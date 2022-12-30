@@ -63,6 +63,14 @@
                 >
                   Información sobre préstamos
                 </v-btn>
+                <v-btn
+                  link
+                  color="grey darken-4"
+                  target="_blank"
+                  href="https://github.com/eduair94/cambio-uruguay"
+                >
+                  Github repo
+                </v-btn>
               </div>
               <div>
                 <v-row style="max-width: 850px">
