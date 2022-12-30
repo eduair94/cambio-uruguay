@@ -11,7 +11,6 @@
     "sync_favicon": "ts-node sync_favicon.ts",
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "deploy": "push-dir --dir=app/dist --branch=gh-pages --cleanup"
   },
   "author": "",
   "license": "ISC",

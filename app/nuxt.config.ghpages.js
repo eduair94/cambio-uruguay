@@ -2,6 +2,9 @@ import colors from 'vuetify/es5/util/colors'
 
 export default {
   type: 'module',
+  ssr: false,
+  target: 'static',
+  publicPath: '/cambio-uruguay/',
   loading: '~/components/LoadingBar.vue',
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
@@ -128,7 +131,7 @@ export default {
 
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
-    '@nuxtjs/sitemap',
+    // '@nuxtjs/sitemap',
     [
       '@nuxtjs/robots',
       {
