@@ -4,9 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "nuxt",
-    "build": "nuxt build --modern=server",
+    "build": "nuxt build --modern=server --config-file './nuxt.config.prod.js'",
     "start": "nuxt start",
-    "build_ghpages": "nuxt build --modern=server --config-file nuxt.config.ghpages.js",
+    "build_ghpages": "nuxt build --modern=server",
     "generate": "nuxt generate",
     "lint:js": "eslint --ext \".js,.ts,.vue\" --ignore-path .gitignore .",
     "lint:prettier": "prettier --check .",

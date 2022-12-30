@@ -10,7 +10,7 @@
     "sync": "ts-node sync.ts",
     "sync_favicon": "ts-node sync_favicon.ts",
     "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
