@@ -1,7 +1,10 @@
 # Cambio Uruguay
 
 Source code of https://cambio-uruguay.com
-Github page: https://eduair94.github.io/cambio-uruguay/
+
+## Github Page
+
+https://eduair94.github.io/cambio-uruguay/
 
 ## Installation
 
