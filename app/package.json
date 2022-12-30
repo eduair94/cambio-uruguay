@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "nuxt",
-    "build": "nuxt build --modern=server --config-file './nuxt.config.prod.js'",
+    "build": "nuxt build --modern=server --config-file ./nuxt.config.prod.js",
     "start": "nuxt start",
     "build_ghpages": "nuxt build --modern=server",
     "generate": "nuxt generate",
