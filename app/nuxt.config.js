@@ -124,7 +124,14 @@ export default {
         id: 'G-F97PNVRMRF',
       },
     ],
+    '@nuxtjs/google-fonts',
   ],
+
+  googleFonts: {
+    families: {
+      'Open Sans': [400, 600, 700],
+    },
+  },
 
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
@@ -176,7 +183,13 @@ export default {
 
   // Vuetify module configuration: https://go.nuxtjs.dev/config-vuetify
   vuetify: {
+    treeShake: true,
     customVariables: ['~/assets/variables.scss'],
+    defaultAssets: {
+      font: {
+        family: 'Open Sans',
+      },
+    },
     theme: {
       dark: true,
       themes: {

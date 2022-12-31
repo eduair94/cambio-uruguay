@@ -1,5 +1,5 @@
 <template>
-  <div class="mt-4">
+  <div class="mt-md-4">
     <h1 class="text-h5">
       Encuentra la mejor cotización en el mercado, comparando entre más de 10
       casas de cambio.
@@ -8,7 +8,7 @@
       <client-only>
         <v-data-table
           :item-class="row_classes"
-          :headers="headers"
+          :headers="getHeaders()"
           :items="items"
           :items-per-page="50"
           class="elevation-1 money_table"
@@ -20,21 +20,35 @@
                   Cotizaciones del día {{ day }}. Se actualizan cada 5 minutos
                   con respecto a la información de la web.
                 </h3>
-                <p class="mt-3 grey darken-3 pa-3">
-                  Ayudanos donando por PayPal:
+                <p class="mt-3 grey darken-3 pa-3 text-body-1">
                   <a
                     target="_blank"
-                    class="white--text"
+                    class="white--text d-flex align-center justify-content-left"
                     href="https://ko-fi.com/cambio_uruguay"
-                    >https://ko-fi.com/cambio_uruguay</a
                   >
-                  <br />O MercadoPago:
+                    <span class="mr-2">Ayudanos donando por PayPal</span>
+                    <v-img
+                      width="30px"
+                      max-width="30px"
+                      height="30px"
+                      contain
+                      src="/img/paypal_icon.png"
+                    ></v-img>
+                  </a>
                   <a
-                    class="white--text"
+                    class="white--text d-flex align-center justify-content-left"
                     target="_blank"
                     href="https://mpago.la/19j46vX"
-                    >https://mpago.la/19j46vX</a
                   >
+                    <span class="mr-2">O MercadoPago</span>
+                    <v-img
+                      width="30px"
+                      max-width="30px"
+                      height="30px"
+                      contain
+                      src="/img/mercadopago_icon.png"
+                    ></v-img>
+                  </a>
                 </p>
               </div>
               <div class="button_section mb-3">
@@ -73,7 +87,7 @@
                 </v-btn>
               </div>
               <div>
-                <v-row style="max-width: 850px">
+                <v-row style="max-width: 890px">
                   <v-col cols="12" md="6" lg="4">
                     <v-radio-group
                       v-model="wantTo"
@@ -131,13 +145,13 @@
                         v-model="notInterBank"
                         class="mr-md-3"
                         hide-details
-                        :label="`Ignorar cotización interbancaria`"
+                        :label="`Ocultar cotizaciones interbancarias`"
                         @change="updateTable"
                       ></v-checkbox>
                       <v-checkbox
                         v-model="notConditional"
                         hide-details
-                        :label="`Ignorar cotización condicional`"
+                        :label="`Ocultar cotizaciones con condiciones`"
                         @change="updateTable"
                       ></v-checkbox>
                     </div>
@@ -179,15 +193,7 @@
             >
           </template>
           <template #item.localData.bcu="{ item }">
-            <a class="no_link" target="_blank" :href="item.localData.bcu">
-              <v-checkbox
-                v-model="item.localData.bcu ? true : false"
-                class="ma-0 pa-0"
-                readonly
-                color="green"
-                hide-details
-              ></v-checkbox>
-            </a>
+            <BCU :item="item"></BCU>
           </template>
           <template #item.amount="{ item }">
             <v-chip :color="getColor(item)" class="ma-2">
@@ -217,6 +223,11 @@
       Ante cualquier problema / consulta / propuesta enviar correo electrónico a
       <a href="mailto:admin@cambio-uruguay.com">admin@cambio-uruguay.com</a>
     </div>
+    <v-alert class="mt-4" type="info" dense>
+      Este sitio fue creado únicamente con la intención de educar, no nos
+      hacemos responsables por el mal uso y/o las pérdidas financieras que pueda
+      ocasionar.
+    </v-alert>
   </div>
 </template>
 
@@ -225,6 +236,9 @@ import localData from '../service/data'
 
 export default {
   name: 'HomePage',
+  components: {
+    BCU: () => import('../components/BCU.vue'),
+  },
   data() {
     return {
       texts: {
@@ -254,24 +268,6 @@ export default {
       day: new Date().toJSON().slice(0, 10),
       code: '',
       notInterBank: true,
-      headers: [
-        { text: 'Valor', value: 'amount', width: 'auto' },
-        {
-          text: 'Moneda',
-          align: 'start',
-          sortable: false,
-          width: '180px',
-          value: 'code',
-        },
-        { text: 'Casa de Cambio', value: 'localData.name' },
-        { text: 'Compra (UY)', value: 'buy' },
-        { text: 'Venta (UY)', value: 'sell' },
-        { text: 'Dif (%)', value: 'diff' },
-        { text: 'Sitio web', value: 'localData.website', sortable: false },
-        { text: '', value: 'localData.location', sortable: false },
-        { text: 'Condicional', value: 'condition', width: '250px' },
-        { text: 'BCU', value: 'localData.bcu', width: '50px' },
-      ],
       items: [],
       all_items: [],
     }
@@ -297,7 +293,6 @@ export default {
     } catch (e) {
       console.error(e)
     }
-    console.log('pwaInstall', pwaInstall)
     if (pwaInstall) {
       ;(window as any).deferredPrompt = null
       window.addEventListener('beforeinstallprompt', (e) => {
@@ -315,6 +310,30 @@ export default {
     this.get_data()
   },
   methods: {
+    getHeaders() {
+      return [
+        {
+          text: this.wantTo === 'buy' ? 'Pagas' : 'Recibes',
+          value: 'amount',
+          width: 'auto',
+        },
+        {
+          text: 'Moneda',
+          align: 'start',
+          sortable: false,
+          width: '180px',
+          value: 'code',
+        },
+        { text: 'Casa de Cambio', value: 'localData.name' },
+        { text: 'Compra (UY)', value: 'buy' },
+        { text: 'Venta (UY)', value: 'sell' },
+        { text: 'Dif (%)', value: 'diff' },
+        { text: 'Sitio web', value: 'localData.website', sortable: false },
+        { text: '', value: 'localData.location', sortable: false },
+        { text: 'Condicional', value: 'condition', width: '250px' },
+        { text: 'BCU', value: 'localData.bcu', width: '50px' },
+      ]
+    },
     savings() {
       if (!this.items.length) return
       const i = this.items
@@ -399,7 +418,7 @@ export default {
     },
     getCondition(el) {
       if (el.origin === 'prex') {
-        return 'Require del uso de la tarjeta prex, debe ser solicitado en su sitio web.'
+        return 'Require del uso de la tarjeta prex, debe ser solicitada en su sitio web.'
       }
       if (el.type === 'EBROU') {
         return 'Require de cuenta web en el banco BROU, debe abrirse una caja de ahorro en dicho banco'
@@ -498,6 +517,10 @@ export default {
 </script>
 
 <style lang="scss">
+body {
+  font-family: 'Open Sans', sans-serif;
+}
+
 .no_link {
   text-decoration: none;
 }

@@ -1,7 +1,12 @@
 <template>
   <v-app dark>
     <v-app-bar :clipped-left="clipped" fixed app>
-      <v-toolbar-title v-text="title" />
+      <v-img
+        max-height="90%"
+        contain
+        position="left center"
+        src="./img/logo.png"
+      ></v-img>
       <v-spacer />
     </v-app-bar>
     <v-main>
