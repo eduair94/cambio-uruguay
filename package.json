@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "bcu_details": "ts-node get_bcu_details.ts",
     "dev": "ts-node index.ts",
     "remove_bcu": "ts-node remove_bcu.ts",
     "remove_date": "ts-node remove_date.ts",

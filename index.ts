@@ -3,6 +3,8 @@ import { Request } from "express";
 import moment from "moment-timezone";
 import { cambio_info } from "./classes/cambioInfo";
 import { MongooseServer } from "./classes/database";
+import BCU_Details from "./classes/bcu_details";
+import { origins } from "./classes/origins";
 
 moment.tz.setDefault("America/Uruguay");
 
@@ -23,6 +25,16 @@ const main = async () => {
   server.getJson("bcu", async (req: Request): Promise<any> => {
     const res = cambio_info.get_bcu();
     return res;
+  });
+  server.getJson("bcu/:origin", async (req: Request): Promise<any> => {
+    const validOrigin = Object.keys(origins).includes(req.params.origin);
+    if (!validOrigin) {
+      throw new Error("Invalid origin");
+    }
+    const x = new BCU_Details();
+    const origin = req.params.origin;
+    const reply = await x.get_by_origin(origin);
+    return reply;
   });
 };
 
