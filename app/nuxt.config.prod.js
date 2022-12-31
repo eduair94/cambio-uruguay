@@ -147,6 +147,10 @@ export default {
     baseURL: '/',
   },
 
+  router: {
+    mode: 'history',
+  },
+
   // PWA module configuration: https://go.nuxtjs.dev/pwa
   pwa: {
     manifest: {
