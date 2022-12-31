@@ -4,8 +4,8 @@
       Encuentra la mejor cotización en el mercado, comparando entre más de 10
       casas de cambio.
     </h1>
-    <div class="my-4">
-      <client-only>
+    <client-only>
+      <div class="my-4">
         <v-data-table
           :item-class="row_classes"
           :headers="getHeaders()"
@@ -199,40 +199,40 @@
           </template>
           <template #item.diff="{ item }"> {{ item.diff }}% </template>
         </v-data-table>
-      </client-only>
-    </div>
-    <div class="button_section mb-3">
-      <v-btn v-if="show_install" color="blue darken-2" @click="install_app"
-        >Instalar app</v-btn
-      >
-      <v-btn color="blue darken-1" @click="share">
-        <v-icon large> mdi-share </v-icon>
-      </v-btn>
-      <v-btn
-        link
-        color="#00acee"
-        target="_blank"
-        href="https://twitter.com/cambio_uruguay"
-      >
-        <v-icon large> mdi-twitter </v-icon>
-      </v-btn>
-      <v-btn
-        link
-        color="grey darken-4"
-        target="_blank"
-        href="https://github.com/eduair94/cambio-uruguay"
-      >
-        <v-icon large> mdi-github </v-icon>
-      </v-btn>
-      <v-btn
-        link
-        color="orange darken-4"
-        target="_blank"
-        href="https://finanzas.com.uy/los-mejores-prestamos-de-bancos/"
-      >
-        Información sobre préstamos
-      </v-btn>
-    </div>
+      </div>
+      <div class="button_section mb-3">
+        <v-btn v-if="show_install" color="blue darken-2" @click="install_app"
+          >Instalar app</v-btn
+        >
+        <v-btn color="blue darken-1" @click="share">
+          <v-icon large> mdi-share </v-icon>
+        </v-btn>
+        <v-btn
+          link
+          color="#00acee"
+          target="_blank"
+          href="https://twitter.com/cambio_uruguay"
+        >
+          <v-icon large> mdi-twitter </v-icon>
+        </v-btn>
+        <v-btn
+          link
+          color="grey darken-4"
+          target="_blank"
+          href="https://github.com/eduair94/cambio-uruguay"
+        >
+          <v-icon large> mdi-github </v-icon>
+        </v-btn>
+        <v-btn
+          link
+          color="orange darken-4"
+          target="_blank"
+          href="https://finanzas.com.uy/los-mejores-prestamos-de-bancos/"
+        >
+          Información sobre préstamos
+        </v-btn>
+      </div>
+    </client-only>
     <div
       id="updates"
       style="width: 100%"
