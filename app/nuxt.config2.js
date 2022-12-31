@@ -2,6 +2,10 @@ import colors from 'vuetify/es5/util/colors'
 
 export default {
   type: 'module',
+  ssr: false,
+  router: {
+    base: '/cambio-uruguay/',
+  },
   loading: '~/components/LoadingBar.vue',
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
@@ -128,7 +132,7 @@ export default {
 
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
-    '@nuxtjs/sitemap',
+    // '@nuxtjs/sitemap',
     [
       '@nuxtjs/robots',
       {
@@ -145,11 +149,6 @@ export default {
   axios: {
     // Workaround to avoid enforcing hard-coded localhost:3000: https://github.com/nuxt-community/axios-module/issues/308
     baseURL: '/',
-  },
-
-  router: {
-    base: '/',
-    mode: 'history',
   },
 
   // PWA module configuration: https://go.nuxtjs.dev/pwa
