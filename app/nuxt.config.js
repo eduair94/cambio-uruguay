@@ -11,7 +11,7 @@ export default {
     titleTemplate: '%s - Cambio Uruguay',
     title: 'Cambio Uruguay',
     description:
-      'Encuentra las mejores cotizaciones de cambio de divisas en Uruguay',
+      'Encuentra las mejores cotizaciones de cambio de divisas en Montevideo / Uruguay',
     meta: [
       { charset: 'utf-8' },
       {
@@ -51,7 +51,7 @@ export default {
         hid: 'description',
         name: 'description',
         content:
-          'Cambio Uruguay - Encuentra las mejores casas cambiarias del país, mejores cotizaciones de dólares (USD), pesos argentinos (ARS) y reales brasileros (BRL).',
+          'Cambio Uruguay - Encuentra las mejores casas cambiarias de Montevideo / Uruguay, mejores cotizaciones de dólares (USD), pesos argentinos (ARS) y reales brasileros (BRL).',
       },
       {
         hid: 'og:title',
@@ -75,7 +75,7 @@ export default {
       {
         name: 'keywords',
         content:
-          'cotizaciones uruguay, casa cambiaria, cambio moneda, cambio dólares, cambio pesos argentinos, cambio reales, cambio euros, varlix, prex, gales',
+          'cotizaciones uruguay, casa cambiaria, cambio moneda, cambio dólares, cambio pesos argentinos, cambio reales, cambio euros, varlix, prex, gales, cambio montevideo, cambio',
       },
     ],
     link: [
@@ -168,7 +168,7 @@ export default {
       short_name: 'Cambio Uruguay',
       lang: 'es',
       description:
-        'Encuentra las mejores cotizaciones de cambio de divisas en Uruguay',
+        'Encuentra las mejores cotizaciones de cambio de divisas en Montevideo / Uruguay',
     },
     workbox: {
       workboxURL:

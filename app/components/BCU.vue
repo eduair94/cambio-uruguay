@@ -81,7 +81,7 @@
           link
           target="_blank"
           :href="item.localData.bcu"
-          >SITIO WEB</v-btn
+          >SITIO WEB BCU</v-btn
         >
       </v-card-actions>
     </v-card>

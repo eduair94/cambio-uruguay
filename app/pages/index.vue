@@ -20,75 +20,64 @@
                   Cotizaciones del día {{ day }}. Se actualizan cada 5 minutos
                   con respecto a la información de la web.
                 </h3>
-                <p class="mt-3 grey darken-3 pa-3 text-body-1">
-                  <a
-                    target="_blank"
-                    class="white--text d-flex align-center justify-content-left"
-                    href="https://ko-fi.com/cambio_uruguay"
+                <div
+                  class="
+                    my-3
+                    grey
+                    darken-3
+                    pa-3
+                    text-subtitle-1
+                    d-flex
+                    align-center
+                    flex-wrap
+                  "
+                >
+                  <span class="mr-3"
+                    >Si la información del sitio te sirvió, puedes ayudar a
+                    mantenerlo</span
                   >
-                    <span class="mr-2">Ayudanos donando por PayPal</span>
-                    <v-img
-                      width="30px"
-                      max-width="30px"
-                      height="30px"
-                      contain
-                      src="/img/paypal_icon.png"
-                    ></v-img>
-                  </a>
-                  <a
-                    class="white--text d-flex align-center justify-content-left"
-                    target="_blank"
-                    href="https://mpago.la/19j46vX"
-                  >
-                    <span class="mr-2">O MercadoPago</span>
-                    <v-img
-                      width="30px"
-                      max-width="30px"
-                      height="30px"
-                      contain
-                      src="/img/mercadopago_icon.png"
-                    ></v-img>
-                  </a>
-                </p>
-              </div>
-              <div class="button_section mb-3">
-                <v-btn
-                  v-if="show_install"
-                  color="blue darken-2"
-                  @click="install_app"
-                  >Instalar app</v-btn
-                >
-                <v-btn color="blue darken-1" @click="share">
-                  Compartir resultados
-                </v-btn>
-                <v-btn
-                  link
-                  color="#00acee"
-                  target="_blank"
-                  href="https://twitter.com/cambio_uruguay"
-                >
-                  Siguenos en twitter
-                </v-btn>
-                <v-btn
-                  link
-                  color="orange darken-4"
-                  target="_blank"
-                  href="https://finanzas.com.uy/los-mejores-prestamos-de-bancos/"
-                >
-                  Información sobre préstamos
-                </v-btn>
-                <v-btn
-                  link
-                  color="grey darken-4"
-                  target="_blank"
-                  href="https://github.com/eduair94/cambio-uruguay"
-                >
-                  Github repo
-                </v-btn>
+                  <div class="d-flex mt-2">
+                    <a
+                      target="_blank"
+                      class="
+                        white--text
+                        d-flex
+                        mr-4
+                        align-center
+                        justify-content-left
+                      "
+                      href="https://ko-fi.com/cambio_uruguay"
+                    >
+                      <v-img
+                        max-width="50px"
+                        height="50px"
+                        contain
+                        src="/img/paypal_icon.png"
+                      ></v-img>
+                    </a>
+                    <a
+                      class="
+                        white--text
+                        d-flex
+                        align-center
+                        justify-content-left
+                      "
+                      target="_blank"
+                      href="https://mpago.la/19j46vX"
+                    >
+                      <v-img
+                        max-width="50px"
+                        height="50px"
+                        contain
+                        src="/img/mercadopago_icon.png"
+                      ></v-img>
+                    </a>
+                  </div>
+                </div>
               </div>
               <div>
-                <v-row style="max-width: 890px">
-                  <v-col cols="12" md="6" lg="4">
+                <v-row style="max-width: 1200px">
+                  <v-col cols="12" md="6" lg="3">
                     <v-radio-group
                       v-model="wantTo"
                       hide-details
@@ -98,7 +87,7 @@
                       <v-radio label="Quiero comprar" value="buy"></v-radio>
                     </v-radio-group>
                   </v-col>
-                  <v-col cols="12" md="6" lg="4">
+                  <v-col cols="12" md="6" lg="3">
                     <v-text-field
                       v-model="amount"
                       :label="'XXX ' + code"
@@ -107,7 +96,7 @@
                       @input="setPrice()"
                     ></v-text-field>
                   </v-col>
-                  <v-col cols="12" md="6" lg="4">
+                  <v-col cols="12" md="6" lg="3">
                     <v-select
                       v-model="code"
                       :items="money"
@@ -122,6 +111,14 @@
                         <!-- HTML that describe how select should render items when the select is open -->
                         <span>{{ data.item }} - {{ texts[data.item] }}</span>
                       </template>
+                    </v-select>
+                  </v-col>
+                  <v-col cols="12" md="6" lg="3">
+                    <v-select
+                      v-model="location"
+                      :items="locations"
+                      label="Departamento"
+                    >
                     </v-select>
                   </v-col>
                   <v-col
@@ -204,6 +201,38 @@
         </v-data-table>
       </client-only>
     </div>
+    <div class="button_section mb-3">
+      <v-btn v-if="show_install" color="blue darken-2" @click="install_app"
+        >Instalar app</v-btn
+      >
+      <v-btn color="blue darken-1" @click="share">
+        <v-icon large> mdi-share </v-icon>
+      </v-btn>
+      <v-btn
+        link
+        color="#00acee"
+        target="_blank"
+        href="https://twitter.com/cambio_uruguay"
+      >
+        <v-icon large> mdi-twitter </v-icon>
+      </v-btn>
+      <v-btn
+        link
+        color="grey darken-4"
+        target="_blank"
+        href="https://github.com/eduair94/cambio-uruguay"
+      >
+        <v-icon large> mdi-github </v-icon>
+      </v-btn>
+      <v-btn
+        link
+        color="orange darken-4"
+        target="_blank"
+        href="https://finanzas.com.uy/los-mejores-prestamos-de-bancos/"
+      >
+        Información sobre préstamos
+      </v-btn>
+    </div>
     <div
       id="updates"
       style="width: 100%"
@@ -241,6 +270,8 @@ export default {
   },
   data() {
     return {
+      location: 'Montevideo',
+      locations: ['Montevideo'],
       texts: {
         USD: 'Dólares estadounidenses',
         ARS: 'Pesos Argentinos',
@@ -553,7 +584,7 @@ body {
 
 .money_table
   .v-data-table__mobile-table-row
-  > .v-data-table__mobile-row:nth-child(8) {
+  > .v-data-table__mobile-row:nth-child(9) {
   flex-direction: column;
   justify-content: flex-start;
   .v-data-table__mobile-row__header {
