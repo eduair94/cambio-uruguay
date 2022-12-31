@@ -6,7 +6,7 @@
     "dev": "nuxt",
     "build": "nuxt build --modern=server",
     "start": "nuxt start",
-    "build_ghpages": "nuxt build --modern=server",
+    "build_ghpages": "nuxt build --modern=server --config-file './nuxt.config2.js'",
     "generate": "nuxt generate",
     "lint:js": "eslint --ext \".js,.ts,.vue\" --ignore-path .gitignore .",
     "lint:prettier": "prettier --check .",

@@ -182,6 +182,7 @@
             <a class="no_link" target="_blank" :href="item.localData.bcu">
               <v-checkbox
                 v-model="item.localData.bcu ? true : false"
+                class="ma-0 pa-0"
                 readonly
                 color="green"
                 hide-details
@@ -254,6 +255,7 @@ export default {
       code: '',
       notInterBank: true,
       headers: [
+        { text: 'Valor', value: 'amount', width: 'auto' },
         {
           text: 'Moneda',
           align: 'start',
@@ -268,8 +270,7 @@ export default {
         { text: 'Sitio web', value: 'localData.website', sortable: false },
         { text: '', value: 'localData.location', sortable: false },
         { text: 'Condicional', value: 'condition', width: '250px' },
-        { text: 'BCU', value: 'localData.bcu', width: '40px' },
-        { text: 'Valor', value: 'amount', width: '250px' },
+        { text: 'BCU', value: 'localData.bcu', width: '50px' },
       ],
       items: [],
       all_items: [],
