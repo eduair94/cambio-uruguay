@@ -93,18 +93,6 @@ export default {
             ? 'https://arc.io/widget.min.js#63RUbX6J'
             : '',
         async: true,
-      },
-      {
-        type: 'text/javascript',
-        charset: 'utf-8',
-        innerHTML: `(function(h,o,t,j,a,r){
-                h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
-                h._hjSettings={hjid:3306157,hjsv:6};
-                a=o.getElementsByTagName('head')[0];
-                r=o.createElement('script');r.async=1;
-                r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
-                a.appendChild(r);
-            })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');`,
       }
     ],
   },
@@ -158,6 +146,10 @@ export default {
     ],
     // https://go.nuxtjs.dev/axios
     '@nuxtjs/axios',
+    ['@netsells/nuxt-hotjar', { 
+        id: '3306157', 
+        sv: '6',
+    }],
   ],
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
