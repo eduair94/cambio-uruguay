@@ -1,9 +1,9 @@
-import server from "./classes/Express/ExpressSetup";
 import { Request } from "express";
 import moment from "moment-timezone";
+import BCU_Details from "./classes/bcu_details";
 import { cambio_info } from "./classes/cambioInfo";
 import { MongooseServer } from "./classes/database";
-import BCU_Details from "./classes/bcu_details";
+import server from "./classes/Express/ExpressSetup";
 import { origins } from "./classes/origins";
 
 moment.tz.setDefault("America/Uruguay");
@@ -24,6 +24,10 @@ const main = async () => {
   });
   server.getJson("bcu", async (req: Request): Promise<any> => {
     const res = cambio_info.get_bcu();
+    return res;
+  });
+  server.getJson("localData", async (req: Request): Promise<any> => {
+    const res = cambio_info.get_local_data();
     return res;
   });
   server.getJson("bcu/:origin", async (req: Request): Promise<any> => {

@@ -4,8 +4,8 @@ import { CambioObj } from "../../interfaces/Cambio";
 import { Cambio } from "../cambio";
 
 class CambioSuizo extends Cambio {
-  bcu =
-    "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2484";
+  name = "Cambio Suizo";
+  bcu = "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2484";
   website = "https://www.cambiosuizo.com.uy/";
   favicon = "https://www.cambiosuizo.com.uy";
   conversions = {

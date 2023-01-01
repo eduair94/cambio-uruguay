@@ -4,8 +4,8 @@ import { CambioObj } from "../../interfaces/Cambio";
 import { Cambio } from "../cambio";
 
 class AlterCambio extends Cambio {
-  bcu =
-    "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2589";
+  name = "Alter Cambio";
+  bcu = "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2589";
   private conversions = {
     "Dolar USA": {
       code: "USD",
@@ -32,12 +32,8 @@ class AlterCambio extends Cambio {
     const result = $(".pizarra tbody tr")
       .map((i: number, element) => ({
         moneda: $(element).find(".izq").text().trim(),
-        compra: this.fix_money(
-          $(element).find("td:nth-of-type(3)").text().trim(),
-        ),
-        venta: this.fix_money(
-          $(element).find("td:nth-of-type(4)").text().trim(),
-        ),
+        compra: this.fix_money($(element).find("td:nth-of-type(3)").text().trim()),
+        venta: this.fix_money($(element).find("td:nth-of-type(4)").text().trim()),
       }))
       .get()
       .filter((el) => el.compra);

@@ -4,6 +4,7 @@ import { CambioObj } from "../../interfaces/Cambio";
 import { Cambio } from "../cambio";
 
 class CambioSicurezza extends Cambio {
+  name = 'Cambio Sicurezza'
   bcu =
     "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2640";
   private conversions = {

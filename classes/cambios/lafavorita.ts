@@ -4,8 +4,8 @@ import { CambioObj } from "../../interfaces/Cambio";
 import { Cambio } from "../cambio";
 
 class CambioLaFavorita extends Cambio {
-  bcu =
-    "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2581";
+  name = "La Favorita";
+  bcu = "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2581";
   conversions = {
     DOLAR: {
       code: "USD",
@@ -82,12 +82,8 @@ class CambioLaFavorita extends Cambio {
     const result = $(cotizacionesSel)
       .map((i: number, element) => ({
         moneda: $(element).find("h1").text().trim(),
-        compra: this.fix_money(
-          $(element).find(".color-cotizacion").eq(0).text().trim(),
-        ),
-        venta: this.fix_money(
-          $(element).find(".color-cotizacion").eq(1).text().trim(),
-        ),
+        compra: this.fix_money($(element).find(".color-cotizacion").eq(0).text().trim()),
+        venta: this.fix_money($(element).find(".color-cotizacion").eq(1).text().trim()),
       }))
       .get();
     const f = result

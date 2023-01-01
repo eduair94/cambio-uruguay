@@ -4,8 +4,8 @@ import { CambioObj } from "../../interfaces/Cambio";
 import { Cambio } from "../cambio";
 
 class CambioGales extends Cambio {
-  bcu =
-    "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2566";
+  name = "Cambio Gales";
+  bcu = "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2566";
   private conversions = {
     "D�lar": {
       code: "USD",
@@ -32,12 +32,8 @@ class CambioGales extends Cambio {
     const result = $("table.monedas tbody tr")
       .map((i: number, element) => ({
         moneda: $(element).find("td:nth-of-type(1)").text().trim(),
-        compra: this.fix_money(
-          $(element).find("td:nth-of-type(2)").text().trim(),
-        ),
-        venta: this.fix_money(
-          $(element).find("td:nth-of-type(3)").text().trim(),
-        ),
+        compra: this.fix_money($(element).find("td:nth-of-type(2)").text().trim()),
+        venta: this.fix_money($(element).find("td:nth-of-type(3)").text().trim()),
       }))
       .get();
     console.log("RESULT", result);

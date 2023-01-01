@@ -4,6 +4,7 @@ import { CambioObj } from "../../interfaces/Cambio";
 import { Cambio } from "../cambio";
 
 class CambioRegul extends Cambio {
+  name = 'Cambio Regul'
   bcu =
     "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2577";
   private conversions = {

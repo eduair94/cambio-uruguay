@@ -4,8 +4,8 @@ import { CambioObj } from "../../interfaces/Cambio";
 import { Cambio } from "../cambio";
 
 class Cambio18 extends Cambio {
-  bcu =
-    "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2576";
+  name = "Cambio 18";
+  bcu = "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2576";
   website = "https://www.cambio18.com";
   favicon = "https://www.cambio18.com";
   conversions = {
@@ -33,18 +33,8 @@ class Cambio18 extends Cambio {
     const result = $(sel)
       .map((i: number, element) => ({
         moneda: $(element).find("tr:nth-of-type(1)").text().trim(),
-        compra: this.fix_money(
-          $(element)
-            .find("tr:nth-of-type(2) > td:nth-of-type(2)")
-            .text()
-            .trim(),
-        ),
-        venta: this.fix_money(
-          $(element)
-            .find("tr:nth-of-type(3) > td:nth-of-type(2)")
-            .text()
-            .trim(),
-        ),
+        compra: this.fix_money($(element).find("tr:nth-of-type(2) > td:nth-of-type(2)").text().trim()),
+        venta: this.fix_money($(element).find("tr:nth-of-type(3) > td:nth-of-type(2)").text().trim()),
       }))
       .get();
     const f = result

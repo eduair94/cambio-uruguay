@@ -9,6 +9,7 @@ abstract class Cambio {
   protected origin: string;
   protected bcu: string;
   abstract website: string;
+  abstract name: string;
   protected favicon: string;
   protected db: MongooseServer;
 
@@ -21,6 +22,10 @@ abstract class Cambio {
       title: $("title").eq(0).text().trim(),
       favicon: $("link[rel='apple-touch-icon']").attr("href"),
     };
+  }
+
+  getMaps() {
+    return "https://www.google.com.uy/maps/search/" + encodeURI(this.name.toLowerCase());
   }
 
   constructor(origin?: string) {
@@ -36,7 +41,7 @@ abstract class Cambio {
         buy: { type: Number },
         sell: { type: Number },
         date: { type: Date },
-      }),
+      })
     );
   }
 
@@ -115,7 +120,7 @@ abstract class Cambio {
         code: data.code,
         type: data.type,
       },
-      data,
+      data
     );
     return db;
   }

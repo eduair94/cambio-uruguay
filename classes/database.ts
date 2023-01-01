@@ -1,5 +1,5 @@
-import { mongoConfig } from "../config";
 import mongoose from "mongoose";
+import { mongoConfig } from "../config";
 const Schema = mongoose.Schema;
 
 export class MongooseServer {
@@ -458,9 +458,8 @@ export class MongooseServer {
   }
 
   public static connectWithRetry = (): any => {
-    mongoose
-      .connect(`mongodb://localhost:27017/${mongoConfig.database}`, {})
-      .catch(() => {});
+    mongoose.set("strictQuery", false);
+    mongoose.connect(`mongodb://localhost:27017/${mongoConfig.database}`, {}).catch(() => {});
   };
 
   public static dealConnection = (): void => {

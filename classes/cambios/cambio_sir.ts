@@ -5,6 +5,7 @@ import { Cambio } from "../cambio";
 import { find_string } from "../utils";
 
 class CambioSir extends Cambio {
+  name= 'Cambio Sir'
   bcu =
     "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2557";
   url_data =

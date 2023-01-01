@@ -4,8 +4,8 @@ import { CambioObj } from "../../interfaces/Cambio";
 import { Cambio } from "../cambio";
 
 class CambioBrou extends Cambio {
-  bcu =
-    "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=1001";
+  name = "brou";
+  bcu = "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=1001";
   website = "https://www.brou.com.uy/cotizaciones";
   favicon = "https://www.brou.com.uy";
 
@@ -65,27 +65,17 @@ class CambioBrou extends Cambio {
     },
   };
   async get_data(): Promise<CambioObj[]> {
-    const url =
-      "https://www.brou.com.uy/c/portal/render_portlet?p_l_id=20593&p_p_id=cotizacionfull_WAR_broutmfportlet_INSTANCE_otHfewh1klyS&p_p_lifecycle=0&p_t_lifecycle=0&p_p_state=normal&p_p_mode=view&p_p_col_id=column-1&p_p_col_pos=0&p_p_col_count=2&p_p_isolated=1&currentURL=%2Fcotizaciones";
-    const body =
-      "p_l_id=20593&p_p_id=cotizacionfull_WAR_broutmfportlet_INSTANCE_otHfewh1klyS&p_p_lifecycle=0&p_t_lifecycle=0&p_p_state=normal&p_p_mode=view&p_p_col_id=column-1&p_p_col_pos=0&p_p_col_count=2&p_p_isolated=1&currentURL=%2Fcotizaciones";
+    const url = "https://www.brou.com.uy/c/portal/render_portlet?p_l_id=20593&p_p_id=cotizacionfull_WAR_broutmfportlet_INSTANCE_otHfewh1klyS&p_p_lifecycle=0&p_t_lifecycle=0&p_p_state=normal&p_p_mode=view&p_p_col_id=column-1&p_p_col_pos=0&p_p_col_count=2&p_p_isolated=1&currentURL=%2Fcotizaciones";
+    const body = "p_l_id=20593&p_p_id=cotizacionfull_WAR_broutmfportlet_INSTANCE_otHfewh1klyS&p_p_lifecycle=0&p_t_lifecycle=0&p_p_state=normal&p_p_mode=view&p_p_col_id=column-1&p_p_col_pos=0&p_p_col_count=2&p_p_isolated=1&currentURL=%2Fcotizaciones";
     const res = await axios.post(url, body).then((res) => res.data);
     const $ = load(res);
     const result = $("table tbody tr")
       .map((i: number, element) => ({
         moneda: $(element).find("td:nth-of-type(1)").text().trim(),
-        compra: this.fix_money(
-          $(element).find("td:nth-of-type(3)").text().trim(),
-        ),
-        venta: this.fix_money(
-          $(element).find("td:nth-of-type(5)").text().trim(),
-        ),
-        arbitraje_compra: this.fix_money(
-          $(element).find("td:nth-of-type(7)").text().trim(),
-        ),
-        arbitraje_venta: this.fix_money(
-          $(element).find("td:nth-of-type(9)").text().trim(),
-        ),
+        compra: this.fix_money($(element).find("td:nth-of-type(3)").text().trim()),
+        venta: this.fix_money($(element).find("td:nth-of-type(5)").text().trim()),
+        arbitraje_compra: this.fix_money($(element).find("td:nth-of-type(7)").text().trim()),
+        arbitraje_venta: this.fix_money($(element).find("td:nth-of-type(9)").text().trim()),
       }))
       .get();
 

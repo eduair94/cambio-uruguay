@@ -1,13 +1,12 @@
-import { CambioObj } from "../../interfaces/Cambio";
-import { Cambio } from "../cambio";
 import axios from "axios";
 import { load } from "cheerio";
+import { CambioObj } from "../../interfaces/Cambio";
+import { Cambio } from "../cambio";
 class CambioBCU extends Cambio {
-  website =
-    "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Cotizaciones.aspx";
+  name = "Banco Central del Uruguay";
+  website = "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Cotizaciones.aspx";
 
-  bcu =
-    "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/casas_cambio.aspx";
+  bcu = "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/casas_cambio.aspx";
   favicon = "https://www.bcu.gub.uy";
 
   get_type(moneda: string) {
@@ -56,15 +55,9 @@ class CambioBCU extends Cambio {
       .map((i: number, element) => ({
         moneda: $(element).find("td:nth-of-type(1)").text().trim(),
         fecha: $(element).find("td:nth-of-type(2)").text().trim(),
-        venta: this.fix_money(
-          $(element).find("td:nth-of-type(3)").text().trim(),
-        ),
-        compra: this.fix_money(
-          $(element).find("td:nth-of-type(4)").text().trim(),
-        ),
-        arbitraje: this.fix_money(
-          $(element).find("td:nth-of-type(5)").text().trim(),
-        ),
+        venta: this.fix_money($(element).find("td:nth-of-type(3)").text().trim()),
+        compra: this.fix_money($(element).find("td:nth-of-type(4)").text().trim()),
+        arbitraje: this.fix_money($(element).find("td:nth-of-type(5)").text().trim()),
       }))
       .get();
     const f = result.map((el) => {

@@ -1,12 +1,11 @@
 import axios from "axios";
-import { load } from "cheerio";
 import moment from "moment";
 import { CambioObj } from "../../interfaces/Cambio";
 import { Cambio } from "../cambio";
 
 class CambioIndumex extends Cambio {
-  bcu =
-    "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2558";
+  name = "Indumex";
+  bcu = "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2558";
   conversions = {
     "1": {
       code: "USD",
@@ -29,12 +28,7 @@ class CambioIndumex extends Cambio {
   favicon = "https://www.indumex.com";
   async get_data(): Promise<CambioObj[]> {
     const date = moment().format("DDMMYYYY");
-    const web_data = await axios
-      .get(
-        "https://www.indumex.com/Umbraco/api/Pizarra/Cotizaciones?fecha=" +
-          date,
-      )
-      .then((res) => res.data);
+    const web_data = await axios.get("https://www.indumex.com/Umbraco/api/Pizarra/Cotizaciones?fecha=" + date).then((res) => res.data);
     const f = web_data.map((el) => {
       const { code, type } = this.conversions[el.Moneda];
       return {

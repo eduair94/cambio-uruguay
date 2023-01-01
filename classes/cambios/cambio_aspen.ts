@@ -4,8 +4,8 @@ import { CambioObj } from "../../interfaces/Cambio";
 import { Cambio } from "../cambio";
 
 class CambioAspen extends Cambio {
-  bcu =
-    "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2466";
+  name = "Cambio Aspen";
+  bcu = "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2466";
   website = "https://www.aspen.com.uy/sitio";
   favicon = "https://www.aspen.com.uy";
   conversions = {
@@ -44,12 +44,8 @@ class CambioAspen extends Cambio {
     const result = $(".md-divisas table tr.bd")
       .map((i: number, element) => ({
         moneda: $(element).find("td:nth-of-type(1)").text().trim(),
-        compra: this.fix_money(
-          $(element).find("td:nth-of-type(2)").text().trim(),
-        ),
-        venta: this.fix_money(
-          $(element).find("td:nth-of-type(3)").text().trim(),
-        ),
+        compra: this.fix_money($(element).find("td:nth-of-type(2)").text().trim()),
+        venta: this.fix_money($(element).find("td:nth-of-type(3)").text().trim()),
       }))
       .get();
     console.log(result);

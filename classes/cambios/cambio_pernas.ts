@@ -4,8 +4,8 @@ import { CambioObj } from "../../interfaces/Cambio";
 import { Cambio } from "../cambio";
 
 class CambioPernas extends Cambio {
-  bcu =
-    "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2486";
+  name = "Cambio Pernas";
+  bcu = "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2486";
   private conversions = {
     dolar: {
       code: "USD",
@@ -31,17 +31,9 @@ class CambioPernas extends Cambio {
     const $ = load(web_data);
     const result = $("#divisas > table > tbody > tr > td > table tbody tr")
       .map((i: number, element) => ({
-        moneda: $(element)
-          .find("td:nth-of-type(2) strong span")
-          .text()
-          .trim()
-          .toLowerCase(),
-        compra: this.fix_money(
-          $(element).find("td:nth-of-type(4) span").text().trim(),
-        ),
-        venta: this.fix_money(
-          $(element).find("td:nth-of-type(7) span").text().trim(),
-        ),
+        moneda: $(element).find("td:nth-of-type(2) strong span").text().trim().toLowerCase(),
+        compra: this.fix_money($(element).find("td:nth-of-type(4) span").text().trim()),
+        venta: this.fix_money($(element).find("td:nth-of-type(7) span").text().trim()),
       }))
       .get()
       .filter((el) => el.compra && !el.moneda.includes("dolarpeso"));

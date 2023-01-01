@@ -4,8 +4,8 @@ import { CambioObj } from "../../interfaces/Cambio";
 import { Cambio } from "../cambio";
 
 class CambioIngles extends Cambio {
-  bcu =
-    "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2695";
+  name = "Cambio Inglés";
+  bcu = "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2695";
   website = "https://www.cambioingles.com.uy/";
   favicon = "https://www.cambioingles.com.uy";
   conversions = {
@@ -37,19 +37,9 @@ class CambioIngles extends Cambio {
           .match(/(?<=\/).*(?=\-f)/g)[0]
           .split(/\//g)
           .at(-1),
-        compra: $(element)
-          .find(".elementor-heading-title")
-          .eq(1)
-          .text()
-          .trim()
-          .replace("$", ""),
+        compra: $(element).find(".elementor-heading-title").eq(1).text().trim().replace("$", ""),
 
-        venta: $(element)
-          .find(".elementor-heading-title")
-          .eq(3)
-          .text()
-          .trim()
-          .replace("$", ""),
+        venta: $(element).find(".elementor-heading-title").eq(3).text().trim().replace("$", ""),
       }))
       .get();
     console.log("REsult", result);
