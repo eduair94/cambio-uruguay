@@ -61,11 +61,12 @@
         <v-list-item>
           <v-list-item-content>
             <v-list-item-title>E-mail</v-list-item-title>
-
             <a v-if="d.email" class="white--text" :href="'mailto:' + d.email">{{
               d.email
             }}</a>
-            <v-else>N/A</v-else>
+            <v-else>
+              <span>N/A</span>
+            </v-else>
           </v-list-item-content>
         </v-list-item>
       </v-list>

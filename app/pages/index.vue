@@ -129,7 +129,7 @@
                     <span>{{ get_text() }}</span
                     ><br />
                     <v-alert
-                      class="green darken-4 mb-0 mt-1"
+                      class="green darken-4 mb-0 mt-3"
                       type="success"
                       dense
                     >
@@ -201,9 +201,9 @@
         </v-data-table>
       </div>
       <div class="button_section mb-3">
-        <v-btn v-if="show_install" color="blue darken-2" @click="install_app"
-          >Instalar app</v-btn
-        >
+        <v-btn color="blue darken-2" @click="install_app">
+          <v-icon>mdi-download</v-icon>
+        </v-btn>
         <v-btn color="blue darken-1" @click="share">
           <v-icon large> mdi-share </v-icon>
         </v-btn>
@@ -250,7 +250,9 @@
     </div>
     <div class="mt-3">
       Ante cualquier problema / consulta / propuesta enviar correo electrónico a
-      <a href="mailto:admin@cambio-uruguay.com">admin@cambio-uruguay.com</a>
+      <a class="white--text" href="mailto:admin@cambio-uruguay.com"
+        >admin@cambio-uruguay.com</a
+      >
     </div>
     <v-alert class="mt-4" type="info" dense>
       Este sitio fue creado únicamente con la intención de educar, no nos
