@@ -1,5 +1,5 @@
 import axios from "axios";
-import { load } from "cheerio";
+import { CheerioAPI, load } from "cheerio";
 import moment from "moment-timezone";
 import { CambioObj } from "../interfaces/Cambio";
 import { MongooseServer, Schema } from "./database";
@@ -26,6 +26,42 @@ abstract class Cambio {
 
   getMaps() {
     return "https://www.google.com.uy/maps/search/" + encodeURI(this.name.toLowerCase());
+  }
+
+  async getLocation(n1: string, n2: string) {
+    const url = "https://www.bcu.gub.uy/_layouts/15/BCU.Registros/handler/RegistrosHandler.ashx?op=getsucursalbynroinstitucionandnrosucursal";
+    const data = { KeyValuePairs: { NroInstitucion: n1, NroSucursal: n2 } };
+    const headers = {
+      "Content-Type": "application/json; charset=UTF-8",
+    };
+    const res = await axios.post(url, data, { headers }).then((res) => res.data);
+    return res;
+  }
+
+  async getLocations($?: CheerioAPI, bcu?: string) {
+    if (!bcu) {
+      bcu = this.bcu;
+    }
+    if (!$) {
+      const res = await axios.get(bcu).then((res) => res.data);
+      $ = load(res);
+    }
+    const locations = $("#lstSucursales tr")
+      .map((idx, el) => {
+        return $(el).find("td span").eq(0).text();
+      })
+      .get();
+    const intNumber = new URL(bcu).searchParams.get("nroinst");
+    if (!intNumber) throw new Error("No institution number");
+    let departments = [];
+    for (let loc of locations) {
+      const locInfo = await this.getLocation(intNumber, loc);
+      const department = locInfo.sucursal.Departamento;
+      if (!departments.includes(department)) {
+        departments.push(department);
+      }
+    }
+    return departments;
   }
 
   constructor(origin?: string) {

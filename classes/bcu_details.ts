@@ -1,8 +1,8 @@
 import axios from "axios";
+import { load } from "cheerio";
 import { Cambio } from "./cambio";
 import { MongooseServer, Schema } from "./database";
 import { origins } from "./origins";
-import { load } from "cheerio";
 
 class BCU_Details {
   private db: MongooseServer;
@@ -17,7 +17,8 @@ class BCU_Details {
         website: { type: String },
         email: { type: String },
         social_reason: { type: String },
-      }),
+        departments: { type: Array },
+      })
     );
   }
   async get_by_origin(origin: string) {
@@ -35,38 +36,18 @@ class BCU_Details {
         if (bcu && bcu.includes("InformacionInstitucion")) {
           const html = await axios.get(bcu).then((res) => res.data);
           const $ = load(html);
-          const name = $(
-            ".data #ctl00_ctl63_g_69ba7a44_6c44_4cfc_b1c0_7533ca184061_ctl00_lblNombreFantasia",
-          )
-            .text()
-            .trim();
-          const address = $(
-            ".data #ctl00_ctl63_g_69ba7a44_6c44_4cfc_b1c0_7533ca184061_ctl00_lblDireccion",
-          )
-            .text()
-            .trim();
-          const phone = $(
-            ".data #ctl00_ctl63_g_69ba7a44_6c44_4cfc_b1c0_7533ca184061_ctl00_lblTelefono",
-          )
-            .text()
-            .trim();
-          const website = $(
-            ".data #ctl00_ctl63_g_69ba7a44_6c44_4cfc_b1c0_7533ca184061_ctl00_HplPaginaWeb",
-          )
-            .text()
-            .trim();
+          const name = $(".data #ctl00_ctl63_g_69ba7a44_6c44_4cfc_b1c0_7533ca184061_ctl00_lblNombreFantasia").text().trim();
+          const address = $(".data #ctl00_ctl63_g_69ba7a44_6c44_4cfc_b1c0_7533ca184061_ctl00_lblDireccion").text().trim();
+          const phone = $(".data #ctl00_ctl63_g_69ba7a44_6c44_4cfc_b1c0_7533ca184061_ctl00_lblTelefono").text().trim();
+          const website = $(".data #ctl00_ctl63_g_69ba7a44_6c44_4cfc_b1c0_7533ca184061_ctl00_HplPaginaWeb").text().trim();
 
-          const email = $(
-            ".data #ctl00_ctl63_g_69ba7a44_6c44_4cfc_b1c0_7533ca184061_ctl00_HplCorreoElectronico",
-          )
-            .text()
-            .trim();
+          const email = $(".data #ctl00_ctl63_g_69ba7a44_6c44_4cfc_b1c0_7533ca184061_ctl00_HplCorreoElectronico").text().trim();
 
-          const social_reason = $(
-            "#ctl00_ctl63_g_69ba7a44_6c44_4cfc_b1c0_7533ca184061_ctl00_lblRazonSocial",
-          )
-            .text()
-            .trim();
+          const social_reason = $("#ctl00_ctl63_g_69ba7a44_6c44_4cfc_b1c0_7533ca184061_ctl00_lblRazonSocial").text().trim();
+
+          const departments = await cambio.getLocations();
+          console.log(departments);
+
           const f = {
             name,
             address,
@@ -74,6 +55,7 @@ class BCU_Details {
             website,
             email,
             social_reason,
+            departments,
             origin,
           };
           await this.db.getAnUpdateEntry({ origin }, f);
