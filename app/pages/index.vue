@@ -261,8 +261,6 @@
 </template>
 
 <script lang="ts">
-import localData from '../service/data'
-
 export default {
   name: 'HomePage',
   components: {
@@ -508,8 +506,8 @@ export default {
       })
     },
     async get_data() {
-      const bcuData = await this.$axios
-        .get('https://cambio.shellix.cc/bcu')
+      const localData = await this.$axios
+        .get('https://cambio.shellix.cc/localData')
         .then((res) => res.data)
       const data = await this.$axios
         .get('https://cambio.shellix.cc')
@@ -525,8 +523,6 @@ export default {
                 maps: '',
                 bcu: '',
               }
-            } else {
-              el.localData.bcu = bcuData[el.origin]
             }
             el.isInterBank = this.isInterBank(el)
             el.condition = this.getCondition(el)
