@@ -26,6 +26,11 @@ Inside /app folder. It will work connected to the official api.
 npm run dev
 ```
 
+## Team
+
+Developer - [Eduardo Airaudo](https://www.linkedin.com/in/eduardo-airaudo/)
+QA (Testing) - [Regina Scagliotti](https://www.linkedin.com/in/reginascagliotti/)
+
 ## Contributing
 
 Pull requests are welcome. For major changes, please open an issue first
