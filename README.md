@@ -28,7 +28,7 @@ npm run dev
 
 ## Team
 
-Developer - [Eduardo Airaudo](https://www.linkedin.com/in/eduardo-airaudo/)\n
+Developer - [Eduardo Airaudo](https://www.linkedin.com/in/eduardo-airaudo/)<br>
 QA (Testing) - [Regina Scagliotti](https://www.linkedin.com/in/reginascagliotti/)
 
 ## Contributing
