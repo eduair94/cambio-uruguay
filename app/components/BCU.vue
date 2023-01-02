@@ -58,12 +58,10 @@
             {{ d.website }}
           </v-list-item-content>
         </v-list-item>
-        <v-list-item>
+        <v-list-item v-if="d.email">
           <v-list-item-content>
             <v-list-item-title>E-mail</v-list-item-title>
-            <a v-if="d.email" class="white--text" :href="'mailto:' + d.email">{{
-              d.email
-            }}</a>
+            <a class="white--text" :href="'mailto:' + d.email">{{ d.email }}</a>
           </v-list-item-content>
         </v-list-item>
       </v-list>
