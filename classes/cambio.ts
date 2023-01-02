@@ -57,7 +57,7 @@ abstract class Cambio {
     for (let loc of locations) {
       const locInfo = await this.getLocation(intNumber, loc);
       const department = locInfo.sucursal.Departamento;
-      if (!departments.includes(department)) {
+      if (department && !departments.includes(department)) {
         departments.push(department);
       }
     }
