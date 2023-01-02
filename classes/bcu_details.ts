@@ -21,7 +21,7 @@ class BCU_Details {
       })
     );
   }
-  async get_by_origin(origin: string) {
+  async get_by_origin(origin: string): Promise<any> {
     const res = await this.db.findEntry({ origin });
     return res;
   }
