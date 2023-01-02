@@ -56,7 +56,7 @@ class CambioInfo extends Cambio {
     if (!date) {
       date = moment().startOf("day").toDate();
     }
-    const obj = await this.db.allEntriesSort({ date }, { code: -1, sell: 1, buy: 1, $not: { origin: "cambio_salto_grande" } });
+    const obj = await this.db.allEntriesSort({ date, $not: { origin: "cambio_salto_grande" } }, { code: -1, sell: 1, buy: 1 });
     return obj as any;
   }
 }
