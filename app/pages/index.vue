@@ -557,22 +557,18 @@ export default {
       const data = await this.$axios
         .get('https://cambio.shellix.cc')
         .then((res) =>
-          res.data.map((el) => {
-            el.localData = localData[el.origin]
-            if (!el.localData) {
-              console.log('missing localData', el)
-              el.localData = {
-                name: 'Cambio',
-                website: '',
-                location: '',
-                maps: '',
-                bcu: '',
+          res.data
+            .map((el: any) => {
+              el.localData = localData[el.origin]
+              if (!el.localData) {
+                console.log('missing localData', el)
+                el.localData = null
               }
-            }
-            el.isInterBank = this.isInterBank(el)
-            el.condition = this.getCondition(el)
-            return el
-          })
+              el.isInterBank = this.isInterBank(el)
+              el.condition = this.getCondition(el)
+              return el
+            })
+            .filter((el: any) => el.localData)
         )
       this.all_items = data
       this.updateTable()
