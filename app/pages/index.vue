@@ -92,6 +92,7 @@
                       v-model="amount"
                       :label="'XXX ' + code"
                       type="number"
+                      min="0"
                       placeholder="10"
                       @input="setPrice()"
                     ></v-text-field>
@@ -118,7 +119,16 @@
                       v-model="location"
                       :items="locations"
                       label="Departamento"
+                      @change="updateTable"
                     >
+                      <template slot="selection" slot-scope="data">
+                        <!-- HTML that describe how select should render selected items -->
+                        <span>{{ capitalize(data.item) }}</span>
+                      </template>
+                      <template slot="item" slot-scope="data">
+                        <!-- HTML that describe how select should render items when the select is open -->
+                        <span>{{ capitalize(data.item) }}</span>
+                      </template>
                     </v-select>
                   </v-col>
                   <v-col
@@ -256,8 +266,7 @@
     </div>
     <v-alert class="mt-4" type="info" dense>
       Este sitio fue creado únicamente con la intención de educar, no nos
-      hacemos responsables por el mal uso y/o las pérdidas financieras que pueda
-      ocasionar.
+      hacemos responsables por el mal uso de la información.
     </v-alert>
   </div>
 </template>
@@ -270,8 +279,8 @@ export default {
   },
   data() {
     return {
-      location: 'Montevideo',
-      locations: ['Montevideo'],
+      location: 'TODOS',
+      locations: ['TODOS', 'MONTEVIDEO'],
       texts: {
         USD: 'Dólares estadounidenses',
         ARS: 'Pesos Argentinos',
@@ -338,9 +347,15 @@ export default {
       : 100
     this.wantTo = this.$route.query.wantTo ? this.$route.query.wantTo : 'buy'
     this.code = this.$route.query.currency ? this.$route.query.currency : 'USD'
+    this.location = this.$route.query.location
+      ? this.$route.query.location
+      : 'TODOS'
     this.get_data()
   },
   methods: {
+    capitalize(str: string) {
+      return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
+    },
     getHeaders() {
       return [
         {
@@ -470,17 +485,24 @@ export default {
         (el) =>
           (!this.code || el.code === this.code) &&
           (!this.notInterBank || !el.isInterBank) &&
-          (!this.notConditional || !el.condition)
+          (!this.notConditional || !el.condition) &&
+          (this.location === 'TODOS' ||
+            !el.localData.departments.length ||
+            el.localData.departments.includes(this.location))
       )
       this.setPrice()
     },
     setPrice() {
+      if (this.amount < 0) {
+        this.amount = 0
+      }
       this.$router.push({
         query: {
           ...this.$route.query,
           currency: this.code,
           amount: this.amount,
           wantTo: this.wantTo,
+          location: this.location,
         },
       })
       this.items.sort((a, b) => {
@@ -511,6 +533,18 @@ export default {
       const localData = await this.$axios
         .get('https://cambio.shellix.cc/localData')
         .then((res) => res.data)
+
+      for (const key in localData) {
+        const val = localData[key]
+        const departments = val.departments
+        if (departments && departments.length) {
+          for (const dep of departments) {
+            if (!this.locations.includes(dep)) {
+              this.locations.push(dep)
+            }
+          }
+        }
+      }
       const data = await this.$axios
         .get('https://cambio.shellix.cc')
         .then((res) =>
