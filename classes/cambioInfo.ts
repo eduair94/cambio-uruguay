@@ -36,6 +36,7 @@ class CambioInfo extends Cambio {
       }
       this.localData = localData;
     }
+    console.log("/GET LocalData");
     return this.localData;
   }
   get_bcu() {
