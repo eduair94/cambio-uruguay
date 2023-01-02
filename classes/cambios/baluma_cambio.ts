@@ -6,6 +6,7 @@ import { Cambio } from "../cambio";
 class BalumaCambio extends Cambio {
   name = "Baluma Cambio";
   bcu = "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2451";
+  maps = "https://www.google.com/maps/d/u/0/edit?mid=1p-v__Ru-joAU1-L6GkXExZ3e_Fbpt50&usp=sharing";
   private conversions = {
     "Dólar USA": {
       code: "USD",

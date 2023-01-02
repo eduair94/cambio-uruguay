@@ -4,7 +4,7 @@ import { CambioObj } from "../../interfaces/Cambio";
 import { Cambio } from "../cambio";
 
 class CambioLaFavorita extends Cambio {
-  name = "La Favorita";
+  name = "Cambio La Favorita";
   bcu = "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2581";
   conversions = {
     DOLAR: {

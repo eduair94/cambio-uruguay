@@ -7,6 +7,7 @@ moment.tz.setDefault("America/Uruguay");
 
 abstract class Cambio {
   protected origin: string;
+  protected maps?: string;
   protected bcu: string;
   abstract website: string;
   abstract name: string;
@@ -25,6 +26,7 @@ abstract class Cambio {
   }
 
   getMaps() {
+    if (this.maps) return this.maps;
     return "https://www.google.com.uy/maps/search/" + encodeURI(this.name.toLowerCase());
   }
 

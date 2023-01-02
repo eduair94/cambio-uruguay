@@ -6,6 +6,7 @@ import { Cambio } from "../cambio";
 class Rynder extends Cambio {
   name = "Rynder Cambio";
   bcu = "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2504";
+  maps = "https://www.google.com/maps/d/edit?mid=15pghhcAbnJn62lCM3-C2fpJL_AWI_hg&usp=sharing";
   private conversions = {
     "img/usa.jpg": {
       code: "USD",
