@@ -20,6 +20,11 @@ class CambioBrou extends Cambio {
       bcu: "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2474",
       website: "https://www.cambioargentino.uy/",
     },
+    {
+      name: "Cambio Federal",
+      bcu: "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2375",
+      website: "https://cambiofederal.com.uy/",
+    },
   ];
 
   private conversions = {

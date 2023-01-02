@@ -6,6 +6,10 @@ Source code of https://cambio-uruguay.com
 
 https://eduair94.github.io/cambio-uruguay/
 
+## Report
+
+https://docs.google.com/document/d/1BBDrsiT778SEIn5hqYltl-7dxQq9dSeG/edit
+
 ## Installation
 
 Inside repository folder
