@@ -11,7 +11,7 @@ export default {
     titleTemplate: '%s - Cambio Uruguay',
     title: 'Cambio Uruguay',
     description:
-      'Encuentra las mejores cotizaciones de cambio de divisas en Montevideo / Uruguay',
+      'Encuentra las mejores cotizaciones de cambio de divisas en Uruguay',
     meta: [
       { charset: 'utf-8' },
       {
@@ -172,7 +172,7 @@ export default {
       short_name: 'Cambio Uruguay',
       lang: 'es',
       description:
-        'Encuentra las mejores cotizaciones de cambio de divisas en Montevideo / Uruguay',
+        'Encuentra las mejores cotizaciones de cambio de divisas en Uruguay',
     },
     workbox: {
       workboxURL:

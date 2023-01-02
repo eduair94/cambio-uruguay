@@ -1,7 +1,7 @@
 <template>
   <div class="mt-md-4">
     <h1 class="text-h5">
-      Encuentra la mejor cotización en el mercado, comparando entre más de 10
+      Encuentra la mejor cotización en el mercado, comparando entre más de 40
       casas de cambio.
     </h1>
     <client-only>
@@ -150,6 +150,7 @@
                     <div style="gap: 10px" class="d-flex flex-wrap">
                       <v-checkbox
                         v-model="notInterBank"
+                        :disabled="onlyInterBank"
                         class="mr-md-3"
                         hide-details
                         :label="`Ocultar cotizaciones interbancarias`"
@@ -279,6 +280,7 @@ export default {
   },
   data() {
     return {
+      onlyInterbank: ['UR', 'UP'],
       location: 'TODOS',
       locations: ['TODOS', 'MONTEVIDEO'],
       texts: {
@@ -323,6 +325,11 @@ export default {
         },
       ],
     }
+  },
+  computed: {
+    onlyInterBank() {
+      return this.onlyInterbank.includes(this.code)
+    },
   },
   beforeMount() {
     let pwaInstall = false
@@ -484,7 +491,9 @@ export default {
       this.items = this.all_items.filter(
         (el) =>
           (!this.code || el.code === this.code) &&
-          (!this.notInterBank || !el.isInterBank) &&
+          (!this.notInterBank ||
+            !el.isInterBank ||
+            this.onlyInterbank.includes(this.code)) &&
           (!this.notConditional || !el.condition) &&
           (this.location === 'TODOS' ||
             !el.localData.departments.length ||
