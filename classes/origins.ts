@@ -22,6 +22,7 @@ import CambioPando from "./cambios/cambio_pando";
 import CambioPernas from "./cambios/cambio_pernas";
 import CambioPrincipal from "./cambios/cambio_principal";
 import CambioRegul from "./cambios/cambio_regul";
+import CambioSaltoGrande from "./cambios/cambio_salto_grande";
 import CambioSicurezza from "./cambios/cambio_sicurezza";
 import CambioSir from "./cambios/cambio_sir";
 import CambioVelso from "./cambios/cambio_velso";
@@ -40,7 +41,7 @@ import CambioVarlix from "./cambios/varlix";
 
 export const origins = {
   cambio_young: CambioYoung,
-  //cambio_salto_grande: CambioSaltoGrande,
+  cambio_salto_grande: CambioSaltoGrande,
   cambio_3: Cambio3,
   cambio_rynder: Rynder,
   cambio_minas: CambioMinas,
