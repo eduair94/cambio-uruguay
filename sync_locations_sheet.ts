@@ -10,10 +10,11 @@ const main = async () => {
   await document.useServiceAccountAuth(credentials);
   await document.loadInfo();
   const sheet = document.sheetsByIndex[0];
-  await sheet.setHeaderRow(["Local", "Departamento", "Localidad", "Dirección"]);
+  await sheet.setHeaderRow(["ID", "Local", "Departamento", "Localidad", "Dirección"]);
   await sheet.clearRows();
   const data = info.map((el) => {
     return {
+      ID: el.id,
       Local: el.origin.toUpperCase(),
       Departamento: el.Departamento,
       Localidad: el.Localidad,
