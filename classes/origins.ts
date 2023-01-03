@@ -30,6 +30,7 @@ import CambioYoung from "./cambios/cambio_young";
 import CambioFortex from "./cambios/fortex";
 import CambioGales from "./cambios/gales";
 import CambioIndumex from "./cambios/indumex";
+import Itau from "./cambios/itau";
 import CambioLaFavorita from "./cambios/lafavorita";
 import MasCambio from "./cambios/mas_cambio";
 import CambioPrex from "./cambios/prex";
@@ -39,6 +40,7 @@ import Tradelix from "./cambios/tradelix";
 import CambioVarlix from "./cambios/varlix";
 
 export const origins = {
+  itau: Itau,
   cambio_principal: CambioPrincipal,
   cambio_young: CambioYoung,
   //cambio_salto_grande: CambioSaltoGrande,
