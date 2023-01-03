@@ -14,6 +14,9 @@ class CambioInfo extends Cambio {
     this.remove_date();
     console.log("End");
   }
+  async getAllMarkets(): Promise<any> {
+    return this.db_suc.allEntries({});
+  }
   async get_local_data() {
     if (!this.localData) {
       const localData = {};

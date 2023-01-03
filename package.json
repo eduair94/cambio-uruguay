@@ -12,7 +12,9 @@
     "sync_favicon": "ts-node sync_favicon.ts",
     "build": "tsc",
     "get_locations": "ts-node get_locations.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "geo": "ts-node test_geo.ts",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "sheet_locations": "ts-node sync_locations_sheet"
   },
   "author": "",
   "license": "ISC",
@@ -26,6 +28,7 @@
     "express": "^4.18.1",
     "express-recaptcha": "^5.1.0",
     "express-validator": "^6.14.2",
+    "geocoder": "^0.2.3",
     "google-spreadsheet": "^3.3.0",
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.34",
