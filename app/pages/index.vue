@@ -199,9 +199,11 @@
             >
           </template>
           <template #item.localData.location="{ item }">
-            <a class="white--text" target="_blank" :href="item.localData.maps"
-              >Buscar sucursal</a
-            >
+            <SearchExchange
+              :maps="item.localData.maps"
+              :origin="item.origin"
+              :location="location"
+            />
           </template>
           <template #item.localData.bcu="{ item }">
             <BCU :item="item"></BCU>
@@ -280,6 +282,7 @@ export default {
   name: 'HomePage',
   components: {
     BCU: () => import('../components/BCU.vue'),
+    SearchExchange: () => import('../components/SearchExchange.vue'),
   },
   data() {
     return {

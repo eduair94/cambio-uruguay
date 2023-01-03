@@ -5,6 +5,7 @@ import { Cambio } from "../cambio";
 
 class CambioPampex extends Cambio {
   name = "Cambio Pampex";
+  maps = "https://www.google.com/maps/d/u/0/edit?mid=1hXQpwRn6jFTud833mP_S5bZDPKjGbXM&usp=sharing";
   bcu = "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2948";
   private conversions = {
     Dolar: {
