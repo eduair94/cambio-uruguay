@@ -115,8 +115,19 @@ export default {
       })
     },
     getHref(item: any) {
+      // Fix BUG Cambial in BCU.
+      if (this.origin === 'cambial') {
+        return (
+          'https://www.google.com.uy/maps/search/' +
+          encodeURI(item.Direccion.trim())
+        )
+      }
       const loc =
-        item.Direccion + ', ' + item.Localidad + ', ' + item.Departamento
+        item.Direccion.trim() +
+        ', ' +
+        item.Localidad.trim() +
+        ', ' +
+        item.Departamento.trim()
       return 'https://www.google.com.uy/maps/search/' + encodeURI(loc)
     },
     getHeaders() {
