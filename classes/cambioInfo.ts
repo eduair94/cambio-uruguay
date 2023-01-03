@@ -39,6 +39,15 @@ class CambioInfo extends Cambio {
     console.log("/GET LocalData");
     return this.localData;
   }
+  async getExchanges(origin: string, location: string) {
+    let res: any = [];
+    if (location === "TODOS" || !location) {
+      res = await this.db_suc.allEntries({ origin });
+    } else {
+      res = await this.db_suc.allEntries({ origin, Departamento: location });
+    }
+    return res;
+  }
   get_bcu() {
     const data = {};
     for (let origin in origins) {

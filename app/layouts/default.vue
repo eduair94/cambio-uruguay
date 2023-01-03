@@ -14,8 +14,23 @@
         <Nuxt />
       </v-container>
     </v-main>
-    <v-footer :absolute="!fixed" app>
+    <v-footer :fixed="false">
       <span>Cambio Uruguay &copy; {{ new Date().getFullYear() }}</span>
+      <v-spacer />
+      <span
+        >Hecho con <v-icon color="red">mdi-heart</v-icon> por
+        <a
+          class="white--text"
+          href="https://www.linkedin.com/in/eduardo-airaudo/"
+          >Eduardo Airaudo</a
+        >
+        y
+        <a
+          class="white--text"
+          href="https://www.linkedin.com/in/reginascagliotti/"
+          >Regina Scagliotti</a
+        >
+      </span>
     </v-footer>
   </v-app>
 </template>

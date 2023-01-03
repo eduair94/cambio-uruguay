@@ -30,6 +30,13 @@ const main = async () => {
     const res = cambio_info.get_local_data();
     return res;
   });
+  server.getJson("exchanges/:origin/:location?", async (req: Request): Promise<any> => {
+    const validOrigin = Object.keys(origins).includes(req.params.origin);
+    if (!validOrigin) {
+      throw new Error("Invalid origin");
+    }
+    return cambio_info.getExchanges(req.params.origin, req.params.location);
+  });
   server.getJson("bcu/:origin", async (req: Request): Promise<any> => {
     const validOrigin = Object.keys(origins).includes(req.params.origin);
     if (!validOrigin) {

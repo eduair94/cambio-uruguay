@@ -6,7 +6,7 @@ import { MongooseServer, Schema } from "./database";
 moment.tz.setDefault("America/Uruguay");
 
 abstract class Cambio {
-  private db_suc: MongooseServer;
+  protected db_suc: MongooseServer;
   protected origin: string;
   protected maps?: string;
   protected bcu: string;

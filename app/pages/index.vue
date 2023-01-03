@@ -10,6 +10,9 @@
           :item-class="row_classes"
           :headers="getHeaders()"
           :items="items"
+          :footer-props="{
+            'items-per-page-options': [10, 20, 30, 40, 50],
+          }"
           :items-per-page="50"
           class="elevation-1 money_table"
         >
@@ -265,7 +268,7 @@
         >admin@cambio-uruguay.com</a
       >
     </div>
-    <v-alert class="mt-4" type="info" dense>
+    <v-alert class="mt-3 mt-md-4 mb-0 mb-md-3" type="info" dense>
       Este sitio fue creado únicamente con la intención de educar, no nos
       hacemos responsables por el mal uso de la información.
     </v-alert>
@@ -411,7 +414,12 @@ export default {
       } else {
         text += this.code
       }
-      const finalText = 'Estas son las mejores entidades uruguayas para ' + text
+      let extra = ''
+      if (this.location !== 'TODOS') {
+        extra += 'de' + this.capitalize(this.location) + ' '
+      }
+      const finalText =
+        'Estas son las mejores entidades uruguayas ' + extra + 'para ' + text
       console.log('Text', finalText)
       try {
         navigator.share({
