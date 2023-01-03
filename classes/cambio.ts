@@ -6,6 +6,7 @@ import { MongooseServer, Schema } from "./database";
 moment.tz.setDefault("America/Uruguay");
 
 abstract class Cambio {
+  private db_suc: MongooseServer;
   protected origin: string;
   protected maps?: string;
   protected bcu: string;
@@ -59,6 +60,8 @@ abstract class Cambio {
     for (let loc of locations) {
       const locInfo = await this.getLocation(intNumber, loc);
       const department = locInfo.sucursal.Departamento;
+      const id = intNumber + "-" + loc;
+      await this.db_suc.getAnUpdateEntryAlt({ id }, { origin: this.origin, ...locInfo.sucursal });
       if (department && !departments.includes(department)) {
         departments.push(department);
       }
@@ -80,6 +83,16 @@ abstract class Cambio {
         sell: { type: Number },
         date: { type: Date },
       })
+    );
+    this.db_suc = MongooseServer.getInstance(
+      "bcu_suc",
+      new Schema(
+        {
+          id: { type: String, unique: true },
+          origin: { type: String },
+        },
+        { strict: false }
+      )
     );
   }
 
