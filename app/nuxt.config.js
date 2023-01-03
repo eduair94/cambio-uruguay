@@ -93,7 +93,12 @@ export default {
             ? 'https://arc.io/widget.min.js#63RUbX6J'
             : '',
         async: true,
-      }
+      },
+      {
+        type: 'text/javascript',
+        async: true,
+        src: '//translate.google.com/translate_a/element.js',
+      },
     ],
   },
 

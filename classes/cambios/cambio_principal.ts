@@ -5,7 +5,7 @@ import { Cambio } from "../cambio";
 
 class CambioPrincipal extends Cambio {
   name = "Cambio Principal";
-  bcu = "https://cambioprincipal.com.uy/";
+  bcu = "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2456";
   private conversions = {
     DÓLAR: {
       code: "USD",
