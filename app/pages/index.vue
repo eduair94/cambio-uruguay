@@ -25,56 +25,97 @@
                 </h3>
                 <div
                   class="
-                    my-3
-                    grey
-                    darken-3
-                    pa-3
-                    text-subtitle-1
                     d-flex
-                    align-center
                     flex-wrap
+                    align-center
+                    top_container
+                    justify-space-between
+                    mb-md-4
                   "
                 >
-                  <span class="mr-3"
-                    >Si la información del sitio te sirvió, puedes ayudar a
-                    mantenerlo</span
+                  <div
+                    class="
+                      my-3
+                      mb-0
+                      md-md-3
+                      grey
+                      darken-3
+                      pa-3
+                      px-lg-5
+                      text-subtitle-1
+                      d-flex
+                      align-center
+                      flex-wrap
+                      donation_container
+                    "
                   >
-                  <div class="d-flex mt-2">
-                    <a
-                      target="_blank"
-                      class="
-                        white--text
-                        d-flex
-                        mr-4
-                        align-center
-                        justify-content-left
-                      "
-                      href="https://ko-fi.com/cambio_uruguay"
+                    <span class="mr-3"
+                      >Si la información del sitio te sirvió, puedes ayudar a
+                      mantenerlo</span
                     >
-                      <v-img
-                        max-width="50px"
-                        height="50px"
-                        contain
-                        src="/img/paypal_icon.png"
-                      ></v-img>
-                    </a>
-                    <a
-                      class="
-                        white--text
-                        d-flex
-                        align-center
-                        justify-content-left
-                      "
+                    <div class="d-flex mt-2">
+                      <a
+                        target="_blank"
+                        class="
+                          white--text
+                          d-flex
+                          mr-4
+                          align-center
+                          justify-content-left
+                          donation_logo
+                        "
+                        href="https://ko-fi.com/cambio_uruguay"
+                      >
+                        <v-img
+                          max-width="50px"
+                          height="50px"
+                          contain
+                          src="/img/paypal_icon.png"
+                        ></v-img>
+                      </a>
+                      <a
+                        class="
+                          white--text
+                          d-flex
+                          align-center
+                          justify-content-left
+                          donation_logo
+                        "
+                        target="_blank"
+                        href="https://mpago.la/19j46vX"
+                      >
+                        <v-img
+                          max-width="50px"
+                          height="50px"
+                          contain
+                          src="/img/mercadopago_icon.png"
+                        ></v-img>
+                      </a>
+                    </div>
+                  </div>
+                  <div class="button_section mb-3">
+                    <v-btn color="blue darken-2" @click="install_app">
+                      <v-icon>mdi-download</v-icon>
+                    </v-btn>
+                    <v-btn color="blue darken-1" @click="share">
+                      <v-icon large> mdi-share </v-icon>
+                    </v-btn>
+                    <v-btn
+                      link
+                      color="#00acee"
                       target="_blank"
-                      href="https://mpago.la/19j46vX"
+                      href="https://twitter.com/cambio_uruguay"
                     >
-                      <v-img
-                        max-width="50px"
-                        height="50px"
-                        contain
-                        src="/img/mercadopago_icon.png"
-                      ></v-img>
-                    </a>
+                      <v-icon large> mdi-twitter </v-icon>
+                    </v-btn>
+                    <v-btn
+                      link
+                      color="grey darken-3"
+                      target="_blank"
+                      href="https://github.com/eduair94/cambio-uruguay"
+                    >
+                      <v-icon large> mdi-github </v-icon>
+                    </v-btn>
                   </div>
                 </div>
               </div>
@@ -225,39 +266,15 @@
           <template #item.diff="{ item }"> {{ item.diff }}% </template>
         </v-data-table>
       </div>
-      <div class="button_section mb-3">
-        <v-btn color="blue darken-2" @click="install_app">
-          <v-icon>mdi-download</v-icon>
-        </v-btn>
-        <v-btn color="blue darken-1" @click="share">
-          <v-icon large> mdi-share </v-icon>
-        </v-btn>
-        <v-btn
-          link
-          color="#00acee"
-          target="_blank"
-          href="https://twitter.com/cambio_uruguay"
-        >
-          <v-icon large> mdi-twitter </v-icon>
-        </v-btn>
-        <v-btn
-          link
-          color="grey darken-4"
-          target="_blank"
-          href="https://github.com/eduair94/cambio-uruguay"
-        >
-          <v-icon large> mdi-github </v-icon>
-        </v-btn>
-        <v-btn
-          link
-          color="orange darken-4"
-          target="_blank"
-          href="https://finanzas.com.uy/los-mejores-prestamos-de-bancos/"
-        >
-          Información sobre préstamos
-        </v-btn>
-      </div>
     </client-only>
+    <v-btn
+      link
+      color="orange darken-4"
+      target="_blank"
+      href="https://finanzas.com.uy/los-mejores-prestamos-de-bancos/"
+    >
+      Información sobre préstamos
+    </v-btn>
     <div
       id="updates"
       style="width: 100%"
@@ -667,5 +684,17 @@ body {
       margin-bottom: 12px;
     }
   }
+}
+
+.top_container {
+  gap: 12px;
+}
+
+.donation_logo {
+  transition: ease-in-out 0.3s;
+}
+.donation_logo:hover {
+  transform: scale(1.05);
+  filter: drop-shadow(0px 0px 3px black);
 }
 </style>
