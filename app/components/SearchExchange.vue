@@ -2,7 +2,7 @@
   <v-dialog
     v-model="dialog"
     :fullscreen="$vuetify.breakpoint.mobile"
-    width="1300px"
+    width="1500px"
   >
     <template #activator="{ on, attrs }">
       <a
@@ -47,6 +47,8 @@
       <div v-if="!loaded" class="px-4 pt-3 text-h5">Cargando...</div>
       <div v-else>
         <v-data-table
+          :sort-by.sync="sortBy"
+          :sort-desc.sync="sortDesc"
           mobile-breakpoint="1100"
           :headers="getHeaders()"
           :items="d"
@@ -83,6 +85,9 @@
               </a>
             </span>
           </template>
+          <template #item.distance="{ item }">
+            {{ formatDistance(item.distance) }}
+          </template>
         </v-data-table>
       </div>
       <v-card-actions>
@@ -107,15 +112,37 @@ export default {
       type: String,
       required: true,
     },
+    latitude: {
+      type: Number,
+      required: false,
+      default: 0,
+    },
+    longitude: {
+      type: Number,
+      required: false,
+      default: 0,
+    },
   },
   data() {
     return {
+      sortBy: undefined,
+      sortDesc: undefined,
       dialog: false,
       loaded: false,
       d: null,
     }
   },
   methods: {
+    formatDistance(item: number) {
+      if (!item || item === 9999999) return '-'
+      if (item >= 1000) {
+        return Math.round(item / 1000.0) + ' km'
+      } else if (item >= 100) {
+        return Math.round(item) + ' m'
+      } else {
+        return item.toFixed(1) + ' m'
+      }
+    },
     capitalize(str: string) {
       return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
     },
@@ -153,7 +180,7 @@ export default {
       return 'https://www.google.com.uy/maps/search/' + encodeURI(loc)
     },
     getHeaders() {
-      return [
+      const toReturn = [
         {
           text: 'Código',
           value: 'NroSucursal',
@@ -175,14 +202,23 @@ export default {
         { text: 'Horarios', value: 'Horarios', sortable: false },
         { text: 'Observaciones', value: 'Observaciones', width: 'auto' },
       ]
+      if (this.latitude && this.longitude) {
+        toReturn.push({ text: 'Distancia', value: 'distance', width: 'auto' })
+      }
+      return toReturn
     },
     async get_data() {
       this.loaded = false
-      const url =
+      let url =
         'https://cambio.shellix.cc/exchanges/' +
         this.origin +
         '/' +
         this.location
+      if (this.latitude && this.longitude) {
+        url += `?latitude=${this.latitude}&longitude=${this.longitude}`
+        this.sortBy = 'distance'
+        this.sortDesc = false
+      }
       this.d = await this.$axios.get(url).then((res) => res.data)
       this.loaded = true
     },

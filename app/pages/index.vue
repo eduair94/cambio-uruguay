@@ -7,6 +7,8 @@
     <client-only>
       <div class="my-4">
         <v-data-table
+          :sort-by.sync="sortBy"
+          :sort-desc.sync="sortDesc"
           :item-class="row_classes"
           :headers="getHeaders()"
           :items="items"
@@ -180,9 +182,23 @@
                     </v-select>
                   </v-col>
                   <v-col cols="12" md="6" lg="2">
-                    <v-btn class="mt-lg-3" color="primary" @click="geoLocation"
-                      >Locales cercanos</v-btn
-                    >
+                    <v-tooltip top>
+                      <template #activator="{ on, attrs }">
+                        <v-btn
+                          class="mt-lg-3"
+                          color="primary"
+                          v-bind="attrs"
+                          :loading="loadingDistances"
+                          v-on="on"
+                          @click="geoLocation"
+                          >Locales cercanos</v-btn
+                        >
+                      </template>
+                      <span
+                        >Funciona de forma más precisa en celulares /
+                        tablets</span
+                      >
+                    </v-tooltip>
                   </v-col>
                   <v-col
                     v-if="items && items.length"
@@ -253,6 +269,8 @@
               :maps="item.localData.maps"
               :origin="item.origin"
               :location="location"
+              :latitude="latitude"
+              :longitude="longitude"
             />
           </template>
           <template #item.localData.bcu="{ item }">
@@ -262,6 +280,9 @@
             <v-chip :color="getColor(item)" class="ma-2">
               {{ formatMoney(item.amount) }}
             </v-chip>
+          </template>
+          <template #item.distance="{ item }">
+            {{ formatDistance(item.distance) }}
           </template>
           <template #item.diff="{ item }"> {{ item.diff }}% </template>
         </v-data-table>
@@ -312,6 +333,9 @@ export default {
   },
   data() {
     return {
+      loadingDistances: false,
+      sortBy: undefined,
+      sortDesc: undefined,
       onlyInterbank: ['UR', 'UP'],
       location: 'TODOS',
       locations: ['TODOS', 'MONTEVIDEO'],
@@ -344,6 +368,9 @@ export default {
       notInterBank: true,
       items: [],
       all_items: [],
+      enableDistance: false,
+      latitude: 0,
+      longitude: 0
     }
   },
   head() {
@@ -392,15 +419,45 @@ export default {
     this.get_data()
   },
   methods: {
-    geoLocationSuccess(info) {
-      alert('En construcción')
-      console.log('Info', info)
+    async geoLocationSuccess(info) {
+      const latitude = info.coords.latitude
+      const longitude = info.coords.longitude
+      this.latitude = latitude
+      this.longitude = longitude
+      const distances = await this.$axios
+        .get(
+          `https://cambio.shellix.cc/distances?latitude=${latitude}&longitude=${longitude}`
+        )
+        .then((res) => res.data)
+      this.all_items = this.all_items.map((item) => {
+        item.distance = distances[item.origin]
+          ? distances[item.origin]
+          : 9999999
+        return item
+      })
+      this.updateTable()
+      this.enableDistance = true
+      this.sortBy = 'distance'
+      this.sortDesc = false
+      this.loadingDistances = false
+    },
+    formatDistance(item: number) {
+      if (!item || item === 9999999) return '-'
+      if (item >= 1000) {
+        return Math.round(item / 1000.0) + ' km'
+      } else if (item >= 100) {
+        return Math.round(item) + ' m'
+      } else {
+        return item.toFixed(1) + ' m'
+      }
     },
     geoLocationError(err) {
       console.log(err)
+      this.loadingDistances = false
       alert('No se ha podido determinar su ubicación actual')
     },
     geoLocation() {
+      this.loadingDistances = true
       navigator.geolocation.getCurrentPosition(
         this.geoLocationSuccess,
         this.geoLocationError
@@ -410,7 +467,7 @@ export default {
       return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
     },
     getHeaders() {
-      return [
+      const toReturn = [
         {
           text: this.wantTo === 'buy' ? 'Pagas' : 'Recibes',
           value: 'amount',
@@ -432,6 +489,14 @@ export default {
         { text: 'Condicional', value: 'condition', width: '250px' },
         { text: 'BCU', value: 'localData.bcu', width: '50px' },
       ]
+      if (this.enableDistance) {
+        toReturn.push({
+          text: 'Distancia',
+          value: 'distance',
+          width: 'auto',
+        })
+      }
+      return toReturn
     },
     savings() {
       if (!this.items.length) return
