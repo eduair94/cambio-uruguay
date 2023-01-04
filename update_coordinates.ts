@@ -15,6 +15,7 @@ async function main() {
   for (let row of rows) {
     const id = row.ID;
     let coordinates = row.Coordenadas;
+    const status = parseInt(row.Status);
     if (coordinates) {
       coordinates = coordinates.split(",").map((el) => parseFloat(el.trim()));
       const json = {
@@ -22,9 +23,14 @@ async function main() {
         Departamento: row.Departamento,
         latitude: coordinates[0],
         longitude: coordinates[1],
-        status: parseInt(row.Status),
+        status: status,
       };
       console.log(json, id, row.Local);
+      await cambio_info.updateSuc(id, json);
+    } else if (status === 0) {
+      const json = {
+        status: 0,
+      };
       await cambio_info.updateSuc(id, json);
     }
   }
