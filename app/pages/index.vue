@@ -7,8 +7,6 @@
     <client-only>
       <div class="my-4">
         <v-data-table
-          :sort-by.sync="sortBy"
-          :sort-desc.sync="sortDesc"
           :item-class="row_classes"
           :headers="getHeaders()"
           :items="items"
@@ -343,8 +341,6 @@ export default {
   data() {
     return {
       loadingDistances: false,
-      sortBy: undefined,
-      sortDesc: undefined,
       onlyInterbank: ['UR', 'UP'],
       location: 'TODOS',
       locations: ['TODOS', 'MONTEVIDEO'],
@@ -451,8 +447,6 @@ export default {
       })
       this.updateTable()
       this.enableDistance = true
-      this.sortBy = 'distance'
-      this.sortDesc = false
       this.loadingDistances = false
     },
     formatDistance(item: number) {
