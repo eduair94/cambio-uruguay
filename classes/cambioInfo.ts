@@ -86,7 +86,7 @@ class CambioInfo extends Cambio {
     }
     const res = {};
     for (let key in origins) {
-      res[key] = Math.min(origins[key]);
+      res[key] = Math.min(...origins[key]);
     }
     return res;
   }
