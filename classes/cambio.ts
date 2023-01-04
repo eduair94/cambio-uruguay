@@ -28,16 +28,22 @@ abstract class Cambio {
 
   getMaps() {
     if (this.maps) return this.maps;
-    return "https://www.google.com.uy/maps/search/" + encodeURI(this.name.toLowerCase());
+    return (
+      "https://www.google.com.uy/maps/search/" +
+      encodeURI(this.name.toLowerCase())
+    );
   }
 
   async getLocation(n1: string, n2: string) {
-    const url = "https://www.bcu.gub.uy/_layouts/15/BCU.Registros/handler/RegistrosHandler.ashx?op=getsucursalbynroinstitucionandnrosucursal";
+    const url =
+      "https://www.bcu.gub.uy/_layouts/15/BCU.Registros/handler/RegistrosHandler.ashx?op=getsucursalbynroinstitucionandnrosucursal";
     const data = { KeyValuePairs: { NroInstitucion: n1, NroSucursal: n2 } };
     const headers = {
       "Content-Type": "application/json; charset=UTF-8",
     };
-    const res = await axios.post(url, data, { headers }).then((res) => res.data);
+    const res = await axios
+      .post(url, data, { headers })
+      .then((res) => res.data);
     return res;
   }
 
@@ -57,11 +63,15 @@ abstract class Cambio {
     const intNumber = new URL(bcu).searchParams.get("nroinst");
     if (!intNumber) throw new Error("No institution number");
     let departments = [];
+    console.log(this.origin, "Sucursales:", locations.length);
     for (let loc of locations) {
       const locInfo = await this.getLocation(intNumber, loc);
       const department = locInfo.sucursal.Departamento;
       const id = intNumber + "-" + loc;
-      await this.db_suc.getAnUpdateEntryAlt({ id }, { origin: this.origin, ...locInfo.sucursal });
+      await this.db_suc.getAnUpdateEntryAlt(
+        { id },
+        { origin: this.origin, ...locInfo.sucursal },
+      );
       if (department && !departments.includes(department)) {
         departments.push(department);
       }
@@ -82,7 +92,7 @@ abstract class Cambio {
         buy: { type: Number },
         sell: { type: Number },
         date: { type: Date },
-      })
+      }),
     );
     this.db_suc = MongooseServer.getInstance(
       "bcu_suc",
@@ -91,8 +101,8 @@ abstract class Cambio {
           id: { type: String, unique: true },
           origin: { type: String },
         },
-        { strict: false }
-      )
+        { strict: false },
+      ),
     );
   }
 
@@ -171,7 +181,7 @@ abstract class Cambio {
         code: data.code,
         type: data.type,
       },
-      data
+      data,
     );
     return db;
   }
