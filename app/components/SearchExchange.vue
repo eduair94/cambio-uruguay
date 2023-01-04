@@ -178,6 +178,9 @@ export default {
           encodeURI(item.Direccion.trim())
         )
       }
+      if (!item.Direccion) item.Direccion = ''
+      if (!item.Localidad) item.Localidad = ''
+      if (!item.Departamento) item.Departamento = ''
       const loc =
         item.Direccion.trim() +
         ', ' +

@@ -182,23 +182,31 @@
                     </v-select>
                   </v-col>
                   <v-col cols="12" md="6" lg="2">
-                    <v-tooltip top>
-                      <template #activator="{ on, attrs }">
-                        <v-btn
-                          class="mt-lg-3"
-                          color="primary"
-                          v-bind="attrs"
-                          :loading="loadingDistances"
-                          v-on="on"
-                          @click="geoLocation"
-                          >Locales cercanos</v-btn
+                    <div class="mt-lg-3">
+                      <v-tooltip top>
+                        <template #activator="{ on, attrs }">
+                          <v-btn
+                            color="primary"
+                            v-bind="attrs"
+                            :loading="loadingDistances"
+                            v-on="on"
+                            @click="geoLocation"
+                            >Cargar distancias</v-btn
+                          >
+                        </template>
+                        <span
+                          >Funciona de forma más precisa en celulares /
+                          tablets</span
                         >
-                      </template>
-                      <span
-                        >Funciona de forma más precisa en celulares /
-                        tablets</span
+                      </v-tooltip>
+                      <v-btn
+                        :disabled="!latitude"
+                        color="blue darken-3"
+                        @click="undoDistances"
                       >
-                    </v-tooltip>
+                        <v-icon> mdi-undo </v-icon>
+                      </v-btn>
+                    </div>
                   </v-col>
                   <v-col
                     v-if="items && items.length"
@@ -370,7 +378,7 @@ export default {
       all_items: [],
       enableDistance: false,
       latitude: 0,
-      longitude: 0
+      longitude: 0,
     }
   },
   head() {
@@ -419,6 +427,11 @@ export default {
     this.get_data()
   },
   methods: {
+    undoDistances() {
+      this.latitude = 0
+      this.longitude = 0
+      this.enableDistance = false
+    },
     async geoLocationSuccess(info) {
       const latitude = info.coords.latitude
       const longitude = info.coords.longitude
