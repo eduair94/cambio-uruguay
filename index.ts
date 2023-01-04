@@ -19,14 +19,12 @@ const main = async () => {
     }
     console.log("Date", dateM);
     const res = await cambio_info.get_data(dateM, req.query);
-    console.log("Response", res);
     return res;
   });
   server.getJson("distances", async (req: Request): Promise<any> => {
     const latitude = parseFloat(req.query.latitude as string);
     const longitude = parseFloat(req.query.longitude as string);
     const res = await cambio_info.get_distances(latitude, longitude);
-    console.log("Response", res);
     return res;
   });
   server.getJson("bcu", async (req: Request): Promise<any> => {
@@ -52,9 +50,11 @@ const main = async () => {
       );
       if (latitude && longitude) {
         // Add distance to entries if latitude and longitude are passed.
-        for (let entry of res) {
+        console.log("Coords", latitude, longitude);
+        for (let index = 0; index < res.length; index++) {
+          const entry = res[index];
           if (entry.latitude && entry.longitude) {
-            entry.distance = cambio_info.getDistance(
+            res[index].distance = cambio_info.getDistance(
               { latitude, longitude },
               { latitude: entry.latitude, longitude: entry.longitude },
             );
