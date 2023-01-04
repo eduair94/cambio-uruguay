@@ -22,7 +22,7 @@ const main = async () => {
     console.log("Response", res);
     return res;
   });
-  server.getJson("/distances", async (req: Request): Promise<any> => {
+  server.getJson("distances", async (req: Request): Promise<any> => {
     const latitude = parseFloat(req.query.latitude as string);
     const longitude = parseFloat(req.query.longitude as string);
     const res = await cambio_info.get_distances(latitude, longitude);
