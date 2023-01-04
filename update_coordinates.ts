@@ -21,10 +21,11 @@ async function main() {
         latitude: coordinates[0],
         longitude: coordinates[1],
       };
-      console.log(json);
+      console.log(json, id, row.Local);
       await cambio_info.updateSuc(id, json);
     }
   }
+  console.log("FINISH");
 }
 
 main();
