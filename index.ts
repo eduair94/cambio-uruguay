@@ -44,7 +44,7 @@ const main = async () => {
       }
       const latitude = parseFloat(req.query.latitude as string);
       const longitude = parseFloat(req.query.longitude as string);
-      const res = await cambio_info.getExchanges(
+      let res = await cambio_info.getExchanges(
         req.params.origin,
         req.params.location,
       );
