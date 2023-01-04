@@ -53,10 +53,12 @@ const main = async () => {
       if (latitude && longitude) {
         // Add distance to entries if latitude and longitude are passed.
         for (let entry of res) {
-          entry.distance = cambio_info.getDistance(
-            { latitude, longitude },
-            { latitude: entry.latitude, longitude: entry.longitude },
-          );
+          if (entry.latitude && entry.longitude) {
+            entry.distance = cambio_info.getDistance(
+              { latitude, longitude },
+              { latitude: entry.latitude, longitude: entry.longitude },
+            );
+          }
         }
       }
       return res;
