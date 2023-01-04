@@ -48,6 +48,7 @@ const main = async () => {
         req.params.origin,
         req.params.location,
       );
+      res = JSON.parse(JSON.stringify(res));
       if (latitude && longitude) {
         // Add distance to entries if latitude and longitude are passed.
         console.log("Coords", latitude, longitude);
