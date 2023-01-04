@@ -20,7 +20,7 @@
             <div class="px-3 pt-3">
               <div class="pt-2">
                 <h3 class="font-weight-regular">
-                  Cotizaciones del día {{ day }}. Se actualizan cada 5 minutos
+                  Cotizaciones del día {{ day }}. Se actualizan cada 10 minutos
                   con respecto a la información de la web.
                 </h3>
                 <div
@@ -79,20 +79,22 @@
                 </div>
               </div>
               <div>
-                <v-row style="max-width: 1200px">
-                  <v-col cols="12" md="6" lg="3">
+                <v-row style="max-width: 1800px">
+                  <v-col cols="12" md="6" lg="2">
                     <v-radio-group
                       v-model="wantTo"
                       hide-details
+                      class="mt-md-0"
                       @change="setPrice()"
                     >
                       <v-radio label="Quiero vender" value="sell"></v-radio>
                       <v-radio label="Quiero comprar" value="buy"></v-radio>
                     </v-radio-group>
                   </v-col>
-                  <v-col cols="12" md="6" lg="3">
+                  <v-col cols="12" md="6" lg="2">
                     <v-text-field
                       v-model="amount"
+                      hide-details
                       :label="'XXX ' + code"
                       type="number"
                       min="0"
@@ -103,6 +105,7 @@
                   <v-col cols="12" md="6" lg="3">
                     <v-select
                       v-model="code"
+                      hide-details
                       :items="money"
                       label="Moneda"
                       @change="updateTable"
@@ -120,6 +123,7 @@
                   <v-col cols="12" md="6" lg="3">
                     <v-select
                       v-model="location"
+                      hide-details
                       :items="locations"
                       label="Departamento"
                       @change="updateTable"
@@ -134,9 +138,14 @@
                       </template>
                     </v-select>
                   </v-col>
+                  <v-col cols="12" md="6" lg="2">
+                    <v-btn class="mt-lg-3" color="primary" @click="geoLocation"
+                      >Locales cercanos</v-btn
+                    >
+                  </v-col>
                   <v-col
                     v-if="items && items.length"
-                    class="py-0 my-0 mt-1"
+                    class="py-0 my-0 mt-1 mt-md-3"
                     cols="12"
                   >
                     <span>{{ get_text() }}</span
@@ -366,6 +375,20 @@ export default {
     this.get_data()
   },
   methods: {
+    geoLocationSuccess(info) {
+      alert('En construcción')
+      console.log('Info', info)
+    },
+    geoLocationError(err) {
+      console.log(err)
+      alert('No se ha podido determinar su ubicación actual')
+    },
+    geoLocation() {
+      navigator.geolocation.getCurrentPosition(
+        this.geoLocationSuccess,
+        this.geoLocationError
+      )
+    },
     capitalize(str: string) {
       return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
     },

@@ -19,8 +19,13 @@
       <v-toolbar dark color="primary">
         <v-toolbar-title>
           <div class="d-flex align-center">
-            <span class="mr-4">Sucursales</span>
-            <v-btn color="blue darken-4" link target="_blank" :href="maps"
+            <span class="mr-4">Sucursales{{ getLocation() }}</span>
+            <v-btn
+              v-if="!$vuetify.breakpoint.mobile"
+              color="blue darken-4"
+              link
+              target="_blank"
+              :href="maps"
               >GOOGLE MAPS</v-btn
             >
           </div>
@@ -30,6 +35,15 @@
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-toolbar>
+      <v-btn
+        v-if="$vuetify.breakpoint.mobile"
+        class="w-100"
+        color="blue darken-4"
+        link
+        target="_blank"
+        :href="maps"
+        >GOOGLE MAPS</v-btn
+      >
       <div v-if="!loaded" class="px-4 pt-3 text-h5">Cargando...</div>
       <div v-else>
         <v-data-table
@@ -102,6 +116,14 @@ export default {
     }
   },
   methods: {
+    capitalize(str: string) {
+      return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
+    },
+    getLocation() {
+      return this.location !== 'TODOS'
+        ? ' de ' + this.capitalize(this.location)
+        : ''
+    },
     getInt(phones: string) {
       return phones.split(/y|-/g).map((el) => el.trim().split('int.')[1])
     },
