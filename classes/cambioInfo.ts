@@ -45,12 +45,12 @@ class CambioInfo extends Cambio {
   async getExchanges(origin: string, location: string) {
     let res: any = [];
     if (location === "TODOS" || !location) {
-      res = await this.db_suc.allEntries({ origin, status: { $not: 0 } });
+      res = await this.db_suc.allEntries({ origin, $not: { status: 0 } });
     } else {
       res = await this.db_suc.allEntries({
         origin,
         Departamento: location,
-        status: { $not: 0 },
+        $not: { status: 0 },
       });
     }
     return res;
@@ -71,7 +71,7 @@ class CambioInfo extends Cambio {
   async get_distances(latitude: number, longitude: number) {
     const sucs = await this.db_suc.allEntries({
       latitude: { $exists: true },
-      status: { $not: 0 },
+      $not: { status: 0 },
     });
     let origins = {};
     for (let suc of sucs) {
