@@ -52,12 +52,14 @@ const main = async () => {
         // Add distance to entries if latitude and longitude are passed.
         console.log("Coords", latitude, longitude);
         for (let index = 0; index < res.length; index++) {
-          const entry = JSON.parse(JSON.stringify(res[index]));
+          const entry = res[index];
+          console.log("Entry", entry.latitude, entry.longitude);
           if (entry.latitude && entry.longitude) {
             res[index].distance = cambio_info.getDistance(
               { latitude, longitude },
               { latitude: entry.latitude, longitude: entry.longitude },
             );
+            console.log("Distance", res[index].distance);
           }
         }
       }
