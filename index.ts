@@ -18,7 +18,7 @@ const main = async () => {
       dateM = moment(date, "YYYY-MM-DD").toDate();
     }
     console.log("Date", dateM);
-    const res = await cambio_info.get_data(dateM);
+    const res = await cambio_info.get_data(dateM, req.query);
     console.log("Response", res);
     return res;
   });
@@ -30,13 +30,16 @@ const main = async () => {
     const res = cambio_info.get_local_data();
     return res;
   });
-  server.getJson("exchanges/:origin/:location?", async (req: Request): Promise<any> => {
-    const validOrigin = Object.keys(origins).includes(req.params.origin);
-    if (!validOrigin) {
-      throw new Error("Invalid origin");
-    }
-    return cambio_info.getExchanges(req.params.origin, req.params.location);
-  });
+  server.getJson(
+    "exchanges/:origin/:location?",
+    async (req: Request): Promise<any> => {
+      const validOrigin = Object.keys(origins).includes(req.params.origin);
+      if (!validOrigin) {
+        throw new Error("Invalid origin");
+      }
+      return cambio_info.getExchanges(req.params.origin, req.params.location);
+    },
+  );
   server.getJson("bcu/:origin", async (req: Request): Promise<any> => {
     const validOrigin = Object.keys(origins).includes(req.params.origin);
     if (!validOrigin) {

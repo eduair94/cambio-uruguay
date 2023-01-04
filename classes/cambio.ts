@@ -3,6 +3,7 @@ import { CheerioAPI, load } from "cheerio";
 import moment from "moment-timezone";
 import { CambioObj } from "../interfaces/Cambio";
 import { MongooseServer, Schema } from "./database";
+import getDistance from "geolib/es/getDistance";
 moment.tz.setDefault("America/Uruguay");
 
 abstract class Cambio {
@@ -45,6 +46,17 @@ abstract class Cambio {
       .post(url, data, { headers })
       .then((res) => res.data);
     return res;
+  }
+
+  async updateSuc(id: string, json: any) {
+    await this.db_suc.getAnUpdateEntryAlt({ id }, json);
+  }
+
+  getDistance(
+    origin: { latitude: number; longitude: number },
+    end: { latitude: number; longitude: number },
+  ) {
+    return getDistance(origin, end);
   }
 
   async getLocations($?: CheerioAPI, bcu?: string) {

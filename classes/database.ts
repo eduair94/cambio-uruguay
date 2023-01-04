@@ -82,7 +82,7 @@ export class MongooseServer {
     return r;
   }
 
-  public allEntries(param: any, att = 0) {
+  public allEntries(param: any, att = 0): Promise<any> {
     return new Promise((resolve, reject) => {
       this.Model.find(param, (error: Error, result: any) => {
         if (error) {
@@ -459,7 +459,9 @@ export class MongooseServer {
 
   public static connectWithRetry = (): any => {
     mongoose.set("strictQuery", false);
-    mongoose.connect(`mongodb://localhost:27017/${mongoConfig.database}`, {}).catch(() => {});
+    mongoose
+      .connect(`mongodb://localhost:27017/${mongoConfig.database}`, {})
+      .catch(() => {});
   };
 
   public static dealConnection = (): void => {
