@@ -44,7 +44,22 @@ const main = async () => {
       if (!validOrigin) {
         throw new Error("Invalid origin");
       }
-      return cambio_info.getExchanges(req.params.origin, req.params.location);
+      const latitude = parseFloat(req.query.latitude as string);
+      const longitude = parseFloat(req.query.longitude as string);
+      const res = await cambio_info.getExchanges(
+        req.params.origin,
+        req.params.location,
+      );
+      if (latitude && longitude) {
+        // Add distance to entries if latitude and longitude are passed.
+        for (let entry of res) {
+          entry.distance = cambio_info.getDistance(
+            { latitude, longitude },
+            { latitude: entry.latitude, longitude: entry.longitude },
+          );
+        }
+      }
+      return res;
     },
   );
   server.getJson("bcu/:origin", async (req: Request): Promise<any> => {
