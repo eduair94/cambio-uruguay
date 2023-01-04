@@ -18,6 +18,8 @@ async function main() {
     if (coordinates) {
       coordinates = coordinates.split(",").map((el) => parseFloat(el.trim()));
       const json = {
+        Direccion: row["Dirección"],
+        Departamento: row.Departamento,
         latitude: coordinates[0],
         longitude: coordinates[1],
       };
