@@ -75,7 +75,6 @@ class CambioInfo extends Cambio {
         { latitude: suc.latitude, longitude: suc.longitude },
       );
       if (distance && !isNaN(distance)) {
-        console.log(distance, suc.origin);
         if (suc.origin) {
           if (!origins[suc.origin]) {
             origins[suc.origin] = [];
