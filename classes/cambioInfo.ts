@@ -64,6 +64,28 @@ class CambioInfo extends Cambio {
     }
     return data;
   }
+  async get_distances(latitude: number, longitude: number) {
+    const sucs = await this.db_suc.allEntries({
+      latitude: { $exists: true },
+    });
+    let origins = {};
+    for (let suc of sucs) {
+      const distance = this.getDistance(
+        { latitude, longitude },
+        { latitude: suc.latitude, longitude: suc.longitude },
+      );
+      if (suc.origin) {
+        if (!origins[suc.origin]) {
+          origins[suc.origin] = [];
+        }
+        origins[suc.origin].push(distance);
+      }
+    }
+    for (let key in origins) {
+      origins[key] = Math.min(origins[key]);
+    }
+    return origins;
+  }
   async get_data(date?: Date, query?: any): Promise<CambioObj[]> {
     if (!date) {
       date = moment().startOf("day").toDate();
@@ -72,32 +94,6 @@ class CambioInfo extends Cambio {
       { date },
       { code: -1, sell: 1, buy: 1 },
     );
-    if (query.latitude && query.longitude) {
-      const latitude = parseFloat(query.latitude);
-      const longitude = parseFloat(query.longitude);
-      const sucs = await this.db_suc.allEntries({
-        latitude: { $exists: true },
-      });
-      let origins = {};
-      for (let suc of sucs) {
-        const distance = this.getDistance(
-          { latitude, longitude },
-          { latitude: suc.latitude, longitude: suc.longitude },
-        );
-        if (suc.origin) {
-          if (!origins[suc.origin]) {
-            origins[suc.origin] = [];
-          }
-          origins[suc.origin].push(distance);
-        }
-      }
-      for (let key in origins) {
-        origins[key] = Math.min(origins[key]);
-      }
-      for (let entry of obj) {
-        entry.distance = origins[entry.origin];
-      }
-    }
     return obj as any;
   }
 }
