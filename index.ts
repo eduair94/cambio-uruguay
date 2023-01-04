@@ -48,8 +48,8 @@ const main = async () => {
         req.params.origin,
         req.params.location,
       );
-      res = JSON.parse(JSON.stringify(res));
       if (latitude && longitude) {
+        res = JSON.parse(JSON.stringify(res));
         // Add distance to entries if latitude and longitude are passed.
         console.log("Coords", latitude, longitude);
         for (let index = 0; index < res.length; index++) {
@@ -60,7 +60,8 @@ const main = async () => {
               { latitude, longitude },
               { latitude: entry.latitude, longitude: entry.longitude },
             );
-            console.log("Distance", res[index].distance);
+          } else {
+            res[index].distance = 9999999;
           }
         }
       }
