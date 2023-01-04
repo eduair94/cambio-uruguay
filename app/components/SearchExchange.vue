@@ -37,7 +37,8 @@
       </v-toolbar>
       <v-btn
         v-if="$vuetify.breakpoint.mobile"
-        class="w-100"
+        class="w-100 mt-0 elevation-0"
+        tile
         color="blue darken-4"
         link
         target="_blank"
@@ -45,6 +46,11 @@
         >GOOGLE MAPS</v-btn
       >
       <div v-if="!loaded" class="px-4 pt-3 text-h5">Cargando...</div>
+      <div v-else-if="message">
+        <p class="ma-0 pa-3 text-h5">
+          {{ message }}
+        </p>
+      </div>
       <div v-else>
         <v-data-table
           :sort-by.sync="sortBy"
@@ -102,6 +108,10 @@
 <script lang="ts">
 export default {
   props: {
+    type: {
+      type: String,
+      required: true,
+    },
     maps: {
       type: String,
       required: true,
@@ -127,6 +137,7 @@ export default {
   },
   data() {
     return {
+      message: '',
       sortBy: undefined,
       sortDesc: undefined,
       dialog: false,
@@ -219,17 +230,26 @@ export default {
     },
     async get_data() {
       this.loaded = false
-      let url =
-        'https://cambio.shellix.cc/exchanges/' +
-        this.origin +
-        '/' +
-        this.location
-      if (this.latitude && this.longitude) {
-        url += `?latitude=${this.latitude}&longitude=${this.longitude}`
-        this.sortBy = 'distance'
-        this.sortDesc = false
+      this.message = ''
+      if (this.origin === 'prex') {
+        this.message =
+          'Se requiere la tarjeta prex y realizar el trámite por la aplicación'
+      } else if (this.type === 'EBROU') {
+        this.message =
+          'Se requiere una cuenta de EBROU, una caja de ahorro en dólares y realizar el cambio por la aplicación'
+      } else {
+        let url =
+          'https://cambio.shellix.cc/exchanges/' +
+          this.origin +
+          '/' +
+          this.location
+        if (this.latitude && this.longitude) {
+          url += `?latitude=${this.latitude}&longitude=${this.longitude}`
+          this.sortBy = 'distance'
+          this.sortDesc = false
+        }
+        this.d = await this.$axios.get(url).then((res) => res.data)
       }
-      this.d = await this.$axios.get(url).then((res) => res.data)
       this.loaded = true
     },
   },

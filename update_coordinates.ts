@@ -22,6 +22,7 @@ async function main() {
         Departamento: row.Departamento,
         latitude: coordinates[0],
         longitude: coordinates[1],
+        status: parseInt(row.Status),
       };
       console.log(json, id, row.Local);
       await cambio_info.updateSuc(id, json);

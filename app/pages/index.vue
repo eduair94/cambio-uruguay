@@ -274,6 +274,7 @@
           </template>
           <template #item.localData.location="{ item }">
             <SearchExchange
+              :type="item.type"
               :maps="item.localData.maps"
               :origin="item.origin"
               :location="location"
