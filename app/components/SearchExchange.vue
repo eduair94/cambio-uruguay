@@ -86,7 +86,9 @@
             </span>
           </template>
           <template #item.distance="{ item }">
-            {{ formatDistance(item.distance) }}
+            <a class="white--text" :href="getMaps(item)" target="_blank">
+              {{ formatDistance(item.distance) }}</a
+            >
           </template>
         </v-data-table>
       </div>
@@ -133,6 +135,11 @@ export default {
     }
   },
   methods: {
+    getMaps(item) {
+      const latitude = item.latitude
+      const longitude = item.longitude
+      return `https://www.google.com.uy/maps/search/${latitude},${longitude}`
+    },
     formatDistance(item: number) {
       if (!item || item === 9999999) return '-'
       if (item >= 1000) {
