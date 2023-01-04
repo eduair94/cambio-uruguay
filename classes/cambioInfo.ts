@@ -74,18 +74,21 @@ class CambioInfo extends Cambio {
         { latitude, longitude },
         { latitude: suc.latitude, longitude: suc.longitude },
       );
-      console.log(distance, suc.origin);
-      if (suc.origin) {
-        if (!origins[suc.origin]) {
-          origins[suc.origin] = [];
+      if (distance && !isNaN(distance)) {
+        console.log(distance, suc.origin);
+        if (suc.origin) {
+          if (!origins[suc.origin]) {
+            origins[suc.origin] = [];
+          }
+          origins[suc.origin].push(distance);
         }
-        origins[suc.origin].push(distance);
       }
     }
+    const res = {};
     for (let key in origins) {
-      origins[key] = Math.min(origins[key]);
+      res[key] = Math.min(origins[key]);
     }
-    return origins;
+    return res;
   }
   async get_data(date?: Date, query?: any): Promise<CambioObj[]> {
     if (!date) {
