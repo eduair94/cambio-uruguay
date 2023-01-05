@@ -3,15 +3,20 @@
     <v-app-bar :clipped-left="clipped" fixed app>
       <v-img
         max-height="90%"
+        max-width="65vw"
         contain
+        alt="logo cambio uruguay"
+        class="logo_image"
         position="left center"
         src="./img/logo.png"
+        @click="scrollTop"
       >
         <template #sources>
           <source srcset="/img/logo.webp" />
         </template>
       </v-img>
       <v-spacer />
+      <LanguageMenu />
     </v-app-bar>
     <v-main>
       <v-container>
@@ -22,13 +27,14 @@
       <span>Cambio Uruguay &copy; {{ new Date().getFullYear() }}</span>
       <v-spacer />
       <span
-        >Hecho con <v-icon color="red">mdi-heart</v-icon> por
+        >{{ $t('madeWith') }} <v-icon color="red">mdi-heart</v-icon>
+        {{ $t('por') }}
         <a
           class="white--text"
           href="https://www.linkedin.com/in/eduardo-airaudo/"
           >Eduardo Airaudo</a
         >
-        y
+        {{ $t('and') }}
         <a
           class="white--text"
           href="https://www.linkedin.com/in/reginascagliotti/"
@@ -42,6 +48,9 @@
 <script>
 export default {
   name: 'DefaultLayout',
+  components: {
+    LanguageMenu: () => import('../components/LanguageMenu.vue'),
+  },
   data() {
     return {
       clipped: false,
@@ -65,5 +74,20 @@ export default {
       title: 'Cambio Uruguay - encuentra la mejor cotización',
     }
   },
+  mounted() {
+    this.$vuetify.lang.current = this.$i18n.locale
+  },
+  methods: {
+    scrollTop() {
+      window.scrollTo(0, 0)
+    },
+  },
 }
 </script>
+
+
+<style>
+.logo_image {
+  cursor: pointer;
+}
+</style>

@@ -1,10 +1,15 @@
 import colors from 'vuetify/es5/util/colors'
+import pt from 'vuetify/src/locale/pt'
+import es from 'vuetify/src/locale/es'
+import translations from './translations'
 
 export default {
   type: 'module',
   loading: '~/components/LoadingBar.vue',
   // Global page headers: https://go.nuxtjs.dev/config-head
+
   head: {
+    addSeoAttributes: true,
     htmlAttrs: {
       lang: 'es-ES'
     },
@@ -94,11 +99,6 @@ export default {
             ? 'https://arc.io/widget.min.js#63RUbX6J'
             : '',
         async: true
-      },
-      {
-        type: 'text/javascript',
-        async: true,
-        src: '//translate.google.com/translate_a/element.js'
       }
     ]
   },
@@ -141,6 +141,7 @@ export default {
 
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
+    '@nuxtjs/i18n',
     '@nuxtjs/sitemap',
     [
       '@nuxtjs/robots',
@@ -165,6 +166,38 @@ export default {
   axios: {
     // Workaround to avoid enforcing hard-coded localhost:3000: https://github.com/nuxt-community/axios-module/issues/308
     baseURL: '/'
+  },
+
+  i18n: {
+    strategy: 'prefix_except_default',
+    baseUrl: 'https://cambio-uruguay.com',
+    locales: [
+      {
+        code: 'en',
+        iso: 'en-US',
+        name: 'English'
+      },
+      {
+        code: 'es',
+        iso: 'es-ES',
+        name: 'Español'
+      },
+      {
+        code: 'pt',
+        iso: 'pt-BR',
+        name: 'Português'
+      }
+    ],
+    defaultLocale: 'es',
+    detectBrowserLanguage: {
+      useCookie: true,
+      cookieKey: 'i18n_redirected',
+      redirectOn: 'root' // recommended
+    },
+    vueI18n: {
+      fallbackLocale: 'es',
+      messages: translations
+    }
   },
 
   router: {
@@ -197,6 +230,7 @@ export default {
 
   // Vuetify module configuration: https://go.nuxtjs.dev/config-vuetify
   vuetify: {
+    locales: { pt, es },
     treeShake: true,
     customVariables: ['~/assets/variables.scss'],
     defaultAssets: {
