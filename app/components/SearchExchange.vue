@@ -12,7 +12,7 @@
         v-bind="attrs"
         @click.prevent="get_data"
         v-on="on"
-        >Buscar sucursal</a
+        >{{ $t('buscarSucursal') }}</a
       >
     </template>
     <v-card>
@@ -45,7 +45,9 @@
         :href="maps"
         >GOOGLE MAPS</v-btn
       >
-      <div v-if="!loaded" class="px-4 pt-3 text-h5">Cargando...</div>
+      <div v-if="!loaded" class="px-4 pt-3 text-h5">
+        {{ $t('cargando') }}...
+      </div>
       <div v-else-if="message">
         <p class="ma-0 pa-3 text-h5">
           {{ message }}
@@ -203,28 +205,36 @@ export default {
     getHeaders() {
       const toReturn = [
         {
-          text: 'Código',
+          text: this.$t('codigo'),
           value: 'NroSucursal',
           width: '30px',
           sortable: false,
         },
         {
-          text: 'Nombre',
+          text: this.$t('nombre'),
           align: 'start',
           sortable: false,
           width: 'auto',
           value: 'Nombre',
         },
-        { text: 'Departamento', value: 'Departamento' },
-        { text: 'Localidad', value: 'Localidad' },
-        { text: 'Direccion', value: 'Direccion' },
-        { text: 'Teléfono/s', value: 'Telefono' },
-        { text: 'E-mail', value: 'CorreoElectronico', sortable: false },
-        { text: 'Horarios', value: 'Horarios', sortable: false },
-        { text: 'Observaciones', value: 'Observaciones', width: 'auto' },
+        { text: this.$t('departamento'), value: 'Departamento' },
+        { text: this.$t('localidad'), value: 'Localidad' },
+        { text: this.$t('direccion'), value: 'Direccion' },
+        { text: this.$t('telefono'), value: 'Telefono' },
+        { text: this.$t('email'), value: 'CorreoElectronico', sortable: false },
+        { text: this.$t('horarios'), value: 'Horarios', sortable: false },
+        {
+          text: this.$t('observaciones'),
+          value: 'Observaciones',
+          width: 'auto',
+        },
       ]
       if (this.latitude && this.longitude) {
-        toReturn.push({ text: 'Distancia', value: 'distance', width: 'auto' })
+        toReturn.push({
+          text: this.$t('distancia'),
+          value: 'distance',
+          width: 'auto',
+        })
       }
       return toReturn
     },
@@ -232,11 +242,19 @@ export default {
       this.loaded = false
       this.message = ''
       if (this.origin === 'prex') {
-        this.message =
-          'Se requiere la tarjeta prex y realizar el trámite por la aplicación'
+        const loc = {
+          es: 'Se requiere la tarjeta prex y realizar el trámite por la aplicación',
+          en: 'A prex card is required and the application must be completed.',
+          pt: 'O cartão prex é necessário e o requerimento deve ser preenchido através do requerimento.',
+        }
+        this.message = loc[this.$i18n.locale]
       } else if (this.type === 'EBROU') {
-        this.message =
-          'Se requiere una cuenta de EBROU, una caja de ahorro en dólares y realizar el cambio por la aplicación'
+        const loc = {
+          es: 'Se requiere una cuenta de EBROU, una caja de ahorro en dólares y realizar el cambio por la aplicación',
+          en: 'It requires an EBROU account, a savings account in US dollars and exchange through the application.',
+          pt: 'É necessária uma conta EBROU, uma conta poupança em dólares e troca através da aplicação.',
+        }
+        this.message = loc[this.$i18n.locale]
       } else {
         let url =
           'https://cambio.shellix.cc/exchanges/' +

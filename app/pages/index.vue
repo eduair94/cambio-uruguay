@@ -1,8 +1,7 @@
 <template>
   <div class="mt-md-4">
     <h1 class="text-h5">
-      Encuentra la mejor cotización en el mercado, comparando entre más de 40
-      casas de cambio.
+      {{ $t('welcome') }}
     </h1>
     <client-only>
       <div class="my-4">
@@ -20,8 +19,7 @@
             <div class="px-3 pt-3">
               <div class="pt-2">
                 <h2 class="font-weight-regular text-body-1">
-                  Cotizaciones del día {{ day }}. Se actualizan cada 10 minutos
-                  con respecto a la información de la web.
+                  {{ fixTitle($t('title')) }}
                 </h2>
                 <div
                   class="
@@ -49,10 +47,7 @@
                       donation_container
                     "
                   >
-                    <span class="mr-3"
-                      >Si la información del sitio te sirvió, puedes ayudar a
-                      mantenerlo</span
-                    >
+                    <span class="mr-3">{{ $t('info') }}</span>
                     <div class="d-flex mt-2">
                       <a
                         target="_blank"
@@ -148,8 +143,8 @@
                       class="mt-md-0"
                       @change="setPrice()"
                     >
-                      <v-radio label="Quiero vender" value="sell"></v-radio>
-                      <v-radio label="Quiero comprar" value="buy"></v-radio>
+                      <v-radio :label="$t('wantToSell')" value="sell"></v-radio>
+                      <v-radio :label="$t('wantToBuy')" value="buy"></v-radio>
                     </v-radio-group>
                   </v-col>
                   <v-col cols="12" md="6" lg="2">
@@ -168,16 +163,22 @@
                       v-model="code"
                       hide-details
                       :items="money"
-                      label="Moneda"
+                      :label="$t('currency')"
                       @change="updateTable"
                     >
                       <template slot="selection" slot-scope="data">
                         <!-- HTML that describe how select should render selected items -->
-                        <span>{{ data.item }} - {{ texts[data.item] }}</span>
+                        <span
+                          >{{ data.item }} -
+                          {{ texts[$i18n.locale][data.item] }}</span
+                        >
                       </template>
                       <template slot="item" slot-scope="data">
                         <!-- HTML that describe how select should render items when the select is open -->
-                        <span>{{ data.item }} - {{ texts[data.item] }}</span>
+                        <span
+                          >{{ data.item }} -
+                          {{ texts[$i18n.locale][data.item] }}</span
+                        >
                       </template>
                     </v-select>
                   </v-col>
@@ -186,7 +187,7 @@
                       v-model="location"
                       hide-details
                       :items="locations"
-                      label="Departamento"
+                      :label="$t('departments')"
                       @change="updateTable"
                     >
                       <template slot="selection" slot-scope="data">
@@ -204,13 +205,12 @@
                       <v-tooltip top>
                         <template #activator="{ on, attrs }">
                           <v-btn
-                            aria-label="Cargar Distancias"
                             color="primary"
                             v-bind="attrs"
                             :loading="loadingDistances"
                             v-on="on"
                             @click="geoLocation"
-                            >Cargar distancias</v-btn
+                            >{{ $t('loadDistances') }}</v-btn
                           >
                         </template>
                         <span
@@ -250,13 +250,13 @@
                         :disabled="onlyInterBank"
                         class="mr-md-3"
                         hide-details
-                        :label="`Ocultar cotizaciones interbancarias`"
+                        :label="$t('hideInterBank')"
                         @change="updateTable"
                       ></v-checkbox>
                       <v-checkbox
                         v-model="notConditional"
                         hide-details
-                        :label="`Ocultar cotizaciones con condiciones`"
+                        :label="$t('hideConditional')"
                         @change="updateTable"
                       ></v-checkbox>
                     </div>
@@ -323,7 +323,7 @@
       target="_blank"
       href="https://finanzas.com.uy/los-mejores-prestamos-de-bancos/"
     >
-      Información sobre préstamos
+      {{ $t('infoPrestamos') }}
     </v-btn>
     <div
       id="updates"
@@ -341,14 +341,13 @@
       ></a>
     </div>
     <div class="mt-3">
-      Ante cualquier problema / consulta / propuesta enviar correo electrónico a
+      {{ $t('consulta') }}
       <a class="white--text" href="mailto:admin@cambio-uruguay.com"
         >admin@cambio-uruguay.com</a
       >
     </div>
     <v-alert class="mt-3 mt-md-4 mb-0 mb-md-3 blue darken-4" type="info" dense>
-      Este sitio fue creado únicamente con la intención de educar, no nos
-      hacemos responsables por el mal uso de la información.
+      {{ $t('disclaimer') }}
     </v-alert>
   </div>
 </template>
@@ -367,23 +366,63 @@ export default {
       location: 'TODOS',
       locations: ['TODOS', 'MONTEVIDEO'],
       texts: {
-        USD: 'Dólares estadounidenses',
-        ARS: 'Pesos Argentinos',
-        BRL: 'Reales Brasileños',
-        EUR: 'Euros',
-        GBP: 'Libras Esterlinas',
-        XAU: 'Oro',
-        UR: 'Unidades Reajustables',
-        UP: 'Unidad Previsional',
-        UI: 'Unidades Indexadas',
-        PYG: 'Guaraníes Paraguayos',
-        PEN: 'Soles Peruanos',
-        MXP: 'Pesos Mexicanos',
-        JPY: 'Yenes',
-        CLP: 'Pesos Chilenos',
-        CHF: 'Francos Suizos',
-        CAD: 'Dólares Canadienses',
-        AUD: 'Dólares Australianos',
+        es: {
+          USD: 'Dólares estadounidenses',
+          ARS: 'Pesos Argentinos',
+          BRL: 'Reales Brasileños',
+          EUR: 'Euros',
+          GBP: 'Libras Esterlinas',
+          XAU: 'Oro',
+          UR: 'Unidades Reajustables',
+          UP: 'Unidad Previsional',
+          UI: 'Unidades Indexadas',
+          PYG: 'Guaraníes Paraguayos',
+          PEN: 'Soles Peruanos',
+          MXP: 'Pesos Mexicanos',
+          JPY: 'Yenes',
+          CLP: 'Pesos Chilenos',
+          CHF: 'Francos Suizos',
+          CAD: 'Dólares Canadienses',
+          AUD: 'Dólares Australianos',
+        },
+        pt: {
+          USD: 'Dólares dos Estados Unidos',
+          ARS: 'Pesos Argentinos',
+          BRL: 'Reais Brasileiros',
+          EUR: 'Euros',
+          GBP: 'Libras Esterlinas Britânicas)',
+          XAU: 'Ouro',
+          UR: 'Unidades reajustáveis',
+          UP: 'Unidade Previsional',
+          UI: 'Unidades indexadas',
+          PYG: 'Guaranis paraguaios',
+          PEN: 'Soles peruanos',
+          MXP: 'Pesos Mexicanos',
+          JPY: 'iene japonês',
+          CLP: 'Pesos chilenos',
+          CHF: 'Francos suíços',
+          CAD: 'Dólares canadenses',
+          AUD: 'Dólares australianos',
+        },
+        en: {
+          USD: 'United States Dollars',
+          ARS: 'Argentine Pesos',
+          BRL: 'Brazilian Reais',
+          EUR: 'Euros',
+          GBP: 'British Pounds Sterling',
+          XAU: 'Gold',
+          UR: 'Readjustable Units',
+          UP: 'Unidade Previsional',
+          UI: 'Indexed Units',
+          PYG: 'Paraguayan Guaraníes',
+          PEN: 'Peruvian Soles',
+          MXP: 'Mexican Pesos',
+          JPY: 'Japanese Yen',
+          CLP: 'Chilean Pesos',
+          CHF: 'Swiss Francs',
+          CAD: 'Canadian Dollars',
+          AUD: 'Australian Dollars',
+        },
       },
       money: ['USD', 'ARS', 'BRL', 'EUR', 'GBP'],
       amount: 100,
@@ -401,7 +440,8 @@ export default {
     }
   },
   head() {
-    return {
+    return this.$nuxtI18nHead({
+      addSeoAttributes: true,
       script: [
         {
           src: 'https://platform.twitter.com/widgets.js',
@@ -410,7 +450,7 @@ export default {
           charset: 'utf-8',
         },
       ],
-    }
+    })
   },
   computed: {
     onlyInterBank() {
@@ -446,6 +486,9 @@ export default {
     this.get_data()
   },
   methods: {
+    fixTitle(text: string) {
+      return text.replace('{{day}}', this.day)
+    },
     undoDistances() {
       this.latitude = 0
       this.longitude = 0
@@ -493,35 +536,49 @@ export default {
         this.geoLocationError
       )
     },
-    capitalize(str: string) {
+    capitalize(entry: string) {
+      let str = entry
+      if (entry === 'TODOS') {
+        const locale = this.$i18n.locale
+        const tr = {
+          es: 'TODOS',
+          en: 'ALL',
+          pt: 'TODOS',
+        }
+        str = tr[locale]
+      }
       return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
     },
     getHeaders() {
       const toReturn = [
         {
-          text: this.wantTo === 'buy' ? 'Pagas' : 'Recibes',
+          text: this.wantTo === 'buy' ? this.$t('pagas') : this.$t('recibes'),
           value: 'amount',
           width: 'auto',
         },
         {
-          text: 'Moneda',
+          text: this.$t('moneda'),
           align: 'start',
           sortable: false,
           width: '180px',
           value: 'code',
         },
-        { text: 'Casa de Cambio', value: 'localData.name' },
-        { text: 'Compra (UY)', value: 'buy' },
-        { text: 'Venta (UY)', value: 'sell' },
+        { text: this.$t('casaDeCambio'), value: 'localData.name' },
+        { text: this.$t('compra') + ' (UY)', value: 'buy' },
+        { text: this.$t('venta') + ' (UY)', value: 'sell' },
         { text: 'Dif (%)', value: 'diff' },
-        { text: 'Sitio web', value: 'localData.website', sortable: false },
+        {
+          text: this.$t('sitioWeb'),
+          value: 'localData.website',
+          sortable: false,
+        },
         { text: '', value: 'localData.location', sortable: false },
-        { text: 'Condicional', value: 'condition', width: '250px' },
+        { text: this.$t('condicional'), value: 'condition', width: '250px' },
         { text: 'BCU', value: 'localData.bcu', width: '50px' },
       ]
       if (this.enableDistance) {
         toReturn.push({
-          text: 'Distancia',
+          text: this.$t('distancia'),
           value: 'distance',
           width: 'auto',
         })
@@ -540,24 +597,37 @@ export default {
       } else {
         savePercent = ((minValue - maxValue) / maxValue) * 100
       }
-      return `Puedes ahorrar hasta un ${savePercent.toFixed(
-        2
-      )}% utilizando nuestra app.`
+      const s = savePercent.toFixed(2)
+      const loc = {
+        es: `Puedes ahorrar hasta un ${s}% utilizando nuestra app.`,
+        en: `You can save up to ${s}% by using our app`,
+        pt: `Você pode economizar até ${s}% ao utilizar nosso aplicativo`,
+      }
+      return loc[this.$i18n.locale]
     },
     share() {
-      let text = this.buy ? 'vender ' : 'comprar '
-      if (this.texts[this.code]) {
+      let text = this.buy ? `${this.$t('sell')} ` : `${this.$t('buy')} `
+      if (this.texts[this.$i18n.locale][this.code]) {
         text +=
-          this.texts[this.code].toLowerCase() + ' ' + '(' + this.code + ')'
+          this.texts[this.$i18n.locale][this.code].toLowerCase() +
+          ' ' +
+          '(' +
+          this.code +
+          ')'
       } else {
         text += this.code
       }
       let extra = ''
       if (this.location !== 'TODOS') {
-        extra += 'de' + this.capitalize(this.location) + ' '
+        extra += this.$t('from') + this.capitalize(this.location) + ' '
+      }
+      const loc = {
+        es: 'Estas son las mejores entidades uruguayas',
+        en: 'These are the best Uruguayan entities',
+        pt: 'Estas são as melhores entidades uruguaias',
       }
       const finalText =
-        'Estas son las mejores entidades uruguayas ' + extra + 'para ' + text
+        loc[this.$i18n.locale] + ' ' + extra + this.$t('to') + ' ' + text
       console.log('Text', finalText)
       try {
         navigator.share({
@@ -585,9 +655,19 @@ export default {
       if (!this.items.length) return
       const m = this.formatMoney(this.items[0].amount)
       if (this.wantTo === 'buy') {
-        return `Comprar ${this.amount} ${this.code} te costará un total de ${m}`
+        const loc = {
+          es: `Comprar ${this.amount} ${this.code} te costará un total de ${m}.`,
+          en: `Buying ${this.amount} ${this.code} will cost you a total of ${m}.`,
+          pt: `Comprar ${this.amount} ${this.code} lhe custará um total de ${m}.`,
+        }
+        return loc[this.$i18n.locale]
       } else {
-        return `Te darán ${m} por tus ${this.amount} ${this.code}`
+        const loc = {
+          es: `Te darán ${m} por tus ${this.amount} ${this.code}.`,
+          en: `You will receive ${m} for your ${this.amount} ${this.code}.`,
+          pt: `Você receberá ${m} por seus ${this.amount} ${this.code}.`,
+        }
+        return loc[this.$i18n.locale]
       }
     },
     getColor({ index, buy, sell }) {
@@ -617,10 +697,20 @@ export default {
     },
     getCondition(el) {
       if (el.origin === 'prex') {
-        return 'Require del uso de la tarjeta prex, debe ser solicitada en su sitio web.'
+        const loc = {
+          es: 'Require del uso de la tarjeta prex, debe ser solicitada en su sitio web.',
+          en: 'Require the use of the prex card, this must be requested on their website.',
+          pt: 'Exigir a utilização do cartão prex, este deve ser solicitado no seu website.',
+        }
+        return loc[this.$i18n.locale]
       }
       if (el.type === 'EBROU') {
-        return 'Require de cuenta web en el banco BROU, debe abrirse una caja de ahorro en dicho banco'
+        const loc = {
+          es: 'Require de cuenta web en el banco BROU, debe abrirse una caja de ahorro en dicho banco',
+          en: 'Require a web account at BROU bank, you must open a savings account at BROU bank.',
+          pt: 'Exigir uma conta web no banco BROU, uma conta poupança deve ser aberta no banco BROU.',
+        }
+        return loc[this.$i18n.locale]
       }
       return ''
     },
