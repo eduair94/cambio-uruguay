@@ -8,12 +8,12 @@
       </template>
       <v-list>
         <v-list-item
-          v-for="(locale, index) in availableLocales"
+          v-for="(item, index) in availableLocales"
           :key="index"
           link
-          :to="switchLocalePath(locale.code)"
+          :to="switchLocalePath(item.code)"
         >
-          <v-list-item-title>{{ locale.name }}</v-list-item-title>
+          <v-list-item-title>{{ item.name }}</v-list-item-title>
         </v-list-item>
       </v-list>
     </v-menu>
@@ -23,13 +23,23 @@
 
 <script>
 export default {
+  data() {
+    return {
+      locale: '',
+    }
+  },
   computed: {
     availableLocales() {
       return this.$i18n.locales.filter((i) => i.code !== this.$i18n.locale)
     },
-    locale() {
-      return this.$i18n.locale
+  },
+  watch: {
+    '$i18n.locale'(val) {
+      this.locale = val
     },
+  },
+  mounted() {
+    this.locale = this.$i18n.locale
   },
 }
 </script>
