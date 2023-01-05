@@ -6,7 +6,7 @@ export default {
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
     htmlAttrs: {
-      lang: 'es-ES',
+      lang: 'es-ES'
     },
     titleTemplate: '%s - Cambio Uruguay',
     title: 'Cambio Uruguay',
@@ -16,75 +16,76 @@ export default {
       { charset: 'utf-8' },
       {
         name: 'twitter:title',
-        content: 'Cambio Uruguay',
+        content: 'Cambio Uruguay'
       },
       {
         name: 'twitter:description',
         content:
-          'Cambio Uruguay - Encuentra las mejores casas cambiarias del país, mejores cotizaciones de dólares (USD), pesos argentinos (ARS) y reales brasileños (BRL).',
+          'Cambio Uruguay - Encuentra las mejores casas cambiarias del país, mejores cotizaciones de dólares (USD), pesos argentinos (ARS) y reales brasileños (BRL).'
       },
       {
         name: 'twitter:image',
-        content: 'https://cambio-uruguay.com/img/banner.png',
+        content: 'https://cambio-uruguay.com/img/banner.png'
       },
       {
         name: 'twitter:site',
-        content: '@cambios_uy',
+        content: '@cambios_uy'
       },
       {
         name: 'twitter:creator',
-        content: '@cambios_uy',
+        content: '@cambios_uy'
       },
       {
         name: 'og:site_name',
-        content: 'Cambio Uruguay',
+        content: 'Cambio Uruguay'
       },
       {
         name: 'robots',
-        content: 'index, follow',
+        content: 'index, follow'
       },
       {
         name: 'viewport',
-        content: 'width=device-width, initial-scale=1, user-scalable=no',
+        content:
+          'width=device-width, initial-scale=1, user-scalable=yes, maximum-scale=5'
       },
       {
         hid: 'description',
         name: 'description',
         content:
-          'Cambio Uruguay - Encuentra las mejores casas cambiarias de Montevideo / Uruguay, mejores cotizaciones de dólares (USD), pesos argentinos (ARS) y reales brasileros (BRL).',
+          'Cambio Uruguay - Encuentra las mejores casas cambiarias de Montevideo / Uruguay, mejores cotizaciones de dólares (USD), pesos argentinos (ARS) y reales brasileros (BRL).'
       },
       {
         hid: 'og:title',
         property: 'og:title',
-        content: `Cambio Uruguay`,
+        content: `Cambio Uruguay`
       },
       {
         hid: 'og:description',
         property: 'og:description',
-        content: `Cambio Uruguay - Encuentra las mejores casas cambiarias del país, mejores cotizaciones de dólares (USD), pesos argentinos (ARS) y reales brasileros (BRL).`,
+        content: `Cambio Uruguay - Encuentra las mejores casas cambiarias del país, mejores cotizaciones de dólares (USD), pesos argentinos (ARS) y reales brasileros (BRL).`
       },
       {
         hid: 'og:image',
         property: 'og:image',
-        content: `https://cambio-uruguay.com/img/banner.png`,
+        content: `https://cambio-uruguay.com/img/banner.png`
       },
       {
         name: 'referrer',
-        content: 'no-referrer',
+        content: 'no-referrer'
       },
       {
         name: 'keywords',
         content:
-          'cotizaciones uruguay, casa cambiaria, cambio moneda, cambio dólares, cambio pesos argentinos, cambio reales, cambio euros, varlix, prex, gales, cambio montevideo, cambio',
-      },
+          'cotizaciones uruguay, casa cambiaria, cambio moneda, cambio dólares, cambio pesos argentinos, cambio reales, cambio euros, varlix, prex, gales, cambio montevideo, cambio'
+      }
     ],
     link: [
       {
         hid: 'icon',
         rel: 'icon',
         type: 'image/x-icon',
-        href: '/icons/favicon-32x32.png',
-      },
+        href: '/icons/favicon-32x32.png'
+      }
     ],
     script: [
       {
@@ -92,19 +93,19 @@ export default {
           process.env.NODE_ENV === 'production'
             ? 'https://arc.io/widget.min.js#63RUbX6J'
             : '',
-        async: true,
+        async: true
       },
       {
         type: 'text/javascript',
         async: true,
-        src: '//translate.google.com/translate_a/element.js',
-      },
-    ],
+        src: '//translate.google.com/translate_a/element.js'
+      }
+    ]
   },
 
   server: {
     port: 3311, // default: 3000
-    host: '0.0.0.0', // default: localhost
+    host: '0.0.0.0' // default: localhost
   },
 
   // Global CSS: https://go.nuxtjs.dev/config-css
@@ -126,16 +127,16 @@ export default {
     [
       '@nuxtjs/google-gtag',
       {
-        id: 'G-F97PNVRMRF',
-      },
+        id: 'G-F97PNVRMRF'
+      }
     ],
-    '@nuxtjs/google-fonts',
+    '@nuxtjs/google-fonts'
   ],
 
   googleFonts: {
     families: {
-      'Open Sans': [400, 600, 700],
-    },
+      'Open Sans': [400, 600, 700]
+    }
   },
 
   // Modules: https://go.nuxtjs.dev/config-modules
@@ -146,38 +147,42 @@ export default {
       {
         UserAgent: '*',
         Disallow: '',
-        Sitemap: 'http://cambio-uruguay.com/sitemap.xml',
-      },
+        Sitemap: 'http://cambio-uruguay.com/sitemap.xml'
+      }
     ],
     // https://go.nuxtjs.dev/axios
     '@nuxtjs/axios',
-    ['@netsells/nuxt-hotjar', { 
-        id: '3306157', 
-        sv: '6',
-    }],
+    [
+      '@netsells/nuxt-hotjar',
+      {
+        id: '3306157',
+        sv: '6'
+      }
+    ]
   ],
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
   axios: {
     // Workaround to avoid enforcing hard-coded localhost:3000: https://github.com/nuxt-community/axios-module/issues/308
-    baseURL: '/',
+    baseURL: '/'
   },
 
   router: {
     base: '/',
-    mode: 'history',
+    mode: 'history'
   },
 
   // PWA module configuration: https://go.nuxtjs.dev/pwa
   pwa: {
     manifest: {
+      theme_color: '#272727',
       start_url: 'https://cambio-uruguay.com',
       crossorigin: 'use-credentials',
       name: 'Cambio Uruguay App',
       short_name: 'Cambio Uruguay',
       lang: 'es',
       description:
-        'Encuentra las mejores cotizaciones de cambio de divisas en Uruguay',
+        'Encuentra las mejores cotizaciones de cambio de divisas en Uruguay'
     },
     workbox: {
       workboxURL:
@@ -186,8 +191,8 @@ export default {
         process.env.NODE_ENV === 'production'
           ? ['https://arc.io/arc-sw-core.js']
           : [],
-      autoRegister: true,
-    },
+      autoRegister: true
+    }
   },
 
   // Vuetify module configuration: https://go.nuxtjs.dev/config-vuetify
@@ -196,8 +201,8 @@ export default {
     customVariables: ['~/assets/variables.scss'],
     defaultAssets: {
       font: {
-        family: 'Open Sans',
-      },
+        family: 'Open Sans'
+      }
     },
     theme: {
       dark: true,
@@ -209,12 +214,19 @@ export default {
           info: colors.teal.lighten1,
           warning: colors.amber.base,
           error: colors.deepOrange.accent4,
-          success: colors.green.accent3,
-        },
-      },
-    },
+          success: colors.green.accent3
+        }
+      }
+    }
   },
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
-  build: {},
+  build: {
+    extend(config, { isClient }) {
+      // Extend only webpack config for client-bundle
+      if (isClient) {
+        config.devtool = 'source-map'
+      }
+    }
+  }
 }
