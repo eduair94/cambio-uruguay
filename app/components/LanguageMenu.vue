@@ -3,7 +3,7 @@
     <v-menu offset-y>
       <template #activator="{ on, attrs }">
         <v-btn color="primary" dark v-bind="attrs" v-on="on">
-          {{ $i18n.locale }} <v-icon>mdi-chevron-down</v-icon>
+          {{ locale }} <v-icon>mdi-chevron-down</v-icon>
         </v-btn>
       </template>
       <v-list>
@@ -23,17 +23,12 @@
 
 <script>
 export default {
-  data: () => ({
-    items: [
-      { title: 'Click Me' },
-      { title: 'Click Me' },
-      { title: 'Click Me' },
-      { title: 'Click Me 2' },
-    ],
-  }),
   computed: {
     availableLocales() {
       return this.$i18n.locales.filter((i) => i.code !== this.$i18n.locale)
+    },
+    locale() {
+      return this.$i18n.locale
     },
   },
 }
