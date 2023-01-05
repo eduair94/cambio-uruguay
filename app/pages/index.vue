@@ -19,10 +19,10 @@
           <template #top>
             <div class="px-3 pt-3">
               <div class="pt-2">
-                <h3 class="font-weight-regular">
+                <h2 class="font-weight-regular text-body-1">
                   Cotizaciones del día {{ day }}. Se actualizan cada 10 minutos
                   con respecto a la información de la web.
-                </h3>
+                </h2>
                 <div
                   class="
                     d-flex
@@ -56,6 +56,7 @@
                     <div class="d-flex mt-2">
                       <a
                         target="_blank"
+                        aria-label="Donar con Paypal"
                         class="
                           white--text
                           d-flex
@@ -71,9 +72,14 @@
                           height="50px"
                           contain
                           src="/img/paypal_icon.png"
-                        ></v-img>
+                        >
+                          <template #sources>
+                            <source srcset="/img/paypal_icon.webp" />
+                          </template>
+                        </v-img>
                       </a>
                       <a
+                        aria-label="Donar con Mercado Pago"
                         class="
                           white--text
                           d-flex
@@ -89,18 +95,31 @@
                           height="50px"
                           contain
                           src="/img/mercadopago_icon.png"
-                        ></v-img>
+                        >
+                          <template #sources>
+                            <source srcset="/img/mercadopago_icon.webp" />
+                          </template>
+                        </v-img>
                       </a>
                     </div>
                   </div>
                   <div class="button_section mb-3">
-                    <v-btn color="blue darken-2" @click="install_app">
+                    <v-btn
+                      aria-label="instalar"
+                      color="blue darken-2"
+                      @click="install_app"
+                    >
                       <v-icon>mdi-download</v-icon>
                     </v-btn>
-                    <v-btn color="blue darken-1" @click="share">
+                    <v-btn
+                      aria-label="compartir"
+                      color="blue darken-1"
+                      @click="share"
+                    >
                       <v-icon large> mdi-share </v-icon>
                     </v-btn>
                     <v-btn
+                      aria-label="twitter"
                       link
                       color="#00acee"
                       target="_blank"
@@ -109,6 +128,7 @@
                       <v-icon large> mdi-twitter </v-icon>
                     </v-btn>
                     <v-btn
+                      aria-label="github"
                       link
                       color="grey darken-3"
                       target="_blank"
@@ -184,6 +204,7 @@
                       <v-tooltip top>
                         <template #activator="{ on, attrs }">
                           <v-btn
+                            aria-label="Cargar Distancias"
                             color="primary"
                             v-bind="attrs"
                             :loading="loadingDistances"
@@ -198,6 +219,7 @@
                         >
                       </v-tooltip>
                       <v-btn
+                        aria-label="deshacer carga distancias"
                         :disabled="!latitude"
                         color="blue darken-3"
                         @click="undoDistances"
@@ -297,7 +319,7 @@
     </client-only>
     <v-btn
       link
-      color="orange darken-4"
+      color="red darken-4"
       target="_blank"
       href="https://finanzas.com.uy/los-mejores-prestamos-de-bancos/"
     >
@@ -324,7 +346,7 @@
         >admin@cambio-uruguay.com</a
       >
     </div>
-    <v-alert class="mt-3 mt-md-4 mb-0 mb-md-3" type="info" dense>
+    <v-alert class="mt-3 mt-md-4 mb-0 mb-md-3 blue darken-4" type="info" dense>
       Este sitio fue creado únicamente con la intención de educar, no nos
       hacemos responsables por el mal uso de la información.
     </v-alert>

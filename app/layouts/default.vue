@@ -6,7 +6,11 @@
         contain
         position="left center"
         src="./img/logo.png"
-      ></v-img>
+      >
+        <template #sources>
+          <source srcset="/img/logo.webp" />
+        </template>
+      </v-img>
       <v-spacer />
     </v-app-bar>
     <v-main>
