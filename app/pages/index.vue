@@ -202,7 +202,12 @@
                   </v-col>
                   <v-col cols="12" md="6" lg="2">
                     <div class="mt-lg-3 d-flex">
-                      <LocationPopup @geoLocationSuccess="geoLocationSuccess" />
+                      <div class="mr-2">
+                        <LocationPopup
+                          ref="locationPopup"
+                          @geoLocationSuccess="geoLocationSuccess"
+                        />
+                      </div>
                       <v-btn
                         aria-label="deshacer carga distancias"
                         :disabled="!latitude"
@@ -249,6 +254,9 @@
                 </v-row>
               </div>
             </div>
+          </template>
+          <template #item.pos="{ item }">
+            <span>#{{ item.pos }}</span>
           </template>
           <template #item.code="{ item }">
             <span
@@ -303,12 +311,21 @@
       </div>
     </client-only>
     <v-btn
+      class="mr-2"
       link
       color="red darken-4"
       target="_blank"
       href="https://finanzas.com.uy/los-mejores-prestamos-de-bancos/"
     >
       {{ $t('infoPrestamos') }}
+    </v-btn>
+    <v-btn
+      color="primary"
+      target="_blank"
+      link
+      href="https://docs.google.com/document/d/1BBDrsiT778SEIn5hqYltl-7dxQq9dSeG/edit"
+    >
+      <v-icon> mdi-file-document </v-icon>
     </v-btn>
     <div
       id="updates"
@@ -531,6 +548,11 @@ export default {
     getHeaders() {
       const toReturn = [
         {
+          text: '',
+          value: 'pos',
+          width: 'auto',
+        },
+        {
           text: this.wantTo === 'buy' ? this.$t('pagas') : this.$t('recibes'),
           value: 'amount',
           width: 'auto',
@@ -735,11 +757,23 @@ export default {
         }
         return b.buy <= a.buy ? -1 : 1
       })
-      this.items = this.items.map((el, index) => {
+      let pos = 1
+      this.items = (this.items as any[]).map((el, index, arr) => {
         el.index = index
+        const wanToSell = this.wantTo === 'sell'
+        if (index !== 0) {
+          if (wanToSell) {
+            if (el.buy !== arr[index - 1].buy) {
+              pos++
+            }
+          } else if (el.sell !== arr[index - 1].sell) {
+            pos++
+          }
+        }
+        el.pos = pos
         const sell = this.amount * el.sell
         const buy = this.amount * el.buy
-        el.amount = this.wantTo === 'sell' ? buy : sell
+        el.amount = wanToSell ? buy : sell
         el.diff = (((sell - buy) / buy) * 100).toFixed(2)
         return el
       })
@@ -772,7 +806,7 @@ export default {
       const data = await this.$axios
         .get('https://cambio.shellix.cc')
         .then((res) =>
-          res.data
+          (res.data as any[])
             .map((el: any) => {
               el.localData = localData[el.origin]
               if (!el.localData) {
@@ -836,7 +870,7 @@ body {
 
 .money_table
   .v-data-table__mobile-table-row
-  > .v-data-table__mobile-row:nth-child(9) {
+  > .v-data-table__mobile-row:nth-child(10) {
   flex-direction: column;
   justify-content: flex-start;
   .v-data-table__mobile-row__header {
