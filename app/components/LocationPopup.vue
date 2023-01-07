@@ -49,6 +49,7 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
+          <v-btn color="primary" @click="reset">Reset</v-btn>
           <v-btn color="red" @click="dialog = false">Cerrar</v-btn>
           <v-btn color="green darken-3" @click="confirmGeo">Confirmar</v-btn>
         </v-card-actions>
@@ -131,17 +132,31 @@ export default {
       this.$emit('geoLocationSuccess', distances, this.latitude, this.longitude)
       this.dialog = false
     },
-    geoLocationError(err) {
-      console.error(err)
+    geoLocationError() {
       this.loadingDistances = false
-      alert('No se ha podido determinar su ubicación actual')
+      this.latitude = -34.88073035118606
+      this.longitude = -56.167630709298805
+      this.setMap()
     },
-    geoLocation() {
-      this.loadingDistances = true
+    reset() {
+      this.search = ''
       navigator.geolocation.getCurrentPosition(
         this.geoLocationSuccess,
         this.geoLocationError
       )
+    },
+    geoLocation() {
+      if (!this.latitude) {
+        this.loadingDistances = true
+        navigator.geolocation.getCurrentPosition(
+          this.geoLocationSuccess,
+          this.geoLocationError
+        )
+      } else {
+        this.dialog = true
+        this.loadingDistances = false
+        this.setMap()
+      }
       this.dialog = true
     },
   },
@@ -156,6 +171,7 @@ export default {
   padding: 10px;
   margin-bottom: 12px;
   border: 1px solid white;
+  font-size: 16px;
 }
 .location_map {
   height: 80vh;
