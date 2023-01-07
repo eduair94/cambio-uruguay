@@ -17,6 +17,9 @@ class CambioInfo extends Cambio {
   async getAllMarkets(): Promise<any> {
     return this.db_suc.allEntries({});
   }
+  async getMarkets(entry:any): Promise<any> {
+    return this.db_suc.allEntries(entry);
+  }
   async get_local_data() {
     if (!this.localData) {
       const localData = {};

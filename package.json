@@ -16,7 +16,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "sheet_locations": "ts-node sync_locations_sheet",
     "coordinates": "ts-node update_coordinates.ts",
-    "cambilex": "ts-node cambilex_sucs"
+    "cambilex": "ts-node cambilex_sucs",
+    "add_itau": "ts-node add_itau"
   },
   "author": "",
   "license": "ISC",
