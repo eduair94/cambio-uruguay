@@ -90,9 +90,16 @@ export default {
         rel: 'icon',
         type: 'image/x-icon',
         href: '/icons/favicon-32x32.png'
+      },
+      {
+        href: 'https://cdn.maptiler.com/maptiler-geocoder/v1.1.0/maptiler-geocoder.css',
+        rel: 'stylesheet'
       }
     ],
     script: [
+      {
+        src: 'https://cdn.maptiler.com/maptiler-geocoder/v1.1.0/maptiler-geocoder.js'
+      },
       {
         src:
           process.env.NODE_ENV === 'production'
@@ -141,6 +148,7 @@ export default {
 
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
+    'nuxt-leaflet',
     '@nuxtjs/i18n',
     '@nuxtjs/sitemap',
     [
@@ -230,7 +238,9 @@ export default {
 
   // Vuetify module configuration: https://go.nuxtjs.dev/config-vuetify
   vuetify: {
-    locales: { pt, es },
+    lang: {
+      locales: { pt, es }
+    },
     treeShake: true,
     customVariables: ['~/assets/variables.scss'],
     defaultAssets: {
