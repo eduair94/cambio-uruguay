@@ -201,23 +201,8 @@
                     </v-select>
                   </v-col>
                   <v-col cols="12" md="6" lg="2">
-                    <div class="mt-lg-3">
-                      <v-tooltip top>
-                        <template #activator="{ on, attrs }">
-                          <v-btn
-                            color="primary"
-                            v-bind="attrs"
-                            :loading="loadingDistances"
-                            v-on="on"
-                            @click="geoLocation"
-                            >{{ $t('loadDistances') }}</v-btn
-                          >
-                        </template>
-                        <span
-                          >Funciona de forma más precisa en celulares /
-                          tablets</span
-                        >
-                      </v-tooltip>
+                    <div class="mt-lg-3 d-flex">
+                      <LocationPopup @geoLocationSuccess="geoLocationSuccess" />
                       <v-btn
                         aria-label="deshacer carga distancias"
                         :disabled="!latitude"
@@ -349,6 +334,12 @@
     <v-alert class="mt-3 mt-md-4 mb-0 mb-md-3 blue darken-4" type="info" dense>
       {{ $t('disclaimer') }}
     </v-alert>
+    <v-snackbar v-model="snackbar" color="green darken-2">
+      <p class="text--white mb-0">{{ snackBarText }}</p>
+      <template #action="{ attrs }">
+        <v-btn text v-bind="attrs" @click="snackbar = false"> Close </v-btn>
+      </template>
+    </v-snackbar>
   </div>
 </template>
 
@@ -356,11 +347,14 @@
 export default {
   name: 'HomePage',
   components: {
+    LocationPopup: () => import('../components/LocationPopup.vue'),
     BCU: () => import('../components/BCU.vue'),
     SearchExchange: () => import('../components/SearchExchange.vue'),
   },
   data() {
     return {
+      snackbar: false,
+      snackBarText: '',
       loadingDistances: false,
       onlyInterbank: ['UR', 'UP'],
       location: 'TODOS',
@@ -489,21 +483,9 @@ export default {
     fixTitle(text: string) {
       return text.replace('{{day}}', this.day)
     },
-    undoDistances() {
-      this.latitude = 0
-      this.longitude = 0
-      this.enableDistance = false
-    },
-    async geoLocationSuccess(info) {
-      const latitude = info.coords.latitude
-      const longitude = info.coords.longitude
+    geoLocationSuccess(distances: any, latitude: number, longitude: number) {
       this.latitude = latitude
       this.longitude = longitude
-      const distances = await this.$axios
-        .get(
-          `https://cambio.shellix.cc/distances?latitude=${latitude}&longitude=${longitude}`
-        )
-        .then((res) => res.data)
       this.all_items = this.all_items.map((item) => {
         item.distance = distances[item.origin]
           ? distances[item.origin]
@@ -512,7 +494,16 @@ export default {
       })
       this.updateTable()
       this.enableDistance = true
-      this.loadingDistances = false
+      this.snackbar = true
+      this.snackBarText = 'Distancias cargadas correctamente'
+      setTimeout(() => {
+        this.snackbar = false
+      }, 1500)
+    },
+    undoDistances() {
+      this.latitude = 0
+      this.longitude = 0
+      this.enableDistance = false
     },
     formatDistance(item: number) {
       if (!item || item === 9999999) return '-'
@@ -523,18 +514,6 @@ export default {
       } else {
         return item.toFixed(1) + ' m'
       }
-    },
-    geoLocationError(err) {
-      console.log(err)
-      this.loadingDistances = false
-      alert('No se ha podido determinar su ubicación actual')
-    },
-    geoLocation() {
-      this.loadingDistances = true
-      navigator.geolocation.getCurrentPosition(
-        this.geoLocationSuccess,
-        this.geoLocationError
-      )
     },
     capitalize(entry: string) {
       let str = entry
