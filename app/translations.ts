@@ -19,7 +19,7 @@ const translation = {
       hideInterBank: 'Hide interbank quotes',
       hideConditional: 'Hide quotes with conditions',
       pagas: 'Pay',
-      recies: 'Receive',
+      recibes: 'Receive',
       moneda: 'Money',
       casaDeCambio: 'Exchange House',
       sitioWeb: 'Website',
@@ -50,7 +50,11 @@ const translation = {
         'This entity is regulated by BCU (Central Bank of Uruguay)',
       razonSocial: 'Company name',
       noData: 'No data to display, click on the Website button.',
-      cargando: 'Loading'
+      cargando: 'Loading',
+      locationTooltip: 'Works more accurately on cell phones / tablets',
+      confirmarUbicacion: 'Confirm location',
+      cerrar: 'Close',
+      confirmar: 'Confirm'
     },
     pt: {
       welcome:
@@ -72,7 +76,7 @@ const translation = {
       hideInterBank: 'Esconder citações interbancárias',
       hideConditional: 'Ocultar citações com condições',
       pagas: 'Paga',
-      recies: 'Recebe',
+      recibes: 'Recebe',
       moneda: 'Moeda',
       casaDeCambio: 'Bureau de Change',
       sitioWeb: 'Sítio Web',
@@ -103,7 +107,11 @@ const translation = {
         'Esta entidade é regulamentada pelo BCU (Banco Central do Uruguai)',
       razonSocial: 'Nome da empresa',
       noData: 'Nenhum dado a ser exibido, clique no botão do site',
-      cargando: 'Carregando'
+      cargando: 'Carregando',
+      locationTooltip: 'Trabalha com mais precisão em celulares / placas',
+      confirmarUbicacion: 'Confirmar localização',
+      cerrar: 'Fechar',
+      confirmar: 'Confirme'
     },
     es: {
       welcome:
@@ -125,7 +133,7 @@ const translation = {
       hideInterBank: 'Ocultar cotizaciones interbancarias',
       hideConditional: 'Ocultar cotizaciones con condiciones',
       pagas: 'Pagas',
-      recies: 'Recibes',
+      recibes: 'Recibes',
       moneda: 'Moneda',
       casaDeCambio: 'Casa de Cambio',
       sitioWeb: 'Sitio Web',
@@ -157,7 +165,11 @@ const translation = {
       razonSocial: 'Razón social',
       noData:
         'No hay datos para mostrar, dar clic en el botón de Sitio Web.',
-      cargando: 'Cargando'
+      cargando: 'Cargando',
+      locationTooltip: 'Funciona de forma más precisa en celulares / tablets',
+      confirmarUbicacion: 'Confirmar ubicación',
+      cerrar: 'Cerrar',
+      confirmar: 'Confirmar'
     }
   }
 
