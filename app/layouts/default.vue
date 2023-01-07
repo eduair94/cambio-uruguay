@@ -90,4 +90,8 @@ export default {
 .logo_image {
   cursor: pointer;
 }
+._hj_feedback_container {
+  z-index: 1;
+  position: relative;
+}
 </style>
