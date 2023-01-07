@@ -4,7 +4,7 @@ import { CambioObj } from "../../interfaces/Cambio";
 import { Cambio } from "../cambio";
 
 class CambioFenix extends Cambio {
-  name = "Cambio Oriental";
+  name = "Cambio Fenix";
   bcu = "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2593";
   private conversions = {
     Dólar: {
