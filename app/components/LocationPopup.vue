@@ -11,12 +11,12 @@
           >{{ $t('loadDistances') }}</v-btn
         >
       </template>
-      <span>Funciona de forma más precisa en celulares / tablets</span>
+      <span>{{ $t('locationTooltip') }}</span>
     </v-tooltip>
     <v-dialog v-model="dialog" persistent fullscreen width="700px" hide-overlay>
       <v-card>
         <v-toolbar dark color="primary">
-          <v-toolbar-title>Confirmar ubicación</v-toolbar-title>
+          <v-toolbar-title>{{ $t('confirmarUbicacion') }}</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-btn icon dark @click="dialog = false">
             <v-icon>mdi-close</v-icon>
@@ -27,7 +27,7 @@
             <input
               id="search"
               v-model="search"
-              placeholder="Dirección"
+              :placeholder="$t('direccion')"
               type="text"
             />
           </div>
@@ -50,8 +50,10 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn color="primary" @click="reset">Reset</v-btn>
-          <v-btn color="red" @click="dialog = false">Cerrar</v-btn>
-          <v-btn color="green darken-3" @click="confirmGeo">Confirmar</v-btn>
+          <v-btn color="red" @click="dialog = false">{{ $t('cerrar') }}</v-btn>
+          <v-btn color="green darken-3" @click="confirmGeo">{{
+            $t('confirmar')
+          }}</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
