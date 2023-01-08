@@ -95,16 +95,16 @@ export default {
   position: relative;
 }
 
-body .v-data-table > .v-data-table__wrapper > table > tbody > tr > td,
-.v-data-table > .v-data-table__wrapper > table > thead > tr > td,
-.v-data-table > .v-data-table__wrapper > table > tfoot > tr > td {
-  font-size: 0.875rem !important;
-}
-
 @media (max-width: 768px) {
   body .v-footer {
     padding-bottom: 80px;
     height: auto !important;
+  }
+  body .v-data-table > .v-data-table__wrapper > table > tbody > tr > td,
+  .v-data-table > .v-data-table__wrapper > table > thead > tr > td,
+  .v-data-table > .v-data-table__wrapper > table > tfoot > tr > td {
+    font-size: 14px !important;
+    padding-bottom: 12px;
   }
 }
 </style>
