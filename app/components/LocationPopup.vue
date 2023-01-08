@@ -118,7 +118,7 @@ export default {
       this.reverseGeo()
     },
     async reverseGeo() {
-      const url = `http://cambio.shellix.cc/position_stack?query=${this.latitude},${this.longitude}&limit=1`
+      const url = `https://cambio.shellix.cc/position_stack?query=${this.latitude},${this.longitude}&limit=1`
       const res = await this.$axios
         .get(url)
         .then((res) => res.data)
