@@ -36,6 +36,7 @@ export default {
   watch: {
     '$i18n.locale'(val) {
       this.locale = val
+      this.$vuetify.lang.current = val
     },
   },
   mounted() {
