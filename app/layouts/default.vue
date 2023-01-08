@@ -104,6 +104,7 @@ export default {
   .v-data-table > .v-data-table__wrapper > table > thead > tr > td,
   .v-data-table > .v-data-table__wrapper > table > tfoot > tr > td {
     padding-bottom: 12px;
+    font-size: 14px !important;
   }
   body .money_table .v-data-table__mobile-row__header,
   body .money_table .v-data-table__mobile-row__cell {
