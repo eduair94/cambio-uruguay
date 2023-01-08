@@ -109,6 +109,7 @@ export default {
   body .money_table.search_exchange .v-data-table__mobile-row__cell {
     width: fit-content !important;
     min-width: 50%;
+    font-size: 12px !important;
   }
 }
 </style>
