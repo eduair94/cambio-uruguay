@@ -103,8 +103,11 @@ export default {
   body .v-data-table > .v-data-table__wrapper > table > tbody > tr > td,
   .v-data-table > .v-data-table__wrapper > table > thead > tr > td,
   .v-data-table > .v-data-table__wrapper > table > tfoot > tr > td {
-    font-size: 12px !important;
     padding-bottom: 12px;
+  }
+  body .money_table .v-data-table__mobile-row__header,
+  body .money_table .v-data-table__mobile-row__cell {
+    width: 100% !important;
   }
 }
 </style>
