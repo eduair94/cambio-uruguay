@@ -304,7 +304,14 @@
             </v-chip>
           </template>
           <template #item.distance="{ item }">
-            {{ formatDistance(item.distance) }}
+            <a
+              v-if="item.distance !== no_distance"
+              :href="getDistanceLink(item)"
+              target="_blank"
+              class="white--text"
+              >{{ formatDistance(item.distance) }}</a
+            >
+            <span v-else>-</span>
           </template>
           <template #item.diff="{ item }"> {{ item.diff }}% </template>
         </v-data-table>
@@ -448,6 +455,7 @@ export default {
       enableDistance: false,
       latitude: 0,
       longitude: 0,
+      no_distance: 9999999,
     }
   },
   head() {
@@ -497,16 +505,38 @@ export default {
     this.get_data()
   },
   methods: {
+    getDistanceLink({ distanceData, localData, origin }) {
+      const notFound = ['cambio_rynder', 'cambio_openn']
+      if (distanceData) {
+        const { latitude, longitude } = distanceData
+        if (!notFound.includes(origin)) {
+          return `https://www.google.com.uy/maps/search/${encodeURI(
+            localData.name
+          )}/@${latitude},${longitude},18.77z`
+        } else {
+          return `https://www.google.com.uy/maps/search/${latitude},${longitude}`
+        }
+      }
+    },
     fixTitle(text: string) {
       return text.replace('{{day}}', this.day)
     },
-    geoLocationSuccess(distances: any, latitude: number, longitude: number) {
+    geoLocationSuccess(
+      distances: any,
+      latitude: number,
+      longitude: number,
+      distanceData: any
+    ) {
       this.latitude = latitude
       this.longitude = longitude
       this.all_items = this.all_items.map((item) => {
         item.distance = distances[item.origin]
           ? distances[item.origin]
-          : 9999999
+          : this.no_distance
+        if (item.distance !== this.no_distance) {
+          item.distanceData = distanceData[item.distance]
+          console.log(item.distanceData)
+        }
         return item
       })
       this.updateTable()
@@ -523,7 +553,6 @@ export default {
       this.enableDistance = false
     },
     formatDistance(item: number) {
-      if (!item || item === 9999999) return '-'
       if (item >= 1000) {
         return Math.round(item / 1000.0) + ' km'
       } else if (item >= 100) {
@@ -548,7 +577,7 @@ export default {
     getHeaders() {
       const toReturn = [
         {
-          text: '',
+          text: 'Rank',
           value: 'pos',
           width: 'auto',
         },

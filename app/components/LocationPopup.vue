@@ -115,14 +115,31 @@ export default {
     changeMarker(e) {
       this.latitude = e.latlng.lat
       this.longitude = e.latlng.lng
+      this.reverseGeo()
     },
-    geoLocationSuccess(info) {
+    async reverseGeo() {
+      const api = 'f2b2a4c548e317a2ed6b4a570fd42241'
+      const url = `http://api.positionstack.com/v1/reverse?access_key=${api}&query=${this.latitude},${this.longitude}&limit=1`
+      const res = await this.$axios
+        .get(url)
+        .then((res) => res.data)
+        .catch(() => null)
+      if (res) {
+        const data = res.data
+        if (data.length) {
+          this.search = data[0].label
+        }
+        console.log('REVERSE GEO', data)
+      }
+    },
+    async geoLocationSuccess(info) {
       const latitude = info.coords.latitude
       const longitude = info.coords.longitude
       this.latitude = latitude
       this.longitude = longitude
       this.dialog = true
       this.loadingDistances = false
+      await this.reverseGeo()
       this.setMap()
     },
     async confirmGeo() {
@@ -131,13 +148,22 @@ export default {
           `https://cambio.shellix.cc/distances?latitude=${this.latitude}&longitude=${this.longitude}`
         )
         .then((res) => res.data)
-      this.$emit('geoLocationSuccess', distances, this.latitude, this.longitude)
+      const distanceData = distances.distanceData
+      this.$emit(
+        'geoLocationSuccess',
+        distances,
+        this.latitude,
+        this.longitude,
+        distanceData
+      )
       this.dialog = false
     },
     geoLocationError() {
       this.loadingDistances = false
       this.latitude = -34.88073035118606
       this.longitude = -56.167630709298805
+      this.search =
+        '2532 Boulevard General Jose Gervasio Artigas, Montevideo, Uruguay'
       this.setMap()
     },
     reset() {
