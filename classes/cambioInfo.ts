@@ -77,6 +77,7 @@ class CambioInfo extends Cambio {
       status: { $ne: 0 },
     });
     let origins = {};
+    let distanceData = {};
     for (let suc of sucs) {
       const distance = this.getDistance(
         { latitude, longitude },
@@ -87,6 +88,10 @@ class CambioInfo extends Cambio {
           if (!origins[suc.origin]) {
             origins[suc.origin] = [];
           }
+          distanceData[distance] = {
+            latitude: suc.latitude,
+            longitude: suc.longitude,
+          };
           origins[suc.origin].push(distance);
         }
       }
@@ -95,7 +100,7 @@ class CambioInfo extends Cambio {
     for (let key in origins) {
       res[key] = Math.min(...origins[key]);
     }
-    return res;
+    return {...res, distanceData};
   }
   async get_data(date?: Date, query?: any): Promise<CambioObj[]> {
     if (!date) {
