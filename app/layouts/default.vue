@@ -103,7 +103,7 @@ export default {
   body .v-data-table > .v-data-table__wrapper > table > tbody > tr > td,
   .v-data-table > .v-data-table__wrapper > table > thead > tr > td,
   .v-data-table > .v-data-table__wrapper > table > tfoot > tr > td {
-    font-size: 14px !important;
+    font-size: 12px !important;
     padding-bottom: 12px;
   }
 }
