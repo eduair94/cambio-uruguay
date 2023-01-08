@@ -106,6 +106,13 @@
                     >
                       <v-icon>mdi-download</v-icon>
                     </v-btn>
+                    <a
+                      ref="pwa_open"
+                      style="display: none"
+                      target="_blank"
+                      href="https://cambio-uruguay.com"
+                      >PWA</a
+                    >
                     <v-btn
                       aria-label="compartir"
                       color="blue darken-1"
@@ -677,8 +684,8 @@ export default {
         if (outcome === 'accepted') {
           ;(window as any).deferredPrompt = null
         }
-      } else {
-        alert('App already installed / rejected')
+      } else if (this.$refs.pwa_open) {
+        this.$refs.pwa_open.click()
       }
     },
     get_text() {
