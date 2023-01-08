@@ -118,8 +118,7 @@ export default {
       this.reverseGeo()
     },
     async reverseGeo() {
-      const api = 'f2b2a4c548e317a2ed6b4a570fd42241'
-      const url = `http://api.positionstack.com/v1/reverse?access_key=${api}&query=${this.latitude},${this.longitude}&limit=1`
+      const url = `http://cambio.shellix.cc/position_stack?query=${this.latitude},${this.longitude}&limit=1`
       const res = await this.$axios
         .get(url)
         .then((res) => res.data)
