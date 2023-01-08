@@ -1,7 +1,8 @@
-import colors from 'vuetify/es5/util/colors'
-import pt from 'vuetify/src/locale/pt'
-import es from 'vuetify/src/locale/es'
-import translations from './translations'
+import colors from 'vuetify/es5/util/colors';
+import es from 'vuetify/lib/locale/es';
+import pt from 'vuetify/lib/locale/pt';
+
+import translations from './translations';
 
 export default {
   type: 'module',
@@ -82,14 +83,38 @@ export default {
         name: 'keywords',
         content:
           'cotizaciones uruguay, casa cambiaria, cambio moneda, cambio dólares, cambio pesos argentinos, cambio reales, cambio euros, varlix, prex, gales, cambio montevideo, cambio'
+      },
+      {
+        name: 'msapplication-TileColor',
+        content: '#3B9B85'
+      },
+      {
+        name: 'theme-color',
+        content: '#3B9B85'
       }
     ],
     link: [
       {
-        hid: 'icon',
+        rel: 'apple-touch-icon',
+        sizes: '180x180',
+        href: '/apple-touch-icon.png',
+      },
+      {
         rel: 'icon',
-        type: 'image/x-icon',
-        href: '/icons/favicon-32x32.png'
+        type: 'image/png',
+        sizes: '32x32',
+        href: '/favicon-32x32.png',
+      },
+      {
+        rel: 'icon',
+        type: 'image/png',
+        sizes: '16x16',
+        href: '/favicon-16x16.png',
+      },
+      {
+        rel: 'mask-icon',
+        href: '/safari-pinned-tab.svg',
+        color: '#5bbad5',
       },
       {
         href: 'https://cdn.maptiler.com/maptiler-geocoder/v1.1.0/maptiler-geocoder.css',
