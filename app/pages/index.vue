@@ -233,6 +233,7 @@
                     <span>{{ get_text() }}</span
                     ><br />
                     <v-alert
+                      v-if="amount"
                       class="green darken-4 mb-0 mt-3"
                       type="success"
                       dense
