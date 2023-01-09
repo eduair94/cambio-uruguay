@@ -714,6 +714,7 @@ export default {
       }
     },
     getColor({ pos }) {
+      if (this.amount === 0) return ''
       if (pos === 1) return 'green darken-4'
       if (pos === this.lastPos) return 'red darken-4'
       return ''
