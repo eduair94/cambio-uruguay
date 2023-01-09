@@ -10,8 +10,8 @@ const main = async () => {
       departments.push(el.Departamento);
     }
   });
-  await cambio_info.updateOne("cambilex", { departments });
-  console.log(departments);
+  const res = await cambio_info.updateOne("cambilex", { departments });
+  console.log(res, departments);
 };
 
 main();
