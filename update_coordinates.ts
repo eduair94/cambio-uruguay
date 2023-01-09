@@ -25,6 +25,12 @@ async function main() {
         longitude: coordinates[1],
         status: status,
       };
+      if (row.Nombre) {
+        json.Nombre = row.Nombre;
+      }
+      if (row.Telefono) {
+        json.Telefono = row.Telefono;
+      }
       console.log(json, id, row.Local);
       if (findSuc) {
         await cambio_info.updateSuc(id, json);
