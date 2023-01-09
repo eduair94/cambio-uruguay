@@ -638,11 +638,13 @@ export default {
       } else {
         savePercent = ((minValue - maxValue) / maxValue) * 100
       }
+      const saveAmount =
+        Math.abs((maxValue - minValue) * this.amount).toFixed(2) + ' UYU'
       const s = savePercent.toFixed(2)
       const loc = {
-        es: `Puedes ahorrar hasta un ${s}% utilizando nuestra app.`,
-        en: `You can save up to ${s}% by using our app`,
-        pt: `Você pode economizar até ${s}% ao utilizar nosso aplicativo`,
+        es: `Puedes ahorrar hasta un ${s}% (${saveAmount}) utilizando nuestra app.`,
+        en: `You can save up to ${s}% (${saveAmount}) by using our app`,
+        pt: `Você pode economizar até ${s}% (${saveAmount}) ao utilizar nosso aplicativo`,
       }
       return loc[this.$i18n.locale]
     },
