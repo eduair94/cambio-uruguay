@@ -9,24 +9,6 @@ class CambioBrou extends Cambio {
   website = "https://www.brou.com.uy/cotizaciones";
   favicon = "https://www.brou.com.uy";
 
-  similar_change = [
-    {
-      name: "Cambio Romántico",
-      bcu: "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2474",
-      website: "https://www.cambioromantico.com/",
-    },
-    {
-      name: "Cambio Argentino",
-      bcu: "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2474",
-      website: "https://www.cambioargentino.uy/",
-    },
-    {
-      name: "Cambio Federal",
-      bcu: "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2375",
-      website: "https://cambiofederal.com.uy/",
-    },
-  ];
-
   private conversions = {
     Dólar: {
       code: "USD",
