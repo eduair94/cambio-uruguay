@@ -59,7 +59,7 @@ class CambioInfo extends Cambio {
     return res;
   }
   updateOne(origin: string, json) {
-    return this.db.updateOne({ origin }, json);
+    return this.db.updateOneAlt({ origin }, json);
   }
   get_bcu() {
     const data = {};
