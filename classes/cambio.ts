@@ -1,9 +1,9 @@
 import axios from "axios";
 import { CheerioAPI, load } from "cheerio";
+import getDistance from "geolib/es/getDistance";
 import moment from "moment-timezone";
 import { CambioObj } from "../interfaces/Cambio";
 import { MongooseServer, Schema } from "./database";
-import getDistance from "geolib/es/getDistance";
 moment.tz.setDefault("America/Uruguay");
 
 abstract class Cambio {
@@ -29,22 +29,16 @@ abstract class Cambio {
 
   getMaps() {
     if (this.maps) return this.maps;
-    return (
-      "https://www.google.com.uy/maps/search/" +
-      encodeURI(this.name.toLowerCase())
-    );
+    return "https://www.google.com.uy/maps/search/" + encodeURI(this.name.toLowerCase());
   }
 
   async getLocation(n1: string, n2: string) {
-    const url =
-      "https://www.bcu.gub.uy/_layouts/15/BCU.Registros/handler/RegistrosHandler.ashx?op=getsucursalbynroinstitucionandnrosucursal";
+    const url = "https://www.bcu.gub.uy/_layouts/15/BCU.Registros/handler/RegistrosHandler.ashx?op=getsucursalbynroinstitucionandnrosucursal";
     const data = { KeyValuePairs: { NroInstitucion: n1, NroSucursal: n2 } };
     const headers = {
       "Content-Type": "application/json; charset=UTF-8",
     };
-    const res = await axios
-      .post(url, data, { headers })
-      .then((res) => res.data);
+    const res = await axios.post(url, data, { headers }).then((res) => res.data);
     return res;
   }
 
@@ -52,10 +46,15 @@ abstract class Cambio {
     await this.db_suc.getAnUpdateEntryAlt({ id }, json);
   }
 
-  getDistance(
-    origin: { latitude: number; longitude: number },
-    end: { latitude: number; longitude: number },
-  ) {
+  async createSuc(id: string, json: any) {
+    await this.db_suc.getAnUpdateEntryAlt({ id }, json);
+  }
+
+  async findSuc(id: string) {
+    await this.db_suc.findEntry({ id });
+  }
+
+  getDistance(origin: { latitude: number; longitude: number }, end: { latitude: number; longitude: number }) {
     return getDistance(origin, end);
   }
 
@@ -80,10 +79,7 @@ abstract class Cambio {
       const locInfo = await this.getLocation(intNumber, loc);
       const department = locInfo.sucursal.Departamento;
       const id = intNumber + "-" + loc;
-      await this.db_suc.getAnUpdateEntryAlt(
-        { id },
-        { origin: this.origin, ...locInfo.sucursal },
-      );
+      await this.db_suc.getAnUpdateEntryAlt({ id }, { origin: this.origin, ...locInfo.sucursal });
       if (department && !departments.includes(department)) {
         departments.push(department);
       }
@@ -104,7 +100,7 @@ abstract class Cambio {
         buy: { type: Number },
         sell: { type: Number },
         date: { type: Date },
-      }),
+      })
     );
     this.db_suc = MongooseServer.getInstance(
       "bcu_suc",
@@ -113,8 +109,8 @@ abstract class Cambio {
           id: { type: String, unique: true },
           origin: { type: String },
         },
-        { strict: false },
-      ),
+        { strict: false }
+      )
     );
   }
 
@@ -193,7 +189,7 @@ abstract class Cambio {
         code: data.code,
         type: data.type,
       },
-      data,
+      data
     );
     return db;
   }
