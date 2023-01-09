@@ -20,7 +20,8 @@
     "add_itau": "ts-node add_itau",
     "add_new": "ts-node add_new",
     "a_sheet": "ts-node autocomplete_sheet.ts",
-    "add_cambilex": "ts-node add_cambilex.ts"
+    "add_cambilex": "ts-node add_cambilex.ts",
+    "fix_depto_cambilex": "ts-node fix_depto_cambilex.ts"
   },
   "author": "",
   "license": "ISC",
