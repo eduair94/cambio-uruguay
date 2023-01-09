@@ -18,6 +18,7 @@ async function main() {
       const name = findSuc.Nombre;
       if (phone) row.Telefono = phone;
       if (name) row.Nombre = name;
+      console.log("Row", row);
       await row.save();
     }
   }
