@@ -184,6 +184,9 @@ export default {
       })
     },
     getHref(item: any) {
+      if (item.map) {
+        return item.map
+      }
       // Fix BUG Cambial in BCU.
       if (this.origin === 'cambial') {
         return (
