@@ -36,6 +36,9 @@ async function main() {
       if (!findSuc.NroSucursal) {
         json.NroSucursal = id.split(/-(.*)/s)[1];
       }
+      if (row.Mapa) {
+        json.map = row.Mapa;
+      }
       if (findSuc) {
         await cambio_info.updateSuc(id, json);
       } else {
