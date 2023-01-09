@@ -300,6 +300,7 @@
               :location="location"
               :latitude="latitude"
               :longitude="longitude"
+              :local-data="item.localData"
             />
           </template>
           <template #item.localData.bcu="{ item }">
@@ -375,6 +376,8 @@
 </template>
 
 <script lang="ts">
+import { notFound } from '../services/not_found'
+
 export default {
   name: 'HomePage',
   components: {
@@ -512,9 +515,7 @@ export default {
     this.get_data()
   },
   methods: {
-    getDistanceLink({ distanceData, localData, origin, map }) {
-      if (map) return map
-      const notFound = ['cambio_rynder', 'cambio_openn']
+    getDistanceLink({ distanceData, localData, origin }) {
       if (distanceData) {
         const { latitude, longitude, map } = distanceData
         if (map) return map

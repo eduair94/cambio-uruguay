@@ -108,6 +108,7 @@
 </template>
 
 <script lang="ts">
+import { notFound } from '../services/not_found'
 export default {
   props: {
     type: {
@@ -136,6 +137,10 @@ export default {
       required: false,
       default: 0,
     },
+    localData: {
+      type: Object,
+      required: true,
+    },
   },
   data() {
     return {
@@ -148,10 +153,16 @@ export default {
     }
   },
   methods: {
-    getMaps(item) {
+    getMaps(item: any) {
       const latitude = item.latitude
       const longitude = item.longitude
-      return `https://www.google.com.uy/maps/search/${latitude},${longitude}`
+      if (!notFound.includes(origin)) {
+        return `https://www.google.com.uy/maps/search/${encodeURI(
+          this.localData.name
+        )}/@${latitude},${longitude},18.77z`
+      } else {
+        return `https://www.google.com.uy/maps/search/${latitude},${longitude}`
+      }
     },
     formatDistance(item: number) {
       if (!item || item === 9999999) return '-'
