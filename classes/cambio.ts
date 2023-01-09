@@ -51,7 +51,8 @@ abstract class Cambio {
   }
 
   async findSuc(id: string) {
-    await this.db_suc.findEntry({ id });
+    const res = await this.db_suc.findEntry({ id });
+    return res;
   }
 
   getDistance(origin: { latitude: number; longitude: number }, end: { latitude: number; longitude: number }) {
