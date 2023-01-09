@@ -24,6 +24,7 @@ class CambioArgentino extends Cambio {
         })
         .filter((el) => el.type !== "EBROU");
     } else {
+      console.log("No exchange found argentino");
       throw new Error("No exchange found");
     }
   }
