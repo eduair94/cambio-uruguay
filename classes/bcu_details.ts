@@ -60,6 +60,7 @@ class BCU_Details {
           };
           await this.db.getAnUpdateEntry({ origin }, f);
         }
+        console.log("Updated", origin, idx);
       } catch (e) {
         console.error(e);
         console.log(origin, e.message);
