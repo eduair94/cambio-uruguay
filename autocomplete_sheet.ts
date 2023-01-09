@@ -12,6 +12,7 @@ async function main() {
   const rows: GoogleSpreadsheetRow[] = await sheet.getRows();
   for (let row of rows) {
     const id = row.ID;
+    console.log("ID", id);
     const findSuc: any = await cambio_info.findSuc(id);
     if (findSuc) {
       const phone = findSuc.Telefono;
@@ -20,6 +21,8 @@ async function main() {
       if (name) row.Nombre = name;
       console.log("Row", row);
       await row.save();
+    } else {
+      console.log("No suc", id);
     }
   }
   console.log("FINISH");
