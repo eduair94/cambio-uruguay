@@ -17,9 +17,10 @@ async function main() {
     if (coordinates) {
       const findSuc: any = await cambio_info.findSuc(id);
       coordinates = coordinates.split(",").map((el) => parseFloat(el.trim()));
-      const json = {
+      let json: any = {
         Direccion: row["Dirección"],
         Departamento: row.Departamento,
+        Localidad: row.Localidad,
         latitude: coordinates[0],
         longitude: coordinates[1],
         status: status,
@@ -28,6 +29,7 @@ async function main() {
       if (findSuc) {
         await cambio_info.updateSuc(id, json);
       } else {
+        json.origin = row["Local"].toLowerCase();
         console.log("Create new suc", id, json);
         await cambio_info.createSuc(id, json);
       }
