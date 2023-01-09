@@ -1,3 +1,4 @@
+import BCU_Details from "./classes/bcu_details";
 import { cambio_info } from "./classes/cambioInfo";
 import { MongooseServer } from "./classes/database";
 
@@ -10,7 +11,7 @@ const main = async () => {
       departments.push(el.Departamento);
     }
   });
-  const res = await cambio_info.updateOne("cambilex", { departments });
+  const res = await new BCU_Details().updateOne("cambilex", { departments });
   console.log(res, departments);
 };
 
