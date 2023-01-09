@@ -17,7 +17,8 @@
     "sheet_locations": "ts-node sync_locations_sheet",
     "coordinates": "ts-node update_coordinates.ts",
     "cambilex": "ts-node cambilex_sucs",
-    "add_itau": "ts-node add_itau"
+    "add_itau": "ts-node add_itau",
+    "add_new": "ts-node add_new"
   },
   "author": "",
   "license": "ISC",

@@ -17,7 +17,7 @@ class CambioInfo extends Cambio {
   async getAllMarkets(): Promise<any> {
     return this.db_suc.allEntries({});
   }
-  async getMarkets(entry:any): Promise<any> {
+  async getMarkets(entry: any): Promise<any> {
     return this.db_suc.allEntries(entry);
   }
   async get_local_data() {
@@ -79,10 +79,7 @@ class CambioInfo extends Cambio {
     let origins = {};
     let distanceData = {};
     for (let suc of sucs) {
-      const distance = this.getDistance(
-        { latitude, longitude },
-        { latitude: suc.latitude, longitude: suc.longitude },
-      );
+      const distance = this.getDistance({ latitude, longitude }, { latitude: suc.latitude, longitude: suc.longitude });
       if (distance && !isNaN(distance)) {
         if (suc.origin) {
           if (!origins[suc.origin]) {
@@ -100,16 +97,13 @@ class CambioInfo extends Cambio {
     for (let key in origins) {
       res[key] = Math.min(...origins[key]);
     }
-    return {...res, distanceData};
+    return { ...res, distanceData };
   }
   async get_data(date?: Date, query?: any): Promise<CambioObj[]> {
     if (!date) {
       date = moment().startOf("day").toDate();
     }
-    const obj = await this.db.allEntriesSort(
-      { date },
-      { code: -1, sell: 1, buy: 1 },
-    );
+    const obj = await this.db.allEntriesSort({ date }, { code: -1, sell: 1, buy: 1 });
     return obj as any;
   }
 }

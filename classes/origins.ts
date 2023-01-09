@@ -7,7 +7,9 @@ import CambioCambilex from "./cambios/cambilex";
 import Cambio18 from "./cambios/cambio18";
 import Cambio3 from "./cambios/cambio_3";
 import CambioAguerrebere from "./cambios/cambio_aguerrebere";
+import CambioArgentino from "./cambios/cambio_argentino";
 import CambioAspen from "./cambios/cambio_aspen";
+import CambioFederal from "./cambios/cambio_federal";
 import CambioFenix from "./cambios/cambio_fenix";
 import CambioIngles from "./cambios/cambio_ingles";
 import CambioMaiorano from "./cambios/cambio_maiorano";
@@ -22,6 +24,7 @@ import CambioPando from "./cambios/cambio_pando";
 import CambioPernas from "./cambios/cambio_pernas";
 import CambioPrincipal from "./cambios/cambio_principal";
 import CambioRegul from "./cambios/cambio_regul";
+import CambioRomantico from "./cambios/cambio_romantico";
 import CambioSicurezza from "./cambios/cambio_sicurezza";
 import CambioSir from "./cambios/cambio_sir";
 import CambioVelso from "./cambios/cambio_velso";
@@ -40,6 +43,9 @@ import Tradelix from "./cambios/tradelix";
 import CambioVarlix from "./cambios/varlix";
 
 export const origins = {
+  cambio_argentino: CambioArgentino,
+  cambio_federal: CambioFederal,
+  cambio_romantico: CambioRomantico,
   cambio_aguerrebere: CambioAguerrebere,
   itau: Itau,
   cambio_principal: CambioPrincipal,
