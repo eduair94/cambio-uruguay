@@ -4,6 +4,18 @@ import { MongooseServer } from "./classes/database";
 import { sleep } from "./config/config";
 import * as credentials from "./sheet_key.json";
 
+async function saveRow(row: GoogleSpreadsheetRow, att = 0) {
+  try {
+    await row.save();
+    await sleep(500);
+  } catch (e) {
+    setTimeout(() => {
+      console.log("Attempts", att);
+      this.saveRow(row, att + 1);
+    }, 500 * att);
+  }
+}
+
 async function main() {
   await MongooseServer.startConnectionPromise();
   const document = new GoogleSpreadsheet("1yKfUC3EZbpiFD-6yJuoUewgjjzA2yv9zhy7a0G2zD30");
@@ -24,8 +36,9 @@ async function main() {
       if (!row.Telefono && !row.Nombre) {
         if (phone) row.Telefono = phone;
         if (name) row.Nombre = name;
-        await row.save();
-        await sleep(500);
+        if (phone || name) {
+          saveRow(row);
+        }
       }
     } else {
       console.log("No suc", id);
