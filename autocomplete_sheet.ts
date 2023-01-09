@@ -11,7 +11,7 @@ async function saveRow(row: GoogleSpreadsheetRow, att = 0) {
   } catch (e) {
     setTimeout(() => {
       console.log("Attempts", att);
-      this.saveRow(row, att + 1);
+      saveRow(row, att + 1);
     }, 500 * att);
   }
 }
@@ -37,7 +37,7 @@ async function main() {
         if (phone) row.Telefono = phone;
         if (name) row.Nombre = name;
         if (phone || name) {
-          saveRow(row);
+          await saveRow(row);
         }
       }
     } else {
