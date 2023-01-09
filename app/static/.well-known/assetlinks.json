@@ -1,0 +1,6 @@
+[{
+        "relation": ["delegate_permission/common.handle_all_urls"],
+        "target" : { "namespace": "android_app", "package_name": "com.cambio_uruguay.twa",
+                     "sha256_cert_fingerprints": ["C8:0C:02:3F:9C:62:64:DA:E6:92:2F:A2:94:BD:2C:EF:F2:CB:39:A6:AD:B9:4B:4A:D5:3E:23:43:DF:70:17:33"] }
+      }
+]
