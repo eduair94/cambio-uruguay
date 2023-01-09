@@ -19,6 +19,8 @@ const main = async () => {
       Dirección: el.Direccion,
       Telefono: el.Telefono,
       Nombre: el.Nombre,
+      Coordenadas: el.latitude + "," + el.longitude,
+      Status: 1,
     };
   });
   const res = await sheet.addRows(data);
