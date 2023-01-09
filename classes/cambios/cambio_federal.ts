@@ -10,7 +10,7 @@ class CambioFederal extends Cambio {
   async get_data(): Promise<CambioObj[]> {
     const today = new Date();
     const current_date = this.getCurrentDateObj(today);
-    const data: any = await this.db.findEntry({ origin: "brou", date: current_date });
+    const data: any = await this.db.allEntries({ origin: "brou", date: current_date });
     if (data) {
       return JSON.parse(JSON.stringify(data))
         .map((el: CambioObj) => {
