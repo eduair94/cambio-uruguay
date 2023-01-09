@@ -154,6 +154,7 @@ export default {
   },
   methods: {
     getMaps(item: any) {
+      if (item.map) return item.map
       const latitude = item.latitude
       const longitude = item.longitude
       if (!notFound.includes(origin)) {
