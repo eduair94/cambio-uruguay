@@ -516,7 +516,8 @@ export default {
       if (map) return map
       const notFound = ['cambio_rynder', 'cambio_openn']
       if (distanceData) {
-        const { latitude, longitude } = distanceData
+        const { latitude, longitude, map } = distanceData
+        if (map) return map
         if (!notFound.includes(origin)) {
           return `https://www.google.com.uy/maps/search/${encodeURI(
             localData.name
