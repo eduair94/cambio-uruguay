@@ -31,7 +31,9 @@ async function main() {
       if (row.Telefono) {
         json.Telefono = row.Telefono;
       }
-      console.log(json, id, row.Local);
+      if (!findSuc.NroSucursal) {
+        json.NroSucursal = id.split(/-(.*)/s)[1];
+      }
       if (findSuc) {
         await cambio_info.updateSuc(id, json);
       } else {
