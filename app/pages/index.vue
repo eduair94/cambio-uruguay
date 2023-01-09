@@ -466,6 +466,7 @@ export default {
       latitude: 0,
       longitude: 0,
       no_distance: 9999999,
+      lastPos: undefined,
     }
   },
   head() {
@@ -710,17 +711,9 @@ export default {
         return loc[this.$i18n.locale]
       }
     },
-    getColor({ index, buy, sell }) {
-      if (index === 0) return 'green darken-4'
-      if (index === this.items.length - 1) return 'red darken-4'
-      if (this.wantTo === 'sell') {
-        if (buy === this.items[0].buy) return 'green darken-4'
-        if (buy === this.items[this.items.length - 1].buy) return 'red darken-4'
-      } else {
-        if (sell === this.items[0].sell) return 'green darken-4'
-        if (sell === this.items[this.items.length - 1].sell)
-          return 'red darken-4'
-      }
+    getColor({ pos }) {
+      if (pos === 1) return 'green darken-4'
+      if (pos === this.lastPos) return 'red darken-4'
       return ''
     },
     formatMoney(number) {
@@ -790,16 +783,18 @@ export default {
           location: this.location,
         },
       })
+      const amount = this.amount
+      const wanToSell = this.wantTo === 'sell'
       this.items.sort((a, b) => {
-        if (this.wantTo === 'buy') {
-          return b.sell <= a.sell ? 1 : -1
+        if (wanToSell) {
+          if (b.buy === a.buy) return 0
+          return b.buy <= a.buy ? -1 : 1
         }
-        return b.buy <= a.buy ? -1 : 1
+        if (b.sell === a.sell) return 0
+        return b.sell <= a.sell ? 1 : -1
       })
       let pos = 1
       this.items = (this.items as any[]).map((el, index, arr) => {
-        el.index = index
-        const wanToSell = this.wantTo === 'sell'
         if (index !== 0) {
           if (wanToSell) {
             if (el.buy !== arr[index - 1].buy) {
@@ -810,12 +805,13 @@ export default {
           }
         }
         el.pos = pos
-        const sell = this.amount * el.sell
-        const buy = this.amount * el.buy
-        el.amount = wanToSell ? buy : sell
+        const sell = amount * el.buy
+        const buy = amount * el.sell
+        el.amount = wanToSell ? sell : buy
         el.diff = (((sell - buy) / buy) * 100).toFixed(2)
         return el
       })
+      this.lastPos = pos
     },
     finishLoading() {
       this.$nextTick(() => {
