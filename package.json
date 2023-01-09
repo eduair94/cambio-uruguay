@@ -19,7 +19,8 @@
     "cambilex": "ts-node cambilex_sucs",
     "add_itau": "ts-node add_itau",
     "add_new": "ts-node add_new",
-    "a_sheet": "ts-node autocomplete_sheet.ts"
+    "a_sheet": "ts-node autocomplete_sheet.ts",
+    "add_cambilex": "ts-node add_cambilex.ts"
   },
   "author": "",
   "license": "ISC",
@@ -44,6 +45,7 @@
   },
   "devDependencies": {
     "@types/express": "^4.17.13",
-    "@types/google-spreadsheet": "^3.3.0"
+    "@types/google-spreadsheet": "^3.3.0",
+    "nuxt-twa-module": "^1.3.1"
   }
 }
