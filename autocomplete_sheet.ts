@@ -24,7 +24,6 @@ async function main() {
       if (!row.Telefono && !row.Nombre) {
         if (phone) row.Telefono = phone;
         if (name) row.Nombre = name;
-        console.log("Row", row);
         await row.save();
         await sleep(500);
       }
