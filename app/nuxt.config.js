@@ -259,6 +259,9 @@ export default {
 
   // PWA module configuration: https://go.nuxtjs.dev/pwa
   pwa: {
+    icon: {
+      purpose: 'maskable'
+    },
     manifest: {
       theme_color: '#272727',
       start_url: 'https://cambio-uruguay.com',
@@ -276,7 +279,7 @@ export default {
         process.env.NODE_ENV === 'production'
           ? ['https://arc.io/arc-sw-core.js']
           : [],
-      autoRegister: true
+      autoRegister: true,
     }
   },
 
