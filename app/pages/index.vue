@@ -512,7 +512,8 @@ export default {
     this.get_data()
   },
   methods: {
-    getDistanceLink({ distanceData, localData, origin }) {
+    getDistanceLink({ distanceData, localData, origin, map }) {
+      if (map) return map
       const notFound = ['cambio_rynder', 'cambio_openn']
       if (distanceData) {
         const { latitude, longitude } = distanceData

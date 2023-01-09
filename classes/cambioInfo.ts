@@ -88,6 +88,7 @@ class CambioInfo extends Cambio {
           distanceData[distance] = {
             latitude: suc.latitude,
             longitude: suc.longitude,
+            map: suc.map,
           };
           origins[suc.origin].push(distance);
         }
