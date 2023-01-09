@@ -10,7 +10,9 @@ async function main() {
   await document.loadInfo();
   const sheet = document.sheetsByIndex[0];
   const rows = await sheet.getRows();
+  let idx = 1;
   for (let row of rows) {
+    console.log("Pos", idx, rows.length);
     const id = row.ID;
     let coordinates = row.Coordenadas;
     const status = parseInt(row.Status);
@@ -47,6 +49,7 @@ async function main() {
       };
       await cambio_info.updateSuc(id, json);
     }
+    idx++;
   }
   console.log("FINISH");
 }
