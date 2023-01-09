@@ -8,7 +8,7 @@ const e = process.env;
 class CambioPrex extends Cambio {
   name = "Prex";
   bcu = "https://www.bcu.gub.uy/Sistema-de-Pagos/Paginas/prex.aspx";
-  website = `https://www.prexcard.com/cambiomoneda/${e.prex_user_id}`;
+  website = `https://www.prexcard.com`;
   favicon = "https://www.prexcard.com";
   async prex_ar() {
     const url = "https://www.prexcard.com/api/prex_a_prex_internacional_get_cotizacion_pais";
