@@ -27,7 +27,7 @@ const translation = {
     compra: 'Buy',
     venta: 'Sell',
     distancia: 'Distance',
-    buscarSucursal: 'Find a branch',
+    buscarSucursal: 'Branches',
     infoPrestamos: 'Loan',
     consulta:
       'If you have any problem / question / proposal please send an email to ',
@@ -83,7 +83,7 @@ const translation = {
     compra: 'Compra',
     venta: 'Venda',
     distancia: 'Distância',
-    buscarSucursal: 'Encontre uma filial',
+    buscarSucursal: 'Filiais',
     infoPrestamos: 'Empréstimos',
     consulta:
       'Se você tiver algum problema / dúvidas / sugestões, envie um e-mail para ',
@@ -140,7 +140,7 @@ const translation = {
     compra: 'Compra',
     venta: 'Venta',
     distancia: 'Distancia',
-    buscarSucursal: 'Buscar sucursal',
+    buscarSucursal: 'Sucursales',
     infoPrestamos: 'Préstamos',
     consulta:
       'Ante cualquier problema / consulta / propuesta enviar correo electrónico a ',

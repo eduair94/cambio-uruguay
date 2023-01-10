@@ -287,7 +287,9 @@
             <span>{{ item.sell.toFixed(2) }}</span>
           </template>
           <template #item.condition="{ item }">
-            <div>{{ item.condition }}</div>
+            <div v-if="item.condition" class="py-md-1">
+              {{ item.condition }}
+            </div>
           </template>
           <template #item.localData.website="{ item }">
             <a
@@ -466,7 +468,7 @@ export default {
       show_install: false,
       wantTo: 'buy',
       notConditional: false,
-      day: new Date().toJSON().slice(0, 10),
+      day: new Date().toLocaleDateString(),
       code: '',
       notInterBank: true,
       items: [],
@@ -820,7 +822,7 @@ export default {
         const sell = amount * el.buy
         const buy = amount * el.sell
         el.amount = wanToSell ? sell : buy
-        el.diff = (((sell - buy) / buy) * 100).toFixed(2)
+        el.diff = (((buy - sell) / sell) * 100).toFixed(2)
         return el
       })
       this.lastPos = pos
@@ -909,9 +911,6 @@ body {
   body .container {
     max-width: 100% !important;
   }
-  .button_section {
-    gap: 5px !important;
-  }
 }
 
 .v-data-table__mobile-row {
@@ -944,5 +943,16 @@ body {
 .donation_logo:hover {
   transform: scale(1.05);
   filter: drop-shadow(0px 0px 3px black);
+}
+
+@media (max-width: 768px) {
+  .button_section {
+    gap: 5px !important;
+    button,
+    a {
+      min-width: 30px !important;
+      max-width: calc(80vw / 5);
+    }
+  }
 }
 </style>

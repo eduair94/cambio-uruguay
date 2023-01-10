@@ -49,13 +49,15 @@
         <v-list-item>
           <v-list-item-content>
             <v-list-item-title>{{ $t('telefono') }}</v-list-item-title>
-            {{ d.phone }}</v-list-item-content
-          >
+            <a v-if="d.phone" class="white--text" :href="'tel:' + d.phone">{{
+              d.phone
+            }}</a>
+          </v-list-item-content>
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
             <v-list-item-title>{{ $t('sitioWeb') }}</v-list-item-title>
-            {{ d.website }}
+            <span v-html="get_linked(d.website)"></span>
           </v-list-item-content>
         </v-list-item>
         <v-list-item v-if="d.email">
@@ -87,6 +89,7 @@
 </template>
 
 <script lang="ts">
+import Autolinker from 'autolinker'
 export default {
   props: {
     item: {
@@ -102,6 +105,10 @@ export default {
     }
   },
   methods: {
+    get_linked(link: string) {
+      const linkedText = Autolinker.link(link, { className: 'white--text' })
+      return linkedText
+    },
     get_map_link(address: string) {
       return 'https://www.google.com.uy/maps/place/' + encodeURI(address)
     },
