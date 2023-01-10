@@ -100,6 +100,14 @@
                   </div>
                   <div class="button_section mb-3">
                     <v-btn
+                      color="#78C257"
+                      link
+                      target="_blank"
+                      href="https://play.google.com/store/apps/details?id=com.cambio_uruguay.twa&pli=1"
+                    >
+                      <v-icon> mdi-android </v-icon>
+                    </v-btn>
+                    <v-btn
                       aria-label="instalar"
                       color="blue darken-2"
                       @click="install_app"
@@ -900,6 +908,9 @@ body {
 @media (max-width: 1750px) {
   body .container {
     max-width: 100% !important;
+  }
+  .button_section {
+    gap: 5px !important;
   }
 }
 
