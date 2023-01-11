@@ -28,6 +28,17 @@ const main = async () => {
     const res = await cambio_info.get_distances(latitude, longitude);
     return res;
   });
+  server.postJson("geocoding", async (req: Request): Promise<any> => {
+    const address = req.body.address as string;
+    const url = `https://nominatim.openstreetmap.org/search.php?q=${encodeURIComponent(address)}&polygon_geojson=1&format=jsonv2`;
+    return axios
+      .get(url)
+      .then((res) => res.data)
+      .catch((e) => {
+        console.log(e);
+        return [];
+      });
+  });
   server.getJson("bcu", async (req: Request): Promise<any> => {
     const res = cambio_info.get_bcu();
     return res;
