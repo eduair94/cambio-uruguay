@@ -54,6 +54,10 @@ const translation = {
     confirmarUbicacion: 'Confirm location',
     cerrar: 'Close',
     confirmar: 'Confirm',
+    prex_condition:
+      'Requires the use of the prex card, this must be requested on their website.',
+    ebrou_condition:
+      'Requires a web account at BROU bank, you must open a savings account at BROU bank.',
   },
   pt: {
     welcome:
@@ -111,6 +115,10 @@ const translation = {
     confirmarUbicacion: 'Confirmar localização',
     cerrar: 'Fechar',
     confirmar: 'Confirme',
+    prex_condition:
+      'Exigir a utilização do cartão prex, este deve ser solicitado no seu website.',
+    ebrou_condition:
+      'Exigir uma conta web no banco BROU, uma conta poupança deve ser aberta no banco BROU.',
   },
   es: {
     welcome:
@@ -168,6 +176,10 @@ const translation = {
     confirmarUbicacion: 'Confirmar ubicación',
     cerrar: 'Cerrar',
     confirmar: 'Confirmar',
+    prex_condition:
+      'Requiere del uso de la tarjeta prex, debe ser solicitada en su sitio web.',
+    ebrou_condition:
+      'Requiere de cuenta web en el banco BROU, debe abrirse una caja de ahorro en dicho banco',
   },
 }
 
