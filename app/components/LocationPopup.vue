@@ -23,13 +23,22 @@
           </v-btn>
         </v-toolbar>
         <v-card-text v-if="latitude">
-          <div class="adress_lookup mt-3">
+          <div class="adress_lookup mt-3 d-flex">
             <input
               id="search"
+              ref="search"
               v-model="search"
               :placeholder="$t('direccion')"
               type="text"
+              @keyup.enter="onEnter(search)"
             />
+            <v-btn
+              class="adress_lookup_btn"
+              color="primary"
+              @click="onEnter(search)"
+            >
+              Search
+            </v-btn>
           </div>
           <div class="location_map">
             <client-only>
@@ -65,6 +74,7 @@ export default {
   data() {
     return {
       loadingDistances: false,
+      prevResult: '',
       dialog: false,
       latitude: 0,
       search: '',
@@ -80,6 +90,21 @@ export default {
     },
   },
   methods: {
+    async onEnter(value) {
+      startLoading()
+      const data = await this.$axios
+        .post('https://cambio.shellix.cc/geocoding', { address: value })
+        .then((res) => res.data)
+        .catch((e) => console.log(e))
+      if (data && data.length) {
+        this.latitude = parseFloat(data[0].lat)
+        this.longitude = parseFloat(data[0].lon)
+        stopLoading()
+        return true
+      }
+      stopLoading()
+      return false
+    },
     searchAddress() {
       const geocoder = new maptiler.Geocoder({
         input: 'search',
@@ -87,10 +112,12 @@ export default {
       })
       geocoder.setLanguage(this.$i18n.locale)
       geocoder.setProximity([this.longitude, this.latitude])
-      geocoder.on('select', (item) => {
-        this.search = item.place_name
-        this.latitude = item.center[1]
-        this.longitude = item.center[0]
+      geocoder.on('select', async (item) => {
+        this.$nextTick(() => {
+          this.$refs.search.value = this.search
+          this.latitude = item.center[1]
+          this.longitude = item.center[0]
+        })
       })
     },
     setMap() {
@@ -166,6 +193,7 @@ export default {
       this.setMap()
     },
     reset() {
+      console.log('RESET')
       this.search = ''
       navigator.geolocation.getCurrentPosition(
         this.geoLocationSuccess,
@@ -201,10 +229,13 @@ export default {
   font-size: 16px;
 }
 .location_map {
-  height: 80vh;
+  height: 75vh;
 }
 .adress_lookup .v-input {
   max-width: 600px;
+}
+.adress_lookup_btn {
+  height: 44px !important;
 }
 @media (max-width: 768px) {
   .location_map {
