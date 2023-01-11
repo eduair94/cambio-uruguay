@@ -33,7 +33,7 @@ const main = async () => {
     const url = `https://nominatim.openstreetmap.org/search.php?q=${encodeURIComponent(address)}&polygon_geojson=1&format=jsonv2`;
     return axios
       .get(url)
-      .then((res) => res.data)
+      .then((res) => res.data.filter((el: any) => el.display_name.includes("Uruguay")))
       .catch((e) => {
         console.log(e);
         return [];
