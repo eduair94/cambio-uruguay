@@ -3,8 +3,8 @@
     <h1 class="text-h5">
       {{ $t('welcome') }}
     </h1>
-    <client-only>
-      <div class="my-4">
+    <div class="my-4">
+      <client-only>
         <v-data-table
           :item-class="row_classes"
           :headers="getHeaders()"
@@ -182,18 +182,10 @@
                       @change="updateTable"
                     >
                       <template slot="selection" slot-scope="data">
-                        <!-- HTML that describe how select should render selected items -->
-                        <span
-                          >{{ data.item }} -
-                          {{ texts[$i18n.locale][data.item] }}</span
-                        >
+                        <span>{{ data.item }} - {{ getTexts(data) }}</span>
                       </template>
                       <template slot="item" slot-scope="data">
-                        <!-- HTML that describe how select should render items when the select is open -->
-                        <span
-                          >{{ data.item }} -
-                          {{ texts[$i18n.locale][data.item] }}</span
-                        >
+                        <span>{{ data.item }} - {{ getTexts(data) }}</span>
                       </template>
                     </v-select>
                   </v-col>
@@ -288,7 +280,7 @@
           </template>
           <template #item.condition="{ item }">
             <div v-if="item.condition" class="py-md-1">
-              {{ item.condition }}
+              {{ $t(item.condition) }}
             </div>
           </template>
           <template #item.localData.website="{ item }">
@@ -334,8 +326,8 @@
           </template>
           <template #item.diff="{ item }"> {{ item.diff }}% </template>
         </v-data-table>
-      </div>
-    </client-only>
+      </client-only>
+    </div>
     <v-btn
       class="mr-2"
       link
@@ -388,7 +380,7 @@
 
 <script lang="ts">
 import { notFound } from '../services/not_found'
-
+import { mapGetters } from 'vuex'
 export default {
   name: 'HomePage',
   components: {
@@ -403,7 +395,6 @@ export default {
       loadingDistances: false,
       onlyInterbank: ['UR', 'UP'],
       location: 'TODOS',
-      locations: ['TODOS', 'MONTEVIDEO'],
       texts: {
         es: {
           USD: 'Dólares estadounidenses',
@@ -472,13 +463,64 @@ export default {
       code: '',
       notInterBank: true,
       items: [],
-      all_items: [],
       enableDistance: false,
       latitude: 0,
       longitude: 0,
       no_distance: 9999999,
       lastPos: undefined,
     }
+  },
+  async middleware({ store, redirect, $axios, $i18n }) {
+    let locations = ['TODOS', 'MONTEVIDEO']
+    const localData = await $axios
+      .get('https://cambio.shellix.cc/localData')
+      .then((res) => res.data)
+
+    for (const key in localData) {
+      const val = localData[key]
+      const departments = val.departments
+      if (departments && departments.length) {
+        for (const dep of departments) {
+          if (!locations.includes(dep)) {
+            locations.push(dep)
+          }
+        }
+      }
+    }
+
+    const getCondition = (el) => {
+      if (el.origin === 'prex') {
+        return 'prex_condition'
+      }
+      if (el.type === 'EBROU') {
+        return 'ebrou_condition'
+      }
+      return ''
+    }
+
+    const isInterBank = (item: any) => {
+      return (
+        item.origin === 'bcu' ||
+        ['INTERBANCARIO', 'FONDO/CABLE'].includes(item.type)
+      )
+    }
+
+    const data = await $axios.get('https://cambio.shellix.cc').then((res) =>
+      (res.data as any[])
+        .map((el: any) => {
+          el.localData = localData[el.origin]
+          if (!el.localData) {
+            console.log('missing localData', el)
+            el.localData = null
+          }
+          el.isInterBank = isInterBank(el)
+          el.condition = getCondition(el)
+          return el
+        })
+        .filter((el: any) => el.localData)
+    )
+    store.dispatch('setLocations', locations)
+    store.dispatch('setItems', data)
   },
   head() {
     return this.$nuxtI18nHead({
@@ -494,6 +536,7 @@ export default {
     })
   },
   computed: {
+    ...mapGetters(['all_items', 'locations']),
     onlyInterBank() {
       return this.onlyInterbank.includes(this.code)
     },
@@ -537,6 +580,9 @@ export default {
     }
   },
   methods: {
+    getTexts(data: any) {
+      return this.texts[this.$i18n.locale][data.item]
+    },
     getDistanceLink({ distanceData, localData, origin }) {
       if (distanceData) {
         const { latitude, longitude, map } = distanceData
@@ -634,7 +680,11 @@ export default {
           value: 'localData.website',
           sortable: false,
         },
-        { text: '', value: 'localData.location', sortable: false },
+        {
+          text: this.$t('buscarSucursal'),
+          value: 'localData.location',
+          sortable: false,
+        },
         { text: this.$t('condicional'), value: 'condition', width: '250px' },
         { text: 'BCU', value: 'localData.bcu', width: '50px' },
       ]
@@ -746,31 +796,6 @@ export default {
         currency: 'UYU',
       })
     },
-    isInterBank(item) {
-      return (
-        item.origin === 'bcu' ||
-        ['INTERBANCARIO', 'FONDO/CABLE'].includes(item.type)
-      )
-    },
-    getCondition(el) {
-      if (el.origin === 'prex') {
-        const loc = {
-          es: 'Require del uso de la tarjeta prex, debe ser solicitada en su sitio web.',
-          en: 'Require the use of the prex card, this must be requested on their website.',
-          pt: 'Exigir a utilização do cartão prex, este deve ser solicitado no seu website.',
-        }
-        return loc[this.$i18n.locale]
-      }
-      if (el.type === 'EBROU') {
-        const loc = {
-          es: 'Require de cuenta web en el banco BROU, debe abrirse una caja de ahorro en dicho banco',
-          en: 'Require a web account at BROU bank, you must open a savings account at BROU bank.',
-          pt: 'Exigir uma conta web no banco BROU, uma conta poupança deve ser aberta no banco BROU.',
-        }
-        return loc[this.$i18n.locale]
-      }
-      return ''
-    },
     row_classes(item) {
       if (item.isInterBank) {
         return 'purple darken-4'
@@ -847,40 +872,8 @@ export default {
       })
     },
     async get_data() {
-      const localData = await this.$axios
-        .get('https://cambio.shellix.cc/localData')
-        .then((res) => res.data)
-
-      for (const key in localData) {
-        const val = localData[key]
-        const departments = val.departments
-        if (departments && departments.length) {
-          for (const dep of departments) {
-            if (!this.locations.includes(dep)) {
-              this.locations.push(dep)
-            }
-          }
-        }
-      }
-      const data = await this.$axios
-        .get('https://cambio.shellix.cc')
-        .then((res) =>
-          (res.data as any[])
-            .map((el: any) => {
-              el.localData = localData[el.origin]
-              if (!el.localData) {
-                console.log('missing localData', el)
-                el.localData = null
-              }
-              el.isInterBank = this.isInterBank(el)
-              el.condition = this.getCondition(el)
-              return el
-            })
-            .filter((el: any) => el.localData)
-        )
-      this.all_items = data
       this.updateTable()
-      data.forEach(({ code }) => {
+      this.all_items.forEach(({ code }) => {
         if (!this.money.includes(code)) {
           this.money.push(code)
         }
