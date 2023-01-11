@@ -526,6 +526,16 @@ export default {
       : 'TODOS'
     this.get_data()
   },
+  mounted() {
+    ;(window as any).startLoading = () => {
+      const el = document.getElementById('spinner-wrapper')
+      if (el) el.style.display = 'flex'
+    }
+    ;(window as any).stopLoading = () => {
+      const el = document.getElementById('spinner-wrapper')
+      if (el) el.style.display = 'none'
+    }
+  },
   methods: {
     getDistanceLink({ distanceData, localData, origin }) {
       if (distanceData) {
