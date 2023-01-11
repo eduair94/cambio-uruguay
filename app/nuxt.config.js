@@ -1,8 +1,8 @@
 import colors from 'vuetify/es5/util/colors';
 import es from 'vuetify/lib/locale/es';
 import pt from 'vuetify/lib/locale/pt';
-
 import translations from './translations';
+
 
 export default {
   type: 'module',
@@ -122,6 +122,11 @@ export default {
       }
     ],
     script: [
+      {
+        async: true,
+        src: 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7038674901615097',
+        crossorigin: 'anonymous'
+      },
       {
         src: 'https://cdn.maptiler.com/maptiler-geocoder/v1.1.0/maptiler-geocoder.js'
       },
