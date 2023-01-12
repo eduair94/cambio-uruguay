@@ -10,6 +10,7 @@ import { origins } from "./classes/origins";
 moment.tz.setDefault("America/Uruguay");
 
 const main = async () => {
+  console.log("Start connection");
   await MongooseServer.startConnectionPromise();
   console.log("Start express");
   server.getJson("/", async (req: Request): Promise<any> => {
