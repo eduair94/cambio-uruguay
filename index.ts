@@ -57,6 +57,7 @@ const main = async () => {
       .get(url)
       .then((res) => res.data)
       .catch(() => null);
+    console.log("Response", res);
     return res;
   });
   server.getJson("exchanges/:origin/:location?", async (req: Request): Promise<any> => {
