@@ -8,14 +8,14 @@ module.exports = {
       cron_restart: "*/10 * * * *",
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
-    {
-      name: "currency-bcu-sync",
-      autorestart: false,
-      exec_mode: "fork",
-      script: "dist/get_bcu_details.js",
-      cron_restart: "0 0 * * *",
-      log_date_format: "YYYY-MM-DD HH:mm Z",
-    },
+    // {
+    //   name: "currency-bcu-sync",
+    //   autorestart: false,
+    //   exec_mode: "fork",
+    //   script: "dist/get_bcu_details.js",
+    //   cron_restart: "0 0 * * *",
+    //   log_date_format: "YYYY-MM-DD HH:mm Z",
+    // },
     {
       name: "currency-server",
       autorestart: true,
