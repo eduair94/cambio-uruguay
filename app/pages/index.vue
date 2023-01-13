@@ -102,8 +102,8 @@
                     <v-btn
                       color="#78C257"
                       link
-                      download
-                      href="/apk/cambio-uruguay.apk"
+                      target="_blank"
+                      href="https://play.google.com/store/apps/details?id=com.cambio_uruguay.twa"
                     >
                       <v-icon> mdi-android </v-icon>
                     </v-btn>
