@@ -101,6 +101,10 @@ export default {
   text-decoration: none;
 }
 
+.link_format {
+  text-decoration: underline;
+}
+
 .no_link:hover {
   opacity: 0.8;
 }

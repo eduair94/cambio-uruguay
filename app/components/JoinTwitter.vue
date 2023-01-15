@@ -1,22 +1,29 @@
 <template>
   <div class="text-center">
     <v-bottom-sheet v-model="sheet" persistent inset>
-      <v-sheet class="text-center py-2" height="auto">
-        <v-btn text color="warning" @click="close"
+      <v-sheet class="text-center py-2 grey darken-3" height="auto">
+        <v-btn text class="font-weight-bold" color="warning" @click="close"
           >{{ $t('no_mostrar_nuevo') }}
         </v-btn>
-        <v-btn text color="error" @click="sheet = false">
+        <v-btn
+          text
+          class="font-weight-bold"
+          color="error"
+          @click="sheet = false"
+        >
           {{ $t('cerrar') }}
         </v-btn>
-        <div class="pb-3">
-          {{ $t('join_twitter') }}:
+        <div class="pb-3 d-flex flex-wrap justify-center">
+          <span class="mr-2">{{ $t('join_twitter') }}:</span>
           <a
-            class="no_link"
+            class="no_link white--text"
             href="https://twitter.com/cambio_uruguay"
             target="_blank"
           >
-            <span class="mr-2">https://twitter.com/cambio_uruguay</span>
-            <v-icon>mdi-twitter</v-icon>
+            <span class="mr-2 link_format"
+              >https://twitter.com/cambio_uruguay</span
+            >
+            <v-icon color="#00acee">mdi-twitter</v-icon>
           </a>
         </div>
       </v-sheet>
