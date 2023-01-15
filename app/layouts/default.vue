@@ -42,6 +42,7 @@
         >
       </span>
     </v-footer>
+    <JoinTwitter />
   </v-app>
 </template>
 
@@ -50,6 +51,7 @@ export default {
   name: 'DefaultLayout',
   components: {
     LanguageMenu: () => import('../components/LanguageMenu.vue'),
+    JoinTwitter: () => import('../components/JoinTwitter.vue'),
   },
   data() {
     return {
@@ -93,6 +95,18 @@ export default {
 ._hj_feedback_container {
   z-index: 1;
   position: relative;
+}
+
+.no_link {
+  text-decoration: none;
+}
+
+.link_format {
+  text-decoration: underline;
+}
+
+.no_link:hover {
+  opacity: 0.8;
 }
 
 @media (max-width: 768px) {

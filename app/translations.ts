@@ -58,6 +58,8 @@ const translation = {
       'Requires the use of the prex card, this must be requested on their website.',
     ebrou_condition:
       'Requires a web account at BROU bank, you must open a savings account at BROU bank.',
+    join_twitter: 'Join our twitter to keep updated',
+    no_mostrar_nuevo: "Don't show again"
   },
   pt: {
     welcome:
@@ -119,6 +121,8 @@ const translation = {
       'Exigir a utilização do cartão prex, este deve ser solicitado no seu website.',
     ebrou_condition:
       'Exigir uma conta web no banco BROU, uma conta poupança deve ser aberta no banco BROU.',
+    join_twitter: 'Junte-se ao nosso twitter para ficar atualizado',
+    no_mostrar_nuevo: 'Não voltar a aparecer'
   },
   es: {
     welcome:
@@ -180,6 +184,8 @@ const translation = {
       'Requiere del uso de la tarjeta prex, debe ser solicitada en su sitio web.',
     ebrou_condition:
       'Requiere de cuenta web en el banco BROU, debe abrirse una caja de ahorro en dicho banco',
+    join_twitter: 'Unete a nuestro twitter para mantenerte actualizado',
+    no_mostrar_nuevo: 'No mostrar de nuevo'
   },
 }
 
