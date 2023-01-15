@@ -1,34 +1,15 @@
-import * as Sentry from "@sentry/node";
 import '@sentry/tracing';
 import dotenv from "dotenv";
+import sentryInit from "./sentry";
 dotenv.config();
 const e = process.env;
-console.log("Sentry DNS", e.sentry_dsn);
-Sentry.init({
-  dsn: e.sentry_dsn,
-  // Set tracesSampleRate to 1.0 to capture 100%
-  // of transactions for performance monitoring.
-  // We recommend adjusting this value in production
-  tracesSampleRate: 1.0,
-});
-
-const transaction = Sentry.startTransaction({
-  op: "test",
-  name: "My First Test Transaction",
-});
+console.log("Sentry Init", e.sentry_dsn);
+sentryInit();
 
 const foo = () => {
     throw new Error("foo");
 } 
 
 setTimeout(() => {
-  try {
     foo();
-  } catch (e) {
-    console.error(e);
-    Sentry.captureException(e);
-  } finally {
-    console.log("Finishing transaction");
-    transaction.finish();
-  }
 }, 99);
