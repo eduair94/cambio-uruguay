@@ -1,4 +1,5 @@
-import Sentry from "@sentry/node";
+import * as Sentry from "@sentry/node";
+import '@sentry/tracing';
 import dotenv from "dotenv";
 dotenv.config();
 const e = process.env;
@@ -15,8 +16,6 @@ const transaction = Sentry.startTransaction({
   op: "test",
   name: "My First Test Transaction",
 });
-
-console.log("Transaction", transaction);
 
 const foo = () => {
     throw new Error("foo");
