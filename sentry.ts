@@ -14,7 +14,7 @@ const sentryInit = () => {
       }),
     ],
   });
-  console.log("Sentry Started", res);
+  console.log("Sentry Started");
 }
 
 export default sentryInit;
