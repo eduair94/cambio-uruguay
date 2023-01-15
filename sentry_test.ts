@@ -1,4 +1,4 @@
-import * as Sentry from "@sentry/node";
+import Sentry from "@sentry/node";
 import dotenv from "dotenv";
 dotenv.config();
 const e = process.env;
