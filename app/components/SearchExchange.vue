@@ -64,7 +64,7 @@
             'items-per-page-options': [10, 20, 30, 40, 50],
           }"
           :items-per-page="10"
-          class="elevation-0 money_table search_exchange"
+          class="elevation-0 search_exchange"
         >
           <template #item.Direccion="{ item }">
             <a target="_blank" class="white--text" :href="getHref(item)">
