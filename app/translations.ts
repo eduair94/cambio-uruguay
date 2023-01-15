@@ -60,7 +60,8 @@ const translation = {
       'Requires a web account at BROU bank, you must open a savings account at BROU bank.',
     join_twitter: 'Join our twitter to keep updated',
     no_mostrar_nuevo: "Don't show again",
-    search_radius: 'Search radius (Km)'
+    search_radius: 'Search radius (Km)',
+    join_linkedin: 'Follow us in Linkedin',
   },
   pt: {
     welcome:
@@ -124,7 +125,8 @@ const translation = {
       'Exigir uma conta web no banco BROU, uma conta poupança deve ser aberta no banco BROU.',
     join_twitter: 'Junte-se ao nosso twitter para ficar atualizado',
     no_mostrar_nuevo: 'Não voltar a aparecer',
-    search_radius: 'Raio de busca (Km)'
+    search_radius: 'Raio de busca (Km)',
+    join_linkedin: 'Siga-nos no Linkedin',
   },
   es: {
     welcome:
@@ -188,7 +190,8 @@ const translation = {
       'Requiere de cuenta web en el banco BROU, debe abrirse una caja de ahorro en dicho banco',
     join_twitter: 'Unete a nuestro twitter para mantenerte actualizado',
     no_mostrar_nuevo: 'No mostrar de nuevo',
-    search_radius: 'Radio de búsquedad (Km)'
+    search_radius: 'Radio de búsquedad (Km)',
+    join_linkedin: 'Siguenos en Linkedin',
   },
 }
 

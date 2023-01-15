@@ -137,6 +137,15 @@
                     >
                       <v-icon large> mdi-twitter </v-icon>
                     </v-btn>
+                    <v-btn
+                      aria-label="linkedin"
+                      link
+                      color="#0e76a8"
+                      target="_blank"
+                      href="https://www.linkedin.com/company/cambio-uruguay/"
+                    >
+                      <v-icon large> mdi-linkedin </v-icon>
+                    </v-btn>
                   </div>
                 </div>
               </div>
@@ -146,7 +155,7 @@
                     <v-radio-group
                       v-model="wantTo"
                       hide-details
-                      class="mt-md-0"
+                      class="mt-0 mt-md-0"
                       @change="setPrice()"
                     >
                       <v-radio :label="$t('wantToSell')" value="sell"></v-radio>
