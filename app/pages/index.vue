@@ -137,15 +137,6 @@
                     >
                       <v-icon large> mdi-twitter </v-icon>
                     </v-btn>
-                    <v-btn
-                      aria-label="github"
-                      link
-                      color="grey darken-3"
-                      target="_blank"
-                      href="https://github.com/eduair94/cambio-uruguay"
-                    >
-                      <v-icon large> mdi-github </v-icon>
-                    </v-btn>
                   </div>
                 </div>
               </div>
@@ -328,23 +319,41 @@
         </v-data-table>
       </client-only>
     </div>
-    <v-btn
-      class="mr-2"
-      link
-      color="red darken-4"
-      target="_blank"
-      href="https://finanzas.com.uy/los-mejores-prestamos-de-bancos/"
-    >
-      {{ $t('infoPrestamos') }}
-    </v-btn>
-    <v-btn
-      color="primary"
-      target="_blank"
-      link
-      href="https://docs.google.com/document/d/1BBDrsiT778SEIn5hqYltl-7dxQq9dSeG/edit"
-    >
-      <v-icon> mdi-file-document </v-icon>
-    </v-btn>
+    <div class="d-flex flex-wrap grid-list-md gap-10">
+      <v-btn
+        link
+        color="red darken-4"
+        target="_blank"
+        href="https://finanzas.com.uy/los-mejores-prestamos-de-bancos/"
+      >
+        {{ $t('infoPrestamos') }}
+      </v-btn>
+      <v-btn
+        color="primary"
+        target="_blank"
+        link
+        href="https://docs.google.com/document/d/1BBDrsiT778SEIn5hqYltl-7dxQq9dSeG/edit"
+      >
+        <v-icon> mdi-file-document </v-icon>
+      </v-btn>
+      <v-btn
+        aria-label="github"
+        link
+        color="grey darken-3"
+        target="_blank"
+        href="https://github.com/eduair94/cambio-uruguay"
+      >
+        <v-icon large> mdi-github </v-icon>
+      </v-btn>
+      <v-btn
+        color="green darken-2"
+        target="_blank"
+        link
+        href="https://status.cambio-uruguay.com"
+      >
+        App Status
+      </v-btn>
+    </div>
     <div
       id="updates"
       style="width: 100%"
@@ -379,14 +388,66 @@
 </template>
 
 <script lang="ts">
-import { notFound } from '../services/not_found'
 import { mapGetters } from 'vuex'
+import { notFound } from '../services/not_found'
 export default {
   name: 'HomePage',
   components: {
     LocationPopup: () => import('../components/LocationPopup.vue'),
     BCU: () => import('../components/BCU.vue'),
     SearchExchange: () => import('../components/SearchExchange.vue'),
+  },
+  async middleware({ store, redirect, $axios, $i18n }) {
+    const locations = ['TODOS', 'MONTEVIDEO']
+    const localData = await $axios
+      .get('https://cambio.shellix.cc/localData')
+      .then((res) => res.data)
+
+    for (const key in localData) {
+      const val = localData[key]
+      const departments = val.departments
+      if (departments && departments.length) {
+        for (const dep of departments) {
+          if (!locations.includes(dep)) {
+            locations.push(dep)
+          }
+        }
+      }
+    }
+
+    const getCondition = (el) => {
+      if (el.origin === 'prex') {
+        return 'prex_condition'
+      }
+      if (el.type === 'EBROU') {
+        return 'ebrou_condition'
+      }
+      return ''
+    }
+
+    const isInterBank = (item: any) => {
+      return (
+        item.origin === 'bcu' ||
+        ['INTERBANCARIO', 'FONDO/CABLE'].includes(item.type)
+      )
+    }
+
+    const data = await $axios.get('https://cambio.shellix.cc').then((res) =>
+      (res.data as any[])
+        .map((el: any) => {
+          el.localData = localData[el.origin]
+          if (!el.localData) {
+            console.log('missing localData', el)
+            el.localData = null
+          }
+          el.isInterBank = isInterBank(el)
+          el.condition = getCondition(el)
+          return el
+        })
+        .filter((el: any) => el.localData)
+    )
+    store.dispatch('setLocations', locations)
+    store.dispatch('setItems', data)
   },
   data() {
     return {
@@ -469,58 +530,6 @@ export default {
       no_distance: 9999999,
       lastPos: undefined,
     }
-  },
-  async middleware({ store, redirect, $axios, $i18n }) {
-    let locations = ['TODOS', 'MONTEVIDEO']
-    const localData = await $axios
-      .get('https://cambio.shellix.cc/localData')
-      .then((res) => res.data)
-
-    for (const key in localData) {
-      const val = localData[key]
-      const departments = val.departments
-      if (departments && departments.length) {
-        for (const dep of departments) {
-          if (!locations.includes(dep)) {
-            locations.push(dep)
-          }
-        }
-      }
-    }
-
-    const getCondition = (el) => {
-      if (el.origin === 'prex') {
-        return 'prex_condition'
-      }
-      if (el.type === 'EBROU') {
-        return 'ebrou_condition'
-      }
-      return ''
-    }
-
-    const isInterBank = (item: any) => {
-      return (
-        item.origin === 'bcu' ||
-        ['INTERBANCARIO', 'FONDO/CABLE'].includes(item.type)
-      )
-    }
-
-    const data = await $axios.get('https://cambio.shellix.cc').then((res) =>
-      (res.data as any[])
-        .map((el: any) => {
-          el.localData = localData[el.origin]
-          if (!el.localData) {
-            console.log('missing localData', el)
-            el.localData = null
-          }
-          el.isInterBank = isInterBank(el)
-          el.condition = getCondition(el)
-          return el
-        })
-        .filter((el: any) => el.localData)
-    )
-    store.dispatch('setLocations', locations)
-    store.dispatch('setItems', data)
   },
   head() {
     return this.$nuxtI18nHead({
@@ -871,7 +880,7 @@ export default {
         }
       })
     },
-    async get_data() {
+    get_data() {
       this.updateTable()
       this.all_items.forEach(({ code }) => {
         if (!this.money.includes(code)) {
@@ -946,6 +955,10 @@ body {
 .donation_logo:hover {
   transform: scale(1.05);
   filter: drop-shadow(0px 0px 3px black);
+}
+
+.gap-10 {
+  gap:10px;
 }
 
 @media (max-width: 768px) {
