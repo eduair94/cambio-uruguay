@@ -6,8 +6,10 @@ import { cambio_info } from "./classes/cambioInfo";
 import { MongooseServer } from "./classes/database";
 import server from "./classes/Express/ExpressSetup";
 import { origins } from "./classes/origins";
+import sentryInit from './sentry';
 
 moment.tz.setDefault("America/Uruguay");
+sentryInit();
 
 const main = async () => {
   console.log("Start connection");

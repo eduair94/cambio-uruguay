@@ -1,13 +1,14 @@
-import { cambio_info } from "./classes/cambioInfo";
-import { MongooseServer } from "./classes/database";
-import * as credentials from "./sheet_key.json";
 import {
-  GoogleSpreadsheet,
-  GoogleSpreadsheetWorksheet,
+  GoogleSpreadsheet
 } from "google-spreadsheet";
 import moment from "moment";
+import { cambio_info } from "./classes/cambioInfo";
+import { MongooseServer } from "./classes/database";
+import sentryInit from "./sentry";
+import * as credentials from "./sheet_key.json";
 
 const main = async () => {
+  sentryInit();
   await MongooseServer.startConnectionPromise();
   const info = await cambio_info.get_data();
   const document = new GoogleSpreadsheet(

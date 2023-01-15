@@ -2,7 +2,7 @@ import axios from "axios";
 import dotenv from "dotenv";
 import { CambioObj } from "../../interfaces/Cambio";
 import { Cambio } from "../cambio";
-const cfg = dotenv.config();
+dotenv.config();
 const e = process.env;
 
 class CambioPrex extends Cambio {
