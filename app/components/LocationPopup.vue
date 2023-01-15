@@ -51,10 +51,23 @@
                 <l-tile-layer
                   url="http://{s}.tile.osm.org/{z}/{x}/{y}.png"
                 ></l-tile-layer>
+                <l-circle
+                  v-if="radius"
+                  :lat-lng="[latitude, longitude]"
+                  :radius="radius * 1000"
+                ></l-circle>
                 <l-marker :lat-lng="[latitude, longitude]"></l-marker>
               </l-map>
             </client-only>
           </div>
+          <v-text-field
+            v-model="radius"
+            type="number"
+            class="mt-2 search_range"
+            :label="$t('search_radius')"
+            clearable
+            hide-details
+          ></v-text-field>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -73,6 +86,7 @@
 export default {
   data() {
     return {
+      radius: '',
       loadingDistances: false,
       prevResult: '',
       dialog: false,
@@ -155,7 +169,6 @@ export default {
         if (data.length) {
           this.search = data[0].label
         }
-        console.log('REVERSE GEO', data)
       }
     },
     async geoLocationSuccess(info) {
@@ -180,7 +193,8 @@ export default {
         distances,
         this.latitude,
         this.longitude,
-        distanceData
+        distanceData,
+        this.radius * 1000
       )
       this.dialog = false
     },
@@ -237,9 +251,12 @@ export default {
 .adress_lookup_btn {
   height: 44px !important;
 }
+.search_range {
+  max-width: 300px;
+}
 @media (max-width: 768px) {
   .location_map {
-    height: 70vh;
+    height: 65vh;
   }
 }
 </style>

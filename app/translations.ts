@@ -59,7 +59,8 @@ const translation = {
     ebrou_condition:
       'Requires a web account at BROU bank, you must open a savings account at BROU bank.',
     join_twitter: 'Join our twitter to keep updated',
-    no_mostrar_nuevo: "Don't show again"
+    no_mostrar_nuevo: "Don't show again",
+    search_radius: 'Search radius (Km)'
   },
   pt: {
     welcome:
@@ -122,7 +123,8 @@ const translation = {
     ebrou_condition:
       'Exigir uma conta web no banco BROU, uma conta poupança deve ser aberta no banco BROU.',
     join_twitter: 'Junte-se ao nosso twitter para ficar atualizado',
-    no_mostrar_nuevo: 'Não voltar a aparecer'
+    no_mostrar_nuevo: 'Não voltar a aparecer',
+    search_radius: 'Raio de busca (Km)'
   },
   es: {
     welcome:
@@ -185,7 +187,8 @@ const translation = {
     ebrou_condition:
       'Requiere de cuenta web en el banco BROU, debe abrirse una caja de ahorro en dicho banco',
     join_twitter: 'Unete a nuestro twitter para mantenerte actualizado',
-    no_mostrar_nuevo: 'No mostrar de nuevo'
+    no_mostrar_nuevo: 'No mostrar de nuevo',
+    search_radius: 'Radio de búsquedad (Km)'
   },
 }
 

@@ -388,7 +388,7 @@
 </template>
 
 <script lang="ts">
-import { mapGetters } from 'vuex'
+import { mapGetters, mapActions } from 'vuex'
 import { notFound } from '../services/not_found'
 export default {
   name: 'HomePage',
@@ -451,6 +451,7 @@ export default {
   },
   data() {
     return {
+      all_items: [],
       snackbar: false,
       snackBarText: '',
       loadingDistances: false,
@@ -545,12 +546,16 @@ export default {
     })
   },
   computed: {
-    ...mapGetters(['all_items', 'locations']),
+    ...mapGetters({
+      allItems: 'all_items',
+      locations: 'locations',
+    }),
     onlyInterBank() {
       return this.onlyInterbank.includes(this.code)
     },
   },
   beforeMount() {
+    this.all_items = [...this.allItems]
     let pwaInstall = false
     try {
       if (!window.matchMedia('(display-mode: standalone)').matches) {
@@ -612,20 +617,24 @@ export default {
       distances: any,
       latitude: number,
       longitude: number,
-      distanceData: any
+      distanceData: any,
+      radius: number
     ) {
       this.latitude = latitude
       this.longitude = longitude
-      this.all_items = this.all_items.map((item) => {
+      let allItems = this.all_items.map((item: any) => {
         item.distance = distances[item.origin]
           ? distances[item.origin]
           : this.no_distance
         if (item.distance !== this.no_distance) {
           item.distanceData = distanceData[item.distance]
-          console.log(item.distanceData)
         }
         return item
       })
+      if (radius) {
+        allItems = allItems.filter((item: any) => item.distance <= radius)
+      }
+      this.all_items = allItems
       this.updateTable()
       this.enableDistance = true
       this.snackbar = true
@@ -638,6 +647,8 @@ export default {
       this.latitude = 0
       this.longitude = 0
       this.enableDistance = false
+      this.all_items = [...this.allItems]
+      this.updateTable()
     },
     formatDistance(item: number) {
       if (item >= 1000) {
@@ -958,7 +969,7 @@ body {
 }
 
 .gap-10 {
-  gap:10px;
+  gap: 10px;
 }
 
 @media (max-width: 768px) {
