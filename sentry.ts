@@ -1,5 +1,5 @@
 import { RewriteFrames } from "@sentry/integrations";
-import Sentry from "@sentry/node";
+import * as Sentry from "@sentry/node";
 import "@sentry/tracing";
 import dotenv from "dotenv";
 dotenv.config();
