@@ -25,8 +25,10 @@ setTimeout(() => {
   try {
     foo();
   } catch (e) {
+    console.error(e);
     Sentry.captureException(e);
   } finally {
+    console.log("Finishing transaction");
     transaction.finish();
   }
 }, 99);
