@@ -81,7 +81,7 @@ export default {
       {
         name: 'keywords',
         content:
-          'cotizaciones uruguay, casa cambiaria, cambio moneda, cambio dólares, cambio pesos argentinos, cambio reales, cambio euros, varlix, prex, gales, cambio montevideo, cambio'
+          'cotizaciones uruguay,casa cambiaria,cambio moneda,cambio dólares,cambio pesos argentinos,cambio reales,cambio euros,varlix,prex,gales,cambio montevideo,cambio,donde cambiar dólares en Uruguay,cambio divisas,donde comprar pesos argentinos en uruguay,donde comprar dolares en uruguay'
       },
       {
         name: 'msapplication-TileColor',
@@ -271,6 +271,7 @@ export default {
       name: 'Cambio Uruguay App',
       short_name: 'Cambio Uruguay',
       lang: 'es',
+      categories: ['finance', 'business', 'currency'],
       description:
         'Encuentra las mejores cotizaciones de cambio de divisas en Uruguay'
     },

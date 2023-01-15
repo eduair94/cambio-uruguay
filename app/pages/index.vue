@@ -4,6 +4,12 @@
       {{ $t('welcome') }}
     </h1>
     <div class="my-4">
+      <h1 style="display: none">
+        cotizaciones uruguay,casa cambiaria,cambio moneda,cambio dólares,cambio
+        pesos argentinos,cambio reales,cambio euros,varlix,prex,gales,cambio
+        montevideo,cambio,donde cambiar dólares en Uruguay,cambio divisas,donde
+        comprar pesos argentinos en uruguay,donde comprar dolares en uruguay
+      </h1>
       <client-only>
         <v-data-table
           :item-class="row_classes"
