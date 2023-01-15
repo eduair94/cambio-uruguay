@@ -26,6 +26,19 @@
             <v-icon color="#00acee">mdi-twitter</v-icon>
           </a>
         </div>
+        <div class="pb-3 d-flex flex-wrap justify-center">
+          <span class="mr-2">{{ $t('join_linkedin') }}:</span>
+          <a
+            class="no_link white--text"
+            href="https://www.linkedin.com/company/cambio-uruguay/"
+            target="_blank"
+          >
+            <span class="mr-2 link_format"
+              >https://www.linkedin.com/company/cambio-uruguay/</span
+            >
+            <v-icon color="#0e76a8">mdi-linkedin</v-icon>
+          </a>
+        </div>
       </v-sheet>
     </v-bottom-sheet>
   </div>
@@ -35,7 +48,7 @@
 export default {
   data() {
     return {
-      sheet: false,
+      sheet: true,
     }
   },
   beforeDestroy() {
