@@ -3,7 +3,6 @@ import es from 'vuetify/lib/locale/es';
 import pt from 'vuetify/lib/locale/pt';
 import translations from './translations';
 
-
 export default {
   type: 'module',
   loading: '~/components/LoadingBar.vue',
@@ -178,25 +177,7 @@ export default {
 
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
-    // ['nuxt-twa-module', {
-    //   /* module options */
-    //   defaultUrl: 'https://cambio-uruguay.com',
-    //   hostName: 'cambio-uruguay.com',
-    //   applicationId: 'com.example.example',
-    //   launcherName: 'Cambio Uruguay',
-    //   versionCode: 1,
-    //   versionName: '1.0',
-    //   statusBarColor: '#3B9B85',
-    //   // The sha256Fingerprints by is an array with one SHA-256 key string.
-    //   // But if you have multiple you can add them to the array. More information about the website asociation:
-    //   // https://developer.android.com/training/app-links/verify-site-associations#web-assoc
-    //   sha256Fingerprints: ['/* your SHA-256 keys */'],
-    //   /* optional */
-    //   /* overwrite default location for icon */
-    //   iconPath: '/static/icon.png',
-    //   /* Overwrite folder where to put .wellknown */
-    //   distFolder: '.nuxt/dist/client',
-    // }],
+    '@nuxtjs/sentry',
     'nuxt-leaflet',
     '@nuxtjs/i18n',
     '@nuxtjs/sitemap',
@@ -218,6 +199,22 @@ export default {
       }
     ]
   ],
+
+  sentry: {
+    dsn: process.env.SENTRY_DSN, // Enter your project's DSN.
+    // Additional Module Options.
+    config: {
+      tracesSampleRate: 1.0,
+      browserTracing: {},
+      vueOptions: {
+        trackComponents: true,
+      },
+      // Optional Sentry SDK configuration.
+      // Those options are shared by both the Browser and the Server instances.
+      // Browser-onlsy and Server-only options should go
+      // into `clientConfig` and `serverConfig` objects respectively.
+    },
+  },
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
   axios: {
