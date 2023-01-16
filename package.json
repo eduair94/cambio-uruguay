@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "prex": "ts-node prex.ts",
     "sentry_test": "ts-node sentry_test.ts",
     "bcu_details": "ts-node get_bcu_details.ts",
     "dev": "ts-node index.ts",
