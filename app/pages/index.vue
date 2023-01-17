@@ -114,13 +114,6 @@
                       >
                         <v-icon> mdi-android </v-icon>
                       </v-btn>
-                      <v-btn
-                        aria-label="instalar"
-                        color="blue darken-2"
-                        @click="install_app"
-                      >
-                        <v-icon>mdi-download</v-icon>
-                      </v-btn>
                       <a
                         ref="pwa_open"
                         style="display: none"
