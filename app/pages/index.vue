@@ -639,12 +639,16 @@ export default {
         })
         return
       }
+      // Check if resolution is mobile.
+      const isMobile = document.querySelector(
+        '.money_table.v-data-table--mobile'
+      )
       this.hasScroll = tableWrapper.scrollWidth > tableWrapper.clientWidth
       let wp1 = null
       let wp2 = null
       let wrapper1 = null
       let wrapper2 = null
-      if (this.hasScroll) {
+      if (this.hasScroll && !isMobile) {
         wrapper1 = document.querySelector('.money_table .v-data-table__wrapper')
         wrapper2 = this.$refs.wrapper2
         if (!wrapper2 || !wrapper1) {
