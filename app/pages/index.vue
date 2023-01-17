@@ -22,250 +22,267 @@
           class="elevation-1 money_table"
         >
           <template #top>
-            <div class="px-3 pt-3">
-              <div class="pt-2">
-                <h2 class="font-weight-regular text-body-1">
-                  {{ fixTitle($t('title')) }}
-                </h2>
-                <div
-                  class="
-                    d-flex
-                    flex-wrap
-                    align-center
-                    top_container
-                    justify-space-between
-                    mb-md-4
-                  "
-                >
+            <div>
+              <div class="px-3 pt-3">
+                <div class="pt-2">
+                  <h2 class="font-weight-regular text-body-1">
+                    {{ fixTitle($t('title')) }}
+                  </h2>
                   <div
                     class="
-                      my-3
-                      mb-0
-                      md-md-3
-                      grey
-                      darken-3
-                      pa-3
-                      px-lg-5
-                      text-subtitle-1
                       d-flex
-                      align-center
                       flex-wrap
-                      donation_container
+                      align-center
+                      top_container
+                      justify-space-between
+                      mb-md-4
                     "
                   >
-                    <span class="mr-3">{{ $t('info') }}</span>
-                    <div class="d-flex mt-2">
-                      <a
-                        target="_blank"
-                        aria-label="Donar con Paypal"
-                        class="
-                          white--text
-                          d-flex
-                          mr-4
-                          align-center
-                          justify-content-left
-                          donation_logo
-                        "
-                        href="https://ko-fi.com/cambio_uruguay"
-                      >
-                        <v-img
-                          max-width="50px"
-                          height="50px"
-                          contain
-                          src="/img/paypal_icon.png"
+                    <div
+                      class="
+                        my-3
+                        mb-0
+                        md-md-3
+                        grey
+                        darken-3
+                        pa-3
+                        px-lg-5
+                        text-subtitle-1
+                        d-flex
+                        align-center
+                        flex-wrap
+                        donation_container
+                      "
+                    >
+                      <span class="mr-3">{{ $t('info') }}</span>
+                      <div class="d-flex mt-2">
+                        <a
+                          target="_blank"
+                          aria-label="Donar con Paypal"
+                          class="
+                            white--text
+                            d-flex
+                            mr-4
+                            align-center
+                            justify-content-left
+                            donation_logo
+                          "
+                          href="https://ko-fi.com/cambio_uruguay"
                         >
-                          <template #sources>
-                            <source srcset="/img/paypal_icon.webp" />
-                          </template>
-                        </v-img>
-                      </a>
-                      <a
-                        aria-label="Donar con Mercado Pago"
-                        class="
-                          white--text
-                          d-flex
-                          align-center
-                          justify-content-left
-                          donation_logo
-                        "
-                        target="_blank"
-                        href="https://mpago.la/19j46vX"
-                      >
-                        <v-img
-                          max-width="50px"
-                          height="50px"
-                          contain
-                          src="/img/mercadopago_icon.png"
+                          <v-img
+                            max-width="50px"
+                            height="50px"
+                            contain
+                            src="/img/paypal_icon.png"
+                          >
+                            <template #sources>
+                              <source srcset="/img/paypal_icon.webp" />
+                            </template>
+                          </v-img>
+                        </a>
+                        <a
+                          aria-label="Donar con Mercado Pago"
+                          class="
+                            white--text
+                            d-flex
+                            align-center
+                            justify-content-left
+                            donation_logo
+                          "
+                          target="_blank"
+                          href="https://mpago.la/19j46vX"
                         >
-                          <template #sources>
-                            <source srcset="/img/mercadopago_icon.webp" />
-                          </template>
-                        </v-img>
-                      </a>
-                    </div>
-                  </div>
-                  <div class="button_section mb-3">
-                    <v-btn
-                      color="#78C257"
-                      link
-                      target="_blank"
-                      href="https://play.google.com/store/apps/details?id=com.cambio_uruguay.twa"
-                    >
-                      <v-icon> mdi-android </v-icon>
-                    </v-btn>
-                    <v-btn
-                      aria-label="instalar"
-                      color="blue darken-2"
-                      @click="install_app"
-                    >
-                      <v-icon>mdi-download</v-icon>
-                    </v-btn>
-                    <a
-                      ref="pwa_open"
-                      style="display: none"
-                      target="_blank"
-                      href="https://cambio-uruguay.com"
-                      >PWA</a
-                    >
-                    <v-btn
-                      aria-label="compartir"
-                      color="blue darken-1"
-                      @click="share"
-                    >
-                      <v-icon large> mdi-share </v-icon>
-                    </v-btn>
-                    <v-btn
-                      aria-label="twitter"
-                      link
-                      color="#00acee"
-                      target="_blank"
-                      href="https://twitter.com/cambio_uruguay"
-                    >
-                      <v-icon large> mdi-twitter </v-icon>
-                    </v-btn>
-                    <v-btn
-                      aria-label="linkedin"
-                      link
-                      color="#0e76a8"
-                      target="_blank"
-                      href="https://www.linkedin.com/company/cambio-uruguay/"
-                    >
-                      <v-icon large> mdi-linkedin </v-icon>
-                    </v-btn>
-                  </div>
-                </div>
-              </div>
-              <div>
-                <v-row style="max-width: 1800px">
-                  <v-col cols="12" md="6" lg="2">
-                    <v-radio-group
-                      v-model="wantTo"
-                      hide-details
-                      class="mt-0 mt-md-0"
-                      @change="setPrice()"
-                    >
-                      <v-radio :label="$t('wantToSell')" value="sell"></v-radio>
-                      <v-radio :label="$t('wantToBuy')" value="buy"></v-radio>
-                    </v-radio-group>
-                  </v-col>
-                  <v-col cols="12" md="6" lg="2">
-                    <v-text-field
-                      v-model="amount"
-                      hide-details
-                      :label="'XXX ' + code"
-                      type="number"
-                      min="0"
-                      placeholder="10"
-                      @input="setPrice()"
-                    ></v-text-field>
-                  </v-col>
-                  <v-col cols="12" md="6" lg="3">
-                    <v-select
-                      v-model="code"
-                      hide-details
-                      :items="money"
-                      :label="$t('currency')"
-                      @change="updateTable"
-                    >
-                      <template slot="selection" slot-scope="data">
-                        <span>{{ data.item }} - {{ getTexts(data) }}</span>
-                      </template>
-                      <template slot="item" slot-scope="data">
-                        <span>{{ data.item }} - {{ getTexts(data) }}</span>
-                      </template>
-                    </v-select>
-                  </v-col>
-                  <v-col cols="12" md="6" lg="3">
-                    <v-select
-                      v-model="location"
-                      hide-details
-                      :items="locations"
-                      :label="$t('departments')"
-                      @change="updateTable"
-                    >
-                      <template slot="selection" slot-scope="data">
-                        <!-- HTML that describe how select should render selected items -->
-                        <span>{{ capitalize(data.item) }}</span>
-                      </template>
-                      <template slot="item" slot-scope="data">
-                        <!-- HTML that describe how select should render items when the select is open -->
-                        <span>{{ capitalize(data.item) }}</span>
-                      </template>
-                    </v-select>
-                  </v-col>
-                  <v-col cols="12" md="6" lg="2">
-                    <div class="mt-lg-3 d-flex">
-                      <div class="mr-2">
-                        <LocationPopup
-                          ref="locationPopup"
-                          @geoLocationSuccess="geoLocationSuccess"
-                        />
+                          <v-img
+                            max-width="50px"
+                            height="50px"
+                            contain
+                            src="/img/mercadopago_icon.png"
+                          >
+                            <template #sources>
+                              <source srcset="/img/mercadopago_icon.webp" />
+                            </template>
+                          </v-img>
+                        </a>
                       </div>
+                    </div>
+                    <div class="button_section mb-3">
                       <v-btn
-                        aria-label="deshacer carga distancias"
-                        :disabled="!latitude"
-                        color="blue darken-3"
-                        @click="undoDistances"
+                        color="#78C257"
+                        link
+                        target="_blank"
+                        href="https://play.google.com/store/apps/details?id=com.cambio_uruguay.twa"
                       >
-                        <v-icon> mdi-undo </v-icon>
+                        <v-icon> mdi-android </v-icon>
+                      </v-btn>
+                      <v-btn
+                        aria-label="instalar"
+                        color="blue darken-2"
+                        @click="install_app"
+                      >
+                        <v-icon>mdi-download</v-icon>
+                      </v-btn>
+                      <a
+                        ref="pwa_open"
+                        style="display: none"
+                        target="_blank"
+                        href="https://cambio-uruguay.com"
+                        >PWA</a
+                      >
+                      <v-btn
+                        aria-label="compartir"
+                        color="blue darken-1"
+                        @click="share"
+                      >
+                        <v-icon large> mdi-share </v-icon>
+                      </v-btn>
+                      <v-btn
+                        aria-label="twitter"
+                        link
+                        color="#00acee"
+                        target="_blank"
+                        href="https://twitter.com/cambio_uruguay"
+                      >
+                        <v-icon large> mdi-twitter </v-icon>
+                      </v-btn>
+                      <v-btn
+                        aria-label="linkedin"
+                        link
+                        color="#0e76a8"
+                        target="_blank"
+                        href="https://www.linkedin.com/company/cambio-uruguay/"
+                      >
+                        <v-icon large> mdi-linkedin </v-icon>
                       </v-btn>
                     </div>
-                  </v-col>
-                  <v-col
-                    v-if="items && items.length"
-                    class="py-0 my-0 mt-1 mt-md-3"
-                    cols="12"
-                  >
-                    <span>{{ get_text() }}</span
-                    ><br />
-                    <v-alert
-                      v-if="amount"
-                      class="green darken-4 mb-0 mt-3"
-                      type="success"
-                      dense
+                  </div>
+                </div>
+                <div>
+                  <v-row style="max-width: 1800px">
+                    <v-col cols="12" md="6" lg="2">
+                      <v-radio-group
+                        v-model="wantTo"
+                        hide-details
+                        class="mt-0 mt-md-0"
+                        @change="setPrice()"
+                      >
+                        <v-radio
+                          :label="$t('wantToSell')"
+                          value="sell"
+                        ></v-radio>
+                        <v-radio :label="$t('wantToBuy')" value="buy"></v-radio>
+                      </v-radio-group>
+                    </v-col>
+                    <v-col cols="12" md="6" lg="2">
+                      <v-text-field
+                        v-model="amount"
+                        hide-details
+                        :label="'XXX ' + code"
+                        type="number"
+                        min="0"
+                        placeholder="10"
+                        @input="setPrice()"
+                      ></v-text-field>
+                    </v-col>
+                    <v-col cols="12" md="6" lg="3">
+                      <v-select
+                        v-model="code"
+                        hide-details
+                        :items="money"
+                        :label="$t('currency')"
+                        @change="updateTable"
+                      >
+                        <template slot="selection" slot-scope="data">
+                          <span>{{ data.item }} - {{ getTexts(data) }}</span>
+                        </template>
+                        <template slot="item" slot-scope="data">
+                          <span>{{ data.item }} - {{ getTexts(data) }}</span>
+                        </template>
+                      </v-select>
+                    </v-col>
+                    <v-col cols="12" md="6" lg="3">
+                      <v-select
+                        v-model="location"
+                        hide-details
+                        :items="locations"
+                        :label="$t('departments')"
+                        @change="updateTable"
+                      >
+                        <template slot="selection" slot-scope="data">
+                          <!-- HTML that describe how select should render selected items -->
+                          <span>{{ capitalize(data.item) }}</span>
+                        </template>
+                        <template slot="item" slot-scope="data">
+                          <!-- HTML that describe how select should render items when the select is open -->
+                          <span>{{ capitalize(data.item) }}</span>
+                        </template>
+                      </v-select>
+                    </v-col>
+                    <v-col cols="12" md="6" lg="2">
+                      <div class="mt-lg-3 d-flex">
+                        <div class="mr-2">
+                          <LocationPopup
+                            ref="locationPopup"
+                            @geoLocationSuccess="geoLocationSuccess"
+                          />
+                        </div>
+                        <v-btn
+                          aria-label="deshacer carga distancias"
+                          :disabled="!latitude"
+                          color="blue darken-3"
+                          @click="undoDistances"
+                        >
+                          <v-icon> mdi-undo </v-icon>
+                        </v-btn>
+                      </div>
+                    </v-col>
+                    <v-col
+                      v-if="items && items.length"
+                      class="py-0 my-0 mt-1 mt-md-3"
+                      cols="12"
                     >
-                      {{ savings() }}
-                    </v-alert>
-                  </v-col>
-                  <v-col class="pt-0 mb-5" cols="12">
-                    <div style="gap: 10px" class="d-flex flex-wrap">
-                      <v-checkbox
-                        v-model="notInterBank"
-                        :disabled="onlyInterBank"
-                        class="mr-md-3"
-                        hide-details
-                        :label="$t('hideInterBank')"
-                        @change="updateTable"
-                      ></v-checkbox>
-                      <v-checkbox
-                        v-model="notConditional"
-                        hide-details
-                        :label="$t('hideConditional')"
-                        @change="updateTable"
-                      ></v-checkbox>
-                    </div>
-                  </v-col>
-                </v-row>
+                      <span>{{ get_text() }}</span
+                      ><br />
+                      <v-alert
+                        v-if="amount"
+                        class="green darken-4 mb-0 mt-3"
+                        type="success"
+                        dense
+                      >
+                        {{ savings() }}
+                      </v-alert>
+                    </v-col>
+                    <v-col class="pt-0 mb-5" cols="12">
+                      <div style="gap: 10px" class="d-flex flex-wrap">
+                        <v-checkbox
+                          v-model="notInterBank"
+                          :disabled="onlyInterBank"
+                          class="mr-md-3"
+                          hide-details
+                          :label="$t('hideInterBank')"
+                          @change="updateTable"
+                        ></v-checkbox>
+                        <v-checkbox
+                          v-model="notConditional"
+                          hide-details
+                          :label="$t('hideConditional')"
+                          @change="updateTable"
+                        ></v-checkbox>
+                      </div>
+                    </v-col>
+                  </v-row>
+                </div>
+              </div>
+              <div
+                v-show="hasScroll"
+                id="wrapper2"
+                ref="wrapper2"
+                class="scroll-style-1"
+              >
+                <div
+                  id="div2"
+                  :style="{ width: scrollWidth }"
+                  class="width-scroll"
+                ></div>
               </div>
             </div>
           </template>
@@ -466,6 +483,7 @@ export default {
   },
   data() {
     return {
+      hasScroll: false,
       all_items: [],
       snackbar: false,
       snackBarText: '',
@@ -545,6 +563,7 @@ export default {
       longitude: 0,
       no_distance: 9999999,
       lastPos: undefined,
+      scrollWidth: 0,
     }
   },
   head() {
@@ -607,8 +626,74 @@ export default {
       const el = document.getElementById('spinner-wrapper')
       if (el) el.style.display = 'none'
     }
+    this.setScrollBar()
   },
   methods: {
+    setScrollBar() {
+      const tableWrapper = document.querySelector(
+        '.money_table .v-data-table__wrapper'
+      )
+      if (!tableWrapper) {
+        this.$nextTick(() => {
+          this.setScrollBar()
+        })
+        return
+      }
+      this.hasScroll = tableWrapper.scrollWidth > tableWrapper.clientWidth
+      let wp1 = null
+      let wp2 = null
+      let wrapper1 = null
+      let wrapper2 = null
+      if (this.hasScroll) {
+        wrapper1 = document.querySelector('.money_table .v-data-table__wrapper')
+        wrapper2 = this.$refs.wrapper2
+        if (!wrapper2 || !wrapper1) {
+          this.$nextTick(() => {
+            this.setScrollBar()
+          })
+          return
+        }
+
+        const table = document.querySelector('.money_table table')
+
+        this.scrollWidth = table.clientWidth + 10 + 'px'
+
+        let scrolling = false
+        wp1 = function () {
+          if (scrolling) {
+            scrolling = false
+            return true
+          }
+          scrolling = true
+
+          wrapper2.scrollLeft = wrapper1.scrollLeft
+        }
+
+        wp2 = function () {
+          if (scrolling) {
+            scrolling = false
+            return true
+          }
+          scrolling = true
+          wrapper1.scrollLeft = wrapper2.scrollLeft
+        }
+
+        wrapper1.addEventListener('scroll', wp1)
+        wrapper2.addEventListener('scroll', wp2)
+      }
+
+      addEventListener(
+        'resize',
+        () => {
+          if (wrapper1) {
+            wrapper1.removeEventListener('scroll', wp1)
+            wrapper2.removeEventListener('scroll', wp2)
+          }
+          this.setScrollBar()
+        },
+        { once: true }
+      )
+    },
     getTexts(data: any) {
       return this.texts[this.$i18n.locale][data.item]
     },
@@ -714,6 +799,7 @@ export default {
           text: this.$t('sitioWeb'),
           value: 'localData.website',
           sortable: false,
+          width: 'auto',
         },
         {
           text: this.$t('buscarSucursal'),
@@ -931,6 +1017,7 @@ body {
 .website_link {
   word-break: break-all;
   max-width: 100%;
+  min-width: 150px;
 }
 
 .button_section {
@@ -985,6 +1072,18 @@ body {
 
 .gap-10 {
   gap: 10px;
+}
+
+#wrapper2 {
+  width: 100%;
+  overflow-x: scroll;
+  overflow-y: hidden;
+}
+
+/* This div allow to make the scroll function and show the scrollbar */
+#div2 {
+  height: 1px;
+  overflow: scroll;
 }
 
 @media (max-width: 768px) {
