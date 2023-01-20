@@ -32,6 +32,7 @@
     "nuxt-twa-module": "^1.3.1",
     "vue": "^2.6.14",
     "vue-server-renderer": "^2.6.14",
+    "vue-tawk": "^1.0.1",
     "vue-template-compiler": "^2.6.14",
     "vuetify": "^2.6.1",
     "webpack": "^4.46.0"
