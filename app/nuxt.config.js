@@ -1,7 +1,7 @@
-import colors from 'vuetify/es5/util/colors';
-import es from 'vuetify/lib/locale/es';
-import pt from 'vuetify/lib/locale/pt';
-import translations from './translations';
+import colors from 'vuetify/es5/util/colors'
+import es from 'vuetify/lib/locale/es'
+import pt from 'vuetify/lib/locale/pt'
+import translations from './translations'
 
 export default {
   type: 'module',
@@ -96,24 +96,24 @@ export default {
       {
         rel: 'apple-touch-icon',
         sizes: '180x180',
-        href: '/apple-touch-icon.png',
+        href: '/apple-touch-icon.png'
       },
       {
         rel: 'icon',
         type: 'image/png',
         sizes: '32x32',
-        href: '/favicon-32x32.png',
+        href: '/favicon-32x32.png'
       },
       {
         rel: 'icon',
         type: 'image/png',
         sizes: '16x16',
-        href: '/favicon-16x16.png',
+        href: '/favicon-16x16.png'
       },
       {
         rel: 'mask-icon',
         href: '/safari-pinned-tab.svg',
-        color: '#5bbad5',
+        color: '#5bbad5'
       },
       {
         href: 'https://cdn.maptiler.com/maptiler-geocoder/v1.1.0/maptiler-geocoder.css',
@@ -148,7 +148,7 @@ export default {
   css: [],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
-  plugins: [],
+  plugins: [{ src: '~/plugins/vue-plugins', mode: 'client' }],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
   components: false,
@@ -207,13 +207,13 @@ export default {
       tracesSampleRate: 1.0,
       browserTracing: {},
       vueOptions: {
-        trackComponents: true,
-      },
+        trackComponents: true
+      }
       // Optional Sentry SDK configuration.
       // Those options are shared by both the Browser and the Server instances.
       // Browser-onlsy and Server-only options should go
       // into `clientConfig` and `serverConfig` objects respectively.
-    },
+    }
   },
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
@@ -282,7 +282,7 @@ export default {
         process.env.NODE_ENV === 'production'
           ? ['https://arc.io/arc-sw-core.js']
           : [],
-      autoRegister: true,
+      autoRegister: true
     }
   },
 
