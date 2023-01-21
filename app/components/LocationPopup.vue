@@ -207,7 +207,6 @@ export default {
       this.setMap()
     },
     reset() {
-      console.log('RESET')
       this.search = ''
       navigator.geolocation.getCurrentPosition(
         this.geoLocationSuccess,

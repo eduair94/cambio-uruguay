@@ -62,6 +62,8 @@ const translation = {
     no_mostrar_nuevo: "Don't show again",
     search_radius: 'Search radius (Km)',
     join_linkedin: 'Follow us in Linkedin',
+    paying_with: 'Paying with',
+    buying_with: 'Buying with',
   },
   pt: {
     welcome:
@@ -127,6 +129,8 @@ const translation = {
     no_mostrar_nuevo: 'Não voltar a aparecer',
     search_radius: 'Raio de busca (Km)',
     join_linkedin: 'Siga-nos no Linkedin',
+    paying_with: 'Pagando com',
+    buying_with: 'Comprando com',
   },
   es: {
     welcome:
@@ -192,6 +196,8 @@ const translation = {
     no_mostrar_nuevo: 'No mostrar de nuevo',
     search_radius: 'Radio de búsquedad (Km)',
     join_linkedin: 'Siguenos en Linkedin',
+    paying_with: 'Pagando con',
+    buying_with: 'Comprando con',
   },
 }
 
