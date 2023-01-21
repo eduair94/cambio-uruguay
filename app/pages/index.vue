@@ -562,7 +562,7 @@ export default {
           UYU: 'Pesos Uruguayos',
         },
       },
-      money: ['USD', 'ARS', 'BRL', 'EUR', 'GBP'],
+      money: ['USD', 'ARS', 'BRL', 'EUR', 'GBP', 'UYU'],
       amount: 100,
       show_install: false,
       wantTo: 'buy',
@@ -639,26 +639,16 @@ export default {
       this.amount = this.$route.query.amount
         ? parseFloat(this.$route.query.amount)
         : 100
-      if (!this.wantTo) {
-        this.wantTo = this.$route.query.wantTo
-          ? this.$route.query.wantTo
-          : 'buy'
-      }
-      if (!this.code) {
-        this.code = this.$route.query.currency
-          ? this.$route.query.currency
-          : 'USD'
-      }
-      if (!this.location) {
-        this.location = this.$route.query.location
-          ? this.$route.query.location
-          : 'TODOS'
-      }
-      if (!this.code_with) {
-        this.code_with = this.$route.query.currency_with
-          ? this.$route.query.currency_with
-          : 'UYU'
-      }
+      this.wantTo = this.$route.query.wantTo ? this.$route.query.wantTo : 'buy'
+      this.code = this.$route.query.currency
+        ? this.$route.query.currency
+        : 'USD'
+      this.location = this.$route.query.location
+        ? this.$route.query.location
+        : 'TODOS'
+      this.code_with = this.$route.query.currency_with
+        ? this.$route.query.currency_with
+        : 'UYU'
       this.get_data()
     },
     plusUy(array: string[]) {
@@ -967,21 +957,36 @@ export default {
       return ''
     },
     updateTable() {
-      this.items = this.all_items.filter(
-        (el) =>
-          (!this.code || el.code === this.code) &&
-          (!this.notInterBank ||
-            !el.isInterBank ||
-            this.onlyInterbank.includes(this.code)) &&
-          (!this.notConditional || !el.condition) &&
-          (this.location === 'TODOS' ||
-            !el.localData.departments.length ||
-            el.localData.departments.includes(this.location))
-      )
+      if (this.code === 'UYU') {
+        this.items = this.all_items.filter(
+          (el) =>
+            (!this.code || el.code === this.code_with) &&
+            (!this.notInterBank ||
+              !el.isInterBank ||
+              this.onlyInterbank.includes(this.code)) &&
+            (!this.notConditional || !el.condition) &&
+            (this.location === 'TODOS' ||
+              !el.localData.departments.length ||
+              el.localData.departments.includes(this.location))
+        )
+      } else {
+        this.items = this.all_items.filter(
+          (el) =>
+            (!this.code || el.code === this.code) &&
+            (!this.notInterBank ||
+              !el.isInterBank ||
+              this.onlyInterbank.includes(this.code)) &&
+            (!this.notConditional || !el.condition) &&
+            (this.location === 'TODOS' ||
+              !el.localData.departments.length ||
+              el.localData.departments.includes(this.location))
+        )
+      }
       if (this.code_with && this.code_with !== 'UYU') {
         const codeOrigins: any = {}
         this.items = this.items
           .filter((el) => {
+            if (this.code === 'UYU') return true
             const f = this.all_items.find(
               (e) =>
                 e.origin === el.origin &&
@@ -993,12 +998,17 @@ export default {
           })
           .map((e) => {
             const el = { ...e }
-            const f = codeOrigins[el.origin + (el.type ? el.type : '')]
-            el.sell = e.sell / f.buy
-            el.buy = e.buy / f.sell
+            if (this.code === 'UYU') {
+              el.sell = 1 / e.buy
+              el.buy = 1 / e.sell
+            } else {
+              const f = codeOrigins[el.origin + (el.type ? el.type : '')]
+              el.sell = e.sell / f.buy
+              el.buy = e.buy / f.sell
+            }
+            console.log('EL', el)
             return el
           })
-        console.log('Code with origins', codeOrigins)
       }
       this.setPrice()
     },
