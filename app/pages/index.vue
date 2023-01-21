@@ -475,6 +475,11 @@ export default {
       )
     }
 
+    const dataFortex = await $axios
+      .get('https://cambio.shellix.cc/fortex')
+      .then((res) => res.data)
+    store.dispatch('setFortex', dataFortex)
+
     const data = await $axios.get('https://cambio.shellix.cc').then((res) =>
       (res.data as any[])
         .map((el: any) => {
@@ -597,6 +602,7 @@ export default {
     ...mapGetters({
       allItems: 'all_items',
       locations: 'locations',
+      fortex: 'fortex',
     }),
     onlyInterBank() {
       return this.onlyInterbank.includes(this.code)
@@ -1001,12 +1007,21 @@ export default {
             if (this.code === 'UYU') {
               el.sell = 1 / e.buy
               el.buy = 1 / e.sell
+            } else if (el.origin === 'fortex') {
+              if (
+                (this.code_with === 'ARS' && this.code === 'USD') ||
+                (this.code === 'ARS' && this.code_with === 'USD')
+              ) {
+                el.sell = this.fortex[this.code_with][this.code]
+              } else {
+                el.sell = 1 / this.fortex[this.code_with][this.code]
+              }
+              el.buy = this.fortex[this.code][this.code_with]
             } else {
               const f = codeOrigins[el.origin + (el.type ? el.type : '')]
               el.sell = e.sell / f.buy
               el.buy = e.buy / f.sell
             }
-            console.log('EL', el)
             return el
           })
       }
