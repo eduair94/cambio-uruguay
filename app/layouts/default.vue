@@ -109,6 +109,10 @@ export default {
   opacity: 0.8;
 }
 
+body .v-app-bar.v-app-bar--fixed {
+  z-index:1;
+}
+
 @media (max-width: 768px) {
   body .v-footer {
     padding-bottom: 80px;
