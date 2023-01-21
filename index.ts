@@ -3,6 +3,7 @@ import { Request } from "express";
 import moment from "moment-timezone";
 import BCU_Details from "./classes/bcu_details";
 import { cambio_info } from "./classes/cambioInfo";
+import CambioFortex from "./classes/cambios/fortex";
 import { MongooseServer } from "./classes/database";
 import server from "./classes/Express/ExpressSetup";
 import { origins } from "./classes/origins";
@@ -48,6 +49,12 @@ const main = async () => {
   });
   server.getJson("localData", async (req: Request): Promise<any> => {
     const res = cambio_info.get_local_data();
+    return res;
+  });
+  server.getJson("fortex", async (req: Request): Promise<any> => {
+    const date = moment().startOf("day").toDate();
+    const fortex = new CambioFortex();
+    const res = await fortex.get_conversions(date);
     return res;
   });
   server.getJson("position_stack", async (req: Request): Promise<any> => {
