@@ -182,7 +182,26 @@
                         hide-details
                         :items="money"
                         :label="$t('currency')"
-                        @change="updateTable"
+                        @change="updateTable()"
+                      >
+                        <template slot="selection" slot-scope="data">
+                          <span>{{ data.item }} - {{ getTexts(data) }}</span>
+                        </template>
+                        <template slot="item" slot-scope="data">
+                          <span>{{ data.item }} - {{ getTexts(data) }}</span>
+                        </template>
+                      </v-select>
+                      <v-select
+                        v-model="code_with"
+                        class="mt-3"
+                        hide-details
+                        :items="plusUy(money)"
+                        :label="
+                          wantTo === 'buy'
+                            ? $t('buying_with')
+                            : $t('paying_with')
+                        "
+                        @change="updateTable()"
                       >
                         <template slot="selection" slot-scope="data">
                           <span>{{ data.item }} - {{ getTexts(data) }}</span>
@@ -198,7 +217,7 @@
                         hide-details
                         :items="locations"
                         :label="$t('departments')"
-                        @change="updateTable"
+                        @change="updateTable()"
                       >
                         <template slot="selection" slot-scope="data">
                           <!-- HTML that describe how select should render selected items -->
@@ -211,7 +230,7 @@
                       </v-select>
                     </v-col>
                     <v-col cols="12" md="6" lg="2">
-                      <div class="mt-lg-3 d-flex">
+                      <div class="mt-lg-3 d-flex flex-wrap">
                         <div class="mr-2">
                           <LocationPopup
                             ref="locationPopup"
@@ -252,13 +271,13 @@
                           class="mr-md-3"
                           hide-details
                           :label="$t('hideInterBank')"
-                          @change="updateTable"
+                          @change="updateTable()"
                         ></v-checkbox>
                         <v-checkbox
                           v-model="notConditional"
                           hide-details
                           :label="$t('hideConditional')"
-                          @change="updateTable"
+                          @change="updateTable()"
                         ></v-checkbox>
                       </div>
                     </v-col>
@@ -422,12 +441,11 @@ export default {
     BCU: () => import('../components/BCU.vue'),
     SearchExchange: () => import('../components/SearchExchange.vue'),
   },
-  async middleware({ store, redirect, $axios, $i18n }) {
+  async middleware({ store, redirect, $axios, $i18n, query }) {
     const locations = ['TODOS', 'MONTEVIDEO']
     const localData = await $axios
       .get('https://cambio.shellix.cc/localData')
       .then((res) => res.data)
-
     for (const key in localData) {
       const val = localData[key]
       const departments = val.departments
@@ -462,7 +480,6 @@ export default {
         .map((el: any) => {
           el.localData = localData[el.origin]
           if (!el.localData) {
-            console.log('missing localData', el)
             el.localData = null
           }
           el.isInterBank = isInterBank(el)
@@ -502,6 +519,7 @@ export default {
           CHF: 'Francos Suizos',
           CAD: 'Dólares Canadienses',
           AUD: 'Dólares Australianos',
+          UYU: 'Pesos Uruguayos',
         },
         pt: {
           USD: 'Dólares dos Estados Unidos',
@@ -521,6 +539,7 @@ export default {
           CHF: 'Francos suíços',
           CAD: 'Dólares canadenses',
           AUD: 'Dólares australianos',
+          UYU: 'Pesos Uruguayos',
         },
         en: {
           USD: 'United States Dollars',
@@ -540,6 +559,7 @@ export default {
           CHF: 'Swiss Francs',
           CAD: 'Canadian Dollars',
           AUD: 'Australian Dollars',
+          UYU: 'Pesos Uruguayos',
         },
       },
       money: ['USD', 'ARS', 'BRL', 'EUR', 'GBP'],
@@ -549,6 +569,7 @@ export default {
       notConditional: false,
       day: new Date().toLocaleDateString(),
       code: '',
+      code_with: '',
       notInterBank: true,
       items: [],
       enableDistance: false,
@@ -582,33 +603,7 @@ export default {
     },
   },
   beforeMount() {
-    this.all_items = [...this.allItems]
-    let pwaInstall = false
-    try {
-      if (!window.matchMedia('(display-mode: standalone)').matches) {
-        pwaInstall = true
-      }
-    } catch (e) {
-      console.error(e)
-    }
-    if (pwaInstall) {
-      ;(window as any).deferredPrompt = null
-      window.addEventListener('beforeinstallprompt', (e) => {
-        ;(window as any).deferredPrompt = e
-        if (e !== null) {
-          this.show_install = true
-        }
-      })
-    }
-    this.amount = this.$route.query.amount
-      ? parseFloat(this.$route.query.amount)
-      : 100
-    this.wantTo = this.$route.query.wantTo ? this.$route.query.wantTo : 'buy'
-    this.code = this.$route.query.currency ? this.$route.query.currency : 'USD'
-    this.location = this.$route.query.location
-      ? this.$route.query.location
-      : 'TODOS'
-    this.get_data()
+    this.beforeMount()
   },
   mounted() {
     ;(window as any).startLoading = () => {
@@ -622,6 +617,53 @@ export default {
     this.setScrollBar()
   },
   methods: {
+    beforeMount() {
+      this.all_items = [...this.allItems]
+      let pwaInstall = false
+      try {
+        if (!window.matchMedia('(display-mode: standalone)').matches) {
+          pwaInstall = true
+        }
+      } catch (e) {
+        console.error(e)
+      }
+      if (pwaInstall) {
+        ;(window as any).deferredPrompt = null
+        window.addEventListener('beforeinstallprompt', (e) => {
+          ;(window as any).deferredPrompt = e
+          if (e !== null) {
+            this.show_install = true
+          }
+        })
+      }
+      this.amount = this.$route.query.amount
+        ? parseFloat(this.$route.query.amount)
+        : 100
+      if (!this.wantTo) {
+        this.wantTo = this.$route.query.wantTo
+          ? this.$route.query.wantTo
+          : 'buy'
+      }
+      if (!this.code) {
+        this.code = this.$route.query.currency
+          ? this.$route.query.currency
+          : 'USD'
+      }
+      if (!this.location) {
+        this.location = this.$route.query.location
+          ? this.$route.query.location
+          : 'TODOS'
+      }
+      if (!this.code_with) {
+        this.code_with = this.$route.query.currency_with
+          ? this.$route.query.currency_with
+          : 'UYU'
+      }
+      this.get_data()
+    },
+    plusUy(array: string[]) {
+      return [...array.filter((el) => el !== this.code), 'UYU']
+    },
     setScrollBar() {
       const tableWrapper = document.querySelector(
         '.money_table .v-data-table__wrapper'
@@ -789,8 +831,8 @@ export default {
           value: 'code',
         },
         { text: this.$t('casaDeCambio'), value: 'localData.name' },
-        { text: this.$t('compra') + ' (UY)', value: 'buy' },
-        { text: this.$t('venta') + ' (UY)', value: 'sell' },
+        { text: this.$t('compra') + ` (${this.code_with})`, value: 'buy' },
+        { text: this.$t('venta') + ` (${this.code_with})`, value: 'sell' },
         { text: 'Dif (%)', value: 'diff' },
         {
           text: this.$t('sitioWeb'),
@@ -828,7 +870,9 @@ export default {
         savePercent = ((minValue - maxValue) / maxValue) * 100
       }
       const saveAmount =
-        Math.abs((maxValue - minValue) * this.amount).toFixed(2) + ' UYU'
+        Math.abs((maxValue - minValue) * this.amount).toFixed(2) +
+        ' ' +
+        this.code_with
       const s = savePercent.toFixed(2)
       const loc = {
         es: `Puedes ahorrar hasta un ${s}% (${saveAmount}) utilizando nuestra app.`,
@@ -860,7 +904,6 @@ export default {
       }
       const finalText =
         loc[this.$i18n.locale] + ' ' + extra + this.$t('to') + ' ' + text
-      console.log('Text', finalText)
       try {
         navigator.share({
           url: window.location.href,
@@ -911,7 +954,7 @@ export default {
     formatMoney(number) {
       return number.toLocaleString('es-ES', {
         style: 'currency',
-        currency: 'UYU',
+        currency: this.code_with,
       })
     },
     row_classes(item) {
@@ -935,20 +978,45 @@ export default {
             !el.localData.departments.length ||
             el.localData.departments.includes(this.location))
       )
+      if (this.code_with && this.code_with !== 'UYU') {
+        const codeOrigins: any = {}
+        this.items = this.items
+          .filter((el) => {
+            const f = this.all_items.find(
+              (e) =>
+                e.origin === el.origin &&
+                e.code === this.code_with &&
+                e.type === el.type
+            )
+            codeOrigins[el.origin + (el.type ? el.type : '')] = f
+            return f !== undefined
+          })
+          .map((e) => {
+            const el = { ...e }
+            const f = codeOrigins[el.origin + (el.type ? el.type : '')]
+            el.sell = e.sell / f.buy
+            el.buy = e.buy / f.sell
+            return el
+          })
+        console.log('Code with origins', codeOrigins)
+      }
       this.setPrice()
     },
     setPrice() {
       if (this.amount < 0) {
         this.amount = 0
       }
+      const query: any = {
+        currency: this.code,
+        amount: this.amount,
+        wantTo: this.wantTo,
+        location: this.location,
+        currency_with: this.code_with,
+      }
+      // Change route.
       this.$router.push({
-        query: {
-          ...this.$route.query,
-          currency: this.code,
-          amount: this.amount,
-          wantTo: this.wantTo,
-          location: this.location,
-        },
+        ...this.$route.query,
+        query,
       })
       const amount = this.amount
       const wanToSell = this.wantTo === 'sell'
@@ -990,13 +1058,12 @@ export default {
       })
     },
     get_data() {
-      this.updateTable()
       this.all_items.forEach(({ code }) => {
         if (!this.money.includes(code)) {
           this.money.push(code)
         }
       })
-      this.setPrice()
+      this.updateTable()
       this.finishLoading()
     },
   },
