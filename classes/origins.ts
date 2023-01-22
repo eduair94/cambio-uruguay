@@ -1,3 +1,4 @@
+import Aeromar from "./cambios/aeromar";
 import AlterCambio from "./cambios/alter_cambio";
 import BalumaCambio from "./cambios/baluma_cambio";
 import CambioBCU from "./cambios/bcu";
@@ -43,6 +44,7 @@ import Tradelix from "./cambios/tradelix";
 import CambioVarlix from "./cambios/varlix";
 
 export const origins = {
+  aeromar: Aeromar,
   fortex: CambioFortex,
   cambio_argentino: CambioArgentino,
   cambio_federal: CambioFederal,
