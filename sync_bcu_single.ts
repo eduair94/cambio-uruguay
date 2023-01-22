@@ -17,7 +17,7 @@ async function main() {
     const res_sync = await b.sync_single(origins, origin, 0, 1);
     console.log("Response sync", res_sync);
     // Add Rows to Sheet.
-    const info = await cambio_info.getMarkets({origin: 'itau'});
+    const info = await cambio_info.getMarkets({origin: origin});
     const document = new GoogleSpreadsheet("1yKfUC3EZbpiFD-6yJuoUewgjjzA2yv9zhy7a0G2zD30");
     await document.useServiceAccountAuth(credentials);
     await document.loadInfo();
