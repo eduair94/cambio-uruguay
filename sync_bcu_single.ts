@@ -29,6 +29,9 @@ async function main() {
             Departamento: el.Departamento,
             Localidad: el.Localidad,
             Dirección: el.Direccion,
+            Telefono: el.Telefono,
+            Nombre: el.Nombre,
+            Status: 1
         };
     });
     const res_sheet = await sheet.addRows(data);
