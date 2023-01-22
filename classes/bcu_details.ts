@@ -28,11 +28,8 @@ class BCU_Details {
     const res = await this.db.findEntry({ origin });
     return res;
   }
-  async sync_data() {
-    let idx = 1;
-    let total = Object.keys(origins).length;
-    for (let origin in origins) {
-      console.log(idx, total);
+  async sync_single(origins:any, origin:string, idx:number, total:number) {
+    console.log(idx, total);
       try {
         const cambio: Cambio = new origins[origin](origin);
         const bcu = (cambio as any).bcu;
@@ -68,6 +65,12 @@ class BCU_Details {
         console.error(e);
         console.log(origin, e.message);
       }
+  }
+  async sync_data() {
+    let idx = 1;
+    let total = Object.keys(origins).length;
+    for (let origin in origins) {
+      await this.sync_single(origins, origin, idx, total);
       idx++;
     }
     console.log("Finish");
