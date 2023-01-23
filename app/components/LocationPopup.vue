@@ -255,7 +255,7 @@ export default {
 }
 @media (max-width: 768px) {
   .location_map {
-    height: 65vh;
+    height: 63vh;
   }
 }
 </style>

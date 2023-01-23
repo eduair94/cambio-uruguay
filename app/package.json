@@ -25,6 +25,7 @@
     "@nuxtjs/sentry": "^7.0.2",
     "@nuxtjs/sitemap": "^2.4.0",
     "@sentry/tracing": "^7.30.0",
+    "@sentry/vue": "^7.32.0",
     "autolinker": "^4.0.0",
     "core-js": "^3.19.3",
     "nuxt": "^2.15.8",

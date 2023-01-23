@@ -110,7 +110,7 @@ export default {
 }
 
 body .v-app-bar.v-app-bar--fixed {
-  z-index:1;
+  z-index: 1;
 }
 
 @media (max-width: 768px) {
