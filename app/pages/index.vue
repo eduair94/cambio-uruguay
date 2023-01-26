@@ -404,22 +404,6 @@
         App Status
       </v-btn>
     </div>
-    <div id="suggestions" class="d-flex"></div>
-    <div
-      id="updates"
-      style="width: 100%"
-      class="w-100 d-flex justify-center twitter_feed"
-    >
-      <a
-        class="twitter-timeline"
-        data-tweet-limit="5"
-        data-width="100%"
-        tw-align="center"
-        data-theme="dark"
-        align="center"
-        href="https://twitter.com/cambio_uruguay?ref_src=twsrc%5Etfw"
-      ></a>
-    </div>
     <div class="mt-3">
       {{ $t('consulta') }}
       <a class="white--text" href="mailto:admin@cambio-uruguay.com"
