@@ -408,7 +408,7 @@
     <div
       id="updates"
       style="width: 100%"
-      class="w-100 d-flex justify-center mt-3 twitter_feed"
+      class="w-100 d-flex justify-center twitter_feed"
     >
       <a
         class="twitter-timeline"
