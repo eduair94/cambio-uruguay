@@ -403,6 +403,7 @@
       >
         App Status
       </v-btn>
+      <div id="suggestions"></div>
     </div>
     <div
       id="updates"
@@ -634,7 +635,6 @@ export default {
     arcRemove(att = 0) {
       this.$nextTick(() => {
         const arc = document.getElementById('arc-widget-container')
-        console.log('Arc remove', arc ? 'true' : 'false')
         if (arc) arc.remove()
         else {
           if (att === 5) {
