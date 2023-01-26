@@ -279,6 +279,12 @@
                           :label="$t('hideConditional')"
                           @change="updateTable()"
                         ></v-checkbox>
+                        <v-checkbox
+                          v-model="hiddenWidgets"
+                          hide-details
+                          :label="$t('hideWidgets')"
+                          @change="hideWidgets"
+                        ></v-checkbox>
                       </div>
                     </v-col>
                   </v-row>
@@ -498,6 +504,7 @@ export default {
   },
   data() {
     return {
+      hiddenWidgets: false,
       hasScroll: false,
       all_items: [],
       snackbar: false,
@@ -621,8 +628,56 @@ export default {
       if (el) el.style.display = 'none'
     }
     this.setScrollBar()
+    this.arcRemove()
   },
   methods: {
+    arcRemove(att = 0) {
+      this.$nextTick(() => {
+        const arc = document.getElementById('arc-widget-container')
+        if (arc) arc.remove()
+        else {
+          if (att === 5) {
+            return
+          }
+          att++
+          this.arcRemove(att)
+        }
+      })
+    },
+    hideFeedback() {
+      document.head.insertAdjacentHTML(
+        'beforeend',
+        `<style type="text/css" class="custom_style_list">
+                    ._hj_feedback_container {
+                      display:none!important;
+                    }
+            </style>`
+      )
+    },
+    hideWidgets(val: boolean, att = 0) {
+      const t = (window as any).Tawk_API
+      if (t && t.hideWidget) {
+        if (val) {
+          localStorage.setItem('hideWidgets', '1')
+          t.hideWidget()
+          this.hideFeedback()
+        } else {
+          localStorage.removeItem('hideWidgets')
+          t.showWidget()
+          const el = document.querySelector('.custom_style_list')
+          if (el) el.remove()
+        }
+      } else {
+        this.$nextTick(() => {
+          att++
+          if (att === 10) {
+            console.log('hide widget', att)
+            return
+          }
+          this.hideWidgets(val, att)
+        })
+      }
+    },
     beforeMount() {
       this.all_items = [...this.allItems]
       let pwaInstall = false
@@ -642,6 +697,12 @@ export default {
           }
         })
       }
+      if (this.$route.query.notConditional) {
+        this.notConditional = true
+      }
+      if (this.$route.query.notInterBank) {
+        this.notInterBank = true
+      }
       this.amount = this.$route.query.amount
         ? parseFloat(this.$route.query.amount)
         : 100
@@ -656,6 +717,14 @@ export default {
         ? this.$route.query.currency_with
         : 'UYU'
       this.get_data()
+
+      if (localStorage.getItem('hideWidgets') === '1') {
+        this.hiddenWidgets = true
+        ;(window as any).Tawk_API.onLoad = () => {
+          ;(window as any).Tawk_API.hideWidget()
+          this.hideFeedback()
+        }
+      }
     },
     plusUy(array: string[]) {
       return [...array.filter((el) => el !== this.code), 'UYU']
@@ -1037,6 +1106,8 @@ export default {
         wantTo: this.wantTo,
         location: this.location,
         currency_with: this.code_with,
+        notInterBank: this.notInterBank ? 1 : undefined,
+        notConditional: this.notConditional ? 1 : undefined,
       }
       // Change route.
       this.$router.push({
