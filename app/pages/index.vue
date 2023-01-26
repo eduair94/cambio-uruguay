@@ -404,7 +404,7 @@
         App Status
       </v-btn>
     </div>
-    <div id="suggestions"></div>
+    <div id="suggestions" class="d-flex"></div>
     <div
       id="updates"
       style="width: 100%"

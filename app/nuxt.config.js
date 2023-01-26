@@ -123,6 +123,11 @@ export default {
     script: [
       {
         async: true,
+        src: 'https://platform.twitter.com/widgets.js',
+        charset: 'utf-8'
+      },
+      {
+        async: true,
         src: 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7038674901615097',
         crossorigin: 'anonymous'
       },
