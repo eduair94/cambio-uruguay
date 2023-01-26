@@ -580,14 +580,6 @@ export default {
   head() {
     return this.$nuxtI18nHead({
       addSeoAttributes: true,
-      script: [
-        {
-          src: 'https://platform.twitter.com/widgets.js',
-          defer: true,
-          hid: 'twitter',
-          charset: 'utf-8',
-        },
-      ],
     })
   },
   computed: {
@@ -613,22 +605,8 @@ export default {
       if (el) el.style.display = 'none'
     }
     this.setScrollBar()
-    this.arcRemove()
   },
   methods: {
-    arcRemove(att = 0) {
-      this.$nextTick(() => {
-        const arc = document.getElementById('arc-widget-container')
-        if (arc) arc.remove()
-        else {
-          if (att === 5) {
-            return
-          }
-          att++
-          setTimeout(() => this.arcRemove(att), 100)
-        }
-      })
-    },
     hideFeedback() {
       document.head.insertAdjacentHTML(
         'beforeend',

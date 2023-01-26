@@ -128,6 +128,11 @@ body .v-app-bar.v-app-bar--fixed {
   }
 }
 
+#arc-widget-container iframe {
+  display: none !important;
+  pointer-events: none !important;
+}
+
 @media (max-width: 768px) {
   body .v-footer {
     padding-bottom: 80px;
