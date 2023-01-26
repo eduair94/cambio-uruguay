@@ -634,13 +634,14 @@ export default {
     arcRemove(att = 0) {
       this.$nextTick(() => {
         const arc = document.getElementById('arc-widget-container')
+        console.log('Arc remove', arc ? 'true' : 'false')
         if (arc) arc.remove()
         else {
           if (att === 5) {
             return
           }
           att++
-          this.arcRemove(att)
+          setTimeout(() => this.arcRemove(att), 100)
         }
       })
     },
