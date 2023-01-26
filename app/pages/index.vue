@@ -403,8 +403,8 @@
       >
         App Status
       </v-btn>
-      <div id="suggestions"></div>
     </div>
+    <div id="suggestions"></div>
     <div
       id="updates"
       style="width: 100%"
