@@ -685,8 +685,8 @@ export default {
         this.hiddenWidgets = true
         ;(window as any).Tawk_API.onLoad = () => {
           ;(window as any).Tawk_API.hideWidget()
-          this.hideFeedback()
         }
+        this.hideFeedback()
       }
     },
     plusUy(array: string[]) {
