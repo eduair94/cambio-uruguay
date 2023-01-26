@@ -24,23 +24,25 @@
       </v-container>
     </v-main>
     <v-footer :fixed="false">
-      <span>Cambio Uruguay &copy; {{ new Date().getFullYear() }}</span>
-      <v-spacer />
-      <span
-        >{{ $t('madeWith') }} <v-icon color="red">mdi-heart</v-icon>
-        {{ $t('por') }}
-        <a
-          class="white--text"
-          href="https://www.linkedin.com/in/eduardo-airaudo/"
-          >Eduardo Airaudo</a
-        >
-        {{ $t('and') }}
-        <a
-          class="white--text"
-          href="https://www.linkedin.com/in/reginascagliotti/"
-          >Regina Scagliotti</a
-        >
-      </span>
+      <div class="d-flex footer_content">
+        <span>Cambio Uruguay &copy; {{ new Date().getFullYear() }}</span>
+        <v-spacer />
+        <span
+          >{{ $t('madeWith') }} <v-icon color="red">mdi-heart</v-icon>
+          {{ $t('por') }}
+          <a
+            class="white--text"
+            href="https://www.linkedin.com/in/eduardo-airaudo/"
+            >Eduardo Airaudo</a
+          >
+          {{ $t('and') }}
+          <a
+            class="white--text"
+            href="https://www.linkedin.com/in/reginascagliotti/"
+            >Regina Scagliotti</a
+          >
+        </span>
+      </div>
     </v-footer>
     <JoinTwitter />
   </v-app>
@@ -111,6 +113,19 @@ export default {
 
 body .v-app-bar.v-app-bar--fixed {
   z-index: 1;
+}
+
+#suggestions {
+  background: white;
+  width: 384px;
+  height: 264px;
+}
+
+@media (min-width: 768px) {
+  .footer_content {
+    max-width: calc(100vw - 150px);
+    width: 100%;
+  }
 }
 
 @media (max-width: 768px) {
