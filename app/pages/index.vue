@@ -403,6 +403,7 @@
       >
         App Status
       </v-btn>
+      <div id="suggestions"></div>
     </div>
     <div
       id="updates"
@@ -640,7 +641,7 @@ export default {
             return
           }
           att++
-          this.arcRemove(att)
+          setTimeout(() => this.arcRemove(att), 100)
         }
       })
     },
