@@ -164,6 +164,14 @@ export default {
       '@nuxtjs/google-gtag',
       {
         id: 'G-F97PNVRMRF'
+        additionalAccounts: [
+          {
+            id: 'AW-972399920',
+            config: {
+              send_page_view: true, // optional configurations
+            },
+          },
+        ],
       }
     ],
     '@nuxtjs/google-fonts'
