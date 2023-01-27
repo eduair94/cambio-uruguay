@@ -163,7 +163,7 @@ export default {
     [
       '@nuxtjs/google-gtag',
       {
-        id: 'G-F97PNVRMRF'
+        id: 'G-F97PNVRMRF',
         additionalAccounts: [
           {
             id: 'AW-972399920',
