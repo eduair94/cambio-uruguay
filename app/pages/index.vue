@@ -54,7 +54,16 @@
                         donation_container
                       "
                     >
-                      <span class="mr-3">{{ $t('info') }}</span>
+                      <span class="mr-3 text_info"
+                        >{{ $t('info') }}
+                        <a
+                          target="_blank"
+                          class="white--text"
+                          href="https://www.trustpilot.com/review/cambio-uruguay.com"
+                        >
+                          {{ $t('here') }}</a
+                        ></span
+                      >
                       <div class="d-flex mt-2">
                         <a
                           target="_blank"
@@ -1207,6 +1216,10 @@ body {
 #div2 {
   height: 1px;
   overflow: scroll;
+}
+
+.text_info {
+  max-width: 490px;
 }
 
 @media (max-width: 768px) {
