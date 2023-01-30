@@ -81,7 +81,7 @@ export default {
       {
         name: 'keywords',
         content:
-          'cotizaciones uruguay,casa cambiaria,cambio moneda,cambio dólares,cambio pesos argentinos,cambio reales,cambio euros,varlix,prex,gales,cambio montevideo,cambio,donde cambiar dólares en Uruguay,cambio divisas,donde comprar pesos argentinos en uruguay,donde comprar dolares en uruguay'
+          'cambio moneda uruguay, cambio divisas uruguay, donde comprar dólares uruguay, donde vender dólares uruguay, vender pesos argentinos uruguay, comprar pesos argentinos uruguay, casas de cambio uruguay, casas de cambio montevideo, casas de cambio punta del este'
       },
       {
         name: 'msapplication-TileColor',
@@ -168,10 +168,10 @@ export default {
           {
             id: 'AW-972399920',
             config: {
-              send_page_view: true, // optional configurations
-            },
-          },
-        ],
+              send_page_view: true // optional configurations
+            }
+          }
+        ]
       }
     ],
     '@nuxtjs/google-fonts'
