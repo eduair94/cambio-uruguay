@@ -58,7 +58,9 @@ const translation = {
 		paying_with: 'Paying with',
 		buying_with: 'Buying with',
 		hideWidgets: 'Hide chat / widgets',
-		here: 'here'
+		here: 'here',
+		pay: 'You pay',
+		get: 'You get',
 	},
 	pt: {
 		welcome: 'Encontre a melhor taxa de câmbio do mercado, comparando entre mais de 40 casas de câmbio.',
@@ -120,6 +122,8 @@ const translation = {
 		buying_with: 'Comprando com',
 		hideWidgets: 'Ocultar widgets / bate-papo',
 		here: 'aqui',
+		pay: 'Você paga',
+		get: 'Você consegue',
 	},
 	es: {
 		welcome: 'Encuentra la mejor cotización en el mercado, comparando entre más de 40 casas de cambio.',
@@ -180,7 +184,9 @@ const translation = {
 		paying_with: 'Pagando con',
 		buying_with: 'Comprando con',
 		hideWidgets: 'Esconder widgets / chat',
-		here: 'aquí'
+		here: 'aquí',
+		pay: 'Pagas',
+		get: 'Te dan',
 	}
 };
 
