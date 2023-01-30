@@ -59,8 +59,8 @@ class CambioBrou extends Cambio {
     const result = $("table tbody tr")
       .map((i: number, element) => ({
         moneda: $(element).find("td:nth-of-type(1)").text().trim(),
-        compra: this.fix_money($(element).find("td:nth-of-type(3)").text().trim()),
-        venta: this.fix_money($(element).find("td:nth-of-type(5)").text().trim()),
+        compra: $(element).find("td:nth-of-type(3)").text().trim(),
+        venta: $(element).find("td:nth-of-type(5)").text().trim(),
         arbitraje_compra: this.fix_money($(element).find("td:nth-of-type(7)").text().trim()),
         arbitraje_venta: this.fix_money($(element).find("td:nth-of-type(9)").text().trim()),
       }))
@@ -72,8 +72,8 @@ class CambioBrou extends Cambio {
         code,
         type,
         name: el.moneda,
-        buy: el.compra,
-        sell: el.venta,
+        buy: this.fix_money(el.compra, code),
+        sell: this.fix_money(el.venta, code),
       };
     });
     return f;

@@ -82,8 +82,8 @@ class CambioLaFavorita extends Cambio {
     const result = $(cotizacionesSel)
       .map((i: number, element) => ({
         moneda: $(element).find("h1").text().trim(),
-        compra: this.fix_money($(element).find(".color-cotizacion").eq(0).text().trim()),
-        venta: this.fix_money($(element).find(".color-cotizacion").eq(1).text().trim()),
+        compra: $(element).find(".color-cotizacion").eq(0).text().trim(),
+        venta: $(element).find(".color-cotizacion").eq(1).text().trim(),
       }))
       .get();
     const f = result
@@ -94,8 +94,8 @@ class CambioLaFavorita extends Cambio {
           code,
           type,
           name: el.moneda,
-          buy: el.compra,
-          sell: el.venta,
+          buy: this.fix_money(el.compra, code),
+          sell: this.fix_money(el.venta, code),
         };
       });
     console.log(f);
