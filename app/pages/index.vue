@@ -178,7 +178,11 @@
                       <v-text-field
                         v-model="amount"
                         hide-details
-                        :label="'XXX ' + code"
+                        :label="
+                          (wantTo === 'buy' ? $t('get') : $t('pay')) +
+                          ' XXX ' +
+                          code
+                        "
                         type="number"
                         min="0"
                         placeholder="10"
@@ -190,7 +194,7 @@
                         v-model="code"
                         hide-details
                         :items="money"
-                        :label="$t('currency')"
+                        :label="wantTo === 'buy' ? $t('get') : $t('pay')"
                         @change="updateTable()"
                       >
                         <template slot="selection" slot-scope="data">
@@ -205,11 +209,7 @@
                         class="mt-3"
                         hide-details
                         :items="plusUy(money)"
-                        :label="
-                          wantTo === 'buy'
-                            ? $t('buying_with')
-                            : $t('paying_with')
-                        "
+                        :label="wantTo === 'buy' ? $t('pay') : $t('get')"
                         @change="updateTable()"
                       >
                         <template slot="selection" slot-scope="data">
@@ -323,10 +323,10 @@
             >
           </template>
           <template #item.buy="{ item }">
-            <span>{{ item.buy.toFixed(2) }}</span>
+            <span>{{ formatNumber(item.buy) }}</span>
           </template>
           <template #item.sell="{ item }">
-            <span>{{ item.sell.toFixed(2) }}</span>
+            <span>{{ formatNumber(item.sell) }}</span>
           </template>
           <template #item.condition="{ item }">
             <div v-if="item.condition" class="py-md-1">
@@ -616,6 +616,18 @@ export default {
     this.setScrollBar()
   },
   methods: {
+    formatNumber(number: number) {
+      const nString = number.toString()
+      if (!nString.includes('.')) {
+        return number.toFixed(2)
+      }
+      const n = number.toPrecision(2)
+      const nSplit = nString.split('.')[1]
+      if (nSplit.length <= 2) {
+        return number.toFixed(2)
+      }
+      return n
+    },
     hideFeedback() {
       document.head.insertAdjacentHTML(
         'beforeend',
