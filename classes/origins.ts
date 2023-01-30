@@ -44,6 +44,8 @@ import Tradelix from "./cambios/tradelix";
 import CambioVarlix from "./cambios/varlix";
 
 export const origins = {
+  la_favorita: CambioLaFavorita,
+  brou: CambioBrou,
   aeromar: Aeromar,
   fortex: CambioFortex,
   cambio_argentino: CambioArgentino,
@@ -80,9 +82,7 @@ export const origins = {
   suizo: CambioSuizo,
   cambio_sir: CambioSir,
   cambio_ingles: CambioIngles,
-  la_favorita: CambioLaFavorita,
   bcu: CambioBCU,
-  brou: CambioBrou,
   cambilex: CambioCambilex,
   aspen: CambioAspen,
   matriz: CambioMatriz,

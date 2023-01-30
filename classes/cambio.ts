@@ -150,7 +150,7 @@ abstract class Cambio {
   fix_money = function (value: string, code = '') {
     let no_dots = value;
     if (code === 'XAU') {
-       no_dots = value.replaceAll(".", ""); 
+       no_dots = no_dots.replaceAll(".", ""); 
     }
     no_dots = no_dots.replaceAll(",", ".");
     const res = parseFloat(no_dots);
