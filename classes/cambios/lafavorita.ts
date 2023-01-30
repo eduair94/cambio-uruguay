@@ -94,8 +94,8 @@ class CambioLaFavorita extends Cambio {
           code,
           type,
           name: el.moneda,
-          buy: this.fix_money(el.compra, code),
-          sell: this.fix_money(el.venta, code),
+          buy: this.fix_money(el.compra, code, 'lafavorita'),
+          sell: this.fix_money(el.venta, code, 'lafavorita'),
         };
       });
     console.log(f);

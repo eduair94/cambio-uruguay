@@ -61,8 +61,8 @@ class CambioBrou extends Cambio {
         moneda: $(element).find("td:nth-of-type(1)").text().trim(),
         compra: $(element).find("td:nth-of-type(3)").text().trim(),
         venta: $(element).find("td:nth-of-type(5)").text().trim(),
-        arbitraje_compra: this.fix_money($(element).find("td:nth-of-type(7)").text().trim()),
-        arbitraje_venta: this.fix_money($(element).find("td:nth-of-type(9)").text().trim()),
+        arbitraje_compra: $(element).find("td:nth-of-type(7)").text().trim(),
+        arbitraje_venta: $(element).find("td:nth-of-type(9)").text().trim(),
       }))
       .get();
 
