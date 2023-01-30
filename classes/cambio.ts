@@ -147,10 +147,14 @@ abstract class Cambio {
     return db;
   }
 
-  fix_money = function (value: string, code = '') {
+  fix_money = function (value: string, code = '', cambio = '') {
     let no_dots = value;
     if (code === 'XAU') {
-       no_dots = no_dots.replaceAll(".", ""); 
+      if (cambio === 'lafavorita') {
+        no_dots = no_dots.replaceAll(",", ""); 
+      } else {
+        no_dots = no_dots.replaceAll(".", ""); 
+      }
     }
     no_dots = no_dots.replaceAll(",", ".");
     const res = parseFloat(no_dots);
