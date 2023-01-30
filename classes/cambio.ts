@@ -147,8 +147,12 @@ abstract class Cambio {
     return db;
   }
 
-  fix_money = function (value: string) {
-    const no_dots = value.replaceAll(",", ".");
+  fix_money = function (value: string, code = '') {
+    let no_dots = '';
+    if (code === 'XAU') {
+       no_dots = value.replaceAll(".", ""); 
+    }
+    no_dots = value.replaceAll(",", ".");
     const res = parseFloat(no_dots);
     if (isNaN(res)) return 0;
     return res;
@@ -219,3 +223,4 @@ abstract class Cambio {
 }
 
 export { Cambio };
+
