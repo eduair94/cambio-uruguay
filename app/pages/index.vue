@@ -187,7 +187,18 @@
                         min="0"
                         placeholder="10"
                         @input="setPrice()"
-                      ></v-text-field>
+                      >
+                        <template #append-outer>
+                          <v-btn
+                            fab
+                            color="primary"
+                            small
+                            @click="changeCode(code, code_with)"
+                          >
+                            <v-icon>mdi-cached</v-icon>
+                          </v-btn>
+                        </template>
+                      </v-text-field>
                     </v-col>
                     <v-col cols="12" md="6" lg="3">
                       <v-select
@@ -616,6 +627,11 @@ export default {
     this.setScrollBar()
   },
   methods: {
+    changeCode(code: string, codeWith: string) {
+      this.code = codeWith
+      this.code_with = code
+      this.updateTable()
+    },
     formatNumber(number: number) {
       const nString = number.toString()
       if (!nString.includes('.')) {

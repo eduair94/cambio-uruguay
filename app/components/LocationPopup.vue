@@ -8,8 +8,10 @@
           :loading="loadingDistances"
           v-on="on"
           @click="geoLocation"
-          >{{ $t('loadDistances') }}</v-btn
         >
+          <v-icon class="mr-1">mdi-map-marker</v-icon>
+          <span>{{ $t('loadDistances') }}</span>
+        </v-btn>
       </template>
       <span>{{ $t('locationTooltip') }}</span>
     </v-tooltip>
@@ -242,7 +244,7 @@ export default {
   font-size: 16px;
 }
 .location_map {
-  height: 75vh;
+  height: calc(100vh - 270px);
 }
 .adress_lookup .v-input {
   max-width: 600px;
