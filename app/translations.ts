@@ -185,8 +185,8 @@ const translation = {
 		buying_with: 'Comprando con',
 		hideWidgets: 'Esconder widgets / chat',
 		here: 'aquí',
-		pay: 'Pagas',
-		get: 'Te dan',
+		pay: 'Pagas en',
+		get: 'Obtienes en',
 	}
 };
 
