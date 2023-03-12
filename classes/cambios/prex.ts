@@ -10,16 +10,32 @@ class CambioPrex extends Cambio {
   bcu = "https://www.bcu.gub.uy/Sistema-de-Pagos/Paginas/prex.aspx";
   website = `https://www.prexcard.com`;
   favicon = "https://www.prexcard.com";
-  async prex_ar() {
+  async login() {
+    const url = 'https://www.prexcard.com/api/login';
+    const headers = {
+      authorization: 'Bearer TokenAPP011001010',
+    }
+    const json = {
+      "Documento": e.prex_doc,
+      "Password": e.prex_pass,
+      "TipoDocumento": "CI",
+      "TipoPersona": "1",
+      "UuidDevice": "dd600127f3582fa7",
+      "ModelDevice": "M2102220SG",
+      "VersionDevice": "11",
+      "SerialDevice": "unknown",
+      "PlatformDevice": "Android",
+      "ManufacturerDevice": "Xaaomi",
+      "TokenFCM": "",
+      "AppVersion": "10.49.44"
+    };
+    const res = await axios.post(url, json, { headers }).then(res=>res.data);
+    return res.token;
+  }
+  async prex_ar(token:string) {
     const url = "https://www.prexcard.com/api/prex_a_prex_internacional_get_cotizacion_pais";
     const headers = {
-      "Accept-Charset": "UTF-8",
-      Authorization: `Bearer ${e.prex_token}`,
-      "Device-Serial": "2070937402d119c1",
-      "Device-Manufacturer": "samsung",
-      "User-Agent": "Dalvik/2.1.0 (Linux; U; Android 7.1.2; SM-N976N Build/N2G48H)",
-      Host: "www.prexcard.com",
-      "Accept-Encoding": "gzip",
+      Authorization: `Bearer ${token}`,
     };
     const res = await axios.post(url, { usuario_id: e.prex_user_id.toString(), pais_id: 32 }, { headers }).catch((e) => {
       console.error(e);
@@ -33,20 +49,25 @@ class CambioPrex extends Cambio {
   async get_usd() {
     const url = "https://www.prexcard.com/api/cotizacion_usd";
     const header = {
-      "Accept-Charset": "UTF-8",
-      Authorization: `Bearer ${e.prex_token}`,
-      "Device-Serial": "2070937402d119c1",
-      "Device-Manufacturer": "samsung",
-      "User-Agent": "Dalvik/2.1.0 (Linux; U; Android 7.1.2; SM-N976N Build/N2G48H)",
-      Host: "www.prexcard.com",
-      "Accept-Encoding": "gzip",
     };
-    const body = {};
+    const body = null;
     const res = await axios.post(url, body, { headers: header }).then((res) => res.data);
+    console.log("Response", res);
     return { buy: res.compra, sell: res.venta };
   }
   async get_data(): Promise<CambioObj[]> {
-    const ar = await this.prex_ar();
+    const { buy, sell } = await this.get_usd();
+    const f = [
+      {
+        code: "USD",
+        type: "",
+        name: "",
+        buy: buy,
+        sell: sell,
+      },
+    ];
+    const token = await this.login();
+    const ar = await this.prex_ar(token);
     let arF = null;
     console.log("Ar", ar);
     if (ar) {
@@ -58,16 +79,6 @@ class CambioPrex extends Cambio {
         sell: ar.cotizaciones.UY.venta / ar.cotizaciones.AR.compra,
       };
     }
-    const { buy, sell } = await this.get_usd();
-    const f = [
-      {
-        code: "USD",
-        type: "",
-        name: "",
-        buy: buy,
-        sell: sell,
-      },
-    ];
     if (arF) {
       f.push(arF);
     }
