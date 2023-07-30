@@ -91,7 +91,6 @@ class CambioPrex extends Cambio {
   async get_data(): Promise<CambioObj[]> {
     const token = await this.login();
     const ar = await this.prex_ar(token);
-    console.log("AR", ar);
     const { buy, sell } = await this.get_usd(token);
     const f = [
       {
@@ -102,9 +101,7 @@ class CambioPrex extends Cambio {
         sell: sell,
       },
     ];
-    console.log(f);
     let arF = null;
-    console.log("Ar", ar);
     if (ar) {
       arF = {
         code: "ARS",
