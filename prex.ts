@@ -1,7 +1,6 @@
 import CambioPrex from './classes/cambios/prex';
 import { MongooseServer } from './classes/database';
 import sentryInit from './sentry';
-process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
 
 const main = async () => {
 	sentryInit();
