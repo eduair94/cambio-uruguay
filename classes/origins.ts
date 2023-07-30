@@ -44,6 +44,7 @@ import Tradelix from "./cambios/tradelix";
 import CambioVarlix from "./cambios/varlix";
 
 export const origins = {
+  prex: CambioPrex,
   la_favorita: CambioLaFavorita,
   brou: CambioBrou,
   aeromar: Aeromar,
@@ -67,7 +68,6 @@ export const origins = {
   cambio_fenix: CambioFenix,
   cambio_oriental: CambioOriental,
   baluma_cambio: BalumaCambio,
-  prex: CambioPrex,
   gales: CambioGales,
   cambio_vexel: CambioVexel,
   cambio_velso: CambioVelso,
