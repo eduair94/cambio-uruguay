@@ -111,7 +111,7 @@ class CambioPrex extends Cambio {
         type: "",
         name: "",
         buy: Math.round(ar.cotUy / ar.cotArg * 100) / 100,
-        sell: "",
+        sell: 0,
       };
     }
     if (arF) {
