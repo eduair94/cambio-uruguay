@@ -29,30 +29,10 @@
                     {{ fixTitle($t('title')) }}
                   </h2>
                   <div
-                    class="
-                      d-flex
-                      flex-wrap
-                      align-center
-                      top_container
-                      justify-space-between
-                      mb-md-4
-                    "
+                    class="d-flex flex-wrap align-center top_container justify-space-between mb-md-4"
                   >
                     <div
-                      class="
-                        my-3
-                        mb-0
-                        md-md-3
-                        grey
-                        darken-3
-                        pa-3
-                        px-lg-5
-                        text-subtitle-1
-                        d-flex
-                        align-center
-                        flex-wrap
-                        donation_container
-                      "
+                      class="my-3 mb-0 md-md-3 grey darken-3 pa-3 px-lg-5 text-subtitle-1 d-flex align-center flex-wrap donation_container"
                     >
                       <span class="mr-3 text_info"
                         >{{ $t('info') }}
@@ -68,14 +48,7 @@
                         <a
                           target="_blank"
                           aria-label="Donar con Paypal"
-                          class="
-                            white--text
-                            d-flex
-                            mr-4
-                            align-center
-                            justify-content-left
-                            donation_logo
-                          "
+                          class="white--text d-flex mr-4 align-center justify-content-left donation_logo"
                           href="https://ko-fi.com/cambio_uruguay"
                         >
                           <v-img
@@ -91,13 +64,7 @@
                         </a>
                         <a
                           aria-label="Donar con Mercado Pago"
-                          class="
-                            white--text
-                            d-flex
-                            align-center
-                            justify-content-left
-                            donation_logo
-                          "
+                          class="white--text d-flex align-center justify-content-left donation_logo"
                           target="_blank"
                           href="https://mpago.la/19j46vX"
                         >
@@ -114,48 +81,7 @@
                         </a>
                       </div>
                     </div>
-                    <div class="button_section mb-3">
-                      <v-btn
-                        color="#78C257"
-                        link
-                        target="_blank"
-                        href="https://play.google.com/store/apps/details?id=com.cambio_uruguay.twa"
-                      >
-                        <v-icon> mdi-android </v-icon>
-                      </v-btn>
-                      <a
-                        ref="pwa_open"
-                        style="display: none"
-                        target="_blank"
-                        href="https://cambio-uruguay.com"
-                        >PWA</a
-                      >
-                      <v-btn
-                        aria-label="compartir"
-                        color="blue darken-1"
-                        @click="share"
-                      >
-                        <v-icon large> mdi-share </v-icon>
-                      </v-btn>
-                      <v-btn
-                        aria-label="twitter"
-                        link
-                        color="#00acee"
-                        target="_blank"
-                        href="https://twitter.com/cambio_uruguay"
-                      >
-                        <v-icon large> mdi-twitter </v-icon>
-                      </v-btn>
-                      <v-btn
-                        aria-label="linkedin"
-                        link
-                        color="#0e76a8"
-                        target="_blank"
-                        href="https://www.linkedin.com/company/cambio-uruguay/"
-                      >
-                        <v-icon large> mdi-linkedin </v-icon>
-                      </v-btn>
-                    </div>
+                    <div class="button_section mb-3"></div>
                   </div>
                 </div>
                 <div>
@@ -455,7 +381,7 @@ export default {
   async middleware({ store, redirect, $axios, $i18n, query }) {
     const locations = ['TODOS', 'MONTEVIDEO']
     const localData = await $axios
-      .get('https://cambio.shellix.cc/localData')
+      .get('https://api.cambio-uruguay.com/localData')
       .then((res) => res.data)
     for (const key in localData) {
       const val = localData[key]
@@ -487,11 +413,11 @@ export default {
     }
 
     const dataFortex = await $axios
-      .get('https://cambio.shellix.cc/fortex')
+      .get('https://api.cambio-uruguay.com/fortex')
       .then((res) => res.data)
     store.dispatch('setFortex', dataFortex)
 
-    const data = await $axios.get('https://cambio.shellix.cc').then((res) =>
+    const data = await $axios.get('https://api.cambio-uruguay.com').then((res) =>
       (res.data as any[])
         .map((el: any) => {
           el.localData = localData[el.origin]
