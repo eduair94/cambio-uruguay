@@ -378,61 +378,7 @@ export default {
     BCU: () => import('../components/BCU.vue'),
     SearchExchange: () => import('../components/SearchExchange.vue'),
   },
-  async middleware({ store, redirect, $axios, $i18n, query }) {
-    const locations = ['TODOS', 'MONTEVIDEO']
-    const localData = await $axios
-      .get('https://api.cambio-uruguay.com/localData')
-      .then((res) => res.data)
-    for (const key in localData) {
-      const val = localData[key]
-      const departments = val.departments
-      if (departments && departments.length) {
-        for (const dep of departments) {
-          if (!locations.includes(dep)) {
-            locations.push(dep)
-          }
-        }
-      }
-    }
-
-    const getCondition = (el) => {
-      if (el.origin === 'prex') {
-        return 'prex_condition'
-      }
-      if (el.type === 'EBROU') {
-        return 'ebrou_condition'
-      }
-      return ''
-    }
-
-    const isInterBank = (item: any) => {
-      return (
-        item.origin === 'bcu' ||
-        ['INTERBANCARIO', 'FONDO/CABLE'].includes(item.type)
-      )
-    }
-
-    const dataFortex = await $axios
-      .get('https://api.cambio-uruguay.com/fortex')
-      .then((res) => res.data)
-    store.dispatch('setFortex', dataFortex)
-
-    const data = await $axios.get('https://api.cambio-uruguay.com').then((res) =>
-      (res.data as any[])
-        .map((el: any) => {
-          el.localData = localData[el.origin]
-          if (!el.localData) {
-            el.localData = null
-          }
-          el.isInterBank = isInterBank(el)
-          el.condition = getCondition(el)
-          return el
-        })
-        .filter((el: any) => el.localData)
-    )
-    store.dispatch('setLocations', locations)
-    store.dispatch('setItems', data)
-  },
+  async middleware({ store, redirect, $axios, $i18n, query }) {},
   data() {
     return {
       hiddenWidgets: false,
@@ -553,6 +499,64 @@ export default {
     this.setScrollBar()
   },
   methods: {
+    async setup() {
+      const locations = ['TODOS', 'MONTEVIDEO']
+      const localData = await this.$axios
+        .get('https://api.cambio-uruguay.com/localData')
+        .then((res) => res.data)
+      console.log('Local Data Response', localData)
+      for (const key in localData) {
+        const val = localData[key]
+        const departments = val.departments
+        if (departments && departments.length) {
+          for (const dep of departments) {
+            if (!locations.includes(dep)) {
+              locations.push(dep)
+            }
+          }
+        }
+      }
+
+      const getCondition = (el) => {
+        if (el.origin === 'prex') {
+          return 'prex_condition'
+        }
+        if (el.type === 'EBROU') {
+          return 'ebrou_condition'
+        }
+        return ''
+      }
+
+      const isInterBank = (item: any) => {
+        return (
+          item.origin === 'bcu' ||
+          ['INTERBANCARIO', 'FONDO/CABLE'].includes(item.type)
+        )
+      }
+
+      const dataFortex = await this.$axios
+        .get('https://api.cambio-uruguay.com/fortex')
+        .then((res) => res.data)
+      this.$store.dispatch('setFortex', dataFortex)
+
+      const data = await this.$axios
+        .get('https://api.cambio-uruguay.com')
+        .then((res) =>
+          (res.data as any[])
+            .map((el: any) => {
+              el.localData = localData[el.origin]
+              if (!el.localData) {
+                el.localData = null
+              }
+              el.isInterBank = isInterBank(el)
+              el.condition = getCondition(el)
+              return el
+            })
+            .filter((el: any) => el.localData)
+        )
+      this.$store.dispatch('setLocations', locations)
+      this.$store.dispatch('setItems', data)
+    },
     changeCode(code: string, codeWith: string) {
       this.code = codeWith
       this.code_with = code
@@ -604,7 +608,8 @@ export default {
         })
       }
     },
-    beforeMount() {
+    async beforeMount() {
+      await this.setup()
       this.all_items = [...this.allItems]
       let pwaInstall = false
       try {
