@@ -113,7 +113,7 @@ export default {
       return 'https://www.google.com.uy/maps/place/' + encodeURI(address)
     },
     async get_data() {
-      const url = 'https://cambio.shellix.cc/bcu/' + this.item.origin
+      const url = 'https://api.cambio-uruguay.com/bcu/' + this.item.origin
       this.d = await this.$axios
         .get(url)
         .then((response) => {

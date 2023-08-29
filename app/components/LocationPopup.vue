@@ -161,7 +161,7 @@ export default {
       this.reverseGeo()
     },
     async reverseGeo() {
-      const url = `https://cambio.shellix.cc/position_stack?query=${this.latitude},${this.longitude}&limit=1`
+      const url = `https://api.cambio-uruguay.com/position_stack?query=${this.latitude},${this.longitude}&limit=1`
       const res = await this.$axios
         .get(url)
         .then((res) => res.data)
@@ -186,7 +186,7 @@ export default {
     async confirmGeo() {
       const distances = await this.$axios
         .get(
-          `https://cambio.shellix.cc/distances?latitude=${this.latitude}&longitude=${this.longitude}`
+          `https://api.cambio-uruguay.com/distances?latitude=${this.latitude}&longitude=${this.longitude}`
         )
         .then((res) => res.data)
       const distanceData = distances.distanceData

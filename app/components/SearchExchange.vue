@@ -272,7 +272,7 @@ export default {
         this.message = loc[this.$i18n.locale]
       } else {
         let url =
-          'https://cambio.shellix.cc/exchanges/' +
+          'https://api.cambio-uruguay.com/exchanges/' +
           this.origin +
           '/' +
           this.location
