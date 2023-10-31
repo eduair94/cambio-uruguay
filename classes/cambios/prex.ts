@@ -103,12 +103,13 @@ class CambioPrex extends Cambio {
     ];
     let arF = null;
     if (ar) {
+      const num = Math.round(ar.cotUy / ar.cotArg * 100) / 100;
       arF = {
         code: "ARS",
         type: "",
         name: "",
-        buy: Math.round(ar.cotUy / ar.cotArg * 100) / 100,
-        sell: 0,
+        buy: num,
+        sell: num,
       };
     }
     if (arF) {

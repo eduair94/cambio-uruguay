@@ -84,7 +84,7 @@ export class MongooseServer {
 
   public allEntries(param: any, att = 0): Promise<any> {
     return new Promise((resolve, reject) => {
-      this.Model.find(param, (error: Error, result: any) => {
+      this.Model.find(param).select('-_id -__v').exec((error: Error, result: any) => {
         if (error) {
           if (att < this.max_att) {
             return setTimeout(() => {
