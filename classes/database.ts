@@ -78,7 +78,7 @@ export class MongooseServer {
   }
 
   public async allEntriesSort(param: any, sort: any, att = 0) {
-    const r = await this.Model.find(param).sort(sort).lean();
+    const r = await this.Model.find(param).select('-_id -__v').sort(sort).lean();
     return r;
   }
 
