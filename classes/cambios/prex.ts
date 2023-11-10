@@ -30,8 +30,8 @@ class CambioPrex extends Cambio {
       'user-agent': 'Dalvik/2.1.0 (Linux; U; Android 11; M2102J20SG Build/RKQ1.200826.002)'
     }
     const json = {
-    "Documento": "airaudoeduardo@gmail.com",
-    "Password": "Ou$QLFr9",
+    "Documento": process.env.prexEmail,
+    "Password": process.env.prexPassword,
     "TipoDocumento": "CI",
     "TipoPersona": "1",
     "UuidDevice": "dd600187f3582fa7",
