@@ -35,7 +35,6 @@ import CambioFortex from "./cambios/fortex";
 import CambioGales from "./cambios/gales";
 import CambioIndumex from "./cambios/indumex";
 import Itau from "./cambios/itau";
-import CambioLaFavorita from "./cambios/lafavorita";
 import MasCambio from "./cambios/mas_cambio";
 import CambioPrex from "./cambios/prex";
 import Rynder from "./cambios/rynder";
@@ -45,7 +44,7 @@ import CambioVarlix from "./cambios/varlix";
 
 export const origins = {
   prex: CambioPrex,
-  la_favorita: CambioLaFavorita,
+  //la_favorita: CambioLaFavorita,
   brou: CambioBrou,
   aeromar: Aeromar,
   fortex: CambioFortex,

@@ -214,6 +214,7 @@ abstract class Cambio {
 
   async sync_data() {
     const data = await this.get_data();
+    console.log("Data", data, this.origin)
     if (data.length === 0) {
       console.error("Empty", this.origin);
       return;
