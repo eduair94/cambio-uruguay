@@ -27,7 +27,7 @@ const main = async () => {
     return res;
   });
 
-  server.getJson("/exchange/:type/:code", async (req: Request): Promise<any> => {
+  server.getJson("exchange/:type/:code", async (req: Request): Promise<any> => {
     let date = req.query.date as string;
     let dateM = null;
     if (date) {
