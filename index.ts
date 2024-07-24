@@ -35,8 +35,10 @@ const main = async () => {
     }
     console.log("Date", dateM);
     const res = await cambio_info.get_entry(dateM, req.params.type, req.params.code).catch(e=> {
+      console.error(e);
       return {
         origin: req.params.type,
+        code: req.params.code,
         error: 'not found'
       }
     });
