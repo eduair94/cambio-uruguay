@@ -105,7 +105,7 @@ class CambioInfo extends Cambio {
     if (!date) {
       date = moment().startOf("day").toDate();
     }
-    const obj = await this.db.findEntry({ date, origin, code });
+    const obj = await this.db.findEntry({ date, origin: origin.toLowerCase(), code: code.toUpperCase() });
     return obj as any;
   }
 
