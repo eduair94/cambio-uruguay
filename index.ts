@@ -26,6 +26,23 @@ const main = async () => {
     const res = await cambio_info.get_data(dateM, req.query);
     return res;
   });
+
+  server.getJson("/exchange/:type", async (req: Request): Promise<any> => {
+    let date = req.query.date as string;
+    let dateM = null;
+    if (date) {
+      dateM = moment(date, "YYYY-MM-DD").toDate();
+    }
+    console.log("Date", dateM);
+    const res = await cambio_info.get_entry(dateM, req.params.type).catch(e=> {
+      return {
+        origin: req.params.type,
+        error: 'not found'
+      }
+    });
+    return res;
+  });
+
   server.getJson("distances", async (req: Request): Promise<any> => {
     const latitude = parseFloat(req.query.latitude as string);
     const longitude = parseFloat(req.query.longitude as string);
