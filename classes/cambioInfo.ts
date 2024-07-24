@@ -101,11 +101,11 @@ class CambioInfo extends Cambio {
     return { ...res, distanceData };
   }
   
-  async get_entry(date: Date, origin: string): Promise<CambioObj[]> {
+  async get_entry(date: Date, origin: string, code: string): Promise<CambioObj[]> {
     if (!date) {
       date = moment().startOf("day").toDate();
     }
-    const obj = await this.db.findEntry({ date, origin });
+    const obj = await this.db.findEntry({ date, origin, code });
     return obj as any;
   }
 

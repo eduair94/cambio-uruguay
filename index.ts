@@ -27,14 +27,14 @@ const main = async () => {
     return res;
   });
 
-  server.getJson("/exchange/:type", async (req: Request): Promise<any> => {
+  server.getJson("/exchange/:type/:code", async (req: Request): Promise<any> => {
     let date = req.query.date as string;
     let dateM = null;
     if (date) {
       dateM = moment(date, "YYYY-MM-DD").toDate();
     }
     console.log("Date", dateM);
-    const res = await cambio_info.get_entry(dateM, req.params.type).catch(e=> {
+    const res = await cambio_info.get_entry(dateM, req.params.type, req.params.code).catch(e=> {
       return {
         origin: req.params.type,
         error: 'not found'
