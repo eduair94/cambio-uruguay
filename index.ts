@@ -33,11 +33,12 @@ const main = async () => {
     if (date) {
       dateM = moment(date, "YYYY-MM-DD").toDate();
     }
+    const origin = (req.params.type as string).toLowerCase();
     console.log("Date", dateM);
-    const res = await cambio_info.get_entry(dateM, req.params.type, req.params.code).catch(e=> {
+    const res = await cambio_info.get_entry(dateM, origin, req.params.code).catch(e=> {
       console.error(e);
       return {
-        origin: req.params.type.toLowerCase(),
+        origin,
         code: req.params.code,
         error: 'not found'
       }
