@@ -37,7 +37,7 @@ const main = async () => {
     const res = await cambio_info.get_entry(dateM, req.params.type, req.params.code).catch(e=> {
       console.error(e);
       return {
-        origin: req.params.type,
+        origin: req.params.type.toLowerCase(),
         code: req.params.code,
         error: 'not found'
       }
