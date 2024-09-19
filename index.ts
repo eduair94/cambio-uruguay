@@ -28,7 +28,7 @@ const main = async () => {
     return res;
   });
 
-  server.get("/ping", async (req: Request, res:Response): Promise<any> => {
+  server.get("ping", async (req: Request, res:Response): Promise<any> => {
     let date = req.query.date as string;
     let dateM = null;
     if (date) {
