@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Request } from "express";
+import { Request, Response } from "express";
 import moment from "moment-timezone";
 import BCU_Details from "./classes/bcu_details";
 import { cambio_info } from "./classes/cambioInfo";
@@ -7,7 +7,7 @@ import CambioFortex from "./classes/cambios/fortex";
 import { MongooseServer } from "./classes/database";
 import server from "./classes/Express/ExpressSetup";
 import { origins } from "./classes/origins";
-import sentryInit from './sentry';
+import sentryInit from "./sentry";
 
 moment.tz.setDefault("America/Uruguay");
 sentryInit();
@@ -24,7 +24,22 @@ const main = async () => {
     }
     console.log("Date", dateM);
     const res = await cambio_info.get_data(dateM, req.query);
+    if(!res?.length) throw new Error("No results found");
     return res;
+  });
+
+  server.get("/ping", async (req: Request, res:Response): Promise<any> => {
+    let date = req.query.date as string;
+    let dateM = null;
+    if (date) {
+      dateM = moment(date, "YYYY-MM-DD").toDate();
+    }
+    console.log("Date", dateM);
+    const result = await cambio_info.get_data(dateM, req.query);
+    const expected = result.length > 0 && result.length >= 100;
+    const fResponse = { expected: expected, total: result.length };
+    if(expected) return res.json(fResponse);
+    return res.json(fResponse).status(500);
   });
 
   server.getJson("exchange/:type/:code?", async (req: Request): Promise<any> => {
@@ -35,13 +50,13 @@ const main = async () => {
     }
     const origin = (req.params.type as string).toLowerCase();
     console.log("Date", dateM);
-    const res = await cambio_info.get_entry(dateM, origin, req.params.code).catch(e=> {
+    const res = await cambio_info.get_entry(dateM, origin, req.params.code).catch((e) => {
       console.error(e);
       return {
         origin,
         code: req.params.code,
-        error: 'not found'
-      }
+        error: "not found",
+      };
     });
     return res;
   });

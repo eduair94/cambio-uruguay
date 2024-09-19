@@ -54,6 +54,9 @@ class Express {
         const result: any = await f(req, res).catch((e) => {
           return bError(e.message);
         });
+        if(result?.error) {
+          return res.json(result).status(500);
+        }
         res.json(result);
       }
     );
