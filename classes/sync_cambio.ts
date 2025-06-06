@@ -9,6 +9,7 @@ const sync_cambios = async () => {
     } catch (e) {
       console.error(e);
       console.log(origin, e.message);
+      process.exit(1);
     }
   }
   console.log("Finish");
