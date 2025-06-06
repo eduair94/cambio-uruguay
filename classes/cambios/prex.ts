@@ -84,13 +84,18 @@ class CambioPrex extends Cambio {
       };
     });
     const d = res.data;
-    const $ = load(d);
-    const cotArg = parseFloat($("#cotizacionArg").attr("value"));
-    const cotUy = parseFloat($("#cotizacionUy").attr("value"));
-    return {
-      cotArg,
-      cotUy,
-    };
+    if (d && typeof d === "string") {
+      const $ = load(d);
+      const cotArg = parseFloat($("#cotizacionArg").attr("value"));
+      const cotUy = parseFloat($("#cotizacionUy").attr("value"));
+      return {
+        cotArg,
+        cotUy,
+      };
+    } else {
+      console.log("Error fetching Prex AR data", d);
+      return null;
+    }
   }
   async get_usd(token: string) {
     const url = "https://www.prexcard.com/api/cotizacion_usd";
