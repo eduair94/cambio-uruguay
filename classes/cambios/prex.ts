@@ -3,6 +3,7 @@ import { load } from "cheerio";
 import dotenv from "dotenv";
 import fs from "fs";
 import { HttpProxyAgent } from "http-proxy-agent";
+import { HttpsProxyAgent } from "https-proxy-agent";
 import { CambioObj } from "../../interfaces/Cambio";
 import { Cambio } from "../cambio";
 dotenv.config();
@@ -12,17 +13,17 @@ class CambioPrex extends Cambio {
   name = "Prex";
   bcu = "https://www.bcu.gub.uy/Sistema-de-Pagos/Paginas/prex.aspx";
   website = `https://www.prexcard.com`;
-  favicon = "https://www.prexcard.com";
-  private getProxyConfig() {
+  favicon = "https://www.prexcard.com";  private getProxyConfig() {
     try {
       const proxyPath = "proxy.txt";
       if (fs.existsSync(proxyPath)) {
         const proxyUrl = fs.readFileSync(proxyPath, "utf8").trim();
         if (proxyUrl) {
-          const agent = new HttpProxyAgent(`http://${proxyUrl}`);
+          const httpAgent = new HttpProxyAgent(`http://${proxyUrl}`);
+          const httpsAgent = new HttpsProxyAgent(`http://${proxyUrl}`);
           return {
-            httpAgent: agent,
-            httpsAgent: agent,
+            httpAgent: httpAgent,
+            httpsAgent: httpsAgent,
           };
         }
       }
