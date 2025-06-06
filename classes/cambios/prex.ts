@@ -13,7 +13,8 @@ class CambioPrex extends Cambio {
   name = "Prex";
   bcu = "https://www.bcu.gub.uy/Sistema-de-Pagos/Paginas/prex.aspx";
   website = `https://www.prexcard.com`;
-  favicon = "https://www.prexcard.com";  private getProxyConfig() {
+  favicon = "https://www.prexcard.com";
+  private getProxyConfig() {
     try {
       const proxyPath = "proxy.txt";
       if (fs.existsSync(proxyPath)) {

@@ -1,5 +1,6 @@
 import axios from "axios";
 import { Request, Response } from "express";
+import fs from "fs";
 import moment from "moment-timezone";
 import BCU_Details from "./classes/bcu_details";
 import { cambio_info } from "./classes/cambioInfo";
@@ -27,7 +28,6 @@ const main = async () => {
     if(!res?.length) throw new Error("No results found");
     return res;
   });
-
   server.get("ping", async (req: Request, res:Response): Promise<any> => {
     let date = req.query.date as string;
     let dateM = null;
@@ -40,6 +40,49 @@ const main = async () => {
     const fResponse = { expected: expected, total: result.length };
     if(expected) return res.json(fResponse);
     return res.json(fResponse).status(500);
+  });
+
+  server.get("health", async (req: Request, res: Response): Promise<any> => {
+    try {
+      const syncFilePath = "last_sync.txt";
+      
+      // Check if file exists and is not empty
+      if (!fs.existsSync(syncFilePath)) {
+        return res.status(200).json({ status: "ok", message: "No sync file found - assuming healthy" });
+      }
+      
+      const syncData = fs.readFileSync(syncFilePath, "utf8").trim();
+      if (!syncData) {
+        return res.status(200).json({ status: "ok", message: "Sync file is empty - assuming healthy" });
+      }
+      
+      // Parse the last sync time
+      const lastSyncTime = new Date(syncData);
+      const now = new Date();
+      const diffMinutes = (now.getTime() - lastSyncTime.getTime()) / (1000 * 60);
+      
+      if (diffMinutes <= 10) {
+        return res.status(200).json({ 
+          status: "ok", 
+          message: "Sync is recent", 
+          lastSync: lastSyncTime.toISOString(),
+          minutesAgo: Math.round(diffMinutes)
+        });
+      } else {
+        return res.status(500).json({ 
+          status: "error", 
+          message: "Sync is too old", 
+          lastSync: lastSyncTime.toISOString(),
+          minutesAgo: Math.round(diffMinutes)
+        });
+      }
+    } catch (error) {
+      return res.status(500).json({ 
+        status: "error", 
+        message: "Error checking sync status", 
+        error: error.message 
+      });
+    }
   });
 
   server.getJson("exchange/:type/:code?", async (req: Request): Promise<any> => {
