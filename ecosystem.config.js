@@ -5,7 +5,7 @@ module.exports = {
       autorestart: false,
       exec_mode: "fork",
       script: "dist/sync.js",
-      cron_restart: "*/10 * * * *",
+      cron_restart: "*/5 * * * *",
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     // {

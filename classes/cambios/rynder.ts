@@ -8,19 +8,19 @@ class Rynder extends Cambio {
   bcu = "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2504";
   maps = "https://www.google.com/maps/d/edit?mid=15pghhcAbnJn62lCM3-C2fpJL_AWI_hg&usp=sharing";
   private conversions = {
-    "img/usa.jpg": {
+    usa: {
       code: "USD",
       type: "",
     },
-    "img/arg.jpg": {
+    arg: {
       code: "ARS",
       type: "",
     },
-    "img/bra.jpg": {
+    bra: {
       code: "BRL",
       type: "",
     },
-    "img/euro.jpg": {
+    euro: {
       code: "EUR",
       type: "",
     },
@@ -39,7 +39,8 @@ class Rynder extends Cambio {
       .get()
       .filter((el) => el.compra);
     const f = result.map((el) => {
-      const { code, type } = this.conversions[el.moneda];
+      const currencyCode = el.moneda.split("/").pop().replace(".jpg", "");
+      const { code, type } = this.conversions[currencyCode];
       return {
         code,
         type,

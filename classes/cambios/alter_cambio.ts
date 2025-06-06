@@ -15,7 +15,7 @@ class AlterCambio extends Cambio {
       code: "ARS",
       type: "",
     },
-    "Real Brasilero": {
+    Real: {
       code: "BRL",
       type: "",
     },
@@ -36,7 +36,8 @@ class AlterCambio extends Cambio {
         venta: this.fix_money($(element).find("td:nth-of-type(4)").text().trim()),
       }))
       .get()
-      .filter((el) => el.compra);
+      .filter((el) => el.compra && el.moneda);
+    console.log("RESULT", result);
     const f = result.map((el) => {
       const { code, type } = this.conversions[el.moneda];
       return {

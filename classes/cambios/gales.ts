@@ -11,7 +11,7 @@ class CambioGales extends Cambio {
       code: "USD",
       type: "",
     },
-    "Peso Argentino": {
+    "Peso Arg": {
       code: "ARS",
       type: "",
     },

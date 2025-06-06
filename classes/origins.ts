@@ -43,10 +43,13 @@ import Tradelix from "./cambios/tradelix";
 import CambioVarlix from "./cambios/varlix";
 
 export const origins = {
+  alter_cambio: AlterCambio,
+  cambio_rynder: Rynder,
+  cambio_sir: CambioSir,
+  aeromar: Aeromar,
   prex: CambioPrex,
   //la_favorita: CambioLaFavorita,
   brou: CambioBrou,
-  aeromar: Aeromar,
   fortex: CambioFortex,
   cambio_argentino: CambioArgentino,
   cambio_federal: CambioFederal,
@@ -57,7 +60,6 @@ export const origins = {
   cambio_young: CambioYoung,
   //cambio_salto_grande: CambioSaltoGrande,
   cambio_3: Cambio3,
-  cambio_rynder: Rynder,
   cambio_minas: CambioMinas,
   cambio_openn: CambioOpenn,
   cambial: Cambial,
@@ -77,9 +79,7 @@ export const origins = {
   cambio_misiones: CambioMisiones,
   cambio_pampex: CambioPampex,
   cambio_obelisco: CambioObelisco,
-  alter_cambio: AlterCambio,
   suizo: CambioSuizo,
-  cambio_sir: CambioSir,
   cambio_ingles: CambioIngles,
   bcu: CambioBCU,
   cambilex: CambioCambilex,
