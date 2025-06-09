@@ -5,7 +5,7 @@
         max-height="90%"
         max-width="65vw"
         contain
-        alt="logo cambio uruguay"
+        alt="Cambio Uruguay - Logo oficial para comparar cotizaciones de cambio"
         class="logo_image"
         position="left center"
         src="./img/logo.png"
@@ -54,6 +54,53 @@ export default {
   components: {
     LanguageMenu: () => import('../components/LanguageMenu.vue'),
     JoinTwitter: () => import('../components/JoinTwitter.vue'),
+  },
+  head() {
+    return {
+      link: [
+        // Preconnect to external domains for performance
+        { rel: 'preconnect', href: 'https://api.cambio-uruguay.com' },
+        { rel: 'preconnect', href: 'https://www.googletagmanager.com' },
+        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: true },
+        // Humans.txt for developer credits
+        { rel: 'author', href: '/humans.txt', type: 'text/plain' },
+        // Alternate languages
+        { rel: 'alternate', hreflang: 'es', href: 'https://cambio-uruguay.com/' },
+        { rel: 'alternate', hreflang: 'en', href: 'https://cambio-uruguay.com/en' },
+        { rel: 'alternate', hreflang: 'pt', href: 'https://cambio-uruguay.com/pt' },
+        { rel: 'alternate', hreflang: 'x-default', href: 'https://cambio-uruguay.com/' },
+        // Feed
+        { rel: 'alternate', type: 'application/json', title: 'Cambio Uruguay Feed', href: '/.well-known/feed.json' }
+      ],
+      script: [
+        {
+          type: 'application/ld+json',
+          json: {
+            '@context': 'https://schema.org',
+            '@type': 'Organization',
+            name: 'Cambio Uruguay',
+            url: 'https://cambio-uruguay.com',
+            logo: 'https://cambio-uruguay.com/img/logo.png',
+            contactPoint: {
+              '@type': 'ContactPoint',
+              email: 'admin@cambio-uruguay.com',
+              contactType: 'Customer Service',
+              areaServed: 'UY',
+              availableLanguage: ['Spanish', 'English', 'Portuguese']
+            },
+            sameAs: [
+              'https://twitter.com/cambios_uy'
+            ],
+            address: {
+              '@type': 'PostalAddress',
+              addressCountry: 'UY',
+              addressRegion: 'Montevideo'
+            }
+          }
+        }
+      ]
+    }
   },
   data() {
     return {
