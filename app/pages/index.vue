@@ -1,15 +1,25 @@
 <template>
   <div class="mt-md-4">
-    <h1 class="text-h5">
-      {{ $t('welcome') }}
-    </h1>
-    <div class="my-4">
-      <h1 style="display: none">
-        cotizaciones uruguay,casa cambiaria,cambio moneda,cambio dólares,cambio
-        pesos argentinos,cambio reales,cambio euros,varlix,prex,gales,cambio
-        montevideo,cambio,donde cambiar dólares en Uruguay,cambio divisas,donde
-        comprar pesos argentinos en uruguay,donde comprar dolares en uruguay
+    <!-- SEO Optimized Header Structure -->
+    <header>
+      <h1 class="text-h4 font-weight-bold mb-3">
+        {{ $t('welcome') }}
       </h1>
+      <h2 class="text-h6 mb-4 grey--text text--lighten-1">
+        {{ $t('subtitle') }}
+      </h2>
+    </header>
+
+    <!-- Enhanced SEO Content -->
+    <section class="mb-4">
+      <h3 class="sr-only">{{ $t('seoTitle') }}</h3>
+      <div class="hidden-content" style="position: absolute; left: -9999px">
+        <p>{{ $t('seoDescription') }}</p>
+        <span>{{ $t('seoKeywords') }}</span>
+      </div>
+    </section>
+
+    <div class="my-4">
       <client-only>
         <v-data-table
           :item-class="row_classes"
@@ -85,6 +95,28 @@
                   </div>
                 </div>
                 <div>
+                  <!-- Real-time Exchange House Search -->
+                  <v-row class="mb-4">
+                    <v-col cols="12" md="6">
+                      <v-autocomplete
+                        v-model="selectedExchangeHouse"
+                        :items="exchangeHouseOptions"
+                        :label="$t('searchExchangeHouse')"
+                        :no-data-text="$t('noExchangeHousesFound')"
+                        multiple
+                        clearable
+                        chips
+                        deletable-chips
+                        hide-details
+                        outlined
+                        prepend-inner-icon="mdi-magnify"
+                        @input="filterByExchangeHouse"
+                        @click:clear="clearExchangeHouseFilter"
+                      >
+                      </v-autocomplete>
+                    </v-col>
+                  </v-row>
+
                   <v-row style="max-width: 1800px">
                     <v-col cols="12" md="6" lg="2">
                       <v-radio-group
@@ -359,6 +391,24 @@
     <v-alert class="mt-3 mt-md-4 mb-0 mb-md-3 blue darken-4" type="info" dense>
       {{ $t('disclaimer') }}
     </v-alert>
+
+    <!-- API Usage Alert -->
+    <v-alert
+      v-model="showApiAlert"
+      class="mt-3 mb-0 mb-md-3 green darken-4"
+      type="success"
+      dense
+      dismissible
+    >
+      {{ $t('apiUsageMessage') }}
+      <a
+        class="white--text font-weight-bold"
+        href="mailto:admin@cambio-uruguay.com"
+      >
+        admin@cambio-uruguay.com
+      </a>
+    </v-alert>
+
     <v-snackbar v-model="snackbar" color="green darken-2">
       <p class="text--white mb-0">{{ snackBarText }}</p>
       <template #action="{ attrs }">
@@ -369,7 +419,7 @@
 </template>
 
 <script lang="ts">
-import { mapGetters, mapActions } from 'vuex'
+import { mapGetters } from 'vuex'
 import { notFound } from '../services/not_found'
 export default {
   name: 'HomePage',
@@ -386,9 +436,14 @@ export default {
       all_items: [],
       snackbar: false,
       snackBarText: '',
+      showApiAlert: true,
       loadingDistances: false,
       onlyInterbank: ['UR', 'UP'],
       location: 'TODOS',
+      // Exchange house search functionality
+      selectedExchangeHouse: [],
+      exchangeHouseOptions: [],
+      filteredItems: [],
       texts: {
         es: {
           USD: 'Dólares estadounidenses',
@@ -470,9 +525,41 @@ export default {
     }
   },
   head() {
-    return this.$nuxtI18nHead({
-      addSeoAttributes: true,
-    })
+    const structuredData = {
+      '@context': 'https://schema.org',
+      '@type': 'WebApplication',
+      name: 'Cambio Uruguay',
+      description: this.$t('seoDescription'),
+      url: 'https://cambio-uruguay.com',
+      applicationCategory: 'FinanceApplication',
+      operatingSystem: 'All',
+      offers: {
+        '@type': 'Offer',
+        description: 'Compare exchange rates from over 40 exchange houses',
+        price: '0',
+        priceCurrency: 'USD',
+      },
+      author: {
+        '@type': 'Organization',
+        name: 'Cambio Uruguay',
+        url: 'https://cambio-uruguay.com',
+      },
+    }
+
+    return {
+      ...this.$nuxtI18nHead({
+        addSeoAttributes: true,
+      }),
+      script: [
+        {
+          type: 'application/ld+json',
+          innerHTML: JSON.stringify(structuredData),
+        },
+      ],
+      __dangerouslyDisableSanitizersByTagID: {
+        'structured-data': ['innerHTML'],
+      },
+    }
   },
   computed: {
     ...mapGetters({
@@ -499,6 +586,53 @@ export default {
     this.setScrollBar()
   },
   methods: {
+    // Exchange house search methods
+    filterByExchangeHouse() {
+      if (
+        !this.selectedExchangeHouse ||
+        this.selectedExchangeHouse.length === 0
+      ) {
+        this.updateTable()
+        this.setPrice() // Update URL to reflect cleared filter
+        return
+      }
+
+      // Get the selected origins values (for multiple selection)
+      const selectedOrigins = this.selectedExchangeHouse.map((item) =>
+        typeof item === 'object' ? item.value : item
+      )
+
+      // Apply all existing filters first
+      this.updateTable()
+
+      // Then filter by the selected exchange houses
+      this.items = this.items.filter((item) =>
+        selectedOrigins.includes(item.origin)
+      ) // Recalculate positions and amounts, and update URL
+      this.setPrice()
+    },
+    clearExchangeHouseFilter() {
+      this.selectedExchangeHouse = []
+      this.updateTable()
+      this.setPrice() // Update URL to reflect cleared filter
+    },
+
+    buildExchangeHouseOptions() {
+      const uniqueOrigins = [
+        ...new Set(this.all_items.map((item) => item.origin)),
+      ]
+      this.exchangeHouseOptions = uniqueOrigins
+        .map((origin) => {
+          const item = this.all_items.find((i) => i.origin === origin)
+          return {
+            text: item.localData?.name || origin,
+            value: origin,
+            website: item.localData?.website,
+          }
+        })
+        .sort((a, b) => a.text.localeCompare(b.text))
+    },
+
     async setup() {
       const locations = ['TODOS', 'MONTEVIDEO']
       const localData = await this.$axios
@@ -611,6 +745,9 @@ export default {
     async beforeMount() {
       await this.setup()
       this.all_items = [...this.allItems]
+
+      // Build exchange house options for autocomplete
+      this.buildExchangeHouseOptions()
       let pwaInstall = false
       try {
         if (!window.matchMedia('(display-mode: standalone)').matches) {
@@ -647,6 +784,21 @@ export default {
       this.code_with = this.$route.query.currency_with
         ? this.$route.query.currency_with
         : 'UYU'
+
+      // Load selected exchange houses from query parameters
+      if (this.$route.query.exchangeHouses) {
+        try {
+          const exchangeHouses = this.$route.query.exchangeHouses.split(
+            ','
+          ) as string
+          if (Array.isArray(exchangeHouses)) {
+            this.selectedExchangeHouse = exchangeHouses
+          }
+        } catch (e) {
+          console.error('Error parsing exchangeHouses from query:', e)
+        }
+      }
+
       this.get_data()
 
       if (localStorage.getItem('hideWidgets') === '1') {
@@ -987,7 +1139,16 @@ export default {
               !el.localData.departments.length ||
               el.localData.departments.includes(this.location))
         )
+      } // Apply exchange house filter if one is selected
+      if (this.selectedExchangeHouse && this.selectedExchangeHouse.length > 0) {
+        const selectedOrigins = this.selectedExchangeHouse.map((item) =>
+          typeof item === 'object' ? item.value : item
+        )
+        this.items = this.items.filter((el) =>
+          selectedOrigins.includes(el.origin)
+        )
       }
+
       if (this.code_with && this.code_with !== 'UYU') {
         const codeOrigins: any = {}
         this.items = this.items
@@ -1039,6 +1200,10 @@ export default {
         currency_with: this.code_with,
         notInterBank: this.notInterBank ? 1 : undefined,
         notConditional: this.notConditional ? 1 : undefined,
+        exchangeHouses:
+          this.selectedExchangeHouse && this.selectedExchangeHouse.length > 0
+            ? this.selectedExchangeHouse.join(',')
+            : undefined,
       }
       // Change route.
       this.$router.push({
@@ -1091,6 +1256,12 @@ export default {
         }
       })
       this.updateTable()
+
+      // Apply exchange house filter if there are selected items from query parameters
+      if (this.selectedExchangeHouse && this.selectedExchangeHouse.length > 0) {
+        this.filterByExchangeHouse()
+      }
+
       this.finishLoading()
     },
   },

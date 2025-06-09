@@ -25,10 +25,10 @@ const main = async () => {
     }
     console.log("Date", dateM);
     const res = await cambio_info.get_data(dateM, req.query);
-    if(!res?.length) throw new Error("No results found");
+    if (!res?.length) throw new Error("No results found");
     return res;
   });
-  server.get("ping", async (req: Request, res:Response): Promise<any> => {
+  server.get("ping", async (req: Request, res: Response): Promise<any> => {
     let date = req.query.date as string;
     let dateM = null;
     if (date) {
@@ -38,49 +38,49 @@ const main = async () => {
     const result = await cambio_info.get_data(dateM, req.query);
     const expected = result.length > 0 && result.length >= 100;
     const fResponse = { expected: expected, total: result.length };
-    if(expected) return res.json(fResponse);
+    if (expected) return res.json(fResponse);
     return res.json(fResponse).status(500);
   });
 
   server.get("health", async (req: Request, res: Response): Promise<any> => {
     try {
       const syncFilePath = "last_sync.txt";
-      
+
       // Check if file exists and is not empty
       if (!fs.existsSync(syncFilePath)) {
         return res.status(200).json({ status: "ok", message: "No sync file found - assuming healthy" });
       }
-      
+
       const syncData = fs.readFileSync(syncFilePath, "utf8").trim();
       if (!syncData) {
         return res.status(200).json({ status: "ok", message: "Sync file is empty - assuming healthy" });
       }
-      
+
       // Parse the last sync time
       const lastSyncTime = new Date(syncData);
       const now = new Date();
       const diffMinutes = (now.getTime() - lastSyncTime.getTime()) / (1000 * 60);
-      
+
       if (diffMinutes <= 10) {
-        return res.status(200).json({ 
-          status: "ok", 
-          message: "Sync is recent", 
+        return res.status(200).json({
+          status: "ok",
+          message: "Sync is recent",
           lastSync: lastSyncTime.toISOString(),
-          minutesAgo: Math.round(diffMinutes)
+          minutesAgo: Math.round(diffMinutes),
         });
       } else {
-        return res.status(500).json({ 
-          status: "error", 
-          message: "Sync is too old", 
+        return res.status(500).json({
+          status: "error",
+          message: "Sync is too old",
           lastSync: lastSyncTime.toISOString(),
-          minutesAgo: Math.round(diffMinutes)
+          minutesAgo: Math.round(diffMinutes),
         });
       }
     } catch (error) {
-      return res.status(500).json({ 
-        status: "error", 
-        message: "Error checking sync status", 
-        error: error.message 
+      return res.status(500).json({
+        status: "error",
+        message: "Error checking sync status",
+        error: error.message,
       });
     }
   });

@@ -7,16 +7,15 @@ export default {
   type: 'module',
   loading: '~/components/LoadingBar.vue',
   // Global page headers: https://go.nuxtjs.dev/config-head
-
   head: {
     addSeoAttributes: true,
     htmlAttrs: {
       lang: 'es-ES'
     },
     titleTemplate: '%s - Cambio Uruguay',
-    title: 'Cambio Uruguay',
+    title: 'Mejores Cotizaciones de Cambio en Uruguay',
     description:
-      'Encuentra las mejores cotizaciones de cambio de divisas en Uruguay',
+      'Encuentra las mejores cotizaciones de cambio de divisas en Uruguay. Compara precios de más de 40 casas de cambio en tiempo real.',
     meta: [
       { charset: 'utf-8' },
       {
