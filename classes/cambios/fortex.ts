@@ -1,5 +1,5 @@
 import axios from "axios";
-import moment from "moment";
+import moment from "moment-timezone";
 import { CambioObj } from "../../interfaces/Cambio";
 import { Cambio } from "../cambio";
 import { MongooseServer, Schema } from "../database";
@@ -13,13 +13,19 @@ class CambioFortex extends Cambio {
 
   constructor() {
     super();
-    this.dbFortex = MongooseServer.getInstance('fortex_conversions', new Schema({
-      date: { type: Date, required: true },
-    }, { strict: false }))
+    this.dbFortex = MongooseServer.getInstance(
+      "fortex_conversions",
+      new Schema(
+        {
+          date: { type: Date, required: true },
+        },
+        { strict: false }
+      )
+    );
   }
 
   async get_conversions(date: Date) {
-    const response:any = await this.dbFortex.findEntry({ date });
+    const response: any = await this.dbFortex.findEntry({ date });
     return response;
   }
 
@@ -40,7 +46,8 @@ class CambioFortex extends Cambio {
       }
     }
     const fortex_conversions = result.visual_conversions;
-    const date = moment().startOf("day").toDate();
+    // Ensure date is in Uruguay timezone for consistency
+    const date = moment.tz("America/Uruguay").startOf("day").toDate();
     await this.dbFortex.getAnUpdateEntry({ date }, fortex_conversions);
     console.log(items);
     return items;

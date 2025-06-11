@@ -124,9 +124,9 @@ abstract class Cambio {
     });
     return db;
   }
-
   getCurrentDateObj(today: Date) {
-    return moment(today).startOf("day").toDate();
+    // Ensure the date is processed in Uruguay timezone for consistency
+    return moment.tz(today, "America/Uruguay").startOf("day").toDate();
   }
 
   async obtener_all_datos_historico(date: Date): Promise<CambioObj[]> {
@@ -147,13 +147,13 @@ abstract class Cambio {
     return db;
   }
 
-  fix_money = function (value: string, code = '', cambio = '') {
+  fix_money = function (value: string, code = "", cambio = "") {
     let no_dots = value;
-    if (code === 'XAU') {
-      if (cambio === 'lafavorita') {
-        no_dots = no_dots.replaceAll(",", ""); 
+    if (code === "XAU") {
+      if (cambio === "lafavorita") {
+        no_dots = no_dots.replaceAll(",", "");
       } else {
-        no_dots = no_dots.replaceAll(".", ""); 
+        no_dots = no_dots.replaceAll(".", "");
       }
     }
     no_dots = no_dots.replaceAll(",", ".");
@@ -161,9 +161,9 @@ abstract class Cambio {
     if (isNaN(res)) return 0;
     return res;
   };
-
   async remove_date() {
-    const date = moment().startOf("day").toDate();
+    // Ensure the date is processed in Uruguay timezone for consistency
+    const date = moment.tz("America/Uruguay").startOf("day").toDate();
     const res = await this.db.deleteMany({ date });
     return res;
   }
@@ -174,9 +174,9 @@ abstract class Cambio {
     console.log("Response", res);
     return res;
   }
-
   async save(data: CambioObj): Promise<CambioObj> {
-    const date = moment().startOf("day").toDate();
+    // Ensure date is in Uruguay timezone for consistency
+    const date = moment.tz("America/Uruguay").startOf("day").toDate();
     const obj = {
       origin: this.origin,
       date: date,
@@ -214,7 +214,7 @@ abstract class Cambio {
 
   async sync_data() {
     const data = await this.get_data();
-    console.log("Data", data, this.origin)
+    console.log("Data", data, this.origin);
     if (data.length === 0) {
       console.error("Empty", this.origin);
       return;
@@ -228,4 +228,3 @@ abstract class Cambio {
 }
 
 export { Cambio };
-

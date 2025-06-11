@@ -21,7 +21,8 @@ const main = async () => {
     let date = req.query.date as string;
     let dateM = null;
     if (date) {
-      dateM = moment(date, "YYYY-MM-DD").toDate();
+      // Parse date explicitly in Uruguay timezone to ensure consistency
+      dateM = moment.tz(date, "YYYY-MM-DD", "America/Uruguay").toDate();
     }
     console.log("Date", dateM);
     const res = await cambio_info.get_data(dateM, req.query);
@@ -32,7 +33,8 @@ const main = async () => {
     let date = req.query.date as string;
     let dateM = null;
     if (date) {
-      dateM = moment(date, "YYYY-MM-DD").toDate();
+      // Parse date explicitly in Uruguay timezone to ensure consistency
+      dateM = moment.tz(date, "YYYY-MM-DD", "America/Uruguay").toDate();
     }
     console.log("Date", dateM);
     const result = await cambio_info.get_data(dateM, req.query);
@@ -84,12 +86,12 @@ const main = async () => {
       });
     }
   });
-
   server.getJson("exchange/:type/:code?", async (req: Request): Promise<any> => {
     let date = req.query.date as string;
     let dateM = null;
     if (date) {
-      dateM = moment(date, "YYYY-MM-DD").toDate();
+      // Parse date explicitly in Uruguay timezone to ensure consistency
+      dateM = moment.tz(date, "YYYY-MM-DD", "America/Uruguay").toDate();
     }
     const origin = (req.params.type as string).toLowerCase();
     console.log("Date", dateM);
@@ -130,7 +132,8 @@ const main = async () => {
     return res;
   });
   server.getJson("fortex", async (req: Request): Promise<any> => {
-    const date = moment().startOf("day").toDate();
+    // Ensure date is in Uruguay timezone for consistency
+    const date = moment.tz("America/Uruguay").startOf("day").toDate();
     const fortex = new CambioFortex();
     const res = await fortex.get_conversions(date);
     return res;
@@ -181,6 +184,41 @@ const main = async () => {
     const origin = req.params.origin;
     const reply = await x.get_by_origin(origin);
     return reply;
+  });
+  server.getJson("evolution/:origin/:code", async (req: Request): Promise<any> => {
+    const origin = req.params.origin;
+    const code = req.params.code;
+
+    // Validate origin parameter
+    const validOrigin = Object.keys(origins).includes(origin);
+    if (!validOrigin) {
+      throw new Error(`Invalid origin: ${origin}. Valid origins are: ${Object.keys(origins).join(", ")}`);
+    }
+
+    // Validate currency code parameter (basic validation)
+    if (!code || code.length < 2 || code.length > 4) {
+      throw new Error(`Invalid currency code: ${code}. Currency code should be 2-4 characters (e.g., USD, ARS, BRL, EUR)`);
+    }
+
+    // Parse period parameter (default to 6 months)
+    let periodMonths = 6;
+    if (req.query.period) {
+      const period = parseInt(req.query.period as string);
+      if (isNaN(period) || period <= 0 || period > 60) {
+        throw new Error("Period must be a number between 1 and 60 months");
+      }
+      periodMonths = period;
+    }
+
+    console.log(`Evolution request: ${origin}/${code} for ${periodMonths} months`);
+
+    try {
+      const evolutionData = await cambio_info.get_currency_evolution(origin, code, periodMonths);
+      return evolutionData;
+    } catch (error) {
+      console.error("Evolution endpoint error:", error);
+      throw error;
+    }
   });
 };
 
