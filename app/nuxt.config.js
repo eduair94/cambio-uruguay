@@ -55,21 +55,27 @@ export default {
       { name: 'geo.placename', content: 'Uruguay' },
       { name: 'geo.position', content: '-34.9011;-56.1645' },
       { name: 'ICBM', content: '-34.9011, -56.1645' },
-      
-      // App meta tags
+        // App meta tags
       { name: 'application-name', content: 'Cambio Uruguay' },
       { name: 'apple-mobile-web-app-title', content: 'Cambio Uruguay' },
       { name: 'apple-mobile-web-app-capable', content: 'yes' },
       { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
       { name: 'mobile-web-app-capable', content: 'yes' },
+      { name: 'format-detection', content: 'telephone=no' },
+      
+      // PWA meta tags
+      { name: 'apple-touch-fullscreen', content: 'yes' },
+      { name: 'apple-mobile-web-app-orientations', content: 'portrait' },
       
       // Theme colors
-      { name: 'msapplication-TileColor', content: '#3B9B85' },
-      { name: 'theme-color', content: '#3B9B85' },
-      { name: 'msapplication-navbutton-color', content: '#3B9B85' },
-      { name: 'apple-mobile-web-app-status-bar-style', content: '#3B9B85' }
-    ],
-    link: [
+      { name: 'msapplication-TileColor', content: '#272727' },
+      { name: 'theme-color', content: '#272727' },
+      { name: 'msapplication-navbutton-color', content: '#272727' },
+      { name: 'apple-mobile-web-app-status-bar-style', content: '#272727' }
+    ],    link: [      {
+        rel: 'manifest',
+        href: '/site.webmanifest'
+      },
       {
         rel: 'apple-touch-icon',
         sizes: '180x180',
@@ -91,6 +97,48 @@ export default {
         rel: 'mask-icon',
         href: '/safari-pinned-tab.svg',
         color: '#5bbad5'
+      },
+      {
+        rel: 'canonical',
+        href: 'https://cambio-uruguay.com'
+      },
+      {
+        rel: 'alternate',
+        hreflang: 'es',
+        href: 'https://cambio-uruguay.com/'
+      },
+      {
+        rel: 'alternate',
+        hreflang: 'en',
+        href: 'https://cambio-uruguay.com/en'
+      },
+      {
+        rel: 'alternate',
+        hreflang: 'pt',
+        href: 'https://cambio-uruguay.com/pt'
+      },
+      {
+        rel: 'alternate',
+        hreflang: 'x-default',
+        href: 'https://cambio-uruguay.com/'
+      },
+      {
+        rel: 'author',
+        href: '/humans.txt',
+        type: 'text/plain'
+      },
+      {
+        rel: 'preconnect',
+        href: 'https://api.cambio-uruguay.com'
+      },
+      {
+        rel: 'preconnect',
+        href: 'https://fonts.googleapis.com'
+      },
+      {
+        rel: 'preconnect',
+        href: 'https://fonts.gstatic.com',
+        crossorigin: true
       },
       {
         href: 'https://cdn.maptiler.com/maptiler-geocoder/v1.1.0/maptiler-geocoder.css',
@@ -119,12 +167,13 @@ export default {
     port: 3311, // default: 3000
     host: '0.0.0.0' // default: localhost
   },
-
   // Global CSS: https://go.nuxtjs.dev/config-css
-  css: [],
-
-  // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
-  plugins: [{ src: '~/plugins/vue-plugins', mode: 'client' }],
+  css: ['~/assets/css/critical.css'],  // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
+  plugins: [
+    { src: '~/plugins/vue-plugins', mode: 'client' },
+    { src: '~/plugins/seo-utils.ts', mode: 'all' },
+    { src: '~/plugins/pwa-utils.ts', mode: 'client' }
+  ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
   components: false,
@@ -281,31 +330,97 @@ export default {
     base: '/',
     mode: 'history'
   },
-
   // PWA module configuration: https://go.nuxtjs.dev/pwa
   pwa: {
     icon: {
       purpose: 'maskable'
     },
-    manifest: {
+    meta: {
+      name: 'Cambio Uruguay',
+      author: 'Cambio Uruguay',
+      description: 'Encuentra las mejores cotizaciones de cambio de divisas en Uruguay',
       theme_color: '#272727',
-      start_url: 'https://cambio-uruguay.com',
-      crossorigin: 'use-credentials',
-      name: 'Cambio Uruguay App',
+      lang: 'es',
+      ogSiteName: 'Cambio Uruguay',
+      ogTitle: 'Cambio Uruguay - Mejores Cotizaciones de Cambio',
+      ogDescription: 'Encuentra las mejores cotizaciones de cambio de divisas en Uruguay',
+      ogImage: '/img/banner.png',
+      twitterCard: 'summary_large_image',
+      twitterSite: '@cambios_uy',
+      twitterCreator: '@cambios_uy'
+    },
+    manifest: {
+      name: 'Cambio Uruguay - Mejores Cotizaciones de Cambio',
       short_name: 'Cambio Uruguay',
+      description: 'Encuentra las mejores cotizaciones de cambio de divisas en Uruguay',
+      theme_color: '#272727',
+      background_color: '#272727',
+      start_url: '/',
+      display: 'standalone',
+      orientation: 'portrait-primary',
       lang: 'es',
       categories: ['finance', 'business', 'currency'],
-      description:
-        'Encuentra las mejores cotizaciones de cambio de divisas en Uruguay'
-    },
+      crossorigin: 'use-credentials'
+    },    
     workbox: {
-      workboxURL:
-        'https://cdn.jsdelivr.net/npm/workbox-cdn/workbox/workbox-sw.js',
-      importScripts:
-        process.env.NODE_ENV === 'production'
-          ? ['https://arc.io/arc-sw-core.js']
-          : [],
-      autoRegister: true
+      enabled: true,
+      workboxURL: 'https://cdn.jsdelivr.net/npm/workbox-cdn/workbox/workbox-sw.js',
+      importScripts: process.env.NODE_ENV === 'production'
+        ? ['https://arc.io/arc-sw-core.js']
+        : [],
+      autoRegister: true,
+      offline: true,
+      offlinePage: '/offline',
+      offlineStrategy: 'NetworkFirst',
+      offlineAnalytics: true,
+      cacheAssets: true,
+      runtimeCaching: [
+        {
+          urlPattern: 'https://api.cambio-uruguay.com/.*',
+          handler: 'StaleWhileRevalidate',
+          method: 'GET',
+          strategyOptions: {
+            cacheName: 'api-cache',
+            cacheableResponse: {
+              statuses: [0, 200]
+            },            plugins: [
+              {
+                cacheWillUpdate: ({ response }) => {
+                  // Don't cache responses with Vary: * header
+                  const varyHeader = response.headers.get('vary');
+                  if (varyHeader && varyHeader.includes('*')) {
+                    return null;
+                  }
+                  return response;
+                }
+              }
+            ]
+          }
+        },
+        {
+          urlPattern: 'https://fonts.googleapis.com/.*',
+          handler: 'CacheFirst',
+          method: 'GET',
+          strategyOptions: {
+            cacheName: 'google-fonts-stylesheets'
+          }
+        },
+        {
+          urlPattern: 'https://fonts.gstatic.com/.*',
+          handler: 'CacheFirst',
+          method: 'GET',
+          strategyOptions: {
+            cacheName: 'google-fonts-webfonts',
+            cacheableResponse: {
+              statuses: [0, 200]
+            },
+            expiration: {
+              maxAgeSeconds: 60 * 60 * 24 * 365,
+              maxEntries: 30
+            }
+          }
+        }
+      ]
     }
   },
 

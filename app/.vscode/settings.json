@@ -1,0 +1,21 @@
+{
+  "vetur.useWorkspaceDependencies": true,
+  "vetur.experimental.templateInterpolationService": true,
+  "typescript.preferences.includePackageJsonAutoImports": "on",
+  "typescript.suggest.autoImports": true,
+  "vue3snippets.enable-compile-vue-file-on-did-save-code": false,
+  "vetur.validation.template": true,
+  "vetur.validation.style": true,
+  "vetur.validation.script": true,
+  "vetur.format.enable": true,
+  "vetur.format.options.tabSize": 2,
+  "vetur.format.options.useTabs": false,
+  "vetur.format.defaultFormatter.html": "prettier",
+  "vetur.format.defaultFormatter.css": "prettier",
+  "vetur.format.defaultFormatter.postcss": "prettier",
+  "vetur.format.defaultFormatter.scss": "prettier",
+  "vetur.format.defaultFormatter.less": "prettier",
+  "vetur.format.defaultFormatter.stylus": "stylus-supremacy",
+  "vetur.format.defaultFormatter.js": "prettier",
+  "vetur.format.defaultFormatter.ts": "prettier"
+}

@@ -78,6 +78,17 @@ const translation = {
     subtitle: 'Compare rates from over 40 exchange houses in real-time',
     apiUsageMessage:
       'Interested in using this API for your website and having an exchange rate according to a particular bank in real time? Contact us at ',
+    pwa: {
+      installTitle: 'Install Cambio Uruguay',
+      installDescription: 'Access faster from your home screen',
+      install: 'Install',
+      dismiss: 'Not now',
+      updateAvailable: 'Update available',
+      updateDescription: 'A new version is available',
+      update: 'Update',
+      offline: 'You are offline',
+      onlineAgain: 'You are online again',
+    },
   },
   pt: {
     welcome:
@@ -159,6 +170,17 @@ const translation = {
     subtitle: 'Compare taxas de mais de 40 casas de câmbio em tempo real',
     apiUsageMessage:
       'Interessado em usar esta API para seu site e ter uma taxa de câmbio de acordo com um banco específico em tempo real? Entre em contato conosco em ',
+    pwa: {
+      installTitle: 'Instalar Cambio Uruguay',
+      installDescription: 'Acesse mais rápido da sua tela inicial',
+      install: 'Instalar',
+      dismiss: 'Agora não',
+      updateAvailable: 'Atualização disponível',
+      updateDescription: 'Uma nova versão está disponível',
+      update: 'Atualizar',
+      offline: 'Você está offline',
+      onlineAgain: 'Você está online novamente',
+    },
   },
   es: {
     welcome:
@@ -241,6 +263,17 @@ const translation = {
       'Compara cotizaciones de más de 40 casas de cambio en tiempo real',
     apiUsageMessage:
       '¿Interesados en usar esta API para su sitio web y tener un ratio de cambio acorde a algún banco en particular en tiempo real? Pueden comunicarse con nosotros en ',
+    pwa: {
+      installTitle: 'Instalar Cambio Uruguay',
+      installDescription: 'Accede más rápido desde tu pantalla de inicio',
+      install: 'Instalar',
+      dismiss: 'Ahora no',
+      updateAvailable: 'Actualización disponible',
+      updateDescription: 'Una nueva versión está disponible',
+      update: 'Actualizar',
+      offline: 'Estás sin conexión',
+      onlineAgain: 'Estás conectado nuevamente',
+    },
   },
 }
 
