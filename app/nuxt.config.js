@@ -68,7 +68,8 @@ export default {
       { name: 'theme-color', content: '#3B9B85' },
       { name: 'msapplication-navbutton-color', content: '#3B9B85' },
       { name: 'apple-mobile-web-app-status-bar-style', content: '#3B9B85' }
-    ],    link: [
+    ],
+    link: [
       {
         rel: 'apple-touch-icon',
         sizes: '180x180',
@@ -90,48 +91,6 @@ export default {
         rel: 'mask-icon',
         href: '/safari-pinned-tab.svg',
         color: '#5bbad5'
-      },
-      {
-        rel: 'canonical',
-        href: 'https://cambio-uruguay.com'
-      },
-      {
-        rel: 'alternate',
-        hreflang: 'es',
-        href: 'https://cambio-uruguay.com/'
-      },
-      {
-        rel: 'alternate',
-        hreflang: 'en',
-        href: 'https://cambio-uruguay.com/en'
-      },
-      {
-        rel: 'alternate',
-        hreflang: 'pt',
-        href: 'https://cambio-uruguay.com/pt'
-      },
-      {
-        rel: 'alternate',
-        hreflang: 'x-default',
-        href: 'https://cambio-uruguay.com/'
-      },
-      {
-        rel: 'author',
-        href: '/humans.txt',
-        type: 'text/plain'
-      },
-      {
-        rel: 'preconnect',
-        href: 'https://api.cambio-uruguay.com'
-      },
-      {
-        rel: 'preconnect',
-        href: 'https://fonts.googleapis.com'
-      },
-      {
-        rel: 'preconnect',
-        href: 'https://fonts.gstatic.com',
-        crossorigin: true
       },
       {
         href: 'https://cdn.maptiler.com/maptiler-geocoder/v1.1.0/maptiler-geocoder.css',
@@ -160,13 +119,12 @@ export default {
     port: 3311, // default: 3000
     host: '0.0.0.0' // default: localhost
   },
+
   // Global CSS: https://go.nuxtjs.dev/config-css
-  css: ['~/assets/css/critical.css'],
+  css: [],
+
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
-  plugins: [
-    { src: '~/plugins/vue-plugins', mode: 'client' },
-    { src: '~/plugins/seo-utils.ts', mode: 'all' }
-  ],
+  plugins: [{ src: '~/plugins/vue-plugins', mode: 'client' }],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
   components: false,
