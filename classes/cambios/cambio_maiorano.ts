@@ -27,6 +27,7 @@ class CambioMaiorano extends Cambio {
   website = "http://www.cambiomaiorano.com/";
   favicon = "http://www.cambiomaiorano.com/";
   async get_data(): Promise<CambioObj[]> {
+    // se tiene que arreglar también, está roto
     const web_data = await axios.get("http://cambios.instyledm.com/5/cotizaciones.html").then((res) => res.data);
     const $ = load(web_data);
     const result = $("table tbody tr")

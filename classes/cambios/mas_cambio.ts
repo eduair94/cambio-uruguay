@@ -27,7 +27,13 @@ class MasCambio extends Cambio {
   website = "http://www.mascambio.com/";
   favicon = "http://www.mascambio.com/";
   async get_data(): Promise<CambioObj[]> {
-    const web_data = await axios.get("http://cambios.instyledm.com/1/cotizaciones.html").then((res) => res.data);
+    const url = "http://www.mascambio.com";
+    const web_d = await axios.get(url).then((res) => res.data);
+    const $a = load(web_d);
+    const iframeUrl = $a("iframe#blockrandom").attr("src");
+    console.log("iframe url", iframeUrl);
+
+    const web_data = await axios.get(iframeUrl).then((res) => res.data);
     const $ = load(web_data);
     const result = $("table tbody tr")
       .map((i: number, element) => ({

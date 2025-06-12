@@ -5,7 +5,7 @@
       <v-col cols="12">
         <v-card class="mb-6">
           <v-card-title
-            class="text-h4 justify-center blue darken-4 white--text"
+            class="text-h5 text-md-h4 justify-center blue darken-4 white--text"
           >
             📈 Histórico de Cotizaciones
           </v-card-title>
@@ -90,7 +90,7 @@
               Compra Actual
             </v-card-title>
             <v-card-text class="white--text">
-              <div class="text-h4 font-weight-bold">
+              <div class="text-h5 text-md-h4 font-weight-bold">
                 {{ formatCurrency(evolutionData.statistics.buy.current) }}
               </div>
               <div class="caption">
@@ -108,7 +108,7 @@
               Venta Actual
             </v-card-title>
             <v-card-text class="white--text">
-              <div class="text-h4 font-weight-bold">
+              <div class="text-h5 text-md-h4 font-weight-bold">
                 {{ formatCurrency(evolutionData.statistics.sell.current) }}
               </div>
               <div class="caption">
@@ -126,7 +126,7 @@
               Promedio Compra
             </v-card-title>
             <v-card-text class="white--text">
-              <div class="text-h4 font-weight-bold">
+              <div class="text-h5 text-md-h4 font-weight-bold">
                 {{ formatCurrency(evolutionData.statistics.buy.avg) }}
               </div>
               <div class="caption">
@@ -144,7 +144,7 @@
               Datos Totales
             </v-card-title>
             <v-card-text class="white--text">
-              <div class="text-h4 font-weight-bold">
+              <div class="text-h5 text-md-h4 font-weight-bold">
                 {{ evolutionData.statistics.totalDataPoints }}
               </div>
               <div class="caption">
@@ -638,22 +638,10 @@ export default {
 </script>
 
 <style scoped>
-.v-card {
-  transition: transform 0.2s ease-in-out;
-}
-
 .chart-container {
   position: relative;
   height: 400px;
   width: 100%;
-}
-
-.elevation-1 {
-  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1) !important;
-}
-
-.text-h4 {
-  font-weight: 600;
 }
 
 .caption {

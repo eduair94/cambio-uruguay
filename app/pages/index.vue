@@ -2,7 +2,7 @@
   <div class="mt-md-4">
     <!-- SEO Optimized Header Structure -->
     <header>
-      <h1 class="text-h4 font-weight-bold mb-3">
+      <h1 class="text-h5 text-md-h4 font-weight-bold mb-3">
         {{ $t('welcome') }}
       </h1>
       <h2 class="text-h6 mb-4 grey--text text--lighten-1">
