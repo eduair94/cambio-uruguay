@@ -7,172 +7,237 @@ export default {
   type: 'module',
   loading: '~/components/LoadingBar.vue',
   // Global page headers: https://go.nuxtjs.dev/config-head  head: {
-    addSeoAttributes: true,
-    htmlAttrs: {
-      lang: 'es-ES'
+  addSeoAttributes: true,
+  htmlAttrs: {
+    lang: 'es-ES',
+  },
+  titleTemplate: '%s - Cambio Uruguay',
+  title: 'Mejores Cotizaciones de Cambio en Uruguay',
+  description:
+    'Encuentra las mejores cotizaciones de cambio de divisas en Uruguay. Compara precios de más de 40 casas de cambio en tiempo real.',
+  meta: [
+    { charset: 'utf-8' },
+    {
+      name: 'viewport',
+      content:
+        'width=device-width, initial-scale=1, user-scalable=yes, maximum-scale=5',
     },
-    titleTemplate: '%s - Cambio Uruguay',
-    title: 'Mejores Cotizaciones de Cambio en Uruguay',
-    description:
-      'Encuentra las mejores cotizaciones de cambio de divisas en Uruguay. Compara precios de más de 40 casas de cambio en tiempo real.',
-    meta: [
-      { charset: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1, user-scalable=yes, maximum-scale=5' },
-      { hid: 'description', name: 'description', content: 'Cambio Uruguay - Encuentra las mejores casas cambiarias de Montevideo / Uruguay, mejores cotizaciones de dólares (USD), pesos argentinos (ARS) y reales brasileros (BRL).' },
-      { name: 'keywords', content: 'cambio moneda uruguay, cambio divisas uruguay, donde comprar dólares uruguay, donde vender dólares uruguay, vender pesos argentinos uruguay, comprar pesos argentinos uruguay, casas de cambio uruguay, casas de cambio montevideo, casas de cambio punta del este' },
-      { name: 'author', content: 'Cambio Uruguay' },
-      { name: 'robots', content: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1' },
-      { name: 'googlebot', content: 'index, follow' },
-      { name: 'bingbot', content: 'index, follow' },
-      { name: 'referrer', content: 'no-referrer' },
-      
-      // Open Graph / Facebook
-      { hid: 'og:type', property: 'og:type', content: 'website' },
-      { hid: 'og:url', property: 'og:url', content: 'https://cambio-uruguay.com' },
-      { hid: 'og:title', property: 'og:title', content: 'Cambio Uruguay - Mejores Cotizaciones de Cambio' },
-      { hid: 'og:description', property: 'og:description', content: 'Cambio Uruguay - Encuentra las mejores casas cambiarias del país, mejores cotizaciones de dólares (USD), pesos argentinos (ARS) y reales brasileros (BRL).' },
-      { hid: 'og:image', property: 'og:image', content: 'https://cambio-uruguay.com/img/banner.png' },
-      { hid: 'og:image:width', property: 'og:image:width', content: '1200' },
-      { hid: 'og:image:height', property: 'og:image:height', content: '630' },
-      { hid: 'og:image:alt', property: 'og:image:alt', content: 'Cambio Uruguay - Mejores cotizaciones de cambio' },
-      { hid: 'og:site_name', property: 'og:site_name', content: 'Cambio Uruguay' },
-      { hid: 'og:locale', property: 'og:locale', content: 'es_ES' },
-      { hid: 'og:locale:alternate', property: 'og:locale:alternate', content: 'en_US' },
-      { hid: 'og:locale:alternate', property: 'og:locale:alternate', content: 'pt_BR' },
-      
-      // Twitter Card
-      { name: 'twitter:card', content: 'summary_large_image' },
-      { name: 'twitter:url', content: 'https://cambio-uruguay.com' },
-      { name: 'twitter:title', content: 'Cambio Uruguay' },
-      { name: 'twitter:description', content: 'Cambio Uruguay - Encuentra las mejores casas cambiarias del país, mejores cotizaciones de dólares (USD), pesos argentinos (ARS) y reales brasileños (BRL).' },
-      { name: 'twitter:image', content: 'https://cambio-uruguay.com/img/banner.png' },
-      { name: 'twitter:image:alt', content: 'Cambio Uruguay - Mejores cotizaciones de cambio' },
-      { name: 'twitter:site', content: '@cambios_uy' },
-      { name: 'twitter:creator', content: '@cambios_uy' },
-      
-      // Additional SEO meta tags
-      { name: 'geo.region', content: 'UY' },
-      { name: 'geo.placename', content: 'Uruguay' },
-      { name: 'geo.position', content: '-34.9011;-56.1645' },
-      { name: 'ICBM', content: '-34.9011, -56.1645' },
-        // App meta tags
-      { name: 'application-name', content: 'Cambio Uruguay' },
-      { name: 'apple-mobile-web-app-title', content: 'Cambio Uruguay' },
-      { name: 'apple-mobile-web-app-capable', content: 'yes' },
-      { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
-      { name: 'mobile-web-app-capable', content: 'yes' },
-      { name: 'format-detection', content: 'telephone=no' },
-      
-      // PWA meta tags
-      { name: 'apple-touch-fullscreen', content: 'yes' },
-      { name: 'apple-mobile-web-app-orientations', content: 'portrait' },
-      
-      // Theme colors
-      { name: 'msapplication-TileColor', content: '#272727' },
-      { name: 'theme-color', content: '#272727' },
-      { name: 'msapplication-navbutton-color', content: '#272727' },
-      { name: 'apple-mobile-web-app-status-bar-style', content: '#272727' }
-    ],    link: [      {
-        rel: 'manifest',
-        href: '/site.webmanifest'
-      },
-      {
-        rel: 'apple-touch-icon',
-        sizes: '180x180',
-        href: '/apple-touch-icon.png'
-      },
-      {
-        rel: 'icon',
-        type: 'image/png',
-        sizes: '32x32',
-        href: '/favicon-32x32.png'
-      },
-      {
-        rel: 'icon',
-        type: 'image/png',
-        sizes: '16x16',
-        href: '/favicon-16x16.png'
-      },
-      {
-        rel: 'mask-icon',
-        href: '/safari-pinned-tab.svg',
-        color: '#5bbad5'
-      },
-      {
-        rel: 'canonical',
-        href: 'https://cambio-uruguay.com'
-      },
-      {
-        rel: 'alternate',
-        hreflang: 'es',
-        href: 'https://cambio-uruguay.com/'
-      },
-      {
-        rel: 'alternate',
-        hreflang: 'en',
-        href: 'https://cambio-uruguay.com/en'
-      },
-      {
-        rel: 'alternate',
-        hreflang: 'pt',
-        href: 'https://cambio-uruguay.com/pt'
-      },
-      {
-        rel: 'alternate',
-        hreflang: 'x-default',
-        href: 'https://cambio-uruguay.com/'
-      },
-      {
-        rel: 'author',
-        href: '/humans.txt',
-        type: 'text/plain'
-      },
-      {
-        rel: 'preconnect',
-        href: 'https://api.cambio-uruguay.com'
-      },
-      {
-        rel: 'preconnect',
-        href: 'https://fonts.googleapis.com'
-      },
-      {
-        rel: 'preconnect',
-        href: 'https://fonts.gstatic.com',
-        crossorigin: true
-      },
-      {
-        href: 'https://cdn.maptiler.com/maptiler-geocoder/v1.1.0/maptiler-geocoder.css',
-        rel: 'stylesheet'
-      }
-    ],
-    script: [
-      {
-        async: true,
-        src: 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7038674901615097',
-        crossorigin: 'anonymous'
-      },
-      {
-        src: 'https://cdn.maptiler.com/maptiler-geocoder/v1.1.0/maptiler-geocoder.js'
-      },
-      {
-        src:
-          process.env.NODE_ENV === 'production'
-            ? 'https://arc.io/widget.min.js#63RUbX6J'
-            : '',
-        async: true
-      }
-    ],
+    {
+      hid: 'description',
+      name: 'description',
+      content:
+        'Cambio Uruguay - Encuentra las mejores casas cambiarias de Montevideo / Uruguay, mejores cotizaciones de dólares (USD), pesos argentinos (ARS) y reales brasileros (BRL).',
+    },
+    {
+      name: 'keywords',
+      content:
+        'cambio moneda uruguay, cambio divisas uruguay, donde comprar dólares uruguay, donde vender dólares uruguay, vender pesos argentinos uruguay, comprar pesos argentinos uruguay, casas de cambio uruguay, casas de cambio montevideo, casas de cambio punta del este',
+    },
+    { name: 'author', content: 'Cambio Uruguay' },
+    {
+      name: 'robots',
+      content:
+        'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
+    },
+    { name: 'googlebot', content: 'index, follow' },
+    { name: 'bingbot', content: 'index, follow' },
+    { name: 'referrer', content: 'no-referrer' },
+
+    // Open Graph / Facebook
+    { hid: 'og:type', property: 'og:type', content: 'website' },
+    {
+      hid: 'og:url',
+      property: 'og:url',
+      content: 'https://cambio-uruguay.com',
+    },
+    {
+      hid: 'og:title',
+      property: 'og:title',
+      content: 'Cambio Uruguay - Mejores Cotizaciones de Cambio',
+    },
+    {
+      hid: 'og:description',
+      property: 'og:description',
+      content:
+        'Cambio Uruguay - Encuentra las mejores casas cambiarias del país, mejores cotizaciones de dólares (USD), pesos argentinos (ARS) y reales brasileros (BRL).',
+    },
+    {
+      hid: 'og:image',
+      property: 'og:image',
+      content: 'https://cambio-uruguay.com/img/banner.png',
+    },
+    { hid: 'og:image:width', property: 'og:image:width', content: '1200' },
+    { hid: 'og:image:height', property: 'og:image:height', content: '630' },
+    {
+      hid: 'og:image:alt',
+      property: 'og:image:alt',
+      content: 'Cambio Uruguay - Mejores cotizaciones de cambio',
+    },
+    {
+      hid: 'og:site_name',
+      property: 'og:site_name',
+      content: 'Cambio Uruguay',
+    },
+    { hid: 'og:locale', property: 'og:locale', content: 'es_ES' },
+    {
+      hid: 'og:locale:alternate',
+      property: 'og:locale:alternate',
+      content: 'en_US',
+    },
+    {
+      hid: 'og:locale:alternate',
+      property: 'og:locale:alternate',
+      content: 'pt_BR',
+    },
+
+    // Twitter Card
+    { name: 'twitter:card', content: 'summary_large_image' },
+    { name: 'twitter:url', content: 'https://cambio-uruguay.com' },
+    { name: 'twitter:title', content: 'Cambio Uruguay' },
+    {
+      name: 'twitter:description',
+      content:
+        'Cambio Uruguay - Encuentra las mejores casas cambiarias del país, mejores cotizaciones de dólares (USD), pesos argentinos (ARS) y reales brasileños (BRL).',
+    },
+    {
+      name: 'twitter:image',
+      content: 'https://cambio-uruguay.com/img/banner.png',
+    },
+    {
+      name: 'twitter:image:alt',
+      content: 'Cambio Uruguay - Mejores cotizaciones de cambio',
+    },
+    { name: 'twitter:site', content: '@cambios_uy' },
+    { name: 'twitter:creator', content: '@cambios_uy' },
+
+    // Additional SEO meta tags
+    { name: 'geo.region', content: 'UY' },
+    { name: 'geo.placename', content: 'Uruguay' },
+    { name: 'geo.position', content: '-34.9011;-56.1645' },
+    { name: 'ICBM', content: '-34.9011, -56.1645' },
+    // App meta tags
+    { name: 'application-name', content: 'Cambio Uruguay' },
+    { name: 'apple-mobile-web-app-title', content: 'Cambio Uruguay' },
+    { name: 'apple-mobile-web-app-capable', content: 'yes' },
+    {
+      name: 'apple-mobile-web-app-status-bar-style',
+      content: 'black-translucent',
+    },
+    { name: 'mobile-web-app-capable', content: 'yes' },
+    { name: 'format-detection', content: 'telephone=no' },
+
+    // PWA meta tags
+    { name: 'apple-touch-fullscreen', content: 'yes' },
+    { name: 'apple-mobile-web-app-orientations', content: 'portrait' },
+
+    // Theme colors
+    { name: 'msapplication-TileColor', content: '#272727' },
+    { name: 'theme-color', content: '#272727' },
+    { name: 'msapplication-navbutton-color', content: '#272727' },
+    { name: 'apple-mobile-web-app-status-bar-style', content: '#272727' },
+  ],
+  link: [
+    {
+      rel: 'manifest',
+      href: '/site.webmanifest',
+    },
+    {
+      rel: 'apple-touch-icon',
+      sizes: '180x180',
+      href: '/apple-touch-icon.png',
+    },
+    {
+      rel: 'icon',
+      type: 'image/png',
+      sizes: '32x32',
+      href: '/favicon-32x32.png',
+    },
+    {
+      rel: 'icon',
+      type: 'image/png',
+      sizes: '16x16',
+      href: '/favicon-16x16.png',
+    },
+    {
+      rel: 'mask-icon',
+      href: '/safari-pinned-tab.svg',
+      color: '#5bbad5',
+    },
+    {
+      rel: 'canonical',
+      href: 'https://cambio-uruguay.com',
+    },
+    {
+      rel: 'alternate',
+      hreflang: 'es',
+      href: 'https://cambio-uruguay.com/',
+    },
+    {
+      rel: 'alternate',
+      hreflang: 'en',
+      href: 'https://cambio-uruguay.com/en',
+    },
+    {
+      rel: 'alternate',
+      hreflang: 'pt',
+      href: 'https://cambio-uruguay.com/pt',
+    },
+    {
+      rel: 'alternate',
+      hreflang: 'x-default',
+      href: 'https://cambio-uruguay.com/',
+    },
+    {
+      rel: 'author',
+      href: '/humans.txt',
+      type: 'text/plain',
+    },
+    {
+      rel: 'preconnect',
+      href: 'https://api.cambio-uruguay.com',
+    },
+    {
+      rel: 'preconnect',
+      href: 'https://fonts.googleapis.com',
+    },
+    {
+      rel: 'preconnect',
+      href: 'https://fonts.gstatic.com',
+      crossorigin: true,
+    },
+    {
+      href: 'https://cdn.maptiler.com/maptiler-geocoder/v1.1.0/maptiler-geocoder.css',
+      rel: 'stylesheet',
+    },
+  ],
+  script: [
+    {
+      async: true,
+      src: 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7038674901615097',
+      crossorigin: 'anonymous',
+    },
+    {
+      src: 'https://cdn.maptiler.com/maptiler-geocoder/v1.1.0/maptiler-geocoder.js',
+    },
+    {
+      src:
+        process.env.NODE_ENV === 'production'
+          ? 'https://arc.io/widget.min.js#63RUbX6J'
+          : '',
+      async: true,
+    },
+  ],
 
   server: {
     port: 3311, // default: 3000
-    host: '0.0.0.0' // default: localhost
+    host: '0.0.0.0', // default: localhost
   },
   // Global CSS: https://go.nuxtjs.dev/config-css
-  css: ['~/assets/css/critical.css'],  // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
+  css: ['~/assets/css/critical.css'], // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
     { src: '~/plugins/vue-plugins', mode: 'client' },
     { src: '~/plugins/seo-utils.ts', mode: 'all' },
-    { src: '~/plugins/pwa-utils.ts', mode: 'client' }
+    { src: '~/plugins/pwa-utils.ts', mode: 'client' },
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
@@ -193,19 +258,19 @@ export default {
           {
             id: 'AW-972399920',
             config: {
-              send_page_view: true // optional configurations
-            }
-          }
-        ]
-      }
+              send_page_view: true, // optional configurations
+            },
+          },
+        ],
+      },
     ],
-    '@nuxtjs/google-fonts'
+    '@nuxtjs/google-fonts',
   ],
 
   googleFonts: {
     families: {
-      'Open Sans': [400, 600, 700]
-    }
+      'Open Sans': [400, 600, 700],
+    },
   },
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
@@ -220,48 +285,178 @@ export default {
       '@netsells/nuxt-hotjar',
       {
         id: '3306157',
-        sv: '6'
-      }
-    ]
-  ],
-  // Sitemap configuration
+        sv: '6',
+      },
+    ],
+  ], // Sitemap configuration
   sitemap: {
     hostname: 'https://cambio-uruguay.com',
     i18n: true,
     gzip: true,
-    routes: () => {
+    routes: async () => {
       // Add dynamic routes here if needed
       const routes = []
-      
+
       // Add currency-specific routes
       const currencies = ['USD', 'ARS', 'BRL', 'EUR', 'GBP']
       const locations = ['MONTEVIDEO', 'PUNTA-DEL-ESTE', 'COLONIA', 'SALTO']
-      
-      currencies.forEach(currency => {
+
+      currencies.forEach((currency) => {
         routes.push({
           url: `/?currency=${currency}`,
           changefreq: 'hourly',
           priority: 0.8,
-          lastmod: new Date()
+          lastmod: new Date(),
         })
-        
-        locations.forEach(location => {
+
+        locations.forEach((location) => {
           routes.push({
             url: `/?currency=${currency}&location=${location}`,
             changefreq: 'hourly',
             priority: 0.7,
-            lastmod: new Date()
+            lastmod: new Date(),
           })
         })
       })
-      
+
+      // Add historical routes
+      try {
+        // Fetch data from API to get all origins and currency codes
+        const axios = require('axios')
+        const response = await axios.get('https://api.cambio-uruguay.com')
+        const data = response.data
+
+        // Extract unique origins and currency codes from API data
+        const uniqueOrigins = [
+          ...new Set(
+            data.filter((item) => item.origin).map((item) => item.origin)
+          ),
+        ]
+        const uniqueCurrencies = [...new Set(data.map((item) => item.code))]
+
+        // Add main historical page
+        routes.push({
+          url: '/historico',
+          changefreq: 'daily',
+          priority: 0.8,
+          lastmod: new Date(),
+        })
+
+        // Add historical routes for each origin
+        uniqueOrigins.forEach((origin) => {
+          routes.push({
+            url: `/historico/${origin}`,
+            changefreq: 'daily',
+            priority: 0.7,
+            lastmod: new Date(),
+          })
+
+          // Add historical routes for each origin and currency combination
+          uniqueCurrencies.forEach((currency) => {
+            routes.push({
+              url: `/historico/${origin}/${currency}`,
+              changefreq: 'daily',
+              priority: 0.6,
+              lastmod: new Date(),
+            })
+          })
+        })
+      } catch (error) {
+        // Fallback: use static list of origins from origins.ts and common currencies
+        const fallbackOrigins = [
+          'prex',
+          'alter_cambio',
+          'cambio_rynder',
+          'cambio_sir',
+          'aeromar',
+          'brou',
+          'fortex',
+          'cambio_argentino',
+          'cambio_federal',
+          'cambio_romantico',
+          'cambio_aguerrebere',
+          'itau',
+          'cambio_principal',
+          'cambio_young',
+          'cambio_3',
+          'cambio_minas',
+          'cambio_openn',
+          'cambial',
+          'cambio_maiorano',
+          'cambio_pando',
+          'mas_cambio',
+          'cambio_fenix',
+          'cambio_oriental',
+          'baluma_cambio',
+          'gales',
+          'cambio_vexel',
+          'cambio_velso',
+          'tradelix',
+          'cambio_sicurezza',
+          'cambio_regul',
+          'cambio_pernas',
+          'cambio_misiones',
+          'cambio_pampex',
+          'cambio_obelisco',
+          'suizo',
+          'cambio_ingles',
+          'bcu',
+          'cambilex',
+          'aspen',
+          'matriz',
+          'cambio18',
+          'indumex',
+          'varlix',
+        ]
+        const fallbackCurrencies = [
+          'USD',
+          'EUR',
+          'ARS',
+          'BRL',
+          'GBP',
+          'CHF',
+          'PYG',
+          'XAU',
+          'UR',
+          'UP',
+          'UI',
+        ]
+
+        // Add main historical page
+        routes.push({
+          url: '/historico',
+          changefreq: 'daily',
+          priority: 0.8,
+          lastmod: new Date(),
+        })
+
+        // Add fallback historical routes
+        fallbackOrigins.forEach((origin) => {
+          routes.push({
+            url: `/historico/${origin}`,
+            changefreq: 'daily',
+            priority: 0.7,
+            lastmod: new Date(),
+          })
+
+          fallbackCurrencies.forEach((currency) => {
+            routes.push({
+              url: `/historico/${origin}/${currency}`,
+              changefreq: 'daily',
+              priority: 0.6,
+              lastmod: new Date(),
+            })
+          })
+        })
+      }
+
       return routes
     },
     defaults: {
       changefreq: 'daily',
       priority: 1,
-      lastmod: new Date()
-    }
+      lastmod: new Date(),
+    },
   },
 
   // Robots.txt configuration
@@ -269,7 +464,7 @@ export default {
     UserAgent: '*',
     Allow: '/',
     Disallow: ['/admin', '/_nuxt'],
-    Sitemap: 'https://cambio-uruguay.com/sitemap.xml'
+    Sitemap: 'https://cambio-uruguay.com/sitemap.xml',
   },
 
   sentry: {
@@ -279,19 +474,19 @@ export default {
       tracesSampleRate: 1.0,
       browserTracing: {},
       vueOptions: {
-        trackComponents: true
-      }
+        trackComponents: true,
+      },
       // Optional Sentry SDK configuration.
       // Those options are shared by both the Browser and the Server instances.
       // Browser-onlsy and Server-only options should go
       // into `clientConfig` and `serverConfig` objects respectively.
-    }
+    },
   },
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
   axios: {
     // Workaround to avoid enforcing hard-coded localhost:3000: https://github.com/nuxt-community/axios-module/issues/308
-    baseURL: '/'
+    baseURL: '/',
   },
 
   i18n: {
@@ -301,58 +496,61 @@ export default {
       {
         code: 'en',
         iso: 'en-US',
-        name: 'English'
+        name: 'English',
       },
       {
         code: 'es',
         iso: 'es-ES',
-        name: 'Español'
+        name: 'Español',
       },
       {
         code: 'pt',
         iso: 'pt-BR',
-        name: 'Português'
-      }
+        name: 'Português',
+      },
     ],
     defaultLocale: 'es',
     detectBrowserLanguage: {
       useCookie: true,
       cookieKey: 'i18n_redirected',
-      redirectOn: 'root' // recommended
+      redirectOn: 'root', // recommended
     },
     vueI18n: {
       fallbackLocale: 'es',
-      messages: translations
-    }
+      messages: translations,
+    },
   },
 
   router: {
     base: '/',
-    mode: 'history'
+    mode: 'history',
   },
   // PWA module configuration: https://go.nuxtjs.dev/pwa
   pwa: {
     icon: {
-      purpose: 'maskable'
+      purpose: 'maskable',
     },
     meta: {
       name: 'Cambio Uruguay',
       author: 'Cambio Uruguay',
-      description: 'Encuentra las mejores cotizaciones de cambio de divisas en Uruguay',
+      description:
+        'Encuentra las mejores cotizaciones de cambio de divisas en Uruguay',
       theme_color: '#272727',
       lang: 'es',
       ogSiteName: 'Cambio Uruguay',
       ogTitle: 'Cambio Uruguay - Mejores Cotizaciones de Cambio',
-      ogDescription: 'Encuentra las mejores cotizaciones de cambio de divisas en Uruguay',
+      ogDescription:
+        'Encuentra las mejores cotizaciones de cambio de divisas en Uruguay',
       ogImage: '/img/banner.png',
       twitterCard: 'summary_large_image',
       twitterSite: '@cambios_uy',
-      twitterCreator: '@cambios_uy'
+      twitterCreator: '@cambios_uy',
     },
     manifest: {
       name: 'Cambio Uruguay - Mejores Cotizaciones de Cambio',
       short_name: 'Cambio Uruguay',
-      description: 'Encuentra las mejores cotizaciones de cambio de divisas en Uruguay',
+      description:
+        'Encuentra las mejores cotizaciones de cambio de divisas en Uruguay',
       theme_color: '#272727',
       background_color: '#272727',
       start_url: '/',
@@ -360,14 +558,16 @@ export default {
       orientation: 'portrait-primary',
       lang: 'es',
       categories: ['finance', 'business', 'currency'],
-      crossorigin: 'use-credentials'
-    },    
+      crossorigin: 'use-credentials',
+    },
     workbox: {
       enabled: true,
-      workboxURL: 'https://cdn.jsdelivr.net/npm/workbox-cdn/workbox/workbox-sw.js',
-      importScripts: process.env.NODE_ENV === 'production'
-        ? ['https://arc.io/arc-sw-core.js']
-        : [],
+      workboxURL:
+        'https://cdn.jsdelivr.net/npm/workbox-cdn/workbox/workbox-sw.js',
+      importScripts:
+        process.env.NODE_ENV === 'production'
+          ? []
+          : [],
       autoRegister: true,
       offline: true,
       offlinePage: '/offline',
@@ -382,28 +582,29 @@ export default {
           strategyOptions: {
             cacheName: 'api-cache',
             cacheableResponse: {
-              statuses: [0, 200]
-            },            plugins: [
+              statuses: [0, 200],
+            },
+            plugins: [
               {
                 cacheWillUpdate: ({ response }) => {
                   // Don't cache responses with Vary: * header
-                  const varyHeader = response.headers.get('vary');
+                  const varyHeader = response.headers.get('vary')
                   if (varyHeader && varyHeader.includes('*')) {
-                    return null;
+                    return null
                   }
-                  return response;
-                }
-              }
-            ]
-          }
+                  return response
+                },
+              },
+            ],
+          },
         },
         {
           urlPattern: 'https://fonts.googleapis.com/.*',
           handler: 'CacheFirst',
           method: 'GET',
           strategyOptions: {
-            cacheName: 'google-fonts-stylesheets'
-          }
+            cacheName: 'google-fonts-stylesheets',
+          },
         },
         {
           urlPattern: 'https://fonts.gstatic.com/.*',
@@ -412,44 +613,44 @@ export default {
           strategyOptions: {
             cacheName: 'google-fonts-webfonts',
             cacheableResponse: {
-              statuses: [0, 200]
+              statuses: [0, 200],
             },
             expiration: {
               maxAgeSeconds: 60 * 60 * 24 * 365,
-              maxEntries: 30
-            }
-          }
-        }
-      ]
-    }
+              maxEntries: 30,
+            },
+          },
+        },
+      ],
+    },
   },
 
   // Vuetify module configuration: https://go.nuxtjs.dev/config-vuetify
   vuetify: {
     lang: {
-      locales: { pt, es }
+      locales: { pt, es },
     },
     treeShake: true,
     customVariables: ['~/assets/variables.scss'],
     defaultAssets: {
       font: {
-        family: 'Open Sans'
-      }
+        family: 'Open Sans',
+      },
     },
     theme: {
       dark: true,
       themes: {
         dark: {
           primary: colors.blue.darken2,
-          accent: colors.grey.darken3,
+          accent: colors.white,
           secondary: colors.amber.darken3,
           info: colors.teal.lighten1,
           warning: colors.amber.base,
           error: colors.deepOrange.accent4,
-          success: colors.green.accent3
-        }
-      }
-    }
+          success: colors.green.accent3,
+        },
+      },
+    },
   },
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
@@ -459,6 +660,6 @@ export default {
       if (isClient) {
         config.devtool = 'source-map'
       }
-    }
-  }
+    },
+  },
 }

@@ -91,7 +91,7 @@
                         </a>
                       </div>
                     </div>
-                    <div class="button_section mb-3"></div>
+                    <div class="button_section mb-3 mt-3 mt-md-0"></div>
                   </div>
                 </div>
                 <div>
@@ -100,6 +100,7 @@
                     <v-col cols="12" md="6">
                       <v-autocomplete
                         v-model="selectedExchangeHouse"
+                        class="selectExchangeHouse"
                         :items="exchangeHouseOptions"
                         :label="$t('searchExchangeHouse')"
                         :no-data-text="$t('noExchangeHousesFound')"
@@ -114,6 +115,47 @@
                         @click:clear="clearExchangeHouseFilter"
                       >
                       </v-autocomplete>
+                    </v-col>
+                    <v-col cols="12" md="6">
+                      <div class="d-flex align-center">
+                        <v-menu
+                          v-model="datePickerMenu"
+                          :close-on-content-click="false"
+                          :nudge-right="40"
+                          transition="scale-transition"
+                          offset-y
+                          min-width="auto"
+                          class="flex-grow-1"
+                        >
+                          <template #activator="{ on, attrs }">
+                            <v-text-field
+                              v-model="selectedDate"
+                              :label="$t('selectDate')"
+                              prepend-inner-icon="mdi-calendar"
+                              readonly
+                              outlined
+                              hide-details
+                              v-bind="attrs"
+                              v-on="on"
+                            ></v-text-field>
+                          </template>
+                          <v-date-picker
+                            v-model="selectedDate"
+                            :max="new Date().toISOString().substr(0, 10)"
+                            @input="onDateChange"
+                            @change="datePickerMenu = false"
+                          ></v-date-picker>
+                        </v-menu>
+                        <v-btn
+                          :title="$t('resetDate')"
+                          class="ml-2"
+                          icon
+                          color="primary"
+                          @click="resetDate"
+                        >
+                          <v-icon>mdi-refresh</v-icon>
+                        </v-btn>
+                      </div>
                     </v-col>
                   </v-row>
 
@@ -512,6 +554,8 @@ export default {
       wantTo: 'buy',
       notConditional: false,
       day: new Date().toLocaleDateString(),
+      selectedDate: new Date().toISOString().substr(0, 10), // YYYY-MM-DD format
+      datePickerMenu: false, // Controls the date picker menu visibility
       code: '',
       code_with: '',
       notInterBank: true,
@@ -575,14 +619,6 @@ export default {
     this.beforeMount()
   },
   mounted() {
-    ;(window as any).startLoading = () => {
-      const el = document.getElementById('spinner-wrapper')
-      if (el) el.style.display = 'flex'
-    }
-    ;(window as any).stopLoading = () => {
-      const el = document.getElementById('spinner-wrapper')
-      if (el) el.style.display = 'none'
-    }
     this.setScrollBar()
   },
   methods: {
@@ -615,6 +651,17 @@ export default {
       this.selectedExchangeHouse = []
       this.updateTable()
       this.setPrice() // Update URL to reflect cleared filter
+    }, // Date change method
+    async onDateChange() {
+      await this.setup()
+      this.get_data()
+    },
+
+    // Reset date to today
+    async resetDate() {
+      this.selectedDate = new Date().toISOString().substr(0, 10)
+      await this.setup()
+      this.get_data()
     },
 
     buildExchangeHouseOptions() {
@@ -634,6 +681,7 @@ export default {
     },
 
     async setup() {
+      ;(window as any).startLoading()
       const locations = ['TODOS', 'MONTEVIDEO']
       const localData = await this.$axios
         .get('https://api.cambio-uruguay.com/localData')
@@ -674,9 +722,15 @@ export default {
       this.$store.dispatch('setFortex', dataFortex)
 
       const data = await this.$axios
-        .get('https://api.cambio-uruguay.com')
-        .then((res) =>
-          (res.data as any[])
+        .get('https://api.cambio-uruguay.com', {
+          params: { date: this.selectedDate },
+        })
+        .then((res) => {
+          // Check if the response contains an error
+          if (res.data && res.data.error === 'No results found') {
+            throw new Error('No results found')
+          }
+          return (res.data as any[])
             .map((el: any) => {
               el.localData = localData[el.origin]
               if (!el.localData) {
@@ -687,9 +741,19 @@ export default {
               return el
             })
             .filter((el: any) => el.localData)
-        )
+        })
+        .catch((error) => {
+          // Handle API errors
+          console.error('API Error:', error)
+          this.snackbar = true
+          this.snackBarText = this.$t('noDataAvailable')
+          return [] // Return empty array to prevent further errors
+        })
+      console.log('Data', data)
       this.$store.dispatch('setLocations', locations)
       this.$store.dispatch('setItems', data)
+      this.all_items = [...this.allItems]
+      ;(window as any).stopLoading()
     },
     changeCode(code: string, codeWith: string) {
       this.code = codeWith
@@ -744,7 +808,6 @@ export default {
     },
     async beforeMount() {
       await this.setup()
-      this.all_items = [...this.allItems]
 
       // Build exchange house options for autocomplete
       this.buildExchangeHouseOptions()
@@ -784,6 +847,11 @@ export default {
       this.code_with = this.$route.query.currency_with
         ? this.$route.query.currency_with
         : 'UYU'
+
+      // Load selected date from query parameters or default to today
+      this.selectedDate = this.$route.query.date
+        ? this.$route.query.date
+        : new Date().toISOString().substr(0, 10)
 
       // Load selected exchange houses from query parameters
       if (this.$route.query.exchangeHouses) {
@@ -1198,6 +1266,7 @@ export default {
         wantTo: this.wantTo,
         location: this.location,
         currency_with: this.code_with,
+        date: this.selectedDate,
         notInterBank: this.notInterBank ? 1 : undefined,
         notConditional: this.notConditional ? 1 : undefined,
         exchangeHouses:
@@ -1327,10 +1396,6 @@ body {
 .donation_logo {
   transition: ease-in-out 0.3s;
 }
-.donation_logo:hover {
-  transform: scale(1.05);
-  filter: drop-shadow(0px 0px 3px black);
-}
 
 .gap-10 {
   gap: 10px;
@@ -1361,5 +1426,9 @@ body {
       max-width: calc(80vw / 5);
     }
   }
+}
+
+.selectExchangeHouse .v-select__selections {
+  min-height: 56px !important;
 }
 </style>

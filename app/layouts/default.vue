@@ -1,20 +1,68 @@
 <template>
   <v-app dark>
+    <!-- Navigation Drawer for mobile only -->
+    <v-navigation-drawer v-model="drawer" absolute>
+      <v-list>
+        <v-list-item
+          v-for="item in items"
+          :key="item.title"
+          :to="item.external ? undefined : item.to"
+          :href="item.external ? item.to : undefined"
+          :target="item.external ? '_blank' : undefined"
+          :rel="item.external ? 'noopener noreferrer' : undefined"
+          router
+          exact
+          @click="drawer = false"
+        >
+          <v-list-item-action>
+            <v-icon>{{ item.icon }}</v-icon>
+          </v-list-item-action>
+          <v-list-item-content>
+            <v-list-item-title>{{ item.title }}</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+      </v-list>
+    </v-navigation-drawer>
     <v-app-bar :clipped-left="clipped" fixed app>
-      <v-img
-        max-height="90%"
-        max-width="65vw"
-        contain
-        alt="Cambio Uruguay - Logo oficial para comparar cotizaciones de cambio"
-        class="logo_image"
-        position="left center"
-        src="./img/logo.png"
-        @click="scrollTop"
-      >
-        <template #sources>
-          <source srcset="/img/logo.webp" />
-        </template>
-      </v-img>      <v-spacer />
+      <!-- Mobile menu button -->
+      <v-app-bar-nav-icon
+        class="d-flex d-md-none mr-2"
+        @click.stop="drawer = !drawer"
+      />
+
+      <router-link to="/" class="no_link">
+        <v-img
+          max-height="90%"
+          max-width="55vw"
+          contain
+          alt="Cambio Uruguay - Logo oficial para comparar cotizaciones de cambio"
+          class="logo_image"
+          position="left center"
+          src="./img/logo.png"
+        >
+          <template #sources>
+            <source srcset="/img/logo.webp" />
+          </template>
+        </v-img>
+      </router-link>
+      <!-- Navigation Menu for desktop -->
+      <v-toolbar-items class="d-none d-md-flex ml-4">
+        <v-btn
+          v-for="item in items"
+          :key="item.title"
+          :to="item.external ? undefined : item.to"
+          :href="item.external ? item.to : undefined"
+          :target="item.external ? '_blank' : undefined"
+          :rel="item.external ? 'noopener noreferrer' : undefined"
+          text
+          class="text-capitalize"
+        >
+          <v-icon left small>{{ item.icon }}</v-icon>
+          {{ item.title }}
+        </v-btn>
+      </v-toolbar-items>
+
+      <v-spacer />
       <LanguageMenu />
     </v-app-bar>
     <PWAInstallBanner />
@@ -28,14 +76,14 @@
         <span>Cambio Uruguay &copy; {{ new Date().getFullYear() }}</span>
         <v-spacer />
         <span
-          >{{ $t('madeWith') }} <v-icon color="red">mdi-heart</v-icon>
-          {{ $t('por') }}
+          >Hecho con <v-icon color="red">mdi-heart</v-icon>
+          por
           <a
             class="white--text"
             href="https://www.linkedin.com/in/eduardo-airaudo/"
             >Eduardo Airaudo</a
           >
-          {{ $t('and') }}
+          y
           <a
             class="white--text"
             href="https://www.linkedin.com/in/reginascagliotti/"
@@ -48,9 +96,10 @@
   </v-app>
 </template>
 
-<script>
+<script lang="ts">
 export default {
-  name: 'DefaultLayout',  components: {
+  name: 'DefaultLayout',
+  components: {
     LanguageMenu: () => import('../components/LanguageMenu.vue'),
     JoinTwitter: () => import('../components/JoinTwitter.vue'),
     PWAInstallBanner: () => import('../components/PWAInstallBanner.vue'),
@@ -62,14 +111,20 @@ export default {
       fixed: false,
       items: [
         {
-          icon: 'mdi-apps',
-          title: 'Welcome',
+          icon: 'mdi-home',
+          title: 'Inicio',
           to: '/',
         },
         {
-          icon: 'mdi-chart-bubble',
-          title: 'Inspire',
-          to: '/inspire',
+          icon: 'mdi-chart-line',
+          title: 'Histórico',
+          to: '/historico',
+        },
+        {
+          icon: 'mdi-heart',
+          title: 'Donar',
+          to: 'https://ko-fi.com/cambio_uruguay',
+          external: true,
         },
       ],
       miniVariant: false,
@@ -148,13 +203,18 @@ export default {
       ],
     }
   },
+  beforeMount() {
+    ;(window as any).startLoading = () => {
+      const el = document.getElementById('spinner-wrapper')
+      if (el) el.style.display = 'flex'
+    }
+    ;(window as any).stopLoading = () => {
+      const el = document.getElementById('spinner-wrapper')
+      if (el) el.style.display = 'none'
+    }
+  },
   mounted() {
     this.$vuetify.lang.current = this.$i18n.locale
-  },
-  methods: {
-    scrollTop() {
-      window.scrollTo(0, 0)
-    },
   },
 }
 </script>
@@ -211,6 +271,28 @@ body .v-app-bar.v-app-bar--fixed {
   .v-data-table > .v-data-table__wrapper > table > thead > tr > td,
   .v-data-table > .v-data-table__wrapper > table > tfoot > tr > td {
     padding-bottom: 12px;
+  }
+}
+
+/* Mobile navigation drawer styles */
+@media (max-width: 959px) {
+  .v-navigation-drawer {
+    z-index: 2000 !important;
+  }
+
+  .v-navigation-drawer .v-list-item {
+    padding: 12px 16px;
+  }
+
+  .v-navigation-drawer .v-list-item-title {
+    font-weight: 500;
+  }
+}
+
+/* Hide drawer on desktop */
+@media (min-width: 960px) {
+  .v-navigation-drawer.d-md-none {
+    display: none !important;
   }
 }
 </style>
