@@ -125,15 +125,15 @@ class CambioInfo extends Cambio {
     const obj = await this.db.allEntriesSort({ date }, { code: -1, sell: 1, buy: 1 });
     return obj as any;
   }
-  async get_currency_evolution(origin: string, code: string, periodMonths: number = 6): Promise<any> {
+  async get_currency_evolution(origin: string, code: string, periodMonths: number = 6, type?: string): Promise<any> {
     // Calculate date range based on the period requested
     const endDate = moment.tz("America/Montevideo").startOf("day").toDate();
     const startDate = moment.tz("America/Montevideo").subtract(periodMonths, "months").startOf("day").toDate();
 
-    console.log(`Getting currency evolution for ${origin}/${code} from ${startDate} to ${endDate}`);
+    console.log(`Getting currency evolution for ${origin}/${code}${type ? `/${type}` : ""} from ${startDate} to ${endDate}`);
 
     // Query the database for historical data within the date range
-    const query = {
+    const query: any = {
       origin: origin.toLowerCase(),
       code: code.toUpperCase(),
       date: {
@@ -141,6 +141,11 @@ class CambioInfo extends Cambio {
         $lte: endDate,
       },
     };
+
+    // Add type filter if specified
+    if (type) {
+      query.type = type.toUpperCase();
+    }
 
     const historicalData: CambioObj[] = (await this.db.allEntriesSort(
       query,
@@ -194,10 +199,10 @@ class CambioInfo extends Cambio {
             }
           : null,
     };
-
     return {
       origin: origin.toLowerCase(),
       code: code.toUpperCase(),
+      type: type?.toUpperCase() || null,
       statistics,
       evolution,
     };

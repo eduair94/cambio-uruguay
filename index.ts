@@ -185,9 +185,10 @@ const main = async () => {
     const reply = await x.get_by_origin(origin);
     return reply;
   });
-  server.getJson("evolution/:origin/:code", async (req: Request): Promise<any> => {
+  server.getJson("evolution/:origin/:code/:type?", async (req: Request): Promise<any> => {
     const origin = req.params.origin;
     const code = req.params.code;
+    const type = req.params.type;
 
     // Validate origin parameter
     const validOrigin = Object.keys(origins).includes(origin);
@@ -198,6 +199,14 @@ const main = async () => {
     // Validate currency code parameter (basic validation)
     if (!code || code.length < 2 || code.length > 4) {
       throw new Error(`Invalid currency code: ${code}. Currency code should be 2-4 characters (e.g., USD, ARS, BRL, EUR)`);
+    }    // Validate type parameter if provided (currency subtype like BILLETE, CABLE, etc.)
+    if (type) {
+      // Allow common currency types - empty string is also valid
+      const validTypes = ["", "billete", "cable", "ebrou", "interbancario", "fondo/cable", "promed.fondo"];
+      if (!validTypes.includes(type.toLowerCase())) {
+        console.warn(`Warning: Potentially invalid currency type: ${type}. Common types are: BILLETE, CABLE, EBROU, INTERBANCARIO`);
+        // Don't throw error to allow flexibility for other types that might exist
+      }
     }
 
     // Parse period parameter (default to 6 months)
@@ -210,10 +219,10 @@ const main = async () => {
       periodMonths = period;
     }
 
-    console.log(`Evolution request: ${origin}/${code} for ${periodMonths} months`);
+    console.log(`Evolution request: ${origin}/${code}${type ? `/${type}` : ""} for ${periodMonths} months`);
 
     try {
-      const evolutionData = await cambio_info.get_currency_evolution(origin, code, periodMonths);
+      const evolutionData = await cambio_info.get_currency_evolution(origin, code, periodMonths, type?.toLowerCase());
       return evolutionData;
     } catch (error) {
       console.error("Evolution endpoint error:", error);
