@@ -1,7 +1,8 @@
 {
   "name": "app",
   "version": "1.0.0",
-  "private": true,  "scripts": {
+  "private": true,
+  "scripts": {
     "dev": "cross-env NODE_OPTIONS=--openssl-legacy-provider nuxt",
     "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider nuxt build --modern=server && pm2 restart ecosystem.config.js",
     "start": "nuxt start",
@@ -45,13 +46,15 @@
     "@nuxt/typescript-runtime": "^2.1.0",
     "@nuxt/vue-app": "^2.18.1",
     "@nuxtjs/axios": "^5.13.6",
-    "@nuxtjs/eslint-config-typescript": "^8.0.0",
+    "@nuxtjs/eslint-config-typescript": "^12.1.0",
     "@nuxtjs/eslint-module": "^3.0.2",
     "@nuxtjs/pwa": "^3.3.5",
     "@nuxtjs/vuetify": "^1.12.3",
     "@types/node": "^24.0.1",
+    "cross-env": "^7.0.3",
     "eslint": "^8.4.1",
     "eslint-config-prettier": "^8.3.0",
+    "eslint-config-standard": "^17.1.0",
     "eslint-plugin-nuxt": "^3.1.0",
     "eslint-plugin-vue": "^8.2.0",
     "nuxt-leaflet": "^0.0.27",
