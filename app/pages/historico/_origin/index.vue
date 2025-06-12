@@ -1,196 +1,194 @@
 <template>
-  <div class="pa-4">
-    <v-container fluid>
-      <v-row>
-        <v-col cols="12">
-          <!-- Breadcrumb navigation -->
-          <v-breadcrumbs class="pa-0 mb-4">
-            <v-breadcrumbs-item>
-              <router-link
-                :to="localePath('/historico')"
-                class="text-decoration-none"
-              >
-                <v-icon small class="mr-1">mdi-chart-line</v-icon>
-                Histórico
-              </router-link>
-            </v-breadcrumbs-item>
-            <v-breadcrumbs-divider>
-              <v-icon>mdi-chevron-right</v-icon>
-            </v-breadcrumbs-divider>
-            <v-breadcrumbs-item class="font-weight-bold">
-              {{ formatOriginName($route.params.origin) }}
-            </v-breadcrumbs-item>
-          </v-breadcrumbs>
+  <div>
+    <v-row>
+      <v-col cols="12">
+        <!-- Breadcrumb navigation -->
+        <v-breadcrumbs class="pa-0 mb-4">
+          <v-breadcrumbs-item>
+            <router-link
+              :to="localePath('/historico')"
+              class="text-decoration-none"
+            >
+              <v-icon small class="mr-1">mdi-chart-line</v-icon>
+              Histórico
+            </router-link>
+          </v-breadcrumbs-item>
+          <v-breadcrumbs-divider>
+            <v-icon>mdi-chevron-right</v-icon>
+          </v-breadcrumbs-divider>
+          <v-breadcrumbs-item class="font-weight-bold">
+            {{ formatOriginName($route.params.origin) }}
+          </v-breadcrumbs-item>
+        </v-breadcrumbs>
 
-          <v-card>
-            <v-card-title class="d-flex align-center">
-              <v-icon class="mr-2" color="primary">mdi-bank</v-icon>
-              <span class="text-h5 text-md-h4">
-                Cotizaciones de {{ formatOriginName($route.params.origin) }}
-              </span>
-              <v-spacer></v-spacer>
-              <v-chip
-                class="mt-2 mt-md-0"
-                color="success"
-                text-color="white"
+        <v-card>
+          <v-card-title class="d-flex align-center">
+            <v-icon class="mr-2" color="primary">mdi-bank</v-icon>
+            <span class="text-h5 text-md-h4">
+              Cotizaciones de {{ formatOriginName($route.params.origin) }}
+            </span>
+            <v-spacer></v-spacer>
+            <v-chip
+              class="mt-2 mt-md-0"
+              color="success"
+              text-color="white"
+              small
+            >
+              <v-icon left small>mdi-clock-outline</v-icon>
+              Actualizado: {{ lastUpdate }}
+            </v-chip>
+          </v-card-title>
+
+          <!-- Filtros -->
+          <v-card-text>
+            <v-row>
+              <v-col cols="12" md="4">
+                <v-select
+                  v-model="selectedCurrency"
+                  :items="currencyOptions"
+                  label="Moneda"
+                  clearable
+                  prepend-icon="mdi-currency-usd"
+                  dense
+                  outlined
+                  hide-details
+                ></v-select>
+              </v-col>
+              <v-col cols="12" md="4">
+                <v-select
+                  v-model="selectedType"
+                  :items="typeOptions"
+                  label="Tipo"
+                  clearable
+                  prepend-icon="mdi-tag"
+                  dense
+                  outlined
+                  hide-details
+                ></v-select>
+              </v-col>
+              <v-col cols="12" md="4">
+                <v-text-field
+                  v-model="search"
+                  label="Buscar"
+                  prepend-icon="mdi-magnify"
+                  clearable
+                  dense
+                  outlined
+                  hide-details
+                ></v-text-field>
+              </v-col>
+            </v-row>
+          </v-card-text>
+
+          <!-- Tabla de datos -->
+          <v-data-table
+            :headers="headers"
+            :items="filteredItems"
+            :search="search"
+            :loading="loading"
+            :items-per-page="20"
+            :footer-props="{
+              'items-per-page-options': [10, 20, 50, 100, -1],
+            }"
+            class="elevation-1"
+            sort-by="code"
+          >
+            <!-- Celda de Moneda con enlace -->
+            <template slot="item.code" slot-scope="{ item }">
+              <v-btn
+                v-if="item.origin && item.code"
+                :to="getLink(item)"
+                text
+                color="secondary"
                 small
               >
-                <v-icon left small>mdi-clock-outline</v-icon>
-                Actualizado: {{ lastUpdate }}
+                <v-avatar size="20" class="mr-2">
+                  <img :src="getCurrencyFlag(item.code)" :alt="item.code" />
+                </v-avatar>
+                {{ item.code }}
+              </v-btn>
+              <span v-else class="grey--text">N/A</span>
+            </template>
+
+            <!-- Celda de Tipo -->
+            <template slot="item.type" slot-scope="{ item }">
+              <v-chip
+                v-if="item.type"
+                small
+                :color="getTypeColor(item.type)"
+                text-color="white"
+              >
+                {{ item.type }}
               </v-chip>
-            </v-card-title>
+              <span v-else class="grey--text">-</span>
+            </template>
 
-            <!-- Filtros -->
-            <v-card-text>
-              <v-row>
-                <v-col cols="12" md="4">
-                  <v-select
-                    v-model="selectedCurrency"
-                    :items="currencyOptions"
-                    label="Moneda"
-                    clearable
-                    prepend-icon="mdi-currency-usd"
-                    dense
-                    outlined
-                    hide-details
-                  ></v-select>
-                </v-col>
-                <v-col cols="12" md="4">
-                  <v-select
-                    v-model="selectedType"
-                    :items="typeOptions"
-                    label="Tipo"
-                    clearable
-                    prepend-icon="mdi-tag"
-                    dense
-                    outlined
-                    hide-details
-                  ></v-select>
-                </v-col>
-                <v-col cols="12" md="4">
-                  <v-text-field
-                    v-model="search"
-                    label="Buscar"
-                    prepend-icon="mdi-magnify"
-                    clearable
-                    dense
-                    outlined
-                    hide-details
-                  ></v-text-field>
-                </v-col>
-              </v-row>
-            </v-card-text>
+            <!-- Celda de Compra -->
+            <template slot="item.buy" slot-scope="{ item }">
+              <div class="text-right">
+                <span class="font-weight-bold text-success">
+                  ${{ formatNumber(item.buy) }}
+                </span>
+              </div>
+            </template>
 
-            <!-- Tabla de datos -->
-            <v-data-table
-              :headers="headers"
-              :items="filteredItems"
-              :search="search"
-              :loading="loading"
-              :items-per-page="20"
-              :footer-props="{
-                'items-per-page-options': [10, 20, 50, 100, -1],
-              }"
-              class="elevation-1"
-              sort-by="code"
-            >
-              <!-- Celda de Moneda con enlace -->
-              <template slot="item.code" slot-scope="{ item }">
-                <v-btn
-                  v-if="item.origin && item.code"
-                  :to="getLink(item)"
-                  text
-                  color="secondary"
-                  small
-                >
-                  <v-avatar size="20" class="mr-2">
-                    <img :src="getCurrencyFlag(item.code)" :alt="item.code" />
-                  </v-avatar>
-                  {{ item.code }}
-                </v-btn>
-                <span v-else class="grey--text">N/A</span>
-              </template>
+            <!-- Celda de Venta -->
+            <template slot="item.sell" slot-scope="{ item }">
+              <div class="text-right">
+                <span class="font-weight-bold text-error">
+                  ${{ formatNumber(item.sell) }}
+                </span>
+              </div>
+            </template>
 
-              <!-- Celda de Tipo -->
-              <template slot="item.type" slot-scope="{ item }">
+            <!-- Celda de Spread -->
+            <template slot="item.spread" slot-scope="{ item }">
+              <div class="text-right">
                 <v-chip
-                  v-if="item.type"
                   small
-                  :color="getTypeColor(item.type)"
+                  :color="getSpreadColor(item.spread)"
                   text-color="white"
                 >
-                  {{ item.type }}
+                  {{ formatNumber(item.spread) }}%
                 </v-chip>
-                <span v-else class="grey--text">-</span>
-              </template>
+              </div>
+            </template>
 
-              <!-- Celda de Compra -->
-              <template slot="item.buy" slot-scope="{ item }">
-                <div class="text-right">
-                  <span class="font-weight-bold text-success">
-                    ${{ formatNumber(item.buy) }}
-                  </span>
-                </div>
-              </template>
+            <!-- Celda de Nombre -->
+            <template slot="item.name" slot-scope="{ item }">
+              <div class="text-truncate" style="max-width: 200px">
+                {{ item.name || '-' }}
+              </div>
+            </template>
 
-              <!-- Celda de Venta -->
-              <template slot="item.sell" slot-scope="{ item }">
-                <div class="text-right">
-                  <span class="font-weight-bold text-error">
-                    ${{ formatNumber(item.sell) }}
-                  </span>
-                </div>
-              </template>
+            <!-- Slot para cuando no hay datos -->
+            <template slot="no-data">
+              <div class="text-center pa-4">
+                <v-icon size="64" color="grey lighten-1"
+                  >mdi-database-remove</v-icon
+                >
+                <p class="text-h6 grey--text mt-4">
+                  No hay datos disponibles para
+                  {{ formatOriginName($route.params.origin) }}
+                </p>
+              </div>
+            </template>
 
-              <!-- Celda de Spread -->
-              <template slot="item.spread" slot-scope="{ item }">
-                <div class="text-right">
-                  <v-chip
-                    small
-                    :color="getSpreadColor(item.spread)"
-                    text-color="white"
-                  >
-                    {{ formatNumber(item.spread) }}%
-                  </v-chip>
-                </div>
-              </template>
-
-              <!-- Celda de Nombre -->
-              <template slot="item.name" slot-scope="{ item }">
-                <div class="text-truncate" style="max-width: 200px">
-                  {{ item.name || '-' }}
-                </div>
-              </template>
-
-              <!-- Slot para cuando no hay datos -->
-              <template slot="no-data">
-                <div class="text-center pa-4">
-                  <v-icon size="64" color="grey lighten-1"
-                    >mdi-database-remove</v-icon
-                  >
-                  <p class="text-h6 grey--text mt-4">
-                    No hay datos disponibles para
-                    {{ formatOriginName($route.params.origin) }}
-                  </p>
-                </div>
-              </template>
-
-              <!-- Slot para loading -->
-              <template slot="loading">
-                <div class="text-center pa-4">
-                  <v-progress-circular
-                    indeterminate
-                    color="primary"
-                    size="64"
-                  ></v-progress-circular>
-                  <p class="text-h6 mt-4">Cargando cotizaciones...</p>
-                </div>
-              </template>
-            </v-data-table>
-          </v-card>
-        </v-col>
-      </v-row>
-    </v-container>
+            <!-- Slot para loading -->
+            <template slot="loading">
+              <div class="text-center pa-4">
+                <v-progress-circular
+                  indeterminate
+                  color="primary"
+                  size="64"
+                ></v-progress-circular>
+                <p class="text-h6 mt-4">Cargando cotizaciones...</p>
+              </div>
+            </template>
+          </v-data-table>
+        </v-card>
+      </v-col>
+    </v-row>
   </div>
 </template>
 

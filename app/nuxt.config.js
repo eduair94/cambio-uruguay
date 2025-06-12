@@ -297,21 +297,27 @@ export default {
       // Add dynamic routes here if needed
       const routes = []
 
-      const locales = ['', 'en', 'pt']
-
+      const locales = ['es', 'en', 'pt']      
       function addRoutes(url) {
         // take into account the different locales
         locales.forEach((locale) => {
+          let newUrl
+          if (locale === 'es') {
+            // For Spanish (default locale), use the URL as-is
+            newUrl = url
+          } else {
+            // For other locales, prepend the locale
+            newUrl = `/${locale}${url}`
+          }
+          
           routes.push({
-            url: `/${locale}${url}`,
+            url: newUrl,
             changefreq: 'daily',
             priority: 0.6,
             lastmod: new Date(),
           })
         })
-      }
-
-      // Add currency-specific routes
+      }      // Add currency-specific routes
       const currencies = ['USD', 'ARS', 'BRL', 'EUR', 'GBP']
       const locations = ['MONTEVIDEO', 'PUNTA-DEL-ESTE', 'COLONIA', 'SALTO']
 
@@ -321,43 +327,48 @@ export default {
         locations.forEach((location) => {
           addRoutes(`/?currency=${currency}&location=${location}`)
         })
-      })
-
-      // Add historical routes
+      })// Add historical routes
 
       // Fetch data from API to get all origins and currency codes
       const axios = require('axios')
-      const response = await axios.get('https://api.cambio-uruguay.com')
-      const data = response.data // Extract unique origins and currency codes from API data
 
-      // Add main historical page
-      addRoutes('/historico')
+      try {
+        const response = await axios.get('https://api.cambio-uruguay.com')
+        const data = response.data // Extract unique origins and currency codes from API data
 
-      const urls = []
-      // Add historical routes for each origin
-      data.forEach(({ origin, type, code }) => {
-        let url = `/historico/${origin}`
+        // Add main historical page
+        addRoutes('/historico')
 
-        if (!urls.includes(url)) {
-          addRoutes(url)
-          urls.push(url)
-        }
+        const urls = []
+        // Add historical routes for each origin
+        data.forEach(({ origin, type, code }) => {
+          let url = `/historico/${origin}`
 
-        url = `/historico/${origin}/${currency}`
-
-        if (!urls.includes(url)) {
-          addRoutes(url)
-          urls.push(url)
-        }
-
-        if (type) {
-          url = `/historico/${origin}/${currency}/${type}`
           if (!urls.includes(url)) {
             addRoutes(url)
             urls.push(url)
           }
-        }
-      })
+
+          url = `/historico/${origin}/${code}`
+
+          if (!urls.includes(url)) {
+            addRoutes(url)
+            urls.push(url)
+          }
+
+          if (type) {
+            url = `/historico/${origin}/${code}/${type}`
+            if (!urls.includes(url)) {
+              addRoutes(url)
+              urls.push(url)
+            }
+          }
+        })
+      } catch (error) {
+        console.error('Error fetching API data for sitemap:', error)
+        // Still add the basic historical page even if API fails
+        addRoutes('/historico')
+      } // console.log('routes', routes)
 
       return routes
     },

@@ -1,276 +1,274 @@
 <template>
   <div class="pa-4">
-    <v-container>
-      <!-- Header Section -->
+    <!-- Header Section -->
+    <v-row>
+      <v-col cols="12">
+        <v-card class="mb-6">
+          <v-card-title
+            class="text-h4 justify-center blue darken-4 white--text"
+          >
+            📈 Histórico de Cotizaciones
+          </v-card-title>
+          <v-card-text class="text-center pa-4">
+            <v-chip color="primary" large class="ma-2">
+              {{ exchangeHouseName }}
+            </v-chip>
+            <v-chip color="secondary" large class="ma-2">
+              {{ $route.params.currency }}
+            </v-chip>
+            <v-chip v-if="$route.params.type" color="accent" large class="ma-2">
+              {{ $route.params.type.toUpperCase() }}
+            </v-chip>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+
+    <!-- Period Selection -->
+    <v-row class="mb-4">
+      <v-col cols="12" md="6" offset-md="3">
+        <v-card>
+          <v-card-text>
+            <v-row align="center">
+              <v-col cols="12" sm="6">
+                <v-icon left color="primary">mdi-calendar-range</v-icon>
+                <span class="text-h6">Período de Análisis:</span>
+              </v-col>
+              <v-col cols="12" sm="6">
+                <v-select
+                  v-model="selectedPeriod"
+                  :items="periodOptions"
+                  item-text="text"
+                  item-value="value"
+                  outlined
+                  dense
+                  :loading="loading"
+                  @change="onPeriodChange"
+                >
+                  <template #prepend-inner>
+                    <v-icon color="primary">mdi-clock-outline</v-icon>
+                  </template>
+                </v-select>
+              </v-col>
+            </v-row>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+
+    <!-- Loading State -->
+    <v-row v-if="loading">
+      <v-col cols="12" class="text-center">
+        <v-progress-circular
+          indeterminate
+          color="primary"
+          size="64"
+        ></v-progress-circular>
+        <p class="mt-4 text-h6">Cargando datos históricos...</p>
+      </v-col>
+    </v-row>
+
+    <!-- Error State -->
+    <v-row v-else-if="error">
+      <v-col cols="12">
+        <v-alert type="error" prominent class="ma-4">
+          <h3>Error al cargar los datos</h3>
+          <p>{{ error }}</p>
+          <v-btn color="white" text @click="fetchData"> Reintentar </v-btn>
+        </v-alert>
+      </v-col>
+    </v-row>
+
+    <!-- Main Content -->
+    <div v-else-if="evolutionData">
+      <!-- Statistics Cards -->
+      <v-row class="mb-6">
+        <v-col cols="12" md="3" sm="6">
+          <v-card class="text-center green darken-4">
+            <v-card-title class="justify-center white--text">
+              <v-icon left color="white">mdi-trending-up</v-icon>
+              Compra Actual
+            </v-card-title>
+            <v-card-text class="white--text">
+              <div class="text-h4 font-weight-bold">
+                {{ formatCurrency(evolutionData.statistics.buy.current) }}
+              </div>
+              <div class="caption">
+                Cambio:
+                {{ formatPercentage(evolutionData.statistics.buy.change) }}%
+              </div>
+            </v-card-text>
+          </v-card>
+        </v-col>
+
+        <v-col cols="12" md="3" sm="6">
+          <v-card class="text-center red darken-4">
+            <v-card-title class="justify-center white--text">
+              <v-icon left color="white">mdi-trending-down</v-icon>
+              Venta Actual
+            </v-card-title>
+            <v-card-text class="white--text">
+              <div class="text-h4 font-weight-bold">
+                {{ formatCurrency(evolutionData.statistics.sell.current) }}
+              </div>
+              <div class="caption">
+                Cambio:
+                {{ formatPercentage(evolutionData.statistics.sell.change) }}%
+              </div>
+            </v-card-text>
+          </v-card>
+        </v-col>
+
+        <v-col cols="12" md="3" sm="6">
+          <v-card class="text-center blue darken-4">
+            <v-card-title class="justify-center white--text">
+              <v-icon left color="white">mdi-chart-line</v-icon>
+              Promedio Compra
+            </v-card-title>
+            <v-card-text class="white--text">
+              <div class="text-h4 font-weight-bold">
+                {{ formatCurrency(evolutionData.statistics.buy.avg) }}
+              </div>
+              <div class="caption">
+                Min: {{ formatCurrency(evolutionData.statistics.buy.min) }} |
+                Max: {{ formatCurrency(evolutionData.statistics.buy.max) }}
+              </div>
+            </v-card-text>
+          </v-card>
+        </v-col>
+
+        <v-col cols="12" md="3" sm="6">
+          <v-card class="text-center purple darken-4">
+            <v-card-title class="justify-center white--text">
+              <v-icon left color="white">mdi-database</v-icon>
+              Datos Totales
+            </v-card-title>
+            <v-card-text class="white--text">
+              <div class="text-h4 font-weight-bold">
+                {{ evolutionData.statistics.totalDataPoints }}
+              </div>
+              <div class="caption">
+                {{ formatDateRange() }}
+              </div>
+            </v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
+
+      <!-- Chart Section -->
+      <v-row class="mb-6">
+        <v-col cols="12">
+          <v-card>
+            <v-card-title>
+              <v-icon left>mdi-chart-line</v-icon>
+              Evolución de Cotizaciones - {{ $route.params.currency }}
+              <v-spacer></v-spacer>
+              <v-btn-toggle v-model="chartType" mandatory dense>
+                <v-btn small value="line">
+                  <v-icon small>mdi-chart-line</v-icon>
+                </v-btn>
+                <v-btn small value="bar">
+                  <v-icon small>mdi-chart-bar</v-icon>
+                </v-btn>
+              </v-btn-toggle>
+            </v-card-title>
+            <v-card-text>
+              <div style="position: relative; height: 400px">
+                <line-chart
+                  v-if="chartType === 'line'"
+                  :chart-data="chartData"
+                  :options="chartOptions"
+                  style="
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                  "
+                />
+                <bar-chart
+                  v-else
+                  :chart-data="chartData"
+                  :options="chartOptions"
+                  style="
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                  "
+                />
+              </div>
+            </v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
+
+      <!-- Data Table -->
       <v-row>
         <v-col cols="12">
-          <v-card class="mb-6">
-            <v-card-title
-              class="text-h4 justify-center blue darken-4 white--text"
-            >
-              📈 Histórico de Cotizaciones
-            </v-card-title>
-            <v-card-text class="text-center pa-4">
-              <v-chip color="primary" large class="ma-2">
-                {{ exchangeHouseName }}
-              </v-chip>
-              <v-chip color="secondary" large class="ma-2">
-                {{ $route.params.currency }}
-              </v-chip>
-              <v-chip v-if="$route.params.type" color="accent" large class="ma-2">
-                {{ $route.params.type.toUpperCase() }}
-              </v-chip>
-            </v-card-text>
-          </v-card>
-        </v-col>
-      </v-row>
-
-      <!-- Period Selection -->
-      <v-row class="mb-4">
-        <v-col cols="12" md="6" offset-md="3">
           <v-card>
-            <v-card-text>
-              <v-row align="center">
-                <v-col cols="12" sm="6">
-                  <v-icon left color="primary">mdi-calendar-range</v-icon>
-                  <span class="text-h6">Período de Análisis:</span>
-                </v-col>
-                <v-col cols="12" sm="6">
-                  <v-select
-                    v-model="selectedPeriod"
-                    :items="periodOptions"
-                    item-text="text"
-                    item-value="value"
-                    outlined
-                    dense
-                    :loading="loading"
-                    @change="onPeriodChange"
-                  >
-                    <template #prepend-inner>
-                      <v-icon color="primary">mdi-clock-outline</v-icon>
-                    </template>
-                  </v-select>
-                </v-col>
-              </v-row>
-            </v-card-text>
+            <v-card-title>
+              <v-icon left>mdi-table</v-icon>
+              Datos Detallados
+              <v-spacer></v-spacer>
+              <v-text-field
+                v-model="search"
+                append-icon="mdi-magnify"
+                label="Buscar por fecha..."
+                single-line
+                hide-details
+                dense
+              ></v-text-field>
+            </v-card-title>
+            <v-data-table
+              :headers="headers"
+              :items="tableData"
+              :search="search"
+              :items-per-page="25"
+              :footer-props="{
+                'items-per-page-options': [10, 25, 50, 100],
+              }"
+              class="elevation-1"
+              dense
+            >
+              <template slot="item.date" slot-scope="{ item }">
+                <span>{{ formatDate(item.date) }}</span>
+              </template>
+              <template slot="item.buy" slot-scope="{ item }">
+                <v-chip :color="getBuyColor(item.buy)" dark small>
+                  {{ formatCurrency(item.buy) }}
+                </v-chip>
+              </template>
+              <template slot="item.sell" slot-scope="{ item }">
+                <v-chip :color="getSellColor(item.sell)" dark small>
+                  {{ formatCurrency(item.sell) }}
+                </v-chip>
+              </template>
+              <template slot="item.spread" slot-scope="{ item }">
+                <span>{{ formatCurrency(item.spread) }}</span>
+              </template>
+              <template slot="item.type" slot-scope="{ item }">
+                <v-chip v-if="item.type" small outlined>
+                  {{ item.type }}
+                </v-chip>
+                <span v-else>-</span>
+              </template>
+            </v-data-table>
           </v-card>
         </v-col>
       </v-row>
+    </div>
 
-      <!-- Loading State -->
-      <v-row v-if="loading">
-        <v-col cols="12" class="text-center">
-          <v-progress-circular
-            indeterminate
-            color="primary"
-            size="64"
-          ></v-progress-circular>
-          <p class="mt-4 text-h6">Cargando datos históricos...</p>
-        </v-col>
-      </v-row>
-
-      <!-- Error State -->
-      <v-row v-else-if="error">
-        <v-col cols="12">
-          <v-alert type="error" prominent class="ma-4">
-            <h3>Error al cargar los datos</h3>
-            <p>{{ error }}</p>
-            <v-btn color="white" text @click="fetchData"> Reintentar </v-btn>
-          </v-alert>
-        </v-col>
-      </v-row>
-
-      <!-- Main Content -->
-      <div v-else-if="evolutionData">
-        <!-- Statistics Cards -->
-        <v-row class="mb-6">
-          <v-col cols="12" md="3" sm="6">
-            <v-card class="text-center green darken-4">
-              <v-card-title class="justify-center white--text">
-                <v-icon left color="white">mdi-trending-up</v-icon>
-                Compra Actual
-              </v-card-title>
-              <v-card-text class="white--text">
-                <div class="text-h4 font-weight-bold">
-                  {{ formatCurrency(evolutionData.statistics.buy.current) }}
-                </div>
-                <div class="caption">
-                  Cambio:
-                  {{ formatPercentage(evolutionData.statistics.buy.change) }}%
-                </div>
-              </v-card-text>
-            </v-card>
-          </v-col>
-
-          <v-col cols="12" md="3" sm="6">
-            <v-card class="text-center red darken-4">
-              <v-card-title class="justify-center white--text">
-                <v-icon left color="white">mdi-trending-down</v-icon>
-                Venta Actual
-              </v-card-title>
-              <v-card-text class="white--text">
-                <div class="text-h4 font-weight-bold">
-                  {{ formatCurrency(evolutionData.statistics.sell.current) }}
-                </div>
-                <div class="caption">
-                  Cambio:
-                  {{ formatPercentage(evolutionData.statistics.sell.change) }}%
-                </div>
-              </v-card-text>
-            </v-card>
-          </v-col>
-
-          <v-col cols="12" md="3" sm="6">
-            <v-card class="text-center blue darken-4">
-              <v-card-title class="justify-center white--text">
-                <v-icon left color="white">mdi-chart-line</v-icon>
-                Promedio Compra
-              </v-card-title>
-              <v-card-text class="white--text">
-                <div class="text-h4 font-weight-bold">
-                  {{ formatCurrency(evolutionData.statistics.buy.avg) }}
-                </div>
-                <div class="caption">
-                  Min: {{ formatCurrency(evolutionData.statistics.buy.min) }} |
-                  Max: {{ formatCurrency(evolutionData.statistics.buy.max) }}
-                </div>
-              </v-card-text>
-            </v-card>
-          </v-col>
-
-          <v-col cols="12" md="3" sm="6">
-            <v-card class="text-center purple darken-4">
-              <v-card-title class="justify-center white--text">
-                <v-icon left color="white">mdi-database</v-icon>
-                Datos Totales
-              </v-card-title>
-              <v-card-text class="white--text">
-                <div class="text-h4 font-weight-bold">
-                  {{ evolutionData.statistics.totalDataPoints }}
-                </div>
-                <div class="caption">
-                  {{ formatDateRange() }}
-                </div>
-              </v-card-text>
-            </v-card>
-          </v-col>
-        </v-row>
-
-        <!-- Chart Section -->
-        <v-row class="mb-6">
-          <v-col cols="12">
-            <v-card>
-              <v-card-title>
-                <v-icon left>mdi-chart-line</v-icon>
-                Evolución de Cotizaciones - {{ $route.params.currency }}
-                <v-spacer></v-spacer>
-                <v-btn-toggle v-model="chartType" mandatory dense>
-                  <v-btn small value="line">
-                    <v-icon small>mdi-chart-line</v-icon>
-                  </v-btn>
-                  <v-btn small value="bar">
-                    <v-icon small>mdi-chart-bar</v-icon>
-                  </v-btn>
-                </v-btn-toggle>
-              </v-card-title>
-              <v-card-text>
-                <div style="position: relative; height: 400px">
-                  <line-chart
-                    v-if="chartType === 'line'"
-                    :chart-data="chartData"
-                    :options="chartOptions"
-                    style="
-                      position: absolute;
-                      top: 0;
-                      left: 0;
-                      width: 100%;
-                      height: 100%;
-                    "
-                  />
-                  <bar-chart
-                    v-else
-                    :chart-data="chartData"
-                    :options="chartOptions"
-                    style="
-                      position: absolute;
-                      top: 0;
-                      left: 0;
-                      width: 100%;
-                      height: 100%;
-                    "
-                  />
-                </div>
-              </v-card-text>
-            </v-card>
-          </v-col>
-        </v-row>
-
-        <!-- Data Table -->
-        <v-row>
-          <v-col cols="12">
-            <v-card>
-              <v-card-title>
-                <v-icon left>mdi-table</v-icon>
-                Datos Detallados
-                <v-spacer></v-spacer>
-                <v-text-field
-                  v-model="search"
-                  append-icon="mdi-magnify"
-                  label="Buscar por fecha..."
-                  single-line
-                  hide-details
-                  dense
-                ></v-text-field>
-              </v-card-title>
-              <v-data-table
-                :headers="headers"
-                :items="tableData"
-                :search="search"
-                :items-per-page="25"
-                :footer-props="{
-                  'items-per-page-options': [10, 25, 50, 100],
-                }"
-                class="elevation-1"
-                dense
-              >
-                <template slot="item.date" slot-scope="{ item }">
-                  <span>{{ formatDate(item.date) }}</span>
-                </template>
-                <template slot="item.buy" slot-scope="{ item }">
-                  <v-chip :color="getBuyColor(item.buy)" dark small>
-                    {{ formatCurrency(item.buy) }}
-                  </v-chip>
-                </template>
-                <template slot="item.sell" slot-scope="{ item }">
-                  <v-chip :color="getSellColor(item.sell)" dark small>
-                    {{ formatCurrency(item.sell) }}
-                  </v-chip>
-                </template>
-                <template slot="item.spread" slot-scope="{ item }">
-                  <span>{{ formatCurrency(item.spread) }}</span>
-                </template>
-                <template slot="item.type" slot-scope="{ item }">
-                  <v-chip v-if="item.type" small outlined>
-                    {{ item.type }}
-                  </v-chip>
-                  <span v-else>-</span>
-                </template>
-              </v-data-table>
-            </v-card>
-          </v-col>
-        </v-row>
-      </div>
-
-      <!-- Back Button -->
-      <v-row class="mt-6">
-        <v-col cols="12" class="text-center">
-          <v-btn color="primary" large @click="$router.push('/')">
-            <v-icon left>mdi-arrow-left</v-icon>
-            Volver al inicio
-          </v-btn>
-        </v-col>
-      </v-row>
-    </v-container>
+    <!-- Back Button -->
+    <v-row class="mt-6">
+      <v-col cols="12" class="text-center">
+        <v-btn color="primary" large @click="$router.push('/')">
+          <v-icon left>mdi-arrow-left</v-icon>
+          Volver al inicio
+        </v-btn>
+      </v-col>
+    </v-row>
   </div>
 </template>
 
@@ -439,13 +437,17 @@ export default {
               label: (context) => {
                 // Use inline formatting to avoid referencing this
                 const value = context.parsed.y
-                if (typeof value !== 'number') return `${context.dataset.label}: -`
-                return `${context.dataset.label}: ${value.toLocaleString('es-UY', {
-                  style: 'currency',
-                  currency: 'UYU',
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2
-                })}`
+                if (typeof value !== 'number')
+                  return `${context.dataset.label}: -`
+                return `${context.dataset.label}: ${value.toLocaleString(
+                  'es-UY',
+                  {
+                    style: 'currency',
+                    currency: 'UYU',
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  }
+                )}`
               },
             },
           },
@@ -493,7 +495,7 @@ export default {
                   style: 'currency',
                   currency: 'UYU',
                   minimumFractionDigits: 2,
-                  maximumFractionDigits: 2
+                  maximumFractionDigits: 2,
                 })
               },
             },
@@ -553,7 +555,7 @@ export default {
       // Save to localStorage and update URL
       this.savePeriodToStorage(this.selectedPeriod)
       this.updateUrlQuery(this.selectedPeriod)
-      
+
       // Fetch new data with the selected period
       await this.fetchData()
     },
@@ -565,14 +567,14 @@ export default {
 
       try {
         const { origin, currency, type } = this.$route.params
-        
+
         // Build the URL with optional type parameter
         let url = `https://api.cambio-uruguay.com/evolution/${origin}/${currency}`
         if (type) {
           url += `/${type}`
         }
         url += `?period=${this.selectedPeriod}`
-        
+
         const response = await this.$axios.get(url)
         this.evolutionData = response.data
       } catch (error) {
@@ -583,7 +585,7 @@ export default {
           'Error al cargar los datos históricos'
       } finally {
         this.loading = false
-         ;(window as any).stopLoading()
+        ;(window as any).stopLoading()
       }
     },
     formatCurrency(value) {
