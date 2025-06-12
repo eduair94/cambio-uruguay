@@ -1,5 +1,5 @@
 <template>
-  <div class="pa-4">
+  <div>
     <!-- Header Section -->
     <v-row>
       <v-col cols="12">
