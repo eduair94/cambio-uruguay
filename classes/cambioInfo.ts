@@ -103,7 +103,7 @@ class CambioInfo extends Cambio {
   async get_entry(date: Date, origin: string, code?: string): Promise<CambioObj[]> {
     if (!date) {
       // Ensure default date is in Uruguay timezone for consistency
-      date = moment.tz("America/Uruguay").startOf("day").toDate();
+      date = moment.tz("America/Montevideo").startOf("day").toDate();
     }
     const toGet: any = { date, origin: origin.toLowerCase() };
     if (code) {
@@ -120,15 +120,15 @@ class CambioInfo extends Cambio {
   async get_data(date?: Date, query?: any): Promise<CambioObj[]> {
     if (!date) {
       // Ensure default date is in Uruguay timezone for consistency
-      date = moment.tz("America/Uruguay").startOf("day").toDate();
+      date = moment.tz("America/Montevideo").startOf("day").toDate();
     }
     const obj = await this.db.allEntriesSort({ date }, { code: -1, sell: 1, buy: 1 });
     return obj as any;
   }
   async get_currency_evolution(origin: string, code: string, periodMonths: number = 6): Promise<any> {
     // Calculate date range based on the period requested
-    const endDate = moment.tz("America/Uruguay").startOf("day").toDate();
-    const startDate = moment.tz("America/Uruguay").subtract(periodMonths, "months").startOf("day").toDate();
+    const endDate = moment.tz("America/Montevideo").startOf("day").toDate();
+    const startDate = moment.tz("America/Montevideo").subtract(periodMonths, "months").startOf("day").toDate();
 
     console.log(`Getting currency evolution for ${origin}/${code} from ${startDate} to ${endDate}`);
 

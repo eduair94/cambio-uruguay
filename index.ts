@@ -10,7 +10,7 @@ import server from "./classes/Express/ExpressSetup";
 import { origins } from "./classes/origins";
 import sentryInit from "./sentry";
 
-moment.tz.setDefault("America/Uruguay");
+moment.tz.setDefault("America/Montevideo");
 sentryInit();
 
 const main = async () => {
@@ -22,7 +22,7 @@ const main = async () => {
     let dateM = null;
     if (date) {
       // Parse date explicitly in Uruguay timezone to ensure consistency
-      dateM = moment.tz(date, "YYYY-MM-DD", "America/Uruguay").toDate();
+      dateM = moment.tz(date, "YYYY-MM-DD", "America/Montevideo").toDate();
     }
     console.log("Date", dateM);
     const res = await cambio_info.get_data(dateM, req.query);
@@ -34,7 +34,7 @@ const main = async () => {
     let dateM = null;
     if (date) {
       // Parse date explicitly in Uruguay timezone to ensure consistency
-      dateM = moment.tz(date, "YYYY-MM-DD", "America/Uruguay").toDate();
+      dateM = moment.tz(date, "YYYY-MM-DD", "America/Montevideo").toDate();
     }
     console.log("Date", dateM);
     const result = await cambio_info.get_data(dateM, req.query);
@@ -91,7 +91,7 @@ const main = async () => {
     let dateM = null;
     if (date) {
       // Parse date explicitly in Uruguay timezone to ensure consistency
-      dateM = moment.tz(date, "YYYY-MM-DD", "America/Uruguay").toDate();
+      dateM = moment.tz(date, "YYYY-MM-DD", "America/Montevideo").toDate();
     }
     const origin = (req.params.type as string).toLowerCase();
     console.log("Date", dateM);
@@ -133,7 +133,7 @@ const main = async () => {
   });
   server.getJson("fortex", async (req: Request): Promise<any> => {
     // Ensure date is in Uruguay timezone for consistency
-    const date = moment.tz("America/Uruguay").startOf("day").toDate();
+    const date = moment.tz("America/Montevideo").startOf("day").toDate();
     const fortex = new CambioFortex();
     const res = await fortex.get_conversions(date);
     return res;

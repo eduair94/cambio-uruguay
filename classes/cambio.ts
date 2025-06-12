@@ -4,7 +4,7 @@ import getDistance from "geolib/es/getDistance";
 import moment from "moment-timezone";
 import { CambioObj } from "../interfaces/Cambio";
 import { MongooseServer, Schema } from "./database";
-moment.tz.setDefault("America/Uruguay");
+moment.tz.setDefault("America/Montevideo");
 
 abstract class Cambio {
   protected db_suc: MongooseServer;
@@ -126,7 +126,7 @@ abstract class Cambio {
   }
   getCurrentDateObj(today: Date) {
     // Ensure the date is processed in Uruguay timezone for consistency
-    return moment.tz(today, "America/Uruguay").startOf("day").toDate();
+    return moment.tz(today, "America/Montevideo").startOf("day").toDate();
   }
 
   async obtener_all_datos_historico(date: Date): Promise<CambioObj[]> {
@@ -163,7 +163,7 @@ abstract class Cambio {
   };
   async remove_date() {
     // Ensure the date is processed in Uruguay timezone for consistency
-    const date = moment.tz("America/Uruguay").startOf("day").toDate();
+    const date = moment.tz("America/Montevideo").startOf("day").toDate();
     const res = await this.db.deleteMany({ date });
     return res;
   }
@@ -176,7 +176,7 @@ abstract class Cambio {
   }
   async save(data: CambioObj): Promise<CambioObj> {
     // Ensure date is in Uruguay timezone for consistency
-    const date = moment.tz("America/Uruguay").startOf("day").toDate();
+    const date = moment.tz("America/Montevideo").startOf("day").toDate();
     const obj = {
       origin: this.origin,
       date: date,

@@ -47,7 +47,7 @@ class CambioFortex extends Cambio {
     }
     const fortex_conversions = result.visual_conversions;
     // Ensure date is in Uruguay timezone for consistency
-    const date = moment.tz("America/Uruguay").startOf("day").toDate();
+    const date = moment.tz("America/Montevideo").startOf("day").toDate();
     await this.dbFortex.getAnUpdateEntry({ date }, fortex_conversions);
     console.log(items);
     return items;
