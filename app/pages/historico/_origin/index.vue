@@ -6,7 +6,10 @@
           <!-- Breadcrumb navigation -->
           <v-breadcrumbs class="pa-0 mb-4">
             <v-breadcrumbs-item>
-              <router-link to="/historico" class="text-decoration-none">
+              <router-link
+                :to="localePath('/historico')"
+                class="text-decoration-none"
+              >
                 <v-icon small class="mr-1">mdi-chart-line</v-icon>
                 Histórico
               </router-link>
@@ -95,7 +98,7 @@
               <template slot="item.code" slot-scope="{ item }">
                 <v-btn
                   v-if="item.origin && item.code"
-                  :to="`/historico/${item.origin}/${item.code}`"
+                  :to="getLink(item)"
                   text
                   color="secondary"
                   small
@@ -335,6 +338,13 @@ export default {
     await this.loadData()
   },
   methods: {
+    getLink(item: any) {
+      let link = `/historico/${item.origin}/${item.code}`
+      if (item.type) {
+        link = `/historico/${item.origin}/${item.code}/${item.type}`
+      }
+      return this.localePath(link)
+    },
     async loadData() {
       try {
         ;(window as any).startLoading()

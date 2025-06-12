@@ -1,7 +1,7 @@
 <template>
   <v-app dark>
     <!-- Navigation Drawer for mobile only -->
-    <v-navigation-drawer v-model="drawer" absolute>
+    <v-navigation-drawer v-model="drawer" app temporary>
       <v-list>
         <v-list-item
           v-for="item in items"
@@ -11,7 +11,6 @@
           :target="item.external ? '_blank' : undefined"
           :rel="item.external ? 'noopener noreferrer' : undefined"
           router
-          exact
           @click="drawer = false"
         >
           <v-list-item-action>
@@ -30,9 +29,9 @@
         @click.stop="drawer = !drawer"
       />
 
-      <router-link to="/" class="no_link">
+      <router-link :to="localePath('/')" class="no_link d-flex logo_link">
         <v-img
-          max-height="90%"
+          max-height="80%"
           max-width="55vw"
           contain
           alt="Cambio Uruguay - Logo oficial para comparar cotizaciones de cambio"
@@ -109,24 +108,6 @@ export default {
       clipped: false,
       drawer: false,
       fixed: false,
-      items: [
-        {
-          icon: 'mdi-home',
-          title: 'Inicio',
-          to: '/',
-        },
-        {
-          icon: 'mdi-chart-line',
-          title: 'Histórico',
-          to: '/historico',
-        },
-        {
-          icon: 'mdi-heart',
-          title: 'Donar',
-          to: 'https://ko-fi.com/cambio_uruguay',
-          external: true,
-        },
-      ],
       miniVariant: false,
       right: true,
       rightDrawer: false,
@@ -203,6 +184,28 @@ export default {
       ],
     }
   },
+  computed: {
+    items() {
+      return [
+        {
+          icon: 'mdi-home',
+          title: 'Inicio',
+          to: this.localePath('/'),
+        },
+        {
+          icon: 'mdi-chart-line',
+          title: 'Histórico',
+          to: this.localePath('/historico'),
+        },
+        {
+          icon: 'mdi-heart',
+          title: 'Donar',
+          to: 'https://ko-fi.com/cambio_uruguay',
+          external: true,
+        },
+      ]
+    },
+  },
   beforeMount() {
     ;(window as any).startLoading = () => {
       const el = document.getElementById('spinner-wrapper')
@@ -219,7 +222,7 @@ export default {
 }
 </script>
 
-<style>
+<style lang="scss">
 .logo_image {
   cursor: pointer;
 }
@@ -294,5 +297,105 @@ body .v-app-bar.v-app-bar--fixed {
   .v-navigation-drawer.d-md-none {
     display: none !important;
   }
+}
+
+.logo_link {
+  position: relative;
+  align-items: center;
+  height: 100%;
+}
+
+body {
+  font-family: 'Open Sans', sans-serif;
+}
+
+.no_link {
+  text-decoration: none;
+}
+.website_link {
+  word-break: break-all;
+  max-width: 100%;
+  min-width: 150px;
+}
+
+.button_section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+@media (min-width: 768px) {
+  .website_link {
+    min-width: 200px;
+  }
+}
+
+@media (max-width: 1750px) {
+  body .container {
+    max-width: 100% !important;
+  }
+}
+
+.v-data-table__mobile-row {
+  width: 100%;
+}
+
+.money_table
+  .v-data-table__mobile-table-row
+  > .v-data-table__mobile-row:nth-child(10) {
+  flex-direction: column;
+  justify-content: flex-start;
+  .v-data-table__mobile-row__header {
+    width: 100%;
+  }
+  .v-data-table__mobile-row__cell {
+    text-align: left;
+    div {
+      margin-bottom: 12px;
+    }
+  }
+}
+
+.top_container {
+  gap: 12px;
+}
+
+.donation_logo {
+  transition: ease-in-out 0.3s;
+}
+
+.gap-10 {
+  gap: 10px;
+}
+
+#wrapper2 {
+  width: 100%;
+  overflow-x: scroll;
+  overflow-y: hidden;
+}
+
+/* This div allow to make the scroll function and show the scrollbar */
+#div2 {
+  height: 1px;
+  overflow: scroll;
+}
+
+.text_info {
+  max-width: 490px;
+}
+
+@media (max-width: 768px) {
+  .button_section {
+    gap: 5px !important;
+    button,
+    a {
+      min-width: 30px !important;
+      max-width: calc(80vw / 5);
+    }
+  }
+}
+
+.selectExchangeHouse .v-select__selections {
+  min-height: 56px !important;
 }
 </style>

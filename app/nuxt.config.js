@@ -297,158 +297,67 @@ export default {
       // Add dynamic routes here if needed
       const routes = []
 
+      const locales = ['', 'en', 'pt']
+
+      function addRoutes(url) {
+        // take into account the different locales
+        locales.forEach((locale) => {
+          routes.push({
+            url: `/${locale}${url}`,
+            changefreq: 'daily',
+            priority: 0.6,
+            lastmod: new Date(),
+          })
+        })
+      }
+
       // Add currency-specific routes
       const currencies = ['USD', 'ARS', 'BRL', 'EUR', 'GBP']
       const locations = ['MONTEVIDEO', 'PUNTA-DEL-ESTE', 'COLONIA', 'SALTO']
 
       currencies.forEach((currency) => {
-        routes.push({
-          url: `/?currency=${currency}`,
-          changefreq: 'hourly',
-          priority: 0.8,
-          lastmod: new Date(),
-        })
+        addRoutes(`/?currency=${currency}`)
 
         locations.forEach((location) => {
-          routes.push({
-            url: `/?currency=${currency}&location=${location}`,
-            changefreq: 'hourly',
-            priority: 0.7,
-            lastmod: new Date(),
-          })
+          addRoutes(`/?currency=${currency}&location=${location}`)
         })
       })
 
       // Add historical routes
-      try {
-        // Fetch data from API to get all origins and currency codes
-        const axios = require('axios')
-        const response = await axios.get('https://api.cambio-uruguay.com')
-        const data = response.data
 
-        // Extract unique origins and currency codes from API data
-        const uniqueOrigins = [
-          ...new Set(
-            data.filter((item) => item.origin).map((item) => item.origin)
-          ),
-        ]
-        const uniqueCurrencies = [...new Set(data.map((item) => item.code))]
+      // Fetch data from API to get all origins and currency codes
+      const axios = require('axios')
+      const response = await axios.get('https://api.cambio-uruguay.com')
+      const data = response.data // Extract unique origins and currency codes from API data
 
-        // Add main historical page
-        routes.push({
-          url: '/historico',
-          changefreq: 'daily',
-          priority: 0.8,
-          lastmod: new Date(),
-        })
+      // Add main historical page
+      addRoutes('/historico')
 
-        // Add historical routes for each origin
-        uniqueOrigins.forEach((origin) => {
-          routes.push({
-            url: `/historico/${origin}`,
-            changefreq: 'daily',
-            priority: 0.7,
-            lastmod: new Date(),
-          })
+      const urls = []
+      // Add historical routes for each origin
+      data.forEach(({ origin, type, code }) => {
+        let url = `/historico/${origin}`
 
-          // Add historical routes for each origin and currency combination
-          uniqueCurrencies.forEach((currency) => {
-            routes.push({
-              url: `/historico/${origin}/${currency}`,
-              changefreq: 'daily',
-              priority: 0.6,
-              lastmod: new Date(),
-            })
-          })
-        })
-      } catch (error) {
-        // Fallback: use static list of origins from origins.ts and common currencies
-        const fallbackOrigins = [
-          'prex',
-          'alter_cambio',
-          'cambio_rynder',
-          'cambio_sir',
-          'aeromar',
-          'brou',
-          'fortex',
-          'cambio_argentino',
-          'cambio_federal',
-          'cambio_romantico',
-          'cambio_aguerrebere',
-          'itau',
-          'cambio_principal',
-          'cambio_young',
-          'cambio_3',
-          'cambio_minas',
-          'cambio_openn',
-          'cambial',
-          'cambio_maiorano',
-          'cambio_pando',
-          'mas_cambio',
-          'cambio_fenix',
-          'cambio_oriental',
-          'baluma_cambio',
-          'gales',
-          'cambio_vexel',
-          'cambio_velso',
-          'tradelix',
-          'cambio_sicurezza',
-          'cambio_regul',
-          'cambio_pernas',
-          'cambio_misiones',
-          'cambio_pampex',
-          'cambio_obelisco',
-          'suizo',
-          'cambio_ingles',
-          'bcu',
-          'cambilex',
-          'aspen',
-          'matriz',
-          'cambio18',
-          'indumex',
-          'varlix',
-        ]
-        const fallbackCurrencies = [
-          'USD',
-          'EUR',
-          'ARS',
-          'BRL',
-          'GBP',
-          'CHF',
-          'PYG',
-          'XAU',
-          'UR',
-          'UP',
-          'UI',
-        ]
+        if (!urls.includes(url)) {
+          addRoutes(url)
+          urls.push(url)
+        }
 
-        // Add main historical page
-        routes.push({
-          url: '/historico',
-          changefreq: 'daily',
-          priority: 0.8,
-          lastmod: new Date(),
-        })
+        url = `/historico/${origin}/${currency}`
 
-        // Add fallback historical routes
-        fallbackOrigins.forEach((origin) => {
-          routes.push({
-            url: `/historico/${origin}`,
-            changefreq: 'daily',
-            priority: 0.7,
-            lastmod: new Date(),
-          })
+        if (!urls.includes(url)) {
+          addRoutes(url)
+          urls.push(url)
+        }
 
-          fallbackCurrencies.forEach((currency) => {
-            routes.push({
-              url: `/historico/${origin}/${currency}`,
-              changefreq: 'daily',
-              priority: 0.6,
-              lastmod: new Date(),
-            })
-          })
-        })
-      }
+        if (type) {
+          url = `/historico/${origin}/${currency}/${type}`
+          if (!urls.includes(url)) {
+            addRoutes(url)
+            urls.push(url)
+          }
+        }
+      })
 
       return routes
     },
@@ -564,10 +473,7 @@ export default {
       enabled: true,
       workboxURL:
         'https://cdn.jsdelivr.net/npm/workbox-cdn/workbox/workbox-sw.js',
-      importScripts:
-        process.env.NODE_ENV === 'production'
-          ? []
-          : [],
+      importScripts: process.env.NODE_ENV === 'production' ? [] : [],
       autoRegister: true,
       offline: true,
       offlinePage: '/offline',

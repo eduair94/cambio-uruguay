@@ -17,6 +17,14 @@
               <v-chip color="secondary" large class="ma-2">
                 {{ $route.params.currency }}
               </v-chip>
+              <v-chip
+                v-if="$route.params.type"
+                color="accent"
+                large
+                class="ma-2"
+              >
+                {{ $route.params.type.toUpperCase() }}
+              </v-chip>
             </v-card-text>
           </v-card>
         </v-col>
@@ -282,6 +290,7 @@ export default {
   },
   validate({ params }) {
     // Validate that both origin and currency are provided
+    // Type parameter is optional
     return params.origin && params.currency
   },
   data() {
@@ -311,19 +320,21 @@ export default {
   head() {
     const origin = this.$route.params.origin?.toUpperCase() || ''
     const currency = this.$route.params.currency?.toUpperCase() || ''
+    const type = this.$route.params.type?.toUpperCase() || ''
 
+    const titleSuffix = type ? ` (${type})` : ''
     return {
-      title: `Histórico ${origin} - ${currency} | Cambio Uruguay`,
+      title: `Histórico ${origin} - ${currency}${titleSuffix} | Cambio Uruguay`,
       meta: [
         {
           hid: 'description',
           name: 'description',
-          content: `Evolución histórica de cotizaciones ${currency} en ${origin}. Gráficos, estadísticas y datos detallados de cambio de moneda en Uruguay.`,
+          content: `Evolución histórica de cotizaciones ${currency}${titleSuffix} en ${origin}. Gráficos, estadísticas y datos detallados de cambio de moneda en Uruguay.`,
         },
         {
           hid: 'keywords',
           name: 'keywords',
-          content: `histórico cotizaciones, ${origin}, ${currency}, evolución cambio, gráfico cotizaciones, estadísticas cambio uruguay`,
+          content: `histórico cotizaciones, ${origin}, ${currency}, ${type}, evolución cambio, gráfico cotizaciones, estadísticas cambio uruguay`,
         },
       ],
     }
@@ -433,13 +444,17 @@ export default {
               label: (context) => {
                 // Use inline formatting to avoid referencing this
                 const value = context.parsed.y
-                if (typeof value !== 'number') return `${context.dataset.label}: -`
-                return `${context.dataset.label}: ${value.toLocaleString('es-UY', {
-                  style: 'currency',
-                  currency: 'UYU',
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2
-                })}`
+                if (typeof value !== 'number')
+                  return `${context.dataset.label}: -`
+                return `${context.dataset.label}: ${value.toLocaleString(
+                  'es-UY',
+                  {
+                    style: 'currency',
+                    currency: 'UYU',
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  }
+                )}`
               },
             },
           },
@@ -487,7 +502,7 @@ export default {
                   style: 'currency',
                   currency: 'UYU',
                   minimumFractionDigits: 2,
-                  maximumFractionDigits: 2
+                  maximumFractionDigits: 2,
                 })
               },
             },
@@ -547,7 +562,7 @@ export default {
       // Save to localStorage and update URL
       this.savePeriodToStorage(this.selectedPeriod)
       this.updateUrlQuery(this.selectedPeriod)
-      
+
       // Fetch new data with the selected period
       await this.fetchData()
     },
@@ -558,10 +573,16 @@ export default {
       this.error = null
 
       try {
-        const { origin, currency } = this.$route.params
-        const response = await this.$axios.get(
-          `https://api.cambio-uruguay.com/evolution/${origin}/${currency}?period=${this.selectedPeriod}`
-        )
+        const { origin, currency, type } = this.$route.params
+
+        // Build the URL with optional type parameter
+        let url = `https://api.cambio-uruguay.com/evolution/${origin}/${currency}`
+        if (type) {
+          url += `/${type}`
+        }
+        url += `?period=${this.selectedPeriod}`
+
+        const response = await this.$axios.get(url)
         this.evolutionData = response.data
       } catch (error) {
         // eslint-disable-next-line no-console
@@ -571,7 +592,7 @@ export default {
           'Error al cargar los datos históricos'
       } finally {
         this.loading = false
-         ;(window as any).stopLoading()
+        ;(window as any).stopLoading()
       }
     },
     formatCurrency(value) {

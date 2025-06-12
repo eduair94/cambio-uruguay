@@ -91,7 +91,7 @@
               <template slot="item.origin" slot-scope="{ item }">
                 <v-btn
                   v-if="item.origin"
-                  :to="`/historico/${item.origin}`"
+                  :to="localePath(`/historico/${item.origin}`)"
                   text
                   color="primary"
                   small
@@ -107,7 +107,7 @@
               <template slot="item.code" slot-scope="{ item }">
                 <v-btn
                   v-if="item.origin && item.code"
-                  :to="`/historico/${item.origin}/${item.code}`"
+                  :to="localePath(`/historico/${item.origin}/${item.code}`)"
                   text
                   color="secondary"
                   small

@@ -141,7 +141,7 @@
                           </template>
                           <v-date-picker
                             v-model="selectedDate"
-                            :max="new Date().toISOString().substr(0, 10)"
+                            :max="new Date().toLocaleDateString('en-CA')"
                             @input="onDateChange"
                             @change="datePickerMenu = false"
                           ></v-date-picker>
@@ -250,8 +250,8 @@
                       </v-select>
                     </v-col>
                     <v-col cols="12" md="6" lg="2">
-                      <div class="mt-lg-3 d-flex flex-wrap">
-                        <div class="mr-2">
+                      <div class="mt-lg-3 d-flex flex-wrap gap-10">
+                        <div>
                           <LocationPopup
                             ref="locationPopup"
                             @geoLocationSuccess="geoLocationSuccess"
@@ -264,6 +264,13 @@
                           @click="undoDistances"
                         >
                           <v-icon> mdi-undo </v-icon>
+                        </v-btn>
+                        <v-btn
+                          :title="$t('resetFilters')"
+                          color="orange darken-3"
+                          @click="resetAllFilters"
+                        >
+                          <v-icon> mdi-restore </v-icon>
                         </v-btn>
                       </div>
                     </v-col>
@@ -375,6 +382,34 @@
               {{ formatMoney(item.amount) }}
             </v-chip>
           </template>
+          <template slot="item.historical" slot-scope="{ item }">
+            <div class="d-flex flex-column py-2" style="gap: 4px">
+              <v-btn
+                v-if="item.origin"
+                :to="localePath(`/historico/${item.origin}`)"
+                color="primary"
+                small
+                outlined
+                dense
+                class="text-caption mb-2"
+              >
+                <v-icon small left>mdi-chart-line</v-icon>
+                Casa
+              </v-btn>
+              <v-btn
+                v-if="item.origin && item.code"
+                :to="getLinkHistory(item)"
+                color="secondary"
+                small
+                outlined
+                dense
+                class="text-caption"
+              >
+                <v-icon small left>mdi-currency-usd</v-icon>
+                Moneda
+              </v-btn>
+            </div>
+          </template>
           <template #item.distance="{ item }">
             <a
               v-if="item.distance !== no_distance"
@@ -473,6 +508,7 @@ export default {
   async middleware({ store, redirect, $axios, $i18n, query }) {},
   data() {
     return {
+      routeHasQuery: false,
       hiddenWidgets: false,
       hasScroll: false,
       all_items: [],
@@ -553,9 +589,10 @@ export default {
       show_install: false,
       wantTo: 'buy',
       notConditional: false,
-      day: new Date().toLocaleDateString(),
-      selectedDate: new Date().toISOString().substr(0, 10), // YYYY-MM-DD format
+      day: new Date().toLocaleDateString('en-CA'),
+      selectedDate: new Date().toLocaleDateString('en-CA'), // YYYY-MM-DD format using local date
       datePickerMenu: false, // Controls the date picker menu visibility
+      isDateManuallySelected: false, // Track if user manually selected a date
       code: '',
       code_with: '',
       notInterBank: true,
@@ -615,13 +652,20 @@ export default {
       return this.onlyInterbank.includes(this.code)
     },
   },
-  beforeMount() {
-    this.beforeMount()
+  async beforeMount() {
+    await this.beforeMountSetup()
   },
   mounted() {
     this.setScrollBar()
   },
   methods: {
+    getLinkHistory(item: any) {
+      let link = `/historico/${item.origin}/${item.code}`
+      if (item.type) {
+        link = `/historico/${item.origin}/${item.code}/${item.type}`
+      }
+      return this.localePath(link)
+    },
     // Exchange house search methods
     filterByExchangeHouse() {
       if (
@@ -651,17 +695,48 @@ export default {
       this.selectedExchangeHouse = []
       this.updateTable()
       this.setPrice() // Update URL to reflect cleared filter
-    }, // Date change method
+    },
+    // Date change method
     async onDateChange() {
+      this.isDateManuallySelected = true // Mark that user manually selected a date
+      await this.setup()
+      this.get_data()
+    }, // Reset date method
+    async resetDate() {
+      this.selectedDate = new Date().toLocaleDateString('en-CA')
+      this.isDateManuallySelected = false // Reset the flag when user resets to today
       await this.setup()
       this.get_data()
     },
 
-    // Reset date to today
-    async resetDate() {
-      this.selectedDate = new Date().toISOString().substr(0, 10)
+    // Reset all filters method
+    async resetAllFilters() {
+      // Reset all form fields to their default values
+      this.amount = 100
+      this.wantTo = 'buy'
+      this.code = 'USD'
+      this.code_with = 'UYU'
+      this.location = 'TODOS'
+      this.selectedDate = new Date().toLocaleDateString('en-CA')
+      this.isDateManuallySelected = false
+      this.notInterBank = true
+      this.notConditional = false
+      this.hiddenWidgets = false
+      this.selectedExchangeHouse = []
+
+      // Reset distance filters
+      this.undoDistances()
+
+      // Update data and table
       await this.setup()
       this.get_data()
+
+      // Show confirmation
+      this.snackbar = true
+      this.snackBarText = this.$t('filtersReset') || 'Filtros restablecidos'
+      setTimeout(() => {
+        this.snackbar = false
+      }, 2000)
     },
 
     buildExchangeHouseOptions() {
@@ -678,6 +753,59 @@ export default {
           }
         })
         .sort((a, b) => a.text.localeCompare(b.text))
+    },
+
+    // Helper method to fetch data for a specific date
+    async fetchDataForDate(date) {
+      const localData = await this.$axios
+        .get('https://api.cambio-uruguay.com/localData')
+        .then((res) => res.data)
+
+      const getCondition = (el) => {
+        if (el.origin === 'prex') {
+          return 'prex_condition'
+        }
+        if (el.type === 'EBROU') {
+          return 'ebrou_condition'
+        }
+        return ''
+      }
+
+      const isInterBank = (item: any) => {
+        return (
+          item.origin === 'bcu' ||
+          ['INTERBANCARIO', 'FONDO/CABLE'].includes(item.type)
+        )
+      }
+
+      try {
+        const data = await this.$axios
+          .get('https://api.cambio-uruguay.com', {
+            params: { date: date },
+          })
+          .then((res) => {
+            // Check if the response contains an error
+            if (res.data && res.data.error === 'No results found') {
+              throw new Error('No results found')
+            }
+            return (res.data as any[])
+              .map((el: any) => {
+                el.localData = localData[el.origin]
+                if (!el.localData) {
+                  el.localData = null
+                }
+                el.isInterBank = isInterBank(el)
+                el.condition = getCondition(el)
+                return el
+              })
+              .filter((el: any) => el.localData)
+          })
+
+        return data
+      } catch (error) {
+        console.error('API Error for date', date, ':', error)
+        return null // Return null to indicate no data found
+      }
     },
 
     async setup() {
@@ -721,34 +849,91 @@ export default {
         .then((res) => res.data)
       this.$store.dispatch('setFortex', dataFortex)
 
-      const data = await this.$axios
-        .get('https://api.cambio-uruguay.com', {
-          params: { date: this.selectedDate },
-        })
-        .then((res) => {
-          // Check if the response contains an error
-          if (res.data && res.data.error === 'No results found') {
-            throw new Error('No results found')
-          }
-          return (res.data as any[])
-            .map((el: any) => {
-              el.localData = localData[el.origin]
-              if (!el.localData) {
-                el.localData = null
+      // Implement fallback logic to find data from previous dates
+      let data = []
+      let currentDate = this.selectedDate
+      let attempts = 0
+      const maxAttempts = 7
+
+      // Only try fallback if the date was not manually selected by the user
+      if (!this.isDateManuallySelected) {
+        while (attempts < maxAttempts && data.length === 0) {
+          try {
+            const response = await this.$axios.get(
+              'https://api.cambio-uruguay.com',
+              {
+                params: { date: currentDate },
               }
-              el.isInterBank = isInterBank(el)
-              el.condition = getCondition(el)
-              return el
-            })
-            .filter((el: any) => el.localData)
-        })
-        .catch((error) => {
-          // Handle API errors
+            )
+
+            if (response.data && response.data.error !== 'No results found') {
+              data = (response.data as any[])
+                .map((el: any) => {
+                  el.localData = localData[el.origin]
+                  if (!el.localData) {
+                    el.localData = null
+                  }
+                  el.isInterBank = isInterBank(el)
+                  el.condition = getCondition(el)
+                  return el
+                })
+                .filter((el: any) => el.localData)
+
+              // If we found data but it's from a previous date, update selectedDate
+              if (data.length > 0 && currentDate !== this.selectedDate) {
+                this.selectedDate = currentDate
+                console.log(
+                  `No data for ${this.selectedDate}, using data from ${currentDate}`
+                )
+              }
+              break
+            }
+          } catch (error) {
+            console.error('API Error for date', currentDate, ':', error)
+          }
+
+          // Move to previous day
+          const previousDate = new Date(currentDate)
+          previousDate.setDate(previousDate.getDate() - 1)
+          currentDate = previousDate.toLocaleDateString('en-CA')
+          attempts++
+        }
+      } else {
+        // User manually selected a date, just try that date once
+        try {
+          const response = await this.$axios.get(
+            'https://api.cambio-uruguay.com',
+            {
+              params: { date: this.selectedDate },
+            }
+          )
+
+          if (response.data && response.data.error !== 'No results found') {
+            data = (response.data as any[])
+              .map((el: any) => {
+                el.localData = localData[el.origin]
+                if (!el.localData) {
+                  el.localData = null
+                }
+                el.isInterBank = isInterBank(el)
+                el.condition = getCondition(el)
+                return el
+              })
+              .filter((el: any) => el.localData)
+          }
+        } catch (error) {
           console.error('API Error:', error)
           this.snackbar = true
           this.snackBarText = this.$t('noDataAvailable')
-          return [] // Return empty array to prevent further errors
-        })
+        }
+      }
+
+      // If still no data found after all attempts, show error
+      if (data.length === 0) {
+        this.snackbar = true
+        this.snackBarText = this.$t('noDataAvailable')
+      }
+
       console.log('Data', data)
       this.$store.dispatch('setLocations', locations)
       this.$store.dispatch('setItems', data)
@@ -806,7 +991,36 @@ export default {
         })
       }
     },
-    async beforeMount() {
+    readQueryParameters() {
+      // Check if there are query parameters when loading the url
+      this.routeHasQuery = Object.keys(this.$route.query).length > 0
+
+      if (this.$route.query.notConditional) {
+        this.notConditional = true
+      }
+      if (this.$route.query.notInterBank) {
+        this.notInterBank = true
+      }
+      this.amount = this.$route.query.amount
+        ? parseFloat(this.$route.query.amount)
+        : 100
+      this.wantTo = this.$route.query.wantTo ? this.$route.query.wantTo : 'buy'
+      this.code = this.$route.query.currency
+        ? this.$route.query.currency
+        : 'USD'
+      this.location = this.$route.query.location
+        ? this.$route.query.location
+        : 'TODOS'
+      this.code_with = this.$route.query.currency_with
+        ? this.$route.query.currency_with
+        : 'UYU' // Load selected date from query parameters or default to today
+      this.selectedDate = this.$route.query.date
+        ? this.$route.query.date
+        : new Date().toLocaleDateString('en-CA')
+    },
+    async beforeMountSetup() {
+      // Set query parameters
+      this.readQueryParameters()
       await this.setup()
 
       // Build exchange house options for autocomplete
@@ -828,30 +1042,6 @@ export default {
           }
         })
       }
-      if (this.$route.query.notConditional) {
-        this.notConditional = true
-      }
-      if (this.$route.query.notInterBank) {
-        this.notInterBank = true
-      }
-      this.amount = this.$route.query.amount
-        ? parseFloat(this.$route.query.amount)
-        : 100
-      this.wantTo = this.$route.query.wantTo ? this.$route.query.wantTo : 'buy'
-      this.code = this.$route.query.currency
-        ? this.$route.query.currency
-        : 'USD'
-      this.location = this.$route.query.location
-        ? this.$route.query.location
-        : 'TODOS'
-      this.code_with = this.$route.query.currency_with
-        ? this.$route.query.currency_with
-        : 'UYU'
-
-      // Load selected date from query parameters or default to today
-      this.selectedDate = this.$route.query.date
-        ? this.$route.query.date
-        : new Date().toISOString().substr(0, 10)
 
       // Load selected exchange houses from query parameters
       if (this.$route.query.exchangeHouses) {
@@ -1063,6 +1253,12 @@ export default {
         },
         { text: this.$t('condicional'), value: 'condition', width: '250px' },
         { text: 'BCU', value: 'localData.bcu', width: '50px' },
+        {
+          text: this.$t('historical.viewHistorical'),
+          value: 'historical',
+          sortable: false,
+          width: '140px',
+        },
       ]
       if (this.enableDistance) {
         toReturn.push({
@@ -1275,10 +1471,15 @@ export default {
             : undefined,
       }
       // Change route.
-      this.$router.push({
-        ...this.$route.query,
-        query,
-      })
+      if (this.routeHasQuery) {
+        // If there are no query parameters, we push the new query
+        this.$router.push({
+          ...this.$route.query,
+          query,
+        })
+      } else {
+        this.routeHasQuery = true
+      }
       const amount = this.amount
       const wanToSell = this.wantTo === 'sell'
       this.items.sort((a, b) => {
@@ -1336,99 +1537,3 @@ export default {
   },
 }
 </script>
-
-<style lang="scss">
-body {
-  font-family: 'Open Sans', sans-serif;
-}
-
-.no_link {
-  text-decoration: none;
-}
-.website_link {
-  word-break: break-all;
-  max-width: 100%;
-  min-width: 150px;
-}
-
-.button_section {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-@media (min-width: 768px) {
-  .website_link {
-    min-width: 200px;
-  }
-}
-
-@media (max-width: 1750px) {
-  body .container {
-    max-width: 100% !important;
-  }
-}
-
-.v-data-table__mobile-row {
-  width: 100%;
-}
-
-.money_table
-  .v-data-table__mobile-table-row
-  > .v-data-table__mobile-row:nth-child(10) {
-  flex-direction: column;
-  justify-content: flex-start;
-  .v-data-table__mobile-row__header {
-    width: 100%;
-  }
-  .v-data-table__mobile-row__cell {
-    text-align: left;
-    div {
-      margin-bottom: 12px;
-    }
-  }
-}
-
-.top_container {
-  gap: 12px;
-}
-
-.donation_logo {
-  transition: ease-in-out 0.3s;
-}
-
-.gap-10 {
-  gap: 10px;
-}
-
-#wrapper2 {
-  width: 100%;
-  overflow-x: scroll;
-  overflow-y: hidden;
-}
-
-/* This div allow to make the scroll function and show the scrollbar */
-#div2 {
-  height: 1px;
-  overflow: scroll;
-}
-
-.text_info {
-  max-width: 490px;
-}
-
-@media (max-width: 768px) {
-  .button_section {
-    gap: 5px !important;
-    button,
-    a {
-      min-width: 30px !important;
-      max-width: calc(80vw / 5);
-    }
-  }
-}
-
-.selectExchangeHouse .v-select__selections {
-  min-height: 56px !important;
-}
-</style>
