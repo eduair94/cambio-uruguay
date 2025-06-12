@@ -219,13 +219,6 @@ export default {
     {
       src: 'https://cdn.maptiler.com/maptiler-geocoder/v1.1.0/maptiler-geocoder.js',
     },
-    {
-      src:
-        process.env.NODE_ENV === 'production'
-          ? 'https://arc.io/widget.min.js#63RUbX6J'
-          : '',
-      async: true,
-    },
   ],
 
   server: {
@@ -297,7 +290,7 @@ export default {
       // Add dynamic routes here if needed
       const routes = []
 
-      const locales = ['es', 'en', 'pt']      
+      const locales = ['es', 'en', 'pt']
       function addRoutes(url) {
         // take into account the different locales
         locales.forEach((locale) => {
@@ -309,7 +302,7 @@ export default {
             // For other locales, prepend the locale
             newUrl = `/${locale}${url}`
           }
-          
+
           routes.push({
             url: newUrl,
             changefreq: 'daily',
@@ -317,7 +310,7 @@ export default {
             lastmod: new Date(),
           })
         })
-      }      // Add currency-specific routes
+      } // Add currency-specific routes
       const currencies = ['USD', 'ARS', 'BRL', 'EUR', 'GBP']
       const locations = ['MONTEVIDEO', 'PUNTA-DEL-ESTE', 'COLONIA', 'SALTO']
 
@@ -327,7 +320,7 @@ export default {
         locations.forEach((location) => {
           addRoutes(`/?currency=${currency}&location=${location}`)
         })
-      })// Add historical routes
+      }) // Add historical routes
 
       // Fetch data from API to get all origins and currency codes
       const axios = require('axios')
@@ -492,29 +485,6 @@ export default {
       offlineAnalytics: true,
       cacheAssets: true,
       runtimeCaching: [
-        {
-          urlPattern: 'https://api.cambio-uruguay.com/.*',
-          handler: 'StaleWhileRevalidate',
-          method: 'GET',
-          strategyOptions: {
-            cacheName: 'api-cache',
-            cacheableResponse: {
-              statuses: [0, 200],
-            },
-            plugins: [
-              {
-                cacheWillUpdate: ({ response }) => {
-                  // Don't cache responses with Vary: * header
-                  const varyHeader = response.headers.get('vary')
-                  if (varyHeader && varyHeader.includes('*')) {
-                    return null
-                  }
-                  return response
-                },
-              },
-            ],
-          },
-        },
         {
           urlPattern: 'https://fonts.googleapis.com/.*',
           handler: 'CacheFirst',

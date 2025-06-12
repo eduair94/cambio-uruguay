@@ -6,8 +6,8 @@
         <v-list-item
           v-for="item in items"
           :key="item.title"
-          :to="item.external ? undefined : item.to"
-          :href="item.external ? item.to : undefined"
+          :to="item.external ? undefined : localePath(item.to)"
+          :href="item.external ? item.external : undefined"
           :target="item.external ? '_blank' : undefined"
           :rel="item.external ? 'noopener noreferrer' : undefined"
           router
@@ -26,7 +26,7 @@
       <!-- Mobile menu button -->
       <v-app-bar-nav-icon
         class="d-flex d-md-none mr-2"
-        @click.stop="drawer = !drawer"
+        @click.stop="drawer = true"
       />
 
       <router-link :to="localePath('/')" class="no_link d-flex logo_link">
@@ -49,8 +49,8 @@
         <v-btn
           v-for="item in items"
           :key="item.title"
-          :to="item.external ? undefined : item.to"
-          :href="item.external ? item.to : undefined"
+          :to="item.external ? undefined : localePath(item.to)"
+          :href="item.external ? item.external : undefined"
           :target="item.external ? '_blank' : undefined"
           :rel="item.external ? 'noopener noreferrer' : undefined"
           text
@@ -110,8 +110,25 @@ export default {
       fixed: false,
       miniVariant: false,
       right: true,
-      rightDrawer: false,
       title: 'Cambio Uruguay - encuentra la mejor cotización',
+      items: [
+        {
+          icon: 'mdi-home',
+          title: 'Inicio',
+          to: '/',
+        },
+        {
+          icon: 'mdi-chart-line',
+          title: 'Histórico',
+          to: '/historico',
+        },
+        {
+          icon: 'mdi-heart',
+          title: 'Donar',
+          to: 'https://ko-fi.com/cambio_uruguay',
+          external: true,
+        },
+      ],
     }
   },
   head() {
@@ -183,28 +200,6 @@ export default {
         },
       ],
     }
-  },
-  computed: {
-    items() {
-      return [
-        {
-          icon: 'mdi-home',
-          title: 'Inicio',
-          to: this.localePath('/'),
-        },
-        {
-          icon: 'mdi-chart-line',
-          title: 'Histórico',
-          to: this.localePath('/historico'),
-        },
-        {
-          icon: 'mdi-heart',
-          title: 'Donar',
-          to: 'https://ko-fi.com/cambio_uruguay',
-          external: true,
-        },
-      ]
-    },
   },
   beforeMount() {
     ;(window as any).startLoading = () => {

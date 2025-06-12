@@ -165,10 +165,7 @@ export default {
     workbox: {
       workboxURL:
         'https://cdn.jsdelivr.net/npm/workbox-cdn/workbox/workbox-sw.js',
-      importScripts:
-        process.env.NODE_ENV === 'production'
-          ? ['https://arc.io/arc-sw-core.js']
-          : [],
+      importScripts: [],
       autoRegister: true,
     },
   },

@@ -814,7 +814,6 @@ export default {
       const localData = await this.$axios
         .get('https://api.cambio-uruguay.com/localData')
         .then((res) => res.data)
-      console.log('Local Data Response', localData)
       for (const key in localData) {
         const val = localData[key]
         const departments = val.departments
@@ -934,7 +933,6 @@ export default {
         this.snackBarText = this.$t('noDataAvailable')
       }
 
-      console.log('Data', data)
       this.$store.dispatch('setLocations', locations)
       this.$store.dispatch('setItems', data)
       this.all_items = [...this.allItems]
