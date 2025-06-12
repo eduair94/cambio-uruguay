@@ -7,7 +7,7 @@
           v-for="item in items"
           :key="item.title"
           :to="item.external ? undefined : localePath(item.to)"
-          :href="item.external ? item.external : undefined"
+          :href="item.external ? item.to : undefined"
           :target="item.external ? '_blank' : undefined"
           :rel="item.external ? 'noopener noreferrer' : undefined"
           router
@@ -50,7 +50,7 @@
           v-for="item in items"
           :key="item.title"
           :to="item.external ? undefined : localePath(item.to)"
-          :href="item.external ? item.external : undefined"
+          :href="item.external ? item.to : undefined"
           :target="item.external ? '_blank' : undefined"
           :rel="item.external ? 'noopener noreferrer' : undefined"
           text
