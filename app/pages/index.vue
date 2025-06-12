@@ -658,6 +658,11 @@ export default {
   mounted() {
     this.setScrollBar()
   },
+  beforeDestroy() {
+    this.$store.dispatch('setLocations', [])
+    this.$store.dispatch('setItems', [])
+    this.$store.dispatch('setFortex', {})
+  },
   methods: {
     getLinkHistory(item: any) {
       let link = `/historico/${item.origin}/${item.code}`

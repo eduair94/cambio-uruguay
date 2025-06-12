@@ -1,4 +1,27 @@
 export default (_context: any, inject: any) => {
+  // Check for Cache API availability to prevent browser extension errors
+  if (process.client && typeof window !== 'undefined') {
+    // Polyfill or check for caches API
+    if (!('caches' in window)) {
+      // Create a minimal caches polyfill to prevent errors from browser extensions
+      ;(window as any).caches = {
+        open: () =>
+          Promise.resolve({
+            match: () => Promise.resolve(undefined),
+            add: () => Promise.resolve(),
+            addAll: () => Promise.resolve(),
+            put: () => Promise.resolve(),
+            delete: () => Promise.resolve(false),
+            keys: () => Promise.resolve([]),
+          }),
+        match: () => Promise.resolve(undefined),
+        has: () => Promise.resolve(false),
+        delete: () => Promise.resolve(false),
+        keys: () => Promise.resolve([]),
+      }
+    }
+  }
+
   // Verificar si la app está instalada como PWA
   if (process.client) {
     // Detectar si está en modo standalone (instalada)

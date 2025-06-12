@@ -1,32 +1,60 @@
 <template>
   <v-app dark>
-    <!-- Navigation Drawer for mobile only -->
-    <v-navigation-drawer v-model="drawer" app temporary>
-      <v-list>
-        <v-list-item
-          v-for="item in items"
-          :key="item.title"
-          :to="item.external ? undefined : localePath(item.to)"
-          :href="item.external ? item.to : undefined"
-          :target="item.external ? '_blank' : undefined"
-          :rel="item.external ? 'noopener noreferrer' : undefined"
-          router
-          @click="drawer = false"
-        >
-          <v-list-item-action>
-            <v-icon>{{ item.icon }}</v-icon>
-          </v-list-item-action>
-          <v-list-item-content>
-            <v-list-item-title>{{ item.title }}</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-      </v-list>
-    </v-navigation-drawer>
+    <!-- Custom Mobile Navigation Menu -->
+    <div
+      v-if="mobileMenuOpen"
+      class="mobile-menu-overlay"
+      @click="closeMobileMenu"
+    >
+      <div class="mobile-menu" @click.stop>
+        <div class="mobile-menu-header">
+          <h3>Menu</h3>
+          <v-btn icon @click="closeMobileMenu">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </div>        <div class="mobile-menu-items">
+          <!-- Inicio -->
+          <router-link
+            :to="localePath('/')"
+            class="mobile-menu-item"
+            :class="{ 'mobile-menu-item--active': isActiveRoute('/') }"
+            @click="handleMobileNavigation"
+          >
+            <v-icon>mdi-home</v-icon>
+            <span>Inicio</span>
+          </router-link>
+
+          <!-- Histórico -->
+          <router-link
+            :to="localePath('/historico')"
+            class="mobile-menu-item"
+            :class="{ 'mobile-menu-item--active': isActiveRoute('/historico') }"
+            @click="handleMobileNavigation"
+          >
+            <v-icon>mdi-chart-line</v-icon>
+            <span>Histórico</span>
+          </router-link>
+
+          <!-- Donar -->
+          <a
+            href="https://ko-fi.com/cambio_uruguay"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="mobile-menu-item"
+            @click="closeMobileMenu"
+          >
+            <v-icon>mdi-heart</v-icon>
+            <span>Donar</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
     <v-app-bar :clipped-left="clipped" fixed app>
       <!-- Mobile menu button -->
       <v-app-bar-nav-icon
         class="d-flex d-md-none mr-2"
-        @click.stop="drawer = true"
+        @click.stop="toggleMobileMenu"
       />
 
       <router-link :to="localePath('/')" class="no_link d-flex logo_link">
@@ -43,21 +71,41 @@
             <source srcset="/img/logo.webp" />
           </template>
         </v-img>
-      </router-link>
-      <!-- Navigation Menu for desktop -->
+      </router-link>      <!-- Navigation Menu for desktop -->
       <v-toolbar-items class="d-none d-md-flex ml-4">
-        <v-btn
-          v-for="item in items"
-          :key="item.title"
-          :to="item.external ? undefined : localePath(item.to)"
-          :href="item.external ? item.to : undefined"
-          :target="item.external ? '_blank' : undefined"
-          :rel="item.external ? 'noopener noreferrer' : undefined"
-          text
-          class="text-capitalize"
+        <!-- Inicio -->
+        <v-btn 
+          :to="localePath('/')" 
+          text 
+          exact
+          class="text-capitalize nav-btn"
+          :class="{ 'nav-btn--active': isActiveRoute('/') }"
         >
-          <v-icon left small>{{ item.icon }}</v-icon>
-          {{ item.title }}
+          <v-icon left small>mdi-home</v-icon>
+          Inicio
+        </v-btn>
+
+        <!-- Histórico -->
+        <v-btn 
+          :to="localePath('/historico')" 
+          text 
+          class="text-capitalize nav-btn"
+          :class="{ 'nav-btn--active': isActiveRoute('/historico') }"
+        >
+          <v-icon left small>mdi-chart-line</v-icon>
+          Histórico
+        </v-btn>
+
+        <!-- Donar -->
+        <v-btn
+          href="https://ko-fi.com/cambio_uruguay"
+          target="_blank"
+          rel="noopener noreferrer"
+          text
+          class="text-capitalize nav-btn"
+        >
+          <v-icon left small>mdi-heart</v-icon>
+          Donar
         </v-btn>
       </v-toolbar-items>
 
@@ -106,30 +154,20 @@ export default {
   data() {
     return {
       clipped: false,
-      drawer: false,
+      mobileMenuOpen: false, // Custom mobile menu state
+      mobileMenuClosing: false, // Track closing animation
       fixed: false,
       miniVariant: false,
       right: true,
       title: 'Cambio Uruguay - encuentra la mejor cotización',
-      items: [
-        {
-          icon: 'mdi-home',
-          title: 'Inicio',
-          to: '/',
-        },
-        {
-          icon: 'mdi-chart-line',
-          title: 'Histórico',
-          to: '/historico',
-        },
-        {
-          icon: 'mdi-heart',
-          title: 'Donar',
-          to: 'https://ko-fi.com/cambio_uruguay',
-          external: true,
-        },
-      ],
     }
+  },  watch: {
+    // Watch for route changes and ensure mobile menu is closed with animation
+    $route() {
+      if (this.mobileMenuOpen) {
+        this.closeMobileMenu()
+      }
+    },
   },
   head() {
     return {
@@ -207,12 +245,68 @@ export default {
       if (el) el.style.display = 'flex'
     }
     ;(window as any).stopLoading = () => {
-      const el = document.getElementById('spinner-wrapper')
-      if (el) el.style.display = 'none'
+      this.$nextTick(() => {
+        const el = document.getElementById('spinner-wrapper')
+        if (el) el.style.display = 'none'
+      })
     }
   },
   mounted() {
     this.$vuetify.lang.current = this.$i18n.locale
+  },  methods: {
+    isActiveRoute(path) {
+      // Check if current route matches the path
+      if (path === '/') {
+        // For home page, only match exact path
+        return this.$route.path === '/' || this.$route.path === '/es' || this.$route.path === '/en' || this.$route.path === '/pt'
+      }
+      // For other paths, check if route starts with the path
+      return this.$route.path.includes(path)
+    },
+    toggleMobileMenu() {
+      if (this.mobileMenuClosing) return
+      this.mobileMenuOpen = !this.mobileMenuOpen
+    },
+    closeMobileMenu() {
+      if (this.mobileMenuClosing) return
+
+      // Start closing animation
+      this.mobileMenuClosing = true
+
+      // Add closing classes for animated exit
+      const overlayElement = document.querySelector(
+        '.mobile-menu-overlay'
+      ) as HTMLElement
+      const menuElement = document.querySelector('.mobile-menu') as HTMLElement
+
+      if (overlayElement) {
+        overlayElement.classList.add('closing')
+      }
+
+      if (menuElement) {
+        menuElement.classList.add('closing')
+        menuElement.style.animation = 'slideOut 0.3s ease-in forwards'
+      }
+
+      // After animation completes, hide the menu
+      setTimeout(() => {
+        this.mobileMenuOpen = false
+        this.mobileMenuClosing = false
+
+        // Clean up classes
+        if (overlayElement) {
+          overlayElement.classList.remove('closing')
+        }
+        if (menuElement) {
+          menuElement.classList.remove('closing')
+          menuElement.style.animation = ''
+        }
+      }, 300)
+    },    handleMobileNavigation() {
+      // Close menu with animation and allow navigation to proceed
+      // The route change will be handled by Vue Router after this method completes
+      this.closeMobileMenu()
+    },
   },
 }
 </script>
@@ -272,24 +366,143 @@ body .v-app-bar.v-app-bar--fixed {
   }
 }
 
-/* Mobile navigation drawer styles */
-@media (max-width: 959px) {
-  .v-navigation-drawer {
-    z-index: 2000 !important;
-  }
-
-  .v-navigation-drawer .v-list-item {
-    padding: 12px 16px;
-  }
-
-  .v-navigation-drawer .v-list-item-title {
-    font-weight: 500;
-  }
+/* Custom Mobile Menu Styles with Animations */
+.mobile-menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 2000;
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  animation: fadeIn 0.3s ease-out;
 }
 
-/* Hide drawer on desktop */
+.mobile-menu-overlay.closing {
+  animation: fadeOut 0.3s ease-in forwards;
+}
+
+.mobile-menu {
+  background-color: #1e1e1e;
+  width: 280px;
+  height: 100%;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(-100%);
+  animation: slideIn 0.3s ease-out forwards;
+}
+
+.mobile-menu.closing {
+  animation: slideOut 0.3s ease-in forwards;
+}
+
+.mobile-menu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid #333;
+  opacity: 0;
+  animation: fadeInDown 0.4s ease-out 0.3s forwards;
+}
+
+.mobile-menu.closing .mobile-menu-header {
+  animation: fadeOutUp 0.2s ease-in forwards;
+}
+
+.mobile-menu-header h3 {
+  color: white;
+  margin: 0;
+  font-size: 18px;
+}
+
+.mobile-menu-header .v-btn {
+  transition: transform 0.2s ease;
+}
+
+.mobile-menu-header .v-btn:hover {
+  transform: scale(1.1);
+}
+
+.mobile-menu-items {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 0;
+}
+
+.mobile-menu-item {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  color: white;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid #333;
+  opacity: 0;
+  transform: translateX(-20px);
+  animation: slideInItem 0.4s ease-out forwards;
+}
+
+.mobile-menu-item:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.mobile-menu-item:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.mobile-menu-item:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.mobile-menu.closing .mobile-menu-item {
+  animation: slideOutItem 0.2s ease-in forwards;
+}
+
+.mobile-menu.closing .mobile-menu-item:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.mobile-menu.closing .mobile-menu-item:nth-child(2) {
+  animation-delay: 0.05s;
+}
+
+.mobile-menu.closing .mobile-menu-item:nth-child(3) {
+  animation-delay: 0.1s;
+}
+
+.mobile-menu-item:hover {
+  background-color: #333;
+  transform: translateX(5px);
+}
+
+.mobile-menu-item:active {
+  background-color: #444;
+  transform: translateX(0px);
+}
+
+.mobile-menu-item .v-icon {
+  margin-right: 16px;
+  color: white;
+}
+
+.mobile-menu-item span {
+  font-size: 16px;
+  font-weight: 500;
+  color: white;
+}
+
+.mobile-menu-item a {
+  color: white;
+}
+
 @media (min-width: 960px) {
-  .v-navigation-drawer.d-md-none {
+  .mobile-menu-overlay {
     display: none !important;
   }
 }
@@ -392,5 +605,123 @@ body {
 
 .selectExchangeHouse .v-select__selections {
   min-height: 56px !important;
+}
+
+/* Navigation Button Styles */
+.nav-btn {
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  border-radius: 8px !important;
+  margin: 0 4px;
+}
+
+.nav-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  transform: translateY(-1px);
+}
+
+.nav-btn--active {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+}
+
+.nav-btn--active .v-icon {
+  color: #4CAF50 !important;
+}
+
+/* Mobile Menu Item Active Styles */
+.mobile-menu-item--active {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border-left: 4px solid #4CAF50 !important;
+  font-weight: 600 !important;
+}
+
+.mobile-menu-item--active .v-icon {
+  color: #4CAF50 !important;
+}
+
+.mobile-menu-item--active span {
+  color: #ffffff !important;
+}
+
+/* Animation Keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes slideInItem {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOutItem {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeOutUp {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
 }
 </style>
