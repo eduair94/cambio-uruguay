@@ -42,12 +42,10 @@ class Express {
     this.app.use((req, res, next) => {
       // Remove problematic Vary headers that could include *
       res.removeHeader("Vary"); // Set cache-friendly headers for API responses
-      if (req.path.includes("/api/") || req.path === "/") {
-        res.set({
-          "Cache-Control": "public, max-age=5, s-maxage=5", // 5 seconds
-          Vary: "Accept-Encoding", // Only vary on encoding, not on everything
-        });
-      }
+      res.set({
+        "Cache-Control": "public, max-age=5, s-maxage=5", // 5 seconds
+        Vary: "Accept-Encoding", // Only vary on encoding, not on everything
+      });
       next();
     });
 
