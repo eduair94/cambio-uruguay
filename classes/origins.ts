@@ -43,6 +43,7 @@ import Tradelix from "./cambios/tradelix";
 import CambioVarlix from "./cambios/varlix";
 
 export const origins = {
+  cambio_maiorano: CambioMaiorano,
   prex: CambioPrex,
   alter_cambio: AlterCambio,
   cambio_rynder: Rynder,
@@ -63,7 +64,6 @@ export const origins = {
   cambio_minas: CambioMinas,
   cambio_openn: CambioOpenn,
   cambial: Cambial,
-  cambio_maiorano: CambioMaiorano,
   cambio_pando: CambioPando,
   mas_cambio: MasCambio,
   cambio_fenix: CambioFenix,
