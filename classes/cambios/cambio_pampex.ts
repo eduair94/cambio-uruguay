@@ -28,6 +28,7 @@ class CambioPampex extends Cambio {
   website = "http://www.cambiopampex.com/";
   favicon = "http://www.cambiopampex.com/";
   async get_data(): Promise<CambioObj[]> {
+    // Tengo que arreglarlo.
     const web_data = await axios.get("http://cambios.instyledm.com/7/cotizaciones.html").then((res) => res.data);
     const $ = load(web_data);
     const result = $("table tbody tr")
