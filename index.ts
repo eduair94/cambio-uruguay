@@ -199,15 +199,7 @@ const main = async () => {
     // Validate currency code parameter (basic validation)
     if (!code || code.length < 2 || code.length > 4) {
       throw new Error(`Invalid currency code: ${code}. Currency code should be 2-4 characters (e.g., USD, ARS, BRL, EUR)`);
-    }    // Validate type parameter if provided (currency subtype like BILLETE, CABLE, etc.)
-    if (type) {
-      // Allow common currency types - empty string is also valid
-      const validTypes = ["", "billete", "cable", "ebrou", "interbancario", "fondo/cable", "promed.fondo"];
-      if (!validTypes.includes(type.toLowerCase())) {
-        console.warn(`Warning: Potentially invalid currency type: ${type}. Common types are: BILLETE, CABLE, EBROU, INTERBANCARIO`);
-        // Don't throw error to allow flexibility for other types that might exist
-      }
-    }
+    } // Validate type parameter if provided (currency subtype like BILLETE, CABLE, etc.)
 
     // Parse period parameter (default to 6 months)
     let periodMonths = 6;
