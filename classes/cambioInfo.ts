@@ -128,72 +128,78 @@ class CambioInfo extends Cambio {
   async get_currency_evolution(origin: string, code: string, periodMonths: number = 6): Promise<any> {
     // Calculate date range based on the period requested
     const endDate = moment.tz("America/Uruguay").startOf("day").toDate();
-    const startDate = moment.tz("America/Uruguay").subtract(periodMonths, 'months').startOf("day").toDate();
-    
+    const startDate = moment.tz("America/Uruguay").subtract(periodMonths, "months").startOf("day").toDate();
+
     console.log(`Getting currency evolution for ${origin}/${code} from ${startDate} to ${endDate}`);
-    
+
     // Query the database for historical data within the date range
     const query = {
       origin: origin.toLowerCase(),
       code: code.toUpperCase(),
       date: {
         $gte: startDate,
-        $lte: endDate
-      }
+        $lte: endDate,
+      },
     };
-    
-    const historicalData: CambioObj[] = await this.db.allEntriesSort(
-      query, 
+
+    const historicalData: CambioObj[] = (await this.db.allEntriesSort(
+      query,
       { date: 1 } // Sort by date ascending
-    ) as CambioObj[];
-    
+    )) as CambioObj[];
+
     if (!historicalData || historicalData.length === 0) {
       throw new Error(`No historical data found for ${origin}/${code} in the last ${periodMonths} months`);
     }
-    
+
     // Process the data to create evolution points
-    const evolution = historicalData.map(entry => ({
+    const evolution = historicalData.map((entry) => ({
       date: entry.date,
       buy: entry.buy,
       sell: entry.sell,
       origin: entry.origin,
       code: entry.code,
       type: entry.type,
-      name: entry.name
+      name: entry.name,
     }));
-    
+
     // Calculate some basic statistics
-    const buyRates = historicalData.map(entry => entry.buy).filter(rate => rate > 0);
-    const sellRates = historicalData.map(entry => entry.sell).filter(rate => rate > 0);
-    
+    const buyRates = historicalData.map((entry) => entry.buy).filter((rate) => rate > 0);
+    const sellRates = historicalData.map((entry) => entry.sell).filter((rate) => rate > 0);
+
     const statistics = {
       totalDataPoints: historicalData.length,
       dateRange: {
         start: startDate,
         end: endDate,
-        periodMonths
+        periodMonths,
       },
-      buy: buyRates.length > 0 ? {
-        min: Math.min(...buyRates),
-        max: Math.max(...buyRates),
-        avg: buyRates.reduce((sum, rate) => sum + rate, 0) / buyRates.length,
-        current: buyRates[buyRates.length - 1] || null,
-        change: buyRates.length > 1 ? ((buyRates[buyRates.length - 1] - buyRates[0]) / buyRates[0] * 100) : 0
-      } : null,
-      sell: sellRates.length > 0 ? {
-        min: Math.min(...sellRates),
-        max: Math.max(...sellRates),
-        avg: sellRates.reduce((sum, rate) => sum + rate, 0) / sellRates.length,
-        current: sellRates[sellRates.length - 1] || null,
-        change: sellRates.length > 1 ? ((sellRates[sellRates.length - 1] - sellRates[0]) / sellRates[0] * 100) : 0
-      } : null
+      buy:
+        buyRates.length > 0
+          ? {
+              min: Math.min(...buyRates),
+              max: Math.max(...buyRates),
+              avg: buyRates.reduce((sum, rate) => sum + rate, 0) / buyRates.length,
+              current: buyRates[buyRates.length - 1] || null,
+              change: buyRates.length > 1 ? ((buyRates[buyRates.length - 1] - buyRates[0]) / buyRates[0]) * 100 : 0,
+            }
+          : null,
+      sell:
+        sellRates.length > 0
+          ? {
+              min: Math.min(...sellRates),
+              max: Math.max(...sellRates),
+              avg: sellRates.reduce((sum, rate) => sum + rate, 0) / sellRates.length,
+              current: sellRates[sellRates.length - 1] || null,
+              change: sellRates.length > 1 ? ((sellRates[sellRates.length - 1] - sellRates[0]) / sellRates[0]) * 100 : 0,
+            }
+          : null,
     };
-    
+
     return {
       origin: origin.toLowerCase(),
       code: code.toUpperCase(),
       statistics,
-      evolution
+      evolution,
     };
   }
 }
