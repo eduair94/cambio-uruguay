@@ -5,7 +5,7 @@ export const useLoadingStore = defineStore('loading', {
     isLoading: true,
     loadingMessage: 'Cargando...',
     routeChanging: false,
-    isClient: false,
+    isClient: true,
   }),
 
   getters: {
