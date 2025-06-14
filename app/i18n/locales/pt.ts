@@ -185,6 +185,7 @@ export default defineI18nLocale(async (locale) => {
     pwa: {
       retry: 'Reintentar',
       installTitle: 'Instalar Cambio Uruguay',
+      installSubtitle: 'Acesse mais rápido da sua tela inicial',
       installDescription: 'Acesse mais rápido da sua tela inicial',
       install: 'Instalar',
       dismiss: 'Agora não',

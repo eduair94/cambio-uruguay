@@ -101,30 +101,13 @@ export default defineNuxtConfig({
 
         // App meta tags
         { name: 'application-name', content: 'Cambio Uruguay' },
-        { name: 'apple-mobile-web-app-title', content: 'Cambio Uruguay' },
-        { name: 'apple-mobile-web-app-capable', content: 'yes' },
-        {
-          name: 'apple-mobile-web-app-status-bar-style',
-          content: 'black-translucent',
-        },
-        { name: 'mobile-web-app-capable', content: 'yes' },
         { name: 'format-detection', content: 'telephone=no' },
-
-        // PWA meta tags
-        { name: 'apple-touch-fullscreen', content: 'yes' },
-        { name: 'apple-mobile-web-app-orientations', content: 'portrait' },
 
         // Theme colors
         { name: 'msapplication-TileColor', content: '#272727' },
         { name: 'theme-color', content: '#272727' },
-        { name: 'msapplication-navbutton-color', content: '#272727' },
-        { name: 'apple-mobile-web-app-status-bar-style', content: '#272727' },
       ],
       link: [
-        {
-          rel: 'manifest',
-          href: '/site.webmanifest',
-        },
         {
           rel: 'apple-touch-icon',
           sizes: '180x180',
@@ -348,7 +331,132 @@ export default defineNuxtConfig({
       },
     ], // Replace with your Google Analytics ID
     //'@sentry/nuxt/module',
-    //'@vite-pwa/nuxt',
+    [
+      '@vite-pwa/nuxt',
+      {
+        registerType: 'autoUpdate',
+        includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'safari-pinned-tab.svg'],
+        client: {
+          installPrompt: true,
+          periodicSyncForUpdates: 20, // check for updates every 20 seconds
+        },
+        workbox: {
+          navigateFallback: '/',
+          globPatterns: ['**/*.{js,css,html,png,svg,ico,woff,woff2}'],
+          cleanupOutdatedCaches: true,
+          runtimeCaching: [
+            {
+              urlPattern: /^https:\/\/api\.cambio-uruguay\.com\/api\//,
+              handler: 'NetworkFirst',
+              options: {
+                cacheName: 'api-cache',
+                expiration: {
+                  maxEntries: 100,
+                  maxAgeSeconds: 60 * 60 * 24, // 24 hours
+                },
+                cacheableResponse: {
+                  statuses: [0, 200],
+                },
+                networkTimeoutSeconds: 10, // fallback to cache after 10s
+              },
+            },
+            {
+              urlPattern: /^https:\/\/fonts\.googleapis\.com\//,
+              handler: 'StaleWhileRevalidate',
+              options: {
+                cacheName: 'google-fonts-stylesheets',
+              },
+            },
+            {
+              urlPattern: /^https:\/\/fonts\.gstatic\.com\//,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'google-fonts-webfonts',
+                expiration: {
+                  maxEntries: 30,
+                  maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+                },
+              },
+            },
+            {
+              urlPattern: /\.(?:png|gif|jpg|jpeg|svg|webp)$/,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'images',
+                expiration: {
+                  maxEntries: 100,
+                  maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+                },
+              },
+            },
+          ],
+        },
+        manifest: {
+          name: 'Cambio Uruguay - Mejores Cotizaciones de Cambio',
+          short_name: 'Cambio Uruguay',
+          description: 'Encuentra las mejores cotizaciones de cambio de divisas en Uruguay. Compara precios de más de 40 casas de cambio en tiempo real.',
+          theme_color: '#272727',
+          background_color: '#272727',
+          display: 'standalone',
+          orientation: 'portrait-primary',
+          start_url: '/',
+          scope: '/',
+          lang: 'es',
+          categories: ['finance', 'business', 'currency'],
+          icons: [
+            {
+              src: '/android-chrome-192x192.png',
+              sizes: '192x192',
+              type: 'image/png',
+              purpose: 'any maskable',
+            },
+            {
+              src: '/android-chrome-384x384.png',
+              sizes: '384x384',
+              type: 'image/png',
+              purpose: 'any maskable',
+            },
+            {
+              src: '/favicon-32x32.png',
+              sizes: '32x32',
+              type: 'image/png',
+            },
+            {
+              src: '/favicon-16x16.png',
+              sizes: '16x16',
+              type: 'image/png',
+            },
+            {
+              src: '/icon.png',
+              sizes: '512x512',
+              type: 'image/png',
+            },
+          ],
+          shortcuts: [
+            {
+              name: 'Cotizaciones USD',
+              short_name: 'USD',
+              description: 'Ver cotizaciones de dólares americanos',
+              url: '/?currency=USD',
+              icons: [{ src: '/favicon-32x32.png', sizes: '32x32' }],
+            },
+            {
+              name: 'Cotizaciones ARS',
+              short_name: 'ARS',
+              description: 'Ver cotizaciones de pesos argentinos',
+              url: '/?currency=ARS',
+              icons: [{ src: '/favicon-32x32.png', sizes: '32x32' }],
+            },
+          ],
+        },
+        devOptions: {
+          enabled: true,
+          suppressWarnings: true,
+          navigateFallbackAllowlist: [/^\/$/],
+          type: 'module',
+        },
+      },
+    ],
   ],
 
   // i18n Configuration

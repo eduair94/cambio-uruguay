@@ -32,39 +32,46 @@
   </div>
 </template>
 
-<script lang="ts">
-export default {
-  name: 'PWANetworkStatus',
-  data() {
-    return {
-      showOfflineSnackbar: false,
-      showOnlineSnackbar: false,
-    }
-  },
-  mounted() {
-    this.setupNetworkListeners()
-  },
-  beforeDestroy() {
-    window.removeEventListener('online', this.handleOnline)
-    window.removeEventListener('offline', this.handleOffline)
-  },
-  methods: {
-    setupNetworkListeners() {
-      window.addEventListener('online', this.handleOnline)
-      window.addEventListener('offline', this.handleOffline)
-      // Check initial status
-      if (!navigator.onLine) {
-        this.showOfflineSnackbar = true
-      }
-    },
-    handleOnline() {
-      this.showOfflineSnackbar = false
-      this.showOnlineSnackbar = true
-    },
-    handleOffline() {
-      this.showOnlineSnackbar = false
-      this.showOfflineSnackbar = true
-    },
-  },
+<script setup lang="ts">
+// Use i18n
+const { t } = useI18n()
+
+// Reactive state
+const showOfflineSnackbar = ref(false)
+const showOnlineSnackbar = ref(false)
+
+// Methods
+const handleOnline = () => {
+  showOfflineSnackbar.value = false
+  showOnlineSnackbar.value = true
 }
+
+const handleOffline = () => {
+  showOnlineSnackbar.value = false
+  showOfflineSnackbar.value = true
+}
+
+const setupNetworkListeners = () => {
+  if (process.client) {
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+    
+    // Check initial status
+    if (!navigator.onLine) {
+      showOfflineSnackbar.value = true
+    }
+  }
+}
+
+// Lifecycle
+onMounted(() => {
+  setupNetworkListeners()
+})
+
+onBeforeUnmount(() => {
+  if (process.client) {
+    window.removeEventListener('online', handleOnline)
+    window.removeEventListener('offline', handleOffline)
+  }
+})
 </script>
