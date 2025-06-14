@@ -85,7 +85,73 @@ export default defineI18nLocale(async (locale) => {
     subtitle:
       'Compara cotizaciones de más de 40 casas de cambio en tiempo real',
     apiUsageMessage:
-      '¿Interesados en usar esta API para su sitio web y tener un ratio de cambio acorde a algún banco en particular en tiempo real? Pueden comunicarse con nosotros en ', // Historical page translations
+      '¿Interesados en usar esta API para su sitio web y tener un ratio de cambio acorde a algún banco en particular en tiempo real? Pueden comunicarse con nosotros en ',
+    loadingApp: 'Iniciando aplicación...',
+    loadingHistoricalData: 'Cargando datos históricos...',
+    prexRequirement:
+      'Se requiere la tarjeta prex y realizar el trámite por la aplicación',
+    ebrouRequirement:
+      'Se requiere una cuenta de EBROU, una caja de ahorro en dólares y realizar el cambio por la aplicación',
+    consultCurrentQuotes:
+      'Consulta las cotizaciones actuales de todas las casas de cambio de Uruguay. Compara precios y encuentra la mejor opción.',
+
+    // Navigation and UI labels
+    inicio: 'Inicio',
+    historico: 'Histórico',
+    donar: 'Donar',
+
+    // Historical page specific texts
+    historicoCotizaciones: 'Histórico de Cotizaciones',
+    evolucionCotizaciones: 'Evolución de Cotizaciones',
+    cargandoDatosHistoricos: 'Cargando datos históricos...',
+    errorCargarDatos: 'Error al cargar los datos',
+    reintentar: 'Reintentar',
+    datosDetallados: 'Datos Detallados',
+    buscarPorFecha: 'Buscar por fecha...',
+    volverAlInicio: 'Volver al inicio',
+    actualizado: 'Actualizado',
+
+    // Statistics labels
+    compraActual: 'Compra Actual',
+    ventaActual: 'Venta Actual',
+    promedioCompra: 'Promedio Compra',
+    datosTotales: 'Datos Totales',
+    cambio: 'Cambio',
+
+    // Form labels
+    monedaLabel: 'Moneda',
+    tipoLabel: 'Tipo',
+    buscarLabel: 'Buscar',
+    fechaLabel: 'Fecha',
+
+    // Period options
+    tresMeses: '3 meses',
+    seisMeses: '6 meses',
+    doceMeses: '12 meses',
+    veinticuatroMeses: '24 meses',
+
+    // Status messages
+    errorCargarCotizaciones: 'Error al cargar las cotizaciones',
+    noEncontrada: 'no encontrada',
+
+    // Footer text
+    hechoConAmor: 'Hecho con',
+    porText: 'por',
+    yText: 'y',
+
+    // Donation labels
+    donarPaypal: 'Donar con Paypal',
+    donarMercadoPago: 'Donar con Mercado Pago',
+    accedeRapido: 'Accede más rápido desde tu pantalla de inicio',
+
+    // Filter labels
+    deshacerCargaDistancias: 'Deshacer carga distancias',
+    casa: 'Casa',
+    monedaBtn: 'Moneda',
+    appStatus: 'Estado de la App',
+    close: 'Cerrar',
+
+    // Historical page translations
     historical: {
       currentQuotes: 'Cotizaciones Actuales',
       historicalQuotes: 'Cotizaciones Históricas',
@@ -136,6 +202,12 @@ export default defineI18nLocale(async (locale) => {
       update: 'Actualizar',
       offline: 'Estás sin conexión',
       onlineAgain: 'Estás conectado nuevamente',
+      noConnection:
+        'Parece que no tienes conexión a internet. Por favor, verifica tu conexión e intenta nuevamente.',
+      offlineFeaturesAvailable:
+        'Algunas funciones pueden estar disponibles sin conexión',
+      stillOffline: 'Aún no hay conexión a internet',
+      noConnectionCached: 'No hay conexión disponible y no hay datos en caché',
     },
     codes: {
       USD: 'Dólares estadounidenses',

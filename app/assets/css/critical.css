@@ -40,7 +40,7 @@ body {
 
 /* Main content container */
 .v-main {
-  padding-top: 64px;
+  padding-top: 64px!important;
 }
 
 .container {

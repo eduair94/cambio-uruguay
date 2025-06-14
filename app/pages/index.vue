@@ -1,23 +1,25 @@
 <template>
   <div class="mt-md-4">
     <!-- SEO Optimized Header Structure -->
-    <header>
-      <h1 class="text-h5 text-md-h4 font-weight-bold mb-3">
-        {{ t('welcome') }}
-      </h1>
-      <h2 class="text-h6 mb-4 text-grey-lighten-1">
-        {{ t('subtitle') }}
-      </h2>
-    </header>
+    <div class="px-3">
+      <header>
+        <h1 class="text-h5 text-md-h4 font-weight-bold mb-3">
+          {{ t('welcome') }}
+        </h1>
+        <h2 class="text-h6 mb-4 text-grey-lighten-1">
+          {{ t('subtitle') }}
+        </h2>
+      </header>
 
-    <!-- Enhanced SEO Content -->
-    <section class="mb-4">
-      <h3 class="sr-only">{{ t('seoTitle') }}</h3>
-      <div class="hidden-content" style="position: absolute; left: -9999px">
-        <p>{{ t('seoDescription') }}</p>
-        <span>{{ t('seoKeywords') }}</span>
-      </div>
-    </section>
+      <!-- Enhanced SEO Content -->
+      <section class="mb-4">
+        <h3 class="sr-only">{{ t('seoTitle') }}</h3>
+        <div class="hidden-content" style="position: absolute; left: -9999px">
+          <p>{{ t('seoDescription') }}</p>
+          <span>{{ t('seoKeywords') }}</span>
+        </div>
+      </section>
+    </div>
 
     <div class="my-4">
       <ExchangeDataTable
@@ -33,7 +35,7 @@
       >
         <template #table-top>
           <div>
-            <div class="px-3 pt-3">
+            <div class="px-3 pt-0 pt-3">
               <DonationSection :day="day" />
               <div>
                 <ExchangeFilters
@@ -164,7 +166,7 @@
         link
         href="https://status.cambio-uruguay.com"
       >
-        App Status
+        {{ t('appStatus') }}
       </v-btn>
     </div>
     <div class="mt-3">
@@ -194,7 +196,7 @@
     <VSnackbar v-model="snackbar" :color="snackColor">
       <p class="text-white mb-0">{{ snackBarText }}</p>
       <template #actions>
-        <VBtn variant="text" @click="snackbar = false"> Close </VBtn>
+        <VBtn variant="text" @click="snackbar = false"> {{ t('close') }} </VBtn>
       </template>
     </VSnackbar>
   </div>
@@ -465,8 +467,8 @@ const resetAllFilters = () => {
   notInterBank.value = true
   notConditional.value = false
   amount.value = 100
-  code.value = ''
-  codeWith.value = ''
+  code.value = 'USD'
+  codeWith.value = 'UYU'
   wantTo.value = 'buy'
 
   updateTable()

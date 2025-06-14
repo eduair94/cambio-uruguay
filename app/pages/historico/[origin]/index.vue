@@ -29,7 +29,7 @@
             <ClientOnly>
               <v-chip class="mt-2 mt-md-0" color="success" size="small">
                 <v-icon start size="small">mdi-clock-outline</v-icon>
-                Actualizado: {{ lastUpdate }}
+                {{ $t('actualizado') }}: {{ lastUpdate }}
               </v-chip>
             </ClientOnly>
           </v-card-title>
@@ -40,7 +40,7 @@
                 <v-select
                   v-model="selectedCurrency"
                   :items="currencyOptions"
-                  label="Moneda"
+                  :label="$t('monedaLabel')"
                   clearable
                   prepend-inner-icon="mdi-currency-usd"
                   density="compact"
@@ -52,7 +52,7 @@
                 <v-select
                   v-model="selectedType"
                   :items="typeOptions"
-                  label="Tipo"
+                  :label="$t('tipoLabel')"
                   clearable
                   prepend-inner-icon="mdi-tag"
                   density="compact"
@@ -63,7 +63,7 @@
               <v-col cols="12" md="4">
                 <v-text-field
                   v-model="search"
-                  label="Buscar"
+                  :label="$t('buscarLabel')"
                   prepend-inner-icon="mdi-magnify"
                   clearable
                   density="compact"

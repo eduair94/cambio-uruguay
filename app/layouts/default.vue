@@ -27,14 +27,14 @@
           <template #prepend>
             <VIcon>mdi-home</VIcon>
           </template>
-          <VListItemTitle>Inicio</VListItemTitle>
+          <VListItemTitle>{{ $t('inicio') }}</VListItemTitle>
         </VListItem>
 
         <VListItem :to="localePath('/historico')" @click="drawer = false">
           <template #prepend>
             <VIcon>mdi-chart-line</VIcon>
           </template>
-          <VListItemTitle>Histórico</VListItemTitle>
+          <VListItemTitle>{{ $t('historico') }}</VListItemTitle>
         </VListItem>
 
         <VListItem
@@ -46,12 +46,12 @@
           <template #prepend>
             <VIcon>mdi-heart</VIcon>
           </template>
-          <VListItemTitle>Donar</VListItemTitle>
+          <VListItemTitle>{{ $t('donar') }}</VListItemTitle>
         </VListItem>
       </VList>
     </VNavigationDrawer>
 
-    <VAppBar class="px-3" app>
+    <VAppBar class="px-3">
       <!-- Mobile menu button -->
       <VAppBarNavIcon
         class="d-flex d-md-none mr-2"
@@ -79,7 +79,7 @@
           :class="{ 'nav-btn--active': isActiveRoute('/') }"
         >
           <VIcon start small>mdi-home</VIcon>
-          Inicio
+          {{ $t('inicio') }}
         </VBtn>
 
         <!-- Histórico -->
@@ -90,7 +90,7 @@
           :class="{ 'nav-btn--active': isActiveRoute('/historico') }"
         >
           <VIcon start small>mdi-chart-line</VIcon>
-          Histórico
+          {{ $t('historico') }}
         </VBtn>
 
         <!-- Donar -->
@@ -102,7 +102,7 @@
           class="text-capitalize nav-btn"
         >
           <VIcon start small>mdi-heart</VIcon>
-          Donar
+          {{ $t('donar') }}
         </VBtn>
       </VToolbarItems>
 
@@ -119,18 +119,18 @@
     </VMain>
 
     <VFooter>
-      <div class="d-flex footer_content">
+      <div class="d-flex footer_content flex-wrap ga-3">
         <span>Cambio Uruguay &copy; {{ new Date().getFullYear() }}</span>
         <VSpacer />
         <span>
-          Hecho con <VIcon color="red">mdi-heart</VIcon>
-          por
+          {{ $t('hechoConAmor') }} <VIcon color="red">mdi-heart</VIcon>
+          {{ $t('porText') }}
           <a
             class="white--text"
             href="https://www.linkedin.com/in/eduardo-airaudo/"
             >Eduardo Airaudo</a
           >
-          y
+          {{ $t('yText') }}
           <a
             class="white--text"
             href="https://www.linkedin.com/in/reginascagliotti/"
@@ -278,14 +278,6 @@ useHead({
 .nav-btn:hover {
   background-color: rgba(255, 255, 255, 0.1) !important;
   transform: translateY(-1px);
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  :deep(.v-footer) {
-    padding-bottom: 80px;
-    height: auto !important;
-  }
 }
 
 .container_custom {

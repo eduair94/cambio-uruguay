@@ -110,10 +110,13 @@
           @update:model-value="$emit('update:code', $event)"
         >
           <template #selection="{ item }">
-            <span>{{ item.raw.value }} - {{ getTexts(item.raw) }}</span>
+            <span v-if="item.raw"
+              >{{ item.raw.value }} - {{ getTexts(item.raw) }}</span
+            >
           </template>
           <template #item="{ props: itemProps, item }">
             <VListItem
+              v-if="item.raw.value"
               v-bind="itemProps"
               :title="item.raw.value + ' - ' + getTexts(item.raw)"
             />
@@ -129,11 +132,14 @@
           @update:model-value="$emit('update:codeWith', $event)"
         >
           <template #selection="{ item }">
-            <span>{{ item.raw.value }} - {{ getTexts(item.raw) }}</span>
+            <span v-if="item.raw"
+              >{{ item.raw.value }} - {{ getTexts(item.raw) }}</span
+            >
           </template>
 
           <template #item="{ props: itemProps, item }">
             <VListItem
+              v-if="item.raw.value"
               v-bind="itemProps"
               :title="item.raw.value + ' - ' + getTexts(item.raw)"
             />
@@ -166,7 +172,7 @@
             />
           </div>
           <VBtn
-            aria-label="deshacer carga distancias"
+            :aria-label="$t('deshacerCargaDistancias')"
             :disabled="!latitude"
             color="blue-darken-3"
             @click="$emit('undoDistances')"

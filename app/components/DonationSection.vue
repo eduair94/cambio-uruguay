@@ -22,7 +22,7 @@
         <div class="d-flex mt-2">
           <a
             target="_blank"
-            aria-label="Donar con Paypal"
+            :aria-label="$t('donarPaypal')"
             class="text-white d-flex mr-4 align-center justify-content-left donation_logo"
             href="https://ko-fi.com/cambio_uruguay"
           >
@@ -35,7 +35,7 @@
             />
           </a>
           <a
-            aria-label="Donar con Mercado Pago"
+            :aria-label="$t('donarMercadoPago')"
             class="text-white d-flex align-center justify-content-left donation_logo"
             target="_blank"
             href="https://mpago.la/19j46vX"

@@ -83,7 +83,65 @@ export default defineI18nLocale(async (locale) => {
       'currency exchange Uruguay, dollar exchange Uruguay, peso exchange Uruguay, exchange houses Uruguay, Montevideo exchange, Punta del Este exchange',
     subtitle: 'Compare rates from over 40 exchange houses in real-time',
     apiUsageMessage:
-      'Interested in using this API for your website and having an exchange rate according to a particular bank in real time? Contact us at ', // Historical page translations
+      'Interested in using this API for your website and having an exchange rate according to a particular bank in real time? Contact us at ',
+
+    // Navigation and UI labels
+    inicio: 'Home',
+    historico: 'Historical',
+    donar: 'Donate',
+
+    // Historical page specific texts
+    historicoCotizaciones: 'Historical Quotes',
+    evolucionCotizaciones: 'Quote Evolution',
+    cargandoDatosHistoricos: 'Loading historical data...',
+    errorCargarDatos: 'Error loading data',
+    reintentar: 'Retry',
+    datosDetallados: 'Detailed Data',
+    buscarPorFecha: 'Search by date...',
+    volverAlInicio: 'Back to home',
+    actualizado: 'Updated',
+
+    // Statistics labels
+    compraActual: 'Current Buy',
+    ventaActual: 'Current Sell',
+    promedioCompra: 'Buy Average',
+    datosTotales: 'Total Data',
+    cambio: 'Change',
+
+    // Form labels
+    monedaLabel: 'Currency',
+    tipoLabel: 'Type',
+    buscarLabel: 'Search',
+    fechaLabel: 'Date',
+
+    // Period options
+    tresMeses: '3 months',
+    seisMeses: '6 months',
+    doceMeses: '12 months',
+    veinticuatroMeses: '24 months',
+
+    // Status messages
+    errorCargarCotizaciones: 'Error loading quotes',
+    noEncontrada: 'not found',
+
+    // Footer text
+    hechoConAmor: 'Made with',
+    porText: 'by',
+    yText: 'and',
+
+    // Donation labels
+    donarPaypal: 'Donate with Paypal',
+    donarMercadoPago: 'Donate with Mercado Pago',
+    accedeRapido: 'Access faster from your home screen',
+
+    // Filter labels
+    deshacerCargaDistancias: 'Undo load distances',
+    casa: 'House',
+    monedaBtn: 'Currency',
+    appStatus: 'App Status',
+    close: 'Close',
+
+    // Historical page translations
     historical: {
       currentQuotes: 'Current Quotes',
       historicalQuotes: 'Historical Quotes',

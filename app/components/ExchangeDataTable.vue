@@ -79,7 +79,7 @@
           class="text-caption mb-2"
         >
           <VIcon size="small" start>mdi-chart-line</VIcon>
-          Casa
+          {{ $t('casa') }}
         </VBtn>
         <VBtn
           v-if="item.origin && item.code"
@@ -90,7 +90,7 @@
           class="text-caption"
         >
           <VIcon size="small" start>mdi-chart-line</VIcon>
-          Moneda
+          {{ $t('monedaBtn') }}
         </VBtn>
       </div>
     </template>

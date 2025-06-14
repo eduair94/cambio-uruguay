@@ -1,6 +1,6 @@
 <template>
   <VBanner
-    v-show="showInstallBanner"
+    v-if="showInstallBanner"
     color="primary"
     icon="mdi-download"
     lines="one"
@@ -11,7 +11,7 @@
         <span class="font-weight-medium"> Instalar Cambio Uruguay </span>
         <br />
         <span class="text-caption">
-          Accede más rápido desde tu pantalla de inicio
+          {{ $t('accedeRapido') }}
         </span>
       </div>
 

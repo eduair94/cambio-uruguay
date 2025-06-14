@@ -84,7 +84,65 @@ export default defineI18nLocale(async (locale) => {
       'câmbio Uruguai, troca dólar Uruguai, troca peso Uruguai, casas de câmbio Uruguai, câmbio Montevidéu, câmbio Punta del Este',
     subtitle: 'Compare taxas de mais de 40 casas de câmbio em tempo real',
     apiUsageMessage:
-      'Interessado em usar esta API para seu site e ter uma taxa de câmbio de acordo com um banco específico em tempo real? Entre em contato conosco em ', // Historical page translations
+      'Interessado em usar esta API para seu site e ter uma taxa de câmbio de acordo com um banco específico em tempo real? Entre em contato conosco em ',
+
+    // Navigation and UI labels
+    inicio: 'Início',
+    historico: 'Histórico',
+    donar: 'Doar',
+
+    // Historical page specific texts
+    historicoCotizações: 'Cotações Históricas',
+    evolucionCotizações: 'Evolução das Cotações',
+    cargandoDatosHistoricos: 'Carregando dados históricos...',
+    errorCargarDatos: 'Erro ao carregar dados',
+    reintentar: 'Tentar Novamente',
+    datosDetallados: 'Dados Detalhados',
+    buscarPorFecha: 'Buscar por data...',
+    volverAlInicio: 'Voltar ao início',
+    actualizado: 'Atualizado',
+
+    // Statistics labels
+    compraActual: 'Compra Atual',
+    ventaActual: 'Venda Atual',
+    promedioCompra: 'Média de Compra',
+    datosTotales: 'Dados Totais',
+    cambio: 'Mudança',
+
+    // Form labels
+    monedaLabel: 'Moeda',
+    tipoLabel: 'Tipo',
+    buscarLabel: 'Buscar',
+    fechaLabel: 'Data',
+
+    // Period options
+    tresMeses: '3 meses',
+    seisMeses: '6 meses',
+    doceMeses: '12 meses',
+    veinticuatroMeses: '24 meses',
+
+    // Status messages
+    errorCargarCotizaciones: 'Erro ao carregar cotações',
+    noEncontrada: 'não encontrada',
+
+    // Footer text
+    hechoConAmor: 'Feito com',
+    porText: 'por',
+    yText: 'e',
+
+    // Donation labels
+    donarPaypal: 'Doar com Paypal',
+    donarMercadoPago: 'Doar com Mercado Pago',
+    accedeRapido: 'Acesse mais rápido da sua tela inicial',
+
+    // Filter labels
+    deshacerCargaDistancias: 'Desfazer carregamento de distâncias',
+    casa: 'Casa',
+    monedaBtn: 'Moeda',
+    appStatus: 'Status do App',
+    close: 'Fechar',
+
+    // Historical page translations
     historical: {
       currentQuotes: 'Citações Atuais',
       historicalQuotes: 'Citações Históricas',

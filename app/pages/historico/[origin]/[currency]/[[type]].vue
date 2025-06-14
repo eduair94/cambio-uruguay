@@ -7,7 +7,7 @@
           <v-card-title
             class="text-h5 text-md-h4 justify-center bg-blue-darken-4 text-white text-center"
           >
-            📈 Histórico de Cotizaciones
+            📈 {{ $t('historicoCotizaciones') }}
           </v-card-title>
           <v-card-text class="text-center pa-4">
             <v-chip color="primary" size="large" class="ma-2">
@@ -70,7 +70,7 @@
           color="primary"
           size="64"
         ></v-progress-circular>
-        <p class="mt-4 text-h6">Cargando datos históricos...</p>
+        <p class="mt-4 text-h6">{{ $t('cargandoDatosHistoricos') }}</p>
       </v-col>
     </v-row>
 
@@ -78,10 +78,10 @@
     <v-row v-else-if="error">
       <v-col cols="12">
         <v-alert type="error" prominent class="ma-4">
-          <h3>Error al cargar los datos</h3>
+          <h3>{{ $t('errorCargarDatos') }}</h3>
           <p>{{ error.message || error }}</p>
           <v-btn color="white" variant="text" @click="refresh">
-            Reintentar
+            {{ $t('reintentar') }}
           </v-btn>
         </v-alert>
       </v-col>
@@ -95,7 +95,7 @@
           <v-card class="text-center bg-green-darken-4">
             <v-card-title class="justify-center text-white">
               <v-icon start color="white">mdi-trending-up</v-icon>
-              Compra Actual
+              {{ $t('compraActual') }}
             </v-card-title>
             <v-card-text class="text-white">
               <div class="text-h5 text-md-h4 font-weight-bold">
@@ -121,7 +121,7 @@
           <v-card class="text-center bg-red-darken-4">
             <v-card-title class="justify-center text-white">
               <v-icon start color="white">mdi-trending-down</v-icon>
-              Venta Actual
+              {{ $t('ventaActual') }}
             </v-card-title>
             <v-card-text class="text-white">
               <div class="text-h5 text-md-h4 font-weight-bold">
@@ -132,7 +132,7 @@
                 }}
               </div>
               <div class="caption">
-                Cambio:
+                {{ $t('cambio') }}:
                 {{
                   formatPercentage(
                     (evolutionData as any)?.statistics?.sell?.change || 0,
@@ -147,7 +147,7 @@
           <v-card class="text-center bg-blue-darken-4">
             <v-card-title class="justify-center text-white">
               <v-icon start color="white">mdi-chart-line</v-icon>
-              Promedio Compra
+              {{ $t('promedioCompra') }}
             </v-card-title>
             <v-card-text class="text-white">
               <div class="text-h5 text-md-h4 font-weight-bold">
@@ -179,7 +179,7 @@
           <v-card class="text-center bg-purple-darken-4">
             <v-card-title class="justify-center text-white">
               <v-icon start color="white">mdi-database</v-icon>
-              Datos Totales
+              {{ $t('datosTotales') }}
             </v-card-title>
             <v-card-text class="text-white">
               <div class="text-h5 text-md-h4 font-weight-bold">
@@ -199,7 +199,7 @@
           <v-card>
             <v-card-title class="d-flex align-center flex-wrap ga-3 py-3">
               <v-icon start>mdi-chart-line</v-icon>
-              Evolución de Cotizaciones - {{ route.params.currency }}
+              {{ $t('evolucionCotizaciones') }} - {{ route.params.currency }}
               <v-spacer></v-spacer>
               <v-btn-toggle v-model="chartType" mandatory density="compact">
                 <v-btn variant="outlined" size="small" value="line">
@@ -248,12 +248,12 @@
           <v-card>
             <v-card-title>
               <v-icon start>mdi-table</v-icon>
-              Datos Detallados
+              {{ $t('datosDetallados') }}
               <v-spacer></v-spacer>
               <v-text-field
                 v-model="search"
                 append-inner-icon="mdi-magnify"
-                label="Buscar por fecha..."
+                :label="$t('buscarPorFecha')"
                 single-line
                 hide-details
                 density="compact"
@@ -319,7 +319,7 @@
       <v-col cols="12" class="text-center">
         <v-btn class="mb-4" color="primary" size="large" @click="navigateHome">
           <v-icon start>mdi-arrow-left</v-icon>
-          Volver al inicio
+          {{ $t('volverAlInicio') }}
         </v-btn>
       </v-col>
     </v-row>
@@ -415,23 +415,24 @@ const { withLoading } = useLoading()
 const chartType = ref('line')
 const search = ref('')
 const selectedPeriod = ref(6) // Default to 6 months
+const { t } = useI18n()
 
 // Period options
-const periodOptions = ref([
-  { text: '3 meses', value: 3 },
-  { text: '6 meses', value: 6 },
-  { text: '12 meses', value: 12 },
-  { text: '24 meses', value: 24 },
+const periodOptions = computed(() => [
+  { text: t('tresMeses'), value: 3 },
+  { text: t('seisMeses'), value: 6 },
+  { text: t('doceMeses'), value: 12 },
+  { text: t('veinticuatroMeses'), value: 24 },
 ])
 
 // Table headers
-const headers = ref([
-  { title: 'Fecha', key: 'date', sortable: true },
-  { title: 'Compra', key: 'buy', sortable: true },
-  { title: 'Venta', key: 'sell', sortable: true },
+const headers = computed(() => [
+  { title: t('fechaLabel'), key: 'date', sortable: true },
+  { title: t('compra'), key: 'buy', sortable: true },
+  { title: t('venta'), key: 'sell', sortable: true },
   { title: 'Spread', key: 'spread', sortable: true },
-  { title: 'Tipo', key: 'type', sortable: false },
-  { title: 'Nombre', key: 'name', sortable: false },
+  { title: t('tipoLabel'), key: 'type', sortable: false },
+  { title: t('nombre'), key: 'name', sortable: false },
 ])
 
 // Load period from storage/query on client
