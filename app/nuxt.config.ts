@@ -2,6 +2,15 @@ export default defineNuxtConfig({
   // SSR Configuration
   ssr: true,
 
+  // Site Configuration (required for @nuxt/sitemap)
+  site: {
+    url: 'https://cambio-uruguay.com',
+    name: 'Cambio Uruguay',
+    description:
+      'Encuentra las mejores cotizaciones de cambio de divisas en Uruguay. Compara precios de más de 40 casas de cambio en tiempo real.',
+    defaultLocale: 'es',
+  },
+
   // App Configuration
   app: {
     head: {

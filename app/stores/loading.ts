@@ -12,7 +12,8 @@ export const useLoadingStore = defineStore('loading', {
     getIsLoading: (state) => state.isLoading,
     getLoadingMessage: (state) => state.loadingMessage,
     getRouteChanging: (state) => state.routeChanging,
-    showOverlay: (state) => (state.isLoading || state.routeChanging) && state.isClient,
+    showOverlay: (state) =>
+      (state.isLoading || state.routeChanging) && state.isClient,
   },
 
   actions: {
