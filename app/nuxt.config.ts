@@ -296,10 +296,10 @@ export default defineNuxtConfig({
   },
 
   nitro: {
-    prerender: {
-      routes: ['/sitemap.xml', '/robots.txt', '/'],
-      crawlLinks: true,
-    },
+    // prerender: {
+    //   routes: ['/sitemap.xml', '/robots.txt', '/'],
+    //   crawlLinks: true,
+    // },
     compressPublicAssets: {
       gzip: true,
       brotli: true,
