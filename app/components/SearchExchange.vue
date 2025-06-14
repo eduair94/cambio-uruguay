@@ -1,53 +1,46 @@
 <template>
-  <v-dialog
-    v-model="dialog"
-    :fullscreen="$vuetify.breakpoint.mobile"
-    width="1500px"
-  >
-    <template #activator="{ on, attrs }">
+  <v-dialog v-model="dialog" :fullscreen="mobile" width="1500px">
+    <template #activator="{ props }">
       <a
-        class="white--text"
+        class="text-white"
         :href="maps"
         target="_blank"
-        v-bind="attrs"
-        @click.prevent="get_data"
-        v-on="on"
-        >{{ $t('buscarSucursal') }}</a
+        v-bind="props"
+        @click.prevent="getData"
+        >{{ t('buscarSucursal') }}</a
       >
     </template>
     <v-card>
-      <v-toolbar dark color="primary">
+      <v-toolbar color="primary" theme="dark">
         <v-toolbar-title>
           <div class="d-flex align-center">
             <span class="mr-4">Sucursales{{ getLocation() }}</span>
             <v-btn
-              v-if="!$vuetify.breakpoint.mobile"
-              color="blue darken-4"
+              v-if="!mobile"
               link
-              target="_blank"
+              variant="flat"
+              color="blue-darken-4"
               :href="maps"
+              target="_blank"
               >GOOGLE MAPS</v-btn
             >
           </div>
         </v-toolbar-title>
         <v-spacer></v-spacer>
-        <v-btn icon dark @click="dialog = false">
+        <v-btn icon @click="dialog = false">
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-toolbar>
       <v-btn
-        v-if="$vuetify.breakpoint.mobile"
-        class="w-100 mt-0 elevation-0"
-        tile
-        color="blue darken-4"
-        link
-        target="_blank"
+        v-if="mobile"
+        class="w-100 mt-0"
+        variant="flat"
+        color="blue-darken-4"
         :href="maps"
+        target="_blank"
         >GOOGLE MAPS</v-btn
       >
-      <div v-if="!loaded" class="px-4 pt-3 text-h5">
-        {{ $t('cargando') }}...
-      </div>
+      <div v-if="!loaded" class="px-4 pt-3 text-h5">{{ t('cargando') }}...</div>
       <div v-else-if="message">
         <p class="ma-0 pa-3 text-h5">
           {{ message }}
@@ -55,26 +48,29 @@
       </div>
       <div v-else>
         <v-data-table
-          :sort-by.sync="sortBy"
-          :sort-desc.sync="sortDesc"
-          mobile-breakpoint="1100"
+          v-model:sort-by="sortBy"
+          :mobile-breakpoint="1100"
           :headers="getHeaders()"
           :items="d"
-          :footer-props="{
-            'items-per-page-options': [10, 20, 30, 40, 50],
-          }"
           :items-per-page="10"
+          :items-per-page-options="[
+            { value: 10, title: '10' },
+            { value: 20, title: '20' },
+            { value: 30, title: '30' },
+            { value: 40, title: '40' },
+            { value: 50, title: '50' },
+          ]"
           class="elevation-0 search_exchange"
         >
           <template #item.Direccion="{ item }">
-            <a target="_blank" class="white--text" :href="getHref(item)">
+            <a target="_blank" class="text-white" :href="getHref(item)">
               {{ item.Direccion }}
             </a>
           </template>
           <template #item.CorreoElectronico="{ item }">
             <a
               v-if="item.CorreoElectronico"
-              class="white--text"
+              class="text-white"
               :href="'mailto:' + item.CorreoElectronico"
             >
               {{ item.CorreoElectronico }}
@@ -85,7 +81,7 @@
               <a
                 v-for="(x, index) in getPhones(item.Telefono)"
                 :key="index"
-                class="white--text"
+                class="text-white"
                 :href="'tel:' + x.phone"
               >
                 <span>{{ x.phone }}</span>
@@ -94,7 +90,7 @@
             </span>
           </template>
           <template #item.distance="{ item }">
-            <a class="white--text" :href="getMaps(item)" target="_blank">
+            <a class="text-white" :href="getMaps(item)" target="_blank">
               {{ formatDistance(item.distance) }}</a
             >
           </template>
@@ -107,184 +103,176 @@
   </v-dialog>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { useDisplay } from 'vuetify'
 import { notFound } from '../services/not_found'
-export default {
-  props: {
-    type: {
-      type: String,
-      required: true,
-    },
-    maps: {
-      type: String,
-      required: true,
-    },
-    origin: {
-      type: String,
-      required: true,
-    },
-    location: {
-      type: String,
-      required: true,
-    },
-    latitude: {
-      type: Number,
-      required: false,
-      default: 0,
-    },
-    longitude: {
-      type: Number,
-      required: false,
-      default: 0,
-    },
-    localData: {
-      type: Object,
-      required: true,
-    },
-  },
-  data() {
+
+// Props
+interface Props {
+  type: string
+  maps: string
+  origin: string
+  location: string
+  latitude?: number
+  longitude?: number
+  localData: { name: string }
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  latitude: 0,
+  longitude: 0,
+})
+
+// Composables
+const { t, locale } = useI18n()
+const { mobile } = useDisplay()
+
+// Data
+const message = ref('')
+const sortBy = ref<{ key: string; order: 'asc' | 'desc' }[]>([])
+const dialog = ref(false)
+const loaded = ref(false)
+const d = ref<any[]>([])
+
+// Methods
+const getMaps = (item: any) => {
+  if (item.map) return item.map
+  const latitude = item.latitude
+  const longitude = item.longitude
+  if (!notFound.includes(props.origin)) {
+    return `https://www.google.com.uy/maps/search/${encodeURI(
+      props.localData.name,
+    )}/@${latitude},${longitude},18.77z`
+  } else {
+    return `https://www.google.com.uy/maps/search/${latitude},${longitude}`
+  }
+}
+
+const formatDistance = (item: number) => {
+  if (!item || item === 9999999) return '-'
+  if (item >= 1000) {
+    return Math.round(item / 1000.0) + ' km'
+  } else if (item >= 100) {
+    return Math.round(item) + ' m'
+  } else {
+    return item.toFixed(1) + ' m'
+  }
+}
+
+const capitalize = (str: string) => {
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
+}
+
+const getLocation = () => {
+  return props.location !== 'TODOS' ? ' de ' + capitalize(props.location) : ''
+}
+
+const getPhones = (phones: string) => {
+  return phones.split(/y|-/g).map((el) => {
+    const arrEl = el.trim().split('int.')
     return {
-      message: '',
-      sortBy: undefined,
-      sortDesc: undefined,
-      dialog: false,
-      loaded: false,
-      d: null,
+      phone: arrEl[0],
+      int: arrEl[1],
     }
-  },
-  methods: {
-    getMaps(item: any) {
-      if (item.map) return item.map
-      const latitude = item.latitude
-      const longitude = item.longitude
-      if (!notFound.includes(origin)) {
-        return `https://www.google.com.uy/maps/search/${encodeURI(
-          this.localData.name
-        )}/@${latitude},${longitude},18.77z`
-      } else {
-        return `https://www.google.com.uy/maps/search/${latitude},${longitude}`
-      }
+  })
+}
+
+const getHref = (item: any) => {
+  if (item.map) {
+    return item.map
+  }
+  // Fix BUG Cambial in BCU.
+  if (props.origin === 'cambial') {
+    return (
+      'https://www.google.com.uy/maps/search/' +
+      encodeURI(item.Direccion.trim())
+    )
+  }
+  if (!item.Direccion) item.Direccion = ''
+  if (!item.Localidad) item.Localidad = ''
+  if (!item.Departamento) item.Departamento = ''
+  const loc =
+    item.Direccion.trim() +
+    ', ' +
+    item.Localidad.trim() +
+    ', ' +
+    item.Departamento.trim()
+  return 'https://www.google.com.uy/maps/search/' + encodeURI(loc)
+}
+
+const getHeaders = () => {
+  const toReturn = [
+    {
+      title: t('codigo') as string,
+      key: 'NroSucursal',
+      width: 30,
+      sortable: false,
     },
-    formatDistance(item: number) {
-      if (!item || item === 9999999) return '-'
-      if (item >= 1000) {
-        return Math.round(item / 1000.0) + ' km'
-      } else if (item >= 100) {
-        return Math.round(item) + ' m'
-      } else {
-        return item.toFixed(1) + ' m'
-      }
+    {
+      title: t('nombre') as string,
+      align: 'start' as const,
+      sortable: false,
+      width: 'auto',
+      key: 'Nombre',
     },
-    capitalize(str: string) {
-      return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
+    { title: t('departamento') as string, key: 'Departamento' },
+    { title: t('localidad') as string, key: 'Localidad' },
+    { title: t('direccion') as string, key: 'Direccion' },
+    { title: t('telefono') as string, key: 'Telefono' },
+    { title: t('email') as string, key: 'CorreoElectronico', sortable: false },
+    { title: t('horarios') as string, key: 'Horarios', sortable: false },
+    {
+      title: t('observaciones') as string,
+      key: 'Observaciones',
+      width: 'auto',
     },
-    getLocation() {
-      return this.location !== 'TODOS'
-        ? ' de ' + this.capitalize(this.location)
-        : ''
-    },
-    getInt(phones: string) {
-      return phones.split(/y|-/g).map((el) => el.trim().split('int.')[1])
-    },
-    getPhones(phones: string) {
-      return phones.split(/y|-/g).map((el) => {
-        const arrEl = el.trim().split('int.')
-        return {
-          phone: arrEl[0],
-          int: arrEl[1],
-        }
-      })
-    },
-    getHref(item: any) {
-      if (item.map) {
-        return item.map
-      }
-      // Fix BUG Cambial in BCU.
-      if (this.origin === 'cambial') {
-        return (
-          'https://www.google.com.uy/maps/search/' +
-          encodeURI(item.Direccion.trim())
-        )
-      }
-      if (!item.Direccion) item.Direccion = ''
-      if (!item.Localidad) item.Localidad = ''
-      if (!item.Departamento) item.Departamento = ''
-      const loc =
-        item.Direccion.trim() +
-        ', ' +
-        item.Localidad.trim() +
-        ', ' +
-        item.Departamento.trim()
-      return 'https://www.google.com.uy/maps/search/' + encodeURI(loc)
-    },
-    getHeaders() {
-      const toReturn = [
-        {
-          text: this.$t('codigo'),
-          value: 'NroSucursal',
-          width: '30px',
-          sortable: false,
-        },
-        {
-          text: this.$t('nombre'),
-          align: 'start',
-          sortable: false,
-          width: 'auto',
-          value: 'Nombre',
-        },
-        { text: this.$t('departamento'), value: 'Departamento' },
-        { text: this.$t('localidad'), value: 'Localidad' },
-        { text: this.$t('direccion'), value: 'Direccion' },
-        { text: this.$t('telefono'), value: 'Telefono' },
-        { text: this.$t('email'), value: 'CorreoElectronico', sortable: false },
-        { text: this.$t('horarios'), value: 'Horarios', sortable: false },
-        {
-          text: this.$t('observaciones'),
-          value: 'Observaciones',
-          width: 'auto',
-        },
-      ]
-      if (this.latitude && this.longitude) {
-        toReturn.push({
-          text: this.$t('distancia'),
-          value: 'distance',
-          width: 'auto',
-        })
-      }
-      return toReturn
-    },
-    async get_data() {
-      this.loaded = false
-      this.message = ''
-      if (this.origin === 'prex') {
-        const loc = {
-          es: 'Se requiere la tarjeta prex y realizar el trámite por la aplicación',
-          en: 'A prex card is required and the application must be completed.',
-          pt: 'O cartão prex é necessário e o requerimento deve ser preenchido através do requerimento.',
-        }
-        this.message = loc[this.$i18n.locale]
-      } else if (this.type === 'EBROU') {
-        const loc = {
-          es: 'Se requiere una cuenta de EBROU, una caja de ahorro en dólares y realizar el cambio por la aplicación',
-          en: 'It requires an EBROU account, a savings account in US dollars and exchange through the application.',
-          pt: 'É necessária uma conta EBROU, uma conta poupança em dólares e troca através da aplicação.',
-        }
-        this.message = loc[this.$i18n.locale]
-      } else {
-        let url =
-          'https://api.cambio-uruguay.com/exchanges/' +
-          this.origin +
-          '/' +
-          this.location
-        if (this.latitude && this.longitude) {
-          url += `?latitude=${this.latitude}&longitude=${this.longitude}`
-          this.sortBy = 'distance'
-          this.sortDesc = false
-        }
-        this.d = await this.$axios.get(url).then((res) => res.data)
-      }
-      this.loaded = true
-    },
-  },
+  ]
+  if (props.latitude && props.longitude) {
+    toReturn.push({
+      title: t('distancia') as string,
+      key: 'distance',
+      width: 'auto',
+    })
+  }
+  return toReturn
+}
+
+const getData = async () => {
+  loaded.value = false
+  message.value = ''
+
+  if (props.origin === 'prex') {
+    const loc = {
+      es: 'Se requiere la tarjeta prex y realizar el trámite por la aplicación',
+      en: 'A prex card is required and the application must be completed.',
+      pt: 'O cartão prex é necessário e o requerimento deve ser preenchido através do requerimento.',
+    } as Record<string, string>
+    message.value = loc[locale.value] || loc.es
+  } else if (props.type === 'EBROU') {
+    const loc = {
+      es: 'Se requiere una cuenta de EBROU, una caja de ahorro en dólares y realizar el cambio por la aplicación',
+      en: 'It requires an EBROU account, a savings account in US dollars and exchange through the application.',
+      pt: 'É necessária uma conta EBROU, uma conta poupança em dólares e troca através da aplicação.',
+    } as Record<string, string>
+    message.value = loc[locale.value] || loc.es
+  } else {
+    let url =
+      'https://api.cambio-uruguay.com/exchanges/' +
+      props.origin +
+      '/' +
+      props.location
+    if (props.latitude && props.longitude) {
+      url += `?latitude=${props.latitude}&longitude=${props.longitude}`
+      sortBy.value = [{ key: 'distance', order: 'asc' }]
+    }
+    try {
+      const data = await $fetch(url)
+      d.value = data as any[]
+    } catch (error) {
+      console.error('Error fetching data:', error)
+      d.value = []
+    }
+  }
+  loaded.value = true
 }
 </script>

@@ -1,46 +1,31 @@
 <template>
   <div class="text-center">
-    <v-menu offset-y>
-      <template #activator="{ on, attrs }">
-        <v-btn color="primary" dark v-bind="attrs" v-on="on">
-          {{ locale }} <v-icon>mdi-chevron-down</v-icon>
-        </v-btn>
+    <VMenu location="bottom end">
+      <template #activator="{ props }">
+        <VBtn color="primary" v-bind="props">
+          {{ locale }}
+          <VIcon end>mdi-chevron-down</VIcon>
+        </VBtn>
       </template>
-      <v-list>
-        <v-list-item
+      <VList>
+        <VListItem
           v-for="(item, index) in availableLocales"
           :key="index"
-          link
           :to="switchLocalePath(item.code)"
         >
-          <v-list-item-title>{{ item.name }}</v-list-item-title>
-        </v-list-item>
-      </v-list>
-    </v-menu>
+          <VListItemTitle>{{ item.name }}</VListItemTitle>
+        </VListItem>
+      </VList>
+    </VMenu>
   </div>
 </template>
 
+<script setup lang="ts">
+// Get i18n instance from global properties
+const { locale, locales } = useI18n()
+const switchLocalePath = useSwitchLocalePath()
 
-<script>
-export default {
-  data() {
-    return {
-      locale: '',
-    }
-  },
-  computed: {
-    availableLocales() {
-      return this.$i18n.locales.filter((i) => i.code !== this.$i18n.locale)
-    },
-  },
-  watch: {
-    '$i18n.locale'(val) {
-      this.locale = val
-      this.$vuetify.lang.current = val
-    },
-  },
-  mounted() {
-    this.locale = this.$i18n.locale
-  },
-}
+const availableLocales = computed(() => {
+  return locales.value.filter((i) => i.code !== locale.value)
+})
 </script>

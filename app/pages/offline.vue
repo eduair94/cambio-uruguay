@@ -1,55 +1,58 @@
 <template>
   <div class="offline-page">
-    <v-container class="fill-height">
-      <v-row align="center" justify="center">
-        <v-col cols="12" sm="8" md="6">
-          <v-card class="pa-8 text-center">
-            <v-icon size="80" color="warning" class="mb-4">
-              mdi-wifi-off
-            </v-icon>
-            
-            <h1 class="headline mb-4">
+    <VContainer class="fill-height">
+      <VRow align="center" justify="center">
+        <VCol cols="12" sm="8" md="6">
+          <VCard class="pa-8 text-center">
+            <VIcon size="80" color="warning" class="mb-4"> mdi-wifi-off </VIcon>
+
+            <h1 class="text-h4 mb-4">
               {{ $t('pwa.offline') || 'Sin conexión a internet' }}
             </h1>
-            
-            <p class="body-1 mb-6">
-              Parece que no tienes conexión a internet. Por favor, verifica tu conexión e intenta nuevamente.
+
+            <p class="text-body-1 mb-6">
+              Parece que no tienes conexión a internet. Por favor, verifica tu
+              conexión e intenta nuevamente.
             </p>
-            
-            <v-btn
-              color="primary"
-              large
-              @click="retry"
-            >
+
+            <VBtn color="primary" size="large" @click="retry">
               {{ $t('pwa.retry') || 'Reintentar' }}
-            </v-btn>
-            
-            <v-divider class="my-6"></v-divider>
-            
-            <p class="caption text--secondary">
+            </VBtn>
+
+            <VDivider class="my-6"></VDivider>
+
+            <p class="text-caption text-medium-emphasis">
               Algunas funciones pueden estar disponibles sin conexión
             </p>
-          </v-card>
-        </v-col>
-      </v-row>
-    </v-container>
+          </VCard>
+        </VCol>
+      </VRow>
+    </VContainer>
   </div>
 </template>
 
-<script lang="ts">
-export default {
+<script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
+
+// Define layout
+definePageMeta({
   layout: 'default',
-  methods: {
-    retry() {
-      if (navigator.onLine) {
-        this.$router.push('/')
-      } else {
-        // Show message that still offline
-        this.$nuxt.$emit('showMessage', {
-          type: 'warning',
-          message: 'Aún no hay conexión a internet'
-        })
-      }
+})
+
+const { t: $t } = useI18n()
+const router = useRouter()
+
+// Methods
+const retry = () => {
+  if (navigator.onLine) {
+    router.push('/')
+  } else {
+    // Show message that still offline - using a simple alert as fallback
+    // In a real app, you might want to use a notification library or custom toast component
+    if (process.client) {
+      console.warn('Aún no hay conexión a internet')
+      // You could also emit an event or use a global state for notifications
     }
   }
 }

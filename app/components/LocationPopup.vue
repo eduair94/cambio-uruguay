@@ -1,12 +1,11 @@
 <template>
   <div>
     <v-tooltip top>
-      <template #activator="{ on, attrs }">
+      <template #activator="{ props }">
         <v-btn
           color="primary"
-          v-bind="attrs"
+          v-bind="props"
           :loading="loadingDistances"
-          v-on="on"
           @click="geoLocation"
         >
           <v-icon class="mr-1">mdi-map-marker</v-icon>
@@ -25,17 +24,17 @@
           </v-btn>
         </v-toolbar>
         <v-card-text v-if="latitude">
-          <div class="adress_lookup mt-3 d-flex">
+          <div class="address_lookup mt-3 d-flex">
             <input
               id="search"
-              ref="search"
+              ref="searchInput"
               v-model="search"
               :placeholder="$t('direccion')"
               type="text"
               @keyup.enter="onEnter(search)"
             />
             <v-btn
-              class="adress_lookup_btn"
+              class="address_lookup_btn"
               color="primary"
               @click="onEnter(search)"
             >
@@ -84,63 +83,130 @@
   </div>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      radius: '',
-      loadingDistances: false,
-      prevResult: '',
-      dialog: false,
-      latitude: 0,
-      search: '',
-      longitude: 0,
-      apiKey: 'XFXIuNUKjvNkruE6DSkR',
-    }
-  },
-  watch: {
-    dialog(val) {
-      if (val) {
-        this.setMap()
-      }
+<script setup lang="ts">
+interface GeocodeData {
+  lat: string
+  lon: string
+}
+
+interface ReverseGeoData {
+  data: Array<{
+    label: string
+  }>
+}
+
+interface DistanceData {
+  distanceData: any
+}
+
+const { $i18n } = useNuxtApp()
+const config = useRuntimeConfig()
+const apiService = useApiService()
+
+const radius = ref(0)
+const loadingDistances = ref(false)
+const prevResult = ref('')
+const dialog = ref(false)
+const latitude = ref(0)
+const search = ref('')
+const longitude = ref(0)
+const apiKey = 'XFXIuNUKjvNkruE6DSkR'
+
+const map = ref<any>(null)
+const searchInput = ref<HTMLInputElement | null>(null)
+
+const emit = defineEmits<{
+  geoLocationSuccess: [
+    {
+      distances: any
+      lat: number
+      lng: number
+      distanceData: any
+      radius: number
     },
-  },
-  methods: {
-    async onEnter(value) {
-      startLoading()
-      const data = await this.$axios
-        .post('https://cambio.shellix.cc/geocoding', { address: value })
-        .then((res) => res.data)
-        .catch((e) => console.log(e))
-      if (data && data.length) {
-        this.latitude = parseFloat(data[0].lat)
-        this.longitude = parseFloat(data[0].lon)
-        stopLoading()
-        return true
-      }
-      stopLoading()
+  ]
+}>()
+
+// Watch for dialog changes
+watch(dialog, (val) => {
+  if (val) {
+    setMap()
+  }
+})
+
+const onEnter = async (value: string) => {
+  try {
+    const response = await apiService.geocodeAddress(value)
+
+    if (response.error) {
+      console.error('Geocoding error:', response.error)
       return false
-    },
-    searchAddress() {
-      const geocoder = new maptiler.Geocoder({
-        input: 'search',
-        key: this.apiKey,
-      })
-      geocoder.setLanguage(this.$i18n.locale)
-      geocoder.setProximity([this.longitude, this.latitude])
-      geocoder.on('select', async (item) => {
-        this.$nextTick(() => {
-          this.$refs.search.value = this.search
-          this.latitude = item.center[1]
-          this.longitude = item.center[0]
-        })
-      })
-    },
-    setMap() {
-      const apiKey = this.apiKey
-      if (!this.$refs.map) return setTimeout(this.setMap, 1000)
-      this.$L
-        .tileLayer(
+    }
+
+    if (response.data && response.data.length) {
+      latitude.value = parseFloat(response.data[0].lat)
+      longitude.value = parseFloat(response.data[0].lon)
+      return true
+    }
+    return false
+  } catch (e) {
+    console.log(e)
+    return false
+  }
+}
+
+const searchAddress = () => {
+  // Note: This function uses external maptiler library
+  // You may need to install and properly import it
+  const geocoder = new (window as any).maptiler.Geocoder({
+    input: 'search',
+    key: apiKey,
+  })
+  geocoder.setLanguage($i18n.locale)
+  geocoder.setProximity([longitude.value, latitude.value])
+  geocoder.on('select', async (item: any) => {
+    await nextTick(() => {
+      if (searchInput.value) {
+        searchInput.value.value = search.value
+      }
+      latitude.value = item.center[1]
+      longitude.value = item.center[0]
+    })
+  })
+}
+
+const setMap = async () => {
+  if (!map.value) return setTimeout(setMap, 1000)
+
+  const mapInstance = map.value.mapObject
+  if (!mapInstance) return setTimeout(setMap, 500)
+
+  try {
+    // For Nuxt 3 with @nuxtjs/leaflet, import Leaflet dynamically
+    const L = await import('leaflet')
+
+    L.tileLayer(
+      `https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png?key=${apiKey}`,
+      {
+        tileSize: 512,
+        zoomOffset: -1,
+        minZoom: 1,
+        attribution:
+          '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a>, ' +
+          '<a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>',
+        crossOrigin: true,
+      },
+    ).addTo(mapInstance)
+
+    searchAddress()
+  } catch (error) {
+    console.error('Error loading Leaflet:', error)
+
+    // Fallback: try to access L from window (for client-side)
+    if (import.meta.client) {
+      const L = (window as any).L
+      if (L && L.tileLayer) {
+        L.tileLayer(
           `https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png?key=${apiKey}`,
           {
             tileSize: 512,
@@ -150,86 +216,107 @@ export default {
               '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a>, ' +
               '<a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>',
             crossOrigin: true,
-          }
-        )
-        .addTo(this.$refs.map.mapObject)
-      this.searchAddress()
-    },
-    changeMarker(e) {
-      this.latitude = e.latlng.lat
-      this.longitude = e.latlng.lng
-      this.reverseGeo()
-    },
-    async reverseGeo() {
-      const url = `https://api.cambio-uruguay.com/position_stack?query=${this.latitude},${this.longitude}&limit=1`
-      const res = await this.$axios
-        .get(url)
-        .then((res) => res.data)
-        .catch(() => null)
-      if (res) {
-        const data = res.data
-        if (data.length) {
-          this.search = data[0].label
-        }
-      }
-    },
-    async geoLocationSuccess(info) {
-      const latitude = info.coords.latitude
-      const longitude = info.coords.longitude
-      this.latitude = latitude
-      this.longitude = longitude
-      this.dialog = true
-      this.loadingDistances = false
-      await this.reverseGeo()
-      this.setMap()
-    },
-    async confirmGeo() {
-      const distances = await this.$axios
-        .get(
-          `https://api.cambio-uruguay.com/distances?latitude=${this.latitude}&longitude=${this.longitude}`
-        )
-        .then((res) => res.data)
-      const distanceData = distances.distanceData
-      this.$emit(
-        'geoLocationSuccess',
-        distances,
-        this.latitude,
-        this.longitude,
-        distanceData,
-        this.radius * 1000
-      )
-      this.dialog = false
-    },
-    geoLocationError() {
-      this.loadingDistances = false
-      this.latitude = -34.88073035118606
-      this.longitude = -56.167630709298805
-      this.search =
-        '2532 Boulevard General Jose Gervasio Artigas, Montevideo, Uruguay'
-      this.setMap()
-    },
-    reset() {
-      this.search = ''
-      navigator.geolocation.getCurrentPosition(
-        this.geoLocationSuccess,
-        this.geoLocationError
-      )
-    },
-    geoLocation() {
-      if (!this.latitude) {
-        this.loadingDistances = true
-        navigator.geolocation.getCurrentPosition(
-          this.geoLocationSuccess,
-          this.geoLocationError
-        )
+          },
+        ).addTo(mapInstance)
+        searchAddress()
       } else {
-        this.dialog = true
-        this.loadingDistances = false
-        this.setMap()
+        console.error('Leaflet not available on window object')
       }
-      this.dialog = true
-    },
-  },
+    }
+  }
+}
+
+const changeMarker = (e: any) => {
+  latitude.value = e.latlng.lat
+  longitude.value = e.latlng.lng
+  reverseGeo()
+}
+
+const reverseGeo = async () => {
+  try {
+    const response = await apiService.reverseGeocode(
+      latitude.value,
+      longitude.value,
+    )
+
+    if (response.error) {
+      console.error('Reverse geocoding failed:', response.error)
+      return
+    }
+
+    if (response.data && response.data.data.length) {
+      search.value = response.data.data[0].label
+    }
+  } catch (error) {
+    console.error('Reverse geocoding failed:', error)
+  }
+}
+
+const geoLocationSuccess = async (info: GeolocationPosition) => {
+  console.log('Geolocation success:', info)
+  latitude.value = info.coords.latitude
+  longitude.value = info.coords.longitude
+  dialog.value = true
+  loadingDistances.value = false
+  await reverseGeo()
+  setMap()
+}
+
+const confirmGeo = async () => {
+  try {
+    const response = await apiService.getDistances(
+      latitude.value,
+      longitude.value,
+    )
+
+    if (response.error) {
+      console.error('Failed to get distances:', response.error)
+      return
+    }
+
+    const distances = response.data
+    const distanceData = distances?.distanceData
+
+    emit('geoLocationSuccess', {
+      distances,
+      lat: latitude.value,
+      lng: longitude.value,
+      distanceData: distanceData,
+      radius: Number(radius.value) * 1000,
+    })
+    dialog.value = false
+  } catch (error) {
+    console.error('Failed to get distances:', error)
+  }
+}
+
+const geoLocationError = () => {
+  loadingDistances.value = false
+  latitude.value = -34.88073035118606
+  longitude.value = -56.167630709298805
+  search.value =
+    '2532 Boulevard General Jose Gervasio Artigas, Montevideo, Uruguay'
+  setMap()
+}
+
+const reset = () => {
+  search.value = ''
+  navigator.geolocation.getCurrentPosition(geoLocationSuccess, geoLocationError)
+}
+
+const geoLocation = () => {
+  if (!latitude.value) {
+    loadingDistances.value = true
+    navigator.geolocation.getCurrentPosition(
+      geoLocationSuccess,
+      geoLocationError,
+    )
+  } else {
+    dialog.value = true
+    loadingDistances.value = false
+    setMap()
+  }
+  dialog.value = true
 }
 </script>
 
@@ -244,12 +331,12 @@ export default {
   font-size: 16px;
 }
 .location_map {
-  height: calc(100vh - 270px);
+  height: calc(100dvh - 310px);
 }
-.adress_lookup .v-input {
+.address_lookup .v-input {
   max-width: 600px;
 }
-.adress_lookup_btn {
+.address_lookup_btn {
   height: 44px !important;
 }
 .search_range {
@@ -257,7 +344,7 @@ export default {
 }
 @media (max-width: 768px) {
   .location_map {
-    height: 63vh;
+    height: 53dvh;
   }
 }
 </style>

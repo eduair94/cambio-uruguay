@@ -2,38 +2,43 @@
   <div>
     <v-row>
       <v-col cols="12">
+        <!-- Breadcrumb navigation -->
+        <v-breadcrumbs class="pa-0 mb-4">
+          <v-breadcrumbs-item>
+            <NuxtLink to="/historico" class="text-decoration-none">
+              <v-icon size="small" class="mr-1">mdi-chart-line</v-icon>
+              Histórico
+            </NuxtLink>
+          </v-breadcrumbs-item>
+          <v-breadcrumbs-divider>
+            <v-icon>mdi-chevron-right</v-icon>
+          </v-breadcrumbs-divider>
+          <v-breadcrumbs-item class="font-weight-bold">
+            {{ formatOriginName(route.params.origin as string) }}
+          </v-breadcrumbs-item>
+        </v-breadcrumbs>
+
         <v-card>
           <v-card-title class="d-flex align-center flex-wrap ga-3 py-4">
-            <v-icon class="mr-2" color="primary">mdi-chart-line</v-icon>
-            <span class="text-h5 text-md-h4">{{
-              $t('historical.currentQuotes')
-            }}</span>
+            <v-icon class="mr-2" color="primary">mdi-bank</v-icon>
+            <span class="text-h5 text-md-h4">
+              Cotizaciones de
+              {{ formatOriginName(route.params.origin as string) }}
+            </span>
             <v-spacer></v-spacer>
             <v-chip class="mt-2 mt-md-0" color="success" size="small">
               <v-icon start size="small">mdi-clock-outline</v-icon>
-              {{ $t('historical.updated') }}: {{ lastUpdate }}
+              Actualizado: {{ lastUpdate }}
             </v-chip>
           </v-card-title>
           <!-- Filtros -->
           <v-card-text>
             <v-row>
-              <v-col cols="12" md="3">
-                <v-select
-                  v-model="selectedOrigin"
-                  :items="originOptions"
-                  :label="$t('historical.exchangeHouse')"
-                  clearable
-                  prepend-inner-icon="mdi-bank"
-                  density="compact"
-                  variant="outlined"
-                  hide-details
-                ></v-select>
-              </v-col>
-              <v-col cols="12" md="3">
+              <v-col cols="12" md="4">
                 <v-select
                   v-model="selectedCurrency"
                   :items="currencyOptions"
-                  :label="$t('historical.currency')"
+                  label="Moneda"
                   clearable
                   prepend-inner-icon="mdi-currency-usd"
                   density="compact"
@@ -41,11 +46,11 @@
                   hide-details
                 ></v-select>
               </v-col>
-              <v-col cols="12" md="3">
+              <v-col cols="12" md="4">
                 <v-select
                   v-model="selectedType"
                   :items="typeOptions"
-                  :label="$t('historical.type')"
+                  label="Tipo"
                   clearable
                   prepend-inner-icon="mdi-tag"
                   density="compact"
@@ -53,10 +58,10 @@
                   hide-details
                 ></v-select>
               </v-col>
-              <v-col cols="12" md="3">
+              <v-col cols="12" md="4">
                 <v-text-field
                   v-model="search"
-                  :label="$t('historical.search')"
+                  label="Buscar"
                   prepend-inner-icon="mdi-magnify"
                   clearable
                   density="compact"
@@ -82,28 +87,13 @@
               { value: -1, title: '$vuetify.dataFooter.itemsPerPageAll' },
             ]"
             class="elevation-1"
-            :sort-by="[{ key: 'origin', order: 'asc' }]"
-            ><!-- Celda de Origen con enlace -->
-            <template #item.origin="{ item }">
-              <v-btn
-                v-if="item.origin"
-                :to="`/historico/${item.origin}`"
-                variant="text"
-                color="primary"
-                size="small"
-                class="text-capitalize"
-              >
-                <v-icon start size="small">mdi-bank</v-icon>
-                {{ formatOriginName(item.origin) }}
-              </v-btn>
-              <span v-else class="text-grey">N/A</span>
-            </template>
-
+            :sort-by="[{ key: 'code', order: 'asc' }]"
+          >
             <!-- Celda de Moneda con enlace -->
             <template #item.code="{ item }">
               <v-btn
                 v-if="item.origin && item.code"
-                :to="`/historico/${item.origin}/${item.code}`"
+                :to="getLink(item)"
                 variant="text"
                 color="secondary"
                 size="small"
@@ -174,7 +164,8 @@
                   >mdi-database-remove</v-icon
                 >
                 <p class="text-h6 text-grey mt-4">
-                  {{ $t('historical.noDataAvailable') }}
+                  No hay datos disponibles para
+                  {{ formatOriginName(route.params.origin as string) }}
                 </p>
               </div>
             </template>
@@ -188,7 +179,6 @@
 <script setup lang="ts">
 import { useSeoMeta } from '#imports'
 import { computed, onMounted, ref, watch } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useDisplay } from 'vuetify/lib/composables/display.mjs'
 
@@ -218,20 +208,18 @@ interface OriginNameMap {
   [key: string]: string
 }
 
-// Reactive state
-const search = ref('')
-const selectedOrigin = ref<string | null>(null)
-const selectedCurrency = ref<string | null>(null)
-const selectedType = ref<string | null>(null)
-
 // Router and route
 const router = useRouter()
 const route = useRoute()
-const { t } = useI18n()
 const { smAndDown } = useDisplay()
 
 // Initialize API service
 const apiService = useApiService()
+
+// Reactive state for filters
+const search = ref('')
+const selectedCurrency = ref<string | null>(null)
+const selectedType = ref<string | null>(null)
 
 // Load data using useAsyncData for SSR
 const {
@@ -240,7 +228,7 @@ const {
   error,
   refresh,
 } = await useAsyncData(
-  'historico-cambios',
+  `historico-origin-${route.params.origin}`,
   async () => {
     try {
       const today = new Date().toLocaleDateString('en-CA')
@@ -275,12 +263,28 @@ const items = computed<CambioItem[]>(() => {
     ? rawData.value
     : [rawData.value]
 
-  return dataArray
+  const processedItems = dataArray
     .map((item: any) => ({
       ...item,
       spread: calculateSpread(item.buy, item.sell),
     }))
     .filter((item: any) => item.origin) // Filter items without origin
+
+  // Check if the origin exists
+  const originExists = processedItems.some(
+    (item) => item.origin === route.params.origin,
+  )
+
+  if (processedItems.length > 0 && !originExists) {
+    throw createError({
+      statusCode: 404,
+      statusMessage: `Casa de cambio "${formatOriginName(
+        route.params.origin as string,
+      )}" no encontrada`,
+    })
+  }
+
+  return processedItems
 })
 
 // Last update timestamp
@@ -294,72 +298,62 @@ const lastUpdate = computed(() => {
   })
 })
 
-// SEO/Head
-useSeoMeta({
-  title: () => `${t('historical.currentQuotes')} - Cambio Uruguay`,
-  description:
-    'Consulta las cotizaciones actuales de todas las casas de cambio de Uruguay. Compara precios y encuentra la mejor opción.',
-})
-
-// Computed properties
-const headers = computed(() => [
+// Headers definition
+const headers = ref([
   {
-    title: t('historical.exchangeHouse'),
-    key: 'origin',
-    sortable: true,
-    width: '180px',
-  },
-  {
-    title: t('historical.currency'),
+    title: 'Moneda',
     key: 'code',
     sortable: true,
     width: '120px',
   },
   {
-    title: t('historical.type'),
+    title: 'Tipo',
     key: 'type',
     sortable: true,
     width: '100px',
   },
   {
-    title: t('historical.buy'),
+    title: 'Compra',
     key: 'buy',
     sortable: true,
     align: 'end' as const,
     width: '120px',
   },
   {
-    title: t('historical.sell'),
+    title: 'Venta',
     key: 'sell',
     sortable: true,
     align: 'end' as const,
     width: '120px',
   },
   {
-    title: t('historical.spread'),
+    title: 'Spread',
     key: 'spread',
     sortable: true,
     align: 'end' as const,
     width: '100px',
   },
   {
-    title: t('historical.name'),
+    title: 'Nombre',
     key: 'name',
     sortable: true,
     width: '200px',
   },
 ])
 
-const originOptions = computed(() => {
-  const origins = [
-    ...new Set(items.value.map((item) => item.origin).filter(Boolean)),
-  ]
-  return origins.sort().map((origin) => ({
-    title: formatOriginName(origin),
-    value: origin,
-  }))
+// SEO/Head
+const originName = computed(() =>
+  formatOriginName(route.params.origin as string),
+)
+useSeoMeta({
+  title: () => `Cotizaciones de ${originName.value} - Cambio Uruguay`,
+  description: () =>
+    `Consulta las cotizaciones actuales de ${originName.value}. Compara precios de todas las monedas disponibles.`,
+  keywords: () =>
+    `${formatOriginName(route.params.origin as string)}, cotizaciones, cambio, uruguay, ${route.params.origin}`,
 })
 
+// Computed properties
 const currencyOptions = computed(() => {
   const currencies = [
     ...new Set(items.value.map((item) => item.code).filter(Boolean)),
@@ -381,11 +375,9 @@ const typeOptions = computed(() => {
 })
 
 const filteredItems = computed(() => {
-  let filtered = items.value
-
-  if (selectedOrigin.value) {
-    filtered = filtered.filter((item) => item.origin === selectedOrigin.value)
-  }
+  let filtered = items.value.filter(
+    (item) => item.origin === route.params.origin,
+  )
 
   if (selectedCurrency.value) {
     filtered = filtered.filter((item) => item.code === selectedCurrency.value)
@@ -399,6 +391,14 @@ const filteredItems = computed(() => {
 })
 
 // Methods
+const getLink = (item: any): string => {
+  let link = `/historico/${item.origin}/${item.code}`
+  if (item.type) {
+    link = `/historico/${item.origin}/${item.code}/${item.type}`
+  }
+  return link
+}
+
 const calculateSpread = (buy: number, sell: number): number => {
   if (!buy || !sell || buy === 0) return 0
   return parseFloat((((sell - buy) / buy) * 100).toFixed(2))
@@ -407,7 +407,6 @@ const calculateSpread = (buy: number, sell: number): number => {
 const formatOriginName = (origin: string): string => {
   if (!origin) return 'N/A'
 
-  // Mapeo de nombres más amigables
   const nameMap: OriginNameMap = {
     brou: 'BROU',
     bcu: 'BCU',
@@ -520,10 +519,6 @@ const formatNumber = (value: number): string => {
 const restoreFiltersFromQuery = () => {
   const query = route.query
 
-  // Restaurar filtros desde query parameters
-  if (query.origin && typeof query.origin === 'string') {
-    selectedOrigin.value = query.origin
-  }
   if (query.currency && typeof query.currency === 'string') {
     selectedCurrency.value = query.currency
   }
@@ -536,15 +531,10 @@ const restoreFiltersFromQuery = () => {
 }
 
 const updateQueryParams = () => {
-  // Evitar loops infinitos durante la inicialización
   if (loading.value) return
 
   const query: Record<string, string> = {}
 
-  // Solo agregar parámetros que tengan valor
-  if (selectedOrigin.value) {
-    query.origin = selectedOrigin.value
-  }
   if (selectedCurrency.value) {
     query.currency = selectedCurrency.value
   }
@@ -555,26 +545,25 @@ const updateQueryParams = () => {
     query.search = search.value
   }
 
-  // Actualizar la URL sin causar navegación
   router
     .replace({
       path: route.path,
       query,
     })
-    .catch(() => {
-      // Ignorar errores de navegación redundante
-    })
-}
-
-const goToExample = () => {
-  router.push('/historico/brou/USD')
+    .catch(() => {})
 }
 
 // Watchers
-watch(selectedOrigin, updateQueryParams)
 watch(selectedCurrency, updateQueryParams)
 watch(selectedType, updateQueryParams)
 watch(search, updateQueryParams)
+watch(
+  () => route.params.origin,
+  () => {
+    // Refresh data when origin changes
+    refresh()
+  },
+)
 
 // Lifecycle - restore filters from query parameters on mount
 onMounted(() => {
@@ -611,6 +600,10 @@ onMounted(() => {
 
 .v-avatar img {
   border-radius: 2px;
+}
+
+.v-breadcrumbs {
+  padding: 0;
 }
 
 @media (max-width: 960px) {

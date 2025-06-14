@@ -10,6 +10,23 @@ body {
   color: #ffffff;
 }
 
+/* Ensure Vuetify components use Open Sans */
+.v-application {
+  font-family: 'Open Sans', sans-serif !important;
+}
+
+.v-btn,
+.v-card,
+.v-list,
+.v-data-table,
+.v-text-field,
+.v-select,
+.v-toolbar,
+.v-app-bar,
+.v-navigation-drawer {
+  font-family: 'Open Sans', sans-serif !important;
+}
+
 /* Header styles */
 .v-app-bar {
   background-color: #272727 !important;
@@ -48,11 +65,6 @@ body {
   font-weight: 600;
 }
 
-/* Form controls */
-.v-text-field, .v-select, .v-autocomplete {
-  margin-bottom: 16px;
-}
-
 /* Loading states */
 .v-skeleton-loader {
   background-color: #2a2a2a;
@@ -81,4 +93,9 @@ img {
 
 .v-chip {
   font-weight: 600;
+}
+
+
+.v-overlay--contained .v-overlay__scrim {
+  background-color:black!important;
 }

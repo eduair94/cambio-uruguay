@@ -1,0 +1,43 @@
+/* Global styles to prevent overlay DOM issues */
+
+/* Ensure body is always available for overlay manipulations */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Prevent scroll when overlay is active */
+.v-overlay--active body,
+body.v-overlay--active {
+  overflow: hidden !important;
+  position: fixed !important;
+  width: 100% !important;
+}
+
+/* Ensure overlays are properly positioned */
+.v-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 9999 !important;
+}
+
+/* Loading overlay specific styles */
+.loading-overlay {
+  z-index: 9999 !important;
+}
+
+/* Prevent issues during SSR/hydration */
+@media (prefers-reduced-motion: reduce) {
+  .loading-content {
+    animation: none !important;
+  }
+}
+
+/* Fallback for when JavaScript fails */
+.no-js .loading-overlay {
+  display: none !important;
+}

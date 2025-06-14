@@ -1,0 +1,381 @@
+export default defineNuxtConfig({
+  // SSR Configuration
+  ssr: true,
+
+  // App Configuration
+  app: {
+    head: {
+      htmlAttrs: {
+        lang: 'es-ES',
+      },
+      titleTemplate: '%s - Cambio Uruguay',
+      title: 'Mejores Cotizaciones de Cambio en Uruguay',
+      meta: [
+        { charset: 'utf-8' },
+        {
+          name: 'viewport',
+          content:
+            'width=device-width, initial-scale=1, user-scalable=yes, maximum-scale=5',
+        },
+        {
+          name: 'description',
+          content:
+            'Encuentra las mejores cotizaciones de cambio de divisas en Uruguay. Compara precios de más de 40 casas de cambio en tiempo real.',
+        },
+        {
+          name: 'keywords',
+          content:
+            'cambio moneda uruguay, cambio divisas uruguay, donde comprar dólares uruguay, donde vender dólares uruguay, vender pesos argentinos uruguay, comprar pesos argentinos uruguay, casas de cambio uruguay, casas de cambio montevideo, casas de cambio punta del este',
+        },
+        { name: 'author', content: 'Cambio Uruguay' },
+        {
+          name: 'robots',
+          content:
+            'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
+        },
+        { name: 'googlebot', content: 'index, follow' },
+        { name: 'bingbot', content: 'index, follow' },
+        { name: 'referrer', content: 'no-referrer' },
+
+        // Open Graph / Facebook
+        { property: 'og:type', content: 'website' },
+        { property: 'og:url', content: 'https://cambio-uruguay.com' },
+        {
+          property: 'og:title',
+          content: 'Cambio Uruguay - Mejores Cotizaciones de Cambio',
+        },
+        {
+          property: 'og:description',
+          content:
+            'Cambio Uruguay - Encuentra las mejores casas cambiarias del país, mejores cotizaciones de dólares (USD), pesos argentinos (ARS) y reales brasileros (BRL).',
+        },
+        {
+          property: 'og:image',
+          content: 'https://cambio-uruguay.com/img/banner.png',
+        },
+        { property: 'og:image:width', content: '1200' },
+        { property: 'og:image:height', content: '630' },
+        {
+          property: 'og:image:alt',
+          content: 'Cambio Uruguay - Mejores cotizaciones de cambio',
+        },
+        { property: 'og:site_name', content: 'Cambio Uruguay' },
+        { property: 'og:locale', content: 'es_ES' },
+        { property: 'og:locale:alternate', content: 'en_US' },
+        { property: 'og:locale:alternate', content: 'pt_BR' },
+
+        // Twitter Card
+        { name: 'twitter:card', content: 'summary_large_image' },
+        { name: 'twitter:url', content: 'https://cambio-uruguay.com' },
+        { name: 'twitter:title', content: 'Cambio Uruguay' },
+        {
+          name: 'twitter:description',
+          content:
+            'Cambio Uruguay - Encuentra las mejores casas cambiarias del país, mejores cotizaciones de dólares (USD), pesos argentinos (ARS) y reales brasileños (BRL).',
+        },
+        {
+          name: 'twitter:image',
+          content: 'https://cambio-uruguay.com/img/banner.png',
+        },
+        {
+          name: 'twitter:image:alt',
+          content: 'Cambio Uruguay - Mejores cotizaciones de cambio',
+        },
+        { name: 'twitter:site', content: '@cambios_uy' },
+        { name: 'twitter:creator', content: '@cambios_uy' },
+
+        // Additional SEO meta tags
+        { name: 'geo.region', content: 'UY' },
+        { name: 'geo.placename', content: 'Uruguay' },
+        { name: 'geo.position', content: '-34.9011;-56.1645' },
+        { name: 'ICBM', content: '-34.9011, -56.1645' },
+
+        // App meta tags
+        { name: 'application-name', content: 'Cambio Uruguay' },
+        { name: 'apple-mobile-web-app-title', content: 'Cambio Uruguay' },
+        { name: 'apple-mobile-web-app-capable', content: 'yes' },
+        {
+          name: 'apple-mobile-web-app-status-bar-style',
+          content: 'black-translucent',
+        },
+        { name: 'mobile-web-app-capable', content: 'yes' },
+        { name: 'format-detection', content: 'telephone=no' },
+
+        // PWA meta tags
+        { name: 'apple-touch-fullscreen', content: 'yes' },
+        { name: 'apple-mobile-web-app-orientations', content: 'portrait' },
+
+        // Theme colors
+        { name: 'msapplication-TileColor', content: '#272727' },
+        { name: 'theme-color', content: '#272727' },
+        { name: 'msapplication-navbutton-color', content: '#272727' },
+        { name: 'apple-mobile-web-app-status-bar-style', content: '#272727' },
+      ],
+      link: [
+        {
+          rel: 'manifest',
+          href: '/site.webmanifest',
+        },
+        {
+          rel: 'apple-touch-icon',
+          sizes: '180x180',
+          href: '/apple-touch-icon.png',
+        },
+        {
+          rel: 'icon',
+          type: 'image/png',
+          sizes: '32x32',
+          href: '/favicon-32x32.png',
+        },
+        {
+          rel: 'icon',
+          type: 'image/png',
+          sizes: '16x16',
+          href: '/favicon-16x16.png',
+        },
+        {
+          rel: 'mask-icon',
+          href: '/safari-pinned-tab.svg',
+          color: '#5bbad5',
+        },
+        {
+          rel: 'canonical',
+          href: 'https://cambio-uruguay.com',
+        },
+        {
+          rel: 'alternate',
+          hreflang: 'es',
+          href: 'https://cambio-uruguay.com/',
+        },
+        {
+          rel: 'alternate',
+          hreflang: 'en',
+          href: 'https://cambio-uruguay.com/en',
+        },
+        {
+          rel: 'alternate',
+          hreflang: 'pt',
+          href: 'https://cambio-uruguay.com/pt',
+        },
+        {
+          rel: 'alternate',
+          hreflang: 'x-default',
+          href: 'https://cambio-uruguay.com/',
+        },
+        {
+          rel: 'author',
+          href: '/humans.txt',
+          type: 'text/plain',
+        },
+        {
+          rel: 'preconnect',
+          href: 'https://api.cambio-uruguay.com',
+        },
+        {
+          rel: 'preconnect',
+          href: 'https://fonts.googleapis.com',
+        },
+        {
+          rel: 'preconnect',
+          href: 'https://fonts.gstatic.com',
+          crossorigin: 'anonymous',
+        },
+        {
+          rel: 'preconnect',
+          href: 'https://www.googletagmanager.com',
+        },
+      ],
+    },
+  },
+
+  // Global CSS
+  css: [
+    'vuetify/styles',
+    '@mdi/font/css/materialdesignicons.min.css',
+    '~/assets/css/critical.css',
+  ],
+  // Server Configuration
+  devServer: {
+    port: 3311,
+    host: '0.0.0.0',
+  },
+
+  // Build Configuration
+  build: {
+    transpile: ['vuetify'],
+    analyze: {
+      analyzerMode: 'static',
+      openAnalyzer: false,
+    },
+  },
+
+  // Vite Configuration
+  vite: {
+    define: {
+      'process.env.DEBUG': false,
+    },
+    css: {
+      devSourcemap: false,
+      preprocessorOptions: {
+        sass: {
+          additionalData: '@use "vuetify/settings" with ($utilities: false)\n',
+        },
+      },
+    },
+    server: {
+      hmr: {
+        overlay: false,
+      },
+    },
+    optimizeDeps: {
+      exclude: ['@nuxtjs/i18n'],
+      include: ['vuetify', 'vuetify/components', 'vuetify/directives'],
+    },
+    ssr: {
+      noExternal: ['@nuxtjs/i18n', 'vue-i18n', 'vuetify'],
+    },
+    build: {
+      cssCodeSplit: false,
+      minify: 'esbuild',
+      chunkSizeWarningLimit: 1000,
+      rollupOptions: {
+        external: (id) => {
+          if (id.includes('node:') && typeof window !== 'undefined') {
+            return false
+          }
+          return false
+        },
+        output: {
+          // Bundle Vuetify into a single chunk
+          manualChunks: {
+            vuetify: ['vuetify', 'vuetify/components', 'vuetify/directives'],
+            vendor: ['vue', '@vue/runtime-core', '@vue/runtime-dom'],
+          },
+        },
+      },
+    },
+  },
+
+  routeRules: {
+    '/': {
+      prerender: true,
+      headers: {
+        'cache-control': 's-maxage=3600',
+        'X-Frame-Options': 'DENY',
+        'X-Content-Type-Options': 'nosniff',
+        'Referrer-Policy': 'strict-origin-when-cross-origin',
+      },
+    },
+    '/_nuxt/**': {
+      headers: { 'cache-control': 'max-age=31536000, immutable' },
+    },
+    '/favicon.*': {
+      headers: { 'cache-control': 'max-age=31536000, immutable' },
+    },
+    '/**/*.{png,jpg,jpeg,gif,webp,svg,ico}': {
+      headers: { 'cache-control': 'max-age=31536000, immutable' },
+    },
+    '/**/*.{js,css,woff,woff2,ttf,eot}': {
+      headers: { 'cache-control': 'max-age=31536000, immutable' },
+    },
+    '/.well-known/**': {
+      headers: {
+        'cache-control': 'max-age=86400',
+        'Content-Type': 'application/json',
+      },
+    },
+  },
+
+  nitro: {
+    prerender: {
+      routes: ['/sitemap.xml', '/robots.txt', '/'],
+      crawlLinks: true,
+    },
+    compressPublicAssets: {
+      gzip: true,
+      brotli: true,
+    },
+    minify: true,
+    storage: {
+      redis: {
+        driver: 'memory', // Use memory storage for development
+      },
+    },
+    experimental: {
+      wasm: true,
+    },
+  },
+
+  // Modules
+  modules: [
+    '@nuxtjs/leaflet',
+    '@nuxtjs/i18n',
+    '@nuxtjs/sitemap',
+    '@nuxtjs/robots',
+    '@pinia/nuxt',
+    [
+      '@nuxtjs/google-fonts',
+      {
+        families: {
+          'Open Sans': [400, 600, 700],
+        },
+        display: 'swap',
+        prefetch: true,
+        preload: true,
+      },
+    ],
+    //'@sentry/nuxt/module',
+    //'@vite-pwa/nuxt',
+  ],
+
+  // i18n Configuration
+  i18n: {
+    bundle: {
+      optimizeTranslationDirective: false,
+    },
+    locales: [
+      { code: 'en', iso: 'en-US', name: 'English', file: 'en.ts' },
+      { code: 'es', iso: 'es-ES', name: 'Español', file: 'es.ts' },
+      { code: 'pt', iso: 'pt-PT', name: 'Português', file: 'pt.ts' },
+    ],
+    //lazy: true,
+    defaultLocale: 'es',
+    strategy: 'prefix_except_default',
+    detectBrowserLanguage: {
+      useCookie: true,
+      cookieKey: 'lang',
+      alwaysRedirect: true,
+      fallbackLocale: 'es',
+    },
+    // imports: false, // Disable vue-i18n composable auto-imports (removed, not supported)
+  },
+
+  // Runtime Config
+  runtimeConfig: {
+    // Private keys (only available on server-side)
+    sentry: {
+      dsn: process.env.SENTRY_DSN,
+    },
+    // Server-side API URL (for SSR requests)
+    apiBaseServer:
+      process.env.NUXT_API_BASE_SERVER || 'http://104.234.204.107:3528',
+    // Public keys (exposed to client-side)
+    public: {
+      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'https://cambio-uruguay.com',
+      // Client-side API URL
+      apiBase:
+        process.env.NUXT_PUBLIC_API_BASE || 'https://api.cambio-uruguay.com',
+    },
+  },
+
+  // TypeScript Configuration
+  typescript: {
+    typeCheck: true,
+  },
+
+  // Dev Tools
+  devtools: { enabled: true },
+
+  // Compatibility
+  compatibilityDate: '2024-06-12',
+})

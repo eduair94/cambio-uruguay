@@ -1,5 +1,4 @@
-import { Context } from '@nuxt/types'
-import { Inject } from '@nuxt/types/app'
+import { defineNuxtPlugin } from '#app'
 
 interface CurrencyMeta {
   title: string
@@ -29,13 +28,13 @@ interface CurrencyData {
   exchangeHouse: string
 }
 
-export default function (context: Context, inject: Inject) {
+export default defineNuxtPlugin(() => {
   // SEO utilities and optimizations
   const seoUtils = {
     // Generate currency-specific meta tags
     generateCurrencyMeta(
       currency: string = 'USD',
-      location: string = 'TODOS'
+      location: string = 'TODOS',
     ): CurrencyMeta {
       const currencyNames: { [key: string]: string } = {
         USD: 'Dólares Estadounidenses',
@@ -68,7 +67,7 @@ export default function (context: Context, inject: Inject) {
     generateCurrencyStructuredData(
       currency: string,
       rate: number,
-      location: string
+      location: string,
     ): StructuredDataItem {
       return {
         '@context': 'https://schema.org',
@@ -159,7 +158,7 @@ export default function (context: Context, inject: Inject) {
         }
         canonical.setAttribute(
           'href',
-          `https://cambio-uruguay.com${route.fullPath}`
+          `https://cambio-uruguay.com${route.fullPath}`,
         )
       }
     },
@@ -167,7 +166,7 @@ export default function (context: Context, inject: Inject) {
     // Generate rich snippets for currency comparison
     generateComparisonStructuredData(
       currencies: CurrencyData[],
-      location: string
+      location: string,
     ): StructuredDataItem {
       return {
         '@context': 'https://schema.org',
@@ -195,7 +194,10 @@ export default function (context: Context, inject: Inject) {
     },
   }
 
-  // Inject into Vue context
-  inject('seo', seoUtils)
-  context.$seo = seoUtils
-}
+  // Return plugin object for Nuxt 3
+  return {
+    provide: {
+      seo: seoUtils,
+    },
+  }
+})
