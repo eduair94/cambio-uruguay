@@ -324,6 +324,20 @@ export default defineNuxtConfig({
         preload: true,
       },
     ],
+    [
+      'nuxt-gtag',
+      {
+        id: 'G-F97PNVRMRF',
+        additionalAccounts: [
+          {
+            id: 'AW-972399920',
+            config: {
+              send_page_view: true, // optional configurations
+            },
+          },
+        ],
+      },
+    ], // Replace with your Google Analytics ID
     //'@sentry/nuxt/module',
     //'@vite-pwa/nuxt',
   ],

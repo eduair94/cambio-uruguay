@@ -31,6 +31,7 @@
     "chart.js": "^4.4.6",
     "chartjs-adapter-date-fns": "^3.0.0",
     "nuxt": "^3.17.5",
+    "nuxt-gtag": "^3.0.3",
     "nuxt-site-config": "^3.2.0",
     "pinia": "^2.2.6",
     "vue": "^3.5.16",
