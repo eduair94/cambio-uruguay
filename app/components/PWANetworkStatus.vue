@@ -55,7 +55,7 @@ const setupNetworkListeners = () => {
   if (process.client) {
     window.addEventListener('online', handleOnline)
     window.addEventListener('offline', handleOffline)
-    
+
     // Check initial status
     if (!navigator.onLine) {
       showOfflineSnackbar.value = true

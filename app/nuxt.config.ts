@@ -335,7 +335,11 @@ export default defineNuxtConfig({
       '@vite-pwa/nuxt',
       {
         registerType: 'autoUpdate',
-        includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'safari-pinned-tab.svg'],
+        includeAssets: [
+          'favicon.ico',
+          'apple-touch-icon.png',
+          'safari-pinned-tab.svg',
+        ],
         client: {
           installPrompt: true,
           periodicSyncForUpdates: 20, // check for updates every 20 seconds
@@ -352,12 +356,12 @@ export default defineNuxtConfig({
                 cacheName: 'api-cache',
                 expiration: {
                   maxEntries: 100,
-                  maxAgeSeconds: 60 * 60 * 24, // 24 hours
+                  maxAgeSeconds: 5, // 5 seconds max
                 },
                 cacheableResponse: {
                   statuses: [0, 200],
                 },
-                networkTimeoutSeconds: 10, // fallback to cache after 10s
+                networkTimeoutSeconds: 3, // fallback to cache after 3s
               },
             },
             {
@@ -394,7 +398,8 @@ export default defineNuxtConfig({
         manifest: {
           name: 'Cambio Uruguay - Mejores Cotizaciones de Cambio',
           short_name: 'Cambio Uruguay',
-          description: 'Encuentra las mejores cotizaciones de cambio de divisas en Uruguay. Compara precios de más de 40 casas de cambio en tiempo real.',
+          description:
+            'Encuentra las mejores cotizaciones de cambio de divisas en Uruguay. Compara precios de más de 40 casas de cambio en tiempo real.',
           theme_color: '#272727',
           background_color: '#272727',
           display: 'standalone',

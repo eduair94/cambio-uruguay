@@ -18,11 +18,7 @@
         </div>
       </div>
       <template #actions="{ isActive }">
-        <v-btn
-          color="white"
-          text
-          @click="installPWA"
-        >
+        <v-btn color="white" text @click="installPWA">
           {{ $t('pwa.install') }}
         </v-btn>
         <v-btn
@@ -46,11 +42,7 @@
     >
       {{ $t('pwa.updateAvailable') }}
       <template #actions="{ isActive }">
-        <v-btn
-          color="white"
-          text
-          @click="updatePWA"
-        >
+        <v-btn color="white" text @click="updatePWA">
           {{ $t('pwa.update') }}
         </v-btn>
         <v-btn
@@ -79,8 +71,10 @@ let deferredPrompt: any = null
 // Check if in standalone mode
 const isStandalone = computed(() => {
   if (process.client) {
-    return window.matchMedia('(display-mode: standalone)').matches ||
-           (window.navigator as any).standalone === true
+    return (
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as any).standalone === true
+    )
   }
   return false
 })
@@ -93,7 +87,10 @@ onMounted(() => {
         const newWorker = registration.installing
         if (newWorker) {
           newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            if (
+              newWorker.state === 'installed' &&
+              navigator.serviceWorker.controller
+            ) {
               needRefresh.value = true
               showUpdatePrompt.value = true
             }
@@ -109,7 +106,7 @@ onMounted(() => {
     e.preventDefault()
     // Stash the event so it can be triggered later
     deferredPrompt = e
-    
+
     // Check if already dismissed or in standalone mode
     const hasBeenDismissed = localStorage.getItem('pwa-install-dismissed')
     if (!hasBeenDismissed && !isStandalone.value) {
