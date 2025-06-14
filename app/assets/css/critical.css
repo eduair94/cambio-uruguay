@@ -96,6 +96,6 @@ img {
 }
 
 
-.v-overlay--contained .v-overlay__scrim {
+.v-overlay .v-overlay__scrim {
   background-color:black!important;
 }
