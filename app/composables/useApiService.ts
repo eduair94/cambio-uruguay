@@ -37,8 +37,13 @@ export const useApiService = () => {
     }).catch((error) => {
       // Extract detailed error information
       const errorResponse = error.response?.data || error.data || null
-
-      return { error: errorResponse }
+      if (errorResponse) {
+        return errorResponse
+      } else {
+        return {
+          error: 'Ha ocurrido un error',
+        }
+      }
     })
   }
 
@@ -50,18 +55,14 @@ export const useApiService = () => {
       baseURL: getApiBaseUrl(),
     }).catch((error) => {
       // Extract detailed error information
-      const errorResponse = {
-        message: error.message || 'Failed to fetch local data',
-        status: error.response?.status || null,
-        statusText: error.response?.statusText || null,
-        data: error.response?.data || error.data || null,
-        headers: error.response?.headers || null,
-        url: error.response?.url || null,
-        originalError: error,
+      const errorResponse = error.response?.data || error.data || null
+      if (errorResponse) {
+        return errorResponse
+      } else {
+        return {
+          error: 'Ha ocurrido un error',
+        }
       }
-
-      console.error('Error fetching local data:', errorResponse)
-      return { error: errorResponse }
     })
   }
 
@@ -148,12 +149,7 @@ export const useApiService = () => {
 
       if (exchangeError || localDataError) {
         return {
-          error: {
-            exchange: exchangeError || null,
-            localData: localDataError || null,
-            combined:
-              exchangeError?.message || localDataError?.message || 'API Error',
-          },
+          error: exchangeError,
           exchangeData: [],
           localData: localDataError ? {} : localData,
           locations: localDataError ? [] : getLocations(localData),

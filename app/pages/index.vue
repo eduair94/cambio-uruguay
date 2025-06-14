@@ -191,7 +191,7 @@
       </a>
     </VAlert>
 
-    <VSnackbar v-model="snackbar" color="green-darken-2">
+    <VSnackbar v-model="snackbar" :color="snackColor">
       <p class="text-white mb-0">{{ snackBarText }}</p>
       <template #actions>
         <VBtn variant="text" @click="snackbar = false"> Close </VBtn>
@@ -266,8 +266,10 @@ const { t, locale } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const store = useCambioStore()
+const { start, finish } = useLoadingIndicator()
 
 // Reactive data
+const snackColor = ref<string>('green darken-4')
 const routeHasQuery = ref<boolean>(false)
 const hiddenWidgets = ref<boolean>(false)
 const hasScroll = ref<boolean>(false)
@@ -472,9 +474,10 @@ const resetAllFilters = () => {
   openSnack(t('filtersReset') || 'Filtros restablecidos')
 }
 
-const openSnack = (text: string, timeout = 2000) => {
+const openSnack = (text: string, timeout = 2000, color = 'green darken-4') => {
   snackbar.value = true
-  snackBarText.value = t('filtersReset') || 'Filtros restablecidos'
+  snackBarText.value = text
+  snackColor.value = color
   setTimeout(() => {
     snackbar.value = false
   }, timeout)
@@ -533,10 +536,11 @@ const buildExchangeHouseOptions = () => {
 }
 
 const fetchDataForDate = async (date: string) => {
+  start()
   try {
     const data = await apiService.getProcessedExchangeData(date)
     if (data.error) {
-      allItems.value = []
+      console.log('Data', data)
 
       // Handle the new detailed error structure
       let errorMessage = 'Error fetching data'
@@ -557,9 +561,9 @@ const fetchDataForDate = async (date: string) => {
 
       // Log detailed error information for debugging
       console.error('Detailed API Error:', data.error)
-
-      openSnack(errorMessage, 10000)
-      return
+      allItems.value = []
+      getData()
+      openSnack(errorMessage, 10000, 'red')
     } else {
       allItems.value = data.exchangeData
       buildExchangeHouseOptions()
@@ -567,13 +571,12 @@ const fetchDataForDate = async (date: string) => {
     }
   } catch (error) {
     console.error('API Error for date', date, ':', error)
-
     // Extract error details using the utility function
     const errorDetails = apiService.extractErrorDetails(error)
     console.error('Extracted error details:', errorDetails)
-
-    openSnack(errorDetails.message, 10000)
-    return
+    openSnack(errorDetails.message, 10000, 'red')
+  } finally {
+    finish()
   }
 }
 
@@ -718,11 +721,6 @@ const getData = () => {
     }
   })
   updateTable()
-
-  // Apply exchange house filter if there are selected items from query parameters
-  if (selectedExchangeHouse.value && selectedExchangeHouse.value.length > 0) {
-    // Filter by exchange house logic
-  }
 }
 
 const setup = async () => {

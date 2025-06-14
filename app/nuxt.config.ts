@@ -267,7 +267,7 @@ export default defineNuxtConfig({
 
   routeRules: {
     '/': {
-      prerender: true,
+      ssr: true,
       headers: {
         'cache-control': 's-maxage=3600',
         'X-Frame-Options': 'DENY',
@@ -296,10 +296,10 @@ export default defineNuxtConfig({
   },
 
   nitro: {
-    // prerender: {
-    //   routes: ['/sitemap.xml', '/robots.txt', '/'],
-    //   crawlLinks: true,
-    // },
+    prerender: {
+      routes: [],
+      crawlLinks: false,
+    },
     compressPublicAssets: {
       gzip: true,
       brotli: true,
