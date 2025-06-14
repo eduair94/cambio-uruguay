@@ -118,9 +118,6 @@
       </div>
     </VMain>
 
-    <!-- Global Loading Overlay -->
-    <LoadingOverlay />
-
     <VFooter>
       <div class="d-flex footer_content">
         <span>Cambio Uruguay &copy; {{ new Date().getFullYear() }}</span>
