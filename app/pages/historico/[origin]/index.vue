@@ -26,10 +26,12 @@
               {{ formatOriginName(route.params.origin as string) }}
             </span>
             <v-spacer></v-spacer>
-            <v-chip class="mt-2 mt-md-0" color="success" size="small">
-              <v-icon start size="small">mdi-clock-outline</v-icon>
-              Actualizado: {{ lastUpdate }}
-            </v-chip>
+            <ClientOnly>
+              <v-chip class="mt-2 mt-md-0" color="success" size="small">
+                <v-icon start size="small">mdi-clock-outline</v-icon>
+                Actualizado: {{ lastUpdate }}
+              </v-chip>
+            </ClientOnly>
           </v-card-title>
           <!-- Filtros -->
           <v-card-text>
