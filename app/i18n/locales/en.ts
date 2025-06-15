@@ -213,5 +213,40 @@ export default defineI18nLocale(async (locale) => {
       AUD: 'Australian Dollars',
       UYU: 'Pesos Uruguayos',
     },
+    seo: {
+      // Homepage
+      homeTitle: 'Best Currency Exchange Rates in Uruguay',
+      homeDescription:
+        'Find the best currency exchange rates in Uruguay. Compare prices from over 40 exchange houses in real time.',
+      homeKeywords:
+        'currency exchange uruguay, forex uruguay, where to buy dollars uruguay, where to sell dollars uruguay, sell argentine pesos uruguay, buy argentine pesos uruguay, exchange houses uruguay, exchange houses montevideo, exchange houses punta del este',
+
+      // Historical page
+      historicalTitle: 'Exchange Rate History - Cambio Uruguay',
+      historicalDescription:
+        'Check the complete history of exchange rates from all exchange houses in Uruguay. Real-time updated data.',
+      historicalKeywords:
+        'exchange rate history, currency exchange uruguay, historical prices, exchange houses uruguay',
+
+      // Historical origin page
+      historicalOriginTitle: '{origin} Exchange Rates - Cambio Uruguay',
+      historicalOriginDescription:
+        'Check all current and historical exchange rates from {origin}. Buy and sell prices updated in real time.',
+      historicalOriginKeywords:
+        'exchange house rates, currency exchange uruguay, exchange prices uruguay',
+
+      // Detailed history page
+      historicalDetailTitle: '{origin} {currency} History | Cambio Uruguay',
+      historicalDetailDescription:
+        'Historical evolution of {currency} exchange rates at {origin}. Charts, statistics and detailed currency exchange data in Uruguay.',
+      historicalDetailKeywords:
+        'historical exchange rates, exchange evolution, exchange rate charts, currency statistics uruguay',
+
+      // Offline page
+      offlineTitle: 'Offline - Cambio Uruguay',
+      offlineDescription:
+        'No internet connection. Check your connection to access exchange rates.',
+      offlineKeywords: 'offline, no connection, cambio uruguay',
+    },
   }
 })

@@ -2,13 +2,18 @@ export default defineNuxtConfig({
   // SSR Configuration
   ssr: true,
 
-  // Site Configuration (required for @nuxt/sitemap)
+  // Site Configuration (required for @nuxt/sitemap and SEO)
   site: {
     url: 'https://cambio-uruguay.com',
     name: 'Cambio Uruguay',
     description:
       'Encuentra las mejores cotizaciones de cambio de divisas en Uruguay. Compara precios de más de 40 casas de cambio en tiempo real.',
     defaultLocale: 'es',
+    identity: {
+      type: 'Organization',
+    },
+    twitter: '@cambio_uruguay',
+    trailingSlash: false,
   },
 
   // App Configuration
@@ -36,7 +41,9 @@ export default defineNuxtConfig({
           content:
             'cambio moneda uruguay, cambio divisas uruguay, donde comprar dólares uruguay, donde vender dólares uruguay, vender pesos argentinos uruguay, comprar pesos argentinos uruguay, casas de cambio uruguay, casas de cambio montevideo, casas de cambio punta del este',
         },
-        { name: 'author', content: 'Cambio Uruguay' },
+        { name: 'author', content: 'Eduardo Airaudo - Cambio Uruguay' },
+        { name: 'creator', content: 'Eduardo Airaudo' },
+        { name: 'publisher', content: 'Eduardo Airaudo' },
         {
           name: 'robots',
           content:
@@ -46,18 +53,8 @@ export default defineNuxtConfig({
         { name: 'bingbot', content: 'index, follow' },
         { name: 'referrer', content: 'no-referrer' },
 
-        // Open Graph / Facebook
+        // Open Graph / Facebook - Only truly global properties
         { property: 'og:type', content: 'website' },
-        { property: 'og:url', content: 'https://cambio-uruguay.com' },
-        {
-          property: 'og:title',
-          content: 'Cambio Uruguay - Mejores Cotizaciones de Cambio',
-        },
-        {
-          property: 'og:description',
-          content:
-            'Cambio Uruguay - Encuentra las mejores casas cambiarias del país, mejores cotizaciones de dólares (USD), pesos argentinos (ARS) y reales brasileros (BRL).',
-        },
         {
           property: 'og:image',
           content: 'https://cambio-uruguay.com/img/banner.png',
@@ -73,15 +70,8 @@ export default defineNuxtConfig({
         { property: 'og:locale:alternate', content: 'en_US' },
         { property: 'og:locale:alternate', content: 'pt_BR' },
 
-        // Twitter Card
+        // Twitter Card - Only truly global properties
         { name: 'twitter:card', content: 'summary_large_image' },
-        { name: 'twitter:url', content: 'https://cambio-uruguay.com' },
-        { name: 'twitter:title', content: 'Cambio Uruguay' },
-        {
-          name: 'twitter:description',
-          content:
-            'Cambio Uruguay - Encuentra las mejores casas cambiarias del país, mejores cotizaciones de dólares (USD), pesos argentinos (ARS) y reales brasileños (BRL).',
-        },
         {
           name: 'twitter:image',
           content: 'https://cambio-uruguay.com/img/banner.png',
@@ -90,8 +80,8 @@ export default defineNuxtConfig({
           name: 'twitter:image:alt',
           content: 'Cambio Uruguay - Mejores cotizaciones de cambio',
         },
-        { name: 'twitter:site', content: '@cambios_uy' },
-        { name: 'twitter:creator', content: '@cambios_uy' },
+        { name: 'twitter:site', content: '@cambio_uruguay' },
+        { name: 'twitter:creator', content: '@cambio_uruguay' },
 
         // Additional SEO meta tags
         { name: 'geo.region', content: 'UY' },
@@ -131,33 +121,13 @@ export default defineNuxtConfig({
           color: '#5bbad5',
         },
         {
-          rel: 'canonical',
-          href: 'https://cambio-uruguay.com',
-        },
-        {
-          rel: 'alternate',
-          hreflang: 'es',
-          href: 'https://cambio-uruguay.com/',
-        },
-        {
-          rel: 'alternate',
-          hreflang: 'en',
-          href: 'https://cambio-uruguay.com/en',
-        },
-        {
-          rel: 'alternate',
-          hreflang: 'pt',
-          href: 'https://cambio-uruguay.com/pt',
-        },
-        {
-          rel: 'alternate',
-          hreflang: 'x-default',
-          href: 'https://cambio-uruguay.com/',
-        },
-        {
           rel: 'author',
           href: '/humans.txt',
           type: 'text/plain',
+        },
+        {
+          rel: 'author',
+          href: 'https://www.linkedin.com/in/eduardo-airaudo/',
         },
         {
           rel: 'preconnect',
@@ -300,6 +270,7 @@ export default defineNuxtConfig({
 
   // Modules
   modules: [
+    '@nuxtjs/seo',
     '@nuxtjs/leaflet',
     '@nuxtjs/i18n',
     '@nuxtjs/sitemap',
@@ -463,6 +434,13 @@ export default defineNuxtConfig({
       },
     ],
   ],
+
+  // Robots Configuration
+  robots: {
+    disallow: ['/admin/', '/_nuxt/', '/.nuxt/', '/server/'],
+    sitemap: 'https://cambio-uruguay.com/sitemap.xml',
+    credits: false,
+  },
 
   // Sitemap Configuration
   sitemap: {

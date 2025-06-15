@@ -39,7 +39,11 @@ export default defineEventHandler(async (event) => {
     }> = []
 
     // Helper function to add URLs for all locales
-    const addUrlsForAllLocales = (path: string, priority: number, changefreq: string = 'daily') => {
+    const addUrlsForAllLocales = (
+      path: string,
+      priority: number,
+      changefreq: string = 'daily',
+    ) => {
       locales.forEach((locale) => {
         if (locale === defaultLocale) {
           // Default locale doesn't have prefix
@@ -60,9 +64,9 @@ export default defineEventHandler(async (event) => {
     }
 
     // Add main URLs for all locales
-    addUrlsForAllLocales('/', 1.0, 'hourly')        // Home page
-    addUrlsForAllLocales('/historico', 0.9, 'daily')  // Historico main page
-    addUrlsForAllLocales('/offline', 0.3, 'monthly')  // Offline page
+    addUrlsForAllLocales('/', 1.0, 'hourly') // Home page
+    addUrlsForAllLocales('/historico', 0.9, 'daily') // Historico main page
+    addUrlsForAllLocales('/offline', 0.3, 'monthly') // Offline page
 
     // Add /historico/:origin routes for all locales
     origins.forEach((origin) => {
@@ -79,7 +83,9 @@ export default defineEventHandler(async (event) => {
       addUrlsForAllLocales(`/historico/${pair}`, 0.7)
     })
 
-    console.log(`Generated ${urls.length} sitemap URLs from API data (${origins.size} origins × ${locales.length} locales)`)
+    console.log(
+      `Generated ${urls.length} sitemap URLs from API data (${origins.size} origins × ${locales.length} locales)`,
+    )
     return urls
   } catch (error) {
     console.error('Error generating sitemap URLs from API:', error)

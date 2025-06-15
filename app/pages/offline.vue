@@ -43,6 +43,17 @@ definePageMeta({
 const { t: $t } = useI18n()
 const router = useRouter()
 
+// SEO Configuration for offline page
+useSeoMeta({
+  title: () => $t('seo.offlineTitle'),
+  description: () => $t('seo.offlineDescription'),
+  robots: 'noindex, nofollow',
+  ogTitle: () => $t('seo.offlineTitle'),
+  ogDescription: () => $t('seo.offlineDescription'),
+  twitterTitle: () => $t('seo.offlineTitle'),
+  twitterDescription: () => $t('seo.offlineDescription'),
+})
+
 // Methods
 const retry = () => {
   if (navigator.onLine) {

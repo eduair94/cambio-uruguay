@@ -435,6 +435,59 @@ const headers = computed(() => [
   { title: t('nombre'), key: 'name', sortable: false },
 ])
 
+// Utility function to format origin name
+const formatOriginName = (origin: string): string => {
+  if (!origin) return ''
+  return origin.replace(/[-_]/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
+}
+
+// Dynamic names for SEO
+const exchangeHouseName = computed(() =>
+  formatOriginName(route.params.origin as string),
+)
+const currencyName = computed(() => route.params.currency as string)
+
+// SEO Configuration with dynamic values
+useSeoMeta({
+  title: () =>
+    t('seo.historicalDetailTitle', {
+      origin: exchangeHouseName.value,
+      currency: currencyName.value,
+    }),
+  description: () =>
+    t('seo.historicalDetailDescription', {
+      origin: exchangeHouseName.value,
+      currency: currencyName.value,
+    }),
+  keywords: () => t('seo.historicalDetailKeywords'),
+  ogTitle: () =>
+    t('seo.historicalDetailTitle', {
+      origin: exchangeHouseName.value,
+      currency: currencyName.value,
+    }),
+  ogDescription: () =>
+    t('seo.historicalDetailDescription', {
+      origin: exchangeHouseName.value,
+      currency: currencyName.value,
+    }),
+  ogType: 'website',
+  ogUrl: () =>
+    `https://cambio-uruguay.com/historico/${route.params.origin}/${route.params.currency}${
+      route.params.type ? '/' + route.params.type : ''
+    }`,
+  twitterCard: 'summary_large_image',
+  twitterTitle: () =>
+    t('seo.historicalDetailTitle', {
+      origin: exchangeHouseName.value,
+      currency: currencyName.value,
+    }),
+  twitterDescription: () =>
+    t('seo.historicalDetailDescription', {
+      origin: exchangeHouseName.value,
+      currency: currencyName.value,
+    }),
+})
+
 // Load period from storage/query on client
 const loadPeriodFromStorage = () => {
   // First check URL query parameter
@@ -501,41 +554,7 @@ const {
   },
 )
 
-// SEO
-const origin = computed(
-  () => (route.params.origin as string)?.toUpperCase() || '',
-)
-const currency = computed(
-  () => (route.params.currency as string)?.toUpperCase() || '',
-)
-const type = computed(() => (route.params.type as string)?.toUpperCase() || '')
-
-const titleSuffix = computed(() => (type.value ? ` (${type.value})` : ''))
-
-useSeoMeta({
-  title: () =>
-    `Histórico ${origin.value} - ${currency.value}${titleSuffix.value} | Cambio Uruguay`,
-  description: () =>
-    `Evolución histórica de cotizaciones ${currency.value}${titleSuffix.value} en ${origin.value}. Gráficos, estadísticas y datos detallados de cambio de moneda en Uruguay.`,
-  keywords: () =>
-    `histórico cotizaciones, ${origin.value}, ${currency.value}, ${type.value}, evolución cambio, gráfico cotizaciones, estadísticas cambio uruguay`,
-})
-
 // Computed properties
-const exchangeHouseName = computed(() => {
-  const names: Record<string, string> = {
-    brou: 'Banco República (BROU)',
-    prex: 'Prex',
-    cambios_alpe: 'Cambios Alpe',
-    gales: 'Gales',
-    varlix: 'Varlix',
-  }
-  return (
-    names[(route.params.origin as string)?.toLowerCase()] ||
-    (route.params.origin as string)?.toUpperCase()
-  )
-})
-
 const tableData = computed(() => {
   if (!(evolutionData.value as any)?.evolution) return []
 

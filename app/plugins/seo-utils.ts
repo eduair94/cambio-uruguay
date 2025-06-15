@@ -62,49 +62,20 @@ export default defineNuxtPlugin(() => {
       }
     },
 
-    // Generate structured data for currency exchange
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    generateCurrencyStructuredData(
-      currency: string,
-      rate: number,
-      location: string,
-    ): StructuredDataItem {
-      return {
-        '@context': 'https://schema.org',
-        '@type': 'ExchangeRateSpecification',
-        currency,
-        currentExchangeRate: {
-          '@type': 'UnitPriceSpecification',
-          price: rate,
-          priceCurrency: 'UYU',
-        },
-        validFrom: new Date().toISOString(),
-        validThrough: new Date(Date.now() + 3600000).toISOString(), // Valid for 1 hour
-        areaServed: {
-          '@type': 'Country',
-          name: 'Uruguay',
-        },
-      }
-    },
-
-    // Optimize images for better SEO
-    optimizeImage(src: string, alt: string, width?: number, height?: number) {
-      return {
-        src,
-        alt,
-        loading: 'lazy' as const,
-        width,
-        height,
-        sizes: '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw',
-      }
+    // Generate canonical URL with proper formatting
+    generateCanonicalUrl(path: string): string {
+      const baseUrl = 'https://cambio-uruguay.com'
+      // Ensure no double slashes and proper formatting
+      const cleanPath = path.startsWith('/') ? path : `/${path}`
+      return `${baseUrl}${cleanPath}`
     },
 
     // Generate breadcrumb structured data
-    generateBreadcrumbs(items: BreadcrumbItem[]): StructuredDataItem {
+    generateBreadcrumbData(breadcrumbs: BreadcrumbItem[]): StructuredDataItem {
       return {
         '@context': 'https://schema.org',
         '@type': 'BreadcrumbList',
-        itemListElement: items.map((item, index) => ({
+        itemListElement: breadcrumbs.map((item, index) => ({
           '@type': 'ListItem',
           position: index + 1,
           name: item.name,
@@ -114,7 +85,7 @@ export default defineNuxtPlugin(() => {
     },
 
     // Generate FAQ structured data
-    generateFAQ(faqs: FAQ[]): StructuredDataItem {
+    generateFAQData(faqs: FAQ[]): StructuredDataItem {
       return {
         '@context': 'https://schema.org',
         '@type': 'FAQPage',
@@ -129,67 +100,172 @@ export default defineNuxtPlugin(() => {
       }
     },
 
-    // Performance optimization: preload critical resources
-    preloadCriticalResources(): void {
-      if (process.client) {
-        // Preload API endpoints
-        const link1 = document.createElement('link')
-        link1.rel = 'dns-prefetch'
-        link1.href = 'https://api.cambio-uruguay.com'
-        document.head.appendChild(link1)
-
-        // Preload critical CSS
-        const link2 = document.createElement('link')
-        link2.rel = 'preload'
-        link2.href = '/css/critical.css'
-        link2.as = 'style'
-        document.head.appendChild(link2)
+    // Generate WebApplication structured data for homepage
+    generateWebApplicationData(): StructuredDataItem {
+      return {
+        '@context': 'https://schema.org',
+        '@type': 'WebApplication',
+        name: 'Cambio Uruguay',
+        description:
+          'Plataforma para comparar cotizaciones de cambio de divisas en Uruguay',
+        url: 'https://cambio-uruguay.com',
+        applicationCategory: 'FinanceApplication',
+        operatingSystem: 'All',
+        browserRequirements: 'HTML5, CSS3, JavaScript',
+        softwareVersion: '2.0.0',
+        offers: {
+          '@type': 'Offer',
+          description: 'Comparación gratuita de más de 40 casas de cambio',
+          price: '0',
+          priceCurrency: 'USD',
+        },
+        author: {
+          '@type': 'Organization',
+          name: 'Cambio Uruguay',
+          url: 'https://cambio-uruguay.com',
+        },
+        creator: {
+          '@type': 'Person',
+          name: 'Eduardo Airaudo',
+          url: 'https://www.linkedin.com/in/eduardo-airaudo/',
+          jobTitle: 'Developer & Founder',
+        },
+        featureList: [
+          'Comparación de cotizaciones en tiempo real',
+          'Más de 40 casas de cambio',
+          'Filtros por ubicación',
+          'Histórico de cotizaciones',
+          'Notificaciones de cambios',
+        ],
+        screenshot: 'https://cambio-uruguay.com/img/banner.png',
       }
     },
 
-    // Update canonical URL based on current route
-    updateCanonical(route: any): void {
-      if (process.client) {
-        let canonical = document.querySelector('link[rel="canonical"]')
-        if (!canonical) {
-          canonical = document.createElement('link')
-          canonical.setAttribute('rel', 'canonical')
-          document.head.appendChild(canonical)
-        }
-        canonical.setAttribute(
-          'href',
-          `https://cambio-uruguay.com${route.fullPath}`,
-        )
-      }
-    },
-
-    // Generate rich snippets for currency comparison
-    generateComparisonStructuredData(
+    // Generate exchange house specific structured data
+    generateExchangeHouseData(
+      houseName: string,
       currencies: CurrencyData[],
-      location: string,
     ): StructuredDataItem {
       return {
         '@context': 'https://schema.org',
-        '@type': 'Product',
-        name: `Comparación de Cotizaciones de Cambio en ${location}`,
-        description:
-          'Compara las mejores cotizaciones de cambio de divisas en Uruguay',
-        category: 'Financial Services',
+        '@type': 'FinancialService',
+        name: houseName,
+        serviceType: 'Currency Exchange',
+        areaServed: 'Uruguay',
+        currenciesAccepted: currencies.map((curr) => curr.currency),
         offers: currencies.map((curr) => ({
           '@type': 'Offer',
           itemOffered: {
-            '@type': 'Service',
-            name: `Cambio de ${curr.currency}`,
-            description: `Servicio de cambio de ${curr.currency} en ${location}`,
-          },
-          price: curr.rate,
-          priceCurrency: 'UYU',
-          availability: 'https://schema.org/InStock',
-          seller: {
-            '@type': 'Organization',
-            name: curr.exchangeHouse,
+            '@type': 'ExchangeRateSpecification',
+            currency: curr.currency,
+            currentExchangeRate: {
+              '@type': 'UnitPriceSpecification',
+              price: curr.rate,
+              priceCurrency: 'UYU',
+            },
           },
         })),
+      }
+    },
+
+    // Generate meta tags for Open Graph
+    generateOpenGraphMeta(
+      title: string,
+      description: string,
+      url: string,
+      image?: string,
+    ): Record<string, string> {
+      return {
+        'og:type': 'website',
+        'og:site_name': 'Cambio Uruguay',
+        'og:title': title,
+        'og:description': description,
+        'og:url': url,
+        'og:image': image || 'https://cambio-uruguay.com/img/banner.png',
+        'og:image:width': '1200',
+        'og:image:height': '630',
+        'og:image:alt': title,
+        'og:locale': 'es_ES',
+      }
+    },
+
+    // Generate Twitter Card meta tags
+    generateTwitterMeta(
+      title: string,
+      description: string,
+      image?: string,
+    ): Record<string, string> {
+      return {
+        'twitter:card': 'summary_large_image',
+        'twitter:site': '@cambio_uruguay',
+        'twitter:creator': '@cambio_uruguay',
+        'twitter:title': title,
+        'twitter:description': description,
+        'twitter:image': image || 'https://cambio-uruguay.com/img/banner.png',
+        'twitter:image:alt': title,
+      }
+    },
+
+    // Generate complete SEO meta setup for a page
+    setupPageSEO(options: {
+      title: string
+      description: string
+      keywords?: string
+      canonicalUrl: string
+      ogImage?: string
+      structuredData?: StructuredDataItem[]
+      breadcrumbs?: BreadcrumbItem[]
+    }) {
+      // Set basic meta tags
+      useSeoMeta({
+        title: options.title,
+        description: options.description,
+        keywords: options.keywords,
+        ...this.generateOpenGraphMeta(
+          options.title,
+          options.description,
+          options.canonicalUrl,
+          options.ogImage,
+        ),
+        ...this.generateTwitterMeta(
+          options.title,
+          options.description,
+          options.ogImage,
+        ),
+      })
+
+      // Set canonical URL
+      useHead({
+        link: [
+          {
+            rel: 'canonical',
+            href: options.canonicalUrl,
+          },
+        ],
+      })
+
+      // Add structured data if provided
+      if (options.structuredData && options.structuredData.length > 0) {
+        useHead({
+          script: options.structuredData.map((data) => ({
+            type: 'application/ld+json',
+            innerHTML: JSON.stringify(data),
+          })),
+        })
+      }
+
+      // Add breadcrumb structured data if provided
+      if (options.breadcrumbs && options.breadcrumbs.length > 0) {
+        useHead({
+          script: [
+            {
+              type: 'application/ld+json',
+              innerHTML: JSON.stringify(
+                this.generateBreadcrumbData(options.breadcrumbs),
+              ),
+            },
+          ],
+        })
       }
     },
   }

@@ -230,5 +230,40 @@ export default defineI18nLocale(async (locale) => {
       AUD: 'Dólares Australianos',
       UYU: 'Pesos Uruguayos',
     },
+    seo: {
+      // Página principal
+      homeTitle: 'Mejores Cotizaciones de Cambio en Uruguay',
+      homeDescription:
+        'Encuentra las mejores cotizaciones de cambio de divisas en Uruguay. Compara precios de más de 40 casas de cambio en tiempo real.',
+      homeKeywords:
+        'cambio moneda uruguay, cambio divisas uruguay, donde comprar dólares uruguay, donde vender dólares uruguay, vender pesos argentinos uruguay, comprar pesos argentinos uruguay, casas de cambio uruguay, casas de cambio montevideo, casas de cambio punta del este',
+
+      // Página histórico
+      historicalTitle: 'Historial de Cotizaciones - Cambio Uruguay',
+      historicalDescription:
+        'Consulta el historial completo de cotizaciones de todas las casas de cambio en Uruguay. Datos actualizados en tiempo real.',
+      historicalKeywords:
+        'historial cotizaciones, cambio uruguay, histórico precios, casas cambio uruguay',
+
+      // Página histórico por casa de cambio
+      historicalOriginTitle: 'Cotizaciones de {origin} - Cambio Uruguay',
+      historicalOriginDescription:
+        'Consulta todas las cotizaciones actuales e históricas de {origin}. Precios de compra y venta actualizados en tiempo real.',
+      historicalOriginKeywords:
+        'cotizaciones casa cambio, cambio divisas uruguay, precios cambio uruguay',
+
+      // Página histórico detallado
+      historicalDetailTitle: 'Histórico {origin} - {currency} | Cambio Uruguay',
+      historicalDetailDescription:
+        'Evolución histórica de cotizaciones {currency} en {origin}. Gráficos, estadísticas y datos detallados de cambio de moneda en Uruguay.',
+      historicalDetailKeywords:
+        'histórico cotizaciones, evolución cambio, gráfico cotizaciones, estadísticas cambio uruguay',
+
+      // Página offline
+      offlineTitle: 'Sin Conexión - Cambio Uruguay',
+      offlineDescription:
+        'No hay conexión a internet. Verifica tu conexión para acceder a las cotizaciones de cambio.',
+      offlineKeywords: 'sin conexión, offline, cambio uruguay',
+    },
   }
 })

@@ -270,6 +270,23 @@ const router = useRouter()
 const store = useCambioStore()
 const { start, finish } = useLoadingIndicator()
 
+// SEO Configuration with multilingual support
+useSeoMeta({
+  title: () => t('seo.homeTitle'),
+  description: () => t('seo.homeDescription'),
+  keywords: () => t('seo.homeKeywords'),
+  ogTitle: () => t('seo.homeTitle'),
+  ogDescription: () => t('seo.homeDescription'),
+  ogType: 'website',
+  ogUrl: 'https://cambio-uruguay.com',
+  ogImage: 'https://cambio-uruguay.com/img/og-image.jpg',
+  twitterCard: 'summary_large_image',
+  twitterTitle: () => t('seo.homeTitle'),
+  twitterDescription: () => t('seo.homeDescription'),
+  twitterImage: 'https://cambio-uruguay.com/img/og-image.jpg',
+  twitterSite: '@cambio_uruguay',
+})
+
 // Reactive data
 const snackColor = ref<string>('green darken-4')
 const routeHasQuery = ref<boolean>(false)
@@ -786,28 +803,31 @@ onMounted(() => {
   }
 })
 
-// SEO Head
-useSeoMeta({
-  title: () => t('seoTitle'),
-  description: () => t('seoDescription'),
-  keywords: () => t('seoKeywords'),
-})
-
+// Structured Data for SEO
 const structuredData = computed(() => ({
   '@context': 'https://schema.org',
   '@type': 'WebApplication',
-  name: 'Cambio Uruguay',
-  description: t('seoDescription'),
+  name: t('seo.home.title'),
+  description: t('seo.home.description'),
   url: 'https://cambio-uruguay.com',
   applicationCategory: 'FinanceApplication',
   operatingSystem: 'All',
   offers: {
     '@type': 'Offer',
-    description: 'Compare exchange rates from over 40 exchange houses',
+    description: t('seo.home.description'),
     price: '0',
     priceCurrency: 'USD',
   },
   author: {
+    '@type': 'Person',
+    name: 'Eduardo Airaudo',
+    url: 'https://www.linkedin.com/in/eairaudo/',
+    sameAs: [
+      'https://www.linkedin.com/in/eairaudo/',
+      'https://github.com/eduair94',
+    ],
+  },
+  publisher: {
     '@type': 'Organization',
     name: 'Cambio Uruguay',
     url: 'https://cambio-uruguay.com',

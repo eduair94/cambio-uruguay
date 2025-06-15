@@ -215,5 +215,40 @@ export default defineI18nLocale(async (locale) => {
       AUD: 'Dólares australianos',
       UYU: 'Pesos Uruguayos',
     },
+    seo: {
+      // Página inicial
+      homeTitle: 'Melhores Taxas de Câmbio no Uruguai',
+      homeDescription:
+        'Encontre as melhores taxas de câmbio no Uruguai. Compare preços de mais de 40 casas de câmbio em tempo real.',
+      homeKeywords:
+        'câmbio moeda uruguai, câmbio divisas uruguai, onde comprar dólares uruguai, onde vender dólares uruguai, vender pesos argentinos uruguai, comprar pesos argentinos uruguai, casas de câmbio uruguai, casas de câmbio montevidéu, casas de câmbio punta del este',
+
+      // Página histórica
+      historicalTitle: 'Histórico de Cotações - Cambio Uruguay',
+      historicalDescription:
+        'Consulte o histórico completo de cotações de todas as casas de câmbio no Uruguai. Dados atualizados em tempo real.',
+      historicalKeywords:
+        'histórico cotações, câmbio uruguai, histórico preços, casas câmbio uruguai',
+
+      // Página histórico por casa de câmbio
+      historicalOriginTitle: 'Cotações de {origin} - Cambio Uruguay',
+      historicalOriginDescription:
+        'Consulte todas as cotações atuais e históricas de {origin}. Preços de compra e venda atualizados em tempo real.',
+      historicalOriginKeywords:
+        'cotações casa câmbio, câmbio divisas uruguai, preços câmbio uruguai',
+
+      // Página histórico detalhado
+      historicalDetailTitle: 'Histórico {origin} - {currency} | Cambio Uruguay',
+      historicalDetailDescription:
+        'Evolução histórica das cotações {currency} em {origin}. Gráficos, estatísticas e dados detalhados de câmbio de moedas no Uruguai.',
+      historicalDetailKeywords:
+        'histórico cotações, evolução câmbio, gráfico cotações, estatísticas câmbio uruguai',
+
+      // Página offline
+      offlineTitle: 'Offline - Cambio Uruguay',
+      offlineDescription:
+        'Sem conexão com a internet. Verifique sua conexão para acessar as taxas de câmbio.',
+      offlineKeywords: 'offline, sem conexão, cambio uruguay',
+    },
   }
 })

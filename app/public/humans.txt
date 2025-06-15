@@ -1,7 +1,10 @@
 /* TEAM */
-Developer: Cambio Uruguay Team
+Developer & Creator: Eduardo Airaudo
+LinkedIn: https://www.linkedin.com/in/eduardo-airaudo/
+Co-Developer: Regina Scagliotti
+LinkedIn: https://www.linkedin.com/in/reginascagliotti/
 Contact: admin@cambio-uruguay.com
-Twitter: @cambios_uy
+Twitter: @cambio_uruguay
 From: Uruguay
 
 /* THANKS */

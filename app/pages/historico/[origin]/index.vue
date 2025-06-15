@@ -179,8 +179,8 @@
 </template>
 
 <script setup lang="ts">
-import { useSeoMeta } from '#imports'
 import { computed, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useDisplay } from 'vuetify/lib/composables/display.mjs'
 
@@ -300,6 +300,28 @@ const lastUpdate = computed(() => {
   })
 })
 
+// SEO Configuration with dynamic origin name
+const originName = computed(() =>
+  formatOriginName(route.params.origin as string),
+)
+
+useSeoMeta({
+  title: () => t('seo.historicalOriginTitle', { origin: originName.value }),
+  description: () =>
+    t('seo.historicalOriginDescription', { origin: originName.value }),
+  keywords: () => t('seo.historicalOriginKeywords'),
+  ogTitle: () => t('seo.historicalOriginTitle', { origin: originName.value }),
+  ogDescription: () =>
+    t('seo.historicalOriginDescription', { origin: originName.value }),
+  ogType: 'website',
+  ogUrl: () => `https://cambio-uruguay.com/historico/${route.params.origin}`,
+  twitterCard: 'summary_large_image',
+  twitterTitle: () =>
+    t('seo.historicalOriginTitle', { origin: originName.value }),
+  twitterDescription: () =>
+    t('seo.historicalOriginDescription', { origin: originName.value }),
+})
+
 // Headers definition
 const headers = ref([
   {
@@ -342,18 +364,6 @@ const headers = ref([
     width: '200px',
   },
 ])
-
-// SEO/Head
-const originName = computed(() =>
-  formatOriginName(route.params.origin as string),
-)
-useSeoMeta({
-  title: () => `Cotizaciones de ${originName.value} - Cambio Uruguay`,
-  description: () =>
-    `Consulta las cotizaciones actuales de ${originName.value}. Compara precios de todas las monedas disponibles.`,
-  keywords: () =>
-    `${formatOriginName(route.params.origin as string)}, cotizaciones, cambio, uruguay, ${route.params.origin}`,
-})
 
 // Computed properties
 const currencyOptions = computed(() => {
@@ -554,6 +564,9 @@ const updateQueryParams = () => {
     })
     .catch(() => {})
 }
+
+// Composables
+const { t } = useI18n()
 
 // Watchers
 watch(selectedCurrency, updateQueryParams)

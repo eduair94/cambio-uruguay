@@ -218,20 +218,34 @@ interface OriginNameMap {
   [key: string]: string
 }
 
+const { t, locale } = useI18n()
+// Router and route
+const route = useRoute()
+const router = useRouter()
+const { smAndDown } = useDisplay()
+
+// Initialize API service
+const apiService = useApiService()
+
+// SEO/Head
+useSeoMeta({
+  title: () => t('seo.historicalTitle'),
+  description: () => t('seo.historicalDescription'),
+  keywords: () => t('seo.historicalKeywords'),
+  ogTitle: () => t('seo.historicalTitle'),
+  ogDescription: () => t('seo.historicalDescription'),
+  ogType: 'website',
+  ogUrl: 'https://cambio-uruguay.com/historico',
+  twitterCard: 'summary_large_image',
+  twitterTitle: () => t('seo.historicalTitle'),
+  twitterDescription: () => t('seo.historicalDescription'),
+})
+
 // Reactive state
 const search = ref('')
 const selectedOrigin = ref<string | null>(null)
 const selectedCurrency = ref<string | null>(null)
 const selectedType = ref<string | null>(null)
-
-// Router and route
-const router = useRouter()
-const route = useRoute()
-const { t } = useI18n()
-const { smAndDown } = useDisplay()
-
-// Initialize API service
-const apiService = useApiService()
 
 // Load data using useAsyncData for SSR
 const {
@@ -292,13 +306,6 @@ const lastUpdate = computed(() => {
     hour: '2-digit',
     minute: '2-digit',
   })
-})
-
-// SEO/Head
-useSeoMeta({
-  title: () => `${t('historical.currentQuotes')} - Cambio Uruguay`,
-  description:
-    'Consulta las cotizaciones actuales de todas las casas de cambio de Uruguay. Compara precios y encuentra la mejor opción.',
 })
 
 // Computed properties
