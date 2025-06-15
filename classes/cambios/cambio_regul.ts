@@ -33,78 +33,18 @@ class CambioRegul extends Cambio {
   website = "https://cambioregulsa.com/";
   favicon = "https://cambioregulsa.com/";
 
-  private async launchBrowser(): Promise<any> {
-    const baseArgs = [
-      "--no-sandbox",
-      "--disable-setuid-sandbox",
-      "--disable-dev-shm-usage",
-      "--disable-accelerated-2d-canvas",
-      "--no-first-run",
-      "--no-zygote",
-      "--disable-gpu",
-      "--disable-web-security",
-      "--disable-features=VizDisplayCompositor",
-      "--disable-extensions",
-      "--disable-plugins",
-      "--disable-default-apps",
-      "--disable-background-timer-throttling",
-      "--disable-backgrounding-occluded-windows",
-      "--disable-renderer-backgrounding",
-      "--disable-field-trial-config",
-      "--disable-back-forward-cache",
-      "--disable-ipc-flooding-protection",
-      "--single-process",
-    ];
-
-    // Strategy 1: Try system Chrome first (safer for Linux servers)
-    const chromePaths = ["/usr/bin/google-chrome"];
-
-    for (const chromePath of chromePaths) {
-      try {
-        console.log(`Trying system Chrome at: ${chromePath}`);
-        const puppeteerCore = require("puppeteer-core");
-
-        const browser = await puppeteerCore.launch({
-          headless: true,
-          executablePath: chromePath,
-          args: baseArgs,
-          timeout: 15000,
-        });
-
-        console.log(`Successfully launched system Chrome from: ${chromePath}`);
-        return browser;
-      } catch (error) {
-        console.log(`Failed to launch Chrome at ${chromePath}: ${error.message}`);
-        continue;
-      }
-    }
-
-    // Strategy 2: Try bundled Puppeteer as fallback
-    console.log("System Chrome not available, trying bundled Puppeteer...");
-    try {
-      const browser = await puppeteer.launch({
-        headless: true,
-        args: baseArgs,
-        timeout: 30000,
-        ignoreDefaultArgs: ["--disable-extensions"],
-      });
-
-      console.log("Successfully launched bundled Puppeteer browser");
-      return browser;
-    } catch (error) {
-      console.error("Failed to launch bundled Puppeteer:", error.message);
-      throw new Error(`All browser launch strategies failed. Last error: ${error.message}`);
-    }
-  }
-
   async get_data(): Promise<CambioObj[]> {
     let browser = null;
 
     try {
-      console.log("Attempting to launch browser...");
+      console.log("Launching Puppeteer browser...");
 
-      // Try system Chrome first, then fall back to bundled Puppeteer
-      browser = await this.launchBrowser();
+      // Launch browser with optimized settings
+      browser = await puppeteer.launch({
+        headless: true,
+        args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage", "--disable-accelerated-2d-canvas", "--no-first-run", "--no-zygote", "--disable-gpu"],
+        timeout: 30000,
+      });
 
       const page = await browser.newPage();
 
@@ -312,17 +252,7 @@ class CambioRegul extends Cambio {
       console.log("Successfully extracted exchange rates:", uniqueResult);
       return uniqueResult;
     } catch (error) {
-      console.error("Error scraping Cambio Regul:", error);
-      console.log("Error details:", error.message);
-
-      // Return fallback data as last resort
-      console.log("Falling back to sample data due to scraping error...");
-      return [
-        { code: "USD", type: "", name: "Dolar", buy: 40.5, sell: 41.5 },
-        { code: "EUR", type: "", name: "Euro", buy: 43.8, sell: 44.8 },
-        { code: "ARS", type: "", name: "Peso", buy: 0.045, sell: 0.055 },
-        { code: "BRL", type: "", name: "Real", buy: 7.8, sell: 8.2 },
-      ];
+      console.error("Error during scraping:", error);
     } finally {
       if (browser) {
         console.log("Closing browser...");
