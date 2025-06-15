@@ -57,7 +57,7 @@ class CambioRegul extends Cambio {
     ];
 
     // Strategy 1: Try system Chrome first (safer for Linux servers)
-    const chromePaths = [process.env.CHROME_BIN, "/usr/bin/google-chrome", "/usr/bin/chromium-browser", "/usr/bin/chromium", "/snap/bin/chromium"].filter(Boolean);
+    const chromePaths = ["/usr/bin/google-chrome"];
 
     for (const chromePath of chromePaths) {
       try {
