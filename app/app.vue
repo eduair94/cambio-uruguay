@@ -18,13 +18,6 @@ onErrorCaptured((error) => {
   return false
 })
 
-// SEO and Meta Configuration
-useHead({
-  htmlAttrs: {
-    lang: 'es-ES',
-  },
-})
-
 // Global error handling
 onErrorCaptured((error) => {
   console.error('Global error captured:', error)

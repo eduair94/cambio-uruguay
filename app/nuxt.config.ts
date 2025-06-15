@@ -19,9 +19,6 @@ export default defineNuxtConfig({
   // App Configuration
   app: {
     head: {
-      htmlAttrs: {
-        lang: 'es-ES',
-      },
       titleTemplate: '%s - Cambio Uruguay',
       title: 'Mejores Cotizaciones de Cambio en Uruguay',
       meta: [
