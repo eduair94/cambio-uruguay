@@ -259,6 +259,8 @@ export default defineI18nLocale(async (locale) => {
       CAD: 'Canadian Dollars',
       AUD: 'Australian Dollars',
       UYU: 'Pesos Uruguayos',
+      MXN: 'Mexican New Pesos',
+      COP: 'Colombian Pesos',
     },
     seo: {
       // Homepage
@@ -301,13 +303,15 @@ export default defineI18nLocale(async (locale) => {
         'Find all {origin} branches in Uruguay. Complete addresses, phone numbers, hours and locations.',
       sucursalesLocationDescription:
         '{origin} branches in {location}. Addresses, phone numbers, hours and locations in {location}, Uruguay.',
-      sucursalesKeywords: '{origin} branches, {origin} addresses, {origin} locations, exchange houses uruguay',
+      sucursalesKeywords:
+        '{origin} branches, {origin} addresses, {origin} locations, exchange houses uruguay',
 
       // Branch directory page
       sucursalesIndexTitle: 'Branch Directory - All Exchange Houses in Uruguay',
       sucursalesIndexDescription:
         'Complete directory of branches from all exchange houses in Uruguay. Find locations, addresses and contacts by department.',
-      sucursalesIndexKeywords: 'branch directory uruguay, exchange houses uruguay, montevideo branches, canelones branches, all branches uruguay',
+      sucursalesIndexKeywords:
+        'branch directory uruguay, exchange houses uruguay, montevideo branches, canelones branches, all branches uruguay',
     },
   }
 })

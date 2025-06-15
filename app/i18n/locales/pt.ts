@@ -261,6 +261,8 @@ export default defineI18nLocale(async (locale) => {
       CAD: 'Dólares canadenses',
       AUD: 'Dólares australianos',
       UYU: 'Pesos Uruguayos',
+      MXN: 'Novos Pesos Mexicanos',
+      COP: 'Pesos colombianos',
     },
     seo: {
       // Página inicial
@@ -303,13 +305,16 @@ export default defineI18nLocale(async (locale) => {
         'Encontre todas as filiais de {origin} no Uruguai. Endereços completos, telefones, horários e localizações.',
       sucursalesLocationDescription:
         'Filiais de {origin} em {location}. Endereços, telefones, horários e localizações em {location}, Uruguai.',
-      sucursalesKeywords: 'filiais {origin}, endereços {origin}, localizações {origin}, casas de câmbio uruguai',
+      sucursalesKeywords:
+        'filiais {origin}, endereços {origin}, localizações {origin}, casas de câmbio uruguai',
 
       // Página diretório de filiais
-      sucursalesIndexTitle: 'Diretório de Filiais - Todas as Casas de Câmbio no Uruguai',
+      sucursalesIndexTitle:
+        'Diretório de Filiais - Todas as Casas de Câmbio no Uruguai',
       sucursalesIndexDescription:
         'Diretório completo de filiais de todas as casas de câmbio no Uruguai. Encontre localizações, endereços e contatos por departamento.',
-      sucursalesIndexKeywords: 'diretório filiais uruguai, casas de câmbio uruguai, filiais montevidéu, filiais canelones, todas as filiais uruguai',
+      sucursalesIndexKeywords:
+        'diretório filiais uruguai, casas de câmbio uruguai, filiais montevidéu, filiais canelones, todas as filiais uruguai',
     },
   }
 })

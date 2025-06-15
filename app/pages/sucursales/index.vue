@@ -99,6 +99,7 @@
       <v-row class="mb-4">
         <v-col cols="12" md="5">
           <v-text-field
+            v-model="searchQuery"
             :label="$t('sucursales.buscar')"
             prepend-inner-icon="mdi-magnify"
             variant="outlined"
@@ -106,6 +107,8 @@
             clearable
             hide-details
             @keyup.enter="applySearchFilter"
+            @input="applySearchFilter"
+            @click:clear="applySearchFilter"
           ></v-text-field>
         </v-col>
         <v-col cols="12" md="5">
@@ -118,6 +121,8 @@
             density="compact"
             clearable
             hide-details
+            @click:clear="applySearchFilter"
+            @update:model-value="applySearchFilter"
           ></v-autocomplete>
         </v-col>
         <v-col
@@ -125,20 +130,6 @@
           md="2"
           class="d-flex align-center justify-end justify-md-start ga-2"
         >
-          <v-tooltip location="top">
-            <template v-slot:activator="{ props }">
-              <v-btn
-                v-bind="props"
-                color="primary"
-                variant="elevated"
-                @click="applySearchFilter"
-                class="mt-1"
-                icon="mdi-magnify"
-                size="small"
-              ></v-btn>
-            </template>
-            <span>{{ $t('sucursales.buscarAhora') }}</span>
-          </v-tooltip>
           <v-tooltip location="top">
             <template v-slot:activator="{ props }">
               <v-btn
@@ -265,24 +256,86 @@ if (route.query.search && typeof route.query.search === 'string') {
 
 const { getProcessedExchangeData } = useApiService()
 
-// Server-side data fetching
+// Server-side data fetching with better error handling
 const {
   data: exchangeInfo,
   pending,
   error,
-} = await useLazyAsyncData('sucursales-index', async () => {
-  try {
-    const today = new Date().toISOString().split('T')[0]
-    return await getProcessedExchangeData(today)
-  } catch (err) {
-    console.error('Error fetching exchange data:', err)
-    throw err
-  }
-})
+} = await useLazyAsyncData(
+  'sucursales-index',
+  async () => {
+    try {
+      // Helper functions with proper memoization
+      const deduplicatedOrigins = (exchangeData: any[]) => {
+        try {
+          if (!exchangeData) return []
+
+          const uniqueOrigins = new Map<string, any>()
+
+          exchangeData.forEach((origin: any) => {
+            const originName = origin.origin
+            if (!originName) return // Skip invalid entries
+
+            if (!uniqueOrigins.has(originName)) {
+              uniqueOrigins.set(originName, { ...origin }) // Deep copy to prevent mutations
+            } else {
+              // If we already have this origin, merge the departments
+              const existing = uniqueOrigins.get(originName)!
+              if (
+                origin.localData?.departments &&
+                existing.localData?.departments
+              ) {
+                const combinedDepts = new Set([
+                  ...existing.localData.departments,
+                  ...origin.localData.departments,
+                ])
+                existing.localData.departments = Array.from(combinedDepts)
+              }
+            }
+          })
+
+          return Array.from(uniqueOrigins.values())
+        } catch (error) {
+          console.error('Error deduplicating origins:', error)
+          return []
+        }
+      }
+
+      const result = await getProcessedExchangeData('')
+      // Validate the data structure
+      if (!result || typeof result !== 'object') {
+        throw new Error('Invalid data structure received')
+      }
+      if (result.exchangeData) {
+        // Process and deduplicate origins
+        result.exchangeData = deduplicatedOrigins(result.exchangeData)
+      } else {
+        result.exchangeData = []
+      }
+      return result
+    } catch (err) {
+      console.error('Error fetching exchange data:', err)
+      // Return empty structure instead of throwing to prevent complete failure
+      return {
+        exchangeData: [],
+        locations: [],
+        localData: {},
+      }
+    }
+  },
+  {
+    server: true, // Enable server-side rendering
+    default: () => ({
+      exchangeData: [],
+      locations: [],
+      localData: {},
+    }),
+  },
+)
 
 // Computed properties
 const totalOrigins = computed(() => {
-  return getDeduplicatedOrigins().length
+  return exchangeInfo.value.exchangeData.length
 })
 
 const totalLocations = computed(() => {
@@ -290,107 +343,87 @@ const totalLocations = computed(() => {
 })
 
 const departmentOptions = computed(() => {
-  const departments = new Set<string>()
+  try {
+    const departments = new Set<string>()
 
-  getDeduplicatedOrigins().forEach((origin: any) => {
-    if (origin.localData?.departments) {
-      origin.localData.departments.forEach((dept: string) =>
-        departments.add(dept),
-      )
-    }
-  })
+    exchangeInfo.value.exchangeData.forEach((origin: any) => {
+      if (origin.localData?.departments) {
+        origin.localData.departments.forEach((dept: string) =>
+          departments.add(dept),
+        )
+      }
+    })
 
-  return Array.from(departments).sort()
+    return Array.from(departments).sort()
+  } catch (error) {
+    console.error('Error computing department options:', error)
+    return []
+  }
 })
 
 const filteredOrigins = computed(() => {
-  let filtered = getDeduplicatedOrigins().filter((origin: any) => {
-    // Apply search filter
-    if (searchQuery.value) {
-      const search = searchQuery.value.toLowerCase()
-      const name = (origin.localData?.name || origin.origin || '').toLowerCase()
-      if (!name.includes(search)) return false
-    }
+  try {
+    const deduplicated = exchangeInfo.value.exchangeData
+    if (!deduplicated || deduplicated.length === 0) return []
 
-    // Apply department filter
-    if (selectedDepartment.value) {
-      if (
-        !origin.localData?.departments?.includes(
-          selectedDepartment.value.toUpperCase().trim(),
-        )
-      ) {
-        return false
+    const department = route.query.location as string
+    const searchQuery = route.query.search as string
+
+    let filtered = deduplicated.filter((origin: any) => {
+      // Apply search filter
+      if (searchQuery) {
+        const search = searchQuery.toLowerCase()
+        const name = (
+          origin.localData?.name ||
+          origin.origin ||
+          ''
+        ).toLowerCase()
+        if (!name.includes(search)) return false
       }
-    }
 
-    return true
-  })
-
-  // Add departments info for each origin
-  return filtered.map((origin: any) => ({
-    ...origin,
-    name: origin.origin,
-    departments: origin.localData?.departments || [],
-  }))
-})
-
-const filteredLocations = computed(() => {
-  if (!exchangeInfo.value?.locations) return []
-
-  let locations = exchangeInfo.value.locations
-
-  // Apply search filter
-  if (searchQuery.value) {
-    const search = searchQuery.value.toLowerCase()
-    locations = locations.filter((location: string) =>
-      location.toLowerCase().includes(search),
-    )
-  }
-
-  // Apply department filter
-  if (selectedDepartment.value) {
-    locations = locations.filter((location: string) =>
-      location.toLowerCase().includes(selectedDepartment.value.toLowerCase()),
-    )
-  }
-
-  return locations.sort()
-})
-
-// Helper functions
-const getDeduplicatedOrigins = (): any[] => {
-  if (!exchangeInfo.value?.exchangeData) return []
-
-  const uniqueOrigins = new Map<string, any>()
-
-  exchangeInfo.value.exchangeData.forEach((origin: any) => {
-    const originName = origin.origin
-    if (!uniqueOrigins.has(originName)) {
-      uniqueOrigins.set(originName, origin)
-    } else {
-      // If we already have this origin, merge the departments
-      const existing = uniqueOrigins.get(originName)
-      if (origin.localData?.departments && existing.localData?.departments) {
-        const combinedDepts = new Set([
-          ...existing.localData.departments,
-          ...origin.localData.departments,
-        ])
-        existing.localData.departments = Array.from(combinedDepts)
+      // Apply department filter
+      if (department) {
+        if (
+          !origin.localData?.departments?.includes(
+            department.toUpperCase().trim(),
+          )
+        ) {
+          return false
+        }
       }
-    }
-  })
 
-  return Array.from(uniqueOrigins.values())
-}
+      return true
+    })
+
+    // Return pre-computed structure to avoid mutation
+    return filtered.map((origin: any) => ({
+      ...origin,
+      name: origin.origin,
+      departments: origin.localData?.departments || [],
+    }))
+  } catch (error) {
+    console.error('Error filtering origins:', error)
+    return []
+  }
+})
 
 const formatOriginName = (origin: string): string => {
+  if (!origin || typeof origin !== 'string') return ''
   return origin
     .split('-')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ')
 }
 
+// Memoized avatar color function
+const avatarColorCache = new Map<string, string>()
 const getAvatarColor = (origin: string): string => {
+  if (!origin || typeof origin !== 'string') return 'primary'
+
+  if (avatarColorCache.has(origin)) {
+    return avatarColorCache.get(origin)!
+  }
+
   const colors = [
     'primary',
     'secondary',
@@ -400,100 +433,83 @@ const getAvatarColor = (origin: string): string => {
     'warning',
   ]
   const index = origin.length % colors.length
-  return colors[index]
+  const color = colors[index]
+
+  avatarColorCache.set(origin, color)
+  return color
 }
 
-const getOriginCountForLocation = (location: string): number => {
-  return getDeduplicatedOrigins().filter((origin: any) =>
-    origin.localData?.departments?.some(
-      (dept: string) =>
-        dept.toLowerCase().includes(location.toLowerCase()) ||
-        location.toLowerCase().includes(dept.toLowerCase()),
-    ),
-  ).length
-}
+// Navigation functions with throttling
+let navigationThrottle = false
 
-// Navigation functions
 const navigateToOrigin = (origin: string) => {
-  let url = `/sucursales/${origin}`
-  if (route.query.location) {
-    url += `/${route.query.location}`
+  if (navigationThrottle) return
+  navigationThrottle = true
+
+  try {
+    let url = `/sucursales/${origin}`
+    if (route.query.location) {
+      url += `/${route.query.location}`
+    }
+    router.push(localePath(url))
+  } catch (error) {
+    console.error('Error navigating to origin:', error)
+  } finally {
+    setTimeout(() => {
+      navigationThrottle = false
+    }, 300) // Prevent rapid navigation
   }
-  router.push(localePath(url))
 }
-
-const navigateToLocation = (location: string) => {
-  // For location-based navigation, we'll show all origins in that location
-  selectedDepartment.value = location
-  router.push(
-    localePath(`/sucursales?location=${encodeURIComponent(location)}`),
-  )
-}
-
 // Search and filter functions
-const applySearchFilter = (event: any) => {
-  searchQuery.value = event.target.value.trim()
-  updateUrlParams()
+const applySearchFilter = (event?: any) => {
+  try {
+    updateUrlParams()
+  } catch (error) {
+    console.error('Error applying search filter:', error)
+  }
 }
 
 const clearAllFilters = () => {
-  searchQuery.value = ''
-  selectedDepartment.value = ''
-  updateUrlParams()
+  try {
+    searchQuery.value = ''
+    selectedDepartment.value = ''
+    updateUrlParams()
+  } catch (error) {
+    console.error('Error clearing filters:', error)
+  }
 }
 
 const updateUrlParams = () => {
-  const query: Record<string, string | undefined> = {}
+  try {
+    const query: Record<string, string | undefined> = {}
 
-  if (searchQuery.value) {
-    query.search = searchQuery.value
-  } else {
-    query.search = undefined
-  }
-
-  if (selectedDepartment.value) {
-    query.location = selectedDepartment.value
-  } else {
-    query.location = undefined
-  }
-
-  // Preserve other query parameters if they exist
-  Object.keys(route.query).forEach((key) => {
-    if (key !== 'location' && key !== 'search' && route.query[key]) {
-      query[key] = route.query[key] as string
+    if (searchQuery.value) {
+      query.search = searchQuery.value
+    } else {
+      query.search = undefined
     }
-  })
 
-  router.push({
-    path: localePath('/sucursales'),
-    query: Object.keys(query).length > 0 ? query : undefined,
-  })
+    if (selectedDepartment.value) {
+      query.location = selectedDepartment.value
+    } else {
+      query.location = undefined
+    }
+
+    // Preserve other query parameters if they exist
+    Object.keys(route.query).forEach((key) => {
+      if (key !== 'location' && key !== 'search' && route.query[key]) {
+        query[key] = route.query[key] as string
+      }
+    })
+
+    router.push({
+      path: localePath('/sucursales'),
+      query: Object.keys(query).length > 0 ? query : undefined,
+    })
+  } catch (error) {
+    console.error('Error updating URL parameters:', error)
+  }
 }
-
-// Watch for department changes and update URL
-watch(selectedDepartment, (newDepartment, oldDepartment) => {
-  // Only update URL if the change wasn't from initial page load or navigation
-  if (newDepartment !== oldDepartment) {
-    updateUrlParams()
-  }
-})
-
-// Watch for search query changes (debounced)
-let searchTimeout: NodeJS.Timeout | null = null
-watch(searchQuery, (newSearch, oldSearch) => {
-  // Clear previous timeout
-  if (searchTimeout) {
-    clearTimeout(searchTimeout)
-  }
-
-  // Only update URL if the change wasn't from initial page load
-  if (newSearch !== oldSearch && oldSearch !== undefined) {
-    // Debounce the URL update for search
-    searchTimeout = setTimeout(() => {
-      updateUrlParams()
-    }, 500) // Update URL 500ms after user stops typing
-  }
-})
 
 // SEO Meta
 useSeoMeta({
@@ -506,11 +522,13 @@ useSeoMeta({
 </script>
 
 <style scoped>
-/* Gradient background for header */
+/* Gradient background for header - optimized for performance */
 .bg-gradient-to-r {
   background: linear-gradient(135deg, #1976d2 0%, #7b1fa2 100%);
   position: relative;
   overflow: hidden;
+  /* Disable animation by default to prevent performance issues */
+  /* animation: gradientShift 6s ease infinite; */
 }
 
 .bg-gradient-to-r::before {
@@ -539,10 +557,12 @@ useSeoMeta({
   pointer-events: none;
 }
 
-/* Animated gradient effect */
-.bg-gradient-to-r {
-  background-size: 400% 400%;
-  animation: gradientShift 6s ease infinite;
+/* Animated gradient effect - only enable on non-mobile and when user prefers motion */
+@media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
+  .bg-gradient-to-r {
+    background-size: 400% 400%;
+    animation: gradientShift 8s ease infinite;
+  }
 }
 
 @keyframes gradientShift {
@@ -557,28 +577,34 @@ useSeoMeta({
   }
 }
 
-/* Card hover effects */
+/* Card hover effects - optimized */
 .exchange-house-card {
-  transition: all 0.3s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  will-change: transform, box-shadow;
 }
 
 .exchange-house-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15) !important;
 }
 
 .location-card {
-  transition: all 0.3s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  will-change: transform, box-shadow;
 }
 
 .location-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1) !important;
 }
 
-/* Glassmorphism effect for chips */
+/* Glassmorphism effect for chips - simplified for performance */
 .v-chip {
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 </style>

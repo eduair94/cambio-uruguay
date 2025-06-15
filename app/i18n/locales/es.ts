@@ -148,11 +148,13 @@ export default defineI18nLocale(async (locale) => {
     // Sucursales index page
     sucursales: {
       titulo: 'Directorio de Sucursales',
-      descripcion: 'Encuentra todas las sucursales de casas de cambio en Uruguay',
+      descripcion:
+        'Encuentra todas las sucursales de casas de cambio en Uruguay',
       casasDeCambio: 'Casas de Cambio',
       ubicaciones: 'Ubicaciones',
       datosActualizados: 'Datos actualizados en tiempo real',
-      clickParaVer: 'Haz clic en cualquier casa de cambio para ver sus sucursales',
+      clickParaVer:
+        'Haz clic en cualquier casa de cambio para ver sus sucursales',
       cargandoDatos: 'Cargando información de sucursales...',
       buscar: 'Buscar casa de cambio o ubicación...',
       buscarAhora: 'Buscar ahora',
@@ -276,6 +278,8 @@ export default defineI18nLocale(async (locale) => {
       CAD: 'Dólares Canadienses',
       AUD: 'Dólares Australianos',
       UYU: 'Pesos Uruguayos',
+      MXN: 'Nuevos Pesos Mexicanos',
+      COP: 'Pesos Colombianos',
     },
     seo: {
       // Página principal
@@ -318,13 +322,16 @@ export default defineI18nLocale(async (locale) => {
         'Encuentra todas las sucursales de {origin} en Uruguay. Direcciones, teléfonos, horarios y ubicaciones completas.',
       sucursalesLocationDescription:
         'Sucursales de {origin} en {location}. Direcciones, teléfonos, horarios y ubicaciones en {location}, Uruguay.',
-      sucursalesKeywords: 'sucursales {origin}, direcciones {origin}, ubicaciones {origin}, casas de cambio uruguay',
+      sucursalesKeywords:
+        'sucursales {origin}, direcciones {origin}, ubicaciones {origin}, casas de cambio uruguay',
 
       // Página directorio de sucursales
-      sucursalesIndexTitle: 'Directorio de Sucursales - Todas las Casas de Cambio en Uruguay',
+      sucursalesIndexTitle:
+        'Directorio de Sucursales - Todas las Casas de Cambio en Uruguay',
       sucursalesIndexDescription:
         'Directorio completo de sucursales de todas las casas de cambio en Uruguay. Encuentra ubicaciones, direcciones y contactos por departamento.',
-      sucursalesIndexKeywords: 'directorio sucursales uruguay, casas de cambio uruguay, sucursales montevideo, sucursales canelones, todas las sucursales uruguay',
+      sucursalesIndexKeywords:
+        'directorio sucursales uruguay, casas de cambio uruguay, sucursales montevideo, sucursales canelones, todas las sucursales uruguay',
     },
   }
 })
