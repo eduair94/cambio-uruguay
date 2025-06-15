@@ -42,6 +42,7 @@ class CambioRegul extends Cambio {
       // Launch browser with optimized settings
       browser = await puppeteer.launch({
         headless: true,
+        executablePath: "usr/bin/google-chrome", // Adjust this path if necessary
         args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage", "--disable-accelerated-2d-canvas", "--no-first-run", "--no-zygote", "--disable-gpu"],
         timeout: 30000,
       });
