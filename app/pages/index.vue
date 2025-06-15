@@ -279,11 +279,9 @@ useSeoMeta({
   ogDescription: () => t('seo.homeDescription'),
   ogType: 'website',
   ogUrl: 'https://cambio-uruguay.com',
-  ogImage: 'https://cambio-uruguay.com/img/og-image.jpg',
   twitterCard: 'summary_large_image',
   twitterTitle: () => t('seo.homeTitle'),
   twitterDescription: () => t('seo.homeDescription'),
-  twitterImage: 'https://cambio-uruguay.com/img/og-image.jpg',
   twitterSite: '@cambio_uruguay',
 })
 
