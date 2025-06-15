@@ -127,6 +127,7 @@ class CambioInfo extends Cambio {
   }
   async get_currency_evolution(origin: string, code: string, periodMonths: number = 6, type?: string): Promise<any> {
     // Calculate date range based on the period requested
+    origin = origin.toLowerCase();
     const endDate = moment.tz("America/Montevideo").startOf("day").toDate();
     const startDate = moment.tz("America/Montevideo").subtract(periodMonths, "months").startOf("day").toDate();
 
@@ -134,7 +135,7 @@ class CambioInfo extends Cambio {
 
     // Query the database for historical data within the date range
     const query: any = {
-      origin: origin.toLowerCase(),
+      origin: origin,
       code: code.toUpperCase(),
       date: {
         $gte: startDate,
@@ -199,12 +200,26 @@ class CambioInfo extends Cambio {
             }
           : null,
     };
+
+    const bcu_details = new BCU_Details();
+    const exchange: Cambio = new origins[origin](origin);
+
+    const data = await bcu_details.get_by_origin(origin);
+    const localData = {
+      name: exchange.name,
+      website: exchange.website,
+      maps: exchange.getMaps(),
+      bcu: (exchange as any).bcu,
+      departments: data && data.departments ? data.departments : [],
+    };
+
     return {
-      origin: origin.toLowerCase(),
+      origin: origin,
       code: code.toUpperCase(),
       type: type?.toUpperCase() || null,
       statistics,
       evolution,
+      localData,
     };
   }
 }
