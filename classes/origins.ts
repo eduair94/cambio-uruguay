@@ -34,6 +34,7 @@ import CambioFortex from "./cambios/fortex";
 import CambioGales from "./cambios/gales";
 import CambioIndumex from "./cambios/indumex";
 import Itau from "./cambios/itau";
+import CambioLaFavorita from "./cambios/lafavorita";
 import MasCambio from "./cambios/mas_cambio";
 import CambioPrex from "./cambios/prex";
 import Rynder from "./cambios/rynder";
@@ -42,6 +43,8 @@ import Tradelix from "./cambios/tradelix";
 import CambioVarlix from "./cambios/varlix";
 
 export const origins = {
+  la_favorita: CambioLaFavorita,
+  cambio_minas: CambioMinas,
   cambio_regul: CambioRegul,
   cambio_maiorano: CambioMaiorano,
   prex: CambioPrex,
@@ -49,7 +52,6 @@ export const origins = {
   cambio_rynder: Rynder,
   cambio_sir: CambioSir,
   aeromar: Aeromar,
-  //la_favorita: CambioLaFavorita,
   brou: CambioBrou,
   fortex: CambioFortex,
   cambio_argentino: CambioArgentino,
@@ -61,7 +63,6 @@ export const origins = {
   cambio_young: CambioYoung,
   //cambio_salto_grande: CambioSaltoGrande,
   cambio_3: Cambio3,
-  cambio_minas: CambioMinas,
   cambio_openn: CambioOpenn,
   cambial: Cambial,
   cambio_pando: CambioPando,

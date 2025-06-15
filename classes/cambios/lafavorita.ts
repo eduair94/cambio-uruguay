@@ -7,97 +7,129 @@ class CambioLaFavorita extends Cambio {
   name = "Cambio La Favorita";
   bcu = "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2581";
   conversions = {
-    DOLAR: {
+    "Dólar Estadounidense": {
       code: "USD",
       type: "",
     },
-    EURO: {
+    Euro: {
       code: "EUR",
       type: "",
     },
-    "PESO ARGENTINO": {
+    "Peso Argentino": {
       code: "ARS",
       type: "",
     },
-    REAL: {
+    Real: {
       code: "BRL",
       type: "",
     },
-    "FRANCO SUIZO": {
+    "Franco Suizo": {
       code: "CHF",
       type: "",
     },
-    "LIBRA INGLESA": {
+    "Libra Esterlina": {
       code: "GBP",
       type: "",
     },
-    "DOLAR CANADIENSE": {
+    "Dólar Canadiense": {
       code: "CAD",
       type: "",
     },
-    "DOLAR AUSTRALIANO": {
+    "Dólar Australiano": {
       code: "AUD",
       type: "",
     },
-    "PESO CHILENO": {
+    "Peso Chileno": {
       code: "CLP",
       type: "",
     },
-    GUARANÍ: {
+    Guaraní: {
       code: "PYG",
       type: "",
     },
-    "SOL PERUANO": {
+    "Sol Peruano": {
       code: "PEN",
       type: "",
     },
-    "PESO MEXICANO": {
-      code: "MXP",
+    "Peso Mexicano": {
+      code: "MXN",
       type: "",
     },
-    YENS: {
+    Yen: {
       code: "JPY",
       type: "",
     },
-    "DOLAR INTERBANCARIO": {
+    "Peso Colombiano": {
+      code: "COP",
+      type: "",
+    },
+    "Dólar Interbancario": {
       code: "USD",
       type: "INTERBANCARIO",
     },
-    "DOLAR FONDO/CABLE": {
-      code: "USD",
-      type: "FONDO/CABLE",
-    },
-    "ORO ONZA": {
-      code: "XAU",
-      type: "",
-    },
   };
-  website = "http://www.lafavorita.com.uy/cotizaciones";
-  favicon = "http://www.lafavorita.com.uy";
+  website = "https://lafavorita.com.uy/cotizaciones/";
+  favicon = "https://lafavorita.com.uy";
+
+  findCurrencyKey(monedaName: string): string | null {
+    // Clean the currency name by removing extra spaces and trimming
+    const cleanName = monedaName.trim();
+
+    // Direct match first
+    if (this.conversions[cleanName]) {
+      return cleanName;
+    }
+
+    // Fallback: search for partial matches or similar names
+    for (const key in this.conversions) {
+      if (key.toLowerCase().includes(cleanName.toLowerCase()) || cleanName.toLowerCase().includes(key.toLowerCase())) {
+        return key;
+      }
+    }
+
+    return null;
+  }
   async get_data(): Promise<CambioObj[]> {
     const web_data = await axios.get(this.website).then((res) => res.data);
-    let items = [];
-    const cotizacionesSel = ".course-block-cotizacion";
     const $ = load(web_data);
-    const result = $(cotizacionesSel)
-      .map((i: number, element) => ({
-        moneda: $(element).find("h1").text().trim(),
-        compra: $(element).find(".color-cotizacion").eq(0).text().trim(),
-        venta: $(element).find(".color-cotizacion").eq(1).text().trim(),
-      }))
+
+    // Find all table rows in the exchange rates table
+    const result = $("table tbody tr")
+      .map((i: number, element) => {
+        const $row = $(element);
+        const moneda = $row.find("td.moneda-table").text().trim();
+        const compra = $row.find("td[data-label='Compra']").text().trim();
+        const venta = $row.find("td[data-label='Venta']").text().trim();
+
+        return {
+          moneda,
+          compra,
+          venta,
+        };
+      })
       .get();
+
     const f = result
-      .filter((el) => el.moneda)
+      .filter((el) => el.moneda && el.compra && el.venta)
       .map((el) => {
-        const { code, type } = this.conversions[el.moneda];
+        // Map currency names to our conversion table
+        const currencyKey = this.findCurrencyKey(el.moneda);
+        if (!currencyKey) {
+          console.log(`Currency not found for: ${el.moneda}`);
+          return null;
+        }
+
+        const { code, type } = this.conversions[currencyKey];
         return {
           code,
           type,
           name: el.moneda,
-          buy: this.fix_money(el.compra, code, 'lafavorita'),
-          sell: this.fix_money(el.venta, code, 'lafavorita'),
+          buy: this.fix_money(el.compra, code, "lafavorita"),
+          sell: this.fix_money(el.venta, code, "lafavorita"),
         };
-      });
+      })
+      .filter(Boolean);
+
     console.log(f);
     return f;
   }

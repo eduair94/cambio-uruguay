@@ -1,54 +1,76 @@
 import axios from "axios";
-import { load } from "cheerio";
 import { CambioObj } from "../../interfaces/Cambio";
 import { Cambio } from "../cambio";
+
+interface MaioranoApiResponse {
+  code: number;
+  message: string;
+  data: {
+    dolar_buy: string;
+    dolar_sell: string;
+    arg_buy: string;
+    arg_sell: string;
+    real_buy: string;
+    real_sell: string;
+    euro_buy: string;
+    euro_sell: string;
+    date: string;
+  };
+}
 
 class CambioMaiorano extends Cambio {
   name = "Cambio Maiorano";
   bcu = "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2471";
-  private conversions = {
-    Dolar: {
-      code: "USD",
-      type: "",
-    },
-    Peso: {
-      code: "ARS",
-      type: "",
-    },
-    Real: {
-      code: "BRL",
-      type: "",
-    },
-    Euro: {
-      code: "EUR",
-      type: "",
-    },
-  };
-  website = "http://www.cambiomaiorano.com/";
-  favicon = "http://www.cambiomaiorano.com/";
+  website = "https://www.cambiomaiorano.com/";
+  favicon = "https://www.cambiomaiorano.com/";
+
   async get_data(): Promise<CambioObj[]> {
-    // se tiene que arreglar también, está roto
-    const web_data = await axios.get("http://cambios.instyledm.com/5/cotizaciones.html").then((res) => res.data);
-    const $ = load(web_data);
-    const result = $("table tbody tr")
-      .map((i: number, element) => ({
-        moneda: $(element).find("td:nth-of-type(2)").text().trim(),
-        compra: this.fix_money($(element).find("td:nth-of-type(3)").text().trim()),
-        venta: this.fix_money($(element).find("td:nth-of-type(4)").text().trim()),
-      }))
-      .get()
-      .filter((el) => el.compra);
-    const f = result.map((el) => {
-      const { code, type } = this.conversions[el.moneda];
-      return {
-        code,
-        type,
-        name: el.moneda,
-        buy: el.compra,
-        sell: el.venta,
-      };
-    });
-    return f;
+    try {
+      const response = await axios.get<MaioranoApiResponse>(
+        "https://cambiomaiorano.com/wp-content/plugins/cotizacion-eze/api/index.php"
+      );
+
+      if (response.data.code !== 200) {
+        throw new Error(`API error: ${response.data.message}`);
+      }
+
+      const data = response.data.data;
+      const result: CambioObj[] = [
+        {
+          code: "USD",
+          type: "",
+          name: "Dólar",
+          buy: this.fix_money(data.dolar_buy),
+          sell: this.fix_money(data.dolar_sell),
+        },
+        {
+          code: "ARS",
+          type: "",
+          name: "Peso Argentino",
+          buy: this.fix_money(data.arg_buy),
+          sell: this.fix_money(data.arg_sell),
+        },
+        {
+          code: "BRL",
+          type: "",
+          name: "Real",
+          buy: this.fix_money(data.real_buy),
+          sell: this.fix_money(data.real_sell),
+        },
+        {
+          code: "EUR",
+          type: "",
+          name: "Euro",
+          buy: this.fix_money(data.euro_buy),
+          sell: this.fix_money(data.euro_sell),
+        },
+      ];
+
+      return result;
+    } catch (error) {
+      console.error("Error fetching Cambio Maiorano data:", error);
+      throw error;
+    }
   }
 }
 
