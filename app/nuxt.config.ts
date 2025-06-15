@@ -54,7 +54,7 @@ export default defineNuxtConfig({
         { property: 'og:type', content: 'website' },
         {
           property: 'og:image',
-          content: 'https://cambio-uruguay.com/img/banner.png',
+          content: 'https://cambio-uruguay.com/img/og.png',
         },
         { property: 'og:image:width', content: '1200' },
         { property: 'og:image:height', content: '630' },
@@ -71,7 +71,7 @@ export default defineNuxtConfig({
         { name: 'twitter:card', content: 'summary_large_image' },
         {
           name: 'twitter:image',
-          content: 'https://cambio-uruguay.com/img/banner.png',
+          content: 'https://cambio-uruguay.com/img/og.png',
         },
         {
           name: 'twitter:image:alt',
