@@ -280,7 +280,7 @@ export default defineNuxtConfig({
 
   nitro: {
     prerender: {
-      routes: [],
+      routes: ['/sitemap.xml'],
       crawlLinks: false,
     },
     compressPublicAssets: {
@@ -463,6 +463,11 @@ export default defineNuxtConfig({
       },
     ],
   ],
+
+  // Sitemap Configuration
+  sitemap: {
+    sources: ['/api/__sitemap__/urls'],
+  },
 
   // i18n Configuration
   i18n: {

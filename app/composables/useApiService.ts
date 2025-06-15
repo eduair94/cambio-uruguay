@@ -30,7 +30,7 @@ export const useApiService = () => {
   /**
    * Fetch exchange data for a specific date
    */
-  const getExchangeData = async (date: string) => {
+  const getExchangeData = async (date: string): Promise<any> => {
     return await $fetch('/', {
       baseURL: getApiBaseUrl(),
       query: { date },
@@ -50,7 +50,7 @@ export const useApiService = () => {
   /**
    * Fetch local data (exchange house information)
    */
-  const getLocalData = async () => {
+  const getLocalData = async (): Promise<any> => {
     return await $fetch('/localData', {
       baseURL: getApiBaseUrl(),
     }).catch((error) => {

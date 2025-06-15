@@ -26,9 +26,7 @@ class CambioMaiorano extends Cambio {
 
   async get_data(): Promise<CambioObj[]> {
     try {
-      const response = await axios.get<MaioranoApiResponse>(
-        "https://cambiomaiorano.com/wp-content/plugins/cotizacion-eze/api/index.php"
-      );
+      const response = await axios.get<MaioranoApiResponse>("https://cambiomaiorano.com/wp-content/plugins/cotizacion-eze/api/index.php");
 
       if (response.data.code !== 200) {
         throw new Error(`API error: ${response.data.message}`);

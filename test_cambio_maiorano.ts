@@ -61,7 +61,6 @@ async function testCambioMaiorano() {
     } else {
       console.log("❌ Some issues found. Please review the output above.");
     }
-
   } catch (error) {
     console.error("❌ Error testing Cambio Maiorano scraper:");
     console.error(error);
@@ -70,9 +69,11 @@ async function testCambioMaiorano() {
 }
 
 // Run the test
-testCambioMaiorano().then(() => {
-  console.log("\nTest completed.");
-}).catch((error) => {
-  console.error("Test failed:", error);
-  process.exit(1);
-});
+testCambioMaiorano()
+  .then(() => {
+    console.log("\nTest completed.");
+  })
+  .catch((error) => {
+    console.error("Test failed:", error);
+    process.exit(1);
+  });

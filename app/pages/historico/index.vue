@@ -269,7 +269,7 @@ const {
 
 // Process the data and calculate spreads
 const items = computed<CambioItem[]>(() => {
-  if (!rawData.value || rawData.value.error) return []
+  if (!rawData.value || (rawData.value as any)?.error) return []
 
   const dataArray = Array.isArray(rawData.value)
     ? rawData.value
