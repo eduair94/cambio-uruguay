@@ -47,6 +47,7 @@ class CambioInfo extends Cambio {
   }
   async getExchanges(origin: string, location: string) {
     let res: any = [];
+    if (location) location = location.toUpperCase().trim();
     if (location === "TODOS" || !location) {
       res = await this.db_suc.allEntries({ origin, status: { $ne: 0 } });
     } else {
