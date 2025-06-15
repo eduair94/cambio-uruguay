@@ -20,7 +20,6 @@ import CambioMisiones from "./cambios/cambio_misiones";
 import CambioObelisco from "./cambios/cambio_obelisco";
 import CambioOpenn from "./cambios/cambio_openn";
 import CambioOriental from "./cambios/cambio_oriental";
-import CambioPampex from "./cambios/cambio_pampex";
 import CambioPando from "./cambios/cambio_pando";
 import CambioPernas from "./cambios/cambio_pernas";
 import CambioPrincipal from "./cambios/cambio_principal";
@@ -77,7 +76,6 @@ export const origins = {
   cambio_regul: CambioRegul,
   cambio_pernas: CambioPernas,
   cambio_misiones: CambioMisiones,
-  cambio_pampex: CambioPampex,
   cambio_obelisco: CambioObelisco,
   suizo: CambioSuizo,
   cambio_ingles: CambioIngles,

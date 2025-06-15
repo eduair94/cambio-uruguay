@@ -24,31 +24,65 @@ class CambioAguerrebere extends Cambio {
       type: "",
     },
   };
-  website = "http://www.cambioaguerrebere.com/";
-  favicon = "http://www.cambioaguerrebere.com/";
+  website = "https://cambioaguerrebere.com/";
+  favicon = "https://cambioaguerrebere.com/";
   async get_data(): Promise<CambioObj[]> {
-    // Tengo que arreglarlo
-    const web_data = await axios.get("http://cambios.instyledm.com/1/cotizaciones.html").then((res) => res.data);
+    const web_data = await axios.get("https://cambioaguerrebere.com/").then((res) => res.data);
     const $ = load(web_data);
-    const result = $("table tbody tr")
-      .map((i: number, element) => ({
-        moneda: $(element).find("td:nth-of-type(2)").text().trim(),
-        compra: this.fix_money($(element).find("td:nth-of-type(3)").text().trim()),
-        venta: this.fix_money($(element).find("td:nth-of-type(4)").text().trim()),
-      }))
-      .get()
-      .filter((el) => el.compra);
-    const f = result.map((el) => {
-      const { code, type } = this.conversions[el.moneda];
-      return {
-        code,
-        type,
-        name: el.moneda,
-        buy: el.compra,
-        sell: el.venta,
-      };
-    });
-    return f;
+
+    // Find the exchange rate container
+    const container = $(".container .row");
+
+    // Extract currency names from the first column (excluding header)
+    const currencies = container
+      .find(".col:first-child .value")
+      .map((i, el) => $(el).text().trim())
+      .get();
+
+    // Extract buy rates from the second column (COMPRA) (excluding header)
+    const buyRates = container
+      .find(".col:nth-child(2) .value")
+      .map((i, el) => $(el).text().trim())
+      .get();
+
+    // Extract sell rates from the third column (VENTA) (excluding header)
+    const sellRates = container
+      .find(".col:nth-child(3) .value")
+      .map((i, el) => $(el).text().trim())
+      .get();
+
+    // Map currency codes to the expected format
+    const currencyMapping: { [key: string]: string } = {
+      USD: "Dolar",
+      ARS: "Peso",
+      BRL: "Real",
+      EUR: "Euro",
+    };
+
+    const result: CambioObj[] = [];
+
+    for (let i = 0; i < currencies.length; i++) {
+      const currencyCode = currencies[i];
+      const currencyName = currencyMapping[currencyCode];
+      if (currencyName && this.conversions[currencyName] && buyRates[i] && sellRates[i]) {
+        // Remove $ symbol before calling fix_money
+        const buyRate = this.fix_money(buyRates[i].replace("$", ""));
+        const sellRate = this.fix_money(sellRates[i].replace("$", ""));
+
+        if (buyRate && sellRate) {
+          const { code, type } = this.conversions[currencyName];
+          result.push({
+            code,
+            type,
+            name: currencyName,
+            buy: buyRate,
+            sell: sellRate,
+          });
+        }
+      }
+    }
+
+    return result;
   }
 }
 

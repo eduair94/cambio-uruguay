@@ -24,7 +24,11 @@
     "add_new": "ts-node add_new",
     "a_sheet": "ts-node autocomplete_sheet.ts",
     "add_cambilex": "ts-node add_cambilex.ts",
-    "fix_depto_cambilex": "ts-node fix_depto_cambilex.ts"
+    "fix_depto_cambilex": "ts-node fix_depto_cambilex.ts",
+    "test_aguerrebere": "ts-node test_cambio_aguerrebere.ts",
+    "debug_aguerrebere": "ts-node debug_aguerrebere.ts",
+    "debug_scraping": "ts-node debug_scraping.ts",
+    "debug_fix_money": "ts-node debug_fix_money.ts"
   },
   "author": "",
   "license": "ISC",
@@ -32,6 +36,7 @@
     "@sentry/integrations": "^7.30.0",
     "@sentry/node": "^7.30.0",
     "@sentry/tracing": "^7.30.0",
+    "@types/puppeteer": "^5.4.7",
     "axios": "^0.27.2",
     "axios-retry": "^3.3.1",
     "body-parser": "^1.20.0",
@@ -50,6 +55,7 @@
     "moment-timezone": "^0.5.34",
     "mongoose": "^6.4.6",
     "nstall": "^0.2.0",
+    "puppeteer": "^24.10.1",
     "ts-node": "^10.9.1",
     "typescript": "^4.9.4"
   },
