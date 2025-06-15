@@ -252,7 +252,6 @@ const {
     }
   },
   {
-    server: true,
     default: () => [],
   },
 )

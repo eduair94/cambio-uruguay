@@ -126,6 +126,7 @@ const props = withDefaults(defineProps<Props>(), {
 // Composables
 const { t, locale } = useI18n()
 const { mobile } = useDisplay()
+const { getExchangesByOriginLocation } = useApiService()
 
 // Data
 const message = ref('')
@@ -256,17 +257,17 @@ const getData = async () => {
     } as Record<string, string>
     message.value = loc[locale.value] || loc.es
   } else {
-    let url =
-      'https://api.cambio-uruguay.com/exchanges/' +
-      props.origin +
-      '/' +
-      props.location
-    if (props.latitude && props.longitude) {
-      url += `?latitude=${props.latitude}&longitude=${props.longitude}`
-      sortBy.value = [{ key: 'distance', order: 'asc' }]
-    }
     try {
-      const data = await $fetch(url)
+      if (props.latitude && props.longitude) {
+        sortBy.value = [{ key: 'distance', order: 'asc' }]
+      }
+
+      const data = await getExchangesByOriginLocation(
+        props.origin,
+        props.location,
+        props.latitude || undefined,
+        props.longitude || undefined,
+      )
       d.value = data as any[]
     } catch (error) {
       console.error('Error fetching data:', error)

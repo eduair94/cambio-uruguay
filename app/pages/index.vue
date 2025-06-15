@@ -282,7 +282,6 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
   twitterTitle: () => t('seo.homeTitle'),
   twitterDescription: () => t('seo.homeDescription'),
-  twitterSite: '@cambio_uruguay',
 })
 
 // Reactive data
@@ -757,7 +756,6 @@ const { data: initialData } = await useAsyncData(
     }
   },
   {
-    server: true, // Only fetch on server
     default: () => [],
   },
 )
@@ -805,14 +803,14 @@ onMounted(() => {
 const structuredData = computed(() => ({
   '@context': 'https://schema.org',
   '@type': 'WebApplication',
-  name: t('seo.home.title'),
-  description: t('seo.home.description'),
+  name: t('seo.homeTitle'),
+  description: t('seo.homeDescription'),
   url: 'https://cambio-uruguay.com',
   applicationCategory: 'FinanceApplication',
   operatingSystem: 'All',
   offers: {
     '@type': 'Offer',
-    description: t('seo.home.description'),
+    description: t('seo.homeDescription'),
     price: '0',
     priceCurrency: 'USD',
   },

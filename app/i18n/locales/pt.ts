@@ -108,12 +108,51 @@ export default defineI18nLocale(async (locale) => {
     promedioCompra: 'Média de Compra',
     datosTotales: 'Dados Totais',
     cambio: 'Mudança',
+    precioCompra: 'Preço de Compra',
+    precioVenta: 'Preço de Venda',
 
     // Form labels
     monedaLabel: 'Moeda',
     tipoLabel: 'Tipo',
     buscarLabel: 'Buscar',
     fechaLabel: 'Data',
+
+    // Additional UI elements
+    ubicacion: 'Localização',
+    institucionRegulada: 'Instituição Regulada pelo BCU',
+    datosHistoricosDisponibles: 'Dados históricos disponíveis',
+    verMenos: 'Ver menos',
+    mas: 'mais',
+    evolucion: 'Evolução',
+
+    // Branches/Sucursales page
+    sucursalesMenu: 'Filiais',
+    todasLasUbicaciones: 'Todas as localizações',
+    verEnGoogleMaps: 'Ver no Google Maps',
+    informacionImportante: 'Informação Importante',
+    cargandoSucursales: 'Carregando filiais...',
+    listaSucursales: 'Lista de Filiais',
+    sucursalesEncontradas: 'filiais encontradas',
+    noSucursalesEncontradas: 'Nenhuma filial encontrada',
+    noSucursalesDisponibles: 'Não há filiais disponíveis para esta consulta',
+
+    // Sucursales index page
+    sucursales: {
+      titulo: 'Diretório de Filiais',
+      descripcion: 'Encontre todas as filiais de casas de câmbio no Uruguai',
+      casasDeCambio: 'Casas de Câmbio',
+      ubicaciones: 'Localizações',
+      datosActualizados: 'Dados atualizados em tempo real',
+      clickParaVer: 'Clique em qualquer casa de câmbio para ver suas filiais',
+      cargandoDatos: 'Carregando informações das filiais...',
+      buscar: 'Buscar casa de câmbio ou localização...',
+      buscarAhora: 'Buscar agora',
+      limpiarFiltros: 'Limpar filtros',
+      filtrarPorDepartamento: 'Filtrar por departamento',
+      verSucursales: 'Ver Filiais',
+      porUbicacion: 'Buscar por Localização',
+      explorar: 'Explorar',
+    },
 
     // Period options
     tresMeses: '3 meses',
@@ -129,6 +168,13 @@ export default defineI18nLocale(async (locale) => {
     hechoConAmor: 'Feito com',
     porText: 'por',
     yText: 'e',
+
+    // Social media tooltips
+    siguenos: {
+      twitter: 'Siga-nos no Twitter',
+      linkedin: 'Siga-nos no LinkedIn',
+      kofi: 'Apoie-nos no Ko-fi',
+    },
 
     // Donation labels
     donarPaypal: 'Doar com Paypal',
@@ -152,6 +198,7 @@ export default defineI18nLocale(async (locale) => {
       currency: 'Moeda',
       type: 'Tipo',
       search: 'Buscar',
+      resetFilters: 'Limpar Filtros',
       buy: 'Compra',
       sell: 'Venda',
       spread: 'Spread',
@@ -249,6 +296,20 @@ export default defineI18nLocale(async (locale) => {
       offlineDescription:
         'Sem conexão com a internet. Verifique sua conexão para acessar as taxas de câmbio.',
       offlineKeywords: 'offline, sem conexão, cambio uruguay',
+
+      // Página de filiais
+      sucursalesTitle: 'Filiais de {origin} - Cambio Uruguay',
+      sucursalesDescription:
+        'Encontre todas as filiais de {origin} no Uruguai. Endereços completos, telefones, horários e localizações.',
+      sucursalesLocationDescription:
+        'Filiais de {origin} em {location}. Endereços, telefones, horários e localizações em {location}, Uruguai.',
+      sucursalesKeywords: 'filiais {origin}, endereços {origin}, localizações {origin}, casas de câmbio uruguai',
+
+      // Página diretório de filiais
+      sucursalesIndexTitle: 'Diretório de Filiais - Todas as Casas de Câmbio no Uruguai',
+      sucursalesIndexDescription:
+        'Diretório completo de filiais de todas as casas de câmbio no Uruguai. Encontre localizações, endereços e contatos por departamento.',
+      sucursalesIndexKeywords: 'diretório filiais uruguai, casas de câmbio uruguai, filiais montevidéu, filiais canelones, todas as filiais uruguai',
     },
   }
 })

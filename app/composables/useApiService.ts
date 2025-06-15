@@ -315,6 +315,35 @@ export const useApiService = () => {
     }
   }
 
+  /**
+   * Fetch exchange data for a specific origin and location
+   */
+  const getExchangesByOriginLocation = async (
+    origin: string,
+    location: string,
+    latitude?: number,
+    longitude?: number,
+  ): Promise<any> => {
+    try {
+      let url = `/exchanges/${origin}/${location}`
+      const query: Record<string, any> = {}
+
+      if (latitude && longitude) {
+        query.latitude = latitude
+        query.longitude = longitude
+      }
+
+      return await $fetch(url, {
+        baseURL: getApiBaseUrl(),
+        query: Object.keys(query).length > 0 ? query : undefined,
+      })
+    } catch (error: any) {
+      console.error('Error fetching exchanges by origin/location:', error)
+      const errorResponse = extractErrorDetails(error)
+      throw errorResponse
+    }
+  }
+
   return {
     getApiBaseUrl,
     getExchangeData,
@@ -323,6 +352,7 @@ export const useApiService = () => {
     processExchangeData,
     getProcessedExchangeData,
     getEvolutionData,
+    getExchangesByOriginLocation,
     extractErrorDetails,
     geocodeAddress,
     reverseGeocode,

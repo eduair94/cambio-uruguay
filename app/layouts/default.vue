@@ -37,6 +37,13 @@
           <VListItemTitle>{{ $t('historico') }}</VListItemTitle>
         </VListItem>
 
+        <VListItem :to="localePath('/sucursales')" @click="drawer = false">
+          <template #prepend>
+            <VIcon>mdi-bank-outline</VIcon>
+          </template>
+          <VListItemTitle>{{ $t('sucursalesMenu') }}</VListItemTitle>
+        </VListItem>
+
         <VListItem
           href="https://ko-fi.com/cambio_uruguay"
           target="_blank"
@@ -119,6 +126,17 @@
           {{ $t('historico') }}
         </VBtn>
 
+        <!-- Sucursales -->
+        <VBtn
+          :to="localePath('/sucursales')"
+          variant="text"
+          class="text-capitalize nav-btn"
+          :class="{ 'nav-btn--active': isActiveRoute('/sucursales') }"
+        >
+          <VIcon start small>mdi-bank-outline</VIcon>
+          {{ $t('sucursalesMenu') }}
+        </VBtn>
+
         <!-- Donar -->
         <VBtn
           href="https://ko-fi.com/cambio_uruguay"
@@ -168,82 +186,7 @@
       </div>
     </VMain>
 
-    <VFooter>
-      <div class="d-flex footer_content flex-wrap ga-3">
-        <div class="d-flex flex-column flex-md-row align-center ga-3 w-100">
-          <!-- Copyright Section -->
-          <div class="text-center text-md-left">
-            <span>Cambio Uruguay &copy; {{ new Date().getFullYear() }}</span>
-          </div>
-
-          <VSpacer class="d-none d-md-flex" />
-
-          <!-- Social Media Links -->
-          <div class="d-flex align-center ga-2">
-            <VTooltip text="Síguenos en Twitter">
-              <template #activator="{ props }">
-                <VBtn
-                  v-bind="props"
-                  href="https://twitter.com/cambio_uruguay"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  icon
-                  size="small"
-                  variant="text"
-                  color="white"
-                >
-                  <VIcon>mdi-twitter</VIcon>
-                </VBtn>
-              </template>
-            </VTooltip>
-
-            <VTooltip text="Apóyanos en Ko-fi">
-              <template #activator="{ props }">
-                <VBtn
-                  v-bind="props"
-                  href="https://ko-fi.com/cambio_uruguay"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  icon
-                  size="small"
-                  variant="text"
-                  color="white"
-                >
-                  <VIcon>mdi-heart</VIcon>
-                </VBtn>
-              </template>
-            </VTooltip>
-          </div>
-
-          <VSpacer class="d-none d-md-flex" />
-
-          <!-- Credits Section -->
-          <div class="text-center text-md-right">
-            <span class="text-caption">
-              {{ $t('hechoConAmor') }}
-              <VIcon color="red" size="small">mdi-heart</VIcon>
-              {{ $t('porText') }}
-              <a
-                class="white--text text-decoration-none"
-                href="https://www.linkedin.com/in/eduardo-airaudo/"
-                target="_blank"
-                rel="noopener noreferrer"
-                >Eduardo Airaudo</a
-              >
-              {{ $t('yText') }}
-              <a
-                class="white--text text-decoration-none"
-                href="https://www.linkedin.com/in/reginascagliotti/"
-                target="_blank"
-                rel="noopener noreferrer"
-                >Regina Scagliotti</a
-              >
-            </span>
-          </div>
-        </div>
-      </div>
-    </VFooter>
-
+    <Footer />
     <JoinTwitter />
   </VApp>
 </template>
@@ -376,13 +319,6 @@ useHead({
   max-height: 40px;
   max-width: 55vw;
 }
-
-.footer_content {
-  width: 100%;
-  align-items: center;
-  padding: 16px;
-}
-
 /* Navigation Button Styles */
 .nav-btn {
   margin: 0 4px;

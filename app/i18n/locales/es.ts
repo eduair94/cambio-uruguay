@@ -117,12 +117,51 @@ export default defineI18nLocale(async (locale) => {
     promedioCompra: 'Promedio Compra',
     datosTotales: 'Datos Totales',
     cambio: 'Cambio',
+    precioCompra: 'Precio Compra',
+    precioVenta: 'Precio Venta',
 
     // Form labels
     monedaLabel: 'Moneda',
     tipoLabel: 'Tipo',
     buscarLabel: 'Buscar',
     fechaLabel: 'Fecha',
+
+    // Additional UI elements
+    ubicacion: 'Ubicación',
+    institucionRegulada: 'Institución Regulada por BCU',
+    datosHistoricosDisponibles: 'Datos históricos disponibles',
+    verMenos: 'Ver menos',
+    mas: 'más',
+    evolucion: 'Evolución',
+
+    // Branches/Sucursales page
+    sucursalesMenu: 'Sucursales',
+    todasLasUbicaciones: 'Todas las ubicaciones',
+    verEnGoogleMaps: 'Ver en Google Maps',
+    informacionImportante: 'Información Importante',
+    cargandoSucursales: 'Cargando sucursales...',
+    listaSucursales: 'Lista de Sucursales',
+    sucursalesEncontradas: 'sucursales encontradas',
+    noSucursalesEncontradas: 'No se encontraron sucursales',
+    noSucursalesDisponibles: 'No hay sucursales disponibles para esta consulta',
+
+    // Sucursales index page
+    sucursales: {
+      titulo: 'Directorio de Sucursales',
+      descripcion: 'Encuentra todas las sucursales de casas de cambio en Uruguay',
+      casasDeCambio: 'Casas de Cambio',
+      ubicaciones: 'Ubicaciones',
+      datosActualizados: 'Datos actualizados en tiempo real',
+      clickParaVer: 'Haz clic en cualquier casa de cambio para ver sus sucursales',
+      cargandoDatos: 'Cargando información de sucursales...',
+      buscar: 'Buscar casa de cambio o ubicación...',
+      buscarAhora: 'Buscar ahora',
+      limpiarFiltros: 'Limpiar filtros',
+      filtrarPorDepartamento: 'Filtrar por departamento',
+      verSucursales: 'Ver Sucursales',
+      porUbicacion: 'Buscar por Ubicación',
+      explorar: 'Explorar',
+    },
 
     // Period options
     tresMeses: '3 meses',
@@ -138,6 +177,13 @@ export default defineI18nLocale(async (locale) => {
     hechoConAmor: 'Hecho con',
     porText: 'por',
     yText: 'y',
+
+    // Social media tooltips
+    siguenos: {
+      twitter: 'Síguenos en Twitter',
+      linkedin: 'Síguenos en LinkedIn',
+      kofi: 'Apóyanos en Ko-fi',
+    },
 
     // Donation labels
     donarPaypal: 'Donar con Paypal',
@@ -161,6 +207,7 @@ export default defineI18nLocale(async (locale) => {
       currency: 'Moneda',
       type: 'Tipo',
       search: 'Buscar',
+      resetFilters: 'Limpiar Filtros',
       buy: 'Compra',
       sell: 'Venta',
       spread: 'Spread',
@@ -264,6 +311,20 @@ export default defineI18nLocale(async (locale) => {
       offlineDescription:
         'No hay conexión a internet. Verifica tu conexión para acceder a las cotizaciones de cambio.',
       offlineKeywords: 'sin conexión, offline, cambio uruguay',
+
+      // Página sucursales
+      sucursalesTitle: 'Sucursales de {origin} - Cambio Uruguay',
+      sucursalesDescription:
+        'Encuentra todas las sucursales de {origin} en Uruguay. Direcciones, teléfonos, horarios y ubicaciones completas.',
+      sucursalesLocationDescription:
+        'Sucursales de {origin} en {location}. Direcciones, teléfonos, horarios y ubicaciones en {location}, Uruguay.',
+      sucursalesKeywords: 'sucursales {origin}, direcciones {origin}, ubicaciones {origin}, casas de cambio uruguay',
+
+      // Página directorio de sucursales
+      sucursalesIndexTitle: 'Directorio de Sucursales - Todas las Casas de Cambio en Uruguay',
+      sucursalesIndexDescription:
+        'Directorio completo de sucursales de todas las casas de cambio en Uruguay. Encuentra ubicaciones, direcciones y contactos por departamento.',
+      sucursalesIndexKeywords: 'directorio sucursales uruguay, casas de cambio uruguay, sucursales montevideo, sucursales canelones, todas las sucursales uruguay',
     },
   }
 })

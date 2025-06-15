@@ -1,29 +1,116 @@
 <template>
   <div>
-    <!-- Header Section -->
-    <v-row>
+    <!-- Exchange House Information Section -->
+    <v-row v-if="evolutionData?.localData">
       <v-col cols="12">
-        <v-card class="mb-0 md-mb-6">
-          <v-card-title
-            class="text-h5 text-md-h4 justify-center bg-blue-darken-4 text-white text-center"
-          >
-            📈 {{ $t('historicoCotizaciones') }}
-          </v-card-title>
-          <v-card-text class="text-center pa-4">
-            <v-chip color="primary" size="large" class="ma-2">
-              {{ exchangeHouseName }}
-            </v-chip>
-            <v-chip color="secondary" size="large" class="ma-2">
-              {{ route.params.currency }}
-            </v-chip>
-            <v-chip
-              v-if="route.params.type"
-              color="accent"
-              size="large"
-              class="ma-2"
-            >
-              {{ (route.params.type as string).toUpperCase() }}
-            </v-chip>
+        <v-card class="overflow-hidden" elevation="8">
+          <div class="bg-gradient-to-r from-blue-600 to-purple-600 pa-3">
+            <v-row align="center" no-gutters>
+              <v-col cols="12" md="8">
+                <div class="d-flex align-top">
+                  <v-avatar size="56" class="d-none d-md-flex me-4 bg-white">
+                    <v-icon size="32" color="primary">mdi-bank</v-icon>
+                  </v-avatar>
+                  <div>
+                    <h2
+                      class="text-h6 text-sm-h5 text-md-h4 font-weight-bold text-white"
+                    >
+                      📈 {{ $t('historicoCotizaciones') }}
+                    </h2>
+                    <div class="d-flex flex-wrap ga-2 align-center">
+                      <h3 class="text-h6 text-md-h5 text-grey-lighten-2">
+                        {{ evolutionData.localData.name }}
+                      </h3>
+                      <v-chip color="secondary" size="small">
+                        {{ route.params.currency }}
+                      </v-chip>
+                      <v-chip
+                        v-if="route.params.type"
+                        color="accent"
+                        size="small"
+                      >
+                        {{ (route.params.type as string).toUpperCase() }}
+                      </v-chip>
+                    </div>
+                    <div class="my-3">
+                      <CollapsibleChips
+                        :items="evolutionData.localData.departments"
+                        :max-visible="2"
+                        size="small"
+                        text-color="white"
+                        chip-class="me-1 mb-1"
+                        icon="mdi-map-marker"
+                        :icon-size="16"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </v-col>
+              <v-col cols="12" md="4" class="text-center text-md-right">
+                <div
+                  class="d-flex flex-column flex-md-row justify-start justify-md-end ga-2"
+                >
+                  <v-btn
+                    v-if="evolutionData.localData.website"
+                    :href="evolutionData.localData.website"
+                    target="_blank"
+                    color="white"
+                    variant="outlined"
+                    size="small"
+                    class="text-decoration-none"
+                  >
+                    <v-icon start>mdi-web</v-icon>
+                    {{ $t('sitioWeb') }}
+                  </v-btn>
+                  <v-btn
+                    v-if="evolutionData.localData.maps"
+                    :href="evolutionData.localData.maps"
+                    target="_blank"
+                    color="white"
+                    variant="outlined"
+                    size="small"
+                    class="text-decoration-none"
+                  >
+                    <v-icon start>mdi-map</v-icon>
+                    {{ $t('ubicacion') }}
+                  </v-btn>
+                  <v-btn
+                    v-if="evolutionData.localData.bcu"
+                    :href="evolutionData.localData.bcu"
+                    target="_blank"
+                    color="white"
+                    variant="outlined"
+                    size="small"
+                    class="text-decoration-none"
+                  >
+                    <v-icon start>mdi-shield-check</v-icon>
+                    BCU
+                  </v-btn>
+                </div>
+              </v-col>
+            </v-row>
+          </div>
+
+          <!-- Additional Info Bar -->
+          <v-card-text class="bg-grey-lighten-5 pa-4">
+            <v-row align="center">
+              <v-col cols="12" md="6">
+                <div class="d-flex align-center">
+                  <v-icon color="success" class="me-2">mdi-check-circle</v-icon>
+                  <span class="text-body-2 font-weight-medium">
+                    {{ $t('institucionRegulada') }}
+                  </span>
+                </div>
+              </v-col>
+              <v-col cols="12" md="6" class="text-md-right">
+                <div class="d-flex align-center justify-start justify-md-end">
+                  <v-icon color="info" class="me-2">mdi-information</v-icon>
+                  <span class="text-body-2">
+                    {{ $t('datosHistoricosDisponibles') }}
+                  </span>
+                </div>
+              </v-col>
+            </v-row>
           </v-card-text>
         </v-card>
       </v-col>
@@ -211,7 +298,10 @@
               </v-btn-toggle>
             </v-card-title>
             <v-card-text>
-              <div style="position: relative; height: 400px">
+              <div
+                :class="['chart-container']"
+                style="position: relative; height: 400px"
+              >
                 <Line
                   v-if="chartType === 'line'"
                   :data="chartData"
@@ -317,7 +407,13 @@
     <!-- Back Button -->
     <v-row class="mt-6">
       <v-col cols="12" class="text-center">
-        <v-btn class="mb-4" color="primary" size="large" @click="navigateHome">
+        <v-btn
+          link
+          class="mb-4"
+          color="primary"
+          size="large"
+          :to="localePath('/')"
+        >
           <v-icon start>mdi-arrow-left</v-icon>
           {{ $t('volverAlInicio') }}
         </v-btn>
@@ -391,9 +487,18 @@ interface Statistics {
   }
 }
 
+interface LocalData {
+  name: string
+  website: string
+  maps: string
+  bcu: string
+  departments: string[]
+}
+
 interface EvolutionData {
   evolution: EvolutionItem[]
   statistics: Statistics
+  localData: LocalData
 }
 
 // Route validation
@@ -440,53 +545,6 @@ const formatOriginName = (origin: string): string => {
   if (!origin) return ''
   return origin.replace(/[-_]/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
 }
-
-// Dynamic names for SEO
-const exchangeHouseName = computed(() =>
-  formatOriginName(route.params.origin as string),
-)
-const currencyName = computed(() => route.params.currency as string)
-
-// SEO Configuration with dynamic values
-useSeoMeta({
-  title: () =>
-    t('seo.historicalDetailTitle', {
-      origin: exchangeHouseName.value,
-      currency: currencyName.value,
-    }),
-  description: () =>
-    t('seo.historicalDetailDescription', {
-      origin: exchangeHouseName.value,
-      currency: currencyName.value,
-    }),
-  keywords: () => t('seo.historicalDetailKeywords'),
-  ogTitle: () =>
-    t('seo.historicalDetailTitle', {
-      origin: exchangeHouseName.value,
-      currency: currencyName.value,
-    }),
-  ogDescription: () =>
-    t('seo.historicalDetailDescription', {
-      origin: exchangeHouseName.value,
-      currency: currencyName.value,
-    }),
-  ogType: 'website',
-  ogUrl: () =>
-    `https://cambio-uruguay.com/historico/${route.params.origin}/${route.params.currency}${
-      route.params.type ? '/' + route.params.type : ''
-    }`,
-  twitterCard: 'summary_large_image',
-  twitterTitle: () =>
-    t('seo.historicalDetailTitle', {
-      origin: exchangeHouseName.value,
-      currency: currencyName.value,
-    }),
-  twitterDescription: () =>
-    t('seo.historicalDetailDescription', {
-      origin: exchangeHouseName.value,
-      currency: currencyName.value,
-    }),
-})
 
 // Load period from storage/query on client
 const loadPeriodFromStorage = () => {
@@ -546,13 +604,64 @@ const {
         })
       }
 
-      return result.data
+      return result.data as EvolutionData
     }, 'Cargando datos históricos...')
   },
   {
     watch: [selectedPeriod],
   },
 )
+
+// Dynamic names for SEO
+const exchangeHouseName = computed(() => {
+  return (
+    evolutionData.value?.localData?.name ||
+    formatOriginName(route.params.origin as string)
+  )
+})
+
+const currencyName = computed(() => route.params.currency as string)
+
+// SEO Configuration with dynamic values
+useSeoMeta({
+  title: () =>
+    t('seo.historicalDetailTitle', {
+      origin: exchangeHouseName.value,
+      currency: currencyName.value,
+    }),
+  description: () =>
+    t('seo.historicalDetailDescription', {
+      origin: exchangeHouseName.value,
+      currency: currencyName.value,
+    }),
+  keywords: () => t('seo.historicalDetailKeywords'),
+  ogTitle: () =>
+    t('seo.historicalDetailTitle', {
+      origin: exchangeHouseName.value,
+      currency: currencyName.value,
+    }),
+  ogDescription: () =>
+    t('seo.historicalDetailDescription', {
+      origin: exchangeHouseName.value,
+      currency: currencyName.value,
+    }),
+  ogType: 'website',
+  ogUrl: () =>
+    `https://cambio-uruguay.com/historico/${route.params.origin}/${route.params.currency}${
+      route.params.type ? '/' + route.params.type : ''
+    }`,
+  twitterCard: 'summary_large_image',
+  twitterTitle: () =>
+    t('seo.historicalDetailTitle', {
+      origin: exchangeHouseName.value,
+      currency: currencyName.value,
+    }),
+  twitterDescription: () =>
+    t('seo.historicalDetailDescription', {
+      origin: exchangeHouseName.value,
+      currency: currencyName.value,
+    }),
+})
 
 // Computed properties
 const tableData = computed(() => {
@@ -573,14 +682,14 @@ const chartData = computed(() => {
 
   const evolution = (evolutionData.value as any).evolution
   const labels = evolution.map((item: EvolutionItem) =>
-    moment(item.date).format('MM/DD'),
+    moment(item.date).format('MM/YYYY'),
   )
 
   return {
     labels,
     datasets: [
       {
-        label: 'Precio Compra',
+        label: t('precioCompra'),
         data: evolution.map((item: EvolutionItem) => item.buy),
         borderColor: 'rgb(75, 192, 192)',
         backgroundColor: 'rgba(75, 192, 192, 0.2)',
@@ -590,7 +699,7 @@ const chartData = computed(() => {
         pointHoverRadius: 5,
       },
       {
-        label: 'Precio Venta',
+        label: t('precioVenta'),
         data: evolution.map((item: EvolutionItem) => item.sell),
         borderColor: 'rgb(255, 99, 132)',
         backgroundColor: 'rgba(255, 99, 132, 0.2)',
@@ -622,7 +731,7 @@ const chartOptions = computed(() => ({
   plugins: {
     title: {
       display: true,
-      text: `Evolución ${route.params.currency} - ${exchangeHouseName.value}`,
+      text: `${t('evolucion')} ${route.params.currency} - ${(evolutionData.value as EvolutionData)?.localData.name}`,
       color: '#1976d2',
       font: {
         size: 16,
@@ -647,6 +756,13 @@ const chartOptions = computed(() => ({
       borderColor: '#1976d2',
       borderWidth: 1,
       callbacks: {
+        title: (context: any) => {
+          // Include year in the tooltip title
+          const dataIndex = context[0].dataIndex
+          const evolution = (evolutionData.value as any).evolution
+          const date = evolution[dataIndex].date
+          return moment(date).format('DD/MM/YYYY')
+        },
         label: (context: any) => {
           // Use inline formatting to avoid referencing this
           const value = context.parsed.y
@@ -676,7 +792,6 @@ const chartOptions = computed(() => ({
       },
       ticks: {
         color: '#666666',
-        maxTicksLimit: 10,
       },
       grid: {
         color: 'rgba(25, 118, 210, 0.1)',
@@ -790,10 +905,7 @@ const getSellColor = (value: number): string => {
   if (position > 0.3) return 'orange-darken-2'
   return 'green-darken-2'
 }
-
-const navigateHome = () => {
-  router.push('/')
-}
+const localePath = useLocalePath()
 </script>
 
 <style scoped>
@@ -806,5 +918,69 @@ const navigateHome = () => {
 .caption {
   font-size: 0.875rem;
   opacity: 0.8;
+}
+
+/* Gradient background for exchange house info */
+.bg-gradient-to-r {
+  background: linear-gradient(135deg, #1976d2 0%, #7b1fa2 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.bg-gradient-to-r::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    radial-gradient(
+      circle at 20% 50%,
+      rgba(255, 255, 255, 0.1) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 80% 20%,
+      rgba(255, 255, 255, 0.1) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 40% 80%,
+      rgba(255, 255, 255, 0.05) 0%,
+      transparent 50%
+    );
+  pointer-events: none;
+}
+
+/* Animated gradient effect */
+.bg-gradient-to-r {
+  background-size: 400% 400%;
+  animation: gradientShift 6s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Enhanced button hover effects */
+.v-btn:hover {
+  transform: translateY(-2px);
+  transition: transform 0.2s ease;
+}
+
+/* Glassmorphism effect for chips */
+.v-chip {
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.15) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 </style>

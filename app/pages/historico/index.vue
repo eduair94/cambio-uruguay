@@ -18,40 +18,47 @@
           <v-card-text>
             <v-row>
               <v-col cols="12" md="3">
-                <v-select
+                <v-autocomplete
                   v-model="selectedOrigin"
                   :items="originOptions"
+                  item-value="value"
                   :label="$t('historical.exchangeHouse')"
+                  multiple
+                  chips
                   clearable
                   prepend-inner-icon="mdi-bank"
                   density="compact"
                   variant="outlined"
                   hide-details
-                ></v-select>
+                ></v-autocomplete>
               </v-col>
               <v-col cols="12" md="3">
-                <v-select
+                <v-autocomplete
                   v-model="selectedCurrency"
                   :items="currencyOptions"
                   :label="$t('historical.currency')"
+                  multiple
+                  chips
                   clearable
                   prepend-inner-icon="mdi-currency-usd"
                   density="compact"
                   variant="outlined"
                   hide-details
-                ></v-select>
+                ></v-autocomplete>
               </v-col>
               <v-col cols="12" md="3">
-                <v-select
+                <v-autocomplete
                   v-model="selectedType"
                   :items="typeOptions"
                   :label="$t('historical.type')"
+                  multiple
+                  chips
                   clearable
                   prepend-inner-icon="mdi-tag"
                   density="compact"
                   variant="outlined"
                   hide-details
-                ></v-select>
+                ></v-autocomplete>
               </v-col>
               <v-col cols="12" md="3">
                 <v-text-field
@@ -63,6 +70,19 @@
                   variant="outlined"
                   hide-details
                 ></v-text-field>
+              </v-col>
+            </v-row>
+            <!-- Reset button -->
+            <v-row class="mt-2">
+              <v-col cols="12" class="text-center">
+                <v-btn
+                  color="secondary"
+                  variant="outlined"
+                  prepend-icon="mdi-refresh"
+                  @click="resetFilters"
+                >
+                  {{ $t('historical.resetFilters') }}
+                </v-btn>
               </v-col>
             </v-row>
           </v-card-text>
@@ -91,25 +111,24 @@
                 variant="text"
                 color="primary"
                 size="small"
-                class="text-capitalize"
+                class="text-lowercase"
               >
                 <v-icon start size="small">mdi-bank</v-icon>
-                {{ formatOriginName(item.origin) }}
+                <CurrencyFlag :item="item" />
               </v-btn>
-              <span v-else class="text-grey">N/A</span>
+              <span v-else>-</span>
             </template>
 
-            <!-- Celda de Moneda con enlace -->
             <template #item.code="{ item }">
               <v-btn
                 v-if="item.origin && item.code"
-                :to="`/historico/${item.origin}/${item.code}`"
+                :to="getLink(item)"
                 variant="text"
                 color="secondary"
                 size="small"
               >
                 <v-avatar size="20" class="mr-2">
-                  <img :src="getCurrencyFlag(item.code)" :alt="item.code" />
+                  <CurrencyFlag :item="item" />
                 </v-avatar>
                 {{ item.code }}
               </v-btn>
@@ -191,6 +210,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useDisplay } from 'vuetify/lib/composables/display.mjs'
+import CurrencyFlag from '~/components/CurrencyFlag.vue'
 
 interface CambioItem {
   origin: string
@@ -200,13 +220,15 @@ interface CambioItem {
   sell: number
   name: string
   spread: number
+  localData?: {
+    name?: string
+    website?: string
+    departments: string[]
+    location?: string
+  } | null
 }
 
 interface CurrencyName {
-  [key: string]: string
-}
-
-interface CurrencyFlag {
   [key: string]: string
 }
 
@@ -243,9 +265,9 @@ useSeoMeta({
 
 // Reactive state
 const search = ref('')
-const selectedOrigin = ref<string | null>(null)
-const selectedCurrency = ref<string | null>(null)
-const selectedType = ref<string | null>(null)
+const selectedOrigin = ref<string[]>([])
+const selectedCurrency = ref<string[]>([])
+const selectedType = ref<string[]>([])
 
 // Load data using useAsyncData for SSR
 const {
@@ -258,9 +280,9 @@ const {
   async () => {
     try {
       const today = new Date().toLocaleDateString('en-CA')
-      const result = await apiService.getExchangeData(today)
+      const result = await apiService.getProcessedExchangeData(today)
 
-      if (result.error) {
+      if ((result as any).error) {
         throw createError({
           statusCode: 500,
           statusMessage: 'Error al cargar las cotizaciones',
@@ -276,18 +298,30 @@ const {
     }
   },
   {
-    server: true,
-    default: () => [],
+    default: () => {
+      return {
+        localData: [],
+        exchangeData: [],
+        error: null,
+      }
+    },
   },
 )
+const localePath = useLocalePath()
+const getLink = (item: CambioItem): string => {
+  if (!item.origin || !item.code) return ''
+  let url = `/historico/${item.origin}/${item.code}`
+  if (item.type) {
+    url = `/historico/${item.origin}/${item.code}/${item.type}`
+  }
+  return localePath(url)
+}
 
 // Process the data and calculate spreads
 const items = computed<CambioItem[]>(() => {
   if (!rawData.value || (rawData.value as any)?.error) return []
 
-  const dataArray = Array.isArray(rawData.value)
-    ? rawData.value
-    : [rawData.value]
+  const dataArray: any[] = rawData.value?.exchangeData
 
   return dataArray
     .map((item: any) => ({
@@ -312,7 +346,7 @@ const lastUpdate = computed(() => {
 const headers = computed(() => [
   {
     title: t('historical.exchangeHouse'),
-    key: 'origin',
+    key: 'localData.name',
     sortable: true,
     width: '180px',
   },
@@ -361,10 +395,13 @@ const originOptions = computed(() => {
   const origins = [
     ...new Set(items.value.map((item) => item.origin).filter(Boolean)),
   ]
-  return origins.sort().map((origin) => ({
-    title: formatOriginName(origin),
-    value: origin,
-  }))
+  return origins.sort().map((origin) => {
+    const item = items.value.find((i) => i.origin === origin)
+    return {
+      title: item?.localData?.name || formatOriginName(origin),
+      value: origin,
+    }
+  })
 })
 
 const currencyOptions = computed(() => {
@@ -390,20 +427,32 @@ const typeOptions = computed(() => {
 const filteredItems = computed(() => {
   let filtered = items.value
 
-  if (selectedOrigin.value) {
-    filtered = filtered.filter((item) => item.origin === selectedOrigin.value)
+  if (selectedOrigin.value.length > 0) {
+    filtered = filtered.filter((item) =>
+      selectedOrigin.value.includes(item.origin),
+    )
   }
 
-  if (selectedCurrency.value) {
-    filtered = filtered.filter((item) => item.code === selectedCurrency.value)
+  if (selectedCurrency.value.length > 0) {
+    filtered = filtered.filter((item) =>
+      selectedCurrency.value.includes(item.code),
+    )
   }
 
-  if (selectedType.value) {
-    filtered = filtered.filter((item) => item.type === selectedType.value)
+  if (selectedType.value.length > 0) {
+    filtered = filtered.filter((item) => selectedType.value.includes(item.type))
   }
 
   return filtered
 })
+
+// Functions
+const resetFilters = () => {
+  selectedOrigin.value = []
+  selectedCurrency.value = []
+  selectedType.value = []
+  search.value = ''
+}
 
 // Methods
 const calculateSpread = (buy: number, sell: number): number => {
@@ -411,10 +460,15 @@ const calculateSpread = (buy: number, sell: number): number => {
   return parseFloat((((sell - buy) / buy) * 100).toFixed(2))
 }
 
-const formatOriginName = (origin: string): string => {
+const formatOriginName = (origin: string, item?: CambioItem): string => {
   if (!origin) return 'N/A'
 
-  // Mapeo de nombres más amigables
+  // Primero intentar usar el nombre de localData si está disponible
+  if (item?.localData?.name) {
+    return item.localData.name
+  }
+
+  // Mapeo de nombres más amigables como fallback
   const nameMap: OriginNameMap = {
     brou: 'BROU',
     bcu: 'BCU',
@@ -480,23 +534,6 @@ const getCurrencyName = (code: string): string => {
   return currencyNames[code] || code
 }
 
-const getCurrencyFlag = (code: string): string => {
-  const flags: CurrencyFlag = {
-    USD: 'https://flagcdn.com/w20/us.png',
-    EUR: 'https://flagcdn.com/w20/eu.png',
-    BRL: 'https://flagcdn.com/w20/br.png',
-    ARS: 'https://flagcdn.com/w20/ar.png',
-    CHF: 'https://flagcdn.com/w20/ch.png',
-    GBP: 'https://flagcdn.com/w20/gb.png',
-    PYG: 'https://flagcdn.com/w20/py.png',
-    XAU: '🥇',
-    UR: 'https://flagcdn.com/w20/uy.png',
-    UP: 'https://flagcdn.com/w20/uy.png',
-    UI: 'https://flagcdn.com/w20/uy.png',
-  }
-  return flags[code] || 'https://flagcdn.com/w20/uy.png'
-}
-
 const getTypeColor = (type: string): string => {
   const colors: TypeColor = {
     BILLETE: 'green',
@@ -529,34 +566,38 @@ const restoreFiltersFromQuery = () => {
 
   // Restaurar filtros desde query parameters
   if (query.origin && typeof query.origin === 'string') {
-    selectedOrigin.value = query.origin
+    selectedOrigin.value = query.origin.split(',')
   }
   if (query.currency && typeof query.currency === 'string') {
-    selectedCurrency.value = query.currency
+    selectedCurrency.value = query.currency.split(',')
   }
   if (query.type && typeof query.type === 'string') {
-    selectedType.value = query.type
+    selectedType.value = query.type.split(',')
   }
   if (query.search && typeof query.search === 'string') {
     search.value = query.search
   }
 }
 
+const getQueryValue = (array: string[]): string | undefined => {
+  return array.length > 0 ? array.join(',') : undefined
+}
+
 const updateQueryParams = () => {
   // Evitar loops infinitos durante la inicialización
   if (loading.value) return
 
-  const query: Record<string, string> = {}
+  const query: Record<string, string | undefined> = {}
 
   // Solo agregar parámetros que tengan valor
   if (selectedOrigin.value) {
-    query.origin = selectedOrigin.value
+    query.origin = getQueryValue(selectedOrigin.value)
   }
   if (selectedCurrency.value) {
-    query.currency = selectedCurrency.value
+    query.currency = getQueryValue(selectedCurrency.value)
   }
   if (selectedType.value) {
-    query.type = selectedType.value
+    query.type = getQueryValue(selectedType.value)
   }
   if (search.value) {
     query.search = search.value
@@ -571,10 +612,6 @@ const updateQueryParams = () => {
     .catch(() => {
       // Ignorar errores de navegación redundante
     })
-}
-
-const goToExample = () => {
-  router.push('/historico/brou/USD')
 }
 
 // Watchers

@@ -107,12 +107,51 @@ export default defineI18nLocale(async (locale) => {
     promedioCompra: 'Buy Average',
     datosTotales: 'Total Data',
     cambio: 'Change',
+    precioCompra: 'Buy Price',
+    precioVenta: 'Sell Price',
 
     // Form labels
     monedaLabel: 'Currency',
     tipoLabel: 'Type',
     buscarLabel: 'Search',
     fechaLabel: 'Date',
+
+    // Additional UI elements
+    ubicacion: 'Location',
+    institucionRegulada: 'BCU Regulated Institution',
+    datosHistoricosDisponibles: 'Historical data available',
+    verMenos: 'Show less',
+    mas: 'more',
+    evolucion: 'Evolution',
+
+    // Branches/Sucursales page
+    sucursalesMenu: 'Branches',
+    todasLasUbicaciones: 'All locations',
+    verEnGoogleMaps: 'View on Google Maps',
+    informacionImportante: 'Important Information',
+    cargandoSucursales: 'Loading branches...',
+    listaSucursales: 'Branch List',
+    sucursalesEncontradas: 'branches found',
+    noSucursalesEncontradas: 'No branches found',
+    noSucursalesDisponibles: 'No branches available for this query',
+
+    // Sucursales index page
+    sucursales: {
+      titulo: 'Branch Directory',
+      descripcion: 'Find all exchange house branches in Uruguay',
+      casasDeCambio: 'Exchange Houses',
+      ubicaciones: 'Locations',
+      datosActualizados: 'Real-time updated data',
+      clickParaVer: 'Click on any exchange house to view its branches',
+      cargandoDatos: 'Loading branch information...',
+      buscar: 'Search exchange house or location...',
+      buscarAhora: 'Search now',
+      limpiarFiltros: 'Clear filters',
+      filtrarPorDepartamento: 'Filter by department',
+      verSucursales: 'View Branches',
+      porUbicacion: 'Search by Location',
+      explorar: 'Explore',
+    },
 
     // Period options
     tresMeses: '3 months',
@@ -128,6 +167,13 @@ export default defineI18nLocale(async (locale) => {
     hechoConAmor: 'Made with',
     porText: 'by',
     yText: 'and',
+
+    // Social media tooltips
+    siguenos: {
+      twitter: 'Follow us on Twitter',
+      linkedin: 'Follow us on LinkedIn',
+      kofi: 'Support us on Ko-fi',
+    },
 
     // Donation labels
     donarPaypal: 'Donate with Paypal',
@@ -151,6 +197,7 @@ export default defineI18nLocale(async (locale) => {
       currency: 'Currency',
       type: 'Type',
       search: 'Search',
+      resetFilters: 'Reset Filters',
       buy: 'Buy',
       sell: 'Sell',
       spread: 'Spread',
@@ -247,6 +294,20 @@ export default defineI18nLocale(async (locale) => {
       offlineDescription:
         'No internet connection. Check your connection to access exchange rates.',
       offlineKeywords: 'offline, no connection, cambio uruguay',
+
+      // Branches page
+      sucursalesTitle: '{origin} Branches - Cambio Uruguay',
+      sucursalesDescription:
+        'Find all {origin} branches in Uruguay. Complete addresses, phone numbers, hours and locations.',
+      sucursalesLocationDescription:
+        '{origin} branches in {location}. Addresses, phone numbers, hours and locations in {location}, Uruguay.',
+      sucursalesKeywords: '{origin} branches, {origin} addresses, {origin} locations, exchange houses uruguay',
+
+      // Branch directory page
+      sucursalesIndexTitle: 'Branch Directory - All Exchange Houses in Uruguay',
+      sucursalesIndexDescription:
+        'Complete directory of branches from all exchange houses in Uruguay. Find locations, addresses and contacts by department.',
+      sucursalesIndexKeywords: 'branch directory uruguay, exchange houses uruguay, montevideo branches, canelones branches, all branches uruguay',
     },
   }
 })
