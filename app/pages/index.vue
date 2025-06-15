@@ -278,7 +278,11 @@ useSeoMeta({
   ogTitle: () => t('seo.homeTitle'),
   ogDescription: () => t('seo.homeDescription'),
   ogType: 'website',
-  ogUrl: 'https://cambio-uruguay.com',
+  ogUrl: () => {
+    const baseUrl = 'https://cambio-uruguay.com'
+    const queryString = new URLSearchParams(route.query as Record<string, string>).toString()
+    return queryString ? `${baseUrl}?${queryString}` : baseUrl
+  },
   twitterCard: 'summary_large_image',
   twitterTitle: () => t('seo.homeTitle'),
   twitterDescription: () => t('seo.homeDescription'),
