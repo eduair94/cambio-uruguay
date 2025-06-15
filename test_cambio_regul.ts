@@ -60,7 +60,8 @@ async function testCambioRegul() {
       console.log("✓ Successfully retrieved data from Firestore API");
     } else {
       console.log("✗ No data retrieved from Firestore API - check API endpoint or data structure");
-    }    console.log("\n=== Test Summary ===");
+    }
+    console.log("\n=== Test Summary ===");
     if (data.length === 4 && invalidRates.length === 0 && invalidSpread.length === 0) {
       console.log("✅ All tests passed! Scraper is working correctly.");
       console.log("\n🎉 SUCCESS: Now using REAL data from https://cambioregulsa.com!");
@@ -70,7 +71,7 @@ async function testCambioRegul() {
       console.log("   ✓ Data is parsed directly from the rendered HTML table");
     } else {
       console.log("❌ Some tests failed. Please check the implementation.");
-      
+
       if (data.length === 0) {
         console.log("💡 Suggestion: The website structure might have changed or the page failed to load.");
       }

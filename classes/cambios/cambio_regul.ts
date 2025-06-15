@@ -33,18 +33,78 @@ class CambioRegul extends Cambio {
   website = "https://cambioregulsa.com/";
   favicon = "https://cambioregulsa.com/";
 
+  private async launchBrowser(): Promise<any> {
+    const baseArgs = [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-dev-shm-usage",
+      "--disable-accelerated-2d-canvas",
+      "--no-first-run",
+      "--no-zygote",
+      "--disable-gpu",
+      "--disable-web-security",
+      "--disable-features=VizDisplayCompositor",
+      "--disable-extensions",
+      "--disable-plugins",
+      "--disable-default-apps",
+      "--disable-background-timer-throttling",
+      "--disable-backgrounding-occluded-windows",
+      "--disable-renderer-backgrounding",
+      "--disable-field-trial-config",
+      "--disable-back-forward-cache",
+      "--disable-ipc-flooding-protection",
+      "--single-process",
+    ];
+
+    // Strategy 1: Try system Chrome first (safer for Linux servers)
+    const chromePaths = [process.env.CHROME_BIN, "/usr/bin/google-chrome", "/usr/bin/chromium-browser", "/usr/bin/chromium", "/snap/bin/chromium"].filter(Boolean);
+
+    for (const chromePath of chromePaths) {
+      try {
+        console.log(`Trying system Chrome at: ${chromePath}`);
+        const puppeteerCore = require("puppeteer-core");
+
+        const browser = await puppeteerCore.launch({
+          headless: true,
+          executablePath: chromePath,
+          args: baseArgs,
+          timeout: 15000,
+        });
+
+        console.log(`Successfully launched system Chrome from: ${chromePath}`);
+        return browser;
+      } catch (error) {
+        console.log(`Failed to launch Chrome at ${chromePath}: ${error.message}`);
+        continue;
+      }
+    }
+
+    // Strategy 2: Try bundled Puppeteer as fallback
+    console.log("System Chrome not available, trying bundled Puppeteer...");
+    try {
+      const browser = await puppeteer.launch({
+        headless: true,
+        args: baseArgs,
+        timeout: 30000,
+        ignoreDefaultArgs: ["--disable-extensions"],
+      });
+
+      console.log("Successfully launched bundled Puppeteer browser");
+      return browser;
+    } catch (error) {
+      console.error("Failed to launch bundled Puppeteer:", error.message);
+      throw new Error(`All browser launch strategies failed. Last error: ${error.message}`);
+    }
+  }
+
   async get_data(): Promise<CambioObj[]> {
     let browser = null;
 
     try {
-      console.log("Launching Puppeteer browser...");
+      console.log("Attempting to launch browser...");
 
-      // Launch browser with optimized settings
-      browser = await puppeteer.launch({
-        headless: true,
-        args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage", "--disable-accelerated-2d-canvas", "--no-first-run", "--no-zygote", "--disable-gpu"],
-        timeout: 30000,
-      });
+      // Try system Chrome first, then fall back to bundled Puppeteer
+      browser = await this.launchBrowser();
 
       const page = await browser.newPage();
 
@@ -76,7 +136,7 @@ class CambioRegul extends Cambio {
           console.log(`Trying selector: ${selector}`);
 
           // Wait for potential elements
-          await page.waitForSelector(selector, { timeout: 5000 });          // Extract data using the current selector
+          await page.waitForSelector(selector, { timeout: 5000 }); // Extract data using the current selector
           const data = await page.evaluate((sel) => {
             const elements = document.querySelectorAll(sel);
             const results: any[] = [];
@@ -85,30 +145,30 @@ class CambioRegul extends Cambio {
               const text = element.textContent || "";
 
               // Special handling for tables - look for table rows with currency data
-              if (sel === 'table' || element.tagName === 'TABLE') {
-                const rows = element.querySelectorAll('tbody tr');
+              if (sel === "table" || element.tagName === "TABLE") {
+                const rows = element.querySelectorAll("tbody tr");
                 rows.forEach((row) => {
-                  const cells = row.querySelectorAll('td');
+                  const cells = row.querySelectorAll("td");
                   if (cells.length >= 3) {
-                    const currencyCell = cells[0].textContent?.trim() || '';
-                    const buyCell = cells[1].textContent?.trim() || '';
-                    const sellCell = cells[2].textContent?.trim() || '';
-                    
+                    const currencyCell = cells[0].textContent?.trim() || "";
+                    const buyCell = cells[1].textContent?.trim() || "";
+                    const sellCell = cells[2].textContent?.trim() || "";
+
                     // Extract currency name and numbers
                     const currencyMatch = currencyCell.match(/(dólar|peso|real|euro)/i);
-                    const buyNumber = parseFloat(buyCell.replace(',', '.'));
-                    const sellNumber = parseFloat(sellCell.replace(',', '.'));
-                    
+                    const buyNumber = parseFloat(buyCell.replace(",", "."));
+                    const sellNumber = parseFloat(sellCell.replace(",", "."));
+
                     if (currencyMatch && !isNaN(buyNumber) && !isNaN(sellNumber)) {
                       let currency = currencyMatch[1].toLowerCase();
                       // Normalize currency names
-                      if (currency === 'dólar') currency = 'dolar';
-                      
+                      if (currency === "dólar") currency = "dolar";
+
                       results.push({
                         currency: currency.charAt(0).toUpperCase() + currency.slice(1),
                         buy: buyNumber,
                         sell: sellNumber,
-                        text: `${currency} ${buyNumber} ${sellNumber}`
+                        text: `${currency} ${buyNumber} ${sellNumber}`,
                       });
                     }
                   }
@@ -252,9 +312,10 @@ class CambioRegul extends Cambio {
       console.log("Successfully extracted exchange rates:", uniqueResult);
       return uniqueResult;
     } catch (error) {
-      console.error("Error scraping Cambio Regul with Puppeteer:", error);
+      console.error("Error scraping Cambio Regul:", error);
+      console.log("Error details:", error.message);
 
-      // Return fallback data only as last resort
+      // Return fallback data as last resort
       console.log("Falling back to sample data due to scraping error...");
       return [
         { code: "USD", type: "", name: "Dolar", buy: 40.5, sell: 41.5 },
