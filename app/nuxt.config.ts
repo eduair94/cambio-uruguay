@@ -71,7 +71,7 @@ export default defineNuxtConfig({
         { name: 'twitter:card', content: 'summary_large_image' },
         {
           name: 'twitter:image',
-          content: 'https://cambio-uruguay.com/img/og.png',
+          content: 'https://cambio-uruguay.com/img/banner.png',
         },
         {
           name: 'twitter:image:alt',
