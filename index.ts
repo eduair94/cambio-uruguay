@@ -197,7 +197,7 @@ const main = async () => {
     }
 
     // Validate currency code parameter (basic validation)
-    if (!code || code.length < 2 || code.length > 4) {
+    if (!code) {
       throw new Error(`Invalid currency code: ${code}. Currency code should be 2-4 characters (e.g., USD, ARS, BRL, EUR)`);
     } // Validate type parameter if provided (currency subtype like BILLETE, CABLE, etc.)
 

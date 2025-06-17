@@ -204,7 +204,6 @@
 </template>
 
 <script setup lang="ts">
-import { useSeoMeta } from '#imports'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
@@ -278,8 +277,7 @@ const {
   'historico-cambios',
   async () => {
     try {
-      const today = new Date().toLocaleDateString('en-CA')
-      const result = await apiService.getProcessedExchangeData(today)
+      const result = await apiService.getProcessedExchangeData('')
 
       if ((result as any).error) {
         throw createError({
@@ -290,6 +288,7 @@ const {
 
       return result
     } catch (err) {
+      console.error(err)
       throw createError({
         statusCode: 500,
         statusMessage: 'Error al cargar las cotizaciones',

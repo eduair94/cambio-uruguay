@@ -1,4 +1,3 @@
-import '@/assets/variables.scss'
 import { createVuetify } from 'vuetify'
 import {
   VAlert,
@@ -64,6 +63,7 @@ import {
   VToolbarTitle,
   VTooltip,
 } from 'vuetify/components'
+import '~/assets/variables.scss'
 
 import * as directives from 'vuetify/directives'
 import colors from 'vuetify/util/colors'

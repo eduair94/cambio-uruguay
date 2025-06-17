@@ -1,0 +1,4 @@
+# Ignore CSS files from being processed as modules
+**/*.css
+**/*.scss
+**/*.sass

@@ -1,3 +1,5 @@
+import vuetify from 'vite-plugin-vuetify'
+
 export default defineNuxtConfig({
   // SSR Configuration
   ssr: true,
@@ -166,14 +168,6 @@ export default defineNuxtConfig({
     define: {
       'process.env.DEBUG': false,
     },
-    css: {
-      devSourcemap: false,
-      preprocessorOptions: {
-        sass: {
-          additionalData: '@use "vuetify/settings" with ($utilities: false)\n',
-        },
-      },
-    },
     server: {
       hmr: {
         overlay: false,
@@ -186,17 +180,12 @@ export default defineNuxtConfig({
     ssr: {
       noExternal: ['@nuxtjs/i18n', 'vue-i18n', 'vuetify'],
     },
+    plugins: [vuetify()],
     build: {
       cssCodeSplit: false, // Disable CSS code splitting to prevent MIME issues
       minify: 'esbuild',
       chunkSizeWarningLimit: 1000,
       rollupOptions: {
-        external: (id) => {
-          if (id.includes('node:') && typeof window !== 'undefined') {
-            return false
-          }
-          return false
-        },
         output: {
           // Simplified chunk splitting
           manualChunks: {
@@ -488,7 +477,7 @@ export default defineNuxtConfig({
       { code: 'es', iso: 'es-ES', name: 'Español', file: 'es.ts' },
       { code: 'pt', iso: 'pt-PT', name: 'Português', file: 'pt.ts' },
     ],
-    //lazy: true,
+    lazy: true,
     defaultLocale: 'es',
     strategy: 'prefix_except_default',
     detectBrowserLanguage: {
@@ -524,7 +513,13 @@ export default defineNuxtConfig({
   },
 
   // Dev Tools
-  devtools: { enabled: true },
+  devtools: {
+    enabled: true,
+
+    timeline: {
+      enabled: true,
+    },
+  },
 
   // Compatibility
   compatibilityDate: '2024-06-12',

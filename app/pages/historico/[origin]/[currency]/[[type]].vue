@@ -443,6 +443,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { useDisplay } from 'vuetify/lib/composables/display.mjs'
 
 const { smAndDown } = useDisplay()
+const { t } = useI18n()
+const localePath = useLocalePath()
 
 // Register Chart.js components
 ChartJS.register(
@@ -520,7 +522,6 @@ const { withLoading } = useLoading()
 const chartType = ref('line')
 const search = ref('')
 const selectedPeriod = ref(6) // Default to 6 months
-const { t } = useI18n()
 
 // Period options
 const periodOptions = computed(() => [
@@ -621,47 +622,6 @@ const exchangeHouseName = computed(() => {
 })
 
 const currencyName = computed(() => route.params.currency as string)
-
-// SEO Configuration with dynamic values
-useSeoMeta({
-  title: () =>
-    t('seo.historicalDetailTitle', {
-      origin: exchangeHouseName.value,
-      currency: currencyName.value,
-    }),
-  description: () =>
-    t('seo.historicalDetailDescription', {
-      origin: exchangeHouseName.value,
-      currency: currencyName.value,
-    }),
-  keywords: () => t('seo.historicalDetailKeywords'),
-  ogTitle: () =>
-    t('seo.historicalDetailTitle', {
-      origin: exchangeHouseName.value,
-      currency: currencyName.value,
-    }),
-  ogDescription: () =>
-    t('seo.historicalDetailDescription', {
-      origin: exchangeHouseName.value,
-      currency: currencyName.value,
-    }),
-  ogType: 'website',
-  ogUrl: () =>
-    `https://cambio-uruguay.com/historico/${route.params.origin}/${route.params.currency}${
-      route.params.type ? '/' + route.params.type : ''
-    }`,
-  twitterCard: 'summary_large_image',
-  twitterTitle: () =>
-    t('seo.historicalDetailTitle', {
-      origin: exchangeHouseName.value,
-      currency: currencyName.value,
-    }),
-  twitterDescription: () =>
-    t('seo.historicalDetailDescription', {
-      origin: exchangeHouseName.value,
-      currency: currencyName.value,
-    }),
-})
 
 // Computed properties
 const tableData = computed(() => {
@@ -905,7 +865,47 @@ const getSellColor = (value: number): string => {
   if (position > 0.3) return 'orange-darken-2'
   return 'green-darken-2'
 }
-const localePath = useLocalePath()
+
+// SEO Configuration with dynamic values
+useSeoMeta({
+  title: () =>
+    t('seo.historicalDetailTitle', {
+      origin: exchangeHouseName.value,
+      currency: currencyName.value,
+    }),
+  description: () =>
+    t('seo.historicalDetailDescription', {
+      origin: exchangeHouseName.value,
+      currency: currencyName.value,
+    }),
+  keywords: () => t('seo.historicalDetailKeywords'),
+  ogTitle: () =>
+    t('seo.historicalDetailTitle', {
+      origin: exchangeHouseName.value,
+      currency: currencyName.value,
+    }),
+  ogDescription: () =>
+    t('seo.historicalDetailDescription', {
+      origin: exchangeHouseName.value,
+      currency: currencyName.value,
+    }),
+  ogType: 'website',
+  ogUrl: () =>
+    `https://cambio-uruguay.com/historico/${route.params.origin}/${route.params.currency}${
+      route.params.type ? '/' + route.params.type : ''
+    }`,
+  twitterCard: 'summary_large_image',
+  twitterTitle: () =>
+    t('seo.historicalDetailTitle', {
+      origin: exchangeHouseName.value,
+      currency: currencyName.value,
+    }),
+  twitterDescription: () =>
+    t('seo.historicalDetailDescription', {
+      origin: exchangeHouseName.value,
+      currency: currencyName.value,
+    }),
+})
 </script>
 
 <style scoped>

@@ -39,7 +39,7 @@ export const useApiService = () => {
   const getExchangeData = async (date: string): Promise<any> => {
     return await $fetch('/', {
       baseURL: getApiBaseUrl(),
-      query: { date },
+      query: { date: date || undefined },
     }).catch((error) => {
       // Extract detailed error information
       const errorResponse = error.response?.data || error.data || null

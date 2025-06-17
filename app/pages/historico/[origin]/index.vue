@@ -301,23 +301,6 @@ const originName = computed(() =>
   formatOriginName(route.params.origin as string),
 )
 
-useSeoMeta({
-  title: () => t('seo.historicalOriginTitle', { origin: originName.value }),
-  description: () =>
-    t('seo.historicalOriginDescription', { origin: originName.value }),
-  keywords: () => t('seo.historicalOriginKeywords'),
-  ogTitle: () => t('seo.historicalOriginTitle', { origin: originName.value }),
-  ogDescription: () =>
-    t('seo.historicalOriginDescription', { origin: originName.value }),
-  ogType: 'website',
-  ogUrl: () => `https://cambio-uruguay.com/historico/${route.params.origin}`,
-  twitterCard: 'summary_large_image',
-  twitterTitle: () =>
-    t('seo.historicalOriginTitle', { origin: originName.value }),
-  twitterDescription: () =>
-    t('seo.historicalOriginDescription', { origin: originName.value }),
-})
-
 // Headers definition
 const headers = ref([
   {
@@ -579,6 +562,23 @@ watch(
 // Lifecycle - restore filters from query parameters on mount
 onMounted(() => {
   restoreFiltersFromQuery()
+})
+
+useSeoMeta({
+  title: () => t('seo.historicalOriginTitle', { origin: originName.value }),
+  description: () =>
+    t('seo.historicalOriginDescription', { origin: originName.value }),
+  keywords: () => t('seo.historicalOriginKeywords'),
+  ogTitle: () => t('seo.historicalOriginTitle', { origin: originName.value }),
+  ogDescription: () =>
+    t('seo.historicalOriginDescription', { origin: originName.value }),
+  ogType: 'website',
+  ogUrl: () => `https://cambio-uruguay.com/historico/${route.params.origin}`,
+  twitterCard: 'summary_large_image',
+  twitterTitle: () =>
+    t('seo.historicalOriginTitle', { origin: originName.value }),
+  twitterDescription: () =>
+    t('seo.historicalOriginDescription', { origin: originName.value }),
 })
 </script>
 

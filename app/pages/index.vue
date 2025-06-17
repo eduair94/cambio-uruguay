@@ -203,11 +203,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
-import { useCambioStore } from '~/stores/cambio'
+import { computed, onMounted, ref } from 'vue'
 
 // Initialize API service
 const apiService = useApiService()
+const { t, locale } = useI18n()
+const route = useRoute()
+const router = useRouter()
+const { start, finish } = useLoadingIndicator()
 
 // Define interfaces for type safety
 interface ExchangeItem {
@@ -245,50 +248,6 @@ interface LocationOption {
   text: string
   value: string
 }
-
-interface Texts {
-  [locale: string]: {
-    [code: string]: string
-  }
-}
-
-// Component imports
-const ExchangeDataTable = defineAsyncComponent(
-  () => import('~/components/ExchangeDataTable.vue'),
-)
-const ExchangeFilters = defineAsyncComponent(
-  () => import('~/components/ExchangeFilters.vue'),
-)
-const DonationSection = defineAsyncComponent(
-  () => import('~/components/DonationSection.vue'),
-)
-
-// Composables
-const { t, locale } = useI18n()
-const route = useRoute()
-const router = useRouter()
-const store = useCambioStore()
-const { start, finish } = useLoadingIndicator()
-
-// SEO Configuration with multilingual support
-useSeoMeta({
-  title: () => t('seo.homeTitle'),
-  description: () => t('seo.homeDescription'),
-  keywords: () => t('seo.homeKeywords'),
-  ogTitle: () => t('seo.homeTitle'),
-  ogDescription: () => t('seo.homeDescription'),
-  ogType: 'website',
-  ogUrl: () => {
-    const baseUrl = 'https://cambio-uruguay.com'
-    const queryString = new URLSearchParams(
-      route.query as Record<string, string>,
-    ).toString()
-    return queryString ? `${baseUrl}?${queryString}` : baseUrl
-  },
-  twitterCard: 'summary_large_image',
-  twitterTitle: () => t('seo.homeTitle'),
-  twitterDescription: () => t('seo.homeDescription'),
-})
 
 // Reactive data
 const snackColor = ref<string>('green darken-4')
@@ -436,13 +395,13 @@ const onDateChange = (newDate: string) => {
   selectedDate.value = newDate
   isDateManuallySelected.value = true
   datePickerMenu.value = false
-  fetchDataForDate(newDate)
+  fetchDataForDate()
 }
 
 const resetDate = () => {
   selectedDate.value = new Date().toLocaleDateString('en-CA')
   isDateManuallySelected.value = false
-  setup()
+  fetchDataForDate()
 }
 
 const geoLocationSuccess = (opt: {
@@ -557,8 +516,9 @@ const buildExchangeHouseOptions = () => {
     .sort((a, b) => a.text.localeCompare(b.text))
 }
 
-const fetchDataForDate = async (date: string) => {
+const fetchDataForDate = async () => {
   start()
+  const date = selectedDate.value
   try {
     const data = await apiService.getProcessedExchangeData(date)
     if (data.error) {
@@ -745,33 +705,75 @@ const getData = () => {
   updateTable()
 }
 
-const setup = async () => {
-  fetchDataForDate(selectedDate.value)
+/**
+ * Extract date from query parameters for server-side use
+ * This function works on both server and client side
+ */
+const getDateFromQuery = () => {
+  const query = route.query
+
+  if (query.date && typeof query.date === 'string') {
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/
+    if (dateRegex.test(query.date)) {
+      const parsedDate = new Date(query.date)
+      if (!isNaN(parsedDate.getTime())) {
+        return query.date
+      }
+    }
+  }
+
+  // Return current date if no valid date in query
+  return new Date().toLocaleDateString('en-CA')
 }
 
 // Server-side data fetching for better SEO and initial page load
 const { data: initialData } = await useAsyncData(
   'exchange-data',
   async () => {
-    const currentDate = new Date().toLocaleDateString('en-CA')
+    // Get date from query parameters for server-side compatibility
+    const currentDate = getDateFromQuery()
+    console.log('Server-side fetching data for date:', currentDate)
+
     try {
-      return await apiService.getProcessedExchangeData(currentDate)
+      const result = await apiService.getProcessedExchangeData(currentDate)
+
+      // Also return the query parameters for client-side state initialization
+      return {
+        ...result,
+        queryParams: route.query,
+        fetchedDate: currentDate,
+      }
     } catch (error) {
       console.error('Server-side data fetching error:', error)
-      return null
+      return {
+        localData: [],
+        locations: [],
+        exchangeData: [],
+        error: error,
+        queryParams: route.query,
+        fetchedDate: currentDate,
+      }
     }
   },
   {
-    default: () => [],
+    server: true,
+    default: () => {
+      return {
+        localData: [],
+        locations: [],
+        exchangeData: [],
+        error: null,
+        queryParams: {},
+        fetchedDate: new Date().toLocaleDateString('en-CA'),
+      }
+    },
   },
 )
 
+console.log('Initial data from server:', initialData.value.queryParams)
+
 // Initialize data from server-side fetch
-if (
-  initialData.value &&
-  !Array.isArray(initialData.value) &&
-  initialData.value.exchangeData
-) {
+if (initialData.value && initialData.value.exchangeData) {
   if (initialData.value.error) {
     let errorMessage = 'Error loading initial data'
     const error = initialData.value.error as any
@@ -789,10 +791,315 @@ if (
     openSnack(errorMessage, 10000)
   }
 
+  // Set the data
   allItems.value = initialData.value.exchangeData
   locations.value = initialData.value.locations || ['TODOS', 'MONTEVIDEO']
+
+  // Set the date if it was fetched from query params
+  if (initialData.value.fetchedDate) {
+    selectedDate.value = initialData.value.fetchedDate
+    day.value = initialData.value.fetchedDate
+
+    // Mark as manually selected if different from today
+    const today = new Date().toLocaleDateString('en-CA')
+    if (initialData.value.fetchedDate !== today) {
+      isDateManuallySelected.value = true
+    }
+  }
+
   buildExchangeHouseOptions()
   getData()
+}
+
+/**
+ * Validate and sanitize query parameter values
+ * @param value - The query parameter value to validate
+ * @param type - The expected type of the parameter
+ * @param allowedValues - Array of allowed values for enum-like parameters
+ * @returns The sanitized value or null if invalid
+ */
+const validateQueryParam = (
+  value: any,
+  type: 'string' | 'number' | 'boolean' | 'date',
+  allowedValues?: string[],
+): any => {
+  if (value === undefined || value === null) return null
+
+  try {
+    switch (type) {
+      case 'string':
+        if (typeof value === 'string') {
+          const sanitized = value.trim().toUpperCase()
+          if (allowedValues && !allowedValues.includes(sanitized)) {
+            return null
+          }
+          return sanitized
+        }
+        break
+
+      case 'number':
+        const numValue = typeof value === 'string' ? parseFloat(value) : value
+        if (!isNaN(numValue) && numValue >= 0) {
+          return numValue
+        }
+        break
+
+      case 'boolean':
+        if (value === '1' || value === 'true' || value === true) return true
+        if (value === '0' || value === 'false' || value === false) return false
+        break
+
+      case 'date':
+        if (typeof value === 'string') {
+          const dateRegex = /^\d{4}-\d{2}-\d{2}$/
+          if (dateRegex.test(value)) {
+            const parsedDate = new Date(value)
+            if (!isNaN(parsedDate.getTime())) {
+              return value
+            }
+          }
+        }
+        break
+    }
+  } catch (error) {
+    console.error('Error validating query parameter:', error)
+  }
+
+  return null
+}
+
+/**
+ * Apply query parameters from server-side data
+ * This function applies query parameters that were passed from server-side
+ */
+const applyServerSideQueryParams = (queryParams: any) => {
+  if (!queryParams || typeof queryParams !== 'object') return
+
+  try {
+    // Apply non-date parameters (date is already handled in server fetch)
+
+    // Currency settings
+    const currencyCode = validateQueryParam(
+      queryParams.currency,
+      'string',
+      money.value,
+    )
+    if (currencyCode) {
+      code.value = currencyCode
+    }
+
+    const currencyWithCode = validateQueryParam(
+      queryParams.currency_with,
+      'string',
+      money.value,
+    )
+    if (currencyWithCode) {
+      codeWith.value = currencyWithCode
+    }
+
+    // Amount setting
+    const amountValue = validateQueryParam(queryParams.amount, 'number')
+    if (amountValue !== null) {
+      amount.value = amountValue
+    }
+
+    // Want to buy/sell setting
+    const wantToValue = validateQueryParam(queryParams.wantTo, 'string', [
+      'BUY',
+      'SELL',
+    ])
+    if (wantToValue) {
+      wantTo.value = wantToValue.toLowerCase() as 'buy' | 'sell'
+    }
+
+    // Location setting
+    const locationValue = validateQueryParam(
+      queryParams.location,
+      'string',
+      locations.value,
+    )
+    if (locationValue) {
+      location.value = locationValue
+    }
+
+    // Filter settings
+    const notInterBankValue = validateQueryParam(
+      queryParams.notInterBank,
+      'boolean',
+    )
+    if (notInterBankValue !== null) {
+      notInterBank.value = notInterBankValue
+    }
+
+    const notConditionalValue = validateQueryParam(
+      queryParams.notConditional,
+      'boolean',
+    )
+    if (notConditionalValue !== null) {
+      notConditional.value = notConditionalValue
+    }
+
+    // Geolocation coordinates (if provided)
+    const latValue = validateQueryParam(queryParams.lat, 'number')
+    const lngValue = validateQueryParam(queryParams.lng, 'number')
+    if (latValue !== null && lngValue !== null) {
+      latitude.value = latValue
+      longitude.value = lngValue
+      enableDistance.value = true
+    }
+
+    // Mark that route has query parameters
+    if (Object.keys(queryParams).length > 0) {
+      routeHasQuery.value = true
+    }
+
+    console.log('Applied server-side query parameters:', {
+      currency: code.value,
+      currency_with: codeWith.value,
+      amount: amount.value,
+      wantTo: wantTo.value,
+      location: location.value,
+      notInterBank: notInterBank.value,
+      notConditional: notConditional.value,
+      hasCoordinates: enableDistance.value,
+    })
+  } catch (error) {
+    console.error('Error applying server-side query parameters:', error)
+  }
+}
+
+/**
+ * Load and apply data from route query parameters (client-side)
+ * This function reads URL query parameters and sets component state accordingly
+ */
+const loadDataFromQueryParams = () => {
+  const query = route.query
+
+  try {
+    // Currency settings
+    const currencyCode = validateQueryParam(
+      query.currency,
+      'string',
+      money.value,
+    )
+    if (currencyCode) {
+      code.value = currencyCode
+    }
+
+    const currencyWithCode = validateQueryParam(
+      query.currency_with,
+      'string',
+      money.value,
+    )
+    if (currencyWithCode) {
+      codeWith.value = currencyWithCode
+    }
+
+    // Amount setting
+    const amountValue = validateQueryParam(query.amount, 'number')
+    if (amountValue !== null) {
+      amount.value = amountValue
+    }
+
+    // Want to buy/sell setting
+    const wantToValue = validateQueryParam(query.wantTo, 'string', [
+      'BUY',
+      'SELL',
+    ])
+    if (wantToValue) {
+      wantTo.value = wantToValue.toLowerCase() as 'buy' | 'sell'
+    }
+
+    // Location setting
+    const locationValue = validateQueryParam(
+      query.location,
+      'string',
+      locations.value,
+    )
+    if (locationValue) {
+      location.value = locationValue
+    }
+
+    // Date setting (for client-side navigation)
+    const dateValue = validateQueryParam(query.date, 'date')
+    if (dateValue && dateValue !== selectedDate.value) {
+      selectedDate.value = dateValue
+      isDateManuallySelected.value = true
+    }
+
+    // Filter settings
+    const notInterBankValue = validateQueryParam(query.notInterBank, 'boolean')
+    if (notInterBankValue !== null) {
+      notInterBank.value = notInterBankValue
+    }
+
+    const notConditionalValue = validateQueryParam(
+      query.notConditional,
+      'boolean',
+    )
+    if (notConditionalValue !== null) {
+      notConditional.value = notConditionalValue
+    }
+
+    // Exchange houses filter
+    if (query.exchangeHouses && typeof query.exchangeHouses === 'string') {
+      const exchangeHousesArray = query.exchangeHouses
+        .split(',')
+        .filter(Boolean)
+      if (exchangeHousesArray.length > 0) {
+        // Set selected exchange houses (will be validated after data loads)
+        nextTick(() => {
+          const validExchangeHouses = exchangeHousesArray
+            .map((origin) => {
+              const option = exchangeHouseOptions.value.find(
+                (opt) => opt.value === origin,
+              )
+              return option ? option : null
+            })
+            .filter(Boolean) as ExchangeHouseOption[]
+
+          if (validExchangeHouses.length > 0) {
+            selectedExchangeHouse.value = validExchangeHouses
+          }
+        })
+      }
+    }
+
+    // Geolocation coordinates (if provided)
+    const latValue = validateQueryParam(query.lat, 'number')
+    const lngValue = validateQueryParam(query.lng, 'number')
+    if (latValue !== null && lngValue !== null) {
+      latitude.value = latValue
+      longitude.value = lngValue
+      enableDistance.value = true
+    }
+
+    // Mark that route has query parameters
+    if (Object.keys(query).length > 0) {
+      routeHasQuery.value = true
+    }
+
+    console.log('Loaded data from query parameters:', {
+      currency: code.value,
+      currency_with: codeWith.value,
+      amount: amount.value,
+      wantTo: wantTo.value,
+      location: location.value,
+      date: selectedDate.value,
+      notInterBank: notInterBank.value,
+      notConditional: notConditional.value,
+      hiddenWidgets: hiddenWidgets.value,
+      hasCoordinates: enableDistance.value,
+    })
+
+    // Update table if data is already loaded
+    if (allItems.value.length > 0) {
+      updateTable()
+    }
+  } catch (error) {
+    console.error('Error loading data from query parameters:', error)
+    openSnack('Error al cargar parámetros de la URL', 5000, 'orange darken-2')
+  }
 }
 
 // Lifecycle hooks
@@ -801,14 +1108,21 @@ onMounted(() => {
 
   // Initialize date values on client side to prevent hydration mismatch
   const currentDate = new Date().toLocaleDateString('en-CA')
-  day.value = currentDate
-  selectedDate.value = currentDate
 
-  // Fetch locations from API
-  // Only run setup if no data was loaded server-side
-  if (!allItems.value.length) {
-    setup()
+  // Only set default date if not already set from server-side data
+  if (!selectedDate.value) {
+    day.value = currentDate
+    selectedDate.value = currentDate
   }
+
+  // Apply server-side query parameters first
+  console.log('Initial data from server:', initialData.value)
+  if (initialData.value?.queryParams) {
+    applyServerSideQueryParams(initialData.value.queryParams)
+  }
+
+  // Then load any additional client-side query parameters
+  loadDataFromQueryParams()
 })
 
 // Structured Data for SEO
@@ -849,5 +1163,25 @@ useHead({
       innerHTML: JSON.stringify(structuredData.value),
     },
   ],
+})
+
+// SEO Configuration with multilingual support
+useSeoMeta({
+  title: () => t('seo.homeTitle'),
+  description: () => t('seo.homeDescription'),
+  keywords: () => t('seo.homeKeywords'),
+  ogTitle: () => t('seo.homeTitle'),
+  ogDescription: () => t('seo.homeDescription'),
+  ogType: 'website',
+  ogUrl: () => {
+    const baseUrl = 'https://cambio-uruguay.com'
+    const queryString = new URLSearchParams(
+      route.query as Record<string, string>,
+    ).toString()
+    return queryString ? `${baseUrl}?${queryString}` : baseUrl
+  },
+  twitterCard: 'summary_large_image',
+  twitterTitle: () => t('seo.homeTitle'),
+  twitterDescription: () => t('seo.homeDescription'),
 })
 </script>
