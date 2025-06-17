@@ -1146,6 +1146,10 @@ onMounted(() => {
 
   // Then load any additional client-side query parameters
   loadDataFromQueryParams()
+
+  if (localStorage.getItem('hideWidgets') === 'true') {
+    hiddenWidgets.value = true
+  }
 })
 
 // Structured Data for SEO
