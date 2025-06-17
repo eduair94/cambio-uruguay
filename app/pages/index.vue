@@ -249,6 +249,18 @@ interface LocationOption {
   value: string
 }
 
+const df = {
+  amount: 100,
+  wantTo: 'buy' as 'buy' | 'sell',
+  notInterBank: true,
+  location: 'TODOS',
+  code: 'USD',
+  codeWith: 'UYU',
+  selectedDate: new Date().toLocaleDateString('en-CA', {
+    timeZone: 'America/Montevideo',
+  }),
+}
+
 // Reactive data
 const snackColor = ref<string>('green darken-4')
 const routeHasQuery = ref<boolean>(false)
@@ -260,22 +272,22 @@ const snackBarText = ref<string>('')
 const showApiAlert = ref<boolean>(true)
 const loadingDistances = ref<boolean>(false)
 const onlyInterBank = ref<string[]>(['UR', 'UP'])
-const location = ref<string>('TODOS')
+const location = ref<string>(df.location)
 const selectedExchangeHouse = ref<ExchangeHouseOption[]>([])
 const exchangeHouseOptions = ref<ExchangeHouseOption[]>([])
 const filteredItems = ref<ExchangeItem[]>([])
 const locations = ref<string[]>(['TODOS', 'MONTEVIDEO'])
 const money = ref<string[]>(['USD', 'ARS', 'BRL', 'EUR', 'GBP', 'UYU'])
-const amount = ref<number>(100)
-const wantTo = ref<'buy' | 'sell'>('buy')
+const amount = ref<number>(df.amount)
+const wantTo = ref<'buy' | 'sell'>(df.wantTo)
 const notConditional = ref<boolean>(false)
 const day = ref<string>('')
-const selectedDate = ref<string>('')
+const selectedDate = ref<string>(df.selectedDate)
 const datePickerMenu = ref<boolean>(false)
 const isDateManuallySelected = ref<boolean>(false)
-const code = ref<string>('USD')
-const codeWith = ref<string>('UYU')
-const notInterBank = ref<boolean>(true)
+const code = ref<string>(df.code)
+const codeWith = ref<string>(df.codeWith)
+const notInterBank = ref<boolean>(df.notInterBank)
 const items = ref<ExchangeItem[]>([])
 const enableDistance = ref<boolean>(false)
 const latitude = ref<number>(0)
@@ -631,19 +643,23 @@ const updateTable = () => {
   setPrice()
 }
 
+const getValueQuery = (value: string | number, key: any) => {
+  return value === (df as any)[key] ? undefined : value
+}
+
 const setPrice = () => {
   if (amount.value < 0) {
     amount.value = 0
   }
 
   const query = {
-    currency: code.value,
-    amount: amount.value,
-    wantTo: wantTo.value,
-    location: location.value,
-    currency_with: codeWith.value,
-    date: selectedDate.value,
-    notInterBank: notInterBank.value ? 1 : undefined,
+    currency: getValueQuery(code.value, 'code'),
+    amount: getValueQuery(amount.value, 'amount'),
+    wantTo: getValueQuery(wantTo.value, 'wantTo'),
+    location: getValueQuery(location.value, 'location'),
+    currency_with: getValueQuery(codeWith.value, 'codeWith'),
+    date: getValueQuery(selectedDate.value, 'selectedDate'),
+    notInterBank: notInterBank.value ? undefined : 0,
     notConditional: notConditional.value ? 1 : undefined,
     exchangeHouses:
       selectedExchangeHouse.value && selectedExchangeHouse.value.length > 0
