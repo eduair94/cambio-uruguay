@@ -161,7 +161,7 @@ export default defineNuxtConfig({
       analyzerMode: 'static',
       openAnalyzer: false,
     },
-  },  // Vite Configuration
+  }, // Vite Configuration
   vite: {
     define: {
       'process.env.DEBUG': false,
