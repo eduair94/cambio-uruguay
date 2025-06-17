@@ -399,7 +399,9 @@ const onDateChange = (newDate: string) => {
 }
 
 const resetDate = () => {
-  selectedDate.value = new Date().toLocaleDateString('en-CA')
+  selectedDate.value = new Date().toLocaleDateString('en-CA', {
+    timeZone: 'America/Montevideo',
+  })
   isDateManuallySelected.value = false
   fetchDataForDate()
 }
@@ -723,7 +725,7 @@ const getDateFromQuery = () => {
   }
 
   // Return current date if no valid date in query
-  return new Date().toLocaleDateString('en-CA')
+  return ''
 }
 
 // Server-side data fetching for better SEO and initial page load
@@ -764,7 +766,9 @@ const { data: initialData } = await useAsyncData(
         exchangeData: [],
         error: null,
         queryParams: {},
-        fetchedDate: new Date().toLocaleDateString('en-CA'),
+        fetchedDate: new Date().toLocaleDateString('en-CA', {
+          timeZone: 'America/Montevideo',
+        }),
       }
     },
   },
@@ -801,7 +805,9 @@ if (initialData.value && initialData.value.exchangeData) {
     day.value = initialData.value.fetchedDate
 
     // Mark as manually selected if different from today
-    const today = new Date().toLocaleDateString('en-CA')
+    const today = new Date().toLocaleDateString('en-CA', {
+      timeZone: 'America/Montevideo',
+    })
     if (initialData.value.fetchedDate !== today) {
       isDateManuallySelected.value = true
     }
@@ -1107,8 +1113,9 @@ onMounted(() => {
   console.log('mounted index.vue')
 
   // Initialize date values on client side to prevent hydration mismatch
-  const currentDate = new Date().toLocaleDateString('en-CA')
-
+  const currentDate = new Date().toLocaleDateString('en-CA', {
+    timeZone: 'America/Montevideo',
+  })
   // Only set default date if not already set from server-side data
   if (!selectedDate.value) {
     day.value = currentDate

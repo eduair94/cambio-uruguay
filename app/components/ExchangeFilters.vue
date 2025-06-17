@@ -291,12 +291,16 @@ const formatDisplayDate = (dateValue: string | Date) => {
   // If it's already a string in YYYY-MM-DD format, convert to display format
   if (typeof dateValue === 'string') {
     const date = new Date(dateValue + 'T00:00:00')
-    return date.toLocaleDateString('en-CA')
+    return date.toLocaleDateString('en-CA', {
+      timeZone: 'America/Montevideo',
+    })
   }
 
   // If it's a Date object, format it
   if (dateValue instanceof Date) {
-    return dateValue.toLocaleDateString('en-CA')
+    return dateValue.toLocaleDateString('en-CA', {
+      timeZone: 'America/Montevideo',
+    })
   }
 
   return dateValue
@@ -307,7 +311,9 @@ const handleDateChange = (newDate: Date | string) => {
 
   if (newDate instanceof Date) {
     // Convert Date object to YYYY-MM-DD format
-    formattedDate = newDate.toLocaleDateString('en-CA') // en-CA gives YYYY-MM-DD format
+    formattedDate = newDate.toLocaleDateString('en-CA', {
+      timeZone: 'America/Montevideo',
+    }) // en-CA gives YYYY-MM-DD format
   } else {
     // If it's already a string, use it as is
     formattedDate = newDate

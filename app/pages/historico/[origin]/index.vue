@@ -230,7 +230,9 @@ const {
   `historico-origin-${route.params.origin}`,
   async () => {
     try {
-      const today = new Date().toLocaleDateString('en-CA')
+      const today = new Date().toLocaleDateString('en-CA', {
+        timeZone: 'America/Montevideo',
+      })
       const result = await apiService.getExchangeData(today)
 
       if (result.error) {
