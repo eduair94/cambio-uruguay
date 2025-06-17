@@ -122,6 +122,8 @@ export default defineNuxtConfig({
           href: '/humans.txt',
           type: 'text/plain',
         },
+        { rel: 'manifest', href: '/manifest.json' },
+        { rel: 'manifest', href: '/manifest.webmanifest' }, //
         {
           rel: 'author',
           href: 'https://www.linkedin.com/in/eduardo-airaudo/',
