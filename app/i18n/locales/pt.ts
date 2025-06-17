@@ -92,8 +92,8 @@ export default defineI18nLocale(async (locale) => {
     donar: 'Doar',
 
     // Historical page specific texts
-    historicoCotizações: 'Cotações Históricas',
-    evolucionCotizações: 'Evolução das Cotações',
+    historicoCotizaciones: 'Cotações Históricas',
+    evolucionCotizaciones: 'Evolução das Cotações',
     cargandoDatosHistoricos: 'Carregando dados históricos...',
     errorCargarDatos: 'Erro ao carregar dados',
     reintentar: 'Tentar Novamente',
