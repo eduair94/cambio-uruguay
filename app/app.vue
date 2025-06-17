@@ -6,8 +6,10 @@
       <NuxtPage />
     </NuxtLayout>
 
-    <!-- PWA Network Status -->
-    <PWANetworkStatus />
+    <!-- PWA Network Status - Client Only -->
+    <ClientOnly>
+      <PWANetworkStatus />
+    </ClientOnly>
   </div>
 </template>
 

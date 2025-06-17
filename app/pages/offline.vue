@@ -61,7 +61,7 @@ const retry = () => {
   } else {
     // Show message that still offline - using a simple alert as fallback
     // In a real app, you might want to use a notification library or custom toast component
-    if (process.client) {
+    if (import.meta.client) {
       console.warn('Aún no hay conexión a internet')
       // You could also emit an event or use a global state for notifications
     }

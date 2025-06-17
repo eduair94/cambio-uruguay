@@ -27,10 +27,7 @@
             </span>
             <v-spacer></v-spacer>
             <ClientOnly>
-              <v-chip class="mt-2 mt-md-0" color="success" size="small">
-                <v-icon start size="small">mdi-clock-outline</v-icon>
-                {{ $t('actualizado') }}: {{ lastUpdate }}
-              </v-chip>
+              <Updated />
             </ClientOnly>
           </v-card-title>
           <!-- Filtros -->

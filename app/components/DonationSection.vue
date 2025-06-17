@@ -27,8 +27,8 @@
             href="https://ko-fi.com/cambio_uruguay"
           >
             <img
-              max-width="50px"
-              height="50px"
+              width="50"
+              height="50"
               src="/img/paypal_icon.webp"
               alt="PayPal"
               class="donation_img"
@@ -41,8 +41,8 @@
             href="https://mpago.la/19j46vX"
           >
             <img
-              max-width="50px"
-              height="50px"
+              width="50"
+              height="50"
               src="/img/mercadopago_icon.webp"
               alt="Mercado Pago"
               class="donation_img"

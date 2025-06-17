@@ -9,10 +9,9 @@
               $t('historical.currentQuotes')
             }}</span>
             <v-spacer></v-spacer>
-            <v-chip class="mt-2 mt-md-0" color="success" size="small">
-              <v-icon start size="small">mdi-clock-outline</v-icon>
-              {{ $t('historical.updated') }}: {{ lastUpdate }}
-            </v-chip>
+            <ClientOnly>
+              <Updated />
+            </ClientOnly>
           </v-card-title>
           <!-- Filtros -->
           <v-card-text>

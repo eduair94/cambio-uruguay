@@ -1,6 +1,12 @@
 /* Critical CSS for above-the-fold content */
 /* This should be inlined for better performance */
 
+/* Material Design Icons font-display optimization */
+@font-face {
+  font-family: 'Material Design Icons';
+  font-display: swap;
+}
+
 /* Basic layout and typography */
 body {
   font-family: 'Open Sans', sans-serif;

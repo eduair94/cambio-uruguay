@@ -93,11 +93,12 @@
 
       <NuxtLink :to="localePath('/')" class="no_link d-flex logo_link">
         <img
-          max-height="80%"
-          max-width="55vw"
+          width="227"
+          height="33"
           alt="Cambio Uruguay - Logo oficial para comparar cotizaciones de cambio"
           class="logo_image"
           src="/img/logo.png"
+          loading="eager"
         />
       </NuxtLink>
 
@@ -178,7 +179,9 @@
       <LanguageMenu />
     </VAppBar>
 
-    <PWAInstallBanner />
+    <ClientOnly>
+      <PWAInstallBanner />
+    </ClientOnly>
 
     <VMain>
       <div class="container_custom">

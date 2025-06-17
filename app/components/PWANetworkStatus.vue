@@ -52,12 +52,12 @@ const handleOffline = () => {
 }
 
 const setupNetworkListeners = () => {
-  if (process.client) {
+  if (import.meta.client) {
     window.addEventListener('online', handleOnline)
     window.addEventListener('offline', handleOffline)
 
-    // Check initial status
-    if (!navigator.onLine) {
+    // Check initial status only on client side
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
       showOfflineSnackbar.value = true
     }
   }
@@ -69,7 +69,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-  if (process.client) {
+  if (import.meta.client) {
     window.removeEventListener('online', handleOnline)
     window.removeEventListener('offline', handleOffline)
   }

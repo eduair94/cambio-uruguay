@@ -16,6 +16,12 @@ interface DistanceResponse {
   [key: string]: any // Allow additional properties
 }
 
+interface HealthResponse {
+  lastSync?: string
+  status?: string
+  [key: string]: any // Allow additional properties
+}
+
 export const useApiService = () => {
   const config = useRuntimeConfig()
 
@@ -344,6 +350,30 @@ export const useApiService = () => {
     }
   }
 
+  /**
+   * Fetch health/status information including last sync time
+   */
+  const getHealthStatus = async () => {
+    try {
+      const data = await $fetch<HealthResponse>('/health', {
+        baseURL: getApiBaseUrl(),
+      })
+
+      return {
+        error: null,
+        data,
+      }
+    } catch (error: any) {
+      console.error('Health status error:', error)
+
+      const errorResponse = extractErrorDetails(error)
+      return {
+        error: errorResponse,
+        data: null,
+      }
+    }
+  }
+
   return {
     getApiBaseUrl,
     getExchangeData,
@@ -357,5 +387,6 @@ export const useApiService = () => {
     geocodeAddress,
     reverseGeocode,
     getDistances,
+    getHealthStatus,
   }
 }

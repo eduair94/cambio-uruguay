@@ -280,7 +280,9 @@ useSeoMeta({
   ogType: 'website',
   ogUrl: () => {
     const baseUrl = 'https://cambio-uruguay.com'
-    const queryString = new URLSearchParams(route.query as Record<string, string>).toString()
+    const queryString = new URLSearchParams(
+      route.query as Record<string, string>,
+    ).toString()
     return queryString ? `${baseUrl}?${queryString}` : baseUrl
   },
   twitterCard: 'summary_large_image',
@@ -308,8 +310,8 @@ const money = ref<string[]>(['USD', 'ARS', 'BRL', 'EUR', 'GBP', 'UYU'])
 const amount = ref<number>(100)
 const wantTo = ref<'buy' | 'sell'>('buy')
 const notConditional = ref<boolean>(false)
-const day = ref<string>(new Date().toLocaleDateString('en-CA'))
-const selectedDate = ref<string>(new Date().toLocaleDateString('en-CA'))
+const day = ref<string>('')
+const selectedDate = ref<string>('')
 const datePickerMenu = ref<boolean>(false)
 const isDateManuallySelected = ref<boolean>(false)
 const code = ref<string>('USD')
@@ -796,6 +798,12 @@ if (
 // Lifecycle hooks
 onMounted(() => {
   console.log('mounted index.vue')
+
+  // Initialize date values on client side to prevent hydration mismatch
+  const currentDate = new Date().toLocaleDateString('en-CA')
+  day.value = currentDate
+  selectedDate.value = currentDate
+
   // Fetch locations from API
   // Only run setup if no data was loaded server-side
   if (!allItems.value.length) {

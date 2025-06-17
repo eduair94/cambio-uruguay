@@ -132,16 +132,11 @@ export default defineNuxtConfig({
         },
         {
           rel: 'preconnect',
-          href: 'https://fonts.googleapis.com',
-        },
-        {
-          rel: 'preconnect',
-          href: 'https://fonts.gstatic.com',
-          crossorigin: 'anonymous',
-        },
-        {
-          rel: 'preconnect',
           href: 'https://www.googletagmanager.com',
+        },
+        {
+          rel: 'dns-prefetch',
+          href: 'https://embed.tawk.to',
         },
       ],
     },
@@ -166,9 +161,7 @@ export default defineNuxtConfig({
       analyzerMode: 'static',
       openAnalyzer: false,
     },
-  },
-
-  // Vite Configuration
+  },  // Vite Configuration
   vite: {
     define: {
       'process.env.DEBUG': false,
@@ -194,7 +187,7 @@ export default defineNuxtConfig({
       noExternal: ['@nuxtjs/i18n', 'vue-i18n', 'vuetify'],
     },
     build: {
-      cssCodeSplit: false,
+      cssCodeSplit: false, // Disable CSS code splitting to prevent MIME issues
       minify: 'esbuild',
       chunkSizeWarningLimit: 1000,
       rollupOptions: {
@@ -205,7 +198,7 @@ export default defineNuxtConfig({
           return false
         },
         output: {
-          // Bundle Vuetify into a single chunk
+          // Simplified chunk splitting
           manualChunks: {
             vuetify: ['vuetify', 'vuetify/components', 'vuetify/directives'],
             vendor: ['vue', '@vue/runtime-core', '@vue/runtime-dom'],
@@ -263,10 +256,9 @@ export default defineNuxtConfig({
     experimental: {
       wasm: true,
     },
-  },
-
-  // Modules
+  }, // Modules
   modules: [
+    '@nuxtjs/web-vitals',
     '@nuxtjs/seo',
     '@nuxtjs/leaflet',
     '@nuxtjs/i18n',
@@ -280,14 +272,21 @@ export default defineNuxtConfig({
           'Open Sans': [400, 600, 700],
         },
         display: 'swap',
-        prefetch: true,
-        preload: true,
+        prefetch: false, // Reduce preconnects
+        preload: false, // Load fonts only when needed
+        download: true, // Download fonts locally
+        inject: true,
       },
     ],
     [
       'nuxt-gtag',
       {
         id: 'G-F97PNVRMRF',
+        loadingStrategy: 'defer', // Defer loading for better performance
+        config: {
+          page_title: 'Cambio Uruguay',
+          page_location: 'https://cambio-uruguay.com',
+        },
         additionalAccounts: [
           {
             id: 'AW-972399920',
@@ -316,6 +315,7 @@ export default defineNuxtConfig({
           navigateFallback: '/',
           globPatterns: ['**/*.{js,css,html,png,svg,ico,woff,woff2}'],
           cleanupOutdatedCaches: true,
+          // Optimize caching strategies
           runtimeCaching: [
             {
               urlPattern: /^https:\/\/api\.cambio-uruguay\.com\/api\//,
@@ -323,13 +323,13 @@ export default defineNuxtConfig({
               options: {
                 cacheName: 'api-cache',
                 expiration: {
-                  maxEntries: 100,
-                  maxAgeSeconds: 5, // 5 seconds max
+                  maxEntries: 50,
+                  maxAgeSeconds: 10, // Very short cache for fresh data
                 },
                 cacheableResponse: {
                   statuses: [0, 200],
                 },
-                networkTimeoutSeconds: 3, // fallback to cache after 3s
+                networkTimeoutSeconds: 2, // Faster fallback to cache
               },
             },
             {
@@ -337,6 +337,10 @@ export default defineNuxtConfig({
               handler: 'StaleWhileRevalidate',
               options: {
                 cacheName: 'google-fonts-stylesheets',
+                expiration: {
+                  maxEntries: 10,
+                  maxAgeSeconds: 60 * 60 * 24 * 7, // 1 week
+                },
               },
             },
             {
@@ -345,19 +349,42 @@ export default defineNuxtConfig({
               options: {
                 cacheName: 'google-fonts-webfonts',
                 expiration: {
-                  maxEntries: 30,
+                  maxEntries: 20,
                   maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
                 },
               },
             },
             {
-              urlPattern: /\.(?:png|gif|jpg|jpeg|svg|webp)$/,
+              urlPattern: /\.(?:png|gif|jpg|jpeg|svg|webp|avif)$/,
               handler: 'CacheFirst',
               options: {
                 cacheName: 'images',
                 expiration: {
-                  maxEntries: 100,
+                  maxEntries: 60,
                   maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+                },
+              },
+            },
+            {
+              urlPattern: /\.(?:js|css)$/,
+              handler: 'StaleWhileRevalidate',
+              options: {
+                cacheName: 'static-resources',
+                expiration: {
+                  maxEntries: 50,
+                  maxAgeSeconds: 60 * 60 * 24 * 7, // 1 week
+                },
+              },
+            },
+            // Cache third-party resources more aggressively
+            {
+              urlPattern: /^https:\/\/www\.googletagmanager\.com\//,
+              handler: 'StaleWhileRevalidate',
+              options: {
+                cacheName: 'google-analytics',
+                expiration: {
+                  maxEntries: 10,
+                  maxAgeSeconds: 60 * 60 * 24, // 1 day
                 },
               },
             },
@@ -431,6 +458,13 @@ export default defineNuxtConfig({
       },
     ],
   ],
+
+  // Web Vitals tracking
+  webVitals: {
+    provider: 'log', // Can be 'ga' for Google Analytics
+    debug: process.env.NODE_ENV === 'development',
+    disabled: false,
+  },
 
   // Robots Configuration
   robots: {

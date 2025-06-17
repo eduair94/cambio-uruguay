@@ -70,7 +70,7 @@ let deferredPrompt: any = null
 
 // Check if in standalone mode
 const isStandalone = computed(() => {
-  if (process.client) {
+  if (import.meta.client) {
     return (
       window.matchMedia('(display-mode: standalone)').matches ||
       (window.navigator as any).standalone === true
@@ -81,7 +81,7 @@ const isStandalone = computed(() => {
 
 // PWA update detection - using custom service worker detection
 onMounted(() => {
-  if ('serviceWorker' in navigator) {
+  if (import.meta.client && 'serviceWorker' in navigator) {
     navigator.serviceWorker.ready.then((registration) => {
       registration.addEventListener('updatefound', () => {
         const newWorker = registration.installing
@@ -100,25 +100,27 @@ onMounted(() => {
     })
   }
 
-  // Listen for beforeinstallprompt event
-  window.addEventListener('beforeinstallprompt', (e) => {
-    // Prevent the mini-infobar from appearing on mobile
-    e.preventDefault()
-    // Stash the event so it can be triggered later
-    deferredPrompt = e
+  // Listen for beforeinstallprompt event - only on client
+  if (import.meta.client) {
+    window.addEventListener('beforeinstallprompt', (e) => {
+      // Prevent the mini-infobar from appearing on mobile
+      e.preventDefault()
+      // Stash the event so it can be triggered later
+      deferredPrompt = e
 
-    // Check if already dismissed or in standalone mode
-    const hasBeenDismissed = localStorage.getItem('pwa-install-dismissed')
-    if (!hasBeenDismissed && !isStandalone.value) {
-      showInstallPrompt.value = true
-    }
-  })
+      // Check if already dismissed or in standalone mode
+      const hasBeenDismissed = localStorage.getItem('pwa-install-dismissed')
+      if (!hasBeenDismissed && !isStandalone.value) {
+        showInstallPrompt.value = true
+      }
+    })
 
-  // Listen for successful app installation
-  window.addEventListener('appinstalled', () => {
-    showInstallPrompt.value = false
-    deferredPrompt = null
-  })
+    // Listen for successful app installation
+    window.addEventListener('appinstalled', () => {
+      showInstallPrompt.value = false
+      deferredPrompt = null
+    })
+  }
 })
 
 // Methods
