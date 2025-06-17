@@ -578,6 +578,16 @@ onMounted(() => {
   loadPeriodFromStorage()
 })
 
+onBeforeMount(() => {
+  const queryPeriod = route.query.period
+  if (queryPeriod) {
+    const period = parseInt(queryPeriod as string)
+    if ([3, 6, 12, 24].includes(period)) {
+      selectedPeriod.value = period
+    }
+  }
+})
+
 // Server-side data fetching with asyncData
 const {
   data: evolutionData,
@@ -588,7 +598,11 @@ const {
   `evolution-${route.params.origin}-${route.params.currency}-${route.params.type || 'default'}`,
   async () => {
     const { origin, currency, type } = route.params
-    const period = selectedPeriod.value || 6
+    let period = route.query.period ? parseInt(route.query.period as string) : 6
+    if (isNaN(period) || ![3, 6, 12, 24].includes(period)) {
+      period = 6 // Default to 6 months if invalid
+    }
+    console.log('period', period, route.params)
 
     return await withLoading(async () => {
       const result = await getEvolutionData(
@@ -608,8 +622,19 @@ const {
       return result.data as EvolutionData
     }, 'Cargando datos históricos...')
   },
-  {
-    watch: [selectedPeriod],
+)
+
+// Watch for changes in the period query parameter
+watch(
+  () => route.query.period,
+  (newPeriod, oldPeriod) => {
+    if (newPeriod !== oldPeriod) {
+      route.query.period = newPeriod
+      // Trigger your refresh logic here
+      withLoading(async () => {
+        await refresh()
+      }, 'Actualizando período...')
+    }
   },
 )
 
@@ -800,7 +825,8 @@ const savePeriodToStorage = (period: number) => {
 
 const updateUrlQuery = (period: number) => {
   // Update URL query parameter without navigation
-  const query = { ...route.query, period: period.toString() }
+  if (route.query && parseInt(route.query.period as string) === period) return
+  const query = { period: period.toString() }
   router.replace({ query })
 }
 
@@ -808,11 +834,6 @@ const onPeriodChange = async () => {
   // Save to localStorage and update URL
   savePeriodToStorage(selectedPeriod.value)
   updateUrlQuery(selectedPeriod.value)
-
-  // Refresh data with the selected period using loading wrapper
-  await withLoading(async () => {
-    await refresh()
-  }, 'Actualizando período...')
 }
 
 const formatCurrency = (value: number): string => {

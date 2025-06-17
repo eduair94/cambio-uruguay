@@ -195,6 +195,7 @@
 </template>
 
 <script setup lang="ts">
+import { useLocalePath } from '#imports'
 import { useLoadingStore } from '~/stores/loading'
 
 const route = useRoute()

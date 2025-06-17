@@ -167,42 +167,26 @@ export default defineNuxtConfig({
       'process.env.DEBUG': false,
     },
     css: {
-      devSourcemap: false,
-      preprocessorOptions: {
-        sass: {
-          additionalData: '@use "vuetify/settings" with ($utilities: false)\n',
-        },
-      },
-    },
-    server: {
-      hmr: {
-        overlay: false,
-      },
+      devSourcemap: false, // Disable CSS sourcemaps in production
     },
     optimizeDeps: {
       exclude: ['@nuxtjs/i18n'],
-      include: ['vuetify', 'vuetify/components', 'vuetify/directives'],
     },
     ssr: {
-      noExternal: ['@nuxtjs/i18n', 'vue-i18n', 'vuetify'],
+      noExternal: ['@nuxtjs/i18n', 'vue-i18n'],
     },
     build: {
-      cssCodeSplit: false, // Disable CSS code splitting to prevent MIME issues
-      minify: 'esbuild',
+      cssCodeSplit: false, // Disable CSS code splitting to avoid dependency issues
+      minify: 'esbuild', // Switch to esbuild for more reliable minification
       chunkSizeWarningLimit: 1000,
+      // Remove manual chunking that's causing issues
       rollupOptions: {
         external: (id) => {
+          // Don't externalize these in the browser build
           if (id.includes('node:') && typeof window !== 'undefined') {
             return false
           }
           return false
-        },
-        output: {
-          // Simplified chunk splitting
-          manualChunks: {
-            vuetify: ['vuetify', 'vuetify/components', 'vuetify/directives'],
-            vendor: ['vue', '@vue/runtime-core', '@vue/runtime-dom'],
-          },
         },
       },
     },
@@ -240,8 +224,9 @@ export default defineNuxtConfig({
 
   nitro: {
     prerender: {
-      routes: ['/sitemap.xml'],
-      crawlLinks: false,
+      routes: ['/sitemap.xml', '/robots.txt', '/'],
+      ignore: ['/manifest.json'],
+      crawlLinks: true,
     },
     compressPublicAssets: {
       gzip: true,
@@ -256,15 +241,17 @@ export default defineNuxtConfig({
     experimental: {
       wasm: true,
     },
-  }, // Modules
+  },
+
+  // Modules
   modules: [
-    '@nuxtjs/web-vitals',
+    //'@nuxtjs/web-vitals',
     '@nuxtjs/seo',
     '@nuxtjs/leaflet',
     '@nuxtjs/i18n',
     '@nuxtjs/sitemap',
-    '@nuxtjs/robots',
     '@pinia/nuxt',
+    '@nuxtjs/robots',
     [
       '@nuxtjs/google-fonts',
       {
@@ -302,93 +289,56 @@ export default defineNuxtConfig({
       '@vite-pwa/nuxt',
       {
         registerType: 'autoUpdate',
-        includeAssets: [
-          'favicon.ico',
-          'apple-touch-icon.png',
-          'safari-pinned-tab.svg',
-        ],
-        client: {
-          installPrompt: true,
-          periodicSyncForUpdates: 20, // check for updates every 20 seconds
-        },
         workbox: {
           navigateFallback: '/',
-          globPatterns: ['**/*.{js,css,html,png,svg,ico,woff,woff2}'],
+          globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
           cleanupOutdatedCaches: true,
-          // Optimize caching strategies
           runtimeCaching: [
             {
-              urlPattern: /^https:\/\/api\.cambio-uruguay\.com\/api\//,
+              urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'google-fonts-cache',
+                expiration: {
+                  maxEntries: 10,
+                  maxAgeSeconds: 60 * 60 * 24 * 365, // 365 days
+                },
+              },
+            },
+            {
+              urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'gstatic-fonts-cache',
+                expiration: {
+                  maxEntries: 10,
+                  maxAgeSeconds: 60 * 60 * 24 * 365, // 365 days
+                },
+              },
+            },
+            {
+              urlPattern: /\/api\/.*/i,
               handler: 'NetworkFirst',
               options: {
                 cacheName: 'api-cache',
+                networkTimeoutSeconds: 10,
                 expiration: {
-                  maxEntries: 50,
-                  maxAgeSeconds: 10, // Very short cache for fresh data
-                },
-                cacheableResponse: {
-                  statuses: [0, 200],
-                },
-                networkTimeoutSeconds: 2, // Faster fallback to cache
-              },
-            },
-            {
-              urlPattern: /^https:\/\/fonts\.googleapis\.com\//,
-              handler: 'StaleWhileRevalidate',
-              options: {
-                cacheName: 'google-fonts-stylesheets',
-                expiration: {
-                  maxEntries: 10,
-                  maxAgeSeconds: 60 * 60 * 24 * 7, // 1 week
-                },
-              },
-            },
-            {
-              urlPattern: /^https:\/\/fonts\.gstatic\.com\//,
-              handler: 'CacheFirst',
-              options: {
-                cacheName: 'google-fonts-webfonts',
-                expiration: {
-                  maxEntries: 20,
-                  maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
-                },
-              },
-            },
-            {
-              urlPattern: /\.(?:png|gif|jpg|jpeg|svg|webp|avif)$/,
-              handler: 'CacheFirst',
-              options: {
-                cacheName: 'images',
-                expiration: {
-                  maxEntries: 60,
-                  maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
-                },
-              },
-            },
-            {
-              urlPattern: /\.(?:js|css)$/,
-              handler: 'StaleWhileRevalidate',
-              options: {
-                cacheName: 'static-resources',
-                expiration: {
-                  maxEntries: 50,
-                  maxAgeSeconds: 60 * 60 * 24 * 7, // 1 week
-                },
-              },
-            },
-            // Cache third-party resources more aggressively
-            {
-              urlPattern: /^https:\/\/www\.googletagmanager\.com\//,
-              handler: 'StaleWhileRevalidate',
-              options: {
-                cacheName: 'google-analytics',
-                expiration: {
-                  maxEntries: 10,
-                  maxAgeSeconds: 60 * 60 * 24, // 1 day
+                  maxEntries: 16,
+                  maxAgeSeconds: 300, // 5 minutes
                 },
               },
             },
           ],
+        },
+        client: {
+          installPrompt: true,
+          periodicSyncForUpdates: 20,
+        },
+        devOptions: {
+          enabled: true,
+          suppressWarnings: true,
+          navigateFallbackAllowlist: [/^\/$/],
+          type: 'module',
         },
         manifest: {
           name: 'Cambio Uruguay - Mejores Cotizaciones de Cambio',
@@ -449,22 +399,16 @@ export default defineNuxtConfig({
             },
           ],
         },
-        devOptions: {
-          enabled: true,
-          suppressWarnings: true,
-          navigateFallbackAllowlist: [/^\/$/],
-          type: 'module',
-        },
       },
     ],
   ],
 
   // Web Vitals tracking
-  webVitals: {
-    provider: 'log', // Can be 'ga' for Google Analytics
-    debug: process.env.NODE_ENV === 'development',
-    disabled: false,
-  },
+  // webVitals: {
+  //   provider: 'log', // Can be 'ga' for Google Analytics
+  //   debug: process.env.NODE_ENV === 'development',
+  //   disabled: false,
+  // },
 
   // Robots Configuration
   robots: {
@@ -488,7 +432,6 @@ export default defineNuxtConfig({
       { code: 'es', iso: 'es-ES', name: 'Español', file: 'es.ts' },
       { code: 'pt', iso: 'pt-PT', name: 'Português', file: 'pt.ts' },
     ],
-    //lazy: true,
     defaultLocale: 'es',
     strategy: 'prefix_except_default',
     detectBrowserLanguage: {
@@ -518,14 +461,6 @@ export default defineNuxtConfig({
     },
   },
 
-  // TypeScript Configuration
-  typescript: {
-    typeCheck: true,
-  },
-
   // Dev Tools
-  devtools: { enabled: true },
-
-  // Compatibility
-  compatibilityDate: '2024-06-12',
+  devtools: { enabled: false },
 })
