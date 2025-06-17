@@ -226,9 +226,9 @@ export default defineNuxtConfig({
 
   nitro: {
     prerender: {
-      routes: ['/sitemap.xml', '/robots.txt', '/'],
+      routes: ['/sitemap.xml', '/robots.txt'],
       ignore: ['/manifest.json'],
-      crawlLinks: true,
+      crawlLinks: false,
     },
     compressPublicAssets: {
       gzip: true,
