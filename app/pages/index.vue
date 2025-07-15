@@ -501,10 +501,10 @@ const getRateTypeLabel = (type: 'buy' | 'sell'): string => {
 
   if (isConvertingFrom) {
     // User is selling the selected currency
-    return type === 'buy' ? 'Te pagan' : 'Te pagan'
+    return type === 'buy' ? 'Te pagan en' : 'Te pagan'
   } else if (isConvertingTo) {
     // User is buying the selected currency
-    return type === 'sell' ? 'Pagas' : 'Pagas'
+    return type === 'sell' ? 'Pagas en' : 'Pagas'
   } else {
     // Mixed conversion
     return type === 'buy' ? t('buying') : t('selling')
@@ -567,13 +567,14 @@ const conversionResult = ref({
 })
 
 // Conversion result computed property
-const getConversionRate = () => {
+const setConversionRate = () => {
   const rate = getExchangeRate(selectedCurrency.value, selectedTargetCurrency.value)
   conversionResult.value = {
     rate,
     invertedRate: 1 / rate,
     convertedAmount: amount.value * rate
   };
+  console.log("Conversion Rate", conversionResult.value);
 }
 
 
@@ -733,12 +734,13 @@ const loadInitialData = async () => {
 
     availableCurrencies.value = Array.from(currencies).sort()
 
+    setConversionRate();
+
   } catch (error) {
     console.error('Error loading initial data:', error)
   } finally {
     loading.value = false
   }
-  getConversionRate();
 }
 
 // Lifecycle
@@ -751,7 +753,7 @@ const updateExchange = () => {
   selectedCurrency.value = selectedCurrencyInput.value;
   selectedTargetCurrency.value = selectedTargetCurrencyInput.value;
   amount.value = amountInput.value;
-  getConversionRate();
+  setConversionRate();
   updateQueryParams();
 }
 
