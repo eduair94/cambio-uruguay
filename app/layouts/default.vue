@@ -70,7 +70,7 @@
 
     <VAppBar class="px-3">
       <!-- Mobile menu button -->
-      <VAppBarNavIcon class="d-flex d-md-none mr-2" @click.stop="drawer = !drawer" />
+      <VAppBarNavIcon class="d-flex d-lg-none mr-2" @click.stop="drawer = !drawer" />
 
       <NuxtLink :to="localePath('/')" class="no_link d-flex logo_link">
         <img width="227" height="33" alt="Cambio Uruguay - Logo oficial para comparar cotizaciones de cambio"
@@ -78,7 +78,7 @@
       </NuxtLink>
 
       <!-- Navigation Menu for desktop -->
-      <VToolbarItems class="d-none d-md-flex ml-4">
+      <VToolbarItems class="d-none d-lg-flex ml-4">
         <!-- Inicio -->
         <VBtn :to="localePath('/')" variant="text" exact class="text-capitalize nav-btn"
           :class="{ 'nav-btn--active': isActiveRoute('/') }">
@@ -137,7 +137,7 @@
       <PWAInstallBanner />
     </ClientOnly>
 
-    <VMain>
+    <VMain :class="formatNameRoute()">
       <div class="container_custom">
         <slot />
       </div>
@@ -149,13 +149,19 @@
 </template>
 
 <script setup lang="ts">
-import { useLocalePath } from '#imports'
-import { useLoadingStore } from '~/stores/loading'
+import { useLocalePath } from '#imports';
+import { useLoadingStore } from '~/stores/loading';
 
 const route = useRoute()
+console.log("route", route);
 const router = useRouter()
 const localePath = useLocalePath()
 const loadingStore = useLoadingStore()
+
+const formatNameRoute = () => {
+  // Format the route name to be used in class names
+  return (route.name ? (route.name as string).split('_')[0] : 'default') + '_main'
+}
 
 // Navigation drawer state
 const drawer = ref(false)
@@ -294,5 +300,9 @@ useHead({
   width: 100%;
   padding: 12px;
   margin: 0 auto;
+}
+
+.index_main .container_custom {
+  padding: 0;
 }
 </style>

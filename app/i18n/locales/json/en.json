@@ -175,9 +175,6 @@
   "monedaBtn": "Currency",
   "appStatus": "App Status",
   "close": "Close",
-  "donar": "Donate",
-  "historico": "Historical",
-  "consultCurrentQuotes": "Check current quotes",
   "historical": {
     "currentQuotes": "Current Quotes",
     "historicalQuotes": "Historical Quotes",
