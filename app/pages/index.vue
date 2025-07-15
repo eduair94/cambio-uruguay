@@ -69,7 +69,7 @@
                 <!-- Conversion Result -->
                 <VCard class="conversion-result pa-4 mb-md-4" color="rgba(76, 175, 80, 0.1)" variant="outlined">
                   <VRow align="center" justify="center" class="conversion-display-row">
-                    <VCol cols="5" sm="4" class="text-center">
+                    <VCol cols="5" sm="4" class="text-center align-self-start">
                       <div class="conversion-display">
                         <span class="amount-text">{{ formatCurrency(amount) }}</span>
                         <span v-if="selectedCurrency" class="currency-name">{{ t('codes.' + selectedCurrency) }}</span>
@@ -80,10 +80,10 @@
                       <VIcon color="success" size="24">mdi-arrow-right</VIcon>
                     </VCol>
 
-                    <VCol cols="5" sm="4" class="text-center">
+                    <VCol cols="5" sm="4" class="text-center align-self-start">
                       <div class="conversion-display">
                         <span class="amount-text converted">{{ formatCurrency(conversionResult.convertedAmount)
-                          }}</span>
+                        }}</span>
                         <span v-if="selectedTargetCurrency" class="currency-name">{{ t('codes.' +
                           selectedTargetCurrency) }}</span>
                       </div>
@@ -932,6 +932,7 @@ useSeoMeta({
   }
 
   .conversion-display {
+    height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
