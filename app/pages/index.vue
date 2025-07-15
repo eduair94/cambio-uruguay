@@ -1,1158 +1,817 @@
 <template>
-  <div class="mt-md-4">
-    <!-- SEO Optimized Header Structure -->
-    <div class="px-3">
-      <header>
-        <h1 class="text-h5 text-md-h4 font-weight-bold mb-3">
-          {{ t('welcome') }}
-        </h1>
-        <h2 class="text-h6 mb-4 text-grey-lighten-1">
-          {{ t('subtitle') }}
-        </h2>
-      </header>
+  <div class="home-container">
+    <!-- Hero Section -->
+    <section class="hero-section pt-0 pt-md-5">
+      <VContainer>
+        <VRow justify="center" align="center" class="min-height-hero">
+          <VCol cols="12" md="12" lg="12" class="text-center">
+            <div class="hero-content">
+              <h1 class="hero-title text-h4 text-md-h3 text-md-h2 font-weight-bold mb-4">
+                {{ t('simpleTitle') }}
+              </h1>
+              <p class="hero-subtitle text-h6 text-grey-lighten-1 mb-6">
+                {{ t('simpleSubtitle') }}
+              </p>
+              <p class="hero-description text-body-1 text-grey-lighten-2 mb-8">
+                {{ t('simpleDescription') }}
+              </p>
 
-      <!-- Enhanced SEO Content -->
-      <section class="mb-4">
-        <h3 class="sr-only">{{ t('seoTitle') }}</h3>
-        <div class="hidden-content" style="position: absolute; left: -9999px">
-          <p>{{ t('seoDescription') }}</p>
-          <span>{{ t('seoKeywords') }}</span>
-        </div>
-      </section>
-    </div>
+              <!-- Currency Converter Card -->
+              <VCard class="exchange-card pa-6 mb-6" elevation="8">
+                <h2 class="text-h5 font-weight-bold mb-6 text-center">
+                  {{ t('quickExchange') }}
+                </h2>
 
-    <div class="my-4">
-      <ExchangeDataTable
-        :items="items"
-        :headers="getHeaders()"
-        :location="location"
-        :latitude="latitude"
-        :longitude="longitude"
-        :code-with="codeWith"
-        :amount="amount"
-        :last-pos="lastPos"
-        :no-distance="noDistance"
-      >
-        <template #table-top>
-          <div>
-            <div class="px-3 pt-0 pt-3">
-              <DonationSection :day="day" />
-              <div>
-                <ExchangeFilters
-                  :selected-exchange-house="selectedExchangeHouse"
-                  :exchange-house-options="exchangeHouseOptions"
-                  :date-picker-menu="datePickerMenu"
-                  :selected-date="selectedDate"
-                  :want-to="wantTo"
-                  :amount="amount"
-                  :code="code"
-                  :code-with="codeWith"
-                  :location="location"
-                  :latitude="latitude"
-                  :longitude="longitude"
-                  :not-inter-bank="notInterBank"
-                  :not-conditional="notConditional"
-                  :hidden-widgets="hiddenWidgets"
-                  :only-inter-bank="onlyInterBank"
-                  :items="items"
-                  :savings="savings()"
-                  :money-options="moneyOptions"
-                  :formatted-locations="formattedLocations"
-                  @update:selected-exchange-house="updateSelectedExchangeHouse"
-                  @clear-exchange-house-filter="clearExchangeHouseFilter"
-                  @update:date-picker-menu="datePickerMenu = $event"
-                  @date-change="onDateChange"
-                  @reset-date="resetDate"
-                  @update:want-to="
-                    (value: any) => {
-                      wantTo = value
-                      setPrice()
-                    }
-                  "
-                  @update:amount="
-                    (value) => {
-                      amount = parseFloat(value)
-                      setPrice()
-                    }
-                  "
-                  @update:code="
-                    (value) => {
-                      code = value
-                      updateTable()
-                    }
-                  "
-                  @update:code-with="
-                    (value) => {
-                      codeWith = value
-                      updateTable()
-                    }
-                  "
-                  @update:location="
-                    (value) => {
-                      location = value
-                      updateTable()
-                    }
-                  "
-                  @geo-location-success="geoLocationSuccess"
-                  @undo-distances="undoDistances"
-                  @reset-all-filters="resetAllFilters"
-                  @update:not-inter-bank="
-                    (value) => {
-                      notInterBank = value
-                      updateTable()
-                    }
-                  "
-                  @update:not-conditional="
-                    (value) => {
-                      notConditional = value
-                      updateTable()
-                    }
-                  "
-                  @update:hidden-widgets="
-                    (value) => {
-                      hiddenWidgets = value
-                      hideWidgets(value)
-                    }
-                  "
-                />
+                <!-- Amount Input -->
+                <VRow class="mb-0 mb-md-4">
+                  <VCol cols="12">
+                    <VTextField hide-details v-model="amountInput" :label="t('enterAmount')" variant="outlined"
+                      density="comfortable" type="number" min="1" class="amount-input" prepend-inner-icon="mdi-cash" />
+                  </VCol>
+                </VRow>
+
+                <!-- Currency Selection Row -->
+                <VRow class="currency-row" align="center">
+                  <VCol cols="12" md="5">
+                    <div class="currency-section">
+                      <VAutocomplete hide-details v-model="selectedCurrencyInput" :items="currencyOptions"
+                        :label="t('from')" variant="outlined" density="comfortable" item-title="title"
+                        item-value="value" class="currency-select" clearable />
+                    </div>
+                  </VCol>
+
+                  <VCol cols="12" md="2" class="text-center">
+                    <VBtn icon variant="outlined" size="large" color="primary" @click="swapCurrencies" class="swap-btn">
+                      <VIcon>mdi-swap-horizontal</VIcon>
+                    </VBtn>
+                  </VCol>
+
+                  <VCol cols="12" md="5">
+                    <div class="currency-section">
+                      <VAutocomplete hide-details v-model="selectedTargetCurrencyInput" :items="currencyOptions"
+                        :label="t('to')" variant="outlined" density="comfortable" item-title="title" item-value="value"
+                        class="currency-select" clearable />
+                    </div>
+                  </VCol>
+                </VRow>
+
+                <VCardActions class="d-flex justify-end pb-3">
+                  <VBtn color="primary" variant="elevated" size="large" :loading="loading" @click="updateExchange"
+                    class="w-100 w-md-auto my-5 my-md-0 px-5 convert-btn">
+                    <VIcon start>mdi-calculator</VIcon>
+                    {{ t('findBestRate') }}
+                  </VBtn>
+                </VCardActions>
+
+                <!-- Conversion Result -->
+                <VCard class="conversion-result pa-4 mb-4" color="rgba(76, 175, 80, 0.1)" variant="outlined">
+                  <VRow align="center" justify="center" class="conversion-display-row">
+                    <VCol cols="12" sm="4" class="text-center">
+                      <div class="conversion-display">
+                        <span class="amount-text">{{ formatCurrency(amount) }}</span>
+                        <span v-if="selectedCurrency" class="currency-name">{{ t('codes.' + selectedCurrency) }}</span>
+                      </div>
+                    </VCol>
+
+                    <VCol cols="12" sm="4" class="text-center">
+                      <VIcon color="success" size="24">mdi-arrow-right</VIcon>
+                    </VCol>
+
+                    <VCol cols="12" sm="4" class="text-center">
+                      <div class="conversion-display">
+                        <span class="amount-text converted">{{ formatCurrency(conversionResult.convertedAmount)
+                          }}</span>
+                        <span v-if="selectedTargetCurrency" class="currency-name">{{ t('codes.' +
+                          selectedTargetCurrency) }}</span>
+                      </div>
+                    </VCol>
+                  </VRow>
+
+                  <VDivider class="my-3" />
+
+                  <div class="rate-info text-center">
+                    <span class="rate-text">
+                      1 {{ selectedCurrency }} = {{ formatCurrency(conversionResult.rate) }} {{ selectedTargetCurrency
+                      }}
+                    </span>
+                  </div>
+                  <div class="rate-info text-center">
+                    <span class="rate-text">
+                      {{ formatCurrency(conversionResult.invertedRate) }} {{ selectedCurrency }} = 1 {{
+                        selectedTargetCurrency
+                      }}
+                    </span>
+                  </div>
+                </VCard>
+
+                <!-- Top 4 Best Rates -->
+                <VCard v-if="top4BestRates.length > 0" class="best-rates-card pa-4 mb-4" color="rgba(33, 150, 243, 0.1)"
+                  variant="outlined">
+                  <h3 class="text-h6 font-weight-bold mb-3 text-center text-white">
+                    {{ getBestRatesTitle() }}
+                  </h3>
+
+                  <VRow>
+                    <VCol v-for="(rate, index) in top4BestRates" :key="index" cols="12" sm="6" md="3" class="d-flex">
+                      <VCard class="rate-item pa-3 text-center flex-grow-1" :color="getRateCardColor(index)"
+                        variant="tonal">
+                        <div class="rate-position text-h6 font-weight-bold mb-2">
+                          #{{ index + 1 }}
+                        </div>
+                        <div class="rate-name text-body-2 font-weight-medium mb-1">
+                          {{ rate.source }}
+                        </div>
+                        <div class="rate-value text-h6 font-weight-bold mb-1">
+                          ${{ rate.rate.toFixed(2) }}
+                        </div>
+                        <div v-if="rate.code" class="rate-type text-caption">
+                          {{ getRateTypeLabel(rate.type) }} {{ t('codes.' + rate.code) }}
+                        </div>
+                      </VCard>
+                    </VCol>
+                  </VRow>
+                </VCard>
+              </VCard>
+              <div class="mt-5">
+                <!-- Advanced Mode Button -->
+                <VBtn :to="localePath('/avanzado')" color="secondary" variant="outlined" size="large" class="mb-4">
+                  <VIcon start>mdi-cog</VIcon>
+                  {{ t('viewAdvanced') }}
+                </VBtn>
               </div>
             </div>
-            <div
-              v-show="hasScroll"
-              id="wrapper2"
-              ref="wrapper2"
-              class="scroll-style-1"
-            >
-              <div
-                id="div2"
-                :style="{ width: scrollWidth }"
-                class="width-scroll"
-              />
+          </VCol>
+        </VRow>
+      </VContainer>
+    </section>
+
+    <!-- Top Exchange Houses Section -->
+    <section class="top-exchanges-section py-12">
+      <VContainer>
+        <VRow>
+          <VCol cols="12" class="text-center mb-8">
+            <h2 class="text-h4 font-weight-bold mb-4">
+              {{ t('topExchangeHouses') }}
+            </h2>
+            <p class="text-body-1 text-grey-lighten-2">
+              {{ t('subtitle') }}
+            </p>
+          </VCol>
+        </VRow>
+
+        <VRow>
+          <VCol v-for="exchange in topExchanges" :key="exchange.origin" cols="12" sm="6" md="4" lg="3">
+            <VCard class="exchange-house-card pa-4 h-100" elevation="4" hover>
+              <div class="text-center">
+                <VAvatar size="64" color="primary" class="mb-4">
+                  <VIcon size="32" color="white">
+                    mdi-bank
+                  </VIcon>
+                </VAvatar>
+                <h3 class="text-h6 font-weight-bold mb-2">
+                  {{ exchange.name }}
+                </h3>
+                <p class="text-body-2 text-grey-lighten-1 mb-3">
+                  {{ formatCurrency(exchange.rate) }}
+                </p>
+                <VChip :color="exchange.isRegulated ? 'green' : 'orange'" size="small" variant="elevated">
+                  {{ exchange.isRegulated ? 'BCU' : 'No BCU' }}
+                </VChip>
+              </div>
+            </VCard>
+          </VCol>
+        </VRow>
+      </VContainer>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="how-it-works-section py-12 bg-grey-darken-4">
+      <VContainer>
+        <VRow>
+          <VCol cols="12" class="text-center mb-8">
+            <h2 class="text-h4 font-weight-bold mb-4">
+              {{ t('howItWorks') }}
+            </h2>
+          </VCol>
+        </VRow>
+
+        <VRow>
+          <VCol v-for="(step, index) in steps" :key="index" cols="12" sm="6" md="3">
+            <div class="step-card text-center pa-4">
+              <VAvatar size="80" color="primary" class="mb-4">
+                <span class="text-h4 font-weight-bold">{{ index + 1 }}</span>
+              </VAvatar>
+              <h3 class="text-h6 font-weight-bold mb-3">
+                {{ step.title }}
+              </h3>
+              <p class="text-body-2 text-grey-lighten-1">
+                {{ step.description }}
+              </p>
             </div>
-          </div>
-        </template>
-      </ExchangeDataTable>
-    </div>
+          </VCol>
+        </VRow>
+      </VContainer>
+    </section>
 
-    <div class="d-flex flex-wrap grid-list-md ga-3">
-      <v-btn
-        link
-        color="red darken-4"
-        target="_blank"
-        href="https://finanzas.com.uy/los-mejores-prestamos-de-bancos/"
-      >
-        {{ t('infoPrestamos') }}
-      </v-btn>
-      <v-btn
-        color="primary"
-        target="_blank"
-        link
-        href="https://docs.google.com/document/d/1BBDrsiT778SEIn5hqYltl-7dxQq9dSeG/edit"
-      >
-        <v-icon> mdi-file-document </v-icon>
-      </v-btn>
-      <v-btn
-        aria-label="github"
-        link
-        color="grey darken-3"
-        target="_blank"
-        href="https://github.com/eduair94/cambio-uruguay"
-      >
-        <v-icon large> mdi-github </v-icon>
-      </v-btn>
-      <v-btn
-        color="green darken-2"
-        target="_blank"
-        link
-        href="https://status.cambio-uruguay.com"
-      >
-        {{ t('appStatus') }}
-      </v-btn>
-    </div>
-    <div class="mt-3">
-      {{ t('consulta') }}
-      <a class="white--text" href="mailto:admin@cambio-uruguay.com"
-        >admin@cambio-uruguay.com</a
-      >
-    </div>
+    <!-- Features Section -->
+    <section class="features-section py-12">
+      <VContainer>
+        <VRow>
+          <VCol cols="12" class="text-center mb-8">
+            <h2 class="text-h4 font-weight-bold mb-4">
+              {{ t('whyChooseUs') }}
+            </h2>
+          </VCol>
+        </VRow>
 
-    <!-- API Usage Alert -->
-    <VAlert
-      v-model="showApiAlert"
-      class="mt-3 mb-0 mb-md-3 bg-green-darken-4"
-      type="success"
-      density="compact"
-      closable
-    >
-      {{ t('apiUsageMessage') }}
-      <a
-        class="text-white font-weight-bold"
-        href="mailto:admin@cambio-uruguay.com"
-      >
-        admin@cambio-uruguay.com
-      </a>
-    </VAlert>
+        <VRow>
+          <VCol v-for="feature in features" :key="feature.title" cols="12" sm="6" md="3">
+            <VCard class="feature-card pa-6 h-100" elevation="2">
+              <div class="text-center">
+                <VIcon :color="feature.color" size="48" class="mb-4">
+                  {{ feature.icon }}
+                </VIcon>
+                <h3 class="text-h6 font-weight-bold mb-3">
+                  {{ feature.title }}
+                </h3>
+                <p class="text-body-2 text-grey-lighten-1">
+                  {{ feature.description }}
+                </p>
+              </div>
+            </VCard>
+          </VCol>
+        </VRow>
+      </VContainer>
+    </section>
 
-    <VSnackbar v-model="snackbar" :color="snackColor">
-      <p class="text-white mb-0">{{ snackBarText }}</p>
-      <template #actions>
-        <VBtn variant="text" @click="snackbar = false"> {{ t('close') }} </VBtn>
-      </template>
-    </VSnackbar>
+    <!-- CTA Section -->
+    <section class="cta-section py-12 bg-primary">
+      <VContainer>
+        <VRow justify="center" align="center">
+          <VCol cols="12" md="8" class="text-center">
+            <h2 class="text-h4 font-weight-bold mb-4 text-white">
+              {{ t('consultCurrentQuotes') }}
+            </h2>
+            <VBtn :to="localePath('/avanzado')" color="white" variant="elevated" size="x-large"
+              class="text-primary font-weight-bold">
+              <VIcon start>mdi-chart-line</VIcon>
+              {{ t('viewAdvanced') }}
+            </VBtn>
+          </VCol>
+        </VRow>
+      </VContainer>
+    </section>
   </div>
 </template>
 
 <script setup lang="ts">
+import { useLocalePath } from '#imports'
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 
-// Initialize API service
-const apiService = useApiService()
-const { t, locale } = useI18n()
-const route = useRoute()
-const router = useRouter()
-const { start, finish } = useLoadingIndicator()
+// Interfaces
+interface ExchangeHouse {
+  name: string
+  origin: string
+  usdRate: number
+  isRegulated: boolean
+}
 
-// Define interfaces for type safety
+interface ExchangeResult {
+  buyRate: number
+  sellRate: number
+  source: string
+  origin: string
+}
+
 interface ExchangeItem {
   origin: string
   code: string
   buy: number
   sell: number
-  amount: number
-  pos: number
   type?: string
   isInterBank: boolean
   condition: string
-  diff: string
   localData: {
     name?: string
     website?: string
     departments: string[]
-    location?: string
+    bcu?: boolean
   } | null
-  distance?: number
 }
 
-interface ExchangeHouseOption {
-  text: string
+interface CurrencyOption {
+  title: string
   value: string
-  website?: string
+  flag: string
 }
 
-interface MoneyOption {
-  text: string
-  value: string
+interface Step {
+  title: string
+  description: string
 }
 
-interface LocationOption {
-  text: string
-  value: string
+interface Feature {
+  title: string
+  description: string
+  icon: string
+  color: string
 }
 
-const df = {
-  amount: 100,
-  wantTo: 'buy' as 'buy' | 'sell',
-  notInterBank: true,
-  location: 'TODOS',
-  code: 'USD',
-  codeWith: 'UYU',
-  selectedDate: new Date().toLocaleDateString('en-CA', {
-    timeZone: 'America/Montevideo',
-  }),
-}
+// Composables
+const { t } = useI18n()
+const localePath = useLocalePath()
+const apiService = useApiService()
+const route = useRoute()
+const router = useRouter()
 
-// Reactive data
-const snackColor = ref<string>('green darken-4')
-const routeHasQuery = ref<boolean>(false)
-const hiddenWidgets = ref<boolean>(false)
-const hasScroll = ref<boolean>(false)
-const allItems = ref<ExchangeItem[]>([])
-const snackbar = ref<boolean>(false)
-const snackBarText = ref<string>('')
-const showApiAlert = ref<boolean>(true)
-const loadingDistances = ref<boolean>(false)
-const onlyInterBank = ref<string[]>(['UR', 'UP'])
-const location = ref<string>(df.location)
-const selectedExchangeHouse = ref<ExchangeHouseOption[]>([])
-const exchangeHouseOptions = ref<ExchangeHouseOption[]>([])
-const filteredItems = ref<ExchangeItem[]>([])
-const locations = ref<string[]>(['TODOS', 'MONTEVIDEO'])
-const money = ref<string[]>(['USD', 'ARS', 'BRL', 'EUR', 'GBP', 'UYU'])
-const amount = ref<number>(df.amount)
-const wantTo = ref<'buy' | 'sell'>(df.wantTo)
-const notConditional = ref<boolean>(false)
-const day = ref<string>('')
-const selectedDate = ref<string>(df.selectedDate)
-const datePickerMenu = ref<boolean>(false)
-const isDateManuallySelected = ref<boolean>(false)
-const code = ref<string>(df.code)
-const codeWith = ref<string>(df.codeWith)
-const notInterBank = ref<boolean>(df.notInterBank)
-const items = ref<ExchangeItem[]>([])
-const enableDistance = ref<boolean>(false)
-const latitude = ref<number>(0)
-const longitude = ref<number>(0)
-const noDistance = ref<number>(9999999)
-const lastPos = ref<number>(0)
-const scrollWidth = ref<number>(0)
+// Reactive data - Initialize from query parameters
+const selectedCurrency = ref<string>(route.query.from as string || 'USD')
+const selectedTargetCurrency = ref<string>(route.query.to as string || 'UYU')
 
-// Refs for template elements
-const wrapper2 = ref<HTMLElement | null>(null)
+// Initialize input currency
+const selectedCurrencyInput = ref<string>(route.query.from as string || 'USD')
+const selectedTargetCurrencyInput = ref<string>(route.query.to as string || 'UYU')
 
-// Computed properties
-const moneyOptions = computed<MoneyOption[]>(() => {
-  return money.value.map((code: string) => ({
-    text: t('codes.' + code),
-    value: code,
+const amountInput = ref<number>((() => {
+  const queryAmount = Number(route.query.amount)
+  return (queryAmount && queryAmount > 0) ? queryAmount : 100
+})())
+
+const amount = ref<number>((() => {
+  const queryAmount = Number(route.query.amount)
+  return (queryAmount && queryAmount > 0) ? queryAmount : 100
+})())
+
+const loading = ref<boolean>(false)
+const exchangeResults = ref<ExchangeResult[]>([])
+const realExchangeData = ref<any[]>([])
+const availableCurrencies = ref<string[]>(['USD', 'ARS', 'BRL', 'EUR', 'UYU'])
+
+// Popular currencies without flags - for autocomplete
+const currencyOptions = computed(() => {
+  return availableCurrencies.value.map(code => ({
+    title: code ? t('codes.' + code) : '',
+    value: code
   }))
 })
 
-const formattedLocations = computed<LocationOption[]>(() => {
-  return locations.value.map((location: string) => ({
-    text: location === 'TODOS' ? 'Todos' : location,
-    value: location,
-  }))
-})
+const topExchanges = computed(() => {
+  if (!realExchangeData.value.length || !selectedCurrency.value) return []
 
-const savings = (): string => {
-  if (!items.value.length) return ''
-  const i = items.value
-  const key = wantTo.value === 'buy' ? 'sell' : 'buy'
-  const maxValue = i[0][key]
-  const minValue = i[i.length - 1][key]
-  let savePercent = 0
-  if (key === 'buy') {
-    savePercent = ((maxValue - minValue) / minValue) * 100
-  } else {
-    savePercent = ((minValue - maxValue) / maxValue) * 100
-  }
-  const saveAmount =
-    Math.abs((maxValue - minValue) * amount.value).toFixed(2) +
-    ' ' +
-    codeWith.value
-  const s = savePercent.toFixed(2)
-  const loc = {
-    es: `Puedes ahorrar hasta un ${s}% (${saveAmount}) utilizando nuestra app.`,
-    en: `You can save up to ${s}% (${saveAmount}) by using our app`,
-    pt: `Você pode economizar até ${s}% (${saveAmount}) ao utilizar nosso aplicativo`,
-  }
-  return loc[locale.value]
-}
-
-const getHeaders = () => {
-  const toReturn = [
-    {
-      title: 'Rank',
-      key: 'pos',
-      width: 'auto',
-    },
-    {
-      title: wantTo.value === 'buy' ? t('pagas') : t('recibes'),
-      key: 'amount',
-      width: 'auto',
-    },
-    {
-      title: t('moneda'),
-      align: 'start',
-      width: '180px',
-      key: 'code',
-    },
-    { title: t('casaDeCambio'), key: 'localData.name' },
-    { title: t('compra') + ` (${codeWith.value})`, key: 'buy' },
-    { title: t('venta') + ` (${codeWith.value})`, key: 'sell' },
-    { title: 'Dif (%)', key: 'diff' },
-    {
-      title: t('sitioWeb'),
-      key: 'localData.website',
-      sortable: false,
-      width: 'auto',
-    },
-    {
-      title: t('buscarSucursal'),
-      key: 'localData.location',
-      sortable: false,
-    },
-    { title: t('condicional'), key: 'condition', width: '250px' },
-    { title: 'BCU', key: 'localData.bcu', width: '50px' },
-    {
-      title: t('historical.viewHistorical'),
-      key: 'historical',
-      sortable: false,
-      width: '140px',
-    },
-  ]
-  if (enableDistance.value) {
-    toReturn.push({
-      title: t('distancia'),
-      key: 'distance',
-      width: 'auto',
-    })
-  }
-  return toReturn
-}
-
-const clearExchangeHouseFilter = () => {
-  selectedExchangeHouse.value = []
-  updateTable()
-}
-
-const updateSelectedExchangeHouse = (value: any[]) => {
-  console.log('Updating selected exchange house:', value)
-  selectedExchangeHouse.value = value
-  updateTable()
-}
-
-const onDateChange = (newDate: string) => {
-  console.log('onDateChange', newDate)
-  selectedDate.value = newDate
-  isDateManuallySelected.value = true
-  datePickerMenu.value = false
-  fetchDataForDate()
-}
-
-const resetDate = () => {
-  selectedDate.value = new Date().toLocaleDateString('en-CA', {
-    timeZone: 'America/Montevideo',
-  })
-  isDateManuallySelected.value = false
-  fetchDataForDate()
-}
-
-const geoLocationSuccess = (opt: {
-  distances: any
-  lat: number
-  lng: number
-  distanceData: any
-  radius: number
-}) => {
-  console.log('opt', opt)
-  const { distances, lat, lng, distanceData, radius } = opt
-  latitude.value = lat
-  longitude.value = lng
-  let items = allItems.value.map((item: any) => {
-    item.distance = distances[item.origin]
-      ? distances[item.origin]
-      : noDistance.value
-    if (item.distance !== noDistance.value) {
-      item.distanceData = distanceData[item.distance]
-    }
-    return item
-  })
-  if (radius) {
-    items = items.filter((item: any) => item.distance <= radius)
-  }
-  allItems.value = items
-  updateTable()
-  enableDistance.value = true
-  openSnack('Distancias cargadas correctamente')
-}
-
-const undoDistances = () => {
-  enableDistance.value = false
-  latitude.value = 0
-  longitude.value = 0
-  updateTable()
-}
-
-const resetAllFilters = () => {
-  selectedExchangeHouse.value = []
-  location.value = 'TODOS'
-  notInterBank.value = true
-  notConditional.value = false
-  amount.value = 100
-  code.value = 'USD'
-  codeWith.value = 'UYU'
-  wantTo.value = 'buy'
-
-  updateTable()
-
-  openSnack(t('filtersReset') || 'Filtros restablecidos')
-}
-
-const openSnack = (text: string, timeout = 2000, color = 'green darken-4') => {
-  snackbar.value = true
-  snackBarText.value = text
-  snackColor.value = color
-  setTimeout(() => {
-    snackbar.value = false
-  }, timeout)
-}
-
-const hideFeedback = () => {
-  document.head.insertAdjacentHTML(
-    'beforeend',
-    `<style type="text/css" class="custom_style_list">
-                    ._hj_feedback_container {
-                      display:none!important;
-                    }
-            </style>`,
+  const currencyData = realExchangeData.value.filter(item =>
+    (item.code === selectedCurrency.value || item.code === selectedTargetCurrency.value) && item.localData?.name && (item.buy > 0 || item.sell > 0)
   )
-}
 
-const hideWidgets = (val: boolean, att = 0) => {
-  const t = (window as any).Tawk_API
-  if (t && t.hideWidget) {
-    if (val) {
-      localStorage.setItem('hideWidgets', '1')
-      t.hideWidget()
-      hideFeedback()
-    } else {
-      localStorage.removeItem('hideWidgets')
-      t.showWidget()
-      const el = document.querySelector('.custom_style_list')
-      if (el) el.remove()
-    }
+  if (currencyData.length === 0) return []
+
+  // Determine if we're converting FROM or TO the selected currency
+  const isConvertingFrom = selectedCurrency.value !== 'UYU' && selectedTargetCurrency.value === 'UYU'
+  const isConvertingTo = selectedCurrency.value === 'UYU' && selectedTargetCurrency.value !== 'UYU'
+
+  let rates = []
+
+  console.log("Conversion direction:", {
+    from: selectedCurrency.value,
+    to: selectedTargetCurrency.value,
+    isConvertingFrom,
+    isConvertingTo
+  });
+
+  if (isConvertingFrom) {
+    // User is selling the selected currency (FROM currency TO UYU)
+    // Show top 4 selling rates (highest buy rates = best for user selling)
+    rates = currencyData
+      .map(item => ({
+        source: item.localData?.name || item.origin,
+        rate: item.buy,
+        type: 'buy' as const, // This is what the exchange house pays (buys from user)
+        origin: item.origin,
+        name: item.localData.name,
+        isRegulated: item.localData.bcu || false
+      }))
+      .sort((a, b) => b.rate - a.rate) // Highest buy rate first
+  } else if (isConvertingTo) {
+    // User is buying the selected currency (FROM UYU TO currency)
+    // Show top 4 buying rates (lowest sell rates = best for user buying)
+    rates = currencyData
+      .map(item => ({
+        source: item.localData?.name || item.origin,
+        rate: item.sell,
+        type: 'sell' as const, // This is what the exchange house sells (user buys)
+        origin: item.origin,
+        name: item.localData.name,
+        isRegulated: item.localData.bcu || false
+      }))
+      .sort((a, b) => a.rate - b.rate) // Lowest sell rate first
   } else {
-    nextTick(() => {
-      att++
-      if (att === 10) {
-        console.log('hide widget', att)
-        return
-      }
-      hideWidgets(val, att)
-    })
-  }
-}
+    // For other conversions, show mixed rates (2 buy + 2 sell)
+    const buyRates = currencyData
+      .map(item => ({
+        source: item.localData?.name || item.origin,
+        rate: item.buy,
+        type: 'buy' as const,
+        origin: item.origin,
+        name: item.localData.name,
+        isRegulated: item.localData.bcu || false
+      }))
+      .sort((a, b) => b.rate - a.rate)
 
-const buildExchangeHouseOptions = () => {
-  const uniqueOrigins = [
-    ...new Set(allItems.value.map((item: ExchangeItem) => item.origin)),
-  ]
-  exchangeHouseOptions.value = uniqueOrigins
-    .map((origin: string) => {
-      const item = allItems.value.find((i: ExchangeItem) => i.origin === origin)
-      return {
-        text: item?.localData?.name || origin,
-        value: origin,
-        website: item?.localData?.website,
-      }
-    })
-    .sort((a, b) => a.text.localeCompare(b.text))
-}
+    const sellRates = currencyData
+      .map(item => ({
+        source: item.localData?.name || item.origin,
+        rate: item.sell,
+        type: 'sell' as const,
+        origin: item.origin,
+        name: item.localData.name,
+        isRegulated: item.localData.bcu || false
+      }))
+      .sort((a, b) => a.rate - b.rate)
 
-const fetchDataForDate = async () => {
-  start()
-  const date = selectedDate.value
-  try {
-    const data = await apiService.getProcessedExchangeData(date)
-    if (data.error) {
-      console.log('Data', data)
-
-      // Handle the new detailed error structure
-      let errorMessage = 'Error fetching data'
-      const error = data.error as any
-
-      if (typeof error === 'string') {
-        errorMessage = error
-      } else if (error && typeof error === 'object') {
-        // Handle combined error structure
-        if ('combined' in error && error.combined) {
-          errorMessage = error.combined
-        } else if ('message' in error && error.message) {
-          errorMessage = error.message
-        } else if ('exchange' in error && error.exchange?.message) {
-          errorMessage = error.exchange.message
-        }
-      }
-
-      // Log detailed error information for debugging
-      console.error('Detailed API Error:', data.error)
-      allItems.value = []
-      getData()
-      openSnack(errorMessage, 10000, 'red')
-    } else {
-      allItems.value = data.exchangeData
-      buildExchangeHouseOptions()
-      getData()
-    }
-  } catch (error) {
-    console.error('API Error for date', date, ':', error)
-    // Extract error details using the utility function
-    const errorDetails = apiService.extractErrorDetails(error)
-    console.error('Extracted error details:', errorDetails)
-    openSnack(errorDetails.message, 10000, 'red')
-  } finally {
-    finish()
-  }
-}
-
-const updateTable = () => {
-  if (code.value === 'UYU') {
-    items.value = allItems.value.filter(
-      (el) =>
-        (!code.value || el.code === codeWith.value) &&
-        (!notInterBank.value ||
-          !el.isInterBank ||
-          onlyInterBank.value.includes(code.value)) &&
-        (!notConditional.value || !el.condition) &&
-        (location.value === 'TODOS' ||
-          !el?.localData?.departments.length ||
-          el.localData.departments.includes(location.value)),
-    )
-  } else {
-    items.value = allItems.value.filter(
-      (el) =>
-        (!code.value || el.code === code.value) &&
-        (!notInterBank.value ||
-          !el.isInterBank ||
-          onlyInterBank.value.includes(code.value)) &&
-        (!notConditional.value || !el.condition) &&
-        (location.value === 'TODOS' ||
-          !el?.localData?.departments.length ||
-          el.localData.departments.includes(location.value)),
-    )
+    rates = [...buyRates, ...sellRates]
   }
 
-  // Apply exchange house filter if one is selected
-  if (selectedExchangeHouse.value && selectedExchangeHouse.value.length > 0) {
-    const selectedOrigins = selectedExchangeHouse.value.map((item) =>
-      typeof item === 'object' ? item.value : item,
-    )
-    items.value = items.value.filter((el) =>
-      selectedOrigins.includes(el.origin),
-    )
-  }
+  // Remove duplicates based on source name and type
+  const uniqueRates = rates
 
-  if (codeWith.value && codeWith.value !== 'UYU') {
-    const codeOrigins: any = {}
-    items.value = items.value
-      .filter((el) => {
-        if (code.value === 'UYU') return true
-        const f = allItems.value.find(
-          (e) =>
-            e.origin === el.origin &&
-            e.code === codeWith.value &&
-            e.type === el.type,
-        )
-        codeOrigins[el.origin + (el.type ? el.type : '')] = f
-        return f !== undefined
-      })
-      .map((e) => {
-        const el = { ...e }
-        if (code.value === 'UYU') {
-          el.sell = 1 / e.buy
-          el.buy = 1 / e.sell
-        } else {
-          const f = codeOrigins[el.origin + (el.type ? el.type : '')]
-          el.sell = e.sell / f.buy
-          el.buy = e.buy / f.sell
-        }
-        return el
-      })
-  }
-  setPrice()
-}
+  if (!uniqueRates.length) return topExchangesOld.value;
 
-const getValueQuery = (value: string | number, key: any) => {
-  return value === (df as any)[key] ? undefined : value
-}
+  return uniqueRates.slice(0, 8)
+})
 
-const setPrice = () => {
-  if (amount.value < 0) {
-    amount.value = 0
-  }
 
-  const query = {
-    currency: getValueQuery(code.value, 'code'),
-    amount: getValueQuery(amount.value, 'amount'),
-    wantTo: getValueQuery(wantTo.value, 'wantTo'),
-    location: getValueQuery(location.value, 'location'),
-    currency_with: getValueQuery(codeWith.value, 'codeWith'),
-    date: getValueQuery(selectedDate.value, 'selectedDate'),
-    notInterBank: notInterBank.value ? undefined : 0,
-    notConditional: notConditional.value ? 1 : undefined,
-    exchangeHouses:
-      selectedExchangeHouse.value && selectedExchangeHouse.value.length > 0
-        ? selectedExchangeHouse.value.join(',')
-        : undefined,
-  }
+// Real exchange data (replace mock data)
+const topExchangesOld = computed(() => {
+  if (!realExchangeData.value.length) return []
 
-  // Change route
-  if (routeHasQuery.value) {
-    const toPush = {
-      ...route.query,
-      query,
-    }
-    console.log('Updating route with query:', toPush)
-    try {
-      router.push(toPush)
-    } catch (error) {}
-  } else {
-    routeHasQuery.value = true
-  }
+  // Get unique origins and their USD rates
+  const exchangeMap = new Map()
 
-  const amountValue = amount.value
-  const wantToSell = wantTo.value === 'sell'
-
-  items.value.sort((a, b) => {
-    if (wantToSell) {
-      if (b.buy === a.buy) return 0
-      return b.buy <= a.buy ? -1 : 1
-    }
-    if (b.sell === a.sell) return 0
-    return b.sell <= a.sell ? 1 : -1
-  })
-
-  let pos = 1
-  items.value = items.value.map((el, index, arr) => {
-    if (index !== 0) {
-      if (wantToSell) {
-        if (el.buy !== arr[index - 1].buy) {
-          pos++
-        }
-      } else if (el.sell !== arr[index - 1].sell) {
-        pos++
-      }
-    }
-    el.pos = pos
-    const sell = amountValue * el.buy
-    const buy = amountValue * el.sell
-    el.amount = wantToSell ? sell : buy
-    el.diff = (((buy - sell) / sell) * 100).toFixed(2)
-    return el
-  })
-  lastPos.value = pos
-}
-
-const getData = () => {
-  allItems.value.forEach(({ code }) => {
-    if (!money.value.includes(code)) {
-      money.value.push(code)
-    }
-  })
-  updateTable()
-}
-
-/**
- * Extract date from query parameters for server-side use
- * This function works on both server and client side
- */
-const getDateFromQuery = () => {
-  const query = route.query
-
-  if (query.date && typeof query.date === 'string') {
-    const dateRegex = /^\d{4}-\d{2}-\d{2}$/
-    if (dateRegex.test(query.date)) {
-      const parsedDate = new Date(query.date)
-      if (!isNaN(parsedDate.getTime())) {
-        return query.date
-      }
-    }
-  }
-
-  // Return current date if no valid date in query
-  return ''
-}
-
-// Server-side data fetching for better SEO and initial page load
-const { data: initialData } = await useAsyncData(
-  'exchange-data',
-  async () => {
-    // Get date from query parameters for server-side compatibility
-    const currentDate = getDateFromQuery()
-    console.log('Server-side fetching data for date:', currentDate)
-
-    try {
-      const result = await apiService.getProcessedExchangeData(currentDate)
-
-      // Also return the query parameters for client-side state initialization
-      return {
-        ...result,
-        queryParams: route.query,
-        fetchedDate: currentDate,
-      }
-    } catch (error) {
-      console.error('Server-side data fetching error:', error)
-      return {
-        localData: [],
-        locations: [],
-        exchangeData: [],
-        error: error,
-        queryParams: route.query,
-        fetchedDate: currentDate,
-      }
-    }
-  },
-  {
-    server: true,
-    default: () => {
-      return {
-        localData: [],
-        locations: [],
-        exchangeData: [],
-        error: null,
-        queryParams: {},
-        fetchedDate: new Date().toLocaleDateString('en-CA', {
-          timeZone: 'America/Montevideo',
-        }),
-      }
-    },
-  },
-)
-
-console.log('Initial data from server:', initialData.value.queryParams)
-
-// Initialize data from server-side fetch
-if (initialData.value && initialData.value.exchangeData) {
-  if (initialData.value.error) {
-    let errorMessage = 'Error loading initial data'
-    const error = initialData.value.error as any
-
-    if (typeof error === 'string') {
-      errorMessage = error
-    } else if (error && typeof error === 'object') {
-      if ('combined' in error && error.combined) {
-        errorMessage = error.combined
-      } else if ('message' in error && error.message) {
-        errorMessage = error.message
-      }
-    }
-
-    openSnack(errorMessage, 10000)
-  }
-
-  // Set the data
-  allItems.value = initialData.value.exchangeData
-  locations.value = initialData.value.locations || ['TODOS', 'MONTEVIDEO']
-
-  // Set the date if it was fetched from query params
-  if (initialData.value.fetchedDate) {
-    selectedDate.value = initialData.value.fetchedDate
-    day.value = initialData.value.fetchedDate
-
-    // Mark as manually selected if different from today
-    const today = new Date().toLocaleDateString('en-CA', {
-      timeZone: 'America/Montevideo',
-    })
-    if (initialData.value.fetchedDate !== today) {
-      isDateManuallySelected.value = true
-    }
-  }
-
-  buildExchangeHouseOptions()
-  getData()
-}
-
-/**
- * Validate and sanitize query parameter values
- * @param value - The query parameter value to validate
- * @param type - The expected type of the parameter
- * @param allowedValues - Array of allowed values for enum-like parameters
- * @returns The sanitized value or null if invalid
- */
-const validateQueryParam = (
-  value: any,
-  type: 'string' | 'number' | 'boolean' | 'date',
-  allowedValues?: string[],
-): any => {
-  if (value === undefined || value === null) return null
-
-  try {
-    switch (type) {
-      case 'string':
-        if (typeof value === 'string') {
-          const sanitized = value.trim().toUpperCase()
-          if (allowedValues && !allowedValues.includes(sanitized)) {
-            return null
-          }
-          return sanitized
-        }
-        break
-
-      case 'number':
-        const numValue = typeof value === 'string' ? parseFloat(value) : value
-        if (!isNaN(numValue) && numValue >= 0) {
-          return numValue
-        }
-        break
-
-      case 'boolean':
-        if (value === '1' || value === 'true' || value === true) return true
-        if (value === '0' || value === 'false' || value === false) return false
-        break
-
-      case 'date':
-        if (typeof value === 'string') {
-          const dateRegex = /^\d{4}-\d{2}-\d{2}$/
-          if (dateRegex.test(value)) {
-            const parsedDate = new Date(value)
-            if (!isNaN(parsedDate.getTime())) {
-              return value
-            }
-          }
-        }
-        break
-    }
-  } catch (error) {
-    console.error('Error validating query parameter:', error)
-  }
-
-  return null
-}
-
-/**
- * Apply query parameters from server-side data
- * This function applies query parameters that were passed from server-side
- */
-const applyServerSideQueryParams = (queryParams: any) => {
-  if (!queryParams || typeof queryParams !== 'object') return
-
-  try {
-    // Apply non-date parameters (date is already handled in server fetch)
-
-    // Currency settings
-    const currencyCode = validateQueryParam(
-      queryParams.currency,
-      'string',
-      money.value,
-    )
-    if (currencyCode) {
-      code.value = currencyCode
-    }
-
-    const currencyWithCode = validateQueryParam(
-      queryParams.currency_with,
-      'string',
-      money.value,
-    )
-    if (currencyWithCode) {
-      codeWith.value = currencyWithCode
-    }
-
-    // Amount setting
-    const amountValue = validateQueryParam(queryParams.amount, 'number')
-    if (amountValue !== null) {
-      amount.value = amountValue
-    }
-
-    // Want to buy/sell setting
-    const wantToValue = validateQueryParam(queryParams.wantTo, 'string', [
-      'BUY',
-      'SELL',
-    ])
-    if (wantToValue) {
-      wantTo.value = wantToValue.toLowerCase() as 'buy' | 'sell'
-    }
-
-    // Location setting
-    const locationValue = validateQueryParam(
-      queryParams.location,
-      'string',
-      locations.value,
-    )
-    if (locationValue) {
-      location.value = locationValue
-    }
-
-    // Filter settings
-    const notInterBankValue = validateQueryParam(
-      queryParams.notInterBank,
-      'boolean',
-    )
-    if (notInterBankValue !== null) {
-      notInterBank.value = notInterBankValue
-    }
-
-    const notConditionalValue = validateQueryParam(
-      queryParams.notConditional,
-      'boolean',
-    )
-    if (notConditionalValue !== null) {
-      notConditional.value = notConditionalValue
-    }
-
-    // Geolocation coordinates (if provided)
-    const latValue = validateQueryParam(queryParams.lat, 'number')
-    const lngValue = validateQueryParam(queryParams.lng, 'number')
-    if (latValue !== null && lngValue !== null) {
-      latitude.value = latValue
-      longitude.value = lngValue
-      enableDistance.value = true
-    }
-
-    // Mark that route has query parameters
-    if (Object.keys(queryParams).length > 0) {
-      routeHasQuery.value = true
-    }
-
-    console.log('Applied server-side query parameters:', {
-      currency: code.value,
-      currency_with: codeWith.value,
-      amount: amount.value,
-      wantTo: wantTo.value,
-      location: location.value,
-      notInterBank: notInterBank.value,
-      notConditional: notConditional.value,
-      hasCoordinates: enableDistance.value,
-    })
-  } catch (error) {
-    console.error('Error applying server-side query parameters:', error)
-  }
-}
-
-/**
- * Load and apply data from route query parameters (client-side)
- * This function reads URL query parameters and sets component state accordingly
- */
-const loadDataFromQueryParams = () => {
-  const query = route.query
-
-  try {
-    // Currency settings
-    const currencyCode = validateQueryParam(
-      query.currency,
-      'string',
-      money.value,
-    )
-    if (currencyCode) {
-      code.value = currencyCode
-    }
-
-    const currencyWithCode = validateQueryParam(
-      query.currency_with,
-      'string',
-      money.value,
-    )
-    if (currencyWithCode) {
-      codeWith.value = currencyWithCode
-    }
-
-    // Amount setting
-    const amountValue = validateQueryParam(query.amount, 'number')
-    if (amountValue !== null) {
-      amount.value = amountValue
-    }
-
-    // Want to buy/sell setting
-    const wantToValue = validateQueryParam(query.wantTo, 'string', [
-      'BUY',
-      'SELL',
-    ])
-    if (wantToValue) {
-      wantTo.value = wantToValue.toLowerCase() as 'buy' | 'sell'
-    }
-
-    // Location setting
-    const locationValue = validateQueryParam(
-      query.location,
-      'string',
-      locations.value,
-    )
-    if (locationValue) {
-      location.value = locationValue
-    }
-
-    // Date setting (for client-side navigation)
-    const dateValue = validateQueryParam(query.date, 'date')
-    if (dateValue && dateValue !== selectedDate.value) {
-      selectedDate.value = dateValue
-      isDateManuallySelected.value = true
-    }
-
-    // Filter settings
-    const notInterBankValue = validateQueryParam(query.notInterBank, 'boolean')
-    if (notInterBankValue !== null) {
-      notInterBank.value = notInterBankValue
-    }
-
-    const notConditionalValue = validateQueryParam(
-      query.notConditional,
-      'boolean',
-    )
-    if (notConditionalValue !== null) {
-      notConditional.value = notConditionalValue
-    }
-
-    // Exchange houses filter
-    if (query.exchangeHouses && typeof query.exchangeHouses === 'string') {
-      const exchangeHousesArray = query.exchangeHouses
-        .split(',')
-        .filter(Boolean)
-      if (exchangeHousesArray.length > 0) {
-        // Set selected exchange houses (will be validated after data loads)
-        nextTick(() => {
-          const validExchangeHouses = exchangeHousesArray
-            .map((origin) => {
-              const option = exchangeHouseOptions.value.find(
-                (opt) => opt.value === origin,
-              )
-              return option ? option : null
-            })
-            .filter(Boolean) as ExchangeHouseOption[]
-
-          if (validExchangeHouses.length > 0) {
-            selectedExchangeHouse.value = validExchangeHouses
-          }
+  realExchangeData.value.forEach(item => {
+    if (item.code === 'USD' && item.localData?.name) {
+      const key = item.origin
+      if (!exchangeMap.has(key) || (exchangeMap.get(key).sell < item.sell)) {
+        exchangeMap.set(key, {
+          name: item.localData.name,
+          origin: item.origin,
+          usdRate: item.sell,
+          isRegulated: item.localData.bcu || false
         })
       }
     }
+  })
 
-    // Geolocation coordinates (if provided)
-    const latValue = validateQueryParam(query.lat, 'number')
-    const lngValue = validateQueryParam(query.lng, 'number')
-    if (latValue !== null && lngValue !== null) {
-      latitude.value = latValue
-      longitude.value = lngValue
-      enableDistance.value = true
-    }
+  return Array.from(exchangeMap.values())
+    .sort((a, b) => b.usdRate - a.usdRate)
+    .slice(0, 8)
+})
 
-    // Mark that route has query parameters
-    if (Object.keys(query).length > 0) {
-      routeHasQuery.value = true
-    }
+// Steps for how it works
+const steps = computed<Step[]>(() => [
+  {
+    title: t('step1'),
+    description: t('step1')
+  },
+  {
+    title: t('step2'),
+    description: t('step2')
+  },
+  {
+    title: t('step3'),
+    description: t('step3')
+  },
+  {
+    title: t('step4'),
+    description: t('step4')
+  }
+])
 
-    console.log('Loaded data from query parameters:', {
-      currency: code.value,
-      currency_with: codeWith.value,
-      amount: amount.value,
-      wantTo: wantTo.value,
-      location: location.value,
-      date: selectedDate.value,
-      notInterBank: notInterBank.value,
-      notConditional: notConditional.value,
-      hiddenWidgets: hiddenWidgets.value,
-      hasCoordinates: enableDistance.value,
-    })
+// Features
+const features = computed<Feature[]>(() => [
+  {
+    title: t('feature1Title'),
+    description: t('feature1Description'),
+    icon: 'mdi-clock-outline',
+    color: 'green'
+  },
+  {
+    title: t('feature2Title'),
+    description: t('feature2Description'),
+    icon: 'mdi-bank-outline',
+    color: 'blue'
+  },
+  {
+    title: t('feature3Title'),
+    description: t('feature3Description'),
+    icon: 'mdi-currency-usd',
+    color: 'orange'
+  },
+  {
+    title: t('feature4Title'),
+    description: t('feature4Description'),
+    icon: 'mdi-heart-outline',
+    color: 'red'
+  }
+])
 
-    // Update table if data is already loaded
-    if (allItems.value.length > 0) {
-      updateTable()
-    }
-  } catch (error) {
-    console.error('Error loading data from query parameters:', error)
-    openSnack('Error al cargar parámetros de la URL', 5000, 'orange darken-2')
+// Computed properties for best rates
+const bestBuyRate = computed(() => {
+  if (exchangeResults.value.length === 0) return 0
+  return Math.max(...exchangeResults.value.map(r => r.buyRate))
+})
+
+const bestSellRate = computed(() => {
+  if (exchangeResults.value.length === 0) return 0
+  return Math.min(...exchangeResults.value.map(r => r.sellRate))
+})
+
+const bestBuySource = computed(() => {
+  if (exchangeResults.value.length === 0) return ''
+  const best = exchangeResults.value.find(r => r.buyRate === bestBuyRate.value)
+  return best?.source || ''
+})
+
+const bestSellSource = computed(() => {
+  if (exchangeResults.value.length === 0) return ''
+  const best = exchangeResults.value.find(r => r.sellRate === bestSellRate.value)
+  return best?.source || ''
+})
+
+// Get appropriate label for rate type
+const getRateTypeLabel = (type: 'buy' | 'sell'): string => {
+  const isConvertingFrom = selectedCurrency.value !== 'UYU' && selectedTargetCurrency.value === 'UYU'
+  const isConvertingTo = selectedCurrency.value === 'UYU' && selectedTargetCurrency.value !== 'UYU'
+
+  if (isConvertingFrom) {
+    // User is selling the selected currency
+    return type === 'buy' ? 'Te pagan' : 'Te pagan'
+  } else if (isConvertingTo) {
+    // User is buying the selected currency
+    return type === 'sell' ? 'Pagas' : 'Pagas'
+  } else {
+    // Mixed conversion
+    return type === 'buy' ? t('buying') : t('selling')
   }
 }
 
-// Lifecycle hooks
-onMounted(() => {
-  console.log('mounted index.vue')
+// Get appropriate title for best rates section
+const getBestRatesTitle = (): string => {
+  if (!selectedCurrency.value || !selectedTargetCurrency.value) return t('topBestRates')
 
-  // Initialize date values on client side to prevent hydration mismatch
-  const currentDate = new Date().toLocaleDateString('en-CA', {
-    timeZone: 'America/Montevideo',
-  })
-  // Only set default date if not already set from server-side data
-  if (!selectedDate.value) {
-    day.value = currentDate
-    selectedDate.value = currentDate
+  const isConvertingFrom = selectedCurrency.value !== 'UYU' && selectedTargetCurrency.value === 'UYU'
+  const isConvertingTo = selectedCurrency.value === 'UYU' && selectedTargetCurrency.value !== 'UYU'
+
+  if (isConvertingFrom) {
+    return t('bestToSell') + ` ${selectedCurrency.value}`
+  } else if (isConvertingTo) {
+    return t('bestToBuy') + ` ${selectedTargetCurrency.value}`
+  } else {
+    return t('topBestRates')
+  }
+}
+
+// Exchange rate calculation
+const getExchangeRate = (fromCurrency: string, toCurrency: string): number => {
+  if (!realExchangeData.value.length) return 0
+
+  if (fromCurrency === toCurrency) return 1
+
+  // If converting from UYU to another currency
+  if (toCurrency === 'UYU') {
+    const currencyData = realExchangeData.value
+      .sort((a, b) => b.buy - a.buy)
+      .find(item =>
+        item.code === fromCurrency && item.buy > 0
+      )
+    return currencyData ? currencyData.buy : 0
   }
 
-  // Apply server-side query parameters first
-  console.log('Initial data from server:', initialData.value)
-  if (initialData.value?.queryParams) {
-    applyServerSideQueryParams(initialData.value.queryParams)
+  // If converting to UYU from another currency
+  if (fromCurrency === 'UYU') {
+    const currencyData = realExchangeData.value
+      .sort((a, b) => a.sell - b.sell)
+      .find(item =>
+        item.code === toCurrency && item.sell > 0
+      )
+    return currencyData ? (1 / currencyData.sell) : 0
   }
 
-  // Then load any additional client-side query parameters
-  loadDataFromQueryParams()
+  // Cross-currency conversion through UYU
+  const fromToUYU = getExchangeRate(fromCurrency, 'UYU')
+  const uyuToTarget = getExchangeRate('UYU', toCurrency)
 
-  if (localStorage.getItem('hideWidgets') === 'true') {
-    hiddenWidgets.value = true
+  return fromToUYU * uyuToTarget
+}
+
+// Conversion result computed property
+const conversionResult = computed(() => {
+  const rate = getExchangeRate(selectedCurrency.value, selectedTargetCurrency.value)
+  return {
+    rate,
+    invertedRate: 1 / rate,
+    convertedAmount: amount.value * rate
   }
 })
 
-// Structured Data for SEO
+// Top 4 best rates for the selected currency
+const top4BestRates = computed(() => {
+  if (!realExchangeData.value.length || !selectedCurrency.value) return []
+
+  const currencyData = realExchangeData.value.filter(item =>
+    (item.code === selectedCurrency.value || item.code === selectedTargetCurrency.value) && item.localData?.name && (item.buy > 0 || item.sell > 0)
+  )
+
+  if (currencyData.length === 0) return []
+
+  // Determine if we're converting FROM or TO the selected currency
+  const isConvertingFrom = selectedCurrency.value !== 'UYU' && selectedTargetCurrency.value === 'UYU'
+  const isConvertingTo = selectedCurrency.value === 'UYU' && selectedTargetCurrency.value !== 'UYU'
+
+  let rates = []
+
+  if (isConvertingFrom) {
+    // User is selling the selected currency (FROM currency TO UYU)
+    // Show top 4 selling rates (highest buy rates = best for user selling)
+    rates = currencyData
+      .map(item => ({
+        source: item.localData?.name || item.origin,
+        rate: item.buy,
+        code: item.code,
+        type: 'buy' as const, // This is what the exchange house pays (buys from user)
+        origin: item.origin
+      }))
+      .sort((a, b) => b.rate - a.rate) // Highest buy rate first
+      .slice(0, 4)
+  } else if (isConvertingTo) {
+    // User is buying the selected currency (FROM UYU TO currency)
+    // Show top 4 buying rates (lowest sell rates = best for user buying)
+    rates = currencyData
+      .map(item => ({
+        source: item.localData?.name || item.origin,
+        rate: item.sell,
+        code: item.code,
+        type: 'sell' as const, // This is what the exchange house sells (user buys)
+        origin: item.origin
+      }))
+      .sort((a, b) => a.rate - b.rate) // Lowest sell rate first
+      .slice(0, 4)
+  } else {
+    // For other conversions, show mixed rates (2 buy + 2 sell)
+    const buyRates = currencyData
+      .filter(item => item.code === selectedCurrency.value)
+      .map(item => ({
+        source: item.localData?.name || item.origin,
+        rate: item.buy,
+        code: item.code,
+        type: 'buy' as const,
+        origin: item.origin
+      }))
+      .sort((a, b) => b.rate - a.rate)
+      .slice(0, 2)
+
+    const sellRates = currencyData
+      .filter(item => item.code === selectedTargetCurrency.value)
+      .map(item => ({
+        source: item.localData?.name || item.origin,
+        rate: item.sell,
+        code: item.code,
+        type: 'sell' as const,
+        origin: item.origin
+      }))
+      .sort((a, b) => a.rate - b.rate)
+      .slice(0, 2)
+
+    rates = [...buyRates, ...sellRates]
+  }
+
+  // Remove duplicates based on source name and type
+  const uniqueRates = rates
+
+  return uniqueRates.slice(0, 4)
+})
+
+// Swap currencies function
+const swapCurrencies = () => {
+  const temp = selectedCurrency.value
+  selectedCurrency.value = selectedTargetCurrency.value
+  selectedTargetCurrency.value = temp
+}
+
+// Get color for rate card based on position
+const getRateCardColor = (index: number): string => {
+  const colors = ['gold', 'silver', 'orange', 'blue']
+  return colors[index] || 'grey'
+}
+
+// Methods
+const formatCurrency = (value: number): string => {
+  return new Intl.NumberFormat('es-UY', {
+    style: 'currency',
+    currency: 'UYU',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(value)
+}
+
+const findBestRates = () => {
+  if (!realExchangeData.value.length) return
+
+  // Filter data for selected currency
+  const currencyData = realExchangeData.value.filter((item: ExchangeItem) =>
+    item.code === selectedCurrency.value && item.localData?.name
+  )
+
+  // Calculate best rates
+  const results: ExchangeResult[] = currencyData.map(item => ({
+    buyRate: item.buy * amount.value,
+    sellRate: item.sell * amount.value,
+    source: item.localData?.name || item.origin,
+    origin: item.origin
+  }))
+
+  // Sort by best rates
+  results.sort((a, b) => b.sellRate - a.sellRate)
+
+  exchangeResults.value = results.slice(0, 10) // Top 10 results
+}
+
+// Function to update query parameters
+const updateQueryParams = () => {
+  const query = {
+    from: selectedCurrency.value,
+    to: selectedTargetCurrency.value,
+    amount: amount.value.toString()
+  }
+
+  // Only update if parameters have actually changed
+  if (route.query.from !== query.from ||
+    route.query.to !== query.to ||
+    route.query.amount !== query.amount) {
+    router.replace({ query })
+  }
+}
+
+// Load initial data only once
+const loadInitialData = async () => {
+  loading.value = true
+
+  try {
+    const date = new Date().toLocaleDateString('en-CA', {
+      timeZone: 'America/Montevideo',
+    })
+    const data = await apiService.getProcessedExchangeData(date)
+    console.log("Data", data);
+
+    if (data.error) {
+      console.error('API Error:', data.error)
+      return
+    }
+
+    // Store the real exchange data
+    realExchangeData.value = data.exchangeData.filter(item => {
+      if (item.isInterBank && ['USD', 'BRL', 'ARG'].includes(item.code)) return false;
+      return true;
+    })
+
+    // Extract available currencies including UYU
+    const currencies = new Set<string>()
+    data.exchangeData.forEach((item: ExchangeItem) => {
+      currencies.add(item.code)
+    })
+
+    // Always include UYU as it's the base currency
+    currencies.add('UYU')
+
+    availableCurrencies.value = Array.from(currencies).sort()
+
+    // Calculate initial rates
+    findBestRates()
+
+  } catch (error) {
+    console.error('Error loading initial data:', error)
+  } finally {
+    loading.value = false
+  }
+}
+
+// Lifecycle
+onMounted(async () => {
+  // Load initial data only once
+  await loadInitialData()
+  updateExchange();
+})
+
+const updateExchange = () => {
+  amount.value = amountInput.value;
+  selectedCurrency.value = selectedCurrencyInput.value;
+  selectedTargetCurrency.value = selectedTargetCurrencyInput.value;
+  if (realExchangeData.value.length > 0) {
+    findBestRates()
+  }
+  updateQueryParams()
+}
+
+// SEO Configuration
 const structuredData = computed(() => ({
   '@context': 'https://schema.org',
   '@type': 'WebApplication',
@@ -1165,34 +824,29 @@ const structuredData = computed(() => ({
     '@type': 'Offer',
     description: t('seo.homeDescription'),
     price: '0',
-    priceCurrency: 'USD',
+    priceCurrency: 'USD'
   },
   author: {
     '@type': 'Person',
     name: 'Eduardo Airaudo',
-    url: 'https://www.linkedin.com/in/eairaudo/',
-    sameAs: [
-      'https://www.linkedin.com/in/eairaudo/',
-      'https://github.com/eduair94',
-    ],
+    url: 'https://www.linkedin.com/in/eairaudo/'
   },
   publisher: {
     '@type': 'Organization',
     name: 'Cambio Uruguay',
-    url: 'https://cambio-uruguay.com',
-  },
+    url: 'https://cambio-uruguay.com'
+  }
 }))
 
 useHead({
   script: [
     {
       type: 'application/ld+json',
-      innerHTML: JSON.stringify(structuredData.value),
-    },
-  ],
+      innerHTML: JSON.stringify(structuredData.value)
+    }
+  ]
 })
 
-// SEO Configuration with multilingual support
 useSeoMeta({
   title: () => t('seo.homeTitle'),
   description: () => t('seo.homeDescription'),
@@ -1200,15 +854,390 @@ useSeoMeta({
   ogTitle: () => t('seo.homeTitle'),
   ogDescription: () => t('seo.homeDescription'),
   ogType: 'website',
-  ogUrl: () => {
-    const baseUrl = 'https://cambio-uruguay.com'
-    const queryString = new URLSearchParams(
-      route.query as Record<string, string>,
-    ).toString()
-    return queryString ? `${baseUrl}?${queryString}` : baseUrl
-  },
+  ogUrl: 'https://cambio-uruguay.com',
   twitterCard: 'summary_large_image',
   twitterTitle: () => t('seo.homeTitle'),
-  twitterDescription: () => t('seo.homeDescription'),
+  twitterDescription: () => t('seo.homeDescription')
 })
 </script>
+
+<style scoped>
+/* Hero Section */
+.home-container {
+  min-height: 100vh;
+}
+
+.hero-section {
+  background: linear-gradient(135deg, rgba(25, 32, 72, 0.95) 0%, rgba(76, 81, 191, 0.85) 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)" /></svg>');
+  opacity: 0.3;
+  animation: float 20s ease-in-out infinite;
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+.min-height-hero {
+  min-height: 70vh;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+}
+
+.hero-title {
+  color: #ffffff;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  margin-bottom: 1.5rem;
+  animation: fadeInUp 0.8s ease-out;
+}
+
+.hero-subtitle {
+  color: #e3f2fd;
+  font-weight: 400;
+  margin-bottom: 2rem;
+  animation: fadeInUp 0.8s ease-out 0.2s both;
+}
+
+.hero-description {
+  color: #f5f5f5;
+  max-width: 600px;
+  margin: 0 auto 2rem;
+  animation: fadeInUp 0.8s ease-out 0.4s both;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Exchange Card */
+.exchange-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  animation: fadeInUp 0.8s ease-out 0.6s both;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.exchange-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.amount-input {
+  .v-field__input {
+    font-size: 1.2em;
+    font-weight: 500;
+  }
+}
+
+/* Currency Selection Row */
+.currency-row {
+  .currency-section {
+    position: relative;
+  }
+
+  .swap-btn {
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+/* Conversion Result */
+.conversion-result {
+  border-radius: 12px;
+
+  .conversion-display-row {
+    min-height: 60px;
+    align-items: center;
+  }
+
+  .conversion-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .amount-text {
+      font-size: 1.4em;
+      font-weight: 600;
+      color: white;
+
+      &.converted {
+        color: #4CAF50;
+      }
+    }
+
+    .currency-name {
+      font-size: 0.9em;
+      color: #B0BEC5;
+      margin-top: 4px;
+    }
+  }
+
+  .rate-info {
+    .rate-text {
+      font-size: 0.9em;
+      color: #81C784;
+      font-weight: 500;
+    }
+  }
+}
+
+/* Mobile responsiveness for conversion result */
+@media (max-width: 600px) {
+  .conversion-result {
+    .conversion-display-row {
+      .v-col {
+        margin-bottom: 8px;
+      }
+    }
+
+    .conversion-display {
+      .amount-text {
+        font-size: 1.2em;
+      }
+
+      .currency-name {
+        font-size: 0.8em;
+      }
+    }
+  }
+}
+
+/* Best Rates Card */
+.best-rates-card {
+  border-radius: 12px;
+
+  .rate-item {
+    transition: all 0.3s ease;
+    border-radius: 8px;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .rate-position {
+      color: #FFC107;
+    }
+
+    .rate-name {
+      color: #E0E0E0;
+      font-size: 0.8em;
+    }
+
+    .rate-value {
+      color: #4CAF50;
+    }
+
+    .rate-type {
+      color: #B0BEC5;
+    }
+  }
+}
+
+/* Action Button */
+.convert-btn {
+  min-width: 180px;
+  height: 48px;
+  border-radius: 24px;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0.5px;
+}
+
+/* Sections */
+.top-exchanges-section {
+  background: #121212;
+  padding: 80px 0;
+}
+
+.how-it-works-section {
+  padding: 80px 0;
+  background: #1e1e1e;
+}
+
+.features-section {
+  background: #121212;
+  padding: 80px 0;
+}
+
+.cta-section {
+  padding: 80px 0;
+  background: linear-gradient(135deg, #1976d2 0%, #42a5f5 100%);
+}
+
+/* Cards */
+.exchange-house-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.exchange-house-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.4);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.step-card {
+  transition: transform 0.3s ease;
+}
+
+.step-card:hover {
+  transform: translateY(-5px);
+}
+
+.feature-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 40px 0 20px;
+  }
+
+  .hero-title {
+    font-size: 2rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1.2rem;
+  }
+
+  .exchange-card {
+    margin: 0 10px;
+  }
+
+  .top-exchanges-section,
+  .how-it-works-section,
+  .features-section,
+  .cta-section {
+    padding: 40px 0;
+  }
+
+  .best-rates-card {
+    .rate-item {
+      margin-bottom: 8px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-title {
+    font-size: 1.75rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1.1rem;
+  }
+
+  .exchange-card {
+    padding: 20px;
+  }
+}
+
+/* Accessibility */
+.exchange-card:focus-within {
+  outline: 2px solid #42a5f5;
+  outline-offset: 2px;
+}
+
+.exchange-house-card:focus-within {
+  outline: 2px solid #42a5f5;
+  outline-offset: 2px;
+}
+
+/* Animation delays for staggered effect */
+.exchange-house-card:nth-child(1) {
+  animation: fadeInUp 0.6s ease-out 0.1s both;
+}
+
+.exchange-house-card:nth-child(2) {
+  animation: fadeInUp 0.6s ease-out 0.2s both;
+}
+
+.exchange-house-card:nth-child(3) {
+  animation: fadeInUp 0.6s ease-out 0.3s both;
+}
+
+.exchange-house-card:nth-child(4) {
+  animation: fadeInUp 0.6s ease-out 0.4s both;
+}
+
+.step-card:nth-child(1) {
+  animation: fadeInUp 0.6s ease-out 0.1s both;
+}
+
+.step-card:nth-child(2) {
+  animation: fadeInUp 0.6s ease-out 0.2s both;
+}
+
+.step-card:nth-child(3) {
+  animation: fadeInUp 0.6s ease-out 0.3s both;
+}
+
+.step-card:nth-child(4) {
+  animation: fadeInUp 0.6s ease-out 0.4s both;
+}
+
+.feature-card:nth-child(1) {
+  animation: fadeInUp 0.6s ease-out 0.1s both;
+}
+
+.feature-card:nth-child(2) {
+  animation: fadeInUp 0.6s ease-out 0.2s both;
+}
+
+.feature-card:nth-child(3) {
+  animation: fadeInUp 0.6s ease-out 0.3s both;
+}
+
+.feature-card:nth-child(4) {
+  animation: fadeInUp 0.6s ease-out 0.4s both;
+}
+</style>

@@ -291,6 +291,7 @@ export default defineNuxtConfig({
       '@vite-pwa/nuxt',
       {
         registerType: 'autoUpdate',
+        disable: process.env.NODE_ENV === 'development',
         workbox: {
           navigateFallback: '/',
           globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
@@ -337,7 +338,7 @@ export default defineNuxtConfig({
           periodicSyncForUpdates: 20,
         },
         devOptions: {
-          enabled: true,
+          enabled: false,
           suppressWarnings: true,
           navigateFallbackAllowlist: [/^\/$/],
           type: 'module',
@@ -465,4 +466,5 @@ export default defineNuxtConfig({
 
   // Dev Tools
   devtools: { enabled: false },
+  compatibilityDate: new Date().toISOString().split('T')[0] as any, // Use current date for compatibility
 })

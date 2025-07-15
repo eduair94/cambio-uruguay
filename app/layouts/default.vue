@@ -1,23 +1,12 @@
 <template>
   <VApp>
     <!-- Navigation Drawer for mobile -->
-    <VNavigationDrawer
-      v-model="drawer"
-      location="left"
-      temporary
-      width="280"
-      class="mobile-navigation-drawer"
-    >
+    <VNavigationDrawer v-model="drawer" location="left" temporary width="280" class="mobile-navigation-drawer">
       <VList>
         <VListItem>
           <VListItemTitle class="text-h6"> Menu </VListItemTitle>
           <template #append>
-            <VBtn
-              icon="mdi-close"
-              variant="text"
-              size="small"
-              @click="drawer = false"
-            />
+            <VBtn icon="mdi-close" variant="text" size="small" @click="drawer = false" />
           </template>
         </VListItem>
 
@@ -28,6 +17,13 @@
             <VIcon>mdi-home</VIcon>
           </template>
           <VListItemTitle>{{ $t('inicio') }}</VListItemTitle>
+        </VListItem>
+
+        <VListItem :to="localePath('/avanzado')" @click="drawer = false">
+          <template #prepend>
+            <VIcon>mdi-cog</VIcon>
+          </template>
+          <VListItemTitle>{{ $t('avanzado') }}</VListItemTitle>
         </VListItem>
 
         <VListItem :to="localePath('/historico')" @click="drawer = false">
@@ -44,24 +40,16 @@
           <VListItemTitle>{{ $t('sucursalesMenu') }}</VListItemTitle>
         </VListItem>
 
-        <VListItem
-          href="https://ko-fi.com/cambio_uruguay"
-          target="_blank"
-          rel="noopener noreferrer"
-          @click="drawer = false"
-        >
+        <VListItem href="https://ko-fi.com/cambio_uruguay" target="_blank" rel="noopener noreferrer"
+          @click="drawer = false">
           <template #prepend>
             <VIcon>mdi-heart</VIcon>
           </template>
           <VListItemTitle>{{ $t('donar') }}</VListItemTitle>
         </VListItem>
 
-        <VListItem
-          href="https://twitter.com/cambio_uruguay"
-          target="_blank"
-          rel="noopener noreferrer"
-          @click="drawer = false"
-        >
+        <VListItem href="https://twitter.com/cambio_uruguay" target="_blank" rel="noopener noreferrer"
+          @click="drawer = false">
           <template #prepend>
             <VIcon>mdi-twitter</VIcon>
           </template>
@@ -70,12 +58,8 @@
 
         <VDivider class="my-2" />
 
-        <VListItem
-          href="https://www.linkedin.com/in/eduardo-airaudo/"
-          target="_blank"
-          rel="noopener noreferrer"
-          @click="drawer = false"
-        >
+        <VListItem href="https://www.linkedin.com/in/eduardo-airaudo/" target="_blank" rel="noopener noreferrer"
+          @click="drawer = false">
           <template #prepend>
             <VIcon>mdi-account-circle</VIcon>
           </template>
@@ -86,90 +70,60 @@
 
     <VAppBar class="px-3">
       <!-- Mobile menu button -->
-      <VAppBarNavIcon
-        class="d-flex d-md-none mr-2"
-        @click.stop="drawer = !drawer"
-      />
+      <VAppBarNavIcon class="d-flex d-md-none mr-2" @click.stop="drawer = !drawer" />
 
       <NuxtLink :to="localePath('/')" class="no_link d-flex logo_link">
-        <img
-          width="227"
-          height="33"
-          alt="Cambio Uruguay - Logo oficial para comparar cotizaciones de cambio"
-          class="logo_image"
-          src="/img/logo.png"
-          loading="eager"
-        />
+        <img width="227" height="33" alt="Cambio Uruguay - Logo oficial para comparar cotizaciones de cambio"
+          class="logo_image" src="/img/logo.png" loading="eager" />
       </NuxtLink>
 
       <!-- Navigation Menu for desktop -->
       <VToolbarItems class="d-none d-md-flex ml-4">
         <!-- Inicio -->
-        <VBtn
-          :to="localePath('/')"
-          variant="text"
-          exact
-          class="text-capitalize nav-btn"
-          :class="{ 'nav-btn--active': isActiveRoute('/') }"
-        >
+        <VBtn :to="localePath('/')" variant="text" exact class="text-capitalize nav-btn"
+          :class="{ 'nav-btn--active': isActiveRoute('/') }">
           <VIcon start small>mdi-home</VIcon>
           {{ $t('inicio') }}
         </VBtn>
 
+        <!-- Avanzado -->
+        <VBtn :to="localePath('/avanzado')" variant="text" class="text-capitalize nav-btn"
+          :class="{ 'nav-btn--active': isActiveRoute('/avanzado') }">
+          <VIcon start small>mdi-cog</VIcon>
+          {{ $t('avanzado') }}
+        </VBtn>
+
         <!-- Histórico -->
-        <VBtn
-          :to="localePath('/historico')"
-          variant="text"
-          class="text-capitalize nav-btn"
-          :class="{ 'nav-btn--active': isActiveRoute('/historico') }"
-        >
+        <VBtn :to="localePath('/historico')" variant="text" class="text-capitalize nav-btn"
+          :class="{ 'nav-btn--active': isActiveRoute('/historico') }">
           <VIcon start small>mdi-chart-line</VIcon>
           {{ $t('historico') }}
         </VBtn>
 
         <!-- Sucursales -->
-        <VBtn
-          :to="localePath('/sucursales')"
-          variant="text"
-          class="text-capitalize nav-btn"
-          :class="{ 'nav-btn--active': isActiveRoute('/sucursales') }"
-        >
+        <VBtn :to="localePath('/sucursales')" variant="text" class="text-capitalize nav-btn"
+          :class="{ 'nav-btn--active': isActiveRoute('/sucursales') }">
           <VIcon start small>mdi-bank-outline</VIcon>
           {{ $t('sucursalesMenu') }}
         </VBtn>
 
         <!-- Donar -->
-        <VBtn
-          href="https://ko-fi.com/cambio_uruguay"
-          target="_blank"
-          rel="noopener noreferrer"
-          variant="text"
-          class="text-capitalize nav-btn"
-        >
+        <VBtn href="https://ko-fi.com/cambio_uruguay" target="_blank" rel="noopener noreferrer" variant="text"
+          class="text-capitalize nav-btn">
           <VIcon start small>mdi-heart</VIcon>
           {{ $t('donar') }}
         </VBtn>
 
         <!-- Twitter -->
-        <VBtn
-          href="https://twitter.com/cambio_uruguay"
-          target="_blank"
-          rel="noopener noreferrer"
-          variant="text"
-          class="text-capitalize nav-btn"
-        >
+        <VBtn href="https://twitter.com/cambio_uruguay" target="_blank" rel="noopener noreferrer" variant="text"
+          class="text-capitalize nav-btn">
           <VIcon start small>mdi-twitter</VIcon>
           Twitter
         </VBtn>
 
         <!-- Autor -->
-        <VBtn
-          href="https://www.linkedin.com/in/eduardo-airaudo/"
-          target="_blank"
-          rel="noopener noreferrer"
-          variant="text"
-          class="text-capitalize nav-btn"
-        >
+        <VBtn href="https://www.linkedin.com/in/eduardo-airaudo/" target="_blank" rel="noopener noreferrer"
+          variant="text" class="text-capitalize nav-btn">
           <VIcon start small>mdi-account-circle</VIcon>
           Autor
         </VBtn>
@@ -323,6 +277,7 @@ useHead({
   max-height: 40px;
   max-width: 55vw;
 }
+
 /* Navigation Button Styles */
 .nav-btn {
   margin: 0 4px;
