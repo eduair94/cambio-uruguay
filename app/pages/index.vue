@@ -750,11 +750,15 @@ onMounted(() => {
 })
 
 const updateExchange = () => {
+  loading.value = true;
   selectedCurrency.value = selectedCurrencyInput.value;
   selectedTargetCurrency.value = selectedTargetCurrencyInput.value;
   amount.value = amountInput.value;
   setConversionRate();
   updateQueryParams();
+  setTimeout(() => {
+    loading.value = false;
+  }, 200);
 }
 
 // SEO Configuration
