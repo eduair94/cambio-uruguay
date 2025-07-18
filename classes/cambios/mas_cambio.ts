@@ -33,7 +33,7 @@ class MasCambio extends Cambio {
     const iframeUrl = $a("iframe#blockrandom").attr("src");
     console.log("iframe url", iframeUrl);
 
-    const web_data = await axios.get(iframeUrl).then((res) => res.data);
+    const web_data = await axios.get(iframeUrl, { timeout: 15000 }).then((res) => res.data);
     const $ = load(web_data);
     const result = $("table tbody tr")
       .map((i: number, element) => ({

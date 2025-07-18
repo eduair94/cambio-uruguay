@@ -35,7 +35,6 @@ import CambioGales from "./cambios/gales";
 import CambioIndumex from "./cambios/indumex";
 import Itau from "./cambios/itau";
 import CambioLaFavorita from "./cambios/lafavorita";
-import MasCambio from "./cambios/mas_cambio";
 import CambioPrex from "./cambios/prex";
 import Rynder from "./cambios/rynder";
 import CambioSuizo from "./cambios/suizo";
@@ -66,7 +65,7 @@ export const origins = {
   cambio_openn: CambioOpenn,
   cambial: Cambial,
   cambio_pando: CambioPando,
-  mas_cambio: MasCambio,
+  //mas_cambio: MasCambio,
   cambio_fenix: CambioFenix,
   cambio_oriental: CambioOriental,
   baluma_cambio: BalumaCambio,
