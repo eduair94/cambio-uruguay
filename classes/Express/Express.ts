@@ -124,13 +124,27 @@ class Express {
         "Content-Type": "application/json",
       });
 
-      const result: any = await f(req, res).catch((e) => {
-        return bError(e.message);
-      });
-      if (result?.error) {
-        return res.status(500).json(result);
+      try {
+        const result: any = await f(req, res);
+        if (result?.error) {
+          return res.status(500).json(result);
+        }
+        res.json(result);
+      } catch (error: any) {
+        // Handle ValidationError with proper error details
+        if (error.name === 'ValidationError' && error.details) {
+          return res.status(error.statusCode || 400).json(error.details);
+        }
+        
+        // Handle other errors with user-friendly messages
+        const errorResponse = {
+          error: error.message || 'Internal server error',
+          timestamp: new Date().toISOString()
+        };
+        
+        console.error('API Error:', error);
+        return res.status(500).json(errorResponse);
       }
-      res.json(result);
     });
   }
 
@@ -160,11 +174,25 @@ class Express {
 
       const errors = validationResult(req);
       if (!errors.isEmpty()) return res.json({ error: errors.array() });
-      const result: any = await f(req).catch((e) => {
-        console.error(e);
-        return bError(e.message);
-      });
-      res.json(result);
+      
+      try {
+        const result: any = await f(req);
+        res.json(result);
+      } catch (error: any) {
+        // Handle ValidationError with proper error details
+        if (error.name === 'ValidationError' && error.details) {
+          return res.status(error.statusCode || 400).json(error.details);
+        }
+        
+        // Handle other errors with user-friendly messages
+        const errorResponse = {
+          error: error.message || 'Internal server error',
+          timestamp: new Date().toISOString()
+        };
+        
+        console.error('API Error:', error);
+        return res.status(500).json(errorResponse);
+      }
     });
   }
   public postJsonRecaptcha(requestUrl: string, f: FunctionExpress, validation: ValidationChain[] = []): void {
@@ -179,10 +207,25 @@ class Express {
       if (!req["recaptcha"]["error"]) {
         const errors = validationResult(req);
         if (!errors.isEmpty()) return res.json({ error: errors.array() });
-        const result: any = await f(req).catch((e) => {
-          return bError(e.message);
-        });
-        res.json(result);
+        
+        try {
+          const result: any = await f(req);
+          res.json(result);
+        } catch (error: any) {
+          // Handle ValidationError with proper error details
+          if (error.name === 'ValidationError' && error.details) {
+            return res.status(error.statusCode || 400).json(error.details);
+          }
+          
+          // Handle other errors with user-friendly messages
+          const errorResponse = {
+            error: error.message || 'Internal server error',
+            timestamp: new Date().toISOString()
+          };
+          
+          console.error('API Error:', error);
+          return res.status(500).json(errorResponse);
+        }
       } else {
         res.json({ error: "Bad recaptcha" });
       }

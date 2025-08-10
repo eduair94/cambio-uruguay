@@ -104,7 +104,10 @@
   "feature4Description": "Simple and intuitive interface",
   "feature5Title": "API available",
   "feature5Description": "Access our data through our REST API",
-  "apiDocumentation": "API Documentation",
+  "feature6Title": "Open source",
+  "feature6Description": "Our code is open source and can be used and improved by other developers",
+    "apiDocumentation": "View documentation",
+  "viewRepository": "View repository",
   "historicoCotizaciones": "Historical Quotes",
   "evolucionCotizaciones": "Quote Evolution",
   "cargandoDatosHistoricos": "Loading historical data...",
@@ -275,5 +278,13 @@
     "sucursalesIndexTitle": "Branch Directory - All Exchange Houses in Uruguay",
     "sucursalesIndexDescription": "Complete directory of branches from all exchange houses in Uruguay. Find locations, addresses and contacts by department.",
     "sucursalesIndexKeywords": "branch directory uruguay, exchange houses uruguay, montevideo branches, canelones branches, all branches uruguay"
+  },
+  "donation": {
+    "supportProject": "Support the project",
+    "helpMessage": "Your donation helps us keep the site updated and free for everyone.",
+    "donatePaypal": "Donate with PayPal",
+    "donateMercadoPago": "Donate with MercadoPago",
+    "seeReviews": "See reviews",
+    "thanksForSupport": "Thanks for your support!"
   }
 }

@@ -36,6 +36,19 @@ const validateOrigin = (origin: string): { isValid: boolean; error?: any } => {
   return { isValid: true };
 };
 
+// Custom error class for API validation errors
+class ValidationError extends Error {
+  public statusCode: number;
+  public details: any;
+
+  constructor(message: string, details: any, statusCode: number = 400) {
+    super(message);
+    this.name = 'ValidationError';
+    this.statusCode = statusCode;
+    this.details = details;
+  }
+}
+
 const main = async () => {
   console.log("Start connection");
   await MongooseServer.startConnectionPromise();
@@ -343,7 +356,7 @@ const main = async () => {
     // Validate origin parameter
     const originValidation = validateOrigin(origin);
     if (!originValidation.isValid) {
-      throw new Error(JSON.stringify(originValidation.error));
+      throw new ValidationError('Invalid origin parameter', originValidation.error);
     }
     
     console.log("Date", dateM);
@@ -713,7 +726,7 @@ const main = async () => {
     // Validate origin parameter
     const originValidation = validateOrigin(origin);
     if (!originValidation.isValid) {
-      throw new Error(JSON.stringify(originValidation.error));
+      throw new ValidationError('Invalid origin parameter', originValidation.error);
     }
     
     const latitude = parseFloat(req.query.latitude as string);
@@ -772,7 +785,7 @@ const main = async () => {
     // Validate origin parameter
     const originValidation = validateOrigin(origin);
     if (!originValidation.isValid) {
-      throw new Error(JSON.stringify(originValidation.error));
+      throw new ValidationError('Invalid origin parameter', originValidation.error);
     }
     
     const x = new BCU_Details();
@@ -858,7 +871,7 @@ const main = async () => {
     // Validate origin parameter
     const originValidation = validateOrigin(origin);
     if (!originValidation.isValid) {
-      throw new Error(JSON.stringify(originValidation.error));
+      throw new ValidationError('Invalid origin parameter', originValidation.error);
     }
 
     // Validate currency code parameter (basic validation)
@@ -873,7 +886,7 @@ const main = async () => {
       }
       
       const error = createValidationError('code', code, availableCurrencies, 'Use /parameters/currencies to get all valid currency codes');
-      throw new Error(JSON.stringify(error));
+      throw new ValidationError('Invalid currency code parameter', error);
     }
 
     // Parse period parameter (default to 6 months)
@@ -882,7 +895,7 @@ const main = async () => {
       const period = parseInt(req.query.period as string);
       if (isNaN(period) || period <= 0 || period > 60) {
         const error = createValidationError('period', req.query.period as string, ['1', '2', '3', '6', '12', '24', '36', '48', '60'], 'Period must be a number between 1 and 60 months');
-        throw new Error(JSON.stringify(error));
+        throw new ValidationError('Invalid period parameter', error);
       }
       periodMonths = period;
     }

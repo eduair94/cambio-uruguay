@@ -83,7 +83,7 @@
                     <VCol cols="5" sm="4" class="text-center align-self-start">
                       <div class="conversion-display">
                         <span class="amount-text converted">{{ formatCurrency(conversionResult.convertedAmount)
-                        }}</span>
+                          }}</span>
                         <span v-if="selectedTargetCurrency" class="currency-name">{{ t('codes.' +
                           selectedTargetCurrency) }}</span>
                       </div>
@@ -223,6 +223,9 @@
       </VContainer>
     </section>
 
+    <!-- Donation Card Component -->
+    <DonationCard />
+
     <!-- Features Section -->
     <section class="features-section py-12">
       <VContainer>
@@ -258,6 +261,31 @@
                 <VBtn color="primary" variant="outlined" size="small">
                   <VIcon start size="small">mdi-open-in-new</VIcon>
                   {{ t('apiDocumentation') }}
+                </VBtn>
+              </div>
+            </VCard>
+            <VCard 
+              v-else-if="feature.title === t('feature6Title')"
+              class="feature-card pa-6 h-100 cursor-pointer" 
+              elevation="2"
+              href="https://github.com/eduair94/cambio-uruguay"
+              target="_blank"
+              rel="noopener noreferrer"
+              :ripple="true"
+            >
+              <div class="text-center">
+                <VIcon :color="feature.color" size="48" class="mb-4">
+                  {{ feature.icon }}
+                </VIcon>
+                <h3 class="text-h6 font-weight-bold mb-3">
+                  {{ feature.title }}
+                </h3>
+                <p class="text-body-2 text-grey-lighten-1 mb-3">
+                  {{ feature.description }}
+                </p>
+                <VBtn color="primary" variant="outlined" size="small">
+                  <VIcon start size="small">mdi-open-in-new</VIcon>
+                  {{ t('viewRepository') }}
                 </VBtn>
               </div>
             </VCard>
@@ -522,6 +550,12 @@ const features = computed<Feature[]>(() => [
     description: t('feature5Description'),
     icon: 'mdi-api',
     color: 'purple'
+  },
+  {
+    title: t('feature6Title'),
+    description: t('feature6Description'),
+    icon: 'mdi-github',
+    color: 'grey'
   }
 ])
 
@@ -1257,5 +1291,9 @@ useSeoMeta({
 
 .feature-card:nth-child(5) {
   animation: fadeInUp 0.6s ease-out 0.5s both;
+}
+
+.feature-card:nth-child(6) {
+  animation: fadeInUp 0.6s ease-out 0.6s both;
 }
 </style>

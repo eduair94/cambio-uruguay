@@ -20,22 +20,30 @@
     }
   }
   
-  // Create enhanced input with suggestions
+  // Create enhanced input with suggestions using datalist (non-intrusive)
   function createEnhancedInput(input, suggestions, paramType) {
     // Skip if already enhanced
     if (input.hasAttribute('data-enhanced')) return;
     
-    const wrapper = document.createElement('div');
-    wrapper.className = 'parameter-input-wrapper';
+    // Create a unique ID for the datalist
+    const datalistId = 'datalist-' + paramType + '-' + Math.random().toString(36).substr(2, 9);
     
-    // Replace input with wrapper
-    input.parentNode.insertBefore(wrapper, input);
-    wrapper.appendChild(input);
+    // Create datalist element
+    const datalist = document.createElement('datalist');
+    datalist.id = datalistId;
     
-    // Create suggestions container
-    const suggestionsContainer = document.createElement('div');
-    suggestionsContainer.className = 'parameter-suggestions';
-    wrapper.appendChild(suggestionsContainer);
+    // Populate datalist with suggestions
+    suggestions.forEach(suggestion => {
+      const option = document.createElement('option');
+      option.value = suggestion;
+      datalist.appendChild(option);
+    });
+    
+    // Add datalist to document
+    document.body.appendChild(datalist);
+    
+    // Connect input to datalist
+    input.setAttribute('list', datalistId);
     
     // Add placeholder text based on parameter type
     const placeholders = {
@@ -45,95 +53,33 @@
       'locations': 'Ej: Montevideo, Canelones, Maldonado...'
     };
     
-    if (placeholders[paramType]) {
+    if (placeholders[paramType] && !input.placeholder) {
       input.placeholder = placeholders[paramType];
-    }
-    
-    // Show suggestions on focus/input
-    function showSuggestions() {
-      const value = input.value.toLowerCase();
-      const filtered = suggestions.filter(item => 
-        item.toLowerCase().includes(value)
-      ).slice(0, 10); // Limit to 10 suggestions
-      
-      suggestionsContainer.innerHTML = '';
-      
-      if (filtered.length > 0 && (value !== '' || document.activeElement === input)) {
-        filtered.forEach(suggestion => {
-          const item = document.createElement('div');
-          item.className = 'parameter-suggestion-item';
-          item.textContent = suggestion;
-          item.onclick = () => {
-            input.value = suggestion;
-            hideSuggestions();
-            input.dispatchEvent(new Event('input', { bubbles: true }));
-            input.dispatchEvent(new Event('change', { bubbles: true }));
-          };
-          suggestionsContainer.appendChild(item);
-        });
-        suggestionsContainer.style.display = 'block';
-      } else {
-        hideSuggestions();
-      }
-    }
-    
-    function hideSuggestions() {
-      suggestionsContainer.style.display = 'none';
-    }
-    
-    // Event listeners
-    input.addEventListener('input', showSuggestions);
-    input.addEventListener('focus', () => {
-      if (suggestions.length > 0) {
-        showSuggestions();
-      }
-    });
-    input.addEventListener('blur', () => {
-      // Delay hiding to allow clicking on suggestions
-      setTimeout(hideSuggestions, 200);
-    });
-    
-    // Keyboard navigation
-    input.addEventListener('keydown', (e) => {
-      const items = suggestionsContainer.querySelectorAll('.parameter-suggestion-item');
-      let currentIndex = -1;
-      
-      // Find currently highlighted item
-      items.forEach((item, index) => {
-        if (item.classList.contains('highlighted')) {
-          currentIndex = index;
-        }
-      });
-      
-      if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        const nextIndex = currentIndex < items.length - 1 ? currentIndex + 1 : 0;
-        highlightItem(items, nextIndex);
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        const prevIndex = currentIndex > 0 ? currentIndex - 1 : items.length - 1;
-        highlightItem(items, prevIndex);
-      } else if (e.key === 'Enter' && currentIndex >= 0) {
-        e.preventDefault();
-        items[currentIndex].click();
-      } else if (e.key === 'Escape') {
-        hideSuggestions();
-      }
-    });
-    
-    function highlightItem(items, index) {
-      items.forEach(item => {
-        item.classList.remove('highlighted');
-        item.style.backgroundColor = '';
-      });
-      if (items[index]) {
-        items[index].classList.add('highlighted');
-        items[index].style.backgroundColor = '#e3f2fd';
-      }
     }
     
     // Mark as enhanced
     input.setAttribute('data-enhanced', 'true');
+    input.setAttribute('data-datalist-id', datalistId);
+    
+    // Clean up datalist when input is removed
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        mutation.removedNodes.forEach((node) => {
+          if (node === input || (node.contains && node.contains(input))) {
+            const datalistElement = document.getElementById(datalistId);
+            if (datalistElement) {
+              datalistElement.remove();
+            }
+            observer.disconnect();
+          }
+        });
+      });
+    });
+    
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
   }
   
   // Process parameter inputs
@@ -181,37 +127,46 @@
       mutations.forEach((mutation) => {
         mutation.addedNodes.forEach((node) => {
           if (node.nodeType === 1) { // Element node
-            // Check for parameter inputs
+            // Check for parameter inputs more specifically
             const paramInputs = node.querySelectorAll ? 
-              node.querySelectorAll('input[type="text"], input:not([type])') : [];
+              node.querySelectorAll('input[type="text"]:not([data-enhanced]), input:not([type]):not([data-enhanced])') : [];
             
             paramInputs.forEach(async (input) => {
-              if (input.hasAttribute('data-enhanced')) return;
+              // Skip inputs that are not part of Swagger UI parameters
+              if (input.hasAttribute('data-enhanced') || 
+                  input.closest('.auth-wrapper') || 
+                  input.closest('.download-contents') ||
+                  !input.closest('.parameters')) {
+                return;
+              }
               
               // Get context from Swagger UI structure
-              const parameterRow = input.closest('.parameter__name, .parameters-col_description, tr');
+              const parameterRow = input.closest('tr, .parameter__name, .parameters-col_description');
+              const parameterLabel = parameterRow?.querySelector('td:first-child, .parameter__name')?.textContent?.toLowerCase() || '';
               const placeholder = input.placeholder?.toLowerCase() || '';
               const name = input.name?.toLowerCase() || '';
-              const parameterName = parameterRow?.textContent?.toLowerCase() || '';
               
               let paramType = null;
               let endpoint = null;
               let arrayKey = null;
               
-              // Enhanced detection logic
-              if (placeholder.includes('origin') || name.includes('origin') || parameterName.includes('origin')) {
+              // Enhanced detection logic with more specific patterns
+              if (parameterLabel.includes('origin') || name.includes('origin') || placeholder.includes('origin')) {
                 paramType = 'origins';
                 endpoint = 'origins';
                 arrayKey = 'origins';
-              } else if (placeholder.includes('code') || name.includes('code') || parameterName.includes('code') || parameterName.includes('currency')) {
+              } else if (parameterLabel.includes('code') || name.includes('code') || placeholder.includes('code') || 
+                         parameterLabel.includes('currency') || name.includes('currency') || placeholder.includes('currency')) {
                 paramType = 'currencies';
                 endpoint = 'currencies';
                 arrayKey = 'currencies';
-              } else if (placeholder.includes('type') || name.includes('type') || (parameterName.includes('type') && !parameterName.includes('content-type'))) {
+              } else if (parameterLabel.includes('type') && !parameterLabel.includes('content-type') || 
+                         (name.includes('type') && !name.includes('content-type')) || 
+                         (placeholder.includes('type') && !placeholder.includes('content-type'))) {
                 paramType = 'types';
                 endpoint = 'types';
                 arrayKey = 'types';
-              } else if (placeholder.includes('location') || name.includes('location') || parameterName.includes('location')) {
+              } else if (parameterLabel.includes('location') || name.includes('location') || placeholder.includes('location')) {
                 paramType = 'locations';
                 endpoint = 'locations';
                 arrayKey = 'locations';
@@ -248,18 +203,22 @@
   function initialize() {
     console.log('🚀 Swagger parameter enhancements initialized');
     
-    // Start the observer
+    // Start the observer for dynamic content
     enhanceParameterInputsAdvanced();
     
-    // Initial enhancement
-    setTimeout(enhanceParameterInputs, 1000);
-    
-    // Periodic enhancement for dynamically loaded content
-    setInterval(scheduleEnhancement, 3000);
+    // Initial enhancement after Swagger UI loads
+    setTimeout(enhanceParameterInputs, 2000);
     
     // Enhance when Swagger operations are expanded
     document.addEventListener('click', (e) => {
-      if (e.target.closest('.opblock-summary, .try-out__btn')) {
+      if (e.target.closest('.opblock-summary, .try-out__btn, .btn.execute')) {
+        setTimeout(scheduleEnhancement, 1000);
+      }
+    });
+    
+    // Also enhance when tabs are switched or operations are expanded
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('.opblock')) {
         setTimeout(scheduleEnhancement, 500);
       }
     });

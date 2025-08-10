@@ -279,5 +279,8 @@
   "donar": "Doar",
   "historico": "Histórico",
   "consultCurrentQuotes": "Verifique as cotações atuais",
-  "topBestRates": "Melhores 4 taxas"
+  "topBestRates": "Melhores 4 taxas",
+  "feature6Title": "Código abierto",
+  "feature6Description": "Nuestro código es open source y puede ser utilizado y mejorado por otros desarrolladores",
+  "viewRepository": "Ver repositorio"
 }

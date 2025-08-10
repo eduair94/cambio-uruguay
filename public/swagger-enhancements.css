@@ -1,4 +1,4 @@
-/* Custom styles for Swagger UI enhancements */
+/* Enhanced Swagger UI styling with HTML5 datalist support */
 
 /* Basic Swagger UI customizations */
 .swagger-ui .topbar {
@@ -21,107 +21,113 @@
   margin: 10px 0;
 }
 
-/* Enhanced parameter input styles */
-.parameter-input-wrapper {
-  position: relative;
-}
-
-.parameter-suggestions {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background: white;
-  border: 1px solid #ccc;
-  border-top: none;
-  border-radius: 0 0 4px 4px;
-  max-height: 200px;
-  overflow-y: auto;
-  z-index: 1000;
-  display: none;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.parameter-suggestion-item {
+/* Enhanced parameter inputs with datalist */
+.swagger-ui input[list] {
+  border: 1px solid #d4d4d4;
+  border-radius: 4px;
   padding: 8px 12px;
-  cursor: pointer;
-  border-bottom: 1px solid #eee;
-  font-family: monospace;
-  font-size: 12px;
-  transition: background-color 0.2s ease;
-}
-
-.parameter-suggestion-item:hover {
-  background-color: #f5f5f5;
-}
-
-.parameter-suggestion-item:last-child {
-  border-bottom: none;
-}
-
-.parameter-suggestion-item.highlighted {
-  background-color: #e3f2fd !important;
-}
-
-/* Enhanced input styling */
-.parameter-input-wrapper input {
+  font-size: 14px;
   transition: border-color 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-.parameter-input-wrapper input:focus {
+.swagger-ui input[list]:focus {
+  outline: none;
   border-color: #2c3e50;
   box-shadow: 0 0 0 2px rgba(44, 62, 80, 0.1);
 }
 
-/* Loading indicator for suggestions */
-.parameter-suggestions.loading::before {
-  content: "Cargando sugerencias...";
-  display: block;
-  padding: 8px 12px;
+.swagger-ui input[list]:hover {
+  border-color: #999;
+}
+
+/* Enhanced placeholders */
+.swagger-ui input[list]::placeholder {
+  color: #888;
   font-style: italic;
-  color: #666;
+  font-size: 13px;
+}
+
+/* Datalist dropdown styling (browser dependent) */
+.swagger-ui datalist {
+  font-family: monospace;
   font-size: 12px;
 }
 
-/* Empty state for suggestions */
-.parameter-suggestions.empty::before {
-  content: "No se encontraron sugerencias";
-  display: block;
-  padding: 8px 12px;
-  font-style: italic;
-  color: #999;
-  font-size: 12px;
+/* Enhanced button styling */
+.swagger-ui .btn.execute {
+  background-color: #2c3e50;
+  border-color: #2c3e50;
+  transition: all 0.2s ease;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .parameter-suggestions {
-    max-height: 150px;
-  }
+.swagger-ui .btn.execute:hover {
+  background-color: #34495e;
+  border-color: #34495e;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
 
-  .parameter-suggestion-item {
-    padding: 6px 10px;
-    font-size: 11px;
-  }
+/* Parameter row styling */
+.swagger-ui .parameters .parameter__name {
+  font-weight: 600;
+  color: #333;
+}
+
+/* Response section styling */
+.swagger-ui .responses-wrapper {
+  margin-top: 20px;
+}
+
+.swagger-ui .response {
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+/* Code block improvements */
+.swagger-ui .highlight-code {
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 4px;
+  padding: 12px;
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+  font-size: 13px;
 }
 
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
-  .parameter-suggestions {
-    background: #2d3748;
-    border-color: #4a5568;
-    color: white;
+  .swagger-ui input[list] {
+    background-color: #2a2a2a;
+    border-color: #555;
+    color: #fff;
   }
 
-  .parameter-suggestion-item {
-    border-bottom-color: #4a5568;
+  .swagger-ui input[list]:focus {
+    border-color: #4fc3f7;
+    box-shadow: 0 0 0 2px rgba(79, 195, 247, 0.2);
   }
 
-  .parameter-suggestion-item:hover {
-    background-color: #4a5568;
+  .swagger-ui input[list]::placeholder {
+    color: #bbb;
   }
 
-  .parameter-suggestion-item.highlighted {
-    background-color: #2b6cb0 !important;
+  .swagger-ui .parameters .parameter__name {
+    color: #e0e0e0;
+  }
+
+  .swagger-ui .highlight-code {
+    background-color: #1e1e1e;
+    border-color: #333;
+    color: #d4d4d4;
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .swagger-ui input[list] {
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 10px 12px;
   }
 }

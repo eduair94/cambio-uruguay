@@ -107,7 +107,10 @@
   "feature4Description": "Interfaz simple y intuitiva",
   "feature5Title": "API disponible",
   "feature5Description": "Accede a nuestros datos mediante nuestra API REST",
-  "apiDocumentation": "Documentación API",
+  "feature6Title": "Código abierto",
+  "feature6Description": "Nuestro código es open source y puede ser utilizado y mejorado por otros desarrolladores",
+    "apiDocumentation": "Ver documentación",
+  "viewRepository": "Ver repositorio",
   "historicoCotizaciones": "Histórico de Cotizaciones",
   "evolucionCotizaciones": "Evolución de Cotizaciones",
   "cargandoDatosHistoricos": "Cargando datos históricos...",
@@ -289,5 +292,13 @@
   "bestToSell": "Mejores lugares para vender",
   "bestToBuy": "Mejores lugares para comprar",
   "donar": "Donar",
-  "historico": "Histórico"
+  "historico": "Histórico",
+  "donation": {
+    "supportProject": "Apoya el proyecto",
+    "helpMessage": "Tu donación nos ayuda a mantener el sitio actualizado y gratuito para todos.",
+    "donatePaypal": "Donar con PayPal",
+    "donateMercadoPago": "Donar con MercadoPago",
+    "seeReviews": "Ver reseñas",
+    "thanksForSupport": "¡Gracias por tu apoyo!"
+  }
 }
