@@ -1,0 +1,127 @@
+/* Custom styles for Swagger UI enhancements */
+
+/* Basic Swagger UI customizations */
+.swagger-ui .topbar {
+  background-color: #2c3e50;
+}
+
+.swagger-ui .topbar .download-url-wrapper {
+  display: none;
+}
+
+.swagger-ui .info .title {
+  color: #2c3e50;
+}
+
+.swagger-ui .scheme-container {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 5px;
+  padding: 10px;
+  margin: 10px 0;
+}
+
+/* Enhanced parameter input styles */
+.parameter-input-wrapper {
+  position: relative;
+}
+
+.parameter-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ccc;
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  display: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.parameter-suggestion-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+  font-family: monospace;
+  font-size: 12px;
+  transition: background-color 0.2s ease;
+}
+
+.parameter-suggestion-item:hover {
+  background-color: #f5f5f5;
+}
+
+.parameter-suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.parameter-suggestion-item.highlighted {
+  background-color: #e3f2fd !important;
+}
+
+/* Enhanced input styling */
+.parameter-input-wrapper input {
+  transition: border-color 0.2s ease;
+}
+
+.parameter-input-wrapper input:focus {
+  border-color: #2c3e50;
+  box-shadow: 0 0 0 2px rgba(44, 62, 80, 0.1);
+}
+
+/* Loading indicator for suggestions */
+.parameter-suggestions.loading::before {
+  content: "Cargando sugerencias...";
+  display: block;
+  padding: 8px 12px;
+  font-style: italic;
+  color: #666;
+  font-size: 12px;
+}
+
+/* Empty state for suggestions */
+.parameter-suggestions.empty::before {
+  content: "No se encontraron sugerencias";
+  display: block;
+  padding: 8px 12px;
+  font-style: italic;
+  color: #999;
+  font-size: 12px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .parameter-suggestions {
+    max-height: 150px;
+  }
+
+  .parameter-suggestion-item {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .parameter-suggestions {
+    background: #2d3748;
+    border-color: #4a5568;
+    color: white;
+  }
+
+  .parameter-suggestion-item {
+    border-bottom-color: #4a5568;
+  }
+
+  .parameter-suggestion-item:hover {
+    background-color: #4a5568;
+  }
+
+  .parameter-suggestion-item.highlighted {
+    background-color: #2b6cb0 !important;
+  }
+}

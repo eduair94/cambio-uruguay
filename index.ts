@@ -981,13 +981,22 @@ const main = async () => {
       dateM = moment.tz(date, "YYYY-MM-DD", "America/Montevideo").toDate();
     }
     
-    const data = await cambio_info.get_data(dateM, req.query);
-    const currencies = [...new Set(data.map(item => item.code))].sort();
-    
-    return {
-      currencies: currencies,
-      count: currencies.length
-    };
+    try {
+      const data = await cambio_info.get_data(dateM, req.query);
+      const currencies = [...new Set(data.map(item => item.code))].sort();
+      
+      return {
+        currencies: currencies,
+        count: currencies.length
+      };
+    } catch (error) {
+      // Return fallback currencies if no data available
+      const fallbackCurrencies = ['USD', 'EUR', 'ARS', 'BRL', 'XAU', 'UR', 'UP', 'UI', 'PYG', 'PEN', 'MXN', 'JPY', 'GBP', 'COP', 'CLP', 'CHF', 'CAD', 'AUD'];
+      return {
+        currencies: fallbackCurrencies,
+        count: fallbackCurrencies.length
+      };
+    }
   });
 
   /**
