@@ -57,7 +57,7 @@ class Express {
     this.app.use(bodyParser.urlencoded({ extended: false }));
     
     // Serve static files for Swagger enhancements
-    this.app.use('/public', express.static(path.join(__dirname, '../../public')));
+    this.app.use('/public', express.static('/public'));
     
     this.setupSwagger();
     this.start();
