@@ -265,7 +265,7 @@ const main = async () => {
 
   /**
    * @openapi
-   * /exchange/{type}:
+   * /exchange/{origin}:
    *   get:
    *     tags:
    *       - Exchange Data
