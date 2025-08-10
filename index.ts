@@ -292,7 +292,7 @@ const main = async () => {
    *       404:
    *         $ref: '#/components/responses/NotFound'
    * 
-   * /exchange/{type}/{code}:
+   * /exchange/{origin}/{code}:
    *   get:
    *     tags:
    *       - Exchange Data
@@ -344,14 +344,14 @@ const main = async () => {
    *               code: "USD"
    *               error: "not found"
    */
-  server.getJson("exchange/:type/:code?", async (req: Request): Promise<any> => {
+  server.getJson("exchange/:origin/:code?", async (req: Request): Promise<any> => {
     let date = req.query.date as string;
     let dateM = null;
     if (date) {
       // Parse date explicitly in Uruguay timezone to ensure consistency
       dateM = moment.tz(date, "YYYY-MM-DD", "America/Montevideo").toDate();
     }
-    const origin = (req.params.type as string).toLowerCase();
+    const origin = (req.params.origin as string).toLowerCase();
     
     // Validate origin parameter
     const originValidation = validateOrigin(origin);
