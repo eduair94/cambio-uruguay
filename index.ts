@@ -13,6 +13,29 @@ import sentryInit from "./sentry";
 moment.tz.setDefault("America/Montevideo");
 sentryInit();
 
+// Helper function to create validation errors with available values
+const createValidationError = (parameter: string, value: string, validValues: string[], suggestion?: string) => {
+  return {
+    error: `Invalid ${parameter} parameter`,
+    parameter,
+    value,
+    validValues,
+    suggestion: suggestion || `Use /parameters/${parameter === 'origin' ? 'origins' : parameter === 'code' ? 'currencies' : parameter === 'type' ? 'types' : 'locations'} to get all valid values`
+  };
+};
+
+// Helper function to validate origin parameter
+const validateOrigin = (origin: string): { isValid: boolean; error?: any } => {
+  const validOrigins = Object.keys(origins);
+  if (!validOrigins.includes(origin)) {
+    return {
+      isValid: false,
+      error: createValidationError('origin', origin, validOrigins)
+    };
+  }
+  return { isValid: true };
+};
+
 const main = async () => {
   console.log("Start connection");
   await MongooseServer.startConnectionPromise();
@@ -46,20 +69,20 @@ const main = async () => {
    *               success:
    *                 summary: Respuesta exitosa
    *                 value:
-   *                   - origin: "abitab"
+   *                   - origin: "la_favorita"
    *                     code: "USD"
-   *                     type: "BILLETE"
-   *                     buy: 39.50
-   *                     sell: 42.30
-   *                     date: "2024-08-09T12:00:00.000Z"
-   *                     isInterBank: false
-   *                   - origin: "redpagos"
+   *                     type: ""
+   *                     buy: 38.75
+   *                     sell: 41.15
+   *                     date: "2025-08-09T03:00:00.000Z"
+   *                     name: "Dólar Estadounidense"
+   *                   - origin: "brou"
    *                     code: "EUR"
-   *                     type: "BILLETE"
-   *                     buy: 42.80
-   *                     sell: 46.20
-   *                     date: "2024-08-09T12:00:00.000Z"
-   *                     isInterBank: false
+   *                     type: ""
+   *                     buy: 44.07
+   *                     sell: 49.45
+   *                     date: "2025-08-09T03:00:00.000Z"
+   *                     name: "Euro"
    *       500:
    *         $ref: '#/components/responses/InternalError'
    */
@@ -237,15 +260,10 @@ const main = async () => {
    *     description: |
    *       Retorna los tipos de cambio de una casa de cambio específica.
    *       Opcionalmente se puede filtrar por código de moneda.
+   *       
+   *       Para obtener la lista de casas de cambio válidas, use `/parameters/origins`.
    *     parameters:
-   *       - name: type
-   *         in: path
-   *         required: true
-   *         description: Nombre de la casa de cambio
-   *         schema:
-   *           type: string
-   *           enum: [abitab, redpagos, cambilex, brou, bbva, santander, itau, scotiabank, prex]
-   *         example: abitab
+   *       - $ref: '#/components/parameters/OriginParam'
    *       - $ref: '#/components/parameters/DateParam'
    *     responses:
    *       200:
@@ -257,7 +275,7 @@ const main = async () => {
    *               items:
    *                 $ref: '#/components/schemas/ExchangeData'
    *       400:
-   *         $ref: '#/components/responses/BadRequest'
+   *         $ref: '#/components/responses/ValidationError'
    *       404:
    *         $ref: '#/components/responses/NotFound'
    * 
@@ -268,23 +286,12 @@ const main = async () => {
    *     summary: Obtener tipo de cambio específico por casa y moneda
    *     description: |
    *       Retorna el tipo de cambio de una moneda específica en una casa de cambio.
+   *       
+   *       Para obtener la lista de casas de cambio válidas, use `/parameters/origins`.
+   *       Para obtener la lista de monedas válidas, use `/parameters/currencies`.
    *     parameters:
-   *       - name: type
-   *         in: path
-   *         required: true
-   *         description: Nombre de la casa de cambio
-   *         schema:
-   *           type: string
-   *           enum: [abitab, redpagos, cambilex, brou, bbva, santander, itau, scotiabank, prex]
-   *         example: abitab
-   *       - name: code
-   *         in: path
-   *         required: true
-   *         description: Código de la moneda (ISO 4217)
-   *         schema:
-   *           type: string
-   *           enum: [USD, EUR, ARS, BRL, CLP]
-   *         example: USD
+   *       - $ref: '#/components/parameters/OriginParam'
+   *       - $ref: '#/components/parameters/CurrencyCodeParam'
    *       - $ref: '#/components/parameters/DateParam'
    *     responses:
    *       200:
@@ -297,12 +304,15 @@ const main = async () => {
    *               found:
    *                 summary: Tipo de cambio encontrado
    *                 value:
-   *                   origin: "abitab"
+   *                   origin: "la_favorita"
    *                   code: "USD"
-   *                   type: "BILLETE"
-   *                   buy: 39.50
-   *                   sell: 42.30
-   *                   date: "2024-08-09T12:00:00.000Z"
+   *                   type: ""
+   *                   buy: 38.75
+   *                   sell: 41.15
+   *                   date: "2025-08-09T03:00:00.000Z"
+   *                   name: "Dólar Estadounidense"
+   *       400:
+   *         $ref: '#/components/responses/ValidationError'
    *       404:
    *         description: Tipo de cambio no encontrado
    *         content:
@@ -317,7 +327,7 @@ const main = async () => {
    *                 error:
    *                   type: string
    *             example:
-   *               origin: "abitab"
+   *               origin: "la_favorita"
    *               code: "USD"
    *               error: "not found"
    */
@@ -329,6 +339,13 @@ const main = async () => {
       dateM = moment.tz(date, "YYYY-MM-DD", "America/Montevideo").toDate();
     }
     const origin = (req.params.type as string).toLowerCase();
+    
+    // Validate origin parameter
+    const originValidation = validateOrigin(origin);
+    if (!originValidation.isValid) {
+      throw new Error(JSON.stringify(originValidation.error));
+    }
+    
     console.log("Date", dateM);
     const res = await cambio_info.get_entry(dateM, origin, req.params.code).catch((e) => {
       console.error(e);
@@ -373,14 +390,14 @@ const main = async () => {
    *               nearby_locations:
    *                 summary: Ubicaciones cercanas
    *                 value:
-   *                   - name: "Abitab Pocitos"
-   *                     address: "Av. Brasil 2536"
+   *                   - name: "La Favorita Centro"
+   *                     address: "Av. 18 de Julio 1234"
    *                     latitude: -34.9173
    *                     longitude: -56.1501
    *                     department: "Montevideo"
    *                     distance: 1250.5
-   *                   - name: "RedPagos Centro"
-   *                     address: "18 de Julio 1234"
+   *                   - name: "Banco República Centro"
+   *                     address: "18 de Julio 1567"
    *                     latitude: -34.9058
    *                     longitude: -56.1909
    *                     department: "Montevideo"
@@ -525,13 +542,13 @@ const main = async () => {
    *               local_data:
    *                 summary: Información de casas de cambio
    *                 value:
-   *                   abitab:
-   *                     name: "Abitab"
-   *                     website: "https://www.abitab.com.uy"
+   *                   la_favorita:
+   *                     name: "La Favorita"
+   *                     website: "https://www.lafavorita.com.uy"
    *                     departments: ["Montevideo", "Canelones", "Maldonado"]
-   *                   redpagos:
-   *                     name: "RedPagos"
-   *                     website: "https://www.redpagos.com.uy"
+   *                   brou:
+   *                     name: "Banco República"
+   *                     website: "https://www.brou.com.uy"
    *                     departments: ["Montevideo", "Canelones", "San José"]
    */
   server.getJson("localData", async (req: Request): Promise<any> => {
@@ -645,15 +662,10 @@ const main = async () => {
    *     description: |
    *       Retorna las sucursales de una casa de cambio específica.
    *       Opcionalmente filtrado por ubicación.
+   *       
+   *       Para obtener la lista de casas de cambio válidas, use `/parameters/origins`.
    *     parameters:
-   *       - name: origin
-   *         in: path
-   *         required: true
-   *         description: Nombre de la casa de cambio
-   *         schema:
-   *           type: string
-   *           enum: [abitab, redpagos, cambilex, brou, bbva, santander, itau, scotiabank]
-   *         example: abitab
+   *       - $ref: '#/components/parameters/OriginParam'
    *       - $ref: '#/components/parameters/LatitudeParam'
    *       - $ref: '#/components/parameters/LongitudeParam'
    *     responses:
@@ -666,11 +678,7 @@ const main = async () => {
    *               items:
    *                 $ref: '#/components/schemas/Location'
    *       400:
-   *         description: Casa de cambio no válida
-   *         content:
-   *           application/json:
-   *             schema:
-   *               $ref: '#/components/schemas/ErrorResponse'
+   *         $ref: '#/components/responses/ValidationError'
    * 
    * /exchanges/{origin}/{location}:
    *   get:
@@ -679,21 +687,12 @@ const main = async () => {
    *     summary: Obtener sucursales por casa de cambio y ubicación
    *     description: |
    *       Retorna las sucursales de una casa de cambio en una ubicación específica.
+   *       
+   *       Para obtener la lista de casas de cambio válidas, use `/parameters/origins`.
+   *       Para obtener la lista de ubicaciones válidas, use `/parameters/locations`.
    *     parameters:
-   *       - name: origin
-   *         in: path
-   *         required: true
-   *         description: Nombre de la casa de cambio
-   *         schema:
-   *           type: string
-   *         example: abitab
-   *       - name: location
-   *         in: path
-   *         required: true
-   *         description: Nombre de la ubicación o departamento
-   *         schema:
-   *           type: string
-   *         example: Montevideo
+   *       - $ref: '#/components/parameters/OriginParam'
+   *       - $ref: '#/components/parameters/LocationParam'
    *       - $ref: '#/components/parameters/LatitudeParam'
    *       - $ref: '#/components/parameters/LongitudeParam'
    *     responses:
@@ -705,12 +704,18 @@ const main = async () => {
    *               type: array
    *               items:
    *                 $ref: '#/components/schemas/Location'
+   *       400:
+   *         $ref: '#/components/responses/ValidationError'
    */
   server.getJson("exchanges/:origin/:location?", async (req: Request): Promise<any> => {
-    const validOrigin = Object.keys(origins).includes(req.params.origin);
-    if (!validOrigin) {
-      throw new Error("Invalid origin");
+    const origin = req.params.origin;
+    
+    // Validate origin parameter
+    const originValidation = validateOrigin(origin);
+    if (!originValidation.isValid) {
+      throw new Error(JSON.stringify(originValidation.error));
     }
+    
     const latitude = parseFloat(req.query.latitude as string);
     const longitude = parseFloat(req.query.longitude as string);
     let res = await cambio_info.getExchanges(req.params.origin, req.params.location);
@@ -740,14 +745,10 @@ const main = async () => {
    *     summary: Obtener detalles BCU por casa de cambio
    *     description: |
    *       Retorna información detallada del BCU para una casa de cambio específica.
+   *       
+   *       Para obtener la lista de casas de cambio válidas, use `/parameters/origins`.
    *     parameters:
-   *       - name: origin
-   *         in: path
-   *         required: true
-   *         description: Nombre de la casa de cambio
-   *         schema:
-   *           type: string
-   *         example: abitab
+   *       - $ref: '#/components/parameters/OriginParam'
    *     responses:
    *       200:
    *         description: Detalles BCU obtenidos exitosamente
@@ -763,19 +764,18 @@ const main = async () => {
    *                   items:
    *                     $ref: '#/components/schemas/ExchangeData'
    *       400:
-   *         description: Casa de cambio no válida
-   *         content:
-   *           application/json:
-   *             schema:
-   *               $ref: '#/components/schemas/ErrorResponse'
+   *         $ref: '#/components/responses/ValidationError'
    */
   server.getJson("bcu/:origin", async (req: Request): Promise<any> => {
-    const validOrigin = Object.keys(origins).includes(req.params.origin);
-    if (!validOrigin) {
-      throw new Error("Invalid origin");
-    }
-    const x = new BCU_Details();
     const origin = req.params.origin;
+    
+    // Validate origin parameter
+    const originValidation = validateOrigin(origin);
+    if (!originValidation.isValid) {
+      throw new Error(JSON.stringify(originValidation.error));
+    }
+    
+    const x = new BCU_Details();
     const reply = await x.get_by_origin(origin);
     return reply;
   });
@@ -790,22 +790,12 @@ const main = async () => {
    *     description: |
    *       Retorna datos históricos de evolución de precios para una moneda específica
    *       en una casa de cambio durante un período determinado.
+   *       
+   *       Para obtener la lista de casas de cambio válidas, use `/parameters/origins`.
+   *       Para obtener la lista de monedas válidas, use `/parameters/currencies`.
    *     parameters:
-   *       - name: origin
-   *         in: path
-   *         required: true
-   *         description: Nombre de la casa de cambio
-   *         schema:
-   *           type: string
-   *         example: abitab
-   *       - name: code
-   *         in: path
-   *         required: true
-   *         description: Código de la moneda (ISO 4217)
-   *         schema:
-   *           type: string
-   *           enum: [USD, EUR, ARS, BRL, CLP]
-   *         example: USD
+   *       - $ref: '#/components/parameters/OriginParam'
+   *       - $ref: '#/components/parameters/CurrencyCodeParam'
    *       - $ref: '#/components/parameters/PeriodParam'
    *     responses:
    *       200:
@@ -818,22 +808,18 @@ const main = async () => {
    *                 $ref: '#/components/schemas/CurrencyEvolution'
    *             examples:
    *               evolution_data:
-   *                 summary: Evolución del USD en Abitab
+   *                 summary: Evolución del USD en La Favorita
    *                 value:
-   *                   - date: "2024-08-01"
-   *                     buy: 39.20
-   *                     sell: 42.10
-   *                     avg: 40.65
-   *                   - date: "2024-08-02"
-   *                     buy: 39.30
-   *                     sell: 42.20
-   *                     avg: 40.75
+   *                   - date: "2025-08-01"
+   *                     buy: 38.75
+   *                     sell: 41.15
+   *                     avg: 39.95
+   *                   - date: "2025-08-02"
+   *                     buy: 38.80
+   *                     sell: 41.20
+   *                     avg: 40.00
    *       400:
-   *         description: Parámetros inválidos
-   *         content:
-   *           application/json:
-   *             schema:
-   *               $ref: '#/components/schemas/ErrorResponse'
+   *         $ref: '#/components/responses/ValidationError'
    * 
    * /evolution/{origin}/{code}/{type}:
    *   get:
@@ -843,29 +829,14 @@ const main = async () => {
    *     description: |
    *       Retorna datos históricos de evolución de precios para un tipo específico
    *       de cambio (BILLETE, CABLE, etc.) de una moneda en una casa de cambio.
+   *       
+   *       Para obtener la lista de casas de cambio válidas, use `/parameters/origins`.
+   *       Para obtener la lista de monedas válidas, use `/parameters/currencies`.
+   *       Para obtener la lista de tipos válidos, use `/parameters/types`.
    *     parameters:
-   *       - name: origin
-   *         in: path
-   *         required: true
-   *         description: Nombre de la casa de cambio
-   *         schema:
-   *           type: string
-   *         example: abitab
-   *       - name: code
-   *         in: path
-   *         required: true
-   *         description: Código de la moneda (ISO 4217)
-   *         schema:
-   *           type: string
-   *         example: USD
-   *       - name: type
-   *         in: path
-   *         required: true
-   *         description: Tipo de cambio
-   *         schema:
-   *           type: string
-   *           enum: [BILLETE, CABLE, TRANSFERENCIA]
-   *         example: BILLETE
+   *       - $ref: '#/components/parameters/OriginParam'
+   *       - $ref: '#/components/parameters/CurrencyCodeParam'
+   *       - $ref: '#/components/parameters/ExchangeTypeParam'
    *       - $ref: '#/components/parameters/PeriodParam'
    *     responses:
    *       200:
@@ -877,11 +848,7 @@ const main = async () => {
    *               items:
    *                 $ref: '#/components/schemas/CurrencyEvolution'
    *       400:
-   *         description: Parámetros inválidos
-   *         content:
-   *           application/json:
-   *             schema:
-   *               $ref: '#/components/schemas/ErrorResponse'
+   *         $ref: '#/components/responses/ValidationError'
    */
   server.getJson("evolution/:origin/:code/:type?", async (req: Request): Promise<any> => {
     const origin = req.params.origin;
@@ -889,22 +856,33 @@ const main = async () => {
     const type = req.params.type;
 
     // Validate origin parameter
-    const validOrigin = Object.keys(origins).includes(origin);
-    if (!validOrigin) {
-      throw new Error(`Invalid origin: ${origin}. Valid origins are: ${Object.keys(origins).join(", ")}`);
+    const originValidation = validateOrigin(origin);
+    if (!originValidation.isValid) {
+      throw new Error(JSON.stringify(originValidation.error));
     }
 
     // Validate currency code parameter (basic validation)
-    if (!code) {
-      throw new Error(`Invalid currency code: ${code}. Currency code should be 2-4 characters (e.g., USD, ARS, BRL, EUR)`);
-    } // Validate type parameter if provided (currency subtype like BILLETE, CABLE, etc.)
+    if (!code || !/^[A-Z]{2,4}$/.test(code)) {
+      // Get available currencies for better error message
+      let availableCurrencies = [];
+      try {
+        const data = await cambio_info.get_data(null, {});
+        availableCurrencies = [...new Set(data.map(item => item.code))].sort();
+      } catch (e) {
+        availableCurrencies = ['USD', 'EUR', 'ARS', 'BRL']; // fallback
+      }
+      
+      const error = createValidationError('code', code, availableCurrencies, 'Use /parameters/currencies to get all valid currency codes');
+      throw new Error(JSON.stringify(error));
+    }
 
     // Parse period parameter (default to 6 months)
     let periodMonths = 6;
     if (req.query.period) {
       const period = parseInt(req.query.period as string);
       if (isNaN(period) || period <= 0 || period > 60) {
-        throw new Error("Period must be a number between 1 and 60 months");
+        const error = createValidationError('period', req.query.period as string, ['1', '2', '3', '6', '12', '24', '36', '48', '60'], 'Period must be a number between 1 and 60 months');
+        throw new Error(JSON.stringify(error));
       }
       periodMonths = period;
     }
@@ -918,6 +896,341 @@ const main = async () => {
       console.error("Evolution endpoint error:", error);
       throw error;
     }
+  });
+
+  /**
+   * @openapi
+   * /parameters/origins:
+   *   get:
+   *     tags:
+   *       - Parameters
+   *     summary: Obtener todas las casas de cambio disponibles
+   *     description: |
+   *       Retorna la lista completa de todas las casas de cambio (origins) disponibles
+   *       en el sistema. Útil para validar parámetros y construir interfaces de usuario.
+   *     responses:
+   *       200:
+   *         description: Lista de casas de cambio disponibles
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 origins:
+   *                   type: array
+   *                   items:
+   *                     type: string
+   *                   description: Lista de nombres de casas de cambio
+   *                 count:
+   *                   type: integer
+   *                   description: Número total de casas de cambio
+   *             examples:
+   *               success:
+   *                 summary: Casas de cambio disponibles
+   *                 value:
+   *                   origins: ["la_favorita", "cambio_minas", "brou", "cambio_regul", "itau", "prex", "bcu", "cambilex"]
+   *                   count: 42
+   */
+  server.getJson("parameters/origins", async (req: Request): Promise<any> => {
+    const availableOrigins = Object.keys(origins).sort();
+    return {
+      origins: availableOrigins,
+      count: availableOrigins.length
+    };
+  });
+
+  /**
+   * @openapi
+   * /parameters/currencies:
+   *   get:
+   *     tags:
+   *       - Parameters
+   *     summary: Obtener todas las monedas disponibles
+   *     description: |
+   *       Retorna la lista de todas las monedas (currency codes) disponibles
+   *       en el sistema, obtenidas de los datos actuales.
+   *     parameters:
+   *       - $ref: '#/components/parameters/DateParam'
+   *     responses:
+   *       200:
+   *         description: Lista de monedas disponibles
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 currencies:
+   *                   type: array
+   *                   items:
+   *                     type: string
+   *                   description: Lista de códigos de moneda (ISO 4217)
+   *                 count:
+   *                   type: integer
+   *                   description: Número total de monedas
+   *             examples:
+   *               success:
+   *                 summary: Monedas disponibles
+   *                 value:
+   *                   currencies: ["USD", "EUR", "ARS", "BRL"]
+   *                   count: 4
+   */
+  server.getJson("parameters/currencies", async (req: Request): Promise<any> => {
+    let date = req.query.date as string;
+    let dateM = null;
+    if (date) {
+      dateM = moment.tz(date, "YYYY-MM-DD", "America/Montevideo").toDate();
+    }
+    
+    const data = await cambio_info.get_data(dateM, req.query);
+    const currencies = [...new Set(data.map(item => item.code))].sort();
+    
+    return {
+      currencies: currencies,
+      count: currencies.length
+    };
+  });
+
+  /**
+   * @openapi
+   * /parameters/types:
+   *   get:
+   *     tags:
+   *       - Parameters
+   *     summary: Obtener todos los tipos de cambio disponibles
+   *     description: |
+   *       Retorna la lista de todos los tipos de cambio disponibles
+   *       (BILLETE, CABLE, TRANSFERENCIA, etc.) en el sistema.
+   *     parameters:
+   *       - $ref: '#/components/parameters/DateParam'
+   *       - name: origin
+   *         in: query
+   *         description: Filtrar por casa de cambio específica
+   *         required: false
+   *         schema:
+   *           type: string
+   *       - name: code
+   *         in: query
+   *         description: Filtrar por moneda específica
+   *         required: false
+   *         schema:
+   *           type: string
+   *     responses:
+   *       200:
+   *         description: Lista de tipos de cambio disponibles
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 types:
+   *                   type: array
+   *                   items:
+   *                     type: string
+   *                   description: Lista de tipos de cambio
+   *                 count:
+   *                   type: integer
+   *                   description: Número total de tipos
+   *             examples:
+   *               success:
+   *                 summary: Tipos disponibles
+   *                 value:
+   *                   types: ["BILLETE", "CABLE", "TRANSFERENCIA"]
+   *                   count: 3
+   */
+  server.getJson("parameters/types", async (req: Request): Promise<any> => {
+    let date = req.query.date as string;
+    let dateM = null;
+    if (date) {
+      dateM = moment.tz(date, "YYYY-MM-DD", "America/Montevideo").toDate();
+    }
+    
+    const origin = req.query.origin as string;
+    const code = req.query.code as string;
+    
+    let data = await cambio_info.get_data(dateM, req.query);
+    
+    // Apply filters if provided
+    if (origin) {
+      data = data.filter(item => item.origin === origin);
+    }
+    if (code) {
+      data = data.filter(item => item.code === code);
+    }
+    
+    const types = [...new Set(data.map(item => item.type).filter(Boolean))].sort();
+    
+    return {
+      types: types,
+      count: types.length
+    };
+  });
+
+  /**
+   * @openapi
+   * /parameters/locations:
+   *   get:
+   *     tags:
+   *       - Parameters
+   *     summary: Obtener todas las ubicaciones disponibles
+   *     description: |
+   *       Retorna la lista de todas las ubicaciones/departamentos disponibles
+   *       para buscar sucursales de casas de cambio.
+   *     parameters:
+   *       - name: origin
+   *         in: query
+   *         description: Filtrar por casa de cambio específica
+   *         required: false
+   *         schema:
+   *           type: string
+   *     responses:
+   *       200:
+   *         description: Lista de ubicaciones disponibles
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 locations:
+   *                   type: array
+   *                   items:
+   *                     type: string
+   *                   description: Lista de departamentos/ubicaciones
+   *                 count:
+   *                   type: integer
+   *                   description: Número total de ubicaciones
+   *             examples:
+   *               success:
+   *                 summary: Ubicaciones disponibles
+   *                 value:
+   *                   locations: ["Montevideo", "Canelones", "Maldonado"]
+   *                   count: 3
+   */
+  server.getJson("parameters/locations", async (req: Request): Promise<any> => {
+    const origin = req.query.origin as string;
+    const localData = await cambio_info.get_local_data();
+    
+    let locations = new Set<string>();
+    
+    if (origin && localData[origin]) {
+      // Get locations for specific origin
+      if (localData[origin].departments && Array.isArray(localData[origin].departments)) {
+        localData[origin].departments.forEach((dept: string) => locations.add(dept));
+      }
+    } else {
+      // Get all locations from all origins
+      Object.values(localData).forEach((data: any) => {
+        if (data.departments && Array.isArray(data.departments)) {
+          data.departments.forEach((dept: string) => locations.add(dept));
+        }
+      });
+    }
+    
+    const sortedLocations = Array.from(locations).sort();
+    
+    return {
+      locations: sortedLocations,
+      count: sortedLocations.length
+    };
+  });
+
+  /**
+   * @openapi
+   * /parameters/all:
+   *   get:
+   *     tags:
+   *       - Parameters
+   *     summary: Obtener todos los parámetros disponibles
+   *     description: |
+   *       Retorna un objeto consolidado con todos los parámetros válidos
+   *       del sistema: origins, currencies, types y locations.
+   *     parameters:
+   *       - $ref: '#/components/parameters/DateParam'
+   *     responses:
+   *       200:
+   *         description: Todos los parámetros disponibles
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 origins:
+   *                   type: array
+   *                   items:
+   *                     type: string
+   *                 currencies:
+   *                   type: array
+   *                   items:
+   *                     type: string
+   *                 types:
+   *                   type: array
+   *                   items:
+   *                     type: string
+   *                 locations:
+   *                   type: array
+   *                   items:
+   *                     type: string
+   *                 counts:
+   *                   type: object
+   *                   properties:
+   *                     origins:
+   *                       type: integer
+   *                     currencies:
+   *                       type: integer
+   *                     types:
+   *                       type: integer
+   *                     locations:
+   *                       type: integer
+   *             examples:
+   *               success:
+   *                 summary: Todos los parámetros
+   *                 value:
+   *                   origins: ["la_favorita", "brou", "cambio_minas", "itau", "prex"]
+   *                   currencies: ["USD", "EUR", "ARS", "BRL", "XAU", "UI"]
+   *                   types: ["", "BILLETE", "CABLE", "INTERBANCARIO"]
+   *                   locations: ["Montevideo", "Canelones", "Maldonado"]
+   *                   counts:
+   *                     origins: 42
+   *                     currencies: 18
+   *                     types: 8
+   *                     locations: 19
+   */
+  server.getJson("parameters/all", async (req: Request): Promise<any> => {
+    let date = req.query.date as string;
+    let dateM = null;
+    if (date) {
+      dateM = moment.tz(date, "YYYY-MM-DD", "America/Montevideo").toDate();
+    }
+    
+    // Get origins
+    const availableOrigins = Object.keys(origins).sort();
+    
+    // Get currencies and types from data
+    const data = await cambio_info.get_data(dateM, req.query);
+    const currencies = [...new Set(data.map(item => item.code))].sort();
+    const types = [...new Set(data.map(item => item.type).filter(Boolean))].sort();
+    
+    // Get locations
+    const localData = await cambio_info.get_local_data();
+    const locationsSet = new Set<string>();
+    Object.values(localData).forEach((data: any) => {
+      if (data.departments && Array.isArray(data.departments)) {
+        data.departments.forEach((dept: string) => locationsSet.add(dept));
+      }
+    });
+    const locations = Array.from(locationsSet).sort();
+    
+    return {
+      origins: availableOrigins,
+      currencies: currencies,
+      types: types,
+      locations: locations,
+      counts: {
+        origins: availableOrigins.length,
+        currencies: currencies.length,
+        types: types.length,
+        locations: locations.length
+      }
+    };
   });
 };
 

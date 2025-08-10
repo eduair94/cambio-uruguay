@@ -74,6 +74,10 @@ Todos los timestamps y fechas están en la zona horaria de Uruguay (America/Mont
     {
       name: 'Geocoding',
       description: 'Endpoints para servicios de geocodificación'
+    },
+    {
+      name: 'Parameters',
+      description: 'Endpoints para obtener parámetros válidos del sistema'
     }
   ],
   components: {
@@ -84,7 +88,7 @@ Todos los timestamps y fechas están en la zona horaria de Uruguay (America/Mont
           origin: {
             type: 'string',
             description: 'Nombre de la casa de cambio',
-            example: 'abitab'
+            example: 'la_favorita'
           },
           code: {
             type: 'string',
@@ -94,30 +98,30 @@ Todos los timestamps y fechas están en la zona horaria de Uruguay (America/Mont
           type: {
             type: 'string',
             description: 'Tipo de cambio (BILLETE, CABLE, etc.)',
-            example: 'BILLETE'
+            example: ''
           },
           buy: {
             type: 'number',
             format: 'float',
             description: 'Precio de compra',
-            example: 39.50
+            example: 38.75
           },
           sell: {
             type: 'number',
             format: 'float',
             description: 'Precio de venta',
-            example: 42.30
+            example: 41.15
           },
           date: {
             type: 'string',
             format: 'date-time',
             description: 'Fecha y hora de la cotización',
-            example: '2024-08-09T12:00:00.000Z'
+            example: '2025-08-09T03:00:00.000Z'
           },
-          isInterBank: {
-            type: 'boolean',
-            description: 'Indica si es tipo de cambio interbancario',
-            example: false
+          name: {
+            type: 'string',
+            description: 'Nombre descriptivo de la moneda',
+            example: 'Dólar Estadounidense'
           }
         },
         required: ['origin', 'code', 'buy', 'sell', 'date']
@@ -128,12 +132,12 @@ Todos los timestamps y fechas están en la zona horaria de Uruguay (America/Mont
           name: {
             type: 'string',
             description: 'Nombre de la sucursal',
-            example: 'Abitab Pocitos'
+            example: 'Cambio Maiorano Centro'
           },
           address: {
             type: 'string',
             description: 'Dirección de la sucursal',
-            example: 'Av. Brasil 2536'
+            example: 'Av. 18 de Julio 1234'
           },
           latitude: {
             type: 'number',
@@ -257,28 +261,111 @@ Todos los timestamps y fechas están en la zona horaria de Uruguay (America/Mont
             type: 'string',
             format: 'date',
             description: 'Fecha de la cotización',
-            example: '2024-08-09'
+            example: '2025-08-09'
           },
           buy: {
             type: 'number',
             format: 'float',
             description: 'Precio de compra',
-            example: 39.50
+            example: 38.75
           },
           sell: {
             type: 'number',
             format: 'float',
             description: 'Precio de venta',
-            example: 42.30
+            example: 41.15
           },
           avg: {
             type: 'number',
             format: 'float',
             description: 'Precio promedio',
-            example: 40.90
+            example: 39.95
           }
         },
         required: ['date', 'buy', 'sell']
+      },
+      ParametersResponse: {
+        type: 'object',
+        properties: {
+          origins: {
+            type: 'array',
+            items: {
+              type: 'string'
+            },
+            description: 'Lista de casas de cambio disponibles'
+          },
+          currencies: {
+            type: 'array',
+            items: {
+              type: 'string'
+            },
+            description: 'Lista de códigos de moneda disponibles'
+          },
+          types: {
+            type: 'array',
+            items: {
+              type: 'string'
+            },
+            description: 'Lista de tipos de cambio disponibles'
+          },
+          locations: {
+            type: 'array',
+            items: {
+              type: 'string'
+            },
+            description: 'Lista de ubicaciones disponibles'
+          },
+          counts: {
+            type: 'object',
+            properties: {
+              origins: {
+                type: 'integer',
+                description: 'Número total de casas de cambio'
+              },
+              currencies: {
+                type: 'integer',
+                description: 'Número total de monedas'
+              },
+              types: {
+                type: 'integer',
+                description: 'Número total de tipos'
+              },
+              locations: {
+                type: 'integer',
+                description: 'Número total de ubicaciones'
+              }
+            }
+          }
+        }
+      },
+      ValidationError: {
+        type: 'object',
+        properties: {
+          error: {
+            type: 'string',
+            description: 'Mensaje de error de validación'
+          },
+          parameter: {
+            type: 'string',
+            description: 'Nombre del parámetro inválido'
+          },
+          value: {
+            type: 'string',
+            description: 'Valor proporcionado que es inválido'
+          },
+          validValues: {
+            type: 'array',
+            items: {
+              type: 'string'
+            },
+            description: 'Lista de valores válidos para este parámetro'
+          },
+          suggestion: {
+            type: 'string',
+            description: 'Sugerencia para corregir el error'
+          }
+        },
+        required: ['error', 'parameter', 'validValues']
       }
     },
     parameters: {
@@ -290,7 +377,7 @@ Todos los timestamps y fechas están en la zona horaria de Uruguay (America/Mont
         schema: {
           type: 'string',
           format: 'date',
-          example: '2024-08-09'
+          example: '2025-08-09'
         }
       },
       LatitudeParam: {
@@ -331,6 +418,51 @@ Todos los timestamps y fechas están en la zona horaria de Uruguay (America/Mont
           default: 6,
           example: 12
         }
+      },
+      OriginParam: {
+        name: 'origin',
+        in: 'path',
+        description: 'Casa de cambio. Para obtener valores válidos, consulte /parameters/origins',
+        required: true,
+        schema: {
+          type: 'string',
+          example: 'la_favorita'
+        },
+        'x-parameter-type': 'origin'
+      },
+      CurrencyCodeParam: {
+        name: 'code',
+        in: 'path',
+        description: 'Código de moneda (ISO 4217). Para obtener valores válidos, consulte /parameters/currencies',
+        required: true,
+        schema: {
+          type: 'string',
+          pattern: '^[A-Z]{3}$',
+          example: 'USD'
+        },
+        'x-parameter-type': 'currency'
+      },
+      ExchangeTypeParam: {
+        name: 'type',
+        in: 'path',
+        description: 'Tipo de cambio. Para obtener valores válidos, consulte /parameters/types',
+        required: true,
+        schema: {
+          type: 'string',
+          example: ''
+        },
+        'x-parameter-type': 'type'
+      },
+      LocationParam: {
+        name: 'location',
+        in: 'path',
+        description: 'Ubicación o departamento. Para obtener valores válidos, consulte /parameters/locations',
+        required: true,
+        schema: {
+          type: 'string',
+          example: 'Montevideo'
+        },
+        'x-parameter-type': 'location'
       }
     },
     responses: {
@@ -360,6 +492,38 @@ Todos los timestamps y fechas están en la zona horaria de Uruguay (America/Mont
           'application/json': {
             schema: {
               $ref: '#/components/schemas/ErrorResponse'
+            }
+          }
+        }
+      },
+      ValidationError: {
+        description: 'Error de validación de parámetros',
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/ValidationError'
+            },
+            examples: {
+              invalid_origin: {
+                summary: 'Casa de cambio inválida',
+                value: {
+                  error: 'Invalid origin parameter',
+                  parameter: 'origin',
+                  value: 'invalid_exchange',
+                  validValues: ['la_favorita', 'cambio_minas', 'brou', 'cambio_regul', 'itau', 'prex', 'bcu', 'cambilex'],
+                  suggestion: 'Use /parameters/origins to get all valid origins'
+                }
+              },
+              invalid_currency: {
+                summary: 'Moneda inválida',
+                value: {
+                  error: 'Invalid currency code',
+                  parameter: 'code',
+                  value: 'INVALID',
+                  validValues: ['USD', 'EUR', 'ARS', 'BRL', 'XAU', 'UR', 'UP', 'UI', 'PYG', 'PEN', 'MXN', 'JPY', 'GBP', 'COP', 'CLP', 'CHF', 'CAD', 'AUD'],
+                  suggestion: 'Use /parameters/currencies to get all valid currency codes'
+                }
+              }
             }
           }
         }
