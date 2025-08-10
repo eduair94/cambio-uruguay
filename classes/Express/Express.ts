@@ -3,11 +3,11 @@ import cors from "cors";
 import express, { Request, Response } from "express";
 import { RecaptchaV2 } from "express-recaptcha";
 import { ValidationChain, validationResult } from "express-validator";
-import swaggerUi from "swagger-ui-express";
 import * as http from "http";
+import swaggerUi from "swagger-ui-express";
+import { swaggerSpec } from "../../swagger/config";
 import { bError } from "../utils";
 import { FunctionExpress } from "./Express.interface";
-import { swaggerSpec } from "../../swagger/config";
 
 class Express {
   private port: number;
