@@ -865,28 +865,13 @@ const main = async () => {
    */
   server.getJson("evolution/:origin/:code/:type?", async (req: Request): Promise<any> => {
     const origin = req.params.origin;
-    const code = req.params.code;
+    const code = req.params.code.toUpperCase().trim();
     const type = req.params.type;
 
     // Validate origin parameter
     const originValidation = validateOrigin(origin);
     if (!originValidation.isValid) {
       throw new ValidationError('Invalid origin parameter', originValidation.error);
-    }
-
-    // Validate currency code parameter (basic validation)
-    if (!code || !/^[A-Z]{2,4}$/.test(code)) {
-      // Get available currencies for better error message
-      let availableCurrencies = [];
-      try {
-        const data = await cambio_info.get_data(null, {});
-        availableCurrencies = [...new Set(data.map(item => item.code))].sort();
-      } catch (e) {
-        availableCurrencies = ['USD', 'EUR', 'ARS', 'BRL']; // fallback
-      }
-      
-      const error = createValidationError('code', code, availableCurrencies, 'Use /parameters/currencies to get all valid currency codes');
-      throw new ValidationError('Invalid currency code parameter', error);
     }
 
     // Parse period parameter (default to 6 months)
