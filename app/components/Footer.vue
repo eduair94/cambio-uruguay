@@ -9,8 +9,27 @@
 
         <VSpacer class="d-none d-md-flex" />
 
-        <!-- Social Media Links -->
+        <!-- API Documentation & Social Media Links -->
         <div class="d-flex align-center ga-2">
+          <VTooltip text="Documentación de la API">
+            <template #activator="{ props }">
+              <VBtn
+                v-bind="props"
+                href="https://api.cambio-uruguay.com/api-docs"
+                target="_blank"
+                rel="noopener noreferrer"
+                icon
+                size="small"
+                variant="text"
+                color="white"
+              >
+                <VIcon>mdi-api</VIcon>
+              </VBtn>
+            </template>
+          </VTooltip>
+
+          <VDivider vertical class="mx-2" />
+
           <VTooltip :text="$t('siguenos.twitter')">
             <template #activator="{ props }">
               <VBtn

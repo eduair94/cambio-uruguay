@@ -3,9 +3,11 @@ import cors from "cors";
 import express, { Request, Response } from "express";
 import { RecaptchaV2 } from "express-recaptcha";
 import { ValidationChain, validationResult } from "express-validator";
+import swaggerUi from "swagger-ui-express";
 import * as http from "http";
 import { bError } from "../utils";
 import { FunctionExpress } from "./Express.interface";
+import { swaggerSpec } from "../../swagger/config";
 
 class Express {
   private port: number;
@@ -52,6 +54,7 @@ class Express {
     this.app.use(bodyParser.json({ limit: "50mb" }));
     this.app.set("trust proxy", true);
     this.app.use(bodyParser.urlencoded({ extended: false }));
+    this.setupSwagger();
     this.start();
   }
 
@@ -61,6 +64,54 @@ class Express {
 
   public getRecaptchaMiddleWare() {
     return this.recaptcha.middleware.verify;
+  }
+
+  private setupSwagger(): void {
+    // Swagger UI options for better customization
+    const swaggerOptions = {
+      explorer: true,
+      customCss: `
+        .swagger-ui .topbar { 
+          background-color: #2c3e50; 
+        }
+        .swagger-ui .topbar .download-url-wrapper { 
+          display: none; 
+        }
+        .swagger-ui .info .title {
+          color: #2c3e50;
+        }
+        .swagger-ui .scheme-container {
+          background: #f8f9fa;
+          border: 1px solid #dee2e6;
+          border-radius: 5px;
+          padding: 10px;
+          margin: 10px 0;
+        }
+      `,
+      customSiteTitle: "Cambio Uruguay API Documentation",
+      swaggerOptions: {
+        docExpansion: 'list',
+        filter: true,
+        showRequestHeaders: true,
+        tryItOutEnabled: true,
+        validatorUrl: null
+      }
+    };
+
+    // Serve Swagger JSON endpoint
+    this.app.get(`${this.baseUrl}api-docs.json`, (req: Request, res: Response) => {
+      res.setHeader('Content-Type', 'application/json');
+      res.send(swaggerSpec);
+    });
+
+    // Serve Swagger UI
+    this.app.use(
+      `${this.baseUrl}api-docs`, 
+      swaggerUi.serve, 
+      swaggerUi.setup(swaggerSpec, swaggerOptions)
+    );
+
+    console.log(`📚 Swagger documentation available at: http://localhost:${this.port}${this.baseUrl}api-docs`);
   }
   public getJson(requestUrl: string, f: FunctionExpress): void {
     this.app.get(`${this.baseUrl}${requestUrl}`, async (req: Request, res: Response) => {

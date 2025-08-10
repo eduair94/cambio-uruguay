@@ -235,8 +235,33 @@
         </VRow>
 
         <VRow>
-          <VCol v-for="feature in features" :key="feature.title" cols="12" sm="6" md="3">
-            <VCard class="feature-card pa-6 h-100" elevation="2">
+          <VCol v-for="feature in features" :key="feature.title" cols="12" sm="6" md="4" lg="3">
+            <VCard 
+              v-if="feature.title === t('feature5Title')"
+              class="feature-card pa-6 h-100 cursor-pointer" 
+              elevation="2"
+              href="https://api.cambio-uruguay.com/api-docs"
+              target="_blank"
+              rel="noopener noreferrer"
+              :ripple="true"
+            >
+              <div class="text-center">
+                <VIcon :color="feature.color" size="48" class="mb-4">
+                  {{ feature.icon }}
+                </VIcon>
+                <h3 class="text-h6 font-weight-bold mb-3">
+                  {{ feature.title }}
+                </h3>
+                <p class="text-body-2 text-grey-lighten-1 mb-3">
+                  {{ feature.description }}
+                </p>
+                <VBtn color="primary" variant="outlined" size="small">
+                  <VIcon start size="small">mdi-open-in-new</VIcon>
+                  {{ t('apiDocumentation') }}
+                </VBtn>
+              </div>
+            </VCard>
+            <VCard v-else class="feature-card pa-6 h-100" elevation="2">
               <div class="text-center">
                 <VIcon :color="feature.color" size="48" class="mb-4">
                   {{ feature.icon }}
@@ -491,6 +516,12 @@ const features = computed<Feature[]>(() => [
     description: t('feature4Description'),
     icon: 'mdi-heart-outline',
     color: 'red'
+  },
+  {
+    title: t('feature5Title'),
+    description: t('feature5Description'),
+    icon: 'mdi-api',
+    color: 'purple'
   }
 ])
 
@@ -1086,6 +1117,16 @@ useSeoMeta({
   border-color: rgba(255, 255, 255, 0.2);
 }
 
+.feature-card.cursor-pointer:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.4);
+  border-color: rgba(156, 39, 176, 0.3);
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
 
@@ -1212,5 +1253,9 @@ useSeoMeta({
 
 .feature-card:nth-child(4) {
   animation: fadeInUp 0.6s ease-out 0.4s both;
+}
+
+.feature-card:nth-child(5) {
+  animation: fadeInUp 0.6s ease-out 0.5s both;
 }
 </style>
