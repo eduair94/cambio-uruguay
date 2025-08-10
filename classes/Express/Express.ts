@@ -4,7 +4,6 @@ import express, { Request, Response } from "express";
 import { RecaptchaV2 } from "express-recaptcha";
 import { ValidationChain, validationResult } from "express-validator";
 import * as http from "http";
-import path from "path";
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "../../swagger/config";
 import { bError } from "../utils";
@@ -74,7 +73,7 @@ class Express {
   private setupSwagger(): void {
     // Read CSS content for inline styles
     const fs = require('fs');
-    const cssPath = path.join(__dirname, '../../public/swagger-enhancements.css');
+    const cssPath = '/public/swagger-enhancements.css';
     let customCss = '';
     
     try {
