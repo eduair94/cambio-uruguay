@@ -56,7 +56,7 @@ class Express {
     this.app.use(bodyParser.urlencoded({ extended: false }));
     
     // Serve static files for Swagger enhancements
-    this.app.use('/public', express.static('/public'));
+    this.app.use('/public', express.static('public'));
     
     this.setupSwagger();
     this.start();
@@ -73,7 +73,7 @@ class Express {
   private setupSwagger(): void {
     // Read CSS content for inline styles
     const fs = require('fs');
-    const cssPath = '/public/swagger-enhancements.css';
+    const cssPath = './public/swagger-enhancements.css';
     let customCss = '';
     
     try {
