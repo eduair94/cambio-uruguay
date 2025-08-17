@@ -335,7 +335,7 @@ const capitalize = (entry: string) => {
       en: 'ALL',
       pt: 'TODOS',
     }
-    str = tr[locale.value] || 'TODOS'
+    str = tr[locale.value] ?? 'TODOS'
   }
   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
 }
@@ -349,14 +349,14 @@ const getText = () => {
       en: `Buying ${props.amount} ${props.code} will cost you a total of ${m}.`,
       pt: `Comprar ${props.amount} ${props.code} lhe custará um total de ${m}.`,
     }
-    return loc[locale.value] || loc.es
+    return loc[locale.value] ?? loc.es
   } else {
     const loc: any = {
       es: `Te darán ${m} por tus ${props.amount} ${props.code}.`,
       en: `You will receive ${m} for your ${props.amount} ${props.code}.`,
       pt: `Você receberá ${m} por seus ${props.amount} ${props.code}.`,
     }
-    return loc[locale.value] || loc.es
+    return loc[locale.value] ?? loc.es
   }
 }
 

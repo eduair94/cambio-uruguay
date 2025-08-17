@@ -1,19 +1,19 @@
 <template>
   <div class="chart-container">
-    <canvas ref="chartCanvas"></canvas>
+    <canvas ref="chartCanvas"/>
   </div>
 </template>
 
 <script>
 import {
-    BarController,
-    BarElement,
-    CategoryScale,
-    Chart as ChartJS,
-    Legend,
-    LinearScale,
-    Title,
-    Tooltip
+  BarController,
+  BarElement,
+  CategoryScale,
+  Chart as ChartJS,
+  Legend,
+  LinearScale,
+  Title,
+  Tooltip
 } from 'chart.js'
 
 ChartJS.register(
@@ -55,16 +55,22 @@ export default {
   mounted() {
     this.createChart()
   },
-  beforeDestroy() {
-    if (this.chart) {
-      this.chart.destroy()
-    }
+  beforeUnmount() {
+    this.destroyChart()
+  },
+  unmounted() {
+    // Fallback cleanup
+    this.destroyChart()
   },
   methods: {
-    createChart() {
+    destroyChart() {
       if (this.chart) {
         this.chart.destroy()
+        this.chart = null
       }
+    },
+    createChart() {
+      this.destroyChart() // Ensure cleanup before creating new chart
 
       const ctx = this.$refs.chartCanvas.getContext('2d')
       this.chart = new ChartJS(ctx, {

@@ -156,7 +156,7 @@
           indeterminate
           color="primary"
           size="64"
-        ></v-progress-circular>
+        />
         <p class="mt-4 text-h6">{{ $t('cargandoDatosHistoricos') }}</p>
       </v-col>
     </v-row>
@@ -287,7 +287,7 @@
             <v-card-title class="d-flex align-center flex-wrap ga-3 py-3">
               <v-icon start>mdi-chart-line</v-icon>
               {{ $t('evolucionCotizaciones') }} - {{ route.params.currency }}
-              <v-spacer></v-spacer>
+              <v-spacer/>
               <v-btn-toggle v-model="chartType" mandatory density="compact">
                 <v-btn variant="outlined" size="small" value="line">
                   <v-icon size="small">mdi-chart-line</v-icon>
@@ -339,7 +339,7 @@
             <v-card-title>
               <v-icon start>mdi-table</v-icon>
               {{ $t('datosDetallados') }}
-              <v-spacer></v-spacer>
+              <v-spacer/>
               <v-text-field
                 v-model="search"
                 append-inner-icon="mdi-magnify"
@@ -347,7 +347,7 @@
                 single-line
                 hide-details
                 density="compact"
-              ></v-text-field>
+              />
             </v-card-title>
             <v-data-table
               :headers="headers"
@@ -425,16 +425,16 @@
 <script setup lang="ts">
 import { useSeoMeta } from '#imports'
 import {
-  BarElement,
-  CategoryScale,
-  Chart as ChartJS,
-  Filler,
-  Legend,
-  LinearScale,
-  LineElement,
-  PointElement,
-  Title,
-  Tooltip,
+    BarElement,
+    CategoryScale,
+    Chart as ChartJS,
+    Filler,
+    Legend,
+    LinearScale,
+    LineElement,
+    PointElement,
+    Title,
+    Tooltip,
 } from 'chart.js'
 import moment from 'moment'
 import { computed, ref } from 'vue'
@@ -552,7 +552,7 @@ const loadPeriodFromStorage = () => {
   // First check URL query parameter
   const queryPeriod = route.query.period
   if (queryPeriod) {
-    const period = parseInt(queryPeriod as string)
+    const period = Number.parseInt(queryPeriod as string)
     if ([3, 6, 12, 24].includes(period)) {
       selectedPeriod.value = period
       savePeriodToStorage(period)
@@ -564,7 +564,7 @@ const loadPeriodFromStorage = () => {
   if (typeof window !== 'undefined') {
     const savedPeriod = localStorage.getItem('cambio-uruguay-period')
     if (savedPeriod) {
-      const period = parseInt(savedPeriod)
+      const period = Number.parseInt(savedPeriod)
       if ([3, 6, 12, 24].includes(period)) {
         selectedPeriod.value = period
         updateUrlQuery(period)
@@ -581,7 +581,7 @@ onMounted(() => {
 onBeforeMount(() => {
   const queryPeriod = route.query.period
   if (queryPeriod) {
-    const period = parseInt(queryPeriod as string)
+    const period = Number.parseInt(queryPeriod as string)
     if ([3, 6, 12, 24].includes(period)) {
       selectedPeriod.value = period
     }
@@ -598,7 +598,7 @@ const {
   `evolution-${route.params.origin}-${route.params.currency}-${route.params.type || 'default'}`,
   async () => {
     const { origin, currency, type } = route.params
-    let period = route.query.period ? parseInt(route.query.period as string) : 6
+    let period = route.query.period ? Number.parseInt(route.query.period as string) : 6
     if (isNaN(period) || ![3, 6, 12, 24].includes(period)) {
       period = 6 // Default to 6 months if invalid
     }
@@ -628,7 +628,7 @@ const {
 watch(
   () => route.query.period,
   (newPeriod, oldPeriod) => {
-    if (newPeriod !== oldPeriod) {
+    if (newPeriod !== oldPeriod && newPeriod !== undefined) {
       route.query.period = newPeriod
       // Trigger your refresh logic here
       withLoading(async () => {
@@ -825,7 +825,7 @@ const savePeriodToStorage = (period: number) => {
 
 const updateUrlQuery = (period: number) => {
   // Update URL query parameter without navigation
-  if (route.query && parseInt(route.query.period as string) === period) return
+  if (route.query && Number.parseInt(route.query.period as string) === period) return
   const query = { period: period.toString() }
   router.replace({ query })
 }

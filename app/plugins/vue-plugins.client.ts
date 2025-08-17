@@ -1,8 +1,11 @@
 // Simple Vue plugins for Nuxt 3
 export default defineNuxtPlugin((nuxtApp) => {
+  let errorHandler: ((event: ErrorEvent) => boolean | void) | null = null
+  let rejectionHandler: ((event: PromiseRejectionEvent) => boolean | void) | null = null
+  
   // Add global error handler to catch browser extension errors
   if (import.meta.client) {
-    window.addEventListener('error', (event) => {
+    errorHandler = (event: ErrorEvent) => {
       // Ignore browser extension errors
       if (
         event.error?.stack?.includes('chrome-extension://') ||
@@ -14,9 +17,9 @@ export default defineNuxtPlugin((nuxtApp) => {
         event.preventDefault()
         return false
       }
-    })
+    }
 
-    window.addEventListener('unhandledrejection', (event) => {
+    rejectionHandler = (event: PromiseRejectionEvent) => {
       // Ignore browser extension promise rejections
       if (
         event.reason?.stack?.includes('chrome-extension://') ||
@@ -28,22 +31,33 @@ export default defineNuxtPlugin((nuxtApp) => {
         event.preventDefault()
         return false
       }
+    }
+
+    window.addEventListener('error', errorHandler)
+    window.addEventListener('unhandledrejection', rejectionHandler)
+
+    // Cleanup on page leave or app end
+    nuxtApp.hook('app:beforeMount', () => {
+      // Store cleanup functions for later use
+      if (typeof window !== 'undefined' && (window as any).__vuePluginCleanup) {
+        (window as any).__vuePluginCleanup()
+      }
     })
 
-    // Initialize Tawk.to for Nuxt 3
-    const script = document.createElement('script')
-    script.async = true
-    script.src = 'https://embed.tawk.to/63c9feb9c2f1ac1e202ea427/1gn6gm1s3'
-    script.charset = 'UTF-8'
-    script.setAttribute('crossorigin', '*')
-    document.head.appendChild(script)
-
-    script.onload = () => {
-      if ((window as any).Tawk_API) {
-        ;(window as any).Tawk_API.customStyle = {
-          zIndex: 4,
+    // Store cleanup in window for access during navigation
+    if (typeof window !== 'undefined') {
+      (window as any).__vuePluginCleanup = () => {
+        if (errorHandler) {
+          window.removeEventListener('error', errorHandler)
+          errorHandler = null
+        }
+        if (rejectionHandler) {
+          window.removeEventListener('unhandledrejection', rejectionHandler)
+          rejectionHandler = null
         }
       }
     }
+
+    // Tawk.to is loaded separately in tawk.client.ts plugin - removed duplicate
   }
 })

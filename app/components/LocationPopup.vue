@@ -14,11 +14,16 @@
       </template>
       <span>{{ $t('locationTooltip') }}</span>
     </v-tooltip>
-    <v-dialog v-model="dialog" persistent fullscreen width="700px" hide-overlay>
+    <v-dialog
+v-model="dialog"
+persistent
+fullscreen
+width="700px"
+hide-overlay>
       <v-card>
         <v-toolbar dark color="primary">
           <v-toolbar-title>{{ $t('confirmarUbicacion') }}</v-toolbar-title>
-          <v-spacer></v-spacer>
+          <v-spacer/>
           <v-btn icon dark @click="dialog = false">
             <v-icon>mdi-close</v-icon>
           </v-btn>
@@ -51,13 +56,13 @@
               >
                 <l-tile-layer
                   url="http://{s}.tile.osm.org/{z}/{x}/{y}.png"
-                ></l-tile-layer>
+                />
                 <l-circle
                   v-if="radius"
                   :lat-lng="[latitude, longitude]"
                   :radius="radius * 1000"
-                ></l-circle>
-                <l-marker :lat-lng="[latitude, longitude]"></l-marker>
+                />
+                <l-marker :lat-lng="[latitude, longitude]"/>
               </l-map>
             </client-only>
           </div>
@@ -68,10 +73,10 @@
             :label="$t('search_radius')"
             clearable
             hide-details
-          ></v-text-field>
+          />
         </v-card-text>
         <v-card-actions>
-          <v-spacer></v-spacer>
+          <v-spacer/>
           <v-btn color="primary" @click="reset">Reset</v-btn>
           <v-btn color="red" @click="dialog = false">{{ $t('cerrar') }}</v-btn>
           <v-btn color="green darken-3" @click="confirmGeo">{{
@@ -144,9 +149,12 @@ const onEnter = async (value: string) => {
     }
 
     if (response.data && response.data.length) {
-      latitude.value = parseFloat(response.data[0].lat)
-      longitude.value = parseFloat(response.data[0].lon)
-      return true
+      const firstResult = response.data[0]
+      if (firstResult?.lat && firstResult.lon) {
+        latitude.value = Number.parseFloat(firstResult.lat)
+        longitude.value = Number.parseFloat(firstResult.lon)
+        return true
+      }
     }
     return false
   } catch (e) {
@@ -175,11 +183,30 @@ const searchAddress = () => {
   })
 }
 
+let mapTimeoutId: NodeJS.Timeout | null = null
+const maxRetries = 10 // Prevent infinite retries
+let retryCount = 0
+
 const setMap = async () => {
-  if (!map.value) return setTimeout(setMap, 1000)
+  if (retryCount >= maxRetries) {
+    console.warn('Map initialization failed after maximum retries')
+    return
+  }
+
+  if (!map.value) {
+    retryCount++
+    mapTimeoutId = setTimeout(setMap, 1000)
+    return
+  }
 
   const mapInstance = map.value.mapObject
-  if (!mapInstance) return setTimeout(setMap, 500)
+  if (!mapInstance) {
+    retryCount++
+    mapTimeoutId = setTimeout(setMap, 500)
+    return
+  }
+
+  retryCount = 0 // Reset on success
 
   try {
     // For Nuxt 3 with @nuxtjs/leaflet, import Leaflet dynamically
@@ -205,7 +232,7 @@ const setMap = async () => {
     // Fallback: try to access L from window (for client-side)
     if (import.meta.client) {
       const L = (window as any).L
-      if (L && L.tileLayer) {
+      if (L?.tileLayer) {
         L.tileLayer(
           `https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png?key=${apiKey}`,
           {
@@ -244,8 +271,11 @@ const reverseGeo = async () => {
       return
     }
 
-    if (response.data && response.data.data.length) {
-      search.value = response.data.data[0].label
+    if (response.data && response.data.data && response.data.data.length) {
+      const firstResult = response.data.data[0]
+      if (firstResult?.label) {
+        search.value = firstResult.label
+      }
     }
   } catch (error) {
     console.error('Reverse geocoding failed:', error)
@@ -318,6 +348,14 @@ const geoLocation = () => {
   }
   dialog.value = true
 }
+
+// Cleanup timeouts on component unmount
+onBeforeUnmount(() => {
+  if (mapTimeoutId) {
+    clearTimeout(mapTimeoutId)
+    mapTimeoutId = null
+  }
+})
 </script>
 
 <style>

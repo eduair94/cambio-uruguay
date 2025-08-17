@@ -26,7 +26,7 @@
             >
           </div>
         </v-toolbar-title>
-        <v-spacer></v-spacer>
+        <v-spacer/>
         <v-btn icon @click="dialog = false">
           <v-icon>mdi-close</v-icon>
         </v-btn>
@@ -97,7 +97,7 @@
         </v-data-table>
       </div>
       <v-card-actions>
-        <v-spacer></v-spacer>
+        <v-spacer/>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -169,7 +169,7 @@ const getLocation = () => {
 }
 
 const getPhones = (phones: string) => {
-  return phones.split(/y|-/g).map((el) => {
+  return phones.split(/y|-/).map((el) => {
     const arrEl = el.trim().split('int.')
     return {
       phone: arrEl[0],
@@ -248,14 +248,14 @@ const getData = async () => {
       en: 'A prex card is required and the application must be completed.',
       pt: 'O cartão prex é necessário e o requerimento deve ser preenchido através do requerimento.',
     } as Record<string, string>
-    message.value = loc[locale.value] || loc.es
+    message.value = (loc[locale.value] ?? loc.es) || ''
   } else if (props.type === 'EBROU') {
     const loc = {
       es: 'Se requiere una cuenta de EBROU, una caja de ahorro en dólares y realizar el cambio por la aplicación',
       en: 'It requires an EBROU account, a savings account in US dollars and exchange through the application.',
       pt: 'É necessária uma conta EBROU, uma conta poupança em dólares e troca através da aplicação.',
     } as Record<string, string>
-    message.value = loc[locale.value] || loc.es
+    message.value = (loc[locale.value] ?? loc.es) || ''
   } else {
     try {
       if (props.latitude && props.longitude) {

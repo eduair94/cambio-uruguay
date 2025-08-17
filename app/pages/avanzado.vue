@@ -171,7 +171,9 @@
     </div>
     <div class="mt-3">
       {{ t('consulta') }}
-      <a class="white--text" href="mailto:admin@cambio-uruguay.com"
+      <a
+class="white--text"
+href="mailto:admin@cambio-uruguay.com"
         >admin@cambio-uruguay.com</a
       >
     </div>
@@ -318,8 +320,14 @@ const savings = (): string => {
   if (!items.value.length) return ''
   const i = items.value
   const key = wantTo.value === 'buy' ? 'sell' : 'buy'
-  const maxValue = i[0][key]
-  const minValue = i[i.length - 1][key]
+  const firstItem = i[0]
+  const lastItem = i[i.length - 1]
+  if (!firstItem || !lastItem) return ''
+  
+  const maxValue = firstItem[key]
+  const minValue = lastItem[key]
+  if (typeof maxValue !== 'number' || typeof minValue !== 'number') return ''
+  
   let savePercent = 0
   if (key === 'buy') {
     savePercent = ((maxValue - minValue) / minValue) * 100
@@ -491,7 +499,7 @@ const hideFeedback = () => {
 
 const hideWidgets = (val: boolean, att = 0) => {
   const t = (window as any).Tawk_API
-  if (t && t.hideWidget) {
+  if (t?.hideWidget) {
     if (val) {
       localStorage.setItem('hideWidgets', '1')
       t.hideWidget()
@@ -696,12 +704,15 @@ const setPrice = () => {
   let pos = 1
   items.value = items.value.map((el, index, arr) => {
     if (index !== 0) {
-      if (wantToSell) {
-        if (el.buy !== arr[index - 1].buy) {
+      const prevItem = arr[index - 1]
+      if (prevItem) {
+        if (wantToSell) {
+          if (el.buy !== prevItem.buy) {
+            pos++
+          }
+        } else if (el.sell !== prevItem.sell) {
           pos++
         }
-      } else if (el.sell !== arr[index - 1].sell) {
-        pos++
       }
     }
     el.pos = pos
@@ -860,7 +871,7 @@ const validateQueryParam = (
         break
 
       case 'number':
-        const numValue = typeof value === 'string' ? parseFloat(value) : value
+        const numValue = typeof value === 'string' ? Number.parseFloat(value) : value
         if (!isNaN(numValue) && numValue >= 0) {
           return numValue
         }

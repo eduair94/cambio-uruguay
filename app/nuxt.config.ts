@@ -1,4 +1,9 @@
 export default defineNuxtConfig({
+  // Enable Nuxt 4 features
+  future: {
+    compatibilityVersion: 4,
+  },
+
   // SSR Configuration
   ssr: true,
 
@@ -183,7 +188,7 @@ export default defineNuxtConfig({
       chunkSizeWarningLimit: 1000,
       // Remove manual chunking that's causing issues
       rollupOptions: {
-        external: (id) => {
+        external: (id: string) => {
           // Don't externalize these in the browser build
           if (id.includes('node:') && typeof window !== 'undefined') {
             return false
@@ -296,6 +301,8 @@ export default defineNuxtConfig({
           navigateFallback: '/',
           globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
           cleanupOutdatedCaches: true,
+          // Limit file size to prevent memory issues
+          maximumFileSizeToCacheInBytes: 4 * 1024 * 1024, // 4MB max
           runtimeCaching: [
             {
               urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
@@ -303,8 +310,8 @@ export default defineNuxtConfig({
               options: {
                 cacheName: 'google-fonts-cache',
                 expiration: {
-                  maxEntries: 10,
-                  maxAgeSeconds: 60 * 60 * 24 * 365, // 365 days
+                  maxEntries: 20, // Increased from 10 but still reasonable
+                  maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days instead of 365
                 },
               },
             },
@@ -314,8 +321,8 @@ export default defineNuxtConfig({
               options: {
                 cacheName: 'gstatic-fonts-cache',
                 expiration: {
-                  maxEntries: 10,
-                  maxAgeSeconds: 60 * 60 * 24 * 365, // 365 days
+                  maxEntries: 20, // Increased from 10 but still reasonable
+                  maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days instead of 365
                 },
               },
             },
@@ -324,10 +331,10 @@ export default defineNuxtConfig({
               handler: 'NetworkFirst',
               options: {
                 cacheName: 'api-cache',
-                networkTimeoutSeconds: 10,
+                networkTimeoutSeconds: 5, // Reduced from 10
                 expiration: {
-                  maxEntries: 16,
-                  maxAgeSeconds: 300, // 5 minutes
+                  maxEntries: 50, // Increased from 16 for better caching
+                  maxAgeSeconds: 300, // Keep 5 minutes
                 },
               },
             },
@@ -415,7 +422,7 @@ export default defineNuxtConfig({
 
   // Robots Configuration
   robots: {
-    disallow: ['/admin/', '/_nuxt/', '/.nuxt/', '/server/'],
+    disallow: ['/admin/', '/server/'],
     sitemap: 'https://cambio-uruguay.com/sitemap.xml',
     credits: false,
   },
@@ -466,5 +473,5 @@ export default defineNuxtConfig({
 
   // Dev Tools
   devtools: { enabled: false },
-  compatibilityDate: new Date().toISOString().split('T')[0] as any, // Use current date for compatibility
+  compatibilityDate: '2024-08-17',
 })

@@ -329,7 +329,7 @@
 
 <script setup lang="ts">
 import { useLocalePath } from '#imports'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useDisplay } from 'vuetify'
 
@@ -812,6 +812,17 @@ const loadInitialData = async () => {
 onMounted(() => {
   // Load initial data only once
   loadInitialData()
+})
+
+// Add cleanup to prevent memory leaks
+onBeforeUnmount(() => {
+  // Clear large data arrays to help garbage collection
+  if (realExchangeData.value.length > 0) {
+    realExchangeData.value = []
+  }
+  if (availableCurrencies.value.length > 0) {
+    availableCurrencies.value = []
+  }
 })
 
 const updateExchange = () => {

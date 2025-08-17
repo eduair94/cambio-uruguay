@@ -22,6 +22,44 @@ interface HealthResponse {
   [key: string]: any // Allow additional properties
 }
 
+// Memory optimization: Use Map for cached responses with cleanup
+const responseCache = new Map<string, { data: any; timestamp: number }>()
+const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
+const MAX_CACHE_SIZE = 100 // Limit cache size
+
+// Cleanup expired cache entries periodically
+if (typeof window !== 'undefined') {
+  const cleanup = () => {
+    const now = Date.now()
+    const entries = Array.from(responseCache.entries())
+    
+    // Remove expired entries
+    for (const [key, { timestamp }] of entries) {
+      if (now - timestamp > CACHE_DURATION) {
+        responseCache.delete(key)
+      }
+    }
+    
+    // If still too many entries, remove oldest
+    if (responseCache.size > MAX_CACHE_SIZE) {
+      const sortedEntries = entries
+        .sort(([, a], [, b]) => a.timestamp - b.timestamp)
+        .slice(0, responseCache.size - MAX_CACHE_SIZE)
+      
+      for (const [key] of sortedEntries) {
+        responseCache.delete(key)
+      }
+    }
+  }
+  
+  setInterval(cleanup, 60 * 1000) // Cleanup every minute
+  
+  // Clear cache on page unload to prevent memory leaks
+  window.addEventListener('beforeunload', () => {
+    responseCache.clear()
+  })
+}
+
 export const useApiService = () => {
   const config = useRuntimeConfig()
 
@@ -131,7 +169,7 @@ export const useApiService = () => {
     for (const key in localData) {
       const val = localData[key]
       const departments = val.departments
-      if (departments && departments.length) {
+      if (departments?.length) {
         for (const dep of departments) {
           if (!locations.includes(dep)) {
             locations.push(dep)
@@ -331,7 +369,7 @@ export const useApiService = () => {
     longitude?: number,
   ): Promise<any> => {
     try {
-      let url = `/exchanges/${origin}/${location}`
+      const url = `/exchanges/${origin}/${location}`
       const query: Record<string, any> = {}
 
       if (latitude && longitude) {

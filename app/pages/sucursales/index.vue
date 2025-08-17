@@ -78,7 +78,7 @@
           indeterminate
           color="primary"
           size="64"
-        ></v-progress-circular>
+        />
         <p class="mt-4 text-h6">{{ $t('sucursales.cargandoDatos') }}</p>
       </v-col>
     </v-row>
@@ -109,7 +109,7 @@
             @keyup.enter="applySearchFilter"
             @input="applySearchFilter"
             @click:clear="applySearchFilter"
-          ></v-text-field>
+          />
         </v-col>
         <v-col cols="12" md="5">
           <v-autocomplete
@@ -123,7 +123,7 @@
             hide-details
             @click:clear="applySearchFilter"
             @update:model-value="applySearchFilter"
-          ></v-autocomplete>
+          />
         </v-col>
         <v-col
           cols="12"
@@ -131,17 +131,17 @@
           class="d-flex align-center justify-end justify-md-start ga-2"
         >
           <v-tooltip location="top">
-            <template v-slot:activator="{ props }">
+            <template #activator="{ props }">
               <v-btn
                 v-bind="props"
                 color="grey"
                 variant="outlined"
-                @click="clearAllFilters"
                 class="mt-1"
                 icon="mdi-filter-remove"
                 :disabled="!searchQuery && !selectedDepartment"
                 size="small"
-              ></v-btn>
+                @click="clearAllFilters"
+              />
             </template>
             <span>{{ $t('sucursales.limpiarFiltros') }}</span>
           </v-tooltip>
@@ -169,8 +169,8 @@
                 class="exchange-house-card"
                 elevation="4"
                 hover
-                @click="navigateToOrigin(origin.name)"
                 style="cursor: pointer"
+                @click="navigateToOrigin(origin.name)"
               >
                 <v-card-text class="pa-4">
                   <div class="d-flex align-center mb-3">
@@ -219,7 +219,11 @@
 
                   <!-- Action buttons -->
                   <div class="d-flex ga-2">
-                    <v-btn size="small" color="primary" variant="tonal" block>
+                    <v-btn
+size="small"
+color="primary"
+variant="tonal"
+block>
                       <v-icon start size="small">mdi-eye</v-icon>
                       {{ $t('sucursales.verSucursales') }}
                     </v-btn>
@@ -369,7 +373,7 @@ const filteredOrigins = computed(() => {
     const department = route.query.location as string
     const searchQuery = route.query.search as string
 
-    let filtered = deduplicated.filter((origin: any) => {
+    const filtered = deduplicated.filter((origin: any) => {
       // Apply search filter
       if (searchQuery) {
         const search = searchQuery.toLowerCase()
@@ -415,13 +419,22 @@ const formatOriginName = (origin: string): string => {
     .join(' ')
 }
 
-// Memoized avatar color function
+// Memoized avatar color function with memory optimization
 const avatarColorCache = new Map<string, string>()
+const MAX_AVATAR_CACHE_SIZE = 50 // Prevent memory bloat
+
 const getAvatarColor = (origin: string): string => {
   if (!origin || typeof origin !== 'string') return 'primary'
 
   if (avatarColorCache.has(origin)) {
     return avatarColorCache.get(origin)!
+  }
+
+  // Clean cache if too large
+  if (avatarColorCache.size >= MAX_AVATAR_CACHE_SIZE) {
+    // Remove oldest entries (Map maintains insertion order)
+    const keysToDelete = Array.from(avatarColorCache.keys()).slice(0, 10)
+    keysToDelete.forEach(key => avatarColorCache.delete(key))
   }
 
   const colors = [
@@ -435,8 +448,11 @@ const getAvatarColor = (origin: string): string => {
   const index = origin.length % colors.length
   const color = colors[index]
 
-  avatarColorCache.set(origin, color)
-  return color
+  if (color) {
+    avatarColorCache.set(origin, color)
+    return color
+  }
+  return 'primary' // fallback color
 }
 
 // Navigation functions with throttling

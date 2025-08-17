@@ -117,8 +117,8 @@ const trackDonation = (platform: string) => {
   console.log(`Donation click: ${platform}`)
   
   // You could add Google Analytics or other tracking here
-  if (typeof gtag !== 'undefined') {
-    gtag('event', 'donation_click', {
+  if (typeof window !== 'undefined' && 'gtag' in window && typeof (window as any).gtag === 'function') {
+    (window as any).gtag('event', 'donation_click', {
       platform: platform,
       currency: 'USD',
       value: 1

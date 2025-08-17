@@ -2,6 +2,7 @@ import { useLoadingStore } from '~/stores/loading'
 
 export default defineNuxtPlugin((nuxtApp) => {
   const loadingStore = useLoadingStore()
+  let loadHandler: (() => void) | null = null
 
   // Handle various Nuxt lifecycle hooks for better loading management
   nuxtApp.hook('app:beforeMount', () => {
@@ -18,18 +19,36 @@ export default defineNuxtPlugin((nuxtApp) => {
         loadingStore.hideRouteLoading()
       } else {
         // Wait for the load event
-        const handleLoad = () => {
+        loadHandler = () => {
           loadingStore.hideLoading()
           loadingStore.hideRouteLoading()
-          window.removeEventListener('load', handleLoad)
+          if (loadHandler) {
+            window.removeEventListener('load', loadHandler)
+            loadHandler = null
+          }
         }
-        window.addEventListener('load', handleLoad)
+        window.addEventListener('load', loadHandler)
 
-        // Fallback timeout
-        setTimeout(() => {
+        // Fallback timeout with cleanup
+        const timeoutId = setTimeout(() => {
           loadingStore.hideLoading()
           loadingStore.hideRouteLoading()
+          if (loadHandler) {
+            window.removeEventListener('load', loadHandler)
+            loadHandler = null
+          }
         }, 2000)
+
+        // Store cleanup function
+        if (typeof window !== 'undefined') {
+          (window as any).__loadingCleanup = () => {
+            if (loadHandler) {
+              window.removeEventListener('load', loadHandler)
+              loadHandler = null
+            }
+            clearTimeout(timeoutId)
+          }
+        }
       }
     })
   })
