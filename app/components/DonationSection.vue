@@ -50,7 +50,7 @@
           </a>
         </div>
       </div>
-      <div class="button_section mb-3 mt-3 mt-md-0"></div>
+      <div class="button_section mb-3 mt-3 mt-md-0" />
     </div>
   </div>
 </template>

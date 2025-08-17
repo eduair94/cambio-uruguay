@@ -40,7 +40,7 @@ const hideFeedback = () => {
 
 const hideWidgets = (att = 0) => {
   const t = (window as any).Tawk_API
-  if (t && t.hideWidget) {
+  if (t?.hideWidget) {
     localStorage.setItem('hideWidgets', '1')
     t.hideWidget()
     hideFeedback()

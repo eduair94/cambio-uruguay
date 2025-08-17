@@ -43,8 +43,8 @@
         variant="flat"
         :text-color="textColor || 'white'"
         :class="['toggle-chip', chipClass]"
-        @click="toggleExpanded"
         style="cursor: pointer"
+        @click="toggleExpanded"
       >
         <v-icon start :size="iconSize">
           {{ showExpanded ? 'mdi-chevron-up' : 'mdi-chevron-down' }}

@@ -9,12 +9,12 @@
         color="green"
         hide-details
         @click="get_data"
-      ></v-checkbox>
+      />
     </template>
     <v-card>
       <v-toolbar dark color="primary">
         <v-toolbar-title>{{ $t('bcu_regul') }}</v-toolbar-title>
-        <v-spacer></v-spacer>
+        <v-spacer />
         <v-btn icon dark @click="dialog = false">
           <v-icon>mdi-close</v-icon>
         </v-btn>
@@ -47,7 +47,7 @@
         </v-list-item>
         <v-list-item>
           <v-list-item-title>{{ $t('sitioWeb') }}</v-list-item-title>
-          <span v-html="get_linked(d.website)"></span>
+          <span v-html="get_linked(d.website)" />
         </v-list-item>
         <v-list-item v-if="d.email">
           <v-list-item-title>{{ $t('email') }}</v-list-item-title>
@@ -61,7 +61,7 @@
         {{ $t('noData') }}
       </div>
       <v-card-actions>
-        <v-spacer></v-spacer>
+        <v-spacer />
         <v-btn
           class="mb-2"
           color="primary"

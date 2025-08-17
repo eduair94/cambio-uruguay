@@ -1,6 +1,6 @@
 <template>
   <ClientOnly>
-    <Teleport to="body" v-if="isMounted">
+    <Teleport v-if="isMounted" to="body">
       <v-overlay
         v-model="showOverlay"
         persistent

@@ -25,7 +25,7 @@
               Cotizaciones de
               {{ formatOriginName(route.params.origin as string) }}
             </span>
-            <v-spacer></v-spacer>
+            <v-spacer />
             <ClientOnly>
               <Updated />
             </ClientOnly>
@@ -43,7 +43,7 @@
                   density="compact"
                   variant="outlined"
                   hide-details
-                ></v-select>
+                />
               </v-col>
               <v-col cols="12" md="4">
                 <v-select
@@ -55,7 +55,7 @@
                   density="compact"
                   variant="outlined"
                   hide-details
-                ></v-select>
+                />
               </v-col>
               <v-col cols="12" md="4">
                 <v-text-field
@@ -66,7 +66,7 @@
                   density="compact"
                   variant="outlined"
                   hide-details
-                ></v-text-field>
+                />
               </v-col>
             </v-row>
           </v-card-text>
@@ -394,7 +394,7 @@ const getLink = (item: any): string => {
 
 const calculateSpread = (buy: number, sell: number): number => {
   if (!buy || !sell || buy === 0) return 0
-  return parseFloat((((sell - buy) / buy) * 100).toFixed(2))
+  return Number.parseFloat((((sell - buy) / buy) * 100).toFixed(2))
 }
 
 const formatOriginName = (origin: string): string => {
@@ -495,7 +495,7 @@ const getTypeColor = (type: string): string => {
 
 const getSpreadColor = (spread: number | string): string => {
   const spreadNum =
-    typeof spread === 'number' ? spread : parseFloat(String(spread))
+    typeof spread === 'number' ? spread : Number.parseFloat(String(spread))
   if (spreadNum <= 2) return 'green'
   if (spreadNum <= 5) return 'orange'
   return 'red'

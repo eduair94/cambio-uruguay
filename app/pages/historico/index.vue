@@ -8,7 +8,7 @@
             <span class="text-h5 text-md-h4">{{
               $t('historical.currentQuotes')
             }}</span>
-            <v-spacer></v-spacer>
+            <v-spacer />
             <ClientOnly>
               <Updated />
             </ClientOnly>
@@ -29,7 +29,7 @@
                   density="compact"
                   variant="outlined"
                   hide-details
-                ></v-autocomplete>
+                />
               </v-col>
               <v-col cols="12" md="3">
                 <v-autocomplete
@@ -43,7 +43,7 @@
                   density="compact"
                   variant="outlined"
                   hide-details
-                ></v-autocomplete>
+                />
               </v-col>
               <v-col cols="12" md="3">
                 <v-autocomplete
@@ -57,7 +57,7 @@
                   density="compact"
                   variant="outlined"
                   hide-details
-                ></v-autocomplete>
+                />
               </v-col>
               <v-col cols="12" md="3">
                 <v-text-field
@@ -68,7 +68,7 @@
                   density="compact"
                   variant="outlined"
                   hide-details
-                ></v-text-field>
+                />
               </v-col>
             </v-row>
             <!-- Reset button -->
@@ -455,7 +455,7 @@ const resetFilters = () => {
 // Methods
 const calculateSpread = (buy: number, sell: number): number => {
   if (!buy || !sell || buy === 0) return 0
-  return parseFloat((((sell - buy) / buy) * 100).toFixed(2))
+  return Number.parseFloat((((sell - buy) / buy) * 100).toFixed(2))
 }
 
 const formatOriginName = (origin: string, item?: CambioItem): string => {
@@ -545,7 +545,7 @@ const getTypeColor = (type: string): string => {
 
 const getSpreadColor = (spread: number | string): string => {
   const spreadNum =
-    typeof spread === 'number' ? spread : parseFloat(String(spread))
+    typeof spread === 'number' ? spread : Number.parseFloat(String(spread))
   if (spreadNum <= 2) return 'green'
   if (spreadNum <= 5) return 'orange'
   return 'red'

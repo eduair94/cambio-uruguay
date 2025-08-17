@@ -1,6 +1,6 @@
 // Vue 2 type overrides for better TypeScript support
 declare module 'vue/types/options' {
-  import Vue from 'vue'
+  import type Vue from 'vue'
 
   interface ComponentOptions<V extends Vue> {
     [key: string]: any

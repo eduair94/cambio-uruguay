@@ -9,7 +9,7 @@
             <span class="text-h5 text-md-h4">
               {{ $t('sucursalesMenu') }} - {{ exchangeHouseName }}
             </span>
-            <v-spacer></v-spacer>
+            <v-spacer />
             <v-chip color="success" size="small">
               <v-icon start size="small">mdi-map-marker</v-icon>
               {{ location || $t('todasLasUbicaciones') }}
@@ -48,11 +48,7 @@
     <!-- Loading State -->
     <v-row v-else-if="pending">
       <v-col cols="12" class="text-center">
-        <v-progress-circular
-          indeterminate
-          color="primary"
-          size="64"
-        ></v-progress-circular>
+        <v-progress-circular indeterminate color="primary" size="64" />
         <p class="mt-4 text-h6">{{ $t('cargandoSucursales') }}</p>
       </v-col>
     </v-row>
@@ -74,7 +70,7 @@
           <v-card-title>
             <v-icon start>mdi-table</v-icon>
             {{ $t('listaSucursales') }}
-            <v-spacer></v-spacer>
+            <v-spacer />
             <span class="text-caption">
               {{ branchesData?.length || 0 }} {{ $t('sucursalesEncontradas') }}
             </span>

@@ -25,7 +25,7 @@ const { data: healthData, error } = await useLazyAsyncData(
 
 // Computed property to format the lastUpdate
 const lastUpdate = computed(() => {
-  if (!healthData.value || !healthData.value.lastSync) {
+  if (!healthData.value?.lastSync) {
     return 'N/A'
   }
 

@@ -11,8 +11,8 @@
         size="small"
         color="red"
         variant="text"
-        @click="toggleCard"
         class="donation-expand-btn"
+        @click="toggleCard"
       >
         <VIcon>mdi-heart</VIcon>
       </VBtn>
@@ -34,8 +34,8 @@
           icon
           size="x-small"
           variant="text"
-          @click="toggleCard"
           class="donation-close-btn"
+          @click="toggleCard"
         >
           <VIcon size="16">mdi-close</VIcon>
         </VBtn>

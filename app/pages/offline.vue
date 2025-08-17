@@ -19,7 +19,7 @@
               {{ $t('pwa.retry') || 'Reintentar' }}
             </VBtn>
 
-            <VDivider class="my-6"></VDivider>
+            <VDivider class="my-6" />
 
             <p class="text-caption text-medium-emphasis">
               Algunas funciones pueden estar disponibles sin conexión

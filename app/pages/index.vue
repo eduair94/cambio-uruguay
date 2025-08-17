@@ -28,8 +28,8 @@
                 <VRow class="mb-0 mb-md-4">
                   <VCol cols="12">
                     <VTextField
-                      hide-details
                       v-model="amountInput"
+                      hide-details
                       :label="t('enterAmount')"
                       variant="outlined"
                       density="comfortable"
@@ -46,8 +46,8 @@
                   <VCol cols="12" md="5">
                     <div class="currency-section">
                       <VAutocomplete
-                        hide-details
                         v-model="selectedCurrencyInput"
+                        hide-details
                         :items="currencyOptions"
                         :label="t('from')"
                         variant="outlined"
@@ -67,8 +67,8 @@
                         variant="outlined"
                         :size="mobile ? 'small' : 'large'"
                         color="primary"
-                        @click="swapCurrencies"
                         class="swap-btn"
+                        @click="swapCurrencies"
                       >
                         <VIcon>mdi-swap-horizontal</VIcon>
                       </VBtn>
@@ -78,8 +78,8 @@
                   <VCol cols="12" md="5">
                     <div class="currency-section">
                       <VAutocomplete
-                        hide-details
                         v-model="selectedTargetCurrencyInput"
+                        hide-details
                         :items="currencyOptions"
                         :label="t('to')"
                         variant="outlined"
@@ -99,8 +99,8 @@
                     variant="elevated"
                     size="large"
                     :loading="loading"
-                    @click.prevent="updateExchange"
                     class="w-100 w-md-auto my-5 my-md-0 px-5 convert-btn"
+                    @click.prevent="updateExchange"
                   >
                     <VIcon start>mdi-calculator</VIcon>
                     {{ t('findBestRate') }}
@@ -742,7 +742,7 @@ const getExchangeRate = (fromCurrency: string, toCurrency: string): number => {
     const currencyData = realExchangeData.value
       .sort((a, b) => a.sell - b.sell)
       .find((item) => item.code === toCurrency && item.sell > 0)
-    return currencyData && currencyData.sell ? 1 / currencyData.sell : 0
+    return currencyData?.sell ? 1 / currencyData.sell : 0
   }
 
   // Cross-currency conversion through UYU
