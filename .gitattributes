@@ -1,0 +1,15 @@
+# Normalize line endings for text files to LF
+* text=auto eol=lf
+
+# Keep images and binaries untouched
+*.png -text
+*.jpg -text
+*.jpeg -text
+*.gif -text
+*.ico -text
+*.pdf -text
+*.woff -text
+*.woff2 -text
+*.ttf -text
+*.eot -text
+*.zip -text

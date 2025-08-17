@@ -318,10 +318,7 @@
         </VRow>
 
         <VRow>
-          <VCol
-            v-for="feature in features"
-            :key="feature.title" 
-            cols="12" sm="6" md="4" lg="3">
+          <VCol v-for="feature in features" :key="feature.title" cols="12" sm="6" md="4" lg="3">
             <VCard
               v-if="feature.title === t('feature5Title')"
               class="feature-card pa-6 h-100 cursor-pointer"

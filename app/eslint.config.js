@@ -1,6 +1,7 @@
 // @ts-check
 import { createConfigForNuxt } from '@nuxt/eslint-config/flat'
 import prettierPlugin from 'eslint-plugin-prettier'
+import eslintConfigPrettier from 'eslint-config-prettier/flat'
 
 export default createConfigForNuxt({
   features: {
@@ -59,7 +60,8 @@ export default createConfigForNuxt({
         'error',
         {
           html: {
-            void: 'always',
+            // Avoid conflicts with Prettier for void elements
+            void: 'any',
             normal: 'always',
             component: 'always',
           },
@@ -140,5 +142,7 @@ export default createConfigForNuxt({
     rules: {
       'prettier/prettier': 'error',
     },
-  }
+  },
+  // Put eslint-config-prettier last to disable conflicting formatting rules
+  eslintConfigPrettier
 )

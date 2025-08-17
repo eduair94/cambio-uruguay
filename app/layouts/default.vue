@@ -203,9 +203,9 @@
     <JoinTwitter />
 
     <!-- Memory Monitor for debugging (only shows in development) -->
-    <ClientOnly>
+    <!-- <ClientOnly>
       <MemoryMonitor />
-    </ClientOnly>
+    </ClientOnly> -->
   </VApp>
 </template>
 
