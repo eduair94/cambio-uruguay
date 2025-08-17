@@ -114,25 +114,32 @@
                   <VRow align="center" justify="center" class="conversion-display-row">
                     <VCol cols="5" sm="4" class="text-center align-self-start">
                       <div class="conversion-display">
-                        <span class="amount-text">{{ formatCurrency(amount) }}</span>
-                        <span v-if="selectedCurrency" class="currency-name">{{
-                          t('codes.' + selectedCurrency)
-                        }}</span>
+                        <span class="amount-text">
+                          {{ formatCurrency(isForward ? amount : leftForReverse) }}
+                        </span>
+                        <span v-if="selectedCurrency" class="currency-name">
+                          {{ t('codes.' + selectedCurrency) }}
+                        </span>
                       </div>
                     </VCol>
 
                     <VCol cols="2" sm="4" class="text-center">
-                      <VIcon color="success" size="24">mdi-arrow-right</VIcon>
+                      <DirectionToggle
+                        :is-forward="isForward"
+                        size="32"
+                        color="success"
+                        @toggle="toggleDirection"
+                      />
                     </VCol>
 
                     <VCol cols="5" sm="4" class="text-center align-self-start">
                       <div class="conversion-display">
-                        <span class="amount-text converted">{{
-                          formatCurrency(conversionResult.convertedAmount)
-                        }}</span>
-                        <span v-if="selectedTargetCurrency" class="currency-name">{{
-                          t('codes.' + selectedTargetCurrency)
-                        }}</span>
+                        <span class="amount-text converted">
+                          {{ formatCurrency(desiredRightAmount) }}
+                        </span>
+                        <span v-if="selectedTargetCurrency" class="currency-name">
+                          {{ t('codes.' + selectedTargetCurrency) }}
+                        </span>
                       </div>
                     </VCol>
                   </VRow>
@@ -140,67 +147,150 @@
                   <VDivider class="my-3" />
 
                   <div class="rate-info text-center">
-                    <span class="rate-text">
+                    <span v-if="isForward" class="rate-text">
                       1 {{ selectedCurrency }} =
                       {{ formatCurrency(conversionResult.rate) }}
                       {{ selectedTargetCurrency }}
                     </span>
+                    <span v-else class="rate-text">
+                      1 {{ selectedTargetCurrency }} =
+                      {{ formatCurrency(conversionResult.reverseRate) }}
+                      {{ selectedCurrency }}
+                    </span>
                   </div>
                   <div class="rate-info text-center">
-                    <span class="rate-text">
+                    <span v-if="isForward" class="rate-text">
                       {{ formatCurrency(conversionResult.invertedRate) }}
                       {{ selectedCurrency }} = 1 {{ selectedTargetCurrency }}
                     </span>
+                    <span v-else class="rate-text">
+                      {{ formatCurrency(reverseInvertedRate) }}
+                      {{ selectedTargetCurrency }} = 1 {{ selectedCurrency }}
+                    </span>
                   </div>
-                </VCard>
-
-                <!-- Top 4 Best Rates -->
-                <VCard
-                  v-if="top4BestRates.length > 0"
-                  class="best-rates-card pa-4 mb-4"
-                  color="rgba(33, 150, 243, 0.1)"
-                  variant="outlined"
-                >
-                  <h3 class="text-h6 font-weight-bold mb-3 mb-md-6 text-center text-white">
-                    {{ getBestRatesTitle() }}
-                  </h3>
-
-                  <VRow>
-                    <VCol
-                      v-for="(rate, index) in top4BestRates"
-                      :key="index"
-                      class="pa-2 pa-sm-3"
-                      cols="6"
-                      sm="6"
-                      md="3"
-                    >
-                      <nuxt-link
-                        class="d-flex w-100 h-100 text-decoration-none"
-                        :to="localePath(`/historico/${rate.origin}/${rate.code}`)"
-                      >
-                        <VCard
-                          class="rate-item pa-3 text-center flex-grow-1"
-                          :color="getRateCardColor(index)"
-                          variant="tonal"
-                        >
-                          <div class="rate-position text-h6 font-weight-bold mb-2">
-                            #{{ index + 1 }}
-                          </div>
-                          <div class="rate-name text-body-2 font-weight-medium mb-1">
-                            {{ rate.source }}
-                          </div>
-                          <div class="rate-value text-h6 font-weight-bold mb-1">
-                            ${{ rate.rate.toFixed(2) }}
-                          </div>
-                          <div v-if="rate.code" class="rate-type text-caption">
-                            {{ getRateTypeLabel(rate.type) }}
-                            {{ t('codes.' + rate.code) }}
-                          </div>
-                        </VCard>
-                      </nuxt-link>
+                  <VDivider class="my-3" />
+                  <!-- Dual conversion summary -->
+                  <VRow class="text-center" align="center" justify="center">
+                    <VCol cols="12" md="6">
+                      <div class="text-subtitle-2 text-grey-lighten-1 mb-1">
+                        {{ t('quickExchangeForward') }}
+                      </div>
+                      <div class="text-h6 font-weight-bold text-white">
+                        {{ formatCurrency(dualConversion.forwardToAmount) }}
+                        <span class="text-caption">{{ selectedTargetCurrency }}</span>
+                      </div>
+                    </VCol>
+                    <VCol cols="12" md="6">
+                      <div class="text-subtitle-2 text-grey-lighten-1 mb-1">
+                        {{ t('quickExchangeReverse') }}
+                      </div>
+                      <div class="text-h6 font-weight-bold text-white">
+                        {{ formatCurrency(dualConversion.reverseNeededAmount) }}
+                        <span class="text-caption">{{ selectedTargetCurrency }}</span>
+                      </div>
+                      <div class="text-caption text-grey-lighten-1 mt-1">
+                        {{ reverseHintText }}
+                      </div>
                     </VCol>
                   </VRow>
                 </VCard>
+
+                <!-- Dual Best Rates: show both Sell and Buy for the subject currency; order by user intent -->
+                <template v-if="subjectCode">
+                  <!-- First card: current intent (sell or buy) -->
+                  <VCard
+                    v-if="primaryRatesForSubject.length"
+                    class="best-rates-card pa-4 mb-4"
+                    color="rgba(33, 150, 243, 0.1)"
+                    variant="outlined"
+                  >
+                    <h3 class="text-h6 font-weight-bold mb-3 mb-md-6 text-center text-white">
+                      {{ primaryTitle }}
+                    </h3>
+                    <VRow>
+                      <VCol
+                        v-for="(rate, index) in primaryRatesForSubject"
+                        :key="`${rate.origin}-${index}-primary`"
+                        class="pa-2 pa-sm-3"
+                        cols="6"
+                        sm="6"
+                        md="3"
+                      >
+                        <nuxt-link
+                          class="d-flex w-100 h-100 text-decoration-none"
+                          :to="localePath(`/historico/${rate.origin}/${subjectCode}`)"
+                        >
+                          <VCard
+                            class="rate-item pa-3 text-center flex-grow-1"
+                            :color="getRateCardColor(index)"
+                            variant="tonal"
+                          >
+                            <div class="rate-position text-h6 font-weight-bold mb-2">
+                              #{{ index + 1 }}
+                            </div>
+                            <div class="rate-name text-body-2 font-weight-medium mb-1">
+                              {{ rate.source }}
+                            </div>
+                            <div class="rate-value text-h6 font-weight-bold mb-1">
+                              ${{ rate.rate.toFixed(2) }}
+                            </div>
+                            <div class="rate-type text-caption">
+                              {{ intentIsSellingSubject ? t('buy') : t('sell') }}
+                              {{ t('codes.' + subjectCode) }}
+                            </div>
+                          </VCard>
+                        </nuxt-link>
+                      </VCol>
+                    </VRow>
+                  </VCard>
+
+                  <!-- Second card: the other intent -->
+                  <VCard
+                    v-if="secondaryRatesForSubject.length"
+                    class="best-rates-card pa-4 mb-4"
+                    color="rgba(33, 150, 243, 0.1)"
+                    variant="outlined"
+                  >
+                    <h3 class="text-h6 font-weight-bold mb-3 mb-md-6 text-center text-white">
+                      {{ secondaryTitle }}
+                    </h3>
+                    <VRow>
+                      <VCol
+                        v-for="(rate, index) in secondaryRatesForSubject"
+                        :key="`${rate.origin}-${index}-secondary`"
+                        class="pa-2 pa-sm-3"
+                        cols="6"
+                        sm="6"
+                        md="3"
+                      >
+                        <nuxt-link
+                          class="d-flex w-100 h-100 text-decoration-none"
+                          :to="localePath(`/historico/${rate.origin}/${subjectCode}`)"
+                        >
+                          <VCard
+                            class="rate-item pa-3 text-center flex-grow-1"
+                            :color="getRateCardColor(index)"
+                            variant="tonal"
+                          >
+                            <div class="rate-position text-h6 font-weight-bold mb-2">
+                              #{{ index + 1 }}
+                            </div>
+                            <div class="rate-name text-body-2 font-weight-medium mb-1">
+                              {{ rate.source }}
+                            </div>
+                            <div class="rate-value text-h6 font-weight-bold mb-1">
+                              ${{ rate.rate.toFixed(2) }}
+                            </div>
+                            <div class="rate-type text-caption">
+                              {{ intentIsSellingSubject ? t('sell') : t('buy') }}
+                              {{ t('codes.' + subjectCode) }}
+                            </div>
+                          </VCard>
+                        </nuxt-link>
+                      </VCol>
+                    </VRow>
+                  </VCard>
+                </template>
               </VCard>
               <div class="mt-5">
                 <!-- Advanced Mode Button -->
@@ -414,6 +504,7 @@
 
 <script setup lang="ts">
 import { useLocalePath } from '#imports'
+import DirectionToggle from '@/components/DirectionToggle.vue'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useDisplay } from 'vuetify'
@@ -470,6 +561,8 @@ const amountInput = ref(
 const selectedCurrency = ref(selectedCurrencyInput.value)
 const selectedTargetCurrency = ref(selectedTargetCurrencyInput.value)
 const amount = ref(amountInput.value)
+// Rounding helper (shared)
+const round2 = (n: number) => Math.round((Number(n) + Number.EPSILON) * 100) / 100
 
 const loading = ref<boolean>(true)
 const realExchangeData = ref<any[]>([])
@@ -628,40 +721,7 @@ const features = computed<Feature[]>(() => [
   },
 ])
 
-// Get appropriate label for rate type
-const getRateTypeLabel = (type: 'buy' | 'sell'): string => {
-  const isConvertingFrom =
-    selectedCurrency.value !== 'UYU' && selectedTargetCurrency.value === 'UYU'
-  const isConvertingTo = selectedCurrency.value === 'UYU' && selectedTargetCurrency.value !== 'UYU'
-
-  if (isConvertingFrom) {
-    // User is selling the selected currency
-    return type === 'buy' ? 'Te pagan en' : 'Te pagan'
-  } else if (isConvertingTo) {
-    // User is buying the selected currency
-    return type === 'sell' ? 'Pagas en' : 'Pagas'
-  } else {
-    // Mixed conversion
-    return type === 'buy' ? t('buying') : t('selling')
-  }
-}
-
-// Get appropriate title for best rates section
-const getBestRatesTitle = (): string => {
-  if (!selectedCurrency.value || !selectedTargetCurrency.value) return t('topBestRates')
-
-  const isConvertingFrom =
-    selectedCurrency.value !== 'UYU' && selectedTargetCurrency.value === 'UYU'
-  const isConvertingTo = selectedCurrency.value === 'UYU' && selectedTargetCurrency.value !== 'UYU'
-
-  if (isConvertingFrom) {
-    return t('bestToSell') + ` ${selectedCurrency.value}`
-  } else if (isConvertingTo) {
-    return t('bestToBuy') + ` ${selectedTargetCurrency.value}`
-  } else {
-    return t('topBestRates')
-  }
-}
+// (removed) legacy helpers replaced by dual sections
 
 // Exchange rate calculation
 const getExchangeRate = (fromCurrency: string, toCurrency: string): number => {
@@ -696,99 +756,163 @@ const conversionResult = ref({
   rate: 0,
   invertedRate: 0,
   convertedAmount: 0,
+  reverseRate: 0,
+  reverseReceiveAmount: 0,
 })
+
+// Inverted reverse rate helper (1 / reverseRate)
+const reverseInvertedRate = computed(() =>
+  conversionResult.value.reverseRate > 0 ? 1 / conversionResult.value.reverseRate : 0
+)
+
+// Dual conversion: forward (from -> to) and reverse-needed (how much of target to sell to get the entered amount)
+const dualConversion = ref({
+  forwardToAmount: 0,
+  reverseNeededAmount: 0,
+})
+
+// UI direction: forward (left->right) vs reverse (right->left)
+const isForward = ref(true)
+// Initialize from query param dir=f|r (defaults to forward)
+if (typeof route.query.dir === 'string') {
+  const lower = route.query.dir.toLowerCase()
+  isForward.value = !(lower === 'r' || lower === 'reverse' || lower === '0' || lower === 'false')
+}
+// We keep the right-hand amount constant across direction toggles
+const desiredRightAmount = ref(0)
+// High-precision right-hand amount to avoid toggle rounding drift
+const desiredRightAmountRaw = ref(0)
+// Left-side needed when we are in reverse (buying on left to receive desiredRightAmount on right)
+const leftForReverse = ref(0)
 
 // Conversion result computed property
 const setConversionRate = () => {
-  const rate = getExchangeRate(selectedCurrency.value, selectedTargetCurrency.value)
+  const rate = Number(getExchangeRate(selectedCurrency.value, selectedTargetCurrency.value))
+  const reverseRate = Number(getExchangeRate(selectedTargetCurrency.value, selectedCurrency.value))
+  const rawConvertedAmount = Number(amount.value) * rate
   conversionResult.value = {
     rate,
-    invertedRate: 1 / rate,
-    convertedAmount: amount.value * rate,
+    invertedRate: rate > 0 ? 1 / rate : 0,
+    convertedAmount: round2(rawConvertedAmount),
+    reverseRate,
+    reverseReceiveAmount: round2(Number(amount.value) * reverseRate),
   }
-  console.log('Conversion Rate', conversionResult.value)
+  // Forward amount (entered amount converted to target)
+  dualConversion.value.forwardToAmount = conversionResult.value.convertedAmount
+  // Reverse summary:
+  // - In forward mode: target to sell to get the entered left amount
+  // - In reverse mode: show the fixed right-hand amount (avoid double rounding)
+  if (reverseRate > 0) {
+    const reverseNeeded = isForward.value
+      ? Number(amount.value) / reverseRate
+      : desiredRightAmountRaw.value > 0
+        ? desiredRightAmountRaw.value
+        : Number(amount.value) / reverseRate
+    dualConversion.value.reverseNeededAmount = round2(reverseNeeded)
+  } else {
+    dualConversion.value.reverseNeededAmount = 0
+  }
+  // end setConversionRate
+
+  // Maintain invariants for UI:
+  // - desiredRightAmount remains the target shown on the right
+  if (desiredRightAmountRaw.value <= 0) {
+    if (isForward.value) {
+      // Forward: initialize from forward conversion
+      desiredRightAmountRaw.value = rawConvertedAmount
+    } else {
+      // Reverse: initialize from reverse math (right needed to obtain left)
+      desiredRightAmountRaw.value = reverseRate > 0 ? Number(amount.value) / reverseRate : 0
+    }
+    desiredRightAmount.value = round2(desiredRightAmountRaw.value)
+  }
+  // - leftForReverse display depends on direction
+  if (isForward.value) {
+    // Forward: show how much you'd get on the left if you sell the right amount
+    leftForReverse.value = reverseRate > 0 ? round2(desiredRightAmountRaw.value * reverseRate) : 0
+  } else {
+    // Reverse: show exactly the desired left amount the user is targeting
+    leftForReverse.value = round2(Number(amount.value))
+  }
 }
 
-// Top 4 best rates for the selected currency
-const top4BestRates = computed(() => {
-  if (!realExchangeData.value.length || !selectedCurrency.value) return []
+// UI text helpers
+const reverseHintText = computed(() =>
+  t('quickExchangeReverseHint', {
+    // Use left-hand amount for the message; in reverse it's leftForReverse
+    amount: formatCurrency(isForward.value ? amount.value : leftForReverse.value),
+    from: selectedCurrency.value,
+    to: selectedTargetCurrency.value,
+  })
+)
 
-  const currencyData = realExchangeData.value.filter(
-    item =>
-      (item.code === selectedCurrency.value || item.code === selectedTargetCurrency.value) &&
-      item.localData?.name &&
-      (item.buy > 0 || item.sell > 0)
-  )
+// (removed) legacy combined list replaced by intent-ordered dual lists
 
-  if (currencyData.length === 0) return []
-
-  // Determine if we're converting FROM or TO the selected currency
-  const isConvertingFrom =
-    selectedCurrency.value !== 'UYU' && selectedTargetCurrency.value === 'UYU'
-  const isConvertingTo = selectedCurrency.value === 'UYU' && selectedTargetCurrency.value !== 'UYU'
-
-  let rates = []
-
-  if (isConvertingFrom) {
-    // User is selling the selected currency (FROM currency TO UYU)
-    // Show top 4 selling rates (highest buy rates = best for user selling)
-    rates = currencyData
-      .map(item => ({
-        source: item.localData?.name || item.origin,
-        rate: item.buy,
-        code: item.code,
-        type: 'buy' as const, // This is what the exchange house pays (buys from user)
-        origin: item.origin,
-      }))
-      .sort((a, b) => b.rate - a.rate) // Highest buy rate first
-      .slice(0, 4)
-  } else if (isConvertingTo) {
-    // User is buying the selected currency (FROM UYU TO currency)
-    // Show top 4 buying rates (lowest sell rates = best for user buying)
-    rates = currencyData
-      .map(item => ({
-        source: item.localData?.name || item.origin,
-        rate: item.sell,
-        code: item.code,
-        type: 'sell' as const, // This is what the exchange house sells (user buys)
-        origin: item.origin,
-      }))
-      .sort((a, b) => a.rate - b.rate) // Lowest sell rate first
-      .slice(0, 4)
-  } else {
-    // For other conversions, show mixed rates (2 buy + 2 sell)
-    const buyRates = currencyData
-      .filter(item => item.code === selectedCurrency.value)
-      .map(item => ({
-        source: item.localData?.name || item.origin,
-        rate: item.buy,
-        code: item.code,
-        type: 'buy' as const,
-        origin: item.origin,
-      }))
-      .sort((a, b) => b.rate - a.rate)
-      .slice(0, 2)
-
-    const sellRates = currencyData
-      .filter(item => item.code === selectedTargetCurrency.value)
-      .map(item => ({
-        source: item.localData?.name || item.origin,
-        rate: item.sell,
-        code: item.code,
-        type: 'sell' as const,
-        origin: item.origin,
-      }))
-      .sort((a, b) => a.rate - b.rate)
-      .slice(0, 2)
-
-    rates = [...buyRates, ...sellRates]
-  }
-
-  // Remove duplicates based on source name and type
-  const uniqueRates = rates
-
-  return uniqueRates.slice(0, 4)
+// Subject currency is the non-UYU currency among from/to; user intent flags
+const subjectCode = computed(() => {
+  if (selectedCurrency.value !== 'UYU' && selectedCurrency.value) return selectedCurrency.value
+  if (selectedTargetCurrency.value !== 'UYU' && selectedTargetCurrency.value)
+    return selectedTargetCurrency.value
+  return 'USD' // default fallback for UI; hidden by v-if if no data
 })
+
+// User intent for the subject currency (sell vs buy) that flips with arrow direction
+// - If forward and FROM is subject (to UYU): selling subject
+// - If forward and TO is subject (from UYU): buying subject
+// - Reverse inverts the intent
+const intentIsSellingSubject = computed(() => {
+  const subj = subjectCode.value
+  if (!subj) return false
+  const fromIsSubject = selectedCurrency.value === subj
+  const toIsSubject = selectedTargetCurrency.value === subj
+  if (!fromIsSubject && !toIsSubject) return false
+  return isForward.value ? fromIsSubject : !fromIsSubject
+})
+
+// Build top 4 lists for subject currency: sell (houses buy) and buy (houses sell)
+const top4SellRatesForSubject = computed(() => {
+  if (!realExchangeData.value.length || !subjectCode.value) return []
+  const items = realExchangeData.value
+    .filter(item => item.code === subjectCode.value && item.buy > 0 && item.localData?.name)
+    .map(item => ({
+      origin: item.origin,
+      source: item.localData?.name || item.origin,
+      rate: item.buy,
+    }))
+    .sort((a, b) => b.rate - a.rate)
+  return items.slice(0, 4)
+})
+
+const top4BuyRatesForSubject = computed(() => {
+  if (!realExchangeData.value.length || !subjectCode.value) return []
+  const items = realExchangeData.value
+    .filter(item => item.code === subjectCode.value && item.sell > 0 && item.localData?.name)
+    .map(item => ({
+      origin: item.origin,
+      source: item.localData?.name || item.origin,
+      rate: item.sell,
+    }))
+    .sort((a, b) => a.rate - b.rate)
+  return items.slice(0, 4)
+})
+
+// Primary/secondary intent-ordered lists and titles
+const primaryRatesForSubject = computed(() =>
+  intentIsSellingSubject.value ? top4SellRatesForSubject.value : top4BuyRatesForSubject.value
+)
+const secondaryRatesForSubject = computed(() =>
+  intentIsSellingSubject.value ? top4BuyRatesForSubject.value : top4SellRatesForSubject.value
+)
+const primaryTitle = computed(() =>
+  intentIsSellingSubject.value
+    ? `${t('bestToSell')} ${subjectCode.value}`
+    : `${t('bestToBuy')} ${subjectCode.value}`
+)
+const secondaryTitle = computed(() =>
+  intentIsSellingSubject.value
+    ? `${t('bestToBuy')} ${subjectCode.value}`
+    : `${t('bestToSell')} ${subjectCode.value}`
+)
 
 // Swap currencies function
 const swapCurrencies = () => {
@@ -819,13 +943,15 @@ const updateQueryParams = () => {
     from: selectedCurrency.value,
     to: selectedTargetCurrency.value,
     amount: amount.value.toString(),
+    dir: isForward.value ? 'f' : 'r',
   }
 
   // Only update if parameters have actually changed
   if (
     route.query.from !== query.from ||
     route.query.to !== query.to ||
-    route.query.amount !== query.amount
+    route.query.amount !== query.amount ||
+    route.query.dir !== query.dir
   ) {
     try {
       router.push({ query })
@@ -898,12 +1024,60 @@ const updateExchange = () => {
   loading.value = true
   selectedCurrency.value = selectedCurrencyInput.value
   selectedTargetCurrency.value = selectedTargetCurrencyInput.value
-  amount.value = amountInput.value
+  amount.value = Number(amountInput.value) || 0
   setConversionRate()
+  // Preserve the shown result when inverted; only reset desiredRightAmount in forward mode
+  if (isForward.value) {
+    // Recompute desiredRight using high precision to avoid future drift
+    const r = conversionResult.value.rate
+    desiredRightAmountRaw.value = amount.value * r
+    desiredRightAmount.value = round2(desiredRightAmountRaw.value)
+  } else {
+    // Reverse mode: the input amount represents the left-side desired amount (e.g., USD to obtain)
+    const rr = conversionResult.value.reverseRate
+    if (rr > 0) {
+      // Compute the right-side amount needed to obtain the left amount
+      desiredRightAmountRaw.value = Number(amount.value) / rr
+      desiredRightAmount.value = round2(desiredRightAmountRaw.value)
+    } else {
+      desiredRightAmountRaw.value = 0
+      desiredRightAmount.value = 0
+    }
+    // Show exactly the entered left amount on the left side
+    leftForReverse.value = round2(amount.value)
+  }
   updateQueryParams()
   setTimeout(() => {
     loading.value = false
   }, 200)
+}
+
+// Toggle display direction and update input to reflect reverse semantics
+const toggleDirection = () => {
+  isForward.value = !isForward.value
+  // Keep the right amount fixed; recompute left based on direction
+  if (!isForward.value) {
+    // Selling on right to buy on left: left obtained = desiredRightAmount * reverseRate
+    const r = conversionResult.value.reverseRate
+    if (r > 0) {
+      amount.value = round2(desiredRightAmountRaw.value * r)
+    } else {
+      amount.value = 0
+    }
+    amountInput.value = amount.value
+  } else {
+    // Selling on left to buy on right (forward): left is the amount needed to receive desiredRightAmount
+    const r = conversionResult.value.rate
+    if (r > 0) {
+      amount.value = round2(desiredRightAmountRaw.value / r)
+    } else {
+      amount.value = 0
+    }
+    amountInput.value = amount.value
+  }
+  setConversionRate()
+  // Reflect current direction in the URL
+  updateQueryParams()
 }
 
 // SEO Configuration

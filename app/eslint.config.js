@@ -1,7 +1,7 @@
 // @ts-check
 import { createConfigForNuxt } from '@nuxt/eslint-config/flat'
-import eslintConfigPrettier from 'eslint-config-prettier/flat'
-import prettierPlugin from 'eslint-plugin-prettier'
+import eslintPluginPrettier from 'eslint-plugin-prettier'
+import eslintConfigPrettier from 'eslint-config-prettier'
 
 export default createConfigForNuxt({
   features: {
@@ -24,6 +24,28 @@ export default createConfigForNuxt({
     ],
   },
 }).append(
+  // Prettier config - must come first to avoid conflicts
+  eslintConfigPrettier,
+  {
+    plugins: {
+      prettier: eslintPluginPrettier,
+    },
+    rules: {
+      'prettier/prettier': [
+        'error',
+        {
+          semi: false,
+          singleQuote: true,
+          trailingComma: 'es5',
+          tabWidth: 2,
+          useTabs: false,
+          printWidth: 100,
+          arrowParens: 'avoid',
+          endOfLine: 'lf',
+        },
+      ],
+    },
+  },
   // Your custom configs here
   {
     files: ['**/*.{js,mjs,cjs,ts,mts,vue}'],
@@ -35,6 +57,7 @@ export default createConfigForNuxt({
       'no-empty': ['error', { allowEmptyCatch: true }],
       'no-case-declarations': 'off',
       'unicorn/prefer-number-properties': 'off', // Allow isNaN
+      '@typescript-eslint/no-explicit-any': 'off', // Allow any types
       '@typescript-eslint/no-unused-vars': [
         'error',
         {
@@ -72,7 +95,7 @@ export default createConfigForNuxt({
       'vue/max-attributes-per-line': [
         'error',
         {
-          singleline: { max: 5 },
+          singleline: { max: 10 }, // Allow more attributes per line for Vuetify
           multiline: { max: 1 },
         },
       ],
@@ -85,24 +108,6 @@ export default createConfigForNuxt({
           ignores: [],
         },
       ],
-    },
-  },
-  {
-    files: ['**/*.ts', '**/*.mts', '**/*.vue'],
-    languageOptions: {
-      parserOptions: {
-        parser: '@typescript-eslint/parser',
-        project: './tsconfig.json',
-        extraFileExtensions: ['.vue'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-    },
-    rules: {
-      // TypeScript-specific rules
-      '@typescript-eslint/no-explicit-any': 'off', // Allow any types
-      '@typescript-eslint/prefer-nullish-coalescing': 'off', // Allow || operator
-      '@typescript-eslint/prefer-optional-chain': 'off', // Don't enforce optional chain
-      '@typescript-eslint/no-invalid-void-type': 'off', // Allow void in union types
     },
   },
   {
@@ -132,17 +137,5 @@ export default createConfigForNuxt({
       // Type definition specific rules
       '@typescript-eslint/no-unused-vars': 'off', // Allow unused vars in type definitions
     },
-  },
-  {
-    // Prettier integration
-    files: ['**/*.{js,mjs,cjs,ts,mts,vue}'],
-    plugins: {
-      prettier: prettierPlugin,
-    },
-    rules: {
-      'prettier/prettier': 'error',
-    },
-  },
-  // Put eslint-config-prettier last to disable conflicting formatting rules
-  eslintConfigPrettier
+  }
 )

@@ -57,9 +57,9 @@
       </div>
       <v-card-actions>
         <v-spacer />
-        <v-btn class="mb-2" color="primary" link target="_blank" :href="item.localData.bcu"
-          >{{ $t('sitioWeb') }} BCU</v-btn
-        >
+        <v-btn class="mb-2" color="primary" link target="_blank" :href="item.localData.bcu">
+          {{ $t('sitioWeb') }} BCU
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
