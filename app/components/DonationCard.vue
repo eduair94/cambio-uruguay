@@ -1,7 +1,15 @@
 <template>
-  <VCard class="donation-card" elevation="6" :class="{ 'donation-card--minimized': isMinimized }">
+  <VCard
+    class="donation-card"
+    elevation="6"
+    :class="{
+      'donation-card--minimized': isMinimized,
+      'donation-card--right': isMinimized,
+      'donation-card--left': !isMinimized,
+    }"
+  >
     <!-- Minimized state -->
-    <div v-if="isMinimized" class="donation-minimized pa-3">
+    <div v-if="isMinimized" class="donation-minimized">
       <VBtn
         icon
         size="small"
@@ -133,7 +141,6 @@ onMounted(() => {
 .donation-card {
   position: fixed;
   bottom: 20px;
-  right: 20px;
   z-index: 1000;
   max-width: 280px;
   background: rgba(18, 18, 18, 0.95);
@@ -141,6 +148,22 @@ onMounted(() => {
   backdrop-filter: blur(10px);
   transition: all 0.3s ease;
   border-radius: 12px;
+}
+
+/* Side positioning modifiers */
+.donation-card--right {
+  right: 20px;
+  left: auto;
+}
+
+.donation-card--left {
+  left: 20px;
+  right: auto;
+}
+
+/* Minimized button: place above chat bubble on desktop too */
+.donation-card.donation-card--minimized.donation-card--right {
+  bottom: calc(20px + var(--chat-bubble-height, 72px));
 }
 
 .donation-card--minimized {
@@ -209,22 +232,24 @@ onMounted(() => {
 
 /* Mobile responsiveness */
 @media (max-width: 768px) {
-  .donation-card {
-    bottom: 80px; /* Above mobile navigation if present */
-    right: 15px;
+  /* Expanded: place bottom-left on mobile and lift above potential mobile nav */
+  .donation-card.donation-card--left {
+    bottom: 80px;
+    left: 15px;
     max-width: 250px;
   }
 
-  .donation-card--minimized {
-    bottom: 20px;
+  /* Minimized: keep bottom-right, place above chat bubble */
+  .donation-card.donation-card--minimized.donation-card--right {
+    bottom: calc(20px + var(--chat-bubble-height, 72px));
     right: 15px;
   }
 }
 
 @media (max-width: 480px) {
-  .donation-card {
+  .donation-card.donation-card--left {
     max-width: 220px;
-    right: 10px;
+    left: 10px;
     bottom: 70px;
   }
 }
