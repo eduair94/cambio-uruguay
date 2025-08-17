@@ -6,6 +6,7 @@ module.exports = {
       exec_mode: 'cluster',
       instances: '2', // Or a number of instances
       script: './.output/server/index.mjs',
+      max_memory_restart: '500M',
     },
   ],
 }

@@ -20,4 +20,5 @@ declare global {
   const __VUE_VERSION__: 2
 }
 
-export {}
+export { }
+
