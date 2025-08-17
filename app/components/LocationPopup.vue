@@ -14,7 +14,12 @@
       </template>
       <span>{{ $t('locationTooltip') }}</span>
     </v-tooltip>
-    <v-dialog v-model="dialog" persistent fullscreen width="700px" hide-overlay>
+    <v-dialog
+v-model="dialog"
+persistent
+fullscreen
+width="700px"
+hide-overlay>
       <v-card>
         <v-toolbar dark color="primary">
           <v-toolbar-title>{{ $t('confirmarUbicacion') }}</v-toolbar-title>
@@ -82,28 +87,11 @@
 </template>
 
 <script setup lang="ts">
-interface GeocodeData {
-  lat: string
-  lon: string
-}
-
-interface ReverseGeoData {
-  data: Array<{
-    label: string
-  }>
-}
-
-interface DistanceData {
-  distanceData: any
-}
-
 const { $i18n } = useNuxtApp()
-const config = useRuntimeConfig()
 const apiService = useApiService()
 
 const radius = ref(0)
 const loadingDistances = ref(false)
-const prevResult = ref('')
 const dialog = ref(false)
 const latitude = ref(0)
 const search = ref('')
@@ -141,7 +129,7 @@ const onEnter = async (value: string) => {
       return false
     }
 
-    if (response.data && response.data.length) {
+    if (response.data?.length) {
       const firstResult = response.data[0]
       if (firstResult?.lat && firstResult.lon) {
         latitude.value = Number.parseFloat(firstResult.lat)
@@ -264,7 +252,7 @@ const reverseGeo = async () => {
       return
     }
 
-    if (response.data && response.data.data && response.data.data.length) {
+    if (response.data?.data?.length) {
       const firstResult = response.data.data[0]
       if (firstResult?.label) {
         search.value = firstResult.label

@@ -215,7 +215,11 @@
 
                   <!-- Action buttons -->
                   <div class="d-flex ga-2">
-                    <v-btn size="small" color="primary" variant="tonal" block>
+                    <v-btn
+size="small"
+color="primary"
+variant="tonal"
+block>
                       <v-icon start size="small">mdi-eye</v-icon>
                       {{ $t('sucursales.verSucursales') }}
                     </v-btn>
@@ -469,7 +473,7 @@ const navigateToOrigin = (origin: string) => {
   }
 }
 // Search and filter functions
-const applySearchFilter = (event?: any) => {
+const applySearchFilter = () => {
   try {
     updateUrlParams()
   } catch (error) {

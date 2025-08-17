@@ -4,7 +4,11 @@
     <section class="hero-section pt-0 pt-md-5">
       <VContainer>
         <VRow justify="center" align="center" class="min-height-hero">
-          <VCol cols="12" md="12" lg="12" class="text-center">
+          <VCol
+cols="12"
+md="12"
+lg="12"
+class="text-center">
             <div class="hero-content">
               <h1
                 class="hero-title text-h4 text-md-h3 text-md-h2 font-weight-bold mb-4"
@@ -456,20 +460,6 @@ import { useDisplay } from 'vuetify'
 const { mobile } = useDisplay()
 
 // Interfaces
-interface ExchangeHouse {
-  name: string
-  origin: string
-  usdRate: number
-  isRegulated: boolean
-}
-
-interface ExchangeResult {
-  buyRate: number
-  sellRate: number
-  source: string
-  origin: string
-}
-
 interface ExchangeItem {
   origin: string
   code: string
@@ -484,12 +474,6 @@ interface ExchangeItem {
     departments: string[]
     bcu?: boolean
   } | null
-}
-
-interface CurrencyOption {
-  title: string
-  value: string
-  flag: string
 }
 
 interface Step {
@@ -894,7 +878,9 @@ const updateQueryParams = () => {
   ) {
     try {
       router.push({ query })
-    } catch (e) {}
+    } catch {
+      // Ignore navigation errors (e.g., duplicate navigation)
+    }
   }
 }
 

@@ -188,7 +188,9 @@
             <!-- Slot para cuando no hay datos -->
             <template #no-data>
               <div class="text-center pa-4">
-                <v-icon size="64" color="grey-lighten-1"
+                <v-icon
+size="64"
+color="grey-lighten-1"
                   >mdi-database-remove</v-icon
                 >
                 <p class="text-h6 text-grey mt-4">
@@ -238,7 +240,7 @@ interface OriginNameMap {
   [key: string]: string
 }
 
-const { t, locale } = useI18n()
+const { t } = useI18n()
 // Router and route
 const route = useRoute()
 const router = useRouter()
@@ -271,8 +273,6 @@ const selectedType = ref<string[]>([])
 const {
   data: rawData,
   pending: loading,
-  error,
-  refresh,
 } = await useAsyncData(
   'historico-cambios',
   async () => {
@@ -327,17 +327,6 @@ const items = computed<CambioItem[]>(() => {
       spread: calculateSpread(item.buy, item.sell),
     }))
     .filter((item: any) => item.origin) // Filter items without origin
-})
-
-// Last update timestamp
-const lastUpdate = computed(() => {
-  return new Date().toLocaleString('es-UY', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
 })
 
 // Computed properties

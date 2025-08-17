@@ -170,7 +170,7 @@ const getLinkHistory = (item: any) => {
   return localePath(link)
 }
 
-const getDistanceLink = ({ distanceData, localData, origin }: any) => {
+const getDistanceLink = ({ distanceData, localData }: any) => {
   if (distanceData) {
     const { latitude: lat, longitude: lng, map } = distanceData
     if (map) return map

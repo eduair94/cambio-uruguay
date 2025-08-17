@@ -1,13 +1,8 @@
 // Simple Vue plugins for Nuxt 3
 export default defineNuxtPlugin((nuxtApp) => {
-  let errorHandler: ((event: ErrorEvent) => boolean | void) | null = null
-  let rejectionHandler:
-    | ((event: PromiseRejectionEvent) => boolean | void)
-    | null = null
-
   // Add global error handler to catch browser extension errors
   if (import.meta.client) {
-    errorHandler = (event: ErrorEvent) => {
+    const errorHandler = (event: ErrorEvent) => {
       // Ignore browser extension errors
       if (
         event.error?.stack?.includes('chrome-extension://') ||
@@ -19,9 +14,10 @@ export default defineNuxtPlugin((nuxtApp) => {
         event.preventDefault()
         return false
       }
+      return true
     }
 
-    rejectionHandler = (event: PromiseRejectionEvent) => {
+    const rejectionHandler = (event: PromiseRejectionEvent) => {
       // Ignore browser extension promise rejections
       if (
         event.reason?.stack?.includes('chrome-extension://') ||
@@ -33,6 +29,7 @@ export default defineNuxtPlugin((nuxtApp) => {
         event.preventDefault()
         return false
       }
+      return true
     }
 
     window.addEventListener('error', errorHandler)
@@ -49,14 +46,8 @@ export default defineNuxtPlugin((nuxtApp) => {
     // Store cleanup in window for access during navigation
     if (typeof window !== 'undefined') {
       ;(window as any).__vuePluginCleanup = () => {
-        if (errorHandler) {
-          window.removeEventListener('error', errorHandler)
-          errorHandler = null
-        }
-        if (rejectionHandler) {
-          window.removeEventListener('unhandledrejection', rejectionHandler)
-          rejectionHandler = null
-        }
+        window.removeEventListener('error', errorHandler)
+        window.removeEventListener('unhandledrejection', rejectionHandler)
       }
     }
 

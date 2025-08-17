@@ -2,7 +2,7 @@
 declare module 'vue/types/options' {
   import type Vue from 'vue'
 
-  interface ComponentOptions<V extends Vue> {
+  interface ComponentOptions<_V extends Vue> {
     [key: string]: any
   }
 }

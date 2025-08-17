@@ -33,9 +33,6 @@
 </template>
 
 <script setup lang="ts">
-// Use i18n
-const { t } = useI18n()
-
 // Reactive state
 const showOfflineSnackbar = ref(false)
 const showOnlineSnackbar = ref(false)

@@ -159,7 +159,9 @@
             <!-- Slot para cuando no hay datos -->
             <template #no-data>
               <div class="text-center pa-4">
-                <v-icon size="64" color="grey-lighten-1"
+                <v-icon
+size="64"
+color="grey-lighten-1"
                   >mdi-database-remove</v-icon
                 >
                 <p class="text-h6 text-grey mt-4">
@@ -224,8 +226,8 @@ const selectedType = ref<string | null>(null)
 const {
   data: rawData,
   pending: loading,
-  error,
-  refresh,
+  error: _error,
+  refresh: _refresh,
 } = await useAsyncData(
   `historico-origin-${route.params.origin}`,
   async () => {
@@ -243,7 +245,7 @@ const {
       }
 
       return result
-    } catch (err) {
+    } catch {
       throw createError({
         statusCode: 500,
         statusMessage: 'Error al cargar las cotizaciones',
@@ -288,7 +290,7 @@ const items = computed<CambioItem[]>(() => {
 })
 
 // Last update timestamp
-const lastUpdate = computed(() => {
+const _lastUpdate = computed(() => {
   return new Date().toLocaleString('es-UY', {
     year: 'numeric',
     month: '2-digit',
@@ -557,7 +559,7 @@ watch(
   () => route.params.origin,
   () => {
     // Refresh data when origin changes
-    refresh()
+    _refresh()
   },
 )
 

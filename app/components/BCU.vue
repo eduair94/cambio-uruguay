@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/no-v-html -->
 <template>
   <v-dialog v-model="dialog" width="700px" hide-overlay>
     <template #activator="{ props }">
@@ -98,7 +99,6 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const { $i18n } = useNuxtApp()
 const config = useRuntimeConfig()
 
 const loaded = ref(false)
@@ -119,7 +119,7 @@ const get_data = async () => {
   try {
     const response = await $fetch<BCUData>(url)
     d.value = response
-  } catch (error) {
+  } catch {
     d.value = null
   }
   loaded.value = true

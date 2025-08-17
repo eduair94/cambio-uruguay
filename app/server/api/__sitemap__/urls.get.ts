@@ -1,4 +1,4 @@
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async (_event) => {
   try {
     // Fetch data from the API
     const response = await $fetch('https://api.cambio-uruguay.com')

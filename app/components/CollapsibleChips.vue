@@ -3,7 +3,7 @@
     <div class="chips-container">
       <!-- Always visible chips -->
       <v-chip
-        v-for="(item, index) in visibleItems"
+        v-for="item in visibleItems"
         :key="item"
         :size="size"
         :color="color"
@@ -75,10 +75,10 @@ const props = withDefaults(defineProps<Props>(), {
   color: 'primary',
   textColor: 'white',
   chipClass: 'me-1 mb-1',
+  icon: '',
   iconSize: 16,
 })
 
-const { t } = useI18n()
 const localePath = useLocalePath()
 
 // Reactive state

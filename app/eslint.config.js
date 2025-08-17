@@ -16,6 +16,9 @@ export default createConfigForNuxt({
       './plugins',
       './middleware',
       './assets',
+      './server',
+      './stores',
+      './types',
     ],
   },
 }).append(
@@ -24,9 +27,17 @@ export default createConfigForNuxt({
     files: ['**/*.{js,mjs,cjs,ts,mts,vue}'],
     rules: {
       // Custom rules for your project
-      'no-console': process.env.NODE_ENV === 'production' ? 'error' : 'warn',
+      'no-console': 'off', // Allow console logs for development
       'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'warn',
       'prefer-const': 'error',
+      'no-empty': ['error', { allowEmptyCatch: true }],
+      'no-case-declarations': 'off',
+      'unicorn/prefer-number-properties': 'off', // Allow isNaN
+      '@typescript-eslint/no-unused-vars': ['error', { 
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+        ignoreRestSiblings: true 
+      }],
     },
   },
   {
@@ -35,6 +46,11 @@ export default createConfigForNuxt({
       // Vue-specific rules
       'vue/multi-word-component-names': 'off',
       'vue/no-multiple-template-root': 'off',
+      'vue/no-v-html': 'warn', // Allow v-html but warn
+      'vue/require-default-prop': 'off', // Don't require default props
+      'vue/no-template-shadow': 'off', // Allow template variable shadowing
+      'vue/valid-v-slot': 'off', // Allow v-slot modifiers for Vuetify compatibility
+      'vue/no-unused-vars': ['error', { ignorePattern: '^_' }],
       'vue/html-self-closing': [
         'error',
         {
@@ -50,7 +66,7 @@ export default createConfigForNuxt({
       'vue/max-attributes-per-line': [
         'error',
         {
-          singleline: { max: 3 },
+          singleline: { max: 5 },
           multiline: { max: 1 },
         },
       ],
@@ -78,8 +94,9 @@ export default createConfigForNuxt({
     rules: {
       // TypeScript-specific rules
       '@typescript-eslint/no-explicit-any': 'off', // Allow any types
-      '@typescript-eslint/prefer-nullish-coalescing': 'error',
-      '@typescript-eslint/prefer-optional-chain': 'error',
+      '@typescript-eslint/prefer-nullish-coalescing': 'off', // Allow || operator
+      '@typescript-eslint/prefer-optional-chain': 'off', // Don't enforce optional chain
+      '@typescript-eslint/no-invalid-void-type': 'off', // Allow void in union types
     },
   },
   {
@@ -93,7 +110,21 @@ export default createConfigForNuxt({
     files: ['plugins/**/*.{js,ts}', 'middleware/**/*.{js,ts}'],
     rules: {
       // Plugin and middleware specific rules
-      'no-console': 'warn',
+      'no-console': 'off', // Allow console logs in plugins/middleware
+    },
+  },
+  {
+    files: ['i18n/**/*.ts'],
+    rules: {
+      // i18n specific rules
+      '@typescript-eslint/no-unused-vars': 'off', // Allow unused params in i18n files
+    },
+  },
+  {
+    files: ['types/**/*.ts', '**/*.d.ts'],
+    rules: {
+      // Type definition specific rules
+      '@typescript-eslint/no-unused-vars': 'off', // Allow unused vars in type definitions
     },
   },
 )

@@ -9,7 +9,7 @@
 const { getHealthStatus } = useApiService()
 
 // Use server-side data fetching with automatic hydration
-const { data: healthData, error } = await useLazyAsyncData(
+const { data: healthData, error: _error } = await useLazyAsyncData(
   'health-status',
   async () => {
     const { data, error } = await getHealthStatus()

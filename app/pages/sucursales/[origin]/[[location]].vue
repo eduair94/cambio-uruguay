@@ -38,7 +38,11 @@
     <!-- Special Messages for Prex and EBROU -->
     <v-row v-if="specialMessage">
       <v-col cols="12">
-        <v-alert type="info" prominent border="start" class="ma-4">
+        <v-alert
+type="info"
+prominent
+border="start"
+class="ma-4">
           <h3>{{ $t('informacionImportante') }}</h3>
           <p>{{ specialMessage }}</p>
         </v-alert>

@@ -171,7 +171,9 @@
     </div>
     <div class="mt-3">
       {{ t('consulta') }}
-      <a class="white--text" href="mailto:admin@cambio-uruguay.com"
+      <a
+class="white--text"
+href="mailto:admin@cambio-uruguay.com"
         >admin@cambio-uruguay.com</a
       >
     </div>
@@ -270,12 +272,10 @@ const allItems = ref<ExchangeItem[]>([])
 const snackbar = ref<boolean>(false)
 const snackBarText = ref<string>('')
 const showApiAlert = ref<boolean>(true)
-const loadingDistances = ref<boolean>(false)
 const onlyInterBank = ref<string[]>(['UR', 'UP'])
 const location = ref<string>(df.location)
 const selectedExchangeHouse = ref<ExchangeHouseOption[]>([])
 const exchangeHouseOptions = ref<ExchangeHouseOption[]>([])
-const filteredItems = ref<ExchangeItem[]>([])
 const locations = ref<string[]>(['TODOS', 'MONTEVIDEO'])
 const money = ref<string[]>(['USD', 'ARS', 'BRL', 'EUR', 'GBP', 'UYU'])
 const amount = ref<number>(df.amount)
@@ -682,7 +682,9 @@ const setPrice = () => {
     console.log('Updating route with query:', toPush)
     try {
       router.push(toPush)
-    } catch (error) {}
+    } catch {
+      // Ignore parsing errors for invalid query parameters
+    }
   } else {
     routeHasQuery.value = true
   }
@@ -743,7 +745,7 @@ const getDateFromQuery = () => {
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/
     if (dateRegex.test(query.date)) {
       const parsedDate = new Date(query.date)
-      if (!isNaN(parsedDate.getTime())) {
+      if (!Number.isNaN(parsedDate.getTime())) {
         return query.date
       }
     }
@@ -871,7 +873,7 @@ const validateQueryParam = (
       case 'number':
         const numValue =
           typeof value === 'string' ? Number.parseFloat(value) : value
-        if (!isNaN(numValue) && numValue >= 0) {
+        if (!Number.isNaN(numValue) && numValue >= 0) {
           return numValue
         }
         break
@@ -886,7 +888,7 @@ const validateQueryParam = (
           const dateRegex = /^\d{4}-\d{2}-\d{2}$/
           if (dateRegex.test(value)) {
             const parsedDate = new Date(value)
-            if (!isNaN(parsedDate.getTime())) {
+            if (!Number.isNaN(parsedDate.getTime())) {
               return value
             }
           }

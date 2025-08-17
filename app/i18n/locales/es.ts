@@ -1,4 +1,4 @@
 import json from './json/es.json'
-export default defineI18nLocale(async (locale) => {
+export default defineI18nLocale(async (_locale) => {
   return json
 })

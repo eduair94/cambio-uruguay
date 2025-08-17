@@ -40,10 +40,6 @@ interface Props {
   item: CambioItem
 }
 
-interface CurrencyFlag {
-  [key: string]: string
-}
-
 const props = defineProps<Props>()
 
 // Currency flag mapping - can include both HTTP URLs and Unicode emojis
@@ -69,23 +65,6 @@ const flagSource = computed(() => {
 // Helper function to check if the source is an HTTP URL
 const isHttpUrl = (url: string): boolean => {
   return url.startsWith('http://') || url.startsWith('https://')
-}
-
-const getCurrencyFlag = (code: string): string => {
-  const flags: CurrencyFlag = {
-    USD: 'https://flagcdn.com/w20/us.png',
-    EUR: 'https://flagcdn.com/w20/eu.png',
-    BRL: 'https://flagcdn.com/w20/br.png',
-    ARS: 'https://flagcdn.com/w20/ar.png',
-    CHF: 'https://flagcdn.com/w20/ch.png',
-    GBP: 'https://flagcdn.com/w20/gb.png',
-    PYG: 'https://flagcdn.com/w20/py.png',
-    XAU: '🥇',
-    UR: 'https://flagcdn.com/w20/uy.png',
-    UP: 'https://flagcdn.com/w20/uy.png',
-    UI: 'https://flagcdn.com/w20/uy.png',
-  }
-  return flags[code] || 'https://flagcdn.com/w20/uy.png'
 }
 </script>
 

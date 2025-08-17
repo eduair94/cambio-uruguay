@@ -597,7 +597,7 @@ const {
     let period = route.query.period
       ? Number.parseInt(route.query.period as string)
       : 6
-    if (isNaN(period) || ![3, 6, 12, 24].includes(period)) {
+    if (Number.isNaN(period) || ![3, 6, 12, 24].includes(period)) {
       period = 6 // Default to 6 months if invalid
     }
     console.log('period', period, route.params)
