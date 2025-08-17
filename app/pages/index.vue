@@ -566,7 +566,7 @@ const round2 = (n: number) => Math.round((Number(n) + Number.EPSILON) * 100) / 1
 const round4 = (n: number) => {
   const num = Number(n)
   const rounded = Math.round((num + Number.EPSILON) * 10000) / 10000
-  
+
   // Check if the number ends with repetitive 999s and round up appropriately
   const str = rounded.toString()
   if (str.includes('.')) {
@@ -577,7 +577,7 @@ const round4 = (n: number) => {
       // For numbers ending in 999+ pattern, round up to the next clean number
       const wholePart = parseInt(parts[0] || '0', 10)
       const nineCount = decimal.match(/9+$/)?.[0].length || 0
-      
+
       if (nineCount >= 3) {
         // Round up to next whole number or to 2 decimal places
         if (decimal.length === 4 && nineCount === 4) {
@@ -593,7 +593,7 @@ const round4 = (n: number) => {
       }
     }
   }
-  
+
   return rounded
 }
 
