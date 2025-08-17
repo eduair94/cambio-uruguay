@@ -75,10 +75,12 @@
   },
   "lint-staged": {
     "*.{js,ts,vue}": [
-      "eslint --fix"
+      "npm run lintfix",
+      "git add"
     ],
     "*.{json,md,css,scss,yaml,yml}": [
-      "prettier --write"
+      "prettier --write",
+      "git add"
     ]
   }
 }
