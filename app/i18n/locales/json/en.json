@@ -106,7 +106,7 @@
   "feature5Description": "Access our data through our REST API",
   "feature6Title": "Open source",
   "feature6Description": "Our code is open source and can be used and improved by other developers",
-    "apiDocumentation": "View documentation",
+  "apiDocumentation": "View documentation",
   "viewRepository": "View repository",
   "historicoCotizaciones": "Historical Quotes",
   "evolucionCotizaciones": "Quote Evolution",

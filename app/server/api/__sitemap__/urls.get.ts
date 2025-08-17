@@ -9,19 +9,27 @@ export default defineEventHandler(async (event) => {
     }>
 
     // Fetch local data for sucursales routes
-    let localData: Record<string, {
-      name?: string
-      website?: string
-      maps?: string
-      bcu?: string
-      departments?: string[]
-    }> = {}
+    let localData: Record<
+      string,
+      {
+        name?: string
+        website?: string
+        maps?: string
+        bcu?: string
+        departments?: string[]
+      }
+    > = {}
 
     try {
-      const localDataResponse = await $fetch('https://api.cambio-uruguay.com/localData')
+      const localDataResponse = await $fetch(
+        'https://api.cambio-uruguay.com/localData',
+      )
       localData = localDataResponse as typeof localData
     } catch (localDataError) {
-      console.warn('Failed to fetch localData for sucursales routes:', localDataError)
+      console.warn(
+        'Failed to fetch localData for sucursales routes:',
+        localDataError,
+      )
       // Continue without sucursales routes if localData fails
     }
 
@@ -54,10 +62,12 @@ export default defineEventHandler(async (event) => {
 
     Object.entries(localData).forEach(([origin, data]) => {
       sucursalesOrigins.add(origin)
-      
+
       if (data.departments) {
         data.departments.forEach((department) => {
-          sucursalesLocationPairs.add(`${origin}/${encodeURIComponent(department)}`)
+          sucursalesLocationPairs.add(
+            `${origin}/${encodeURIComponent(department)}`,
+          )
         })
       }
     })
@@ -134,12 +144,14 @@ export default defineEventHandler(async (event) => {
       `\n- LocalData: ${Object.keys(localData).length} exchange houses`,
       `\n- Sucursales origins: ${sucursalesOrigins.size} routes`,
       `\n- Sucursales location pairs: ${sucursalesLocationPairs.size} routes`,
-      `\n- Total across ${locales.length} locales: ${urls.length} URLs`
+      `\n- Total across ${locales.length} locales: ${urls.length} URLs`,
     )
     return urls
   } catch (error) {
     console.error('Error generating sitemap URLs from API:', error)
-    console.error('Failed to fetch from https://api.cambio-uruguay.com or https://api.cambio-uruguay.com/localData')
+    console.error(
+      'Failed to fetch from https://api.cambio-uruguay.com or https://api.cambio-uruguay.com/localData',
+    )
     return []
   }
 })

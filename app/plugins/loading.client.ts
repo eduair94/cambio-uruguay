@@ -41,7 +41,7 @@ export default defineNuxtPlugin((nuxtApp) => {
 
         // Store cleanup function
         if (typeof window !== 'undefined') {
-          (window as any).__loadingCleanup = () => {
+          ;(window as any).__loadingCleanup = () => {
             if (loadHandler) {
               window.removeEventListener('load', loadHandler)
               loadHandler = null

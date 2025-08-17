@@ -4,7 +4,10 @@
       <div class="memory-stats">
         <div class="stat">
           <span class="label">Used:</span>
-          <span class="value" :class="{ warning: memoryUsage > 50, critical: memoryUsage > 80 }">
+          <span
+            class="value"
+            :class="{ warning: memoryUsage > 50, critical: memoryUsage > 80 }"
+          >
             {{ formatBytes(usedJSHeapSize) }}
           </span>
         </div>
@@ -18,24 +21,36 @@
         </div>
         <div class="stat">
           <span class="label">Usage:</span>
-          <span class="value" :class="{ warning: memoryUsage > 50, critical: memoryUsage > 80 }">
+          <span
+            class="value"
+            :class="{ warning: memoryUsage > 50, critical: memoryUsage > 80 }"
+          >
             {{ memoryUsage.toFixed(1) }}%
           </span>
         </div>
       </div>
-      <button class="gc-button" title="Force Garbage Collection" @click="forceGarbageCollection">
+      <button
+        class="gc-button"
+        title="Force Garbage Collection"
+        @click="forceGarbageCollection"
+      >
         🗑️ GC
       </button>
-      <button class="close-button" title="Hide Monitor" @click="showMonitor = false">
+      <button
+        class="close-button"
+        title="Hide Monitor"
+        @click="showMonitor = false"
+      >
         ✕
       </button>
     </div>
   </div>
   <button
-v-else
-class="show-monitor-button"
-title="Show Memory Monitor"
-@click="showMonitor = true">
+    v-else
+    class="show-monitor-button"
+    title="Show Memory Monitor"
+    @click="showMonitor = true"
+  >
     📊
   </button>
 </template>
@@ -47,13 +62,19 @@ const totalJSHeapSize = ref(0)
 const jsHeapSizeLimit = ref(0)
 
 const memoryUsage = computed(() => {
-  return jsHeapSizeLimit.value > 0 ? (usedJSHeapSize.value / jsHeapSizeLimit.value) * 100 : 0
+  return jsHeapSizeLimit.value > 0
+    ? (usedJSHeapSize.value / jsHeapSizeLimit.value) * 100
+    : 0
 })
 
 let intervalId: NodeJS.Timeout | null = null
 
 const updateMemoryStats = () => {
-  if (typeof window !== 'undefined' && 'performance' in window && 'memory' in (performance as any)) {
+  if (
+    typeof window !== 'undefined' &&
+    'performance' in window &&
+    'memory' in (performance as any)
+  ) {
     const memory = (performance as any).memory
     usedJSHeapSize.value = memory.usedJSHeapSize
     totalJSHeapSize.value = memory.totalJSHeapSize
@@ -66,20 +87,20 @@ const forceGarbageCollection = () => {
   if (typeof window !== 'undefined') {
     // Clear any global caches
     if ((window as any).__vuePluginCleanup) {
-      (window as any).__vuePluginCleanup()
+      ;(window as any).__vuePluginCleanup()
     }
     if ((window as any).__loadingCleanup) {
-      (window as any).__loadingCleanup()
+      ;(window as any).__loadingCleanup()
     }
-    
+
     // Force garbage collection if available (only in development with --js-flags="--expose-gc")
     if ('gc' in window) {
-      (window as any).gc()
+      ;(window as any).gc()
     }
-    
+
     // Update stats immediately
     setTimeout(updateMemoryStats, 100)
-    
+
     console.log('Manual garbage collection attempt completed')
   }
 }
@@ -112,13 +133,19 @@ onBeforeUnmount(() => {
 })
 
 // Only show in development or with debug flag
-const isDevelopment = process.env.NODE_ENV === 'development' || 
-                    (typeof window !== 'undefined' && window.location.search.includes('debug=memory'))
+const isDevelopment =
+  process.env.NODE_ENV === 'development' ||
+  (typeof window !== 'undefined' &&
+    window.location.search.includes('debug=memory'))
 
 // Auto-hide if memory is not available
 onMounted(() => {
-  if (!isDevelopment || typeof window === 'undefined' || 
-      !('performance' in window) || !('memory' in (performance as any))) {
+  if (
+    !isDevelopment ||
+    typeof window === 'undefined' ||
+    !('performance' in window) ||
+    !('memory' in (performance as any))
+  ) {
     showMonitor.value = false
   }
 })
@@ -164,15 +191,15 @@ onMounted(() => {
 }
 
 .value {
-  color: #4CAF50;
+  color: #4caf50;
 }
 
 .value.warning {
-  color: #FF9800;
+  color: #ff9800;
 }
 
 .value.critical {
-  color: #F44336;
+  color: #f44336;
   font-weight: bold;
 }
 

@@ -26,7 +26,7 @@
             >
           </div>
         </v-toolbar-title>
-        <v-spacer/>
+        <v-spacer />
         <v-btn icon @click="dialog = false">
           <v-icon>mdi-close</v-icon>
         </v-btn>
@@ -97,7 +97,7 @@
         </v-data-table>
       </div>
       <v-card-actions>
-        <v-spacer/>
+        <v-spacer />
       </v-card-actions>
     </v-card>
   </v-dialog>

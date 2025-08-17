@@ -171,9 +171,7 @@
     </div>
     <div class="mt-3">
       {{ t('consulta') }}
-      <a
-class="white--text"
-href="mailto:admin@cambio-uruguay.com"
+      <a class="white--text" href="mailto:admin@cambio-uruguay.com"
         >admin@cambio-uruguay.com</a
       >
     </div>
@@ -323,11 +321,11 @@ const savings = (): string => {
   const firstItem = i[0]
   const lastItem = i[i.length - 1]
   if (!firstItem || !lastItem) return ''
-  
+
   const maxValue = firstItem[key]
   const minValue = lastItem[key]
   if (typeof maxValue !== 'number' || typeof minValue !== 'number') return ''
-  
+
   let savePercent = 0
   if (key === 'buy') {
     savePercent = ((maxValue - minValue) / minValue) * 100
@@ -871,7 +869,8 @@ const validateQueryParam = (
         break
 
       case 'number':
-        const numValue = typeof value === 'string' ? Number.parseFloat(value) : value
+        const numValue =
+          typeof value === 'string' ? Number.parseFloat(value) : value
         if (!isNaN(numValue) && numValue >= 0) {
           return numValue
         }

@@ -14,16 +14,11 @@
       </template>
       <span>{{ $t('locationTooltip') }}</span>
     </v-tooltip>
-    <v-dialog
-v-model="dialog"
-persistent
-fullscreen
-width="700px"
-hide-overlay>
+    <v-dialog v-model="dialog" persistent fullscreen width="700px" hide-overlay>
       <v-card>
         <v-toolbar dark color="primary">
           <v-toolbar-title>{{ $t('confirmarUbicacion') }}</v-toolbar-title>
-          <v-spacer/>
+          <v-spacer />
           <v-btn icon dark @click="dialog = false">
             <v-icon>mdi-close</v-icon>
           </v-btn>
@@ -54,15 +49,13 @@ hide-overlay>
                 :center="[latitude, longitude]"
                 @click="changeMarker"
               >
-                <l-tile-layer
-                  url="http://{s}.tile.osm.org/{z}/{x}/{y}.png"
-                />
+                <l-tile-layer url="http://{s}.tile.osm.org/{z}/{x}/{y}.png" />
                 <l-circle
                   v-if="radius"
                   :lat-lng="[latitude, longitude]"
                   :radius="radius * 1000"
                 />
-                <l-marker :lat-lng="[latitude, longitude]"/>
+                <l-marker :lat-lng="[latitude, longitude]" />
               </l-map>
             </client-only>
           </div>
@@ -76,7 +69,7 @@ hide-overlay>
           />
         </v-card-text>
         <v-card-actions>
-          <v-spacer/>
+          <v-spacer />
           <v-btn color="primary" @click="reset">Reset</v-btn>
           <v-btn color="red" @click="dialog = false">{{ $t('cerrar') }}</v-btn>
           <v-btn color="green darken-3" @click="confirmGeo">{{

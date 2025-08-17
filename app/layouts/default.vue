@@ -2,20 +2,22 @@
   <VApp>
     <!-- Navigation Drawer for mobile -->
     <VNavigationDrawer
-v-model="drawer"
-location="left"
-temporary
-width="280"
-class="mobile-navigation-drawer">
+      v-model="drawer"
+      location="left"
+      temporary
+      width="280"
+      class="mobile-navigation-drawer"
+    >
       <VList>
         <VListItem>
           <VListItemTitle class="text-h6"> Menu </VListItemTitle>
           <template #append>
             <VBtn
-icon="mdi-close"
-variant="text"
-size="small"
-@click="drawer = false" />
+              icon="mdi-close"
+              variant="text"
+              size="small"
+              @click="drawer = false"
+            />
           </template>
         </VListItem>
 
@@ -50,10 +52,11 @@ size="small"
         </VListItem>
 
         <VListItem
-href="https://ko-fi.com/cambio_uruguay"
-target="_blank"
-rel="noopener noreferrer"
-          @click="drawer = false">
+          href="https://ko-fi.com/cambio_uruguay"
+          target="_blank"
+          rel="noopener noreferrer"
+          @click="drawer = false"
+        >
           <template #prepend>
             <VIcon>mdi-heart</VIcon>
           </template>
@@ -61,10 +64,11 @@ rel="noopener noreferrer"
         </VListItem>
 
         <VListItem
-href="https://twitter.com/cambio_uruguay"
-target="_blank"
-rel="noopener noreferrer"
-          @click="drawer = false">
+          href="https://twitter.com/cambio_uruguay"
+          target="_blank"
+          rel="noopener noreferrer"
+          @click="drawer = false"
+        >
           <template #prepend>
             <VIcon>mdi-twitter</VIcon>
           </template>
@@ -74,10 +78,11 @@ rel="noopener noreferrer"
         <VDivider class="my-2" />
 
         <VListItem
-href="https://www.linkedin.com/in/eduardo-airaudo/"
-target="_blank"
-rel="noopener noreferrer"
-          @click="drawer = false">
+          href="https://www.linkedin.com/in/eduardo-airaudo/"
+          target="_blank"
+          rel="noopener noreferrer"
+          @click="drawer = false"
+        >
           <template #prepend>
             <VIcon>mdi-account-circle</VIcon>
           </template>
@@ -88,90 +93,101 @@ rel="noopener noreferrer"
 
     <VAppBar class="px-3">
       <!-- Mobile menu button -->
-      <VAppBarNavIcon class="d-flex d-lg-none mr-2" @click.stop="drawer = !drawer" />
+      <VAppBarNavIcon
+        class="d-flex d-lg-none mr-2"
+        @click.stop="drawer = !drawer"
+      />
 
       <NuxtLink :to="localePath('/')" class="no_link d-flex logo_link">
         <img
-width="227"
-height="33"
-alt="Cambio Uruguay - Logo oficial para comparar cotizaciones de cambio"
+          width="227"
+          height="33"
+          alt="Cambio Uruguay - Logo oficial para comparar cotizaciones de cambio"
           class="logo_image"
-src="/img/logo.png"
-loading="eager" />
+          src="/img/logo.png"
+          loading="eager"
+        />
       </NuxtLink>
 
       <!-- Navigation Menu for desktop -->
       <VToolbarItems class="d-none d-lg-flex ml-4">
         <!-- Inicio -->
         <VBtn
-:to="localePath('/')"
-variant="text"
-exact
-class="text-capitalize nav-btn"
-          :class="{ 'nav-btn--active': isActiveRoute('/') }">
+          :to="localePath('/')"
+          variant="text"
+          exact
+          class="text-capitalize nav-btn"
+          :class="{ 'nav-btn--active': isActiveRoute('/') }"
+        >
           <VIcon start small>mdi-home</VIcon>
           {{ $t('inicio') }}
         </VBtn>
 
         <!-- Avanzado -->
         <VBtn
-:to="localePath('/avanzado')"
-variant="text"
-class="text-capitalize nav-btn"
-          :class="{ 'nav-btn--active': isActiveRoute('/avanzado') }">
+          :to="localePath('/avanzado')"
+          variant="text"
+          class="text-capitalize nav-btn"
+          :class="{ 'nav-btn--active': isActiveRoute('/avanzado') }"
+        >
           <VIcon start small>mdi-cog</VIcon>
           {{ $t('avanzado') }}
         </VBtn>
 
         <!-- Histórico -->
         <VBtn
-:to="localePath('/historico')"
-variant="text"
-class="text-capitalize nav-btn"
-          :class="{ 'nav-btn--active': isActiveRoute('/historico') }">
+          :to="localePath('/historico')"
+          variant="text"
+          class="text-capitalize nav-btn"
+          :class="{ 'nav-btn--active': isActiveRoute('/historico') }"
+        >
           <VIcon start small>mdi-chart-line</VIcon>
           {{ $t('historico') }}
         </VBtn>
 
         <!-- Sucursales -->
         <VBtn
-:to="localePath('/sucursales')"
-variant="text"
-class="text-capitalize nav-btn"
-          :class="{ 'nav-btn--active': isActiveRoute('/sucursales') }">
+          :to="localePath('/sucursales')"
+          variant="text"
+          class="text-capitalize nav-btn"
+          :class="{ 'nav-btn--active': isActiveRoute('/sucursales') }"
+        >
           <VIcon start small>mdi-bank-outline</VIcon>
           {{ $t('sucursalesMenu') }}
         </VBtn>
 
         <!-- Donar -->
         <VBtn
-href="https://ko-fi.com/cambio_uruguay"
-target="_blank"
-rel="noopener noreferrer"
-variant="text"
-          class="text-capitalize nav-btn">
+          href="https://ko-fi.com/cambio_uruguay"
+          target="_blank"
+          rel="noopener noreferrer"
+          variant="text"
+          class="text-capitalize nav-btn"
+        >
           <VIcon start small>mdi-heart</VIcon>
           {{ $t('donar') }}
         </VBtn>
 
         <!-- Twitter -->
         <VBtn
-href="https://twitter.com/cambio_uruguay"
-target="_blank"
-rel="noopener noreferrer"
-variant="text"
-          class="text-capitalize nav-btn">
+          href="https://twitter.com/cambio_uruguay"
+          target="_blank"
+          rel="noopener noreferrer"
+          variant="text"
+          class="text-capitalize nav-btn"
+        >
           <VIcon start small>mdi-twitter</VIcon>
           Twitter
         </VBtn>
 
         <!-- Autor -->
         <VBtn
-href="https://www.linkedin.com/in/eduardo-airaudo/"
-target="_blank"
-rel="noopener noreferrer"
+          href="https://www.linkedin.com/in/eduardo-airaudo/"
+          target="_blank"
+          rel="noopener noreferrer"
           variant="text"
-class="text-capitalize nav-btn">
+          class="text-capitalize nav-btn"
+        >
           <VIcon start small>mdi-account-circle</VIcon>
           Autor
         </VBtn>
@@ -193,7 +209,7 @@ class="text-capitalize nav-btn">
 
     <Footer />
     <JoinTwitter />
-    
+
     <!-- Memory Monitor for debugging (only shows in development) -->
     <ClientOnly>
       <MemoryMonitor />
@@ -202,18 +218,20 @@ class="text-capitalize nav-btn">
 </template>
 
 <script setup lang="ts">
-import { useLocalePath } from '#imports';
-import { useLoadingStore } from '~/stores/loading';
+import { useLocalePath } from '#imports'
+import { useLoadingStore } from '~/stores/loading'
 
 const route = useRoute()
-console.log("route", route);
+console.log('route', route)
 const router = useRouter()
 const localePath = useLocalePath()
 const loadingStore = useLoadingStore()
 
 const formatNameRoute = () => {
   // Format the route name to be used in class names
-  return (route.name ? (route.name as string).split('_')[0] : 'default') + '_main'
+  return (
+    (route.name ? (route.name as string).split('_')[0] : 'default') + '_main'
+  )
 }
 
 // Navigation drawer state

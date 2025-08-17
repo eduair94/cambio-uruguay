@@ -1,6 +1,6 @@
 <template>
   <div class="chart-container">
-    <canvas ref="chartCanvas"/>
+    <canvas ref="chartCanvas" />
   </div>
 </template>
 
@@ -13,7 +13,7 @@ import {
   Legend,
   LinearScale,
   Title,
-  Tooltip
+  Tooltip,
 } from 'chart.js'
 
 ChartJS.register(
@@ -23,7 +23,7 @@ ChartJS.register(
   BarController,
   Title,
   Tooltip,
-  Legend
+  Legend,
 )
 
 export default {
@@ -31,16 +31,16 @@ export default {
   props: {
     chartData: {
       type: Object,
-      required: true
+      required: true,
     },
     options: {
       type: Object,
-      default: () => ({})
-    }
+      default: () => ({}),
+    },
   },
   data() {
     return {
-      chart: null
+      chart: null,
     }
   },
   watch: {
@@ -48,8 +48,8 @@ export default {
       deep: true,
       handler() {
         this.updateChart()
-      }
-    }
+      },
+    },
     // Removed options watcher to prevent infinite loop
   },
   mounted() {
@@ -76,7 +76,7 @@ export default {
       this.chart = new ChartJS(ctx, {
         type: 'bar',
         data: this.chartData,
-        options: this.options
+        options: this.options,
       })
     },
     updateChart() {
@@ -85,8 +85,8 @@ export default {
         this.chart.data = this.chartData
         this.chart.update('none') // Use 'none' mode to prevent animations and reduce triggers
       }
-    }
-  }
+    },
+  },
 }
 </script>
 

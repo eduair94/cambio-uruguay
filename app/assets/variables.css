@@ -1,7 +1,8 @@
 /* Global styles to prevent overlay DOM issues */
 
 /* Ensure body is always available for overlay manipulations */
-html, body {
+html,
+body {
   height: 100%;
   margin: 0;
   padding: 0;

@@ -32,28 +32,28 @@ if (typeof window !== 'undefined') {
   const cleanup = () => {
     const now = Date.now()
     const entries = Array.from(responseCache.entries())
-    
+
     // Remove expired entries
     for (const [key, { timestamp }] of entries) {
       if (now - timestamp > CACHE_DURATION) {
         responseCache.delete(key)
       }
     }
-    
+
     // If still too many entries, remove oldest
     if (responseCache.size > MAX_CACHE_SIZE) {
       const sortedEntries = entries
         .sort(([, a], [, b]) => a.timestamp - b.timestamp)
         .slice(0, responseCache.size - MAX_CACHE_SIZE)
-      
+
       for (const [key] of sortedEntries) {
         responseCache.delete(key)
       }
     }
   }
-  
+
   setInterval(cleanup, 60 * 1000) // Cleanup every minute
-  
+
   // Clear cache on page unload to prevent memory leaks
   window.addEventListener('beforeunload', () => {
     responseCache.clear()

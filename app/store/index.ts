@@ -1,7 +1,7 @@
 export const state = () => ({
   items: [],
   locations: [],
-  fortex: {}
+  fortex: {},
 })
 
 export const mutations = {
@@ -37,5 +37,5 @@ export const getters = {
   },
   fortex(state: any) {
     return state.fortex
-  }
+  },
 }

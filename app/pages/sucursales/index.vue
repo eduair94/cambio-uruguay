@@ -74,11 +74,7 @@
     <!-- Loading State -->
     <v-row v-if="pending">
       <v-col cols="12" class="text-center mt-5">
-        <v-progress-circular
-          indeterminate
-          color="primary"
-          size="64"
-        />
+        <v-progress-circular indeterminate color="primary" size="64" />
         <p class="mt-4 text-h6">{{ $t('sucursales.cargandoDatos') }}</p>
       </v-col>
     </v-row>
@@ -219,11 +215,7 @@
 
                   <!-- Action buttons -->
                   <div class="d-flex ga-2">
-                    <v-btn
-size="small"
-color="primary"
-variant="tonal"
-block>
+                    <v-btn size="small" color="primary" variant="tonal" block>
                       <v-icon start size="small">mdi-eye</v-icon>
                       {{ $t('sucursales.verSucursales') }}
                     </v-btn>
@@ -434,7 +426,7 @@ const getAvatarColor = (origin: string): string => {
   if (avatarColorCache.size >= MAX_AVATAR_CACHE_SIZE) {
     // Remove oldest entries (Map maintains insertion order)
     const keysToDelete = Array.from(avatarColorCache.keys()).slice(0, 10)
-    keysToDelete.forEach(key => avatarColorCache.delete(key))
+    keysToDelete.forEach((key) => avatarColorCache.delete(key))
   }
 
   const colors = [

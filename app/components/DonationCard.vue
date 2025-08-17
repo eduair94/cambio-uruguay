@@ -1,15 +1,15 @@
 <template>
-  <VCard 
-    class="donation-card" 
+  <VCard
+    class="donation-card"
     elevation="6"
     :class="{ 'donation-card--minimized': isMinimized }"
   >
     <!-- Minimized state -->
     <div v-if="isMinimized" class="donation-minimized pa-3">
-      <VBtn 
-        icon 
-        size="small" 
-        color="red" 
+      <VBtn
+        icon
+        size="small"
+        color="red"
         variant="text"
         @click="toggleCard"
         class="donation-expand-btn"
@@ -21,15 +21,19 @@
     <!-- Expanded state -->
     <div v-else class="donation-expanded">
       <!-- Header -->
-      <div class="donation-header pa-3 pb-2 d-flex align-center justify-space-between">
+      <div
+        class="donation-header pa-3 pb-2 d-flex align-center justify-space-between"
+      >
         <div class="d-flex align-center">
           <VIcon color="red" class="mr-2">mdi-heart</VIcon>
-          <span class="text-body-2 font-weight-medium">{{ $t('donation.supportProject') }}</span>
+          <span class="text-body-2 font-weight-medium">{{
+            $t('donation.supportProject')
+          }}</span>
         </div>
-        <VBtn 
-          icon 
-          size="x-small" 
-          variant="text" 
+        <VBtn
+          icon
+          size="x-small"
+          variant="text"
           @click="toggleCard"
           class="donation-close-btn"
         >
@@ -115,13 +119,17 @@ const toggleCard = () => {
 const trackDonation = (platform: string) => {
   // Track donation clicks (could be used for analytics)
   console.log(`Donation click: ${platform}`)
-  
+
   // You could add Google Analytics or other tracking here
-  if (typeof window !== 'undefined' && 'gtag' in window && typeof (window as any).gtag === 'function') {
-    (window as any).gtag('event', 'donation_click', {
+  if (
+    typeof window !== 'undefined' &&
+    'gtag' in window &&
+    typeof (window as any).gtag === 'function'
+  ) {
+    ;(window as any).gtag('event', 'donation_click', {
       platform: platform,
       currency: 'USD',
-      value: 1
+      value: 1,
     })
   }
 }
@@ -220,7 +228,7 @@ onMounted(() => {
     right: 15px;
     max-width: 250px;
   }
-  
+
   .donation-card--minimized {
     bottom: 20px;
     right: 15px;

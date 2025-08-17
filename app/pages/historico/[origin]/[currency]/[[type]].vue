@@ -152,11 +152,7 @@
     <!-- Loading State -->
     <v-row v-if="loading">
       <v-col cols="12" class="text-center">
-        <v-progress-circular
-          indeterminate
-          color="primary"
-          size="64"
-        />
+        <v-progress-circular indeterminate color="primary" size="64" />
         <p class="mt-4 text-h6">{{ $t('cargandoDatosHistoricos') }}</p>
       </v-col>
     </v-row>
@@ -287,7 +283,7 @@
             <v-card-title class="d-flex align-center flex-wrap ga-3 py-3">
               <v-icon start>mdi-chart-line</v-icon>
               {{ $t('evolucionCotizaciones') }} - {{ route.params.currency }}
-              <v-spacer/>
+              <v-spacer />
               <v-btn-toggle v-model="chartType" mandatory density="compact">
                 <v-btn variant="outlined" size="small" value="line">
                   <v-icon size="small">mdi-chart-line</v-icon>
@@ -339,7 +335,7 @@
             <v-card-title>
               <v-icon start>mdi-table</v-icon>
               {{ $t('datosDetallados') }}
-              <v-spacer/>
+              <v-spacer />
               <v-text-field
                 v-model="search"
                 append-inner-icon="mdi-magnify"
@@ -425,16 +421,16 @@
 <script setup lang="ts">
 import { useSeoMeta } from '#imports'
 import {
-    BarElement,
-    CategoryScale,
-    Chart as ChartJS,
-    Filler,
-    Legend,
-    LinearScale,
-    LineElement,
-    PointElement,
-    Title,
-    Tooltip,
+  BarElement,
+  CategoryScale,
+  Chart as ChartJS,
+  Filler,
+  Legend,
+  LinearScale,
+  LineElement,
+  PointElement,
+  Title,
+  Tooltip,
 } from 'chart.js'
 import moment from 'moment'
 import { computed, ref } from 'vue'
@@ -598,7 +594,9 @@ const {
   `evolution-${route.params.origin}-${route.params.currency}-${route.params.type || 'default'}`,
   async () => {
     const { origin, currency, type } = route.params
-    let period = route.query.period ? Number.parseInt(route.query.period as string) : 6
+    let period = route.query.period
+      ? Number.parseInt(route.query.period as string)
+      : 6
     if (isNaN(period) || ![3, 6, 12, 24].includes(period)) {
       period = 6 // Default to 6 months if invalid
     }
@@ -825,7 +823,8 @@ const savePeriodToStorage = (period: number) => {
 
 const updateUrlQuery = (period: number) => {
   // Update URL query parameter without navigation
-  if (route.query && Number.parseInt(route.query.period as string) === period) return
+  if (route.query && Number.parseInt(route.query.period as string) === period)
+    return
   const query = { period: period.toString() }
   router.replace({ query })
 }

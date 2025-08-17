@@ -35,24 +35,34 @@ export default createConfigForNuxt({
       // Vue-specific rules
       'vue/multi-word-component-names': 'off',
       'vue/no-multiple-template-root': 'off',
-      'vue/html-self-closing': ['error', {
-        html: {
-          void: 'always',
-          normal: 'always',
-          component: 'always',
+      'vue/html-self-closing': [
+        'error',
+        {
+          html: {
+            void: 'always',
+            normal: 'always',
+            component: 'always',
+          },
+          svg: 'always',
+          math: 'always',
         },
-        svg: 'always',
-        math: 'always',
-      }],
-      'vue/max-attributes-per-line': ['error', {
-        singleline: { max: 3 },
-        multiline: { max: 1 },
-      }],
+      ],
+      'vue/max-attributes-per-line': [
+        'error',
+        {
+          singleline: { max: 3 },
+          multiline: { max: 1 },
+        },
+      ],
       'vue/component-definition-name-casing': ['error', 'PascalCase'],
-      'vue/component-name-in-template-casing': ['error', 'PascalCase', {
-        registeredComponentsOnly: true,
-        ignores: [],
-      }],
+      'vue/component-name-in-template-casing': [
+        'error',
+        'PascalCase',
+        {
+          registeredComponentsOnly: true,
+          ignores: [],
+        },
+      ],
     },
   },
   {

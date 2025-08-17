@@ -10,7 +10,7 @@ declare module 'vue/types/options' {
 declare module 'vue/types/vue' {
   interface VueConstructor {
     extend<Data, Methods, Computed, Props>(
-      options?: ThisType<Data & Methods & Computed & Props> & object
+      options?: ThisType<Data & Methods & Computed & Props> & object,
     ): VueConstructor<Vue & Data & Methods & Computed & Props>
   }
 }

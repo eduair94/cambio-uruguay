@@ -1,8 +1,10 @@
 // Simple Vue plugins for Nuxt 3
 export default defineNuxtPlugin((nuxtApp) => {
   let errorHandler: ((event: ErrorEvent) => boolean | void) | null = null
-  let rejectionHandler: ((event: PromiseRejectionEvent) => boolean | void) | null = null
-  
+  let rejectionHandler:
+    | ((event: PromiseRejectionEvent) => boolean | void)
+    | null = null
+
   // Add global error handler to catch browser extension errors
   if (import.meta.client) {
     errorHandler = (event: ErrorEvent) => {
@@ -40,13 +42,13 @@ export default defineNuxtPlugin((nuxtApp) => {
     nuxtApp.hook('app:beforeMount', () => {
       // Store cleanup functions for later use
       if (typeof window !== 'undefined' && (window as any).__vuePluginCleanup) {
-        (window as any).__vuePluginCleanup()
+        ;(window as any).__vuePluginCleanup()
       }
     })
 
     // Store cleanup in window for access during navigation
     if (typeof window !== 'undefined') {
-      (window as any).__vuePluginCleanup = () => {
+      ;(window as any).__vuePluginCleanup = () => {
         if (errorHandler) {
           window.removeEventListener('error', errorHandler)
           errorHandler = null
