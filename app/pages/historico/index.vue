@@ -5,9 +5,7 @@
         <v-card>
           <v-card-title class="d-flex align-center flex-wrap ga-3 py-4">
             <v-icon class="mr-2" color="primary">mdi-chart-line</v-icon>
-            <span class="text-h5 text-md-h4">{{
-              $t('historical.currentQuotes')
-            }}</span>
+            <span class="text-h5 text-md-h4">{{ $t('historical.currentQuotes') }}</span>
             <v-spacer />
             <ClientOnly>
               <Updated />
@@ -136,12 +134,7 @@
 
             <!-- Celda de Tipo -->
             <template #item.type="{ item }">
-              <v-chip
-                v-if="item.type"
-                size="small"
-                :color="getTypeColor(item.type)"
-                variant="flat"
-              >
+              <v-chip v-if="item.type" size="small" :color="getTypeColor(item.type)" variant="flat">
                 {{ item.type }}
               </v-chip>
               <span v-else class="text-grey">-</span>
@@ -150,29 +143,21 @@
             <!-- Celda de Compra -->
             <template #item.buy="{ item }">
               <div class="text-right">
-                <span class="font-weight-bold text-success">
-                  ${{ formatNumber(item.buy) }}
-                </span>
+                <span class="font-weight-bold text-success"> ${{ formatNumber(item.buy) }} </span>
               </div>
             </template>
 
             <!-- Celda de Venta -->
             <template #item.sell="{ item }">
               <div class="text-right">
-                <span class="font-weight-bold text-error">
-                  ${{ formatNumber(item.sell) }}
-                </span>
+                <span class="font-weight-bold text-error"> ${{ formatNumber(item.sell) }} </span>
               </div>
             </template>
 
             <!-- Celda de Spread -->
             <template #item.spread="{ item }">
               <div class="text-right">
-                <v-chip
-                  size="small"
-                  :color="getSpreadColor(item.spread)"
-                  variant="flat"
-                >
+                <v-chip size="small" :color="getSpreadColor(item.spread)" variant="flat">
                   {{ formatNumber(item.spread) }}%
                 </v-chip>
               </div>
@@ -188,11 +173,7 @@
             <!-- Slot para cuando no hay datos -->
             <template #no-data>
               <div class="text-center pa-4">
-                <v-icon
-size="64"
-color="grey-lighten-1"
-                  >mdi-database-remove</v-icon
-                >
+                <v-icon size="64" color="grey-lighten-1">mdi-database-remove</v-icon>
                 <p class="text-h6 text-grey mt-4">
                   {{ $t('historical.noDataAvailable') }}
                 </p>
@@ -270,10 +251,7 @@ const selectedCurrency = ref<string[]>([])
 const selectedType = ref<string[]>([])
 
 // Load data using useAsyncData for SSR
-const {
-  data: rawData,
-  pending: loading,
-} = await useAsyncData(
+const { data: rawData, pending: loading } = await useAsyncData(
   'historico-cambios',
   async () => {
     try {
@@ -303,7 +281,7 @@ const {
         error: null,
       }
     },
-  },
+  }
 )
 const localePath = useLocalePath()
 const getLink = (item: CambioItem): string => {
@@ -379,11 +357,9 @@ const headers = computed(() => [
 ])
 
 const originOptions = computed(() => {
-  const origins = [
-    ...new Set(items.value.map((item) => item.origin).filter(Boolean)),
-  ]
-  return origins.sort().map((origin) => {
-    const item = items.value.find((i) => i.origin === origin)
+  const origins = [...new Set(items.value.map(item => item.origin).filter(Boolean))]
+  return origins.sort().map(origin => {
+    const item = items.value.find(i => i.origin === origin)
     return {
       title: item?.localData?.name || formatOriginName(origin),
       value: origin,
@@ -392,20 +368,16 @@ const originOptions = computed(() => {
 })
 
 const currencyOptions = computed(() => {
-  const currencies = [
-    ...new Set(items.value.map((item) => item.code).filter(Boolean)),
-  ]
-  return currencies.sort().map((currency) => ({
+  const currencies = [...new Set(items.value.map(item => item.code).filter(Boolean))]
+  return currencies.sort().map(currency => ({
     title: `${currency} - ${getCurrencyName(currency)}`,
     value: currency,
   }))
 })
 
 const typeOptions = computed(() => {
-  const types = [
-    ...new Set(items.value.map((item) => item.type).filter(Boolean)),
-  ]
-  return types.sort().map((type) => ({
+  const types = [...new Set(items.value.map(item => item.type).filter(Boolean))]
+  return types.sort().map(type => ({
     title: type,
     value: type,
   }))
@@ -415,19 +387,15 @@ const filteredItems = computed(() => {
   let filtered = items.value
 
   if (selectedOrigin.value.length > 0) {
-    filtered = filtered.filter((item) =>
-      selectedOrigin.value.includes(item.origin),
-    )
+    filtered = filtered.filter(item => selectedOrigin.value.includes(item.origin))
   }
 
   if (selectedCurrency.value.length > 0) {
-    filtered = filtered.filter((item) =>
-      selectedCurrency.value.includes(item.code),
-    )
+    filtered = filtered.filter(item => selectedCurrency.value.includes(item.code))
   }
 
   if (selectedType.value.length > 0) {
-    filtered = filtered.filter((item) => selectedType.value.includes(item.type))
+    filtered = filtered.filter(item => selectedType.value.includes(item.type))
   }
 
   return filtered
@@ -498,10 +466,7 @@ const formatOriginName = (origin: string, item?: CambioItem): string => {
     cambio_obelisco: 'Cambio Obelisco',
   }
 
-  return (
-    nameMap[origin] ||
-    origin.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
-  )
+  return nameMap[origin] || origin.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
 }
 
 const getCurrencyName = (code: string): string => {
@@ -533,8 +498,7 @@ const getTypeColor = (type: string): string => {
 }
 
 const getSpreadColor = (spread: number | string): string => {
-  const spreadNum =
-    typeof spread === 'number' ? spread : Number.parseFloat(String(spread))
+  const spreadNum = typeof spread === 'number' ? spread : Number.parseFloat(String(spread))
   if (spreadNum <= 2) return 'green'
   if (spreadNum <= 5) return 'orange'
   return 'red'

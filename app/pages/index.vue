@@ -4,15 +4,9 @@
     <section class="hero-section pt-0 pt-md-5">
       <VContainer>
         <VRow justify="center" align="center" class="min-height-hero">
-          <VCol
-cols="12"
-md="12"
-lg="12"
-class="text-center">
+          <VCol cols="12" md="12" lg="12" class="text-center">
             <div class="hero-content">
-              <h1
-                class="hero-title text-h4 text-md-h3 text-md-h2 font-weight-bold mb-4"
-              >
+              <h1 class="hero-title text-h4 text-md-h3 text-md-h2 font-weight-bold mb-4">
                 {{ t('simpleTitle') }}
               </h1>
               <p class="hero-subtitle text-h6 text-grey-lighten-1 mb-6">
@@ -117,16 +111,10 @@ class="text-center">
                   color="rgba(76, 175, 80, 0.1)"
                   variant="outlined"
                 >
-                  <VRow
-                    align="center"
-                    justify="center"
-                    class="conversion-display-row"
-                  >
+                  <VRow align="center" justify="center" class="conversion-display-row">
                     <VCol cols="5" sm="4" class="text-center align-self-start">
                       <div class="conversion-display">
-                        <span class="amount-text">{{
-                          formatCurrency(amount)
-                        }}</span>
+                        <span class="amount-text">{{ formatCurrency(amount) }}</span>
                         <span v-if="selectedCurrency" class="currency-name">{{
                           t('codes.' + selectedCurrency)
                         }}</span>
@@ -142,11 +130,9 @@ class="text-center">
                         <span class="amount-text converted">{{
                           formatCurrency(conversionResult.convertedAmount)
                         }}</span>
-                        <span
-                          v-if="selectedTargetCurrency"
-                          class="currency-name"
-                          >{{ t('codes.' + selectedTargetCurrency) }}</span
-                        >
+                        <span v-if="selectedTargetCurrency" class="currency-name">{{
+                          t('codes.' + selectedTargetCurrency)
+                        }}</span>
                       </div>
                     </VCol>
                   </VRow>
@@ -175,9 +161,7 @@ class="text-center">
                   color="rgba(33, 150, 243, 0.1)"
                   variant="outlined"
                 >
-                  <h3
-                    class="text-h6 font-weight-bold mb-3 mb-md-6 text-center text-white"
-                  >
+                  <h3 class="text-h6 font-weight-bold mb-3 mb-md-6 text-center text-white">
                     {{ getBestRatesTitle() }}
                   </h3>
 
@@ -192,23 +176,17 @@ class="text-center">
                     >
                       <nuxt-link
                         class="d-flex w-100 h-100 text-decoration-none"
-                        :to="
-                          localePath(`/historico/${rate.origin}/${rate.code}`)
-                        "
+                        :to="localePath(`/historico/${rate.origin}/${rate.code}`)"
                       >
                         <VCard
                           class="rate-item pa-3 text-center flex-grow-1"
                           :color="getRateCardColor(index)"
                           variant="tonal"
                         >
-                          <div
-                            class="rate-position text-h6 font-weight-bold mb-2"
-                          >
+                          <div class="rate-position text-h6 font-weight-bold mb-2">
                             #{{ index + 1 }}
                           </div>
-                          <div
-                            class="rate-name text-body-2 font-weight-medium mb-1"
-                          >
+                          <div class="rate-name text-body-2 font-weight-medium mb-1">
                             {{ rate.source }}
                           </div>
                           <div class="rate-value text-h6 font-weight-bold mb-1">
@@ -270,11 +248,7 @@ class="text-center">
               class="d-flex w-100 h-100 text-decoration-none"
               :to="localePath(`/historico/${exchange.origin}/${exchange.code}`)"
             >
-              <VCard
-                class="exchange-house-card pa-4 h-100 w-100"
-                elevation="4"
-                hover
-              >
+              <VCard class="exchange-house-card pa-4 h-100 w-100" elevation="4" hover>
                 <div class="text-center">
                   <VAvatar size="64" color="primary" class="mb-4">
                     <VIcon size="32" color="white"> mdi-bank </VIcon>
@@ -312,13 +286,7 @@ class="text-center">
         </VRow>
 
         <VRow>
-          <VCol
-            v-for="(step, index) in steps"
-            :key="index"
-            cols="12"
-            sm="6"
-            md="3"
-          >
+          <VCol v-for="(step, index) in steps" :key="index" cols="12" sm="6" md="3">
             <div class="step-card text-center pa-4">
               <VAvatar size="80" color="primary" class="mb-4">
                 <span class="text-h4 font-weight-bold">{{ index + 1 }}</span>
@@ -352,12 +320,8 @@ class="text-center">
         <VRow>
           <VCol
             v-for="feature in features"
-            :key="feature.title"
-            cols="12"
-            sm="6"
-            md="4"
-            lg="3"
-          >
+            :key="feature.title" 
+            cols="12" sm="6" md="4" lg="3">
             <VCard
               v-if="feature.title === t('feature5Title')"
               class="feature-card pa-6 h-100 cursor-pointer"
@@ -502,7 +466,7 @@ const amountInput = ref(
   (() => {
     const queryAmount = Number(route.query.amount)
     return queryAmount && queryAmount > 0 ? queryAmount : 100
-  })(),
+  })()
 )
 
 // selectedCurrency, selectedTargetCurrency, and amount are refs, set manually on button click
@@ -516,7 +480,7 @@ const availableCurrencies = ref<string[]>(['USD', 'ARS', 'BRL', 'EUR', 'UYU'])
 
 // Popular currencies without flags - for autocomplete
 const currencyOptions = computed(() => {
-  return availableCurrencies.value.map((code) => ({
+  return availableCurrencies.value.map(code => ({
     title: code ? code + ' - ' + t('codes.' + code) : '',
     value: code,
   }))
@@ -526,11 +490,10 @@ const topExchanges = computed(() => {
   if (!realExchangeData.value.length || !selectedCurrency.value) return []
 
   const currencyData = realExchangeData.value.filter(
-    (item) =>
-      (item.code === selectedCurrency.value ||
-        item.code === selectedTargetCurrency.value) &&
+    item =>
+      (item.code === selectedCurrency.value || item.code === selectedTargetCurrency.value) &&
       item.localData?.name &&
-      (item.buy > 0 || item.sell > 0),
+      (item.buy > 0 || item.sell > 0)
   )
 
   if (currencyData.length === 0) return []
@@ -538,8 +501,7 @@ const topExchanges = computed(() => {
   // Determine if we're converting FROM or TO the selected currency
   const isConvertingFrom =
     selectedCurrency.value !== 'UYU' && selectedTargetCurrency.value === 'UYU'
-  const isConvertingTo =
-    selectedCurrency.value === 'UYU' && selectedTargetCurrency.value !== 'UYU'
+  const isConvertingTo = selectedCurrency.value === 'UYU' && selectedTargetCurrency.value !== 'UYU'
 
   let rates = []
 
@@ -547,7 +509,7 @@ const topExchanges = computed(() => {
     // User is selling the selected currency (FROM currency TO UYU)
     // Show top 4 selling rates (highest buy rates = best for user selling)
     rates = currencyData
-      .map((item) => ({
+      .map(item => ({
         source: item.localData?.name || item.origin,
         rate: item.buy,
         type: 'buy' as const, // This is what the exchange house pays (buys from user)
@@ -561,7 +523,7 @@ const topExchanges = computed(() => {
     // User is buying the selected currency (FROM UYU TO currency)
     // Show top 4 buying rates (lowest sell rates = best for user buying)
     rates = currencyData
-      .map((item) => ({
+      .map(item => ({
         source: item.localData?.name || item.origin,
         rate: item.sell,
         type: 'sell' as const, // This is what the exchange house sells (user buys)
@@ -574,8 +536,8 @@ const topExchanges = computed(() => {
   } else {
     // For other conversions, show mixed rates (2 buy + 2 sell)
     const buyRates = currencyData
-      .filter((item) => item.code === selectedCurrency.value)
-      .map((item) => ({
+      .filter(item => item.code === selectedCurrency.value)
+      .map(item => ({
         source: item.localData?.name || item.origin,
         rate: item.buy,
         type: 'buy' as const,
@@ -588,8 +550,8 @@ const topExchanges = computed(() => {
       .slice(0, 4)
 
     const sellRates = currencyData
-      .filter((item) => item.code === selectedTargetCurrency.value)
-      .map((item) => ({
+      .filter(item => item.code === selectedTargetCurrency.value)
+      .map(item => ({
         source: item.localData?.name || item.origin,
         rate: item.sell,
         type: 'sell' as const,
@@ -673,8 +635,7 @@ const features = computed<Feature[]>(() => [
 const getRateTypeLabel = (type: 'buy' | 'sell'): string => {
   const isConvertingFrom =
     selectedCurrency.value !== 'UYU' && selectedTargetCurrency.value === 'UYU'
-  const isConvertingTo =
-    selectedCurrency.value === 'UYU' && selectedTargetCurrency.value !== 'UYU'
+  const isConvertingTo = selectedCurrency.value === 'UYU' && selectedTargetCurrency.value !== 'UYU'
 
   if (isConvertingFrom) {
     // User is selling the selected currency
@@ -690,13 +651,11 @@ const getRateTypeLabel = (type: 'buy' | 'sell'): string => {
 
 // Get appropriate title for best rates section
 const getBestRatesTitle = (): string => {
-  if (!selectedCurrency.value || !selectedTargetCurrency.value)
-    return t('topBestRates')
+  if (!selectedCurrency.value || !selectedTargetCurrency.value) return t('topBestRates')
 
   const isConvertingFrom =
     selectedCurrency.value !== 'UYU' && selectedTargetCurrency.value === 'UYU'
-  const isConvertingTo =
-    selectedCurrency.value === 'UYU' && selectedTargetCurrency.value !== 'UYU'
+  const isConvertingTo = selectedCurrency.value === 'UYU' && selectedTargetCurrency.value !== 'UYU'
 
   if (isConvertingFrom) {
     return t('bestToSell') + ` ${selectedCurrency.value}`
@@ -717,7 +676,7 @@ const getExchangeRate = (fromCurrency: string, toCurrency: string): number => {
   if (toCurrency === 'UYU') {
     const currencyData = realExchangeData.value
       .sort((a, b) => b.buy - a.buy)
-      .find((item) => item.code === fromCurrency && item.buy > 0)
+      .find(item => item.code === fromCurrency && item.buy > 0)
     return currencyData ? currencyData.buy : 0
   }
 
@@ -725,7 +684,7 @@ const getExchangeRate = (fromCurrency: string, toCurrency: string): number => {
   if (fromCurrency === 'UYU') {
     const currencyData = realExchangeData.value
       .sort((a, b) => a.sell - b.sell)
-      .find((item) => item.code === toCurrency && item.sell > 0)
+      .find(item => item.code === toCurrency && item.sell > 0)
     return currencyData?.sell ? 1 / currencyData.sell : 0
   }
 
@@ -744,10 +703,7 @@ const conversionResult = ref({
 
 // Conversion result computed property
 const setConversionRate = () => {
-  const rate = getExchangeRate(
-    selectedCurrency.value,
-    selectedTargetCurrency.value,
-  )
+  const rate = getExchangeRate(selectedCurrency.value, selectedTargetCurrency.value)
   conversionResult.value = {
     rate,
     invertedRate: 1 / rate,
@@ -761,11 +717,10 @@ const top4BestRates = computed(() => {
   if (!realExchangeData.value.length || !selectedCurrency.value) return []
 
   const currencyData = realExchangeData.value.filter(
-    (item) =>
-      (item.code === selectedCurrency.value ||
-        item.code === selectedTargetCurrency.value) &&
+    item =>
+      (item.code === selectedCurrency.value || item.code === selectedTargetCurrency.value) &&
       item.localData?.name &&
-      (item.buy > 0 || item.sell > 0),
+      (item.buy > 0 || item.sell > 0)
   )
 
   if (currencyData.length === 0) return []
@@ -773,8 +728,7 @@ const top4BestRates = computed(() => {
   // Determine if we're converting FROM or TO the selected currency
   const isConvertingFrom =
     selectedCurrency.value !== 'UYU' && selectedTargetCurrency.value === 'UYU'
-  const isConvertingTo =
-    selectedCurrency.value === 'UYU' && selectedTargetCurrency.value !== 'UYU'
+  const isConvertingTo = selectedCurrency.value === 'UYU' && selectedTargetCurrency.value !== 'UYU'
 
   let rates = []
 
@@ -782,7 +736,7 @@ const top4BestRates = computed(() => {
     // User is selling the selected currency (FROM currency TO UYU)
     // Show top 4 selling rates (highest buy rates = best for user selling)
     rates = currencyData
-      .map((item) => ({
+      .map(item => ({
         source: item.localData?.name || item.origin,
         rate: item.buy,
         code: item.code,
@@ -795,7 +749,7 @@ const top4BestRates = computed(() => {
     // User is buying the selected currency (FROM UYU TO currency)
     // Show top 4 buying rates (lowest sell rates = best for user buying)
     rates = currencyData
-      .map((item) => ({
+      .map(item => ({
         source: item.localData?.name || item.origin,
         rate: item.sell,
         code: item.code,
@@ -807,8 +761,8 @@ const top4BestRates = computed(() => {
   } else {
     // For other conversions, show mixed rates (2 buy + 2 sell)
     const buyRates = currencyData
-      .filter((item) => item.code === selectedCurrency.value)
-      .map((item) => ({
+      .filter(item => item.code === selectedCurrency.value)
+      .map(item => ({
         source: item.localData?.name || item.origin,
         rate: item.buy,
         code: item.code,
@@ -819,8 +773,8 @@ const top4BestRates = computed(() => {
       .slice(0, 2)
 
     const sellRates = currencyData
-      .filter((item) => item.code === selectedTargetCurrency.value)
-      .map((item) => ({
+      .filter(item => item.code === selectedTargetCurrency.value)
+      .map(item => ({
         source: item.localData?.name || item.origin,
         rate: item.sell,
         code: item.code,
@@ -900,9 +854,8 @@ const loadInitialData = async () => {
     }
 
     // Store the real exchange data
-    const realData = data.exchangeData.filter((item) => {
-      if (item.isInterBank && ['USD', 'BRL', 'ARG'].includes(item.code))
-        return false
+    const realData = data.exchangeData.filter(item => {
+      if (item.isInterBank && ['USD', 'BRL', 'ARG'].includes(item.code)) return false
       return true
     })
 
@@ -1013,11 +966,7 @@ useSeoMeta({
 }
 
 .hero-section {
-  background: linear-gradient(
-    135deg,
-    rgba(25, 32, 72, 0.95) 0%,
-    rgba(76, 81, 191, 0.85) 100%
-  );
+  background: linear-gradient(135deg, rgba(25, 32, 72, 0.95) 0%, rgba(76, 81, 191, 0.85) 100%);
   position: relative;
   overflow: hidden;
 }
@@ -1306,11 +1255,7 @@ useSeoMeta({
     z-index: 10;
 
     .swap-btn {
-      background: linear-gradient(
-        135deg,
-        rgba(25, 32, 72, 0.95) 0%,
-        rgba(76, 81, 191, 0.85) 100%
-      );
+      background: linear-gradient(135deg, rgba(25, 32, 72, 0.95) 0%, rgba(76, 81, 191, 0.85) 100%);
       border-color: transparent;
 
       box-shadow: rgba(0, 0, 0, 0.2);

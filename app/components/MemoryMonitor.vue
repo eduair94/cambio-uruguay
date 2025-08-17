@@ -4,10 +4,7 @@
       <div class="memory-stats">
         <div class="stat">
           <span class="label">Used:</span>
-          <span
-            class="value"
-            :class="{ warning: memoryUsage > 50, critical: memoryUsage > 80 }"
-          >
+          <span class="value" :class="{ warning: memoryUsage > 50, critical: memoryUsage > 80 }">
             {{ formatBytes(usedJSHeapSize) }}
           </span>
         </div>
@@ -21,28 +18,15 @@
         </div>
         <div class="stat">
           <span class="label">Usage:</span>
-          <span
-            class="value"
-            :class="{ warning: memoryUsage > 50, critical: memoryUsage > 80 }"
-          >
+          <span class="value" :class="{ warning: memoryUsage > 50, critical: memoryUsage > 80 }">
             {{ memoryUsage.toFixed(1) }}%
           </span>
         </div>
       </div>
-      <button
-        class="gc-button"
-        title="Force Garbage Collection"
-        @click="forceGarbageCollection"
-      >
+      <button class="gc-button" title="Force Garbage Collection" @click="forceGarbageCollection">
         🗑️ GC
       </button>
-      <button
-        class="close-button"
-        title="Hide Monitor"
-        @click="showMonitor = false"
-      >
-        ✕
-      </button>
+      <button class="close-button" title="Hide Monitor" @click="showMonitor = false">✕</button>
     </div>
   </div>
   <button
@@ -62,9 +46,7 @@ const totalJSHeapSize = ref(0)
 const jsHeapSizeLimit = ref(0)
 
 const memoryUsage = computed(() => {
-  return jsHeapSizeLimit.value > 0
-    ? (usedJSHeapSize.value / jsHeapSizeLimit.value) * 100
-    : 0
+  return jsHeapSizeLimit.value > 0 ? (usedJSHeapSize.value / jsHeapSizeLimit.value) * 100 : 0
 })
 
 let intervalId: NodeJS.Timeout | null = null
@@ -113,7 +95,7 @@ const formatBytes = (bytes: number): string => {
   return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
 
-watch(showMonitor, (show) => {
+watch(showMonitor, show => {
   if (show) {
     updateMemoryStats()
     intervalId = setInterval(updateMemoryStats, 1000)
@@ -135,8 +117,7 @@ onBeforeUnmount(() => {
 // Only show in development or with debug flag
 const isDevelopment =
   process.env.NODE_ENV === 'development' ||
-  (typeof window !== 'undefined' &&
-    window.location.search.includes('debug=memory'))
+  (typeof window !== 'undefined' && window.location.search.includes('debug=memory'))
 
 // Auto-hide if memory is not available
 onMounted(() => {

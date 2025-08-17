@@ -1,6 +1,6 @@
 import { useLoadingStore } from '~/stores/loading'
 
-export default defineNuxtPlugin((nuxtApp) => {
+export default defineNuxtPlugin(nuxtApp => {
   const loadingStore = useLoadingStore()
   let loadHandler: (() => void) | null = null
 

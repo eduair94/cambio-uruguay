@@ -78,7 +78,7 @@ export const useApiService = () => {
     return await $fetch('/', {
       baseURL: getApiBaseUrl(),
       query: { date: date || undefined },
-    }).catch((error) => {
+    }).catch(error => {
       // Extract detailed error information
       const errorResponse = error.response?.data || error.data || null
       if (errorResponse) {
@@ -97,7 +97,7 @@ export const useApiService = () => {
   const getLocalData = async (): Promise<any> => {
     return await $fetch('/localData', {
       baseURL: getApiBaseUrl(),
-    }).catch((error) => {
+    }).catch(error => {
       // Extract detailed error information
       const errorResponse = error.response?.data || error.data || null
       if (errorResponse) {
@@ -114,10 +114,7 @@ export const useApiService = () => {
    * Fetch both exchange data and local data in parallel
    */
   const getExchangeDataWithLocal = async (date: string) => {
-    const [exchangeData, localData] = await Promise.all([
-      getExchangeData(date),
-      getLocalData(),
-    ])
+    const [exchangeData, localData] = await Promise.all([getExchangeData(date), getLocalData()])
 
     return {
       exchangeData,
@@ -144,9 +141,7 @@ export const useApiService = () => {
         }
 
         // Determine if it's an interbank transaction
-        el.isInterBank =
-          el.origin === 'bcu' ||
-          ['INTERBANCARIO', 'FONDO/CABLE'].includes(el.type)
+        el.isInterBank = el.origin === 'bcu' || ['INTERBANCARIO', 'FONDO/CABLE'].includes(el.type)
 
         // Add condition based on origin/type
         if (el.origin === 'prex') {
@@ -211,8 +206,7 @@ export const useApiService = () => {
 
       // Create detailed error response
       const errorResponse = {
-        message:
-          error?.message || 'An error occurred while fetching exchange data',
+        message: error?.message || 'An error occurred while fetching exchange data',
         status: error?.status || null,
         statusText: error?.statusText || null,
         data: error?.data || null,
@@ -250,13 +244,10 @@ export const useApiService = () => {
    */
   const geocodeAddress = async (address: string) => {
     try {
-      const data = await $fetch<GeocodeData[]>(
-        'https://api.cambio-uruguay.com/geocoding',
-        {
-          method: 'POST',
-          body: { address },
-        },
-      )
+      const data = await $fetch<GeocodeData[]>('https://api.cambio-uruguay.com/geocoding', {
+        method: 'POST',
+        body: { address },
+      })
 
       return {
         error: null,
@@ -330,7 +321,7 @@ export const useApiService = () => {
     origin: string,
     currency: string,
     type?: string,
-    period: number = 6,
+    period: number = 6
   ) => {
     try {
       // Build the URL with optional type parameter
@@ -366,7 +357,7 @@ export const useApiService = () => {
     origin: string,
     location: string,
     latitude?: number,
-    longitude?: number,
+    longitude?: number
   ): Promise<any> => {
     try {
       const url = `/exchanges/${origin}/${location}`

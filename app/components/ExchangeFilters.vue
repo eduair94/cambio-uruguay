@@ -42,10 +42,7 @@
                 prepend-inner-icon="mdi-calendar"
               />
             </template>
-            <VDatePicker
-              :model-value="selectedDate"
-              @update:model-value="handleDateChange"
-            />
+            <VDatePicker :model-value="selectedDate" @update:model-value="handleDateChange" />
           </VMenu>
           <VBtn
             class="primary"
@@ -69,11 +66,7 @@
           hide-details
           @update:model-value="$emit('update:wantTo', $event ? $event : '')"
         >
-          <VRadio
-            color="blue darken-2"
-            :label="$t('wantToSell')"
-            value="sell"
-          />
+          <VRadio color="blue darken-2" :label="$t('wantToSell')" value="sell" />
           <VRadio color="blue darken-2" :label="$t('wantToBuy')" value="buy" />
         </VRadioGroup>
       </VCol>
@@ -88,12 +81,7 @@
           @update:model-value="$emit('update:amount', $event)"
         >
           <template #append>
-            <VBtn
-              size="small"
-              icon
-              color="primary"
-              @click="changeCode(code, codeWith)"
-            >
+            <VBtn size="small" icon color="primary" @click="changeCode(code, codeWith)">
               <VIcon>mdi-cached</VIcon>
             </VBtn>
           </template>
@@ -110,9 +98,7 @@
           @update:model-value="$emit('update:code', $event)"
         >
           <template #selection="{ item }">
-            <span v-if="item.raw"
-              >{{ item.raw.value }} - {{ getTexts(item.raw) }}</span
-            >
+            <span v-if="item.raw">{{ item.raw.value }} - {{ getTexts(item.raw) }}</span>
           </template>
           <template #item="{ props: itemProps, item }">
             <VListItem
@@ -132,9 +118,7 @@
           @update:model-value="$emit('update:codeWith', $event)"
         >
           <template #selection="{ item }">
-            <span v-if="item.raw"
-              >{{ item.raw.value }} - {{ getTexts(item.raw) }}</span
-            >
+            <span v-if="item.raw">{{ item.raw.value }} - {{ getTexts(item.raw) }}</span>
           </template>
 
           <template #item="{ props: itemProps, item }">
@@ -195,12 +179,7 @@
       <VCol class="py-0 my-0 mt-1 mt-md-3" cols="12">
         <span>{{ getText() }}</span
         ><br />
-        <VAlert
-          v-if="amount"
-          class="bg-green-darken-4 mb-0 mt-3"
-          type="success"
-          density="compact"
-        >
+        <VAlert v-if="amount" class="bg-green-darken-4 mb-0 mt-3" type="success" density="compact">
           {{ savings }}
         </VAlert>
       </VCol>

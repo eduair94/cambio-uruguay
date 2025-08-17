@@ -38,11 +38,7 @@
     <!-- Special Messages for Prex and EBROU -->
     <v-row v-if="specialMessage">
       <v-col cols="12">
-        <v-alert
-type="info"
-prominent
-border="start"
-class="ma-4">
+        <v-alert type="info" prominent border="start" class="ma-4">
           <h3>{{ $t('informacionImportante') }}</h3>
           <p>{{ specialMessage }}</p>
         </v-alert>
@@ -121,12 +117,7 @@ class="ma-4">
             </template>
 
             <template #item.distance="{ item }">
-              <v-chip
-                v-if="(item as any).distance"
-                size="small"
-                color="info"
-                variant="tonal"
-              >
+              <v-chip v-if="(item as any).distance" size="small" color="info" variant="tonal">
                 {{ ((item as any).distance / 1000).toFixed(1) }} km
               </v-chip>
             </template>
@@ -134,9 +125,7 @@ class="ma-4">
 
           <!-- No data state -->
           <v-card-text v-else class="text-center pa-8">
-            <v-icon size="64" color="grey-lighten-1" class="mb-4">
-              mdi-bank-off
-            </v-icon>
+            <v-icon size="64" color="grey-lighten-1" class="mb-4"> mdi-bank-off </v-icon>
             <h3 class="text-h6 mb-2">{{ $t('noSucursalesEncontradas') }}</h3>
             <p class="text-body-2 text-grey">
               {{ $t('noSucursalesDisponibles') }}
@@ -151,7 +140,7 @@ class="ma-4">
 <script setup lang="ts">
 // Define page meta for route validation
 definePageMeta({
-  validate: (route) => {
+  validate: route => {
     return !!route.params.origin
   },
 })
@@ -213,27 +202,19 @@ const {
   data: branchesData,
   pending,
   error,
-} = await useLazyAsyncData(
-  `branches-${origin}-${location || 'all'}`,
-  async () => {
-    // Skip API call for special cases
-    if (origin === 'prex' || origin === 'ebrou') {
-      return []
-    }
+} = await useLazyAsyncData(`branches-${origin}-${location || 'all'}`, async () => {
+  // Skip API call for special cases
+  if (origin === 'prex' || origin === 'ebrou') {
+    return []
+  }
 
-    try {
-      return await getExchangesByOriginLocation(
-        origin,
-        location || '',
-        undefined,
-        undefined,
-      )
-    } catch (err) {
-      console.error('Error fetching branches data:', err)
-      throw err
-    }
-  },
-)
+  try {
+    return await getExchangesByOriginLocation(origin, location || '', undefined, undefined)
+  } catch (err) {
+    console.error('Error fetching branches data:', err)
+    throw err
+  }
+})
 
 // SEO Meta
 useSeoMeta({

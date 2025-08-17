@@ -3,9 +3,7 @@
     <h2 class="font-weight-regular text-body-1">
       {{ fixTitle($t('title')) }}
     </h2>
-    <div
-      class="d-flex flex-wrap align-center top_container justify-space-between mb-md-4"
-    >
+    <div class="d-flex flex-wrap align-center top_container justify-space-between mb-md-4">
       <div
         class="my-3 mb-0 md-md-3 bg-grey-darken-3 pa-3 px-lg-5 text-subtitle-1 d-flex align-center flex-wrap donation_container"
       >

@@ -9,19 +9,16 @@
 const { getHealthStatus } = useApiService()
 
 // Use server-side data fetching with automatic hydration
-const { data: healthData, error: _error } = await useLazyAsyncData(
-  'health-status',
-  async () => {
-    const { data, error } = await getHealthStatus()
+const { data: healthData, error: _error } = await useLazyAsyncData('health-status', async () => {
+  const { data, error } = await getHealthStatus()
 
-    if (error || !data) {
-      console.error('Failed to fetch health status:', error)
-      return null
-    }
+  if (error || !data) {
+    console.error('Failed to fetch health status:', error)
+    return null
+  }
 
-    return data
-  },
-)
+  return data
+})
 
 // Computed property to format the lastUpdate
 const lastUpdate = computed(() => {

@@ -1,14 +1,9 @@
 <template>
   <v-dialog v-model="dialog" :fullscreen="mobile" width="1500px">
     <template #activator="{ props }">
-      <a
-        class="text-white"
-        :href="maps"
-        target="_blank"
-        v-bind="props"
-        @click.prevent="getData"
-        >{{ t('buscarSucursal') }}</a
-      >
+      <a class="text-white" :href="maps" target="_blank" v-bind="props" @click.prevent="getData">{{
+        t('buscarSucursal')
+      }}</a>
     </template>
     <v-card>
       <v-toolbar color="primary" theme="dark">
@@ -142,7 +137,7 @@ const getMaps = (item: any) => {
   const longitude = item.longitude
   if (!notFound.includes(props.origin)) {
     return `https://www.google.com.uy/maps/search/${encodeURI(
-      props.localData.name,
+      props.localData.name
     )}/@${latitude},${longitude},18.77z`
   } else {
     return `https://www.google.com.uy/maps/search/${latitude},${longitude}`
@@ -169,7 +164,7 @@ const getLocation = () => {
 }
 
 const getPhones = (phones: string) => {
-  return phones.split(/y|-/).map((el) => {
+  return phones.split(/y|-/).map(el => {
     const arrEl = el.trim().split('int.')
     return {
       phone: arrEl[0],
@@ -184,20 +179,12 @@ const getHref = (item: any) => {
   }
   // Fix BUG Cambial in BCU.
   if (props.origin === 'cambial') {
-    return (
-      'https://www.google.com.uy/maps/search/' +
-      encodeURI(item.Direccion.trim())
-    )
+    return 'https://www.google.com.uy/maps/search/' + encodeURI(item.Direccion.trim())
   }
   if (!item.Direccion) item.Direccion = ''
   if (!item.Localidad) item.Localidad = ''
   if (!item.Departamento) item.Departamento = ''
-  const loc =
-    item.Direccion.trim() +
-    ', ' +
-    item.Localidad.trim() +
-    ', ' +
-    item.Departamento.trim()
+  const loc = item.Direccion.trim() + ', ' + item.Localidad.trim() + ', ' + item.Departamento.trim()
   return 'https://www.google.com.uy/maps/search/' + encodeURI(loc)
 }
 
@@ -266,7 +253,7 @@ const getData = async () => {
         props.origin,
         props.location,
         props.latitude || undefined,
-        props.longitude || undefined,
+        props.longitude || undefined
       )
       d.value = data as any[]
     } catch (error) {

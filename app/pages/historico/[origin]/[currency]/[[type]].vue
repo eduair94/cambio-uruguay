@@ -12,9 +12,7 @@
                     <v-icon size="32" color="primary">mdi-bank</v-icon>
                   </v-avatar>
                   <div>
-                    <h2
-                      class="text-h6 text-sm-h5 text-md-h4 font-weight-bold text-white"
-                    >
+                    <h2 class="text-h6 text-sm-h5 text-md-h4 font-weight-bold text-white">
                       📈 {{ $t('historicoCotizaciones') }}
                     </h2>
                     <div class="d-flex flex-wrap ga-2 align-center">
@@ -24,11 +22,7 @@
                       <v-chip color="secondary" size="small">
                         {{ route.params.currency }}
                       </v-chip>
-                      <v-chip
-                        v-if="route.params.type"
-                        color="accent"
-                        size="small"
-                      >
+                      <v-chip v-if="route.params.type" color="accent" size="small">
                         {{ (route.params.type as string).toUpperCase() }}
                       </v-chip>
                     </div>
@@ -47,9 +41,7 @@
                 </div>
               </v-col>
               <v-col cols="12" md="4" class="text-center text-md-right">
-                <div
-                  class="d-flex flex-column flex-md-row justify-start justify-md-end ga-2"
-                >
+                <div class="d-flex flex-column flex-md-row justify-start justify-md-end ga-2">
                   <v-btn
                     v-if="evolutionData.localData.website"
                     :href="evolutionData.localData.website"
@@ -182,19 +174,11 @@
             </v-card-title>
             <v-card-text class="text-white">
               <div class="text-h5 text-md-h4 font-weight-bold">
-                {{
-                  formatCurrency(
-                    (evolutionData as any)?.statistics?.buy?.current || 0,
-                  )
-                }}
+                {{ formatCurrency((evolutionData as any)?.statistics?.buy?.current || 0) }}
               </div>
               <div class="caption">
                 Cambio:
-                {{
-                  formatPercentage(
-                    (evolutionData as any)?.statistics?.buy?.change || 0,
-                  )
-                }}%
+                {{ formatPercentage((evolutionData as any)?.statistics?.buy?.change || 0) }}%
               </div>
             </v-card-text>
           </v-card>
@@ -208,19 +192,11 @@
             </v-card-title>
             <v-card-text class="text-white">
               <div class="text-h5 text-md-h4 font-weight-bold">
-                {{
-                  formatCurrency(
-                    (evolutionData as any)?.statistics?.sell?.current || 0,
-                  )
-                }}
+                {{ formatCurrency((evolutionData as any)?.statistics?.sell?.current || 0) }}
               </div>
               <div class="caption">
                 {{ $t('cambio') }}:
-                {{
-                  formatPercentage(
-                    (evolutionData as any)?.statistics?.sell?.change || 0,
-                  )
-                }}%
+                {{ formatPercentage((evolutionData as any)?.statistics?.sell?.change || 0) }}%
               </div>
             </v-card-text>
           </v-card>
@@ -234,25 +210,13 @@
             </v-card-title>
             <v-card-text class="text-white">
               <div class="text-h5 text-md-h4 font-weight-bold">
-                {{
-                  formatCurrency(
-                    (evolutionData as any)?.statistics?.buy?.avg || 0,
-                  )
-                }}
+                {{ formatCurrency((evolutionData as any)?.statistics?.buy?.avg || 0) }}
               </div>
               <div class="caption">
                 Min:
-                {{
-                  formatCurrency(
-                    (evolutionData as any)?.statistics?.buy?.min || 0,
-                  )
-                }}
+                {{ formatCurrency((evolutionData as any)?.statistics?.buy?.min || 0) }}
                 | Max:
-                {{
-                  formatCurrency(
-                    (evolutionData as any)?.statistics?.buy?.max || 0,
-                  )
-                }}
+                {{ formatCurrency((evolutionData as any)?.statistics?.buy?.max || 0) }}
               </div>
             </v-card-text>
           </v-card>
@@ -294,33 +258,18 @@
               </v-btn-toggle>
             </v-card-title>
             <v-card-text>
-              <div
-                :class="['chart-container']"
-                style="position: relative; height: 400px"
-              >
+              <div :class="['chart-container']" style="position: relative; height: 400px">
                 <Line
                   v-if="chartType === 'line'"
                   :data="chartData"
                   :options="chartOptions"
-                  style="
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                  "
+                  style="position: absolute; top: 0; left: 0; width: 100%; height: 100%"
                 />
                 <Bar
                   v-else
                   :data="chartData"
                   :options="chartOptions"
-                  style="
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                  "
+                  style="position: absolute; top: 0; left: 0; width: 100%; height: 100%"
                 />
               </div>
             </v-card-text>
@@ -364,20 +313,12 @@
                 <span>{{ formatDate((item as any).date) }}</span>
               </template>
               <template #item.buy="{ item }">
-                <v-chip
-                  :color="getBuyColor((item as any).buy)"
-                  variant="flat"
-                  size="small"
-                >
+                <v-chip :color="getBuyColor((item as any).buy)" variant="flat" size="small">
                   {{ formatCurrency((item as any).buy) }}
                 </v-chip>
               </template>
               <template #item.sell="{ item }">
-                <v-chip
-                  :color="getSellColor((item as any).sell)"
-                  variant="flat"
-                  size="small"
-                >
+                <v-chip :color="getSellColor((item as any).sell)" variant="flat" size="small">
                   {{ formatCurrency((item as any).sell) }}
                 </v-chip>
               </template>
@@ -385,11 +326,7 @@
                 <span>{{ formatCurrency((item as any).spread) }}</span>
               </template>
               <template #item.type="{ item }">
-                <v-chip
-                  v-if="(item as any).type"
-                  size="small"
-                  variant="outlined"
-                >
+                <v-chip v-if="(item as any).type" size="small" variant="outlined">
                   {{ (item as any).type }}
                 </v-chip>
                 <span v-else>-</span>
@@ -403,13 +340,7 @@
     <!-- Back Button -->
     <v-row class="mt-6">
       <v-col cols="12" class="text-center">
-        <v-btn
-          link
-          class="mb-4"
-          color="primary"
-          size="large"
-          :to="localePath('/')"
-        >
+        <v-btn link class="mb-4" color="primary" size="large" :to="localePath('/')">
           <v-icon start>mdi-arrow-left</v-icon>
           {{ $t('volverAlInicio') }}
         </v-btn>
@@ -452,7 +383,7 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  Filler,
+  Filler
 )
 // Define types
 interface EvolutionItem {
@@ -501,7 +432,7 @@ interface EvolutionData {
 
 // Route validation
 definePageMeta({
-  validate: (route) => {
+  validate: route => {
     return !!(route.params.origin && route.params.currency)
   },
 })
@@ -540,7 +471,7 @@ const headers = computed(() => [
 // Utility function to format origin name
 const formatOriginName = (origin: string): string => {
   if (!origin) return ''
-  return origin.replace(/[-_]/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
+  return origin.replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
 }
 
 // Load period from storage/query on client
@@ -594,9 +525,7 @@ const {
   `evolution-${route.params.origin}-${route.params.currency}-${route.params.type || 'default'}`,
   async () => {
     const { origin, currency, type } = route.params
-    let period = route.query.period
-      ? Number.parseInt(route.query.period as string)
-      : 6
+    let period = route.query.period ? Number.parseInt(route.query.period as string) : 6
     if (Number.isNaN(period) || ![3, 6, 12, 24].includes(period)) {
       period = 6 // Default to 6 months if invalid
     }
@@ -607,7 +536,7 @@ const {
         origin as string,
         currency as string,
         type as string | undefined,
-        period,
+        period
       )
 
       if (result.error) {
@@ -619,7 +548,7 @@ const {
 
       return result.data as EvolutionData
     }, 'Cargando datos históricos...')
-  },
+  }
 )
 
 // Watch for changes in the period query parameter
@@ -633,15 +562,12 @@ watch(
         await refresh()
       }, 'Actualizando período...')
     }
-  },
+  }
 )
 
 // Dynamic names for SEO
 const exchangeHouseName = computed(() => {
-  return (
-    evolutionData.value?.localData?.name ||
-    formatOriginName(route.params.origin as string)
-  )
+  return evolutionData.value?.localData?.name || formatOriginName(route.params.origin as string)
 })
 
 const currencyName = computed(() => route.params.currency as string)
@@ -660,13 +586,10 @@ const tableData = computed(() => {
 })
 
 const chartData = computed(() => {
-  if (!(evolutionData.value as any)?.evolution)
-    return { labels: [], datasets: [] }
+  if (!(evolutionData.value as any)?.evolution) return { labels: [], datasets: [] }
 
   const evolution = (evolutionData.value as any).evolution
-  const labels = evolution.map((item: EvolutionItem) =>
-    moment(item.date).format('MM/YYYY'),
-  )
+  const labels = evolution.map((item: EvolutionItem) => moment(item.date).format('MM/YYYY'))
 
   return {
     labels,
@@ -823,8 +746,7 @@ const savePeriodToStorage = (period: number) => {
 
 const updateUrlQuery = (period: number) => {
   // Update URL query parameter without navigation
-  if (route.query && Number.parseInt(route.query.period as string) === period)
-    return
+  if (route.query && Number.parseInt(route.query.period as string) === period) return
   const query = { period: period.toString() }
   router.replace({ query })
 }
@@ -857,9 +779,7 @@ const formatDate = (dateString: string): string => {
 const formatDateRange = (): string => {
   if (!(evolutionData.value as any)?.statistics?.dateRange) return ''
   const { start, end } = (evolutionData.value as any).statistics.dateRange
-  return `${moment(start).format('DD/MM/YY')} - ${moment(end).format(
-    'DD/MM/YY',
-  )}`
+  return `${moment(start).format('DD/MM/YY')} - ${moment(end).format('DD/MM/YY')}`
 }
 
 const getBuyColor = (value: number): string => {
@@ -955,21 +875,9 @@ useSeoMeta({
   right: 0;
   bottom: 0;
   background:
-    radial-gradient(
-      circle at 20% 50%,
-      rgba(255, 255, 255, 0.1) 0%,
-      transparent 50%
-    ),
-    radial-gradient(
-      circle at 80% 20%,
-      rgba(255, 255, 255, 0.1) 0%,
-      transparent 50%
-    ),
-    radial-gradient(
-      circle at 40% 80%,
-      rgba(255, 255, 255, 0.05) 0%,
-      transparent 50%
-    );
+    radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
   pointer-events: none;
 }
 

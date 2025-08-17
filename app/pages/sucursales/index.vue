@@ -12,9 +12,7 @@
                     <v-icon size="32" color="primary">mdi-bank-outline</v-icon>
                   </v-avatar>
                   <div>
-                    <h1
-                      class="text-h5 text-md-h3 font-weight-bold text-white mb-1"
-                    >
+                    <h1 class="text-h5 text-md-h3 font-weight-bold text-white mb-1">
                       🏦 {{ $t('sucursales.titulo') }}
                     </h1>
                     <p class="text-body-1 text-grey-lighten-2 mb-0">
@@ -33,12 +31,7 @@
                   <v-icon start>mdi-bank</v-icon>
                   {{ totalOrigins }} {{ $t('sucursales.casasDeCambio') }}
                 </v-chip>
-                <v-chip
-                  color="rgba(255,255,255,0.2)"
-                  text-color="white"
-                  size="large"
-                  class="mb-2"
-                >
+                <v-chip color="rgba(255,255,255,0.2)" text-color="white" size="large" class="mb-2">
                   <v-icon start>mdi-map-marker</v-icon>
                   {{ totalLocations }} {{ $t('sucursales.ubicaciones') }}
                 </v-chip>
@@ -121,11 +114,7 @@
             @update:model-value="applySearchFilter"
           />
         </v-col>
-        <v-col
-          cols="12"
-          md="2"
-          class="d-flex align-center justify-end justify-md-start ga-2"
-        >
+        <v-col cols="12" md="2" class="d-flex align-center justify-end justify-md-start ga-2">
           <v-tooltip location="top">
             <template #activator="{ props }">
               <v-btn
@@ -170,19 +159,12 @@
               >
                 <v-card-text class="pa-4">
                   <div class="d-flex align-center mb-3">
-                    <v-avatar
-                      size="40"
-                      class="me-3"
-                      :color="getAvatarColor(origin.name)"
-                    >
+                    <v-avatar size="40" class="me-3" :color="getAvatarColor(origin.name)">
                       <v-icon color="white">mdi-bank</v-icon>
                     </v-avatar>
                     <div class="flex-grow-1">
                       <h3 class="text-h6 font-weight-bold mb-0">
-                        {{
-                          origin.localData?.name ||
-                          formatOriginName(origin.name)
-                        }}
+                        {{ origin.localData?.name || formatOriginName(origin.name) }}
                       </h3>
                       <p class="text-caption text-grey mb-0">
                         {{ origin.departments?.length || 0 }} departamentos
@@ -215,11 +197,7 @@
 
                   <!-- Action buttons -->
                   <div class="d-flex ga-2">
-                    <v-btn
-size="small"
-color="primary"
-variant="tonal"
-block>
+                    <v-btn size="small" color="primary" variant="tonal" block>
                       <v-icon start size="small">mdi-eye</v-icon>
                       {{ $t('sucursales.verSucursales') }}
                     </v-btn>
@@ -281,10 +259,7 @@ const {
             } else {
               // If we already have this origin, merge the departments
               const existing = uniqueOrigins.get(originName)!
-              if (
-                origin.localData?.departments &&
-                existing.localData?.departments
-              ) {
+              if (origin.localData?.departments && existing.localData?.departments) {
                 const combinedDepts = new Set([
                   ...existing.localData.departments,
                   ...origin.localData.departments,
@@ -330,7 +305,7 @@ const {
       locations: [],
       localData: {},
     }),
-  },
+  }
 )
 
 // Computed properties
@@ -348,9 +323,7 @@ const departmentOptions = computed(() => {
 
     exchangeInfo.value.exchangeData.forEach((origin: any) => {
       if (origin.localData?.departments) {
-        origin.localData.departments.forEach((dept: string) =>
-          departments.add(dept),
-        )
+        origin.localData.departments.forEach((dept: string) => departments.add(dept))
       }
     })
 
@@ -373,21 +346,13 @@ const filteredOrigins = computed(() => {
       // Apply search filter
       if (searchQuery) {
         const search = searchQuery.toLowerCase()
-        const name = (
-          origin.localData?.name ||
-          origin.origin ||
-          ''
-        ).toLowerCase()
+        const name = (origin.localData?.name || origin.origin || '').toLowerCase()
         if (!name.includes(search)) return false
       }
 
       // Apply department filter
       if (department) {
-        if (
-          !origin.localData?.departments?.includes(
-            department.toUpperCase().trim(),
-          )
-        ) {
+        if (!origin.localData?.departments?.includes(department.toUpperCase().trim())) {
           return false
         }
       }
@@ -411,7 +376,7 @@ const formatOriginName = (origin: string): string => {
   if (!origin || typeof origin !== 'string') return ''
   return origin
     .split('-')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ')
 }
 
@@ -430,17 +395,10 @@ const getAvatarColor = (origin: string): string => {
   if (avatarColorCache.size >= MAX_AVATAR_CACHE_SIZE) {
     // Remove oldest entries (Map maintains insertion order)
     const keysToDelete = Array.from(avatarColorCache.keys()).slice(0, 10)
-    keysToDelete.forEach((key) => avatarColorCache.delete(key))
+    keysToDelete.forEach(key => avatarColorCache.delete(key))
   }
 
-  const colors = [
-    'primary',
-    'secondary',
-    'accent',
-    'info',
-    'success',
-    'warning',
-  ]
+  const colors = ['primary', 'secondary', 'accent', 'info', 'success', 'warning']
   const index = origin.length % colors.length
   const color = colors[index]
 
@@ -508,7 +466,7 @@ const updateUrlParams = () => {
     }
 
     // Preserve other query parameters if they exist
-    Object.keys(route.query).forEach((key) => {
+    Object.keys(route.query).forEach(key => {
       if (key !== 'location' && key !== 'search' && route.query[key]) {
         query[key] = route.query[key] as string
       }
@@ -551,21 +509,9 @@ useSeoMeta({
   right: 0;
   bottom: 0;
   background:
-    radial-gradient(
-      circle at 20% 50%,
-      rgba(255, 255, 255, 0.1) 0%,
-      transparent 50%
-    ),
-    radial-gradient(
-      circle at 80% 20%,
-      rgba(255, 255, 255, 0.1) 0%,
-      transparent 50%
-    ),
-    radial-gradient(
-      circle at 40% 80%,
-      rgba(255, 255, 255, 0.05) 0%,
-      transparent 50%
-    );
+    radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
   pointer-events: none;
 }
 

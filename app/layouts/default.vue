@@ -12,12 +12,7 @@
         <VListItem>
           <VListItemTitle class="text-h6"> Menu </VListItemTitle>
           <template #append>
-            <VBtn
-              icon="mdi-close"
-              variant="text"
-              size="small"
-              @click="drawer = false"
-            />
+            <VBtn icon="mdi-close" variant="text" size="small" @click="drawer = false" />
           </template>
         </VListItem>
 
@@ -93,10 +88,7 @@
 
     <VAppBar class="px-3">
       <!-- Mobile menu button -->
-      <VAppBarNavIcon
-        class="d-flex d-lg-none mr-2"
-        @click.stop="drawer = !drawer"
-      />
+      <VAppBarNavIcon class="d-flex d-lg-none mr-2" @click.stop="drawer = !drawer" />
 
       <NuxtLink :to="localePath('/')" class="no_link d-flex logo_link">
         <img
@@ -229,9 +221,7 @@ const loadingStore = useLoadingStore()
 
 const formatNameRoute = () => {
   // Format the route name to be used in class names
-  return (
-    (route.name ? (route.name as string).split('_')[0] : 'default') + '_main'
-  )
+  return (route.name ? (route.name as string).split('_')[0] : 'default') + '_main'
 }
 
 // Navigation drawer state
@@ -261,17 +251,14 @@ watch(
     if (drawer.value) {
       drawer.value = false
     }
-  },
+  }
 )
 
 // Methods
 const isActiveRoute = (path: string) => {
   if (path === '/') {
     return (
-      route.path === '/' ||
-      route.path === '/es' ||
-      route.path === '/en' ||
-      route.path === '/pt'
+      route.path === '/' || route.path === '/es' || route.path === '/en' || route.path === '/pt'
     )
   }
   return route.path.startsWith(path)

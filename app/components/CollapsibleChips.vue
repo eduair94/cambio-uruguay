@@ -49,9 +49,7 @@
         <v-icon start :size="iconSize">
           {{ showExpanded ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
         </v-icon>
-        {{
-          showExpanded ? $t('verMenos') : `+${hiddenItems.length} ${$t('mas')}`
-        }}
+        {{ showExpanded ? $t('verMenos') : `+${hiddenItems.length} ${$t('mas')}` }}
       </v-chip>
     </div>
   </div>

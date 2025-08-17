@@ -1,32 +1,15 @@
 <template>
   <div>
-    <v-snackbar
-      v-model="showOfflineSnackbar"
-      :timeout="-1"
-      color="error"
-      bottom
-      left
-    >
+    <v-snackbar v-model="showOfflineSnackbar" :timeout="-1" color="error" bottom left>
       {{ $t('pwa.offline') || 'Estás sin conexión' }}
       <template #actions="{ isActive }">
-        <v-btn
-          color="white"
-          text
-          v-bind="isActive"
-          @click="showOfflineSnackbar = false"
-        >
+        <v-btn color="white" text v-bind="isActive" @click="showOfflineSnackbar = false">
           {{ $t('pwa.dismiss') || 'Cerrar' }}
         </v-btn>
       </template>
     </v-snackbar>
 
-    <v-snackbar
-      v-model="showOnlineSnackbar"
-      :timeout="3000"
-      color="success"
-      bottom
-      left
-    >
+    <v-snackbar v-model="showOnlineSnackbar" :timeout="3000" color="success" bottom left>
       {{ $t('pwa.onlineAgain') || 'Estás conectado nuevamente' }}
     </v-snackbar>
   </div>

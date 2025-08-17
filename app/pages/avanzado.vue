@@ -70,25 +70,25 @@
                     }
                   "
                   @update:amount="
-                    (value) => {
+                    value => {
                       amount = parseFloat(value)
                       setPrice()
                     }
                   "
                   @update:code="
-                    (value) => {
+                    value => {
                       code = value
                       updateTable()
                     }
                   "
                   @update:code-with="
-                    (value) => {
+                    value => {
                       codeWith = value
                       updateTable()
                     }
                   "
                   @update:location="
-                    (value) => {
+                    value => {
                       location = value
                       updateTable()
                     }
@@ -97,19 +97,19 @@
                   @undo-distances="undoDistances"
                   @reset-all-filters="resetAllFilters"
                   @update:not-inter-bank="
-                    (value) => {
+                    value => {
                       notInterBank = value
                       updateTable()
                     }
                   "
                   @update:not-conditional="
-                    (value) => {
+                    value => {
                       notConditional = value
                       updateTable()
                     }
                   "
                   @update:hidden-widgets="
-                    (value) => {
+                    value => {
                       hiddenWidgets = value
                       hideWidgets(value)
                     }
@@ -117,17 +117,8 @@
                 />
               </div>
             </div>
-            <div
-              v-show="hasScroll"
-              id="wrapper2"
-              ref="wrapper2"
-              class="scroll-style-1"
-            >
-              <div
-                id="div2"
-                :style="{ width: scrollWidth }"
-                class="width-scroll"
-              />
+            <div v-show="hasScroll" id="wrapper2" ref="wrapper2" class="scroll-style-1">
+              <div id="div2" :style="{ width: scrollWidth }" class="width-scroll" />
             </div>
           </div>
         </template>
@@ -160,22 +151,13 @@
       >
         <v-icon large> mdi-github </v-icon>
       </v-btn>
-      <v-btn
-        color="green darken-2"
-        target="_blank"
-        link
-        href="https://status.cambio-uruguay.com"
-      >
+      <v-btn color="green darken-2" target="_blank" link href="https://status.cambio-uruguay.com">
         {{ t('appStatus') }}
       </v-btn>
     </div>
     <div class="mt-3">
       {{ t('consulta') }}
-      <a
-class="white--text"
-href="mailto:admin@cambio-uruguay.com"
-        >admin@cambio-uruguay.com</a
-      >
+      <a class="white--text" href="mailto:admin@cambio-uruguay.com">admin@cambio-uruguay.com</a>
     </div>
 
     <!-- API Usage Alert -->
@@ -187,10 +169,7 @@ href="mailto:admin@cambio-uruguay.com"
       closable
     >
       {{ t('apiUsageMessage') }}
-      <a
-        class="text-white font-weight-bold"
-        href="mailto:admin@cambio-uruguay.com"
-      >
+      <a class="text-white font-weight-bold" href="mailto:admin@cambio-uruguay.com">
         admin@cambio-uruguay.com
       </a>
     </VAlert>
@@ -333,9 +312,7 @@ const savings = (): string => {
     savePercent = ((minValue - maxValue) / maxValue) * 100
   }
   const saveAmount =
-    Math.abs((maxValue - minValue) * amount.value).toFixed(2) +
-    ' ' +
-    codeWith.value
+    Math.abs((maxValue - minValue) * amount.value).toFixed(2) + ' ' + codeWith.value
   const s = savePercent.toFixed(2)
   const loc = {
     es: `Puedes ahorrar hasta un ${s}% (${saveAmount}) utilizando nuestra app.`,
@@ -436,9 +413,7 @@ const geoLocationSuccess = (opt: {
   latitude.value = lat
   longitude.value = lng
   let items = allItems.value.map((item: any) => {
-    item.distance = distances[item.origin]
-      ? distances[item.origin]
-      : noDistance.value
+    item.distance = distances[item.origin] ? distances[item.origin] : noDistance.value
     if (item.distance !== noDistance.value) {
       item.distanceData = distanceData[item.distance]
     }
@@ -491,7 +466,7 @@ const hideFeedback = () => {
                     ._hj_feedback_container {
                       display:none!important;
                     }
-            </style>`,
+            </style>`
   )
 }
 
@@ -521,9 +496,7 @@ const hideWidgets = (val: boolean, att = 0) => {
 }
 
 const buildExchangeHouseOptions = () => {
-  const uniqueOrigins = [
-    ...new Set(allItems.value.map((item: ExchangeItem) => item.origin)),
-  ]
+  const uniqueOrigins = [...new Set(allItems.value.map((item: ExchangeItem) => item.origin))]
   exchangeHouseOptions.value = uniqueOrigins
     .map((origin: string) => {
       const item = allItems.value.find((i: ExchangeItem) => i.origin === origin)
@@ -585,55 +558,46 @@ const fetchDataForDate = async () => {
 const updateTable = () => {
   if (code.value === 'UYU') {
     items.value = allItems.value.filter(
-      (el) =>
+      el =>
         (!code.value || el.code === codeWith.value) &&
-        (!notInterBank.value ||
-          !el.isInterBank ||
-          onlyInterBank.value.includes(code.value)) &&
+        (!notInterBank.value || !el.isInterBank || onlyInterBank.value.includes(code.value)) &&
         (!notConditional.value || !el.condition) &&
         (location.value === 'TODOS' ||
           !el?.localData?.departments.length ||
-          el.localData.departments.includes(location.value)),
+          el.localData.departments.includes(location.value))
     )
   } else {
     items.value = allItems.value.filter(
-      (el) =>
+      el =>
         (!code.value || el.code === code.value) &&
-        (!notInterBank.value ||
-          !el.isInterBank ||
-          onlyInterBank.value.includes(code.value)) &&
+        (!notInterBank.value || !el.isInterBank || onlyInterBank.value.includes(code.value)) &&
         (!notConditional.value || !el.condition) &&
         (location.value === 'TODOS' ||
           !el?.localData?.departments.length ||
-          el.localData.departments.includes(location.value)),
+          el.localData.departments.includes(location.value))
     )
   }
 
   // Apply exchange house filter if one is selected
   if (selectedExchangeHouse.value && selectedExchangeHouse.value.length > 0) {
-    const selectedOrigins = selectedExchangeHouse.value.map((item) =>
-      typeof item === 'object' ? item.value : item,
+    const selectedOrigins = selectedExchangeHouse.value.map(item =>
+      typeof item === 'object' ? item.value : item
     )
-    items.value = items.value.filter((el) =>
-      selectedOrigins.includes(el.origin),
-    )
+    items.value = items.value.filter(el => selectedOrigins.includes(el.origin))
   }
 
   if (codeWith.value && codeWith.value !== 'UYU') {
     const codeOrigins: any = {}
     items.value = items.value
-      .filter((el) => {
+      .filter(el => {
         if (code.value === 'UYU') return true
         const f = allItems.value.find(
-          (e) =>
-            e.origin === el.origin &&
-            e.code === codeWith.value &&
-            e.type === el.type,
+          e => e.origin === el.origin && e.code === codeWith.value && e.type === el.type
         )
         codeOrigins[el.origin + (el.type ? el.type : '')] = f
         return f !== undefined
       })
-      .map((e) => {
+      .map(e => {
         const el = { ...e }
         if (code.value === 'UYU') {
           el.sell = 1 / e.buy
@@ -798,7 +762,7 @@ const { data: initialData } = await useAsyncData(
         }),
       }
     },
-  },
+  }
 )
 
 console.log('Initial data from server:', initialData.value.queryParams)
@@ -854,7 +818,7 @@ if (initialData.value && initialData.value.exchangeData) {
 const validateQueryParam = (
   value: any,
   type: 'string' | 'number' | 'boolean' | 'date',
-  allowedValues?: string[],
+  allowedValues?: string[]
 ): any => {
   if (value === undefined || value === null) return null
 
@@ -871,8 +835,7 @@ const validateQueryParam = (
         break
 
       case 'number':
-        const numValue =
-          typeof value === 'string' ? Number.parseFloat(value) : value
+        const numValue = typeof value === 'string' ? Number.parseFloat(value) : value
         if (!Number.isNaN(numValue) && numValue >= 0) {
           return numValue
         }
@@ -913,20 +876,12 @@ const applyServerSideQueryParams = (queryParams: any) => {
     // Apply non-date parameters (date is already handled in server fetch)
 
     // Currency settings
-    const currencyCode = validateQueryParam(
-      queryParams.currency,
-      'string',
-      money.value,
-    )
+    const currencyCode = validateQueryParam(queryParams.currency, 'string', money.value)
     if (currencyCode) {
       code.value = currencyCode
     }
 
-    const currencyWithCode = validateQueryParam(
-      queryParams.currency_with,
-      'string',
-      money.value,
-    )
+    const currencyWithCode = validateQueryParam(queryParams.currency_with, 'string', money.value)
     if (currencyWithCode) {
       codeWith.value = currencyWithCode
     }
@@ -938,37 +893,24 @@ const applyServerSideQueryParams = (queryParams: any) => {
     }
 
     // Want to buy/sell setting
-    const wantToValue = validateQueryParam(queryParams.wantTo, 'string', [
-      'BUY',
-      'SELL',
-    ])
+    const wantToValue = validateQueryParam(queryParams.wantTo, 'string', ['BUY', 'SELL'])
     if (wantToValue) {
       wantTo.value = wantToValue.toLowerCase() as 'buy' | 'sell'
     }
 
     // Location setting
-    const locationValue = validateQueryParam(
-      queryParams.location,
-      'string',
-      locations.value,
-    )
+    const locationValue = validateQueryParam(queryParams.location, 'string', locations.value)
     if (locationValue) {
       location.value = locationValue
     }
 
     // Filter settings
-    const notInterBankValue = validateQueryParam(
-      queryParams.notInterBank,
-      'boolean',
-    )
+    const notInterBankValue = validateQueryParam(queryParams.notInterBank, 'boolean')
     if (notInterBankValue !== null) {
       notInterBank.value = notInterBankValue
     }
 
-    const notConditionalValue = validateQueryParam(
-      queryParams.notConditional,
-      'boolean',
-    )
+    const notConditionalValue = validateQueryParam(queryParams.notConditional, 'boolean')
     if (notConditionalValue !== null) {
       notConditional.value = notConditionalValue
     }
@@ -1011,20 +953,12 @@ const loadDataFromQueryParams = () => {
 
   try {
     // Currency settings
-    const currencyCode = validateQueryParam(
-      query.currency,
-      'string',
-      money.value,
-    )
+    const currencyCode = validateQueryParam(query.currency, 'string', money.value)
     if (currencyCode) {
       code.value = currencyCode
     }
 
-    const currencyWithCode = validateQueryParam(
-      query.currency_with,
-      'string',
-      money.value,
-    )
+    const currencyWithCode = validateQueryParam(query.currency_with, 'string', money.value)
     if (currencyWithCode) {
       codeWith.value = currencyWithCode
     }
@@ -1036,20 +970,13 @@ const loadDataFromQueryParams = () => {
     }
 
     // Want to buy/sell setting
-    const wantToValue = validateQueryParam(query.wantTo, 'string', [
-      'BUY',
-      'SELL',
-    ])
+    const wantToValue = validateQueryParam(query.wantTo, 'string', ['BUY', 'SELL'])
     if (wantToValue) {
       wantTo.value = wantToValue.toLowerCase() as 'buy' | 'sell'
     }
 
     // Location setting
-    const locationValue = validateQueryParam(
-      query.location,
-      'string',
-      locations.value,
-    )
+    const locationValue = validateQueryParam(query.location, 'string', locations.value)
     if (locationValue) {
       location.value = locationValue
     }
@@ -1067,27 +994,20 @@ const loadDataFromQueryParams = () => {
       notInterBank.value = notInterBankValue
     }
 
-    const notConditionalValue = validateQueryParam(
-      query.notConditional,
-      'boolean',
-    )
+    const notConditionalValue = validateQueryParam(query.notConditional, 'boolean')
     if (notConditionalValue !== null) {
       notConditional.value = notConditionalValue
     }
 
     // Exchange houses filter
     if (query.exchangeHouses && typeof query.exchangeHouses === 'string') {
-      const exchangeHousesArray = query.exchangeHouses
-        .split(',')
-        .filter(Boolean)
+      const exchangeHousesArray = query.exchangeHouses.split(',').filter(Boolean)
       if (exchangeHousesArray.length > 0) {
         // Set selected exchange houses (will be validated after data loads)
         nextTick(() => {
           const validExchangeHouses = exchangeHousesArray
-            .map((origin) => {
-              const option = exchangeHouseOptions.value.find(
-                (opt) => opt.value === origin,
-              )
+            .map(origin => {
+              const option = exchangeHouseOptions.value.find(opt => opt.value === origin)
               return option ? option : null
             })
             .filter(Boolean) as ExchangeHouseOption[]
@@ -1183,10 +1103,7 @@ const structuredData = computed(() => ({
     '@type': 'Person',
     name: 'Eduardo Airaudo',
     url: 'https://www.linkedin.com/in/eairaudo/',
-    sameAs: [
-      'https://www.linkedin.com/in/eairaudo/',
-      'https://github.com/eduair94',
-    ],
+    sameAs: ['https://www.linkedin.com/in/eairaudo/', 'https://github.com/eduair94'],
   },
   publisher: {
     '@type': 'Organization',
@@ -1214,9 +1131,7 @@ useSeoMeta({
   ogType: 'website',
   ogUrl: () => {
     const baseUrl = 'https://cambio-uruguay.com'
-    const queryString = new URLSearchParams(
-      route.query as Record<string, string>,
-    ).toString()
+    const queryString = new URLSearchParams(route.query as Record<string, string>).toString()
     return queryString ? `${baseUrl}?${queryString}` : baseUrl
   },
   twitterCard: 'summary_large_image',

@@ -10,13 +10,7 @@
         :z-index="9999"
       >
         <div class="loading-content">
-          <v-progress-circular
-            indeterminate
-            size="64"
-            width="6"
-            color="primary"
-            class="mb-4"
-          />
+          <v-progress-circular indeterminate size="64" width="6" color="primary" class="mb-4" />
           <div class="loading-text">
             <h3 class="text-h6 text-white text-center mb-2">
               {{ loadingMessage }}

@@ -1,9 +1,5 @@
 <template>
-  <VCard
-    class="donation-card"
-    elevation="6"
-    :class="{ 'donation-card--minimized': isMinimized }"
-  >
+  <VCard class="donation-card" elevation="6" :class="{ 'donation-card--minimized': isMinimized }">
     <!-- Minimized state -->
     <div v-if="isMinimized" class="donation-minimized pa-3">
       <VBtn
@@ -21,22 +17,12 @@
     <!-- Expanded state -->
     <div v-else class="donation-expanded">
       <!-- Header -->
-      <div
-        class="donation-header pa-3 pb-2 d-flex align-center justify-space-between"
-      >
+      <div class="donation-header pa-3 pb-2 d-flex align-center justify-space-between">
         <div class="d-flex align-center">
           <VIcon color="red" class="mr-2">mdi-heart</VIcon>
-          <span class="text-body-2 font-weight-medium">{{
-            $t('donation.supportProject')
-          }}</span>
+          <span class="text-body-2 font-weight-medium">{{ $t('donation.supportProject') }}</span>
         </div>
-        <VBtn
-          icon
-          size="x-small"
-          variant="text"
-          class="donation-close-btn"
-          @click="toggleCard"
-        >
+        <VBtn icon size="x-small" variant="text" class="donation-close-btn" @click="toggleCard">
           <VIcon size="16">mdi-close</VIcon>
         </VBtn>
       </div>

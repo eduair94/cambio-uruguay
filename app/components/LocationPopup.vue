@@ -2,24 +2,14 @@
   <div>
     <v-tooltip top>
       <template #activator="{ props }">
-        <v-btn
-          color="primary"
-          v-bind="props"
-          :loading="loadingDistances"
-          @click="geoLocation"
-        >
+        <v-btn color="primary" v-bind="props" :loading="loadingDistances" @click="geoLocation">
           <v-icon class="mr-1">mdi-map-marker</v-icon>
           <span>{{ $t('loadDistances') }}</span>
         </v-btn>
       </template>
       <span>{{ $t('locationTooltip') }}</span>
     </v-tooltip>
-    <v-dialog
-v-model="dialog"
-persistent
-fullscreen
-width="700px"
-hide-overlay>
+    <v-dialog v-model="dialog" persistent fullscreen width="700px" hide-overlay>
       <v-card>
         <v-toolbar dark color="primary">
           <v-toolbar-title>{{ $t('confirmarUbicacion') }}</v-toolbar-title>
@@ -38,28 +28,15 @@ hide-overlay>
               type="text"
               @keyup.enter="onEnter(search)"
             />
-            <v-btn
-              class="address_lookup_btn"
-              color="primary"
-              @click="onEnter(search)"
-            >
+            <v-btn class="address_lookup_btn" color="primary" @click="onEnter(search)">
               Search
             </v-btn>
           </div>
           <div class="location_map">
             <client-only>
-              <l-map
-                ref="map"
-                :zoom="13"
-                :center="[latitude, longitude]"
-                @click="changeMarker"
-              >
+              <l-map ref="map" :zoom="13" :center="[latitude, longitude]" @click="changeMarker">
                 <l-tile-layer url="http://{s}.tile.osm.org/{z}/{x}/{y}.png" />
-                <l-circle
-                  v-if="radius"
-                  :lat-lng="[latitude, longitude]"
-                  :radius="radius * 1000"
-                />
+                <l-circle v-if="radius" :lat-lng="[latitude, longitude]" :radius="radius * 1000" />
                 <l-marker :lat-lng="[latitude, longitude]" />
               </l-map>
             </client-only>
@@ -77,9 +54,7 @@ hide-overlay>
           <v-spacer />
           <v-btn color="primary" @click="reset">Reset</v-btn>
           <v-btn color="red" @click="dialog = false">{{ $t('cerrar') }}</v-btn>
-          <v-btn color="green darken-3" @click="confirmGeo">{{
-            $t('confirmar')
-          }}</v-btn>
+          <v-btn color="green darken-3" @click="confirmGeo">{{ $t('confirmar') }}</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -114,7 +89,7 @@ const emit = defineEmits<{
 }>()
 
 // Watch for dialog changes
-watch(dialog, (val) => {
+watch(dialog, val => {
   if (val) {
     setMap()
   }
@@ -193,18 +168,15 @@ const setMap = async () => {
     // For Nuxt 3 with @nuxtjs/leaflet, import Leaflet dynamically
     const L = await import('leaflet')
 
-    L.tileLayer(
-      `https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png?key=${apiKey}`,
-      {
-        tileSize: 512,
-        zoomOffset: -1,
-        minZoom: 1,
-        attribution:
-          '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a>, ' +
-          '<a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>',
-        crossOrigin: true,
-      },
-    ).addTo(mapInstance)
+    L.tileLayer(`https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png?key=${apiKey}`, {
+      tileSize: 512,
+      zoomOffset: -1,
+      minZoom: 1,
+      attribution:
+        '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a>, ' +
+        '<a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>',
+      crossOrigin: true,
+    }).addTo(mapInstance)
 
     searchAddress()
   } catch (error) {
@@ -214,18 +186,15 @@ const setMap = async () => {
     if (import.meta.client) {
       const L = (window as any).L
       if (L?.tileLayer) {
-        L.tileLayer(
-          `https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png?key=${apiKey}`,
-          {
-            tileSize: 512,
-            zoomOffset: -1,
-            minZoom: 1,
-            attribution:
-              '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a>, ' +
-              '<a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>',
-            crossOrigin: true,
-          },
-        ).addTo(mapInstance)
+        L.tileLayer(`https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png?key=${apiKey}`, {
+          tileSize: 512,
+          zoomOffset: -1,
+          minZoom: 1,
+          attribution:
+            '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a>, ' +
+            '<a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>',
+          crossOrigin: true,
+        }).addTo(mapInstance)
         searchAddress()
       } else {
         console.error('Leaflet not available on window object')
@@ -242,10 +211,7 @@ const changeMarker = (e: any) => {
 
 const reverseGeo = async () => {
   try {
-    const response = await apiService.reverseGeocode(
-      latitude.value,
-      longitude.value,
-    )
+    const response = await apiService.reverseGeocode(latitude.value, longitude.value)
 
     if (response.error) {
       console.error('Reverse geocoding failed:', response.error)
@@ -275,10 +241,7 @@ const geoLocationSuccess = async (info: GeolocationPosition) => {
 
 const confirmGeo = async () => {
   try {
-    const response = await apiService.getDistances(
-      latitude.value,
-      longitude.value,
-    )
+    const response = await apiService.getDistances(latitude.value, longitude.value)
 
     if (response.error) {
       console.error('Failed to get distances:', response.error)
@@ -305,8 +268,7 @@ const geoLocationError = () => {
   loadingDistances.value = false
   latitude.value = -34.88073035118606
   longitude.value = -56.167630709298805
-  search.value =
-    '2532 Boulevard General Jose Gervasio Artigas, Montevideo, Uruguay'
+  search.value = '2532 Boulevard General Jose Gervasio Artigas, Montevideo, Uruguay'
   setMap()
 }
 
@@ -318,10 +280,7 @@ const reset = () => {
 const geoLocation = () => {
   if (!latitude.value) {
     loadingDistances.value = true
-    navigator.geolocation.getCurrentPosition(
-      geoLocationSuccess,
-      geoLocationError,
-    )
+    navigator.geolocation.getCurrentPosition(geoLocationSuccess, geoLocationError)
   } else {
     dialog.value = true
     loadingDistances.value = false

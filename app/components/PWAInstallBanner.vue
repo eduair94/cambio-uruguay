@@ -21,36 +21,20 @@
         <v-btn color="white" text @click="installPWA">
           {{ $t('pwa.install') }}
         </v-btn>
-        <v-btn
-          color="white"
-          text
-          v-bind="isActive"
-          @click="dismissInstallPrompt"
-        >
+        <v-btn color="white" text v-bind="isActive" @click="dismissInstallPrompt">
           {{ $t('pwa.dismiss') }}
         </v-btn>
       </template>
     </v-snackbar>
 
     <!-- PWA Update Available Banner -->
-    <v-snackbar
-      v-model="showUpdatePrompt"
-      :timeout="-1"
-      color="info"
-      bottom
-      right
-    >
+    <v-snackbar v-model="showUpdatePrompt" :timeout="-1" color="info" bottom right>
       {{ $t('pwa.updateAvailable') }}
       <template #actions="{ isActive }">
         <v-btn color="white" text @click="updatePWA">
           {{ $t('pwa.update') }}
         </v-btn>
-        <v-btn
-          color="white"
-          text
-          v-bind="isActive"
-          @click="showUpdatePrompt = false"
-        >
+        <v-btn color="white" text v-bind="isActive" @click="showUpdatePrompt = false">
           {{ $t('pwa.dismiss') }}
         </v-btn>
       </template>
@@ -79,15 +63,12 @@ const isStandalone = computed(() => {
 // PWA update detection - using custom service worker detection
 onMounted(() => {
   if (import.meta.client && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.ready.then((registration) => {
+    navigator.serviceWorker.ready.then(registration => {
       registration.addEventListener('updatefound', () => {
         const newWorker = registration.installing
         if (newWorker) {
           newWorker.addEventListener('statechange', () => {
-            if (
-              newWorker.state === 'installed' &&
-              navigator.serviceWorker.controller
-            ) {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
               needRefresh.value = true
               showUpdatePrompt.value = true
             }
@@ -99,7 +80,7 @@ onMounted(() => {
 
   // Listen for beforeinstallprompt event - only on client
   if (import.meta.client) {
-    window.addEventListener('beforeinstallprompt', (e) => {
+    window.addEventListener('beforeinstallprompt', e => {
       // Prevent the mini-infobar from appearing on mobile
       e.preventDefault()
       // Stash the event so it can be triggered later

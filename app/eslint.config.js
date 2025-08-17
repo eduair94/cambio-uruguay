@@ -1,5 +1,6 @@
 // @ts-check
 import { createConfigForNuxt } from '@nuxt/eslint-config/flat'
+import prettierPlugin from 'eslint-plugin-prettier'
 
 export default createConfigForNuxt({
   features: {
@@ -33,11 +34,14 @@ export default createConfigForNuxt({
       'no-empty': ['error', { allowEmptyCatch: true }],
       'no-case-declarations': 'off',
       'unicorn/prefer-number-properties': 'off', // Allow isNaN
-      '@typescript-eslint/no-unused-vars': ['error', { 
-        argsIgnorePattern: '^_',
-        varsIgnorePattern: '^_',
-        ignoreRestSiblings: true 
-      }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          ignoreRestSiblings: true,
+        },
+      ],
     },
   },
   {
@@ -127,4 +131,14 @@ export default createConfigForNuxt({
       '@typescript-eslint/no-unused-vars': 'off', // Allow unused vars in type definitions
     },
   },
+  {
+    // Prettier integration
+    files: ['**/*.{js,mjs,cjs,ts,mts,vue}'],
+    plugins: {
+      prettier: prettierPlugin,
+    },
+    rules: {
+      'prettier/prettier': 'error',
+    },
+  }
 )

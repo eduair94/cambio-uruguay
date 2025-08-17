@@ -36,15 +36,11 @@
         </v-list-item>
         <v-list-item>
           <v-list-item-title>{{ $t('direccion') }}</v-list-item-title>
-          <a class="white--text" :href="get_map_link(d.address)">
-            {{ d.address }}</a
-          >
+          <a class="white--text" :href="get_map_link(d.address)"> {{ d.address }}</a>
         </v-list-item>
         <v-list-item>
           <v-list-item-title>{{ $t('telefono') }}</v-list-item-title>
-          <a v-if="d.phone" class="white--text" :href="'tel:' + d.phone">{{
-            d.phone
-          }}</a>
+          <a v-if="d.phone" class="white--text" :href="'tel:' + d.phone">{{ d.phone }}</a>
         </v-list-item>
         <v-list-item>
           <v-list-item-title>{{ $t('sitioWeb') }}</v-list-item-title>
@@ -55,20 +51,16 @@
           <a class="white--text" :href="'mailto:' + d.email">{{ d.email }}</a>
         </v-list-item>
       </v-list>
-      <div v-if="!loaded" class="px-4 pt-3 text-h5">
-        {{ $t('cargando') }}...
-      </div>
+      <div v-if="!loaded" class="px-4 pt-3 text-h5">{{ $t('cargando') }}...</div>
       <div v-else-if="!d" class="px-4 pt-3 text-h5">
         {{ $t('noData') }}
       </div>
       <v-card-actions>
         <v-spacer />
         <v-btn
-          class="mb-2"
-          color="primary"
-          link
-          target="_blank"
-          :href="item.localData.bcu"
+class="mb-2"
+color="primary" link target="_blank"
+:href="item.localData.bcu"
           >{{ $t('sitioWeb') }} BCU</v-btn
         >
       </v-card-actions>

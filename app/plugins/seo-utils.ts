@@ -32,10 +32,7 @@ export default defineNuxtPlugin(() => {
   // SEO utilities and optimizations
   const seoUtils = {
     // Generate currency-specific meta tags
-    generateCurrencyMeta(
-      currency: string = 'USD',
-      location: string = 'TODOS',
-    ): CurrencyMeta {
+    generateCurrencyMeta(currency: string = 'USD', location: string = 'TODOS'): CurrencyMeta {
       const currencyNames: { [key: string]: string } = {
         USD: 'Dólares Estadounidenses',
         ARS: 'Pesos Argentinos',
@@ -89,7 +86,7 @@ export default defineNuxtPlugin(() => {
       return {
         '@context': 'https://schema.org',
         '@type': 'FAQPage',
-        mainEntity: faqs.map((faq) => ({
+        mainEntity: faqs.map(faq => ({
           '@type': 'Question',
           name: faq.question,
           acceptedAnswer: {
@@ -106,8 +103,7 @@ export default defineNuxtPlugin(() => {
         '@context': 'https://schema.org',
         '@type': 'WebApplication',
         name: 'Cambio Uruguay',
-        description:
-          'Plataforma para comparar cotizaciones de cambio de divisas en Uruguay',
+        description: 'Plataforma para comparar cotizaciones de cambio de divisas en Uruguay',
         url: 'https://cambio-uruguay.com',
         applicationCategory: 'FinanceApplication',
         operatingSystem: 'All',
@@ -142,18 +138,15 @@ export default defineNuxtPlugin(() => {
     },
 
     // Generate exchange house specific structured data
-    generateExchangeHouseData(
-      houseName: string,
-      currencies: CurrencyData[],
-    ): StructuredDataItem {
+    generateExchangeHouseData(houseName: string, currencies: CurrencyData[]): StructuredDataItem {
       return {
         '@context': 'https://schema.org',
         '@type': 'FinancialService',
         name: houseName,
         serviceType: 'Currency Exchange',
         areaServed: 'Uruguay',
-        currenciesAccepted: currencies.map((curr) => curr.currency),
-        offers: currencies.map((curr) => ({
+        currenciesAccepted: currencies.map(curr => curr.currency),
+        offers: currencies.map(curr => ({
           '@type': 'Offer',
           itemOffered: {
             '@type': 'ExchangeRateSpecification',
@@ -173,7 +166,7 @@ export default defineNuxtPlugin(() => {
       title: string,
       description: string,
       url: string,
-      image?: string,
+      image?: string
     ): Record<string, string> {
       return {
         'og:type': 'website',
@@ -193,7 +186,7 @@ export default defineNuxtPlugin(() => {
     generateTwitterMeta(
       title: string,
       description: string,
-      image?: string,
+      image?: string
     ): Record<string, string> {
       return {
         'twitter:card': 'summary_large_image',
@@ -225,13 +218,9 @@ export default defineNuxtPlugin(() => {
           options.title,
           options.description,
           options.canonicalUrl,
-          options.ogImage,
+          options.ogImage
         ),
-        ...this.generateTwitterMeta(
-          options.title,
-          options.description,
-          options.ogImage,
-        ),
+        ...this.generateTwitterMeta(options.title, options.description, options.ogImage),
       })
 
       // Set canonical URL
@@ -247,7 +236,7 @@ export default defineNuxtPlugin(() => {
       // Add structured data if provided
       if (options.structuredData && options.structuredData.length > 0) {
         useHead({
-          script: options.structuredData.map((data) => ({
+          script: options.structuredData.map(data => ({
             type: 'application/ld+json',
             innerHTML: JSON.stringify(data),
           })),
@@ -260,9 +249,7 @@ export default defineNuxtPlugin(() => {
           script: [
             {
               type: 'application/ld+json',
-              innerHTML: JSON.stringify(
-                this.generateBreadcrumbData(options.breadcrumbs),
-              ),
+              innerHTML: JSON.stringify(this.generateBreadcrumbData(options.breadcrumbs)),
             },
           ],
         })

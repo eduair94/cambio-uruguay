@@ -107,12 +107,7 @@
 
             <!-- Celda de Tipo -->
             <template #item.type="{ item }">
-              <v-chip
-                v-if="item.type"
-                size="small"
-                :color="getTypeColor(item.type)"
-                variant="flat"
-              >
+              <v-chip v-if="item.type" size="small" :color="getTypeColor(item.type)" variant="flat">
                 {{ item.type }}
               </v-chip>
               <span v-else class="text-grey">-</span>
@@ -121,29 +116,21 @@
             <!-- Celda de Compra -->
             <template #item.buy="{ item }">
               <div class="text-right">
-                <span class="font-weight-bold text-success">
-                  ${{ formatNumber(item.buy) }}
-                </span>
+                <span class="font-weight-bold text-success"> ${{ formatNumber(item.buy) }} </span>
               </div>
             </template>
 
             <!-- Celda de Venta -->
             <template #item.sell="{ item }">
               <div class="text-right">
-                <span class="font-weight-bold text-error">
-                  ${{ formatNumber(item.sell) }}
-                </span>
+                <span class="font-weight-bold text-error"> ${{ formatNumber(item.sell) }} </span>
               </div>
             </template>
 
             <!-- Celda de Spread -->
             <template #item.spread="{ item }">
               <div class="text-right">
-                <v-chip
-                  size="small"
-                  :color="getSpreadColor(item.spread)"
-                  variant="flat"
-                >
+                <v-chip size="small" :color="getSpreadColor(item.spread)" variant="flat">
                   {{ formatNumber(item.spread) }}%
                 </v-chip>
               </div>
@@ -159,11 +146,7 @@
             <!-- Slot para cuando no hay datos -->
             <template #no-data>
               <div class="text-center pa-4">
-                <v-icon
-size="64"
-color="grey-lighten-1"
-                  >mdi-database-remove</v-icon
-                >
+                <v-icon size="64" color="grey-lighten-1">mdi-database-remove</v-icon>
                 <p class="text-h6 text-grey mt-4">
                   No hay datos disponibles para
                   {{ formatOriginName(route.params.origin as string) }}
@@ -254,16 +237,14 @@ const {
   },
   {
     default: () => [],
-  },
+  }
 )
 
 // Process the data and calculate spreads
 const items = computed<CambioItem[]>(() => {
   if (!rawData.value || rawData.value.error) return []
 
-  const dataArray = Array.isArray(rawData.value)
-    ? rawData.value
-    : [rawData.value]
+  const dataArray = Array.isArray(rawData.value) ? rawData.value : [rawData.value]
 
   const processedItems = dataArray
     .map((item: any) => ({
@@ -273,15 +254,13 @@ const items = computed<CambioItem[]>(() => {
     .filter((item: any) => item.origin) // Filter items without origin
 
   // Check if the origin exists
-  const originExists = processedItems.some(
-    (item) => item.origin === route.params.origin,
-  )
+  const originExists = processedItems.some(item => item.origin === route.params.origin)
 
   if (processedItems.length > 0 && !originExists) {
     throw createError({
       statusCode: 404,
       statusMessage: `Casa de cambio "${formatOriginName(
-        route.params.origin as string,
+        route.params.origin as string
       )}" no encontrada`,
     })
   }
@@ -301,9 +280,7 @@ const _lastUpdate = computed(() => {
 })
 
 // SEO Configuration with dynamic origin name
-const originName = computed(() =>
-  formatOriginName(route.params.origin as string),
-)
+const originName = computed(() => formatOriginName(route.params.origin as string))
 
 // Headers definition
 const headers = ref([
@@ -350,36 +327,30 @@ const headers = ref([
 
 // Computed properties
 const currencyOptions = computed(() => {
-  const currencies = [
-    ...new Set(items.value.map((item) => item.code).filter(Boolean)),
-  ]
-  return currencies.sort().map((currency) => ({
+  const currencies = [...new Set(items.value.map(item => item.code).filter(Boolean))]
+  return currencies.sort().map(currency => ({
     title: `${currency} - ${getCurrencyName(currency)}`,
     value: currency,
   }))
 })
 
 const typeOptions = computed(() => {
-  const types = [
-    ...new Set(items.value.map((item) => item.type).filter(Boolean)),
-  ]
-  return types.sort().map((type) => ({
+  const types = [...new Set(items.value.map(item => item.type).filter(Boolean))]
+  return types.sort().map(type => ({
     title: type,
     value: type,
   }))
 })
 
 const filteredItems = computed(() => {
-  let filtered = items.value.filter(
-    (item) => item.origin === route.params.origin,
-  )
+  let filtered = items.value.filter(item => item.origin === route.params.origin)
 
   if (selectedCurrency.value) {
-    filtered = filtered.filter((item) => item.code === selectedCurrency.value)
+    filtered = filtered.filter(item => item.code === selectedCurrency.value)
   }
 
   if (selectedType.value) {
-    filtered = filtered.filter((item) => item.type === selectedType.value)
+    filtered = filtered.filter(item => item.type === selectedType.value)
   }
 
   return filtered
@@ -444,10 +415,7 @@ const formatOriginName = (origin: string): string => {
     cambio_obelisco: 'Cambio Obelisco',
   }
 
-  return (
-    nameMap[origin] ||
-    origin.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
-  )
+  return nameMap[origin] || origin.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
 }
 
 const getCurrencyName = (code: string): string => {
@@ -496,8 +464,7 @@ const getTypeColor = (type: string): string => {
 }
 
 const getSpreadColor = (spread: number | string): string => {
-  const spreadNum =
-    typeof spread === 'number' ? spread : Number.parseFloat(String(spread))
+  const spreadNum = typeof spread === 'number' ? spread : Number.parseFloat(String(spread))
   if (spreadNum <= 2) return 'green'
   if (spreadNum <= 5) return 'orange'
   return 'red'
@@ -560,7 +527,7 @@ watch(
   () => {
     // Refresh data when origin changes
     _refresh()
-  },
+  }
 )
 
 // Lifecycle - restore filters from query parameters on mount
@@ -570,19 +537,15 @@ onMounted(() => {
 
 useSeoMeta({
   title: () => t('seo.historicalOriginTitle', { origin: originName.value }),
-  description: () =>
-    t('seo.historicalOriginDescription', { origin: originName.value }),
+  description: () => t('seo.historicalOriginDescription', { origin: originName.value }),
   keywords: () => t('seo.historicalOriginKeywords'),
   ogTitle: () => t('seo.historicalOriginTitle', { origin: originName.value }),
-  ogDescription: () =>
-    t('seo.historicalOriginDescription', { origin: originName.value }),
+  ogDescription: () => t('seo.historicalOriginDescription', { origin: originName.value }),
   ogType: 'website',
   ogUrl: () => `https://cambio-uruguay.com/historico/${route.params.origin}`,
   twitterCard: 'summary_large_image',
-  twitterTitle: () =>
-    t('seo.historicalOriginTitle', { origin: originName.value }),
-  twitterDescription: () =>
-    t('seo.historicalOriginDescription', { origin: originName.value }),
+  twitterTitle: () => t('seo.historicalOriginTitle', { origin: originName.value }),
+  twitterDescription: () => t('seo.historicalOriginDescription', { origin: originName.value }),
 })
 </script>
 

@@ -25,10 +25,10 @@ export const useCambioStore = defineStore('cambio', {
   }),
 
   getters: {
-    allItems: (state) => state.all_items,
-    getLocations: (state) => state.locations,
-    getFortex: (state) => state.fortex,
-    isLoading: (state) => state.loading,
+    allItems: state => state.all_items,
+    getLocations: state => state.locations,
+    getFortex: state => state.fortex,
+    isLoading: state => state.loading,
   },
 
   actions: {

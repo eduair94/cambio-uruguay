@@ -30,8 +30,7 @@ export default defineNuxtConfig({
         { charset: 'utf-8' },
         {
           name: 'viewport',
-          content:
-            'width=device-width, initial-scale=1, user-scalable=yes, maximum-scale=5',
+          content: 'width=device-width, initial-scale=1, user-scalable=yes, maximum-scale=5',
         },
         {
           name: 'description',
@@ -48,8 +47,7 @@ export default defineNuxtConfig({
         { name: 'publisher', content: 'Eduardo Airaudo' },
         {
           name: 'robots',
-          content:
-            'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
+          content: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
         },
         { name: 'googlebot', content: 'index, follow' },
         { name: 'bingbot', content: 'index, follow' },
@@ -150,11 +148,7 @@ export default defineNuxtConfig({
   },
 
   // Global CSS
-  css: [
-    'vuetify/styles',
-    '@mdi/font/css/materialdesignicons.min.css',
-    '~/assets/css/critical.css',
-  ],
+  css: ['vuetify/styles', '@mdi/font/css/materialdesignicons.min.css', '~/assets/css/critical.css'],
   // Server Configuration
   devServer: {
     port: 3311,
@@ -460,14 +454,12 @@ export default defineNuxtConfig({
       dsn: process.env.SENTRY_DSN,
     },
     // Server-side API URL (for SSR requests)
-    apiBaseServer:
-      process.env.NUXT_API_BASE_SERVER || 'http://104.234.204.107:3528',
+    apiBaseServer: process.env.NUXT_API_BASE_SERVER || 'http://104.234.204.107:3528',
     // Public keys (exposed to client-side)
     public: {
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'https://cambio-uruguay.com',
       // Client-side API URL
-      apiBase:
-        process.env.NUXT_PUBLIC_API_BASE || 'https://api.cambio-uruguay.com',
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'https://api.cambio-uruguay.com',
     },
   },
 

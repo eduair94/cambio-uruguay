@@ -9,11 +9,10 @@ export const useLoadingStore = defineStore('loading', {
   }),
 
   getters: {
-    getIsLoading: (state) => state.isLoading,
-    getLoadingMessage: (state) => state.loadingMessage,
-    getRouteChanging: (state) => state.routeChanging,
-    showOverlay: (state) =>
-      (state.isLoading || state.routeChanging) && state.isClient,
+    getIsLoading: state => state.isLoading,
+    getLoadingMessage: state => state.loadingMessage,
+    getRouteChanging: state => state.routeChanging,
+    showOverlay: state => (state.isLoading || state.routeChanging) && state.isClient,
   },
 
   actions: {

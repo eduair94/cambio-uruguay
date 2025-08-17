@@ -9,8 +9,8 @@ export const useLazyComponent = () => {
     if (!import.meta.client || !element.value) return
 
     const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
+      entries => {
+        entries.forEach(entry => {
           if (entry.isIntersecting) {
             isVisible.value = true
             observer.unobserve(entry.target)
@@ -20,7 +20,7 @@ export const useLazyComponent = () => {
       {
         rootMargin: '50px', // Load 50px before element becomes visible
         threshold: 0.1,
-      },
+      }
     )
 
     observer.observe(element.value)

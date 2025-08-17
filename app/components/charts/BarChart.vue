@@ -16,15 +16,7 @@ import {
   Tooltip,
 } from 'chart.js'
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  BarController,
-  Title,
-  Tooltip,
-  Legend,
-)
+ChartJS.register(CategoryScale, LinearScale, BarElement, BarController, Title, Tooltip, Legend)
 
 export default {
   name: 'BarChart',

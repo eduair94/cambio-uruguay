@@ -1,5 +1,5 @@
 // Simple Vue plugins for Nuxt 3
-export default defineNuxtPlugin((nuxtApp) => {
+export default defineNuxtPlugin(nuxtApp => {
   // Add global error handler to catch browser extension errors
   if (import.meta.client) {
     const errorHandler = (event: ErrorEvent) => {

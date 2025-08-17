@@ -15,13 +15,13 @@
 
 <script setup lang="ts">
 // Handle hydration and errors
-onErrorCaptured((error) => {
+onErrorCaptured(error => {
   console.error('App error captured:', error)
   return false
 })
 
 // Global error handling
-onErrorCaptured((error) => {
+onErrorCaptured(error => {
   console.error('Global error captured:', error)
   // You can add Sentry error reporting here if needed
   return false
@@ -34,7 +34,7 @@ const hideFeedback = () => {
                     ._hj_feedback_container {
                       display:none!important;
                     }
-            </style>`,
+            </style>`
   )
 }
 

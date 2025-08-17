@@ -35,14 +35,8 @@
     </template>
 
     <template #item.localData.website="{ item }">
-      <a
-        class="text-white d-block website_link"
-        target="_blank"
-        :href="item.localData.website"
-      >
-        {{
-          item.localData.website.replace(/(^\w+:|^)\/\//, '').replace(/\/$/, '')
-        }}
+      <a class="text-white d-block website_link" target="_blank" :href="item.localData.website">
+        {{ item.localData.website.replace(/(^\w+:|^)\/\//, '').replace(/\/$/, '') }}
       </a>
     </template>
 

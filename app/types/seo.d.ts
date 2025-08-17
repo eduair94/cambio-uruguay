@@ -4,23 +4,14 @@ declare module 'vue/types/vue' {
     $seo: {
       generateCurrencyMeta(
         currency?: string,
-        location?: string,
+        location?: string
       ): {
         title: string
         description: string
         keywords: string
       }
-      generateCurrencyStructuredData(
-        currency: string,
-        rate: number,
-        location: string,
-      ): any
-      optimizeImage(
-        src: string,
-        alt: string,
-        width?: number,
-        height?: number,
-      ): any
+      generateCurrencyStructuredData(currency: string, rate: number, location: string): any
+      optimizeImage(src: string, alt: string, width?: number, height?: number): any
       generateBreadcrumbs(items: { name: string; url: string }[]): any
       generateFAQ(faqs: { question: string; answer: string }[]): any
       preloadCriticalResources(): void
@@ -35,23 +26,14 @@ declare module '@nuxt/types' {
     $seo: {
       generateCurrencyMeta(
         currency?: string,
-        location?: string,
+        location?: string
       ): {
         title: string
         description: string
         keywords: string
       }
-      generateCurrencyStructuredData(
-        currency: string,
-        rate: number,
-        location: string,
-      ): any
-      optimizeImage(
-        src: string,
-        alt: string,
-        width?: number,
-        height?: number,
-      ): any
+      generateCurrencyStructuredData(currency: string, rate: number, location: string): any
+      optimizeImage(src: string, alt: string, width?: number, height?: number): any
       generateBreadcrumbs(items: { name: string; url: string }[]): any
       generateFAQ(faqs: { question: string; answer: string }[]): any
       preloadCriticalResources(): void

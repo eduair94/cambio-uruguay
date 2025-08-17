@@ -68,7 +68,7 @@ import '~/assets/variables.scss'
 import * as directives from 'vuetify/directives'
 import colors from 'vuetify/util/colors'
 
-export default defineNuxtPlugin((nuxtApp) => {
+export default defineNuxtPlugin(nuxtApp => {
   const vuetify = createVuetify({
     ssr: true,
     components: {

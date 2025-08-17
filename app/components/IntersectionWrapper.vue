@@ -6,10 +6,7 @@
     <div v-else-if="showPlaceholder" class="lazy-placeholder">
       <slot name="placeholder">
         <!-- Default loading placeholder -->
-        <div
-          class="d-flex justify-center align-center"
-          style="min-height: 100px"
-        >
+        <div class="d-flex justify-center align-center" style="min-height: 100px">
           <VProgressCircular indeterminate color="primary" />
         </div>
       </slot>
@@ -37,8 +34,8 @@ const observeElement = () => {
   if (!import.meta.client || !element.value) return
 
   const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
+    entries => {
+      entries.forEach(entry => {
         if (entry.isIntersecting) {
           isVisible.value = true
           observer.unobserve(entry.target)
@@ -48,7 +45,7 @@ const observeElement = () => {
     {
       rootMargin: props.rootMargin,
       threshold: props.threshold,
-    },
+    }
   )
 
   observer.observe(element.value)

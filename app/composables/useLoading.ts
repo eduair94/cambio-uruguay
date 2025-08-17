@@ -19,10 +19,7 @@ export const useLoading = () => {
     loadingStore.hideRouteLoading()
   }
 
-  const withLoading = async <T>(
-    asyncFn: () => Promise<T>,
-    message = 'Cargando...',
-  ): Promise<T> => {
+  const withLoading = async <T>(asyncFn: () => Promise<T>, message = 'Cargando...'): Promise<T> => {
     showLoading(message)
     try {
       return await asyncFn()

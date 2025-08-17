@@ -11,7 +11,7 @@ export const useAppReadiness = () => {
   })
 
   const checkDOMReadiness = () => {
-    return new Promise<void>((resolve) => {
+    return new Promise<void>(resolve => {
       if (document.readyState === 'complete') {
         readinessChecks.domReady = true
         resolve()
@@ -19,10 +19,7 @@ export const useAppReadiness = () => {
         const handleReadyStateChange = () => {
           if (document.readyState === 'complete') {
             readinessChecks.domReady = true
-            document.removeEventListener(
-              'readystatechange',
-              handleReadyStateChange,
-            )
+            document.removeEventListener('readystatechange', handleReadyStateChange)
             resolve()
           }
         }
@@ -32,7 +29,7 @@ export const useAppReadiness = () => {
   }
 
   const checkImagesLoaded = () => {
-    return new Promise<void>((resolve) => {
+    return new Promise<void>(resolve => {
       const images = document.querySelectorAll('img')
       if (images.length === 0) {
         readinessChecks.imagesLoaded = true
@@ -51,7 +48,7 @@ export const useAppReadiness = () => {
         }
       }
 
-      images.forEach((img) => {
+      images.forEach(img => {
         if (img.complete) {
           handleImageLoad()
         } else {

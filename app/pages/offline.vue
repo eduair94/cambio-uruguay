@@ -11,8 +11,8 @@
             </h1>
 
             <p class="text-body-1 mb-6">
-              Parece que no tienes conexión a internet. Por favor, verifica tu
-              conexión e intenta nuevamente.
+              Parece que no tienes conexión a internet. Por favor, verifica tu conexión e intenta
+              nuevamente.
             </p>
 
             <VBtn color="primary" size="large" @click="retry">
