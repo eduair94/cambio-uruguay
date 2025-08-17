@@ -563,6 +563,39 @@ const selectedTargetCurrency = ref(selectedTargetCurrencyInput.value)
 const amount = ref(amountInput.value)
 // Rounding helper (shared)
 const round2 = (n: number) => Math.round((Number(n) + Number.EPSILON) * 100) / 100
+const round4 = (n: number) => {
+  const num = Number(n)
+  const rounded = Math.round((num + Number.EPSILON) * 10000) / 10000
+  
+  // Check if the number ends with repetitive 999s and round up appropriately
+  const str = rounded.toString()
+  if (str.includes('.')) {
+    const parts = str.split('.')
+    const decimal = parts[1]
+    // If decimal part ends with 999 or 9999, round up to cleaner number
+    if (decimal && /9{3,}$/.test(decimal)) {
+      // For numbers ending in 999+ pattern, round up to the next clean number
+      const wholePart = parseInt(parts[0] || '0', 10)
+      const nineCount = decimal.match(/9+$/)?.[0].length || 0
+      
+      if (nineCount >= 3) {
+        // Round up to next whole number or to 2 decimal places
+        if (decimal.length === 4 && nineCount === 4) {
+          // 99.9999 -> 100.00
+          return wholePart + 1
+        } else if (nineCount >= 3) {
+          // 12.3999 -> 12.40, 45.0999 -> 45.10
+          const cleanDecimal = decimal.substring(0, decimal.length - nineCount)
+          const lastDigit = parseInt(cleanDecimal[cleanDecimal.length - 1] || '0', 10)
+          const newDecimal = cleanDecimal.substring(0, cleanDecimal.length - 1) + (lastDigit + 1)
+          return parseFloat(`${wholePart}.${newDecimal.padEnd(2, '0')}`)
+        }
+      }
+    }
+  }
+  
+  return rounded
+}
 
 const loading = ref<boolean>(true)
 const realExchangeData = ref<any[]>([])
@@ -943,7 +976,7 @@ const updateQueryParams = () => {
     from: selectedCurrency.value,
     to: selectedTargetCurrency.value,
     amount: amount.value.toString(),
-    dir: isForward.value ? 'f' : 'r',
+    dir: isForward.value ? undefined : 'r',
   }
 
   // Only update if parameters have actually changed
@@ -1060,7 +1093,7 @@ const toggleDirection = () => {
     // Selling on right to buy on left: left obtained = desiredRightAmount * reverseRate
     const r = conversionResult.value.reverseRate
     if (r > 0) {
-      amount.value = round2(desiredRightAmountRaw.value * r)
+      amount.value = round4(desiredRightAmountRaw.value * r)
     } else {
       amount.value = 0
     }
@@ -1069,7 +1102,7 @@ const toggleDirection = () => {
     // Selling on left to buy on right (forward): left is the amount needed to receive desiredRightAmount
     const r = conversionResult.value.rate
     if (r > 0) {
-      amount.value = round2(desiredRightAmountRaw.value / r)
+      amount.value = round4(desiredRightAmountRaw.value / r)
     } else {
       amount.value = 0
     }
