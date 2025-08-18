@@ -977,8 +977,13 @@ const formatCurrency = (value: number): string => {
       formatted = formatted.replace(/UYU/g, '$')
       
       // If $ is at the end, move it to the front
-      if (formatted.match(/\d.*\$$/)) {
+      if (formatted.endsWith('$')) {
         formatted = '$ ' + formatted.replace(/\$$/, '').trim()
+      }
+      
+      // Ensure there's always a space after $
+      if (formatted.startsWith('$') && !formatted.startsWith('$ ')) {
+        formatted = formatted.replace(/^\$/, '$ ')
       }
       
       // Clean up extra spaces
