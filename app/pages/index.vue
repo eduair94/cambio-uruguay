@@ -962,12 +962,34 @@ const getRateCardColor = (index: number): string => {
 
 // Methods
 const formatCurrency = (value: number): string => {
-  return new Intl.NumberFormat('es-UY', {
-    style: 'currency',
-    currency: 'UYU',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value)
+  // Use a more robust approach to ensure $ symbol is always shown
+  try {
+    let formatted = new Intl.NumberFormat('es-UY', {
+      style: 'currency',
+      currency: 'UYU',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(value)
+    
+    // Handle different mobile formats that might show UYU instead of $
+    if (formatted.includes('UYU')) {
+      // Replace UYU with $
+      formatted = formatted.replace(/UYU/g, '$')
+      
+      // If $ is at the end, move it to the front
+      if (formatted.match(/\d.*\$$/)) {
+        formatted = '$ ' + formatted.replace(/\$$/, '').trim()
+      }
+      
+      // Clean up extra spaces
+      formatted = formatted.replace(/\s+/g, ' ').trim()
+    }
+    
+    return formatted
+  } catch {
+    // Fallback in case of any issues with Intl.NumberFormat
+    return `$ ${value.toLocaleString('es-UY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  }
 }
 
 // Function to update query parameters
