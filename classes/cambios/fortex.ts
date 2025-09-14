@@ -11,8 +11,8 @@ class CambioFortex extends Cambio {
   favicon = "https://www.fortex.com.uy";
   dbFortex: MongooseServer;
 
-  constructor() {
-    super();
+  constructor(origin:string) {
+    super(origin);
     this.dbFortex = MongooseServer.getInstance(
       "fortex_conversions",
       new Schema(
@@ -49,7 +49,6 @@ class CambioFortex extends Cambio {
     // Ensure date is in Uruguay timezone for consistency
     const date = moment.tz("America/Montevideo").startOf("day").toDate();
     await this.dbFortex.getAnUpdateEntry({ date }, fortex_conversions);
-    console.log(items);
     return items;
   }
 }
