@@ -970,26 +970,26 @@ const formatCurrency = (value: number): string => {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(value)
-    
+
     // Handle different mobile formats that might show UYU instead of $
     if (formatted.includes('UYU')) {
       // Replace UYU with $
       formatted = formatted.replace(/UYU/g, '$')
-      
+
       // If $ is at the end, move it to the front
       if (formatted.endsWith('$')) {
         formatted = '$ ' + formatted.replace(/\$$/, '').trim()
       }
-      
+
       // Ensure there's always a space after $
       if (formatted.startsWith('$') && !formatted.startsWith('$ ')) {
         formatted = formatted.replace(/^\$/, '$ ')
       }
-      
+
       // Clean up extra spaces
       formatted = formatted.replace(/\s+/g, ' ').trim()
     }
-    
+
     return formatted
   } catch {
     // Fallback in case of any issues with Intl.NumberFormat
