@@ -11,7 +11,7 @@ class CambioFortex extends Cambio {
   favicon = "https://www.fortex.com.uy";
   dbFortex: MongooseServer;
 
-  constructor(origin:string) {
+  constructor(origin?:string) {
     super(origin);
     this.dbFortex = MongooseServer.getInstance(
       "fortex_conversions",
