@@ -1,6 +1,5 @@
 import Aeromar from "./cambios/aeromar";
 import AlterCambio from "./cambios/alter_cambio";
-import BalumaCambio from "./cambios/baluma_cambio";
 import CambioBCU from "./cambios/bcu";
 import CambioBrou from "./cambios/brou";
 import Cambial from "./cambios/cambial";
@@ -68,7 +67,7 @@ export const origins = {
   //mas_cambio: MasCambio,
   cambio_fenix: CambioFenix,
   cambio_oriental: CambioOriental,
-  baluma_cambio: BalumaCambio,
+  //baluma_cambio: BalumaCambio,
   gales: CambioGales,
   cambio_vexel: CambioVexel,
   cambio_velso: CambioVelso,
