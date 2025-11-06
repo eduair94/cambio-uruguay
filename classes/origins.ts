@@ -41,6 +41,7 @@ import Tradelix from "./cambios/tradelix";
 import CambioVarlix from "./cambios/varlix";
 
 export const origins = {
+  cambio_aguerrebere: CambioAguerrebere,
   la_favorita: CambioLaFavorita,
   cambio_minas: CambioMinas,
   cambio_regul: CambioRegul,
@@ -55,7 +56,6 @@ export const origins = {
   cambio_argentino: CambioArgentino,
   cambio_federal: CambioFederal,
   cambio_romantico: CambioRomantico,
-  cambio_aguerrebere: CambioAguerrebere,
   itau: Itau,
   cambio_principal: CambioPrincipal,
   cambio_young: CambioYoung,

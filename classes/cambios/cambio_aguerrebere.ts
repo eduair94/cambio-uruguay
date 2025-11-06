@@ -55,8 +55,9 @@ class CambioAguerrebere extends Cambio {
         return retryCount * 1000; // 1s, 2s, 3s
       },
       retryCondition: (error) => {
-        // Retry on network errors or 5xx status codes
+        // Retry on network errors, 403, or 5xx status codes
         return axiosRetry.isNetworkOrIdempotentRequestError(error) || 
+               error.response?.status === 403 ||
                (error.response?.status >= 500 && error.response?.status <= 599);
       },
       onRetry: async (retryCount, error, requestConfig) => {
