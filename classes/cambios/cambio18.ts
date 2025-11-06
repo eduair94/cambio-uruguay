@@ -9,32 +9,32 @@ class Cambio18 extends Cambio {
   website = "https://www.cambio18.com";
   favicon = "https://www.cambio18.com";
   conversions = {
-    "Dólar USA": {
+    "DÓLAR": {
       code: "USD",
       type: "",
     },
-    Euro: {
+    "EURO": {
       code: "EUR",
       type: "",
     },
-    Real: {
+    "REAL": {
       code: "BRL",
       type: "",
     },
-    "Peso Arg.": {
+    "ARGENTINO": {
       code: "ARS",
       type: "",
     },
   };
   async get_data(): Promise<CambioObj[]> {
-    const sel = "table table tbody";
+    const sel = "table.mtQJtX tbody.VUpDdz tr.UhXTve";
     const web_data = await axios.get(this.website).then((res) => res.data);
     const $ = load(web_data);
     const result = $(sel)
       .map((i: number, element) => ({
-        moneda: $(element).find("tr:nth-of-type(1)").text().trim(),
-        compra: this.fix_money($(element).find("tr:nth-of-type(2) > td:nth-of-type(2)").text().trim()),
-        venta: this.fix_money($(element).find("tr:nth-of-type(3) > td:nth-of-type(2)").text().trim()),
+        moneda: $(element).find("td:nth-of-type(2) div.ZTH0AF").text().trim(),
+        compra: this.fix_money($(element).find("td:nth-of-type(3) div.ZTH0AF").text().trim()),
+        venta: this.fix_money($(element).find("td:nth-of-type(4) div.ZTH0AF").text().trim()),
       }))
       .get();
     const f = result
