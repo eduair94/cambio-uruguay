@@ -1,7 +1,7 @@
 import axios from "axios";
 import axiosRetry from "axios-retry";
-import { SocksProxyAgent } from "socks-proxy-agent";
 import { load } from "cheerio";
+import { SocksProxyAgent } from "socks-proxy-agent";
 import { CambioObj } from "../../interfaces/Cambio";
 import { Cambio } from "../cambio";
 import { ProxyFileService } from "../ProxyFileService";
