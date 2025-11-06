@@ -1,7 +1,10 @@
 import axios from "axios";
+import axiosRetry from "axios-retry";
+import { SocksProxyAgent } from "socks-proxy-agent";
 import { load } from "cheerio";
 import { CambioObj } from "../../interfaces/Cambio";
 import { Cambio } from "../cambio";
+import { ProxyFileService } from "../ProxyFileService";
 
 class CambioAguerrebere extends Cambio {
   name = "Cambio Aguerrebere";
@@ -30,8 +33,45 @@ class CambioAguerrebere extends Cambio {
   };
   website = "https://cambioaguerrebere.com/";
   favicon = "https://cambioaguerrebere.com/";
+  
   async get_data(): Promise<CambioObj[]> {
-    const web_data = await axios.get("https://cambioaguerrebere.com/", {
+    // Get proxy from ProxyFileService
+    const proxyService = ProxyFileService.getInstance();
+    const proxyUrl = await proxyService.getNextProxy();
+    
+    // Create axios instance with proxy agent
+    const axiosInstance = axios.create();
+    
+    if (proxyUrl) {
+      const agent = new SocksProxyAgent(proxyUrl);
+      axiosInstance.defaults.httpAgent = agent;
+      axiosInstance.defaults.httpsAgent = agent;
+    }
+    
+    // Configure axios-retry
+    axiosRetry(axiosInstance, {
+      retries: 3,
+      retryDelay: (retryCount) => {
+        return retryCount * 1000; // 1s, 2s, 3s
+      },
+      retryCondition: (error) => {
+        // Retry on network errors or 5xx status codes
+        return axiosRetry.isNetworkOrIdempotentRequestError(error) || 
+               (error.response?.status >= 500 && error.response?.status <= 599);
+      },
+      onRetry: async (retryCount, error, requestConfig) => {
+        console.log(`Retry attempt ${retryCount} for ${requestConfig.url}`);
+        // Get a new proxy on retry
+        const newProxyUrl = await proxyService.getNextProxy();
+        if (newProxyUrl) {
+          const newAgent = new SocksProxyAgent(newProxyUrl);
+          requestConfig.httpAgent = newAgent;
+          requestConfig.httpsAgent = newAgent;
+        }
+      }
+    });
+    
+    const web_data = await axiosInstance.get("https://cambioaguerrebere.com/", {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
