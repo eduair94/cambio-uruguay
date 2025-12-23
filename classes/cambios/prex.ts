@@ -74,6 +74,80 @@ class CambioPrex extends Cambio {
       });
     return e.token;
   }
+
+  /**
+   * Get USD exchange rate from the cambiomoneda page using web session
+   * Requires PHPSESSID cookie and user ID from environment variables
+   */
+  async get_usd_from_web(): Promise<{ buy: number; sell: number } | null> {
+    try {
+      const phpSessionId = process.env.prex_session_id;
+      const userId = process.env.prex_user_id;
+
+      if (!phpSessionId || !userId) {
+        console.log("Prex web session credentials not configured (prex_session_id, prex_user_id)");
+        return null;
+      }
+
+      const url = `https://www.prexcard.com/cambiomoneda/${userId}`;
+      const headers = {
+        accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+        "accept-language": "es-ES,es;q=0.9",
+        "cache-control": "no-cache",
+        pragma: "no-cache",
+        "sec-ch-ua": '"Google Chrome";v="143", "Chromium";v="143", "Not A(Brand";v="24"',
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": '"Windows"',
+        "sec-fetch-dest": "document",
+        "sec-fetch-mode": "navigate",
+        "sec-fetch-site": "same-origin",
+        "sec-fetch-user": "?1",
+        "upgrade-insecure-requests": "1",
+        cookie: `PHPSESSID=${phpSessionId}; promo=1`,
+        Referer: `https://www.prexcard.com/usuarios/cuentav2/${userId}`,
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+      };
+
+      const res = await axios.get(url, { headers, ...this.getProxyConfig() });
+      const html = res.data;
+
+      if (typeof html === "string") {
+        const $ = load(html);
+
+        // Check if we're on the login page (session expired)
+        const title = $("title").text();
+        if (title.includes("Ingresar") || title.includes("Login")) {
+          console.log("Prex session expired, please update prexPHPSESSID");
+          return null;
+        }
+
+        // Extract buy and sell rates from the cambiomoneda page
+        // <p id="pizarra-compra" class="px-azul px-pizarra">39,00</p>
+        // <p id="pizarra-venta" class="px-azul px-pizarra">39,40</p>
+        const buyText = $("#pizarra-compra").text().trim();
+        const sellText = $("#pizarra-venta").text().trim();
+
+        if (buyText && sellText) {
+          // Parse the values (format: "39,00" - uses comma as decimal separator)
+          const buy = parseFloat(buyText.replace(",", "."));
+          const sell = parseFloat(sellText.replace(",", "."));
+
+          if (!isNaN(buy) && !isNaN(sell)) {
+            console.log(`Prex USD rates from web: buy=${buy}, sell=${sell}`);
+            return { buy, sell };
+          }
+        }
+
+        console.log("Prex: Could not find exchange rates in cambiomoneda page");
+        return null;
+      }
+
+      return null;
+    } catch (error) {
+      console.error("Error fetching Prex USD from web:", error);
+      return null;
+    }
+  }
   async prex_ar(token: string) {
     const url = "https://www.prexcard.com/hacelabien";
     const headers = {
@@ -115,32 +189,45 @@ class CambioPrex extends Cambio {
     return { buy: res.compra, sell: res.venta };
   }
   async get_data(): Promise<CambioObj[]> {
-    const token = await this.login();
-    const ar = await this.prex_ar(token);
-    const { buy, sell } = await this.get_usd(token);
-    const f = [
-      {
+    const ar = await this.prex_ar("");
+
+    // Try to get USD rates from web first (cambiomoneda page)
+    let usdRates = await this.get_usd_from_web();
+
+    // Fallback to API if web scraping fails
+    if (!usdRates) {
+      try {
+        const token = await this.login();
+        usdRates = await this.get_usd(token);
+      } catch (error) {
+        console.error("Error fetching Prex USD from API:", error);
+        usdRates = null;
+      }
+    }
+
+    const f: CambioObj[] = [];
+
+    if (usdRates) {
+      f.push({
         code: "USD",
         type: "",
         name: "",
-        buy: buy,
-        sell: sell,
-      },
-    ];
-    let arF = null;
+        buy: usdRates.buy,
+        sell: usdRates.sell,
+      });
+    }
+
     if (ar) {
       const num = Math.round((ar.cotUy / ar.cotArg) * 100) / 100;
-      arF = {
+      f.push({
         code: "ARS",
         type: "",
         name: "",
         buy: num,
         sell: num,
-      };
+      });
     }
-    if (arF) {
-      f.push(arF);
-    }
+
     return f;
   }
 }
