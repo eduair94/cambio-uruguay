@@ -81,11 +81,11 @@ class CambioPrex extends Cambio {
    */
   async get_usd_from_web(): Promise<{ buy: number; sell: number } | null> {
     try {
-      const phpSessionId = process.env.prex_session_id;
-      const userId = process.env.prex_user_id;
+      const phpSessionId = process.env.PREX_SESSION_ID;
+      const userId = process.env.PREX_USER_ID;
 
       if (!phpSessionId || !userId) {
-        console.log("Prex web session credentials not configured (prex_session_id, prex_user_id)");
+        console.log("Prex web session credentials not configured (PREX_SESSION_ID, PREX_USER_ID)");
         return null;
       }
 
