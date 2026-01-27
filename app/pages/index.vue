@@ -22,274 +22,317 @@
                   {{ t('quickExchange') }}
                 </h2>
 
-                <!-- Amount Input -->
-                <VRow class="mb-0 mb-md-4">
-                  <VCol cols="12">
-                    <VTextField
-                      v-model="amountInput"
-                      hide-details
-                      :label="t('enterAmount')"
-                      variant="outlined"
-                      density="comfortable"
-                      type="number"
-                      min="1"
-                      class="amount-input"
-                      prepend-inner-icon="mdi-cash"
-                    />
-                  </VCol>
-                </VRow>
-
-                <!-- Currency Selection Row -->
-                <VRow class="currency-row" align="center">
-                  <VCol cols="12" md="5">
-                    <div class="currency-section">
-                      <VAutocomplete
-                        v-model="selectedCurrencyInput"
-                        hide-details
-                        :items="currencyOptions"
-                        :label="t('from')"
-                        variant="outlined"
-                        density="comfortable"
-                        item-title="title"
-                        item-value="value"
-                        class="currency-select"
-                        clearable
-                      />
-                    </div>
-                  </VCol>
-
-                  <VCol cols="12" md="2" class="text-center pa-0 pa-md-3">
-                    <div class="swap-btn_container">
-                      <VBtn
-                        icon
-                        variant="outlined"
-                        :size="mobile ? 'small' : 'large'"
-                        color="primary"
-                        class="swap-btn"
-                        @click="swapCurrencies"
-                      >
-                        <VIcon>mdi-swap-horizontal</VIcon>
-                      </VBtn>
-                    </div>
-                  </VCol>
-
-                  <VCol cols="12" md="5">
-                    <div class="currency-section">
-                      <VAutocomplete
-                        v-model="selectedTargetCurrencyInput"
-                        hide-details
-                        :items="currencyOptions"
-                        :label="t('to')"
-                        variant="outlined"
-                        density="comfortable"
-                        item-title="title"
-                        item-value="value"
-                        class="currency-select"
-                        clearable
-                      />
-                    </div>
-                  </VCol>
-                </VRow>
-
-                <VCardActions class="d-flex justify-end pa-0 pt-md-3 pb-3">
-                  <VBtn
-                    color="primary"
-                    variant="elevated"
-                    size="large"
-                    :loading="loading"
-                    class="w-100 w-md-auto my-5 my-md-0 px-5 convert-btn"
-                    @click.prevent="updateExchange"
-                  >
-                    <VIcon start>mdi-calculator</VIcon>
-                    {{ t('findBestRate') }}
-                  </VBtn>
-                </VCardActions>
-
-                <!-- Conversion Result -->
-                <VCard
-                  class="conversion-result pa-4 mb-md-4"
-                  color="rgba(76, 175, 80, 0.1)"
-                  variant="outlined"
+                <!-- Loading State -->
+                <div
+                  v-if="initialLoading"
+                  class="d-flex flex-column align-center justify-center py-12"
                 >
-                  <VRow align="center" justify="center" class="conversion-display-row">
-                    <VCol cols="5" sm="4" class="text-center align-self-start">
-                      <div class="conversion-display">
-                        <span class="amount-text">
-                          {{ formatCurrency(isForward ? amount : leftForReverse) }}
-                        </span>
-                        <span v-if="selectedCurrency" class="currency-name">
-                          {{ t('codes.' + selectedCurrency) }}
-                        </span>
-                      </div>
-                    </VCol>
+                  <VProgressCircular
+                    indeterminate
+                    color="primary"
+                    size="64"
+                    width="6"
+                    class="mb-4"
+                  />
+                  <span class="text-body-1 text-grey-lighten-1">{{ t('loading') }}...</span>
+                </div>
 
-                    <VCol cols="2" sm="4" class="text-center">
-                      <DirectionToggle
-                        :is-forward="isForward"
-                        size="32"
-                        color="success"
-                        @toggle="toggleDirection"
+                <!-- Loaded Content -->
+                <template v-else>
+                  <!-- Amount Input -->
+                  <VRow class="mb-0 mb-md-4">
+                    <VCol cols="12" md="6">
+                      <VTextField
+                        v-model="amountInput"
+                        hide-details
+                        :label="t('enterAmount')"
+                        variant="outlined"
+                        density="comfortable"
+                        type="number"
+                        min="1"
+                        class="amount-input"
+                        prepend-inner-icon="mdi-cash"
                       />
                     </VCol>
+                    <VCol cols="12" md="6">
+                      <VAutocomplete
+                        v-model="selectedExchangeHouseInput"
+                        hide-details
+                        :items="exchangeHouseOptions"
+                        :label="t('selectExchangeHouse')"
+                        variant="outlined"
+                        density="comfortable"
+                        item-title="title"
+                        item-value="value"
+                        class="exchange-house-select"
+                        prepend-inner-icon="mdi-bank"
+                      />
+                    </VCol>
+                  </VRow>
 
-                    <VCol cols="5" sm="4" class="text-center align-self-start">
-                      <div class="conversion-display">
-                        <span class="amount-text converted">
-                          {{ formatCurrency(desiredRightAmount) }}
-                        </span>
-                        <span v-if="selectedTargetCurrency" class="currency-name">
-                          {{ t('codes.' + selectedTargetCurrency) }}
-                        </span>
+                  <!-- Currency Selection Row -->
+                  <VRow class="currency-row" align="center">
+                    <VCol cols="12" md="5">
+                      <div class="currency-section">
+                        <VAutocomplete
+                          v-model="selectedCurrencyInput"
+                          hide-details
+                          :items="currencyOptions"
+                          :label="t('from')"
+                          variant="outlined"
+                          density="comfortable"
+                          item-title="title"
+                          item-value="value"
+                          class="currency-select"
+                          clearable
+                        />
+                      </div>
+                    </VCol>
+
+                    <VCol cols="12" md="2" class="text-center pa-0 pa-md-3">
+                      <div class="swap-btn_container">
+                        <VBtn
+                          icon
+                          variant="outlined"
+                          :size="mobile ? 'small' : 'large'"
+                          color="primary"
+                          class="swap-btn"
+                          @click="swapCurrencies"
+                        >
+                          <VIcon>mdi-swap-horizontal</VIcon>
+                        </VBtn>
+                      </div>
+                    </VCol>
+
+                    <VCol cols="12" md="5">
+                      <div class="currency-section">
+                        <VAutocomplete
+                          v-model="selectedTargetCurrencyInput"
+                          hide-details
+                          :items="currencyOptions"
+                          :label="t('to')"
+                          variant="outlined"
+                          density="comfortable"
+                          item-title="title"
+                          item-value="value"
+                          class="currency-select"
+                          clearable
+                        />
                       </div>
                     </VCol>
                   </VRow>
 
-                  <VDivider class="my-3" />
+                  <VCardActions class="d-flex justify-end pa-0 pt-md-3 pb-3">
+                    <VBtn
+                      color="primary"
+                      variant="elevated"
+                      size="large"
+                      :loading="loading"
+                      class="w-100 w-md-auto my-5 my-md-0 px-5 convert-btn"
+                      @click.prevent="updateExchange"
+                    >
+                      <VIcon start>mdi-calculator</VIcon>
+                      {{ t('findBestRate') }}
+                    </VBtn>
+                  </VCardActions>
 
-                  <div class="rate-info text-center">
-                    <span v-if="isForward" class="rate-text">
-                      1 {{ selectedCurrency }} =
-                      {{ formatCurrency(conversionResult.rate) }}
-                      {{ selectedTargetCurrency }}
-                    </span>
-                    <span v-else class="rate-text">
-                      1 {{ selectedTargetCurrency }} =
-                      {{ formatCurrency(conversionResult.reverseRate) }}
-                      {{ selectedCurrency }}
-                    </span>
-                  </div>
-                  <div class="rate-info text-center">
-                    <span v-if="isForward" class="rate-text">
-                      {{ formatCurrency(conversionResult.invertedRate) }}
-                      {{ selectedCurrency }} = 1 {{ selectedTargetCurrency }}
-                    </span>
-                    <span v-else class="rate-text">
-                      {{ formatCurrency(reverseInvertedRate) }}
-                      {{ selectedTargetCurrency }} = 1 {{ selectedCurrency }}
-                    </span>
-                  </div>
-                  <VDivider class="my-3" />
-                  <!-- Dual conversion summary -->
-                  <VRow class="text-center" align="center" justify="center">
-                    <VCol cols="12" md="6">
-                      <div class="text-subtitle-2 text-grey-lighten-1 mb-1">
-                        {{ t('quickExchangeForward') }}
-                      </div>
-                      <div class="text-h6 font-weight-bold text-white">
-                        {{ formatCurrency(dualConversion.forwardToAmount) }}
-                        <span class="text-caption">{{ selectedTargetCurrency }}</span>
-                      </div>
-                    </VCol>
-                    <VCol cols="12" md="6">
-                      <div class="text-subtitle-2 text-grey-lighten-1 mb-1">
-                        {{ t('quickExchangeReverse') }}
-                      </div>
-                      <div class="text-h6 font-weight-bold text-white">
-                        {{ formatCurrency(dualConversion.reverseNeededAmount) }}
-                        <span class="text-caption">{{ selectedTargetCurrency }}</span>
-                      </div>
-                      <div class="text-caption text-grey-lighten-1 mt-1">
-                        {{ reverseHintText }}
-                      </div>
-                    </VCol>
-                  </VRow>
-                </VCard>
-
-                <!-- Dual Best Rates: show both Sell and Buy for the subject currency; order by user intent -->
-                <template v-if="subjectCode">
-                  <!-- First card: current intent (sell or buy) -->
+                  <!-- Conversion Result -->
                   <VCard
-                    v-if="primaryRatesForSubject.length"
-                    class="best-rates-card pa-4 mb-4"
-                    color="rgba(33, 150, 243, 0.1)"
+                    class="conversion-result pa-4 mb-md-4"
+                    color="rgba(76, 175, 80, 0.1)"
                     variant="outlined"
                   >
-                    <h3 class="text-h6 font-weight-bold mb-3 mb-md-6 text-center text-white">
-                      {{ primaryTitle }}
-                    </h3>
-                    <VRow>
-                      <VCol
-                        v-for="(rate, index) in primaryRatesForSubject"
-                        :key="`${rate.origin}-${index}-primary`"
-                        class="pa-2 pa-sm-3"
-                        cols="6"
-                        sm="6"
-                        md="3"
+                    <!-- Show selected exchange house name if not 'best' -->
+                    <div v-if="selectedExchangeHouse !== 'best'" class="text-center mb-3">
+                      <VChip
+                        color="primary"
+                        variant="outlined"
+                        size="small"
+                        prepend-icon="mdi-bank"
                       >
-                        <nuxt-link
-                          class="d-flex w-100 h-100 text-decoration-none"
-                          :to="localePath(`/historico/${rate.origin}/${subjectCode}`)"
-                        >
-                          <VCard
-                            class="rate-item pa-3 text-center flex-grow-1"
-                            :color="getRateCardColor(index)"
-                            variant="tonal"
-                          >
-                            <div class="rate-position text-h6 font-weight-bold mb-2">
-                              #{{ index + 1 }}
-                            </div>
-                            <div class="rate-name text-body-2 font-weight-medium mb-1">
-                              {{ rate.source }}
-                            </div>
-                            <div class="rate-value text-h6 font-weight-bold mb-1">
-                              ${{ rate.rate.toFixed(2) }}
-                            </div>
-                            <div class="rate-type text-caption">
-                              {{ intentIsSellingSubject ? t('buy') : t('sell') }}
-                              {{ t('codes.' + subjectCode) }}
-                            </div>
-                          </VCard>
-                        </nuxt-link>
+                        {{ selectedExchangeHouseName }}
+                      </VChip>
+                    </div>
+                    <VRow align="center" justify="center" class="conversion-display-row">
+                      <VCol cols="5" sm="4" class="text-center align-self-start">
+                        <div class="conversion-display">
+                          <span class="amount-text">
+                            {{ formatCurrency(isForward ? amount : leftForReverse) }}
+                          </span>
+                          <span v-if="selectedCurrency" class="currency-name">
+                            {{ t('codes.' + selectedCurrency) }}
+                          </span>
+                        </div>
+                      </VCol>
+
+                      <VCol cols="2" sm="4" class="text-center">
+                        <DirectionToggle
+                          :is-forward="isForward"
+                          size="32"
+                          color="success"
+                          @toggle="toggleDirection"
+                        />
+                      </VCol>
+
+                      <VCol cols="5" sm="4" class="text-center align-self-start">
+                        <div class="conversion-display">
+                          <span class="amount-text converted">
+                            {{ formatCurrency(desiredRightAmount) }}
+                          </span>
+                          <span v-if="selectedTargetCurrency" class="currency-name">
+                            {{ t('codes.' + selectedTargetCurrency) }}
+                          </span>
+                        </div>
+                      </VCol>
+                    </VRow>
+
+                    <VDivider class="my-3" />
+
+                    <div class="rate-info text-center">
+                      <span v-if="isForward" class="rate-text">
+                        1 {{ selectedCurrency }} =
+                        {{ formatCurrency(conversionResult.rate) }}
+                        {{ selectedTargetCurrency }}
+                      </span>
+                      <span v-else class="rate-text">
+                        1 {{ selectedTargetCurrency }} =
+                        {{ formatCurrency(conversionResult.reverseRate) }}
+                        {{ selectedCurrency }}
+                      </span>
+                    </div>
+                    <div class="rate-info text-center">
+                      <span v-if="isForward" class="rate-text">
+                        {{ formatCurrency(conversionResult.invertedRate) }}
+                        {{ selectedCurrency }} = 1 {{ selectedTargetCurrency }}
+                      </span>
+                      <span v-else class="rate-text">
+                        {{ formatCurrency(reverseInvertedRate) }}
+                        {{ selectedTargetCurrency }} = 1 {{ selectedCurrency }}
+                      </span>
+                    </div>
+                    <VDivider class="my-3" />
+                    <!-- Dual conversion summary -->
+                    <VRow class="text-center" align="center" justify="center">
+                      <VCol cols="12" md="6">
+                        <div class="text-subtitle-2 text-grey-lighten-1 mb-1">
+                          {{ t('quickExchangeForward') }}
+                        </div>
+                        <div class="text-h6 font-weight-bold text-white">
+                          {{ formatCurrency(dualConversion.forwardToAmount) }}
+                          <span class="text-caption">{{ selectedTargetCurrency }}</span>
+                        </div>
+                      </VCol>
+                      <VCol cols="12" md="6">
+                        <div class="text-subtitle-2 text-grey-lighten-1 mb-1">
+                          {{ t('quickExchangeReverse') }}
+                        </div>
+                        <div class="text-h6 font-weight-bold text-white">
+                          {{ formatCurrency(dualConversion.reverseNeededAmount) }}
+                          <span class="text-caption">{{ selectedTargetCurrency }}</span>
+                        </div>
+                        <div class="text-caption text-grey-lighten-1 mt-1">
+                          {{ reverseHintText }}
+                        </div>
                       </VCol>
                     </VRow>
                   </VCard>
 
-                  <!-- Second card: the other intent -->
-                  <VCard
-                    v-if="secondaryRatesForSubject.length"
-                    class="best-rates-card pa-4 mb-4"
-                    color="rgba(33, 150, 243, 0.1)"
-                    variant="outlined"
-                  >
-                    <h3 class="text-h6 font-weight-bold mb-3 mb-md-6 text-center text-white">
-                      {{ secondaryTitle }}
-                    </h3>
-                    <VRow>
-                      <VCol
-                        v-for="(rate, index) in secondaryRatesForSubject"
-                        :key="`${rate.origin}-${index}-secondary`"
-                        class="pa-2 pa-sm-3"
-                        cols="6"
-                        sm="6"
-                        md="3"
-                      >
-                        <nuxt-link
-                          class="d-flex w-100 h-100 text-decoration-none"
-                          :to="localePath(`/historico/${rate.origin}/${subjectCode}`)"
+                  <!-- Dual Best Rates: show both Sell and Buy for the subject currency; order by user intent -->
+                  <template v-if="subjectCode">
+                    <!-- First card: current intent (sell or buy) -->
+                    <VCard
+                      v-if="primaryRatesForSubject.length"
+                      class="best-rates-card pa-4 mb-4"
+                      color="rgba(33, 150, 243, 0.1)"
+                      variant="outlined"
+                    >
+                      <h3 class="text-h6 font-weight-bold mb-3 mb-md-6 text-center text-white">
+                        {{ primaryTitle }}
+                      </h3>
+                      <VRow>
+                        <VCol
+                          v-for="(rate, index) in primaryRatesForSubject"
+                          :key="`${rate.origin}-${index}-primary`"
+                          class="pa-2 pa-sm-3"
+                          cols="6"
+                          sm="6"
+                          md="3"
                         >
-                          <VCard
-                            class="rate-item pa-3 text-center flex-grow-1"
-                            :color="getRateCardColor(index)"
-                            variant="tonal"
+                          <nuxt-link
+                            class="d-flex w-100 h-100 text-decoration-none"
+                            :to="localePath(`/historico/${rate.origin}/${subjectCode}`)"
                           >
-                            <div class="rate-position text-h6 font-weight-bold mb-2">
-                              #{{ index + 1 }}
-                            </div>
-                            <div class="rate-name text-body-2 font-weight-medium mb-1">
-                              {{ rate.source }}
-                            </div>
-                            <div class="rate-value text-h6 font-weight-bold mb-1">
-                              ${{ rate.rate.toFixed(2) }}
-                            </div>
-                            <div class="rate-type text-caption">
-                              {{ intentIsSellingSubject ? t('sell') : t('buy') }}
-                              {{ t('codes.' + subjectCode) }}
-                            </div>
-                          </VCard>
-                        </nuxt-link>
-                      </VCol>
-                    </VRow>
-                  </VCard>
+                            <VCard
+                              class="rate-item pa-3 text-center flex-grow-1"
+                              :color="getRateCardColor(index)"
+                              variant="tonal"
+                            >
+                              <div class="rate-position text-h6 font-weight-bold mb-2">
+                                #{{ index + 1 }}
+                              </div>
+                              <div class="rate-name text-body-2 font-weight-medium mb-1">
+                                {{ rate.source }}
+                              </div>
+                              <div class="rate-value text-h6 font-weight-bold mb-1">
+                                ${{ rate.rate.toFixed(2) }}
+                              </div>
+                              <div class="rate-type text-caption">
+                                {{ intentIsSellingSubject ? t('buy') : t('sell') }}
+                                {{ t('codes.' + subjectCode) }}
+                              </div>
+                            </VCard>
+                          </nuxt-link>
+                        </VCol>
+                      </VRow>
+                    </VCard>
+
+                    <!-- Second card: the other intent -->
+                    <VCard
+                      v-if="secondaryRatesForSubject.length"
+                      class="best-rates-card pa-4 mb-4"
+                      color="rgba(33, 150, 243, 0.1)"
+                      variant="outlined"
+                    >
+                      <h3 class="text-h6 font-weight-bold mb-3 mb-md-6 text-center text-white">
+                        {{ secondaryTitle }}
+                      </h3>
+                      <VRow>
+                        <VCol
+                          v-for="(rate, index) in secondaryRatesForSubject"
+                          :key="`${rate.origin}-${index}-secondary`"
+                          class="pa-2 pa-sm-3"
+                          cols="6"
+                          sm="6"
+                          md="3"
+                        >
+                          <nuxt-link
+                            class="d-flex w-100 h-100 text-decoration-none"
+                            :to="localePath(`/historico/${rate.origin}/${subjectCode}`)"
+                          >
+                            <VCard
+                              class="rate-item pa-3 text-center flex-grow-1"
+                              :color="getRateCardColor(index)"
+                              variant="tonal"
+                            >
+                              <div class="rate-position text-h6 font-weight-bold mb-2">
+                                #{{ index + 1 }}
+                              </div>
+                              <div class="rate-name text-body-2 font-weight-medium mb-1">
+                                {{ rate.source }}
+                              </div>
+                              <div class="rate-value text-h6 font-weight-bold mb-1">
+                                ${{ rate.rate.toFixed(2) }}
+                              </div>
+                              <div class="rate-type text-caption">
+                                {{ intentIsSellingSubject ? t('sell') : t('buy') }}
+                                {{ t('codes.' + subjectCode) }}
+                              </div>
+                            </VCard>
+                          </nuxt-link>
+                        </VCol>
+                      </VRow>
+                    </VCard>
+                  </template>
                 </template>
               </VCard>
               <div class="mt-5">
@@ -547,15 +590,83 @@ const apiService = useApiService()
 const route = useRoute()
 const router = useRouter()
 
+// localStorage key for form persistence
+const STORAGE_KEY = 'cambio-uruguay-home-form'
+
+// Interface for stored form data
+interface StoredFormData {
+  from: string
+  to: string
+  amount: number
+  exchangeHouse: string
+  dir: boolean
+}
+
+// Function to get stored form data
+const getStoredFormData = (): StoredFormData | null => {
+  if (typeof window === 'undefined') return null
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    if (stored) {
+      return JSON.parse(stored)
+    }
+  } catch (e) {
+    console.error('Error reading localStorage:', e)
+  }
+  return null
+}
+
+// Function to save form data to localStorage
+const saveFormData = () => {
+  if (typeof window === 'undefined') return
+  try {
+    const data: StoredFormData = {
+      from: selectedCurrency.value,
+      to: selectedTargetCurrency.value,
+      amount: amount.value,
+      exchangeHouse: selectedExchangeHouse.value,
+      dir: isForward.value,
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+  } catch (e) {
+    console.error('Error saving to localStorage:', e)
+  }
+}
+
+// Get initial values from query params, localStorage, or defaults
+function getInitialString(
+  queryValue: string | undefined,
+  storedValue: string | undefined,
+  defaultValue: string
+): string {
+  if (queryValue !== undefined && queryValue !== null && queryValue !== '') return queryValue
+  if (storedValue !== undefined && storedValue !== null) return storedValue
+  return defaultValue
+}
+
+const storedData = getStoredFormData()
+
 // Use input refs for v-models
-const selectedCurrencyInput = ref((route.query.from as string) || 'USD')
-const selectedTargetCurrencyInput = ref((route.query.to as string) || 'UYU')
+const selectedCurrencyInput = ref(
+  getInitialString(route.query.from as string, storedData?.from, 'USD')
+)
+const selectedTargetCurrencyInput = ref(
+  getInitialString(route.query.to as string, storedData?.to, 'UYU')
+)
 const amountInput = ref(
   (() => {
     const queryAmount = Number(route.query.amount)
-    return queryAmount && queryAmount > 0 ? queryAmount : 100
+    if (queryAmount && queryAmount > 0) return queryAmount
+    if (storedData?.amount && storedData.amount > 0) return storedData.amount
+    return 100
   })()
 )
+
+// Exchange house selector - 'best' means show best rate
+const selectedExchangeHouseInput = ref(
+  getInitialString(route.query.house as string, storedData?.exchangeHouse, 'best')
+)
+const selectedExchangeHouse = ref(selectedExchangeHouseInput.value)
 
 // selectedCurrency, selectedTargetCurrency, and amount are refs, set manually on button click
 const selectedCurrency = ref(selectedCurrencyInput.value)
@@ -597,7 +708,8 @@ const round4 = (n: number) => {
   return rounded
 }
 
-const loading = ref<boolean>(true)
+const loading = ref<boolean>(false)
+const initialLoading = ref<boolean>(true)
 const realExchangeData = ref<any[]>([])
 const availableCurrencies = ref<string[]>(['USD', 'ARS', 'BRL', 'EUR', 'UYU'])
 
@@ -607,6 +719,44 @@ const currencyOptions = computed(() => {
     title: code ? code + ' - ' + t('codes.' + code) : '',
     value: code,
   }))
+})
+
+// Exchange house options for autocomplete
+const exchangeHouseOptions = computed(() => {
+  // Get unique exchange houses from the data
+  const houses = new Map<string, { origin: string; name: string }>()
+
+  realExchangeData.value.forEach(item => {
+    if (item.localData?.name && !houses.has(item.origin)) {
+      houses.set(item.origin, {
+        origin: item.origin,
+        name: item.localData.name,
+      })
+    }
+  })
+
+  // Create options array with "Best rate" as first option
+  const options = [
+    {
+      title: t('bestRate'),
+      value: 'best',
+    },
+    ...Array.from(houses.values())
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map(house => ({
+        title: house.name,
+        value: house.origin,
+      })),
+  ]
+
+  return options
+})
+
+// Get the name of the selected exchange house
+const selectedExchangeHouseName = computed(() => {
+  if (selectedExchangeHouse.value === 'best') return t('bestRate')
+  const option = exchangeHouseOptions.value.find(opt => opt.value === selectedExchangeHouse.value)
+  return option?.title || selectedExchangeHouse.value
 })
 
 const topExchanges = computed(() => {
@@ -762,9 +912,16 @@ const getExchangeRate = (fromCurrency: string, toCurrency: string): number => {
 
   if (fromCurrency === toCurrency) return 1
 
+  // Filter data by selected exchange house if not 'best'
+  const filterByHouse = (data: typeof realExchangeData.value) => {
+    if (selectedExchangeHouse.value === 'best') return data
+    return data.filter(item => item.origin === selectedExchangeHouse.value)
+  }
+
   // If converting from UYU to another currency
   if (toCurrency === 'UYU') {
-    const currencyData = realExchangeData.value
+    const filteredData = filterByHouse(realExchangeData.value)
+    const currencyData = filteredData
       .sort((a, b) => b.buy - a.buy)
       .find(item => item.code === fromCurrency && item.buy > 0)
     return currencyData ? currencyData.buy : 0
@@ -772,7 +929,8 @@ const getExchangeRate = (fromCurrency: string, toCurrency: string): number => {
 
   // If converting to UYU from another currency
   if (fromCurrency === 'UYU') {
-    const currencyData = realExchangeData.value
+    const filteredData = filterByHouse(realExchangeData.value)
+    const currencyData = filteredData
       .sort((a, b) => a.sell - b.sell)
       .find(item => item.code === toCurrency && item.sell > 0)
     return currencyData?.sell ? 1 / currencyData.sell : 0
@@ -806,10 +964,12 @@ const dualConversion = ref({
 
 // UI direction: forward (left->right) vs reverse (right->left)
 const isForward = ref(true)
-// Initialize from query param dir=f|r (defaults to forward)
+// Initialize from query param dir=f|r, then localStorage (defaults to forward)
 if (typeof route.query.dir === 'string') {
   const lower = route.query.dir.toLowerCase()
   isForward.value = !(lower === 'r' || lower === 'reverse' || lower === '0' || lower === 'false')
+} else if (storedData?.dir !== undefined) {
+  isForward.value = storedData.dir
 }
 // We keep the right-hand amount constant across direction toggles
 const desiredRightAmount = ref(0)
@@ -999,11 +1159,12 @@ const formatCurrency = (value: number): string => {
 
 // Function to update query parameters
 const updateQueryParams = () => {
-  const query = {
+  const query: Record<string, string | undefined> = {
     from: selectedCurrency.value,
     to: selectedTargetCurrency.value,
     amount: amount.value.toString(),
     dir: isForward.value ? undefined : 'r',
+    house: selectedExchangeHouse.value === 'best' ? undefined : selectedExchangeHouse.value,
   }
 
   // Only update if parameters have actually changed
@@ -1011,7 +1172,8 @@ const updateQueryParams = () => {
     route.query.from !== query.from ||
     route.query.to !== query.to ||
     route.query.amount !== query.amount ||
-    route.query.dir !== query.dir
+    route.query.dir !== query.dir ||
+    route.query.house !== query.house
   ) {
     try {
       router.push({ query })
@@ -1023,7 +1185,7 @@ const updateQueryParams = () => {
 
 // Load initial data only once
 const loadInitialData = async () => {
-  loading.value = true
+  initialLoading.value = true
 
   try {
     const date = new Date().toLocaleDateString('en-CA', {
@@ -1059,7 +1221,7 @@ const loadInitialData = async () => {
   } catch (error) {
     console.error('Error loading initial data:', error)
   } finally {
-    loading.value = false
+    initialLoading.value = false
   }
 }
 
@@ -1084,6 +1246,7 @@ const updateExchange = () => {
   loading.value = true
   selectedCurrency.value = selectedCurrencyInput.value
   selectedTargetCurrency.value = selectedTargetCurrencyInput.value
+  selectedExchangeHouse.value = selectedExchangeHouseInput.value
   amount.value = Number(amountInput.value) || 0
   setConversionRate()
   // Preserve the shown result when inverted; only reset desiredRightAmount in forward mode
@@ -1107,6 +1270,8 @@ const updateExchange = () => {
     leftForReverse.value = round2(amount.value)
   }
   updateQueryParams()
+  // Save form data to localStorage
+  saveFormData()
   setTimeout(() => {
     loading.value = false
   }, 200)
@@ -1138,6 +1303,8 @@ const toggleDirection = () => {
   setConversionRate()
   // Reflect current direction in the URL
   updateQueryParams()
+  // Save form data to localStorage
+  saveFormData()
 }
 
 // SEO Configuration

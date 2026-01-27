@@ -83,6 +83,9 @@
   "quickExchangeReverseHint": "Para obter {amount} {from}, você venderia {to}",
   "selectCurrency": "Selecione a moeda",
   "enterAmount": "Digite o valor",
+  "selectExchangeHouse": "Casa de câmbio",
+  "bestRate": "A melhor",
+  "bestRateDescription": "Mostra a melhor cotação disponível",
   "findBestRate": "Encontrar melhor cotação",
   "buyingRate": "Comprando",
   "sellingRate": "Vendendo",
@@ -277,6 +280,7 @@
     "sucursalesIndexDescription": "Diretório completo de filiais de todas as casas de câmbio no Uruguai. Encontre localizações, endereços e contatos por departamento.",
     "sucursalesIndexKeywords": "diretório filiais uruguai, casas de câmbio uruguai, filiais montevidéu, filiais canelones, todas as filiais uruguai"
   },
+  "loading": "Carregando...",
   "bestToSell": "Melhor para vender",
   "bestToBuy": "Melhor comprar",
   "donar": "Doar",

@@ -214,7 +214,6 @@ import { useLocalePath } from '#imports'
 import { useLoadingStore } from '~/stores/loading'
 
 const route = useRoute()
-console.log('route', route)
 const router = useRouter()
 const localePath = useLocalePath()
 const loadingStore = useLoadingStore()
