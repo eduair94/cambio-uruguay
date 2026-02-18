@@ -10,9 +10,9 @@ export default defineNuxtConfig({
   // Site Configuration (required for @nuxt/sitemap and SEO)
   site: {
     url: 'https://cambio-uruguay.com',
-    name: 'Cambio Uruguay',
+    name: 'Cambio Uruguay - Cotización del Dólar en Uruguay Hoy',
     description:
-      'Encuentra las mejores cotizaciones de cambio de divisas en Uruguay. Compara precios de más de 40 casas de cambio en tiempo real.',
+      'Cotización del dólar en Uruguay hoy actualizada cada 10 minutos. Compara precios de compra y venta en más de 40 casas de cambio en Montevideo y todo Uruguay.',
     defaultLocale: 'es',
     identity: {
       type: 'Organization',
@@ -24,8 +24,8 @@ export default defineNuxtConfig({
   // App Configuration
   app: {
     head: {
-      titleTemplate: '%s - Cambio Uruguay',
-      title: 'Mejores Cotizaciones de Cambio en Uruguay',
+      titleTemplate: '%s | Cambio Uruguay - Cotización del Dólar',
+      title: 'Cotización del Dólar en Uruguay Hoy | Compara +40 Casas de Cambio',
       meta: [
         { charset: 'utf-8' },
         {
@@ -35,12 +35,12 @@ export default defineNuxtConfig({
         {
           name: 'description',
           content:
-            'Encuentra las mejores cotizaciones de cambio de divisas en Uruguay. Compara precios de más de 40 casas de cambio en tiempo real.',
+            'Cotización del dólar en Uruguay hoy actualizada cada 10 minutos. Compara precios de compra y venta en más de 40 casas de cambio. Dólar, euro, real y peso argentino.',
         },
         {
           name: 'keywords',
           content:
-            'cambio moneda uruguay, cambio divisas uruguay, donde comprar dólares uruguay, donde vender dólares uruguay, vender pesos argentinos uruguay, comprar pesos argentinos uruguay, casas de cambio uruguay, casas de cambio montevideo, casas de cambio punta del este',
+            'cotización del dólar en uruguay, cotización dólar uruguay hoy, precio del dólar en uruguay, dólar en uruguay hoy, casas de cambio uruguay, tipo de cambio uruguay, cotización euro uruguay, cotización real uruguay, cotización peso argentino uruguay, dólar BROU, comprar dólares montevideo, vender dólares uruguay, cambio de moneda uruguay',
         },
         { name: 'author', content: 'Eduardo Airaudo - Cambio Uruguay' },
         { name: 'creator', content: 'Eduardo Airaudo' },
@@ -63,7 +63,7 @@ export default defineNuxtConfig({
         { property: 'og:image:height', content: '630' },
         {
           property: 'og:image:alt',
-          content: 'Cambio Uruguay - Mejores cotizaciones de cambio',
+          content: 'Cambio Uruguay - Cotización del dólar en Uruguay hoy',
         },
         { property: 'og:site_name', content: 'Cambio Uruguay' },
         { property: 'og:locale', content: 'es_ES' },
@@ -78,7 +78,7 @@ export default defineNuxtConfig({
         },
         {
           name: 'twitter:image:alt',
-          content: 'Cambio Uruguay - Mejores cotizaciones de cambio',
+          content: 'Cambio Uruguay - Cotización del dólar en Uruguay hoy',
         },
         { name: 'twitter:site', content: '@cambio_uruguay' },
         { name: 'twitter:creator', content: '@cambio_uruguay' },
@@ -345,10 +345,10 @@ export default defineNuxtConfig({
           type: 'module',
         },
         manifest: {
-          name: 'Cambio Uruguay - Mejores Cotizaciones de Cambio',
+          name: 'Cambio Uruguay - Cotización del Dólar en Uruguay Hoy',
           short_name: 'Cambio Uruguay',
           description:
-            'Encuentra las mejores cotizaciones de cambio de divisas en Uruguay. Compara precios de más de 40 casas de cambio en tiempo real.',
+            'Cotización del dólar en Uruguay hoy. Compara precios de compra y venta en más de 40 casas de cambio en tiempo real.',
           theme_color: '#272727',
           background_color: '#272727',
           display: 'standalone',
@@ -416,7 +416,8 @@ export default defineNuxtConfig({
 
   // Robots Configuration
   robots: {
-    disallow: ['/admin/', '/server/'],
+    disallow: ['/admin/', '/server/', '/_nuxt/'],
+    allow: ['/', '/avanzado', '/historico', '/sucursales'],
     sitemap: 'https://cambio-uruguay.com/sitemap.xml',
     credits: false,
   },

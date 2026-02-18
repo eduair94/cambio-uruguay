@@ -94,7 +94,8 @@ export default defineEventHandler(async _event => {
     }
 
     // Add main URLs for all locales
-    addUrlsForAllLocales('/', 1.0, 'hourly') // Home page
+    addUrlsForAllLocales('/', 1.0, 'hourly') // Home page - Cotización del dólar en Uruguay
+    addUrlsForAllLocales('/avanzado', 0.9, 'hourly') // Advanced comparator
     addUrlsForAllLocales('/historico', 0.9, 'daily') // Historico main page
     addUrlsForAllLocales('/sucursales', 0.9, 'daily') // Sucursales main page
     addUrlsForAllLocales('/offline', 0.3, 'monthly') // Offline page

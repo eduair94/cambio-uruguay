@@ -291,8 +291,16 @@ useHead({
         '@context': 'https://schema.org',
         '@type': 'Organization',
         name: 'Cambio Uruguay',
+        alternateName: 'Cambio Uruguay - Cotización del Dólar',
         url: 'https://cambio-uruguay.com',
-        logo: 'https://cambio-uruguay.com/img/logo.png',
+        logo: {
+          '@type': 'ImageObject',
+          url: 'https://cambio-uruguay.com/img/logo.png',
+          width: 227,
+          height: 33,
+        },
+        description:
+          'Plataforma líder en Uruguay para comparar cotizaciones del dólar y divisas en más de 40 casas de cambio en tiempo real.',
         contactPoint: {
           '@type': 'ContactPoint',
           email: 'admin@cambio-uruguay.com',
@@ -300,7 +308,11 @@ useHead({
           areaServed: 'UY',
           availableLanguage: ['Spanish', 'English', 'Portuguese'],
         },
-        sameAs: ['https://twitter.com/cambio_uruguay'],
+        sameAs: [
+          'https://twitter.com/cambio_uruguay',
+          'https://www.linkedin.com/company/cambio-uruguay/',
+          'https://github.com/eduair94/cambio-uruguay',
+        ],
         address: {
           '@type': 'PostalAddress',
           addressCountry: 'UY',
@@ -317,6 +329,12 @@ useHead({
           name: 'Eduardo Airaudo',
           url: 'https://www.linkedin.com/in/eduardo-airaudo/',
         },
+        knowsAbout: [
+          'Cotización del dólar en Uruguay',
+          'Tipo de cambio Uruguay',
+          'Casas de cambio Uruguay',
+          'Mercado cambiario uruguayo',
+        ],
       }),
     },
   ],

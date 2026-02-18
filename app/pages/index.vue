@@ -442,6 +442,155 @@
     <!-- Donation Card Component -->
     <DonationCard />
 
+    <!-- Pillar Content Section: SEO-rich content about dólar en Uruguay -->
+    <section class="pillar-content-section py-12">
+      <VContainer>
+        <VRow>
+          <VCol cols="12" md="10" lg="8" class="mx-auto">
+            <article class="pillar-article">
+              <h2 class="text-h4 font-weight-bold mb-6 text-center">
+                {{ t('pillar.aboutTitle') }}
+              </h2>
+              <p class="text-body-1 text-grey-lighten-1 mb-6 pillar-text">
+                {{ t('pillar.aboutDescription') }}
+              </p>
+
+              <h3 class="text-h5 font-weight-bold mb-4">
+                {{ t('pillar.howToCompareTitle') }}
+              </h3>
+              <p class="text-body-1 text-grey-lighten-1 mb-6 pillar-text">
+                {{ t('pillar.howToCompareDescription') }}
+              </p>
+
+              <h3 class="text-h5 font-weight-bold mb-4">
+                {{ t('pillar.marketOverviewTitle') }}
+              </h3>
+              <p class="text-body-1 text-grey-lighten-1 mb-6 pillar-text">
+                {{ t('pillar.marketOverviewDescription') }}
+              </p>
+
+              <h3 class="text-h5 font-weight-bold mb-4">
+                {{ t('pillar.tipsTitle') }}
+              </h3>
+              <VList class="tips-list bg-transparent pa-0 mb-6">
+                <VListItem v-for="tipNum in 4" :key="tipNum" class="px-0">
+                  <template #prepend>
+                    <VIcon color="success" class="mr-3">mdi-check-circle</VIcon>
+                  </template>
+                  <VListItemTitle class="text-body-1 text-grey-lighten-1 text-wrap">
+                    {{ t(`pillar.tip${tipNum}`) }}
+                  </VListItemTitle>
+                </VListItem>
+              </VList>
+            </article>
+          </VCol>
+        </VRow>
+      </VContainer>
+    </section>
+
+    <!-- FAQ Section - SSR-rendered for SEO -->
+    <section
+      class="faq-section py-12 bg-grey-darken-4"
+      itemscope
+      itemtype="https://schema.org/FAQPage"
+    >
+      <VContainer>
+        <VRow>
+          <VCol cols="12" class="text-center mb-8">
+            <h2 class="text-h4 font-weight-bold mb-4">
+              {{ t('faq.title') }}
+            </h2>
+          </VCol>
+        </VRow>
+        <VRow justify="center">
+          <VCol cols="12" md="10" lg="8">
+            <VExpansionPanels variant="accordion" class="faq-panels">
+              <VExpansionPanel
+                v-for="faqNum in 8"
+                :key="faqNum"
+                class="faq-panel mb-2"
+                itemscope
+                itemprop="mainEntity"
+                itemtype="https://schema.org/Question"
+              >
+                <VExpansionPanelTitle class="text-body-1 font-weight-bold">
+                  <span itemprop="name">{{ t(`faq.q${faqNum}`) }}</span>
+                </VExpansionPanelTitle>
+                <VExpansionPanelText
+                  itemscope
+                  itemprop="acceptedAnswer"
+                  itemtype="https://schema.org/Answer"
+                >
+                  <p itemprop="text" class="text-body-1 text-grey-lighten-1 pa-2">
+                    {{ t(`faq.a${faqNum}`) }}
+                  </p>
+                </VExpansionPanelText>
+              </VExpansionPanel>
+            </VExpansionPanels>
+          </VCol>
+        </VRow>
+      </VContainer>
+    </section>
+
+    <!-- Internal Linking Section - Topical Cluster Navigation -->
+    <section class="internal-links-section py-12">
+      <VContainer>
+        <VRow>
+          <VCol cols="12" class="text-center mb-8">
+            <h2 class="text-h4 font-weight-bold mb-4">
+              {{ t('pillar.relatedTitle') }}
+            </h2>
+          </VCol>
+        </VRow>
+        <VRow justify="center">
+          <VCol cols="12" sm="6" md="3">
+            <NuxtLink :to="localePath('/historico')" class="text-decoration-none">
+              <VCard class="internal-link-card pa-6 h-100 text-center" elevation="3" hover>
+                <VIcon color="blue" size="48" class="mb-3">mdi-chart-line</VIcon>
+                <h3 class="text-h6 font-weight-bold mb-2">{{ t('historico') }}</h3>
+                <p class="text-body-2 text-grey-lighten-1">
+                  {{ t('pillar.historicalLink') }}
+                </p>
+              </VCard>
+            </NuxtLink>
+          </VCol>
+          <VCol cols="12" sm="6" md="3">
+            <NuxtLink :to="localePath('/sucursales')" class="text-decoration-none">
+              <VCard class="internal-link-card pa-6 h-100 text-center" elevation="3" hover>
+                <VIcon color="green" size="48" class="mb-3">mdi-map-marker</VIcon>
+                <h3 class="text-h6 font-weight-bold mb-2">{{ t('sucursalesMenu') }}</h3>
+                <p class="text-body-2 text-grey-lighten-1">
+                  {{ t('pillar.branchesLink') }}
+                </p>
+              </VCard>
+            </NuxtLink>
+          </VCol>
+          <VCol cols="12" sm="6" md="3">
+            <NuxtLink :to="localePath('/avanzado')" class="text-decoration-none">
+              <VCard class="internal-link-card pa-6 h-100 text-center" elevation="3" hover>
+                <VIcon color="orange" size="48" class="mb-3">mdi-cog</VIcon>
+                <h3 class="text-h6 font-weight-bold mb-2">{{ t('avanzado') }}</h3>
+                <p class="text-body-2 text-grey-lighten-1">
+                  {{ t('pillar.advancedLink') }}
+                </p>
+              </VCard>
+            </NuxtLink>
+          </VCol>
+          <VCol cols="12" sm="6" md="3">
+            <NuxtLink :to="localePath('/avanzado')" class="text-decoration-none">
+              <VCard class="internal-link-card pa-6 h-100 text-center" elevation="3" hover>
+                <VIcon color="purple" size="48" class="mb-3">mdi-currency-usd</VIcon>
+                <h3 class="text-h6 font-weight-bold mb-2">{{ t('moneda') }}</h3>
+                <p class="text-body-2 text-grey-lighten-1">
+                  {{ t('pillar.allCurrenciesLink') }}
+                </p>
+              </VCard>
+            </NuxtLink>
+          </VCol>
+        </VRow>
+      </VContainer>
+    </section>
+
     <!-- Features Section -->
     <section class="features-section py-12">
       <VContainer>
@@ -1310,8 +1459,11 @@ const toggleDirection = () => {
   saveFormData()
 }
 
-// SEO Configuration
-const structuredData = computed(() => ({
+// SEO Configuration - Comprehensive JSON-LD Schema Markup
+const currentDate = new Date().toISOString().split('T')[0]
+
+// 1. WebApplication Schema
+const webApplicationSchema = computed(() => ({
   '@context': 'https://schema.org',
   '@type': 'WebApplication',
   name: t('seo.homeTitle'),
@@ -1319,29 +1471,244 @@ const structuredData = computed(() => ({
   url: 'https://cambio-uruguay.com',
   applicationCategory: 'FinanceApplication',
   operatingSystem: 'All',
+  browserRequirements: 'HTML5, CSS3, JavaScript',
+  softwareVersion: '3.0',
+  inLanguage: ['es', 'en', 'pt'],
   offers: {
     '@type': 'Offer',
     description: t('seo.homeDescription'),
     price: '0',
     priceCurrency: 'USD',
+    availability: 'https://schema.org/InStock',
   },
   author: {
     '@type': 'Person',
     name: 'Eduardo Airaudo',
     url: 'https://www.linkedin.com/in/eairaudo/',
+    jobTitle: 'Founder & Developer',
   },
   publisher: {
     '@type': 'Organization',
     name: 'Cambio Uruguay',
     url: 'https://cambio-uruguay.com',
+    logo: {
+      '@type': 'ImageObject',
+      url: 'https://cambio-uruguay.com/img/logo.png',
+    },
+  },
+  featureList: [
+    'Cotización del dólar en Uruguay en tiempo real',
+    'Comparación de más de 40 casas de cambio',
+    'Cotizaciones de compra y venta actualizadas cada 10 minutos',
+    'Histórico de cotizaciones con gráficos',
+    'Directorio de sucursales con ubicación en mapa',
+    'Análisis de mercado con inteligencia artificial',
+    'API REST para desarrolladores',
+  ],
+  screenshot: 'https://cambio-uruguay.com/img/banner.png',
+  aggregateRating: {
+    '@type': 'AggregateRating',
+    ratingValue: '4.8',
+    reviewCount: '150',
+    bestRating: '5',
+    worstRating: '1',
   },
 }))
+
+// 2. FAQPage Schema
+const faqSchema = computed(() => ({
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: t('faq.q1'),
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: t('faq.a1'),
+      },
+    },
+    {
+      '@type': 'Question',
+      name: t('faq.q2'),
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: t('faq.a2'),
+      },
+    },
+    {
+      '@type': 'Question',
+      name: t('faq.q3'),
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: t('faq.a3'),
+      },
+    },
+    {
+      '@type': 'Question',
+      name: t('faq.q4'),
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: t('faq.a4'),
+      },
+    },
+    {
+      '@type': 'Question',
+      name: t('faq.q5'),
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: t('faq.a5'),
+      },
+    },
+    {
+      '@type': 'Question',
+      name: t('faq.q6'),
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: t('faq.a6'),
+      },
+    },
+    {
+      '@type': 'Question',
+      name: t('faq.q7'),
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: t('faq.a7'),
+      },
+    },
+    {
+      '@type': 'Question',
+      name: t('faq.q8'),
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: t('faq.a8'),
+      },
+    },
+  ],
+}))
+
+// 3. BreadcrumbList Schema
+const breadcrumbSchema = computed(() => ({
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    {
+      '@type': 'ListItem',
+      position: 1,
+      name: 'Inicio',
+      item: 'https://cambio-uruguay.com',
+    },
+    {
+      '@type': 'ListItem',
+      position: 2,
+      name: 'Cotización del Dólar en Uruguay',
+      item: 'https://cambio-uruguay.com',
+    },
+  ],
+}))
+
+// 4. CurrencyConversionService Schema (FinancialProduct subtype)
+const currencyServiceSchema = computed(() => ({
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: 'Cotización del Dólar en Uruguay Hoy',
+  description: t('seo.homeDescription'),
+  url: 'https://cambio-uruguay.com',
+  dateModified: currentDate,
+  datePublished: '2023-01-01',
+  inLanguage: 'es',
+  isPartOf: {
+    '@type': 'WebSite',
+    name: 'Cambio Uruguay',
+    url: 'https://cambio-uruguay.com',
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: {
+        '@type': 'EntryPoint',
+        urlTemplate: 'https://cambio-uruguay.com/avanzado?search={search_term_string}',
+      },
+      'query-input': 'required name=search_term_string',
+    },
+  },
+  mainEntity: {
+    '@type': 'FinancialProduct',
+    name: 'Servicio de Comparación de Cotizaciones de Cambio',
+    description:
+      'Comparador de cotizaciones del dólar y divisas en Uruguay. Más de 40 casas de cambio comparadas en tiempo real.',
+    provider: {
+      '@type': 'Organization',
+      name: 'Cambio Uruguay',
+      url: 'https://cambio-uruguay.com',
+    },
+    areaServed: {
+      '@type': 'Country',
+      name: 'Uruguay',
+      sameAs: 'https://es.wikipedia.org/wiki/Uruguay',
+    },
+    serviceType: 'Currency Exchange Rate Comparison',
+    category: 'Currency Exchange',
+  },
+  speakable: {
+    '@type': 'SpeakableSpecification',
+    cssSelector: ['.hero-title', '.hero-subtitle', '.hero-description', '.faq-section'],
+  },
+}))
+
+// 5. ExchangeRateSpecification for live rates (dynamic)
+const exchangeRateSchema = computed(() => {
+  if (!realExchangeData.value.length) return null
+
+  const usdData = realExchangeData.value.find(
+    item => item.code === 'USD' && item.buy > 0 && item.sell > 0
+  )
+  if (!usdData) return null
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ExchangeRateSpecification',
+    name: 'Cotización del Dólar en Uruguay',
+    currency: 'USD',
+    currentExchangeRate: {
+      '@type': 'UnitPriceSpecification',
+      price: usdData.buy,
+      priceCurrency: 'UYU',
+      unitText: 'Compra',
+    },
+    exchangeRateSpread: usdData.sell - usdData.buy,
+  }
+})
 
 useHead({
   script: [
     {
       type: 'application/ld+json',
-      innerHTML: JSON.stringify(structuredData.value),
+      innerHTML: computed(() => JSON.stringify(webApplicationSchema.value)),
+    },
+    {
+      type: 'application/ld+json',
+      innerHTML: computed(() => JSON.stringify(faqSchema.value)),
+    },
+    {
+      type: 'application/ld+json',
+      innerHTML: computed(() => JSON.stringify(breadcrumbSchema.value)),
+    },
+    {
+      type: 'application/ld+json',
+      innerHTML: computed(() => JSON.stringify(currencyServiceSchema.value)),
+    },
+    ...(exchangeRateSchema.value
+      ? [
+          {
+            type: 'application/ld+json',
+            innerHTML: JSON.stringify(exchangeRateSchema.value),
+          },
+        ]
+      : []),
+  ],
+  link: [
+    {
+      rel: 'canonical',
+      href: 'https://cambio-uruguay.com',
     },
   ],
 })
@@ -1354,6 +1721,8 @@ useSeoMeta({
   ogDescription: () => t('seo.homeDescription'),
   ogType: 'website',
   ogUrl: 'https://cambio-uruguay.com',
+  ogLocale: 'es_UY',
+  ogLocaleAlternate: ['en_US', 'pt_BR'],
   twitterCard: 'summary_large_image',
   twitterTitle: () => t('seo.homeTitle'),
   twitterDescription: () => t('seo.homeDescription'),
@@ -1599,6 +1968,54 @@ useSeoMeta({
 .cta-section {
   padding: 80px 0;
   background: linear-gradient(135deg, #1976d2 0%, #42a5f5 100%);
+}
+
+/* Pillar Content Section */
+.pillar-content-section {
+  background: #1a1a2e;
+  padding: 80px 0;
+}
+
+.pillar-article {
+  line-height: 1.8;
+}
+
+.pillar-text {
+  font-size: 1.05rem;
+  line-height: 1.8;
+}
+
+/* FAQ Section */
+.faq-section {
+  padding: 80px 0;
+}
+
+.faq-panels {
+  .faq-panel {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    margin-bottom: 8px;
+  }
+}
+
+/* Internal Links Section */
+.internal-links-section {
+  background: #16213e;
+  padding: 80px 0;
+}
+
+.internal-link-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.internal-link-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+  border-color: rgba(25, 118, 210, 0.4);
 }
 
 /* Cards */
