@@ -78,6 +78,14 @@ Todos los timestamps y fechas están en la zona horaria de Uruguay (America/Mont
     {
       name: 'Parameters',
       description: 'Endpoints para obtener parámetros válidos del sistema'
+    },
+    {
+      name: 'Debug',
+      description: 'Endpoints de depuración para monitorear el estado interno del servicio'
+    },
+    {
+      name: 'AI Insights',
+      description: 'Endpoints de inteligencia artificial para análisis de mercado y generación de insights'
     }
   ],
   components: {
@@ -175,8 +183,8 @@ Todos los timestamps y fechas están en la zona horaria de Uruguay (America/Mont
         properties: {
           status: {
             type: 'string',
-            enum: ['ok', 'error'],
-            description: 'Estado del servicio',
+            enum: ['ok', 'degraded', 'error'],
+            description: 'Estado del servicio (ok, degraded, error)',
             example: 'ok'
           },
           message: {
@@ -184,19 +192,84 @@ Todos los timestamps y fechas están en la zona horaria de Uruguay (America/Mont
             description: 'Mensaje descriptivo del estado',
             example: 'Sync is recent'
           },
-          lastSync: {
+          timestamp: {
             type: 'string',
             format: 'date-time',
-            description: 'Última sincronización exitosa',
+            description: 'Timestamp de la respuesta',
             example: '2024-08-09T12:00:00.000Z'
           },
-          minutesAgo: {
+          uptime: {
             type: 'number',
-            description: 'Minutos desde la última sincronización',
-            example: 5
+            description: 'Tiempo de actividad del servidor en segundos',
+            example: 3600
+          },
+          database: {
+            type: 'object',
+            properties: {
+              connected: {
+                type: 'boolean',
+                description: 'Si la base de datos está conectada'
+              },
+              readyState: {
+                type: 'number',
+                description: 'Estado de la conexión (0=disconnected, 1=connected, 2=connecting, 3=disconnecting)'
+              },
+              readyStateText: {
+                type: 'string',
+                description: 'Descripción del estado de conexión'
+              }
+            }
+          },
+          sync: {
+            type: 'object',
+            properties: {
+              available: {
+                type: 'boolean',
+                description: 'Si hay información de sincronización disponible'
+              },
+              lastSync: {
+                type: 'string',
+                format: 'date-time',
+                description: 'Última sincronización exitosa'
+              },
+              minutesAgo: {
+                type: 'number',
+                description: 'Minutos desde la última sincronización'
+              }
+            }
           }
         },
-        required: ['status', 'message']
+        required: ['status', 'message', 'timestamp']
+      },
+      AIInsightResponse: {
+        type: 'object',
+        properties: {
+          insight: {
+            type: 'string',
+            description: 'Análisis generado por IA en formato Markdown',
+            example: '## 📊 Resumen del Mercado\n\nEl dólar se cotiza hoy entre...'
+          },
+          type: {
+            type: 'string',
+            enum: ['market_summary', 'currency_analysis', 'best_rates', 'trend_analysis', 'custom'],
+            description: 'Tipo de análisis generado'
+          },
+          timestamp: {
+            type: 'string',
+            format: 'date-time',
+            description: 'Momento en que se generó el análisis'
+          },
+          language: {
+            type: 'string',
+            enum: ['es', 'en', 'pt'],
+            description: 'Idioma del análisis'
+          },
+          cached: {
+            type: 'boolean',
+            description: 'Si la respuesta provino de la caché'
+          }
+        },
+        required: ['insight', 'type', 'timestamp', 'language', 'cached']
       },
       PingResponse: {
         type: 'object',

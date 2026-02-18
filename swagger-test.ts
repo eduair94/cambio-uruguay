@@ -1,5 +1,5 @@
 import express from "express";
-import swaggerUi from "swagger-ui-express";
+import { apiReference } from "@scalar/express-api-reference";
 import { swaggerSpec } from "./swagger/config";
 
 const app = express();
@@ -8,45 +8,26 @@ const port = 3529;
 // Basic middleware
 app.use(express.json());
 
-// Swagger setup
-const swaggerOptions = {
-  explorer: true,
-  customCss: `
-    .swagger-ui .topbar { 
-      background-color: #2c3e50; 
-    }
-    .swagger-ui .topbar .download-url-wrapper { 
-      display: none; 
-    }
-    .swagger-ui .info .title {
-      color: #2c3e50;
-    }
-    .swagger-ui .scheme-container {
-      background: #f8f9fa;
-      border: 1px solid #dee2e6;
-      border-radius: 5px;
-      padding: 10px;
-      margin: 10px 0;
-    }
-  `,
-  customSiteTitle: "Cambio Uruguay API Documentation",
-  swaggerOptions: {
-    docExpansion: 'list',
-    filter: true,
-    showRequestHeaders: true,
-    tryItOutEnabled: true,
-    validatorUrl: null
-  }
-};
-
 // Serve Swagger JSON endpoint
 app.get("/api-docs.json", (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   res.send(swaggerSpec);
 });
 
-// Serve Swagger UI
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerOptions));
+// Serve Scalar API Reference
+app.use(
+  "/api-docs",
+  apiReference({
+    url: '/api-docs.json',
+    theme: 'purple',
+    layout: 'modern',
+    darkMode: true,
+    metaData: {
+      title: 'Cambio Uruguay API Documentation',
+      description: 'API completa para obtener tipos de cambio y información de casas de cambio en Uruguay',
+    },
+  })
+);
 
 // Test endpoint
 app.get("/test", (req, res) => {

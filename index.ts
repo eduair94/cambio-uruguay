@@ -2,10 +2,12 @@ import axios from "axios";
 import { Request, Response } from "express";
 import fs from "fs";
 import moment from "moment-timezone";
+import path from "path";
+import { aiService } from "./classes/ai_service";
 import BCU_Details from "./classes/bcu_details";
 import { cambio_info } from "./classes/cambioInfo";
 import CambioFortex from "./classes/cambios/fortex";
-import { MongooseServer } from "./classes/database";
+import { MongooseServer, mongoose } from "./classes/database";
 import server from "./classes/Express/ExpressSetup";
 import { origins } from "./classes/origins";
 import sentryInit from "./sentry";
@@ -48,6 +50,29 @@ class ValidationError extends Error {
     this.details = details;
   }
 }
+
+// Helper function to format bytes into human-readable string
+const formatBytes = (bytes: number): string => {
+  if (bytes === 0) return "0 B";
+  const k = 1024;
+  const sizes = ["B", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+};
+
+// Helper function to format uptime into human-readable string
+const formatUptime = (seconds: number): string => {
+  const days = Math.floor(seconds / 86400);
+  const hours = Math.floor((seconds % 86400) / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = Math.floor(seconds % 60);
+  const parts: string[] = [];
+  if (days > 0) parts.push(`${days}d`);
+  if (hours > 0) parts.push(`${hours}h`);
+  if (minutes > 0) parts.push(`${minutes}m`);
+  parts.push(`${secs}s`);
+  return parts.join(" ");
+};
 
 const main = async () => {
   console.log("Start connection");
@@ -162,8 +187,8 @@ const main = async () => {
     const result = await cambio_info.get_data(dateM, req.query);
     const expected = result.length > 0 && result.length >= 100;
     const fResponse = { expected: expected, total: result.length };
-    if (expected) return res.json(fResponse);
-    return res.json(fResponse).status(500);
+    if (expected) return res.status(200).json(fResponse);
+    return res.status(500).json(fResponse);
   });
 
   /**
@@ -175,13 +200,19 @@ const main = async () => {
    *     summary: Verificar estado del servicio
    *     description: |
    *       Endpoint de health check que verifica el estado del servicio
-   *       basándose en la última sincronización de datos.
+   *       basándose en la última sincronización de datos y la conectividad
+   *       con la base de datos.
    *       
-   *       - **ok**: Sincronización reciente (≤10 minutos)
-   *       - **error**: Sincronización antigua (>10 minutos) o error
+   *       Estados posibles:
+   *       - **ok**: Sincronización reciente (≤15 minutos) y DB conectada
+   *       - **degraded**: Sincronización ligeramente retrasada (15-30 min), DB desconectada, o datos de sync inválidos
+   *       - **error**: Sincronización muy antigua (>30 minutos)
+   *       
+   *       Este endpoint solo retorna 500 cuando la sincronización tiene más de 30 minutos de antigüedad.
+   *       Los estados "degraded" retornan 200 para evitar falsos positivos en health checks.
    *     responses:
    *       200:
-   *         description: Servicio saludable
+   *         description: Servicio saludable o degradado
    *         content:
    *           application/json:
    *             schema:
@@ -192,75 +223,619 @@ const main = async () => {
    *                 value:
    *                   status: "ok"
    *                   message: "Sync is recent"
-   *                   lastSync: "2024-08-09T12:00:00.000Z"
-   *                   minutesAgo: 5
+   *                   timestamp: "2024-08-09T12:00:00.000Z"
+   *                   uptime: 3600
+   *                   database:
+   *                     connected: true
+   *                     readyState: 1
+   *                     readyStateText: "connected"
+   *                   sync:
+   *                     available: true
+   *                     lastSync: "2024-08-09T12:00:00.000Z"
+   *                     minutesAgo: 5
+   *               degraded:
+   *                 summary: Servicio con degradación
+   *                 value:
+   *                   status: "degraded"
+   *                   message: "Database is not connected"
+   *                   timestamp: "2024-08-09T12:00:00.000Z"
    *               no_sync_file:
    *                 summary: Sin archivo de sincronización
    *                 value:
    *                   status: "ok"
    *                   message: "No sync file found - assuming healthy"
    *       500:
-   *         description: Servicio con problemas
+   *         description: Servicio con problemas graves (sync > 30 min)
    *         content:
    *           application/json:
    *             schema:
    *               $ref: '#/components/schemas/HealthResponse'
    *             examples:
    *               unhealthy:
-   *                 summary: Sincronización antigua
+   *                 summary: Sincronización muy antigua
    *                 value:
    *                   status: "error"
    *                   message: "Sync is too old"
-   *                   lastSync: "2024-08-09T10:00:00.000Z"
-   *                   minutesAgo: 120
-   *               error:
-   *                 summary: Error al verificar estado
-   *                 value:
-   *                   status: "error"
-   *                   message: "Error checking sync status"
-   *                   error: "File read error"
+   *                   sync:
+   *                     available: true
+   *                     lastSync: "2024-08-09T10:00:00.000Z"
+   *                     minutesAgo: 120
    */
   server.get("health", async (req: Request, res: Response): Promise<any> => {
     try {
       const syncFilePath = "last_sync.txt";
+      const dbState = MongooseServer.getConnectionState();
 
-      // Check if file exists and is not empty
+      // Build health response
+      const healthResponse: any = {
+        status: "ok",
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        database: dbState,
+      };
+
+      // Check database connectivity first
+      if (!dbState.connected) {
+        healthResponse.status = "degraded";
+        healthResponse.message = "Database is not connected";
+        return res.status(200).json(healthResponse);
+      }
+
+      // Check sync file
       if (!fs.existsSync(syncFilePath)) {
-        return res.status(200).json({ status: "ok", message: "No sync file found - assuming healthy" });
+        healthResponse.message = "No sync file found - assuming healthy";
+        healthResponse.sync = { available: false };
+        return res.status(200).json(healthResponse);
       }
 
       const syncData = fs.readFileSync(syncFilePath, "utf8").trim();
       if (!syncData) {
-        return res.status(200).json({ status: "ok", message: "Sync file is empty - assuming healthy" });
+        healthResponse.message = "Sync file is empty - assuming healthy";
+        healthResponse.sync = { available: false };
+        return res.status(200).json(healthResponse);
       }
 
-      // Parse the last sync time
+      // Parse the last sync time with validation
       const lastSyncTime = new Date(syncData);
+      if (isNaN(lastSyncTime.getTime())) {
+        healthResponse.status = "degraded";
+        healthResponse.message = "Sync file contains invalid date";
+        healthResponse.sync = { available: false, rawValue: syncData };
+        return res.status(200).json(healthResponse);
+      }
+
       const now = new Date();
       const diffMinutes = (now.getTime() - lastSyncTime.getTime()) / (1000 * 60);
 
-      if (diffMinutes <= 10) {
-        return res.status(200).json({
-          status: "ok",
-          message: "Sync is recent",
-          lastSync: lastSyncTime.toISOString(),
-          minutesAgo: Math.round(diffMinutes),
-        });
-      } else {
-        return res.status(500).json({
-          status: "error",
-          message: "Sync is too old",
-          lastSync: lastSyncTime.toISOString(),
-          minutesAgo: Math.round(diffMinutes),
-        });
+      healthResponse.sync = {
+        available: true,
+        lastSync: lastSyncTime.toISOString(),
+        minutesAgo: Math.round(diffMinutes),
+      };
+
+      // Read per-origin sync results if available
+      const syncResultsPath = "last_sync_results.json";
+      if (fs.existsSync(syncResultsPath)) {
+        try {
+          const syncResults = JSON.parse(fs.readFileSync(syncResultsPath, "utf8"));
+          healthResponse.sync.originResults = syncResults;
+        } catch (_e) {
+          // Ignore parse errors
+        }
       }
-    } catch (error) {
+
+      if (diffMinutes <= 15) {
+        healthResponse.message = "Sync is recent";
+        return res.status(200).json(healthResponse);
+      } else if (diffMinutes <= 30) {
+        healthResponse.status = "degraded";
+        healthResponse.message = "Sync is slightly delayed";
+        return res.status(200).json(healthResponse);
+      } else {
+        healthResponse.status = "error";
+        healthResponse.message = "Sync is too old";
+        return res.status(500).json(healthResponse);
+      }
+    } catch (error: any) {
       return res.status(500).json({
         status: "error",
         message: "Error checking sync status",
-        error: error.message,
+        error: error?.message || "Unknown error",
+        timestamp: new Date().toISOString(),
       });
     }
+  });
+
+  /**
+   * @openapi
+   * /debug/sync:
+   *   get:
+   *     tags:
+   *       - Debug
+   *     summary: Estado detallado de la última sincronización
+   *     description: |
+   *       Retorna información detallada sobre la última sincronización,
+   *       incluyendo resultados por cada origen (casa de cambio),
+   *       tiempos de ejecución y errores individuales.
+   *     responses:
+   *       200:
+   *         description: Información de sincronización
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 lastSync:
+   *                   type: string
+   *                   format: date-time
+   *                 minutesAgo:
+   *                   type: number
+   *                 syncResults:
+   *                   type: object
+   *                 syncFileExists:
+   *                   type: boolean
+   */
+  server.get("debug/sync", async (req: Request, res: Response): Promise<any> => {
+    try {
+      const syncFilePath = "last_sync.txt";
+      const syncResultsPath = "last_sync_results.json";
+      const response: any = {
+        timestamp: new Date().toISOString(),
+        syncFile: {
+          path: path.resolve(syncFilePath),
+          exists: fs.existsSync(syncFilePath),
+        },
+        syncResultsFile: {
+          path: path.resolve(syncResultsPath),
+          exists: fs.existsSync(syncResultsPath),
+        },
+      };
+
+      if (response.syncFile.exists) {
+        const syncData = fs.readFileSync(syncFilePath, "utf8").trim();
+        response.syncFile.content = syncData;
+        const lastSyncTime = new Date(syncData);
+        if (!isNaN(lastSyncTime.getTime())) {
+          const now = new Date();
+          response.syncFile.lastSync = lastSyncTime.toISOString();
+          response.syncFile.minutesAgo = Math.round((now.getTime() - lastSyncTime.getTime()) / (1000 * 60));
+        } else {
+          response.syncFile.error = "Invalid date in sync file";
+        }
+      }
+
+      if (response.syncResultsFile.exists) {
+        try {
+          response.syncResults = JSON.parse(fs.readFileSync(syncResultsPath, "utf8"));
+        } catch (e: any) {
+          response.syncResultsFile.error = "Failed to parse sync results: " + (e?.message || "Unknown error");
+        }
+      }
+
+      return res.status(200).json(response);
+    } catch (error: any) {
+      return res.status(500).json({
+        error: "Failed to retrieve sync debug info",
+        message: error?.message || "Unknown error",
+        timestamp: new Date().toISOString(),
+      });
+    }
+  });
+
+  /**
+   * @openapi
+   * /debug/db:
+   *   get:
+   *     tags:
+   *       - Debug
+   *     summary: Estado de la conexión a la base de datos
+   *     description: |
+   *       Retorna información sobre la conexión a MongoDB,
+   *       incluyendo estado de la conexión, nombre de la base de datos,
+   *       y conteo de documentos en las colecciones principales.
+   *     responses:
+   *       200:
+   *         description: Estado de la base de datos
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 connection:
+   *                   type: object
+   *                 collections:
+   *                   type: object
+   */
+  server.get("debug/db", async (req: Request, res: Response): Promise<any> => {
+    try {
+      const dbState = MongooseServer.getConnectionState();
+      const response: any = {
+        timestamp: new Date().toISOString(),
+        connection: dbState,
+        database: mongoose.connection.name || "unknown",
+        host: mongoose.connection.host || "unknown",
+        port: mongoose.connection.port || "unknown",
+      };
+
+      // Try to get collection stats if connected
+      if (dbState.connected) {
+        try {
+          const db = mongoose.connection.db;
+          if (db) {
+            const collections = await db.listCollections().toArray();
+            response.collections = {};
+            for (const col of collections) {
+              try {
+                const count = await db.collection(col.name).countDocuments();
+                response.collections[col.name] = { count };
+              } catch (_e) {
+                response.collections[col.name] = { error: "Could not count documents" };
+              }
+            }
+          }
+        } catch (e: any) {
+          response.collectionsError = e?.message || "Could not list collections";
+        }
+
+        // Try to get latest exchange data date
+        try {
+          const latestData = await cambio_info.get_data(undefined, {});
+          response.latestData = {
+            recordCount: latestData?.length || 0,
+            sampleDate: latestData?.[0]?.date || null,
+            originsInData: [...new Set(latestData?.map((d: any) => d.origin) || [])].length,
+          };
+        } catch (e: any) {
+          response.latestDataError = e?.message || "Could not fetch latest data";
+        }
+      }
+
+      return res.status(200).json(response);
+    } catch (error: any) {
+      return res.status(500).json({
+        error: "Failed to retrieve database debug info",
+        message: error?.message || "Unknown error",
+        timestamp: new Date().toISOString(),
+      });
+    }
+  });
+
+  /**
+   * @openapi
+   * /debug/origins:
+   *   get:
+   *     tags:
+   *       - Debug
+   *     summary: Estado de los orígenes (casas de cambio)
+   *     description: |
+   *       Retorna la lista de todos los orígenes configurados con
+   *       información detallada de cada uno, incluyendo si tienen
+   *       datos actualizados para hoy.
+   *     responses:
+   *       200:
+   *         description: Estado de los orígenes
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 total:
+   *                   type: integer
+   *                 origins:
+   *                   type: array
+   *                   items:
+   *                     type: object
+   */
+  server.get("debug/origins", async (req: Request, res: Response): Promise<any> => {
+    try {
+      const originsList = Object.keys(origins);
+      const originDetails: any[] = [];
+
+      // Get today's data to check which origins have current data
+      let todayData: any[] = [];
+      try {
+        todayData = await cambio_info.get_data(undefined, {});
+      } catch (_e) {
+        // Ignore if we can't get data
+      }
+
+      const originsWithData = new Set(todayData.map((d: any) => d.origin));
+
+      for (const originKey of originsList) {
+        try {
+          const cambio = new (origins as any)[originKey](originKey);
+          const originInfo: any = {
+            key: originKey,
+            name: cambio.name || originKey,
+            website: cambio.website || null,
+            hasDataToday: originsWithData.has(originKey),
+          };
+
+          // Count records for this origin today
+          const originRecords = todayData.filter((d: any) => d.origin === originKey);
+          originInfo.recordCount = originRecords.length;
+
+          if (originRecords.length > 0) {
+            originInfo.currencies = originRecords.map((d: any) => d.code);
+          }
+
+          originDetails.push(originInfo);
+        } catch (e: any) {
+          originDetails.push({
+            key: originKey,
+            error: e?.message || "Could not instantiate origin",
+          });
+        }
+      }
+
+      // Read last sync results for per-origin error info
+      let lastSyncErrors: any = {};
+      try {
+        const syncResultsPath = "last_sync_results.json";
+        if (fs.existsSync(syncResultsPath)) {
+          const syncResults = JSON.parse(fs.readFileSync(syncResultsPath, "utf8"));
+          if (syncResults?.origins) {
+            for (const result of syncResults.origins) {
+              if (result.status === "error") {
+                lastSyncErrors[result.origin] = result.error;
+              }
+            }
+          }
+        }
+      } catch (_e) {
+        // Ignore
+      }
+
+      // Attach sync errors to origin details
+      for (const detail of originDetails) {
+        if (lastSyncErrors[detail.key]) {
+          detail.lastSyncError = lastSyncErrors[detail.key];
+        }
+      }
+
+      const withData = originDetails.filter((o) => o.hasDataToday).length;
+      const withErrors = originDetails.filter((o) => o.lastSyncError).length;
+
+      return res.status(200).json({
+        timestamp: new Date().toISOString(),
+        total: originsList.length,
+        withDataToday: withData,
+        withoutDataToday: originsList.length - withData,
+        withSyncErrors: withErrors,
+        origins: originDetails,
+      });
+    } catch (error: any) {
+      return res.status(500).json({
+        error: "Failed to retrieve origins debug info",
+        message: error?.message || "Unknown error",
+        timestamp: new Date().toISOString(),
+      });
+    }
+  });
+
+  /**
+   * @openapi
+   * /debug/config:
+   *   get:
+   *     tags:
+   *       - Debug
+   *     summary: Configuración del servidor (sin datos sensibles)
+   *     description: |
+   *       Retorna información sobre la configuración del servidor,
+   *       incluyendo versión de Node.js, tiempo de actividad,
+   *       uso de memoria y zona horaria configurada.
+   *     responses:
+   *       200:
+   *         description: Configuración del servidor
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 nodeVersion:
+   *                   type: string
+   *                 uptime:
+   *                   type: number
+   *                 memory:
+   *                   type: object
+   *                 timezone:
+   *                   type: string
+   */
+  server.get("debug/config", async (req: Request, res: Response): Promise<any> => {
+    try {
+      const memUsage = process.memoryUsage();
+      return res.status(200).json({
+        timestamp: new Date().toISOString(),
+        nodeVersion: process.version,
+        platform: process.platform,
+        arch: process.arch,
+        uptime: {
+          seconds: Math.round(process.uptime()),
+          formatted: formatUptime(process.uptime()),
+        },
+        memory: {
+          rss: formatBytes(memUsage.rss),
+          heapTotal: formatBytes(memUsage.heapTotal),
+          heapUsed: formatBytes(memUsage.heapUsed),
+          external: formatBytes(memUsage.external),
+        },
+        timezone: moment.tz.guess() || "America/Montevideo",
+        currentTime: moment.tz("America/Montevideo").format("YYYY-MM-DD HH:mm:ss Z"),
+        pid: process.pid,
+        cwd: process.cwd(),
+        originsCount: Object.keys(origins).length,
+      });
+    } catch (error: any) {
+      return res.status(500).json({
+        error: "Failed to retrieve config debug info",
+        message: error?.message || "Unknown error",
+        timestamp: new Date().toISOString(),
+      });
+    }
+  });
+
+  /**
+   * @openapi
+   * /ai/insights:
+   *   post:
+   *     tags:
+   *       - AI Insights
+   *     summary: Obtener análisis de mercado con IA
+   *     description: |
+   *       Genera análisis e insights del mercado de cambios uruguayo usando inteligencia artificial.
+   *       
+   *       Tipos de análisis disponibles:
+   *       - **market_summary**: Resumen general del estado del mercado
+   *       - **currency_analysis**: Análisis detallado de una moneda específica
+   *       - **best_rates**: Mejores oportunidades de compra/venta
+   *       - **trend_analysis**: Análisis de tendencias históricas
+   *       - **custom**: Pregunta personalizada sobre el mercado
+   *       
+   *       Las respuestas se generan en el idioma solicitado (es, en, pt) y se cachean por 10 minutos.
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - type
+   *             properties:
+   *               type:
+   *                 type: string
+   *                 enum: [market_summary, currency_analysis, best_rates, trend_analysis, custom]
+   *                 description: Tipo de análisis a generar
+   *               language:
+   *                 type: string
+   *                 enum: [es, en, pt]
+   *                 default: es
+   *                 description: Idioma de la respuesta
+   *               currency:
+   *                 type: string
+   *                 description: Código de moneda para análisis específico (ej. USD, EUR)
+   *               origin:
+   *                 type: string
+   *                 description: Casa de cambio para análisis específico
+   *               customPrompt:
+   *                 type: string
+   *                 description: Pregunta personalizada (solo para type=custom)
+   *           examples:
+   *             market_summary:
+   *               summary: Resumen del mercado
+   *               value:
+   *                 type: market_summary
+   *                 language: es
+   *             currency_analysis:
+   *               summary: Análisis de USD
+   *               value:
+   *                 type: currency_analysis
+   *                 language: es
+   *                 currency: USD
+   *             custom:
+   *               summary: Pregunta personalizada
+   *               value:
+   *                 type: custom
+   *                 language: es
+   *                 customPrompt: "¿Cuál es la mejor casa de cambio para comprar dólares hoy?"
+   *     responses:
+   *       200:
+   *         description: Análisis generado exitosamente
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/AIInsightResponse'
+   *       400:
+   *         description: Parámetros inválidos
+   *       503:
+   *         description: Servicio de IA no configurado
+   */
+  server.postJson("ai/insights", async (req: Request): Promise<any> => {
+    if (!aiService.isConfigured()) {
+      throw new ValidationError("AI service is not configured", {
+        error: "AI service unavailable",
+        message: "The AI insights feature is not configured on this server. Set AI_BASE_URL and AI_API_KEY environment variables.",
+      }, 503);
+    }
+
+    const { type, language, currency, origin, customPrompt } = req.body;
+
+    // Validate type
+    const validTypes = ["market_summary", "currency_analysis", "best_rates", "trend_analysis", "custom"];
+    if (!type || !validTypes.includes(type)) {
+      throw new ValidationError("Invalid type parameter", createValidationError("type", type || "", validTypes));
+    }
+
+    // Validate language
+    const validLanguages = ["es", "en", "pt"];
+    const lang = validLanguages.includes(language) ? language : "es";
+
+    // Get current exchange data for context
+    const exchangeData = await cambio_info.get_data();
+
+    // Build the request
+    const insightRequest: any = {
+      type,
+      language: lang,
+      currency: currency?.toUpperCase(),
+      origin: origin?.toLowerCase(),
+      customPrompt,
+      exchangeData,
+    };
+
+    // If trend_analysis and we have currency + origin, get evolution data
+    if (type === "trend_analysis" && currency) {
+      try {
+        const originForEvolution = origin || "brou";
+        const evolutionData = await cambio_info.get_currency_evolution(originForEvolution, currency, 3);
+        insightRequest.evolutionData = evolutionData;
+      } catch (e: any) {
+        // Evolution data is optional, continue without it
+        console.warn("Could not fetch evolution data for AI insight:", e?.message || e);
+      }
+    }
+
+    const result = await aiService.getInsight(insightRequest, exchangeData);
+    return result;
+  });
+
+  /**
+   * @openapi
+   * /ai/status:
+   *   get:
+   *     tags:
+   *       - AI Insights
+   *     summary: Estado del servicio de IA
+   *     description: Verifica si el servicio de inteligencia artificial está configurado y disponible.
+   *     responses:
+   *       200:
+   *         description: Estado del servicio de IA
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 configured:
+   *                   type: boolean
+   *                 model:
+   *                   type: string
+   *                 availableTypes:
+   *                   type: array
+   *                   items:
+   *                     type: string
+   *                 supportedLanguages:
+   *                   type: array
+   *                   items:
+   *                     type: string
+   */
+  server.getJson("ai/status", async (req: Request): Promise<any> => {
+    return {
+      configured: aiService.isConfigured(),
+      model: process.env.AI_MODEL || "gpt-4o-mini",
+      availableTypes: ["market_summary", "currency_analysis", "best_rates", "trend_analysis", "custom"],
+      supportedLanguages: ["es", "en", "pt"],
+      cacheEnabled: true,
+      cacheTTL: "10 minutes",
+    };
   });
 
   /**

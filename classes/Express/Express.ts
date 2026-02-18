@@ -4,7 +4,7 @@ import express, { Request, Response } from "express";
 import { RecaptchaV2 } from "express-recaptcha";
 import { ValidationChain, validationResult } from "express-validator";
 import * as http from "http";
-import swaggerUi from "swagger-ui-express";
+import { apiReference } from "@scalar/express-api-reference";
 import { swaggerSpec } from "../../swagger/config";
 import { bError } from "../utils";
 import { FunctionExpress } from "./Express.interface";
@@ -55,7 +55,7 @@ class Express {
     this.app.set("trust proxy", true);
     this.app.use(bodyParser.urlencoded({ extended: false }));
     
-    // Serve static files for Swagger enhancements
+    // Serve static files (favicon, etc.)
     this.app.use('/public', express.static('public'));
     
     this.setupSwagger();
@@ -71,48 +71,38 @@ class Express {
   }
 
   private setupSwagger(): void {
-    // Read CSS content for inline styles
-    const fs = require('fs');
-    const cssPath = './public/swagger-enhancements.css';
-    let customCss = '';
-    
-    try {
-      customCss = fs.readFileSync(cssPath, 'utf8');
-    } catch (error) {
-      console.warn('Could not load custom CSS for Swagger UI:', error.message);
-    }
-
-    // Swagger UI options with external JavaScript
-    const swaggerOptions = {
-      explorer: true,
-      customCss: customCss,
-      customSiteTitle: "Cambio Uruguay API Documentation",
-      customfavIcon: "/public/favicon.ico",
-      customJs: ['/public/swagger-enhancements.js'],
-      swaggerOptions: {
-        docExpansion: 'list',
-        filter: true,
-        showRequestHeaders: true,
-        tryItOutEnabled: true,
-        validatorUrl: null,
-        supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch']
-      }
-    };
-
-    // Serve Swagger JSON endpoint
+    // Serve OpenAPI JSON endpoint
     this.app.get(`${this.baseUrl}api-docs.json`, (req: Request, res: Response) => {
       res.setHeader('Content-Type', 'application/json');
       res.send(swaggerSpec);
     });
 
-    // Serve Swagger UI
+    // Serve Scalar API Reference
     this.app.use(
-      `${this.baseUrl}api-docs`, 
-      swaggerUi.serve, 
-      swaggerUi.setup(swaggerSpec, swaggerOptions)
+      `${this.baseUrl}api-docs`,
+      apiReference({
+        url: `${this.baseUrl}api-docs.json`,
+        theme: 'purple',
+        layout: 'modern',
+        darkMode: true,
+        defaultOpenAllTags: false,
+        hideModels: false,
+        persistAuth: true,
+        defaultHttpClient: {
+          targetKey: 'shell',
+          clientKey: 'curl',
+        },
+        metaData: {
+          title: 'Cambio Uruguay API Documentation',
+          description: 'API completa para obtener tipos de cambio y información de casas de cambio en Uruguay',
+          ogTitle: 'Cambio Uruguay API',
+          ogDescription: 'Tipos de cambio actualizados en tiempo real para Uruguay',
+        },
+        favicon: '/public/favicon.ico',
+      })
     );
 
-    console.log(`📚 Swagger documentation available at: http://localhost:${this.port}${this.baseUrl}api-docs`);
+    console.log(`📚 API documentation available at: http://localhost:${this.port}${this.baseUrl}api-docs`);
   }
   public getJson(requestUrl: string, f: FunctionExpress): void {
     this.app.get(`${this.baseUrl}${requestUrl}`, async (req: Request, res: Response) => {
@@ -150,10 +140,17 @@ class Express {
 
   public get(requestUrl: string, f: any): void {
     this.app.get(`${this.baseUrl}${requestUrl}`, async (req: Request, res: Response) => {
-      f(req, res).catch((e) => {
-        res.status(404);
-        res.end();
-      });
+      try {
+        await f(req, res);
+      } catch (e: any) {
+        console.error(`Error in GET /${requestUrl}:`, e?.message || e);
+        if (!res.headersSent) {
+          res.status(500).json({
+            error: e?.message || 'Internal server error',
+            timestamp: new Date().toISOString()
+          });
+        }
+      }
     });
   }
 

@@ -2,7 +2,7 @@
 
 ## 🎯 Overview
 
-This project now includes comprehensive **Swagger/OpenAPI 3.0** documentation for all API endpoints. The integration provides an interactive interface where developers can explore, test, and understand how to use the Cambio Uruguay API.
+This project includes comprehensive **OpenAPI 3.0** documentation for all API endpoints, powered by **[Scalar](https://scalar.com)**. Scalar provides a modern, interactive, and beautiful API reference interface where developers can explore, test, and understand how to use the Cambio Uruguay API.
 
 ## 🚀 Access the Documentation
 
@@ -38,37 +38,40 @@ If running locally on port 3528:
 
 ## 🛠️ Technical Implementation
 
-### Dependencies Added
+### Dependencies
 ```json
 {
   "swagger-jsdoc": "^6.2.8",
-  "swagger-ui-express": "^5.0.1",
-  "@types/swagger-jsdoc": "^6.0.4",
-  "@types/swagger-ui-express": "^4.1.6"
+  "@scalar/express-api-reference": "^0.8.41",
+  "@types/swagger-jsdoc": "^6.0.4"
 }
 ```
 
 ### Key Files
-- `swagger/config.ts` - Main Swagger configuration with OpenAPI specification
-- `classes/Express/Express.ts` - Express class with Swagger UI integration
+- `swagger/config.ts` - Main OpenAPI specification configuration
+- `classes/Express/Express.ts` - Express class with Scalar API Reference integration
 - `index.ts` - All endpoints documented with JSDoc annotations
 
 ### Features
 - ✅ **Interactive Documentation** - Try out endpoints directly in the browser
+- ✅ **Modern UI** - Beautiful Scalar interface with dark/light mode
 - ✅ **Comprehensive Schemas** - Detailed request/response models
 - ✅ **Example Data** - Real examples for all endpoints
 - ✅ **Error Handling** - Documented error responses
-- ✅ **Custom Styling** - Branded UI matching the site theme
+- ✅ **Code Generation** - Auto-generated code examples in 20+ languages
+- ✅ **Search** - Full-text search across all endpoints and models
 - ✅ **Multi-language Support** - Documentation available in multiple languages
 
-## 🎨 UI Customization
+## 🎨 UI Features
 
-The Swagger UI includes:
-- Custom CSS with Cambio Uruguay branding
-- Hidden download URL wrapper for cleaner interface
-- Enhanced color scheme matching the main website
-- Collapsible sections for better navigation
-- Try-it-out functionality enabled
+Scalar API Reference includes out of the box:
+- Modern, responsive design with dark and light modes
+- Purple theme matching the Cambio Uruguay brand
+- Interactive API client to test requests directly
+- Auto-generated code examples (cURL, JavaScript, Python, Go, and more)
+- Full-text search across endpoints, models, and descriptions
+- Collapsible tag sections for better navigation
+- Persistent authentication across page reloads
 
 ## 📱 Frontend Integration
 

@@ -1,21 +1,21 @@
-import mongoose from "mongoose";
+import mongoose, { Schema as MongooseSchema, FilterQuery, UpdateQuery, QueryOptions, AggregateOptions, PipelineStage } from "mongoose";
 import { mongoConfig } from "../config";
-const Schema = mongoose.Schema;
+const Schema = MongooseSchema;
 
 export class MongooseServer {
   private static att = 0;
-  private static instances: Array<MongooseServer> = [];
+  private static instances: Record<string, MongooseServer> = {};
   private static db: any = {};
   private static connectionAllowed = false;
-  private Model;
+  private Model: mongoose.Model<any>;
   private max_att = 3;
   private timeout = 200;
 
-  private constructor(document, schema) {
+  private constructor(document: string, schema: mongoose.Schema) {
     this.Model = mongoose.model(document, schema);
   }
 
-  public static getInstance(document: string, schema) {
+  public static getInstance(document: string, schema: mongoose.Schema): MongooseServer {
     const m = MongooseServer;
     if (!m.instances[document]) {
       m.instances[document] = new MongooseServer(document, schema);
@@ -27,207 +27,150 @@ export class MongooseServer {
     error: "Connection Error",
   };
 
-  async aggregate(aggQuery, att = 0): Promise<any> {
-    return new Promise((resolve, reject) => {
-      this.getModel()
-        .aggregate(aggQuery)
-        .exec((error: Error, res: any) => {
-          if (error) {
-            if (att < this.max_att) {
-              return setTimeout(() => {
-                att++;
-                return resolve(this.aggregate(aggQuery, att));
-              }, this.timeout);
-            } else {
-              console.error(error);
-              return reject(error);
-            }
-          }
-          if (res && res.length) {
-            return resolve(res);
-          } else {
-            return resolve([]);
-          }
-        });
-    });
+  async aggregate(aggQuery: PipelineStage[], att = 0): Promise<any[]> {
+    try {
+      const res = await this.getModel().aggregate(aggQuery).exec();
+      return res && res.length ? res : [];
+    } catch (error) {
+      if (att < this.max_att) {
+        await new Promise(r => setTimeout(r, this.timeout));
+        return this.aggregate(aggQuery, att + 1);
+      }
+      console.error(error);
+      throw error;
+    }
   }
 
-  findEntry(entry: any, att = 0) {
+  async findEntry(entry: any, att = 0): Promise<any> {
     if (!MongooseServer.connectionAllowed) {
       return this.connectionError;
     }
-    const options = {};
-    return new Promise((resolve, reject) => {
-      this.Model.findOne(entry, options)
-        .lean()
-        .exec((error: Error, doc: any) => {
-          if (error) {
-            if (att < this.max_att) {
-              return setTimeout(() => {
-                att++;
-                return resolve(this.findEntry(entry, att));
-              }, this.timeout);
-            } else {
-              console.error(error);
-              return reject(error);
-            }
-          }
-          return resolve(doc);
-        });
-    });
+    try {
+      const doc = await this.Model.findOne(entry, {}).lean().exec();
+      return doc;
+    } catch (error) {
+      if (att < this.max_att) {
+        await new Promise(r => setTimeout(r, this.timeout));
+        return this.findEntry(entry, att + 1);
+      }
+      console.error(error);
+      throw error;
+    }
   }
 
-  public async allEntriesSort(param: any, sort: any, att = 0) {
+  public async allEntriesSort(param: any, sort: any, att = 0): Promise<any[]> {
     const r = await this.Model.find(param).select('-_id -__v').sort(sort).lean();
     return r;
   }
 
-  public allEntries(param: any, att = 0): Promise<any> {
-    return new Promise((resolve, reject) => {
-      this.Model.find(param, {'_id': 0, '__v': 0}, (error: Error, result: any) => {
-        if (error) {
-          if (att < this.max_att) {
-            return setTimeout(() => {
-              att++;
-              return resolve(this.allEntries(param, att));
-            }, this.timeout);
-          } else {
-            console.error(error);
-            return reject(error);
-          }
-        }
-        return resolve(result);
-      });
-    });
+  public async allEntries(param: any, att = 0): Promise<any[]> {
+    try {
+      const result = await this.Model.find(param, { '_id': 0, '__v': 0 }).lean().exec();
+      return result;
+    } catch (error) {
+      if (att < this.max_att) {
+        await new Promise(r => setTimeout(r, this.timeout));
+        return this.allEntries(param, att + 1);
+      }
+      console.error(error);
+      throw error;
+    }
   }
 
   public async dropCollection(): Promise<void> {
     await this.Model.collection.drop();
   }
 
-  public allEntriesExclusion(param: any, exclusion: any, att = 0) {
-    return new Promise((resolve, reject) => {
-      this.Model.find(param, exclusion, (error, result) => {
-        if (error) {
-          if (att < this.max_att) {
-            return setTimeout(() => {
-              att++;
-              return resolve(this.allEntriesExclusion(param, exclusion, att));
-            }, this.timeout);
-          } else {
-            console.error(error);
-            return reject(error);
-          }
-        }
-        return resolve(result);
-      });
-    });
+  public async allEntriesExclusion(param: any, exclusion: any, att = 0): Promise<any[]> {
+    try {
+      const result = await this.Model.find(param, exclusion).lean().exec();
+      return result;
+    } catch (error) {
+      if (att < this.max_att) {
+        await new Promise(r => setTimeout(r, this.timeout));
+        return this.allEntriesExclusion(param, exclusion, att + 1);
+      }
+      console.error(error);
+      throw error;
+    }
   }
 
-  public countEntries(param?, att = 0) {
-    if (!param) param = {};
-    return new Promise((resolve, reject) => {
-      this.Model.countDocuments(param, (error, result) => {
-        if (error) {
-          if (att < this.max_att) {
-            return setTimeout(() => {
-              att++;
-              return resolve(this.countEntries(param, att));
-            }, this.timeout);
-          } else {
-            console.error(error);
-            return reject(error);
-          }
-        }
-        return resolve(result);
-      });
-    });
+  public async countEntries(param: any = {}, att = 0): Promise<number> {
+    try {
+      const result = await this.Model.countDocuments(param).exec();
+      return result;
+    } catch (error) {
+      if (att < this.max_att) {
+        await new Promise(r => setTimeout(r, this.timeout));
+        return this.countEntries(param, att + 1);
+      }
+      console.error(error);
+      throw error;
+    }
   }
 
-  public saveEntries(entries: Array<any>, att = 0) {
-    return new Promise((resolve, reject) => {
-      this.Model.insertMany(entries, (error: Error, docs: any) => {
-        if (error) {
-          if (att < this.max_att) {
-            return setTimeout(() => {
-              att++;
-              return resolve(this.saveEntries(entries, att));
-            }, this.timeout);
-          } else {
-            console.error(error);
-            return reject(error);
-          }
-        }
-        return resolve(true);
-      });
-    });
+  public async saveEntries(entries: Array<any>, att = 0): Promise<boolean> {
+    try {
+      await this.Model.insertMany(entries);
+      return true;
+    } catch (error) {
+      if (att < this.max_att) {
+        await new Promise(r => setTimeout(r, this.timeout));
+        return this.saveEntries(entries, att + 1);
+      }
+      console.error(error);
+      throw error;
+    }
   }
 
-  public saveEntry(entry: any, att = 0) {
-    return new Promise((resolve, reject) => {
-      this.Model.create(entry, (error: Error, doc: any) => {
-        if (error) {
-          if (att < this.max_att) {
-            return setTimeout(() => {
-              att++;
-              return resolve(this.saveEntry(entry, att));
-            }, this.timeout);
-          } else {
-            console.error(error);
-            return reject(error);
-          }
-        }
-        resolve(doc);
-      });
-    });
+  public async saveEntry(entry: any, att = 0): Promise<any> {
+    try {
+      const doc = await this.Model.create(entry);
+      return doc;
+    } catch (error) {
+      if (att < this.max_att) {
+        await new Promise(r => setTimeout(r, this.timeout));
+        return this.saveEntry(entry, att + 1);
+      }
+      console.error(error);
+      throw error;
+    }
   }
 
-  public findHistoryEntry(entry: any, att = 0) {
-    return new Promise((resolve, reject) => {
-      this.Model.find(entry, (error: Error, doc: any, res: any) => {
-        if (error) {
-          if (att < this.max_att) {
-            return setTimeout(() => {
-              att++;
-              return resolve(this.findHistoryEntry(entry, att));
-            }, this.timeout);
-          } else {
-            console.error(error);
-            return reject(error);
-          }
-        }
-        resolve(doc);
-      });
-    });
+  public async findHistoryEntry(entry: any, att = 0): Promise<any[]> {
+    try {
+      const docs = await this.Model.find(entry).lean().exec();
+      return docs;
+    } catch (error) {
+      if (att < this.max_att) {
+        await new Promise(r => setTimeout(r, this.timeout));
+        return this.findHistoryEntry(entry, att + 1);
+      }
+      console.error(error);
+      throw error;
+    }
   }
 
-  public addToSet(entry, items, att = 0) {
+  public async addToSet(entry: any, items: any, att = 0): Promise<any> {
     const options = {
       upsert: true,
       useFindAndModify: false,
       setDefaultsOnInsert: true,
     };
-    return new Promise((resolve, reject) => {
-      this.Model.updateOne(entry, items, options)
-        .lean()
-        .exec((error, doc) => {
-          if (error) {
-            if (att < this.max_att) {
-              return setTimeout(() => {
-                att++;
-                return resolve(this.addToSet(entry, items, att));
-              }, this.timeout);
-            } else {
-              console.error(error);
-              return reject(error);
-            }
-          }
-          return resolve(doc);
-        });
-    });
+    try {
+      const doc = await this.Model.updateOne(entry, items, options).lean().exec();
+      return doc;
+    } catch (error) {
+      if (att < this.max_att) {
+        await new Promise(r => setTimeout(r, this.timeout));
+        return this.addToSet(entry, items, att + 1);
+      }
+      console.error(error);
+      throw error;
+    }
   }
 
-  public getAnUpdateEntryAlt(entryGet: any, entry: any, att = 0) {
+  public async getAnUpdateEntryAlt(entryGet: any, entry: any, att = 0): Promise<any> {
     const query = entryGet;
     const update = entry;
     const options = {
@@ -235,27 +178,20 @@ export class MongooseServer {
       useFindAndModify: false,
       setDefaultsOnInsert: true,
     };
-    return new Promise((resolve, reject) => {
-      this.Model.findOneAndUpdate(query, update, options)
-        .lean()
-        .exec((error: Error, doc: any) => {
-          if (error) {
-            if (att < this.max_att) {
-              return setTimeout(() => {
-                att++;
-                return resolve(this.getAnUpdateEntryAlt(entryGet, entry, att));
-              }, this.timeout);
-            } else {
-              console.error(error);
-              return reject(error);
-            }
-          }
-          return resolve(doc);
-        });
-    });
+    try {
+      const doc = await this.Model.findOneAndUpdate(query, update, options).lean().exec();
+      return doc;
+    } catch (error) {
+      if (att < this.max_att) {
+        await new Promise(r => setTimeout(r, this.timeout));
+        return this.getAnUpdateEntryAlt(entryGet, entry, att + 1);
+      }
+      console.error(error);
+      throw error;
+    }
   }
 
-  public getAnUpdateEntry(entryGet: any, entryE: any, att = 0) {
+  public async getAnUpdateEntry(entryGet: any, entryE: any, att = 0): Promise<any> {
     const entry = { ...entryE };
     const query = entryGet;
     const keys = Object.keys(query);
@@ -268,166 +204,115 @@ export class MongooseServer {
       useFindAndModify: false,
       setDefaultsOnInsert: true,
     };
-    return new Promise((resolve, reject) => {
-      this.Model.findOneAndUpdate(query, update, options)
-        .lean()
-        .exec((error: Error, doc: any) => {
-          if (error) {
-            if (att < this.max_att) {
-              return setTimeout(() => {
-                att++;
-                return resolve(this.getAnUpdateEntry(entryGet, entryE, att));
-              }, this.timeout);
-            } else {
-              console.error(error);
-              return reject(error);
-            }
-          }
-          return resolve(doc);
-        });
-    });
+    try {
+      const doc = await this.Model.findOneAndUpdate(query, update, options).lean().exec();
+      return doc;
+    } catch (error) {
+      if (att < this.max_att) {
+        await new Promise(r => setTimeout(r, this.timeout));
+        return this.getAnUpdateEntry(entryGet, entryE, att + 1);
+      }
+      console.error(error);
+      throw error;
+    }
   }
 
-  public pushEntry(entry: any, toPush: any, att = 0) {
+  public async pushEntry(entry: any, toPush: any, att = 0): Promise<any> {
     const pushMongo = { $push: toPush };
-    return new Promise((resolve, reject) => {
-      const options = {
-        upsert: true,
-        useFindAndModify: false,
-        setDefaultsOnInsert: true,
-        new: true,
-      };
-      this.Model.findOneAndUpdate(entry, pushMongo, options)
-        .lean()
-        .exec((error: Error, doc: any) => {
-          if (error) {
-            if (att < this.max_att) {
-              return setTimeout(() => {
-                att++;
-                return resolve(this.pushEntry(entry, toPush, att));
-              }, this.timeout);
-            } else {
-              console.error(error);
-              return reject(error);
-            }
-          }
-          return resolve(doc);
-        });
-    });
+    const options = {
+      upsert: true,
+      useFindAndModify: false,
+      setDefaultsOnInsert: true,
+      new: true,
+    };
+    try {
+      const doc = await this.Model.findOneAndUpdate(entry, pushMongo, options).lean().exec();
+      return doc;
+    } catch (error) {
+      if (att < this.max_att) {
+        await new Promise(r => setTimeout(r, this.timeout));
+        return this.pushEntry(entry, toPush, att + 1);
+      }
+      console.error(error);
+      throw error;
+    }
   }
 
-  public deleteEntry(entry, att = 0) {
-    return new Promise((resolve, reject) => {
-      this.Model.deleteOne(entry)
-        .lean()
-        .exec((error: Error, doc: any) => {
-          if (error) {
-            if (att < this.max_att) {
-              return setTimeout(() => {
-                att++;
-                return resolve(this.deleteEntry(entry, att));
-              }, this.timeout);
-            } else {
-              console.error(error);
-              return reject(error);
-            }
-          }
-          return resolve(doc);
-        });
-    });
+  public async deleteEntry(entry: any, att = 0): Promise<any> {
+    try {
+      const doc = await this.Model.deleteOne(entry).lean().exec();
+      return doc;
+    } catch (error) {
+      if (att < this.max_att) {
+        await new Promise(r => setTimeout(r, this.timeout));
+        return this.deleteEntry(entry, att + 1);
+      }
+      console.error(error);
+      throw error;
+    }
   }
 
-  public deleteMany(args = {}, att = 0) {
-    return new Promise((resolve, reject) => {
-      this.Model.deleteMany(args)
-        .lean()
-        .exec((error: Error, doc: any) => {
-          if (error) {
-            if (att < this.max_att) {
-              return setTimeout(() => {
-                att++;
-                return resolve(this.deleteMany(args, att));
-              }, this.timeout);
-            } else {
-              console.error(error);
-              return reject(error);
-            }
-          }
-          return resolve(doc);
-        });
-    });
+  public async deleteMany(args: any = {}, att = 0): Promise<any> {
+    try {
+      const doc = await this.Model.deleteMany(args).lean().exec();
+      return doc;
+    } catch (error) {
+      if (att < this.max_att) {
+        await new Promise(r => setTimeout(r, this.timeout));
+        return this.deleteMany(args, att + 1);
+      }
+      console.error(error);
+      throw error;
+    }
   }
 
-  public deleteAll(att = 0) {
-    return new Promise((resolve, reject) => {
-      this.Model.deleteMany({})
-        .lean()
-        .exec((error: Error, doc: any) => {
-          if (error) {
-            if (att < this.max_att) {
-              return setTimeout(() => {
-                att++;
-                return resolve(this.deleteAll(att));
-              }, this.timeout);
-            } else {
-              console.error(error);
-              return reject(error);
-            }
-          }
-          return resolve(doc);
-        });
-    });
+  public async deleteAll(att = 0): Promise<any> {
+    try {
+      const doc = await this.Model.deleteMany({}).lean().exec();
+      return doc;
+    } catch (error) {
+      if (att < this.max_att) {
+        await new Promise(r => setTimeout(r, this.timeout));
+        return this.deleteAll(att + 1);
+      }
+      console.error(error);
+      throw error;
+    }
   }
 
-  public getModel() {
+  public getModel(): mongoose.Model<any> {
     return this.Model;
   }
 
-  public updateMany(entryGet, entry, att = 0) {
-    const options = {};
-    return new Promise((resolve, reject) => {
-      this.Model.updateMany(entryGet, entry, options)
-        .lean()
-        .exec((error: Error, doc: any) => {
-          if (error) {
-            if (att < this.max_att) {
-              return setTimeout(() => {
-                att++;
-                return resolve(this.updateMany(entryGet, entry, att));
-              }, this.timeout);
-            } else {
-              console.error(error);
-              return reject(error);
-            }
-          }
-          return resolve(doc);
-        });
-    });
+  public async updateMany(entryGet: any, entry: any, att = 0): Promise<any> {
+    try {
+      const doc = await this.Model.updateMany(entryGet, entry, {}).lean().exec();
+      return doc;
+    } catch (error) {
+      if (att < this.max_att) {
+        await new Promise(r => setTimeout(r, this.timeout));
+        return this.updateMany(entryGet, entry, att + 1);
+      }
+      console.error(error);
+      throw error;
+    }
   }
 
-  public updateOneAlt(entryGet, entry, att = 0) {
-    const options = {};
-    return new Promise((resolve, reject) => {
-      this.Model.updateOne(entryGet, entry, options)
-        .lean()
-        .exec((error: Error, doc: any) => {
-          if (error) {
-            if (att < this.max_att) {
-              return setTimeout(() => {
-                att++;
-                return resolve(this.updateOneAlt(entryGet, entry, att));
-              }, this.timeout);
-            } else {
-              console.error(error);
-              return reject(error);
-            }
-          }
-          return resolve(doc);
-        });
-    });
+  public async updateOneAlt(entryGet: any, entry: any, att = 0): Promise<any> {
+    try {
+      const doc = await this.Model.updateOne(entryGet, entry, {}).lean().exec();
+      return doc;
+    } catch (error) {
+      if (att < this.max_att) {
+        await new Promise(r => setTimeout(r, this.timeout));
+        return this.updateOneAlt(entryGet, entry, att + 1);
+      }
+      console.error(error);
+      throw error;
+    }
   }
 
-  public updateOne(entryGet, entryUpdate, att = 0) {
+  public async updateOne(entryGet: any, entryUpdate: any, att = 0): Promise<any> {
     const entry = { ...entryUpdate };
     Object.keys(entryGet).forEach((key) => {
       delete entry[key];
@@ -437,24 +322,17 @@ export class MongooseServer {
       useFindAndModify: false,
       setDefaultsOnInsert: true,
     };
-    return new Promise((resolve, reject) => {
-      this.Model.updateOne(entryGet, entry, options)
-        .lean()
-        .exec((error: Error, doc: any) => {
-          if (error) {
-            if (att < this.max_att) {
-              return setTimeout(() => {
-                att++;
-                return resolve(this.updateOne(entryGet, entryUpdate, att));
-              }, this.timeout);
-            } else {
-              console.error(error);
-              return reject(error);
-            }
-          }
-          return resolve(doc);
-        });
-    });
+    try {
+      const doc = await this.Model.updateOne(entryGet, entry, options).lean().exec();
+      return doc;
+    } catch (error) {
+      if (att < this.max_att) {
+        await new Promise(r => setTimeout(r, this.timeout));
+        return this.updateOne(entryGet, entryUpdate, att + 1);
+      }
+      console.error(error);
+      throw error;
+    }
   }
 
   public static connectWithRetry = (): any => {
@@ -480,6 +358,25 @@ export class MongooseServer {
 
   public static first = true;
   public static retry = true;
+
+  public static isConnected(): boolean {
+    return mongoose.connection.readyState === 1 && MongooseServer.connectionAllowed;
+  }
+
+  public static getConnectionState(): { connected: boolean; readyState: number; readyStateText: string } {
+    const readyState = mongoose.connection.readyState;
+    const stateMap: Record<number, string> = {
+      0: "disconnected",
+      1: "connected",
+      2: "connecting",
+      3: "disconnecting",
+    };
+    return {
+      connected: readyState === 1 && MongooseServer.connectionAllowed,
+      readyState,
+      readyStateText: stateMap[readyState] || "unknown",
+    };
+  }
 
   public static closeConnection(): void {
     MongooseServer.retry = false;
