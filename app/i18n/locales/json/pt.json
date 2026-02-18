@@ -289,5 +289,32 @@
   "topBestRates": "Melhores 4 taxas",
   "feature6Title": "Código abierto",
   "feature6Description": "Nuestro código es open source y puede ser utilizado y mejorado por otros desarrolladores",
-  "viewRepository": "Ver repositorio"
+  "viewRepository": "Ver repositorio",
+  "ai": {
+    "title": "Insights de Mercado com IA",
+    "subtitle": "Análise inteligente das cotações",
+    "marketSummary": "Resumo do Mercado",
+    "currencyAnalysis": "Análise de Moeda",
+    "bestRates": "Melhores Taxas",
+    "trendAnalysis": "Análise de Tendência",
+    "customQuestion": "Pergunta Personalizada",
+    "askPlaceholder": "Pergunte sobre o mercado de câmbio...",
+    "analyze": "Analisar",
+    "analyzing": "Analisando...",
+    "askAI": "Perguntar à IA",
+    "poweredBy": "Alimentado por IA",
+    "cached": "Resposta em cache",
+    "error": "Não foi possível gerar a análise. Tente novamente.",
+    "notConfigured": "O serviço de IA não está disponível no momento.",
+    "selectCurrency": "Selecione uma moeda para análise",
+    "generating": "Gerando análise inteligente...",
+    "disclaimer": "Esta análise é gerada por IA e não constitui aconselhamento financeiro.",
+    "tryAgain": "Tentar novamente",
+    "newAnalysis": "Nova análise",
+    "marketSummaryDesc": "Panorama geral do mercado de câmbio de hoje",
+    "currencyAnalysisDesc": "Análise detalhada de uma moeda específica",
+    "bestRatesDesc": "Onde comprar e vender ao melhor preço",
+    "trendAnalysisDesc": "Tendências históricas e perspectivas",
+    "customDesc": "Faça qualquer pergunta sobre o mercado"
+  }
 }

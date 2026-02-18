@@ -306,5 +306,32 @@
     "donateMercadoPago": "Donar con MercadoPago",
     "seeReviews": "Ver reseñas",
     "thanksForSupport": "¡Gracias por tu apoyo!"
+  },
+  "ai": {
+    "title": "Insights del Mercado con IA",
+    "subtitle": "Análisis inteligente de las cotizaciones",
+    "marketSummary": "Resumen del Mercado",
+    "currencyAnalysis": "Análisis de Moneda",
+    "bestRates": "Mejores Cotizaciones",
+    "trendAnalysis": "Análisis de Tendencia",
+    "customQuestion": "Pregunta Personalizada",
+    "askPlaceholder": "Pregunta sobre el mercado de cambios...",
+    "analyze": "Analizar",
+    "analyzing": "Analizando...",
+    "askAI": "Preguntar a la IA",
+    "poweredBy": "Impulsado por IA",
+    "cached": "Respuesta cacheada",
+    "error": "No se pudo generar el análisis. Intenta de nuevo.",
+    "notConfigured": "El servicio de IA no está disponible en este momento.",
+    "selectCurrency": "Selecciona una moneda para el análisis",
+    "generating": "Generando análisis inteligente...",
+    "disclaimer": "Este análisis es generado por IA y no constituye asesoramiento financiero.",
+    "tryAgain": "Reintentar",
+    "newAnalysis": "Nuevo análisis",
+    "marketSummaryDesc": "Panorama general del mercado de cambios hoy",
+    "currencyAnalysisDesc": "Análisis detallado de una moneda específica",
+    "bestRatesDesc": "Dónde comprar y vender al mejor precio",
+    "trendAnalysisDesc": "Tendencias históricas y perspectivas",
+    "customDesc": "Haz cualquier pregunta sobre el mercado"
   }
 }

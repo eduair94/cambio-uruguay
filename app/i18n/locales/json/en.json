@@ -296,5 +296,32 @@
     "donateMercadoPago": "Donate with MercadoPago",
     "seeReviews": "See reviews",
     "thanksForSupport": "Thanks for your support!"
+  },
+  "ai": {
+    "title": "AI Market Insights",
+    "subtitle": "Intelligent analysis of exchange rates",
+    "marketSummary": "Market Summary",
+    "currencyAnalysis": "Currency Analysis",
+    "bestRates": "Best Rates",
+    "trendAnalysis": "Trend Analysis",
+    "customQuestion": "Custom Question",
+    "askPlaceholder": "Ask about the currency exchange market...",
+    "analyze": "Analyze",
+    "analyzing": "Analyzing...",
+    "askAI": "Ask AI",
+    "poweredBy": "Powered by AI",
+    "cached": "Cached response",
+    "error": "Could not generate the analysis. Try again.",
+    "notConfigured": "The AI service is not available at this time.",
+    "selectCurrency": "Select a currency for analysis",
+    "generating": "Generating intelligent analysis...",
+    "disclaimer": "This analysis is AI-generated and does not constitute financial advice.",
+    "tryAgain": "Try again",
+    "newAnalysis": "New analysis",
+    "marketSummaryDesc": "General overview of today's exchange market",
+    "currencyAnalysisDesc": "Detailed analysis of a specific currency",
+    "bestRatesDesc": "Where to buy and sell at the best price",
+    "trendAnalysisDesc": "Historical trends and outlook",
+    "customDesc": "Ask any question about the market"
   }
 }

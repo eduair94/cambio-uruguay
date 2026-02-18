@@ -436,6 +436,9 @@
       </VContainer>
     </section>
 
+    <!-- AI Insights Section -->
+    <AIInsights />
+
     <!-- Donation Card Component -->
     <DonationCard />
 

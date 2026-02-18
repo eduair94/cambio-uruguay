@@ -67,6 +67,7 @@
 
 <script setup lang="ts">
 import Autolinker from 'autolinker'
+import DOMPurify from 'isomorphic-dompurify'
 
 interface BCUData {
   social_reason: string
@@ -96,7 +97,12 @@ const d = ref<BCUData | null>(null)
 
 const get_linked = (link: string) => {
   const linkedText = Autolinker.link(link, { className: 'white--text' })
-  return linkedText
+  return DOMPurify.sanitize(linkedText, {
+    ALLOWED_TAGS: ['a'],
+    ALLOWED_ATTR: ['href', 'class', 'target', 'rel'],
+    ALLOW_DATA_ATTR: false,
+    ALLOW_ARIA_ATTR: false,
+  })
 }
 
 const get_map_link = (address: string) => {
