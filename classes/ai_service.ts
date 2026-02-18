@@ -450,6 +450,10 @@ class AIService {
       throw new Error("AI Service is not configured. Set AI_BASE_URL and AI_API_KEY in .env");
     }
 
+    // Normalize language before cache key computation to prevent cross-language cache hits
+    const language = (request.language && SYSTEM_PROMPTS[request.language]) ? request.language : "es";
+    request = { ...request, language };
+
     // Check cache (except for custom prompts)
     if (request.type !== "custom") {
       const cacheKey = this.getCacheKey(request);
@@ -457,8 +461,7 @@ class AIService {
       if (cached) return cached;
     }
 
-    const language = request.language || "es";
-    const systemPrompt = SYSTEM_PROMPTS[language] || SYSTEM_PROMPTS["es"];
+    const systemPrompt = SYSTEM_PROMPTS[language];
     const userPrompt = this.buildPrompt(request, exchangeData);
 
     try {
