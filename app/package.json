@@ -39,6 +39,7 @@
     "isomorphic-dompurify": "^2.36.0",
     "leaflet": "^1.9.4",
     "libphonenumber-js": "^1.10.44",
+    "marked": "^17.0.3",
     "mongoose": "^8.15.1",
     "nuxt-gtag": "^3.0.3",
     "phone-number-generator-js": "^1.2.12",

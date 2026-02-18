@@ -1,4 +1,3 @@
-<!-- eslint-disable vue/no-v-html -->
 <template>
   <div>
     <!-- Exchange House Information Section -->
@@ -244,66 +243,12 @@
       <!-- AI Trend Analysis -->
       <v-row class="mb-6">
         <v-col cols="12">
-          <v-card class="ai-trend-card" elevation="4">
-            <v-card-title class="d-flex align-center ga-2">
-              <v-icon color="primary">mdi-creation</v-icon>
-              {{ $t('ai.trendAnalysis') }}
-              <v-spacer />
-              <v-chip v-if="aiInsight?.cached" size="small" color="grey" variant="tonal">
-                <v-icon start size="small">mdi-cached</v-icon>
-                {{ $t('ai.cached') }}
-              </v-chip>
-            </v-card-title>
-            <v-card-text>
-              <div v-if="!aiInsight && !aiLoading && !aiError" class="text-center py-4">
-                <p class="text-body-2 text-grey mb-3">
-                  {{ $t('ai.trendAnalysisDesc') }}
-                </p>
-                <v-btn
-                  color="primary"
-                  variant="flat"
-                  prepend-icon="mdi-creation"
-                  :loading="aiLoading"
-                  @click="requestAIAnalysis"
-                >
-                  {{ $t('ai.analyze') }}
-                </v-btn>
-              </div>
-              <div v-if="aiLoading" class="text-center py-6">
-                <v-progress-circular indeterminate color="primary" size="40" class="mb-3" />
-                <p class="text-body-2 text-grey">{{ $t('ai.generating') }}</p>
-              </div>
-              <v-alert v-if="aiError && !aiLoading" type="error" variant="tonal" class="mb-2">
-                {{ aiError }}
-                <template #append>
-                  <v-btn variant="text" size="small" @click="requestAIAnalysis">
-                    {{ $t('ai.tryAgain') }}
-                  </v-btn>
-                </template>
-              </v-alert>
-              <div
-                v-if="aiInsight && !aiLoading"
-                class="ai-insight-content"
-                v-html="renderedAIInsight"
-              />
-              <div
-                v-if="aiInsight && !aiLoading"
-                class="mt-3 d-flex justify-space-between align-center"
-                style="border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 8px"
-              >
-                <span class="text-caption text-grey">{{ $t('ai.disclaimer') }}</span>
-                <v-btn
-                  variant="text"
-                  color="primary"
-                  size="small"
-                  prepend-icon="mdi-refresh"
-                  @click="requestAIAnalysis"
-                >
-                  {{ $t('ai.newAnalysis') }}
-                </v-btn>
-              </div>
-            </v-card-text>
-          </v-card>
+          <AITrendCard
+            :insight="aiInsight"
+            :loading="aiLoading"
+            :error="aiError"
+            @analyze="requestAIAnalysis"
+          />
         </v-col>
       </v-row>
 
@@ -430,7 +375,6 @@ import {
   Title,
   Tooltip,
 } from 'chart.js'
-import DOMPurify from 'isomorphic-dompurify'
 import moment from 'moment'
 import { computed, ref } from 'vue'
 import { Bar, Line } from 'vue-chartjs'
@@ -515,40 +459,6 @@ const { withLoading } = useLoading()
 
 // AI Insights
 const { loading: aiLoading, error: aiError, insight: aiInsight, getTrendAnalysis } = useAIInsights()
-
-// Simple Markdown to HTML renderer for AI insight
-const renderedAIInsight = computed(() => {
-  if (!aiInsight.value?.insight) return ''
-  let html = aiInsight.value.insight
-  // Escape all HTML entities first to neutralize any raw HTML in the AI response
-  html = html.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-  // Convert markdown syntax to safe HTML tags
-  html = html.replace(/^### (.+)$/gm, '<h4 class="text-h6 font-weight-bold mt-3 mb-1">$1</h4>')
-  html = html.replace(/^## (.+)$/gm, '<h3 class="text-h5 font-weight-bold mt-3 mb-1">$1</h3>')
-  html = html.replace(/^# (.+)$/gm, '<h2 class="text-h4 font-weight-bold mt-3 mb-1">$1</h2>')
-  html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
-  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-  html = html.replace(/\*(.+?)\*/g, '<em>$1</em>')
-  html = html.replace(/^- (.+)$/gm, '<li>$1</li>')
-  html = html.replace(
-    /((?:<li>.*<\/li>\n?)+)/g,
-    '<ul class="mb-2" style="padding-left:1.5rem">$1</ul>'
-  )
-  html = html.replace(/^\d+\. (.+)$/gm, '<li>$1</li>')
-  html = html.replace(/\n\n/g, '</p><p class="mb-2">')
-  html = html.replace(/\n/g, '<br />')
-  if (!html.startsWith('<')) html = '<p class="mb-2">' + html + '</p>'
-
-  // Sanitize with DOMPurify using a strict allowlist of only the tags/attributes we generate
-  html = DOMPurify.sanitize(html, {
-    ALLOWED_TAGS: ['h2', 'h3', 'h4', 'p', 'br', 'strong', 'em', 'ul', 'ol', 'li'],
-    ALLOWED_ATTR: ['class', 'style'],
-    ALLOW_DATA_ATTR: false,
-    ALLOW_ARIA_ATTR: false,
-  })
-
-  return html
-})
 
 const { locale } = useI18n()
 
@@ -1022,53 +932,5 @@ useSeoMeta({
   backdrop-filter: blur(10px);
   background: rgba(255, 255, 255, 0.15) !important;
   border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-/* AI Trend Analysis Card */
-.ai-trend-card {
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  transition:
-    border-color 0.3s ease,
-    box-shadow 0.3s ease;
-}
-
-.ai-trend-card:hover {
-  border-color: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-}
-
-.ai-insight-content {
-  line-height: 1.7;
-  font-size: 0.95rem;
-  color: rgba(255, 255, 255, 0.87);
-}
-
-.ai-insight-content h1,
-.ai-insight-content h2,
-.ai-insight-content h3 {
-  color: #42a5f5;
-  margin-top: 1rem;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
-}
-
-.ai-insight-content strong {
-  color: #90caf9;
-}
-
-.ai-insight-content ul,
-.ai-insight-content ol {
-  padding-left: 1.5rem;
-  margin: 0.5rem 0;
-}
-
-.ai-insight-content li {
-  margin-bottom: 0.25rem;
-}
-
-.ai-insight-content p {
-  margin-bottom: 0.75rem;
 }
 </style>

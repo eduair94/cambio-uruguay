@@ -141,6 +141,7 @@
 
 <script setup lang="ts">
 import DOMPurify from 'isomorphic-dompurify'
+import { marked } from 'marked'
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -207,43 +208,51 @@ const canAnalyze = computed(() => {
   return true
 })
 
-// Simple Markdown to HTML renderer (no external dependency)
+// Configure marked for clean output
+marked.setOptions({
+  breaks: true,
+  gfm: true,
+})
+
+// Markdown to HTML renderer using 'marked' library
 const renderedInsight = computed(() => {
   if (!insight.value?.insight) return ''
-  let html = insight.value.insight
+  let text = insight.value.insight
 
-  // Escape HTML first
-  html = html.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  // Remove model name prefixes (e.g. "WormGPT:", "ChatGPT:", etc.)
+  text = text.replace(/^\s*\w+GPT\s*:\s*/i, '')
 
-  // Headers
-  html = html.replace(/^### (.+)$/gm, '<h4 class="text-h6 font-weight-bold mt-4 mb-2">$1</h4>')
-  html = html.replace(/^## (.+)$/gm, '<h3 class="text-h5 font-weight-bold mt-4 mb-2">$1</h3>')
-  html = html.replace(/^# (.+)$/gm, '<h2 class="text-h4 font-weight-bold mt-4 mb-2">$1</h2>')
+  // Convert markdown to HTML
+  let html = marked.parse(text) as string
 
-  // Bold and italic
-  html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
-  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-  html = html.replace(/\*(.+?)\*/g, '<em>$1</em>')
-
-  // Unordered lists
-  html = html.replace(/^- (.+)$/gm, '<li>$1</li>')
-  html = html.replace(/((?:<li>.*<\/li>\n?)+)/g, '<ul class="insight-list mb-3">$1</ul>')
-
-  // Ordered lists
-  html = html.replace(/^\d+\. (.+)$/gm, '<li>$1</li>')
-
-  // Line breaks (double newline = paragraph)
-  html = html.replace(/\n\n/g, '</p><p class="mb-2">')
-  html = html.replace(/\n/g, '<br />')
-
-  // Wrap in paragraph if not already
-  if (!html.startsWith('<')) {
-    html = '<p class="mb-2">' + html + '</p>'
-  }
-
-  // Sanitize with DOMPurify using a strict allowlist of only the tags/attributes we generate
+  // Sanitize with DOMPurify
   html = DOMPurify.sanitize(html, {
-    ALLOWED_TAGS: ['h2', 'h3', 'h4', 'p', 'br', 'strong', 'em', 'ul', 'ol', 'li'],
+    ALLOWED_TAGS: [
+      'h1',
+      'h2',
+      'h3',
+      'h4',
+      'h5',
+      'h6',
+      'p',
+      'br',
+      'hr',
+      'strong',
+      'em',
+      'ul',
+      'ol',
+      'li',
+      'div',
+      'table',
+      'thead',
+      'tbody',
+      'tr',
+      'th',
+      'td',
+      'blockquote',
+      'code',
+      'pre',
+    ],
     ALLOWED_ATTR: ['class'],
     ALLOW_DATA_ATTR: false,
     ALLOW_ARIA_ATTR: false,
@@ -304,7 +313,6 @@ defineExpose({ isAvailable })
 }
 
 .ai-card:hover {
-  transform: translateY(-2px);
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
   border-color: rgba(255, 255, 255, 0.15);
 }
@@ -322,7 +330,6 @@ defineExpose({ isAvailable })
 }
 
 .action-chip:hover {
-  transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(25, 118, 210, 0.25);
 }
 
@@ -354,29 +361,128 @@ defineExpose({ isAvailable })
 
 .insight-content {
   color: rgba(255, 255, 255, 0.9);
-  line-height: 1.7;
+  line-height: 1.6;
 }
 
+.insight-content :deep(h1),
 .insight-content :deep(h2),
 .insight-content :deep(h3),
-.insight-content :deep(h4) {
+.insight-content :deep(h4),
+.insight-content :deep(h5),
+.insight-content :deep(h6) {
   color: #42a5f5;
+  margin-top: 0.75rem;
+  margin-bottom: 0.35rem;
+  font-weight: 700;
+}
+
+.insight-content :deep(h1) {
+  font-size: 1.4rem;
+}
+.insight-content :deep(h2) {
+  font-size: 1.25rem;
+}
+.insight-content :deep(h3) {
+  font-size: 1.1rem;
+}
+.insight-content :deep(h4) {
+  font-size: 1rem;
+}
+
+.insight-content :deep(p) {
+  margin-bottom: 0.5rem;
 }
 
 .insight-content :deep(strong) {
   color: #90caf9;
 }
 
-.insight-content :deep(.insight-list) {
+.insight-content :deep(em) {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* Lists */
+.insight-content :deep(ul),
+.insight-content :deep(ol) {
   padding-left: 1.5rem;
+  margin-top: 0.2rem;
+  margin-bottom: 0.5rem;
 }
 
 .insight-content :deep(li) {
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.2rem;
 }
 
-.insight-content :deep(p) {
-  margin-bottom: 0.5rem;
+.insight-content :deep(li > p) {
+  margin-bottom: 0.1rem;
+}
+
+/* Tables */
+.insight-content :deep(table) {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  margin: 0.5rem 0;
+  overflow-x: auto;
+  display: block;
+}
+
+.insight-content :deep(th),
+.insight-content :deep(td) {
+  padding: 0.45rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.insight-content :deep(th) {
+  background: rgba(66, 165, 245, 0.15);
+  color: #42a5f5;
+  font-weight: 600;
+}
+
+.insight-content :deep(tr:nth-child(even)) {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.insight-content :deep(tr:hover) {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+/* Blockquotes */
+.insight-content :deep(blockquote) {
+  border-left: 3px solid #42a5f5;
+  padding-left: 0.75rem;
+  margin: 0.5rem 0;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Code */
+.insight-content :deep(code) {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 0.15rem 0.35rem;
+  border-radius: 4px;
+  font-size: 0.85em;
+}
+
+.insight-content :deep(pre) {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.75rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 0.5rem 0;
+}
+
+.insight-content :deep(pre code) {
+  background: none;
+  padding: 0;
+}
+
+/* Horizontal rules */
+.insight-content :deep(hr) {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  margin: 0.75rem 0;
 }
 
 /* Accessibility */

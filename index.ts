@@ -781,8 +781,14 @@ const main = async () => {
     const validLanguages = ["es", "en", "pt"];
     const lang = validLanguages.includes(language) ? language : "es";
 
-    // Get current exchange data for context
-    const exchangeData = await cambio_info.get_data();
+    // Get current exchange data and local data for context
+    const [exchangeData, localData] = await Promise.all([
+      cambio_info.get_data(),
+      cambio_info.get_local_data(),
+    ]);
+
+    // Current date in Uruguay timezone
+    const currentDate = moment.tz("America/Montevideo").format("YYYY-MM-DD");
 
     // Build the request
     const insightRequest: any = {
@@ -792,13 +798,16 @@ const main = async () => {
       origin: origin?.toLowerCase(),
       customPrompt,
       exchangeData,
+      localData,
+      date: currentDate,
     };
 
-    // If trend_analysis and we have currency + origin, get evolution data
-    if (type === "trend_analysis" && currency) {
+    // Fetch evolution data for trend_analysis and currency_analysis
+    if ((type === "trend_analysis" || type === "currency_analysis") && currency) {
       try {
         const originForEvolution = origin || "brou";
-        const evolutionData = await cambio_info.get_currency_evolution(originForEvolution, currency, 3);
+        const periodMonths = type === "trend_analysis" ? 3 : 1;
+        const evolutionData = await cambio_info.get_currency_evolution(originForEvolution, currency, periodMonths);
         insightRequest.evolutionData = evolutionData;
       } catch (e: any) {
         // Evolution data is optional, continue without it
