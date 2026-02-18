@@ -10,6 +10,7 @@ import CambioFortex from "./classes/cambios/fortex";
 import { MongooseServer, mongoose } from "./classes/database";
 import server from "./classes/Express/ExpressSetup";
 import { origins } from "./classes/origins";
+import { redisCache } from "./classes/redis_cache";
 import sentryInit from "./sentry";
 
 moment.tz.setDefault("America/Montevideo");
@@ -77,6 +78,15 @@ const formatUptime = (seconds: number): string => {
 const main = async () => {
   console.log("Start connection");
   await MongooseServer.startConnectionPromise();
+  
+  // Connect to Redis cache
+  const redisConnected = await redisCache.connect();
+  if (redisConnected) {
+    console.log("✅ Redis cache layer active");
+  } else {
+    console.warn("⚠️ Redis cache not available — running without cache layer");
+  }
+  
   console.log("Start express");
   
   /**
@@ -132,7 +142,8 @@ const main = async () => {
       dateM = moment.tz(date, "YYYY-MM-DD", "America/Montevideo").toDate();
     }
     console.log("Date", dateM);
-    const res = await cambio_info.get_data(dateM, req.query);
+    const cacheKey = `data:${date || "latest"}`;
+    const res = await redisCache.getOrSet(cacheKey, () => cambio_info.get_data(dateM, req.query), 30);
     if (!res?.length) throw new Error("No results found");
     return res;
   });
@@ -272,6 +283,7 @@ const main = async () => {
         timestamp: new Date().toISOString(),
         uptime: process.uptime(),
         database: dbState,
+        cache: await redisCache.getHealthStatus(),
       };
 
       // Check database connectivity first
@@ -833,9 +845,62 @@ const main = async () => {
       model: process.env.AI_MODEL || "gpt-4o-mini",
       availableTypes: ["market_summary", "currency_analysis", "best_rates", "trend_analysis", "custom"],
       supportedLanguages: ["es", "en", "pt"],
-      cacheEnabled: true,
+      cacheEnabled: redisCache.isConnected(),
       cacheTTL: "10 minutes",
     };
+  });
+
+  /**
+   * @openapi
+   * /cache/status:
+   *   get:
+   *     tags:
+   *       - Health
+   *     summary: Estado del cache Redis
+   *     description: Retorna información sobre el estado de la conexión Redis y estadísticas.
+   *     responses:
+   *       200:
+   *         description: Estado del cache
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 enabled:
+   *                   type: boolean
+   *                 connected:
+   *                   type: boolean
+   *                 latencyMs:
+   *                   type: number
+   */
+  server.getJson("cache/status", async (req: Request): Promise<any> => {
+    return redisCache.getHealthStatus();
+  });
+
+  /**
+   * @openapi
+   * /cache/flush:
+   *   post:
+   *     tags:
+   *       - Health
+   *     summary: Limpiar cache Redis
+   *     description: Limpia todas las entradas del cache Redis.
+   *     responses:
+   *       200:
+   *         description: Cache limpiado exitosamente
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 flushed:
+   *                   type: boolean
+   *                 keysDeleted:
+   *                   type: number
+   */
+  server.postJson("cache/flush", async (req: Request): Promise<any> => {
+    const deleted = await redisCache.flushAll();
+    return { flushed: true, keysDeleted: deleted };
   });
 
   /**
@@ -1091,7 +1156,7 @@ const main = async () => {
    *                     isInterBank: true
    */
   server.getJson("bcu", async (req: Request): Promise<any> => {
-    const res = cambio_info.get_bcu();
+    const res = await redisCache.getOrSet("bcu:all", async () => cambio_info.get_bcu(), 300);
     return res;
   });
 
@@ -1140,7 +1205,7 @@ const main = async () => {
    *                     departments: ["Montevideo", "Canelones", "San José"]
    */
   server.getJson("localData", async (req: Request): Promise<any> => {
-    const res = cambio_info.get_local_data();
+    const res = await redisCache.getOrSet("localData", () => cambio_info.get_local_data(), 600);
     return res;
   });
 
@@ -1167,8 +1232,11 @@ const main = async () => {
   server.getJson("fortex", async (req: Request): Promise<any> => {
     // Ensure date is in Uruguay timezone for consistency
     const date = moment.tz("America/Montevideo").startOf("day").toDate();
-    const fortex = new CambioFortex();
-    const res = await fortex.get_conversions(date);
+    const cacheKey = `fortex:${moment(date).format("YYYY-MM-DD")}`;
+    const res = await redisCache.getOrSet(cacheKey, async () => {
+      const fortex = new CambioFortex();
+      return fortex.get_conversions(date);
+    }, 120);
     return res;
   });
 
@@ -1306,7 +1374,9 @@ const main = async () => {
     
     const latitude = parseFloat(req.query.latitude as string);
     const longitude = parseFloat(req.query.longitude as string);
-    let res = await cambio_info.getExchanges(req.params.origin, req.params.location);
+    const locationParam = req.params.location || "all";
+    const cacheKey = `exchanges:${origin}:${locationParam}`;
+    let res = await redisCache.getOrSet(cacheKey, () => cambio_info.getExchanges(req.params.origin, req.params.location), 180);
     if (latitude && longitude) {
       res = JSON.parse(JSON.stringify(res));
       // Add distance to entries if latitude and longitude are passed.
@@ -1463,7 +1533,11 @@ const main = async () => {
     console.log(`Evolution request: ${origin}/${code}${type ? `/${type}` : ""} for ${periodMonths} months`);
 
     try {
-      const evolutionData = await cambio_info.get_currency_evolution(origin, code, periodMonths, type?.toLowerCase());
+      const cacheKey = `evolution:${origin}:${code}:${type || "all"}:${periodMonths}`;
+      const evolutionData = await redisCache.getOrSet(cacheKey, () =>
+        cambio_info.get_currency_evolution(origin, code, periodMonths, type?.toLowerCase()),
+        300 // 5 min cache for evolution data
+      );
       return evolutionData;
     } catch (error) {
       console.error("Evolution endpoint error:", error);

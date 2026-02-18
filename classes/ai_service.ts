@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 import OpenAI from "openai";
 import { CambioObj } from "../interfaces/Cambio";
+import { redisCache } from "./redis_cache";
 
 dotenv.config();
 
@@ -46,9 +47,9 @@ interface InsightResponse {
   cached: boolean;
 }
 
-// Simple in-memory cache for insights
-const insightCache = new Map<string, { data: InsightResponse; expiry: number }>();
-const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+// Cache TTL in seconds for Redis
+const AI_CACHE_TTL = 600; // 10 minutes
+const AI_CACHE_PREFIX = "ai:";
 
 class AIService {
   private client: OpenAI | null = null;
@@ -64,7 +65,7 @@ class AIService {
         baseURL,
         apiKey,
       });
-      console.log(`Ì¥ñ AI Service initialized with model: ${this.model}`);
+      console.log(`ü§ñ AI Service initialized with model: ${this.model}`);
     } else {
       console.warn("‚ö†Ô∏è AI Service not configured. Set AI_BASE_URL and AI_API_KEY in .env");
     }
@@ -75,27 +76,19 @@ class AIService {
   }
 
   private getCacheKey(request: InsightRequest): string {
-    return `${request.type}_${request.language}_${request.currency || "all"}_${request.origin || "all"}`;
+    return `${AI_CACHE_PREFIX}${request.type}_${request.language}_${request.currency || "all"}_${request.origin || "all"}`;
   }
 
-  private getCached(key: string): InsightResponse | null {
-    const entry = insightCache.get(key);
-    if (entry && Date.now() < entry.expiry) {
-      return { ...entry.data, cached: true };
-    }
-    if (entry) {
-      insightCache.delete(key);
+  private async getCached(key: string): Promise<InsightResponse | null> {
+    const data = await redisCache.get<InsightResponse>(key);
+    if (data) {
+      return { ...data, cached: true };
     }
     return null;
   }
 
-  private setCache(key: string, data: InsightResponse): void {
-    // Limit cache size
-    if (insightCache.size > 100) {
-      const firstKey = insightCache.keys().next().value;
-      if (firstKey) insightCache.delete(firstKey);
-    }
-    insightCache.set(key, { data, expiry: Date.now() + CACHE_TTL });
+  private async setCache(key: string, data: InsightResponse): Promise<void> {
+    await redisCache.set(key, data, AI_CACHE_TTL);
   }
 
   private buildPrompt(request: InsightRequest, exchangeData: CambioObj[]): string {
@@ -218,7 +211,7 @@ ${dataSummary}${evolutionSummary}`;
     // Check cache (except for custom prompts)
     if (request.type !== "custom") {
       const cacheKey = this.getCacheKey(request);
-      const cached = this.getCached(cacheKey);
+      const cached = await this.getCached(cacheKey);
       if (cached) return cached;
     }
 
@@ -260,8 +253,8 @@ ${dataSummary}${evolutionSummary}`;
   }
 
   // Cleanup cache
-  clearCache(): void {
-    insightCache.clear();
+  async clearCache(): Promise<void> {
+    await redisCache.delPattern(`${AI_CACHE_PREFIX}*`);
   }
 }
 

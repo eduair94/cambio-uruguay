@@ -57,6 +57,7 @@
     "google-spreadsheet": "^3.3.0",
     "http-proxy-agent": "^7.0.2",
     "https-proxy-agent": "^7.0.6",
+    "ioredis": "^5.9.3",
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.34",
     "mongoose": "^6.4.6",

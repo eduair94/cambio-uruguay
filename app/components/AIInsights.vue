@@ -10,7 +10,7 @@
               {{ t('ai.poweredBy') }}
             </v-chip>
             <h2 class="text-h4 text-md-h3 font-weight-bold text-white mb-3">
-              ��� {{ t('ai.title') }}
+              🤖 {{ t('ai.title') }}
             </h2>
             <p class="text-body-1 text-grey-lighten-1">
               {{ t('ai.subtitle') }}
@@ -157,8 +157,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
 import DOMPurify from 'isomorphic-dompurify'
+import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const { t, locale } = useI18n()
