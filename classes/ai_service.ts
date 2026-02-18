@@ -226,8 +226,9 @@ ${dataSummary}${evolutionSummary}`;
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
         ],
-        max_tokens: 1000,
+        max_tokens: 10000,
         temperature: 0.7,
+        stream: false,
       });
 
       const insight = completion.choices?.[0]?.message?.content || "No insight generated";

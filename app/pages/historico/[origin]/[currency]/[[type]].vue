@@ -224,7 +224,7 @@
         </v-col>
 
         <v-col cols="12" md="3" sm="6">
-          <v-card class="text-center bg-purple-darken-4">
+          <v-card class="text-center bg-blue-darken-4">
             <v-card-title class="justify-center text-white">
               <v-icon start color="white">mdi-database</v-icon>
               {{ $t('datosTotales') }}
@@ -246,8 +246,8 @@
         <v-col cols="12">
           <v-card class="ai-trend-card" elevation="4">
             <v-card-title class="d-flex align-center ga-2">
-              <v-icon color="purple">mdi-robot</v-icon>
-              🤖 {{ $t('ai.trendAnalysis') }}
+              <v-icon color="primary">mdi-creation</v-icon>
+              {{ $t('ai.trendAnalysis') }}
               <v-spacer />
               <v-chip v-if="aiInsight?.cached" size="small" color="grey" variant="tonal">
                 <v-icon start size="small">mdi-cached</v-icon>
@@ -260,9 +260,9 @@
                   {{ $t('ai.trendAnalysisDesc') }}
                 </p>
                 <v-btn
-                  color="purple"
+                  color="primary"
                   variant="flat"
-                  prepend-icon="mdi-brain"
+                  prepend-icon="mdi-creation"
                   :loading="aiLoading"
                   @click="requestAIAnalysis"
                 >
@@ -270,7 +270,7 @@
                 </v-btn>
               </div>
               <div v-if="aiLoading" class="text-center py-6">
-                <v-progress-circular indeterminate color="purple" size="40" class="mb-3" />
+                <v-progress-circular indeterminate color="primary" size="40" class="mb-3" />
                 <p class="text-body-2 text-grey">{{ $t('ai.generating') }}</p>
               </div>
               <v-alert v-if="aiError && !aiLoading" type="error" variant="tonal" class="mb-2">
@@ -294,7 +294,7 @@
                 <span class="text-caption text-grey">{{ $t('ai.disclaimer') }}</span>
                 <v-btn
                   variant="text"
-                  color="purple"
+                  color="primary"
                   size="small"
                   prepend-icon="mdi-refresh"
                   @click="requestAIAnalysis"
@@ -1026,21 +1026,17 @@ useSeoMeta({
 
 /* AI Trend Analysis Card */
 .ai-trend-card {
-  border: 1px solid rgba(156, 39, 176, 0.3);
-  background: linear-gradient(
-    135deg,
-    rgba(26, 26, 46, 0.95) 0%,
-    rgba(22, 33, 62, 0.95) 50%,
-    rgba(15, 52, 96, 0.95) 100%
-  );
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
   transition:
     border-color 0.3s ease,
     box-shadow 0.3s ease;
 }
 
 .ai-trend-card:hover {
-  border-color: rgba(156, 39, 176, 0.5);
-  box-shadow: 0 4px 20px rgba(156, 39, 176, 0.15);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 .ai-insight-content {
@@ -1052,14 +1048,14 @@ useSeoMeta({
 .ai-insight-content h1,
 .ai-insight-content h2,
 .ai-insight-content h3 {
-  color: #ce93d8;
+  color: #42a5f5;
   margin-top: 1rem;
   margin-bottom: 0.5rem;
   font-weight: 600;
 }
 
 .ai-insight-content strong {
-  color: #e1bee7;
+  color: #90caf9;
 }
 
 .ai-insight-content ul,

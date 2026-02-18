@@ -3,28 +3,25 @@
   <section class="ai-insights-section py-12">
     <v-container>
       <v-row justify="center">
-        <v-col cols="12" md="10" lg="8">
-          <!-- Section Header -->
-          <div class="text-center mb-8">
-            <v-chip color="purple" variant="flat" class="mb-4" prepend-icon="mdi-robot">
-              {{ t('ai.poweredBy') }}
-            </v-chip>
-            <h2 class="text-h4 text-md-h3 font-weight-bold text-white mb-3">
-              🤖 {{ t('ai.title') }}
-            </h2>
-            <p class="text-body-1 text-grey-lighten-1">
-              {{ t('ai.subtitle') }}
-            </p>
-          </div>
+        <v-col cols="12" class="text-center mb-8">
+          <h2 class="text-h4 font-weight-bold mb-4">
+            {{ t('ai.title') }}
+          </h2>
+          <p class="text-body-1 text-grey-lighten-1">
+            {{ t('ai.subtitle') }}
+          </p>
+        </v-col>
+      </v-row>
 
-          <!-- Analysis Type Selector -->
-          <v-card class="ai-card pa-4 pa-md-6 mb-6" elevation="8">
+      <v-row justify="center">
+        <v-col cols="12" md="10" lg="8">
+          <v-card class="ai-card pa-4 pa-md-6" elevation="4">
             <!-- Quick Action Chips -->
             <div class="d-flex flex-wrap ga-2 mb-5 justify-center">
               <v-chip
                 v-for="action in quickActions"
                 :key="action.type"
-                :color="selectedType === action.type ? 'purple' : 'default'"
+                :color="selectedType === action.type ? 'primary' : 'default'"
                 :variant="selectedType === action.type ? 'flat' : 'outlined'"
                 :prepend-icon="action.icon"
                 size="large"
@@ -36,12 +33,8 @@
             </div>
 
             <!-- Currency selector (for currency-specific analyses) -->
-            <v-row
-              v-if="showCurrencySelector"
-              class="mb-4"
-              justify="center"
-            >
-              <v-col cols="12" sm="6" md="4">
+            <v-row v-if="showCurrencySelector" class="mb-4" justify="center">
+              <v-col cols="12" sm="8" md="6">
                 <v-autocomplete
                   v-model="selectedCurrency"
                   :items="currencyItems"
@@ -55,32 +48,31 @@
             </v-row>
 
             <!-- Custom prompt input -->
-            <v-row v-if="selectedType === 'custom'" class="mb-4">
-              <v-col cols="12">
-                <v-textarea
+            <v-row v-if="selectedType === 'custom'" class="mb-4" justify="center">
+              <v-col cols="12" sm="10" md="8">
+                <v-text-field
                   v-model="customPrompt"
                   :label="t('ai.customQuestion')"
                   :placeholder="t('ai.askPlaceholder')"
                   variant="outlined"
-                  rows="2"
-                  auto-grow
-                  max-rows="4"
+                  density="comfortable"
                   hide-details
                   prepend-inner-icon="mdi-chat-question"
+                  @keydown.enter="runAnalysis"
                 />
               </v-col>
             </v-row>
 
             <!-- Analyze button -->
-            <div class="text-center mb-4">
+            <div class="text-center mb-2">
               <v-btn
                 :loading="loading"
                 :disabled="!canAnalyze"
-                color="purple"
+                color="primary"
                 size="large"
                 rounded="lg"
                 class="analyze-btn px-8"
-                :prepend-icon="loading ? '' : 'mdi-brain'"
+                :prepend-icon="loading ? '' : 'mdi-creation'"
                 @click="runAnalysis"
               >
                 {{ loading ? t('ai.analyzing') : t('ai.analyze') }}
@@ -89,12 +81,7 @@
 
             <!-- Loading state -->
             <div v-if="loading" class="text-center py-8">
-              <v-progress-circular
-                indeterminate
-                color="purple"
-                size="48"
-                class="mb-4"
-              />
+              <v-progress-circular indeterminate color="primary" size="48" class="mb-4" />
               <p class="text-body-2 text-grey-lighten-1">
                 {{ t('ai.generating') }}
               </p>
@@ -105,23 +92,19 @@
               v-if="error && !loading"
               type="error"
               variant="tonal"
-              class="mb-4"
+              class="mb-4 mt-4"
               closable
             >
               {{ error }}
               <template #append>
-                <v-btn
-                  variant="text"
-                  size="small"
-                  @click="runAnalysis"
-                >
+                <v-btn variant="text" size="small" @click="runAnalysis">
                   {{ t('ai.tryAgain') }}
                 </v-btn>
               </template>
             </v-alert>
 
             <!-- Results -->
-            <div v-if="insight && !loading" class="insight-result">
+            <div v-if="insight && !loading" class="insight-result mt-4">
               <v-divider class="mb-4" />
 
               <!-- Cached indicator -->
@@ -134,13 +117,13 @@
               <div class="insight-content text-body-1" v-html="renderedInsight" />
 
               <!-- Actions -->
-              <div class="d-flex justify-space-between align-center mt-4 pt-3" style="border-top: 1px solid rgba(255,255,255,0.1)">
+              <div class="insight-actions d-flex justify-space-between align-center mt-4 pt-3">
                 <span class="text-caption text-grey-darken-1">
                   {{ t('ai.disclaimer') }}
                 </span>
                 <v-btn
                   variant="text"
-                  color="purple"
+                  color="primary"
                   size="small"
                   prepend-icon="mdi-refresh"
                   @click="runAnalysis"
@@ -162,7 +145,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const { t, locale } = useI18n()
-const { loading, error, insight, checkAIStatus, getInsight, aiStatus } = useAIInsights()
+const { loading, error, insight, checkAIStatus, getInsight } = useAIInsights()
 
 const selectedType = ref<string>('market_summary')
 const selectedCurrency = ref<string>('USD')
@@ -292,11 +275,7 @@ const runAnalysis = async () => {
     options.customPrompt = customPrompt.value
   }
 
-  await getInsight(
-    selectedType.value as any,
-    lang,
-    options
-  )
+  await getInsight(selectedType.value as any, lang, options)
 }
 
 // Check AI availability on mount
@@ -311,38 +290,23 @@ defineExpose({ isAvailable })
 
 <style scoped>
 .ai-insights-section {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-  position: relative;
-  overflow: hidden;
-}
-
-.ai-insights-section::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(
-    ellipse at center,
-    rgba(156, 39, 176, 0.08) 0%,
-    transparent 60%
-  );
-  animation: pulse-glow 8s ease-in-out infinite;
-}
-
-@keyframes pulse-glow {
-  0%, 100% { opacity: 0.3; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(1.1); }
+  background: #1e1e1e;
 }
 
 .ai-card {
-  background: rgba(255, 255, 255, 0.05) !important;
+  background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(156, 39, 176, 0.2);
-  border-radius: 16px !important;
-  position: relative;
-  z-index: 1;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.ai-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 .action-chip {
@@ -352,22 +316,33 @@ defineExpose({ isAvailable })
 
 .action-chip:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(156, 39, 176, 0.3);
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.25);
 }
 
 .analyze-btn {
   text-transform: none;
   font-weight: 600;
   letter-spacing: 0.5px;
+  min-width: 180px;
 }
 
 .insight-result {
-  animation: fadeIn 0.5s ease-out;
+  animation: fadeInUp 0.5s ease-out;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+.insight-actions {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .insight-content {
@@ -378,11 +353,11 @@ defineExpose({ isAvailable })
 .insight-content :deep(h2),
 .insight-content :deep(h3),
 .insight-content :deep(h4) {
-  color: #ce93d8;
+  color: #42a5f5;
 }
 
 .insight-content :deep(strong) {
-  color: #e1bee7;
+  color: #90caf9;
 }
 
 .insight-content :deep(.insight-list) {
@@ -397,10 +372,20 @@ defineExpose({ isAvailable })
   margin-bottom: 0.5rem;
 }
 
+/* Accessibility */
+.ai-card:focus-within {
+  outline: 2px solid #42a5f5;
+  outline-offset: 2px;
+}
+
 /* Responsive */
 @media (max-width: 600px) {
   .action-chip {
     font-size: 0.75rem;
+  }
+
+  .analyze-btn {
+    min-width: 140px;
   }
 }
 </style>

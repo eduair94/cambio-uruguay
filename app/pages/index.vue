@@ -1639,7 +1639,7 @@ useSeoMeta({
 .feature-card.cursor-pointer:hover {
   transform: translateY(-8px);
   box-shadow: 0 16px 32px rgba(0, 0, 0, 0.4);
-  border-color: rgba(156, 39, 176, 0.3);
+  border-color: rgba(25, 118, 210, 0.3);
 }
 
 .cursor-pointer {
