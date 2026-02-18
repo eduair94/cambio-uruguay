@@ -81,7 +81,7 @@ class AIService {
 
   private async getCached(key: string): Promise<InsightResponse | null> {
     const data = await redisCache.get<InsightResponse>(key);
-    if (data) {
+    if (data && data.insight !== "No insight generated") {
       return { ...data, cached: true };
     }
     return null;
@@ -241,8 +241,8 @@ ${dataSummary}${evolutionSummary}`;
         cached: false,
       };
 
-      // Cache the response (except custom)
-      if (request.type !== "custom") {
+      // Cache the response (except custom and empty insights)
+      if (request.type !== "custom" && insight !== "No insight generated") {
         this.setCache(this.getCacheKey(request), response);
       }
 

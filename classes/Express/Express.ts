@@ -1,12 +1,11 @@
+import { apiReference } from "@scalar/express-api-reference";
 import bodyParser from "body-parser";
 import cors from "cors";
 import express, { Request, Response } from "express";
 import { RecaptchaV2 } from "express-recaptcha";
 import { ValidationChain, validationResult } from "express-validator";
 import * as http from "http";
-import { apiReference } from "@scalar/express-api-reference";
 import { swaggerSpec } from "../../swagger/config";
-import { bError } from "../utils";
 import { FunctionExpress } from "./Express.interface";
 
 class Express {

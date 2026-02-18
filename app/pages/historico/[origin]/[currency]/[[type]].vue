@@ -974,7 +974,7 @@ useSeoMeta({
 
 /* Gradient background for exchange house info */
 .bg-gradient-to-r {
-  background: linear-gradient(135deg, #1976d2 0%, #7b1fa2 100%);
+  background: linear-gradient(135deg, #1565c0 0%, #42a5f5 100%);
   position: relative;
   overflow: hidden;
 }

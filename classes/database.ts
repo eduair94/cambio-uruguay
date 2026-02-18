@@ -1,4 +1,4 @@
-import mongoose, { Schema as MongooseSchema, FilterQuery, UpdateQuery, QueryOptions, AggregateOptions, PipelineStage } from "mongoose";
+import mongoose, { Schema as MongooseSchema, PipelineStage } from "mongoose";
 import { mongoConfig } from "../config";
 const Schema = MongooseSchema;
 
@@ -417,3 +417,4 @@ export class MongooseServer {
 }
 
 export { mongoose, Schema };
+

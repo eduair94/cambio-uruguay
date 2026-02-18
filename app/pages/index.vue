@@ -897,7 +897,7 @@ const features = computed<Feature[]>(() => [
     title: t('feature5Title'),
     description: t('feature5Description'),
     icon: 'mdi-api',
-    color: 'purple',
+    color: 'indigo',
   },
   {
     title: t('feature6Title'),

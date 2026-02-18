@@ -17,7 +17,7 @@
         <v-col cols="12" md="10" lg="8">
           <v-card class="ai-card pa-4 pa-md-6" elevation="4">
             <!-- Quick Action Chips -->
-            <div class="d-flex flex-wrap ga-2 mb-5 justify-center">
+            <div class="action-chips-grid mb-5">
               <v-chip
                 v-for="action in quickActions"
                 :key="action.type"
@@ -314,6 +314,13 @@ defineExpose({ isAvailable })
   cursor: pointer;
 }
 
+.action-chips-grid {
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  gap: 8px;
+  justify-content: center;
+}
+
 .action-chip:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(25, 118, 210, 0.25);
@@ -380,6 +387,10 @@ defineExpose({ isAvailable })
 
 /* Responsive */
 @media (max-width: 600px) {
+  .action-chips-grid {
+    grid-template-columns: repeat(2, auto);
+  }
+
   .action-chip {
     font-size: 0.75rem;
   }
