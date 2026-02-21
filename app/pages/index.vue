@@ -1484,6 +1484,19 @@ const webApplicationSchema = computed(() => ({
       '@type': 'ImageObject',
       url: 'https://cambio-uruguay.com/img/logo.png',
     },
+    sameAs: [
+      'https://twitter.com/cambio_uruguay',
+      'https://www.linkedin.com/company/cambio-uruguay/',
+      'https://github.com/eduair94/cambio-uruguay',
+    ],
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: 'Montevideo',
+      addressLocality: 'Montevideo',
+      addressRegion: 'Montevideo',
+      postalCode: '11000',
+      addressCountry: 'UY',
+    },
   },
   featureList: [
     'Cotización del dólar en Uruguay en tiempo real',
@@ -1628,6 +1641,23 @@ const currencyServiceSchema = computed(() => ({
       '@type': 'Organization',
       name: 'Cambio Uruguay',
       url: 'https://cambio-uruguay.com',
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://cambio-uruguay.com/img/logo.png',
+      },
+      sameAs: [
+        'https://twitter.com/cambio_uruguay',
+        'https://www.linkedin.com/company/cambio-uruguay/',
+        'https://github.com/eduair94/cambio-uruguay',
+      ],
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: 'Montevideo',
+        addressLocality: 'Montevideo',
+        addressRegion: 'Montevideo',
+        postalCode: '11000',
+        addressCountry: 'UY',
+      },
     },
     areaServed: {
       '@type': 'Country',

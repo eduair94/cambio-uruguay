@@ -315,8 +315,11 @@ useHead({
         ],
         address: {
           '@type': 'PostalAddress',
-          addressCountry: 'UY',
+          streetAddress: 'Montevideo',
+          addressLocality: 'Montevideo',
           addressRegion: 'Montevideo',
+          postalCode: '11000',
+          addressCountry: 'UY',
         },
         founder: {
           '@type': 'Person',
