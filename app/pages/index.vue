@@ -488,12 +488,8 @@
       </VContainer>
     </section>
 
-    <!-- FAQ Section - SSR-rendered for SEO -->
-    <section
-      class="faq-section py-12 bg-grey-darken-4"
-      itemscope
-      itemtype="https://schema.org/FAQPage"
-    >
+    <!-- FAQ Section - SSR-rendered for SEO (schema via JSON-LD only, no microdata to avoid duplication) -->
+    <section class="faq-section py-12 bg-grey-darken-4">
       <VContainer>
         <VRow>
           <VCol cols="12" class="text-center mb-8">
@@ -509,19 +505,12 @@
                 v-for="faqNum in 8"
                 :key="faqNum"
                 class="faq-panel mb-2"
-                itemscope
-                itemprop="mainEntity"
-                itemtype="https://schema.org/Question"
               >
                 <VExpansionPanelTitle class="text-body-1 font-weight-bold">
-                  <span itemprop="name">{{ t(`faq.q${faqNum}`) }}</span>
+                  {{ t(`faq.q${faqNum}`) }}
                 </VExpansionPanelTitle>
-                <VExpansionPanelText
-                  itemscope
-                  itemprop="acceptedAnswer"
-                  itemtype="https://schema.org/Answer"
-                >
-                  <p itemprop="text" class="text-body-1 text-grey-lighten-1 pa-2">
+                <VExpansionPanelText>
+                  <p class="text-body-1 text-grey-lighten-1 pa-2">
                     {{ t(`faq.a${faqNum}`) }}
                   </p>
                 </VExpansionPanelText>
