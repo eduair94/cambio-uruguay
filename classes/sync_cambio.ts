@@ -9,12 +9,19 @@ interface SyncOriginResult {
   error?: string;
 }
 
+// Delay between processing each origin (ms) to reduce CPU spikes
+const ORIGIN_DELAY_MS = 500;
+
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 const sync_cambios = async () => {
   const syncResults: SyncOriginResult[] = [];
   let successCount = 0;
   let errorCount = 0;
 
-  for (let origin in origins) {
+  const originKeys = Object.keys(origins);
+  for (let i = 0; i < originKeys.length; i++) {
+    const origin = originKeys[i];
     const startTime = Date.now();
     try {
       const cambio: Cambio = new (origins as any)[origin](origin);
@@ -28,6 +35,11 @@ const sync_cambios = async () => {
       console.log(origin, e.message);
       syncResults.push({ origin, status: "error", duration, error: e.message || "Unknown error" });
       errorCount++;
+    }
+
+    // Throttle between origins to reduce CPU pressure
+    if (i < originKeys.length - 1) {
+      await delay(ORIGIN_DELAY_MS);
     }
   }
 

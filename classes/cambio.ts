@@ -6,6 +6,9 @@ import { CambioObj } from "../interfaces/Cambio";
 import { MongooseServer, Schema } from "./database";
 moment.tz.setDefault("America/Montevideo");
 
+// Set a default timeout for all axios requests to prevent hanging on unresponsive servers
+axios.defaults.timeout = 15000; // 15 seconds
+
 abstract class Cambio {
   protected db_suc: MongooseServer;
   protected origin: string;
@@ -219,8 +222,48 @@ abstract class Cambio {
       console.error("Empty", this.origin);
       return;
     }
+
+    // Batch all saves into a single bulkWrite operation instead of individual findOneAndUpdate calls
+    const date = moment.tz("America/Montevideo").startOf("day").toDate();
+    const operations: { filter: Record<string, any>; update: Record<string, any> }[] = [];
+
     for (let obj of data) {
-      await this.save(obj);
+      const saveObj = {
+        origin: this.origin,
+        date: date,
+        code: obj.code,
+        type: obj.type,
+        name: obj.name,
+        buy: obj.buy,
+        sell: obj.sell,
+      } as CambioObj;
+
+      if (saveObj.buy === 0 && saveObj.sell === 0) {
+        console.log("Skipping zero buy/sell:", saveObj);
+        continue;
+      }
+
+      console.log("Data", saveObj);
+
+      const filter = {
+        origin: this.origin,
+        date: date,
+        code: obj.code,
+        type: obj.type,
+      };
+
+      // Build the update fields (excluding filter keys, matching getAnUpdateEntry behavior)
+      const update: Record<string, any> = { ...obj };
+      Object.keys(filter).forEach((key) => {
+        delete update[key];
+      });
+
+      operations.push({ filter, update });
+    }
+
+    if (operations.length > 0) {
+      await this.db.bulkUpsert(operations);
+      console.log(`Bulk upserted ${operations.length} entries for ${this.origin}`);
     }
   }
 

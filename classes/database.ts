@@ -284,6 +284,34 @@ export class MongooseServer {
     return this.Model;
   }
 
+  /**
+   * Perform a batch of upsert operations using MongoDB bulkWrite.
+   * Much more efficient than calling findOneAndUpdate individually for each item.
+   * @param operations Array of { filter, update } objects
+   * @param att Retry attempt counter
+   */
+  public async bulkUpsert(operations: { filter: Record<string, any>; update: Record<string, any> }[], att = 0): Promise<any> {
+    if (operations.length === 0) return { ok: 1, nModified: 0 };
+    const bulkOps = operations.map((op) => ({
+      updateOne: {
+        filter: op.filter,
+        update: { $set: op.update },
+        upsert: true,
+      },
+    }));
+    try {
+      const result = await this.Model.bulkWrite(bulkOps, { ordered: false });
+      return result;
+    } catch (error) {
+      if (att < this.max_att) {
+        await new Promise(r => setTimeout(r, this.timeout));
+        return this.bulkUpsert(operations, att + 1);
+      }
+      console.error(error);
+      throw error;
+    }
+  }
+
   public async updateMany(entryGet: any, entry: any, att = 0): Promise<any> {
     try {
       const doc = await this.Model.updateMany(entryGet, entry, {}).lean().exec();
