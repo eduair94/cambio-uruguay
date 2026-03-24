@@ -33,7 +33,8 @@
     "debug_aguerrebere": "ts-node debug_aguerrebere.ts",
     "debug_scraping": "ts-node debug_scraping.ts",
     "debug_fix_money": "ts-node debug_fix_money.ts",
-    "test_ai": "ts-node test_ai_service.ts"
+    "test_ai": "ts-node test_ai_service.ts",
+    "test_ai_insights": "ts-node test_ai_insights.ts"
   },
   "author": "",
   "license": "ISC",

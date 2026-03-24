@@ -12,21 +12,24 @@ Proporcionas insights claros, concisos y útiles sobre las cotizaciones de divis
 Responde siempre en español. Usa formato Markdown para estructurar tu respuesta.
 Incluye emojis relevantes para hacer la información más visual.
 Sé directo y práctico, enfocándote en información que el usuario pueda usar para tomar decisiones.
-No te extiendas demasiado, mantén las respuestas concisas pero informativas.`,
+No te extiendas demasiado, mantén las respuestas concisas pero informativas.
+IMPORTANTE: SIEMPRE completa todas las tablas, listas y secciones que inicies. Nunca dejes una tabla o sección a medias. Si el contenido es largo, prioriza completar las secciones más importantes en lugar de dejar contenido incompleto. Prefiere respuestas más cortas y completas a respuestas largas e incompletas.`,
 
   en: `You are a financial analyst expert in the Uruguayan currency exchange market.
 You provide clear, concise, and useful insights about currency exchange rates.
 Always respond in English. Use Markdown format to structure your response.
 Include relevant emojis to make information more visual.
 Be direct and practical, focusing on information users can act on.
-Keep responses concise but informative.`,
+Keep responses concise but informative.
+IMPORTANT: ALWAYS complete all tables, lists, and sections you start. Never leave a table or section unfinished. If the content is lengthy, prioritize completing the most important sections rather than leaving content incomplete. Prefer shorter complete responses over longer incomplete ones.`,
 
   pt: `Você é um analista financeiro especialista no mercado de câmbio do Uruguai.
 Você fornece insights claros, concisos e úteis sobre as taxas de câmbio de moedas.
 Responda sempre em português. Use formato Markdown para estruturar sua resposta.
 Inclua emojis relevantes para tornar a informação mais visual.
 Seja direto e prático, focando em informações que o usuário possa usar para tomar decisões.
-Mantenha as respostas concisas mas informativas.`,
+Mantenha as respostas concisas mas informativas.
+IMPORTANTE: SEMPRE complete todas as tabelas, listas e seções que iniciar. Nunca deixe uma tabela ou seção incompleta. Se o conteúdo for longo, priorize completar as seções mais importantes em vez de deixar conteúdo incompleto. Prefira respostas mais curtas e completas a respostas longas e incompletas.`,
 };
 
 interface InsightRequest {
@@ -447,6 +450,68 @@ class AIService {
     }
   }
 
+  /**
+   * Detect if markdown content appears structurally incomplete.
+   * Catches cases where the model returns finish_reason="stop" but content is cut off.
+   */
+  private detectIncompleteContent(content: string): { incomplete: boolean; reason: string } {
+    if (!content || content.length < 20) {
+      return { incomplete: true, reason: "content_too_short" };
+    }
+
+    const lines = content.split("\n");
+    const lastLines = lines.slice(-5).join("\n").trim();
+
+    // Check for incomplete markdown tables:
+    // A table separator row like |--- or |:--- without a following data row
+    const tableHeaderPattern = /\|[-:\s]+\|?\s*$/;
+    if (tableHeaderPattern.test(lastLines)) {
+      return { incomplete: true, reason: "incomplete_table_header" };
+    }
+
+    // Check if last line is a table row that doesn't end with |
+    const lastNonEmptyLine = lines.filter((l) => l.trim().length > 0).pop() || "";
+    if (lastNonEmptyLine.trim().startsWith("|") && !lastNonEmptyLine.trim().endsWith("|")) {
+      return { incomplete: true, reason: "incomplete_table_row" };
+    }
+
+    // Check for unclosed markdown structures
+    // Unclosed code block (odd number of ``` markers)
+    const codeBlockCount = (content.match(/```/g) || []).length;
+    if (codeBlockCount % 2 !== 0) {
+      return { incomplete: true, reason: "unclosed_code_block" };
+    }
+
+    // Content ends mid-sentence (ends with common incomplete patterns)
+    const trimmed = content.trim();
+    
+    // Table-ending with pipe is almost always incomplete (a complete response rarely ends with |)
+    if (/\|\s*$/.test(trimmed) && trimmed.length > 50) {
+      return { incomplete: true, reason: "content_ends_with_pipe" };
+    }
+    
+    const endsIncomplete = /[,:\-–—]\s*$/.test(trimmed) || 
+                           /\*\*[^*]+$/.test(lastNonEmptyLine); // unclosed bold
+    if (endsIncomplete && trimmed.length > 50) {
+      return { incomplete: true, reason: "content_ends_abruptly" };
+    }
+
+    // Check for numbered list that seems to stop abruptly
+    // (e.g., prompt asks for 5 items but only 2 are present)
+    const numberedItems = content.match(/^\d+[.)]\s/gm);
+    if (numberedItems && numberedItems.length > 0) {
+      const lastNumber = parseInt(numberedItems[numberedItems.length - 1]);
+      // If the last content in the response is a numbered item header with no content after it
+      const lastLineIdx = lines.length - 1;
+      const lastContentLine = lines.findIndex((l, i) => i === lastLineIdx && /^\d+[.)]\s/.test(l.trim()));
+      if (lastContentLine === lastLineIdx) {
+        return { incomplete: true, reason: "incomplete_numbered_list" };
+      }
+    }
+
+    return { incomplete: false, reason: "" };
+  }
+
   async getInsight(request: InsightRequest, exchangeData: CambioObj[]): Promise<InsightResponse> {
     if (!this.client) {
       throw new Error("AI Service is not configured. Set AI_BASE_URL and AI_API_KEY in .env");
@@ -466,83 +531,115 @@ class AIService {
     const systemPrompt = SYSTEM_PROMPTS[language];
     const userPrompt = this.buildPrompt(request, exchangeData);
 
-    try {
-      // Add timeout to prevent hanging requests (60 seconds)
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 60000);
+    // Retry loop: if the model produces incomplete content, retry once with a shorter prompt
+    const MAX_ATTEMPTS = 2;
+    let lastError: any = null;
 
-      let completion;
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
       try {
-        completion = await this.client.chat.completions.create({
-          model: this.model,
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userPrompt },
-          ],
-          max_tokens: 10000,
-          temperature: 0.7,
-          stream: false,
-        }, { signal: controller.signal });
-      } finally {
-        clearTimeout(timeout);
-      }
+        // Add timeout to prevent hanging requests (60 seconds)
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 60000);
 
-      const choice = completion.choices?.[0];
-      const finishReason = choice?.finish_reason || "unknown";
-      const rawContent = choice?.message?.content;
+        let completion;
+        try {
+          completion = await this.client.chat.completions.create({
+            model: this.model,
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: attempt === 1 ? userPrompt : userPrompt + "\n\nIMPORTANTE: Genera una respuesta COMPLETA y más concisa. No dejes tablas ni secciones incompletas." },
+            ],
+            max_tokens: 4096,
+            temperature: 0.7,
+            stream: false,
+          }, { signal: controller.signal });
+        } finally {
+          clearTimeout(timeout);
+        }
 
-      // Detect broken/empty responses
-      const insight = rawContent?.trim() || "";
-      const isTruncated = finishReason === "length";
-      const isEmpty = !insight || insight.length < 20;
-      const isRefusal = finishReason === "content_filter";
+        const choice = completion.choices?.[0];
+        const finishReason = choice?.finish_reason || "unknown";
+        const rawContent = choice?.message?.content;
+        const usage = completion.usage;
 
-      if (isEmpty && !isTruncated) {
-        console.warn(`AI returned empty/short response. finish_reason=${finishReason}, content length=${insight.length}`);
-        throw new Error("AI returned an empty or invalid response. Please try again.");
-      }
+        // Log token usage for debugging
+        if (usage) {
+          console.log(`AI tokens used (attempt ${attempt}): prompt=${usage.prompt_tokens}, completion=${usage.completion_tokens}, total=${usage.total_tokens}`);
+        }
 
-      if (isRefusal) {
-        console.warn(`AI content was filtered. finish_reason=${finishReason}`);
-        throw new Error("The AI response was blocked by content filters. Please try a different query.");
-      }
+        // Detect broken/empty responses
+        const insight = rawContent?.trim() || "";
+        const isTruncatedByFinishReason = finishReason === "length";
+        const isEmpty = !insight || insight.length < 20;
+        const isRefusal = finishReason === "content_filter";
 
-      // If truncated, append a note so the user knows
-      let finalInsight = insight || "No insight generated";
-      if (isTruncated) {
-        console.warn(`AI response was truncated (finish_reason=length). Content length: ${insight.length}`);
-        const truncationNote: Record<string, string> = {
-          es: "\n\n---\n⚠️ *Esta respuesta fue truncada por límites del modelo. Los datos principales están arriba.*",
-          en: "\n\n---\n⚠️ *This response was truncated due to model limits. The main data is above.*",
-          pt: "\n\n---\n⚠️ *Esta resposta foi truncada por limites do modelo. Os dados principais estão acima.*",
+        if (isEmpty && !isTruncatedByFinishReason) {
+          console.warn(`AI returned empty/short response. finish_reason=${finishReason}, content length=${insight.length}`);
+          throw new Error("AI returned an empty or invalid response. Please try again.");
+        }
+
+        if (isRefusal) {
+          console.warn(`AI content was filtered. finish_reason=${finishReason}`);
+          throw new Error("The AI response was blocked by content filters. Please try a different query.");
+        }
+
+        // Content-level completeness detection (catches cases where finish_reason="stop" but content is cut off)
+        const completenessCheck = this.detectIncompleteContent(insight);
+        const isTruncated = isTruncatedByFinishReason || completenessCheck.incomplete;
+
+        if (completenessCheck.incomplete && !isTruncatedByFinishReason) {
+          console.warn(`AI response appears incomplete (content-level detection). reason=${completenessCheck.reason}, finish_reason=${finishReason}, content length=${insight.length}, attempt=${attempt}`);
+          // On first attempt with incomplete content, retry
+          if (attempt < MAX_ATTEMPTS) {
+            console.log("Retrying with instruction to complete response...");
+            continue;
+          }
+        }
+
+        // If truncated, append a note so the user knows
+        let finalInsight = insight || "No insight generated";
+        if (isTruncated) {
+          console.warn(`AI response was truncated (finish_reason=${finishReason}, contentCheck=${completenessCheck.reason || "none"}). Content length: ${insight.length}`);
+          const truncationNote: Record<string, string> = {
+            es: "\n\n---\n⚠️ *Esta respuesta fue truncada por límites del modelo. Los datos principales están arriba.*",
+            en: "\n\n---\n⚠️ *This response was truncated due to model limits. The main data is above.*",
+            pt: "\n\n---\n⚠️ *Esta resposta foi truncada por limites do modelo. Os dados principais estão acima.*",
+          };
+          finalInsight += truncationNote[language] || truncationNote["es"];
+        }
+
+        const response: InsightResponse = {
+          insight: finalInsight,
+          type: request.type,
+          timestamp: new Date().toISOString(),
+          language,
+          cached: false,
+          truncated: isTruncated,
+          finishReason,
         };
-        finalInsight += truncationNote[language] || truncationNote["es"];
-      }
 
-      const response: InsightResponse = {
-        insight: finalInsight,
-        type: request.type,
-        timestamp: new Date().toISOString(),
-        language,
-        cached: false,
-        truncated: isTruncated,
-        finishReason,
-      };
+        // Cache the response only if it's complete and valid (not truncated, not empty, not custom)
+        if (request.type !== "custom" && !isTruncated && finalInsight !== "No insight generated" && finalInsight.length >= 20) {
+          this.setCache(this.getCacheKey(request), response);
+        }
 
-      // Cache the response only if it's complete and valid (not truncated, not empty, not custom)
-      if (request.type !== "custom" && !isTruncated && finalInsight !== "No insight generated" && finalInsight.length >= 20) {
-        this.setCache(this.getCacheKey(request), response);
+        return response;
+      } catch (error: any) {
+        lastError = error;
+        if (error?.name === "AbortError") {
+          console.error("AI Service timeout: request took longer than 60s");
+          throw new Error("AI analysis timed out. The service is taking too long to respond. Please try again.");
+        }
+        // Don't retry on non-recoverable errors
+        if (attempt >= MAX_ATTEMPTS || error?.message?.includes("content filters") || error?.message?.includes("not configured")) {
+          throw error;
+        }
+        console.warn(`AI Service error on attempt ${attempt}, retrying:`, error?.message || error);
       }
-
-      return response;
-    } catch (error: any) {
-      if (error?.name === "AbortError") {
-        console.error("AI Service timeout: request took longer than 60s");
-        throw new Error("AI analysis timed out. The service is taking too long to respond. Please try again.");
-      }
-      console.error("AI Service error:", error?.message || error);
-      throw new Error(`AI analysis failed: ${error?.message || "Unknown error"}`);
     }
+
+    console.error("AI Service error after all attempts:", lastError?.message || lastError);
+    throw new Error(`AI analysis failed: ${lastError?.message || "Unknown error"}`);
   }
 
   // Cleanup cache
