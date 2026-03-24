@@ -1,4 +1,6 @@
 import mongoose, { Schema as MongooseSchema, PipelineStage } from "mongoose";
+import dotenv from "dotenv";
+dotenv.config();
 import { mongoConfig } from "../config";
 const Schema = MongooseSchema;
 
@@ -365,8 +367,9 @@ export class MongooseServer {
 
   public static connectWithRetry = (): any => {
     mongoose.set("strictQuery", false);
+    const uri = process.env.MONGODB_URI || `mongodb://localhost:27017/${mongoConfig.database}`;
     mongoose
-      .connect(`mongodb://localhost:27017/${mongoConfig.database}`, {})
+      .connect(uri, {})
       .catch(() => {});
   };
 
