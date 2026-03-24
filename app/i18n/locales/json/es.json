@@ -326,6 +326,7 @@
     "selectCurrency": "Selecciona una moneda para el análisis",
     "generating": "Generando análisis inteligente...",
     "disclaimer": "Este análisis es generado por IA y no constituye asesoramiento financiero.",
+    "truncatedWarning": "La respuesta fue truncada por límites del modelo. La información principal está arriba.",
     "tryAgain": "Reintentar",
     "newAnalysis": "Nuevo análisis",
     "marketSummaryDesc": "Panorama general del mercado de cambios hoy",

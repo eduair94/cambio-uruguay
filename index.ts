@@ -815,8 +815,32 @@ const main = async () => {
       }
     }
 
-    const result = await aiService.getInsight(insightRequest, exchangeData);
-    return result;
+    // Wrap with a top-level timeout to prevent indefinite hanging (65 seconds)
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error("AI insight request timed out after 65 seconds")), 65000);
+    });
+
+    try {
+      const result = await Promise.race([
+        aiService.getInsight(insightRequest, exchangeData),
+        timeoutPromise,
+      ]);
+
+      // Final response validation before sending to client
+      if (!result || !result.insight || result.insight.trim().length === 0) {
+        throw new Error("AI returned an empty response");
+      }
+
+      return result;
+    } catch (e: any) {
+      const message = e?.message || "AI analysis failed";
+      console.error("AI insight endpoint error:", message);
+      throw new ValidationError("AI analysis failed", {
+        error: "AI analysis failed",
+        message,
+        timestamp: new Date().toISOString(),
+      }, 502);
+    }
   });
 
   /**

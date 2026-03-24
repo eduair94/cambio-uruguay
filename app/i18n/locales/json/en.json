@@ -316,6 +316,7 @@
     "selectCurrency": "Select a currency for analysis",
     "generating": "Generating intelligent analysis...",
     "disclaimer": "This analysis is AI-generated and does not constitute financial advice.",
+    "truncatedWarning": "The response was truncated due to model limits. The main information is above.",
     "tryAgain": "Try again",
     "newAnalysis": "New analysis",
     "marketSummaryDesc": "General overview of today's exchange market",

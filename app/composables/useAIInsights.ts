@@ -6,6 +6,8 @@ interface AIInsightResponse {
   timestamp: string
   language: string
   cached: boolean
+  truncated?: boolean
+  finishReason?: string
 }
 
 interface AIStatusResponse {
@@ -16,6 +18,10 @@ interface AIStatusResponse {
   cacheEnabled: boolean
   cacheTTL: string
 }
+
+const MAX_RETRIES = 2
+const RETRY_DELAY_MS = 1500
+const FETCH_TIMEOUT_MS = 75000 // 75 seconds (server timeout is 60s)
 
 export const useAIInsights = () => {
   const config = useRuntimeConfig()
@@ -29,12 +35,23 @@ export const useAIInsights = () => {
   }
 
   /**
+   * Validate that the AI response is usable (not empty/broken)
+   */
+  const isValidResponse = (data: AIInsightResponse): boolean => {
+    if (!data || !data.insight) return false
+    // A valid insight should have meaningful content (at least 20 chars)
+    const cleanInsight = data.insight.replace(/\s+/g, ' ').trim()
+    return cleanInsight.length >= 20
+  }
+
+  /**
    * Check if the AI service is available
    */
   const checkAIStatus = async (): Promise<AIStatusResponse | null> => {
     try {
       const data = await $fetch<AIStatusResponse>('/ai/status', {
         baseURL: getApiBaseUrl(),
+        timeout: 10000,
       })
       aiStatus.value = data
       return data
@@ -46,7 +63,23 @@ export const useAIInsights = () => {
   }
 
   /**
-   * Get AI-generated insight
+   * Fetch with timeout support
+   */
+  const fetchWithTimeout = async <T>(url: string, options: Record<string, any>): Promise<T> => {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
+    try {
+      return (await $fetch(url, {
+        ...options,
+        signal: controller.signal,
+      })) as T
+    } finally {
+      clearTimeout(timeout)
+    }
+  }
+
+  /**
+   * Get AI-generated insight with retry logic
    */
   const getInsight = async (
     type: 'market_summary' | 'currency_analysis' | 'best_rates' | 'trend_analysis' | 'custom',
@@ -61,32 +94,70 @@ export const useAIInsights = () => {
     error.value = null
     insight.value = null
 
-    try {
-      const body: Record<string, any> = {
-        type,
-        language,
-      }
-
-      if (options.currency) body.currency = options.currency
-      if (options.origin) body.origin = options.origin
-      if (options.customPrompt) body.customPrompt = options.customPrompt
-
-      const data = await $fetch<AIInsightResponse>('/ai/insights', {
-        baseURL: getApiBaseUrl(),
-        method: 'POST',
-        body,
-      })
-
-      insight.value = data
-      return data
-    } catch (e: any) {
-      console.error('AI insight error:', e)
-      const errorMsg = e?.data?.message || e?.data?.error || e?.message || 'Unknown error'
-      error.value = errorMsg
-      return null
-    } finally {
-      loading.value = false
+    const body: Record<string, any> = {
+      type,
+      language,
     }
+
+    if (options.currency) body.currency = options.currency
+    if (options.origin) body.origin = options.origin
+    if (options.customPrompt) body.customPrompt = options.customPrompt
+
+    let lastError: any = null
+
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        if (attempt > 0) {
+          console.warn(`AI insight retry attempt ${attempt}/${MAX_RETRIES}`)
+          await new Promise(r => setTimeout(r, RETRY_DELAY_MS * attempt))
+        }
+
+        const data = await fetchWithTimeout<AIInsightResponse>('/ai/insights', {
+          baseURL: getApiBaseUrl(),
+          method: 'POST',
+          body,
+        })
+
+        // Validate the response quality
+        if (!isValidResponse(data)) {
+          console.warn(
+            `AI response failed validation (attempt ${attempt + 1}): insight length=${data?.insight?.length || 0}`
+          )
+          lastError = new Error('AI returned an incomplete response')
+          // Don't retry for truncated responses that have some content - show what we have
+          if (data?.truncated && data.insight && data.insight.length > 50) {
+            insight.value = data
+            loading.value = false
+            return data
+          }
+          continue
+        }
+
+        insight.value = data
+        loading.value = false
+        return data
+      } catch (e: any) {
+        lastError = e
+        const isAbort = e?.name === 'AbortError'
+        const isTimeout =
+          isAbort || e?.message?.includes('timeout') || e?.message?.includes('timed out')
+        const isServerError = e?.status >= 500
+
+        console.error(`AI insight error (attempt ${attempt + 1}):`, e?.message || e)
+
+        // Only retry on timeouts and server errors, not on 4xx client errors
+        if (!isTimeout && !isServerError) {
+          break
+        }
+      }
+    }
+
+    // All attempts failed
+    const errorMsg =
+      lastError?.data?.message || lastError?.data?.error || lastError?.message || 'Unknown error'
+    error.value = errorMsg
+    loading.value = false
+    return null
   }
 
   /**

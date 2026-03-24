@@ -113,6 +113,17 @@
                 <span class="text-caption text-grey">{{ t('ai.cached') }}</span>
               </div>
 
+              <!-- Truncation warning -->
+              <v-alert
+                v-if="insight.truncated"
+                type="warning"
+                variant="tonal"
+                density="compact"
+                class="mb-3"
+              >
+                {{ t('ai.truncatedWarning') }}
+              </v-alert>
+
               <!-- Markdown rendered content -->
               <div class="insight-content text-body-1" v-html="renderedInsight" />
 

@@ -43,6 +43,17 @@
         </template>
       </v-alert>
 
+      <!-- Truncation warning -->
+      <v-alert
+        v-if="insight?.truncated && !loading"
+        type="warning"
+        variant="tonal"
+        density="compact"
+        class="mb-2"
+      >
+        {{ t('ai.truncatedWarning') }}
+      </v-alert>
+
       <!-- Rendered content -->
       <div v-if="insight && !loading" class="ai-insight-content" v-html="renderedInsight" />
 

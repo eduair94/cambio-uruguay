@@ -47,6 +47,8 @@ interface InsightResponse {
   timestamp: string;
   language: string;
   cached: boolean;
+  truncated?: boolean;
+  finishReason?: string;
 }
 
 // Language-specific labels for building prompts in the correct language
@@ -465,34 +467,79 @@ class AIService {
     const userPrompt = this.buildPrompt(request, exchangeData);
 
     try {
-      const completion = await this.client.chat.completions.create({
-        model: this.model,
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-        max_tokens: 10000,
-        temperature: 0.7,
-        stream: false,
-      });
+      // Add timeout to prevent hanging requests (60 seconds)
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 60000);
 
-      const insight = completion.choices?.[0]?.message?.content || "No insight generated";
+      let completion;
+      try {
+        completion = await this.client.chat.completions.create({
+          model: this.model,
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt },
+          ],
+          max_tokens: 10000,
+          temperature: 0.7,
+          stream: false,
+        }, { signal: controller.signal });
+      } finally {
+        clearTimeout(timeout);
+      }
+
+      const choice = completion.choices?.[0];
+      const finishReason = choice?.finish_reason || "unknown";
+      const rawContent = choice?.message?.content;
+
+      // Detect broken/empty responses
+      const insight = rawContent?.trim() || "";
+      const isTruncated = finishReason === "length";
+      const isEmpty = !insight || insight.length < 20;
+      const isRefusal = finishReason === "content_filter";
+
+      if (isEmpty && !isTruncated) {
+        console.warn(`AI returned empty/short response. finish_reason=${finishReason}, content length=${insight.length}`);
+        throw new Error("AI returned an empty or invalid response. Please try again.");
+      }
+
+      if (isRefusal) {
+        console.warn(`AI content was filtered. finish_reason=${finishReason}`);
+        throw new Error("The AI response was blocked by content filters. Please try a different query.");
+      }
+
+      // If truncated, append a note so the user knows
+      let finalInsight = insight || "No insight generated";
+      if (isTruncated) {
+        console.warn(`AI response was truncated (finish_reason=length). Content length: ${insight.length}`);
+        const truncationNote: Record<string, string> = {
+          es: "\n\n---\n⚠️ *Esta respuesta fue truncada por límites del modelo. Los datos principales están arriba.*",
+          en: "\n\n---\n⚠️ *This response was truncated due to model limits. The main data is above.*",
+          pt: "\n\n---\n⚠️ *Esta resposta foi truncada por limites do modelo. Os dados principais estão acima.*",
+        };
+        finalInsight += truncationNote[language] || truncationNote["es"];
+      }
 
       const response: InsightResponse = {
-        insight,
+        insight: finalInsight,
         type: request.type,
         timestamp: new Date().toISOString(),
         language,
         cached: false,
+        truncated: isTruncated,
+        finishReason,
       };
 
-      // Cache the response (except custom and empty insights)
-      if (request.type !== "custom" && insight !== "No insight generated") {
+      // Cache the response only if it's complete and valid (not truncated, not empty, not custom)
+      if (request.type !== "custom" && !isTruncated && finalInsight !== "No insight generated" && finalInsight.length >= 20) {
         this.setCache(this.getCacheKey(request), response);
       }
 
       return response;
     } catch (error: any) {
+      if (error?.name === "AbortError") {
+        console.error("AI Service timeout: request took longer than 60s");
+        throw new Error("AI analysis timed out. The service is taking too long to respond. Please try again.");
+      }
       console.error("AI Service error:", error?.message || error);
       throw new Error(`AI analysis failed: ${error?.message || "Unknown error"}`);
     }
