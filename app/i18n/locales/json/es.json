@@ -82,6 +82,13 @@
   "simpleTitle": "Cotización del Dólar en Uruguay Hoy",
   "simpleSubtitle": "Compara la cotización del dólar y todas las divisas en más de 40 casas de cambio",
   "simpleDescription": "Actualizamos las cotizaciones de compra y venta cada 10 minutos. Encuentra dónde comprar o vender dólares al mejor precio en Montevideo y todo Uruguay.",
+  "trust": {
+    "regulated": "Datos del BCU",
+    "regulatedAria": "Cotizaciones basadas en el registro oficial del Banco Central del Uruguay (BCU)",
+    "houses": "+40 casas de cambio",
+    "updated": "Actualizado cada 10 min",
+    "reviews": "Reseñas en Trustpilot"
+  },
   "quickExchange": "Cambio Rápido",
   "quickExchangeForward": "Recibirías",
   "quickExchangeReverse": "Necesitas vender",

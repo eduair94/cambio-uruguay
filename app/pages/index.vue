@@ -16,6 +16,9 @@
                 {{ t('simpleDescription') }}
               </p>
 
+              <!-- Trust signals: BCU source, coverage, freshness, Trustpilot -->
+              <TrustBar />
+
               <!-- Currency Converter Card -->
               <VCard class="exchange-card pa-6 mb-6" elevation="8">
                 <h2 class="text-h5 font-weight-bold mb-6 text-center">
@@ -1508,13 +1511,10 @@ const webApplicationSchema = computed(() => ({
     'API REST para desarrolladores',
   ],
   screenshot: 'https://cambio-uruguay.com/img/banner.png',
-  aggregateRating: {
-    '@type': 'AggregateRating',
-    ratingValue: '4.8',
-    reviewCount: '150',
-    bestRating: '5',
-    worstRating: '1',
-  },
+  // NOTE: a self-declared aggregateRating (4.8 / 150) was removed here. Google's
+  // structured-data policy disallows self-serving ratings not backed by verifiable
+  // on-page reviews and can trigger a manual action. Re-add only when sourced from a
+  // real provider (e.g. live Trustpilot count via widget/API), never hardcoded.
 }))
 
 // 2. FAQPage Schema

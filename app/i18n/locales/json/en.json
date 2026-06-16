@@ -79,6 +79,13 @@
   "simpleTitle": "Dollar Exchange Rate in Uruguay Today",
   "simpleSubtitle": "Compare dollar and currency exchange rates from 40+ exchange houses",
   "simpleDescription": "We update buy and sell rates every 10 minutes. Find where to buy or sell dollars at the best price in Montevideo and all of Uruguay.",
+  "trust": {
+    "regulated": "BCU-sourced data",
+    "regulatedAria": "Rates based on the official Central Bank of Uruguay (BCU) registry",
+    "houses": "40+ exchange houses",
+    "updated": "Updated every 10 min",
+    "reviews": "Trustpilot reviews"
+  },
   "quickExchange": "Quick Exchange",
   "quickExchangeForward": "You would receive",
   "quickExchangeReverse": "You need to sell",

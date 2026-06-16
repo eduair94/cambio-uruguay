@@ -77,6 +77,13 @@
   "simpleTitle": "Cotação do Dólar no Uruguai Hoje",
   "simpleSubtitle": "Compare cotações do dólar e todas as moedas em mais de 40 casas de câmbio",
   "simpleDescription": "Atualizamos as cotações de compra e venda a cada 10 minutos. Encontre onde comprar ou vender dólares ao melhor preço em Montevidéu e todo o Uruguai.",
+  "trust": {
+    "regulated": "Dados do BCU",
+    "regulatedAria": "Cotações baseadas no registro oficial do Banco Central do Uruguai (BCU)",
+    "houses": "+40 casas de câmbio",
+    "updated": "Atualizado a cada 10 min",
+    "reviews": "Avaliações no Trustpilot"
+  },
   "quickExchange": "Câmbio Rápido",
   "quickExchangeForward": "Você receberia",
   "quickExchangeReverse": "Você precisa vender",
