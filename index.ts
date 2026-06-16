@@ -831,7 +831,13 @@ const main = async () => {
         throw new Error("AI returned an empty response");
       }
 
-      return result;
+      // Ensure truncated and finishReason are always present in the response
+      // (guards against old cache entries or unexpected upstream changes)
+      return {
+        ...result,
+        truncated: result.truncated ?? false,
+        finishReason: result.finishReason ?? "unknown",
+      };
     } catch (e: any) {
       const message = e?.message || "AI analysis failed";
       console.error("AI insight endpoint error:", message);
