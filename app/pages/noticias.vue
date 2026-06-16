@@ -156,6 +156,13 @@ const relativeDate = (dateStr: string) => {
   return rtf.format(Math.round(diffMin / 1440), 'day')
 }
 
+// Branded OG image for the news page
+defineOgImageComponent('Cambio', {
+  title: 'Noticias del Dólar en Uruguay',
+  subtitle: 'Resumen con IA + titulares de los principales medios',
+  tag: 'NOTICIAS',
+})
+
 // SEO
 useSeoMeta({
   title: () => t('noticias.metaTitle'),

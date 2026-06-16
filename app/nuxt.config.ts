@@ -53,33 +53,17 @@ export default defineNuxtConfig({
         { name: 'bingbot', content: 'index, follow' },
         { name: 'referrer', content: 'no-referrer' },
 
-        // Open Graph / Facebook - Only truly global properties
+        // Open Graph / Facebook. og:image and twitter:image are generated PER PAGE
+        // by nuxt-og-image (see `ogImage` config + defineOgImageComponent), so they
+        // are intentionally NOT hardcoded here — avoids duplicate/competing tags.
         { property: 'og:type', content: 'website' },
-        {
-          property: 'og:image',
-          content: 'https://cambio-uruguay.com/img/og.png',
-        },
-        { property: 'og:image:width', content: '1200' },
-        { property: 'og:image:height', content: '630' },
-        {
-          property: 'og:image:alt',
-          content: 'Cambio Uruguay - Cotización del dólar en Uruguay hoy',
-        },
         { property: 'og:site_name', content: 'Cambio Uruguay' },
         { property: 'og:locale', content: 'es_ES' },
         { property: 'og:locale:alternate', content: 'en_US' },
         { property: 'og:locale:alternate', content: 'pt_BR' },
 
-        // Twitter Card - Only truly global properties
+        // Twitter Card
         { name: 'twitter:card', content: 'summary_large_image' },
-        {
-          name: 'twitter:image',
-          content: 'https://cambio-uruguay.com/img/banner.png',
-        },
-        {
-          name: 'twitter:image:alt',
-          content: 'Cambio Uruguay - Cotización del dólar en Uruguay hoy',
-        },
         { name: 'twitter:site', content: '@cambio_uruguay' },
         { name: 'twitter:creator', content: '@cambio_uruguay' },
 
@@ -425,6 +409,16 @@ export default defineNuxtConfig({
   // Sitemap Configuration
   sitemap: {
     sources: ['/api/__sitemap__/urls'],
+  },
+
+  // OG image generation (nuxt-og-image, bundled with @nuxtjs/seo).
+  // Branded per-page social previews via the OgImage/Cambio component.
+  ogImage: {
+    fonts: ['Open Sans:400', 'Open Sans:600', 'Open Sans:800', 'Sora:700', 'Sora:800'],
+    defaults: {
+      width: 1200,
+      height: 630,
+    },
   },
 
   // i18n Configuration

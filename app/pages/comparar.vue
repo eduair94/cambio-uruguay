@@ -403,6 +403,13 @@ const formatOriginName = (origin: string): string => {
   return origin.replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
 }
 
+// Branded OG image for the comparison page
+defineOgImageComponent('Cambio', {
+  title: 'Comparar Casas de Cambio',
+  subtitle: 'Superponé la evolución de varias casas en el tiempo',
+  tag: 'COMPARADOR',
+})
+
 // SEO
 useSeoMeta({
   title: () => t('seo.compareTitle'),
