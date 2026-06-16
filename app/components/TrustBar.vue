@@ -8,7 +8,7 @@
         :href="bcuUrl"
         target="_blank"
         rel="noopener noreferrer"
-        :aria-label="$t('trust.regulatedAria')"
+        :title="$t('trust.regulatedAria')"
       >
         <VIcon size="18" color="success" class="trust-pill__icon">mdi-shield-check</VIcon>
         <span>{{ $t('trust.regulated') }}</span>

@@ -100,6 +100,7 @@
                           :size="mobile ? 'small' : 'large'"
                           color="primary"
                           class="swap-btn"
+                          :aria-label="t('a11y.swap')"
                           @click="swapCurrencies"
                         >
                           <VIcon>mdi-swap-horizontal</VIcon>
@@ -396,7 +397,7 @@
                     {{ formatCurrency(exchange.rate) }} = 1 {{ exchange.code }}
                   </p>
                   <VChip
-                    :color="exchange.isRegulated ? 'green' : 'orange'"
+                    :color="exchange.isRegulated ? 'green-darken-3' : 'deep-orange-darken-4'"
                     size="small"
                     variant="elevated"
                   >
@@ -475,16 +476,14 @@
               <h3 class="text-h5 font-weight-bold mb-4">
                 {{ t('pillar.tipsTitle') }}
               </h3>
-              <VList class="tips-list bg-transparent pa-0 mb-6">
-                <VListItem v-for="tipNum in 4" :key="tipNum" class="px-0">
-                  <template #prepend>
-                    <VIcon color="success" class="mr-3">mdi-check-circle</VIcon>
-                  </template>
-                  <VListItemTitle class="text-body-1 text-grey-lighten-1 text-wrap">
+              <ul class="tips-list pa-0 mb-6">
+                <li v-for="tipNum in 4" :key="tipNum" class="d-flex align-start mb-3">
+                  <VIcon color="success" class="mr-3 mt-1">mdi-check-circle</VIcon>
+                  <span class="text-body-1 text-grey-lighten-1">
                     {{ t(`pillar.tip${tipNum}`) }}
-                  </VListItemTitle>
-                </VListItem>
-              </VList>
+                  </span>
+                </li>
+              </ul>
             </article>
           </VCol>
         </VRow>
@@ -504,11 +503,7 @@
         <VRow justify="center">
           <VCol cols="12" md="10" lg="8">
             <VExpansionPanels variant="accordion" class="faq-panels">
-              <VExpansionPanel
-                v-for="faqNum in 8"
-                :key="faqNum"
-                class="faq-panel mb-2"
-              >
+              <VExpansionPanel v-for="faqNum in 8" :key="faqNum" class="faq-panel mb-2">
                 <VExpansionPanelTitle class="text-body-1 font-weight-bold">
                   {{ t(`faq.q${faqNum}`) }}
                 </VExpansionPanelTitle>
@@ -2002,6 +1997,10 @@ useSeoMeta({
 .pillar-text {
   font-size: 1.05rem;
   line-height: 1.8;
+}
+
+.tips-list {
+  list-style: none;
 }
 
 /* FAQ Section */

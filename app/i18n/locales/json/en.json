@@ -86,6 +86,27 @@
     "updated": "Updated every 10 min",
     "reviews": "Trustpilot reviews"
   },
+  "a11y": {
+    "swap": "Swap currencies",
+    "expandDonation": "Open project support",
+    "closeDonation": "Close",
+    "menu": "Open menu",
+    "close": "Close menu"
+  },
+  "noticias": {
+    "nav": "News",
+    "title": "Uruguay dollar news",
+    "metaTitle": "Uruguay Dollar News Today | Cambio Uruguay",
+    "metaDescription": "Latest news on the US dollar exchange rate and the economy in Uruguay, updated throughout the day. Then compare rates across 40+ exchange houses.",
+    "intro": "Follow the latest news on the dollar, the Uruguayan peso and the country's economy. We gather headlines from the main outlets so you understand the context before buying or selling, and then compare the live exchange rate.",
+    "updatedAuto": "Updated automatically throughout the day",
+    "readMore": "Read at the source",
+    "empty": "No news available right now. Please check back later.",
+    "ctaTitle": "Ready to exchange?",
+    "ctaText": "Compare the dollar rate across 40+ exchange houses and find the best price.",
+    "ctaButton": "View rates",
+    "disclaimer": "Headlines link to their original sources. Cambio Uruguay is not responsible for third-party content."
+  },
   "quickExchange": "Quick Exchange",
   "quickExchangeForward": "You would receive",
   "quickExchangeReverse": "You need to sell",

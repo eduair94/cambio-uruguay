@@ -89,6 +89,27 @@
     "updated": "Actualizado cada 10 min",
     "reviews": "Reseñas en Trustpilot"
   },
+  "a11y": {
+    "swap": "Intercambiar monedas",
+    "expandDonation": "Abrir apoyo al proyecto",
+    "closeDonation": "Cerrar",
+    "menu": "Abrir menú",
+    "close": "Cerrar menú"
+  },
+  "noticias": {
+    "nav": "Noticias",
+    "title": "Noticias del dólar en Uruguay",
+    "metaTitle": "Noticias del Dólar en Uruguay Hoy | Cambio Uruguay",
+    "metaDescription": "Últimas noticias sobre la cotización del dólar y la economía en Uruguay, actualizadas a lo largo del día. Compará luego las cotizaciones en más de 40 casas de cambio.",
+    "intro": "Seguí las últimas noticias sobre el dólar, el peso uruguayo y la economía del país. Reunimos los titulares de los principales medios para que entiendas el contexto antes de comprar o vender, y después compares la cotización en tiempo real.",
+    "updatedAuto": "Actualizado automáticamente a lo largo del día",
+    "readMore": "Leer en la fuente",
+    "empty": "No hay noticias disponibles en este momento. Volvé a intentarlo más tarde.",
+    "ctaTitle": "¿Listo para cambiar?",
+    "ctaText": "Compará la cotización del dólar en más de 40 casas de cambio y encontrá el mejor precio.",
+    "ctaButton": "Ver cotizaciones",
+    "disclaimer": "Los titulares enlazan a sus fuentes originales. Cambio Uruguay no es responsable del contenido de terceros."
+  },
   "quickExchange": "Cambio Rápido",
   "quickExchangeForward": "Recibirías",
   "quickExchangeReverse": "Necesitas vender",

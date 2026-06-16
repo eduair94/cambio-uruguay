@@ -12,7 +12,13 @@
         <VListItem>
           <VListItemTitle class="text-h6"> Menu </VListItemTitle>
           <template #append>
-            <VBtn icon="mdi-close" variant="text" size="small" @click="drawer = false" />
+            <VBtn
+              icon="mdi-close"
+              variant="text"
+              size="small"
+              :aria-label="$t('a11y.close')"
+              @click="drawer = false"
+            />
           </template>
         </VListItem>
 
@@ -44,6 +50,13 @@
             <VIcon>mdi-bank-outline</VIcon>
           </template>
           <VListItemTitle>{{ $t('sucursalesMenu') }}</VListItemTitle>
+        </VListItem>
+
+        <VListItem :to="localePath('/noticias')" @click="drawer = false">
+          <template #prepend>
+            <VIcon>mdi-newspaper-variant-outline</VIcon>
+          </template>
+          <VListItemTitle>{{ $t('noticias.nav') }}</VListItemTitle>
         </VListItem>
 
         <VListItem
@@ -88,7 +101,12 @@
 
     <VAppBar class="px-3">
       <!-- Mobile menu button -->
-      <VAppBarNavIcon class="d-flex d-lg-none mr-2" @click.stop="drawer = !drawer" />
+      <VAppBarNavIcon
+        class="d-flex d-lg-none mr-2"
+        :aria-label="$t('a11y.menu')"
+        :title="$t('a11y.menu')"
+        @click.stop="drawer = !drawer"
+      />
 
       <NuxtLink :to="localePath('/')" class="no_link d-flex logo_link">
         <img
@@ -146,6 +164,17 @@
         >
           <VIcon start small>mdi-bank-outline</VIcon>
           {{ $t('sucursalesMenu') }}
+        </VBtn>
+
+        <!-- Noticias -->
+        <VBtn
+          :to="localePath('/noticias')"
+          variant="text"
+          class="text-capitalize nav-btn"
+          :class="{ 'nav-btn--active': isActiveRoute('/noticias') }"
+        >
+          <VIcon start small>mdi-newspaper-variant-outline</VIcon>
+          {{ $t('noticias.nav') }}
         </VBtn>
 
         <!-- Donar -->

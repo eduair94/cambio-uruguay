@@ -16,6 +16,7 @@
         color="red"
         variant="text"
         class="donation-expand-btn"
+        :aria-label="$t('a11y.expandDonation')"
         @click="toggleCard"
       >
         <VIcon>mdi-heart</VIcon>
@@ -30,7 +31,14 @@
           <VIcon color="red" class="mr-2">mdi-heart</VIcon>
           <span class="text-body-2 font-weight-medium">{{ $t('donation.supportProject') }}</span>
         </div>
-        <VBtn icon size="x-small" variant="text" class="donation-close-btn" @click="toggleCard">
+        <VBtn
+          icon
+          size="x-small"
+          variant="text"
+          class="donation-close-btn"
+          :aria-label="$t('a11y.closeDonation')"
+          @click="toggleCard"
+        >
           <VIcon size="16">mdi-close</VIcon>
         </VBtn>
       </div>
@@ -70,7 +78,7 @@
           >
             <VChip
               size="small"
-              color="light-blue"
+              color="light-blue-darken-4"
               variant="elevated"
               class="donation-chip"
               prepend-icon="mdi-credit-card"

@@ -9,77 +9,67 @@
 
         <VSpacer class="d-none d-md-flex" />
 
-        <!-- API Documentation & Social Media Links -->
+        <!-- API Documentation & Social Media Links.
+             Native title (hover hint) + aria-label instead of VTooltip: avoids
+             empty role=tooltip overlays that fail the aria-tooltip-name audit. -->
         <div class="d-flex align-center ga-2">
-          <VTooltip text="Documentación de la API">
-            <template #activator="{ props }">
-              <VBtn
-                v-bind="props"
-                href="https://api.cambio-uruguay.com/api-docs"
-                target="_blank"
-                rel="noopener noreferrer"
-                icon
-                size="small"
-                variant="text"
-                color="white"
-              >
-                <VIcon>mdi-api</VIcon>
-              </VBtn>
-            </template>
-          </VTooltip>
+          <VBtn
+            href="https://api.cambio-uruguay.com/api-docs"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Documentación de la API"
+            title="Documentación de la API"
+            icon
+            size="small"
+            variant="text"
+            color="white"
+          >
+            <VIcon>mdi-api</VIcon>
+          </VBtn>
 
           <VDivider vertical class="mx-2" />
 
-          <VTooltip :text="$t('siguenos.twitter')">
-            <template #activator="{ props }">
-              <VBtn
-                v-bind="props"
-                href="https://twitter.com/cambio_uruguay"
-                target="_blank"
-                rel="noopener noreferrer"
-                icon
-                size="small"
-                variant="text"
-                color="white"
-              >
-                <VIcon>mdi-twitter</VIcon>
-              </VBtn>
-            </template>
-          </VTooltip>
+          <VBtn
+            href="https://twitter.com/cambio_uruguay"
+            target="_blank"
+            rel="noopener noreferrer"
+            :aria-label="$t('siguenos.twitter')"
+            :title="$t('siguenos.twitter')"
+            icon
+            size="small"
+            variant="text"
+            color="white"
+          >
+            <VIcon>mdi-twitter</VIcon>
+          </VBtn>
 
-          <VTooltip :text="$t('siguenos.linkedin')">
-            <template #activator="{ props }">
-              <VBtn
-                v-bind="props"
-                href="https://www.linkedin.com/company/cambio-uruguay/"
-                target="_blank"
-                rel="noopener noreferrer"
-                icon
-                size="small"
-                variant="text"
-                color="white"
-              >
-                <VIcon>mdi-linkedin</VIcon>
-              </VBtn>
-            </template>
-          </VTooltip>
+          <VBtn
+            href="https://www.linkedin.com/company/cambio-uruguay/"
+            target="_blank"
+            rel="noopener noreferrer"
+            :aria-label="$t('siguenos.linkedin')"
+            :title="$t('siguenos.linkedin')"
+            icon
+            size="small"
+            variant="text"
+            color="white"
+          >
+            <VIcon>mdi-linkedin</VIcon>
+          </VBtn>
 
-          <VTooltip :text="$t('siguenos.kofi')">
-            <template #activator="{ props }">
-              <VBtn
-                v-bind="props"
-                href="https://ko-fi.com/cambio_uruguay"
-                target="_blank"
-                rel="noopener noreferrer"
-                icon
-                size="small"
-                variant="text"
-                color="white"
-              >
-                <VIcon>mdi-heart</VIcon>
-              </VBtn>
-            </template>
-          </VTooltip>
+          <VBtn
+            href="https://ko-fi.com/cambio_uruguay"
+            target="_blank"
+            rel="noopener noreferrer"
+            :aria-label="$t('siguenos.kofi')"
+            :title="$t('siguenos.kofi')"
+            icon
+            size="small"
+            variant="text"
+            color="white"
+          >
+            <VIcon>mdi-heart</VIcon>
+          </VBtn>
         </div>
 
         <VSpacer class="d-none d-md-flex" />
