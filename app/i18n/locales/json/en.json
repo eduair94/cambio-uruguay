@@ -355,6 +355,21 @@
     "seeReviews": "See reviews",
     "thanksForSupport": "Thanks for your support!"
   },
+  "whereToChange": {
+    "title": "Where to exchange?",
+    "subtitle": "We tell you which exchange house is best for you based on the current market.",
+    "operation": "Operation",
+    "currency": "Currency",
+    "amount": "Amount",
+    "youSpend": "You spend",
+    "youReceive": "You receive",
+    "savings": "Save {amount}",
+    "marketAverage": "Market average",
+    "noData": "No quotes available for this currency right now.",
+    "aiLoading": "Generating recommendation...",
+    "aiLabel": "AI-generated recommendation",
+    "disclaimer": "Informational guidance, not financial advice."
+  },
   "ai": {
     "title": "AI Market Insights",
     "subtitle": "Intelligent analysis of exchange rates",

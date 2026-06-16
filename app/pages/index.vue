@@ -527,6 +527,9 @@
     <!-- AI Insights Section -->
     <AIInsights />
 
+    <!-- ¿Dónde cambiar? — AI-assisted "where to exchange" recommendation -->
+    <WhereToChange />
+
     <!-- Donation Card Component -->
     <DonationCard />
 

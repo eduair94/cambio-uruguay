@@ -365,6 +365,21 @@
     "seeReviews": "Ver reseñas",
     "thanksForSupport": "¡Gracias por tu apoyo!"
   },
+  "whereToChange": {
+    "title": "¿Dónde cambiar?",
+    "subtitle": "Te decimos en qué casa de cambio te conviene operar según el mercado actual.",
+    "operation": "Operación",
+    "currency": "Moneda",
+    "amount": "Monto",
+    "youSpend": "Pagás",
+    "youReceive": "Recibís",
+    "savings": "Ahorrás {amount}",
+    "marketAverage": "Promedio del mercado",
+    "noData": "No hay cotizaciones disponibles para esta moneda en este momento.",
+    "aiLoading": "Generando recomendación...",
+    "aiLabel": "Recomendación generada con IA",
+    "disclaimer": "Información orientativa, no asesoramiento financiero."
+  },
   "ai": {
     "title": "Insights del Mercado con IA",
     "subtitle": "Análisis inteligente de las cotizaciones",

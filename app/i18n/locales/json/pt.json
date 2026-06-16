@@ -348,6 +348,21 @@
   "feature6Title": "Código abierto",
   "feature6Description": "Nuestro código es open source y puede ser utilizado y mejorado por otros desarrolladores",
   "viewRepository": "Ver repositorio",
+  "whereToChange": {
+    "title": "Onde trocar?",
+    "subtitle": "Indicamos em qual casa de câmbio é melhor operar com base no mercado atual.",
+    "operation": "Operação",
+    "currency": "Moeda",
+    "amount": "Valor",
+    "youSpend": "Você paga",
+    "youReceive": "Você recebe",
+    "savings": "Economize {amount}",
+    "marketAverage": "Média do mercado",
+    "noData": "Não há cotações disponíveis para esta moeda no momento.",
+    "aiLoading": "Gerando recomendação...",
+    "aiLabel": "Recomendação gerada com IA",
+    "disclaimer": "Informação orientativa, não aconselhamento financeiro."
+  },
   "ai": {
     "title": "Insights de Mercado com IA",
     "subtitle": "Análise inteligente das cotações",
