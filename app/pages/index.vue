@@ -16,6 +16,9 @@
                 {{ t('simpleDescription') }}
               </p>
 
+              <!-- Trust signals: BCU source, coverage, freshness, Trustpilot -->
+              <TrustBar />
+
               <!-- Currency Converter Card -->
               <VCard class="exchange-card pa-6 mb-6" elevation="8">
                 <h2 class="text-h5 font-weight-bold mb-6 text-center">
@@ -97,6 +100,7 @@
                           :size="mobile ? 'small' : 'large'"
                           color="primary"
                           class="swap-btn"
+                          :aria-label="t('a11y.swap')"
                           @click="swapCurrencies"
                         >
                           <VIcon>mdi-swap-horizontal</VIcon>
@@ -393,7 +397,7 @@
                     {{ formatCurrency(exchange.rate) }} = 1 {{ exchange.code }}
                   </p>
                   <VChip
-                    :color="exchange.isRegulated ? 'green' : 'orange'"
+                    :color="exchange.isRegulated ? 'green-darken-3' : 'deep-orange-darken-4'"
                     size="small"
                     variant="elevated"
                   >
@@ -472,16 +476,14 @@
               <h3 class="text-h5 font-weight-bold mb-4">
                 {{ t('pillar.tipsTitle') }}
               </h3>
-              <VList class="tips-list bg-transparent pa-0 mb-6">
-                <VListItem v-for="tipNum in 4" :key="tipNum" class="px-0">
-                  <template #prepend>
-                    <VIcon color="success" class="mr-3">mdi-check-circle</VIcon>
-                  </template>
-                  <VListItemTitle class="text-body-1 text-grey-lighten-1 text-wrap">
+              <ul class="tips-list pa-0 mb-6">
+                <li v-for="tipNum in 4" :key="tipNum" class="d-flex align-start mb-3">
+                  <VIcon color="success" class="mr-3 mt-1">mdi-check-circle</VIcon>
+                  <span class="text-body-1 text-grey-lighten-1">
                     {{ t(`pillar.tip${tipNum}`) }}
-                  </VListItemTitle>
-                </VListItem>
-              </VList>
+                  </span>
+                </li>
+              </ul>
             </article>
           </VCol>
         </VRow>
@@ -501,11 +503,7 @@
         <VRow justify="center">
           <VCol cols="12" md="10" lg="8">
             <VExpansionPanels variant="accordion" class="faq-panels">
-              <VExpansionPanel
-                v-for="faqNum in 8"
-                :key="faqNum"
-                class="faq-panel mb-2"
-              >
+              <VExpansionPanel v-for="faqNum in 8" :key="faqNum" class="faq-panel mb-2">
                 <VExpansionPanelTitle class="text-body-1 font-weight-bold">
                   {{ t(`faq.q${faqNum}`) }}
                 </VExpansionPanelTitle>
@@ -1508,13 +1506,10 @@ const webApplicationSchema = computed(() => ({
     'API REST para desarrolladores',
   ],
   screenshot: 'https://cambio-uruguay.com/img/banner.png',
-  aggregateRating: {
-    '@type': 'AggregateRating',
-    ratingValue: '4.8',
-    reviewCount: '150',
-    bestRating: '5',
-    worstRating: '1',
-  },
+  // NOTE: a self-declared aggregateRating (4.8 / 150) was removed here. Google's
+  // structured-data policy disallows self-serving ratings not backed by verifiable
+  // on-page reviews and can trigger a manual action. Re-add only when sourced from a
+  // real provider (e.g. live Trustpilot count via widget/API), never hardcoded.
 }))
 
 // 2. FAQPage Schema
@@ -2002,6 +1997,10 @@ useSeoMeta({
 .pillar-text {
   font-size: 1.05rem;
   line-height: 1.8;
+}
+
+.tips-list {
+  list-style: none;
 }
 
 /* FAQ Section */

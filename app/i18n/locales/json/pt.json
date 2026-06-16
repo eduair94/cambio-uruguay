@@ -77,6 +77,34 @@
   "simpleTitle": "Cotação do Dólar no Uruguai Hoje",
   "simpleSubtitle": "Compare cotações do dólar e todas as moedas em mais de 40 casas de câmbio",
   "simpleDescription": "Atualizamos as cotações de compra e venda a cada 10 minutos. Encontre onde comprar ou vender dólares ao melhor preço em Montevidéu e todo o Uruguai.",
+  "trust": {
+    "regulated": "Dados do BCU",
+    "regulatedAria": "Cotações baseadas no registro oficial do Banco Central do Uruguai (BCU)",
+    "houses": "+40 casas de câmbio",
+    "updated": "Atualizado a cada 10 min",
+    "reviews": "Avaliações no Trustpilot"
+  },
+  "a11y": {
+    "swap": "Trocar moedas",
+    "expandDonation": "Abrir apoio ao projeto",
+    "closeDonation": "Fechar",
+    "menu": "Abrir menu",
+    "close": "Fechar menu"
+  },
+  "noticias": {
+    "nav": "Notícias",
+    "title": "Notícias do dólar no Uruguai",
+    "metaTitle": "Notícias do Dólar no Uruguai Hoje | Cambio Uruguay",
+    "metaDescription": "Últimas notícias sobre a cotação do dólar e a economia no Uruguai, atualizadas ao longo do dia. Depois compare as cotações em mais de 40 casas de câmbio.",
+    "intro": "Acompanhe as últimas notícias sobre o dólar, o peso uruguaio e a economia do país. Reunimos as manchetes dos principais veículos para você entender o contexto antes de comprar ou vender, e depois comparar a cotação em tempo real.",
+    "updatedAuto": "Atualizado automaticamente ao longo do dia",
+    "readMore": "Ler na fonte",
+    "empty": "Não há notícias disponíveis no momento. Tente novamente mais tarde.",
+    "ctaTitle": "Pronto para trocar?",
+    "ctaText": "Compare a cotação do dólar em mais de 40 casas de câmbio e encontre o melhor preço.",
+    "ctaButton": "Ver cotações",
+    "disclaimer": "As manchetes levam às suas fontes originais. Cambio Uruguay não é responsável pelo conteúdo de terceiros."
+  },
   "quickExchange": "Câmbio Rápido",
   "quickExchangeForward": "Você receberia",
   "quickExchangeReverse": "Você precisa vender",

@@ -7,19 +7,19 @@ class Tradelix extends Cambio {
   name = "Tradelix";
   bcu = "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2496";
   private conversions = {
-    dolar: {
+    usd: {
       code: "USD",
       type: "",
     },
-    "peso arg.": {
+    ars: {
       code: "ARS",
       type: "",
     },
-    real: {
+    brl: {
       code: "BRL",
       type: "",
     },
-    euro: {
+    eur: {
       code: "EUR",
       type: "",
     },
@@ -29,16 +29,25 @@ class Tradelix extends Cambio {
   async get_data(): Promise<CambioObj[]> {
     const web_data = await axios.get(this.website).then((res) => res.data);
     const $ = load(web_data);
-    const result = $("table")
+    // Layout: .container .row > 3 .col (currencies | COMPRA | VENTA),
+    // each with .value cells aligned by row index. Money cells are "$NN.NN".
+    const cols = $(".container .row .col");
+    const names = cols
       .eq(0)
-      .find("tbody tr")
-      .map((i: number, element) => ({
-        moneda: $(element).find("td:nth-of-type(2) b").text().trim().toLowerCase(),
-        compra: this.fix_money($(element).find("td:nth-of-type(3)").text().trim()),
-        venta: this.fix_money($(element).find("td:nth-of-type(4)").text().trim()),
-      }))
-      .get()
-      .filter((el) => el.compra);
+      .find(".value .currency-name, .value .currency-name-eur")
+      .map((i: number, el) => $(el).text().trim().toLowerCase())
+      .get();
+    const parseCol = (idx: number) =>
+      cols
+        .eq(idx)
+        .find(".value")
+        .map((i: number, el) => this.fix_money($(el).text().replace(/[^0-9.,]/g, "").trim()))
+        .get();
+    const compras = parseCol(1);
+    const ventas = parseCol(2);
+    const result = names
+      .map((moneda, i) => ({ moneda, compra: compras[i], venta: ventas[i] }))
+      .filter((el) => el.compra && this.conversions[el.moneda]);
     const f = result.map((el) => {
       const { code, type } = this.conversions[el.moneda];
       return {

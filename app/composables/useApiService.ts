@@ -19,6 +19,12 @@ interface DistanceResponse {
 interface HealthResponse {
   lastSync?: string
   status?: string
+  sync?: {
+    available?: boolean
+    lastSync?: string
+    minutesAgo?: number
+    [key: string]: any
+  }
   [key: string]: any // Allow additional properties
 }
 

@@ -417,7 +417,7 @@ export default defineNuxtConfig({
   // Robots Configuration
   robots: {
     disallow: ['/admin/', '/server/', '/_nuxt/'],
-    allow: ['/', '/avanzado', '/historico', '/sucursales'],
+    allow: ['/', '/avanzado', '/historico', '/sucursales', '/noticias'],
     sitemap: 'https://cambio-uruguay.com/sitemap.xml',
     credits: false,
   },
@@ -461,6 +461,9 @@ export default defineNuxtConfig({
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'https://cambio-uruguay.com',
       // Client-side API URL
       apiBase: process.env.NUXT_PUBLIC_API_BASE || 'https://api.cambio-uruguay.com',
+      // Microsoft Clarity project id (session replay + heatmaps). Empty -> disabled.
+      // Set via env NUXT_PUBLIC_CLARITY_ID. See plugins/clarity.client.ts.
+      clarityId: process.env.NUXT_PUBLIC_CLARITY_ID || '',
     },
   },
 

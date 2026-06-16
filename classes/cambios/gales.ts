@@ -7,19 +7,19 @@ class CambioGales extends Cambio {
   name = "Cambio Gales";
   bcu = "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2566";
   private conversions = {
-    "D�lar": {
+    "DOLAR USA": {
       code: "USD",
       type: "",
     },
-    "Peso Arg": {
+    "PESO ARGENTINO": {
       code: "ARS",
       type: "",
     },
-    Real: {
+    REAL: {
       code: "BRL",
       type: "",
     },
-    Euro: {
+    EURO: {
       code: "EUR",
       type: "",
     },
@@ -29,14 +29,14 @@ class CambioGales extends Cambio {
   async get_data(): Promise<CambioObj[]> {
     const web_data = await axios.get(this.website).then((res) => res.data);
     const $ = load(web_data);
-    const result = $("table.monedas tbody tr")
+    const result = $("table.currency-table tbody tr")
       .map((i: number, element) => ({
-        moneda: $(element).find("td:nth-of-type(1)").text().trim(),
+        moneda: $(element).find("td:nth-of-type(1)").text().trim().toUpperCase(),
         compra: this.fix_money($(element).find("td:nth-of-type(2)").text().trim()),
         venta: this.fix_money($(element).find("td:nth-of-type(3)").text().trim()),
       }))
-      .get();
-    console.log("RESULT", result);
+      .get()
+      .filter((el) => this.conversions[el.moneda]);
     const f = result.map((el) => {
       const { code, type } = this.conversions[el.moneda];
       return {
