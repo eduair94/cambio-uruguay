@@ -46,16 +46,32 @@
                   <VRow class="mb-0 mb-md-4">
                     <VCol cols="12" md="6">
                       <VTextField
-                        v-model="amountInput"
+                        v-model="amountDisplay"
                         hide-details
                         :label="t('enterAmount')"
                         variant="outlined"
                         density="comfortable"
-                        type="number"
-                        min="1"
+                        type="text"
+                        inputmode="decimal"
                         class="amount-input"
+                        data-testid="amount-input"
                         prepend-inner-icon="mdi-cash"
                       />
+                      <!-- Quick preset amount chips -->
+                      <div class="preset-chips d-flex flex-wrap ga-2 mt-3">
+                        <VChip
+                          v-for="preset in presetAmounts"
+                          :key="`preset-${preset}`"
+                          size="small"
+                          variant="outlined"
+                          color="primary"
+                          class="preset-chip"
+                          :data-testid="`preset-${preset}`"
+                          @click="setPresetAmount(preset)"
+                        >
+                          {{ formatAmount(preset, 0) }}
+                        </VChip>
+                      </div>
                     </VCol>
                     <VCol cols="12" md="6">
                       <VAutocomplete
@@ -100,6 +116,7 @@
                           :size="mobile ? 'small' : 'large'"
                           color="primary"
                           class="swap-btn"
+                          data-testid="swap-btn"
                           :aria-label="t('a11y.swap')"
                           @click="swapCurrencies"
                         >
@@ -126,6 +143,26 @@
                     </VCol>
                   </VRow>
 
+                  <!-- Quick currency-pair shortcuts -->
+                  <div class="shortcut-chips d-flex flex-wrap justify-center ga-2 mt-2 mt-md-0">
+                    <span class="text-caption text-grey-lighten-1 align-self-center mr-1">
+                      {{ t('quickExchangeShortcuts') }}:
+                    </span>
+                    <VChip
+                      v-for="pair in currencyShortcuts"
+                      :key="`pair-${pair.from}-${pair.to}`"
+                      size="small"
+                      :variant="isActiveShortcut(pair) ? 'elevated' : 'outlined'"
+                      :color="isActiveShortcut(pair) ? 'success' : 'primary'"
+                      class="shortcut-chip"
+                      @click="applyCurrencyShortcut(pair)"
+                    >
+                      {{ pair.from }}
+                      <VIcon size="14" class="mx-1">mdi-arrow-right</VIcon>
+                      {{ pair.to }}
+                    </VChip>
+                  </div>
+
                   <VCardActions class="d-flex justify-end pa-0 pt-md-3 pb-3">
                     <VBtn
                       color="primary"
@@ -133,6 +170,7 @@
                       size="large"
                       :loading="loading"
                       class="w-100 w-md-auto my-5 my-md-0 px-5 convert-btn"
+                      data-testid="convert-btn"
                       @click.prevent="updateExchange"
                     >
                       <VIcon start>mdi-calculator</VIcon>
@@ -145,6 +183,7 @@
                     class="conversion-result pa-4 mb-md-4"
                     color="rgba(76, 175, 80, 0.1)"
                     variant="outlined"
+                    data-testid="conversion-result"
                   >
                     <!-- Show selected exchange house name if not 'best' -->
                     <div v-if="selectedExchangeHouse !== 'best'" class="text-center mb-3">
@@ -163,7 +202,11 @@
                           <span class="amount-text">
                             {{ formatCurrency(isForward ? amount : leftForReverse) }}
                           </span>
-                          <span v-if="selectedCurrency" class="currency-name">
+                          <span
+                            v-if="selectedCurrency"
+                            class="currency-name"
+                            data-testid="from-currency"
+                          >
                             {{ t('codes.' + selectedCurrency) }}
                           </span>
                         </div>
@@ -180,10 +223,14 @@
 
                       <VCol cols="5" sm="4" class="text-center align-self-start">
                         <div class="conversion-display">
-                          <span class="amount-text converted">
+                          <span class="amount-text converted" data-testid="result-amount">
                             {{ formatCurrency(desiredRightAmount) }}
                           </span>
-                          <span v-if="selectedTargetCurrency" class="currency-name">
+                          <span
+                            v-if="selectedTargetCurrency"
+                            class="currency-name"
+                            data-testid="to-currency"
+                          >
                             {{ t('codes.' + selectedTargetCurrency) }}
                           </span>
                         </div>
@@ -239,6 +286,36 @@
                         </div>
                       </VCol>
                     </VRow>
+
+                    <!-- Savings vs market average hint -->
+                    <div
+                      v-if="showSavings"
+                      class="savings-hint d-flex align-center justify-center mt-3"
+                    >
+                      <VChip
+                        color="success"
+                        variant="tonal"
+                        size="small"
+                        prepend-icon="mdi-piggy-bank"
+                      >
+                        {{ savingsText }}
+                      </VChip>
+                    </div>
+
+                    <!-- Copy result to clipboard -->
+                    <div class="d-flex justify-center mt-3">
+                      <VBtn
+                        variant="tonal"
+                        color="success"
+                        size="small"
+                        class="copy-result-btn"
+                        :aria-label="t('quickExchangeCopy')"
+                        @click="copyResult"
+                      >
+                        <VIcon start>mdi-content-copy</VIcon>
+                        {{ t('quickExchangeCopy') }}
+                      </VBtn>
+                    </div>
                   </VCard>
 
                   <!-- Dual Best Rates: show both Sell and Buy for the subject currency; order by user intent -->
@@ -339,6 +416,13 @@
                   </template>
                 </template>
               </VCard>
+
+              <!-- Copy confirmation snackbar -->
+              <VSnackbar v-model="copySnackbar" color="success" :timeout="2000" location="bottom">
+                <VIcon start>mdi-check-circle</VIcon>
+                {{ t('quickExchangeCopied') }}
+              </VSnackbar>
+
               <div class="mt-5">
                 <!-- Advanced Mode Button -->
                 <VBtn
@@ -690,6 +774,13 @@ import DirectionToggle from '@/components/DirectionToggle.vue'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useDisplay } from 'vuetify'
+import {
+  convert as convertAmount,
+  formatAmount,
+  marketAverageSavings,
+  parseAmount,
+  type RateRow,
+} from '@/utils/conversion'
 
 const { mobile } = useDisplay()
 
@@ -792,7 +883,9 @@ const selectedCurrencyInput = ref(
 const selectedTargetCurrencyInput = ref(
   getInitialString(route.query.to as string, storedData?.to, 'UYU')
 )
-const amountInput = ref(
+// Numeric source of truth for the entered amount (kept as a number so all
+// downstream math/toggling stays unchanged).
+const amountInput = ref<number>(
   (() => {
     const queryAmount = Number(route.query.amount)
     if (queryAmount && queryAmount > 0) return queryAmount
@@ -800,6 +893,41 @@ const amountInput = ref(
     return 100
   })()
 )
+
+// es-UY thousands-formatted view of `amountInput` for the text field. Reading
+// formats the current number; writing parses the user's input back to a number
+// so numeric behavior is preserved (see utils/conversion.ts).
+const amountDisplay = computed<string>({
+  get: () => (amountInput.value > 0 ? formatAmount(amountInput.value) : ''),
+  set: (raw: string) => {
+    amountInput.value = parseAmount(raw)
+  },
+})
+
+// Quick preset amounts the user can tap to fill the field.
+const presetAmounts: readonly number[] = [100, 500, 1000, 5000]
+const setPresetAmount = (value: number): void => {
+  amountInput.value = value
+  updateExchange()
+}
+
+// Quick currency-pair shortcuts (from -> to) as clickable chips.
+interface CurrencyPair {
+  from: string
+  to: string
+}
+const currencyShortcuts: readonly CurrencyPair[] = [
+  { from: 'USD', to: 'UYU' },
+  { from: 'UYU', to: 'USD' },
+  { from: 'USD', to: 'EUR' },
+]
+const applyCurrencyShortcut = (pair: CurrencyPair): void => {
+  selectedCurrencyInput.value = pair.from
+  selectedTargetCurrencyInput.value = pair.to
+  updateExchange()
+}
+const isActiveShortcut = (pair: CurrencyPair): boolean =>
+  selectedCurrency.value === pair.from && selectedTargetCurrency.value === pair.to
 
 // Exchange house selector - 'best' means show best rate
 const selectedExchangeHouseInput = ref(
@@ -1045,42 +1173,9 @@ const features = computed<Feature[]>(() => [
 
 // (removed) legacy helpers replaced by dual sections
 
-// Exchange rate calculation
-const getExchangeRate = (fromCurrency: string, toCurrency: string): number => {
-  if (!realExchangeData.value.length) return 0
-
-  if (fromCurrency === toCurrency) return 1
-
-  // Filter data by selected exchange house if not 'best'
-  const filterByHouse = (data: typeof realExchangeData.value) => {
-    if (selectedExchangeHouse.value === 'best') return data
-    return data.filter(item => item.origin === selectedExchangeHouse.value)
-  }
-
-  // If converting from UYU to another currency
-  if (toCurrency === 'UYU') {
-    const filteredData = filterByHouse(realExchangeData.value)
-    const currencyData = filteredData
-      .sort((a, b) => b.buy - a.buy)
-      .find(item => item.code === fromCurrency && item.buy > 0)
-    return currencyData ? currencyData.buy : 0
-  }
-
-  // If converting to UYU from another currency
-  if (fromCurrency === 'UYU') {
-    const filteredData = filterByHouse(realExchangeData.value)
-    const currencyData = filteredData
-      .sort((a, b) => a.sell - b.sell)
-      .find(item => item.code === toCurrency && item.sell > 0)
-    return currencyData?.sell ? 1 / currencyData.sell : 0
-  }
-
-  // Cross-currency conversion through UYU
-  const fromToUYU = getExchangeRate(fromCurrency, 'UYU')
-  const uyuToTarget = getExchangeRate('UYU', toCurrency)
-
-  return fromToUYU * uyuToTarget
-}
+// `ExchangeItem` is structurally a superset of `RateRow` (origin/code/buy/sell),
+// so the pure conversion module consumes the live data directly.
+const rateRows = computed<RateRow[]>(() => realExchangeData.value as RateRow[])
 
 const conversionResult = ref({
   rate: 0,
@@ -1119,13 +1214,21 @@ const leftForReverse = ref(0)
 
 // Conversion result computed property
 const setConversionRate = () => {
-  const rate = Number(getExchangeRate(selectedCurrency.value, selectedTargetCurrency.value))
-  const reverseRate = Number(getExchangeRate(selectedTargetCurrency.value, selectedCurrency.value))
+  // Core forward/reverse math comes from the pure util (unit-tested).
+  const core = convertAmount(
+    rateRows.value,
+    Number(amount.value),
+    selectedCurrency.value,
+    selectedTargetCurrency.value,
+    selectedExchangeHouse.value
+  )
+  const rate = core.rate
+  const reverseRate = core.reverseRate
   const rawConvertedAmount = Number(amount.value) * rate
   conversionResult.value = {
     rate,
-    invertedRate: rate > 0 ? 1 / rate : 0,
-    convertedAmount: round2(rawConvertedAmount),
+    invertedRate: core.invertedRate,
+    convertedAmount: core.convertedAmount,
     reverseRate,
     reverseReceiveAmount: round2(Number(amount.value) * reverseRate),
   }
@@ -1200,6 +1303,43 @@ const intentIsSellingSubject = computed(() => {
   if (!fromIsSubject && !toIsSubject) return false
   return isForward.value ? fromIsSubject : !fromIsSubject
 })
+
+// Savings of the best rate vs. the market average for the subject currency.
+// Only meaningful when one side is UYU and there are >= 2 quotes to average.
+const savingsInfo = computed(() =>
+  marketAverageSavings(
+    rateRows.value,
+    subjectCode.value,
+    Number(amount.value),
+    intentIsSellingSubject.value ? 'sell' : 'buy'
+  )
+)
+const showSavings = computed(
+  () =>
+    savingsInfo.value.savings > 0 &&
+    selectedExchangeHouse.value === 'best' &&
+    (selectedCurrency.value === 'UYU' || selectedTargetCurrency.value === 'UYU')
+)
+const savingsText = computed(() =>
+  t('quickExchangeSavings', {
+    amount: formatCurrency(savingsInfo.value.savings),
+  })
+)
+
+// Copy-result-to-clipboard with a confirmation snackbar.
+const copySnackbar = ref(false)
+// The headline converted figure currently shown on the right side.
+const copyResult = async (): Promise<void> => {
+  const text = formatCurrency(desiredRightAmount.value)
+  try {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      await navigator.clipboard.writeText(text)
+    }
+    copySnackbar.value = true
+  } catch (e) {
+    console.error('Clipboard copy failed:', e)
+  }
+}
 
 // Build top 4 lists for subject currency: sell (houses buy) and buy (houses sell)
 const top4SellRatesForSubject = computed(() => {
@@ -1842,6 +1982,26 @@ useSeoMeta({
     font-size: 1.2em;
     font-weight: 500;
   }
+}
+
+/* Quick preset + shortcut chips */
+.preset-chip,
+.shortcut-chip {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.preset-chip:hover,
+.shortcut-chip:hover {
+  transform: translateY(-1px);
+}
+
+.shortcut-chips {
+  row-gap: 0.5rem;
+}
+
+.copy-result-btn {
+  text-transform: none;
 }
 
 /* Currency Selection Row */

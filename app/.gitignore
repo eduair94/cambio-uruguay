@@ -91,3 +91,6 @@ sw.*
 android
 
 .output
+# Playwright
+test-results/
+playwright-report/
