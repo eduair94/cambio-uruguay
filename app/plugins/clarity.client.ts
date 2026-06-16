@@ -20,7 +20,8 @@ export default defineNuxtPlugin(() => {
       t.async = true
       t.src = 'https://www.clarity.ms/tag/' + i
       const y = l.getElementsByTagName(r)[0]
-      y.parentNode!.insertBefore(t, y)
+      if (y?.parentNode) y.parentNode.insertBefore(t, y)
+      else l.head.appendChild(t)
     })(window, document, 'clarity', 'script', clarityId)
   }, 3000)
 })

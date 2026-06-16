@@ -27,14 +27,14 @@ const decode = (s: string) =>
     .replace(/\s+/g, ' ')
     .trim()
 
-const tag = (block: string, name: string) => {
+const tag = (block: string, name: string): string => {
   const m = block.match(new RegExp(`<${name}[^>]*>([\\s\\S]*?)</${name}>`))
-  return m ? decode(m[1]) : ''
+  return decode(m?.[1] ?? '')
 }
 
 function parseFeed(xml: string): NewsItem[] {
   return [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].map(m => {
-    const block = m[1]
+    const block = m[1] ?? ''
     const rawTitle = tag(block, 'title')
     const source = tag(block, 'source')
     const title =
