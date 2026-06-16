@@ -62,7 +62,7 @@ const PROMPT_LABELS: Record<string, Record<string, string>> = {
     exchangeHouses: "casas de cambio",
     currencies: "monedas",
     operationTypes: "tipos de operación",
-    typeReference: "Referencia de tipos: BILLETE = efectivo, CABLE = transferencia bancaria internacional, TRANSFERENCIA = transferencia bancaria local",
+    typeReference: "Referencia de tipos: BILLETE = efectivo, CABLE = transferencia bancaria internacional, TRANSFERENCIA = transferencia bancaria local, INTERBANCARIO = tipo de cambio de referencia exclusivo entre bancos, NO disponible para el público (no se puede comprar ni vender a este precio). Cuando recomiendes dónde comprar o vender, usa SOLO cotizaciones de tipo BILLETE, CABLE o TRANSFERENCIA. Las cotizaciones INTERBANCARIO solo sirven como referencia del mercado mayorista.",
     currentRates: "Datos actuales de cotizaciones",
     quotes: "cotizaciones de",
     buy: "Compra",
@@ -117,7 +117,7 @@ Sé conciso y directo. Usa los nombres reales de las casas de cambio.`,
     exchangeHouses: "exchange houses",
     currencies: "currencies",
     operationTypes: "operation types",
-    typeReference: "Type reference: BILLETE = cash, CABLE = international wire transfer, TRANSFERENCIA = local bank transfer",
+    typeReference: "Type reference: BILLETE = cash, CABLE = international wire transfer, TRANSFERENCIA = local bank transfer, INTERBANCARIO = interbank reference rate exclusive to banks, NOT available to the public (you cannot buy or sell at this price). When recommending where to buy or sell, use ONLY BILLETE, CABLE or TRANSFERENCIA quotes. INTERBANCARIO quotes are only useful as a wholesale market reference.",
     currentRates: "Current exchange rates",
     quotes: "quotes from",
     buy: "Buy",
@@ -172,7 +172,7 @@ Be concise and direct. Use the real names of the exchange houses.`,
     exchangeHouses: "casas de câmbio",
     currencies: "moedas",
     operationTypes: "tipos de operação",
-    typeReference: "Referência de tipos: BILLETE = dinheiro/espécie, CABLE = transferência bancária internacional, TRANSFERENCIA = transferência bancária local",
+    typeReference: "Referência de tipos: BILLETE = dinheiro/espécie, CABLE = transferência bancária internacional, TRANSFERENCIA = transferência bancária local, INTERBANCARIO = taxa de câmbio de referência exclusiva entre bancos, NÃO disponível ao público (não é possível comprar nem vender a este preço). Ao recomendar onde comprar ou vender, use APENAS cotações do tipo BILLETE, CABLE ou TRANSFERENCIA. As cotações INTERBANCARIO servem apenas como referência do mercado atacadista.",
     currentRates: "Dados atuais de cotações",
     quotes: "cotações de",
     buy: "Compra",
@@ -258,7 +258,13 @@ class AIService {
   private async getCached(key: string): Promise<InsightResponse | null> {
     const data = await redisCache.get<InsightResponse>(key);
     if (data && data.insight !== "No insight generated") {
-      return { ...data, cached: true };
+      return {
+        ...data,
+        cached: true,
+        // Ensure fields always exist (old cache entries may lack them)
+        truncated: data.truncated ?? false,
+        finishReason: data.finishReason ?? "stop",
+      };
     }
     return null;
   }
