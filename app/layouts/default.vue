@@ -59,6 +59,13 @@
           <VListItemTitle>{{ $t('noticias.nav') }}</VListItemTitle>
         </VListItem>
 
+        <VListItem :to="localePath('/comparar')" @click="drawer = false">
+          <template #prepend>
+            <VIcon>mdi-chart-multiple</VIcon>
+          </template>
+          <VListItemTitle>{{ $t('compare.nav') }}</VListItemTitle>
+        </VListItem>
+
         <VListItem
           href="https://ko-fi.com/cambio_uruguay"
           target="_blank"
@@ -175,6 +182,17 @@
         >
           <VIcon start small>mdi-newspaper-variant-outline</VIcon>
           {{ $t('noticias.nav') }}
+        </VBtn>
+
+        <!-- Comparar -->
+        <VBtn
+          :to="localePath('/comparar')"
+          variant="text"
+          class="text-capitalize nav-btn"
+          :class="{ 'nav-btn--active': isActiveRoute('/comparar') }"
+        >
+          <VIcon start small>mdi-chart-multiple</VIcon>
+          {{ $t('compare.nav') }}
         </VBtn>
 
         <!-- Donar -->
