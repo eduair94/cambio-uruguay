@@ -99,6 +99,7 @@ export default defineEventHandler(async _event => {
     addUrlsForAllLocales('/historico', 0.9, 'daily') // Historico main page
     addUrlsForAllLocales('/sucursales', 0.9, 'daily') // Sucursales main page
     addUrlsForAllLocales('/noticias', 0.7, 'hourly') // Noticias del dólar (news)
+    addUrlsForAllLocales('/comparar', 0.8, 'daily') // Compare exchange houses over time
     addUrlsForAllLocales('/offline', 0.3, 'monthly') // Offline page
 
     // Add /historico/:origin routes for all locales
