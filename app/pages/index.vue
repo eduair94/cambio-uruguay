@@ -823,6 +823,18 @@ const apiService = useApiService()
 const route = useRoute()
 const router = useRouter()
 
+// Branded OG image with the live USD rate (og-rate route is cached 10 min).
+const { data: ogRate } = await useFetch<{ buy: number | null; sell: number | null }>(
+  '/api/og-rate',
+  { default: () => ({ buy: null, sell: null }) }
+)
+defineOgImageComponent('Cambio', {
+  title: 'Cotización del Dólar en Uruguay',
+  subtitle: 'Compará +40 casas de cambio en tiempo real',
+  rateBuy: ogRate.value?.buy ?? null,
+  rateSell: ogRate.value?.sell ?? null,
+})
+
 // localStorage key for form persistence
 const STORAGE_KEY = 'cambio-uruguay-home-form'
 

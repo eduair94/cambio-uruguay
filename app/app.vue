@@ -14,6 +14,9 @@
 </template>
 
 <script setup lang="ts">
+// Site-wide default branded OG image. Pages override via defineOgImageComponent.
+defineOgImageComponent('Cambio')
+
 // Handle hydration and errors
 onErrorCaptured(error => {
   console.error('App error captured:', error)
