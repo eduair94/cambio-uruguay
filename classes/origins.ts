@@ -69,8 +69,8 @@ export const origins = {
   cambio_oriental: CambioOriental,
   //baluma_cambio: BalumaCambio,
   gales: CambioGales,
-  cambio_vexel: CambioVexel,
-  cambio_velso: CambioVelso,
+  // cambio_vexel: CambioVexel, // 2026-06: web server down (DNS resolves, no HTTP response). Re-enable when site is back.
+  // cambio_velso: CambioVelso, // 2026-06: published rate table abandoned (last modified 12/02/2025). Re-enable when site updates again.
   tradelix: Tradelix,
   cambio_sicurezza: CambioSicurezza,
   cambio_pernas: CambioPernas,
@@ -80,7 +80,7 @@ export const origins = {
   cambio_ingles: CambioIngles,
   bcu: CambioBCU,
   cambilex: CambioCambilex,
-  aspen: CambioAspen,
+  // aspen: CambioAspen, // 2026-06: site misconfigured (root 301 -> broken path, /sitio returns 503). Re-enable when fixed.
   matriz: CambioMatriz,
   cambio18: Cambio18,
   indumex: CambioIndumex,
