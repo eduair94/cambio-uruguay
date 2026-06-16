@@ -57,7 +57,7 @@
   "paying_with": "Pagando con",
   "buying_with": "Comprando con",
   "hideWidgets": "Esconder widgets / chat",
-  "here": "aquí",
+  "here": "en Trustpilot",
   "pay": "Pagas en",
   "get": "Obtienes en",
   "searchExchangeHouse": "Buscar casa de cambio (ej: Itau, Varlix)",
@@ -108,7 +108,10 @@
     "ctaTitle": "¿Listo para cambiar?",
     "ctaText": "Compará la cotización del dólar en más de 40 casas de cambio y encontrá el mejor precio.",
     "ctaButton": "Ver cotizaciones",
-    "disclaimer": "Los titulares enlazan a sus fuentes originales. Cambio Uruguay no es responsable del contenido de terceros."
+    "disclaimer": "Los titulares enlazan a sus fuentes originales. Cambio Uruguay no es responsable del contenido de terceros.",
+    "aiTitle": "Resumen y tendencia con IA",
+    "aiBadge": "IA",
+    "aiLoading": "Analizando noticias y cotizaciones..."
   },
   "quickExchange": "Cambio Rápido",
   "quickExchangeForward": "Recibirías",

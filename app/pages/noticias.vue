@@ -11,6 +11,25 @@
         </VChip>
       </header>
 
+      <!-- AI pulse: news summary + dollar trend (client-only, never blocks SSR) -->
+      <ClientOnly>
+        <VCard v-if="aiPending || aiHtml" class="ai-pulse mb-8 pa-5">
+          <div class="d-flex align-center mb-3">
+            <VIcon color="primary" class="mr-2">mdi-robot-outline</VIcon>
+            <span class="text-subtitle-1 font-weight-bold">{{ t('noticias.aiTitle') }}</span>
+            <VChip size="x-small" color="primary" variant="tonal" class="ml-2 font-weight-bold">
+              {{ t('noticias.aiBadge') }}
+            </VChip>
+          </div>
+          <div v-if="aiPending" class="d-flex align-center text-grey-lighten-1 text-body-2">
+            <VProgressCircular indeterminate size="20" width="2" color="primary" class="mr-3" />
+            {{ t('noticias.aiLoading') }}
+          </div>
+          <!-- eslint-disable-next-line vue/no-v-html -->
+          <div v-else class="ai-pulse-content" v-html="aiHtml" />
+        </VCard>
+      </ClientOnly>
+
       <!-- News grid -->
       <VRow v-if="news && news.length">
         <VCol v-for="item in news" :key="item.link" cols="12" sm="6" md="4">
@@ -51,12 +70,8 @@
       <p class="text-caption text-grey-darken-1 text-center mt-6">{{ t('noticias.disclaimer') }}</p>
 
       <!-- CTA back to comparator (internal link for SEO + conversion) -->
-      <VCard
-        class="cta-news my-8 pa-6 text-center"
-        color="rgba(33,150,243,0.08)"
-        variant="outlined"
-      >
-        <h2 class="text-h6 font-weight-bold mb-2">{{ t('noticias.ctaTitle') }}</h2>
+      <VCard class="cta-news my-8 pa-6 text-center" variant="flat">
+        <h2 class="text-h6 font-weight-bold mb-2 text-white">{{ t('noticias.ctaTitle') }}</h2>
         <p class="text-body-2 text-grey-lighten-1 mb-4">{{ t('noticias.ctaText') }}</p>
         <VBtn :to="localePath('/')" color="primary" variant="elevated">
           <VIcon start>mdi-chart-line</VIcon>
@@ -68,6 +83,9 @@
 </template>
 
 <script setup lang="ts">
+import { marked } from 'marked'
+import DOMPurify from 'isomorphic-dompurify'
+
 interface NewsItem {
   title: string
   link: string
@@ -82,6 +100,48 @@ const localePath = useLocalePath()
 const { data: news } = await useFetch<NewsItem[]>('/api/news', {
   key: 'news-uy',
   default: () => [],
+})
+
+// AI summary + dollar trend — client-lazy so the slow/cold AI call never blocks SSR.
+const { data: ai, pending: aiPending } = useLazyFetch<{ insight: string | null }>('/api/news-ai', {
+  query: { lang: locale },
+  server: false,
+  default: () => ({ insight: null }),
+})
+
+marked.setOptions({ breaks: true, gfm: true })
+const aiHtml = computed(() => {
+  const txt = ai.value?.insight
+  if (!txt) return ''
+  const html = marked.parse(txt) as string
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: [
+      'h1',
+      'h2',
+      'h3',
+      'h4',
+      'h5',
+      'p',
+      'br',
+      'hr',
+      'strong',
+      'em',
+      'ul',
+      'ol',
+      'li',
+      'table',
+      'thead',
+      'tbody',
+      'tr',
+      'th',
+      'td',
+      'blockquote',
+      'code',
+      'pre',
+    ],
+    ALLOWED_ATTR: ['class'],
+    ALLOW_DATA_ATTR: false,
+  })
 })
 
 const relativeDate = (dateStr: string) => {
@@ -137,6 +197,59 @@ useHead({
 .news-intro {
   max-width: 720px;
   line-height: 1.7;
+}
+
+/* Readable CTA on dark theme (avoid Vuetify outlined `color` tinting the text) */
+.cta-news {
+  background: rgba(33, 150, 243, 0.1);
+  border: 1px solid rgba(33, 150, 243, 0.28);
+  border-radius: 12px;
+}
+
+.ai-pulse {
+  background: linear-gradient(135deg, rgba(33, 150, 243, 0.1), rgba(124, 77, 255, 0.07));
+  border: 1px solid rgba(33, 150, 243, 0.25);
+  border-radius: 14px;
+}
+
+.ai-pulse-content :deep(h1),
+.ai-pulse-content :deep(h2),
+.ai-pulse-content :deep(h3) {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0.7rem 0 0.3rem;
+  color: #fff;
+}
+.ai-pulse-content :deep(p) {
+  margin: 0.4rem 0;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.86);
+}
+.ai-pulse-content :deep(strong) {
+  color: #fff;
+}
+.ai-pulse-content :deep(em) {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.86em;
+}
+.ai-pulse-content :deep(ul),
+.ai-pulse-content :deep(ol) {
+  padding-left: 1.2rem;
+  color: rgba(255, 255, 255, 0.86);
+}
+.ai-pulse-content :deep(li) {
+  margin: 0.2rem 0;
+}
+.ai-pulse-content :deep(table) {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.5rem 0;
+}
+.ai-pulse-content :deep(th),
+.ai-pulse-content :deep(td) {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  padding: 0.3rem 0.5rem;
+  font-size: 0.85rem;
 }
 
 .news-card {

@@ -59,7 +59,7 @@
   "paying_with": "Paying with",
   "buying_with": "Buying with",
   "hideWidgets": "Hide chat / widgets",
-  "here": "here",
+  "here": "on Trustpilot",
   "pay": "You pay",
   "get": "You get",
   "searchExchangeHouse": "Search exchange house (e.g., Itau, Varlix)",
@@ -105,7 +105,10 @@
     "ctaTitle": "Ready to exchange?",
     "ctaText": "Compare the dollar rate across 40+ exchange houses and find the best price.",
     "ctaButton": "View rates",
-    "disclaimer": "Headlines link to their original sources. Cambio Uruguay is not responsible for third-party content."
+    "disclaimer": "Headlines link to their original sources. Cambio Uruguay is not responsible for third-party content.",
+    "aiTitle": "AI summary & trend",
+    "aiBadge": "AI",
+    "aiLoading": "Analyzing news and rates..."
   },
   "quickExchange": "Quick Exchange",
   "quickExchangeForward": "You would receive",
