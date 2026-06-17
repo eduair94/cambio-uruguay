@@ -66,6 +66,20 @@
           <VListItemTitle>{{ $t('compare.nav') }}</VListItemTitle>
         </VListItem>
 
+        <VListItem :to="localePath('/guias')" @click="drawer = false">
+          <template #prepend>
+            <VIcon>mdi-book-open-variant</VIcon>
+          </template>
+          <VListItemTitle>{{ $t('guias.nav') }}</VListItemTitle>
+        </VListItem>
+
+        <VListItem :to="localePath('/acerca')" @click="drawer = false">
+          <template #prepend>
+            <VIcon>mdi-information-outline</VIcon>
+          </template>
+          <VListItemTitle>{{ $t('acerca.nav') }}</VListItemTitle>
+        </VListItem>
+
         <VListItem
           href="https://ko-fi.com/cambio_uruguay"
           target="_blank"
@@ -193,6 +207,28 @@
         >
           <VIcon start small>mdi-chart-multiple</VIcon>
           {{ $t('compare.nav') }}
+        </VBtn>
+
+        <!-- Guías -->
+        <VBtn
+          :to="localePath('/guias')"
+          variant="text"
+          class="text-capitalize nav-btn"
+          :class="{ 'nav-btn--active': isActiveRoute('/guias') }"
+        >
+          <VIcon start small>mdi-book-open-variant</VIcon>
+          {{ $t('guias.nav') }}
+        </VBtn>
+
+        <!-- Acerca -->
+        <VBtn
+          :to="localePath('/acerca')"
+          variant="text"
+          class="text-capitalize nav-btn"
+          :class="{ 'nav-btn--active': isActiveRoute('/acerca') }"
+        >
+          <VIcon start small>mdi-information-outline</VIcon>
+          {{ $t('acerca.nav') }}
         </VBtn>
 
         <!-- Donar -->

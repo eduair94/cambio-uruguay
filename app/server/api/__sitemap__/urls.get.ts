@@ -1,3 +1,6 @@
+import { listCurrencySlugs } from '../../../utils/currencyPages'
+import { guideSlugs } from '../../../utils/guides'
+
 export default defineEventHandler(async _event => {
   try {
     // Fetch data from the API
@@ -119,7 +122,14 @@ export default defineEventHandler(async _event => {
     addUrlsForAllLocales('/noticias', 0.7, 'hourly') // Noticias del dólar (news)
     addUrlsForAllLocales('/preguntas-frecuentes', 0.7, 'weekly') // FAQ hub
     addUrlsForAllLocales('/comparar', 0.8, 'daily') // Compare exchange houses over time
+    addUrlsForAllLocales('/guias', 0.7, 'weekly') // Editorial guides hub
+    addUrlsForAllLocales('/acerca', 0.6, 'monthly') // Methodology / about page
     addUrlsForAllLocales('/offline', 0.3, 'monthly') // Offline page
+
+    // Add /guias/:slug editorial guide routes for all locales
+    guideSlugs().forEach(slug => {
+      addUrlsForAllLocales(`/guias/${slug}`, 0.7, 'weekly')
+    })
 
     // Add /historico/:origin routes for all locales
     origins.forEach(origin => {
@@ -151,6 +161,18 @@ export default defineEventHandler(async _event => {
       addUrlsForAllLocales(`/dolar/${slug}`, 0.7)
     })
 
+    // Add /cotizacion/:moneda programmatic-SEO routes for all locales
+    const currencySlugs = listCurrencySlugs()
+    currencySlugs.forEach(slug => {
+      addUrlsForAllLocales(`/cotizacion/${slug}`, 0.8)
+    })
+
+    // Add /casa/:origin programmatic-SEO routes for all locales (origins come
+    // from localData keys, same source as the sucursales routes above).
+    sucursalesOrigins.forEach(origin => {
+      addUrlsForAllLocales(`/casa/${origin}`, 0.7)
+    })
+
     console.log(
       `Generated ${urls.length} sitemap URLs from API data:`,
       `\n- Main exchange data: ${origins.size} origins`,
@@ -161,6 +183,9 @@ export default defineEventHandler(async _event => {
       `\n- Sucursales origins: ${sucursalesOrigins.size} routes`,
       `\n- Sucursales location pairs: ${sucursalesLocationPairs.size} routes`,
       `\n- Dolar department pages: ${departmentSlugs.size} routes`,
+      `\n- Cotizacion currency pages: ${currencySlugs.length} routes`,
+      `\n- Casa pages: ${sucursalesOrigins.size} routes`,
+      `\n- Editorial guides: ${guideSlugs().length} routes`,
       `\n- Total across ${locales.length} locales: ${urls.length} URLs`
     )
     return urls
