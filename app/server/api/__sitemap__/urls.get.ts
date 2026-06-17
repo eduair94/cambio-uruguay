@@ -1,3 +1,4 @@
+import { listCurrencySlugs } from '../../../utils/currencyPages'
 import { guideSlugs } from '../../../utils/guides'
 
 export default defineEventHandler(async _event => {
@@ -160,6 +161,18 @@ export default defineEventHandler(async _event => {
       addUrlsForAllLocales(`/dolar/${slug}`, 0.7)
     })
 
+    // Add /cotizacion/:moneda programmatic-SEO routes for all locales
+    const currencySlugs = listCurrencySlugs()
+    currencySlugs.forEach(slug => {
+      addUrlsForAllLocales(`/cotizacion/${slug}`, 0.8)
+    })
+
+    // Add /casa/:origin programmatic-SEO routes for all locales (origins come
+    // from localData keys, same source as the sucursales routes above).
+    sucursalesOrigins.forEach(origin => {
+      addUrlsForAllLocales(`/casa/${origin}`, 0.7)
+    })
+
     console.log(
       `Generated ${urls.length} sitemap URLs from API data:`,
       `\n- Main exchange data: ${origins.size} origins`,
@@ -170,6 +183,8 @@ export default defineEventHandler(async _event => {
       `\n- Sucursales origins: ${sucursalesOrigins.size} routes`,
       `\n- Sucursales location pairs: ${sucursalesLocationPairs.size} routes`,
       `\n- Dolar department pages: ${departmentSlugs.size} routes`,
+      `\n- Cotizacion currency pages: ${currencySlugs.length} routes`,
+      `\n- Casa pages: ${sucursalesOrigins.size} routes`,
       `\n- Editorial guides: ${guideSlugs().length} routes`,
       `\n- Total across ${locales.length} locales: ${urls.length} URLs`
     )

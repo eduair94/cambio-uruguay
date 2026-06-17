@@ -409,6 +409,8 @@ export default defineNuxtConfig({
       '/noticias',
       '/comparar',
       '/dolar',
+      '/cotizacion',
+      '/casa',
       '/guias',
       '/acerca',
     ],
