@@ -399,7 +399,11 @@
     "customDesc": "Ask any question about the market"
   },
   "faq": {
-    "title": "Frequently Asked Questions About the Dollar in Uruguay",
+    "nav": "FAQ",
+    "metaTitle": "FAQ about the dollar and exchange rates in Uruguay",
+    "metaDescription": "Clear answers about today's US dollar, euro, real and Argentine peso rates in Uruguay: where to buy, where to sell, spreads and how to choose an exchange house. Updated every 10 minutes.",
+    "title": "Frequently asked questions",
+    "intro": "Answers to the most common questions about exchange rates in Uruguay, with real-time data from over 40 exchange houses.",
     "q1": "What is the dollar exchange rate in Uruguay today?",
     "a1": "The dollar exchange rate in Uruguay is updated every 10 minutes on our site. We compare more than 40 exchange houses to show you the best buy and sell prices. The exchange rate varies by exchange house, so comparing is key to getting the best rate.",
     "q2": "Where can I buy dollars at the best price in Uruguay?",

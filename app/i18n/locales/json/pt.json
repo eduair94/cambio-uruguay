@@ -392,7 +392,11 @@
     "customDesc": "Faça qualquer pergunta sobre o mercado"
   },
   "faq": {
-    "title": "Perguntas Frequentes sobre o Dólar no Uruguai",
+    "nav": "Perguntas frequentes",
+    "metaTitle": "Perguntas frequentes sobre o dólar e as cotações no Uruguai",
+    "metaDescription": "Respostas claras sobre a cotação do dólar, euro, real e peso argentino hoje no Uruguai: onde comprar, onde vender, spreads e como escolher casa de câmbio. Dados atualizados a cada 10 minutos.",
+    "title": "Perguntas frequentes",
+    "intro": "Respostas às dúvidas mais comuns sobre as cotações no Uruguai, com dados em tempo real de mais de 40 casas de câmbio.",
     "q1": "Qual é a cotação do dólar no Uruguai hoje?",
     "a1": "A cotação do dólar no Uruguai é atualizada a cada 10 minutos em nosso site. Comparamos mais de 40 casas de câmbio para mostrar o melhor preço de compra e venda. A taxa de câmbio varia por casa de câmbio, então comparar é fundamental para obter a melhor cotação.",
     "q2": "Onde posso comprar dólares ao melhor preço no Uruguai?",
