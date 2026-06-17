@@ -55,12 +55,30 @@ export default defineEventHandler(async _event => {
     const sucursalesOrigins = new Set<string>()
     const sucursalesLocationPairs = new Set<string>()
 
+    // Department slugs for the programmatic /dolar/:departamento pages. Built from
+    // the union of all houses' departments, slugified the same way the page does
+    // (lowercase, accent-stripped, spaces -> hyphens) so the routes resolve.
+    const departmentSlugs = new Set<string>()
+    const slugifyDepartment = (name: string): string =>
+      name
+        .normalize('NFD')
+        .replace(/[\u0300-\u036F]/g, '')
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+
     Object.entries(localData).forEach(([origin, data]) => {
       sucursalesOrigins.add(origin)
 
       if (data.departments) {
         data.departments.forEach(department => {
           sucursalesLocationPairs.add(`${origin}/${encodeURIComponent(department)}`)
+
+          const deptSlug = slugifyDepartment(department)
+          if (deptSlug) {
+            departmentSlugs.add(deptSlug)
+          }
         })
       }
     })
@@ -128,6 +146,11 @@ export default defineEventHandler(async _event => {
       addUrlsForAllLocales(`/sucursales/${pair}`, 0.7)
     })
 
+    // Add /dolar/:departamento programmatic-SEO routes for all locales
+    departmentSlugs.forEach(slug => {
+      addUrlsForAllLocales(`/dolar/${slug}`, 0.7)
+    })
+
     console.log(
       `Generated ${urls.length} sitemap URLs from API data:`,
       `\n- Main exchange data: ${origins.size} origins`,
@@ -137,6 +160,7 @@ export default defineEventHandler(async _event => {
       `\n- LocalData: ${Object.keys(localData).length} exchange houses`,
       `\n- Sucursales origins: ${sucursalesOrigins.size} routes`,
       `\n- Sucursales location pairs: ${sucursalesLocationPairs.size} routes`,
+      `\n- Dolar department pages: ${departmentSlugs.size} routes`,
       `\n- Total across ${locales.length} locales: ${urls.length} URLs`
     )
     return urls

@@ -401,7 +401,7 @@ export default defineNuxtConfig({
   // Robots Configuration
   robots: {
     disallow: ['/admin/', '/server/', '/_nuxt/'],
-    allow: ['/', '/avanzado', '/historico', '/sucursales', '/noticias', '/comparar'],
+    allow: ['/', '/avanzado', '/historico', '/sucursales', '/noticias', '/comparar', '/dolar'],
     sitemap: 'https://cambio-uruguay.com/sitemap.xml',
     credits: false,
   },
@@ -423,6 +423,9 @@ export default defineNuxtConfig({
 
   // i18n Configuration
   i18n: {
+    // Required for @nuxtjs/i18n to emit absolute hreflang/canonical alternate
+    // links (was missing -> no hreflang tags were rendered).
+    baseUrl: 'https://cambio-uruguay.com',
     bundle: {
       optimizeTranslationDirective: false,
     },
