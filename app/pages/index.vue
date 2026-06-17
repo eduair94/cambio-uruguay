@@ -1765,11 +1765,47 @@ const exchangeRateSchema = computed(() => {
   }
 })
 
+// Dataset schema — positions the site as a structured data source (rich results
+// + AI/GEO citations). Static so it is always present in SSR HTML.
+const datasetSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Dataset',
+  name: 'Cotizaciones de casas de cambio en Uruguay',
+  description:
+    'Cotizaciones de compra y venta del dólar, euro, real y peso argentino en más de 40 casas de cambio y bancos de Uruguay, actualizadas cada 10 minutos. Datos basados en el registro oficial del Banco Central del Uruguay (BCU).',
+  url: 'https://cambio-uruguay.com',
+  keywords: [
+    'cotización dólar Uruguay',
+    'casas de cambio Uruguay',
+    'tipo de cambio Uruguay',
+    'dólar BROU',
+    'precio del dólar',
+  ],
+  isAccessibleForFree: true,
+  creator: {
+    '@type': 'Organization',
+    name: 'Cambio Uruguay',
+    url: 'https://cambio-uruguay.com',
+  },
+  spatialCoverage: { '@type': 'Place', name: 'Uruguay' },
+  distribution: [
+    {
+      '@type': 'DataDownload',
+      encodingFormat: 'application/json',
+      contentUrl: 'https://api.cambio-uruguay.com/',
+    },
+  ],
+}
+
 useHead({
   script: [
     {
       type: 'application/ld+json',
       innerHTML: computed(() => JSON.stringify(webApplicationSchema.value)),
+    },
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify(datasetSchema),
     },
     {
       type: 'application/ld+json',
