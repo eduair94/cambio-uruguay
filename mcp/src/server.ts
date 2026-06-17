@@ -4,7 +4,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { CambioApi } from "./api.js";
-import { bestHouse, convert, getEvolution, getRates, listHouses } from "./tools.js";
+import { bestHouse, convert, dailySummary, getEvolution, getNews, getRates, listHouses } from "./tools.js";
 
 const VERSION = "0.1.0";
 
@@ -103,6 +103,37 @@ export function buildServer(api: CambioApi): McpServer {
     async ({ origin, currency, period }) => {
       const data = await getEvolution(api, { origin, currency, period });
       return ok(`Evolution for ${origin}/${currency.toUpperCase()} over ${period ?? 6} month(s).`, data as Record<string, unknown>);
+    }
+  );
+
+  server.registerTool(
+    "get_news",
+    {
+      title: "Get market news",
+      description: "Latest Uruguayan dollar/economy headlines (Google News), de-duplicated and newest first.",
+      inputSchema: { limit: z.number().int().positive().max(30).optional().describe("Max headlines (default 12)") },
+    },
+    async ({ limit }) => {
+      const items = await getNews(api, { limit });
+      const text = items.map((n) => `• ${n.title} — ${n.source}`).join("\n") || "No headlines.";
+      return ok(text, { items });
+    }
+  );
+
+  server.registerTool(
+    "daily_summary",
+    {
+      title: "AI market summary",
+      description:
+        "AI-generated analysis of the Uruguayan exchange market. Without a currency, a whole-market summary; with one, a per-currency analysis. lang is es | en | pt.",
+      inputSchema: {
+        lang: z.enum(["es", "en", "pt"]).optional().describe("Language (default es)"),
+        currency: z.string().optional().describe("Optional ISO code for a per-currency analysis, e.g. USD"),
+      },
+    },
+    async ({ lang, currency }) => {
+      const r = await dailySummary(api, { lang, currency });
+      return ok(r.summary, r as unknown as Record<string, unknown>);
     }
   );
 

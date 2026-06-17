@@ -72,6 +72,8 @@ It is stateless and read-only.
 | `convert` | Convert an amount between currencies at the best market rates (foreign↔foreign routes through UYU). |
 | `list_houses` | Every tracked exchange house with name, website, and departments served. |
 | `get_evolution` | Historical series + stats (min/max/avg/current/change) for a house + currency over N months. |
+| `get_news` | Latest Uruguayan dollar/economy headlines (Google News), de-duplicated, newest first. |
+| `daily_summary` | AI market analysis (whole-market, or per-currency when `currency` is given). `lang` es \| en \| pt. |
 
 Plus a prompt, `analizar-dolar-hoy`, that chains the tools into a one-shot Spanish summary of today's dollar market.
 

@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { CambioApi, HouseInfo, RateRow } from "../src/api";
-import { bestHouse, convert, getEvolution, getRates, listHouses } from "../src/tools";
+import { bestHouse, convert, dailySummary, getEvolution, getNews, getRates, listHouses } from "../src/tools";
 
 function row(code: string, origin: string, buy: number, sell: number, type = "", date = "2026-06-17"): RateRow {
   return { code, origin, buy, sell, type, date, name: "" };
@@ -23,11 +23,18 @@ const LOCAL: Record<string, HouseInfo> = {
   bcu: { name: "BCU" },
 };
 
+const NEWS = [
+  { title: "Dólar baja", link: "https://x/1", source: "El País", pubDate: "2026-06-17", snippet: "..." },
+  { title: "Economía UY", link: "https://x/2", source: "Búsqueda", pubDate: "2026-06-16", snippet: "..." },
+];
+
 function fakeApi(overrides: Partial<CambioApi> = {}): CambioApi {
   return {
     getRates: async () => ROWS,
     getLocalData: async () => LOCAL,
     getEvolution: async () => ({ marker: "evolution" }),
+    getNews: async () => NEWS,
+    getInsight: async ({ type }) => ({ insight: `summary for ${type}`, type, cached: false, truncated: false }),
     ...overrides,
   };
 }
@@ -104,5 +111,37 @@ describe("getEvolution", () => {
   it("passes through the API series", async () => {
     const r = await getEvolution(fakeApi(), { origin: "brou", currency: "USD", period: 1 });
     expect(r).toEqual({ marker: "evolution" });
+  });
+});
+
+describe("getNews", () => {
+  it("forwards the limit and returns the headlines", async () => {
+    const spy = vi.fn(async () => NEWS);
+    const r = await getNews(fakeApi({ getNews: spy }), { limit: 5 });
+    expect(spy).toHaveBeenCalledWith(5);
+    expect(r).toEqual(NEWS);
+  });
+});
+
+describe("dailySummary", () => {
+  it("uses market_summary when no currency is given", async () => {
+    const spy = vi.fn(async ({ type }: { type: string }) => ({ insight: "ok", type, cached: false, truncated: false }));
+    const r = await dailySummary(fakeApi({ getInsight: spy }), { lang: "en" });
+    expect(spy).toHaveBeenCalledWith({ type: "market_summary", lang: "en", currency: undefined });
+    expect(r.summary).toBe("ok");
+  });
+
+  it("uses currency_analysis when a currency is given", async () => {
+    const spy = vi.fn(async ({ type }: { type: string }) => ({ insight: "ok", type, cached: false, truncated: false }));
+    await dailySummary(fakeApi({ getInsight: spy }), { lang: "es", currency: "usd" });
+    expect(spy).toHaveBeenCalledWith({ type: "currency_analysis", lang: "es", currency: "USD" });
+  });
+
+  it("strips <think> reasoning and provider junk from the insight", async () => {
+    const dirty = "<think>chain of thought\nmore</think>\n\nWormGPT: El dólar se mantiene estable hoy.";
+    const r = await dailySummary(fakeApi({ getInsight: async ({ type }) => ({ insight: dirty, type, cached: false, truncated: false }) }), {
+      lang: "es",
+    });
+    expect(r.summary).toBe("El dólar se mantiene estable hoy.");
   });
 });

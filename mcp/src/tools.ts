@@ -8,7 +8,7 @@
 //     better, so the best sell price is the HIGHEST `buy`.
 // Best market rates (most favorable to the user) drive conversions.
 
-import type { CambioApi, HouseInfo, RateRow } from "./api.js";
+import type { CambioApi, HouseInfo, NewsItem, RateRow } from "./api.js";
 
 /** Quote types that are not retail cash exchange and are excluded from market math. */
 const INTERBANK_TYPES = new Set(["INTERBANCARIO", "FONDO/CABLE", "CABLE", "BILLETE", "PROMED.FONDO"]);
@@ -190,4 +190,44 @@ export async function getEvolution(
   args: { origin: string; currency: string; period?: number }
 ): Promise<unknown> {
   return api.getEvolution(args.origin, args.currency.toUpperCase(), args.period);
+}
+
+export async function getNews(api: CambioApi, args: { limit?: number } = {}): Promise<NewsItem[]> {
+  return api.getNews(args.limit);
+}
+
+/** Strip `<think>` reasoning blocks and known provider prefixes from an AI insight. */
+export function cleanInsight(raw: string): string {
+  return raw
+    .replace(/<think>[\s\S]*?<\/think>/gi, "")
+    .trim()
+    .replace(/^(?:WormGPT|Assistant|AI)\s*:\s*/i, "")
+    .trim();
+}
+
+export interface DailySummaryResult {
+  type: string;
+  lang: string;
+  currency?: string;
+  summary: string;
+  cached: boolean;
+  truncated: boolean;
+}
+
+export async function dailySummary(
+  api: CambioApi,
+  args: { lang?: string; currency?: string }
+): Promise<DailySummaryResult> {
+  const lang = args.lang ?? "es";
+  const currency = args.currency ? args.currency.toUpperCase() : undefined;
+  const type = currency ? "currency_analysis" : "market_summary";
+  const r = await api.getInsight({ type, lang, currency });
+  return {
+    type,
+    lang,
+    currency,
+    summary: cleanInsight(r.insight),
+    cached: r.cached,
+    truncated: r.truncated,
+  };
 }
