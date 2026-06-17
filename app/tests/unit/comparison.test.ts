@@ -126,4 +126,38 @@ describe('buildComparisonChartData', () => {
       { label: 'B', data: [null, 39] },
     ])
   })
+
+  it('drops a gross outlier so one bad point cannot flatten the line', () => {
+    // Real-world data-entry typo: sell=2981 among ~30-peso values (AUD/la_favorita).
+    // Left in, it blows the shared y-axis up to ~3000 and squashes every line flat.
+    const series: LabelledSeries[] = [
+      {
+        label: 'A',
+        points: [
+          point('2024-01-01', 27, 30),
+          point('2024-01-02', 23, 2981),
+          point('2024-01-03', 25, 31),
+        ],
+      },
+    ]
+    const result = buildComparisonChartData(series, 'sell')
+    expect(result.labels).toEqual(['2024-01-01', '2024-01-02', '2024-01-03'])
+    expect(result.datasets[0]?.data).toEqual([30, null, 31])
+  })
+
+  it('treats a non-numeric price as a gap', () => {
+    // Some houses (e.g. prex) emit evolution points with no buy/sell at all.
+    const series: LabelledSeries[] = [
+      {
+        label: 'A',
+        points: [
+          point('2024-01-01', 40, 42),
+          point('2024-01-02', Number.NaN, Number.NaN),
+          point('2024-01-03', 41, 43),
+        ],
+      },
+    ]
+    const result = buildComparisonChartData(series, 'sell')
+    expect(result.datasets[0]?.data).toEqual([42, null, 43])
+  })
 })
