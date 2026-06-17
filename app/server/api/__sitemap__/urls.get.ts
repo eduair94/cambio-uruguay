@@ -1,3 +1,5 @@
+import { guideSlugs } from '../../../utils/guides'
+
 export default defineEventHandler(async _event => {
   try {
     // Fetch data from the API
@@ -119,7 +121,14 @@ export default defineEventHandler(async _event => {
     addUrlsForAllLocales('/noticias', 0.7, 'hourly') // Noticias del dólar (news)
     addUrlsForAllLocales('/preguntas-frecuentes', 0.7, 'weekly') // FAQ hub
     addUrlsForAllLocales('/comparar', 0.8, 'daily') // Compare exchange houses over time
+    addUrlsForAllLocales('/guias', 0.7, 'weekly') // Editorial guides hub
+    addUrlsForAllLocales('/acerca', 0.6, 'monthly') // Methodology / about page
     addUrlsForAllLocales('/offline', 0.3, 'monthly') // Offline page
+
+    // Add /guias/:slug editorial guide routes for all locales
+    guideSlugs().forEach(slug => {
+      addUrlsForAllLocales(`/guias/${slug}`, 0.7, 'weekly')
+    })
 
     // Add /historico/:origin routes for all locales
     origins.forEach(origin => {
@@ -161,6 +170,7 @@ export default defineEventHandler(async _event => {
       `\n- Sucursales origins: ${sucursalesOrigins.size} routes`,
       `\n- Sucursales location pairs: ${sucursalesLocationPairs.size} routes`,
       `\n- Dolar department pages: ${departmentSlugs.size} routes`,
+      `\n- Editorial guides: ${guideSlugs().length} routes`,
       `\n- Total across ${locales.length} locales: ${urls.length} URLs`
     )
     return urls

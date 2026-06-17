@@ -401,7 +401,17 @@ export default defineNuxtConfig({
   // Robots Configuration
   robots: {
     disallow: ['/admin/', '/server/', '/_nuxt/'],
-    allow: ['/', '/avanzado', '/historico', '/sucursales', '/noticias', '/comparar', '/dolar'],
+    allow: [
+      '/',
+      '/avanzado',
+      '/historico',
+      '/sucursales',
+      '/noticias',
+      '/comparar',
+      '/dolar',
+      '/guias',
+      '/acerca',
+    ],
     sitemap: 'https://cambio-uruguay.com/sitemap.xml',
     credits: false,
   },

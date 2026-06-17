@@ -74,6 +74,18 @@
 
         <VSpacer class="d-none d-md-flex" />
 
+        <!-- Site links: editorial guides + methodology/about (internal SEO) -->
+        <nav class="d-flex align-center ga-3 footer-links">
+          <NuxtLink :to="localePath('/guias')" class="footer-link text-caption">
+            {{ $t('guias.nav') }}
+          </NuxtLink>
+          <NuxtLink :to="localePath('/acerca')" class="footer-link text-caption">
+            {{ $t('acerca.nav') }}
+          </NuxtLink>
+        </nav>
+
+        <VSpacer class="d-none d-md-flex" />
+
         <!-- Credits Section -->
         <div class="text-center text-md-right">
           <span class="text-caption">
@@ -102,10 +114,25 @@
   </VFooter>
 </template>
 
+<script setup lang="ts">
+const localePath = useLocalePath()
+</script>
+
 <style lang="scss" scoped>
 .footer_content {
   width: 100%;
   align-items: center;
   padding: 16px;
+}
+
+.footer-link {
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: #fff;
+    text-decoration: underline;
+  }
 }
 </style>
