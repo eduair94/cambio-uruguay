@@ -71,8 +71,9 @@ class CambioPrex extends Cambio {
       .then((res) => res.data)
       .catch((e) => {
         console.log("Error", url);
+        return null;
       });
-    return e.token;
+    return res?.token;
   }
 
   /**
@@ -207,7 +208,10 @@ class CambioPrex extends Cambio {
 
     const f: CambioObj[] = [];
 
-    if (usdRates) {
+    // Only push USD when both rates are valid, finite, positive numbers.
+    // Otherwise (expired web session + dead API fallback) we'd write
+    // `buy: undefined, sell: undefined` garbage into the DB.
+    if (usdRates && Number.isFinite(usdRates.buy) && Number.isFinite(usdRates.sell) && usdRates.buy > 0 && usdRates.sell > 0) {
       f.push({
         code: "USD",
         type: "",
@@ -215,6 +219,8 @@ class CambioPrex extends Cambio {
         buy: usdRates.buy,
         sell: usdRates.sell,
       });
+    } else {
+      console.warn("Prex: skipping USD — no valid rate (refresh PREX_SESSION_ID cookie)");
     }
 
     if (ar) {
