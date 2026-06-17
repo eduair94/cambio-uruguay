@@ -2,7 +2,7 @@
 
 **Date:** 2026-06-17
 **Status:** Approved design, pre-implementation
-**Scope:** Push channels only — Telegram + Discord (interactive) and Twitter/X (broadcast), plus a **multilingual Open Graph embed** (beautiful localized share card + meta) reused by both the website and the bots' posts. Email newsletter is a **separate** later spec (Spec 2).
+**Scope:** Push channels — Telegram + Discord (interactive) and Twitter/X (broadcast), plus a **multilingual Open Graph embed** (beautiful localized share card + meta) reused by both the website and the bots' posts, plus an **open-source MCP server** that exposes the same data to AI assistants as a pull/interactive surface (hosted + `npx`). Email newsletter is a **separate** later spec (Spec 2).
 
 ## Goal
 
@@ -134,6 +134,41 @@ Work required:
 
 Polish pass on `Cambio.vue` is in scope (spacing/contrast/locale-aware layout); a full redesign is not.
 
+## MCP server (open source, hosted + npx)
+
+**Why.** Beyond social channels (push) and the raw REST API (JSON), expose the same market data through the **Model Context Protocol** so any AI assistant — Claude Desktop, Cursor, Cline, ChatGPT, etc. — can answer live Uruguayan exchange-rate questions, convert amounts, and pull trends/news on demand. This is a *pull/interactive* surface (like the bots), and it ships as a standalone open-source package so third parties run it themselves or just point at the hosted endpoint. Reaching the AI-assistant ecosystem is itself a distribution/SEO channel: the project becomes the canonical UY-rates tool LLMs reach for.
+
+**Data source.** Read-only wrapper over the existing Express API (single source of truth) — no DB, scraper, or credential access. Same API base the bots use. Reuses the report core (`report_data`, `report_ai`, `news`) and the shared convert helper, so MCP tools and the bot commands stay in lockstep.
+
+**Two transports, one server.** `MCP_TRANSPORT` selects the mode from a single entry (`mcp_server.ts`):
+- **stdio** — local clients via `npx cambio-uruguay-mcp`; paste a snippet into Claude Desktop / Cursor config. Zero infra, no keys.
+- **Streamable HTTP** — a public hosted endpoint (e.g. `https://mcp.cambio-uruguay.com`) so anyone adds the URL with nothing to install. Stateless, read-only, rate-limited; runs as an always-on pm2 process (`currency-mcp`).
+
+### Tools (mirror the API + bot commands)
+
+- `list_houses` — all casas de cambio + metadata.
+- `get_rates(currency)` — current buy/sell per house, market avg, spread, best buy/sell.
+- `best_house(currency, side?)` — best house to buy or sell now.
+- `convert(amount, from, to, side?)` — converted amount at best/avg rate (shared convert helper).
+- `get_evolution(origin, currency)` — historical series (wraps `/evolution/:origin/:currency`).
+- `get_news(limit?)` — latest market headlines.
+- `daily_summary(lang?)` — AI market summary (reuses `report_ai.summarize`, Redis-cached, es/en/pt).
+
+### Resources & prompts (optional, low cost)
+
+- Resources: `rates://current` and `casa://{origin}` for browsable snapshots.
+- Prompt: `analizar-dolar-hoy` — pre-wired template chaining `get_rates` + `get_news` + `daily_summary` for a one-shot "how's the dollar today" answer.
+
+Tool handlers are **pure over an injected fetcher** → unit-tested like the formatters; **MCP Inspector** for manual smoke. No auth on the public endpoint (read-only public data); abuse handled by rate limiting. The server is feature-gated like every other surface: with no `MCP_*` config it simply isn't started.
+
+### Packaging & distribution (open source)
+
+- Published to npm as `cambio-uruguay-mcp` with a `bin` (so `npx cambio-uruguay-mcp` just works), **MIT-licensed**, source in the monorepo under `mcp/` (its own `package.json`, built independently of the Nuxt app).
+- README ships ready-to-paste Claude Desktop / Cursor / Cline configs for both stdio and the hosted URL.
+- Submitted to the public MCP registries (the official `modelcontextprotocol/servers` list, `mcp.so`, Smithery, Glama) for discoverability — the "available to be used" goal.
+
+SDK: `@modelcontextprotocol/sdk` (TypeScript).
+
 ## Configuration (all env, feature-gated)
 
 | Var | Purpose | Default |
@@ -150,6 +185,10 @@ Polish pass on `Cambio.vue` is in scope (spacing/contrast/locale-aware layout); 
 | `DEFAULT_BROADCAST_LANG` | Channel + Twitter language | `es` |
 | `DRY_RUN` | Log instead of send | unset |
 | `FORCE` | Bypass daily dedup | unset |
+| `MCP_TRANSPORT` | `stdio` or `http` | `stdio` |
+| `MCP_HTTP_PORT` | Hosted Streamable-HTTP port | `8788` |
+| `MCP_PUBLIC_URL` | Advertised endpoint (docs/registry) | — |
+| `API_BASE_URL` | Express API base the MCP/bots call | local API |
 
 Reuses existing `AI_*`, Redis, and Mongo connection envs.
 
@@ -157,7 +196,7 @@ Reuses existing `AI_*`, Redis, and Mongo connection envs.
 
 - Daily: pm2 `cron_restart: "0 12 * * *"` (09:00 local).
 - Alerts: pm2 `cron_restart: "*/15 11-21 * * *"` (~08:00–18:00 local market window).
-- pm2 `apps` additions: `currency-bot-telegram`, `currency-bot-discord` (always-on, `autorestart: true`); `currency-daily`, `currency-alerts` (`autorestart: false`, cron).
+- pm2 `apps` additions: `currency-bot-telegram`, `currency-bot-discord`, `currency-mcp` (always-on, `autorestart: true`); `currency-daily`, `currency-alerts` (`autorestart: false`, cron).
 
 ## Languages
 
@@ -175,11 +214,12 @@ Per-user language for DMs/commands (Telegram `language_code` or `/idioma`, store
 
 - **Unit (vitest):** formatters (`report_format.ts`), delta math (`report_data` pure parts behind an injected fetcher), alert threshold/cooldown logic, subscriber CRUD (mocked model), Twitter 280-char truncation. Follow the existing pure-function test style (`app/tests/unit/comparison.test.ts`). Network/IO behind interfaces.
 - **Manual:** `DRY_RUN=1` end-to-end of `daily_report.ts` and `alert_check.ts`; a staging Telegram channel/bot for live smoke.
+- **MCP:** unit-test tool handlers (pure, injected fetcher) alongside the formatters; **MCP Inspector** against both stdio and HTTP transports; smoke each tool from a real client config (Claude Desktop) before npm publish.
 - **OG embed:** snapshot/visual check of the rendered OG PNG for each locale (es/en/pt) — no Spanish leaking into en/pt; assert localized `og:title`/`og:description`/`og:locale` in each localized route's head (extend existing e2e where practical).
 
 ## New dependencies
 
-`telegraf`, `discord.js`, `twitter-api-v2`. Scheduling handled by pm2 (no in-process cron lib).
+`telegraf`, `discord.js`, `twitter-api-v2`, `@modelcontextprotocol/sdk` (the last isolated in the `mcp/` package). Scheduling handled by pm2 (no in-process cron lib).
 
 ## File layout (new)
 
@@ -188,12 +228,20 @@ classes/
   report/{news,report_data,report_ai,report_format,subscribers}.ts
   publishers/{telegram_publisher,discord_publisher,twitter_publisher}.ts
   bots/{commands,telegram_bot,discord_bot}.ts
+  mcp/{tools,resources}.ts   # MCP handlers over the report core (pure, unit-tested)
   models/bot_subscriber.ts
 daily_report.ts            # cron
 alert_check.ts             # cron
 bot_telegram.ts            # always-on entry
 bot_discord.ts             # always-on entry
+mcp_server.ts              # always-on entry; MCP_TRANSPORT → stdio | streamable-http
 tests/ (vitest for the pure modules)
+
+mcp/ (standalone open-source package — published to npm, MIT)
+  package.json             # bin: cambio-uruguay-mcp; deps: @modelcontextprotocol/sdk
+  README.md                # client configs (Claude Desktop / Cursor / Cline), stdio + hosted
+  LICENSE                  # MIT
+  src → re-exports classes/mcp + mcp_server (or thin copy); builds to dist independently
 
 app/ (frontend — multilingual OG)
   components/OgImage/Cambio.vue     # + locale prop & per-locale label map (edit)
@@ -207,3 +255,5 @@ app/ (frontend — multilingual OG)
 - Confirm whether `app/utils/convert.ts` exposes a pure conversion usable from the backend, or extract a shared helper.
 - Confirm `og-rate` output suits a daily card before deciding to add `og-daily`.
 - The backend currently has no vitest setup; add a minimal one (or colocate pure modules tested from the existing `app` vitest if import paths allow).
+- Decide how the published `mcp/` package consumes the report core: import the compiled `classes/` output, a thin re-export, or a small copied subset — the package must stay installable standalone via `npx` without pulling the whole backend.
+- Confirm the hosted MCP endpoint's home (subdomain `mcp.cambio-uruguay.com` vs `/mcp` path) and the rate-limit budget for anonymous public traffic.
