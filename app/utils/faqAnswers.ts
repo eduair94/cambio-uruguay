@@ -14,7 +14,19 @@ export interface FaqItem {
   answer: string
 }
 
-export const HOME_FAQ_IDS = ['rate-USD', 'buy-USD', 'sell-USD'] as const
+// Home embed = the USD live answers (incl. spread) + the evergreen set. This is
+// the full data-grounded replacement for the old static 8-question home FAQ, so
+// it carries one FAQPage schema for the home URL.
+export const HOME_FAQ_IDS = [
+  'rate-USD',
+  'buy-USD',
+  'sell-USD',
+  'spread-USD',
+  'types',
+  'update-freq',
+  'data-source',
+  'how-choose',
+] as const
 export function currencyFaqIds(code: string): string[] {
   const c = code.toUpperCase()
   return [`rate-${c}`, `buy-${c}`, `sell-${c}`]

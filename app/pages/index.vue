@@ -577,34 +577,13 @@
       </VContainer>
     </section>
 
-    <!-- FAQ Section - SSR-rendered for SEO (schema via JSON-LD only, no microdata to avoid duplication) -->
-    <section class="faq-section py-12 bg-grey-darken-4">
-      <VContainer>
-        <VRow>
-          <VCol cols="12" class="text-center mb-8">
-            <h2 class="text-h4 font-weight-bold mb-4">
-              {{ t('faq.title') }}
-            </h2>
-          </VCol>
-        </VRow>
-        <VRow justify="center">
-          <VCol cols="12" md="10" lg="8">
-            <VExpansionPanels variant="accordion" class="faq-panels">
-              <VExpansionPanel v-for="faqNum in 8" :key="faqNum" class="faq-panel mb-2">
-                <VExpansionPanelTitle class="text-body-1 font-weight-bold">
-                  {{ t(`faq.q${faqNum}`) }}
-                </VExpansionPanelTitle>
-                <VExpansionPanelText>
-                  <p class="text-body-1 text-grey-lighten-1 pa-2">
-                    {{ t(`faq.a${faqNum}`) }}
-                  </p>
-                </VExpansionPanelText>
-              </VExpansionPanel>
-            </VExpansionPanels>
-          </VCol>
-        </VRow>
-      </VContainer>
-    </section>
+    <!-- FAQ Section - data-grounded FAQ + single FAQPage JSON-LD via FaqBlock -->
+    <FaqBlock
+      v-if="homeFaqItems.length"
+      class="faq-section py-12 bg-grey-darken-4"
+      :items="homeFaqItems"
+      :heading="t('faq.title')"
+    />
 
     <!-- Internal Linking Section - Topical Cluster Navigation -->
     <section class="internal-links-section py-12">
@@ -776,6 +755,7 @@ import { useLocalePath } from '#imports'
 import DirectionToggle from '@/components/DirectionToggle.vue'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { HOME_FAQ_IDS, type FaqItem } from '~/utils/faqAnswers'
 import { useDisplay } from 'vuetify'
 import {
   convert as convertAmount,
@@ -817,7 +797,7 @@ interface Feature {
 }
 
 // Composables
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const localePath = useLocalePath()
 const apiService = useApiService()
 const route = useRoute()
@@ -834,6 +814,16 @@ defineOgImageComponent('Cambio', {
   rateBuy: ogRate.value?.buy ?? null,
   rateSell: ogRate.value?.sell ?? null,
 })
+
+// Data-grounded FAQ embed (USD live answers + evergreen). FaqBlock renders the
+// visible accordion and the single home FAQPage JSON-LD from these same items.
+const { data: faqData } = await useFetch<{ generatedAt: string; items: FaqItem[] }>('/api/faq', {
+  query: { lang: locale },
+  default: () => ({ generatedAt: '', items: [] as FaqItem[] }),
+})
+const homeFaqItems = computed(() =>
+  (faqData.value?.items ?? []).filter(i => (HOME_FAQ_IDS as readonly string[]).includes(i.id))
+)
 
 // localStorage key for form persistence
 const STORAGE_KEY = 'cambio-uruguay-home-form'
@@ -1667,79 +1657,7 @@ const webApplicationSchema = computed(() => ({
   // real provider (e.g. live Trustpilot count via widget/API), never hardcoded.
 }))
 
-// 2. FAQPage Schema
-const faqSchema = computed(() => ({
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: [
-    {
-      '@type': 'Question',
-      name: t('faq.q1'),
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: t('faq.a1'),
-      },
-    },
-    {
-      '@type': 'Question',
-      name: t('faq.q2'),
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: t('faq.a2'),
-      },
-    },
-    {
-      '@type': 'Question',
-      name: t('faq.q3'),
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: t('faq.a3'),
-      },
-    },
-    {
-      '@type': 'Question',
-      name: t('faq.q4'),
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: t('faq.a4'),
-      },
-    },
-    {
-      '@type': 'Question',
-      name: t('faq.q5'),
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: t('faq.a5'),
-      },
-    },
-    {
-      '@type': 'Question',
-      name: t('faq.q6'),
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: t('faq.a6'),
-      },
-    },
-    {
-      '@type': 'Question',
-      name: t('faq.q7'),
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: t('faq.a7'),
-      },
-    },
-    {
-      '@type': 'Question',
-      name: t('faq.q8'),
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: t('faq.a8'),
-      },
-    },
-  ],
-}))
-
-// 3. BreadcrumbList Schema
+// 2. BreadcrumbList Schema
 const breadcrumbSchema = computed(() => ({
   '@context': 'https://schema.org',
   '@type': 'BreadcrumbList',
@@ -1852,10 +1770,6 @@ useHead({
     {
       type: 'application/ld+json',
       innerHTML: computed(() => JSON.stringify(webApplicationSchema.value)),
-    },
-    {
-      type: 'application/ld+json',
-      innerHTML: computed(() => JSON.stringify(faqSchema.value)),
     },
     {
       type: 'application/ld+json',

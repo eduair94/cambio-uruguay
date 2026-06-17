@@ -100,7 +100,16 @@ describe('buildFaqItems', () => {
   })
 
   it('exposes stable id helpers', () => {
-    expect(HOME_FAQ_IDS).toEqual(['rate-USD', 'buy-USD', 'sell-USD'])
+    expect(HOME_FAQ_IDS).toEqual([
+      'rate-USD',
+      'buy-USD',
+      'sell-USD',
+      'spread-USD',
+      'types',
+      'update-freq',
+      'data-source',
+      'how-choose',
+    ])
     expect(currencyFaqIds('EUR')).toEqual(['rate-EUR', 'buy-EUR', 'sell-EUR'])
   })
 })

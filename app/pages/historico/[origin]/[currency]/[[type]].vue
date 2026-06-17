@@ -349,6 +349,9 @@
       </v-row>
     </div>
 
+    <!-- Data-grounded FAQ for this currency + scoped FAQPage JSON-LD -->
+    <FaqBlock v-if="currencyFaqItems.length" :items="currencyFaqItems" :heading="$t('faq.title')" />
+
     <!-- Back Button -->
     <v-row class="mt-6">
       <v-col cols="12" class="text-center">
@@ -379,6 +382,7 @@ import moment from 'moment'
 import { computed, ref } from 'vue'
 import { Bar, Line } from 'vue-chartjs'
 import { useRoute, useRouter } from 'vue-router'
+import { currencyFaqIds, type FaqItem } from '~/utils/faqAnswers'
 import { useDisplay } from 'vuetify/lib/composables/display.mjs'
 
 const { smAndDown } = useDisplay()
@@ -461,6 +465,17 @@ const { withLoading } = useLoading()
 const { loading: aiLoading, error: aiError, insight: aiInsight, getTrendAnalysis } = useAIInsights()
 
 const { locale } = useI18n()
+
+// Data-grounded FAQ for this currency (rate/buy/sell of route.params.currency),
+// rendered with its own scoped FAQPage JSON-LD via FaqBlock.
+const { data: faqData } = await useFetch<{ generatedAt: string; items: FaqItem[] }>('/api/faq', {
+  query: { lang: locale },
+  default: () => ({ generatedAt: '', items: [] as FaqItem[] }),
+})
+const currencyFaqItems = computed(() => {
+  const ids = currencyFaqIds(String(route.params.currency ?? '').toUpperCase())
+  return (faqData.value?.items ?? []).filter(i => ids.includes(i.id))
+})
 
 const requestAIAnalysis = async () => {
   const lang = locale.value?.startsWith('en') ? 'en' : locale.value?.startsWith('pt') ? 'pt' : 'es'
