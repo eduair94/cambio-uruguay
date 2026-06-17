@@ -534,6 +534,18 @@
     "disclaimerText": "As informações do Cambio Uruguay têm caráter informativo e educativo. Não constituem aconselhamento financeiro, fiscal ou de investimento, nem recomendação de compra ou venda de divisas. Verifique sempre a cotação e as condições diretamente com a casa de câmbio antes de operar.",
     "ctaTitle": "Compare e decida com dados",
     "ctaText": "Veja a cotação do dólar em mais de 40 casas de câmbio ou aprofunde-se com nossos guias.",
-    "ctaButton": "Ver cotações"
+    "ctaButton": "Ver cotações",
+    "embedTitle": "Insira o widget",
+    "embedText": "Tem um site ou blog? Adicione a cotação do dólar ao vivo com o nosso widget. Copie este código e cole na sua página:",
+    "embedCopy": "Copiar código",
+    "embedCopied": "Copiado!"
+  },
+  "widget": {
+    "live": "Ao vivo",
+    "buy": "Compra",
+    "sell": "Venda",
+    "backlink": "Cotação ao vivo · cambio-uruguay.com",
+    "metaTitle": "Widget de cotação do dólar no Uruguai",
+    "metaDescription": "Widget incorporável com a melhor cotação do dólar (compra e venda) no Uruguai, atualizada ao vivo."
   }
 }

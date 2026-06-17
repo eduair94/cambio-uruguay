@@ -346,6 +346,17 @@ const isActiveRoute = (path: string) => {
   return route.path.startsWith(path)
 }
 
+// hreflang alternates: feed @nuxtjs/i18n's localized head (rel=alternate
+// hreflang links for es/en/pt + x-default, plus htmlAttrs lang/dir) into useHead
+// at the layout level so every page emits them. Kept separate from the static
+// useHead below to avoid clobbering the existing canonical/meta/JSON-LD.
+const i18nHead = useLocaleHead()
+useHead(() => ({
+  htmlAttrs: i18nHead.value.htmlAttrs ?? {},
+  link: i18nHead.value.link ?? [],
+  meta: i18nHead.value.meta ?? [],
+}))
+
 // Head configuration
 useHead({
   link: [

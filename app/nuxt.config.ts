@@ -187,6 +187,16 @@ export default defineNuxtConfig({
         'Referrer-Policy': 'strict-origin-when-cross-origin',
       },
     },
+    // Embeddable widget: must be framable from any third-party domain. Clear any
+    // X-Frame-Options and allow all frame-ancestors so the iframe snippet works.
+    '/widget': {
+      ssr: true,
+      headers: {
+        'cache-control': 's-maxage=300',
+        'X-Frame-Options': '',
+        'Content-Security-Policy': 'frame-ancestors *',
+      },
+    },
     '/_nuxt/**': {
       headers: { 'cache-control': 'max-age=31536000, immutable' },
     },
