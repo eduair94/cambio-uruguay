@@ -31,19 +31,17 @@ const props = withDefaults(
 
 const { $seo } = useNuxtApp()
 
-if (props.emitSchema) {
-  useHead(() => {
-    if (!props.items.length) return {}
-    return {
-      script: [
-        {
-          type: 'application/ld+json',
-          innerHTML: JSON.stringify(
-            $seo.generateFAQData(props.items.map(i => ({ question: i.question, answer: i.answer })))
-          ),
-        },
-      ],
-    }
-  })
-}
+useHead(() => {
+  if (!props.emitSchema || !props.items.length) return {}
+  return {
+    script: [
+      {
+        type: 'application/ld+json',
+        innerHTML: JSON.stringify(
+          $seo.generateFAQData(props.items.map(i => ({ question: i.question, answer: i.answer })))
+        ),
+      },
+    ],
+  }
+})
 </script>
