@@ -9,9 +9,7 @@ export default defineCachedEventHandler(
     const rates = await $fetch<ExchangeRate[]>('/', { baseURL: apiBase }).catch(
       () => [] as ExchangeRate[]
     )
-    const usd = rates.filter(
-      r => r.code === 'USD' && (!r.type || r.type === '') && r.origin !== 'bcu'
-    )
+    const usd = rates.filter(r => r.code === 'USD' && !r.type && r.origin !== 'bcu')
     const sells = usd.map(r => r.sell ?? 0).filter(v => v > 0)
     const buys = usd.map(r => r.buy ?? 0).filter(v => v > 0)
     return {
