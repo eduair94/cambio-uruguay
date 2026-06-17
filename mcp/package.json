@@ -8,7 +8,7 @@
   "homepage": "https://cambio-uruguay.com",
   "repository": {
     "type": "git",
-    "url": "https://github.com/eduair94/cambio-uruguay",
+    "url": "git+https://github.com/eduair94/cambio-uruguay.git",
     "directory": "mcp"
   },
   "keywords": [

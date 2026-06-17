@@ -28,5 +28,18 @@ module.exports = {
       exec_mode: "fork",
       script: "dist/sync_sheet.js",
     },
+    {
+      // Open-source MCP server (Streamable-HTTP). Build first: `cd mcp && npm ci && npm run build`.
+      name: "currency-mcp",
+      autorestart: true,
+      exec_mode: "fork",
+      cwd: "./mcp",
+      script: "dist/index.js",
+      env: {
+        MCP_TRANSPORT: "http",
+        MCP_HTTP_PORT: "8788",
+        API_BASE_URL: "https://api.cambio-uruguay.com",
+      },
+    },
   ],
 };
