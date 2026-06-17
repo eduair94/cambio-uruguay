@@ -2,7 +2,10 @@
   <div>
     <!-- Main App -->
     <NuxtLoadingIndicator />
-    <NuxtLayout name="default">
+    <!-- No explicit name: NuxtLayout reads the layout from route meta, so each
+         page's definePageMeta({ layout }) is honored (defaulting to 'default').
+         Lets bare pages like /widget opt out of the default app shell. -->
+    <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
 

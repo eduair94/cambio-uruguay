@@ -541,6 +541,18 @@
     "disclaimerText": "The information on Cambio Uruguay is informational and educational. It does not constitute financial, tax or investment advice, nor a recommendation to buy or sell currency. Always verify the rate and conditions directly with the exchange house before operating.",
     "ctaTitle": "Compare and decide with data",
     "ctaText": "Check the dollar rate across more than 40 exchange houses, or dig deeper with our guides.",
-    "ctaButton": "View rates"
+    "ctaButton": "View rates",
+    "embedTitle": "Embed the widget",
+    "embedText": "Have a website or blog? Add the live dollar rate with our widget. Copy this code and paste it into your page:",
+    "embedCopy": "Copy code",
+    "embedCopied": "Copied!"
+  },
+  "widget": {
+    "live": "Live",
+    "buy": "Buy",
+    "sell": "Sell",
+    "backlink": "Live rate · cambio-uruguay.com",
+    "metaTitle": "Uruguay dollar rate widget",
+    "metaDescription": "Embeddable widget with the best dollar rate (buy and sell) in Uruguay, updated live."
   }
 }

@@ -138,6 +138,35 @@
             </p>
           </section>
 
+          <!-- Insertá el widget (embeddable iframe -> backlinks) -->
+          <section class="mb-8">
+            <h2 class="text-h5 font-weight-bold mb-3">{{ t('acerca.embedTitle') }}</h2>
+            <p class="text-body-1 text-grey-lighten-1 about-prose mb-4">
+              {{ t('acerca.embedText') }}
+            </p>
+            <div class="embed-snippet">
+              <VTextarea
+                :model-value="embedSnippet"
+                readonly
+                variant="solo-filled"
+                rows="3"
+                auto-grow
+                hide-details
+                class="embed-code"
+                :aria-label="t('acerca.embedTitle')"
+              />
+              <VBtn
+                color="primary"
+                variant="tonal"
+                class="mt-2"
+                :prepend-icon="copied ? 'mdi-check' : 'mdi-content-copy'"
+                @click="copyEmbed"
+              >
+                {{ copied ? t('acerca.embedCopied') : t('acerca.embedCopy') }}
+              </VBtn>
+            </div>
+          </section>
+
           <!-- Disclaimer -->
           <VAlert type="warning" variant="tonal" class="mb-8" :title="t('acerca.disclaimerTitle')">
             {{ t('acerca.disclaimerText') }}
@@ -190,6 +219,30 @@ const rateTypes = computed<RateTypeRow[]>(() => [
   { code: 'TRANSFERENCIA', desc: t('acerca.typeTransferencia') },
   { code: 'INTERBANCARIO', desc: t('acerca.typeInterbancario') },
 ])
+
+// Copy-paste iframe snippet for the embeddable live-rate widget. Sites that
+// embed it link back to cambio-uruguay.com (the backlink lives inside /widget).
+const embedSnippet =
+  '<iframe src="https://cambio-uruguay.com/widget" width="320" height="180" frameborder="0" title="Cotización del dólar en Uruguay"></iframe>'
+
+const copied = ref(false)
+let copiedTimer: ReturnType<typeof setTimeout> | null = null
+const copyEmbed = async () => {
+  try {
+    await navigator.clipboard.writeText(embedSnippet)
+    copied.value = true
+    if (copiedTimer) clearTimeout(copiedTimer)
+    copiedTimer = setTimeout(() => {
+      copied.value = false
+    }, 2000)
+  } catch {
+    // Clipboard API unavailable (insecure context / denied): the textarea is
+    // selectable so the user can still copy manually.
+  }
+}
+onBeforeUnmount(() => {
+  if (copiedTimer) clearTimeout(copiedTimer)
+})
 
 const canonicalUrl = 'https://cambio-uruguay.com/acerca'
 
@@ -304,6 +357,12 @@ useHead({
 
 .about-link:hover {
   text-decoration: underline;
+}
+
+.embed-code :deep(textarea) {
+  font-family: 'Courier New', ui-monospace, monospace;
+  font-size: 0.8rem;
+  line-height: 1.5;
 }
 
 /* Readable CTA on dark theme (avoid Vuetify outlined color tinting the text) */
