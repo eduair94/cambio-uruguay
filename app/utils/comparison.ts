@@ -44,6 +44,23 @@ export function pickPrice(point: EvolutionPoint, kind: PriceKind): number {
 }
 
 /**
+ * A value this many times above/below the series median is treated as a
+ * data-entry error (e.g. a `2981` typo among ~30-peso quotes) rather than real
+ * movement. Exchange rates don't swing 10x over a few months, so the band is
+ * wide enough never to drop legitimate fluctuation. Dropping these points keeps
+ * one bad quote from inflating the shared y-axis and flattening every line.
+ */
+export const OUTLIER_RATIO = 10
+
+/** Median of a numeric list (0 for an empty list). Used as a robust centre. */
+function median(values: number[]): number {
+  if (values.length === 0) return 0
+  const sorted = [...values].sort((a, b) => a - b)
+  const mid = Math.floor(sorted.length / 2)
+  return sorted.length % 2 === 0 ? (sorted[mid - 1]! + sorted[mid]!) / 2 : sorted[mid]!
+}
+
+/**
  * Align multiple labelled evolution series onto a single, sorted date axis.
  *
  * - Collects the union of every series' dates and sorts them ascending.
@@ -72,15 +89,29 @@ export function buildComparisonChartData(
   const labels = Array.from(dateSet).sort((a, b) => a.localeCompare(b))
 
   // Map each series to a date -> price lookup (last duplicate wins), then project
-  // it onto the shared axis, filling gaps with null.
+  // it onto the shared axis, filling gaps with null. Non-finite prices (some
+  // houses omit buy/sell) are skipped, and gross outliers are dropped so a
+  // single bad quote can't distort the axis shared by every line.
   const datasets: ComparisonDataset[] = series.map(s => {
     const byDate = new Map<string, number>()
     for (const point of s.points) {
-      byDate.set(point.date, pickPrice(point, kind))
+      const value = pickPrice(point, kind)
+      if (typeof value === 'number' && Number.isFinite(value)) {
+        byDate.set(point.date, value)
+      }
     }
+
+    const med = median([...byDate.values()])
+    const isOutlier = (v: number): boolean =>
+      med > 0 && (v > med * OUTLIER_RATIO || v < med / OUTLIER_RATIO)
+
     return {
       label: s.label,
-      data: labels.map(date => (byDate.has(date) ? (byDate.get(date) as number) : null)),
+      data: labels.map(date => {
+        const value = byDate.get(date)
+        if (value === undefined || isOutlier(value)) return null
+        return value
+      }),
     }
   })
 
