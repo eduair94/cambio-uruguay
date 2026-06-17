@@ -1,0 +1,52 @@
+{
+  "name": "cambio-uruguay-mcp",
+  "version": "0.1.0",
+  "description": "Model Context Protocol server for live Uruguayan exchange-rate data (cambio-uruguay.com). Read-only, open source.",
+  "type": "module",
+  "license": "MIT",
+  "author": "cambio-uruguay",
+  "homepage": "https://cambio-uruguay.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eduair94/cambio-uruguay",
+    "directory": "mcp"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "uruguay",
+    "exchange-rate",
+    "dolar",
+    "cotizacion",
+    "casas-de-cambio"
+  ],
+  "bin": {
+    "cambio-uruguay-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx src/index.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "inspect": "npx @modelcontextprotocol/inspector tsx src/index.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.1.0",
+    "@types/node": "^20.14.0"
+  }
+}
