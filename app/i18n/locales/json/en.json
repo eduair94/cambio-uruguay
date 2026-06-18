@@ -648,5 +648,15 @@
     "pushDenied": "Notification permission denied.",
     "pushUnsupported": "This browser does not support push notifications.",
     "saved": "Alert created."
+  },
+  "tg": {
+    "title": "Telegram",
+    "link": "Link Telegram",
+    "linked": "Telegram linked",
+    "unlink": "Unlink",
+    "open": "Open Telegram",
+    "waiting": "Waiting for confirmation in Telegram…",
+    "hint": "Link Telegram to receive alerts in chat",
+    "telegram": "Telegram"
   }
 }

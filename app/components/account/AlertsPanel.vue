@@ -11,6 +11,8 @@
       {{ pushMsg }}
     </VAlert>
 
+    <AccountTelegramLink />
+
     <!-- Create form -->
     <VCard variant="outlined" class="pa-4 mb-4">
       <div class="text-subtitle-2 mb-2">{{ $t('alerts.new') }}</div>
@@ -63,6 +65,12 @@
         <VCheckbox
           v-model="form.email"
           :label="$t('alerts.email')"
+          density="compact"
+          hide-details
+        />
+        <VCheckbox
+          v-model="form.telegram"
+          :label="$t('tg.telegram')"
           density="compact"
           hide-details
         />
@@ -131,6 +139,7 @@ const form = reactive({
   target: 41,
   push: true,
   email: true,
+  telegram: false,
 })
 
 async function load() {
@@ -147,7 +156,7 @@ async function create() {
         kind: form.kind,
         op: form.op,
         target: form.target,
-        channels: { push: form.push, email: form.email },
+        channels: { push: form.push, email: form.email, telegram: form.telegram },
       },
     })
     await load()

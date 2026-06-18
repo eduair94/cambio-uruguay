@@ -641,5 +641,15 @@
     "pushDenied": "Permissão de notificações negada.",
     "pushUnsupported": "Este navegador não suporta notificações push.",
     "saved": "Alerta criada."
+  },
+  "tg": {
+    "title": "Telegram",
+    "link": "Vincular Telegram",
+    "linked": "Telegram vinculado",
+    "unlink": "Desvincular",
+    "open": "Abrir Telegram",
+    "waiting": "Aguardando confirmação no Telegram…",
+    "hint": "Vincule o Telegram para receber alertas no chat",
+    "telegram": "Telegram"
   }
 }
