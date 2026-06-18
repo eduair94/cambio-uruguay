@@ -667,6 +667,14 @@
     "sevenDays": "Últimos 7 dias",
     "seeMore": "Ver detalhes",
     "metaTitle": "Cotação do dólar hoje no Uruguai: subiu ou caiu? | Cambio Uruguay",
-    "metaDescription": "Cotação do dólar hoje no Uruguai: preço de compra e venda, variação em relação a ontem e tendência dos últimos dias, com a melhor cotação de mais de 40 casas de câmbio."
+    "metaDescription": "Cotação do dólar hoje no Uruguai: preço de compra e venda, variação em relação a ontem e tendência dos últimos dias, com a melhor cotação de mais de 40 casas de câmbio.",
+    "footNote": "A variação é calculada com base na cotação oficial do Banco Central do Uruguai (BCU).",
+    "compareCta": "Para operar, compare a cotação do dólar em mais de 40 casas de câmbio.",
+    "faqQ1": "O dólar subiu ou caiu hoje?",
+    "faqA1": "Mostramos a variação do dólar em relação a ontem com base na cotação oficial do BCU, junto com a tendência dos últimos dias.",
+    "faqQ2": "Qual cotação do dólar devo usar para comprar ou vender?",
+    "faqA2": "Para operar, convém comparar a melhor cotação de compra e venda entre mais de 40 casas de câmbio do Uruguai, não apenas a oficial do BCU.",
+    "faqQ3": "Com que frequência é atualizado?",
+    "faqA3": "As cotações são atualizadas a cada 10 minutos ao longo do dia."
   }
 }

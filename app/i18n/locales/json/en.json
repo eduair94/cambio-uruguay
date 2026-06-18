@@ -674,6 +674,14 @@
     "sevenDays": "Last 7 days",
     "seeMore": "View details",
     "metaTitle": "Dollar exchange rate in Uruguay today: rose or fell? | Cambio Uruguay",
-    "metaDescription": "Dollar exchange rate in Uruguay today: buy and sell price, change vs yesterday and trend over recent days, with the best rate from over 40 exchange houses."
+    "metaDescription": "Dollar exchange rate in Uruguay today: buy and sell price, change vs yesterday and trend over recent days, with the best rate from over 40 exchange houses.",
+    "footNote": "The change is calculated against the official rate of the Central Bank of Uruguay (BCU).",
+    "compareCta": "To trade, compare the dollar exchange rate across more than 40 exchange houses.",
+    "faqQ1": "Did the dollar rise or fall today?",
+    "faqA1": "We show the dollar's change vs yesterday based on the official BCU rate, along with the trend over recent days.",
+    "faqQ2": "Which dollar rate should I use to buy or sell?",
+    "faqA2": "To trade, it's best to compare the best buy and sell rates across more than 40 Uruguayan exchange houses, not just the official BCU rate.",
+    "faqQ3": "How often is it updated?",
+    "faqA3": "Rates are updated every 10 minutes throughout the day."
   }
 }

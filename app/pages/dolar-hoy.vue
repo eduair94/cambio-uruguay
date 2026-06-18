@@ -41,9 +41,8 @@
 
         <VCard class="pa-5" variant="flat">
           <p class="text-body-2 text-grey-lighten-1 mb-2">
-            La variación se calcula sobre la cotización oficial del Banco Central del Uruguay (BCU).
-            Para operar, compará la <NuxtLink :to="localePath('/cotizacion/dolar')" class="lnk">cotización del dólar</NuxtLink>
-            en más de 40 casas de cambio.
+            {{ $t('dolarHoy.footNote') }}
+            <NuxtLink :to="localePath('/cotizacion/dolar')" class="lnk">{{ $t('dolarHoy.compareCta') }}</NuxtLink>
           </p>
         </VCard>
       </VCol>
@@ -95,6 +94,20 @@ useSeoMeta({
 
 useHead(() => ({
   link: [{ rel: 'canonical', href: canonical.value }],
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: [1, 2, 3].map(n => ({
+          '@type': 'Question',
+          name: t(`dolarHoy.faqQ${n}`),
+          acceptedAnswer: { '@type': 'Answer', text: t(`dolarHoy.faqA${n}`) },
+        })),
+      }),
+    },
+  ],
 }))
 </script>
 

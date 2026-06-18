@@ -685,6 +685,14 @@
     "sevenDays": "Últimos 7 días",
     "seeMore": "Ver detalle",
     "metaTitle": "Cotización del dólar hoy en Uruguay: ¿subió o bajó? | Cambio Uruguay",
-    "metaDescription": "Cotización del dólar hoy en Uruguay: precio de compra y venta, variación respecto a ayer y tendencia de los últimos días, con la mejor cotización de más de 40 casas de cambio."
+    "metaDescription": "Cotización del dólar hoy en Uruguay: precio de compra y venta, variación respecto a ayer y tendencia de los últimos días, con la mejor cotización de más de 40 casas de cambio.",
+    "footNote": "La variación se calcula sobre la cotización oficial del Banco Central del Uruguay (BCU).",
+    "compareCta": "Para operar, compará la cotización del dólar en más de 40 casas de cambio.",
+    "faqQ1": "¿El dólar subió o bajó hoy?",
+    "faqA1": "Mostramos la variación del dólar respecto a ayer según la cotización oficial del BCU, junto con la tendencia de los últimos días.",
+    "faqQ2": "¿Qué cotización del dólar uso para comprar o vender?",
+    "faqA2": "Para operar conviene comparar la mejor cotización de compra y venta entre más de 40 casas de cambio de Uruguay, no solo la oficial del BCU.",
+    "faqQ3": "¿Cada cuánto se actualiza?",
+    "faqA3": "Las cotizaciones se actualizan cada 10 minutos a lo largo del día."
   }
 }
