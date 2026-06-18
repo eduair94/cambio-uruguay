@@ -91,7 +91,7 @@
               <p class="text-subtitle-1 font-weight-bold mb-3">
                 {{ rankingHeading }}
               </p>
-              <VList class="wtc-list bg-transparent" lines="two">
+              <VList class="wtc-list bg-transparent" lines="two" role="list">
                 <VListItem
                   v-for="(house, index) in topRanked"
                   :key="house.origin"
@@ -134,7 +134,7 @@
                 </VListItem>
               </VList>
 
-              <p class="text-caption text-grey-darken-1 mt-2">
+              <p class="text-caption text-grey-lighten-1 mt-2">
                 {{ t('whereToChange.marketAverage') }}: {{ formatUyu(ranking.marketAverage) }}
               </p>
 
