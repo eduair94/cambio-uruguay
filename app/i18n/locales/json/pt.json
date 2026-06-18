@@ -593,6 +593,7 @@
     "email": "E-mail",
     "password": "Senha",
     "continueGoogle": "Continuar com Google",
+    "continueGuest": "Continuar como convidado",
     "signIn": "Entrar",
     "register": "Criar conta",
     "magicLink": "Link mágico",

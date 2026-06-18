@@ -81,6 +81,17 @@
         <VAlert v-if="store.error" type="error" variant="tonal" density="comfortable" class="mt-4">
           {{ $t('auth.error') }} ({{ store.error }})
         </VAlert>
+
+        <VDivider class="my-4" />
+        <VBtn
+          block
+          variant="text"
+          size="small"
+          prepend-icon="mdi-incognito"
+          @click="store.signInAsGuest()"
+        >
+          {{ $t('auth.continueGuest') }}
+        </VBtn>
       </VCardText>
     </VCard>
   </VDialog>

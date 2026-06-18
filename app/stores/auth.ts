@@ -8,6 +8,7 @@ import {
   sendSignInLinkToEmail,
   sendPasswordResetEmail,
   sendEmailVerification,
+  signInAnonymously,
   signOut,
 } from './firebaseAuthApi'
 
@@ -83,6 +84,16 @@ export const useAuthStore = defineStore('auth', {
       this.error = null
       try {
         await signInWithPopup(fbAuth(), new GoogleAuthProvider())
+        this.closeDialog()
+      } catch (e: any) {
+        this.error = e?.code ?? e?.message ?? 'error'
+      }
+    },
+
+    async signInAsGuest() {
+      this.error = null
+      try {
+        await signInAnonymously(fbAuth())
         this.closeDialog()
       } catch (e: any) {
         this.error = e?.code ?? e?.message ?? 'error'

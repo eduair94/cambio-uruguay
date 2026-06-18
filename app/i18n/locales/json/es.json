@@ -611,6 +611,7 @@
     "email": "Correo electrónico",
     "password": "Contraseña",
     "continueGoogle": "Continuar con Google",
+    "continueGuest": "Continuar como invitado",
     "signIn": "Entrar",
     "register": "Crear cuenta",
     "magicLink": "Enlace mágico",

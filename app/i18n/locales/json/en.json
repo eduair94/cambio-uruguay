@@ -600,6 +600,7 @@
     "email": "Email",
     "password": "Password",
     "continueGoogle": "Continue with Google",
+    "continueGuest": "Continue as guest",
     "signIn": "Sign in",
     "register": "Create account",
     "magicLink": "Magic link",
