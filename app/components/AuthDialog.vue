@@ -12,11 +12,21 @@
         <VBtn
           block
           color="primary"
-          class="mb-4"
+          class="mb-2"
           prepend-icon="mdi-google"
           @click="store.signInWithGoogle()"
         >
           {{ $t('auth.continueGoogle') }}
+        </VBtn>
+
+        <VBtn
+          block
+          variant="flat"
+          class="mb-4 discord-btn"
+          prepend-icon="mdi-discord"
+          @click="goDiscord"
+        >
+          {{ $t('auth.continueDiscord') }}
         </VBtn>
 
         <VTabs v-model="tab" grow class="mb-2">
@@ -107,4 +117,16 @@ const open = computed({
   get: () => store.dialogOpen,
   set: v => (v ? store.openDialog() : store.closeDialog()),
 })
+
+// Full-page navigation kicks off the server-side Discord OAuth2 flow.
+const goDiscord = () => {
+  window.location.href = '/api/auth/discord/start'
+}
 </script>
+
+<style scoped>
+.discord-btn {
+  background-color: #5865f2;
+  color: #fff;
+}
+</style>

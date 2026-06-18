@@ -13,6 +13,7 @@ export {
   sendPasswordResetEmail,
   sendEmailVerification,
   signInAnonymously,
+  signInWithCustomToken,
   signOut,
   onAuthStateChanged,
 } from 'firebase/auth'

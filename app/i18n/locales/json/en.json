@@ -634,6 +634,7 @@
     "email": "Email",
     "password": "Password",
     "continueGoogle": "Continue with Google",
+    "continueDiscord": "Continue with Discord",
     "continueGuest": "Continue as guest",
     "signIn": "Sign in",
     "register": "Create account",
