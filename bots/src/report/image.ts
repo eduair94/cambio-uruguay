@@ -2,10 +2,12 @@
 // (/api/og-daily). Channels use the URL; Twitter needs the raw bytes. Both
 // degrade gracefully — a missing image just means text-only posts.
 
-export function ogImageUrl(siteBaseUrl: string, lang: string, env: NodeJS.ProcessEnv = process.env): string {
+export function ogImageUrl(siteBaseUrl: string, _lang: string, env: NodeJS.ProcessEnv = process.env): string {
+  // Override with OG_IMAGE_URL to point at a localized/dynamic card once one
+  // exists; default is the site's static branded OG image (always available).
   if (env.OG_IMAGE_URL) return env.OG_IMAGE_URL;
   const base = siteBaseUrl.replace(/\/$/, "");
-  return `${base}/api/og-daily?lang=${encodeURIComponent(lang)}`;
+  return `${base}/img/og.png`;
 }
 
 export async function fetchImage(url: string, fetchImpl: typeof fetch = fetch): Promise<Buffer | null> {

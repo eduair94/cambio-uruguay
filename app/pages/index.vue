@@ -814,10 +814,10 @@ const { data: ogRate } = await useFetch<{ buy: number | null; sell: number | nul
   { default: () => ({ buy: null, sell: null }) }
 )
 defineOgImageComponent('Cambio', {
-  title: 'Cotización del Dólar en Uruguay',
-  subtitle: 'Compará +40 casas de cambio en tiempo real',
+  // title/subtitle omitted → the OgImage component supplies localized defaults.
   rateBuy: ogRate.value?.buy ?? null,
   rateSell: ogRate.value?.sell ?? null,
+  locale: locale.value as 'es' | 'en' | 'pt',
 })
 
 // Data-grounded FAQ embed (USD live answers + evergreen). FaqBlock renders the

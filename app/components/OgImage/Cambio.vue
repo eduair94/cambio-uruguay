@@ -6,6 +6,8 @@ import type { CSSProperties } from 'vue'
 // opacity, box-shadow. No grid, no backdrop-filter, no JS/motion.
 // Styles are defined as typed objects here (not inline) to keep the template
 // clean and avoid attribute-quoting issues with font names.
+type OgLocale = 'es' | 'en' | 'pt'
+
 const props = withDefaults(
   defineProps<{
     title?: string
@@ -13,15 +15,58 @@ const props = withDefaults(
     tag?: string
     rateBuy?: number | null
     rateSell?: number | null
+    locale?: OgLocale
   }>(),
   {
-    title: 'Cotización del Dólar en Uruguay Hoy',
-    subtitle: 'Compará +40 casas de cambio en tiempo real',
+    title: '',
+    subtitle: '',
     tag: '',
     rateBuy: null,
     rateSell: null,
+    locale: 'es',
   }
 )
+
+// Satori renders server-side without i18n, so the card's chrome is localized
+// from this static map (es/en/pt). `title`/`subtitle` come pre-translated from
+// the page; when omitted we fall back to the localized defaults below.
+const OG_LABELS: Record<OgLocale, {
+  title: string
+  subtitle: string
+  rateLabel: string
+  buyWord: string
+  footerHouses: string
+  footerUpdated: string
+}> = {
+  es: {
+    title: 'Cotización del Dólar en Uruguay Hoy',
+    subtitle: 'Compará +40 casas de cambio en tiempo real',
+    rateLabel: 'DÓLAR USD',
+    buyWord: 'compra',
+    footerHouses: '+40 casas de cambio',
+    footerUpdated: 'actualizado cada 10 min',
+  },
+  en: {
+    title: "Uruguay's Dollar Exchange Rate Today",
+    subtitle: 'Compare 40+ exchange houses in real time',
+    rateLabel: 'USD DOLLAR',
+    buyWord: 'buy',
+    footerHouses: '40+ exchange houses',
+    footerUpdated: 'updated every 10 min',
+  },
+  pt: {
+    title: 'Cotação do Dólar no Uruguai Hoje',
+    subtitle: 'Compare +40 casas de câmbio em tempo real',
+    rateLabel: 'DÓLAR USD',
+    buyWord: 'compra',
+    footerHouses: '+40 casas de câmbio',
+    footerUpdated: 'atualizado a cada 10 min',
+  },
+}
+
+const labels = OG_LABELS[props.locale] ?? OG_LABELS.es
+const titleText = props.title || labels.title
+const subtitleText = props.subtitle || labels.subtitle
 
 const fmt = (n: number): string =>
   new Intl.NumberFormat('es-UY', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n)
@@ -185,14 +230,14 @@ const titleCol = (hasRate: boolean): CSSProperties => ({
 
     <div :style="main">
       <div :style="titleCol(!!props.rateSell)">
-        <div :style="titleStyle">{{ title }}</div>
-        <div :style="subtitleStyle">{{ subtitle }}</div>
+        <div :style="titleStyle">{{ titleText }}</div>
+        <div :style="subtitleStyle">{{ subtitleText }}</div>
       </div>
 
       <div v-if="props.rateSell" :style="rateCard">
-        <div :style="rateLabel">DÓLAR USD</div>
+        <div :style="rateLabel">{{ labels.rateLabel }}</div>
         <div :style="rateValue">${{ fmt(props.rateSell) }}</div>
-        <div v-if="props.rateBuy" :style="rateBuyStyle">compra ${{ fmt(props.rateBuy) }}</div>
+        <div v-if="props.rateBuy" :style="rateBuyStyle">{{ labels.buyWord }} ${{ fmt(props.rateBuy) }}</div>
       </div>
       <div v-else :style="bigDollar">$</div>
     </div>
@@ -200,9 +245,9 @@ const titleCol = (hasRate: boolean): CSSProperties => ({
     <div :style="footer">
       <span :style="footerBrand">cambio-uruguay.com</span>
       <span :style="dot">•</span>
-      <span>+40 casas de cambio</span>
+      <span>{{ labels.footerHouses }}</span>
       <span :style="dot">•</span>
-      <span>actualizado cada 10 min</span>
+      <span>{{ labels.footerUpdated }}</span>
     </div>
   </div>
 </template>

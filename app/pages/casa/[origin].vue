@@ -228,7 +228,7 @@ definePageMeta({
   },
 })
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const localePath = useLocalePath()
 const route = useRoute()
 const { smAndDown } = useDisplay()
@@ -321,6 +321,7 @@ const canonicalUrl = computed(() => `https://cambio-uruguay.com/casa/${origin.va
 defineOgImageComponent('Cambio', {
   title: () => casaName.value,
   subtitle: () => t('casaPage.ogSubtitle'),
+  locale: locale.value as 'es' | 'en' | 'pt',
   tag: 'CASA',
 })
 

@@ -312,6 +312,7 @@ defineOgImageComponent('Cambio', {
   title: () => t('cotizacion.ogTitle', { currency: currencyName.value }),
   subtitle: () => t('cotizacion.ogSubtitle', { currency: currencyName.value }),
   tag: 'COTIZACIÓN',
+  locale: locale.value as 'es' | 'en' | 'pt',
 })
 
 // SEO meta.

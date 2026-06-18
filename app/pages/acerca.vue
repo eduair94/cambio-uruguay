@@ -323,9 +323,16 @@ const canonicalUrl = 'https://cambio-uruguay.com/acerca'
 
 // Branded OG image for the about/methodology page.
 defineOgImageComponent('Cambio', {
-  title: 'Sobre Cambio Uruguay',
-  subtitle: 'Metodología y fuentes de datos',
+  title: () =>
+    ({ es: 'Sobre Cambio Uruguay', en: 'About Cambio Uruguay', pt: 'Sobre o Cambio Uruguay' })[
+      locale.value as 'es' | 'en' | 'pt'
+    ],
+  subtitle: () =>
+    ({ es: 'Metodología y fuentes de datos', en: 'Methodology and data sources', pt: 'Metodologia e fontes de dados' })[
+      locale.value as 'es' | 'en' | 'pt'
+    ],
   tag: 'ACERCA',
+  locale: locale.value as 'es' | 'en' | 'pt',
 })
 
 // SEO meta.

@@ -161,9 +161,18 @@ const relativeDate = (dateStr: string) => {
 
 // Branded OG image for the news page
 defineOgImageComponent('Cambio', {
-  title: 'Noticias del Dólar en Uruguay',
-  subtitle: 'Resumen con IA + titulares de los principales medios',
+  title: () =>
+    ({ es: 'Noticias del Dólar en Uruguay', en: "Uruguay's Dollar News", pt: 'Notícias do Dólar no Uruguai' })[
+      locale.value as 'es' | 'en' | 'pt'
+    ],
+  subtitle: () =>
+    ({
+      es: 'Resumen con IA + titulares de los principales medios',
+      en: 'AI summary + headlines from major outlets',
+      pt: 'Resumo com IA + manchetes dos principais meios',
+    })[locale.value as 'es' | 'en' | 'pt'],
   tag: 'NOTICIAS',
+  locale: locale.value as 'es' | 'en' | 'pt',
 })
 
 // SEO

@@ -69,9 +69,18 @@ const canonicalUrl = 'https://cambio-uruguay.com/guias'
 
 // Branded OG image for the guides hub.
 defineOgImageComponent('Cambio', {
-  title: 'Guías sobre el dólar en Uruguay',
-  subtitle: 'Cómo comprar, comparar y cambiar divisas',
+  title: () =>
+    ({ es: 'Guías sobre el dólar en Uruguay', en: 'Guides about the dollar in Uruguay', pt: 'Guias sobre o dólar no Uruguai' })[
+      locale.value as 'es' | 'en' | 'pt'
+    ],
+  subtitle: () =>
+    ({
+      es: 'Cómo comprar, comparar y cambiar divisas',
+      en: 'How to buy, compare and exchange currencies',
+      pt: 'Como comprar, comparar e trocar divisas',
+    })[locale.value as 'es' | 'en' | 'pt'],
   tag: 'GUÍAS',
+  locale: locale.value as 'es' | 'en' | 'pt',
 })
 
 // SEO meta.

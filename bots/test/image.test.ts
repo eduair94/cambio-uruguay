@@ -2,10 +2,8 @@ import { describe, expect, it } from "vitest";
 import { fetchImage, ogImageUrl } from "../src/report/image.js";
 
 describe("ogImageUrl", () => {
-  it("builds the localized og-daily url", () => {
-    expect(ogImageUrl("https://cambio-uruguay.com", "en", {})).toBe(
-      "https://cambio-uruguay.com/api/og-daily?lang=en"
-    );
+  it("defaults to the static branded OG image", () => {
+    expect(ogImageUrl("https://cambio-uruguay.com", "en", {})).toBe("https://cambio-uruguay.com/img/og.png");
   });
   it("honors an OG_IMAGE_URL override", () => {
     expect(ogImageUrl("https://x", "es", { OG_IMAGE_URL: "https://cdn/og.png" } as NodeJS.ProcessEnv)).toBe(

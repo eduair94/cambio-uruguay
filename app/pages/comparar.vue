@@ -192,7 +192,7 @@ import LineChart from '~/components/charts/LineChart.vue'
 import type { EvolutionResponse } from '~/types/api'
 import { buildComparisonChartData, type LabelledSeries, type PriceKind } from '~/utils/comparison'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const localePath = useLocalePath()
 const { smAndDown } = useDisplay()
 const { getEvolutionData, getProcessedExchangeData } = useApiService()
@@ -405,9 +405,18 @@ const formatOriginName = (origin: string): string => {
 
 // Branded OG image for the comparison page
 defineOgImageComponent('Cambio', {
-  title: 'Comparar Casas de Cambio',
-  subtitle: 'Superponé la evolución de varias casas en el tiempo',
+  title: () =>
+    ({ es: 'Comparar Casas de Cambio', en: 'Compare Exchange Houses', pt: 'Comparar Casas de Câmbio' })[
+      locale.value as 'es' | 'en' | 'pt'
+    ],
+  subtitle: () =>
+    ({
+      es: 'Superponé la evolución de varias casas en el tiempo',
+      en: 'Overlay the evolution of several houses over time',
+      pt: 'Sobreponha a evolução de várias casas ao longo do tempo',
+    })[locale.value as 'es' | 'en' | 'pt'],
   tag: 'COMPARADOR',
+  locale: locale.value as 'es' | 'en' | 'pt',
 })
 
 // SEO

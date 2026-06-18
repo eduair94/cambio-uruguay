@@ -183,7 +183,7 @@ definePageMeta({
   },
 })
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const localePath = useLocalePath()
 const route = useRoute()
 const { smAndDown } = useDisplay()
@@ -296,6 +296,7 @@ defineOgImageComponent('Cambio', {
   title: () => t('dolarDepto.ogTitle', { department: departmentTitle.value }),
   subtitle: () => t('dolarDepto.ogSubtitle'),
   tag: 'DÓLAR',
+  locale: locale.value as 'es' | 'en' | 'pt',
 })
 
 // SEO meta.
