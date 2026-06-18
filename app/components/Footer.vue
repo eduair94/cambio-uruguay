@@ -44,6 +44,20 @@
           </VBtn>
 
           <VBtn
+            href="https://t.me/cambio_uruguay_bot"
+            target="_blank"
+            rel="noopener noreferrer"
+            :aria-label="$t('siguenos.telegram')"
+            :title="$t('siguenos.telegram')"
+            icon
+            size="small"
+            variant="text"
+            color="white"
+          >
+            <VIcon>mdi-telegram</VIcon>
+          </VBtn>
+
+          <VBtn
             href="https://www.linkedin.com/company/cambio-uruguay/"
             target="_blank"
             rel="noopener noreferrer"
