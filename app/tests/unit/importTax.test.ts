@@ -24,7 +24,12 @@ describe('courierImport', () => {
 
   it('IVA on franchise + 60% on the excess above the franchise', () => {
     // declared 1000, franchise 800 -> IVA 800*22%=176, excess 200*60%=120 -> 296
-    const r = courierImport({ value: 1000, origin: 'other', useFranchise: true, franchiseAvailable: 800 })
+    const r = courierImport({
+      value: 1000,
+      origin: 'other',
+      useFranchise: true,
+      franchiseAvailable: 800,
+    })
     expect(r.totalTax).toBe(296)
     expect(r.landedCost).toBe(1296)
   })
@@ -40,9 +45,44 @@ describe('courierImport', () => {
     expect(r.totalTax).toBe(10)
   })
 
-  it('includes shipping and insurance in the declared value', () => {
-    const r = courierImport({ value: 100, shipping: 20, insurance: 5, useFranchise: false })
-    expect(r.taxableBase).toBe(125)
+  it('does not tax freight: IVA is on merchandise only, freight added to landed cost', () => {
+    // value 150 (franchise covers it) -> IVA 22% = 33; freight 40 untaxed -> landed 150+33+40
+    const r = courierImport({ value: 150, shipping: 40, origin: 'other', useFranchise: true })
+    expect(r.totalTax).toBe(33)
+    expect(r.landedCost).toBe(223)
+  })
+
+  it('keeps freight out of the franchise and the 60% excess base', () => {
+    // value 1000, franchise 800 -> IVA 176 + 60% of 200 = 120 => 296; freight 100 untaxed
+    const r = courierImport({
+      value: 1000,
+      shipping: 100,
+      origin: 'other',
+      useFranchise: true,
+      franchiseAvailable: 800,
+    })
+    expect(r.totalTax).toBe(296)
+    expect(r.landedCost).toBe(1396)
+  })
+
+  it('keeps freight out of the 60% base when the franchise is not used', () => {
+    // 60% of merchandise 100 = 60; freight 20 untaxed -> landed 180
+    const r = courierImport({ value: 100, shipping: 20, useFranchise: false })
+    expect(r.taxableBase).toBe(100)
+    expect(r.totalTax).toBe(60)
+    expect(r.landedCost).toBe(180)
+  })
+
+  it('shows the merchandise and freight as explicit, separate breakdown lines', () => {
+    const r = courierImport({ value: 100, shipping: 20, useFranchise: false })
+    expect(r.breakdown[0]).toEqual({ label: 'Mercadería', amount: 100 })
+    const freightLine = r.breakdown.find(l => /flete|env[ií]o/i.test(l.label))
+    expect(freightLine?.amount).toBe(20)
+  })
+
+  it('omits the freight line when there is no shipping', () => {
+    const r = courierImport({ value: 100, useFranchise: false })
+    expect(r.breakdown.some(l => /flete|env[ií]o/i.test(l.label))).toBe(false)
   })
 })
 
@@ -56,7 +96,7 @@ describe('courierShipping', () => {
   })
 
   it('falls back to the first courier for an unknown id', () => {
-    expect(getCourier('nope').id).toBe('usxcargo')
+    expect(getCourier('nope').id).toBe('gripper')
   })
 })
 

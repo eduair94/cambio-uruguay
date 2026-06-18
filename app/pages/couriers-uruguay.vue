@@ -1,0 +1,337 @@
+<template>
+  <div class="couriers-page pb-8">
+    <!-- Breadcrumb -->
+    <div class="mb-3">
+      <VBtn :to="localePath('/herramientas')" variant="text" size="small" class="px-1">
+        <VIcon start size="small">mdi-arrow-left</VIcon>
+        Herramientas
+      </VBtn>
+    </div>
+
+    <!-- Header -->
+    <VCard class="overflow-hidden mb-4" elevation="8">
+      <div class="bg-gradient-couriers pa-6">
+        <div class="d-flex align-center ga-4 flex-wrap">
+          <VAvatar size="56" class="d-none d-md-flex bg-white">
+            <VIcon size="32" color="primary">mdi-truck-fast-outline</VIcon>
+          </VAvatar>
+          <div>
+            <h1 class="text-h5 text-md-h4 font-weight-bold text-white mb-1">
+              Couriers para comprar en el exterior desde Uruguay
+            </h1>
+            <p class="text-body-1 text-grey-lighten-2 mb-0 couriers-intro">
+              Comparativa de los principales couriers puerta a puerta (Miami → Uruguay): tarifa de
+              referencia por kilo, cargo de manejo y demora. Valores verificados en junio de 2026.
+            </p>
+          </div>
+        </div>
+        <div class="d-flex justify-start justify-md-end mt-3">
+          <ShareButtons text="Couriers para comprar en el exterior desde Uruguay" />
+        </div>
+      </div>
+    </VCard>
+
+    <!-- How it ties to the import calculator -->
+    <VAlert
+      type="info"
+      variant="tonal"
+      density="comfortable"
+      class="mb-4"
+      icon="mdi-information-outline"
+    >
+      El flete del courier es un <strong>costo aparte que no paga IVA</strong>: en el régimen de
+      compras online el IVA solo grava el costo del producto, y el envío se suma al total.
+      <NuxtLink
+        :to="localePath('/herramientas/calculadora-impuestos-importacion')"
+        class="couriers-link"
+      >
+        Estimá los impuestos de tu compra
+      </NuxtLink>
+      antes de comprar.
+    </VAlert>
+
+    <!-- Comparison table -->
+    <VCard class="couriers-card pa-4 pa-sm-6">
+      <h2 class="text-h6 font-weight-bold mb-1">Comparativa de couriers (casillero en Miami)</h2>
+      <p class="text-caption text-grey-lighten-1 mb-4">
+        Los couriers cobran por escalas de peso; el valor por kg que se muestra es la escala de
+        paquete chico. Mirá las notas y el sitio oficial para el detalle por tramo.
+      </p>
+      <VTable density="comfortable" class="couriers-table">
+        <thead>
+          <tr>
+            <th>Courier</th>
+            <th>Modalidad</th>
+            <th class="text-right">US$/kg (ref.)</th>
+            <th class="text-right">Cargo fijo</th>
+            <th>Demora</th>
+            <th>Sitio / fuente</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="c in couriers" :key="c.id">
+            <td class="font-weight-medium">{{ c.name }}</td>
+            <td class="text-grey-lighten-1">{{ c.modality }}</td>
+            <td class="text-right">US$ {{ fmt(c.perKgUsd) }}</td>
+            <td class="text-right">US$ {{ fmt(c.baseUsd) }}</td>
+            <td class="text-grey-lighten-1">{{ c.transit ?? '—' }}</td>
+            <td>
+              <a :href="c.source" target="_blank" rel="noopener noreferrer" class="couriers-link">
+                {{ hostOf(c.website) }}
+              </a>
+            </td>
+          </tr>
+        </tbody>
+      </VTable>
+      <ul class="couriers-notes mt-3">
+        <li v-for="c in couriers" :key="c.id">
+          <strong>{{ c.name }}:</strong> {{ c.note }}
+        </li>
+      </ul>
+    </VCard>
+
+    <!-- Other options -->
+    <VCard variant="flat" class="couriers-section mt-6 pa-5">
+      <h2 class="text-subtitle-1 font-weight-bold mb-3">Otras opciones</h2>
+      <ul class="couriers-other">
+        <li v-for="o in otherOptions" :key="o.name">
+          <a :href="o.url" target="_blank" rel="noopener noreferrer" class="couriers-link">{{
+            o.name
+          }}</a>
+          — {{ o.note }}
+        </li>
+      </ul>
+    </VCard>
+
+    <!-- Disclaimer -->
+    <VAlert
+      type="warning"
+      variant="tonal"
+      density="comfortable"
+      class="mt-4"
+      icon="mdi-alert-outline"
+    >
+      Las tarifas son <strong>de referencia</strong>, verificadas el 18/06/2026 a partir de los
+      sitios oficiales de cada courier, y cambian con frecuencia (no incluyen recargos como la TSPU
+      ni el costo de despacho aduanero). Confirmá el precio exacto con tu courier antes de comprar.
+      No es asesoramiento profesional. No tenemos afiliación con los couriers listados.
+    </VAlert>
+
+    <!-- Sources -->
+    <VCard variant="flat" class="couriers-section mt-4 pa-5">
+      <h2 class="text-subtitle-2 font-weight-bold mb-2">
+        <VIcon start size="small" color="primary">mdi-link-variant</VIcon>
+        Fuentes y referencias
+      </h2>
+      <ul class="couriers-sources">
+        <li v-for="(src, i) in sources" :key="i">
+          <a :href="src.url" target="_blank" rel="noopener noreferrer">{{ src.label }}</a>
+        </li>
+      </ul>
+    </VCard>
+
+    <!-- CTA -->
+    <VCard class="cta-couriers mt-6 pa-6 text-center" variant="flat">
+      <h2 class="text-h6 font-weight-bold mb-2 text-white">¿Cuánto vas a pagar de impuestos?</h2>
+      <p class="text-body-2 text-grey-lighten-1 mb-4">
+        Usá la calculadora de impuestos de importación: franquicia anual de US$ 800, IVA sobre la
+        mercadería y el flete del courier por separado.
+      </p>
+      <VBtn
+        :to="localePath('/herramientas/calculadora-impuestos-importacion')"
+        color="primary"
+        variant="elevated"
+      >
+        <VIcon start>mdi-calculator</VIcon>
+        Calcular impuestos de importación
+      </VBtn>
+    </VCard>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { COURIERS } from '~/utils/courierShipping'
+
+const localePath = useLocalePath()
+
+const couriers = COURIERS
+
+/** Format a USD amount with Uruguayan locale (comma decimals, no trailing zeros). */
+function fmt(n: number): string {
+  return n.toLocaleString('es-UY', { maximumFractionDigits: 2 })
+}
+
+/** Bare host (without scheme / www) for compact source links. */
+function hostOf(url: string): string {
+  return url
+    .replace(/^https?:\/\//, '')
+    .replace(/^www\./, '')
+    .replace(/\/.*$/, '')
+}
+
+// Broader landscape, linked but not part of the per-kg estimator.
+const otherOptions = [
+  {
+    name: 'Correo Uruguayo',
+    url: 'https://www.correo.com.uy/tarifas',
+    note: 'Operador postal oficial; tarifas oficiales y gestión del despacho ante Aduanas.',
+  },
+  {
+    name: 'Logistika.US',
+    url: 'https://logistika.us/puerta-a-puerta/',
+    note: 'Aéreo puerta a puerta desde US$ 130 más por libra adicional; incluye seguro.',
+  },
+  {
+    name: 'Tiendamia',
+    url: 'https://tiendamia.com.uy',
+    note: 'Marketplace (Amazon, eBay, Walmart) con envío y, en general, impuestos incluidos.',
+  },
+  {
+    name: 'DHL / UPS / FedEx',
+    url: 'https://www.dhl.com/uy-es/home/express.html',
+    note: 'Couriers express internacionales; tarifa por cotización según peso y volumen.',
+  },
+]
+
+const sources = [
+  {
+    label: 'Dirección Nacional de Aduanas — Nuevo régimen de franquicias (mayo 2026)',
+    url: 'https://www.aduanas.gub.uy/innovaportal/v/28455/1/innova.front/desde-el-1%C2%BA-de-mayo-comienza-a-regir-el-nuevo-regimen-de-franquicias-de-envios-postales-internacionales.html',
+  },
+  {
+    label: 'MEF — Preguntas frecuentes sobre el régimen de envíos postales (franquicias)',
+    url: 'https://www.gub.uy/ministerio-economia-finanzas/comunicacion/noticias/guia-preguntas-frecuentes-sobre-regimen-envios-postales-franquicias',
+  },
+  { label: 'Gripper — Tarifas', url: 'https://www.gripper.com.uy/tarifas' },
+  {
+    label: 'Envía Mi Compra — Servicios y tarifas',
+    url: 'https://www.enviamicompra.com.uy/servicios-tarifas',
+  },
+  { label: 'Casilla Mía — Tarifas', url: 'https://www.casillamia.uy/Tarifas' },
+  { label: 'Punto Mío', url: 'https://www.puntomio.uy' },
+  { label: 'Correo Uruguayo — Tarifas', url: 'https://www.correo.com.uy/tarifas' },
+]
+
+const canonicalUrl = 'https://cambio-uruguay.com/couriers-uruguay'
+const title = 'Couriers para comprar en el exterior desde Uruguay (comparativa 2026)'
+const description =
+  'Comparativa de couriers puerta a puerta de Miami a Uruguay: precio de referencia por kilo, cargo de manejo y demora. Gripper, Envía Mi Compra, Casilla Mía, Punto Mío y más, con fuentes oficiales.'
+
+defineOgImageComponent('Cambio', {
+  title: 'Couriers en Uruguay',
+  subtitle: 'Comparativa de tarifas puerta a puerta Miami → Uruguay',
+  tag: 'GUÍA',
+})
+
+useSeoMeta({
+  title: () => `${title} | Cambio Uruguay`,
+  description,
+  ogTitle: title,
+  ogDescription: description,
+  ogType: 'website',
+  ogUrl: canonicalUrl,
+  twitterCard: 'summary_large_image',
+  twitterTitle: title,
+  twitterDescription: description,
+})
+
+useHead({
+  link: [{ rel: 'canonical', href: canonicalUrl }],
+  meta: [
+    {
+      name: 'keywords',
+      content:
+        'couriers uruguay, comprar en el exterior uruguay, courier puerta a puerta, casillero miami uruguay, tarifas courier uruguay',
+    },
+  ],
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@graph': [
+          {
+            '@type': 'ItemList',
+            name: 'Couriers puerta a puerta en Uruguay',
+            itemListElement: couriers.map((c, i) => ({
+              '@type': 'ListItem',
+              position: i + 1,
+              name: c.name,
+              url: c.website,
+            })),
+          },
+          {
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Cambio Uruguay',
+                item: 'https://cambio-uruguay.com',
+              },
+              { '@type': 'ListItem', position: 2, name: 'Couriers en Uruguay', item: canonicalUrl },
+            ],
+          },
+        ],
+      }),
+    },
+  ],
+})
+</script>
+
+<style scoped>
+.bg-gradient-couriers {
+  background: linear-gradient(135deg, #2f81f7 0%, #16c784 100%);
+}
+
+.couriers-intro {
+  max-width: 760px;
+  line-height: 1.6;
+}
+
+.couriers-card,
+.couriers-section {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+}
+
+.couriers-table :deep(td),
+.couriers-table :deep(th) {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.couriers-notes,
+.couriers-other,
+.couriers-sources {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.couriers-notes li,
+.couriers-other li,
+.couriers-sources li {
+  margin-bottom: 0.4rem;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.78);
+  line-height: 1.6;
+}
+
+.couriers-link,
+.couriers-sources a {
+  color: #64b5f6;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.couriers-link:hover,
+.couriers-sources a:hover {
+  text-decoration: underline;
+}
+
+.cta-couriers {
+  background: rgba(33, 150, 243, 0.1);
+  border: 1px solid rgba(33, 150, 243, 0.28);
+  border-radius: 12px;
+}
+</style>

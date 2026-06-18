@@ -162,9 +162,15 @@
             </div>
             <VSwitch v-model="shipByWeight" color="primary" hide-details density="compact" inset />
           </div>
-          <p class="text-caption text-grey-lighten-1 mb-3">
+          <p class="text-caption text-grey-lighten-1 mb-1">
             Tarifa de referencia por courier (Miami → Uruguay). Ajustá el valor por kg al de tu
             courier; el resultado completa el flete de arriba.
+          </p>
+          <p class="text-caption text-grey-lighten-1 mb-3">
+            El flete es un costo aparte: <strong>no paga IVA</strong> y se suma al total.
+            <NuxtLink :to="localePath('/couriers-uruguay')" class="tool-link">
+              Comparar couriers en Uruguay
+            </NuxtLink>
           </p>
           <VExpandTransition>
             <VRow v-if="shipByWeight" class="g-input">
@@ -253,7 +259,7 @@
             </td>
           </tr>
           <tr class="total-row">
-            <td class="font-weight-bold">Total a pagar (con mercadería)</td>
+            <td class="font-weight-bold">{{ totalRowLabel }}</td>
             <td class="text-right font-weight-bold text-success">
               {{ formatUSD(result.landedCost) }}
             </td>
@@ -272,6 +278,15 @@
         TIFA. Lo que supera la franquicia paga el régimen simplificado del <strong>60%</strong>.
       </p>
       <p>
+        En este régimen el IVA y la tasa única se calculan siempre sobre el
+        <strong>costo interno del producto</strong> (el valor de la factura del vendedor). El
+        <strong>flete del courier no paga IVA</strong>: es un costo aparte que se muestra explícito
+        y se suma al total. ¿No sabés qué courier conviene?
+        <NuxtLink :to="localePath('/couriers-uruguay')" class="tool-link">
+          Compará los couriers disponibles en Uruguay</NuxtLink
+        >.
+      </p>
+      <p>
         <strong>Régimen general:</strong> aplica para importaciones formales. Se calcula el valor
         CIF (mercadería + flete + seguro), se suman el arancel y la tasa consular, y sobre esa base
         se aplica el <strong>IVA del 22%</strong>. Algunos productos pagan además IMESI.
@@ -286,9 +301,10 @@
       Cálculo de referencia. Régimen de franquicia vigente desde el 1.º de mayo de 2026 (hasta US$
       800 anuales, en 3 envíos): exento de aranceles pero <strong>gravado con IVA 22%</strong>,
       salvo envíos desde EE.UU. de hasta US$ 200 (exonerados de IVA por el acuerdo TIFA). El
-      excedente paga el régimen simplificado del 60%. Las tarifas de courier son de referencia.
-      Verificá las condiciones vigentes con la Dirección Nacional de Aduanas y tu courier antes de
-      comprar. No es asesoramiento profesional.
+      excedente paga el régimen simplificado del 60%. El IVA y la tasa única gravan el valor de la
+      mercadería; <strong>el flete del courier no paga IVA</strong> y se suma aparte al costo total.
+      Las tarifas de courier son de referencia. Verificá las condiciones vigentes con la Dirección
+      Nacional de Aduanas y tu courier antes de comprar. No es asesoramiento profesional.
     </template>
   </ToolShell>
 </template>
@@ -326,10 +342,17 @@ const computedShipping = computed(() =>
   shippingCostUsd(perKgUsd.value || 0, getCourier(courierId.value).baseUsd, weightKg.value || 0)
 )
 
-// Feed the freight input when estimating by weight.
-watch([shipByWeight, computedShipping], () => {
-  if (regime.value === 'courier' && shipByWeight.value) shipping.value = computedShipping.value
+// Feed the freight input while estimating by weight; reset it to 0 when the estimate is turned
+// off so a stale weight-based amount never lingers in the (now editable) freight field.
+watch(shipByWeight, on => {
+  if (regime.value !== 'courier') return
+  shipping.value = on ? computedShipping.value : 0
 })
+watch(computedShipping, v => {
+  if (regime.value === 'courier' && shipByWeight.value) shipping.value = v
+})
+
+const localePath = useLocalePath()
 
 const sources = [
   {
@@ -369,6 +392,13 @@ const landedUyu = computed(() => {
   return rate ? result.value.landedCost * rate : null
 })
 
+// Make explicit that, for courier shipments with freight, the total already includes it.
+const totalRowLabel = computed(() =>
+  regime.value === 'courier' && (shipping.value || 0) > 0
+    ? 'Total a pagar (mercadería + flete + impuestos)'
+    : 'Total a pagar (con mercadería)'
+)
+
 const faq = [
   {
     q: '¿La franquicia de US$ 800 paga impuestos?',
@@ -387,8 +417,12 @@ const faq = [
     a: 'Se parte del valor CIF (mercadería + flete + seguro). Sobre el CIF se aplican el arancel (Tasa Global Arancelaria, que varía según el producto y el origen) y la tasa consular. Luego, el IVA del 22% se calcula sobre la suma de CIF + arancel + tasa consular. Algunos bienes pagan además IMESI.',
   },
   {
+    q: '¿El flete del courier paga IVA?',
+    a: 'No en el régimen courier (compra online): el IVA y la tasa única se calculan siempre sobre el costo interno del producto (el valor de la factura del vendedor), nunca sobre el flete del courier. El envío es un costo aparte que se muestra explícito y se suma al total. Distinto es el régimen general de importación formal, donde el flete sí integra el valor CIF sobre el que se calcula el IVA.',
+  },
+  {
     q: '¿Las tarifas de courier por peso son oficiales?',
-    a: 'No. Son valores de referencia para estimar el flete según el peso. Cada courier (USX Cargo, casilleros en Miami, etc.) tiene su propia tarifa por kilo; ajustá el valor por kg al de tu courier para una estimación más precisa.',
+    a: 'No. Son valores de referencia (verificados en junio de 2026) para estimar el flete según el peso. Cada courier (Gripper, Envía Mi Compra, Casilla Mía, Punto Mío, etc.) tiene su propia tarifa por kilo y escalas por peso; ajustá el valor por kg al de tu courier o mirá la comparativa de couriers para una estimación más precisa.',
   },
 ]
 </script>
