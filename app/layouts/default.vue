@@ -182,6 +182,17 @@
           {{ $t('inicio') }}
         </VBtn>
 
+        <!-- Dólar hoy -->
+        <VBtn
+          :to="localePath('/dolar-hoy')"
+          variant="text"
+          class="text-capitalize nav-btn"
+          :class="{ 'nav-btn--active': isActiveRoute('/dolar-hoy') }"
+        >
+          <VIcon start small>mdi-trending-up</VIcon>
+          {{ $t('dolarHoy.nav') }}
+        </VBtn>
+
         <!-- Avanzado -->
         <VBtn
           :to="localePath('/avanzado')"
