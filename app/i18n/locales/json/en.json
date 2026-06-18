@@ -659,6 +659,17 @@
     "hint": "Link Telegram to receive alerts in chat",
     "telegram": "Telegram"
   },
+  "dolarRecords": {
+    "title": "Dollar in Uruguay: highs, lows and historical data",
+    "subtitle": "Records and averages of the official dollar exchange rate.",
+    "max": "All-time high",
+    "min": "All-time low",
+    "yearAgo": "1 year ago",
+    "monthlyAvg": "Period average",
+    "noData": "No historical data available yet.",
+    "metaTitle": "Dollar in Uruguay: highs, lows and historical data | Cambio Uruguay",
+    "metaDescription": "All-time high and low of the dollar in Uruguay, value from one year ago and period average, based on the official BCU rate."
+  },
   "ahorro": {
     "title": "How much do you save by comparing?",
     "amount": "Amount in dollars",

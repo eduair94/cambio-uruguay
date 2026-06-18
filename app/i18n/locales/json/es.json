@@ -670,6 +670,17 @@
     "hint": "Vinculá Telegram para recibir alertas en el chat",
     "telegram": "Telegram"
   },
+  "dolarRecords": {
+    "title": "Dólar en Uruguay: máximos, mínimos e históricos",
+    "subtitle": "Récords y promedios de la cotización oficial del dólar.",
+    "max": "Máximo histórico",
+    "min": "Mínimo histórico",
+    "yearAgo": "Hace 1 año",
+    "monthlyAvg": "Promedio del período",
+    "noData": "Sin datos históricos por ahora.",
+    "metaTitle": "Dólar en Uruguay: máximos, mínimos e históricos | Cambio Uruguay",
+    "metaDescription": "Máximo y mínimo histórico del dólar en Uruguay, valor de hace un año y promedio del período, según la cotización oficial del BCU."
+  },
   "ahorro": {
     "title": "¿Cuánto ahorrás comparando?",
     "amount": "Monto en dólares",
