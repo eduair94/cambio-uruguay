@@ -31,6 +31,13 @@
           <VListItemTitle>{{ $t('inicio') }}</VListItemTitle>
         </VListItem>
 
+        <VListItem :to="localePath('/dolar-hoy')" @click="drawer = false">
+          <template #prepend>
+            <VIcon>mdi-trending-up</VIcon>
+          </template>
+          <VListItemTitle>{{ $t('dolarHoy.nav') }}</VListItemTitle>
+        </VListItem>
+
         <VListItem :to="localePath('/avanzado')" @click="drawer = false">
           <template #prepend>
             <VIcon>mdi-cog</VIcon>

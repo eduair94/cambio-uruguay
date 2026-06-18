@@ -36,7 +36,7 @@ import type { CurrencyCode } from '~/utils/currencyPages'
 const { bestBuy, bestSell } = useExchangeRates()
 const { momentum } = useDollarTrend()
 const currencies: CurrencyCode[] = ['USD', 'EUR', 'BRL', 'ARS']
-const fmt = (n: number | null) => (n ? formatNumber(n) : '-')
+const fmt = (n: number | null) => (n !== null ? formatNumber(n) : '-')
 </script>
 
 <style scoped>
