@@ -501,6 +501,12 @@ export default defineNuxtConfig({
       apiKey: process.env.NUXT_AI_API_KEY || process.env.AI_API_KEY || '',
       model: process.env.NUXT_AI_MODEL || 'wormv5.1',
     },
+    // User data store + Firebase Admin (server-only secrets)
+    mongoUri: process.env.MONGO_URI || '',
+    firebase: {
+      // base64-encoded service account JSON
+      serviceAccount: process.env.FIREBASE_SERVICE_ACCOUNT || '',
+    },
     // Public keys (exposed to client-side)
     public: {
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'https://cambio-uruguay.com',
@@ -509,6 +515,14 @@ export default defineNuxtConfig({
       // Microsoft Clarity project id (session replay + heatmaps). Empty -> disabled.
       // Set via env NUXT_PUBLIC_CLARITY_ID. See plugins/clarity.client.ts.
       clarityId: process.env.NUXT_PUBLIC_CLARITY_ID || '',
+      // Firebase Web SDK config (public by design)
+      firebase: {
+        apiKey: process.env.NUXT_PUBLIC_FIREBASE_API_KEY || '',
+        authDomain: process.env.NUXT_PUBLIC_FIREBASE_AUTH_DOMAIN || '',
+        projectId: process.env.NUXT_PUBLIC_FIREBASE_PROJECT_ID || '',
+        appId: process.env.NUXT_PUBLIC_FIREBASE_APP_ID || '',
+        messagingSenderId: process.env.NUXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || '',
+      },
     },
   },
 
