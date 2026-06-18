@@ -570,5 +570,39 @@
     "backlink": "Live rate · cambio-uruguay.com",
     "metaTitle": "Uruguay dollar rate widget",
     "metaDescription": "Embeddable widget with the best dollar rate (buy and sell) in Uruguay, updated live."
+  },
+  "auth": {
+    "login": "Log in",
+    "logout": "Log out",
+    "account": "My account",
+    "favorites": "Favorites",
+    "saved": "Saved",
+    "email": "Email",
+    "password": "Password",
+    "continueGoogle": "Continue with Google",
+    "signIn": "Sign in",
+    "register": "Create account",
+    "magicLink": "Magic link",
+    "sendMagicLink": "Send me a link",
+    "forgotPassword": "Forgot your password?",
+    "resetSent": "We sent you a password reset email.",
+    "magicSent": "We sent you a sign-in link. Check your email.",
+    "verifySent": "Account created. Verify your email to finish signing up.",
+    "tabPassword": "Email & password",
+    "tabMagic": "Email link",
+    "error": "Could not complete. Check your details and try again."
+  },
+  "account": {
+    "title": "My account",
+    "favoritesEmpty": "You haven't marked any exchange houses or currencies as favorites yet.",
+    "savedEmpty": "You haven't saved any results yet.",
+    "savedAt": "Saved on",
+    "then": "Then",
+    "now": "Now",
+    "drift": "Change",
+    "save": "Save result",
+    "saved": "Saved",
+    "remove": "Remove",
+    "rateUnavailable": "Rate unavailable"
   }
 }

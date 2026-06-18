@@ -581,5 +581,39 @@
     "metaTitle": "Widget de cotización del dólar en Uruguay",
     "metaDescription": "Widget embebible con la mejor cotización del dólar (compra y venta) en Uruguay, actualizada en vivo."
   },
-  "loading": "Cargando"
+  "loading": "Cargando",
+  "auth": {
+    "login": "Iniciar sesión",
+    "logout": "Cerrar sesión",
+    "account": "Mi cuenta",
+    "favorites": "Favoritos",
+    "saved": "Guardados",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "continueGoogle": "Continuar con Google",
+    "signIn": "Entrar",
+    "register": "Crear cuenta",
+    "magicLink": "Enlace mágico",
+    "sendMagicLink": "Enviarme un enlace",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "resetSent": "Te enviamos un correo para restablecer la contraseña.",
+    "magicSent": "Te enviamos un enlace de acceso. Revisá tu correo.",
+    "verifySent": "Cuenta creada. Verificá tu correo para completar el registro.",
+    "tabPassword": "Correo y contraseña",
+    "tabMagic": "Enlace por correo",
+    "error": "No se pudo completar. Verificá los datos e intentá de nuevo."
+  },
+  "account": {
+    "title": "Mi cuenta",
+    "favoritesEmpty": "Todavía no marcaste casas o monedas como favoritas.",
+    "savedEmpty": "Todavía no guardaste ningún resultado.",
+    "savedAt": "Guardado el",
+    "then": "Entonces",
+    "now": "Ahora",
+    "drift": "Variación",
+    "save": "Guardar resultado",
+    "saved": "Guardado",
+    "remove": "Quitar",
+    "rateUnavailable": "Cotización no disponible"
+  }
 }

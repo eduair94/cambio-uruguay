@@ -563,5 +563,39 @@
     "backlink": "Cotação ao vivo · cambio-uruguay.com",
     "metaTitle": "Widget de cotação do dólar no Uruguai",
     "metaDescription": "Widget incorporável com a melhor cotação do dólar (compra e venda) no Uruguai, atualizada ao vivo."
+  },
+  "auth": {
+    "login": "Entrar",
+    "logout": "Sair",
+    "account": "Minha conta",
+    "favorites": "Favoritos",
+    "saved": "Salvos",
+    "email": "E-mail",
+    "password": "Senha",
+    "continueGoogle": "Continuar com Google",
+    "signIn": "Entrar",
+    "register": "Criar conta",
+    "magicLink": "Link mágico",
+    "sendMagicLink": "Enviar um link",
+    "forgotPassword": "Esqueceu a senha?",
+    "resetSent": "Enviamos um e-mail para redefinir a senha.",
+    "magicSent": "Enviamos um link de acesso. Verifique seu e-mail.",
+    "verifySent": "Conta criada. Verifique seu e-mail para concluir o cadastro.",
+    "tabPassword": "E-mail e senha",
+    "tabMagic": "Link por e-mail",
+    "error": "Não foi possível concluir. Verifique os dados e tente novamente."
+  },
+  "account": {
+    "title": "Minha conta",
+    "favoritesEmpty": "Você ainda não marcou casas de câmbio ou moedas como favoritas.",
+    "savedEmpty": "Você ainda não salvou nenhum resultado.",
+    "savedAt": "Salvo em",
+    "then": "Antes",
+    "now": "Agora",
+    "drift": "Variação",
+    "save": "Salvar resultado",
+    "saved": "Salvo",
+    "remove": "Remover",
+    "rateUnavailable": "Cotação indisponível"
   }
 }
