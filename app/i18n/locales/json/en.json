@@ -4,7 +4,7 @@
     "title": "Dollar newsletter",
     "subtitle": "Get the daily Uruguay dollar summary in your inbox.",
     "emailLabel": "Your email",
-    "emailPlaceholder": "you@example.com",
+    "emailPlaceholder": "you{'@'}example.com",
     "subscribe": "Subscribe",
     "consent": "We'll send a confirmation email. You can unsubscribe anytime.",
     "sent": "Check your inbox! We sent you a link to confirm your subscription.",

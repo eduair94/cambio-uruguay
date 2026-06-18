@@ -4,7 +4,7 @@
     "title": "Newsletter del dólar",
     "subtitle": "Recibí cada día el resumen del dólar en Uruguay en tu correo.",
     "emailLabel": "Tu correo electrónico",
-    "emailPlaceholder": "tucorreo@ejemplo.com",
+    "emailPlaceholder": "tucorreo{'@'}ejemplo.com",
     "subscribe": "Suscribirme",
     "consent": "Te enviaremos un correo para confirmar. Podés cancelar cuando quieras.",
     "sent": "¡Revisá tu correo! Te enviamos un enlace para confirmar la suscripción.",
