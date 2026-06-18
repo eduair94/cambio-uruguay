@@ -21,6 +21,14 @@ interface AuthUser {
 
 const MAGIC_LINK_EMAIL_KEY = 'cu_magic_email'
 
+// Resolves the first time onAuthStateChanged reports in (via setUser), so
+// authenticated requests can wait for the session to be restored instead of
+// firing with no token on a cold page load.
+let resolveReady: (() => void) | null = null
+const readyGate = new Promise<void>(resolve => {
+  resolveReady = resolve
+})
+
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null as AuthUser | null,
@@ -37,6 +45,10 @@ export const useAuthStore = defineStore('auth', {
   actions: {
     setUser(fb: any | null) {
       this.ready = true
+      if (resolveReady) {
+        resolveReady()
+        resolveReady = null
+      }
       this.user = fb
         ? {
             uid: fb.uid,
@@ -49,6 +61,11 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async getToken(): Promise<string | null> {
+      // Wait for the first auth-state resolution (capped) so a cold-load
+      // request doesn't fire before the session is restored.
+      if (!this.ready) {
+        await Promise.race([readyGate, new Promise(resolve => setTimeout(resolve, 3000))])
+      }
       const current = fbAuth().currentUser
       return current ? current.getIdToken() : null
     },
