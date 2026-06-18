@@ -32,10 +32,9 @@ async function toggle() {
   }
   if (active.value) {
     favorites.delete(id.value)
-    await authFetch(
-      `/api/me/favorites/${encodeURIComponent(props.itemKey)}?type=${props.type}`,
-      { method: 'DELETE' }
-    ).catch(() => favorites.add(id.value)) // rollback on failure
+    await authFetch(`/api/me/favorites/${encodeURIComponent(props.itemKey)}?type=${props.type}`, {
+      method: 'DELETE',
+    }).catch(() => favorites.add(id.value)) // rollback on failure
   } else {
     favorites.add(id.value)
     await authFetch('/api/me/favorites', {

@@ -78,13 +78,7 @@
         >
           {{ $t(store.notice) }}
         </VAlert>
-        <VAlert
-          v-if="store.error"
-          type="error"
-          variant="tonal"
-          density="comfortable"
-          class="mt-4"
-        >
+        <VAlert v-if="store.error" type="error" variant="tonal" density="comfortable" class="mt-4">
           {{ $t('auth.error') }} ({{ store.error }})
         </VAlert>
       </VCardText>

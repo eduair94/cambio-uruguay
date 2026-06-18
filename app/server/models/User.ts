@@ -1,6 +1,17 @@
-import mongoose, { Schema } from 'mongoose'
+import mongoose, { Schema, type Model } from 'mongoose'
 
-const UserSchema = new Schema(
+export interface UserDoc {
+  _id: string // firebase uid
+  email: string | null
+  name: string | null
+  photo: string | null
+  settings: {
+    locale: string
+    defaultDirection: string | null
+  }
+}
+
+const UserSchema = new Schema<UserDoc>(
   {
     _id: { type: String }, // firebase uid
     email: { type: String, default: null },
@@ -14,4 +25,5 @@ const UserSchema = new Schema(
   { timestamps: true, _id: false }
 )
 
-export const UserModel = mongoose.models.User || mongoose.model('User', UserSchema)
+export const UserModel: Model<UserDoc> =
+  (mongoose.models.User as Model<UserDoc>) || mongoose.model<UserDoc>('User', UserSchema)

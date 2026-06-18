@@ -99,7 +99,7 @@ async function remove(id: string) {
 }
 
 async function removeFavorite(id: string) {
-  const [type, key] = id.split(':')
+  const [type = '', key = ''] = id.split(':')
   favorites.delete(id)
   await authFetch(`/api/me/favorites/${encodeURIComponent(key)}?type=${type}`, {
     method: 'DELETE',
