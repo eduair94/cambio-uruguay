@@ -21,19 +21,8 @@ test('offline banner shows the saved-data time when a snapshot exists', async ({
 
   // PWANetworkStatus is wrapped in <ClientOnly> and takes a few seconds to
   // hydrate and register its window.addEventListener('offline') handler.
-  // Poll until the ClientOnly span has rendered content, then dispatch offline.
-  await expect.poll(
-    async () => {
-      const html = await page.evaluate(() => {
-        const root = document.body.firstElementChild?.firstElementChild
-        if (!root) return ''
-        const last = root.children[root.children.length - 1]
-        return last?.innerHTML ?? ''
-      })
-      return html.length > 0
-    },
-    { timeout: 30_000, intervals: [500] }
-  ).toBe(true)
+  // Wait for the component's root element (always present once mounted) before dispatching offline.
+  await expect(page.locator('[data-testid="pwa-network-status"]')).toBeAttached({ timeout: 30_000 })
 
   // Now dispatch the offline event — the listener is registered.
   await page.evaluate(() => window.dispatchEvent(new Event('offline')))

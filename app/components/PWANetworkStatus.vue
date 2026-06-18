@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div data-testid="pwa-network-status">
     <v-snackbar v-model="showOfflineSnackbar" :timeout="-1" color="error" bottom left>
       <div class="d-flex align-center">
         <v-icon class="mr-2">mdi-wifi-off</v-icon>
