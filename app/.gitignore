@@ -91,6 +91,10 @@ sw.*
 android
 
 .output
+
+# AI daily blog persisted posts (Nitro fs storage)
+.data
+
 # Playwright
 test-results/
 playwright-report/

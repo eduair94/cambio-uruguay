@@ -51,9 +51,14 @@ function parseFeed(xml: string): NewsItem[] {
   })
 }
 
-export async function fetchNews(limit = 12): Promise<NewsItem[]> {
+/**
+ * Fetch + merge + de-duplicate headlines from an arbitrary set of RSS feeds.
+ * Shared by the UY dollar/economy pulse (`fetchNews`) and the daily blog, which
+ * passes its own per-category feeds (global vs local).
+ */
+export async function fetchNewsFrom(feeds: readonly string[], limit = 12): Promise<NewsItem[]> {
   const results = await Promise.allSettled(
-    FEEDS.map(url =>
+    feeds.map(url =>
       $fetch<string>(url, {
         headers: {
           'User-Agent':
@@ -83,4 +88,8 @@ export async function fetchNews(limit = 12): Promise<NewsItem[]> {
     })
     .sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime())
     .slice(0, limit)
+}
+
+export async function fetchNews(limit = 12): Promise<NewsItem[]> {
+  return fetchNewsFrom(FEEDS, limit)
 }

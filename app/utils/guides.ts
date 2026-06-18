@@ -187,6 +187,416 @@ export const guides: readonly Guide[] = [
       },
     ],
   },
+  {
+    slug: 'comprar-online-exterior-impuestos',
+    title: 'Comprar online del exterior en Uruguay: impuestos y franquicia',
+    description:
+      'Cómo funciona la franquicia courier de USD 800, cuándo pagás el 60% del régimen simplificado y cómo estimar el costo total de una compra online del exterior en Uruguay.',
+    tag: 'IMPORTACIÓN',
+    updatedAt: '2026-06-17',
+    sections: [
+      {
+        heading: 'El régimen courier: la vía habitual para compras online',
+        body: 'Cuando comprás en una tienda del exterior y te lo envían "puerta a puerta", la operación entra por el régimen de encomiendas postales (courier). Es el camino más común para compras personales sin fines comerciales, y tiene reglas propias distintas a la importación formal. Conocerlas antes de comprar evita sorpresas al momento de recibir el paquete y pagar para liberarlo.',
+      },
+      {
+        heading: 'La franquicia anual de USD 800',
+        body: 'Desde mayo de 2026 rige una franquicia anual de hasta USD 800 por persona, que se puede usar hasta 3 veces al año, con un máximo de 20 kg por envío. Lo que entra dentro de la franquicia no paga impuestos de importación (sí los costos del courier). La clave es que la franquicia es anual: conviene administrarla durante el año y no agotarla en una sola compra si pensás traer más cosas.',
+      },
+      {
+        heading: 'El régimen simplificado: 60% sobre el valor',
+        body: 'Los envíos que no califican para la franquicia tributan bajo el régimen simplificado, que aplica una tasa única del 60% sobre el valor declarado de la compra, con un mínimo. Es un cálculo sencillo: si traés algo por fuera de la franquicia, multiplicá el valor por 0,60 para estimar el impuesto. A ese costo hay que sumarle el flete y los cargos del courier.',
+      },
+      {
+        heading: 'Cómo estimar el costo total antes de comprar',
+        body: 'El costo final de una compra online no es solo el precio del producto: sumá el envío, los impuestos que correspondan y los cargos del courier. Hacer la cuenta antes de comprar te dice si realmente conviene traerlo del exterior o si conseguís algo similar en plaza a un precio competitivo una vez cargados todos los costos.',
+      },
+      {
+        heading: 'Usá la calculadora de impuestos de importación',
+        body: 'Para no hacer las cuentas a mano, nuestra calculadora de impuestos de importación te permite ingresar el valor, elegir si aplicás la franquicia y ver el impuesto y el costo total estimado, tanto para el régimen courier como para el general. Recordá que son valores de referencia: verificá siempre las condiciones vigentes con Aduanas y tu courier antes de comprar.',
+      },
+    ],
+  },
+  {
+    slug: 'enviar-recibir-dinero-exterior',
+    title: 'Enviar y recibir dinero del exterior en Uruguay',
+    description:
+      'Guía para enviar y recibir dinero del exterior en Uruguay: transferencias internacionales, remesas, el dólar cable y cómo cuidar la cotización a la que se liquida.',
+    tag: 'REMESAS',
+    updatedAt: '2026-06-17',
+    sections: [
+      {
+        heading: 'Tres formas de mover dinero entre países',
+        body: 'Para enviar o recibir dinero del exterior solés tener tres caminos: la transferencia bancaria internacional (red SWIFT), los servicios de remesas y las plataformas digitales. Cada uno tiene costos, plazos y tipos de cambio distintos. Antes de elegir, conviene comparar no solo la comisión visible, sino también la cotización a la que te convierten el dinero, que es donde muchas veces está el costo real.',
+      },
+      {
+        heading: 'El dólar cable y por qué importa',
+        body: 'Las operaciones con el exterior se vinculan con la cotización del dólar cable, que puede diferir del dólar local. Si recibís dólares de afuera y los pasás a pesos, la diferencia entre una buena y una mala cotización se nota en el monto final. Por eso, una vez que el dinero llegó, comparar dónde liquidarlo puede mejorar bastante lo que recibís.',
+      },
+      {
+        heading: 'Comisiones y tipo de cambio: mirá las dos cosas',
+        body: 'Un servicio puede anunciar "envío gratis" pero aplicarte un tipo de cambio peor, y terminar siendo más caro que otro con comisión explícita y mejor cotización. La forma honesta de comparar es preguntar cuántos pesos (o dólares) recibe efectivamente el destinatario al final, descontando todo. Esa cifra final es la única que importa.',
+      },
+      {
+        heading: 'Recibir remesas: cuidá la liquidación',
+        body: 'Si te llegan remesas de forma recurrente, pequeñas diferencias de cotización suman a lo largo del año. Tené a mano una referencia del mejor precio del día y, cuando puedas elegir, liquidá donde la cotización te favorezca. Comparar antes de cambiar es la rutina que más dinero ahorra a quien recibe ingresos del exterior.',
+      },
+      {
+        heading: 'Antes de operar: compará',
+        body: 'Sea para enviar o recibir, entrá a Cambio Uruguay y mirá la cotización del dólar y de otras divisas en más de 40 casas de cambio. Tener el mejor precio del día como referencia te da poder de negociación y te evita aceptar la primera cifra que te ofrecen.',
+      },
+    ],
+  },
+  {
+    slug: 'dolares-para-viajar',
+    title: 'Cuántos dólares llevar de viaje y cómo conseguirlos',
+    description:
+      'Cómo planificar cuántos dólares llevar de viaje desde Uruguay, billete vs tarjeta, dónde conseguir el mejor precio y cómo evitar cambiar caro en el aeropuerto.',
+    tag: 'VIAJES',
+    updatedAt: '2026-06-17',
+    sections: [
+      {
+        heading: 'Primero el presupuesto, después la moneda',
+        body: 'Antes de pensar en el tipo de cambio, estimá tu gasto: días de viaje, gasto diario promedio (alojamiento, comida, transporte) y un extra para imprevistos. Con ese número total sabés cuántos dólares (o euros, o reales) necesitás llevar. Planificar el presupuesto evita tanto quedarte corto como cambiar de más y tener que revender divisas a peor precio al volver.',
+      },
+      {
+        heading: 'Billete, tarjeta o una mezcla',
+        body: 'Llevar todo en efectivo es riesgoso; pagar todo con tarjeta puede tener recargos. La estrategia más usada es una mezcla: algo de efectivo para gastos chicos y propinas, y tarjeta para el resto, sabiendo qué tipo de cambio y comisiones te aplican. Para el efectivo, el dólar billete es la cotización relevante; compará entre casas antes de comprarlo.',
+      },
+      {
+        heading: 'Dónde conseguir el mejor precio',
+        body: 'El peor lugar para cambiar suele ser el aeropuerto o las zonas turísticas: la comodidad se paga con un precio claramente peor. Comprá tus divisas con anticipación comparando casas de cambio, y evitá dejarlo para último momento. Unos pesos de diferencia por dólar, multiplicados por el total del viaje, son dinero real.',
+      },
+      {
+        heading: 'No intentes cronometrar el dólar',
+        body: 'Si tu viaje es pronto, esperar a que el dólar baje rara vez vale la pena: el riesgo de equivocarte supera al ahorro de acertar por unos centésimos. Si el viaje es a varios meses y ahorrás en pesos, podés comprar de a poco para promediar el precio. Definí tu horizonte y actuá en consecuencia.',
+      },
+      {
+        heading: 'Planificá con nuestras herramientas',
+        body: 'Usá la calculadora de presupuesto de viaje para estimar cuántos dólares llevar y el conversor para verlo en pesos con la cotización en vivo. Después, compará casas de cambio para comprar al mejor precio. Viajar tranquilo empieza por hacer bien las cuentas antes de salir.',
+      },
+    ],
+  },
+  {
+    slug: 'ahorrar-en-dolares-o-pesos',
+    title: '¿Conviene ahorrar en dólares o en pesos en Uruguay?',
+    description:
+      'Ventajas y riesgos de ahorrar en dólares o en pesos en Uruguay: inflación, tasas de plazo fijo, unidad indexada y cómo elegir según tus gastos futuros.',
+    tag: 'AHORRO',
+    updatedAt: '2026-06-17',
+    sections: [
+      {
+        heading: 'La pregunta clave: ¿en qué vas a gastar?',
+        body: 'La mejor moneda para ahorrar depende sobre todo de en qué planeás gastar ese dinero. Si tu objetivo está en dólares (un viaje, un auto, un inmueble valuado en dólares), ahorrar en dólares te cubre del riesgo cambiario. Si tus gastos futuros son en pesos, ahorrar en pesos —o en instrumentos indexados— puede tener más sentido. Alinear la moneda del ahorro con la del gasto es la regla más sólida.',
+      },
+      {
+        heading: 'Pesos: rinden más, pero pierden con la inflación',
+        body: 'Los plazos fijos en pesos suelen pagar tasas más altas que los de dólares para compensar la inflación. El punto es que esa tasa tiene que superar a la inflación para que ganes poder de compra real. Si la inflación se come buena parte del interés, el rendimiento real es bajo. Mirá siempre la tasa frente a la inflación esperada, no en abstracto.',
+      },
+      {
+        heading: 'Dólares: estabilidad, pero menor tasa',
+        body: 'Ahorrar en dólares protege frente a la pérdida de valor del peso y aporta previsibilidad, especialmente para metas de largo plazo. A cambio, las tasas de interés en dólares suelen ser más bajas. Es la opción de quien prioriza preservar valor por sobre maximizar el rendimiento nominal.',
+      },
+      {
+        heading: 'La opción indexada: Unidad Indexada (UI)',
+        body: 'Entre ambos extremos están los instrumentos en Unidad Indexada, que ajustan su valor por la inflación (IPC). Permiten ahorrar en pesos sin perder poder de compra frente a la suba de precios. Son una alternativa interesante para quien quiere mantener valor real sin asumir riesgo cambiario.',
+      },
+      {
+        heading: 'Diversificar suele ser lo más prudente',
+        body: 'No tenés que elegir todo o nada. Muchos ahorristas reparten entre pesos, dólares e instrumentos indexados según sus metas y horizonte. Lo importante es decidir con criterio y no por impulso. Y cuando compres o vendas dólares, compará en Cambio Uruguay para hacerlo al mejor precio.',
+      },
+    ],
+  },
+  {
+    slug: 'cambiar-pesos-argentinos-uruguay',
+    title: 'Cambiar pesos argentinos en Uruguay: qué tener en cuenta',
+    description:
+      'Cómo y dónde cambiar pesos argentinos en Uruguay, por qué su cotización es volátil y tiene spreads amplios, y consejos para zonas de frontera y turismo.',
+    tag: 'FRONTERA',
+    updatedAt: '2026-06-17',
+    sections: [
+      {
+        heading: 'Una moneda volátil y de spread amplio',
+        body: 'El peso argentino es una de las monedas más volátiles que se operan en Uruguay por la historia inflacionaria y cambiaria del país vecino. Eso se traduce en cotizaciones que varían mucho entre casas de cambio y en spreads (brecha compra-venta) más amplios que los del dólar. Comparar antes de operar es todavía más importante con esta moneda.',
+      },
+      {
+        heading: 'Dónde se cambia mejor',
+        body: 'La oferta de cambio de pesos argentinos se concentra en zonas de frontera y de turismo. En esos lugares hay más casas operando esta moneda y, por la competencia, podés encontrar mejores precios que en sitios donde casi no se demanda. Aun así, las diferencias entre casas pueden ser grandes: no asumas que todas pagan parecido.',
+      },
+      {
+        heading: 'Cuidado con el momento y el monto',
+        body: 'Como la cotización puede moverse marcadamente en poco tiempo, evitá quedarte con grandes cantidades de pesos argentinos si no los vas a usar pronto. Para montos altos, consultá directamente: algunas casas mejoran el precio. Y tené presente que la cotización de hoy puede no ser la de mañana.',
+      },
+      {
+        heading: 'Compará en Cambio Uruguay',
+        body: 'Antes de cambiar pesos argentinos, mirá la cotización de la moneda en las casas de cambio relevadas y quedate con la que más te convenga según vayas a comprar o vender. Tener una referencia clara del mercado te protege de aceptar un precio muy por debajo del disponible.',
+      },
+    ],
+  },
+  {
+    slug: 'euros-reales-donde-cambiar',
+    title: 'Euros y reales en Uruguay: dónde y cómo cambiarlos',
+    description:
+      'Cómo cambiar euros y reales en Uruguay, por qué su precio se mueve junto con el dólar (arbitraje) y cómo encontrar la mejor cotización entre casas de cambio.',
+    tag: 'DIVISAS',
+    updatedAt: '2026-06-17',
+    sections: [
+      {
+        heading: 'Por qué euros y reales se mueven con el dólar',
+        body: 'En el mercado uruguayo, el precio del euro y del real en pesos suele calcularse por arbitraje: se combina la cotización internacional de cada moneda frente al dólar con el dólar/peso local. Por eso, cuando se mueve el dólar, también se mueven el euro y el real, aunque la noticia no los mencione. Entender esto ayuda a interpretar por qué cambian sus precios.',
+      },
+      {
+        heading: 'Spreads más amplios que el dólar',
+        body: 'Al ser monedas menos operadas que el dólar, el euro y el real tienden a tener spreads (brecha compra-venta) más amplios y mayor variación entre casas de cambio. Eso significa que comparar rinde aún más: la diferencia entre la mejor y la peor cotización puede ser significativa.',
+      },
+      {
+        heading: 'El real y la frontera',
+        body: 'El real brasileño tiene más demanda en zonas de frontera y turismo, donde solés encontrar mejores condiciones para cambiarlo. Si viajás a Brasil o recibís reales, compará especialmente en esas localidades, sin dejar de revisar las casas online relevadas.',
+      },
+      {
+        heading: 'Compará antes de operar',
+        body: 'Tanto para euros como para reales, entrá a Cambio Uruguay, mirá la cotización en las casas de cambio y elegí según vayas a comprar o vender. Una buena comparación te asegura que no estás dejando dinero sobre la mesa con monedas que, por su menor liquidez, pueden tener precios muy dispares.',
+      },
+    ],
+  },
+  {
+    slug: 'casas-de-cambio-vs-bancos',
+    title: 'Casas de cambio vs bancos: ¿dónde conviene cambiar?',
+    description:
+      'Diferencias entre cambiar divisas en casas de cambio o en bancos en Uruguay: cotizaciones, comodidad, requisitos y cuándo conviene cada opción.',
+    tag: 'COMPARATIVA',
+    updatedAt: '2026-06-17',
+    sections: [
+      {
+        heading: 'No siempre tu banco da el mejor precio',
+        body: 'Un error frecuente es asumir que el banco propio ofrece automáticamente la mejor cotización. No siempre es así: las casas de cambio compiten entre sí y, para muchas operaciones, ofrecen precios mejores. La única forma de saberlo es comparar la cotización del banco con la de varias casas antes de operar.',
+      },
+      {
+        heading: 'La comodidad del banco tiene un valor',
+        body: 'Operar con tu banco —sobre todo por home banking o plataformas como eBROU— es cómodo: no tenés que trasladarte ni manejar efectivo, y el dinero queda acreditado en tu cuenta. Esa comodidad puede justificar una pequeña diferencia de precio para montos chicos o medianos, especialmente si valorás la seguridad de no mover billetes.',
+      },
+      {
+        heading: 'Las casas de cambio y el efectivo',
+        body: 'Para operaciones en efectivo (dólar billete), las casas de cambio suelen ser la referencia, con muchas opciones y precios competitivos. Para montos grandes, muchas mejoran la cotización si la negociás, sobre todo por transferencia. La contra es que implica trasladarte y, a veces, manejar dinero físico.',
+      },
+      {
+        heading: 'La regla práctica',
+        body: 'Compará siempre: mirá la cotización de tu banco y la de las casas de cambio relevadas en Cambio Uruguay para tu tipo de operación (billete, transferencia, cable). Elegí según el equilibrio entre precio y comodidad que más te sirva. Para montos altos, la diferencia de precio suele inclinar la balanza hacia comparar bien.',
+      },
+    ],
+  },
+  {
+    slug: 'como-leer-cotizacion-dolar',
+    title: 'Cómo leer la cotización del dólar paso a paso',
+    description:
+      'Aprendé a leer la cotización del dólar en Uruguay: compra y venta, spread, tipos de operación y cómo identificar rápido el mejor precio para tu caso.',
+    tag: 'BÁSICOS',
+    updatedAt: '2026-06-17',
+    sections: [
+      {
+        heading: 'Compra y venta: desde la óptica de la casa',
+        body: 'La cotización siempre tiene dos números: compra y venta, definidos desde el punto de vista de la casa de cambio. "Compra" es lo que la casa te paga si le vendés dólares; "venta" es lo que te cobra si le comprás. Por eso, si vos comprás dólares, mirás el precio de venta de la casa; si vos vendés, mirás el de compra. Confundir las columnas es el error más común.',
+      },
+      {
+        heading: 'El spread te dice cuánto se queda la casa',
+        body: 'La diferencia entre venta y compra es el spread. Cuanto más chico, mejor para vos, porque la casa se queda con menos en cada operación. Dos casas con una cotización parecida pueden tener spreads distintos: la de menor spread suele dejarte mejor parado. Mirar el spread, y no solo un número aislado, afina la comparación.',
+      },
+      {
+        heading: 'Identificá el tipo de operación',
+        body: 'El mismo dólar tiene varios precios según cómo se mueva el dinero: billete (efectivo), transferencia (entre cuentas), cable (con el exterior) y eBROU (plataforma del BROU). El interbancario es solo una referencia mayorista, no un precio para el público. Asegurate de comparar el mismo tipo entre casas: es la única forma de comparar peras con peras.',
+      },
+      {
+        heading: 'Cómo encontrar el mejor precio rápido',
+        body: 'En Cambio Uruguay podés ordenar y filtrar las casas para tu operación. Si comprás, buscá la venta más baja; si vendés, la compra más alta. Sumá una mirada al spread y, si no tenés apuro, al histórico para tener contexto. Con esos pasos leés la cotización como un experto y operás con datos.',
+      },
+    ],
+  },
+  {
+    slug: 'unidad-indexada-explicada',
+    title: 'Unidad Indexada (UI) explicada: para qué sirve y cómo se calcula',
+    description:
+      'Qué es la Unidad Indexada (UI) en Uruguay, por qué ajusta por inflación, en qué contratos aparece y cómo convertir UI a pesos uruguayos.',
+    tag: 'INDEXACIÓN',
+    updatedAt: '2026-06-17',
+    sections: [
+      {
+        heading: 'Qué es la Unidad Indexada',
+        body: 'La Unidad Indexada (UI) es una unidad de valor cuyo precio en pesos se ajusta diariamente según la inflación, medida por el Índice de Precios al Consumo (IPC). Su objetivo es mantener el poder de compra en el tiempo: cuando los precios suben, el valor de la UI también, de modo que una cantidad de UI conserva su valor real.',
+      },
+      {
+        heading: 'Por qué se usa',
+        body: 'En contextos con inflación, fijar montos en pesos a largo plazo los deja desactualizados. Por eso muchos contratos —alquileres, préstamos, ahorros— se expresan en UI: así ambas partes se protegen de la pérdida de valor del peso. Es una forma de "atar" el dinero al costo de vida en lugar de a un número fijo.',
+      },
+      {
+        heading: 'Dónde la vas a encontrar',
+        body: 'La UI aparece en contratos de alquiler, préstamos hipotecarios, instrumentos de ahorro y algunas tarifas. Si firmás algo en UI, conviene tener presente que el monto en pesos a pagar o cobrar irá variando con la inflación, a diferencia de un monto fijo en pesos. No es lo mismo que la Unidad Reajustable (UR), que ajusta por salarios.',
+      },
+      {
+        heading: 'Cómo convertir UI a pesos',
+        body: 'Convertir UI a pesos es directo: multiplicás la cantidad de UI por el valor del día, que publica el Banco Central. Para hacerlo sin buscar el número a mano, usá nuestro conversor de Unidad Indexada: ingresás las UI (o los pesos) y obtenés la equivalencia al valor vigente. Ideal para entender cuánto representa un alquiler o una cuota en pesos de hoy.',
+      },
+    ],
+  },
+  {
+    slug: 'inflacion-y-dolar-uruguay',
+    title: 'Inflación y dólar en Uruguay: cómo se relacionan',
+    description:
+      'Cómo se relacionan la inflación y el dólar en Uruguay, por qué muchos ahorran en dólares y qué mirar para entender el poder de compra del peso.',
+    tag: 'ECONOMÍA',
+    updatedAt: '2026-06-17',
+    sections: [
+      {
+        heading: 'Inflación: el peso pierde poder de compra',
+        body: 'La inflación es la suba sostenida y generalizada de los precios. Cuando hay inflación, la misma cantidad de pesos compra menos cosas con el paso del tiempo. En Uruguay se mide con el IPC, que publica mensualmente el INE. Es el telón de fondo de muchas decisiones financieras de las familias.',
+      },
+      {
+        heading: 'Por qué muchos miran al dólar',
+        body: 'Ante la pérdida de valor del peso, una parte de los ahorristas elige el dólar como refugio, buscando preservar poder de compra. Esta dolarización del ahorro tiene una larga historia en el país. No es la única estrategia —también están los instrumentos indexados—, pero explica por qué la cotización del dólar es seguida tan de cerca.',
+      },
+      {
+        heading: 'La relación no es automática',
+        body: 'Inflación y tipo de cambio se influyen, pero no se mueven siempre juntos ni en la misma magnitud. El dólar puede subir o bajar por factores propios del mercado cambiario (oferta y demanda, contexto regional, intervenciones del BCU) más allá de la inflación del mes. Por eso conviene mirar ambos indicadores y no asumir que uno predice exactamente al otro.',
+      },
+      {
+        heading: 'Qué hacer con esta información',
+        body: 'Si te preocupa la inflación, evaluá repartir tu ahorro entre pesos, dólares e instrumentos indexados según tus metas. Y cuando decidas comprar o vender dólares, hacelo al mejor precio comparando en Cambio Uruguay. Entender el contexto te ayuda a decidir con cabeza fría, no con titulares.',
+      },
+    ],
+  },
+  {
+    slug: 'evitar-comisiones-cambio',
+    title: 'Cómo evitar comisiones ocultas al cambiar divisas',
+    description:
+      'Identificá y evitá comisiones ocultas, mínimos y malas cotizaciones al cambiar divisas en Uruguay, y aprendé a comparar el costo real de cada operación.',
+    tag: 'COSTOS',
+    updatedAt: '2026-06-17',
+    sections: [
+      {
+        heading: 'El costo no siempre se ve a primera vista',
+        body: 'Al cambiar divisas, el costo real no está solo en una "comisión" explícita: muchas veces se esconde en una cotización peor. Un lugar puede no cobrar comisión pero aplicarte un tipo de cambio desfavorable, y terminar siendo más caro que otro con comisión y mejor precio. Comparar solo la comisión es insuficiente.',
+      },
+      {
+        heading: 'Mirá el monto final, no las etiquetas',
+        body: 'La forma honesta de comparar es preguntar cuántos pesos recibís (o pagás) al final, con todo incluido. Esa cifra final es la única que importa. Pedí siempre el "total a pagar" o "total a recibir" antes de cerrar la operación, y compará ese número entre opciones.',
+      },
+      {
+        heading: 'Cuidado con mínimos y zonas turísticas',
+        body: 'Algunas casas tienen montos mínimos o condiciones especiales que afectan el precio efectivo para operaciones chicas. Y los aeropuertos y zonas turísticas suelen ofrecer cotizaciones claramente peores a cambio de comodidad. Operar en el mercado formal comparado casi siempre rinde mejor.',
+      },
+      {
+        heading: 'Negociá si el monto es alto',
+        body: 'En operaciones grandes, muchas casas mejoran la cotización si la pedís, sobre todo por transferencia. Llevar como referencia el mejor precio que viste en Cambio Uruguay te da argumentos para negociar. El peor escenario es que mantengan el precio publicado; muchas veces, lo mejoran.',
+      },
+    ],
+  },
+  {
+    slug: 'glosario-terminos-cambiarios',
+    title: 'Glosario rápido de términos cambiarios en Uruguay',
+    description:
+      'Los términos clave del mercado cambiario uruguayo explicados en simple: cotización, spread, billete, cable, transferencia, interbancario y más.',
+    tag: 'GLOSARIO',
+    updatedAt: '2026-06-17',
+    sections: [
+      {
+        heading: 'Cotización, compra y venta',
+        body: 'La cotización es el precio de una moneda. Siempre tiene dos caras: compra (lo que la casa te paga por la divisa) y venta (lo que te cobra). Si comprás dólares, mirás la venta; si vendés, la compra. Cada casa fija su propia cotización, por eso conviene comparar.',
+      },
+      {
+        heading: 'Spread y brecha',
+        body: 'El spread es la diferencia entre venta y compra: cuanto más chico, mejor para vos. La brecha cambiaria, en cambio, es la diferencia porcentual entre dos cotizaciones distintas de una misma moneda (por ejemplo, oficial y paralela). Uruguay tiene mercado libre, así que no presenta grandes brechas.',
+      },
+      {
+        heading: 'Billete, transferencia, cable y eBROU',
+        body: 'El dólar tiene varios precios según cómo se mueva el dinero: billete (efectivo), transferencia (entre cuentas), cable (con el exterior) y eBROU (plataforma del BROU). Elegí el tipo que corresponde a tu operación para comparar correctamente entre casas.',
+      },
+      {
+        heading: 'Interbancario: solo referencia',
+        body: 'El dólar interbancario es la cotización mayorista a la que operan los bancos entre sí. Es un buen termómetro del mercado, pero no es un precio al que el público pueda comprar o vender. Para tus operaciones reales, usá billete, transferencia o cable.',
+      },
+      {
+        heading: 'Profundizá en el glosario completo',
+        body: 'Este es un repaso rápido. Si querés definiciones más completas —con ejemplos uruguayos y términos como UI, BPC, IRPF, IVA o tasa consular— visitá nuestro glosario financiero, pensado para entender el mercado y los impuestos del país en lenguaje claro.',
+      },
+    ],
+  },
+  {
+    slug: 'como-afecta-la-fed-al-dolar',
+    title: 'Cómo afecta la Reserva Federal (Fed) al dólar y a Uruguay',
+    description:
+      'Qué es la Reserva Federal de EE.UU., cómo sus decisiones de tasas mueven al dólar en el mundo y por qué eso llega hasta la cotización en Uruguay.',
+    tag: 'GLOBAL',
+    updatedAt: '2026-06-17',
+    sections: [
+      {
+        heading: 'Qué es la Fed y por qué importa',
+        body: 'La Reserva Federal (Fed) es el banco central de Estados Unidos. Sus decisiones sobre la tasa de interés en dólares influyen en el valor del dólar frente a otras monedas en todo el mundo. Como el dólar es la moneda de referencia global, lo que hace la Fed se siente lejos de Washington, incluido Uruguay.',
+      },
+      {
+        heading: 'Tasas más altas, dólar más fuerte (en general)',
+        body: 'Cuando la Fed sube las tasas, invertir en dólares rinde más, lo que tiende a fortalecer al dólar a nivel global. Cuando las baja, suele debilitarlo. No es una regla matemática —influyen muchos factores—, pero es la tendencia de fondo que conviene tener presente al leer noticias internacionales.',
+      },
+      {
+        heading: 'Cómo llega eso a Uruguay',
+        body: 'Un dólar global más fuerte o más débil influye en el tipo de cambio local, junto con factores propios de Uruguay (inflación, exportaciones, contexto regional, decisiones del BCU). Por eso, una noticia sobre la Fed puede anticipar movimientos, aunque el dólar en Uruguay tiene su propia dinámica de oferta y demanda.',
+      },
+      {
+        heading: 'Qué mirar como ahorrista',
+        body: 'No necesitás seguir cada reunión de la Fed para tomar buenas decisiones. Alcanza con entender el contexto, no apurarte por una sola noticia y, cuando vayas a operar, comparar el mejor precio. Seguimos estos temas a diario en nuestro blog del dólar, con foco en lo que significan para Uruguay.',
+      },
+    ],
+  },
+  {
+    slug: 'proteger-ahorros-de-la-inflacion',
+    title: 'Cómo proteger tus ahorros de la inflación en Uruguay',
+    description:
+      'Estrategias prácticas para que la inflación no licúe tus ahorros en Uruguay: dólares, Unidad Indexada, plazos fijos y diversificación.',
+    tag: 'AHORRO',
+    updatedAt: '2026-06-17',
+    sections: [
+      {
+        heading: 'El enemigo silencioso: la inflación',
+        body: 'Guardar pesos "bajo el colchón" implica perder poder de compra cada año por la inflación. El primer paso para protegerte es ser consciente de ese costo y buscar opciones que, al menos, mantengan el valor real de tu dinero en el tiempo.',
+      },
+      {
+        heading: 'Dólares: refugio clásico',
+        body: 'Ahorrar en dólares es la estrategia más usada en Uruguay para preservar valor frente a la pérdida del peso. Tiene sentido sobre todo si tus metas son en dólares. La contra es la menor tasa de interés y el riesgo cambiario si tus gastos son en pesos. Cuando compres, hacelo al mejor precio comparando casas de cambio.',
+      },
+      {
+        heading: 'Unidad Indexada: ahorrar en pesos sin perder',
+        body: 'Los instrumentos en Unidad Indexada (UI) ajustan su valor por la inflación, por lo que permiten ahorrar en pesos sin perder poder de compra. Son una alternativa interesante para quien no quiere asumir riesgo cambiario pero tampoco quedar expuesto a la suba de precios.',
+      },
+      {
+        heading: 'Diversificar y usar herramientas',
+        body: 'La prudencia suele estar en repartir: una parte en dólares, otra en instrumentos indexados, según tus metas y horizonte. Usá nuestra calculadora de inflación para dimensionar el impacto en el tiempo y el conversor para operar con datos. La clave es decidir con criterio, no por impulso.',
+      },
+    ],
+  },
+  {
+    slug: 'comprar-dolares-online-uruguay',
+    title: 'Cómo comprar dólares online en Uruguay (eBROU y plataformas)',
+    description:
+      'Guía para comprar y vender dólares por internet en Uruguay: plataformas como eBROU, transferencia entre cuentas, requisitos y ventajas frente al efectivo.',
+    tag: 'DIGITAL',
+    updatedAt: '2026-06-17',
+    sections: [
+      {
+        heading: 'Operar dólares sin ir a la sucursal',
+        body: 'Cada vez más uruguayos compran y venden dólares por internet, sin manejar efectivo ni trasladarse. Las plataformas digitales de los bancos y algunas casas de cambio permiten operar desde el celular, acreditando los fondos directamente en tu cuenta.',
+      },
+      {
+        heading: 'eBROU y la cotización por transferencia',
+        body: 'eBROU es la plataforma del Banco República para operar en línea, con cotizaciones competitivas para quienes tienen cuenta. En general, la cotización por transferencia (entre cuentas) suele ser más afinada que la del billete físico, porque no hay costos de manejo de efectivo.',
+      },
+      {
+        heading: 'Requisitos y a tener en cuenta',
+        body: 'Para operar online normalmente necesitás una cuenta habilitada en el banco o plataforma. No es un costo oculto, sino una condición de la operación. Revisá límites, horarios (el mercado se mueve en días hábiles) y si hay comisiones según el monto.',
+      },
+      {
+        heading: 'Compará igual que con el efectivo',
+        body: 'Operar online no te exime de comparar. Mirá la cotización de tu banco o plataforma frente a la de las casas de cambio relevadas en Cambio Uruguay para tu tipo de operación. Para montos altos, la diferencia puede ser significativa, así que vale la pena revisar antes de confirmar.',
+      },
+    ],
+  },
 ] as const
 
 /**

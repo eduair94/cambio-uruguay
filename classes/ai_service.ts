@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 import OpenAI from "openai";
 import { CambioObj } from "../interfaces/Cambio";
+import { aiInsightCache } from "./ai_insight_cache";
 import { redisCache } from "./redis_cache";
 
 dotenv.config();
@@ -13,7 +14,8 @@ Responde siempre en español. Usa formato Markdown para estructurar tu respuesta
 Incluye emojis relevantes para hacer la información más visual.
 Sé directo y práctico, enfocándote en información que el usuario pueda usar para tomar decisiones.
 No te extiendas demasiado, mantén las respuestas concisas pero informativas.
-IMPORTANTE: SIEMPRE completa todas las tablas, listas y secciones que inicies. Nunca dejes una tabla o sección a medias. Si el contenido es largo, prioriza completar las secciones más importantes en lugar de dejar contenido incompleto. Prefiere respuestas más cortas y completas a respuestas largas e incompletas.`,
+IMPORTANTE: SIEMPRE completa todas las tablas, listas y secciones que inicies. Nunca dejes una tabla o sección a medias. Si el contenido es largo, prioriza completar las secciones más importantes en lugar de dejar contenido incompleto. Prefiere respuestas más cortas y completas a respuestas largas e incompletas.
+FORMATO DE MONTOS: NO uses notación matemática LaTeX. Prohibido usar $$...$$, \\(...\\), \\frac, \\text, \\times, \\,, \\% ni ningún comando con barra invertida. Escribe los cálculos y montos en texto plano (ejemplos: "5,68%", "2,30 USD", "$ 41,20", "206.000 UYU"). Usa el símbolo $ únicamente pegado a un monto en dólares (ej: $41,20) y nunca uses símbolos de moneda raros como ₵ o ¢.`,
 
   en: `You are a financial analyst expert in the Uruguayan currency exchange market.
 You provide clear, concise, and useful insights about currency exchange rates.
@@ -21,7 +23,8 @@ Always respond in English. Use Markdown format to structure your response.
 Include relevant emojis to make information more visual.
 Be direct and practical, focusing on information users can act on.
 Keep responses concise but informative.
-IMPORTANT: ALWAYS complete all tables, lists, and sections you start. Never leave a table or section unfinished. If the content is lengthy, prioritize completing the most important sections rather than leaving content incomplete. Prefer shorter complete responses over longer incomplete ones.`,
+IMPORTANT: ALWAYS complete all tables, lists, and sections you start. Never leave a table or section unfinished. If the content is lengthy, prioritize completing the most important sections rather than leaving content incomplete. Prefer shorter complete responses over longer incomplete ones.
+AMOUNT FORMATTING: Do NOT use LaTeX math notation. Never use $$...$$, \\(...\\), \\frac, \\text, \\times, \\,, \\% or any backslash command. Write calculations and amounts in plain text (e.g. "5.68%", "2.30 USD", "$41.20", "206,000 UYU"). Use the $ symbol only attached to a dollar amount (e.g. $41.20) and never use odd currency symbols like ₵ or ¢.`,
 
   pt: `Você é um analista financeiro especialista no mercado de câmbio do Uruguai.
 Você fornece insights claros, concisos e úteis sobre as taxas de câmbio de moedas.
@@ -29,7 +32,8 @@ Responda sempre em português. Use formato Markdown para estruturar sua resposta
 Inclua emojis relevantes para tornar a informação mais visual.
 Seja direto e prático, focando em informações que o usuário possa usar para tomar decisões.
 Mantenha as respostas concisas mas informativas.
-IMPORTANTE: SEMPRE complete todas as tabelas, listas e seções que iniciar. Nunca deixe uma tabela ou seção incompleta. Se o conteúdo for longo, priorize completar as seções mais importantes em vez de deixar conteúdo incompleto. Prefira respostas mais curtas e completas a respostas longas e incompletas.`,
+IMPORTANTE: SEMPRE complete todas as tabelas, listas e seções que iniciar. Nunca deixe uma tabela ou seção incompleta. Se o conteúdo for longo, priorize completar as seções mais importantes em vez de deixar conteúdo incompleto. Prefira respostas mais curtas e completas a respostas longas e incompletas.
+FORMATO DE VALORES: NÃO use notação matemática LaTeX. Proibido usar $$...$$, \\(...\\), \\frac, \\text, \\times, \\,, \\% ou qualquer comando com barra invertida. Escreva os cálculos e valores em texto puro (ex.: "5,68%", "2,30 USD", "$ 41,20", "206.000 UYU"). Use o símbolo $ apenas colado a um valor em dólares (ex.: $41,20) e nunca use símbolos de moeda estranhos como ₵ ou ¢.`,
 };
 
 interface InsightRequest {
@@ -42,6 +46,8 @@ interface InsightRequest {
   evolutionData?: any;
   localData?: Record<string, { name: string; website: string; maps: string; bcu: string; departments: string[] }>;
   date?: string;
+  /** Optional per-request model override; defaults to the configured AI_MODEL. */
+  model?: string;
 }
 
 interface InsightResponse {
@@ -255,24 +261,6 @@ class AIService {
     return `${AI_CACHE_PREFIX}${request.type}_${request.language}_${request.currency || "all"}_${request.origin || "all"}`;
   }
 
-  private async getCached(key: string): Promise<InsightResponse | null> {
-    const data = await redisCache.get<InsightResponse>(key);
-    if (data && data.insight !== "No insight generated") {
-      return {
-        ...data,
-        cached: true,
-        // Ensure fields always exist (old cache entries may lack them)
-        truncated: data.truncated ?? false,
-        finishReason: data.finishReason ?? "stop",
-      };
-    }
-    return null;
-  }
-
-  private async setCache(key: string, data: InsightResponse): Promise<void> {
-    await redisCache.set(key, data, AI_CACHE_TTL);
-  }
-
   private getExchangeName(origin: string, localData?: InsightRequest["localData"]): string {
     if (localData && localData[origin]) {
       return localData[origin].name;
@@ -457,6 +445,90 @@ class AIService {
   }
 
   /**
+   * Convert a LaTeX math snippet into readable plain text.
+   * The model (an uncensored OpenAI-compatible endpoint) frequently emits
+   * LaTeX, which the front-end Markdown renderer (marked) does NOT understand,
+   * leaving raw backslash commands and stray `$` delimiters next to amounts.
+   */
+  private deLatexExpression(expr: string): string {
+    return expr
+      .replace(/\\(?:text|mathrm|mathbf|boxed|operatorname)\s*\{([^}]*)\}/g, "$1")
+      .replace(/\\frac\s*\{([^}]*)\}\s*\{([^}]*)\}/g, "($1)/($2)")
+      .replace(/\\left|\\right/g, "")
+      .replace(/\\times/g, "×")
+      .replace(/\\div/g, "÷")
+      .replace(/\\cdot/g, "·")
+      .replace(/\\approx/g, "≈")
+      .replace(/\\pm/g, "±")
+      .replace(/\\(?:leq|le)\b/g, "≤")
+      .replace(/\\(?:geq|ge)\b/g, "≥")
+      .replace(/\\neq/g, "≠")
+      .replace(/\\%/g, "%")
+      .replace(/\\\$/g, "$")
+      .replace(/\\([#&_{}])/g, "$1")
+      .replace(/\\(?:quad|qquad)/g, " ")
+      .replace(/\\[,;:!]/g, " ") // LaTeX spacing commands
+      .replace(/\\\\/g, " ") // in-math line breaks
+      .replace(/[{}]/g, "")
+      .replace(/[ \t]{2,}/g, " ")
+      .trim();
+  }
+
+  /**
+   * Clean a raw model response before caching/returning:
+   *  - strip <think> reasoning blocks and "<model>GPT:" prefixes
+   *  - convert LaTeX math ($$...$$, \(...\), inline $...$) to plain text
+   *  - normalize odd dollar/currency glyphs and remove replacement chars
+   */
+  private sanitizeContent(content: string): string {
+    if (!content) return "";
+    let s = content;
+
+    // Reasoning leakage from the model
+    s = s.replace(/<think>[\s\S]*?<\/think>/gi, "");
+    s = s.replace(/<\/?think>/gi, ""); // unclosed/leftover tag
+    s = s.replace(/^\s*\**\s*\w*GPT\s*:\s*/i, "");
+    // "WormGPT: ..." can also appear on its own trailing line (often wrapped in * or **)
+    s = s.replace(/^\s*\**\s*\w*GPT\s*:.*$/gim, "");
+
+    // Display math: $$ ... $$  and \[ ... \]
+    s = s.replace(/\$\$([\s\S]*?)\$\$/g, (_m, inner) => " " + this.deLatexExpression(inner) + " ");
+    s = s.replace(/\\\[([\s\S]*?)\\\]/g, (_m, inner) => " " + this.deLatexExpression(inner) + " ");
+    // Inline math: \( ... \)
+    s = s.replace(/\\\(([\s\S]*?)\\\)/g, (_m, inner) => this.deLatexExpression(inner));
+    // Inline math wrapped in single $...$ — only when the content is clearly math
+    // (contains a backslash command or an "=" sign) so plain currency like
+    // "$41,20" or "de $5 a $10" is never touched.
+    s = s.replace(/\$\s*([^$\n]*?(?:\\[a-zA-Z]+|=)[^$\n]*?)\s*\$/g, (_m, inner) => this.deLatexExpression(inner));
+
+    // Any remaining stray LaTeX tokens outside delimiters (preserve newlines)
+    s = s
+      .replace(/\\(?:text|mathrm|mathbf|boxed|operatorname)\s*\{([^}]*)\}/g, "$1")
+      .replace(/\\frac\s*\{([^}]*)\}\s*\{([^}]*)\}/g, "($1)/($2)")
+      .replace(/\\left|\\right/g, "")
+      .replace(/\\times/g, "×")
+      .replace(/\\div/g, "÷")
+      .replace(/\\cdot/g, "·")
+      .replace(/\\approx/g, "≈")
+      .replace(/\\(?:leq|le)\b/g, "≤")
+      .replace(/\\(?:geq|ge)\b/g, "≥")
+      .replace(/\\%/g, "%")
+      .replace(/\\\$/g, "$")
+      .replace(/\\([#&_])/g, "$1")
+      .replace(/\\[,;:!]/g, " ");
+
+    // Odd currency glyphs the model sometimes substitutes for "$"
+    s = s.replace(/[＄﹩]/g, "$"); // fullwidth / small dollar
+    s = s.replace(/[₵¢](?=\s*[\d.,])/g, "$"); // cedi/cent glyph used as a money sign
+    s = s.replace(/�/g, ""); // replacement char from bad encoding
+
+    // Tidy excess spaces introduced by stripping, keep line structure
+    s = s.replace(/[ \t]{2,}/g, " ").replace(/ +\n/g, "\n").replace(/\n{3,}/g, "\n\n");
+
+    return s.trim();
+  }
+
+  /**
    * Detect if markdown content appears structurally incomplete.
    * Catches cases where the model returns finish_reason="stop" but content is cut off.
    */
@@ -527,15 +599,44 @@ class AIService {
     const language = (request.language && SYSTEM_PROMPTS[request.language]) ? request.language : "es";
     request = { ...request, language };
 
-    // Check cache (except for custom prompts)
-    if (request.type !== "custom") {
-      const cacheKey = this.getCacheKey(request);
-      const cached = await this.getCached(cacheKey);
-      if (cached) return cached;
-    }
-
     const systemPrompt = SYSTEM_PROMPTS[language];
     const userPrompt = this.buildPrompt(request, exchangeData);
+
+    // Effective model: per-request override (validated upstream) or the default.
+    const model = request.model || this.model;
+
+    // Inputs that fully determine the output. We reuse a stored insight until
+    // these change (rates, date, prompt, model) — i.e. regenerate ONLY when
+    // something changed that warrants it, instead of on every Redis TTL expiry.
+    const promptHash = aiInsightCache.hashPrompt(model, systemPrompt, userPrompt);
+    const baseKey =
+      request.type === "custom"
+        ? `${AI_CACHE_PREFIX}custom_${language}_${promptHash.slice(0, 12)}`
+        : this.getCacheKey(request);
+    const redisKey = `${baseKey}:${promptHash.slice(0, 8)}`;
+
+    // 1) Fast in-memory layer (Redis), scoped to this exact prompt hash so it
+    //    can never serve a result for stale data.
+    const hot = await redisCache.get<InsightResponse>(redisKey);
+    if (hot && hot.insight && hot.insight !== "No insight generated") {
+      return { ...hot, cached: true, truncated: hot.truncated ?? false, finishReason: hot.finishReason ?? "stop" };
+    }
+
+    // 2) Persistent layer (MongoDB) — survives restarts and Redis TTL expiry.
+    const stored = await aiInsightCache.get(baseKey);
+    if (stored && stored.promptHash === promptHash && stored.insight && stored.insight.length >= 20) {
+      const response: InsightResponse = {
+        insight: stored.insight,
+        type: stored.type,
+        timestamp: stored.timestamp,
+        language,
+        cached: true,
+        truncated: stored.truncated ?? false,
+        finishReason: stored.finishReason ?? "stop",
+      };
+      redisCache.set(redisKey, { ...response, cached: false }, AI_CACHE_TTL).catch(() => {});
+      return response;
+    }
 
     // Retry loop: if the model produces incomplete content, retry once with a shorter prompt
     const MAX_ATTEMPTS = 2;
@@ -550,7 +651,7 @@ class AIService {
         let completion;
         try {
           completion = await this.client.chat.completions.create({
-            model: this.model,
+            model,
             messages: [
               { role: "system", content: systemPrompt },
               { role: "user", content: attempt === 1 ? userPrompt : userPrompt + "\n\nIMPORTANTE: Genera una respuesta COMPLETA y más concisa. No dejes tablas ni secciones incompletas." },
@@ -573,8 +674,9 @@ class AIService {
           console.log(`AI tokens used (attempt ${attempt}): prompt=${usage.prompt_tokens}, completion=${usage.completion_tokens}, total=${usage.total_tokens}`);
         }
 
-        // Detect broken/empty responses
-        const insight = rawContent?.trim() || "";
+        // Detect broken/empty responses (after stripping reasoning blocks,
+        // model-name prefixes and converting any LaTeX math to plain text)
+        const insight = this.sanitizeContent(rawContent || "").trim();
         const isTruncatedByFinishReason = finishReason === "length";
         const isEmpty = !insight || insight.length < 20;
         const isRefusal = finishReason === "content_filter";
@@ -624,9 +726,25 @@ class AIService {
           finishReason,
         };
 
-        // Cache the response only if it's complete and valid (not truncated, not empty, not custom)
-        if (request.type !== "custom" && !isTruncated && finalInsight !== "No insight generated" && finalInsight.length >= 20) {
-          this.setCache(this.getCacheKey(request), response);
+        // Persist only complete, valid responses (all types, including custom).
+        // Next request reuses this until the prompt hash changes.
+        if (!isTruncated && finalInsight !== "No insight generated" && finalInsight.length >= 20) {
+          aiInsightCache
+            .set({
+              key: baseKey,
+              promptHash,
+              type: request.type,
+              language,
+              currency: request.currency,
+              origin: request.origin,
+              model,
+              insight: finalInsight,
+              truncated: false,
+              finishReason,
+              timestamp: response.timestamp,
+            })
+            .catch(() => {});
+          redisCache.set(redisKey, { ...response, cached: false }, AI_CACHE_TTL).catch(() => {});
         }
 
         return response;
@@ -648,9 +766,10 @@ class AIService {
     throw new Error(`AI analysis failed: ${lastError?.message || "Unknown error"}`);
   }
 
-  // Cleanup cache
+  // Cleanup cache (both the hot Redis layer and the persistent MongoDB store)
   async clearCache(): Promise<void> {
     await redisCache.delPattern(`${AI_CACHE_PREFIX}*`);
+    await aiInsightCache.clear();
   }
 }
 

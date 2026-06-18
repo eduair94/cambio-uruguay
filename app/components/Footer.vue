@@ -75,7 +75,19 @@
         <VSpacer class="d-none d-md-flex" />
 
         <!-- Site links: editorial guides + methodology/about (internal SEO) -->
-        <nav class="d-flex align-center ga-3 footer-links">
+        <nav class="d-flex align-center flex-wrap ga-3 footer-links">
+          <NuxtLink :to="localePath('/herramientas')" class="footer-link text-caption">
+            Herramientas
+          </NuxtLink>
+          <NuxtLink :to="localePath('/glosario')" class="footer-link text-caption">
+            Glosario
+          </NuxtLink>
+          <NuxtLink :to="localePath('/convertir')" class="footer-link text-caption">
+            Convertir
+          </NuxtLink>
+          <NuxtLink :to="localePath('/blog')" class="footer-link text-caption">
+            Blog
+          </NuxtLink>
           <NuxtLink :to="localePath('/guias')" class="footer-link text-caption">
             {{ $t('guias.nav') }}
           </NuxtLink>

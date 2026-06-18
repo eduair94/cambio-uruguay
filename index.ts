@@ -769,7 +769,7 @@ const main = async () => {
       }, 503);
     }
 
-    const { type, language, currency, origin, customPrompt } = req.body;
+    const { type, language, currency, origin, customPrompt, model } = req.body;
 
     // Validate type
     const validTypes = ["market_summary", "currency_analysis", "best_rates", "trend_analysis", "custom"];
@@ -780,6 +780,13 @@ const main = async () => {
     // Validate language
     const validLanguages = ["es", "en", "pt"];
     const lang = validLanguages.includes(language) ? language : "es";
+
+    // Optional model override (whitelisted to the supported wormgpt/OpenAI models).
+    // Defaults to AI_MODEL when not provided or not allowed.
+    const allowedModels = [
+      "wormv-auto", "wormv5.1", "wormv5.0", "worm-coder", "wormv4.5", "wormv4.3", "wormv4.1", "wormv4.0",
+    ];
+    const modelOverride = typeof model === "string" && allowedModels.includes(model) ? model : undefined;
 
     // Get current exchange data and local data for context
     const [exchangeData, localData] = await Promise.all([
@@ -800,6 +807,7 @@ const main = async () => {
       exchangeData,
       localData,
       date: currentDate,
+      model: modelOverride,
     };
 
     // Fetch evolution data for trend_analysis and currency_analysis

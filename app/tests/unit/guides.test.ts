@@ -20,8 +20,8 @@ describe('guideSlugs', () => {
     expect(guideSlugs()).toEqual(guides.map(g => g.slug))
   })
 
-  it('contains the four expected guides', () => {
-    expect(guideSlugs()).toEqual([
+  it('contains the four original guides in catalogue order', () => {
+    expect(guideSlugs().slice(0, 4)).toEqual([
       'conviene-comprar-dolares-hoy',
       'billete-cable-transferencia',
       'comprar-dolares-mejor-precio',
@@ -31,8 +31,8 @@ describe('guideSlugs', () => {
 })
 
 describe('guides catalogue integrity', () => {
-  it('has at least four guides', () => {
-    expect(guides.length).toBeGreaterThanOrEqual(4)
+  it('has been expanded with additional guides', () => {
+    expect(guides.length).toBeGreaterThanOrEqual(16)
   })
 
   it('has unique slugs', () => {

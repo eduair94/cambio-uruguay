@@ -73,6 +73,34 @@
           <VListItemTitle>{{ $t('guias.nav') }}</VListItemTitle>
         </VListItem>
 
+        <VListItem :to="localePath('/herramientas')" @click="drawer = false">
+          <template #prepend>
+            <VIcon>mdi-tools</VIcon>
+          </template>
+          <VListItemTitle>Herramientas</VListItemTitle>
+        </VListItem>
+
+        <VListItem :to="localePath('/glosario')" @click="drawer = false">
+          <template #prepend>
+            <VIcon>mdi-book-alphabet</VIcon>
+          </template>
+          <VListItemTitle>Glosario</VListItemTitle>
+        </VListItem>
+
+        <VListItem :to="localePath('/convertir')" @click="drawer = false">
+          <template #prepend>
+            <VIcon>mdi-cash-sync</VIcon>
+          </template>
+          <VListItemTitle>Convertir</VListItemTitle>
+        </VListItem>
+
+        <VListItem :to="localePath('/blog')" @click="drawer = false">
+          <template #prepend>
+            <VIcon>mdi-newspaper-variant-multiple</VIcon>
+          </template>
+          <VListItemTitle>Blog</VListItemTitle>
+        </VListItem>
+
         <VListItem :to="localePath('/acerca')" @click="drawer = false">
           <template #prepend>
             <VIcon>mdi-information-outline</VIcon>
@@ -218,6 +246,39 @@
         >
           <VIcon start small>mdi-book-open-variant</VIcon>
           {{ $t('guias.nav') }}
+        </VBtn>
+
+        <!-- Herramientas -->
+        <VBtn
+          :to="localePath('/herramientas')"
+          variant="text"
+          class="text-capitalize nav-btn"
+          :class="{ 'nav-btn--active': isActiveRoute('/herramientas') }"
+        >
+          <VIcon start small>mdi-tools</VIcon>
+          Herramientas
+        </VBtn>
+
+        <!-- Glosario -->
+        <VBtn
+          :to="localePath('/glosario')"
+          variant="text"
+          class="text-capitalize nav-btn"
+          :class="{ 'nav-btn--active': isActiveRoute('/glosario') }"
+        >
+          <VIcon start small>mdi-book-alphabet</VIcon>
+          Glosario
+        </VBtn>
+
+        <!-- Blog -->
+        <VBtn
+          :to="localePath('/blog')"
+          variant="text"
+          class="text-capitalize nav-btn"
+          :class="{ 'nav-btn--active': isActiveRoute('/blog') }"
+        >
+          <VIcon start small>mdi-newspaper-variant-multiple</VIcon>
+          Blog
         </VBtn>
 
         <!-- Acerca -->

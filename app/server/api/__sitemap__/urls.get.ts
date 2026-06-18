@@ -1,5 +1,9 @@
 import { listCurrencySlugs } from '../../../utils/currencyPages'
 import { guideSlugs } from '../../../utils/guides'
+import { toolSlugs } from '../../../utils/tools'
+import { glossarySlugs } from '../../../utils/glossary'
+import { convertSlugs } from '../../../utils/convert'
+import { listPosts } from '../../utils/blog'
 
 export default defineEventHandler(async _event => {
   try {
@@ -123,6 +127,10 @@ export default defineEventHandler(async _event => {
     addUrlsForAllLocales('/preguntas-frecuentes', 0.7, 'weekly') // FAQ hub
     addUrlsForAllLocales('/comparar', 0.8, 'daily') // Compare exchange houses over time
     addUrlsForAllLocales('/guias', 0.7, 'weekly') // Editorial guides hub
+    addUrlsForAllLocales('/herramientas', 0.8, 'weekly') // Tools / calculators hub
+    addUrlsForAllLocales('/glosario', 0.7, 'weekly') // Financial glossary hub
+    addUrlsForAllLocales('/convertir', 0.7, 'weekly') // Amount-conversion hub
+    addUrlsForAllLocales('/blog', 0.8, 'daily') // AI daily blog hub
     addUrlsForAllLocales('/acerca', 0.6, 'monthly') // Methodology / about page
     addUrlsForAllLocales('/offline', 0.3, 'monthly') // Offline page
 
@@ -130,6 +138,37 @@ export default defineEventHandler(async _event => {
     guideSlugs().forEach(slug => {
       addUrlsForAllLocales(`/guias/${slug}`, 0.7, 'weekly')
     })
+
+    // Add /herramientas/:slug calculator routes for all locales
+    toolSlugs().forEach(slug => {
+      addUrlsForAllLocales(`/herramientas/${slug}`, 0.7, 'weekly')
+    })
+
+    // Add /glosario/:termino definition routes for all locales
+    glossarySlugs().forEach(slug => {
+      addUrlsForAllLocales(`/glosario/${slug}`, 0.6, 'monthly')
+    })
+
+    // Add /convertir/:slug amount-conversion routes for all locales
+    convertSlugs().forEach(slug => {
+      addUrlsForAllLocales(`/convertir/${slug}`, 0.6, 'weekly')
+    })
+
+    // Add /blog/:slug AI daily-blog posts (default locale only — posts are
+    // Spanish-only, so we avoid duplicate-content URLs across locales).
+    try {
+      const posts = await listPosts()
+      posts.forEach(post => {
+        urls.push({
+          loc: `/blog/${post.slug}`,
+          lastmod: post.createdAt,
+          changefreq: 'monthly',
+          priority: 0.6,
+        })
+      })
+    } catch (blogError) {
+      console.warn('Failed to add blog posts to sitemap:', blogError)
+    }
 
     // Add /historico/:origin routes for all locales
     origins.forEach(origin => {

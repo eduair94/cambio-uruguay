@@ -232,9 +232,20 @@ export default defineNuxtConfig({
       redis: {
         driver: 'memory', // Use memory storage for development
       },
+      // Durable store for the AI daily blog (one post per category per day).
+      // Filesystem-backed so posts survive restarts and accumulate as history.
+      blog: {
+        driver: 'fs',
+        base: './.data/blog',
+      },
     },
     experimental: {
       wasm: true,
+      tasks: true, // enable Nitro scheduled tasks (daily blog generation)
+    },
+    scheduledTasks: {
+      // 09:30 UTC ≈ 06:30 Uruguay: generate the day's blog posts.
+      '30 9 * * *': ['blog:daily'],
     },
   },
 
@@ -422,6 +433,10 @@ export default defineNuxtConfig({
       '/cotizacion',
       '/casa',
       '/guias',
+      '/herramientas',
+      '/glosario',
+      '/convertir',
+      '/blog',
       '/acerca',
     ],
     sitemap: 'https://cambio-uruguay.com/sitemap.xml',
@@ -475,6 +490,17 @@ export default defineNuxtConfig({
     },
     // Server-side API URL (for SSR requests)
     apiBaseServer: process.env.NUXT_API_BASE_SERVER || 'http://104.234.204.107:3528',
+    // AI provider (server-only) for the daily blog generator. OpenAI-compatible
+    // wormgpt endpoint; defaults to the latest model. Falls back to the backend
+    // /ai/insights when no apiKey is present in this app's environment.
+    ai: {
+      baseUrl:
+        process.env.NUXT_AI_BASE_URL ||
+        process.env.AI_BASE_URL ||
+        'https://wormgpt.checkleaked.com/v1',
+      apiKey: process.env.NUXT_AI_API_KEY || process.env.AI_API_KEY || '',
+      model: process.env.NUXT_AI_MODEL || 'wormv5.1',
+    },
     // Public keys (exposed to client-side)
     public: {
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'https://cambio-uruguay.com',
