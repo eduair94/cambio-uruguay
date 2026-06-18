@@ -10,6 +10,7 @@ export interface UserDoc {
     defaultDirection: string | null
   }
   fcmTokens: string[]
+  telegramChatId: string | null
 }
 
 const UserSchema = new Schema<UserDoc>(
@@ -23,6 +24,7 @@ const UserSchema = new Schema<UserDoc>(
       defaultDirection: { type: String, default: null },
     },
     fcmTokens: { type: [String], default: [] },
+    telegramChatId: { type: String, default: null },
   },
   { timestamps: true, _id: false }
 )

@@ -7,7 +7,7 @@ export interface AlertDoc {
   kind: 'bestBuy' | 'bestSell'
   op: '<' | '>' | '<=' | '>='
   target: number
-  channels: { push: boolean; email: boolean }
+  channels: { push: boolean; email: boolean; telegram: boolean }
   active: boolean
   armed: boolean
   lastFiredAt: Date | null
@@ -24,6 +24,7 @@ const AlertSchema = new Schema<AlertDoc>(
     channels: {
       push: { type: Boolean, default: true },
       email: { type: Boolean, default: true },
+      telegram: { type: Boolean, default: false },
     },
     active: { type: Boolean, default: true },
     armed: { type: Boolean, default: true },
