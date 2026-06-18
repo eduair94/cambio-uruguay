@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { BestHouseResult, ConvertResult, NewsItem, RatesResult } from "cambio-uruguay-mcp/tools";
+import type { BestHouseResult, ConvertResult, RatesResult } from "cambio-uruguay-mcp/tools";
+import type { NewsItem } from "cambio-uruguay-mcp/news";
 import {
   formatAlert,
   formatBest,

@@ -1,11 +1,7 @@
 // Channel-specific message formatters. Pure: structured data in, strings out.
 // Telegram/Discord use light Markdown; Twitter is compact and hard-capped at 280.
-import type {
-  BestHouseResult,
-  ConvertResult,
-  NewsItem,
-  RatesResult,
-} from "cambio-uruguay-mcp/tools";
+import type { BestHouseResult, ConvertResult, RatesResult } from "cambio-uruguay-mcp/tools";
+import type { NewsItem } from "cambio-uruguay-mcp/news";
 import { fmtNum, fmtPct, fmtUYU, L, type Lang } from "./i18n.js";
 import type { AlertData, DailyReportData } from "../report/types.js";
 

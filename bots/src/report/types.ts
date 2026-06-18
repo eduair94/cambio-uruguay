@@ -1,6 +1,6 @@
 // Shared shapes for the daily report + alerts, produced by report/data.ts and
 // consumed by the formatters and publishers.
-import type { NewsItem } from "cambio-uruguay-mcp/tools";
+import type { NewsItem } from "cambio-uruguay-mcp/news";
 
 export interface CurrencyDelta {
   code: string;
