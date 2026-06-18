@@ -19,6 +19,11 @@
               <!-- Trust signals: BCU source, coverage, freshness, Trustpilot -->
               <TrustBar />
 
+              <!-- Share (referral traffic + interactions); WhatsApp-first for UY -->
+              <div class="d-flex justify-center justify-md-start mb-4">
+                <ShareButtons />
+              </div>
+
               <!-- Currency Converter Card -->
               <VCard class="exchange-card pa-6 mb-6" elevation="8">
                 <h2 class="text-h5 font-weight-bold mb-6 text-center">

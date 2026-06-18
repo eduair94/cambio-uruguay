@@ -32,6 +32,11 @@
               <v-icon start size="small">mdi-autorenew</v-icon>
               {{ $t('cotizacion.updatedAuto') }}
             </v-chip>
+            <v-spacer class="d-none d-sm-flex" />
+            <ShareButtons
+              :url="canonicalUrl"
+              :text="$t('cotizacion.metaTitle', { currency: currencyName })"
+            />
           </v-card-text>
         </v-card>
       </v-col>

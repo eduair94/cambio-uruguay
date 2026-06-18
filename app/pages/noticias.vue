@@ -9,6 +9,9 @@
           <VIcon start size="small">mdi-autorenew</VIcon>
           {{ t('noticias.updatedAuto') }}
         </VChip>
+        <div class="d-flex justify-center mt-4">
+          <ShareButtons :text="t('noticias.metaTitle')" />
+        </div>
       </header>
 
       <!-- AI pulse: news summary + dollar trend (client-only, never blocks SSR) -->

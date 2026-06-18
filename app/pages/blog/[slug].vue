@@ -18,6 +18,7 @@
             </div>
             <h1 class="text-h4 text-md-h3 font-weight-bold mb-3">{{ post.title }}</h1>
             <p class="text-body-1 text-grey-lighten-1 post-lead">{{ post.summary }}</p>
+            <ShareButtons class="mt-4" :text="post.title" />
           </header>
 
           <VDivider class="mb-5" />

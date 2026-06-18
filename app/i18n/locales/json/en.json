@@ -93,6 +93,18 @@
     "menu": "Open menu",
     "close": "Close menu"
   },
+  "share": {
+    "label": "Share:",
+    "cta": "Share",
+    "aria": "Share this page",
+    "defaultText": "US dollar exchange rate in Uruguay — Cambio Uruguay",
+    "copy": "Copy link",
+    "copied": "Link copied!",
+    "whatsapp": "Share on WhatsApp",
+    "twitter": "Share on X",
+    "telegram": "Share on Telegram",
+    "facebook": "Share on Facebook"
+  },
   "noticias": {
     "nav": "News",
     "title": "Uruguay dollar news",

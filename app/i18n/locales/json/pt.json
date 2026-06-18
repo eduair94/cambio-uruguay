@@ -91,6 +91,18 @@
     "menu": "Abrir menu",
     "close": "Fechar menu"
   },
+  "share": {
+    "label": "Compartilhar:",
+    "cta": "Compartilhar",
+    "aria": "Compartilhar esta página",
+    "defaultText": "Cotação do dólar no Uruguai — Cambio Uruguay",
+    "copy": "Copiar link",
+    "copied": "Link copiado!",
+    "whatsapp": "Compartilhar no WhatsApp",
+    "twitter": "Compartilhar no X",
+    "telegram": "Compartilhar no Telegram",
+    "facebook": "Compartilhar no Facebook"
+  },
   "noticias": {
     "nav": "Notícias",
     "title": "Notícias do dólar no Uruguai",

@@ -20,6 +20,7 @@
             </VChip>
             <h1 class="text-h4 text-md-h3 font-weight-bold mb-3">{{ guide.title }}</h1>
             <p class="text-body-1 text-grey-lighten-1 guide-lead">{{ guide.description }}</p>
+            <ShareButtons class="mt-4 mb-2" :url="canonicalUrl" :text="guide.title" />
             <p class="text-caption text-grey-darken-1 mt-3">
               {{ t('guias.updated', { date: updatedDisplay }) }}
               · {{ t('guias.byAuthor') }}
