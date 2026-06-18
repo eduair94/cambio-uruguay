@@ -92,6 +92,7 @@
   "subtitle": "Compare taxas de mais de 40 casas de câmbio em tempo real",
   "apiUsageMessage": "Interessado em usar esta API para seu site e ter uma taxa de câmbio de acordo com um banco específico em tempo real? Entre em contato conosco em ",
   "inicio": "Início",
+  "navMore": "Mais",
   "avanzado": "Avançado",
   "simpleTitle": "Cotação do Dólar no Uruguai Hoje",
   "simpleSubtitle": "Compare cotações do dólar e todas as moedas em mais de 40 casas de câmbio",
@@ -353,6 +354,8 @@
     "updateDescription": "Uma nova versão está disponível",
     "update": "Atualizar",
     "offline": "Você está offline",
+    "showingSavedData": "Sem conexão · mostrando dados salvos",
+    "savedDataAt": "Dados salvos às {time}",
     "onlineAgain": "Você está online novamente"
   },
   "codes": {

@@ -94,6 +94,7 @@
   "subtitle": "Compare rates from over 40 exchange houses in real-time",
   "apiUsageMessage": "Interested in using this API for your website and having an exchange rate according to a particular bank in real time? Contact us at ",
   "inicio": "Home",
+  "navMore": "More",
   "avanzado": "Advanced",
   "simpleTitle": "Dollar Exchange Rate in Uruguay Today",
   "simpleSubtitle": "Compare dollar and currency exchange rates from 40+ exchange houses",
@@ -358,6 +359,8 @@
     "updateDescription": "A new version is available",
     "update": "Update",
     "offline": "You are offline",
+    "showingSavedData": "Offline · showing saved data",
+    "savedDataAt": "Saved at {time}",
     "onlineAgain": "You are online again"
   },
   "codes": {

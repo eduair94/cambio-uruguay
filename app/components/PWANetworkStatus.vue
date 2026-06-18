@@ -1,10 +1,16 @@
 <template>
   <div>
     <v-snackbar v-model="showOfflineSnackbar" :timeout="-1" color="error" bottom left>
-      {{ $t('pwa.offline') || 'Estás sin conexión' }}
+      <div class="d-flex align-center">
+        <v-icon class="mr-2">mdi-wifi-off</v-icon>
+        <div>
+          <div>{{ savedAtLabel ? $t('pwa.showingSavedData') : $t('pwa.offline') }}</div>
+          <div v-if="savedAtLabel" class="text-caption">{{ savedAtLabel }}</div>
+        </div>
+      </div>
       <template #actions="{ isActive }">
         <v-btn color="white" text v-bind="isActive" @click="showOfflineSnackbar = false">
-          {{ $t('pwa.dismiss') || 'Cerrar' }}
+          {{ $t('pwa.dismiss') }}
         </v-btn>
       </template>
     </v-snackbar>
@@ -16,9 +22,20 @@
 </template>
 
 <script setup lang="ts">
+import { loadSnapshot, snapshotAgeLabel } from '~/utils/ratesSnapshot'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
+
 // Reactive state
 const showOfflineSnackbar = ref(false)
 const showOnlineSnackbar = ref(false)
+const savedAtLabel = ref('')
+
+const refreshSavedLabel = () => {
+  const snap = loadSnapshot()
+  savedAtLabel.value = snap ? t('pwa.savedDataAt', { time: snapshotAgeLabel(snap.ts) }) : ''
+}
 
 // Methods
 const handleOnline = () => {
@@ -28,6 +45,7 @@ const handleOnline = () => {
 
 const handleOffline = () => {
   showOnlineSnackbar.value = false
+  refreshSavedLabel()
   showOfflineSnackbar.value = true
 }
 
@@ -38,6 +56,7 @@ const setupNetworkListeners = () => {
 
     // Check initial status only on client side
     if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      refreshSavedLabel()
       showOfflineSnackbar.value = true
     }
   }
