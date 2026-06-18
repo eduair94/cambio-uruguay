@@ -1,3 +1,5 @@
+import { saveSnapshot, loadSnapshot, resolveExchangeResult } from '~/utils/ratesSnapshot'
+
 // Define interfaces for API responses
 interface GeocodeData {
   lat: string
@@ -185,6 +187,7 @@ export const useApiService = () => {
    * Get processed exchange data for a specific date
    */
   const getProcessedExchangeData = async (date: string) => {
+    const isCurrent = date === ''
     try {
       const { exchangeData, localData } = await getExchangeDataWithLocal(date)
 
@@ -192,21 +195,31 @@ export const useApiService = () => {
       const exchangeError = exchangeData?.error
       const localDataError = localData?.error
 
-      if (exchangeError || localDataError) {
-        return {
-          error: exchangeError,
-          exchangeData: [],
-          localData: localDataError ? {} : localData,
-          locations: localDataError ? [] : getLocations(localData),
-        }
-      }
+      const live = exchangeError || localDataError
+        ? {
+            error: exchangeError,
+            exchangeData: [] as any[],
+            localData: localDataError ? {} : localData,
+            locations: localDataError ? [] : getLocations(localData),
+          }
+        : {
+            error: null,
+            exchangeData: processExchangeData(exchangeData, localData),
+            localData,
+            locations: getLocations(localData),
+          }
 
-      return {
-        error: null,
-        exchangeData: processExchangeData(exchangeData, localData),
-        localData,
-        locations: getLocations(localData),
+      // Snapshot only applies to the current day's rates (date === '').
+      if (!isCurrent) return live
+      if (import.meta.client && live.error == null && live.exchangeData.length > 0) {
+        saveSnapshot({
+          exchangeData: live.exchangeData,
+          localData: live.localData,
+          locations: live.locations,
+        })
+        return resolveExchangeResult(live, null)
       }
+      return resolveExchangeResult(live, import.meta.client ? loadSnapshot() : null)
     } catch (error: any) {
       console.error('API Error for date', date, ':', error)
 
@@ -218,6 +231,17 @@ export const useApiService = () => {
         data: error?.data || null,
         stack: error?.stack || null,
         originalError: error,
+      }
+
+      // Offline / network failure for today: serve the last good snapshot if we have one.
+      if (isCurrent && import.meta.client) {
+        const snap = loadSnapshot()
+        if (snap) {
+          return resolveExchangeResult(
+            { error: errorResponse, exchangeData: [], localData: {}, locations: [] },
+            snap
+          )
+        }
       }
 
       return {
