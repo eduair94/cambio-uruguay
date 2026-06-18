@@ -248,8 +248,10 @@ export default defineNuxtConfig({
       '30 9 * * *': ['blog:daily'],
       // 12:00 UTC = 09:00 Uruguay: send the daily newsletter to confirmed subs.
       '0 12 * * *': ['newsletter:daily'],
-      // Every 10 minutes: evaluate rate alerts and notify (push + email).
+      // Every 10 minutes: evaluate rate alerts and notify (push + email + telegram).
       '*/10 * * * *': ['alerts:check'],
+      // 11:00 UTC = 08:00 Uruguay: personalized Telegram summary for linked users.
+      '0 11 * * *': ['telegram:summary'],
     },
   },
 
