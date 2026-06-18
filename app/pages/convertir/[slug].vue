@@ -71,6 +71,16 @@
                 </tr>
               </tbody>
             </VTable>
+            <div v-if="!pending" class="mt-4">
+              <SaveResultButton
+                kind="conversion"
+                tool-slug="convertir"
+                :title="title"
+                :inputs="{ slug, amount: entry!.amount, from: entry!.from, to: entry!.to }"
+                :result="{ receiveSelling, payBuying, buyForeign, sellForeign }"
+                :rates="saveRates"
+              />
+            </div>
           </VCard>
 
           <!-- SEO copy -->
@@ -141,6 +151,7 @@ import {
   type ConvertCode,
 } from '~/utils/convert'
 import type { CurrencyCode } from '~/utils/currencyPages'
+import type { SavedRateRef } from '~/composables/useSavedDrift'
 
 definePageMeta({
   validate: route => convertSlugs().includes(String(route.params.slug ?? '')),
@@ -178,6 +189,16 @@ const buyForeign = computed(() =>
 const sellForeign = computed(() =>
   buyRate.value ? round(entry.value!.amount / buyRate.value, 2) : null
 )
+
+const saveRates = computed<SavedRateRef[]>(() => {
+  const out: SavedRateRef[] = []
+  const cur = foreign.value as CurrencyCode
+  if (buyRate.value)
+    out.push({ label: 'compra', currency: cur, rateKind: 'bestBuy', value: buyRate.value })
+  if (sellRate.value)
+    out.push({ label: 'venta', currency: cur, rateKind: 'bestSell', value: sellRate.value })
+  return out
+})
 
 const formatForeign = (v: number | null) => formatCurrency(v, foreign.value)
 

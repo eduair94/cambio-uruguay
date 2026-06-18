@@ -54,6 +54,17 @@
           todas las casas en la
           <NuxtLink :to="localePath('/')" class="tool-link">portada</NuxtLink>.
         </p>
+
+        <div class="mt-4">
+          <SaveResultButton
+            kind="conversion"
+            tool-slug="conversor-de-monedas"
+            :title="`${amount} ${code}`"
+            :inputs="{ amount, code }"
+            :result="{ buyResult, sellResult }"
+            :rates="saveRates"
+          />
+        </div>
       </template>
     </VCard>
 
@@ -81,6 +92,7 @@ import { computed, ref } from 'vue'
 import { formatUYU } from '~/utils/format'
 import { currencyDisplayName, type CurrencyCode } from '~/utils/currencyPages'
 import { CONVERT_CURRENCIES } from '~/utils/convert'
+import type { SavedRateRef } from '~/composables/useSavedDrift'
 
 const localePath = useLocalePath()
 const amount = ref(100)
@@ -100,6 +112,15 @@ const sellResult = computed(() => (buyRate.value ? (amount.value || 0) * buyRate
 
 const singular = computed(() => CONVERT_CURRENCIES[code.value].singular)
 const plural = computed(() => CONVERT_CURRENCIES[code.value].plural)
+
+const saveRates = computed<SavedRateRef[]>(() => {
+  const out: SavedRateRef[] = []
+  if (buyRate.value)
+    out.push({ label: 'sell', currency: code.value, rateKind: 'bestBuy', value: buyRate.value })
+  if (sellRate.value)
+    out.push({ label: 'buy', currency: code.value, rateKind: 'bestSell', value: sellRate.value })
+  return out
+})
 
 const faq = [
   {
