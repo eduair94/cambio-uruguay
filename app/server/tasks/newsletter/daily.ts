@@ -7,17 +7,23 @@ import { NewsletterSubscriberModel } from '../../models/NewsletterSubscriber'
 import { isMailerConfigured, sendMail } from '../../utils/mailer'
 import {
   buildDailyEmail,
+  buildDailyTelegram,
   buildDigestData,
   normalizeNewsletterLang,
   type DigestData,
   type NewsletterLang,
 } from '../../utils/newsletter'
+import { UserModel } from '../../models/User'
+import { sendTelegram } from '../../utils/telegram'
 
 // Per-day run marker for dedup.
-const runSchema = new Schema({ key: { type: String, unique: true }, at: { type: Date, default: () => new Date() } })
+const runSchema = new Schema({
+  key: { type: String, unique: true },
+  at: { type: Date, default: () => new Date() },
+})
 const NewsletterRun = mongoose.models.NewsletterRun || mongoose.model('NewsletterRun', runSchema)
 
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+const sleep = (ms: number) => new Promise(r => setTimeout(r, ms))
 
 export default defineTask({
   meta: {
@@ -30,7 +36,9 @@ export default defineTask({
     const cfg = useRuntimeConfig()
     const nl = (cfg.newsletter as { delayMs?: string | number }) ?? {}
     const dryRun = process.env.DRY_RUN === '1'
-    const site = ((cfg.public as { siteUrl?: string }).siteUrl || 'https://cambio-uruguay.com').replace(/\/$/, '')
+    const site = (
+      (cfg.public as { siteUrl?: string }).siteUrl || 'https://cambio-uruguay.com'
+    ).replace(/\/$/, '')
     const delayMs = Number(nl.delayMs) || 1000
     const today = new Date().toISOString().slice(0, 10)
 
@@ -42,10 +50,9 @@ export default defineTask({
     }
 
     const subs = await NewsletterSubscriberModel.find({ status: 'confirmed' }).lean()
-    if (subs.length === 0) return { result: 'no-subscribers' }
 
     // Build one digest per language present among subscribers.
-    const langs = new Set<NewsletterLang>(subs.map((s) => normalizeNewsletterLang(s.language)))
+    const langs = new Set<NewsletterLang>(subs.map(s => normalizeNewsletterLang(s.language)))
     const digestByLang = new Map<NewsletterLang, DigestData>()
     for (const lang of langs) digestByLang.set(lang, await buildDigestData(lang))
 
@@ -77,8 +84,36 @@ export default defineTask({
       if (delayMs > 0) await sleep(delayMs)
     }
 
-    if (!dryRun) await NewsletterRun.updateOne({ key: today }, { $set: { at: new Date() } }, { upsert: true })
+    // Telegram delivery for linked users who opted in. Reuses the per-language
+    // digest; builds lazily for any language not already among email subscribers.
+    let telegramSent = 0
+    const tgUsers = (await UserModel.find({
+      'newsletter.telegram': true,
+      telegramChatId: { $ne: null },
+    })
+      .lean()
+      .exec()) as any[]
+    for (const tu of tgUsers) {
+      const lang = normalizeNewsletterLang(tu.settings?.locale)
+      let digest = digestByLang.get(lang)
+      if (!digest) {
+        digest = await buildDigestData(lang)
+        digestByLang.set(lang, digest)
+      }
+      const msg = buildDailyTelegram(digest, lang)
+      if (dryRun) {
+        console.log(`[DRY_RUN newsletter tg] -> ${tu.telegramChatId}: ${msg.slice(0, 60)}…`)
+        telegramSent++
+        continue
+      }
+      const ok = await sendTelegram(tu.telegramChatId, msg)
+      if (ok) telegramSent++
+      if (delayMs > 0) await sleep(delayMs)
+    }
 
-    return { result: { sent, failed, total: subs.length } }
+    if (!dryRun)
+      await NewsletterRun.updateOne({ key: today }, { $set: { at: new Date() } }, { upsert: true })
+
+    return { result: { sent, failed, total: subs.length, telegramSent } }
   },
 })
