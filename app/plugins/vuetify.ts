@@ -54,6 +54,7 @@ import {
   VRow,
   VSelect,
   VSheet,
+  VSkeletonLoader,
   VSlider,
   VSnackbar,
   VSpacer,
@@ -144,6 +145,7 @@ export default defineNuxtPlugin(nuxtApp => {
       VBottomSheet,
       VBanner,
       VOverlay,
+      VSkeletonLoader,
     },
     directives,
     theme: {

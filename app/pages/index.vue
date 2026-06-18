@@ -19,6 +19,10 @@
               <!-- Trust signals: BCU source, coverage, freshness, Trustpilot -->
               <TrustBar />
 
+              <ClientOnly>
+                <DollarMomentum class="mb-4" />
+              </ClientOnly>
+
               <!-- Share (referral traffic + interactions); WhatsApp-first for UY -->
               <div class="d-flex justify-center justify-md-start mb-4">
                 <ShareButtons />

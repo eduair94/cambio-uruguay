@@ -658,5 +658,22 @@
     "waiting": "Waiting for confirmation in Telegram…",
     "hint": "Link Telegram to receive alerts in chat",
     "telegram": "Telegram"
+  },
+  "dolarHoy": {
+    "nav": "Dollar today",
+    "title": "Dollar exchange rate in Uruguay today",
+    "subtitle": "Did the dollar rise or fall? Check the change and trend.",
+    "today": "Dollar today",
+    "buy": "Buy",
+    "sell": "Sell",
+    "up": "rose",
+    "down": "fell",
+    "flat": "unchanged",
+    "vsYesterday": "vs yesterday",
+    "noTrend": "No trend data available yet.",
+    "sevenDays": "Last 7 days",
+    "seeMore": "View details",
+    "metaTitle": "Dollar exchange rate in Uruguay today: rose or fell? | Cambio Uruguay",
+    "metaDescription": "Dollar exchange rate in Uruguay today: buy and sell price, change vs yesterday and trend over recent days, with the best rate from over 40 exchange houses."
   }
 }

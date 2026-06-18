@@ -651,5 +651,22 @@
     "waiting": "Aguardando confirmação no Telegram…",
     "hint": "Vincule o Telegram para receber alertas no chat",
     "telegram": "Telegram"
+  },
+  "dolarHoy": {
+    "nav": "Dólar hoje",
+    "title": "Cotação do dólar hoje no Uruguai",
+    "subtitle": "O dólar subiu ou caiu? Veja a variação e a tendência.",
+    "today": "Dólar hoje",
+    "buy": "Compra",
+    "sell": "Venda",
+    "up": "subiu",
+    "down": "caiu",
+    "flat": "sem mudança",
+    "vsYesterday": "vs ontem",
+    "noTrend": "Sem dados de tendência por enquanto.",
+    "sevenDays": "Últimos 7 dias",
+    "seeMore": "Ver detalhes",
+    "metaTitle": "Cotação do dólar hoje no Uruguai: subiu ou caiu? | Cambio Uruguay",
+    "metaDescription": "Cotação do dólar hoje no Uruguai: preço de compra e venda, variação em relação a ontem e tendência dos últimos dias, com a melhor cotação de mais de 40 casas de câmbio."
   }
 }
