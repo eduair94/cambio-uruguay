@@ -246,6 +246,8 @@ export default defineNuxtConfig({
     scheduledTasks: {
       // 09:30 UTC ≈ 06:30 Uruguay: generate the day's blog posts.
       '30 9 * * *': ['blog:daily'],
+      // 12:00 UTC = 09:00 Uruguay: send the daily newsletter to confirmed subs.
+      '0 12 * * *': ['newsletter:daily'],
     },
   },
 
@@ -508,6 +510,19 @@ export default defineNuxtConfig({
       // File-based creds use FIREBASE_SERVICE_ACCOUNT_PATH / serviceAccount.json,
       // read directly from env in server/utils/firebaseAdmin.ts.
       serviceAccount: process.env.FIREBASE_SERVICE_ACCOUNT || '',
+    },
+    // Email newsletter (server-only). SMTP creds gate the whole feature: when
+    // host/user/from are absent, signup returns 503 and the daily task no-ops.
+    smtp: {
+      host: process.env.SMTP_HOST || '',
+      port: process.env.SMTP_PORT || '587',
+      secure: process.env.SMTP_SECURE || 'false',
+      user: process.env.SMTP_USER || '',
+      pass: process.env.SMTP_PASS || '',
+      from: process.env.SMTP_FROM || '',
+    },
+    newsletter: {
+      delayMs: process.env.NEWSLETTER_SEND_DELAY_MS || '1000',
     },
     // Public keys (exposed to client-side)
     public: {

@@ -1,4 +1,23 @@
 {
+  "newsletter": {
+    "nav": "Newsletter",
+    "title": "Newsletter del dólar",
+    "subtitle": "Recibí cada día el resumen del dólar en Uruguay en tu correo.",
+    "emailLabel": "Tu correo electrónico",
+    "emailPlaceholder": "tucorreo@ejemplo.com",
+    "subscribe": "Suscribirme",
+    "consent": "Te enviaremos un correo para confirmar. Podés cancelar cuando quieras.",
+    "sent": "¡Revisá tu correo! Te enviamos un enlace para confirmar la suscripción.",
+    "error": "No pudimos procesar tu suscripción. Intentá de nuevo.",
+    "confirmedTitle": "¡Suscripción confirmada!",
+    "confirmedMsg": "Listo. Vas a recibir el resumen diario del dólar.",
+    "unsubscribedTitle": "Suscripción cancelada",
+    "unsubscribedMsg": "Ya no recibirás más correos. Podés volver cuando quieras.",
+    "invalidTitle": "Enlace inválido",
+    "invalidMsg": "El enlace expiró o no es válido.",
+    "metaTitle": "Newsletter del dólar en Uruguay | Cambio Uruguay",
+    "metaDescription": "Suscribite gratis y recibí cada día el resumen del dólar en Uruguay: mejores cotizaciones, tendencia y noticias."
+  },
   "welcome": "Encuentra la mejor cotización en el mercado, comparando entre más de 40 casas de cambio.",
   "title": "Cotizaciones del día [day]. Se actualizan cada 10 minutos con respecto a la información de la web.",
   "info": "Si la información del sitio te sirvió, puedes ayudar a mantenerlo o dejando tu reseña",
