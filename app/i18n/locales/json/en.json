@@ -293,6 +293,13 @@
     "blogText": "Daily AI-generated market analysis.",
     "open": "Open"
   },
+  "newsletterPanel": {
+    "title": "Daily newsletter",
+    "email": "Receive by email",
+    "telegram": "Receive on Telegram",
+    "telegramHint": "Link your Telegram first",
+    "saved": "Preferences saved"
+  },
   "donarPaypal": "Donate with Paypal",
   "donarMercadoPago": "Donate with Mercado Pago",
   "accedeRapido": "Access faster from your home screen",

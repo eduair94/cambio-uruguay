@@ -13,6 +13,8 @@
 
     <AccountTelegramLink />
 
+    <AccountNewsletterPanel />
+
     <!-- Create form -->
     <VCard variant="outlined" class="pa-4 mb-4">
       <div class="text-subtitle-2 mb-2">{{ $t('alerts.new') }}</div>

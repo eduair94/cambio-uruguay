@@ -296,6 +296,13 @@
     "blogText": "Análisis diario del mercado generado con IA.",
     "open": "Abrir"
   },
+  "newsletterPanel": {
+    "title": "Newsletter diario",
+    "email": "Recibir por correo",
+    "telegram": "Recibir por Telegram",
+    "telegramHint": "Vinculá tu Telegram primero",
+    "saved": "Preferencias guardadas"
+  },
   "donarPaypal": "Donar con Paypal",
   "donarMercadoPago": "Donar con Mercado Pago",
   "accedeRapido": "Accede más rápido desde tu pantalla de inicio",
