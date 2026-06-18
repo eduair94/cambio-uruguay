@@ -41,5 +41,43 @@ module.exports = {
         API_BASE_URL: "https://api.cambio-uruguay.com",
       },
     },
+    // Social bots. Build first: `cd mcp && npm ci && npm run build && cd ../bots && npm ci && npm run build`.
+    // All read env from bots/.env (see bots/.env.example); each process is a no-op without its creds.
+    {
+      // Telegram interactive bot (long-poll). Single instance only.
+      name: "currency-bot-telegram",
+      autorestart: true,
+      exec_mode: "fork",
+      cwd: "./bots",
+      script: "dist/entries/telegram.js",
+    },
+    {
+      // Discord interactive bot (gateway). Register slash commands once: `npm run register:discord`.
+      name: "currency-bot-discord",
+      autorestart: true,
+      exec_mode: "fork",
+      cwd: "./bots",
+      script: "dist/entries/discord.js",
+    },
+    {
+      // Daily report — 09:00 America/Montevideo (12:00 UTC).
+      name: "currency-daily",
+      autorestart: false,
+      exec_mode: "fork",
+      cwd: "./bots",
+      script: "dist/entries/daily_report.js",
+      cron_restart: "0 12 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
+      // Intraday big-move alerts — every 15 min, ~08:00–18:00 America/Montevideo.
+      name: "currency-alerts",
+      autorestart: false,
+      exec_mode: "fork",
+      cwd: "./bots",
+      script: "dist/entries/alert_check.js",
+      cron_restart: "*/15 11-21 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
   ],
 };
