@@ -167,6 +167,57 @@
             </div>
           </section>
 
+          <!-- MCP server / AI assistants (open-source, npm) -->
+          <section class="mb-8">
+            <h2 class="text-h5 font-weight-bold mb-3">{{ t('acerca.mcpTitle') }}</h2>
+            <p class="text-body-1 text-grey-lighten-1 about-prose mb-4">
+              {{ t('acerca.mcpText') }}
+            </p>
+            <div class="d-flex flex-wrap ga-2 mb-4">
+              <VBtn
+                href="https://www.npmjs.com/package/cambio-uruguay-mcp"
+                target="_blank"
+                rel="noopener noreferrer"
+                color="primary"
+                variant="tonal"
+                prepend-icon="mdi-npm"
+              >
+                {{ t('acerca.mcpNpm') }}
+              </VBtn>
+              <VBtn
+                href="https://github.com/eduair94/cambio-uruguay/tree/main/mcp"
+                target="_blank"
+                rel="noopener noreferrer"
+                color="primary"
+                variant="text"
+                prepend-icon="mdi-github"
+              >
+                {{ t('acerca.mcpSource') }}
+              </VBtn>
+            </div>
+            <div class="embed-snippet">
+              <VTextarea
+                :model-value="mcpConfig"
+                readonly
+                variant="solo-filled"
+                rows="5"
+                auto-grow
+                hide-details
+                class="embed-code"
+                :aria-label="t('acerca.mcpTitle')"
+              />
+              <VBtn
+                color="primary"
+                variant="tonal"
+                class="mt-2"
+                :prepend-icon="copiedMcp ? 'mdi-check' : 'mdi-content-copy'"
+                @click="copyMcp"
+              >
+                {{ copiedMcp ? t('acerca.embedCopied') : t('acerca.embedCopy') }}
+              </VBtn>
+            </div>
+          </section>
+
           <!-- Disclaimer -->
           <VAlert type="warning" variant="tonal" class="mb-8" :title="t('acerca.disclaimerTitle')">
             {{ t('acerca.disclaimerText') }}
@@ -240,8 +291,32 @@ const copyEmbed = async () => {
     // selectable so the user can still copy manually.
   }
 }
+
+// MCP client config for AI assistants (Claude Desktop, Cursor, …). Points at the
+// hosted Streamable-HTTP endpoint; the package is also on npm (cambio-uruguay-mcp).
+const mcpConfig = JSON.stringify(
+  { mcpServers: { 'cambio-uruguay': { url: 'https://mcp.cambio-uruguay.com/mcp' } } },
+  null,
+  2
+)
+const copiedMcp = ref(false)
+let copiedMcpTimer: ReturnType<typeof setTimeout> | null = null
+const copyMcp = async () => {
+  try {
+    await navigator.clipboard.writeText(mcpConfig)
+    copiedMcp.value = true
+    if (copiedMcpTimer) clearTimeout(copiedMcpTimer)
+    copiedMcpTimer = setTimeout(() => {
+      copiedMcp.value = false
+    }, 2000)
+  } catch {
+    // Clipboard unavailable; the textarea stays selectable for manual copy.
+  }
+}
+
 onBeforeUnmount(() => {
   if (copiedTimer) clearTimeout(copiedTimer)
+  if (copiedMcpTimer) clearTimeout(copiedMcpTimer)
 })
 
 const canonicalUrl = 'https://cambio-uruguay.com/acerca'

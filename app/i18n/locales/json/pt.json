@@ -538,7 +538,11 @@
     "embedTitle": "Insira o widget",
     "embedText": "Tem um site ou blog? Adicione a cotação do dólar ao vivo com o nosso widget. Copie este código e cole na sua página:",
     "embedCopy": "Copiar código",
-    "embedCopied": "Copiado!"
+    "embedCopied": "Copiado!",
+    "mcpTitle": "Para assistentes de IA (servidor MCP)",
+    "mcpText": "Usa o Claude, Cursor ou outro assistente de IA? Nosso servidor MCP, open source e gratuito, dá acesso ao vivo às cotações: taxas, melhor casa de câmbio, conversões, histórico e notícias. Adicione com a URL hospedada ou rode com npx.",
+    "mcpNpm": "Ver no npm",
+    "mcpSource": "Código-fonte"
   },
   "widget": {
     "live": "Ao vivo",

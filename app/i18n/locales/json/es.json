@@ -555,7 +555,11 @@
     "embedTitle": "Insertá el widget",
     "embedText": "¿Tenés un sitio web o blog? Sumá la cotización del dólar en vivo con nuestro widget. Copiá este código y pegalo en tu página:",
     "embedCopy": "Copiar código",
-    "embedCopied": "¡Copiado!"
+    "embedCopied": "¡Copiado!",
+    "mcpTitle": "Para asistentes de IA (servidor MCP)",
+    "mcpText": "¿Usás Claude, Cursor u otro asistente de IA? Nuestro servidor MCP, open source y gratuito, les da acceso en vivo a las cotizaciones: tasas, mejor casa, conversiones, historial y noticias. Sumalo con la URL hospedada o instalalo con npx.",
+    "mcpNpm": "Ver en npm",
+    "mcpSource": "Código fuente"
   },
   "widget": {
     "live": "En vivo",

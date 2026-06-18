@@ -545,7 +545,11 @@
     "embedTitle": "Embed the widget",
     "embedText": "Have a website or blog? Add the live dollar rate with our widget. Copy this code and paste it into your page:",
     "embedCopy": "Copy code",
-    "embedCopied": "Copied!"
+    "embedCopied": "Copied!",
+    "mcpTitle": "For AI assistants (MCP server)",
+    "mcpText": "Use Claude, Cursor or another AI assistant? Our free, open-source MCP server gives them live access to the exchange market: rates, best house, conversions, history and news. Add it via the hosted URL or run it with npx.",
+    "mcpNpm": "View on npm",
+    "mcpSource": "Source code"
   },
   "widget": {
     "live": "Live",
