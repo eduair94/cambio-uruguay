@@ -1,18 +1,26 @@
 <template>
   <ToolShell slug="conversor-unidad-indexada" :faq="faq" :sources="sources">
-    <VCard class="pa-5">
+    <VCard class="pa-4 pa-sm-6">
+      <div class="text-overline text-grey mb-2">Sentido de la conversión</div>
       <VBtnToggle
         v-model="mode"
         color="primary"
-        density="comfortable"
         mandatory
-        class="mb-5 flex-wrap"
+        divided
+        variant="outlined"
+        class="seg-toggle mb-6"
       >
-        <VBtn value="uiToPesos">UI → Pesos</VBtn>
-        <VBtn value="pesosToUi">Pesos → UI</VBtn>
+        <VBtn value="uiToPesos" class="seg-btn">
+          <VIcon start>mdi-arrow-right</VIcon>
+          UI → Pesos
+        </VBtn>
+        <VBtn value="pesosToUi" class="seg-btn">
+          <VIcon start>mdi-arrow-left</VIcon>
+          Pesos → UI
+        </VBtn>
       </VBtnToggle>
 
-      <VRow dense align="center">
+      <VRow class="g-input" align="center">
         <VCol cols="12" sm="7">
           <VTextField
             v-model.number="amount"
@@ -42,7 +50,9 @@
         </VCol>
       </VRow>
 
-      <div class="result-grid mt-5">
+      <VDivider class="my-6" />
+
+      <div class="result-grid">
         <div class="result-box">
           <div class="text-overline text-grey">Resultado</div>
           <div class="text-h4 font-weight-bold text-primary">
@@ -122,24 +132,4 @@ const faq = [
 ]
 </script>
 
-<style scoped>
-.result-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 12px;
-}
-.result-box {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  padding: 16px 18px;
-}
-.tool-link {
-  color: #64b5f6;
-  font-weight: 600;
-  text-decoration: none;
-}
-.tool-link:hover {
-  text-decoration: underline;
-}
-</style>
+<!-- Layout primitives shared from ToolShell (.tool-page namespace). -->

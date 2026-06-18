@@ -9,13 +9,13 @@
         mandatory
         divided
         variant="outlined"
-        class="regime-toggle mb-6"
+        class="seg-toggle mb-6"
       >
-        <VBtn value="courier" class="regime-btn">
+        <VBtn value="courier" class="seg-btn">
           <VIcon start>mdi-package-variant-closed</VIcon>
           Compra online <span class="d-none d-sm-inline">&nbsp;(courier)</span>
         </VBtn>
-        <VBtn value="general" class="regime-btn">
+        <VBtn value="general" class="seg-btn">
           <VIcon start>mdi-truck-outline</VIcon>
           Régimen general
         </VBtn>
@@ -30,13 +30,13 @@
           mandatory
           divided
           variant="outlined"
-          class="regime-toggle mb-6"
+          class="seg-toggle mb-6"
         >
-          <VBtn value="usa" class="regime-btn">
+          <VBtn value="usa" class="seg-btn">
             <VIcon start>mdi-flag-variant</VIcon>
             Estados Unidos
           </VBtn>
-          <VBtn value="other" class="regime-btn">
+          <VBtn value="other" class="seg-btn">
             <VIcon start>mdi-earth</VIcon>
             Otro país
           </VBtn>
@@ -154,7 +154,7 @@
 
       <!-- Courier shipping by weight -->
       <template v-if="regime === 'courier'">
-        <div class="ship-box mt-5 pa-4">
+        <div class="tool-info-box mt-5 pa-4">
           <div class="d-flex align-center justify-space-between flex-wrap ga-2 mb-1">
             <div class="d-flex align-center ga-2">
               <VIcon color="primary" size="small">mdi-weight-kilogram</VIcon>
@@ -206,7 +206,7 @@
                 />
               </VCol>
               <VCol cols="12">
-                <div class="d-flex align-center justify-space-between ship-result px-3 py-2">
+                <div class="d-flex align-center justify-space-between tool-info-row px-3 py-2">
                   <span class="text-body-2 text-grey-lighten-1">Flete estimado</span>
                   <span class="text-subtitle-1 font-weight-bold text-primary">
                     {{ formatUSD(computedShipping) }}
@@ -393,57 +393,5 @@ const faq = [
 ]
 </script>
 
-<style scoped>
-.regime-toggle {
-  width: 100%;
-  height: auto;
-}
-
-.regime-toggle :deep(.regime-btn) {
-  flex: 1 1 0;
-  min-height: 52px;
-  min-width: 0;
-  text-transform: none;
-  letter-spacing: 0;
-  font-weight: 600;
-  padding-inline: 16px;
-}
-
-.g-input {
-  row-gap: 4px;
-}
-
-.ship-box {
-  background: rgba(33, 150, 243, 0.06);
-  border: 1px solid rgba(33, 150, 243, 0.22);
-  border-radius: 12px;
-}
-
-.ship-result {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-}
-
-.result-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 12px;
-}
-
-.result-box {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  padding: 14px 16px;
-}
-
-.breakdown-table :deep(td) {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.total-row :deep(td),
-.total-row td {
-  border-top: 2px solid rgba(255, 255, 255, 0.15);
-}
-</style>
+<!-- All layout primitives (seg-toggle, result-grid, tool-info-box,
+     breakdown-table…) are shared from ToolShell, namespaced under .tool-page. -->

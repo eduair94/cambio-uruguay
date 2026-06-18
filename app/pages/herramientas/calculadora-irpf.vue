@@ -1,7 +1,7 @@
 <template>
   <ToolShell slug="calculadora-irpf" :faq="faq" :sources="sources">
-    <VCard class="pa-5">
-      <VRow dense>
+    <VCard class="pa-4 pa-sm-6">
+      <VRow class="g-input">
         <VCol cols="12" sm="7">
           <VTextField
             v-model.number="salary"
@@ -30,7 +30,9 @@
         </VCol>
       </VRow>
 
-      <div class="result-grid mt-5">
+      <VDivider class="my-6" />
+
+      <div class="result-grid">
         <div class="result-box">
           <div class="text-overline text-grey">IRPF mensual estimado</div>
           <div class="text-h5 font-weight-bold text-primary">{{ formatUYU(r.total) }}</div>
@@ -121,28 +123,4 @@ const faq = [
 ]
 </script>
 
-<style scoped>
-.result-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 12px;
-}
-.result-box {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  padding: 14px 16px;
-}
-.breakdown-table :deep(td),
-.breakdown-table :deep(th) {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-}
-.tool-link {
-  color: #64b5f6;
-  font-weight: 600;
-  text-decoration: none;
-}
-.tool-link:hover {
-  text-decoration: underline;
-}
-</style>
+<!-- Layout primitives shared from ToolShell (.tool-page namespace). -->

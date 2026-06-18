@@ -301,3 +301,76 @@ useHead(() => ({
   border-radius: 12px;
 }
 </style>
+
+<!--
+  Shared design primitives for the herramientas/* slot content.
+  Global (unscoped) but namespaced under .tool-page so they never leak to
+  other pages. Every tool uses these instead of redefining them per file,
+  keeping the calculators visually consistent with the import calculator
+  (the design reference).
+-->
+<style>
+/* Comfortable row-gap for stacked input rows */
+.tool-page .g-input {
+  row-gap: 4px;
+}
+
+/* Full-width segmented control for mode / régimen selectors */
+.tool-page .seg-toggle {
+  width: 100%;
+  height: auto;
+}
+.tool-page .seg-toggle .seg-btn {
+  flex: 1 1 0;
+  min-height: 52px;
+  min-width: 0;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
+  padding-inline: 16px;
+}
+
+/* Result summary cards */
+.tool-page .result-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+.tool-page .result-box {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+
+/* Highlighted secondary panel (e.g. estimate-by-weight) and its inner row */
+.tool-page .tool-info-box {
+  background: rgba(33, 150, 243, 0.06);
+  border: 1px solid rgba(33, 150, 243, 0.22);
+  border-radius: 12px;
+}
+.tool-page .tool-info-row {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+}
+
+/* Breakdown / detail tables */
+.tool-page .breakdown-table td,
+.tool-page .breakdown-table th {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.tool-page .breakdown-table .total-row td {
+  border-top: 2px solid rgba(255, 255, 255, 0.15);
+}
+
+/* Inline text links inside the calculator card */
+.tool-page .tool-link {
+  color: #64b5f6;
+  font-weight: 600;
+  text-decoration: none;
+}
+.tool-page .tool-link:hover {
+  text-decoration: underline;
+}
+</style>

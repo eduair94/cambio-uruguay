@@ -1,15 +1,23 @@
 <template>
   <ToolShell slug="calculadora-aguinaldo" :faq="faq" hide-disclaimer>
-    <VCard class="pa-5">
+    <VCard class="pa-4 pa-sm-6">
+      <div class="text-overline text-grey mb-2">Cómo querés calcularlo</div>
       <VBtnToggle
         v-model="mode"
         color="primary"
-        density="comfortable"
         mandatory
-        class="mb-5 flex-wrap"
+        divided
+        variant="outlined"
+        class="seg-toggle mb-6"
       >
-        <VBtn value="total">Total del semestre</VBtn>
-        <VBtn value="monthly">Sueldo mensual fijo</VBtn>
+        <VBtn value="total" class="seg-btn">
+          <VIcon start>mdi-cash-multiple</VIcon>
+          Total del semestre
+        </VBtn>
+        <VBtn value="monthly" class="seg-btn">
+          <VIcon start>mdi-calendar-month</VIcon>
+          Sueldo mensual fijo
+        </VBtn>
       </VBtnToggle>
 
       <VTextField
@@ -23,7 +31,7 @@
         density="comfortable"
         hide-details
       />
-      <VRow v-else dense align="center">
+      <VRow v-else class="g-input" align="center">
         <VCol cols="12" sm="7">
           <VTextField
             v-model.number="monthly"
@@ -50,7 +58,9 @@
         </VCol>
       </VRow>
 
-      <div class="result-grid mt-5">
+      <VDivider class="my-6" />
+
+      <div class="result-grid">
         <div class="result-box">
           <div class="text-overline text-grey">Aguinaldo estimado</div>
           <div class="text-h4 font-weight-bold text-primary">{{ formatUYU(aguinaldo) }}</div>
@@ -102,16 +112,4 @@ const faq = [
 ]
 </script>
 
-<style scoped>
-.result-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 12px;
-}
-.result-box {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  padding: 16px 18px;
-}
-</style>
+<!-- Layout primitives shared from ToolShell (.tool-page namespace). -->

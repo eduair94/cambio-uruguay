@@ -1,7 +1,7 @@
 <template>
   <ToolShell slug="calculadora-propinas" :faq="faq" hide-disclaimer>
-    <VCard class="pa-5">
-      <VRow dense>
+    <VCard class="pa-4 pa-sm-6">
+      <VRow class="g-input">
         <VCol cols="12" sm="5">
           <VTextField
             v-model.number="bill"
@@ -52,18 +52,20 @@
         </VChip>
       </div>
 
-      <div class="result-grid mt-5">
+      <VDivider class="my-6" />
+
+      <div class="result-grid">
         <div class="result-box">
           <div class="text-overline text-grey">Propina</div>
-          <div class="text-h6 font-weight-bold text-primary">{{ formatUYU(tip) }}</div>
+          <div class="text-h5 font-weight-bold text-primary">{{ formatUYU(tip) }}</div>
         </div>
         <div class="result-box">
           <div class="text-overline text-grey">Total con propina</div>
-          <div class="text-h6 font-weight-bold text-success">{{ formatUYU(total) }}</div>
+          <div class="text-h5 font-weight-bold text-success">{{ formatUYU(total) }}</div>
         </div>
         <div class="result-box">
           <div class="text-overline text-grey">Por persona</div>
-          <div class="text-h6 font-weight-bold">{{ formatUYU(perPerson) }}</div>
+          <div class="text-h5 font-weight-bold">{{ formatUYU(perPerson) }}</div>
         </div>
       </div>
     </VCard>
@@ -107,16 +109,4 @@ const faq = [
 ]
 </script>
 
-<style scoped>
-.result-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 12px;
-}
-.result-box {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  padding: 14px 16px;
-}
-</style>
+<!-- Layout primitives shared from ToolShell (.tool-page namespace). -->

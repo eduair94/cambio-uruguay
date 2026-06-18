@@ -1,7 +1,7 @@
 <template>
   <ToolShell slug="calculadora-prestamo" :faq="faq">
-    <VCard class="pa-5">
-      <VRow dense>
+    <VCard class="pa-4 pa-sm-6">
+      <VRow class="g-input">
         <VCol cols="12" sm="6">
           <VTextField
             v-model.number="principal"
@@ -40,7 +40,9 @@
         </VCol>
       </VRow>
 
-      <div class="result-grid mt-5">
+      <VDivider class="my-6" />
+
+      <div class="result-grid">
         <div class="result-box">
           <div class="text-overline text-grey">Cuota mensual</div>
           <div class="text-h5 font-weight-bold text-primary">{{ formatUYU(r.monthlyPayment) }}</div>
@@ -101,16 +103,4 @@ const faq = [
 ]
 </script>
 
-<style scoped>
-.result-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 12px;
-}
-.result-box {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  padding: 16px 18px;
-}
-</style>
+<!-- Layout primitives shared from ToolShell (.tool-page namespace). -->

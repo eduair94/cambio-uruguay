@@ -1,7 +1,7 @@
 <template>
   <ToolShell slug="calculadora-presupuesto-viaje" :faq="faq" hide-disclaimer>
-    <VCard class="pa-5">
-      <VRow dense>
+    <VCard class="pa-4 pa-sm-6">
+      <VRow class="g-input">
         <VCol cols="6" sm="3">
           <VTextField
             v-model.number="days"
@@ -41,14 +41,16 @@
         </VCol>
       </VRow>
 
-      <div class="result-grid mt-5">
+      <VDivider class="my-6" />
+
+      <div class="result-grid">
         <div class="result-box">
           <div class="text-overline text-grey">Presupuesto total</div>
-          <div class="text-h4 font-weight-bold text-primary">{{ formatUSD(totalUsd) }}</div>
+          <div class="text-h5 font-weight-bold text-primary">{{ formatUSD(totalUsd) }}</div>
         </div>
         <div class="result-box">
           <div class="text-overline text-grey">En pesos uruguayos</div>
-          <div class="text-h4 font-weight-bold text-success">
+          <div class="text-h5 font-weight-bold text-success">
             {{ totalUyu ? formatUYU(totalUyu) : '—' }}
           </div>
           <div v-if="rate" class="text-caption text-grey-lighten-1">
@@ -103,24 +105,4 @@ const faq = [
 ]
 </script>
 
-<style scoped>
-.result-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 12px;
-}
-.result-box {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  padding: 16px 18px;
-}
-.tool-link {
-  color: #64b5f6;
-  font-weight: 600;
-  text-decoration: none;
-}
-.tool-link:hover {
-  text-decoration: underline;
-}
-</style>
+<!-- Layout primitives shared from ToolShell (.tool-page namespace). -->
