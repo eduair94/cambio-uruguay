@@ -223,3 +223,11 @@ export function ratesForOrigin(rows: readonly ExchangeRate[], origin: string): C
     return a.code.localeCompare(b.code)
   })
 }
+
+/** Mean of positive sell quotes for a currency, or null when none. */
+export function averageSell(rows: readonly ExchangeRate[], code: CurrencyCode): number | null {
+  const quotes = quotesForCurrency(rows, code).filter(q => q.sell !== null && q.sell > 0)
+  if (!quotes.length) return null
+  const sum = quotes.reduce((acc, q) => acc + (q.sell as number), 0)
+  return sum / quotes.length
+}

@@ -23,6 +23,10 @@
                 <DollarMomentum class="mb-4" />
               </ClientOnly>
 
+              <ClientOnly>
+                <SavingsHighlight class="mb-4" />
+              </ClientOnly>
+
               <!-- Share (referral traffic + interactions); WhatsApp-first for UY -->
               <div class="d-flex justify-center justify-md-start mb-4">
                 <ShareButtons />

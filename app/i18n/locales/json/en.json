@@ -659,6 +659,14 @@
     "hint": "Link Telegram to receive alerts in chat",
     "telegram": "Telegram"
   },
+  "ahorro": {
+    "title": "How much do you save by comparing?",
+    "amount": "Amount in dollars",
+    "saving": "You save",
+    "vsAvg": "choosing the best house vs the market average",
+    "share": "Share my saving",
+    "noData": "Loading rates…"
+  },
   "dolarHoy": {
     "nav": "Dollar today",
     "title": "Dollar exchange rate in Uruguay today",

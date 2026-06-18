@@ -652,6 +652,14 @@
     "hint": "Vincule o Telegram para receber alertas no chat",
     "telegram": "Telegram"
   },
+  "ahorro": {
+    "title": "Quanto você economiza comparando?",
+    "amount": "Valor em dólares",
+    "saving": "Você economiza",
+    "vsAvg": "escolhendo a melhor casa vs a média do mercado",
+    "share": "Compartilhar minha economia",
+    "noData": "Carregando cotações…"
+  },
   "dolarHoy": {
     "nav": "Dólar hoje",
     "title": "Cotação do dólar hoje no Uruguai",

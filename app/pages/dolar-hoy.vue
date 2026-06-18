@@ -39,6 +39,8 @@
           </template>
         </VCard>
 
+        <SavingsHighlight class="mb-5" />
+
         <VCard class="pa-5" variant="flat">
           <p class="text-body-2 text-grey-lighten-1 mb-2">
             {{ $t('dolarHoy.footNote') }}
