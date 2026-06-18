@@ -52,3 +52,19 @@ runs exactly as before (the login button simply does nothing useful).
 Rate alerts with web push (FCM) + email (Nodemailer/SMTP) and the
 `alerts:check` scheduled task. See
 `docs/superpowers/specs/2026-06-17-firebase-auth-logged-in-value-design.md`.
+
+## Telegram account linking
+
+Users link Telegram under `/cuenta` → Alertas → "Vincular Telegram": the app
+issues a short-lived code, the user opens `t.me/<bot>?start=<code>`, the telegraf
+bot confirms via the secret-authenticated internal API, and `User.telegramChatId`
+is set. Alerts can then fire a Telegram channel, the bot answers `/misalertas`,
+`/favoritos`, `/alerta USD compra 41`, `/desvincular`, and a daily
+`telegram:summary` task DMs linked users.
+
+Env (app): `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME`, `TELEGRAM_BOT_SECRET`.
+Env (bot `bots/.env`): `TELEGRAM_BOT_SECRET` (same) + `APP_BASE_URL`. The
+internal `/api/telegram/*` API is gated by `x-telegram-secret`, keyed by chatId
+(never a Firebase token); link codes are single-use with a 10-min Mongo TTL. Bot
+runs as pm2 `cu-telegram-bot` (`bots/dist/entries/telegram.js`). Design/plan:
+`docs/superpowers/specs/2026-06-18-telegram-account-linking-design.md`.
