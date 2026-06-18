@@ -45,6 +45,39 @@ export interface DigestData {
   ai: string
 }
 
+// Telegram (Markdown) rendering of the daily digest — same content as the email,
+// for users who opted into Telegram delivery. Deterministic comma decimals (es).
+const TG_HEAD: Record<NewsletterLang, string> = {
+  es: '📊 *Resumen del dólar* — ',
+  en: '📊 *Daily dollar digest* — ',
+  pt: '📊 *Resumo do dólar* — ',
+}
+const TG_NEWS: Record<NewsletterLang, string> = {
+  es: '📰 *Noticias*',
+  en: '📰 *News*',
+  pt: '📰 *Notícias*',
+}
+
+function fmtRate(n: number): string {
+  return n.toFixed(2).replace('.', ',')
+}
+
+export function buildDailyTelegram(data: DigestData, lang: NewsletterLang): string {
+  const lines: string[] = [TG_HEAD[lang] + data.date, '']
+  for (const c of data.currencies) {
+    const arrow = c.changePct > 0 ? '🔺' : c.changePct < 0 ? '🔻' : '▪️'
+    const pct = `${c.changePct >= 0 ? '+' : ''}${c.changePct.toFixed(2)}%`
+    lines.push(`${arrow} *${c.code}* $ ${fmtRate(c.bestSellRate)} (${pct}) · ${c.bestBuyHouse}`)
+  }
+  if (data.ai) lines.push('', data.ai)
+  if (data.news?.length) {
+    lines.push('', TG_NEWS[lang])
+    for (const n of data.news.slice(0, 3)) lines.push(`• [${n.title}](${n.link}) — _${n.source}_`)
+  }
+  lines.push('', 'https://cambio-uruguay.com/newsletter')
+  return lines.join('\n')
+}
+
 const REPORT_CURRENCIES = ['USD', 'EUR', 'ARS', 'BRL']
 
 interface RateRow {
