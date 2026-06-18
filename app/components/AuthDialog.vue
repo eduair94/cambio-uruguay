@@ -24,8 +24,8 @@
           <VTab value="magic">{{ $t('auth.tabMagic') }}</VTab>
         </VTabs>
 
-        <VWindow v-model="tab">
-          <VWindowItem value="password">
+        <VTabsWindow v-model="tab">
+          <VTabsWindowItem value="password">
             <VTextField
               v-model="email"
               :label="$t('auth.email')"
@@ -52,9 +52,9 @@
             <VBtn variant="text" size="small" class="mt-2 px-0" @click="store.resetPassword(email)">
               {{ $t('auth.forgotPassword') }}
             </VBtn>
-          </VWindowItem>
+          </VTabsWindowItem>
 
-          <VWindowItem value="magic">
+          <VTabsWindowItem value="magic">
             <VTextField
               v-model="email"
               :label="$t('auth.email')"
@@ -66,8 +66,8 @@
             <VBtn color="primary" variant="flat" @click="store.sendMagicLink(email)">
               {{ $t('auth.sendMagicLink') }}
             </VBtn>
-          </VWindowItem>
-        </VWindow>
+          </VTabsWindowItem>
+        </VTabsWindow>
 
         <VAlert
           v-if="store.notice"

@@ -504,7 +504,9 @@ export default defineNuxtConfig({
     // User data store + Firebase Admin (server-only secrets)
     mongoUri: process.env.MONGO_URI || '',
     firebase: {
-      // base64-encoded service account JSON
+      // base64-encoded service account JSON (optional override).
+      // File-based creds use FIREBASE_SERVICE_ACCOUNT_PATH / serviceAccount.json,
+      // read directly from env in server/utils/firebaseAdmin.ts.
       serviceAccount: process.env.FIREBASE_SERVICE_ACCOUNT || '',
     },
     // Public keys (exposed to client-side)

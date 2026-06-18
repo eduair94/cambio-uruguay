@@ -1,38 +1,36 @@
 <template>
-  <ClientOnly>
-    <VBtn
-      v-if="!store.isLoggedIn"
-      color="primary"
-      variant="text"
-      class="text-capitalize"
-      @click="store.openDialog()"
-    >
-      <VIcon start>mdi-account-circle</VIcon>
-      {{ $t('auth.login') }}
-    </VBtn>
+  <VBtn
+    v-if="!store.isLoggedIn"
+    color="primary"
+    variant="text"
+    class="text-capitalize"
+    @click="store.openDialog()"
+  >
+    <VIcon start>mdi-account-circle</VIcon>
+    {{ $t('auth.login') }}
+  </VBtn>
 
-    <VMenu v-else location="bottom end">
-      <template #activator="{ props }">
-        <VBtn icon v-bind="props">
-          <VAvatar size="32" color="primary">
-            <VImg v-if="store.user?.photo" :src="store.user.photo" />
-            <span v-else>{{ initials }}</span>
-          </VAvatar>
-        </VBtn>
-      </template>
-      <VList>
-        <VListItem :to="localePath('/cuenta')">
-          <template #prepend><VIcon>mdi-view-dashboard</VIcon></template>
-          <VListItemTitle>{{ $t('auth.account') }}</VListItemTitle>
-        </VListItem>
-        <VDivider />
-        <VListItem @click="store.logout()">
-          <template #prepend><VIcon>mdi-logout</VIcon></template>
-          <VListItemTitle>{{ $t('auth.logout') }}</VListItemTitle>
-        </VListItem>
-      </VList>
-    </VMenu>
-  </ClientOnly>
+  <VMenu v-else location="bottom end">
+    <template #activator="{ props }">
+      <VBtn icon v-bind="props">
+        <VAvatar size="32" color="primary">
+          <VImg v-if="store.user?.photo" :src="store.user.photo" />
+          <span v-else>{{ initials }}</span>
+        </VAvatar>
+      </VBtn>
+    </template>
+    <VList>
+      <VListItem :to="localePath('/cuenta')">
+        <template #prepend><VIcon>mdi-view-dashboard</VIcon></template>
+        <VListItemTitle>{{ $t('auth.account') }}</VListItemTitle>
+      </VListItem>
+      <VDivider />
+      <VListItem @click="store.logout()">
+        <template #prepend><VIcon>mdi-logout</VIcon></template>
+        <VListItemTitle>{{ $t('auth.logout') }}</VListItemTitle>
+      </VListItem>
+    </VList>
+  </VMenu>
 </template>
 
 <script setup lang="ts">

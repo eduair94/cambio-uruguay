@@ -49,6 +49,7 @@ Thumbs.db
 package-lock.json
 dist
 sheet_key.json
+serviceAccount.json
 .env
 
 proxy.txt

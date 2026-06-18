@@ -7,9 +7,9 @@
       <VTab value="favorites">{{ $t('auth.favorites') }}</VTab>
     </VTabs>
 
-    <VWindow v-model="tab">
+    <VTabsWindow v-model="tab">
       <!-- Saved results with drift -->
-      <VWindowItem value="saved">
+      <VTabsWindowItem value="saved">
         <VAlert v-if="!saved.length" type="info" variant="tonal">
           {{ $t('account.savedEmpty') }}
         </VAlert>
@@ -50,10 +50,10 @@
             </VCard>
           </VCol>
         </VRow>
-      </VWindowItem>
+      </VTabsWindowItem>
 
       <!-- Favorites -->
-      <VWindowItem value="favorites">
+      <VTabsWindowItem value="favorites">
         <VAlert v-if="!favoriteIds.length" type="info" variant="tonal">
           {{ $t('account.favoritesEmpty') }}
         </VAlert>
@@ -68,8 +68,8 @@
             </template>
           </VListItem>
         </VList>
-      </VWindowItem>
-    </VWindow>
+      </VTabsWindowItem>
+    </VTabsWindow>
   </div>
 </template>
 
