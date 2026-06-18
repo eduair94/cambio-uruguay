@@ -88,6 +88,9 @@
           <NuxtLink :to="localePath('/blog')" class="footer-link text-caption">
             Blog
           </NuxtLink>
+          <NuxtLink :to="localePath('/newsletter')" class="footer-link text-caption">
+            {{ $t('newsletter.nav') }}
+          </NuxtLink>
           <NuxtLink :to="localePath('/guias')" class="footer-link text-caption">
             {{ $t('guias.nav') }}
           </NuxtLink>

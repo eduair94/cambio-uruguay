@@ -1,4 +1,23 @@
 {
+  "newsletter": {
+    "nav": "Newsletter",
+    "title": "Dollar newsletter",
+    "subtitle": "Get the daily Uruguay dollar summary in your inbox.",
+    "emailLabel": "Your email",
+    "emailPlaceholder": "you@example.com",
+    "subscribe": "Subscribe",
+    "consent": "We'll send a confirmation email. You can unsubscribe anytime.",
+    "sent": "Check your inbox! We sent you a link to confirm your subscription.",
+    "error": "We couldn't process your subscription. Please try again.",
+    "confirmedTitle": "Subscription confirmed!",
+    "confirmedMsg": "Done. You'll receive the daily dollar summary.",
+    "unsubscribedTitle": "Unsubscribed",
+    "unsubscribedMsg": "You won't receive more emails. Come back anytime.",
+    "invalidTitle": "Invalid link",
+    "invalidMsg": "The link has expired or is not valid.",
+    "metaTitle": "Uruguay dollar newsletter | Cambio Uruguay",
+    "metaDescription": "Subscribe free and get the daily Uruguay dollar summary: best rates, trend and news."
+  },
   "bestToSell": "Best to sell",
   "bestToBuy": "Best to buy",
   "welcome": "Find the best exchange rate in the market, comparing between more than 40 exchange houses.",
