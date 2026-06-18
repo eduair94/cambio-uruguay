@@ -1,0 +1,22 @@
+// Share-image helper. Points at the Nuxt site's localized daily OG card
+// (/api/og-daily). Channels use the URL; Twitter needs the raw bytes. Both
+// degrade gracefully — a missing image just means text-only posts.
+
+export function ogImageUrl(siteBaseUrl: string, lang: string, env: NodeJS.ProcessEnv = process.env): string {
+  if (env.OG_IMAGE_URL) return env.OG_IMAGE_URL;
+  const base = siteBaseUrl.replace(/\/$/, "");
+  return `${base}/api/og-daily?lang=${encodeURIComponent(lang)}`;
+}
+
+export async function fetchImage(url: string, fetchImpl: typeof fetch = fetch): Promise<Buffer | null> {
+  try {
+    const res = await fetchImpl(url);
+    if (!res.ok) return null;
+    const contentType = res.headers.get("content-type") ?? "";
+    if (!contentType.startsWith("image/")) return null;
+    return Buffer.from(await res.arrayBuffer());
+  } catch (err) {
+    console.error("fetchImage failed:", err);
+    return null;
+  }
+}
