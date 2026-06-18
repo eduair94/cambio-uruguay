@@ -670,6 +670,13 @@
     "metaTitle": "Dollar in Uruguay: highs, lows and historical data | Cambio Uruguay",
     "metaDescription": "All-time high and low of the dollar in Uruguay, value from one year ago and period average, based on the official BCU rate."
   },
+  "panel": {
+    "title": "All rates at a glance",
+    "currency": "Currency",
+    "buy": "Buy",
+    "sell": "Sell",
+    "trend": "Trend"
+  },
   "ahorro": {
     "title": "How much do you save by comparing?",
     "amount": "Amount in dollars",

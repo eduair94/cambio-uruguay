@@ -21,6 +21,10 @@
       </section>
     </div>
 
+    <ClientOnly>
+      <MultiCurrencyPanel class="mb-4" />
+    </ClientOnly>
+
     <div class="my-4">
       <ExchangeDataTable
         :items="items"

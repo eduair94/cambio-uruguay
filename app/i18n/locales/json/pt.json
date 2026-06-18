@@ -663,6 +663,13 @@
     "metaTitle": "Dólar no Uruguai: máximos, mínimos e históricos | Cambio Uruguay",
     "metaDescription": "Máximo e mínimo histórico do dólar no Uruguai, valor de um ano atrás e média do período, segundo a cotação oficial do BCU."
   },
+  "panel": {
+    "title": "Todas as cotações de uma vez",
+    "currency": "Moeda",
+    "buy": "Compra",
+    "sell": "Venda",
+    "trend": "Tendência"
+  },
   "ahorro": {
     "title": "Quanto você economiza comparando?",
     "amount": "Valor em dólares",
