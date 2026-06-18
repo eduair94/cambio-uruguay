@@ -187,7 +187,10 @@ export const useApiService = () => {
    * Get processed exchange data for a specific date
    */
   const getProcessedExchangeData = async (date: string) => {
-    const isCurrent = date === ''
+    // "Current" means today's rates — callers pass either '' (default/today) or
+    // today's Montevideo date string (e.g. useExchangeRates / the home table).
+    const todayMvd = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Montevideo' })
+    const isCurrent = date === '' || date === todayMvd
     try {
       const { exchangeData, localData } = await getExchangeDataWithLocal(date)
 
