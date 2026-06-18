@@ -1,0 +1,30 @@
+{
+  "name": "cambio-uruguay-bots",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Telegram/Discord bots + Twitter daily report and alerts for cambio-uruguay.com",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev:telegram": "tsx src/entries/telegram.ts",
+    "dev:discord": "tsx src/entries/discord.ts",
+    "register:discord": "tsx src/bot/register_commands.ts",
+    "daily": "tsx src/entries/daily_report.ts",
+    "alerts": "tsx src/entries/alert_check.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "cambio-uruguay-mcp": "file:../mcp",
+    "discord.js": "^14.16.3",
+    "dotenv": "^16.4.5",
+    "mongoose": "^8.7.0",
+    "telegraf": "^4.16.3",
+    "twitter-api-v2": "^1.18.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.1.0"
+  }
+}
