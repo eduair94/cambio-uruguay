@@ -25,6 +25,8 @@ export interface AlertConfig {
 export interface BotConfig {
   apiBaseUrl: string;
   siteBaseUrl: string;
+  appBaseUrl: string;
+  accountSecret?: string;
   defaultLang: string;
   reportCurrencies: string[];
   alert: AlertConfig;
@@ -80,6 +82,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): BotConfig {
   return {
     apiBaseUrl: env.API_BASE_URL || "https://api.cambio-uruguay.com",
     siteBaseUrl: env.SITE_BASE_URL || "https://cambio-uruguay.com",
+    appBaseUrl: env.APP_BASE_URL || env.SITE_BASE_URL || "https://cambio-uruguay.com",
+    accountSecret: env.TELEGRAM_BOT_SECRET || undefined,
     defaultLang: (env.DEFAULT_BROADCAST_LANG || "es").toLowerCase(),
     reportCurrencies: csv(env.REPORT_CURRENCIES, DEFAULT_CURRENCIES),
     alert: {
