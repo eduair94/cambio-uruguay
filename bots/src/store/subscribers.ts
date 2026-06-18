@@ -55,6 +55,13 @@ export async function isSubscribed(platform: Platform, chatId: string): Promise<
   return Boolean(doc);
 }
 
+/** Stored language preference for a user (set via /idioma), or null. */
+export async function getLanguage(platform: Platform, chatId: string): Promise<string | null> {
+  if (!isMongoReady()) return null;
+  const doc = await SubscriberModel.findOne({ platform, chatId }).lean<SubscriberDoc>();
+  return doc?.language ?? null;
+}
+
 export async function listActive(platform: Platform): Promise<SubscriberRef[]> {
   if (!isMongoReady()) return [];
   const docs = await SubscriberModel.find({ platform, active: true }).lean<SubscriberDoc[]>();
