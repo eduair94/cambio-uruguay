@@ -1,6 +1,8 @@
 import { initializeApp, getApps } from 'firebase/app'
 import { getAuth, onAuthStateChanged } from 'firebase/auth'
 import { useAuthStore } from '~/stores/auth'
+import { useAuthFetch } from '~/composables/useAuthFetch'
+import { hydrateFavorites, resetFavoritesState } from '~/composables/useFavoritesState'
 
 export default defineNuxtPlugin(() => {
   const cfg = useRuntimeConfig().public.firebase
@@ -18,7 +20,17 @@ export default defineNuxtPlugin(() => {
 
   const auth = getAuth()
   const store = useAuthStore()
-  onAuthStateChanged(auth, fbUser => store.setUser(fbUser))
+  const { authFetch } = useAuthFetch()
+
+  onAuthStateChanged(auth, async fbUser => {
+    store.setUser(fbUser)
+    if (fbUser) {
+      await authFetch('/api/me/profile').catch(() => {})
+      await hydrateFavorites(authFetch)
+    } else {
+      resetFavoritesState()
+    }
+  })
 
   return { provide: { firebaseAuth: auth } }
 })

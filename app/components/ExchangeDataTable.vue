@@ -13,7 +13,14 @@
     </template>
 
     <template #item.pos="{ item }">
-      <span>#{{ item.pos }}</span>
+      <span class="d-inline-flex align-center">
+        <FavoriteStar
+          type="casa"
+          :item-key="item.origin"
+          :label="item.localData?.name || item.origin"
+        />
+        #{{ item.pos }}
+      </span>
     </template>
 
     <template #item.code="{ item }">
