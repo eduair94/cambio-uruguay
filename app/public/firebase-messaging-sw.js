@@ -3,11 +3,11 @@ importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js')
 
 firebase.initializeApp({
-  apiKey: 'AIzaSyDVfz6541hc0VME3vnBgc_IgwRqOaphdZM',
-  authDomain: 'helpbot-nconrh.firebaseapp.com',
-  projectId: 'helpbot-nconrh',
-  messagingSenderId: '958321688893',
-  appId: '1:958321688893:web:f63a07aeaa57ff814fc554',
+  apiKey: 'AIzaSyAk9gmrq82O1v_jHtkTE8Ubf3nk9JN2Avg',
+  authDomain: 'cambiouruguay-d69e9.firebaseapp.com',
+  projectId: 'cambiouruguay-d69e9',
+  messagingSenderId: '473510862323',
+  appId: '1:473510862323:web:07d3e4888e1a040d50c686',
 })
 
 const messaging = firebase.messaging()
