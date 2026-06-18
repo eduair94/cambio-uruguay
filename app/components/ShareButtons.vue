@@ -5,9 +5,10 @@
     <VBtn
       :icon="!label"
       :prepend-icon="label ? 'mdi-share-variant' : undefined"
-      color="primary"
-      variant="tonal"
+      color="white"
+      variant="flat"
       size="small"
+      class="share-trigger font-weight-bold"
       :aria-label="t('share.cta')"
       :title="t('share.cta')"
       @click="open = true"
@@ -151,6 +152,12 @@ function track(channel: ShareNetwork | 'native' | 'copy') {
 </script>
 
 <style scoped>
+/* High-contrast trigger so it reads on the coloured tool/header gradients. */
+.share-trigger {
+  color: #1a1a1a !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+}
+
 .share-row {
   transition: background-color 0.15s ease;
 }

@@ -1,31 +1,56 @@
 <template>
   <ToolShell slug="calculadora-impuestos-importacion" :faq="faq" :sources="sources">
-    <VCard class="pa-5">
-      <!-- Regime selector -->
+    <VCard class="pa-4 pa-sm-6">
+      <!-- Regime selector: full-width segmented control -->
+      <div class="text-overline text-grey mb-2">Régimen de importación</div>
       <VBtnToggle
         v-model="regime"
         color="primary"
-        density="comfortable"
         mandatory
-        class="mb-5 flex-wrap"
+        divided
+        variant="outlined"
+        class="regime-toggle mb-6"
       >
-        <VBtn value="courier">
-          <VIcon start size="small">mdi-package-variant-closed</VIcon>
-          Compra online (courier)
+        <VBtn value="courier" class="regime-btn">
+          <VIcon start>mdi-package-variant-closed</VIcon>
+          Compra online <span class="d-none d-sm-inline">&nbsp;(courier)</span>
         </VBtn>
-        <VBtn value="general">
-          <VIcon start size="small">mdi-truck-outline</VIcon>
+        <VBtn value="general" class="regime-btn">
+          <VIcon start>mdi-truck-outline</VIcon>
           Régimen general
         </VBtn>
       </VBtnToggle>
 
-      <VRow dense>
+      <!-- Origin (courier only): drives the USA/TIFA IVA exemption -->
+      <template v-if="regime === 'courier'">
+        <div class="text-overline text-grey mb-2">Origen del envío</div>
+        <VBtnToggle
+          v-model="origin"
+          color="primary"
+          mandatory
+          divided
+          variant="outlined"
+          class="regime-toggle mb-6"
+        >
+          <VBtn value="usa" class="regime-btn">
+            <VIcon start>mdi-flag-variant</VIcon>
+            Estados Unidos
+          </VBtn>
+          <VBtn value="other" class="regime-btn">
+            <VIcon start>mdi-earth</VIcon>
+            Otro país
+          </VBtn>
+        </VBtnToggle>
+      </template>
+
+      <!-- Core inputs -->
+      <VRow class="g-input">
         <VCol cols="12" sm="6">
           <VTextField
             v-model.number="value"
             type="number"
             min="0"
-            label="Valor de la mercadería (USD)"
+            label="Valor de la mercadería"
             prefix="US$"
             variant="outlined"
             density="comfortable"
@@ -37,11 +62,13 @@
             v-model.number="shipping"
             type="number"
             min="0"
-            label="Flete / envío (USD)"
+            label="Flete / envío"
             prefix="US$"
             variant="outlined"
             density="comfortable"
-            hide-details
+            :readonly="regime === 'courier' && shipByWeight"
+            :hint="regime === 'courier' && shipByWeight ? 'Calculado por peso abajo' : ''"
+            :persistent-hint="regime === 'courier' && shipByWeight"
           />
         </VCol>
 
@@ -51,7 +78,7 @@
             <VSwitch
               v-model="useFranchise"
               color="primary"
-              label="Usar franquicia anual (USD 800)"
+              label="Usar franquicia anual (US$ 800)"
               hide-details
               density="comfortable"
             />
@@ -62,12 +89,11 @@
               type="number"
               min="0"
               max="800"
-              label="Franquicia disponible (USD)"
+              label="Franquicia disponible"
               prefix="US$"
               variant="outlined"
               density="comfortable"
-              hide-details
-              hint="Hasta USD 800 por año, en 3 envíos"
+              hint="Hasta US$ 800 por año, en 3 envíos"
               persistent-hint
             />
           </VCol>
@@ -80,7 +106,7 @@
               v-model.number="insurance"
               type="number"
               min="0"
-              label="Seguro (USD)"
+              label="Seguro"
               prefix="US$"
               variant="outlined"
               density="comfortable"
@@ -92,7 +118,7 @@
               v-model.number="arancelPct"
               type="number"
               min="0"
-              label="Arancel %"
+              label="Arancel"
               suffix="%"
               variant="outlined"
               density="comfortable"
@@ -104,7 +130,7 @@
               v-model.number="tasaConsularPct"
               type="number"
               min="0"
-              label="Tasa consular %"
+              label="Tasa consular"
               suffix="%"
               variant="outlined"
               density="comfortable"
@@ -116,7 +142,7 @@
               v-model.number="ivaPct"
               type="number"
               min="0"
-              label="IVA %"
+              label="IVA"
               suffix="%"
               variant="outlined"
               density="comfortable"
@@ -126,7 +152,73 @@
         </template>
       </VRow>
 
-      <VDivider class="my-5" />
+      <!-- Courier shipping by weight -->
+      <template v-if="regime === 'courier'">
+        <div class="ship-box mt-5 pa-4">
+          <div class="d-flex align-center justify-space-between flex-wrap ga-2 mb-1">
+            <div class="d-flex align-center ga-2">
+              <VIcon color="primary" size="small">mdi-weight-kilogram</VIcon>
+              <span class="text-subtitle-2 font-weight-bold">Estimar flete por peso</span>
+            </div>
+            <VSwitch v-model="shipByWeight" color="primary" hide-details density="compact" inset />
+          </div>
+          <p class="text-caption text-grey-lighten-1 mb-3">
+            Tarifa de referencia por courier (Miami → Uruguay). Ajustá el valor por kg al de tu
+            courier; el resultado completa el flete de arriba.
+          </p>
+          <VExpandTransition>
+            <VRow v-if="shipByWeight" class="g-input">
+              <VCol cols="12" sm="5">
+                <VSelect
+                  v-model="courierId"
+                  :items="courierItems"
+                  item-title="name"
+                  item-value="id"
+                  label="Courier"
+                  variant="outlined"
+                  density="comfortable"
+                  hide-details
+                />
+              </VCol>
+              <VCol cols="6" sm="4">
+                <VTextField
+                  v-model.number="weightKg"
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  label="Peso"
+                  suffix="kg"
+                  variant="outlined"
+                  density="comfortable"
+                  hide-details
+                />
+              </VCol>
+              <VCol cols="6" sm="3">
+                <VTextField
+                  v-model.number="perKgUsd"
+                  type="number"
+                  min="0"
+                  label="US$/kg"
+                  prefix="US$"
+                  variant="outlined"
+                  density="comfortable"
+                  hide-details
+                />
+              </VCol>
+              <VCol cols="12">
+                <div class="d-flex align-center justify-space-between ship-result px-3 py-2">
+                  <span class="text-body-2 text-grey-lighten-1">Flete estimado</span>
+                  <span class="text-subtitle-1 font-weight-bold text-primary">
+                    {{ formatUSD(computedShipping) }}
+                  </span>
+                </div>
+              </VCol>
+            </VRow>
+          </VExpandTransition>
+        </div>
+      </template>
+
+      <VDivider class="my-6" />
 
       <!-- Result -->
       <div class="result-grid">
@@ -152,11 +244,13 @@
       </div>
 
       <!-- Breakdown -->
-      <VTable density="comfortable" class="mt-4 breakdown-table">
+      <VTable density="comfortable" class="mt-5 breakdown-table">
         <tbody>
           <tr v-for="(line, i) in result.breakdown" :key="i">
             <td>{{ line.label }}</td>
-            <td class="text-right font-weight-medium">{{ formatUSD(line.amount) }}</td>
+            <td class="text-right font-weight-medium" :class="{ 'text-success': line.amount < 0 }">
+              {{ formatUSD(line.amount) }}
+            </td>
           </tr>
           <tr class="total-row">
             <td class="font-weight-bold">Total a pagar (con mercadería)</td>
@@ -172,9 +266,10 @@
       <h2>Cómo funciona</h2>
       <p>
         <strong>Compra online (courier):</strong> desde mayo de 2026 podés traer hasta
-        <strong>USD 800 por año</strong> en 3 envíos, con un máximo de 20 kg por paquete, sin pagar
-        impuestos de importación. Lo que supera la franquicia paga el régimen simplificado: una tasa
-        única del <strong>60%</strong> sobre el valor, con un mínimo.
+        <strong>US$ 800 por año</strong> en hasta 3 envíos, sin pagar <em>aranceles</em>. Pero la
+        franquicia <strong>sí paga IVA (22%)</strong>, salvo una excepción: los envíos desde
+        <strong>Estados Unidos de hasta US$ 200</strong> quedan exonerados de IVA por el acuerdo
+        TIFA. Lo que supera la franquicia paga el régimen simplificado del <strong>60%</strong>.
       </p>
       <p>
         <strong>Régimen general:</strong> aplica para importaciones formales. Se calcula el valor
@@ -188,21 +283,24 @@
     </template>
 
     <template #disclaimer>
-      Cálculo de referencia. La normativa de importación cambia y tiene excepciones (tipo de
-      producto, origen, exoneraciones). Régimen de franquicia vigente desde el 1.º de mayo de 2026
-      (hasta USD 800 anuales, en 3 envíos, máximo 20 kg) y régimen simplificado del 60% sobre el
-      excedente. Verificá las condiciones vigentes con la Dirección Nacional de Aduanas y tu courier
-      antes de comprar. No es asesoramiento profesional.
+      Cálculo de referencia. Régimen de franquicia vigente desde el 1.º de mayo de 2026 (hasta US$
+      800 anuales, en 3 envíos): exento de aranceles pero <strong>gravado con IVA 22%</strong>,
+      salvo envíos desde EE.UU. de hasta US$ 200 (exonerados de IVA por el acuerdo TIFA). El
+      excedente paga el régimen simplificado del 60%. Las tarifas de courier son de referencia.
+      Verificá las condiciones vigentes con la Dirección Nacional de Aduanas y tu courier antes de
+      comprar. No es asesoramiento profesional.
     </template>
   </ToolShell>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { courierImport, generalImport } from '~/utils/importTax'
+import { COURIERS, getCourier, shippingCostUsd } from '~/utils/courierShipping'
 import { formatUSD, formatUYU } from '~/utils/format'
 
 const regime = ref<'courier' | 'general'>('courier')
+const origin = ref<'usa' | 'other'>('usa')
 const value = ref(150)
 const shipping = ref(0)
 const insurance = ref(0)
@@ -212,10 +310,31 @@ const arancelPct = ref(0)
 const tasaConsularPct = ref(5)
 const ivaPct = ref(22)
 
+// Courier shipping-by-weight
+const shipByWeight = ref(false)
+const courierId = ref(COURIERS[0]!.id)
+const weightKg = ref(1)
+const perKgUsd = ref(COURIERS[0]!.perKgUsd)
+const courierItems = COURIERS
+
+// When the courier changes, pre-fill its reference per-kg rate.
+watch(courierId, id => {
+  perKgUsd.value = getCourier(id).perKgUsd
+})
+
+const computedShipping = computed(() =>
+  shippingCostUsd(perKgUsd.value || 0, getCourier(courierId.value).baseUsd, weightKg.value || 0)
+)
+
+// Feed the freight input when estimating by weight.
+watch([shipByWeight, computedShipping], () => {
+  if (regime.value === 'courier' && shipByWeight.value) shipping.value = computedShipping.value
+})
+
 const sources = [
   {
-    label: 'Dirección Nacional de Aduanas — Régimen de franquicia',
-    url: 'https://www.aduanas.gub.uy/innovaportal/v/24954/3/innova.front/regimen-de-franquicia.html',
+    label: 'Dirección Nacional de Aduanas — Nuevo régimen de franquicias (mayo 2026)',
+    url: 'https://www.aduanas.gub.uy/innovaportal/v/28455/1/innova.front/desde-el-1%C2%BA-de-mayo-comienza-a-regir-el-nuevo-regimen-de-franquicias-de-envios-postales-internacionales.html',
   },
   {
     label: 'MEF — Preguntas frecuentes sobre el régimen de envíos postales (franquicias)',
@@ -231,6 +350,7 @@ const result = computed(() =>
     ? courierImport({
         value: value.value || 0,
         shipping: shipping.value || 0,
+        origin: origin.value,
         useFranchise: useFranchise.value,
         franchiseAvailable: franchiseAvailable.value || 0,
       })
@@ -244,7 +364,6 @@ const result = computed(() =>
       })
 )
 
-// Optional UYU equivalent of the landed cost using the best USD sell rate.
 const landedUyu = computed(() => {
   const rate = bestSell('USD')
   return rate ? result.value.landedCost * rate : null
@@ -252,28 +371,63 @@ const landedUyu = computed(() => {
 
 const faq = [
   {
-    q: '¿Cuánto puedo traer del exterior sin pagar impuestos en Uruguay?',
-    a: 'Desde mayo de 2026 rige una franquicia anual de hasta USD 800 por persona, utilizable en hasta 3 envíos por año, con un máximo de 20 kg por paquete, para compras puerta a puerta sin fines comerciales. Lo que supera ese monto tributa.',
+    q: '¿La franquicia de US$ 800 paga impuestos?',
+    a: 'Desde mayo de 2026 la franquicia anual de US$ 800 (en hasta 3 envíos) exime de aranceles, pero igual paga IVA del 22%. La única excepción son los envíos desde Estados Unidos de hasta US$ 200 cada uno, que quedan exonerados de IVA por el Acuerdo Marco de Comercio e Inversiones (TIFA).',
+  },
+  {
+    q: '¿Por qué importa si el envío viene de Estados Unidos?',
+    a: 'Por el acuerdo TIFA entre Uruguay y EE.UU., los envíos desde Estados Unidos de hasta US$ 200 mantienen la exoneración de IVA. Si el envío de EE.UU. supera los US$ 200, o si proviene de cualquier otro país, se aplica el IVA del 22% sobre la franquicia.',
   },
   {
     q: '¿Cuánto se paga por encima de la franquicia?',
-    a: 'El régimen simplificado de courier aplica una tasa única del 60% sobre el valor declarado de la parte no exenta, con un mínimo. Por ejemplo, si traés USD 1.000 y usás los USD 800 de franquicia, pagás 60% sobre los USD 200 restantes (USD 120).',
+    a: 'El régimen simplificado aplica una tasa única del 60% sobre el valor que supera la franquicia, con un mínimo. Por ejemplo, si traés US$ 1.000 y usás los US$ 800 de franquicia, pagás IVA sobre los 800 más 60% sobre los 200 restantes.',
   },
   {
     q: '¿Cómo se calculan los impuestos en el régimen general?',
     a: 'Se parte del valor CIF (mercadería + flete + seguro). Sobre el CIF se aplican el arancel (Tasa Global Arancelaria, que varía según el producto y el origen) y la tasa consular. Luego, el IVA del 22% se calcula sobre la suma de CIF + arancel + tasa consular. Algunos bienes pagan además IMESI.',
   },
   {
-    q: '¿Los valores de esta calculadora son oficiales?',
-    a: 'No. Son estimaciones de referencia con fines informativos. Las tasas y franquicias pueden cambiar y existen excepciones según el producto y el origen. Verificá siempre con Aduanas y tu courier antes de comprar.',
+    q: '¿Las tarifas de courier por peso son oficiales?',
+    a: 'No. Son valores de referencia para estimar el flete según el peso. Cada courier (USX Cargo, casilleros en Miami, etc.) tiene su propia tarifa por kilo; ajustá el valor por kg al de tu courier para una estimación más precisa.',
   },
 ]
 </script>
 
 <style scoped>
+.regime-toggle {
+  width: 100%;
+  height: auto;
+}
+
+.regime-toggle :deep(.regime-btn) {
+  flex: 1 1 0;
+  min-height: 52px;
+  min-width: 0;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
+  padding-inline: 16px;
+}
+
+.g-input {
+  row-gap: 4px;
+}
+
+.ship-box {
+  background: rgba(33, 150, 243, 0.06);
+  border: 1px solid rgba(33, 150, 243, 0.22);
+  border-radius: 12px;
+}
+
+.ship-result {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+}
+
 .result-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 12px;
 }
 
@@ -281,7 +435,7 @@ const faq = [
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 10px;
-  padding: 12px 16px;
+  padding: 14px 16px;
 }
 
 .breakdown-table :deep(td) {
@@ -291,14 +445,5 @@ const faq = [
 .total-row :deep(td),
 .total-row td {
   border-top: 2px solid rgba(255, 255, 255, 0.15);
-}
-
-.tool-link {
-  color: #64b5f6;
-  font-weight: 600;
-  text-decoration: none;
-}
-.tool-link:hover {
-  text-decoration: underline;
 }
 </style>

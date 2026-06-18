@@ -38,6 +38,9 @@ export interface ImportTaxResult {
   breakdown: TaxLine[]
 }
 
+/** Shipment origin — drives the USA/TIFA IVA exemption. */
+export type ImportOrigin = 'usa' | 'other'
+
 /** Inputs for the courier ("puerta a puerta") simplified regime. */
 export interface CourierInput {
   /** Declared merchandise value. */
@@ -46,20 +49,30 @@ export interface CourierInput {
   shipping?: number
   /** Insurance cost (optional). */
   insurance?: number
+  /** Shipment origin; `'usa'` enables the TIFA IVA exemption ≤ USD 200. */
+  origin?: ImportOrigin
   /** Whether to apply the annual franchise to this shipment. */
   useFranchise?: boolean
-  /** Franchise amount still available this year (capped at {@link CourierInput.value} base). */
+  /** Franchise amount still available this year (capped at the declared value). */
   franchiseAvailable?: number
-  /** Simplified single rate (%); defaults to the official 60%. */
+  /** Simplified single rate (%) on the portion above the franchise; default 60%. */
   ratePct?: number
-  /** Minimum tax when any tax is due; defaults to the official USD 10. */
+  /** Minimum simplified tax when any is due; defaults to the official USD 10. */
   minTax?: number
+  /** IVA rate (%) applied to the franchised portion; defaults to 22%. */
+  ivaPct?: number
 }
 
+/** USD threshold under which a US-origin shipment keeps the IVA exemption (TIFA). */
+export const TIFA_IVA_EXEMPTION_USD = 200
+
 /**
- * Courier / encomiendas postales calculation. The franchise (when used) shields
- * up to `franchiseAvailable` of the declared value; the remainder pays the
- * simplified single rate (default 60%), with a minimum charge when tax is due.
+ * Courier / encomiendas postales (Decreto 50/026, vigente 2026-05-01).
+ *
+ * The annual franchise (up to USD 800/year) exempts **aranceles** but the
+ * franchised value still pays **IVA (22%)** — except shipments from the USA of
+ * up to USD 200, which keep the IVA exemption under the TIFA framework. The
+ * portion **above** the franchise pays the simplified single rate (60%).
  */
 export function courierImport(input: CourierInput): ImportTaxResult {
   const value = Math.max(input.value || 0, 0)
@@ -67,8 +80,10 @@ export function courierImport(input: CourierInput): ImportTaxResult {
   const insurance = Math.max(input.insurance || 0, 0)
   const declared = value + shipping + insurance
 
+  const origin: ImportOrigin = input.origin ?? 'other'
   const ratePct = input.ratePct ?? URUGUAY.courier.simplifiedRatePct
   const minTax = input.minTax ?? URUGUAY.courier.simplifiedMinUsd
+  const ivaPct = input.ivaPct ?? URUGUAY.iva.basica
 
   const franchise = input.useFranchise
     ? Math.min(
@@ -76,22 +91,45 @@ export function courierImport(input: CourierInput): ImportTaxResult {
         declared
       )
     : 0
+  const franchisedBase = round(franchise) // arancel-exempt; IVA may still apply
+  const excess = round(Math.max(declared - franchise, 0)) // simplified 60%
 
-  const taxableBase = round(Math.max(declared - franchise, 0))
+  // TIFA: US-origin shipments up to USD 200 keep the IVA exemption.
+  const usaIvaExempt = origin === 'usa' && declared <= TIFA_IVA_EXEMPTION_USD
+  const iva = round((franchisedBase * (usaIvaExempt ? 0 : ivaPct)) / 100)
 
-  let tax = round((taxableBase * ratePct) / 100)
-  if (tax > 0 && tax < minTax) tax = minTax
+  let simplified = round((excess * ratePct) / 100)
+  if (simplified > 0 && simplified < minTax) simplified = minTax
 
-  const breakdown: TaxLine[] = [{ label: 'Valor declarado', amount: round(declared) }]
-  if (franchise > 0) breakdown.push({ label: 'Franquicia aplicada', amount: -round(franchise) })
-  breakdown.push({ label: `Base imponible`, amount: taxableBase })
-  breakdown.push({ label: `Impuesto único (${ratePct}%)`, amount: tax })
+  const totalTax = round(iva + simplified)
+  const taxableBase = round((usaIvaExempt ? 0 : franchisedBase) + excess)
+
+  const breakdown: TaxLine[] = [
+    { label: 'Valor declarado (mercadería + envío)', amount: round(declared) },
+  ]
+  if (input.useFranchise && franchise > 0) {
+    breakdown.push({ label: 'Franquicia (exenta de aranceles)', amount: -franchisedBase })
+    breakdown.push({
+      label: usaIvaExempt
+        ? `IVA exonerado (TIFA · EE.UU. ≤ US$ ${TIFA_IVA_EXEMPTION_USD})`
+        : `IVA (${ivaPct}%) sobre la franquicia`,
+      amount: iva,
+    })
+    if (excess > 0) {
+      breakdown.push({
+        label: `Impuesto único (${ratePct}%) sobre el excedente`,
+        amount: simplified,
+      })
+    }
+  } else {
+    breakdown.push({ label: `Impuesto único (${ratePct}%)`, amount: simplified })
+  }
 
   return {
     taxableBase,
-    totalTax: tax,
-    landedCost: round(declared + tax),
-    effectiveRatePct: value > 0 ? round((tax / value) * 100, 2) : null,
+    totalTax,
+    landedCost: round(declared + totalTax),
+    effectiveRatePct: value > 0 ? round((totalTax / value) * 100, 2) : null,
     breakdown,
   }
 }
