@@ -6,11 +6,14 @@ function makeDeps(over: Partial<any> = {}) {
     loadActiveAlerts: vi.fn().mockResolvedValue([]),
     fetchRates: vi.fn().mockResolvedValue([]),
     bestRate: vi.fn().mockReturnValue(41.5),
-    getUserContacts: vi.fn().mockResolvedValue({ email: 'a@b.com', fcmTokens: ['t1'] }),
+    getUserContacts: vi
+      .fn()
+      .mockResolvedValue({ email: 'a@b.com', fcmTokens: ['t1'], telegramChatId: null }),
     persistAlert: vi.fn().mockResolvedValue(undefined),
     pruneTokens: vi.fn().mockResolvedValue(undefined),
     push: vi.fn().mockResolvedValue([]),
     email: vi.fn().mockResolvedValue(undefined),
+    telegram: vi.fn().mockResolvedValue(true),
     now: 1_000_000_000_000,
     ...over,
   }
@@ -59,5 +62,23 @@ describe('runAlertsCheck', () => {
     })
     await runAlertsCheck(deps as any)
     expect(deps.pruneTokens).toHaveBeenCalledWith('u1', ['t1'])
+  })
+
+  it('fires a Telegram message when channels.telegram + telegramChatId', async () => {
+    const alert = {
+      _id: 'a4', uid: 'u1', currency: 'USD', kind: 'bestBuy', op: '>=', target: 41,
+      origin: 'any', armed: true, lastFiredAt: null,
+      channels: { push: false, email: false, telegram: true },
+    }
+    const telegram = vi.fn().mockResolvedValue(true)
+    const deps = makeDeps({
+      loadActiveAlerts: vi.fn().mockResolvedValue([alert]),
+      getUserContacts: vi
+        .fn()
+        .mockResolvedValue({ email: null, fcmTokens: [], telegramChatId: '77' }),
+      telegram,
+    })
+    await runAlertsCheck(deps as any)
+    expect(telegram).toHaveBeenCalledWith('77', expect.any(String))
   })
 })

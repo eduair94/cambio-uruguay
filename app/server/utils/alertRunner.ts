@@ -5,11 +5,14 @@ export interface RunnerDeps {
   loadActiveAlerts: () => Promise<any[]>
   fetchRates: () => Promise<any[]>
   bestRate: (rows: any[], currency: any, kind: any, origin: string) => number | null
-  getUserContacts: (uid: string) => Promise<{ email: string | null; fcmTokens: string[] }>
+  getUserContacts: (
+    uid: string
+  ) => Promise<{ email: string | null; fcmTokens: string[]; telegramChatId: string | null }>
   persistAlert: (id: string, patch: Record<string, unknown>) => Promise<void>
   pruneTokens: (uid: string, tokens: string[]) => Promise<void>
   push: (tokens: string[], title: string, body: string) => Promise<string[]>
   email: (to: string, subject: string, text: string) => Promise<void>
+  telegram: (chatId: string, text: string) => Promise<boolean>
   now: number
 }
 
@@ -39,6 +42,9 @@ export async function runAlertsCheck(
     }
     if (a.channels?.email && contacts.email) {
       await deps.email(contacts.email, title, body)
+    }
+    if (a.channels?.telegram && contacts.telegramChatId) {
+      await deps.telegram(contacts.telegramChatId, `${title}\n${body}`)
     }
 
     await deps.persistAlert(String(a._id), { armed: false, lastFiredAt: new Date(deps.now) })

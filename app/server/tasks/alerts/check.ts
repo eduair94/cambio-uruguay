@@ -4,6 +4,7 @@ import { UserModel } from '../../models/User'
 import { fetchCurrentRates, bestRateFor } from '../../utils/rates'
 import { sendPush } from '../../utils/push'
 import { sendMail } from '../../utils/mailer'
+import { sendTelegram } from '../../utils/telegram'
 import { runAlertsCheck } from '../../utils/alertRunner'
 
 export default defineTask({
@@ -16,7 +17,11 @@ export default defineTask({
       bestRate: (rows, currency, kind, origin) => bestRateFor(rows, currency, kind, origin),
       getUserContacts: async uid => {
         const u = await UserModel.findById(uid).lean().exec()
-        return { email: u?.email ?? null, fcmTokens: u?.fcmTokens ?? [] }
+        return {
+          email: u?.email ?? null,
+          fcmTokens: u?.fcmTokens ?? [],
+          telegramChatId: u?.telegramChatId ?? null,
+        }
       },
       persistAlert: async (id, patch) => {
         await AlertModel.updateOne({ _id: id }, { $set: patch })
@@ -32,6 +37,7 @@ export default defineTask({
           text,
           html: `<p>${text}</p><p><a href="https://cambio-uruguay.com/cuenta">Ver mis alertas</a></p>`,
         }),
+      telegram: sendTelegram,
       now: Date.now(),
     })
     return { result }
