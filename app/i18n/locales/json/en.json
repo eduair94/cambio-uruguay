@@ -624,5 +624,28 @@
     "saved": "Saved",
     "remove": "Remove",
     "rateUnavailable": "Rate unavailable"
+  },
+  "alerts": {
+    "tab": "Alerts",
+    "title": "My rate alerts",
+    "empty": "You don't have any alerts yet. Create one and we'll notify you when your target is hit.",
+    "new": "New alert",
+    "currency": "Currency",
+    "kind": "Type",
+    "bestBuy": "Best buy (they pay you)",
+    "bestSell": "Best sell (you pay)",
+    "op": "Condition",
+    "target": "Target",
+    "channels": "Notify me by",
+    "push": "Push notification",
+    "email": "Email",
+    "create": "Create alert",
+    "active": "Active",
+    "delete": "Delete",
+    "enablePush": "Enable push notifications",
+    "pushGranted": "Notifications enabled on this device.",
+    "pushDenied": "Notification permission denied.",
+    "pushUnsupported": "This browser does not support push notifications.",
+    "saved": "Alert created."
   }
 }

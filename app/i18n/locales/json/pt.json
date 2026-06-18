@@ -617,5 +617,28 @@
     "saved": "Salvo",
     "remove": "Remover",
     "rateUnavailable": "Cotação indisponível"
+  },
+  "alerts": {
+    "tab": "Alertas",
+    "title": "Minhas alertas de cotação",
+    "empty": "Você ainda não tem alertas. Crie uma e avisamos quando seu objetivo for atingido.",
+    "new": "Nova alerta",
+    "currency": "Moeda",
+    "kind": "Tipo",
+    "bestBuy": "Melhor compra (te pagam)",
+    "bestSell": "Melhor venda (você paga)",
+    "op": "Condição",
+    "target": "Objetivo",
+    "channels": "Avisar por",
+    "push": "Notificação push",
+    "email": "E-mail",
+    "create": "Criar alerta",
+    "active": "Ativa",
+    "delete": "Excluir",
+    "enablePush": "Ativar notificações push",
+    "pushGranted": "Notificações ativadas neste dispositivo.",
+    "pushDenied": "Permissão de notificações negada.",
+    "pushUnsupported": "Este navegador não suporta notificações push.",
+    "saved": "Alerta criada."
   }
 }

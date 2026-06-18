@@ -37,6 +37,7 @@ import {
   // List components
   VList,
   VListItem,
+  VListItemSubtitle,
   VListItemTitle,
   VMain,
   VMenu,
@@ -52,6 +53,7 @@ import {
   VSlider,
   VSnackbar,
   VSpacer,
+  VSwitch,
   // Other components
   VTab,
   VTabs,
@@ -89,6 +91,7 @@ export default defineNuxtPlugin(nuxtApp => {
       VList,
       VListItem,
       VListItemTitle,
+      VListItemSubtitle,
       VBtn,
       VBtnToggle,
       VIcon,
@@ -96,6 +99,7 @@ export default defineNuxtPlugin(nuxtApp => {
       VAutocomplete,
       VSelect,
       VCheckbox,
+      VSwitch,
       VMenu,
       VDatePicker,
       VSlider,

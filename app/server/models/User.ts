@@ -9,6 +9,7 @@ export interface UserDoc {
     locale: string
     defaultDirection: string | null
   }
+  fcmTokens: string[]
 }
 
 const UserSchema = new Schema<UserDoc>(
@@ -21,6 +22,7 @@ const UserSchema = new Schema<UserDoc>(
       locale: { type: String, default: 'es' },
       defaultDirection: { type: String, default: null },
     },
+    fcmTokens: { type: [String], default: [] },
   },
   { timestamps: true, _id: false }
 )

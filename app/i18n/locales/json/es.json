@@ -635,5 +635,28 @@
     "saved": "Guardado",
     "remove": "Quitar",
     "rateUnavailable": "Cotización no disponible"
+  },
+  "alerts": {
+    "tab": "Alertas",
+    "title": "Mis alertas de cotización",
+    "empty": "No tenés alertas todavía. Creá una para que te avisemos cuando se cumpla tu objetivo.",
+    "new": "Nueva alerta",
+    "currency": "Moneda",
+    "kind": "Tipo",
+    "bestBuy": "Mejor compra (te pagan)",
+    "bestSell": "Mejor venta (pagás)",
+    "op": "Condición",
+    "target": "Objetivo",
+    "channels": "Avisarme por",
+    "push": "Notificación push",
+    "email": "Correo",
+    "create": "Crear alerta",
+    "active": "Activa",
+    "delete": "Eliminar",
+    "enablePush": "Activar notificaciones push",
+    "pushGranted": "Notificaciones activadas en este dispositivo.",
+    "pushDenied": "Permiso de notificaciones denegado.",
+    "pushUnsupported": "Este navegador no soporta notificaciones push.",
+    "saved": "Alerta creada."
   }
 }

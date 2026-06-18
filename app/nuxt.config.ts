@@ -248,6 +248,8 @@ export default defineNuxtConfig({
       '30 9 * * *': ['blog:daily'],
       // 12:00 UTC = 09:00 Uruguay: send the daily newsletter to confirmed subs.
       '0 12 * * *': ['newsletter:daily'],
+      // Every 10 minutes: evaluate rate alerts and notify (push + email).
+      '*/10 * * * *': ['alerts:check'],
     },
   },
 
@@ -540,6 +542,8 @@ export default defineNuxtConfig({
         appId: process.env.NUXT_PUBLIC_FIREBASE_APP_ID || '',
         messagingSenderId: process.env.NUXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || '',
       },
+      // FCM web-push VAPID public key (Cloud Messaging → Web Push certificates)
+      fcmVapidKey: process.env.NUXT_PUBLIC_FCM_VAPID_KEY || '',
     },
   },
 

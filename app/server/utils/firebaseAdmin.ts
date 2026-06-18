@@ -50,3 +50,8 @@ function init(): App {
 export function adminAuth(): Auth {
   return getAuth(init())
 }
+
+/** The initialized Firebase Admin app (for messaging, etc.). */
+export function adminApp(): App {
+  return init()
+}

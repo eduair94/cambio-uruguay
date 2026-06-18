@@ -5,6 +5,7 @@
     <VTabs v-model="tab" class="mb-4">
       <VTab value="saved">{{ $t('auth.saved') }}</VTab>
       <VTab value="favorites">{{ $t('auth.favorites') }}</VTab>
+      <VTab value="alerts">{{ $t('alerts.tab') }}</VTab>
     </VTabs>
 
     <VTabsWindow v-model="tab">
@@ -68,6 +69,11 @@
             </template>
           </VListItem>
         </VList>
+      </VTabsWindowItem>
+
+      <!-- Rate alerts -->
+      <VTabsWindowItem value="alerts">
+        <AccountAlertsPanel />
       </VTabsWindowItem>
     </VTabsWindow>
   </div>
