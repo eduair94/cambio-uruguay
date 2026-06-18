@@ -522,6 +522,14 @@ export default defineNuxtConfig({
       username: process.env.TELEGRAM_BOT_USERNAME || '',
       secret: process.env.TELEGRAM_BOT_SECRET || '',
     },
+    // Discord OAuth2 login (server-side code exchange -> Firebase custom token).
+    // Secrets are server-only; the client never sees clientSecret.
+    discord: {
+      clientId: process.env.DISCORD_CLIENT_ID || '',
+      clientSecret: process.env.DISCORD_CLIENT_SECRET || '',
+      redirectUri:
+        process.env.DISCORD_REDIRECT_URI || 'https://cambio-uruguay.com/api/auth/discord/callback',
+    },
     // Email newsletter (server-only). SMTP creds gate the whole feature: when
     // host/user/from are absent, signup returns 503 and the daily task no-ops.
     smtp: {

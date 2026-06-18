@@ -12,6 +12,7 @@ export interface UserDoc {
   fcmTokens: string[]
   telegramChatId: string | null
   newsletter: { email: boolean; telegram: boolean }
+  discordId: string | null
 }
 
 const UserSchema = new Schema<UserDoc>(
@@ -30,6 +31,7 @@ const UserSchema = new Schema<UserDoc>(
       email: { type: Boolean, default: false },
       telegram: { type: Boolean, default: false },
     },
+    discordId: { type: String, default: null, index: true, sparse: true },
   },
   { timestamps: true, _id: false }
 )
