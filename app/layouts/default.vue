@@ -115,6 +115,13 @@
           <VListItemTitle>{{ $t('acerca.nav') }}</VListItemTitle>
         </VListItem>
 
+        <VListItem :to="localePath('/conectar')" @click="drawer = false">
+          <template #prepend>
+            <VIcon>mdi-connection</VIcon>
+          </template>
+          <VListItemTitle>{{ $t('conectar.nav') }}</VListItemTitle>
+        </VListItem>
+
         <VListItem
           href="https://ko-fi.com/cambio_uruguay"
           target="_blank"
@@ -308,6 +315,17 @@
         >
           <VIcon start small>mdi-information-outline</VIcon>
           {{ $t('acerca.nav') }}
+        </VBtn>
+
+        <!-- Conectar -->
+        <VBtn
+          :to="localePath('/conectar')"
+          variant="text"
+          class="text-capitalize nav-btn"
+          :class="{ 'nav-btn--active': isActiveRoute('/conectar') }"
+        >
+          <VIcon start small>mdi-connection</VIcon>
+          {{ $t('conectar.nav') }}
         </VBtn>
 
         <!-- Donar -->

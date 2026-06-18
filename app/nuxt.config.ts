@@ -444,6 +444,7 @@ export default defineNuxtConfig({
       '/convertir',
       '/blog',
       '/acerca',
+      '/conectar',
     ],
     sitemap: 'https://cambio-uruguay.com/sitemap.xml',
     credits: false,
@@ -539,6 +540,8 @@ export default defineNuxtConfig({
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'https://cambio-uruguay.com',
       // Client-side API URL
       apiBase: process.env.NUXT_PUBLIC_API_BASE || 'https://api.cambio-uruguay.com',
+      // Optional Discord community invite shown on /conectar. Empty -> login-only card.
+      discordInviteUrl: process.env.DISCORD_INVITE_URL || '',
       // Microsoft Clarity project id (session replay + heatmaps). Empty -> disabled.
       // Set via env NUXT_PUBLIC_CLARITY_ID. See plugins/clarity.client.ts.
       clarityId: process.env.NUXT_PUBLIC_CLARITY_ID || '',

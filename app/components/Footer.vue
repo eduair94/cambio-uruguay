@@ -58,6 +58,44 @@
           </VBtn>
 
           <VBtn
+            href="https://t.me/cambio_uruguay"
+            target="_blank"
+            rel="noopener noreferrer"
+            :aria-label="$t('siguenos.channel')"
+            :title="$t('siguenos.channel')"
+            icon
+            size="small"
+            variant="text"
+            color="white"
+          >
+            <VIcon>mdi-bullhorn</VIcon>
+          </VBtn>
+
+          <VBtn
+            :to="localePath('/conectar')"
+            :aria-label="$t('siguenos.mcp')"
+            :title="$t('siguenos.mcp')"
+            icon
+            size="small"
+            variant="text"
+            color="white"
+          >
+            <VIcon>mdi-robot-happy</VIcon>
+          </VBtn>
+
+          <VBtn
+            :to="localePath('/conectar')"
+            :aria-label="$t('siguenos.discord')"
+            :title="$t('siguenos.discord')"
+            icon
+            size="small"
+            variant="text"
+            color="white"
+          >
+            <VIcon>mdi-discord</VIcon>
+          </VBtn>
+
+          <VBtn
             href="https://www.linkedin.com/company/cambio-uruguay/"
             target="_blank"
             rel="noopener noreferrer"
@@ -99,8 +137,9 @@
           <NuxtLink :to="localePath('/convertir')" class="footer-link text-caption">
             Convertir
           </NuxtLink>
-          <NuxtLink :to="localePath('/blog')" class="footer-link text-caption">
-            Blog
+          <NuxtLink :to="localePath('/blog')" class="footer-link text-caption"> Blog </NuxtLink>
+          <NuxtLink :to="localePath('/conectar')" class="footer-link text-caption">
+            {{ $t('conectar.nav') }}
           </NuxtLink>
           <NuxtLink :to="localePath('/newsletter')" class="footer-link text-caption">
             {{ $t('newsletter.nav') }}
