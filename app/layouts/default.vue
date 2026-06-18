@@ -330,6 +330,7 @@
       </VToolbarItems>
 
       <VSpacer />
+      <AccountMenu />
       <LanguageMenu />
     </VAppBar>
 
@@ -345,6 +346,7 @@
 
     <Footer />
     <JoinTwitter />
+    <ClientOnly><AuthDialog /></ClientOnly>
 
     <!-- Memory Monitor for debugging (only shows in development) -->
     <!-- <ClientOnly>
