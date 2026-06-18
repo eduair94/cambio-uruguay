@@ -303,6 +303,7 @@ export default defineNuxtConfig({
         registerType: 'autoUpdate',
         disable: process.env.NODE_ENV === 'development',
         workbox: {
+          importScripts: ['firebase-messaging-extra.js'],
           navigateFallback: '/',
           globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
           cleanupOutdatedCaches: true,

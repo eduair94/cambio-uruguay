@@ -12,7 +12,13 @@ export function usePushNotifications() {
     const permission = await Notification.requestPermission()
     if (permission !== 'granted') return 'denied'
 
-    const swReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js')
+    // Bind FCM to the single vite-pwa Workbox SW (which importScripts the FCM
+    // handler). In dev the PWA module is disabled, so fall back to any existing
+    // registration; if there is none, push is unavailable.
+    const { $pwa } = useNuxtApp() as { $pwa?: { getSWRegistration?: () => ServiceWorkerRegistration | undefined } }
+    const swReg =
+      $pwa?.getSWRegistration?.() ?? (await navigator.serviceWorker.getRegistration())
+    if (!swReg) return 'unsupported'
     const messaging = getMessaging()
     const token = await getToken(messaging, {
       vapidKey: config.fcmVapidKey,
