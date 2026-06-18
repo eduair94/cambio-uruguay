@@ -513,6 +513,12 @@ export default defineNuxtConfig({
       // read directly from env in server/utils/firebaseAdmin.ts.
       serviceAccount: process.env.FIREBASE_SERVICE_ACCOUNT || '',
     },
+    // Telegram account linking (bot token + deep-link username + internal-API secret)
+    telegram: {
+      token: process.env.TELEGRAM_BOT_TOKEN || '',
+      username: process.env.TELEGRAM_BOT_USERNAME || '',
+      secret: process.env.TELEGRAM_BOT_SECRET || '',
+    },
     // Email newsletter (server-only). SMTP creds gate the whole feature: when
     // host/user/from are absent, signup returns 503 and the daily task no-ops.
     smtp: {
