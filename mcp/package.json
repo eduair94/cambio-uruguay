@@ -23,6 +23,14 @@
   "bin": {
     "cambio-uruguay-mcp": "dist/index.js"
   },
+  "main": "dist/lib.js",
+  "types": "dist/lib.d.ts",
+  "exports": {
+    ".": { "types": "./dist/lib.d.ts", "import": "./dist/lib.js" },
+    "./api": { "types": "./dist/api.d.ts", "import": "./dist/api.js" },
+    "./tools": { "types": "./dist/tools.d.ts", "import": "./dist/tools.js" },
+    "./news": { "types": "./dist/news.d.ts", "import": "./dist/news.js" }
+  },
   "files": [
     "dist",
     "README.md",
