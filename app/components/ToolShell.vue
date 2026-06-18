@@ -20,6 +20,9 @@
             <p class="text-body-1 text-grey-lighten-2 mb-0 tool-intro">{{ tool.description }}</p>
           </div>
         </div>
+        <div class="d-flex justify-start justify-md-end mt-3">
+          <ShareButtons :text="tool.title" />
+        </div>
       </div>
     </VCard>
 

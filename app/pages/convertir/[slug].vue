@@ -24,6 +24,9 @@
                 </div>
                 <p class="text-body-2 text-grey-lighten-2 mb-0 mt-1">{{ headlineNote }}</p>
               </template>
+              <div class="d-flex justify-start justify-md-end mt-3">
+                <ShareButtons :text="title" />
+              </div>
             </div>
           </VCard>
 

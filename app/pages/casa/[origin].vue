@@ -60,6 +60,8 @@
               <v-icon start size="small">mdi-autorenew</v-icon>
               {{ $t('casaPage.updatedAuto') }}
             </v-chip>
+            <v-spacer class="d-none d-sm-flex" />
+            <ShareButtons :text="$t('casaPage.h1', { casa: casaName })" />
           </v-card-text>
         </v-card>
       </v-col>

@@ -15,6 +15,9 @@
           conversor de monedas en vivo, plazo fijo, préstamos, inflación y más. Todas pensadas para
           el mercado uruguayo y actualizadas con datos reales.
         </p>
+        <div class="d-flex justify-center mt-4">
+          <ShareButtons :url="canonicalUrl" />
+        </div>
       </header>
 
       <!-- Grouped by category -->

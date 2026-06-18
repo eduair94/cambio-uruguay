@@ -15,6 +15,9 @@
           frecuente o usá el
           <NuxtLink :to="localePath('/herramientas/conversor-de-monedas')">conversor</NuxtLink>.
         </p>
+        <div class="d-flex justify-center mt-4">
+          <ShareButtons :url="canonicalUrl" />
+        </div>
       </header>
 
       <section v-for="group in groups" :key="group.key" class="mb-8">
