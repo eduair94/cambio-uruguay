@@ -31,8 +31,10 @@
         </div>
 
         <p class="text-body-2 text-grey-lighten-1 mt-5">
-          Mirá la <NuxtLink :to="localePath('/dolar-hoy')" class="lnk">cotización del dólar hoy</NuxtLink>
-          o el <NuxtLink :to="localePath('/historico')" class="lnk">histórico completo</NuxtLink>.
+          {{ $t('dolarRecords.seeMoreIntro') }}
+          <NuxtLink :to="localePath('/dolar-hoy')" class="lnk">{{ $t('dolarRecords.seeToday') }}</NuxtLink>
+          {{ $t('dolarRecords.seeMoreOr') }}
+          <NuxtLink :to="localePath('/historico')" class="lnk">{{ $t('dolarRecords.seeHistory') }}</NuxtLink>.
         </p>
       </VCol>
     </VRow>
@@ -59,9 +61,13 @@ defineOgImageComponent('Cambio', {
 useSeoMeta({
   title: () => t('dolarRecords.metaTitle'),
   description: () => t('dolarRecords.metaDescription'),
+  ogTitle: () => t('dolarRecords.metaTitle'),
+  ogDescription: () => t('dolarRecords.metaDescription'),
   ogType: 'website',
   ogUrl: canonical,
   twitterCard: 'summary_large_image',
+  twitterTitle: () => t('dolarRecords.metaTitle'),
+  twitterDescription: () => t('dolarRecords.metaDescription'),
 })
 useHead({ link: [{ rel: 'canonical', href: canonical }] })
 </script>

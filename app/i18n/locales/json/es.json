@@ -679,7 +679,11 @@
     "monthlyAvg": "Promedio del período",
     "noData": "Sin datos históricos por ahora.",
     "metaTitle": "Dólar en Uruguay: máximos, mínimos e históricos | Cambio Uruguay",
-    "metaDescription": "Máximo y mínimo histórico del dólar en Uruguay, valor de hace un año y promedio del período, según la cotización oficial del BCU."
+    "metaDescription": "Máximo y mínimo histórico del dólar en Uruguay, valor de hace un año y promedio del período, según la cotización oficial del BCU.",
+    "seeMoreIntro": "Mirá la",
+    "seeToday": "cotización del dólar hoy",
+    "seeMoreOr": "o el",
+    "seeHistory": "histórico completo"
   },
   "panel": {
     "title": "Todas las cotizaciones de un vistazo",
@@ -693,7 +697,6 @@
     "amount": "Monto en dólares",
     "saving": "Ahorrás",
     "vsAvg": "eligiendo la mejor casa vs el promedio del mercado",
-    "share": "Compartir mi ahorro",
     "noData": "Cargando cotizaciones…"
   },
   "dolarHoy": {
