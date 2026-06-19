@@ -1158,5 +1158,15 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
   twitterTitle: () => t('seo.homeTitle'),
   twitterDescription: () => t('seo.homeDescription'),
+  ogImageAlt: () => t('seo.homeTitle'),
+  twitterImageAlt: () => t('seo.homeTitle'),
+})
+
+// Branded, copyright-free OG image generated server-side (page had no image).
+defineOgImageComponent('Cambio', {
+  title: () => t('avanzado'),
+  subtitle: () => t('seo.homeDescription'),
+  tag: () => t('avanzado'),
+  locale: locale.value as 'es' | 'en' | 'pt',
 })
 </script>

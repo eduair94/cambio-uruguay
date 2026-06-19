@@ -214,7 +214,7 @@
 
 <script setup lang="ts">
 // Composables
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const router = useRouter()
 const localePath = useLocalePath()
 const route = useRoute()
@@ -488,7 +488,44 @@ useSeoMeta({
   ogTitle: () => t('seo.sucursalesIndexTitle'),
   ogDescription: () => t('seo.sucursalesIndexDescription'),
   keywords: () => t('seo.sucursalesIndexKeywords'),
+  ogImageAlt: () => t('seo.sucursalesIndexTitle'),
+  twitterCard: 'summary_large_image',
+  twitterImageAlt: () => t('seo.sucursalesIndexTitle'),
 })
+
+// Branded, copyright-free OG image generated server-side (page had no image).
+defineOgImageComponent('Cambio', {
+  title: () => t('seo.sucursalesIndexTitle'),
+  tag: 'Sucursales',
+  locale: locale.value as 'es' | 'en' | 'pt',
+})
+
+// BreadcrumbList for Search (Inicio > Sucursales).
+useHead(() => ({
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: t('inicio'),
+            item: 'https://cambio-uruguay.com/',
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: t('sucursalesMenu'),
+            item: 'https://cambio-uruguay.com/sucursales',
+          },
+        ],
+      }),
+    },
+  ],
+}))
 </script>
 
 <style scoped>

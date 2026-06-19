@@ -221,7 +221,7 @@ interface OriginNameMap {
   [key: string]: string
 }
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 // Router and route
 const route = useRoute()
 const router = useRouter()
@@ -242,7 +242,43 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
   twitterTitle: () => t('seo.historicalTitle'),
   twitterDescription: () => t('seo.historicalDescription'),
+  ogImageAlt: () => t('seo.historicalTitle'),
+  twitterImageAlt: () => t('seo.historicalTitle'),
 })
+
+// Branded, copyright-free OG image generated server-side (page had no image).
+defineOgImageComponent('Cambio', {
+  title: () => t('seo.historicalTitle'),
+  tag: () => t('historico'),
+  locale: locale.value as 'es' | 'en' | 'pt',
+})
+
+// BreadcrumbList for Search (Inicio > Histórico).
+useHead(() => ({
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: t('inicio'),
+            item: 'https://cambio-uruguay.com/',
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: t('historico'),
+            item: 'https://cambio-uruguay.com/historico',
+          },
+        ],
+      }),
+    },
+  ],
+}))
 
 // Reactive state
 const search = ref('')

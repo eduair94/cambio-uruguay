@@ -38,4 +38,16 @@ watchEffect(() => {
     ],
   })
 })
+
+// Branded, copyright-free OG image (the FAQPage schema already ships via
+// FaqBlock); the page previously had no social/Search preview image.
+defineOgImageComponent('Cambio', {
+  title: () => t('faq.title'),
+  tag: 'FAQ',
+  locale: locale.value as 'es' | 'en' | 'pt',
+})
+useSeoMeta({
+  ogImageAlt: () => t('faq.title'),
+  twitterImageAlt: () => t('faq.title'),
+})
 </script>

@@ -882,7 +882,76 @@ useSeoMeta({
       origin: exchangeHouseName.value,
       currency: currencyName.value,
     }),
+  ogImageAlt: () =>
+    t('seo.historicalDetailTitle', {
+      origin: exchangeHouseName.value,
+      currency: currencyName.value,
+    }),
+  twitterImageAlt: () =>
+    t('seo.historicalDetailTitle', {
+      origin: exchangeHouseName.value,
+      currency: currencyName.value,
+    }),
 })
+
+// Branded, copyright-free OG image (1200x630) generated server-side by
+// nuxt-og-image. This page previously declared summary_large_image but shipped
+// no image, so social/Search previews had no visual.
+defineOgImageComponent('Cambio', {
+  title: () =>
+    t('seo.historicalDetailTitle', {
+      origin: exchangeHouseName.value,
+      currency: currencyName.value,
+    }),
+  tag: () => currencyName.value,
+  locale: locale.value as 'es' | 'en' | 'pt',
+})
+
+// BreadcrumbList structured data so Search shows the Inicio > Histórico > casa >
+// moneda trail and understands the page hierarchy.
+const historicalCanonical = computed(
+  () =>
+    `https://cambio-uruguay.com/historico/${route.params.origin}/${route.params.currency}${
+      route.params.type ? '/' + route.params.type : ''
+    }`
+)
+useHead(() => ({
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: t('inicio'),
+            item: 'https://cambio-uruguay.com/',
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: t('historico'),
+            item: 'https://cambio-uruguay.com/historico',
+          },
+          {
+            '@type': 'ListItem',
+            position: 3,
+            name: exchangeHouseName.value,
+            item: `https://cambio-uruguay.com/historico/${route.params.origin}`,
+          },
+          {
+            '@type': 'ListItem',
+            position: 4,
+            name: currencyName.value,
+            item: historicalCanonical.value,
+          },
+        ],
+      }),
+    },
+  ],
+}))
 </script>
 
 <style scoped>
