@@ -10,10 +10,15 @@ import { quotesForCurrency, type CurrencyCode } from '~/utils/currencyPages'
 export function useExchangeRates() {
   const { getProcessedExchangeData } = useApiService()
 
+  // One fetch shared across every consumer on the page (calculator, trend
+  // modules, tools) via the fixed key — useAsyncData dedupes by key. Uses
+  // today's Montevideo date (the request that returns data) and keeps SSR on so
+  // pages that render rates in their initial HTML stay server-rendered.
   const { data, pending, error, refresh } = useAsyncData<ExchangeRate[]>(
     'tool-exchange-rates',
     async () => {
-      const res = await getProcessedExchangeData('')
+      const date = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Montevideo' })
+      const res = await getProcessedExchangeData(date)
       return (res?.exchangeData ?? []) as ExchangeRate[]
     },
     { default: () => [] as ExchangeRate[] }

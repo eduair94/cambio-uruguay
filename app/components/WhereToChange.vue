@@ -173,12 +173,14 @@
 <script setup lang="ts">
 import DOMPurify from 'isomorphic-dompurify'
 import { marked } from 'marked'
-import { computed, onMounted, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { rankExchanges, type Operation, type RankableRate } from '@/utils/recommendation'
 
 const { t, locale } = useI18n()
-const apiService = useApiService()
+// Reuse the shared, deduped exchange-rates fetch instead of issuing another
+// identical request for the day's dataset.
+const { rows: sharedRows, pending: ratesPending } = useExchangeRates()
 
 // A processed row carries the house display name under localData.name.
 interface ProcessedRow {
@@ -193,8 +195,21 @@ interface ProcessedRow {
 const operation = ref<Operation>('buy')
 const currency = ref<string>('USD')
 const amountInput = ref<number>(100)
-const loadingRates = ref<boolean>(true)
-const rates = ref<RankableRate[]>([])
+
+// Plain/cash quotes only, derived from the shared dataset (carrying the house
+// display name for the ranking). No second fetch of its own.
+const rates = computed<RankableRate[]>(() =>
+  (sharedRows.value as unknown as ProcessedRow[])
+    .filter(r => !r.type || r.type === '')
+    .map(r => ({
+      origin: r.origin,
+      code: r.code,
+      buy: r.buy,
+      sell: r.sell,
+      name: r.localData?.name ?? r.origin,
+    }))
+)
+const loadingRates = computed(() => ratesPending.value && rates.value.length === 0)
 
 const operationItems = computed(() => [
   { title: t('buy'), value: 'buy' as Operation },
@@ -276,32 +291,18 @@ const renderedRecommendation = computed<string>(() => {
   })
 })
 
-onMounted(async () => {
-  try {
-    const date = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Montevideo' })
-    const data = await apiService.getProcessedExchangeData(date)
-    const rows = (data.exchangeData ?? []) as ProcessedRow[]
-    // Plain/cash quotes only and carry the display name for the ranking.
-    rates.value = rows
-      .filter(r => !r.type || r.type === '')
-      .map<RankableRate>(r => ({
-        origin: r.origin,
-        code: r.code,
-        buy: r.buy,
-        sell: r.sell,
-        name: r.localData?.name ?? r.origin,
-      }))
-    // Default to USD if present, otherwise the first available currency.
-    const first = currencyItems.value[0]
-    if (first && !rates.value.some(r => r.code === 'USD')) {
-      currency.value = first.value
+// Default to USD if quoted, otherwise the first available currency — once the
+// shared dataset arrives.
+watch(
+  rates,
+  rows => {
+    if (rows.length && !rows.some(r => r.code === 'USD')) {
+      const first = currencyItems.value[0]
+      if (first) currency.value = first.value
     }
-  } catch (error) {
-    console.error('WhereToChange: failed to load rates', error)
-  } finally {
-    loadingRates.value = false
-  }
-})
+  },
+  { immediate: true }
+)
 </script>
 
 <style scoped>

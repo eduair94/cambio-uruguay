@@ -162,16 +162,16 @@
       </VList>
     </VNavigationDrawer>
 
-    <VAppBar class="px-3">
+    <VAppBar class="app-bar px-2 px-sm-4" flat>
       <!-- Mobile menu button -->
       <VAppBarNavIcon
-        class="d-flex d-lg-none mr-2"
+        class="d-flex d-lg-none mr-1 mr-sm-2"
         :aria-label="$t('a11y.menu')"
         :title="$t('a11y.menu')"
         @click.stop="drawer = !drawer"
       />
 
-      <NuxtLink :to="localePath('/')" class="no_link d-flex logo_link">
+      <NuxtLink :to="localePath('/')" class="no_link d-flex logo_link" :aria-label="$t('inicio')">
         <img
           width="227"
           height="33"
@@ -182,192 +182,61 @@
         />
       </NuxtLink>
 
-      <!-- Navigation Menu for desktop -->
-      <VToolbarItems class="d-none d-lg-flex ml-4">
-        <!-- Inicio -->
+      <!-- Desktop primary navigation (secondary links live under the "Más" menu) -->
+      <nav class="primary-nav d-none d-lg-flex align-center ml-6" :aria-label="$t('a11y.menu')">
         <VBtn
-          :to="localePath('/')"
+          v-for="item in primaryNav"
+          :key="item.to"
+          :to="localePath(item.to)"
+          :exact="item.exact"
           variant="text"
-          exact
-          class="text-capitalize nav-btn"
-          :class="{ 'nav-btn--active': isActiveRoute('/') }"
+          class="nav-btn text-none"
+          :class="{ 'nav-btn--active': isActiveRoute(item.to) }"
         >
-          <VIcon start small>mdi-home</VIcon>
-          {{ $t('inicio') }}
+          <VIcon start size="small">{{ item.icon }}</VIcon>
+          {{ navLabel(item) }}
         </VBtn>
 
-        <!-- Dólar hoy -->
-        <VBtn
-          :to="localePath('/dolar-hoy')"
-          variant="text"
-          class="text-capitalize nav-btn"
-          :class="{ 'nav-btn--active': isActiveRoute('/dolar-hoy') }"
-        >
-          <VIcon start small>mdi-trending-up</VIcon>
-          {{ $t('dolarHoy.nav') }}
-        </VBtn>
-
-        <!-- Avanzado -->
-        <VBtn
-          :to="localePath('/avanzado')"
-          variant="text"
-          class="text-capitalize nav-btn"
-          :class="{ 'nav-btn--active': isActiveRoute('/avanzado') }"
-        >
-          <VIcon start small>mdi-cog</VIcon>
-          {{ $t('avanzado') }}
-        </VBtn>
-
-        <!-- Histórico -->
-        <VBtn
-          :to="localePath('/historico')"
-          variant="text"
-          class="text-capitalize nav-btn"
-          :class="{ 'nav-btn--active': isActiveRoute('/historico') }"
-        >
-          <VIcon start small>mdi-chart-line</VIcon>
-          {{ $t('historico') }}
-        </VBtn>
-
-        <!-- Sucursales -->
-        <VBtn
-          :to="localePath('/sucursales')"
-          variant="text"
-          class="text-capitalize nav-btn"
-          :class="{ 'nav-btn--active': isActiveRoute('/sucursales') }"
-        >
-          <VIcon start small>mdi-bank-outline</VIcon>
-          {{ $t('sucursalesMenu') }}
-        </VBtn>
-
-        <!-- Noticias -->
-        <VBtn
-          :to="localePath('/noticias')"
-          variant="text"
-          class="text-capitalize nav-btn"
-          :class="{ 'nav-btn--active': isActiveRoute('/noticias') }"
-        >
-          <VIcon start small>mdi-newspaper-variant-outline</VIcon>
-          {{ $t('noticias.nav') }}
-        </VBtn>
-
-        <!-- Comparar -->
-        <VBtn
-          :to="localePath('/comparar')"
-          variant="text"
-          class="text-capitalize nav-btn"
-          :class="{ 'nav-btn--active': isActiveRoute('/comparar') }"
-        >
-          <VIcon start small>mdi-chart-multiple</VIcon>
-          {{ $t('compare.nav') }}
-        </VBtn>
-
-        <!-- Guías -->
-        <VBtn
-          :to="localePath('/guias')"
-          variant="text"
-          class="text-capitalize nav-btn"
-          :class="{ 'nav-btn--active': isActiveRoute('/guias') }"
-        >
-          <VIcon start small>mdi-book-open-variant</VIcon>
-          {{ $t('guias.nav') }}
-        </VBtn>
-
-        <!-- Herramientas -->
-        <VBtn
-          :to="localePath('/herramientas')"
-          variant="text"
-          class="text-capitalize nav-btn"
-          :class="{ 'nav-btn--active': isActiveRoute('/herramientas') }"
-        >
-          <VIcon start small>mdi-tools</VIcon>
-          Herramientas
-        </VBtn>
-
-        <!-- Glosario -->
-        <VBtn
-          :to="localePath('/glosario')"
-          variant="text"
-          class="text-capitalize nav-btn"
-          :class="{ 'nav-btn--active': isActiveRoute('/glosario') }"
-        >
-          <VIcon start small>mdi-book-alphabet</VIcon>
-          Glosario
-        </VBtn>
-
-        <!-- Blog -->
-        <VBtn
-          :to="localePath('/blog')"
-          variant="text"
-          class="text-capitalize nav-btn"
-          :class="{ 'nav-btn--active': isActiveRoute('/blog') }"
-        >
-          <VIcon start small>mdi-newspaper-variant-multiple</VIcon>
-          Blog
-        </VBtn>
-
-        <!-- Acerca -->
-        <VBtn
-          :to="localePath('/acerca')"
-          variant="text"
-          class="text-capitalize nav-btn"
-          :class="{ 'nav-btn--active': isActiveRoute('/acerca') }"
-        >
-          <VIcon start small>mdi-information-outline</VIcon>
-          {{ $t('acerca.nav') }}
-        </VBtn>
-
-        <!-- Conectar -->
-        <VBtn
-          :to="localePath('/conectar')"
-          variant="text"
-          class="text-capitalize nav-btn"
-          :class="{ 'nav-btn--active': isActiveRoute('/conectar') }"
-        >
-          <VIcon start small>mdi-connection</VIcon>
-          {{ $t('conectar.nav') }}
-        </VBtn>
-
-        <!-- Donar -->
-        <VBtn
-          href="https://ko-fi.com/cambio_uruguay"
-          target="_blank"
-          rel="noopener noreferrer"
-          variant="text"
-          class="text-capitalize nav-btn"
-        >
-          <VIcon start small>mdi-heart</VIcon>
-          {{ $t('donar') }}
-        </VBtn>
-
-        <!-- Twitter -->
-        <VBtn
-          href="https://twitter.com/cambio_uruguay"
-          target="_blank"
-          rel="noopener noreferrer"
-          variant="text"
-          class="text-capitalize nav-btn"
-        >
-          <VIcon start small>mdi-twitter</VIcon>
-          Twitter
-        </VBtn>
-
-        <!-- Autor -->
-        <VBtn
-          href="https://www.linkedin.com/in/eduardo-airaudo/"
-          target="_blank"
-          rel="noopener noreferrer"
-          variant="text"
-          class="text-capitalize nav-btn"
-        >
-          <VIcon start small>mdi-account-circle</VIcon>
-          Autor
-        </VBtn>
-      </VToolbarItems>
+        <VMenu location="bottom start" transition="slide-y-transition">
+          <template #activator="{ props, isActive }">
+            <VBtn
+              v-bind="props"
+              variant="text"
+              class="nav-btn text-none"
+              :class="{ 'nav-btn--active': isActive }"
+            >
+              <VIcon start size="small">mdi-dots-horizontal</VIcon>
+              {{ $t('navMore') }}
+              <VIcon end size="small">mdi-chevron-down</VIcon>
+            </VBtn>
+          </template>
+          <VList class="more-menu" density="comfortable" nav>
+            <template v-for="item in moreNav" :key="item.label">
+              <VListItem v-if="item.to" :to="localePath(item.to)" :active="isActiveRoute(item.to)">
+                <template #prepend>
+                  <VIcon>{{ item.icon }}</VIcon>
+                </template>
+                <VListItemTitle>{{ navLabel(item) }}</VListItemTitle>
+              </VListItem>
+              <VListItem v-else :href="item.href" target="_blank" rel="noopener noreferrer">
+                <template #prepend>
+                  <VIcon>{{ item.icon }}</VIcon>
+                </template>
+                <VListItemTitle>{{ navLabel(item) }}</VListItemTitle>
+              </VListItem>
+            </template>
+          </VList>
+        </VMenu>
+      </nav>
 
       <VSpacer />
-      <AccountMenu />
-      <LanguageMenu />
+
+      <!-- Account + language cluster: kept together with its own gap so the login
+           CTA never collides with the logo or the nav. -->
+      <div class="nav-actions d-flex align-center ga-1 ga-sm-2">
+        <AccountMenu />
+        <LanguageMenu />
+      </div>
     </VAppBar>
 
     <ClientOnly>
@@ -444,6 +313,46 @@ const isActiveRoute = (path: string) => {
   }
   return route.path.startsWith(path)
 }
+
+// Desktop navigation model. `label` is an i18n key unless `raw` is set (some
+// items have no dedicated translation key). Primary items stay inline; the rest
+// live under the "Más" dropdown so the bar never overflows.
+const { t } = useI18n()
+interface NavItem {
+  to?: string
+  href?: string
+  icon: string
+  label: string
+  raw?: boolean
+  exact?: boolean
+}
+const primaryNav: NavItem[] = [
+  { to: '/', icon: 'mdi-home', label: 'inicio', exact: true },
+  { to: '/dolar-hoy', icon: 'mdi-trending-up', label: 'dolarHoy.nav' },
+  { to: '/historico', icon: 'mdi-chart-line', label: 'historico' },
+  { to: '/sucursales', icon: 'mdi-bank-outline', label: 'sucursalesMenu' },
+  { to: '/comparar', icon: 'mdi-chart-multiple', label: 'compare.nav' },
+]
+const moreNav: NavItem[] = [
+  { to: '/noticias', icon: 'mdi-newspaper-variant-outline', label: 'noticias.nav' },
+  { to: '/avanzado', icon: 'mdi-cog', label: 'avanzado' },
+  { to: '/guias', icon: 'mdi-book-open-variant', label: 'guias.nav' },
+  { to: '/herramientas', icon: 'mdi-tools', label: 'Herramientas', raw: true },
+  { to: '/glosario', icon: 'mdi-book-alphabet', label: 'Glosario', raw: true },
+  { to: '/convertir', icon: 'mdi-cash-sync', label: 'Convertir', raw: true },
+  { to: '/blog', icon: 'mdi-newspaper-variant-multiple', label: 'Blog', raw: true },
+  { to: '/acerca', icon: 'mdi-information-outline', label: 'acerca.nav' },
+  { to: '/conectar', icon: 'mdi-connection', label: 'conectar.nav' },
+  { href: 'https://ko-fi.com/cambio_uruguay', icon: 'mdi-heart', label: 'donar' },
+  { href: 'https://twitter.com/cambio_uruguay', icon: 'mdi-twitter', label: 'Twitter', raw: true },
+  {
+    href: 'https://www.linkedin.com/in/eduardo-airaudo/',
+    icon: 'mdi-account-circle',
+    label: 'Autor',
+    raw: true,
+  },
+]
+const navLabel = (item: NavItem): string => (item.raw ? item.label : t(item.label))
 
 // hreflang alternates: feed @nuxtjs/i18n's localized head (rel=alternate
 // hreflang links for es/en/pt + x-default, plus htmlAttrs lang/dir) into useHead
@@ -551,20 +460,69 @@ useHead({
 }
 
 .logo_image {
-  max-height: 40px;
-  max-width: 55vw;
+  max-height: 36px;
+  max-width: 188px;
 }
 
-/* Navigation Button Styles */
+/* On phones the logo must leave room for the hamburger + account/language
+   cluster, otherwise the spacer collapses and the logo butts against the login
+   button (and the language menu overflows the viewport). */
+@media (max-width: 600px) {
+  .logo_image {
+    max-height: 30px;
+    max-width: 40vw;
+  }
+}
+
+/* App bar: subtle bottom hairline + slight blur for a modern, layered feel */
+.app-bar {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Navigation Button Styles — compact so the full bar fits from the lg
+   breakpoint (1280px) without colliding with the account/language cluster. */
 .nav-btn {
-  margin: 0 4px;
-  border-radius: 4px;
-  transition: all 0.3s ease;
+  margin: 0 1px;
+  min-width: 0;
+  padding-inline: 10px;
+  border-radius: 10px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+/* Tighten the leading icon's gap inside nav buttons to reclaim width. */
+.primary-nav .nav-btn :deep(.v-btn__prepend) {
+  margin-inline-end: 4px;
 }
 
 .nav-btn:hover {
-  background-color: rgba(255, 255, 255, 0.1) !important;
+  background-color: rgba(255, 255, 255, 0.08) !important;
   transform: translateY(-1px);
+}
+
+/* Active route: tinted pill + accent underline so the current section reads
+   clearly without shouting. */
+.nav-btn--active {
+  color: rgb(var(--v-theme-info)) !important;
+  background-color: rgba(var(--v-theme-info), 0.12) !important;
+}
+
+/* "Más" dropdown panel */
+.more-menu {
+  min-width: 232px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Keep the account/language cluster from hugging the screen edge on mobile */
+.nav-actions {
+  flex: 0 0 auto;
 }
 
 .container_custom {

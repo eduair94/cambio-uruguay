@@ -18,14 +18,13 @@
         <div v-if="best && avg" class="result-box px-4 py-3">
           <div class="text-caption text-grey">{{ $t('ahorro.saving') }}</div>
           <div class="text-h4 font-weight-bold text-success">{{ formatUYU(savings.savings) }}</div>
-          <div class="text-caption text-grey-lighten-1">{{ $t('ahorro.vsAvg') }} ({{ savings.pct }}%)</div>
+          <div class="text-caption text-grey-lighten-1">
+            {{ $t('ahorro.vsAvg') }} ({{ savings.pct }}%)
+          </div>
         </div>
         <div v-else class="text-caption text-grey">{{ $t('ahorro.noData') }}</div>
       </VCol>
     </VRow>
-    <div class="mt-3">
-      <ShareButtons :text="shareText" />
-    </div>
   </VCard>
 </template>
 
@@ -34,14 +33,12 @@ import { formatUYU } from '~/utils/format'
 import { averageSell } from '~/utils/currencyPages'
 import { computeSavings } from '~/utils/rateStats'
 
-const { t } = useI18n()
 const { rows, bestSell } = useExchangeRates()
 const amount = ref(1000)
 
 const best = computed(() => bestSell('USD'))
 const avg = computed(() => averageSell(rows.value ?? [], 'USD'))
 const savings = computed(() => computeSavings(amount.value || 0, best.value || 0, avg.value || 0))
-const shareText = computed(() => `${t('ahorro.saving')} ${formatUYU(savings.value.savings)} — Cambio Uruguay`)
 </script>
 
 <style scoped>

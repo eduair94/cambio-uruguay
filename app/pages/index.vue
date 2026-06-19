@@ -766,7 +766,7 @@
 <script setup lang="ts">
 import { useLocalePath } from '#imports'
 import DirectionToggle from '@/components/DirectionToggle.vue'
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { HOME_FAQ_IDS, type FaqItem } from '~/utils/faqAnswers'
 import { useDisplay } from 'vuetify'
@@ -812,7 +812,10 @@ interface Feature {
 // Composables
 const { t, locale } = useI18n()
 const localePath = useLocalePath()
-const apiService = useApiService()
+// Shared, deduped exchange-rates fetch (the home trend modules use the same
+// `useExchangeRates` cache key) — the calculator reads from it instead of
+// issuing its own second identical request for the dataset.
+const { rows: sharedRows, pending: sharedPending } = useExchangeRates()
 const route = useRoute()
 const router = useRouter()
 
@@ -1480,53 +1483,33 @@ const updateQueryParams = () => {
   }
 }
 
-// Load initial data only once
-const loadInitialData = async () => {
-  initialLoading.value = true
+// Apply the shared exchange dataset to the calculator's local state.
+const applyExchangeData = (data: ExchangeItem[]) => {
+  // Drop interbank USD/BRL/ARG rows the calculator shouldn't quote.
+  realExchangeData.value = data.filter(
+    item => !(item.isInterBank && ['USD', 'BRL', 'ARG'].includes(item.code))
+  )
 
-  try {
-    const date = new Date().toLocaleDateString('en-CA', {
-      timeZone: 'America/Montevideo',
-    })
-    const data = await apiService.getProcessedExchangeData(date)
+  // Extract available currencies, always including UYU (the base currency).
+  const currencies = new Set<string>()
+  data.forEach(item => currencies.add(item.code))
+  currencies.add('UYU')
+  availableCurrencies.value = Array.from(currencies).sort()
 
-    if (data.error) {
-      console.error('API Error:', data.error)
-      return
-    }
-
-    // Store the real exchange data
-    const realData = data.exchangeData.filter(item => {
-      if (item.isInterBank && ['USD', 'BRL', 'ARG'].includes(item.code)) return false
-      return true
-    })
-
-    realExchangeData.value = realData
-
-    // Extract available currencies including UYU
-    const currencies = new Set<string>()
-    data.exchangeData.forEach((item: ExchangeItem) => {
-      currencies.add(item.code)
-    })
-
-    // Always include UYU as it's the base currency
-    currencies.add('UYU')
-
-    availableCurrencies.value = Array.from(currencies).sort()
-
-    setConversionRate()
-  } catch (error) {
-    console.error('Error loading initial data:', error)
-  } finally {
-    initialLoading.value = false
-  }
+  setConversionRate()
 }
 
-// Lifecycle
-onMounted(() => {
-  // Load initial data only once
-  loadInitialData()
-})
+// Drive the calculator off the shared `useExchangeRates` fetch: populate when
+// the rows arrive, and stop the loading state once the fetch settles (even if
+// it returned empty, matching the previous error/finally behavior).
+watch(
+  [sharedRows, sharedPending] as const,
+  ([rows, pending]) => {
+    if (rows && rows.length) applyExchangeData(rows as unknown as ExchangeItem[])
+    if (!pending) initialLoading.value = false
+  },
+  { immediate: true }
+)
 
 // Add cleanup to prevent memory leaks
 onBeforeUnmount(() => {

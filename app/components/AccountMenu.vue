@@ -1,19 +1,24 @@
 <template>
+  <!-- Logged out: a real CTA pill. Icon-only on phones to save the cramped top
+       bar; icon + label from the sm breakpoint up. -->
   <VBtn
     v-if="!store.isLoggedIn"
     color="primary"
-    variant="text"
-    class="text-capitalize"
+    variant="flat"
+    rounded="pill"
+    class="login-btn text-none px-3 px-sm-4"
+    :aria-label="$t('auth.login')"
+    :title="$t('auth.login')"
     @click="store.openDialog()"
   >
-    <VIcon start>mdi-account-circle</VIcon>
-    {{ $t('auth.login') }}
+    <VIcon size="20">mdi-account-circle</VIcon>
+    <span class="d-none d-sm-inline ml-2">{{ $t('auth.login') }}</span>
   </VBtn>
 
   <VMenu v-else location="bottom end">
     <template #activator="{ props }">
-      <VBtn icon v-bind="props">
-        <VAvatar size="32" color="primary">
+      <VBtn icon v-bind="props" :aria-label="$t('auth.account')">
+        <VAvatar size="34" color="primary">
           <VImg v-if="store.user?.photo" :src="store.user.photo" />
           <span v-else>{{ initials }}</span>
         </VAvatar>
@@ -61,3 +66,10 @@ onMounted(async () => {
   }
 })
 </script>
+
+<style scoped>
+.login-btn {
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+</style>
