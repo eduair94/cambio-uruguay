@@ -47,6 +47,9 @@ Thumbs.db
 *.wmv
 
 package-lock.json
+# CI (deploy.yml) runs `npm ci` in app/ and caches on this lockfile, so it must
+# be committed even though other package-lock.json files stay ignored.
+!app/package-lock.json
 dist
 sheet_key.json
 serviceAccount.json
