@@ -26,9 +26,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: app/package-lock.json
-      - run: npm ci
+      # No lockfile is committed (package-lock.json is gitignored), so install
+      # like the server's deploy.sh does — `npm install`, not `npm ci`.
+      - run: npm install --no-audit --no-fund
       - run: npm run test
 
   deploy:
