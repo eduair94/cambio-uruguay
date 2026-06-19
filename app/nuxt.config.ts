@@ -549,6 +549,8 @@ export default defineNuxtConfig({
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'https://cambio-uruguay.com',
       // Client-side API URL
       apiBase: process.env.NUXT_PUBLIC_API_BASE || 'https://api.cambio-uruguay.com',
+      // Telegram bot username (public) for the Login Widget on /cuenta.
+      telegramBotUsername: process.env.TELEGRAM_BOT_USERNAME || '',
       // Optional Discord community invite shown on /conectar. Empty -> login-only card.
       discordInviteUrl: process.env.DISCORD_INVITE_URL || '',
       // Microsoft Clarity project id (session replay + heatmaps). Empty -> disabled.

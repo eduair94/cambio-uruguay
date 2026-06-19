@@ -695,7 +695,9 @@
     "open": "Open Telegram",
     "waiting": "Waiting for confirmation in Telegram…",
     "hint": "Link Telegram to receive alerts in chat",
-    "telegram": "Telegram"
+    "telegram": "Telegram",
+    "widgetHint": "Link your account in one click with Telegram",
+    "useCode": "or link with a code"
   },
   "dolarRecords": {
     "title": "Dollar in Uruguay: highs, lows and historical data",

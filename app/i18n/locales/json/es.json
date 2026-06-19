@@ -706,7 +706,9 @@
     "open": "Abrir Telegram",
     "waiting": "Esperando confirmación en Telegram…",
     "hint": "Vinculá Telegram para recibir alertas en el chat",
-    "telegram": "Telegram"
+    "telegram": "Telegram",
+    "widgetHint": "Vinculá tu cuenta con un clic usando Telegram",
+    "useCode": "o vincular con un código"
   },
   "dolarRecords": {
     "title": "Dólar en Uruguay: máximos, mínimos e históricos",
