@@ -218,6 +218,11 @@ export default defineNuxtConfig({
   },
 
   nitro: {
+    // Zero-downtime deploys: when NITRO_OUTPUT_DIR is set (by scripts/deploy.sh)
+    // the build writes to a staging dir so the live .output keeps serving during
+    // the build; the deploy script then atomically swaps it into place. Unset in
+    // normal/dev builds -> Nitro keeps its default `.output`.
+    ...(process.env.NITRO_OUTPUT_DIR ? { output: { dir: process.env.NITRO_OUTPUT_DIR } } : {}),
     prerender: {
       routes: ['/sitemap.xml', '/robots.txt'],
       ignore: ['/manifest.json'],

@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "nuxt build && pm2 restart cambio-uruguay && pm2 log cambio-uruguay",
+    "build": "nuxt build",
+    "deploy": "bash scripts/deploy.sh",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
