@@ -15,22 +15,27 @@ export interface AlertPrev {
  * Decide whether a move warrants an alert.
  * - Below threshold → never.
  * - No prior alert → yes.
- * - Same direction within cooldown → no (anti-spam).
  * - Opposite direction (a reversal) → yes, even within cooldown.
- * - Past the cooldown → yes.
+ * - Same direction within cooldown → no (anti-spam).
+ * - Same direction past cooldown → only when the move materially grew since the
+ *   last alert (|pct| advanced by ≥ reAlertDeltaPct). Because changePct is taken
+ *   vs yesterday's static baseline, a sustained move yields ~the same pct each
+ *   run; without this guard the channel gets the identical alert every cooldown.
  */
 export function decideAlert(
   prev: AlertPrev | null,
   pct: number,
   nowMs: number,
-  cfg: Pick<AlertConfig, "thresholdPct" | "cooldownMin">
+  cfg: Pick<AlertConfig, "thresholdPct" | "cooldownMin"> & Partial<Pick<AlertConfig, "reAlertDeltaPct">>
 ): boolean {
   if (Math.abs(pct) < cfg.thresholdPct) return false;
   if (!prev) return true;
   const direction: Direction = pct > 0 ? "up" : "down";
+  if (direction !== prev.direction) return true;
   const withinCooldown = nowMs - prev.atMs < cfg.cooldownMin * 60_000;
-  if (!withinCooldown) return true;
-  return direction !== prev.direction;
+  if (withinCooldown) return false;
+  const step = cfg.reAlertDeltaPct ?? cfg.thresholdPct;
+  return Math.abs(pct) - Math.abs(prev.pct) >= step;
 }
 
 interface AlertStateDoc {

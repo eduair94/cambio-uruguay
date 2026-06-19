@@ -20,6 +20,8 @@ export interface TwitterConfig {
 export interface AlertConfig {
   thresholdPct: number;
   cooldownMin: number;
+  /** Same-direction re-alert (past cooldown) needs |pct| to grow by ≥ this. */
+  reAlertDeltaPct: number;
   currencies: string[];
 }
 export interface BotConfig {
@@ -89,6 +91,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): BotConfig {
     alert: {
       thresholdPct: num(env.ALERT_THRESHOLD_PCT, 1),
       cooldownMin: num(env.ALERT_COOLDOWN_MIN, 120),
+      reAlertDeltaPct: num(env.ALERT_REALERT_DELTA_PCT, num(env.ALERT_THRESHOLD_PCT, 1)),
       currencies: csv(env.ALERT_CURRENCIES, DEFAULT_CURRENCIES),
     },
     telegram,
