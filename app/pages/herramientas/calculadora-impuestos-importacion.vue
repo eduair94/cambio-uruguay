@@ -43,6 +43,91 @@
         </VBtnToggle>
       </template>
 
+      <!-- Product type: drives IVA, IMESI and required procedures -->
+      <div class="text-overline text-grey mb-2">Tipo de producto</div>
+      <VSelect
+        v-model="productTypeId"
+        :items="IMPORT_PRODUCT_TYPES"
+        item-title="label"
+        item-value="id"
+        variant="outlined"
+        density="comfortable"
+        prepend-inner-icon="mdi-shape-outline"
+        hide-details
+        class="mb-3"
+      >
+        <template #item="{ props: itemProps, item }">
+          <VListItem v-bind="itemProps" :prepend-icon="item.raw.icon" />
+        </template>
+      </VSelect>
+
+      <!-- Status: IVA treatment, required procedures, prohibitions -->
+      <div class="d-flex flex-wrap align-center ga-2 mb-2">
+        <VChip
+          size="small"
+          variant="tonal"
+          :color="productType.iva === 'exento' ? 'success' : 'primary'"
+          prepend-icon="mdi-cash"
+        >
+          {{
+            productType.iva === 'exento'
+              ? 'No paga IVA (exento)'
+              : `IVA ${productTax.ivaPct}%`
+          }}
+        </VChip>
+        <VChip
+          v-if="productType.imesi"
+          size="small"
+          variant="tonal"
+          color="warning"
+          prepend-icon="mdi-fuel"
+        >
+          Paga IMESI
+        </VChip>
+        <VChip
+          v-for="proc in productType.procedures"
+          :key="proc.organism"
+          size="small"
+          variant="tonal"
+          color="info"
+          prepend-icon="mdi-file-document-check-outline"
+          :href="proc.url"
+          target="_blank"
+          rel="noopener"
+        >
+          Trámite: {{ ORGANISM_LABEL[proc.organism] }}
+        </VChip>
+      </div>
+
+      <VAlert
+        v-if="regimeStatus.blocked"
+        type="error"
+        variant="tonal"
+        density="comfortable"
+        class="mb-3"
+        icon="mdi-cancel"
+      >
+        {{ regimeStatus.reason }}
+      </VAlert>
+      <VAlert
+        v-else-if="productType.procedures?.length"
+        type="info"
+        variant="tonal"
+        density="comfortable"
+        class="mb-3"
+        icon="mdi-information-outline"
+      >
+        Antes de despachar necesitás un trámite ante
+        {{ productType.procedures.map(p => ORGANISM_LABEL[p.organism]).join(' y ') }}.
+        <span v-if="productType.note">{{ productType.note }}</span>
+      </VAlert>
+      <p
+        v-else-if="productType.note"
+        class="text-caption text-grey-lighten-1 mb-3"
+      >
+        {{ productType.note }}
+      </p>
+
       <!-- Core inputs -->
       <VRow class="g-input">
         <VCol cols="12" sm="6">
@@ -149,6 +234,20 @@
               hide-details
             />
           </VCol>
+          <VCol v-if="showImesiField" cols="12" sm="3">
+            <VTextField
+              v-model.number="imesiPct"
+              type="number"
+              min="0"
+              label="IMESI"
+              suffix="%"
+              placeholder="ej. 20"
+              variant="outlined"
+              density="comfortable"
+              hint="Varía mucho según el producto: ingresá la tasa de tu caso."
+              persistent-hint
+            />
+          </VCol>
         </template>
       </VRow>
 
@@ -226,8 +325,16 @@
 
       <VDivider class="my-6" />
 
+      <!-- When the product can't enter under this regime, the estimate is shown
+           dimmed under a warning: the math still illustrates the cost, but it is
+           not actionable. -->
+      <p v-if="regimeStatus.blocked" class="text-caption text-error mb-3">
+        <VIcon size="small" start>mdi-alert</VIcon>
+        Estimación a título informativo: este producto no puede importarse por este régimen.
+      </p>
+
       <!-- Result -->
-      <div class="result-grid">
+      <div class="result-grid" :class="{ 'result-blocked': regimeStatus.blocked }">
         <div class="result-box">
           <div class="text-overline text-grey">Impuestos estimados</div>
           <div class="text-h5 font-weight-bold text-primary">{{ formatUSD(result.totalTax) }}</div>
@@ -248,7 +355,11 @@
       </div>
 
       <!-- Breakdown -->
-      <VTable density="comfortable" class="mt-5 breakdown-table">
+      <VTable
+        density="comfortable"
+        class="mt-5 breakdown-table"
+        :class="{ 'result-blocked': regimeStatus.blocked }"
+      >
         <tbody>
           <tr v-for="(line, i) in result.breakdown" :key="i">
             <td>{{ line.label }}</td>
@@ -293,6 +404,36 @@
         Los aranceles dependen del producto y el origen: muchos bienes del Mercosur pagan 0%. Ajustá
         los porcentajes según tu caso o consultá a tu despachante.
       </p>
+      <h2>Tipo de producto: IVA, trámites y prohibidos</h2>
+      <p>
+        Elegí el <strong>tipo de producto</strong> para ajustar el IVA y ver si necesitás trámites:
+      </p>
+      <ul>
+        <li>
+          <strong>No pagan IVA:</strong> libros, diarios y revistas están exentos. Los
+          <strong>medicamentos</strong> pagan la tasa mínima del 10%.
+        </li>
+        <li>
+          <strong>Pagan IVA 22%:</strong> el resto de los bienes (electrónica, ropa, juguetes, etc.).
+        </li>
+        <li>
+          <strong>Requieren trámites adicionales:</strong> celulares y equipos con radiofrecuencia,
+          drones y GPS necesitan homologación de <strong>URSEC</strong> (vía VUCE); medicamentos,
+          suplementos, cosméticos y productos médicos pasan por el <strong>MSP</strong>; semillas,
+          plantas, fertilizantes y alimentos por el <strong>MGAP</strong>; armas y réplicas por el
+          Servicio de Material y Armamento del Ejército.
+        </li>
+        <li>
+          <strong>Prohibidos por courier:</strong> vaporizadores y cigarrillos electrónicos,
+          pirotecnia, inflamables, baterías sueltas y power banks, dinero en efectivo y sustancias
+          controladas. Bebidas alcohólicas, tabaco, perfumería y vehículos pagan IMESI y solo
+          ingresan por importación formal (régimen general).
+        </li>
+      </ul>
+      <p>
+        Las listas son orientativas y <strong>no taxativas</strong>: pueden variar según la cantidad,
+        el uso y la normativa vigente. Confirmá siempre con Aduanas y el organismo correspondiente.
+      </p>
     </template>
 
     <template #disclaimer>
@@ -310,6 +451,12 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { courierImport, generalImport } from '~/utils/importTax'
+import {
+  IMPORT_PRODUCT_TYPES,
+  productRegimeStatus,
+  productTypeById,
+  resolveProductTax,
+} from '~/utils/importProductTypes'
 import { ESTIMATOR_COURIERS, shippingCostUsd, type Courier } from '~/utils/courierShipping'
 import { formatUSD } from '~/utils/format'
 
@@ -323,6 +470,36 @@ const franchiseAvailable = ref(800)
 const arancelPct = ref(0)
 const tasaConsularPct = ref(5)
 const ivaPct = ref(22)
+const imesiPct = ref(0)
+
+// Product type drives the IVA rate, IMESI applicability and which agencies must
+// authorize the shipment. `general` (the default) reproduces the prior behaviour.
+const productTypeId = ref('general')
+const productType = computed(() => productTypeById(productTypeId.value))
+const productTax = computed(() => resolveProductTax(productType.value))
+const regimeStatus = computed(() => productRegimeStatus(productType.value, regime.value))
+const showImesiField = computed(() => regime.value === 'general' && productType.value.imesi === true)
+
+// Keep the (still editable) IVA field in sync with the chosen product type.
+watch(
+  productTax,
+  tax => {
+    ivaPct.value = tax.ivaPct
+  },
+  { immediate: true }
+)
+// Reset the IMESI field when a category that does not levy IMESI is selected, so a
+// stale rate never lingers in the (now hidden) field.
+watch(showImesiField, on => {
+  if (!on) imesiPct.value = 0
+})
+
+const ORGANISM_LABEL: Record<string, string> = {
+  MSP: 'MSP — Salud Pública',
+  URSEC: 'URSEC (VUCE)',
+  MGAP: 'MGAP — Agricultura',
+  SMA: 'Material y Armamento (Ejército)',
+}
 
 // Courier shipping-by-weight — only couriers with a published flat per-kg are offered here.
 // Rates come from /api/couriers (daily-scraped, freshest), falling back to the static seed.
@@ -377,6 +554,15 @@ const sources = [
     label: 'MEF — Preguntas frecuentes sobre el régimen de envíos postales (franquicias)',
     url: 'https://www.gub.uy/ministerio-economia-finanzas/comunicacion/noticias/guia-preguntas-frecuentes-sobre-regimen-envios-postales-franquicias',
   },
+  {
+    label: 'Aduanas — Mercaderías controladas por otros organismos',
+    url: 'https://www.aduanas.gub.uy/innovaportal/v/25358/15/innova.front/',
+  },
+  {
+    label: 'Aduanas — ¿Qué mercadería no puedo traer bajo encomiendas postales?',
+    url: 'https://www.aduanas.gub.uy/innovaportal/v/25107/3/innova.front/que-mercaderia-no-puedo-traer-bajo-el-regimen-de-encomiendas-postales-internacionales.html',
+  },
+  { label: 'VUCE / URSEC — Homologación de equipos de radiofrecuencia', url: 'https://vuce.gub.uy' },
   { label: 'DGI — IVA e impuestos', url: 'https://www.dgi.gub.uy' },
 ]
 
@@ -388,6 +574,7 @@ const result = computed(() =>
         origin: origin.value,
         useFranchise: useFranchise.value,
         franchiseAvailable: franchiseAvailable.value || 0,
+        ivaPct: productTax.value.ivaPct,
       })
     : generalImport({
         value: value.value || 0,
@@ -396,6 +583,7 @@ const result = computed(() =>
         arancelPct: arancelPct.value || 0,
         tasaConsularPct: tasaConsularPct.value || 0,
         ivaPct: ivaPct.value || 0,
+        imesiPct: imesiPct.value || 0,
       })
 )
 
@@ -428,6 +616,18 @@ const faq = [
     a: 'No en el régimen courier (compra online): el IVA y la tasa única se calculan siempre sobre el costo interno del producto (el valor de la factura del vendedor), nunca sobre el flete del courier. El envío es un costo aparte que se muestra explícito y se suma al total. Distinto es el régimen general de importación formal, donde el flete sí integra el valor CIF sobre el que se calcula el IVA.',
   },
   {
+    q: '¿Qué productos no pagan IVA al importar?',
+    a: 'Los libros, diarios y revistas están exentos de IVA. Los medicamentos pagan la tasa mínima del 10% (y requieren autorización del MSP). El resto de los bienes paga el IVA general del 22%. En el régimen courier, además, los envíos desde EE.UU. de hasta US$ 200 quedan exonerados de IVA por el acuerdo TIFA, cualquiera sea el producto.',
+  },
+  {
+    q: '¿Qué productos requieren trámites adicionales para importar?',
+    a: 'Los celulares y equipos que emiten radiofrecuencia (también routers, drones y GPS) requieren homologación de URSEC, que se gestiona en la VUCE. Los medicamentos, suplementos, cosméticos y productos médicos pasan por el Ministerio de Salud Pública (MSP). Las semillas, plantas, fertilizantes y alimentos requieren autorización del MGAP. Las armas y réplicas (airsoft) se tramitan ante el Servicio de Material y Armamento del Ejército.',
+  },
+  {
+    q: '¿Qué productos están prohibidos por courier?',
+    a: 'No pueden importarse por encomiendas postales: vaporizadores y cigarrillos electrónicos, pirotecnia y explosivos, líquidos inflamables, baterías sueltas y power banks (restricción aérea), dinero en efectivo, sustancias controladas y pornografía. Bebidas alcohólicas, tabaco, perfumería y vehículos pagan IMESI y solo ingresan por importación formal (régimen general), no como envío personal.',
+  },
+  {
     q: '¿Las tarifas de courier por peso son oficiales?',
     a: 'No. Son valores de referencia (verificados en junio de 2026) para estimar el flete según el peso. Cada courier (Gripper, Envía Mi Compra, Casilla Mía, Punto Mío, etc.) tiene su propia tarifa por kilo y escalas por peso; ajustá el valor por kg al de tu courier o mirá la comparativa de couriers para una estimación más precisa.',
   },
@@ -436,3 +636,12 @@ const faq = [
 
 <!-- All layout primitives (seg-toggle, result-grid, tool-info-box,
      breakdown-table…) are shared from ToolShell, namespaced under .tool-page. -->
+
+<style scoped>
+/* Prohibited / not-allowed product: the estimate stays visible but dimmed so it
+   reads as informational, not actionable. */
+.result-blocked {
+  opacity: 0.55;
+  filter: grayscale(0.4);
+}
+</style>
