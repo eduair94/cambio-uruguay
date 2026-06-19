@@ -127,6 +127,7 @@ async function startLink() {
 async function unlink() {
   await authFetch('/api/me/telegram', { method: 'DELETE' }).catch(() => {})
   linked.value = false
+  if (import.meta.client && tgWidget.value) tgWidget.value.innerHTML = ''
 }
 
 watch([linked, tgWidget], () => {
@@ -134,7 +135,10 @@ watch([linked, tgWidget], () => {
 })
 
 onMounted(async () => { await refresh(); mountWidget() })
-onBeforeUnmount(() => poll && clearInterval(poll))
+onBeforeUnmount(() => {
+  poll && clearInterval(poll)
+  if (import.meta.client) delete (window as any).onTelegramAuth
+})
 
 defineExpose({ linked })
 </script>
