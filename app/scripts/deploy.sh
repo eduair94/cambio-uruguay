@@ -40,8 +40,9 @@ log "Installing deps (no-audit)…"
 npm install --no-audit --no-fund
 
 log "Building into staging dir ($STAGING) — live .output keeps serving…"
-rm -rf "$STAGING"
-NITRO_OUTPUT_DIR="$STAGING" npx nuxt build
+rm -rf "$STAGING" "$APP_DIR/.nuxt"
+# 8192 heap: 4096 OOM'd after firebase-auth landed (see memory/deploy notes).
+NODE_OPTIONS="--max-old-space-size=8192" NITRO_OUTPUT_DIR="$STAGING" npx nuxt build
 
 # Sanity: the staging build must have a server entry before we swap.
 if [ ! -f "$STAGING/server/index.mjs" ]; then
