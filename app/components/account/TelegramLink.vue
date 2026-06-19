@@ -15,25 +15,47 @@
           </VBtn>
         </div>
       </template>
-      <VBtn v-else color="info" variant="tonal" size="small" :loading="busy" @click="startLink">
-        {{ $t('tg.link') }}
-      </VBtn>
-    </div>
-
-    <div v-if="deepLink && !linked" class="mt-3">
-      <VBtn
-        :href="deepLink"
-        target="_blank"
-        color="info"
-        variant="flat"
-        size="small"
-        prepend-icon="mdi-open-in-new"
-      >
-        {{ $t('tg.open') }}
-      </VBtn>
-      <div class="text-caption text-grey mt-2 d-flex align-center">
-        <VProgressCircular indeterminate size="14" width="2" class="me-2" />
-        {{ $t('tg.waiting') }}
+      <div v-else class="d-flex flex-column ga-2" style="min-width: 220px">
+        <div class="text-caption text-grey">{{ $t('tg.widgetHint') }}</div>
+        <ClientOnly>
+          <div ref="tgWidget" class="tg-widget"></div>
+        </ClientOnly>
+        <VBtn
+          variant="text"
+          size="small"
+          color="info"
+          class="align-self-start px-1"
+          @click="toggleCode"
+        >
+          {{ $t('tg.useCode') }}
+        </VBtn>
+        <div v-if="showCode">
+          <VBtn
+            color="info"
+            variant="tonal"
+            size="small"
+            :loading="busy"
+            @click="startLink"
+          >
+            {{ $t('tg.link') }}
+          </VBtn>
+          <div v-if="deepLink" class="mt-3">
+            <VBtn
+              :href="deepLink"
+              target="_blank"
+              color="info"
+              variant="flat"
+              size="small"
+              prepend-icon="mdi-open-in-new"
+            >
+              {{ $t('tg.open') }}
+            </VBtn>
+            <div class="text-caption text-grey mt-2 d-flex align-center">
+              <VProgressCircular indeterminate size="14" width="2" class="me-2" />
+              {{ $t('tg.waiting') }}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </VCard>
@@ -45,6 +67,39 @@ const linked = ref(false)
 const busy = ref(false)
 const deepLink = ref('')
 let poll: ReturnType<typeof setInterval> | null = null
+
+const config = useRuntimeConfig().public as { telegramBotUsername?: string }
+const tgWidget = ref<HTMLElement | null>(null)
+const showCode = ref(false)
+function toggleCode() {
+  showCode.value = !showCode.value
+}
+
+// Telegram Login Widget: inject the script with our bot + an onauth callback.
+function mountWidget() {
+  if (!import.meta.client) return
+  const username = config.telegramBotUsername
+  if (!username || !tgWidget.value || tgWidget.value.childElementCount > 0) return
+
+  ;(window as any).onTelegramAuth = async (user: Record<string, unknown>) => {
+    try {
+      await authFetch('/api/me/telegram/link-widget', { method: 'POST', body: user })
+      await refresh()
+    } catch {
+      /* keep the card unlinked; the user can retry or use the code flow */
+    }
+  }
+
+  const s = document.createElement('script')
+  s.async = true
+  s.src = 'https://telegram.org/js/telegram-widget.js?22'
+  s.setAttribute('data-telegram-login', username)
+  s.setAttribute('data-size', 'large')
+  s.setAttribute('data-radius', '8')
+  s.setAttribute('data-request-access', 'write')
+  s.setAttribute('data-onauth', 'onTelegramAuth(user)')
+  tgWidget.value.appendChild(s)
+}
 
 async function refresh() {
   const r = await authFetch<{ linked: boolean }>('/api/me/telegram/status').catch(() => ({
@@ -74,8 +129,18 @@ async function unlink() {
   linked.value = false
 }
 
-onMounted(refresh)
+watch([linked, tgWidget], () => {
+  if (!linked.value) mountWidget()
+})
+
+onMounted(async () => { await refresh(); mountWidget() })
 onBeforeUnmount(() => poll && clearInterval(poll))
 
 defineExpose({ linked })
 </script>
+
+<style scoped>
+.tg-widget {
+  min-height: 40px;
+}
+</style>
