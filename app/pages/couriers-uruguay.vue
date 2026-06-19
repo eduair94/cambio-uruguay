@@ -181,6 +181,7 @@
         :to="localePath('/herramientas/calculadora-impuestos-importacion')"
         color="primary"
         variant="elevated"
+        class="cta-btn"
       >
         <VIcon start>mdi-calculator</VIcon>
         Calcular impuestos de importación
@@ -350,9 +351,26 @@ useHead(() => ({
   background: linear-gradient(135deg, #2f81f7 0%, #16c784 100%);
 }
 
+/* Guard against any child (e.g. the share-buttons row) forcing a few px of horizontal scroll. */
+.couriers-page {
+  overflow-x: hidden;
+}
+
 .couriers-intro {
   max-width: 760px;
   line-height: 1.6;
+}
+
+/* Let the CTA label wrap inside the button instead of spilling out on narrow screens. */
+.cta-btn {
+  height: auto;
+  min-height: 44px;
+  max-width: 100%;
+  white-space: normal;
+}
+.cta-btn :deep(.v-btn__content) {
+  white-space: normal;
+  padding-block: 8px;
 }
 
 .couriers-card,

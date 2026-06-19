@@ -11,8 +11,9 @@
 
         <!-- API Documentation & Social Media Links.
              Native title (hover hint) + aria-label instead of VTooltip: avoids
-             empty role=tooltip overlays that fail the aria-tooltip-name audit. -->
-        <div class="d-flex align-center ga-2">
+             empty role=tooltip overlays that fail the aria-tooltip-name audit.
+             flex-wrap so the icon row never forces horizontal scroll on small phones. -->
+        <div class="d-flex align-center flex-wrap justify-center ga-2">
           <VBtn
             href="https://api.cambio-uruguay.com/api-docs"
             target="_blank"
