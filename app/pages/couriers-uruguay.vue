@@ -50,44 +50,81 @@
       antes de comprar.
     </VAlert>
 
-    <!-- Comparison table -->
+    <!-- Comparison -->
     <VCard class="couriers-card pa-4 pa-sm-6">
-      <h2 class="text-h6 font-weight-bold mb-1">Comparativa de couriers (casillero en Miami)</h2>
+      <h2 class="text-h6 font-weight-bold mb-1">Comparativa de couriers (puerta a puerta)</h2>
       <p class="text-caption text-grey-lighten-1 mb-4">
-        Los couriers cobran por escalas de peso; el valor por kg que se muestra es la escala de
-        paquete chico. Mirá las notas y el sitio oficial para el detalle por tramo.
+        Los couriers cobran por escalas de peso; el valor por kg es la escala de paquete chico,
+        verificada en junio de 2026. Donde figura «Consultar», el courier cotiza desde su propio
+        sitio. Mirá las notas y el sitio oficial para el detalle por tramo.
       </p>
-      <VTable density="comfortable" class="couriers-table">
-        <thead>
-          <tr>
-            <th>Courier</th>
-            <th>Modalidad</th>
-            <th class="text-right">US$/kg (ref.)</th>
-            <th class="text-right">Cargo fijo</th>
-            <th>Demora</th>
-            <th>Sitio / fuente</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="c in couriers" :key="c.id">
-            <td class="font-weight-medium">{{ c.name }}</td>
-            <td class="text-grey-lighten-1">{{ c.modality }}</td>
-            <td class="text-right">US$ {{ fmt(c.perKgUsd) }}</td>
-            <td class="text-right">US$ {{ fmt(c.baseUsd) }}</td>
-            <td class="text-grey-lighten-1">{{ c.transit ?? '—' }}</td>
-            <td>
-              <a :href="c.source" target="_blank" rel="noopener noreferrer" class="couriers-link">
-                {{ hostOf(c.website) }}
-              </a>
-            </td>
-          </tr>
-        </tbody>
-      </VTable>
-      <ul class="couriers-notes mt-3">
-        <li v-for="c in couriers" :key="c.id">
-          <strong>{{ c.name }}:</strong> {{ c.note }}
-        </li>
-      </ul>
+
+      <!-- Desktop: table -->
+      <div class="d-none d-md-block">
+        <VTable density="comfortable" class="couriers-table">
+          <thead>
+            <tr>
+              <th>Courier</th>
+              <th>Modalidad</th>
+              <th class="text-right">US$/kg (ref.)</th>
+              <th class="text-right">Cargo fijo</th>
+              <th>Demora</th>
+              <th>Sitio</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="c in couriers" :key="c.id">
+              <td class="font-weight-medium">{{ c.name }}</td>
+              <td class="text-grey-lighten-1">{{ c.modality }}</td>
+              <td class="text-right">{{ rateLabel(c.perKgUsd) }}</td>
+              <td class="text-right">{{ rateLabel(c.baseUsd) }}</td>
+              <td class="text-grey-lighten-1">{{ c.transit ?? '—' }}</td>
+              <td>
+                <a :href="c.source" target="_blank" rel="noopener noreferrer" class="couriers-link">
+                  {{ hostOf(c.website) }}
+                </a>
+              </td>
+            </tr>
+          </tbody>
+        </VTable>
+        <ul class="couriers-notes mt-3">
+          <li v-for="c in couriers" :key="c.id">
+            <strong>{{ c.name }}:</strong> {{ c.note }}
+          </li>
+        </ul>
+      </div>
+
+      <!-- Mobile: stacked cards -->
+      <div class="d-md-none">
+        <div v-for="c in couriers" :key="c.id" class="courier-card">
+          <div class="d-flex align-center justify-space-between ga-2 mb-1">
+            <span class="text-subtitle-1 font-weight-bold">{{ c.name }}</span>
+            <span class="courier-rate">
+              {{ rateLabel(c.perKgUsd) }}<small v-if="c.perKgUsd != null">/kg</small>
+            </span>
+          </div>
+          <div class="text-caption text-grey-lighten-1 mb-2">{{ c.modality }}</div>
+          <dl class="courier-specs">
+            <div>
+              <dt>Cargo fijo</dt>
+              <dd>{{ rateLabel(c.baseUsd) }}</dd>
+            </div>
+            <div>
+              <dt>Demora</dt>
+              <dd>{{ c.transit ?? '—' }}</dd>
+            </div>
+          </dl>
+          <p v-if="c.note" class="text-caption text-grey-lighten-1 mb-2">{{ c.note }}</p>
+          <a
+            :href="c.source"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="couriers-link text-caption"
+          >
+            {{ hostOf(c.website) }}
+          </a>
+        </div>
+      </div>
     </VCard>
 
     <!-- Other options -->
@@ -159,6 +196,11 @@ const couriers = COURIERS
 /** Format a USD amount with Uruguayan locale (comma decimals, no trailing zeros). */
 function fmt(n: number): string {
   return n.toLocaleString('es-UY', { maximumFractionDigits: 2 })
+}
+
+/** A rate cell: `US$ X` for published rates, `Consultar` when the courier only quotes online. */
+function rateLabel(n: number | null): string {
+  return n == null ? 'Consultar' : `US$ ${fmt(n)}`
 }
 
 /** Bare host (without scheme / www) for compact source links. */
@@ -333,5 +375,49 @@ useHead({
   background: rgba(33, 150, 243, 0.1);
   border: 1px solid rgba(33, 150, 243, 0.28);
   border-radius: 12px;
+}
+
+/* Mobile card layout for the courier comparison (replaces the table < md). */
+.courier-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.courier-card + .courier-card {
+  margin-top: 12px;
+}
+
+.courier-rate {
+  font-weight: 700;
+  color: #16c784;
+  white-space: nowrap;
+}
+
+.courier-rate small {
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.courier-specs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 0 0 8px;
+}
+
+.courier-specs dt {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.courier-specs dd {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
 }
 </style>

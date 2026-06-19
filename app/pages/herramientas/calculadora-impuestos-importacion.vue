@@ -312,7 +312,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { courierImport, generalImport } from '~/utils/importTax'
-import { COURIERS, getCourier, shippingCostUsd } from '~/utils/courierShipping'
+import { ESTIMATOR_COURIERS, getCourier, shippingCostUsd } from '~/utils/courierShipping'
 import { formatUSD, formatUYU } from '~/utils/format'
 
 const regime = ref<'courier' | 'general'>('courier')
@@ -326,20 +326,25 @@ const arancelPct = ref(0)
 const tasaConsularPct = ref(5)
 const ivaPct = ref(22)
 
-// Courier shipping-by-weight
+// Courier shipping-by-weight — only couriers with a published flat per-kg are offered here.
 const shipByWeight = ref(false)
-const courierId = ref(COURIERS[0]!.id)
+const courierId = ref(ESTIMATOR_COURIERS[0]!.id)
 const weightKg = ref(1)
-const perKgUsd = ref(COURIERS[0]!.perKgUsd)
-const courierItems = COURIERS
+const perKgUsd = ref<number>(ESTIMATOR_COURIERS[0]!.perKgUsd ?? 0)
+const courierItems = ESTIMATOR_COURIERS
 
 // When the courier changes, pre-fill its reference per-kg rate.
 watch(courierId, id => {
-  perKgUsd.value = getCourier(id).perKgUsd
+  const rate = getCourier(id).perKgUsd
+  if (rate != null) perKgUsd.value = rate
 })
 
 const computedShipping = computed(() =>
-  shippingCostUsd(perKgUsd.value || 0, getCourier(courierId.value).baseUsd, weightKg.value || 0)
+  shippingCostUsd(
+    perKgUsd.value || 0,
+    getCourier(courierId.value).baseUsd ?? 0,
+    weightKg.value || 0
+  )
 )
 
 // Feed the freight input while estimating by weight; reset it to 0 when the estimate is turned
