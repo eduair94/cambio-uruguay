@@ -1,0 +1,67 @@
+name: CI / Deploy
+
+# Tests run on every push and PR. A zero-downtime production deploy to the
+# 104 server runs only after tests pass on `main` (or via manual dispatch).
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Never run two production deploys at once: queue a new one, never cancel a
+# deploy that is already swapping/reloading on the server.
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  test:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci
+      - run: npm run test
+
+  deploy:
+    name: Zero-downtime deploy
+    needs: test
+    # Deploy only for pushes to main (and manual dispatch on main); never for PRs.
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run remote deploy over SSH
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          PORT: ${{ secrets.DEPLOY_PORT }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          # Path to the app dir on the server. Override with a repo variable if
+          # it ever moves; defaults to the documented location in deploy.sh.
+          APP_DIR: ${{ vars.DEPLOY_APP_DIR || '/root/cambio-uruguay/app' }}
+        run: |
+          set -euo pipefail
+          : "${SSH_KEY:?missing repository secret DEPLOY_SSH_KEY}"
+          : "${HOST:?missing repository secret DEPLOY_HOST}"
+          : "${PORT:?missing repository secret DEPLOY_PORT}"
+          : "${DEPLOY_USER:?missing repository secret DEPLOY_USER}"
+
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          # Pin the host key (TOFU on first run) so the SSH session can't be MITM'd.
+          ssh-keyscan -p "$PORT" -H "$HOST" >> ~/.ssh/known_hosts 2>/dev/null
+
+          # deploy.sh pulls main, builds into a staging dir, atomically swaps
+          # .output and `pm2 reload`s — the live site never goes down.
+          ssh -i ~/.ssh/deploy_key -p "$PORT" -o IdentitiesOnly=yes \
+            "$DEPLOY_USER@$HOST" \
+            "cd '$APP_DIR' && bash scripts/deploy.sh"
