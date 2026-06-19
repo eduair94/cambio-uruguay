@@ -1,5 +1,5 @@
 <template>
-  <div class="widget" data-testid="widget">
+  <div :class="['widget', themeClass]" data-testid="widget">
     <div class="widget-inner">
       <header class="widget-head">
         <span class="widget-brand">cambio-uruguay.com</span>
@@ -49,6 +49,12 @@ interface OgRate {
 }
 
 const { t } = useI18n()
+const route = useRoute()
+
+// Light/dark theme is chosen by the embedding site via ?theme=light|dark.
+const themeClass = computed(() =>
+  route.query.theme === 'light' ? 'widget--light' : 'widget--dark'
+)
 
 const { data: rate, refresh } = await useFetch<OgRate>('/api/og-rate', {
   key: 'widget-og-rate',
@@ -224,5 +230,47 @@ useSeoMeta({
 .widget-link:hover {
   color: #64b5f6;
   text-decoration: underline;
+}
+
+/* Light theme (?theme=light) — for embedding on light-background sites. */
+.widget--light {
+  background: #f4f6fb;
+}
+
+.widget--light .widget-inner {
+  background: linear-gradient(135deg, #ffffff 0%, #f0f3f9 100%);
+  border-color: rgba(33, 150, 243, 0.25);
+}
+
+.widget--light .widget-brand {
+  color: #1565c0;
+}
+
+.widget--light .widget-badge {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.widget--light .widget-body {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.widget--light .widget-sep {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.widget--light .widget-label {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.widget--light .widget-value {
+  color: #1a1a1a;
+}
+
+.widget--light .widget-value::before {
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.widget--light .widget-link {
+  color: rgba(0, 0, 0, 0.6);
 }
 </style>

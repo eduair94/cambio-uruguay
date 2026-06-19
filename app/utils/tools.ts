@@ -63,6 +63,21 @@ export const tools: readonly Tool[] = [
     ],
   },
   {
+    slug: 'widget-dolar',
+    title: 'Widget del dólar para tu web (gratis)',
+    description:
+      'Agregá gratis la cotización del dólar en Uruguay a tu sitio web o blog. Elegí el tema, copiá el código y listo: se actualiza solo cada 10 minutos.',
+    icon: 'mdi-code-tags',
+    category: 'divisas',
+    keywords: [
+      'widget dólar uruguay',
+      'cotización dólar para mi web',
+      'embeber cotización dólar',
+      'iframe dólar uruguay',
+      'widget cambio uruguay',
+    ],
+  },
+  {
     slug: 'calculadora-spread',
     title: 'Calculadora de spread cambiario',
     description:
