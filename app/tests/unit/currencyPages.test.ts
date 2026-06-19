@@ -200,6 +200,54 @@ describe('quotesForCurrency', () => {
   })
 })
 
+describe('quotesForCurrency — excludes the BCU reference', () => {
+  // The BCU publishes a near-zero-spread reference quote (here typed BILLETE)
+  // that is NOT a casa de cambio. It must never be listed as a house nor win the
+  // "mejor cambio" highlight, otherwise "Dólar billete" (the BCU row) shows as
+  // the best rate even though nobody can transact at it.
+  const withBcu: ExchangeRate[] = [
+    {
+      origin: 'bcu',
+      date: '2026-06-18',
+      type: 'BILLETE',
+      code: 'USD',
+      name: 'BCU',
+      buy: 40.097,
+      sell: 40.097,
+    },
+    {
+      origin: 'itau',
+      date: '2026-06-18',
+      type: '',
+      code: 'USD',
+      name: 'Itaú',
+      buy: 39.5,
+      sell: 41.5,
+    },
+    {
+      origin: 'brou',
+      date: '2026-06-18',
+      type: '',
+      code: 'USD',
+      name: 'BROU',
+      buy: 40.0,
+      sell: 41.0,
+    },
+  ]
+
+  it('never lists the BCU row as a casa quote', () => {
+    const quotes = quotesForCurrency(withBcu, 'USD')
+    expect(quotes.some(q => q.origin === 'bcu')).toBe(false)
+  })
+
+  it('flags a real casa (not BCU) as best buy and best sell', () => {
+    const quotes = quotesForCurrency(withBcu, 'USD')
+    // Without the fix the BCU 40.097 row wins both (lowest sell, highest buy).
+    expect(quotes.find(q => q.bestSell)?.origin).toBe('brou') // 41.0, not bcu 40.097
+    expect(quotes.find(q => q.bestBuy)?.origin).toBe('brou') // 40.0, not bcu 40.097
+  })
+})
+
 describe('ratesForOrigin', () => {
   it('returns one plain/cash row per currency for the casa', () => {
     const rates = ratesForOrigin(rows, 'itau')

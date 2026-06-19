@@ -8,6 +8,7 @@
 // Types come from the shared API contract; imported relatively so this module
 // stays runtime-agnostic.
 import type { ExchangeRate, ExchangeType } from '../types/api'
+import { BCU_ORIGIN } from './rateSource'
 
 /** Supported display locales for currency names. */
 export type CurrencyLang = 'es' | 'en' | 'pt'
@@ -131,6 +132,7 @@ export function quotesForCurrency(
 
   for (const row of rows) {
     if (row.code !== code) continue
+    if (row.origin === BCU_ORIGIN) continue // BCU is a reference, not a casa de cambio
     if (!PLAIN_OR_CASH_TYPES.has(row.type)) continue
     if (byOrigin.has(row.origin)) continue // first plain/cash row per house wins
 

@@ -777,6 +777,7 @@ import {
   parseAmount,
   type RateRow,
 } from '@/utils/conversion'
+import { publicRates } from '@/utils/rateSource'
 
 const { mobile } = useDisplay()
 
@@ -1485,10 +1486,10 @@ const updateQueryParams = () => {
 
 // Apply the shared exchange dataset to the calculator's local state.
 const applyExchangeData = (data: ExchangeItem[]) => {
-  // Drop interbank USD/BRL/ARG rows the calculator shouldn't quote.
-  realExchangeData.value = data.filter(
-    item => !(item.isInterBank && ['USD', 'BRL', 'ARG'].includes(item.code))
-  )
+  // Quote only public-obtainable rates: drop the BCU reference and the
+  // interbank/wholesale types (INTERBANCARIO/PROMED.FONDO/CABLE) for every
+  // currency — nobody can transact at those.
+  realExchangeData.value = publicRates(data)
 
   // Extract available currencies, always including UYU (the base currency).
   const currencies = new Set<string>()

@@ -33,11 +33,11 @@ import { formatUYU } from '~/utils/format'
 import { averageSell } from '~/utils/currencyPages'
 import { computeSavings } from '~/utils/rateStats'
 
-const { rows, bestSell } = useExchangeRates()
+const { realRows, bestSell } = useExchangeRates()
 const amount = ref(1000)
 
 const best = computed(() => bestSell('USD'))
-const avg = computed(() => averageSell(rows.value ?? [], 'USD'))
+const avg = computed(() => averageSell(realRows.value ?? [], 'USD'))
 const savings = computed(() => computeSavings(amount.value || 0, best.value || 0, avg.value || 0))
 </script>
 

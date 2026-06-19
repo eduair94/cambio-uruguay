@@ -1,5 +1,6 @@
 import type { ExchangeRate } from '~/types/api'
 import { quotesForCurrency, type CurrencyCode } from '~/utils/currencyPages'
+import { publicRates } from '~/utils/rateSource'
 
 /**
  * Shared, SSR-friendly access to today's processed exchange rates for the
@@ -24,17 +25,22 @@ export function useExchangeRates() {
     { default: () => [] as ExchangeRate[] }
   )
 
+  // Public-obtainable quotes only: the headline price, the converter and the
+  // tool conversions must never quote the BCU reference or an interbank/wholesale
+  // rate (nobody can transact at those). SEO/casa pages keep using `rows`.
+  const realRows = computed<ExchangeRate[]>(() => publicRates(data.value ?? []))
+
   /** Lowest positive sell price for a currency (best price to BUY it), or null. */
   const bestSell = (code: CurrencyCode): number | null => {
-    const quotes = quotesForCurrency(data.value ?? [], code)
+    const quotes = quotesForCurrency(realRows.value, code)
     return quotes.find(q => q.bestSell)?.sell ?? null
   }
 
   /** Highest positive buy price for a currency (best price to SELL it), or null. */
   const bestBuy = (code: CurrencyCode): number | null => {
-    const quotes = quotesForCurrency(data.value ?? [], code)
+    const quotes = quotesForCurrency(realRows.value, code)
     return quotes.find(q => q.bestBuy)?.buy ?? null
   }
 
-  return { rows: data, pending, error, refresh, bestSell, bestBuy }
+  return { rows: data, realRows, pending, error, refresh, bestSell, bestBuy }
 }

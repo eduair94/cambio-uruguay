@@ -53,9 +53,7 @@
           <div class="text-h5 font-weight-bold text-success">
             {{ totalUyu ? formatUYU(totalUyu) : '—' }}
           </div>
-          <div v-if="rate" class="text-caption text-grey-lighten-1">
-            Dólar a {{ formatUYU(rate) }} (mejor venta)
-          </div>
+          <UyuEquivalent :usd="totalUsd" :show-amount="false" />
         </div>
       </div>
     </VCard>

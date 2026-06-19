@@ -237,9 +237,7 @@
           <div class="text-h5 font-weight-bold text-success">
             {{ formatUSD(result.landedCost) }}
           </div>
-          <div v-if="landedUyu" class="text-caption text-grey-lighten-1">
-            ≈ {{ formatUYU(landedUyu) }}
-          </div>
+          <UyuEquivalent :usd="result.landedCost" />
         </div>
         <div class="result-box">
           <div class="text-overline text-grey">Carga sobre el valor</div>
@@ -313,7 +311,7 @@
 import { computed, ref, watch } from 'vue'
 import { courierImport, generalImport } from '~/utils/importTax'
 import { ESTIMATOR_COURIERS, shippingCostUsd, type Courier } from '~/utils/courierShipping'
-import { formatUSD, formatUYU } from '~/utils/format'
+import { formatUSD } from '~/utils/format'
 
 const regime = ref<'courier' | 'general'>('courier')
 const origin = ref<'usa' | 'other'>('usa')
@@ -382,8 +380,6 @@ const sources = [
   { label: 'DGI — IVA e impuestos', url: 'https://www.dgi.gub.uy' },
 ]
 
-const { bestSell } = useExchangeRates()
-
 const result = computed(() =>
   regime.value === 'courier'
     ? courierImport({
@@ -402,11 +398,6 @@ const result = computed(() =>
         ivaPct: ivaPct.value || 0,
       })
 )
-
-const landedUyu = computed(() => {
-  const rate = bestSell('USD')
-  return rate ? result.value.landedCost * rate : null
-})
 
 // Make explicit that, for courier shipments with freight, the total already includes it.
 const totalRowLabel = computed(() =>
