@@ -54,9 +54,12 @@
     <VCard class="couriers-card pa-4 pa-sm-6">
       <h2 class="text-h6 font-weight-bold mb-1">Comparativa de couriers (puerta a puerta)</h2>
       <p class="text-caption text-grey-lighten-1 mb-4">
-        Los couriers cobran por escalas de peso; el valor por kg es la escala de paquete chico,
-        verificada en junio de 2026. Donde figura «Consultar», el courier cotiza desde su propio
-        sitio. Mirá las notas y el sitio oficial para el detalle por tramo.
+        Los couriers cobran por escalas de peso; el valor por kg es la escala de paquete chico.
+        Donde figura «Consultar», el courier cotiza desde su propio sitio. Mirá las notas y el sitio
+        oficial para el detalle por tramo.
+        <template v-if="updatedLabel">
+          <br /><strong>Tarifas actualizadas automáticamente el {{ updatedLabel }}.</strong>
+        </template>
       </p>
 
       <!-- Desktop: table -->
@@ -187,11 +190,32 @@
 </template>
 
 <script setup lang="ts">
-import { COURIERS } from '~/utils/courierShipping'
+import { COURIERS, type Courier } from '~/utils/courierShipping'
 
 const localePath = useLocalePath()
 
-const couriers = COURIERS
+// Live data: the catalogue with daily-scraped rates layered on top. Falls back to the static
+// seed (and SSRs from it) so the page renders even before the first scrape.
+type ApiCourier = Courier & { scrapedAt?: string }
+const { data: couriersData } = await useFetch<{ couriers: ApiCourier[]; updatedAt: string | null }>(
+  '/api/couriers',
+  { default: () => ({ couriers: COURIERS as ApiCourier[], updatedAt: null }) }
+)
+const couriers = computed<ApiCourier[]>(
+  () => couriersData.value?.couriers ?? (COURIERS as ApiCourier[])
+)
+const updatedAt = computed(() => couriersData.value?.updatedAt ?? null)
+
+/** Human date (es-UY) for the "actualizado" label. */
+const updatedLabel = computed(() =>
+  updatedAt.value
+    ? new Date(updatedAt.value).toLocaleDateString('es-UY', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })
+    : null
+)
 
 /** Format a USD amount with Uruguayan locale (comma decimals, no trailing zeros). */
 function fmt(n: number): string {
@@ -277,7 +301,7 @@ useSeoMeta({
   twitterDescription: description,
 })
 
-useHead({
+useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl }],
   meta: [
     {
@@ -295,7 +319,7 @@ useHead({
           {
             '@type': 'ItemList',
             name: 'Couriers puerta a puerta en Uruguay',
-            itemListElement: couriers.map((c, i) => ({
+            itemListElement: couriers.value.map((c, i) => ({
               '@type': 'ListItem',
               position: i + 1,
               name: c.name,
@@ -318,7 +342,7 @@ useHead({
       }),
     },
   ],
-})
+}))
 </script>
 
 <style scoped>

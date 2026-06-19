@@ -115,12 +115,13 @@ export const COURIERS: Courier[] = [
   {
     id: 'usxcargo',
     name: 'USX Cargo',
-    perKgUsd: null,
-    baseUsd: null,
+    perKgUsd: 17.5,
+    baseUsd: 0,
     modality: 'Casillero en Miami y Europa',
+    transit: '9–15 días',
     website: 'https://usxcargo.com',
     source: 'https://usxcargo.com',
-    note: 'Envíos desde EE.UU. y Europa; tarifa según su propia calculadora',
+    note: 'Desde EE.UU. US$17,5/kg; desde Europa US$21,5/kg; envío al interior ~US$7,5',
   },
   {
     id: 'miami-box',

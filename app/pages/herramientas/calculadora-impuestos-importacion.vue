@@ -312,7 +312,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { courierImport, generalImport } from '~/utils/importTax'
-import { ESTIMATOR_COURIERS, getCourier, shippingCostUsd } from '~/utils/courierShipping'
+import { ESTIMATOR_COURIERS, shippingCostUsd, type Courier } from '~/utils/courierShipping'
 import { formatUSD, formatUYU } from '~/utils/format'
 
 const regime = ref<'courier' | 'general'>('courier')
@@ -327,22 +327,33 @@ const tasaConsularPct = ref(5)
 const ivaPct = ref(22)
 
 // Courier shipping-by-weight — only couriers with a published flat per-kg are offered here.
+// Rates come from /api/couriers (daily-scraped, freshest), falling back to the static seed.
+const { data: couriersData } = await useFetch<{ couriers: Courier[] }>('/api/couriers', {
+  default: () => ({ couriers: ESTIMATOR_COURIERS as Courier[] }),
+})
+const courierItems = computed<Courier[]>(() => {
+  const withRate = (couriersData.value?.couriers ?? []).filter(c => c.perKgUsd != null)
+  return withRate.length ? withRate : ESTIMATOR_COURIERS
+})
+function courierById(id: string): Courier {
+  return courierItems.value.find(c => c.id === id) ?? courierItems.value[0]!
+}
+
 const shipByWeight = ref(false)
 const courierId = ref(ESTIMATOR_COURIERS[0]!.id)
 const weightKg = ref(1)
 const perKgUsd = ref<number>(ESTIMATOR_COURIERS[0]!.perKgUsd ?? 0)
-const courierItems = ESTIMATOR_COURIERS
 
-// When the courier changes, pre-fill its reference per-kg rate.
-watch(courierId, id => {
-  const rate = getCourier(id).perKgUsd
+// Pre-fill the per-kg rate when the courier changes, or when fresh rates arrive from the API.
+watch([courierId, courierItems], () => {
+  const rate = courierById(courierId.value).perKgUsd
   if (rate != null) perKgUsd.value = rate
 })
 
 const computedShipping = computed(() =>
   shippingCostUsd(
     perKgUsd.value || 0,
-    getCourier(courierId.value).baseUsd ?? 0,
+    courierById(courierId.value).baseUsd ?? 0,
     weightKg.value || 0
   )
 )

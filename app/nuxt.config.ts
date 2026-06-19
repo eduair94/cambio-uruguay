@@ -238,6 +238,11 @@ export default defineNuxtConfig({
         driver: 'fs',
         base: './.data/blog',
       },
+      // Durable store for daily-scraped courier per-kg rates (keeps last good value).
+      couriers: {
+        driver: 'fs',
+        base: './.data/couriers',
+      },
     },
     experimental: {
       wasm: true,
@@ -252,6 +257,8 @@ export default defineNuxtConfig({
       '*/10 * * * *': ['alerts:check'],
       // 11:00 UTC = 08:00 Uruguay: personalized Telegram summary for linked users.
       '0 11 * * *': ['telegram:summary'],
+      // 08:15 UTC ≈ 05:15 Uruguay: refresh courier per-kg shipping rates.
+      '15 8 * * *': ['couriers:scrape'],
     },
   },
 
