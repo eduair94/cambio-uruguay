@@ -5,15 +5,28 @@ import { computeMomentum, computeRecords, type Momentum, type Records } from '~/
 export function useDollarTrend() {
   const { getEvolutionData } = useApiService()
 
-  const { data, pending } = useLazyAsyncData(
+  const { data, pending, execute } = useLazyAsyncData(
     'dollar-trend-bcu-usd',
     async () => {
-      const res = await getEvolutionData('bcu', 'USD', undefined, 6)
+      // BILLETE (cash USD) gives exactly one quote per day; the untyped feed
+      // returns several types per date, which made the day-over-day momentum and
+      // sparkline compare same-day quotes instead of consecutive days.
+      const res = await getEvolutionData('bcu', 'USD', 'BILLETE', 6)
       const series = toSeries((res?.data as any)?.evolution)
       return series
     },
     { default: () => [] }
   )
+
+  // useLazyAsyncData does not auto-run when first registered after hydration —
+  // e.g. inside <ClientOnly> on the home page — so the handler never fired and
+  // the trend stayed empty. Kick it off on mount when no data has loaded yet,
+  // which is a no-op on the trend pages where the auto path already ran.
+  if (import.meta.client) {
+    onMounted(() => {
+      if (!data.value?.length) execute()
+    })
+  }
 
   const momentum = computed<Momentum>(() => computeMomentum(data.value ?? []))
   const records = computed<Records>(() => computeRecords(data.value ?? []))
