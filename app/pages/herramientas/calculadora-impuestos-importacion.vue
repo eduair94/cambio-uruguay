@@ -563,6 +563,9 @@ const sources = [
     url: 'https://www.aduanas.gub.uy/innovaportal/v/25107/3/innova.front/que-mercaderia-no-puedo-traer-bajo-el-regimen-de-encomiendas-postales-internacionales.html',
   },
   { label: 'VUCE / URSEC — Homologación de equipos de radiofrecuencia', url: 'https://vuce.gub.uy' },
+  { label: 'MSP — Medicamentos, suplementos, cosméticos y productos médicos', url: 'https://www.gub.uy/ministerio-salud-publica/' },
+  { label: 'MGAP — Plantas, semillas, fertilizantes y alimentos', url: 'https://www.gub.uy/ministerio-ganaderia-agricultura-pesca/' },
+  { label: 'Ejército — Servicio de Material y Armamento (armas y réplicas)', url: 'https://www.ejercito.mil.uy' },
   { label: 'DGI — IVA e impuestos', url: 'https://www.dgi.gub.uy' },
 ]
 
