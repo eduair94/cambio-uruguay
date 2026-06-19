@@ -246,6 +246,56 @@ useSeoMeta({
         })
       : t('seo.sucursalesDescription', { origin: exchangeHouseName.value })
   },
+  ogImageAlt: () => t('seo.sucursalesTitle', { origin: exchangeHouseName.value }),
+  twitterCard: 'summary_large_image',
+  twitterImageAlt: () => t('seo.sucursalesTitle', { origin: exchangeHouseName.value }),
+})
+
+// Branded, copyright-free OG image generated server-side (page had no image).
+defineOgImageComponent('Cambio', {
+  title: () => t('seo.sucursalesTitle', { origin: exchangeHouseName.value }),
+  subtitle: () => (location ? String(location) : ''),
+  tag: 'Sucursales',
+  locale: locale.value as 'es' | 'en' | 'pt',
+})
+
+// BreadcrumbList: Inicio > Sucursales > casa (> localidad).
+useHead(() => {
+  const items = [
+    { '@type': 'ListItem', position: 1, name: t('inicio'), item: 'https://cambio-uruguay.com/' },
+    {
+      '@type': 'ListItem',
+      position: 2,
+      name: t('sucursalesMenu'),
+      item: 'https://cambio-uruguay.com/sucursales',
+    },
+    {
+      '@type': 'ListItem',
+      position: 3,
+      name: exchangeHouseName.value,
+      item: `https://cambio-uruguay.com/sucursales/${origin}`,
+    },
+  ]
+  if (location) {
+    items.push({
+      '@type': 'ListItem',
+      position: 4,
+      name: String(location),
+      item: `https://cambio-uruguay.com/sucursales/${origin}/${location}`,
+    })
+  }
+  return {
+    script: [
+      {
+        type: 'application/ld+json',
+        innerHTML: JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          itemListElement: items,
+        }),
+      },
+    ],
+  }
 })
 </script>
 

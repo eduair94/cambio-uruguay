@@ -950,6 +950,41 @@ useHead(() => ({
         ],
       }),
     },
+    {
+      // Dataset schema for the historical time series → Google Dataset Search /
+      // dataset rich results. Describes the buy/sell series without depending on
+      // the (lazy) fetched numbers; temporalCoverage is added only when loaded.
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'Dataset',
+        name: t('seo.historicalDetailTitle', {
+          origin: exchangeHouseName.value,
+          currency: currencyName.value,
+        }),
+        description: t('seo.historicalDetailDescription', {
+          origin: exchangeHouseName.value,
+          currency: currencyName.value,
+        }),
+        url: historicalCanonical.value,
+        isAccessibleForFree: true,
+        creator: {
+          '@type': 'Organization',
+          name: 'Cambio Uruguay',
+          url: 'https://cambio-uruguay.com',
+        },
+        keywords: [currencyName.value, exchangeHouseName.value, 'cotización', 'Uruguay', 'BCU'],
+        variableMeasured: [
+          { '@type': 'PropertyValue', name: t('compra'), unitText: 'UYU' },
+          { '@type': 'PropertyValue', name: t('venta'), unitText: 'UYU' },
+        ],
+        ...(tableData.value.length
+          ? {
+              temporalCoverage: `${String(tableData.value[tableData.value.length - 1].date).slice(0, 10)}/${String(tableData.value[0].date).slice(0, 10)}`,
+            }
+          : {}),
+      }),
+    },
   ],
 }))
 </script>

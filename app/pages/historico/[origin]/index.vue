@@ -516,7 +516,7 @@ const updateQueryParams = () => {
 }
 
 // Composables
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 // Watchers
 watch(selectedCurrency, updateQueryParams)
@@ -546,7 +546,49 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
   twitterTitle: () => t('seo.historicalOriginTitle', { origin: originName.value }),
   twitterDescription: () => t('seo.historicalOriginDescription', { origin: originName.value }),
+  ogImageAlt: () => t('seo.historicalOriginTitle', { origin: originName.value }),
+  twitterImageAlt: () => t('seo.historicalOriginTitle', { origin: originName.value }),
 })
+
+// Branded, copyright-free OG image generated server-side (page had no image).
+defineOgImageComponent('Cambio', {
+  title: () => t('seo.historicalOriginTitle', { origin: originName.value }),
+  tag: () => t('historico'),
+  locale: locale.value as 'es' | 'en' | 'pt',
+})
+
+// BreadcrumbList: Inicio > Histórico > casa.
+useHead(() => ({
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: t('inicio'),
+            item: 'https://cambio-uruguay.com/',
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: t('historico'),
+            item: 'https://cambio-uruguay.com/historico',
+          },
+          {
+            '@type': 'ListItem',
+            position: 3,
+            name: originName.value,
+            item: `https://cambio-uruguay.com/historico/${route.params.origin}`,
+          },
+        ],
+      }),
+    },
+  ],
+}))
 </script>
 
 <style scoped>
