@@ -15,6 +15,15 @@ describe("TelegramPublisher", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it("throws when the channel post returns a non-2xx status", async () => {
+    const fetchMock = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ ok: false, error_code: 400, description: "MESSAGE_TOO_LONG" }), { status: 400 })
+    );
+    const p = new TelegramPublisher(cfg, { fetchImpl: fetchMock as unknown as typeof fetch, delayMs: 0 });
+    await expect(p.postChannel("x")).rejects.toThrow(/400/);
+  });
+
   it("deactivates recipients that return 403 and counts the rest", async () => {
     const fetchMock = vi.fn(async (_url: string, init?: RequestInit) => {
       const body = JSON.parse((init?.body as string) ?? "{}");

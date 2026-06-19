@@ -43,9 +43,14 @@ export class TelegramPublisher {
     return `https://api.telegram.org/bot${this.cfg.token}/${method}`;
   }
 
-  /** Post to the configured channel; sends a photo with caption when imageUrl is given. */
+  /** Post to the configured channel; sends a photo with caption when imageUrl is given.
+   * Throws on non-2xx so the caller logs a real failure instead of a false success
+   * (e.g. a caption that exceeds Telegram's limit returns 400, not an exception). */
   async postChannel(text: string, opts: { imageUrl?: string } = {}): Promise<void> {
-    await this.send(this.cfg.channelId, text, opts);
+    const status = await this.send(this.cfg.channelId, text, opts);
+    if (status < 200 || status >= 300) {
+      throw new Error(`telegram channel post failed: HTTP ${status}`);
+    }
   }
 
   /** Send one message; returns the HTTP status so callers can detect 403 (blocked). */

@@ -5,6 +5,7 @@ import {
   formatAlert,
   formatBest,
   formatConvert,
+  formatDailyTelegram,
   formatDailyTwitter,
   formatNews,
   formatRates,
@@ -77,6 +78,60 @@ describe("formatNews", () => {
   it("lists headlines", () => {
     const items: NewsItem[] = [{ title: "Titular uno", link: "https://a", source: "S", pubDate: "", snippet: "" }];
     expect(formatNews(items, "es")).toContain("Titular uno");
+  });
+});
+
+describe("formatDailyTelegram", () => {
+  // The live /ai/insights summary is a long multi-section markdown report.
+  const longAi =
+    "#### 1. Resumen del mercado\n" +
+    "**Comprar USD**: BROU. ".repeat(200) +
+    "\n| Moneda | Spread |\n| --- | --- |\n| USD | 2.04 |\n" +
+    "⚠️ *Esta respuesta fue truncada por límites del modelo.*";
+
+  it("caps the body at the 1024 Telegram photo-caption limit by default", () => {
+    const out = formatDailyTelegram(daily, longAi, "es");
+    expect(out.length).toBeLessThanOrEqual(1024);
+  });
+
+  it("strips markdown that breaks Telegram legacy parse_mode from the AI block", () => {
+    const out = formatDailyTelegram(daily, "#### Head\n**bold** text\n⚠️ truncada", "es");
+    expect(out).not.toContain("####");
+    expect(out).not.toContain("**");
+    expect(out).not.toContain("⚠️");
+    // The report's own template markdown stays.
+    expect(out).toContain("📊");
+    expect(out).toContain("https://cambio-uruguay.com");
+  });
+
+  it("respects a custom max length, fitting more of the summary", () => {
+    const wide = formatDailyTelegram(daily, longAi, "es", 4096);
+    expect(wide.length).toBeLessThanOrEqual(4096);
+    expect(wide.length).toBeGreaterThan(1024);
+  });
+
+  it("keeps the AI summary even when news links are long (summary > news)", () => {
+    const longLink = "https://news.google.com/rss/articles/" + "A".repeat(600);
+    const heavyNews: DailyReportData = {
+      ...daily,
+      news: [
+        { title: "Dólar hoy", link: longLink, source: "Infobae", pubDate: "", snippet: "" },
+        { title: "Euro hoy", link: longLink, source: "El Observador", pubDate: "", snippet: "" },
+        { title: "Real hoy", link: longLink, source: "El País", pubDate: "", snippet: "" },
+      ],
+    };
+    const out = formatDailyTelegram(heavyNews, "Resumen breve del mercado de hoy.", "es");
+    expect(out.length).toBeLessThanOrEqual(1024);
+    expect(out).toContain("Resumen breve del mercado de hoy.");
+    // Long RSS tracking URLs must not eat the caption budget.
+    expect(out).not.toContain("news.google.com");
+  });
+
+  it("still ships head + news + footer when the AI summary is empty", () => {
+    const out = formatDailyTelegram(daily, "", "es");
+    expect(out).toContain("USD");
+    expect(out).toContain("Dólar sube");
+    expect(out).toContain("https://cambio-uruguay.com");
   });
 });
 
