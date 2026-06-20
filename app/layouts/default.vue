@@ -101,6 +101,20 @@
           <VListItemTitle>Convertir</VListItemTitle>
         </VListItem>
 
+        <VListItem :to="localePath('/cotizacion')" @click="drawer = false">
+          <template #prepend>
+            <VIcon>mdi-cash-multiple</VIcon>
+          </template>
+          <VListItemTitle>Cotizaciones</VListItemTitle>
+        </VListItem>
+
+        <VListItem :to="localePath('/indicadores')" @click="drawer = false">
+          <template #prepend>
+            <VIcon>mdi-finance</VIcon>
+          </template>
+          <VListItemTitle>Indicadores</VListItemTitle>
+        </VListItem>
+
         <VListItem :to="localePath('/blog')" @click="drawer = false">
           <template #prepend>
             <VIcon>mdi-newspaper-variant-multiple</VIcon>
@@ -340,6 +354,8 @@ const moreNav: NavItem[] = [
   { to: '/herramientas', icon: 'mdi-tools', label: 'Herramientas', raw: true },
   { to: '/glosario', icon: 'mdi-book-alphabet', label: 'Glosario', raw: true },
   { to: '/convertir', icon: 'mdi-cash-sync', label: 'Convertir', raw: true },
+  { to: '/cotizacion', icon: 'mdi-cash-multiple', label: 'Cotizaciones', raw: true },
+  { to: '/indicadores', icon: 'mdi-finance', label: 'Indicadores', raw: true },
   { to: '/blog', icon: 'mdi-newspaper-variant-multiple', label: 'Blog', raw: true },
   { to: '/acerca', icon: 'mdi-information-outline', label: 'acerca.nav' },
   { to: '/conectar', icon: 'mdi-connection', label: 'conectar.nav' },

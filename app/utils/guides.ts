@@ -18,6 +18,14 @@ export interface GuideSection {
   body: string
 }
 
+/** A related internal link rendered at the foot of a guide. */
+export interface GuideLink {
+  /** Visible chip label. */
+  label: string
+  /** App-relative path (passed through `localePath`). */
+  to: string
+}
+
 /** A complete editorial guide, addressable at `/guias/{slug}`. */
 export interface Guide {
   /** URL-safe identifier, unique across {@link guides} (e.g. `'comprar-dolares-mejor-precio'`). */
@@ -32,6 +40,8 @@ export interface Guide {
   updatedAt: string
   /** Ordered body sections. */
   sections: GuideSection[]
+  /** Optional guide-specific related links, shown in addition to the defaults. */
+  related?: GuideLink[]
 }
 
 /**
@@ -595,6 +605,112 @@ export const guides: readonly Guide[] = [
         heading: 'Compará igual que con el efectivo',
         body: 'Operar online no te exime de comparar. Mirá la cotización de tu banco o plataforma frente a la de las casas de cambio relevadas en Cambio Uruguay para tu tipo de operación. Para montos altos, la diferencia puede ser significativa, así que vale la pena revisar antes de confirmar.',
       },
+    ],
+  },
+  {
+    slug: 'precio-del-oro-en-uruguay',
+    title: 'Precio del oro en Uruguay: cómo se cotiza y dónde comprarlo o venderlo',
+    description:
+      'Cómo se forma el precio del oro en Uruguay, qué es la onza troy, cómo pasar el valor a gramos según los quilates y dónde comparar para comprar o vender al mejor precio.',
+    tag: 'ORO',
+    updatedAt: '2026-06-20',
+    sections: [
+      {
+        heading: 'El oro se cotiza por onza troy, no por gramo',
+        body: 'A diferencia del dólar o el euro, el oro no se mide por unidad sino por peso, y la referencia internacional es la onza troy: 31,1035 gramos de oro puro. Cuando ves un precio del oro, casi siempre es el valor de una onza troy de oro 24 quilates (oro puro). Para saber cuánto vale un gramo, hay que dividir ese precio entre 31,1035; y para joyería de 18k o 14k, ajustar además por la pureza.',
+      },
+      {
+        heading: 'De la onza al gramo y por quilates',
+        body: 'El oro 24k es oro puro. El 18k tiene un 75% de oro (18/24) y el 14k aproximadamente un 58% (14/24). Por eso un gramo de oro 18k vale alrededor de tres cuartas partes de un gramo de 24k, y el 14k bastante menos. Si vas a vender una cadena o un anillo, te conviene saber sus quilates: el precio que te paguen va a partir del valor del gramo puro ajustado por esa pureza, menos el margen de quien compra.',
+      },
+      {
+        heading: 'Qué mueve el precio del oro',
+        body: 'El precio del oro en pesos uruguayos depende de dos cosas: la cotización internacional del oro (en dólares por onza) y el tipo de cambio del dólar en Uruguay. Cuando sube el dólar o sube el oro en el mundo, sube el precio en pesos. El oro suele fortalecerse en momentos de incertidumbre económica o inflación alta, por eso se lo considera un activo de refugio.',
+      },
+      {
+        heading: 'Dónde comprar o vender oro en Uruguay',
+        body: 'En Uruguay, el Banco República y algunas casas de cambio publican precios de compra y venta del oro. Como en cualquier operación cambiaria, hay un spread entre lo que te pagan al vender y lo que te cobran al comprar, y ese margen varía de un lugar a otro. Para joyería usada, además, el comprador descuenta su costo de fundición y refinado. Comparar antes de operar es la única forma de no dejar dinero sobre la mesa.',
+      },
+      {
+        heading: 'Cómo usar Cambio Uruguay para el oro',
+        body: 'En la página de cotización del oro mostramos el precio de compra y venta por onza troy de las casas que lo publican, actualizado automáticamente, y calculamos el valor aproximado por gramo en 24k, 18k y 14k a partir del mejor precio disponible. Es un punto de partida para estimar cuánto podrías pagar o recibir, siempre teniendo en cuenta que el precio final lo define cada casa según la forma y pureza del oro.',
+      },
+    ],
+    related: [
+      { label: 'Cotización del oro hoy', to: '/cotizacion/oro' },
+      { label: 'Cotización del dólar', to: '/cotizacion/dolar' },
+      { label: 'Proteger ahorros de la inflación', to: '/guias/proteger-ahorros-de-la-inflacion' },
+    ],
+  },
+  {
+    slug: 'ui-ur-bpc-diferencias',
+    title: 'UI, UR y BPC: qué son y en qué se diferencian',
+    description:
+      'Qué es la Unidad Indexada (UI), la Unidad Reajustable (UR) y la Base de Prestaciones y Contribuciones (BPC), cómo se ajusta cada una y para qué se usan en Uruguay.',
+    tag: 'INDICADORES',
+    updatedAt: '2026-06-20',
+    sections: [
+      {
+        heading: 'Tres unidades que no son lo mismo',
+        body: 'En Uruguay conviven varias unidades de valor que se usan para expresar montos en contratos, impuestos y prestaciones. Las tres más comunes son la Unidad Indexada (UI), la Unidad Reajustable (UR) y la Base de Prestaciones y Contribuciones (BPC). Se parecen en que ninguna es dinero contante, sino una referencia que se convierte a pesos, pero se ajustan por motivos distintos y conviene no confundirlas.',
+      },
+      {
+        heading: 'La UI sigue a la inflación, todos los días',
+        body: 'La Unidad Indexada se ajusta a diario según el Índice de Precios al Consumo (IPC), es decir, según la inflación. Su objetivo es mantener el poder de compra: un monto en UI conserva su valor real aunque pasen los años. Por eso se usa mucho en alquileres ajustados por inflación, préstamos hipotecarios, depósitos y contratos de largo plazo.',
+      },
+      {
+        heading: 'La UR sigue a los salarios, mes a mes',
+        body: 'La Unidad Reajustable se ajusta una vez al mes según el Índice Medio de Salarios. A diferencia de la UI, que sigue a los precios, la UR sigue a la evolución de los sueldos. Se utiliza sobre todo en alquileres con ajuste anual y en préstamos del Banco Hipotecario (BHU), donde interesa acompañar la capacidad de pago de las personas.',
+      },
+      {
+        heading: 'La BPC es un valor anual del Estado',
+        body: 'La Base de Prestaciones y Contribuciones se fija una vez al año, con vigencia desde el 1° de enero, por decreto. Se usa como unidad de referencia en tributos, multas, prestaciones sociales y, muy especialmente, en las franjas del IRPF, que se expresan en cantidades de BPC. Al actualizarse el valor cada año, esos montos se ajustan automáticamente sin necesidad de reescribir cada norma.',
+      },
+      {
+        heading: 'Cómo convertirlas a pesos',
+        body: 'Convertir cualquiera de estas unidades a pesos es una multiplicación: cantidad por el valor vigente de la unidad. La UI y la UR cambian seguido, así que conviene tomar el valor del día; la BPC se mantiene todo el año. En Cambio Uruguay publicamos el valor actualizado de la UI y la UR tomado del Banco Central, junto con la BPC vigente, y un conversor para pasar cualquier cantidad a pesos en segundos.',
+      },
+    ],
+    related: [
+      { label: 'Valor de la UI hoy', to: '/indicadores/unidad-indexada' },
+      { label: 'Valor de la UR hoy', to: '/indicadores/unidad-reajustable' },
+      { label: 'Valor de la BPC', to: '/indicadores/bpc' },
+    ],
+  },
+  {
+    slug: 'cambiar-monedas-poco-comunes-uruguay',
+    title: 'Cómo cambiar monedas menos comunes en Uruguay (libra, yen, franco y más)',
+    description:
+      'Dónde y cómo cambiar monedas menos habituales en Uruguay como el yen, el franco suizo, el guaraní o el peso chileno: qué casas las cotizan y cómo comparar el precio.',
+    tag: 'MONEDAS',
+    updatedAt: '2026-06-20',
+    sections: [
+      {
+        heading: 'No solo de dólares vive el cambio',
+        body: 'El dólar, el euro, el real y el peso argentino concentran la mayoría de las operaciones en Uruguay, pero no son las únicas monedas que se pueden cambiar. Para viajes, estudios, negocios o herencias también aparece la necesidad de operar yenes, francos suizos, guaraníes, pesos chilenos o dólares canadienses, entre otras. La oferta es más acotada, así que saber dónde buscar marca la diferencia.',
+      },
+      {
+        heading: 'Por qué hay menos oferta y más spread',
+        body: 'Cuanto menos se opera una moneda, menos casas la cotizan y mayor suele ser el spread entre compra y venta. Es lógico: manejar una divisa con poca demanda implica más costo y riesgo para la casa de cambio. Por eso, con monedas poco comunes conviene comparar especialmente bien y, si el monto es importante, llamar antes para confirmar disponibilidad de efectivo.',
+      },
+      {
+        heading: 'Monedas de la región: guaraní y peso chileno',
+        body: 'El guaraní paraguayo y el peso chileno tienen demanda sobre todo por turismo y comercio de frontera. Ambos tienen un valor unitario bajo frente al peso uruguayo, así que sus cotizaciones se expresan con varios decimales y conviene mirarlas con atención al cambiar montos grandes. Cerca de la frontera suele haber más oferta que en el resto del país.',
+      },
+      {
+        heading: 'Monedas internacionales: yen, franco y dólares de otros países',
+        body: 'El yen japonés, el franco suizo, el dólar canadiense y el dólar australiano aparecen sobre todo por viajes, estudios o inmigración. El franco suizo, además, es visto como moneda refugio. No todas las casas las ofrecen, pero algunas plazas grandes sí; revisar dónde están disponibles evita recorrer la ciudad sin éxito.',
+      },
+      {
+        heading: 'Compará antes de operar',
+        body: 'Para cada una de estas monedas, en Cambio Uruguay podés ver qué casas de cambio la cotizan y a qué precio de compra y venta, actualizado automáticamente. Aunque haya pocas opciones, comparar te dice rápido dónde te conviene operar y te evita aceptar el primer precio que encontrás, que no siempre es el mejor.',
+      },
+    ],
+    related: [
+      { label: 'Todas las cotizaciones', to: '/cotizacion' },
+      { label: 'Cotización del yen', to: '/cotizacion/yen' },
+      { label: 'Cotización del franco suizo', to: '/cotizacion/franco-suizo' },
+      { label: 'Cotización del guaraní', to: '/cotizacion/guarani' },
     ],
   },
 ] as const

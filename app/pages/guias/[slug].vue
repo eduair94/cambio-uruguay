@@ -82,6 +82,18 @@
                 <VIcon start size="small">mdi-map-marker</VIcon>
                 {{ t('guias.linkMontevideo') }}
               </VChip>
+              <VChip
+                v-for="link in guide.related ?? []"
+                :key="link.to"
+                :to="localePath(link.to)"
+                color="primary"
+                variant="tonal"
+                size="small"
+                link
+              >
+                <VIcon start size="small">mdi-link-variant</VIcon>
+                {{ link.label }}
+              </VChip>
             </div>
           </VCard>
         </VCol>
