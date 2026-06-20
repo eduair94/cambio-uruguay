@@ -95,7 +95,9 @@ export const glossary: readonly GlossaryTerm[] = [
     category: 'cambio',
     short:
       'El dólar transferencia es la cotización que aplica cuando los dólares se mueven electrónicamente entre cuentas, sin billetes de por medio.',
-    body: 'Al no haber manejo de efectivo, la transferencia suele ofrecer condiciones más afinadas que el billete. Es la modalidad típica para quien opera montos medianos o altos y prefiere no trasladar dinero físico. Acreditás o debitás dólares de una cuenta bancaria, y por eso el precio refleja menos costos operativos de seguridad y logística.',
+    body: 'La cotización transferencia aplica cuando los dólares se mueven de forma electrónica entre cuentas bancarias, sin billetes de por medio: acreditás o debitás dólares de una cuenta. Al no haber manejo de efectivo, suele ofrecer condiciones más afinadas que el dólar billete, porque la casa de cambio o el banco se ahorra los costos de seguridad y logística del dinero físico. Es la modalidad típica para quien opera montos medianos o altos y prefiere no trasladar efectivo. Conviene compararla entre casas igual que el billete, porque el precio de transferencia también varía de un lugar a otro.',
+    example:
+      'Si vendés dólares acreditados en tu caja de ahorro para recibir pesos, te aplica el precio de transferencia, no el de billete.',
     related: ['dolar-billete', 'dolar-cable', 'dolar-ebrou'],
   },
   {
@@ -104,7 +106,7 @@ export const glossary: readonly GlossaryTerm[] = [
     category: 'cambio',
     short:
       'El dólar cable es la cotización de los dólares transferidos hacia o desde el exterior; aplica a operaciones internacionales.',
-    body: 'El nombre es histórico, de cuando las transferencias se cursaban "por cable". Hoy designa los fondos que entran o salen del sistema financiero uruguayo hacia otro país. Por los costos y tiempos de las operaciones transfronterizas, su precio puede diferir del dólar local. Es la cotización relevante cuando enviás o recibís dinero de afuera.',
+    body: 'La cotización cable corresponde a los dólares que se transfieren hacia o desde el exterior, es decir fondos que entran o salen del sistema financiero uruguayo hacia otro país. El nombre es histórico, de cuando las transferencias internacionales se cursaban "por cable". Por los costos y los tiempos de las operaciones transfronterizas, su precio puede diferir del dólar local (billete o transferencia). Es la cotización relevante cuando enviás dinero al exterior o recibís una transferencia de afuera, como una remesa o el pago de un cliente del extranjero. Antes de operar conviene mirar tanto el precio cable como las comisiones del banco, porque ambas cosas afectan cuántos pesos recibís o cuánto te cuesta enviar.',
     related: ['dolar-transferencia', 'remesa', 'transferencia-internacional'],
   },
   {
@@ -113,7 +115,7 @@ export const glossary: readonly GlossaryTerm[] = [
     category: 'cambio',
     short:
       'El dólar interbancario es la cotización mayorista a la que operan los bancos entre sí; es una referencia de mercado, no un precio para el público.',
-    body: 'Refleja hacia dónde se mueve el dólar en el corazón del mercado y es muy útil como termómetro, pero no es un precio al que una persona pueda comprar o vender. Para tus operaciones reales tenés que mirar el dólar billete, transferencia o cable según el caso. Los comparadores muestran el interbancario solo como contexto.',
+    body: 'El dólar interbancario es la cotización mayorista a la que los bancos compran y venden dólares entre sí en el mercado de cambios. Refleja hacia dónde se mueve el dólar en el corazón del mercado y por eso es un excelente termómetro de la tendencia, pero no es un precio al que una persona pueda comprar o vender: es exclusivo entre bancos. Para tus operaciones reales tenés que mirar el dólar billete, transferencia, cable o eBROU según el caso. Los comparadores y los medios muestran el interbancario solo como referencia de contexto. Por ejemplo, si el interbancario sube, es esperable que también suban los precios al público, aunque con un margen (spread) por encima.',
     related: ['tipo-de-cambio', 'dolar-billete', 'bcu'],
   },
   {
@@ -122,7 +124,7 @@ export const glossary: readonly GlossaryTerm[] = [
     category: 'cambio',
     short:
       'El dólar eBROU es la cotización para operar dólares a través de la plataforma digital del Banco República (BROU).',
-    body: 'Suele ofrecer condiciones competitivas para quienes tienen cuenta y operan en línea, evitando ir a una sucursal. Para usar esta modalidad normalmente necesitás una cuenta habilitada en el banco: es una condición de la operación, no un costo oculto. Es una opción cómoda para clientes del BROU que quieren comprar o vender sin moverse.',
+    body: 'El dólar eBROU es la cotización para operar dólares a través de eBROU, la plataforma digital del Banco República (BROU). Suele ofrecer condiciones competitivas para quienes tienen cuenta y operan en línea, evitando ir a una sucursal y hacer cola. Para usar esta modalidad normalmente necesitás una cuenta habilitada en el banco: es una condición de la operación, no un costo oculto. Es una opción cómoda para clientes del BROU que quieren comprar o vender sin moverse, dentro de los días hábiles del mercado. Como con cualquier otra cotización, conviene compararla: el eBROU no siempre es el mejor precio frente a las casas de cambio privadas, así que vale la pena mirar el comparador antes de operar.',
     related: ['dolar-transferencia', 'caja-de-ahorro', 'bcu'],
   },
   {
