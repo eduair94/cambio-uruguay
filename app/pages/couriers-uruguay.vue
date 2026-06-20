@@ -72,6 +72,7 @@
               <th class="text-right">US$/kg (ref.)</th>
               <th class="text-right">Cargo fijo</th>
               <th>Demora</th>
+              <th>Reputación</th>
               <th>Sitio</th>
             </tr>
           </thead>
@@ -82,6 +83,32 @@
               <td class="text-right">{{ rateLabel(c.perKgUsd) }}</td>
               <td class="text-right">{{ rateLabel(c.baseUsd) }}</td>
               <td class="text-grey-lighten-1">{{ c.transit ?? '—' }}</td>
+              <td>
+                <template v-if="c.rating != null">
+                  <span class="courier-stars" :aria-label="`${c.rating} de 5 según reseñas`">
+                    <VIcon
+                      v-for="n in starParts(c.rating).full"
+                      :key="`f${n}`"
+                      size="14"
+                      color="amber"
+                      >mdi-star</VIcon
+                    >
+                    <!-- eslint-disable-next-line vue/max-attributes-per-line -->
+                    <VIcon v-if="starParts(c.rating).half" size="14" color="amber"
+                      >mdi-star-half-full</VIcon
+                    >
+                    <VIcon
+                      v-for="n in starParts(c.rating).empty"
+                      :key="`e${n}`"
+                      size="14"
+                      color="grey"
+                      >mdi-star-outline</VIcon
+                    >
+                  </span>
+                  <small class="d-block text-grey-lighten-1">según reseñas</small>
+                </template>
+                <template v-else>—</template>
+              </td>
               <td>
                 <a :href="c.source" target="_blank" rel="noopener noreferrer" class="couriers-link">
                   {{ hostOf(c.website) }}
@@ -118,6 +145,25 @@
             </div>
           </dl>
           <p v-if="c.note" class="text-caption text-grey-lighten-1 mb-2">{{ c.note }}</p>
+          <div v-if="c.rating != null" class="mb-2">
+            <span class="courier-stars" :aria-label="`${c.rating} de 5 según reseñas`">
+              <!-- eslint-disable vue/max-attributes-per-line -->
+              <VIcon v-for="n in starParts(c.rating).full" :key="`f${n}`" size="14" color="amber"
+                >mdi-star</VIcon
+              >
+              <VIcon v-if="starParts(c.rating).half" size="14" color="amber"
+                >mdi-star-half-full</VIcon
+              >
+              <VIcon v-for="n in starParts(c.rating).empty" :key="`e${n}`" size="14" color="grey"
+                >mdi-star-outline</VIcon
+              >
+              <!-- eslint-enable vue/max-attributes-per-line -->
+            </span>
+            <small class="text-grey-lighten-1 ml-1">según reseñas</small>
+            <p v-if="c.reviewsNote" class="text-caption text-grey-lighten-1 mb-0 mt-1">
+              {{ c.reviewsNote }}
+            </p>
+          </div>
           <a
             :href="c.source"
             target="_blank"
@@ -164,7 +210,10 @@
         Fuentes y referencias
       </h2>
       <ul class="couriers-sources">
-        <li v-for="(src, i) in sources" :key="i">
+        <li v-for="(src, i) in sources" :key="'o' + i">
+          <a :href="src.url" target="_blank" rel="noopener noreferrer">{{ src.label }}</a>
+        </li>
+        <li v-for="(src, i) in reviewSourcesList" :key="'r' + i">
           <a :href="src.url" target="_blank" rel="noopener noreferrer">{{ src.label }}</a>
         </li>
       </ul>
@@ -192,6 +241,7 @@
 
 <script setup lang="ts">
 import { COURIERS, type Courier } from '~/utils/courierShipping'
+import { starParts } from '~/utils/reviews'
 
 const localePath = useLocalePath()
 
@@ -259,6 +309,21 @@ const otherOptions = [
     note: 'Couriers express internacionales; tarifa por cotización según peso y volumen.',
   },
 ]
+
+// Deduplicated review sources across all couriers
+const reviewSourcesList = computed(() => {
+  const seen = new Set<string>()
+  const out: Array<{ label: string; url: string }> = []
+  for (const c of couriers.value) {
+    for (const rs of c.reviewSources ?? []) {
+      if (!seen.has(rs.url)) {
+        seen.add(rs.url)
+        out.push(rs)
+      }
+    }
+  }
+  return out
+})
 
 const sources = [
   {
@@ -461,5 +526,11 @@ useHead(() => ({
   font-size: 0.9rem;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.85);
+}
+
+.courier-stars {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
 }
 </style>
