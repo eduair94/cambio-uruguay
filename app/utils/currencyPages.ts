@@ -14,14 +14,30 @@ import { BCU_ORIGIN } from './rateSource'
 export type CurrencyLang = 'es' | 'en' | 'pt'
 
 /**
- * The four currencies that get a dedicated landing page, mapping the URL slug to
- * the canonical ISO code used by the API (`ExchangeRate.code`).
+ * The currencies that get a dedicated landing page, mapping the URL slug to the
+ * canonical ISO code used by the API (`ExchangeRate.code`).
+ *
+ * The four majors (USD, EUR, BRL, ARS) come first; the slug order also drives the
+ * "major currencies first" sort in {@link ratesForOrigin}. The rest are the extra
+ * codes the API actually quotes at casas de cambio (gold plus a set of travel /
+ * regional currencies), all grammatically masculine in Spanish so the shared
+ * "Cotización del {currency}" copy reads correctly.
  */
 export const CURRENCY_SLUG_TO_CODE = {
   dolar: 'USD',
   euro: 'EUR',
   real: 'BRL',
   'peso-argentino': 'ARS',
+  oro: 'XAU',
+  yen: 'JPY',
+  'franco-suizo': 'CHF',
+  guarani: 'PYG',
+  'peso-chileno': 'CLP',
+  'sol-peruano': 'PEN',
+  'peso-colombiano': 'COP',
+  'peso-mexicano': 'MXN',
+  'dolar-canadiense': 'CAD',
+  'dolar-australiano': 'AUD',
 } as const
 
 /** A pretty slug accepted in the URL (e.g. `'dolar'`). */
@@ -46,7 +62,60 @@ const CURRENCY_NAMES: Readonly<Record<CurrencyCode, Record<CurrencyLang, string>
   EUR: { es: 'Euro', en: 'Euro', pt: 'Euro' },
   BRL: { es: 'Real', en: 'Brazilian Real', pt: 'Real' },
   ARS: { es: 'Peso Argentino', en: 'Argentine Peso', pt: 'Peso Argentino' },
+  XAU: { es: 'Oro', en: 'Gold', pt: 'Ouro' },
+  JPY: { es: 'Yen', en: 'Japanese Yen', pt: 'Iene' },
+  CHF: { es: 'Franco Suizo', en: 'Swiss Franc', pt: 'Franco Suíço' },
+  PYG: { es: 'Guaraní', en: 'Paraguayan Guaraní', pt: 'Guarani' },
+  CLP: { es: 'Peso Chileno', en: 'Chilean Peso', pt: 'Peso Chileno' },
+  PEN: { es: 'Sol Peruano', en: 'Peruvian Sol', pt: 'Sol Peruano' },
+  COP: { es: 'Peso Colombiano', en: 'Colombian Peso', pt: 'Peso Colombiano' },
+  MXN: { es: 'Peso Mexicano', en: 'Mexican Peso', pt: 'Peso Mexicano' },
+  CAD: { es: 'Dólar Canadiense', en: 'Canadian Dollar', pt: 'Dólar Canadense' },
+  AUD: { es: 'Dólar Australiano', en: 'Australian Dollar', pt: 'Dólar Australiano' },
 })
+
+/**
+ * Per-currency context paragraph (Spanish-only, like the editorial guides). Gives
+ * each programmatic `/cotizacion/{slug}` page a unique, locally-relevant blurb so
+ * even single-casa pages are substantive rather than thin. Rendered verbatim
+ * regardless of the active UI locale; the audience is Uruguay.
+ */
+const CURRENCY_CONTEXT: Readonly<Record<CurrencyCode, string>> = Object.freeze({
+  USD: 'El dólar estadounidense es la moneda de referencia para el ahorro y los grandes pagos en Uruguay, por eso casi todas las casas de cambio del país publican su precio de compra y venta. Las diferencias entre una casa y otra pueden representar varios pesos por dólar, así que comparar antes de operar marca una diferencia real en montos altos.',
+  EUR: 'El euro es la segunda divisa más operada en Uruguay, sobre todo para viajes a Europa, remesas y ahorro. No todas las casas de cambio ofrecen el mismo precio ni el mismo spread, de modo que conviene comparar la cotización de compra y venta antes de decidir.',
+  BRL: 'El real brasileño tiene fuerte demanda en Uruguay por el turismo y el comercio de frontera con Brasil. Su cotización suele moverse con el mercado regional, y comparar entre casas de cambio ayuda a no perder en el cambio, especialmente cerca de la frontera.',
+  ARS: 'El peso argentino se opera mucho en el litoral y por el turismo desde Argentina. Es una moneda volátil, por lo que su cotización en las casas de cambio uruguayas puede variar bastante en pocos días; revisar el precio actualizado evita sorpresas.',
+  XAU: 'El oro se cotiza por onza troy y funciona como activo de refugio frente a la inflación y la incertidumbre. En Uruguay, el Banco República y algunas casas de cambio publican su precio de compra y venta en pesos; al tratarse de un valor alto, una pequeña diferencia por onza puede significar bastante dinero.',
+  JPY: 'El yen japonés es una de las monedas más negociadas del mundo y en Uruguay se busca sobre todo para viajes a Japón o pagos puntuales. Pocas casas de cambio lo cotizan, así que comparar el precio disponible evita pagar de más.',
+  CHF: 'El franco suizo es considerado una moneda refugio por su estabilidad histórica. En Uruguay se opera para viajes a Suiza, ahorro o pagos específicos; no todas las casas lo ofrecen, por lo que conviene revisar dónde está disponible y a qué precio.',
+  PYG: 'El guaraní paraguayo interesa sobre todo a quienes viajan o comercian con Paraguay y a la zona de frontera. Por su bajo valor unitario, su cotización se expresa con varios decimales, así que conviene mirarla con atención al cambiar montos grandes.',
+  CLP: 'El peso chileno se busca para viajes y compras en Chile. Tiene un valor unitario bajo frente al peso uruguayo, por lo que su cotización se muestra con decimales; verificar qué casa de cambio lo ofrece ayuda a cambiar en mejores condiciones.',
+  PEN: 'El sol peruano se opera principalmente por turismo y negocios con Perú. Es una moneda de circulación más acotada en Uruguay, así que conviene confirmar qué casa de cambio la cotiza antes de operar.',
+  COP: 'El peso colombiano interesa a viajeros y a quienes reciben o envían dinero desde Colombia. Por su bajo valor unitario, su cotización en Uruguay se expresa con varios decimales y conviene revisarla con cuidado.',
+  MXN: 'El peso mexicano se busca para viajes a México y pagos puntuales. No es de las monedas más ofrecidas en Uruguay, por lo que comparar dónde está disponible es clave para conseguir un buen precio.',
+  CAD: 'El dólar canadiense se opera por viajes, estudios o inmigración a Canadá. Su cotización en Uruguay puede variar según la casa de cambio, así que conviene comparar antes de comprar o vender.',
+  AUD: 'El dólar australiano interesa a quienes viajan, estudian o emigran a Australia. Es una divisa menos común en las casas de cambio uruguayas, de modo que verificar disponibilidad y precio ayuda a operar mejor.',
+})
+
+/**
+ * Currency groupings for the `/cotizacion` hub, in display order. Each slug
+ * appears in exactly one group (asserted by the unit tests) so the hub lists
+ * every supported currency once. `titleKey` resolves against the `cotizacionIndex`
+ * i18n namespace.
+ */
+export const CURRENCY_GROUPS: ReadonlyArray<{ titleKey: string; slugs: CurrencySlug[] }> =
+  Object.freeze([
+    { titleKey: 'groupMajors', slugs: ['dolar', 'euro', 'real', 'peso-argentino'] },
+    {
+      titleKey: 'groupRegion',
+      slugs: ['peso-chileno', 'guarani', 'sol-peruano', 'peso-colombiano', 'peso-mexicano'],
+    },
+    {
+      titleKey: 'groupIntl',
+      slugs: ['yen', 'franco-suizo', 'dolar-canadiense', 'dolar-australiano'],
+    },
+    { titleKey: 'groupCommodities', slugs: ['oro'] },
+  ])
 
 /** Exchange `type` values that represent a plain/cash quote shown on these pages. */
 const PLAIN_OR_CASH_TYPES: ReadonlySet<ExchangeType> = new Set<ExchangeType>(['', 'BILLETE'])
@@ -93,6 +162,15 @@ export function listCurrencySlugs(): CurrencySlug[] {
 export function currencyDisplayName(code: CurrencyCode, lang: CurrencyLang = 'es'): string {
   const byLang = CURRENCY_NAMES[code]
   return byLang[lang] ?? byLang.es
+}
+
+/**
+ * Spanish context paragraph for a currency, used as the unique SEO copy on its
+ * `/cotizacion/{slug}` page. Always Spanish (audience is Uruguay), mirroring the
+ * editorial guides convention.
+ */
+export function currencyContext(code: CurrencyCode): string {
+  return CURRENCY_CONTEXT[code]
 }
 
 /** One casa's plain/cash quote for a single currency, used by the currency page. */

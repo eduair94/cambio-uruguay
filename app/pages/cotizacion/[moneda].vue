@@ -162,6 +162,21 @@
         </v-col>
       </v-row>
 
+      <!-- Per-currency context: unique SEO copy so each page is substantive -->
+      <v-row v-if="context" class="mt-2">
+        <v-col cols="12">
+          <v-card>
+            <v-card-title class="d-flex align-center py-3">
+              <v-icon start>mdi-information-outline</v-icon>
+              {{ $t('cotizacion.aboutTitle', { currency: currencyName }) }}
+            </v-card-title>
+            <v-card-text>
+              <p class="text-body-1 cotizacion-context mb-0">{{ context }}</p>
+            </v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
+
       <!-- SEO copy + CTAs -->
       <v-row class="mt-2">
         <v-col cols="12">
@@ -221,6 +236,7 @@ import { useI18n } from 'vue-i18n'
 import { useDisplay } from 'vuetify/lib/composables/display.mjs'
 import type { ExchangeRate } from '~/types/api'
 import {
+  currencyContext,
   currencyDisplayName,
   currencyFromSlug,
   currencySlug,
@@ -255,6 +271,7 @@ const lang = computed<CurrencyLang>(() =>
     : 'es'
 )
 const currencyName = computed(() => currencyDisplayName(code.value, lang.value))
+const context = computed(() => currencyContext(code.value))
 
 // SSR fetch: today's quotes, reduced to this currency's plain/cash rows with the
 // best buy/sell flagged. Keyed by code so each currency page is cached separately.
@@ -295,11 +312,15 @@ const headers = computed(() => [
 
 const formatRate = (value: number | null): string => {
   if (typeof value !== 'number' || Number.isNaN(value)) return '-'
+  // Low-unit-value currencies (guaraní, peso chileno/colombiano, etc.) need more
+  // decimals than the 2 that suit the dólar/euro, otherwise rates like 0.0056
+  // collapse to "0,01" and lose all meaning.
+  const small = value !== 0 && Math.abs(value) < 1
   return value.toLocaleString('es-UY', {
     style: 'currency',
     currency: 'UYU',
     minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    maximumFractionDigits: small ? 4 : 2,
   })
 }
 
@@ -380,6 +401,11 @@ useHead({
 .cotizacion-intro {
   max-width: 760px;
   line-height: 1.6;
+}
+
+.cotizacion-context {
+  max-width: 820px;
+  line-height: 1.7;
 }
 
 /* Readable CTA on dark theme (avoid Vuetify outlined color tinting the text) */

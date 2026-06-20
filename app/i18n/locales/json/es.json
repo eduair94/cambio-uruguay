@@ -464,6 +464,7 @@
     "ctaButton": "Ir al comparador",
     "ctaCompare": "Comparar casas",
     "otherCurrencies": "Cotización de otras monedas",
+    "aboutTitle": "Sobre la cotización del {currency} en Uruguay",
     "metaTitle": "Cotización del {currency} en Uruguay Hoy | Cambio Uruguay",
     "metaDescription": "Cotización del {currency} en Uruguay hoy. Compará el precio de compra y venta del {currency} en todas las casas de cambio, actualizado automáticamente.",
     "ogTitle": "Cotización del {currency}",

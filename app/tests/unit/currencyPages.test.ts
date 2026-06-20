@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import type { ExchangeRate } from '../../types/api'
 import {
+  CURRENCY_GROUPS,
+  currencyContext,
   currencyDisplayName,
   currencyFromSlug,
   currencySlug,
@@ -133,12 +135,53 @@ describe('currencyFromSlug / currencySlug', () => {
     expect(currencySlug('ARS')).toBe('peso-argentino')
   })
 
+  it('maps the extended currency slugs to their ISO codes', () => {
+    expect(currencyFromSlug('oro')).toBe('XAU')
+    expect(currencyFromSlug('yen')).toBe('JPY')
+    expect(currencyFromSlug('franco-suizo')).toBe('CHF')
+    expect(currencyFromSlug('guarani')).toBe('PYG')
+    expect(currencyFromSlug('peso-chileno')).toBe('CLP')
+    expect(currencyFromSlug('sol-peruano')).toBe('PEN')
+    expect(currencyFromSlug('peso-colombiano')).toBe('COP')
+    expect(currencyFromSlug('peso-mexicano')).toBe('MXN')
+    expect(currencyFromSlug('dolar-canadiense')).toBe('CAD')
+    expect(currencyFromSlug('dolar-australiano')).toBe('AUD')
+  })
+
+  it('keeps the four majors first so casa pages order them first', () => {
+    expect(listCurrencySlugs().slice(0, 4)).toEqual(['dolar', 'euro', 'real', 'peso-argentino'])
+  })
+
   it('round-trips slug -> code -> slug for every supported currency', () => {
     for (const slug of listCurrencySlugs()) {
       const code = currencyFromSlug(slug)
       expect(code).not.toBeNull()
       expect(currencySlug(code!)).toBe(slug)
     }
+  })
+})
+
+describe('currencyContext', () => {
+  it('returns a non-empty Spanish blurb for every supported currency', () => {
+    for (const slug of listCurrencySlugs()) {
+      const code = currencyFromSlug(slug)!
+      const text = currencyContext(code)
+      expect(typeof text).toBe('string')
+      expect(text.length).toBeGreaterThan(40)
+    }
+  })
+
+  it('gives each currency a distinct blurb', () => {
+    const blurbs = listCurrencySlugs().map(slug => currencyContext(currencyFromSlug(slug)!))
+    expect(new Set(blurbs).size).toBe(blurbs.length)
+  })
+})
+
+describe('CURRENCY_GROUPS', () => {
+  it('places every supported slug in exactly one group', () => {
+    const grouped = CURRENCY_GROUPS.flatMap(g => g.slugs)
+    expect([...grouped].sort()).toEqual([...listCurrencySlugs()].sort())
+    expect(new Set(grouped).size).toBe(grouped.length)
   })
 })
 

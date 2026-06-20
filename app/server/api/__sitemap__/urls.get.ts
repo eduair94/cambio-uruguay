@@ -132,6 +132,7 @@ export default defineEventHandler(async _event => {
     addUrlsForAllLocales('/prestamos-uruguay', 0.7, 'weekly') // Loan directory comparison
     addUrlsForAllLocales('/glosario', 0.7, 'weekly') // Financial glossary hub
     addUrlsForAllLocales('/convertir', 0.7, 'weekly') // Amount-conversion hub
+    addUrlsForAllLocales('/cotizacion', 0.8, 'hourly') // All-currencies cotización hub
     addUrlsForAllLocales('/blog', 0.8, 'daily') // AI daily blog hub
     addUrlsForAllLocales('/acerca', 0.6, 'monthly') // Methodology / about page
     addUrlsForAllLocales('/conectar', 0.6, 'monthly') // Channels hub (API, MCP, Telegram, Discord, newsletter)

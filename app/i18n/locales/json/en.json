@@ -457,6 +457,7 @@
     "ctaButton": "Go to the comparator",
     "ctaCompare": "Compare houses",
     "otherCurrencies": "Exchange rates for other currencies",
+    "aboutTitle": "About the {currency} exchange rate in Uruguay",
     "metaTitle": "{currency} Exchange Rate in Uruguay Today | Cambio Uruguay",
     "metaDescription": "{currency} exchange rate in Uruguay today. Compare the buy and sell {currency} prices across every exchange house, updated automatically.",
     "ogTitle": "{currency} exchange rate",
