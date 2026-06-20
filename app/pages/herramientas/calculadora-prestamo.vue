@@ -1,5 +1,18 @@
 <template>
   <ToolShell slug="calculadora-prestamo" :faq="faq">
+    <VAlert
+      type="info"
+      variant="tonal"
+      density="comfortable"
+      class="mb-4"
+      icon="mdi-information-outline"
+    >
+      ¿No sabés dónde pedir el préstamo? Compará bancos, financieras y cooperativas.
+      <NuxtLink :to="localePath('/prestamos-uruguay')" class="alert-link">
+        Ver opciones de préstamos en Uruguay
+      </NuxtLink>
+    </VAlert>
+
     <VCard class="pa-4 pa-sm-6">
       <VRow class="g-input">
         <VCol cols="12" sm="6">
@@ -85,6 +98,8 @@ import { computed, ref } from 'vue'
 import { loanPayment } from '~/utils/calculators'
 import { formatUYU } from '~/utils/format'
 
+const localePath = useLocalePath()
+
 const principal = ref(200000)
 const ratePct = ref(30)
 const months = ref(24)
@@ -102,5 +117,18 @@ const faq = [
   },
 ]
 </script>
+
+<style scoped>
+.alert-link {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 2px solid currentColor;
+}
+
+.alert-link:hover {
+  text-decoration: underline;
+}
+</style>
 
 <!-- Layout primitives shared from ToolShell (.tool-page namespace). -->

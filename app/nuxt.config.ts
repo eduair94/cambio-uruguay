@@ -248,6 +248,11 @@ export default defineNuxtConfig({
         driver: 'fs',
         base: './.data/couriers',
       },
+      // Durable store for daily-scraped lender TEA rates (keeps last good value).
+      loans: {
+        driver: 'fs',
+        base: './.data/loans',
+      },
     },
     experimental: {
       wasm: true,
@@ -264,6 +269,8 @@ export default defineNuxtConfig({
       '0 11 * * *': ['telegram:summary'],
       // 08:15 UTC ≈ 05:15 Uruguay: refresh courier per-kg shipping rates.
       '15 8 * * *': ['couriers:scrape'],
+      // 08:45 UTC ≈ 05:45 Uruguay: refresh lender TEA rates.
+      '45 8 * * *': ['loans:scrape'],
     },
   },
 

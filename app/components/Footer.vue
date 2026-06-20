@@ -132,6 +132,12 @@
           <NuxtLink :to="localePath('/herramientas')" class="footer-link text-caption">
             Herramientas
           </NuxtLink>
+          <NuxtLink :to="localePath('/couriers-uruguay')" class="footer-link text-caption">
+            Couriers en Uruguay
+          </NuxtLink>
+          <NuxtLink :to="localePath('/prestamos-uruguay')" class="footer-link text-caption">
+            Préstamos en Uruguay
+          </NuxtLink>
           <NuxtLink :to="localePath('/glosario')" class="footer-link text-caption">
             Glosario
           </NuxtLink>

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { parseCourierRate, stripHtml, RATE_PARSERS } from '../../server/utils/courierScraper'
+import { COURIERS } from '../../utils/courierShipping'
 
 // Fixtures are the tag-stripped rate text captured from each courier's live tariff page
 // (2026-06-18). Parsers must pull the representative small-parcel per-kg out of the surrounding
@@ -37,6 +38,32 @@ describe('parseCourierRate', () => {
     expect(parseCourierRate('usxcargo', text).perKgUsd).toBe(17.5)
   })
 
+  it('urubox: anchors on "1 a 4.99" label, ignores competing lighter tier (u$s 18,90 at 500-699g)', () => {
+    // Fixture mirrors real page order: sub-kg tiers (incl. 18,90) appear BEFORE the 1-4.99 kg row.
+    // The old loose 18–22 band would grab 18,90 first — the new anchor must skip it.
+    const text =
+      '0 a 199 u$s 10,90 200 a 499 u$s 15,90 500 a 699 u$s 18,90 700 a 999 u$s 20,90 ' +
+      '1 a 4.99 u$s 19,90 5 a 9.99 u$s 17,90 10 a 19.99 u$s 16,50 20 a 40 u$s 15,90'
+    expect(parseCourierRate('urubox', text).perKgUsd).toBe(19.9)
+  })
+
+  it('starbox: anchors on "1-4.99 kg" label, ignores competing heavier tier ($20 / por cada kg)', () => {
+    // Fixture puts the 5-10 kg tier ($20) BEFORE the 1-4.99 kg tier ($21) to prove order-independence.
+    const text = '0-500g U$S17 501-999g $21 5-10 kg $20 / por cada kg 1-4.99 kg $21 / por cada kg'
+    expect(parseCourierRate('starbox', text).perKgUsd).toBe(21)
+  })
+
+  it('buybox: takes the 1,01–3 kg tier (U$D 18.90 x kilo)', () => {
+    const text =
+      '0-500 grs U$D 5.9 501 grs - 1 kg U$D 21 x kilo 1,01 - 3 kg U$D 18.90 x kilo 3,1- 5 kg U$D16.90 x kilo'
+    expect(parseCourierRate('buybox', text).perKgUsd).toBe(18.9)
+  })
+
+  it('glic: takes the single per-kg rate (22.99 USD el Kg)', () => {
+    const text = 'Calculá el precio 22.99 USD el Kg. consolidación gratis 60 días depósito gratis'
+    expect(parseCourierRate('glic', text).perKgUsd).toBe(22.99)
+  })
+
   it('strips HTML tags before matching', () => {
     const html = '<div><span>DESDE USA</span> <b>USD 17.50</b> kg</div>'
     expect(parseCourierRate('usxcargo', html).perKgUsd).toBe(17.5)
@@ -71,7 +98,32 @@ describe('stripHtml', () => {
 describe('RATE_PARSERS catalogue', () => {
   it('only lists couriers whose rates are in raw HTML (HTTP-scrapeable)', () => {
     expect(Object.keys(RATE_PARSERS).sort()).toEqual(
-      ['casillamia', 'enviamicompra', 'gripper', 'uruguaycargo', 'usxcargo'].sort()
+      [
+        'buybox',
+        'casillamia',
+        'enviamicompra',
+        'glic',
+        'gripper',
+        'starbox',
+        'uruguaycargo',
+        'urubox',
+        'usxcargo',
+      ].sort()
     )
+  })
+})
+
+describe('courier catalog reputation', () => {
+  it('rated couriers cite at least one review source and rating is 0..5', () => {
+    for (const c of COURIERS) {
+      if (c.rating != null) {
+        expect(c.rating).toBeGreaterThanOrEqual(0)
+        expect(c.rating).toBeLessThanOrEqual(5)
+        expect((c.reviewSources ?? []).length).toBeGreaterThan(0)
+      }
+    }
+  })
+  it('every courier has a source URL', () => {
+    for (const c of COURIERS) expect(c.source).toMatch(/^https?:\/\//)
   })
 })
