@@ -16,6 +16,13 @@
                 {{ t('simpleDescription') }}
               </p>
 
+              <!-- SSR-visible live answer to "¿a cuánto está el dólar hoy?" — plain
+                   text (not hidden in the FAQ accordion) so AI Overviews/Gemini can
+                   extract and cite the figure. -->
+              <p v-if="usdHeadline" class="hero-answer text-body-1 mb-8">
+                {{ usdHeadline }}
+              </p>
+
               <!-- Trust signals: BCU source, coverage, freshness, Trustpilot -->
               <TrustBar />
 
@@ -780,6 +787,7 @@ import DirectionToggle from '@/components/DirectionToggle.vue'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { HOME_FAQ_IDS, type FaqItem } from '~/utils/faqAnswers'
+import { quotesForCurrency } from '~/utils/currencyPages'
 import { useDisplay } from 'vuetify'
 import {
   convert as convertAmount,
@@ -827,9 +835,36 @@ const localePath = useLocalePath()
 // Shared, deduped exchange-rates fetch (the home trend modules use the same
 // `useExchangeRates` cache key) — the calculator reads from it instead of
 // issuing its own second identical request for the dataset.
-const { rows: sharedRows, pending: sharedPending } = useExchangeRates()
+const { rows: sharedRows, pending: sharedPending, realRows: sharedRealRows } = useExchangeRates()
 const route = useRoute()
 const router = useRouter()
+
+// SSR-rendered, self-contained answer to "¿a cuánto está el dólar hoy?" so the
+// figure is visible plain text (not only inside the FAQ accordion / schema),
+// which AI Overviews and Gemini extract more readily. Built from the same
+// SSR-friendly useExchangeRates data, public quotes only (no BCU/interbank).
+const usdHeadline = computed<string | null>(() => {
+  const quotes = quotesForCurrency(sharedRealRows.value ?? [], 'USD')
+  const sells = quotes.map(q => q.sell).filter((n): n is number => typeof n === 'number' && n > 0)
+  const buys = quotes.map(q => q.buy).filter((n): n is number => typeof n === 'number' && n > 0)
+  if (!sells.length || !buys.length) return null
+  const fmt = (n: number) =>
+    n.toLocaleString('es-UY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  const minSell = fmt(Math.min(...sells))
+  const maxBuy = fmt(Math.max(...buys))
+  const today = new Date().toLocaleDateString('es-UY', {
+    timeZone: 'America/Montevideo',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
+  return (
+    `Hoy ${today}, el dólar estadounidense se vende desde $${minSell} y se compra hasta ` +
+    `$${maxBuy} comparando ${quotes.length} casas de cambio de Uruguay. Para comprar conviene ` +
+    `el precio de venta más bajo; para vender, el de compra más alto. Los datos se basan en el ` +
+    `registro del Banco Central del Uruguay (BCU) y se actualizan automáticamente cada ~10 minutos.`
+  )
+})
 
 // Branded OG image with the live USD rate (og-rate route is cached 10 min).
 const { data: ogRate } = await useFetch<{ buy: number | null; sell: number | null }>(
@@ -1745,7 +1780,13 @@ const currencyServiceSchema = computed(() => ({
   },
   speakable: {
     '@type': 'SpeakableSpecification',
-    cssSelector: ['.hero-title', '.hero-subtitle', '.hero-description', '.faq-section'],
+    cssSelector: [
+      '.hero-title',
+      '.hero-subtitle',
+      '.hero-description',
+      '.hero-answer',
+      '.faq-section',
+    ],
   },
 }))
 
@@ -1919,6 +1960,17 @@ useSeoMeta({
   max-width: 600px;
   margin: 0 auto 2rem;
   animation: fadeInUp 0.8s ease-out 0.4s both;
+}
+
+.hero-answer {
+  color: #e8f0ff;
+  max-width: 760px;
+  margin: 0 auto 2rem;
+  line-height: 1.7;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
 }
 
 @keyframes fadeInUp {
