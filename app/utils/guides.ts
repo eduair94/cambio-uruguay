@@ -26,6 +26,14 @@ export interface GuideLink {
   to: string
 }
 
+/** One step of a procedural guide, emitted as HowToStep JSON-LD. */
+export interface GuideStep {
+  /** Short imperative step name. */
+  name: string
+  /** One-sentence explanation of the step. */
+  text: string
+}
+
 /** A complete editorial guide, addressable at `/guias/{slug}`. */
 export interface Guide {
   /** URL-safe identifier, unique across {@link guides} (e.g. `'comprar-dolares-mejor-precio'`). */
@@ -42,6 +50,11 @@ export interface Guide {
   sections: GuideSection[]
   /** Optional guide-specific related links, shown in addition to the defaults. */
   related?: GuideLink[]
+  /**
+   * Optional ordered steps for procedural guides. When present, the page also
+   * emits HowTo JSON-LD (in addition to Article) for AI step extraction.
+   */
+  steps?: GuideStep[]
 }
 
 /**
@@ -856,6 +869,24 @@ export const guides: readonly Guide[] = [
       },
       { label: '¿Pagar en dólares o en pesos?', to: '/guias/pagar-en-dolares-o-pesos-uruguay' },
     ],
+    steps: [
+      {
+        name: 'Pagá con tarjeta del exterior',
+        text: 'Usá una tarjeta de débito o crédito emitida fuera de Uruguay (o transferencia del exterior); el pago en efectivo no accede a los beneficios.',
+      },
+      {
+        name: 'Hospedate en hoteles sin IVA',
+        text: 'El alojamiento en hoteles para no residentes se factura sin IVA durante todo el año, de forma automática.',
+      },
+      {
+        name: 'Verificá el beneficio en gastronomía',
+        text: 'La reducción de IVA en restaurantes rige por temporada y cambia por decreto; confirmá si está vigente en las fechas de tu viaje.',
+      },
+      {
+        name: 'Pedí Tax Free en compras de bienes',
+        text: 'Al comprar bienes, conservá las facturas y gestioná la devolución de parte del IVA en el punto de salida del país.',
+      },
+    ],
   },
   {
     slug: 'cambiar-dolares-aeropuerto-carrasco',
@@ -886,6 +917,24 @@ export const guides: readonly Guide[] = [
       { label: 'Cotización del dólar hoy', to: '/cotizacion/dolar' },
       { label: 'Sucursales de casas de cambio', to: '/sucursales' },
       { label: 'Devolución de IVA y Tax Free', to: '/guias/devolucion-iva-turistas-uruguay' },
+    ],
+    steps: [
+      {
+        name: 'Cambiá solo lo justo en el aeropuerto',
+        text: 'En Carrasco cambiá lo necesario para el traslado y las primeras horas; la cotización del aeropuerto suele ser peor que la del centro.',
+      },
+      {
+        name: 'Llegá con algo de pesos',
+        text: 'Tener algo de pesos uruguayos a mano evita pagar el traslado a un cambio desfavorable.',
+      },
+      {
+        name: 'Compará antes de cambiar el grueso',
+        text: 'Mirá en Cambio Uruguay qué casa de cambio ofrece el mejor precio para tu operación antes de cambiar montos grandes.',
+      },
+      {
+        name: 'Cambiá el resto en una casa del centro',
+        text: 'Operá el grueso de tu cambio en una casa de cambio de Montevideo o tu destino, donde conseguís más pesos por dólar.',
+      },
     ],
   },
   {

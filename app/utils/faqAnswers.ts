@@ -175,6 +175,12 @@ const LABELS: Record<FaqLang, Labels> = {
         answer:
           'Los turistas no residentes tienen beneficios de IVA en Uruguay si pagan con una tarjeta emitida en el exterior. El alojamiento en hoteles está exonerado del IVA durante todo el año (se factura sin el impuesto). Para gastronomía (restaurantes, bares y cafés independientes del hospedaje) existe una reducción del IVA que rige por temporada —típicamente en verano— y que puede cambiar de un año a otro, así que conviene verificar la vigencia del período en curso. Además, en compras de bienes se puede pedir la devolución "Tax Free" de una parte del IVA al salir del país. El pago en efectivo no accede a estos beneficios.',
       },
+      {
+        id: 'brou',
+        question: '¿Cuánto vale el dólar en el BROU y conviene?',
+        answer:
+          'El BROU es el Banco de la República Oriental del Uruguay, el banco estatal más grande del país, y su cotización del dólar es una de las más buscadas. Al ser un banco público, suele ser algo más conservadora que la de las casas de cambio privadas, sobre todo para el dólar billete; a través de eBROU, su plataforma digital, se consiguen cotizaciones más competitivas operando en línea. Para saber si el dólar del BROU te conviene, lo mejor es compararlo con el resto del mercado: en Cambio Uruguay ves el precio del BROU lado a lado con más de 40 casas de cambio, actualizado automáticamente, para elegir dónde comprar o vender al mejor precio.',
+      },
     ],
   },
   en: {
@@ -241,6 +247,12 @@ const LABELS: Record<FaqLang, Labels> = {
         answer:
           'Non-resident tourists get VAT benefits in Uruguay when they pay with a foreign-issued card. Hotel lodging is VAT-exempt year-round (billed without the tax). For dining (restaurants, bars and cafés separate from lodging) there is a VAT reduction that applies seasonally —typically over the summer— and can change from year to year, so check the current period. In addition, on goods you can claim a "Tax Free" refund of part of the VAT when leaving the country. Cash payments do not qualify for these benefits.',
       },
+      {
+        id: 'brou',
+        question: 'What is the BROU dollar rate and is it worth it?',
+        answer:
+          "BROU is the Banco de la República Oriental del Uruguay, the country's largest state-owned bank, and its dollar rate is one of the most searched. As a public bank it tends to be a bit more conservative than private exchange houses, especially for cash (dólar billete); through eBROU, its online platform, you can get more competitive rates. To know whether BROU's dollar is a good deal, compare it with the rest of the market: on Cambio Uruguay you see BROU's price side by side with over 40 exchange houses, updated automatically, so you can choose where to buy or sell at the best price.",
+      },
     ],
   },
   pt: {
@@ -305,6 +317,12 @@ const LABELS: Record<FaqLang, Labels> = {
         question: 'Turistas estrangeiros pagam IVA no Uruguai?',
         answer:
           'Turistas não residentes têm benefícios de IVA no Uruguai ao pagar com cartão emitido no exterior. A hospedagem em hotéis é isenta de IVA o ano todo (faturada sem o imposto). Para gastronomia (restaurantes, bares e cafés independentes da hospedagem) há uma redução de IVA que vigora por temporada —geralmente no verão— e pode mudar de um ano para outro, então confira a vigência do período atual. Além disso, em compras de bens é possível pedir a devolução "Tax Free" de parte do IVA ao sair do país. Pagamentos em dinheiro não acessam esses benefícios.',
+      },
+      {
+        id: 'brou',
+        question: 'Quanto vale o dólar no BROU e vale a pena?',
+        answer:
+          'O BROU é o Banco de la República Oriental del Uruguay, o maior banco estatal do país, e sua cotação do dólar é uma das mais procuradas. Por ser um banco público, costuma ser um pouco mais conservadora que a das casas de câmbio privadas, sobretudo para o dólar em espécie (billete); pelo eBROU, sua plataforma online, é possível conseguir cotações mais competitivas. Para saber se o dólar do BROU vale a pena, compare-o com o resto do mercado: na Cambio Uruguay você vê o preço do BROU lado a lado com mais de 40 casas de câmbio, atualizado automaticamente, para escolher onde comprar ou vender pelo melhor preço.',
       },
     ],
   },

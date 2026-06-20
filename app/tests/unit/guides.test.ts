@@ -62,6 +62,19 @@ describe('guides catalogue integrity', () => {
     }
   })
 
+  it('gives every related link and step the required fields', () => {
+    for (const guide of guides) {
+      for (const link of guide.related ?? []) {
+        expect(link.label.trim().length).toBeGreaterThan(0)
+        expect(link.to.startsWith('/')).toBe(true)
+      }
+      for (const step of guide.steps ?? []) {
+        expect(step.name.trim().length).toBeGreaterThan(0)
+        expect(step.text.trim().length).toBeGreaterThan(10)
+      }
+    }
+  })
+
   it('exposes every slug through getGuide', () => {
     for (const slug of guideSlugs()) {
       expect(getGuide(slug)?.slug).toBe(slug)

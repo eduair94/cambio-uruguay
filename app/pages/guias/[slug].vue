@@ -44,6 +44,17 @@
             </section>
           </article>
 
+          <!-- Procedural steps (also emitted as HowTo schema) -->
+          <section v-if="guide.steps?.length" class="guide-steps mb-2">
+            <h2 class="text-h5 font-weight-bold mb-3">Paso a paso</h2>
+            <ol class="guide-steps-list">
+              <li v-for="(step, i) in guide.steps" :key="i" class="mb-3">
+                <span class="font-weight-bold">{{ step.name }}.</span>
+                <span class="text-grey-lighten-1"> {{ step.text }}</span>
+              </li>
+            </ol>
+          </section>
+
           <!-- CTA to the comparator -->
           <VCard class="cta-guide my-8 pa-6 text-center" variant="flat">
             <h2 class="text-h6 font-weight-bold mb-2 text-white">{{ t('guias.ctaTitle') }}</h2>
@@ -177,6 +188,10 @@ useHead({
               dateModified: guide.value?.updatedAt,
               inLanguage: 'es-UY',
               mainEntityOfPage: { '@type': 'WebPage', '@id': canonicalUrl.value },
+              speakable: {
+                '@type': 'SpeakableSpecification',
+                cssSelector: ['.guide-lead', '.guide-prose'],
+              },
               author: {
                 '@type': 'Person',
                 name: 'Eduardo Airaudo',
@@ -214,6 +229,22 @@ useHead({
                 },
               ],
             },
+            // HowTo for procedural guides — feeds AI Overview step extraction.
+            ...(guide.value?.steps?.length
+              ? [
+                  {
+                    '@type': 'HowTo',
+                    name: guide.value.title,
+                    description: guide.value.description,
+                    step: guide.value.steps.map((s, i) => ({
+                      '@type': 'HowToStep',
+                      position: i + 1,
+                      name: s.name,
+                      text: s.text,
+                    })),
+                  },
+                ]
+              : []),
           ],
         })
       ),
@@ -229,6 +260,14 @@ useHead({
 
 .guide-prose {
   line-height: 1.8;
+}
+
+.guide-steps-list {
+  padding-left: 1.25rem;
+  line-height: 1.7;
+}
+.guide-steps-list li {
+  padding-left: 0.25rem;
 }
 
 .guide-link {
