@@ -226,6 +226,16 @@ useHead({
         '@context': 'https://schema.org',
         '@graph': [
           {
+            '@type': 'WebPage',
+            '@id': `${canonicalUrl}#webpage`,
+            url: canonicalUrl,
+            name: 'Cotizaciones de todas las monedas en Uruguay hoy',
+            inLanguage: 'es',
+            dateModified: new Date().toISOString(),
+            isPartOf: { '@id': 'https://cambio-uruguay.com/#organization' },
+            speakable: { '@type': 'SpeakableSpecification', cssSelector: ['.cotizacion-intro'] },
+          },
+          {
             '@type': 'BreadcrumbList',
             itemListElement: [
               {

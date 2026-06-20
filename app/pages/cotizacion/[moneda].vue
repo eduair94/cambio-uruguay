@@ -409,6 +409,19 @@ useHead({
           '@context': 'https://schema.org',
           '@graph': [
             {
+              '@type': 'WebPage',
+              '@id': `${canonicalUrl.value}#webpage`,
+              url: canonicalUrl.value,
+              name: t('cotizacion.metaTitle', { currency: currencyName.value, prep: prep.value }),
+              inLanguage: locale.value,
+              dateModified: new Date().toISOString(),
+              isPartOf: { '@id': 'https://cambio-uruguay.com/#organization' },
+              speakable: {
+                '@type': 'SpeakableSpecification',
+                cssSelector: ['.cotizacion-intro', '.cotizacion-context'],
+              },
+            },
+            {
               '@type': 'ExchangeRateSpecification',
               currency: code.value,
               currentExchangeRate: {

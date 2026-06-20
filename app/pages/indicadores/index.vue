@@ -166,6 +166,16 @@ useHead({
         '@context': 'https://schema.org',
         '@graph': [
           {
+            '@type': 'WebPage',
+            '@id': `${canonicalUrl}#webpage`,
+            url: canonicalUrl,
+            name: 'Indicadores económicos de Uruguay hoy: UI, UR y BPC',
+            inLanguage: 'es',
+            dateModified: new Date().toISOString(),
+            isPartOf: { '@id': 'https://cambio-uruguay.com/#organization' },
+            speakable: { '@type': 'SpeakableSpecification', cssSelector: ['.indicadores-intro'] },
+          },
+          {
             '@type': 'BreadcrumbList',
             itemListElement: [
               {

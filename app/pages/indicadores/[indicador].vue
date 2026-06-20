@@ -272,6 +272,19 @@ useHead({
           '@context': 'https://schema.org',
           '@graph': [
             {
+              '@type': 'WebPage',
+              '@id': `${canonicalUrl.value}#webpage`,
+              url: canonicalUrl.value,
+              name: `Valor de la ${ind.name} (${ind.abbr}) hoy`,
+              inLanguage: 'es',
+              dateModified: new Date().toISOString(),
+              isPartOf: { '@id': 'https://cambio-uruguay.com/#organization' },
+              speakable: {
+                '@type': 'SpeakableSpecification',
+                cssSelector: ['.indicador-intro', '.indicador-prose'],
+              },
+            },
+            {
               '@type': 'DefinedTerm',
               name: `${ind.name} (${ind.abbr})`,
               description: ind.whatItIs,
