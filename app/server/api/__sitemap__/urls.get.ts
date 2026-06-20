@@ -1,4 +1,5 @@
 import { listCurrencySlugs } from '../../../utils/currencyPages'
+import { listIndicatorSlugs } from '../../../utils/indicators'
 import { guideSlugs } from '../../../utils/guides'
 import { toolSlugs } from '../../../utils/tools'
 import { glossarySlugs } from '../../../utils/glossary'
@@ -133,6 +134,7 @@ export default defineEventHandler(async _event => {
     addUrlsForAllLocales('/glosario', 0.7, 'weekly') // Financial glossary hub
     addUrlsForAllLocales('/convertir', 0.7, 'weekly') // Amount-conversion hub
     addUrlsForAllLocales('/cotizacion', 0.8, 'hourly') // All-currencies cotización hub
+    addUrlsForAllLocales('/indicadores', 0.8, 'daily') // Economic indicators hub (UI, UR, BPC)
     addUrlsForAllLocales('/blog', 0.8, 'daily') // AI daily blog hub
     addUrlsForAllLocales('/acerca', 0.6, 'monthly') // Methodology / about page
     addUrlsForAllLocales('/conectar', 0.6, 'monthly') // Channels hub (API, MCP, Telegram, Discord, newsletter)
@@ -156,6 +158,11 @@ export default defineEventHandler(async _event => {
     // Add /convertir/:slug amount-conversion routes for all locales
     convertSlugs().forEach(slug => {
       addUrlsForAllLocales(`/convertir/${slug}`, 0.6, 'weekly')
+    })
+
+    // Add /indicadores/:slug economic-indicator routes for all locales
+    listIndicatorSlugs().forEach(slug => {
+      addUrlsForAllLocales(`/indicadores/${slug}`, 0.7, 'daily')
     })
 
     // Add /blog/:slug AI daily-blog posts (default locale only — posts are

@@ -144,6 +144,12 @@
           <NuxtLink :to="localePath('/convertir')" class="footer-link text-caption">
             Convertir
           </NuxtLink>
+          <NuxtLink :to="localePath('/cotizacion')" class="footer-link text-caption">
+            Cotizaciones
+          </NuxtLink>
+          <NuxtLink :to="localePath('/indicadores')" class="footer-link text-caption">
+            Indicadores
+          </NuxtLink>
           <NuxtLink :to="localePath('/blog')" class="footer-link text-caption"> Blog </NuxtLink>
           <NuxtLink :to="localePath('/conectar')" class="footer-link text-caption">
             {{ $t('conectar.nav') }}

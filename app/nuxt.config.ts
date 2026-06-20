@@ -462,6 +462,7 @@ export default defineNuxtConfig({
       '/herramientas',
       '/glosario',
       '/convertir',
+      '/indicadores',
       '/blog',
       '/acerca',
       '/conectar',
