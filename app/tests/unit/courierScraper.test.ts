@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { parseCourierRate, stripHtml, RATE_PARSERS } from '../../server/utils/courierScraper'
+import { COURIERS } from '../../utils/courierShipping'
 
 // Fixtures are the tag-stripped rate text captured from each courier's live tariff page
 // (2026-06-18). Parsers must pull the representative small-parcel per-kg out of the surrounding
@@ -73,5 +74,20 @@ describe('RATE_PARSERS catalogue', () => {
     expect(Object.keys(RATE_PARSERS).sort()).toEqual(
       ['casillamia', 'enviamicompra', 'gripper', 'uruguaycargo', 'usxcargo'].sort()
     )
+  })
+})
+
+describe('courier catalog reputation', () => {
+  it('rated couriers cite at least one review source and rating is 0..5', () => {
+    for (const c of COURIERS) {
+      if (c.rating != null) {
+        expect(c.rating).toBeGreaterThanOrEqual(0)
+        expect(c.rating).toBeLessThanOrEqual(5)
+        expect((c.reviewSources ?? []).length).toBeGreaterThan(0)
+      }
+    }
+  })
+  it('every courier has a source URL', () => {
+    for (const c of COURIERS) expect(c.source).toMatch(/^https?:\/\//)
   })
 })
