@@ -532,6 +532,53 @@ export const glossary: readonly GlossaryTerm[] = [
     body: 'Es un término argentino que aparece al comparar el dólar entre ambos países. Surge por las restricciones cambiarias de Argentina, que llevan a operar dólares a través de bonos (Mercado Electrónico de Pagos). Uruguay, con su mercado libre y unificado, no necesita estos mecanismos: aquí el dólar se compra y vende directamente en casas de cambio y bancos.',
     related: ['dolar-blue', 'brecha-cambiaria', 'mercado-cambiario'],
   },
+  {
+    slug: 'oro',
+    term: 'Oro',
+    category: 'cambio',
+    short:
+      'El oro es un metal precioso que funciona como reserva de valor y activo de refugio; se cotiza por onza troy en dólares.',
+    body: 'Además de su uso en joyería, el oro se opera como inversión y como refugio frente a la inflación y la incertidumbre. Su precio internacional se expresa en dólares por onza troy de oro puro (24 quilates) y, llevado a pesos uruguayos, depende tanto de esa cotización como del tipo de cambio del dólar. En Uruguay, el Banco República y algunas casas de cambio publican precios de compra y venta del oro.',
+    example:
+      'Si la onza troy cotiza a USD 2.300 y el dólar está a $40, una onza equivale a unos $92.000 antes del spread de la casa.',
+    related: ['onza-troy', 'quilate', 'moneda-refugio'],
+  },
+  {
+    slug: 'onza-troy',
+    term: 'Onza troy',
+    category: 'cambio',
+    short:
+      'La onza troy es la unidad de peso con que se cotizan los metales preciosos: equivale a 31,1035 gramos.',
+    body: 'A diferencia de la onza común (que ronda los 28,35 gramos), la onza troy se usa exclusivamente para metales preciosos como el oro y la plata, y equivale a 31,1035 gramos. Cuando ves el precio del oro, casi siempre es el valor de una onza troy de oro puro. Para obtener el precio por gramo hay que dividir entre 31,1035, y para joyería ajustar además por los quilates.',
+    related: ['oro', 'quilate'],
+  },
+  {
+    slug: 'quilate',
+    term: 'Quilate',
+    category: 'cambio',
+    short:
+      'El quilate mide la pureza del oro sobre 24 partes: 24k es oro puro, 18k tiene 75% y 14k cerca de 58%.',
+    body: 'En joyería, el quilate indica cuánto oro puro contiene una pieza sobre un total de 24 partes. El oro 24k es puro; el 18k tiene 18 de 24 partes de oro (75%); el 14k, 14 de 24 (alrededor del 58%). Cuanto menor es el quilataje, menos oro contiene y menor es su valor por gramo. Por eso, al vender una joya, el precio parte del valor del gramo de oro puro ajustado por su pureza.',
+    related: ['oro', 'onza-troy'],
+  },
+  {
+    slug: 'moneda-refugio',
+    term: 'Moneda refugio',
+    category: 'cambio',
+    short:
+      'Una moneda o activo refugio es aquel que los inversores buscan en momentos de incertidumbre por su estabilidad.',
+    body: 'En épocas de crisis o alta volatilidad, el dinero tiende a moverse hacia activos considerados seguros, que conservan su valor mejor que otros. El dólar estadounidense, el franco suizo y el oro suelen cumplir ese rol. En Uruguay, esa búsqueda de refugio se ve sobre todo en la demanda de dólares, que aumenta cuando crece la incertidumbre regional.',
+    related: ['oro', 'divisa', 'cobertura-cambiaria'],
+  },
+  {
+    slug: 'indice-medio-de-salarios',
+    term: 'Índice Medio de Salarios',
+    category: 'indicadores',
+    short:
+      'El Índice Medio de Salarios (IMS) mide la evolución de los salarios y es la base del ajuste de la Unidad Reajustable.',
+    body: 'El Instituto Nacional de Estadística (INE) calcula el Índice Medio de Salarios para seguir cómo evolucionan las remuneraciones en Uruguay. Es la referencia con la que se ajusta mensualmente la Unidad Reajustable (UR), muy usada en alquileres y préstamos del Banco Hipotecario. A diferencia del IPC, que mide precios, el IMS mide salarios, por eso la UR y la UI pueden moverse de forma distinta.',
+    related: ['unidad-reajustable', 'ipc', 'inflacion'],
+  },
 ] as const
 
 /** Look up a glossary term by slug. */

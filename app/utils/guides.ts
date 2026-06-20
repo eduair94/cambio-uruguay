@@ -713,6 +713,41 @@ export const guides: readonly Guide[] = [
       { label: 'Cotización del guaraní', to: '/cotizacion/guarani' },
     ],
   },
+  {
+    slug: 'dolar-cripto-usdt-uruguay',
+    title: 'Dólar cripto y USDT en Uruguay: qué son y cómo se relacionan con el dólar',
+    description:
+      'Qué es el dólar cripto y el USDT, cómo se vinculan con el dólar billete en Uruguay, para qué se usan y qué riesgos conviene tener en cuenta antes de operar.',
+    tag: 'CRIPTO',
+    updatedAt: '2026-06-20',
+    sections: [
+      {
+        heading: '¿Qué es el "dólar cripto"?',
+        body: 'Se llama "dólar cripto" a la compra de dólares a través de criptomonedas estables, principalmente el USDT. La expresión se popularizó en Argentina, donde las restricciones cambiarias llevaron a mucha gente a conseguir dólares por esta vía. En Uruguay, con un mercado cambiario libre y unificado, no hay esa necesidad de esquivar controles, pero el interés por las criptomonedas igual viene creciendo.',
+      },
+      {
+        heading: 'Qué es el USDT (y por qué vale ~1 dólar)',
+        body: 'El USDT (Tether) es una stablecoin: una criptomoneda diseñada para mantener su valor cercano a un dólar estadounidense, respaldada —según su emisor— por reservas en dólares y activos equivalentes. Por eso 1 USDT suele cotizar muy cerca de USD 1. A diferencia del Bitcoin, cuya cotización es muy volátil, el USDT busca estabilidad, y por eso se usa como forma de "tener dólares" dentro del mundo cripto.',
+      },
+      {
+        heading: 'USDT frente al dólar billete y el dólar de las casas de cambio',
+        body: 'El USDT no es lo mismo que un dólar billete: es un activo digital que representa un dólar, no efectivo ni un depósito bancario. Su precio en pesos uruguayos depende de la cotización del dólar más el spread y las comisiones de la plataforma donde lo compres. Conviene comparar siempre ese precio final contra la cotización del dólar en las casas de cambio relevadas en Cambio Uruguay, porque no siempre el camino cripto resulta más barato.',
+      },
+      {
+        heading: 'Para qué se usa y quién lo usa',
+        body: 'El USDT se usa para ahorrar en una unidad estable, mover fondos rápido entre plataformas o países, y operar dentro de exchanges de criptomonedas sin exponerse a la volatilidad del Bitcoin. En Uruguay lo utilizan sobre todo personas familiarizadas con el ecosistema cripto. Para alguien que solo quiere comprar dólares para ahorrar o viajar, el dólar tradicional de las casas de cambio sigue siendo el camino más simple y directo.',
+      },
+      {
+        heading: 'Riesgos y aspectos a tener en cuenta',
+        body: 'Operar con USDT implica riesgos distintos a los del dólar tradicional: riesgo de la plataforma o exchange (custodia, seguridad, posibilidad de fraude), riesgo de que la stablecoin se aleje de su paridad con el dólar, y un marco regulatorio que sigue evolucionando en Uruguay y la región. No es dinero de curso legal y no está cubierto por las garantías del sistema bancario. Antes de operar, conviene informarse bien, usar plataformas serias y no volcar más de lo que estás dispuesto a arriesgar.',
+      },
+    ],
+    related: [
+      { label: 'Cotización del dólar hoy', to: '/cotizacion/dolar' },
+      { label: 'Proteger ahorros de la inflación', to: '/guias/proteger-ahorros-de-la-inflacion' },
+      { label: 'Glosario: dólar billete', to: '/glosario/dolar-billete' },
+    ],
+  },
 ] as const
 
 /**
