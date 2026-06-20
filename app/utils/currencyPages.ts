@@ -38,6 +38,7 @@ export const CURRENCY_SLUG_TO_CODE = {
   'peso-mexicano': 'MXN',
   'dolar-canadiense': 'CAD',
   'dolar-australiano': 'AUD',
+  'libra-esterlina': 'GBP',
 } as const
 
 /** A pretty slug accepted in the URL (e.g. `'dolar'`). */
@@ -72,7 +73,27 @@ const CURRENCY_NAMES: Readonly<Record<CurrencyCode, Record<CurrencyLang, string>
   MXN: { es: 'Peso Mexicano', en: 'Mexican Peso', pt: 'Peso Mexicano' },
   CAD: { es: 'Dólar Canadiense', en: 'Canadian Dollar', pt: 'Dólar Canadense' },
   AUD: { es: 'Dólar Australiano', en: 'Australian Dollar', pt: 'Dólar Australiano' },
+  GBP: { es: 'Libra Esterlina', en: 'British Pound', pt: 'Libra Esterlina' },
 })
+
+/**
+ * Currencies that are grammatically feminine in Spanish/Portuguese, so the shared
+ * copy must say "de la libra" / "da libra" instead of "del" / "do". Everything
+ * else defaults to masculine.
+ */
+const FEMININE_CURRENCIES: ReadonlySet<CurrencyCode> = new Set<CurrencyCode>(['GBP'])
+
+/**
+ * The "de + article" preposition for a currency in the given language, used by the
+ * shared cotización copy (`Cotización {prep} {currency}`). Spanish: `del` / `de la`;
+ * Portuguese: `do` / `da`; English needs no article, so it returns an empty string.
+ */
+export function currencyPrep(code: CurrencyCode, lang: CurrencyLang = 'es'): string {
+  const feminine = FEMININE_CURRENCIES.has(code)
+  if (lang === 'pt') return feminine ? 'da' : 'do'
+  if (lang === 'en') return ''
+  return feminine ? 'de la' : 'del'
+}
 
 /**
  * Per-currency context paragraph (Spanish-only, like the editorial guides). Gives
@@ -95,6 +116,7 @@ const CURRENCY_CONTEXT: Readonly<Record<CurrencyCode, string>> = Object.freeze({
   MXN: 'El peso mexicano se busca para viajes a México y pagos puntuales. No es de las monedas más ofrecidas en Uruguay, por lo que comparar dónde está disponible es clave para conseguir un buen precio.',
   CAD: 'El dólar canadiense se opera por viajes, estudios o inmigración a Canadá. Su cotización en Uruguay puede variar según la casa de cambio, así que conviene comparar antes de comprar o vender.',
   AUD: 'El dólar australiano interesa a quienes viajan, estudian o emigran a Australia. Es una divisa menos común en las casas de cambio uruguayas, de modo que verificar disponibilidad y precio ayuda a operar mejor.',
+  GBP: 'La libra esterlina es la moneda del Reino Unido y una de las divisas más fuertes del mundo. En Uruguay se opera sobre todo por viajes, estudios o negocios con Gran Bretaña; no todas las casas de cambio la cotizan, así que conviene comparar dónde está disponible y a qué precio.',
 })
 
 /**
@@ -112,7 +134,7 @@ export const CURRENCY_GROUPS: ReadonlyArray<{ titleKey: string; slugs: CurrencyS
     },
     {
       titleKey: 'groupIntl',
-      slugs: ['yen', 'franco-suizo', 'dolar-canadiense', 'dolar-australiano'],
+      slugs: ['libra-esterlina', 'yen', 'franco-suizo', 'dolar-canadiense', 'dolar-australiano'],
     },
     { titleKey: 'groupCommodities', slugs: ['oro'] },
   ])

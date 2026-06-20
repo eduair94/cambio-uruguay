@@ -14,10 +14,10 @@
               </v-avatar>
               <div>
                 <h1 class="text-h5 text-md-h4 font-weight-bold text-white mb-1">
-                  {{ $t('cotizacion.h1', { currency: currencyName }) }}
+                  {{ $t('cotizacion.h1', { currency: currencyName, prep }) }}
                 </h1>
                 <p class="text-body-1 text-grey-lighten-2 mb-0 cotizacion-intro">
-                  {{ $t('cotizacion.intro', { currency: currencyName }) }}
+                  {{ $t('cotizacion.intro', { currency: currencyName, prep }) }}
                 </p>
               </div>
             </div>
@@ -35,7 +35,7 @@
             <v-spacer class="d-none d-sm-flex" />
             <ShareButtons
               :url="canonicalUrl"
-              :text="$t('cotizacion.metaTitle', { currency: currencyName })"
+              :text="$t('cotizacion.metaTitle', { currency: currencyName, prep })"
             />
           </v-card-text>
         </v-card>
@@ -79,7 +79,7 @@
           <v-card>
             <v-card-title class="d-flex align-center py-3">
               <v-icon start>mdi-table</v-icon>
-              {{ $t('cotizacion.tableTitle', { currency: currencyName }) }}
+              {{ $t('cotizacion.tableTitle', { currency: currencyName, prep }) }}
             </v-card-title>
 
             <v-data-table
@@ -155,7 +155,7 @@
               <v-icon size="64" color="grey-lighten-1" class="mb-4">mdi-bank-off</v-icon>
               <h2 class="text-h6 mb-2">{{ $t('cotizacion.emptyTitle') }}</h2>
               <p class="text-body-2 text-grey">
-                {{ $t('cotizacion.emptyText', { currency: currencyName }) }}
+                {{ $t('cotizacion.emptyText', { currency: currencyName, prep }) }}
               </p>
             </v-card-text>
           </v-card>
@@ -168,7 +168,7 @@
           <v-card>
             <v-card-title class="d-flex align-center py-3">
               <v-icon start>mdi-information-outline</v-icon>
-              {{ $t('cotizacion.aboutTitle', { currency: currencyName }) }}
+              {{ $t('cotizacion.aboutTitle', { currency: currencyName, prep }) }}
             </v-card-title>
             <v-card-text>
               <p class="text-body-1 cotizacion-context mb-0">{{ context }}</p>
@@ -218,7 +218,7 @@
         <v-col cols="12">
           <v-card class="cta-cotizacion pa-6 text-center" variant="flat">
             <h2 class="text-h6 font-weight-bold mb-2 text-white">
-              {{ $t('cotizacion.ctaTitle', { currency: currencyName }) }}
+              {{ $t('cotizacion.ctaTitle', { currency: currencyName, prep }) }}
             </h2>
             <p class="text-body-2 text-grey-lighten-1 mb-4">
               {{ $t('cotizacion.ctaText') }}
@@ -275,6 +275,7 @@ import {
   currencyContext,
   currencyDisplayName,
   currencyFromSlug,
+  currencyPrep,
   currencySlug,
   goldGramPrices,
   listCurrencySlugs,
@@ -309,6 +310,8 @@ const lang = computed<CurrencyLang>(() =>
 )
 const currencyName = computed(() => currencyDisplayName(code.value, lang.value))
 const context = computed(() => currencyContext(code.value))
+// "de + article" preposition so the shared copy reads "del dólar" / "de la libra".
+const prep = computed(() => currencyPrep(code.value, lang.value))
 
 // SSR fetch: today's quotes, reduced to this currency's plain/cash rows with the
 // best buy/sell flagged. Keyed by code so each currency page is cached separately.
@@ -373,23 +376,26 @@ const canonicalUrl = computed(
 
 // Branded OG image for the currency page.
 defineOgImageComponent('Cambio', {
-  title: () => t('cotizacion.ogTitle', { currency: currencyName.value }),
-  subtitle: () => t('cotizacion.ogSubtitle', { currency: currencyName.value }),
+  title: () => t('cotizacion.ogTitle', { currency: currencyName.value, prep: prep.value }),
+  subtitle: () => t('cotizacion.ogSubtitle', { currency: currencyName.value, prep: prep.value }),
   tag: 'COTIZACIÓN',
   locale: locale.value as 'es' | 'en' | 'pt',
 })
 
 // SEO meta.
 useSeoMeta({
-  title: () => t('cotizacion.metaTitle', { currency: currencyName.value }),
-  description: () => t('cotizacion.metaDescription', { currency: currencyName.value }),
-  ogTitle: () => t('cotizacion.metaTitle', { currency: currencyName.value }),
-  ogDescription: () => t('cotizacion.metaDescription', { currency: currencyName.value }),
+  title: () => t('cotizacion.metaTitle', { currency: currencyName.value, prep: prep.value }),
+  description: () =>
+    t('cotizacion.metaDescription', { currency: currencyName.value, prep: prep.value }),
+  ogTitle: () => t('cotizacion.metaTitle', { currency: currencyName.value, prep: prep.value }),
+  ogDescription: () =>
+    t('cotizacion.metaDescription', { currency: currencyName.value, prep: prep.value }),
   ogType: 'website',
   ogUrl: () => canonicalUrl.value,
   twitterCard: 'summary_large_image',
-  twitterTitle: () => t('cotizacion.metaTitle', { currency: currencyName.value }),
-  twitterDescription: () => t('cotizacion.metaDescription', { currency: currencyName.value }),
+  twitterTitle: () => t('cotizacion.metaTitle', { currency: currencyName.value, prep: prep.value }),
+  twitterDescription: () =>
+    t('cotizacion.metaDescription', { currency: currencyName.value, prep: prep.value }),
 })
 
 // ExchangeRateSpecification + BreadcrumbList JSON-LD for rich results.
@@ -423,7 +429,7 @@ useHead({
                 {
                   '@type': 'ListItem',
                   position: 2,
-                  name: t('cotizacion.h1', { currency: currencyName.value }),
+                  name: t('cotizacion.h1', { currency: currencyName.value, prep: prep.value }),
                   item: canonicalUrl.value,
                 },
               ],

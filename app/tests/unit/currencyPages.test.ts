@@ -6,6 +6,7 @@ import {
   currencyContext,
   currencyDisplayName,
   currencyFromSlug,
+  currencyPrep,
   currencySlug,
   goldGramPrices,
   listCurrencySlugs,
@@ -148,6 +149,7 @@ describe('currencyFromSlug / currencySlug', () => {
     expect(currencyFromSlug('peso-mexicano')).toBe('MXN')
     expect(currencyFromSlug('dolar-canadiense')).toBe('CAD')
     expect(currencyFromSlug('dolar-australiano')).toBe('AUD')
+    expect(currencyFromSlug('libra-esterlina')).toBe('GBP')
   })
 
   it('keeps the four majors first so casa pages order them first', () => {
@@ -184,6 +186,24 @@ describe('CURRENCY_GROUPS', () => {
     const grouped = CURRENCY_GROUPS.flatMap(g => g.slugs)
     expect([...grouped].sort()).toEqual([...listCurrencySlugs()].sort())
     expect(new Set(grouped).size).toBe(grouped.length)
+  })
+})
+
+describe('currencyPrep', () => {
+  it('uses masculine "del"/"do" for ordinary currencies', () => {
+    expect(currencyPrep('USD', 'es')).toBe('del')
+    expect(currencyPrep('XAU', 'es')).toBe('del')
+    expect(currencyPrep('USD', 'pt')).toBe('do')
+  })
+
+  it('uses feminine "de la"/"da" for the libra (GBP)', () => {
+    expect(currencyPrep('GBP', 'es')).toBe('de la')
+    expect(currencyPrep('GBP', 'pt')).toBe('da')
+  })
+
+  it('returns an empty preposition for English (no article needed)', () => {
+    expect(currencyPrep('USD', 'en')).toBe('')
+    expect(currencyPrep('GBP', 'en')).toBe('')
   })
 })
 
