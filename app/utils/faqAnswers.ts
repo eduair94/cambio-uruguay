@@ -151,6 +151,30 @@ const LABELS: Record<FaqLang, Labels> = {
         answer:
           'Para comprar conviene la casa con la menor cotización de venta; para vender, la que tenga la mayor cotización de compra. También importa el spread: cuanto menor es la diferencia entre compra y venta, mejor el precio.',
       },
+      {
+        id: 'moneda-uruguay',
+        question: '¿Cuál es la moneda de Uruguay?',
+        answer:
+          'La moneda oficial de Uruguay es el peso uruguayo (código UYU, símbolo $ o $U), emitido por el Banco Central del Uruguay. Se divide en 100 centésimos y circula en billetes de 20, 50, 100, 200, 500, 1.000 y 2.000 pesos, y monedas de 1, 2, 5, 10 y 50 pesos. En la práctica, el dólar estadounidense también se usa mucho para ahorrar, fijar alquileres y operaciones grandes, pero los pagos del día a día son en pesos. A diferencia de Argentina, Uruguay no tiene mercado paralelo ("dólar blue"): el dólar se compra y vende libremente en casas de cambio y bancos.',
+      },
+      {
+        id: 'pagar-dolares',
+        question: '¿Se puede pagar en dólares en Uruguay?',
+        answer:
+          'En zonas turísticas muchos hoteles, restaurantes y comercios aceptan dólares estadounidenses, pero suelen aplicar un tipo de cambio propio menos favorable que el de una casa de cambio. Por eso, para gastos del día a día casi siempre conviene pagar en pesos uruguayos. Si traés dólares en efectivo, cambialos en una casa de cambio comparando el precio (en Cambio Uruguay ves dónde te dan más), y para compras grandes considerá la tarjeta. El peso es la moneda de curso legal, así que siempre podés pagar en pesos.',
+      },
+      {
+        id: 'propinas',
+        question: '¿Cuánto se deja de propina en Uruguay?',
+        answer:
+          'En Uruguay la propina no es obligatoria, pero es habitual dejar alrededor del 10% en restaurantes y bares cuando el servicio fue bueno; muchos posnet permiten agregarla al pagar con tarjeta. Ojo: el "cubierto" que aparece en la cuenta es un cargo por pan y servicio de mesa, no una propina. En los taxis no se acostumbra dejar propina (como mucho se redondea). A maleteros y cuidacoches se les suele dar unos $20 a $50. En cafés y mostradores, la propina es opcional.',
+      },
+      {
+        id: 'iva-turistas',
+        question: '¿Los turistas extranjeros pagan IVA en Uruguay?',
+        answer:
+          'Los turistas no residentes tienen beneficios de IVA en Uruguay si pagan con una tarjeta emitida en el exterior. El alojamiento en hoteles está exonerado del IVA durante todo el año (se factura sin el impuesto). Para gastronomía (restaurantes, bares y cafés independientes del hospedaje) existe una reducción del IVA que rige por temporada —típicamente en verano— y que puede cambiar de un año a otro, así que conviene verificar la vigencia del período en curso. Además, en compras de bienes se puede pedir la devolución "Tax Free" de una parte del IVA al salir del país. El pago en efectivo no accede a estos beneficios.',
+      },
     ],
   },
   en: {
@@ -193,6 +217,30 @@ const LABELS: Record<FaqLang, Labels> = {
         answer:
           'To buy, pick the house with the lowest sell rate; to sell, the one with the highest buy rate. The spread also matters: the smaller the gap between buy and sell, the better the price.',
       },
+      {
+        id: 'moneda-uruguay',
+        question: 'What is the currency of Uruguay?',
+        answer:
+          'Uruguay\'s official currency is the Uruguayan peso (code UYU, symbol $ or $U), issued by the Central Bank of Uruguay. It is divided into 100 centésimos and circulates in notes of 20, 50, 100, 200, 500, 1,000 and 2,000 pesos, plus coins of 1, 2, 5, 10 and 50 pesos. In practice, the US dollar is also widely used for savings, rent and large transactions, but everyday payments are in pesos. Unlike Argentina, Uruguay has no parallel ("blue") market: dollars are bought and sold freely at exchange houses and banks.',
+      },
+      {
+        id: 'pagar-dolares',
+        question: 'Can you pay in US dollars in Uruguay?',
+        answer:
+          'In tourist areas many hotels, restaurants and shops accept US dollars, but they usually apply their own, less favorable exchange rate than a casa de cambio. So for everyday spending it is almost always better to pay in Uruguayan pesos. If you bring US cash, change it at an exchange house and compare the rate (Cambio Uruguay shows where you get more); for large purchases, consider a card. The peso is legal tender, so you can always pay in pesos.',
+      },
+      {
+        id: 'propinas',
+        question: 'How much do you tip in Uruguay?',
+        answer:
+          'In Uruguay tipping is not mandatory, but it is customary to leave around 10% at restaurants and bars when the service was good; many card terminals let you add it. Note: the "cubierto" on the bill is a bread/table-service charge, not a tip. Taxi drivers are not usually tipped (rounding up at most). Porters and parking attendants ("cuidacoches") typically get about $20 to $50 in pesos. At cafés and counters, tipping is optional.',
+      },
+      {
+        id: 'iva-turistas',
+        question: 'Do foreign tourists pay VAT in Uruguay?',
+        answer:
+          'Non-resident tourists get VAT benefits in Uruguay when they pay with a foreign-issued card. Hotel lodging is VAT-exempt year-round (billed without the tax). For dining (restaurants, bars and cafés separate from lodging) there is a VAT reduction that applies seasonally —typically over the summer— and can change from year to year, so check the current period. In addition, on goods you can claim a "Tax Free" refund of part of the VAT when leaving the country. Cash payments do not qualify for these benefits.',
+      },
     ],
   },
   pt: {
@@ -233,6 +281,30 @@ const LABELS: Record<FaqLang, Labels> = {
         question: 'Como escolher a melhor casa de câmbio?',
         answer:
           'Para comprar, escolha a casa com a menor cotação de venda; para vender, a com a maior cotação de compra. O spread também importa: quanto menor a diferença entre compra e venda, melhor o preço.',
+      },
+      {
+        id: 'moneda-uruguay',
+        question: 'Qual é a moeda do Uruguai?',
+        answer:
+          'A moeda oficial do Uruguai é o peso uruguaio (código UYU, símbolo $ ou $U), emitido pelo Banco Central do Uruguai. Divide-se em 100 centésimos e circula em notas de 20, 50, 100, 200, 500, 1.000 e 2.000 pesos, além de moedas de 1, 2, 5, 10 e 50 pesos. Na prática, o dólar americano também é muito usado para poupança, aluguéis e operações grandes, mas os pagamentos do dia a dia são em pesos. Diferente da Argentina, o Uruguai não tem mercado paralelo ("dólar blue"): o dólar é comprado e vendido livremente em casas de câmbio e bancos.',
+      },
+      {
+        id: 'pagar-dolares',
+        question: 'É possível pagar em dólares no Uruguai?',
+        answer:
+          'Em áreas turísticas, muitos hotéis, restaurantes e lojas aceitam dólares americanos, mas costumam aplicar um câmbio próprio menos favorável que o de uma casa de câmbio. Por isso, para gastos do dia a dia quase sempre vale a pena pagar em pesos uruguaios. Se você traz dólares em espécie, troque numa casa de câmbio comparando o preço (a Cambio Uruguay mostra onde pagam mais); para compras grandes, considere o cartão. O peso é moeda de curso legal, então você sempre pode pagar em pesos.',
+      },
+      {
+        id: 'propinas',
+        question: 'Quanto se dá de gorjeta no Uruguai?',
+        answer:
+          'No Uruguai a gorjeta não é obrigatória, mas é comum deixar cerca de 10% em restaurantes e bares quando o serviço foi bom; muitas maquininhas permitem incluí-la no cartão. Atenção: o "cubierto" na conta é uma taxa de pão e serviço de mesa, não gorjeta. Em táxis não se costuma dar gorjeta (no máximo arredondar). A carregadores e "cuidacoches" costuma-se dar cerca de $20 a $50 em pesos. Em cafés e balcões, a gorjeta é opcional.',
+      },
+      {
+        id: 'iva-turistas',
+        question: 'Turistas estrangeiros pagam IVA no Uruguai?',
+        answer:
+          'Turistas não residentes têm benefícios de IVA no Uruguai ao pagar com cartão emitido no exterior. A hospedagem em hotéis é isenta de IVA o ano todo (faturada sem o imposto). Para gastronomia (restaurantes, bares e cafés independentes da hospedagem) há uma redução de IVA que vigora por temporada —geralmente no verão— e pode mudar de um ano para outro, então confira a vigência do período atual. Além disso, em compras de bens é possível pedir a devolução "Tax Free" de parte do IVA ao sair do país. Pagamentos em dinheiro não acessam esses benefícios.',
       },
     ],
   },

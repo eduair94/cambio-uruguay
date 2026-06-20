@@ -467,6 +467,30 @@ export default defineNuxtConfig({
       '/acerca',
       '/conectar',
     ],
+    // Explicitly welcome AI search/answer crawlers so the site can be cited by
+    // Google AI Overviews/Gemini, ChatGPT Search, Perplexity and Claude. These
+    // are answer engines (not just training scrapers); citation drives traffic.
+    groups: [
+      {
+        userAgent: [
+          'GPTBot',
+          'OAI-SearchBot',
+          'ChatGPT-User',
+          'ClaudeBot',
+          'Claude-User',
+          'anthropic-ai',
+          'PerplexityBot',
+          'Perplexity-User',
+          'Google-Extended',
+          'Applebot-Extended',
+          'Bingbot',
+          'Amazonbot',
+          'cohere-ai',
+        ],
+        allow: ['/'],
+        disallow: ['/admin/', '/server/', '/_nuxt/'],
+      },
+    ],
     sitemap: 'https://cambio-uruguay.com/sitemap.xml',
     credits: false,
   },
