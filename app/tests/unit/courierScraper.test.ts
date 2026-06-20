@@ -38,14 +38,18 @@ describe('parseCourierRate', () => {
     expect(parseCourierRate('usxcargo', text).perKgUsd).toBe(17.5)
   })
 
-  it('urubox: takes the 1–4,99 kg tier (first u$s value in the 18–22 band)', () => {
+  it('urubox: anchors on "1 a 4.99" label, ignores competing lighter tier (u$s 18,90 at 500-699g)', () => {
+    // Fixture mirrors real page order: sub-kg tiers (incl. 18,90) appear BEFORE the 1-4.99 kg row.
+    // The old loose 18–22 band would grab 18,90 first — the new anchor must skip it.
     const text =
-      'En KG Costo por Kg 1 a 4.99 u$s 19,90 5 a 9.99 u$s 17,90 10 a 19.99 u$s 16,50 20 a 40 u$s 15,90'
+      '0 a 199 u$s 10,90 200 a 499 u$s 15,90 500 a 699 u$s 18,90 700 a 999 u$s 20,90 ' +
+      '1 a 4.99 u$s 19,90 5 a 9.99 u$s 17,90 10 a 19.99 u$s 16,50 20 a 40 u$s 15,90'
     expect(parseCourierRate('urubox', text).perKgUsd).toBe(19.9)
   })
 
-  it('starbox: takes the 1–4,99 kg tier ($21 / por cada kg)', () => {
-    const text = '0-500g U$S17 501-999g $21 1-4.99 kg $21 / por cada kg 5-10 kg $20 / por cada kg'
+  it('starbox: anchors on "1-4.99 kg" label, ignores competing heavier tier ($20 / por cada kg)', () => {
+    // Fixture puts the 5-10 kg tier ($20) BEFORE the 1-4.99 kg tier ($21) to prove order-independence.
+    const text = '0-500g U$S17 501-999g $21 5-10 kg $20 / por cada kg 1-4.99 kg $21 / por cada kg'
     expect(parseCourierRate('starbox', text).perKgUsd).toBe(21)
   })
 

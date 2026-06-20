@@ -92,18 +92,23 @@ export const RATE_PARSERS: Record<
       return m ? toNum(m[1]!) : null
     },
   },
-  // Tiers: <1 kg tiered · 1–4,99 kg u$s 19,90/kg · 5–9,99 kg u$s 17,90 · …
-  // Representative = 1–4,99 kg tier = first u$s value in the 18–22 band.
+  // Tiers: <1 kg tiered (incl. 500–699 g @ u$s 18,90) · 1–4,99 kg u$s 19,90/kg · 5–9,99 kg u$s 17,90 · …
+  // Representative = 1–4,99 kg tier. Anchored on the "1 a 4.99" weight-range label immediately
+  // preceding the u$s price, so sub-kg tiers (which also fall in the 18–22 range) are skipped.
   urubox: {
     url: 'https://www.urubox.com.uy/tarifas-envios.html',
-    extract: text => usdValues(text).find(v => v >= 18 && v <= 22) ?? null,
+    extract: text => {
+      const m = text.match(/1\s+a\s+4[.,]99\s+(?:u\$s|us\$|usd)\s?(\d{1,3}[.,]\d{1,2})/i)
+      return m ? toNum(m[1]!) : null
+    },
   },
   // Tiers: 0–500 g U$S17 flat · 501–999 g $21 · 1–4,99 kg $21/por cada kg · 5–10 kg $20/por cada kg.
-  // Representative = 1–4,99 kg tier, anchored on "$<n> / por cada kg" (plain $ sign, not U$S/USD).
+  // Representative = 1–4,99 kg tier. Anchored on the "1-4.99 kg" weight-range label immediately
+  // preceding "$<n> / por cada kg", so the 5–10 kg tier ($20) is not mistakenly returned.
   starbox: {
     url: 'https://www.starboxuruguay.com/',
     extract: text => {
-      const m = text.match(/\$\s*(\d{1,3})\s*\/\s*por cada kg/i)
+      const m = text.match(/1[-–]4[.,]99\s*kg\s*\$\s*(\d{1,3})\s*\/\s*por cada kg/i)
       return m ? toNum(m[1]!) : null
     },
   },
