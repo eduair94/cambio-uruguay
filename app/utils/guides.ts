@@ -175,6 +175,28 @@ export const guides: readonly Guide[] = [
         body: 'Resumiendo: primero compará en Cambio Uruguay y quedate con la venta más baja para tu monto; segundo, revisá el spread y elegí el canal (billete, transferencia, cable o eBROU) que corresponde a tu caso; tercero, confirmá comisiones y, si el monto es alto, negociá. Con esa rutina simple comprás dólares al mejor precio disponible sin depender de la suerte ni del primer lugar que encontrás.',
       },
     ],
+    steps: [
+      {
+        name: 'Compará entre casas de cambio',
+        text: 'Entrá al comparador de Cambio Uruguay y mirá el precio de venta del dólar en más de 40 casas de cambio.',
+      },
+      {
+        name: 'Quedate con la venta más baja',
+        text: 'Si estás comprando, lo que te importa es el precio de venta: elegí la casa con el menor para tu monto.',
+      },
+      {
+        name: 'Revisá el spread y elegí el canal',
+        text: 'Fijate el spread (diferencia entre compra y venta) y elegí billete, transferencia, cable o eBROU según tu operación.',
+      },
+      {
+        name: 'Evitá comisiones y zonas turísticas',
+        text: 'Confirmá que no haya comisiones ni montos mínimos, y evitá cambiar en aeropuertos o zonas turísticas.',
+      },
+      {
+        name: 'Operá (y negociá si el monto es alto)',
+        text: 'Hacé la operación en la casa con el mejor precio; para sumas grandes, consultá si te mejoran la cotización.',
+      },
+    ],
   },
   {
     slug: 'mejor-momento-cambiar-divisas',
@@ -509,6 +531,28 @@ export const guides: readonly Guide[] = [
       {
         heading: 'Negociá si el monto es alto',
         body: 'En operaciones grandes, muchas casas mejoran la cotización si la pedís, sobre todo por transferencia. Llevar como referencia el mejor precio que viste en Cambio Uruguay te da argumentos para negociar. El peor escenario es que mantengan el precio publicado; muchas veces, lo mejoran.',
+      },
+    ],
+    steps: [
+      {
+        name: 'Mirá el monto final, no las etiquetas',
+        text: 'Compará cuántos pesos recibís o pagás en total, con todo incluido, no solo la cotización o la comisión anunciada.',
+      },
+      {
+        name: 'Detectá comisiones y montos mínimos',
+        text: 'Preguntá si hay comisión por operar o un monto mínimo que encarezca el cambio para operaciones chicas.',
+      },
+      {
+        name: 'Evitá aeropuertos y zonas turísticas',
+        text: 'En esos lugares la cotización suele ser claramente peor; cambiá en casas de cambio del centro.',
+      },
+      {
+        name: 'Compará el costo real en Cambio Uruguay',
+        text: 'Usá el comparador para ver en qué casa el precio final de tu operación es el mejor.',
+      },
+      {
+        name: 'Negociá si el monto es alto',
+        text: 'Para sumas grandes, pedí que te mejoren la cotización usando como referencia el mejor precio que viste.',
       },
     ],
   },
