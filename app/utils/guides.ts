@@ -749,6 +749,275 @@ export const guides: readonly Guide[] = [
       { label: 'Proteger ahorros de la inflación', to: '/guias/proteger-ahorros-de-la-inflacion' },
     ],
   },
+  {
+    slug: 'moneda-de-uruguay',
+    title: '¿Cuál es la moneda de Uruguay? El peso uruguayo (UYU)',
+    description:
+      'La moneda de Uruguay es el peso uruguayo (UYU), emitido por el Banco Central. Qué billetes y monedas circulan, cómo se usa el dólar y por qué no hay "dólar blue".',
+    tag: 'MONEDA',
+    updatedAt: '2026-06-20',
+    sections: [
+      {
+        heading: 'La moneda oficial es el peso uruguayo',
+        body: 'La moneda oficial de Uruguay es el peso uruguayo, cuyo código internacional es UYU y se representa con el símbolo $ (a veces $U para distinguirlo del dólar). Lo emite el Banco Central del Uruguay (BCU) y se divide en 100 centésimos, aunque en la práctica los centésimos ya casi no se usan. El peso uruguayo actual existe desde 1993, cuando reemplazó al "nuevo peso" quitándole tres ceros. Es la moneda de curso legal: todos los precios, sueldos e impuestos se expresan en pesos, y siempre podés pagar en pesos en cualquier comercio del país.',
+      },
+      {
+        heading: 'Billetes y monedas que circulan',
+        body: 'Los billetes en circulación son de 20, 50, 100, 200, 500, 1.000 y 2.000 pesos uruguayos. Las monedas son de 1, 2, 5, 10 y 50 pesos. Los billetes de mayor valor (1.000 y 2.000) llevan medidas de seguridad modernas como hilo de seguridad, marca de agua y tintas que cambian de color. Para montos chicos del día a día alcanzan los billetes de 100, 200 y 500; para pagos grandes o cambio de divisas conviene la tarjeta o la transferencia.',
+      },
+      {
+        heading: 'El dólar en Uruguay: muy usado, pero no es la moneda local',
+        body: 'Aunque la moneda es el peso, el dólar estadounidense tiene un peso enorme en la economía uruguaya: se usa para ahorrar, fijar el precio de alquileres e inmuebles y cerrar operaciones grandes. Muchos comercios de zonas turísticas aceptan dólares, pero a un tipo de cambio propio que suele ser peor que el de una casa de cambio. Por eso, para gastar en el día a día conviene pagar en pesos y cambiar los dólares donde te den el mejor precio.',
+      },
+      {
+        heading: 'En Uruguay no hay "dólar blue"',
+        body: 'A diferencia de Argentina, Uruguay tiene un mercado cambiario libre y unificado: no existe un mercado paralelo ni un "dólar blue". El dólar se compra y se vende abiertamente en casas de cambio y bancos al precio de mercado, y la diferencia entre lugares es solo de competencia, no de cotizaciones legales distintas. Eso hace que comparar entre casas sea la única forma de "ganar" unos pesos por dólar.',
+      },
+      {
+        heading: 'Cómo saber cuánto vale el dólar hoy',
+        body: 'En Cambio Uruguay podés ver, en tiempo real, a cuánto compran y venden el dólar más de 40 casas de cambio del país, con datos basados en el registro del Banco Central. Así sabés cuántos pesos uruguayos equivalen a tus dólares y dónde te conviene cambiarlos, sin depender de un único mostrador.',
+      },
+    ],
+    related: [
+      { label: 'Cotización del dólar hoy', to: '/cotizacion/dolar' },
+      { label: 'Billetes y monedas de Uruguay', to: '/guias/billetes-y-monedas-de-uruguay' },
+      { label: '¿Pagar en dólares o en pesos?', to: '/guias/pagar-en-dolares-o-pesos-uruguay' },
+      { label: 'Glosario: peso uruguayo', to: '/glosario/peso-uruguayo' },
+    ],
+  },
+  {
+    slug: 'pagar-en-dolares-o-pesos-uruguay',
+    title: '¿Conviene pagar en dólares o en pesos en Uruguay?',
+    description:
+      'En Uruguay muchos comercios turísticos aceptan dólares, pero a un cambio propio peor. Cuándo pagar en pesos, cuándo usar tarjeta y cómo no perder en el cambio.',
+    tag: 'TURISMO',
+    updatedAt: '2026-06-20',
+    sections: [
+      {
+        heading: 'Casi siempre conviene pagar en pesos',
+        body: 'En Uruguay la moneda de curso legal es el peso uruguayo, y para los gastos del día a día casi siempre conviene pagar en pesos. Muchos hoteles, restaurantes y comercios de zonas turísticas aceptan dólares estadounidenses, pero aplican su propio tipo de cambio, que suele ser bastante menos favorable que el de una casa de cambio. En la práctica, pagar un café o una cena en dólares significa, casi siempre, recibir un cambio peor del que conseguirías cambiando esos mismos dólares en una casa de cambio y pagando en pesos.',
+      },
+      {
+        heading: 'Cuándo sí puede tener sentido pagar en dólares',
+        body: 'Pagar directamente en dólares puede ser cómodo para montos puntuales en lugares muy turísticos, cuando no querés cambiar efectivo o no tenés pesos a mano. Pero conviene preguntar siempre qué tipo de cambio aplican antes de aceptar: si está muy por debajo del precio de mercado, te conviene pagar en pesos o con tarjeta. Para compras grandes (electrónica, hospedaje, excursiones) suele ser mejor la tarjeta, que usa un tipo de cambio más cercano al oficial.',
+      },
+      {
+        heading: 'Efectivo en dólares: cambialo, no lo gastes directo',
+        body: 'Si llegás con dólares en efectivo, la mejor estrategia suele ser cambiarlos en una casa de cambio —comparando dónde te dan más— y usar pesos para gastar. En Cambio Uruguay ves en tiempo real qué casa paga mejor por tus dólares, lo que puede representar varios pesos de diferencia por cada dólar. Evitá cambiar en aeropuertos o lugares muy turísticos, donde la cotización suele ser peor.',
+      },
+      {
+        heading: 'Tarjeta o efectivo: cada una tiene su lugar',
+        body: 'La tarjeta es práctica y segura para compras medianas y grandes, y muchos posnet permiten incluso elegir la moneda; conviene pagar en pesos para que el tipo de cambio lo haga tu banco y no el comercio. El efectivo en pesos es útil para ferias, taxis, propinas y comercios chicos. Llevar un poco de ambas cosas —algo de efectivo en pesos y una tarjeta— es lo más cómodo para moverse por Uruguay.',
+      },
+    ],
+    related: [
+      { label: '¿Cuál es la moneda de Uruguay?', to: '/guias/moneda-de-uruguay' },
+      {
+        label: 'Cajeros automáticos para turistas',
+        to: '/guias/cajeros-automaticos-uruguay-turistas',
+      },
+      { label: 'Cotización del dólar hoy', to: '/cotizacion/dolar' },
+    ],
+  },
+  {
+    slug: 'devolucion-iva-turistas-uruguay',
+    title: 'Devolución de IVA para turistas en Uruguay: hoteles, gastronomía y Tax Free',
+    description:
+      'Cómo funcionan los beneficios de IVA para turistas extranjeros en Uruguay: hoteles sin IVA todo el año, reducción en gastronomía por temporada y devolución Tax Free al salir.',
+    tag: 'IMPUESTOS',
+    updatedAt: '2026-06-20',
+    sections: [
+      {
+        heading: 'Qué beneficios de IVA tienen los turistas',
+        body: 'Los turistas no residentes en Uruguay acceden a beneficios de IVA siempre que paguen con una tarjeta (débito o crédito) emitida en el exterior o con una transferencia desde el exterior; el pago en efectivo no califica. Hay tres beneficios distintos: el alojamiento en hoteles está exonerado del IVA durante todo el año; la gastronomía (restaurantes, bares y cafés independientes del hospedaje) tiene una reducción del IVA que rige por temporada; y en la compra de bienes se puede pedir la devolución "Tax Free" de parte del IVA al salir del país. Conviene conocer cada uno por separado, porque las condiciones y la vigencia cambian.',
+      },
+      {
+        heading: 'Hoteles: sin IVA durante todo el año',
+        body: 'El hospedaje en hoteles y alojamientos para turistas no residentes está exonerado del IVA de forma permanente, durante todo el año. En la práctica, la factura se emite directamente sin el impuesto cuando se paga con medios electrónicos del exterior, así que no hay que pedir ninguna devolución posterior: el beneficio se aplica solo. Es uno de los incentivos turísticos más estables de Uruguay.',
+      },
+      {
+        heading: 'Gastronomía: reducción de IVA por temporada',
+        body: 'Para restaurantes, bares y cafeterías (independientes del hospedaje), Uruguay aplica una reducción del IVA cuando se paga con tarjeta extranjera, pero este beneficio se otorga por períodos —típicamente la temporada alta de verano— y su porcentaje y vigencia pueden cambiar de un año a otro mediante decreto. Por eso, antes de viajar conviene verificar si el beneficio está vigente en las fechas de tu visita y con qué alcance, ya que fuera del período promocional la gastronomía paga el IVA normal.',
+      },
+      {
+        heading: 'Tax Free: devolución del IVA en compras de bienes',
+        body: 'En la compra de bienes (no de servicios como hoteles o restaurantes) existe el sistema "Tax Free": al salir del país, el turista puede recuperar una parte del IVA pagado, gestionándolo en los puntos de salida como el Aeropuerto de Carrasco, Laguna del Sauce, puertos y pasos de frontera. Suele requerir un monto mínimo de compra por factura y presentar los comprobantes. No aplica a restaurantes, hoteles, combustible ni peajes.',
+      },
+      {
+        heading: 'Requisito clave: pagar con tarjeta del exterior',
+        body: 'El hilo común de todos estos beneficios es el medio de pago: hay que pagar con una tarjeta emitida fuera de Uruguay o con dinero electrónico/transferencia del exterior. Pagar en efectivo —en pesos o en dólares— deja afuera la exoneración. Por eso, para aprovechar el IVA cero en hoteles y la reducción en gastronomía, conviene usar la tarjeta extranjera y conservar las facturas.',
+      },
+    ],
+    related: [
+      { label: 'Calculadora de IVA', to: '/herramientas/calculadora-iva' },
+      {
+        label: 'Cambiar dólares en el aeropuerto de Carrasco',
+        to: '/guias/cambiar-dolares-aeropuerto-carrasco',
+      },
+      { label: '¿Pagar en dólares o en pesos?', to: '/guias/pagar-en-dolares-o-pesos-uruguay' },
+    ],
+  },
+  {
+    slug: 'cambiar-dolares-aeropuerto-carrasco',
+    title: 'Cambiar dólares en el Aeropuerto de Carrasco: ¿conviene?',
+    description:
+      'Cambiar dólares en el aeropuerto de Montevideo es cómodo pero caro: la cotización suele ser peor que en el centro. Cuánto cambiar, dónde y cómo no perder de más.',
+    tag: 'AEROPUERTO',
+    updatedAt: '2026-06-20',
+    sections: [
+      {
+        heading: 'En el aeropuerto cambiás peor',
+        body: 'Cambiar dólares en el Aeropuerto Internacional de Carrasco (Montevideo) es cómodo y está disponible casi a toda hora, pero casi siempre te dan una cotización peor que en las casas de cambio del centro de la ciudad. Es lo habitual en aeropuertos de todo el mundo: la conveniencia se paga con un tipo de cambio menos favorable y, a veces, comisiones. La recomendación práctica es cambiar en el aeropuerto solo lo justo para llegar a tu alojamiento y moverte las primeras horas, y dejar el grueso del cambio para una casa de cambio del centro, donde vas a conseguir más pesos por cada dólar.',
+      },
+      {
+        heading: 'Cuánto conviene cambiar al llegar',
+        body: 'Una estrategia sensata es cambiar en el aeropuerto un monto chico —lo necesario para el traslado, una comida y algún imprevisto— y el resto cambiarlo después, ya en Montevideo o tu destino, comparando entre casas. Llegar con algo de pesos uruguayos en el bolsillo evita pagar el traslado a un cambio malo, pero cambiar todo el viaje en el aeropuerto suele salir caro.',
+      },
+      {
+        heading: 'Alternativas al cambio del aeropuerto',
+        body: 'Si tu tarjeta no cobra comisiones altas por extracción, sacar algo de pesos en un cajero del aeropuerto puede ser una alternativa, aunque también tiene límites y costos. Otra opción es pagar el traslado con tarjeta y cambiar el efectivo más tarde. Lo importante es no sentir la presión de cambiar todo apenas aterrizás: tenés tiempo para buscar una mejor cotización.',
+      },
+      {
+        heading: 'Compará antes de cambiar el grueso',
+        body: 'Antes de cambiar montos importantes, mirá en Cambio Uruguay qué casa de cambio ofrece el mejor precio para tu operación. La diferencia entre el mostrador del aeropuerto y la mejor casa del centro puede ser de varios pesos por dólar, que en un cambio grande se vuelve dinero real. Comparar te toma un minuto y te puede ahorrar bastante.',
+      },
+    ],
+    related: [
+      { label: 'Cotización del dólar hoy', to: '/cotizacion/dolar' },
+      { label: 'Sucursales de casas de cambio', to: '/sucursales' },
+      { label: 'Devolución de IVA y Tax Free', to: '/guias/devolucion-iva-turistas-uruguay' },
+    ],
+  },
+  {
+    slug: 'cajeros-automaticos-uruguay-turistas',
+    title: 'Cajeros automáticos en Uruguay para turistas: redes, límites y comisiones',
+    description:
+      'Cómo sacar pesos (o dólares) con tarjeta extranjera en Uruguay: redes Banred y RedBROU, límites por extracción, comisiones y cuándo conviene una casa de cambio.',
+    tag: 'CAJEROS',
+    updatedAt: '2026-06-20',
+    sections: [
+      {
+        heading: 'Dos redes de cajeros: Banred y RedBROU',
+        body: 'En Uruguay hay dos grandes redes de cajeros automáticos: RedBROU (del Banco República, con logo azul) y Banred (que agrupa a la banca privada, con logo verde). Ambas aceptan tarjetas internacionales Visa, Mastercard y otras. La mayoría de los cajeros entregan pesos uruguayos, y muchos también permiten retirar dólares. Los billetes suelen dispensarse en múltiplos de 100, así que no esperes recibir cifras "exactas" al centavo.',
+      },
+      {
+        heading: 'Límites por extracción para tarjetas del exterior',
+        body: 'Con tarjeta extranjera, los cajeros uruguayos suelen tener un tope por extracción relativamente bajo —del orden de unos pocos miles de pesos cuando entregan pesos, o unos cientos de dólares cuando entregan dólares—, y a veces un máximo diario. Esto significa que para necesidades de efectivo grandes puede que tengas que hacer varias extracciones (con su comisión cada una) o, directamente, cambiar billetes en una casa de cambio.',
+      },
+      {
+        heading: 'Comisiones: las del cajero y las de tu banco',
+        body: 'Al sacar plata con tarjeta del exterior pagás, por lo general, dos costos: una comisión del cajero/red uruguaya por la operación y, además, lo que cobre tu propio banco por usar la tarjeta en el extranjero (más el tipo de cambio que aplique). Por eso, para montos importantes muchas veces conviene comparar: cambiar billetes en una casa de cambio puede salir más barato que varias extracciones de cajero.',
+      },
+      {
+        heading: 'Cajero o casa de cambio: cuándo conviene cada uno',
+        body: 'El cajero es práctico para conseguir algo de efectivo rápido, sobre todo al llegar o fuera de horario. Pero si traés dólares en efectivo y necesitás bastante plata local, casi siempre te conviene cambiarlos en una casa de cambio, comparando dónde te dan más. En Cambio Uruguay podés ver el mejor precio del dólar antes de decidir entre sacar del cajero o cambiar billetes.',
+      },
+    ],
+    related: [
+      { label: '¿Pagar en dólares o en pesos?', to: '/guias/pagar-en-dolares-o-pesos-uruguay' },
+      { label: 'Cotización del dólar hoy', to: '/cotizacion/dolar' },
+      {
+        label: 'Documentos para cambiar dólares',
+        to: '/guias/documentos-para-cambiar-dolares-uruguay',
+      },
+    ],
+  },
+  {
+    slug: 'documentos-para-cambiar-dolares-uruguay',
+    title: 'Qué documentos necesitás para cambiar dólares en Uruguay',
+    description:
+      'Cuándo te piden cédula o pasaporte para cambiar dólares en Uruguay, qué es la declaración jurada de origen de fondos y la regla de declarar más de USD 10.000 en aduana.',
+    tag: 'TRÁMITES',
+    updatedAt: '2026-06-20',
+    sections: [
+      {
+        heading: 'Para montos chicos, normalmente sin trámite',
+        body: 'Para cambiar montos pequeños de dólares en una casa de cambio uruguaya, en general no te piden más que el efectivo: las operaciones por debajo de cierto umbral diario se hacen sin necesidad de mostrar documento. Ese umbral suele ubicarse en el orden de los USD 3.000 por día, por debajo del cual la operación es directa. Es lo habitual para un turista que cambia unos cientos de dólares para sus gastos.',
+      },
+      {
+        heading: 'Montos altos: cédula o pasaporte y declaración jurada',
+        body: 'Cuando la operación supera ese umbral (del orden de USD 3.000 diarios), las casas de cambio están obligadas, por las normas de prevención de lavado de activos del Banco Central, a pedirte un documento de identidad (cédula o pasaporte) y, según el monto, una declaración jurada sobre el origen y el destino de los fondos. No es una sospecha hacia vos: es un requisito legal que aplica a todos por igual, y conviene llevar el documento si pensás cambiar sumas importantes.',
+      },
+      {
+        heading: 'Entrar o salir con más de USD 10.000: declarar en aduana',
+        body: 'Aparte del cambio en sí, hay una regla aduanera importante: si entrás o salís de Uruguay con dinero en efectivo (o instrumentos al portador) por un valor igual o superior a USD 10.000, debés declararlo ante la Dirección Nacional de Aduanas. Aplica tanto al ingreso como al egreso del país y suma todas las monedas convertidas a dólares. No declararlo puede derivar en sanciones, así que si viajás con sumas grandes, hacé la declaración correspondiente.',
+      },
+      {
+        heading: 'Consejo práctico para turistas',
+        body: 'Para la mayoría de los viajeros, que cambian montos moderados, alcanza con llevar el pasaporte por las dudas. Si pensás operar sumas grandes —por una compra importante, por ejemplo—, anticipá que te pedirán identificación y, posiblemente, una declaración de origen de fondos, y tené presente el límite de USD 10.000 de aduana al entrar o salir. Informarte antes evita demoras en el mostrador.',
+      },
+    ],
+    related: [
+      {
+        label: 'Cajeros automáticos para turistas',
+        to: '/guias/cajeros-automaticos-uruguay-turistas',
+      },
+      { label: 'Glosario: casa de cambio', to: '/glosario/casa-de-cambio' },
+      { label: 'Cotización del dólar hoy', to: '/cotizacion/dolar' },
+    ],
+  },
+  {
+    slug: 'propinas-en-uruguay',
+    title: 'Propinas en Uruguay: cuánto dejar en restaurantes, taxis y más',
+    description:
+      'Cuánto se deja de propina en Uruguay: alrededor del 10% en restaurantes (no obligatorio), qué es el cubierto, y qué pasa con taxis, maleteros y cuidacoches.',
+    tag: 'PROPINAS',
+    updatedAt: '2026-06-20',
+    sections: [
+      {
+        heading: 'La propina no es obligatoria, pero se acostumbra ~10%',
+        body: 'En Uruguay la propina no es obligatoria ni está incluida por ley, pero existe la costumbre de dejar alrededor del 10% en restaurantes y bares cuando el servicio fue bueno. No es una regla rígida: podés dejar algo menos o más según tu experiencia. Cada vez más posnet permiten agregar la propina al pagar con tarjeta, así que no hace falta tener efectivo. En lugares muy turísticos a veces ya aparece un cargo por servicio en la cuenta; en ese caso, la propina adicional es opcional.',
+      },
+      {
+        heading: 'Ojo con el "cubierto": no es propina',
+        body: 'En muchos restaurantes uruguayos vas a ver en la cuenta un ítem llamado "cubierto". Es un cargo fijo por persona que cubre el pan, los grisines y el servicio de mesa, y no tiene nada que ver con la propina: es parte del precio de la comida. Por eso, el cubierto no reemplaza a la propina; si el servicio te gustó, la propina del ~10% va aparte.',
+      },
+      {
+        heading: 'Taxis, maleteros y cuidacoches',
+        body: 'En los taxis no se acostumbra dejar propina; como mucho se redondea el importe hacia arriba. A los maleteros de hoteles o del aeropuerto, y a los cuidacoches (las personas que cuidan el auto en la calle), se les suele dar unos pocos pesos: del orden de $20 a $50 según el caso, un poco más de noche. No es obligatorio, pero es un gesto habitual y bien recibido.',
+      },
+      {
+        heading: 'En cafés, mostradores y delivery',
+        body: 'En cafeterías donde pedís en el mostrador, en heladerías o en compras rápidas, la propina es totalmente opcional y la mayoría de la gente no deja. En el delivery, dejar algo para el repartidor es un gesto valorado pero tampoco obligatorio. La pauta general en Uruguay es relajada: la propina es un agradecimiento por un buen servicio, no una obligación.',
+      },
+    ],
+    related: [
+      { label: 'Calculadora de propinas', to: '/herramientas/calculadora-propinas' },
+      { label: '¿Pagar en dólares o en pesos?', to: '/guias/pagar-en-dolares-o-pesos-uruguay' },
+      { label: 'Presupuesto de viaje', to: '/herramientas/calculadora-presupuesto-viaje' },
+    ],
+  },
+  {
+    slug: 'billetes-y-monedas-de-uruguay',
+    title: 'Billetes y monedas de Uruguay: denominaciones y cómo reconocerlos',
+    description:
+      'Qué billetes (20 a 2.000 pesos) y monedas (1 a 50 pesos) circulan en Uruguay, sus características de seguridad y consejos para reconocer billetes falsos.',
+    tag: 'BILLETES',
+    updatedAt: '2026-06-20',
+    sections: [
+      {
+        heading: 'Qué billetes y monedas circulan',
+        body: 'En Uruguay circulan billetes de 20, 50, 100, 200, 500, 1.000 y 2.000 pesos uruguayos, y monedas de 1, 2, 5, 10 y 50 pesos. Los billetes los emite el Banco Central del Uruguay y llevan retratos de figuras de la cultura y la historia uruguaya. Para los gastos cotidianos lo más práctico son los billetes de 100, 200 y 500; los de 1.000 y 2.000 son cómodos para montos altos, aunque a veces cuesta que en comercios chicos tengan cambio.',
+      },
+      {
+        heading: 'Medidas de seguridad de los billetes',
+        body: 'Los billetes uruguayos, sobre todo los de mayor valor, incluyen varias medidas de seguridad: marca de agua visible al trasluz, hilo de seguridad incrustado, números o motivos que se completan perfectamente al mirar el billete contra la luz, tintas que cambian de color al inclinarlo y relieves que se sienten al tacto. El billete de 2.000 pesos de las series más nuevas suma elementos holográficos y de color cambiante. Conocer estas marcas ayuda a identificar un billete genuino.',
+      },
+      {
+        heading: 'Cómo reconocer un billete falso',
+        body: 'La regla básica es "tocar, mirar y girar": tocá el billete para sentir los relieves del papel (el papel moneda tiene una textura particular), miralo al trasluz para ver la marca de agua y el hilo de seguridad, y giralo o inclinalo para ver las tintas que cambian de color. Desconfiá de billetes con colores apagados, superficie demasiado lisa o brillante, o marcas de agua que se ven impresas en vez de aparecer al trasluz. Ante la duda, no aceptes el billete.',
+      },
+      {
+        heading: 'Consejo al cambiar o recibir efectivo',
+        body: 'Al cambiar dólares en una casa de cambio recibís billetes en buen estado y verificados, lo que reduce el riesgo de recibir uno falso frente a operar con desconocidos. Si te dan vuelto en un comercio, dedicá un segundo a revisar los billetes grandes. Y si vas a manejar mucho efectivo, dividilo y guardalo en lugares distintos por seguridad.',
+      },
+    ],
+    related: [
+      { label: '¿Cuál es la moneda de Uruguay?', to: '/guias/moneda-de-uruguay' },
+      { label: 'Glosario: peso uruguayo', to: '/glosario/peso-uruguayo' },
+      { label: 'Cotización del dólar hoy', to: '/cotizacion/dolar' },
+    ],
+  },
 ] as const
 
 /**

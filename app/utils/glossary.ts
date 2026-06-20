@@ -606,6 +606,35 @@ export const glossary: readonly GlossaryTerm[] = [
     body: 'El USDT, emitido por Tether, es la stablecoin más operada del mundo. Cada USDT busca valer aproximadamente un dólar, respaldado —según su emisor— por reservas en dólares y activos equivalentes. Es la base del llamado "dólar cripto": comprar USDT como forma de tener dólares dentro del ecosistema. No es dinero de curso legal ni un depósito bancario, por lo que conviene entender sus riesgos antes de operar.',
     related: ['stablecoin', 'criptomoneda', 'dolar-billete'],
   },
+  {
+    slug: 'peso-uruguayo',
+    term: 'Peso uruguayo',
+    category: 'cambio',
+    short:
+      'El peso uruguayo (UYU) es la moneda oficial de Uruguay, emitida por el Banco Central del Uruguay.',
+    body: 'El peso uruguayo es la moneda de curso legal de Uruguay; su código internacional es UYU y se representa con el símbolo $ (o $U). Lo emite el Banco Central del Uruguay (BCU) y se divide en 100 centésimos. El peso actual existe desde 1993, cuando reemplazó al "nuevo peso" quitándole tres ceros. Circulan billetes de 20, 50, 100, 200, 500, 1.000 y 2.000 pesos y monedas de 1, 2, 5, 10 y 50 pesos. Aunque el dólar se usa mucho para ahorrar y operar montos grandes, todos los precios, sueldos e impuestos se expresan en pesos.',
+    example:
+      'Un café puede costar $120 (ciento veinte pesos uruguayos); 1 dólar equivale a unos $40.',
+    related: ['divisa', 'casa-de-cambio', 'dolar-billete'],
+  },
+  {
+    slug: 'tax-free',
+    term: 'Tax Free',
+    category: 'impuestos',
+    short:
+      'El Tax Free es el sistema que permite a los turistas extranjeros recuperar parte del IVA pagado en la compra de bienes al salir del país.',
+    body: 'El Tax Free es un régimen de devolución del IVA para turistas no residentes: al comprar bienes (no servicios como hoteles o restaurantes) y salir del país, el turista puede recuperar una parte del impuesto. En Uruguay se gestiona en los puntos de salida —Aeropuerto de Carrasco, Laguna del Sauce, puertos y pasos de frontera— y suele exigir un monto mínimo de compra por factura y presentar los comprobantes. No debe confundirse con la exoneración de IVA en hoteles ni con la reducción en gastronomía, que son beneficios distintos y se aplican al pagar con tarjeta del exterior.',
+    related: ['iva', 'impuestos-importacion'],
+  },
+  {
+    slug: 'declaracion-jurada-origen-de-fondos',
+    term: 'Declaración jurada de origen de fondos',
+    category: 'banca',
+    short:
+      'Es el documento en el que se declara de dónde provienen los fondos de una operación, exigido por las normas de prevención de lavado de activos.',
+    body: 'La declaración jurada de origen (y destino) de fondos es un formulario que las casas de cambio, bancos y otras instituciones piden cuando una operación supera ciertos montos, en cumplimiento de las normas de prevención de lavado de activos del Banco Central del Uruguay. En el caso del cambio de divisas, suele solicitarse junto con el documento de identidad cuando la operación supera el orden de los USD 3.000 diarios. No implica sospecha sobre la persona: es un requisito legal que aplica por igual a todos para dar trazabilidad a las operaciones de mayor monto.',
+    related: ['casa-de-cambio', 'bcu'],
+  },
 ] as const
 
 /** Look up a glossary term by slug. */
