@@ -559,7 +559,9 @@
     "historicalLink": "Ver histórico de cotações do dólar",
     "branchesLink": "Encontrar filiais de casas de câmbio perto de você",
     "advancedLink": "Usar o comparador avançado com filtros detalhados",
-    "allCurrenciesLink": "Comparar todas as moedas disponíveis"
+    "allCurrenciesLink": "Comparar todas as moedas disponíveis",
+    "indicatorsTitle": "Indicadores",
+    "indicatorsLink": "Valor da UI, da UR e da BPC hoje"
   },
   "guias": {
     "nav": "Guias",

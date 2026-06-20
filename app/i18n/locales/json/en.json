@@ -566,7 +566,9 @@
     "historicalLink": "View historical dollar exchange rates",
     "branchesLink": "Find exchange house branches near you",
     "advancedLink": "Use the advanced comparator with detailed filters",
-    "allCurrenciesLink": "Compare all available currencies"
+    "allCurrenciesLink": "Compare all available currencies",
+    "indicatorsTitle": "Indicators",
+    "indicatorsLink": "Value of the UI, UR and BPC today"
   },
   "guias": {
     "nav": "Guides",

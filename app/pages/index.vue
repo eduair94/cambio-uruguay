@@ -643,12 +643,23 @@
             </NuxtLink>
           </VCol>
           <VCol cols="12" sm="6" md="3">
-            <NuxtLink :to="localePath('/avanzado')" class="text-decoration-none">
+            <NuxtLink :to="localePath('/cotizacion')" class="text-decoration-none">
               <VCard class="internal-link-card pa-6 h-100 text-center" elevation="3" hover>
                 <VIcon color="purple" size="48" class="mb-3">mdi-currency-usd</VIcon>
                 <h3 class="text-h6 font-weight-bold mb-2">{{ t('moneda') }}</h3>
                 <p class="text-body-2 text-grey-lighten-1">
                   {{ t('pillar.allCurrenciesLink') }}
+                </p>
+              </VCard>
+            </NuxtLink>
+          </VCol>
+          <VCol cols="12" sm="6" md="3">
+            <NuxtLink :to="localePath('/indicadores')" class="text-decoration-none">
+              <VCard class="internal-link-card pa-6 h-100 text-center" elevation="3" hover>
+                <VIcon color="deep-purple" size="48" class="mb-3">mdi-finance</VIcon>
+                <h3 class="text-h6 font-weight-bold mb-2">{{ t('pillar.indicatorsTitle') }}</h3>
+                <p class="text-body-2 text-grey-lighten-1">
+                  {{ t('pillar.indicatorsLink') }}
                 </p>
               </VCard>
             </NuxtLink>

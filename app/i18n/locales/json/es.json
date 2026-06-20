@@ -576,7 +576,9 @@
     "historicalLink": "Ver histórico de cotizaciones del dólar",
     "branchesLink": "Encontrar sucursales de casas de cambio cerca de ti",
     "advancedLink": "Usar el comparador avanzado con filtros detallados",
-    "allCurrenciesLink": "Comparar todas las monedas disponibles"
+    "allCurrenciesLink": "Comparar todas las monedas disponibles",
+    "indicatorsTitle": "Indicadores",
+    "indicatorsLink": "Valor de la UI, la UR y la BPC hoy"
   },
   "guias": {
     "nav": "Guías",
