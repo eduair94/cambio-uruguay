@@ -45,6 +45,21 @@
         </VCol>
       </VRow>
 
+      <section class="mb-8">
+        <h2 class="text-h6 font-weight-bold mb-4 d-flex align-center">
+          <VIcon start color="primary">mdi-frequently-asked-questions</VIcon>
+          Preguntas frecuentes sobre los indicadores
+        </h2>
+        <VExpansionPanels variant="accordion">
+          <VExpansionPanel v-for="(faq, i) in faqs" :key="i">
+            <VExpansionPanelTitle class="font-weight-medium">
+              {{ faq.question }}
+            </VExpansionPanelTitle>
+            <VExpansionPanelText class="text-body-2">{{ faq.answer }}</VExpansionPanelText>
+          </VExpansionPanel>
+        </VExpansionPanels>
+      </section>
+
       <VCard class="cta-indicadores my-8 pa-6 text-center" variant="flat">
         <h2 class="text-h6 font-weight-bold mb-2 text-white">
           ¿Querés convertir monedas en lugar de unidades?
@@ -98,6 +113,30 @@ const items = computed(() =>
   }))
 )
 
+// FAQ aimed at featured snippets / AI Overviews for "indicadores economicos uruguay".
+const faqs = [
+  {
+    question: '¿Qué es la Unidad Indexada (UI)?',
+    answer:
+      'La Unidad Indexada es una unidad de valor que se ajusta a diario según la inflación (IPC). Se usa en alquileres, préstamos hipotecarios, depósitos y contratos para mantener el valor real frente a la suba de precios.',
+  },
+  {
+    question: '¿Qué es la Unidad Reajustable (UR)?',
+    answer:
+      'La Unidad Reajustable se ajusta una vez al mes según la evolución de los salarios (Índice Medio de Salarios). Se utiliza sobre todo en alquileres y en préstamos del Banco Hipotecario (BHU).',
+  },
+  {
+    question: '¿Qué es la BPC y para qué sirve?',
+    answer:
+      'La Base de Prestaciones y Contribuciones (BPC) es un valor que fija el Estado una vez al año. Se usa como referencia en tributos, multas, prestaciones sociales y, sobre todo, en las franjas del IRPF.',
+  },
+  {
+    question: '¿Cómo convierto UI, UR o BPC a pesos?',
+    answer:
+      'Multiplicá la cantidad de la unidad por su valor vigente. Por ejemplo, 1.000 UI a un valor de $6,58 equivalen a $6.580. En cada indicador encontrás un conversor que hace la cuenta automáticamente.',
+  },
+]
+
 const canonicalUrl = 'https://cambio-uruguay.com/indicadores'
 
 defineOgImageComponent('Cambio', {
@@ -146,6 +185,14 @@ useHead({
               position: i + 1,
               name: `${ind.name} (${ind.abbr})`,
               url: `https://cambio-uruguay.com/indicadores/${ind.slug}`,
+            })),
+          },
+          {
+            '@type': 'FAQPage',
+            mainEntity: faqs.map(f => ({
+              '@type': 'Question',
+              name: f.question,
+              acceptedAnswer: { '@type': 'Answer', text: f.answer },
             })),
           },
         ],
