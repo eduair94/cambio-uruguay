@@ -92,6 +92,38 @@ export const RATE_PARSERS: Record<
       return m ? toNum(m[1]!) : null
     },
   },
+  // Tiers: <1 kg tiered · 1–4,99 kg u$s 19,90/kg · 5–9,99 kg u$s 17,90 · …
+  // Representative = 1–4,99 kg tier = first u$s value in the 18–22 band.
+  urubox: {
+    url: 'https://www.urubox.com.uy/tarifas-envios.html',
+    extract: text => usdValues(text).find(v => v >= 18 && v <= 22) ?? null,
+  },
+  // Tiers: 0–500 g U$S17 flat · 501–999 g $21 · 1–4,99 kg $21/por cada kg · 5–10 kg $20/por cada kg.
+  // Representative = 1–4,99 kg tier, anchored on "$<n> / por cada kg" (plain $ sign, not U$S/USD).
+  starbox: {
+    url: 'https://www.starboxuruguay.com/',
+    extract: text => {
+      const m = text.match(/\$\s*(\d{1,3})\s*\/\s*por cada kg/i)
+      return m ? toNum(m[1]!) : null
+    },
+  },
+  // Tiers: 0–500 g U$D 5,9 · 501 g–1 kg U$D 21 · 1,01–3 kg U$D 18,90/kg · 3,1–5 kg U$D 16,90 · …
+  // Representative = 1,01–3 kg tier = first U$D value in the 18–20 band.
+  buybox: {
+    url: 'https://www.buybox.com.uy/tarifas.html',
+    extract: text => {
+      const vals = [...text.matchAll(/U\$D\s?(\d{1,3}[.,]\d{1,2})/gi)].map(m => toNum(m[1]!))
+      return vals.find(v => v >= 18 && v <= 20) ?? null
+    },
+  },
+  // Single rate: "22.99 USD el Kg." — number precedes the USD token.
+  glic: {
+    url: 'https://glicglobal.com/uy/calculadora.html',
+    extract: text => {
+      const m = text.match(/(\d{1,3}[.,]\d{1,2})\s*USD\s+el\s+Kg/i)
+      return m ? toNum(m[1]!) : null
+    },
+  },
 }
 
 /** Parse one courier's page text into a guarded {@link ScrapeResult}. */

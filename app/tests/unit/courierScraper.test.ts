@@ -38,6 +38,28 @@ describe('parseCourierRate', () => {
     expect(parseCourierRate('usxcargo', text).perKgUsd).toBe(17.5)
   })
 
+  it('urubox: takes the 1–4,99 kg tier (first u$s value in the 18–22 band)', () => {
+    const text =
+      'En KG Costo por Kg 1 a 4.99 u$s 19,90 5 a 9.99 u$s 17,90 10 a 19.99 u$s 16,50 20 a 40 u$s 15,90'
+    expect(parseCourierRate('urubox', text).perKgUsd).toBe(19.9)
+  })
+
+  it('starbox: takes the 1–4,99 kg tier ($21 / por cada kg)', () => {
+    const text = '0-500g U$S17 501-999g $21 1-4.99 kg $21 / por cada kg 5-10 kg $20 / por cada kg'
+    expect(parseCourierRate('starbox', text).perKgUsd).toBe(21)
+  })
+
+  it('buybox: takes the 1,01–3 kg tier (U$D 18.90 x kilo)', () => {
+    const text =
+      '0-500 grs U$D 5.9 501 grs - 1 kg U$D 21 x kilo 1,01 - 3 kg U$D 18.90 x kilo 3,1- 5 kg U$D16.90 x kilo'
+    expect(parseCourierRate('buybox', text).perKgUsd).toBe(18.9)
+  })
+
+  it('glic: takes the single per-kg rate (22.99 USD el Kg)', () => {
+    const text = 'Calculá el precio 22.99 USD el Kg. consolidación gratis 60 días depósito gratis'
+    expect(parseCourierRate('glic', text).perKgUsd).toBe(22.99)
+  })
+
   it('strips HTML tags before matching', () => {
     const html = '<div><span>DESDE USA</span> <b>USD 17.50</b> kg</div>'
     expect(parseCourierRate('usxcargo', html).perKgUsd).toBe(17.5)
@@ -72,7 +94,17 @@ describe('stripHtml', () => {
 describe('RATE_PARSERS catalogue', () => {
   it('only lists couriers whose rates are in raw HTML (HTTP-scrapeable)', () => {
     expect(Object.keys(RATE_PARSERS).sort()).toEqual(
-      ['casillamia', 'enviamicompra', 'gripper', 'uruguaycargo', 'usxcargo'].sort()
+      [
+        'buybox',
+        'casillamia',
+        'enviamicompra',
+        'glic',
+        'gripper',
+        'starbox',
+        'uruguaycargo',
+        'urubox',
+        'usxcargo',
+      ].sort()
     )
   })
 })
