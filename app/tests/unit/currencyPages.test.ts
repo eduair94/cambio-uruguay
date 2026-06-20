@@ -2,10 +2,12 @@ import { describe, expect, it } from 'vitest'
 import type { ExchangeRate } from '../../types/api'
 import {
   CURRENCY_GROUPS,
+  TROY_OUNCE_GRAMS,
   currencyContext,
   currencyDisplayName,
   currencyFromSlug,
   currencySlug,
+  goldGramPrices,
   listCurrencySlugs,
   quotesForCurrency,
   ratesForOrigin,
@@ -182,6 +184,28 @@ describe('CURRENCY_GROUPS', () => {
     const grouped = CURRENCY_GROUPS.flatMap(g => g.slugs)
     expect([...grouped].sort()).toEqual([...listCurrencySlugs()].sort())
     expect(new Set(grouped).size).toBe(grouped.length)
+  })
+})
+
+describe('goldGramPrices', () => {
+  it('derives per-gram 24k/18k/14k prices from a per-troy-ounce price', () => {
+    // One troy ounce priced at exactly TROY_OUNCE_GRAMS -> 24k gram price of 1.
+    const prices = goldGramPrices(TROY_OUNCE_GRAMS)
+    expect(prices.map(p => p.karat)).toEqual([24, 18, 14])
+    expect(prices[0]!.pricePerGram).toBeCloseTo(1, 6)
+    expect(prices[1]!.pricePerGram).toBeCloseTo(0.75, 6)
+    expect(prices[2]!.pricePerGram).toBeCloseTo(0.5833, 6)
+  })
+
+  it('scales linearly with the ounce price', () => {
+    const [g24] = goldGramPrices(179245.44)
+    expect(g24!.pricePerGram).toBeCloseTo(179245.44 / TROY_OUNCE_GRAMS, 4)
+  })
+
+  it('returns an empty list for a non-positive price', () => {
+    expect(goldGramPrices(0)).toEqual([])
+    expect(goldGramPrices(-5)).toEqual([])
+    expect(goldGramPrices(Number.NaN)).toEqual([])
   })
 })
 

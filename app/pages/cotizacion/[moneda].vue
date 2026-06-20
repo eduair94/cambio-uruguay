@@ -177,6 +177,42 @@
         </v-col>
       </v-row>
 
+      <!-- Gold only: price per gram by karat, derived from the per-ounce quote -->
+      <v-row v-if="goldGrams.length" class="mt-2">
+        <v-col cols="12">
+          <v-card>
+            <v-card-title class="d-flex align-center py-3">
+              <v-icon start>mdi-gold</v-icon>
+              Precio del oro por gramo en Uruguay
+            </v-card-title>
+            <v-card-text>
+              <p class="text-body-2 text-grey mb-4">
+                El oro se cotiza por onza troy (31,1 gramos de oro puro). A partir del mejor precio
+                de venta disponible, este es el valor aproximado por gramo según la pureza:
+              </p>
+              <v-table density="comfortable">
+                <thead>
+                  <tr>
+                    <th>Pureza</th>
+                    <th class="text-end">Precio por gramo</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="g in goldGrams" :key="g.karat">
+                    <td class="font-weight-medium">Oro {{ g.karat }}k</td>
+                    <td class="text-end">{{ formatRate(g.pricePerGram) }}</td>
+                  </tr>
+                </tbody>
+              </v-table>
+              <p class="text-caption text-grey mt-3 mb-0">
+                Valores estimados a partir de la cotización de venta más baja; el precio final puede
+                variar según la casa de cambio y la forma del oro.
+              </p>
+            </v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
+
       <!-- SEO copy + CTAs -->
       <v-row class="mt-2">
         <v-col cols="12">
@@ -240,6 +276,7 @@ import {
   currencyDisplayName,
   currencyFromSlug,
   currencySlug,
+  goldGramPrices,
   listCurrencySlugs,
   quotesForCurrency,
   type CurrencyCode,
@@ -293,6 +330,12 @@ if (!data.value) {
 const quotes = computed<CurrencyQuote[]>(() => data.value ?? [])
 const bestBuy = computed<CurrencyQuote | null>(() => quotes.value.find(q => q.bestBuy) ?? null)
 const bestSell = computed<CurrencyQuote | null>(() => quotes.value.find(q => q.bestSell) ?? null)
+
+// Gold-only: derive per-gram prices by karat from the best (lowest) sell quote,
+// which is quoted per troy ounce of pure gold. Answers "precio del gramo de oro".
+const goldGrams = computed(() =>
+  code.value === 'XAU' && bestSell.value?.sell ? goldGramPrices(bestSell.value.sell) : []
+)
 
 const relatedCurrencies = computed(() =>
   listCurrencySlugs()

@@ -117,6 +117,36 @@ export const CURRENCY_GROUPS: ReadonlyArray<{ titleKey: string; slugs: CurrencyS
     { titleKey: 'groupCommodities', slugs: ['oro'] },
   ])
 
+/** Grams in one troy ounce — gold (XAU) is quoted per troy ounce of pure (24k) gold. */
+export const TROY_OUNCE_GRAMS = 31.1035
+
+/** Common gold finenesses and their purity factor relative to 24k (pure) gold. */
+export const GOLD_KARATS: ReadonlyArray<{ karat: number; purity: number }> = Object.freeze([
+  { karat: 24, purity: 1 },
+  { karat: 18, purity: 0.75 },
+  { karat: 14, purity: 0.5833 },
+])
+
+/** A per-gram gold price for a given karat. */
+export interface GoldGramPrice {
+  karat: number
+  pricePerGram: number
+}
+
+/**
+ * Per-gram gold prices by karat, derived from a per-troy-ounce 24k price (the XAU
+ * quote). Lets the `/cotizacion/oro` page answer "precio del gramo de oro" queries
+ * from the same live data, instead of only the per-ounce figure.
+ *
+ * @returns one entry per {@link GOLD_KARATS} fineness, or `[]` for a non-positive
+ * input.
+ */
+export function goldGramPrices(pricePerTroyOunce: number): GoldGramPrice[] {
+  if (!(pricePerTroyOunce > 0)) return []
+  const perGram24 = pricePerTroyOunce / TROY_OUNCE_GRAMS
+  return GOLD_KARATS.map(k => ({ karat: k.karat, pricePerGram: perGram24 * k.purity }))
+}
+
 /** Exchange `type` values that represent a plain/cash quote shown on these pages. */
 const PLAIN_OR_CASH_TYPES: ReadonlySet<ExchangeType> = new Set<ExchangeType>(['', 'BILLETE'])
 
