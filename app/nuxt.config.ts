@@ -248,6 +248,11 @@ export default defineNuxtConfig({
         driver: 'fs',
         base: './.data/couriers',
       },
+      // Durable store for daily-scraped lender TEA rates (keeps last good value).
+      loans: {
+        driver: 'fs',
+        base: './.data/loans',
+      },
     },
     experimental: {
       wasm: true,
