@@ -1111,6 +1111,44 @@ export const guides: readonly Guide[] = [
       { label: 'Cotización del dólar hoy', to: '/cotizacion/dolar' },
     ],
   },
+  {
+    slug: 'horarios-casas-de-cambio-uruguay',
+    title: 'Horarios de las casas de cambio en Uruguay (y dónde cambiar fuera de hora)',
+    description:
+      'A qué hora abren las casas de cambio en Uruguay, qué pasa los sábados y domingos, y dónde cambiar fuera de horario: aeropuerto de Carrasco, terminales y shoppings.',
+    tag: 'HORARIOS',
+    updatedAt: '2026-06-20',
+    sections: [
+      {
+        heading: 'Horarios típicos de las casas de cambio',
+        body: 'La mayoría de las casas de cambio en Uruguay abren de lunes a viernes en horario comercial, en general aproximadamente de 9:00 a 18:00 o 19:00, y los sábados con horario reducido (muchas hasta el mediodía o primeras horas de la tarde). Los domingos, la mayoría permanece cerrada. Estos horarios son orientativos: cada casa fija el suyo y puede variar según la sucursal, la ciudad y la época del año, sobre todo en zonas turísticas durante la temporada de verano. El mercado cambiario, además, se mueve en días hábiles, por lo que los fines de semana y feriados no hay actualización de cotizaciones.',
+      },
+      {
+        heading: 'Sábados, domingos y feriados',
+        body: 'Los sábados muchas casas de cambio abren solo medio día, y los domingos y feriados la mayoría cierra. En esos días, las opciones para cambiar suelen reducirse a los puntos de mayor demanda turística (aeropuerto, terminales y algunos shoppings). Como en fin de semana no hay operativa bancaria ni actualización de cotizaciones, el precio que veas el viernes es, en general, la referencia hasta el lunes.',
+      },
+      {
+        heading: 'Cambiar fuera de hora: aeropuerto y terminales',
+        body: 'Para cambiar fuera del horario comercial, las alternativas más habituales son el Aeropuerto Internacional de Carrasco, donde hay servicio de cambio prácticamente las 24 horas, y la Terminal Tres Cruces de Montevideo, con horario extendido. La contracara es que la cotización en aeropuertos y terminales suele ser menos favorable que en una casa de cambio del centro, así que conviene cambiar ahí solo lo necesario y dejar el grueso para el horario y el lugar donde consigas mejor precio.',
+      },
+      {
+        heading: 'Shoppings y zonas turísticas',
+        body: 'Las casas de cambio ubicadas dentro de shoppings o centros comerciales suelen seguir el horario del centro comercial, que es más amplio e incluye tardes, sábados y a veces domingos. En zonas turísticas como Punta del Este, los horarios se extienden durante la temporada alta y se reducen fuera de ella. Si dependés de cambiar en un día u horario puntual, conviene confirmar de antemano.',
+      },
+      {
+        heading: 'Verificá la sucursal y aprovechá el horario online',
+        body: 'Como los horarios varían, antes de ir conviene confirmar el de la sucursal específica. En Cambio Uruguay podés ver las sucursales de las casas de cambio y comparar precios sin moverte. Y si tenés cuenta, operar en línea (por ejemplo a través de eBROU) te permite cambiar sin depender del horario del mostrador, dentro de los días hábiles del mercado.',
+      },
+    ],
+    related: [
+      { label: 'Sucursales de casas de cambio', to: '/sucursales' },
+      {
+        label: 'Cambiar dólares en el aeropuerto de Carrasco',
+        to: '/guias/cambiar-dolares-aeropuerto-carrasco',
+      },
+      { label: 'Cotización del dólar hoy', to: '/cotizacion/dolar' },
+    ],
+  },
 ] as const
 
 /**
