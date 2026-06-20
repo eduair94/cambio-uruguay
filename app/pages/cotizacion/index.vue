@@ -57,6 +57,21 @@
         </VRow>
       </section>
 
+      <section class="mb-8">
+        <h2 class="text-h6 font-weight-bold mb-4 d-flex align-center">
+          <VIcon start color="primary">mdi-frequently-asked-questions</VIcon>
+          Preguntas frecuentes sobre las cotizaciones
+        </h2>
+        <VExpansionPanels variant="accordion">
+          <VExpansionPanel v-for="(faq, i) in faqs" :key="i">
+            <VExpansionPanelTitle class="font-weight-medium">
+              {{ faq.question }}
+            </VExpansionPanelTitle>
+            <VExpansionPanelText class="text-body-2">{{ faq.answer }}</VExpansionPanelText>
+          </VExpansionPanel>
+        </VExpansionPanels>
+      </section>
+
       <VCard class="cta-cotizacion my-8 pa-6 text-center" variant="flat">
         <h2 class="text-h6 font-weight-bold mb-2 text-white">¿Buscás el mejor precio del dólar?</h2>
         <p class="text-body-2 text-grey-lighten-1 mb-4">
@@ -152,6 +167,35 @@ const formatRate = (value: number | null): string => {
   })
 }
 
+// FAQ aimed at featured snippets / AI Overviews for "cotizaciones uruguay".
+const faqs = [
+  {
+    question: '¿Dónde comprar dólares al mejor precio en Uruguay?',
+    answer:
+      'Para comprar al mejor precio conviene comparar la cotización de venta de varias casas de cambio: la diferencia entre la más barata y la más cara puede ser de varios pesos por dólar. En Cambio Uruguay mostramos esos precios actualizados automáticamente para que compres donde más te conviene.',
+  },
+  {
+    question: '¿Cada cuánto se actualizan las cotizaciones?',
+    answer:
+      'Las cotizaciones se actualizan automáticamente varias veces al día, con datos de más de 40 casas de cambio y del Banco Central del Uruguay (BCU), de modo que la foto que ves es muy cercana al mercado en vivo.',
+  },
+  {
+    question: '¿Qué monedas puedo comparar además del dólar?',
+    answer:
+      'Además del dólar, podés comparar el euro, el real, el peso argentino, la libra esterlina, el yen, el franco suizo, el guaraní, el peso chileno y otras monedas, e incluso el precio del oro, en las casas de cambio que las cotizan.',
+  },
+  {
+    question: '¿Cuál es la diferencia entre el precio de compra y el de venta?',
+    answer:
+      'La casa de cambio compra la moneda a un precio (compra) y la vende a otro más alto (venta). Si vos comprás dólares, te importa el precio de venta; si los vendés, el de compra. La diferencia entre ambos se llama spread.',
+  },
+  {
+    question: '¿Conviene cambiar dólares en el aeropuerto?',
+    answer:
+      'En general no: en aeropuertos y zonas turísticas las cotizaciones suelen ser menos favorables. Comparar entre casas de cambio antes de operar casi siempre te deja mejor parado, sobre todo en montos altos.',
+  },
+]
+
 const canonicalUrl = 'https://cambio-uruguay.com/cotizacion'
 
 defineOgImageComponent('Cambio', {
@@ -201,6 +245,14 @@ useHead({
               position: i + 1,
               name: currencyDisplayName(currencyFromSlug(slug) as CurrencyCode, 'es'),
               url: `https://cambio-uruguay.com/cotizacion/${slug}`,
+            })),
+          },
+          {
+            '@type': 'FAQPage',
+            mainEntity: faqs.map(f => ({
+              '@type': 'Question',
+              name: f.question,
+              acceptedAnswer: { '@type': 'Answer', text: f.answer },
             })),
           },
         ],

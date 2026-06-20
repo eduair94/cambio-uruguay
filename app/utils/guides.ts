@@ -744,8 +744,9 @@ export const guides: readonly Guide[] = [
     ],
     related: [
       { label: 'Cotización del dólar hoy', to: '/cotizacion/dolar' },
+      { label: 'Glosario: USDT (Tether)', to: '/glosario/usdt' },
+      { label: 'Glosario: stablecoin', to: '/glosario/stablecoin' },
       { label: 'Proteger ahorros de la inflación', to: '/guias/proteger-ahorros-de-la-inflacion' },
-      { label: 'Glosario: dólar billete', to: '/glosario/dolar-billete' },
     ],
   },
 ] as const

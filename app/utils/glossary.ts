@@ -579,6 +579,33 @@ export const glossary: readonly GlossaryTerm[] = [
     body: 'El Instituto Nacional de Estadística (INE) calcula el Índice Medio de Salarios para seguir cómo evolucionan las remuneraciones en Uruguay. Es la referencia con la que se ajusta mensualmente la Unidad Reajustable (UR), muy usada en alquileres y préstamos del Banco Hipotecario. A diferencia del IPC, que mide precios, el IMS mide salarios, por eso la UR y la UI pueden moverse de forma distinta.',
     related: ['unidad-reajustable', 'ipc', 'inflacion'],
   },
+  {
+    slug: 'criptomoneda',
+    term: 'Criptomoneda',
+    category: 'cambio',
+    short:
+      'Una criptomoneda es un activo digital que funciona sobre una red descentralizada y no depende de un banco central.',
+    body: 'Las criptomonedas, como el Bitcoin, son activos digitales que se emiten y transfieren a través de redes basadas en blockchain, sin un banco central que las respalde. Su precio puede ser muy volátil. En Uruguay su uso viene creciendo, sobre todo entre quienes ya conocen el ecosistema, aunque para comprar dólares de forma simple la mayoría sigue recurriendo a las casas de cambio.',
+    related: ['stablecoin', 'usdt', 'divisa'],
+  },
+  {
+    slug: 'stablecoin',
+    term: 'Stablecoin',
+    category: 'cambio',
+    short:
+      'Una stablecoin es una criptomoneda diseñada para mantener un valor estable, normalmente atado al dólar estadounidense.',
+    body: 'A diferencia del Bitcoin, cuya cotización es muy volátil, una stablecoin busca valer siempre lo mismo, por lo general un dólar. Para lograrlo, su emisor declara mantener reservas que la respaldan. Se usa para ahorrar en una unidad estable dentro del mundo cripto y para mover fondos rápido. La más conocida es el USDT (Tether).',
+    related: ['usdt', 'criptomoneda', 'dolar-billete'],
+  },
+  {
+    slug: 'usdt',
+    term: 'USDT (Tether)',
+    category: 'cambio',
+    short:
+      'El USDT es la stablecoin más usada: una criptomoneda que busca mantener su valor en torno a un dólar estadounidense.',
+    body: 'El USDT, emitido por Tether, es la stablecoin más operada del mundo. Cada USDT busca valer aproximadamente un dólar, respaldado —según su emisor— por reservas en dólares y activos equivalentes. Es la base del llamado "dólar cripto": comprar USDT como forma de tener dólares dentro del ecosistema. No es dinero de curso legal ni un depósito bancario, por lo que conviene entender sus riesgos antes de operar.',
+    related: ['stablecoin', 'criptomoneda', 'dolar-billete'],
+  },
 ] as const
 
 /** Look up a glossary term by slug. */
