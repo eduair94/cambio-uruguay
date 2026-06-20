@@ -76,10 +76,18 @@
         precisión.
       </p>
       <p>
+        ¿No sabés el valor de hoy? Consultá el
+        <NuxtLink :to="localePath('/indicadores/unidad-indexada')"
+          >valor de la Unidad Indexada hoy</NuxtLink
+        >, que tomamos del Banco Central y se actualiza automáticamente.
+      </p>
+      <p>
         ¿Querés entenderla a fondo? Leé la guía
         <NuxtLink :to="localePath('/guias/unidad-indexada-explicada')"
           >Unidad Indexada explicada</NuxtLink
-        >.
+        >
+        o la comparación entre
+        <NuxtLink :to="localePath('/guias/ui-ur-bpc-diferencias')">UI, UR y BPC</NuxtLink>.
       </p>
     </template>
 

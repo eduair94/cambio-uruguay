@@ -73,6 +73,13 @@
           >dólares o en instrumentos indexados</NuxtLink
         >: buscan que su dinero no pierda valor.
       </p>
+      <p>
+        La
+        <NuxtLink :to="localePath('/indicadores/unidad-indexada')">Unidad Indexada (UI)</NuxtLink>
+        se ajusta justamente por la inflación, por eso se usa para que alquileres, créditos y
+        ahorros mantengan su valor real. Si tenés dudas, mirá la diferencia entre
+        <NuxtLink :to="localePath('/guias/ui-ur-bpc-diferencias')">UI, UR y BPC</NuxtLink>.
+      </p>
     </template>
   </ToolShell>
 </template>
