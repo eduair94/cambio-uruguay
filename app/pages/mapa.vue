@@ -149,7 +149,7 @@ function popupFor(b: any): string {
       : `https://www.google.com/maps/search/${encodeURIComponent(`${b.name} ${b.address} ${b.locality}`)}`
   const dir = esc(rawDir)
   const rateLine = rate
-    ? `<br>${currency.value}: ${t('compra')} ${rate.buy ?? '—'} / ${t('venta')} ${rate.sell ?? '—'}`
+    ? `<br>${esc(currency.value)}: ${t('compra')} ${rate.buy ?? '—'} / ${t('venta')} ${rate.sell ?? '—'}`
     : ''
   return `<strong>${esc(nameFor(b.origin))}</strong><br>${esc(b.address)}<br>${esc(b.locality)}, ${esc(b.dept)}` +
     (b.hours ? `<br><em>${esc(b.hours)}</em>` : '') +
