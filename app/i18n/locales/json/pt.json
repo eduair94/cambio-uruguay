@@ -761,6 +761,11 @@
   "legal": {
     "privacyNav": "Privacidade",
     "termsNav": "Termos",
-    "contactNav": "Contato"
+    "contactNav": "Contato",
+    "privacy": {
+      "metaTitle": "Política de Privacidade | Cambio Uruguay",
+      "metaDescription": "Como o Cambio Uruguay coleta, usa e protege seus dados: cookies, Google Analytics, Google AdSense, Google Ads, autenticação e suas opções de privacidade.",
+      "h1": "Política de Privacidade"
+    }
   }
 }
