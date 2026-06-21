@@ -775,5 +775,10 @@
     "more": "Más información",
     "title": "Tu privacidad",
     "settings": "Configurar cookies"
+  },
+  "legal": {
+    "privacyNav": "Privacidad",
+    "termsNav": "Términos",
+    "contactNav": "Contacto"
   }
 }

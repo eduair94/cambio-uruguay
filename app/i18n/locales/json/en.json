@@ -764,5 +764,10 @@
     "more": "Learn more",
     "title": "Your privacy",
     "settings": "Cookie settings"
+  },
+  "legal": {
+    "privacyNav": "Privacy",
+    "termsNav": "Terms",
+    "contactNav": "Contact"
   }
 }

@@ -757,5 +757,10 @@
     "more": "Saiba mais",
     "title": "Sua privacidade",
     "settings": "Configurar cookies"
+  },
+  "legal": {
+    "privacyNav": "Privacidade",
+    "termsNav": "Termos",
+    "contactNav": "Contato"
   }
 }

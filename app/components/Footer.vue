@@ -163,6 +163,22 @@
           <NuxtLink :to="localePath('/acerca')" class="footer-link text-caption">
             {{ $t('acerca.nav') }}
           </NuxtLink>
+          <NuxtLink :to="localePath('/privacidad')" class="footer-link text-caption">
+            {{ $t('legal.privacyNav') }}
+          </NuxtLink>
+          <NuxtLink :to="localePath('/terminos')" class="footer-link text-caption">
+            {{ $t('legal.termsNav') }}
+          </NuxtLink>
+          <NuxtLink :to="localePath('/contacto')" class="footer-link text-caption">
+            {{ $t('legal.contactNav') }}
+          </NuxtLink>
+          <button
+            type="button"
+            class="footer-link footer-link--btn text-caption"
+            @click="reopenConsent"
+          >
+            {{ $t('consent.settings') }}
+          </button>
         </nav>
 
         <VSpacer class="d-none d-md-flex" />
@@ -197,6 +213,8 @@
 
 <script setup lang="ts">
 const localePath = useLocalePath()
+const { reopen } = useConsent()
+const reopenConsent = () => reopen()
 </script>
 
 <style lang="scss" scoped>
@@ -215,5 +233,13 @@ const localePath = useLocalePath()
     color: #fff;
     text-decoration: underline;
   }
+}
+
+.footer-link--btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
 }
 </style>
