@@ -35,7 +35,9 @@
     "directions": "Cómo llegar",
     "geoUnavailable": "La geolocalización no está disponible en este dispositivo.",
     "geoDenied": "No pudimos obtener tu ubicación. Usamos Montevideo por defecto.",
-    "viewOnMap": "Ver en el mapa"
+    "viewOnMap": "Ver en el mapa",
+    "cashPoints": "Puntos de retiro de efectivo",
+    "withdrawCash": "Retiro de efectivo"
   },
   "welcome": "Encuentra la mejor cotización en el mercado, comparando entre más de 40 casas de cambio.",
   "title": "Cotizaciones del día [day]. Se actualizan cada 10 minutos con respecto a la información de la web.",

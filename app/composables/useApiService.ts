@@ -127,6 +127,15 @@ export const useApiService = () => {
     }
   }
 
+  const getCashPoints = async (): Promise<any[]> => {
+    try {
+      return await $fetch('/api/cash-points')
+    } catch (error) {
+      console.error('Error fetching cash points:', error)
+      return []
+    }
+  }
+
   /**
    * Fetch both exchange data and local data in parallel
    */
@@ -450,6 +459,7 @@ export const useApiService = () => {
     getExchangeData,
     getLocalData,
     getAllLocations,
+    getCashPoints,
     getExchangeDataWithLocal,
     processExchangeData,
     getProcessedExchangeData,

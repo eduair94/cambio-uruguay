@@ -35,7 +35,9 @@
     "directions": "Como chegar",
     "geoUnavailable": "A geolocalização não está disponível neste dispositivo.",
     "geoDenied": "Não foi possível obter sua localização. Usando Montevidéu por padrão.",
-    "viewOnMap": "Ver no mapa"
+    "viewOnMap": "Ver no mapa",
+    "cashPoints": "Pontos de saque de dinheiro",
+    "withdrawCash": "Saque de dinheiro"
   },
   "welcome": "Encontre a melhor taxa de câmbio do mercado, comparando entre mais de 40 casas de câmbio.",
   "title": "Citações do dia [day]. Elas são atualizadas a cada 10 minutos com respeito às informações na web.",

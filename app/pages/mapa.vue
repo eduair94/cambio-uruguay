@@ -35,6 +35,16 @@
           <v-icon start>mdi-crosshairs-gps</v-icon>{{ t('map.useMyLocation') }}
         </v-btn>
       </v-col>
+      <v-col cols="12" sm="6" md="3" class="d-flex align-center">
+        <v-switch
+          v-model="showCash"
+          :label="t('map.cashPoints')"
+          color="teal"
+          density="compact"
+          hide-details
+          @update:model-value="onToggleCash"
+        />
+      </v-col>
     </v-row>
 
     <v-alert v-if="geoError" type="warning" density="compact" class="mb-2" closable @click:close="geoError = ''">
@@ -50,6 +60,8 @@
           :radius-km="userLocation ? radiusKm : 0"
           :highlight-id="highlightId"
           :popup-for="popupFor"
+          :cash-points="showCash ? cashPoints : []"
+          :cash-label="t('map.withdrawCash')"
           height="72vh"
           @marker-click="onMarkerClick"
         />
@@ -92,12 +104,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import LocationsMap from '~/components/map/LocationsMap.vue'
 import { buildRatesByOrigin, rankNearby, type RatesByOrigin } from '~/utils/nearbyRates'
 
 const { t, locale } = useI18n()
-const { getAllLocations, getProcessedExchangeData } = useApiService()
+const route = useRoute()
+const { getAllLocations, getProcessedExchangeData, getCashPoints } = useApiService()
 
 const branches = ref<any[]>([])
 const ratesByOrigin = ref<RatesByOrigin>({})
@@ -111,6 +124,8 @@ const highlightId = ref<string | null>(null)
 const locating = ref(false)
 const geoError = ref('')
 const mapRef = ref<any>(null)
+const showCash = ref(false)
+const cashPoints = ref<any[]>([])
 
 // Currencies actually present in today's rate data, USD first.
 const currencyItems = computed(() => {
@@ -155,6 +170,19 @@ function popupFor(b: any): string {
     (b.hours ? `<br><em>${esc(b.hours)}</em>` : '') +
     rateLine +
     `<br><a href="${dir}" target="_blank" rel="noopener">${t('map.directions')} →</a>`
+}
+
+onMounted(() => {
+  if (route.query.cash) {
+    showCash.value = true
+    onToggleCash(true)
+  }
+})
+
+async function onToggleCash(v: boolean) {
+  if (v && cashPoints.value.length === 0) {
+    cashPoints.value = await getCashPoints()
+  }
 }
 
 function onMarkerClick(b: any) {
