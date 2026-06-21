@@ -771,6 +771,14 @@
       "metaTitle": "Termos de Uso | Cambio Uruguay",
       "metaDescription": "Termos e condições de uso do Cambio Uruguay: natureza informativa das cotações, limitação de responsabilidade e propriedade intelectual.",
       "h1": "Termos de Uso"
+    },
+    "contact": {
+      "metaTitle": "Contato | Cambio Uruguay",
+      "metaDescription": "Entre em contato com a equipe do Cambio Uruguay por e-mail ou redes sociais.",
+      "h1": "Contato",
+      "intro": "Tem uma dúvida, uma correção ou uma proposta? Escreva para nós e responderemos.",
+      "emailTitle": "E-mail",
+      "socialTitle": "Redes sociais"
     }
   }
 }

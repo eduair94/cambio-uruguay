@@ -789,6 +789,14 @@
       "metaTitle": "Términos de Uso | Cambio Uruguay",
       "metaDescription": "Términos y condiciones de uso de Cambio Uruguay: naturaleza informativa de las cotizaciones, limitación de responsabilidad y propiedad intelectual.",
       "h1": "Términos de Uso"
+    },
+    "contact": {
+      "metaTitle": "Contacto | Cambio Uruguay",
+      "metaDescription": "Ponete en contacto con el equipo de Cambio Uruguay por correo electrónico o redes sociales.",
+      "h1": "Contacto",
+      "intro": "¿Tenés una consulta, una corrección o una propuesta? Escribinos y te respondemos.",
+      "emailTitle": "Correo electrónico",
+      "socialTitle": "Redes sociales"
     }
   }
 }

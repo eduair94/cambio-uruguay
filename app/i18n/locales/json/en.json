@@ -778,6 +778,14 @@
       "metaTitle": "Terms of Use | Cambio Uruguay",
       "metaDescription": "Terms and conditions for using Cambio Uruguay: informational nature of the rates, limitation of liability and intellectual property.",
       "h1": "Terms of Use"
+    },
+    "contact": {
+      "metaTitle": "Contact | Cambio Uruguay",
+      "metaDescription": "Get in touch with the Cambio Uruguay team by email or social media.",
+      "h1": "Contact",
+      "intro": "Have a question, a correction or a proposal? Write to us and we'll get back to you.",
+      "emailTitle": "Email",
+      "socialTitle": "Social media"
     }
   }
 }
