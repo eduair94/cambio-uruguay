@@ -1255,6 +1255,9 @@ const main = async () => {
     const res = await redisCache.getOrSet("localData", () => cambio_info.get_local_data(), 600);
     return res;
   });
+  server.getJson("locations", async (req: Request): Promise<any> => {
+    return await redisCache.getOrSet("locations", () => cambio_info.getMapLocations(), 600);
+  });
 
   /**
    * @openapi
