@@ -98,43 +98,40 @@ export default defineEventHandler(async _event => {
       priority?: number
     }> = []
 
-    // Helper function to add URLs for all locales
-    const addUrlsForAllLocales = (path: string, priority: number, changefreq: string = 'daily') => {
+    // Today (UTC) as the lastmod for live/dynamic pages whose data refreshes daily
+    // or faster — a freshness hint that helps crawlers (and AI) prioritise re-crawl.
+    const today = new Date().toISOString()
+
+    // Helper function to add URLs for all locales. `lastmod` is optional: pass it
+    // for pages backed by live data (rates, indicators) so they signal freshness.
+    const addUrlsForAllLocales = (
+      path: string,
+      priority: number,
+      changefreq: string = 'daily',
+      lastmod?: string
+    ) => {
       locales.forEach(locale => {
-        if (locale === defaultLocale) {
-          // Default locale doesn't have prefix
-          urls.push({
-            loc: path,
-            changefreq,
-            priority,
-          })
-        } else {
-          // Non-default locales have /en or /pt prefix
-          urls.push({
-            loc: `/${locale}${path}`,
-            changefreq,
-            priority,
-          })
-        }
+        const loc = locale === defaultLocale ? path : `/${locale}${path}`
+        urls.push({ loc, changefreq, priority, ...(lastmod ? { lastmod } : {}) })
       })
     }
 
-    // Add main URLs for all locales
-    addUrlsForAllLocales('/', 1.0, 'hourly') // Home page - Cotización del dólar en Uruguay
-    addUrlsForAllLocales('/avanzado', 0.9, 'hourly') // Advanced comparator
-    addUrlsForAllLocales('/historico', 0.9, 'daily') // Historico main page
+    // Add main URLs for all locales (live-data pages carry today's lastmod)
+    addUrlsForAllLocales('/', 1.0, 'hourly', today) // Home page - Cotización del dólar en Uruguay
+    addUrlsForAllLocales('/avanzado', 0.9, 'hourly', today) // Advanced comparator
+    addUrlsForAllLocales('/historico', 0.9, 'daily', today) // Historico main page
     addUrlsForAllLocales('/sucursales', 0.9, 'daily') // Sucursales main page
-    addUrlsForAllLocales('/noticias', 0.7, 'hourly') // Noticias del dólar (news)
+    addUrlsForAllLocales('/noticias', 0.7, 'hourly', today) // Noticias del dólar (news)
     addUrlsForAllLocales('/preguntas-frecuentes', 0.7, 'weekly') // FAQ hub
-    addUrlsForAllLocales('/comparar', 0.8, 'daily') // Compare exchange houses over time
+    addUrlsForAllLocales('/comparar', 0.8, 'daily', today) // Compare exchange houses over time
     addUrlsForAllLocales('/guias', 0.7, 'weekly') // Editorial guides hub
     addUrlsForAllLocales('/herramientas', 0.8, 'weekly') // Tools / calculators hub
     addUrlsForAllLocales('/couriers-uruguay', 0.7, 'weekly') // Couriers comparison guide
     addUrlsForAllLocales('/prestamos-uruguay', 0.7, 'weekly') // Loan directory comparison
     addUrlsForAllLocales('/glosario', 0.7, 'weekly') // Financial glossary hub
     addUrlsForAllLocales('/convertir', 0.7, 'weekly') // Amount-conversion hub
-    addUrlsForAllLocales('/cotizacion', 0.8, 'hourly') // All-currencies cotización hub
-    addUrlsForAllLocales('/indicadores', 0.8, 'daily') // Economic indicators hub (UI, UR, BPC)
+    addUrlsForAllLocales('/cotizacion', 0.8, 'hourly', today) // All-currencies cotización hub
+    addUrlsForAllLocales('/indicadores', 0.8, 'daily', today) // Economic indicators hub (UI, UR, BPC)
     addUrlsForAllLocales('/blog', 0.8, 'daily') // AI daily blog hub
     addUrlsForAllLocales('/acerca', 0.6, 'monthly') // Methodology / about page
     addUrlsForAllLocales('/conectar', 0.6, 'monthly') // Channels hub (API, MCP, Telegram, Discord, newsletter)
@@ -162,7 +159,7 @@ export default defineEventHandler(async _event => {
 
     // Add /indicadores/:slug economic-indicator routes for all locales
     listIndicatorSlugs().forEach(slug => {
-      addUrlsForAllLocales(`/indicadores/${slug}`, 0.7, 'daily')
+      addUrlsForAllLocales(`/indicadores/${slug}`, 0.7, 'daily', today)
     })
 
     // Add /blog/:slug AI daily-blog posts (default locale only — posts are
@@ -183,17 +180,17 @@ export default defineEventHandler(async _event => {
 
     // Add /historico/:origin routes for all locales
     origins.forEach(origin => {
-      addUrlsForAllLocales(`/historico/${origin}`, 0.8)
+      addUrlsForAllLocales(`/historico/${origin}`, 0.8, 'daily', today)
     })
 
     // Add /historico/:origin/:currency routes for all locales
     originCurrencyPairs.forEach(pair => {
-      addUrlsForAllLocales(`/historico/${pair}`, 0.7)
+      addUrlsForAllLocales(`/historico/${pair}`, 0.7, 'daily', today)
     })
 
     // Add /historico/:origin/:type routes for all locales
     originTypePairs.forEach(pair => {
-      addUrlsForAllLocales(`/historico/${pair}`, 0.7)
+      addUrlsForAllLocales(`/historico/${pair}`, 0.7, 'daily', today)
     })
 
     // Add /sucursales/:origin routes for all locales
@@ -208,19 +205,19 @@ export default defineEventHandler(async _event => {
 
     // Add /dolar/:departamento programmatic-SEO routes for all locales
     departmentSlugs.forEach(slug => {
-      addUrlsForAllLocales(`/dolar/${slug}`, 0.7)
+      addUrlsForAllLocales(`/dolar/${slug}`, 0.7, 'daily', today)
     })
 
     // Add /cotizacion/:moneda programmatic-SEO routes for all locales
     const currencySlugs = listCurrencySlugs()
     currencySlugs.forEach(slug => {
-      addUrlsForAllLocales(`/cotizacion/${slug}`, 0.8)
+      addUrlsForAllLocales(`/cotizacion/${slug}`, 0.8, 'hourly', today)
     })
 
     // Add /casa/:origin programmatic-SEO routes for all locales (origins come
     // from localData keys, same source as the sucursales routes above).
     sucursalesOrigins.forEach(origin => {
-      addUrlsForAllLocales(`/casa/${origin}`, 0.7)
+      addUrlsForAllLocales(`/casa/${origin}`, 0.7, 'daily', today)
     })
 
     console.log(
