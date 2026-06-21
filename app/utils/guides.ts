@@ -1149,6 +1149,113 @@ export const guides: readonly Guide[] = [
       { label: 'Cotización del dólar hoy', to: '/cotizacion/dolar' },
     ],
   },
+  {
+    slug: 'tipo-de-cambio-fiscal-dgi-uruguay',
+    title: 'Tipo de cambio para facturar en Uruguay: el dólar fiscal de la DGI',
+    description:
+      'Qué tipo de cambio se usa para facturar en dólares y liquidar IVA e IRPF en Uruguay: la cotización de compra del Banco República del día hábil anterior. Cómo encontrarla.',
+    tag: 'FACTURACIÓN',
+    updatedAt: '2026-06-20',
+    sections: [
+      {
+        heading: 'El "dólar fiscal" es la compra del BROU del día hábil anterior',
+        body: 'Para convertir a pesos una operación en moneda extranjera —facturar en dólares, liquidar IVA o calcular IRPF— en Uruguay no se usa cualquier cotización ni necesariamente la del día: la regla general de la DGI es tomar el tipo de cambio comprador (de compra) del Banco República (BROU) del día hábil anterior al de la operación. Por eso se lo conoce como "dólar fiscal" o "tipo de cambio para facturar". Es independiente del precio al que vos hayas comprado o vendido los dólares: a efectos impositivos vale esa referencia.',
+      },
+      {
+        heading: 'Compra, no venta: un detalle que cambia el número',
+        body: 'Un error frecuente es usar la cotización de venta o un promedio. La referencia fiscal es la de compra (comprador) del BROU, que es más baja que la de venta. Confundirlas hace que el monto en pesos —y por lo tanto el IVA o el IRPF calculado— quede mal. Si facturás o declarás en moneda extranjera, asegurate de mirar la columna de compra del Banco República.',
+      },
+      {
+        heading: 'Por qué "el día hábil anterior"',
+        body: 'La conversión se hace con la cotización del día hábil anterior al hecho gravado, no con la del mismo día. Si ese día anterior no fue hábil o no hubo cotización (fines de semana, feriados), se toma la del último día hábil con cotización disponible. El sistema de comprobantes fiscales electrónicos (eFactura) de la DGI controla justamente que el tipo de cambio declarado en un CFE en moneda extranjera respete esta referencia.',
+      },
+      {
+        heading: 'Dónde encontrar la cotización de compra del BROU',
+        body: 'En Cambio Uruguay podés ver la cotización de compra del BROU dentro del comparador de cotización del dólar, y su evolución en el histórico por casa de cambio. Para el cálculo fiscal necesitás el valor de compra del día hábil anterior; tenelo a mano al emitir la factura o al armar la declaración, porque es el dato que la DGI espera.',
+      },
+      {
+        heading: 'Cuándo conviene consultar a un contador',
+        body: 'La regla del día hábil anterior es general, pero hay matices: en el IRPF de servicios personales, por ejemplo, la renta se convierte cuando se devenga y puede recalcularse al cobrar, generando diferencias de cambio. Y algunos regímenes o tipos de operación tienen reglas propias. Si tu situación no es una factura simple, conviene confirmar el criterio con tu contador para no arrastrar errores en la liquidación.',
+      },
+    ],
+    related: [
+      { label: 'Cotización del dólar hoy', to: '/cotizacion/dolar' },
+      { label: 'Histórico de cotizaciones', to: '/historico' },
+      { label: 'Calculadora de IVA', to: '/herramientas/calculadora-iva' },
+      { label: 'Calculadora de IRPF', to: '/herramientas/calculadora-irpf' },
+    ],
+  },
+  {
+    slug: 'criptomonedas-regulacion-impuestos-uruguay',
+    title: 'Criptomonedas en Uruguay: regulación e impuestos (qué dice la ley)',
+    description:
+      'Cómo están reguladas las criptomonedas en Uruguay tras la Ley de Activos Virtuales, qué rol tiene el Banco Central y cómo se tratan a efectos impositivos. Guía informativa.',
+    tag: 'CRIPTO',
+    updatedAt: '2026-06-20',
+    sections: [
+      {
+        heading: 'Las criptomonedas no son moneda de curso legal',
+        body: 'En Uruguay, la única moneda de curso legal es el peso uruguayo: las criptomonedas (Bitcoin, USDT y demás) no son dinero en sentido legal, sino activos. Eso no las hace ilegales —comprarlas, tenerlas y operarlas es legal—, pero sí significa que nadie está obligado a aceptarlas como pago y que su tratamiento jurídico y fiscal es el de un activo, no el de una divisa. Entender esa diferencia es la base para no llevarse sorpresas.',
+      },
+      {
+        heading: 'La Ley de Activos Virtuales y el rol del Banco Central',
+        body: 'Uruguay aprobó una Ley de Activos Virtuales (Ley N.º 20.345) que incorpora a los proveedores de servicios de activos virtuales (los llamados PSAV: exchanges, plataformas, custodios) bajo la órbita de supervisión del Banco Central del Uruguay (BCU). El objetivo es dar un marco a la actividad —registro, requisitos, prevención de lavado— para quienes prestan estos servicios en el país. Es un marco relativamente nuevo y en desarrollo, así que conviene seguir su reglamentación.',
+      },
+      {
+        heading: 'Cómo se tratan a efectos impositivos',
+        body: 'A grandes rasgos, la administración tributaria (DGI) considera a las criptomonedas como bienes (activos), no como moneda. Eso implica que las ganancias o rentas vinculadas a operar con cripto pueden tener consecuencias impositivas según el caso y el tipo de contribuyente. No existe un "impuesto a la cripto" separado y simple: se aplican las reglas generales según la operación. Por eso, si operás montos relevantes o de forma habitual, conviene asesorarte para declarar correctamente.',
+      },
+      {
+        heading: 'USDT y "dólar cripto": estable, pero no es un dólar bancario',
+        body: 'El USDT y otras stablecoins buscan mantener su valor cerca de un dólar, y por eso se usan como forma de "tener dólares" dentro del mundo cripto. Pero un USDT no es un dólar billete ni un depósito bancario: depende de la plataforma donde lo tengas y del respaldo de su emisor. Para comprar dólares de forma simple y regulada, las casas de cambio siguen siendo el camino más directo; el USDT es una herramienta del ecosistema cripto, con sus propias ventajas y riesgos.',
+      },
+      {
+        heading: 'Antes de operar, informate y asesorate',
+        body: 'Esta guía es informativa y no constituye asesoramiento legal ni fiscal. La regulación de activos virtuales en Uruguay es reciente y puede cambiar, y el tratamiento impositivo depende de tu situación particular. Antes de operar montos importantes, usá plataformas serias, entendé los riesgos y, si corresponde, consultá con un profesional para cumplir con la normativa vigente.',
+      },
+    ],
+    related: [
+      { label: 'Dólar cripto y USDT en Uruguay', to: '/guias/dolar-cripto-usdt-uruguay' },
+      { label: 'Glosario: USDT (Tether)', to: '/glosario/usdt' },
+      { label: 'Glosario: stablecoin', to: '/glosario/stablecoin' },
+      { label: 'Glosario: criptomoneda', to: '/glosario/criptomoneda' },
+    ],
+  },
+  {
+    slug: 'dolares-deteriorados-billetes-rechazados-uruguay',
+    title: 'Dólares deteriorados o rechazados: qué billetes aceptan las casas de cambio',
+    description:
+      'Por qué algunas casas de cambio rechazan o pagan menos por dólares rotos, manchados o de serie vieja en Uruguay, y por qué el mito de la "cara chica" no aplica acá.',
+    tag: 'BILLETES',
+    updatedAt: '2026-06-20',
+    sections: [
+      {
+        heading: 'No todos los billetes de dólar se reciben igual',
+        body: 'Aunque un billete de dólar sea auténtico, una casa de cambio o un banco en Uruguay puede rechazarlo o pagarte un poco menos si está muy deteriorado: roto, manchado, escrito, con cinta, muy gastado o de una serie antigua. No es un capricho: estos billetes son más difíciles de reinsertar en el circuito internacional, y por eso a veces se descuenta una comisión o directamente no se aceptan. Conviene revisar el estado de tus dólares antes de ir a cambiar.',
+      },
+      {
+        heading: 'Por qué pasa esto',
+        body: 'Las casas de cambio y los bancos terminan exportando o redepositando los billetes que reciben, y para ese circuito los dólares deben estar en buen estado y, muchas veces, ser de series recientes. Un billete deteriorado implica costos extra (verificación, canje, logística) que la institución traslada con una comisión o no asume. Por eso un mismo dólar puede valerte un poco menos si está feo, aunque su valor legal sea idéntico.',
+      },
+      {
+        heading: 'El mito de la "cara chica" y la "cara grande"',
+        body: 'Es común escuchar que los billetes de "cara chica" (diseños más viejos) valen menos que los de "cara grande" (rediseñados). Ese fenómeno es sobre todo del circuito informal argentino; en Uruguay, donde el mercado cambiario es libre y formal, todas las emisiones de dólar son de curso legal y valen lo mismo. Lo que sí puede bajar el precio no es el diseño en sí, sino el estado del billete (deterioro) o, en algún caso, series muy antiguas que ciertas casas prefieren no manejar.',
+      },
+      {
+        heading: 'Cómo evitar problemas al cambiar',
+        body: 'Para no quedarte con billetes "rechazables": al comprar dólares, pedí billetes en buen estado y de series recientes, y revisalos en el momento. Si vas a vender, llevá los billetes lo más prolijos posible y, si tenés alguno deteriorado, preguntá de antemano si lo toman y a qué precio. Comparar entre casas también ayuda: algunas son más flexibles que otras con el estado de los billetes.',
+      },
+      {
+        heading: 'Si te quedó un billete deteriorado',
+        body: 'Si ya tenés un dólar roto o muy gastado que no te aceptan, no lo tires: algunos bancos lo reciben con una comisión por billete deteriorado, y los billetes a los que les falta poca superficie suelen poder canjearse. Consultá en tu banco o en una casa de cambio grande cuáles son las condiciones; el valor legal del billete sigue existiendo aunque su aspecto complique la operación.',
+      },
+    ],
+    related: [
+      { label: 'Billetes y monedas de Uruguay', to: '/guias/billetes-y-monedas-de-uruguay' },
+      { label: 'Glosario: dólar billete', to: '/glosario/dolar-billete' },
+      { label: 'Cotización del dólar hoy', to: '/cotizacion/dolar' },
+    ],
+  },
 ] as const
 
 /**
