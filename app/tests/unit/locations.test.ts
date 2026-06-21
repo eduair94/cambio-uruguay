@@ -50,4 +50,14 @@ describe('buildLocations', () => {
     expect(out).toHaveLength(1)
     expect(out[0].id).toBe('osm-1')
   })
+
+  it('keeps a same-origin extra that is far from the backend branch', () => {
+    const extraSameOriginFar: MapBranch = {
+      origin: 'brou', id: 'osm-3', name: 'OSM BROU Far', dept: '', locality: '', address: '',
+      phone: '', hours: '', lat: -34.85, lng: -56.18, mapUrl: '', source: 'osm',
+    }
+    const out = buildLocations([raw], [extraSameOriginFar])
+    expect(out).toHaveLength(2)
+    expect(out.find(b => b.id === 'osm-3')).toBeTruthy()
+  })
 })
