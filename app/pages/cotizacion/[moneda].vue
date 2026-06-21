@@ -452,7 +452,7 @@ useHead({
               name: t('cotizacion.metaTitle', { currency: currencyName.value, prep: prep.value }),
               inLanguage: locale.value,
               dateModified: new Date().toISOString(),
-              isPartOf: { '@id': 'https://cambio-uruguay.com/#organization' },
+              isPartOf: { '@id': 'https://cambio-uruguay.com/#website' },
               speakable: {
                 '@type': 'SpeakableSpecification',
                 cssSelector: ['.cotizacion-intro', '.cotizacion-context'],

@@ -278,7 +278,7 @@ useHead({
               name: `Valor de la ${ind.name} (${ind.abbr}) hoy`,
               inLanguage: 'es',
               dateModified: new Date().toISOString(),
-              isPartOf: { '@id': 'https://cambio-uruguay.com/#organization' },
+              isPartOf: { '@id': 'https://cambio-uruguay.com/#website' },
               speakable: {
                 '@type': 'SpeakableSpecification',
                 cssSelector: ['.indicador-intro', '.indicador-prose'],

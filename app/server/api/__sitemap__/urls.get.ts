@@ -208,10 +208,19 @@ export default defineEventHandler(async _event => {
       addUrlsForAllLocales(`/dolar/${slug}`, 0.7, 'daily', today)
     })
 
-    // Add /cotizacion/:moneda programmatic-SEO routes for all locales
+    // Add /cotizacion/:moneda programmatic-SEO routes for all locales. The four
+    // majors trade heavily (hourly); the rest (gold, thin regional currencies)
+    // move daily at most, so don't over-promise freshness.
     const currencySlugs = listCurrencySlugs()
+    const majorCurrencySlugs = new Set(['dolar', 'euro', 'real', 'peso-argentino'])
     currencySlugs.forEach(slug => {
-      addUrlsForAllLocales(`/cotizacion/${slug}`, 0.8, 'hourly', today)
+      const isMajor = majorCurrencySlugs.has(slug)
+      addUrlsForAllLocales(
+        `/cotizacion/${slug}`,
+        isMajor ? 0.8 : 0.7,
+        isMajor ? 'hourly' : 'daily',
+        today
+      )
     })
 
     // Add /casa/:origin programmatic-SEO routes for all locales (origins come

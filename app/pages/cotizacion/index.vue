@@ -232,7 +232,7 @@ useHead({
             name: 'Cotizaciones de todas las monedas en Uruguay hoy',
             inLanguage: 'es',
             dateModified: new Date().toISOString(),
-            isPartOf: { '@id': 'https://cambio-uruguay.com/#organization' },
+            isPartOf: { '@id': 'https://cambio-uruguay.com/#website' },
             speakable: { '@type': 'SpeakableSpecification', cssSelector: ['.cotizacion-intro'] },
           },
           {

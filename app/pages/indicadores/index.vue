@@ -172,7 +172,7 @@ useHead({
             name: 'Indicadores económicos de Uruguay hoy: UI, UR y BPC',
             inLanguage: 'es',
             dateModified: new Date().toISOString(),
-            isPartOf: { '@id': 'https://cambio-uruguay.com/#organization' },
+            isPartOf: { '@id': 'https://cambio-uruguay.com/#website' },
             speakable: { '@type': 'SpeakableSpecification', cssSelector: ['.indicadores-intro'] },
           },
           {
