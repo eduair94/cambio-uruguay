@@ -253,6 +253,11 @@ export default defineNuxtConfig({
         driver: 'fs',
         base: './.data/loans',
       },
+      // Durable store for the tourist-IVA re-verify watchdog (withdraw:iva-check).
+      withdraw: {
+        driver: 'fs',
+        base: './.data/withdraw',
+      },
     },
     experimental: {
       wasm: true,
@@ -271,6 +276,8 @@ export default defineNuxtConfig({
       '15 8 * * *': ['couriers:scrape'],
       // 08:45 UTC ≈ 05:45 Uruguay: refresh lender TEA rates.
       '45 8 * * *': ['loans:scrape'],
+      // 09:00 UTC Mondays ≈ 06:00 Uruguay: re-verify tourist-IVA facts watchdog.
+      '0 9 * * 1': ['withdraw:iva-check'],
     },
   },
 
@@ -584,6 +591,9 @@ export default defineNuxtConfig({
       token: process.env.TELEGRAM_BOT_TOKEN || '',
       username: process.env.TELEGRAM_BOT_USERNAME || '',
       secret: process.env.TELEGRAM_BOT_SECRET || '',
+      // Optional admin chat id for ops alerts (e.g. withdraw:iva-check re-verify).
+      // Empty -> watchdog records state + logs but sends no Telegram.
+      adminChatId: process.env.TELEGRAM_ADMIN_CHAT_ID || '',
     },
     // Discord OAuth2 login (server-side code exchange -> Firebase custom token).
     // Secrets are server-only; the client never sees clientSecret.

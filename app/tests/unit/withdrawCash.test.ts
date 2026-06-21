@@ -52,6 +52,8 @@ describe('withdrawCash content integrity', () => {
     required(c.keywords)
     // every UI chrome string is present and non-empty
     for (const value of Object.values(c.ui)) required(value)
+    // live-IVA labels present and non-empty
+    for (const value of Object.values(c.ivaLive)) required(value)
   })
 
   it.each(LOCALES)('has non-empty tldr, sections, zones, steps and faq (%s)', locale => {
@@ -126,6 +128,7 @@ describe('withdrawCash locale parity', () => {
     tldr: c.tldr.length,
     related: c.related.map(r => r.to),
     uiKeys: Object.keys(c.ui).sort(),
+    ivaLiveKeys: Object.keys(c.ivaLive).sort(),
   })
 
   it('en and pt mirror the es structure exactly', () => {

@@ -112,6 +112,25 @@ export interface WithdrawUi {
   lastChecked: string
 }
 
+/**
+ * Localized labels for the live "IVA status as of today" block, composed in the
+ * page from {@link resolveIvaStatus}. Placeholders: `{date}`, `{points}`, `{end}`.
+ */
+export interface WithdrawIvaLive {
+  /** Block heading, e.g. "Estado al día de hoy". */
+  heading: string
+  /** Dated subline, with `{date}` placeholder. */
+  asOf: string
+  /** Lodging line (static). */
+  hotel: string
+  /** Base reduction line, with `{points}` placeholder. */
+  base: string
+  /** Seasonal exemption ACTIVE line, with `{end}` placeholder. */
+  seasonalOn: string
+  /** Seasonal exemption INACTIVE line. */
+  seasonalOff: string
+}
+
 /** The complete, localized content tree for one locale. */
 export interface WithdrawContent {
   locale: WithdrawLocale
@@ -129,6 +148,8 @@ export interface WithdrawContent {
   tldr: string[]
   /** UI chrome strings. */
   ui: WithdrawUi
+  /** Live "IVA status today" labels (composed from the date-driven resolver). */
+  ivaLive: WithdrawIvaLive
   /** Intro/explanatory prose sections (networks, USD vs pesos, fees, etc.). */
   sections: WithdrawSection[]
   /** ATM-network comparison rows. */
@@ -219,6 +240,15 @@ export const withdrawContent: Record<WithdrawLocale, WithdrawContent> = {
       disclaimer:
         'Información de referencia para turistas, no asesoramiento financiero. Las comisiones, los límites y los beneficios impositivos cambian: confirmalos al llegar y con el emisor de tu tarjeta. No tenemos afiliación con los bancos ni las casas de cambio mencionadas.',
       lastChecked: 'Última verificación: junio de 2026',
+    },
+    ivaLive: {
+      heading: 'Beneficios de IVA vigentes hoy',
+      asOf: 'Estado al {date}:',
+      hotel: 'Alojamiento (hoteles y similares): 0% de IVA todo el año.',
+      base: 'Gastronomía y alquiler de autos: descuento de {points} puntos de IVA pagando con tarjeta extranjera.',
+      seasonalOn: 'Exención total de IVA de verano: VIGENTE (hasta el {end}).',
+      seasonalOff:
+        'Exención total de IVA de verano: fuera de temporada en este momento (rige aproximadamente de noviembre a abril).',
     },
     sections: [
       {
@@ -494,6 +524,15 @@ export const withdrawContent: Record<WithdrawLocale, WithdrawContent> = {
         'Reference information for tourists, not financial advice. Fees, limits and tax benefits change: confirm them on arrival and with your card issuer. We are not affiliated with the banks or exchange houses mentioned.',
       lastChecked: 'Last checked: June 2026',
     },
+    ivaLive: {
+      heading: 'Tourist VAT benefits in force today',
+      asOf: 'Status as of {date}:',
+      hotel: 'Accommodation (hotels and similar): 0% VAT year-round.',
+      base: 'Dining and car rental: a {points}-point VAT discount when you pay with a foreign card.',
+      seasonalOn: 'Summer full VAT exemption: ACTIVE (until {end}).',
+      seasonalOff:
+        'Summer full VAT exemption: out of season right now (runs roughly November to April).',
+    },
     sections: [
       {
         id: 'redes',
@@ -766,6 +805,15 @@ export const withdrawContent: Record<WithdrawLocale, WithdrawContent> = {
       disclaimer:
         'Informação de referência para turistas, não é aconselhamento financeiro. Taxas, limites e benefícios fiscais mudam: confirme ao chegar e com o emissor do seu cartão. Não temos afiliação com os bancos ou casas de câmbio mencionados.',
       lastChecked: 'Última verificação: junho de 2026',
+    },
+    ivaLive: {
+      heading: 'Benefícios de IVA em vigor hoje',
+      asOf: 'Status em {date}:',
+      hotel: 'Hospedagem (hotéis e similares): 0% de IVA o ano todo.',
+      base: 'Gastronomia e aluguel de carros: desconto de {points} pontos de IVA pagando com cartão estrangeiro.',
+      seasonalOn: 'Isenção total de IVA de verão: EM VIGOR (até {end}).',
+      seasonalOff:
+        'Isenção total de IVA de verão: fora de temporada neste momento (vale aproximadamente de novembro a abril).',
     },
     sections: [
       {
