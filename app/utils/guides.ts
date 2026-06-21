@@ -1256,6 +1256,45 @@ export const guides: readonly Guide[] = [
       { label: 'Cotización del dólar hoy', to: '/cotizacion/dolar' },
     ],
   },
+  {
+    slug: 'proyeccion-dolar-uruguay-se-puede-predecir',
+    title: '¿A cuánto va a llegar el dólar en Uruguay? Qué se puede prever y qué no',
+    description:
+      'Si se puede predecir el dólar en Uruguay, qué muestran las expectativas del mercado y la encuesta del BCU, y por qué conviene una estrategia en lugar de adivinar el precio.',
+    tag: 'PROYECCIÓN',
+    updatedAt: '2026-06-20',
+    sections: [
+      {
+        heading: 'La verdad incómoda: nadie predice el dólar con certeza',
+        body: 'La pregunta "¿a cuánto va a llegar el dólar?" no tiene una respuesta confiable, y conviene desconfiar de quien asegure lo contrario. En Uruguay el dólar flota: su precio lo determina el mercado, con intervenciones puntuales del Banco Central. Depende de tantos factores —decisiones de la Reserva Federal de EE.UU., la situación de Argentina y Brasil, los precios de exportación, la oferta y la demanda local— que ningún pronóstico es seguro. Lo que sí podés hacer es entender las referencias disponibles y decidir con una estrategia en lugar de una corazonada.',
+      },
+      {
+        heading: 'Las expectativas del mercado y la encuesta del BCU',
+        body: 'Una referencia útil son las expectativas del mercado. El Banco Central del Uruguay publica periódicamente una Encuesta de Expectativas Económicas, donde analistas estiman, entre otras variables, hacia dónde podría ir el tipo de cambio. Esa proyección mediana no es una garantía —se ajusta mes a mes según cambian las condiciones— pero da una idea de qué espera el mercado. Tomala como un termómetro de consenso, no como una promesa.',
+      },
+      {
+        heading: 'Qué mueve realmente al dólar',
+        body: 'El dólar en Uruguay se mueve por una combinación de factores: la política monetaria de la Reserva Federal (cuando suben las tasas en EE.UU., el dólar tiende a fortalecerse en el mundo), las condiciones de la región —en especial Argentina y Brasil—, los flujos de comercio exterior, el precio de los commodities y las decisiones del Banco Central. Por eso el precio puede moverse con noticias internacionales, no solo locales. Entender estos motores ayuda más que buscar un número mágico.',
+      },
+      {
+        heading: 'Por qué "adivinar el piso" suele fallar',
+        body: 'Mucha gente espera "el mejor momento" para comprar dólares, pero intentar cronometrar el mercado rara vez funciona: el costo de equivocarse suele superar al ahorro de acertar por unos centésimos. Si necesitás los dólares pronto, la decisión es de necesidad, no de timing. Y si ahorrás a largo plazo, el ruido diario importa poco. Esperar indefinidamente "a que baje" muchas veces termina en comprar más caro.',
+      },
+      {
+        heading: 'Una estrategia mejor que pronosticar',
+        body: 'En lugar de adivinar, definí tu horizonte y comprá de forma escalonada: dividir la compra en el tiempo promedia el precio y baja el riesgo de comprar todo en un mal momento. Mirá el histórico para ubicar si el precio de hoy está alto o bajo respecto de las últimas semanas, comparÁ entre casas para conseguir el mejor precio y seguí las noticias del dólar para tener contexto. Con horizonte, comparación y compras escalonadas decidís mejor que con cualquier pronóstico.',
+      },
+    ],
+    related: [
+      { label: 'Histórico de cotizaciones', to: '/historico' },
+      { label: 'Noticias del dólar', to: '/noticias' },
+      {
+        label: '¿Cuál es el mejor momento para cambiar?',
+        to: '/guias/mejor-momento-cambiar-divisas',
+      },
+      { label: 'Cómo afecta la Fed al dólar', to: '/guias/como-afecta-la-fed-al-dolar' },
+    ],
+  },
 ] as const
 
 /**
