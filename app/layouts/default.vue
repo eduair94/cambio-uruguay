@@ -345,6 +345,7 @@ const primaryNav: NavItem[] = [
   { to: '/dolar-hoy', icon: 'mdi-trending-up', label: 'dolarHoy.nav' },
   { to: '/historico', icon: 'mdi-chart-line', label: 'historico' },
   { to: '/sucursales', icon: 'mdi-bank-outline', label: 'sucursalesMenu' },
+  { to: '/mapa', icon: 'mdi-map-marker-radius', label: 'map.nav' },
   { to: '/comparar', icon: 'mdi-chart-multiple', label: 'compare.nav' },
 ]
 const moreNav: NavItem[] = [
