@@ -65,6 +65,9 @@
 
     <!-- Data Table -->
     <v-row v-else>
+      <v-col v-if="mapBranches.length" cols="12">
+        <LocationsMap :branches="mapBranches" :zoom="mapBranches.length === 1 ? 14 : 10" height="50vh" />
+      </v-col>
       <v-col cols="12">
         <v-card>
           <v-card-title>
@@ -138,6 +141,8 @@
 </template>
 
 <script setup lang="ts">
+import LocationsMap from '~/components/map/LocationsMap.vue'
+
 // Define page meta for route validation
 definePageMeta({
   validate: route => {
@@ -185,6 +190,26 @@ const specialMessage = computed(() => {
   }
   return null
 })
+
+// Map adapter: filter geocoded rows and map to LocationsMap shape
+const mapBranches = computed(() =>
+  (branchesData.value || [])
+    .filter((s: any) => s.latitude && s.longitude)
+    .map((s: any) => ({
+      origin,
+      id: String(s.id ?? `${origin}-${s.NroSucursal}`),
+      name: s.Nombre || '',
+      dept: s.Departamento || '',
+      locality: s.Localidad || '',
+      address: s.Direccion || '',
+      phone: s.Telefono || '',
+      hours: s.Horarios || '',
+      lat: Number(s.latitude),
+      lng: Number(s.longitude),
+      mapUrl: s.map || '',
+      source: 'bcu',
+    }))
+)
 
 // Table headers
 const headers = computed(() => [
