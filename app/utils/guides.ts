@@ -1184,6 +1184,24 @@ export const guides: readonly Guide[] = [
       { label: 'Calculadora de IVA', to: '/herramientas/calculadora-iva' },
       { label: 'Calculadora de IRPF', to: '/herramientas/calculadora-irpf' },
     ],
+    steps: [
+      {
+        name: 'Identificá el día hábil anterior',
+        text: 'Tomá el último día hábil anterior a la fecha de tu operación; si fue feriado o fin de semana, retrocedé al último día con cotización.',
+      },
+      {
+        name: 'Buscá la cotización de compra del BROU',
+        text: 'Usá el valor de compra (comprador) del Banco República de ese día, no el de venta ni un promedio.',
+      },
+      {
+        name: 'Convertí el monto a pesos',
+        text: 'Multiplicá el importe en dólares por esa cotización de compra para obtener la base en pesos del IVA o del IRPF.',
+      },
+      {
+        name: 'Ante dudas, confirmá con tu contador',
+        text: 'Para regímenes especiales o el IRPF de servicios personales, verificá el criterio exacto con un profesional.',
+      },
+    ],
   },
   {
     slug: 'criptomonedas-regulacion-impuestos-uruguay',
