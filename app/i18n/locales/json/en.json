@@ -35,7 +35,9 @@
     "directions": "Directions",
     "geoUnavailable": "Geolocation is not available on this device.",
     "geoDenied": "We couldn't get your location. Defaulting to Montevideo.",
-    "viewOnMap": "View on map"
+    "viewOnMap": "View on map",
+    "cashPoints": "Cash withdrawal points",
+    "withdrawCash": "Cash withdrawal"
   },
   "bestToSell": "Best to sell",
   "bestToBuy": "Best to buy",
