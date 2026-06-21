@@ -123,6 +123,24 @@
           </VCol>
         </VRow>
       </VCard>
+
+      <!-- Live IVA status, derived from the date (resolveIvaStatus) -->
+      <VAlert
+        v-if="section.id === 'iva-turistas'"
+        type="success"
+        variant="tonal"
+        density="comfortable"
+        class="withdraw-iva-live mb-4"
+        icon="mdi-check-decagram"
+      >
+        <div class="font-weight-bold">{{ c.ivaLive.heading }}</div>
+        <div class="text-caption mb-2">{{ ivaAsOf }}</div>
+        <ul class="withdraw-bullets mb-0">
+          <li>{{ c.ivaLive.hotel }}</li>
+          <li>{{ ivaBase }}</li>
+          <li>{{ ivaSeasonal }}</li>
+        </ul>
+      </VAlert>
     </template>
 
     <!-- Step by step -->
@@ -195,6 +213,7 @@ import {
   WITHDRAW_PATH,
   WITHDRAW_SOURCES,
 } from '~/utils/withdrawCash'
+import { resolveIvaStatus } from '~/utils/ivaStatus'
 
 const { locale } = useI18n()
 const localePath = useLocalePath()
@@ -202,6 +221,27 @@ const localePath = useLocalePath()
 // Localized content tree for the active UI locale (falls back to es).
 const c = computed(() => getWithdrawContent(locale.value))
 const sources = WITHDRAW_SOURCES
+
+// Live tourist-IVA status, derived purely from today's date. The page always
+// states the currently-in-force benefits (it flips on 2026-10-01 and each
+// season) — kept honest by the withdraw:iva-check watchdog task.
+const ivaNow = resolveIvaStatus(new Date())
+const fmtDate = (iso: string) =>
+  new Date(`${iso}T00:00:00Z`).toLocaleDateString(c.value.lang, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    timeZone: 'UTC',
+  })
+const ivaAsOf = computed(() => c.value.ivaLive.asOf.replace('{date}', fmtDate(ivaNow.date)))
+const ivaBase = computed(() =>
+  c.value.ivaLive.base.replace('{points}', String(ivaNow.baseReductionPoints))
+)
+const ivaSeasonal = computed(() =>
+  ivaNow.seasonalActive && ivaNow.seasonalWindow
+    ? c.value.ivaLive.seasonalOn.replace('{end}', fmtDate(ivaNow.seasonalWindow.end))
+    : c.value.ivaLive.seasonalOff
+)
 
 // Per-locale canonical: localePath prefixes /en and /pt; es stays unprefixed.
 // hreflang alternates are injected globally by the layout (useLocaleHead).
