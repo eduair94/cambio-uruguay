@@ -177,6 +177,28 @@
         </v-col>
       </v-row>
 
+      <!-- Live, data-grounded FAQ (majors only) with FAQPage schema -->
+      <v-row v-if="currencyFaqs.length" class="mt-2">
+        <v-col cols="12">
+          <v-card>
+            <v-card-title class="d-flex align-center py-3">
+              <v-icon start>mdi-frequently-asked-questions</v-icon>
+              {{ $t('cotizacion.faqTitle') }}
+            </v-card-title>
+            <v-expansion-panels variant="accordion" class="pa-2">
+              <v-expansion-panel v-for="faq in currencyFaqs" :key="faq.id">
+                <v-expansion-panel-title class="font-weight-medium">
+                  {{ faq.question }}
+                </v-expansion-panel-title>
+                <v-expansion-panel-text class="text-body-2">
+                  {{ faq.answer }}
+                </v-expansion-panel-text>
+              </v-expansion-panel>
+            </v-expansion-panels>
+          </v-card>
+        </v-col>
+      </v-row>
+
       <!-- Gold only: price per gram by karat, derived from the per-ounce quote -->
       <v-row v-if="goldGrams.length" class="mt-2">
         <v-col cols="12">
@@ -284,6 +306,7 @@ import {
   type CurrencyLang,
   type CurrencyQuote,
 } from '~/utils/currencyPages'
+import { currencyFaqIds, type FaqItem } from '~/utils/faqAnswers'
 
 // Validate the slug against the supported currency list BEFORE rendering. Running
 // in the route guard yields a real 404 status (on SSR and client navigation) and,
@@ -339,6 +362,20 @@ const bestSell = computed<CurrencyQuote | null>(() => quotes.value.find(q => q.b
 const goldGrams = computed(() =>
   code.value === 'XAU' && bestSell.value?.sell ? goldGramPrices(bestSell.value.sell) : []
 )
+
+// Live, data-grounded FAQ for this currency (only the four majors have grammatical
+// FAQ copy in faqAnswers). Reuses the cached /api/faq route, and the transform keeps
+// only this currency's items so the page payload stays small; empty for the rest.
+const { data: faqData } = await useFetch<{ items: FaqItem[] }>('/api/faq', {
+  query: { lang: locale },
+  key: () => `cotizacion-faq-${currencySlug(code.value)}-${locale.value}`,
+  default: () => ({ items: [] as FaqItem[] }),
+  transform: (data: { items: FaqItem[] }) => {
+    const ids = new Set(currencyFaqIds(code.value))
+    return { items: (data?.items ?? []).filter(i => ids.has(i.id)) }
+  },
+})
+const currencyFaqs = computed<FaqItem[]>(() => faqData.value?.items ?? [])
 
 const relatedCurrencies = computed(() =>
   listCurrencySlugs()
@@ -430,6 +467,18 @@ useHead({
                 ...(bestSell.value?.sell ? { price: bestSell.value.sell } : {}),
               },
             },
+            ...(currencyFaqs.value.length
+              ? [
+                  {
+                    '@type': 'FAQPage',
+                    mainEntity: currencyFaqs.value.map(f => ({
+                      '@type': 'Question',
+                      name: f.question,
+                      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+                    })),
+                  },
+                ]
+              : []),
             {
               '@type': 'BreadcrumbList',
               itemListElement: [
