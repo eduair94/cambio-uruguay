@@ -64,6 +64,27 @@
       </v-col>
     </v-row>
 
+    <!-- Tourist cross-link: where/how to withdraw cash -->
+    <v-row>
+      <v-col cols="12">
+        <v-alert
+          type="info"
+          variant="tonal"
+          density="comfortable"
+          class="mt-3"
+          icon="mdi-cash-multiple"
+        >
+          {{ $t('sucursales.retirarTip') }}
+          <NuxtLink
+            :to="localePath('/retirar-efectivo-uruguay')"
+            class="text-info font-weight-bold text-decoration-none"
+          >
+            {{ $t('sucursales.retirarLink') }}
+          </NuxtLink>
+        </v-alert>
+      </v-col>
+    </v-row>
+
     <!-- Loading State -->
     <v-row v-if="pending">
       <v-col cols="12" class="text-center mt-5">

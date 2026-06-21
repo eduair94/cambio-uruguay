@@ -160,6 +160,9 @@
           <NuxtLink :to="localePath('/guias')" class="footer-link text-caption">
             {{ $t('guias.nav') }}
           </NuxtLink>
+          <NuxtLink :to="localePath('/retirar-efectivo-uruguay')" class="footer-link text-caption">
+            Retirar efectivo
+          </NuxtLink>
           <NuxtLink :to="localePath('/acerca')" class="footer-link text-caption">
             {{ $t('acerca.nav') }}
           </NuxtLink>
