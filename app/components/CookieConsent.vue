@@ -1,13 +1,7 @@
 <!-- app/components/CookieConsent.vue -->
 <template>
   <VFadeTransition>
-    <div
-      v-if="visible"
-      class="cookie-consent"
-      role="dialog"
-      aria-live="polite"
-      :aria-label="t('consent.title')"
-    >
+    <div v-if="visible" class="cookie-consent" role="region" :aria-label="t('consent.title')">
       <VCard class="cookie-consent__card pa-4" elevation="12">
         <div class="d-flex flex-column flex-md-row align-md-center ga-3">
           <div class="cookie-consent__text text-body-2">
