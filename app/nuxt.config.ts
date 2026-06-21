@@ -593,6 +593,10 @@ export default defineNuxtConfig({
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'https://cambio-uruguay.com',
       // Client-side API URL
       apiBase: process.env.NUXT_PUBLIC_API_BASE || 'https://api.cambio-uruguay.com',
+      // Leaflet tile source. Default = public OSM tiles (fine for low traffic).
+      // Switch to a tile-provider/CDN URL via NUXT_PUBLIC_TILE_URL before heavy traffic
+      // (OSM's tile usage policy forbids heavy use of its public tiles).
+      tileUrl: process.env.NUXT_PUBLIC_TILE_URL || 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
       // Telegram bot username (public) for the Login Widget on /cuenta.
       telegramBotUsername: process.env.TELEGRAM_BOT_USERNAME || '',
       // Optional Discord community invite shown on /conectar. Empty -> login-only card.
