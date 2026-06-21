@@ -137,19 +137,19 @@ const LABELS: Record<FaqLang, Labels> = {
         id: 'update-freq',
         question: '¿Cada cuánto se actualizan las cotizaciones?',
         answer:
-          'Las cotizaciones se actualizan automáticamente cada 10 minutos a partir de los datos publicados por las casas de cambio de todo el país.',
+          'Las cotizaciones se actualizan automáticamente cada 10 minutos a partir de los datos que publican las casas de cambio de todo el país, junto con la referencia del Banco Central del Uruguay (BCU). Esa frecuencia mantiene la foto muy cercana al mercado en vivo durante los días hábiles; los fines de semana y feriados, cuando el mercado cambiario no opera, el último precio queda como referencia. Por eso, al consultar el dólar conviene mirar la fecha y hora del dato: una cotización de hace minutos es mucho más confiable para decidir que una de ayer.',
       },
       {
         id: 'data-source',
         question: '¿De dónde salen los datos de las cotizaciones?',
         answer:
-          'Los datos provienen del Banco Central del Uruguay (BCU) y de más de 40 casas de cambio del país, que se consultan en tiempo real y se comparan en un solo lugar.',
+          'Los datos provienen de más de 40 casas de cambio y bancos de todo Uruguay, junto con la cotización de referencia del Banco Central del Uruguay (BCU). Cada casa publica sus propios precios de compra y venta, que se consultan en tiempo real y se reúnen en un solo lugar para compararlos. Cambio Uruguay no fija precios ni cobra por operar: solo releva y ordena la información para que veas de un vistazo dónde conviene comprar o vender. La cotización INTERBANCARIO se muestra solo como referencia mayorista entre bancos, porque no está disponible para el público.',
       },
       {
         id: 'how-choose',
         question: '¿Cómo se elige la mejor casa de cambio?',
         answer:
-          'Para comprar conviene la casa con la menor cotización de venta; para vender, la que tenga la mayor cotización de compra. También importa el spread: cuanto menor es la diferencia entre compra y venta, mejor el precio.',
+          'Para comprar conviene la casa de cambio con la menor cotización de venta; para vender, la que tenga la mayor cotización de compra. También importa el spread, que es la diferencia entre el precio de compra y el de venta: cuanto menor es ese spread, mejor el precio para vos. Entre dos casas con cotizaciones parecidas, la de menor spread casi siempre te deja mejor parado. Y conviene elegir el tipo de operación adecuado —billete, transferencia, cable o eBROU—, porque cada uno tiene un precio distinto. Comparar las tres cosas (precio, spread y canal) es la forma de encontrar el mejor precio.',
       },
       {
         id: 'moneda-uruguay',
@@ -209,19 +209,19 @@ const LABELS: Record<FaqLang, Labels> = {
         id: 'update-freq',
         question: 'How often are the exchange rates updated?',
         answer:
-          'Rates are updated automatically every 10 minutes from the data published by exchange houses across the country.',
+          'Rates are updated automatically every 10 minutes from the data published by exchange houses across the country, alongside the Central Bank of Uruguay (BCU) reference. That frequency keeps the snapshot very close to the live market on business days; on weekends and holidays, when the FX market is closed, the last price stays as a reference. So when you check the dollar, look at the date and time of the figure: a quote from minutes ago is far more reliable for deciding than one from yesterday.',
       },
       {
         id: 'data-source',
         question: 'Where does the exchange-rate data come from?',
         answer:
-          'Data comes from the Central Bank of Uruguay (BCU) and over 40 exchange houses nationwide, queried in real time and compared in one place.',
+          'Data comes from over 40 exchange houses and banks across Uruguay, alongside the reference rate of the Central Bank of Uruguay (BCU). Each house publishes its own buy and sell prices, which are queried in real time and gathered in one place for comparison. Cambio Uruguay does not set prices or charge to trade: it only collects and organizes the information so you can see at a glance where to buy or sell. The INTERBANCARIO quote is shown only as a wholesale interbank reference, because it is not available to the public.',
       },
       {
         id: 'how-choose',
         question: 'How do you choose the best exchange house?',
         answer:
-          'To buy, pick the house with the lowest sell rate; to sell, the one with the highest buy rate. The spread also matters: the smaller the gap between buy and sell, the better the price.',
+          'To buy, pick the exchange house with the lowest sell rate; to sell, the one with the highest buy rate. The spread also matters — the difference between the buy and sell price: the smaller that spread, the better the price for you. Between two houses with similar quotes, the one with the lower spread almost always leaves you better off. It also helps to choose the right operation type —cash (billete), transfer, cable or eBROU— because each has a different price. Comparing all three (price, spread and channel) is how you find the best deal.',
       },
       {
         id: 'moneda-uruguay',
@@ -280,19 +280,19 @@ const LABELS: Record<FaqLang, Labels> = {
         id: 'update-freq',
         question: 'Com que frequência as cotações são atualizadas?',
         answer:
-          'As cotações são atualizadas automaticamente a cada 10 minutos a partir dos dados publicados pelas casas de câmbio de todo o país.',
+          'As cotações são atualizadas automaticamente a cada 10 minutos a partir dos dados publicados pelas casas de câmbio de todo o país, junto com a referência do Banco Central do Uruguai (BCU). Essa frequência mantém a foto muito próxima do mercado ao vivo nos dias úteis; nos fins de semana e feriados, quando o mercado de câmbio não opera, o último preço fica como referência. Por isso, ao consultar o dólar, olhe a data e a hora do dado: uma cotação de minutos atrás é muito mais confiável para decidir do que uma de ontem.',
       },
       {
         id: 'data-source',
         question: 'De onde vêm os dados das cotações?',
         answer:
-          'Os dados vêm do Banco Central do Uruguai (BCU) e de mais de 40 casas de câmbio do país, consultados em tempo real e comparados em um só lugar.',
+          'Os dados vêm de mais de 40 casas de câmbio e bancos de todo o Uruguai, junto com a cotação de referência do Banco Central do Uruguai (BCU). Cada casa publica seus próprios preços de compra e venda, consultados em tempo real e reunidos em um só lugar para comparação. A Cambio Uruguay não fixa preços nem cobra para operar: apenas coleta e organiza a informação para você ver de relance onde vale a pena comprar ou vender. A cotação INTERBANCARIO é mostrada apenas como referência atacadista entre bancos, pois não está disponível ao público.',
       },
       {
         id: 'how-choose',
         question: 'Como escolher a melhor casa de câmbio?',
         answer:
-          'Para comprar, escolha a casa com a menor cotação de venda; para vender, a com a maior cotação de compra. O spread também importa: quanto menor a diferença entre compra e venda, melhor o preço.',
+          'Para comprar, escolha a casa de câmbio com a menor cotação de venda; para vender, a com a maior cotação de compra. O spread também importa — a diferença entre o preço de compra e o de venda: quanto menor esse spread, melhor o preço para você. Entre duas casas com cotações parecidas, a de menor spread quase sempre te deixa em melhor situação. E convém escolher o tipo de operação certo —dinheiro (billete), transferência, cable ou eBROU—, porque cada um tem um preço diferente. Comparar as três coisas (preço, spread e canal) é como encontrar o melhor negócio.',
       },
       {
         id: 'moneda-uruguay',
