@@ -264,6 +264,7 @@
     </VMain>
 
     <Footer />
+    <ClientOnly><CookieConsent /></ClientOnly>
     <JoinTwitter />
     <ClientOnly><AuthDialog /></ClientOnly>
 

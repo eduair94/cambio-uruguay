@@ -767,5 +767,13 @@
     "faqA2": "Para operar conviene comparar la mejor cotización de compra y venta entre más de 40 casas de cambio de Uruguay, no solo la oficial del BCU.",
     "faqQ3": "¿Cada cuánto se actualiza?",
     "faqA3": "Las cotizaciones se actualizan cada 10 minutos a lo largo del día."
+  },
+  "consent": {
+    "message": "Usamos cookies propias y de terceros (Google Analytics, Google AdSense y Google Ads) para medir el tráfico, personalizar contenido y mostrar anuncios. Podés aceptarlas o rechazarlas.",
+    "accept": "Aceptar",
+    "reject": "Rechazar",
+    "more": "Más información",
+    "title": "Tu privacidad",
+    "settings": "Configurar cookies"
   }
 }

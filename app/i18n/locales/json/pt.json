@@ -749,5 +749,13 @@
     "faqA2": "Para operar, convém comparar a melhor cotação de compra e venda entre mais de 40 casas de câmbio do Uruguai, não apenas a oficial do BCU.",
     "faqQ3": "Com que frequência é atualizado?",
     "faqA3": "As cotações são atualizadas a cada 10 minutos ao longo do dia."
+  },
+  "consent": {
+    "message": "Usamos cookies próprios e de terceiros (Google Analytics, Google AdSense e Google Ads) para medir o tráfego, personalizar conteúdo e exibir anúncios. Você pode aceitá-los ou recusá-los.",
+    "accept": "Aceitar",
+    "reject": "Recusar",
+    "more": "Saiba mais",
+    "title": "Sua privacidade",
+    "settings": "Configurar cookies"
   }
 }
