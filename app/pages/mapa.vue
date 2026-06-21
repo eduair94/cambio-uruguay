@@ -104,11 +104,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import LocationsMap from '~/components/map/LocationsMap.vue'
 import { buildRatesByOrigin, rankNearby, type RatesByOrigin } from '~/utils/nearbyRates'
 
 const { t, locale } = useI18n()
+const route = useRoute()
 const { getAllLocations, getProcessedExchangeData, getCashPoints } = useApiService()
 
 const branches = ref<any[]>([])
@@ -170,6 +171,13 @@ function popupFor(b: any): string {
     rateLine +
     `<br><a href="${dir}" target="_blank" rel="noopener">${t('map.directions')} →</a>`
 }
+
+onMounted(() => {
+  if (route.query.cash) {
+    showCash.value = true
+    onToggleCash(true)
+  }
+})
 
 async function onToggleCash(v: boolean) {
   if (v && cashPoints.value.length === 0) {

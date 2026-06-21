@@ -172,6 +172,9 @@
       <VBtn :to="localePath('/comparar')" color="primary" variant="elevated" class="cta-btn">
         <VIcon start>mdi-chart-multiple</VIcon>{{ c.ui.ctaButton }}
       </VBtn>
+      <VBtn :to="{ path: localePath('/mapa'), query: { cash: '1' } }" color="teal" variant="tonal" class="cta-btn mt-3">
+        <VIcon start>mdi-map-marker-radius</VIcon>{{ c.ui.mapButton }}
+      </VBtn>
     </VCard>
 
     <!-- Related links -->
