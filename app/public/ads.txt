@@ -1,0 +1,6 @@
+# ads.txt for cambio-uruguay.com
+# Authorized Digital Sellers (IAB). No publisher account yet.
+# After AdSense approval, replace the line below with:
+# google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0
+#
+# (placeholder — intentionally empty of seller lines until approved)
