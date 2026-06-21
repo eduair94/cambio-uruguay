@@ -71,6 +71,14 @@ describe('buildFaqItems', () => {
     expect(buy.answer).toContain('41.00')
   })
 
+  it('uses the plural noun in buy/sell copy ("comprar dólares", not "dólar")', () => {
+    const items = buildFaqItems(rates, 'es', { today })
+    expect(items.find(i => i.id === 'buy-USD')!.question).toContain('comprar dólares')
+    expect(items.find(i => i.id === 'sell-USD')!.question).toContain('vender dólares')
+    // The rate question keeps the singular with its article.
+    expect(items.find(i => i.id === 'rate-USD')!.question).toContain('el dólar')
+  })
+
   it('recommends the house that pays most to SELL USD (highest buy)', () => {
     const items = buildFaqItems(rates, 'es', { today })
     const sell = items.find(i => i.id === 'sell-USD')!

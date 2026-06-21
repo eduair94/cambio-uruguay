@@ -45,6 +45,8 @@ interface RateFacts {
 
 interface Labels {
   curNames: Record<string, string>
+  /** Plural nouns used where "comprar/vender {plural}" reads more naturally. */
+  curNamesPlural: Record<string, string>
   rateQ: (cur: string) => string
   rateA: (p: {
     date: string
@@ -114,6 +116,12 @@ function freshestDate(rates: ExchangeRate[], fallback: Date): Date {
 const LABELS: Record<FaqLang, Labels> = {
   es: {
     curNames: { USD: 'dólar', EUR: 'euro', BRL: 'real brasileño', ARS: 'peso argentino' },
+    curNamesPlural: {
+      USD: 'dólares',
+      EUR: 'euros',
+      BRL: 'reales brasileños',
+      ARS: 'pesos argentinos',
+    },
     rateQ: cur => `¿A cuánto está el ${cur} hoy en Uruguay?`,
     rateA: p =>
       `Hoy ${p.date}, el ${p.cur} se vende desde $${p.minSell} y se paga hasta $${p.maxBuy} en las casas de cambio de Uruguay. El promedio de venta es $${p.avgSell}. Datos actualizados cada 10 minutos.`,
@@ -185,6 +193,12 @@ const LABELS: Record<FaqLang, Labels> = {
   },
   en: {
     curNames: { USD: 'US dollar', EUR: 'euro', BRL: 'Brazilian real', ARS: 'Argentine peso' },
+    curNamesPlural: {
+      USD: 'US dollars',
+      EUR: 'euros',
+      BRL: 'Brazilian reais',
+      ARS: 'Argentine pesos',
+    },
     rateQ: cur => `What is the ${cur} rate in Uruguay today?`,
     rateA: p =>
       `Today ${p.date}, the ${p.cur} sells from $${p.minSell} and is bought up to $${p.maxBuy} at Uruguay's exchange houses. The average sell rate is $${p.avgSell}. Data is updated every 10 minutes.`,
@@ -257,6 +271,7 @@ const LABELS: Record<FaqLang, Labels> = {
   },
   pt: {
     curNames: { USD: 'dólar', EUR: 'euro', BRL: 'real', ARS: 'peso argentino' },
+    curNamesPlural: { USD: 'dólares', EUR: 'euros', BRL: 'reais', ARS: 'pesos argentinos' },
     rateQ: cur => `Qual é a cotação do ${cur} no Uruguai hoje?`,
     rateA: p =>
       `Hoje ${p.date}, o ${p.cur} é vendido a partir de $${p.minSell} e comprado até $${p.maxBuy} nas casas de câmbio do Uruguai. A média de venda é $${p.avgSell}. Dados atualizados a cada 10 minutos.`,
@@ -341,6 +356,9 @@ export function buildFaqItems(
     const f = factsFor(rates, code)
     if (!f) return
     const cur = L.curNames[code] ?? code
+    // "comprar/vender dólares" reads better than "comprar dólar"; the rate/spread
+    // questions keep the singular ("¿a cuánto está el dólar?").
+    const curPlural = L.curNamesPlural[code] ?? cur
     items.push({
       id: `rate-${code}`,
       question: L.rateQ(cur),
@@ -355,10 +373,10 @@ export function buildFaqItems(
     if (f.bestBuyHouse) {
       items.push({
         id: `buy-${code}`,
-        question: L.buyQ(cur),
+        question: L.buyQ(curPlural),
         answer:
           L.buyA({
-            cur,
+            cur: curPlural,
             house: f.bestBuyHouse.name,
             rate: f.bestBuyHouse.rate.toFixed(2),
             savings: Math.max(0, f.bestBuyHouse.savingsVsAvg).toFixed(2),
@@ -368,10 +386,13 @@ export function buildFaqItems(
     if (f.bestSellHouse) {
       items.push({
         id: `sell-${code}`,
-        question: L.sellQ(cur),
+        question: L.sellQ(curPlural),
         answer:
-          L.sellA({ cur, house: f.bestSellHouse.name, rate: f.bestSellHouse.rate.toFixed(2) }) +
-          L.disclaimer,
+          L.sellA({
+            cur: curPlural,
+            house: f.bestSellHouse.name,
+            rate: f.bestSellHouse.rate.toFixed(2),
+          }) + L.disclaimer,
       })
     }
     if (code === 'USD' && f.minSpreadHouse) {
