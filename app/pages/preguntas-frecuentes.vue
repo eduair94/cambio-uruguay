@@ -6,7 +6,7 @@
         {{ t('faq.intro') }}
       </p>
     </VContainer>
-    <FaqBlock :items="items" :emit-schema="true" />
+    <FaqBlock :items="items" :emit-schema="true" :expanded="true" />
   </main>
 </template>
 
