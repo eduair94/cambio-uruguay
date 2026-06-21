@@ -1,1 +1,72 @@
-[]
+[
+  {
+    "origin": "indumex",
+    "id": "osm-node-2377847926",
+    "name": "Indumex",
+    "dept": "MALDONADO",
+    "locality": "Punta del Este",
+    "address": "",
+    "phone": "+598 4249 2077",
+    "hours": "",
+    "lat": -34.9402135,
+    "lng": -54.934801,
+    "mapUrl": "",
+    "source": "osm"
+  },
+  {
+    "origin": "tradelix",
+    "id": "osm-node-4540409673",
+    "name": "Cambio Tradelix S.A.",
+    "dept": "CANELONES",
+    "locality": "Ciudad de la Costa",
+    "address": "",
+    "phone": "",
+    "hours": "",
+    "lat": -34.8354092,
+    "lng": -55.9820042,
+    "mapUrl": "",
+    "source": "osm"
+  },
+  {
+    "origin": "cambio_openn",
+    "id": "osm-node-4761849185",
+    "name": "Openn",
+    "dept": "CERRO LARGO",
+    "locality": "Río Branco",
+    "address": "",
+    "phone": "",
+    "hours": "",
+    "lat": -32.5764892,
+    "lng": -53.3789814,
+    "mapUrl": "",
+    "source": "osm"
+  },
+  {
+    "origin": "gales",
+    "id": "osm-node-12806319874",
+    "name": "Gales",
+    "dept": "",
+    "locality": "",
+    "address": "",
+    "phone": "",
+    "hours": "",
+    "lat": -34.8698363,
+    "lng": -56.0309883,
+    "mapUrl": "",
+    "source": "osm"
+  },
+  {
+    "origin": "cambio_obelisco",
+    "id": "osm-node-13012203941",
+    "name": "Cambio Obelisco",
+    "dept": "MONTEVIDEO",
+    "locality": "",
+    "address": "",
+    "phone": "",
+    "hours": "",
+    "lat": -34.8862837,
+    "lng": -56.1639018,
+    "mapUrl": "",
+    "source": "osm"
+  }
+]
