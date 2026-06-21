@@ -83,9 +83,11 @@ function pinIcon(origin: string, highlighted: boolean) {
 function defaultPopup(b: Branch): string {
   const esc = (s: string) =>
     String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string))
-  const dir = b.mapUrl
-    ? b.mapUrl
-    : `https://www.google.com/maps/search/${encodeURIComponent(`${b.name} ${b.address} ${b.locality}`)}`
+  const rawDir =
+    b.mapUrl && /^https?:\/\//i.test(b.mapUrl)
+      ? b.mapUrl
+      : `https://www.google.com/maps/search/${encodeURIComponent(`${b.name} ${b.address} ${b.locality}`)}`
+  const dir = esc(rawDir)
   return `<strong>${esc(b.name || b.origin)}</strong><br>${esc(b.address)}<br>${esc(b.locality)}, ${esc(b.dept)}` +
     (b.hours ? `<br><em>${esc(b.hours)}</em>` : '') +
     (b.phone ? `<br>📞 ${esc(b.phone)}` : '') +
@@ -151,7 +153,13 @@ function focusBranch(id: string) {
 defineExpose({ focusBranch })
 
 onMounted(init)
-onBeforeUnmount(() => { if (map) { map.remove(); map = null } })
+onBeforeUnmount(() => {
+  if (map) { map.remove(); map = null }
+  cluster = null
+  userMarker = null
+  radiusCircle = null
+  markersById.clear()
+})
 
 watch(() => props.branches, () => renderMarkers(), { deep: false })
 watch(() => [props.userLocation, props.radiusKm], () => renderUser(), { deep: true })
