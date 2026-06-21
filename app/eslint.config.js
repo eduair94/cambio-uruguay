@@ -92,13 +92,6 @@ export default createConfigForNuxt({
           math: 'always',
         },
       ],
-      'vue/max-attributes-per-line': [
-        'error',
-        {
-          singleline: { max: 10 }, // Allow more attributes per line for Vuetify
-          multiline: { max: 1 },
-        },
-      ],
       'vue/component-definition-name-casing': ['error', 'PascalCase'],
       'vue/component-name-in-template-casing': [
         'error',

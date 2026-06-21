@@ -29,7 +29,6 @@
             <p class="legal-prose text-body-1 text-grey-lighten-1">
               El responsable del sitio es el equipo de Cambio Uruguay. Para cualquier consulta sobre
               privacidad podés escribirnos a
-              <!-- eslint-disable-next-line vue/max-attributes-per-line -->
               <a class="legal-link" href="mailto:admin@cambio-uruguay.com"
                 >admin@cambio-uruguay.com</a
               >.
@@ -128,7 +127,6 @@
               <li>Bloquear o borrar cookies desde la configuración de tu navegador.</li>
               <li>
                 Solicitar acceso, rectificación o eliminación de tus datos escribiendo a
-                <!-- eslint-disable-next-line vue/max-attributes-per-line -->
                 <a class="legal-link" href="mailto:admin@cambio-uruguay.com"
                   >admin@cambio-uruguay.com</a
                 >.
