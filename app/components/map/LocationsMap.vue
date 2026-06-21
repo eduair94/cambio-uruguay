@@ -27,6 +27,20 @@ interface Branch {
   source: string
 }
 
+interface CashPoint {
+  network: string
+  label: string
+  id: string
+  name: string
+  address: string
+  locality: string
+  dept: string
+  phone: string
+  hours: string
+  lat: number
+  lng: number
+}
+
 interface Props {
   branches: Branch[]
   center?: [number, number]
@@ -37,6 +51,8 @@ interface Props {
   highlightId?: string | null
   popupFor?: (b: Branch) => string
   directionsLabel?: string
+  cashPoints?: CashPoint[]
+  cashLabel?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -48,6 +64,8 @@ const props = withDefaults(defineProps<Props>(), {
   highlightId: null,
   popupFor: undefined,
   directionsLabel: 'Cómo llegar',
+  cashPoints: () => [],
+  cashLabel: 'Retiro de efectivo',
 })
 
 const emit = defineEmits<{ 'marker-click': [branch: Branch] }>()
@@ -60,6 +78,7 @@ const el = ref<HTMLElement | null>(null)
 let L: any = null
 let map: any = null
 let cluster: any = null
+let cashCluster: any = null
 let userMarker: any = null
 let radiusCircle: any = null
 const markersById = new Map<string, any>()
@@ -113,7 +132,44 @@ async function init() {
   cluster = (L as any).markerClusterGroup({ chunkedLoading: true, maxClusterRadius: 50 })
   map.addLayer(cluster)
   renderMarkers()
+
+  cashCluster = (L as any).markerClusterGroup({ chunkedLoading: true, maxClusterRadius: 60 })
+  map.addLayer(cashCluster)
+  renderCashPoints()
+
   renderUser()
+}
+
+function cashIcon() {
+  return L.divIcon({
+    className: 'cash-pin',
+    html: `<span style="display:flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:3px;background:#00897b;border:2px solid #fff;box-shadow:0 0 3px rgba(0,0,0,.5);color:#fff;font-size:10px;font-weight:700;line-height:1">$</span>`,
+    iconSize: [16, 16],
+    iconAnchor: [8, 8],
+  })
+}
+
+function cashPopup(p: CashPoint): string {
+  const esc = (s: string) =>
+    String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string))
+  const q = encodeURIComponent(`${p.name} ${p.address} ${p.locality}`)
+  const dir = esc(`https://www.google.com/maps/search/${q}`)
+  return `<strong>${esc(p.name || p.label)}</strong><br><span style="color:#00897b;font-weight:600">${esc(p.label)} · ${esc(props.cashLabel)}</span>` +
+    (p.address ? `<br>${esc(p.address)}` : '') +
+    (p.locality ? `<br>${esc(p.locality)}` : '') +
+    (p.hours ? `<br><em>${esc(p.hours)}</em>` : '') +
+    (p.phone ? `<br>📞 ${esc(p.phone)}` : '') +
+    `<br><a href="${dir}" target="_blank" rel="noopener">${esc(props.directionsLabel)} →</a>`
+}
+
+function renderCashPoints() {
+  if (!cashCluster) return
+  cashCluster.clearLayers()
+  for (const p of props.cashPoints || []) {
+    const m = L.marker([p.lat, p.lng], { icon: cashIcon() })
+    m.bindPopup(cashPopup(p))
+    cashCluster.addLayer(m)
+  }
 }
 
 function renderMarkers() {
@@ -158,12 +214,14 @@ onMounted(init)
 onBeforeUnmount(() => {
   if (map) { map.remove(); map = null }
   cluster = null
+  cashCluster = null
   userMarker = null
   radiusCircle = null
   markersById.clear()
 })
 
 watch(() => props.branches, () => renderMarkers(), { deep: false })
+watch(() => props.cashPoints, () => renderCashPoints(), { deep: false })
 watch(() => [props.userLocation, props.radiusKm], () => renderUser(), { deep: true })
 watch(() => props.highlightId, () => renderMarkers())
 </script>
