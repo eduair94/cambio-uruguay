@@ -18,6 +18,25 @@
     "metaTitle": "Newsletter del dólar en Uruguay | Cambio Uruguay",
     "metaDescription": "Suscribite gratis y recibí cada día el resumen del dólar en Uruguay: mejores cotizaciones, tendencia y noticias."
   },
+  "map": {
+    "nav": "Mapa",
+    "title": "Mapa de casas de cambio en Uruguay",
+    "subtitle": "Encontrá la casa de cambio más cercana y la mejor cotización a tu alrededor.",
+    "currency": "Moneda",
+    "direction": "Operación",
+    "radius": "Radio",
+    "useMyLocation": "Usar mi ubicación",
+    "bestNearby": "Mejores cotizaciones cerca",
+    "setLocationPrompt": "Elegí tu ubicación",
+    "setLocationHint": "Tocá «Usar mi ubicación» para ver las mejores cotizaciones cerca tuyo.",
+    "noneInRadius": "No hay sucursales en ese radio. Probá ampliarlo.",
+    "haveForeign": "Tengo {c} (vender)",
+    "needForeign": "Necesito {c} (comprar)",
+    "directions": "Cómo llegar",
+    "geoUnavailable": "La geolocalización no está disponible en este dispositivo.",
+    "geoDenied": "No pudimos obtener tu ubicación. Usamos Montevideo por defecto.",
+    "viewOnMap": "Ver en el mapa"
+  },
   "welcome": "Encuentra la mejor cotización en el mercado, comparando entre más de 40 casas de cambio.",
   "title": "Cotizaciones del día [day]. Se actualizan cada 10 minutos con respecto a la información de la web.",
   "info": "Si la información del sitio te sirvió, puedes ayudar a mantenerlo o dejando tu reseña",
@@ -417,7 +436,9 @@
     "sucursalesIndexKeywords": "directorio sucursales uruguay, casas de cambio uruguay, sucursales montevideo, sucursales canelones, todas las sucursales uruguay",
     "compareTitle": "Comparar Casas de Cambio en el Tiempo | Cambio Uruguay",
     "compareDescription": "Compará la evolución histórica de la cotización del dólar y otras divisas entre varias casas de cambio de Uruguay en un mismo gráfico. Encontrá quién ofrece el mejor precio a lo largo del tiempo.",
-    "compareKeywords": "comparar casas de cambio uruguay, evolución dólar uruguay, comparativa cotizaciones, gráfico comparativo dólar, mejor casa de cambio uruguay"
+    "compareKeywords": "comparar casas de cambio uruguay, evolución dólar uruguay, comparativa cotizaciones, gráfico comparativo dólar, mejor casa de cambio uruguay",
+    "mapaTitle": "Mapa de casas de cambio en Uruguay | Cambio Uruguay",
+    "mapaDescription": "Mapa interactivo de casas de cambio en Uruguay. Encontrá la sucursal más cercana y la mejor cotización del dólar a tu alrededor."
   },
   "dolarDepto": {
     "h1": "Dólar en {department} hoy",

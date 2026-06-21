@@ -20,6 +20,28 @@ class CambioInfo extends Cambio {
   async getMarkets(entry: any): Promise<any> {
     return this.db_suc.allEntries(entry);
   }
+  async getMapLocations(): Promise<any[]> {
+    const sucs = await this.db_suc.allEntries({
+      latitude: { $exists: true, $ne: null },
+      longitude: { $exists: true, $ne: null },
+      status: { $ne: 0 },
+    });
+    return sucs
+      .map((s: any) => ({
+        origin: s.origin,
+        id: s.id,
+        name: s.Nombre || "",
+        dept: s.Departamento || "",
+        locality: s.Localidad || "",
+        address: s.Direccion || "",
+        phone: s.Telefono || "",
+        hours: s.Horarios || "",
+        lat: Number(s.latitude),
+        lng: Number(s.longitude),
+        mapUrl: s.map || "",
+      }))
+      .filter((b: any) => !isNaN(b.lat) && !isNaN(b.lng) && b.lat !== 0 && b.lng !== 0);
+  }
   async get_local_data() {
     if (!this.localData) {
       const localData = {};

@@ -118,6 +118,15 @@ export const useApiService = () => {
     })
   }
 
+  const getAllLocations = async (): Promise<any[]> => {
+    try {
+      return await $fetch('/api/locations')
+    } catch (error) {
+      console.error('Error fetching map locations:', error)
+      return []
+    }
+  }
+
   /**
    * Fetch both exchange data and local data in parallel
    */
@@ -440,6 +449,7 @@ export const useApiService = () => {
     getApiBaseUrl,
     getExchangeData,
     getLocalData,
+    getAllLocations,
     getExchangeDataWithLocal,
     processExchangeData,
     getProcessedExchangeData,

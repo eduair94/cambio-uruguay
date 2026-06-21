@@ -64,6 +64,15 @@
       </v-col>
     </v-row>
 
+    <!-- Map CTA -->
+    <v-row class="mt-4">
+      <v-col cols="12">
+        <v-btn color="primary" variant="tonal" to="/mapa" class="mb-4">
+          <v-icon start>mdi-map-marker-radius</v-icon>{{ t('map.viewOnMap') }}
+        </v-btn>
+      </v-col>
+    </v-row>
+
     <!-- Loading State -->
     <v-row v-if="pending">
       <v-col cols="12" class="text-center mt-5">
