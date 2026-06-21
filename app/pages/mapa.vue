@@ -196,6 +196,9 @@ watch(
     branches.value = d.locs || []
     ratesByOrigin.value = buildRatesByOrigin((d.processed?.exchangeData || []) as any[])
     localData.value = d.processed?.localData || {}
+    if (currencyItems.value.length && !currencyItems.value.includes(currency.value)) {
+      currency.value = currencyItems.value[0]
+    }
   },
   { immediate: true }
 )

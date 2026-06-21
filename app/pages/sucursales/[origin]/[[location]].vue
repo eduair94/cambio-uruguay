@@ -66,7 +66,7 @@
     <!-- Data Table -->
     <v-row v-else>
       <v-col v-if="mapBranches.length" cols="12">
-        <LocationsMap :branches="mapBranches" :zoom="mapBranches.length === 1 ? 14 : 10" height="50vh" />
+        <LocationsMap :branches="mapBranches" :zoom="mapBranches.length === 1 ? 14 : 10" height="50vh" :directions-label="t('map.directions')" />
       </v-col>
       <v-col cols="12">
         <v-card>

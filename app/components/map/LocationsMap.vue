@@ -36,6 +36,7 @@ interface Props {
   radiusKm?: number
   highlightId?: string | null
   popupFor?: (b: Branch) => string
+  directionsLabel?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -46,6 +47,7 @@ const props = withDefaults(defineProps<Props>(), {
   radiusKm: 0,
   highlightId: null,
   popupFor: undefined,
+  directionsLabel: 'Cómo llegar',
 })
 
 const emit = defineEmits<{ 'marker-click': [branch: Branch] }>()
@@ -91,7 +93,7 @@ function defaultPopup(b: Branch): string {
   return `<strong>${esc(b.name || b.origin)}</strong><br>${esc(b.address)}<br>${esc(b.locality)}, ${esc(b.dept)}` +
     (b.hours ? `<br><em>${esc(b.hours)}</em>` : '') +
     (b.phone ? `<br>📞 ${esc(b.phone)}` : '') +
-    `<br><a href="${dir}" target="_blank" rel="noopener">Cómo llegar →</a>`
+    `<br><a href="${dir}" target="_blank" rel="noopener">${esc(props.directionsLabel)} →</a>`
 }
 
 async function init() {
