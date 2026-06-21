@@ -11,10 +11,10 @@ const rp = [
 
 describe('parseBcuCsv', () => {
   it('parses valid rows and tags the network', () => {
-    const out = parseBcuCsv(rp, 'redpagos')
+    const out = parseBcuCsv(rp, 'redpagos', 'Redpagos')
     expect(out).toHaveLength(1)
     expect(out[0]).toMatchObject({
-      network: 'redpagos', id: 'redpagos-1', name: 'CAMBIO MATRIZ PLAZA MATRIZ',
+      network: 'redpagos', label: 'Redpagos', id: 'redpagos-1', name: 'CAMBIO MATRIZ PLAZA MATRIZ',
       address: 'Sarandi 556 esq. Ituzaingo', locality: 'CIUDAD VIEJA - MONTEVIDEO', dept: 'MO',
       phone: '29150800',
     })
@@ -23,19 +23,20 @@ describe('parseBcuCsv', () => {
   })
 
   it('skips rows with missing/zero coords and rows outside the Uruguay bbox', () => {
-    expect(parseBcuCsv(rp, 'redpagos').map(p => p.id)).toEqual(['redpagos-1'])
+    expect(parseBcuCsv(rp, 'redpagos', 'Redpagos').map(p => p.id)).toEqual(['redpagos-1'])
   })
 
   it('tolerates comma-decimal coordinates', () => {
     const csv = HEADER + '\n6509;PTO;434;Agencia 01/01;-34,8484573;-56,1698608;Avda San Martin 4250;Cerrito;MO;UY;22166045;L-V;;;'
-    const out = parseBcuCsv(csv, 'abitab')
+    const out = parseBcuCsv(csv, 'abitab', 'Abitab')
     expect(out).toHaveLength(1)
     expect(out[0].lat).toBeCloseTo(-34.8484573)
     expect(out[0].network).toBe('abitab')
+    expect(out[0].label).toBe('Abitab')
   })
 
   it('returns empty for header-only or blank input', () => {
-    expect(parseBcuCsv(HEADER, 'abitab')).toEqual([])
-    expect(parseBcuCsv('', 'abitab')).toEqual([])
+    expect(parseBcuCsv(HEADER, 'abitab', 'Abitab')).toEqual([])
+    expect(parseBcuCsv('', 'abitab', 'Abitab')).toEqual([])
   })
 })
