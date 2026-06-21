@@ -262,6 +262,8 @@
     "ubicaciones": "Locations",
     "datosActualizados": "Real-time updated data",
     "clickParaVer": "Click on any exchange house to view its branches",
+    "retirarTip": "A tourist who needs cash?",
+    "retirarLink": "See where and how to withdraw money in Uruguay →",
     "cargandoDatos": "Loading branch information...",
     "buscar": "Search exchange house or location...",
     "buscarAhora": "Search now",
@@ -777,5 +779,36 @@
     "faqA2": "To trade, it's best to compare the best buy and sell rates across more than 40 Uruguayan exchange houses, not just the official BCU rate.",
     "faqQ3": "How often is it updated?",
     "faqA3": "Rates are updated every 10 minutes throughout the day."
+  },
+  "consent": {
+    "message": "We use first- and third-party cookies (Google Analytics, Google AdSense and Google Ads) to measure traffic, personalize content and show ads. You can accept or reject them.",
+    "accept": "Accept",
+    "reject": "Reject",
+    "more": "Learn more",
+    "title": "Your privacy",
+    "settings": "Cookie settings"
+  },
+  "legal": {
+    "privacyNav": "Privacy",
+    "termsNav": "Terms",
+    "contactNav": "Contact",
+    "privacy": {
+      "metaTitle": "Privacy Policy | Cambio Uruguay",
+      "metaDescription": "How Cambio Uruguay collects, uses and protects your data: cookies, Google Analytics, Google AdSense, Google Ads, authentication and your privacy choices.",
+      "h1": "Privacy Policy"
+    },
+    "terms": {
+      "metaTitle": "Terms of Use | Cambio Uruguay",
+      "metaDescription": "Terms and conditions for using Cambio Uruguay: informational nature of the rates, limitation of liability and intellectual property.",
+      "h1": "Terms of Use"
+    },
+    "contact": {
+      "metaTitle": "Contact | Cambio Uruguay",
+      "metaDescription": "Get in touch with the Cambio Uruguay team by email or social media.",
+      "h1": "Contact",
+      "intro": "Have a question, a correction or a proposal? Write to us and we'll get back to you.",
+      "emailTitle": "Email",
+      "socialTitle": "Social media"
+    }
   }
 }

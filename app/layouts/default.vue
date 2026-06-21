@@ -59,6 +59,13 @@
           <VListItemTitle>{{ $t('sucursalesMenu') }}</VListItemTitle>
         </VListItem>
 
+        <VListItem :to="localePath('/retirar-efectivo-uruguay')" @click="drawer = false">
+          <template #prepend>
+            <VIcon>mdi-cash-multiple</VIcon>
+          </template>
+          <VListItemTitle>Retirar efectivo</VListItemTitle>
+        </VListItem>
+
         <VListItem :to="localePath('/noticias')" @click="drawer = false">
           <template #prepend>
             <VIcon>mdi-newspaper-variant-outline</VIcon>
@@ -264,6 +271,7 @@
     </VMain>
 
     <Footer />
+    <ClientOnly><CookieConsent /></ClientOnly>
     <JoinTwitter />
     <ClientOnly><AuthDialog /></ClientOnly>
 
@@ -352,6 +360,12 @@ const moreNav: NavItem[] = [
   { to: '/noticias', icon: 'mdi-newspaper-variant-outline', label: 'noticias.nav' },
   { to: '/avanzado', icon: 'mdi-cog', label: 'avanzado' },
   { to: '/guias', icon: 'mdi-book-open-variant', label: 'guias.nav' },
+  {
+    to: '/retirar-efectivo-uruguay',
+    icon: 'mdi-cash-multiple',
+    label: 'Retirar efectivo',
+    raw: true,
+  },
   { to: '/herramientas', icon: 'mdi-tools', label: 'Herramientas', raw: true },
   { to: '/glosario', icon: 'mdi-book-alphabet', label: 'Glosario', raw: true },
   { to: '/convertir', icon: 'mdi-cash-sync', label: 'Convertir', raw: true },

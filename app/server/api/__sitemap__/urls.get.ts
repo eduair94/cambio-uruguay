@@ -122,6 +122,7 @@ export default defineEventHandler(async _event => {
     addUrlsForAllLocales('/historico', 0.9, 'daily', today) // Historico main page
     addUrlsForAllLocales('/sucursales', 0.9, 'daily') // Sucursales main page
     addUrlsForAllLocales('/mapa', 0.8, 'weekly') // Interactive map of exchange houses
+    addUrlsForAllLocales('/retirar-efectivo-uruguay', 0.8, 'monthly') // Tourist cash-withdrawal guide
     addUrlsForAllLocales('/noticias', 0.7, 'hourly', today) // Noticias del dólar (news)
     addUrlsForAllLocales('/preguntas-frecuentes', 0.7, 'weekly') // FAQ hub
     addUrlsForAllLocales('/comparar', 0.8, 'daily', today) // Compare exchange houses over time
@@ -135,6 +136,9 @@ export default defineEventHandler(async _event => {
     addUrlsForAllLocales('/indicadores', 0.8, 'daily', today) // Economic indicators hub (UI, UR, BPC)
     addUrlsForAllLocales('/blog', 0.8, 'daily') // AI daily blog hub
     addUrlsForAllLocales('/acerca', 0.6, 'monthly') // Methodology / about page
+    addUrlsForAllLocales('/privacidad', 0.4, 'yearly') // Privacy policy
+    addUrlsForAllLocales('/terminos', 0.4, 'yearly') // Terms of use
+    addUrlsForAllLocales('/contacto', 0.5, 'monthly') // Contact
     addUrlsForAllLocales('/conectar', 0.6, 'monthly') // Channels hub (API, MCP, Telegram, Discord, newsletter)
     addUrlsForAllLocales('/offline', 0.3, 'monthly') // Offline page
 

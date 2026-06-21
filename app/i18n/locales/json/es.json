@@ -265,6 +265,8 @@
     "ubicaciones": "Ubicaciones",
     "datosActualizados": "Datos actualizados en tiempo real",
     "clickParaVer": "Haz clic en cualquier casa de cambio para ver sus sucursales",
+    "retirarTip": "¿Sos turista y necesitás efectivo?",
+    "retirarLink": "Mirá dónde y cómo sacar dinero en Uruguay →",
     "cargandoDatos": "Cargando información de sucursales...",
     "buscar": "Buscar casa de cambio o ubicación...",
     "buscarAhora": "Buscar ahora",
@@ -788,5 +790,36 @@
     "faqA2": "Para operar conviene comparar la mejor cotización de compra y venta entre más de 40 casas de cambio de Uruguay, no solo la oficial del BCU.",
     "faqQ3": "¿Cada cuánto se actualiza?",
     "faqA3": "Las cotizaciones se actualizan cada 10 minutos a lo largo del día."
+  },
+  "consent": {
+    "message": "Usamos cookies propias y de terceros (Google Analytics, Google AdSense y Google Ads) para medir el tráfico, personalizar contenido y mostrar anuncios. Podés aceptarlas o rechazarlas.",
+    "accept": "Aceptar",
+    "reject": "Rechazar",
+    "more": "Más información",
+    "title": "Tu privacidad",
+    "settings": "Configurar cookies"
+  },
+  "legal": {
+    "privacyNav": "Privacidad",
+    "termsNav": "Términos",
+    "contactNav": "Contacto",
+    "privacy": {
+      "metaTitle": "Política de Privacidad | Cambio Uruguay",
+      "metaDescription": "Cómo Cambio Uruguay recopila, usa y protege tus datos: cookies, Google Analytics, Google AdSense, Google Ads, autenticación y tus opciones de privacidad.",
+      "h1": "Política de Privacidad"
+    },
+    "terms": {
+      "metaTitle": "Términos de Uso | Cambio Uruguay",
+      "metaDescription": "Términos y condiciones de uso de Cambio Uruguay: naturaleza informativa de las cotizaciones, limitación de responsabilidad y propiedad intelectual.",
+      "h1": "Términos de Uso"
+    },
+    "contact": {
+      "metaTitle": "Contacto | Cambio Uruguay",
+      "metaDescription": "Ponete en contacto con el equipo de Cambio Uruguay por correo electrónico o redes sociales.",
+      "h1": "Contacto",
+      "intro": "¿Tenés una consulta, una corrección o una propuesta? Escribinos y te respondemos.",
+      "emailTitle": "Correo electrónico",
+      "socialTitle": "Redes sociales"
+    }
   }
 }

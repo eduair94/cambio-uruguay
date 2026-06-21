@@ -20,6 +20,25 @@
 // Site-wide default branded OG image. Pages override via defineOgImageComponent.
 defineOgImageComponent('Cambio')
 
+// Google AdSense: inject the loader + account meta only when a publisher id is
+// configured (NUXT_PUBLIC_ADSENSE_PUB_ID). Empty by default so nothing loads
+// until the AdSense account exists — applying later is a config change, not a
+// code change. Personalized-ads behaviour follows the Consent Mode v2 signals
+// set by the cookie banner.
+const adsensePubId = useRuntimeConfig().public.adsensePubId as string
+if (adsensePubId) {
+  useHead({
+    meta: [{ name: 'google-adsense-account', content: adsensePubId }],
+    script: [
+      {
+        src: `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsensePubId}`,
+        async: true,
+        crossorigin: 'anonymous',
+      },
+    ],
+  })
+}
+
 // Handle hydration and errors
 onErrorCaptured(error => {
   console.error('App error captured:', error)

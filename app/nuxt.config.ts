@@ -301,20 +301,38 @@ export default defineNuxtConfig({
       {
         id: 'G-F97PNVRMRF',
         loadingStrategy: 'defer', // Defer loading for better performance
+        // Google Consent Mode v2: deny all storage by default until the user
+        // accepts via the cookie banner (useConsent flips these to granted).
+        // wait_for_update gives the banner a moment before tags fire.
+        initCommands: [
+          [
+            'consent',
+            'default',
+            {
+              ad_user_data: 'denied',
+              ad_personalization: 'denied',
+              ad_storage: 'denied',
+              analytics_storage: 'denied',
+              wait_for_update: 500,
+            },
+          ],
+        ],
         config: {
           page_title: 'Cambio Uruguay',
           page_location: 'https://cambio-uruguay.com',
         },
-        additionalAccounts: [
+        // Google Ads conversion tag (v3 multi-destination syntax). Inherits the
+        // consent default above — closes the previously ungated tag.
+        tags: [
           {
             id: 'AW-972399920',
             config: {
-              send_page_view: true, // optional configurations
+              send_page_view: true,
             },
           },
         ],
       },
-    ], // Replace with your Google Analytics ID
+    ],
     //'@sentry/nuxt/module',
     [
       '@vite-pwa/nuxt',
@@ -604,6 +622,9 @@ export default defineNuxtConfig({
       // Microsoft Clarity project id (session replay + heatmaps). Empty -> disabled.
       // Set via env NUXT_PUBLIC_CLARITY_ID. See plugins/clarity.client.ts.
       clarityId: process.env.NUXT_PUBLIC_CLARITY_ID || '',
+      // Google AdSense publisher id (ca-pub-XXXXXXXXXXXXXXXX). Empty until the
+      // AdSense account is created; when set, app.vue injects the loader script.
+      adsensePubId: process.env.NUXT_PUBLIC_ADSENSE_PUB_ID || '',
       // Firebase Web SDK config (public by design)
       firebase: {
         apiKey: process.env.NUXT_PUBLIC_FIREBASE_API_KEY || '',
