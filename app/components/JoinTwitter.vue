@@ -32,10 +32,11 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 const sheet = ref(false)
 let timeoutFunction: NodeJS.Timeout | null = null
+const { hasDecided } = useConsent()
 
 const close = () => {
   localStorage.setItem('not_show_twitter', 'true')
@@ -52,7 +53,16 @@ const show = () => {
 }
 
 onMounted(() => {
-  show()
+  if (hasDecided.value) {
+    show()
+    return
+  }
+  const stop = watch(hasDecided, decided => {
+    if (decided) {
+      stop()
+      show()
+    }
+  })
 })
 
 onBeforeUnmount(() => {
