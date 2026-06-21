@@ -773,6 +773,11 @@
       "metaTitle": "Privacy Policy | Cambio Uruguay",
       "metaDescription": "How Cambio Uruguay collects, uses and protects your data: cookies, Google Analytics, Google AdSense, Google Ads, authentication and your privacy choices.",
       "h1": "Privacy Policy"
+    },
+    "terms": {
+      "metaTitle": "Terms of Use | Cambio Uruguay",
+      "metaDescription": "Terms and conditions for using Cambio Uruguay: informational nature of the rates, limitation of liability and intellectual property.",
+      "h1": "Terms of Use"
     }
   }
 }
