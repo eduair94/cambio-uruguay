@@ -108,6 +108,8 @@ export interface WithdrawUi {
   ctaTitle: string
   ctaText: string
   ctaButton: string
+  /** CTA label linking to /mapa?cash=1 to see withdrawal points on the interactive map. */
+  mapButton: string
   disclaimer: string
   lastChecked: string
 }
@@ -237,6 +239,7 @@ export const withdrawContent: Record<WithdrawLocale, WithdrawContent> = {
       ctaText:
         'Mirá la cotización del dólar en más de 40 casas de cambio actualizada cada 10 minutos y elegí dónde te conviene operar.',
       ctaButton: 'Ver el comparador',
+      mapButton: 'Ver puntos de retiro en el mapa',
       disclaimer:
         'Información de referencia para turistas, no asesoramiento financiero. Las comisiones, los límites y los beneficios impositivos cambian: confirmalos al llegar y con el emisor de tu tarjeta. No tenemos afiliación con los bancos ni las casas de cambio mencionadas.',
       lastChecked: 'Última verificación: junio de 2026',
@@ -520,6 +523,7 @@ export const withdrawContent: Record<WithdrawLocale, WithdrawContent> = {
       ctaText:
         'See the dollar rate across 40+ exchange houses, updated every 10 minutes, and pick the best place to operate.',
       ctaButton: 'Open the comparator',
+      mapButton: 'See withdrawal points on the map',
       disclaimer:
         'Reference information for tourists, not financial advice. Fees, limits and tax benefits change: confirm them on arrival and with your card issuer. We are not affiliated with the banks or exchange houses mentioned.',
       lastChecked: 'Last checked: June 2026',
@@ -802,6 +806,7 @@ export const withdrawContent: Record<WithdrawLocale, WithdrawContent> = {
       ctaText:
         'Veja a cotação do dólar em mais de 40 casas de câmbio, atualizada a cada 10 minutos, e escolha onde vale mais a pena operar.',
       ctaButton: 'Abrir o comparador',
+      mapButton: 'Ver pontos de saque no mapa',
       disclaimer:
         'Informação de referência para turistas, não é aconselhamento financeiro. Taxas, limites e benefícios fiscais mudam: confirme ao chegar e com o emissor do seu cartão. Não temos afiliação com os bancos ou casas de câmbio mencionados.',
       lastChecked: 'Última verificação: junho de 2026',

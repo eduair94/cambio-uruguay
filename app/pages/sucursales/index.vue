@@ -64,6 +64,15 @@
       </v-col>
     </v-row>
 
+    <!-- Map CTA -->
+    <v-row class="mt-4">
+      <v-col cols="12">
+        <v-btn color="primary" variant="tonal" to="/mapa" class="mb-4">
+          <v-icon start>mdi-map-marker-radius</v-icon>{{ t('map.viewOnMap') }}
+        </v-btn>
+      </v-col>
+    </v-row>
+
     <!-- Tourist cross-link: where/how to withdraw cash -->
     <v-row>
       <v-col cols="12">

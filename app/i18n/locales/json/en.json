@@ -18,6 +18,27 @@
     "metaTitle": "Uruguay dollar newsletter | Cambio Uruguay",
     "metaDescription": "Subscribe free and get the daily Uruguay dollar summary: best rates, trend and news."
   },
+  "map": {
+    "nav": "Map",
+    "title": "Map of exchange houses in Uruguay",
+    "subtitle": "Find the nearest exchange house and the best rate around you.",
+    "currency": "Currency",
+    "direction": "Operation",
+    "radius": "Radius",
+    "useMyLocation": "Use my location",
+    "bestNearby": "Best rates nearby",
+    "setLocationPrompt": "Pick your location",
+    "setLocationHint": "Tap \"Use my location\" to see the best rates around you.",
+    "noneInRadius": "No branches within that radius. Try widening it.",
+    "haveForeign": "I have {c} (sell)",
+    "needForeign": "I need {c} (buy)",
+    "directions": "Directions",
+    "geoUnavailable": "Geolocation is not available on this device.",
+    "geoDenied": "We couldn't get your location. Defaulting to Montevideo.",
+    "viewOnMap": "View on map",
+    "cashPoints": "Cash withdrawal points",
+    "withdrawCash": "Cash withdrawal"
+  },
   "bestToSell": "Best to sell",
   "bestToBuy": "Best to buy",
   "welcome": "Find the best exchange rate in the market, comparing between more than 40 exchange houses.",
@@ -494,7 +515,9 @@
     "sucursalesIndexKeywords": "branch directory uruguay, exchange houses uruguay, montevideo branches, canelones branches, all branches uruguay",
     "compareTitle": "Compare Exchange Houses Over Time | Cambio Uruguay",
     "compareDescription": "Compare the historical evolution of the US dollar and other currency rates across several Uruguayan exchange houses on a single chart. Find who offers the best price over time.",
-    "compareKeywords": "compare exchange houses uruguay, dollar evolution uruguay, rate comparison, comparative dollar chart, best exchange house uruguay"
+    "compareKeywords": "compare exchange houses uruguay, dollar evolution uruguay, rate comparison, comparative dollar chart, best exchange house uruguay",
+    "mapaTitle": "Map of exchange houses in Uruguay | Cambio Uruguay",
+    "mapaDescription": "Interactive map of exchange houses in Uruguay. Find the nearest branch and the best US dollar rate around you."
   },
   "dolarDepto": {
     "h1": "Dollar in {department} today",

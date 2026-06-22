@@ -121,6 +121,7 @@ export default defineEventHandler(async _event => {
     addUrlsForAllLocales('/avanzado', 0.9, 'hourly', today) // Advanced comparator
     addUrlsForAllLocales('/historico', 0.9, 'daily', today) // Historico main page
     addUrlsForAllLocales('/sucursales', 0.9, 'daily') // Sucursales main page
+    addUrlsForAllLocales('/mapa', 0.8, 'weekly') // Interactive map of exchange houses
     addUrlsForAllLocales('/retirar-efectivo-uruguay', 0.8, 'monthly') // Tourist cash-withdrawal guide
     addUrlsForAllLocales('/noticias', 0.7, 'hourly', today) // Noticias del dólar (news)
     addUrlsForAllLocales('/preguntas-frecuentes', 0.7, 'weekly') // FAQ hub
