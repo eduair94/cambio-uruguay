@@ -7,8 +7,19 @@
       </NuxtLink>
     </div>
 
+    <!-- Loading skeleton mirrors the loaded row's structure + widths so the card
+         keeps the exact same height when live data arrives (no layout shift). -->
     <template v-if="pending">
-      <VSkeletonLoader type="text, heading" class="bg-transparent" />
+      <div class="d-flex align-center ga-4 flex-wrap" aria-hidden="true">
+        <div class="dm-col">
+          <div class="dm-skel dm-skel-caption" />
+          <div class="dm-skel dm-skel-value" />
+        </div>
+        <div class="dm-skel dm-skel-chip" />
+        <div class="spark-wrap flex-grow-1">
+          <div class="dm-skel dm-skel-spark" />
+        </div>
+      </div>
     </template>
 
     <template v-else>
@@ -97,5 +108,51 @@ const changeLabel = computed(() => {
 .spark-wrap {
   min-width: 120px;
   max-width: 240px;
+}
+
+/* Skeleton bars sized to mirror the loaded row so there is no layout shift when
+   live data swaps in. Theme-aware tint (on-surface) works in light + dark. */
+.dm-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.dm-skel {
+  background: rgba(var(--v-theme-on-surface), 0.09);
+  border-radius: 6px;
+  animation: dm-pulse 1.4s ease-in-out infinite;
+}
+.dm-skel-caption {
+  width: 88px;
+  height: 16px;
+}
+.dm-skel-value {
+  /* caption 16 + gap 4 + value 32 = 52px = the loaded left column, so the row
+     (and card) height is identical in both states. */
+  width: 150px;
+  height: 32px;
+}
+.dm-skel-chip {
+  width: 116px;
+  height: 26px;
+  border-radius: 13px;
+}
+.dm-skel-spark {
+  width: 100%;
+  height: 28px;
+}
+@keyframes dm-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dm-skel {
+    animation: none;
+  }
 }
 </style>
