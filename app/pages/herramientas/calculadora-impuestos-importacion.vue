@@ -69,11 +69,7 @@
           :color="productType.iva === 'exento' ? 'success' : 'primary'"
           prepend-icon="mdi-cash"
         >
-          {{
-            productType.iva === 'exento'
-              ? 'No paga IVA (exento)'
-              : `IVA ${productTax.ivaPct}%`
-          }}
+          {{ productType.iva === 'exento' ? 'No paga IVA (exento)' : `IVA ${productTax.ivaPct}%` }}
         </VChip>
         <VChip
           v-if="productType.imesi"
@@ -121,10 +117,7 @@
         {{ productType.procedures.map(p => ORGANISM_LABEL[p.organism]).join(' y ') }}.
         <span v-if="productType.note">{{ productType.note }}</span>
       </VAlert>
-      <p
-        v-else-if="productType.note"
-        class="text-caption text-grey-lighten-1 mb-3"
-      >
+      <p v-else-if="productType.note" class="text-caption text-grey-lighten-1 mb-3">
         {{ productType.note }}
       </p>
 
@@ -414,7 +407,8 @@
           <strong>medicamentos</strong> pagan la tasa mínima del 10%.
         </li>
         <li>
-          <strong>Pagan IVA 22%:</strong> el resto de los bienes (electrónica, ropa, juguetes, etc.).
+          <strong>Pagan IVA 22%:</strong> el resto de los bienes (electrónica, ropa, juguetes,
+          etc.).
         </li>
         <li>
           <strong>Requieren trámites adicionales:</strong> celulares y equipos con radiofrecuencia,
@@ -431,8 +425,9 @@
         </li>
       </ul>
       <p>
-        Las listas son orientativas y <strong>no taxativas</strong>: pueden variar según la cantidad,
-        el uso y la normativa vigente. Confirmá siempre con Aduanas y el organismo correspondiente.
+        Las listas son orientativas y <strong>no taxativas</strong>: pueden variar según la
+        cantidad, el uso y la normativa vigente. Confirmá siempre con Aduanas y el organismo
+        correspondiente.
       </p>
     </template>
 
@@ -478,7 +473,9 @@ const productTypeId = ref('general')
 const productType = computed(() => productTypeById(productTypeId.value))
 const productTax = computed(() => resolveProductTax(productType.value))
 const regimeStatus = computed(() => productRegimeStatus(productType.value, regime.value))
-const showImesiField = computed(() => regime.value === 'general' && productType.value.imesi === true)
+const showImesiField = computed(
+  () => regime.value === 'general' && productType.value.imesi === true
+)
 
 // Keep the (still editable) IVA field in sync with the chosen product type.
 watch(
@@ -562,10 +559,22 @@ const sources = [
     label: 'Aduanas — ¿Qué mercadería no puedo traer bajo encomiendas postales?',
     url: 'https://www.aduanas.gub.uy/innovaportal/v/25107/3/innova.front/que-mercaderia-no-puedo-traer-bajo-el-regimen-de-encomiendas-postales-internacionales.html',
   },
-  { label: 'VUCE / URSEC — Homologación de equipos de radiofrecuencia', url: 'https://vuce.gub.uy' },
-  { label: 'MSP — Medicamentos, suplementos, cosméticos y productos médicos', url: 'https://www.gub.uy/ministerio-salud-publica/' },
-  { label: 'MGAP — Plantas, semillas, fertilizantes y alimentos', url: 'https://www.gub.uy/ministerio-ganaderia-agricultura-pesca/' },
-  { label: 'Ejército — Servicio de Material y Armamento (armas y réplicas)', url: 'https://www.ejercito.mil.uy' },
+  {
+    label: 'VUCE / URSEC — Homologación de equipos de radiofrecuencia',
+    url: 'https://vuce.gub.uy',
+  },
+  {
+    label: 'MSP — Medicamentos, suplementos, cosméticos y productos médicos',
+    url: 'https://www.gub.uy/ministerio-salud-publica/',
+  },
+  {
+    label: 'MGAP — Plantas, semillas, fertilizantes y alimentos',
+    url: 'https://www.gub.uy/ministerio-ganaderia-agricultura-pesca/',
+  },
+  {
+    label: 'Ejército — Servicio de Material y Armamento (armas y réplicas)',
+    url: 'https://www.ejercito.mil.uy',
+  },
   { label: 'DGI — IVA e impuestos', url: 'https://www.dgi.gub.uy' },
 ]
 

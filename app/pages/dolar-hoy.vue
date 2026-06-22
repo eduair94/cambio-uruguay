@@ -4,7 +4,9 @@
       <VCol cols="12" md="9" lg="8">
         <VCard class="overflow-hidden mb-5" elevation="8">
           <div class="hero pa-6">
-            <h1 class="text-h5 text-md-h4 font-weight-bold text-white mb-1">{{ $t('dolarHoy.title') }}</h1>
+            <h1 class="text-h5 text-md-h4 font-weight-bold text-white mb-1">
+              {{ $t('dolarHoy.title') }}
+            </h1>
             <p class="text-body-1 text-grey-lighten-2 mb-3">{{ $t('dolarHoy.subtitle') }}</p>
             <div class="d-flex justify-start justify-md-end">
               <ShareButtons :text="$t('dolarHoy.title')" />
@@ -20,20 +22,34 @@
             <div class="d-flex align-center ga-4 flex-wrap mb-4">
               <div>
                 <div class="text-overline text-grey">{{ $t('dolarHoy.buy') }}</div>
-                <div class="text-h4 font-weight-bold text-primary">{{ buy ? formatUYU(buy) : '-' }}</div>
+                <div class="text-h4 font-weight-bold text-primary">
+                  {{ buy ? formatUYU(buy) : '-' }}
+                </div>
               </div>
               <div>
                 <div class="text-overline text-grey">{{ $t('dolarHoy.sell') }}</div>
-                <div class="text-h4 font-weight-bold text-success">{{ sell ? formatUYU(sell) : '-' }}</div>
+                <div class="text-h4 font-weight-bold text-success">
+                  {{ sell ? formatUYU(sell) : '-' }}
+                </div>
               </div>
-              <VChip v-if="momentum.latest !== null" :color="chipColor" variant="tonal" :prepend-icon="chipIcon" class="ms-auto">
+              <VChip
+                v-if="momentum.latest !== null"
+                :color="chipColor"
+                variant="tonal"
+                :prepend-icon="chipIcon"
+                class="ms-auto"
+              >
                 {{ changeLabel }}
               </VChip>
             </div>
 
             <div class="text-overline text-grey mb-1">{{ $t('dolarHoy.sevenDays') }}</div>
             <div class="spark-lg">
-              <Sparkline v-if="momentum.sparkline.length > 1" :values="momentum.sparkline" :up="momentum.direction !== 'down'" />
+              <Sparkline
+                v-if="momentum.sparkline.length > 1"
+                :values="momentum.sparkline"
+                :up="momentum.direction !== 'down'"
+              />
               <span v-else class="text-caption text-grey">{{ $t('dolarHoy.noTrend') }}</span>
             </div>
           </template>
@@ -44,7 +60,9 @@
         <VCard class="pa-5" variant="flat">
           <p class="text-body-2 text-grey-lighten-1 mb-2">
             {{ $t('dolarHoy.footNote') }}
-            <NuxtLink :to="localePath('/cotizacion/dolar')" class="lnk">{{ $t('dolarHoy.compareCta') }}</NuxtLink>
+            <NuxtLink :to="localePath('/cotizacion/dolar')" class="lnk">{{
+              $t('dolarHoy.compareCta')
+            }}</NuxtLink>
           </p>
         </VCard>
       </VCol>
@@ -64,14 +82,27 @@ const buy = computed(() => bestBuy('USD'))
 const sell = computed(() => bestSell('USD'))
 
 const chipColor = computed(() =>
-  momentum.value.direction === 'up' ? 'success' : momentum.value.direction === 'down' ? 'error' : 'grey'
+  momentum.value.direction === 'up'
+    ? 'success'
+    : momentum.value.direction === 'down'
+      ? 'error'
+      : 'grey'
 )
 const chipIcon = computed(() =>
-  momentum.value.direction === 'up' ? 'mdi-trending-up' : momentum.value.direction === 'down' ? 'mdi-trending-down' : 'mdi-trending-neutral'
+  momentum.value.direction === 'up'
+    ? 'mdi-trending-up'
+    : momentum.value.direction === 'down'
+      ? 'mdi-trending-down'
+      : 'mdi-trending-neutral'
 )
 const changeLabel = computed(() => {
   const m = momentum.value
-  const word = m.direction === 'up' ? t('dolarHoy.up') : m.direction === 'down' ? t('dolarHoy.down') : t('dolarHoy.flat')
+  const word =
+    m.direction === 'up'
+      ? t('dolarHoy.up')
+      : m.direction === 'down'
+        ? t('dolarHoy.down')
+        : t('dolarHoy.flat')
   const pct = m.direction === 'flat' ? '' : ` ${Math.abs(m.changePct)}%`
   return `${word}${pct} ${t('dolarHoy.vsYesterday')}`
 })
@@ -121,7 +152,7 @@ useHead(() => ({
   height: 60px;
 }
 .lnk {
-  color: #64b5f6;
+  color: rgb(var(--v-theme-link));
   font-weight: 600;
   text-decoration: none;
 }

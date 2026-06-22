@@ -28,7 +28,7 @@ function rateOk(ip: string): boolean {
   return rec.count <= MAX_PER_WINDOW
 }
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async event => {
   const body = await readBody<{ email?: string; locale?: string; website?: string }>(event)
 
   // Honeypot: bots fill hidden fields. Pretend success, do nothing.
@@ -58,7 +58,10 @@ export default defineEventHandler(async (event) => {
   const unsubToken = existing?.unsubToken || newToken()
   await NewsletterSubscriberModel.updateOne(
     { email },
-    { $set: { language: lang, status: 'pending', confirmToken, unsubToken }, $setOnInsert: { email } },
+    {
+      $set: { language: lang, status: 'pending', confirmToken, unsubToken },
+      $setOnInsert: { email },
+    },
     { upsert: true }
   )
 

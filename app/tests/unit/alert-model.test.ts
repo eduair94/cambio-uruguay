@@ -13,12 +13,22 @@ describe('Alert model', () => {
 
   it('rejects an invalid op and an invalid kind', () => {
     expect(
-      new AlertModel({ uid: 'u', currency: 'USD', kind: 'bestBuy', op: '!=', target: 40 }).validateSync()
-        ?.errors.op
+      new AlertModel({
+        uid: 'u',
+        currency: 'USD',
+        kind: 'bestBuy',
+        op: '!=',
+        target: 40,
+      }).validateSync()?.errors.op
     ).toBeTruthy()
     expect(
-      new AlertModel({ uid: 'u', currency: 'USD', kind: 'nope', op: '<', target: 40 }).validateSync()
-        ?.errors.kind
+      new AlertModel({
+        uid: 'u',
+        currency: 'USD',
+        kind: 'nope',
+        op: '<',
+        target: 40,
+      }).validateSync()?.errors.kind
     ).toBeTruthy()
   })
 

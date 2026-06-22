@@ -23,7 +23,9 @@ const points = computed(() => {
   const max = Math.max(...v)
   const span = max - min || 1
   const step = W / (v.length - 1)
-  return v.map((n, i) => `${(i * step).toFixed(1)},${(H - ((n - min) / span) * H).toFixed(1)}`).join(' ')
+  return v
+    .map((n, i) => `${(i * step).toFixed(1)},${(H - ((n - min) / span) * H).toFixed(1)}`)
+    .join(' ')
 })
 </script>
 

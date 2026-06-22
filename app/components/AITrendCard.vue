@@ -299,4 +299,73 @@ const renderedInsight = computed(() => {
   border-top: 1px solid rgba(255, 255, 255, 0.15);
   margin: 0.75rem 0;
 }
+
+/* Light theme: authored dark-first (white-alpha glass card + white/pale text).
+   The AI body loads client-side so the audit can miss it, but it would be
+   invisible on a light page — re-skin to a white card with ink/markdown text. */
+.v-theme--light .ai-trend-card {
+  background: #ffffff;
+  border-color: rgba(15, 23, 42, 0.1);
+}
+
+.v-theme--light .ai-trend-card:hover {
+  border-color: rgba(15, 23, 42, 0.18);
+}
+
+.v-theme--light .ai-insight-footer {
+  border-top-color: rgba(15, 23, 42, 0.1);
+}
+
+.v-theme--light .ai-insight-content {
+  color: rgba(15, 23, 42, 0.9);
+}
+
+.v-theme--light .ai-insight-content :deep(h1),
+.v-theme--light .ai-insight-content :deep(h2),
+.v-theme--light .ai-insight-content :deep(h3),
+.v-theme--light .ai-insight-content :deep(h4),
+.v-theme--light .ai-insight-content :deep(h5),
+.v-theme--light .ai-insight-content :deep(h6),
+.v-theme--light .ai-insight-content :deep(strong) {
+  color: #1565c0;
+}
+
+.v-theme--light .ai-insight-content :deep(em) {
+  color: rgba(15, 23, 42, 0.75);
+}
+
+.v-theme--light .ai-insight-content :deep(th),
+.v-theme--light .ai-insight-content :deep(td) {
+  border-color: rgba(15, 23, 42, 0.15);
+}
+
+.v-theme--light .ai-insight-content :deep(th) {
+  background: rgba(21, 101, 192, 0.1);
+  color: #1565c0;
+}
+
+.v-theme--light .ai-insight-content :deep(tr:nth-child(even)) {
+  background: rgba(15, 23, 42, 0.03);
+}
+
+.v-theme--light .ai-insight-content :deep(tr:hover) {
+  background: rgba(15, 23, 42, 0.06);
+}
+
+.v-theme--light .ai-insight-content :deep(blockquote) {
+  border-left-color: #1565c0;
+  color: rgba(15, 23, 42, 0.7);
+}
+
+.v-theme--light .ai-insight-content :deep(code) {
+  background: rgba(15, 23, 42, 0.06);
+}
+
+.v-theme--light .ai-insight-content :deep(pre) {
+  background: rgba(15, 23, 42, 0.04);
+}
+
+.v-theme--light .ai-insight-content :deep(hr) {
+  border-top-color: rgba(15, 23, 42, 0.15);
+}
 </style>

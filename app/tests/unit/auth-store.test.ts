@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 
+import { useAuthStore } from '../../stores/auth'
+
 // Hoisted so the vi.mock factory (also hoisted) can reference these safely.
 const h = vi.hoisted(() => ({
   signInWithPopup: vi.fn(),
@@ -23,8 +25,6 @@ vi.mock('../../stores/firebaseAuthApi', () => ({
   signOut: h.signOut,
   sendEmailVerification: h.sendEmailVerification,
 }))
-
-import { useAuthStore } from '../../stores/auth'
 
 beforeEach(() => {
   setActivePinia(createPinia())

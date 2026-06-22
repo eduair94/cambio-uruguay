@@ -2,7 +2,7 @@
   <div class="guides-page">
     <VContainer>
       <!-- Header -->
-      <header class="text-center py-8 py-md-12">
+      <header class="text-center pt-2 pb-6 py-md-12">
         <VChip class="mb-4" color="primary" size="small" variant="tonal">
           <VIcon start size="small">mdi-book-open-variant</VIcon>
           {{ t('guias.tag') }}
@@ -33,7 +33,7 @@
               <h2 class="text-h6 font-weight-bold mb-2 guide-title">{{ guide.title }}</h2>
               <p class="text-body-2 text-grey-lighten-1 mb-4 guide-desc">{{ guide.description }}</p>
               <div class="mt-auto">
-                <span class="text-caption text-primary font-weight-medium">
+                <span class="text-caption text-link font-weight-medium">
                   {{ t('guias.readGuide') }}
                   <VIcon size="14">mdi-arrow-right</VIcon>
                 </span>
@@ -70,9 +70,11 @@ const canonicalUrl = 'https://cambio-uruguay.com/guias'
 // Branded OG image for the guides hub.
 defineOgImageComponent('Cambio', {
   title: () =>
-    ({ es: 'Guías sobre el dólar en Uruguay', en: 'Guides about the dollar in Uruguay', pt: 'Guias sobre o dólar no Uruguai' })[
-      locale.value as 'es' | 'en' | 'pt'
-    ],
+    ({
+      es: 'Guías sobre el dólar en Uruguay',
+      en: 'Guides about the dollar in Uruguay',
+      pt: 'Guias sobre o dólar no Uruguai',
+    })[locale.value as 'es' | 'en' | 'pt'],
   subtitle: () =>
     ({
       es: 'Cómo comprar, comparar y cambiar divisas',

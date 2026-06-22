@@ -39,14 +39,8 @@ describe('POST /api/me/telegram/link-widget', () => {
     readBody.mockResolvedValueOnce({ id: 4242, username: 'ada', auth_date: 1, hash: 'ok' })
     verifyTelegramAuth.mockReturnValueOnce(true)
     const res = await handler({} as any)
-    expect(verifyTelegramAuth).toHaveBeenCalledWith(
-      expect.objectContaining({ id: 4242 }),
-      'tok'
-    )
-    expect(updateOne).toHaveBeenCalledWith(
-      { _id: 'u1' },
-      { $set: { telegramChatId: '4242' } }
-    )
+    expect(verifyTelegramAuth).toHaveBeenCalledWith(expect.objectContaining({ id: 4242 }), 'tok')
+    expect(updateOne).toHaveBeenCalledWith({ _id: 'u1' }, { $set: { telegramChatId: '4242' } })
     expect(res).toEqual({ ok: true, linked: true, username: 'ada' })
   })
 })

@@ -43,9 +43,24 @@ const route = useRoute()
 
 const banner = computed(() => {
   const state = route.query.state
-  if (state === 'confirmed') return { type: 'success' as const, title: t('newsletter.confirmedTitle'), msg: t('newsletter.confirmedMsg') }
-  if (state === 'unsubscribed') return { type: 'info' as const, title: t('newsletter.unsubscribedTitle'), msg: t('newsletter.unsubscribedMsg') }
-  if (state === 'invalid') return { type: 'warning' as const, title: t('newsletter.invalidTitle'), msg: t('newsletter.invalidMsg') }
+  if (state === 'confirmed')
+    return {
+      type: 'success' as const,
+      title: t('newsletter.confirmedTitle'),
+      msg: t('newsletter.confirmedMsg'),
+    }
+  if (state === 'unsubscribed')
+    return {
+      type: 'info' as const,
+      title: t('newsletter.unsubscribedTitle'),
+      msg: t('newsletter.unsubscribedMsg'),
+    }
+  if (state === 'invalid')
+    return {
+      type: 'warning' as const,
+      title: t('newsletter.invalidTitle'),
+      msg: t('newsletter.invalidMsg'),
+    }
   return null
 })
 

@@ -1,5 +1,9 @@
 <template>
   <VApp>
+    <!-- Keyboard / screen-reader skip link: first focusable element, jumps past
+         the nav straight to the page content. -->
+    <a class="skip-link" href="#main">{{ $t('a11y.skipToContent') }}</a>
+
     <!-- Navigation Drawer for mobile -->
     <VNavigationDrawer
       v-model="drawer"
@@ -12,13 +16,16 @@
         <VListItem>
           <VListItemTitle class="text-h6"> Menu </VListItemTitle>
           <template #append>
-            <VBtn
-              icon="mdi-close"
-              variant="text"
-              size="small"
-              :aria-label="$t('a11y.close')"
-              @click="drawer = false"
-            />
+            <div class="d-flex align-center">
+              <ThemeToggle />
+              <VBtn
+                icon="mdi-close"
+                variant="text"
+                size="small"
+                :aria-label="$t('a11y.close')"
+                @click="drawer = false"
+              />
+            </div>
           </template>
         </VListItem>
 
@@ -255,6 +262,7 @@
       <!-- Account + language cluster: kept together with its own gap so the login
            CTA never collides with the logo or the nav. -->
       <div class="nav-actions d-flex align-center ga-1 ga-sm-2">
+        <ThemeToggle />
         <AccountMenu />
         <LanguageMenu />
       </div>
@@ -264,7 +272,7 @@
       <PWAInstallBanner />
     </ClientOnly>
 
-    <VMain :class="formatNameRoute()">
+    <VMain id="main" tabindex="-1" :class="formatNameRoute()">
       <div class="container_custom">
         <slot />
       </div>
@@ -299,21 +307,28 @@ const formatNameRoute = () => {
 // Navigation drawer state
 const drawer = ref(false)
 
-// Route change loading management
-router.beforeEach((to, from) => {
+// Route change loading management. router.beforeEach/afterEach add GLOBAL guards
+// and return their removers; capture them and dispose on scope teardown so a
+// layout swap (error/widget layout) or HMR can't stack duplicate guards.
+const removeBeforeEach = router.beforeEach((to, from) => {
   // Only show loading if navigating to a different page and we're on client side
   if (to.path !== from.path && typeof window !== 'undefined') {
     loadingStore.showRouteLoading()
   }
 })
 
-router.afterEach(() => {
+const removeAfterEach = router.afterEach(() => {
   // Hide loading after route change completes
   if (typeof window !== 'undefined') {
     nextTick(() => {
       loadingStore.hideRouteLoading()
     })
   }
+})
+
+onScopeDispose(() => {
+  removeBeforeEach()
+  removeAfterEach()
 })
 
 // Watch for route changes and ensure drawer is closed

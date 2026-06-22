@@ -18,7 +18,7 @@
       <div v-else class="d-flex flex-column ga-2" style="min-width: 220px">
         <div class="text-caption text-grey">{{ $t('tg.widgetHint') }}</div>
         <ClientOnly>
-          <div ref="tgWidget" class="tg-widget"></div>
+          <div ref="tgWidget" class="tg-widget" />
         </ClientOnly>
         <VBtn
           variant="text"
@@ -30,13 +30,7 @@
           {{ $t('tg.useCode') }}
         </VBtn>
         <div v-if="showCode">
-          <VBtn
-            color="info"
-            variant="tonal"
-            size="small"
-            :loading="busy"
-            @click="startLink"
-          >
+          <VBtn color="info" variant="tonal" size="small" :loading="busy" @click="startLink">
             {{ $t('tg.link') }}
           </VBtn>
           <div v-if="deepLink" class="mt-3">
@@ -80,7 +74,6 @@ function mountWidget() {
   if (!import.meta.client) return
   const username = config.telegramBotUsername
   if (!username || !tgWidget.value || tgWidget.value.childElementCount > 0) return
-
   ;(window as any).onTelegramAuth = async (user: Record<string, unknown>) => {
     try {
       await authFetch('/api/me/telegram/link-widget', { method: 'POST', body: user })
@@ -116,7 +109,9 @@ async function refresh() {
 async function startLink() {
   busy.value = true
   try {
-    const r = await authFetch<{ deepLink: string }>('/api/me/telegram/link-code', { method: 'POST' })
+    const r = await authFetch<{ deepLink: string }>('/api/me/telegram/link-code', {
+      method: 'POST',
+    })
     deepLink.value = r.deepLink
     if (!poll) poll = setInterval(refresh, 3000)
   } finally {
@@ -134,7 +129,10 @@ watch([linked, tgWidget], () => {
   if (!linked.value) mountWidget()
 })
 
-onMounted(async () => { await refresh(); mountWidget() })
+onMounted(async () => {
+  await refresh()
+  mountWidget()
+})
 onBeforeUnmount(() => {
   poll && clearInterval(poll)
   if (import.meta.client) delete (window as any).onTelegramAuth

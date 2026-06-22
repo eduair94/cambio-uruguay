@@ -47,9 +47,7 @@ export function saveSnapshot(
   }
 }
 
-export function loadSnapshot(
-  storage: StorageLike | null = defaultStorage()
-): RatesSnapshot | null {
+export function loadSnapshot(storage: StorageLike | null = defaultStorage()): RatesSnapshot | null {
   if (!storage) return null
   let raw: string | null
   try {

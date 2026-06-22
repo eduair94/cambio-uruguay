@@ -54,7 +54,7 @@ const visible = computed(() => !hasDecided.value || bannerOpen.value)
   line-height: 1.6;
 }
 .cookie-consent__link {
-  color: #64b5f6;
+  color: rgb(var(--v-theme-link));
   text-decoration: none;
   font-weight: 600;
 }

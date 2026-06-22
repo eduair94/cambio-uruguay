@@ -137,7 +137,11 @@ export const IMPORT_PRODUCT_TYPES: ImportProductType[] = [
     icon: 'mdi-nutrition',
     iva: 'basica',
     procedures: [
-      { organism: 'MSP', note: 'Suplementos, vitaminas y similares son controlados por el MSP.', url: MSP_URL },
+      {
+        organism: 'MSP',
+        note: 'Suplementos, vitaminas y similares son controlados por el MSP.',
+        url: MSP_URL,
+      },
     ],
   },
   {
@@ -148,7 +152,11 @@ export const IMPORT_PRODUCT_TYPES: ImportProductType[] = [
     imesi: true,
     courierProhibited: true,
     procedures: [
-      { organism: 'MSP', note: 'Cosméticos y productos de higiene son controlados por el MSP (sobre todo en cantidad).', url: MSP_URL },
+      {
+        organism: 'MSP',
+        note: 'Cosméticos y productos de higiene son controlados por el MSP (sobre todo en cantidad).',
+        url: MSP_URL,
+      },
     ],
     note: 'La perfumería paga IMESI y no ingresa como envío personal por courier.',
   },
@@ -171,7 +179,11 @@ export const IMPORT_PRODUCT_TYPES: ImportProductType[] = [
     icon: 'mdi-food-apple',
     iva: 'basica',
     procedures: [
-      { organism: 'MGAP', note: 'Productos de origen animal o vegetal: control sanitario del MGAP.', url: MGAP_URL },
+      {
+        organism: 'MGAP',
+        note: 'Productos de origen animal o vegetal: control sanitario del MGAP.',
+        url: MGAP_URL,
+      },
       { organism: 'MSP', note: 'Alimentos elaborados: control bromatológico / MSP.', url: MSP_URL },
     ],
     note: 'Ingreso limitado por courier (sólo snacks sellados, de marca, en cantidad acotada).',
@@ -182,7 +194,11 @@ export const IMPORT_PRODUCT_TYPES: ImportProductType[] = [
     icon: 'mdi-sprout',
     iva: 'basica',
     procedures: [
-      { organism: 'MGAP', note: 'Semillas, plantas y fertilizantes requieren autorización fitosanitaria del MGAP.', url: MGAP_URL },
+      {
+        organism: 'MGAP',
+        note: 'Semillas, plantas y fertilizantes requieren autorización fitosanitaria del MGAP.',
+        url: MGAP_URL,
+      },
     ],
   },
   {
@@ -219,7 +235,8 @@ export const IMPORT_PRODUCT_TYPES: ImportProductType[] = [
   },
   {
     id: 'prohibidos',
-    label: 'Prohibidos: vaper/cigarrillo electrónico, pirotecnia, inflamables, baterías sueltas, drogas',
+    label:
+      'Prohibidos: vaper/cigarrillo electrónico, pirotecnia, inflamables, baterías sueltas, drogas',
     icon: 'mdi-cancel',
     iva: 'basica',
     prohibited: true,
@@ -246,7 +263,8 @@ export function productRegimeStatus(
   if (regime === 'courier' && type.courierProhibited) {
     return {
       blocked: true,
-      reason: 'No ingresa por courier / encomiendas postales. Requiere importación formal (régimen general).',
+      reason:
+        'No ingresa por courier / encomiendas postales. Requiere importación formal (régimen general).',
     }
   }
   return { blocked: false }

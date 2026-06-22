@@ -270,7 +270,7 @@ useHead({
   margin-bottom: 0.4rem;
 }
 .post-body :deep(a) {
-  color: #64b5f6;
+  color: rgb(var(--v-theme-link));
   text-decoration: none;
 }
 .post-body :deep(a:hover) {
@@ -291,14 +291,14 @@ useHead({
   font-size: 0.9rem;
 }
 .sources-list a {
-  color: #64b5f6;
+  color: rgb(var(--v-theme-link));
   text-decoration: none;
 }
 .sources-list a:hover {
   text-decoration: underline;
 }
 .related-link {
-  color: #64b5f6;
+  color: rgb(var(--v-theme-link));
   text-decoration: none;
   font-size: 0.92rem;
 }

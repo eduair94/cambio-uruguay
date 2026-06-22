@@ -23,7 +23,13 @@
           <VIcon start color="primary">mdi-share-variant</VIcon>
           <span class="text-subtitle-1 font-weight-bold">{{ t('share.cta') }}</span>
           <VSpacer />
-          <VBtn icon variant="text" size="small" :aria-label="t('a11y.close')" @click="open = false">
+          <VBtn
+            icon
+            variant="text"
+            size="small"
+            :aria-label="t('a11y.close')"
+            @click="open = false"
+          >
             <VIcon>mdi-close</VIcon>
           </VBtn>
         </VCardTitle>
@@ -63,7 +69,9 @@
             <VListItem class="share-row px-2" rounded="lg" @click="copyLink">
               <template #prepend>
                 <VAvatar :color="copied ? 'success' : 'grey-darken-2'" size="36" class="me-1">
-                  <VIcon color="white" size="20">{{ copied ? 'mdi-check' : 'mdi-link-variant' }}</VIcon>
+                  <VIcon color="white" size="20">{{
+                    copied ? 'mdi-check' : 'mdi-link-variant'
+                  }}</VIcon>
                 </VAvatar>
               </template>
               <VListItemTitle class="font-weight-medium">
@@ -144,7 +152,8 @@ onBeforeUnmount(() => {
 function track(channel: ShareNetwork | 'native' | 'copy') {
   try {
     // @ts-expect-error gtag is injected globally by the analytics plugin.
-    if (typeof gtag === 'function') gtag('event', 'share', { method: channel, item_id: shareUrl.value })
+    if (typeof gtag === 'function')
+      gtag('event', 'share', { method: channel, item_id: shareUrl.value })
   } catch {
     // analytics optional
   }

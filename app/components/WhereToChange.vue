@@ -339,4 +339,39 @@ watch(
 .wtc-ai-content :deep(em) {
   color: rgba(255, 255, 255, 0.7);
 }
+
+/* Light theme: the card was authored for the dark home canvas (white-alpha
+   overlays + light text). Re-skin to a white card on a light band so the
+   theme-default dark text reads with full contrast. */
+.v-theme--light .where-to-change-section {
+  background: #eef2f8;
+}
+
+.v-theme--light .wtc-card {
+  background: #ffffff;
+  border-color: rgba(15, 23, 42, 0.1);
+}
+
+.v-theme--light .wtc-item {
+  background: rgba(15, 23, 42, 0.03);
+  border-color: rgba(15, 23, 42, 0.08);
+}
+
+/* Rank-#1 avatar: success green darken-2 (#388e3c) leaves white at 4.11:1 — a
+   touch under AA. Drop to #2e7d32 for white text at 5.1:1. */
+.v-theme--light .wtc-item :deep(.v-avatar.bg-success) {
+  background-color: #2e7d32 !important;
+}
+
+.v-theme--light .wtc-ai-content {
+  color: rgba(15, 23, 42, 0.9);
+}
+
+.v-theme--light .wtc-ai-content :deep(strong) {
+  color: #1565c0;
+}
+
+.v-theme--light .wtc-ai-content :deep(em) {
+  color: rgba(15, 23, 42, 0.65);
+}
 </style>

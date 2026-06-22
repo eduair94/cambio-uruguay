@@ -111,7 +111,89 @@
     "expandDonation": "Open project support",
     "closeDonation": "Close",
     "menu": "Open menu",
-    "close": "Close menu"
+    "close": "Close menu",
+    "skipToContent": "Skip to main content",
+    "toggleTheme": "Toggle light/dark theme"
+  },
+  "theme": {
+    "label": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "Automatic (system)"
+  },
+  "importCart": {
+    "nav": "Import cart",
+    "tag": "IMPORT CART",
+    "h1": "Import cart: the final cost of your overseas purchases",
+    "intro": "Add products from Amazon, eBay or MercadoLibre (paste the link or enter them by hand) and work out what they cost landed in Uruguay: taxes by category, franchise, shipping and total in pesos.",
+    "ogSubtitle": "Taxes, franchise and shipping of your online orders, in pesos",
+    "metaDescription": "Build a cart with your Amazon, eBay or MercadoLibre orders and see the final cost in Uruguay: taxes, the USD 800 franchise, courier shipping and the total in Uruguayan pesos, live.",
+    "yourCart": "Your cart",
+    "clear": "Clear",
+    "empty": {
+      "title": "Your cart is empty",
+      "hint": "Add a product by pasting an Amazon, eBay or MercadoLibre link, or enter it by hand."
+    },
+    "add": {
+      "cta": "Add product",
+      "title": "Add product",
+      "urlLabel": "Product link (optional)",
+      "urlPlaceholder": "https://www.amazon.com/...",
+      "urlHint": "Paste an Amazon, eBay or MercadoLibre link and we'll fill in the details automatically.",
+      "fetch": "Fetch link data",
+      "name": "Product name",
+      "priceUsd": "Price (USD)",
+      "qty": "Quantity",
+      "weightKg": "Weight (kg)",
+      "category": "Category",
+      "cancel": "Cancel",
+      "confirm": "Add to cart",
+      "urlInvalid": "Only Amazon, eBay or MercadoLibre links are supported.",
+      "urlNoData": "We couldn't read the data. Please fill the fields by hand.",
+      "urlCurrency": "The price is in {currency}. Enter the value in US dollars (USD) by hand.",
+      "estimateWeight": "Estimate the weight with AI",
+      "weightEstimated": "AI-estimated weight — adjust it if needed.",
+      "weightFailed": "We couldn't estimate the weight. Enter it by hand.",
+      "detectCategory": "Detect the category with AI",
+      "categoryDetected": "AI-suggested category — verify it's correct.",
+      "categoryFailed": "We couldn't suggest a category. Pick it by hand."
+    },
+    "line": {
+      "remove": "Remove from cart",
+      "decrease": "Decrease by one",
+      "increase": "Increase by one",
+      "landed": "Landed in UY",
+      "tax": "taxes"
+    },
+    "settings": {
+      "title": "Calculation options",
+      "regime": "Import regime",
+      "courier": "Online purchase (courier)",
+      "general": "General regime",
+      "courierSelect": "Courier to estimate shipping",
+      "origin": "Shipment origin",
+      "usa": "United States",
+      "otherOrigin": "Other country",
+      "useFranchise": "Use the annual franchise (USD 800)",
+      "franchiseAvailable": "Franchise available this year (USD)",
+      "manualShipping": "Manual shipping (optional)",
+      "shippingHint": "Leave it empty and we'll estimate shipping from the total weight and chosen courier.",
+      "arancel": "Tariff",
+      "tasaConsular": "Consular fee"
+    },
+    "summary": {
+      "title": "Cart summary",
+      "subtotal": "Goods",
+      "taxes": "Taxes",
+      "shipping": "Shipping",
+      "landedUsd": "Total landed in UY (USD)",
+      "landedUyu": "Total in pesos",
+      "atRate": "at a dollar of {rate}",
+      "effectiveRate": "Tax burden: {pct}% of the goods value",
+      "saveHint": "Sign in to save your cart and see it from any device."
+    },
+    "disclaimer": "Reference estimate. Actual taxes depend on the category, origin and Customs.",
+    "fullCalculator": "Open the full calculator"
   },
   "share": {
     "label": "Share:",

@@ -30,14 +30,17 @@ const props = withDefaults(
 // Satori renders server-side without i18n, so the card's chrome is localized
 // from this static map (es/en/pt). `title`/`subtitle` come pre-translated from
 // the page; when omitted we fall back to the localized defaults below.
-const OG_LABELS: Record<OgLocale, {
-  title: string
-  subtitle: string
-  rateLabel: string
-  buyWord: string
-  footerHouses: string
-  footerUpdated: string
-}> = {
+const OG_LABELS: Record<
+  OgLocale,
+  {
+    title: string
+    subtitle: string
+    rateLabel: string
+    buyWord: string
+    footerHouses: string
+    footerUpdated: string
+  }
+> = {
   es: {
     title: 'Cotización del Dólar en Uruguay Hoy',
     subtitle: 'Compará +40 casas de cambio en tiempo real',
@@ -237,7 +240,9 @@ const titleCol = (hasRate: boolean): CSSProperties => ({
       <div v-if="props.rateSell" :style="rateCard">
         <div :style="rateLabel">{{ labels.rateLabel }}</div>
         <div :style="rateValue">${{ fmt(props.rateSell) }}</div>
-        <div v-if="props.rateBuy" :style="rateBuyStyle">{{ labels.buyWord }} ${{ fmt(props.rateBuy) }}</div>
+        <div v-if="props.rateBuy" :style="rateBuyStyle">
+          {{ labels.buyWord }} ${{ fmt(props.rateBuy) }}
+        </div>
       </div>
       <div v-else :style="bigDollar">$</div>
     </div>

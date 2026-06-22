@@ -5,7 +5,11 @@ import en from '../../i18n/locales/json/en.json'
 import pt from '../../i18n/locales/json/pt.json'
 
 describe('newsletter i18n compiles (no vue-i18n syntax errors)', () => {
-  for (const [loc, msg] of [['es', es], ['en', en], ['pt', pt]] as const) {
+  for (const [loc, msg] of [
+    ['es', es],
+    ['en', en],
+    ['pt', pt],
+  ] as const) {
     it(`${loc} newsletter keys render`, () => {
       const i18n = createI18n({ legacy: false, locale: loc, messages: { [loc]: msg } })
       const t = i18n.global.t as (k: string) => string

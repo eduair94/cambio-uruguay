@@ -17,6 +17,7 @@
     "test": "vitest run",
     "test:unit": "vitest run",
     "test:e2e": "playwright test",
+    "lighthouse": "lighthouse http://127.0.0.1:3313/ --quiet --only-categories=performance,accessibility,best-practices,seo --chrome-flags=\"--headless=new --no-sandbox\" --output=html --output=json --output-path=../docs/lighthouse/home",
     "prepare": "husky"
   },
   "dependencies": {
@@ -32,6 +33,7 @@
     "@types/leaflet": "^1.9.18",
     "@types/nodemailer": "^8.0.1",
     "@vite-pwa/nuxt": "^1.0.4",
+    "@vueuse/motion": "^3.0.3",
     "autolinker": "^4.1.5",
     "axios": "^1.5.0",
     "bcryptjs": "^3.0.2",

@@ -406,9 +406,11 @@ const formatOriginName = (origin: string): string => {
 // Branded OG image for the comparison page
 defineOgImageComponent('Cambio', {
   title: () =>
-    ({ es: 'Comparar Casas de Cambio', en: 'Compare Exchange Houses', pt: 'Comparar Casas de Câmbio' })[
-      locale.value as 'es' | 'en' | 'pt'
-    ],
+    ({
+      es: 'Comparar Casas de Cambio',
+      en: 'Compare Exchange Houses',
+      pt: 'Comparar Casas de Câmbio',
+    })[locale.value as 'es' | 'en' | 'pt'],
   subtitle: () =>
     ({
       es: 'Superponé la evolución de varias casas en el tiempo',

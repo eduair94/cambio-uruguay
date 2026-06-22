@@ -14,7 +14,9 @@
     <template v-else>
       <div class="d-flex align-center ga-4 flex-wrap">
         <div>
-          <div class="text-caption text-grey">{{ $t('dolarHoy.buy') }} / {{ $t('dolarHoy.sell') }}</div>
+          <div class="text-caption text-grey">
+            {{ $t('dolarHoy.buy') }} / {{ $t('dolarHoy.sell') }}
+          </div>
           <div class="text-h6 font-weight-bold">
             {{ buy ? formatUYU(buy) : '-' }} / {{ sell ? formatUYU(sell) : '-' }}
           </div>
@@ -31,7 +33,11 @@
         </VChip>
 
         <div class="spark-wrap flex-grow-1">
-          <Sparkline v-if="momentum.sparkline.length > 1" :values="momentum.sparkline" :up="momentum.direction !== 'down'" />
+          <Sparkline
+            v-if="momentum.sparkline.length > 1"
+            :values="momentum.sparkline"
+            :up="momentum.direction !== 'down'"
+          />
           <span v-else class="text-caption text-grey">{{ $t('dolarHoy.noTrend') }}</span>
         </div>
       </div>
@@ -51,7 +57,11 @@ const buy = computed(() => bestBuy('USD'))
 const sell = computed(() => bestSell('USD'))
 
 const chipColor = computed(() =>
-  momentum.value.direction === 'up' ? 'success' : momentum.value.direction === 'down' ? 'error' : 'grey'
+  momentum.value.direction === 'up'
+    ? 'success'
+    : momentum.value.direction === 'down'
+      ? 'error'
+      : 'grey'
 )
 const chipIcon = computed(() =>
   momentum.value.direction === 'up'
@@ -62,7 +72,12 @@ const chipIcon = computed(() =>
 )
 const changeLabel = computed(() => {
   const m = momentum.value
-  const word = m.direction === 'up' ? t('dolarHoy.up') : m.direction === 'down' ? t('dolarHoy.down') : t('dolarHoy.flat')
+  const word =
+    m.direction === 'up'
+      ? t('dolarHoy.up')
+      : m.direction === 'down'
+        ? t('dolarHoy.down')
+        : t('dolarHoy.flat')
   const pct = m.direction === 'flat' ? '' : ` ${Math.abs(m.changePct)}%`
   return `${word}${pct} ${t('dolarHoy.vsYesterday')}`
 })
@@ -75,7 +90,7 @@ const changeLabel = computed(() => {
   border-radius: 12px;
 }
 .see-more {
-  color: #64b5f6;
+  color: rgb(var(--v-theme-link));
   text-decoration: none;
   font-weight: 600;
 }

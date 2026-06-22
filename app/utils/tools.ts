@@ -49,6 +49,21 @@ export const tools: readonly Tool[] = [
     ],
   },
   {
+    slug: 'carrito-importacion',
+    title: 'Carrito de importación: calculá el costo final de tus compras',
+    description:
+      'Armá un carrito con productos de Amazon, eBay o MercadoLibre (pegá el enlace o cargalos a mano) y mirá el costo final puesto en Uruguay: impuestos por categoría, franquicia, envío y total en pesos.',
+    icon: 'mdi-cart-outline',
+    category: 'impuestos',
+    keywords: [
+      'carrito de importación uruguay',
+      'cuánto sale traer de amazon a uruguay',
+      'calcular costo final compra exterior',
+      'impuestos amazon ebay uruguay',
+      'comprar afuera y traer a uruguay',
+    ],
+  },
+  {
     slug: 'conversor-de-monedas',
     title: 'Conversor de monedas en Uruguay (en vivo)',
     description:

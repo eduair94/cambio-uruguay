@@ -83,11 +83,12 @@ export function aiConfigured(): boolean {
 }
 
 /**
- * Call the configured wormgpt chat-completions endpoint with the latest model.
- * Returns the sanitized content + the model used, or null on failure / when not
- * configured (so the caller can fall back to the backend).
+ * Low-level call to the configured wormgpt chat-completions endpoint. Returns the
+ * sanitized content (no minimum-length guard) + the model used, or null on
+ * failure / when not configured. Use this for short structured answers; use
+ * {@link generateChat} for prose (it additionally rejects too-short replies).
  */
-export async function generateChat(opts: ChatOptions): Promise<ChatResult | null> {
+export async function chatCompletion(opts: ChatOptions): Promise<ChatResult | null> {
   const cfg = useRuntimeConfig().ai as
     | { baseUrl?: string; apiKey?: string; model?: string }
     | undefined
@@ -113,9 +114,20 @@ export async function generateChat(opts: ChatOptions): Promise<ChatResult | null
       timeout: 70000,
     })
     const content = sanitizeAi(res?.choices?.[0]?.message?.content || '').trim()
-    if (!content || content.length < 40) return null
-    return { content, model }
+    return content ? { content, model } : null
   } catch {
     return null
   }
+}
+
+/**
+ * Call the configured wormgpt chat-completions endpoint with the latest model.
+ * Returns the sanitized content + the model used, or null on failure / when not
+ * configured / when the reply is too short to be a real article (the caller can
+ * fall back to the backend).
+ */
+export async function generateChat(opts: ChatOptions): Promise<ChatResult | null> {
+  const res = await chatCompletion(opts)
+  if (!res || res.content.length < 40) return null
+  return res
 }

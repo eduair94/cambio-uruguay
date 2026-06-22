@@ -114,7 +114,89 @@
     "expandDonation": "Abrir apoyo al proyecto",
     "closeDonation": "Cerrar",
     "menu": "Abrir menú",
-    "close": "Cerrar menú"
+    "close": "Cerrar menú",
+    "skipToContent": "Saltar al contenido principal",
+    "toggleTheme": "Cambiar tema claro/oscuro"
+  },
+  "theme": {
+    "label": "Tema",
+    "light": "Claro",
+    "dark": "Oscuro",
+    "system": "Automático (sistema)"
+  },
+  "importCart": {
+    "nav": "Carrito de importación",
+    "tag": "CARRITO DE IMPORTACIÓN",
+    "h1": "Carrito de importación: el costo final de tus compras del exterior",
+    "intro": "Agregá productos de Amazon, eBay o MercadoLibre (pegá el enlace o cargalos a mano) y calculá cuánto te sale puesto en Uruguay: impuestos por categoría, franquicia, envío y total en pesos.",
+    "ogSubtitle": "Impuestos, franquicia y envío de tus compras online, en pesos",
+    "metaDescription": "Armá un carrito con tus compras de Amazon, eBay o MercadoLibre y mirá el costo final en Uruguay: impuestos, franquicia de USD 800, envío del courier y total en pesos uruguayos en vivo.",
+    "yourCart": "Tu carrito",
+    "clear": "Vaciar",
+    "empty": {
+      "title": "Tu carrito está vacío",
+      "hint": "Agregá un producto pegando un enlace de Amazon, eBay o MercadoLibre, o cargalo a mano."
+    },
+    "add": {
+      "cta": "Agregar producto",
+      "title": "Agregar producto",
+      "urlLabel": "Enlace del producto (opcional)",
+      "urlPlaceholder": "https://www.amazon.com/...",
+      "urlHint": "Pegá un enlace de Amazon, eBay o MercadoLibre y completamos los datos automáticamente.",
+      "fetch": "Buscar datos del enlace",
+      "name": "Nombre del producto",
+      "priceUsd": "Precio (USD)",
+      "qty": "Cantidad",
+      "weightKg": "Peso (kg)",
+      "category": "Categoría",
+      "cancel": "Cancelar",
+      "confirm": "Agregar al carrito",
+      "urlInvalid": "Solo se admiten enlaces de Amazon, eBay o MercadoLibre.",
+      "urlNoData": "No pudimos leer los datos. Completá los campos a mano.",
+      "urlCurrency": "El precio está en {currency}. Ingresá el valor en dólares (USD) a mano.",
+      "estimateWeight": "Estimar el peso con IA",
+      "weightEstimated": "Peso estimado por IA — ajustalo si hace falta.",
+      "weightFailed": "No pudimos estimar el peso. Ingresalo a mano.",
+      "detectCategory": "Detectar la categoría con IA",
+      "categoryDetected": "Categoría sugerida por IA — verificá que sea correcta.",
+      "categoryFailed": "No pudimos sugerir la categoría. Elegila a mano."
+    },
+    "line": {
+      "remove": "Quitar del carrito",
+      "decrease": "Restar uno",
+      "increase": "Sumar uno",
+      "landed": "Puesto en UY",
+      "tax": "impuestos"
+    },
+    "settings": {
+      "title": "Opciones de cálculo",
+      "regime": "Régimen de importación",
+      "courier": "Compra online (courier)",
+      "general": "Régimen general",
+      "courierSelect": "Courier para estimar el envío",
+      "origin": "Origen del envío",
+      "usa": "Estados Unidos",
+      "otherOrigin": "Otro país",
+      "useFranchise": "Usar la franquicia anual (USD 800)",
+      "franchiseAvailable": "Franquicia disponible este año (USD)",
+      "manualShipping": "Envío manual (opcional)",
+      "shippingHint": "Si lo dejás vacío, estimamos el envío por el peso total y el courier elegido.",
+      "arancel": "Arancel",
+      "tasaConsular": "Tasa consular"
+    },
+    "summary": {
+      "title": "Resumen del carrito",
+      "subtotal": "Mercadería",
+      "taxes": "Impuestos",
+      "shipping": "Envío",
+      "landedUsd": "Total puesto en UY (USD)",
+      "landedUyu": "Total en pesos",
+      "atRate": "al dólar {rate}",
+      "effectiveRate": "Carga impositiva: {pct}% sobre la mercadería",
+      "saveHint": "Iniciá sesión para guardar tu carrito y verlo desde cualquier dispositivo."
+    },
+    "disclaimer": "Estimación de referencia. Los impuestos reales dependen de la categoría, el origen y la Aduana.",
+    "fullCalculator": "Ver la calculadora completa"
   },
   "share": {
     "label": "Compartir:",

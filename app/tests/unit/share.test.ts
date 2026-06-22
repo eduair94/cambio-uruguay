@@ -24,19 +24,24 @@ describe('buildShareLinks', () => {
   })
 
   it('builds a Facebook sharer link (url only)', () => {
-    expect(links.facebook).toBe('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(URL))
+    expect(links.facebook).toBe(
+      'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(URL)
+    )
   })
 
   it('encodes special characters safely', () => {
     const l = buildShareLinks({ url: 'https://x.com/a?b=1&c=2', text: 'a & b' })
-    expect(l.facebook).toBe('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent('https://x.com/a?b=1&c=2'))
+    expect(l.facebook).toBe(
+      'https://www.facebook.com/sharer/sharer.php?u=' +
+        encodeURIComponent('https://x.com/a?b=1&c=2')
+    )
     expect(l.whatsapp).not.toContain(' ') // fully encoded
   })
 })
 
 describe('SHARE_NETWORKS', () => {
   it('lists each network with an icon, color and label key, matching the builder keys', () => {
-    const ids = SHARE_NETWORKS.map((n) => n.id)
+    const ids = SHARE_NETWORKS.map(n => n.id)
     expect(ids).toEqual(['whatsapp', 'twitter', 'telegram', 'facebook'])
     for (const n of SHARE_NETWORKS) {
       expect(n.icon).toMatch(/^mdi-/)

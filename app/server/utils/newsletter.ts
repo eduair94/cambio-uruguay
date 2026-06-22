@@ -13,7 +13,7 @@ export function normalizeEmail(raw: string): string {
 // Pragmatic email check: one @, a dotted domain, no whitespace. Not RFC-perfect
 // (deliberately) — real validation is the double opt-in.
 export function isValidEmail(email: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+  return /^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/.test(email)
 }
 
 export function newToken(): string {
@@ -92,7 +92,8 @@ interface RateRow {
 function dayOverDayPct(evolution: Array<{ date: string; sell?: number }>): number {
   const byDay = new Map<string, number>()
   for (const p of evolution) {
-    if (typeof p.sell === 'number' && Number.isFinite(p.sell)) byDay.set(p.date.slice(0, 10), p.sell)
+    if (typeof p.sell === 'number' && Number.isFinite(p.sell))
+      byDay.set(p.date.slice(0, 10), p.sell)
   }
   const days = [...byDay.entries()].sort((a, b) => a[0].localeCompare(b[0]))
   if (days.length < 2) return 0
@@ -118,7 +119,7 @@ export async function buildDigestData(lang: NewsletterLang): Promise<DigestData>
   let date = new Date().toISOString().slice(0, 10)
 
   for (const code of REPORT_CURRENCIES) {
-    const rows = rates.filter((r) => r.code === code && isRetail(r))
+    const rows = rates.filter(r => r.code === code && isRetail(r))
     if (rows.length === 0) continue
     const bestSell = rows.reduce((a, b) => (b.sell < a.sell ? b : a))
     const bestBuy = rows.reduce((a, b) => (b.buy > a.buy ? b : a))
@@ -133,7 +134,12 @@ export async function buildDigestData(lang: NewsletterLang): Promise<DigestData>
     } catch {
       changePct = 0
     }
-    currencies.push({ code, bestSellRate: bestSell.sell, changePct, bestBuyHouse: houseName(bestBuy.origin) })
+    currencies.push({
+      code,
+      bestSellRate: bestSell.sell,
+      changePct,
+      bestBuyHouse: houseName(bestBuy.origin),
+    })
   }
 
   let ai = ''
@@ -150,7 +156,7 @@ export async function buildDigestData(lang: NewsletterLang): Promise<DigestData>
 
   let news: DigestNews[] = []
   try {
-    news = (await fetchNews(5)).map((n) => ({ title: n.title, link: n.link, source: n.source }))
+    news = (await fetchNews(5)).map(n => ({ title: n.title, link: n.link, source: n.source }))
   } catch {
     news = []
   }
@@ -174,7 +180,7 @@ interface EmailLabels {
 
 const LABELS: Record<NewsletterLang, EmailLabels> = {
   es: {
-    subject: (d) => `Resumen del dólar en Uruguay — ${d}`,
+    subject: d => `Resumen del dólar en Uruguay — ${d}`,
     preheader: 'Cotizaciones, tendencia y noticias del día.',
     rate: 'Mejor venta',
     change: 'Variación',
@@ -185,7 +191,7 @@ const LABELS: Record<NewsletterLang, EmailLabels> = {
     why: 'Cotización del dólar en Uruguay, actualizada cada 10 minutos.',
   },
   en: {
-    subject: (d) => `Uruguay dollar daily — ${d}`,
+    subject: d => `Uruguay dollar daily — ${d}`,
     preheader: "Today's rates, trend and news.",
     rate: 'Best sell',
     change: 'Change',
@@ -196,7 +202,7 @@ const LABELS: Record<NewsletterLang, EmailLabels> = {
     why: "Uruguay's dollar exchange rate, updated every 10 minutes.",
   },
   pt: {
-    subject: (d) => `Resumo do dólar no Uruguai — ${d}`,
+    subject: d => `Resumo do dólar no Uruguai — ${d}`,
     preheader: 'Cotações, tendência e notícias do dia.',
     rate: 'Melhor venda',
     change: 'Variação',
@@ -211,7 +217,11 @@ const LABELS: Record<NewsletterLang, EmailLabels> = {
 const INTL: Record<NewsletterLang, string> = { es: 'es-UY', en: 'en-US', pt: 'pt-BR' }
 
 function fmtUYU(n: number, lang: NewsletterLang): string {
-  return new Intl.NumberFormat(INTL[lang], { style: 'currency', currency: 'UYU', minimumFractionDigits: 2 }).format(n)
+  return new Intl.NumberFormat(INTL[lang], {
+    style: 'currency',
+    currency: 'UYU',
+    minimumFractionDigits: 2,
+  }).format(n)
 }
 function fmtPct(n: number): string {
   const sign = n > 0 ? '+' : n < 0 ? '-' : ''
@@ -228,12 +238,16 @@ export interface BuiltEmail {
 }
 
 /** Pure: render the localized daily email. */
-export function buildDailyEmail(data: DigestData, lang: NewsletterLang, unsubUrl: string): BuiltEmail {
+export function buildDailyEmail(
+  data: DigestData,
+  lang: NewsletterLang,
+  unsubUrl: string
+): BuiltEmail {
   const L = LABELS[lang] ?? LABELS.es
   const site = 'https://cambio-uruguay.com'
 
   const rows = data.currencies
-    .map((c) => {
+    .map(c => {
       const arrow = c.changePct > 0 ? '🔺' : c.changePct < 0 ? '🔻' : '▪️'
       return `<tr>
   <td style="padding:8px 12px;font-weight:700;">${esc(c.code)}</td>
@@ -245,13 +259,15 @@ export function buildDailyEmail(data: DigestData, lang: NewsletterLang, unsubUrl
     .join('\n')
 
   const aiHtml = data.ai
-    ? `<div style="margin:18px 0;font-size:15px;line-height:1.6;color:#333;">${esc(data.ai).replace(/\n{2,}/g, '</p><p style="margin:0 0 10px;">').replace(/\n/g, '<br>')}</div>`
+    ? `<div style="margin:18px 0;font-size:15px;line-height:1.6;color:#333;">${esc(data.ai)
+        .replace(/\n{2,}/g, '</p><p style="margin:0 0 10px;">')
+        .replace(/\n/g, '<br>')}</div>`
     : ''
 
   const newsHtml = data.news.length
     ? `<h3 style="margin:22px 0 8px;font-size:16px;color:#0d0f14;">📰 ${L.news}</h3>
 <ul style="margin:0;padding-left:18px;font-size:14px;line-height:1.7;">
-${data.news.map((n) => `<li><a href="${esc(n.link)}" style="color:#1565c0;">${esc(n.title)}</a> — <span style="color:#888;">${esc(n.source)}</span></li>`).join('\n')}
+${data.news.map(n => `<li><a href="${esc(n.link)}" style="color:#1565c0;">${esc(n.title)}</a> — <span style="color:#888;">${esc(n.source)}</span></li>`).join('\n')}
 </ul>`
     : ''
 
@@ -292,11 +308,14 @@ ${data.news.map((n) => `<li><a href="${esc(n.link)}" style="color:#1565c0;">${es
   const text = [
     L.subject(data.date),
     '',
-    ...data.currencies.map((c) => `${c.code}: ${fmtUYU(c.bestSellRate, lang)} (${fmtPct(c.changePct)}) — ${L.bestBuy}: ${c.bestBuyHouse}`),
+    ...data.currencies.map(
+      c =>
+        `${c.code}: ${fmtUYU(c.bestSellRate, lang)} (${fmtPct(c.changePct)}) — ${L.bestBuy}: ${c.bestBuyHouse}`
+    ),
     '',
     data.ai,
     '',
-    ...data.news.map((n) => `- ${n.title} (${n.source}) ${n.link}`),
+    ...data.news.map(n => `- ${n.title} (${n.source}) ${n.link}`),
     '',
     `${L.unsubscribe}: ${unsubUrl}`,
   ].join('\n')
@@ -306,7 +325,10 @@ ${data.news.map((n) => `<li><a href="${esc(n.link)}" style="color:#1565c0;">${es
 
 // ---- Confirmation (double opt-in) email (pure) ------------------------------
 
-const CONFIRM_COPY: Record<NewsletterLang, { subject: string; heading: string; body: string; cta: string; ignore: string }> = {
+const CONFIRM_COPY: Record<
+  NewsletterLang,
+  { subject: string; heading: string; body: string; cta: string; ignore: string }
+> = {
   es: {
     subject: 'Confirmá tu suscripción — Cambio Uruguay',
     heading: 'Confirmá tu suscripción',
@@ -317,7 +339,7 @@ const CONFIRM_COPY: Record<NewsletterLang, { subject: string; heading: string; b
   en: {
     subject: 'Confirm your subscription — Cambio Uruguay',
     heading: 'Confirm your subscription',
-    body: "Click the button to start receiving the daily Uruguay dollar summary.",
+    body: 'Click the button to start receiving the daily Uruguay dollar summary.',
     cta: 'Confirm subscription',
     ignore: "If this wasn't you, just ignore this email.",
   },

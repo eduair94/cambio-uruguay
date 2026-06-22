@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest'
-
 ;(globalThis as any).useRuntimeConfig = () => ({ telegram: { secret: 's3cret' } })
 const { requireBotSecret } = await import('../../server/utils/telegramAuth')
 

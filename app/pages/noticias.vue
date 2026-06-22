@@ -2,7 +2,7 @@
   <div class="news-page">
     <VContainer>
       <!-- Header -->
-      <header class="text-center py-8 py-md-12">
+      <header class="text-center pt-2 pb-6 py-md-12">
         <h1 class="text-h4 text-md-h3 font-weight-bold mb-4">{{ t('noticias.title') }}</h1>
         <p class="text-body-1 text-grey-lighten-1 mx-auto news-intro">{{ t('noticias.intro') }}</p>
         <VChip class="mt-4" color="success" size="small" variant="tonal">
@@ -55,7 +55,7 @@
               </div>
               <h2 class="text-body-1 font-weight-bold mb-2 news-title">{{ item.title }}</h2>
               <div class="mt-auto pt-2">
-                <span class="text-caption text-primary font-weight-medium">
+                <span class="text-caption text-link font-weight-medium">
                   {{ t('noticias.readMore') }}
                   <VIcon size="14">mdi-open-in-new</VIcon>
                 </span>
@@ -162,9 +162,11 @@ const relativeDate = (dateStr: string) => {
 // Branded OG image for the news page
 defineOgImageComponent('Cambio', {
   title: () =>
-    ({ es: 'Noticias del Dólar en Uruguay', en: "Uruguay's Dollar News", pt: 'Notícias do Dólar no Uruguai' })[
-      locale.value as 'es' | 'en' | 'pt'
-    ],
+    ({
+      es: 'Noticias del Dólar en Uruguay',
+      en: "Uruguay's Dollar News",
+      pt: 'Notícias do Dólar no Uruguai',
+    })[locale.value as 'es' | 'en' | 'pt'],
   subtitle: () =>
     ({
       es: 'Resumen con IA + titulares de los principales medios',

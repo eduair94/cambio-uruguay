@@ -517,7 +517,7 @@ useHead(() => ({
 
 .prestamos-link,
 .prestamos-sources a {
-  color: #64b5f6;
+  color: rgb(var(--v-theme-link));
   font-weight: 600;
   text-decoration: none;
 }

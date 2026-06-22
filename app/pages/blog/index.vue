@@ -1,7 +1,7 @@
 <template>
   <div class="blog-hub">
     <VContainer>
-      <header class="text-center py-8 py-md-12">
+      <header class="text-center pt-2 pb-6 py-md-12">
         <VChip class="mb-4" color="primary" size="small" variant="tonal">
           <VIcon start size="small">mdi-newspaper-variant-multiple</VIcon>
           BLOG DIARIO
@@ -50,7 +50,7 @@
               <h2 class="text-subtitle-1 font-weight-bold mb-2 post-title">{{ post.title }}</h2>
               <p class="text-body-2 text-grey-lighten-1 mb-3 post-summary">{{ post.summary }}</p>
               <div class="mt-auto">
-                <span class="text-caption text-primary font-weight-medium">
+                <span class="text-caption text-link font-weight-medium">
                   Leer análisis <VIcon size="14">mdi-arrow-right</VIcon>
                 </span>
               </div>

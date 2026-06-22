@@ -131,7 +131,7 @@ useSeoMeta({
 .widget-brand {
   font-size: 0.78rem;
   font-weight: 700;
-  color: #64b5f6;
+  color: rgb(var(--v-theme-link));
   letter-spacing: 0.2px;
 }
 
@@ -228,7 +228,7 @@ useSeoMeta({
 }
 
 .widget-link:hover {
-  color: #64b5f6;
+  color: rgb(var(--v-theme-link));
   text-decoration: underline;
 }
 

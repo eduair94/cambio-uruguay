@@ -1,9 +1,7 @@
 import { createVuetify } from 'vuetify'
 import {
   VAlert,
-  // Layout components
   VApp,
-  // Navigation components
   VAppBar,
   VAppBarNavIcon,
   VAutocomplete,
@@ -14,7 +12,6 @@ import {
   VBreadcrumbs,
   VBreadcrumbsItem,
   VBreadcrumbsDivider,
-  // Form components
   VBtn,
   VBtnToggle,
   VCard,
@@ -27,7 +24,6 @@ import {
   VChip,
   VCol,
   VContainer,
-  // Data display components
   VDataTable,
   VDatePicker,
   VDialog,
@@ -41,7 +37,6 @@ import {
   VFooter,
   VIcon,
   VImg,
-  // List components
   VList,
   VListItem,
   VListItemSubtitle,
@@ -63,7 +58,6 @@ import {
   VSpacer,
   VSwitch,
   VTable,
-  // Other components
   VTab,
   VTabs,
   VTabsWindow,
@@ -155,17 +149,44 @@ export default defineNuxtPlugin(nuxtApp => {
     },
     directives,
     theme: {
+      // SSR + first paint default. The client theme plugin / `useThemeMode`
+      // switches to the persisted or system preference after hydration.
       defaultTheme: 'dark',
       themes: {
         dark: {
+          dark: true,
           colors: {
+            // Deep navy canvas. Vuetify left .v-application painting white in dark
+            // mode, which bled through transparent sections; an explicit background
+            // keeps the whole app shell cohesively dark on every page.
+            background: '#0a0e1a',
+            surface: '#121a2e',
             primary: colors.blue.darken2,
-            accent: '#FFFF',
+            accent: '#FFFFFF',
             secondary: colors.amber.darken3,
             info: colors.teal.lighten1,
             warning: colors.amber.base,
             error: colors.deepOrange.accent4,
             success: colors.green.accent3,
+            // Link/anchor color: light blue reads on dark surfaces. Paired with
+            // the light theme's darker `link` so anchors clear AA in both modes.
+            link: '#64b5f6',
+          },
+        },
+        light: {
+          dark: false,
+          colors: {
+            background: '#f6f7f9',
+            surface: '#ffffff',
+            primary: colors.blue.darken2,
+            accent: colors.blue.accent2,
+            secondary: colors.amber.darken4,
+            info: colors.teal.darken1,
+            warning: colors.amber.darken3,
+            error: colors.deepOrange.darken1,
+            success: colors.green.darken2,
+            // Darker blue so links clear AA (4.5:1) on white/light surfaces.
+            link: '#1565c0',
           },
         },
       },

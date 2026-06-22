@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
+import { requireUser } from '../../server/utils/auth'
+
 // Mock firebaseAdmin so requireUser doesn't need real credentials.
 const verifyIdToken = vi.fn()
 vi.mock('../../server/utils/firebaseAdmin', () => ({
   adminAuth: () => ({ verifyIdToken }),
 }))
-
-import { requireUser } from '../../server/utils/auth'
 
 function fakeEvent(authHeader?: string) {
   return {

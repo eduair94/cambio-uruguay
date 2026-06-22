@@ -3,6 +3,7 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth'
 import { useAuthStore } from '~/stores/auth'
 import { useAuthFetch } from '~/composables/useAuthFetch'
 import { hydrateFavorites, resetFavoritesState } from '~/composables/useFavoritesState'
+import { useImportCartStore } from '~/stores/importCart'
 
 export default defineNuxtPlugin(() => {
   const cfg = useRuntimeConfig().public.firebase
@@ -22,13 +23,17 @@ export default defineNuxtPlugin(() => {
   const store = useAuthStore()
   const { authFetch } = useAuthFetch()
 
+  const cart = useImportCartStore()
+
   onAuthStateChanged(auth, async fbUser => {
     store.setUser(fbUser)
     if (fbUser) {
       await authFetch('/api/me/profile').catch(() => {})
       await hydrateFavorites(authFetch)
+      await cart.hydrateFromAccount(authFetch)
     } else {
       resetFavoritesState()
+      cart.onLogout()
     }
   })
 

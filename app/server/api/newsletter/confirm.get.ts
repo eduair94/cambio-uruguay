@@ -7,7 +7,7 @@ function localePrefix(lang: string): string {
   return lang === 'en' || lang === 'pt' ? `/${lang}` : ''
 }
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async event => {
   const token = getQuery(event).token
   if (!token || typeof token !== 'string') {
     throw createError({ statusCode: 400, statusMessage: 'Missing token' })

@@ -7,13 +7,20 @@
   font-display: swap;
 }
 
-/* Basic layout and typography */
+/* Basic layout and typography. Dark is the default (SSR + first paint); the
+   theme composable sets data-theme on <html> after hydration so the light
+   palette can override it. */
 body {
   font-family: 'Open Sans', sans-serif;
   margin: 0;
   padding: 0;
-  background-color: #121212;
+  background-color: #0a0e1a;
   color: #ffffff;
+}
+
+html[data-theme='light'] body {
+  background-color: #f6f7f9;
+  color: #1a1a1a;
 }
 
 /* Ensure Vuetify components use Open Sans */
@@ -33,10 +40,17 @@ body {
   font-family: 'Open Sans', sans-serif !important;
 }
 
-/* Header styles */
-.v-app-bar {
-  background-color: #272727 !important;
-  border-bottom: 1px solid #333;
+/* Header styles — scoped per theme so the light palette isn't forced dark. */
+.v-theme--dark.v-app-bar,
+.v-theme--dark .v-app-bar {
+  background-color: rgba(12, 17, 32, 0.82) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.v-theme--light.v-app-bar,
+.v-theme--light .v-app-bar {
+  background-color: #ffffff !important;
+  border-bottom: 1px solid #e3e6ea;
 }
 
 .logo_image {
@@ -55,8 +69,8 @@ body {
   padding: 0 16px;
 }
 
-/* Table critical styles */
-.money_table {
+/* Table critical styles (dark-scoped; light uses the default surface). */
+.v-theme--dark .money_table {
   background-color: #1e1e1e;
   border-radius: 4px;
 }
@@ -72,7 +86,7 @@ body {
 }
 
 /* Loading states */
-.v-skeleton-loader {
+.v-theme--dark .v-skeleton-loader {
   background-color: #2a2a2a;
 }
 
@@ -103,4 +117,149 @@ img {
 
 .v-overlay .v-overlay__scrim {
   background-color: black !important;
+}
+
+/* ------------------------------------------------------------------ */
+/* Accessibility                                                        */
+/* ------------------------------------------------------------------ */
+
+/* Skip-to-content link: off-screen until focused by keyboard. */
+.skip-link {
+  position: fixed;
+  top: -120px;
+  left: 8px;
+  z-index: 3000;
+  padding: 10px 16px;
+  border-radius: 0 0 8px 8px;
+  background-color: rgb(var(--v-theme-primary));
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+  transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* Visible keyboard focus ring on interactive elements. */
+a:focus-visible,
+button:focus-visible,
+.v-btn:focus-visible,
+[tabindex]:focus-visible,
+[role='button']:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-primary));
+  outline-offset: 2px;
+}
+
+/* Smooth theme cross-fade. */
+.v-application {
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+
+/* ------------------------------------------------------------------ */
+/* Light-theme remaps                                                  */
+/* The pages were authored dark-first with hardcoded grey utility      */
+/* classes. Rather than touch ~180 call sites, remap the common ones   */
+/* to theme-appropriate values inside the light theme only.            */
+/* ------------------------------------------------------------------ */
+.v-theme--light .text-grey-lighten-1,
+.v-theme--light .text-grey-lighten-2,
+.v-theme--light .text-grey-lighten-3,
+.v-theme--light .text-grey-lighten-4 {
+  color: rgba(0, 0, 0, 0.62) !important;
+}
+
+.v-theme--light .bg-grey-darken-4,
+.v-theme--light .bg-grey-darken-3,
+.v-theme--light .bg-grey-darken-2 {
+  background-color: #eef1f5 !important;
+}
+
+/* Subtle borders that were tuned for dark surfaces. */
+.v-theme--light .v-card--variant-outlined {
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
+/* `text-grey` (#9e9e9e) overlines/labels fail AA on light surfaces. */
+.v-theme--light .text-grey {
+  color: rgba(0, 0, 0, 0.6) !important;
+}
+
+/* `text-grey-darken-1` (#757575) misses AA on BOTH the off-white light body
+   and the deep-navy dark canvas — nudge it to an accessible muted tone in each. */
+.v-theme--light .text-grey-darken-1 {
+  color: rgba(0, 0, 0, 0.62) !important;
+}
+
+.v-theme--dark .text-grey-darken-1 {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Shared CTA slabs (`.cta-*` translucent-primary cards copied across ~15 pages)
+   were authored white-on-dark. In light mode the card tint goes pale, so flip
+   the heading to ink. Excludes the home `.cta-section`, a colored gradient slab
+   whose white heading is correct in both themes. */
+.v-theme--light [class*='cta-']:not(.cta-section) .text-white {
+  color: rgba(0, 0, 0, 0.87) !important;
+}
+
+/* Vuetify field labels/hints fail AA on the light body — they inherit a
+   medium/low-emphasis OPACITY (~0.38) that washes the colour out to ~#a3a3a3.
+   Force a solid accessible tone AND opacity:1 so the multiplier can't dilute it. */
+.v-theme--light .v-field-label,
+.v-theme--light .v-messages,
+.v-theme--light .v-messages__message {
+  color: rgba(0, 0, 0, 0.6) !important;
+  opacity: 1 !important;
+}
+
+/* ------------------------------------------------------------------ */
+/* Engagement animations (CSS-only, reduced-motion aware)              */
+/* ------------------------------------------------------------------ */
+
+/* Scroll-reveal: opted-in elements start hidden and fade/slide up when the
+   `useReveal` IntersectionObserver adds `.is-revealed`. */
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.6s ease,
+    transform 0.6s ease;
+  will-change: opacity, transform;
+}
+
+.reveal.is-revealed {
+  opacity: 1;
+  transform: none;
+}
+
+/* Reusable hover lift for cards / tiles. */
+.hover-lift {
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-3px);
+}
+
+/* Respect users who ask for less motion: disable animations + reveal offset. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }

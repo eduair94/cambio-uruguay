@@ -198,19 +198,20 @@ export const useApiService = () => {
       const exchangeError = exchangeData?.error
       const localDataError = localData?.error
 
-      const live = exchangeError || localDataError
-        ? {
-            error: exchangeError,
-            exchangeData: [] as any[],
-            localData: localDataError ? {} : localData,
-            locations: localDataError ? [] : getLocations(localData),
-          }
-        : {
-            error: null,
-            exchangeData: processExchangeData(exchangeData, localData),
-            localData,
-            locations: getLocations(localData),
-          }
+      const live =
+        exchangeError || localDataError
+          ? {
+              error: exchangeError,
+              exchangeData: [] as any[],
+              localData: localDataError ? {} : localData,
+              locations: localDataError ? [] : getLocations(localData),
+            }
+          : {
+              error: null,
+              exchangeData: processExchangeData(exchangeData, localData),
+              localData,
+              locations: getLocations(localData),
+            }
 
       // Snapshot only applies to the current day's rates (date === '').
       if (!isCurrent) return live

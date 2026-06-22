@@ -1,7 +1,7 @@
 <template>
   <div class="glossary-hub">
     <VContainer>
-      <header class="text-center py-8 py-md-12">
+      <header class="text-center pt-2 pb-6 py-md-12">
         <VChip class="mb-4" color="primary" size="small" variant="tonal">
           <VIcon start size="small">mdi-book-alphabet</VIcon>
           GLOSARIO

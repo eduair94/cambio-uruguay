@@ -271,7 +271,7 @@ useHead({
 }
 
 .guide-link {
-  color: #64b5f6;
+  color: rgb(var(--v-theme-link));
   text-decoration: none;
   font-weight: 600;
 }

@@ -2,7 +2,7 @@
   <div class="tools-hub">
     <VContainer>
       <!-- Header -->
-      <header class="text-center py-8 py-md-12">
+      <header class="text-center pt-2 pb-6 py-md-12">
         <VChip class="mb-4" color="primary" size="small" variant="tonal">
           <VIcon start size="small">mdi-tools</VIcon>
           HERRAMIENTAS
@@ -41,7 +41,7 @@
                 <h3 class="text-subtitle-1 font-weight-bold mb-2 tool-title">{{ tool.title }}</h3>
                 <p class="text-body-2 text-grey-lighten-1 mb-3 tool-desc">{{ tool.description }}</p>
                 <div class="mt-auto">
-                  <span class="text-caption text-primary font-weight-medium">
+                  <span class="text-caption text-link font-weight-medium">
                     Abrir herramienta <VIcon size="14">mdi-arrow-right</VIcon>
                   </span>
                 </div>

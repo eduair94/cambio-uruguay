@@ -15,7 +15,13 @@ test('offline banner shows the saved-data time when a snapshot exists', async ({
   await page.evaluate(() => {
     localStorage.setItem(
       'cu:rates-snapshot:v1',
-      JSON.stringify({ v: 1, ts: Date.now(), exchangeData: [{ a: 1 }], localData: {}, locations: [] })
+      JSON.stringify({
+        v: 1,
+        ts: Date.now(),
+        exchangeData: [{ a: 1 }],
+        localData: {},
+        locations: [],
+      })
     )
   })
 
@@ -29,7 +35,11 @@ test('offline banner shows the saved-data time when a snapshot exists', async ({
 
   // The offline banner shows the saved-data line (es/en/pt copy all match this regex).
   await expect(
-    page.getByText(/datos guardados|saved at|dados salvos|mostrando datos guardados|showing saved data|mostrando dados salvos/i).first()
+    page
+      .getByText(
+        /datos guardados|saved at|dados salvos|mostrando datos guardados|showing saved data|mostrando dados salvos/i
+      )
+      .first()
   ).toBeVisible()
 
   expect(errors).toEqual([])

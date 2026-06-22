@@ -12,12 +12,16 @@
         <div v-else class="records-grid">
           <div class="rec-box">
             <div class="text-overline text-grey">{{ $t('dolarRecords.max') }}</div>
-            <div class="text-h5 font-weight-bold text-success">{{ formatUYU(records.max.value) }}</div>
+            <div class="text-h5 font-weight-bold text-success">
+              {{ formatUYU(records.max.value) }}
+            </div>
             <div class="text-caption text-grey">{{ fmtDate(records.max.date) }}</div>
           </div>
           <div class="rec-box">
             <div class="text-overline text-grey">{{ $t('dolarRecords.min') }}</div>
-            <div class="text-h5 font-weight-bold text-error">{{ formatUYU(records.min.value) }}</div>
+            <div class="text-h5 font-weight-bold text-error">
+              {{ formatUYU(records.min.value) }}
+            </div>
             <div class="text-caption text-grey">{{ fmtDate(records.min.date) }}</div>
           </div>
           <div v-if="records.yearAgo !== null" class="rec-box">
@@ -32,9 +36,14 @@
 
         <p class="text-body-2 text-grey-lighten-1 mt-5">
           {{ $t('dolarRecords.seeMoreIntro') }}
-          <NuxtLink :to="localePath('/dolar-hoy')" class="lnk">{{ $t('dolarRecords.seeToday') }}</NuxtLink>
+          <NuxtLink :to="localePath('/dolar-hoy')" class="lnk">{{
+            $t('dolarRecords.seeToday')
+          }}</NuxtLink>
           {{ $t('dolarRecords.seeMoreOr') }}
-          <NuxtLink :to="localePath('/historico')" class="lnk">{{ $t('dolarRecords.seeHistory') }}</NuxtLink>.
+          <NuxtLink :to="localePath('/historico')" class="lnk">{{
+            $t('dolarRecords.seeHistory')
+          }}</NuxtLink
+          >.
         </p>
       </VCol>
     </VRow>
@@ -49,7 +58,11 @@ const { t } = useI18n()
 const { records, pending } = useDollarTrend()
 
 function fmtDate(d: string) {
-  return new Date(d).toLocaleDateString('es-UY', { day: '2-digit', month: 'short', year: 'numeric' })
+  return new Date(d).toLocaleDateString('es-UY', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  })
 }
 
 const canonical = 'https://cambio-uruguay.com/dolar/records'
@@ -85,7 +98,7 @@ useHead({ link: [{ rel: 'canonical', href: canonical }] })
   padding: 14px 16px;
 }
 .lnk {
-  color: #64b5f6;
+  color: rgb(var(--v-theme-link));
   font-weight: 600;
   text-decoration: none;
 }

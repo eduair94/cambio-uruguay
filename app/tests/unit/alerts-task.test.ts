@@ -22,8 +22,16 @@ function makeDeps(over: Partial<any> = {}) {
 describe('runAlertsCheck', () => {
   it('fires push + email for a met, armed alert and disarms it', async () => {
     const alert = {
-      _id: 'a1', uid: 'u1', currency: 'USD', kind: 'bestBuy', op: '>=', target: 41,
-      origin: 'any', armed: true, lastFiredAt: null, channels: { push: true, email: true },
+      _id: 'a1',
+      uid: 'u1',
+      currency: 'USD',
+      kind: 'bestBuy',
+      op: '>=',
+      target: 41,
+      origin: 'any',
+      armed: true,
+      lastFiredAt: null,
+      channels: { push: true, email: true },
     }
     const deps = makeDeps({ loadActiveAlerts: vi.fn().mockResolvedValue([alert]) })
     const res = await runAlertsCheck(deps as any)
@@ -38,8 +46,16 @@ describe('runAlertsCheck', () => {
 
   it('re-arms without firing when condition is unmet', async () => {
     const alert = {
-      _id: 'a2', uid: 'u1', currency: 'USD', kind: 'bestBuy', op: '>=', target: 41,
-      origin: 'any', armed: false, lastFiredAt: new Date(0), channels: { push: true, email: false },
+      _id: 'a2',
+      uid: 'u1',
+      currency: 'USD',
+      kind: 'bestBuy',
+      op: '>=',
+      target: 41,
+      origin: 'any',
+      armed: false,
+      lastFiredAt: new Date(0),
+      channels: { push: true, email: false },
     }
     const deps = makeDeps({
       loadActiveAlerts: vi.fn().mockResolvedValue([alert]),
@@ -53,8 +69,16 @@ describe('runAlertsCheck', () => {
 
   it('prunes invalid tokens returned by push', async () => {
     const alert = {
-      _id: 'a3', uid: 'u1', currency: 'USD', kind: 'bestBuy', op: '>=', target: 41,
-      origin: 'any', armed: true, lastFiredAt: null, channels: { push: true, email: false },
+      _id: 'a3',
+      uid: 'u1',
+      currency: 'USD',
+      kind: 'bestBuy',
+      op: '>=',
+      target: 41,
+      origin: 'any',
+      armed: true,
+      lastFiredAt: null,
+      channels: { push: true, email: false },
     }
     const deps = makeDeps({
       loadActiveAlerts: vi.fn().mockResolvedValue([alert]),
@@ -66,8 +90,15 @@ describe('runAlertsCheck', () => {
 
   it('fires a Telegram message when channels.telegram + telegramChatId', async () => {
     const alert = {
-      _id: 'a4', uid: 'u1', currency: 'USD', kind: 'bestBuy', op: '>=', target: 41,
-      origin: 'any', armed: true, lastFiredAt: null,
+      _id: 'a4',
+      uid: 'u1',
+      currency: 'USD',
+      kind: 'bestBuy',
+      op: '>=',
+      target: 41,
+      origin: 'any',
+      armed: true,
+      lastFiredAt: null,
       channels: { push: false, email: false, telegram: true },
     }
     const telegram = vi.fn().mockResolvedValue(true)

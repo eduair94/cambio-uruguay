@@ -109,7 +109,89 @@
     "expandDonation": "Abrir apoio ao projeto",
     "closeDonation": "Fechar",
     "menu": "Abrir menu",
-    "close": "Fechar menu"
+    "close": "Fechar menu",
+    "skipToContent": "Pular para o conteúdo principal",
+    "toggleTheme": "Alternar tema claro/escuro"
+  },
+  "theme": {
+    "label": "Tema",
+    "light": "Claro",
+    "dark": "Escuro",
+    "system": "Automático (sistema)"
+  },
+  "importCart": {
+    "nav": "Carrinho de importação",
+    "tag": "CARRINHO DE IMPORTAÇÃO",
+    "h1": "Carrinho de importação: o custo final das suas compras do exterior",
+    "intro": "Adicione produtos da Amazon, eBay ou MercadoLivre (cole o link ou cadastre à mão) e calcule quanto custa posto no Uruguai: impostos por categoria, franquia, frete e total em pesos.",
+    "ogSubtitle": "Impostos, franquia e frete das suas compras online, em pesos",
+    "metaDescription": "Monte um carrinho com suas compras da Amazon, eBay ou MercadoLivre e veja o custo final no Uruguai: impostos, franquia de USD 800, frete do courier e o total em pesos uruguaios ao vivo.",
+    "yourCart": "Seu carrinho",
+    "clear": "Esvaziar",
+    "empty": {
+      "title": "Seu carrinho está vazio",
+      "hint": "Adicione um produto colando um link da Amazon, eBay ou MercadoLivre, ou cadastre à mão."
+    },
+    "add": {
+      "cta": "Adicionar produto",
+      "title": "Adicionar produto",
+      "urlLabel": "Link do produto (opcional)",
+      "urlPlaceholder": "https://www.amazon.com/...",
+      "urlHint": "Cole um link da Amazon, eBay ou MercadoLivre e preenchemos os dados automaticamente.",
+      "fetch": "Buscar dados do link",
+      "name": "Nome do produto",
+      "priceUsd": "Preço (USD)",
+      "qty": "Quantidade",
+      "weightKg": "Peso (kg)",
+      "category": "Categoria",
+      "cancel": "Cancelar",
+      "confirm": "Adicionar ao carrinho",
+      "urlInvalid": "Só aceitamos links da Amazon, eBay ou MercadoLivre.",
+      "urlNoData": "Não conseguimos ler os dados. Preencha os campos à mão.",
+      "urlCurrency": "O preço está em {currency}. Informe o valor em dólares (USD) à mão.",
+      "estimateWeight": "Estimar o peso com IA",
+      "weightEstimated": "Peso estimado por IA — ajuste se necessário.",
+      "weightFailed": "Não conseguimos estimar o peso. Informe à mão.",
+      "detectCategory": "Detectar a categoria com IA",
+      "categoryDetected": "Categoria sugerida por IA — verifique se está correta.",
+      "categoryFailed": "Não conseguimos sugerir a categoria. Escolha à mão."
+    },
+    "line": {
+      "remove": "Remover do carrinho",
+      "decrease": "Diminuir um",
+      "increase": "Aumentar um",
+      "landed": "Posto no UY",
+      "tax": "impostos"
+    },
+    "settings": {
+      "title": "Opções de cálculo",
+      "regime": "Regime de importação",
+      "courier": "Compra online (courier)",
+      "general": "Regime geral",
+      "courierSelect": "Courier para estimar o frete",
+      "origin": "Origem do envio",
+      "usa": "Estados Unidos",
+      "otherOrigin": "Outro país",
+      "useFranchise": "Usar a franquia anual (USD 800)",
+      "franchiseAvailable": "Franquia disponível este ano (USD)",
+      "manualShipping": "Frete manual (opcional)",
+      "shippingHint": "Se deixar vazio, estimamos o frete pelo peso total e o courier escolhido.",
+      "arancel": "Tarifa",
+      "tasaConsular": "Taxa consular"
+    },
+    "summary": {
+      "title": "Resumo do carrinho",
+      "subtotal": "Mercadoria",
+      "taxes": "Impostos",
+      "shipping": "Frete",
+      "landedUsd": "Total posto no UY (USD)",
+      "landedUyu": "Total em pesos",
+      "atRate": "ao dólar {rate}",
+      "effectiveRate": "Carga tributária: {pct}% sobre a mercadoria",
+      "saveHint": "Faça login para salvar seu carrinho e vê-lo de qualquer dispositivo."
+    },
+    "disclaimer": "Estimativa de referência. Os impostos reais dependem da categoria, da origem e da Alfândega.",
+    "fullCalculator": "Ver a calculadora completa"
   },
   "share": {
     "label": "Compartilhar:",
