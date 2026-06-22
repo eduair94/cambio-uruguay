@@ -304,6 +304,13 @@ watch(
   },
   { immediate: true }
 )
+
+// GA4: a deliberate change of operation/currency means the visitor is actually
+// using the "where to change" recommender — high-signal engagement.
+const trackWtc = useTrack()
+watch([operation, currency], ([op, cur]) => {
+  trackWtc('where_to_change', { operation: op, currency: cur })
+})
 </script>
 
 <style scoped>

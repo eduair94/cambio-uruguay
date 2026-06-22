@@ -5,10 +5,11 @@
     <VBtn
       :icon="!label"
       :prepend-icon="label ? 'mdi-share-variant' : undefined"
-      color="white"
-      variant="flat"
+      :color="color"
+      :variant="variant"
       size="small"
-      class="share-trigger font-weight-bold"
+      class="font-weight-bold"
+      :class="{ 'share-trigger': variant === 'flat' }"
       :aria-label="t('share.cta')"
       :title="t('share.cta')"
       @click="open = true"
@@ -96,8 +97,12 @@ const props = withDefaults(
     text?: string
     /** Show the trigger button's text label (else icon-only). */
     label?: boolean
+    /** Trigger button variant (e.g. 'text' to blend into the footer). */
+    variant?: 'flat' | 'text' | 'tonal' | 'outlined' | 'elevated' | 'plain'
+    /** Trigger button color. */
+    color?: string
   }>(),
-  { label: true }
+  { label: true, variant: 'flat', color: 'white' }
 )
 
 const { t } = useI18n()

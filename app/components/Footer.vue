@@ -14,6 +14,12 @@
              empty role=tooltip overlays that fail the aria-tooltip-name audit.
              flex-wrap so the icon row never forces horizontal scroll on small phones. -->
         <div class="d-flex align-center flex-wrap justify-center ga-2">
+          <!-- Site-wide share entry point: lets visitors share the site from
+               any page (drives referral traffic + backlinks). -->
+          <ShareButtons label variant="text" color="white" />
+
+          <VDivider vertical class="mx-2" />
+
           <VBtn
             href="https://api.cambio-uruguay.com/api-docs"
             target="_blank"

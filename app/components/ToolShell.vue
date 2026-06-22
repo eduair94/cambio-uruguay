@@ -152,6 +152,11 @@ const relatedTools = computed(() => {
   return [...sameCat, ...others].slice(0, 6)
 })
 
+// Which calculators actually get used (GA4 `tool_view`) — tells us which tools
+// to invest in vs. prune.
+const track = useTrack()
+onMounted(() => track('tool_view', { tool: props.slug, category: tool.value?.category }))
+
 const canonicalUrl = computed(() => `https://cambio-uruguay.com/herramientas/${props.slug}`)
 
 // Branded OG image.

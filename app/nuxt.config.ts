@@ -324,10 +324,11 @@ export default defineNuxtConfig({
             },
           ],
         ],
-        config: {
-          page_title: 'Cambio Uruguay',
-          page_location: 'https://cambio-uruguay.com',
-        },
+        // No static page_title/page_location here: those would stamp EVERY
+        // session's first page_view with the home URL/title regardless of the
+        // real landing page, wrecking the "most-visited pages" report. Let GA4
+        // read the actual per-page URL + document.title (SPA route changes are
+        // captured by GA4 Enhanced Measurement / nuxt-gtag's page tracking).
         // Google Ads conversion tag (v3 multi-destination syntax). Inherits the
         // consent default above — closes the previously ungated tag.
         tags: [

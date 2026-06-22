@@ -145,8 +145,18 @@ const cards = computed<ChannelCard[]>(() => [
   },
 ])
 
-useSeoMeta({
+defineOgImageComponent('Cambio', {
   title: () => t('conectar.title'),
+  subtitle: () => t('conectar.subtitle'),
+  tag: 'CONECTAR',
+})
+
+useSeoMeta({
+  title: () => `${t('conectar.title')} | Cambio Uruguay`,
   description: () => t('conectar.subtitle'),
+  ogTitle: () => t('conectar.title'),
+  ogDescription: () => t('conectar.subtitle'),
+  ogType: 'website',
+  twitterCard: 'summary_large_image',
 })
 </script>

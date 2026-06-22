@@ -23,6 +23,7 @@ let initialized = false
  */
 export function useThemeMode() {
   const theme = useTheme()
+  const track = useTrack()
 
   const applied = computed<AppliedTheme>(() => resolveTheme(mode.value, systemDark.value))
 
@@ -42,6 +43,8 @@ export function useThemeMode() {
       } catch {
         /* private mode / quota — preference just won't persist */
       }
+      // GA4: do light/dark visitors differ? Cheap signal of toggle usage.
+      track('theme_change', { mode: next })
     }
     apply()
   }

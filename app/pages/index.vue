@@ -1651,12 +1651,20 @@ onBeforeUnmount(() => {
   }
 })
 
+const trackConvert = useTrack()
 const updateExchange = () => {
   loading.value = true
   selectedCurrency.value = selectedCurrencyInput.value
   selectedTargetCurrency.value = selectedTargetCurrencyInput.value
   selectedExchangeHouse.value = selectedExchangeHouseInput.value
   amount.value = Number(amountInput.value) || 0
+  // GA4: the converter is the core feature — track usage (currencies + whether a
+  // specific house was picked) to see what people actually look up.
+  trackConvert('convert', {
+    from: selectedCurrency.value,
+    to: selectedTargetCurrency.value,
+    house: selectedExchangeHouse.value || 'best',
+  })
   setConversionRate()
   // Preserve the shown result when inverted; only reset desiredRightAmount in forward mode
   if (isForward.value) {
