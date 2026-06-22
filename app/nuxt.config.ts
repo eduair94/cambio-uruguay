@@ -461,6 +461,9 @@ export default defineNuxtConfig({
         },
       },
     ],
+    // Declarative, spring-physics animations (v-motion directive) for the
+    // home hero + card grids. SSR-safe, scroll-triggered via visibleOnce.
+    '@vueuse/motion/nuxt',
   ],
 
   // Web Vitals tracking

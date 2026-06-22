@@ -4,43 +4,31 @@
     <section class="hero-section pt-0 pt-md-5">
       <VContainer>
         <VRow justify="center" align="center" class="min-height-hero">
-          <VCol cols="12" md="12" lg="12" class="text-center">
+          <VCol cols="12" class="hero-col text-center">
             <div class="hero-content">
-              <h1 class="hero-title text-h4 text-md-h3 text-md-h2 font-weight-bold mb-4">
+              <!-- Eyebrow: live-data badge for instant credibility -->
+              <div class="hero-eyebrow hero-anim">
+                <span class="live-dot" aria-hidden="true" />
+                {{ t('trust.updated') }}
+              </div>
+
+              <h1 class="hero-title hero-anim">
                 {{ t('simpleTitle') }}
               </h1>
-              <p class="hero-subtitle text-h6 text-grey-lighten-1 mb-6">
+              <p class="hero-subtitle hero-anim">
                 {{ t('simpleSubtitle') }}
-              </p>
-              <p class="hero-description text-body-1 text-grey-lighten-2 mb-8">
-                {{ t('simpleDescription') }}
-              </p>
-
-              <!-- SSR-visible live answer to "¿a cuánto está el dólar hoy?" — plain
-                   text (not hidden in the FAQ accordion) so AI Overviews/Gemini can
-                   extract and cite the figure. -->
-              <p v-if="usdHeadline" class="hero-answer text-body-1 mb-8">
-                {{ usdHeadline }}
               </p>
 
               <!-- Trust signals: BCU source, coverage, freshness, Trustpilot -->
-              <TrustBar />
+              <TrustBar class="hero-trust hero-anim" />
 
+              <!-- Live USD rate band: momentum chip + sparkline, the hero hook -->
               <ClientOnly>
-                <DollarMomentum class="mb-4" />
+                <DollarMomentum class="hero-live hero-anim mb-6" />
               </ClientOnly>
-
-              <ClientOnly>
-                <SavingsHighlight class="mb-4" />
-              </ClientOnly>
-
-              <!-- Share (referral traffic + interactions); WhatsApp-first for UY -->
-              <div class="d-flex justify-center justify-md-start mb-4">
-                <ShareButtons />
-              </div>
 
               <!-- Currency Converter Card -->
-              <VCard class="exchange-card pa-6 mb-6" elevation="8">
+              <VCard class="exchange-card hero-anim pa-6 mb-6" elevation="8">
                 <h2 class="text-h5 font-weight-bold mb-6 text-center">
                   {{ t('quickExchange') }}
                 </h2>
@@ -443,18 +431,33 @@
                 {{ t('quickExchangeCopied') }}
               </VSnackbar>
 
-              <div class="mt-5">
-                <!-- Advanced Mode Button -->
-                <VBtn
-                  :to="localePath('/avanzado')"
-                  color="secondary"
-                  variant="outlined"
-                  size="large"
-                  class="mb-3"
-                >
-                  <VIcon start>mdi-cog</VIcon>
-                  {{ t('viewAdvanced') }}
-                </VBtn>
+              <!-- Secondary band: SEO answer + savings tool + share + advanced.
+                   De-emphasized below the converter so the hero stays focused. -->
+              <div class="hero-secondary">
+                <!-- SSR-visible live answer to "¿a cuánto está el dólar hoy?" — plain
+                     text (not hidden in the FAQ accordion) so AI Overviews/Gemini can
+                     extract and cite the figure. -->
+                <p v-if="usdHeadline" class="hero-answer text-body-1">
+                  {{ usdHeadline }}
+                </p>
+
+                <ClientOnly>
+                  <SavingsHighlight class="hero-savings" />
+                </ClientOnly>
+
+                <div class="hero-actions">
+                  <ShareButtons />
+                  <VBtn
+                    :to="localePath('/avanzado')"
+                    color="secondary"
+                    variant="outlined"
+                    size="large"
+                    class="advanced-btn"
+                  >
+                    <VIcon start>mdi-cog</VIcon>
+                    {{ t('viewAdvanced') }}
+                  </VBtn>
+                </div>
               </div>
             </div>
           </VCol>
@@ -467,10 +470,10 @@
       <VContainer>
         <VRow>
           <VCol cols="12" class="text-center mb-8">
-            <h2 class="text-h4 font-weight-bold mb-4">
+            <h2 class="section-title">
               {{ t('topExchangeHouses') }}
             </h2>
-            <p class="text-body-1 text-grey-lighten-2">
+            <p class="section-subtitle">
               {{ t('subtitle') }}
             </p>
           </VCol>
@@ -478,35 +481,46 @@
 
         <VRow>
           <VCol
-            v-for="exchange in topExchanges"
+            v-for="(exchange, i) in topExchanges"
             :key="exchange.origin"
+            v-motion
             cols="6"
             sm="6"
             md="4"
             lg="3"
+            :initial="revealInitial"
+            :visible-once="revealVisible(i)"
           >
             <nuxt-link
               class="d-flex w-100 h-100 text-decoration-none"
               :to="localePath(`/historico/${exchange.origin}/${exchange.code}`)"
             >
-              <VCard class="exchange-house-card pa-4 h-100 w-100" elevation="4" hover>
-                <div class="text-center">
-                  <VAvatar size="64" color="primary" class="mb-4">
-                    <VIcon size="32" color="white"> mdi-bank </VIcon>
-                  </VAvatar>
-                  <h3 class="text-body-1 text-sm-h6 font-weight-bold mb-2">
-                    {{ exchange.name }}
-                  </h3>
-                  <p class="text-body-2 text-grey-lighten-1 mb-3">
-                    {{ formatCurrency(exchange.rate) }} = 1 {{ exchange.code }}
-                  </p>
+              <VCard
+                class="house-card pa-4 h-100 w-100"
+                :style="{
+                  '--rank-accent': ['#ffd54a', '#cfd8e3', '#e8a06a'][i] || 'rgba(120,160,255,0.5)',
+                }"
+              >
+                <div class="house-card__top">
+                  <span class="house-rank">{{ i + 1 }}</span>
                   <VChip
-                    :color="exchange.isRegulated ? 'green-darken-3' : 'deep-orange-darken-4'"
-                    size="small"
-                    variant="elevated"
+                    :color="exchange.isRegulated ? 'success' : 'warning'"
+                    size="x-small"
+                    variant="flat"
+                    class="house-badge"
                   >
+                    <VIcon start size="12">
+                      {{ exchange.isRegulated ? 'mdi-shield-check' : 'mdi-alert-outline' }}
+                    </VIcon>
                     {{ exchange.isRegulated ? 'BCU' : 'No BCU' }}
                   </VChip>
+                </div>
+                <h3 class="house-name">{{ exchange.name }}</h3>
+                <div class="house-rate">{{ formatCurrency(exchange.rate) }}</div>
+                <div class="house-meta">1 {{ exchange.code }}</div>
+                <div class="house-cta">
+                  {{ t('historico') }}
+                  <VIcon size="14">mdi-arrow-right</VIcon>
                 </div>
               </VCard>
             </nuxt-link>
@@ -516,28 +530,34 @@
     </section>
 
     <!-- How It Works Section -->
-    <section class="how-it-works-section py-12 bg-grey-darken-4">
+    <section class="how-it-works-section section-band py-12">
       <VContainer>
         <VRow>
           <VCol cols="12" class="text-center mb-8">
-            <h2 class="text-h4 font-weight-bold mb-4">
+            <h2 class="section-title">
               {{ t('howItWorks') }}
             </h2>
           </VCol>
         </VRow>
 
-        <VRow>
-          <VCol v-for="(step, index) in steps" :key="index" cols="12" sm="6" md="3">
-            <div class="step-card text-center pa-4">
-              <VAvatar size="80" color="primary" class="mb-4">
-                <span class="text-h4 font-weight-bold">{{ index + 1 }}</span>
-              </VAvatar>
-              <h3 class="text-h6 font-weight-bold mb-3">
+        <VRow class="steps-grid" justify="center">
+          <VCol
+            v-for="(step, index) in steps"
+            :key="index"
+            v-motion
+            cols="12"
+            sm="6"
+            md="3"
+            :initial="revealInitial"
+            :visible-once="revealVisible(index, 110)"
+          >
+            <div class="step-card text-center">
+              <div class="step-node">
+                <span class="step-index">{{ index + 1 }}</span>
+              </div>
+              <h3 class="step-title">
                 {{ step.title }}
               </h3>
-              <p class="text-body-2 text-grey-lighten-1">
-                {{ step.description }}
-              </p>
             </div>
           </VCol>
         </VRow>
@@ -554,12 +574,12 @@
     <DonationCard />
 
     <!-- Pillar Content Section: SEO-rich content about dólar en Uruguay -->
-    <section class="pillar-content-section py-12">
+    <section class="pillar-content-section section-band py-12">
       <VContainer>
         <VRow>
           <VCol cols="12" md="10" lg="8" class="mx-auto">
             <article class="pillar-article">
-              <h2 class="text-h4 font-weight-bold mb-6 text-center">
+              <h2 class="section-title mb-6">
                 {{ t('pillar.aboutTitle') }}
               </h2>
               <p class="text-body-1 text-grey-lighten-1 mb-6 pillar-text">
@@ -600,7 +620,7 @@
     <!-- FAQ Section - data-grounded FAQ + single FAQPage JSON-LD via FaqBlock -->
     <FaqBlock
       v-if="homeFaqItems.length"
-      class="faq-section py-12 bg-grey-darken-4"
+      class="faq-section section-band py-12"
       :items="homeFaqItems"
       :heading="t('faq.title')"
     />
@@ -610,13 +630,20 @@
       <VContainer>
         <VRow>
           <VCol cols="12" class="text-center mb-8">
-            <h2 class="text-h4 font-weight-bold mb-4">
+            <h2 class="section-title">
               {{ t('pillar.relatedTitle') }}
             </h2>
           </VCol>
         </VRow>
         <VRow justify="center">
-          <VCol cols="12" sm="6" md="3">
+          <VCol
+            v-motion
+            cols="12"
+            sm="6"
+            md="3"
+            :initial="revealInitial"
+            :visible-once="revealVisible(0)"
+          >
             <NuxtLink :to="localePath('/historico')" class="text-decoration-none">
               <VCard class="internal-link-card pa-6 h-100 text-center" elevation="3" hover>
                 <VIcon color="blue" size="48" class="mb-3">mdi-chart-line</VIcon>
@@ -627,7 +654,14 @@
               </VCard>
             </NuxtLink>
           </VCol>
-          <VCol cols="12" sm="6" md="3">
+          <VCol
+            v-motion
+            cols="12"
+            sm="6"
+            md="3"
+            :initial="revealInitial"
+            :visible-once="revealVisible(1)"
+          >
             <NuxtLink :to="localePath('/sucursales')" class="text-decoration-none">
               <VCard class="internal-link-card pa-6 h-100 text-center" elevation="3" hover>
                 <VIcon color="green" size="48" class="mb-3">mdi-map-marker</VIcon>
@@ -638,7 +672,14 @@
               </VCard>
             </NuxtLink>
           </VCol>
-          <VCol cols="12" sm="6" md="3">
+          <VCol
+            v-motion
+            cols="12"
+            sm="6"
+            md="3"
+            :initial="revealInitial"
+            :visible-once="revealVisible(2)"
+          >
             <NuxtLink :to="localePath('/avanzado')" class="text-decoration-none">
               <VCard class="internal-link-card pa-6 h-100 text-center" elevation="3" hover>
                 <VIcon color="orange" size="48" class="mb-3">mdi-cog</VIcon>
@@ -649,7 +690,14 @@
               </VCard>
             </NuxtLink>
           </VCol>
-          <VCol cols="12" sm="6" md="3">
+          <VCol
+            v-motion
+            cols="12"
+            sm="6"
+            md="3"
+            :initial="revealInitial"
+            :visible-once="revealVisible(3)"
+          >
             <NuxtLink :to="localePath('/cotizacion')" class="text-decoration-none">
               <VCard class="internal-link-card pa-6 h-100 text-center" elevation="3" hover>
                 <VIcon color="purple" size="48" class="mb-3">mdi-currency-usd</VIcon>
@@ -660,7 +708,14 @@
               </VCard>
             </NuxtLink>
           </VCol>
-          <VCol cols="12" sm="6" md="3">
+          <VCol
+            v-motion
+            cols="12"
+            sm="6"
+            md="3"
+            :initial="revealInitial"
+            :visible-once="revealVisible(4)"
+          >
             <NuxtLink :to="localePath('/indicadores')" class="text-decoration-none">
               <VCard class="internal-link-card pa-6 h-100 text-center" elevation="3" hover>
                 <VIcon color="deep-purple" size="48" class="mb-3">mdi-finance</VIcon>
@@ -676,18 +731,28 @@
     </section>
 
     <!-- Features Section -->
-    <section class="features-section py-12">
+    <section class="features-section section-band py-12">
       <VContainer>
         <VRow>
           <VCol cols="12" class="text-center mb-8">
-            <h2 class="text-h4 font-weight-bold mb-4">
+            <h2 class="section-title">
               {{ t('whyChooseUs') }}
             </h2>
           </VCol>
         </VRow>
 
         <VRow>
-          <VCol v-for="feature in features" :key="feature.title" cols="12" sm="6" md="4" lg="3">
+          <VCol
+            v-for="(feature, fi) in features"
+            :key="feature.title"
+            v-motion
+            cols="12"
+            sm="6"
+            md="4"
+            lg="3"
+            :initial="revealInitial"
+            :visible-once="revealVisible(fi, 60)"
+          >
             <VCard
               v-if="feature.title === t('feature5Title')"
               class="feature-card pa-6 h-100 cursor-pointer"
@@ -784,7 +849,7 @@
 <script setup lang="ts">
 import { useLocalePath } from '#imports'
 import DirectionToggle from '@/components/DirectionToggle.vue'
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { HOME_FAQ_IDS, type FaqItem } from '~/utils/faqAnswers'
 import { quotesForCurrency } from '~/utils/currencyPages'
@@ -799,6 +864,23 @@ import {
 import { publicRates } from '@/utils/rateSource'
 
 const { mobile } = useDisplay()
+
+// Scroll-reveal animations (@vueuse/motion) are applied only AFTER client mount.
+// During SSR and first hydration `revealInitial` is empty, so no motion styles
+// are server-rendered — this avoids a hydration mismatch and never leaves cards
+// stuck hidden if JS is slow/absent. Once mounted, the from-state kicks in and
+// `visibleOnce` springs each card up as it scrolls into view.
+const motionReady = ref(false)
+onMounted(() => {
+  motionReady.value = true
+})
+const revealInitial = computed(() => (motionReady.value ? { opacity: 0, y: 40, scale: 0.96 } : {}))
+const revealVisible = (index: number, gap = 70) => ({
+  opacity: 1,
+  y: 0,
+  scale: 1,
+  transition: { delay: index * gap, type: 'spring', stiffness: 120, damping: 18 },
+})
 
 // Interfaces
 interface ExchangeItem {
@@ -1898,85 +1980,201 @@ useSeoMeta({
 </script>
 
 <style scoped>
-/* Hero Section */
+/* ============================================================
+   Cambio Uruguay — Home: refined 2026 fintech design system.
+   Cohesive deep-navy canvas + aurora glow, glassmorphism,
+   consistent spacing rhythm. Converter-internal rules (inputs,
+   chips, result, best-rates) are preserved further down.
+   ============================================================ */
 .home-container {
+  position: relative;
   min-height: 100vh;
+  /* Design tokens */
+  --ink: #f2f5fb;
+  --ink-soft: #aab4c8;
+  --ink-muted: #828da0;
+  --hairline: rgba(255, 255, 255, 0.08);
+  --glass: rgba(255, 255, 255, 0.045);
+  --glass-strong: rgba(255, 255, 255, 0.07);
+  --good: #2bd47d;
+  --radius-lg: 24px;
+  --radius-md: 16px;
+  --section-pad: clamp(56px, 8vw, 104px);
+
+  /* Cohesive page canvas: a solid deep-navy base (guarantees no white bleed in
+     any theme) with soft aurora glows layered on top, viewport-anchored. The
+     home is a dark-first premium landing regardless of the light/dark toggle. */
+  background-color: #0a0e1a;
+  background-image:
+    radial-gradient(900px 620px at 12% 0%, rgba(59, 130, 246, 0.22), transparent 60%),
+    radial-gradient(820px 600px at 100% 4%, rgba(99, 102, 241, 0.18), transparent 55%),
+    radial-gradient(900px 700px at 50% 100%, rgba(16, 185, 129, 0.08), transparent 60%);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
 }
 
+/* ---- Hero ---- */
 .hero-section {
-  background: linear-gradient(135deg, rgba(25, 32, 72, 0.95) 0%, rgba(76, 81, 191, 0.85) 100%);
   position: relative;
   overflow: hidden;
+  padding-top: clamp(20px, 4vw, 48px);
 }
 
+/* Soft top spotlight just behind the hero content. */
 .hero-section::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)" /></svg>');
-  opacity: 0.3;
-  animation: float 20s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-
-  50% {
-    transform: translateY(-20px);
-  }
+  inset: -25% -10% auto -10%;
+  height: 80%;
+  background: radial-gradient(58% 100% at 50% 0%, rgba(99, 102, 241, 0.2), transparent 70%);
+  pointer-events: none;
 }
 
 .min-height-hero {
-  min-height: 70vh;
+  min-height: auto;
 }
 
 .hero-content {
   position: relative;
   z-index: 2;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+/* Staggered hero entrance — pure CSS so it runs on first paint (SSR-safe, no
+   hydration mismatch, never leaves content stuck hidden). Reduced-motion is
+   handled globally in critical.css. */
+.hero-anim {
+  animation: fadeInUp 0.6s ease-out both;
+}
+
+.hero-eyebrow.hero-anim {
+  animation-delay: 0.05s;
+}
+.hero-title.hero-anim {
+  animation-delay: 0.12s;
+}
+.hero-subtitle.hero-anim {
+  animation-delay: 0.2s;
+}
+.hero-trust.hero-anim {
+  animation-delay: 0.28s;
+}
+.hero-live.hero-anim {
+  animation-delay: 0.36s;
+}
+.exchange-card.hero-anim {
+  animation-delay: 0.44s;
+}
+
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.9rem;
+  margin-bottom: 1.25rem;
+  border-radius: 999px;
+  background: var(--glass-strong);
+  border: 1px solid var(--hairline);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--ink-soft);
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--good);
+  box-shadow: 0 0 0 0 rgba(43, 212, 125, 0.55);
+  animation: livePulse 2.2s infinite;
+}
+
+@keyframes livePulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(43, 212, 125, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 9px rgba(43, 212, 125, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(43, 212, 125, 0);
+  }
 }
 
 .hero-title {
-  color: #ffffff;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-  margin-bottom: 1.5rem;
-  animation: fadeInUp 0.8s ease-out;
+  font-size: clamp(2rem, 5.2vw, 3.35rem);
+  line-height: 1.08;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0 auto 1rem;
+  background: linear-gradient(180deg, #ffffff 0%, #c7d3ee 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .hero-subtitle {
-  color: #e3f2fd;
+  font-size: clamp(1rem, 1.6vw, 1.18rem);
+  line-height: 1.6;
   font-weight: 400;
-  margin-bottom: 2rem;
-  animation: fadeInUp 0.8s ease-out 0.2s both;
+  color: var(--ink-soft);
+  max-width: 56ch;
+  margin: 0 auto 1.5rem;
 }
 
-.hero-description {
-  color: #f5f5f5;
-  max-width: 600px;
-  margin: 0 auto 2rem;
-  animation: fadeInUp 0.8s ease-out 0.4s both;
+.hero-trust {
+  margin-bottom: 1.5rem;
+}
+
+.hero-live {
+  max-width: 560px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Secondary hero band: SEO answer + savings + share, de-emphasized. */
+.hero-secondary {
+  max-width: 720px;
+  margin: 2.25rem auto 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
 }
 
 .hero-answer {
-  color: #e8f0ff;
-  max-width: 760px;
-  margin: 0 auto 2rem;
+  color: var(--ink-soft);
+  font-size: 0.92rem;
   line-height: 1.7;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  text-align: left;
+  background: var(--glass);
+  border: 1px solid var(--hairline);
+  border-left: 3px solid rgba(120, 160, 255, 0.55);
   border-radius: 12px;
-  padding: 1rem 1.25rem;
+  padding: 1rem 1.15rem;
+  margin: 0;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.advanced-btn {
+  text-transform: none;
+  font-weight: 700;
 }
 
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(24px);
   }
 
   to {
@@ -1985,21 +2183,20 @@ useSeoMeta({
   }
 }
 
-/* Exchange Card */
+/* ---- Exchange (converter) card: glass centerpiece ---- */
 .exchange-card {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  animation: fadeInUp 0.8s ease-out 0.6s both;
-  transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease;
-}
-
-.exchange-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  position: relative;
+  max-width: 720px;
+  margin: 0 auto 1.5rem;
+  text-align: left;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.03));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-lg) !important;
+  box-shadow:
+    0 30px 80px -34px rgba(0, 0, 0, 0.75),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .amount-input {
@@ -2148,125 +2345,249 @@ useSeoMeta({
   letter-spacing: 0.5px;
 }
 
-/* Sections */
-.top-exchanges-section {
-  background: #121212;
-  padding: 80px 0;
-}
-
-.how-it-works-section {
-  padding: 80px 0;
-  background: #1e1e1e;
-}
-
-.features-section {
-  background: #121212;
-  padding: 80px 0;
-}
-
+/* ---- Section rhythm: one canvas, optional translucent bands ---- */
+.top-exchanges-section,
+.how-it-works-section,
+.features-section,
+.internal-links-section,
+.pillar-content-section,
 .cta-section {
-  padding: 80px 0;
-  background: linear-gradient(135deg, #1976d2 0%, #42a5f5 100%);
+  position: relative;
+  padding-block: var(--section-pad);
+  background: transparent;
 }
 
-/* Pillar Content Section */
-.pillar-content-section {
-  background: #1a1a2e;
-  padding: 80px 0;
+/* Alternating sections get a faint elevated band with hairline edges so the
+   page reads as layered depth instead of jarring black/white blocks. */
+.section-band {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.022), rgba(255, 255, 255, 0.012));
+  border-top: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--hairline);
 }
 
+/* Shared section headings */
+.section-title {
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin-bottom: 0.75rem;
+}
+
+.section-subtitle {
+  color: var(--ink-soft);
+  font-size: 1.02rem;
+  line-height: 1.6;
+  max-width: 60ch;
+  margin: 0 auto;
+}
+
+/* ---- Top Exchange Houses: rate-forward ranked cards ---- */
+.house-card {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.025));
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md) !important;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.house-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--rank-accent);
+}
+
+.house-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 24px 46px -24px rgba(0, 0, 0, 0.75);
+}
+
+.house-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.85rem;
+}
+
+.house-rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: #0a0e1a;
+  background: var(--rank-accent);
+}
+
+.house-badge {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.house-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.25;
+  margin-bottom: 0.55rem;
+  min-height: 2.4em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.house-rate {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  color: #ffffff;
+}
+
+.house-meta {
+  margin-top: 0.3rem;
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+}
+
+.house-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: auto;
+  padding-top: 0.9rem;
+  color: #7fb0ff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.house-card:hover .house-cta {
+  opacity: 1;
+  transform: none;
+}
+
+/* ---- How It Works: glowing numbered nodes ---- */
+.step-card {
+  position: relative;
+  z-index: 1;
+  padding: 8px 12px;
+  transition: transform 0.25s ease;
+}
+
+.step-card:hover {
+  transform: translateY(-4px);
+}
+
+.step-node {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 1rem;
+  display: grid;
+  place-items: center;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(59, 130, 246, 0.28), rgba(99, 102, 241, 0.18));
+  border: 1px solid rgba(120, 160, 255, 0.35);
+  box-shadow: 0 14px 32px -14px rgba(59, 130, 246, 0.7);
+}
+
+.step-index {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #d6e3ff;
+}
+
+.step-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.4;
+}
+
+/* ---- Pillar prose ---- */
 .pillar-article {
-  line-height: 1.8;
+  line-height: 1.85;
+  color: var(--ink-soft);
+}
+
+.pillar-article :deep(h3) {
+  color: var(--ink);
+  margin-bottom: 0.9rem;
 }
 
 .pillar-text {
   font-size: 1.05rem;
-  line-height: 1.8;
+  line-height: 1.85;
+  color: var(--ink-soft);
 }
 
 .tips-list {
   list-style: none;
 }
 
-/* FAQ Section */
-.faq-section {
-  padding: 80px 0;
-}
-
-.faq-panels {
-  .faq-panel {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 8px;
-    margin-bottom: 8px;
-  }
-}
-
-/* Internal Links Section */
-.internal-links-section {
-  background: #16213e;
-  padding: 80px 0;
-}
-
-.internal-link-card {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  transition: all 0.3s ease;
-}
-
-.internal-link-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
-  border-color: rgba(25, 118, 210, 0.4);
-}
-
-/* Cards */
-.exchange-house-card {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  transition: all 0.3s ease;
-}
-
-.exchange-house-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.4);
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-.step-card {
-  transition: transform 0.3s ease;
-}
-
-.step-card:hover {
-  transform: translateY(-5px);
-}
-
+/* ---- Internal-link + feature tiles ---- */
+.internal-link-card,
 .feature-card {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  transition: all 0.3s ease;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md) !important;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
 }
 
-.feature-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
+.internal-link-card:hover,
+.feature-card:hover,
 .feature-card.cursor-pointer:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.4);
-  border-color: rgba(25, 118, 210, 0.3);
+  transform: translateY(-6px);
+  box-shadow: 0 24px 46px -24px rgba(0, 0, 0, 0.7);
+  border-color: rgba(120, 160, 255, 0.38);
 }
 
 .cursor-pointer {
   cursor: pointer;
 }
 
-/* Responsive Design */
+/* ---- CTA: bold gradient slab ---- */
+.cta-section {
+  overflow: hidden;
+  text-align: center;
+  background:
+    radial-gradient(120% 140% at 0% 0%, rgba(255, 255, 255, 0.18), transparent 50%),
+    linear-gradient(120deg, #1d3a8a 0%, #2563eb 52%, #6366f1 100%) !important;
+  border-radius: 28px;
+  margin: 0 16px var(--section-pad);
+  box-shadow: 0 30px 70px -30px rgba(37, 99, 235, 0.6);
+}
+
+/* ---- Accessibility ---- */
+.exchange-card:focus-within,
+.house-card:focus-within {
+  outline: 2px solid #42a5f5;
+  outline-offset: 2px;
+}
+
+/* ---- Responsive ---- */
 @media (max-width: 768px) {
   .swap-btn_container {
     position: absolute;
@@ -2276,39 +2597,35 @@ useSeoMeta({
     z-index: 10;
 
     .swap-btn {
-      background: linear-gradient(135deg, rgba(25, 32, 72, 0.95) 0%, rgba(76, 81, 191, 0.85) 100%);
+      background: linear-gradient(135deg, #1d3a8a 0%, #4f46e5 100%);
       border-color: transparent;
-
-      box-shadow: rgba(0, 0, 0, 0.2);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
 
       i {
         color: white;
       }
     }
   }
+}
 
-  .hero-section {
-    padding: 40px 0 0;
-  }
-
-  .hero-title {
-    font-size: 2rem;
-  }
-
-  .hero-subtitle {
-    font-size: 1.2rem;
-  }
-
+@media (max-width: 600px) {
   .exchange-card {
-    margin: 0 -20px;
-    border-radius: 0;
+    padding: 18px !important;
   }
 
-  .top-exchanges-section,
-  .how-it-works-section,
-  .features-section,
+  .house-rate {
+    font-size: 1.35rem;
+  }
+
+  /* No hover on touch: keep the "ver histórico" hint visible. */
+  .house-cta {
+    opacity: 1;
+    transform: none;
+  }
+
   .cta-section {
-    padding: 40px 0;
+    margin-inline: 8px;
+    border-radius: 20px;
   }
 
   .best-rates-card {
@@ -2318,85 +2635,98 @@ useSeoMeta({
   }
 }
 
-@media (max-width: 480px) {
-  .hero-title {
-    font-size: 1.75rem;
-  }
+/* ============================================================
+   LIGHT THEME
+   The home was authored dark-first with hardcoded white-alpha
+   "glass" surfaces and light text. These overrides re-skin it
+   for the light toggle: airy canvas, solid white cards, dark
+   ink and AA-contrast text. Scoped to `.v-theme--light` so the
+   tuned dark design is left completely untouched.
+   ============================================================ */
+.v-theme--light .home-container {
+  --ink: #16233b;
+  --ink-soft: #45556e;
+  --ink-muted: #5f6c82;
+  --hairline: rgba(15, 23, 42, 0.1);
+  --glass: rgba(255, 255, 255, 0.72);
+  --glass-strong: #ffffff;
 
-  .hero-subtitle {
-    font-size: 1.1rem;
-  }
-
-  .exchange-card {
-    padding: 20px;
-  }
+  background-color: #eef2f8;
+  background-image:
+    radial-gradient(900px 620px at 12% 0%, rgba(59, 130, 246, 0.1), transparent 60%),
+    radial-gradient(820px 600px at 100% 4%, rgba(99, 102, 241, 0.08), transparent 55%),
+    radial-gradient(900px 700px at 50% 100%, rgba(16, 185, 129, 0.05), transparent 60%);
 }
 
-/* Accessibility */
-.exchange-card:focus-within {
-  outline: 2px solid #42a5f5;
-  outline-offset: 2px;
+/* Hero headline: dark gradient instead of white→pale-blue. */
+.v-theme--light .home-container .hero-title {
+  background: linear-gradient(180deg, #16233b 0%, #2456b8 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
-.exchange-house-card:focus-within {
-  outline: 2px solid #42a5f5;
-  outline-offset: 2px;
+/* Glass surfaces → solid white cards with hairline border + soft shadow. */
+.v-theme--light .home-container .exchange-card {
+  background: #ffffff;
+  border-color: rgba(15, 23, 42, 0.1);
+  box-shadow:
+    0 24px 60px -34px rgba(15, 23, 42, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
-/* Animation delays for staggered effect */
-.exchange-house-card:nth-child(1) {
-  animation: fadeInUp 0.6s ease-out 0.1s both;
+.v-theme--light .home-container .house-card,
+.v-theme--light .home-container .internal-link-card,
+.v-theme--light .home-container .feature-card {
+  background: #ffffff;
+  border-color: rgba(15, 23, 42, 0.1);
 }
 
-.exchange-house-card:nth-child(2) {
-  animation: fadeInUp 0.6s ease-out 0.2s both;
+.v-theme--light .home-container .house-card:hover,
+.v-theme--light .home-container .internal-link-card:hover,
+.v-theme--light .home-container .feature-card:hover {
+  border-color: rgba(37, 99, 235, 0.4);
+  box-shadow: 0 24px 46px -26px rgba(15, 23, 42, 0.3);
 }
 
-.exchange-house-card:nth-child(3) {
-  animation: fadeInUp 0.6s ease-out 0.3s both;
+.v-theme--light .home-container .section-band {
+  background: rgba(15, 23, 42, 0.025);
 }
 
-.exchange-house-card:nth-child(4) {
-  animation: fadeInUp 0.6s ease-out 0.4s both;
+/* Text/icons hardcoded light for the dark canvas. */
+.v-theme--light .home-container .house-rate {
+  color: var(--ink);
 }
 
-.step-card:nth-child(1) {
-  animation: fadeInUp 0.6s ease-out 0.1s both;
+.v-theme--light .home-container .house-cta {
+  color: #1565c0;
 }
 
-.step-card:nth-child(2) {
-  animation: fadeInUp 0.6s ease-out 0.2s both;
+/* Converter result + best-rates cards keep their faint tint, but the text was
+   white/pale-green for the dark glass — flip it to readable ink on the light
+   card. The CTA slab (.cta-section) keeps white text on its colored gradient. */
+.v-theme--light .home-container .conversion-result .text-white,
+.v-theme--light .home-container .best-rates-card .text-white,
+.v-theme--light .home-container .conversion-result .amount-text {
+  color: var(--ink) !important;
 }
 
-.step-card:nth-child(3) {
-  animation: fadeInUp 0.6s ease-out 0.3s both;
+.v-theme--light .home-container .conversion-result .amount-text.converted,
+.v-theme--light .home-container .conversion-result .rate-text,
+.v-theme--light .home-container .best-rates-card .rate-value {
+  color: #2e7d32 !important;
 }
 
-.step-card:nth-child(4) {
-  animation: fadeInUp 0.6s ease-out 0.4s both;
+.v-theme--light .home-container .conversion-result .currency-name,
+.v-theme--light .home-container .best-rates-card .rate-type {
+  color: var(--ink-muted) !important;
 }
 
-.feature-card:nth-child(1) {
-  animation: fadeInUp 0.6s ease-out 0.1s both;
+.v-theme--light .home-container .best-rates-card .rate-name {
+  color: var(--ink-soft) !important;
 }
 
-.feature-card:nth-child(2) {
-  animation: fadeInUp 0.6s ease-out 0.2s both;
-}
-
-.feature-card:nth-child(3) {
-  animation: fadeInUp 0.6s ease-out 0.3s both;
-}
-
-.feature-card:nth-child(4) {
-  animation: fadeInUp 0.6s ease-out 0.4s both;
-}
-
-.feature-card:nth-child(5) {
-  animation: fadeInUp 0.6s ease-out 0.5s both;
-}
-
-.feature-card:nth-child(6) {
-  animation: fadeInUp 0.6s ease-out 0.6s both;
+.v-theme--light .home-container .best-rates-card .rate-position {
+  color: #b45309 !important;
 }
 </style>
