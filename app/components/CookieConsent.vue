@@ -6,7 +6,11 @@
         <div class="d-flex flex-column flex-md-row align-md-center ga-3">
           <div class="cookie-consent__text text-body-2">
             {{ t('consent.message') }}
-            <NuxtLink :to="localePath('/privacidad')" class="cookie-consent__link">
+            <NuxtLink
+              :to="localePath('/privacidad')"
+              class="cookie-consent__link"
+              :aria-label="t('consent.moreLabel')"
+            >
               {{ t('consent.more') }}
             </NuxtLink>
           </div>
