@@ -119,7 +119,12 @@ function defaultPopup(b: Branch): string {
 async function init() {
   if (initStarted || !el.value) return
   initStarted = true
-  L = await import('leaflet')
+  // import('leaflet') yields the ESM namespace; L.map/tileLayer are named exports
+  // but the markercluster plugin augments leaflet's *default* object (and window.L),
+  // so use that — otherwise L.markerClusterGroup is undefined and init throws.
+  const leafletMod: any = await import('leaflet')
+  L = leafletMod.default ?? leafletMod
+  if (import.meta.client) (window as any).L = L
   await import('leaflet.markercluster')
   await import('leaflet/dist/leaflet.css')
   await import('leaflet.markercluster/dist/MarkerCluster.css')
