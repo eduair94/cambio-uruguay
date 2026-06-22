@@ -58,6 +58,11 @@
 
                 <!-- Loaded Content -->
                 <template v-else>
+                  <!-- Desktop (lg+): form on the left, live result on the right
+                       so the converter uses the available width instead of a
+                       narrow centred column. Stacks on smaller screens. -->
+                  <VRow class="converter-grid" align="start">
+                    <VCol cols="12" lg="6" class="converter-col converter-col--form">
                   <!-- Amount Input -->
                   <VRow class="mb-0 mb-md-4">
                     <VCol cols="12" md="6">
@@ -160,7 +165,7 @@
                   </VRow>
 
                   <!-- Quick currency-pair shortcuts -->
-                  <div class="shortcut-chips d-flex flex-wrap justify-center ga-2 mt-2 mt-md-0">
+                  <div class="shortcut-chips d-flex flex-wrap justify-center ga-2 my-4">
                     <span class="text-caption text-grey-lighten-1 align-self-center mr-1">
                       {{ t('quickExchangeShortcuts') }}:
                     </span>
@@ -193,7 +198,9 @@
                       {{ t('findBestRate') }}
                     </VBtn>
                   </VCardActions>
+                    </VCol>
 
+                    <VCol cols="12" lg="6" class="converter-col converter-col--result">
                   <!-- Conversion Result -->
                   <VCard
                     class="conversion-result pa-4 mb-md-4"
@@ -333,13 +340,18 @@
                       </VBtn>
                     </div>
                   </VCard>
+                    </VCol>
+                  </VRow>
 
-                  <!-- Dual Best Rates: show both Sell and Buy for the subject currency; order by user intent -->
+                  <!-- Best rates, full width below the converter: two columns
+                       (sell | buy) only where the multi-column layout applies
+                       (lg+); stacks on smaller screens. -->
                   <template v-if="subjectCode">
+                    <VRow class="best-rates-grid">
+                    <VCol v-if="primaryRatesForSubject.length" cols="12" lg="6">
                     <!-- First card: current intent (sell or buy) -->
                     <VCard
-                      v-if="primaryRatesForSubject.length"
-                      class="best-rates-card pa-4 mb-4"
+                      class="best-rates-card pa-4 mb-4 h-100"
                       color="rgba(33, 150, 243, 0.1)"
                       variant="outlined"
                     >
@@ -354,6 +366,7 @@
                           cols="6"
                           sm="6"
                           md="3"
+                          lg="6"
                         >
                           <nuxt-link
                             class="d-flex w-100 h-100 text-decoration-none"
@@ -382,11 +395,12 @@
                         </VCol>
                       </VRow>
                     </VCard>
+                    </VCol>
 
                     <!-- Second card: the other intent -->
+                    <VCol v-if="secondaryRatesForSubject.length" cols="12" lg="6">
                     <VCard
-                      v-if="secondaryRatesForSubject.length"
-                      class="best-rates-card pa-4 mb-4"
+                      class="best-rates-card pa-4 mb-4 h-100"
                       color="rgba(33, 150, 243, 0.1)"
                       variant="outlined"
                     >
@@ -401,6 +415,7 @@
                           cols="6"
                           sm="6"
                           md="3"
+                          lg="6"
                         >
                           <nuxt-link
                             class="d-flex w-100 h-100 text-decoration-none"
@@ -429,6 +444,8 @@
                         </VCol>
                       </VRow>
                     </VCard>
+                    </VCol>
+                    </VRow>
                   </template>
                 </template>
               </VCard>
@@ -2144,7 +2161,10 @@ useSeoMeta({
 
 .hero-title {
   font-size: clamp(2rem, 5.2vw, 3.35rem);
-  line-height: 1.08;
+  /* line-height + padding-bottom give descenders (g, y in "Uruguay") room:
+     background-clip:text otherwise clips them against a tight line box. */
+  line-height: 1.18;
+  padding-bottom: 0.12em;
   font-weight: 800;
   letter-spacing: -0.02em;
   margin: 0 auto 1rem;
@@ -2257,6 +2277,23 @@ useSeoMeta({
 
 .shortcut-chips {
   row-gap: 0.5rem;
+  /* Breathing room above/below the quick-pair shortcuts ("Atajos:"). */
+  margin-block: 14px;
+}
+
+/* ---- Desktop converter: two columns (form | live result) ----
+   Below lg the two .converter-col stack (cols=12), so this only reshapes wide
+   screens — filling the width instead of a narrow centred column. */
+@media (min-width: 1280px) {
+  .hero-content {
+    max-width: 1180px;
+  }
+  .exchange-card {
+    max-width: 1180px;
+  }
+  .converter-col--result {
+    border-left: 1px solid var(--hairline);
+  }
 }
 
 .copy-result-btn {
