@@ -27,7 +27,15 @@
       <v-col cols="12" sm="6" md="3">
         <div class="px-1">
           <span class="text-caption">{{ t('map.radius') }}: {{ radiusKm }} km</span>
-          <v-slider v-model="radiusKm" :min="1" :max="50" :step="1" hide-details density="compact" />
+          <v-slider
+            v-model="radiusKm"
+            :min="1"
+            :max="50"
+            :step="1"
+            hide-details
+            density="compact"
+            :aria-label="`${t('map.radius')} (km)`"
+          />
         </div>
       </v-col>
       <v-col cols="12" sm="6" md="3" class="d-flex align-center">

@@ -173,7 +173,8 @@ function renderCashPoints() {
   if (!cashCluster) return
   cashCluster.clearLayers()
   for (const p of props.cashPoints || []) {
-    const m = L.marker([p.lat, p.lng], { icon: cashIcon() })
+    const label = p.name || p.label
+    const m = L.marker([p.lat, p.lng], { icon: cashIcon(), title: label, alt: label })
     m.bindPopup(cashPopup(p))
     cashCluster.addLayer(m)
   }
@@ -185,7 +186,14 @@ function renderMarkers() {
   markersById.clear()
   const popup = props.popupFor || defaultPopup
   for (const b of props.branches) {
-    const m = L.marker([b.lat, b.lng], { icon: pinIcon(b.origin, b.id === props.highlightId) })
+    // title/alt give the (keyboard-focusable) marker an accessible name so it
+    // isn't an unnamed command for screen readers / axe `aria-command-name`.
+    const label = b.name || b.origin
+    const m = L.marker([b.lat, b.lng], {
+      icon: pinIcon(b.origin, b.id === props.highlightId),
+      title: label,
+      alt: label,
+    })
     m.bindPopup(popup(b))
     m.on('click', () => emit('marker-click', b))
     markersById.set(b.id, m)

@@ -137,7 +137,8 @@
     "menu": "Abrir menú",
     "close": "Cerrar menú",
     "skipToContent": "Saltar al contenido principal",
-    "toggleTheme": "Cambiar tema claro/oscuro"
+    "toggleTheme": "Cambiar tema claro/oscuro",
+    "primaryNav": "Navegación principal"
   },
   "theme": {
     "label": "Tema",

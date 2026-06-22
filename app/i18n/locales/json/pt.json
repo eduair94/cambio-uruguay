@@ -132,7 +132,8 @@
     "menu": "Abrir menu",
     "close": "Fechar menu",
     "skipToContent": "Pular para o conteúdo principal",
-    "toggleTheme": "Alternar tema claro/escuro"
+    "toggleTheme": "Alternar tema claro/escuro",
+    "primaryNav": "Navegação principal"
   },
   "theme": {
     "label": "Tema",

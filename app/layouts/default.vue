@@ -11,8 +11,13 @@
       temporary
       width="280"
       class="mobile-navigation-drawer"
+      :aria-label="$t('a11y.primaryNav')"
     >
-      <VList>
+      <!-- The drawer itself is the <nav> landmark (labelled above). Neutralise
+           Vuetify's default role=listbox on the inner list (its mixed link/button/
+           divider children aren't listbox options) so it's a plain container — the
+           links inside remain the navigable content. -->
+      <VList role="presentation" tabindex="-1">
         <VListItem>
           <VListItemTitle class="text-h6"> Menu </VListItemTitle>
           <template #append>

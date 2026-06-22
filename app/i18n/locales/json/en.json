@@ -134,7 +134,8 @@
     "menu": "Open menu",
     "close": "Close menu",
     "skipToContent": "Skip to main content",
-    "toggleTheme": "Toggle light/dark theme"
+    "toggleTheme": "Toggle light/dark theme",
+    "primaryNav": "Main navigation"
   },
   "theme": {
     "label": "Theme",

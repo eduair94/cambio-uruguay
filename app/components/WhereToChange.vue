@@ -96,6 +96,7 @@
                   v-for="(house, index) in topRanked"
                   :key="house.origin"
                   class="wtc-item mb-2 px-3"
+                  role="listitem"
                   data-testid="wtc-house"
                 >
                   <template #prepend>
