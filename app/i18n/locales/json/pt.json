@@ -290,6 +290,36 @@
     "subtitle": "Compare +40 casas de câmbio e fique com a melhor cotação do dia.",
     "cta": "Comparar cotações"
   },
+  "tour": {
+    "start": "Ver tour guiado",
+    "next": "Próximo",
+    "prev": "Anterior",
+    "done_btn": "Pronto",
+    "welcome": {
+      "title": "Bem-vindo ao Cambio Uruguay",
+      "desc": "Um tour de 30 segundos sobre como obter a melhor cotação. Feche quando quiser."
+    },
+    "converter": {
+      "title": "Conversor ao vivo",
+      "desc": "Converta o dólar e +14 moedas com a cotação real de hoje."
+    },
+    "recommend": {
+      "title": "Onde trocar?",
+      "desc": "Dizemos em qual casa de câmbio vale mais a pena operar para ganhar mais."
+    },
+    "promo": {
+      "title": "Veja como funciona",
+      "desc": "Um olhar rápido sobre por que comparar antes de trocar."
+    },
+    "theme": {
+      "title": "Claro ou escuro",
+      "desc": "Mude o tema do seu jeito aqui."
+    },
+    "done": {
+      "title": "Pronto para economizar!",
+      "desc": "Explore o comparador, as ferramentas e o mapa no menu. Bom câmbio!"
+    }
+  },
   "howItWorks": "Como funciona?",
   "step1": "Selecione a moeda que deseja trocar",
   "step2": "Digite o valor que deseja trocar",

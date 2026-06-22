@@ -27,6 +27,14 @@
                 <DollarMomentum class="hero-live hero-anim mb-6" />
               </ClientOnly>
 
+              <!-- Guided tour entry point (lazy driver.js; auto-runs once on a
+                   first visit, replayable from here). Client-only. -->
+              <ClientOnly>
+                <div class="d-flex justify-center mb-4">
+                  <SiteTour />
+                </div>
+              </ClientOnly>
+
               <!-- Currency Converter Card -->
               <VCard class="exchange-card hero-anim pa-6 mb-6" elevation="8">
                 <h2 class="text-h5 font-weight-bold mb-6 text-center">

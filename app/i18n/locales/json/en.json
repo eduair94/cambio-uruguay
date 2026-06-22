@@ -292,6 +292,36 @@
     "subtitle": "Compare 40+ exchange houses and get the best rate of the day.",
     "cta": "Compare rates"
   },
+  "tour": {
+    "start": "Take a tour",
+    "next": "Next",
+    "prev": "Back",
+    "done_btn": "Done",
+    "welcome": {
+      "title": "Welcome to Cambio Uruguay",
+      "desc": "A 30-second tour of how to get the best exchange rate. Close it anytime."
+    },
+    "converter": {
+      "title": "Live converter",
+      "desc": "Convert the dollar and 14+ currencies at today's real rate."
+    },
+    "recommend": {
+      "title": "Where to change?",
+      "desc": "We tell you which exchange house pays best for your money."
+    },
+    "promo": {
+      "title": "See how it works",
+      "desc": "A quick look at why comparing before you change pays off."
+    },
+    "theme": {
+      "title": "Light or dark",
+      "desc": "Switch the theme to your liking here."
+    },
+    "done": {
+      "title": "Ready to save!",
+      "desc": "Explore the comparator, tools and map from the menu. Happy exchanging!"
+    }
+  },
   "howItWorks": "How it works?",
   "step1": "Select the currency you want to exchange",
   "step2": "Enter the amount you want to exchange",

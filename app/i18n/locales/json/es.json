@@ -295,6 +295,36 @@
     "subtitle": "Compará +40 casas de cambio y quedate con la mejor cotización del día.",
     "cta": "Comparar cotizaciones"
   },
+  "tour": {
+    "start": "Ver tour guiado",
+    "next": "Siguiente",
+    "prev": "Anterior",
+    "done_btn": "Listo",
+    "welcome": {
+      "title": "Bienvenido a Cambio Uruguay",
+      "desc": "Te muestro en 30 segundos cómo sacar el mejor cambio. Podés cerrar cuando quieras."
+    },
+    "converter": {
+      "title": "Conversor en vivo",
+      "desc": "Convertí entre el dólar y +14 monedas con la cotización real de hoy."
+    },
+    "recommend": {
+      "title": "¿Dónde cambiar?",
+      "desc": "Te decimos en qué casa de cambio conviene operar para ganar más por tu plata."
+    },
+    "promo": {
+      "title": "Mirá cómo funciona",
+      "desc": "Un vistazo rápido a por qué comparar antes de cambiar."
+    },
+    "theme": {
+      "title": "Claro u oscuro",
+      "desc": "Cambiá el tema a tu gusto desde acá."
+    },
+    "done": {
+      "title": "¡Listo para ahorrar!",
+      "desc": "Explorá el comparador, las herramientas y el mapa desde el menú. ¡Buen cambio!"
+    }
+  },
   "howItWorks": "¿Cómo funciona?",
   "step1": "Selecciona la moneda que quieres cambiar",
   "step2": "Ingresa el monto que deseas cambiar",
