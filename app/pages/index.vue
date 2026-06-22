@@ -529,6 +529,27 @@
       </VContainer>
     </section>
 
+    <!-- Promo video: short branded clip, lazy + autoplay-in-view (muted), the
+         visitor can tap to unmute. Sits between the rates and the how-it-works
+         steps so it reinforces "compare before you change" organically. -->
+    <section v-reveal class="promo-section py-12">
+      <VContainer>
+        <VRow justify="center">
+          <VCol cols="12" md="10" lg="9" class="text-center mb-6">
+            <h2 class="section-title">{{ t('promo.heading') }}</h2>
+            <p class="section-subtitle">{{ t('promo.subtitle') }}</p>
+          </VCol>
+        </VRow>
+        <PromoVideo :label="t('promo.heading')" />
+        <div class="d-flex justify-center mt-6">
+          <VBtn :to="localePath('/comparar')" color="primary" variant="elevated" size="large">
+            <VIcon start>mdi-chart-multiple</VIcon>
+            {{ t('promo.cta') }}
+          </VBtn>
+        </div>
+      </VContainer>
+    </section>
+
     <!-- How It Works Section -->
     <section v-reveal class="how-it-works-section section-band py-12">
       <VContainer>

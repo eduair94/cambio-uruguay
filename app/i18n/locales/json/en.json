@@ -135,7 +135,9 @@
     "close": "Close menu",
     "skipToContent": "Skip to main content",
     "toggleTheme": "Toggle light/dark theme",
-    "primaryNav": "Main navigation"
+    "primaryNav": "Main navigation",
+    "unmute": "Unmute",
+    "mute": "Mute"
   },
   "theme": {
     "label": "Theme",
@@ -285,6 +287,11 @@
   "bestRateFrom": "Best rate from",
   "viewAdvanced": "View advanced options",
   "topExchangeHouses": "Top Exchange Houses",
+  "promo": {
+    "heading": "Don't overpay when you exchange",
+    "subtitle": "Compare 40+ exchange houses and get the best rate of the day.",
+    "cta": "Compare rates"
+  },
   "howItWorks": "How it works?",
   "step1": "Select the currency you want to exchange",
   "step2": "Enter the amount you want to exchange",

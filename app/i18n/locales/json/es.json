@@ -138,7 +138,9 @@
     "close": "Cerrar menú",
     "skipToContent": "Saltar al contenido principal",
     "toggleTheme": "Cambiar tema claro/oscuro",
-    "primaryNav": "Navegación principal"
+    "primaryNav": "Navegación principal",
+    "unmute": "Activar sonido",
+    "mute": "Silenciar"
   },
   "theme": {
     "label": "Tema",
@@ -288,6 +290,11 @@
   "bestRateFrom": "Mejor tasa de",
   "viewAdvanced": "Ver opciones avanzadas",
   "topExchangeHouses": "Mejores Casas de Cambio",
+  "promo": {
+    "heading": "No pagues de más al cambiar",
+    "subtitle": "Compará +40 casas de cambio y quedate con la mejor cotización del día.",
+    "cta": "Comparar cotizaciones"
+  },
   "howItWorks": "¿Cómo funciona?",
   "step1": "Selecciona la moneda que quieres cambiar",
   "step2": "Ingresa el monto que deseas cambiar",
