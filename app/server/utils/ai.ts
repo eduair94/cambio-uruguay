@@ -131,3 +131,42 @@ export async function generateChat(opts: ChatOptions): Promise<ChatResult | null
   if (!res || res.content.length < 40) return null
   return res
 }
+
+/**
+ * Short structured answer with graceful degradation: try the direct (latest)
+ * wormgpt model first, then fall back to the backend `/ai/insights` proxy — the
+ * same configured provider + cache the rest of the app uses — when this app has
+ * no AI key of its own (the common case). Returns the sanitized reply text, or
+ * null when neither path yields a usable answer. Mirrors the dual-path strategy
+ * in `server/utils/blog.ts`; the import-cart weight/category features rely on it
+ * so they behave like every other AI feature instead of failing whenever the
+ * direct key is absent.
+ */
+export async function chatTextWithFallback(opts: ChatOptions): Promise<string | null> {
+  const direct = await chatCompletion(opts)
+  if (direct) return direct.content
+
+  const cfg = useRuntimeConfig()
+  const apiBase = (cfg.public as { apiBase?: string } | undefined)?.apiBase
+  if (!apiBase) return null
+  const model = (cfg.ai as { model?: string } | undefined)?.model
+  try {
+    const res = await $fetch<{ insight?: string }>('/ai/insights', {
+      baseURL: apiBase,
+      method: 'POST',
+      // The backend proxy forwards a single custom prompt (no separate system
+      // role), so the instruction must travel inside customPrompt.
+      body: {
+        type: 'custom',
+        language: 'es',
+        customPrompt: `${opts.system}\n\n${opts.user}`,
+        model,
+      },
+      timeout: 70000,
+    })
+    const content = sanitizeAi(res?.insight || '').trim()
+    return content || null
+  } catch {
+    return null
+  }
+}

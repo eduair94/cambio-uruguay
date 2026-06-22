@@ -8,7 +8,7 @@
 // selector + the usual disclaimers).
 import { IMPORT_PRODUCT_TYPES } from '../../utils/importProductTypes'
 import { pickCategoryId } from '../../utils/productClassify'
-import { chatCompletion } from './ai'
+import { chatTextWithFallback } from './ai'
 
 const CATALOG = IMPORT_PRODUCT_TYPES.map(t => `${t.id}: ${t.label}`).join('\n')
 const SYSTEM =
@@ -19,11 +19,11 @@ const SYSTEM =
 export async function classifyProductCategory(name: string): Promise<string | null> {
   const clean = name.trim().slice(0, 200)
   if (!clean) return null
-  const res = await chatCompletion({
+  const text = await chatTextWithFallback({
     system: SYSTEM,
     user: `Product: ${clean}`,
     maxTokens: 16,
     temperature: 0,
   })
-  return res ? pickCategoryId(res.content) : null
+  return pickCategoryId(text)
 }
