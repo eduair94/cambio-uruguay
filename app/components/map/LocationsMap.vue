@@ -81,6 +81,7 @@ let cluster: any = null
 let cashCluster: any = null
 let userMarker: any = null
 let radiusCircle: any = null
+let initStarted = false
 const markersById = new Map<string, any>()
 
 // Stable colour per origin (hash → hue) so each casa is visually distinct.
@@ -116,7 +117,8 @@ function defaultPopup(b: Branch): string {
 }
 
 async function init() {
-  if (!el.value) return
+  if (initStarted || !el.value) return
+  initStarted = true
   L = await import('leaflet')
   await import('leaflet.markercluster')
   await import('leaflet/dist/leaflet.css')
@@ -210,13 +212,18 @@ function focusBranch(id: string) {
 }
 defineExpose({ focusBranch })
 
+// <client-only> renders its default-slot div AFTER this component's onMounted
+// fires, so el.value can still be null here. Watch the ref and init the moment
+// the div attaches; the initStarted guard keeps it to a single run.
 onMounted(init)
+watch(el, () => { if (el.value) init() })
 onBeforeUnmount(() => {
   if (map) { map.remove(); map = null }
   cluster = null
   cashCluster = null
   userMarker = null
   radiusCircle = null
+  initStarted = false
   markersById.clear()
 })
 
