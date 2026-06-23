@@ -1,4 +1,43 @@
 {
+  "estado": {
+    "nav": "Estado",
+    "title": "Estado de los scrapers",
+    "subtitle": "Monitor en vivo de qué casas de cambio estamos recolectando correctamente.",
+    "operational": "{n} de {total} operativos",
+    "updated": "Última recolección",
+    "minutesAgo": "hace {n} min",
+    "loadError": "No pudimos cargar el estado en este momento.",
+    "insights": "Análisis",
+    "usdMedian": "Mediana USD (venta)",
+    "usdRange": "Rango USD (venta)",
+    "bestBuy": "Mejor para comprar USD",
+    "bestSell": "Mejor para vender USD",
+    "avgDuration": "Duración media",
+    "outliers": "Valores atípicos (USD)",
+    "issuesHeading": "Problemas detectados",
+    "allGood": "Todos los scrapers funcionando",
+    "colCasa": "Casa de cambio",
+    "colStatus": "Estado",
+    "colCurrencies": "Monedas",
+    "colUsd": "USD compra/venta",
+    "colDuration": "Duración",
+    "status": {
+      "live": "En vivo",
+      "stale": "Desactualizado",
+      "silent": "Sin datos",
+      "error": "Con error"
+    },
+    "statusDesc": {
+      "live": "Datos frescos hoy",
+      "stale": "No se actualizó hoy",
+      "silent": "Corrió pero sin filas",
+      "error": "Falló al ejecutarse"
+    },
+    "methodologyHeading": "Cómo lo medimos",
+    "methodologyText": "Cruzamos tres señales del API: si el scraper corrió sin errores, si realmente devolvió cotizaciones de hoy, y la marca de tiempo de cada fila. Así distinguimos un fallo evidente (error de ejecución) de uno silencioso (corrió pero no extrajo datos, p. ej. un sitio que cambió su estructura).",
+    "seoTitle": "Estado de los scrapers de casas de cambio | Cambio Uruguay",
+    "seoDescription": "Monitor en vivo del estado de recolección de cotizaciones de cada casa de cambio en Uruguay: cuáles funcionan, cuáles fallan y análisis del mercado USD."
+  },
   "newsletter": {
     "nav": "Newsletter",
     "title": "Newsletter del dólar",
@@ -415,6 +454,26 @@
     "channel": "Canal de Telegram",
     "discord": "Discord",
     "mcp": "Asistentes IA (MCP)"
+  },
+  "dev": {
+    "nav": "Desarrolladores",
+    "title": "Desarrolladores",
+    "subtitle": "Cambio Uruguay es open source. Acá está todo lo que necesitás para construir sobre nuestros datos: el código en GitHub, la API pública con su referencia OpenAPI, el servidor MCP y cómo levantar el proyecto localmente.",
+    "openSource": "Código abierto",
+    "openSourceText": "Todo el código del sitio y la API está publicado en GitHub. Forkealo, abrí issues o mandá un pull request.",
+    "viewOnGithub": "Ver en GitHub",
+    "reportIssue": "Reportar un problema",
+    "api": "API pública",
+    "apiText": "REST, gratuita y sin autenticación. Base URL y documento OpenAPI 3.1 listo para importar a Postman, Insomnia o generadores de código.",
+    "openapiJson": "openapi.json",
+    "copyUrl": "Copiar URL",
+    "copied": "¡Copiado!",
+    "runLocally": "Correr localmente",
+    "runLocallyText": "Cloná el repo y levantá la API y la app en minutos.",
+    "mcp": "Servidor MCP",
+    "mcpText": "Usá las cotizaciones desde Claude, Cursor y otros asistentes IA. Pegá esta configuración en tu cliente MCP.",
+    "reference": "Referencia de la API",
+    "referenceText": "Explorá todos los endpoints, parámetros y respuestas. Probalos directamente desde acá."
   },
   "conectar": {
     "nav": "Conectar",

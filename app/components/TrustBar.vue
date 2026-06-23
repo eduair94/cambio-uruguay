@@ -113,4 +113,20 @@ const bcuUrl = 'https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/casas_c
     padding: 0.35rem 0.7rem;
   }
 }
+
+/* Light theme: pills were authored white-on-glass for the dark hero, which is
+   invisible on the light canvas. Re-skin to dark ink on a faint solid surface
+   with a hairline border (matches the home page light overrides). */
+.v-theme--light .trust-pill__link,
+.v-theme--light .trust-pill--static {
+  color: #16233b;
+  background: rgba(255, 255, 255, 0.72);
+  border-color: rgba(15, 23, 42, 0.12);
+}
+
+.v-theme--light .trust-pill__link:hover,
+.v-theme--light .trust-pill__link:focus-visible {
+  background: #ffffff;
+  border-color: rgba(37, 99, 235, 0.4);
+}
 </style>

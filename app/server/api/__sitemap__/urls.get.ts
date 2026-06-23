@@ -135,11 +135,13 @@ export default defineEventHandler(async _event => {
     addUrlsForAllLocales('/cotizacion', 0.8, 'hourly', today) // All-currencies cotización hub
     addUrlsForAllLocales('/indicadores', 0.8, 'daily', today) // Economic indicators hub (UI, UR, BPC)
     addUrlsForAllLocales('/blog', 0.8, 'daily') // AI daily blog hub
+    addUrlsForAllLocales('/estado', 0.6, 'daily', today) // Scraper health dashboard
     addUrlsForAllLocales('/acerca', 0.6, 'monthly') // Methodology / about page
     addUrlsForAllLocales('/privacidad', 0.4, 'yearly') // Privacy policy
     addUrlsForAllLocales('/terminos', 0.4, 'yearly') // Terms of use
     addUrlsForAllLocales('/contacto', 0.5, 'monthly') // Contact
     addUrlsForAllLocales('/conectar', 0.6, 'monthly') // Channels hub (API, MCP, Telegram, Discord, newsletter)
+    addUrlsForAllLocales('/desarrolladores', 0.6, 'monthly') // Developer portal (Scalar API reference + open source)
     addUrlsForAllLocales('/offline', 0.3, 'monthly') // Offline page
 
     // Add /guias/:slug editorial guide routes for all locales

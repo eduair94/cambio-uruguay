@@ -45,7 +45,7 @@
         </VCol>
       </VRow>
 
-      <section class="mb-8">
+      <section class="mt-10 mb-8">
         <h2 class="text-h6 font-weight-bold mb-4 d-flex align-center">
           <VIcon start color="primary">mdi-frequently-asked-questions</VIcon>
           Preguntas frecuentes sobre los indicadores

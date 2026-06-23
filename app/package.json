@@ -29,6 +29,7 @@
     "@nuxtjs/seo": "^3.0.3",
     "@nuxtjs/sitemap": "^7.4.0",
     "@pinia/nuxt": "^0.11.1",
+    "@scalar/nuxt": "^0.6.48",
     "@sentry/nuxt": "^8.40.0",
     "@types/leaflet": "^1.9.18",
     "@types/nodemailer": "^8.0.1",

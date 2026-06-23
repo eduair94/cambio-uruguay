@@ -183,8 +183,12 @@ export default defineNuxtPlugin(nuxtApp => {
             secondary: colors.amber.darken4,
             info: colors.teal.darken1,
             warning: colors.amber.darken3,
-            error: colors.deepOrange.darken1,
-            success: colors.green.darken2,
+            // Darkened vs the dark-theme tokens so they clear AA (4.5:1) when used
+            // as filled chips/badges (white text auto-picked) AND as colored text
+            // on white (.text-error etc). darken1 deep-orange (#F4511E, 3.47) and
+            // darken2 green (#388E3C, 4.11) both failed on /estado status chips.
+            error: colors.deepOrange.darken4,
+            success: colors.green.darken3,
             // Darker blue so links clear AA (4.5:1) on white/light surfaces.
             link: '#1565c0',
           },

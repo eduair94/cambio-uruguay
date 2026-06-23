@@ -4,7 +4,9 @@ import { CambioObj } from "../../interfaces/Cambio";
 import { Cambio } from "../cambio";
 
 class CambioYoung extends Cambio {
-  name = "Cambio Young";
+  // The business brands itself "Young en Cambio" (legal: Young en Cambio S.A.),
+  // not "Cambio Young" — see youngencambio.com.
+  name = "Young en Cambio";
   bcu = "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2369";
   private conversions = {
     "DOLAR USA": {

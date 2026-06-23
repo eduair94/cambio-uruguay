@@ -2,7 +2,7 @@ import { CambioObj } from "../../interfaces/Cambio";
 import { Cambio } from "../cambio";
 
 class CambioRomantico extends Cambio {
-  name = "Cambio Romantico";
+  name = "Cambio Romántico";
   bcu = "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2474";
   website = "https://www.cambioromantico.com/";
   favicon = "https://www.cambioromantico.com/";

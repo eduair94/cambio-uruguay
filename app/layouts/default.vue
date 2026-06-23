@@ -392,6 +392,7 @@ const moreNav: NavItem[] = [
   { to: '/cotizacion', icon: 'mdi-cash-multiple', label: 'Cotizaciones', raw: true },
   { to: '/indicadores', icon: 'mdi-finance', label: 'Indicadores', raw: true },
   { to: '/blog', icon: 'mdi-newspaper-variant-multiple', label: 'Blog', raw: true },
+  { to: '/estado', icon: 'mdi-heart-pulse', label: 'estado.nav' },
   { to: '/acerca', icon: 'mdi-information-outline', label: 'acerca.nav' },
   { to: '/conectar', icon: 'mdi-connection', label: 'conectar.nav' },
   { href: 'https://ko-fi.com/cambio_uruguay', icon: 'mdi-heart', label: 'donar' },
@@ -570,9 +571,9 @@ useHead({
 /* Navigation Button Styles — compact so the full bar fits from the lg
    breakpoint (1280px) without colliding with the account/language cluster. */
 .nav-btn {
-  margin: 0 1px;
+  margin: 0 4px;
   min-width: 0;
-  padding-inline: 10px;
+  padding-inline: 14px;
   border-radius: 10px;
   font-weight: 600;
   letter-spacing: 0.01em;
@@ -584,7 +585,7 @@ useHead({
 
 /* Tighten the leading icon's gap inside nav buttons to reclaim width. */
 .primary-nav .nav-btn :deep(.v-btn__prepend) {
-  margin-inline-end: 4px;
+  margin-inline-end: 6px;
 }
 
 .nav-btn:hover {

@@ -1,4 +1,43 @@
 {
+  "estado": {
+    "nav": "Status",
+    "title": "Scraper status",
+    "subtitle": "Live monitor of which exchange houses we are collecting correctly.",
+    "operational": "{n} of {total} operational",
+    "updated": "Last collection",
+    "minutesAgo": "{n} min ago",
+    "loadError": "We couldn't load the status right now.",
+    "insights": "Insights",
+    "usdMedian": "USD median (sell)",
+    "usdRange": "USD range (sell)",
+    "bestBuy": "Best to buy USD",
+    "bestSell": "Best to sell USD",
+    "avgDuration": "Average duration",
+    "outliers": "Outliers (USD)",
+    "issuesHeading": "Detected issues",
+    "allGood": "All scrapers working",
+    "colCasa": "Exchange house",
+    "colStatus": "Status",
+    "colCurrencies": "Currencies",
+    "colUsd": "USD buy/sell",
+    "colDuration": "Duration",
+    "status": {
+      "live": "Live",
+      "stale": "Stale",
+      "silent": "No data",
+      "error": "Error"
+    },
+    "statusDesc": {
+      "live": "Fresh data today",
+      "stale": "Not updated today",
+      "silent": "Ran but no rows",
+      "error": "Failed to run"
+    },
+    "methodologyHeading": "How we measure it",
+    "methodologyText": "We cross three API signals: whether the scraper ran without errors, whether it actually returned today's quotes, and each row's timestamp. That lets us tell a hard failure (a run error) from a silent one (ran but parsed nothing, e.g. a site that changed its structure).",
+    "seoTitle": "Exchange house scraper status | Cambio Uruguay",
+    "seoDescription": "Live monitor of quote-collection status for every exchange house in Uruguay: which work, which fail, plus USD market insights."
+  },
   "newsletter": {
     "nav": "Newsletter",
     "title": "Dollar newsletter",
@@ -412,6 +451,26 @@
     "channel": "Telegram channel",
     "discord": "Discord",
     "mcp": "AI assistants (MCP)"
+  },
+  "dev": {
+    "nav": "Developers",
+    "title": "Developers",
+    "subtitle": "Cambio Uruguay is open source. Here's everything you need to build on our data: the code on GitHub, the public API with its OpenAPI reference, the MCP server, and how to run the project locally.",
+    "openSource": "Open source",
+    "openSourceText": "All of the site and API code is published on GitHub. Fork it, open issues, or send a pull request.",
+    "viewOnGithub": "View on GitHub",
+    "reportIssue": "Report an issue",
+    "api": "Public API",
+    "apiText": "REST, free, no authentication. Base URL and an OpenAPI 3.1 document ready to import into Postman, Insomnia or code generators.",
+    "openapiJson": "openapi.json",
+    "copyUrl": "Copy URL",
+    "copied": "Copied!",
+    "runLocally": "Run locally",
+    "runLocallyText": "Clone the repo and spin up the API and the app in minutes.",
+    "mcp": "MCP server",
+    "mcpText": "Use the rates from Claude, Cursor and other AI assistants. Paste this config into your MCP client.",
+    "reference": "API reference",
+    "referenceText": "Browse every endpoint, parameter and response — and try them right here."
   },
   "conectar": {
     "nav": "Connect",

@@ -197,6 +197,11 @@ export default defineNuxtConfig({
         'Content-Security-Policy': 'frame-ancestors *',
       },
     },
+    // Scalar's standalone reference (the @scalar/nuxt module always mounts one).
+    // @scalar/api-reference can't be imported under Node SSR (web-worker shim),
+    // so render it client-side only. It's robots-disallowed; the canonical,
+    // SSR-chromed entry point is /desarrolladores.
+    '/api-reference': { ssr: false },
     '/_nuxt/**': {
       headers: { 'cache-control': 'max-age=31536000, immutable' },
     },
@@ -290,6 +295,10 @@ export default defineNuxtConfig({
     '@nuxtjs/sitemap',
     '@pinia/nuxt',
     '@nuxtjs/robots',
+    // Scalar API reference. We do NOT use its standalone route — the
+    // `ScalarApiReference` component is embedded inside /desarrolladores so the
+    // site chrome + a custom dev-hub header wrap the docs. See that page.
+    '@scalar/nuxt',
     [
       '@nuxtjs/google-fonts',
       {
@@ -476,7 +485,7 @@ export default defineNuxtConfig({
 
   // Robots Configuration
   robots: {
-    disallow: ['/admin/', '/server/', '/_nuxt/'],
+    disallow: ['/admin/', '/server/', '/_nuxt/', '/api-reference'],
     allow: [
       '/',
       '/avanzado',
@@ -495,6 +504,7 @@ export default defineNuxtConfig({
       '/blog',
       '/acerca',
       '/conectar',
+      '/desarrolladores',
     ],
     // Explicitly welcome AI search/answer crawlers so the site can be cited by
     // Google AI Overviews/Gemini, ChatGPT Search, Perplexity and Claude. These
@@ -527,6 +537,17 @@ export default defineNuxtConfig({
   // Sitemap Configuration
   sitemap: {
     sources: ['/api/__sitemap__/urls'],
+  },
+
+  // Scalar API reference. The module always registers one standalone page; we
+  // park it at /api-reference (full-screen docs of /openapi.json) and rely on
+  // the embedded <ScalarApiReference> on /desarrolladores as the canonical,
+  // site-chromed entry point. /api-reference is robots-disallowed below to
+  // avoid duplicate-content indexing.
+  scalar: {
+    url: '/openapi.json',
+    darkMode: true,
+    pathRouting: { basePath: '/api-reference' },
   },
 
   // OG image generation (nuxt-og-image, bundled with @nuxtjs/seo).

@@ -1,4 +1,43 @@
 {
+  "estado": {
+    "nav": "Status",
+    "title": "Status dos scrapers",
+    "subtitle": "Monitor ao vivo de quais casas de câmbio estamos coletando corretamente.",
+    "operational": "{n} de {total} operacionais",
+    "updated": "Última coleta",
+    "minutesAgo": "há {n} min",
+    "loadError": "Não foi possível carregar o status agora.",
+    "insights": "Análises",
+    "usdMedian": "Mediana USD (venda)",
+    "usdRange": "Faixa USD (venda)",
+    "bestBuy": "Melhor para comprar USD",
+    "bestSell": "Melhor para vender USD",
+    "avgDuration": "Duração média",
+    "outliers": "Valores atípicos (USD)",
+    "issuesHeading": "Problemas detectados",
+    "allGood": "Todos os scrapers funcionando",
+    "colCasa": "Casa de câmbio",
+    "colStatus": "Status",
+    "colCurrencies": "Moedas",
+    "colUsd": "USD compra/venda",
+    "colDuration": "Duração",
+    "status": {
+      "live": "Ao vivo",
+      "stale": "Desatualizado",
+      "silent": "Sem dados",
+      "error": "Com erro"
+    },
+    "statusDesc": {
+      "live": "Dados frescos hoje",
+      "stale": "Não atualizado hoje",
+      "silent": "Rodou mas sem linhas",
+      "error": "Falhou ao executar"
+    },
+    "methodologyHeading": "Como medimos",
+    "methodologyText": "Cruzamos três sinais da API: se o scraper rodou sem erros, se realmente retornou cotações de hoje, e o carimbo de data/hora de cada linha. Assim distinguimos uma falha evidente (erro de execução) de uma silenciosa (rodou mas não extraiu dados, ex.: um site que mudou sua estrutura).",
+    "seoTitle": "Status dos scrapers de casas de câmbio | Cambio Uruguay",
+    "seoDescription": "Monitor ao vivo do status de coleta de cotações de cada casa de câmbio no Uruguai: quais funcionam, quais falham e análises do mercado USD."
+  },
   "newsletter": {
     "nav": "Newsletter",
     "title": "Newsletter do dólar",
@@ -407,6 +446,26 @@
     "channel": "Canal do Telegram",
     "discord": "Discord",
     "mcp": "Assistentes de IA (MCP)"
+  },
+  "dev": {
+    "nav": "Desenvolvedores",
+    "title": "Desenvolvedores",
+    "subtitle": "O Cambio Uruguay é open source. Aqui está tudo o que você precisa para construir sobre nossos dados: o código no GitHub, a API pública com sua referência OpenAPI, o servidor MCP e como rodar o projeto localmente.",
+    "openSource": "Código aberto",
+    "openSourceText": "Todo o código do site e da API está publicado no GitHub. Faça um fork, abra issues ou envie um pull request.",
+    "viewOnGithub": "Ver no GitHub",
+    "reportIssue": "Relatar um problema",
+    "api": "API pública",
+    "apiText": "REST, gratuita e sem autenticação. URL base e um documento OpenAPI 3.1 pronto para importar no Postman, Insomnia ou geradores de código.",
+    "openapiJson": "openapi.json",
+    "copyUrl": "Copiar URL",
+    "copied": "Copiado!",
+    "runLocally": "Rodar localmente",
+    "runLocallyText": "Clone o repo e suba a API e o app em minutos.",
+    "mcp": "Servidor MCP",
+    "mcpText": "Use as cotações no Claude, Cursor e outros assistentes de IA. Cole esta configuração no seu cliente MCP.",
+    "reference": "Referência da API",
+    "referenceText": "Explore todos os endpoints, parâmetros e respostas — e teste aqui mesmo."
   },
   "conectar": {
     "nav": "Conectar",

@@ -21,11 +21,9 @@
           <VDivider vertical class="mx-2" />
 
           <VBtn
-            href="https://api.cambio-uruguay.com/api-docs"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Documentación de la API"
-            title="Documentación de la API"
+            :to="localePath('/desarrolladores')"
+            :aria-label="$t('dev.title')"
+            :title="$t('dev.title')"
             icon
             size="small"
             variant="text"
@@ -159,6 +157,9 @@
           <NuxtLink :to="localePath('/blog')" class="footer-link text-caption"> Blog </NuxtLink>
           <NuxtLink :to="localePath('/conectar')" class="footer-link text-caption">
             {{ $t('conectar.nav') }}
+          </NuxtLink>
+          <NuxtLink :to="localePath('/desarrolladores')" class="footer-link text-caption">
+            {{ $t('dev.nav') }}
           </NuxtLink>
           <NuxtLink :to="localePath('/newsletter')" class="footer-link text-caption">
             {{ $t('newsletter.nav') }}

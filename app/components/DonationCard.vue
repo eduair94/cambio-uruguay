@@ -156,6 +156,24 @@ onMounted(() => {
   backdrop-filter: blur(10px);
   transition: all 0.3s ease;
   border-radius: 12px;
+  /* Surface is hardcoded dark in both themes, so pin text light. Otherwise in
+     light mode Vuetify's VCard sets near-black on-surface ink and the un-classed
+     title renders black-on-dark (illegible). */
+  color: rgba(255, 255, 255, 0.92);
+}
+
+/* Title inherits the card color; keep it explicitly light regardless of theme. */
+.donation-header span {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+/* The secondary text + reviews link used Vuetify `text-grey-lighten-*` utilities,
+   which don't resolve to a light value here (palette utility absent / the <a>'s
+   link cascade wins) — the reviews link came out near-black on the dark card.
+   Pin them light explicitly so they never depend on the theme/utility palette. */
+.donation-content p,
+.donation-content a {
+  color: rgba(255, 255, 255, 0.78) !important;
 }
 
 /* Side positioning modifiers */

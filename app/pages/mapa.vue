@@ -24,8 +24,8 @@
           hide-details
         />
       </v-col>
-      <v-col cols="12" sm="6" md="3">
-        <div class="px-1">
+      <v-col cols="12" sm="6" md="3" class="d-flex align-center">
+        <div class="px-1 flex-grow-1">
           <span class="text-caption">{{ t('map.radius') }}: {{ radiusKm }} km</span>
           <v-slider
             v-model="radiusKm"
@@ -55,7 +55,14 @@
       </v-col>
     </v-row>
 
-    <v-alert v-if="geoError" type="warning" density="compact" class="mb-2" closable @click:close="geoError = ''">
+    <v-alert
+      v-if="geoError"
+      type="warning"
+      density="compact"
+      class="mb-2"
+      closable
+      @click:close="geoError = ''"
+    >
       {{ geoError }}
     </v-alert>
 
@@ -91,7 +98,7 @@
                   <span class="rank-num">{{ i + 1 }}</span>
                 </template>
                 <v-list-item-title>
-                  {{ nameFor(r.branch.origin) }} — {{ formatRate(r.rate) }}
+                  {{ nameFor(r.branch) }} — {{ formatRate(r.rate) }}
                 </v-list-item-title>
                 <v-list-item-subtitle>
                   {{ r.branch.locality }} · {{ r.distanceKm.toFixed(1) }} km
@@ -153,11 +160,21 @@ const directionItems = computed(() => [
 
 const ranked = computed(() => {
   if (!userLocation.value) return []
-  return rankNearby(branches.value, ratesByOrigin.value, userLocation.value, radiusKm.value, currency.value, direction.value)
+  return rankNearby(
+    branches.value,
+    ratesByOrigin.value,
+    userLocation.value,
+    radiusKm.value,
+    currency.value,
+    direction.value
+  )
 })
 
-function nameFor(origin: string): string {
-  return localData.value[origin]?.name || origin
+// Real casa name: canonical localData name first, then the branch's own name
+// (OSM/web extras carry it, and casas absent from localData still have one),
+// only falling back to the origin slug as a last resort.
+function nameFor(branch: { origin: string; name?: string }): string {
+  return localData.value[branch.origin]?.name || branch.name || branch.origin
 }
 function formatRate(n: number): string {
   return new Intl.NumberFormat(locale.value, { maximumFractionDigits: 2 }).format(n)
@@ -165,7 +182,10 @@ function formatRate(n: number): string {
 function popupFor(b: any): string {
   const rate = ratesByOrigin.value[b.origin]?.[currency.value]
   const esc = (s: string) =>
-    String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string))
+    String(s).replace(
+      /[&<>"]/g,
+      c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] as string
+    )
   const rawDir =
     b.mapUrl && /^https?:\/\//i.test(b.mapUrl)
       ? b.mapUrl
@@ -174,10 +194,12 @@ function popupFor(b: any): string {
   const rateLine = rate
     ? `<br>${esc(currency.value)}: ${t('compra')} ${rate.buy ?? '—'} / ${t('venta')} ${rate.sell ?? '—'}`
     : ''
-  return `<strong>${esc(nameFor(b.origin))}</strong><br>${esc(b.address)}<br>${esc(b.locality)}, ${esc(b.dept)}` +
+  return (
+    `<strong>${esc(nameFor(b))}</strong><br>${esc(b.address)}<br>${esc(b.locality)}, ${esc(b.dept)}` +
     (b.hours ? `<br><em>${esc(b.hours)}</em>` : '') +
     rateLine +
     `<br><a href="${dir}" target="_blank" rel="noopener">${t('map.directions')} →</a>`
+  )
 }
 
 onMounted(() => {
@@ -207,7 +229,7 @@ function locate() {
   }
   locating.value = true
   navigator.geolocation.getCurrentPosition(
-    (pos) => {
+    pos => {
       userLocation.value = { lat: pos.coords.latitude, lng: pos.coords.longitude }
       locating.value = false
     },
@@ -227,7 +249,7 @@ const { data } = await useLazyAsyncData('mapa-data', async () => {
 })
 watch(
   data,
-  (d) => {
+  d => {
     if (!d) return
     branches.value = d.locs || []
     ratesByOrigin.value = buildRatesByOrigin((d.processed?.exchangeData || []) as any[])

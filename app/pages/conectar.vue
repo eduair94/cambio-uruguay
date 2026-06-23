@@ -72,13 +72,7 @@ const cards = computed<ChannelCard[]>(() => [
     color: 'indigo',
     title: t('conectar.api'),
     text: t('conectar.apiText'),
-    actions: [
-      {
-        href: 'https://api.cambio-uruguay.com/api-docs',
-        label: t('conectar.open'),
-        icon: 'mdi-open-in-new',
-      },
-    ],
+    actions: [{ to: localePath('/desarrolladores'), label: t('conectar.open'), icon: 'mdi-api' }],
   },
   {
     key: 'mcp',

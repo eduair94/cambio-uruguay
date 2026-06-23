@@ -76,7 +76,12 @@ export default {
     createChart() {
       this.destroyChart() // Ensure cleanup before creating new chart
 
-      const ctx = this.$refs.chartCanvas.getContext('2d')
+      // Canvas can be gone if the component unmounted between tick and render
+      // (e.g. a dev HMR reload, or a fast key change). Bail instead of throwing.
+      const canvas = this.$refs.chartCanvas
+      if (!canvas) return
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return
       this.chart = new ChartJS(ctx, {
         type: 'line',
         data: this.chartData,

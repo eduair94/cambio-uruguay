@@ -22,7 +22,7 @@
 
           <!-- Controls -->
           <v-card-text>
-            <v-row align="center">
+            <v-row align="start">
               <v-col cols="12" md="4">
                 <v-autocomplete
                   v-model="selectedCurrency"
@@ -196,6 +196,8 @@ const { t, locale } = useI18n()
 const localePath = useLocalePath()
 const { smAndDown } = useDisplay()
 const { getEvolutionData, getProcessedExchangeData } = useApiService()
+const route = useRoute()
+const router = useRouter()
 
 const MAX_HOUSES = 4
 
@@ -218,12 +220,39 @@ interface ExchangeRow {
   localData?: { name?: string } | null
 }
 
-// State
-const selectedCurrency = ref('USD')
-const selectedOrigins = ref<string[]>([])
-const priceKind = ref<PriceKind>('sell')
+// State — seeded from the URL query so a shared/reloaded link restores the view.
+const parseOriginsParam = (raw: unknown): string[] => {
+  if (typeof raw !== 'string' || !raw) return []
+  return [
+    ...new Set(
+      raw
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean)
+    ),
+  ].slice(0, MAX_HOUSES)
+}
+const firstQueryValue = (raw: unknown): string =>
+  Array.isArray(raw) ? (raw[0] ?? '') : typeof raw === 'string' ? raw : ''
+
+const selectedCurrency = ref(firstQueryValue(route.query.moneda) || 'USD')
+const selectedOrigins = ref<string[]>(parseOriginsParam(route.query.casas))
+const priceKind = ref<PriceKind>(firstQueryValue(route.query.tipo) === 'buy' ? 'buy' : 'sell')
 
 const tooManyHouses = computed(() => selectedOrigins.value.length > MAX_HOUSES)
+
+// Mirror the current selection into the URL (replace, so it doesn't spam history).
+// Client-only: the watcher is non-immediate, so SSR setup never redirects.
+watch([selectedCurrency, selectedOrigins, priceKind], () => {
+  router.replace({
+    query: {
+      ...route.query,
+      moneda: selectedCurrency.value,
+      casas: selectedOrigins.value.length ? selectedOrigins.value.join(',') : undefined,
+      tipo: priceKind.value,
+    },
+  })
+})
 
 // --- Source data: the list of houses + the currencies they quote -------------
 const { data: houseData } = await useAsyncData('compare-houses', async () => {
@@ -262,7 +291,12 @@ const evolutionKey = computed(
   () => `compare-evo-${selectedCurrency.value}-${[...selectedOrigins.value].sort().join(',')}`
 )
 
-const { data: evolutions, pending: loading } = await useLazyAsyncData<EvolutionResponse[]>(
+// NOT lazy on purpose: a shared/reloaded link carries the houses in the query,
+// so we want the series resolved during SSR. That way the chart branch hydrates
+// directly instead of flickering loading→chart on the client — the latter leaves
+// the <ClientOnly> chart wrapper stuck on its fallback spinner. With no houses
+// selected the handler returns [] instantly, so the default page stays fast.
+const { data: evolutions, pending: loading } = await useAsyncData<EvolutionResponse[]>(
   'compare-evolutions',
   async () => {
     const origins = selectedOrigins.value.slice(0, MAX_HOUSES)
