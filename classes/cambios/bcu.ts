@@ -1,6 +1,7 @@
 import axios from "axios";
 import { load } from "cheerio";
 import { CambioObj } from "../../interfaces/Cambio";
+import { fetchCurrentCotizaciones } from "../bcu_soap";
 import { Cambio } from "../cambio";
 class CambioBCU extends Cambio {
   name = "Banco Central del Uruguay";
@@ -49,6 +50,27 @@ class CambioBCU extends Cambio {
   };
 
   async get_data(): Promise<CambioObj[]> {
+    // SOAP is the primary source: it's a stable API, immune to the HTML redesigns
+    // that have silently broken the scrape before. Fall back to the HTML page only
+    // if SOAP fails or returns nothing.
+    try {
+      const quotes = await fetchCurrentCotizaciones();
+      if (quotes.length > 0) {
+        return quotes.map((q) => ({
+          code: q.code,
+          type: q.type,
+          name: q.name,
+          buy: q.buy,
+          sell: q.sell,
+        }));
+      }
+    } catch (e) {
+      console.error("BCU SOAP failed, falling back to HTML scrape:", (e as Error).message);
+    }
+    return this.get_data_html();
+  }
+
+  async get_data_html(): Promise<CambioObj[]> {
     const web_data = await axios.get(this.website).then((res) => res.data);
     const $ = load(web_data);
     // 2025 redesign: rows live in tbody[id*='lstCotizaciones'] with class-based cells
