@@ -84,7 +84,7 @@ const cards = computed<ChannelCard[]>(() => [
   },
   {
     key: 'bot',
-    icon: 'mdi-telegram',
+    icon: '$telegram',
     color: 'info',
     title: t('conectar.botTitle'),
     text: t('conectar.botText'),
@@ -108,7 +108,7 @@ const cards = computed<ChannelCard[]>(() => [
   },
   {
     key: 'discord',
-    icon: 'mdi-discord',
+    icon: '$discord',
     color: 'deep-purple-accent-3',
     title: t('conectar.discord'),
     text: t('conectar.discordText'),

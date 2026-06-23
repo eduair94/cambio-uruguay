@@ -59,7 +59,7 @@
             variant="text"
             color="white"
           >
-            <VIcon>mdi-telegram</VIcon>
+            <VIcon>$telegram</VIcon>
           </VBtn>
 
           <VBtn
@@ -97,7 +97,7 @@
             variant="text"
             color="white"
           >
-            <VIcon>mdi-discord</VIcon>
+            <VIcon>$discord</VIcon>
           </VBtn>
 
           <VBtn
@@ -228,10 +228,23 @@ const reopenConsent = () => reopen()
 </script>
 
 <style lang="scss" scoped>
+// Footer is a fixed dark brand band. Pin the navy background in BOTH themes so
+// the white text/icons stay legible — in light mode VFooter would otherwise
+// inherit the white `surface` token and render white-on-white (unreadable).
+.v-footer {
+  background-color: #0a0e1a;
+  color: #fff;
+}
+
 .footer_content {
   width: 100%;
   align-items: center;
   padding: 16px;
+
+  // Credit links use Vuetify-2 `white--text` (no-op in Vuetify 3); force white.
+  a {
+    color: #fff;
+  }
 }
 
 .footer-link {

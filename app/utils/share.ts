@@ -34,6 +34,6 @@ export const SHARE_NETWORKS: ReadonlyArray<{
 }> = [
   { id: 'whatsapp', labelKey: 'share.whatsapp', icon: 'mdi-whatsapp', color: '#25D366' },
   { id: 'twitter', labelKey: 'share.twitter', icon: 'mdi-twitter', color: '#1DA1F2' },
-  { id: 'telegram', labelKey: 'share.telegram', icon: 'mdi-telegram', color: '#229ED9' },
+  { id: 'telegram', labelKey: 'share.telegram', icon: '$telegram', color: '#229ED9' },
   { id: 'facebook', labelKey: 'share.facebook', icon: 'mdi-facebook', color: '#1877F2' },
 ]

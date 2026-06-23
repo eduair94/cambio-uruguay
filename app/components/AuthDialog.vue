@@ -23,7 +23,7 @@
           block
           variant="flat"
           class="mb-4 discord-btn"
-          prepend-icon="mdi-discord"
+          prepend-icon="$discord"
           @click="goDiscord"
         >
           {{ $t('auth.continueDiscord') }}

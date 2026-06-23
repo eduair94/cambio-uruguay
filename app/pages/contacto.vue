@@ -51,7 +51,7 @@ const { t, locale } = useI18n()
 
 const socials = [
   { label: 'Twitter / X', icon: 'mdi-twitter', href: 'https://twitter.com/cambio_uruguay' },
-  { label: 'Telegram', icon: 'mdi-telegram', href: 'https://t.me/cambio_uruguay' },
+  { label: 'Telegram', icon: '$telegram', href: 'https://t.me/cambio_uruguay' },
   {
     label: 'LinkedIn',
     icon: 'mdi-linkedin',
