@@ -89,7 +89,9 @@ export default {
       })
     },
     updateChart() {
-      if (this.chart) {
+      // Skip if the chart was torn down (or its canvas context is gone): drawing
+      // against a destroyed chart dereferences a null ctx and throws.
+      if (this.chart && this.chart.ctx) {
         // Update data without triggering watchers
         this.chart.data = this.chartData
         this.chart.update('none') // Use 'none' mode to prevent animations and reduce triggers

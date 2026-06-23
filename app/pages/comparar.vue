@@ -354,6 +354,13 @@ const chartKey = computed(
 const chartOptions = computed(() => ({
   responsive: true,
   maintainAspectRatio: false,
+  // No entrance animation. The chart unmounts/remounts on every selection change
+  // (the `loading` branch swaps it out during each refetch), so an in-flight
+  // animation frame can outlive its chart — Chart.js's Animator then calls
+  // ctx.save() on the destroyed chart's nulled context and throws, leaving the
+  // canvas blank until a reload. Updates already use update('none'); disabling
+  // the create animation removes the Animator path entirely.
+  animation: false as const,
   interaction: { mode: 'index' as const, intersect: false },
   plugins: {
     legend: {

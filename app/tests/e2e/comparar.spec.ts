@@ -8,6 +8,17 @@ test.describe('compare exchange houses', () => {
   test.setTimeout(120_000)
 
   test('selects a currency + two houses and renders a chart and summary', async ({ page }) => {
+    // Picking houses unmounts/remounts the chart on each refetch. If the chart
+    // animates, an in-flight frame can outlive its destroyed instance and Chart.js
+    // throws "Cannot read properties of null (reading 'save')", leaving the canvas
+    // blank until a reload. Capture page errors so that regression fails the test
+    // (the canvas element stays visible even when the draw crashed).
+    const pageErrors: string[] = []
+    page.on('pageerror', err => pageErrors.push(err.message))
+    page.on('console', msg => {
+      if (msg.type() === 'error') pageErrors.push(msg.text())
+    })
+
     await page.goto('/comparar')
 
     // The page is server-rendered; the H1 should appear quickly.
@@ -46,5 +57,11 @@ test.describe('compare exchange houses', () => {
     await expect(summary).toBeVisible({ timeout: 90_000 })
     const houseCells = summary.getByTestId('compare-summary-house')
     await expect.poll(async () => houseCells.count(), { timeout: 90_000 }).toBeGreaterThanOrEqual(2)
+
+    // The chart must have drawn without a Chart.js lifecycle crash.
+    const chartCrash = pageErrors.filter(m =>
+      /reading 'save'|Cannot read properties of null/.test(m)
+    )
+    expect(chartCrash, `chart draw crashed: ${chartCrash.join(' | ')}`).toEqual([])
   })
 })
