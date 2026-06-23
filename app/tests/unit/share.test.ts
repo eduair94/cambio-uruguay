@@ -44,7 +44,9 @@ describe('SHARE_NETWORKS', () => {
     const ids = SHARE_NETWORKS.map(n => n.id)
     expect(ids).toEqual(['whatsapp', 'twitter', 'telegram', 'facebook'])
     for (const n of SHARE_NETWORKS) {
-      expect(n.icon).toMatch(/^mdi-/)
+      // `mdi-*` font glyphs OR `$alias` custom SVG icons (telegram/discord were
+      // dropped from MDI 7 and re-added as Vuetify aliases).
+      expect(n.icon).toMatch(/^(mdi-|\$)/)
       expect(n.labelKey).toContain('share.')
       expect(typeof n.color).toBe('string')
     }
