@@ -514,6 +514,9 @@ useHead(() => ({
   color: rgba(255, 255, 255, 0.78);
   line-height: 1.6;
 }
+.v-theme--light .prestamos-sources li {
+  color: rgba(0, 0, 0, 0.78);
+}
 
 .prestamos-link,
 .prestamos-sources a {
@@ -544,6 +547,11 @@ useHead(() => ({
   margin: 1px 2px;
   color: rgba(255, 255, 255, 0.75);
   line-height: 1.4;
+}
+.v-theme--light .prestamos-req-chip {
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  color: rgba(0, 0, 0, 0.75);
 }
 
 /* Mobile card layout for the lender comparison (replaces the table < md). */
@@ -581,12 +589,18 @@ useHead(() => ({
   letter-spacing: 0.04em;
   color: rgba(255, 255, 255, 0.5);
 }
+.v-theme--light .lender-specs dt {
+  color: rgba(0, 0, 0, 0.5);
+}
 
 .lender-specs dd {
   margin: 0;
   font-size: 0.9rem;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.85);
+}
+.v-theme--light .lender-specs dd {
+  color: rgba(0, 0, 0, 0.85);
 }
 
 .lender-stars {

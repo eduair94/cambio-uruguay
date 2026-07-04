@@ -262,6 +262,9 @@ useHead({
   margin-bottom: 1rem;
   color: rgba(255, 255, 255, 0.85);
 }
+.v-theme--light .post-body :deep(p) {
+  color: rgba(0, 0, 0, 0.82);
+}
 .post-body :deep(ul),
 .post-body :deep(ol) {
   margin: 0 0 1rem 1.25rem;

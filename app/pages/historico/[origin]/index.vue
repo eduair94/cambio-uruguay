@@ -107,7 +107,7 @@
 
             <!-- Celda de Tipo -->
             <template #item.type="{ item }">
-              <v-chip v-if="item.type" size="small" :color="getTypeColor(item.type)" variant="flat">
+              <v-chip v-if="item.type" size="small" :color="getTypeColor(item.type)" variant="tonal">
                 {{ item.type }}
               </v-chip>
               <span v-else class="text-grey">-</span>
@@ -130,7 +130,7 @@
             <!-- Celda de Spread -->
             <template #item.spread="{ item }">
               <div class="text-right">
-                <v-chip size="small" :color="getSpreadColor(item.spread)" variant="flat">
+                <v-chip size="small" :color="getSpreadColor(item.spread)" variant="tonal">
                   {{ formatNumber(item.spread) }}%
                 </v-chip>
               </div>

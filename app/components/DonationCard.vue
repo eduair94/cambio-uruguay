@@ -176,6 +176,16 @@ onMounted(() => {
   color: rgba(255, 255, 255, 0.78) !important;
 }
 
+/* The card surface is hardcoded dark in BOTH themes, but the global light-mode
+   `text-grey-lighten-*` → dark-ink remap (higher specificity than the rule
+   above) turns the reviews link near-black on the dark card. Re-pin light under
+   the light theme with enough specificity to win. */
+.v-theme--light .donation-content p,
+.v-theme--light .donation-content a,
+.v-theme--light .donation-content a.text-grey-lighten-2 {
+  color: rgba(255, 255, 255, 0.82) !important;
+}
+
 /* Side positioning modifiers */
 .donation-card--right {
   right: 20px;

@@ -273,6 +273,29 @@ useHead({
   font-size: 0.85rem;
 }
 
+.v-theme--light .ai-pulse-content :deep(h1),
+.v-theme--light .ai-pulse-content :deep(h2),
+.v-theme--light .ai-pulse-content :deep(h3) {
+  color: rgba(0, 0, 0, 0.87);
+}
+.v-theme--light .ai-pulse-content :deep(p) {
+  color: rgba(0, 0, 0, 0.82);
+}
+.v-theme--light .ai-pulse-content :deep(strong) {
+  color: rgba(0, 0, 0, 0.87);
+}
+.v-theme--light .ai-pulse-content :deep(em) {
+  color: rgba(0, 0, 0, 0.6);
+}
+.v-theme--light .ai-pulse-content :deep(ul),
+.v-theme--light .ai-pulse-content :deep(ol) {
+  color: rgba(0, 0, 0, 0.82);
+}
+.v-theme--light .ai-pulse-content :deep(th),
+.v-theme--light .ai-pulse-content :deep(td) {
+  border-color: rgba(0, 0, 0, 0.14);
+}
+
 .news-card {
   text-decoration: none;
   transition:

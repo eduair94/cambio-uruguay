@@ -401,6 +401,13 @@ useHead(() => ({
   line-height: 1.6;
 }
 
+.v-theme--light .withdraw-tldr-list li,
+.v-theme--light .withdraw-bullets li,
+.v-theme--light .withdraw-zone-tips li,
+.v-theme--light .withdraw-sources li {
+  color: rgba(0, 0, 0, 0.82);
+}
+
 .withdraw-zone-tips li,
 .withdraw-sources li {
   font-size: 0.9rem;
@@ -427,6 +434,11 @@ useHead(() => ({
   color: #16c784;
   white-space: nowrap;
   font-size: 0.85rem;
+}
+
+/* Bright brand green fails AA (~2:1) on the near-white card in light mode. */
+.v-theme--light .withdraw-net-cap {
+  color: #0b7a4a;
 }
 
 .withdraw-zone {

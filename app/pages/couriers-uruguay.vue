@@ -502,6 +502,12 @@ useHead(() => ({
   white-space: nowrap;
 }
 
+/* Bright brand green (#16c784 ≈ 2:1 on white) fails AA on the near-white mobile
+   card in light mode. Darken to an accessible emerald; dark mode keeps the tone. */
+.v-theme--light .courier-rate {
+  color: #0b7a4a;
+}
+
 .courier-rate small {
   font-weight: 500;
   color: rgba(255, 255, 255, 0.6);
@@ -532,5 +538,24 @@ useHead(() => ({
   display: inline-flex;
   align-items: center;
   gap: 1px;
+}
+
+/* Light-mode text-contrast overrides (dark-first hardcoded whites → black at same alpha). */
+.v-theme--light .couriers-notes li,
+.v-theme--light .couriers-other li,
+.v-theme--light .couriers-sources li {
+  color: rgba(0, 0, 0, 0.78);
+}
+
+.v-theme--light .courier-rate small {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.v-theme--light .courier-specs dt {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.v-theme--light .courier-specs dd {
+  color: rgba(0, 0, 0, 0.85);
 }
 </style>

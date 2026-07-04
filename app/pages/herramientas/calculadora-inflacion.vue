@@ -110,4 +110,13 @@ const faq = [
 ]
 </script>
 
+<style scoped>
+/* Amber `text-warning` (#FF8F00) can't clear AA on the light page even as large
+   text. Darken the "purchasing power" figure in light mode; dark mode keeps the
+   amber warning tone. */
+.v-theme--light .text-warning {
+  color: #c25e00 !important;
+}
+</style>
+
 <!-- Layout primitives shared from ToolShell (.tool-page namespace). -->

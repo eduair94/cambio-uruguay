@@ -156,4 +156,22 @@ const toggleExpanded = () => {
   background: rgba(255, 255, 255, 0.25) !important;
   transform: translateY(-1px);
 }
+
+/* Light mode: the glass chips (white fill + white `textColor` default) are
+   invisible on the light canvas. Re-skin to a faint ink-on-light surface. */
+.v-theme--light :deep(.v-chip) {
+  background: rgba(15, 23, 42, 0.06) !important;
+  border-color: rgba(15, 23, 42, 0.14);
+}
+.v-theme--light :deep(.v-chip:hover) {
+  background: rgba(15, 23, 42, 0.12) !important;
+}
+.v-theme--light :deep(.v-chip .v-chip__content),
+.v-theme--light :deep(.v-chip.text-white),
+.v-theme--light :deep(.v-chip .text-white) {
+  color: rgba(0, 0, 0, 0.82) !important;
+}
+.v-theme--light .toggle-chip:hover {
+  background: rgba(15, 23, 42, 0.1) !important;
+}
 </style>

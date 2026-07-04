@@ -155,7 +155,7 @@
         <v-alert type="error" prominent class="ma-4">
           <h3>{{ $t('errorCargarDatos') }}</h3>
           <p>{{ error.message || error }}</p>
-          <v-btn color="white" variant="text" @click="refresh">
+          <v-btn color="error" variant="text" @click="refresh">
             {{ $t('reintentar') }}
           </v-btn>
         </v-alert>

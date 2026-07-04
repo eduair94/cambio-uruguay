@@ -202,4 +202,11 @@ const formatDistance = (distance: number) => {
     color: white !important;
   }
 }
+
+/* Light mode: the amount chips are tonal/neutral over the white table surface,
+   so forced-white content is unreadable. The chips are pos-1 (green) / last
+   (red) / neutral — dark ink clears AA on every one of those pale tonal fills. */
+.v-theme--light .v-chip .v-chip__content {
+  color: rgba(0, 0, 0, 0.87) !important;
+}
 </style>

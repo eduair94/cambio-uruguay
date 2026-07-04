@@ -217,4 +217,20 @@ useSeoMeta({
 .dev-scalar {
   min-height: 70vh;
 }
+
+/* Scalar's own LIGHT theme uses muted greys (#9ca3af ≈ 2.5:1 on white) for
+   sidebar/secondary labels that fail AA. Darken its muted-text design tokens
+   (they cascade to Scalar's internals) and hard-override the sidebar label
+   class as a fallback in case token names drift between Scalar versions. */
+.v-theme--light .dev-scalar {
+  --scalar-color-2: #4b5563;
+  --scalar-color-3: #5b6472;
+  --scalar-sidebar-color-2: #4b5563;
+  --scalar-color-disabled: #6b7280;
+}
+.v-theme--light .dev-scalar :deep(.text-sidebar-c-2),
+.v-theme--light .dev-scalar :deep(.text-c-2),
+.v-theme--light .dev-scalar :deep(.text-c-3) {
+  color: #4b5563 !important;
+}
 </style>

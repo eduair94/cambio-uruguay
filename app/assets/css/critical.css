@@ -216,6 +216,22 @@ button:focus-visible,
   opacity: 1 !important;
 }
 
+/* Data-table links (casa website, distance, branch-dialog rows) were authored
+   `text-white` for the dark table surface. In light mode the table uses the
+   default white surface (the dark bg is `.v-theme--dark`-scoped), so the white
+   links become invisible (~1.07:1). Re-ink them to the theme link colour. */
+.v-theme--light .money_table a.text-white,
+.v-theme--light .search_exchange a.text-white {
+  color: rgb(var(--v-theme-link)) !important;
+}
+
+/* The inter-bank highlight row keeps a dark purple fill in dark mode; the grey
+   row variants are remapped above but purple was not — tint it light so the
+   row's default dark ink stays legible in light mode. */
+.v-theme--light .bg-purple-darken-4 {
+  background-color: #ece7fb !important;
+}
+
 /* ------------------------------------------------------------------ */
 /* Engagement animations (CSS-only, reduced-motion aware)              */
 /* ------------------------------------------------------------------ */

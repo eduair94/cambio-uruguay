@@ -272,7 +272,7 @@ useHead(() => ({
 }
 
 .tool-aside :deep(a) {
-  color: #64b5f6;
+  color: rgb(var(--v-theme-link));
   font-weight: 600;
   text-decoration: none;
 }
@@ -292,7 +292,7 @@ useHead(() => ({
 }
 
 .sources-list a {
-  color: #64b5f6;
+  color: rgb(var(--v-theme-link));
   text-decoration: none;
 }
 
@@ -304,6 +304,13 @@ useHead(() => ({
   background: rgba(33, 150, 243, 0.1);
   border: 1px solid rgba(33, 150, 243, 0.28);
   border-radius: 12px;
+}
+
+/* Light mode: the aside/section surfaces are near-transparent white overlays
+   that stay pale on the light canvas, so the 0.78-white slot paragraphs are
+   unreadable. Re-ink to a dark muted tone. */
+.v-theme--light .tool-aside :deep(p) {
+  color: rgba(0, 0, 0, 0.78);
 }
 </style>
 
@@ -371,7 +378,7 @@ useHead(() => ({
 
 /* Inline text links inside the calculator card */
 .tool-page .tool-link {
-  color: #64b5f6;
+  color: rgb(var(--v-theme-link));
   font-weight: 600;
   text-decoration: none;
 }

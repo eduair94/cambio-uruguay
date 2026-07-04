@@ -179,6 +179,11 @@ useHead({
   border: 1px solid rgba(33, 150, 243, 0.24);
   border-radius: 10px;
 }
+/* The primary "Ejemplo" overline sits on the pale-blue example card; in light
+   mode #1976d2 on that tint is only 3.95:1. Darken it to clear AA. */
+.v-theme--light .example-box .text-overline {
+  color: #0d47a1 !important;
+}
 .related-box {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
