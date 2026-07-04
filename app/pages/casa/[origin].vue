@@ -190,6 +190,10 @@
                 <v-icon start>mdi-cash-multiple</v-icon>
                 {{ $t('casaPage.ctaDolar') }}
               </v-btn>
+              <v-btn :to="localePath('/casas-de-cambio')" color="secondary" variant="tonal">
+                <v-icon start>mdi-bank</v-icon>
+                {{ $t('casaPage.ctaDirectorio') }}
+              </v-btn>
             </div>
           </v-card>
         </v-col>

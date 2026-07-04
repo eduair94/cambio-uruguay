@@ -129,6 +129,7 @@ export default defineEventHandler(async _event => {
     addUrlsForAllLocales('/guias', 0.7, 'weekly') // Editorial guides hub
     addUrlsForAllLocales('/herramientas', 0.8, 'weekly') // Tools / calculators hub
     addUrlsForAllLocales('/couriers-uruguay', 0.7, 'weekly') // Couriers comparison guide
+    addUrlsForAllLocales('/casas-de-cambio', 0.8, 'weekly') // Exchange-house directory/comparison
     addUrlsForAllLocales('/prestamos-uruguay', 0.7, 'weekly') // Loan directory comparison
     addUrlsForAllLocales('/glosario', 0.7, 'weekly') // Financial glossary hub
     addUrlsForAllLocales('/convertir', 0.7, 'weekly') // Amount-conversion hub

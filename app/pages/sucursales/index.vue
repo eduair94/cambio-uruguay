@@ -67,8 +67,11 @@
     <!-- Map CTA -->
     <v-row class="mt-4">
       <v-col cols="12">
-        <v-btn color="primary" variant="tonal" to="/mapa" class="mb-4">
+        <v-btn color="primary" variant="tonal" to="/mapa" class="mb-4 me-2">
           <v-icon start>mdi-map-marker-radius</v-icon>{{ t('map.viewOnMap') }}
+        </v-btn>
+        <v-btn color="secondary" variant="tonal" :to="localePath('/casas-de-cambio')" class="mb-4">
+          <v-icon start>mdi-bank</v-icon>{{ t('casaPage.ctaDirectorio') }}
         </v-btn>
       </v-col>
     </v-row>
