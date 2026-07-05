@@ -56,6 +56,21 @@ serviceAccount.json
 .env
 
 proxy.txt
+prex_session.txt
 last_sync.txt
 .output
 proxy_scrape.json
+
+# Scratch / scraping snapshots dumped at repo root (HTML/PNG/JSON debug artifacts)
+/*.html
+/*.png
+indumex_preview.json
+indumex_reviews.json
+rev.json
+rev2.json
+regul-snapshot.yml
+
+# Tooling scratch + crash dumps
+.playwright-mcp/
+*.stackdump
+.sdd-*

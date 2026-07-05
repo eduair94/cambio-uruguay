@@ -34,6 +34,180 @@ class CambioPrex extends Cambio {
     return {};
   }
 
+  // --- Web session (PHPSESSID) auto-refresh -------------------------------
+  // The cambiomoneda page needs a logged-in PHPSESSID that expires often.
+  // We mint a fresh one over the network (no browser): email+password login
+  // that emails a 6-digit OTP, which we read back from an external mailbox
+  // endpoint (PREX_OTP_URL). The minted cookie is cached to disk so the next
+  // run reuses it without a fresh login/OTP round trip.
+  private readonly SESSION_CACHE = "prex_session.txt";
+  private readonly OTP_URL_DEFAULT = "https://spotify-mail.checkleaked.cc/code?to=prex@checkleaked.cc&want=code";
+  private readonly WEB_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36";
+
+  private getStoredSession(): string | null {
+    try {
+      if (fs.existsSync(this.SESSION_CACHE)) {
+        const v = fs.readFileSync(this.SESSION_CACHE, "utf8").trim();
+        if (v) return v;
+      }
+    } catch (e) {
+      console.warn("Prex: could not read session cache", (e as Error).message);
+    }
+    const env = process.env.PREX_SESSION_ID;
+    return env ? env.trim() : null;
+  }
+
+  private storeSession(phpSessionId: string) {
+    try {
+      fs.writeFileSync(this.SESSION_CACHE, phpSessionId, "utf8");
+    } catch (e) {
+      console.warn("Prex: could not cache session", (e as Error).message);
+    }
+  }
+
+  /** Fetch the latest Prex OTP from the external mailbox endpoint. */
+  private async otpFetch(url: string): Promise<{ code: string; receivedAt: number } | null> {
+    try {
+      const res = await axios.get(url, {
+        headers: { "User-Agent": "Mozilla/5.0" },
+        timeout: 20000,
+        validateStatus: () => true,
+      });
+      const d = res.data;
+      if (d && d.found && d.code) {
+        const ts = d.receivedAt ? Date.parse(d.receivedAt) : 0;
+        return { code: String(d.code).trim(), receivedAt: Number.isNaN(ts) ? 0 : ts };
+      }
+    } catch (e) {
+      console.warn("Prex OTP fetch error:", (e as Error).message);
+    }
+    return null;
+  }
+
+  /**
+   * Poll the mailbox for the OTP triggered by /login/_do.
+   * Prefers a code newer than `baselineTs` (the just-sent one); falls back to
+   * a still-valid active code if Prex reused an existing one.
+   */
+  private async fetchOtp(url: string, baselineTs: number): Promise<string | null> {
+    const FRESH_MS = 15 * 60 * 1000;
+    const TRIES = 24;
+    for (let i = 0; i < TRIES; i++) {
+      const r = await this.otpFetch(url);
+      if (r && r.receivedAt > baselineTs) return r.code; // brand-new code arrived
+      await new Promise((res) => setTimeout(res, 5000));
+    }
+    // No newer code arrived — Prex may have reused an active code still valid.
+    const last = await this.otpFetch(url);
+    if (last && Date.now() - last.receivedAt < FRESH_MS) return last.code;
+    return null;
+  }
+
+  /**
+   * Full network login flow that mints a fresh authenticated PHPSESSID:
+   *   GET /login -> POST /usuarios/validarUsuarioLogin -> POST /login/_do
+   *   (emails OTP) -> read OTP -> POST /login/int_do_clave -> GET /usuarios.
+   * Returns the raw PHPSESSID value, or null on failure.
+   */
+  async prexWebLogin(): Promise<string | null> {
+    const doc = process.env.PREX_LOGIN_USER;
+    const pass = process.env.PREX_LOGIN_PASSWORD;
+    const otpUrl = process.env.PREX_OTP_URL || this.OTP_URL_DEFAULT;
+    if (!doc || !pass) {
+      console.log("Prex web login: credentials not configured (PREX_LOGIN_USER, PREX_LOGIN_PASSWORD)");
+      return null;
+    }
+
+    const BASE = "https://www.prexcard.com";
+    let sid = "";
+    const form = (o: Record<string, string>) =>
+      Object.entries(o)
+        .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+        .join("&");
+    const grabSid = (res: any) => {
+      const sc = res?.headers?.["set-cookie"];
+      if (Array.isArray(sc)) {
+        for (const c of sc) {
+          const m = /PHPSESSID=([^;]+)/.exec(c);
+          if (m) sid = m[1];
+        }
+      }
+    };
+    const cfg = (extra: Record<string, string> = {}) => ({
+      headers: {
+        "User-Agent": this.WEB_UA,
+        "X-Requested-With": "XMLHttpRequest",
+        Referer: `${BASE}/login`,
+        ...(sid ? { cookie: `PHPSESSID=${sid}` } : {}),
+        ...extra,
+      },
+      validateStatus: () => true,
+      ...this.getProxyConfig(),
+    });
+    const formCfg = () => cfg({ "content-type": "application/x-www-form-urlencoded" });
+
+    try {
+      // 1. Prime the session (initial PHPSESSID).
+      const r1 = await axios.get(`${BASE}/login`, { ...cfg(), maxRedirects: 0 });
+      grabSid(r1);
+      if (!sid) {
+        console.warn("Prex web login: no PHPSESSID from GET /login");
+        return null;
+      }
+
+      // 2. Validate the document (mirrors the browser; primes 2FA state).
+      const r2 = await axios.post(`${BASE}/usuarios/validarUsuarioLogin`, form({ inputUsuario: doc }), formCfg());
+      grabSid(r2);
+
+      // Baseline OTP timestamp BEFORE triggering, to detect the fresh code.
+      const before = await this.otpFetch(otpUrl);
+      const baselineTs = before ? before.receivedAt : 0;
+
+      // 3. Submit credentials -> emails/activates the OTP.
+      const r3 = await axios.post(`${BASE}/login/_do`, form({ usuario: doc, password: pass }), formCfg());
+      grabSid(r3);
+      const doErr = r3.data && String(r3.data.error);
+      if (doErr === "ok") {
+        // Account without 2FA — session already authenticated.
+        console.log("Prex web login: authenticated without OTP");
+        this.storeSession(sid);
+        return sid;
+      }
+      if (doErr !== "0") {
+        console.warn("Prex web login: unexpected /login/_do response", JSON.stringify(r3.data));
+        return null;
+      }
+
+      // 4. Read the OTP from the mailbox endpoint.
+      const code = await this.fetchOtp(otpUrl, baselineTs);
+      if (!code || !/^\d{6}$/.test(code)) {
+        console.warn("Prex web login: OTP not received in time");
+        return null;
+      }
+
+      // 5. Submit the OTP.
+      const digits: Record<string, string> = {};
+      for (let i = 0; i < 6; i++) digits[`codigo${i + 1}`] = code[i];
+      const r5 = await axios.post(`${BASE}/login/int_do_clave`, form({ usuario: doc, password: pass, ...digits }), formCfg());
+      grabSid(r5);
+      if (!(r5.data && r5.data.error === "ok")) {
+        console.warn("Prex web login: OTP rejected", JSON.stringify(r5.data));
+        return null;
+      }
+
+      // 6. Finalize the authenticated session.
+      const r6 = await axios.get(`${BASE}/usuarios`, { ...cfg(), maxRedirects: 0 });
+      grabSid(r6);
+
+      console.log("Prex web login: authenticated, fresh PHPSESSID minted");
+      this.storeSession(sid);
+      return sid;
+    } catch (e) {
+      console.error("Prex web login error:", (e as Error).message);
+      return null;
+    }
+  }
+
   async login() {
     const url = "https://www.prexcard.com/api/login";
     const headers = {
@@ -77,16 +251,17 @@ class CambioPrex extends Cambio {
   }
 
   /**
-   * Get USD exchange rate from the cambiomoneda page using web session
-   * Requires PHPSESSID cookie and user ID from environment variables
+   * Get USD exchange rate from the cambiomoneda page using web session.
+   * Uses the given PHPSESSID (freshly minted via prexWebLogin), falling back
+   * to the cached/env session. Needs PREX_USER_ID for the account URL.
    */
-  async get_usd_from_web(): Promise<{ buy: number; sell: number } | null> {
+  async get_usd_from_web(sessionId?: string): Promise<{ buy: number; sell: number } | null> {
     try {
-      const phpSessionId = process.env.PREX_SESSION_ID;
+      const phpSessionId = sessionId || this.getStoredSession();
       const userId = process.env.PREX_USER_ID;
 
       if (!phpSessionId || !userId) {
-        console.log("Prex web session credentials not configured (PREX_SESSION_ID, PREX_USER_ID)");
+        console.log("Prex web session credentials not configured (PREX_SESSION_ID/cache, PREX_USER_ID)");
         return null;
       }
 
@@ -192,10 +367,19 @@ class CambioPrex extends Cambio {
   async get_data(): Promise<CambioObj[]> {
     const ar = await this.prex_ar("");
 
-    // Try to get USD rates from web first (cambiomoneda page)
+    // 1. Try the cached/env PHPSESSID (fast path, no login/OTP).
     let usdRates = await this.get_usd_from_web();
 
-    // Fallback to API if web scraping fails
+    // 2. Cookie missing/expired -> mint a fresh one over the network and retry.
+    if (!usdRates) {
+      console.log("Prex: web session expired/missing — minting fresh cookie via login");
+      const sid = await this.prexWebLogin();
+      if (sid) {
+        usdRates = await this.get_usd_from_web(sid);
+      }
+    }
+
+    // 3. Last-resort fallback to the mobile API.
     if (!usdRates) {
       try {
         const token = await this.login();
@@ -220,7 +404,7 @@ class CambioPrex extends Cambio {
         sell: usdRates.sell,
       });
     } else {
-      console.warn("Prex: skipping USD — no valid rate (refresh PREX_SESSION_ID cookie)");
+      console.warn("Prex: skipping USD — no valid rate (web login + API fallback both failed; check PREX_LOGIN_* / PREX_OTP_URL)");
     }
 
     if (ar) {
