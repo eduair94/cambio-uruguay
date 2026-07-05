@@ -26,7 +26,9 @@
           </dt>
           <dd>{{ formatUSD(result.shippingUsd) }}</dd>
         </div>
-        <VDivider class="my-2" />
+        <!-- Separator is a CSS border on the total row, not a DOM element: a <dl>
+             may only directly contain dt/dd (or div groups of them), so an <hr>
+             here trips axe's definition-list rule. -->
         <div class="summary-row summary-row--total">
           <dt>{{ t('importCart.summary.landedUsd') }}</dt>
           <dd data-testid="cart-landed-usd">{{ formatUSD(result.landedCostUsd) }}</dd>
@@ -105,6 +107,11 @@ const { t } = useI18n()
   margin: 0;
   font-weight: 600;
   text-align: right;
+}
+.summary-row--total {
+  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity, 0.12));
 }
 .summary-row--total dt,
 .summary-row--total dd {
