@@ -62,4 +62,14 @@ SSR: `useAsyncData` → `getProcessedExchangeData('')` (already cached composabl
 
 ## Maintenance
 
-Reputation snapshot refresh: re-run the research workflow, update `CASAS_REPUTATION` + `LAST_RESEARCHED`. Note added to auto-memory.
+Reputation snapshot refresh: re-run the research workflow, update `CASAS_REPUTATION` + `CASAS_LAST_RESEARCHED`. Note added to auto-memory.
+
+## Addendum (same day): automated review refresh
+
+Requested follow-up: keep the review numbers fresh using the self-hosted scraping APIs (the `trustpilot` monorepo on the same VPS - Google Places proxy `google-maps-server` on :2221, Trustpilot API on :3029).
+
+- **`app/utils/casasReviews.ts`** (pure): `CASAS_PLACE_IDS` (pinned Google place_id per casa - captured + human-verified live, 33 casas; read by Place Details so a run always hits the exact listing and can never drift onto a co-branded/nearby business), `CASAS_TRUSTPILOT_DOMAINS` (prex), `shouldAcceptReview` plausibility gate (1-5 stars, count >=1, vs previous: no count collapse <40% / no rating jump >1.5 stars), `parsePlaceDetails` + `parseTrustpilotFeedbacks` (the latter reads `businessUnit.trustScore/numberOfReviews` - the real scraper shape).
+- Casas whose Google search resolved to a DIFFERENT business are deliberately excluded from the pinned set (Cambio Argentino + Rynder both resolve to Cambio 18's listing; Openn to an unrelated Redpagos) - they stay "sin datos" rather than show a wrong rating. Found during live end-to-end verification.
+- **`server/utils/casasReviewsStore.ts`** - fs-mounted `casas-reviews` store (courier-store pattern; only fresh plausible fetches overwrite).
+- **`server/tasks/casas/refreshReviews.ts`** - nitro task `casas:reviews`, Mondays 07:30 UTC. Env-gated: `CASAS_REVIEWS_GMAPS_URL` (Places proxy :2221), `CASAS_REVIEWS_TRUSTPILOT_URL` (:3029); unset -> no-op (page keeps the researched snapshot). Verified end-to-end via SSH tunnel: 33 Google + prex Trustpilot (1.9/70), 0 rejected.
+- **`server/api/casas-reviews.get.ts`** - read model; the page layers stored ratings over `CASAS_REPUTATION`, shows the refresh date, and adds a Trustpilot chip in the detail panel where present.

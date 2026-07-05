@@ -85,7 +85,11 @@
               <td class="text-grey-lighten-1">{{ c.transit ?? '—' }}</td>
               <td>
                 <template v-if="c.rating != null">
-                  <span class="courier-stars" :aria-label="`${c.rating} de 5 según reseñas`">
+                  <span
+                    class="courier-stars"
+                    role="img"
+                    :aria-label="`${c.rating} de 5 según reseñas`"
+                  >
                     <VIcon
                       v-for="n in starParts(c.rating).full"
                       :key="`f${n}`"
@@ -146,7 +150,7 @@
           </dl>
           <p v-if="c.note" class="text-caption text-grey-lighten-1 mb-2">{{ c.note }}</p>
           <div v-if="c.rating != null" class="mb-2">
-            <span class="courier-stars" :aria-label="`${c.rating} de 5 según reseñas`">
+            <span class="courier-stars" role="img" :aria-label="`${c.rating} de 5 según reseñas`">
               <!-- eslint-disable vue/max-attributes-per-line -->
               <VIcon v-for="n in starParts(c.rating).full" :key="`f${n}`" size="14" color="amber"
                 >mdi-star</VIcon

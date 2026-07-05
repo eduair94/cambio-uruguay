@@ -263,6 +263,11 @@ export default defineNuxtConfig({
         driver: 'fs',
         base: './.data/withdraw',
       },
+      // Durable store for refreshed exchange-house review snapshots (casas:reviews).
+      'casas-reviews': {
+        driver: 'fs',
+        base: './.data/casas-reviews',
+      },
     },
     experimental: {
       wasm: true,
@@ -283,6 +288,8 @@ export default defineNuxtConfig({
       '45 8 * * *': ['loans:scrape'],
       // 09:00 UTC Mondays ≈ 06:00 Uruguay: re-verify tourist-IVA facts watchdog.
       '0 9 * * 1': ['withdraw:iva-check'],
+      // 07:30 UTC Mondays ≈ 04:30 Uruguay: refresh exchange-house review snapshots.
+      '30 7 * * 1': ['casas:reviews'],
     },
   },
 
@@ -590,6 +597,14 @@ export default defineNuxtConfig({
     sentry: {
       dsn: process.env.SENTRY_DSN,
     },
+    // Self-hosted scraper bases for the weekly casas:reviews refresh (Google
+    // Places proxy + Trustpilot API). Baked from .env at build — prod reads
+    // useRuntimeConfig, not process.env (runtime env is empty under pm2). Unset
+    // -> the task no-ops and /casas-de-cambio serves the researched snapshot.
+    casasReviews: {
+      gmapsUrl: process.env.CASAS_REVIEWS_GMAPS_URL || '',
+      trustpilotUrl: process.env.CASAS_REVIEWS_TRUSTPILOT_URL || '',
+    },
     // Server-side API URL (for SSR requests)
     apiBaseServer: process.env.NUXT_API_BASE_SERVER || 'http://104.234.204.107:3528',
     // AI provider (server-only) for the daily blog generator. OpenAI-compatible
@@ -649,7 +664,8 @@ export default defineNuxtConfig({
       // Leaflet tile source. Default = public OSM tiles (fine for low traffic).
       // Switch to a tile-provider/CDN URL via NUXT_PUBLIC_TILE_URL before heavy traffic
       // (OSM's tile usage policy forbids heavy use of its public tiles).
-      tileUrl: process.env.NUXT_PUBLIC_TILE_URL || 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      tileUrl:
+        process.env.NUXT_PUBLIC_TILE_URL || 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
       // Telegram bot username (public) for the Login Widget on /cuenta.
       telegramBotUsername: process.env.TELEGRAM_BOT_USERNAME || '',
       // Optional Discord community invite shown on /conectar. Empty -> login-only card.

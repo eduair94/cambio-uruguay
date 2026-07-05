@@ -102,7 +102,9 @@
           >
             <VBtn value="all" size="small">{{ c.categoryAll }}</VBtn>
             <VBtn value="casa" size="small">{{ c.categoryCasa }}</VBtn>
-            <VBtn value="banco" size="small">{{ c.categoryBanco }}</VBtn>
+            <VBtn value="banco" size="small" data-testid="casas-cat-banco">{{
+              c.categoryBanco
+            }}</VBtn>
             <VBtn value="fintech" size="small">{{ c.categoryFintech }}</VBtn>
           </VBtnToggle>
         </VCol>
@@ -146,6 +148,7 @@
                 <template v-if="r.googleRating != null">
                   <span
                     class="casas-stars"
+                    role="img"
                     :aria-label="`${r.googleRating} / 5 (${r.googleReviewCount})`"
                   >
                     <!-- eslint-disable vue/max-attributes-per-line -->
@@ -228,6 +231,7 @@
           <div v-if="r.googleRating != null" class="mb-1">
             <span
               class="casas-stars"
+              role="img"
               :aria-label="`${r.googleRating} / 5 (${r.googleReviewCount})`"
             >
               <!-- eslint-disable vue/max-attributes-per-line -->
@@ -374,6 +378,18 @@
             </div>
             <div class="d-flex flex-wrap ga-2 mt-2">
               <VChip
+                v-if="r.trustpilot"
+                :href="r.trustpilot.url"
+                target="_blank"
+                size="small"
+                variant="tonal"
+                color="info"
+                link
+              >
+                <VIcon start size="small">mdi-star-check</VIcon>
+                Trustpilot {{ r.trustpilot.score.toFixed(1) }}★ ({{ r.trustpilot.count }})
+              </VChip>
+              <VChip
                 v-if="r.bcu"
                 :href="r.bcu"
                 target="_blank"
@@ -490,6 +506,7 @@ import {
   type CasaReputation,
   type UsdComparisonEntry,
 } from '~/utils/casasDirectory'
+import type { StoredTrustpilot } from '~/utils/casasReviews'
 import { starParts } from '~/utils/reviews'
 
 const { locale } = useI18n()
@@ -499,8 +516,14 @@ const { getProcessedExchangeData } = useApiService()
 // Localized content tree (falls back to es).
 const c = computed(() => getCasasContent(locale.value))
 
+// Review-snapshot date: the weekly refresh store when it has run, else the
+// original research date.
+const effectiveReviewDate = computed(() => {
+  const ts = refreshed.value?.updatedAt
+  return ts ? ts.slice(0, 10) : CASAS_LAST_RESEARCHED
+})
 const fmtResearchDate = computed(() =>
-  new Date(`${CASAS_LAST_RESEARCHED}T00:00:00Z`).toLocaleDateString(c.value.lang, {
+  new Date(`${effectiveReviewDate.value}T00:00:00Z`).toLocaleDateString(c.value.lang, {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -532,6 +555,12 @@ const { data: live } = await useAsyncData('casas-directory', async () => {
   }
 })
 
+// Weekly-refreshed Google/Trustpilot snapshots (server/tasks/casas/refreshReviews.ts).
+// Fails soft: default keeps the researched dataset authoritative.
+const { data: refreshed } = await useFetch('/api/casas-reviews', {
+  default: () => ({ reviews: {}, trustpilot: {}, updatedAt: null as string | null }),
+})
+
 const usdByOrigin = computed<Map<string, UsdComparisonEntry>>(() => {
   const entries = buildUsdComparison(live.value?.exchangeData ?? [])
   return new Map(entries.map(e => [e.origin, e]))
@@ -539,6 +568,7 @@ const usdByOrigin = computed<Map<string, UsdComparisonEntry>>(() => {
 
 // --- Merged rows: reputation snapshot × live localData × live USD quotes -----
 interface CasaRow extends CasaReputation {
+  trustpilot: StoredTrustpilot | null
   website: string | null
   bcu: string | null
   departments: string[]
@@ -551,9 +581,14 @@ const rows = computed<CasaRow[]>(() => {
   return CASAS_REPUTATION.map(rep => {
     const ld = localData[rep.code]
     const departments = ld?.departments ?? []
+    const stored = refreshed.value?.reviews?.[rep.code] ?? null
     return {
       ...rep,
       name: ld?.name || rep.name,
+      googleRating: stored?.rating ?? rep.googleRating,
+      googleReviewCount: stored?.count ?? rep.googleReviewCount,
+      ratingSource: stored?.url ?? rep.ratingSource,
+      trustpilot: refreshed.value?.trustpilot?.[rep.code] ?? null,
       website: ld?.website ?? null,
       bcu: ld?.bcu ?? null,
       departments,

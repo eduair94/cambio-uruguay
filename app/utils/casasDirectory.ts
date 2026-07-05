@@ -116,9 +116,9 @@ export const CASAS_REPUTATION: CasaReputation[] = [
     code: 'aeromar',
     name: 'Aeromar',
     category: 'casa',
-    googleRating: null,
-    googleReviewCount: null,
-    ratingSource: null,
+    googleRating: 3.3,
+    googleReviewCount: 16,
+    ratingSource: 'https://www.google.com/maps/place/?q=place_id:ChIJX7EYNG0FdZURv3fDIWxCNcI',
     branchNote:
       'Ratings solo visibles vía el directorio SmartServices (aparente espejo de reseñas de Google): casa central "Cambio Aeromar" (Gorlero y 31) 3.5★ con 13 votos; sucursal Redpagos Aeromar (Av. Aparicio Saravia) 3.8★ con 5 votos.',
     founded: '2011',
@@ -531,6 +531,56 @@ export const CASAS_REPUTATION: CasaReputation[] = [
       {
         label: 'Google Maps - listado Colonia 4,7★ (70) / búsqueda con 3 listados',
         url: 'https://www.google.com/maps/search/%22Cambio+Aguerrebere%22+Uruguay?hl=es',
+      },
+    ],
+  },
+  {
+    code: 'cambio_argentino',
+    name: 'Cambio Argentino',
+    category: 'casa',
+    googleRating: null,
+    googleReviewCount: null,
+    ratingSource: null,
+    branchNote:
+      'No existe ficha propia de "Cambio Argentino" en Google Maps (búsquedas por nombre, por dirección de casa central y por la sucursal Almenara, verificadas el 2026-07-04, no arrojan ningún listado con ese nombre). En su casa central (Av.',
+    founded: '1981',
+    services: [
+      'cambio de divisas en mostrador',
+      'giros Western Union',
+      'transferencias nacionales e internacionales',
+      'cobranzas y venta de entradas de espectáculos',
+      'formulario web de sugerencias y reclamos',
+      "en su web solo mostraba la 'Cotización Oficial BROU', no",
+    ],
+    strengths: [
+      'Larga trayectoria: opera desde 1981 (Cambiox Casa de Cambio S.A., perfil EMIS)',
+      'Autorizada y supervisada por el Banco Central del Uruguay (institución nº 2555)',
+      'Ubicación céntrica: casa central en Av. 18 de Julio 975 y sucursal en Almenara Mall (Canelones)',
+      'Ofrecía giros Western Union además del cambio de divisas (sitio archivado 2023)',
+    ],
+    weaknesses: [
+      "Sin ficha ni reseñas propias en Google Maps; su local de casa central figura como 'Abitab 46-00' (2,9★, 10 reseñas)",
+      'Sitio web oficial fuera de línea (cambioargentino.uy no resuelve DNS, verificado 2026-07-04; última captura en Wayback: abril 2024)',
+      'Sin presencia verificable en Facebook, Trustpilot, TripAdvisor ni Foursquare',
+      'No publicaba cotizaciones propias: su web mostraba la cotización oficial del BROU',
+    ],
+    press: [],
+    sources: [
+      {
+        label: 'Perfil EMIS de Cambiox Casa de Cambio S.A. (fundación 1981, dirección…',
+        url: 'https://www.emis.com/php/company-profile/UY/Cambiox_Casa_de_Cambio_SA__Montevideo__es_3545738.html',
+      },
+      {
+        label: 'Sitio archivado - Contáctenos (sucursales 18 de Julio 975 y Almenara Mall…',
+        url: 'https://web.archive.org/web/20230331162513/http://cambioargentino.uy/contactenos.html',
+      },
+      {
+        label: 'Sitio archivado - Locales comerciales (Casa Central y Suc. Almenara Mall)',
+        url: 'https://web.archive.org/web/20230331165600/http://cambioargentino.uy/locales.html',
+      },
+      {
+        label: 'Sitio archivado - página Western Union (giros internacionales)',
+        url: 'https://web.archive.org/web/20230331160251/http://cambioargentino.uy/western.html',
       },
     ],
   },
@@ -1191,6 +1241,62 @@ export const CASAS_REPUTATION: CasaReputation[] = [
       {
         label: 'opina.com.uy – Cambio Regul (4,2/5, 213 votos, reseñas de clientes)',
         url: 'https://www.opina.com.uy/institucion-financiera/montevideo/cambio-regul-montevideo_157725.php',
+      },
+    ],
+  },
+  {
+    code: 'cambio_romantico',
+    name: 'Cambio Romántico',
+    category: 'casa',
+    googleRating: 4.4,
+    googleReviewCount: 18,
+    ratingSource:
+      'https://www.google.com/maps/place/Cambio+Y+Tienda+Romantico/@-34.8583849,-56.2177926,17z/data=!3m1!4b1!4m6!3m5!1s0x95a1d546f9d4efe1:0xcdf1d5403c64f464!8m2!3d-34.8583849!4d-56.2177926!16s%2Fg%2F11hb39g9tc?hl=es',
+    branchNote:
+      'Dos fichas en Google Maps, ambas con 4,4★: "Cambio Y Tienda Romantico" (Av. Agraciada, Paso Molino, 18 reseñas) y "Cambio Romántico" (Club Olimpia, Av. Gral. Eugenio Garzón 1923, Colón, 15 reseñas).',
+    founded: '1993',
+    services: [
+      'Compra y venta de moneda extranjera en 3 locales',
+      'Giros internacionales como agente Western Union',
+      'Pago de facturas/cobranzas y agencia de lotería y quiniela',
+      'Canal de quejas por email y Código de Buenas Prácticas',
+      'Publicaba cotizaciones en su web',
+    ],
+    strengths: [
+      'Buena reputación en Google Maps: 4,4★ en sus dos fichas (18 y 15 reseñas)',
+      'Reseñas destacan cotización competitiva y atención rápida y cordial',
+      'Más de 30 años de trayectoria (opera desde 1993)',
+      'Regulado por el BCU, sin sanciones registradas en su ficha institucional y ausente de las sanciones BCU 2025 reportadas por prensa',
+    ],
+    weaknesses: [
+      'Volumen bajo de reseñas (~33 en total entre ambas fichas de Google)',
+      'Quejas puntuales en Google: mal trato al público y fallas de equipamiento al cobrar giros (ficha Agraciada)',
+      'Sitio web propio fuera de servicio: no publica cotizaciones online actualmente',
+      'Presencia digital mínima: sin app, sin redes sociales verificables y ficha de Google sin reclamar',
+    ],
+    press: [
+      {
+        label:
+          'Debilidad en sistema de prevención contra lavado: BCU dispuso 15 sanciones a casas…',
+        url: 'https://www.elobservador.com.uy/economia-y-empresas/debilidad-sistema-prevencion-contra-lavado-y-otras-omisiones-bcu-dispuso-15-sanciones-casas-cambio-el-ano-n6015583',
+      },
+    ],
+    sources: [
+      {
+        label: "Google Maps - búsqueda 'Cambio Romántico' Montevideo (ambas fichas con…",
+        url: 'https://www.google.com/maps/search/%22Cambio+Rom%C3%A1ntico%22+Montevideo?hl=es',
+      },
+      {
+        label: 'Google Maps - ficha Cambio Y Tienda Romantico (4,4★, 18 reseñas)',
+        url: 'https://www.google.com/maps/place/Cambio+Y+Tienda+Romantico/@-34.8583849,-56.2177926,17z/data=!3m1!4b1!4m6!3m5!1s0x95a1d546f9d4efe1:0xcdf1d5403c64f464!8m2!3d-34.8583849!4d-56.2177926!16s%2Fg%2F11hb39g9tc?hl=es',
+      },
+      {
+        label: 'BCU - ficha institucional Cambio Romántico S.A. (autorización 22/12/2004…',
+        url: 'https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2474',
+      },
+      {
+        label: 'Sitio propio archivado - portada/principal (Western Union, BCU) - Wayback…',
+        url: 'https://web.archive.org/web/20250417214800/http://cambioromantico.com/',
       },
     ],
   },
