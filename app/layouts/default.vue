@@ -493,6 +493,7 @@ useHead({
               'https://twitter.com/cambio_uruguay',
               'https://www.linkedin.com/company/cambio-uruguay/',
               'https://github.com/eduair94/cambio-uruguay',
+              'https://medium.com/@cambio-uruguay',
             ],
             address: {
               '@type': 'PostalAddress',

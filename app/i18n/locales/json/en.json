@@ -450,7 +450,14 @@
     "kofi": "Support us on Ko-fi",
     "channel": "Telegram channel",
     "discord": "Discord",
-    "mcp": "AI assistants (MCP)"
+    "mcp": "AI assistants (MCP)",
+    "medium": "Follow us on Medium"
+  },
+  "mediumPosts": {
+    "title": "Also on Medium",
+    "subtitle": "Guides on the dollar and exchange houses in Uruguay, published on our Medium.",
+    "cta": "Read the article",
+    "profile": "View profile on Medium"
   },
   "dev": {
     "nav": "Developers",

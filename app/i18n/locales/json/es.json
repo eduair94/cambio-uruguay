@@ -453,7 +453,14 @@
     "kofi": "Apóyanos en Ko-fi",
     "channel": "Canal de Telegram",
     "discord": "Discord",
-    "mcp": "Asistentes IA (MCP)"
+    "mcp": "Asistentes IA (MCP)",
+    "medium": "Seguinos en Medium"
+  },
+  "mediumPosts": {
+    "title": "También en Medium",
+    "subtitle": "Guías sobre el dólar y las casas de cambio en Uruguay, publicadas en nuestro Medium.",
+    "cta": "Leer el artículo",
+    "profile": "Ver perfil en Medium"
   },
   "dev": {
     "nav": "Desarrolladores",

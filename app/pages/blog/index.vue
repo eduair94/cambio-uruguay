@@ -68,6 +68,38 @@
         </p>
       </VCard>
 
+      <!-- Cross-link to our evergreen SEO articles on Medium (locale-aware:
+           shows the matching-language post, always links the profile). -->
+      <VCard class="medium-section my-8 pa-6" variant="flat">
+        <div class="d-flex align-center ga-2 mb-2">
+          <VIcon color="white">$medium</VIcon>
+          <h2 class="text-h6 font-weight-bold text-white mb-0">{{ $t('mediumPosts.title') }}</h2>
+        </div>
+        <p class="text-body-2 text-grey-lighten-1 mb-4">{{ $t('mediumPosts.subtitle') }}</p>
+        <div class="d-flex flex-wrap ga-2">
+          <VBtn
+            v-if="mediumPost"
+            :href="mediumPost.url"
+            target="_blank"
+            rel="noopener noreferrer"
+            color="primary"
+            variant="elevated"
+          >
+            <VIcon start>$medium</VIcon>
+            {{ $t('mediumPosts.cta') }}
+          </VBtn>
+          <VBtn
+            :href="mediumProfile"
+            target="_blank"
+            rel="noopener noreferrer"
+            color="white"
+            variant="outlined"
+          >
+            {{ $t('mediumPosts.profile') }}
+          </VBtn>
+        </div>
+      </VCard>
+
       <!-- CTA -->
       <VCard class="cta-blog my-8 pa-6 text-center" variant="flat">
         <h2 class="text-h6 font-weight-bold mb-2 text-white">Mirá la cotización en tiempo real</h2>
@@ -98,8 +130,12 @@ import {
   type BlogCategory,
   type BlogPostSummary,
 } from '~/utils/blog'
+import { MEDIUM_PROFILE, mediumPostFor } from '~/utils/medium'
 
 const localePath = useLocalePath()
+const { locale } = useI18n()
+const mediumProfile = MEDIUM_PROFILE
+const mediumPost = computed(() => mediumPostFor(locale.value))
 const categoryMetas = blogCategories().map(c => BLOG_CATEGORY_META[c])
 const metaFor = (c: BlogCategory) => BLOG_CATEGORY_META[c]
 
@@ -193,6 +229,11 @@ useHead({
 .cta-blog {
   background: rgba(33, 150, 243, 0.1);
   border: 1px solid rgba(33, 150, 243, 0.28);
+  border-radius: 12px;
+}
+.medium-section {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 12px;
 }
 </style>

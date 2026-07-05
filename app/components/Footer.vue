@@ -115,6 +115,20 @@
           </VBtn>
 
           <VBtn
+            href="https://medium.com/@cambio-uruguay"
+            target="_blank"
+            rel="me noopener noreferrer"
+            :aria-label="$t('siguenos.medium')"
+            :title="$t('siguenos.medium')"
+            icon
+            size="small"
+            variant="text"
+            color="white"
+          >
+            <VIcon>$medium</VIcon>
+          </VBtn>
+
+          <VBtn
             href="https://ko-fi.com/cambio_uruguay"
             target="_blank"
             rel="noopener noreferrer"
