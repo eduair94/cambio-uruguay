@@ -20,6 +20,19 @@
 // Site-wide default branded OG image. Pages override via defineOgImageComponent.
 defineOgImageComponent('Cambio')
 
+// Title template with brand dedup. Pages set a query-matched title (e.g.
+// "BROU: cotización del dólar hoy e histórico"); we append "| Cambio Uruguay"
+// only when the brand isn't already present. This kills the old double-branding
+// ("… - Cambio Uruguay | Cambio Uruguay - Cotización del Dólar", 76 chars) that
+// truncated in the SERP and hurt CTR. A function template can't live in
+// nuxt.config (it must serialize), so it's registered here and wins by order.
+useHead({
+  titleTemplate: title => {
+    if (!title) return 'Cambio Uruguay: cotización del dólar hoy en Uruguay'
+    return /cambio uruguay/i.test(title) ? title : `${title} | Cambio Uruguay`
+  },
+})
+
 // Google AdSense: inject the loader + account meta only when a publisher id is
 // configured (NUXT_PUBLIC_ADSENSE_PUB_ID). Empty by default so nothing loads
 // until the AdSense account exists — applying later is a config change, not a

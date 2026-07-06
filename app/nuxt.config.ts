@@ -24,7 +24,9 @@ export default defineNuxtConfig({
   // App Configuration
   app: {
     head: {
-      titleTemplate: '%s | Cambio Uruguay - Cotización del Dólar',
+      // Fallback only — app.vue registers a brand-dedup function titleTemplate
+      // that wins at render (a function can't be serialized in nuxt.config).
+      titleTemplate: '%s | Cambio Uruguay',
       title: 'Cotización del Dólar en Uruguay Hoy | Compara +40 Casas de Cambio',
       meta: [
         { charset: 'utf-8' },
