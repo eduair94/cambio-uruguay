@@ -546,6 +546,22 @@ export default defineNuxtConfig({
   // Sitemap Configuration
   sitemap: {
     sources: ['/api/__sitemap__/urls'],
+    // Keep non-search pages out of the sitemap so they don't waste crawl budget
+    // or show as "not indexed" in Search Console. These are auto-discovered from
+    // pages/; the custom source above no longer emits them either. They're also
+    // noindex'd at the page level. Globs cover the /en and /pt locale prefixes.
+    exclude: [
+      '/offline',
+      '/widget',
+      '/cuenta',
+      '/estado',
+      '/api-reference',
+      '/*/offline',
+      '/*/widget',
+      '/*/cuenta',
+      '/*/estado',
+      '/*/api-reference',
+    ],
   },
 
   // Scalar API reference. The module always registers one standalone page; we

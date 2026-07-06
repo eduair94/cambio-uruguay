@@ -92,6 +92,8 @@ useSeoMeta({
   ogTitle: () => t('widget.metaTitle'),
   ogDescription: () => t('widget.metaDescription'),
   ogType: 'website',
+  // Embeddable iframe widget — not a search landing page.
+  robots: 'noindex, follow',
 })
 </script>
 

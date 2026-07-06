@@ -45,11 +45,17 @@ export default defineEventHandler(async _event => {
     const originCurrencyPairs = new Set<string>()
     const originTypePairs = new Set<string>()
 
+    // Only submit per-casa currency-history pages for currencies with real
+    // search demand. Exotic pairs (gold, minor currencies × 36 casas) were pure
+    // index bloat — Google discovered but never indexed them, diluting crawl
+    // budget. The all-currency hub lives at /cotizacion/:moneda instead.
+    const SITEMAP_CURRENCIES = new Set(['USD', 'EUR', 'BRL', 'ARS'])
+
     data.forEach(item => {
       if (item.origin) {
         origins.add(item.origin)
 
-        if (item.code) {
+        if (item.code && SITEMAP_CURRENCIES.has(item.code.toUpperCase())) {
           originCurrencyPairs.add(`${item.origin}/${item.code}`)
         }
 
@@ -81,7 +87,10 @@ export default defineEventHandler(async _event => {
 
       if (data.departments) {
         data.departments.forEach(department => {
-          sucursalesLocationPairs.add(`${origin}/${encodeURIComponent(department)}`)
+          // Pass the raw department — the sitemap serializer URL-encodes the loc
+          // once. Pre-encoding here produced double-encoded URLs in the sitemap
+          // (e.g. "TREINTA%2520Y%2520TRES"), which Google never indexed.
+          sucursalesLocationPairs.add(`${origin}/${department}`)
 
           const deptSlug = slugifyDepartment(department)
           if (deptSlug) {
@@ -136,14 +145,16 @@ export default defineEventHandler(async _event => {
     addUrlsForAllLocales('/cotizacion', 0.8, 'hourly', today) // All-currencies cotización hub
     addUrlsForAllLocales('/indicadores', 0.8, 'daily', today) // Economic indicators hub (UI, UR, BPC)
     addUrlsForAllLocales('/blog', 0.8, 'daily') // AI daily blog hub
-    addUrlsForAllLocales('/estado', 0.6, 'daily', today) // Scraper health dashboard
+    // /estado (scraper dashboard) intentionally NOT in the sitemap — it's an ops
+    // status page, not search content (kept out to save crawl budget).
     addUrlsForAllLocales('/acerca', 0.6, 'monthly') // Methodology / about page
     addUrlsForAllLocales('/privacidad', 0.4, 'yearly') // Privacy policy
     addUrlsForAllLocales('/terminos', 0.4, 'yearly') // Terms of use
     addUrlsForAllLocales('/contacto', 0.5, 'monthly') // Contact
     addUrlsForAllLocales('/conectar', 0.6, 'monthly') // Channels hub (API, MCP, Telegram, Discord, newsletter)
     addUrlsForAllLocales('/desarrolladores', 0.6, 'monthly') // Developer portal (Scalar API reference + open source)
-    addUrlsForAllLocales('/offline', 0.3, 'monthly') // Offline page
+    // /offline (PWA fallback), /widget (embeddable), /cuenta (account) are
+    // deliberately excluded from the sitemap and noindex'd — not search content.
 
     // Add /guias/:slug editorial guide routes for all locales
     guideSlugs().forEach(slug => {

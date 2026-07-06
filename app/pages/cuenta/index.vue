@@ -82,6 +82,9 @@
 <script setup lang="ts">
 definePageMeta({ middleware: 'auth' })
 
+// Private account area — behind auth, never a search landing page.
+useSeoMeta({ robots: 'noindex, nofollow' })
+
 const { authFetch } = useAuthFetch()
 const { driftForItem } = useSavedDrift()
 const favorites = useFavoritesState()
