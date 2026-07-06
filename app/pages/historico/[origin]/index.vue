@@ -556,17 +556,35 @@ onMounted(() => {
   restoreFiltersFromQuery()
 })
 
+// Today's USD cash quote for this casa (SSR — items come from useAsyncData), so
+// the SERP snippet leads with the actual number ("Dólar en BROU hoy: compra $X,
+// venta $Y…") instead of a generic sentence. Bank/casa cotización queries carry
+// huge impressions but near-zero CTR precisely because the snippet showed no price.
+const usdToday = computed(() => {
+  const rows = items.value.filter(i => i.code === 'USD' && i.buy > 0 && i.sell > 0)
+  if (!rows.length) return null
+  const r = rows.find(x => !x.type) ?? rows[0]
+  return { buy: r.buy, sell: r.sell }
+})
+const seoDescription = computed(() => {
+  const base = t('seo.historicalOriginDescription', { origin: originName.value })
+  const u = usdToday.value
+  return u
+    ? `Dólar en ${originName.value} hoy: compra $${formatNumber(u.buy)}, venta $${formatNumber(u.sell)}. ${base}`
+    : base
+})
+
 useSeoMeta({
   title: () => t('seo.historicalOriginTitle', { origin: originName.value }),
-  description: () => t('seo.historicalOriginDescription', { origin: originName.value }),
+  description: () => seoDescription.value,
   keywords: () => t('seo.historicalOriginKeywords'),
   ogTitle: () => t('seo.historicalOriginTitle', { origin: originName.value }),
-  ogDescription: () => t('seo.historicalOriginDescription', { origin: originName.value }),
+  ogDescription: () => seoDescription.value,
   ogType: 'website',
   ogUrl: () => `https://cambio-uruguay.com/historico/${route.params.origin}`,
   twitterCard: 'summary_large_image',
   twitterTitle: () => t('seo.historicalOriginTitle', { origin: originName.value }),
-  twitterDescription: () => t('seo.historicalOriginDescription', { origin: originName.value }),
+  twitterDescription: () => seoDescription.value,
   ogImageAlt: () => t('seo.historicalOriginTitle', { origin: originName.value }),
   twitterImageAlt: () => t('seo.historicalOriginTitle', { origin: originName.value }),
 })

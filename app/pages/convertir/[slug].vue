@@ -253,17 +253,31 @@ defineOgImageComponent('Cambio', {
   tag: 'CONVERTIR',
 })
 
+// SEO title/description lead with the live converted amount so the SERP snippet
+// shows the ANSWER (e.g. "50.000 pesos argentinos ≈ $12.345 hoy") — these pages
+// ranked well but got ~0 clicks because the snippet never showed a number. The
+// dedup titleTemplate in app.vue appends "| Cambio Uruguay"; no manual brand here.
+const seoDescription = computed(() => {
+  const amt = amountLabel(entry.value!.amount, entry.value!.from)
+  if (headlineValue.value !== null) {
+    const priceKind = entry.value!.to === 'UYU' ? 'mejor precio de compra' : 'mejor precio de venta'
+    return `${amt} ≈ ${headlineFormatted.value} hoy (${priceKind}). Convertí ${fromName.value} a ${toName.value} con la cotización en vivo de más de 40 casas de cambio en Uruguay.`
+  }
+  return `Cuánto es ${amt} en ${toName.value} hoy, con la cotización en vivo de más de 40 casas de cambio en Uruguay.`
+})
+const seoTitle = computed(() =>
+  headlineValue.value !== null ? `${title.value} ≈ ${headlineFormatted.value}` : title.value
+)
+
 useSeoMeta({
-  title: () => `${title.value} | Cambio Uruguay`,
-  description: () =>
-    `Cuánto es ${amountLabel(entry.value!.amount, entry.value!.from)} en ${toName.value} hoy, con la cotización en vivo de más de 40 casas de cambio en Uruguay.`,
-  ogTitle: () => title.value,
-  ogDescription: () =>
-    `Conversión en vivo de ${amountLabel(entry.value!.amount, entry.value!.from)} a ${toName.value}.`,
+  title: () => seoTitle.value,
+  description: () => seoDescription.value,
+  ogTitle: () => seoTitle.value,
+  ogDescription: () => seoDescription.value,
   ogType: 'website',
   ogUrl: () => canonicalUrl.value,
   twitterCard: 'summary_large_image',
-  twitterTitle: () => title.value,
+  twitterTitle: () => seoTitle.value,
 })
 
 useHead({
