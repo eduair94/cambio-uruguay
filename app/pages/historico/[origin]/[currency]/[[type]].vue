@@ -607,7 +607,9 @@ const exchangeHouseName = computed(() => {
   return evolutionData.value?.localData?.name || formatOriginName(route.params.origin as string)
 })
 
-const currencyName = computed(() => route.params.currency as string)
+// Currency codes (usd/eur/brl/ars/xau…) read better uppercased in the title,
+// H1 and breadcrumb ("BROU USD hoy" not "BROU usd hoy").
+const currencyName = computed(() => String(route.params.currency ?? '').toUpperCase())
 
 // Computed properties
 const tableData = computed(() => {

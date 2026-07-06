@@ -16,6 +16,19 @@
             </v-chip>
           </v-card-title>
 
+          <!-- Hub cross-link into the comprehensive /casa page (rate + branches
+               + reputation) so it gains internal links to rank for "cambio X". -->
+          <v-card-text class="pt-0 pb-2">
+            <NuxtLink
+              :to="localePath(`/casa/${origin}`)"
+              class="casa-hub-link d-inline-flex align-center ga-1"
+            >
+              <v-icon size="small">mdi-bank-outline</v-icon>
+              Ver todo sobre {{ exchangeHouseName }}: cotización de hoy, sucursales y opiniones
+              <v-icon size="small">mdi-arrow-right</v-icon>
+            </NuxtLink>
+          </v-card-text>
+
           <!-- External Maps Button -->
           <v-card-text class="pb-0">
             <v-btn
@@ -66,7 +79,12 @@
     <!-- Data Table -->
     <v-row v-else>
       <v-col v-if="mapBranches.length" cols="12">
-        <LocationsMap :branches="mapBranches" :zoom="mapBranches.length === 1 ? 14 : 10" height="50vh" :directions-label="t('map.directions')" />
+        <LocationsMap
+          :branches="mapBranches"
+          :zoom="mapBranches.length === 1 ? 14 : 10"
+          height="50vh"
+          :directions-label="t('map.directions')"
+        />
       </v-col>
       <v-col cols="12">
         <v-card>
@@ -153,6 +171,7 @@ definePageMeta({
 // Composables
 const { t, locale } = useI18n()
 const route = useRoute()
+const localePath = useLocalePath()
 const { getExchangesByOriginLocation } = useApiService()
 
 // Extract route parameters
@@ -328,5 +347,15 @@ useHead(() => {
 .text-wrap {
   white-space: normal;
   word-wrap: break-word;
+}
+
+.casa-hub-link {
+  color: rgb(var(--v-theme-link));
+  font-weight: 600;
+  text-decoration: none;
+  line-height: 1.4;
+}
+.casa-hub-link:hover {
+  text-decoration: underline;
 }
 </style>

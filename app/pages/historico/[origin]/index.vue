@@ -30,6 +30,21 @@
               <Updated />
             </ClientOnly>
           </v-card-title>
+
+          <!-- Hub cross-link: funnels this high-traffic history page into the
+               comprehensive /casa page (rate + branches + reputation), which is
+               the page positioned to rank for "cambio X" brand queries. -->
+          <v-card-text class="pt-0 pb-2">
+            <NuxtLink
+              :to="localePath(`/casa/${route.params.origin}`)"
+              class="casa-hub-link d-inline-flex align-center ga-1"
+            >
+              <v-icon size="small">mdi-bank-outline</v-icon>
+              Ver todo sobre {{ formatOriginName(route.params.origin as string) }}: cotización de
+              hoy, sucursales y opiniones
+              <v-icon size="small">mdi-arrow-right</v-icon>
+            </NuxtLink>
+          </v-card-text>
           <!-- Filtros -->
           <v-card-text>
             <v-row>
@@ -107,7 +122,12 @@
 
             <!-- Celda de Tipo -->
             <template #item.type="{ item }">
-              <v-chip v-if="item.type" size="small" :color="getTypeColor(item.type)" variant="tonal">
+              <v-chip
+                v-if="item.type"
+                size="small"
+                :color="getTypeColor(item.type)"
+                variant="tonal"
+              >
                 {{ item.type }}
               </v-chip>
               <span v-else class="text-grey">-</span>
@@ -195,6 +215,7 @@ interface OriginNameMap {
 // Router and route
 const router = useRouter()
 const route = useRoute()
+const localePath = useLocalePath()
 const { smAndDown } = useDisplay()
 
 // Initialize API service
@@ -624,6 +645,16 @@ useHead(() => ({
 
 .v-breadcrumbs {
   padding: 0;
+}
+
+.casa-hub-link {
+  color: rgb(var(--v-theme-link));
+  font-weight: 600;
+  text-decoration: none;
+  line-height: 1.4;
+}
+.casa-hub-link:hover {
+  text-decoration: underline;
 }
 
 @media (max-width: 960px) {
