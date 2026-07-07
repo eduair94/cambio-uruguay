@@ -33,7 +33,10 @@ async function fetchCanonicalSeries(currency: string): Promise<SeriesPoint[]> {
     `/evolution/${anchor.origin}/${anchor.code}/${anchor.type}`,
     { baseURL: base, query: { period: 60 } }
   )
-  return toSeries(res?.evolution, 'sell')
+  // Backend returns `date` as an ISO datetime ("...T00:00:00.000Z"); driver-snapshot and
+  // news dates are plain YYYY-MM-DD. alignByDate() is an exact string join, so normalize
+  // here or every driver correlation silently comes back r=0/n=0.
+  return toSeries(res?.evolution, 'sell').map(p => ({ date: p.date.slice(0, 10), value: p.value }))
 }
 
 /** Assemble driver correlations + notable moves + today's archived news for a currency. */
