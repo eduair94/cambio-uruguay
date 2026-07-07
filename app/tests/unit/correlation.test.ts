@@ -42,6 +42,12 @@ describe('alignByDate', () => {
     ])
     expect(alignByDate(a, b)).toEqual({ a: [2, 3], b: [20, 30] })
   })
+
+  it('joins on the calendar-day key across mixed date formats (ISO vs YYYY-MM-DD)', () => {
+    const a = S([['2026-06-01T00:00:00.000Z', 1], ['2026-06-02T00:00:00.000Z', 2]])
+    const b = S([['2026-06-01', 10], ['2026-06-02', 20]])
+    expect(alignByDate(a, b)).toEqual({ a: [1, 2], b: [10, 20] })
+  })
 })
 
 describe('pearson', () => {
@@ -96,6 +102,17 @@ describe('rankDrivers', () => {
     expect(antiR.r).toBeGreaterThan(-1)
     // strong's |r| (1.0) exceeds anti's, so it ranks first
     expect(ranked[0]!.key).toBe('strong')
+  })
+
+  it('regression: correlates across mixed base(ISO)/driver(YYYY-MM-DD) date formats', () => {
+    const base = S([
+      ['2026-06-01T00:00:00.000Z', 100], ['2026-06-02T00:00:00.000Z', 110],
+      ['2026-06-03T00:00:00.000Z', 105], ['2026-06-04T00:00:00.000Z', 115],
+    ])
+    const drv = { key: 'd', points: S([['2026-06-01', 50], ['2026-06-02', 55], ['2026-06-03', 52.5], ['2026-06-04', 57.5]]) }
+    const ranked = rankDrivers(base, [drv])
+    expect(ranked[0]!.n).toBeGreaterThan(0)
+    expect(ranked[0]!.r).toBeCloseTo(1, 6)
   })
 })
 

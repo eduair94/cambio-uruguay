@@ -27,13 +27,16 @@ export function logReturns(series: SeriesPoint[]): SeriesPoint[] {
   return out
 }
 
-/** Inner-join two series on shared dates, preserving the order of `a`. */
+/** Inner-join two series on the shared calendar-day key (YYYY-MM-DD), preserving the
+ *  order of `a`. Series may carry ISO datetimes or plain day strings — both are sliced
+ *  to the day so the join never silently misses on a format mismatch. */
 export function alignByDate(a: SeriesPoint[], b: SeriesPoint[]): { a: number[]; b: number[] } {
-  const bMap = new Map(b.map(p => [p.date, p.value]))
+  const dayKey = (d: string) => d.slice(0, 10)
+  const bMap = new Map(b.map(p => [dayKey(p.date), p.value]))
   const xs: number[] = []
   const ys: number[] = []
   for (const p of a) {
-    const y = bMap.get(p.date)
+    const y = bMap.get(dayKey(p.date))
     if (y === undefined) continue
     xs.push(p.value)
     ys.push(y)
