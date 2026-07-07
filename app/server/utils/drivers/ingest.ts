@@ -3,10 +3,12 @@ import { DriverSnapshotModel } from '../../models/DriverSnapshot'
 import { DRIVERS, driversFor, type DriverDef } from '../../../utils/drivers/config'
 import { fetchStooqSeries } from './fetchStooq'
 import { fetchArgentinaSeries } from './fetchArgentina'
+import { fetchFredSeries } from './fetchFred'
 import type { SeriesPoint } from '../../../utils/rateStats'
 
 async function fetchDriver(def: DriverDef, fromYmd?: string): Promise<SeriesPoint[]> {
   if (def.source === 'stooq') return fetchStooqSeries(def.symbol, fromYmd)
+  if (def.source === 'fred') return fetchFredSeries(def.symbol)
   return fetchArgentinaSeries(def.symbol)
 }
 
