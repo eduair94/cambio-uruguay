@@ -19,15 +19,18 @@ export interface AnalysisResult {
 
 // Phase 1 anchors every currency's canonical series on BCU USD. Phase 3 will map
 // EUR/ARS to their own canonical origin/code.
-const CANONICAL: Record<string, { origin: string; code: string }> = {
-  USD: { origin: 'bcu', code: 'USD' },
+// IMPORTANT: BCU emits several `type` rows per date for USD (BILLETE/CABLE/PROMED.FONDO).
+// Pin a single type or the adjacent-pair log-return math compares same-day spreads.
+// Matches app/composables/useDollarTrend.ts.
+const CANONICAL: Record<string, { origin: string; code: string; type: string }> = {
+  USD: { origin: 'bcu', code: 'USD', type: 'BILLETE' },
 }
 
 async function fetchCanonicalSeries(currency: string): Promise<SeriesPoint[]> {
   const anchor = CANONICAL[currency] ?? CANONICAL.USD!
   const base = useRuntimeConfig().apiBaseServer
   const res = await $fetch<{ evolution?: { date?: string; buy?: number; sell?: number }[] }>(
-    `/evolution/${anchor.origin}/${anchor.code}`,
+    `/evolution/${anchor.origin}/${anchor.code}/${anchor.type}`,
     { baseURL: base, query: { period: 60 } }
   )
   return toSeries(res?.evolution, 'sell')
