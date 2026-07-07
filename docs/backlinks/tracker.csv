@@ -1,0 +1,40 @@
+tier,channel,type,url,dofollow,priority,status,date_done,live_url,notes
+1,GitHub repo topics,setup,https://github.com/eduair94/cambio-uruguay,n/a,P0,DONE,2026-07-06,https://github.com/eduair94/cambio-uruguay,12 topics set incl mcp/mcp-server/model-context-protocol
+1,Official MCP Registry,mcp-registry,https://registry.modelcontextprotocol.io,yes,P0,ready-to-publish,,,server.json written+validated + mcpName added; needs npm republish + mcp-publisher login (user)
+1,Glama,mcp-registry,https://glama.ai/mcp/servers,maybe,P0,todo,,,auto-indexes mcp topic
+1,MCP.so,mcp-registry,https://mcp.so/submit,maybe,P0,todo,,,
+1,PulseMCP,mcp-registry,https://www.pulsemcp.com/submit,maybe,P0,todo,,,
+1,Smithery,mcp-registry,https://smithery.ai/new,maybe,P1,todo,,,connect github
+1,Cursor Directory,mcp-registry,https://cursor.directory/mcp,maybe,P1,todo,,,
+1,mcp-get,mcp-registry,https://github.com/michaellatman/mcp-get,yes,P2,todo,,,PR
+1,punkpeye/awesome-mcp-servers,awesome-pr,https://github.com/punkpeye/awesome-mcp-servers,yes,P0,PR-OPEN,2026-07-06,https://github.com/punkpeye/awesome-mcp-servers/pull/9525,agent fast-track tag; Finance & Fintech
+1,wong2/awesome-mcp-servers,awesome-pr,https://github.com/wong2/awesome-mcp-servers,yes,P2,todo,,,
+1,appcypher/awesome-mcp-servers,awesome-pr,https://github.com/appcypher/awesome-mcp-servers,yes,P2,todo,,,
+1,public-apis,api-pr,https://github.com/public-apis/public-apis,yes,P0,todo,,,Currency Exchange section; follow CONTRIBUTING
+1,FreePublicAPIs,api-directory,https://www.freepublicapis.com/submit,maybe,P1,todo,,,
+1,APIs.guru,api-directory,https://github.com/APIs-guru/openapi-directory,yes,P3,todo,,,needs OpenAPI spec
+1,RapidAPI Hub,api-directory,https://rapidapi.com/provider,maybe,P3,todo,,,optional
+1,AlternativeTo,app-directory,https://alternativeto.net,often,P1,todo,,,alt to XE/Wise
+1,SaaSHub,app-directory,https://www.saashub.com/submit,yes,P1,todo,,,
+1,Product Hunt,launch,https://www.producthunt.com/posts/new,no,P1,todo,,,pick Tue-Thu launch day
+1,Uneed,app-directory,https://www.uneed.best/submit-a-tool,mix,P2,todo,,,
+1,Fazier,app-directory,https://fazier.com,mix,P2,todo,,,
+1,Peerlist,app-directory,https://peerlist.io,mix,P2,todo,,,
+1,BetaList,app-directory,https://betalist.com/submit,mix,P3,todo,,,
+2,Dev.to cross-post EN,content,https://dev.to,no-then-yes,P0,todo,,,canonical to Medium EN
+2,Hashnode cross-post EN,content,https://hashnode.com,no-then-yes,P1,todo,,,canonical to Medium EN
+2,Dev.to MCP build post,content,https://dev.to,no-then-yes,P2,todo,,,fresh dev post; ask Claude to draft
+2,Show HN,social,https://news.ycombinator.com/submit,no,P1,todo,,,repo url + first comment
+2,r/SideProject,social,https://reddit.com/r/SideProject,no,P1,todo,,,post allowed
+2,r/webdev,social,https://reddit.com/r/webdev,no,P2,todo,,,MCP/API angle
+2,r/uruguay,social,https://reddit.com/r/uruguay,no,P2,ongoing,,,comment first never cold-post link
+2,r/solotravel,social,https://reddit.com/r/solotravel,no,P3,ongoing,,,money-in-Uruguay threads
+3,TripAdvisor Uruguay forum,forum,https://www.tripadvisor.com,no,P2,ongoing,,,answer money questions
+3,Quora,qa,https://www.quora.com,no,P2,ongoing,,,3-5 answers spread out
+3,InterNations Uruguay,forum,https://www.internations.org,no,P3,ongoing,,,
+3,Expat.com Uruguay,forum,https://www.expat.com,no,P3,ongoing,,,
+3,Featured.com,pr,https://featured.com,yes,P2,ongoing,,,HARO replacement
+3,Qwoted,pr,https://www.qwoted.com,yes,P2,ongoing,,,fintech journalists
+3,#journorequest,pr,https://twitter.com,yes,P3,ongoing,,,monitor
+3,Guest post (guruguay etc),guest-post,,yes,P3,todo,,,pitch resource link
+3,Wikidata item,reference,https://www.wikidata.org,yes,P3,todo,,,optional

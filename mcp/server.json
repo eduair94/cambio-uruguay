@@ -1,0 +1,35 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.eduair94/cambio-uruguay",
+  "description": "Live Uruguayan exchange rates across every casa de cambio: best rates, conversion, history, news.",
+  "repository": {
+    "url": "https://github.com/eduair94/cambio-uruguay.git",
+    "source": "github",
+    "subfolder": "mcp"
+  },
+  "version": "0.1.0",
+  "websiteUrl": "https://cambio-uruguay.com",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "cambio-uruguay-mcp",
+      "version": "0.1.0",
+      "runtimeHint": "npx",
+      "transport": { "type": "stdio" },
+      "environmentVariables": [
+        {
+          "name": "API_BASE_URL",
+          "description": "Upstream cambio-uruguay API base URL",
+          "isRequired": false,
+          "default": "https://api.cambio-uruguay.com"
+        }
+      ]
+    }
+  ],
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.cambio-uruguay.com/mcp"
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 {
   "name": "cambio-uruguay-mcp",
   "version": "0.1.0",
+  "mcpName": "io.github.eduair94/cambio-uruguay",
   "description": "Model Context Protocol server for live Uruguayan exchange-rate data (cambio-uruguay.com). Read-only, open source.",
   "type": "module",
   "license": "MIT",
