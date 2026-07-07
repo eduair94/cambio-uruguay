@@ -276,6 +276,8 @@ export default defineNuxtConfig({
       tasks: true, // enable Nitro scheduled tasks (daily blog generation)
     },
     scheduledTasks: {
+      // 09:15 UTC ≈ 06:15 Uruguay: refresh macro-driver snapshots + archive daily news.
+      '15 9 * * *': ['drivers:daily'],
       // 09:30 UTC ≈ 06:30 Uruguay: generate the day's blog posts.
       '30 9 * * *': ['blog:daily'],
       // 12:00 UTC = 09:00 Uruguay: send the daily newsletter to confirmed subs.
