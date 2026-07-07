@@ -109,16 +109,23 @@ describe('pearson', () => {
 })
 
 describe('rankDrivers', () => {
-  it('ranks by absolute correlation of returns, descending', () => {
-    const base = S([['d1', 100], ['d2', 110], ['d3', 121]]) // +10%, +10%
-    const strong = { key: 'strong', points: S([['d1', 10], ['d2', 11], ['d3', 12.1]]) } // same returns
-    const anti = { key: 'anti', points: S([['d1', 100], ['d2', 90], ['d3', 81]]) } // opposite
+  it('ranks by absolute correlation of returns, descending, keeping sign', () => {
+    // Base must have NON-constant returns, else every correlation is 0 (zero variance).
+    const base = S([['d1', 100], ['d2', 110], ['d3', 105], ['d4', 115]])
+    // strong = base scaled ×0.5 → identical ratios → identical log-returns → r = +1 exactly
+    const strong = { key: 'strong', points: S([['d1', 50], ['d2', 55], ['d3', 52.5], ['d4', 57.5]]) }
+    // anti moves opposite to base but imperfectly → r < 0 and |r| < 1
+    const anti = { key: 'anti', points: S([['d1', 100], ['d2', 90], ['d3', 95], ['d4', 88]]) }
     const ranked = rankDrivers(base, [anti, strong])
+    expect(ranked).toHaveLength(2)
+    const strongR = ranked.find(c => c.key === 'strong')!
+    const antiR = ranked.find(c => c.key === 'anti')!
+    expect(strongR.r).toBeCloseTo(1, 6)
+    expect(strongR.n).toBe(3)
+    expect(antiR.r).toBeLessThan(0)
+    expect(antiR.r).toBeGreaterThan(-1)
+    // strong's |r| (1.0) exceeds anti's, so it ranks first
     expect(ranked[0]!.key).toBe('strong')
-    expect(ranked[0]!.r).toBeCloseTo(1, 6)
-    expect(ranked[0]!.n).toBe(2)
-    expect(ranked[1]!.key).toBe('anti')
-    expect(ranked[1]!.r).toBeCloseTo(-1, 6)
   })
 })
 
@@ -177,13 +184,17 @@ export function logReturns(series: SeriesPoint[]): SeriesPoint[] {
   return out
 }
 
-/** Inner-join two series on shared dates, preserving the order of `a`. */
+/** Inner-join two series on the shared calendar-day key (YYYY-MM-DD), preserving the
+ *  order of `a`. Series may carry ISO datetimes or plain day strings — both are sliced
+ *  to the day so the join never silently misses on a format mismatch (the backend
+ *  evolution feed returns ISO datetimes; driver/news dates are plain YYYY-MM-DD). */
 export function alignByDate(a: SeriesPoint[], b: SeriesPoint[]): { a: number[]; b: number[] } {
-  const bMap = new Map(b.map(p => [p.date, p.value]))
+  const dayKey = (d: string) => d.slice(0, 10)
+  const bMap = new Map(b.map(p => [dayKey(p.date), p.value]))
   const xs: number[] = []
   const ys: number[] = []
   for (const p of a) {
-    const y = bMap.get(p.date)
+    const y = bMap.get(dayKey(p.date))
     if (y === undefined) continue
     xs.push(p.value)
     ys.push(y)
@@ -954,19 +965,29 @@ export interface AnalysisResult {
 }
 
 // Phase 1 anchors every currency's canonical series on BCU USD. Phase 3 will map
-// EUR/ARS to their own canonical origin/code.
-const CANONICAL: Record<string, { origin: string; code: string }> = {
-  USD: { origin: 'bcu', code: 'USD' },
+// EUR/ARS to their own canonical origin/code/type.
+// IMPORTANT: BCU emits several `type` rows per date for USD (BILLETE, CABLE,
+// PROMED.FONDO). The evolution endpoint only filters by type when one is passed;
+// omitting it returns ~3 points per calendar day, which breaks the adjacent-pair
+// log-return / move-detection math (it would compare same-day type spreads, not
+// consecutive days). Always pin a single type — BILLETE, matching the existing
+// app/composables/useDollarTrend.ts convention.
+const CANONICAL: Record<string, { origin: string; code: string; type: string }> = {
+  USD: { origin: 'bcu', code: 'USD', type: 'BILLETE' },
 }
 
 async function fetchCanonicalSeries(currency: string): Promise<SeriesPoint[]> {
   const anchor = CANONICAL[currency] ?? CANONICAL.USD!
   const base = useRuntimeConfig().apiBaseServer
   const res = await $fetch<{ evolution?: { date?: string; buy?: number; sell?: number }[] }>(
-    `/evolution/${anchor.origin}/${anchor.code}`,
+    `/evolution/${anchor.origin}/${anchor.code}/${anchor.type}`,
     { baseURL: base, query: { period: 60 } }
   )
-  return toSeries(res?.evolution, 'sell')
+  // The backend returns `date` as an ISO datetime (e.g. "2026-06-01T00:00:00.000Z"),
+  // but driver-snapshot and news dates are plain `YYYY-MM-DD`. alignByDate() does an
+  // exact string join, so we MUST normalize the base series to `YYYY-MM-DD` here or
+  // every driver correlation silently comes back r=0/n=0 (no dates ever match).
+  return toSeries(res?.evolution, 'sell').map(p => ({ date: p.date.slice(0, 10), value: p.value }))
 }
 
 /** Assemble driver correlations + notable moves + today's archived news for a currency. */
@@ -1126,9 +1147,21 @@ export default defineTask({
     description: 'Ingest macro drivers (stooq + argentinadatos) and archive daily news',
   },
   async run() {
-    const drivers = await ingestDrivers(['USD'])
-    const news = await archiveTodayNews('USD')
-    return { result: { drivers, news } }
+    // Isolate the two responsibilities: a driver-ingest failure (e.g. DB/bulkWrite)
+    // must NOT skip the daily news archive — missed news days are permanent gaps,
+    // the exact problem this archive exists to prevent (and vice versa).
+    const result: { drivers?: unknown; news?: unknown; errors?: Record<string, string> } = {}
+    try {
+      result.drivers = await ingestDrivers(['USD'])
+    } catch (e) {
+      result.errors = { ...result.errors, drivers: String((e as Error)?.message ?? e) }
+    }
+    try {
+      result.news = await archiveTodayNews('USD')
+    } catch (e) {
+      result.errors = { ...result.errors, news: String((e as Error)?.message ?? e) }
+    }
+    return { result }
   },
 })
 ```
