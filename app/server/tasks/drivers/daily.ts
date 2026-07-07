@@ -6,7 +6,7 @@ import { archiveTodayNews } from '../../utils/priceNews'
 export default defineTask({
   meta: {
     name: 'drivers:daily',
-    description: 'Ingest macro drivers (stooq + argentinadatos) and archive daily news',
+    description: 'Ingest macro drivers (FRED + argentinadatos) and archive daily news',
   },
   async run() {
     // Isolate the two responsibilities: a driver-ingest failure (e.g. DB/bulkWrite)
