@@ -1,8 +1,10 @@
 import Aeromar from "./cambios/aeromar";
 import AlterCambio from "./cambios/alter_cambio";
+import BalumaCambio from "./cambios/baluma_cambio";
 import CambioBCU from "./cambios/bcu";
 import CambioBrou from "./cambios/brou";
 import Cambial from "./cambios/cambial";
+import Cambistar from "./cambios/cambistar";
 import CambioCambilex from "./cambios/cambilex";
 import Cambio18 from "./cambios/cambio18";
 import Cambio3 from "./cambios/cambio_3";
@@ -26,14 +28,17 @@ import CambioRegul from "./cambios/cambio_regul";
 import CambioRomantico from "./cambios/cambio_romantico";
 import CambioSicurezza from "./cambios/cambio_sicurezza";
 import CambioSir from "./cambios/cambio_sir";
+import CambioVarzy from "./cambios/cambio_varzy";
 import CambioVelso from "./cambios/cambio_velso";
 import CambioVexel from "./cambios/cambio_vexel";
 import CambioYoung from "./cambios/cambio_young";
+import Eurodracma from "./cambios/eurodracma";
 import CambioFortex from "./cambios/fortex";
 import CambioGales from "./cambios/gales";
 import CambioIndumex from "./cambios/indumex";
 import Itau from "./cambios/itau";
 import CambioLaFavorita from "./cambios/lafavorita";
+import Nonica from "./cambios/nonica";
 import CambioPrex from "./cambios/prex";
 import Rynder from "./cambios/rynder";
 import CambioSuizo from "./cambios/suizo";
@@ -63,11 +68,15 @@ export const origins = {
   cambio_3: Cambio3,
   cambio_openn: CambioOpenn,
   cambial: Cambial,
+  cambistar: Cambistar,
   cambio_pando: CambioPando,
   //mas_cambio: MasCambio,
   cambio_fenix: CambioFenix,
   cambio_oriental: CambioOriental,
-  //baluma_cambio: BalumaCambio,
+  baluma_cambio: BalumaCambio, // 2026-07: re-verified live, rate table working again
+  cambio_varzy: CambioVarzy,
+  eurodracma: Eurodracma,
+  nonica: Nonica,
   gales: CambioGales,
   // cambio_vexel: CambioVexel, // 2026-06: web server down (DNS resolves, no HTTP response). Re-enable when site is back.
   // cambio_velso: CambioVelso, // 2026-06: published rate table abandoned (last modified 12/02/2025). Re-enable when site updates again.
