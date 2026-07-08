@@ -1010,5 +1010,71 @@
       "emailTitle": "Correo electrónico",
       "socialTitle": "Redes sociales"
     }
+  },
+  "porQueDolar": {
+    "metaTitle": "¿Por qué sube o baja el dólar en Uruguay? Análisis y correlación",
+    "metaDescription": "Qué mueve al dólar en Uruguay: correlación real con el real brasileño, el dólar global y las tasas de EE.UU., con los saltos de precio explicados día a día.",
+    "title": "¿Por qué sube o baja el dólar en Uruguay?",
+    "subtitle": "Qué factores mueven la cotización, medido con datos.",
+    "todayTitle": "Qué está moviendo al dólar hoy",
+    "todayUp": "Hoy el dólar subió {pct}%",
+    "todayDown": "Hoy el dólar bajó {pct}%",
+    "todayFlat": "Hoy el dólar se mantuvo estable",
+    "todayNoData": "Todavía no hay datos del día de hoy.",
+    "todayTopDriver": "El factor más asociado a estos movimientos es {driver}.",
+    "todayHeadlines": "{count} titulares de hoy",
+    "chartTitle": "Cotización del dólar y días de mayor movimiento",
+    "chartHint": "Tocá un punto marcado para ver qué pasó ese día.",
+    "markerUp": "Salto al alza",
+    "markerDown": "Salto a la baja",
+    "driversTitle": "Qué mueve al dólar (correlación medida)",
+    "driversHint": "Correlación de los retornos diarios en la ventana disponible. No implica causalidad.",
+    "noData": "sin datos",
+    "sampleSize": "{n} días",
+    "strength": { "fuerte": "fuerte", "moderada": "moderada", "debil": "débil", "casiNula": "casi nula" },
+    "timelineTitle": "Saltos notables y su contexto",
+    "timelineAttribution": "Ese día se movieron:",
+    "timelineNoNews": "Sin noticias archivadas para esta fecha todavía.",
+    "methodologyTitle": "Cómo se calcula",
+    "methodologyBody": "Tomamos la cotización diaria del dólar (BROU/BCU) y la comparamos con indicadores que suelen mover al peso: el real brasileño, un índice amplio del dólar (FRED), el bono de EE.UU. a 10 años y el dólar argentino. Calculamos la correlación de Pearson sobre los retornos diarios (variaciones porcentuales), no sobre los niveles, para evitar correlaciones espurias. La correlación mide co-movimiento, no causalidad: un valor alto sugiere que dos cosas se mueven juntas, no que una cause la otra. Algunos días el dólar se mueve por factores locales (flujo, decisiones del BCU) sin un driver externo claro.",
+    "sources": "Fuentes: BROU/BCU (cotización), FRED (índice dólar, bono 10 años), argentinadatos.com (dólar Argentina). Datos al {date}.",
+    "disclaimer": "Información con fines educativos, no es asesoramiento financiero.",
+    "readings": {
+      "brl": {
+        "pos": "El dólar en Uruguay tiende a subir cuando se debilita el real brasileño.",
+        "neg": "El dólar en Uruguay tiende a bajar cuando se debilita el real brasileño.",
+        "weak": "El real brasileño explica poco el movimiento del dólar en Uruguay."
+      },
+      "dxy": {
+        "pos": "Cuando el dólar se fortalece en el mundo, el peso uruguayo tiende a debilitarse.",
+        "neg": "Cuando el dólar se fortalece en el mundo, el peso uruguayo tiende a fortalecerse.",
+        "weak": "El dólar global explica poco el movimiento del dólar en Uruguay."
+      },
+      "us10y": {
+        "pos": "Tasas más altas del bono de EE.UU. a 10 años suelen acompañar un dólar más fuerte acá.",
+        "neg": "Tasas más altas del bono de EE.UU. a 10 años suelen acompañar un dólar más débil acá.",
+        "weak": "El bono de EE.UU. a 10 años explica poco el movimiento del dólar en Uruguay."
+      },
+      "eurusd": {
+        "pos": "El euro y el dólar en Uruguay tienden a moverse en la misma dirección.",
+        "neg": "El euro y el dólar en Uruguay tienden a moverse en sentido opuesto.",
+        "weak": "El euro explica poco el movimiento del dólar en Uruguay."
+      },
+      "arBlue": {
+        "pos": "El dólar blue argentino se mueve levemente en línea con el dólar en Uruguay.",
+        "neg": "El dólar blue argentino se mueve levemente en sentido opuesto al dólar en Uruguay.",
+        "weak": "El dólar blue argentino casi no explica el movimiento del dólar en Uruguay."
+      },
+      "arOfficial": {
+        "pos": "El dólar oficial argentino se mueve levemente en línea con el dólar en Uruguay.",
+        "neg": "El dólar oficial argentino se mueve levemente en sentido opuesto al dólar en Uruguay.",
+        "weak": "El dólar oficial argentino casi no explica el movimiento del dólar en Uruguay."
+      },
+      "generic": {
+        "pos": "Este indicador tiende a moverse en la misma dirección que el dólar en Uruguay.",
+        "neg": "Este indicador tiende a moverse en sentido opuesto al dólar en Uruguay.",
+        "weak": "Este indicador explica poco el movimiento del dólar en Uruguay."
+      }
+    }
   }
 }

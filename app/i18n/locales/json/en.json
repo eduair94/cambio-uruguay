@@ -999,5 +999,71 @@
       "emailTitle": "Email",
       "socialTitle": "Social media"
     }
+  },
+  "porQueDolar": {
+    "metaTitle": "Why is the dollar rising or falling in Uruguay? Analysis and correlation",
+    "metaDescription": "What moves the dollar in Uruguay: real correlation with the Brazilian real, the global dollar and US rates, with the price jumps explained day by day.",
+    "title": "Why is the dollar rising or falling in Uruguay?",
+    "subtitle": "What factors move the exchange rate, measured with data.",
+    "todayTitle": "What's moving the dollar today",
+    "todayUp": "Today the dollar rose {pct}%",
+    "todayDown": "Today the dollar fell {pct}%",
+    "todayFlat": "Today the dollar held steady",
+    "todayNoData": "There's no data for today yet.",
+    "todayTopDriver": "The factor most associated with these moves is {driver}.",
+    "todayHeadlines": "{count} headlines today",
+    "chartTitle": "Dollar exchange rate and days of biggest moves",
+    "chartHint": "Tap a marked point to see what happened that day.",
+    "markerUp": "Upward jump",
+    "markerDown": "Downward jump",
+    "driversTitle": "What moves the dollar (measured correlation)",
+    "driversHint": "Correlation of daily returns over the available window. Does not imply causation.",
+    "noData": "no data",
+    "sampleSize": "{n} days",
+    "strength": { "fuerte": "strong", "moderada": "moderate", "debil": "weak", "casiNula": "almost none" },
+    "timelineTitle": "Notable jumps and their context",
+    "timelineAttribution": "That day, these moved:",
+    "timelineNoNews": "No archived news for this date yet.",
+    "methodologyTitle": "How it's calculated",
+    "methodologyBody": "We take the daily dollar exchange rate (BROU/BCU) and compare it against indicators that tend to move the peso: the Brazilian real, a broad dollar index (FRED), the US 10-year bond yield, and the Argentine dollar. We calculate the Pearson correlation on daily returns (percentage changes), not on levels, to avoid spurious correlations. Correlation measures co-movement, not causation: a high value suggests two things move together, not that one causes the other. On some days the dollar moves due to local factors (flow, BCU decisions) with no clear external driver.",
+    "sources": "Sources: BROU/BCU (exchange rate), FRED (dollar index, 10-year bond), argentinadatos.com (Argentine dollar). Data as of {date}.",
+    "disclaimer": "Information for educational purposes only, not financial advice.",
+    "readings": {
+      "brl": {
+        "pos": "The dollar in Uruguay tends to rise when the Brazilian real weakens.",
+        "neg": "The dollar in Uruguay tends to fall when the Brazilian real weakens.",
+        "weak": "The Brazilian real explains little of the dollar's movement in Uruguay."
+      },
+      "dxy": {
+        "pos": "When the dollar strengthens globally, the Uruguayan peso tends to weaken.",
+        "neg": "When the dollar strengthens globally, the Uruguayan peso tends to strengthen.",
+        "weak": "The global dollar explains little of the dollar's movement in Uruguay."
+      },
+      "us10y": {
+        "pos": "Higher US 10-year bond yields tend to accompany a stronger dollar here.",
+        "neg": "Higher US 10-year bond yields tend to accompany a weaker dollar here.",
+        "weak": "The US 10-year bond explains little of the dollar's movement in Uruguay."
+      },
+      "eurusd": {
+        "pos": "The euro and the dollar in Uruguay tend to move in the same direction.",
+        "neg": "The euro and the dollar in Uruguay tend to move in opposite directions.",
+        "weak": "The euro explains little of the dollar's movement in Uruguay."
+      },
+      "arBlue": {
+        "pos": "The Argentine blue dollar moves slightly in line with the dollar in Uruguay.",
+        "neg": "The Argentine blue dollar moves slightly opposite to the dollar in Uruguay.",
+        "weak": "The Argentine blue dollar barely explains the dollar's movement in Uruguay."
+      },
+      "arOfficial": {
+        "pos": "The official Argentine dollar moves slightly in line with the dollar in Uruguay.",
+        "neg": "The official Argentine dollar moves slightly opposite to the dollar in Uruguay.",
+        "weak": "The official Argentine dollar barely explains the dollar's movement in Uruguay."
+      },
+      "generic": {
+        "pos": "This indicator tends to move in the same direction as the dollar in Uruguay.",
+        "neg": "This indicator tends to move in the opposite direction from the dollar in Uruguay.",
+        "weak": "This indicator explains little of the dollar's movement in Uruguay."
+      }
+    }
   }
 }

@@ -992,5 +992,71 @@
       "emailTitle": "E-mail",
       "socialTitle": "Redes sociais"
     }
+  },
+  "porQueDolar": {
+    "metaTitle": "Por que o dólar sobe ou desce no Uruguai? Análise e correlação",
+    "metaDescription": "O que move o dólar no Uruguai: correlação real com o real brasileiro, o dólar global e as taxas de juros dos EUA, com os saltos de preço explicados dia a dia.",
+    "title": "Por que o dólar sobe ou desce no Uruguai?",
+    "subtitle": "Quais fatores movem a cotação, medido com dados.",
+    "todayTitle": "O que está movendo o dólar hoje",
+    "todayUp": "Hoje o dólar subiu {pct}%",
+    "todayDown": "Hoje o dólar caiu {pct}%",
+    "todayFlat": "Hoje o dólar se manteve estável",
+    "todayNoData": "Ainda não há dados de hoje.",
+    "todayTopDriver": "O fator mais associado a esses movimentos é {driver}.",
+    "todayHeadlines": "{count} manchetes de hoje",
+    "chartTitle": "Cotação do dólar e dias de maior movimento",
+    "chartHint": "Toque em um ponto marcado para ver o que aconteceu naquele dia.",
+    "markerUp": "Salto de alta",
+    "markerDown": "Salto de baixa",
+    "driversTitle": "O que move o dólar (correlação medida)",
+    "driversHint": "Correlação dos retornos diários na janela disponível. Não implica causalidade.",
+    "noData": "sem dados",
+    "sampleSize": "{n} dias",
+    "strength": { "fuerte": "forte", "moderada": "moderada", "debil": "fraca", "casiNula": "quase nula" },
+    "timelineTitle": "Saltos notáveis e seu contexto",
+    "timelineAttribution": "Naquele dia, se moveram:",
+    "timelineNoNews": "Ainda não há notícias arquivadas para esta data.",
+    "methodologyTitle": "Como é calculado",
+    "methodologyBody": "Pegamos a cotação diária do dólar (BROU/BCU) e a comparamos com indicadores que costumam mover o peso: o real brasileiro, um índice amplo do dólar (FRED), o título do Tesouro dos EUA de 10 anos e o dólar argentino. Calculamos a correlação de Pearson sobre os retornos diários (variações percentuais), não sobre os níveis, para evitar correlações espúrias. A correlação mede co-movimento, não causalidade: um valor alto sugere que duas coisas se movem juntas, não que uma cause a outra. Em alguns dias o dólar se move por fatores locais (fluxo, decisões do BCU) sem um driver externo claro.",
+    "sources": "Fontes: BROU/BCU (cotação), FRED (índice do dólar, título de 10 anos), argentinadatos.com (dólar argentino). Dados de {date}.",
+    "disclaimer": "Informação com fins educativos, não é aconselhamento financeiro.",
+    "readings": {
+      "brl": {
+        "pos": "O dólar no Uruguai tende a subir quando o real brasileiro se enfraquece.",
+        "neg": "O dólar no Uruguai tende a cair quando o real brasileiro se enfraquece.",
+        "weak": "O real brasileiro explica pouco o movimento do dólar no Uruguai."
+      },
+      "dxy": {
+        "pos": "Quando o dólar se fortalece no mundo, o peso uruguaio tende a se enfraquecer.",
+        "neg": "Quando o dólar se fortalece no mundo, o peso uruguaio tende a se fortalecer.",
+        "weak": "O dólar global explica pouco o movimento do dólar no Uruguai."
+      },
+      "us10y": {
+        "pos": "Taxas mais altas do título do Tesouro dos EUA de 10 anos costumam acompanhar um dólar mais forte aqui.",
+        "neg": "Taxas mais altas do título do Tesouro dos EUA de 10 anos costumam acompanhar um dólar mais fraco aqui.",
+        "weak": "O título do Tesouro dos EUA de 10 anos explica pouco o movimento do dólar no Uruguai."
+      },
+      "eurusd": {
+        "pos": "O euro e o dólar no Uruguai tendem a se mover na mesma direção.",
+        "neg": "O euro e o dólar no Uruguai tendem a se mover em sentido oposto.",
+        "weak": "O euro explica pouco o movimento do dólar no Uruguai."
+      },
+      "arBlue": {
+        "pos": "O dólar blue argentino se move levemente em linha com o dólar no Uruguai.",
+        "neg": "O dólar blue argentino se move levemente em sentido oposto ao dólar no Uruguai.",
+        "weak": "O dólar blue argentino quase não explica o movimento do dólar no Uruguai."
+      },
+      "arOfficial": {
+        "pos": "O dólar oficial argentino se move levemente em linha com o dólar no Uruguai.",
+        "neg": "O dólar oficial argentino se move levemente em sentido oposto ao dólar no Uruguai.",
+        "weak": "O dólar oficial argentino quase não explica o movimento do dólar no Uruguai."
+      },
+      "generic": {
+        "pos": "Este indicador tende a se mover na mesma direção que o dólar no Uruguai.",
+        "neg": "Este indicador tende a se mover em sentido oposto ao dólar no Uruguai.",
+        "weak": "Este indicador explica pouco o movimento do dólar no Uruguai."
+      }
+    }
   }
 }
