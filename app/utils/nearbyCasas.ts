@@ -30,9 +30,7 @@ export function rankNearbyCasas<T extends { origin: string; lat: number; lng: nu
   currency: string,
   direction: 'buy' | 'sell'
 ): RankedCasa<T>[] {
-  const casaByCode = new Map(
-    reputations.filter(r => r.category === 'casa').map(r => [r.code, r])
-  )
+  const casaByCode = new Map(reputations.filter(r => r.category === 'casa').map(r => [r.code, r]))
 
   const nearestByOrigin = new Map<string, { branch: T; distanceKm: number; rate: number }>()
   for (const b of branches || []) {
@@ -62,8 +60,7 @@ export function rankNearbyCasas<T extends { origin: string; lat: number; lng: nu
   const scored: RankedCasa<T>[] = entries.map(([origin, e]) => {
     const casa = casaByCode.get(origin)!
     const rateScore = rateSpan === 0 ? 1 : 1 - Math.abs(bestRate - e.rate) / rateSpan
-    const distanceScore =
-      distanceSpan === 0 ? 1 : 1 - (e.distanceKm - minDistance) / distanceSpan
+    const distanceScore = distanceSpan === 0 ? 1 : 1 - (e.distanceKm - minDistance) / distanceSpan
     const ratingScore = (casa.googleRating ?? NEUTRAL_RATING) / 5
     const score =
       rateScore * WEIGHT_RATE + distanceScore * WEIGHT_DISTANCE + ratingScore * WEIGHT_RATING
