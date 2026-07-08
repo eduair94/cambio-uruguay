@@ -82,6 +82,7 @@
     "title": "Encontrá la mejor casa de cambio cerca tuyo",
     "subtitle": "Combinamos distancia, cotización y reseñas de Google para recomendarte la mejor opción. Solo casas de cambio reales — nunca bancos ni fintech.",
     "chooseCity": "O elegí tu ciudad",
+    "geoDenied": "No pudimos obtener tu ubicación. Elegí tu ciudad abajo.",
     "sortSmart": "Recomendado",
     "sortDistance": "Más cerca",
     "sortRate": "Mejor tasa",

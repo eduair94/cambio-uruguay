@@ -225,7 +225,7 @@ function locate() {
       locating.value = false
     },
     () => {
-      geoError.value = t('map.geoDenied')
+      geoError.value = t('nearbyCasas.geoDenied')
       locating.value = false
     },
     { enableHighAccuracy: true, timeout: 8000 }
