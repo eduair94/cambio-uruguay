@@ -108,7 +108,13 @@
             color="primary"
             @update:model-value="v => toggle(a, !!v)"
           />
-          <VBtn icon variant="text" size="small" @click="remove(a._id)">
+          <VBtn
+            icon
+            variant="text"
+            size="small"
+            :aria-label="$t('alerts.delete')"
+            @click="remove(a._id)"
+          >
             <VIcon>mdi-delete-outline</VIcon>
           </VBtn>
         </template>

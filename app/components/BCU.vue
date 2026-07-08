@@ -16,7 +16,7 @@
       <v-toolbar dark color="primary">
         <v-toolbar-title>{{ $t('bcu_regul') }}</v-toolbar-title>
         <v-spacer />
-        <v-btn icon dark @click="dialog = false">
+        <v-btn icon dark :aria-label="$t('cerrar')" @click="dialog = false">
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-toolbar>
@@ -57,7 +57,14 @@
       </div>
       <v-card-actions>
         <v-spacer />
-        <v-btn class="mb-2" color="primary" link target="_blank" :href="item.localData.bcu">
+        <v-btn
+          class="mb-2"
+          color="primary"
+          link
+          target="_blank"
+          rel="noopener noreferrer"
+          :href="item.localData.bcu"
+        >
           {{ $t('sitioWeb') }} BCU
         </v-btn>
       </v-card-actions>

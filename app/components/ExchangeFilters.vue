@@ -50,6 +50,7 @@
             variant="text"
             color="primary"
             :title="$t('resetDate')"
+            :aria-label="$t('resetDate')"
             @click="$emit('resetDate')"
           >
             <VIcon>mdi-restore</VIcon>

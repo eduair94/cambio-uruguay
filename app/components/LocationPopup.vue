@@ -14,7 +14,7 @@
         <v-toolbar dark color="primary">
           <v-toolbar-title>{{ $t('confirmarUbicacion') }}</v-toolbar-title>
           <v-spacer />
-          <v-btn icon dark @click="dialog = false">
+          <v-btn icon dark :aria-label="$t('cerrar')" @click="dialog = false">
             <v-icon>mdi-close</v-icon>
           </v-btn>
         </v-toolbar>
@@ -34,11 +34,11 @@
           </div>
           <div class="location_map">
             <client-only>
-              <l-map ref="map" :zoom="13" :center="[latitude, longitude]" @click="changeMarker">
-                <l-tile-layer url="http://{s}.tile.osm.org/{z}/{x}/{y}.png" />
-                <l-circle v-if="radius" :lat-lng="[latitude, longitude]" :radius="radius * 1000" />
-                <l-marker :lat-lng="[latitude, longitude]" />
-              </l-map>
+              <LMap ref="map" :zoom="13" :center="[latitude, longitude]" @click="changeMarker">
+                <LTileLayer url="http://{s}.tile.osm.org/{z}/{x}/{y}.png" />
+                <LCircle v-if="radius" :lat-lng="[latitude, longitude]" :radius="radius * 1000" />
+                <LMarker :lat-lng="[latitude, longitude]" />
+              </LMap>
             </client-only>
           </div>
           <v-text-field
@@ -62,6 +62,11 @@
 </template>
 
 <script setup lang="ts">
+// Explicit (not module-global) so leaflet's CSS + JS only ship on the routes
+// that render this component, instead of every page — see nuxt.config.ts.
+import { LCircle, LMap, LMarker, LTileLayer } from '@vue-leaflet/vue-leaflet'
+import 'leaflet/dist/leaflet.css'
+
 const { $i18n } = useNuxtApp()
 const apiService = useApiService()
 
@@ -173,8 +178,8 @@ const setMap = async () => {
       zoomOffset: -1,
       minZoom: 1,
       attribution:
-        '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a>, ' +
-        '<a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>',
+        '<a href="https://www.maptiler.com/copyright/" target="_blank" rel="noopener">&copy; MapTiler</a>, ' +
+        '<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">&copy; OpenStreetMap contributors</a>',
       crossOrigin: true,
     }).addTo(mapInstance)
 
@@ -191,8 +196,8 @@ const setMap = async () => {
           zoomOffset: -1,
           minZoom: 1,
           attribution:
-            '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a>, ' +
-            '<a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>',
+            '<a href="https://www.maptiler.com/copyright/" target="_blank" rel="noopener">&copy; MapTiler</a>, ' +
+            '<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">&copy; OpenStreetMap contributors</a>',
           crossOrigin: true,
         }).addTo(mapInstance)
         searchAddress()

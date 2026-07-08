@@ -198,6 +198,7 @@ useHead({
               '@type': 'BlogPosting',
               headline: post.value?.title,
               description: post.value?.summary,
+              image: `https://cambio-uruguay.com/__og-image__/image/blog/${slug.value}/og.png`,
               datePublished: post.value?.createdAt,
               dateModified: post.value?.createdAt,
               inLanguage: 'es-UY',

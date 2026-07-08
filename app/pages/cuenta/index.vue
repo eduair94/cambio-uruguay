@@ -24,7 +24,13 @@
                     {{ $t('account.savedAt') }} {{ formatDate(item.createdAt) }}
                   </div>
                 </div>
-                <VBtn icon variant="text" size="small" @click="remove(item._id)">
+                <VBtn
+                  icon
+                  variant="text"
+                  size="small"
+                  :aria-label="`${$t('account.remove')}: ${item.title}`"
+                  @click="remove(item._id)"
+                >
                   <VIcon>mdi-delete-outline</VIcon>
                 </VBtn>
               </div>
@@ -63,7 +69,13 @@
             <template #prepend><VIcon color="amber">mdi-star</VIcon></template>
             <VListItemTitle>{{ id.split(':')[1] }}</VListItemTitle>
             <template #append>
-              <VBtn icon variant="text" size="small" @click="removeFavorite(id)">
+              <VBtn
+                icon
+                variant="text"
+                size="small"
+                :aria-label="`${$t('account.remove')}: ${id.split(':')[1]}`"
+                @click="removeFavorite(id)"
+              >
                 <VIcon>mdi-delete-outline</VIcon>
               </VBtn>
             </template>

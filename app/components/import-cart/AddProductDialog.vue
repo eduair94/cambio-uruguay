@@ -54,6 +54,7 @@
         <VImg
           v-if="form.imageUrl"
           :src="form.imageUrl"
+          :alt="form.name || t('importCart.add.title')"
           max-height="120"
           class="mb-4 rounded preview-img"
           contain

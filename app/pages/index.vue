@@ -1867,7 +1867,9 @@ const webApplicationSchema = computed(() => ({
   // real provider (e.g. live Trustpilot count via widget/API), never hardcoded.
 }))
 
-// 2. BreadcrumbList Schema
+// 2. BreadcrumbList Schema. Single entry: the home page has no parent to
+// list, and a 2-item list pointing both entries at the same URL is an
+// invalid/duplicate breadcrumb per Google's structured-data guidance.
 const breadcrumbSchema = computed(() => ({
   '@context': 'https://schema.org',
   '@type': 'BreadcrumbList',
@@ -1876,12 +1878,6 @@ const breadcrumbSchema = computed(() => ({
       '@type': 'ListItem',
       position: 1,
       name: 'Inicio',
-      item: 'https://cambio-uruguay.com',
-    },
-    {
-      '@type': 'ListItem',
-      position: 2,
-      name: 'Cotización del Dólar en Uruguay',
       item: 'https://cambio-uruguay.com',
     },
   ],

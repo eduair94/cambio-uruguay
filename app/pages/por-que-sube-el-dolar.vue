@@ -183,6 +183,7 @@ useHead(() => ({
             '@type': 'Article',
             headline: t('porQueDolar.metaTitle'),
             description: t('porQueDolar.metaDescription'),
+            image: 'https://cambio-uruguay.com/__og-image__/image/por-que-sube-el-dolar/og.png',
             datePublished: analysis.value?.asOf ?? new Date().toISOString().slice(0, 10),
             dateModified: analysis.value?.asOf ?? new Date().toISOString().slice(0, 10),
             inLanguage: 'es-UY',
@@ -232,6 +233,14 @@ useHead(() => ({
    related but distinct. */
 .hero {
   background: linear-gradient(135deg, #0f172a 0%, #1e3a63 45%, #16c784 100%);
+}
+
+/* Hero surface is hardcoded dark in BOTH themes, but the global light-mode
+   `text-grey-lighten-*` -> dark-ink remap (higher specificity, see
+   critical.css) turns the subtitle near-black on this dark gradient.
+   Re-pin it light under the light theme so it stays legible. */
+.v-theme--light .hero .text-grey-lighten-2 {
+  color: rgba(255, 255, 255, 0.82) !important;
 }
 
 .chart-skeleton {

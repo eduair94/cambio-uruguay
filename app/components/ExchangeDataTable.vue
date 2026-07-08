@@ -42,7 +42,12 @@
     </template>
 
     <template #item.localData.website="{ item }">
-      <a class="text-white d-block website_link" target="_blank" :href="item.localData.website">
+      <a
+        class="text-white d-block website_link"
+        target="_blank"
+        rel="noopener noreferrer"
+        :href="item.localData.website"
+      >
         {{ item.localData.website.replace(/(^\w+:|^)\/\//, '').replace(/\/$/, '') }}
       </a>
     </template>
@@ -101,6 +106,7 @@
         v-if="item.distance !== noDistance"
         class="text-white"
         target="_blank"
+        rel="noopener noreferrer"
         :href="getDistanceLink(item)"
       >
         {{ formatDistance(item.distance) }}

@@ -3,7 +3,13 @@
     <VCard>
       <VCardTitle class="d-flex align-center justify-space-between">
         <span>{{ $t('auth.login') }}</span>
-        <VBtn icon variant="text" size="small" @click="store.closeDialog()">
+        <VBtn
+          icon
+          variant="text"
+          size="small"
+          :aria-label="$t('cerrar')"
+          @click="store.closeDialog()"
+        >
           <VIcon>mdi-close</VIcon>
         </VBtn>
       </VCardTitle>

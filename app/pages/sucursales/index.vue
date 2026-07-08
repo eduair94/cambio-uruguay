@@ -157,6 +157,7 @@
                 class="mt-1"
                 icon="mdi-filter-remove"
                 :disabled="!searchQuery && !selectedDepartment"
+                :aria-label="$t('sucursales.limpiarFiltros')"
                 size="small"
                 @click="clearAllFilters"
               />

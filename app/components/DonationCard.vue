@@ -53,6 +53,7 @@
         <div class="d-flex justify-space-between align-center">
           <a
             target="_blank"
+            rel="noopener noreferrer"
             :aria-label="$t('donation.donatePaypal')"
             class="donation-link"
             href="https://ko-fi.com/cambio_uruguay"
@@ -71,6 +72,7 @@
 
           <a
             target="_blank"
+            rel="noopener noreferrer"
             :aria-label="$t('donation.donateMercadoPago')"
             class="donation-link"
             href="https://mpago.la/19j46vX"
@@ -92,6 +94,7 @@
         <div class="text-center mt-2">
           <a
             target="_blank"
+            rel="noopener noreferrer"
             class="text-caption text-grey-lighten-2 text-decoration-none"
             href="https://www.trustpilot.com/review/cambio-uruguay.com"
             @click="trackDonation('trustpilot')"

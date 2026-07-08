@@ -37,6 +37,7 @@
             <VBtn
               :href="deepLink"
               target="_blank"
+              rel="noopener noreferrer"
               color="info"
               variant="flat"
               size="small"

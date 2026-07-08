@@ -185,41 +185,30 @@ export default defineNuxtPlugin(() => {
       }
     },
 
-    // Generate meta tags for Open Graph
-    generateOpenGraphMeta(
-      title: string,
-      description: string,
-      url: string,
-      image?: string
-    ): Record<string, string> {
+    // Generate meta tags for Open Graph. Image tags are intentionally NOT
+    // included here — nuxt-og-image's defineOgImageComponent (called
+    // per-page, see preguntas-frecuentes.vue) is the single source of truth
+    // for og:image/twitter:image; setting them here too produced duplicate,
+    // competing tags on any page that used both.
+    generateOpenGraphMeta(title: string, description: string, url: string): Record<string, string> {
       return {
         'og:type': 'website',
         'og:site_name': 'Cambio Uruguay',
         'og:title': title,
         'og:description': description,
         'og:url': url,
-        'og:image': image || 'https://cambio-uruguay.com/img/banner.png',
-        'og:image:width': '1200',
-        'og:image:height': '630',
-        'og:image:alt': title,
         'og:locale': 'es_ES',
       }
     },
 
-    // Generate Twitter Card meta tags
-    generateTwitterMeta(
-      title: string,
-      description: string,
-      image?: string
-    ): Record<string, string> {
+    // Generate Twitter Card meta tags (image handled by nuxt-og-image, see above).
+    generateTwitterMeta(title: string, description: string): Record<string, string> {
       return {
         'twitter:card': 'summary_large_image',
         'twitter:site': '@cambio_uruguay',
         'twitter:creator': '@cambio_uruguay',
         'twitter:title': title,
         'twitter:description': description,
-        'twitter:image': image || 'https://cambio-uruguay.com/img/banner.png',
-        'twitter:image:alt': title,
       }
     },
 
@@ -238,13 +227,8 @@ export default defineNuxtPlugin(() => {
         title: options.title,
         description: options.description,
         keywords: options.keywords,
-        ...this.generateOpenGraphMeta(
-          options.title,
-          options.description,
-          options.canonicalUrl,
-          options.ogImage
-        ),
-        ...this.generateTwitterMeta(options.title, options.description, options.ogImage),
+        ...this.generateOpenGraphMeta(options.title, options.description, options.canonicalUrl),
+        ...this.generateTwitterMeta(options.title, options.description),
       })
 
       // Set canonical URL

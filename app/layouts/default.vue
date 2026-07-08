@@ -210,7 +210,7 @@
           height="33"
           alt="Cambio Uruguay - Logo oficial para comparar cotizaciones de cambio"
           class="logo_image"
-          src="/img/logo.png"
+          src="/img/logo.webp"
           loading="eager"
         />
       </NuxtLink>

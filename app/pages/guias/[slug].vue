@@ -184,6 +184,7 @@ useHead({
               '@type': 'Article',
               headline: guide.value?.title,
               description: guide.value?.description,
+              image: `https://cambio-uruguay.com/__og-image__/image/guias/${slug.value}/og.png`,
               datePublished: guide.value?.updatedAt,
               dateModified: guide.value?.updatedAt,
               inLanguage: 'es-UY',

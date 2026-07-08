@@ -261,16 +261,26 @@
               {{ $t('evolucionCotizaciones') }} - {{ route.params.currency }}
               <v-spacer />
               <v-btn-toggle v-model="chartType" mandatory density="compact">
-                <v-btn variant="outlined" size="small" value="line">
+                <v-btn
+                  variant="outlined"
+                  size="small"
+                  value="line"
+                  :aria-label="$t('chartTypeLine')"
+                >
                   <v-icon size="small">mdi-chart-line</v-icon>
                 </v-btn>
-                <v-btn variant="outlined" size="small" value="bar">
+                <v-btn variant="outlined" size="small" value="bar" :aria-label="$t('chartTypeBar')">
                   <v-icon size="small">mdi-chart-bar</v-icon>
                 </v-btn>
               </v-btn-toggle>
             </v-card-title>
             <v-card-text>
-              <div :class="['chart-container']" style="position: relative; height: 400px">
+              <div
+                :class="['chart-container']"
+                role="img"
+                :aria-label="`${$t('evolucionCotizaciones')} - ${route.params.currency}`"
+                style="position: relative; height: 400px"
+              >
                 <Line
                   v-if="chartType === 'line'"
                   :data="chartData"
@@ -378,7 +388,7 @@ import {
   Title,
   Tooltip,
 } from 'chart.js'
-import moment from 'moment'
+import { format, parseISO } from 'date-fns'
 import { computed, ref } from 'vue'
 import { Bar, Line } from 'vue-chartjs'
 import { useRoute, useRouter } from 'vue-router'
@@ -673,7 +683,7 @@ const chartData = computed(() => {
   if (!(evolutionData.value as any)?.evolution) return { labels: [], datasets: [] }
 
   const evolution = (evolutionData.value as any).evolution
-  const labels = evolution.map((item: EvolutionItem) => moment(item.date).format('MM/YYYY'))
+  const labels = evolution.map((item: EvolutionItem) => format(parseISO(item.date), 'MM/yyyy'))
   const dates = evolution.map((item: EvolutionItem) => item.date)
   // Chart.js's PointElement routes an unset pointBackgroundColor to the
   // dataset's own `backgroundColor` (the translucent rgba, NOT borderColor).
@@ -763,7 +773,7 @@ const chartOptions = computed(() => ({
           const dataIndex = context[0].dataIndex
           const evolution = (evolutionData.value as any).evolution
           const date = evolution[dataIndex].date
-          return moment(date).format('DD/MM/YYYY')
+          return format(parseISO(date), 'dd/MM/yyyy')
         },
         label: (context: any) => {
           // Use inline formatting to avoid referencing this
@@ -889,13 +899,13 @@ const formatPercentage = (value: number): string => {
 }
 
 const formatDate = (dateString: string): string => {
-  return moment(dateString).format('DD/MM/YYYY')
+  return format(parseISO(dateString), 'dd/MM/yyyy')
 }
 
 const formatDateRange = (): string => {
   if (!(evolutionData.value as any)?.statistics?.dateRange) return ''
   const { start, end } = (evolutionData.value as any).statistics.dateRange
-  return `${moment(start).format('DD/MM/YY')} - ${moment(end).format('DD/MM/YY')}`
+  return `${format(parseISO(start), 'dd/MM/yy')} - ${format(parseISO(end), 'dd/MM/yy')}`
 }
 
 const getBuyColor = (value: number): string => {

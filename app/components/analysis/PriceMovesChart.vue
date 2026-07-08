@@ -18,7 +18,7 @@ import {
   PointElement,
   Tooltip,
 } from 'chart.js'
-import moment from 'moment'
+import { format, parseISO } from 'date-fns'
 import { Line } from 'vue-chartjs'
 
 // Register only the pieces this single-line chart needs (mirrors the
@@ -75,7 +75,7 @@ const markerColor = (direction: MovePoint['direction']) =>
   direction === 'up' ? UP_COLOR : direction === 'down' ? DOWN_COLOR : LINE_COLOR
 
 const chartData = computed(() => ({
-  labels: props.base.map(p => moment(p.date).format('DD/MM')),
+  labels: props.base.map(p => format(parseISO(p.date), 'dd/MM')),
   datasets: [
     {
       data: props.base.map(p => p.value),
@@ -118,7 +118,8 @@ const options = computed(() => ({
       callbacks: {
         title: (items: any[]) => {
           const i = items[0]?.dataIndex ?? 0
-          return moment(props.base[i]?.date).format('DD/MM/YYYY')
+          const d = props.base[i]?.date
+          return d ? format(parseISO(d), 'dd/MM/yyyy') : ''
         },
         label: (item: any) => {
           const point = props.base[item.dataIndex]

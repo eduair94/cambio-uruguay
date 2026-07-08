@@ -1,5 +1,5 @@
 <template>
-  <div class="chart-container">
+  <div class="chart-container" role="img" :aria-label="ariaLabel">
     <canvas ref="chartCanvas" />
   </div>
 </template>
@@ -40,6 +40,10 @@ export default {
     options: {
       type: Object,
       default: () => ({}),
+    },
+    ariaLabel: {
+      type: String,
+      default: '',
     },
   },
   data() {

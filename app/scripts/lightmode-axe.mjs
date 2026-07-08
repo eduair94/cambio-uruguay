@@ -10,6 +10,7 @@ const ALL_PAGES = [
   // --- core / landing ---
   '/',
   '/dolar-hoy',
+  '/por-que-sube-el-dolar',
   '/comparar',
   '/avanzado',
   '/mapa',

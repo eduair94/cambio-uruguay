@@ -1,9 +1,15 @@
 <template>
   <v-dialog v-model="dialog" :fullscreen="mobile" width="1500px">
     <template #activator="{ props }">
-      <a class="text-white" :href="maps" target="_blank" v-bind="props" @click.prevent="getData">{{
-        t('buscarSucursal')
-      }}</a>
+      <a
+        class="text-white"
+        :href="maps"
+        target="_blank"
+        rel="noopener noreferrer"
+        v-bind="props"
+        @click.prevent="getData"
+        >{{ t('buscarSucursal') }}</a
+      >
     </template>
     <v-card>
       <v-toolbar color="primary" theme="dark">
@@ -17,12 +23,13 @@
               color="blue-darken-4"
               :href="maps"
               target="_blank"
+              rel="noopener noreferrer"
               >GOOGLE MAPS</v-btn
             >
           </div>
         </v-toolbar-title>
         <v-spacer />
-        <v-btn icon @click="dialog = false">
+        <v-btn icon :aria-label="$t('cerrar')" @click="dialog = false">
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-toolbar>
@@ -33,6 +40,7 @@
         color="blue-darken-4"
         :href="maps"
         target="_blank"
+        rel="noopener noreferrer"
         >GOOGLE MAPS</v-btn
       >
       <div v-if="!loaded" class="px-4 pt-3 text-h5">{{ t('cargando') }}...</div>
@@ -58,7 +66,7 @@
           class="elevation-0 search_exchange"
         >
           <template #item.Direccion="{ item }">
-            <a target="_blank" class="text-white" :href="getHref(item)">
+            <a target="_blank" rel="noopener noreferrer" class="text-white" :href="getHref(item)">
               {{ item.Direccion }}
             </a>
           </template>
@@ -85,7 +93,7 @@
             </span>
           </template>
           <template #item.distance="{ item }">
-            <a class="text-white" :href="getMaps(item)" target="_blank">
+            <a class="text-white" :href="getMaps(item)" target="_blank" rel="noopener noreferrer">
               {{ formatDistance(item.distance) }}</a
             >
           </template>

@@ -255,6 +255,7 @@ useSeoMeta({
   ogTitle: () => t('estado.seoTitle'),
   ogDescription: () => t('estado.seoDescription'),
   twitterCard: 'summary_large_image',
+  robots: 'noindex, follow',
 })
 defineOgImageComponent('Cambio', {
   title: () => t('estado.title'),

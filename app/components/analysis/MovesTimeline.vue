@@ -15,7 +15,12 @@
         </div>
 
         <div class="timeline-content">
-          <button type="button" class="timeline-header" @click="emit('select', move.date)">
+          <button
+            type="button"
+            class="timeline-header"
+            :aria-label="`${t('porQueDolar.timelineSelectMove')} ${formatDate(move.date)}, ${signedPct(move.pctChange)}`"
+            @click="emit('select', move.date)"
+          >
             <span class="text-subtitle-2 font-weight-medium">{{ formatDate(move.date) }}</span>
             <span class="stat-value text-body-2 font-weight-bold" :class="pctClass(move.direction)">
               {{ signedPct(move.pctChange) }}
@@ -62,7 +67,7 @@
 </template>
 
 <script setup lang="ts">
-import moment from 'moment'
+import { format, parseISO } from 'date-fns'
 import { attributeMove, type DriverDayMove } from '~/utils/attribution'
 
 const props = defineProps<{
@@ -86,7 +91,7 @@ const ordered = computed(() => [...props.moves].sort((a, b) => b.date.localeComp
 
 const attribution = (date: string) => attributeMove(date, props.driverSeries).slice(0, 3)
 
-const formatDate = (date: string) => moment(date).format('DD/MM/YYYY')
+const formatDate = (date: string) => format(parseISO(date), 'dd/MM/yyyy')
 
 const signedPct = (pctChange: number) => `${pctChange >= 0 ? '+' : ''}${pctChange.toFixed(2)}%`
 

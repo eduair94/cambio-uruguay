@@ -11,6 +11,7 @@
           >{{ $t('info') }}
           <a
             target="_blank"
+            rel="noopener noreferrer"
             class="text-white"
             href="https://www.trustpilot.com/review/cambio-uruguay.com"
           >
@@ -20,6 +21,7 @@
         <div class="d-flex mt-2">
           <a
             target="_blank"
+            rel="noopener noreferrer"
             :aria-label="$t('donarPaypal')"
             class="text-white d-flex mr-4 align-center justify-content-left donation_logo"
             href="https://ko-fi.com/cambio_uruguay"
@@ -36,6 +38,7 @@
             :aria-label="$t('donarMercadoPago')"
             class="text-white d-flex align-center justify-content-left donation_logo"
             target="_blank"
+            rel="noopener noreferrer"
             href="https://mpago.la/19j46vX"
           >
             <img

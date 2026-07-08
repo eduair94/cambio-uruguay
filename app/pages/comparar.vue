@@ -109,7 +109,12 @@
             <v-card-text>
               <div class="chart-wrap">
                 <ClientOnly>
-                  <LineChart :key="chartKey" :chart-data="chartData" :options="chartOptions" />
+                  <LineChart
+                    :key="chartKey"
+                    :chart-data="chartData"
+                    :options="chartOptions"
+                    :aria-label="$t('compare.chartTitle', { currency: selectedCurrency })"
+                  />
                   <template #fallback>
                     <div class="d-flex align-center justify-center fill-height">
                       <v-progress-circular indeterminate color="primary" />
@@ -184,7 +189,7 @@
 
 <script setup lang="ts">
 import { useSeoMeta } from '#imports'
-import moment from 'moment'
+import { format, parseISO } from 'date-fns'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useDisplay } from 'vuetify/lib/composables/display.mjs'
@@ -329,7 +334,7 @@ const labelledSeries = computed<LabelledSeries[]>(() =>
 const merged = computed(() => buildComparisonChartData(labelledSeries.value, priceKind.value))
 
 const chartData = computed(() => ({
-  labels: merged.value.labels.map(date => moment(date).format('DD/MM/YY')),
+  labels: merged.value.labels.map(date => format(parseISO(date), 'dd/MM/yy')),
   datasets: merged.value.datasets.map((ds, i) => {
     const color = colorAt(i)
     return {

@@ -113,7 +113,7 @@
                 size="small"
               >
                 <v-avatar size="20" class="mr-2">
-                  <img :src="getCurrencyFlag(item.code)" :alt="item.code" />
+                  <img :src="getCurrencyFlag(item.code)" :alt="item.code" width="20" height="20" />
                 </v-avatar>
                 {{ item.code }}
               </v-btn>

@@ -134,6 +134,7 @@
         link
         color="red darken-4"
         target="_blank"
+        rel="noopener noreferrer"
         href="https://finanzas.com.uy/los-mejores-prestamos-de-bancos/"
       >
         {{ t('infoPrestamos') }}
@@ -141,8 +142,10 @@
       <v-btn
         color="primary"
         target="_blank"
+        rel="noopener noreferrer"
         link
         href="https://docs.google.com/document/d/1BBDrsiT778SEIn5hqYltl-7dxQq9dSeG/edit"
+        :aria-label="t('verDocumentoReferencia')"
       >
         <v-icon> mdi-file-document </v-icon>
       </v-btn>
@@ -151,11 +154,18 @@
         link
         color="grey darken-3"
         target="_blank"
+        rel="noopener noreferrer"
         href="https://github.com/eduair94/cambio-uruguay"
       >
         <v-icon large> mdi-github </v-icon>
       </v-btn>
-      <v-btn color="green darken-2" target="_blank" link href="https://status.cambio-uruguay.com">
+      <v-btn
+        color="green darken-2"
+        target="_blank"
+        rel="noopener noreferrer"
+        link
+        href="https://status.cambio-uruguay.com"
+      >
         {{ t('appStatus') }}
       </v-btn>
     </div>
@@ -729,7 +739,6 @@ const { data: initialData } = await useAsyncData(
   async () => {
     // Get date from query parameters for server-side compatibility
     const currentDate = getDateFromQuery()
-    console.log('Server-side fetching data for date:', currentDate)
 
     try {
       const result = await apiService.getProcessedExchangeData(currentDate)
@@ -768,8 +777,6 @@ const { data: initialData } = await useAsyncData(
     },
   }
 )
-
-console.log('Initial data from server:', initialData.value.queryParams)
 
 // Initialize data from server-side fetch
 if (initialData.value && initialData.value.exchangeData) {
@@ -1062,8 +1069,6 @@ const loadDataFromQueryParams = () => {
 
 // Lifecycle hooks
 onMounted(() => {
-  console.log('mounted index.vue')
-
   // Initialize date values on client side to prevent hydration mismatch
   const currentDate = new Date().toLocaleDateString('en-CA', {
     timeZone: 'America/Montevideo',
@@ -1075,7 +1080,6 @@ onMounted(() => {
   }
 
   // Apply server-side query parameters first
-  console.log('Initial data from server:', initialData.value)
   if (initialData.value?.queryParams) {
     applyServerSideQueryParams(initialData.value.queryParams)
   }

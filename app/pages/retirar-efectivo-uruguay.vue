@@ -249,6 +249,9 @@ const ivaSeasonal = computed(() =>
 // Per-locale canonical: localePath prefixes /en and /pt; es stays unprefixed.
 // hreflang alternates are injected globally by the layout (useLocaleHead).
 const canonicalUrl = computed(() => `https://cambio-uruguay.com${localePath(WITHDRAW_PATH)}`)
+const ogImageUrl = computed(
+  () => `https://cambio-uruguay.com/__og-image__/image${localePath(WITHDRAW_PATH)}/og.png`
+)
 
 // Short uppercase OG tag, localized.
 const ogTag = computed(
@@ -288,6 +291,7 @@ useHead(() => ({
             '@type': 'Article',
             headline: c.value.title,
             description: c.value.description,
+            image: ogImageUrl.value,
             datePublished: LAST_RESEARCHED,
             dateModified: LAST_RESEARCHED,
             inLanguage: c.value.lang,

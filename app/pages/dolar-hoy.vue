@@ -148,6 +148,14 @@ useHead(() => ({
 .hero {
   background: linear-gradient(135deg, #2f81f7 0%, #16c784 100%);
 }
+
+/* Hero surface is hardcoded bright in BOTH themes, but the global light-mode
+   `text-grey-lighten-*` -> dark-ink remap (higher specificity, see
+   critical.css) drops the subtitle contrast on this saturated gradient.
+   Re-pin it light under the light theme so it stays legible. */
+.v-theme--light .hero .text-grey-lighten-2 {
+  color: rgba(255, 255, 255, 0.92) !important;
+}
 .spark-lg :deep(.sparkline) {
   height: 60px;
 }

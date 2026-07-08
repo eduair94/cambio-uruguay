@@ -381,6 +381,7 @@
                 v-if="r.trustpilot"
                 :href="r.trustpilot.url"
                 target="_blank"
+                rel="noopener noreferrer"
                 size="small"
                 variant="tonal"
                 color="info"
@@ -393,6 +394,7 @@
                 v-if="r.bcu"
                 :href="r.bcu"
                 target="_blank"
+                rel="noopener noreferrer"
                 size="small"
                 variant="tonal"
                 color="success"
@@ -785,6 +787,9 @@ const categoryColor = (cat: CasaRow['category']): string =>
 
 // --- SEO -----------------------------------------------------------------------
 const canonicalUrl = computed(() => `https://cambio-uruguay.com${localePath(CASAS_PATH)}`)
+const ogImageUrl = computed(
+  () => `https://cambio-uruguay.com/__og-image__/image${localePath(CASAS_PATH)}/og.png`
+)
 const ogTag = computed(
   () => ({ es: 'COMPARATIVA', en: 'COMPARISON', pt: 'COMPARATIVO' })[locale.value] ?? 'COMPARATIVA'
 )
@@ -823,6 +828,7 @@ useHead(() => ({
             '@type': 'Article',
             headline: c.value.title,
             description: c.value.description,
+            image: ogImageUrl.value,
             datePublished: CASAS_LAST_RESEARCHED,
             dateModified: CASAS_LAST_RESEARCHED,
             inLanguage: c.value.lang,

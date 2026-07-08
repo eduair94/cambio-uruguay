@@ -301,7 +301,12 @@ export default defineNuxtConfig({
   modules: [
     //'@nuxtjs/web-vitals',
     '@nuxtjs/seo',
-    '@nuxtjs/leaflet',
+    // NOT '@nuxtjs/leaflet' — that module unconditionally pushes
+    // leaflet/dist/leaflet.css into Nuxt's GLOBAL css array, shipping it on
+    // every route (measured: 82KiB of the homepage's 87KiB stylesheet was
+    // unused). Only LocationPopup.vue (on /avanzado) uses the Vue wrapper
+    // components, so it imports '@vue-leaflet/vue-leaflet' + the CSS itself,
+    // scoping both to that route's own chunk. /mapa uses raw Leaflet only.
     '@nuxtjs/i18n',
     '@nuxtjs/sitemap',
     '@pinia/nuxt',

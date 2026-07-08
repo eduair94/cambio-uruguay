@@ -10,7 +10,12 @@
         </VBtn>
         <div class="pb-3 d-flex flex-wrap justify-center">
           <span class="mr-2">Síguenos en Twitter:</span>
-          <a class="no_link text-white" href="https://twitter.com/cambio_uruguay" target="_blank">
+          <a
+            class="no_link text-white"
+            href="https://twitter.com/cambio_uruguay"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <span class="mr-2 link_format">https://twitter.com/cambio_uruguay</span>
             <VIcon color="#00acee">mdi-twitter</VIcon>
           </a>
@@ -21,6 +26,7 @@
             class="no_link text-white"
             href="https://www.linkedin.com/company/cambio-uruguay/"
             target="_blank"
+            rel="noopener noreferrer"
           >
             <span class="mr-2 link_format">https://www.linkedin.com/company/cambio-uruguay/</span>
             <VIcon color="#0e76a8">mdi-linkedin</VIcon>
