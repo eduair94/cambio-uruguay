@@ -17,22 +17,31 @@ export interface AnalysisResult {
   headlines: { title: string; source: string; link: string; pubDate: string }[]
 }
 
-// Phase 1 anchors every currency's canonical series on BCU USD. Phase 3 will map
-// EUR/ARS to their own canonical origin/code.
-// IMPORTANT: BCU emits several `type` rows per date for USD (BILLETE/CABLE/PROMED.FONDO).
+// Phase 3: canonical anchors for USD, EUR, ARS. EUR has no BCU quote (verified —
+// BCU's currency set is USD/ARS/BRL/UI/UP/UR only), so it anchors on BROU, whose
+// EUR feed uses an empty `type` (single series, no BILLETE/CABLE-style ambiguity).
+// ARS mirrors USD exactly (BCU, BILLETE, same backfill/gap-detection tooling).
+// IMPORTANT: BCU emits several `type` rows per date for USD/ARS (BILLETE/CABLE/PROMED.FONDO).
 // Pin a single type or the adjacent-pair log-return math compares same-day spreads.
 // Matches app/composables/useDollarTrend.ts.
 const CANONICAL: Record<string, { origin: string; code: string; type: string }> = {
   USD: { origin: 'bcu', code: 'USD', type: 'BILLETE' },
+  EUR: { origin: 'brou', code: 'EUR', type: '' },
+  ARS: { origin: 'bcu', code: 'ARS', type: 'BILLETE' },
 }
 
 async function fetchCanonicalSeries(currency: string): Promise<SeriesPoint[]> {
   const anchor = CANONICAL[currency] ?? CANONICAL.USD!
   const base = useRuntimeConfig().apiBaseServer
-  const res = await $fetch<{ evolution?: { date?: string; buy?: number; sell?: number }[] }>(
-    `/evolution/${anchor.origin}/${anchor.code}/${anchor.type}`,
-    { baseURL: base, query: { period: 60 } }
-  )
+  // Omit the /type segment entirely when empty (EUR) — an untyped trailing
+  // segment would 404/produce a malformed URL, unlike a simply-absent one.
+  const path = anchor.type
+    ? `/evolution/${anchor.origin}/${anchor.code}/${anchor.type}`
+    : `/evolution/${anchor.origin}/${anchor.code}`
+  const res = await $fetch<{ evolution?: { date?: string; buy?: number; sell?: number }[] }>(path, {
+    baseURL: base,
+    query: { period: 60 },
+  })
   // Backend returns `date` as an ISO datetime ("...T00:00:00.000Z"); driver-snapshot and
   // news dates are plain YYYY-MM-DD. alignByDate() is an exact string join, so normalize
   // here or every driver correlation silently comes back r=0/n=0.

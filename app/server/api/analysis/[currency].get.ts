@@ -1,7 +1,7 @@
 // Correlation + notable moves + today's news for a currency (default USD).
 import { buildAnalysis } from '../../utils/analysis'
 
-const SUPPORTED = new Set(['USD']) // Phase 3 adds EUR, ARS
+const SUPPORTED = new Set(['USD', 'EUR', 'ARS'])
 
 export default defineCachedEventHandler(
   async event => {
