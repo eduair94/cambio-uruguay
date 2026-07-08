@@ -8,7 +8,9 @@ import { ingestDrivers } from '../../utils/drivers/ingest'
 import { archiveTodayNews } from '../../utils/priceNews'
 
 export default defineEventHandler(async event => {
-  const required = process.env.NUXT_DRIVERS_INGEST_TOKEN
+  // Raw process.env reads empty at pm2 runtime here — this app's secrets are
+  // baked from .env at BUILD time via useRuntimeConfig (see nuxt.config.ts).
+  const required = useRuntimeConfig().driversIngestToken
   if (required) {
     const provided = getHeader(event, 'x-ingest-token') || String(getQuery(event).token || '')
     if (provided !== required) {
