@@ -41,22 +41,16 @@ export function extractGroundedHeadlines(
     }
   }
 
-  const candidates: Array<{ idx: number; headline: GroundedHeadline; specificity: number }> = []
+  const out: GroundedHeadline[] = []
   chunks.forEach((chunk, idx) => {
     const uri = chunk.web?.uri
     if (!uri) return
     const domain = stripWww(chunk.web?.title ?? '')
-    const bestSupport = bestSupportForChunk.get(idx)
-    const rawTitle = bestSupport?.segment.text?.trim()
+    const rawTitle = bestSupportForChunk.get(idx)?.segment.text?.trim()
     const title = truncate(rawTitle || domain, 140)
-    const specificity = bestSupport?.groundingChunkIndices.length ?? Number.MAX_SAFE_INTEGER
-    candidates.push({ idx, headline: { title, source: domain, link: uri }, specificity })
+    out.push({ title, source: domain, link: uri })
   })
-
-  // Sort by specificity (fewer indices = more specific), then by original chunk index
-  candidates.sort((a, b) => a.specificity - b.specificity || a.idx - b.idx)
-
-  return candidates.slice(0, limit).map(c => c.headline)
+  return out.slice(0, limit)
 }
 
 /** True when Gemini's text reply signals it found nothing real (case-insensitive prefix match). */
