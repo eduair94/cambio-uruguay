@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import OpenAI from "openai";
 import { CambioObj } from "../interfaces/Cambio";
 import { aiInsightCache } from "./ai_insight_cache";
+import { BCU_ORIGIN, isPublicRate } from "./rate_source";
 import { redisCache } from "./redis_cache";
 
 dotenv.config();
@@ -68,14 +69,14 @@ const PROMPT_LABELS: Record<string, Record<string, string>> = {
     exchangeHouses: "casas de cambio",
     currencies: "monedas",
     operationTypes: "tipos de operación",
-    typeReference: "Referencia de tipos: BILLETE = efectivo, CABLE = transferencia bancaria internacional, TRANSFERENCIA = transferencia bancaria local, INTERBANCARIO = tipo de cambio de referencia exclusivo entre bancos, NO disponible para el público (no se puede comprar ni vender a este precio). Cuando recomiendes dónde comprar o vender, usa SOLO cotizaciones de tipo BILLETE, CABLE o TRANSFERENCIA. Las cotizaciones INTERBANCARIO solo sirven como referencia del mercado mayorista.",
+    typeReference: "Tipos: BILLETE = efectivo en mano; EBROU = transferencia digital eBROU. Solo se muestran cotizaciones que el público puede operar en casas de cambio; se excluyen la referencia oficial del BCU y las cotizaciones interbancarias/mayoristas (NUNCA las recomiendes como lugar para cambiar). Para COMPRAR una divisa el usuario paga la VENTA; para VENDERLA recibe la COMPRA.",
     currentRates: "Datos actuales de cotizaciones",
     quotes: "cotizaciones de",
     buy: "Compra",
     sell: "Venta",
     avgSpread: "Spread promedio",
-    bestBuy: "Mejores compras (te pagan más)",
-    bestSell: "Mejores ventas (te cobran menos)",
+    bestBuy: "Mejor para VENDER la divisa (compra más alta, te pagan más)",
+    bestSell: "Mejor para COMPRAR la divisa (venta más baja, te cobran menos)",
     lowestSpread: "Menor spread",
     historicalEvolution: "Datos de evolución histórica",
     exchangeHouse: "Casa de cambio",
@@ -91,7 +92,7 @@ const PROMPT_LABELS: Record<string, Record<string, string>> = {
 1. Estado general del mercado (fecha: {date})
 2. Mejores oportunidades para comprar/vender divisas principales
 3. Spread promedio del mercado y qué casas de cambio ofrecen mejor spread
-4. Comparación entre diferentes tipos de operación (BILLETE vs CABLE)
+4. Comparación entre los tipos de operación disponibles (efectivo/BILLETE y eBROU)
 5. Recomendación general para el usuario`,
     currencyAnalysisPrompt: `Analiza en detalle la cotización de {currency} en Uruguay con los siguientes datos (fecha: {date}). Incluye:
 1. Rango actual de precios de compra y venta
@@ -100,9 +101,9 @@ const PROMPT_LABELS: Record<string, Record<string, string>> = {
 4. Diferencias entre tipos de operación (BILLETE, CABLE, etc.) si hay datos
 5. Contexto del mercado{trendSuffix}`,
     currencyAnalysisTrendSuffix: " y tendencia reciente",
-    bestRatesPrompt: `Con los siguientes datos (fecha: {date}), identifica las mejores oportunidades de cambio. Para cada moneda principal (USD, EUR, ARS, BRL):
-1. Mejor lugar para comprar (la casa que más te paga) - indica nombre y cotización
-2. Mejor lugar para vender (la casa que menos te cobra) - indica nombre y cotización
+    bestRatesPrompt: `Con los siguientes datos (fecha: {date}), identifica las mejores oportunidades de cambio. Para cada moneda principal disponible (USD, EUR, ARS, BRL):
+1. Para COMPRAR la divisa (el usuario paga pesos): la casa con la VENTA más baja (menos te cobra) — nombre y cotización
+2. Para VENDER la divisa (el usuario recibe pesos): la casa con la COMPRA más alta (más te paga) — nombre y cotización
 3. Diferencia con el promedio del mercado
 4. Spread más bajo disponible y en qué casa de cambio
 
@@ -123,14 +124,14 @@ Sé conciso y directo. Usa los nombres reales de las casas de cambio.`,
     exchangeHouses: "exchange houses",
     currencies: "currencies",
     operationTypes: "operation types",
-    typeReference: "Type reference: BILLETE = cash, CABLE = international wire transfer, TRANSFERENCIA = local bank transfer, INTERBANCARIO = interbank reference rate exclusive to banks, NOT available to the public (you cannot buy or sell at this price). When recommending where to buy or sell, use ONLY BILLETE, CABLE or TRANSFERENCIA quotes. INTERBANCARIO quotes are only useful as a wholesale market reference.",
+    typeReference: "Types: BILLETE = physical cash; EBROU = eBROU digital transfer. Only quotes the public can transact at exchange houses are shown; the official BCU reference and interbank/wholesale quotes are excluded (NEVER recommend those as a place to change money). To BUY a currency the user pays the SELL rate; to SELL it they receive the BUY rate.",
     currentRates: "Current exchange rates",
     quotes: "quotes from",
     buy: "Buy",
     sell: "Sell",
     avgSpread: "Average spread",
-    bestBuy: "Best buy rates (they pay you the most)",
-    bestSell: "Best sell rates (they charge you the least)",
+    bestBuy: "Best to SELL the currency (highest buy, they pay you most)",
+    bestSell: "Best to BUY the currency (lowest sell, they charge you least)",
     lowestSpread: "Lowest spread",
     historicalEvolution: "Historical evolution data",
     exchangeHouse: "Exchange house",
@@ -146,7 +147,7 @@ Sé conciso y directo. Usa los nombres reales de las casas de cambio.`,
 1. General market state (date: {date})
 2. Best opportunities to buy/sell major currencies
 3. Average market spread and which exchange houses offer the best spread
-4. Comparison between different operation types (BILLETE vs CABLE)
+4. Comparison between the available operation types (cash/BILLETE and eBROU)
 5. General recommendation for the user`,
     currencyAnalysisPrompt: `Analyze in detail the {currency} exchange rate in Uruguay with the following data (date: {date}). Include:
 1. Current buy and sell price range
@@ -155,9 +156,9 @@ Sé conciso y directo. Usa los nombres reales de las casas de cambio.`,
 4. Differences between operation types (BILLETE, CABLE, etc.) if available
 5. Market context{trendSuffix}`,
     currencyAnalysisTrendSuffix: " and recent trend",
-    bestRatesPrompt: `With the following data (date: {date}), identify the best exchange opportunities. For each major currency (USD, EUR, ARS, BRL):
-1. Best place to buy (the house that pays you the most) - include name and rate
-2. Best place to sell (the house that charges you the least) - include name and rate
+    bestRatesPrompt: `With the following data (date: {date}), identify the best exchange opportunities. For each major currency available (USD, EUR, ARS, BRL):
+1. To BUY the currency (the user pays pesos): the house with the LOWEST sell rate (charges you least) — name and rate
+2. To SELL the currency (the user receives pesos): the house with the HIGHEST buy rate (pays you most) — name and rate
 3. Difference from the market average
 4. Lowest spread available and at which exchange house
 
@@ -178,14 +179,14 @@ Be concise and direct. Use the real names of the exchange houses.`,
     exchangeHouses: "casas de câmbio",
     currencies: "moedas",
     operationTypes: "tipos de operação",
-    typeReference: "Referência de tipos: BILLETE = dinheiro/espécie, CABLE = transferência bancária internacional, TRANSFERENCIA = transferência bancária local, INTERBANCARIO = taxa de câmbio de referência exclusiva entre bancos, NÃO disponível ao público (não é possível comprar nem vender a este preço). Ao recomendar onde comprar ou vender, use APENAS cotações do tipo BILLETE, CABLE ou TRANSFERENCIA. As cotações INTERBANCARIO servem apenas como referência do mercado atacadista.",
+    typeReference: "Tipos: BILLETE = dinheiro em espécie; EBROU = transferência digital eBROU. Só são mostradas cotações que o público pode operar em casas de câmbio; a referência oficial do BCU e as cotações interbancárias/atacadistas são excluídas (NUNCA as recomende como lugar para trocar). Para COMPRAR uma moeda o usuário paga a VENDA; para VENDÊ-LA recebe a COMPRA.",
     currentRates: "Dados atuais de cotações",
     quotes: "cotações de",
     buy: "Compra",
     sell: "Venda",
     avgSpread: "Spread médio",
-    bestBuy: "Melhores compras (te pagam mais)",
-    bestSell: "Melhores vendas (te cobram menos)",
+    bestBuy: "Melhor para VENDER a moeda (compra mais alta, te pagam mais)",
+    bestSell: "Melhor para COMPRAR a moeda (venda mais baixa, te cobram menos)",
     lowestSpread: "Menor spread",
     historicalEvolution: "Dados de evolução histórica",
     exchangeHouse: "Casa de câmbio",
@@ -201,7 +202,7 @@ Be concise and direct. Use the real names of the exchange houses.`,
 1. Estado geral do mercado (data: {date})
 2. Melhores oportunidades para comprar/vender moedas principais
 3. Spread médio do mercado e quais casas de câmbio oferecem melhor spread
-4. Comparação entre diferentes tipos de operação (BILLETE vs CABLE)
+4. Comparação entre os tipos de operação disponíveis (dinheiro/BILLETE e eBROU)
 5. Recomendação geral para o usuário`,
     currencyAnalysisPrompt: `Analise em detalhe a cotação de {currency} no Uruguai com os seguintes dados (data: {date}). Inclua:
 1. Faixa atual de preços de compra e venda
@@ -210,9 +211,9 @@ Be concise and direct. Use the real names of the exchange houses.`,
 4. Diferenças entre tipos de operação (BILLETE, CABLE, etc.) se houver dados
 5. Contexto do mercado{trendSuffix}`,
     currencyAnalysisTrendSuffix: " e tendência recente",
-    bestRatesPrompt: `Com os seguintes dados (data: {date}), identifique as melhores oportunidades de câmbio. Para cada moeda principal (USD, EUR, ARS, BRL):
-1. Melhor lugar para comprar (a casa que mais te paga) - indique nome e cotação
-2. Melhor lugar para vender (a casa que menos te cobra) - indique nome e cotação
+    bestRatesPrompt: `Com os seguintes dados (data: {date}), identifique as melhores oportunidades de câmbio. Para cada moeda principal disponível (USD, EUR, ARS, BRL):
+1. Para COMPRAR a moeda (o usuário paga pesos): a casa com a VENDA mais baixa (te cobra menos) — nome e cotação
+2. Para VENDER a moeda (o usuário recebe pesos): a casa com a COMPRA mais alta (te paga mais) — nome e cotação
 3. Diferença em relação à média do mercado
 4. Menor spread disponível e em qual casa de câmbio
 
@@ -232,6 +233,31 @@ Seja conciso e direto. Use os nomes reais das casas de câmbio.`,
 // Cache TTL in seconds for Redis
 const AI_CACHE_TTL = 600; // 10 minutes
 const AI_CACHE_PREFIX = "ai:";
+
+// Index/reference units that aren't foreign currencies you exchange at a counter
+// (Unidad Indexada / Previsional / Reajustable, gold). Dropped from the ALL-currency
+// market context so the model focuses on real tradeable divisas — a specific
+// currency_analysis request for one of them still gets through.
+const NON_TRADEABLE_UNITS: ReadonlySet<string> = new Set(["UI", "UP", "UR", "XAU"]);
+
+// Casa "billete"/cash quotes arrive with an empty type; label them so the model
+// (and thus its output) can tell physical cash apart from eBROU/transfer products.
+function displayType(type?: string | null): string {
+  const t = (type ?? "").trim();
+  return t === "" ? "BILLETE" : t;
+}
+
+// Adaptive precision: a flat toFixed(2) collapses sub-unit currencies (ARS, PYG,
+// COP, CLP ~0.0x) to a meaningless "0.01" and hides their real spread. Scale the
+// decimals to the magnitude so small values keep ~3 significant figures.
+function fmtRate(n: number): string {
+  if (!Number.isFinite(n)) return String(n);
+  const a = Math.abs(n);
+  if (a === 0) return "0";
+  if (a >= 1) return n.toFixed(2);
+  if (a >= 0.01) return n.toFixed(4);
+  return Number(n.toPrecision(3)).toString();
+}
 
 class AIService {
   private client: OpenAI | null = null;
@@ -280,35 +306,55 @@ class AIService {
     // Date context
     const dateStr = date || new Date().toISOString().split("T")[0];
 
+    // Only quotes the public can actually transact at feed the recommendation.
+    // Drop the BCU official reference (bank-only for every currency) and the
+    // wholesale/interbank types so the model never suggests a place — the central
+    // bank or an interbank price — where nobody can change money. Mirrors
+    // app/utils/rateSource.ts (see classes/rate_source.ts).
+    const publicData = (exchangeData || []).filter(isPublicRate);
+
+    // Group by currency (label empty/cash type as BILLETE so the model can tell
+    // physical cash from eBROU/transfer products).
+    const byCurrency: Record<string, any[]> = {};
+    for (const item of publicData) {
+      if (!byCurrency[item.code]) byCurrency[item.code] = [];
+      byCurrency[item.code].push({
+        origin: item.origin,
+        originName: this.getExchangeName(item.origin || item.code, localData),
+        buy: item.buy,
+        sell: item.sell,
+        type: displayType(item.type),
+        name: item.name || "",
+      });
+    }
+
+    // A currency is worth summarizing when it's a real tradeable divisa with at
+    // least two houses (so "best/average/spread" mean something) — unless the
+    // request targets it specifically. This drops index units and single-source
+    // exotics that otherwise fill the prompt with min=max=avg noise.
+    const wantCode = currency ? currency.toUpperCase() : null;
+    const shownCodes = Object.entries(byCurrency)
+      .filter(([code, entries]) => {
+        if (wantCode) return code === wantCode;
+        if (NON_TRADEABLE_UNITS.has(code)) return false;
+        return new Set(entries.map((e) => e.origin)).size >= 2;
+      })
+      .map(([code]) => code)
+      .sort();
+
     // Build data summary for context
     let dataSummary = "";
-    if (exchangeData && exchangeData.length > 0) {
-      // Collect unique currencies, origins, and types
-      const allCurrencies = [...new Set(exchangeData.map((e) => e.code))].sort();
-      const allOrigins = [...new Set(exchangeData.map((e) => e.origin))].sort();
-      const allTypes = [...new Set(exchangeData.map((e) => e.type).filter(Boolean))].sort();
+    if (publicData.length > 0 && shownCodes.length > 0) {
+      const allOrigins = [...new Set(publicData.map((e) => e.origin))].sort();
+      const allTypes = [...new Set(publicData.map((e) => displayType(e.type)))].sort();
 
       dataSummary = `${L.dataDate}: ${dateStr}\n`;
-      dataSummary += `${L.marketOverview}: ${allOrigins.length} ${L.exchangeHouses}, ${allCurrencies.length} ${L.currencies} (${allCurrencies.join(", ")}), ${L.operationTypes}: ${allTypes.join(", ")}\n`;
+      dataSummary += `${L.marketOverview}: ${allOrigins.length} ${L.exchangeHouses}, ${shownCodes.length} ${L.currencies} (${shownCodes.join(", ")}), ${L.operationTypes}: ${allTypes.join(", ")}\n`;
       dataSummary += `${L.typeReference}\n\n`;
 
-      // Group by currency
-      const byCurrency: Record<string, any[]> = {};
-      for (const item of exchangeData) {
-        if (!byCurrency[item.code]) byCurrency[item.code] = [];
-        byCurrency[item.code].push({
-          origin: item.origin,
-          originName: this.getExchangeName(item.origin || item.code, localData),
-          buy: item.buy,
-          sell: item.sell,
-          type: item.type || "",
-          name: item.name || "",
-        });
-      }
-
       dataSummary += `${L.currentRates}:\n`;
-      for (const [code, entries] of Object.entries(byCurrency)) {
-        if (currency && code !== currency.toUpperCase()) continue;
+      for (const code of shownCodes) {
+        const entries = byCurrency[code];
         const buyRates = entries.map((e) => e.buy).filter((b) => b > 0);
         const sellRates = entries.map((e) => e.sell).filter((s) => s > 0);
         if (buyRates.length === 0) continue;
@@ -316,29 +362,28 @@ class AIService {
         // Currency name from data
         const currencyName = entries[0]?.name || code;
         dataSummary += `\n${code} (${currencyName}): ${entries.length} ${L.quotes} ${new Set(entries.map((e) => e.origin)).size} ${L.exchangeHouses}\n`;
-        
+
         const avgBuy = buyRates.reduce((a, b) => a + b, 0) / buyRates.length;
         const avgSell = sellRates.reduce((a, b) => a + b, 0) / sellRates.length;
         const avgSpread = avgSell - avgBuy;
         const spreadPercent = avgBuy > 0 ? ((avgSpread / avgBuy) * 100).toFixed(2) : "N/A";
-        
-        dataSummary += `  ${L.buy}: min=${Math.min(...buyRates).toFixed(2)}, max=${Math.max(...buyRates).toFixed(2)}, ${L.average.toLowerCase()}=${avgBuy.toFixed(2)}\n`;
-        dataSummary += `  ${L.sell}: min=${Math.min(...sellRates).toFixed(2)}, max=${Math.max(...sellRates).toFixed(2)}, ${L.average.toLowerCase()}=${avgSell.toFixed(2)}\n`;
-        dataSummary += `  ${L.avgSpread}: ${avgSpread.toFixed(2)} (${spreadPercent}%)\n`;
+
+        dataSummary += `  ${L.buy}: min=${fmtRate(Math.min(...buyRates))}, max=${fmtRate(Math.max(...buyRates))}, ${L.average.toLowerCase()}=${fmtRate(avgBuy)}\n`;
+        dataSummary += `  ${L.sell}: min=${fmtRate(Math.min(...sellRates))}, max=${fmtRate(Math.max(...sellRates))}, ${L.average.toLowerCase()}=${fmtRate(avgSell)}\n`;
+        dataSummary += `  ${L.avgSpread}: ${fmtRate(avgSpread)} (${spreadPercent}%)\n`;
 
         // Group by type if there are multiple types
         const byType: Record<string, any[]> = {};
         for (const e of entries) {
-          const t = e.type || "N/A";
-          if (!byType[t]) byType[t] = [];
-          byType[t].push(e);
+          if (!byType[e.type]) byType[e.type] = [];
+          byType[e.type].push(e);
         }
         if (Object.keys(byType).length > 1) {
           for (const [t, typeEntries] of Object.entries(byType)) {
             const tBuy = typeEntries.map((e) => e.buy).filter((b) => b > 0);
             const tSell = typeEntries.map((e) => e.sell).filter((s) => s > 0);
             if (tBuy.length > 0) {
-              dataSummary += `  [${t}] ${L.buy}: ${Math.min(...tBuy).toFixed(2)}-${Math.max(...tBuy).toFixed(2)}, ${L.sell}: ${Math.min(...tSell).toFixed(2)}-${Math.max(...tSell).toFixed(2)}\n`;
+              dataSummary += `  [${t}] ${L.buy}: ${fmtRate(Math.min(...tBuy))}-${fmtRate(Math.max(...tBuy))}, ${L.sell}: ${fmtRate(Math.min(...tSell))}-${fmtRate(Math.max(...tSell))}\n`;
             }
           }
         }
@@ -349,13 +394,13 @@ class AIService {
         if (sortedBuy.length > 0) {
           dataSummary += `  ${L.bestBuy}: ${sortedBuy
             .slice(0, 5)
-            .map((e) => `${e.originName}(${e.buy}${e.type ? ` ${e.type}` : ""})`)
+            .map((e) => `${e.originName}(${fmtRate(e.buy)} ${e.type})`)
             .join(", ")}\n`;
         }
         if (sortedSell.length > 0) {
           dataSummary += `  ${L.bestSell}: ${sortedSell
             .slice(0, 5)
-            .map((e) => `${e.originName}(${e.sell}${e.type ? ` ${e.type}` : ""})`)
+            .map((e) => `${e.originName}(${fmtRate(e.sell)} ${e.type})`)
             .join(", ")}\n`;
         }
 
@@ -372,7 +417,7 @@ class AIService {
         if (spreads.length > 0) {
           dataSummary += `  ${L.lowestSpread}: ${spreads
             .slice(0, 3)
-            .map((s) => `${s.originName}(${s.spread.toFixed(2)}${s.type ? ` ${s.type}` : ""})`)
+            .map((s) => `${s.originName}(${fmtRate(s.spread)} ${s.type})`)
             .join(", ")}\n`;
         }
       }
@@ -413,8 +458,8 @@ class AIService {
     let exchangeInfoSummary = "";
     if (localData && Object.keys(localData).length > 0) {
       const originsWithDepts = Object.entries(localData)
-        .filter(([, v]) => v.departments && v.departments.length > 0)
-        .map(([k, v]) => `${v.name}: ${v.departments.join(", ")}`)
+        .filter(([k, v]) => k !== BCU_ORIGIN && v.departments && v.departments.length > 0)
+        .map(([, v]) => `${v.name}: ${v.departments.join(", ")}`)
         .slice(0, 15); // Limit to keep prompt manageable
       if (originsWithDepts.length > 0) {
         exchangeInfoSummary = `\n${L.geographicPresence}:\n${originsWithDepts.join("\n")}\n`;
