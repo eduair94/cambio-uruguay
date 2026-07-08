@@ -98,6 +98,15 @@
 </template>
 
 <script setup lang="ts">
+// Nuxt's default auto-import prefixes subfolder components by directory
+// (components/analysis/WhyTodayCard.vue -> <AnalysisWhyTodayCard>), so these
+// must be imported explicitly to be used under their bare names below —
+// same workaround already established for components/charts/LineChart.vue
+// in comparar.vue.
+import WhyTodayCard from '~/components/analysis/WhyTodayCard.vue'
+import PriceMovesChart from '~/components/analysis/PriceMovesChart.vue'
+import DollarDriversPanel from '~/components/analysis/DollarDriversPanel.vue'
+import MovesTimeline from '~/components/analysis/MovesTimeline.vue'
 import { todaySummary } from '~/utils/attribution'
 
 interface AnalysisResponse {
