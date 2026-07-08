@@ -88,8 +88,11 @@ const chartData = computed(() => ({
       // radius 0 so the line itself carries the trend and the eye lands on
       // the days that actually matter.
       pointRadius: props.base.map(p => (moveByDate.value.has(p.date) ? 5 : 0)),
-      pointHoverRadius: props.base.map(p => (moveByDate.value.has(p.date) ? 7 : 3)),
-      pointHitRadius: 6,
+      // Hover/hit affordance is restricted to move markers only (0 elsewhere).
+      // A scalar hit radius made the whole line hoverable + cursor:pointer,
+      // implying non-move points were clickable when only markers are.
+      pointHoverRadius: props.base.map(p => (moveByDate.value.has(p.date) ? 7 : 0)),
+      pointHitRadius: props.base.map(p => (moveByDate.value.has(p.date) ? 6 : 0)),
       pointBackgroundColor: props.base.map(p => {
         const move = moveByDate.value.get(p.date)
         return move ? markerColor(move.direction) : LINE_COLOR
