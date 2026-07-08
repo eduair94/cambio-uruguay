@@ -178,8 +178,8 @@ useHead(() => ({
             '@type': 'Article',
             headline: t('porQueDolar.metaTitle'),
             description: t('porQueDolar.metaDescription'),
-            datePublished: analysis.value?.asOf,
-            dateModified: analysis.value?.asOf,
+            datePublished: analysis.value?.asOf ?? new Date().toISOString().slice(0, 10),
+            dateModified: analysis.value?.asOf ?? new Date().toISOString().slice(0, 10),
             inLanguage: 'es-UY',
             mainEntityOfPage: { '@type': 'WebPage', '@id': canonical.value },
             author: {
