@@ -26,38 +26,45 @@
           </span>
         </div>
 
-        <template v-if="entry.n > 0">
-          <div class="bar-track mb-2" aria-hidden="true">
-            <div
-              class="bar-fill"
-              :class="entry.r >= 0 ? 'bg-success' : 'bg-error'"
-              :style="{ width: barPct(entry.r) + '%' }"
-            />
-          </div>
+        <!-- Bar / strength / reading are correlation-derived, so they render only when
+             a sample exists (n > 0). pearson()=0 for no-data would misread as "weak". -->
+        <div v-if="entry.n > 0" class="bar-track mb-2" aria-hidden="true">
+          <div
+            class="bar-fill"
+            :class="entry.r >= 0 ? 'bg-success' : 'bg-error'"
+            :style="{ width: barPct(entry.r) + '%' }"
+          />
+        </div>
 
-          <div class="d-flex align-center justify-space-between ga-3 flex-wrap mb-2">
-            <div class="d-flex align-center ga-2 flex-wrap">
-              <VChip size="x-small" variant="tonal" :color="entry.r >= 0 ? 'success' : 'error'">
-                {{ t('porQueDolar.strength.' + strengthLabel(entry.r)) }}
-              </VChip>
-              <span class="text-caption text-medium-emphasis stat-value">
-                {{ t('porQueDolar.sampleSize', { n: entry.n }) }}
-              </span>
-            </div>
-            <div class="spark-wrap">
-              <Sparkline :values="driverSeries[entry.key] ?? []" :up="entry.r >= 0" />
-            </div>
+        <div class="d-flex align-center justify-space-between ga-3 flex-wrap mb-2">
+          <div class="d-flex align-center ga-2 flex-wrap">
+            <VChip
+              v-if="entry.n > 0"
+              size="x-small"
+              variant="tonal"
+              :color="entry.r >= 0 ? 'success' : 'error'"
+            >
+              {{ t('porQueDolar.strength.' + strengthLabel(entry.r)) }}
+            </VChip>
+            <span v-else class="text-caption text-medium-emphasis font-italic">
+              {{ t('porQueDolar.noData') }}
+            </span>
+            <!-- Sample size is shown for every row — honest "0 días" for no-data drivers
+                 instead of a fabricated r. -->
+            <span class="text-caption text-medium-emphasis stat-value">
+              {{ t('porQueDolar.sampleSize', { n: entry.n }) }}
+            </span>
           </div>
+          <!-- driverSeries is independent of the correlation: a driver can have a valid
+               price trend even when n=0, so the sparkline renders for every row. -->
+          <div class="spark-wrap">
+            <Sparkline :values="driverSeries[entry.key] ?? []" :up="entry.r >= 0" />
+          </div>
+        </div>
 
-          <p class="text-body-2 text-medium-emphasis mb-0 reading">
-            {{ t(readingKeyFor(entry.key, entry.r)) }}
-          </p>
-        </template>
-        <template v-else>
-          <span class="text-caption text-medium-emphasis font-italic">
-            {{ t('porQueDolar.noData') }}
-          </span>
-        </template>
+        <p v-if="entry.n > 0" class="text-body-2 text-medium-emphasis mb-0 reading">
+          {{ t(readingKeyFor(entry.key, entry.r)) }}
+        </p>
       </li>
     </ul>
   </VCard>
