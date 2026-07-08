@@ -8,8 +8,8 @@ tier,channel,type,url,dofollow,priority,status,date_done,live_url,notes
 1,Cursor Directory,mcp-registry,https://cursor.directory/mcp,maybe,P1,todo,,,
 1,mcp-get,mcp-registry,https://github.com/michaellatman/mcp-get,yes,P2,todo,,,PR
 1,punkpeye/awesome-mcp-servers,awesome-pr,https://github.com/punkpeye/awesome-mcp-servers,yes,P0,PR-OPEN,2026-07-06,https://github.com/punkpeye/awesome-mcp-servers/pull/9525,agent fast-track tag; Finance & Fintech
-1,wong2/awesome-mcp-servers,awesome-pr,https://github.com/wong2/awesome-mcp-servers,yes,P2,todo,,,
-1,appcypher/awesome-mcp-servers,awesome-pr,https://github.com/appcypher/awesome-mcp-servers,yes,P2,todo,,,
+1,wong2/awesome-mcp-servers,awesome-pr,https://github.com/wong2/awesome-mcp-servers,yes,P2,1-CLICK-LEFT,2026-07-06,https://github.com/wong2/awesome-mcp-servers/compare/main...eduair94:wong2-awesome-mcp-servers:add-cambio-uruguay?expand=1,branch+content pushed; open compare url + Create PR (renamed-fork API block)
+1,appcypher/awesome-mcp-servers,awesome-pr,https://github.com/appcypher/awesome-mcp-servers,yes,P2,1-CLICK-LEFT,2026-07-06,https://github.com/appcypher/awesome-mcp-servers/compare/main...eduair94:appcypher-awesome-mcp-servers:add-cambio-uruguay?expand=1,branch+content pushed; open compare url + Create PR
 1,public-apis,api-pr,https://github.com/public-apis/public-apis,yes,P0,todo,,,Currency Exchange section; follow CONTRIBUTING
 1,FreePublicAPIs,api-directory,https://www.freepublicapis.com/submit,maybe,P1,todo,,,
 1,APIs.guru,api-directory,https://github.com/APIs-guru/openapi-directory,yes,P3,todo,,,needs OpenAPI spec
