@@ -10,12 +10,9 @@ test('nearby casa finder renders ranked results after picking a city', async ({ 
   const chip = page.locator('[data-testid="nearby-city-chip"]').first()
   await expect(chip).toBeVisible({ timeout: 30_000 })
 
-  // The page's setup is async (top-level `await useLazyAsyncData`), so Nuxt
-  // wraps it in <Suspense>: the chip can be visible before Vue finishes
-  // attaching its click listener, which silently swallows a too-early click.
-  // Re-click on each retry so a lost first click doesn't fail the test; once
-  // a click lands, the chip is replaced by the results UI, so later retries
-  // (if the row-count read races the DOM patch) tolerate the chip being gone.
+  // Retry the click: harmless if it lands twice (a second click on an
+  // already-transitioned view is a no-op), and defensive against any future
+  // hydration-timing changes.
   await expect(async () => {
     await chip.click({ timeout: 5_000 }).catch(() => {})
     const rows = await page.locator('[data-testid="nearby-casa-row"]').count()
@@ -23,7 +20,9 @@ test('nearby casa finder renders ranked results after picking a city', async ({ 
   }).toPass({ timeout: 30_000 })
 
   const first = page.locator('[data-testid="nearby-casa-row"]').first()
-  const mapsHref = await first.locator('[data-testid="nearby-directions-link"]').getAttribute('href')
+  const mapsHref = await first
+    .locator('[data-testid="nearby-directions-link"]')
+    .getAttribute('href')
   expect(mapsHref).toContain('google.com/maps/dir')
   const wazeHref = await first.locator('[data-testid="nearby-waze-link"]').getAttribute('href')
   expect(wazeHref).toContain('waze.com/ul')
@@ -35,12 +34,9 @@ test('nearby casa finder never lists a banco or fintech as a casa de cambio', as
   const chip = page.locator('[data-testid="nearby-city-chip"]').first()
   await expect(chip).toBeVisible({ timeout: 30_000 })
 
-  // The page's setup is async (top-level `await useLazyAsyncData`), so Nuxt
-  // wraps it in <Suspense>: the chip can be visible before Vue finishes
-  // attaching its click listener, which silently swallows a too-early click.
-  // Re-click on each retry so a lost first click doesn't fail the test; once
-  // a click lands, the chip is replaced by the results UI, so later retries
-  // (if the row-count read races the DOM patch) tolerate the chip being gone.
+  // Retry the click: harmless if it lands twice (a second click on an
+  // already-transitioned view is a no-op), and defensive against any future
+  // hydration-timing changes.
   await expect(async () => {
     await chip.click({ timeout: 5_000 }).catch(() => {})
     const rows = await page.locator('[data-testid="nearby-casa-row"]').count()
