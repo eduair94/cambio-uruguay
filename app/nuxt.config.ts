@@ -642,6 +642,11 @@ export default defineNuxtConfig({
       apiKey: process.env.NUXT_AI_API_KEY || process.env.AI_API_KEY || '',
       model: process.env.NUXT_AI_MODEL || 'wormv5.1',
     },
+    // Gemini API key (server-only) for grounded real-news search on notable
+    // move days — see docs/superpowers/specs/2026-07-08-gemini-news-grounding-design.md.
+    // Baked at build time same as driversIngestToken/ai.apiKey; raw process.env
+    // reads empty at pm2 runtime in this deployment.
+    geminiApiKey: process.env.NUXT_GEMINI_API_KEY || '',
     // User data store + Firebase Admin (server-only secrets)
     mongoUri: process.env.MONGO_URI || '',
     firebase: {
