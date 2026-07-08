@@ -414,6 +414,7 @@
   "cambio": "Change",
   "precioCompra": "Buy Price",
   "precioVenta": "Sell Price",
+  "historicoMoveAttribution": "That day, these moved",
   "monedaLabel": "Currency",
   "tipoLabel": "Type",
   "buscarLabel": "Search",

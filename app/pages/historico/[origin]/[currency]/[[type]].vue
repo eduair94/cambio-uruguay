@@ -384,6 +384,8 @@ import { Bar, Line } from 'vue-chartjs'
 import { useRoute, useRouter } from 'vue-router'
 import { currencyFaqIds, type FaqItem } from '~/utils/faqAnswers'
 import { useDisplay } from 'vuetify/lib/composables/display.mjs'
+import { markPoints } from '~/utils/chartMoveMarkers'
+import { attributeMove } from '~/utils/attribution'
 
 const { smAndDown } = useDisplay()
 const { t } = useI18n()
@@ -486,6 +488,49 @@ const requestAIAnalysis = async () => {
 const chartType = ref('line')
 const search = ref('')
 const selectedPeriod = ref(6) // Default to 6 months
+
+// Phase 3: inline move markers + attribution, gated to currencies the
+// analysis backend actually supports. Any other currency (or a failed
+// fetch) leaves the chart exactly as it was before this feature — no
+// markers, no extra tooltip line, no thrown errors.
+const ANALYSIS_SUPPORTED = new Set(['USD', 'EUR', 'ARS'])
+const currencyUpper = computed(() => String(route.params.currency ?? '').toUpperCase())
+const analysisSupported = computed(() => ANALYSIS_SUPPORTED.has(currencyUpper.value))
+
+interface AnalysisMove {
+  date: string
+  pctChange: number
+  direction: 'up' | 'down' | 'flat'
+}
+interface AnalysisResponse {
+  moves: AnalysisMove[]
+}
+interface DriversResponse {
+  drivers: { key: string; label: string; source: string }[]
+  series: { key: string; points: { date: string; value: number }[] }[]
+}
+
+const { data: analysisData } = useLazyAsyncData<AnalysisResponse | null>(
+  `historico-analysis-${currencyUpper.value}`,
+  async () => {
+    if (!analysisSupported.value) return null
+    return await $fetch<AnalysisResponse>(`/api/analysis/${currencyUpper.value}`).catch(() => null)
+  }
+)
+
+const { data: driversData } = useLazyAsyncData<DriversResponse | null>(
+  `historico-drivers-${currencyUpper.value}`,
+  async () => {
+    if (!analysisSupported.value) return null
+    return await $fetch<DriversResponse>('/api/drivers').catch(() => null)
+  }
+)
+
+const moves = computed<AnalysisMove[]>(() => analysisData.value?.moves ?? [])
+const driverLabels = computed<Record<string, string>>(() =>
+  Object.fromEntries((driversData.value?.drivers ?? []).map(d => [d.key, d.label]))
+)
+const driverSeriesArr = computed(() => driversData.value?.series ?? [])
 
 // Period options
 const periodOptions = computed(() => [
@@ -629,6 +674,9 @@ const chartData = computed(() => {
 
   const evolution = (evolutionData.value as any).evolution
   const labels = evolution.map((item: EvolutionItem) => moment(item.date).format('MM/YYYY'))
+  const dates = evolution.map((item: EvolutionItem) => item.date)
+  const buyMarks = markPoints(dates, moves.value, 'rgb(75, 192, 192)')
+  const sellMarks = markPoints(dates, moves.value, 'rgb(255, 99, 132)')
 
   return {
     labels,
@@ -640,7 +688,8 @@ const chartData = computed(() => {
         backgroundColor: 'rgba(75, 192, 192, 0.2)',
         tension: 0.1,
         fill: false,
-        pointRadius: 3,
+        pointRadius: buyMarks.pointRadius,
+        pointBackgroundColor: buyMarks.pointBackgroundColor,
         pointHoverRadius: 5,
       },
       {
@@ -650,7 +699,8 @@ const chartData = computed(() => {
         backgroundColor: 'rgba(255, 99, 132, 0.2)',
         tension: 0.1,
         fill: false,
-        pointRadius: 3,
+        pointRadius: sellMarks.pointRadius,
+        pointBackgroundColor: sellMarks.pointBackgroundColor,
         pointHoverRadius: 5,
       },
     ],
@@ -718,6 +768,26 @@ const chartOptions = computed(() => ({
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
           })}`
+        },
+        afterBody: (context: any) => {
+          const dataIndex = context[0]?.dataIndex
+          if (dataIndex === undefined) return []
+          const evolution = (evolutionData.value as any)?.evolution ?? []
+          const date = evolution[dataIndex]?.date
+          if (!date) return []
+          const dayDate = String(date).slice(0, 10)
+          const isMoveDay = moves.value.some(m => m.date === dayDate)
+          if (!isMoveDay) return []
+          const top = attributeMove(dayDate, driverSeriesArr.value).slice(0, 3)
+          if (!top.length) return []
+          return [
+            '',
+            `${t('historicoMoveAttribution')}:`,
+            ...top.map(
+              d =>
+                `${driverLabels.value[d.key] ?? d.key} ${d.dayMovePct >= 0 ? '+' : ''}${d.dayMovePct.toFixed(1)}%`
+            ),
+          ]
         },
       },
     },
