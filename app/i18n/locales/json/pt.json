@@ -78,6 +78,23 @@
     "cashPoints": "Pontos de saque de dinheiro",
     "withdrawCash": "Saque de dinheiro"
   },
+  "nearbyCasas": {
+    "title": "Encontre a melhor casa de câmbio perto de você",
+    "subtitle": "Combinamos distância, cotação e avaliações do Google para recomendar a melhor opção. Somente casas de câmbio reais — nunca bancos ou fintechs.",
+    "chooseCity": "Ou escolha sua cidade",
+    "sortSmart": "Recomendado",
+    "sortDistance": "Mais perto",
+    "sortRate": "Melhor cotação",
+    "noneInRadius": "Não há casas de câmbio nesse raio. Tente ampliá-lo.",
+    "noReviews": "Sem avaliações",
+    "viewOnMap": "Ver no mapa",
+    "hideMap": "Ocultar mapa",
+    "getDirections": "Como chegar",
+    "openWaze": "Abrir no Waze",
+    "homeBannerTitle": "Encontre a melhor casa de câmbio perto de você",
+    "homeBannerSubtitle": "Distância, cotação e avaliações em um só lugar. Vá direto com Google Maps ou Waze.",
+    "homeBannerCta": "Buscar perto de mim"
+  },
   "welcome": "Encontre a melhor taxa de câmbio do mercado, comparando entre mais de 40 casas de câmbio.",
   "title": "Citações do dia [day]. Elas são atualizadas a cada 10 minutos com respeito às informações na web.",
   "info": "Se você achou as informações no site úteis, você pode ajudar a mantê-las ou deixando sua avaliação",
@@ -616,7 +633,9 @@
     "compareDescription": "Compare a evolução histórica da cotação do dólar e de outras moedas entre várias casas de câmbio do Uruguai em um único gráfico. Descubra quem oferece o melhor preço ao longo do tempo.",
     "compareKeywords": "comparar casas de câmbio uruguai, evolução dólar uruguai, comparação de cotações, gráfico comparativo dólar, melhor casa de câmbio uruguai",
     "mapaTitle": "Mapa de casas de câmbio no Uruguai | Cambio Uruguay",
-    "mapaDescription": "Mapa interativo de casas de câmbio no Uruguai. Encontre a agência mais próxima e a melhor cotação do dólar perto de você."
+    "mapaDescription": "Mapa interativo de casas de câmbio no Uruguai. Encontre a agência mais próxima e a melhor cotação do dólar perto de você.",
+    "nearbyCasasTitle": "Melhor Casa de Câmbio Perto de Mim no Uruguai | Cambio Uruguay",
+    "nearbyCasasDescription": "Encontre a casa de câmbio real mais próxima com a melhor cotação e avaliações. Navegue direto com Google Maps ou Waze. Sem bancos ou fintechs."
   },
   "dolarDepto": {
     "h1": "Dólar em {department} hoje",
