@@ -2041,6 +2041,207 @@ export const CASAS_REPUTATION: CasaReputation[] = [
       },
     ],
   },
+  {
+    code: 'cambistar',
+    name: 'Cambistar (Investa)',
+    category: 'casa',
+    googleRating: null,
+    googleReviewCount: null,
+    ratingSource: null,
+    branchNote:
+      'Casa Central única (Misiones 1544/46 esq. Piedras, Ciudad Vieja); no se identificaron otras sucursales propias con listados de Google separados, aunque figura también como punto Redpagos. No se pudo verificar una ficha de Google Maps (herramientas de búsqueda sin acceso a Maps renderizado por JS).',
+    founded: '2004',
+    services: [
+      'compra y venta de moneda extranjera (USD, ARS, BRL, EUR)',
+      'giros y transferencias nacionales e internacionales (Giros More)',
+      'cobros y pagos de servicios vía red Redpagos',
+      'depósitos y retiros en cuentas bancarias mediante terminal',
+      'corresponsalía financiera (recepción de fondos)',
+    ],
+    strengths: [
+      'Antigüedad y continuidad operativa: activa desde 2004 en la misma dirección',
+      'Ubicación céntrica en Ciudad Vieja, esquina Misiones y Piedras',
+      'Integración con red Redpagos, ampliando puntos de cobro/pago',
+      'Regulada y supervisada por el BCU (institución nº 2598), estado activa',
+    ],
+    weaknesses: [
+      'Sin rating ni volumen de reseñas de Google verificable',
+      'Horario acotado: lunes a viernes 10:00-18:00, sin atención fines de semana',
+      'Sucursal única, sin presencia física amplia frente a competidores con múltiples locales',
+    ],
+    press: [],
+    sources: [
+      { label: 'Sitio oficial Investa', url: 'https://www.investa.com.uy/' },
+      {
+        label: 'BCU - Ficha institucional nroinst=2598',
+        url: 'https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2598',
+      },
+    ],
+  },
+  {
+    code: 'eurodracma',
+    name: 'Eurodracma',
+    category: 'casa',
+    googleRating: null,
+    googleReviewCount: null,
+    ratingSource: null,
+    branchNote:
+      'Varias sucursales (Casa Central en Montevideo/Divina Comedia, Punta del Este, y dos locales en Treinta y Tres), pero no se encontró una ficha de Google verificable para ninguna (un agregador de terceros muestra 5,0★ con solo 4 reseñas para Punta del Este, muestra insuficiente para reportar).',
+    founded: null,
+    services: [
+      'compra y venta de moneda extranjera',
+      'arbitraje de divisas',
+      'cobranza de facturas y giros nacionales',
+      'envío de remesas familiares',
+      'transferencias/giros al exterior',
+    ],
+    strengths: [
+      'Regulada y supervisada por el BCU (institución nº 2443), estado activa',
+      'Múltiples puntos de atención (Montevideo, Punta del Este, Treinta y Tres x2)',
+    ],
+    weaknesses: [
+      'Sin calificación de Google verificable para la Casa Central de Montevideo',
+      'Mencionada en la investigación periodística "FinCEN Files" como entidad receptora de fondos vinculados a Javier Mascherano, lo que generó dudas sobre titularidad real de cuentas',
+    ],
+    press: [
+      {
+        label:
+          'Transferencias e inversiones de Javier Mascherano en Uruguay despertaron alertas (Montevideo Portal)',
+        url: 'https://www.montevideo.com.uy/Noticias/Transferencias-e-inversiones-de-Javier-Mascherano-en-Uruguay-despertaron-alertas-uc765251',
+      },
+    ],
+    sources: [
+      { label: 'Sitio oficial Eurodracma', url: 'https://eurodracma.com/' },
+      { label: 'Servicios (sitio oficial)', url: 'https://eurodracma.com/servicios/' },
+      {
+        label: 'BCU - Ficha institucional nroinst=2443',
+        url: 'https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2443',
+      },
+    ],
+  },
+  {
+    code: 'nonica',
+    name: 'Cambio El Trébol',
+    category: 'casa',
+    googleRating: null,
+    googleReviewCount: null,
+    ratingSource: null,
+    branchNote:
+      'Solo se identificó una sucursal confirmada (Casa Central, 18 de Julio 1395, Montevideo); no se hallaron listados de Google Maps para evaluar variación entre sucursales ni una ficha verificable.',
+    founded: '2006',
+    services: [
+      'compra y venta de moneda extranjera (USD, EUR, ARS, BRL, GBP, CHF, JPY)',
+      'compra y venta de oro y monedas',
+      'cotización online publicada en el sitio',
+      'procedimiento de Prevención de Lavado de Activos publicado',
+      'canal formal de reclamos online',
+    ],
+    strengths: [
+      'Institución activa y habilitada por el BCU (nº 2373)',
+      'Publica cotizaciones actualizadas en su propio sitio',
+      'Ubicación céntrica de larga trayectoria sobre 18 de Julio',
+    ],
+    weaknesses: [
+      'Sin reseñas/rating de Google verificables',
+      'Sitio oficial en Joomla 1.5 (obsoleto) con un link canonical inyectado en el <head> apuntando a un dominio ajeno (resotomoro.eu) — indicio de compromiso/spam SEO, confirmado vigente en julio 2026; no enlazar el sitio sin monitoreo',
+      'Sucursal única, sin red de locales adicionales',
+    ],
+    press: [],
+    sources: [
+      {
+        label: 'BCU - Ficha institucional nroinst=2373',
+        url: 'https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2373',
+      },
+      { label: 'Sitio oficial - Inicio', url: 'https://www.cambioeltrebol.com/' },
+    ],
+  },
+  {
+    code: 'cambio_varzy',
+    name: 'Cambio Varzy',
+    category: 'casa',
+    googleRating: null,
+    googleReviewCount: null,
+    ratingSource: null,
+    branchNote:
+      'Sucursal única (Independencia 736, Florida); no se encontró una ficha de Google Maps verificable (un agregador de terceros, PlanetaUruguay, muestra 4,4/5, pero es un sistema de reseñas propio del directorio, no de Google).',
+    founded: '2006',
+    services: [
+      'compra y venta de moneda extranjera',
+      'cobranza de facturas',
+      'giros y transferencias nacionales e internacionales',
+      'corresponsalía financiera (recepción de fondos)',
+      'venta de entradas para espectáculos',
+      'sub agencia Redpagos',
+    ],
+    strengths: [
+      'Primera casa de cambio del departamento de Florida, operando desde 2006',
+      'Institución autorizada y supervisada por el BCU (nº 2500)',
+      'Oferta ampliada vía sub-agencia Redpagos (cobranzas, giros)',
+    ],
+    weaknesses: [
+      'Sin calificación de Google Maps verificable — baja visibilidad online',
+      'Una socia (hermana de Gustavo Basso, accionista del 50% de Cambio Varzy S.A.) fue denunciada por asistencia al lavado de activos por unas 600 transferencias registradas en esta casa de cambio, en el marco del escándalo "Conexión Ganadera" (la diaria y El Observador, 2026)',
+      'Sucursal única, sin cobertura en Montevideo u otras ciudades',
+    ],
+    press: [
+      {
+        label:
+          'la diaria — Denunciaron a la hermana de Basso por asistencia al lavado por unas 600 transacciones realizadas en el Cambio Varzy',
+        url: 'https://ladiaria.com.uy/justicia/articulo/2026/3/conexion-ganadera-denunciaron-a-la-hermana-de-basso-por-asistencia-al-lavado-por-unas-600-transacciones-realizadas-en-el-cambio-varzy/',
+      },
+      {
+        label:
+          'El Observador — Inversores de Conexión Ganadera ampliaron denuncia por lavado... y contra la hermana de Basso',
+        url: 'https://www.elobservador.com.uy/nacional/inversores-conexion-ganadera-ampliaron-denuncia-lavado-contra-cabral-tener-ganado-don-coraje-y-contra-la-hermana-basso-n6038843',
+      },
+    ],
+    sources: [
+      { label: 'Sitio oficial Cambio Varzy', url: 'https://www.cambiovarzy.com/' },
+      {
+        label: 'BCU - Ficha institucional nroinst=2500',
+        url: 'https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2500',
+      },
+    ],
+  },
+  {
+    code: 'baluma_cambio',
+    name: 'Baluma Cambio',
+    category: 'casa',
+    googleRating: null,
+    googleReviewCount: null,
+    ratingSource: null,
+    branchNote:
+      'Única ubicación registrada ante el BCU, dentro del complejo turístico Enjoy Punta del Este (ex-Conrad), Parada 4; no se encontró una ficha de Google Maps ni presencia en comparadores de casas de cambio de Punta del Este.',
+    founded: '1997',
+    services: [
+      'compra y venta de moneda extranjera',
+      'arbitraje de divisas',
+      'giros y transferencias nacionales e internacionales',
+      'cobro de facturas de servicios',
+      'venta de entradas para espectáculos del resort',
+    ],
+    strengths: [
+      'Casi 30 años de trayectoria (desde 1997)',
+      'Ubicación única dentro del complejo turístico Enjoy Punta del Este, zona de alto tránsito',
+      'Institución activa y habilitada por el BCU (nº 2451), sin sanciones registradas en fuentes de prensa consultadas',
+    ],
+    weaknesses: [
+      'Sin presencia ni reseñas verificables en Google Maps ni en comparadores como Wise — baja visibilidad online',
+      'Sucursal única, no listada en directorios independientes de casas de cambio de Punta del Este',
+      'Atención probablemente ligada a los horarios del resort/casino',
+    ],
+    press: [],
+    sources: [
+      {
+        label: 'BCU - Ficha institucional nroinst=2451',
+        url: 'https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2451',
+      },
+      {
+        label: 'Sitio oficial Baluma Cambio',
+        url: 'http://balumacambio.enjoypuntadeleste.com.uy/',
+      },
+    ],
+  },
 ]
 
 // --- Localized page content ---------------------------------------------------
