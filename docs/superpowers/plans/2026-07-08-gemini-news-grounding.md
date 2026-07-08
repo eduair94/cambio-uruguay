@@ -88,26 +88,32 @@ const REAL_SUPPORTS = [
 
 describe('extractGroundedHeadlines', () => {
   it('picks, per chunk, the most specific (fewest-indices) supporting segment as title', () => {
-    const out = extractGroundedHeadlines(REAL_CHUNKS, REAL_SUPPORTS)
-    // chunk 3 is cited alone by the 3rd segment -> that becomes its title, not the broad first one
+    // limit=5 so every fixture chunk survives the cap and can be inspected —
+    // the default-limit cap behavior (order-preserving, no ranking) is
+    // covered separately below. Two of these fixture segments (chunk0,
+    // chunk4) are longer than the 140-char truncation limit, so their
+    // expected titles below are the truncated form, not the raw segment text.
+    const out = extractGroundedHeadlines(REAL_CHUNKS, REAL_SUPPORTS, 5)
+    // chunk 3 is cited alone by the 3rd segment (125 chars, no truncation needed)
     const chunk3 = out.find(h => h.link.endsWith('DDD'))
     expect(chunk3?.title).toBe(
       'La decisión de bajar la tasa de interés se esperaba que desalentara las inversiones en pesos y respaldara el valor del dólar.'
     )
-    // chunk 4 is cited alone by the 4th segment
+    // chunk 4 is cited alone by the 4th segment (159 chars -> truncated to 140)
     const chunk4 = out.find(h => h.link.endsWith('EEE'))
     expect(chunk4?.title).toBe(
-      'El anuncio de esta reunión y la expectativa de un recorte en la tasa ya habían provocado una leve subida del dólar en el mercado cambiario el viernes anterior.'
+      'El anuncio de esta reunión y la expectativa de un recorte en la tasa ya habían provocado una leve subida del dólar en el mercado cambiari...'
     )
-    // chunk 0 is only ever cited by the broad first/second segments -> falls back to the first (earliest)
+    // chunk 0 is only ever cited by the broad first/second segments -> falls
+    // back to the first (earliest) segment (149 chars -> truncated to 140)
     const chunk0 = out.find(h => h.link.endsWith('AAA'))
     expect(chunk0?.title).toBe(
-      'El 26 de enero de 2026, el Banco Central del Uruguay (BCU) redujo la Tasa de Política Monetaria (TPM) en 100 puntos básicos, estableciéndola en 6,5%.'
+      'El 26 de enero de 2026, el Banco Central del Uruguay (BCU) redujo la Tasa de Política Monetaria (TPM) en 100 puntos básicos, estableciénd...'
     )
   })
 
   it('strips a leading www. from the domain for `source`', () => {
-    const out = extractGroundedHeadlines(REAL_CHUNKS, REAL_SUPPORTS)
+    const out = extractGroundedHeadlines(REAL_CHUNKS, REAL_SUPPORTS, 5)
     const chunk3 = out.find(h => h.link.endsWith('DDD'))
     expect(chunk3?.source).toBe('busqueda.com.uy')
   })
@@ -135,9 +141,10 @@ describe('extractGroundedHeadlines', () => {
     expect(out[0]!.title).toBe('ok.com')
   })
 
-  it('caps at `limit` (default 3)', () => {
+  it('caps at `limit` (default 3), preserving original chunk order (no ranking)', () => {
     const out = extractGroundedHeadlines(REAL_CHUNKS, REAL_SUPPORTS)
     expect(out).toHaveLength(3)
+    expect(out.map(h => h.link.slice(-3))).toEqual(['AAA', 'BBB', 'CCC'])
     const out5 = extractGroundedHeadlines(REAL_CHUNKS, REAL_SUPPORTS, 5)
     expect(out5).toHaveLength(5)
   })
