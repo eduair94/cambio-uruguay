@@ -675,8 +675,13 @@ const chartData = computed(() => {
   const evolution = (evolutionData.value as any).evolution
   const labels = evolution.map((item: EvolutionItem) => moment(item.date).format('MM/YYYY'))
   const dates = evolution.map((item: EvolutionItem) => item.date)
-  const buyMarks = markPoints(dates, moves.value, 'rgb(75, 192, 192)')
-  const sellMarks = markPoints(dates, moves.value, 'rgb(255, 99, 132)')
+  // Chart.js's PointElement routes an unset pointBackgroundColor to the
+  // dataset's own `backgroundColor` (the translucent rgba, NOT borderColor).
+  // Pass that exact value as the default so a day with no move renders
+  // pixel-identical to before this feature; only matched days get the
+  // fully-opaque up/down marker color.
+  const buyMarks = markPoints(dates, moves.value, 'rgba(75, 192, 192, 0.2)')
+  const sellMarks = markPoints(dates, moves.value, 'rgba(255, 99, 132, 0.2)')
 
   return {
     labels,
