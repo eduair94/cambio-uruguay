@@ -554,6 +554,37 @@
       </VContainer>
     </section>
 
+    <!-- Nearby Casa Finder Banner - flagship tourist tool, links to the
+         dedicated smart nearby-finder page. -->
+    <section v-reveal class="nearby-finder-banner py-10">
+      <VContainer>
+        <VCard class="nearby-finder-card pa-6 pa-md-10" elevation="6">
+          <VRow align="center">
+            <VCol cols="12" md="8">
+              <div class="d-flex align-center ga-3 mb-2">
+                <VIcon color="primary" size="40">mdi-map-marker-radius</VIcon>
+                <h2 class="text-h5 text-md-h4 font-weight-bold mb-0">
+                  {{ t('nearbyCasas.homeBannerTitle') }}
+                </h2>
+              </div>
+              <p class="text-body-1 mb-0">{{ t('nearbyCasas.homeBannerSubtitle') }}</p>
+            </VCol>
+            <VCol cols="12" md="4" class="text-center text-md-end">
+              <VBtn
+                :to="localePath('/casa-de-cambio-cerca-de-mi')"
+                color="primary"
+                size="large"
+                class="px-6"
+              >
+                <VIcon start>mdi-crosshairs-gps</VIcon>
+                {{ t('nearbyCasas.homeBannerCta') }}
+              </VBtn>
+            </VCol>
+          </VRow>
+        </VCard>
+      </VContainer>
+    </section>
+
     <!-- Promo video: short branded clip, lazy + autoplay-in-view (muted), the
          visitor can tap to unmute. Sits between the rates and the how-it-works
          steps so it reinforces "compare before you change" organically. -->
@@ -2707,6 +2738,10 @@ useSeoMeta({
       margin-bottom: 8px;
     }
   }
+}
+
+.nearby-finder-card {
+  border: 2px solid rgba(var(--v-theme-primary), 0.35);
 }
 
 /* ============================================================

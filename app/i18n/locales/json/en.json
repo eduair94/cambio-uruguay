@@ -82,6 +82,7 @@
     "title": "Find the best exchange house near you",
     "subtitle": "We combine distance, exchange rate, and Google reviews to recommend the best option. Real exchange houses only — never banks or fintechs.",
     "chooseCity": "Or pick your city",
+    "geoDenied": "We couldn't get your location. Pick your city below.",
     "sortSmart": "Recommended",
     "sortDistance": "Closest",
     "sortRate": "Best rate",

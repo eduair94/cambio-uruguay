@@ -142,8 +142,9 @@ getProcessedExchangeData() (rates) ────────┘
 - **No googleRating**: neutral 3.0 fed into the score; badge shows "Sin reseñas"
   instead of a star count.
 - **Empty `hours`**: hours line omitted from the card entirely, no placeholder text.
-- **No casa within radius**: show nearest N regardless (same "widen radius" hint
-  pattern as `/mapa`'s spec), never a hard empty state.
+- **No casa within radius**: hard-filtered out (same as `/mapa`'s actual `rankNearby`
+  behavior) — the page shows a "no casas in that radius, try widening it" empty
+  state rather than back-filling with out-of-radius results.
 - **Geolocation denied**: quick-pick city chips fallback; if none chosen either,
   default to Montevideo center same as `/mapa`.
 - **Missing rate for chosen currency**: casa excluded from that currency's ranking

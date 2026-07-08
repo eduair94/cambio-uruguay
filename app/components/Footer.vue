@@ -153,6 +153,9 @@
           <NuxtLink :to="localePath('/casas-de-cambio')" class="footer-link text-caption">
             Casas de cambio
           </NuxtLink>
+          <NuxtLink :to="localePath('/casa-de-cambio-cerca-de-mi')" class="footer-link text-caption">
+            Cerca de mí
+          </NuxtLink>
           <NuxtLink :to="localePath('/couriers-uruguay')" class="footer-link text-caption">
             Couriers en Uruguay
           </NuxtLink>

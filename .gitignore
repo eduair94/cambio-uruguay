@@ -74,5 +74,6 @@ regul-snapshot.yml
 .playwright-mcp/
 *.stackdump
 .sdd-*
+.superpowers/
 # SEO analysis private data + service-account keys (never commit)
 docs/seo/data/
