@@ -78,6 +78,23 @@
     "cashPoints": "Puntos de retiro de efectivo",
     "withdrawCash": "Retiro de efectivo"
   },
+  "nearbyCasas": {
+    "title": "Encontrá la mejor casa de cambio cerca tuyo",
+    "subtitle": "Combinamos distancia, cotización y reseñas de Google para recomendarte la mejor opción. Solo casas de cambio reales — nunca bancos ni fintech.",
+    "chooseCity": "O elegí tu ciudad",
+    "sortSmart": "Recomendado",
+    "sortDistance": "Más cerca",
+    "sortRate": "Mejor tasa",
+    "noneInRadius": "No hay casas de cambio en ese radio. Probá ampliarlo.",
+    "noReviews": "Sin reseñas",
+    "viewOnMap": "Ver en el mapa",
+    "hideMap": "Ocultar mapa",
+    "getDirections": "Cómo llegar",
+    "openWaze": "Abrir en Waze",
+    "homeBannerTitle": "Encontrá la mejor casa de cambio cerca tuyo",
+    "homeBannerSubtitle": "Distancia, cotización y reseñas en un solo lugar. Andá directo con Google Maps o Waze.",
+    "homeBannerCta": "Buscar cerca de mí"
+  },
   "welcome": "Encuentra la mejor cotización en el mercado, comparando entre más de 40 casas de cambio.",
   "title": "Cotizaciones del día [day]. Se actualizan cada 10 minutos con respecto a la información de la web.",
   "info": "Si la información del sitio te sirvió, puedes ayudar a mantenerlo o dejando tu reseña",
@@ -628,7 +645,9 @@
     "compareDescription": "Compará la evolución histórica de la cotización del dólar y otras divisas entre varias casas de cambio de Uruguay en un mismo gráfico. Encontrá quién ofrece el mejor precio a lo largo del tiempo.",
     "compareKeywords": "comparar casas de cambio uruguay, evolución dólar uruguay, comparativa cotizaciones, gráfico comparativo dólar, mejor casa de cambio uruguay",
     "mapaTitle": "Mapa de casas de cambio en Uruguay | Cambio Uruguay",
-    "mapaDescription": "Mapa interactivo de casas de cambio en Uruguay. Encontrá la sucursal más cercana y la mejor cotización del dólar a tu alrededor."
+    "mapaDescription": "Mapa interactivo de casas de cambio en Uruguay. Encontrá la sucursal más cercana y la mejor cotización del dólar a tu alrededor.",
+    "nearbyCasasTitle": "Mejor Casa de Cambio Cerca de Mí en Uruguay | Cambio Uruguay",
+    "nearbyCasasDescription": "Encontrá la casa de cambio real más cercana con mejor cotización y reseñas. Navegá directo con Google Maps o Waze. Sin bancos ni fintech."
   },
   "dolarDepto": {
     "h1": "Dólar en {department} hoy",

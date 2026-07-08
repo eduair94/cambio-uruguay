@@ -78,6 +78,23 @@
     "cashPoints": "Cash withdrawal points",
     "withdrawCash": "Cash withdrawal"
   },
+  "nearbyCasas": {
+    "title": "Find the best exchange house near you",
+    "subtitle": "We combine distance, exchange rate, and Google reviews to recommend the best option. Real exchange houses only — never banks or fintechs.",
+    "chooseCity": "Or pick your city",
+    "sortSmart": "Recommended",
+    "sortDistance": "Closest",
+    "sortRate": "Best rate",
+    "noneInRadius": "No exchange houses within that radius. Try widening it.",
+    "noReviews": "No reviews",
+    "viewOnMap": "View on map",
+    "hideMap": "Hide map",
+    "getDirections": "Directions",
+    "openWaze": "Open in Waze",
+    "homeBannerTitle": "Find the best exchange house near you",
+    "homeBannerSubtitle": "Distance, exchange rate, and reviews in one place. Go straight there with Google Maps or Waze.",
+    "homeBannerCta": "Find near me"
+  },
   "bestToSell": "Best to sell",
   "bestToBuy": "Best to buy",
   "welcome": "Find the best exchange rate in the market, comparing between more than 40 exchange houses.",
@@ -621,7 +638,9 @@
     "compareDescription": "Compare the historical evolution of the US dollar and other currency rates across several Uruguayan exchange houses on a single chart. Find who offers the best price over time.",
     "compareKeywords": "compare exchange houses uruguay, dollar evolution uruguay, rate comparison, comparative dollar chart, best exchange house uruguay",
     "mapaTitle": "Map of exchange houses in Uruguay | Cambio Uruguay",
-    "mapaDescription": "Interactive map of exchange houses in Uruguay. Find the nearest branch and the best US dollar rate around you."
+    "mapaDescription": "Interactive map of exchange houses in Uruguay. Find the nearest branch and the best US dollar rate around you.",
+    "nearbyCasasTitle": "Best Exchange House Near Me in Uruguay | Cambio Uruguay",
+    "nearbyCasasDescription": "Find the closest real exchange house with the best rate and reviews. Navigate directly with Google Maps or Waze. No banks or fintechs."
   },
   "dolarDepto": {
     "h1": "Dollar in {department} today",
