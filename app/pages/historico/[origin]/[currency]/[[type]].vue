@@ -695,7 +695,9 @@ const chartData = computed(() => {
         fill: false,
         pointRadius: buyMarks.pointRadius,
         pointBackgroundColor: buyMarks.pointBackgroundColor,
-        pointHoverRadius: 5,
+        // +2 over each point's own radius so hovering never shrinks a
+        // highlighted move marker (was a flat 5, smaller than the marker's 6).
+        pointHoverRadius: buyMarks.pointRadius.map(r => r + 2),
       },
       {
         label: t('precioVenta'),
@@ -706,7 +708,7 @@ const chartData = computed(() => {
         fill: false,
         pointRadius: sellMarks.pointRadius,
         pointBackgroundColor: sellMarks.pointBackgroundColor,
-        pointHoverRadius: 5,
+        pointHoverRadius: sellMarks.pointRadius.map(r => r + 2),
       },
     ],
   }
