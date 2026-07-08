@@ -52,11 +52,14 @@ export async function searchMoveNews(
   (mirrors `aiConfigured()` / `chatCompletion`'s early-return pattern in
   `ai.ts` — no key configured is not an error, just "feature off").
 - Calls the Gemini `generateContent` REST endpoint with the Google Search
-  grounding tool enabled (`tools: [{ google_search: {} }]` — **implementer
-  must verify this is the correct tool name/shape for the currently available
-  API version with a live smoke-test call before wiring into the cron; Gemini
-  grounding tool syntax has changed across API versions and must not be
-  guessed from training data**).
+  grounding tool enabled. **Verified live during design (2026-07-08) against
+  the provided key:**
+  `POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}`,
+  body `{"contents":[{"parts":[{"text": PROMPT}]}], "tools":[{"google_search":{}}]}`.
+  `gemini-2.5-flash` (non-preview, stable) confirmed available for this key and
+  supports grounding. Real smoke test on 2026-01-26 USD (the BCU 100bp cut)
+  returned the correct real story, matching the manual backfill research —
+  confirms this genuinely finds real news, not just plausible-sounding text.
 - Prompt (single user-role message, Spanish, mirrors the manual WebSearch
   subagent prompts used for the historical backfill):
 
@@ -71,19 +74,43 @@ export async function searchMoveNews(
   > encontrás algo, escribí una explicación breve (2-3 frases, en español),
   > basada solo en lo que encontraste — no inventes causas ni datos."
 
-- **Headline extraction**: from `candidates[0].groundingMetadata.groundingChunks[]`
-  (`.web.uri`, `.web.title`) — real URLs the model actually grounded on, not
-  free-text the model might misformat. `source` derived from the URL's
-  hostname (strip `www.`, take the registrable domain) since grounding chunks
-  don't carry a separate publisher-name field.
+- **Headline extraction — verified live shape, differs from a naive reading
+  of the field names**:
+  - `groundingChunks[i].web.uri` is a real, working
+    `vertexaisearch.cloud.google.com/grounding-api-redirect/...` link that
+    redirects to the actual source article — not the raw article URL itself,
+    but a real, stable, clickable link to real content (this is the
+    documented, standard shape of Gemini grounding citations, not a bug to
+    work around).
+  - `groundingChunks[i].web.title` is just the bare domain (e.g.
+    `"busqueda.com.uy"`), **not the article's actual headline text** — Gemini
+    does not expose the source's real headline in this field.
+  - `groundingSupports[]` maps narrative text segments to the chunk indices
+    that back them (`{segment: {text, endIndex}, groundingChunkIndices: number[]}`).
+    Use this to build an honest "title" substitute per chunk: for each chunk
+    index, take the `groundingSupports` segment that cites it most
+    specifically (fewest total `groundingChunkIndices` on that segment;
+    earliest occurrence breaks ties), truncated to ~140 chars. This is real,
+    grounded, AI-paraphrased text tied to a real source — not the outlet's
+    exact original headline, but not fabricated either. `source` = the
+    chunk's domain (`web.title`, stripped of a leading `www.`). `link` =
+    `web.uri` (the redirect link).
+  - Cap at 3 headlines (chunks), same as the manual backfill's per-move cap.
 - **Narrative extraction**: `candidates[0].content.parts[].text` joined. If
   the text is exactly (or startswith, case-insensitive) `"SIN NOTICIAS"`,
   treat as "nothing found" → return `null` (triggers the existing fallback
   path in the caller) rather than storing a useless narrative with no
-  headlines.
-- Any HTTP/parse error, empty grounding chunks, or "SIN NOTICIAS" response →
-  return `null`. No retries (daily cron; a persisting move gets a fresh
-  attempt the next day it's still notable).
+  headlines. **In practice this is rare** — a second live smoke test on a
+  low-signal/uncertain date still returned a real, grounded, plausible macro
+  narrative rather than "SIN NOTICIAS" (same behavior a human analyst has:
+  there's almost always *something* going on in FX markets). This is
+  acceptable — the honesty guarantee is "don't fabricate," not "return
+  nothing on uncertain days" — but means the fallback path will fire mainly
+  on hard failures (network/parse errors, no grounding chunks at all), not
+  routinely on "nothing relevant" days.
+- Any HTTP/parse error or empty grounding chunks → return `null`. No retries
+  (daily cron; a persisting move gets a fresh attempt the next day it's
+  still notable).
 
 ### Modified: `app/server/utils/moveExplanation.ts` (`recordTodayExplanation`)
 
