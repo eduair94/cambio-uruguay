@@ -88,9 +88,9 @@ never be presented as a "casa de cambio."
      `https://www.google.com/maps/dir/?api=1&destination={lat},{lng}` (destination
      coords, not a text search — actually launches navigation).
    - `wazeUrl(lat, lng)` → `https://waze.com/ul?ll={lat},{lng}&navigate=yes`.
-   - Consolidates the two ad-hoc Google Maps URL builders currently duplicated in
-     `mapa.vue` and `LocationsMap.vue`; both are migrated to call this util (search
-     URL kept as a fallback export only if a lat/lng is unavailable).
+   - The two ad-hoc Google Maps URL builders in `mapa.vue` and `LocationsMap.vue`
+     are left as-is (`/mapa` is untouched by this work, per Out of Scope below) —
+     only the new page's cards call this util.
 
 3. **New page `app/pages/casa-de-cambio-cerca-de-mi.vue`**
    - Control bar (compact, mobile-first): geolocate button with quick-pick city
