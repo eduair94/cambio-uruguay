@@ -43,6 +43,11 @@ export async function recordTodayExplanation(
     user: `El ${currency}/UYU ${directionWord} ${Math.abs(today.pctChange).toFixed(2)}% el ${asOf}. Ese día se movieron estos indicadores: ${driverLines || 'sin datos de drivers disponibles'}. Explicá brevemente qué pudo influir, basándote solo en estos datos (correlación, no causalidad; no afirmes causas que no estén en los datos).`,
   }).catch(() => null)
 
+  // buildAnalysis's headlines carry an extra `pubDate` field that
+  // MoveExplanationDoc doesn't declare — strip it explicitly rather than
+  // relying on implicit Mongoose subdocument casting to drop it.
+  const storedHeadlines = headlines.map(h => ({ title: h.title, source: h.source, link: h.link }))
+
   await MoveExplanationModel.updateOne(
     { currency, date: asOf },
     {
@@ -51,7 +56,7 @@ export async function recordTodayExplanation(
         direction: today.direction,
         drivers,
         narrative,
-        headlines,
+        headlines: storedHeadlines,
       },
     },
     { upsert: true }
