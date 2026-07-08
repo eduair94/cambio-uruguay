@@ -1,6 +1,7 @@
 import { connectDb } from './db'
 import { DriverSnapshotModel } from '../models/DriverSnapshot'
 import { PriceNewsModel } from '../models/PriceNews'
+import { MoveExplanationModel } from '../models/MoveExplanation'
 import { toSeries } from '../../utils/dollarSeries'
 import { montevideoToday } from '../../utils/blog'
 import { driversFor } from '../../utils/drivers/config'
@@ -8,12 +9,17 @@ import { snapshotsToDriverSeries, type DateValueMap } from '../../utils/drivers/
 import { rankDrivers, detectMoves, type Correlation, type Move } from '../../utils/correlation'
 import type { SeriesPoint } from '../../utils/rateStats'
 
+export interface EnrichedMove extends Move {
+  headlines: { title: string; source: string; link: string }[]
+  narrative: string | null
+}
+
 export interface AnalysisResult {
   currency: string
   asOf: string
   base: SeriesPoint[]
   correlations: Correlation[]
-  moves: Move[]
+  moves: EnrichedMove[]
   headlines: { title: string; source: string; link: string; pubDate: string }[]
 }
 
@@ -48,29 +54,54 @@ async function fetchCanonicalSeries(currency: string): Promise<SeriesPoint[]> {
   return toSeries(res?.evolution, 'sell').map(p => ({ date: p.date.slice(0, 10), value: p.value }))
 }
 
-/** Assemble driver correlations + notable moves + today's archived news for a currency. */
-export async function buildAnalysis(currency: string): Promise<AnalysisResult> {
+/**
+ * Load + pivot this currency's driver snapshots into per-driver series. Shared
+ * by buildAnalysis and the forward/backfill move-explanation jobs so every
+ * caller computes attribution from the exact same Mongo read, never a
+ * hand-typed number.
+ */
+export async function loadDriverSeries(
+  currency: string
+): Promise<{ key: string; points: SeriesPoint[] }[]> {
   await connectDb()
-  const asOf = montevideoToday()
-
-  const [base, snapshotDocs, newsDoc] = await Promise.all([
-    fetchCanonicalSeries(currency),
-    DriverSnapshotModel.find({}).lean(),
-    PriceNewsModel.findOne({ currency, date: asOf }).lean(),
-  ])
-
+  const snapshotDocs = await DriverSnapshotModel.find({}).lean()
   const snapshots: DateValueMap[] = snapshotDocs.map(d => ({
     date: d.date,
     values: (d.values as unknown as Record<string, number>) ?? {},
   }))
-  const driverSeries = snapshotsToDriverSeries(snapshots, driversFor(currency))
+  return snapshotsToDriverSeries(snapshots, driversFor(currency))
+}
+
+/** Assemble driver correlations + notable moves (enriched with any archived
+ *  explanation) + today's archived news for a currency. */
+export async function buildAnalysis(currency: string): Promise<AnalysisResult> {
+  await connectDb()
+  const asOf = montevideoToday()
+
+  const [base, driverSeries, newsDoc] = await Promise.all([
+    fetchCanonicalSeries(currency),
+    loadDriverSeries(currency),
+    PriceNewsModel.findOne({ currency, date: asOf }).lean(),
+  ])
+
+  const moves = detectMoves(base, 1)
+  const explanations = await MoveExplanationModel.find({
+    currency,
+    date: { $in: moves.map(m => m.date) },
+  }).lean()
+  const explanationByDate = new Map(explanations.map(e => [e.date, e]))
+  const enrichedMoves: EnrichedMove[] = moves.map(m => ({
+    ...m,
+    headlines: explanationByDate.get(m.date)?.headlines ?? [],
+    narrative: explanationByDate.get(m.date)?.narrative ?? null,
+  }))
 
   return {
     currency,
     asOf,
     base,
     correlations: rankDrivers(base, driverSeries),
-    moves: detectMoves(base, 1),
+    moves: enrichedMoves,
     headlines: newsDoc?.headlines ?? [],
   }
 }
