@@ -3,7 +3,7 @@
     <h1 class="text-h5 mb-2">{{ t('nearbyCasas.title') }}</h1>
     <p class="text-body-2 mb-4">{{ t('nearbyCasas.subtitle') }}</p>
 
-    <v-row dense class="mb-2">
+    <v-row dense align="end" class="mb-2">
       <v-col cols="6" sm="4" md="3">
         <v-select
           v-model="currency"
