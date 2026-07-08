@@ -33,6 +33,7 @@
       </template>
 
       <VChip
+        v-if="headlineCount > 0"
         size="small"
         variant="tonal"
         color="primary"

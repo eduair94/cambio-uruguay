@@ -58,7 +58,10 @@
           <!-- driverSeries is independent of the correlation: a driver can have a valid
                price trend even when n=0, so the sparkline renders for every row. -->
           <div class="spark-wrap">
-            <Sparkline :values="driverSeries[entry.key] ?? []" :up="entry.r >= 0" />
+            <Sparkline
+              :values="driverSeries[entry.key] ?? []"
+              :up="sparkUp(driverSeries[entry.key] ?? [])"
+            />
           </div>
         </div>
 
@@ -99,6 +102,13 @@ const ranked = computed(() =>
 const barPct = (r: number) => Math.min(100, Math.abs(r) * 100)
 const label = (key: string) => props.driverLabels[key] ?? key
 const signedR = (r: number) => `${r >= 0 ? '+' : ''}${r.toFixed(2)}`
+
+// The sparkline must reflect the driver's OWN trend (last vs first value),
+// not the correlation sign — a positively-correlated driver whose own price
+// fell should still show a red downward line, otherwise the honesty page
+// misrepresents its own data.
+const sparkUp = (vals: number[]) =>
+  vals.length ? (vals[vals.length - 1] ?? 0) >= (vals[0] ?? 0) : true
 </script>
 
 <style scoped>
