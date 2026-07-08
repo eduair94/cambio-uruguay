@@ -37,9 +37,11 @@
             </VChip>
           </div>
 
-          <div v-if="headlinesByDate[move.date]?.length" class="headline-list">
+          <p v-if="move.narrative" class="text-body-2 mb-2">{{ move.narrative }}</p>
+
+          <div v-if="move.headlines.length" class="headline-list">
             <a
-              v-for="(headline, i) in headlinesByDate[move.date]"
+              v-for="(headline, i) in move.headlines"
               :key="i"
               :href="headline.link"
               target="_blank"
@@ -50,7 +52,7 @@
               <span class="text-caption text-medium-emphasis">— {{ headline.source }}</span>
             </a>
           </div>
-          <p v-else class="text-caption text-medium-emphasis font-italic mb-0">
+          <p v-else-if="!move.narrative" class="text-caption text-medium-emphasis font-italic mb-0">
             {{ t('porQueDolar.timelineNoNews') }}
           </p>
         </div>
@@ -64,10 +66,15 @@ import moment from 'moment'
 import { attributeMove, type DriverDayMove } from '~/utils/attribution'
 
 const props = defineProps<{
-  moves: { date: string; pctChange: number; direction: 'up' | 'down' | 'flat' }[]
+  moves: {
+    date: string
+    pctChange: number
+    direction: 'up' | 'down' | 'flat'
+    headlines: { title: string; source: string; link: string }[]
+    narrative: string | null
+  }[]
   driverSeries: { key: string; points: { date: string; value: number }[] }[]
   driverLabels: Record<string, string>
-  headlinesByDate: Record<string, { title: string; source: string; link: string }[]>
   selectedDate: string | null
 }>()
 

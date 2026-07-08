@@ -63,7 +63,6 @@
           :moves="analysis?.moves ?? []"
           :driver-series="driverSeriesArr"
           :driver-labels="driverLabels"
-          :headlines-by-date="headlinesByDate"
           :selected-date="selected"
           @select="selected = $event"
         />
@@ -114,7 +113,13 @@ interface AnalysisResponse {
   asOf: string
   base: { date: string; value: number }[]
   correlations: { key: string; r: number; n: number }[]
-  moves: { date: string; pctChange: number; direction: 'up' | 'down' | 'flat' }[]
+  moves: {
+    date: string
+    pctChange: number
+    direction: 'up' | 'down' | 'flat'
+    headlines: { title: string; source: string; link: string }[]
+    narrative: string | null
+  }[]
   headlines: { title: string; source: string; link: string; pubDate: string }[]
 }
 
@@ -147,15 +152,6 @@ const driverSeriesValues = computed<Record<string, number[]>>(() =>
 const summary = computed(() =>
   todaySummary(analysis.value?.base ?? [], analysis.value?.correlations ?? [])
 )
-
-// v1 only ever has headlines for the current day (see brief: past-day news
-// arrives with the archive/backfill in a later phase).
-const headlinesByDate = computed<Record<string, AnalysisResponse['headlines']>>(() => {
-  const headlines = analysis.value?.headlines
-  const asOf = analysis.value?.asOf
-  if (!headlines?.length || !asOf) return {}
-  return { [asOf]: headlines }
-})
 
 const canonical = computed(() => 'https://cambio-uruguay.com/por-que-sube-el-dolar')
 
