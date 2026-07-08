@@ -232,7 +232,7 @@ function locate() {
   )
 }
 
-const { data } = await useLazyAsyncData('nearby-casas-data', async () => {
+const { data } = useLazyAsyncData('nearby-casas-data', async () => {
   const [locs, processed] = await Promise.all([getAllLocations(), getProcessedExchangeData('')])
   return { locs, processed }
 })
