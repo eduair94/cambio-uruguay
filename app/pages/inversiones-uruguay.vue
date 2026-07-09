@@ -111,7 +111,7 @@
                 </td>
                 <td>
                   <a
-                    :href="i.source"
+                    :href="i.website"
                     target="_blank"
                     rel="noopener noreferrer"
                     class="inversiones-link"
@@ -138,15 +138,7 @@
               </div>
               <div>
                 <dt>Regulación</dt>
-                <dd>
-                  {{
-                    i.regulation === 'bcu'
-                      ? 'BCU'
-                      : i.regulation === 'exterior_regulado'
-                        ? 'Exterior'
-                        : 'No regulado'
-                  }}
-                </dd>
+                <dd>{{ regulationBadge(i.regulation) }}</dd>
               </div>
             </dl>
             <p class="text-caption text-grey-lighten-1 mb-1">Regulación:</p>
@@ -170,7 +162,7 @@
               <small class="text-grey-lighten-1 ml-1">según reseñas</small>
             </div>
             <a
-              :href="i.source"
+              :href="i.website"
               target="_blank"
               rel="noopener noreferrer"
               class="inversiones-link text-caption"
@@ -337,6 +329,7 @@ import {
   investmentsByCategory,
   riskLabel,
   minInvestmentLabel,
+  type RegulationStatus,
 } from '~/utils/investments'
 import { starParts } from '~/utils/reviews'
 
@@ -349,6 +342,13 @@ function hostOf(url: string): string {
     .replace(/^https?:\/\//, '')
     .replace(/^www\./, '')
     .replace(/\/.*$/, '')
+}
+
+/** Compact regulation badge label for the mobile card view. */
+function regulationBadge(regulation: RegulationStatus): string {
+  if (regulation === 'bcu') return 'BCU'
+  if (regulation === 'exterior_regulado') return 'Exterior'
+  return 'No regulado'
 }
 
 /** Icon per investment category, mirrors groupIcon() in prestamos-uruguay.vue. */
