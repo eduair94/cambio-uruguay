@@ -86,20 +86,29 @@ registered securities brokers.
 
 ## Brokers internacionales
 
-- **eToro** — Uruguay is a supported country, no UY-specific restriction found. Standard KYC.
-  Fees: USD 5 withdrawal fee (min withdrawal USD 30) on USD accounts; USD 10/month inactivity
-  fee after 12 months. Minimum deposit: not consistently verified (some secondary sources cite
-  USD 50, not confirmed on official fees page) — no verificado. Regulator: NOT a Uruguayan
-  entity, NOT BCU-regulated; regulated by CySEC (Cyprus), FCA (UK), ASIC (Australia), or FSAS
-  (Seychelles) depending on which eToro legal entity actually onboards the Uruguayan user — exact
-  entity for UY users not confirmed. No BCU investor protection applies.
+- **eToro** — Uruguay is a supported country
+  (https://tradersunion.com/brokers/fond/view/etoro/etoro-available-countries/), no UY-specific
+  restriction found. Standard KYC. Fees: USD 5 withdrawal fee (min withdrawal USD 30) on USD
+  accounts; USD 10/month inactivity fee after 12 months —
+  https://help.etoro.com/s/article/which-fees-and-commissions-does-etoro-have?language=en_GB.
+  Minimum deposit: not consistently verified (some secondary sources cite USD 50, not confirmed
+  on official fees page) — no verificado, check https://www.etoro.com/trading/fees/. Regulator:
+  NOT a Uruguayan entity, NOT BCU-regulated; regulated by CySEC (Cyprus), FCA (UK), ASIC
+  (Australia), or FSAS (Seychelles) depending on which eToro legal entity actually onboards the
+  Uruguayan user — exact entity for UY users not confirmed
+  (https://www.etoro.com/customer-service/regulation-license/). No BCU investor protection
+  applies.
 
-- **XTB** — Uruguay is listed as a country where XTB allows fully online account opening. No
-  mandatory minimum deposit (some secondary sources suggest ~USD 200 as a practical
-  recommendation, not a requirement). Fees: stocks/ETFs commission-free up to EUR 100.000/month
-  volume, then 0,2% (min EUR 10); FX conversion fee 0,5%; inactivity fee EUR 10/month after 12
-  months inactive + 90 days no deposit; withdrawals free. Regulator: entity serving Uruguayan
-  clients not confirmed (varies by XTB group entity); NOT BCU-regulated, no BCU protection.
+- **XTB** — Uruguay is listed as a country where XTB allows fully online account opening
+  (https://finantres.com/uruguay-xtb/). No mandatory minimum deposit (some secondary sources
+  suggest ~USD 200 as a practical recommendation, not a requirement) —
+  https://www.xtb.com/int/help-center/fees-and-payments-7-1/are-there-any-commissions-charged-for-deposits-and-withdrawals-1.
+  Fees: stocks/ETFs commission-free up to EUR 100.000/month volume, then 0,2% (min EUR 10); FX
+  conversion fee 0,5%; inactivity fee EUR 10/month after 12 months inactive + 90 days no deposit;
+  withdrawals free —
+  https://www.xtb.com/int/help-center/fees-and-payments-3-4/fees-and-commissions-at-xtb-3.
+  Regulator: entity serving Uruguayan clients not confirmed (varies by XTB group entity); NOT
+  BCU-regulated, no BCU protection.
 
 - **Interactive Brokers (IBKR)** — Mixed/unconfirmed: one aggregator says UY is NOT supported;
   two independent secondary sources say IBKR does accept Uruguayan residents. Official country
