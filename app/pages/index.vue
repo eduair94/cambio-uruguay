@@ -77,6 +77,7 @@
                         class="amount-input"
                         data-testid="amount-input"
                         prepend-inner-icon="mdi-cash"
+                        @blur="formatAmountDisplay"
                       />
                       <!-- Quick preset amount chips -->
                       <div class="preset-chips d-flex flex-wrap ga-2 mt-3">
@@ -1121,20 +1122,33 @@ const amountInput = ref<number>(
   })()
 )
 
-// es-UY thousands-formatted view of `amountInput` for the text field. Reading
-// formats the current number; writing parses the user's input back to a number
-// so numeric behavior is preserved (see utils/conversion.ts).
-const amountDisplay = computed<string>({
-  get: () => (amountInput.value > 0 ? formatAmount(amountInput.value) : ''),
-  set: (raw: string) => {
-    amountInput.value = parseAmount(raw)
-  },
+// Text-field-facing buffer for the entered amount. This is a plain ref (not a
+// get/set computed) so that reformatting with es-UY thousands separators only
+// happens on blur / programmatic changes, never on every keystroke. Live
+// reformatting while typing used to reinsert a "." thousands separator into
+// the string mid-edit (e.g. typing "25000" -> "2.500" once it hit 4 digits),
+// and since parseAmount treats a lone "." as a decimal point when no comma is
+// present, the next keystroke landed after that dot and got parsed as a
+// decimal (e.g. "2.5000" -> 2.5) instead of the intended 25000.
+const amountDisplay = ref<string>(amountInput.value > 0 ? formatAmount(amountInput.value) : '')
+
+watch(amountDisplay, raw => {
+  amountInput.value = parseAmount(raw)
 })
+
+// Re-sync the display buffer from the numeric source of truth. Called on blur
+// (to apply thousands formatting once the user is done typing) and whenever
+// amountInput is changed programmatically (presets, direction toggle, initial
+// load) rather than by the user typing in the field.
+const formatAmountDisplay = (): void => {
+  amountDisplay.value = amountInput.value > 0 ? formatAmount(amountInput.value) : ''
+}
 
 // Quick preset amounts the user can tap to fill the field.
 const presetAmounts: readonly number[] = [100, 500, 1000, 5000]
 const setPresetAmount = (value: number): void => {
   amountInput.value = value
+  formatAmountDisplay()
   updateExchange()
 }
 
@@ -1794,6 +1808,7 @@ const toggleDirection = () => {
     }
     amountInput.value = amount.value
   }
+  formatAmountDisplay()
   setConversionRate()
   // Reflect current direction in the URL
   updateQueryParams()

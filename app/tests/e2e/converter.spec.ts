@@ -48,4 +48,28 @@ test.describe('currency converter', () => {
     await expect(page.getByTestId('from-currency')).toHaveText(toBefore as string)
     await expect(page.getByTestId('to-currency')).toHaveText(fromBefore as string)
   })
+
+  // Regression: typing a 5-digit amount keystroke-by-keystroke used to get
+  // mangled once the live es-UY thousands separator ("2.500" while typing
+  // "25000") was reinterpreted as a decimal point on the next keystroke,
+  // silently truncating the value to "2,5". `.fill()` sets the value in one
+  // shot and can't reproduce this, so this test types character by character.
+  test('typing a multi-digit amount keystroke-by-keystroke does not get mangled', async ({
+    page,
+  }) => {
+    await page.goto('/')
+
+    const amountInput = page.getByTestId('amount-input').locator('input')
+    await expect(amountInput).toBeVisible({ timeout: 90_000 })
+
+    await amountInput.click()
+    await amountInput.press('Control+A')
+    await amountInput.pressSequentially('25000', { delay: 50 })
+    await expect(amountInput).toHaveValue('25000')
+
+    // Blurring reformats with the es-UY thousands separator, confirming the
+    // underlying numeric value is still the full 25000, not a truncated 2.5.
+    await amountInput.blur()
+    await expect(amountInput).toHaveValue('25.000')
+  })
 })
