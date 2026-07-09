@@ -278,6 +278,8 @@ export default defineNuxtConfig({
     scheduledTasks: {
       // 09:15 UTC ≈ 06:15 Uruguay: refresh macro-driver snapshots + archive daily news.
       '15 9 * * *': ['drivers:daily'],
+      // 09:20 UTC ≈ 06:20 Uruguay: record AI price-lean + external forecasts per currency.
+      '20 9 * * *': ['predictions:daily'],
       // 09:30 UTC ≈ 06:30 Uruguay: generate the day's blog posts.
       '30 9 * * *': ['blog:daily'],
       // 12:00 UTC = 09:00 Uruguay: send the daily newsletter to confirmed subs.
