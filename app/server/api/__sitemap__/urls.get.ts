@@ -140,6 +140,7 @@ export default defineEventHandler(async _event => {
     addUrlsForAllLocales('/couriers-uruguay', 0.7, 'weekly') // Couriers comparison guide
     addUrlsForAllLocales('/casas-de-cambio', 0.8, 'weekly') // Exchange-house directory/comparison
     addUrlsForAllLocales('/prestamos-uruguay', 0.7, 'weekly') // Loan directory comparison
+    addUrlsForAllLocales('/inversiones-uruguay', 0.7, 'weekly') // Investment options comparison guide
     addUrlsForAllLocales('/glosario', 0.7, 'weekly') // Financial glossary hub
     addUrlsForAllLocales('/convertir', 0.7, 'weekly') // Amount-conversion hub
     addUrlsForAllLocales('/cotizacion', 0.8, 'hourly', today) // All-currencies cotización hub
