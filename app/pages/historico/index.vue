@@ -183,6 +183,18 @@
         </v-card>
       </v-col>
     </v-row>
+    <v-row v-if="singleSelectedCurrency" class="mt-4">
+      <v-col cols="12">
+        <PricePredictionCard :currency="singleSelectedCurrency" />
+      </v-col>
+    </v-row>
+    <v-row v-else-if="selectedCurrency.length > 1" class="mt-4">
+      <v-col cols="12">
+        <v-alert type="info" variant="tonal">
+          {{ $t('historical.prediction.selectOneCurrency') }}
+        </v-alert>
+      </v-col>
+    </v-row>
   </div>
 </template>
 
@@ -418,6 +430,10 @@ const typeOptions = computed(() => {
     value: type,
   }))
 })
+
+const singleSelectedCurrency = computed(() =>
+  selectedCurrency.value.length === 1 ? selectedCurrency.value[0] : null
+)
 
 const filteredItems = computed(() => {
   let filtered = items.value
