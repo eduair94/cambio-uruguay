@@ -162,6 +162,9 @@
           <NuxtLink :to="localePath('/prestamos-uruguay')" class="footer-link text-caption">
             Préstamos en Uruguay
           </NuxtLink>
+          <NuxtLink :to="localePath('/inversiones-uruguay')" class="footer-link text-caption">
+            Inversiones en Uruguay
+          </NuxtLink>
           <NuxtLink :to="localePath('/glosario')" class="footer-link text-caption">
             Glosario
           </NuxtLink>
