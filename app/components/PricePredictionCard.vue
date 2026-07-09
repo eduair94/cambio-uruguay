@@ -14,7 +14,7 @@
       </div>
 
       <template v-else>
-        <div v-if="data?.ai" class="mb-4">
+        <div v-if="!error && data?.ai" class="mb-4">
           <div class="d-flex align-center ga-2 mb-2 flex-wrap">
             <v-chip :color="leanColor" variant="tonal">
               <v-icon start size="small">{{ leanIcon }}</v-icon>
@@ -37,7 +37,7 @@
           {{ t('historical.prediction.noAiAnalysis') }}
         </p>
 
-        <div v-if="data?.externalForecasts?.length">
+        <div v-if="!error && data?.externalForecasts?.length">
           <p class="text-subtitle-2 mb-2">{{ t('historical.prediction.externalForecasts') }}</p>
           <v-list density="compact" class="bg-transparent">
             <v-list-item
@@ -101,7 +101,7 @@ interface PricePredictionResponse {
 const props = defineProps<{ currency: string }>()
 const { t } = useI18n()
 
-const { data, pending } = await useFetch<PricePredictionResponse | null>(
+const { data, pending, error } = await useFetch<PricePredictionResponse | null>(
   () => `/api/predictions/${props.currency}`,
   { key: () => `price-prediction-${props.currency}` }
 )
