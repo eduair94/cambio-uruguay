@@ -228,7 +228,8 @@ export const INVESTMENTS: InvestmentOption[] = [
       'Desde 2026 el IRPF se extendió a rentas/ganancias de capital de fuente extranjera: 12% general con opción de retención definitiva reducida al 8% si retiene un agente residente en Uruguay',
     online: true,
     website: 'https://www.etoro.com',
-    source: 'https://help.etoro.com/s/article/which-fees-and-commissions-does-etoro-have?language=en_GB',
+    source:
+      'https://help.etoro.com/s/article/which-fees-and-commissions-does-etoro-have?language=en_GB',
     note: 'KYC estándar; sin restricción específica para residentes de Uruguay encontrada en esta investigación',
     rating: null,
     reviewSources: [],
@@ -248,7 +249,8 @@ export const INVESTMENTS: InvestmentOption[] = [
       'Desde 2026 el IRPF se extendió a rentas/ganancias de capital de fuente extranjera: 12% general con opción de retención definitiva reducida al 8% si retiene un agente residente en Uruguay',
     online: true,
     website: 'https://www.xtb.com',
-    source: 'https://www.xtb.com/int/help-center/fees-and-payments-3-4/fees-and-commissions-at-xtb-3',
+    source:
+      'https://www.xtb.com/int/help-center/fees-and-payments-3-4/fees-and-commissions-at-xtb-3',
     note: 'Sin depósito mínimo obligatorio; algunas fuentes secundarias sugieren ~USD 200 como recomendación práctica, no como requisito',
     rating: null,
     reviewSources: [],
