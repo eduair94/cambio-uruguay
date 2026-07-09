@@ -96,12 +96,23 @@ export async function resolveAnchor(
   return { origin: match.origin, code: currency, type: match.type ?? '' }
 }
 
+// UI (Unidad Indexada) and UR (Unidad Reajustable) ride the same live feed as
+// tradeable currencies but are inflation/legal-adjustment units, not
+// currencies with a real buy/sell market vs UYU (see app/utils/indicators.ts).
+// An AI directional lean for them is meaningless and wastes a daily Gemini call.
+const NON_TRADEABLE_CODES = new Set(['UI', 'UR'])
+
+/** Whether `code` represents a real tradeable currency (or metal) vs UYU. */
+export function isPredictableCurrencyCode(code: string): boolean {
+  return !NON_TRADEABLE_CODES.has(code)
+}
+
 /** Every currency code currently quoted by at least one exchange house. */
 export async function listActiveCurrencies(): Promise<string[]> {
   const items = await fetchLiveRates()
   const codes = new Set<string>()
   for (const item of items) {
-    if (item.code) codes.add(item.code)
+    if (item.code && isPredictableCurrencyCode(item.code)) codes.add(item.code)
   }
   return [...codes].sort()
 }

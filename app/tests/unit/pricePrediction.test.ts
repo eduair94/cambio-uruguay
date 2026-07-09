@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest'
-import { computePeriodChanges, parseAiReply } from '../../server/utils/pricePrediction'
+import {
+  computePeriodChanges,
+  parseAiReply,
+  isPredictableCurrencyCode,
+} from '../../server/utils/pricePrediction'
 
 describe('computePeriodChanges', () => {
   it('computes 7d/30d/90d pct change from a 100-point daily series', () => {
@@ -60,5 +64,17 @@ describe('parseAiReply', () => {
 
   it('returns null when the reasoning is empty', () => {
     expect(parseAiReply('LEAN: up\nCONFIANZA: baja\nRAZONAMIENTO:   ')).toBeNull()
+  })
+})
+
+describe('isPredictableCurrencyCode', () => {
+  it('excludes UI and UR (inflation/legal units, not tradeable currencies)', () => {
+    expect(isPredictableCurrencyCode('UI')).toBe(false)
+    expect(isPredictableCurrencyCode('UR')).toBe(false)
+  })
+
+  it('keeps gold and regular currencies as predictable', () => {
+    expect(isPredictableCurrencyCode('XAU')).toBe(true)
+    expect(isPredictableCurrencyCode('USD')).toBe(true)
   })
 })
