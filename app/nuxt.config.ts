@@ -638,6 +638,10 @@ export default defineNuxtConfig({
     // trigger for the daily driver ingest). Unset -> endpoint is open, mirroring
     // /api/blog/generate's NUXT_BLOG_GENERATE_TOKEN pattern.
     driversIngestToken: process.env.NUXT_DRIVERS_INGEST_TOKEN || '',
+    // Optional shared-secret gate for POST /api/predictions/ingest (manual/cron
+    // trigger for the daily price-prediction record). Unset -> endpoint is open,
+    // same convention as driversIngestToken above.
+    predictionsIngestToken: process.env.NUXT_PREDICTIONS_INGEST_TOKEN || '',
     // AI provider (server-only) for the daily blog generator. OpenAI-compatible
     // wormgpt endpoint; defaults to the latest model. Falls back to the backend
     // /ai/insights when no apiKey is present in this app's environment.
