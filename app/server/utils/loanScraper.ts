@@ -31,7 +31,7 @@ export function stripHtml(html: string): string {
     .replace(/[ \t]+/g, ' ')
 }
 
-function toNum(s: string): number {
+export function toNum(s: string): number {
   // Handle both UY decimal-comma format ("63,9" → 63.9) and decimal-dot format ("63.9" → 63.9).
   // Strip dots only when used as thousands separators (dot followed by exactly 3 digits).
   return parseFloat(s.replace(/\.(?=\d{3}(?:[,.]|$))/g, '').replace(',', '.'))
