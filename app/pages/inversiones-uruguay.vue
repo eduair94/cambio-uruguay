@@ -68,7 +68,6 @@
                 <th class="text-right">Mín. inversión</th>
                 <th>Regulación</th>
                 <th>Comisiones</th>
-                <th>Reputación</th>
                 <th>Sitio</th>
               </tr>
             </thead>
@@ -82,32 +81,6 @@
                 </td>
                 <td>
                   <span class="inversiones-note">{{ i.feesNote }}</span>
-                </td>
-                <td>
-                  <template v-if="i.rating != null">
-                    <span class="investment-stars" :aria-label="`${i.rating} de 5 según reseñas`">
-                      <VIcon
-                        v-for="n in starParts(i.rating).full"
-                        :key="`f${n}`"
-                        size="14"
-                        color="amber"
-                        >mdi-star</VIcon
-                      >
-                      <!-- eslint-disable-next-line vue/max-attributes-per-line -->
-                      <VIcon v-if="starParts(i.rating).half" size="14" color="amber"
-                        >mdi-star-half-full</VIcon
-                      >
-                      <VIcon
-                        v-for="n in starParts(i.rating).empty"
-                        :key="`e${n}`"
-                        size="14"
-                        color="grey"
-                        >mdi-star-outline</VIcon
-                      >
-                    </span>
-                    <small class="d-block text-grey-lighten-1">según reseñas</small>
-                  </template>
-                  <template v-else>—</template>
                 </td>
                 <td>
                   <a
@@ -145,22 +118,6 @@
             <p class="text-body-2 mb-2 inversiones-note">{{ i.regulationNote }}</p>
             <p class="text-caption text-grey-lighten-1 mb-1">Comisiones:</p>
             <p class="text-body-2 mb-2 inversiones-note">{{ i.feesNote }}</p>
-            <div v-if="i.rating != null" class="mb-2">
-              <span class="investment-stars" :aria-label="`${i.rating} de 5 según reseñas`">
-                <!-- eslint-disable vue/max-attributes-per-line -->
-                <VIcon v-for="n in starParts(i.rating).full" :key="`f${n}`" size="14" color="amber"
-                  >mdi-star</VIcon
-                >
-                <VIcon v-if="starParts(i.rating).half" size="14" color="amber"
-                  >mdi-star-half-full</VIcon
-                >
-                <VIcon v-for="n in starParts(i.rating).empty" :key="`e${n}`" size="14" color="grey"
-                  >mdi-star-outline</VIcon
-                >
-                <!-- eslint-enable vue/max-attributes-per-line -->
-              </span>
-              <small class="text-grey-lighten-1 ml-1">según reseñas</small>
-            </div>
             <a
               :href="i.website"
               target="_blank"
@@ -331,7 +288,6 @@ import {
   minInvestmentLabel,
   type RegulationStatus,
 } from '~/utils/investments'
-import { starParts } from '~/utils/reviews'
 
 const localePath = useLocalePath()
 const groups = computed(() => investmentsByCategory())

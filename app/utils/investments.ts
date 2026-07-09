@@ -221,7 +221,7 @@ export const INVESTMENTS: InvestmentOption[] = [
     minInvestment: null,
     feesNote:
       'USD 5 de comisión de retiro (mínimo de retiro USD 30); USD 10/mes de inactividad tras 12 meses sin uso. Depósito mínimo: no verificado (algunas fuentes secundarias citan USD 50, sin confirmar en la página oficial de comisiones)',
-    regulation: 'no_regulado',
+    regulation: 'exterior_regulado',
     regulationNote:
       'Uruguay es país soportado, sin restricción específica encontrada, pero eToro no es una entidad uruguaya ni está regulada por el BCU; según la entidad legal que finalmente da de alta al usuario uruguayo puede estar regulada por CySEC (Chipre), FCA (Reino Unido), ASIC (Australia) o FSAS (Seychelles) — entidad exacta para usuarios de Uruguay no confirmada. No aplica protección de inversores del BCU',
     taxNote:
@@ -241,7 +241,7 @@ export const INVESTMENTS: InvestmentOption[] = [
     minInvestment: null,
     feesNote:
       'Acciones/ETFs sin comisión hasta EUR 100.000/mes de volumen, luego 0,2% (mín. EUR 10); conversión de moneda 0,5%; inactividad EUR 10/mes tras 12 meses sin actividad y 90 días sin depósito; retiros gratuitos',
-    regulation: 'no_regulado',
+    regulation: 'exterior_regulado',
     regulationNote:
       'Uruguay figura como país donde XTB permite apertura de cuenta 100% online; la entidad del grupo XTB que efectivamente atiende a clientes uruguayos no está confirmada (varía) — NO está regulado por el BCU, sin protección del BCU',
     taxNote:
