@@ -572,7 +572,22 @@
     "volatility": "Volatilidade",
     "noHistoricalData": "Nenhum dado histórico disponível para o período selecionado",
     "errorLoadingData": "Erro ao carregar dados históricos",
-    "retryLoad": "Tentar Novamente"
+    "retryLoad": "Tentar Novamente",
+    "prediction": {
+      "title": "Análise de tendência (IA)",
+      "disclaimer": "Isto não é aconselhamento financeiro. A taxa de câmbio flutua livremente e nenhuma análise, incluindo esta, pode prevê-la com certeza.",
+      "leanUp": "Tendência de alta",
+      "leanDown": "Tendência de baixa",
+      "leanFlat": "Sem tendência clara",
+      "confidenceHigh": "Confiança alta",
+      "confidenceMedium": "Confiança média",
+      "confidenceLow": "Confiança baixa",
+      "basedOn": "Baseado na variação dos últimos {period}",
+      "externalForecasts": "Previsões publicadas por outras fontes",
+      "noAiAnalysis": "Nenhuma análise de IA disponível hoje para esta moeda.",
+      "noExternalForecasts": "Nenhuma previsão publicada recente encontrada para esta moeda.",
+      "selectOneCurrency": "Selecione uma única moeda para ver a análise de tendência."
+    }
   },
   "pwa": {
     "retry": "Reintentar",

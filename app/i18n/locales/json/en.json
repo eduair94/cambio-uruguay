@@ -577,7 +577,22 @@
     "volatility": "Volatility",
     "noHistoricalData": "No historical data available for the selected period",
     "errorLoadingData": "Error loading historical data",
-    "retryLoad": "Retry"
+    "retryLoad": "Retry",
+    "prediction": {
+      "title": "Trend Analysis (AI)",
+      "disclaimer": "This is not financial advice. The exchange rate floats freely and no analysis, including this one, can predict it with certainty.",
+      "leanUp": "Upward trend",
+      "leanDown": "Downward trend",
+      "leanFlat": "No clear trend",
+      "confidenceHigh": "High confidence",
+      "confidenceMedium": "Medium confidence",
+      "confidenceLow": "Low confidence",
+      "basedOn": "Based on the change over the last {period}",
+      "externalForecasts": "Forecasts published by other sources",
+      "noAiAnalysis": "No AI analysis available today for this currency.",
+      "noExternalForecasts": "No recent published forecasts found for this currency.",
+      "selectOneCurrency": "Select a single currency to see the trend analysis."
+    }
   },
   "pwa": {
     "retry": "Retry",
