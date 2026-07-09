@@ -29,9 +29,11 @@ test.describe('currency converter', () => {
     await expect(resultAmount).toContainText(/\$/)
     await expect(resultAmount).not.toHaveText(/^\s*\$\s*0,00\s*$/)
 
-    // Click a preset chip and assert the amount field updates.
+    // Click a preset chip and assert the amount field updates. The field is
+    // intentionally left unformatted (no thousands separator) - see the
+    // regression tests below for why.
     await page.getByTestId('preset-1000').click()
-    await expect(amountInput).toHaveValue('1.000')
+    await expect(amountInput).toHaveValue('1000')
 
     // Capture the current from/to currency, then swap and assert they switch.
     const fromBefore = (await page.getByTestId('from-currency').textContent())?.trim()
@@ -54,6 +56,8 @@ test.describe('currency converter', () => {
   // "25000") was reinterpreted as a decimal point on the next keystroke,
   // silently truncating the value to "2,5". `.fill()` sets the value in one
   // shot and can't reproduce this, so this test types character by character.
+  // The field is intentionally left unformatted (no "." inserted, ever), so
+  // it should read back exactly what was typed - before and after blur.
   test('typing a multi-digit amount keystroke-by-keystroke does not get mangled', async ({
     page,
   }) => {
@@ -67,9 +71,38 @@ test.describe('currency converter', () => {
     await amountInput.pressSequentially('25000', { delay: 50 })
     await expect(amountInput).toHaveValue('25000')
 
-    // Blurring reformats with the es-UY thousands separator, confirming the
-    // underlying numeric value is still the full 25000, not a truncated 2.5.
     await amountInput.blur()
-    await expect(amountInput).toHaveValue('25.000')
+    await expect(amountInput).toHaveValue('25000')
+  })
+
+  // Regression: a first fix reformatted the field on blur (adding "." as a
+  // thousands separator) and re-synced it via a `watch` on the display ref.
+  // That watch fired even for the fix's own programmatic writes, so toggling
+  // direction after blurring "25000" (now displayed as "25.000") reparsed
+  // that formatted text and silently collapsed it to 25. The field must
+  // never gain a grouping "." separator, and toggling direction must not
+  // shrink the entered amount by orders of magnitude (a genuine decimal
+  // point from the recomputed reverse amount, e.g. "25410.87", is fine and
+  // unambiguous - only a *grouping* dot mixed with decimal parsing is not).
+  test('toggling direction after blur does not corrupt a multi-digit amount', async ({
+    page,
+  }) => {
+    await page.goto('/')
+
+    const amountInput = page.getByTestId('amount-input').locator('input')
+    await expect(amountInput).toBeVisible({ timeout: 90_000 })
+
+    await amountInput.click()
+    await amountInput.press('Control+A')
+    await amountInput.pressSequentially('25000', { delay: 50 })
+    await amountInput.blur()
+    await expect(amountInput).toHaveValue('25000')
+
+    await page.getByTestId('convert-btn').click()
+    await page.locator('.direction-toggle').click()
+
+    const value = await amountInput.inputValue()
+    expect(value).not.toBe('')
+    expect(Number(value.replace(',', '.'))).toBeGreaterThan(1000)
   })
 })

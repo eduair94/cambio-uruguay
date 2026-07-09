@@ -67,7 +67,7 @@
                   <VRow class="mb-0 mb-md-4">
                     <VCol cols="12" md="6">
                       <VTextField
-                        v-model="amountDisplay"
+                        :model-value="amountDisplay"
                         hide-details
                         :label="t('enterAmount')"
                         variant="outlined"
@@ -77,7 +77,7 @@
                         class="amount-input"
                         data-testid="amount-input"
                         prepend-inner-icon="mdi-cash"
-                        @blur="formatAmountDisplay"
+                        @update:model-value="onAmountTyped"
                       />
                       <!-- Quick preset amount chips -->
                       <div class="preset-chips d-flex flex-wrap ga-2 mt-3">
@@ -1122,33 +1122,44 @@ const amountInput = ref<number>(
   })()
 )
 
-// Text-field-facing buffer for the entered amount. This is a plain ref (not a
-// get/set computed) so that reformatting with es-UY thousands separators only
-// happens on blur / programmatic changes, never on every keystroke. Live
-// reformatting while typing used to reinsert a "." thousands separator into
-// the string mid-edit (e.g. typing "25000" -> "2.500" once it hit 4 digits),
-// and since parseAmount treats a lone "." as a decimal point when no comma is
-// present, the next keystroke landed after that dot and got parsed as a
-// decimal (e.g. "2.5000" -> 2.5) instead of the intended 25000.
-const amountDisplay = ref<string>(amountInput.value > 0 ? formatAmount(amountInput.value) : '')
+// Text-field-facing buffer for the entered amount. Deliberately NOT formatted
+// with es-UY thousands separators ("."), and never reformatted while the
+// field has focus: any "." inserted into the text is ambiguous downstream,
+// since parseAmount treats a lone "." as a decimal point when no "," is
+// present (needed so plain JS-number strings like "1234.5" still parse). Two
+// different bugs came from adding formatting back in:
+//  1. Reformatting on every keystroke ("25000" -> "2.500" once it hit 4
+//     digits) meant the next keystroke landed after the inserted dot, so
+//     continuing to type got parsed as a decimal ("2.5000" -> 2.5).
+//  2. A get/set computed swapped for a ref + `watch(amountDisplay, ...)`
+//     still reparsed the text every time the display was reformatted
+//     programmatically (blur, presets, direction toggle) - so blurring
+//     "25000" produced "25.000", which the watcher immediately reparsed as
+//     25 via the same dot-as-decimal ambiguity.
+// The fix: never inject grouping into this field at all. Typing only ever
+// updates amountInput from the raw, unmodified text (onAmountTyped); this
+// import parseAmount handles at most a "," decimal, no grouping to sort out.
+// programmatic writes (presets, direction toggle, initial load) set an
+// unformatted digit string instead of calling formatAmount, so no "." is ever
+// introduced.
+const amountDisplay = ref<string>(plainAmountString(amountInput.value))
 
-watch(amountDisplay, raw => {
+function plainAmountString(value: number): string {
+  return value > 0 ? String(value) : ''
+}
+
+// Fired only by the field's own input event (user typing) - never by
+// programmatic changes to amountDisplay.value, which don't re-trigger this.
+function onAmountTyped(raw: string): void {
+  amountDisplay.value = raw
   amountInput.value = parseAmount(raw)
-})
-
-// Re-sync the display buffer from the numeric source of truth. Called on blur
-// (to apply thousands formatting once the user is done typing) and whenever
-// amountInput is changed programmatically (presets, direction toggle, initial
-// load) rather than by the user typing in the field.
-const formatAmountDisplay = (): void => {
-  amountDisplay.value = amountInput.value > 0 ? formatAmount(amountInput.value) : ''
 }
 
 // Quick preset amounts the user can tap to fill the field.
 const presetAmounts: readonly number[] = [100, 500, 1000, 5000]
 const setPresetAmount = (value: number): void => {
   amountInput.value = value
-  formatAmountDisplay()
+  amountDisplay.value = plainAmountString(value)
   updateExchange()
 }
 
@@ -1808,7 +1819,7 @@ const toggleDirection = () => {
     }
     amountInput.value = amount.value
   }
-  formatAmountDisplay()
+  amountDisplay.value = plainAmountString(amountInput.value)
   setConversionRate()
   // Reflect current direction in the URL
   updateQueryParams()
