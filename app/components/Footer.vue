@@ -145,73 +145,38 @@
 
         <VSpacer class="d-none d-md-flex" />
 
-        <!-- Site links: editorial guides + methodology/about (internal SEO) -->
-        <nav class="d-flex align-center flex-wrap ga-3 footer-links">
-          <NuxtLink :to="localePath('/herramientas')" class="footer-link text-caption">
-            Herramientas
-          </NuxtLink>
-          <NuxtLink :to="localePath('/casas-de-cambio')" class="footer-link text-caption">
-            Casas de cambio
-          </NuxtLink>
-          <NuxtLink :to="localePath('/casa-de-cambio-cerca-de-mi')" class="footer-link text-caption">
-            Cerca de mí
-          </NuxtLink>
-          <NuxtLink :to="localePath('/couriers-uruguay')" class="footer-link text-caption">
-            Couriers en Uruguay
-          </NuxtLink>
-          <NuxtLink :to="localePath('/prestamos-uruguay')" class="footer-link text-caption">
-            Préstamos en Uruguay
-          </NuxtLink>
-          <NuxtLink :to="localePath('/inversiones-uruguay')" class="footer-link text-caption">
-            Inversiones en Uruguay
-          </NuxtLink>
-          <NuxtLink :to="localePath('/glosario')" class="footer-link text-caption">
-            Glosario
-          </NuxtLink>
-          <NuxtLink :to="localePath('/convertir')" class="footer-link text-caption">
-            Convertir
-          </NuxtLink>
-          <NuxtLink :to="localePath('/cotizacion')" class="footer-link text-caption">
-            Cotizaciones
-          </NuxtLink>
-          <NuxtLink :to="localePath('/indicadores')" class="footer-link text-caption">
-            Indicadores
-          </NuxtLink>
-          <NuxtLink :to="localePath('/blog')" class="footer-link text-caption"> Blog </NuxtLink>
-          <NuxtLink :to="localePath('/conectar')" class="footer-link text-caption">
-            {{ $t('conectar.nav') }}
-          </NuxtLink>
-          <NuxtLink :to="localePath('/desarrolladores')" class="footer-link text-caption">
-            {{ $t('dev.nav') }}
-          </NuxtLink>
-          <NuxtLink :to="localePath('/newsletter')" class="footer-link text-caption">
-            {{ $t('newsletter.nav') }}
-          </NuxtLink>
-          <NuxtLink :to="localePath('/guias')" class="footer-link text-caption">
-            {{ $t('guias.nav') }}
-          </NuxtLink>
-          <NuxtLink :to="localePath('/retirar-efectivo-uruguay')" class="footer-link text-caption">
-            Retirar efectivo
-          </NuxtLink>
-          <NuxtLink :to="localePath('/acerca')" class="footer-link text-caption">
-            {{ $t('acerca.nav') }}
-          </NuxtLink>
-          <NuxtLink :to="localePath('/privacidad')" class="footer-link text-caption">
-            {{ $t('legal.privacyNav') }}
-          </NuxtLink>
-          <NuxtLink :to="localePath('/terminos')" class="footer-link text-caption">
-            {{ $t('legal.termsNav') }}
-          </NuxtLink>
-          <NuxtLink :to="localePath('/contacto')" class="footer-link text-caption">
-            {{ $t('legal.contactNav') }}
-          </NuxtLink>
-          <button
-            type="button"
-            class="footer-link footer-link--btn text-caption"
-            @click="reopenConsent"
-          >
-            {{ $t('consent.settings') }}
-          </button>
+        <!-- Site links, grouped by section and generated from NAV_SECTIONS so the
+             footer, the header and the drawer can never disagree about what
+             exists. This is where crawlers pick up the long-tail pages. -->
+        <nav class="footer-nav">
+          <div v-for="section in footerSections" :key="section.id" class="footer-nav__group">
+            <h2 class="footer-nav__heading text-caption">{{ $t(section.titleKey) }}</h2>
+            <ul class="footer-nav__list">
+              <li v-for="entry in section.entries" :key="entry.to">
+                <NuxtLink
+                  :to="localePath(entry.to as string)"
+                  class="footer-link text-caption"
+                  :data-cta="entry.to === '/mapa-del-sitio' ? 'footer-sitemap' : undefined"
+                >
+                  {{ $t(entry.labelKey) }}
+                </NuxtLink>
+              </li>
+            </ul>
+          </div>
+          <div class="footer-nav__group">
+            <h2 class="footer-nav__heading text-caption">{{ $t('consent.settings') }}</h2>
+            <ul class="footer-nav__list">
+              <li>
+                <button
+                  type="button"
+                  class="footer-link footer-link--btn text-caption"
+                  @click="reopenConsent"
+                >
+                  {{ $t('consent.settings') }}
+                </button>
+              </li>
+            </ul>
+          </div>
         </nav>
 
         <VSpacer class="d-none d-md-flex" />
@@ -245,9 +210,19 @@
 </template>
 
 <script setup lang="ts">
+import { NAV_SECTIONS } from '~/utils/siteNav'
+
 const localePath = useLocalePath()
 const { reopen } = useConsent()
 const reopenConsent = () => reopen()
+
+// Internal routes only: the external links already have their own icon row above.
+const footerSections = computed(() =>
+  NAV_SECTIONS.map(section => ({
+    ...section,
+    entries: section.entries.filter(entry => entry.to),
+  }))
+)
 </script>
 
 <style lang="scss" scoped>
@@ -268,6 +243,30 @@ const reopenConsent = () => reopen()
   a {
     color: #fff;
   }
+}
+
+.footer-nav {
+  display: grid;
+  width: 100%;
+  gap: 20px 28px;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.footer-nav__heading {
+  margin-bottom: 8px;
+  color: rgba(255, 255, 255, 0.55);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.footer-nav__list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .footer-link {

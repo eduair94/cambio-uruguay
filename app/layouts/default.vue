@@ -4,12 +4,14 @@
          the nav straight to the page content. -->
     <a class="skip-link" href="#main">{{ $t('a11y.skipToContent') }}</a>
 
-    <!-- Navigation Drawer for mobile -->
+    <!-- Navigation Drawer for mobile. Every item is generated from NAV_SECTIONS,
+         so the drawer can no longer drift away from the desktop nav (it used to
+         be a hand-written list that had silently lost /mapa and /estado). -->
     <VNavigationDrawer
       v-model="drawer"
       location="left"
       temporary
-      width="280"
+      width="288"
       class="mobile-navigation-drawer"
       :aria-label="$t('a11y.primaryNav')"
     >
@@ -17,7 +19,7 @@
            Vuetify's default role=listbox on the inner list (its mixed link/button/
            divider children aren't listbox options) so it's a plain container — the
            links inside remain the navigable content. -->
-      <VList role="presentation" tabindex="-1">
+      <VList v-model:opened="openGroups" role="presentation" tabindex="-1">
         <VListItem>
           <VListItemTitle class="text-h6"> Menu </VListItemTitle>
           <template #append>
@@ -36,162 +38,50 @@
 
         <VDivider />
 
-        <VListItem :to="localePath('/')" exact @click="drawer = false">
+        <VListItem :href="searchHref" @click="onSearchTrigger">
           <template #prepend>
-            <VIcon>mdi-home</VIcon>
+            <VIcon>mdi-magnify</VIcon>
           </template>
-          <VListItemTitle>{{ $t('inicio') }}</VListItemTitle>
+          <VListItemTitle>{{ $t('search.triggerLabel') }}</VListItemTitle>
         </VListItem>
 
-        <VListItem :to="localePath('/dolar-hoy')" @click="drawer = false">
-          <template #prepend>
-            <VIcon>mdi-trending-up</VIcon>
-          </template>
-          <VListItemTitle>{{ $t('dolarHoy.nav') }}</VListItemTitle>
-        </VListItem>
+        <VDivider />
 
-        <VListItem :to="localePath('/avanzado')" @click="drawer = false">
-          <template #prepend>
-            <VIcon>mdi-cog</VIcon>
+        <VListGroup v-for="section in navSections" :key="section.id" :value="section.id">
+          <template #activator="{ props: activatorProps }">
+            <VListItem v-bind="activatorProps">
+              <VListItemTitle class="font-weight-medium">
+                {{ $t(section.titleKey) }}
+              </VListItemTitle>
+            </VListItem>
           </template>
-          <VListItemTitle>{{ $t('avanzado') }}</VListItemTitle>
-        </VListItem>
 
-        <VListItem :to="localePath('/historico')" @click="drawer = false">
-          <template #prepend>
-            <VIcon>mdi-chart-line</VIcon>
+          <template v-for="entry in section.entries" :key="entry.to ?? entry.href">
+            <VListItem
+              v-if="entry.to"
+              :to="localePath(entry.to)"
+              :exact="entry.exact"
+              @click="drawer = false"
+            >
+              <template #prepend>
+                <VIcon>{{ entry.icon }}</VIcon>
+              </template>
+              <VListItemTitle>{{ $t(entry.labelKey) }}</VListItemTitle>
+            </VListItem>
+            <VListItem
+              v-else
+              :href="entry.href"
+              target="_blank"
+              rel="noopener noreferrer"
+              @click="drawer = false"
+            >
+              <template #prepend>
+                <VIcon>{{ entry.icon }}</VIcon>
+              </template>
+              <VListItemTitle>{{ $t(entry.labelKey) }}</VListItemTitle>
+            </VListItem>
           </template>
-          <VListItemTitle>{{ $t('historico') }}</VListItemTitle>
-        </VListItem>
-
-        <VListItem :to="localePath('/sucursales')" @click="drawer = false">
-          <template #prepend>
-            <VIcon>mdi-bank-outline</VIcon>
-          </template>
-          <VListItemTitle>{{ $t('sucursalesMenu') }}</VListItemTitle>
-        </VListItem>
-
-        <VListItem :to="localePath('/retirar-efectivo-uruguay')" @click="drawer = false">
-          <template #prepend>
-            <VIcon>mdi-cash-multiple</VIcon>
-          </template>
-          <VListItemTitle>Retirar efectivo</VListItemTitle>
-        </VListItem>
-
-        <VListItem :to="localePath('/noticias')" @click="drawer = false">
-          <template #prepend>
-            <VIcon>mdi-newspaper-variant-outline</VIcon>
-          </template>
-          <VListItemTitle>{{ $t('noticias.nav') }}</VListItemTitle>
-        </VListItem>
-
-        <VListItem :to="localePath('/comparar')" @click="drawer = false">
-          <template #prepend>
-            <VIcon>mdi-chart-multiple</VIcon>
-          </template>
-          <VListItemTitle>{{ $t('compare.nav') }}</VListItemTitle>
-        </VListItem>
-
-        <VListItem :to="localePath('/guias')" @click="drawer = false">
-          <template #prepend>
-            <VIcon>mdi-book-open-variant</VIcon>
-          </template>
-          <VListItemTitle>{{ $t('guias.nav') }}</VListItemTitle>
-        </VListItem>
-
-        <VListItem :to="localePath('/herramientas')" @click="drawer = false">
-          <template #prepend>
-            <VIcon>mdi-tools</VIcon>
-          </template>
-          <VListItemTitle>Herramientas</VListItemTitle>
-        </VListItem>
-
-        <VListItem :to="localePath('/glosario')" @click="drawer = false">
-          <template #prepend>
-            <VIcon>mdi-book-alphabet</VIcon>
-          </template>
-          <VListItemTitle>Glosario</VListItemTitle>
-        </VListItem>
-
-        <VListItem :to="localePath('/convertir')" @click="drawer = false">
-          <template #prepend>
-            <VIcon>mdi-cash-sync</VIcon>
-          </template>
-          <VListItemTitle>Convertir</VListItemTitle>
-        </VListItem>
-
-        <VListItem :to="localePath('/cotizacion')" @click="drawer = false">
-          <template #prepend>
-            <VIcon>mdi-cash-multiple</VIcon>
-          </template>
-          <VListItemTitle>Cotizaciones</VListItemTitle>
-        </VListItem>
-
-        <VListItem :to="localePath('/indicadores')" @click="drawer = false">
-          <template #prepend>
-            <VIcon>mdi-finance</VIcon>
-          </template>
-          <VListItemTitle>Indicadores</VListItemTitle>
-        </VListItem>
-
-        <VListItem :to="localePath('/blog')" @click="drawer = false">
-          <template #prepend>
-            <VIcon>mdi-newspaper-variant-multiple</VIcon>
-          </template>
-          <VListItemTitle>Blog</VListItemTitle>
-        </VListItem>
-
-        <VListItem :to="localePath('/acerca')" @click="drawer = false">
-          <template #prepend>
-            <VIcon>mdi-information-outline</VIcon>
-          </template>
-          <VListItemTitle>{{ $t('acerca.nav') }}</VListItemTitle>
-        </VListItem>
-
-        <VListItem :to="localePath('/conectar')" @click="drawer = false">
-          <template #prepend>
-            <VIcon>mdi-connection</VIcon>
-          </template>
-          <VListItemTitle>{{ $t('conectar.nav') }}</VListItemTitle>
-        </VListItem>
-
-        <VListItem
-          href="https://ko-fi.com/cambio_uruguay"
-          target="_blank"
-          rel="noopener noreferrer"
-          @click="drawer = false"
-        >
-          <template #prepend>
-            <VIcon>mdi-heart</VIcon>
-          </template>
-          <VListItemTitle>{{ $t('donar') }}</VListItemTitle>
-        </VListItem>
-
-        <VListItem
-          href="https://twitter.com/cambio_uruguay"
-          target="_blank"
-          rel="noopener noreferrer"
-          @click="drawer = false"
-        >
-          <template #prepend>
-            <VIcon>mdi-twitter</VIcon>
-          </template>
-          <VListItemTitle>Síguenos en Twitter</VListItemTitle>
-        </VListItem>
-
-        <VDivider class="my-2" />
-
-        <VListItem
-          href="https://www.linkedin.com/in/eduardo-airaudo/"
-          target="_blank"
-          rel="noopener noreferrer"
-          @click="drawer = false"
-        >
-          <template #prepend>
-            <VIcon>mdi-account-circle</VIcon>
-          </template>
-          <VListItemTitle>Acerca del Autor</VListItemTitle>
-        </VListItem>
+        </VListGroup>
       </VList>
     </VNavigationDrawer>
 
@@ -203,6 +93,21 @@
         :title="$t('a11y.menu')"
         @click.stop="drawer = !drawer"
       />
+
+      <!-- Mobile search. A real anchor: before hydration a tap navigates to the
+           SSR /buscar page (this app drops pre-hydration clicks), after
+           hydration the handler cancels that and opens the palette instead. -->
+      <a
+        class="search-trigger-icon d-flex d-lg-none"
+        :href="searchHref"
+        :aria-label="$t('search.triggerLabel')"
+        :title="$t('search.triggerLabel')"
+        data-cta="search-open-mobile"
+        @pointerenter="paletteActivated = true"
+        @click="onSearchTrigger"
+      >
+        <VIcon>mdi-magnify</VIcon>
+      </a>
 
       <NuxtLink :to="localePath('/')" class="no_link d-flex logo_link" :aria-label="$t('inicio')">
         <img
@@ -220,16 +125,18 @@
         <VBtn
           v-for="item in primaryNav"
           :key="item.to"
-          :to="localePath(item.to)"
+          :to="localePath(item.to as string)"
           :exact="item.exact"
           variant="text"
           class="nav-btn text-none"
-          :class="{ 'nav-btn--active': isActiveRoute(item.to) }"
+          :class="{ 'nav-btn--active': isActiveRoute(item.to as string) }"
         >
           <VIcon start size="small">{{ item.icon }}</VIcon>
           {{ navLabel(item) }}
         </VBtn>
 
+        <!-- "Más" is now grouped by section rather than a flat list of 13 links,
+             and it carries the pages that used to be footer-only or orphaned. -->
         <VMenu location="bottom start" transition="slide-y-transition">
           <template #activator="{ props, isActive }">
             <VBtn
@@ -244,19 +151,26 @@
             </VBtn>
           </template>
           <VList class="more-menu" density="comfortable" nav>
-            <template v-for="item in moreNav" :key="item.label">
-              <VListItem v-if="item.to" :to="localePath(item.to)" :active="isActiveRoute(item.to)">
-                <template #prepend>
-                  <VIcon>{{ item.icon }}</VIcon>
-                </template>
-                <VListItemTitle>{{ navLabel(item) }}</VListItemTitle>
-              </VListItem>
-              <VListItem v-else :href="item.href" target="_blank" rel="noopener noreferrer">
-                <template #prepend>
-                  <VIcon>{{ item.icon }}</VIcon>
-                </template>
-                <VListItemTitle>{{ navLabel(item) }}</VListItemTitle>
-              </VListItem>
+            <template v-for="section in moreGroups" :key="section.id">
+              <VListSubheader>{{ $t(section.titleKey) }}</VListSubheader>
+              <template v-for="entry in section.entries" :key="entry.to ?? entry.href">
+                <VListItem
+                  v-if="entry.to"
+                  :to="localePath(entry.to)"
+                  :active="isActiveRoute(entry.to)"
+                >
+                  <template #prepend>
+                    <VIcon>{{ entry.icon }}</VIcon>
+                  </template>
+                  <VListItemTitle>{{ $t(entry.labelKey) }}</VListItemTitle>
+                </VListItem>
+                <VListItem v-else :href="entry.href" target="_blank" rel="noopener noreferrer">
+                  <template #prepend>
+                    <VIcon>{{ entry.icon }}</VIcon>
+                  </template>
+                  <VListItemTitle>{{ $t(entry.labelKey) }}</VListItemTitle>
+                </VListItem>
+              </template>
             </template>
           </VList>
         </VMenu>
@@ -267,11 +181,30 @@
       <!-- Account + language cluster: kept together with its own gap so the login
            CTA never collides with the logo or the nav. -->
       <div class="nav-actions d-flex align-center ga-1 ga-sm-2">
+        <!-- Desktop search. Same real-anchor trick as the mobile trigger: it is a
+             working link to /buscar until Vue takes over the click. -->
+        <a
+          class="search-trigger d-none d-lg-flex"
+          :href="searchHref"
+          :aria-label="$t('search.triggerLabel')"
+          aria-keyshortcuts="Control+K"
+          data-cta="search-open-desktop"
+          @pointerenter="paletteActivated = true"
+          @click="onSearchTrigger"
+        >
+          <VIcon size="small">mdi-magnify</VIcon>
+          <span class="search-trigger__label">{{ $t('search.triggerLabel') }}</span>
+          <kbd class="search-trigger__kbd">{{ $t('search.triggerHint') }}</kbd>
+        </a>
         <ThemeToggle />
         <AccountMenu />
         <LanguageMenu />
       </div>
     </VAppBar>
+
+    <ClientOnly>
+      <LazySearchPalette v-if="paletteActivated" v-model="paletteOpen" />
+    </ClientOnly>
 
     <ClientOnly>
       <PWAInstallBanner />
@@ -298,6 +231,7 @@
 <script setup lang="ts">
 import { useLocalePath } from '#imports'
 import { useLoadingStore } from '~/stores/loading'
+import { NAV_SECTIONS, type NavEntry } from '~/utils/siteNav'
 
 const route = useRoute()
 const router = useRouter()
@@ -356,55 +290,89 @@ const isActiveRoute = (path: string) => {
   return route.path.startsWith(path)
 }
 
-// Desktop navigation model. `label` is an i18n key unless `raw` is set (some
-// items have no dedicated translation key). Primary items stay inline; the rest
-// live under the "Más" dropdown so the bar never overflows.
+// Every navigation surface below is a projection of NAV_SECTIONS (app/utils/siteNav.ts):
+// the inline bar, the grouped "Más" menu, the mobile drawer and the footer. Add a
+// page there and it appears in all of them; a page that is in none fails the
+// `siteNav-coverage` unit test.
 const { t } = useI18n()
-interface NavItem {
-  to?: string
-  href?: string
-  icon: string
-  label: string
-  raw?: boolean
-  exact?: boolean
+const navSections = NAV_SECTIONS
+const primaryNav = computed(() => NAV_SECTIONS.flatMap(s => s.entries.filter(e => e.primary)))
+const moreGroups = computed(() =>
+  NAV_SECTIONS.map(s => ({ ...s, entries: s.entries.filter(e => !e.primary) })).filter(
+    s => s.entries.length > 0
+  )
+)
+const navLabel = (entry: NavEntry): string => t(entry.labelKey)
+
+// Open the drawer group that owns the current route, so a mobile visitor lands
+// inside the section they are already browsing.
+const openGroups = ref<string[]>([])
+watch(
+  () => route.path,
+  () => {
+    const section = NAV_SECTIONS.find(s =>
+      s.entries.some(e => e.to && e.to !== '/' && route.path.startsWith(e.to))
+    )
+    openGroups.value = section ? [section.id] : ['market']
+  },
+  { immediate: true }
+)
+
+// Search palette. `paletteActivated` defers loading the component (and, inside
+// it, the ~220-document index) until the first hint that someone wants to
+// search, so the sessions that never search pay nothing for it.
+const paletteOpen = ref(false)
+const paletteActivated = ref(false)
+const searchHref = computed(() => localePath('/buscar'))
+const track = useTrack()
+
+function openPalette() {
+  paletteActivated.value = true
+  paletteOpen.value = true
 }
-const primaryNav: NavItem[] = [
-  { to: '/', icon: 'mdi-home', label: 'inicio', exact: true },
-  { to: '/dolar-hoy', icon: 'mdi-trending-up', label: 'dolarHoy.nav' },
-  { to: '/historico', icon: 'mdi-chart-line', label: 'historico' },
-  { to: '/sucursales', icon: 'mdi-bank-outline', label: 'sucursalesMenu' },
-  { to: '/mapa', icon: 'mdi-map-marker-radius', label: 'map.nav' },
-  { to: '/comparar', icon: 'mdi-chart-multiple', label: 'compare.nav' },
-]
-const moreNav: NavItem[] = [
-  { to: '/noticias', icon: 'mdi-newspaper-variant-outline', label: 'noticias.nav' },
-  { to: '/avanzado', icon: 'mdi-cog', label: 'avanzado' },
-  { to: '/guias', icon: 'mdi-book-open-variant', label: 'guias.nav' },
-  {
-    to: '/retirar-efectivo-uruguay',
-    icon: 'mdi-cash-multiple',
-    label: 'Retirar efectivo',
-    raw: true,
-  },
-  { to: '/herramientas', icon: 'mdi-tools', label: 'Herramientas', raw: true },
-  { to: '/glosario', icon: 'mdi-book-alphabet', label: 'Glosario', raw: true },
-  { to: '/convertir', icon: 'mdi-cash-sync', label: 'Convertir', raw: true },
-  { to: '/cotizacion', icon: 'mdi-cash-multiple', label: 'Cotizaciones', raw: true },
-  { to: '/indicadores', icon: 'mdi-finance', label: 'Indicadores', raw: true },
-  { to: '/blog', icon: 'mdi-newspaper-variant-multiple', label: 'Blog', raw: true },
-  { to: '/estado', icon: 'mdi-heart-pulse', label: 'estado.nav' },
-  { to: '/acerca', icon: 'mdi-information-outline', label: 'acerca.nav' },
-  { to: '/conectar', icon: 'mdi-connection', label: 'conectar.nav' },
-  { href: 'https://ko-fi.com/cambio_uruguay', icon: 'mdi-heart', label: 'donar' },
-  { href: 'https://twitter.com/cambio_uruguay', icon: 'mdi-twitter', label: 'Twitter', raw: true },
-  {
-    href: 'https://www.linkedin.com/in/eduardo-airaudo/',
-    icon: 'mdi-account-circle',
-    label: 'Autor',
-    raw: true,
-  },
-]
-const navLabel = (item: NavItem): string => (item.raw ? item.label : t(item.label))
+
+/**
+ * Handle a click on a search trigger.
+ *
+ * The trigger is a real `<a href="/buscar">`. Before hydration no listener is
+ * attached, so the browser follows the link to the server-rendered search page —
+ * a dropped first click is impossible. After hydration we cancel the navigation
+ * and open the palette instead. Modified clicks keep their native meaning.
+ */
+function onSearchTrigger(event: MouseEvent) {
+  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return
+  event.preventDefault()
+  drawer.value = false
+  openPalette()
+}
+
+function isTypingTarget(target: EventTarget | null): boolean {
+  const el = target as HTMLElement | null
+  if (!el) return false
+  return (
+    el.tagName === 'INPUT' ||
+    el.tagName === 'TEXTAREA' ||
+    el.tagName === 'SELECT' ||
+    el.isContentEditable
+  )
+}
+
+function onGlobalKeydown(event: KeyboardEvent) {
+  if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+    event.preventDefault()
+    track('search_open', { source: 'hotkey' })
+    openPalette()
+    return
+  }
+  if (event.key === '/' && !event.metaKey && !event.ctrlKey && !isTypingTarget(event.target)) {
+    event.preventDefault()
+    track('search_open', { source: 'hotkey_slash' })
+    openPalette()
+  }
+}
+
+onMounted(() => window.addEventListener('keydown', onGlobalKeydown))
+onUnmounted(() => window.removeEventListener('keydown', onGlobalKeydown))
 
 // hreflang alternates: feed @nuxtjs/i18n's localized head (rel=alternate
 // hreflang links for es/en/pt + x-default, plus htmlAttrs lang/dir) into useHead
@@ -457,7 +425,7 @@ useHead({
               '@type': 'SearchAction',
               target: {
                 '@type': 'EntryPoint',
-                urlTemplate: 'https://cambio-uruguay.com/avanzado?search={search_term_string}',
+                urlTemplate: 'https://cambio-uruguay.com/buscar?q={search_term_string}',
               },
               'query-input': 'required name=search_term_string',
             },
@@ -603,9 +571,87 @@ useHead({
 
 /* "Más" dropdown panel */
 .more-menu {
-  min-width: 232px;
+  min-width: 264px;
+  max-height: 78vh;
   border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Search triggers. Both reserve their footprint in the SSR HTML so hydration
+   never shifts the app bar. The desktop one reads as a search field, which is
+   what people look for; the mobile one is an icon next to the hamburger. */
+.search-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 196px;
+  height: 36px;
+  padding: 0 8px 0 12px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.05);
+  color: inherit;
+  text-decoration: none;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.search-trigger:hover,
+.search-trigger:focus-visible {
+  border-color: rgba(var(--v-theme-info), 0.6);
+  background-color: rgba(255, 255, 255, 0.09);
+}
+
+.search-trigger__label {
+  flex: 1 1 auto;
+  font-size: 0.86rem;
+  opacity: 0.75;
+}
+
+.search-trigger__kbd {
+  padding: 2px 6px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 5px;
+  font-family: inherit;
+  font-size: 0.68rem;
+  opacity: 0.7;
+}
+
+.search-trigger-icon {
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: inherit;
+  text-decoration: none;
+}
+
+.search-trigger-icon:hover,
+.search-trigger-icon:focus-visible {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+/* The app bar is dark in both themes, except the trigger borders, which are
+   tuned against white text — re-tone them when the light theme is applied. */
+:global(.v-theme--light) .search-trigger {
+  border-color: rgba(0, 0, 0, 0.18);
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+:global(.v-theme--light) .search-trigger:hover,
+:global(.v-theme--light) .search-trigger:focus-visible {
+  background-color: rgba(0, 0, 0, 0.06);
+}
+
+:global(.v-theme--light) .search-trigger__kbd {
+  border-color: rgba(0, 0, 0, 0.2);
+}
+
+:global(.v-theme--light) .search-trigger-icon:hover,
+:global(.v-theme--light) .search-trigger-icon:focus-visible {
+  background-color: rgba(0, 0, 0, 0.06);
 }
 
 /* Keep the account/language cluster from hugging the screen edge on mobile */

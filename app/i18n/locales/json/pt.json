@@ -1098,5 +1098,76 @@
         "weak": "Este indicador explica pouco o movimento do dólar no Uruguai."
       }
     }
+  },
+  "search": {
+    "triggerLabel": "Buscar",
+    "triggerHint": "Ctrl K",
+    "placeholder": "Buscar páginas, ferramentas, casas de câmbio…",
+    "ariaInput": "Buscar no site",
+    "ariaListbox": "Resultados da busca",
+    "close": "Fechar",
+    "recents": "Buscas recentes",
+    "clearRecents": "Limpar",
+    "suggestions": "Sugestões",
+    "resultsCount": "{n} resultados",
+    "oneResult": "1 resultado",
+    "noResultsAria": "Sem resultados",
+    "empty": "Não encontramos resultados para «{q}».",
+    "didYouMean": "Você quis dizer…?",
+    "seeAll": "Ver todos os resultados",
+    "browseSitemap": "Explorar o mapa do site",
+    "resultsFor": "Resultados para «{q}»",
+    "pageTitle": "Buscar no Cambio Uruguay",
+    "pageIntro": "Encontre qualquer página do site: cotações, casas de câmbio, calculadoras, guias e termos do glossário.",
+    "pageDescription": "Buscador do Cambio Uruguay: encontre cotações, casas de câmbio, calculadoras, guias e definições em um só lugar.",
+    "section": {
+      "market": "Cotação e mercado",
+      "houses": "Casas de câmbio",
+      "tools": "Conversores e ferramentas",
+      "learn": "Guias e aprendizado",
+      "services": "Serviços financeiros",
+      "connect": "Dados e conexões",
+      "site": "Site"
+    },
+    "action": {
+      "theme": "Mudar tema (atual: {mode})",
+      "lang": "Mudar idioma para {lang}"
+    },
+    "type": {
+      "page": "Página",
+      "tool": "Ferramenta",
+      "currency": "Cotação",
+      "convert": "Conversão",
+      "glossary": "Glossário",
+      "guide": "Guia",
+      "indicator": "Indicador",
+      "casa": "Casa de câmbio",
+      "action": "Ação"
+    }
+  },
+  "nav": {
+    "herramientas": "Ferramentas",
+    "convertir": "Converter",
+    "cotizacion": "Cotações",
+    "indicadores": "Indicadores",
+    "glosario": "Glossário",
+    "blog": "Blog",
+    "retirar": "Sacar dinheiro",
+    "porQueSube": "Por que o dólar sobe?",
+    "records": "Recordes do dólar",
+    "casasDirectory": "Casas de câmbio",
+    "nearby": "Perto de mim",
+    "couriers": "Couriers no Uruguai",
+    "prestamos": "Empréstimos no Uruguai",
+    "inversiones": "Investimentos no Uruguai",
+    "sitemap": "Mapa do site",
+    "twitter": "Twitter",
+    "linkedin": "Sobre o autor"
+  },
+  "sitemapPage": {
+    "h1": "Mapa do site Cambio Uruguay",
+    "intro": "Todas as páginas do site, agrupadas por seção: cotações, casas de câmbio, calculadoras, guias, glossário e mais.",
+    "metaTitle": "Mapa do site",
+    "metaDescription": "Índice completo do Cambio Uruguay: cotações, casas de câmbio, calculadoras, conversões, guias, glossário e indicadores econômicos."
   }
 }
