@@ -642,6 +642,10 @@
       </VContainer>
     </section>
 
+    <!-- Social proof: real Trustpilot reviews. Lazily mounted and self-removing
+         on failure, so a third-party outage never leaves an empty box here. -->
+    <TrustpilotReviews />
+
     <!-- AI Insights Section -->
     <AIInsights />
 
@@ -898,6 +902,10 @@
         </VRow>
       </VContainer>
     </section>
+
+    <!-- Our own published assets. Not an "as featured in" claim: no third-party
+         editorial mention exists yet. -->
+    <EcosystemStrip />
 
     <!-- CTA Section -->
     <section class="cta-section py-6 py-sm-12 bg-primary">
