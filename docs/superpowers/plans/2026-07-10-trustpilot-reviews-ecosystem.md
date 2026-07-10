@@ -974,9 +974,16 @@ test('the review carousel mounts with the TrustScore banner suppressed', async (
   expect(src).toContain('hideTopBanner=true')
   expect(src).toContain('hideGlobalReviews=true')
 
-  // `rating` and `sort` are no-ops upstream; setting them would be a lie.
+  // `rating` is a no-op upstream; setting it would be a lie. We never set it, so
+  // the library never puts it in the URL.
   expect(src).not.toContain('rating=')
-  expect(src).not.toContain('sort=')
+
+  // NOTE: `sort=latest` DOES appear here, along with `page=1&limit=20`. Those are
+  // the library's own defaults, injected by its buildIframeUrl — we do not set
+  // them. The constraint is that our config never *sets* `sort`, which
+  // tests/unit/trustpilot.test.ts asserts directly. Do not assert its absence
+  // from the URL; verified against the live dev server, it is always present.
+  expect(src).toContain('sort=latest')
 })
 
 test('both review CTAs point at Trustpilot and open in a new tab', async ({ page }) => {
@@ -1046,10 +1053,26 @@ git commit -m "test(reviews): e2e cover carousel config, CTAs, ecosystem links"
 
 **Files:** none (verification only).
 
-- [ ] **Step 1: Lint the whole app**
+- [ ] **Step 1: Lint the files this branch touches**
 
-Run: `cd app && npm run lint`
-Expected: exit 0, no errors.
+`npm run lint` is ALREADY RED on `main`: 443 prettier errors across files this branch never opens (e.g. `utils/nearbyRates.ts`, and 360 in `pages/index.vue` alone, identical before and after our two-line insertion). Do not try to fix them — that is unrelated repo debt, and `--fix` would produce a huge unreviewable diff.
+
+Gate on the files we actually changed instead:
+
+Run:
+```
+cd app && npx eslint utils/trustpilot.ts utils/ecosystem.ts \
+  components/TrustpilotReviews.vue components/EcosystemStrip.vue \
+  types/trustpilot-iframe-widget-vanilla.d.ts \
+  tests/unit/trustpilot.test.ts tests/unit/ecosystem.test.ts tests/e2e/trustpilot.spec.ts
+```
+Expected: exit 0, no output.
+
+Then confirm we added no new errors to `pages/index.vue`:
+```
+cd app && npx eslint pages/index.vue 2>&1 | tail -2
+```
+Expected: `360 problems` — the same count as on `main`. A higher number means our insertion introduced errors.
 
 - [ ] **Step 2: Run the full unit suite**
 
