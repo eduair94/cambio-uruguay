@@ -162,6 +162,7 @@ import {
   type DepartmentEntry,
   type LocalDataMap,
 } from '~/utils/departments'
+import { pickOriginRate } from '~/utils/rateSource'
 
 // Validate the slug against the live department list BEFORE rendering. Running in
 // the route guard yields a real 404 status (on SSR and client navigation) and,
@@ -224,16 +225,12 @@ const { data, pending } = await useAsyncData<DepartmentPageData | null>(
     const departmentName = departmentFromSlug(slug.value, allNames)
     if (!departmentName) return null
 
-    // Latest USD buy/sell per origin (last row wins; the snapshot is "today").
-    const usdByOrigin = new Map<string, { buy: number | null; sell: number | null }>()
-    for (const row of rows) {
-      if (row.code !== 'USD') continue
-      usdByOrigin.set(row.origin, { buy: row.buy ?? null, sell: row.sell ?? null })
-    }
-
+    // One USD quote per casa: its walk-in rate. Taking the last matching row
+    // instead handed BROU its eBROU quote and La Favorita its INTERBANCARIO one
+    // — a wholesale price no member of the public can transact at.
     const houses: DepartmentHouseRow[] = housesInDepartment(localData, departmentName).map(
       house => {
-        const usd = usdByOrigin.get(house.origin)
+        const usd = pickOriginRate(rows, house.origin)
         return {
           origin: house.origin,
           name: house.name,
