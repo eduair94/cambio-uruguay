@@ -1181,7 +1181,8 @@
     "inversiones": "Investing in Uruguay",
     "sitemap": "Sitemap",
     "twitter": "Twitter",
-    "linkedin": "About the author"
+    "linkedin": "About the author",
+    "mejorCasa": "Best exchange house"
   },
   "sitemapPage": {
     "h1": "Cambio Uruguay sitemap",
@@ -1202,5 +1203,20 @@
     "days": "{days} days",
     "streakUp": "Up {days} days in a row.",
     "streakDown": "Down {days} days in a row."
+  },
+  "mejorCasa": {
+    "h1": "Where should you change dollars in Uruguay today?",
+    "subtitle": "We compare every exchange house and bank in the country to name the best rate today.",
+    "metaTitle": "Best exchange house in Uruguay today: cheapest dollar",
+    "metaDescription": "Today the cheapest place to buy dollars is {casa} at ${rate}. Compare 40+ houses and save ${savings} against the market average.",
+    "metaDescriptionGeneric": "Compare the dollar price across 40+ exchange houses and banks in Uruguay and find out where to change money today.",
+    "answer": "Today the cheapest place to buy dollars is {casa}, selling at ${rate}. Buying US$ 1,000 there saves you about ${savings} against the average of the {count} exchange houses and banks we compare.",
+    "average": "The market average is ${average}.",
+    "asOf": "Data as of {date}.",
+    "colCasa": "Exchange house",
+    "colRate": "Sell",
+    "colSavings": "Saving vs. average",
+    "methodology": "Ranked by the dollar sell price (what you pay per US$ 1). The saving compares buying US$ {amount} at that house against the market average. The BCU reference rate and interbank quotes are excluded — the public cannot transact at them.",
+    "noData": "No rates available right now."
   }
 }

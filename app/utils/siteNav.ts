@@ -179,6 +179,22 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         keywords: ['casas de cambio', 'directorio', 'comparativa', 'resenas', 'ranking'],
       },
       {
+        to: '/mejor-casa-de-cambio',
+        labelKey: 'nav.mejorCasa',
+        icon: 'mdi-trophy-outline',
+        priority: 0.9,
+        changefreq: 'daily',
+        primary: true,
+        keywords: [
+          'mejor casa de cambio',
+          'donde cambiar',
+          'dolar mas barato',
+          'mas conveniente',
+          'cual conviene',
+          'ranking',
+        ],
+      },
+      {
         to: '/casa-de-cambio-cerca-de-mi',
         labelKey: 'nav.nearby',
         icon: 'mdi-map-marker-account',

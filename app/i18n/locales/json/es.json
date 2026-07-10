@@ -1192,7 +1192,8 @@
     "inversiones": "Inversiones en Uruguay",
     "sitemap": "Mapa del sitio",
     "twitter": "Twitter",
-    "linkedin": "Acerca del autor"
+    "linkedin": "Acerca del autor",
+    "mejorCasa": "Mejor casa de cambio"
   },
   "sitemapPage": {
     "h1": "Mapa del sitio de Cambio Uruguay",
@@ -1213,5 +1214,20 @@
     "days": "{days} días",
     "streakUp": "Viene subiendo {days} días seguidos.",
     "streakDown": "Viene bajando {days} días seguidos."
+  },
+  "mejorCasa": {
+    "h1": "¿Dónde conviene cambiar dólares hoy en Uruguay?",
+    "subtitle": "Comparamos las casas de cambio y bancos del país para decirte cuál paga mejor hoy.",
+    "metaTitle": "Mejor casa de cambio hoy en Uruguay: dólar más barato",
+    "metaDescription": "Hoy la casa más barata para comprar dólares es {casa} a ${rate}. Compará las 40+ casas y ahorrá ${savings} frente al promedio del mercado.",
+    "metaDescriptionGeneric": "Compará el precio del dólar en más de 40 casas de cambio y bancos de Uruguay y descubrí dónde conviene cambiar hoy.",
+    "answer": "Hoy, la casa más barata para comprar dólares es {casa}, que los vende a ${rate}. Comprando US$ 1.000 ahí ahorrás unos ${savings} frente al promedio de las {count} casas de cambio y bancos que comparamos.",
+    "average": "El promedio del mercado es ${average}.",
+    "asOf": "Datos al {date}.",
+    "colCasa": "Casa de cambio",
+    "colRate": "Venta",
+    "colSavings": "Ahorro vs. promedio",
+    "methodology": "Ranking por precio de venta del dólar (lo que pagás por cada US$ 1). El ahorro compara el total de comprar US$ {amount} en esa casa contra hacerlo al promedio del mercado. Se excluyen la cotización de referencia del BCU y las cotizaciones interbancarias, que no están disponibles al público.",
+    "noData": "No hay cotizaciones disponibles en este momento."
   }
 }
