@@ -1199,5 +1199,12 @@
     "intro": "Todas las páginas del sitio, agrupadas por sección: cotizaciones, casas de cambio, calculadoras, guías, glosario y más.",
     "metaTitle": "Mapa del sitio",
     "metaDescription": "Índice completo de Cambio Uruguay: cotizaciones, casas de cambio, calculadoras, conversiones, guías, glosario e indicadores económicos."
+  },
+  "reviews": {
+    "title": "Lo que dice la gente",
+    "subtitle": "Reseñas reales de Trustpilot, sin editar.",
+    "write": "Escribir una reseña",
+    "seeAll": "Ver todas las reseñas en Trustpilot",
+    "a11yRegion": "Reseñas de clientes en Trustpilot"
   }
 }

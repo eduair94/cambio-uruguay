@@ -1188,5 +1188,12 @@
     "intro": "Every page on the site, grouped by section: exchange rates, exchange houses, calculators, guides, glossary and more.",
     "metaTitle": "Sitemap",
     "metaDescription": "Complete index of Cambio Uruguay: exchange rates, exchange houses, calculators, conversions, guides, glossary and economic indicators."
+  },
+  "reviews": {
+    "title": "What people say",
+    "subtitle": "Real, unedited reviews from Trustpilot.",
+    "write": "Write a review",
+    "seeAll": "See all reviews on Trustpilot",
+    "a11yRegion": "Trustpilot customer reviews"
   }
 }
