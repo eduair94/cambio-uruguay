@@ -504,6 +504,18 @@
     "reference": "Referencia de la API",
     "referenceText": "Explorá todos los endpoints, parámetros y respuestas. Probalos directamente desde acá."
   },
+  "ecosystem": {
+    "title": "Código abierto y ecosistema",
+    "subtitle": "Todo lo que construimos alrededor de Cambio Uruguay es público.",
+    "links": {
+      "github": "Código en GitHub",
+      "npm": "Paquete npm",
+      "mcp": "Servidor MCP",
+      "api": "API pública",
+      "mediumEs": "Guía (español)",
+      "mediumEn": "Guía (inglés)"
+    }
+  },
   "conectar": {
     "nav": "Conectar",
     "title": "Conectá con Cambio Uruguay",

@@ -501,6 +501,18 @@
     "reference": "API reference",
     "referenceText": "Browse every endpoint, parameter and response — and try them right here."
   },
+  "ecosystem": {
+    "title": "Open source & ecosystem",
+    "subtitle": "Everything we build around Cambio Uruguay is public.",
+    "links": {
+      "github": "Source on GitHub",
+      "npm": "npm package",
+      "mcp": "MCP server",
+      "api": "Public API",
+      "mediumEs": "Guide (Spanish)",
+      "mediumEn": "Guide (English)"
+    }
+  },
   "conectar": {
     "nav": "Connect",
     "title": "Connect with Cambio Uruguay",
