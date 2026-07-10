@@ -410,9 +410,9 @@ git commit -m "feat(ecosystem): add open-source link catalogue + i18n keys"
 
 - [ ] **Step 1: Install the dependency**
 
-Run: `cd app && npm install trustpilot-iframe-widget@^1.0.2 --legacy-peer-deps`
+Run: `cd app && npm install trustpilot-iframe-widget@^1.0.2`
 
-`--legacy-peer-deps` stops npm from pulling in the `react` / `react-dom` peers, which we never use — the `/vanilla` bundle contains zero React references.
+No flag is needed: the package declares `react` / `react-dom` under `peerDependenciesMeta` with `optional: true`, so npm does not auto-install them. Do **not** add `--legacy-peer-deps` — it disables required-peer auto-install tree-wide, not just for this package, and will silently drop unrelated required peers already in the tree (it dropped `pinia` when tried during this task's original implementation).
 
 Expected: `package.json` gains `"trustpilot-iframe-widget": "^1.0.2"` under `dependencies`.
 
