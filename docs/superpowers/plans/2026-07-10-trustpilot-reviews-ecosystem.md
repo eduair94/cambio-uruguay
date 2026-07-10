@@ -527,16 +527,25 @@ Add to `app/i18n/locales/json/pt.json`:
 
 Create `app/components/TrustpilotReviews.vue`:
 
+> Note: use the shared Vuetify typography utilities (`text-h4 font-weight-bold` /
+> `text-body-1 text-grey-lighten-1`) for the heading and subtitle, and do NOT add
+> `section-band`/`section-title`/`section-subtitle`. Those three classes are private
+> to `app/pages/index.vue`'s `<style scoped>` block: Vue's scoped CSS only tags the
+> parent's own elements (and a child's root node), so a child component's nested
+> `<h2>`/`<p>` never receive that scope hash and would render unstyled. Standalone
+> section components (`AIInsights.vue`, `WhereToChange.vue`) all follow this same
+> convention.
+
 ```vue
 <template>
   <!-- Removed entirely if the third-party widget fails: a heading with an empty
        box under it is worse than no social proof at all. -->
-  <section v-if="!failed" v-reveal class="reviews-section section-band py-12">
+  <section v-if="!failed" v-reveal class="reviews-section py-12">
     <VContainer>
       <VRow>
         <VCol cols="12" md="10" lg="8" class="mx-auto text-center mb-8">
-          <h2 class="section-title">{{ t('reviews.title') }}</h2>
-          <p class="section-subtitle">{{ t('reviews.subtitle') }}</p>
+          <h2 class="text-h4 font-weight-bold mb-4">{{ t('reviews.title') }}</h2>
+          <p class="text-body-1 text-grey-lighten-1">{{ t('reviews.subtitle') }}</p>
         </VCol>
       </VRow>
 
@@ -717,8 +726,8 @@ Create `app/components/EcosystemStrip.vue`:
     <VContainer>
       <VRow>
         <VCol cols="12" class="text-center mb-6">
-          <h2 class="section-title">{{ t('ecosystem.title') }}</h2>
-          <p class="section-subtitle">{{ t('ecosystem.subtitle') }}</p>
+          <h2 class="text-h4 font-weight-bold mb-4">{{ t('ecosystem.title') }}</h2>
+          <p class="text-body-1 text-grey-lighten-1">{{ t('ecosystem.subtitle') }}</p>
         </VCol>
       </VRow>
 

@@ -1,12 +1,12 @@
 <template>
   <!-- Removed entirely if the third-party widget fails: a heading with an empty
        box under it is worse than no social proof at all. -->
-  <section v-if="!failed" v-reveal class="reviews-section section-band py-12">
+  <section v-if="!failed" v-reveal class="reviews-section py-12">
     <VContainer>
       <VRow>
         <VCol cols="12" md="10" lg="8" class="mx-auto text-center mb-8">
-          <h2 class="section-title">{{ t('reviews.title') }}</h2>
-          <p class="section-subtitle">{{ t('reviews.subtitle') }}</p>
+          <h2 class="text-h4 font-weight-bold mb-4">{{ t('reviews.title') }}</h2>
+          <p class="text-body-1 text-grey-lighten-1">{{ t('reviews.subtitle') }}</p>
         </VCol>
       </VRow>
 
