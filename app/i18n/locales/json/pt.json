@@ -1186,5 +1186,14 @@
     "casaHubsTitle": "Casas de câmbio e bancos do Uruguai",
     "casaHubsSubtitle": "Cotação de hoje, filiais, horários e avaliações de cada casa.",
     "casaHubAnchor": "{casa}: cotação e filiais hoje"
+  },
+  "records": {
+    "max": "Máximo do período",
+    "min": "Mínimo do período",
+    "biggestMove": "Maior salto em um dia",
+    "daysSinceHigh": "Desde o máximo",
+    "days": "{days} dias",
+    "streakUp": "Vem subindo {days} dias seguidos.",
+    "streakDown": "Vem caindo {days} dias seguidos."
   }
 }

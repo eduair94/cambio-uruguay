@@ -1193,5 +1193,14 @@
     "casaHubsTitle": "Exchange houses and banks in Uruguay",
     "casaHubsSubtitle": "Today's rate, branches, hours and reviews for each house.",
     "casaHubAnchor": "{casa}: rate and branches today"
+  },
+  "records": {
+    "max": "Period high",
+    "min": "Period low",
+    "biggestMove": "Biggest one-day move",
+    "daysSinceHigh": "Since the high",
+    "days": "{days} days",
+    "streakUp": "Up {days} days in a row.",
+    "streakDown": "Down {days} days in a row."
   }
 }

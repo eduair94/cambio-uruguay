@@ -99,6 +99,46 @@
                 {{ $t('historical.asOf', { date: asOfDate }) }}
               </time>
             </p>
+
+            <!-- Records for THIS casa and THIS currency: facts no single-rate
+                 competitor can publish, and unique text per URL, which is what
+                 the near-identical templates lacked. -->
+            <dl v-if="periodRecords" class="cu-records mt-4 mb-0">
+              <div class="cu-record">
+                <dt>{{ $t('records.max') }}</dt>
+                <dd>
+                  ${{ formatRate(periodRecords.max.value, localeTag) }}
+                  <span class="text-medium-emphasis">
+                    · {{ formatDay(periodRecords.max.date) }}
+                  </span>
+                </dd>
+              </div>
+              <div class="cu-record">
+                <dt>{{ $t('records.min') }}</dt>
+                <dd>
+                  ${{ formatRate(periodRecords.min.value, localeTag) }}
+                  <span class="text-medium-emphasis">
+                    · {{ formatDay(periodRecords.min.date) }}
+                  </span>
+                </dd>
+              </div>
+              <div v-if="periodRecords.biggest" class="cu-record">
+                <dt>{{ $t('records.biggestMove') }}</dt>
+                <dd>
+                  {{ formatChangePct(periodRecords.biggest.pct, localeTag) }} %
+                  <span class="text-medium-emphasis">
+                    · {{ formatDay(periodRecords.biggest.date) }}
+                  </span>
+                </dd>
+              </div>
+              <div v-if="periodRecords.daysSinceHigh !== null" class="cu-record">
+                <dt>{{ $t('records.daysSinceHigh') }}</dt>
+                <dd>{{ $t('records.days', { days: periodRecords.daysSinceHigh }) }}</dd>
+              </div>
+            </dl>
+            <p v-if="streakSentence" class="text-body-2 text-medium-emphasis mt-2 mb-0">
+              {{ streakSentence }}
+            </p>
           </v-card-text>
 
           <!-- Additional Info Bar -->
@@ -432,12 +472,20 @@ import { useDisplay } from 'vuetify/lib/composables/display.mjs'
 import { markPoints } from '~/utils/chartMoveMarkers'
 import { attributeMove } from '~/utils/attribution'
 import { historyDetailCanonicalPath } from '~/utils/historyCanonical'
+import {
+  biggestMove,
+  computeRecords,
+  computeStreak,
+  daysSinceHigh,
+  sanitizeSeries,
+} from '~/utils/rateStats'
 import { currencyDisplayName, currencyFromSlug, type CurrencyLang } from '~/utils/currencyPages'
 import {
   factsFromRows,
   formatChangePct,
   formatRate,
   rateAnswerFacts,
+  selectTypeRows,
   type EvolutionRow,
   type EvolutionStatistics,
 } from '~/utils/rateAnswer'
@@ -748,14 +796,54 @@ const answerFacts = computed(() => {
   return fromRows ?? rateAnswerFacts(payload?.statistics)
 })
 
-/** The most recent date in the series, as `DD/MM/AAAA` in Montevideo. */
-const asOfDate = computed(() => {
-  if (!answerFacts.value) return ''
-  return new Date(answerFacts.value.asOf).toLocaleDateString(localeTag.value, {
+/** Render an ISO date as `DD/MM/AAAA` in Montevideo. */
+const formatDay = (iso: string) =>
+  new Date(iso).toLocaleDateString(localeTag.value, {
     timeZone: 'America/Montevideo',
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
+  })
+
+/** The most recent date in the series, as `DD/MM/AAAA` in Montevideo. */
+const asOfDate = computed(() => (answerFacts.value ? formatDay(answerFacts.value.asOf) : ''))
+
+// Records over the selected period, from this casa's sell prices for the ONE
+// rate type the page is about. `sanitizeSeries` drops decimal-shift artefacts
+// first: a scraper glitch must never be published as "el máximo del período" on
+// a finance page. Unique per casa and per currency, which is the point — the
+// thin, near-identical templates are what Google declined to index.
+const sellSeries = computed(() => {
+  const rows = (evolutionData.value as { evolution?: EvolutionRow[] } | null)?.evolution ?? []
+  const typed = selectTypeRows(rows, route.params.type as string | undefined)
+  return sanitizeSeries(
+    typed
+      .map(r => ({ date: r.date, value: r.sell }))
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+  )
+})
+
+const periodRecords = computed(() => {
+  const series = sellSeries.value
+  // Two points cannot establish a record worth publishing.
+  if (series.length < 3) return null
+  const records = computeRecords(series)
+  if (!records.max || !records.min) return null
+  return {
+    max: records.max,
+    min: records.min,
+    streak: computeStreak(series),
+    biggest: biggestMove(series),
+    daysSinceHigh: daysSinceHigh(series),
+  }
+})
+
+/** "subió 3 días seguidos" / "bajó 2 días seguidos" / "" when flat. */
+const streakSentence = computed(() => {
+  const r = periodRecords.value
+  if (!r || r.streak.direction === 'flat' || r.streak.days < 1) return ''
+  return t(r.streak.direction === 'up' ? 'records.streakUp' : 'records.streakDown', {
+    days: r.streak.days,
   })
 })
 
@@ -1297,5 +1385,27 @@ useHead(() => ({
 
 .cu-answer time {
   white-space: nowrap;
+}
+
+/* Records grid. Colours inherit so both themes stay AA without a re-skin — the
+   light-mode axe sweep fails any hardcoded white surface. */
+.cu-records {
+  display: grid;
+  gap: 0.75rem 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  margin: 0;
+}
+
+.cu-record dt {
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+  opacity: 0.75;
+  text-transform: uppercase;
+}
+
+.cu-record dd {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
 }
 </style>

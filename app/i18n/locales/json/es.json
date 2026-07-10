@@ -1204,5 +1204,14 @@
     "casaHubsTitle": "Casas de cambio y bancos de Uruguay",
     "casaHubsSubtitle": "Cotización de hoy, sucursales, horarios y opiniones de cada casa.",
     "casaHubAnchor": "{casa}: cotización y sucursales hoy"
+  },
+  "records": {
+    "max": "Máximo del período",
+    "min": "Mínimo del período",
+    "biggestMove": "Mayor salto en un día",
+    "daysSinceHigh": "Desde el máximo",
+    "days": "{days} días",
+    "streakUp": "Viene subiendo {days} días seguidos.",
+    "streakDown": "Viene bajando {days} días seguidos."
   }
 }
