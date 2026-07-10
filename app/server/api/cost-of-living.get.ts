@@ -31,7 +31,7 @@ export default defineCachedEventHandler(
   {
     maxAge: 60 * 60, // 1h
     staleMaxAge: 60 * 60 * 24 * 7,
-    name: 'cost-of-living',
+    name: 'cost-of-living-v2',
     getKey: () => 'live',
   }
 )

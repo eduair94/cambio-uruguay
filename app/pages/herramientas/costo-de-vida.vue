@@ -1,11 +1,11 @@
 <template>
   <ToolShell slug="costo-de-vida" :faq="faq">
     <VCard class="pa-4 pa-sm-6">
-      <!-- Inputs -->
-      <div class="mb-2 text-subtitle-2 font-weight-bold">Tu situación</div>
+      <!-- ── Situación ── -->
+      <div class="cv-section-title">Tu situación</div>
       <VRow class="mb-1">
         <VCol cols="12" md="6">
-          <label class="cv-label">Situación de convivencia</label>
+          <label class="cv-label">Convivencia</label>
           <VBtnToggle
             v-model="situation"
             mandatory
@@ -46,55 +46,129 @@
           </VBtnToggle>
         </VCol>
       </VRow>
-
-      <VRow class="align-end">
-        <VCol cols="12" :md="situation === 'familia' ? 8 : 12">
-          <label class="cv-label">
-            Ingreso mensual líquido del hogar
-            <span class="text-grey-lighten-1">(en la mano, sumando a los dos si son pareja)</span>
-          </label>
-          <VTextField
-            v-model.number="netIncome"
-            type="number"
-            min="0"
-            step="1000"
-            prefix="$"
+      <VRow>
+        <VCol v-if="city === 'montevideo' && housing === 'alquila'" cols="12" md="8">
+          <VSelect
+            v-model="zone"
+            :items="zoneItems"
+            label="Zona de Montevideo"
             variant="outlined"
             density="comfortable"
             hide-details
-            class="mt-1"
           />
-          <div class="d-flex flex-wrap ga-2 mt-2">
-            <VChip
-              v-for="q in quickIncomes"
-              :key="q.value"
-              size="small"
-              variant="tonal"
-              @click="netIncome = q.value"
-            >
-              {{ q.label }}
-            </VChip>
-          </div>
         </VCol>
         <VCol v-if="situation === 'familia'" cols="12" md="4">
-          <label class="cv-label">Hijos a cargo</label>
           <VTextField
             v-model.number="children"
             type="number"
             min="0"
             max="8"
+            label="Hijos a cargo"
+            variant="outlined"
+            density="comfortable"
+            hide-details
+          />
+        </VCol>
+      </VRow>
+
+      <!-- ── Estilo de vida ── -->
+      <div class="cv-section-title mt-5">Tu estilo de vida</div>
+      <VRow>
+        <VCol cols="12" md="5">
+          <VSelect
+            v-model="transport"
+            :items="transportItems"
+            label="Transporte"
+            variant="outlined"
+            density="comfortable"
+            hide-details
+          />
+        </VCol>
+        <VCol cols="12" sm="7" md="4">
+          <label class="cv-label">Estilo de gasto</label>
+          <VBtnToggle
+            v-model="lifestyle"
+            mandatory
+            density="comfortable"
+            color="primary"
+            class="cv-toggle mt-1"
+          >
+            <VBtn value="austero">Austero</VBtn>
+            <VBtn value="moderado">Moderado</VBtn>
+            <VBtn value="comodo">Cómodo</VBtn>
+          </VBtnToggle>
+        </VCol>
+        <VCol cols="12" sm="5" md="3">
+          <label class="cv-label">Salud</label>
+          <VBtnToggle
+            v-model="health"
+            mandatory
+            density="comfortable"
+            color="primary"
+            class="cv-toggle mt-1"
+          >
+            <VBtn value="fonasa">FONASA</VBtn>
+            <VBtn value="particular">Particular</VBtn>
+          </VBtnToggle>
+        </VCol>
+      </VRow>
+
+      <!-- ── Ingreso ── -->
+      <div class="cv-section-title mt-5">Tu ingreso</div>
+      <VRow class="align-center">
+        <VCol cols="12" sm="4" md="3">
+          <label class="cv-label">Moneda</label>
+          <VBtnToggle
+            v-model="currency"
+            mandatory
+            density="comfortable"
+            color="primary"
+            class="cv-toggle mt-1"
+          >
+            <VBtn value="UYU">Pesos</VBtn>
+            <VBtn value="USD">Dólares</VBtn>
+          </VBtnToggle>
+        </VCol>
+        <VCol cols="12" sm="8" md="9">
+          <label class="cv-label">
+            Ingreso mensual líquido del hogar
+            <span class="text-grey-lighten-1">(en la mano, sumando a los dos si son pareja)</span>
+          </label>
+          <VTextField
+            v-model.number="income"
+            type="number"
+            min="0"
+            :step="currency === 'USD' ? 50 : 1000"
+            :prefix="currency === 'USD' ? 'US$' : '$'"
             variant="outlined"
             density="comfortable"
             hide-details
             class="mt-1"
           />
+          <div class="d-flex flex-wrap align-center ga-2 mt-2">
+            <VChip
+              v-for="q in quickIncomes"
+              :key="q.label"
+              size="small"
+              variant="tonal"
+              @click="income = q.value"
+            >
+              {{ q.label }}
+            </VChip>
+            <span
+              v-if="currency === 'USD' && usdRate"
+              class="text-caption text-grey-lighten-1 ml-1"
+            >
+              ≈ {{ formatUYU(incomeUYU) }} · dólar a {{ formatUYU(usdRate) }}
+            </span>
+          </div>
         </VCol>
       </VRow>
 
       <VDivider class="my-6" />
 
       <!-- Verdict -->
-      <div class="cv-verdict pa-4 mb-5" :class="`cv-${result.verdict}`">
+      <div class="cv-verdict pa-4 mb-4" :class="`cv-${result.verdict}`">
         <div class="d-flex align-center ga-3 mb-1">
           <span class="cv-emoji">{{ meta.emoji }}</span>
           <div>
@@ -105,11 +179,42 @@
         <p class="text-body-2 mb-0 cv-verdict-msg">{{ meta.message }}</p>
       </div>
 
+      <!-- Savings highlight -->
+      <div
+        class="cv-savings pa-4 mb-5"
+        :class="result.deficit > 0 ? 'cv-savings-bad' : 'cv-savings-good'"
+      >
+        <template v-if="result.deficit > 0">
+          <div class="cv-savings-eyebrow">Ahorro posible</div>
+          <div class="cv-savings-amount cv-savings-neg">−{{ formatUYU(result.deficit) }}/mes</div>
+          <p class="text-body-2 mb-0">
+            Con este escenario no llegás a fin de mes: primero hay que cerrar ese bache antes de
+            pensar en ahorrar. Probá bajar el alquiler, el transporte o el estilo de gasto.
+          </p>
+        </template>
+        <template v-else>
+          <div class="cv-savings-eyebrow">Podés ahorrar por mes</div>
+          <div class="d-flex align-end flex-wrap ga-3">
+            <div class="cv-savings-amount">{{ formatUYU(result.savingsMax) }}</div>
+            <div v-if="usdRate && result.savingsMax > 0" class="cv-savings-usd">
+              ≈ US$ {{ toUsd(result.savingsMax) }}
+            </div>
+          </div>
+          <p class="text-body-2 mb-0">
+            Eso es lo máximo si no gastás nada en gustos. Un objetivo sano y sostenible es apartar
+            <strong>{{ formatUYU(result.savingsSuggested) }}/mes</strong> (~{{
+              formatUYU(result.savingsMax * 12)
+            }}/año como techo) apenas cobrás, y usar el resto para vivir.
+          </p>
+        </template>
+      </div>
+
       <!-- Distribution bar -->
       <div class="mb-2 d-flex justify-space-between align-center">
         <span class="text-subtitle-2 font-weight-bold">Cómo se reparte tu ingreso</span>
         <span class="text-caption text-grey-lighten-1">
           Ingreso: <strong>{{ formatUYU(result.income) }}</strong>
+          <template v-if="usdRate"> · US$ {{ toUsd(result.income) }}</template>
         </span>
       </div>
       <div class="cv-dist mb-1">
@@ -165,7 +270,7 @@
         "
         variant="tonal"
         density="comfortable"
-        class="mt-5"
+        class="mt-5 cv-reality"
         icon="mdi-lightbulb-on-outline"
       >
         <ul class="cv-tips">
@@ -173,7 +278,20 @@
         </ul>
       </VAlert>
 
-      <div class="d-flex align-center flex-wrap ga-2 mt-3">
+      <!-- CTA to the rent finder -->
+      <VBtn
+        v-if="housing === 'alquila'"
+        :to="localePath('/alquilar-en-uruguay')"
+        variant="tonal"
+        color="primary"
+        class="mt-4"
+        block
+      >
+        <VIcon start>mdi-home-search-outline</VIcon>
+        Guía para encontrar y alquilar (garantías, zonas, tips)
+      </VBtn>
+
+      <div class="d-flex align-center flex-wrap ga-2 mt-4">
         <VChip v-if="updatedLabel" size="x-small" color="success" variant="tonal">
           <VIcon start size="12">mdi-autorenew</VIcon>
           Precios actualizados el {{ updatedLabel }}
@@ -185,41 +303,38 @@
       </div>
       <p class="text-caption text-grey-lighten-1 mt-2 mb-0">
         Referencia: salario mínimo nacional {{ formatUYU(salaryRef.minimoNacional) }} y salario
-        mediano líquido aproximado {{ formatUYU(salaryRef.medianaLiquidoAprox) }} (con
-        incertidumbre). Los montos son estimaciones típicas con rango real —alquiler, boleto y
-        salario mínimo se actualizan solos a diario; tu caso puede variar bastante.
+        mediano líquido aproximado {{ formatUYU(salaryRef.medianaLiquidoAprox) }}. Los montos son
+        estimaciones típicas con rango real —alquiler, boleto, salario mínimo y el dólar se
+        actualizan solos; tu caso puede variar bastante.
       </p>
     </VCard>
 
     <template #content>
-      <h2>Cómo leer este presupuesto</h2>
+      <h2>Contempla tu caso, no un promedio</h2>
       <p>
-        Esta calculadora no reparte tu sueldo con porcentajes abstractos: estima de abajo hacia
-        arriba <strong>cuánto cuesta realmente</strong> vivir en tu situación (alquiler, comida,
-        servicios, transporte, salud y varios) y lo compara con tu ingreso. Así el veredicto te dice
-        si el escenario que imaginás es <strong>financieramente viable</strong>, en vez de venderte
-        una expectativa que no cierra.
+        No hay un solo "cuánto se necesita para vivir": cambia enormemente según dónde vivas, cómo
+        te movés y tu estilo de gasto. Por eso podés ajustar la <strong>zona</strong> de Montevideo,
+        el <strong>transporte</strong> (a pie, bondi o auto), el <strong>estilo</strong> (austero,
+        moderado o cómodo) y la <strong>salud</strong>. Mucha gente vive con menos porque comparte,
+        camina y elige una zona accesible; el buscador lo refleja.
       </p>
-      <h2>La regla del 50/30/20 (adaptada)</h2>
+      <h2>¿Cobrás en dólares?</h2>
       <p>
-        Una guía simple: <strong>50%</strong> a necesidades, <strong>30%</strong> a gustos y
-        <strong>20%</strong> a ahorro. En Montevideo, con alquileres altos, muchos arrancan más
-        cerca de 60/20/20 y está bien: lo importante es que el ahorro sea una categoría fija, no lo
-        que sobra. Automatizalo apenas cobrás.
+        Elegí "Dólares" y la herramienta convierte tu ingreso a pesos con la
+        <strong>cotización en vivo</strong> del sitio (el mejor precio al que las casas te compran
+        los dólares) para armar el presupuesto, y te muestra los equivalentes en USD.
       </p>
-      <h2>Bajá el número si no cierra</h2>
+      <h2>El ahorro va primero</h2>
       <p>
-        Vivir solo alquilando es lo más caro. Compartir apartamento, elegir un barrio más accesible
-        o el interior, o esperar a tener un colchón para el arranque (garantía + primer mes +
-        comisión + muebles suelen ser 2 a 3 sueldos juntos) son formas honestas de que la cuenta
-        cierre sin empezar endeudado.
+        El resultado te dice cuánto podés apartar por mes. La regla de oro: pagate a vos primero
+        —automatizá el ahorro apenas cobrás— y viví con lo que queda, no al revés.
       </p>
     </template>
 
     <template #disclaimer>
       Estimación orientativa con valores típicos 2026 (INE, MTSS, UTE/OSE/Antel, STM, portales
-      inmobiliarios). Los precios reales varían mucho por barrio, consumo y momento. No es
-      asesoramiento financiero; usala como punto de partida, no como presupuesto exacto.
+      inmobiliarios) y la cotización en vivo del sitio. Los precios reales varían mucho por zona,
+      consumo y momento. No es asesoramiento financiero.
     </template>
   </ToolShell>
 </template>
@@ -233,16 +348,38 @@ import {
   VERDICT_META,
   SALARY_REFERENCE,
   COST_MODEL,
+  ZONE_LABELS,
+  TRANSPORT_LABELS,
   type City,
   type Situation,
   type Housing,
+  type MvdZone,
+  type TransportMode,
+  type Lifestyle,
+  type HealthMode,
 } from '~/utils/costOfLiving'
+
+const localePath = useLocalePath()
 
 const situation = ref<Situation>('solo')
 const city = ref<City>('montevideo')
 const housing = ref<Housing>('alquila')
-const netIncome = ref(50000)
+const zone = ref<MvdZone>('intermedio')
+const transport = ref<TransportMode>('publico_diario')
+const lifestyle = ref<Lifestyle>('moderado')
+const health = ref<HealthMode>('fonasa')
 const children = ref(1)
+const currency = ref<'UYU' | 'USD'>('UYU')
+const income = ref(60000)
+
+const zoneItems = (Object.keys(ZONE_LABELS) as MvdZone[]).map(v => ({
+  title: ZONE_LABELS[v],
+  value: v,
+}))
+const transportItems = (Object.keys(TRANSPORT_LABELS) as TransportMode[]).map(v => ({
+  title: TRANSPORT_LABELS[v],
+  value: v,
+}))
 
 // Live figures (salario mínimo, boleto STM, alquileres) refreshed daily via Gemini,
 // with the verified static baseline as fallback so the tool always works.
@@ -261,7 +398,20 @@ const { data: live } = await useFetch<LiveCostsResp>('/api/cost-of-living', {
     updated: [] as string[],
   }),
 })
-const model = computed(() => live.value?.model ?? COST_MODEL)
+// Deep-merge the live figures over the baseline so a stale/older-shape stored
+// model (e.g. one saved before new fields existed) can never drop a required key.
+const model = computed(() => {
+  const m = live.value?.model
+  if (!m) return COST_MODEL
+  return {
+    ...COST_MODEL,
+    ...m,
+    rentMontevideo: { ...COST_MODEL.rentMontevideo, ...(m.rentMontevideo ?? {}) },
+    zoneMultiplier: { ...COST_MODEL.zoneMultiplier, ...(m.zoneMultiplier ?? {}) },
+    lifestyleFood: { ...COST_MODEL.lifestyleFood, ...(m.lifestyleFood ?? {}) },
+    lifestyleMisc: { ...COST_MODEL.lifestyleMisc, ...(m.lifestyleMisc ?? {}) },
+  }
+})
 const salaryRef = computed(() => live.value?.salary ?? SALARY_REFERENCE)
 const updatedLabel = computed(() => {
   const iso = live.value?.asOf
@@ -270,26 +420,49 @@ const updatedLabel = computed(() => {
   return isNaN(d.getTime()) ? '' : d.toLocaleDateString('es-UY', { day: 'numeric', month: 'long' })
 })
 
-const quickIncomes = computed(() => [
-  {
-    label: `Mínimo ${Math.round(salaryRef.value.minimoNacional / 1000)}k`,
-    value: salaryRef.value.minimoNacional,
-  },
-  { label: '$40k', value: 40000 },
-  {
-    label: `Mediana ${Math.round(salaryRef.value.medianaLiquidoAprox / 1000)}k`,
-    value: salaryRef.value.medianaLiquidoAprox,
-  },
-  { label: '$60k', value: 60000 },
-  { label: '$90k', value: 90000 },
-])
+// Live USD rate from the site's exchange infrastructure (best price to sell your dollars).
+const { bestBuy } = useExchangeRates()
+const usdRate = computed(() => bestBuy('USD'))
+const incomeUYU = computed(() =>
+  currency.value === 'USD' && usdRate.value
+    ? Math.round((income.value || 0) * usdRate.value)
+    : income.value || 0
+)
+const toUsd = (uyu: number) =>
+  usdRate.value ? Math.round(uyu / usdRate.value).toLocaleString('es-UY') : ''
+
+const quickIncomes = computed(() => {
+  if (currency.value === 'USD') {
+    return [500, 1000, 1500, 2500, 4000].map(v => ({
+      label: `US$${v.toLocaleString('es-UY')}`,
+      value: v,
+    }))
+  }
+  return [
+    {
+      label: `Mínimo ${Math.round(salaryRef.value.minimoNacional / 1000)}k`,
+      value: salaryRef.value.minimoNacional,
+    },
+    { label: '$40k', value: 40000 },
+    {
+      label: `Mediana ${Math.round(salaryRef.value.medianaLiquidoAprox / 1000)}k`,
+      value: salaryRef.value.medianaLiquidoAprox,
+    },
+    { label: '$60k', value: 60000 },
+    { label: '$90k', value: 90000 },
+  ]
+})
 
 const inputs = computed(() => ({
-  netIncome: netIncome.value || 0,
+  netIncome: incomeUYU.value,
   situation: situation.value,
   city: city.value,
   housing: housing.value,
   children: children.value || 0,
+  zone: zone.value,
+  transport: transport.value,
+  lifestyle: lifestyle.value,
+  health: health.value,
 }))
 const result = computed(() => estimateBudget(inputs.value, model.value))
 const meta = computed(() => VERDICT_META[result.value.verdict])
@@ -317,7 +490,6 @@ const legend = computed(() => {
   return items
 })
 
-// Segment widths as % of income (or of essentials when there is a deficit).
 const denom = computed(() => Math.max(result.value.income, result.value.essentials, 1))
 const segPct = (n: number) => Math.max(0, Math.min(100, (n / denom.value) * 100))
 const deficitPct = computed(() => segPct(result.value.deficit))
@@ -327,20 +499,27 @@ const linePct = (n: number) => Math.max(2, (n / maxLine.value) * 100)
 const faq = [
   {
     q: '¿Cuánto sueldo necesito para vivir solo en Montevideo?',
-    a: 'De forma realista, entre $45.000 y $70.000 líquidos por mes según el barrio y el estilo de vida. Con un monoambiente o 1 dormitorio en barrios accesibles la cuenta cierra cerca de $45.000-$51.000; en Pocitos o Punta Carretas sube a $60.000-$70.000. Con el salario mínimo es inviable vivir solo, y compartir apartamento baja mucho el número.',
+    a: 'Depende muchísimo de la zona, el transporte y el estilo de vida. Un monoambiente en una zona económica, moviéndote en bondi y con un estilo austero puede cerrar cerca de $40.000-$48.000; en Pocitos o Carrasco con auto y estilo cómodo trepa por encima de $70.000. Compartir apartamento baja mucho el número. Por eso el buscador te deja ajustar cada variable en vez de darte un promedio.',
+  },
+  {
+    q: '¿Puedo usarlo si cobro en dólares?',
+    a: 'Sí. Elegí "Dólares" como moneda del ingreso y la herramienta lo convierte a pesos con la cotización en vivo del sitio (el mejor precio al que las casas de cambio te compran los dólares) para armar el presupuesto, y te muestra los equivalentes en USD.',
   },
   {
     q: '¿Qué gastos incluye la estimación?',
-    a: 'Alquiler (según ciudad y tipo de vivienda), alimentación, servicios (UTE, OSE, internet, celular y una parte de gastos comunes), transporte público, copagos de salud e higiene/limpieza/varios. No incluye el costo de arranque (garantía, depósito, muebles) ni gastos de ocio, que van en la parte "libre para gustos".',
-  },
-  {
-    q: '¿De dónde salen los precios?',
-    a: 'De valores típicos 2026 de fuentes públicas: canastas del INE, portales inmobiliarios (InfoCasas), tarifas de UTE, OSE, Antel y del boleto STM, y el salario mínimo del MTSS. Son estimaciones con rango real, no cotizaciones; tu caso puede variar.',
+    a: 'Alquiler (según zona y tipo de vivienda), alimentación, servicios (UTE, OSE, internet, celular y parte de gastos comunes), transporte según cómo te movés, salud (copagos FONASA o cuota particular) e higiene/varios. No incluye el costo de arranque de una mudanza (garantía, depósito, muebles) ni gastos de ocio, que van en "libre para gustos".',
   },
 ]
 </script>
 
 <style scoped>
+.cv-section-title {
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: rgb(var(--v-theme-primary));
+  margin-bottom: 8px;
+}
 .cv-label {
   font-size: 0.82rem;
   font-weight: 600;
@@ -389,6 +568,44 @@ const faq = [
 .cv-holgado {
   background: rgba(22, 163, 74, 0.12);
   border-color: rgba(22, 163, 74, 0.4);
+}
+
+/* Savings highlight */
+.cv-savings {
+  border-radius: 14px;
+  border: 1px solid transparent;
+}
+.cv-savings-good {
+  background: rgba(22, 163, 74, 0.1);
+  border-color: rgba(22, 163, 74, 0.3);
+}
+.cv-savings-bad {
+  background: rgba(148, 163, 184, 0.1);
+  border-color: rgba(148, 163, 184, 0.3);
+}
+.cv-savings-eyebrow {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.7;
+  margin-bottom: 2px;
+}
+.cv-savings-amount {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+  color: #16a34a;
+  margin-bottom: 6px;
+}
+.cv-savings-neg {
+  color: #ef4444;
+}
+.cv-savings-usd {
+  font-size: 1rem;
+  font-weight: 700;
+  color: rgba(var(--v-theme-on-surface), 0.6);
+  padding-bottom: 8px;
 }
 
 /* Distribution bar */
@@ -441,13 +658,13 @@ const faq = [
 }
 .cv-line {
   display: grid;
-  grid-template-columns: 170px 1fr 96px;
+  grid-template-columns: 190px 1fr 96px;
   align-items: center;
   gap: 10px;
 }
 @media (max-width: 599px) {
   .cv-line {
-    grid-template-columns: 120px 1fr 84px;
+    grid-template-columns: 130px 1fr 84px;
     gap: 8px;
   }
 }
@@ -494,5 +711,12 @@ const faq = [
 }
 .cv-tips li:last-child {
   margin-bottom: 0;
+}
+/* Keep the reality-check text readable on the tinted alert in both themes
+   (Vuetify's tonal variant otherwise tints the text with the type colour,
+   which is low-contrast on the dark background). */
+.cv-reality :deep(.v-alert__content),
+.cv-reality .cv-tips li {
+  color: rgba(var(--v-theme-on-surface), 0.92);
 }
 </style>

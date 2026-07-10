@@ -15,6 +15,16 @@
 export type City = 'montevideo' | 'interior'
 export type Situation = 'solo' | 'compartido' | 'pareja' | 'familia'
 export type Housing = 'alquila' | 'propia'
+/** Montevideo price zone (ignored for the interior). */
+export type MvdZone = 'economico' | 'intermedio' | 'costa'
+export type TransportMode =
+  | 'a_pie_bici'
+  | 'publico_ocasional'
+  | 'publico_diario'
+  | 'auto'
+  | 'auto_publico'
+export type Lifestyle = 'austero' | 'moderado' | 'comodo'
+export type HealthMode = 'fonasa' | 'particular'
 
 export interface BudgetInputs {
   /** Household net monthly income in UYU (sum of both incomes if a couple). */
@@ -24,6 +34,14 @@ export interface BudgetInputs {
   housing: Housing
   /** Number of children (only used when situation = 'familia'). */
   children: number
+  /** Montevideo price zone; defaults to 'intermedio'. Ignored for the interior. */
+  zone?: MvdZone
+  /** How the household gets around; defaults to 'publico_diario'. */
+  transport?: TransportMode
+  /** Spending style, scales food + discretionary; defaults to 'moderado'. */
+  lifestyle?: Lifestyle
+  /** Health coverage; defaults to 'fonasa' (covered via payroll). */
+  health?: HealthMode
 }
 
 export type DwellingType =
@@ -47,10 +65,24 @@ interface CostModel {
   transportPerAdult: number
   /** Interior transport factor (shorter distances / more walking). */
   interiorTransportFactor: number
+  /** Occasional public-transport spend per adult (few trips a month). */
+  publicoOcasionalMonthly: number
+  /** Walk/bike monthly cost (bike upkeep, occasional trip). */
+  aPieBiciMonthly: number
+  /** Monthly cost of running one car (nafta + seguro + patente + mantenimiento). */
+  autoMonthly: number
   /** Health co-pagos (tickets/órdenes) buffer per person — FONASA covers the cuota for employees. */
   healthPerPerson: number
+  /** Out-of-pocket mutualista cuota per person when NOT on FONASA. */
+  mutualistaParticular: number
   /** Personal care, cleaning, basic clothing per person. */
   miscPerPerson: number
+  /** Rent multiplier per Montevideo zone (applied to the baseline typical rent). */
+  zoneMultiplier: Record<MvdZone, number>
+  /** Food spend factor by lifestyle. */
+  lifestyleFood: Record<Lifestyle, number>
+  /** Discretionary (varios) factor by lifestyle. */
+  lifestyleMisc: Record<Lifestyle, number>
   /** Aspirational savings rate applied when income comfortably covers essentials. */
   savingsRate: number
 }
@@ -70,8 +102,15 @@ export const COST_MODEL: CostModel = {
   utilitiesBase: 8500, // UTE ~$2.000 + OSE ~$1.100 + internet ~$1.650 + celular ~$600 + parte de gastos comunes
   transportPerAdult: 2600, // ~2 tramos/día, ~22 días, boleto STM $52
   interiorTransportFactor: 0.7,
+  publicoOcasionalMonthly: 1300, // pocos viajes al mes
+  aPieBiciMonthly: 500, // a pie / bici (mantenimiento ocasional)
+  autoMonthly: 14000, // 1 auto: nafta + seguro + patente + mantenimiento (nafta cara en UY)
   healthPerPerson: 900, // copagos/tickets (FONASA cubre la cuota de los trabajadores formales)
+  mutualistaParticular: 5500, // cuota de mutualista particular si NO estás en FONASA
   miscPerPerson: 3500,
+  zoneMultiplier: { economico: 0.78, intermedio: 1, costa: 1.38 }, // Centro/Cordón vs media vs Pocitos/Carrasco
+  lifestyleFood: { austero: 0.75, moderado: 1, comodo: 1.35 },
+  lifestyleMisc: { austero: 0.6, moderado: 1, comodo: 1.6 },
   savingsRate: 0.1,
 }
 
@@ -141,6 +180,8 @@ export interface BudgetResult {
   income: number
   /** Suggested monthly savings (0 when money is too tight). */
   savingsSuggested: number
+  /** The most you could put aside per month (income − essentials, if you spent nothing on wants). */
+  savingsMax: number
   /** Income − essentials − savings; can be negative (a real deficit). */
   discretionary: number
   /** income / essentials. */
@@ -161,19 +202,25 @@ const r100 = (n: number) => Math.round(n / 100) * 100
 export function estimateBudget(inputs: BudgetInputs, model: CostModel = COST_MODEL): BudgetResult {
   const income = Math.max(0, inputs.netIncome || 0)
   const { adults, children } = household(inputs)
+  const people = adults + children
   const dwelling = dwellingFor(inputs.situation)
-  const cityRentFactor = inputs.city === 'interior' ? model.interiorRentFactor : 1
-  const cityTransportFactor = inputs.city === 'interior' ? model.interiorTransportFactor : 1
+  const zone: MvdZone = inputs.zone ?? 'intermedio'
+  const transportMode: TransportMode = inputs.transport ?? 'publico_diario'
+  const lifestyle: Lifestyle = inputs.lifestyle ?? 'moderado'
+  const healthMode: HealthMode = inputs.health ?? 'fonasa'
+  const transitFactor = inputs.city === 'interior' ? model.interiorTransportFactor : 1
 
-  // Rent
+  // Rent: interior uses a flat discount; Montevideo uses the chosen zone multiplier.
   let rent = 0
   if (inputs.housing === 'alquila') {
-    rent = model.rentMontevideo[dwelling] * cityRentFactor
+    const geoFactor =
+      inputs.city === 'interior' ? model.interiorRentFactor : model.zoneMultiplier[zone]
+    rent = model.rentMontevideo[dwelling] * geoFactor
   }
 
-  // Food scales with everyone in the household
+  // Food scales with everyone in the household and the spending style.
   const foodPeople = adults + children * model.childFoodFactor
-  const food = model.foodPerAdult * foodPeople
+  const food = model.foodPerAdult * foodPeople * model.lifestyleFood[lifestyle]
 
   // Utilities: base for the dwelling, more people → a bit more; sharing → your share only
   let utilities: number
@@ -183,13 +230,34 @@ export function estimateBudget(inputs: BudgetInputs, model: CostModel = COST_MOD
     utilities = model.utilitiesBase * (1 + 0.15 * (adults - 1) + 0.1 * children)
   }
 
-  // Transport per commuting adult
-  const transport = model.transportPerAdult * adults * cityTransportFactor
+  // Transport depends on how the household actually gets around.
+  let transport: number
+  switch (transportMode) {
+    case 'a_pie_bici':
+      transport = model.aPieBiciMonthly
+      break
+    case 'publico_ocasional':
+      transport = model.publicoOcasionalMonthly * adults * transitFactor
+      break
+    case 'auto':
+      transport = model.autoMonthly
+      break
+    case 'auto_publico':
+      transport =
+        model.autoMonthly + model.publicoOcasionalMonthly * Math.max(0, adults - 1) * transitFactor
+      break
+    case 'publico_diario':
+    default:
+      transport = model.transportPerAdult * adults * transitFactor
+      break
+  }
 
-  // Health co-pagos + misc per person
-  const people = adults + children
-  const health = model.healthPerPerson * people
-  const misc = model.miscPerPerson * people
+  // Health: FONASA covers the cuota (only co-pagos); otherwise pay the mutualista cuota.
+  const health =
+    healthMode === 'particular'
+      ? model.mutualistaParticular * people
+      : model.healthPerPerson * people
+  const misc = model.miscPerPerson * people * model.lifestyleMisc[lifestyle]
 
   const essentialLines: EssentialLine[] = [
     {
@@ -221,6 +289,7 @@ export function estimateBudget(inputs: BudgetInputs, model: CostModel = COST_MOD
   // Suggest savings only from the surplus, up to the aspirational rate.
   const surplus = Math.max(0, income - essentials)
   const savingsSuggested = r100(Math.min(surplus, income * model.savingsRate))
+  const savingsMax = r100(surplus)
   const discretionary = income - essentials - savingsSuggested
 
   return {
@@ -231,6 +300,7 @@ export function estimateBudget(inputs: BudgetInputs, model: CostModel = COST_MOD
     essentials,
     income,
     savingsSuggested,
+    savingsMax,
     discretionary,
     ratio,
     verdict,
@@ -331,4 +401,29 @@ export const SITUATION_LABELS: Readonly<Record<Situation, string>> = Object.free
 export const CITY_LABELS: Readonly<Record<City, string>> = Object.freeze({
   montevideo: 'Montevideo',
   interior: 'Interior',
+})
+
+export const ZONE_LABELS: Readonly<Record<MvdZone, string>> = Object.freeze({
+  economico: 'Económica (Centro, Cordón, La Blanqueada, Cerro…)',
+  intermedio: 'Intermedia (media de la ciudad)',
+  costa: 'Costa/premium (Pocitos, Punta Carretas, Carrasco…)',
+})
+
+export const TRANSPORT_LABELS: Readonly<Record<TransportMode, string>> = Object.freeze({
+  a_pie_bici: 'A pie / bici',
+  publico_ocasional: 'Bondi ocasional',
+  publico_diario: 'Bondi diario (a trabajar)',
+  auto: 'Auto propio',
+  auto_publico: 'Auto + bondi',
+})
+
+export const LIFESTYLE_LABELS: Readonly<Record<Lifestyle, string>> = Object.freeze({
+  austero: 'Austero',
+  moderado: 'Moderado',
+  comodo: 'Cómodo',
+})
+
+export const HEALTH_LABELS: Readonly<Record<HealthMode, string>> = Object.freeze({
+  fonasa: 'FONASA (por el trabajo)',
+  particular: 'Mutualista particular',
 })

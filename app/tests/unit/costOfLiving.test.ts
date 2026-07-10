@@ -107,6 +107,62 @@ describe('estimateBudget', () => {
     expect(r.income).toBe(0)
     expect(r.verdict).toBe('noAlcanza')
   })
+
+  it('exposes the maximum monthly savings (income − essentials)', () => {
+    const r = estimateBudget({ ...base, netIncome: 90000 })
+    expect(r.savingsMax).toBe(Math.round((90000 - r.essentials) / 100) * 100)
+    expect(r.savingsMax).toBeGreaterThanOrEqual(r.savingsSuggested)
+    // when it does not add up, you cannot save
+    expect(estimateBudget({ ...base, netIncome: 1000 }).savingsMax).toBe(0)
+  })
+})
+
+describe('lifestyle knobs (contemplating every case)', () => {
+  it('transport mode changes the cost (walk < occasional < daily; auto is its own cost)', () => {
+    const t = (transport: BudgetInputs['transport']) =>
+      estimateBudget({ ...base, transport }).essentialLines.find(l => l.key === 'transporte')!
+        .amount
+    expect(t('a_pie_bici')).toBeLessThan(t('publico_ocasional'))
+    expect(t('publico_ocasional')).toBeLessThan(t('publico_diario'))
+    expect(t('auto')).toBeGreaterThan(t('publico_diario'))
+  })
+
+  it('Montevideo zone changes the rent (económica < intermedia < costa)', () => {
+    const rent = (zone: BudgetInputs['zone']) =>
+      estimateBudget({ ...base, zone }).essentialLines.find(l => l.key === 'vivienda')!.amount
+    expect(rent('economico')).toBeLessThan(rent('intermedio'))
+    expect(rent('intermedio')).toBeLessThan(rent('costa'))
+  })
+
+  it('lifestyle scales food + varios (austero cheaper than cómodo)', () => {
+    const austero = estimateBudget({ ...base, lifestyle: 'austero' }).essentials
+    const comodo = estimateBudget({ ...base, lifestyle: 'comodo' }).essentials
+    expect(austero).toBeLessThan(comodo)
+  })
+
+  it('paying a private mutualista costs more than being on FONASA', () => {
+    const fonasa = estimateBudget({ ...base, health: 'fonasa' }).essentials
+    const particular = estimateBudget({ ...base, health: 'particular' }).essentials
+    expect(particular).toBeGreaterThan(fonasa)
+  })
+
+  it('an austere sharer who walks in an economic zone can live on much less', () => {
+    const lean = estimateBudget({
+      ...base,
+      situation: 'compartido',
+      zone: 'economico',
+      transport: 'a_pie_bici',
+      lifestyle: 'austero',
+    }).essentials
+    const heavy = estimateBudget({
+      ...base,
+      situation: 'solo',
+      zone: 'costa',
+      transport: 'auto',
+      lifestyle: 'comodo',
+    }).essentials
+    expect(lean).toBeLessThan(heavy * 0.6)
+  })
 })
 
 describe('reality checks + metadata', () => {
