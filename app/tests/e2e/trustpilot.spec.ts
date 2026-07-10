@@ -1,5 +1,11 @@
 import { expect, test } from '@playwright/test'
 
+import { ECOSYSTEM_LINKS } from '../../utils/ecosystem'
+
+// Derive the counts from the single source of truth rather than hardcoding them,
+// so adding an ecosystem link never fails this test for a non-regression reason.
+const EXTERNAL_COUNT = ECOSYSTEM_LINKS.filter(l => !l.internal).length
+
 test.setTimeout(180_000)
 
 // Default Accept-Language is `en`, which makes @nuxtjs/i18n redirect `/` to
@@ -36,11 +42,16 @@ test('the review carousel mounts with the TrustScore banner suppressed', async (
   // from the URL; verified against the live dev server, it is always present.
   expect(src).toContain('sort=latest')
 
-  // hideTopBanner + hideGlobalReviews exist specifically to suppress Trustpilot's
-  // age-decayed 3.8 TrustScore (see utils/trustpilot.ts) in favour of the actual
-  // 4.8 review average. Guard against a regression re-introducing that number
-  // anywhere in our own (non-iframe) markup.
-  await expect(page.locator('body')).not.toContainText('3.8')
+  // The TrustScore banner (a stale, age-decayed "3.8") lives INSIDE the widget's
+  // cross-origin iframe, so only a frameLocator can see it. hideTopBanner +
+  // hideGlobalReviews are what suppress it; this asserts the user-visible result,
+  // not just the config that is supposed to produce it. not.toBeEmpty() proves we
+  // are inspecting loaded iframe content, not passing vacuously on a blank doc.
+  const widgetBody = page.frameLocator('.reviews-widget iframe').locator('body')
+  await expect(async () => {
+    await expect(widgetBody).not.toBeEmpty()
+    await expect(widgetBody).not.toContainText('3.8')
+  }).toPass({ timeout: 60_000 })
 })
 
 test('both review CTAs point at Trustpilot and open in a new tab', async ({ page }) => {
@@ -70,16 +81,15 @@ test('the ecosystem strip renders safe external links', async ({ page }) => {
   await expect(strip).toBeVisible()
 
   const links = strip.locator('.ecosystem-link')
-  await expect(links).toHaveCount(6)
+  await expect(links).toHaveCount(ECOSYSTEM_LINKS.length)
 
   // Never link the robots-disallowed Scalar reference.
   await expect(strip.locator('a[href*="/api-reference"]')).toHaveCount(0)
 
   const external = strip.locator('a.ecosystem-link[target="_blank"]')
-  const count = await external.count()
-  expect(count).toBe(5) // 5 external + 1 internal /desarrolladores
+  await expect(external).toHaveCount(EXTERNAL_COUNT) // external links + internal /desarrolladores
 
-  for (let i = 0; i < count; i++) {
+  for (let i = 0; i < EXTERNAL_COUNT; i++) {
     await expect(external.nth(i)).toHaveAttribute('rel', /noopener/)
   }
 })
