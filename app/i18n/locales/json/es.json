@@ -751,7 +751,8 @@
     "metaTitle": "{casa}: cotización dólar hoy, sucursales y opiniones",
     "metaDescription": "Cotización del dólar y otras monedas en {casa} hoy. Compará el precio de compra y venta, actualizado automáticamente en Cambio Uruguay.",
     "ogSubtitle": "Cotización del dólar hoy",
-    "metaDescriptionLive": "Dólar en {casa} hoy: compra ${buy}, venta ${sell}. Sucursales, horarios, opiniones y cotización de todas las monedas."
+    "metaDescriptionLive": "Dólar en {casa} hoy: compra ${buy}, venta ${sell}. Sucursales, horarios, opiniones y cotización de todas las monedas.",
+    "fromHistorico": "Sucursales, opiniones y todas las monedas de {casa}"
   },
   "topBestRates": "Mejores 4 Cotizaciones",
   "buying": "Compro",
@@ -1198,5 +1199,10 @@
     "intro": "Todas las páginas del sitio, agrupadas por sección: cotizaciones, casas de cambio, calculadoras, guías, glosario y más.",
     "metaTitle": "Mapa del sitio",
     "metaDescription": "Índice completo de Cambio Uruguay: cotizaciones, casas de cambio, calculadoras, conversiones, guías, glosario e indicadores económicos."
+  },
+  "home": {
+    "casaHubsTitle": "Casas de cambio y bancos de Uruguay",
+    "casaHubsSubtitle": "Cotización de hoy, sucursales, horarios y opiniones de cada casa.",
+    "casaHubAnchor": "{casa}: cotización y sucursales hoy"
   }
 }

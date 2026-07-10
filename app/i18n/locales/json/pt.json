@@ -739,7 +739,8 @@
     "metaTitle": "{casa}: cotação do dólar hoje, filiais e avaliações",
     "metaDescription": "Cotação do dólar e de outras moedas na {casa} hoje. Compare o preço de compra e venda, atualizado automaticamente na Cambio Uruguay.",
     "ogSubtitle": "Cotação do dólar hoje",
-    "metaDescriptionLive": "Dólar na {casa} hoje: compra ${buy}, venda ${sell}. Filiais, horários, avaliações e cotação de todas as moedas."
+    "metaDescriptionLive": "Dólar na {casa} hoje: compra ${buy}, venda ${sell}. Filiais, horários, avaliações e cotação de todas as moedas.",
+    "fromHistorico": "Filiais, avaliações e todas as moedas da {casa}"
   },
   "loading": "Carregando...",
   "bestToSell": "Melhor para vender",
@@ -1180,5 +1181,10 @@
     "intro": "Todas as páginas do site, agrupadas por seção: cotações, casas de câmbio, calculadoras, guias, glossário e mais.",
     "metaTitle": "Mapa do site",
     "metaDescription": "Índice completo do Cambio Uruguay: cotações, casas de câmbio, calculadoras, conversões, guias, glossário e indicadores econômicos."
+  },
+  "home": {
+    "casaHubsTitle": "Casas de câmbio e bancos do Uruguai",
+    "casaHubsSubtitle": "Cotação de hoje, filiais, horários e avaliações de cada casa.",
+    "casaHubAnchor": "{casa}: cotação e filiais hoje"
   }
 }

@@ -808,6 +808,32 @@
       </VContainer>
     </section>
 
+    <!-- Casa hubs. /casa/[origin] is the page built to win the "cambio {casa}"
+         brand query — tens of thousands of impressions — and it had almost no
+         inbound internal links. Rendered from the SSR rate rows, so these links
+         are in the server HTML, and every origin comes from live localData, so
+         none of them can 404. -->
+    <section v-if="hubCasas.length" v-reveal class="casa-hubs-section py-12">
+      <VContainer>
+        <VRow>
+          <VCol cols="12" class="text-center mb-6">
+            <h2 class="text-h5 font-weight-bold">{{ t('home.casaHubsTitle') }}</h2>
+            <p class="text-body-2 text-grey-lighten-1">{{ t('home.casaHubsSubtitle') }}</p>
+          </VCol>
+        </VRow>
+        <div class="casa-hubs">
+          <NuxtLink
+            v-for="casa in hubCasas"
+            :key="casa.origin"
+            :to="localePath(`/casa/${casa.origin}`)"
+            class="casa-hub-link"
+          >
+            {{ t('home.casaHubAnchor', { casa: casa.name }) }}
+          </NuxtLink>
+        </div>
+      </VContainer>
+    </section>
+
     <!-- Features Section -->
     <section v-reveal class="features-section section-band py-12">
       <VContainer>
@@ -1003,6 +1029,24 @@ const router = useRouter()
 // figure is visible plain text (not only inside the FAQ accordion / schema),
 // which AI Overviews and Gemini extract more readily. Built from the same
 // SSR-friendly useExchangeRates data, public quotes only (no BCU/interbank).
+
+// The casas we link to from the homepage. Derived from the SSR rate rows, so
+// the links exist in the server HTML — `realExchangeData` is filled by a
+// watcher, which would leave a crawler with an empty list. Names come from the
+// payload's own localData, so an origin can never 404 the /casa validate hook,
+// and publicRates has already dropped the BCU reference (it has no /casa page).
+const hubCasas = computed(() => {
+  const byOrigin = new Map<string, string>()
+  for (const row of sharedRealRows.value ?? []) {
+    if (row.code !== 'USD' || byOrigin.has(row.origin)) continue
+    const name = (row as { localData?: { name?: string } }).localData?.name
+    if (name && name.trim()) byOrigin.set(row.origin, name.trim())
+  }
+  return Array.from(byOrigin, ([origin, name]) => ({ origin, name })).sort((a, b) =>
+    a.name.localeCompare(b.name, 'es')
+  )
+})
+
 // One source of truth for the market's best public USD quotes. The visible
 // headline and the ExchangeRateSpecification JSON-LD are both built from it, so
 // the schema can never advertise a price the page does not show.
@@ -2714,6 +2758,33 @@ useSeoMeta({
 
 .cursor-pointer {
   cursor: pointer;
+}
+
+/* Casa hub links: a wrapped list of text links, not cards. They exist to pass
+   link equity to /casa/[origin] and to be readable, so they stay light. */
+.casa-hubs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  justify-content: center;
+}
+
+.casa-hub-link {
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  color: inherit;
+  font-size: 0.875rem;
+  padding: 0.375rem 0.75rem;
+  text-decoration: none;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.casa-hub-link:hover,
+.casa-hub-link:focus-visible {
+  background: rgba(120, 160, 255, 0.08);
+  border-color: rgba(120, 160, 255, 0.38);
 }
 
 /* ---- CTA: bold gradient slab ---- */

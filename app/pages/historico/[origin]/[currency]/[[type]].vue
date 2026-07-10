@@ -380,10 +380,27 @@
     <!-- Data-grounded FAQ for this currency + scoped FAQPage JSON-LD -->
     <FaqBlock v-if="currencyFaqItems.length" :items="currencyFaqItems" :heading="$t('faq.title')" />
 
-    <!-- Back Button -->
+    <!-- Up-link to the casa hub. This leaf is the site's highest-impression
+         page; /casa/[origin] is the page meant to win the "cambio {casa}" brand
+         query and had almost no inbound internal links. Worded differently from
+         the up-links on /historico/[origin] and /sucursales/[origin] so three
+         pages do not repeat one anchor. -->
     <v-row class="mt-6">
+      <v-col v-if="evolutionData?.localData" cols="12" class="text-center">
+        <v-btn
+          link
+          class="mb-4"
+          color="primary"
+          variant="tonal"
+          size="large"
+          :to="localePath(`/casa/${route.params.origin}`)"
+        >
+          <v-icon start>mdi-storefront-outline</v-icon>
+          {{ $t('casaPage.fromHistorico', { casa: exchangeHouseName }) }}
+        </v-btn>
+      </v-col>
       <v-col cols="12" class="text-center">
-        <v-btn link class="mb-4" color="primary" size="large" :to="localePath('/')">
+        <v-btn link class="mb-4" color="primary" variant="text" :to="localePath('/')">
           <v-icon start>mdi-arrow-left</v-icon>
           {{ $t('volverAlInicio') }}
         </v-btn>
