@@ -1003,15 +1003,20 @@ const router = useRouter()
 // figure is visible plain text (not only inside the FAQ accordion / schema),
 // which AI Overviews and Gemini extract more readily. Built from the same
 // SSR-friendly useExchangeRates data, public quotes only (no BCU/interbank).
+// One source of truth for the market's best public USD quotes. The visible
+// headline and the ExchangeRateSpecification JSON-LD are both built from it, so
+// the schema can never advertise a price the page does not show.
+const usdQuotes = computed(() => quotesForCurrency(sharedRealRows.value ?? [], 'USD'))
+const usdBestSell = computed(() => usdQuotes.value.find(q => q.bestSell)?.sell ?? null)
+const usdBestBuy = computed(() => usdQuotes.value.find(q => q.bestBuy)?.buy ?? null)
+
 const usdHeadline = computed<string | null>(() => {
-  const quotes = quotesForCurrency(sharedRealRows.value ?? [], 'USD')
-  const sells = quotes.map(q => q.sell).filter((n): n is number => typeof n === 'number' && n > 0)
-  const buys = quotes.map(q => q.buy).filter((n): n is number => typeof n === 'number' && n > 0)
-  if (!sells.length || !buys.length) return null
+  const quotes = usdQuotes.value
+  if (usdBestSell.value === null || usdBestBuy.value === null) return null
   const fmt = (n: number) =>
     n.toLocaleString('es-UY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-  const minSell = fmt(Math.min(...sells))
-  const maxBuy = fmt(Math.max(...buys))
+  const minSell = fmt(usdBestSell.value)
+  const maxBuy = fmt(usdBestBuy.value)
   const today = new Date().toLocaleDateString('es-UY', {
     timeZone: 'America/Montevideo',
     day: 'numeric',
@@ -1842,13 +1847,10 @@ const webApplicationSchema = computed(() => ({
   browserRequirements: 'HTML5, CSS3, JavaScript',
   softwareVersion: '3.0',
   inLanguage: ['es', 'en', 'pt'],
-  offers: {
-    '@type': 'Offer',
-    description: t('seo.homeDescription'),
-    price: '0',
-    priceCurrency: 'USD',
-    availability: 'https://schema.org/InStock',
-  },
+  // No `offers` block. A free comparison site sells nothing, and an Offer with
+  // price 0 + InStock made this the only rich result the site earned: a Product
+  // snippet (11,852 impressions, 0.07% CTR) advertising a $0 price on currency
+  // queries. It is also a Merchant-listing eligibility trap.
   author: {
     '@type': 'Person',
     name: 'Eduardo Airaudo',
@@ -1979,27 +1981,44 @@ const currencyServiceSchema = computed(() => ({
   },
 }))
 
-// 5. ExchangeRateSpecification for live rates (dynamic)
+// 5. ExchangeRateSpecification for live rates (dynamic).
+//
+// Derived from `sharedRealRows` (a computed over the blocking useAsyncData) and
+// NOT from `realExchangeData`, which a watcher fills — a watcher has not run by
+// the time the server renders the head, so this schema silently never shipped.
+// `dateModified` is the scrape timestamp the API returns, never `new Date()`:
+// claiming freshness the data does not have is worse than claiming none.
 const exchangeRateSchema = computed(() => {
-  if (!realExchangeData.value.length) return null
+  const sell = usdBestSell.value
+  const buy = usdBestBuy.value
+  if (sell === null || buy === null) return null
 
-  const usdData = realExchangeData.value.find(
-    item => item.code === 'USD' && item.buy > 0 && item.sell > 0
-  )
-  if (!usdData) return null
+  // Latest scrape timestamp the API reported. Never `new Date()`: claiming a
+  // freshness the data does not have is worse than claiming none.
+  const dates = sharedRealRows.value
+    .filter(r => r.code === 'USD' && r.date)
+    .map(r => new Date(r.date as string).getTime())
+    .filter(Number.isFinite)
 
   return {
     '@context': 'https://schema.org',
     '@type': 'ExchangeRateSpecification',
     name: 'Cotización del Dólar en Uruguay',
+    url: 'https://cambio-uruguay.com',
     currency: 'USD',
+    // The best price to BUY a dollar — the lowest sell across the casas, which
+    // is the number the headline above renders as "se vende desde $X".
     currentExchangeRate: {
       '@type': 'UnitPriceSpecification',
-      price: usdData.buy,
+      price: sell,
       priceCurrency: 'UYU',
-      unitText: 'Compra',
+      unitText: 'Venta',
     },
-    exchangeRateSpread: usdData.sell - usdData.buy,
+    // No `exchangeRateSpread`. It means one broker's own bid-ask gap; across an
+    // aggregate of 40 houses the cheapest seller and the highest buyer are
+    // different casas, so best-sell minus best-buy is cross-house arbitrage and
+    // routinely goes negative (today: 39,55 − 40,20 = −0,65).
+    ...(dates.length ? { dateModified: new Date(Math.max(...dates)).toISOString() } : {}),
   }
 })
 
@@ -2053,14 +2072,16 @@ useHead({
       type: 'application/ld+json',
       innerHTML: computed(() => JSON.stringify(currencyServiceSchema.value)),
     },
-    ...(exchangeRateSchema.value
-      ? [
-          {
-            type: 'application/ld+json',
-            innerHTML: JSON.stringify(exchangeRateSchema.value),
-          },
-        ]
-      : []),
+    // Reactive, like its siblings above. A `...(schema.value ? [...] : [])`
+    // spread is evaluated once, during synchronous setup — before useAsyncData
+    // resolves — so on the server it always collapsed to [] and this schema
+    // never reached Googlebot. Empty string only when the API returned nothing.
+    {
+      type: 'application/ld+json',
+      innerHTML: computed(() =>
+        exchangeRateSchema.value ? JSON.stringify(exchangeRateSchema.value) : ''
+      ),
+    },
   ],
   link: [
     {

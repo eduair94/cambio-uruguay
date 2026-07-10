@@ -196,7 +196,8 @@ useHead(() => ({
             applicationCategory: 'FinanceApplication',
             operatingSystem: 'Web',
             url: canonicalUrl.value,
-            offers: { '@type': 'Offer', price: '0', priceCurrency: 'UYU' },
+            // No `offers`: a free calculator sells nothing, and a $0 Offer only
+            // buys a Product snippet on the SERP (see pages/index.vue).
             publisher: { '@type': 'Organization', name: 'Cambio Uruguay' },
           },
           {
