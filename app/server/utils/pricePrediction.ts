@@ -124,9 +124,12 @@ async function fetchRecentSeries(currency: string) {
   const path = anchor.type
     ? `/evolution/${anchor.origin}/${anchor.code}/${anchor.type}`
     : `/evolution/${anchor.origin}/${anchor.code}`
+  // `period` is in MONTHS and the backend only accepts a fixed whitelist
+  // (1,2,3,6,12,24,36,48,60) — not an arbitrary day count. 6 months gives
+  // ~150 daily points, comfortable margin for the 90-day lookback window.
   const res = await $fetch<{ evolution?: { date?: string; buy?: number; sell?: number }[] }>(path, {
     baseURL: base,
-    query: { period: 100 },
+    query: { period: 6 },
   }).catch(() => null)
   return toSeries(res?.evolution, 'sell').map(p => ({ date: p.date.slice(0, 10), value: p.value }))
 }
