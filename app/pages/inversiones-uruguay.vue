@@ -254,6 +254,40 @@
       </ul>
     </VCard>
 
+    <!-- Related guides -->
+    <VRow class="my-6">
+      <VCol cols="12" md="6">
+        <VCard
+          :to="localePath('/invertir-en-proyectos-uruguayos')"
+          class="cross-link pa-4 h-100"
+          hover
+          variant="flat"
+        >
+          <VIcon color="primary" class="mb-2">mdi-sprout-outline</VIcon>
+          <h2 class="text-subtitle-1 font-weight-bold mb-1">Invertir en proyectos uruguayos</h2>
+          <p class="text-body-2 text-grey-lighten-1 mb-0">
+            Crowdfunding, obligaciones negociables, fideicomisos de forestación e infraestructura,
+            agro, inmobiliario y startups: cómo poner tu dinero en la economía real de Uruguay.
+          </p>
+        </VCard>
+      </VCol>
+      <VCol cols="12" md="6">
+        <VCard
+          :to="localePath('/salud-financiera')"
+          class="cross-link pa-4 h-100"
+          hover
+          variant="flat"
+        >
+          <VIcon color="primary" class="mb-2">mdi-heart-pulse</VIcon>
+          <h2 class="text-subtitle-1 font-weight-bold mb-1">Salud financiera e ingresos extra</h2>
+          <p class="text-body-2 text-grey-lighten-1 mb-0">
+            Antes de invertir, ordená tus finanzas: hacé el diagnóstico de salud financiera y mirá
+            ideas para generar ingresos extra en Uruguay.
+          </p>
+        </VCard>
+      </VCol>
+    </VRow>
+
     <!-- CTA -->
     <VCard class="cta-inversiones mt-6 pa-6 text-center" variant="flat">
       <h2 class="text-h6 font-weight-bold mb-2 text-white">¿Cuánto rendiría tu plazo fijo?</h2>
@@ -605,5 +639,20 @@ useHead(() => ({
   display: inline-flex;
   align-items: center;
   gap: 1px;
+}
+
+.cross-link {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  text-decoration: none;
+  transition: transform 0.2s ease;
+}
+.cross-link:hover {
+  transform: translateY(-2px);
+}
+.v-theme--light .cross-link {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.08);
 }
 </style>
