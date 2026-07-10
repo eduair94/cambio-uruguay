@@ -144,6 +144,12 @@ export const TRUSTPILOT_DOMAIN = 'cambio-uruguay.com'
 export const TRUSTPILOT_PROFILE_URL = `https://www.trustpilot.com/review/${TRUSTPILOT_DOMAIN}`
 export const TRUSTPILOT_REVIEW_URL = `https://www.trustpilot.com/evaluate/${TRUSTPILOT_DOMAIN}`
 
+/** The widget iframe's origin. Probed for reachability before we mount anything. */
+export const TRUSTPILOT_WIDGET_ORIGIN = 'https://trustpilot.checkleaked.com'
+
+/** Give the probe less time than READY_TIMEOUT_MS so it always decides first. */
+export const PROBE_TIMEOUT_MS = 5_000
+
 /** Kept in lockstep with the min-height the component reserves, so the iframe never shifts layout. */
 export const TRUSTPILOT_WIDGET_HEIGHT = 320
 
@@ -183,12 +189,45 @@ export function buildWidgetConfig({ theme, reducedMotion }: WidgetOpts): Trustpi
     height: TRUSTPILOT_WIDGET_HEIGHT,
   }
 }
+
+/**
+ * True when the widget host answers at all.
+ *
+ * The library calls `onReady` from `iframe.onload`, and browsers fire `load`
+ * even for a blocked or failed navigation — so `onReady` cannot distinguish a
+ * live widget from an ad-blocked one. An opaque `no-cors` request can: it
+ * resolves when the host answers and rejects when the request is blocked,
+ * aborted, or the host is unreachable.
+ *
+ * It cannot see HTTP status (the response is opaque), so a 5xx still reads as
+ * reachable. That is acceptable: the widget renders its own error state, and we
+ * are guarding against outage and ad-blockers, not against a bad status code.
+ */
+export async function probeWidgetReachable(
+  fetchImpl: typeof fetch,
+  timeoutMs: number = PROBE_TIMEOUT_MS
+): Promise<boolean> {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), timeoutMs)
+  try {
+    await fetchImpl(`${TRUSTPILOT_WIDGET_ORIGIN}/?domain=${TRUSTPILOT_DOMAIN}`, {
+      mode: 'no-cors',
+      cache: 'no-store',
+      signal: controller.signal,
+    })
+    return true
+  } catch {
+    return false
+  } finally {
+    clearTimeout(timer)
+  }
+}
 ```
 
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `cd app && npx vitest run tests/unit/trustpilot.test.ts`
-Expected: PASS — 7 passed.
+Expected: PASS — 12 passed (7 for `buildWidgetConfig`, 5 for `probeWidgetReachable`).
 
 - [ ] **Step 5: Lint**
 
@@ -604,6 +643,7 @@ import { useI18n } from 'vue-i18n'
 import type { TrustpilotWidgetHandle } from 'trustpilot-iframe-widget/vanilla'
 import {
   buildWidgetConfig,
+  probeWidgetReachable,
   TRUSTPILOT_PROFILE_URL,
   TRUSTPILOT_REVIEW_URL,
   TRUSTPILOT_WIDGET_HEIGHT,
@@ -612,7 +652,11 @@ import {
 const { t } = useI18n()
 const { applied } = useThemeMode()
 
-/** The iframe is third-party; if it never signals ready, we assume it never will. */
+// Backstop only: catches "loads but never signals ready" after the widget has
+// actually been created. It does NOT detect a blocked/downed host — the library
+// sets `iframe.onload = onReady`, and browsers fire `load` even for a blocked or
+// failed navigation (the browser just loads an error document into the frame).
+// That case is caught earlier, by `probeWidgetReachable` in `mountWidget`.
 const READY_TIMEOUT_MS = 8_000
 
 const mountEl = ref<HTMLElement>()
@@ -656,6 +700,10 @@ async function mountWidget(target: HTMLElement) {
     const { createTrustpilotWidget } = await import('trustpilot-iframe-widget/vanilla')
     // The import is uncancellable; if we were torn down while it was in flight,
     // do not create a widget attached to an orphaned node with an unclearable timer.
+    if (unmounted) return
+    // onReady/onError below cannot detect a blocked or downed host (see the
+    // READY_TIMEOUT_MS comment), so decide reachability here instead.
+    if (!(await probeWidgetReachable(globalThis.fetch))) return fail()
     if (unmounted) return
     readyTimer = setTimeout(fail, READY_TIMEOUT_MS)
     widget = createTrustpilotWidget({
@@ -1005,6 +1053,22 @@ test('both review CTAs point at Trustpilot and open in a new tab', async ({ page
   await expect(seeAll).toHaveAttribute('rel', /noopener/)
 })
 
+test('the whole reviews section is removed when the widget host is unreachable', async ({
+  page,
+}) => {
+  await page.route('**trustpilot.checkleaked.com**', r => r.abort())
+  await page.goto('/')
+
+  // The section renders server-side, then removes itself once the probe fails.
+  await expect(async () => {
+    await page.locator('.ecosystem-section').scrollIntoViewIfNeeded()
+    await expect(page.locator('.reviews-section')).toHaveCount(0)
+  }).toPass({ timeout: 90_000 })
+
+  // The neighbouring section must survive — we removed one section, not the page.
+  await expect(page.locator('.ecosystem-section')).toBeVisible()
+})
+
 test('the ecosystem strip renders safe external links', async ({ page }) => {
   await page.goto('/')
 
@@ -1031,7 +1095,7 @@ test('the ecosystem strip renders safe external links', async ({ page }) => {
 - [ ] **Step 2: Run the e2e suite**
 
 Run: `cd app && npx playwright test tests/e2e/trustpilot.spec.ts`
-Expected: PASS — 3 passed. (Playwright starts the dev server itself; `reuseExistingServer` is on.)
+Expected: PASS — 4 passed. (Playwright starts the dev server itself; `reuseExistingServer` is on.) The fourth test is the real regression guard for the soft-fail defect: it blocks `trustpilot.checkleaked.com` and asserts `.reviews-section` is fully removed from the DOM while `.ecosystem-section` stays visible.
 
 If the first test fails because no iframe ever appears, check the browser console: an ad-blocking extension or a DNS failure on `trustpilot.checkleaked.com` triggers the intended soft-fail, and the whole `.reviews-section` is removed. That is correct behaviour, not a test bug — verify by loading the URL directly.
 

@@ -161,10 +161,53 @@ Adding a genuine third-party mention later means appending one object. Splitting
 
 The widget is hosted on third-party infrastructure. The section must never degrade into a broken or empty box.
 
-- `onError` → `failed = true` → `v-if` removes the **entire section**, heading included.
-- No `onReady` within **8 seconds** → same hide path. Covers ad-blockers, DNS failure, and `trustpilot.checkleaked.com` being down.
-- Between mount and ready → skeleton placeholder at the reserved height.
-- `widget.destroy()` on unmount; the 8s timer is cleared on both `onReady` and unmount.
+**`onReady`/`onError` cannot detect a blocked or downed host.** The library sets
+`iframe.onload = () => this.handleIframeLoad()`, and `handleIframeLoad` calls
+`onReady`. Browsers fire an iframe's `load` event **even when the framed
+navigation is blocked or fails at the network layer** — the browser simply loads
+an error document into the frame and still fires `load`. So with
+`trustpilot.checkleaked.com` blocked (ad-blocker, DNS failure, outage), `onReady`
+still fires (measured: ~65ms blocked vs. ~1206ms reachable), clearing the ready
+timer before a timeout-based fail() can ever run. `iframe.onerror` does not fire
+for blocked navigations either, so `onError` never runs. An earlier version of
+this design relied on the 8-second timeout to catch exactly this case; it does
+not — verified by reproduction (blocking the host still renders a 644px section
+containing the heading and a broken, empty iframe).
+
+Other signals were probed and rejected as discriminators:
+- `onResize` (from the widget's iframe-resizer) never fires at all, even when
+  fully online — the framed page does not ship the resizer's child script.
+  Gating on it would hide the widget for every real user.
+- `iframe.contentDocument` is `null` in both the online and blocked cases
+  (cross-origin).
+- `PerformanceResourceTiming.transferSize` is `0` in both cases (cross-origin,
+  no `Timing-Allow-Origin`).
+
+The one signal that does discriminate: `fetch(url, { mode: 'no-cors' })`
+**resolves** when the host answers and **rejects with a `TypeError`** when the
+request is blocked, aborted, or the host is unreachable. `probeWidgetReachable`
+(`app/utils/trustpilot.ts`) wraps this, with its own timeout (`PROBE_TIMEOUT_MS`,
+5s — shorter than the 8s ready timeout so it always decides first).
+
+- `TrustpilotReviews.vue`'s `mountWidget` calls `probeWidgetReachable` **before**
+  calling `createTrustpilotWidget`. A rejected/timed-out probe → `fail()` →
+  `v-if` removes the **entire section**, heading included, without ever creating
+  a widget or an iframe.
+- Only once the probe resolves true do we arm the 8-second `READY_TIMEOUT_MS`
+  and create the widget. That timeout is now a **backstop**, not the primary
+  detector: it catches "the widget mounted successfully but never signals ready
+  for some other reason," not a blocked/downed host — the probe already ruled
+  that out by the time the timer is armed.
+- `onError` → `failed = true` → same hide path, for whatever failure modes the
+  widget itself does surface through it.
+- Between probe-pass and ready → skeleton placeholder at the reserved height.
+- `widget.destroy()` on unmount; the ready timer is cleared on both `onReady`
+  and unmount.
+
+The probe cannot see HTTP status (`no-cors` responses are opaque), so a 5xx
+still reads as reachable. That is acceptable: the widget renders its own error
+state for a bad status, and we are guarding against outage and ad-blockers, not
+against a bad status code.
 
 `EcosystemStrip` has no runtime dependencies and cannot fail.
 
@@ -177,6 +220,10 @@ The widget is hosted on third-party infrastructure. The section must never degra
 - `autoplay === false` when `reducedMotion` is true, `true` otherwise.
 - `theme` passes through unchanged for both `'light'` and `'dark'`.
 - `TRUSTPILOT_REVIEW_URL` and `TRUSTPILOT_PROFILE_URL` point at the `cambio-uruguay.com` domain.
+- `probeWidgetReachable`, with an injected fake `fetch`: resolves → `true`; rejects
+  → `false`; never settles → `false` once the timeout elapses; the probed URL
+  contains `TRUSTPILOT_WIDGET_ORIGIN` and the domain; the request uses
+  `mode: 'no-cors'`.
 
 **Unit — `app/tests/unit/ecosystem.test.ts`**
 - Every `id` is unique.
@@ -188,6 +235,7 @@ The widget is hosted on third-party infrastructure. The section must never degra
 - Scroll to the reviews section; gate on hydration with `expect(...).toPass()` retries (per the import-cart lesson — never assert immediately after `goto`).
 - The iframe's `src` contains `hideTopBanner=true` and `hideGlobalReviews=true`, and does **not** contain `rating=`.
 - Both CTAs resolve to `trustpilot.com/evaluate/...` and `trustpilot.com/review/...`.
+- **The regression guard:** with `**trustpilot.checkleaked.com**` routed to `abort()`, scrolling `.reviews-section` into view removes it entirely (`toHaveCount(0)`), while `.ecosystem-section` stays visible. This is the test that would have caught the shipped defect — `onReady` firing from a blocked iframe's `load` event, clearing the ready timer before the old code's timeout-only fail path could run.
 - Ecosystem links are present; external ones carry `target="_blank"` and `rel` containing `noopener`.
 
 **Verification gates**

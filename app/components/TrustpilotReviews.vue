@@ -65,6 +65,7 @@ import { useI18n } from 'vue-i18n'
 import type { TrustpilotWidgetHandle } from 'trustpilot-iframe-widget/vanilla'
 import {
   buildWidgetConfig,
+  probeWidgetReachable,
   TRUSTPILOT_PROFILE_URL,
   TRUSTPILOT_REVIEW_URL,
   TRUSTPILOT_WIDGET_HEIGHT,
@@ -73,7 +74,11 @@ import {
 const { t } = useI18n()
 const { applied } = useThemeMode()
 
-/** The iframe is third-party; if it never signals ready, we assume it never will. */
+// Backstop only: catches "loads but never signals ready" after the widget has
+// actually been created. It does NOT detect a blocked/downed host — the library
+// sets `iframe.onload = onReady`, and browsers fire `load` even for a blocked or
+// failed navigation (the browser just loads an error document into the frame).
+// That case is caught earlier, by `probeWidgetReachable` in `mountWidget`.
 const READY_TIMEOUT_MS = 8_000
 
 const mountEl = ref<HTMLElement>()
@@ -117,6 +122,10 @@ async function mountWidget(target: HTMLElement) {
     const { createTrustpilotWidget } = await import('trustpilot-iframe-widget/vanilla')
     // The import is uncancellable; if we were torn down while it was in flight,
     // do not create a widget attached to an orphaned node with an unclearable timer.
+    if (unmounted) return
+    // onReady/onError below cannot detect a blocked or downed host (see the
+    // READY_TIMEOUT_MS comment), so decide reachability here instead.
+    if (!(await probeWidgetReachable(globalThis.fetch))) return fail()
     if (unmounted) return
     readyTimer = setTimeout(fail, READY_TIMEOUT_MS)
     widget = createTrustpilotWidget({

@@ -73,6 +73,32 @@ test('both review CTAs point at Trustpilot and open in a new tab', async ({ page
   await expect(seeAll).toHaveAttribute('rel', /noopener/)
 })
 
+test('the whole reviews section is removed when the widget host is unreachable', async ({
+  page,
+}) => {
+  await page.route('**trustpilot.checkleaked.com**', r => r.abort())
+  await page.goto('/')
+
+  // The section renders server-side, then removes itself once the probe fails
+  // — but only after IntersectionWrapper reveals it. Several large sections
+  // (AIInsights, WhereToChange, pillar-content, internal-links) sit between
+  // `.reviews-section` and `.ecosystem-section`, so scrolling straight to the
+  // ecosystem strip jumps clean over the reviews section (~4800px away) and
+  // never intersects it — the mount/probe would never even be attempted.
+  // Scroll to `.reviews-section` itself, same as the healthy-path test above.
+  // Guard the scroll: once the section is removed, a locator matching zero
+  // elements would otherwise hang scrollIntoViewIfNeeded.
+  const section = page.locator('.reviews-section')
+  await expect(async () => {
+    if ((await section.count()) > 0) await section.scrollIntoViewIfNeeded()
+    await expect(section).toHaveCount(0, { timeout: 2_000 })
+  }).toPass({ timeout: 90_000 })
+
+  // The neighbouring section must survive — we removed one section, not the page.
+  await page.locator('.ecosystem-section').scrollIntoViewIfNeeded()
+  await expect(page.locator('.ecosystem-section')).toBeVisible()
+})
+
 test('the ecosystem strip renders safe external links', async ({ page }) => {
   await page.goto('/')
 
