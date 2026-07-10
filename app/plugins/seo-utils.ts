@@ -22,12 +22,6 @@ interface FAQ {
   answer: string
 }
 
-interface CurrencyData {
-  currency: string
-  rate: number
-  exchangeHouse: string
-}
-
 export default defineNuxtPlugin(() => {
   // SEO utilities and optimizations
   const seoUtils = {
@@ -92,94 +86,6 @@ export default defineNuxtPlugin(() => {
           acceptedAnswer: {
             '@type': 'Answer',
             text: faq.answer,
-          },
-        })),
-      }
-    },
-
-    // Generate WebApplication structured data for homepage
-    generateWebApplicationData(): StructuredDataItem {
-      return {
-        '@context': 'https://schema.org',
-        '@type': 'WebApplication',
-        name: 'Cambio Uruguay - Cotización del Dólar en Uruguay',
-        description:
-          'Cotización del dólar en Uruguay hoy. Compara precios de compra y venta en más de 40 casas de cambio actualizados cada 10 minutos.',
-        url: 'https://cambio-uruguay.com',
-        applicationCategory: 'FinanceApplication',
-        operatingSystem: 'All',
-        browserRequirements: 'HTML5, CSS3, JavaScript',
-        softwareVersion: '3.0.0',
-        inLanguage: ['es', 'en', 'pt'],
-        offers: {
-          '@type': 'Offer',
-          description:
-            'Comparación gratuita de cotizaciones de más de 40 casas de cambio en Uruguay',
-          price: '0',
-          priceCurrency: 'USD',
-          availability: 'https://schema.org/InStock',
-        },
-        author: {
-          '@type': 'Organization',
-          name: 'Cambio Uruguay',
-          url: 'https://cambio-uruguay.com',
-          logo: {
-            '@type': 'ImageObject',
-            url: 'https://cambio-uruguay.com/img/logo.png',
-          },
-          sameAs: [
-            'https://twitter.com/cambio_uruguay',
-            'https://www.linkedin.com/company/cambio-uruguay/',
-            'https://github.com/eduair94/cambio-uruguay',
-          ],
-          address: {
-            '@type': 'PostalAddress',
-            streetAddress: 'Montevideo',
-            addressLocality: 'Montevideo',
-            addressRegion: 'Montevideo',
-            postalCode: '11000',
-            addressCountry: 'UY',
-          },
-        },
-        creator: {
-          '@type': 'Person',
-          name: 'Eduardo Airaudo',
-          url: 'https://www.linkedin.com/in/eduardo-airaudo/',
-          jobTitle: 'Founder & Developer',
-        },
-        featureList: [
-          'Cotización del dólar en Uruguay en tiempo real',
-          'Comparación de más de 40 casas de cambio',
-          'Cotizaciones de USD, EUR, BRL, ARS actualizadas cada 10 minutos',
-          'Filtros por ubicación y departamento',
-          'Histórico de cotizaciones con gráficos',
-          'Directorio de sucursales con mapa',
-          'Análisis de mercado con inteligencia artificial',
-          'API REST pública para desarrolladores',
-        ],
-        screenshot: 'https://cambio-uruguay.com/img/banner.png',
-      }
-    },
-
-    // Generate exchange house specific structured data
-    generateExchangeHouseData(houseName: string, currencies: CurrencyData[]): StructuredDataItem {
-      return {
-        '@context': 'https://schema.org',
-        '@type': 'FinancialService',
-        name: houseName,
-        serviceType: 'Currency Exchange',
-        areaServed: 'Uruguay',
-        currenciesAccepted: currencies.map(curr => curr.currency),
-        offers: currencies.map(curr => ({
-          '@type': 'Offer',
-          itemOffered: {
-            '@type': 'ExchangeRateSpecification',
-            currency: curr.currency,
-            currentExchangeRate: {
-              '@type': 'UnitPriceSpecification',
-              price: curr.rate,
-              priceCurrency: 'UYU',
-            },
           },
         })),
       }

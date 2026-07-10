@@ -73,6 +73,108 @@ export function computeRecords(series: SeriesPoint[], now: Date = new Date()): R
   }
 }
 
+/**
+ * The largest single-day move a currency plausibly makes. A jump beyond this is
+ * a scraper artefact — a decimal shift, a stale mirror, a units change — not a
+ * market move, and must never be published as a record on a finance page.
+ */
+const MAX_PLAUSIBLE_DAILY_MOVE = 0.15
+
+/**
+ * Drop points a record must never be computed from: non-finite, non-positive,
+ * and outliers more than {@link MAX_PLAUSIBLE_DAILY_MOVE} from the previous
+ * KEPT point (so a run of bad points cannot validate itself).
+ *
+ * This is the first of two guards. The second is freshness: a casa whose scraper
+ * is stale or silent should not show records at all.
+ */
+export function sanitizeSeries(series: SeriesPoint[]): SeriesPoint[] {
+  const out: SeriesPoint[] = []
+  for (const p of series) {
+    if (!Number.isFinite(p.value) || p.value <= 0) continue
+    const prev = out[out.length - 1]
+    if (prev && Math.abs(p.value - prev.value) / prev.value > MAX_PLAUSIBLE_DAILY_MOVE) continue
+    out.push(p)
+  }
+  return out
+}
+
+export interface Streak {
+  direction: 'up' | 'down' | 'flat'
+  /** Number of consecutive MOVES in that direction, not a count of points. */
+  days: number
+}
+
+/**
+ * The run of consecutive same-direction moves ending at the last point.
+ *
+ * `[40, 41, 42]` is two rises, so the copy reads "subió 2 días seguidos". An
+ * unchanged final value ends any streak — the market did not move.
+ */
+export function computeStreak(series: SeriesPoint[]): Streak {
+  const pts = series.filter(p => Number.isFinite(p.value))
+  if (pts.length < 2) return { direction: 'flat', days: 0 }
+
+  const last = pts[pts.length - 1]!.value
+  const prev = pts[pts.length - 2]!.value
+  if (last === prev) return { direction: 'flat', days: 0 }
+
+  const direction: Streak['direction'] = last > prev ? 'up' : 'down'
+  let days = 0
+  for (let i = pts.length - 1; i > 0; i--) {
+    const delta = pts[i]!.value - pts[i - 1]!.value
+    if (delta === 0) break
+    if (delta > 0 !== (direction === 'up')) break
+    days++
+  }
+  return { direction, days }
+}
+
+export interface BiggestMove {
+  /** Date of the point the move landed on. */
+  date: string
+  from: number
+  to: number
+  delta: number
+  /** Percent change, rounded to 2dp. */
+  pct: number
+}
+
+/** The largest absolute day-over-day change in the series, or null if too short. */
+export function biggestMove(series: SeriesPoint[]): BiggestMove | null {
+  const pts = series.filter(p => Number.isFinite(p.value))
+  if (pts.length < 2) return null
+
+  let best: BiggestMove | null = null
+  for (let i = 1; i < pts.length; i++) {
+    const from = pts[i - 1]!.value
+    const to = pts[i]!.value
+    const delta = to - from
+    if (!best || Math.abs(delta) > Math.abs(best.delta)) {
+      best = {
+        date: pts[i]!.date,
+        from,
+        to,
+        delta: round(delta, 4),
+        pct: from === 0 ? 0 : round((delta / from) * 100, 2),
+      }
+    }
+  }
+  return best
+}
+
+/** Whole days between the series maximum and `now`, or null for an empty series. */
+export function daysSinceHigh(series: SeriesPoint[], now: Date = new Date()): number | null {
+  const pts = series.filter(p => Number.isFinite(p.value))
+  if (pts.length === 0) return null
+
+  let max = pts[0]!
+  for (const p of pts) if (p.value > max.value) max = p
+
+  const ms = now.getTime() - new Date(max.date).getTime()
+  return Math.max(0, Math.floor(ms / 86_400_000))
+}
+
 /** Pesos saved buying `amount` (USD-equivalent) at `best` vs `avg` sell price. */
 export function computeSavings(
   amount: number,

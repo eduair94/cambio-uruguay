@@ -194,7 +194,8 @@
     "toggleTheme": "Toggle light/dark theme",
     "primaryNav": "Main navigation",
     "unmute": "Unmute",
-    "mute": "Mute"
+    "mute": "Mute",
+    "changeLanguage": "Change language"
   },
   "theme": {
     "label": "Theme",
@@ -604,7 +605,10 @@
       "noAiAnalysis": "No AI analysis available today for this currency.",
       "noExternalForecasts": "No recent published forecasts found for this currency.",
       "selectOneCurrency": "Select a single currency to see the trend analysis."
-    }
+    },
+    "heading": "{currency} rate at {origin} today and historical chart",
+    "answer": "On {date}, the {currency} at {origin} trades at ${sell} sell and ${buy} buy. Over the last {months} months it moved {change} %; period high ${max}, low ${min}.",
+    "asOf": "Data as of {date}."
   },
   "pwa": {
     "retry": "Retry",
@@ -650,7 +654,7 @@
     "historicalTitle": "Exchange rate history in Uruguay",
     "historicalDescription": "Check the complete history of exchange rates from all exchange houses in Uruguay. Real-time updated data.",
     "historicalKeywords": "exchange rate history, currency exchange uruguay, historical prices, exchange houses uruguay",
-    "historicalOriginTitle": "{origin}: today's dollar rate and history",
+    "historicalOriginTitle": "Historical exchange rates for {origin}",
     "historicalOriginDescription": "Check all current and historical exchange rates from {origin}. Buy and sell prices updated in real time.",
     "historicalOriginKeywords": "exchange house rates, currency exchange uruguay, exchange prices uruguay",
     "historicalDetailTitle": "{origin} {currency} today: rate and trend",
@@ -659,7 +663,7 @@
     "offlineTitle": "Offline - Cambio Uruguay",
     "offlineDescription": "No internet connection. Check your connection to access exchange rates.",
     "offlineKeywords": "offline, no connection, cambio uruguay",
-    "sucursalesTitle": "{origin}: branches, hours and dollar rate",
+    "sucursalesTitle": "Branches and hours of {origin}",
     "sucursalesDescription": "Find all {origin} branches in Uruguay. Complete addresses, phone numbers, hours and locations.",
     "sucursalesLocationDescription": "{origin} branches in {location}. Addresses, phone numbers, hours and locations in {location}, Uruguay.",
     "sucursalesKeywords": "{origin} branches, {origin} addresses, {origin} locations, exchange houses uruguay",
@@ -672,7 +676,8 @@
     "mapaTitle": "Map of exchange houses in Uruguay | Cambio Uruguay",
     "mapaDescription": "Interactive map of exchange houses in Uruguay. Find the nearest branch and the best US dollar rate around you.",
     "nearbyCasasTitle": "Best Exchange House Near Me in Uruguay | Cambio Uruguay",
-    "nearbyCasasDescription": "Find the closest real exchange house with the best rate and reviews. Navigate directly with Google Maps or Waze. No banks or fintechs."
+    "nearbyCasasDescription": "Find the closest real exchange house with the best rate and reviews. Navigate directly with Google Maps or Waze. No banks or fintechs.",
+    "historicalDetailDescriptionLive": "{currency} at {origin} today: sell ${sell}, buy ${buy}. Trend, chart and records. Compare 40+ exchange houses in Uruguay."
   },
   "dolarDepto": {
     "h1": "Dollar in {department} today",
@@ -750,7 +755,9 @@
     "ctaDirectorio": "Exchange house comparison",
     "metaTitle": "{casa}: dollar rate today, branches and reviews",
     "metaDescription": "Dollar and other currency rates at {casa} today. Compare the buy and sell prices, updated automatically on Cambio Uruguay.",
-    "ogSubtitle": "Dollar exchange rate today"
+    "ogSubtitle": "Dollar exchange rate today",
+    "metaDescriptionLive": "Dollar at {casa} today: buy ${buy}, sell ${sell}. Branches, hours, reviews and every currency rate.",
+    "fromHistorico": "Branches, reviews and every currency at {casa}"
   },
   "consultCurrentQuotes": "Check the current exchange rates from all exchange houses in Uruguay. Compare prices and find the best option.",
   "donar": "Donate",
@@ -1071,7 +1078,12 @@
     "driversHint": "Correlation of daily returns over the available window. Does not imply causation.",
     "noData": "no data",
     "sampleSize": "{n} days",
-    "strength": { "fuerte": "strong", "moderada": "moderate", "debil": "weak", "casiNula": "almost none" },
+    "strength": {
+      "fuerte": "strong",
+      "moderada": "moderate",
+      "debil": "weak",
+      "casiNula": "almost none"
+    },
     "timelineTitle": "Notable jumps and their context",
     "timelineSelectMove": "View move detail for",
     "timelineAttribution": "That day, these moved:",
@@ -1181,7 +1193,8 @@
     "inversiones": "Investing in Uruguay",
     "sitemap": "Sitemap",
     "twitter": "Twitter",
-    "linkedin": "About the author"
+    "linkedin": "About the author",
+    "mejorCasa": "Best exchange house"
   },
   "sitemapPage": {
     "h1": "Cambio Uruguay sitemap",
@@ -1195,5 +1208,34 @@
     "write": "Write a review",
     "seeAll": "See all reviews on Trustpilot",
     "a11yRegion": "Trustpilot customer reviews"
+  },
+  "home": {
+    "casaHubsTitle": "Exchange houses and banks in Uruguay",
+    "casaHubsSubtitle": "Today's rate, branches, hours and reviews for each house.",
+    "casaHubAnchor": "{casa}: rate and branches today"
+  },
+  "records": {
+    "max": "Period high",
+    "min": "Period low",
+    "biggestMove": "Biggest one-day move",
+    "daysSinceHigh": "Since the high",
+    "days": "{days} days",
+    "streakUp": "Up {days} days in a row.",
+    "streakDown": "Down {days} days in a row."
+  },
+  "mejorCasa": {
+    "h1": "Where should you change dollars in Uruguay today?",
+    "subtitle": "We compare every exchange house and bank in the country to name the best rate today.",
+    "metaTitle": "Best exchange house in Uruguay today: cheapest dollar",
+    "metaDescription": "Today the cheapest place to buy dollars is {casa} at ${rate}. Compare 40+ houses and save ${savings} against the market average.",
+    "metaDescriptionGeneric": "Compare the dollar price across 40+ exchange houses and banks in Uruguay and find out where to change money today.",
+    "answer": "Today the cheapest place to buy dollars is {casa}, selling at ${rate}. Buying US$ 1,000 there saves you about ${savings} against the average of the {count} exchange houses and banks we compare.",
+    "average": "The market average is ${average}.",
+    "asOf": "Data as of {date}.",
+    "colCasa": "Exchange house",
+    "colRate": "Sell",
+    "colSavings": "Saving vs. average",
+    "methodology": "Ranked by the dollar sell price (what you pay per US$ 1). The saving compares buying US$ {amount} at that house against the market average. The BCU reference rate and interbank quotes are excluded — the public cannot transact at them.",
+    "noData": "No rates available right now."
   }
 }

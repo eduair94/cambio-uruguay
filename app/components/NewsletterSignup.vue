@@ -51,6 +51,8 @@ import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const { locale } = useI18n()
+const route = useRoute()
+const track = useTrack()
 const email = ref('')
 const website = ref('') // honeypot
 const state = ref<'idle' | 'submitting' | 'sent' | 'error'>('idle')
@@ -64,6 +66,10 @@ async function submit(): Promise<void> {
       body: { email: email.value, locale: locale.value, website: website.value },
     })
     state.value = 'sent'
+    // A GA4 key event: the signup is one of the two conversions that tell us an
+    // organic landing page earned a returning visitor. `source` is the landing
+    // path so we can attribute it to the page type in an Exploration.
+    track('newsletter_signup', { source: route.path, locale: locale.value })
   } catch {
     state.value = 'error'
   }

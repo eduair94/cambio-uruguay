@@ -47,7 +47,11 @@
 
         <VDivider />
 
-        <VListGroup v-for="section in navSections" :key="section.id" :value="section.id">
+        <!-- `fluid` zeroes Vuetify's nested indent. Without it the group inherits
+             --parent-padding of one prepend-icon width (40px) plus a 16px indent
+             step, pushing every sub-item's icon 72px in while the section headers
+             sit at 16px. -->
+        <VListGroup v-for="section in navSections" :key="section.id" :value="section.id" fluid>
           <template #activator="{ props: activatorProps }">
             <VListItem v-bind="activatorProps">
               <VListItemTitle class="font-weight-medium">
@@ -193,10 +197,16 @@
           @click="onSearchTrigger"
         >
           <VIcon size="small">mdi-magnify</VIcon>
-          <span class="search-trigger__label">{{ $t('search.triggerLabel') }}</span>
-          <kbd class="search-trigger__kbd">{{ $t('search.triggerHint') }}</kbd>
+          <!-- Label + shortcut hint only from xl up; below that the pill collapses
+               to its icon so the full nav + action cluster fits the bar. -->
+          <span class="search-trigger__label d-none d-xl-inline">{{
+            $t('search.triggerLabel')
+          }}</span>
+          <kbd class="search-trigger__kbd d-none d-xl-inline">{{ $t('search.triggerHint') }}</kbd>
         </a>
-        <ThemeToggle />
+        <!-- Hidden on phones: the drawer header carries its own ThemeToggle, and
+             the 48px it costs here is what pushed the language menu off-screen. -->
+        <ThemeToggle class="d-none d-sm-flex" />
         <AccountMenu />
         <LanguageMenu />
       </div>
@@ -522,11 +532,23 @@ useHead({
 
 /* On phones the logo must leave room for the hamburger + account/language
    cluster, otherwise the spacer collapses and the logo butts against the login
-   button (and the language menu overflows the viewport). */
-@media (max-width: 600px) {
+   button (and the language menu overflows the viewport).
+
+   599.98px rather than 600px: Vuetify's `d-sm-*` helpers switch on at exactly
+   600px, so a `max-width: 600px` query overlapped them by one pixel — the bar
+   got the wide desktop cluster and the phone logo at the same time, and the
+   language menu spilled past the right edge. */
+@media (max-width: 599.98px) {
   .logo_image {
     max-height: 30px;
-    max-width: 40vw;
+    max-width: 34vw;
+  }
+}
+
+/* Below 360px even a 34vw logo leaves the action cluster a few px short. */
+@media (max-width: 359.98px) {
+  .logo_image {
+    max-width: 30vw;
   }
 }
 
@@ -597,6 +619,17 @@ useHead({
     border-color 0.2s ease;
 }
 
+/* Collapsed (icon-only) below xl: no reserved label width, square so it reads
+   as an icon button rather than a stretched empty field. */
+@media (max-width: 1919.98px) {
+  .search-trigger {
+    min-width: 0;
+    width: 36px;
+    padding: 0;
+    justify-content: center;
+  }
+}
+
 .search-trigger:hover,
 .search-trigger:focus-visible {
   border-color: rgba(var(--v-theme-info), 0.6);
@@ -616,6 +649,15 @@ useHead({
   font-family: inherit;
   font-size: 0.68rem;
   opacity: 0.7;
+}
+
+/* Under 360px the bar has no slack left and the logo ends up flush against the
+   login pill. The drawer carries its own search row, so this icon is the one
+   thing here that can go without losing a destination. */
+@media (max-width: 359.98px) {
+  .search-trigger-icon {
+    display: none !important;
+  }
 }
 
 .search-trigger-icon {

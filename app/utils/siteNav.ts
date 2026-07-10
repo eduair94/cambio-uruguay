@@ -179,6 +179,24 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         keywords: ['casas de cambio', 'directorio', 'comparativa', 'resenas', 'ranking'],
       },
       {
+        to: '/mejor-casa-de-cambio',
+        labelKey: 'nav.mejorCasa',
+        icon: 'mdi-trophy-outline',
+        priority: 0.9,
+        changefreq: 'daily',
+        // Not `primary`: its label is the widest of the set (~198px) and a 7th
+        // top-level button pushed the whole action cluster off the right edge
+        // below 1920px. It lives in the "Más" menu instead.
+        keywords: [
+          'mejor casa de cambio',
+          'donde cambiar',
+          'dolar mas barato',
+          'mas conveniente',
+          'cual conviene',
+          'ranking',
+        ],
+      },
+      {
         to: '/casa-de-cambio-cerca-de-mi',
         labelKey: 'nav.nearby',
         icon: 'mdi-map-marker-account',

@@ -133,3 +133,66 @@ describe('housesInDepartment', () => {
     expect(housesInDepartment(localData, '   ')).toEqual([])
   })
 })
+
+// The live /localData does not agree with itself: as of 2026-07-10 four
+// departments are spelled BOTH ways across houses — PAYSANDU/PAYSANDÚ,
+// RIO NEGRO/RÍO NEGRO, SAN JOSE/SAN JOSÉ, TACUAREMBO/TACUAREMBÓ. Matching on
+// the raw uppercase string therefore silently dropped every house that used the
+// other spelling (San José showed 1 of its 2 casas), and `listDepartments`
+// emitted two entries that slugify to the same URL.
+const splitSpelling: LocalDataMap = {
+  brou: {
+    name: 'BROU',
+    website: '',
+    maps: '',
+    bcu: '',
+    departments: ['PAYSANDÚ', 'RÍO NEGRO', 'SAN JOSÉ'],
+  },
+  gales: {
+    name: 'Gales',
+    website: '',
+    maps: '',
+    bcu: '',
+    departments: ['PAYSANDU', 'RIO NEGRO', 'SAN JOSE'],
+  },
+  itau: { name: 'Itaú', website: '', maps: '', bcu: '', departments: ['MONTEVIDEO'] },
+}
+
+describe('departments spelled inconsistently across houses', () => {
+  it.each([
+    ['PAYSANDÚ', 'PAYSANDU'],
+    ['RÍO NEGRO', 'RIO NEGRO'],
+    ['SAN JOSÉ', 'SAN JOSE'],
+  ])('finds houses under both %s and %s', (accented, plain) => {
+    for (const spelling of [accented, plain]) {
+      const houses = housesInDepartment(splitSpelling, spelling)
+      expect(houses.map(h => h.origin).sort()).toEqual(['brou', 'gales'])
+    }
+  })
+
+  it('resolves either spelling from the shared slug', () => {
+    const names = ['PAYSANDU', 'PAYSANDÚ']
+    const resolved = departmentFromSlug('paysandu', names)
+    expect(resolved).not.toBeNull()
+    expect(
+      housesInDepartment(splitSpelling, resolved!)
+        .map(h => h.origin)
+        .sort()
+    ).toEqual(['brou', 'gales'])
+  })
+
+  it('lists each department once, so one slug maps to one URL', () => {
+    const entries = listDepartments(splitSpelling)
+    const slugs = entries.map(e => e.slug)
+    expect(new Set(slugs).size).toBe(slugs.length)
+    expect(slugs.sort()).toEqual(['montevideo', 'paysandu', 'rio-negro', 'san-jose'])
+  })
+
+  it('prefers the accented spelling as the display name', () => {
+    const entries = listDepartments(splitSpelling)
+    const names = entries.map(e => e.name)
+    expect(names).toContain('PAYSANDÚ')
+    expect(names).toContain('RÍO NEGRO')
+    expect(names).not.toContain('PAYSANDU')
+  })
+})

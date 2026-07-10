@@ -93,24 +93,46 @@ export function departmentFromSlug(slug: string, allNames: readonly string[]): s
  * callers can build routes and links without re-slugifying.
  */
 export function listDepartments(localData: LocalDataMap): DepartmentEntry[] {
-  const names = new Set<string>()
+  // Houses disagree on accents for the same department (PAYSANDU vs PAYSANDÚ,
+  // RIO NEGRO vs RÍO NEGRO, ...). Key by slug so each department is listed once
+  // — otherwise two entries collapse to one URL and Google sees a duplicate.
+  const bySlug = new Map<string, string>()
   for (const house of Object.values(localData)) {
     for (const dept of house.departments ?? []) {
       const trimmed = dept.trim()
-      if (trimmed) names.add(trimmed)
+      if (!trimmed) continue
+      const slug = slugifyDepartment(trimmed)
+      if (!slug) continue
+      const current = bySlug.get(slug)
+      if (!current || preferredSpelling(current, trimmed) === trimmed) {
+        bySlug.set(slug, trimmed)
+      }
     }
   }
-  return Array.from(names)
-    .sort((a, b) => a.localeCompare(b, 'es'))
-    .map(name => ({ slug: slugifyDepartment(name), name }))
+  return Array.from(bySlug.entries())
+    .map(([slug, name]) => ({ slug, name }))
+    .sort((a, b) => a.name.localeCompare(b.name, 'es'))
+}
+
+/**
+ * Pick the display spelling when two houses disagree: prefer the one that keeps
+ * its diacritics (`PAYSANDÚ` over `PAYSANDU`), which is the correct Spanish.
+ * Deterministic — never depends on house iteration order.
+ */
+function preferredSpelling(a: string, b: string): string {
+  const accents = (s: string) => (s.normalize('NFD').match(/\p{Diacritic}/gu) ?? []).length
+  const da = accents(a)
+  const db = accents(b)
+  if (da !== db) return da > db ? a : b
+  return a.localeCompare(b, 'es') <= 0 ? a : b
 }
 
 /**
  * List the exchange houses that have at least one branch in `departmentName`.
  *
- * Department membership is matched case-insensitively (the API stores names in
- * UPPERCASE). Results are de-duplicated by `origin` and sorted by display name
- * for a stable, reproducible order.
+ * Department membership is matched on the slug, so it is case- and
+ * accent-insensitive. Results are de-duplicated by `origin` and sorted by
+ * display name for a stable, reproducible order.
  *
  * @returns a strictly-typed list of {@link DepartmentHouse}; empty when the
  * department is unknown or no house operates there.
@@ -119,12 +141,15 @@ export function housesInDepartment(
   localData: LocalDataMap,
   departmentName: string
 ): DepartmentHouse[] {
-  const target = departmentName.trim().toUpperCase()
+  // Compare on the slug, not the raw uppercase string: houses spell the same
+  // department both with and without accents, and an exact match silently drops
+  // every house that chose the other spelling (San José returned 1 of 2 casas).
+  const target = slugifyDepartment(departmentName)
   if (!target) return []
 
   const houses: DepartmentHouse[] = []
   for (const [origin, data] of Object.entries(localData)) {
-    const inDept = (data.departments ?? []).some(dept => dept.trim().toUpperCase() === target)
+    const inDept = (data.departments ?? []).some(dept => slugifyDepartment(dept) === target)
     if (!inDept) continue
     houses.push({
       origin,

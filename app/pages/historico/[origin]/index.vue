@@ -185,6 +185,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useDisplay } from 'vuetify/lib/composables/display.mjs'
+import { pickOriginRate } from '@/utils/rateSource'
 
 interface CambioItem {
   origin: string
@@ -560,11 +561,12 @@ onMounted(() => {
 // the SERP snippet leads with the actual number ("Dólar en BROU hoy: compra $X,
 // venta $Y…") instead of a generic sentence. Bank/casa cotización queries carry
 // huge impressions but near-zero CTR precisely because the snippet showed no price.
+// `items` holds every casa's rows, so the origin filter is load-bearing: without
+// it every casa page quotes the first USD row in the market. Origins that publish
+// no USD quote (BCU) get the generic description rather than someone else's rate.
 const usdToday = computed(() => {
-  const rows = items.value.filter(i => i.code === 'USD' && i.buy > 0 && i.sell > 0)
-  if (!rows.length) return null
-  const r = rows.find(x => !x.type) ?? rows[0]
-  return { buy: r.buy, sell: r.sell }
+  const r = pickOriginRate(items.value, route.params.origin as string)
+  return r ? { buy: r.buy, sell: r.sell } : null
 })
 const seoDescription = computed(() => {
   const base = t('seo.historicalOriginDescription', { origin: originName.value })

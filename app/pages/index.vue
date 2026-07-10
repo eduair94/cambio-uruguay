@@ -812,6 +812,32 @@
       </VContainer>
     </section>
 
+    <!-- Casa hubs. /casa/[origin] is the page built to win the "cambio {casa}"
+         brand query — tens of thousands of impressions — and it had almost no
+         inbound internal links. Rendered from the SSR rate rows, so these links
+         are in the server HTML, and every origin comes from live localData, so
+         none of them can 404. -->
+    <section v-if="hubCasas.length" v-reveal class="casa-hubs-section py-12">
+      <VContainer>
+        <VRow>
+          <VCol cols="12" class="text-center mb-6">
+            <h2 class="text-h5 font-weight-bold">{{ t('home.casaHubsTitle') }}</h2>
+            <p class="text-body-2 text-grey-lighten-1">{{ t('home.casaHubsSubtitle') }}</p>
+          </VCol>
+        </VRow>
+        <div class="casa-hubs">
+          <NuxtLink
+            v-for="casa in hubCasas"
+            :key="casa.origin"
+            :to="localePath(`/casa/${casa.origin}`)"
+            class="casa-hub-link"
+          >
+            {{ t('home.casaHubAnchor', { casa: casa.name }) }}
+          </NuxtLink>
+        </div>
+      </VContainer>
+    </section>
+
     <!-- Features Section -->
     <section v-reveal class="features-section section-band py-12">
       <VContainer>
@@ -1011,15 +1037,38 @@ const router = useRouter()
 // figure is visible plain text (not only inside the FAQ accordion / schema),
 // which AI Overviews and Gemini extract more readily. Built from the same
 // SSR-friendly useExchangeRates data, public quotes only (no BCU/interbank).
+
+// The casas we link to from the homepage. Derived from the SSR rate rows, so
+// the links exist in the server HTML — `realExchangeData` is filled by a
+// watcher, which would leave a crawler with an empty list. Names come from the
+// payload's own localData, so an origin can never 404 the /casa validate hook,
+// and publicRates has already dropped the BCU reference (it has no /casa page).
+const hubCasas = computed(() => {
+  const byOrigin = new Map<string, string>()
+  for (const row of sharedRealRows.value ?? []) {
+    if (row.code !== 'USD' || byOrigin.has(row.origin)) continue
+    const name = (row as { localData?: { name?: string } }).localData?.name
+    if (name && name.trim()) byOrigin.set(row.origin, name.trim())
+  }
+  return Array.from(byOrigin, ([origin, name]) => ({ origin, name })).sort((a, b) =>
+    a.name.localeCompare(b.name, 'es')
+  )
+})
+
+// One source of truth for the market's best public USD quotes. The visible
+// headline and the ExchangeRateSpecification JSON-LD are both built from it, so
+// the schema can never advertise a price the page does not show.
+const usdQuotes = computed(() => quotesForCurrency(sharedRealRows.value ?? [], 'USD'))
+const usdBestSell = computed(() => usdQuotes.value.find(q => q.bestSell)?.sell ?? null)
+const usdBestBuy = computed(() => usdQuotes.value.find(q => q.bestBuy)?.buy ?? null)
+
 const usdHeadline = computed<string | null>(() => {
-  const quotes = quotesForCurrency(sharedRealRows.value ?? [], 'USD')
-  const sells = quotes.map(q => q.sell).filter((n): n is number => typeof n === 'number' && n > 0)
-  const buys = quotes.map(q => q.buy).filter((n): n is number => typeof n === 'number' && n > 0)
-  if (!sells.length || !buys.length) return null
+  const quotes = usdQuotes.value
+  if (usdBestSell.value === null || usdBestBuy.value === null) return null
   const fmt = (n: number) =>
     n.toLocaleString('es-UY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-  const minSell = fmt(Math.min(...sells))
-  const maxBuy = fmt(Math.max(...buys))
+  const minSell = fmt(usdBestSell.value)
+  const maxBuy = fmt(usdBestBuy.value)
   const today = new Date().toLocaleDateString('es-UY', {
     timeZone: 'America/Montevideo',
     day: 'numeric',
@@ -1850,13 +1899,10 @@ const webApplicationSchema = computed(() => ({
   browserRequirements: 'HTML5, CSS3, JavaScript',
   softwareVersion: '3.0',
   inLanguage: ['es', 'en', 'pt'],
-  offers: {
-    '@type': 'Offer',
-    description: t('seo.homeDescription'),
-    price: '0',
-    priceCurrency: 'USD',
-    availability: 'https://schema.org/InStock',
-  },
+  // No `offers` block. A free comparison site sells nothing, and an Offer with
+  // price 0 + InStock made this the only rich result the site earned: a Product
+  // snippet (11,852 impressions, 0.07% CTR) advertising a $0 price on currency
+  // queries. It is also a Merchant-listing eligibility trap.
   author: {
     '@type': 'Person',
     name: 'Eduardo Airaudo',
@@ -1987,27 +2033,44 @@ const currencyServiceSchema = computed(() => ({
   },
 }))
 
-// 5. ExchangeRateSpecification for live rates (dynamic)
+// 5. ExchangeRateSpecification for live rates (dynamic).
+//
+// Derived from `sharedRealRows` (a computed over the blocking useAsyncData) and
+// NOT from `realExchangeData`, which a watcher fills — a watcher has not run by
+// the time the server renders the head, so this schema silently never shipped.
+// `dateModified` is the scrape timestamp the API returns, never `new Date()`:
+// claiming freshness the data does not have is worse than claiming none.
 const exchangeRateSchema = computed(() => {
-  if (!realExchangeData.value.length) return null
+  const sell = usdBestSell.value
+  const buy = usdBestBuy.value
+  if (sell === null || buy === null) return null
 
-  const usdData = realExchangeData.value.find(
-    item => item.code === 'USD' && item.buy > 0 && item.sell > 0
-  )
-  if (!usdData) return null
+  // Latest scrape timestamp the API reported. Never `new Date()`: claiming a
+  // freshness the data does not have is worse than claiming none.
+  const dates = sharedRealRows.value
+    .filter(r => r.code === 'USD' && r.date)
+    .map(r => new Date(r.date as string).getTime())
+    .filter(Number.isFinite)
 
   return {
     '@context': 'https://schema.org',
     '@type': 'ExchangeRateSpecification',
     name: 'Cotización del Dólar en Uruguay',
+    url: 'https://cambio-uruguay.com',
     currency: 'USD',
+    // The best price to BUY a dollar — the lowest sell across the casas, which
+    // is the number the headline above renders as "se vende desde $X".
     currentExchangeRate: {
       '@type': 'UnitPriceSpecification',
-      price: usdData.buy,
+      price: sell,
       priceCurrency: 'UYU',
-      unitText: 'Compra',
+      unitText: 'Venta',
     },
-    exchangeRateSpread: usdData.sell - usdData.buy,
+    // No `exchangeRateSpread`. It means one broker's own bid-ask gap; across an
+    // aggregate of 40 houses the cheapest seller and the highest buyer are
+    // different casas, so best-sell minus best-buy is cross-house arbitrage and
+    // routinely goes negative (today: 39,55 − 40,20 = −0,65).
+    ...(dates.length ? { dateModified: new Date(Math.max(...dates)).toISOString() } : {}),
   }
 })
 
@@ -2061,14 +2124,16 @@ useHead({
       type: 'application/ld+json',
       innerHTML: computed(() => JSON.stringify(currencyServiceSchema.value)),
     },
-    ...(exchangeRateSchema.value
-      ? [
-          {
-            type: 'application/ld+json',
-            innerHTML: JSON.stringify(exchangeRateSchema.value),
-          },
-        ]
-      : []),
+    // Reactive, like its siblings above. A `...(schema.value ? [...] : [])`
+    // spread is evaluated once, during synchronous setup — before useAsyncData
+    // resolves — so on the server it always collapsed to [] and this schema
+    // never reached Googlebot. Empty string only when the API returned nothing.
+    {
+      type: 'application/ld+json',
+      innerHTML: computed(() =>
+        exchangeRateSchema.value ? JSON.stringify(exchangeRateSchema.value) : ''
+      ),
+    },
   ],
   link: [
     {
@@ -2701,6 +2766,33 @@ useSeoMeta({
 
 .cursor-pointer {
   cursor: pointer;
+}
+
+/* Casa hub links: a wrapped list of text links, not cards. They exist to pass
+   link equity to /casa/[origin] and to be readable, so they stay light. */
+.casa-hubs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  justify-content: center;
+}
+
+.casa-hub-link {
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  color: inherit;
+  font-size: 0.875rem;
+  padding: 0.375rem 0.75rem;
+  text-decoration: none;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.casa-hub-link:hover,
+.casa-hub-link:focus-visible {
+  background: rgba(120, 160, 255, 0.08);
+  border-color: rgba(120, 160, 255, 0.38);
 }
 
 /* ---- CTA: bold gradient slab ---- */

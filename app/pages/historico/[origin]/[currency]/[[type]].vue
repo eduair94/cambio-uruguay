@@ -12,13 +12,18 @@
                     <v-icon size="32" color="primary">mdi-bank</v-icon>
                   </v-avatar>
                   <div>
-                    <h2 class="text-h6 text-sm-h5 text-md-h4 font-weight-bold text-white">
+                    <p class="cu-eyebrow text-grey-lighten-2 mb-1">
                       📈 {{ $t('historicoCotizaciones') }}
-                    </h2>
-                    <div class="d-flex flex-wrap ga-2 align-center">
-                      <h3 class="text-h6 text-md-h5 text-grey-lighten-2">
-                        {{ evolutionData.localData.name }}
-                      </h3>
+                    </p>
+                    <h1 class="text-h6 text-sm-h5 text-md-h4 font-weight-bold text-white">
+                      {{
+                        $t('historical.heading', {
+                          currency: currencyLabel,
+                          origin: exchangeHouseName,
+                        })
+                      }}
+                    </h1>
+                    <div class="d-flex flex-wrap ga-2 align-center mt-1">
                       <v-chip color="secondary" size="small">
                         {{ route.params.currency }}
                       </v-chip>
@@ -82,6 +87,59 @@
               </v-col>
             </v-row>
           </div>
+
+          <!-- The answer, in server-rendered plain text: the figure the search
+               query asked for, before any chart, selector or spinner. Suppressed
+               entirely when the payload is incomplete — a finance page states no
+               rate rather than a partial one. -->
+          <v-card-text v-if="answerFacts" class="cu-answer pa-4">
+            <p class="text-body-1 mb-0">
+              {{ answerSentence }}
+              <time :datetime="answerFacts.asOf" class="text-medium-emphasis">
+                {{ $t('historical.asOf', { date: asOfDate }) }}
+              </time>
+            </p>
+
+            <!-- Records for THIS casa and THIS currency: facts no single-rate
+                 competitor can publish, and unique text per URL, which is what
+                 the near-identical templates lacked. -->
+            <dl v-if="periodRecords" class="cu-records mt-4 mb-0">
+              <div class="cu-record">
+                <dt>{{ $t('records.max') }}</dt>
+                <dd>
+                  ${{ formatRate(periodRecords.max.value, localeTag) }}
+                  <span class="text-medium-emphasis">
+                    · {{ formatDay(periodRecords.max.date) }}
+                  </span>
+                </dd>
+              </div>
+              <div class="cu-record">
+                <dt>{{ $t('records.min') }}</dt>
+                <dd>
+                  ${{ formatRate(periodRecords.min.value, localeTag) }}
+                  <span class="text-medium-emphasis">
+                    · {{ formatDay(periodRecords.min.date) }}
+                  </span>
+                </dd>
+              </div>
+              <div v-if="periodRecords.biggest" class="cu-record">
+                <dt>{{ $t('records.biggestMove') }}</dt>
+                <dd>
+                  {{ formatChangePct(periodRecords.biggest.pct, localeTag) }} %
+                  <span class="text-medium-emphasis">
+                    · {{ formatDay(periodRecords.biggest.date) }}
+                  </span>
+                </dd>
+              </div>
+              <div v-if="periodRecords.daysSinceHigh !== null" class="cu-record">
+                <dt>{{ $t('records.daysSinceHigh') }}</dt>
+                <dd>{{ $t('records.days', { days: periodRecords.daysSinceHigh }) }}</dd>
+              </div>
+            </dl>
+            <p v-if="streakSentence" class="text-body-2 text-medium-emphasis mt-2 mb-0">
+              {{ streakSentence }}
+            </p>
+          </v-card-text>
 
           <!-- Additional Info Bar -->
           <v-card-text class="bg-grey-lighten-5 pa-4">
@@ -362,10 +420,27 @@
     <!-- Data-grounded FAQ for this currency + scoped FAQPage JSON-LD -->
     <FaqBlock v-if="currencyFaqItems.length" :items="currencyFaqItems" :heading="$t('faq.title')" />
 
-    <!-- Back Button -->
+    <!-- Up-link to the casa hub. This leaf is the site's highest-impression
+         page; /casa/[origin] is the page meant to win the "cambio {casa}" brand
+         query and had almost no inbound internal links. Worded differently from
+         the up-links on /historico/[origin] and /sucursales/[origin] so three
+         pages do not repeat one anchor. -->
     <v-row class="mt-6">
+      <v-col v-if="evolutionData?.localData" cols="12" class="text-center">
+        <v-btn
+          link
+          class="mb-4"
+          color="primary"
+          variant="tonal"
+          size="large"
+          :to="localePath(`/casa/${route.params.origin}`)"
+        >
+          <v-icon start>mdi-storefront-outline</v-icon>
+          {{ $t('casaPage.fromHistorico', { casa: exchangeHouseName }) }}
+        </v-btn>
+      </v-col>
       <v-col cols="12" class="text-center">
-        <v-btn link class="mb-4" color="primary" size="large" :to="localePath('/')">
+        <v-btn link class="mb-4" color="primary" variant="text" :to="localePath('/')">
           <v-icon start>mdi-arrow-left</v-icon>
           {{ $t('volverAlInicio') }}
         </v-btn>
@@ -396,6 +471,24 @@ import { currencyFaqIds, type FaqItem } from '~/utils/faqAnswers'
 import { useDisplay } from 'vuetify/lib/composables/display.mjs'
 import { markPoints } from '~/utils/chartMoveMarkers'
 import { attributeMove } from '~/utils/attribution'
+import { historyDetailCanonicalPath } from '~/utils/historyCanonical'
+import {
+  biggestMove,
+  computeRecords,
+  computeStreak,
+  daysSinceHigh,
+  sanitizeSeries,
+} from '~/utils/rateStats'
+import { currencyDisplayName, currencyFromSlug, type CurrencyLang } from '~/utils/currencyPages'
+import {
+  factsFromRows,
+  formatChangePct,
+  formatRate,
+  rateAnswerFacts,
+  selectTypeRows,
+  type EvolutionRow,
+  type EvolutionStatistics,
+} from '~/utils/rateAnswer'
 
 const { smAndDown } = useDisplay()
 const { t } = useI18n()
@@ -477,6 +570,11 @@ const { withLoading } = useLoading()
 const { loading: aiLoading, error: aiError, insight: aiInsight, getTrendAnalysis } = useAIInsights()
 
 const { locale } = useI18n()
+
+/** BCP-47 tag for number/date formatting: the site's audience is Uruguay. */
+const localeTag = computed(() =>
+  locale.value?.startsWith('en') ? 'en-US' : locale.value?.startsWith('pt') ? 'pt-BR' : 'es-UY'
+)
 
 // Data-grounded FAQ for this currency (rate/buy/sell of route.params.currency),
 // rendered with its own scoped FAQPage JSON-LD via FaqBlock.
@@ -607,13 +705,18 @@ onBeforeMount(() => {
   }
 })
 
-// Server-side data fetching with asyncData
+// Blocking (not lazy) on purpose: this is the site's highest-impression
+// template, and with a lazy fetch the server rendered a spinner — the casa name,
+// the rate, the table and the whole header block sit behind `v-if="evolutionData"`.
+// Googlebot, AI crawlers and the SERP snippet saw none of it. The payload is one
+// small JSON document from an endpoint that is already cached upstream; the
+// heavy `/api/analysis` and `/api/drivers` overlays stay lazy below.
 const {
   data: evolutionData,
   error,
   pending: loading,
   refresh,
-} = await useLazyAsyncData(
+} = await useAsyncData(
   `evolution-${route.params.origin}-${route.params.currency}-${route.params.type || 'default'}`,
   async () => {
     const { origin, currency, type } = route.params
@@ -621,7 +724,6 @@ const {
     if (Number.isNaN(period) || ![3, 6, 12, 24].includes(period)) {
       period = 6 // Default to 6 months if invalid
     }
-    console.log('period', period, route.params)
 
     return await withLoading(async () => {
       const result = await getEvolutionData(
@@ -665,6 +767,103 @@ const exchangeHouseName = computed(() => {
 // Currency codes (usd/eur/brl/ars/xau…) read better uppercased in the title,
 // H1 and breadcrumb ("BROU USD hoy" not "BROU usd hoy").
 const currencyName = computed(() => String(route.params.currency ?? '').toUpperCase())
+
+// This route serves USD, EUR, BRL, ARS, XAU… so the H1 and the answer sentence
+// must name the actual currency ("el dólar", "o real"), never a hardcoded one.
+const currencyLabel = computed(() => {
+  const code = currencyFromSlug(String(route.params.currency ?? ''))
+  if (!code) return currencyName.value
+  return currencyDisplayName(code, locale.value as CurrencyLang)
+})
+
+// The facts the SSR answer block states, or null when the payload is incomplete
+// — in which case the page renders its generic copy instead of a partial rate.
+// Built from the evolution ROWS of a single rate type, not the API's
+// `statistics`: /evolution/brou/USD interleaves eBROU and plain rows, so
+// `statistics.current` is whichever type sorts last (eBROU's 40,90) while
+// /casa/brou shows the walk-in 41,40 — the same casa, two rates. Falls back to
+// `statistics` when the payload has no rows to select from.
+const answerFacts = computed(() => {
+  const payload = evolutionData.value as {
+    statistics?: EvolutionStatistics
+    evolution?: EvolutionRow[]
+  } | null
+  const rows = payload?.evolution
+  const periodMonths = payload?.statistics?.dateRange?.periodMonths
+  const fromRows = rows?.length
+    ? factsFromRows(rows, route.params.type as string | undefined, periodMonths)
+    : null
+  return fromRows ?? rateAnswerFacts(payload?.statistics)
+})
+
+/** Render an ISO date as `DD/MM/AAAA` in Montevideo. */
+const formatDay = (iso: string) =>
+  new Date(iso).toLocaleDateString(localeTag.value, {
+    timeZone: 'America/Montevideo',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  })
+
+/** The most recent date in the series, as `DD/MM/AAAA` in Montevideo. */
+const asOfDate = computed(() => (answerFacts.value ? formatDay(answerFacts.value.asOf) : ''))
+
+// Records over the selected period, from this casa's sell prices for the ONE
+// rate type the page is about. `sanitizeSeries` drops decimal-shift artefacts
+// first: a scraper glitch must never be published as "el máximo del período" on
+// a finance page. Unique per casa and per currency, which is the point — the
+// thin, near-identical templates are what Google declined to index.
+const sellSeries = computed(() => {
+  const rows = (evolutionData.value as { evolution?: EvolutionRow[] } | null)?.evolution ?? []
+  const typed = selectTypeRows(rows, route.params.type as string | undefined)
+  return sanitizeSeries(
+    typed
+      .map(r => ({ date: r.date, value: r.sell }))
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+  )
+})
+
+const periodRecords = computed(() => {
+  const series = sellSeries.value
+  // Two points cannot establish a record worth publishing.
+  if (series.length < 3) return null
+  const records = computeRecords(series)
+  if (!records.max || !records.min) return null
+  return {
+    max: records.max,
+    min: records.min,
+    streak: computeStreak(series),
+    biggest: biggestMove(series),
+    daysSinceHigh: daysSinceHigh(series),
+  }
+})
+
+/** "subió 3 días seguidos" / "bajó 2 días seguidos" / "" when flat. */
+const streakSentence = computed(() => {
+  const r = periodRecords.value
+  if (!r || r.streak.direction === 'flat' || r.streak.days < 1) return ''
+  return t(r.streak.direction === 'up' ? 'records.streakUp' : 'records.streakDown', {
+    days: r.streak.days,
+  })
+})
+
+// The answer sentence, server-rendered as plain text above the chart. Built from
+// i18n params so es/en/pt all read naturally.
+const answerSentence = computed(() => {
+  const f = answerFacts.value
+  if (!f) return ''
+  return t('historical.answer', {
+    currency: currencyLabel.value,
+    origin: exchangeHouseName.value,
+    date: asOfDate.value,
+    sell: formatRate(f.sell, localeTag.value),
+    buy: formatRate(f.buy, localeTag.value),
+    months: f.periodMonths,
+    change: formatChangePct(f.changePct, localeTag.value),
+    max: formatRate(f.maxSell, localeTag.value),
+    min: formatRate(f.minSell, localeTag.value),
+  })
+})
 
 // Computed properties
 const tableData = computed(() => {
@@ -933,33 +1132,43 @@ const getSellColor = (value: number): string => {
 }
 
 // SEO Configuration with dynamic values
+// Lead the snippet with this casa's actual numbers — the rate is what the query
+// asked for. The rate lives in the description, never the <title>: a title is
+// cached in the SERP for weeks and would go stale, while Google refreshes a
+// description. Falls back to the generic sentence when the payload is short.
+const seoDescription = computed(() => {
+  const f = answerFacts.value
+  if (!f) {
+    return t('seo.historicalDetailDescription', {
+      origin: exchangeHouseName.value,
+      currency: currencyName.value,
+    })
+  }
+  return t('seo.historicalDetailDescriptionLive', {
+    origin: exchangeHouseName.value,
+    currency: currencyLabel.value,
+    sell: formatRate(f.sell, localeTag.value),
+    buy: formatRate(f.buy, localeTag.value),
+  })
+})
+
 useSeoMeta({
   title: () =>
     t('seo.historicalDetailTitle', {
       origin: exchangeHouseName.value,
       currency: currencyName.value,
     }),
-  description: () =>
-    t('seo.historicalDetailDescription', {
-      origin: exchangeHouseName.value,
-      currency: currencyName.value,
-    }),
+  description: () => seoDescription.value,
   keywords: () => t('seo.historicalDetailKeywords'),
   ogTitle: () =>
     t('seo.historicalDetailTitle', {
       origin: exchangeHouseName.value,
       currency: currencyName.value,
     }),
-  ogDescription: () =>
-    t('seo.historicalDetailDescription', {
-      origin: exchangeHouseName.value,
-      currency: currencyName.value,
-    }),
+  ogDescription: () => seoDescription.value,
   ogType: 'website',
-  ogUrl: () =>
-    `https://cambio-uruguay.com/historico/${route.params.origin}/${route.params.currency}${
-      route.params.type ? '/' + route.params.type : ''
-    }`,
+  // Matches <link rel=canonical>: a type variant shares the base page's og:url.
+  ogUrl: () => historicalCanonical.value,
   twitterCard: 'summary_large_image',
   twitterTitle: () =>
     t('seo.historicalDetailTitle', {
@@ -996,15 +1205,32 @@ defineOgImageComponent('Cambio', {
   locale: locale.value as 'es' | 'en' | 'pt',
 })
 
-// BreadcrumbList structured data so Search shows the Inicio > Histórico > casa >
-// moneda trail and understands the page hierarchy.
+// The one URL that represents this page. BILLETE/CABLE/INTERBANCARIO are
+// alternate views of the same series and fold into the base, so Google
+// consolidates their signals instead of splitting them across near-duplicates;
+// eBROU is a distinct product and stays self-canonical.
+//
+// Used for <link rel=canonical>, og:url, the BreadcrumbList trail and the
+// Dataset url, so structured data never points somewhere the canonical does not.
 const historicalCanonical = computed(
   () =>
-    `https://cambio-uruguay.com/historico/${route.params.origin}/${route.params.currency}${
-      route.params.type ? '/' + route.params.type : ''
-    }`
+    `https://cambio-uruguay.com${historyDetailCanonicalPath(
+      String(route.params.origin),
+      String(route.params.currency),
+      route.params.type as string | undefined
+    )}`
 )
 useHead(() => ({
+  // Overrides the self-canonical that @nuxtjs/i18n's useLocaleHead emits from
+  // the layout — it keys the tag `i18n-can`, so reuse that key or both render.
+  link: [
+    {
+      key: 'i18n-can',
+      hid: 'i18n-can',
+      rel: 'canonical',
+      href: historicalCanonical.value,
+    },
+  ],
   script: [
     {
       type: 'application/ld+json',
@@ -1140,5 +1366,46 @@ useHead(() => ({
   backdrop-filter: blur(10px);
   background: rgba(255, 255, 255, 0.15) !important;
   border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* The generic "Histórico de Cotizaciones" label above the H1. It used to BE the
+   h2; it is now a plain paragraph so the casa+currency line can be the h1. */
+.cu-eyebrow {
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+/* The server-rendered answer paragraph. Plain text on purpose: no chart, no
+   accordion — this is what a snippet and an AI crawler read. */
+.cu-answer {
+  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+.cu-answer time {
+  white-space: nowrap;
+}
+
+/* Records grid. Colours inherit so both themes stay AA without a re-skin — the
+   light-mode axe sweep fails any hardcoded white surface. */
+.cu-records {
+  display: grid;
+  gap: 0.75rem 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  margin: 0;
+}
+
+.cu-record dt {
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+  opacity: 0.75;
+  text-transform: uppercase;
+}
+
+.cu-record dd {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
 }
 </style>

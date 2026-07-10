@@ -197,7 +197,8 @@
     "toggleTheme": "Cambiar tema claro/oscuro",
     "primaryNav": "Navegación principal",
     "unmute": "Activar sonido",
-    "mute": "Silenciar"
+    "mute": "Silenciar",
+    "changeLanguage": "Cambiar idioma"
   },
   "theme": {
     "label": "Tema",
@@ -607,7 +608,10 @@
       "noAiAnalysis": "No hay análisis de IA disponible hoy para esta moneda.",
       "noExternalForecasts": "No se encontraron pronósticos publicados recientes para esta moneda.",
       "selectOneCurrency": "Seleccioná una sola moneda para ver el análisis de tendencia."
-    }
+    },
+    "heading": "Cotización del {currency} en {origin} hoy e histórico",
+    "answer": "Hoy {date}, el {currency} en {origin} cotiza a ${sell} venta y ${buy} compra. En los últimos {months} meses varió {change} %; máximo del período ${max}, mínimo ${min}.",
+    "asOf": "Datos al {date}."
   },
   "pwa": {
     "retry": "Reintentar",
@@ -657,7 +661,7 @@
     "historicalTitle": "Histórico de cotizaciones del dólar en Uruguay",
     "historicalDescription": "Consulta el historial completo de cotizaciones de todas las casas de cambio en Uruguay. Datos actualizados en tiempo real.",
     "historicalKeywords": "historial cotizaciones, cambio uruguay, histórico precios, casas cambio uruguay",
-    "historicalOriginTitle": "{origin}: cotización del dólar hoy e histórico",
+    "historicalOriginTitle": "Cotizaciones históricas de {origin}",
     "historicalOriginDescription": "Consulta todas las cotizaciones actuales e históricas de {origin}. Precios de compra y venta actualizados en tiempo real.",
     "historicalOriginKeywords": "cotizaciones casa cambio, cambio divisas uruguay, precios cambio uruguay",
     "historicalDetailTitle": "{origin} {currency} hoy: cotización y evolución",
@@ -666,7 +670,7 @@
     "offlineTitle": "Sin Conexión - Cambio Uruguay",
     "offlineDescription": "No hay conexión a internet. Verifica tu conexión para acceder a las cotizaciones de cambio.",
     "offlineKeywords": "sin conexión, offline, cambio uruguay",
-    "sucursalesTitle": "{origin}: sucursales, horarios y cotización",
+    "sucursalesTitle": "Sucursales y horarios de {origin}",
     "sucursalesDescription": "Encuentra todas las sucursales de {origin} en Uruguay. Direcciones, teléfonos, horarios y ubicaciones completas.",
     "sucursalesLocationDescription": "Sucursales de {origin} en {location}. Direcciones, teléfonos, horarios y ubicaciones en {location}, Uruguay.",
     "sucursalesKeywords": "sucursales {origin}, direcciones {origin}, ubicaciones {origin}, casas de cambio uruguay",
@@ -679,7 +683,8 @@
     "mapaTitle": "Mapa de casas de cambio en Uruguay | Cambio Uruguay",
     "mapaDescription": "Mapa interactivo de casas de cambio en Uruguay. Encontrá la sucursal más cercana y la mejor cotización del dólar a tu alrededor.",
     "nearbyCasasTitle": "Mejor Casa de Cambio Cerca de Mí en Uruguay | Cambio Uruguay",
-    "nearbyCasasDescription": "Encontrá la casa de cambio real más cercana con mejor cotización y reseñas. Navegá directo con Google Maps o Waze. Sin bancos ni fintech."
+    "nearbyCasasDescription": "Encontrá la casa de cambio real más cercana con mejor cotización y reseñas. Navegá directo con Google Maps o Waze. Sin bancos ni fintech.",
+    "historicalDetailDescriptionLive": "{currency} en {origin} hoy: venta ${sell}, compra ${buy}. Evolución, gráfico y récords. Compará con 40+ casas de cambio de Uruguay."
   },
   "dolarDepto": {
     "h1": "Dólar en {department} hoy",
@@ -757,7 +762,9 @@
     "ctaDirectorio": "Comparativa de casas de cambio",
     "metaTitle": "{casa}: cotización dólar hoy, sucursales y opiniones",
     "metaDescription": "Cotización del dólar y otras monedas en {casa} hoy. Compará el precio de compra y venta, actualizado automáticamente en Cambio Uruguay.",
-    "ogSubtitle": "Cotización del dólar hoy"
+    "ogSubtitle": "Cotización del dólar hoy",
+    "metaDescriptionLive": "Dólar en {casa} hoy: compra ${buy}, venta ${sell}. Sucursales, horarios, opiniones y cotización de todas las monedas.",
+    "fromHistorico": "Sucursales, opiniones y todas las monedas de {casa}"
   },
   "topBestRates": "Mejores 4 Cotizaciones",
   "buying": "Compro",
@@ -1082,7 +1089,12 @@
     "driversHint": "Correlación de los retornos diarios en la ventana disponible. No implica causalidad.",
     "noData": "sin datos",
     "sampleSize": "{n} días",
-    "strength": { "fuerte": "fuerte", "moderada": "moderada", "debil": "débil", "casiNula": "casi nula" },
+    "strength": {
+      "fuerte": "fuerte",
+      "moderada": "moderada",
+      "debil": "débil",
+      "casiNula": "casi nula"
+    },
     "timelineTitle": "Saltos notables y su contexto",
     "timelineSelectMove": "Ver detalle del movimiento del",
     "timelineAttribution": "Ese día se movieron:",
@@ -1192,7 +1204,8 @@
     "inversiones": "Inversiones en Uruguay",
     "sitemap": "Mapa del sitio",
     "twitter": "Twitter",
-    "linkedin": "Acerca del autor"
+    "linkedin": "Acerca del autor",
+    "mejorCasa": "Mejor casa de cambio"
   },
   "sitemapPage": {
     "h1": "Mapa del sitio de Cambio Uruguay",
@@ -1206,5 +1219,34 @@
     "write": "Escribir una reseña",
     "seeAll": "Ver todas las reseñas en Trustpilot",
     "a11yRegion": "Reseñas de clientes en Trustpilot"
+  },
+  "home": {
+    "casaHubsTitle": "Casas de cambio y bancos de Uruguay",
+    "casaHubsSubtitle": "Cotización de hoy, sucursales, horarios y opiniones de cada casa.",
+    "casaHubAnchor": "{casa}: cotización y sucursales hoy"
+  },
+  "records": {
+    "max": "Máximo del período",
+    "min": "Mínimo del período",
+    "biggestMove": "Mayor salto en un día",
+    "daysSinceHigh": "Desde el máximo",
+    "days": "{days} días",
+    "streakUp": "Viene subiendo {days} días seguidos.",
+    "streakDown": "Viene bajando {days} días seguidos."
+  },
+  "mejorCasa": {
+    "h1": "¿Dónde conviene cambiar dólares hoy en Uruguay?",
+    "subtitle": "Comparamos las casas de cambio y bancos del país para decirte cuál paga mejor hoy.",
+    "metaTitle": "Mejor casa de cambio hoy en Uruguay: dólar más barato",
+    "metaDescription": "Hoy la casa más barata para comprar dólares es {casa} a ${rate}. Compará las 40+ casas y ahorrá ${savings} frente al promedio del mercado.",
+    "metaDescriptionGeneric": "Compará el precio del dólar en más de 40 casas de cambio y bancos de Uruguay y descubrí dónde conviene cambiar hoy.",
+    "answer": "Hoy, la casa más barata para comprar dólares es {casa}, que los vende a ${rate}. Comprando US$ 1.000 ahí ahorrás unos ${savings} frente al promedio de las {count} casas de cambio y bancos que comparamos.",
+    "average": "El promedio del mercado es ${average}.",
+    "asOf": "Datos al {date}.",
+    "colCasa": "Casa de cambio",
+    "colRate": "Venta",
+    "colSavings": "Ahorro vs. promedio",
+    "methodology": "Ranking por precio de venta del dólar (lo que pagás por cada US$ 1). El ahorro compara el total de comprar US$ {amount} en esa casa contra hacerlo al promedio del mercado. Se excluyen la cotización de referencia del BCU y las cotizaciones interbancarias, que no están disponibles al público.",
+    "noData": "No hay cotizaciones disponibles en este momento."
   }
 }
