@@ -127,6 +127,7 @@
 const { authFetch } = useAuthFetch()
 const { enablePush } = usePushNotifications()
 const { t } = useI18n()
+const track = useTrack()
 
 const currencies = ['USD', 'EUR', 'BRL', 'ARS']
 const ops = ['<', '>', '<=', '>=']
@@ -166,6 +167,15 @@ async function create() {
         target: form.target,
         channels: { push: form.push, email: form.email, telegram: form.telegram },
       },
+    })
+    // A GA4 key event. Emitted only after the POST resolves, so a failed create
+    // never counts as a conversion. The payload mirrors the alert itself — it is
+    // not per-casa, because an alert watches the best rate across all of them.
+    track('alert_created', {
+      currency: form.currency,
+      kind: form.kind,
+      op: form.op,
+      target: form.target,
     })
     await load()
   } finally {
