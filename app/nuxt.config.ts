@@ -270,6 +270,11 @@ export default defineNuxtConfig({
         driver: 'fs',
         base: './.data/casas-reviews',
       },
+      // Durable store for the live cost-of-living figures (costs:daily).
+      costs: {
+        driver: 'fs',
+        base: './.data/costs',
+      },
     },
     experimental: {
       wasm: true,
@@ -282,6 +287,8 @@ export default defineNuxtConfig({
       '20 9 * * *': ['predictions:daily'],
       // 09:30 UTC ≈ 06:30 Uruguay: generate the day's blog posts.
       '30 9 * * *': ['blog:daily'],
+      // 09:40 UTC ≈ 06:40 Uruguay: refresh live cost-of-living figures via Gemini.
+      '40 9 * * *': ['costs:daily'],
       // 12:00 UTC = 09:00 Uruguay: send the daily newsletter to confirmed subs.
       '0 12 * * *': ['newsletter:daily'],
       // Every 10 minutes: evaluate rate alerts and notify (push + email + telegram).

@@ -136,6 +136,23 @@ export const tools: readonly Tool[] = [
     ],
   },
   {
+    slug: 'costo-de-vida',
+    title: 'Calculadora de costo de vida y presupuesto en Uruguay',
+    description:
+      'Descubrí cuánto necesitás para vivir solo, en pareja o compartiendo, alquilando en Montevideo o el interior. Ingresá tu sueldo y mirá un presupuesto realista, con un veredicto honesto de si te alcanza.',
+    icon: 'mdi-home-search-outline',
+    category: 'finanzas',
+    keywords: [
+      'costo de vida uruguay',
+      'cuánto necesito para vivir solo',
+      'presupuesto mensual uruguay',
+      'vivir solo montevideo sueldo',
+      'calculadora de gastos',
+      'independizarse uruguay',
+      'cuánto sale alquilar',
+    ],
+  },
+  {
     slug: 'calculadora-aguinaldo',
     title: 'Calculadora de aguinaldo en Uruguay',
     description:
