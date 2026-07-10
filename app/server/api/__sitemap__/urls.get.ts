@@ -1,71 +1,154 @@
-import { listCurrencySlugs } from '../../../utils/currencyPages'
-import { listIndicatorSlugs } from '../../../utils/indicators'
-import { guideSlugs } from '../../../utils/guides'
-import { toolSlugs } from '../../../utils/tools'
-import { glossarySlugs } from '../../../utils/glossary'
 import { convertSlugs } from '../../../utils/convert'
+import { listCurrencySlugs } from '../../../utils/currencyPages'
+import { glossarySlugs } from '../../../utils/glossary'
+import { guideSlugs } from '../../../utils/guides'
+import { listIndicatorSlugs } from '../../../utils/indicators'
+import { NAV_SECTIONS, UNLISTED_ROUTES } from '../../../utils/siteNav'
+import { toolSlugs } from '../../../utils/tools'
 import { listPosts } from '../../utils/blog'
 
+interface SitemapUrl {
+  loc: string
+  lastmod?: string
+  changefreq?: string
+  priority?: number
+}
+
+const LOCALES = ['es', 'en', 'pt']
+const DEFAULT_LOCALE = 'es'
+
+/**
+ * Only submit per-casa currency-history pages for currencies with real search
+ * demand. Exotic pairs (gold, minor currencies × 36 casas) were pure index
+ * bloat — Google discovered but never indexed them, diluting crawl budget. The
+ * all-currency hub lives at /cotizacion/:moneda instead.
+ */
+const SITEMAP_CURRENCIES = new Set(['USD', 'EUR', 'BRL', 'ARS'])
+
+/**
+ * Build the sitemap URL set.
+ *
+ * The static backbone — every navigation route plus every catalogue slug — is
+ * assembled from `siteNav.ts` and the pure catalogues with no I/O, and is
+ * emitted whether or not the upstream API answers. Only the data-derived slices
+ * (per-casa history, sucursales, departments) depend on the API, so an outage
+ * costs those routes rather than the entire sitemap. This handler used to be one
+ * big try/catch that returned `[]` whenever api.cambio-uruguay.com hiccuped.
+ *
+ * Deriving the backbone from the navigation model also means a page can no
+ * longer be added to the site and forgotten here: /por-que-sube-el-dolar,
+ * /dolar/records, /casa-de-cambio-cerca-de-mi and /newsletter were all missing
+ * from the hand-written list this replaces.
+ */
 export default defineEventHandler(async _event => {
+  const urls: SitemapUrl[] = []
+
+  // Today (UTC) as the lastmod for live/dynamic pages whose data refreshes daily
+  // or faster — a freshness hint that helps crawlers (and AI) prioritise re-crawl.
+  const today = new Date().toISOString()
+
+  const addUrlsForAllLocales = (
+    path: string,
+    priority: number,
+    changefreq: string = 'daily',
+    lastmod?: string
+  ) => {
+    LOCALES.forEach(locale => {
+      const loc = locale === DEFAULT_LOCALE ? path : `/${locale}${path}`
+      urls.push({ loc, changefreq, priority, ...(lastmod ? { lastmod } : {}) })
+    })
+  }
+
+  // --- Static backbone: the navigation model is the source of truth ----------
+  // /estado carries `sitemapExclude` (ops dashboard, not search content), while
+  // /offline, /widget and /cuenta are absent from the model entirely (noindex).
+  for (const section of NAV_SECTIONS) {
+    for (const entry of section.entries) {
+      if (!entry.to || entry.sitemapExclude) continue
+      addUrlsForAllLocales(
+        entry.to,
+        entry.priority ?? 0.6,
+        entry.changefreq ?? 'weekly',
+        entry.fresh ? today : undefined
+      )
+    }
+  }
+
+  // Indexable pages that belong in no menu (the /buscar landing).
+  for (const route of UNLISTED_ROUTES) {
+    addUrlsForAllLocales(route.to, route.priority, route.changefreq)
+  }
+
+  // --- Catalogue long tail: pure data, no I/O -------------------------------
+  guideSlugs().forEach(slug => addUrlsForAllLocales(`/guias/${slug}`, 0.7, 'weekly'))
+  toolSlugs().forEach(slug => addUrlsForAllLocales(`/herramientas/${slug}`, 0.7, 'weekly'))
+  glossarySlugs().forEach(slug => addUrlsForAllLocales(`/glosario/${slug}`, 0.6, 'monthly'))
+  convertSlugs().forEach(slug => addUrlsForAllLocales(`/convertir/${slug}`, 0.6, 'weekly'))
+  listIndicatorSlugs().forEach(slug =>
+    addUrlsForAllLocales(`/indicadores/${slug}`, 0.7, 'daily', today)
+  )
+
+  // /cotizacion/:moneda — the four majors trade heavily (hourly); the rest (gold,
+  // thin regional currencies) move daily at most, so don't over-promise freshness.
+  const currencySlugs = listCurrencySlugs()
+  const majorCurrencySlugs = new Set(['dolar', 'euro', 'real', 'peso-argentino'])
+  currencySlugs.forEach(slug => {
+    const isMajor = majorCurrencySlugs.has(slug)
+    addUrlsForAllLocales(
+      `/cotizacion/${slug}`,
+      isMajor ? 0.8 : 0.7,
+      isMajor ? 'hourly' : 'daily',
+      today
+    )
+  })
+
+  const staticCount = urls.length
+
+  // --- Blog posts: server filesystem, independently fallible ----------------
+  // Default locale only — posts are Spanish-only, so we avoid duplicate-content
+  // URLs across locales.
   try {
-    // Fetch data from the API
+    const posts = await listPosts()
+    posts.forEach(post => {
+      urls.push({
+        loc: `/blog/${post.slug}`,
+        lastmod: post.createdAt,
+        changefreq: 'monthly',
+        priority: 0.6,
+      })
+    })
+  } catch (blogError) {
+    console.warn('Failed to add blog posts to sitemap:', blogError)
+  }
+
+  // --- API-derived routes: best effort --------------------------------------
+  try {
     const response = await $fetch('https://api.cambio-uruguay.com')
-    const data = response as Array<{
-      origin?: string
-      code?: string
-      type?: string
-    }>
+    const data = response as Array<{ origin?: string; code?: string; type?: string }>
 
-    // Fetch local data for sucursales routes
-    let localData: Record<
-      string,
-      {
-        name?: string
-        website?: string
-        maps?: string
-        bcu?: string
-        departments?: string[]
-      }
-    > = {}
-
+    let localData: Record<string, { departments?: string[] }> = {}
     try {
-      const localDataResponse = await $fetch('https://api.cambio-uruguay.com/localData')
-      localData = localDataResponse as typeof localData
+      localData = (await $fetch('https://api.cambio-uruguay.com/localData')) as typeof localData
     } catch (localDataError) {
       console.warn('Failed to fetch localData for sucursales routes:', localDataError)
       // Continue without sucursales routes if localData fails
     }
 
-    // Define supported locales
-    const locales = ['es', 'en', 'pt']
-    const defaultLocale = 'es'
-
-    // Extract unique origins, currencies, and types
     const origins = new Set<string>()
     const originCurrencyPairs = new Set<string>()
     const originTypePairs = new Set<string>()
 
-    // Only submit per-casa currency-history pages for currencies with real
-    // search demand. Exotic pairs (gold, minor currencies × 36 casas) were pure
-    // index bloat — Google discovered but never indexed them, diluting crawl
-    // budget. The all-currency hub lives at /cotizacion/:moneda instead.
-    const SITEMAP_CURRENCIES = new Set(['USD', 'EUR', 'BRL', 'ARS'])
-
     data.forEach(item => {
-      if (item.origin) {
-        origins.add(item.origin)
-
-        if (item.code && SITEMAP_CURRENCIES.has(item.code.toUpperCase())) {
-          originCurrencyPairs.add(`${item.origin}/${item.code}`)
-        }
-
-        if (item.type && item.type.trim() !== '') {
-          originTypePairs.add(`${item.origin}/${item.type}`)
-        }
+      if (!item.origin) return
+      origins.add(item.origin)
+      if (item.code && SITEMAP_CURRENCIES.has(item.code.toUpperCase())) {
+        originCurrencyPairs.add(`${item.origin}/${item.code}`)
+      }
+      if (item.type && item.type.trim() !== '') {
+        originTypePairs.add(`${item.origin}/${item.type}`)
       }
     })
 
-    // Extract sucursales data for sitemap
     const sucursalesOrigins = new Set<string>()
     const sucursalesLocationPairs = new Set<string>()
 
@@ -76,200 +159,54 @@ export default defineEventHandler(async _event => {
     const slugifyDepartment = (name: string): string =>
       name
         .normalize('NFD')
-        .replace(/[\u0300-\u036F]/g, '')
+        .replace(/\p{Diacritic}/gu, '')
         .toLowerCase()
         .trim()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-+|-+$/g, '')
 
-    Object.entries(localData).forEach(([origin, data]) => {
+    Object.entries(localData).forEach(([origin, house]) => {
       sucursalesOrigins.add(origin)
-
-      if (data.departments) {
-        data.departments.forEach(department => {
-          // Pass the raw department — the sitemap serializer URL-encodes the loc
-          // once. Pre-encoding here produced double-encoded URLs in the sitemap
-          // (e.g. "TREINTA%2520Y%2520TRES"), which Google never indexed.
-          sucursalesLocationPairs.add(`${origin}/${department}`)
-
-          const deptSlug = slugifyDepartment(department)
-          if (deptSlug) {
-            departmentSlugs.add(deptSlug)
-          }
-        })
-      }
-    })
-
-    const urls: Array<{
-      loc: string
-      lastmod?: string
-      changefreq?: string
-      priority?: number
-    }> = []
-
-    // Today (UTC) as the lastmod for live/dynamic pages whose data refreshes daily
-    // or faster — a freshness hint that helps crawlers (and AI) prioritise re-crawl.
-    const today = new Date().toISOString()
-
-    // Helper function to add URLs for all locales. `lastmod` is optional: pass it
-    // for pages backed by live data (rates, indicators) so they signal freshness.
-    const addUrlsForAllLocales = (
-      path: string,
-      priority: number,
-      changefreq: string = 'daily',
-      lastmod?: string
-    ) => {
-      locales.forEach(locale => {
-        const loc = locale === defaultLocale ? path : `/${locale}${path}`
-        urls.push({ loc, changefreq, priority, ...(lastmod ? { lastmod } : {}) })
+      house.departments?.forEach(department => {
+        // Pass the raw department — the sitemap serializer URL-encodes the loc
+        // once. Pre-encoding here produced double-encoded URLs in the sitemap
+        // (e.g. "TREINTA%2520Y%2520TRES"), which Google never indexed.
+        sucursalesLocationPairs.add(`${origin}/${department}`)
+        const deptSlug = slugifyDepartment(department)
+        if (deptSlug) departmentSlugs.add(deptSlug)
       })
-    }
-
-    // Add main URLs for all locales (live-data pages carry today's lastmod)
-    addUrlsForAllLocales('/', 1.0, 'hourly', today) // Home page - Cotización del dólar en Uruguay
-    addUrlsForAllLocales('/avanzado', 0.9, 'hourly', today) // Advanced comparator
-    addUrlsForAllLocales('/historico', 0.9, 'daily', today) // Historico main page
-    addUrlsForAllLocales('/sucursales', 0.9, 'daily') // Sucursales main page
-    addUrlsForAllLocales('/mapa', 0.8, 'weekly') // Interactive map of exchange houses
-    addUrlsForAllLocales('/retirar-efectivo-uruguay', 0.8, 'monthly') // Tourist cash-withdrawal guide
-    addUrlsForAllLocales('/noticias', 0.7, 'hourly', today) // Noticias del dólar (news)
-    addUrlsForAllLocales('/preguntas-frecuentes', 0.7, 'weekly') // FAQ hub
-    addUrlsForAllLocales('/comparar', 0.8, 'daily', today) // Compare exchange houses over time
-    addUrlsForAllLocales('/guias', 0.7, 'weekly') // Editorial guides hub
-    addUrlsForAllLocales('/herramientas', 0.8, 'weekly') // Tools / calculators hub
-    addUrlsForAllLocales('/couriers-uruguay', 0.7, 'weekly') // Couriers comparison guide
-    addUrlsForAllLocales('/casas-de-cambio', 0.8, 'weekly') // Exchange-house directory/comparison
-    addUrlsForAllLocales('/prestamos-uruguay', 0.7, 'weekly') // Loan directory comparison
-    addUrlsForAllLocales('/inversiones-uruguay', 0.7, 'weekly') // Investment options comparison guide
-    addUrlsForAllLocales('/glosario', 0.7, 'weekly') // Financial glossary hub
-    addUrlsForAllLocales('/convertir', 0.7, 'weekly') // Amount-conversion hub
-    addUrlsForAllLocales('/cotizacion', 0.8, 'hourly', today) // All-currencies cotización hub
-    addUrlsForAllLocales('/indicadores', 0.8, 'daily', today) // Economic indicators hub (UI, UR, BPC)
-    addUrlsForAllLocales('/blog', 0.8, 'daily') // AI daily blog hub
-    // /estado (scraper dashboard) intentionally NOT in the sitemap — it's an ops
-    // status page, not search content (kept out to save crawl budget).
-    addUrlsForAllLocales('/acerca', 0.6, 'monthly') // Methodology / about page
-    addUrlsForAllLocales('/privacidad', 0.4, 'yearly') // Privacy policy
-    addUrlsForAllLocales('/terminos', 0.4, 'yearly') // Terms of use
-    addUrlsForAllLocales('/contacto', 0.5, 'monthly') // Contact
-    addUrlsForAllLocales('/conectar', 0.6, 'monthly') // Channels hub (API, MCP, Telegram, Discord, newsletter)
-    addUrlsForAllLocales('/desarrolladores', 0.6, 'monthly') // Developer portal (Scalar API reference + open source)
-    // /offline (PWA fallback), /widget (embeddable), /cuenta (account) are
-    // deliberately excluded from the sitemap and noindex'd — not search content.
-
-    // Add /guias/:slug editorial guide routes for all locales
-    guideSlugs().forEach(slug => {
-      addUrlsForAllLocales(`/guias/${slug}`, 0.7, 'weekly')
     })
 
-    // Add /herramientas/:slug calculator routes for all locales
-    toolSlugs().forEach(slug => {
-      addUrlsForAllLocales(`/herramientas/${slug}`, 0.7, 'weekly')
-    })
-
-    // Add /glosario/:termino definition routes for all locales
-    glossarySlugs().forEach(slug => {
-      addUrlsForAllLocales(`/glosario/${slug}`, 0.6, 'monthly')
-    })
-
-    // Add /convertir/:slug amount-conversion routes for all locales
-    convertSlugs().forEach(slug => {
-      addUrlsForAllLocales(`/convertir/${slug}`, 0.6, 'weekly')
-    })
-
-    // Add /indicadores/:slug economic-indicator routes for all locales
-    listIndicatorSlugs().forEach(slug => {
-      addUrlsForAllLocales(`/indicadores/${slug}`, 0.7, 'daily', today)
-    })
-
-    // Add /blog/:slug AI daily-blog posts (default locale only — posts are
-    // Spanish-only, so we avoid duplicate-content URLs across locales).
-    try {
-      const posts = await listPosts()
-      posts.forEach(post => {
-        urls.push({
-          loc: `/blog/${post.slug}`,
-          lastmod: post.createdAt,
-          changefreq: 'monthly',
-          priority: 0.6,
-        })
-      })
-    } catch (blogError) {
-      console.warn('Failed to add blog posts to sitemap:', blogError)
-    }
-
-    // Add /historico/:origin routes for all locales
-    origins.forEach(origin => {
-      addUrlsForAllLocales(`/historico/${origin}`, 0.8, 'daily', today)
-    })
-
-    // Add /historico/:origin/:currency routes for all locales
-    originCurrencyPairs.forEach(pair => {
+    origins.forEach(origin => addUrlsForAllLocales(`/historico/${origin}`, 0.8, 'daily', today))
+    originCurrencyPairs.forEach(pair =>
       addUrlsForAllLocales(`/historico/${pair}`, 0.7, 'daily', today)
-    })
-
-    // Add /historico/:origin/:type routes for all locales
-    originTypePairs.forEach(pair => {
-      addUrlsForAllLocales(`/historico/${pair}`, 0.7, 'daily', today)
-    })
-
-    // Add /sucursales/:origin routes for all locales
-    sucursalesOrigins.forEach(origin => {
-      addUrlsForAllLocales(`/sucursales/${origin}`, 0.8)
-    })
-
-    // Add /sucursales/:origin/:location routes for all locales
-    sucursalesLocationPairs.forEach(pair => {
-      addUrlsForAllLocales(`/sucursales/${pair}`, 0.7)
-    })
-
-    // Add /dolar/:departamento programmatic-SEO routes for all locales
-    departmentSlugs.forEach(slug => {
-      addUrlsForAllLocales(`/dolar/${slug}`, 0.7, 'daily', today)
-    })
-
-    // Add /cotizacion/:moneda programmatic-SEO routes for all locales. The four
-    // majors trade heavily (hourly); the rest (gold, thin regional currencies)
-    // move daily at most, so don't over-promise freshness.
-    const currencySlugs = listCurrencySlugs()
-    const majorCurrencySlugs = new Set(['dolar', 'euro', 'real', 'peso-argentino'])
-    currencySlugs.forEach(slug => {
-      const isMajor = majorCurrencySlugs.has(slug)
-      addUrlsForAllLocales(
-        `/cotizacion/${slug}`,
-        isMajor ? 0.8 : 0.7,
-        isMajor ? 'hourly' : 'daily',
-        today
-      )
-    })
-
-    // Add /casa/:origin programmatic-SEO routes for all locales (origins come
-    // from localData keys, same source as the sucursales routes above).
-    sucursalesOrigins.forEach(origin => {
+    )
+    originTypePairs.forEach(pair => addUrlsForAllLocales(`/historico/${pair}`, 0.7, 'daily', today))
+    sucursalesOrigins.forEach(origin => addUrlsForAllLocales(`/sucursales/${origin}`, 0.8))
+    sucursalesLocationPairs.forEach(pair => addUrlsForAllLocales(`/sucursales/${pair}`, 0.7))
+    departmentSlugs.forEach(slug => addUrlsForAllLocales(`/dolar/${slug}`, 0.7, 'daily', today))
+    // /casa/:origin origins come from localData keys, same source as sucursales.
+    sucursalesOrigins.forEach(origin =>
       addUrlsForAllLocales(`/casa/${origin}`, 0.7, 'daily', today)
-    })
+    )
 
     console.log(
-      `Generated ${urls.length} sitemap URLs from API data:`,
-      `\n- Main exchange data: ${origins.size} origins`,
+      `Generated ${urls.length} sitemap URLs:`,
+      `\n- Static + catalogue: ${staticCount} URLs`,
       `\n- Historico origins: ${origins.size} routes`,
       `\n- Historico currency pairs: ${originCurrencyPairs.size} routes`,
       `\n- Historico type pairs: ${originTypePairs.size} routes`,
-      `\n- LocalData: ${Object.keys(localData).length} exchange houses`,
       `\n- Sucursales origins: ${sucursalesOrigins.size} routes`,
       `\n- Sucursales location pairs: ${sucursalesLocationPairs.size} routes`,
       `\n- Dolar department pages: ${departmentSlugs.size} routes`,
       `\n- Cotizacion currency pages: ${currencySlugs.length} routes`,
       `\n- Casa pages: ${sucursalesOrigins.size} routes`,
-      `\n- Editorial guides: ${guideSlugs().length} routes`,
-      `\n- Total across ${locales.length} locales: ${urls.length} URLs`
+      `\n- Total across ${LOCALES.length} locales: ${urls.length} URLs`
     )
-    return urls
   } catch (error) {
-    console.error('Error generating sitemap URLs from API:', error)
-    console.error(
-      'Failed to fetch from https://api.cambio-uruguay.com or https://api.cambio-uruguay.com/localData'
-    )
-    return []
+    console.error('Error adding API-derived sitemap URLs:', error)
+    console.error(`Serving the ${urls.length} static URLs without live data.`)
   }
+
+  return urls
 })

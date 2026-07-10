@@ -1105,5 +1105,76 @@
         "weak": "This indicator explains little of the dollar's movement in Uruguay."
       }
     }
+  },
+  "search": {
+    "triggerLabel": "Search",
+    "triggerHint": "Ctrl K",
+    "placeholder": "Search pages, tools, exchange houses…",
+    "ariaInput": "Search the site",
+    "ariaListbox": "Search results",
+    "close": "Close",
+    "recents": "Recent searches",
+    "clearRecents": "Clear",
+    "suggestions": "Suggestions",
+    "resultsCount": "{n} results",
+    "oneResult": "1 result",
+    "noResultsAria": "No results",
+    "empty": "No results found for “{q}”.",
+    "didYouMean": "Did you mean…?",
+    "seeAll": "See all results",
+    "browseSitemap": "Browse the sitemap",
+    "resultsFor": "Results for “{q}”",
+    "pageTitle": "Search Cambio Uruguay",
+    "pageIntro": "Find any page on the site: exchange rates, exchange houses, calculators, guides and glossary terms.",
+    "pageDescription": "Search Cambio Uruguay: find exchange rates, exchange houses, calculators, guides and definitions in one place.",
+    "section": {
+      "market": "Rates and market",
+      "houses": "Exchange houses",
+      "tools": "Converters and tools",
+      "learn": "Guides and learning",
+      "services": "Financial services",
+      "connect": "Data and connections",
+      "site": "Site"
+    },
+    "action": {
+      "theme": "Switch theme (current: {mode})",
+      "lang": "Switch language to {lang}"
+    },
+    "type": {
+      "page": "Page",
+      "tool": "Tool",
+      "currency": "Exchange rate",
+      "convert": "Conversion",
+      "glossary": "Glossary",
+      "guide": "Guide",
+      "indicator": "Indicator",
+      "casa": "Exchange house",
+      "action": "Action"
+    }
+  },
+  "nav": {
+    "herramientas": "Tools",
+    "convertir": "Convert",
+    "cotizacion": "Exchange rates",
+    "indicadores": "Indicators",
+    "glosario": "Glossary",
+    "blog": "Blog",
+    "retirar": "Withdraw cash",
+    "porQueSube": "Why does the dollar rise?",
+    "records": "Dollar records",
+    "casasDirectory": "Exchange houses",
+    "nearby": "Near me",
+    "couriers": "Couriers in Uruguay",
+    "prestamos": "Loans in Uruguay",
+    "inversiones": "Investing in Uruguay",
+    "sitemap": "Sitemap",
+    "twitter": "Twitter",
+    "linkedin": "About the author"
+  },
+  "sitemapPage": {
+    "h1": "Cambio Uruguay sitemap",
+    "intro": "Every page on the site, grouped by section: exchange rates, exchange houses, calculators, guides, glossary and more.",
+    "metaTitle": "Sitemap",
+    "metaDescription": "Complete index of Cambio Uruguay: exchange rates, exchange houses, calculators, conversions, guides, glossary and economic indicators."
   }
 }
