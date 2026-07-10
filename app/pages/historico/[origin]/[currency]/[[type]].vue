@@ -434,9 +434,11 @@ import { attributeMove } from '~/utils/attribution'
 import { historyDetailCanonicalPath } from '~/utils/historyCanonical'
 import { currencyDisplayName, currencyFromSlug, type CurrencyLang } from '~/utils/currencyPages'
 import {
+  factsFromRows,
   formatChangePct,
   formatRate,
   rateAnswerFacts,
+  type EvolutionRow,
   type EvolutionStatistics,
 } from '~/utils/rateAnswer'
 
@@ -728,9 +730,23 @@ const currencyLabel = computed(() => {
 
 // The facts the SSR answer block states, or null when the payload is incomplete
 // — in which case the page renders its generic copy instead of a partial rate.
-const answerFacts = computed(() =>
-  rateAnswerFacts((evolutionData.value as { statistics?: EvolutionStatistics } | null)?.statistics)
-)
+// Built from the evolution ROWS of a single rate type, not the API's
+// `statistics`: /evolution/brou/USD interleaves eBROU and plain rows, so
+// `statistics.current` is whichever type sorts last (eBROU's 40,90) while
+// /casa/brou shows the walk-in 41,40 — the same casa, two rates. Falls back to
+// `statistics` when the payload has no rows to select from.
+const answerFacts = computed(() => {
+  const payload = evolutionData.value as {
+    statistics?: EvolutionStatistics
+    evolution?: EvolutionRow[]
+  } | null
+  const rows = payload?.evolution
+  const periodMonths = payload?.statistics?.dateRange?.periodMonths
+  const fromRows = rows?.length
+    ? factsFromRows(rows, route.params.type as string | undefined, periodMonths)
+    : null
+  return fromRows ?? rateAnswerFacts(payload?.statistics)
+})
 
 /** The most recent date in the series, as `DD/MM/AAAA` in Montevideo. */
 const asOfDate = computed(() => {
