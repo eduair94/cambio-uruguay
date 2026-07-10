@@ -79,6 +79,10 @@ test('the whole reviews section is removed when the widget host is unreachable',
   await page.route('**trustpilot.checkleaked.com**', r => r.abort())
   await page.goto('/')
 
+  // Precondition: the section is server-rendered. Without this, toHaveCount(0)
+  // below would pass vacuously if the section stopped rendering at all.
+  await expect(page.locator('.reviews-section')).toHaveCount(1)
+
   // The section renders server-side, then removes itself once the probe fails
   // — but only after IntersectionWrapper reveals it. Several large sections
   // (AIInsights, WhereToChange, pillar-content, internal-links) sit between
@@ -113,7 +117,7 @@ test('the ecosystem strip renders safe external links', async ({ page }) => {
   await expect(strip.locator('a[href*="/api-reference"]')).toHaveCount(0)
 
   const external = strip.locator('a.ecosystem-link[target="_blank"]')
-  await expect(external).toHaveCount(EXTERNAL_COUNT) // external links + internal /desarrolladores
+  await expect(external).toHaveCount(EXTERNAL_COUNT) // only the external ones; the internal /desarrolladores link has no target
 
   for (let i = 0; i < EXTERNAL_COUNT; i++) {
     await expect(external.nth(i)).toHaveAttribute('rel', /noopener/)

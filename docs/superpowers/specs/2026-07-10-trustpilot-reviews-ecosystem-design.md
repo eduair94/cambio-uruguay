@@ -121,11 +121,41 @@ Do not add a `rating` key even "for future-proofing" — it silently does nothin
 </section>
 ```
 
-- `onMounted` → dynamic `import('trustpilot-iframe-widget')`, then `createTrustpilotWidget({ target: mount, ...buildWidgetConfig({ theme: applied, reducedMotion }), onReady, onError })`.
+- `IntersectionWrapper` only renders its slot (the `<div ref="mountEl">`) once the
+  section scrolls into view, so the ref arrives late. `watch(mountEl, ...)` fires
+  `mountWidget(el)` the moment it does — this, not `onMounted`, is what defers the
+  iframe past LCP and costs nothing on the home-page Lighthouse run.
+- `mountWidget` dynamically imports `trustpilot-iframe-widget/vanilla` — **never**
+  the root entry, which imports React and would break the build.
+- Before creating the widget, `mountWidget` awaits `probeWidgetReachable()` and
+  bails into `fail()` if it resolves false. This has to happen **before**
+  `createTrustpilotWidget`, not via `onReady`/`onError`: the library sets
+  `iframe.onload = onReady`, and browsers fire `load` even for a blocked or
+  failed navigation — the browser just loads an error document into the frame
+  and still fires it. `iframe.onerror` never fires for a blocked navigation
+  either, so `onError` never runs for this case. See "Error handling" below.
+- Once the probe passes, `mountWidget` arms `READY_TIMEOUT_MS` (8s) and calls
+  `createTrustpilotWidget({ target, ...buildWidgetConfig({ theme: applied,
+  reducedMotion }), onReady: clearReadyTimer, onError: fail })`. With the probe
+  already having ruled out a blocked/downed host, this timeout is now only a
+  backstop for "the widget mounted but never signalled ready for some other
+  reason."
+- `createTrustpilotWidget` is synchronous and can invoke `onError` from inside
+  its own constructor — before the return value is assigned to `widget`. So
+  right after it returns, `mountWidget` checks `if (unmounted || failed.value)
+  teardown()`, which releases a handle whose `onError` already fired
+  synchronously (otherwise `teardown()`'s `widget?.destroy()` would have
+  no-opped on a still-null `widget`).
 - `watch(applied)` (from `useThemeMode()`) → `widget.updateConfig({ theme })`, so the carousel follows the site's dark/light toggle.
-- `onBeforeUnmount` → `widget.destroy()`.
-- Reserved `min-height` on the mount div → zero CLS.
-- The iframe is only constructed once the section scrolls into view, so it costs nothing on LCP or the home-page Lighthouse run.
+- All teardown routes through one `teardown()` function (clears the ready timer,
+  calls `widget?.destroy()`, nulls `widget`). `onBeforeUnmount` calls it, but it
+  is **not** the only path in: the soft-fail below removes `.reviews-section` via
+  `v-if` on `failed` while the parent keeps this component mounted, so
+  `onBeforeUnmount` alone never runs on that path. `fail()` (called from the
+  probe, from `onError`, and from the `READY_TIMEOUT_MS` backstop) calls
+  `teardown()` itself before flipping `failed.value = true`, so the widget is
+  always released before the section disappears.
+- Reserved `min-height` on the mount div (`TRUSTPILOT_WIDGET_HEIGHT`) → zero CLS.
 
 The iframe already renders its own "Powered by Trustpilot" link to the public profile. Our "See all reviews" CTA is still worth having outside the frame, where it is styled and tracked.
 
@@ -150,8 +180,8 @@ Entries (all verified live):
 | `npm` | `https://www.npmjs.com/package/cambio-uruguay-mcp` | live, 156 dl/mo |
 | `mcp` | `https://mcp.cambio-uruguay.com` | `/health` → 200 |
 | `api` | `/desarrolladores` (internal) | canonical dev entry. **Do not link `/api-reference`** — it is robots-disallowed to avoid duplicate-content indexing |
-| `medium-es` | `https://cambio-uruguay.medium.com/c%C3%B3mo-saber-el-mejor-precio-del-d%C3%B3lar-en-uruguay-hoy-sin-recorrer-casas-de-cambio-27d3669d3839` | |
-| `medium-en` | `https://cambio-uruguay.medium.com/currency-exchange-in-uruguay-how-to-find-the-best-rate-before-you-trade-3a5fd46e3fc4` | |
+| `mediumEs` | `https://cambio-uruguay.medium.com/c%C3%B3mo-saber-el-mejor-precio-del-d%C3%B3lar-en-uruguay-hoy-sin-recorrer-casas-de-cambio-27d3669d3839` | |
+| `mediumEn` | `https://cambio-uruguay.medium.com/currency-exchange-in-uruguay-how-to-find-the-best-rate-before-you-trade-3a5fd46e3fc4` | |
 
 External links render `target="_blank" rel="noopener noreferrer"`. The internal one uses `localePath()`.
 

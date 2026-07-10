@@ -82,7 +82,11 @@ const localePath = useLocalePath()
   background: rgba(255, 255, 255, 0.12);
   border-color: rgba(255, 255, 255, 0.28);
   transform: translateY(-2px);
-  outline: none;
+}
+
+.ecosystem-link:focus-visible {
+  outline: 2px solid #7dd3fc;
+  outline-offset: 2px;
 }
 
 .ecosystem-icon {
@@ -99,6 +103,11 @@ const localePath = useLocalePath()
 .v-theme--light .ecosystem-link:focus-visible {
   background: #ffffff;
   border-color: rgba(37, 99, 235, 0.4);
+}
+
+.v-theme--light .ecosystem-link:focus-visible {
+  outline: 2px solid #1d4ed8;
+  outline-offset: 2px;
 }
 
 @media (max-width: 600px) {
