@@ -592,7 +592,10 @@
       "noAiAnalysis": "No AI analysis available today for this currency.",
       "noExternalForecasts": "No recent published forecasts found for this currency.",
       "selectOneCurrency": "Select a single currency to see the trend analysis."
-    }
+    },
+    "heading": "{currency} rate at {origin} today and historical chart",
+    "answer": "On {date}, the {currency} at {origin} trades at ${sell} sell and ${buy} buy. Over the last {months} months it moved {change} %; period high ${max}, low ${min}.",
+    "asOf": "Data as of {date}."
   },
   "pwa": {
     "retry": "Retry",
@@ -660,7 +663,8 @@
     "mapaTitle": "Map of exchange houses in Uruguay | Cambio Uruguay",
     "mapaDescription": "Interactive map of exchange houses in Uruguay. Find the nearest branch and the best US dollar rate around you.",
     "nearbyCasasTitle": "Best Exchange House Near Me in Uruguay | Cambio Uruguay",
-    "nearbyCasasDescription": "Find the closest real exchange house with the best rate and reviews. Navigate directly with Google Maps or Waze. No banks or fintechs."
+    "nearbyCasasDescription": "Find the closest real exchange house with the best rate and reviews. Navigate directly with Google Maps or Waze. No banks or fintechs.",
+    "historicalDetailDescriptionLive": "{currency} at {origin} today: sell ${sell}, buy ${buy}. Trend, chart and records. Compare 40+ exchange houses in Uruguay."
   },
   "dolarDepto": {
     "h1": "Dollar in {department} today",
@@ -1059,7 +1063,12 @@
     "driversHint": "Correlation of daily returns over the available window. Does not imply causation.",
     "noData": "no data",
     "sampleSize": "{n} days",
-    "strength": { "fuerte": "strong", "moderada": "moderate", "debil": "weak", "casiNula": "almost none" },
+    "strength": {
+      "fuerte": "strong",
+      "moderada": "moderate",
+      "debil": "weak",
+      "casiNula": "almost none"
+    },
     "timelineTitle": "Notable jumps and their context",
     "timelineSelectMove": "View move detail for",
     "timelineAttribution": "That day, these moved:",

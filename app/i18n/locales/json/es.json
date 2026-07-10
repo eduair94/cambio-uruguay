@@ -595,7 +595,10 @@
       "noAiAnalysis": "No hay análisis de IA disponible hoy para esta moneda.",
       "noExternalForecasts": "No se encontraron pronósticos publicados recientes para esta moneda.",
       "selectOneCurrency": "Seleccioná una sola moneda para ver el análisis de tendencia."
-    }
+    },
+    "heading": "Cotización del {currency} en {origin} hoy e histórico",
+    "answer": "Hoy {date}, el {currency} en {origin} cotiza a ${sell} venta y ${buy} compra. En los últimos {months} meses varió {change} %; máximo del período ${max}, mínimo ${min}.",
+    "asOf": "Datos al {date}."
   },
   "pwa": {
     "retry": "Reintentar",
@@ -667,7 +670,8 @@
     "mapaTitle": "Mapa de casas de cambio en Uruguay | Cambio Uruguay",
     "mapaDescription": "Mapa interactivo de casas de cambio en Uruguay. Encontrá la sucursal más cercana y la mejor cotización del dólar a tu alrededor.",
     "nearbyCasasTitle": "Mejor Casa de Cambio Cerca de Mí en Uruguay | Cambio Uruguay",
-    "nearbyCasasDescription": "Encontrá la casa de cambio real más cercana con mejor cotización y reseñas. Navegá directo con Google Maps o Waze. Sin bancos ni fintech."
+    "nearbyCasasDescription": "Encontrá la casa de cambio real más cercana con mejor cotización y reseñas. Navegá directo con Google Maps o Waze. Sin bancos ni fintech.",
+    "historicalDetailDescriptionLive": "{currency} en {origin} hoy: venta ${sell}, compra ${buy}. Evolución, gráfico y récords. Compará con 40+ casas de cambio de Uruguay."
   },
   "dolarDepto": {
     "h1": "Dólar en {department} hoy",
@@ -1070,7 +1074,12 @@
     "driversHint": "Correlación de los retornos diarios en la ventana disponible. No implica causalidad.",
     "noData": "sin datos",
     "sampleSize": "{n} días",
-    "strength": { "fuerte": "fuerte", "moderada": "moderada", "debil": "débil", "casiNula": "casi nula" },
+    "strength": {
+      "fuerte": "fuerte",
+      "moderada": "moderada",
+      "debil": "débil",
+      "casiNula": "casi nula"
+    },
     "timelineTitle": "Saltos notables y su contexto",
     "timelineSelectMove": "Ver detalle del movimiento del",
     "timelineAttribution": "Ese día se movieron:",

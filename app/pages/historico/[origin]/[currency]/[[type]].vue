@@ -12,13 +12,18 @@
                     <v-icon size="32" color="primary">mdi-bank</v-icon>
                   </v-avatar>
                   <div>
-                    <h2 class="text-h6 text-sm-h5 text-md-h4 font-weight-bold text-white">
+                    <p class="cu-eyebrow text-grey-lighten-2 mb-1">
                       📈 {{ $t('historicoCotizaciones') }}
-                    </h2>
-                    <div class="d-flex flex-wrap ga-2 align-center">
-                      <h3 class="text-h6 text-md-h5 text-grey-lighten-2">
-                        {{ evolutionData.localData.name }}
-                      </h3>
+                    </p>
+                    <h1 class="text-h6 text-sm-h5 text-md-h4 font-weight-bold text-white">
+                      {{
+                        $t('historical.heading', {
+                          currency: currencyLabel,
+                          origin: exchangeHouseName,
+                        })
+                      }}
+                    </h1>
+                    <div class="d-flex flex-wrap ga-2 align-center mt-1">
                       <v-chip color="secondary" size="small">
                         {{ route.params.currency }}
                       </v-chip>
@@ -82,6 +87,19 @@
               </v-col>
             </v-row>
           </div>
+
+          <!-- The answer, in server-rendered plain text: the figure the search
+               query asked for, before any chart, selector or spinner. Suppressed
+               entirely when the payload is incomplete — a finance page states no
+               rate rather than a partial one. -->
+          <v-card-text v-if="answerFacts" class="cu-answer pa-4">
+            <p class="text-body-1 mb-0">
+              {{ answerSentence }}
+              <time :datetime="answerFacts.asOf" class="text-medium-emphasis">
+                {{ $t('historical.asOf', { date: asOfDate }) }}
+              </time>
+            </p>
+          </v-card-text>
 
           <!-- Additional Info Bar -->
           <v-card-text class="bg-grey-lighten-5 pa-4">
@@ -396,6 +414,13 @@ import { currencyFaqIds, type FaqItem } from '~/utils/faqAnswers'
 import { useDisplay } from 'vuetify/lib/composables/display.mjs'
 import { markPoints } from '~/utils/chartMoveMarkers'
 import { attributeMove } from '~/utils/attribution'
+import { currencyDisplayName, currencyFromSlug, type CurrencyLang } from '~/utils/currencyPages'
+import {
+  formatChangePct,
+  formatRate,
+  rateAnswerFacts,
+  type EvolutionStatistics,
+} from '~/utils/rateAnswer'
 
 const { smAndDown } = useDisplay()
 const { t } = useI18n()
@@ -477,6 +502,11 @@ const { withLoading } = useLoading()
 const { loading: aiLoading, error: aiError, insight: aiInsight, getTrendAnalysis } = useAIInsights()
 
 const { locale } = useI18n()
+
+/** BCP-47 tag for number/date formatting: the site's audience is Uruguay. */
+const localeTag = computed(() =>
+  locale.value?.startsWith('en') ? 'en-US' : locale.value?.startsWith('pt') ? 'pt-BR' : 'es-UY'
+)
 
 // Data-grounded FAQ for this currency (rate/buy/sell of route.params.currency),
 // rendered with its own scoped FAQPage JSON-LD via FaqBlock.
@@ -607,13 +637,18 @@ onBeforeMount(() => {
   }
 })
 
-// Server-side data fetching with asyncData
+// Blocking (not lazy) on purpose: this is the site's highest-impression
+// template, and with a lazy fetch the server rendered a spinner — the casa name,
+// the rate, the table and the whole header block sit behind `v-if="evolutionData"`.
+// Googlebot, AI crawlers and the SERP snippet saw none of it. The payload is one
+// small JSON document from an endpoint that is already cached upstream; the
+// heavy `/api/analysis` and `/api/drivers` overlays stay lazy below.
 const {
   data: evolutionData,
   error,
   pending: loading,
   refresh,
-} = await useLazyAsyncData(
+} = await useAsyncData(
   `evolution-${route.params.origin}-${route.params.currency}-${route.params.type || 'default'}`,
   async () => {
     const { origin, currency, type } = route.params
@@ -621,7 +656,6 @@ const {
     if (Number.isNaN(period) || ![3, 6, 12, 24].includes(period)) {
       period = 6 // Default to 6 months if invalid
     }
-    console.log('period', period, route.params)
 
     return await withLoading(async () => {
       const result = await getEvolutionData(
@@ -665,6 +699,49 @@ const exchangeHouseName = computed(() => {
 // Currency codes (usd/eur/brl/ars/xau…) read better uppercased in the title,
 // H1 and breadcrumb ("BROU USD hoy" not "BROU usd hoy").
 const currencyName = computed(() => String(route.params.currency ?? '').toUpperCase())
+
+// This route serves USD, EUR, BRL, ARS, XAU… so the H1 and the answer sentence
+// must name the actual currency ("el dólar", "o real"), never a hardcoded one.
+const currencyLabel = computed(() => {
+  const code = currencyFromSlug(String(route.params.currency ?? ''))
+  if (!code) return currencyName.value
+  return currencyDisplayName(code, locale.value as CurrencyLang)
+})
+
+// The facts the SSR answer block states, or null when the payload is incomplete
+// — in which case the page renders its generic copy instead of a partial rate.
+const answerFacts = computed(() =>
+  rateAnswerFacts((evolutionData.value as { statistics?: EvolutionStatistics } | null)?.statistics)
+)
+
+/** The most recent date in the series, as `DD/MM/AAAA` in Montevideo. */
+const asOfDate = computed(() => {
+  if (!answerFacts.value) return ''
+  return new Date(answerFacts.value.asOf).toLocaleDateString(localeTag.value, {
+    timeZone: 'America/Montevideo',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  })
+})
+
+// The answer sentence, server-rendered as plain text above the chart. Built from
+// i18n params so es/en/pt all read naturally.
+const answerSentence = computed(() => {
+  const f = answerFacts.value
+  if (!f) return ''
+  return t('historical.answer', {
+    currency: currencyLabel.value,
+    origin: exchangeHouseName.value,
+    date: asOfDate.value,
+    sell: formatRate(f.sell, localeTag.value),
+    buy: formatRate(f.buy, localeTag.value),
+    months: f.periodMonths,
+    change: formatChangePct(f.changePct, localeTag.value),
+    max: formatRate(f.maxSell, localeTag.value),
+    min: formatRate(f.minSell, localeTag.value),
+  })
+})
 
 // Computed properties
 const tableData = computed(() => {
@@ -933,28 +1010,40 @@ const getSellColor = (value: number): string => {
 }
 
 // SEO Configuration with dynamic values
+// Lead the snippet with this casa's actual numbers — the rate is what the query
+// asked for. The rate lives in the description, never the <title>: a title is
+// cached in the SERP for weeks and would go stale, while Google refreshes a
+// description. Falls back to the generic sentence when the payload is short.
+const seoDescription = computed(() => {
+  const f = answerFacts.value
+  if (!f) {
+    return t('seo.historicalDetailDescription', {
+      origin: exchangeHouseName.value,
+      currency: currencyName.value,
+    })
+  }
+  return t('seo.historicalDetailDescriptionLive', {
+    origin: exchangeHouseName.value,
+    currency: currencyLabel.value,
+    sell: formatRate(f.sell, localeTag.value),
+    buy: formatRate(f.buy, localeTag.value),
+  })
+})
+
 useSeoMeta({
   title: () =>
     t('seo.historicalDetailTitle', {
       origin: exchangeHouseName.value,
       currency: currencyName.value,
     }),
-  description: () =>
-    t('seo.historicalDetailDescription', {
-      origin: exchangeHouseName.value,
-      currency: currencyName.value,
-    }),
+  description: () => seoDescription.value,
   keywords: () => t('seo.historicalDetailKeywords'),
   ogTitle: () =>
     t('seo.historicalDetailTitle', {
       origin: exchangeHouseName.value,
       currency: currencyName.value,
     }),
-  ogDescription: () =>
-    t('seo.historicalDetailDescription', {
-      origin: exchangeHouseName.value,
-      currency: currencyName.value,
-    }),
+  ogDescription: () => seoDescription.value,
   ogType: 'website',
   ogUrl: () =>
     `https://cambio-uruguay.com/historico/${route.params.origin}/${route.params.currency}${
@@ -1140,5 +1229,24 @@ useHead(() => ({
   backdrop-filter: blur(10px);
   background: rgba(255, 255, 255, 0.15) !important;
   border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* The generic "Histórico de Cotizaciones" label above the H1. It used to BE the
+   h2; it is now a plain paragraph so the casa+currency line can be the h1. */
+.cu-eyebrow {
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+/* The server-rendered answer paragraph. Plain text on purpose: no chart, no
+   accordion — this is what a snippet and an AI crawler read. */
+.cu-answer {
+  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+.cu-answer time {
+  white-space: nowrap;
 }
 </style>
