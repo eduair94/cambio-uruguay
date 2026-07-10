@@ -2,7 +2,7 @@
 // last-updated timestamp. Cached briefly at the edge. Lazy bootstrap: if rates were never scraped or
 // the last scrape is badly stale (> 2 days), refresh once on demand; scrape failures fall back to the
 // seed catalogue.
-import { scrapeAllLenderRates } from '../utils/loanScraper'
+import { refreshAllLenderRates } from '../utils/loanRateRefresh'
 import {
   applyLoanScrapeResults,
   getMergedLenders,
@@ -17,7 +17,7 @@ export default defineCachedEventHandler(
     const stale = !last || Date.now() - new Date(last).getTime() > STALE_MS
     if (stale) {
       try {
-        await applyLoanScrapeResults(await scrapeAllLenderRates())
+        await applyLoanScrapeResults(await refreshAllLenderRates())
       } catch {
         // keep seed / last-good values on any scrape error
       }
