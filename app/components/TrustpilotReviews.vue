@@ -119,7 +119,18 @@ async function mountWidget(target: HTMLElement) {
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   try {
     // The root entry imports React. Always the /vanilla subpath.
-    const { createTrustpilotWidget } = await import('trustpilot-iframe-widget/vanilla')
+    //
+    // The /vanilla subpath ships UMD (dist/vanilla.umd.js). Nuxt's production
+    // build collapses that to a DEFAULT-ONLY ESM export, so the named
+    // `createTrustpilotWidget` is `undefined` in prod — the destructure only
+    // worked in dev/unminified. Calling `undefined(...)` threw, the catch below
+    // swallowed it, and the whole section soft-failed on every production visit.
+    // Read the factory off `default` as well.
+    const mod = await import('trustpilot-iframe-widget/vanilla')
+    const createTrustpilotWidget =
+      mod.createTrustpilotWidget ??
+      (mod as { default?: typeof mod }).default?.createTrustpilotWidget
+    if (!createTrustpilotWidget) return fail()
     // The import is uncancellable; if we were torn down while it was in flight,
     // do not create a widget attached to an orphaned node with an unclearable timer.
     if (unmounted) return
