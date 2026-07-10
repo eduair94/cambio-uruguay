@@ -664,6 +664,10 @@ async function mountWidget(target: HTMLElement) {
       onReady: clearReadyTimer,
       onError: fail,
     })
+    // createTrustpilotWidget is synchronous and can invoke onError from inside the
+    // constructor — before this assignment lands, so teardown()'s destroy() would
+    // have no-opped on a still-null handle. Re-check and release the zombie.
+    if (unmounted || failed.value) teardown()
   } catch {
     // Chunk fetch blocked (ad-blockers routinely match "trustpilot"), or the
     // service is down. Either way: no section.
