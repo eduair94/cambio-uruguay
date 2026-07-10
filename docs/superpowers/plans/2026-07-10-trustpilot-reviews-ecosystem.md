@@ -621,6 +621,8 @@ const heightStyle = { minHeight: `${TRUSTPILOT_WIDGET_HEIGHT}px` }
 
 let widget: TrustpilotWidgetHandle | null = null
 let readyTimer: ReturnType<typeof setTimeout> | null = null
+let mounting = false
+let unmounted = false
 
 function clearReadyTimer() {
   if (readyTimer) {
@@ -629,17 +631,32 @@ function clearReadyTimer() {
   }
 }
 
-function fail() {
+// Single teardown path. The soft-fail below removes the section via `v-if`
+// WITHOUT unmounting this component (the parent still renders it), so
+// `onBeforeUnmount` alone never runs on that path — the widget's autoplay
+// interval and listeners would leak for the rest of the visit. Every exit
+// (fail, unmount) must route through here to actually release the widget.
+function teardown() {
   clearReadyTimer()
+  widget?.destroy()
+  widget = null
+}
+
+function fail() {
+  teardown()
   failed.value = true
 }
 
 async function mountWidget(target: HTMLElement) {
-  if (widget) return
+  if (widget || mounting || unmounted) return
+  mounting = true
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   try {
     // The root entry imports React. Always the /vanilla subpath.
     const { createTrustpilotWidget } = await import('trustpilot-iframe-widget/vanilla')
+    // The import is uncancellable; if we were torn down while it was in flight,
+    // do not create a widget attached to an orphaned node with an unclearable timer.
+    if (unmounted) return
     readyTimer = setTimeout(fail, READY_TIMEOUT_MS)
     widget = createTrustpilotWidget({
       target,
@@ -651,6 +668,8 @@ async function mountWidget(target: HTMLElement) {
     // Chunk fetch blocked (ad-blockers routinely match "trustpilot"), or the
     // service is down. Either way: no section.
     fail()
+  } finally {
+    mounting = false
   }
 }
 
@@ -663,9 +682,8 @@ watch(mountEl, el => {
 watch(applied, theme => widget?.updateConfig({ theme }))
 
 onBeforeUnmount(() => {
-  clearReadyTimer()
-  widget?.destroy()
-  widget = null
+  unmounted = true
+  teardown()
 })
 </script>
 
