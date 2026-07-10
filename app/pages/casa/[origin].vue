@@ -212,6 +212,11 @@ import { useDisplay } from 'vuetify/lib/composables/display.mjs'
 import type { ExchangeRate } from '~/types/api'
 import { slugifyDepartment, type LocalDataMap } from '~/utils/departments'
 import { ratesForOrigin, type CasaRate } from '~/utils/currencyPages'
+import { pickOriginRate } from '~/utils/rateSource'
+// Aliased: this page already has a local `formatRate` that renders a full
+// currency string ("$ 39,00"). The meta description wants the bare number, the
+// "$" being part of the sentence.
+import { formatRate as formatBareRate } from '~/utils/rateAnswer'
 
 const MAX_DEPARTMENTS = 8
 
@@ -256,6 +261,8 @@ interface CasaPageData {
   bcu: string
   rates: CasaRate[]
   departments: CasaDepartment[]
+  /** This casa's own USD quote, or null when it publishes none (e.g. BCU). */
+  usdToday: { buy: number; sell: number } | null
 }
 
 // Title-case an UPPERCASE department name for display (e.g. "CERRO LARGO" ->
@@ -282,12 +289,18 @@ const { data, pending } = await useAsyncData<CasaPageData | null>(
       .slice(0, MAX_DEPARTMENTS)
       .map(dep => ({ slug: slugifyDepartment(dep), title: titleCaseDepartment(dep) }))
 
+    // This casa's own USD quote, resolved server-side so the SERP snippet leads
+    // with the number the "cambio {casa}" query is really asking for. Only the
+    // two scalars cross into the hydration payload, not the market array.
+    const usd = pickOriginRate(rows, origin.value)
+
     return {
       name: entry.name && entry.name.trim() ? entry.name : origin.value,
       website: entry.website ?? '',
       bcu: entry.bcu ?? '',
       rates: ratesForOrigin(rows, origin.value),
       departments,
+      usdToday: usd ? { buy: usd.buy, sell: usd.sell } : null,
     }
   }
 )
@@ -331,17 +344,31 @@ defineOgImageComponent('Cambio', {
   tag: 'CASA',
 })
 
+// This page is the canonical hub for the "cambio {casa}" brand query, so its
+// snippet leads with the casa's own dollar rate. Falls back to the generic
+// sentence for the origins that publish no USD quote (BCU quotes UI/UR/UP only)
+// rather than borrowing another casa's number.
+const seoDescription = computed(() => {
+  const usd = data.value?.usdToday
+  if (!usd) return t('casaPage.metaDescription', { casa: casaName.value })
+  return t('casaPage.metaDescriptionLive', {
+    casa: casaName.value,
+    buy: formatBareRate(usd.buy),
+    sell: formatBareRate(usd.sell),
+  })
+})
+
 // SEO meta.
 useSeoMeta({
   title: () => t('casaPage.metaTitle', { casa: casaName.value }),
-  description: () => t('casaPage.metaDescription', { casa: casaName.value }),
+  description: () => seoDescription.value,
   ogTitle: () => t('casaPage.metaTitle', { casa: casaName.value }),
-  ogDescription: () => t('casaPage.metaDescription', { casa: casaName.value }),
+  ogDescription: () => seoDescription.value,
   ogType: 'website',
   ogUrl: () => canonicalUrl.value,
   twitterCard: 'summary_large_image',
   twitterTitle: () => t('casaPage.metaTitle', { casa: casaName.value }),
-  twitterDescription: () => t('casaPage.metaDescription', { casa: casaName.value }),
+  twitterDescription: () => seoDescription.value,
 })
 
 // FinancialService + BreadcrumbList JSON-LD for rich results.

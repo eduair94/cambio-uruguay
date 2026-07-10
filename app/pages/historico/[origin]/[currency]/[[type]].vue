@@ -414,6 +414,7 @@ import { currencyFaqIds, type FaqItem } from '~/utils/faqAnswers'
 import { useDisplay } from 'vuetify/lib/composables/display.mjs'
 import { markPoints } from '~/utils/chartMoveMarkers'
 import { attributeMove } from '~/utils/attribution'
+import { historyDetailCanonicalPath } from '~/utils/historyCanonical'
 import { currencyDisplayName, currencyFromSlug, type CurrencyLang } from '~/utils/currencyPages'
 import {
   formatChangePct,
@@ -1045,10 +1046,8 @@ useSeoMeta({
     }),
   ogDescription: () => seoDescription.value,
   ogType: 'website',
-  ogUrl: () =>
-    `https://cambio-uruguay.com/historico/${route.params.origin}/${route.params.currency}${
-      route.params.type ? '/' + route.params.type : ''
-    }`,
+  // Matches <link rel=canonical>: a type variant shares the base page's og:url.
+  ogUrl: () => historicalCanonical.value,
   twitterCard: 'summary_large_image',
   twitterTitle: () =>
     t('seo.historicalDetailTitle', {
@@ -1085,15 +1084,32 @@ defineOgImageComponent('Cambio', {
   locale: locale.value as 'es' | 'en' | 'pt',
 })
 
-// BreadcrumbList structured data so Search shows the Inicio > Histórico > casa >
-// moneda trail and understands the page hierarchy.
+// The one URL that represents this page. BILLETE/CABLE/INTERBANCARIO are
+// alternate views of the same series and fold into the base, so Google
+// consolidates their signals instead of splitting them across near-duplicates;
+// eBROU is a distinct product and stays self-canonical.
+//
+// Used for <link rel=canonical>, og:url, the BreadcrumbList trail and the
+// Dataset url, so structured data never points somewhere the canonical does not.
 const historicalCanonical = computed(
   () =>
-    `https://cambio-uruguay.com/historico/${route.params.origin}/${route.params.currency}${
-      route.params.type ? '/' + route.params.type : ''
-    }`
+    `https://cambio-uruguay.com${historyDetailCanonicalPath(
+      String(route.params.origin),
+      String(route.params.currency),
+      route.params.type as string | undefined
+    )}`
 )
 useHead(() => ({
+  // Overrides the self-canonical that @nuxtjs/i18n's useLocaleHead emits from
+  // the layout — it keys the tag `i18n-can`, so reuse that key or both render.
+  link: [
+    {
+      key: 'i18n-can',
+      hid: 'i18n-can',
+      rel: 'canonical',
+      href: historicalCanonical.value,
+    },
+  ],
   script: [
     {
       type: 'application/ld+json',

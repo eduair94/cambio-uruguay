@@ -195,6 +195,7 @@
     "close": "Cerrar menú",
     "skipToContent": "Saltar al contenido principal",
     "toggleTheme": "Cambiar tema claro/oscuro",
+    "changeLanguage": "Cambiar idioma",
     "primaryNav": "Navegación principal",
     "unmute": "Activar sonido",
     "mute": "Silenciar"
@@ -648,7 +649,7 @@
     "historicalTitle": "Histórico de cotizaciones del dólar en Uruguay",
     "historicalDescription": "Consulta el historial completo de cotizaciones de todas las casas de cambio en Uruguay. Datos actualizados en tiempo real.",
     "historicalKeywords": "historial cotizaciones, cambio uruguay, histórico precios, casas cambio uruguay",
-    "historicalOriginTitle": "{origin}: cotización del dólar hoy e histórico",
+    "historicalOriginTitle": "Cotizaciones históricas de {origin}",
     "historicalOriginDescription": "Consulta todas las cotizaciones actuales e históricas de {origin}. Precios de compra y venta actualizados en tiempo real.",
     "historicalOriginKeywords": "cotizaciones casa cambio, cambio divisas uruguay, precios cambio uruguay",
     "historicalDetailTitle": "{origin} {currency} hoy: cotización y evolución",
@@ -657,7 +658,7 @@
     "offlineTitle": "Sin Conexión - Cambio Uruguay",
     "offlineDescription": "No hay conexión a internet. Verifica tu conexión para acceder a las cotizaciones de cambio.",
     "offlineKeywords": "sin conexión, offline, cambio uruguay",
-    "sucursalesTitle": "{origin}: sucursales, horarios y cotización",
+    "sucursalesTitle": "Sucursales y horarios de {origin}",
     "sucursalesDescription": "Encuentra todas las sucursales de {origin} en Uruguay. Direcciones, teléfonos, horarios y ubicaciones completas.",
     "sucursalesLocationDescription": "Sucursales de {origin} en {location}. Direcciones, teléfonos, horarios y ubicaciones en {location}, Uruguay.",
     "sucursalesKeywords": "sucursales {origin}, direcciones {origin}, ubicaciones {origin}, casas de cambio uruguay",
@@ -749,7 +750,8 @@
     "ctaDirectorio": "Comparativa de casas de cambio",
     "metaTitle": "{casa}: cotización dólar hoy, sucursales y opiniones",
     "metaDescription": "Cotización del dólar y otras monedas en {casa} hoy. Compará el precio de compra y venta, actualizado automáticamente en Cambio Uruguay.",
-    "ogSubtitle": "Cotización del dólar hoy"
+    "ogSubtitle": "Cotización del dólar hoy",
+    "metaDescriptionLive": "Dólar en {casa} hoy: compra ${buy}, venta ${sell}. Sucursales, horarios, opiniones y cotización de todas las monedas."
   },
   "topBestRates": "Mejores 4 Cotizaciones",
   "buying": "Compro",

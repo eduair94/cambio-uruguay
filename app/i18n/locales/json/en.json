@@ -192,6 +192,7 @@
     "close": "Close menu",
     "skipToContent": "Skip to main content",
     "toggleTheme": "Toggle light/dark theme",
+    "changeLanguage": "Change language",
     "primaryNav": "Main navigation",
     "unmute": "Unmute",
     "mute": "Mute"
@@ -641,7 +642,7 @@
     "historicalTitle": "Exchange rate history in Uruguay",
     "historicalDescription": "Check the complete history of exchange rates from all exchange houses in Uruguay. Real-time updated data.",
     "historicalKeywords": "exchange rate history, currency exchange uruguay, historical prices, exchange houses uruguay",
-    "historicalOriginTitle": "{origin}: today's dollar rate and history",
+    "historicalOriginTitle": "Historical exchange rates for {origin}",
     "historicalOriginDescription": "Check all current and historical exchange rates from {origin}. Buy and sell prices updated in real time.",
     "historicalOriginKeywords": "exchange house rates, currency exchange uruguay, exchange prices uruguay",
     "historicalDetailTitle": "{origin} {currency} today: rate and trend",
@@ -650,7 +651,7 @@
     "offlineTitle": "Offline - Cambio Uruguay",
     "offlineDescription": "No internet connection. Check your connection to access exchange rates.",
     "offlineKeywords": "offline, no connection, cambio uruguay",
-    "sucursalesTitle": "{origin}: branches, hours and dollar rate",
+    "sucursalesTitle": "Branches and hours of {origin}",
     "sucursalesDescription": "Find all {origin} branches in Uruguay. Complete addresses, phone numbers, hours and locations.",
     "sucursalesLocationDescription": "{origin} branches in {location}. Addresses, phone numbers, hours and locations in {location}, Uruguay.",
     "sucursalesKeywords": "{origin} branches, {origin} addresses, {origin} locations, exchange houses uruguay",
@@ -742,7 +743,8 @@
     "ctaDirectorio": "Exchange house comparison",
     "metaTitle": "{casa}: dollar rate today, branches and reviews",
     "metaDescription": "Dollar and other currency rates at {casa} today. Compare the buy and sell prices, updated automatically on Cambio Uruguay.",
-    "ogSubtitle": "Dollar exchange rate today"
+    "ogSubtitle": "Dollar exchange rate today",
+    "metaDescriptionLive": "Dollar at {casa} today: buy ${buy}, sell ${sell}. Branches, hours, reviews and every currency rate."
   },
   "consultCurrentQuotes": "Check the current exchange rates from all exchange houses in Uruguay. Compare prices and find the best option.",
   "donar": "Donate",
