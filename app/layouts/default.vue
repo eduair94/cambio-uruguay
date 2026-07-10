@@ -197,8 +197,12 @@
           @click="onSearchTrigger"
         >
           <VIcon size="small">mdi-magnify</VIcon>
-          <span class="search-trigger__label">{{ $t('search.triggerLabel') }}</span>
-          <kbd class="search-trigger__kbd">{{ $t('search.triggerHint') }}</kbd>
+          <!-- Label + shortcut hint only from xl up; below that the pill collapses
+               to its icon so the full nav + action cluster fits the bar. -->
+          <span class="search-trigger__label d-none d-xl-inline">{{
+            $t('search.triggerLabel')
+          }}</span>
+          <kbd class="search-trigger__kbd d-none d-xl-inline">{{ $t('search.triggerHint') }}</kbd>
         </a>
         <!-- Hidden on phones: the drawer header carries its own ThemeToggle, and
              the 48px it costs here is what pushed the language menu off-screen. -->
@@ -613,6 +617,17 @@ useHead({
   transition:
     background-color 0.2s ease,
     border-color 0.2s ease;
+}
+
+/* Collapsed (icon-only) below xl: no reserved label width, square so it reads
+   as an icon button rather than a stretched empty field. */
+@media (max-width: 1919.98px) {
+  .search-trigger {
+    min-width: 0;
+    width: 36px;
+    padding: 0;
+    justify-content: center;
+  }
 }
 
 .search-trigger:hover,

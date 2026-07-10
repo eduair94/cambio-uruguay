@@ -184,7 +184,9 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         icon: 'mdi-trophy-outline',
         priority: 0.9,
         changefreq: 'daily',
-        primary: true,
+        // Not `primary`: its label is the widest of the set (~198px) and a 7th
+        // top-level button pushed the whole action cluster off the right edge
+        // below 1920px. It lives in the "Más" menu instead.
         keywords: [
           'mejor casa de cambio',
           'donde cambiar',

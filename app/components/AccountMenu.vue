@@ -1,18 +1,18 @@
 <template>
-  <!-- Logged out: a real CTA pill. Icon-only on phones to save the cramped top
-       bar; icon + label from the sm breakpoint up. -->
+  <!-- Logged out: a real CTA pill. Icon-only until xl, where the desktop nav +
+       search pill finally leave room for the label; icon + label from xl up. -->
   <VBtn
     v-if="!store.isLoggedIn"
     color="primary"
     variant="flat"
     rounded="pill"
-    class="login-btn text-none px-3 px-sm-4"
+    class="login-btn text-none px-3 px-xl-4"
     :aria-label="$t('auth.login')"
     :title="$t('auth.login')"
     @click="store.openDialog()"
   >
     <VIcon size="20">mdi-account-circle</VIcon>
-    <span class="d-none d-sm-inline ml-2">{{ $t('auth.login') }}</span>
+    <span class="d-none d-xl-inline ml-2">{{ $t('auth.login') }}</span>
   </VBtn>
 
   <VMenu v-else location="bottom end">
