@@ -548,8 +548,6 @@ useHead(() => ({
 }
 
 .salud-page {
-  max-width: 1152px;
-  margin-inline: auto;
   overflow-x: hidden;
 }
 

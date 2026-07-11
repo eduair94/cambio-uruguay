@@ -703,11 +703,23 @@ useHead({
 
 .container_custom {
   width: 100%;
+  /* Global content cap: keep pages readable + centred on ultra-wide screens
+     instead of spanning the whole viewport. Full-bleed pages opt out below. */
+  max-width: 1280px;
   padding: 12px;
   margin: 0 auto;
 }
 
+/* Full-bleed pages: the home landing, the maps, and the wide all-casas table
+   want the whole viewport (VMain gets a `<routeName>_main` class). */
 .index_main .container_custom {
   padding: 0;
+  max-width: none;
+}
+.mapa_main .container_custom,
+.sucursales_main .container_custom,
+.sucursales-origin-location_main .container_custom,
+.avanzado_main .container_custom {
+  max-width: none;
 }
 </style>

@@ -412,8 +412,6 @@ useHead(() => ({
   background: linear-gradient(135deg, #0f766e 0%, #b45309 100%);
 }
 .alquilar-page {
-  max-width: 1152px;
-  margin-inline: auto;
   overflow-x: hidden;
 }
 .alquilar-intro {

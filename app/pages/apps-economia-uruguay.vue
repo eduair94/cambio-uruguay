@@ -369,8 +369,6 @@ useHead(() => ({
 }
 
 .apps-page {
-  max-width: 1280px;
-  margin-inline: auto;
   overflow-x: hidden;
 }
 

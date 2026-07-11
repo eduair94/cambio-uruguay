@@ -223,10 +223,6 @@ useHead(() => ({
 </script>
 
 <style scoped>
-.pfaq-page {
-  max-width: 896px;
-  margin-inline: auto;
-}
 .pfaq-q {
   line-height: 1.35;
 }

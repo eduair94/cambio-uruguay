@@ -457,8 +457,6 @@ useHead(() => ({
 }
 
 .tarjetas-page {
-  max-width: 1280px;
-  margin-inline: auto;
   overflow-x: hidden;
 }
 .tarjetas-intro {
