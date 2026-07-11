@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="pagar-page pb-8">
     <!-- Breadcrumb -->
     <div class="mb-3">
@@ -488,6 +488,8 @@ useHead(() => ({
 }
 
 .pagar-page {
+  max-width: 1152px;
+  margin-inline: auto;
   overflow-x: hidden;
 }
 

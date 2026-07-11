@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="salud-page pb-8">
     <!-- Breadcrumb -->
     <div class="mb-3">
@@ -194,6 +194,43 @@
         Reglas locales verificadas contra fuentes oficiales (DGI, BPS, BCU). Los datos cambian cada
         año: confirmá las cifras vigentes antes de decidir.
       </p>
+
+      <!-- Live key figures (refreshed daily via Gemini; static baseline fallback) -->
+      <VCard variant="flat" class="salud-section pa-4 pa-sm-5 mb-3">
+        <div class="d-flex align-center justify-space-between flex-wrap ga-2 mb-3">
+          <span class="text-subtitle-2 font-weight-bold">
+            <VIcon size="18" color="primary" class="mr-1">mdi-chart-timeline-variant</VIcon>
+            Indicadores clave, al día
+          </span>
+          <VChip v-if="figuresUpdated" size="x-small" color="success" variant="tonal">
+            <VIcon start size="12">mdi-autorenew</VIcon>
+            Actualizado el {{ figuresUpdated }}
+          </VChip>
+        </div>
+        <div class="fig-grid">
+          <div class="fig-tile">
+            <span class="fig-label">Salario mínimo</span>
+            <span class="fig-value">{{ formatUYU(figures.salarioMinimo) }}</span>
+          </div>
+          <div class="fig-tile">
+            <span class="fig-label">BPC</span>
+            <span class="fig-value">{{ formatUYU(figures.bpc) }}</span>
+          </div>
+          <div class="fig-tile">
+            <span class="fig-label">Inflación anual</span>
+            <span class="fig-value">{{ figures.inflacionAnual }}%</span>
+          </div>
+          <div class="fig-tile">
+            <span class="fig-label">Boleto STM</span>
+            <span class="fig-value">{{ formatUYU(figures.boletoStm) }}</span>
+          </div>
+        </div>
+        <p class="text-caption text-grey-lighten-1 mb-0 mt-3">
+          Se actualizan solos a diario con datos oficiales. Para la UI, la UR y más, mirá
+          <NuxtLink :to="localePath('/indicadores')" class="salud-link">Indicadores</NuxtLink>.
+        </p>
+      </VCard>
+
       <VCard variant="flat" class="salud-section pa-4 pa-sm-5">
         <div v-for="(f, i) in facts" :key="i" class="salud-fact">
           <p class="text-body-2 mb-1">{{ f.fact }}</p>
@@ -300,12 +337,38 @@ import {
   type IncomeCategory,
   type EffortLevel,
 } from '~/utils/personalFinance'
+import { formatUYU } from '~/utils/format'
 
 const localePath = useLocalePath()
 
 const pillars = HEALTH_PILLARS
 const facts = UY_FACTS
 const incomeGroups = computed(() => incomeIdeasByCategory())
+
+// Live national figures, refreshed daily via Gemini (static baseline fallback).
+interface UyFiguresResp {
+  salarioMinimo: number
+  bpc: number
+  boletoStm: number
+  inflacionAnual: number
+  asOf: string | null
+}
+const { data: figures } = await useFetch<UyFiguresResp>('/api/uy-figures', {
+  key: 'uy-figures',
+  default: () => ({
+    salarioMinimo: 25383,
+    bpc: 6864,
+    boletoStm: 52,
+    inflacionAnual: 4.3,
+    asOf: null,
+  }),
+})
+const figuresUpdated = computed(() => {
+  const iso = figures.value?.asOf
+  if (!iso) return ''
+  const d = new Date(iso)
+  return isNaN(d.getTime()) ? '' : d.toLocaleDateString('es-UY', { day: 'numeric', month: 'long' })
+})
 
 // Interactive checklist state (client-side, private — never persisted).
 const checkedIds = ref<string[]>([])
@@ -453,7 +516,40 @@ useHead(() => ({
   background: linear-gradient(135deg, #7c3aed 0%, #1e3a8a 100%);
 }
 
+.fig-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+@media (min-width: 600px) {
+  .fig-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+.fig-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(var(--v-theme-on-surface), 0.04);
+}
+.fig-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: rgba(var(--v-theme-on-surface), 0.55);
+}
+.fig-value {
+  font-size: 1.15rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: rgb(var(--v-theme-primary));
+}
+
 .salud-page {
+  max-width: 1152px;
+  margin-inline: auto;
   overflow-x: hidden;
 }
 

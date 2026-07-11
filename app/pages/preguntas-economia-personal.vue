@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="pfaq-page pb-8">
     <!-- Breadcrumb -->
     <div class="mb-3">
@@ -221,3 +221,17 @@ useHead(() => ({
   ],
 }))
 </script>
+
+<style scoped>
+.pfaq-page {
+  max-width: 896px;
+  margin-inline: auto;
+}
+.pfaq-q {
+  line-height: 1.35;
+}
+.pfaq-answer {
+  line-height: 1.6;
+  color: rgba(var(--v-theme-on-surface), 0.85);
+}
+</style>

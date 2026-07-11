@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="tarjetas-page pb-8">
     <!-- Breadcrumb -->
     <div class="mb-3">
@@ -457,6 +457,8 @@ useHead(() => ({
 }
 
 .tarjetas-page {
+  max-width: 1280px;
+  margin-inline: auto;
   overflow-x: hidden;
 }
 .tarjetas-intro {

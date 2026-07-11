@@ -508,7 +508,7 @@ export interface UyFact {
 
 export const UY_FACTS: readonly UyFact[] = Object.freeze([
   {
-    fact: 'El Monotributo (BPS + DGI) unifica en un solo pago los aportes y los impuestos nacionales; está pensado para emprendimientos de reducida dimensión. En 2025 el tope de ingresos anuales es de 183.000 UI (≈ $1.129.055) para el monotributista unipersonal y 305.000 UI (≈ $1.881.759) para la sociedad de hecho de 2 socios, con un tope de activos de 152.500 UI (≈ $940.879).',
+    fact: 'El Monotributo (BPS + DGI) unifica en un solo pago los aportes y los impuestos nacionales; está pensado para emprendimientos de reducida dimensión. En 2026 el tope de ingresos anuales es de 183.000 UI (≈ $1.175.537 según DGI) para el monotributista unipersonal y 305.000 UI (≈ $1.959.229) para la sociedad de hecho de 2 socios, con un tope de activos de 152.500 UI (≈ $979.614). El tope en UI se mantiene estable; el equivalente en pesos se actualiza cada año.',
     sourceLabel: 'DGI — Tope de ingresos y activos del monotributo',
     sourceUrl:
       'https://www.gub.uy/direccion-general-impositiva/comunicacion/publicaciones/tope-ingresos-activos-anuales-monotributo',

@@ -275,6 +275,11 @@ export default defineNuxtConfig({
         driver: 'fs',
         base: './.data/costs',
       },
+      // Durable store for the live national key figures + drift watchdog (figures:daily).
+      figures: {
+        driver: 'fs',
+        base: './.data/figures',
+      },
     },
     experimental: {
       wasm: true,
@@ -289,6 +294,8 @@ export default defineNuxtConfig({
       '30 9 * * *': ['blog:daily'],
       // 09:40 UTC ≈ 06:40 Uruguay: refresh live cost-of-living figures via Gemini.
       '40 9 * * *': ['costs:daily'],
+      // 09:50 UTC ≈ 06:50 Uruguay: refresh national key figures + drift watchdog.
+      '50 9 * * *': ['figures:daily'],
       // 12:00 UTC = 09:00 Uruguay: send the daily newsletter to confirmed subs.
       '0 12 * * *': ['newsletter:daily'],
       // Every 10 minutes: evaluate rate alerts and notify (push + email + telegram).

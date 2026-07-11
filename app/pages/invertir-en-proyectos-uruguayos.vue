@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="proyectos-page pb-8">
     <!-- Breadcrumb: this page is the local-projects companion to /inversiones-uruguay -->
     <div class="mb-3">
@@ -388,6 +388,8 @@ useHead(() => ({
 }
 
 .proyectos-page {
+  max-width: 1152px;
+  margin-inline: auto;
   overflow-x: hidden;
 }
 

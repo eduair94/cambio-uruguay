@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="apps-page pb-8">
     <!-- Breadcrumb -->
     <div class="mb-3">
@@ -369,6 +369,8 @@ useHead(() => ({
 }
 
 .apps-page {
+  max-width: 1280px;
+  margin-inline: auto;
   overflow-x: hidden;
 }
 

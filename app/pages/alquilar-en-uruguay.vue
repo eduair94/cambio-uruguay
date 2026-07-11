@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="alquilar-page pb-8">
     <!-- Breadcrumb -->
     <div class="mb-3">
@@ -412,6 +412,8 @@ useHead(() => ({
   background: linear-gradient(135deg, #0f766e 0%, #b45309 100%);
 }
 .alquilar-page {
+  max-width: 1152px;
+  margin-inline: auto;
   overflow-x: hidden;
 }
 .alquilar-intro {
