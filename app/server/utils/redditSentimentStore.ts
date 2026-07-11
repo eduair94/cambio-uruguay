@@ -307,17 +307,9 @@ export async function refreshRedditSentiment(
     )
   }
 
-  // Drop the cached GET response. Without this the fresh snapshot is invisible for up to an
-  // hour: the daily task would publish, the page would keep serving yesterday's numbers, and
-  // an operator running a manual backfill would conclude it did nothing.
-  try {
-    const cache = useStorage('cache')
-    const keys = await cache.getKeys('nitro:handlers:reddit-sentiment-uy')
-    await Promise.all(keys.map(k => cache.removeItem(k)))
-  } catch {
-    // A cache we cannot clear is a stale page, not a failed refresh — the data is already saved.
-  }
-
+  // No cache to invalidate: /api/reddit-sentiment reads MongoDB on every request (see the
+  // handler — a per-process Nitro cache diverges across pm2's cluster workers), so the moment
+  // these snapshots are written they are live for everyone.
   return {
     harvest: stats,
     entities: board.length,
