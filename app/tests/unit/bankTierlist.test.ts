@@ -120,11 +120,29 @@ describe('board + ranking', () => {
     expect(top.tier).toBe('A')
   })
 
-  it('Prex and HSBC land in the bottom tier (D) with balanced criteria', () => {
+  it('Scotiabank is the bottom of the balanced board — it runs the worst app in the country', () => {
     const ranked = rankEntities(DIM_IDS)
-    const byId = Object.fromEntries(ranked.map(r => [r.entity.id, r.tier]))
-    expect(byId.prex).toBe('D')
-    expect(byId.hsbc).toBe('D')
+    const last = ranked[ranked.length - 1]!
+    expect(last.entity.id).toBe('scotiabank')
+    expect(last.tier).toBe('D')
+  })
+
+  it('BTG replaced HSBC on the board after the 2026-07-10 takeover', () => {
+    const ids = BANKS.map(b => b.id)
+    expect(ids).toContain('btg')
+    expect(ids).not.toContain('hsbc')
+  })
+
+  it('Prex is no longer bottom-tier: the best-rated app on the board, sunk by its support', () => {
+    // We used to score Prex productos=40 AND comisiones=46 — punishing the same defect twice.
+    // Corrected, it clears D. What still drags it down is `atencion`, and only that.
+    const byId = Object.fromEntries(rankEntities(DIM_IDS).map(r => [r.entity.id, r.tier]))
+    expect(byId.prex).toBe('C')
+    const bestApp = [...BANKS].sort((a, b) => b.scores.app - a.scores.app)[0]!
+    expect(bestApp.id).toBe('itau')
+    expect(BANKS.find(b => b.id === 'prex')!.scores.app).toBeGreaterThan(
+      BANKS.find(b => b.id === 'scotiabank')!.scores.app
+    )
   })
 })
 

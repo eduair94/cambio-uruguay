@@ -1155,18 +1155,18 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     verified: false,
   },
   {
-    id: 'hsbc-uruguay-tdc',
-    name: 'Tarjetas de Crédito HSBC (Visa Internacional / Oro / Infinite; Mastercard Premier)',
-    issuer: 'HSBC Bank (Uruguay) S.A.',
+    id: 'btg-uruguay-tdc',
+    name: 'Tarjetas de Crédito BTG Pactual, ex HSBC (Visa Internacional / Oro / Infinite; Mastercard Premier)',
+    issuer: 'Banco BTG Pactual Uruguay S.A. (ex HSBC Bank (Uruguay) S.A.)',
     issuerType: 'banco',
     networks: ['visa', 'mastercard'],
     pointsProgramName: 'Sin programa de puntos propio en Uruguay',
     earnRateNote:
-      "HSBC Uruguay NO ofrece un programa de puntos/recompensas propio en sus tarjetas de crédito: la cartilla oficial vigente (julio 2026) lista solo beneficios de descuento y control, sin acumulación de puntos. Los programas 'HSBC Rewards / Puntos Premia / Más' corresponden a HSBC México y Argentina, no a Uruguay. verified=true (fuente: cartilla oficial HSBC Uruguay).",
+      "No hay programa de puntos/recompensas propio en estas tarjetas: la cartilla oficial vigente (julio 2026, heredada de HSBC) lista solo beneficios de descuento y control, sin acumulación de puntos. Los programas 'HSBC Rewards / Puntos Premia / Más' correspondían a HSBC México y Argentina, no a Uruguay. El 10/07/2026 HSBC Uruguay pasó a operar como BTG Pactual y avisó que no cambian productos ni servicios; falta reverificar la cartilla bajo la marca nueva.",
     redemptionNote:
       'No aplica: no hay canje de puntos. El retorno al cliente pasa por descuentos y beneficios directos, no por acumulación.',
     discountNote:
-      'Beneficios centrados en descuentos, no en puntos: reducción del 9% del IVA en restaurantes al pagar con tarjeta de crédito Visa/Mastercard HSBC (sujeto a Ley de Inclusión Financiera y Ley 17.934); aviso gratis vía SMS por cada compra. Perfil de banca Premier/premium más que de acumulación de puntos.',
+      'Beneficios centrados en descuentos, no en puntos: reducción del 9% del IVA en restaurantes al pagar con la tarjeta de crédito Visa/Mastercard (sujeto a Ley de Inclusión Financiera y Ley 17.934); aviso gratis vía SMS por cada compra. Perfil de banca Premier/premium (hoy "Excellence" en BTG) más que de acumulación de puntos.',
     feeNote:
       'Costos oficiales (cartilla jul-2026, + IVA): Visa Internacional US$ 85/año; Visa Oro US$ 100/año; Visa Infinite US$ 120/año; Mastercard Premier ~$U 5.974 residente / $U 7.294 no residente (ajustable trimestral por IPC). Sin costo de emisión el primer año (Visa/Master). Adicionales sin costo. Costo mensual de estado de cuenta $ 43 + IVA. Ingreso mínimo: $U 25.000 nominales/mes (nuevos/existentes) o $U 15.000 (nómina).',
     pros: [
@@ -1192,7 +1192,7 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
       cobertura: 55,
     },
     rationale:
-      'Ultimo puesto de forma objetiva: HSBC Uruguay NO ofrece programa de puntos/recompensas (verificado en cartilla oficial jul-2026), por lo que carece de acumulacion y canje, las dos dimensiones de mayor peso. El retorno se limita a la reduccion del 9% de IVA en restaurantes y a un perfil premium con costos anuales en USD (85-120) mas cargo mensual de estado de cuenta, lo que tambien castiga la dimension costo.',
+      'Ultimo puesto de forma objetiva: estas tarjetas NO tienen programa de puntos/recompensas (verificado en la cartilla oficial jul-2026, heredada de HSBC), por lo que carecen de acumulacion y canje, las dos dimensiones de mayor peso. El retorno se limita a la reduccion del 9% de IVA en restaurantes y a un perfil premium con costos anuales en USD (85-120) mas cargo mensual de estado de cuenta, lo que tambien castiga la dimension costo. Desde el 10/07/2026 el emisor es BTG Pactual (ex HSBC): la cartilla bajo la marca nueva esta pendiente de reverificacion.',
     verified: true,
   },
 ])

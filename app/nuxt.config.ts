@@ -310,6 +310,10 @@ export default defineNuxtConfig({
       '0 9 * * 1': ['withdraw:iva-check'],
       // 07:30 UTC Mondays ≈ 04:30 Uruguay: refresh exchange-house review snapshots.
       '30 7 * * 1': ['casas:reviews'],
+      // 10:10 UTC ≈ 07:10 Uruguay: harvest Reddit threads about banks/fintech and
+      // re-score the sentiment snapshot for /mejores-bancos-uruguay. Runs after the other
+      // dailies so it never contends with them for the API/AI budget.
+      '10 10 * * *': ['reddit:sentiment'],
     },
   },
 
@@ -673,6 +677,21 @@ export default defineNuxtConfig({
       apiKey: process.env.NUXT_AI_API_KEY || process.env.AI_API_KEY || '',
       model: process.env.NUXT_AI_MODEL || 'wormv5.1',
     },
+    // Reddit API (server-only) for the daily bank-sentiment harvest (`reddit:sentiment`).
+    // App-only "installed_client" credentials — no user account needed. Reddit blocks
+    // generic User-Agents, so keep it descriptive. Baked from .env at build like the keys
+    // above (pm2 runtime env reads empty). Unset -> the task no-ops and
+    // /mejores-bancos-uruguay serves the last snapshot already in MongoDB.
+    reddit: {
+      clientId: process.env.REDDIT_CLIENT_ID || '',
+      clientSecret: process.env.REDDIT_CLIENT_SECRET || '',
+      userAgent:
+        process.env.REDDIT_USER_AGENT || 'nodejs:cambio-uruguay:v1.0 (+https://cambio-uruguay.com)',
+    },
+    // Shared secret gating POST /api/reddit-sentiment/refresh (manual backfill). Must live in
+    // runtimeConfig, not process.env: pm2's runtime env is empty here, so a process.env check
+    // would read undefined in prod and leave an endpoint that spends Reddit + AI calls open.
+    redditRefreshToken: process.env.NUXT_REDDIT_REFRESH_TOKEN || '',
     // Gemini API key (server-only) for grounded real-news search on notable
     // move days — see docs/superpowers/specs/2026-07-08-gemini-news-grounding-design.md.
     // Baked at build time same as driversIngestToken/ai.apiKey; raw process.env

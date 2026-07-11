@@ -1,0 +1,31 @@
+// Manual / cron trigger for the Reddit sentiment refresh — the same work the daily
+// `reddit:sentiment` task does. Useful for the first backfill after deploy:
+//
+//   curl -X POST 'https://cambio-uruguay.com/api/reddit-sentiment/refresh?window=all' \
+//        -H 'x-reddit-token: …'
+//
+// Idempotent by construction: MongoDB dedupes threads on `redditId`, so a repeated call
+// re-scores the corpus without re-downloading it.
+//
+// Gated by a shared token. The token comes from runtimeConfig, NOT process.env: under pm2 the
+// runtime environment is empty (secrets are baked at build), so a process.env gate would read
+// undefined in production and silently leave this endpoint — which spends Reddit calls and AI
+// tokens on every hit — wide open.
+import { refreshRedditSentiment } from '../../utils/redditSentimentStore'
+
+export default defineEventHandler(async event => {
+  const required = useRuntimeConfig().redditRefreshToken as string | undefined
+  if (required) {
+    const provided = getHeader(event, 'x-reddit-token') || String(getQuery(event).token || '')
+    if (provided !== required) {
+      throw createError({ statusCode: 401, statusMessage: 'No autorizado' })
+    }
+  }
+
+  const q = getQuery(event)
+  const result = await refreshRedditSentiment({
+    window: q.window === 'all' ? 'all' : 'year',
+    withSummaries: q.summaries !== 'false',
+  })
+  return { ok: true, ...result }
+})

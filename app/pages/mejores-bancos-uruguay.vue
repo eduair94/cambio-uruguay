@@ -155,6 +155,14 @@
             sobre lo activo. Los puntajes son nuestro mejor criterio con evidencia pública (reseñas,
             tarifarios, prensa) a julio de 2026.
           </p>
+          <p class="text-body-2 mb-4">
+            <strong>De dónde sale el puntaje de “App”:</strong> lo anclamos al puntaje real de las
+            tiendas (Google Play y App Store, ponderado por cantidad de reseñas) y después lo
+            ajustamos por la <em>tendencia</em> de las reseñas recientes, por funciones que faltan
+            (Apple Pay, Google Pay) y por el tamaño de la muestra. Donde no hay muestra local
+            razonable —Takenos tiene 1 reseña en la App Store uruguaya; Heritage, 13— lo decimos en
+            la ficha y puntuamos conservador en vez de inventar un número.
+          </p>
           <div v-for="dim in BANK_RUBRIC" :key="dim.id" class="method-dim">
             <div class="d-flex align-center justify-space-between mb-1">
               <span class="font-weight-bold text-body-2">
@@ -197,12 +205,12 @@
                 <VChip
                   v-if="r.entity.flag"
                   size="x-small"
-                  color="error"
+                  color="warning"
                   variant="tonal"
                   class="font-weight-medium"
                 >
                   <VIcon start size="12">mdi-alert-outline</VIcon>
-                  En transición
+                  Marca nueva
                 </VChip>
               </div>
               <p class="text-caption text-medium-emphasis mb-0 mt-1">{{ r.entity.tagline }}</p>
@@ -216,7 +224,7 @@
         <VExpansionPanelText>
           <VAlert
             v-if="r.entity.flag"
-            type="error"
+            type="warning"
             variant="tonal"
             density="compact"
             class="mb-4"
@@ -280,9 +288,102 @@
             <VIcon size="13">mdi-account-check-outline</VIcon>
             Ideal para: {{ r.entity.bestFor }}
           </p>
+
+          <!-- What Uruguayans say about THIS entity on Reddit (daily snapshot) -->
+          <ClientOnly>
+            <div v-if="redditFor(r.entity.id)" class="ficha-reddit mt-4">
+              <div class="d-flex align-center flex-wrap ga-2 mb-2">
+                <VIcon size="16" color="primary">mdi-reddit</VIcon>
+                <span class="text-caption font-weight-bold">Qué dicen en Reddit</span>
+                <VChip
+                  size="x-small"
+                  variant="tonal"
+                  :color="netColor(redditFor(r.entity.id)!.net)"
+                  class="font-weight-bold"
+                >
+                  {{ redditFor(r.entity.id)!.label }}
+                  ({{ redditFor(r.entity.id)!.net > 0 ? '+' : ''
+                  }}{{ redditFor(r.entity.id)!.net }})
+                </VChip>
+                <span class="text-caption text-medium-emphasis">
+                  {{ redditFor(r.entity.id)!.opinions }} opiniones ·
+                  {{ redditFor(r.entity.id)!.positive }} a favor /
+                  {{ redditFor(r.entity.id)!.negative }} en contra
+                </span>
+              </div>
+              <p v-if="redditFor(r.entity.id)!.summary" class="reddit-summary mb-2">
+                {{ redditFor(r.entity.id)!.summary }}
+              </p>
+              <ul class="reddit-quotes">
+                <li v-for="(q, i) in redditFor(r.entity.id)!.quotes" :key="i">
+                  <a
+                    :href="q.permalink"
+                    target="_blank"
+                    rel="noopener noreferrer nofollow"
+                    :class="q.polarity < 0 ? 'q-neg' : 'q-pos'"
+                  >
+                    <span class="q-mark">“</span>{{ q.text }}<span class="q-mark">”</span>
+                    <span class="q-meta">r/{{ q.sub }} · {{ q.date }} · {{ q.score }} votos</span>
+                  </a>
+                </li>
+              </ul>
+              <p class="text-caption text-medium-emphasis mt-2 mb-0">
+                Comentarios reales de uruguayos, no editados. Reddit se queja más de lo que elogia:
+                es una señal, no el veredicto — no toca el puntaje de arriba.
+              </p>
+            </div>
+          </ClientOnly>
         </VExpansionPanelText>
       </VExpansionPanel>
     </VExpansionPanels>
+
+    <!-- Corrections: we were called out, we checked, we were wrong. Say it out loud. -->
+    <section class="corrections mt-8" aria-label="Correcciones">
+      <h2 class="section-heading mb-1">Correcciones</h2>
+      <p class="text-body-2 text-medium-emphasis mb-4">
+        Publicamos esta tier list, un uruguayo nos marcó tres errores en Reddit y fuimos a chequear.
+        Tenía razón en casi todo — y buscando lo que nos marcó encontramos dos errores peores, que
+        nadie nos había señalado. Los dejamos acá en vez de corregir en silencio.
+      </p>
+      <VCard variant="flat" class="corrections-card pa-4 pa-sm-5">
+        <p class="corr-date">11 de julio de 2026</p>
+        <ul class="corr-list">
+          <li>
+            <strong>Santander sí tiene Apple Pay</strong>, desde agosto de 2025 (y Google Pay desde
+            abril de ese año). Decíamos “todavía no”. Está en la lista oficial de emisores de Apple
+            para Uruguay y en la página del propio banco. Era nuestro error, y era el más visible.
+          </li>
+          <li>
+            <strong>BBVA no es “app de referencia”.</strong> El histórico es bueno (4,61/5 en Play),
+            pero viene cayendo hace un año: las últimas 60 reseñas promedian 3,1/5 con 32% de una
+            estrella, y es el único del tablero sin Apple Pay ni Google Pay. Bajamos su app de 84 a
+            62. Lo que no encontramos es que “se vea espantosa”: las quejas son de que no anda, no
+            de cómo se ve.
+          </li>
+          <li>
+            <strong>HSBC ya no existe en Uruguay: es BTG Pactual</strong> desde el 10 de julio de
+            2026. Reemplazamos la ficha. Para el cliente, por ahora, sigue todo igual (misma app,
+            mismo teléfono, mismas sucursales) y el foco sigue siendo Premium, como era HSBC.
+          </li>
+          <li>
+            <strong>Scotiabank: nos equivocamos feo.</strong> Decíamos “app funcional”. Es, con
+            datos, la peor app bancaria del país: 2,45/5 en Play y 2,35/5 en la App Store. Le
+            bajamos la app de 66 a 30 y quedó último.
+          </li>
+          <li>
+            <strong>Prex: le habíamos puesto una nota injusta.</strong> Sus apps son las mejor
+            puntuadas del tablero (4,8/5 con 210 mil reseñas) y fue la primera en pagar rendimientos
+            diarios en Uruguay, dos meses antes que Mercado Pago. Le castigábamos dos veces lo mismo
+            (producto y comisiones). Sale del último tier; su problema sigue siendo la atención.
+          </li>
+          <li>
+            <strong>Takenos: nos comimos la letra chica.</strong> Cobrar del exterior es gratis,
+            pero <em>sacar</em> la plata cuesta 3%, y no tiene rieles en pesos. Decíamos “sin
+            comisiones” y “casi instantáneo”: las dos cosas eran falsas.
+          </li>
+        </ul>
+      </VCard>
+    </section>
 
     <!-- Recent news + AI analysis -->
     <section class="news-section mt-8">
@@ -433,6 +534,128 @@
       </ClientOnly>
     </section>
 
+    <!-- What Reddit says -->
+    <section class="reddit-section mt-8" aria-label="Qué dice Reddit de cada banco">
+      <h2 class="section-heading mb-1">Qué dice Reddit</h2>
+      <p class="text-body-2 text-medium-emphasis mb-4">
+        Nuestro puntaje es nuestro criterio. Esto es el contrapeso: lo que dicen los uruguayos en
+        Reddit. Todos los días buscamos los hilos de bancos y fintech en
+        <span class="text-medium-emphasis">{{ redditSubs }}</span
+        >, atribuimos cada frase al banco del que habla y la puntuamos. El número sale de las
+        opiniones, no de las menciones al pasar —y si a alguien casi nadie lo juzgó, decimos
+        <em>sin datos</em> en vez de inventar un veredicto.
+      </p>
+
+      <ClientOnly>
+        <template #default>
+          <VCard
+            v-if="redditPending"
+            variant="flat"
+            class="news-placeholder pa-6 d-flex align-center"
+          >
+            <VProgressCircular indeterminate size="22" width="2" color="primary" class="mr-3" />
+            <span class="text-body-2 text-medium-emphasis">Leyendo Reddit…</span>
+          </VCard>
+
+          <template v-else-if="redditJudged.length">
+            <div class="reddit-grid">
+              <VCard
+                v-for="e in redditJudged"
+                :key="e.id"
+                variant="flat"
+                class="reddit-card pa-4"
+                :class="`rd-${netClass(e.net)}`"
+              >
+                <div class="d-flex align-center ga-2 mb-2">
+                  <span class="tile-mono" :style="monoStyle(e.id)">{{ monogram(e.name) }}</span>
+                  <span class="text-subtitle-2 font-weight-bold">{{ e.name }}</span>
+                  <VChip
+                    size="x-small"
+                    variant="tonal"
+                    class="ml-auto font-weight-bold"
+                    :color="netColor(e.net)"
+                  >
+                    {{ e.label }}
+                  </VChip>
+                </div>
+
+                <!-- Net sentiment, −100 … +100, drawn from the centre -->
+                <div
+                  class="rd-bar"
+                  role="img"
+                  :aria-label="`Sentimiento neto de ${e.name}: ${e.net} sobre 100`"
+                >
+                  <span class="rd-zero" />
+                  <span
+                    class="rd-fill"
+                    :style="{
+                      left: e.net >= 0 ? '50%' : `${50 + e.net / 2}%`,
+                      width: `${Math.abs(e.net) / 2}%`,
+                      background: netHue(e.net),
+                    }"
+                  />
+                </div>
+                <p class="rd-counts mb-3">
+                  <strong :style="{ color: netHue(e.net) }"
+                    >{{ e.net > 0 ? '+' : '' }}{{ e.net }}</strong
+                  >
+                  · {{ e.opinions }} opiniones ({{ e.positive }} 👍 / {{ e.negative }} 👎) sobre
+                  {{ e.mentions }} menciones
+                </p>
+
+                <p v-if="e.summary" class="reddit-summary mb-3">{{ e.summary }}</p>
+
+                <ul v-if="e.quotes.length" class="reddit-quotes">
+                  <li v-for="(q, i) in e.quotes.slice(0, 3)" :key="i">
+                    <a
+                      :href="q.permalink"
+                      target="_blank"
+                      rel="noopener noreferrer nofollow"
+                      :class="q.polarity < 0 ? 'q-neg' : 'q-pos'"
+                    >
+                      <span class="q-mark">“</span>{{ q.text }}<span class="q-mark">”</span>
+                      <span class="q-meta">r/{{ q.sub }} · {{ q.date }}</span>
+                    </a>
+                  </li>
+                </ul>
+
+                <div v-if="e.themes.length" class="d-flex flex-wrap ga-1 mt-3">
+                  <VChip
+                    v-for="t in e.themes.slice(0, 3)"
+                    :key="t.theme"
+                    size="x-small"
+                    variant="tonal"
+                    color="primary"
+                  >
+                    {{ THEME_LABELS[t.theme] ?? t.theme }} · {{ t.count }}
+                  </VChip>
+                </div>
+              </VCard>
+            </div>
+
+            <p v-if="redditUnjudged.length" class="text-caption text-medium-emphasis mt-4 mb-0">
+              <VIcon size="14" class="mr-1">mdi-help-circle-outline</VIcon>
+              Sin datos suficientes en Reddit ({{ redditMinSample }} opiniones mínimo):
+              <strong>{{ redditUnjudged.map(e => e.name).join(', ') }}</strong
+              >. Que no se hable de un banco no dice nada bueno ni malo de él.
+            </p>
+            <p class="text-caption text-medium-emphasis mt-2 mb-0">
+              <VIcon size="14" class="mr-1">mdi-alert-outline</VIcon>
+              Reddit amplifica la queja: se escribe más cuando algo sale mal, y quien postea es una
+              porción joven y urbana del país. Tomalo como una señal, no como el veredicto del
+              mercado — por eso no toca los puntajes de arriba.
+              <span v-if="redditAsOf">Actualizado {{ redditAsOf }}.</span>
+            </p>
+          </template>
+        </template>
+        <template #fallback>
+          <VCard variant="flat" class="news-placeholder pa-6">
+            <span class="text-body-2 text-medium-emphasis">Cargando opiniones…</span>
+          </VCard>
+        </template>
+      </ClientOnly>
+    </section>
+
     <!-- Disclaimer -->
     <VAlert
       type="warning"
@@ -445,8 +668,8 @@
       con ninguna entidad. Comisiones, tasas, beneficios y letra chica
       <strong>cambian seguido</strong>. Los puntajes reflejan nuestro criterio con la información
       pública disponible a julio de 2026 — incluido que
-      <strong>HSBC está en salida del mercado uruguayo</strong> (venta a BTG Pactual). Verificá
-      siempre las condiciones vigentes en el sitio de cada entidad antes de decidir.
+      <strong>HSBC Uruguay pasó a ser BTG Pactual el 10 de julio de 2026</strong>. Verificá siempre
+      las condiciones vigentes en el sitio de cada entidad antes de decidir.
     </VAlert>
 
     <!-- Sources -->
@@ -604,7 +827,7 @@ const BRAND: Record<string, string> = {
   astropay: '#00b487',
   scotiabank: '#d5121a',
   prex: '#ff5a1f',
-  hsbc: '#c8102e',
+  btg: '#00274d',
 }
 const brand = (id: string) => BRAND[id] ?? '#64748b'
 
@@ -669,6 +892,7 @@ function scoreHue(score: number): string {
 function monogram(name: string): string {
   if (name === 'Mercado Pago') return 'MP'
   if (name === 'Banco Heritage') return 'H'
+  if (name === 'BTG Pactual') return 'BTG'
   return name.slice(0, 2).toUpperCase()
 }
 
@@ -747,11 +971,90 @@ function newsParagraphs(text: string | null): string[] {
   return paras
 }
 
+// --- what Reddit says (daily snapshot from MongoDB; never a live Reddit call) ---
+interface RedditQuote {
+  text: string
+  permalink: string
+  date: string
+  score: number
+  sub: string
+  polarity: number
+}
+interface RedditEntitySentiment {
+  id: string
+  name: string
+  mentions: number
+  positive: number
+  negative: number
+  neutral: number
+  opinions: number
+  net: number
+  label: string
+  themes: { theme: string; count: number }[]
+  quotes: RedditQuote[]
+  summary: string | null
+  latestMentionDate: string | null
+}
+interface RedditSnapshot {
+  entities: RedditEntitySentiment[]
+  asOf: string | null
+  empty: boolean
+  subs: string[]
+  minSample: number
+}
+
+const THEME_LABELS: Record<string, string> = {
+  app: 'App',
+  comisiones: 'Comisiones',
+  atencion: 'Atención',
+  usd: 'Dólares',
+  productos: 'Productos',
+  cobertura: 'Cobertura',
+}
+
+const { data: reddit, pending: redditPending } = useLazyFetch<RedditSnapshot>(
+  '/api/reddit-sentiment',
+  { server: false }
+)
+
+/** Entities Reddit actually judged (enough opinions to say something). */
+const redditJudged = computed(() =>
+  (reddit.value?.entities ?? [])
+    .filter(e => e.label !== 'sin datos')
+    .sort((a, b) => b.opinions - a.opinions)
+)
+/** Named but barely judged — we say so instead of pretending silence is a verdict. */
+const redditUnjudged = computed(() =>
+  (reddit.value?.entities ?? []).filter(e => e.label === 'sin datos' && e.mentions > 0)
+)
+const redditMinSample = computed(() => reddit.value?.minSample ?? 5)
+const redditSubs = computed(() =>
+  (reddit.value?.subs ?? ['uruguay', 'Burises', 'UruguayFinanzas']).map(s => `r/${s}`).join(', ')
+)
+const redditAsOf = computed(() => {
+  const iso = reddit.value?.asOf
+  if (!iso) return ''
+  const d = new Date(iso)
+  return isNaN(d.getTime())
+    ? ''
+    : d.toLocaleDateString('es-UY', { day: 'numeric', month: 'long', year: 'numeric' })
+})
+
+/** The Reddit verdict for one tier-list entity, or null when Reddit hasn't judged it. */
+function redditFor(id: string): RedditEntitySentiment | null {
+  const e = (reddit.value?.entities ?? []).find(x => x.id === id)
+  return e && e.label !== 'sin datos' && e.quotes.length ? e : null
+}
+
+const netClass = (net: number) => (net >= 15 ? 'pos' : net > -15 ? 'mix' : 'neg')
+const netColor = (net: number) => (net >= 15 ? 'success' : net > -15 ? 'warning' : 'error')
+const netHue = (net: number) => (net >= 15 ? '#16a34a' : net > -15 ? '#ca8a04' : '#dc2626')
+
 // --- SEO ---
 const canonicalUrl = 'https://cambio-uruguay.com/mejores-bancos-uruguay'
 const title = 'Los mejores bancos de Uruguay 2026: tier list de bancos y fintech'
 const description =
-  'Tier list interactiva de los bancos y fintech de Uruguay (BROU, Itaú, Santander, BBVA, Scotiabank, HSBC, Heritage, Mercado Pago, Prex, Astropay, Takenos). Rankeados con datos: reseñas reales, comisiones, atención, dólares y cobertura. Reordená según lo que te importa.'
+  'Tier list interactiva de los bancos y fintech de Uruguay (BROU, Itaú, Santander, BBVA, Scotiabank, BTG Pactual (ex HSBC), Heritage, Mercado Pago, Prex, Astropay, Takenos). Rankeados con datos: puntajes reales de las tiendas, comisiones, atención, dólares y cobertura, más lo que dicen los uruguayos en Reddit. Reordená según lo que te importa.'
 
 defineOgImageComponent('Cambio', {
   title: 'Mejores bancos de Uruguay',
@@ -774,22 +1077,63 @@ useSeoMeta({
 const sources = [
   { label: 'Reddit r/Burises — “Top peores bancos de Uruguay” (hilo disparador)', url: redditUrl },
   {
-    label: 'eBROU — reseñas Google Play (~4,34/5)',
+    label: 'Apple — bancos que participan en Apple Pay (sección Uruguay)',
+    url: 'https://support.apple.com/en-us/109524',
+  },
+  {
+    label: 'Santander Uruguay — página oficial de Apple Pay',
+    url: 'https://www.santander.com.uy/apple-pay',
+  },
+  {
+    label: 'Santander suma Apple Pay en Uruguay (El Observador, ago. 2025)',
+    url: 'https://www.elobservador.com.uy/ciencia-y-tecnologia/santander-suma-apple-pay-uruguay-conoce-la-lista-bancos-que-ya-lo-tienen-n6012017',
+  },
+  {
+    label: 'Google Wallet — bancos compatibles en Uruguay',
+    url: 'https://support.google.com/wallet/answer/12059326?hl=es-419&co=GENIE.CountryCode%3DUY',
+  },
+  {
+    label:
+      'HSBC Uruguay — aviso: “el 10 de julio de 2026 se concretó la adquisición” por BTG Pactual',
+    url: 'https://www.hsbc.com.uy/aviso/',
+  },
+  { label: 'BTG Pactual Uruguay — sitio oficial', url: 'https://www.btgpactual.uy/' },
+  {
+    label: 'HSBC vende su operación en Uruguay a BTG Pactual (Mercopress, jul. 2025)',
+    url: 'https://en.mercopress.com/2025/07/29/hsbc-sells-out-operations-in-uruguay-to-leading-brazilian-bank',
+  },
+  {
+    label: 'eBROU — reseñas Google Play (~4,4/5)',
     url: 'https://play.google.com/store/apps/details?id=uy.brou',
   },
   {
-    label: 'Itaú Uruguay — reseñas Google Play (~4,48/5)',
+    label: 'Itaú Uruguay — reseñas Google Play (~4,8/5)',
     url: 'https://play.google.com/store/apps/details?id=com.uy.itau.appitauuypf',
   },
-  { label: 'Prex — Trustpilot (~1,9/5)', url: 'https://es.trustpilot.com/review/www.prexcard.com' },
   {
-    label: 'Astropay — Trustpilot (~4,4–4,7/5)',
+    label: 'BBVA Uruguay — reseñas Google Play (histórico ~4,6/5; recientes ~3,1/5)',
+    url: 'https://play.google.com/store/apps/details?id=com.bbva.glomo.uy',
+  },
+  {
+    label: 'Scotia Móvil — reseñas Google Play (~2,45/5)',
+    url: 'https://play.google.com/store/apps/details?id=com.ingsw.scotiabankapp',
+  },
+  {
+    label: 'Prex — reseñas Google Play (~4,77/5, 129 mil reseñas)',
+    url: 'https://play.google.com/store/apps/details?id=air.Prex',
+  },
+  {
+    label: 'Prex — Trustpilot (~1,9/5, 70 reseñas)',
+    url: 'https://es.trustpilot.com/review/www.prexcard.com',
+  },
+  {
+    label: 'Astropay — Trustpilot (~4,2/5, 9.611 reseñas)',
     url: 'https://www.trustpilot.com/review/app.astropay.com',
   },
-  { label: 'Takenos — Trustpilot (~3,7/5)', url: 'https://www.trustpilot.com/review/takenos.com' },
+  { label: 'Takenos — Trustpilot (~3,6/5)', url: 'https://www.trustpilot.com/review/takenos.com' },
   {
-    label: 'HSBC vende su operación en Uruguay a BTG Pactual (Mercopress)',
-    url: 'https://en.mercopress.com/2025/07/29/hsbc-sells-out-operations-in-uruguay-to-leading-brazilian-bank',
+    label: 'Takenos — comisiones de retiro (centro de ayuda)',
+    url: 'https://help.takenos.com/en/articles/9820507',
   },
   {
     label: 'Scotiabank — modificación de retiros Banred (Cuenta Sueldo)',
@@ -800,8 +1144,8 @@ const sources = [
     url: 'https://www.elobservador.com.uy/cafe-y-negocios/negocios/mercado-pago-uruguay',
   },
   {
-    label: 'Banco Heritage — cuenta y atención (El Observador)',
-    url: 'https://www.elobservador.com.uy/',
+    label: 'Banque Heritage — tarifario Cuenta Smart (mínimo US$ 10.000)',
+    url: 'https://www.heritage.com.uy/',
   },
 ]
 
@@ -811,7 +1155,7 @@ useHead(() => ({
     {
       name: 'keywords',
       content:
-        'mejores bancos uruguay, peores bancos uruguay, mejor banco uruguay, tier list bancos uruguay, brou itau santander scotiabank bbva, mercado pago prex astropay takenos, comparativa bancos uruguay',
+        'mejores bancos uruguay, peores bancos uruguay, mejor banco uruguay, tier list bancos uruguay, brou itau santander scotiabank bbva, mercado pago prex astropay takenos, comparativa bancos uruguay, btg pactual uruguay, hsbc uruguay btg pactual, hsbc pasa a btg, santander apple pay uruguay',
     },
   ],
   script: [
@@ -1429,6 +1773,128 @@ useHead(() => ({
 }
 .news-more:hover {
   text-decoration: underline;
+}
+
+/* Corrections */
+.corrections-card {
+  border: 1px solid rgba(var(--v-border-color), 0.14);
+  border-left: 3px solid rgb(var(--v-theme-primary));
+  border-radius: 14px;
+}
+.corr-date {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.6;
+  margin-bottom: 10px;
+}
+.corr-list {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.corr-list li {
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+/* Per-ficha Reddit block */
+.ficha-reddit {
+  border-top: 1px dashed rgba(var(--v-border-color), 0.22);
+  padding-top: 12px;
+}
+
+/* What Reddit says */
+.reddit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+}
+.reddit-card {
+  border: 1px solid rgba(var(--v-border-color), 0.14);
+  border-radius: 14px;
+}
+.reddit-card.rd-neg {
+  border-left: 3px solid #dc2626;
+}
+.reddit-card.rd-mix {
+  border-left: 3px solid #ca8a04;
+}
+.reddit-card.rd-pos {
+  border-left: 3px solid #16a34a;
+}
+/* Net sentiment bar: zero sits in the middle, the fill grows to its side. */
+.rd-bar {
+  position: relative;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(var(--v-border-color), 0.16);
+  overflow: hidden;
+}
+.rd-zero {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(var(--v-theme-on-surface), 0.35);
+}
+.rd-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 999px;
+}
+.rd-counts {
+  font-size: 0.74rem;
+  opacity: 0.75;
+  margin-top: 6px;
+  margin-bottom: 0;
+}
+.reddit-summary {
+  font-size: 0.85rem;
+  line-height: 1.6;
+  opacity: 0.9;
+}
+.reddit-quotes {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.reddit-quotes a {
+  display: block;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  text-decoration: none;
+  border-radius: 8px;
+  padding: 6px 8px;
+  background: rgba(var(--v-border-color), 0.08);
+  color: rgb(var(--v-theme-on-surface));
+  opacity: 0.92;
+}
+.reddit-quotes a:hover {
+  background: rgba(var(--v-theme-primary), 0.1);
+}
+.reddit-quotes a.q-neg {
+  border-left: 2px solid rgba(220, 38, 38, 0.75);
+}
+.reddit-quotes a.q-pos {
+  border-left: 2px solid rgba(22, 163, 74, 0.75);
+}
+.q-mark {
+  opacity: 0.45;
+}
+.q-meta {
+  display: block;
+  font-size: 0.68rem;
+  opacity: 0.6;
+  margin-top: 3px;
 }
 
 /* News detail dialog */

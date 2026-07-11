@@ -18,6 +18,19 @@
 // Scores are our best objective judgement from web research + an adversarial fact-check
 // pass (review aggregates, tarifarios, press). Where a fact is dated or unconfirmed we say
 // so in `note`/`flag` and score conservatively. Informational, not financial advice.
+//
+// `app` is ANCHORED to the real store scores (Google Play + App Store, weighted by review
+// count), then adjusted for the trend of RECENT reviews, feature gaps (Apple Pay / Google
+// Pay) and sample size. Where there is no meaningful local sample (Takenos: 1 iOS rating;
+// Heritage: 13; Astropay: 193) we say so on the card and score conservatively instead of
+// inventing a number.
+//
+// Last fact-check: 2026-07-11. That pass corrected five things we had wrong:
+//   1. Santander DOES have Apple Pay (since ago-2025) — and Google Pay too.
+//   2. BBVA's app is not "de referencia": its 60 newest Play reviews average 3,1/5.
+//   3. Scotiabank's app is the WORST in the country (2,45/5), not "funcional".
+//   4. Prex shipped daily yields (mar-2026) TWO MONTHS before Mercado Pago (may-2026).
+//   5. HSBC Uruguay became BTG Pactual on 2026-07-10 — the `hsbc` entity is now `btg`.
 
 /** A scoring dimension of the rubric. */
 export type DimId = 'app' | 'comisiones' | 'atencion' | 'usd' | 'productos' | 'cobertura'
@@ -166,41 +179,42 @@ export const BANKS: readonly BankEntity[] = Object.freeze([
     tagline: 'La billetera que se comió media banca uruguaya.',
     scores: { app: 90, comisiones: 88, atencion: 42, usd: 66, productos: 74, cobertura: 92 },
     signals: [
-      { label: 'App', value: 'de las mejores', tone: 'pos' },
+      { label: 'App', value: '4,83/5 (75 mil reseñas iOS)', tone: 'pos' },
       { label: 'Tarjeta internacional', value: 'sin comisión', tone: 'pos' },
       { label: 'Soporte', value: 'quejas frecuentes', tone: 'neg' },
     ],
     bestFor:
       'Día a día, QR, guardar plata con rendimiento y una tarjeta gratis para comprar afuera.',
     pros: [
-      'Rendimiento diario sobre el saldo con liquidez inmediata (fondo BIND, regulado por BCU).',
+      'Rendimiento diario sobre el saldo en pesos, con liquidez inmediata y sin mínimo (fondo BIND Ahorro Pesos, supervisado por el BCU; referencia: la tasa de política monetaria, 5,75% anual al lanzamiento).',
       'Mastercard prepaga sin costo de emisión ni mantenimiento y sin comisión por compra en el exterior.',
       'Aceptación y QR en todos lados; transferencias gratis.',
     ],
     cons: [
       'Atención al cliente opaca: reintegros demorados y cuentas congeladas por "movimientos inusuales".',
-      'No es un banco: sin créditos hipotecarios ni caja de ahorro tradicional.',
+      'El rendimiento es solo en PESOS (fondo BIND Ahorro Pesos): si tenés el saldo en dólares, no gana nada.',
+      'No es un banco (es emisora de dinero electrónico ante el BCU): sin hipoteca ni caja de ahorro. Y su prepaga no se puede cargar en Apple Pay ni Google Pay.',
     ],
     flag: undefined,
     verdict:
-      'Con criterios parejos, la fintech le gana a casi todos los bancos: app excelente, casi todo gratis, rinde el saldo y la tarjeta compra afuera sin recargo. El talón de Aquiles es el soporte cuando algo sale mal. Desde ~mayo 2026 sumó rendimientos, tarjeta internacional y POS.',
+      'Con criterios parejos, la fintech le gana a casi todos los bancos: app excelente, casi todo gratis, rinde el saldo en pesos y la tarjeta compra afuera sin recargo. El talón de Aquiles sigue siendo el soporte cuando algo sale mal. Y una corrección al relato: sumó rendimientos en mayo de 2026, pero la PRIMERA en pagarlos en Uruguay fue Prex, dos meses antes.',
   },
   {
     id: 'itau',
     name: 'Itaú',
     kind: 'banco',
-    identity: 'Banco privado (el más grande)',
+    identity: 'Banco privado brasileño (dueño de OCA)',
     tagline: 'El banco privado mejor armado en lo digital.',
     scores: { app: 92, comisiones: 50, atencion: 68, usd: 78, productos: 88, cobertura: 82 },
     signals: [
-      { label: 'App', value: '4,48/5 Play', tone: 'pos' },
+      { label: 'App', value: '4,76/5 Play · 4,84/5 iOS', tone: 'pos' },
       { label: 'Productos', value: 'gama completa', tone: 'pos' },
       { label: 'Costos', value: 'perfil "caro"', tone: 'neg' },
     ],
     bestFor: 'Quien quiere el mejor combo app + productos y no le pesa pagar por el servicio.',
     pros: [
-      'La app mejor puntuada entre los grandes (≈4,48/5 con ~25 mil reseñas).',
-      'Amplia cartera de tarjetas y programa de beneficios; suele liderar tasas de plazo fijo a plazos largos.',
+      'La app mejor puntuada de la banca uruguaya: 4,76/5 en Play (27 mil reseñas) y 4,84/5 en la App Store. Global Finance lo eligió Mejor Banco Digital de Uruguay cuatro años seguidos.',
+      'Amplia cartera de tarjetas y programa de beneficios; es dueño de OCA, la mayor emisora de tarjetas del país.',
       'Fuerte presencia de sucursales y cajeros en Montevideo.',
     ],
     cons: [
@@ -216,24 +230,24 @@ export const BANKS: readonly BankEntity[] = Object.freeze([
     kind: 'banco',
     identity: 'Banco privado (multinacional)',
     tagline: 'El favorito de quien cobra en dólares.',
-    scores: { app: 82, comisiones: 58, atencion: 68, usd: 86, productos: 82, cobertura: 76 },
+    scores: { app: 84, comisiones: 58, atencion: 68, usd: 86, productos: 82, cobertura: 76 },
     signals: [
-      { label: 'App', value: 'bien valorada', tone: 'pos' },
+      { label: 'App', value: '4,67/5 Play · 4,65/5 iOS', tone: 'pos' },
       { label: 'Dólares', value: 'fuerte', tone: 'pos' },
-      { label: 'Apple Pay', value: 'todavía no', tone: 'neg' },
+      { label: 'Apple Pay + Google Pay', value: 'sí, desde ago. 2025', tone: 'pos' },
     ],
     bestFor: 'Freelancers y empleados de zona franca que cobran en USD y quieren hipoteca.',
     pros: [
-      'App completa y bien valorada; buena para operar en dólares.',
+      'App completa y bien puntuada (4,67/5 en Play con ~38 mil reseñas; 4,65/5 en la App Store), con Apple Pay y Google Pay habilitados desde agosto de 2025.',
       'Condiciones pensadas para ingresos en USD y foco en crédito hipotecario.',
       'Promociones y beneficios comerciales frecuentes.',
     ],
     cons: [
-      'App algo lenta y sin Apple Pay (solo Google Pay), pedido recurrente en reseñas.',
+      'Movimientos que tardan en impactar y fallas repetidas con Face ID / llave digital: es lo que más aparece en las reseñas recientes de la App Store.',
       'Reputación "multinacional" en comisiones (más de imagen que de datos locales verificados).',
     ],
     verdict:
-      'El más elegido por perfiles con ingresos en dólares: operativa USD sólida, hipotecas y una app que gusta. Le falta Apple Pay y algo de velocidad para pelear el primer puesto.',
+      'El más elegido por perfiles con ingresos en dólares: operativa USD sólida, hipotecas y una app bien puntuada (4,67/5 en Play). Corrección nuestra: SÍ tiene Apple Pay —desde agosto de 2025— y también Google Pay; lo decíamos mal. Lo que le queda flojo son las comisiones y algunos bugs de sesión, no las billeteras.',
   },
   {
     id: 'brou',
@@ -241,10 +255,11 @@ export const BANKS: readonly BankEntity[] = Object.freeze([
     kind: 'banco',
     identity: 'Banco República (estatal)',
     tagline: 'El aburrido confiable que está en todos lados.',
-    scores: { app: 58, comisiones: 86, atencion: 52, usd: 64, productos: 80, cobertura: 99 },
+    scores: { app: 66, comisiones: 86, atencion: 52, usd: 64, productos: 80, cobertura: 99 },
     signals: [
-      { label: 'App eBROU', value: '4,34/5 Play', tone: 'neutral' },
+      { label: 'App eBROU', value: '4,43/5 Play · 3,53/5 iOS', tone: 'neutral' },
       { label: 'Red', value: 'la más grande', tone: 'pos' },
+      { label: 'Apple Pay', value: 'no (solo Google Pay)', tone: 'neg' },
       { label: 'Trámites', value: 'burocráticos', tone: 'neg' },
     ],
     bestFor: 'Quien prioriza respaldo estatal, cajeros en todo el país y costos bajos.',
@@ -254,60 +269,68 @@ export const BANKS: readonly BankEntity[] = Object.freeze([
       'Respaldo estatal: el "por defecto" confiable.',
     ],
     cons: [
-      'App con límites rígidos, fricción de login y estabilidad irregular tras updates.',
-      'Trámites y colas: la burocracia de una entidad estatal grande.',
+      'App con límites rígidos y estabilidad irregular tras updates; mucho peor en iPhone (3,53/5) que en Android (4,43/5).',
+      'Tiene Google Pay pero NO Apple Pay: siendo el banco más usado del país, si usás iPhone no pagás con el celular. (Sí lo tienen Itaú, Santander, Scotiabank, OCA, Prex y MiDinero.)',
+      'Trámites y colas: la burocracia de una entidad estatal grande. Además bloquea las transferencias a Revolut, y el BCU le dio la razón.',
     ],
     verdict:
-      'Con criterios parejos queda en el pelotón, pero cambiá el filtro a "uso diario / cobertura" y salta al tope: nadie le gana en red física ni en costo. La app y la atención son su techo.',
+      'Subió, y por datos: con el puntaje real de eBROU (4,43/5 en Play, no el 4,34 que teníamos) entra en A. Nadie le gana en red física ni en costo — cambiá el filtro a "uso diario" y salta al tope. Sus techos siguen siendo la atención y la app en iPhone (3,53/5), y que, siendo el banco más usado del país, todavía no tenga Apple Pay.',
   },
   {
     id: 'bbva',
     name: 'BBVA',
     kind: 'banco',
     identity: 'Banco privado (multinacional)',
-    tagline: 'Buen digital, huella chica.',
-    scores: { app: 84, comisiones: 60, atencion: 60, usd: 74, productos: 76, cobertura: 64 },
+    tagline: 'Era la referencia digital; hoy la app se le cae.',
+    scores: { app: 62, comisiones: 60, atencion: 60, usd: 74, productos: 70, cobertura: 64 },
     signals: [
       { label: 'Alta 100% online', value: 'solo con cédula', tone: 'pos' },
-      { label: 'App', value: 'de referencia', tone: 'pos' },
-      { label: 'Red', value: 'más chica', tone: 'neg' },
+      { label: 'App (histórico)', value: '4,61/5 Play', tone: 'pos' },
+      { label: 'App (últimas 60 reseñas)', value: '3,1/5 · 32% de 1 estrella', tone: 'neg' },
+      { label: 'Apple Pay / Google Pay', value: 'ninguno de los dos', tone: 'neg' },
     ],
-    bestFor: 'Quien abre cuenta desde el celu y quiere cashback y cuentas en dólares.',
+    bestFor:
+      'Quien quiere abrir cuenta desde el celular en minutos y operar en pesos y dólares. Si vivís pagando con el celular, no: es el único sin Apple Pay ni Google Pay.',
     pros: [
-      'Alta de cuenta 100% dentro de la app con cédula uruguaya.',
-      'App/home banking históricamente de referencia; pionero en cashback y cuentas en dólares.',
+      'Alta de cuenta 100% online desde la app: alcanza con cédula vigente y conexión a internet.',
+      'Opera en pesos y dólares, y el histórico de la app sigue siendo bueno (4,61/5 en Play, 4,76/5 en la App Store).',
     ],
     cons: [
+      'La app viene cayendo hace un año: el promedio mensual de reseñas pasó de 4,45 (jun. 2025) a 2,58 (jul. 2026), y las últimas 60 promedian 3,1/5 con 32% de una estrella. La queja que más se repite: se traba en la pantalla azul de "validando credenciales".',
+      'Es el ÚNICO del tablero sin Apple Pay NI Google Pay: no figura en la lista oficial de emisores de Apple ni en la de Google Wallet para Uruguay.',
+      'No es "pionero en cashback": su programa hoy es Puntos BBVA, puntos canjeables por viajes vía Despegar.',
       'Menor cantidad de sucursales y cajeros que BROU/Itaú/Santander.',
-      'Datos locales de atención/comisiones más finos; puntuamos conservador.',
     ],
     verdict:
-      'Su gran carta es el onboarding digital y una app pulida. Pierde puntos por cobertura física y porque hay menos evidencia local dura de servicio, así que lo puntuamos con prudencia.',
+      'Nos escribieron diciendo que la app "es una bosta y encima se ve espantosa". Tienen media razón, y nos hicieron mirar mejor. "Una bosta" exagera: en histórico puntúa 4,61/5 en Play y 4,76/5 en la App Store. Pero nuestro "app de referencia" con 84/100 era indefendible: viene en caída desde mediados de 2025 (promedio mensual 4,45 → 2,58), las últimas 60 reseñas dan 3,1/5 con 32% de una estrella, y es el único banco del tablero sin Apple Pay ni Google Pay. Lo que NO encontramos es lo de "espantosa": de las 50 reseñas negativas más recientes, casi ninguna habla del diseño — se quejan de que no anda, no de cómo se ve. Bajamos la app de 84 a 62.',
   },
   {
     id: 'takenos',
     name: 'Takenos',
     kind: 'fintech',
     identity: 'Fintech (cuenta USD para freelancers)',
-    tagline: 'Cobrar del exterior sin que te coman las comisiones.',
-    scores: { app: 70, comisiones: 82, atencion: 58, usd: 92, productos: 56, cobertura: 58 },
+    tagline: 'Cobrás gratis del exterior; sacarlo te cuesta 3%.',
+    scores: { app: 64, comisiones: 48, atencion: 52, usd: 88, productos: 56, cobertura: 48 },
     signals: [
-      { label: 'Trustpilot', value: '3,7/5', tone: 'neutral' },
-      { label: 'Cuenta USD EEUU', value: 'sí', tone: 'pos' },
-      { label: 'Soporte', value: '24/7 WhatsApp', tone: 'pos' },
+      { label: 'Cuenta USD en EEUU', value: 'ACH gratis, 1 a 3 días', tone: 'pos' },
+      { label: 'Sacar la plata', value: '3% (ACH o USDT)', tone: 'neg' },
+      { label: 'Rieles uruguayos', value: 'ninguno (ni entra ni sale UYU)', tone: 'neg' },
+      { label: 'Trustpilot', value: '3,6/5 (140 reseñas)', tone: 'neutral' },
     ],
-    bestFor: 'Freelancers que facturan a clientes del exterior y quieren dólares reales, ya.',
+    bestFor:
+      'Freelancers que COBRAN del exterior en dólares y los dejan ahí o los gastan con la tarjeta. Si tu plan es pasarlos a pesos en Uruguay, mirá el 3% antes.',
     pros: [
-      'Cuenta en dólares en EEUU: recibís USD por ACH/WIRE casi instantáneo y sin comisiones.',
-      'Ahorro en dólares digitales, retiro a USDT o rieles locales; tarjeta usable en cualquier país.',
-      'Soporte 24/7 por WhatsApp.',
+      'Cuenta en dólares en EEUU a tu nombre: recibís USD por ACH sin comisión (acredita en 1 a 3 días hábiles).',
+      'También recibís euros por SEPA y cripto; el saldo queda en dólares digitales y la tarjeta se usa en cualquier país.',
     ],
     cons: [
+      'Sacar la plata cuesta 3% (ACH o USDT). Para un uruguayo NO hay salida gratis: el 1% es solo para usuarios de Argentina/Ecuador o para fondos que vienen de Deel, Ontop, PayPal o Airbnb.',
+      'No tiene rieles uruguayos: no entra ni sale UYU. La tarjeta cuesta USD 5 (virtual) o USD 20 + USD 20 de envío (física), más 1% por compra.',
+      'Es una fintech argentina, no uruguaya, y el soporte "24/7 por WhatsApp" que decíamos no está publicado en ningún lado.',
       'Cola de reseñas negativas sobre recuperar fondos y cuentas cerradas con saldo adentro.',
-      'Producto angosto (recibir/ahorrar USD): no reemplaza a un banco.',
     ],
     verdict:
-      'Herramienta de nicho muy querida por freelancers para cobrar afuera. Marcá el filtro "dólares" y se dispara a lo más alto; su 3,7 refleja una minoría con problemas para sacar la plata.',
+      'Nos habíamos comido la letra chica. Sigue siendo lo mejor para COBRAR del exterior: te da una cuenta en dólares en EEUU y recibís por ACH sin comisión. El problema es la salida — sacar esos dólares a Uruguay cuesta 3% (ACH o USDT) y no tiene rieles en pesos, así que ni entra ni sale UYU. Marcá el filtro "dólares" y se dispara a S; marcá "comisiones" y se derrumba. Antes decíamos "sin comisiones" y "casi instantáneo": las dos cosas eran falsas.',
   },
   {
     id: 'heritage',
@@ -317,43 +340,45 @@ export const BANKS: readonly BankEntity[] = Object.freeze([
     tagline: 'Atención de guante blanco y dólares que rinden.',
     scores: { app: 56, comisiones: 64, atencion: 92, usd: 94, productos: 74, cobertura: 34 },
     signals: [
-      { label: 'Cuenta USD a la vista', value: '~3,5% anual', tone: 'pos' },
+      { label: 'Cuenta USD a la vista', value: '3,5% anual (desde US$ 10.000)', tone: 'pos' },
       { label: 'Atención', value: 'oficial directo', tone: 'pos' },
       { label: 'Sucursales', value: 'muy pocas', tone: 'neg' },
     ],
     bestFor: 'Ahorristas en dólares y saldos medios/altos que quieren trato personalizado.',
     pros: [
       'Único banco de capitales suizos; sin call center: cada cliente tiene un oficial de cuenta directo.',
-      '"Smart Account" en USD que paga ~3,5% anual sobre el saldo a la vista (raro en plaza) y plataforma multimoneda.',
-      'Alta satisfacción autoinformada; suele liderar plazo fijo en dólares a plazos largos.',
+      '"Cuenta Smart": paga 3,5% anual en dólares a la vista (y 5,5% en pesos), sin costo de apertura ni mantenimiento — pero se abre desde US$ 10.000.',
+      'Trato personalizado y alta satisfacción autoinformada; abrió oficina en Punta del Este.',
     ],
     cons: [
-      'Huella física mínima: no es para quien quiere cajeros en cada esquina.',
-      'Perfil afluente/boutique: no es un banco masivo de uso diario.',
+      'La Cuenta Smart arranca en US$ 10.000: si no tenés ese colchón, este banco no es para vos. (Antes no lo decíamos.)',
+      'Huella física mínima: no es para quien quiere cajeros en cada esquina; tampoco tiene Apple Pay ni Google Pay.',
+      'Su app casi no tiene muestra pública (13 reseñas en la App Store uruguaya): la puntuamos conservador, no medida.',
     ],
     verdict:
-      'El secreto de los que ahorran en dólares. Con criterios parejos queda en B por su cobertura chica, pero filtrá por "dólares" o "atención" y se va al tope. No es para todos; para su nicho, es de lo mejor.',
+      'El secreto de los que ahorran en dólares. Con criterios parejos queda en B por su cobertura chica, pero filtrá por "dólares" o "atención" y se va al tope. No es para todos —arranca en US$ 10.000, dato que antes nos faltaba—; para su nicho, es de lo mejor.',
   },
   {
     id: 'astropay',
     name: 'Astropay',
     kind: 'fintech',
-    identity: 'Fintech uruguaya (billetera + tarjeta)',
+    identity: 'Fintech de origen uruguayo (hoy con sede en Londres)',
     tagline: 'Billetera global con buenas reseñas y una cola de trabas.',
-    scores: { app: 80, comisiones: 60, atencion: 56, usd: 78, productos: 54, cobertura: 70 },
+    scores: { app: 74, comisiones: 60, atencion: 56, usd: 78, productos: 54, cobertura: 70 },
     signals: [
-      { label: 'Trustpilot', value: '4,4–4,7/5', tone: 'pos' },
+      { label: 'Trustpilot', value: '4,2/5 (9.611 reseñas)', tone: 'pos' },
       { label: 'Depósitos', value: 'rápidos', tone: 'pos' },
       { label: 'KYC / retiros', value: 'trabas puntuales', tone: 'neg' },
     ],
     bestFor: 'Compras online, plataformas internacionales y mover dólares entre servicios.',
     pros: [
-      'Puntajes altos en Trustpilot; rápida, fácil e integrada con muchas plataformas.',
+      'Buen puntaje en Trustpilot (4,2/5 sobre 9.611 reseñas, la muestra más grande del tablero); rápida e integrada con muchas plataformas.',
       'Origen uruguayo; útil para tarjeta en USD y pagos transfronterizos.',
     ],
     cons: [
       'Minoría real de casos: verificación KYC lenta y cuentas bloqueadas sin explicación.',
       'Producto acotado a billetera/prepaga; piden comisiones más bajas.',
+      'Muestra local mínima: 193 reseñas en la App Store uruguaya y sin listado propio en Google Play — puntuamos su app conservador, no medida.',
     ],
     verdict:
       'Buen promedio de reseñas y práctica para pagos internacionales, con una cola de problemas de KYC y retiros que conviene tener presente. Sólida en su rubro, no un reemplazo bancario.',
@@ -364,23 +389,24 @@ export const BANKS: readonly BankEntity[] = Object.freeze([
     kind: 'banco',
     identity: 'Banco privado (canadiense)',
     tagline: 'El que más quejas de servicio junta.',
-    scores: { app: 66, comisiones: 42, atencion: 36, usd: 70, productos: 74, cobertura: 60 },
+    scores: { app: 30, comisiones: 42, atencion: 36, usd: 70, productos: 74, cobertura: 60 },
     signals: [
+      { label: 'App Scotia Móvil', value: '2,45/5 Play · 2,35/5 iOS', tone: 'neg' },
       { label: 'Atención', value: 'quejas recurrentes', tone: 'neg' },
       { label: 'Cajeros gratis', value: 'recortados 05/2026', tone: 'neg' },
-      { label: 'Scotia Puntos', value: 'ok', tone: 'neutral' },
     ],
     bestFor: 'Quien ya tiene el paquete y usa Scotia Puntos / Club Card Tienda Inglesa.',
     pros: [
-      'App funcional (transferencias, saldos, movimientos) y respaldo de un banco canadiense grande.',
-      'Buenos programas de premios (Scotia Puntos, Club Card Tienda Inglesa).',
+      'Buenos programas de premios (Scotia Puntos, Club Card Tienda Inglesa) y respaldo de un banco canadiense grande.',
+      'Sucursales en todas las capitales departamentales y una red amplia en Montevideo.',
     ],
     cons: [
+      'La peor app del tablero, y no por poco: Scotia Móvil puntúa 2,45/5 en Google Play (3.700 reseñas) y 2,35/5 en la App Store. El 82% de las 60 reseñas más recientes son de una estrella: login que se traba de noche, transferencias que fallan.',
       'Atención telefónica floja, demoras para abrir cuenta y facturación con errores.',
-      'Erosión de beneficios: desde mayo 2026 recortó los retiros Banred gratis de la Cuenta Sueldo Básica.',
+      'Erosión de beneficios: desde mayo 2026 recortó los retiros Banred gratis de la Cuenta Sueldo Básica a 6 por mes.',
     ],
     verdict:
-      'Es el banco que más consistentemente aparece por mal servicio y por recortar beneficios "sin comisiones". La app cumple, pero la experiencia alrededor lo empuja hacia abajo.',
+      'Acá nos equivocamos feo: decíamos "la app cumple" y es, con datos, la peor app bancaria del país — 2,45/5 en Play, 2,35/5 en la App Store, y 82% de las últimas reseñas son de una estrella. Sumale la atención telefónica y el recorte de los retiros Banred gratis, y queda claro por qué es el que más quejas junta. Los programas de premios son lo único que lo sostiene. Le bajamos la app de 66 a 30 y se va a D.',
   },
   {
     id: 'prex',
@@ -388,49 +414,56 @@ export const BANKS: readonly BankEntity[] = Object.freeze([
     kind: 'fintech',
     identity: 'Fintech (cuenta + prepaga)',
     tagline: 'Cómoda hasta que algo sale mal.',
-    scores: { app: 72, comisiones: 46, atencion: 16, usd: 54, productos: 40, cobertura: 76 },
+    scores: { app: 86, comisiones: 46, atencion: 30, usd: 54, productos: 66, cobertura: 76 },
     signals: [
-      { label: 'Trustpilot', value: '1,9/5', tone: 'neg' },
+      { label: 'Apps (Play + App Store)', value: '4,8/5 · 210 mil reseñas', tone: 'pos' },
+      { label: 'Trustpilot', value: '1,9/5 · solo 70 reseñas', tone: 'neg' },
       { label: 'Fraude/phishing', value: 'casos en prensa', tone: 'neg' },
-      { label: 'Sin cuenta bancaria', value: 'práctica', tone: 'pos' },
     ],
-    bestFor: 'Uso liviano local/USD sin abrir cuenta en banco; guardá poco saldo.',
+    bestFor:
+      'Uso diario sin abrir cuenta en banco, y hacer rendir pesos con liquidez inmediata. Guardá solo lo que puedas permitirte perder.',
     pros: [
-      'App simple y prepaga sin necesidad de cuenta bancaria; muy popular entre jóvenes.',
+      'Fue la PRIMERA en pagar rendimientos diarios en Uruguay: "Inversión Violeta" (fondo aprobado por el BCU vía Gletir/VALO, liquidez inmediata, sin comisiones, desde $100) salió a fines de marzo de 2026, dos meses antes que Mercado Pago.',
+      'Las apps mejor puntuadas del tablero: 4,77/5 en Play (129 mil reseñas) y 4,81/5 en la App Store (81 mil). Prepaga sin necesidad de cuenta bancaria.',
       'Recargas y transferencias fáciles para uso cotidiano.',
     ],
     cons: [
-      'Reputación de soporte pésima (Trustpilot ≈1,9/5): ante fraude, tiende a responsabilizar al usuario.',
-      'Blanco de phishing con casos en prensa; comisiones de retiro y de compra en el exterior altas.',
+      'Reputación de soporte pésima en Trustpilot (1,9/5) — aunque son solo 70 reseñas, contra 210 mil en las tiendas: ante fraude, tiende a responsabilizar al usuario.',
+      'Blanco de phishing con casos en prensa local: te llaman haciéndose pasar por Prex, te cambian la contraseña y te vacían la cuenta.',
+      'Comisiones altas: retiro en cajero USD 3 o $45 + IVA; en Abitab USD 1,90 o $35 + IVA; compras en el exterior 2,5% + USD 0,50 + IVA.',
     ],
     verdict:
-      'La usan miles por comodidad, pero su manejo de fraudes y su soporte arrastran la peor reputación independiente del listado. Útil para saldos chicos; no le confíes plata que no puedas perder.',
+      'Le debíamos una corrección. Sus apps son las mejor puntuadas del tablero (4,8/5 con más de 210 mil reseñas entre Play y la App Store) y fue la PRIMERA en pagar rendimientos diarios en Uruguay —a fines de marzo de 2026, dos meses antes que Mercado Pago—, así que "producto pobre" ya no corre. Lo que la hunde no es el producto: es qué pasa cuando algo sale mal. Su 1,9/5 en Trustpilot (sobre solo 70 reseñas, ojo) y su manejo de los fraudes le siguen costando caro. Marcá el filtro "atención" y se va sola a F. Útil y cómoda; no le confíes plata que no puedas perder.',
   },
   {
-    id: 'hsbc',
-    name: 'HSBC',
+    id: 'btg',
+    name: 'BTG Pactual',
     kind: 'banco',
-    identity: 'Banco privado — en salida del país',
-    tagline: 'Se va de Uruguay: pasa a manos de BTG Pactual.',
-    scores: { app: 52, comisiones: 42, atencion: 44, usd: 70, productos: 54, cobertura: 26 },
+    identity: 'Banco privado brasileño (ex-HSBC Uruguay)',
+    tagline: 'El ex-HSBC con marca nueva: mismo banco, mismo foco Premium.',
+    scores: { app: 78, comisiones: 42, atencion: 56, usd: 82, productos: 62, cobertura: 30 },
     signals: [
-      { label: 'Venta a BTG Pactual', value: 'US$175M', tone: 'neg' },
-      { label: 'Cierre', value: '~2º sem. 2026', tone: 'neg' },
-      { label: 'Sucursales', value: 'solo ~5', tone: 'neg' },
+      { label: 'Arrancó', value: '10 de julio de 2026', tone: 'neutral' },
+      { label: 'App iBanca', value: '4,8/5 (sigue siendo la de HSBC)', tone: 'pos' },
+      { label: 'Cuenta para personas', value: 'solo Excellence (premium)', tone: 'neg' },
+      { label: 'Sucursales', value: '~6, casa central con cita previa', tone: 'neg' },
     ],
     bestFor:
-      'Prácticamente nadie nuevo: está en transición. Clientes actuales, atentos al traspaso.',
+      'Perfil afluente que quiere banca privada, inversiones globales y un ejecutivo de cuenta asignado. Para el uso masivo del día a día, no.',
     pros: [
-      'Banca internacional con foco afluente/premier mientras dura la transición.',
-      'Operativa en dólares propia de un banco global.',
+      'El traspaso no rompió nada: misma app (iBanca, 4,8/5), mismo teléfono (2915 1010), mismas sucursales, mismo equipo y mismo CEO local. El propio HSBC avisó que "no afectará la continuidad de los productos, servicios ni canales de atención".',
+      'Excellence es el ex-Premier de HSBC con otro nombre: ejecutivo de cuenta asignado, VISA Infinite con salas VIP, cuentas multimoneda (UYU/USD/EUR/GBP/UI), fondos globales, bonos, ADRs y ETFs.',
+      'Atrás hay un grupo grande: BTG Pactual maneja US$ 497 mil millones y Euromoney lo eligió Mejor Banca Privada de Latinoamérica en 2025.',
     ],
     cons: [
-      'Vende toda su operación uruguaya a BTG Pactual (acordado jul. 2025, cierre ~2º sem. 2026): marca en retirada.',
-      'Huella mínima (≈5 sucursales) y foco en saldos altos; no es para el usuario masivo.',
+      'Es una marca de días: arrancó el 10 de julio de 2026 y todavía no hay una sola reseña ni experiencia de cliente independiente. Puntuamos conservador y lo vamos a revisar.',
+      'Escaparate 100% premium: la ÚNICA cuenta para personas que publica es Excellence — su propio sitio la titula "Banca Premium". Las cuentas masivas de HSBC (Cuenta Personal, Cuenta Ingresos) no aparecen en su web.',
+      'Huella mínima: ~6 sucursales y una casa central (WTC) que atiende solo con cita: "coordiná con tu ejecutivo de cuentas". Sin Apple Pay ni Google Pay.',
+      'La app sigue publicada como "HSBC Uruguay - iBanca" bajo la cuenta de desarrollador de HSBC: falta la republicación bajo BTG y no hay fecha.',
     ],
-    flag: 'En transición a BTG Pactual — no lo tomes como opción estable',
+    flag: 'Marca nueva desde el 10/07/2026 (ex-HSBC): los datos y la experiencia de cliente todavía se están formando',
     verdict:
-      'Lo incluimos porque muchos lo buscan, pero para abrir cuenta hoy no tiene sentido: está saliendo del mercado. Su futuro es la marca brasileña BTG Pactual. Si sos cliente, seguí de cerca el traspaso.',
+      'El 10 de julio de 2026 HSBC Uruguay pasó a ser BTG Pactual: la compra (US$ 175 millones, aprobada por el BCU en junio) se concretó, hsbc.com.uy quedó reducido a un aviso y el home banking se mudó a ibanca.btgpactual.uy. Para el cliente, por ahora, sigue todo igual: misma app, mismo teléfono, mismas sucursales, mismo equipo. Lo que cambia es el rumbo — la única cuenta para personas que publica es "Excellence", que su propio sitio llama "Banca Premium": el ex-Premier de HSBC con otro nombre. Dice querer estar en el top 3 del país en dos o tres años, pero hoy el escaparate es MÁS premium que el de HSBC, no menos. Tiene días de vida: lo puntuamos conservador y lo revisamos en semanas.',
   },
 ])
 
