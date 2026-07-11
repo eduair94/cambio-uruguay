@@ -17,6 +17,7 @@
 // FROM THE ALREADY-SELECTED QUOTES. It is commentary on the numbers, never their source.
 import { connectDb } from './db'
 import { RedditPostModel, type RedditPostDoc } from '../models/RedditPost'
+import { RedditCommentModel, type RedditCommentDoc } from '../models/RedditComment'
 import { RedditSentimentModel } from '../models/RedditSentiment'
 import { fetchComments, redditConfigured, searchSubreddit, type RedditPostRaw } from './reddit'
 import { chatTextWithFallback } from './ai'
@@ -36,6 +37,15 @@ const SUBS = ['uruguay', 'Burises', 'UruguayFinanzas', 'Montevideo', 'uruguayNOf
 /** Comment downloads per run. The daily budget; anything left over waits for tomorrow. */
 const MAX_COMMENT_FETCHES = 120
 
+/**
+ * Bump to re-download every thread's comments. v1 asked for `limit=80, depth=4` and took
+ * whatever came back, which meant we stored only the TOP of each tree — everything Reddit
+ * collapsed behind "load more comments" / "continue this thread" was silently dropped, and the
+ * long threads are exactly where the argument happens. v2 walks the full tree and drains those
+ * stubs via /api/morechildren.
+ */
+const COMMENT_FETCH_VERSION = 2
+
 /** Ignore threads older than this — the decay curve makes them near-weightless anyway. */
 const MAX_CORPUS_AGE_DAYS = 365 * 5
 
@@ -46,6 +56,7 @@ export interface HarvestStats {
   seen: number
   newPosts: number
   commentsFetched: number
+  commentsStored: number
   commentsPending: number
   skippedBudget: number
 }
@@ -53,13 +64,19 @@ export interface HarvestStats {
 /**
  * Stage 1. Search every entity's queries across the subs and upsert what comes back.
  * `window` is 'all' for a first backfill, 'year' for the daily incremental pass.
+ * `budget` caps how many threads we download comments for in this run (the expensive part);
+ * the leftovers are picked up by the next run, so a big backfill is just several runs.
  */
-export async function harvest(window: 'year' | 'all' = 'year'): Promise<HarvestStats> {
+export async function harvest(
+  window: 'year' | 'all' = 'year',
+  budget: number = MAX_COMMENT_FETCHES
+): Promise<HarvestStats> {
   const stats: HarvestStats = {
     searched: 0,
     seen: 0,
     newPosts: 0,
     commentsFetched: 0,
+    commentsStored: 0,
     commentsPending: 0,
     skippedBudget: 0,
   }
@@ -74,7 +91,7 @@ export async function harvest(window: 'year' | 'all' = 'year'): Promise<HarvestS
     for (const q of entity.queries) {
       for (const sub of SUBS) {
         stats.searched++
-        const posts = await searchSubreddit(sub, q, { t: window, sort: 'new', limit: 50 })
+        const posts = await searchSubreddit(sub, q, { t: window, sort: 'new' })
         for (const p of posts) {
           const hit = found.get(p.id)
           if (hit) hit.queries.add(q)
@@ -92,18 +109,22 @@ export async function harvest(window: 'year' | 'all' = 'year'): Promise<HarvestS
   // What do we already have? One query, then upsert only what changed.
   const ids = fresh.map(f => f.post.id)
   const existing = await RedditPostModel.find({ redditId: { $in: ids } })
-    .select({ redditId: 1, commentsAtCount: 1 })
+    .select({ redditId: 1, commentsAtCount: 1, commentsVersion: 1 })
     .lean()
-  const known = new Map(existing.map(d => [d.redditId, d.commentsAtCount ?? -1]))
+  const known = new Map(
+    existing.map(d => [d.redditId, { at: d.commentsAtCount ?? -1, v: d.commentsVersion ?? 0 }])
+  )
 
   const needComments: Array<{ post: RedditPostRaw; queries: string[] }> = []
 
   const ops = fresh.map(({ post, queries }) => {
-    const isNew = !known.has(post.id)
-    if (isNew) stats.newPosts++
-    // Re-read comments only when there is something new to read.
-    const have = known.get(post.id) ?? -1
-    if (post.numComments > 0 && post.numComments > have) {
+    const have = known.get(post.id)
+    if (!have) stats.newPosts++
+    // Download this thread's comments when there is something new to read, OR when what we
+    // stored came from an older, lossier fetch strategy (see COMMENT_FETCH_VERSION).
+    const staleStrategy = (have?.v ?? 0) < COMMENT_FETCH_VERSION
+    const grew = post.numComments > (have?.at ?? -1)
+    if (post.numComments > 0 && (grew || staleStrategy)) {
       needComments.push({ post, queries: [...queries] })
     }
     return {
@@ -124,7 +145,12 @@ export async function harvest(window: 'year' | 'all' = 'year'): Promise<HarvestS
             lastSeenAt: new Date(),
           },
           $addToSet: { queries: { $each: [...queries] } },
-          $setOnInsert: { comments: [], commentsAtCount: -1, commentsFetchedAt: null },
+          $setOnInsert: {
+            comments: [],
+            commentsAtCount: -1,
+            commentsVersion: 0,
+            commentsFetchedAt: null,
+          },
         },
         upsert: true,
       },
@@ -137,33 +163,110 @@ export async function harvest(window: 'year' | 'all' = 'year'): Promise<HarvestS
     (a, b) => b.post.createdUtc - a.post.createdUtc || b.post.numComments - a.post.numComments
   )
   stats.commentsPending = needComments.length
-  const budget = needComments.slice(0, MAX_COMMENT_FETCHES)
-  stats.skippedBudget = needComments.length - budget.length
+  const todo = budget > 0 ? needComments.slice(0, budget) : needComments
+  stats.skippedBudget = needComments.length - todo.length
 
-  for (const { post } of budget) {
-    const comments = await fetchComments(post.id)
-    if (!comments.length) continue
+  for (const { post } of todo) {
+    // Tell Reddit what we already hold, so collapsed branches we've stored are never re-sent.
+    const held = await RedditCommentModel.find({ postId: post.id }).select({ commentId: 1 }).lean()
+    const known = new Set(held.map(c => c.commentId))
+
+    const comments = await fetchComments(post.id, known)
+    stats.commentsFetched++
+
+    // Upsert only what is new. `commentId` is unique, so a comment is stored exactly once and
+    // a re-read of a thread costs nothing beyond the request that discovered it.
+    const fresh = comments.filter(c => !known.has(c.id))
+    if (fresh.length) {
+      await RedditCommentModel.bulkWrite(
+        fresh.map(c => ({
+          updateOne: {
+            filter: { commentId: c.id },
+            update: {
+              $set: {
+                commentId: c.id,
+                postId: post.id,
+                sub: post.sub,
+                author: c.author,
+                body: c.body,
+                score: c.score,
+                date: iso(c.createdUtc),
+                createdUtc: c.createdUtc,
+                permalink: c.permalink || post.permalink,
+              },
+            },
+            upsert: true,
+          },
+        })),
+        { ordered: false }
+      )
+      stats.commentsStored += fresh.length
+    }
+
     await RedditPostModel.updateOne(
       { redditId: post.id },
       {
         $set: {
-          comments: comments.map(c => ({
-            id: c.id,
-            author: c.author,
-            body: c.body,
-            score: c.score,
-            date: iso(c.createdUtc),
-            permalink: c.permalink || post.permalink,
-          })),
+          storedComments: known.size + fresh.length,
           commentsAtCount: post.numComments,
+          commentsVersion: COMMENT_FETCH_VERSION,
           commentsFetchedAt: new Date(),
         },
       }
     )
-    stats.commentsFetched++
   }
 
   return stats
+}
+
+/**
+ * One-time move of the old embedded `RedditPost.comments` arrays into the `RedditComment`
+ * collection. Pure database work — no Reddit calls — so the comments we already paid to
+ * download are kept rather than fetched a second time. Idempotent: once a post's array is
+ * unset it is never seen again.
+ */
+export async function migrateEmbeddedComments(): Promise<number> {
+  await connectDb()
+  const legacy = await RedditPostModel.find({ 'comments.0': { $exists: true } })
+    .select({ redditId: 1, sub: 1, permalink: 1, comments: 1 })
+    .lean()
+  if (!legacy.length) return 0
+
+  let moved = 0
+  for (const p of legacy) {
+    const comments = p.comments ?? []
+    if (comments.length) {
+      await RedditCommentModel.bulkWrite(
+        comments.map(c => ({
+          updateOne: {
+            filter: { commentId: c.id },
+            update: {
+              $setOnInsert: {
+                commentId: c.id,
+                postId: p.redditId,
+                sub: p.sub,
+                author: c.author,
+                body: c.body,
+                score: c.score,
+                date: c.date,
+                createdUtc: c.date ? Math.floor(Date.parse(c.date) / 1000) : 0,
+                permalink: c.permalink || p.permalink,
+              },
+            },
+            upsert: true,
+          },
+        })),
+        { ordered: false }
+      )
+      moved += comments.length
+    }
+    const held = await RedditCommentModel.countDocuments({ postId: p.redditId })
+    await RedditPostModel.updateOne(
+      { redditId: p.redditId },
+      { $unset: { comments: '' }, $set: { storedComments: held } }
+    )
+  }
+  return moved
 }
 
 /**
@@ -177,6 +280,14 @@ export async function buildMentions(): Promise<Record<string, RedditMention[]>> 
   await connectDb()
   const cutoff = Math.floor(Date.now() / 1000 - MAX_CORPUS_AGE_DAYS * 86_400)
   const posts = await RedditPostModel.find({ createdUtc: { $gte: cutoff } }).lean()
+  const allComments = await RedditCommentModel.find({}).lean()
+
+  const commentsByPost = new Map<string, RedditCommentDoc[]>()
+  for (const c of allComments) {
+    const list = commentsByPost.get(c.postId)
+    if (list) list.push(c)
+    else commentsByPost.set(c.postId, [c])
+  }
 
   const byEntity: Record<string, RedditMention[]> = {}
   const push = (id: string, m: RedditMention) => {
@@ -203,10 +314,10 @@ export async function buildMentions(): Promise<Record<string, RedditMention[]>> 
       })
     }
 
-    for (const c of p.comments ?? []) {
+    for (const c of commentsByPost.get(p.redditId) ?? []) {
       for (const [i, seg] of extractMentions(c.body, subject).entries()) {
         push(seg.entityId, {
-          id: `${c.id}#${i}`,
+          id: `${c.commentId}#${i}`,
           kind: 'comment',
           text: seg.text,
           score: c.score,
@@ -254,6 +365,10 @@ async function summarise(entity: EntitySentiment): Promise<string | null> {
 
 export interface RefreshResult {
   harvest: HarvestStats
+  /** Comments moved out of the deprecated embedded array on this run (one-off, then always 0). */
+  migrated: number
+  /** What the corpus holds in total, after this run. */
+  corpus: { posts: number; comments: number }
   entities: number
   withVerdict: number
   summaries: number
@@ -265,9 +380,13 @@ export interface RefreshResult {
  * re-score whatever corpus is already in MongoDB) and with no AI key (no prose summaries).
  */
 export async function refreshRedditSentiment(
-  opts: { window?: 'year' | 'all'; withSummaries?: boolean } = {}
+  opts: { window?: 'year' | 'all'; withSummaries?: boolean; budget?: number } = {}
 ): Promise<RefreshResult> {
-  const stats = await harvest(opts.window ?? 'year')
+  // Move any comments still embedded in their post across before harvesting, so the corpus we
+  // already paid to download is kept instead of fetched again.
+  const migrated = await migrateEmbeddedComments()
+
+  const stats = await harvest(opts.window ?? 'year', opts.budget ?? MAX_COMMENT_FETCHES)
   const byEntity = await buildMentions()
   const board = aggregateBoard(byEntity)
 
@@ -310,8 +429,15 @@ export async function refreshRedditSentiment(
   // No cache to invalidate: /api/reddit-sentiment reads MongoDB on every request (see the
   // handler — a per-process Nitro cache diverges across pm2's cluster workers), so the moment
   // these snapshots are written they are live for everyone.
+  const [posts, comments] = await Promise.all([
+    RedditPostModel.countDocuments({}),
+    RedditCommentModel.countDocuments({}),
+  ])
+
   return {
     harvest: stats,
+    migrated,
+    corpus: { posts, comments },
     entities: board.length,
     withVerdict: board.filter(e => e.label !== 'sin datos').length,
     summaries,

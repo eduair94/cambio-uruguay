@@ -23,9 +23,14 @@ export default defineEventHandler(async event => {
   }
 
   const q = getQuery(event)
+  // `budget` = how many threads to download comments for in this run (0 = no limit, for a
+  // one-off backfill; the daily task keeps the small default so it always finishes quickly).
+  const budget = q.budget !== undefined ? Math.max(0, Number(q.budget) || 0) : undefined
+
   const result = await refreshRedditSentiment({
     window: q.window === 'all' ? 'all' : 'year',
     withSummaries: q.summaries !== 'false',
+    budget,
   })
   return { ok: true, ...result }
 })

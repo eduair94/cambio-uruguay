@@ -32,9 +32,22 @@ export interface RedditPostDoc {
   entities: string[]
   /** Which harvest queries surfaced this thread (debug/provenance). */
   queries: string[]
-  comments: RedditCommentDoc[]
-  /** Comment count at the time we last downloaded the thread's comments. */
+  /**
+   * @deprecated Comments now live in their own `RedditComment` collection, keyed by a unique
+   * `commentId`, so they are stored once and never re-downloaded. This array is only read by
+   * the one-time migration that moves the old embedded comments across; nothing writes it.
+   */
+  comments?: RedditCommentDoc[]
+  /** How many of this thread's comments we actually hold. */
+  storedComments: number
+  /** The thread's advertised comment count when we last read it — re-read only when it grows. */
   commentsAtCount: number
+  /**
+   * Which fetch strategy produced `comments`. Bumping COMMENT_FETCH_VERSION re-pulls every
+   * thread: v1 only took the top of each tree (limit=80, depth=4) and silently dropped
+   * everything Reddit collapsed behind "load more comments".
+   */
+  commentsVersion: number
   commentsFetchedAt: Date | null
   lastSeenAt: Date
 }
@@ -65,8 +78,10 @@ const RedditPostSchema = new Schema<RedditPostDoc>(
     createdUtc: { type: Number, default: 0 },
     entities: { type: [String], default: [] },
     queries: { type: [String], default: [] },
-    comments: { type: [CommentSchema], default: [] },
+    comments: { type: [CommentSchema], default: undefined }, // deprecated; migration source only
+    storedComments: { type: Number, default: 0 },
     commentsAtCount: { type: Number, default: -1 },
+    commentsVersion: { type: Number, default: 0 },
     commentsFetchedAt: { type: Date, default: null },
     lastSeenAt: { type: Date, default: () => new Date() },
   },
