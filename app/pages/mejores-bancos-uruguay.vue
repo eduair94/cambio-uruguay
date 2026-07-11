@@ -22,13 +22,17 @@
           {{ BANKS.length }} bancos y fintech con datos —reseñas reales, comisiones, atención y
           letra chica— y una rúbrica transparente que <em>vos</em> podés reconfigurar.
         </p>
-        <a :href="redditUrl" target="_blank" rel="noopener noreferrer" class="hero-link">
-          <VIcon size="15" class="mr-1">mdi-reddit</VIcon>Ver el hilo original en r/Burises
-        </a>
-        <div class="hero-spoiler">
-          <VIcon size="16" class="mr-1">mdi-alert-decagram-outline</VIcon>
-          Spoiler: con criterios parejos, <strong>ninguno llega a S</strong>. La banca uruguaya
-          tiene techo.
+        <div class="hero-meta">
+          <a :href="redditUrl" target="_blank" rel="noopener noreferrer" class="hero-link">
+            <VIcon size="15" class="mr-1">mdi-reddit</VIcon>Ver el hilo original en r/Burises
+          </a>
+          <div class="hero-spoiler">
+            <VIcon size="16" class="mr-2">mdi-alert-decagram-outline</VIcon>
+            <span>
+              Spoiler: con criterios parejos, <strong>ninguno llega a S</strong>. La banca uruguaya
+              tiene techo.
+            </span>
+          </div>
         </div>
         <div class="d-flex justify-start justify-md-end mt-4">
           <ShareButtons text="Tier list de los mejores bancos de Uruguay 2026" />
@@ -119,14 +123,14 @@
               :class="{ 'tile--open': openId === r.entity.id }"
               @click="openFicha(r.entity.id)"
             >
-              <span class="tile-mono" :style="{ background: brand(r.entity.id) }">
+              <span class="tile-mono" :style="monoStyle(r.entity.id)">
                 {{ monogram(r.entity.name) }}
               </span>
               <span class="tile-main">
                 <span class="tile-name">{{ r.entity.name }}</span>
                 <span class="tile-kind">{{ KIND_LABELS[r.entity.kind] }}</span>
               </span>
-              <span class="tile-score" :style="{ color: scoreHue(r.score) }">{{ r.score }}</span>
+              <span class="tile-score" :class="scoreClass(r.score)">{{ r.score }}</span>
             </button>
             <span v-if="!visibleItems(row.items).length" key="empty" class="tier-empty">
               {{ emptyCaption(row.tier.id) }}
@@ -182,7 +186,7 @@
       >
         <VExpansionPanelTitle>
           <div class="d-flex align-center ga-3 flex-grow-1">
-            <span class="ficha-mono" :style="{ background: brand(r.entity.id) }">
+            <span class="ficha-mono" :style="monoStyle(r.entity.id)">
               {{ monogram(r.entity.name) }}
             </span>
             <div class="flex-grow-1">
@@ -204,7 +208,7 @@
               <p class="text-caption text-medium-emphasis mb-0 mt-1">{{ r.entity.tagline }}</p>
             </div>
             <div class="ficha-scorebox text-center flex-shrink-0">
-              <div class="ficha-score" :style="{ color: scoreHue(r.score) }">{{ r.score }}</div>
+              <div class="ficha-score" :class="scoreClass(r.score)">{{ r.score }}</div>
               <div class="text-caption text-medium-emphasis">/ 100</div>
             </div>
           </div>
@@ -319,29 +323,31 @@
             <div v-if="newsItems.length" class="news-grid">
               <VCard v-for="it in newsItems" :key="it.id" variant="flat" class="news-card pa-4">
                 <div class="d-flex align-center ga-2 mb-3">
-                  <span class="tile-mono" :style="{ background: brand(it.id) }">
+                  <span class="tile-mono" :style="monoStyle(it.id)">
                     {{ monogram(it.name) }}
                   </span>
                   <span class="text-subtitle-2 font-weight-bold">{{ it.name }}</span>
                 </div>
-                <p
-                  v-if="it.insight"
-                  class="news-insight mb-1"
-                  :class="{ 'news-insight--clamped': !isNewsOpen(it.id) }"
-                >
-                  {{ it.insight }}
+                <p v-if="it.insight" class="news-insight news-teaser mb-2">
+                  {{ teaser(it.insight) }}
                 </p>
                 <button
-                  v-if="it.insight && it.insight.length > 170"
+                  v-if="it.insight"
                   type="button"
                   class="news-more"
-                  @click="toggleNews(it.id)"
+                  @click.stop="openNewsId = it.id"
                 >
-                  {{ isNewsOpen(it.id) ? 'Ver menos ▲' : 'Ver más ▼' }}
+                  Ver más<VIcon size="14" class="ml-1">mdi-arrow-right</VIcon>
                 </button>
                 <ul v-if="it.headlines.length" class="news-links mt-3">
                   <li v-for="(h, i) in it.headlines" :key="i">
-                    <a :href="h.link" target="_blank" rel="noopener noreferrer" :title="h.title">
+                    <a
+                      :href="h.link"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      :title="h.title"
+                      @click.stop
+                    >
                       <VIcon size="13" class="mr-1">mdi-open-in-new</VIcon>{{ h.source }}
                     </a>
                   </li>
@@ -357,6 +363,66 @@
                 intentar en un rato.
               </p>
             </VCard>
+
+            <!-- Reading-friendly detail dialog -->
+            <VDialog v-model="newsDialog" max-width="580" scrollable>
+              <VCard v-if="activeNews" class="news-dialog">
+                <div class="news-dialog-head pa-4 pa-sm-5">
+                  <div class="d-flex align-center ga-3">
+                    <span class="ficha-mono" :style="monoStyle(activeNews.id)">
+                      {{ monogram(activeNews.name) }}
+                    </span>
+                    <div class="flex-grow-1">
+                      <div class="d-flex align-center ga-2 flex-wrap">
+                        <span class="text-h6 font-weight-bold">{{ activeNews.name }}</span>
+                        <VChip size="x-small" color="primary" variant="tonal">Novedades · IA</VChip>
+                      </div>
+                      <p v-if="newsAsOf" class="text-caption text-medium-emphasis mb-0 mt-1">
+                        Actualizado {{ newsAsOf }}
+                      </p>
+                    </div>
+                    <VBtn
+                      icon="mdi-close"
+                      variant="text"
+                      size="small"
+                      aria-label="Cerrar"
+                      @click="newsDialog = false"
+                    />
+                  </div>
+                </div>
+                <VDivider />
+                <div class="news-dialog-body pa-4 pa-sm-5">
+                  <p
+                    v-for="(para, i) in newsParagraphs(activeNews.insight)"
+                    :key="i"
+                    class="news-dialog-text"
+                  >
+                    {{ para }}
+                  </p>
+                  <div v-if="activeNews.headlines.length" class="mt-4">
+                    <p class="news-dialog-srclabel">Fuentes</p>
+                    <ul class="news-links">
+                      <li v-for="(h, i) in activeNews.headlines" :key="i">
+                        <a
+                          :href="h.link"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          :title="h.title"
+                        >
+                          <VIcon size="13" class="mr-1">mdi-open-in-new</VIcon>{{ h.source }}
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <VDivider />
+                <div class="pa-3 d-flex justify-end">
+                  <VBtn variant="tonal" color="primary" size="small" @click="newsDialog = false">
+                    Cerrar
+                  </VBtn>
+                </div>
+              </VCard>
+            </VDialog>
           </template>
         </template>
         <template #fallback>
@@ -550,23 +616,48 @@ const TIER_HUE: Record<TierId, string> = {
   D: '#f97316',
   F: '#ef4444',
 }
-/** Dark text on light gems (lime/yellow/orange), light on the rest. */
-const TIER_DARK_TEXT: Record<TierId, boolean> = {
-  S: false,
-  A: false,
-  B: true,
-  C: true,
-  D: true,
-  F: false,
+
+/**
+ * Pick the text colour (near-black or white) with the better contrast against a
+ * background hex. Brand and tier colours span the whole lightness range, so
+ * hardcoding white would fail WCAG on the light ones (Mercado Pago, Astropay, the
+ * lime/amber tiers). This keeps every chip legible in both themes.
+ */
+function readableOn(hex: string): string {
+  const h = hex.replace('#', '')
+  const toLin = (c: number) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4))
+  const r = toLin(parseInt(h.slice(0, 2), 16) / 255)
+  const g = toLin(parseInt(h.slice(2, 4), 16) / 255)
+  const b = toLin(parseInt(h.slice(4, 6), 16) / 255)
+  const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b
+  const vsWhite = 1.05 / (lum + 0.05)
+  const vsBlack = (lum + 0.05) / 0.05
+  return vsBlack > vsWhite ? '#0b1220' : '#ffffff'
 }
+
+/** Monogram chip: brand background + a text colour that actually contrasts with it. */
+function monoStyle(id: string) {
+  const bg = brand(id)
+  return { background: bg, color: readableOn(bg) }
+}
+
 function gemStyle(t: TierId) {
   return {
     '--gem': TIER_HUE[t],
-    color: TIER_DARK_TEXT[t] ? '#0b1220' : '#fff',
+    color: readableOn(TIER_HUE[t]),
   } as Record<string, string>
 }
 
-/** Score → green-amber-red hue for numbers and bars. */
+/** Score band → a class, so the colour can differ per theme (see `<style>`). */
+function scoreClass(score: number): string {
+  if (score >= 78) return 'sc-5'
+  if (score >= 66) return 'sc-4'
+  if (score >= 54) return 'sc-3'
+  if (score >= 44) return 'sc-2'
+  return 'sc-1'
+}
+
+/** Score → hue for the (non-text) progress bars. */
 function scoreHue(score: number): string {
   if (score >= 78) return '#16a34a'
   if (score >= 66) return '#65a30d'
@@ -628,14 +719,32 @@ const newsAsOf = computed(() => {
     : d.toLocaleDateString('es-UY', { day: 'numeric', month: 'long', year: 'numeric' })
 })
 
-// Per-card "ver más" expand state — keeps the news cards scannable by default.
-const expandedNews = ref<Set<string>>(new Set())
-const isNewsOpen = (id: string) => expandedNews.value.has(id)
-function toggleNews(id: string) {
-  const next = new Set(expandedNews.value)
-  if (next.has(id)) next.delete(id)
-  else next.add(id)
-  expandedNews.value = next
+// "Ver más" opens a reading-friendly dialog with the full news for one entity.
+const openNewsId = ref<string | null>(null)
+const newsDialog = computed({
+  get: () => openNewsId.value !== null,
+  set: v => {
+    if (!v) openNewsId.value = null
+  },
+})
+const activeNews = computed(() => newsItems.value.find(it => it.id === openNewsId.value) ?? null)
+
+/** Short first-sentence teaser for the card (the full text lives in the dialog). */
+function teaser(text: string): string {
+  const clean = text.replace(/\s+/g, ' ').trim()
+  const stop = clean.indexOf('. ')
+  if (stop >= 40 && stop <= 150) return clean.slice(0, stop + 1)
+  return clean.length > 140 ? clean.slice(0, 140).replace(/\s+\S*$/, '') + '…' : clean
+}
+
+/** Split the insight into ~2-sentence paragraphs so the dialog reads comfortably. */
+function newsParagraphs(text: string | null): string[] {
+  if (!text) return []
+  const clean = text.replace(/\s+/g, ' ').trim()
+  const sentences = clean.match(/[^.!?]+[.!?]+(?:\s|$)/g)?.map(s => s.trim()) ?? [clean]
+  const paras: string[] = []
+  for (let i = 0; i < sentences.length; i += 2) paras.push(sentences.slice(i, i + 2).join(' '))
+  return paras
 }
 
 // --- SEO ---
@@ -792,6 +901,14 @@ useHead(() => ({
   font-size: 1rem;
   margin-bottom: 1rem;
 }
+/* Link + spoiler sit on one row with a real gap, and wrap cleanly on mobile. */
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  margin-top: 14px;
+}
 .hero-link {
   display: inline-flex;
   align-items: center;
@@ -799,7 +916,7 @@ useHead(() => ({
   font-weight: 600;
   font-size: 0.85rem;
   text-decoration: none;
-  margin-top: 2px;
+  flex-shrink: 0;
 }
 .hero-link:hover {
   text-decoration: underline;
@@ -812,8 +929,9 @@ useHead(() => ({
   border: 1px solid rgba(255, 255, 255, 0.16);
   color: #fff;
   border-radius: 999px;
-  padding: 6px 14px;
+  padding: 7px 15px;
   font-size: 0.85rem;
+  line-height: 1.45;
 }
 
 /* ---------- Controls ---------- */
@@ -866,7 +984,7 @@ useHead(() => ({
   margin-left: auto;
   font-size: 0.7rem;
   font-weight: 700;
-  opacity: 0.6;
+  opacity: 0.85;
   background: rgba(var(--v-border-color), 0.16);
   border-radius: 6px;
   padding: 1px 6px;
@@ -954,7 +1072,7 @@ useHead(() => ({
   font-weight: 600;
   letter-spacing: 0.01em;
   color: rgb(var(--v-theme-on-surface));
-  opacity: 0.75;
+  opacity: 0.88;
   margin-bottom: 8px;
 }
 .tier-tiles {
@@ -1012,7 +1130,7 @@ useHead(() => ({
 }
 .tile-kind {
   font-size: 0.68rem;
-  opacity: 0.6;
+  opacity: 0.82;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -1026,7 +1144,7 @@ useHead(() => ({
 .tier-empty {
   font-size: 0.8rem;
   font-style: italic;
-  opacity: 0.6;
+  opacity: 0.85;
   align-self: center;
   padding: 4px 2px;
 }
@@ -1289,16 +1407,18 @@ useHead(() => ({
   opacity: 0.88;
   margin-bottom: 0;
 }
-.news-insight--clamped {
+.news-teaser {
   display: -webkit-box;
-  -webkit-line-clamp: 4;
-  line-clamp: 4;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 .news-more {
+  display: inline-flex;
+  align-items: center;
   font: inherit;
-  font-size: 0.72rem;
+  font-size: 0.74rem;
   font-weight: 700;
   letter-spacing: 0.02em;
   color: rgb(var(--v-theme-primary));
@@ -1309,6 +1429,34 @@ useHead(() => ({
 }
 .news-more:hover {
   text-decoration: underline;
+}
+
+/* News detail dialog */
+.news-dialog {
+  border-radius: 16px;
+}
+.news-dialog-head {
+  background: rgba(var(--v-theme-primary), 0.06);
+}
+.news-dialog-body {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+.news-dialog-text {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  margin-bottom: 0.85rem;
+}
+.news-dialog-text:last-of-type {
+  margin-bottom: 0;
+}
+.news-dialog-srclabel {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.6;
+  margin-bottom: 6px;
 }
 .news-links {
   list-style: none;
@@ -1330,6 +1478,62 @@ useHead(() => ({
 }
 .news-links a:hover {
   background: rgba(var(--v-theme-primary), 0.18);
+}
+
+/* ---------- Score colours (theme-aware: the dark-tuned hues fail AA on white) ---------- */
+.sc-5 {
+  color: #22c55e;
+}
+.sc-4 {
+  color: #a3e635;
+}
+.sc-3 {
+  color: #eab308;
+}
+.sc-2 {
+  color: #fb923c;
+}
+.sc-1 {
+  color: #f87171;
+}
+.v-theme--light .sc-5 {
+  color: #15803d;
+}
+.v-theme--light .sc-4 {
+  color: #4d7c0f;
+}
+.v-theme--light .sc-3 {
+  color: #a16207;
+}
+.v-theme--light .sc-2 {
+  color: #c2410c;
+}
+.v-theme--light .sc-1 {
+  color: #b91c1c;
+}
+
+/* ---------- Light-mode contrast fixes (brand primary is tuned for dark) ---------- */
+.v-theme--light .active-hint,
+.v-theme--light .news-more,
+.v-theme--light .news-links a,
+.v-theme--light .sources-list a {
+  color: #0d47a1;
+}
+.v-theme--light .plabel--pro {
+  color: #15803d;
+}
+.v-theme--light .plabel--con {
+  color: #b91c1c;
+}
+.v-theme--light .score-dim {
+  color: rgba(0, 0, 0, 0.72);
+}
+.v-theme--light .score-val {
+  color: rgba(0, 0, 0, 0.78);
+}
+.v-theme--light .tier-empty,
+.v-theme--light .tier-blurb {
+  color: rgba(0, 0, 0, 0.68);
 }
 
 @media (max-width: 600px) {

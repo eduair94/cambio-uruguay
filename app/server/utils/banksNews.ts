@@ -172,8 +172,8 @@ export async function buildBanksBriefing(lang: string): Promise<BanksBriefing> {
   return { items, analysis, asOf, unavailable: false }
 }
 
-/** Keep an insight short: cut on a sentence boundary near `maxChars`, else ellipsize. */
-function trimInsight(text: string, maxChars = 300): string {
+/** Bound an insight to a readable length: cut on a sentence boundary near `maxChars`. */
+function trimInsight(text: string, maxChars = 700): string {
   const clean = text.replace(/\s+/g, ' ').trim()
   if (clean.length <= maxChars) return clean
   const slice = clean.slice(0, maxChars)
