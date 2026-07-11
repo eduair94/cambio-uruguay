@@ -14,6 +14,7 @@ export function installNitroGlobals() {
   const readBody = vi.fn()
   const getRouterParam = vi.fn()
   const getQuery = vi.fn()
+  const useRuntimeConfig = vi.fn(() => ({}) as Record<string, unknown>)
   vi.stubGlobal('defineEventHandler', (fn: unknown) => fn)
   vi.stubGlobal('createError', (e: { statusCode?: number; statusMessage?: string }) =>
     Object.assign(new Error(e?.statusMessage || 'error'), e)
@@ -21,5 +22,6 @@ export function installNitroGlobals() {
   vi.stubGlobal('readBody', readBody)
   vi.stubGlobal('getRouterParam', getRouterParam)
   vi.stubGlobal('getQuery', getQuery)
-  return { readBody, getRouterParam, getQuery }
+  vi.stubGlobal('useRuntimeConfig', useRuntimeConfig)
+  return { readBody, getRouterParam, getQuery, useRuntimeConfig }
 }

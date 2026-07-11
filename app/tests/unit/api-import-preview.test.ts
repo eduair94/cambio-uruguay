@@ -4,7 +4,7 @@ import { installNitroGlobals } from './helpers/nitro'
 const lookup = vi.fn()
 vi.mock('node:dns/promises', () => ({ lookup }))
 
-const { getQuery } = installNitroGlobals()
+const { getQuery, useRuntimeConfig } = installNitroGlobals()
 const handler = (await import('../../server/api/import-preview.get')).default
 
 const htmlResponse = (html: string, contentType = 'text/html; charset=utf-8') =>
@@ -18,6 +18,8 @@ const htmlResponse = (html: string, contentType = 'text/html; charset=utf-8') =>
 beforeEach(() => {
   getQuery.mockReset()
   lookup.mockReset()
+  useRuntimeConfig.mockReset()
+  useRuntimeConfig.mockReturnValue({}) // default: no ebayApiUrl -> HTML-scrape path
   // default: hostname resolves to a public address
   lookup.mockResolvedValue([{ address: '93.184.216.34', family: 4 }])
 })
@@ -43,6 +45,49 @@ describe('import-preview endpoint', () => {
     )
     const res = await handler({} as any)
     expect(res).toMatchObject({ title: 'Echo Dot', price: 49.99, currency: 'USD' })
+  })
+
+  it('resolves eBay items via the proxy API when ebayApiUrl is configured', async () => {
+    getQuery.mockReturnValue({ url: 'https://www.ebay.com/itm/167912235793' })
+    useRuntimeConfig.mockReturnValue({ ebayApiUrl: 'https://proxy.test/ebay/item' })
+    const fetchSpy = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () =>
+        Promise.resolve({
+          success: true,
+          title: 'ROG Ally',
+          image: 'https://img/x.jpg',
+          price: { value: 427, currency: 'USD' },
+        }),
+    } as unknown as Response)
+    vi.stubGlobal('fetch', fetchSpy)
+    const res = await handler({} as any)
+    expect(res).toMatchObject({ title: 'ROG Ally', price: 427, currency: 'USD' })
+    // hit the proxy with the encoded item URL, not eBay directly
+    expect(String(fetchSpy.mock.calls[0]?.[0])).toContain('proxy.test/ebay/item')
+    expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(encodeURIComponent('https://www.ebay.com/itm/167912235793'))
+  })
+
+  it('falls back to the HTML scrape when the eBay proxy returns nothing usable', async () => {
+    getQuery.mockReturnValue({ url: 'https://www.ebay.com/itm/1' })
+    useRuntimeConfig.mockReturnValue({ ebayApiUrl: 'https://proxy.test/ebay/item' })
+    const fetchSpy = vi
+      .fn()
+      // proxy call: success:false -> empty preview
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ success: false }),
+      } as unknown as Response)
+      // fallback HTML scrape
+      .mockResolvedValueOnce(
+        htmlResponse('<meta property="og:title" content="Scraped Item">')
+      )
+    vi.stubGlobal('fetch', fetchSpy)
+    const res = await handler({} as any)
+    expect(res).toMatchObject({ title: 'Scraped Item' })
+    expect(fetchSpy).toHaveBeenCalledTimes(2)
   })
 
   it('returns an empty object (not an error) when the fetch fails', async () => {
