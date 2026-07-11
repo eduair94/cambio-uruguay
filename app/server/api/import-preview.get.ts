@@ -16,6 +16,10 @@ import {
 // to manual entry.
 
 const TIMEOUT_MS = 6000
+// The eBay proxy is FlareSolverr-backed: a cached item returns in <1s, but an
+// uncached URL is solved live and can take 15-30s. Give it a much longer budget
+// than the direct HTML scrape so first-time links resolve instead of aborting.
+const EBAY_PROXY_TIMEOUT_MS = 30_000
 const MAX_HOPS = 4
 const MAX_BYTES = 1_500_000
 const UA =
@@ -98,7 +102,7 @@ async function fetchHtml(startUrl: string): Promise<string> {
 async function fetchEbayViaProxy(apiBase: string, itemUrl: string): Promise<ProductPreview> {
   const proxied = `${apiBase}${apiBase.includes('?') ? '&' : '?'}url=${encodeURIComponent(itemUrl)}`
   const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
+  const timer = setTimeout(() => controller.abort(), EBAY_PROXY_TIMEOUT_MS)
   try {
     const res = await fetch(proxied, {
       signal: controller.signal,
