@@ -14,7 +14,11 @@ export function installNitroGlobals() {
   const readBody = vi.fn()
   const getRouterParam = vi.fn()
   const getQuery = vi.fn()
-  const useRuntimeConfig = vi.fn(() => ({}) as Record<string, unknown>)
+  // Preserve a useRuntimeConfig a test may have set before calling this helper
+  // (e.g. api-me-telegram stubs it at module top); default to an empty config.
+  const existingRuntimeConfig = (globalThis as { useRuntimeConfig?: () => Record<string, unknown> })
+    .useRuntimeConfig
+  const useRuntimeConfig = vi.fn(existingRuntimeConfig ?? (() => ({}) as Record<string, unknown>))
   vi.stubGlobal('defineEventHandler', (fn: unknown) => fn)
   vi.stubGlobal('createError', (e: { statusCode?: number; statusMessage?: string }) =>
     Object.assign(new Error(e?.statusMessage || 'error'), e)
