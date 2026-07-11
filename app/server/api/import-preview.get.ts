@@ -1,6 +1,8 @@
 import { lookup } from 'node:dns/promises'
 import {
   isAllowedProductUrl,
+  isEbayUrl,
+  parseEbayApiJson,
   parseProductHtml,
   type ProductPreview,
 } from '../../utils/productScrape'
@@ -87,6 +89,28 @@ async function fetchHtml(startUrl: string): Promise<string> {
   throw new Error('too many redirects')
 }
 
+/**
+ * Resolve an eBay item via the FlareSolverr-backed proxy (`ebayApiUrl`). eBay's
+ * Akamai shield 403s our direct fetch, so this is the only reliable path. The
+ * proxy URL is our own trusted config; `itemUrl` is an already-validated eBay
+ * link. Returns `{}` on any failure so the caller can fall back to manual entry.
+ */
+async function fetchEbayViaProxy(apiBase: string, itemUrl: string): Promise<ProductPreview> {
+  const proxied = `${apiBase}${apiBase.includes('?') ? '&' : '?'}url=${encodeURIComponent(itemUrl)}`
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
+  try {
+    const res = await fetch(proxied, {
+      signal: controller.signal,
+      headers: { 'user-agent': UA, accept: 'application/json' },
+    })
+    if (!res.ok) return {}
+    return parseEbayApiJson(await res.json())
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
 export default defineEventHandler(async (event): Promise<ProductPreview> => {
   const query = getQuery(event)
   const url = String(query?.url ?? '').trim()
@@ -97,6 +121,12 @@ export default defineEventHandler(async (event): Promise<ProductPreview> => {
     })
   }
   try {
+    const ebayApiUrl = useRuntimeConfig(event).ebayApiUrl as string
+    if (ebayApiUrl && isEbayUrl(url)) {
+      const preview = await fetchEbayViaProxy(ebayApiUrl, url)
+      if (Object.keys(preview).length) return preview
+      // proxy returned nothing usable -> fall through to the HTML scrape
+    }
     return parseProductHtml(await fetchHtml(url))
   } catch {
     return {} // best-effort: client falls back to manual entry

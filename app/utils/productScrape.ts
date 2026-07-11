@@ -52,6 +52,20 @@ export function isAllowedProductUrl(raw: string): boolean {
   return false
 }
 
+/**
+ * True when `raw` is an allowlisted eBay item URL. eBay's Akamai bot shield 403s
+ * a direct server fetch, so the endpoint routes these through a FlareSolverr
+ * proxy (`ebayApiUrl`) instead of scraping the HTML itself.
+ */
+export function isEbayUrl(raw: string): boolean {
+  if (!isAllowedProductUrl(raw)) return false
+  try {
+    return new URL(raw).hostname.toLowerCase().split('.').includes('ebay')
+  } catch {
+    return false
+  }
+}
+
 /** Parsed product preview; every field is optional / best-effort. */
 export interface ProductPreview {
   title?: string
@@ -147,6 +161,29 @@ function parseJsonLd(html: string): { price?: number; currency?: string; title?:
     }
   }
   return acc
+}
+
+/**
+ * Map the eBay item resolver proxy's JSON response to a `ProductPreview`. The
+ * proxy returns `{ success, title, image, price: { value, currency } }`; any
+ * shape we don't recognise (or `success === false`) yields an empty object so
+ * the caller falls back to manual entry.
+ */
+export function parseEbayApiJson(data: unknown): ProductPreview {
+  const out: ProductPreview = {}
+  if (!data || typeof data !== 'object') return out
+  const obj = data as Record<string, unknown>
+  if (obj.success === false) return out
+  if (typeof obj.title === 'string' && obj.title.trim()) out.title = obj.title.trim()
+  if (typeof obj.image === 'string' && obj.image.trim()) out.image = obj.image.trim()
+  const price = obj.price
+  if (price && typeof price === 'object') {
+    const p = price as Record<string, unknown>
+    const v = toPrice(p.value)
+    if (v != null) out.price = v
+    if (typeof p.currency === 'string' && p.currency.trim()) out.currency = p.currency.trim()
+  }
+  return out
 }
 
 /**

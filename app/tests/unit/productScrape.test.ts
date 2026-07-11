@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { isAllowedProductUrl, parseProductHtml } from '../../utils/productScrape'
+import {
+  isAllowedProductUrl,
+  isEbayUrl,
+  parseEbayApiJson,
+  parseProductHtml,
+} from '../../utils/productScrape'
 
 describe('isAllowedProductUrl', () => {
   it('accepts https Amazon / eBay / MercadoLibre product URLs', () => {
@@ -32,6 +37,48 @@ describe('isAllowedProductUrl', () => {
   it('rejects garbage input', () => {
     expect(isAllowedProductUrl('not a url')).toBe(false)
     expect(isAllowedProductUrl('')).toBe(false)
+  })
+})
+
+describe('isEbayUrl', () => {
+  it('is true only for allowlisted eBay hosts', () => {
+    expect(isEbayUrl('https://www.ebay.com/itm/167912235793')).toBe(true)
+    expect(isEbayUrl('https://www.ebay.co.uk/itm/1')).toBe(true)
+    expect(isEbayUrl('https://www.amazon.com/dp/B0123')).toBe(false)
+    expect(isEbayUrl('https://ebay.evil.com/itm/1')).toBe(false)
+    expect(isEbayUrl('not a url')).toBe(false)
+  })
+})
+
+describe('parseEbayApiJson', () => {
+  it('maps the proxy response to a ProductPreview', () => {
+    const r = parseEbayApiJson({
+      success: true,
+      title: 'ASUS ROG Ally 7" 120Hz',
+      image: 'https://img.example/rc71l.jpg',
+      price: { value: 427, currency: 'USD', raw: 'US $427.00' },
+    })
+    expect(r).toEqual({
+      title: 'ASUS ROG Ally 7" 120Hz',
+      image: 'https://img.example/rc71l.jpg',
+      price: 427,
+      currency: 'USD',
+    })
+  })
+
+  it('coerces string prices and trims fields', () => {
+    const r = parseEbayApiJson({ title: '  Thing  ', price: { value: '19.90', currency: ' EUR ' } })
+    expect(r.title).toBe('Thing')
+    expect(r.price).toBe(19.9)
+    expect(r.currency).toBe('EUR')
+  })
+
+  it('returns {} on failure, non-object, or missing fields', () => {
+    expect(parseEbayApiJson({ success: false, title: 'x' })).toEqual({})
+    expect(parseEbayApiJson(null)).toEqual({})
+    expect(parseEbayApiJson('nope')).toEqual({})
+    expect(parseEbayApiJson({})).toEqual({})
+    expect(parseEbayApiJson({ price: { value: 0 } })).toEqual({})
   })
 })
 

@@ -648,6 +648,12 @@ export default defineNuxtConfig({
     },
     // Server-side API URL (for SSR requests)
     apiBaseServer: process.env.NUXT_API_BASE_SERVER || 'http://104.234.204.107:3528',
+    // Server-side proxy that resolves eBay item metadata (FlareSolverr-backed)
+    // for the import-cart "add from URL" flow. eBay's Akamai bot shield 403s a
+    // direct server fetch, so we hit this proxy for ebay.* hosts. Baked from .env
+    // at build (pm2 runtime env is empty); unset -> eBay falls back to the
+    // best-effort HTML scrape (which currently yields nothing).
+    ebayApiUrl: process.env.EBAY_ITEM_API_URL || '',
     // Optional shared-secret gate for POST /api/drivers/ingest (manual/cron
     // trigger for the daily driver ingest). Unset -> endpoint is open, mirroring
     // /api/blog/generate's NUXT_BLOG_GENERATE_TOKEN pattern.
