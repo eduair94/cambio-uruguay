@@ -595,11 +595,61 @@ export function labelForNet(net: number, opinions: number): SentimentLabel {
 
 const MAX_QUOTES_PER_POLARITY = 3
 const QUOTE_MAX_CHARS = 280
+/** How much of the sentence to keep before the bank's name, so the quote reads in context. */
+const QUOTE_LEAD_CHARS = 70
 
-function trimQuote(text: string): string {
+/**
+ * Normalise for matching while keeping a map back to the ORIGINAL indices — `normalize('NFD')`
+ * changes the string's length, so a match offset found in the normalised text does not point at
+ * the same character in the text we actually publish.
+ */
+function normalizeWithMap(text: string): { norm: string; map: number[] } {
+  let norm = ''
+  const map: number[] = []
+  for (let i = 0; i < text.length; i++) {
+    const folded = text[i]!.toLowerCase()
+      .normalize('NFD')
+      .replace(/\p{Diacritic}/gu, '')
+    for (const ch of folded) {
+      norm += ch
+      map.push(i)
+    }
+  }
+  return { norm, map }
+}
+
+/**
+ * A quote short enough to read, and centred on the bank it is attributed to.
+ *
+ * Naively cutting the first 280 chars published two BROU quotes whose visible text never said
+ * "BROU" — the name sat further into a long post — which reads as us making it up. So when the
+ * mention falls outside the window, the excerpt slides to include it.
+ */
+function trimQuote(text: string, entityId: string): string {
   const clean = text.replace(/\s+/g, ' ').trim()
   if (clean.length <= QUOTE_MAX_CHARS) return clean
-  return clean.slice(0, QUOTE_MAX_CHARS).replace(/\s+\S*$/, '') + '…'
+
+  const entity = REDDIT_ENTITIES.find(e => e.id === entityId)
+  const { norm, map } = normalizeWithMap(clean)
+  let at = -1
+  for (const p of entity?.patterns ?? []) {
+    const hit = p.exec(norm)
+    if (hit && (at === -1 || hit.index < at)) at = hit.index
+  }
+  const nameAt = at >= 0 ? (map[at] ?? 0) : 0
+
+  // Keep the head of the sentence unless the name lives past the cut.
+  if (nameAt < QUOTE_MAX_CHARS - 20) {
+    return clean.slice(0, QUOTE_MAX_CHARS).replace(/\s+\S*$/, '') + '…'
+  }
+
+  const rawStart = Math.max(0, nameAt - QUOTE_LEAD_CHARS)
+  // Snap to a word boundary so the excerpt never starts mid-word.
+  const spaceAt = clean.indexOf(' ', rawStart)
+  const start = spaceAt > 0 && spaceAt - rawStart < 20 ? spaceAt + 1 : rawStart
+  const slice = clean.slice(start, start + QUOTE_MAX_CHARS)
+  const body = slice.length < clean.length - start ? slice.replace(/\s+\S*$/, '') + '…' : slice
+  return (start > 0 ? '…' : '') + body
 }
 
 export interface AggregateOptions {
@@ -683,7 +733,7 @@ export function aggregateEntitySentiment(
   ]
     .sort(byStrength)
     .map(s => ({
-      text: trimQuote(s.m.text),
+      text: trimQuote(s.m.text, id),
       permalink: s.m.permalink,
       date: s.m.date,
       score: s.m.score,

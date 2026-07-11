@@ -343,6 +343,26 @@ describe('aggregateEntitySentiment', () => {
     expect(agg.quotes[0]!.text).toContain('Santander')
   })
 
+  it('shows the bank in the quote even when its name sits past the length cut', () => {
+    // Real leak: two BROU quotes were published whose visible text never said "BROU" — the name
+    // sat 300+ chars into a long post. A quote that never names the bank it is filed under reads
+    // as invented, so the excerpt slides to include the mention.
+    const filler = 'estoy intentando adentrarme en el mundo de las inversiones a largo plazo, '
+    const long = filler.repeat(6) + 'y la verdad el BROU es un desastre para esto, pésimo.'
+    const agg = aggregateEntitySentiment('brou', [mention({ id: 'a', text: long, named: true })])
+    const q = agg.quotes[0]!
+    expect(q.text.length).toBeLessThanOrEqual(282)
+    expect(q.text).toMatch(/BROU/i)
+    expect(q.text.startsWith('…')).toBe(true)
+  })
+
+  it('keeps the head of a short-enough quote untouched', () => {
+    const agg = aggregateEntitySentiment('brou', [
+      mention({ id: 'a', text: 'el BROU es un desastre', named: true }),
+    ])
+    expect(agg.quotes[0]!.text).toBe('el BROU es un desastre')
+  })
+
   it('never emits a quote without a permalink (we always cite)', () => {
     const agg = aggregateEntitySentiment('x', [
       mention({ id: 'a', text: 'una bosta', permalink: '' }),
