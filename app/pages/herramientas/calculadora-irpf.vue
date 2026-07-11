@@ -79,6 +79,13 @@
         considera además <strong>deducciones</strong> (hijos, aportes, etc.) que generan un crédito
         y reducen lo que pagás, por lo que el resultado es una referencia.
       </p>
+      <VAlert type="info" variant="tonal" density="comfortable" class="mt-3">
+        ¿Querés saber cuánto cobrás <strong>en mano</strong>? La
+        <NuxtLink :to="localePath('/herramientas/calculadora-sueldo-liquido')">
+          calculadora de sueldo líquido
+        </NuxtLink>
+        sí aplica las deducciones y te descuenta también BPS, FONASA y FRL.
+      </VAlert>
     </template>
 
     <template #disclaimer>
@@ -94,6 +101,7 @@ import { computed, ref } from 'vue'
 import { irpfBracketsUyu, progressiveTax, URUGUAY } from '~/utils/calculators'
 import { formatUYU } from '~/utils/format'
 
+const localePath = useLocalePath()
 const salary = ref(80000)
 const bpc = ref(URUGUAY.bpc)
 

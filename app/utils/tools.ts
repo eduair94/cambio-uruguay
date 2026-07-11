@@ -122,6 +122,25 @@ export const tools: readonly Tool[] = [
     ],
   },
   {
+    slug: 'calculadora-sueldo-liquido',
+    title: 'Calculadora de sueldo líquido en Uruguay (nominal a líquido)',
+    description:
+      'Cuánto cobrás realmente en mano: te descontamos aporte jubilatorio (15%), FONASA, FRL e IRPF con sus deducciones, y te mostramos el recibo línea por línea. También al revés: qué nominal necesitás para un líquido dado.',
+    icon: 'mdi-cash-check',
+    category: 'finanzas',
+    keywords: [
+      'calculadora sueldo liquido uruguay',
+      'sueldo nominal a liquido',
+      'cuanto cobro en mano',
+      'de nominal a liquido uruguay',
+      'cuanto me descuentan del sueldo',
+      'aportes bps fonasa frl',
+      'calculadora salario uruguay',
+      'sueldo liquido bps',
+      'me pagaron bien',
+    ],
+  },
+  {
     slug: 'calculadora-irpf',
     title: 'Calculadora de IRPF en Uruguay (rentas del trabajo)',
     description:
