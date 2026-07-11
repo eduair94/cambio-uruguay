@@ -85,8 +85,9 @@ async function fetchEntityNews(
     `mejoras o problemas serios de la app, fusiones/compras/ventas, multas o sanciones del Banco Central (BCU), ` +
     `lanzamientos de productos y reputación o reclamos de clientes. ` +
     `Si NO encontrás nada realmente relevante y reciente, respondé exactamente "SIN NOTICIAS". ` +
-    `Si encontrás algo, escribí en ${langName} un análisis breve (2-3 frases) de qué significan esas novedades ` +
-    `para un cliente en Uruguay. Basate solo en lo que encontraste; no inventes datos ni cifras.`
+    `Si encontrás algo, escribí en ${langName} un resumen muy breve (1-2 frases, máximo ~40 palabras) ` +
+    `de la novedad más importante y qué significa para un cliente en Uruguay. Directo y concreto, sin relleno. ` +
+    `Basate solo en lo que encontraste; no inventes datos ni cifras.`
 
   try {
     const res = await $fetch<GeminiResponse>(GEMINI_URL, {
@@ -163,6 +164,24 @@ export async function buildBanksBriefing(lang: string): Promise<BanksBriefing> {
     headlines: raw[i]!.headlines,
   })).filter(it => it.insight || it.headlines.length)
 
+  // Synthesise the sector analysis from the FULL insights (better context)...
   const analysis = await synthesise(apiKey, items, langName)
+  // ...then trim each per-entity insight so the cards stay scannable even expanded.
+  for (const it of items) if (it.insight) it.insight = trimInsight(it.insight)
+
   return { items, analysis, asOf, unavailable: false }
+}
+
+/** Keep an insight short: cut on a sentence boundary near `maxChars`, else ellipsize. */
+function trimInsight(text: string, maxChars = 300): string {
+  const clean = text.replace(/\s+/g, ' ').trim()
+  if (clean.length <= maxChars) return clean
+  const slice = clean.slice(0, maxChars)
+  const lastStop = Math.max(
+    slice.lastIndexOf('. '),
+    slice.lastIndexOf('? '),
+    slice.lastIndexOf('! ')
+  )
+  if (lastStop > maxChars * 0.5) return slice.slice(0, lastStop + 1).trim()
+  return slice.replace(/\s+\S*$/, '').trim() + '…'
 }

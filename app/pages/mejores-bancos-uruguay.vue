@@ -318,14 +318,28 @@
             <!-- Per-entity recent news -->
             <div v-if="newsItems.length" class="news-grid">
               <VCard v-for="it in newsItems" :key="it.id" variant="flat" class="news-card pa-4">
-                <div class="d-flex align-center ga-2 mb-2">
+                <div class="d-flex align-center ga-2 mb-3">
                   <span class="tile-mono" :style="{ background: brand(it.id) }">
                     {{ monogram(it.name) }}
                   </span>
                   <span class="text-subtitle-2 font-weight-bold">{{ it.name }}</span>
                 </div>
-                <p v-if="it.insight" class="text-body-2 news-insight mb-2">{{ it.insight }}</p>
-                <ul v-if="it.headlines.length" class="news-links">
+                <p
+                  v-if="it.insight"
+                  class="news-insight mb-1"
+                  :class="{ 'news-insight--clamped': !isNewsOpen(it.id) }"
+                >
+                  {{ it.insight }}
+                </p>
+                <button
+                  v-if="it.insight && it.insight.length > 170"
+                  type="button"
+                  class="news-more"
+                  @click="toggleNews(it.id)"
+                >
+                  {{ isNewsOpen(it.id) ? 'Ver menos ▲' : 'Ver más ▼' }}
+                </button>
+                <ul v-if="it.headlines.length" class="news-links mt-3">
                   <li v-for="(h, i) in it.headlines" :key="i">
                     <a :href="h.link" target="_blank" rel="noopener noreferrer" :title="h.title">
                       <VIcon size="13" class="mr-1">mdi-open-in-new</VIcon>{{ h.source }}
@@ -613,6 +627,16 @@ const newsAsOf = computed(() => {
     ? ''
     : d.toLocaleDateString('es-UY', { day: 'numeric', month: 'long', year: 'numeric' })
 })
+
+// Per-card "ver más" expand state — keeps the news cards scannable by default.
+const expandedNews = ref<Set<string>>(new Set())
+const isNewsOpen = (id: string) => expandedNews.value.has(id)
+function toggleNews(id: string) {
+  const next = new Set(expandedNews.value)
+  if (next.has(id)) next.delete(id)
+  else next.add(id)
+  expandedNews.value = next
+}
 
 // --- SEO ---
 const canonicalUrl = 'https://cambio-uruguay.com/mejores-bancos-uruguay'
@@ -1259,7 +1283,32 @@ useHead(() => ({
   border-radius: 14px;
 }
 .news-insight {
-  line-height: 1.55;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: rgb(var(--v-theme-on-surface));
+  opacity: 0.88;
+  margin-bottom: 0;
+}
+.news-insight--clamped {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.news-more {
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: rgb(var(--v-theme-primary));
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 3px 0;
+}
+.news-more:hover {
+  text-decoration: underline;
 }
 .news-links {
   list-style: none;
