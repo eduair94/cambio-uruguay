@@ -127,3 +127,149 @@ export function checkPrescription(
     caveat: PRESCRIPTION_CAVEAT,
   }
 }
+
+export type RubricId =
+  | 'transparencia'
+  | 'costo'
+  | 'independencia'
+  | 'privacidad'
+  | 'utilidad'
+  | 'constancia'
+
+export interface RubricDimension {
+  id: RubricId
+  label: string
+  weight: number
+  what: string
+}
+
+/** Transparent weighted rubric. Weights sum to 100 (see spec §4.6). */
+export const RELIEF_RUBRIC: readonly RubricDimension[] = Object.freeze([
+  { id: 'transparencia', label: 'Transparencia', weight: 20, what: 'Se sabe quién está detrás (razón social, RUT, prensa real vs. contenido pago).' },
+  { id: 'costo', label: 'Costo para vos', weight: 15, what: 'Cuánto te cuesta a vos, el deudor, usar el servicio.' },
+  { id: 'independencia', label: 'Independencia', weight: 20, what: '¿Es un tercero neutral, o el brazo de una cobranza / del propio buró que te reporta?' },
+  { id: 'privacidad', label: 'Privacidad de datos', weight: 15, what: 'Qué datos te pide y qué tan coherente es su política con lo que hace.' },
+  { id: 'utilidad', label: 'Utilidad real', weight: 15, what: 'Qué tanto te acerca de verdad a saldar la deuda, y con qué cobertura.' },
+  { id: 'constancia', label: 'Constancia de cancelación', weight: 15, what: '¿Te deja un finiquito por escrito y gestiona la baja del registro?' },
+])
+
+export interface ReliefService {
+  id: string
+  name: string
+  operador: string
+  quienPaga: string
+  bcuRegulado: boolean
+  documenta: string
+  transparencia: string
+  scores: Record<RubricId, number>
+  sources: { label: string; url: string }[]
+}
+
+/**
+ * Scores are our best objective judgement from web research + an adversarial
+ * fact-check pass; conservative where a service's terms are unpublished. Each
+ * factual field is sourced. Critical but fair — never "estafa".
+ */
+export const RELIEF_SERVICES: readonly ReliefService[] = Object.freeze([
+  {
+    id: 'negociar_directo',
+    name: 'Negociar directo con el acreedor',
+    operador: 'Vos mismo (sin intermediario)',
+    quienPaga: 'Nadie: es gratis',
+    bcuRegulado: false,
+    documenta: 'Vos exigís la carta de cancelación / finiquito al acreedor',
+    transparencia: 'Total: sabés exactamente con quién hablás y qué firmás. Requiere tu tiempo y algo de temple.',
+    scores: { transparencia: 100, costo: 100, independencia: 100, privacidad: 100, utilidad: 70, constancia: 90 },
+    sources: [
+      { label: 'Central de Riesgos BCU (consulta gratis)', url: 'https://consultadeuda.bcu.gub.uy/consultadeuda/' },
+      { label: 'r/uruguay: negociación directa (evidencia de usuarios)', url: 'https://reddit.com/r/uruguay/comments/1dhwy89' },
+    ],
+  },
+  {
+    id: 'brou_autogestion',
+    name: 'BROU — Autogestión de Deuda',
+    operador: 'Banco República (banco estatal, regulado BCU)',
+    quienPaga: 'Es el propio acreedor: sin intermediario',
+    bcuRegulado: true,
+    documenta: 'Acuerdo de refinanciación / cancelación del propio banco',
+    transparencia: 'Alta: es tu acreedor directo. Solo sirve para deudas con BROU.',
+    scores: { transparencia: 95, costo: 100, independencia: 85, privacidad: 90, utilidad: 70, constancia: 90 },
+    sources: [
+      { label: 'BROU Autogestión de Deudas', url: 'https://autogestiondeudas.brou.com.uy/' },
+      { label: 'BROU — Reestructuración de deuda', url: 'https://www.brou.com.uy/personas/reestructuracion-de-deuda' },
+    ],
+  },
+  {
+    id: 'ponete_al_dia',
+    name: 'Ponete al Día',
+    operador: 'WEDKOL S.A. (Alpréstamo) + Equifax Uruguay S.A.',
+    quienPaga: 'El acreedor (no vos)',
+    bcuRegulado: false,
+    documenta: 'Depende del acreedor adherido',
+    transparencia: 'Operadores identificados en sus Términos, pero lo corre el propio buró de crédito (Equifax) que te reporta: conflicto de interés notorio.',
+    scores: { transparencia: 70, costo: 100, independencia: 20, privacidad: 55, utilidad: 65, constancia: 60 },
+    sources: [{ label: 'Ponete al Día (Uruguay)', url: 'https://ponetealdia.com/uy' }],
+  },
+  {
+    id: 'mideuda',
+    name: 'MiDeuda',
+    operador: 'Requiro SRL (cobranza/BPO; RUT 217697220017)',
+    quienPaga: 'El acreedor: % sobre lo que recauda (a vos no te cobra)',
+    bcuRegulado: false,
+    documenta: 'No borra el registro; la deuda figura mientras la financiera lo informe',
+    transparencia: 'Operada por Requiro (confirmado por LinkedIn de sus fundadores). Pero su propia política deja el RUT de "MiDeuda S.A." como plantilla sin completar, y pide escaneo del documento con la cámara.',
+    scores: { transparencia: 55, costo: 100, independencia: 30, privacidad: 40, utilidad: 65, constancia: 55 },
+    sources: [
+      { label: 'MiDeuda', url: 'https://mideuda.com.uy/' },
+      { label: 'Requiro (operador)', url: 'https://www.requiro.com.uy/' },
+    ],
+  },
+  {
+    id: 'zeroatraso',
+    name: 'ZeroAtraso',
+    operador: 'Empresa regional (Argentina/Uruguay/Perú)',
+    quienPaga: 'El acreedor: dice no cobrar honorarios al deudor',
+    bcuRegulado: false,
+    documenta: 'Acuerdos con bancos/financieras adheridos',
+    transparencia: 'Declara "no te cobramos honorarios", pero es extranjera, atención por WhatsApp AR, y no queda claro con qué acreedores uruguayos tiene convenio.',
+    scores: { transparencia: 45, costo: 100, independencia: 40, privacidad: 50, utilidad: 55, constancia: 50 },
+    sources: [{ label: 'ZeroAtraso', url: 'https://zeroatraso.com' }],
+  },
+  {
+    id: 'chaudeudas',
+    name: 'ChauDeudas',
+    operador: 'Chau Deudas SAS (Ituzaingó 1324/501, Montevideo)',
+    quienPaga: 'El acreedor (ChauDeudas dice no recibir tu dinero)',
+    bcuRegulado: false,
+    documenta: 'No menciona el Clearing ni promete constancia de libre deuda',
+    transparencia: 'Baja: no publica RUT ni fundadores; la única prensa es contenido pago. Su propia API lista 12 acreedores con prefijo "CREDITIA -" (recuperadora de carteras), indicio de que su base viene de cobranza. Su FAQ dice no compartir datos, pero los T&C autorizan usarlos para marketing y transferirlos ante una venta de la empresa.',
+    scores: { transparencia: 35, costo: 100, independencia: 35, privacidad: 40, utilidad: 60, constancia: 45 },
+    sources: [
+      { label: 'ChauDeudas', url: 'https://www.chaudeudas.com.uy/' },
+      { label: 'ChauDeudas — Términos y Condiciones', url: 'https://www.chaudeudas.com.uy/legal/terminos_condiciones.json' },
+    ],
+  },
+])
+
+const RELIEF_WEIGHT_SUM = RELIEF_RUBRIC.reduce((s, d) => s + d.weight, 0)
+
+/** Weighted 0–100 overall from per-dimension scores. */
+export function computeReliefScore(scores: Record<RubricId, number>): number {
+  const total = RELIEF_RUBRIC.reduce((s, d) => s + (scores[d.id] ?? 0) * d.weight, 0)
+  return Math.round((total / RELIEF_WEIGHT_SUM) * 10) / 10
+}
+
+export interface RankedService extends ReliefService {
+  rank: number
+  overall: number
+}
+
+/** Services with computed overall, best-first, 1-indexed rank. */
+export function rankedServices(
+  services: readonly ReliefService[] = RELIEF_SERVICES
+): RankedService[] {
+  return services
+    .map(s => ({ ...s, overall: computeReliefScore(s.scores), rank: 0 }))
+    .sort((a, b) => b.overall - a.overall || a.name.localeCompare(b.name))
+    .map((s, i) => ({ ...s, rank: i + 1 }))
+}

@@ -54,3 +54,58 @@ describe('checkPrescription', () => {
     expect(r.caveat.toLowerCase()).toContain('recono')
   })
 })
+
+import {
+  RELIEF_RUBRIC,
+  RELIEF_SERVICES,
+  computeReliefScore,
+  rankedServices,
+} from '../../utils/debtRelief'
+
+describe('RELIEF_RUBRIC', () => {
+  it('weights sum to 100', () => {
+    expect(RELIEF_RUBRIC.reduce((s, d) => s + d.weight, 0)).toBe(100)
+  })
+})
+
+describe('RELIEF_SERVICES', () => {
+  it('every service scores every rubric dimension 0–100 and cites a source', () => {
+    for (const s of RELIEF_SERVICES) {
+      for (const d of RELIEF_RUBRIC) {
+        const v = s.scores[d.id]
+        expect(v, `${s.id}.${d.id}`).toBeGreaterThanOrEqual(0)
+        expect(v, `${s.id}.${d.id}`).toBeLessThanOrEqual(100)
+      }
+      expect(s.sources.length).toBeGreaterThan(0)
+      for (const src of s.sources) expect(src.url).toMatch(/^https?:\/\//)
+    }
+  })
+
+  it('includes the negotiate-direct baseline and the two named platforms', () => {
+    const ids = RELIEF_SERVICES.map(s => s.id)
+    expect(ids).toContain('negociar_directo')
+    expect(ids).toContain('chaudeudas')
+    expect(ids).toContain('mideuda')
+  })
+})
+
+describe('computeReliefScore + rankedServices', () => {
+  it('computes the weighted average', () => {
+    const flat = Object.fromEntries(RELIEF_RUBRIC.map(d => [d.id, 50])) as Record<
+      'transparencia' | 'costo' | 'independencia' | 'privacidad' | 'utilidad' | 'constancia',
+      number
+    >
+    expect(computeReliefScore(flat)).toBe(50)
+  })
+
+  it('ranks negociar_directo first (it dominates the rubric)', () => {
+    const ranked = rankedServices()
+    expect(ranked[0].id).toBe('negociar_directo')
+    expect(ranked[0].rank).toBe(1)
+    // ranks are strictly increasing and overall is descending
+    for (let i = 1; i < ranked.length; i++) {
+      expect(ranked[i].rank).toBe(i + 1)
+      expect(ranked[i].overall).toBeLessThanOrEqual(ranked[i - 1].overall)
+    }
+  })
+})
