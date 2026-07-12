@@ -2,6 +2,10 @@ import { describe, it, expect } from 'vitest'
 import {
   PRESCRIPTION_TYPES,
   checkPrescription,
+  RELIEF_RUBRIC,
+  RELIEF_SERVICES,
+  computeReliefScore,
+  rankedServices,
 } from '../../utils/debtRelief'
 
 describe('PRESCRIPTION_TYPES', () => {
@@ -54,13 +58,6 @@ describe('checkPrescription', () => {
     expect(r.caveat.toLowerCase()).toContain('recono')
   })
 })
-
-import {
-  RELIEF_RUBRIC,
-  RELIEF_SERVICES,
-  computeReliefScore,
-  rankedServices,
-} from '../../utils/debtRelief'
 
 describe('RELIEF_RUBRIC', () => {
   it('weights sum to 100', () => {
