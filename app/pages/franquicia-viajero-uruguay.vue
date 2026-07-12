@@ -49,11 +49,11 @@
           </VCol>
 
           <VCol cols="12" sm="6">
+            <div class="text-overline text-medium-emphasis mb-2">Valor de lo que traés</div>
             <VTextField
               v-model.number="valueUsd"
               type="number"
               min="0"
-              label="Valor de lo que traés"
               prefix="US$"
               variant="outlined"
               density="comfortable"
@@ -160,9 +160,10 @@
 
     <VAlert type="warning" variant="tonal" density="comfortable" icon="mdi-alert-outline">
       Información <strong>de referencia</strong>, no asesoramiento profesional. Qué cuenta como "uso
-      personal" queda a criterio del funcionario de Aduana en el momento de la inspección — no hay
-      una cifra oficial que lo defina. Para equipaje de alto valor, consultá directo con la
-      Dirección Nacional de Aduanas antes de viajar.
+      personal" tiene un test legal (cantidad, naturaleza y variedad — no una cifra), pero aplicarlo
+      caso a caso queda a criterio del funcionario de Aduana en el momento de la inspección. Para
+      equipaje de alto valor o de tu emprendimiento, consultá directo con la Dirección Nacional de
+      Aduanas antes de viajar.
     </VAlert>
   </VContainer>
 </template>
@@ -216,11 +217,15 @@ const faqs = [
   },
   {
     q: '¿Necesito un despachante de aduana para traer equipamiento de mi emprendimiento?',
-    a: 'No — la Ley 19.276 exime explícitamente "Equipajes de viajero" de la intervención obligatoria de un despachante. Eso resuelve la parte formal. Lo que la ley no resuelve es si Aduana va a considerarlo equipaje personal o importación comercial — ver la pregunta siguiente.',
+    a: 'No — la Ley 19.276 exime explícitamente "Equipajes de viajero" de la intervención obligatoria de un despachante. Eso resuelve la parte formal. Lo que importa es si Aduana lo va a considerar equipaje o importación comercial — ver las dos preguntas siguientes.',
+  },
+  {
+    q: '¿Puedo declarar que lo traigo para mi emprendimiento o actividad profesional?',
+    a: 'Sí, y no hace falta esconderlo: el propio Decreto 139/014 (art. 3°) contempla expresamente que tu declaración de equipaje incluya "bienes relacionados al ejercicio de una actividad profesional o estudio". Decir la verdad sobre que es para tu negocio no te saca automáticamente del régimen de equipaje — lo que importa es si, por cantidad, naturaleza o variedad, se parece a inventario para vender (importación comercial) o a herramienta de trabajo para tu propio uso (ver la pregunta siguiente). Una notebook de diseño, una cámara profesional o un set de herramientas de tu oficio entran en esa lógica; 20 unidades iguales del mismo producto, no.',
   },
   {
     q: '¿Qué es "uso personal" y por qué es zona gris?',
-    a: 'La norma no define un test de cantidad o valor para distinguir equipaje personal de una importación comercial disfrazada de equipaje — es una decisión que toma el funcionario en el momento de la inspección. Cuanto más se parezca lo que traés a inventario de negocio (varias unidades iguales, embalaje comercial, valor alto concentrado en un rubro), mayor el riesgo de que lo traten como importación y no como equipaje, aunque pagues el 50%. No hay una cifra oficial que marque el límite: es discreción real, no un matiz nuestro.',
+    a: 'Sí hay un test en la norma, pero no es un número: el Decreto 139/014 (art. 1°) define "equipaje" como lo que un viajero puede destinar a uso o consumo personal "siempre que por su cantidad, naturaleza o variedad no permitieren presumir que se importan... con fines comerciales o industriales". No dice "hasta 3 unidades" ni "hasta USD X" — es un estándar cualitativo, y aplicarlo caso a caso queda en manos del funcionario en el momento de la inspección. Cuanto más se parezca lo que traés a inventario de negocio (varias unidades iguales, embalaje comercial, valor alto concentrado en un solo rubro), mayor el riesgo de que lo traten como importación y no como equipaje, aunque pagues el 50%.',
   },
   {
     q: '¿Y si el equipo llega por separado, no en la valija?',
@@ -239,7 +244,7 @@ const sources = [
   },
   {
     label:
-      'Decreto 139/014 — régimen de equipaje del MERCOSUR, arts. 9 (franquicia y uso mensual) y 13 (50% sobre el excedente)',
+      'Decreto 139/014 — régimen de equipaje del MERCOSUR, arts. 1 (definición: cantidad/naturaleza/variedad no comercial), 3 (bienes de actividad profesional), 9 (franquicia y uso mensual) y 13 (50% sobre el excedente)',
     url: 'https://www.impo.com.uy/bases/decretos-internacional/139-2014/1',
   },
   {
@@ -286,7 +291,7 @@ useHead(() => ({
     {
       name: 'keywords',
       content:
-        'franquicia equipaje viajero uruguay, franquicia aeropuerto carrasco, cuanto puedo traer sin pagar impuesto uruguay, canal rojo aeropuerto uruguay, declaracion jurada equipaje, equipaje aduana uruguay, uso personal aduana',
+        'franquicia equipaje viajero uruguay, franquicia aeropuerto carrasco, cuanto puedo traer sin pagar impuesto uruguay, canal rojo aeropuerto uruguay, declaracion jurada equipaje, equipaje aduana uruguay, uso personal aduana, traer equipamiento emprendimiento uruguay, equipaje uso comercial aduana',
     },
   ],
   script: [
