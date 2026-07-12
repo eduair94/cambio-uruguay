@@ -88,7 +88,7 @@
                   <span class="warn-date">{{ formatDate(w.date) }}</span>
                 </div>
                 <p class="warn-entities mb-1">{{ w.entities }}</p>
-                <p class="warn-title mb-2">“{{ w.title }}”</p>
+                <p class="warn-title mb-2">“{{ verdictOf(w) }}”</p>
                 <div class="d-flex align-center flex-wrap ga-3">
                   <a
                     :href="sourceLink(w)"
@@ -174,6 +174,16 @@ const asOfLabel = computed(() => {
     ? ''
     : d.toLocaleDateString('es-UY', { day: 'numeric', month: 'long', year: 'numeric' })
 })
+
+/**
+ * The BCU's headline repeats the entity names before its verdict ("«Urucash» – «Americana
+ * Seguros» ADVERTENCIA sobre…"), and we already show those above. Print only the verdict half so
+ * the reader doesn't read the same names twice — still the BCU's words, just not duplicated.
+ */
+function verdictOf(w: BcuWarning): string {
+  const rest = w.title.startsWith(w.entities) ? w.title.slice(w.entities.length) : w.title
+  return rest.replace(/^[\s\-–—]+/, '').trim() || w.title
+}
 
 function formatDate(iso: string): string {
   const d = new Date(`${iso}T00:00:00Z`)
