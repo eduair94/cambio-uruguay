@@ -15,6 +15,13 @@
         <strong>Decreto 50/026</strong> y las <strong>Resoluciones Generales 09 y 21/2026</strong>
         de la Aduana. Si algo no está en una norma, lo decimos.
       </VAlert>
+      <p class="text-caption text-medium-emphasis mt-3 mb-0">
+        <VIcon size="14" class="mr-1">mdi-bag-suitcase-outline</VIcon>
+        ¿Es equipaje que vas a traer físicamente en la valija, no una compra online?
+        <NuxtLink :to="localePath('/franquicia-viajero-uruguay')">
+          Es otro régimen — ver franquicia de equipaje de viajero </NuxtLink
+        >.
+      </p>
     </header>
 
     <!-- The semáforo -->
