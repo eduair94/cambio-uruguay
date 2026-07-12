@@ -183,7 +183,7 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     pros: [
       "Rendimiento diario sobre el saldo (raro en prepagas): el dinero parado 'trabaja'",
       'Cashback fuerte si comprás mucho en Mercado Libre',
-      'Prepaga internacional gratis sin recargos en compras del exterior',
+      'Prepaga internacional gratis, sin comisión por compra en el exterior. Ojo: sin comisión no es sin costo — el margen se lo puede llevar el tipo de cambio que te aplican, que no siempre es el mejor de plaza.',
     ],
     cons: [
       'El mejor cashback (5%) exige suscripción Meli+ paga ($199/mes) y gastar en el ecosistema',
@@ -312,7 +312,7 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
       'Valor del punto simple y transparente: 1 punto = $U 1 (sin catálogos con tasas de canje ocultas).',
       'Canje flexible desde la App por cualquier compra pagable con la tarjeta, no un catálogo cerrado.',
       'Programa unificado: puntos de Visa, Mastercard y Amex acumulan en la misma bolsa Scotia Puntos.',
-      'Combinable con la tarjeta Amex para viajes/compras en el exterior sin recargo.',
+      'Combinable con la tarjeta Amex para viajes/compras en el exterior sin comisión (el costo real igual depende del tipo de cambio que te apliquen).',
     ],
     cons: [
       'Los puntos vencen a los 36 meses.',
@@ -698,7 +698,7 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
       'Costo anual referencia de mercado ~US$ 120/año para la línea Amex (verified=false; confirmar tarifario Scotiabank). Adicionales sin cargo.',
     pros: [
       'Orientada a viajero: Sala VIP Carrasco, seguros y asistencia de viaje robustos.',
-      'Compras en el exterior sin recargo.',
+      'Compras en el exterior sin comisión. No es lo mismo que gratis: el tipo de cambio aplicado puede llevarse un margen que no figura como comisión.',
       'Acumula en la misma bolsa Scotia Puntos que las tarjetas Visa/Mastercard del banco.',
       'Adicionales sin costo.',
     ],

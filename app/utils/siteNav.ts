@@ -454,6 +454,23 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        to: '/advertencias-bcu',
+        labelKey: 'nav.advertenciasBcu',
+        icon: 'mdi-alert-octagon-outline',
+        priority: 0.7,
+        changefreq: 'weekly',
+        fresh: true,
+        keywords: [
+          'advertencias bcu',
+          'empresas no autorizadas uruguay',
+          'es confiable esta empresa',
+          'estafa financiera uruguay',
+          'banco central advertencia',
+          'ponzi uruguay',
+          'registro bcu entidades',
+        ],
+      },
+      {
         to: '/estafas-uruguay',
         labelKey: 'nav.estafas',
         icon: 'mdi-shield-alert-outline',

@@ -314,6 +314,9 @@ export default defineNuxtConfig({
       // re-score the sentiment snapshot for /mejores-bancos-uruguay. Runs after the other
       // dailies so it never contends with them for the API/AI budget.
       '10 10 * * *': ['reddit:sentiment'],
+      // 08:00 UTC Mondays ≈ 05:00 Uruguay: refresh the BCU's list of entities it has warned
+      // about (~1 new entry a month, so weekly is plenty).
+      '0 8 * * 1': ['bcu:warnings'],
     },
   },
 
