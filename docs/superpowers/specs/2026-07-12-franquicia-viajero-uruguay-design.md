@@ -30,12 +30,16 @@ sitio cubre hoy esta pregunta.
   franquicia (Decreto 139/014, art. 13, texto literal "alícuota del 50% sobre el valor
   que exceda dichos límites").
 - **Base legal**: Ley 19.276 (Código Aduanero) arts. 132-133 (declaración obligatoria,
-  define equipaje acompañado/no acompañado) + Decreto 139/014 (incorpora MERCOSUR
-  Decisión 53/08) como decreto reglamentario, modificado por un decreto de 2019
-  (Decisión CMC 03/018, vigente desde 27/08/2021) que unificó la vieja franja
-  300/500-por-origen en un USD 500 plano. **El número exacto de ese decreto aparece
-  como "43/019" en una fuente y "49/019" en otra — se resuelve contra IMPO antes de
-  escribir la página** (tarea del plan de implementación, no bloquea el diseño).
+  define equipaje acompañado/no acompañado) + Decreto 139/014 (19/05/2014, incorpora
+  MERCOSUR Decisión 53/08) como decreto reglamentario original (300 aéreo/marítimo, 150
+  terrestre mínimo), modificado por el **Decreto 43/019** (promulgado 05/02/2019,
+  publicado 13/02/2019, "Modificación del Régimen de Equipaje del MERCOSUR", incorpora
+  Decisión CMC 03/018) que llevó la cifra a USD 500 aéreo/marítimo y USD 300 terrestre.
+  **Resuelto por fetch directo a IMPO** (2026-07-12): una página de aduanas.gub.uy cita
+  "Decreto 49/019" para el mismo régimen — verificado y es un **error de cita de
+  Aduanas**: el Decreto 49/019 real es sobre compensaciones de peaje de Vialidad, sin
+  relación con aduana. Mismo patrón de bug ya documentado en `/advertencias-bcu`
+  (Kredimio/Remesas Tres Cruces) — se cita el 43/019, nunca el 49/019.
 - **No hace falta despachante de aduana** — Ley 19.276 exime explícitamente "Equipajes
   de viajero" de esa exigencia. Dato tranquilizador directo para el caso de Reddit.
 - **Sí se puede pagar en el momento y llevarse las cosas.** gub.uy: Carrasco acepta
@@ -59,12 +63,15 @@ que la sección de phishing en `/estafas-uruguay`):**
   como equipaje de mano/despachado) está definido legalmente (art. 133-B) pero **no se
   confirmó si recibe la misma franquicia/tasa** que el acompañado — se marca como
   pregunta abierta, no se inventa una cifra.
-- **Tope de uso** (una vez por mes vs. una vez por año) — fuentes en conflicto, a
-  resolver contra el decreto vigente antes de publicar.
-- **Terminología del canal en Carrasco** — un anuncio de Aduanas de 2016 describe un
-  "corredor azul" para quienes declaran; existe además una página oficial separada que
-  define "canal rojo" como el nivel de control más estricto. Se verifica cuál término
-  usa Aduanas hoy antes de escribir copy que use uno u otro.
+- **Tope de uso: RESUELTO — una vez por mes**, no por año. Confirmado por fetch directo
+  a dos fuentes independientes (Decreto 139/014 art. 9 original y la página gub.uy
+  vigente): "las franquicias... no podrán ser utilizadas más de una vez por mes".
+- **Terminología del canal en Carrasco: sin confirmar, se evita en el copy.** La página
+  gub.uy vigente (fetch directo 2026-07-12) **no menciona "canal rojo", "corredor
+  azul" ni "canal verde" en ningún lugar** — el "corredor azul" viene solo de un
+  anuncio de Aduanas de 2016 (stale). La página describe el procedimiento de forma
+  funcional (mostrador → declaración jurada → inspección → pago) sin afirmar un color
+  de canal específico como vigente hoy.
 
 ## 3. Alcance (decisiones aprobadas por el usuario)
 
@@ -152,16 +159,23 @@ si aplica, card de fuentes, disclaimer).
 - `resolveBaggageTax` — dentro de franquicia (impuesto 0), justo en el límite,
   excedente aéreo, excedente terrestre, valor 0.
 
-## 6. Verificación previa a escribir copy (bloquea el plan, no el diseño)
+## 6. Verificación previa a escribir copy — COMPLETADA (2026-07-12)
 
-Antes de redactar el contenido final de la página, el plan de implementación debe
-incluir un paso de `WebFetch` directo (no memoria del research) contra:
-- IMPO: texto del decreto que unificó la cifra a USD 500 (confirmar 43/019 vs 49/019).
-- gub.uy trámite `equipaje-viajeros-gestion-franquicia-equipaje`: tope de uso (mes vs.
-  año) y terminología de canal/corredor vigente hoy.
-Si algo sigue sin resolverse tras ese fetch directo, se publica como pregunta abierta
-(mismo estándar que `/franquicia-aduana-uruguay` con el registro de vendedores) — nunca
-se inventa una cifra para rellenar el hueco.
+Los tres hechos abiertos se resolvieron con `WebFetch` directo contra fuente primaria
+antes de escribir el plan de implementación (no delegado a un implementador sin
+contexto). Resultado, con lo que queda como constante fuenteada en el código:
+
+| Hecho | Resuelto | Fuente |
+|---|---|---|
+| Decreto que fija USD 500 | **43/019** (no 49/019 — bug de cita de Aduanas) | impo.com.uy/bases/decretos/43-2019 |
+| Tope de uso | **una vez por mes** | Decreto 139/014 art. 9 + gub.uy trámite |
+| Terminología de canal | **sin confirmar — se evita en el copy** | gub.uy trámite (no la menciona) |
+| Residencia | **no distingue** residente/turista | gub.uy trámite (confirmado 2 veces) |
+| Medios de pago en Carrasco | **Visa (débito/crédito) o American Express (crédito)** — no se afirma Mastercard | gub.uy trámite, cita textual |
+| Franquicia adicional Tiendas Libres | **USD 850** (Decreto 376/022), se suma a la de equipaje | gub.uy trámite, cita textual |
+
+La única pregunta que sigue genuinamente abierta es la de **equipaje no acompañado**
+(§2) — se publica como tal, sin inventar cifra.
 
 ## 7. Cuidado editorial / legal
 
@@ -190,6 +204,3 @@ se inventa una cifra para rellenar el hueco.
 - `siteNav-coverage.test.ts` verde (entrada de nav + label en los 3 locales).
 - Cross-links funcionando en ambas direcciones con `/franquicia-aduana-uruguay`.
 - `npm run lint` limpio.
-- Los tres hechos marcados "a confirmar" (número de decreto, tope mensual/anual,
-  terminología de canal) están resueltos vía WebFetch directo antes del commit final,
-  o explícitamente publicados como pregunta abierta si no se resuelven.
