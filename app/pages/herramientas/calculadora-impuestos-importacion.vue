@@ -373,11 +373,36 @@
     <template #content>
       <h2>Cómo funciona</h2>
       <p>
-        <strong>Compra online (courier):</strong> desde mayo de 2026 podés traer hasta
-        <strong>US$ 800 por año</strong> en hasta 3 envíos, sin pagar <em>aranceles</em>. Pero la
-        franquicia <strong>sí paga IVA (22%)</strong>, salvo una excepción: los envíos desde
-        <strong>Estados Unidos de hasta US$ 200</strong> quedan exonerados de IVA por el acuerdo
-        TIFA. Lo que supera la franquicia paga el régimen simplificado del <strong>60%</strong>.
+        <strong>Compra online (courier):</strong> hay
+        <strong>dos regímenes y son excluyentes</strong>
+        — un envío entra en uno o en el otro, nunca se parte entre los dos (Decreto 50/026, art.
+        15).
+      </p>
+      <ul>
+        <li>
+          <strong>Franquicia:</strong> hasta <strong>US$ 800 por año</strong> en un máximo de
+          <strong>3 envíos</strong>, sin <em>aranceles</em>. Igual paga
+          <strong>IVA (tasa básica 22%)</strong>, salvo una excepción: las compras
+          <strong>de EE.UU. de hasta US$ 200</strong> quedan exoneradas de IVA (acuerdo TIFA). Es
+          <strong>todo o nada</strong>: un dólar por encima de US$ 200 y pagás IVA sobre el total.
+        </li>
+        <li>
+          <strong>Prestación única:</strong> si el envío no entra en la franquicia —porque ya usaste
+          los 3 envíos, o porque lo que te queda de cupo no lo cubre— paga
+          <strong>60% del valor, con un mínimo de US$ 20</strong> por envío. El envío completo, no
+          "el excedente".
+        </li>
+      </ul>
+      <p>
+        Ojo con el <strong>valor</strong> que se mira para los topes de US$ 200 y US$ 800: es el
+        <strong>total de la factura</strong> — precio + <em>sales tax</em> + el envío que te cobre
+        el vendedor (Decreto 50/026, art. 5). Y por encima de <strong>US$ 800</strong> el envío no
+        entra en ninguno de los dos regímenes: pasa al régimen general y no lo calculamos acá.
+      </p>
+      <p>
+        <strong>Desde el 1.º de octubre de 2026</strong> la exoneración de IVA de EE.UU. va a
+        exigir, además, que el <em>vendedor</em> esté registrado ante la Aduana (RG 09/2026). Hoy
+        todavía no se exige: ya se prorrogó dos veces.
       </p>
       <p>
         En este régimen el IVA y la tasa única se calculan siempre sobre el
@@ -432,13 +457,15 @@
     </template>
 
     <template #disclaimer>
-      Cálculo de referencia. Régimen de franquicia vigente desde el 1.º de mayo de 2026 (hasta US$
-      800 anuales, en 3 envíos): exento de aranceles pero <strong>gravado con IVA 22%</strong>,
-      salvo envíos desde EE.UU. de hasta US$ 200 (exonerados de IVA por el acuerdo TIFA). El
-      excedente paga el régimen simplificado del 60%. El IVA y la tasa única gravan el valor de la
-      mercadería; <strong>el flete del courier no paga IVA</strong> y se suma aparte al costo total.
-      Las tarifas de courier son de referencia. Verificá las condiciones vigentes con la Dirección
-      Nacional de Aduanas y tu courier antes de comprar. No es asesoramiento profesional.
+      Cálculo de referencia (Ley 20.446 art. 627 y Decreto 50/026). La franquicia —hasta US$ 800 al
+      año, en 3 envíos— exime de aranceles pero <strong>igual paga IVA (tasa básica 22%)</strong>,
+      salvo las compras de EE.UU. de hasta US$ 200, exoneradas por el acuerdo TIFA. Si el envío no
+      entra en la franquicia, paga la <strong>prestación única: 60%, mínimo US$ 20</strong> — el
+      envío entero, porque los dos regímenes son excluyentes. Los topes de US$ 200 y US$ 800 se
+      miden sobre el <strong>total de la factura del vendedor</strong> (precio + sales tax + su
+      envío); el flete que te cobra el courier va aparte y no paga IVA. Verificá las condiciones
+      vigentes con la Dirección Nacional de Aduanas antes de comprar. No es asesoramiento
+      profesional.
     </template>
   </ToolShell>
 </template>
@@ -616,8 +643,8 @@ const faq = [
     a: 'Por el acuerdo TIFA entre Uruguay y EE.UU., los envíos desde Estados Unidos de hasta US$ 200 mantienen la exoneración de IVA. Si el envío de EE.UU. supera los US$ 200, o si proviene de cualquier otro país, se aplica el IVA del 22% sobre la franquicia.',
   },
   {
-    q: '¿Cuánto se paga por encima de la franquicia?',
-    a: 'El régimen simplificado aplica una tasa única del 60% sobre el valor que supera la franquicia, con un mínimo. Por ejemplo, si traés US$ 1.000 y usás los US$ 800 de franquicia, pagás IVA sobre los 800 más 60% sobre los 200 restantes.',
+    q: '¿Cuánto se paga si el envío no entra en la franquicia?',
+    a: 'Paga la prestación única: 60% del valor del envío, con un mínimo de US$ 20. Ojo: es sobre el envío ENTERO, no sobre "el excedente" — los dos regímenes son excluyentes y un envío no se parte entre los dos (Decreto 50/026, art. 15). Si te quedan US$ 100 de franquicia y comprás por US$ 500, no pagás IVA por 100 y 60% por 400: pagás 60% de los 500. Y por encima de US$ 800 el envío no entra en ninguno de los dos regímenes.',
   },
   {
     q: '¿Cómo se calculan los impuestos en el régimen general?',
