@@ -108,6 +108,30 @@ mínimo US$ 20, umbral sobre el total de la factura). La página consume esas re
 - `classes/couriers/opinions.ts` — minado por entidad (alias: "Punto Mío"/"puntomio"/"punto mio"),
   scoring de sentimiento a nivel **oración** (no post: un hilo puede elogiar a uno y despedazar a otro)
   y extracción de hasta 3 citas con permalink.
+
+  **Clasificación híbrida (corrección post-research, 2026-07-12).** El corpus real (1.513 posts +
+  7.862 comentarios minados de r/uruguay, r/Burises, r/UruguayFinanzas, r/Montevideo, r/AskUruguay)
+  demostró que un léxico de keywords **no alcanza** y publica mentiras:
+
+  - Para Tiendamia el léxico dio net **−5**; leyendo las oraciones, el neto real es **−70** (27 de 28
+    opiniones negativas).
+  - Contó como elogio a Tiendamia la frase *"Yo recomiendo PuntoMio antes que estos chorros"* — que es
+    exactamente lo contrario. Las frases **comparativas** ("mejor X que Y") invierten el sujeto.
+  - Leyó como positivas frases **sarcásticas** ("actuó más rápido que la velocidad de la luz",
+    "sospechosamente rápido").
+
+  Por lo tanto: cada oración nueva se **clasifica con el proveedor de AI del backend**
+  (`AI_BASE_URL`/`AI_API_KEY`, ya configurado) devolviendo `{ subject, isOpinion, polarity, theme }`,
+  y el resultado se **cachea en Mongo por hash de la oración** — así el costo es una vez por oración,
+  el corpus viejo no se re-clasifica, y dos corridas dan el mismo número. **La agregación
+  (decay temporal, peso logarítmico de upvotes, neto, `MIN_SAMPLE`) sigue siendo determinística y
+  auditable**: la AI etiqueta, no calcula. Si la AI no responde, la oración queda sin clasificar y no
+  entra al neto — degrada a "menos muestra", nunca a "número inventado".
+
+  Umbral de publicación (medido contra el corpus real): < 8 opiniones genuinas → se muestra con la
+  leyenda "muestra fina"; < 3 → "sin muestra suficiente" y la dimensión queda ausente. Con el corpus
+  de hoy eso deja **sin muestra** a UruguayCargo (3 menciones), StarBox (3), SoyCourier (3), Grinbox
+  (14 menciones pero 0 opiniones), Logistika (0) y UPS.
 - `sync_couriers.ts` — job único. Tarifas + Reddit todos los días; Google solo si el snapshot tiene
   más de 7 días (los promedios de reseñas se mueven lento y el proxy es caro).
 - pm2 en `ecosystem.config.js`:
