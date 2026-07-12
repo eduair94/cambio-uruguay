@@ -379,32 +379,14 @@
         <VIcon start color="primary">mdi-format-list-numbered</VIcon>
         Cómo salir, en concreto
       </h2>
-      <ol class="steps">
-        <li>
-          <strong>Averiguá exactamente qué debés y a quién.</strong> Consultá el BCU y pedí tu
-          informe al Clearing. Sin eso estás negociando a ciegas.
-        </li>
-        <li>
-          <strong>Chequeá que la deuda sea tuya y esté bien.</strong> Si es un error, ya pagaste, o
-          pasaron más de 5 años, pedí la rectificación o baja por escrito.
-        </li>
-        <li>
-          <strong>Calculá la tasa real</strong> (arriba). Si supera el tope del BCU, tenés un
-          argumento fuerte y podés denunciarlo.
-        </li>
-        <li>
-          <strong>Negociá un convenio.</strong> Pedí quita de intereses y multas, y una cuota que
-          puedas sostener. Que quede <strong>por escrito</strong> antes de pagar nada.
-        </li>
-        <li>
-          <strong>Pagá siguiendo el plan</strong> (avalancha si querés gastar menos). Guardá todos
-          los comprobantes.
-        </li>
-        <li>
-          <strong>Exigí que quede como “cancelada”</strong> y verificá dentro de unas semanas que el
-          registro se actualizó.
-        </li>
-      </ol>
+      <p class="mb-3">
+        El paso a paso para negociar una quita, la comparativa honesta de servicios como ChauDeudas
+        y MiDeuda, y cómo reconstruir tu historial están en una guía aparte.
+      </p>
+      <VBtn :to="localePath('/saldar-deudas-uruguay')" color="primary" variant="flat">
+        Ver la guía para saldar deudas
+        <VIcon end icon="mdi-arrow-right" />
+      </VBtn>
       <VAlert type="error" variant="tonal" density="comfortable" class="mt-4" icon="mdi-alert">
         Desconfiá de quien te cobre por “borrarte del clearing”. Nadie puede eliminar un dato
         legítimo antes de tiempo: lo que existe es corregir errores y esperar la caducidad.

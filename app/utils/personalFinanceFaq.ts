@@ -163,9 +163,9 @@ export const PERSONAL_FAQS: readonly PersonalFaq[] = Object.freeze([
     id: 'salir-del-clearing',
     question: '¿Cómo salgo del Clearing de Informes?',
     shortAnswer:
-      'Pagando o negociando la deuda (queda registrada 2 años tras el pago) o esperando el plazo legal (5 años si sigue impaga).',
+      'Pagando o negociando la deuda (una vez cancelada queda registrada hasta 5 años más; en la práctica Equifax la muestra ~3) o esperando el plazo legal (5 años impaga, renovable una vez).',
     answer:
-      "El Clearing (Equifax) muestra tus deudas: las impagas quedan hasta 5 años desde el último incumplimiento y las pagas 2 años desde que las cancelaste. Podés pedir tu informe gratis una vez cada 6 meses en Equifax o en el BCU para ver exactamente qué debés y a quién. Contactá al acreedor y negociá: en deudas viejas es común lograr quitas del 30-60%, y exigí certificado de cancelación y que informen la baja a la base de datos. Si hay un dato erróneo, por Ley 18.331 tienen que corregirlo en pocos días; desconfiá de quien te promete 'borrarte del Clearing' pagando: eso no existe, solo se sale pagando o por el paso del tiempo.",
+      "El Clearing (Equifax) muestra tus deudas: las impagas quedan 5 años desde su incorporación (renovable por otros 5 si siguen sin pagarse) y, una vez canceladas, quedan registradas como 'canceladas' hasta 5 años más (en la práctica Equifax las muestra unos 3). Podés pedir tu informe gratis una vez cada 6 meses en Equifax o en el BCU para ver exactamente qué debés y a quién. Contactá al acreedor y negociá: en deudas viejas es común lograr quitas del 30-60%, y exigí certificado de cancelación y que informen la baja a la base de datos. Si hay un dato erróneo, por Ley 18.331 tienen que corregirlo en pocos días; desconfiá de quien te promete 'borrarte del Clearing' pagando: eso no existe, solo se sale pagando o por el paso del tiempo.",
     category: 'deudas',
     tags: ['Clearing', 'deudas', 'Equifax', 'BCU', 'negociación'],
     howCommon: 'muy_comun',

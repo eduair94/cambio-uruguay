@@ -291,7 +291,7 @@
 
     <!-- Cross-links -->
     <VRow class="my-6">
-      <VCol cols="12" md="6">
+      <VCol cols="12" md="4">
         <VCard
           :to="localePath('/inversiones-uruguay')"
           class="cross-link pa-4 h-100"
@@ -306,7 +306,7 @@
           </p>
         </VCard>
       </VCol>
-      <VCol cols="12" md="6">
+      <VCol cols="12" md="4">
         <VCard
           :to="localePath('/economia-uruguay')"
           class="cross-link pa-4 h-100"
@@ -317,6 +317,20 @@
           <h3 class="text-subtitle-1 font-weight-bold mb-1">Entendé el contexto económico</h3>
           <p class="text-body-2 text-grey-lighten-1 mb-0">
             Noticias de economía de Uruguay por área e informe con IA.
+          </p>
+        </VCard>
+      </VCol>
+      <VCol cols="12" md="4">
+        <VCard
+          :to="localePath('/saldar-deudas-uruguay')"
+          class="cross-link pa-4 h-100"
+          hover
+          variant="flat"
+        >
+          <VIcon color="primary" class="mb-2">mdi-handshake-outline</VIcon>
+          <h3 class="text-subtitle-1 font-weight-bold mb-1">Saldar deudas</h3>
+          <p class="text-body-2 text-grey-lighten-1 mb-0">
+            Negociá una quita, compará servicios y reconstruí tu historial.
           </p>
         </VCard>
       </VCol>
