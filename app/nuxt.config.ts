@@ -301,6 +301,8 @@ export default defineNuxtConfig({
       '40 9 * * *': ['costs:daily'],
       // 09:50 UTC ≈ 06:50 Uruguay: refresh national key figures + drift watchdog.
       '50 9 * * *': ['figures:daily'],
+      // 10:10 UTC on the 1st ≈ 07:10 Uruguay: refresh debt-relief usury caps (monthly).
+      '10 10 1 * *': ['debt-relief:monthly'],
       // 12:00 UTC = 09:00 Uruguay: send the daily newsletter to confirmed subs.
       '0 12 * * *': ['newsletter:daily'],
       // Every 10 minutes: evaluate rate alerts and notify (push + email + telegram).
