@@ -48,6 +48,53 @@
       </VCol>
     </VRow>
 
+    <!-- Prescription tool -->
+    <h2 class="section-heading">¿Tu deuda pudo prescribir?</h2>
+    <VCard variant="outlined" class="pa-4 mb-2" rounded="lg">
+      <VRow align="center">
+        <VCol cols="12" md="6">
+          <VSelect
+            v-model="presType"
+            :items="PRESCRIPTION_TYPES.map(t => ({ title: t.label, value: t.id }))"
+            label="Tipo de deuda"
+            density="comfortable"
+            variant="outlined"
+            hide-details
+          />
+        </VCol>
+        <VCol cols="12" md="6">
+          <VTextField
+            v-model="presDate"
+            type="date"
+            label="Fecha del último pago o vencimiento"
+            density="comfortable"
+            variant="outlined"
+            hide-details
+          />
+        </VCol>
+      </VRow>
+
+      <VAlert
+        v-if="presResult"
+        :type="presResult.mayHaveExpired ? 'success' : 'info'"
+        variant="tonal"
+        class="mt-4"
+      >
+        <div class="font-weight-bold mb-1">
+          Plazo legal: {{ yearsMonths(presResult.months) }} · {{ presResult.norma }}
+        </div>
+        <div v-if="presResult.mayHaveExpired" class="mb-2">
+          Pasaron {{ yearsMonths(presResult.monthsElapsed) }}: el plazo legal de cobro
+          <strong>pudo</strong> haberse cumplido.
+        </div>
+        <div v-else class="mb-2">
+          Pasaron {{ yearsMonths(presResult.monthsElapsed) }}; faltarían
+          {{ yearsMonths(presResult.monthsRemaining) }} para cumplir el plazo.
+        </div>
+        <div class="text-body-2">{{ presResult.caveat }}</div>
+      </VAlert>
+    </VCard>
+
     <!-- Negotiation playbook -->
     <h2 class="section-heading">Cómo negociar una quita vos mismo</h2>
     <VExpansionPanels variant="accordion" class="mb-2">
@@ -66,6 +113,69 @@
       >; no son garantía. ¿Varias deudas? Ordénalas con el
       <NuxtLink :to="localePath('/salir-del-clearing')">simulador de pago</NuxtLink>.
     </p>
+
+    <!-- Live usury caps note -->
+    <VAlert v-if="live" type="info" variant="text" density="compact" class="mb-6 text-caption">
+      Topes de usura vigentes ({{ live.period }}): sin descuento &lt; 10.000 UI, tope
+      {{ formatNumber(live.usuryCaps[1]?.topeTasa ?? 0, 2) }}%. Si tu tasa real supera el tope,
+      podés reclamar.
+    </VAlert>
+
+    <!-- Comparison table (computed rubric) -->
+    <h2 class="section-heading">Las plataformas, comparadas</h2>
+    <p class="mb-3 text-body-2 text-medium-emphasis">
+      Puntaje 0–100 calculado con una rúbrica ponderada ({{
+        RELIEF_RUBRIC.map(d => `${d.label} ${d.weight}%`).join(' · ')
+      }}). La línea base "negociar directo" es el patrón contra el que se miden las plataformas.
+    </p>
+    <div style="overflow-x: auto">
+      <VTable density="comfortable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Servicio</th>
+            <th>Quién está detrás</th>
+            <th>¿Quién paga?</th>
+            <th>¿BCU?</th>
+            <th class="text-right">Puntaje</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="s in ranked" :key="s.id">
+            <td>{{ medal(s.rank) || s.rank }}</td>
+            <td class="font-weight-medium">{{ s.name }}</td>
+            <td class="text-caption">{{ s.operador }}</td>
+            <td class="text-caption">{{ s.quienPaga }}</td>
+            <td>{{ s.bcuRegulado ? 'Sí' : 'No' }}</td>
+            <td class="text-right font-weight-bold">{{ s.overall }}</td>
+          </tr>
+        </tbody>
+      </VTable>
+    </div>
+    <VExpansionPanels variant="accordion" class="mt-3 mb-2">
+      <VExpansionPanel v-for="s in ranked" :key="s.id">
+        <VExpansionPanelTitle
+          >{{ medal(s.rank) || `${s.rank}.` }} {{ s.name }} —
+          {{ s.overall }}/100</VExpansionPanelTitle
+        >
+        <VExpansionPanelText>
+          <p class="mb-2">{{ s.transparencia }}</p>
+          <div class="text-caption text-medium-emphasis mb-2">Qué documenta: {{ s.documenta }}</div>
+          <div class="text-caption">
+            Fuentes:
+            <a
+              v-for="src in s.sources"
+              :key="src.url"
+              :href="src.url"
+              target="_blank"
+              rel="noopener"
+              class="mr-2"
+              >{{ src.label }}</a
+            >
+          </div>
+        </VExpansionPanelText>
+      </VExpansionPanel>
+    </VExpansionPanels>
 
     <!-- Verdict by case -->
     <h2 class="section-heading">Veredicto honesto, según tu caso</h2>
@@ -195,12 +305,45 @@ import {
   VERDICT_CASES,
   CREDIT_REBUILD_STEPS,
   DEBT_RELIEF_BASELINE,
+  PRESCRIPTION_TYPES,
+  checkPrescription,
+  RELIEF_RUBRIC,
+  rankedServices,
+  type LiveDebtRelief,
 } from '~/utils/debtRelief'
+import { formatNumber } from '~/utils/format'
 
 const localePath = useLocalePath()
 
 const verdictColor = (tone: 'good' | 'neutral' | 'warn') =>
   tone === 'good' ? 'success' : tone === 'warn' ? 'warning' : 'info'
+
+// --- Prescription tool state ---
+const presType = ref(PRESCRIPTION_TYPES[0].id)
+const presDate = ref('') // yyyy-mm-dd from <input type="date">
+const presResult = computed(() => {
+  if (!presDate.value) return null
+  const today = new Date().toISOString().slice(0, 10)
+  return checkPrescription(presType.value, presDate.value, today)
+})
+const yearsMonths = (months: number) => {
+  const y = Math.floor(months / 12)
+  const m = months % 12
+  return (
+    [y ? `${y} año${y === 1 ? '' : 's'}` : '', m ? `${m} mes${m === 1 ? '' : 'es'}` : '']
+      .filter(Boolean)
+      .join(' y ') || '0 meses'
+  )
+}
+
+// --- Ranked services (computed from the rubric) ---
+const ranked = rankedServices()
+const medal = (rank: number) => (rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '')
+
+// --- Live usury caps (non-blocking) ---
+// Do NOT await: awaiting makes this an async component (Suspense) and triggers the
+// known first-click hydration bug. useLazyFetch is non-blocking by design.
+const { data: live } = useLazyFetch<LiveDebtRelief>('/api/debt-relief', { server: false })
 
 const sources = [
   {

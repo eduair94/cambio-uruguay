@@ -565,3 +565,11 @@ export const DEBT_RELIEF_BASELINE: DebtReliefBaseline = Object.freeze({
     },
   ],
 })
+
+// Shape returned by /api/debt-relief (baseline + live overrides). Declared here
+// so the page can import it from the pure util without reaching into server/.
+export interface LiveDebtRelief extends Omit<DebtReliefBaseline, 'asOf'> {
+  asOf: string | null
+  updated: string[]
+  sources: { label: string; url: string }[]
+}

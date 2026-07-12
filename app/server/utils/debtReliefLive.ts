@@ -8,13 +8,8 @@
 // ignored (baseline kept). A hallucinated number can never make the page show
 // something absurd; worst case it keeps the last-good / baseline data.
 import { DEBT_RELIEF_BASELINE } from '../../utils/debtRelief'
-import type { DebtReliefBaseline, UsuryCap } from '../../utils/debtRelief'
-
-export interface LiveDebtRelief extends Omit<DebtReliefBaseline, 'asOf'> {
-  asOf: string | null
-  updated: string[]
-  sources: { label: string; url: string }[]
-}
+import type { DebtReliefBaseline, UsuryCap, LiveDebtRelief } from '../../utils/debtRelief'
+export type { LiveDebtRelief }
 
 const STORAGE = 'debt-relief'
 const KEY = 'live'
