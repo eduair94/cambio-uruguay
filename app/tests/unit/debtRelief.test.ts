@@ -6,6 +6,11 @@ import {
   RELIEF_SERVICES,
   computeReliefScore,
   rankedServices,
+  DEBT_MYTHS,
+  NEGOTIATION_STEPS,
+  CREDIT_REBUILD_STEPS,
+  VERDICT_CASES,
+  DEBT_RELIEF_BASELINE,
 } from '../../utils/debtRelief'
 
 describe('PRESCRIPTION_TYPES', () => {
@@ -104,5 +109,28 @@ describe('computeReliefScore + rankedServices', () => {
       expect(ranked[i].rank).toBe(i + 1)
       expect(ranked[i].overall).toBeLessThanOrEqual(ranked[i - 1].overall)
     }
+  })
+})
+
+describe('structured content', () => {
+  it('has myths, steps and verdict cases with content', () => {
+    expect(DEBT_MYTHS.length).toBeGreaterThanOrEqual(4)
+    for (const m of DEBT_MYTHS) expect(m.norma.length).toBeGreaterThan(0)
+    expect(NEGOTIATION_STEPS.length).toBeGreaterThanOrEqual(5)
+    expect(CREDIT_REBUILD_STEPS.length).toBeGreaterThanOrEqual(3)
+    expect(VERDICT_CASES.length).toBeGreaterThanOrEqual(4)
+    for (const v of VERDICT_CASES) expect(['good', 'neutral', 'warn']).toContain(v.tone)
+  })
+})
+
+describe('DEBT_RELIEF_BASELINE', () => {
+  it('carries a dated usury-cap snapshot and refi rates', () => {
+    expect(DEBT_RELIEF_BASELINE.asOf).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+    expect(DEBT_RELIEF_BASELINE.usuryCaps.length).toBeGreaterThan(0)
+    for (const c of DEBT_RELIEF_BASELINE.usuryCaps) {
+      expect(c.topeTasa).toBeGreaterThan(c.tasaMedia)
+      expect(c.topeMora).toBeGreaterThanOrEqual(c.topeTasa)
+    }
+    expect(DEBT_RELIEF_BASELINE.refiRates.length).toBeGreaterThan(0)
   })
 })

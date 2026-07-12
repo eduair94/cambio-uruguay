@@ -362,3 +362,206 @@ export function rankedServices(
     .sort((a, b) => b.overall - a.overall || a.name.localeCompare(b.name))
     .map((s, i) => ({ ...s, rank: i + 1 }))
 }
+
+export interface Myth {
+  myth: string
+  truth: string
+  norma: string
+}
+
+export const DEBT_MYTHS: readonly Myth[] = Object.freeze([
+  {
+    myth: '"Pagar me borra del Clearing."',
+    truth:
+      'No. La deuda pagada queda registrada como "cancelada" hasta 5 años (no renovable); en la práctica Equifax la mantiene unos 3 años. Pagar mejora tu situación a futuro, pero no borra el antecedente.',
+    norma: 'Ley 18.331 art. 22',
+  },
+  {
+    myth: '"La deuda caduca sola a los 10 años."',
+    truth:
+      'La deuda no desaparece sola. Lo que caduca es tu registro en el Clearing (5 años + 5 renovable una vez) y lo que prescribe es el derecho a cobrarte por juicio (10 años la acción personal, 5 la vía ejecutiva, 4 el pagaré, 6 meses el cheque). Y la prescripción hay que oponerla: no la aplica el juez de oficio.',
+    norma: 'CC arts. 1216, 1217, 1191; CCom 1019; Ley 14.412 art. 68',
+  },
+  {
+    myth: '"Si arreglo un pago, no pierdo nada."',
+    truth:
+      'Cuidado: pagar una cuota, pagar intereses o firmar un "acuerdo" sobre una deuda ya prescrita la RESUCITA (es renuncia tácita a la prescripción y reinicia el plazo). Verificá la prescripción ANTES de reconocer o pagar nada.',
+    norma: 'CC arts. 1189, 1234; CCom 1026',
+  },
+  {
+    myth: '"Me pueden embargar el sueldo / meter preso."',
+    truth:
+      'El sueldo es inembargable salvo por tributos o pensión alimenticia (hasta 1/3, o 1/2 alimentos a menores), y siempre debés conservar como mínimo el 35% líquido. Y no hay cárcel por deudas civiles o comerciales.',
+    norma: 'CGP art. 381; Ley 17.829 art. 3; Constitución art. 52',
+  },
+])
+
+export interface Step {
+  title: string
+  detail: string
+}
+
+export const NEGOTIATION_STEPS: readonly Step[] = Object.freeze([
+  {
+    title: 'Diagnóstico gratis primero',
+    detail:
+      'Consultá tu situación sin costo en la Central de Riesgos del BCU (consultadeuda.bcu.gub.uy) y pedí tu informe de Clearing gratis, que te corresponde una vez cada 6 meses. Antes de hablar con nadie, sabé exactamente qué debés y a quién.',
+  },
+  {
+    title: 'Entendé quién tiene tu deuda hoy',
+    detail:
+      'Si ya pasó a una recuperadora, esa empresa te la compró a centavos (a veces ~10% del nominal). Eso te da poder: le sirve cobrar algo antes que nada.',
+  },
+  {
+    title: 'Anclá en el capital original',
+    detail:
+      'Anotá cuánto pediste de verdad y negociá sobre ese número, no sobre el total inflado con intereses y gastos. Los intereses que te quieren cobrar son lo primero que se recorta.',
+  },
+  {
+    title: 'Ofrecé pago contado por una quita',
+    detail:
+      'La quita más grande aparece pagando de una. Táctica que reportan usuarios de r/uruguay: "tengo esto para hoy, más no". Usuarios reportan quitas de 54.000→12.000 (~78%) con financieras y 240.000→50.000 con un banco vía estudio.',
+  },
+  {
+    title: 'Exigí el acuerdo por escrito ANTES de pagar',
+    detail:
+      'Pedí el acuerdo y la carta de cancelación / finiquito por escrito antes de transferir un peso. Nunca pagues por Abitab de palabra: el doble cobro (te reclaman una deuda que ya pagaste) es un fraude común.',
+  },
+  {
+    title: 'Priorizá por la tasa más cara',
+    detail:
+      'Si tenés varias deudas, atacá primero la de mayor TEA. Usá el simulador de /salir-del-clearing para ver el orden y cuánto te ahorra.',
+  },
+  {
+    title: 'Guardá todo',
+    detail:
+      'Comprobantes, el acuerdo firmado y la constancia de cancelación. Con eso pedís la baja del registro y te cubrís de reclamos futuros.',
+  },
+])
+
+export const CREDIT_REBUILD_STEPS: readonly Step[] = Object.freeze([
+  {
+    title: 'Pagá en tiempo y forma, y esperá',
+    detail:
+      'Reconstruir es cuestión de historial nuevo y limpio. El antecedente "cancelada con atraso" queda 3-5 años; no hay atajo que lo borre antes.',
+  },
+  {
+    title: 'Ojo con la lista negra interna del banco',
+    detail:
+      'Cada banco guarda su propio registro. El banco donde fallaste puede no darte crédito aunque el Clearing esté limpio. A veces conviene reconstruir en otra institución.',
+  },
+  {
+    title: 'Empezá con un producto chico y bien pagado',
+    detail:
+      'Una tarjeta de límite bajo o prepaga, usada y pagada al día, genera historial positivo. Consistencia y tiempo, no monto.',
+  },
+  {
+    title: 'Refinanciar puede ayudar (con criterio)',
+    detail:
+      'Consolidar varias deudas caras en una más barata baja tu TEA y ordena las cuotas. Pero no saques un préstamo caro para pagar otro: eso es la "calesita" y agranda el pozo.',
+  },
+])
+
+export interface VerdictCase {
+  situation: string
+  advice: string
+  tone: 'good' | 'neutral' | 'warn'
+}
+
+export const VERDICT_CASES: readonly VerdictCase[] = Object.freeze([
+  {
+    situation: 'Tu deuda sigue en el acreedor original (banco o financiera)',
+    advice:
+      'Andá directo a su canal de regularización (por ejemplo BROU Autogestión). No necesitás intermediario: cualquier plataforma te va a mandar igual a negociar con ellos.',
+    tone: 'good',
+  },
+  {
+    situation: 'Ya la tiene una recuperadora / estudio de cobranza',
+    advice:
+      'Vas a negociar con ellos de todos modos. Una plataforma puede agilizar el trámite, pero verificá quién está detrás y exigí el acuerdo escrito y el finiquito antes de pagar.',
+    tone: 'neutral',
+  },
+  {
+    situation: 'No sabés qué deudas tenés ni con quién',
+    advice:
+      'Empezá GRATIS: Central de Riesgos del BCU + informe de Clearing. Recién ahí decidí. No entregues tu cédula ni tus datos a una plataforma solo para "ver qué debés".',
+    tone: 'neutral',
+  },
+  {
+    situation: 'Te prometen "borrarte del Clearing" pagando una tarifa',
+    advice:
+      'Es imposible y engañoso: del Clearing se sale pagando o por el paso del tiempo, no por una gestión pagada. No pagues por eso.',
+    tone: 'warn',
+  },
+])
+
+export interface UsuryCap {
+  segmento: string
+  tasaMedia: number
+  topeTasa: number
+  topeMora: number
+}
+
+export interface DebtReliefBaseline {
+  asOf: string
+  period: string
+  usuryCaps: UsuryCap[]
+  refiRates: { institucion: string; producto: string; tasa: string; nota: string }[]
+}
+
+/**
+ * Dated verified snapshot. The monthly Gemini task overrides usuryCaps/refiRates
+ * when it finds fresher, in-band values; otherwise this baseline is served as-is.
+ * Verified figures: BCU "Tasas medias", período marzo–mayo 2026 (topes vigentes
+ * desde el 1/7/2026). See spec §4.9 and research.
+ */
+export const DEBT_RELIEF_BASELINE: DebtReliefBaseline = Object.freeze({
+  asOf: '2026-07-01',
+  period: 'marzo–mayo 2026 (topes vigentes desde el 1/7/2026)',
+  usuryCaps: [
+    {
+      segmento: 'Consumo con autorización de descuento, < 10.000 UI',
+      tasaMedia: 21.16,
+      topeTasa: 32.798,
+      topeMora: 38.088,
+    },
+    {
+      segmento: 'Consumo sin autorización de descuento, < 10.000 UI',
+      tasaMedia: 80.72,
+      topeTasa: 125.116,
+      topeMora: 145.296,
+    },
+  ],
+  refiRates: [
+    {
+      institucion: 'BBVA',
+      producto: 'Préstamo Personal Unificación de Deuda',
+      tasa: '24% en $ / 9% en UI (hasta 60 cuotas)',
+      nota: 'Único que cancela deuda en OTRAS instituciones. Exige no tener antecedentes en Clearing ni BCU.',
+    },
+    {
+      institucion: 'Itaú',
+      producto: 'Reorganizá tus deudas',
+      tasa: '42% TEA',
+      nota: 'Solo unifica deuda propia dentro de Itaú.',
+    },
+    {
+      institucion: 'OCA',
+      producto: 'Reorganización de préstamos',
+      tasa: '39–87% + IVA',
+      nota: 'Solo saldo propio de OCA; exige tener >50% de las cuotas pagas.',
+    },
+    {
+      institucion: 'ANDA',
+      producto: 'Préstamo personal',
+      tasa: '27,40–32,20% + IVA',
+      nota: 'Cooperativa: presta estando en el Clearing (puede pedir garantía).',
+    },
+    {
+      institucion: 'BROU',
+      producto: 'Consumo / reestructura de morosos',
+      tasa: 'Con retención 21–28% + IVA; sin retención 26–31% + IVA',
+      nota: 'Campaña de reestructura: quita de intereses + bonificación de tasa para atrasos >360 días.',
+    },
+  ],
+})
