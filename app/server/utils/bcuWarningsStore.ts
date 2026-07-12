@@ -8,6 +8,9 @@
 // SAFETY: this module does not judge anybody. It stores the BCU's own headline verbatim and a
 // link back to the BCU. See the header of `~/utils/bcuWarnings` for why that distinction is the
 // whole legal basis of the page.
+import { X509Certificate } from 'node:crypto'
+import { request as httpsRequest } from 'node:https'
+import { rootCertificates } from 'node:tls'
 import { connectDb } from './db'
 import { BcuWarningModel } from '../models/BcuWarning'
 import { BCU_WARNINGS_URL, parseBcuWarnings, type BcuWarning } from '../../utils/bcuWarnings'
@@ -17,6 +20,104 @@ const UA =
 
 /** A listing this small is either right or broken — a sudden collapse means the page changed. */
 const MIN_PLAUSIBLE_ROWS = 20
+
+// ── The BCU's TLS is misconfigured, and this is how we work around it HONESTLY ───────────────
+//
+// bcu.gub.uy serves ONLY its leaf certificate — it never sends the Abitab intermediate. Browsers
+// hide this by chasing the "CA Issuers" URL in the certificate (AIA fetching); Node does not, so
+// a plain fetch dies with UNABLE_TO_VERIFY_LEAF_SIGNATURE.
+//
+// The tempting fix is `rejectUnauthorized: false`. We are NOT doing that: this page publishes
+// accusations against named companies, and accepting any certificate would mean anyone able to
+// intercept the connection could choose which companies we accuse. So we do what the browser
+// does — fetch the missing intermediate from the AIA URL (plain HTTP, so there is no
+// chicken-and-egg), add it to the normal root store, and keep verification fully ON.
+//
+// The gap is TWO certificates deep, not one: the leaf is issued by "Abitab SSL Organization
+// Validated", which is itself issued by "Certum Global Services CA SHA2", which is finally issued
+// by a real root. So we CHASE the AIA chain rather than hard-coding one URL — that way it keeps
+// working when either certificate is rotated.
+//
+// If any fetch fails, the scrape fails, and the last good list keeps serving. Nothing here can
+// silently downgrade to insecure.
+const BCU_AIA_START = 'http://repository.certum.pl/abitabov.cer'
+const MAX_AIA_HOPS = 4
+
+let cachedCa: string[] | null = null
+
+/** DER (binary) → PEM, the format the TLS stack wants. */
+function derToPem(der: Buffer): string {
+  const b64 = der.toString('base64').replace(/(.{64})/g, '$1\n')
+  return `-----BEGIN CERTIFICATE-----\n${b64}\n-----END CERTIFICATE-----\n`
+}
+
+/**
+ * Parse a fetched blob into a certificate. AIA endpoints are inconsistent — some serve DER, some
+ * PEM, some a PKCS#7 bundle we cannot read. An unparseable blob is not an error: it just means we
+ * stop climbing, and by then the next issuer up is a real root that Node already trusts.
+ */
+function toCertificate(raw: Buffer): { pem: string; nextUrl: string | null } | null {
+  const candidates = [derToPem(raw), raw.toString('utf8')]
+  for (const pem of candidates) {
+    try {
+      const cert = new X509Certificate(pem)
+      const m = (cert.infoAccess ?? '').match(/CA Issuers - URI:(\S+)/)
+      return { pem, nextUrl: m?.[1] ?? null }
+    } catch {
+      // try the next interpretation
+    }
+  }
+  return null
+}
+
+/**
+ * The normal root store PLUS every intermediate the BCU forgets to send, walked up from its
+ * certificate's AIA pointer until we run out of readable certificates (i.e. we have reached a
+ * trusted root).
+ */
+async function bcuTrustStore(): Promise<string[]> {
+  if (cachedCa) return cachedCa
+
+  const chain: string[] = []
+  let url: string | null = BCU_AIA_START
+
+  for (let hop = 0; hop < MAX_AIA_HOPS && url; hop++) {
+    const res: Response = await fetch(url)
+    if (!res.ok) throw new Error(`AIA fetch failed (${url}): ${res.status}`)
+    const cert = toCertificate(Buffer.from(await res.arrayBuffer()))
+    if (!cert) break // not a certificate we can read — we already have what we need
+    chain.push(cert.pem)
+    url = cert.nextUrl
+  }
+  if (!chain.length) throw new Error('AIA chain empty')
+
+  cachedCa = [...rootCertificates, ...chain]
+  return cachedCa
+}
+
+/** GET over TLS, verifying against the repaired chain. */
+function getWithChain(url: string, ca: string[]): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const req = httpsRequest(
+      url,
+      { method: 'GET', headers: { 'User-Agent': UA }, ca, timeout: 25000 },
+      res => {
+        if ((res.statusCode ?? 0) >= 400) {
+          reject(new Error(`HTTP ${res.statusCode}`))
+          res.resume()
+          return
+        }
+        let body = ''
+        res.setEncoding('utf8')
+        res.on('data', chunk => (body += chunk))
+        res.on('end', () => resolve(body))
+      }
+    )
+    req.on('timeout', () => req.destroy(new Error('timeout')))
+    req.on('error', reject)
+    req.end()
+  })
+}
 
 export interface BcuRefreshResult {
   fetched: number
@@ -31,11 +132,8 @@ export interface BcuRefreshResult {
 /** Fetch + parse the BCU listing. Returns [] on any failure: a bad scrape must not wipe the page. */
 export async function fetchBcuWarnings(): Promise<BcuWarning[]> {
   try {
-    const html = await $fetch<string>(BCU_WARNINGS_URL, {
-      headers: { 'User-Agent': UA },
-      timeout: 25000,
-      responseType: 'text',
-    })
+    const ca = await bcuTrustStore()
+    const html = await getWithChain(BCU_WARNINGS_URL, ca)
     const rows = parseBcuWarnings(html)
     // If the BCU redesigns the page our regexes will quietly return nothing. Publishing "no
     // warnings exist" would be worse than publishing yesterday's list, so we refuse the result.
