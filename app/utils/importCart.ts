@@ -1,23 +1,26 @@
 // Framework-agnostic cart aggregator for the import-cart tool
 // (`pages/herramientas/carrito-importacion.vue`).
 //
-// Reuses the per-shipment import-tax math (`importTax`) and the product catalog
-// (`importProductTypes`) to price a whole basket of products at once: each line
-// is taxed by its category, an optional shared courier franchise is split across
-// the basket, cart-level shipping is added untaxed, and the landed cost is
-// converted to UYU with a supplied rate. PURE (no Vue/Nuxt runtime) so it can be
-// unit-tested in plain Node via vitest.
+// Reuses the sourced courier rules (`importRules`) and the product catalog
+// (`importProductTypes`) to price a whole basket at once. PURE (no Vue/Nuxt runtime) so it can
+// be unit-tested in plain Node via vitest.
 //
-// This is an ESTIMATOR. Splitting a single annual franchise across mixed-category
-// items in one basket is a simplification (Aduanas assesses per shipment); the
-// page renders the same prominent disclaimers as the import calculator.
-import { round, URUGUAY } from './calculators'
+// THE BASKET IS ONE SHIPMENT, and Aduanas assesses per shipment — so the regime is decided
+// once for the basket, never per line. (This module used to split a single franchise across
+// the lines and charge 60% on the remainder; Decreto 50/026 art. 15 does not permit that, and
+// it under-charged every mixed basket.)
+//
+// This is still an ESTIMATOR: the page renders the same prominent disclaimers as the import
+// calculator and links to Aduanas/DGI.
+import { round } from './calculators'
+import { generalImport, type ImportTaxResult, type TaxLine } from './importTax'
 import {
-  courierImport,
-  generalImport,
-  TIFA_IVA_EXEMPTION_USD,
-  type ImportTaxResult,
-} from './importTax'
+  FRANCHISE_ANNUAL_USD,
+  SIMPLIFIED_MIN_USD,
+  SIMPLIFIED_RATE_PCT,
+  USA_IVA_EXEMPTION_USD,
+  resolveRegime,
+} from './importRules'
 import {
   productRegimeStatus,
   productTypeById,
@@ -51,11 +54,17 @@ export interface CartSettings {
   regime: 'courier' | 'general'
   /** Shipment origin (courier TIFA IVA exemption). */
   origin?: 'usa' | 'other'
-  /** Whether to apply the courier franchise across the basket. */
+  /** Whether to apply the courier franchise to this shipment. */
   useFranchise?: boolean
-  /** Franchise still available this year (USD), shared across the basket. */
+  /** Franchise still available this calendar year (USD). */
   franchiseAvailableUsd?: number
-  /** Cart-level shipping/freight (USD); added untaxed to the landed cost. */
+  /** Franchise shipments already used this calendar year (max 3). */
+  shipmentsUsed?: number
+  /** Is the invoice issuer registered with the DNA? Only consulted from 2026-10-01. */
+  sellerRegistered?: boolean
+  /** Resolution date — injectable so the dated rules are testable. */
+  today?: Date
+  /** Courier freight (USD); not on the seller's invoice, so untaxed and outside the thresholds. */
   shippingUsd?: number
   /** General regime: arancel / TGA (%). */
   arancelPct?: number
@@ -124,11 +133,17 @@ function describeLines(items: CartItem[], regime: 'courier' | 'general'): CartLi
 }
 
 /**
- * Price a basket of products. Each non-blocked line is taxed by its category;
- * under the courier regime the franchise is split across the basket in
- * proportion to each line's value, then the per-line simplified/IVA math runs.
- * Cart-level shipping is added untaxed, and the landed cost is converted to UYU
- * when a rate is given.
+ * Price a basket of products.
+ *
+ * THE BASKET IS ONE SHIPMENT. That is not a detail — it is the whole model. The courier
+ * regime is decided once, for the shipment: either the franchise covers it (aranceles exempt,
+ * IVA still due per product type unless the US/TIFA exoneration applies) or the entire
+ * shipment pays the prestación única (60%, minimum USD 20). Decreto 50/026 art. 15 does not
+ * allow a shipment to be split between the two, and the old code split it — franchising part
+ * of the basket and charging 60% on the rest, a regime that does not exist.
+ *
+ * Cart-level shipping is the courier's own freight: it is not on the seller's invoice, so it
+ * stays out of the USD 200/800 thresholds and is added to the landed cost untaxed.
  */
 export function computeCart(items: CartItem[], settings: CartSettings): CartResult {
   const lines = describeLines(items, settings.regime)
@@ -145,43 +160,66 @@ export function computeCart(items: CartItem[], settings: CartSettings): CartResu
     }
   }
 
-  // Courier franchise shared across the basket, allocated by line value.
-  const useFranchise = settings.regime === 'courier' && !!settings.useFranchise
-  const franchiseToUse = useFranchise
-    ? Math.min(Math.max(settings.franchiseAvailableUsd ?? 800, 0), taxableSubtotalUsd)
-    : 0
+  // ONE regime decision for the whole shipment.
+  const decision =
+    settings.regime === 'courier'
+      ? resolveRegime({
+          valueUsd: taxableSubtotalUsd,
+          origin: settings.origin ?? 'other',
+          franchiseAvailableUsd: settings.franchiseAvailableUsd ?? FRANCHISE_ANNUAL_USD,
+          shipmentsUsed: settings.shipmentsUsed ?? 0,
+          useFranchise: !!settings.useFranchise,
+          sellerRegistered: settings.sellerRegistered,
+          today: settings.today,
+        })
+      : null
 
-  // The courier regime assesses two rules at the SHIPMENT (basket) level, not per
-  // line: the USA TIFA IVA exemption (whole basket ≤ USD 200) and the simplified
-  // single-rate USD 10 minimum. Deciding these per line would let a split basket
-  // dodge them (each line < 200 → all exempt; many tiny lines → 10× the floor).
-  const ratePct = URUGUAY.courier.simplifiedRatePct
-  const minTax = URUGUAY.courier.simplifiedMinUsd
-  const tifaExempt =
-    settings.regime === 'courier' &&
-    (settings.origin ?? 'other') === 'usa' &&
-    taxableSubtotalUsd <= TIFA_IVA_EXEMPTION_USD
-  let simplifiedUnfloored = 0
+  if (decision?.regime === 'general') {
+    warnings.push(
+      'El envío supera US$ 800: no entra en la franquicia ni en el régimen simplificado. Pasa al régimen general y hay que despacharlo aparte — no lo calculamos.'
+    )
+  }
+
+  // The prestación única is a single tax on the SHIPMENT (60% of its value, floor USD 20), so
+  // it is computed once and then split across the lines only for display.
+  const ratePct = SIMPLIFIED_RATE_PCT
+  const minTax = SIMPLIFIED_MIN_USD
+  let basketSimplified = 0
+  if (decision?.regime === 'simplificado') {
+    basketSimplified = round((taxableSubtotalUsd * ratePct) / 100)
+    if (basketSimplified > 0 && basketSimplified < minTax) basketSimplified = minTax
+  }
 
   for (const line of taxable) {
     const { ivaPct, imesiApplies } = resolveProductTax(line.productType)
     if (settings.regime === 'courier') {
-      const franchiseForLine =
-        taxableSubtotalUsd > 0
-          ? round((franchiseToUse * line.lineValueUsd) / taxableSubtotalUsd)
-          : 0
-      line.tax = courierImport({
-        value: line.lineValueUsd,
-        origin: 'other', // TIFA decided at the basket level via `ivaPct` below
-        useFranchise,
-        franchiseAvailable: franchiseForLine,
-        ivaPct: tifaExempt ? 0 : ivaPct,
-        minTax: 0, // the USD 10 floor is applied once to the basket below
-        shipping: 0,
-      })
-      simplifiedUnfloored += round(
-        (Math.max(line.lineValueUsd - franchiseForLine, 0) * ratePct) / 100
-      )
+      const share = taxableSubtotalUsd > 0 ? line.lineValueUsd / taxableSubtotalUsd : 0
+      let lineTax = 0
+      const breakdown: TaxLine[] = [{ label: 'Mercadería', amount: line.lineValueUsd }]
+
+      if (decision?.regime === 'franquicia') {
+        lineTax = decision.ivaExempt ? 0 : round((line.lineValueUsd * ivaPct) / 100)
+        breakdown.push({
+          label: decision.ivaExempt
+            ? `IVA exonerado (EE.UU. hasta US$ ${USA_IVA_EXEMPTION_USD})`
+            : `IVA (${ivaPct}%)`,
+          amount: lineTax,
+        })
+      } else if (decision?.regime === 'simplificado') {
+        lineTax = round(basketSimplified * share)
+        breakdown.push({ label: `Prestación única (${ratePct}%)`, amount: lineTax })
+      }
+
+      line.tax = {
+        taxableBase: decision?.ivaExempt ? 0 : line.lineValueUsd,
+        totalTax: lineTax,
+        landedCost: round(line.lineValueUsd + lineTax),
+        effectiveRatePct:
+          line.lineValueUsd > 0 ? round((lineTax / line.lineValueUsd) * 100, 2) : null,
+        breakdown,
+        regime: decision?.regime,
+        ivaExempt: decision?.ivaExempt,
+      }
     } else {
       line.tax = generalImport({
         value: line.lineValueUsd,
@@ -194,12 +232,10 @@ export function computeCart(items: CartItem[], settings: CartSettings): CartResu
     }
   }
 
-  // Apply the simplified-rate minimum once across the basket (courier only).
-  const minAdjust =
-    simplifiedUnfloored > 0 && simplifiedUnfloored < minTax
-      ? round(minTax - simplifiedUnfloored)
-      : 0
-  const totalTaxUsd = round(taxable.reduce((s, l) => s + (l.tax?.totalTax ?? 0), 0) + minAdjust)
+  // Rounding each line's share can drift a cent or two off the shipment's single tax; the
+  // shipment figure is the legal one, so it wins.
+  const lineSum = round(taxable.reduce((s, l) => s + (l.tax?.totalTax ?? 0), 0))
+  const totalTaxUsd = decision?.regime === 'simplificado' ? basketSimplified : lineSum
   const shippingUsd = round(Math.max(settings.shippingUsd ?? 0, 0))
   const landedCostUsd = round(taxableSubtotalUsd + totalTaxUsd + shippingUsd)
   const rate = settings.usdToUyu

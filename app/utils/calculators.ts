@@ -243,18 +243,23 @@ export const URUGUAY = {
   /** IVA rates: 22% general (tasa básica), 10% mínima (some goods/services). */
   iva: { basica: 22, minima: 10 },
   /**
-   * Courier / encomiendas postales regime (vigente desde 2026-05-01):
-   * annual franchise up to USD 800 per person, usable up to 3 times a year, up
-   * to 20 kg per shipment; the non-franchise simplified regime pays a single
-   * 60% rate over the declared value (min USD 10).
+   * Courier / encomiendas postales regime (Ley 20.446 art. 627 + Decreto 50/026):
+   * annual franchise up to USD 800 per person ACCUMULATED, usable at most 3 times a year, up
+   * to 20 kg per shipment; anything else up to USD 800 pays the prestación única — a single
+   * 60% rate over the invoice value, **minimum USD 20 per shipment**.
+   *
+   * The minimum was USD 10 here for months. That figure is Decreto 356/014, which is REPEALED;
+   * Ley 20.446 art. 627 says "un pago mínimo de US$ 20 … por envío", and so does the MEF's own
+   * FAQ. There is likewise NO per-shipment franchise cap — the old `franchisePerShipmentUsd:
+   * 200` conflated the franchise with the TIFA IVA threshold for US invoices, which is a
+   * different rule entirely. See `~/utils/importRules` for the sourced model.
    */
   courier: {
     franchiseAnnualUsd: 800,
-    franchisePerShipmentUsd: 200,
     maxUsesPerYear: 3,
     maxWeightKg: 20,
     simplifiedRatePct: 60,
-    simplifiedMinUsd: 10,
+    simplifiedMinUsd: 20,
   },
   /**
    * IRPF (rentas del trabajo) monthly franjas expressed in BPC multiples, with

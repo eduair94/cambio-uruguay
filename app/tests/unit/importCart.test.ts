@@ -28,14 +28,12 @@ describe('computeCart — courier regime', () => {
     expect(r.totalTaxUsd).toBe(60)
   })
 
-  it('allocates a shared franchise proportionally across mixed-category items', () => {
-    // A: general $600 (IVA 22%), B: books $400 (IVA 0%); franchise 800 over goods 1000.
-    // franchise_A = 480, franchise_B = 320.
-    // A: IVA 480*22% = 105.6 + excess 120*60% = 72 -> 177.6
-    // B: IVA 320*0% = 0    + excess 80*60%  = 48 -> 48
+  it('taxes each line by its own IVA rate when the franchise covers the shipment', () => {
+    // A: general $300 (IVA 22% = 66), B: books $100 (IVA 0%). The USD 800 franchise covers the
+    // whole USD 400 shipment: exempt from aranceles, IVA still due per product type.
     const items = [
-      item({ id: 'a', priceUsd: 600, categoryId: 'general' }),
-      item({ id: 'b', priceUsd: 400, categoryId: 'libros' }),
+      item({ id: 'a', priceUsd: 300, categoryId: 'general' }),
+      item({ id: 'b', priceUsd: 100, categoryId: 'libros' }),
     ]
     const settings: CartSettings = {
       regime: 'courier',
@@ -44,10 +42,43 @@ describe('computeCart — courier regime', () => {
       franchiseAvailableUsd: 800,
     }
     const r = computeCart(items, settings)
-    expect(r.lines[0]!.tax?.totalTax).toBeCloseTo(177.6, 2)
-    expect(r.lines[1]!.tax?.totalTax).toBeCloseTo(48, 2)
-    expect(r.totalTaxUsd).toBeCloseTo(225.6, 2)
-    expect(r.taxableSubtotalUsd).toBe(1000)
+    expect(r.lines[0]!.tax?.regime).toBe('franquicia')
+    expect(r.lines[0]!.tax?.totalTax).toBeCloseTo(66, 2)
+    expect(r.lines[1]!.tax?.totalTax).toBeCloseTo(0, 2)
+    expect(r.totalTaxUsd).toBeCloseTo(66, 2)
+    expect(r.taxableSubtotalUsd).toBe(400)
+  })
+
+  it('sends the WHOLE basket to the 60% regime when the franchise cannot cover it', () => {
+    // Decreto 50/026 art. 15: a shipment is never split. The old model franchised USD 800 of a
+    // USD 1.000 basket and charged 60% on the remaining 200 — a regime that does not exist.
+    const items = [
+      item({ id: 'a', priceUsd: 600, categoryId: 'general' }),
+      item({ id: 'b', priceUsd: 400, categoryId: 'libros' }),
+    ]
+    const r = computeCart(items, {
+      regime: 'courier',
+      origin: 'other',
+      useFranchise: true,
+      franchiseAvailableUsd: 800,
+    })
+    // Basket is USD 1.000 > USD 800: it fits neither regime and goes to the general one.
+    expect(r.lines[0]!.tax?.regime).toBe('general')
+    expect(r.totalTaxUsd).toBe(0)
+    expect(r.warnings.join(' ')).toMatch(/US\$ 800/)
+  })
+
+  it('charges 60% of the whole basket when the remaining franchise is too small', () => {
+    // USD 500 basket, only USD 100 of franchise left -> the entire shipment pays 60%.
+    const items = [item({ id: 'a', priceUsd: 500, categoryId: 'general' })]
+    const r = computeCart(items, {
+      regime: 'courier',
+      origin: 'other',
+      useFranchise: true,
+      franchiseAvailableUsd: 100,
+    })
+    expect(r.lines[0]!.tax?.regime).toBe('simplificado')
+    expect(r.totalTaxUsd).toBe(300)
   })
 
   it('excludes courier-prohibited items from tax and surfaces a warning', () => {
@@ -90,24 +121,23 @@ describe('computeCart — courier regime', () => {
 })
 
 describe('computeCart — basket-level shipment rules', () => {
-  it('applies the USD 10 simplified minimum ONCE per basket, not per line', () => {
-    // 6 cheap items, no franchise: each line excess 5 -> 60% = 3 (< 10).
-    // Per-line flooring would give 6×10 = 60; basket-level floors the total once.
-    const items = Array.from({ length: 6 }, (_, i) =>
+  it('applies the simplified minimum ONCE per shipment, not per line', () => {
+    // 12 items of USD 5 = USD 60 basket -> 60% = 36, already over the USD 20 floor.
+    // Flooring per line would have charged 12 × 20 = 240.
+    const items = Array.from({ length: 12 }, (_, i) =>
       item({ id: `x${i}`, priceUsd: 5, categoryId: 'general' })
     )
     const r = computeCart(items, { regime: 'courier', useFranchise: false })
-    // total excess 30 × 60% = 18, already above the 10 minimum -> no floor, 18.
-    expect(r.totalTaxUsd).toBe(18)
+    expect(r.totalTaxUsd).toBe(36)
   })
 
-  it('floors the basket simplified tax to USD 10 when the whole basket is below it', () => {
-    // 3 items of $5 -> total excess 15 × 60% = 9 (< 10) -> floored once to 10.
+  it('floors the shipment at USD 20 — the statutory minimum, not the repealed USD 10', () => {
+    // 3 items of USD 5 = USD 15 -> 60% = 9, floored once to the USD 20 minimum.
     const items = Array.from({ length: 3 }, (_, i) =>
       item({ id: `y${i}`, priceUsd: 5, categoryId: 'general' })
     )
     const r = computeCart(items, { regime: 'courier', useFranchise: false })
-    expect(r.totalTaxUsd).toBe(10)
+    expect(r.totalTaxUsd).toBe(20)
   })
 
   it('evaluates the USA TIFA IVA exemption on the basket total, not per line', () => {
