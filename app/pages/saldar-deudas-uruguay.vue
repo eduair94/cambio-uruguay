@@ -116,7 +116,7 @@
 
     <!-- Live usury caps note -->
     <VAlert v-if="live" type="info" variant="text" density="compact" class="mb-6 text-caption">
-      Topes de usura vigentes ({{ live.period }}): sin descuento &lt; 10.000 UI, tope
+      Topes de usura vigentes: {{ live.period }}. Sin descuento &lt; 10.000 UI, tope
       {{ formatNumber(live.usuryCaps[1]?.topeTasa ?? 0, 2) }}%. Si tu tasa real supera el tope,
       podés reclamar.
     </VAlert>
@@ -406,6 +406,43 @@ useHead(() => ({
       name: 'keywords',
       content:
         'saldar deudas uruguay, chaudeudas opiniones, mideuda vale la pena, negociar deuda uruguay, quita de deuda, salir de deudas uruguay, prescripción deuda, clearing',
+    },
+  ],
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@graph': [
+          {
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Cambio Uruguay',
+                item: 'https://cambio-uruguay.com',
+              },
+              { '@type': 'ListItem', position: 2, name: 'Saldar deudas', item: canonicalUrl },
+            ],
+          },
+          {
+            '@type': 'FAQPage',
+            mainEntity: [
+              ...DEBT_MYTHS.map(m => ({
+                '@type': 'Question',
+                name: m.myth,
+                acceptedAnswer: { '@type': 'Answer', text: m.truth },
+              })),
+              ...VERDICT_CASES.map(v => ({
+                '@type': 'Question',
+                name: v.situation,
+                acceptedAnswer: { '@type': 'Answer', text: v.advice },
+              })),
+            ],
+          },
+        ],
+      }),
     },
   ],
 }))

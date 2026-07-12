@@ -93,8 +93,8 @@ const PRESCRIPTION_CAVEAT =
 function monthsBetween(aISO: string, bISO: string): number {
   const a = new Date(aISO)
   const b = new Date(bISO)
-  let m = (b.getFullYear() - a.getFullYear()) * 12 + (b.getMonth() - a.getMonth())
-  if (b.getDate() < a.getDate()) m -= 1
+  let m = (b.getUTCFullYear() - a.getUTCFullYear()) * 12 + (b.getUTCMonth() - a.getUTCMonth())
+  if (b.getUTCDate() < a.getUTCDate()) m -= 1
   return m
 }
 
