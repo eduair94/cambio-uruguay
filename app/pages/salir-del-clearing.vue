@@ -672,20 +672,15 @@ useHead(() => ({
 }
 
 .reg-list,
-.rights,
-.steps {
+.rights {
   padding-left: 20px;
   margin: 0;
 }
 .reg-list li,
-.rights li,
-.steps li {
+.rights li {
   font-size: 0.88rem;
   line-height: 1.6;
   margin-bottom: 6px;
-}
-.steps li {
-  margin-bottom: 10px;
 }
 
 /* Debt rows */
