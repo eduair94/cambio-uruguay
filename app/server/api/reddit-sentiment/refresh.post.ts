@@ -11,7 +11,11 @@
 // runtime environment is empty (secrets are baked at build), so a process.env gate would read
 // undefined in production and silently leave this endpoint — which spends Reddit calls and AI
 // tokens on every hit — wide open.
+//
+// It must do EVERYTHING the task does, or it stops being a faithful trigger: it silently skipped
+// the scam radar once, and the radar shipped empty.
 import { refreshRedditSentiment } from '../../utils/redditSentimentStore'
+import { refreshScamRadar } from '../../utils/scamRadarStore'
 
 export default defineEventHandler(async event => {
   const required = useRuntimeConfig().redditRefreshToken as string | undefined
@@ -32,5 +36,7 @@ export default defineEventHandler(async event => {
     withSummaries: q.summaries !== 'false',
     budget,
   })
-  return { ok: true, ...result }
+  // Same corpus, second read — exactly what the task does.
+  const radar = await refreshScamRadar()
+  return { ok: true, ...result, radar }
 })
