@@ -102,9 +102,9 @@
             "Equipajes de viajero" de esa exigencia — la parte formal está resuelta.
           </li>
           <li>
-            <strong>Si no pagás</strong>, te retienen el excedente; si no lo pagás, se declara en
-            abandono a los <strong>5 días hábiles</strong> (gub.uy, trámite de equipaje) y la Aduana
-            puede rematarlo.
+            <strong>Si no pagás</strong>, te retienen el excedente hasta que lo hagas. No
+            encontramos una fuente primaria que confirme un plazo exacto de abandono o remate — así
+            que no te inventamos un número.
           </li>
           <li>
             <strong>La franquicia se usa una vez por mes</strong> (Decreto 139/014 art. 9), no una
@@ -121,7 +121,7 @@
         icon="mdi-bag-suitcase-outline"
       >
         Además de esta franquicia, si comprás en <strong>Tiendas Libres</strong> de llegada tenés
-        una franquicia adicional de <strong>US$ 850</strong> (gub.uy, Decreto 376/022) — no se
+        una franquicia adicional de <strong>US$ 850</strong> (Decreto 376/022, art. 1) — no se
         mezcla con la de equipaje.
       </VAlert>
     </section>
@@ -208,7 +208,7 @@ const faqs = [
   },
   {
     q: '¿Qué pasa si no declaro y me agarran?',
-    a: 'Depende de si ocultaste el bien o no. Si lo llevás a la vista y no completaste la declaración, lo normal es que te retengan el excedente hasta que pagues el 50%; si no pagás, se declara en abandono a los 5 días hábiles (gub.uy, trámite de equipaje) y la Aduana puede rematarlo. Si en cambio lo ocultaste activamente (doble fondo, entre la ropa), es <strong>contrabando</strong>: el art. 211 del Código Aduanero aplica sanciones acumulativas — comiso del bien, comiso del medio de transporte, el doble de los tributos que correspondían, y una multa del 20% del valor en aduana.',
+    a: 'Depende de si ocultaste el bien o no. Si lo llevás a la vista y no completaste la declaración, lo normal es que te retengan el excedente hasta que pagues el 50%; no encontramos una fuente primaria que confirme un plazo exacto de abandono o remate, así que no te damos un número que no podemos respaldar. Si en cambio lo ocultaste activamente (doble fondo, entre la ropa), es <strong>contrabando</strong>: el art. 211 del Código Aduanero aplica sanciones acumulativas — comiso del bien, comiso del medio de transporte, el doble de los tributos que correspondían, y una multa del 20% del valor en aduana.',
   },
   {
     q: '¿Es lo mismo si soy residente que si soy turista?',
@@ -246,6 +246,10 @@ const sources = [
     label:
       'Decreto 43/019 — modificación del régimen de equipaje del MERCOSUR (franquicia a US$ 500)',
     url: 'https://www.impo.com.uy/bases/decretos/43-2019',
+  },
+  {
+    label: 'Decreto 376/022, art. 1 — franquicia adicional de Tiendas Libres (US$ 850)',
+    url: 'https://www.impo.com.uy/bases/decretos/376-2022',
   },
   {
     label: 'gub.uy — trámite "Equipaje de viajeros: gestión de la franquicia de equipaje"',
