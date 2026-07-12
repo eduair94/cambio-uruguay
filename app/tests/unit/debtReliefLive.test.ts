@@ -25,4 +25,10 @@ describe('applyLiveCaps guardrails', () => {
     expect(updated).not.toContain('topeConDescuento')
     expect(caps[0].topeTasa).toBe(DEBT_RELIEF_BASELINE.usuryCaps[0].topeTasa)
   })
+
+  it('does not mutate the shared DEBT_RELIEF_BASELINE singleton', () => {
+    const before = DEBT_RELIEF_BASELINE.usuryCaps[0].topeTasa
+    applyLiveCaps(DEBT_RELIEF_BASELINE, { topeConDescuento: 33.5 })
+    expect(DEBT_RELIEF_BASELINE.usuryCaps[0].topeTasa).toBe(before)
+  })
 })

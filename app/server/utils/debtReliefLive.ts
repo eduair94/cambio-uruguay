@@ -10,7 +10,7 @@
 import { DEBT_RELIEF_BASELINE } from '../../utils/debtRelief'
 import type { DebtReliefBaseline, UsuryCap } from '../../utils/debtRelief'
 
-export interface LiveDebtRelief extends DebtReliefBaseline {
+export interface LiveDebtRelief extends Omit<DebtReliefBaseline, 'asOf'> {
   asOf: string | null
   updated: string[]
   sources: { label: string; url: string }[]
