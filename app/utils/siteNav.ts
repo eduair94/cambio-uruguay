@@ -529,6 +529,23 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        to: '/franquicia-viajero-uruguay',
+        labelKey: 'nav.franquiciaViajero',
+        icon: 'mdi-bag-suitcase-outline',
+        priority: 0.8,
+        changefreq: 'monthly',
+        keywords: [
+          'franquicia equipaje viajero uruguay',
+          'franquicia aeropuerto carrasco',
+          'cuanto puedo traer sin pagar impuesto uruguay',
+          'canal rojo aeropuerto uruguay',
+          'declaracion jurada equipaje',
+          'equipaje aduana uruguay',
+          'uso personal aduana',
+          'despachante de aduana equipaje',
+        ],
+      },
+      {
         to: '/mejores-bancos-uruguay',
         labelKey: 'nav.mejoresBancos',
         icon: 'mdi-bank-outline',
