@@ -126,6 +126,47 @@
       </VAlert>
     </section>
 
+    <!-- If it doesn't qualify as baggage -->
+    <section class="mb-8">
+      <h2 class="section-heading mb-1">Si Aduana lo considera importación comercial</h2>
+      <p class="text-body-2 text-medium-emphasis mb-4">
+        Si por cantidad, naturaleza o variedad no pasa como equipaje (ver la zona gris más arriba),
+        no es que pagués más del 50% — es que <strong>cambia todo el mecanismo</strong>: sale del
+        régimen de equipaje y entra al <strong>Régimen General de Importación</strong>.
+      </p>
+
+      <VCard variant="flat" class="practica pa-5">
+        <ul class="practica-list">
+          <li>
+            <strong>El arancel ya no es 50% fijo.</strong> Se calcula según la clasificación NCM
+            (Nomenclatura Común MERCOSUR) de cada producto — varía por producto, no hay un
+            porcentaje único.
+          </li>
+          <li>
+            <strong>Se suma IVA</strong> (22% tasa básica, 10% para algunos rubros) sobre el arancel
+            — no lo reemplaza.
+          </li>
+          <li>
+            <strong>Acá sí hace falta despachante de aduana.</strong> La exención de despachante
+            (Ley 19.276) es específica para equipaje de viajero; fuera de esa excepción, se necesita
+            un despachante para armar y presentar el DUA (Documento Único Aduanero).
+          </li>
+          <li>
+            <strong>No se resuelve el mismo día en Carrasco.</strong> La mercadería queda retenida
+            hasta que el despachante presente el DUA por separado.
+          </li>
+          <li>
+            <strong>Podés entrar como "importador esporádico"</strong> con tu cédula, sin RUT — pero
+            con un tope de <strong>2 DUA por año civil</strong>; pasado eso, tenés que registrarte
+            con RUT ante la DGI como importador. Esta cifra la repiten varios despachantes
+            profesionales con el mismo texto, pero no pudimos verificarla contra un documento
+            primario legible de Aduana (el PDF del procedimiento es un escaneo sin capa de texto) —
+            tratala como orientativa, no como norma citada.
+          </li>
+        </ul>
+      </VCard>
+    </section>
+
     <!-- FAQ -->
     <section class="mb-8" aria-label="Preguntas frecuentes">
       <h2 class="section-heading mb-4">Lo que realmente preguntan</h2>
@@ -221,7 +262,7 @@ const faqs = [
   },
   {
     q: '¿Puedo declarar que lo traigo para mi emprendimiento o actividad profesional?',
-    a: 'Sí, y no hace falta esconderlo: el propio Decreto 139/014 (art. 3°) contempla expresamente que tu declaración de equipaje incluya "bienes relacionados al ejercicio de una actividad profesional o estudio". Decir la verdad sobre que es para tu negocio no te saca automáticamente del régimen de equipaje — lo que importa es si, por cantidad, naturaleza o variedad, se parece a inventario para vender (importación comercial) o a herramienta de trabajo para tu propio uso (ver la pregunta siguiente). Una notebook de diseño, una cámara profesional o un set de herramientas de tu oficio entran en esa lógica; 20 unidades iguales del mismo producto, no.',
+    a: 'Sí, y no hace falta esconderlo: el propio Decreto 139/014 (art. 3°) contempla expresamente que tu declaración de equipaje incluya "bienes relacionados al ejercicio de una actividad profesional o estudio". Decir la verdad sobre que es para tu negocio no te saca automáticamente del régimen de equipaje — lo que importa es si, por cantidad, naturaleza o variedad, se parece a inventario para vender (importación comercial) o a herramienta de trabajo para tu propio uso (ver la pregunta siguiente). Una notebook de diseño, una cámara profesional o un set de herramientas de tu oficio entran en esa lógica; 20 unidades iguales del mismo producto, no. Si no califica, no es que pagués más — cambia el mecanismo entero (ver "Si Aduana lo considera importación comercial" más abajo).',
   },
   {
     q: '¿Qué es "uso personal" y por qué es zona gris?',
@@ -291,7 +332,7 @@ useHead(() => ({
     {
       name: 'keywords',
       content:
-        'franquicia equipaje viajero uruguay, franquicia aeropuerto carrasco, cuanto puedo traer sin pagar impuesto uruguay, canal rojo aeropuerto uruguay, declaracion jurada equipaje, equipaje aduana uruguay, uso personal aduana, traer equipamiento emprendimiento uruguay, equipaje uso comercial aduana',
+        'franquicia equipaje viajero uruguay, franquicia aeropuerto carrasco, cuanto puedo traer sin pagar impuesto uruguay, canal rojo aeropuerto uruguay, declaracion jurada equipaje, equipaje aduana uruguay, uso personal aduana, traer equipamiento emprendimiento uruguay, equipaje uso comercial aduana, regimen general de importacion uruguay, dua importacion uruguay, importador esporadico uruguay',
     },
   ],
   script: [
