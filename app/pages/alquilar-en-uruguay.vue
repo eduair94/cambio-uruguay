@@ -917,5 +917,8 @@ useHead(() => ({
   .hero .v-btn {
     flex: 1 1 100%;
   }
+  .post-preview {
+    min-height: 360px;
+  }
 }
 </style>
