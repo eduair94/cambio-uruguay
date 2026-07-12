@@ -111,6 +111,100 @@
       </VCard>
     </section>
 
+    <!-- Live radar -->
+    <section class="mb-8" aria-label="Estafas que se están reportando">
+      <h2 class="section-heading mb-1">Qué están reportando ahora</h2>
+      <p class="text-body-2 text-medium-emphasis mb-4">
+        Leemos todos los días los hilos de r/uruguay, r/Burises y r/UruguayFinanzas y agrupamos lo
+        que la gente cuenta por <strong>modus operandi</strong>. No publicamos acusaciones contra
+        empresas con nombre y apellido: publicamos <em>cómo funciona la estafa</em>, para que la
+        reconozcas antes de caer.
+      </p>
+
+      <ClientOnly>
+        <template #default>
+          <VCard v-if="radarPending" variant="flat" class="ladder pa-6 d-flex align-center">
+            <VProgressCircular indeterminate size="22" width="2" color="primary" class="mr-3" />
+            <span class="text-body-2 text-medium-emphasis">Leyendo los reportes…</span>
+          </VCard>
+
+          <template v-else-if="radar.length">
+            <div class="radar">
+              <VCard v-for="p in radar" :key="p.id" variant="flat" class="pattern pa-5">
+                <div class="d-flex align-center flex-wrap ga-2 mb-2">
+                  <VIcon size="20" color="warning">{{ p.icon }}</VIcon>
+                  <span class="text-subtitle-1 font-weight-bold">{{ p.label }}</span>
+                  <VChip
+                    v-if="p.recent > 0"
+                    size="x-small"
+                    color="warning"
+                    variant="tonal"
+                    class="font-weight-bold"
+                  >
+                    {{ p.recent }} en los últimos 90 días
+                  </VChip>
+                  <span class="text-caption text-medium-emphasis ml-auto">
+                    {{ p.reports }} reportes en total
+                  </span>
+                </div>
+
+                <p class="pattern-how mb-3">{{ p.how }}</p>
+
+                <VAlert
+                  type="success"
+                  variant="tonal"
+                  density="compact"
+                  icon="mdi-shield-check-outline"
+                  class="mb-3"
+                >
+                  <span class="text-body-2">{{ p.defence }}</span>
+                </VAlert>
+
+                <ul v-if="p.quotes.length" class="pattern-quotes mb-3">
+                  <li v-for="(q, i) in p.quotes" :key="i">
+                    <a :href="q.permalink" target="_blank" rel="noopener noreferrer nofollow">
+                      “{{ q.text }}”
+                      <span class="q-meta">r/{{ q.sub }} · {{ q.date }}</span>
+                    </a>
+                  </li>
+                </ul>
+
+                <div v-if="p.threads.length" class="d-flex flex-wrap ga-2 align-center">
+                  <span class="text-caption text-medium-emphasis">Los hilos:</span>
+                  <a
+                    v-for="(t, i) in p.threads"
+                    :key="i"
+                    :href="t.permalink"
+                    target="_blank"
+                    rel="noopener noreferrer nofollow"
+                    class="thread-link"
+                  >
+                    {{ t.date }}
+                  </a>
+                </div>
+              </VCard>
+            </div>
+
+            <VAlert
+              type="info"
+              variant="tonal"
+              density="comfortable"
+              class="mt-4"
+              icon="mdi-information-outline"
+            >
+              {{ radarDisclaimer }}
+              <span v-if="radarAsOf">Actualizado {{ radarAsOf }}.</span>
+            </VAlert>
+          </template>
+        </template>
+        <template #fallback>
+          <VCard variant="flat" class="ladder pa-6">
+            <span class="text-body-2 text-medium-emphasis">Cargando los reportes…</span>
+          </VCard>
+        </template>
+      </ClientOnly>
+    </section>
+
     <!-- Escalation ladder -->
     <section class="mb-8">
       <h2 class="section-heading mb-1">La escalera, en orden</h2>
@@ -197,6 +291,40 @@ import {
 
 const activeId = ref(FRAUD_SCENARIOS[0]!.id)
 const active = computed(() => scenarioById(activeId.value))
+
+// --- the live radar (daily snapshot from the Reddit corpus we already harvest) ---
+interface RadarPattern {
+  id: string
+  label: string
+  icon: string
+  how: string
+  defence: string
+  reports: number
+  recent: number
+  threads: Array<{ date: string; permalink: string; sub: string }>
+  quotes: Array<{ text: string; date: string; permalink: string; sub: string }>
+}
+interface RadarPayload {
+  patterns: RadarPattern[]
+  asOf: string | null
+  empty: boolean
+  disclaimer: string
+}
+
+const { data: radarData, pending: radarPending } = useLazyFetch<RadarPayload>(
+  '/api/estafas-radar',
+  { server: false }
+)
+const radar = computed(() => radarData.value?.patterns ?? [])
+const radarDisclaimer = computed(() => radarData.value?.disclaimer ?? '')
+const radarAsOf = computed(() => {
+  const iso = radarData.value?.asOf
+  if (!iso) return ''
+  const d = new Date(iso)
+  return isNaN(d.getTime())
+    ? ''
+    : d.toLocaleDateString('es-UY', { day: 'numeric', month: 'long', year: 'numeric' })
+})
 
 const WHO_LABEL: Record<WhoPays, string> = {
   emisor: 'Lo paga el emisor',
@@ -483,6 +611,58 @@ useHead(() => ({
   flex-direction: column;
   gap: 6px;
   font-size: 0.85rem;
+}
+
+/* Live radar */
+.radar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.pattern {
+  border: 1px solid rgba(var(--v-border-color), 0.14);
+  border-left: 3px solid rgba(202, 138, 4, 0.75);
+  border-radius: 14px;
+}
+.pattern-how {
+  font-size: 0.9rem;
+  line-height: 1.65;
+  opacity: 0.9;
+}
+.pattern-quotes {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.pattern-quotes a {
+  display: block;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  text-decoration: none;
+  border-radius: 8px;
+  padding: 6px 8px;
+  background: rgba(var(--v-border-color), 0.08);
+  color: rgb(var(--v-theme-on-surface));
+  opacity: 0.92;
+}
+.pattern-quotes a:hover {
+  background: rgba(var(--v-theme-primary), 0.1);
+}
+.q-meta {
+  display: block;
+  font-size: 0.68rem;
+  opacity: 0.6;
+  margin-top: 3px;
+}
+.thread-link {
+  font-size: 0.74rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(var(--v-theme-primary), 0.1);
+  text-decoration: none;
 }
 @media (max-width: 600px) {
   .step-row {

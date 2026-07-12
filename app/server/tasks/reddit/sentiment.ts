@@ -8,6 +8,7 @@
 //   { window: 'all' }        → backfill the whole history instead of the last year
 //   { withSummaries: false } → skip the AI prose pass (numbers only)
 import { refreshRedditSentiment } from '../../utils/redditSentimentStore'
+import { refreshScamRadar } from '../../utils/scamRadarStore'
 
 export default defineTask({
   meta: {
@@ -19,6 +20,8 @@ export default defineTask({
     const window = (payload as { window?: 'year' | 'all' })?.window === 'all' ? 'all' : 'year'
     const withSummaries = (payload as { withSummaries?: boolean })?.withSummaries !== false
     const result = await refreshRedditSentiment({ window, withSummaries })
-    return { result }
+    // Same corpus, second read: the scam radar on /estafas-uruguay. No new data source.
+    const radar = await refreshScamRadar()
+    return { result: { ...result, radar } }
   },
 })
