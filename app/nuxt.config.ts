@@ -275,6 +275,11 @@ export default defineNuxtConfig({
         driver: 'fs',
         base: './.data/costs',
       },
+      // Durable store for the live debt-relief figures (debt-relief:monthly).
+      'debt-relief': {
+        driver: 'fs',
+        base: './.data/debt-relief',
+      },
       // Durable store for the live national key figures + drift watchdog (figures:daily).
       figures: {
         driver: 'fs',
