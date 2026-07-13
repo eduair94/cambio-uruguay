@@ -13,6 +13,8 @@ import { cambio_info } from "./classes/cambioInfo";
 import CambioFortex from "./classes/cambios/fortex";
 import { MongooseServer, mongoose } from "./classes/database";
 import server from "./classes/Express/ExpressSetup";
+import { BASELINE_FIGURES } from "./classes/figures/bands";
+import { loadFigures } from "./classes/figures/store";
 import { origins } from "./classes/origins";
 import { redisCache } from "./classes/redis_cache";
 import sentryInit from "./sentry";
@@ -1433,6 +1435,53 @@ const main = async () => {
       },
       1800
     );
+  });
+
+  /**
+   * @openapi
+   * /uy-figures:
+   *   get:
+   *     tags:
+   *       - Indicators
+   *     summary: Indicadores clave de Uruguay (salario mínimo, BPC, boleto, inflación)
+   *     description: |
+   *       Datos que alimentan /salud-financiera, /indicadores y /herramientas/costo-de-vida:
+   *       salario mínimo nacional, BPC, boleto común de Montevideo (STM) e inflación anual (IPC),
+   *       vía una búsqueda con grounding (Gemini + Google Search). Se sincroniza una vez por día
+   *       (pm2 `currency-figures`).
+   *
+   *       Cada valor debe caer dentro de una banda de plausibilidad para ser aceptado; un valor
+   *       fuera de banda se descarta y se mantiene el último dato bueno (o el baseline verificado).
+   *       `updated[]` lista qué campos vinieron de una búsqueda en vivo en este ciclo — todo lo
+   *       demás es el baseline verificado. `asOf: null` significa que todavía no se generó ningún
+   *       dato en vivo (nunca corrió el job con GEMINI_API_KEY configurada).
+   *     responses:
+   *       200:
+   *         description: Indicadores clave de Uruguay
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 salarioMinimo: { type: number, description: "UYU/mes, nominal" }
+   *                 bpc: { type: number, description: "Base de Prestaciones y Contribuciones, UYU" }
+   *                 boletoStm: { type: number, description: "Boleto común de Montevideo con STM, UYU" }
+   *                 inflacionAnual: { type: number, description: "Variación anual del IPC, %" }
+   *                 asOf: { type: string, nullable: true }
+   *                 updated:
+   *                   type: array
+   *                   items: { type: string }
+   *                   description: Campos actualizados en vivo en este ciclo.
+   *                 sources:
+   *                   type: array
+   *                   items:
+   *                     type: object
+   *                     properties:
+   *                       label: { type: string }
+   *                       url: { type: string }
+   */
+  server.getJson("uy-figures", async (req: Request): Promise<any> => {
+    return await redisCache.getOrSet("uy-figures", async () => (await loadFigures()) ?? BASELINE_FIGURES, 1800);
   });
 
   /**

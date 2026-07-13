@@ -45,6 +45,18 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Uruguay's key national figures (salario mínimo, BPC, boleto STM, inflación) via grounded
+      // search. Daily 09:52 UTC ≈ 06:52 America/Montevideo. Minute 52: not a multiple of 5.
+      // The DRIFT WATCHDOG is not here — it stayed in the app (nitro task figures:drift), because
+      // it needs the app's Telegram config and its own dedupe state, and it spends no Gemini call.
+      name: "currency-figures",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_figures.js",
+      cron_restart: "52 9 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Cluster mode, 2 instances: `pm2 reload` (scripts/deploy-backend.sh) then
       // rolls instances one at a time, so a deploy never takes the API down.
       // Safe because the API path writes nothing to disk — ProxyFileService is
