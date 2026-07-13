@@ -97,6 +97,11 @@ export interface PublicAduanaPayload {
   sources: AduanaSource[]
   updatedAt: string | null
   stale: boolean
+  /** Fact ids the weekly grounded re-check is disputing, still awaiting a human look. A fact
+   * flagged here must never render as confidently "verificado contra la norma" without also
+   * surfacing that the automated check disagrees. Empty in the baseline: nothing here has ever
+   * been through the weekly refresh. */
+  pendingReview: string[]
 }
 
 export const ADUANA_FALLBACK: PublicAduanaPayload = {
@@ -1226,4 +1231,5 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
   ] as AduanaSource[],
   updatedAt: null,
   stale: true,
+  pendingReview: [],
 }

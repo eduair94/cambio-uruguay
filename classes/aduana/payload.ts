@@ -10,6 +10,10 @@ export interface PublicAduanaPayload {
   sources: Source[];
   updatedAt: string | null;
   stale: boolean;
+  /** Fact ids the weekly grounded re-check is disputing, still awaiting a human look — see
+   * AduanaDoc.pendingReview. A fact flagged here must never render as confidently "verificado
+   * contra la norma" without also surfacing that the automated check disagrees. */
+  pendingReview: string[];
 }
 
 export function buildAduanaPayload(doc: AduanaDoc): PublicAduanaPayload {
@@ -23,5 +27,6 @@ export function buildAduanaPayload(doc: AduanaDoc): PublicAduanaPayload {
     sources: doc.sources,
     updatedAt: doc.updatedAt,
     stale: !doc.updatedAt || Date.now() - new Date(doc.updatedAt).getTime() > STALE_MS,
+    pendingReview: doc.pendingReview,
   };
 }

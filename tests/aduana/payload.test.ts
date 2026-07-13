@@ -27,4 +27,11 @@ describe("buildAduanaPayload", () => {
     expect(out.problems).toHaveLength(12); // a problem with no Reddit evidence still ships its norm
     expect(out.problems.every((p) => Array.isArray(p.quotes))).toBe(true);
   });
+
+  it("passes pendingReview through untouched, so a disputed fact is not silently dropped", () => {
+    const doc = { ...BASELINE, pendingReview: ["franquicia.tope_anual_usd"] };
+    const out = buildAduanaPayload(doc);
+
+    expect(out.pendingReview).toEqual(["franquicia.tope_anual_usd"]);
+  });
 });

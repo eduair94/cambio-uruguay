@@ -165,6 +165,12 @@
               <VIcon size="13" class="mr-1">mdi-file-document-outline</VIcon
               >{{ sourceById(v.sourceId)!.norm }}
             </a>
+            <p
+              v-else-if="v.backing === 'norma'"
+              class="verdict-source verdict-source--missing mb-0"
+            >
+              Es un tributo, pero no pudimos linkear la norma que lo respalda.
+            </p>
           </div>
         </div>
         <p v-else class="text-caption text-medium-emphasis mb-0">
@@ -213,54 +219,68 @@
           </li>
         </ul>
 
-        <VRow class="franchise-stats" dense>
-          <VCol cols="6" sm="3">
-            <div class="stat">
-              <span class="stat-label">Usado</span>
-              <span class="stat-value">US$ {{ franchise.usedUsd }}</span>
-            </div>
-          </VCol>
-          <VCol cols="6" sm="3">
-            <div class="stat">
-              <span class="stat-label">Te queda</span>
-              <span class="stat-value">US$ {{ franchise.remainingUsd }}</span>
-            </div>
-          </VCol>
-          <VCol cols="6" sm="3">
-            <div class="stat">
-              <span class="stat-label">Envíos usados</span>
-              <span class="stat-value">{{ franchise.shipmentsUsed }}</span>
-            </div>
-          </VCol>
-          <VCol cols="6" sm="3">
-            <div class="stat">
-              <span class="stat-label">Envíos libres</span>
-              <span class="stat-value">{{ franchise.shipmentsLeft }}</span>
-            </div>
-          </VCol>
-        </VRow>
-
         <VAlert
-          v-if="franchise.exhausted"
+          v-if="franchise.unknown"
           type="warning"
           variant="tonal"
           density="comfortable"
-          class="mt-3"
-          icon="mdi-alert-outline"
+          icon="mdi-help-circle-outline"
         >
-          Ya no te queda franquicia disponible este año.
+          No pudimos calcular tu franquicia con los datos disponibles en este momento. No es que se
+          te haya acabado: es que no tenemos el tope o el máximo de envíos para calcularlo. Probá de
+          nuevo más tarde.
         </VAlert>
 
-        <VAlert
-          v-if="franchise.nextPurchaseWarning"
-          type="info"
-          variant="tonal"
-          density="comfortable"
-          class="mt-3"
-          icon="mdi-information-outline"
-        >
-          {{ franchise.nextPurchaseWarning }}
-        </VAlert>
+        <template v-else>
+          <VRow class="franchise-stats" dense>
+            <VCol cols="6" sm="3">
+              <div class="stat">
+                <span class="stat-label">Usado</span>
+                <span class="stat-value">US$ {{ franchise.usedUsd }}</span>
+              </div>
+            </VCol>
+            <VCol cols="6" sm="3">
+              <div class="stat">
+                <span class="stat-label">Te queda</span>
+                <span class="stat-value">US$ {{ franchise.remainingUsd }}</span>
+              </div>
+            </VCol>
+            <VCol cols="6" sm="3">
+              <div class="stat">
+                <span class="stat-label">Envíos usados</span>
+                <span class="stat-value">{{ franchise.shipmentsUsed }}</span>
+              </div>
+            </VCol>
+            <VCol cols="6" sm="3">
+              <div class="stat">
+                <span class="stat-label">Envíos libres</span>
+                <span class="stat-value">{{ franchise.shipmentsLeft }}</span>
+              </div>
+            </VCol>
+          </VRow>
+
+          <VAlert
+            v-if="franchise.exhausted"
+            type="warning"
+            variant="tonal"
+            density="comfortable"
+            class="mt-3"
+            icon="mdi-alert-outline"
+          >
+            Ya no te queda franquicia disponible este año.
+          </VAlert>
+
+          <VAlert
+            v-if="franchise.nextPurchaseWarning"
+            type="info"
+            variant="tonal"
+            density="comfortable"
+            class="mt-3"
+            icon="mdi-information-outline"
+          >
+            {{ franchise.nextPurchaseWarning }}
+          </VAlert>
+        </template>
       </VCard>
     </section>
 
@@ -273,67 +293,91 @@
         corresponda.
       </p>
       <VCard variant="flat" class="tool-card pa-4 pa-sm-6">
-        <VRow v-if="claimableProblems.length">
-          <VCol cols="12" sm="6">
-            <VSelect
-              v-model="claimProblemId"
-              :items="claimableProblems.map(p => ({ title: p.title, value: p.id }))"
-              label="Tu situación"
-              variant="outlined"
-              density="comfortable"
-            />
-          </VCol>
-          <VCol cols="12" sm="6">
-            <VTextField
-              v-model="claimTracking"
-              label="Número de guía / tracking"
-              variant="outlined"
-              density="comfortable"
-            />
-          </VCol>
-          <VCol cols="12" sm="6">
-            <VTextField
-              v-model="claimDate"
-              type="date"
-              label="Fecha del hecho"
-              variant="outlined"
-              density="comfortable"
-            />
-          </VCol>
-          <VCol cols="12">
-            <VTextarea
-              v-model="claimDescription"
-              label="Contá qué pasó, con tus palabras"
-              variant="outlined"
-              density="comfortable"
-              rows="2"
-              auto-grow
-            />
-          </VCol>
-        </VRow>
+        <template v-if="claimableProblems.length">
+          <VRow>
+            <VCol cols="12" sm="6">
+              <VSelect
+                v-model="claimProblemId"
+                :items="claimableProblems.map(p => ({ title: p.title, value: p.id }))"
+                label="Tu situación"
+                variant="outlined"
+                density="comfortable"
+              />
+            </VCol>
+            <VCol cols="12" sm="6">
+              <VTextField
+                v-model="claimTracking"
+                label="Número de guía / tracking"
+                variant="outlined"
+                density="comfortable"
+              />
+            </VCol>
+            <VCol cols="12" sm="6">
+              <VTextField
+                v-model="claimDate"
+                type="date"
+                label="Fecha del hecho"
+                variant="outlined"
+                density="comfortable"
+              />
+            </VCol>
+            <VCol cols="12">
+              <VTextarea
+                v-model="claimDescription"
+                label="Contá qué pasó, con tus palabras"
+                variant="outlined"
+                density="comfortable"
+                rows="2"
+                auto-grow
+              />
+            </VCol>
+          </VRow>
 
-        <VTextarea
-          :model-value="claimText"
-          readonly
-          variant="outlined"
-          density="comfortable"
-          rows="12"
-          auto-grow
-          class="claim-textarea mt-2"
-          label="Tu reclamo"
-        />
-
-        <div class="d-flex justify-end mt-2">
-          <VBtn
-            :color="claimCopied ? 'success' : 'primary'"
+          <VAlert
+            v-if="claimError"
+            type="error"
             variant="tonal"
-            size="small"
-            :prepend-icon="claimCopied ? 'mdi-check' : 'mdi-content-copy'"
-            @click="copyClaimText"
+            density="comfortable"
+            icon="mdi-alert-circle-outline"
+            class="mt-2"
           >
-            {{ claimCopied ? 'Copiado' : 'Copiar el reclamo' }}
-          </VBtn>
-        </div>
+            {{ claimError }}
+          </VAlert>
+
+          <VTextarea
+            :model-value="claimText"
+            readonly
+            variant="outlined"
+            density="comfortable"
+            rows="12"
+            auto-grow
+            class="claim-textarea mt-2"
+            label="Tu reclamo"
+          />
+
+          <div class="d-flex justify-end mt-2">
+            <VBtn
+              :color="claimCopied ? 'success' : 'primary'"
+              variant="tonal"
+              size="small"
+              :disabled="!claimText"
+              :prepend-icon="claimCopied ? 'mdi-check' : 'mdi-content-copy'"
+              @click="copyClaimText"
+            >
+              {{ claimCopied ? 'Copiado' : 'Copiar el reclamo' }}
+            </VBtn>
+          </div>
+        </template>
+
+        <VAlert
+          v-else
+          type="info"
+          variant="tonal"
+          density="comfortable"
+          icon="mdi-information-outline"
+        >
+          Ninguna de las situaciones verificadas contra la norma tiene un reclamo armable todavía.
+        </VAlert>
       </VCard>
     </section>
 
@@ -475,6 +519,15 @@
                   >
                     según la DNA, no la ley
                   </VChip>
+                  <VChip
+                    v-if="pendingReview.includes(f.id)"
+                    size="x-small"
+                    color="error"
+                    variant="tonal"
+                    class="ml-2"
+                  >
+                    control automático en disputa — pendiente de revisión humana
+                  </VChip>
                 </div>
                 <div class="fact-meta">
                   <a
@@ -560,7 +613,7 @@
 </template>
 
 <script setup lang="ts">
-import { ADUANA_FALLBACK, type AduanaSource } from '~/server/utils/aduanaFallback'
+import type { AduanaSource } from '~/server/utils/aduanaFallback'
 import {
   buildClaim,
   diagnose,
@@ -578,15 +631,28 @@ import {
 
 const localePath = useLocalePath()
 
-// Data: server-cached, cascades live backend -> nitro cache -> the embedded baseline, so the page
-// always has every fact and every procedure to render, even offline. SSR, so it's in the HTML.
+// Data: server-cached, cascades live backend -> nitro cache -> the embedded baseline
+// (app/server/utils/aduanaFallback.ts). The baseline is a VALUE only on the server: the API route
+// (app/server/api/aduana.get.ts) already returns it on any backend error or empty result, so the
+// client only ever needs an empty shell here — importing the 80KB+ baseline as a value would ship
+// it in the client bundle AND in the hydration payload, twice, for a default that (bar a
+// client-navigation network error) never fires.
+const EMPTY: PublicAduanaPayload = {
+  facts: [],
+  problems: [],
+  sources: [],
+  updatedAt: null,
+  stale: true,
+  pendingReview: [],
+}
 const { data } = await useFetch<PublicAduanaPayload>('/api/aduana', {
-  default: () => ADUANA_FALLBACK,
+  default: () => EMPTY,
 })
-const payload = computed<PublicAduanaPayload>(() => data.value ?? ADUANA_FALLBACK)
+const payload = computed<PublicAduanaPayload>(() => data.value ?? EMPTY)
 const facts = computed(() => payload.value.facts)
 const problems = computed(() => payload.value.problems)
 const sources = computed(() => payload.value.sources)
+const pendingReview = computed(() => payload.value.pendingReview ?? [])
 
 function sourceById(id: string): AduanaSource | undefined {
   return sources.value.find(s => s.id === id)
@@ -730,26 +796,40 @@ const franchise = computed<FranchiseStatus>(() =>
 
 // --- Generador de reclamo -------------------------------------------------------------------
 
-const claimableProblems = computed(() => problems.value.filter(p => p.claimTemplate))
+// verified is NOT optional here: an unverified problem's steps are our own guess, and this tool
+// hands out a formal letter with a PETITORIO that people file with the DNA/courier/URSEC. Offering
+// it for a situation the page itself says it could not confirm against the norm would contradict
+// the page's own promise on the same screen.
+const claimableProblems = computed(() => problems.value.filter(p => p.claimTemplate && p.verified))
 const claimProblemId = ref<BucketId | null>(claimableProblems.value[0]?.id ?? null)
 const claimTracking = ref('')
 const claimDate = ref(new Date().toISOString().slice(0, 10))
 const claimDescription = ref('')
 
-const claimText = computed(() => {
+// buildClaim throws by design when a template placeholder is left unresolved, so a claim letter
+// never ships with a literal "{{tracking}}" in it. That must be surfaced, not swallowed into a
+// silently blank textarea whose copy button would otherwise copy an empty string.
+const claimResult = computed<{ text: string; error: string | null }>(() => {
   const problem = claimableProblems.value.find(p => p.id === claimProblemId.value)
-  if (!problem) return ''
+  if (!problem) return { text: '', error: null }
   try {
-    return buildClaim({
+    const text = buildClaim({
       problem,
       tracking: claimTracking.value.trim() || '[NÚMERO DE GUÍA]',
       date: claimDate.value ? formatDate(claimDate.value) : '[FECHA]',
       description: claimDescription.value.trim() || '[DESCRIBÍ QUÉ PASÓ]',
     })
+    return { text, error: null }
   } catch {
-    return ''
+    return {
+      text: '',
+      error:
+        'No pudimos generar el texto del reclamo para esta situación. Probá de nuevo o cambiá la situación elegida.',
+    }
   }
 })
+const claimText = computed(() => claimResult.value.text)
+const claimError = computed(() => claimResult.value.error)
 
 const claimCopied = ref(false)
 async function copyClaimText() {
@@ -829,11 +909,15 @@ useHead(() => ({
           },
           {
             '@type': 'FAQPage',
-            mainEntity: problems.value.map(p => ({
-              '@type': 'Question',
-              name: p.symptom,
-              acceptedAnswer: { '@type': 'Answer', text: p.steps[0] ?? p.norm },
-            })),
+            // Only verified problems: structured data must never assert to Google what the
+            // visible page itself refuses to assert ("no lo pudimos verificar").
+            mainEntity: problems.value
+              .filter(p => p.verified)
+              .map(p => ({
+                '@type': 'Question',
+                name: p.symptom,
+                acceptedAnswer: { '@type': 'Answer', text: p.steps[0] ?? p.norm },
+              })),
           },
           {
             '@type': 'HowTo',
@@ -976,6 +1060,10 @@ useHead(() => ({
   font-size: 0.75rem;
   display: inline-flex;
   align-items: center;
+}
+.verdict-source--missing {
+  opacity: 0.75;
+  font-style: italic;
 }
 
 /* Contador de franquicias */
@@ -1157,6 +1245,17 @@ useHead(() => ({
   font-size: 0.7rem;
   opacity: 0.65;
   margin-top: 2px;
+}
+/* A human verification and a machine re-read must not read as the same claim: verifiedAt is the
+   stronger one (somebody opened the decree), aiCheckedAt is a freshness signal, never a trust
+   signal — see the header comment on AduanaFact in app/server/utils/aduanaFallback.ts. */
+.fact-verified {
+  font-weight: 600;
+  opacity: 0.9;
+}
+.fact-ai-checked {
+  font-style: italic;
+  opacity: 0.55;
 }
 
 /* Cross-links */

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildClaim, franchiseStatus, verifyCharges } from '../../utils/aduanaTools'
+import { buildClaim, diagnose, franchiseStatus, verifyCharges, type ProblemLike } from '../../utils/aduanaTools'
 
 const facts = [
   { id: 'franquicia.tope_anual_usd', label: 'Tope anual', value: 800, unit: 'USD', sourceId: 'decreto-50-026', verifiedAt: '2026-07-11', origin: 'baseline' },
@@ -29,6 +29,17 @@ describe('verifyCharges', () => {
     const out = verifyCharges({ charges: [{ id: 'otro', amountUsd: 30 }], facts: [...facts] })
     expect(out[0].backing).toBe('sin-respaldo')
     expect(out[0].explain).toBeTruthy()
+  })
+
+  it('classifies the prestación única as a tax and cites its source', () => {
+    const [v] = verifyCharges({ charges: [{ id: 'prestacion_unica', amountUsd: 60 }], facts: [...facts] })
+    expect(v.backing).toBe('norma')
+    expect(v.sourceId).toBeTruthy()
+  })
+
+  it('classifies the flete as the courier price list', () => {
+    const [v] = verifyCharges({ charges: [{ id: 'flete', amountUsd: 30 }], facts: [...facts] })
+    expect(v.backing).toBe('contrato')
   })
 })
 
@@ -65,6 +76,13 @@ describe('franchiseStatus', () => {
     expect(out.remainingUsd).toBe(100)
     expect(out.nextPurchaseWarning).toMatch(/entero|no se parte|prestación única/i)
   })
+
+  it('is exhausted when the money is gone even with shipments left', () => {
+    const out = franchiseStatus({ purchases: [{ valueUsd: 800 }], facts: [...facts] })
+    expect(out.shipmentsLeft).toBe(2) // shipments remain
+    expect(out.remainingUsd).toBe(0)
+    expect(out.exhausted).toBe(true) // ...but the tope is spent: either limit ends it
+  })
 })
 
 describe('buildClaim', () => {
@@ -77,5 +95,13 @@ describe('buildClaim', () => {
     })
     expect(text).toContain('ABC123')
     expect(text).not.toMatch(/\{\{/)
+  })
+})
+
+describe('diagnose', () => {
+  it('finds the bucket, and returns null for one that is not there', () => {
+    const problems = [{ id: 'retenido', title: 'x' }] as ProblemLike[]
+    expect(diagnose('retenido', problems)?.id).toBe('retenido')
+    expect(diagnose('demora-extrema', problems)).toBeNull()
   })
 })
