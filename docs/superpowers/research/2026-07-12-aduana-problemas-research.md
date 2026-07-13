@@ -62,8 +62,8 @@ esa la hace la IA en Task 4):
 | `rg-dna-10-2026` | Protección de la identidad del usuario en el uso de franquicias | RG DNA 10/2026 (24/04/2026) | https://impo.com.uy/bases/resoluciones-generales-aduanas-nd/10-2026 |
 | `dna-comunicado-11-2026` | Comunicado — registro de acceso a la franquicia EPI | Comunicado AGCE 11/2026 (27/04/2026) | https://www.aduanas.gub.uy/innovaportal/file/28456/1/comunicado-11-2026---registro-acceso-franquicia-epi-27.4.26-revisada-ap-als-de-acuerdo.pdf |
 | `rg-dna-21-2026` | Prórroga de la exigibilidad de la RG 09/2026 hasta el 1/10/2026 | RG DNA 21/2026 (25/06/2026) | https://www.aduanas.gub.uy/innovaportal/file/28613/1/rg-21-2026.pdf |
-| `carou-14` | Despachante de aduana — definición y preceptividad | Ley 19.276 (CAROU), art. 14 | https://www.impo.com.uy/bases/codigo-aduanero/19276-2014/14 |
-| `carou-15` | Intervención NO preceptiva del despachante | Ley 19.276 (CAROU), art. 15 | https://www.impo.com.uy/bases/codigo-aduanero/19276-2014/15 |
+| `carou-14` | Despachante de aduana — **definición y facultades**. ⚠ Su rúbrica dice "Definición y preceptividad", pero su texto sólo **define** al despachante y lo faculta a tramitar. **NO citar como fundamento de la preceptividad** (ver §3.1) | Ley 19.276 (CAROU), art. 14 | https://www.impo.com.uy/bases/codigo-aduanero/19276-2014/14 |
+| `carou-15` | Intervención NO preceptiva del despachante — **lit. A) EPI de carácter no comercial, sin tope de valor** | Ley 19.276 (CAROU), art. 15 | https://www.impo.com.uy/bases/codigo-aduanero/19276-2014/15 |
 | `carou-98` | Abandono — casos | Ley 19.276 (CAROU), art. 98 | https://www.impo.com.uy/bases/codigo-aduanero/19276-2014/98 |
 | `carou-99` | Abandono no infraccional — procedimiento judicial | Ley 19.276 (CAROU), art. 99 | https://www.impo.com.uy/bases/codigo-aduanero/19276-2014/99 |
 | `carou-140` | Régimen de envíos postales internacionales — definición | Ley 19.276 (CAROU), art. 140 | https://www.impo.com.uy/bases/codigo-aduanero/19276-2014/140 |
@@ -76,10 +76,10 @@ esa la hace la IA en Task 4):
 | `carou-213` | Responsabilidad — culpa/dolo; responsabilidad objetiva | Ley 19.276 (CAROU), art. 213 | https://www.impo.com.uy/bases/codigo-aduanero/19276-2014/213 |
 | `carou-223` | Prescripción (5 años Fisco / **2 años reclamos de particulares**) | Ley 19.276 (CAROU), art. 223 | https://www.impo.com.uy/bases/codigo-aduanero/19276-2014/223 |
 | `carou-227` | Competencia: Juzgados Letrados de Aduana (salvo contravención) | Ley 19.276 (CAROU), art. 227 | https://www.impo.com.uy/bases/codigo-aduanero/19276-2014/227 |
-| `ley-19009` | Régimen General de las Actividades Postales (courier incluido) | Ley 19.009 (22/11/2012), arts. 5, 6, 33, 37 | https://www.impo.com.uy/bases/leyes/19009-2012 |
+| `ley-19009` | Régimen General de las Actividades Postales (courier incluido; **art. 6 lit. H: el envío es propiedad del remitente hasta la entrega**) | Ley 19.009 (22/11/2012), arts. 5, 6, 18, 33, 37 | https://www.impo.com.uy/bases/leyes/19009-2012 |
 | `ursec-185-016` | **Reglamento de Reclamaciones e Indemnizaciones del Servicio Postal** | Res. URSEC 185/016 (09/12/2016), Anexo, arts. 1-29 | https://www.impo.com.uy/bases/resoluciones-ursec-originales/185-2016 |
-| `decreto-209-017` | Reglamento de actividades postales — definiciones (queja/reclamación/courier) | Decreto 209/017 (04/08/2017), art. 3 | https://www.impo.com.uy/bases/decretos/209-2017 |
-| `ley-17250` | Relaciones de consumo — Defensa del Consumidor | Ley 17.250 (11/08/2000), arts. 6, 12, 13, 30, 31, 42, 47 | https://www.impo.com.uy/bases/leyes/17250-2000/42 |
+| `decreto-209-017` | Reglamento de actividades postales — definiciones (queja/reclamación/courier). ⚠ Su **art. 16 es sólo para encomiendas NACIONALES** (rúbrica: *"Parámetros de calidad de las encomiendas nacionales"*) | Decreto 209/017 (04/08/2017), art. 3 | https://www.impo.com.uy/bases/decretos/209-2017 |
+| `ley-17250` | Relaciones de consumo — Defensa del Consumidor | Ley 17.250 (11/08/2000), arts. 6, 12, 13, 16, 30, 31, 42, 47 | https://www.impo.com.uy/bases/leyes/17250-2000 |
 | `ley-18250-76` | Mudanza de uruguayos que retornan (menaje, herramientas, 1 vehículo) | Ley 18.250, art. 76 (red. Ley 19.996 art. 352) | https://www.impo.com.uy/bases/leyes/18250-2008/76 |
 | `ley-18761-tifa` | TIFA — exoneración tributaria en envíos de entrega rápida | Ley 18.761 (17/06/2011), art. 7 | https://www.impo.com.uy/bases/leyes-internacional/18761-2011 |
 | `decreto-139-014` | Régimen de equipaje MERCOSUR | Decreto 139/014, arts. 1, 3, 9, 13 | https://www.impo.com.uy/bases/decretos-internacional/139-2014/1 |
@@ -132,17 +132,23 @@ esa la hace la IA en Task 4):
 | `postal.resolucion_final_nacional_dias` | 30 | días corridos | `ursec-185-016` | Anexo art. 11 |
 | `postal.escalar_ursec_dias` | 30 | días corridos desde la resolución final | `ursec-185-016` | Anexo art. 13 |
 | `postal.ursec_resuelve_dias` | 60 | días corridos | `ursec-185-016` | Anexo art. 13 |
-| `postal.indemniz_courier_intl_ui` | 417 | UI | `ursec-185-016` | Anexo art. 22 |
-| `postal.indemniz_encomienda_intl_ui_kg` | 63 | UI por kg | `ursec-185-016` | Anexo art. 23 |
+| `postal.indemniz_titular` | "el **impositor**" (el que despachó el envío — en una compra online, **el vendedor**) | — | `ursec-185-016` | Anexo arts. 22, 23 y 24 |
+| `postal.indemniz_courier_intl_ui` | 417 | UI (al impositor) | `ursec-185-016` | Anexo art. 22 |
+| `postal.indemniz_encomienda_intl_ui_kg` | 63 | UI por kg (al impositor) | `ursec-185-016` | Anexo art. 23 |
 | `postal.indemniz_encomienda_intl_tope_ui` | 1252 | UI (tope por encomienda) | `ursec-185-016` | Anexo art. 23 |
 | `postal.indemniz_nacional_multiplicador` | 3 | × el importe abonado por el envío | `ursec-185-016` | Anexo arts. 22 y 23 |
-| `postal.pago_indemniz_horas` | 72 | horas desde la notificación de la resolución final | `ursec-185-016` | Anexo art. 25 |
+| `postal.cesion_derechos` | "el impositor puede **ceder sus derechos** sobre el envío al destinatario (y a la inversa); cualquiera de los dos puede autorizar a un tercero a **recibir la indemnización**" | — | `ursec-185-016` | Anexo art. 26 |
+| `postal.propiedad_envio` | "el envío es **propiedad del remitente** hasta el momento de la entrega al destinatario" | — | `ley-19009` | art. 6 lit. H |
+| `postal.pago_indemniz_horas` | 72 | horas desde la notificación de la resolución final (**una** de las ramas del art. 25) | `ursec-185-016` | Anexo art. 25 |
+| `postal.pago_indemniz_intl_dias` | 90 | días **a contar del día siguiente al de la reclamación**, en reclamaciones internacionales (la otra rama del art. 25) | `ursec-185-016` | Anexo art. 25 |
 | `consumo.venta_distancia_dias_habiles` | 5 | días hábiles para rescindir | `ley-17250` | art. 16 |
 | `consumo.multa_ur_min` | 20 | UR | `ley-17250` | art. 47 num. 2 |
 | `consumo.multa_ur_max` | 4000 | UR | `ley-17250` | art. 47 num. 2 |
 | `ursec.multa_ui_min` | 5000 | UI | `ley-19009` | art. 33 lit. C |
 | `ursec.multa_ui_max` | 500000 | UI | `ley-19009` | art. 33 lit. C |
 | `general.dua_por_persona_por_anio` | 2 | DUA/año (persona física) | `dna-regimen-general` | ⚠ ver §7.4 — sin norma localizada |
+| `despachante.dna_lo_exige_sobre_800` | true — *"se requiere la contratación de un Despachante de Aduana … La intervención del Despachante de Aduana en el Régimen de importación **es preceptiva**"* | — | `dna-regimen-general` | página v/28223 (09/01/2026) |
+| `despachante.la_ley_no_lo_exige` | true — *"Los envíos postales internacionales **no requerirán** intervención de Despachante de Aduana"* (párrafo autónomo, sin acotar por monto) | — | `ley-20446` | art. 627 inc. 4; concordantes: Decreto 50/026 art. 17 y CAROU art. 15 lit. A |
 | `viajero.franquicia_aerea_usd` | 500 | USD | `decreto-43-019` | art. 1 |
 | `viajero.franquicia_terrestre_usd` | 300 | USD | `decreto-43-019` | art. 1 |
 | `viajero.excedente_pct` | 50 | % sobre el excedente | `decreto-139-014` | art. 13 |
@@ -155,27 +161,52 @@ esa la hace la IA en Task 4):
 
 ## 3. Las dos correcciones al brief (leer antes de codificar)
 
-### 3.1 ⚠ El despachante SÍ es preceptivo arriba de USD 800
+### 3.1 ⚠ Despachante arriba de USD 800: **la DNA lo exige, la ley dice lo contrario**
 
-El brief afirma: *"over USD 800 → general regime, and by law no despachante is required (Ley 20.446 art. 627)"*.
-**Eso es incorrecto y le costaría plata al lector.** Lo verificado:
+Ésta es la corrección más delicada del documento, porque **la conclusión práctica y el fundamento jurídico apuntan a
+lados distintos**, y hay que darle al lector las dos cosas.
 
-- **Ley 20.446 art. 627**: *"Los envíos postales internacionales no requerirán intervención de Despachante de Aduana."*
-  Pero el **inciso 1 del mismo artículo acota el régimen** a envíos de ≤ 20 kg **y** valor ≤ USD 800.
-- **Decreto 50/026 art. 17**: *"Las operaciones **reguladas por este Decreto** no requerirán intervención de Despachante
-  de Aduana."* El Decreto (arts. 2 y 3) sólo regula prestación única y franquicia, ambas topeadas en USD 800.
-- **CAROU art. 14**: la intervención del despachante es **preceptiva** como regla general.
-  **CAROU art. 15** lista las excepciones: lit. A) EPI **de carácter no comercial**; lit. C) EPI de entrega expresa
-  **siempre que su valor en aduana no exceda USD 200**.
-- **La DNA, en su página vigente del régimen general** (`dna-regimen-general`, 09/01/2026), es explícita:
-  *"para los envíos … que el valor factura sea superior a USD 800 y/o que el peso supere los 20 kg, rige Régimen
-  General de Importaciones y **se requiere la contratación de un Despachante de Aduana** … La intervención del
-  Despachante de Aduana en el Régimen de importación **es preceptiva**."*
+**Lo que le va a pasar al lector (y por eso la página tiene que decirlo primero).**
+La DNA, en su página vigente del régimen general (`dna-regimen-general`, **v/28223**, 09/01/2026), dice **textual**:
 
-**Regla a codificar:** hasta USD 800 y 20 kg → **sin despachante** (Ley 20.446 art. 627 + Decreto 50/026 art. 17).
-Por encima → **régimen general, despachante preceptivo** (CAROU art. 14 + criterio DNA).
-Existe un argumento jurídico en contrario (CAROU art. 15 lit. A no pone tope de valor a los EPI no comerciales),
-pero **la DNA no lo aplica**; la página no puede decirle a nadie que se ahorre el despachante.
+> *"para los envíos que contengan mercadería que se encuentre gravada por IMESI y/o que el valor factura sea superior a
+> USD 800 y/o que el peso supere los 20 kg, rige Régimen General de Importaciones y **se requiere la contratación de un
+> Despachante de Aduana** para que libere su envío… La intervención del Despachante de Aduana en el Régimen de
+> importación **es preceptiva**."*
+
+Cita **verificada palabra por palabra el 2026-07-12** contra el HTML de v/28223. **En el mostrador vas a necesitar un
+despachante.** La página **no puede** decirle a nadie que se lo ahorre.
+
+**Lo que dicen las normas — y acá el sitio ya tenía razón.**
+Los tres argumentos con los que una versión anterior de este documento "demostró" que la ley exige despachante
+**se caen contra el texto primario**:
+
+- **Ley 20.446 art. 627.** La frase del despachante es un **párrafo autónomo**, con sujeto sin acotar:
+  *"Los envíos postales internacionales no requerirán intervención de Despachante de Aduana."*
+  Dos párrafos antes, cuando el redactor **sí** quiso acotar, lo dijo con anáfora: *"**El referido** régimen contará con
+  una franquicia anual…"*. En el párrafo del despachante **no** usó esa técnica. No hay "≤ USD 800" en esa oración.
+- **Decreto 50/026 art. 17** (*"Las operaciones reguladas por este Decreto no requerirán intervención de Despachante de
+  Aduana"*) remite al **art. 1**, que define el alcance del Decreto **sólo por peso**:
+  *"…cuyo peso unitario no exceda de 20 (veinte) kilogramos"*. **En el art. 1 no hay ningún USD 800.**
+  Es decir: "las operaciones reguladas por este Decreto" es **más amplio** de lo que decía el argumento.
+- **CAROU art. 14 NO es la regla de preceptividad.** Su rúbrica dice "Definición y preceptividad", pero su texto sólo
+  **define** al despachante (num. 1) y lo **faculta** a tramitar (num. 2). Y **CAROU art. 15 lit. A** exime de
+  intervención preceptiva a los *"Envíos postales internacionales de carácter **no comercial**"* — **sin tope de valor**.
+  (El tope de USD 200 del lit. C es para los EPI **de entrega expresa**, es decir los comerciales; por eso el lit. A
+  no necesita ninguno.)
+
+**Regla a codificar — las dos mitades, en este orden:**
+
+> **La DNA exige despachante por encima de USD 800** (v/28223): en la práctica vas a necesitar uno.
+> **La ley dice lo contrario:** Ley 20.446 art. 627, Decreto 50/026 art. 17 y CAROU art. 15 lit. A.
+
+**Prohibiciones explícitas para todas las tareas siguientes:**
+- **Nunca** escribir "por ley el despachante es preceptivo" (arriba de USD 800). Es falso.
+- **Nunca** citar **CAROU art. 14** como fundamento de la preceptividad.
+- **Nunca** recomendarle a nadie que prescinda del despachante: en el mostrador se lo van a exigir igual.
+- Sí darle el argumento, para que sepa **qué tiene para discutir** si quiere pelearlo.
+
+Ver también §7.6.
 
 ### 3.2 ⚠ La resolución de abril NO le pide papeles al comprador
 
@@ -374,7 +405,25 @@ Agregado que corresponde al envío de referencia.
   daño**"*, y el **lit. h)** si no se reclamó dentro de los plazos del art. 10.
   **Traducción: si firmás conforme y no decís nada, perdiste.**
 
-**Cuánto te tienen que pagar (arts. 21-24):**
+**⚠ Cuánto se paga — y A QUIÉN (arts. 21-26). Leer esto antes de prometerle plata a nadie.**
+Los arts. 22, 23 y 24 **no** dicen "el destinatario tendrá derecho". Los tres dicen, textual, **"el impositor tendrá
+derecho a una indemnización"**. El **impositor** es quien despachó el envío: en una compra online, **el vendedor
+extranjero**. Y **Ley 19.009 art. 6 lit. H** lo remacha: *"El envío es **propiedad del remitente** hasta el momento de la
+entrega al destinatario, quien deviene titular del mismo en ese momento."*
+
+- **Reclamar sí podés** (y el operador está obligado a recibirte): art. 6 inc. 2 — *"Las reclamaciones deberán ser
+  recibidas y procesadas … ya sean realizadas por el **impositor** como por el **destinatario**"* — y el art. 10 te da
+  tu propio plazo de 48 horas como destinatario.
+- **Cobrar es otra cosa.** El titular de la indemnización tasada es el impositor. Para que la plata termine en tu bolsillo
+  hace falta **art. 26**: *"el impositor tendrá la facultad de **ceder sus derechos** sobre el envío en favor del
+  destinatario"* — y, además, *"el impositor o el destinatario podrán **autorizar a una tercera persona a recibir la
+  indemnización**"*. Sin reclamo del vendedor o sin esa cesión, la indemnización no es tuya.
+- **La excepción que te devuelve la titularidad:** si el envío **te fue entregado** y dejaste constancia del daño
+  (art. 16 lit. g), sos vos el que tiene el derecho — el art. 26 prevé, "a la inversa", que **vos** cedas al impositor.
+  Es decir: **paquete entregado roto/incompleto → el derecho es tuyo. Paquete que nunca llegó → el derecho es del
+  vendedor** (nunca fuiste propietario), y necesitás que reclame él o que te ceda.
+
+**Los montos (siempre a favor del impositor, salvo cesión):**
 - envío **expreso o courier** / certificado: **3× el importe abonado** si es nacional; **417 UI** si es internacional (art. 22);
 - **encomienda**: 3× el importe abonado si es nacional; **63 UI por kg, con tope de 1.252 UI por encomienda**, si es
   internacional, **más** el importe abonado y los derechos pagados (art. 23);
@@ -383,8 +432,9 @@ Agregado que corresponde al envío de referencia.
 - **art. 20**: **no** se indemnizan daños indirectos ni lucro cesante.
 
 > **Honestidad obligatoria en la página:** si el courier pierde tu notebook de USD 900 y no declaraste valor, el
-> reglamento te da **1.252 UI como tope** (≈ USD 200-220 según UI vigente), no los USD 900. Ese es el punto de la
-> sección: **declarar valor y pagar el seguro** es lo que cambia el resultado.
+> reglamento da **1.252 UI como tope** (≈ USD 200-220 según UI vigente), no los USD 900 — y encima ese tope es
+> **del impositor**, no tuyo, si el paquete nunca te fue entregado. Ese es el punto de la sección: **declarar valor y
+> pagar el seguro** (y saber quién es el titular del derecho) es lo que cambia el resultado.
 
 **⚠ Cuándo el courier NO responde — art. 16:** fuerza mayor (lit. a); culpa del impositor o naturaleza del contenido
 (lit. c); **retención del envío por orden del Poder Judicial o cualquier interrupción del proceso postal por parte de
@@ -402,9 +452,16 @@ el courier no responde.** En ese caso el camino es la **denuncia ante la DNA** (
 5. Si te la rechaza o vence el plazo sin respuesta: **escalá a URSEC dentro de los 30 días corridos** siguientes
    (art. 13). URSEC resuelve en **60 días corridos**. Trámite: `ursec-reclamo`.
    ⚠ **No podés ir a URSEC antes de agotar la instancia ante el courier** (art. 13).
-6. Si la indemnización se reconoce y no te la pagan: **72 horas** desde la notificación de la resolución final (art. 25),
-   y el incumplimiento habilita a URSEC a abrir procedimiento sancionatorio contra el operador
-   (Ley 19.009 art. 6 lit. G num. 3; multas de **5.000 a 500.000 UI**, art. 33).
+6. Si la indemnización se reconoce y no la pagan: el **art. 25** manda pagar *"lo antes posible"* y fija **dos plazos
+   alternativos** — *"a más tardar, dentro del plazo de **72 (setenta y dos) horas corridas** desde la notificación de la
+   resolución final, **o dentro de los 30 (treinta) días** en el caso de reclamaciones nacionales **y dentro de los 90
+   (noventa) días a contar del día siguiente al de la reclamación en el caso de reclamaciones internacionales**"*.
+   ⚠ **Un envío del exterior es una reclamación internacional**: no le exijas al courier "las 72 horas" como si fuera el
+   único plazo — la norma le habilita hasta **90 días desde el día siguiente al reclamo**. El incumplimiento habilita a
+   URSEC a abrir procedimiento sancionatorio contra el operador (Ley 19.009 art. 6 lit. G num. 3; multas de
+   **5.000 a 500.000 UI**, art. 33).
+7. **Si el paquete nunca llegó a entregarse**, la indemnización es del **impositor** (arts. 22-24): necesitás que reclame
+   el vendedor o que te **ceda sus derechos** (art. 26). Ver el recuadro de arriba.
 
 **Plazo.** **48 horas** (destinatario). Es el plazo más corto y más letal de toda la guía.
 
@@ -463,10 +520,13 @@ la Ley 19.009.
 | **Flete, "gestión", "handling", "despacho"** del courier | **No hay norma que los fije.** Son **precio contractual** | Se rigen por la **Ley 17.250** |
 
 **Lo que la ley de consumo te da (Ley 17.250):**
-- **art. 6 lit. C**: derecho a **información suficiente, clara, veraz, en español**.
+- **art. 6 lit. C**: derecho básico a *"La información suficiente, clara, veraz, **en idioma español** sin perjuicio que
+  puedan emplearse además otros idiomas"*. El **mandato operativo** correlativo está en el **art. 13 inc. 1**:
+  *"Toda información referente a una relación de consumo deberá expresarse en idioma español…"*. **Citar los dos** —
+  el art. 6 lit. C es el derecho, el art. 13 inc. 1 es la obligación.
 - **art. 12**: la **oferta obliga** a quien la emite.
-- **art. 13**: *"Cuando en la oferta se dieran dos o más informaciones contradictorias, **prevalecerá la más favorable
-  al consumidor**."* ← Si te cotizaron X y te cobraron Y, **vale X**.
+- **art. 13 inc. 2**: *"Cuando en la oferta se dieran dos o más informaciones contradictorias, **prevalecerá la más
+  favorable al consumidor**."* ← Si te cotizaron X y te cobraron Y, **vale X**.
 - **arts. 30 y 31**: **cláusulas abusivas** — son abusivas las que generan desequilibrio injustificado, las que autorizan
   al proveedor a **modificar los términos del contrato** (art. 31 lit. C) y las que **imponen la carga de la prueba** al
   consumidor (lit. E).
@@ -508,9 +568,9 @@ Quien suscribe, [NOMBRE], CI [CI], con domicilio en [DOMICILIO], presenta reclam
    informados de manera clara y previa. {{descripcion}}
 
 3. Que el artículo 6 literal C) de la Ley 17.250 consagra el derecho del consumidor a información
-   suficiente, clara y veraz; que el artículo 12 establece que la oferta vincula a quien la emite; y
-   que el artículo 13 dispone que, ante informaciones contradictorias, prevalece la más favorable al
-   consumidor.
+   suficiente, clara y veraz, en idioma español; que el artículo 12 establece que la oferta vincula a
+   quien la emite; y que el inciso segundo del artículo 13 dispone que, ante informaciones
+   contradictorias, prevalece la más favorable al consumidor.
 
 4. Que los cargos aplicados unilateralmente y no informados configuran, además, la hipótesis del
    artículo 31 literal C) de la citada ley (cláusulas que autorizan al proveedor a modificar los
@@ -538,8 +598,16 @@ independientemente de sus montos y características**, y **todas** las franquici
 1. **Los regalos también consumen cupo.** Decreto 50/026 art. 3 inc. 2: *"el valor de dichos envíos **se imputará al cupo
    anual** establecido para la franquicia, consumiendo el monto correspondiente"*. Aplica a los envíos exonerados por
    acuerdo comercial (EE.UU.) **y** a los obsequios familiares.
-2. **La franquicia no se parte.** Si te quedan USD 300 y el envío vale USD 400, **no** pagás la diferencia: el envío
-   entero cae en **prestación única** (60%, mínimo USD 20) — Decreto 50/026 art. 15.
+2. ⚠ **"La franquicia no se parte" — NO VERIFICADO. NO PUBLICAR COMO HECHO.** Una versión anterior de este documento
+   citaba **Decreto 50/026 art. 15** para esto. **Es una mala cita.** El art. 15 se llama *"Aplicación de prestación única
+   en casos de **incumplimiento** de las condiciones del régimen"* y se dispara *"cuando se verifique el incumplimiento …
+   **en los términos previstos por el artículo 632** de la Ley"* (o sea: declaración inexacta + multa). Es el artículo
+   correcto para la **recalificación** (§4.9) y **no** para el agotamiento de cupo.
+   Buscado en el Decreto 50/026 (arts. 1-20) y en la Ley 20.446 (arts. 627-635) **no hay artículo que regule qué pasa
+   cuando el valor del envío excede el saldo de franquicia disponible**. La conclusión puede seguir siendo cierta por
+   **diseño del régimen** (la franquicia es "de hasta USD 800" y no hay mecanismo de aplicación parcial; los dos
+   regímenes son excluyentes), **pero no tenemos artículo**. → **§7.8.** ⚠ **`app/utils/importRules.ts` (~línea 119) hace
+   exactamente la misma mala cita** en su comentario y hay que corregirla aguas arriba (§6).
 3. **Libros y medicamentos no consumen el tope de USD 800** (Decreto 50/026 art. 4, inciso final;
    los medicamentos, **con autorización del MSP**).
 4. **La fecha que cuenta es la de desaduanamiento**, no la de compra ni la de arribo (`dna-franquicias-usadas`).
@@ -553,8 +621,11 @@ beneficiarte del régimen se sanciona con **multa igual al DOBLE de los tributos
    intermedio/verificado o superior).
    ⚠ **No confundir** con `aduanas.gub.uy/innovaportal/v/18715` — ése es un **cubo estadístico agregado**, no tu cupo.
 2. Si ya usaste las 3 o llegaste a USD 800: el próximo envío va por **prestación única** (60%, mínimo USD 20) —
-   no es un castigo, es el otro régimen. Los dos regímenes son **excluyentes**, nunca se combinan.
-3. Si el envío supera **USD 800** → **régimen general**, con **despachante preceptivo** (§3.1 y §4.6).
+   no es un castigo, es el otro régimen. Los dos regímenes son **excluyentes**, nunca se combinan
+   (Decreto 50/026 arts. 2 y 3: la franquicia es *"adicionalmente"* al régimen de prestación única, y es *"de hasta
+   USD 800"* — no hay norma que habilite aplicarla parcialmente; ver la advertencia del punto 2 de arriba y §7.8).
+3. Si el envío supera **USD 800** → **régimen general**, y la **DNA te va a exigir despachante** (v/28223), aunque
+   la ley diga lo contrario (§3.1 y §4.6).
 4. Si te notifican una **multa** del art. 632: tenés **10 días hábiles de vista previa** para defenderte (ver abajo).
 
 **Plazo.** ⚠ **10 días hábiles de VISTA PREVIA** (Ley 20.446 art. 632): *"En caso de que no exista reconocimiento, se
@@ -615,8 +686,10 @@ Base: **Ley 18.761 art. 7 lit. g** + **Ley 20.446 art. 628** + **Decreto 50/026 
 
 **En el régimen general** (`dna-regimen-general`, DNA, 09/01/2026):
 - se tramita por **DUA** (Documento Único Aduanero);
-- **la intervención del despachante de aduana es PRECEPTIVA** (CAROU art. 14; ver la corrección del §3.1 — **el brief
-  decía lo contrario**);
+- **la DNA exige despachante de aduana** — *"se requiere la contratación de un Despachante de Aduana … es preceptiva"*
+  (v/28223). ⚠ **No escribir "por ley es preceptivo": la ley dice lo contrario** (Ley 20.446 art. 627, Decreto 50/026
+  art. 17, CAROU art. 15 lit. A). **No citar CAROU art. 14.** Ver §3.1 y §7.6: al lector hay que darle **la práctica**
+  (va a necesitar despachante) **y el argumento** (lo que la norma efectivamente dice);
 - la DNA afirma además que *"las personas físicas podrán realizar únicamente **hasta dos DUA por año**"*
   (⚠ no localizamos la norma que lo establece — ver §7.4);
 - pagás **aranceles + IVA + tasas** completos; la calculadora del sitio **no** cotiza este régimen.
@@ -629,16 +702,22 @@ esa factura**. El flete que el courier te factura aparte **no** integra ese tota
 1. Verificá el valor con el criterio del art. 5 (**total de la factura**, no el precio del producto).
 2. Conversión: **arbitraje del BCU del día hábil anterior al despacho** (Decreto 50/026 art. 6).
 3. Si pasás de USD 200 (EE.UU.): **pagás IVA sobre el total**. Nada que reclamar — es la norma.
-4. Si pasás de USD 800 / 20 kg / IMESI: **contratá un despachante de aduana**. No hay atajo.
+4. Si pasás de USD 800 / 20 kg / IMESI: en los hechos **vas a tener que contratar un despachante de aduana** — la DNA lo
+   exige (v/28223). Que la ley no lo imponga (§3.1) no te va a servir en el mostrador.
 5. **Alternativa antes del despacho:** si la mercadería está **restringida o requiere autorización** que no tenés,
    el Decreto 50/026 art. 7 te deja **devolverla a origen a tu costo dentro de 30 días** (ver §4.7).
-   ⚠ Una vez que la DNA **verificó** el envío, *"los operadores postales no podrán retornar a origen"* (`dna-retenidos`).
-6. Si creés que la DNA valuó mal la mercadería → vista previa de **10 días hábiles** (Ley 20.446 art. 632).
+   El **retorno a origen procede mientras no se haya producido el despacho** (Decreto 50/026 art. 7).
+6. **Si la DNA te imputa haber declarado inexactamente el valor o la procedencia** y **no reconocés** el incumplimiento:
+   tenés **vista previa de 10 días hábiles** (Ley 20.446 art. 632) para evacuarla antes de que dicte el acto
+   sancionatorio. ⚠ **Ojo con el alcance:** esa vista es un trámite **dentro del procedimiento sancionatorio** del
+   art. 632 — **no** es un recurso general contra "la DNA me valuó mal la mercadería". Para una **discrepancia de
+   valoración sin sanción** no verificamos norma aplicable (§7.9).
 
-**Plazo.** 10 días hábiles de vista si hay sanción. 30 días para devolver a origen (art. 7), **sólo antes del despacho**.
+**Plazo.** 10 días hábiles de vista **si hay imputación del art. 632**. 30 días para devolver a origen (art. 7),
+**mientras no se haya producido el despacho**.
 
-**A quién reclamar.** **DNA** (valuación / clasificación). Un **despachante de aduana** para operar el DUA.
-**Defensa del Consumidor no puede hacer nada** con un tributo.
+**A quién reclamar.** **DNA** (liquidación / clasificación / evacuación de vista). Un **despachante de aduana** para
+operar el DUA. **Defensa del Consumidor no puede hacer nada** con un tributo.
 
 **Documento requerido.** Factura original completa (con todos los conceptos) + comprobante de pago.
 
@@ -677,11 +756,16 @@ esa factura**. El flete que el courier te factura aparte **no** integra ese tota
    trámite en Aduana."*
 2. Con el certificado en mano, seguí el procedimiento de `retenido` (§4.1).
 3. **Si no vas a conseguir el permiso:** pedí la **devolución a origen a tu costo, dentro de los 30 días**
-   (Decreto 50/026 art. 7). ⚠ **Sólo funciona si el envío todavía no fue verificado por la DNA** — después,
-   *"los operadores postales no podrán retornar a origen"* (`dna-retenidos`).
+   (Decreto 50/026 art. 7). **El retorno a origen procede mientras no se haya producido el despacho**
+   (Decreto 50/026 art. 7: *"En el caso de arribo de dicho tipo de mercadería, **sin que se haya producido el
+   despacho**, el interesado podrá devolverla a su costo al lugar de procedencia dentro del plazo de 30 (treinta) días,
+   siempre que no haya incurrido en ningún incumplimiento de la normativa vigente"*). La propia DNA lo repite así en
+   `dna-retenidos`: *"previo al despacho"*.
+   ⚠ **El corte legal es el DESPACHO, no la verificación.** Que la DNA haya abierto o revisado el envío **no** te cierra
+   esta puerta: mientras no esté despachado, el art. 7 sigue disponible.
 4. Si no hacés ni una cosa ni la otra: a los **30/90 días** cae en **abandono** (§4.8).
 
-**Plazo.** **30 días** desde el arribo para devolver a origen (Decreto 50/026 art. 7).
+**Plazo.** **30 días** para devolver a origen, **mientras no se haya producido el despacho** (Decreto 50/026 art. 7).
 
 **A quién reclamar.** **Al organismo que regula el producto** (MSP / URSEC-VUCE / MGAP) para el permiso.
 A la **DNA** sólo para el despacho, una vez que tenés el certificado.
@@ -906,8 +990,11 @@ Lo que **sí** existe:
 - **Decreto 209/017 art. 3 lit. j)**: el **envío expreso o courier** se define por *"un **plazo preestablecido de entrega
   menor a la norma**"* del operador, y debe tener **rastreo o seguimiento desde la admisión hasta la entrega**.
   → **El plazo que te obliga es el que el operador prometió.** Ése es el incumplimiento.
-- **Decreto 209/017** (condiciones de prestación): la información de **cada evento de trazabilidad** debe publicarse en
-  la web del operador **dentro de las 24 horas** de ocurrido.
+- ⚠ **NO existe una regla de "publicar cada evento de tracking dentro de las 24 horas" para envíos internacionales.**
+  Una versión anterior de este documento la afirmaba, sin artículo. La regla real es **Decreto 209/017 art. 16 lit. b**,
+  y el art. 16 se llama, textual, *"**Parámetros de calidad de las encomiendas NACIONALES**"*. Este bucket es
+  **íntegramente** de envíos internacionales → **la regla no aplica y no se publica**. Si alguna vez se cita, tiene que
+  ser **explícitamente acotada a envíos nacionales**.
 - **Ley 19.009 art. 18**: los prestadores deben asegurar **continuidad, regularidad y calidad** del servicio.
 - **Res. URSEC 185/016 art. 6**: deben atender **gratis** las reclamaciones por *"incumplimiento de las normas de calidad
   del servicio **o cualquier otro incumplimiento** relacionado con la prestación de los servicios postales"*.
@@ -931,6 +1018,15 @@ curso del proceso postal por parte de organismos públicos competentes"*). **Pri
    suspensión de actividades, pérdida de licencia).
 6. Si el envío **nunca llega**, deja de ser demora y pasa a ser **pérdida** → `roto-o-incompleto` (§4.3), con la
    indemnización tasada de los arts. 22-23.
+   ⚠ **Y acá viene la mala noticia que la página tiene que dar:** en un envío **que nunca se entregó**, el titular de esa
+   indemnización **no sos vos**. Los arts. 22, 23 y 24 dicen *"el **impositor** tendrá derecho a una indemnización"*, y
+   **Ley 19.009 art. 6 lit. H** dice que *"el envío es **propiedad del remitente** hasta el momento de la entrega"*: si
+   nunca te lo entregaron, nunca fuiste propietario. **Podés reclamar** (art. 6 inc. 2 recibe la reclamación del
+   destinatario; art. 10 te da tu plazo), pero para **cobrar** necesitás que **reclame el vendedor** o que te **ceda sus
+   derechos** — **art. 26**: *"el impositor tendrá la facultad de ceder sus derechos sobre el envío en favor del
+   destinatario"*, y *"el impositor o el destinatario podrán autorizar a una tercera persona a recibir la indemnización"*.
+   → **Práctica:** pedile al vendedor que abra el reclamo en origen o que firme la cesión del art. 26. Y en paralelo,
+   la vía **realmente** tuya suele ser la del **vendedor/marketplace** (garantía de entrega, Ley 17.250), no la postal.
 
 **Plazo.** ⚠ **90 días desde el ingreso al país** → abandono (Ley 20.446 art. 631 num. 2). **Ése es el plazo que te puede
 costar el paquete entero**, y corre aunque estés esperando respuesta del courier.
@@ -1030,7 +1126,7 @@ la **checklist** en su lugar. (Si el bien es retenido, aplica la plantilla de `r
 
 | Organismo | Intake verificado | **Puede** | **NO puede** |
 |---|---|---|---|
-| **El courier / operador postal** | Su propio canal. Es **obligatorio agotarlo primero** para ir a URSEC (Res. 185/016 art. 13). Debe ser **gratuito** (art. 6-7) y darte **recibo/nº de referencia** (art. 9). | Indemnizar pérdida/hurto/destrucción/deterioro (art. 15). Responder en 15 días (preliminar) / 90 días (final internacional). | **Liberar un envío retenido por la DNA.** **Responder por lo que pasó mientras Aduana lo tenía retenido** (art. 16 lit. e). Bajarte un tributo. |
+| **El courier / operador postal** | Su propio canal. Es **obligatorio agotarlo primero** para ir a URSEC (Res. 185/016 art. 13). Debe ser **gratuito** (art. 6-7), **recibir la reclamación tanto del impositor como del destinatario** (art. 6 inc. 2) y darte **recibo/nº de referencia** (art. 9). | Indemnizar pérdida/hurto/destrucción/deterioro (art. 15). Responder en 15 días (preliminar) / 90 días (final internacional). Pagar la indemnización tasada (arts. 22-24) **al impositor**, o a quien éste haya cedido/autorizado (art. 26). | **Liberar un envío retenido por la DNA.** **Responder por lo que pasó mientras Aduana lo tenía retenido** (art. 16 lit. e). Bajarte un tributo. **Pagarte a VOS la indemnización de un envío que nunca te entregó**, si el impositor no reclamó ni te cedió sus derechos (arts. 22-24 y 26; Ley 19.009 art. 6 lit. H). |
 | **DNA / Aduanas** | **Envíos retenidos:** exclusivamente **por agenda previa**, presencial → `dna-retenidos`. **Denuncias** (faltas, infracciones, delitos aduaneros, Código de Conducta): `dna-denuncias`, en línea, **0800 1855**, L-V 9-18h. Consultas: **2915 0007**, `info@aduanas.gub.uy`, `centrodeatencionalusuario@aduanas.gub.uy`. | Liberar la mercadería, liquidar tributos, recibir tu **descargo en la vista de 10 días hábiles** (Ley 20.446 art. 632), aplicar/levantar la **contravención** (CAROU art. 200), declarar el abandono (art. 631). | **Fijar o controlar las tarifas del courier.** **Levantar una prohibición del MSP/URSEC/MGAP.** Juzgar infracciones aduaneras distintas de la contravención — **eso es del Juzgado Letrado de Aduana** (CAROU art. 227). |
 | **URSEC** | `ursec-reclamo` (trámite gub.uy). Presencial: **Av. Uruguay 988**. **Sólo después** de agotar la instancia ante el operador, dentro de **30 días corridos** (Res. 185/016 art. 13). | Resolver **controversias** entre usuarios y operadores postales — **incluidos los courier** (Ley 19.009 art. 5 num. 4 y **art. 37**). Resolver en **60 días corridos**. **Sancionar** al operador: multa **5.000-500.000 UI**, suspensión, clausura, pérdida de licencia (Ley 19.009 art. 33). Abrir procedimiento si no te pagan la indemnización reconocida (art. 6 lit. G num. 3). | **Tocar un tributo o una decisión de Aduana.** Atenderte **antes** de que reclames al courier. Darte más indemnización que la tasada en los arts. 21-24 de la Res. 185/016. |
 | **Área Defensa del Consumidor (MEF)** | `mef-dc-denuncia` (trámite gub.uy en línea — requiere usuario gub.uy **nivel intermedio/verificado**). **0800 7005**, L-V 9:30-16h. Presencial: **Av. Uruguay 948 esq. Río Branco**, L-V 9:30-15:30. | **Citar al proveedor** a instancia del consumidor (Ley 17.250 **art. 42 lit. F**) → conciliación. **Sancionar**: multa **20-4.000 UR**, decomiso, clausura hasta 90 días, suspensión en registros de proveedores del Estado (**art. 47**). Es el organismo correcto para **cobros no informados, publicidad engañosa y cláusulas abusivas** del courier o del intermediario (Tiendamia, USX…). | **Anular un tributo aduanero.** **Liberar un paquete.** **Obligar por sí sola a devolverte la plata** — sanciona e intermedia; la restitución forzada es vía judicial. Intervenir **si ya empezó la acción judicial**. |
@@ -1055,6 +1151,23 @@ la **checklist** en su lugar. (Si el bien es retenido, aplica la plantilla de `r
 4. Los montos en **UI** y **UR** deben renderizarse convertidos al valor vigente, no hardcodeados en pesos.
 5. **El `general.dua_por_persona_por_anio = 2` sale con `verified: false`** o con una nota explícita de que la fuente es
    la página de la DNA y no una norma localizada (§7.4).
+6. **Despachante (§3.1).** Codificar **las dos mitades**: `despachante.dna_lo_exige_sobre_800` (fuente: v/28223) y
+   `despachante.la_ley_no_lo_exige` (Ley 20.446 art. 627 + Decreto 50/026 art. 17 + CAROU art. 15 lit. A).
+   **Nunca** emitir la cadena "por ley es preceptivo"; **nunca** citar CAROU art. 14 para esto; **nunca** sugerir
+   prescindir del despachante.
+7. **Indemnización postal (§4.3, §4.11).** El titular del derecho es el **impositor** (Res. 185/016 arts. 22-24;
+   Ley 19.009 art. 6 lit. H). El destinatario **reclama** (arts. 6 y 10) pero **cobra** sólo si el impositor reclama o
+   le **cede** (art. 26). Cualquier copy que diga "te tienen que pagar a vos" en un envío **no entregado** es falso.
+8. ⚠ **Arreglo aguas arriba, fuera del alcance de este plan pero necesario:**
+   `app/utils/importRules.ts` (~línea 119) documenta la regla de no-fraccionamiento así:
+   *"a shipment is NEVER split between franchise and the 60% rate (**art. 15**: a shipment that cannot use the franchise
+   goes ENTIRELY to the simplified regime)"*. **Esa cita es incorrecta**: el art. 15 del Decreto 50/026 regula el
+   **incumplimiento** (art. 632), no el agotamiento de cupo. El **comportamiento** del código no cambia; **el comentario
+   y su cita, sí**. Ver §7.8. **No tocar `importRules.ts` desde este plan sin coordinar** (lo consume `/franquicia-aduana-uruguay`).
+9. **`demora-extrema` no lleva la regla de las "24 horas" de tracking** (es Decreto 209/017 art. 16 lit. b, y el art. 16
+   es sólo de **encomiendas nacionales**). El bucket **sigue `verified: true`**: su procedimiento se apoya en
+   Decreto 209/017 art. 3 lit. j, Res. 185/016 arts. 6, 9, 11, 13 y 14, Ley 19.009 arts. 18 y 33, Ley 17.250 art. 12 y
+   Ley 20.446 art. 631.
 
 ---
 
@@ -1088,23 +1201,42 @@ con varias etapas ineludibles"*.
 1/10 **ocurrirá** algo.
 
 ### 7.4 "Hasta dos DUA por año" para personas físicas
-La página de la DNA (`dna-regimen-general`, 09/01/2026) afirma: *"Las personas físicas podrán realizar únicamente hasta
+La página de la DNA (`dna-regimen-general`, v/28223, 09/01/2026) afirma: *"Las personas físicas podrán realizar únicamente hasta
 dos Documento Único Aduanero (DUA) por año."*
 → **No localizamos la norma que lo establece.** No está en la Ley 20.446 (arts. 627-635), ni en el Decreto 50/026, ni en
-el CAROU. Puede venir de una Orden del Día o RG anterior no identificada.
-→ **Publicar sólo como "según la DNA", nunca como "la ley dice".**
+el CAROU.
+→ **Se siguió el único puntero que la propia v/28223 ofrece**: al pie linkea *"Ver **Orden del Día 69/2012**
+Procedimiento-DUA Importación"* → `https://www.aduanas.gub.uy/innovaportal/v/12336/1/innova.front/procedimiento-dua-importacion.html`
+→ PDF `https://www.aduanas.gub.uy/innovaportal/file/12336/1/procedimiento_impo_od_69-2012_.pdf` (HTTP 200, 1,9 MB,
+**con capa de texto**: se extrajeron 239.758 caracteres con `pdftotext`).
+**Leído y buscado: la OD 69/2012 es el procedimiento operativo del DUA (LUCIA, DAE, RASO/RADE, canales de revisión) y
+NO contiene ningún cupo anual de DUA por persona física.** Sin coincidencias para "dos DUA", "por año" en ese sentido,
+ni ninguna limitación por persona física. (Además es de **2012**: es anterior a todo el régimen vigente.)
+→ **La afirmación sigue sin norma identificada.** **Publicar sólo como "según la DNA", nunca como "la ley dice".**
 
 ### 7.5 Equipaje NO acompañado (mudanza parcial / "me mando la PC aparte")
 CAROU art. 133 lit. B lo menciona, pero **no encontramos fuente primaria** que confirme si le aplica la misma franquicia
 de USD 500 o un régimen distinto. Ya está declarado como no verificado en `/franquicia-viajero-uruguay` y **sigue sin
 verificarse**. **No inventar una cifra.**
 
-### 7.6 Despachante por encima de USD 800 — tensión normativa real
-**CAROU art. 15 lit. A** exime de despachante preceptivo a los *"Envíos postales internacionales de carácter **no
-comercial**"* **sin tope de valor**. La DNA, en cambio, exige despachante por encima de USD 800 (`dna-regimen-general`).
-→ **Existe un argumento jurídico para discutirlo, pero la DNA no lo aplica.**
-→ La página **debe decir que hace falta despachante** (es lo que le va a pasar al lector) y **puede** mencionar la tensión
-como nota, **jamás** recomendar prescindir del despachante.
+### 7.6 Despachante por encima de USD 800 — la práctica contradice a la norma
+No es una duda de investigación: es un **conflicto real entre lo que dice la ley y lo que hace la DNA**, y las dos puntas
+están verificadas.
+
+- **La norma dice que NO se requiere despachante**, y lo dice tres veces:
+  **Ley 20.446 art. 627** (párrafo autónomo: *"Los envíos postales internacionales no requerirán intervención de
+  Despachante de Aduana"*, sin acotar por monto); **Decreto 50/026 art. 17** (*"Las operaciones reguladas por este
+  Decreto…"*, y su **art. 1** define el alcance **sólo por peso**, ≤ 20 kg, **sin USD 800**); **CAROU art. 15 lit. A**
+  (*"Envíos postales internacionales de carácter no comercial"*, **sin tope de valor**).
+- **La DNA exige despachante igual**, por encima de USD 800 (`dna-regimen-general`, v/28223: *"se requiere la
+  contratación de un Despachante de Aduana … es preceptiva"*).
+- **CAROU art. 14 no resuelve nada a favor de la DNA:** define y faculta al despachante; no impone su intervención.
+
+→ **Lo NO verificado es sólo esto:** no localizamos la norma en la que la DNA apoya la exigencia. Puede existir y no
+haberla encontrado.
+→ La página **debe decir que en la práctica hace falta despachante** (es lo que le va a pasar al lector) **y** debe darle
+el argumento normativo, porque es real y es suyo. **Jamás** recomendar prescindir del despachante — el que decide en el
+mostrador es la DNA. Ver §3.1.
 
 ### 7.7 Lo que NO tiene norma, y hay que decirlo así
 - **"¿Por qué me retienen a mí y no a otro?"** — La DNA dice *"selectivo o **aleatorio**"* (`dna-retenidos`) y **no publica
@@ -1116,6 +1248,34 @@ como nota, **jamás** recomendar prescindir del despachante.
   Si entra en la página, es como **reporte de usuarios**, jamás como norma.
 - **Tarifas de gestión/almacenaje del courier** — **ninguna norma las tarifa.** Son precio contractual. Sólo se atacan
   por vía de consumo (Ley 17.250), no por "exceden el máximo legal": **no existe máximo legal**.
+- **"Cada evento de tracking se publica en 24 horas"** en envíos **internacionales** — **falso como regla general.**
+  Es **Decreto 209/017 art. 16 lit. b**, y el art. 16 es *"Parámetros de calidad de las encomiendas **nacionales**"*.
+  No hay equivalente verificado para internacionales.
+
+### 7.8 "La franquicia no se parte" — conclusión probable, artículo INEXISTENTE
+La regla que todos damos por buena ("si te quedan USD 300 y el envío vale USD 400, el envío **entero** va a prestación
+única") **no tiene artículo que la diga**.
+- **Decreto 50/026 art. 15 NO sirve**: se llama *"Aplicación de prestación única en casos de **incumplimiento** de las
+  condiciones del régimen"* y opera *"cuando se verifique el incumplimiento … **en los términos previstos por el
+  artículo 632** de la Ley"* — es la **recalificación sancionatoria** (§4.9), no el agotamiento de cupo.
+- **Buscado y no encontrado**: Decreto 50/026 leído íntegro (arts. 1-20) y Ley 20.446 arts. 627-635. **Ningún artículo
+  regula el envío cuyo valor excede el saldo de franquicia disponible.**
+- **El argumento sistemático** (no es un artículo, es una inferencia): la franquicia es *"de hasta USD 800"* (art. 3), se
+  concede *"adicionalmente al régimen de prestación única"* (art. 3), y **no existe mecanismo de aplicación parcial** en
+  ninguna parte del Decreto. La prestación única se aplica *"sobre el valor de factura … de la mercadería"* completa
+  (art. 2), no sobre un excedente.
+- ⚠ **`app/utils/importRules.ts` (~línea 119) hace la misma mala cita** en su comentario (*"art. 15: a shipment that
+  cannot use the franchise goes ENTIRELY to the simplified regime"*). **El código está bien; la cita, no.** Corregir
+  aguas arriba (§6 num. 8).
+→ **La página puede describir el comportamiento como diseño del régimen, pero NO puede colgarle "Decreto 50/026
+art. 15" ni ningún otro artículo.** Si el bucket necesita una cita, va sin ella y con la advertencia.
+
+### 7.9 Impugnar una valoración aduanera sin sanción
+La **vista previa de 10 días hábiles** de la **Ley 20.446 art. 632** existe **dentro del procedimiento sancionatorio**
+por declaración inexacta de valor o procedencia (*"En caso de que no exista reconocimiento, se otorgará vista previa…"*),
+y sólo se abre si la DNA **imputa** ese incumplimiento.
+→ **No verificamos ninguna norma que regule cómo discutir una valoración/clasificación con la que no estás de acuerdo
+cuando NO hay imputación del art. 632.** No extender el art. 632 a "la DNA valuó mal la mercadería" en general.
 
 ---
 
@@ -1129,3 +1289,38 @@ como nota, **jamás** recomendar prescindir del despachante.
 - **Res. URSEC 185/016** leída íntegra (Anexo, arts. 1-29) desde IMPO.
 - **CAROU** arts. 14, 15, 98, 99, 140, 141, 200, 201, 204, 205, 207, 209, 213, 223, 227 leídos desde IMPO.
 - Ninguna cifra proviene de una nota de prensa, de Reddit ni de `v/27950`.
+
+### 8.1 Segunda pasada — corrección de hallazgos adversariales (2026-07-12)
+
+Un revisor adversarial verificó el documento contra fuentes primarias. **Cinco defectos confirmados y corregidos.**
+Todo lo de abajo se **re-verificó bajando el texto primario de nuevo**, no releyendo este documento.
+
+| # | Defecto | Qué se hizo | Fuente primaria re-descargada |
+|---|---|---|---|
+| C1 | **Cita fabricada.** El doc entrecomillaba, dos veces (§4.6 y §4.7), *"los operadores postales no podrán retornar a origen"* atribuida a `dna-retenidos`. **Esa cadena NO existe** en v/28225 (ni en ninguna página EPI de la DNA). Peor: convertía el corte legal del **despacho** en un corte por **verificación**, y le habría dicho a alguien con el paquete revisado-pero-no-despachado que perdió el art. 7. | **Ambas frases borradas.** Se dice sólo: *"el retorno a origen procede mientras no se haya producido el **despacho** (Decreto 50/026 art. 7)"*. | v/28225 (HTML íntegro). Su texto real: *"Retorno a origen: Art. 7 Dec. 50/026: … **previo al despacho**, el interesado podrá devolverla a origen a su costo, dentro del plazo de 30 días…"* |
+| C2 | **Razonamiento invertido en el despachante.** El doc decía que **la ley** hace preceptivo al despachante > USD 800 y tildaba de "incorrecto" al sitio. **En derecho, el sitio tenía razón.** | §3.1 **reescrito**; §7.6 reescrito; §4.5, §4.6 y la tabla de hechos alineadas. Regla nueva: **"la DNA exige / la ley dice lo contrario"**. Prohibido "por ley es preceptivo" y prohibido citar CAROU art. 14. | **Ley 20.446 art. 627** (el párrafo del despachante es **autónomo y sin acotar**; dos párrafos antes el redactor usó anáfora — *"El referido régimen"* — cuando sí quiso acotar). **Decreto 50/026 art. 1** (alcance **sólo por peso**, ≤20 kg, **sin USD 800**) → su art. 17 es más amplio de lo que decía el doc. **CAROU art. 14** (sólo define/faculta) y **art. 15 lit. A** (EPI no comerciales, **sin tope de valor**). **v/28223** (la cita de la DNA **sí** es real y textual: *"se requiere la contratación de un Despachante de Aduana … es preceptiva"*). |
+| I3 | **La indemnización URSEC es del IMPOSITOR, no del destinatario.** El doc la presentaba como "lo que **te** pagan" y nunca mencionaba el art. 26. | §4.3 reescrito (quién cobra, no sólo cuánto), §4.11 paso 6 reescrito, §5 (fila del courier) y tabla de hechos (`postal.indemniz_titular`, `postal.cesion_derechos`, `postal.propiedad_envio`). | **Res. URSEC 185/016 arts. 22, 23 y 24**: los tres dicen *"el **impositor** tendrá derecho a una indemnización"*. **Art. 26**: cesión de derechos (y autorización a un tercero a cobrar). **Art. 6 inc. 2**: el destinatario **sí** puede reclamar. **Ley 19.009 art. 6 lit. H**: *"El envío es propiedad del remitente hasta el momento de la entrega"*. |
+| I4 | **La regla de "24 horas" de tracking es SÓLO nacional.** El bucket `demora-extrema` es 100% internacional. | **Eliminada del bucket**, con la advertencia de por qué. Añadida a §7.7. | **Decreto 209/017 art. 16**, rúbrica textual: *"**Parámetros de calidad de las encomiendas nacionales**"*; el plazo de 24 h es su **lit. b**. |
+| I5 | **Decreto 50/026 art. 15 no dice "la franquicia no se parte".** | §4.5 punto 2 degradado a **no verificado**; nueva **§7.8**; anotado que **`app/utils/importRules.ts` ~L119 repite la misma mala cita**. | **Decreto 50/026 art. 15**, rúbrica textual: *"Aplicación de prestación única en casos de **incumplimiento** de las condiciones del régimen…"*, y opera *"en los términos previstos por el artículo 632 de la Ley"*. Es el cite correcto para **§4.9**, no para §4.5. |
+
+**Menores corregidos:**
+- **§4.3 paso 6:** las **72 h** del art. 25 son **una** de sus ramas; el mismo artículo da *"dentro de los 90 días a contar
+  del día siguiente al de la reclamación **en el caso de reclamaciones internacionales**"* — que es nuestro caso.
+  Añadido `postal.pago_indemniz_intl_dias = 90`.
+- **§7.4:** se **siguió el puntero** de v/28223 → **Orden del Día 69/2012** (v/12336 → PDF, 200, con capa de texto,
+  239.758 caracteres extraídos). **Leída: no contiene ningún cupo de 2 DUA/año por persona física**, y es de 2012.
+  El dato sigue sin norma, ahora **con la búsqueda documentada**.
+- **`ley-17250`:** la fila deep-linkeaba a `/42` (que no sirve los demás artículos) y omitía el art. 16 que la tabla de
+  hechos cita. **URL → raíz de la norma** (`https://www.impo.com.uy/bases/leyes/17250-2000`, HTTP 200) y **art. 16
+  agregado** a la lista.
+- **§4.6 paso 6:** la **vista previa** del art. 632 es un trámite **del procedimiento sancionatorio**, no un recurso
+  general contra una valoración. **Acotada**; el hueco quedó registrado en **§7.9**.
+- **Ley 17.250 e idioma español:** ahora se citan **los dos** artículos. ⚠ **El revisor se equivocó acá**: sostuvo que el
+  mandato *"no es el art. 6 lit. C, es el art. 13"*. El **art. 6 lit. C** dice, textual, *"La información suficiente, clara,
+  veraz, **en idioma español** sin perjuicio que puedan emplearse además otros idiomas"* — **sí contiene el idioma**.
+  El **art. 13 inc. 1** contiene el mandato operativo (*"Toda información referente a una relación de consumo deberá
+  expresarse en idioma español…"*). **Ambas citas son correctas** y el documento ahora las da juntas.
+
+**Ningún bucket pasó a `verified: false`.** Los cinco defectos eran citas y atribuciones, no procedimientos: cada bucket
+tocado (`roto-o-incompleto`, `cobro-abusivo`, `franquicia-agotada`, `supera-monto`, `prohibido-o-restringido`,
+`demora-extrema`) **conserva pasos con norma y artículo** después de la corrección.
