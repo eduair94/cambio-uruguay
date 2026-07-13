@@ -34,7 +34,7 @@ const today = () => new Date().toISOString().slice(0, 10);
 
 describe("applyProposals", () => {
   it("keeps the last-good value and flags a changed fact instead of publishing it", () => {
-    const out = applyProposals(current, proposal({ value: 1200 }), GROUNDED);
+    const out = applyProposals(current, proposal({ value: 1200 }), GROUNDED, SOURCES);
     expect(out.facts[0].value).toBe(800); // NOT 1200 — a human confirms a change of law
     expect(out.facts[0].aiCheckedAt).toBeUndefined();
     expect(out.pendingReview).toContain("franquicia.tope_anual_usd");
@@ -44,15 +44,38 @@ describe("applyProposals", () => {
   // right number… but Google's grounding metadata says it never opened that page. A citation to a
   // page it did not fetch is a hallucinated citation, whatever it points at.
   it("refuses a proposal whose source the model never actually retrieved", () => {
-    const out = applyProposals(current, proposal(), ["https://www.gub.uy/otra-cosa"]);
+    const out = applyProposals(current, proposal(), ["https://www.gub.uy/otra-cosa"], SOURCES);
     expect(out.facts[0].aiCheckedAt).toBeUndefined();
     expect(out.facts[0].value).toBe(800);
     expect(out.pendingReview).toContain("franquicia.tope_anual_usd");
   });
 
   it("admits nothing at all when the model did not search (no grounding chunks)", () => {
-    const out = applyProposals(current, proposal(), []);
+    const out = applyProposals(current, proposal(), [], SOURCES);
     expect(out.facts[0].aiCheckedAt).toBeUndefined();
+    expect(out.pendingReview).toContain("franquicia.tope_anual_usd");
+  });
+
+  // GATE 1b — a homepage is not a citation. Reproduces the exact exploit found in review:
+  // host-only grounding means ANY page on gub.uy — including the bare homepage, which cites no
+  // norm at all — satisfies isGrounded and isOfficial identically to a real decree page.
+  it("refuses a homepage sourceUrl, even when grounded on an official host", () => {
+    const homepage = "https://www.gub.uy/";
+    const out = applyProposals(current, proposal({ sourceUrl: homepage }), [homepage], SOURCES);
+    expect(out.facts[0].aiCheckedAt).toBeUndefined();
+    expect(out.facts[0].value).toBe(800);
+    expect(out.pendingReview).toContain("franquicia.tope_anual_usd");
+  });
+
+  // GATE 1c — official is not enough; it has to be THIS fact's own source. Demonstrated bug: an
+  // unrelated gub.uy tramite page "confirmed" franquicia.tope_anual_usd, whose own source
+  // (SOURCES: decreto-50-026) lives on impo.com.uy. Both isGrounded and isOfficial pass here —
+  // only the own-source-host check can refuse it.
+  it("refuses a citation on an official host that is not this fact's own source host", () => {
+    const otherOfficialPage = "https://www.gub.uy/tramites/otra-cosa-cualquiera";
+    const out = applyProposals(current, proposal({ sourceUrl: otherOfficialPage }), [otherOfficialPage], SOURCES);
+    expect(out.facts[0].aiCheckedAt).toBeUndefined();
+    expect(out.facts[0].value).toBe(800);
     expect(out.pendingReview).toContain("franquicia.tope_anual_usd");
   });
 
@@ -60,7 +83,7 @@ describe("applyProposals", () => {
   // equal to what we publish. Only the domain check can stop it. A newspaper is not the law.
   it("refuses a fact sourced to a domain that is not official, even when the model really read it", () => {
     const press = "https://elpais.com.uy/nota";
-    const out = applyProposals(current, proposal({ sourceUrl: press }), [press]);
+    const out = applyProposals(current, proposal({ sourceUrl: press }), [press], SOURCES);
     expect(out.facts[0].aiCheckedAt).toBeUndefined();
     expect(out.facts[0].value).toBe(800);
     expect(out.pendingReview).toContain("franquicia.tope_anual_usd");
@@ -72,7 +95,7 @@ describe("applyProposals", () => {
   // blessing it.)
   it("refuses an out-of-range value even when it equals the one we publish", () => {
     const outOfBand: AduanaFact[] = [{ ...current[0], value: 9999 }]; // FACT_RANGES caps this at 5000
-    const out = applyProposals(outOfBand, proposal({ value: 9999 }), GROUNDED);
+    const out = applyProposals(outOfBand, proposal({ value: 9999 }), GROUNDED, SOURCES);
     expect(out.facts[0].aiCheckedAt).toBeUndefined();
     expect(out.facts[0].value).toBe(9999); // untouched
     expect(out.pendingReview).toContain("franquicia.tope_anual_usd");
@@ -95,7 +118,8 @@ describe("applyProposals", () => {
         { id: "general.dua_por_persona_por_anio", value: 2, sourceUrl: NORM_URL },
         { id: "despachante.dna_lo_exige_sobre_800", value: 800, sourceUrl: NORM_URL },
       ],
-      GROUNDED
+      GROUNDED,
+      SOURCES
     );
     expect(out.facts[0].value).toBe("2"); // still the string, still untouched
     expect(out.facts[0].aiCheckedAt).toBeUndefined();
@@ -116,7 +140,8 @@ describe("applyProposals", () => {
         { id: "franquicia.tope_anual_usd", value: 800, sourceUrl: NORM_URL },
         { id: "franquicia.tope_anual_usd", value: 1200, sourceUrl: NORM_URL },
       ],
-      GROUNDED
+      GROUNDED,
+      SOURCES
     );
     expect(out.facts[0].value).toBe(800);
     expect(out.facts[0].aiCheckedAt).toBeUndefined();
@@ -126,21 +151,21 @@ describe("applyProposals", () => {
   // Alert fatigue: a stringified "800" for a numeric 800 is the same number. Deferring it would
   // put this id on the human's list EVERY week until they stop reading the list.
   it('treats a stringified "800" as the 800 we publish, not as a change', () => {
-    const out = applyProposals(current, proposal({ value: "800" }), GROUNDED);
+    const out = applyProposals(current, proposal({ value: "800" }), GROUNDED, SOURCES);
     expect(out.facts[0].value).toBe(800); // still the number — the proposal's value is never copied
     expect(out.facts[0].aiCheckedAt).toBe(today());
     expect(out.pendingReview).toEqual([]);
   });
 
   it("keeps everything when the AI returns garbage", () => {
-    expect(applyProposals(current, "<think>hmm</think>", GROUNDED).facts).toEqual(current);
-    expect(applyProposals(current, null, GROUNDED).facts).toEqual(current);
-    expect(applyProposals(current, { error: "no encontré la norma" }, GROUNDED).facts).toEqual(current);
-    expect(applyProposals(current, [{ nonsense: true }], GROUNDED).facts).toEqual(current);
+    expect(applyProposals(current, "<think>hmm</think>", GROUNDED, SOURCES).facts).toEqual(current);
+    expect(applyProposals(current, null, GROUNDED, SOURCES).facts).toEqual(current);
+    expect(applyProposals(current, { error: "no encontré la norma" }, GROUNDED, SOURCES).facts).toEqual(current);
+    expect(applyProposals(current, [{ nonsense: true }], GROUNDED, SOURCES).facts).toEqual(current);
   });
 
   it("stamps aiCheckedAt — never verifiedAt — when the AI confirms the value we already had", () => {
-    const out = applyProposals(current, proposal({ value: 800 }), GROUNDED);
+    const out = applyProposals(current, proposal({ value: 800 }), GROUNDED, SOURCES);
     expect(out.facts[0].value).toBe(800);
     expect(out.facts[0].aiCheckedAt).toBe(today());
     expect(out.facts[0].verifiedAt).toBe("2026-07-11"); // a machine's re-read is not a human's
@@ -178,11 +203,16 @@ describe("refreshNorms", () => {
     vi.spyOn(console, "log").mockImplementation(() => {});
   });
 
-  it("is a silent no-op without a Gemini key — the doc comes back untouched", async () => {
+  // F1: unconfigured is a no-op — but NOT a silent one. The root .env has no GEMINI_API_KEY at
+  // all (this repo's key lives in app/.env as NUXT_GEMINI_API_KEY), so before this fix
+  // geminiConfigured() was false in production and refreshNorms returned early with nothing
+  // logged — the weekly job "ran" every week while never checking a single norm.
+  it("is a no-op without a Gemini key — the doc comes back by reference, and it warns", async () => {
     mockedConfigured.mockReturnValue(false);
     const doc = docWith(current);
     await expect(refreshNorms(doc)).resolves.toBe(doc); // by reference
     expect(mockedAsk).not.toHaveBeenCalled();
+    expect(warnedWith("GEMINI_API_KEY")).toBe(true); // a skipped safety check must never be silent
   });
 
   // The one that would have wiped the alarm: `{"error": ...}` parses fine, is not an array, and
@@ -261,5 +291,27 @@ describe("refreshNorms", () => {
     expect(out.facts[0].value).toBe(800);
     expect(out.facts[0].aiCheckedAt).toBeUndefined();
     expect(out.pendingReview).toEqual(["franquicia.tope_anual_usd"]);
+  });
+
+  // F4 — pendingReview is not a pure ratchet: a dispute resolved this run must not stay flagged
+  // forever. A fact flagged by a PRIOR run that this run's AI grounds, sources correctly, and
+  // reconfirms unchanged is exactly "the dispute is resolved" — discharge it.
+  it("discharges a previously-flagged fact once the AI reconfirms it this run", async () => {
+    mockedAsk.mockResolvedValue(grounded(JSON.stringify(proposal()))); // same value, grounded, official
+    const doc = docWith(current, ["franquicia.tope_anual_usd"]); // flagged by an earlier run
+    const out = await refreshNorms(doc);
+    expect(out.facts[0].aiCheckedAt).toBe(today());
+    expect(out.pendingReview).toEqual([]); // discharged — the flag is not a ratchet
+  });
+
+  // F4's other half: a fact flagged by a prior run that this run's AI simply says nothing about
+  // (no proposal for that id — the model omitted it, per buildPrompt's own instructions) must
+  // stay flagged. Only an actual reconfirmation discharges a flag; silence does not.
+  it("keeps a previously-flagged fact flagged when the AI proposes nothing for it this run", async () => {
+    mockedAsk.mockResolvedValue(grounded("[]")); // verified nothing this run
+    const doc = docWith(current, ["franquicia.tope_anual_usd"]);
+    const out = await refreshNorms(doc);
+    expect(out.facts[0].aiCheckedAt).toBeUndefined();
+    expect(out.pendingReview).toEqual(["franquicia.tope_anual_usd"]); // still flagged
   });
 });

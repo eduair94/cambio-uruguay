@@ -9,12 +9,19 @@
 // Four deterministic gates, all of which a proposal must clear before it may even re-stamp a date:
 //   1. GROUNDED  — the model must have actually retrieved the page it cites (its sourceUrl host
 //      must appear among the URIs Google's grounding metadata says it fetched). A citation to a
-//      page it never opened is a hallucinated citation.
+//      page it never opened is a hallucinated citation. Host-only matching is coarse (see
+//      isGrounded's doc), so two more checks ride along with this gate: the citation may not be a
+//      bare homepage, and it must be on THIS fact's own `sources[].url` host — "an official
+//      domain" is not "the right official page".
 //   2. OFFICIAL  — that source must be an official domain. A newspaper is not the law.
 //   3. IN RANGE  — the value must be inside the declared plausible range for that fact, and a fact
 //      with NO declared range (the two unsourceable DNA assertions) can never take a number at all.
 //   4. UNCHANGED — if it DIFFERS from what we publish, it is not published: the last-good value
 //      stays and the fact id goes to pendingReview for a human.
+//
+// pendingReview discharges: a fact flagged in an earlier run whose dispute is resolved THIS run
+// (grounded, own source, in range, unchanged) is removed from pendingReview when `refreshNorms`
+// rebuilds it — see refreshNorms's doc. Everything else a human hasn't looked at yet stays flagged.
 //
 // And `verifiedAt` is HUMAN-ONLY. A machine's re-read is not a human's verification: a confirmation
 // from the AI sets `aiCheckedAt`, which the page renders as "último control automático", never as
@@ -41,6 +48,14 @@ const hostOf = (url: string): string | null => {
   }
 };
 
+const safeUrl = (url: string): URL | null => {
+  try {
+    return new URL(url);
+  } catch {
+    return null;
+  }
+};
+
 const isOfficial = (url: string): boolean => {
   const host = hostOf(url);
   if (!host) return false;
@@ -60,6 +75,15 @@ const isOfficial = (url: string): boolean => {
  * paths. Host-level is the honest precision the API gives us — combined with gate 2 it asserts
  * "the model really did fetch a page on the official host it cites", and gate 4 still means the
  * number itself can never move.
+ *
+ * Host-only matching has a hole this function does not close on its own: EVERY page on `gub.uy`
+ * shares a host, so a citation to the bare homepage `https://www.gub.uy/` — never opened for any
+ * specific norm — grounds just as well as a citation to the actual decree, as long as the model
+ * retrieved *some* gub.uy page in the same call. `applyProposals` closes that hole with two more
+ * checks run after this one: a citation whose path is just `/` (a homepage, never a real page of
+ * law) is refused outright, and a citation on an official host that is not THIS fact's own
+ * `sources[].url` host is refused too — "official" is necessary but not sufficient; it has to be
+ * the right official page.
  */
 const isGrounded = (sourceUrl: string, groundingUris: string[]): boolean => {
   const host = hostOf(sourceUrl);
@@ -106,14 +130,17 @@ function parseProposals(raw: unknown): Proposal[] {
  *
  * `current` and the returned facts share the same ids and order. **`value` is never written, and
  * neither is `verifiedAt`**: the only field this function can change is `aiCheckedAt`, and only on
- * a proposal that is grounded, officially sourced, in range AND equal to what we already publish.
- * A fact object is returned by reference unless it was confirmed, which is what lets the caller
- * count confirmations by identity.
+ * a proposal that is grounded, on its OWN source's host (not merely some official host — see the
+ * two checks right after the grounding gate below), in range, AND equal to what we already
+ * publish. A fact object is returned by reference unless it was confirmed, which is what lets the
+ * caller count confirmations by identity — and, in `refreshNorms`, discharge a stale
+ * `pendingReview` flag once the same identity-diff shows the fact was actually reconfirmed.
  */
 export function applyProposals(
   current: AduanaFact[],
   raw: unknown,
-  groundingUris: string[]
+  groundingUris: string[],
+  sources: Source[]
 ): { facts: AduanaFact[]; pendingReview: string[] } {
   const proposals = parseProposals(raw);
   const pendingReview: string[] = [];
@@ -138,6 +165,20 @@ export function applyProposals(
       pendingReview.push(fact.id); // cited a page it never retrieved
       return fact;
     }
+
+    // GATE 1b/1c — a citation being on SOME official host is not enough (see isGrounded's doc):
+    // it has to be a real page (not a bare homepage) on THIS fact's own source host.
+    const own = sources.find((s) => s.id === fact.sourceId);
+    const u = safeUrl(p.sourceUrl);
+    if (!u || u.pathname.length <= 1) {
+      pendingReview.push(fact.id); // a homepage is not a citation
+      return fact;
+    }
+    if (own && hostOf(p.sourceUrl) !== hostOf(own.url)) {
+      pendingReview.push(fact.id); // grounded on an official host, but not this fact's own source
+      return fact;
+    }
+
     if (!isOfficial(p.sourceUrl) || !inRange(fact.id, p.value)) {
       pendingReview.push(fact.id);
       return fact;
@@ -175,17 +216,24 @@ function chunk<T>(items: T[], size: number): T[][] {
  * Ask a GROUNDED model, in batches, whether each norm still says what we publish — and run every
  * answer through applyProposals before any of it can touch the page.
  *
- * Silent no-op without a GEMINI_API_KEY (the doc comes back by reference). Every other failure —
- * no reply, a reply that doesn't parse, a reply that parses into something that isn't an array —
- * is logged and skipped: that batch simply produces no update. Never hand-repairs malformed model
- * output.
+ * No-op without a GEMINI_API_KEY (the doc comes back by reference) — but NOT a silent one: a
+ * skipped safety check must say so out loud, or everyone keeps assuming the gate is running. Every
+ * other failure — no reply, a reply that doesn't parse, a reply that parses into something that
+ * isn't an array — is logged and skipped: that batch simply produces no update. Never hand-repairs
+ * malformed model output.
  *
- * `pendingReview` is a UNION with what the doc already carried, never a recomputation of it. A
- * human's open TODO from three weeks ago does not disappear because this week's reply was junk —
- * the AI cannot change the law, but a wiped alarm would make us stop noticing when it changes.
+ * `pendingReview` starts as a UNION with what the doc already carried, never a recomputation of
+ * it — a human's open TODO from three weeks ago does not disappear because this week's reply was
+ * junk. But it is not a pure ratchet either: an id whose fact was actually reconfirmed THIS run
+ * (grounded, on its own source, in range, unchanged — see `applyProposals`) is discharged from the
+ * union at the end, because a dispute that is resolved is not a dispute anymore, and a list that
+ * only ever grows is a list a human eventually stops reading.
  */
 export async function refreshNorms(doc: AduanaDoc): Promise<AduanaDoc> {
-  if (!geminiConfigured()) return doc;
+  if (!geminiConfigured()) {
+    console.warn("[aduana] norms: no GEMINI_API_KEY — se omite el control de normas");
+    return doc;
+  }
 
   try {
     const batches = chunk(doc.facts, BATCH_SIZE);
@@ -219,7 +267,7 @@ export async function refreshNorms(doc: AduanaDoc): Promise<AduanaDoc> {
       }
 
       const before = facts;
-      const result = applyProposals(before, parsed, reply.sourceUris);
+      const result = applyProposals(before, parsed, reply.sourceUris, doc.sources);
       facts = result.facts;
       flagged.push(...result.pendingReview);
       checked += batch.length;
@@ -227,7 +275,14 @@ export async function refreshNorms(doc: AduanaDoc): Promise<AduanaDoc> {
       confirmed += facts.filter((f, idx) => f !== before[idx]).length;
     }
 
-    const pendingReview = [...new Set([...doc.pendingReview, ...flagged])];
+    // Same identity trick as the confirmed-count above, but against the ORIGINAL doc.facts: any
+    // fact whose reference changed across the whole run was confirmed this run, so its flag (if
+    // it had one) is stale and gets discharged. Everything not confirmed — including ids flagged
+    // just now — stays in the union.
+    const confirmedIds = new Set(facts.filter((f, i) => f !== doc.facts[i]).map((f) => f.id));
+    const pendingReview = [...new Set([...doc.pendingReview, ...flagged])].filter(
+      (id) => !confirmedIds.has(id)
+    );
     console.log(
       `[aduana] norms: ${checked}/${doc.facts.length} facts checked, ${confirmed} confirmed by the AI, ${flagged.length} flagged this run (${pendingReview.length} open in total)`
     );

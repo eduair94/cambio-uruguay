@@ -45,38 +45,57 @@ export interface GroundedReply {
   sourceUris: string[];
 }
 
-/** No key → the norms refresh is a silent no-op, exactly like an unconfigured AIService. */
+/**
+ * No key → the norms refresh is a silent no-op, exactly like an unconfigured AIService.
+ *
+ * Accepts either env var name. This repo's actual Gemini key lives in `app/.env` as
+ * `NUXT_GEMINI_API_KEY` (the Nuxt runtime-config convention — the app side reads it through
+ * `useRuntimeConfig()`). The root `.env` — the only file `dotenv.config()` loads here — has never
+ * carried a bare `GEMINI_API_KEY`. Reading only that name meant this gate was unconfigured in
+ * production from the day it shipped, and `refreshNorms` returned early with nothing logged, so
+ * the weekly job "ran" while never re-checking a single norm and nobody could tell from the logs.
+ */
 export function geminiConfigured(): boolean {
-  return !!process.env.GEMINI_API_KEY;
+  return !!(process.env.GEMINI_API_KEY || process.env.NUXT_GEMINI_API_KEY);
 }
 
-const looksLikeHost = (s: string): boolean => /^[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?\.[a-z]{2,}$/i.test(s.trim());
-
 /**
- * Turn one grounding chunk into the URI of the page the model really read.
+ * Resolve one grounding chunk's redirect wrapper to the real URL it points at.
  *
  * Google does not hand the source URL back directly: `groundingChunks[].web.uri` is a
- * `vertexaisearch.cloud.google.com/grounding-api-redirect/...` link and `web.title` carries the
- * source domain ("impo.com.uy"). Match a citation against the raw redirect and nothing EVER
- * matches — the gate would reject all 52 facts every week, which is just the silent no-op wearing
- * a different hat. So: follow the redirect to the real URL (HEAD, short timeout), and when that
- * fails fall back to `https://<title>` so at least the retrieved HOST survives. If even that is
- * unavailable we return the redirect URL itself: its host is not an official one, so it grounds
- * nothing — a failure to resolve can only ever make the gate stricter, never looser.
+ * `vertexaisearch.cloud.google.com/grounding-api-redirect/...` link. The only reliable signal for
+ * the real URL is the `Location` header of the FIRST redirect response — NOT axios's
+ * post-redirect `responseUrl` with `maxRedirects` > 0: `responseUrl` equals the REQUESTED url
+ * whenever no redirect was actually followed, and Google's redirect endpoint answering HEAD with
+ * 405 / 404, or a 200 meta-refresh, are all common — none of which throw under
+ * `validateStatus: () => true`. So a blocked resolution used to silently "succeed" by resolving
+ * to the wrapper URI itself. `maxRedirects: 0` plus reading `Location` directly removes that
+ * ambiguity: only a response that actually carries `Location` counts as resolved.
+ *
+ * When it does not resolve, this returns `null` — never the wrapper URI, and never a
+ * `https://<web.title>` fallback (an earlier version fell back to the title; `title` is the
+ * source domain only by convention, is not verified, and is not a security boundary — pretending
+ * an unresolved chunk "grounds" via its title is exactly the kind of lie this module exists to
+ * catch). A comment used to live here claiming a failed resolution "can only make the gate
+ * stricter" — that is false at host granularity: if the redirect endpoint stops answering with a
+ * clean 3xx (which happens — 405s and meta-refreshes are routine), EVERY chunk fails to resolve,
+ * EVERY proposal then fails `isGrounded`, and `pendingReview` — a union nothing discharges except
+ * an actual future confirmation — accumulates every fact this module knows about, forever. A
+ * permanently flagged fact is not a stricter gate; it is a gate that stopped functioning while
+ * still ringing an alarm that looks like it's working.
  */
-async function resolveUri(web: { uri?: string; title?: string }): Promise<string | null> {
-  const fallback = web.title && looksLikeHost(web.title) ? `https://${web.title.trim()}` : null;
-  if (!web.uri) return fallback;
+async function resolveUri(web: { uri?: string }): Promise<string | null> {
+  if (!web.uri) return null;
   try {
-    const res = await axios.head(web.uri, {
+    const res = await axios.get(web.uri, {
       timeout: RESOLVE_TIMEOUT_MS,
-      maxRedirects: 5,
+      maxRedirects: 0,
       validateStatus: () => true,
     });
-    const final = (res.request as any)?.res?.responseUrl as string | undefined;
-    return final || fallback || web.uri;
+    const loc = res.headers?.location as string | undefined;
+    return loc || null; // no Location on the first hop ⇒ unresolved — never the wrapper itself
   } catch {
-    return fallback ?? web.uri;
+    return null;
   }
 }
 
@@ -85,7 +104,7 @@ async function resolveUri(web: { uri?: string; title?: string }): Promise<string
  * on anything at all going wrong (including "not configured").
  */
 export async function askGrounded(prompt: string): Promise<GroundedReply | null> {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY || process.env.NUXT_GEMINI_API_KEY;
   if (!apiKey) return null;
 
   try {

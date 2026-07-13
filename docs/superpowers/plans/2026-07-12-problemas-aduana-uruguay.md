@@ -763,15 +763,49 @@ git commit -m "feat(aduana): AI-labelled, deterministically aggregated Reddit ev
 
 ### Task 5: The norms gate — the AI proposes, it never publishes
 
+> **SUPERSEDED — this task's steps below describe the FIRST draft of the gate, kept for history.**
+> The contract that actually shipped (`classes/aduana/norms.ts` + `classes/aduana/gemini.ts`) is
+> different in three ways later tasks must respect:
+>
+> 1. **Grounding is gate 1, and it is not optional.** `classes/aduana/gemini.ts#askGrounded` calls
+>    Gemini with the Google Search tool ON and returns the URIs it actually retrieved
+>    (`sourceUris`). `applyProposals` takes those as a required `groundingUris: string[]` param and
+>    refuses any proposal whose citation the model never opened — an ungrounded proposal is a plain
+>    chat completion answering from memory, indistinguishable from a hallucination. Host-only
+>    matching on its own is too coarse (any page on an official domain would pass), so two more
+>    deterministic checks ride along with it: a citation cannot be a bare homepage, and it must be
+>    on THIS fact's own `sources[].url` host, not merely *some* official host.
+>    **Real signature:** `applyProposals(current: AduanaFact[], raw: unknown, groundingUris: string[], sources: Source[]): { facts: AduanaFact[]; pendingReview: string[] }`.
+> 2. **`verifiedAt` is HUMAN-ONLY and is never written by the refresh.** The draft below has
+>    `applyProposals` "re-stamp verifiedAt" on a confirmation — that shipped differently on
+>    purpose. `verifiedAt` means a human opened the decree and read the number; a machine's
+>    re-read is not that. A grounded, correctly-sourced, in-range, unchanged confirmation instead
+>    sets a **second, separate field**: `aiCheckedAt` (see `types.ts`'s `AduanaFact`). `value` and
+>    `verifiedAt` are the two fields no code path in `norms.ts` may ever write — that is the
+>    invariant the whole module is built around.
+> 3. **`pendingReview` discharges.** A fact flagged in an earlier run whose dispute is resolved
+>    this run (grounded + own-sourced + in-range + unchanged, i.e. actually reconfirmed) is removed
+>    from `pendingReview` when `refreshNorms` rebuilds it. It is a union of "still open" items, not
+>    a pure ratchet that only ever grows.
+>
+> **Task 9 must render `verifiedAt` and `aiCheckedAt` differently — do not conflate them on the
+> page.** `verifiedAt` → "verificado contra la norma" (a human read it). `aiCheckedAt` → "último
+> control automático" (a grounded model re-read it and found no change). Showing either as the
+> other overstates what actually happened; the whole point of splitting the fields is that a page
+> whose every date is a model's shrug is worse than a page with an honestly old human-verified date.
+
 **Files:**
-- Create: `classes/aduana/norms.ts`
-- Test: `tests/aduana/norms.test.ts`
+- Create: `classes/aduana/norms.ts`, `classes/aduana/gemini.ts`
+- Test: `tests/aduana/norms.test.ts`, `tests/aduana/gemini.test.ts`
 
 **Interfaces:**
-- Consumes: `BASELINE`, `FACT_RANGES`, `OFFICIAL_HOSTS` from `baseline.ts`; `AduanaFact` from `types.ts`; `classes/ai_service.ts`.
-- Produces: `applyProposals(current: AduanaFact[], proposals: unknown, sources: Source[]): { facts: AduanaFact[]; pendingReview: string[] }` (pure — this is the whole gate, and it is what the tests hit); `refreshNorms(doc: AduanaDoc): Promise<AduanaDoc>` (calls the AI, then `applyProposals`).
+- Consumes: `BASELINE`, `FACT_RANGES`, `OFFICIAL_HOSTS` from `baseline.ts`; `AduanaFact`/`Source` from `types.ts`; `askGrounded`/`geminiConfigured` from `gemini.ts` (NOT the plain `classes/ai_service.ts` — that has no web access, so it can only ever answer from memory).
+- Produces (real contract): `applyProposals(current: AduanaFact[], raw: unknown, groundingUris: string[], sources: Source[]): { facts: AduanaFact[]; pendingReview: string[] }` (pure — this is the whole gate, and it is what the tests hit); `refreshNorms(doc: AduanaDoc): Promise<AduanaDoc>` (calls Gemini grounded, batches, then `applyProposals`, then discharges resolved `pendingReview` ids).
 
 This is the task where money gets lost if we are sloppy. We have already shipped wrong import figures once.
+
+---
+**Historical draft below (superseded — see the note above before using any of this as a reference):**
 
 - [ ] **Step 1: Write the failing test**
 
