@@ -115,13 +115,18 @@ export function isSellerRegistryEnforced(today: Date): boolean {
 /**
  * Decide which regime a shipment falls under, and whether it pays IVA.
  *
- * The three rules that the old code got wrong, all from Decreto 50/026:
- *  - a shipment is NEVER split between franchise and the 60% rate (art. 15: a shipment that
- *    cannot use the franchise goes ENTIRELY to the simplified regime);
- *  - the franchise ceiling is USD 800 ACCUMULATED PER YEAR across at most 3 shipments — there
- *    is no per-shipment cap;
- *  - above USD 800 a shipment fits neither regime and goes to the general one, which this
- *    calculator does not attempt to price.
+ * The three rules that the old code got wrong:
+ *  - a shipment is NEVER split between franchise and the 60% rate (a shipment that cannot use
+ *    the franchise goes ENTIRELY to the simplified regime). This is NOT sourced to Decreto
+ *    50/026 art. 15 — that article is the incumplimiento/sanción rule, keyed to Ley 20.446
+ *    art. 632, and has nothing to do with running out of franchise. No article says this
+ *    outright; it follows from the regime's design (the franchise is granted "adicionalmente
+ *    al régimen de prestación única", art. 3, and prestación única applies to the invoice
+ *    value as a whole, art. 2). Verified 2026-07-12 — do not re-attach art. 15 to this rule;
+ *  - the franchise ceiling is USD 800 ACCUMULATED PER YEAR across at most 3 shipments (Decreto
+ *    50/026 art. 3 y art. 4 lit. c) — there is no per-shipment cap;
+ *  - above USD 800 a shipment fits neither regime and goes to the general one (Decreto 50/026
+ *    arts. 2 y 3), which this calculator does not attempt to price.
  */
 export function resolveRegime(input: RegimeInput): RegimeDecision {
   const today = input.today ?? new Date()

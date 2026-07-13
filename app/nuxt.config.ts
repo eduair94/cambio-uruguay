@@ -255,11 +255,9 @@ export default defineNuxtConfig({
         driver: 'fs',
         base: './.data/couriers',
       },
-      // Durable store for daily-scraped lender TEA rates (keeps last good value).
-      loans: {
-        driver: 'fs',
-        base: './.data/loans',
-      },
+      // NOTE: the `loans` mount is gone — lender TEA scraping (regex + Gemini fallback) and its
+      // daily history moved to the backend (classes/loans/*, GET /loan-rates, pm2
+      // currency-loans). This app only proxies + merges (server/api/prestamos.get.ts).
       // Durable store for the tourist-IVA re-verify watchdog (withdraw:iva-check).
       withdraw: {
         driver: 'fs',
@@ -270,17 +268,9 @@ export default defineNuxtConfig({
         driver: 'fs',
         base: './.data/casas-reviews',
       },
-      // Durable store for the live cost-of-living figures (costs:daily).
-      costs: {
-        driver: 'fs',
-        base: './.data/costs',
-      },
-      // Durable store for the live debt-relief figures (debt-relief:monthly).
-      'debt-relief': {
-        driver: 'fs',
-        base: './.data/debt-relief',
-      },
-      // Durable store for the live national key figures + drift watchdog (figures:daily).
+      // Durable store for the drift watchdog's dedupe state (figures:drift). The live figures
+      // themselves no longer live here — the Gemini refresh moved to the backend (classes/figures/*,
+      // GET /uy-figures) and this app only proxies + caches them.
       figures: {
         driver: 'fs',
         base: './.data/figures',
@@ -297,19 +287,23 @@ export default defineNuxtConfig({
     },
     scheduledTasks: {
       // 09:15 UTC ≈ 06:15 Uruguay: refresh macro-driver snapshots + archive daily news.
+      // NOTE: this task USED TO also record move explanations (Gemini). That stage moved to the
+      // backend (pm2 currency-explain, 10:07 UTC) — it now writes the SAME moveexplanations
+      // collection (classes/appdb.ts) that /api/analysis/[currency].get.ts already reads.
       '15 9 * * *': ['drivers:daily'],
-      // 09:20 UTC ≈ 06:20 Uruguay: record AI price-lean + external forecasts per currency.
-      '20 9 * * *': ['predictions:daily'],
+      // NOTE: predictions:daily (AI price-lean + external forecasts) moved to the backend
+      // (pm2 currency-predictions, 09:23 UTC) — it now writes the SAME pricepredictions
+      // collection (classes/appdb.ts) that /api/predictions/[currency].get.ts already reads.
       // 09:30 UTC ≈ 06:30 Uruguay: generate the day's blog posts.
       '30 9 * * *': ['blog:daily'],
-      // 09:40 UTC ≈ 06:40 Uruguay: refresh live cost-of-living figures via Gemini.
-      '40 9 * * *': ['costs:daily'],
-      // 09:50 UTC ≈ 06:50 Uruguay: refresh national key figures + drift watchdog.
-      '50 9 * * *': ['figures:daily'],
       // 09:55 UTC ≈ 06:55 Uruguay: refresh company-formation figures (IVA mínimo, BPS, ICOSA).
+      // Still an app-side Gemini refresh: the backend has no company-figures logic, and this
+      // no-ops to the verified baseline when no geminiApiKey is present.
       '55 9 * * *': ['company:daily'],
-      // 10:10 UTC on the 1st ≈ 07:10 Uruguay: refresh debt-relief usury caps (monthly).
-      '10 10 1 * *': ['debt-relief:monthly'],
+      // 10:05 UTC ≈ 07:05 Uruguay: compare the backend's freshly-refreshed figures (pm2
+      // currency-figures, 09:52 UTC) with the constants baked into this app, and ping the admin
+      // when they drift. Spends no AI call — the Gemini refresh moved to the backend.
+      '5 10 * * *': ['figures:drift'],
       // 12:00 UTC = 09:00 Uruguay: send the daily newsletter to confirmed subs.
       '0 12 * * *': ['newsletter:daily'],
       // Every 10 minutes: evaluate rate alerts and notify (push + email + telegram).
@@ -318,8 +312,8 @@ export default defineNuxtConfig({
       '0 11 * * *': ['telegram:summary'],
       // 08:15 UTC ≈ 05:15 Uruguay: refresh courier per-kg shipping rates.
       '15 8 * * *': ['couriers:scrape'],
-      // 08:45 UTC ≈ 05:45 Uruguay: refresh lender TEA rates.
-      '45 8 * * *': ['loans:scrape'],
+      // NOTE: lender TEA scraping (loans:scrape) moved to the backend (pm2 currency-loans,
+      // 08:47 UTC) — this app no longer spends a Gemini call for /prestamos-uruguay.
       // 09:00 UTC Mondays ≈ 06:00 Uruguay: re-verify tourist-IVA facts watchdog.
       '0 9 * * 1': ['withdraw:iva-check'],
       // 07:30 UTC Mondays ≈ 04:30 Uruguay: refresh exchange-house review snapshots.
@@ -679,10 +673,10 @@ export default defineNuxtConfig({
     // trigger for the daily driver ingest). Unset -> endpoint is open, mirroring
     // /api/blog/generate's NUXT_BLOG_GENERATE_TOKEN pattern.
     driversIngestToken: process.env.NUXT_DRIVERS_INGEST_TOKEN || '',
-    // Optional shared-secret gate for POST /api/predictions/ingest (manual/cron
-    // trigger for the daily price-prediction record). Unset -> endpoint is open,
-    // same convention as driversIngestToken above.
-    predictionsIngestToken: process.env.NUXT_PREDICTIONS_INGEST_TOKEN || '',
+    // NOTE: predictionsIngestToken / POST /api/predictions/ingest is gone — the daily AI
+    // price-lean + external-forecast record moved to the backend (classes/predictions/*, pm2
+    // currency-predictions). The manual trigger it provided is now, on the VPS:
+    // `cd /root/cambio-uruguay && node dist/sync_predictions.js`.
     // AI provider (server-only) for the daily blog generator. OpenAI-compatible
     // wormgpt endpoint; defaults to the latest model. Falls back to the backend
     // /ai/insights when no apiKey is present in this app's environment.
@@ -709,11 +703,6 @@ export default defineNuxtConfig({
     // runtimeConfig, not process.env: pm2's runtime env is empty here, so a process.env check
     // would read undefined in prod and leave an endpoint that spends Reddit + AI calls open.
     redditRefreshToken: process.env.NUXT_REDDIT_REFRESH_TOKEN || '',
-    // Gemini API key (server-only) for grounded real-news search on notable
-    // move days — see docs/superpowers/specs/2026-07-08-gemini-news-grounding-design.md.
-    // Baked at build time same as driversIngestToken/ai.apiKey; raw process.env
-    // reads empty at pm2 runtime in this deployment.
-    geminiApiKey: process.env.NUXT_GEMINI_API_KEY || '',
     // User data store + Firebase Admin (server-only secrets)
     mongoUri: process.env.MONGO_URI || '',
     firebase: {

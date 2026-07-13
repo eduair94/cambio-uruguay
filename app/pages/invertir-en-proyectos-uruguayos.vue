@@ -48,6 +48,22 @@
       alarma.
     </VAlert>
 
+    <VAlert
+      type="info"
+      variant="tonal"
+      density="comfortable"
+      class="mb-4"
+      icon="mdi-file-percent-outline"
+    >
+      Cada instrumento de esta guía tiene su propia carga de IRPF —mirá el detalle de "Impuestos" en
+      cada ficha—; para entender la lógica general (tasas, exoneraciones, cómo se declara), consultá
+      la
+      <NuxtLink :to="localePath('/impuestos-inversiones-uruguay')">
+        guía de impuestos sobre inversiones
+      </NuxtLink>
+      .
+    </VAlert>
+
     <!-- Comparison groups -->
     <div v-for="group in groups" :key="group.category" class="mb-6">
       <h2 class="text-h6 font-weight-bold mb-3 proyectos-group-title">

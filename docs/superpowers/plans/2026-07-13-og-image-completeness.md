@@ -248,7 +248,7 @@ export function evaluateOgImageResponse({ ok, status, contentType, byteLength })
 - [ ] **Step 4: Run tests to verify they pass**
 
 Run: `cd app && npx vitest run tests/unit/og-image-check.test.ts`
-Expected: PASS, all 10 tests green.
+Expected: PASS, all 11 tests green.
 
 - [ ] **Step 5: Commit**
 

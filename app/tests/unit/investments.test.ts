@@ -51,6 +51,44 @@ describe('investments catalog', () => {
   })
 })
 
+// Invariants over `taxNote`. These exist because three tax errors lived in this field
+// unguarded: the 8% presented as a rate available whenever "un agente residente" withholds,
+// a crypto percentage we have no norm for, and a step-up stated without its statutory
+// condition. Source of truth: docs/superpowers/specs/2026-07-12-impuestos-inversiones-design.md.
+describe('investments taxNote invariants', () => {
+  it('every option has a non-empty taxNote', () => {
+    for (const i of INVESTMENTS) {
+      expect(i.taxNote.trim(), `${i.id} has an empty taxNote`).not.toBe('')
+    }
+  })
+
+  it('no crypto row publishes a percentage (the treatment is unresolved)', () => {
+    for (const i of INVESTMENTS.filter(i => i.category === 'cripto')) {
+      expect(i.taxNote, `${i.id} publishes a crypto percentage: no norm settles it`).not.toMatch(
+        /%/
+      )
+    }
+  })
+
+  it('never presents the 8% as a rate: it is a withholding, and only a custodian may apply it', () => {
+    for (const i of INVESTMENTS.filter(i => i.taxNote.includes('8%'))) {
+      expect(i.taxNote, `${i.id} mentions 8% without calling it a retención`).toMatch(/retención/)
+      // T7 art. 52 lit. A + Dec. 148/007: only a resident entity that intermediates AND holds
+      // custody may withhold the 8%. Without the custody condition the note reads as "any
+      // resident agent", which is the error this guard exists to kill.
+      expect(i.taxNote, `${i.id} mentions 8% without the custody condition`).toMatch(/custodi/)
+    }
+  })
+
+  it('never states the 2025 step-up without its "bolsas de reconocido prestigio" condition', () => {
+    for (const i of INVESTMENTS.filter(i => i.taxNote.includes('31/12/2025'))) {
+      expect(i.taxNote, `${i.id} states the step-up unconditionally`).toMatch(
+        /bolsas de reconocido prestigio/
+      )
+    }
+  })
+})
+
 describe('investments helpers', () => {
   it('riskLabel maps every level to a capitalized Spanish label', () => {
     expect(riskLabel('bajo')).toBe('Bajo')

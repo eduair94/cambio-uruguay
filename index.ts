@@ -4,11 +4,22 @@ import fs from "fs";
 import moment from "moment-timezone";
 import path from "path";
 import { aiService } from "./classes/ai_service";
+import { buildAduanaPayload } from "./classes/aduana/payload";
+import { loadAduanaDoc } from "./classes/aduana/store";
+import type { Lang } from "./classes/banks/news";
+import { loadBriefing } from "./classes/banks/store";
 import BCU_Details from "./classes/bcu_details";
 import { cambio_info } from "./classes/cambioInfo";
 import CambioFortex from "./classes/cambios/fortex";
 import { MongooseServer, mongoose } from "./classes/database";
 import server from "./classes/Express/ExpressSetup";
+import { emptyLiveCosts } from "./classes/costs/refresh";
+import { loadCosts } from "./classes/costs/store";
+import { baselineDebtRelief } from "./classes/debt/refresh";
+import { loadDebtRelief } from "./classes/debt/store";
+import { BASELINE_FIGURES } from "./classes/figures/bands";
+import { loadFigures } from "./classes/figures/store";
+import { loadLoanRates } from "./classes/loans/store";
 import { origins } from "./classes/origins";
 import { redisCache } from "./classes/redis_cache";
 import sentryInit from "./sentry";
@@ -1257,6 +1268,377 @@ const main = async () => {
   });
   server.getJson("locations", async (req: Request): Promise<any> => {
     return await redisCache.getOrSet("locations", () => cambio_info.getMapLocations(), 600);
+  });
+
+  /**
+   * @openapi
+   * /aduana:
+   *   get:
+   *     tags:
+   *       - Aduana
+   *     summary: Guía de problemas con la aduana uruguaya (normas, procedimientos y testimonios citados)
+   *     description: |
+   *       Datos que alimentan /problemas-con-la-aduana-uruguay: doce problemas típicos de compras
+   *       importadas y encomiendas (paquete retenido, factura exigida, franquicia agotada, etc.),
+   *       cada uno con la norma aplicable, los pasos a seguir y testimonios reales citados de
+   *       r/uruguay. Se sincroniza una vez por semana (pm2 `currency-aduana`, lunes 09:30 UTC):
+   *       se cosechan hilos nuevos de Reddit, se etiquetan con IA y se re-chequean los hechos
+   *       legales contra la norma oficial (impo.com.uy / gub.uy) con un modelo con acceso a
+   *       búsqueda — la IA solo puede señalar un cambio de ley para revisión humana, nunca
+   *       publicarlo directamente.
+   *
+   *       Cada hecho (`facts[]`) trae su fuente (`sourceId`, resoluble en `sources[]`) y dos
+   *       fechas que NO son intercambiables: `verifiedAt` es exclusivamente humana — significa que
+   *       una persona abrió el decreto y leyó el número — mientras que `aiCheckedAt` es lo que
+   *       escribe el re-chequeo semanal cuando un modelo con acceso a búsqueda confirmó el mismo
+   *       valor leyendo la norma; es una señal de frescura, no de verificación humana. La página
+   *       debe mostrarlas por separado ("verificado contra la norma" vs. "último control
+   *       automático"), nunca fusionadas.
+   *
+   *       `stale` es `true` cuando el job semanal no corrió en más de dos semanas (o nunca corrió).
+   *       Un problema sin testimonios de Reddit igual se publica: la norma y el procedimiento son
+   *       el contenido, los testimonios son corroboración.
+   *     responses:
+   *       200:
+   *         description: Hechos legales, problemas con procedimiento y testimonios citados
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 facts:
+   *                   type: array
+   *                   items:
+   *                     type: object
+   *                     properties:
+   *                       id: { type: string, example: "franquicia.tope_anual_usd" }
+   *                       label: { type: string }
+   *                       value: { oneOf: [{ type: number }, { type: string }] }
+   *                       unit: { type: string, nullable: true, example: "USD" }
+   *                       sourceId: { type: string }
+   *                       article: { type: string, nullable: true }
+   *                       verifiedAt:
+   *                         type: string
+   *                         description: Fecha ISO — escrita SOLO por un humano que leyó la norma.
+   *                       aiCheckedAt:
+   *                         type: string
+   *                         nullable: true
+   *                         description: Fecha ISO — escrita SOLO por el re-chequeo semanal de la IA.
+   *                       origin: { type: string, enum: [baseline, ai] }
+   *                 problems:
+   *                   type: array
+   *                   items:
+   *                     type: object
+   *                     properties:
+   *                       id: { type: string, example: "retenido" }
+   *                       title: { type: string }
+   *                       symptom: { type: string }
+   *                       norm: { type: string }
+   *                       sourceIds: { type: array, items: { type: string } }
+   *                       steps: { type: array, items: { type: string } }
+   *                       deadline: { type: string, nullable: true }
+   *                       claimTemplate: { type: string, nullable: true }
+   *                       verified: { type: boolean }
+   *                       quotes:
+   *                         type: array
+   *                         items:
+   *                           type: object
+   *                           properties:
+   *                             text: { type: string }
+   *                             author: { type: string }
+   *                             date: { type: string }
+   *                             score: { type: number }
+   *                             permalink: { type: string }
+   *                       reports: { type: number, example: 12 }
+   *                 sources:
+   *                   type: array
+   *                   items:
+   *                     type: object
+   *                     properties:
+   *                       id: { type: string }
+   *                       title: { type: string }
+   *                       norm: { type: string }
+   *                       url: { type: string }
+   *                       checkedAt: { type: string }
+   *                 updatedAt: { type: string, nullable: true }
+   *                 stale:
+   *                   type: boolean
+   *                   description: true cuando el job semanal no corrió en más de dos semanas
+   */
+  server.getJson("aduana", async (req: Request): Promise<any> => {
+    return await redisCache.getOrSet("aduana", async () => buildAduanaPayload(await loadAduanaDoc()), 1800);
+  });
+
+  /**
+   * @openapi
+   * /banks-news:
+   *   get:
+   *     tags:
+   *       - Banks
+   *     summary: Novedades y análisis del sector bancario uruguayo (búsqueda con grounding, citada)
+   *     description: |
+   *       Datos que alimentan la sección de novedades de /mejores-bancos-uruguay: una búsqueda con
+   *       grounding (Gemini + Google Search) por banco/fintech uruguayo, más un análisis de sector
+   *       sintetizado SOLO a partir de lo que esa búsqueda encontró. Se sincroniza una vez por día
+   *       (pm2 `currency-banks-news`).
+   *
+   *       `lang` acepta `es` (default), `en` o `pt`; cualquier otro valor cae a `es`.
+   *
+   *       `unavailable: true` significa que el briefing para ese idioma todavía no se generó nunca
+   *       (por ejemplo, si el job nunca corrió con GEMINI_API_KEY configurada) — no que la búsqueda
+   *       haya fallado esta vez, en cuyo caso se sigue sirviendo el último briefing bueno guardado.
+   *
+   *       `headlines[].link` es la URL REAL de la fuente (resuelta a partir del redirect de Google),
+   *       nunca el wrapper `vertexaisearch.cloud.google.com/grounding-api-redirect/...`.
+   *     parameters:
+   *       - in: query
+   *         name: lang
+   *         schema: { type: string, enum: [es, en, pt], default: es }
+   *         description: Idioma del análisis y los resúmenes. Cualquier otro valor cae a "es".
+   *     responses:
+   *       200:
+   *         description: Novedades por entidad + análisis de sector
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 items:
+   *                   type: array
+   *                   items:
+   *                     type: object
+   *                     properties:
+   *                       id: { type: string, example: "itau" }
+   *                       name: { type: string, example: "Itaú" }
+   *                       insight: { type: string, nullable: true }
+   *                       headlines:
+   *                         type: array
+   *                         items:
+   *                           type: object
+   *                           properties:
+   *                             title: { type: string }
+   *                             source: { type: string, example: "elpais.com.uy" }
+   *                             link:
+   *                               type: string
+   *                               description: URL real de la fuente, nunca el redirect de Google.
+   *                 analysis:
+   *                   type: string
+   *                   nullable: true
+   *                   description: Análisis de sector en Markdown, sintetizado solo de los items.
+   *                 asOf: { type: string }
+   *                 unavailable:
+   *                   type: boolean
+   *                   description: true cuando este idioma todavía no tiene un briefing generado.
+   */
+  server.getJson("banks-news", async (req: Request): Promise<any> => {
+    const raw = String(req.query.lang ?? "es").slice(0, 2);
+    const lang = (["es", "en", "pt"].includes(raw) ? raw : "es") as Lang;
+    return await redisCache.getOrSet(
+      `banks-news:${lang}`,
+      async () => {
+        return (await loadBriefing(lang)) ?? { items: [], analysis: null, asOf: new Date().toISOString(), unavailable: true };
+      },
+      1800
+    );
+  });
+
+  /**
+   * @openapi
+   * /uy-figures:
+   *   get:
+   *     tags:
+   *       - Indicators
+   *     summary: Indicadores clave de Uruguay (salario mínimo, BPC, boleto, inflación)
+   *     description: |
+   *       Datos que alimentan /salud-financiera, /indicadores y /herramientas/costo-de-vida:
+   *       salario mínimo nacional, BPC, boleto común de Montevideo (STM) e inflación anual (IPC),
+   *       vía una búsqueda con grounding (Gemini + Google Search). Se sincroniza una vez por día
+   *       (pm2 `currency-figures`).
+   *
+   *       Cada valor debe caer dentro de una banda de plausibilidad para ser aceptado; un valor
+   *       fuera de banda se descarta y se mantiene el último dato bueno (o el baseline verificado).
+   *       `updated[]` lista qué campos vinieron de una búsqueda en vivo en este ciclo — todo lo
+   *       demás es el baseline verificado. `asOf: null` significa que todavía no se generó ningún
+   *       dato en vivo (nunca corrió el job con GEMINI_API_KEY configurada).
+   *     responses:
+   *       200:
+   *         description: Indicadores clave de Uruguay
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 salarioMinimo: { type: number, description: "UYU/mes, nominal" }
+   *                 bpc: { type: number, description: "Base de Prestaciones y Contribuciones, UYU" }
+   *                 boletoStm: { type: number, description: "Boleto común de Montevideo con STM, UYU" }
+   *                 inflacionAnual: { type: number, description: "Variación anual del IPC, %" }
+   *                 asOf: { type: string, nullable: true }
+   *                 updated:
+   *                   type: array
+   *                   items: { type: string }
+   *                   description: Campos actualizados en vivo en este ciclo.
+   *                 sources:
+   *                   type: array
+   *                   items:
+   *                     type: object
+   *                     properties:
+   *                       label: { type: string }
+   *                       url: { type: string }
+   */
+  server.getJson("uy-figures", async (req: Request): Promise<any> => {
+    return await redisCache.getOrSet("uy-figures", async () => (await loadFigures()) ?? BASELINE_FIGURES, 1800);
+  });
+
+  /**
+   * @openapi
+   * /cost-of-living:
+   *   get:
+   *     tags:
+   *       - Indicators
+   *     summary: Figuras en vivo para el costo de vida en Uruguay (salario, boleto, alquileres)
+   *     description: |
+   *       Datos que alimentan /herramientas/costo-de-vida: salario mínimo, boleto común de
+   *       Montevideo (STM) y alquileres típicos (monoambiente, 1 y 2 dormitorios) vía una búsqueda
+   *       con grounding (Gemini + Google Search). Se sincroniza una vez por día (pm2
+   *       `currency-costs`).
+   *
+   *       Devuelve SOLO las cinco figuras validadas — la app aplica esos valores sobre su propio
+   *       modelo de costos (COST_MODEL), que no vive acá para no duplicar esa tabla. Cada figura
+   *       debe caer dentro de una banda de plausibilidad para ser aceptada; una fuera de banda
+   *       simplemente no aparece en `figures` ni en `updated`. `asOf: null` significa que todavía
+   *       no se generó ningún dato en vivo.
+   *     responses:
+   *       200:
+   *         description: Figuras en vivo de costo de vida
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 figures:
+   *                   type: object
+   *                   properties:
+   *                     salarioMinimo: { type: number, nullable: true }
+   *                     boletoStm: { type: number, nullable: true }
+   *                     rentMono: { type: number, nullable: true }
+   *                     rent1: { type: number, nullable: true }
+   *                     rent2: { type: number, nullable: true }
+   *                 asOf: { type: string, nullable: true }
+   *                 updated:
+   *                   type: array
+   *                   items: { type: string }
+   *                 sources:
+   *                   type: array
+   *                   items:
+   *                     type: object
+   *                     properties:
+   *                       label: { type: string }
+   *                       url: { type: string }
+   */
+  server.getJson("cost-of-living", async (req: Request): Promise<any> => {
+    return await redisCache.getOrSet("cost-of-living", async () => (await loadCosts()) ?? emptyLiveCosts(), 1800);
+  });
+
+  /**
+   * @openapi
+   * /debt-relief:
+   *   get:
+   *     tags:
+   *       - Indicators
+   *     summary: Topes de usura vigentes del BCU (crédito al consumo)
+   *     description: |
+   *       Datos que alimentan /saldar-deudas-uruguay: los topes de usura que publica el Banco
+   *       Central del Uruguay (Ley 18.212) para crédito al consumo, con y sin autorización de
+   *       descuento, tramo menor a 10.000 UI — vía una búsqueda con grounding (Gemini + Google
+   *       Search). Se sincroniza una vez por mes (pm2 `currency-debt-relief`, día 1).
+   *
+   *       Devuelve SOLO los topes (`usuryCaps`, índice 0 = con descuento, 1 = sin) — `refiRates` y
+   *       `period` son contenido estático de la página y no viven acá. Cada valor debe caer dentro
+   *       de una banda de plausibilidad para ser aceptado; si nada pasa la banda se sirve el
+   *       último baseline verificado. `asOf: null` significa que todavía no se generó ningún dato
+   *       en vivo.
+   *     responses:
+   *       200:
+   *         description: Topes de usura vigentes
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 usuryCaps:
+   *                   type: array
+   *                   items:
+   *                     type: object
+   *                     properties:
+   *                       segmento: { type: string }
+   *                       tasaMedia: { type: number }
+   *                       topeTasa: { type: number }
+   *                       topeMora: { type: number }
+   *                 asOf: { type: string, nullable: true }
+   *                 updated:
+   *                   type: array
+   *                   items: { type: string }
+   *                 sources:
+   *                   type: array
+   *                   items:
+   *                     type: object
+   *                     properties:
+   *                       label: { type: string }
+   *                       url: { type: string }
+   */
+  server.getJson("debt-relief", async (req: Request): Promise<any> => {
+    return await redisCache.getOrSet("debt-relief", async () => (await loadDebtRelief()) ?? baselineDebtRelief(), 1800);
+  });
+
+  /**
+   * @openapi
+   * /loan-rates:
+   *   get:
+   *     tags:
+   *       - Indicators
+   *     summary: Tasas efectivas anuales (TEA) publicadas por prestamistas uruguayos
+   *     description: |
+   *       Datos que alimentan \prestamos-uruguay: la TEA representativa publicada por cada
+   *       prestamista (bancos, financieras, cooperativas, fintech), obtenida por un parser regex
+   *       sobre la propia página del prestamista y, cuando no hay parser o falla, por una búsqueda
+   *       con grounding (Gemini + Google Search) que exige que la cita resuelva al dominio propio
+   *       del prestamista. Se sincroniza una vez por día (pm2 `currency-loans`).
+   *
+   *       `rates` trae solo el último valor conocido por prestamista; `history` guarda una entrada
+   *       por prestamista y por día — una serie temporal que nunca se trunca ni se regenera. Un
+   *       scrape fallido o implausible nunca borra el último valor bueno.
+   *     responses:
+   *       200:
+   *         description: TEAs vigentes por prestamista
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 rates:
+   *                   type: object
+   *                   description: Por id de prestamista.
+   *                   additionalProperties:
+   *                     type: object
+   *                     properties:
+   *                       teaPct: { type: number }
+   *                       scrapedAt: { type: string }
+   *                 history:
+   *                   type: object
+   *                   description: Por id de prestamista, un array con una entrada por día.
+   *                   additionalProperties:
+   *                     type: array
+   *                     items:
+   *                       type: object
+   *                       properties:
+   *                         date: { type: string }
+   *                         teaPct: { type: number }
+   *                         source: { type: string }
+   *                         method: { type: string, enum: [regex, gemini] }
+   *                 updatedAt: { type: string }
+   */
+  server.getJson("loan-rates", async (req: Request): Promise<any> => {
+    return await redisCache.getOrSet("loan-rates", async () => await loadLoanRates(), 1800);
   });
 
   /**

@@ -80,6 +80,10 @@ Todos los timestamps y fechas están en la zona horaria de Uruguay (America/Mont
       description: 'Endpoints para obtener parámetros válidos del sistema'
     },
     {
+      name: 'Aduana',
+      description: 'Guía de problemas con la aduana uruguaya: hechos legales citados, procedimientos y testimonios de r/uruguay'
+    },
+    {
       name: 'Debug',
       description: 'Endpoints de depuración para monitorear el estado interno del servicio'
     },

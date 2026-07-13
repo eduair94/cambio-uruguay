@@ -134,6 +134,13 @@ watchEffect(() => {
 
 const canonicalUrl = 'https://cambio-uruguay.com/buscar'
 
+defineOgImageComponent('Cambio', {
+  title: () => t('search.pageTitle'),
+  subtitle: () => t('search.pageDescription'),
+  tag: 'BÚSQUEDA',
+  locale: locale.value as 'es' | 'en' | 'pt',
+})
+
 useSeoMeta({
   title: () =>
     query.value
@@ -203,7 +210,7 @@ useHead({
   border: 1px dashed rgba(255, 255, 255, 0.16);
 }
 
-:global(.v-theme--light) {
+.v-theme--light {
   .search-page__form {
     border-color: rgba(0, 0, 0, 0.16);
     background: rgba(0, 0, 0, 0.02);

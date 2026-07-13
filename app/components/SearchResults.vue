@@ -174,7 +174,7 @@ function onPointerMove(event: MouseEvent, idx: number) {
 
 // The site renders dark first (SSR default), so light mode is the override:
 // the muted whites above would vanish on a white surface.
-:global(.v-theme--light) {
+.v-theme--light {
   .search-results__group,
   .search-results__heading {
     color: rgba(0, 0, 0, 0.6);

@@ -567,7 +567,7 @@ onUnmounted(() => clearTimeout(noResultTimer))
 }
 
 // SSR paints the dark theme; light mode is the override.
-:global(.v-theme--light) {
+.v-theme--light {
   .search-palette__input::placeholder,
   .search-palette__group {
     color: rgba(0, 0, 0, 0.6);

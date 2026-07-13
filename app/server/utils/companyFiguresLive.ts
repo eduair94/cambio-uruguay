@@ -1,14 +1,19 @@
 // Daily self-updating source of truth for the volatile figures on
-// /que-empresa-abrir-uruguay. Same guardrailed pattern as uyFiguresLive.ts /
-// debtReliefLive.ts: ask Gemini with grounded search, validate EVERY value against
-// a plausibility band, and keep the verified baseline for anything out of band. A
-// hallucinated number can never reach the page.
+// /que-empresa-abrir-uruguay. Same guardrailed pattern as debtReliefLive.ts: ask
+// Gemini with grounded search, validate EVERY value against a plausibility band,
+// and keep the verified baseline for anything out of band. A hallucinated number
+// can never reach the page.
+//
+// NOTE: most of the app's Gemini refreshes moved to the backend (pm2), so in prod
+// this task typically has no geminiApiKey and gracefully no-ops to the verified
+// baseline — which is the authoritative data anyway. The endpoint and the PURE
+// band validator stay useful if a backend company-figures refresh is added later.
 //
 // The ANNUAL CEILINGS (topes in UI) are deliberately NOT refreshed here: they are
 // constants set by decree each January using the UI at the close of the previous
 // ejercicio, and a search engine will happily return last year's. They stay
-// hand-maintained in utils/companyTypes.ts, and the figures:daily drift watchdog
-// nags when they go stale.
+// hand-maintained in utils/companyTypes.ts, and the figures:drift watchdog
+// (figuresDrift.ts) nags when the BPC they depend on drifts.
 //
 // The band validator `applyLiveCompanyFigures` is a PURE function (no I/O) so it is
 // unit-tested directly in plain Node, exactly like debtReliefLive's applyLiveCaps.

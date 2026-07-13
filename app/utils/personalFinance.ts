@@ -541,14 +541,16 @@ export const UY_FACTS: readonly UyFact[] = Object.freeze([
     official: true,
   },
   {
-    fact: 'La Base de Prestaciones y Contribuciones (BPC) es de $6.576 desde el 1 de enero de 2025. Es la unidad de referencia de muchos topes tributarios y prestaciones, por lo que conviene tenerla presente al calcular impuestos.',
-    sourceLabel: 'BPS — Valor de la BPC 2025',
+    fact: 'La Base de Prestaciones y Contribuciones (BPC) es de $6.864 desde el 1 de enero de 2026 (en 2025 era $6.576). Es la unidad de referencia de muchos topes tributarios y prestaciones, por lo que conviene tenerla presente al calcular impuestos.',
+    // The URL is the BPS IASS page (which is where the BPC 2026 figure was read); the label
+    // must name the page it actually opens, not a page that does not exist.
+    sourceLabel: 'BPS — Impuesto de Asistencia a la Seguridad Social (IASS)',
     sourceUrl:
-      'https://www.gpa.uy/posts/informes/8926-base-de-prestaciones-y-contribuciones-bpc-a-partir-del-1o-de-enero-de-2025/',
+      'https://www.bps.gub.uy/18002/el-impuesto-de-asistencia-a-la-seguridad-social-iass.html',
     official: true,
   },
   {
-    fact: 'El IRPF sobre el arrendamiento de inmuebles es del 12% anual (rendimientos de capital inmobiliario); el 10,5% que retiene la inmobiliaria es solo un anticipo mensual, no la tasa del impuesto. Los ingresos por alquiler —incluido el turístico— deben declararse, con una exención de hasta 40 BPC anuales en ciertos casos.',
+    fact: 'El IRPF sobre el arrendamiento de inmuebles es del 12% sobre la renta NETA (rendimientos de capital inmobiliario): se deducen, entre otros, la comisión de la administradora de propiedades, la Contribución Inmobiliaria y el Impuesto de Enseñanza Primaria. El 10,5% que retiene la administradora es la retención, no la tasa del impuesto; podés dejarla como definitiva o liquidar por lo real. Los ingresos por alquiler —incluido el turístico— deben declararse; la exoneración para pequeños arrendadores exige rentas de hasta 40 BPC anuales y autorizar expresamente el levantamiento del secreto bancario.',
     sourceLabel: 'DGI — IRPF rendimientos de capital inmobiliario',
     sourceUrl:
       'https://www.gub.uy/direccion-general-impositiva/comunicacion/publicaciones/irpf-rendimientos-capital-inmobiliario-0',
