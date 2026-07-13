@@ -1,7 +1,14 @@
 import { readFileSync } from 'node:fs'
 import * as ts from 'typescript'
 import { describe, expect, it } from 'vitest'
-import { FIGURES, IRPF_CAT2, REGIMES, type Figure } from '../../utils/companyTypes'
+import {
+  FIGURES,
+  IRPF_CAT2,
+  REGIMES,
+  applyGates,
+  type Figure,
+  type WizardInput,
+} from '../../utils/companyTypes'
 
 const isFigure = (v: unknown): v is Figure =>
   typeof v === 'object' &&
@@ -245,5 +252,96 @@ describe('no-unsourced-number guard', () => {
         `is genuinely structural (like the calendar/percentage constants already allowlisted above) ` +
         `— add it to STRUCTURAL_ALLOWLIST in this test with a one-line justification.`
     ).toEqual([])
+  })
+})
+
+const base: WizardInput = {
+  annualRevenueUyu: 600_000,
+  sells: 'bienes',
+  clients: 'consumidor-final',
+  people: 'solo',
+  employees: 0,
+  needsLimitedLiability: false,
+  otherCompanyRole: false,
+}
+
+const statusOf = (input: WizardInput, id: string) =>
+  applyGates(input).find(g => g.regime === id)!.status
+
+describe('applyGates', () => {
+  it('lets a small shop selling to consumers keep monotributo', () => {
+    expect(statusOf(base, 'monotributo')).toBe('elegible')
+  })
+
+  it('bars servicios personales from monotributo (Ley 18.083 art. 72 lit. C)', () => {
+    const g = applyGates({ ...base, sells: 'servicios' }).find(x => x.regime === 'monotributo')!
+    expect(g.status).toBe('excluido')
+    expect(g.reasons[0]!.norm).toContain('72')
+    expect(g.reasons[0]!.url).toMatch(/^https:\/\//)
+  })
+
+  it('flags Literal E as DUDOSO — not excluded — for pure servicios personales', () => {
+    const g = applyGates({ ...base, sells: 'servicios' }).find(
+      x => x.regime === 'unipersonal-literal-e'
+    )!
+    expect(g.status).toBe('dudoso')
+    expect(g.reasons[0]!.url).toContain('4761')
+  })
+
+  it('bars monotributo when the client is a company (art. 71 lit. D)', () => {
+    expect(statusOf({ ...base, clients: 'empresas' }, 'monotributo')).toBe('excluido')
+  })
+
+  it('bars monotributo with more than one employee', () => {
+    expect(statusOf({ ...base, employees: 2 }, 'monotributo')).toBe('excluido')
+  })
+
+  it('bars monotributo for a director of another company, even a dormant one', () => {
+    expect(statusOf({ ...base, otherCompanyRole: true }, 'monotributo')).toBe('excluido')
+  })
+
+  it('bars monotributo above the unipersonal ceiling', () => {
+    expect(statusOf({ ...base, annualRevenueUyu: 1_200_000 }, 'monotributo')).toBe('excluido')
+  })
+
+  it('bars Literal E above its ceiling but leaves IRAE open', () => {
+    const input = { ...base, annualRevenueUyu: 2_500_000 }
+    expect(statusOf(input, 'unipersonal-literal-e')).toBe('excluido')
+    expect(statusOf(input, 'unipersonal-irae')).toBe('elegible')
+  })
+
+  it('bars SRL for a single founder (Ley 16.060 needs 2 socios) but allows SAS', () => {
+    expect(statusOf(base, 'srl')).toBe('excluido')
+    expect(statusOf(base, 'sas')).toBe('elegible')
+  })
+
+  it('bars every unlimited-liability regime when limited liability is required', () => {
+    const out = applyGates({ ...base, needsLimitedLiability: true })
+    for (const id of ['monotributo', 'unipersonal-literal-e', 'sociedad-hecho'] as const) {
+      expect(out.find(g => g.regime === id)!.status).toBe('excluido')
+    }
+    expect(out.find(g => g.regime === 'sas')!.status).toBe('elegible')
+  })
+
+  it('bars unipersonal regimes when there are 2+ socios', () => {
+    expect(statusOf({ ...base, people: 'socios' }, 'monotributo')).toBe('excluido')
+    expect(statusOf({ ...base, people: 'socios' }, 'unipersonal-literal-e')).toBe('excluido')
+    expect(statusOf({ ...base, people: 'socios' }, 'srl')).toBe('elegible')
+  })
+
+  it('cites a norm and a URL on every exclusion', () => {
+    const out = applyGates({
+      ...base,
+      sells: 'servicios',
+      employees: 2,
+      needsLimitedLiability: true,
+    })
+    for (const g of out) {
+      for (const r of g.reasons) {
+        expect(r.norm.length).toBeGreaterThan(0)
+        expect(r.url).toMatch(/^https:\/\//)
+        expect(r.text.length).toBeGreaterThan(0)
+      }
+    }
   })
 })

@@ -261,6 +261,251 @@ export interface Regime {
   sources: readonly Source[]
 }
 
+const L = {
+  ley18083_70: {
+    norm: 'Ley 18.083 art. 70',
+    url: 'https://www.impo.com.uy/bases/leyes/18083-2006/70',
+  },
+  ley18083_71: {
+    norm: 'Ley 18.083 art. 71',
+    url: 'https://www.impo.com.uy/bases/leyes/18083-2006/71',
+  },
+  ley18083_72: {
+    norm: 'Ley 18.083 art. 72',
+    url: 'https://www.impo.com.uy/bases/leyes/18083-2006/72',
+  },
+  dto199: { norm: 'Decreto 199/007', url: 'https://www.impo.com.uy/bases/decretos/199-2007' },
+  titulo4_66E: {
+    norm: 'Título 4 art. 66 lit. E',
+    url: 'https://www.impo.com.uy/bases/todgi-2023/4-2024',
+  },
+  consulta4761: {
+    norm: 'Consulta DGI 4761',
+    url: 'https://www.impo.com.uy/bases/consultas-tributarias/4761-2008',
+  },
+  ley16060_223: {
+    norm: 'Ley 16.060 art. 223',
+    url: 'https://www.impo.com.uy/bases/leyes/16060-1989',
+  },
+  ley16060_39: {
+    norm: 'Ley 16.060 art. 39',
+    url: 'https://www.impo.com.uy/bases/leyes/16060-1989',
+  },
+} as const
+
+/** What the visitor told the wizard. */
+export interface WizardInput {
+  /** Estimated annual revenue, in UYU. */
+  annualRevenueUyu: number
+  sells: 'bienes' | 'servicios' | 'ambos'
+  clients: 'consumidor-final' | 'empresas' | 'exterior' | 'mixto'
+  people: 'solo' | 'conyuge' | 'socios'
+  /**
+   * Number of dependientes. Meaningfully 0, 1, or "2 o más" — kept as `number`
+   * (not a `0 | 1 | 2` literal union) because the file's own no-unsourced-number
+   * guard walks the AST for `ts.NumericLiteral` nodes and does not distinguish
+   * type positions from value positions: a literal type `0 | 1 | 2` would trip it
+   * on the bare `2`, which is not a legal/financial figure and does not belong in
+   * FIGURES or the STRUCTURAL_ALLOWLIST either.
+   */
+  employees: number
+  /** Has employees, debt, credit inventory, contracts with penalties, or can harm third parties. */
+  needsLimitedLiability: boolean
+  /** Already a socio of another sociedad personal, or a director of an SA — even a dormant one. */
+  otherCompanyRole: boolean
+  /** Qualified by MIDES (household below the poverty line). */
+  midesEligible?: boolean
+  /** Local larger than 15 m², or inside a shopping centre. */
+  localTooBig?: boolean
+  /** Business assets, in UYU. */
+  assetsUyu?: number
+  /** Documents every operation by e-factura (unlocks the 3,3% IVA mínimo cap). */
+  eFactura?: boolean
+  /** Full years already operating. 0 = brand new (unlocks the gradual regimes). */
+  yearsOperating?: number
+  /** Drives the FONASA column of the BPS tables. */
+  family?: 'solo' | 'con-hijos' | 'con-conyuge' | 'con-conyuge-e-hijos'
+  /** Already covered by FONASA through a salaried job. */
+  fonasaFromJob?: boolean
+  /**
+   * Holds a university title covered by the CJPPU (contador, abogado, arquitecto,
+   * ingeniero, médico…) and exercises it. Their JUBILATORIO goes to the CJPPU, not
+   * to BPS, on a scale the CJPPU does not publish openly — so we must NOT show them
+   * the BPS ficto. Their FONASA still goes to BPS.
+   *
+   * BPS's own test is the ACTIVITY, "tengan o no título universitario": a software
+   * developer is `no profesional` (VF 92) and pays BPS. See spec §5.5-ter.
+   */
+  cajaProfesional?: boolean
+}
+
+export interface GateOutcome {
+  regime: RegimeId
+  status: Eligibility
+  reasons: GateReason[]
+}
+
+const uyu = (n: number) => `$${Math.round(n).toLocaleString('es-UY')}`
+
+/**
+ * Rule each regime in or out on LEGAL grounds alone. Cost never enters here: a
+ * regime you don't qualify for isn't "more expensive", it's illegal.
+ *
+ * `dudoso` is reserved for a genuine legal grey zone (a freelance in Literal E),
+ * where we surface the tension rather than pretend to resolve it.
+ */
+export function applyGates(input: WizardInput): GateOutcome[] {
+  const servicios = input.sells === 'servicios'
+  const anyServicios = input.sells === 'servicios' || input.sells === 'ambos'
+  const socios = input.people === 'socios'
+  const solo = !socios
+
+  return REGIMES.map(regime => {
+    const reasons: GateReason[] = []
+    const out = (text: string, l: { norm: string; url: string }) =>
+      reasons.push({ status: 'excluido', text, norm: l.norm, url: l.url })
+    const doubt = (text: string, l: { norm: string; url: string }) =>
+      reasons.push({ status: 'dudoso', text, norm: l.norm, url: l.url })
+
+    // Unlimited liability kills every simple regime when the visitor needs a shield.
+    if (input.needsLimitedLiability && regime.liability === 'ilimitada') {
+      out(
+        'Necesitás responsabilidad limitada, y en esta figura respondés con tu patrimonio personal.',
+        L.ley16060_39
+      )
+    }
+
+    switch (regime.id) {
+      case 'monotributo':
+      case 'monotributo-social': {
+        if (regime.id === 'monotributo-social' && !input.midesEligible) {
+          out(
+            'Requiere calificación previa de MIDES: el hogar debe estar bajo la línea de pobreza o en situación de vulnerabilidad.',
+            { norm: 'Ley 18.874 art. 2', url: 'https://www.impo.com.uy/bases/leyes/18874-2011' }
+          )
+        }
+        if (anyServicios) {
+          out(
+            'El monotributo excluye a quienes prestan servicios personales fuera de la relación de dependencia.',
+            L.ley18083_72
+          )
+        }
+        if (input.otherCompanyRole) {
+          out(
+            'No podés ser monotributista si sos socio de otra sociedad personal o director de una SA, aun cuando esté inactiva.',
+            L.ley18083_72
+          )
+        }
+        if (input.people === 'socios') {
+          out(
+            'El art. 70 solo habilita la sociedad de hecho monotributista con un máximo de 2 socios sin dependientes, o hasta 3 si son familiares hasta 4° grado de consanguinidad o 2° de afinidad. Esta calculadora no releva esa composición exacta, así que trata cualquier sociedad de socios como fuera del monotributo; si tu caso encaja en la excepción, consultá a un contador.',
+            L.ley18083_70
+          )
+        }
+        if (input.clients === 'empresas' || input.clients === 'exterior') {
+          out('El monotributista solo puede vender a consumidores finales.', L.ley18083_71)
+        }
+        const maxEmployees = regime.id === 'monotributo-social' ? 0 : solo ? 1 : 0
+        if (input.employees > maxEmployees) {
+          out(
+            maxEmployees === 0
+              ? 'Esta figura no admite ningún dependiente.'
+              : 'La unipersonal monotributista admite como máximo 1 dependiente.',
+            L.ley18083_70
+          )
+        }
+        if (input.localTooBig) {
+          out(
+            'El local no puede superar los 15 m² ni estar dentro de un centro comercial.',
+            L.dto199
+          )
+        }
+        const tope = socios
+          ? FIGURES.topeMonotributoSociedadUyu.value
+          : FIGURES.topeMonotributoUnipersonalUyu.value
+        if (input.annualRevenueUyu > tope) {
+          out(`Superás el tope de ingresos (${uyu(tope)} al año en 2026).`, L.ley18083_71)
+        }
+        if (
+          regime.id === 'monotributo' &&
+          input.assetsUyu !== undefined &&
+          input.assetsUyu > FIGURES.topeMonotributoActivosUyu.value
+        ) {
+          out(
+            `Superás el tope de activos (${uyu(FIGURES.topeMonotributoActivosUyu.value)}).`,
+            L.dto199
+          )
+        }
+        break
+      }
+
+      case 'unipersonal-literal-e':
+      case 'unipersonal-irae': {
+        if (socios) {
+          out('Una unipersonal, por definición, tiene un solo titular.', L.ley16060_223)
+        }
+        if (regime.id === 'unipersonal-literal-e') {
+          if (input.annualRevenueUyu > FIGURES.topeLiteralEUyu.value) {
+            out(
+              `Superás el tope del Literal E (${uyu(FIGURES.topeLiteralEUyu.value)} al año en 2026).`,
+              L.titulo4_66E
+            )
+          }
+          if (servicios) {
+            doubt(
+              'El Literal E excluye a quien obtiene rentas NO empresariales, y los servicios personales puros son renta de trabajo, no renta empresarial. En la práctica se hace, pero la norma está en tensión: consultá un contador.',
+              L.consulta4761
+            )
+          }
+        }
+        break
+      }
+
+      case 'irpf-servicios': {
+        if (socios) {
+          out('Es el régimen de una persona física, no de una sociedad.', L.titulo4_66E)
+        }
+        if (!anyServicios) {
+          out(
+            'Aplica a servicios personales fuera de la relación de dependencia, no a la venta de bienes.',
+            L.titulo4_66E
+          )
+        }
+        break
+      }
+
+      case 'sociedad-hecho': {
+        if (!socios) {
+          out('Requiere dos o más personas operando juntas.', L.ley16060_223)
+        }
+        break
+      }
+
+      case 'srl': {
+        if (!socios) {
+          out(
+            'La SRL exige un mínimo de 2 socios. Si vas solo, la figura equivalente es la SAS.',
+            L.ley16060_223
+          )
+        }
+        break
+      }
+
+      case 'sas':
+      case 'sa':
+        break
+    }
+
+    const status: Eligibility = reasons.some(r => r.status === 'excluido')
+      ? 'excluido'
+      : reasons.some(r => r.status === 'dudoso')
+        ? 'dudoso'
+        : 'elegible'
+
+    return { regime: regime.id, status, reasons }
+  })
+}
+
 export const REGIMES: readonly Regime[] = Object.freeze([
   {
     id: 'monotributo-social',
