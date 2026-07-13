@@ -203,7 +203,7 @@ useHead({
   border: 1px dashed rgba(255, 255, 255, 0.16);
 }
 
-:global(.v-theme--light) {
+.v-theme--light {
   .search-page__form {
     border-color: rgba(0, 0, 0, 0.16);
     background: rgba(0, 0, 0, 0.02);
