@@ -285,6 +285,11 @@ export default defineNuxtConfig({
         driver: 'fs',
         base: './.data/figures',
       },
+      // Durable store for the live company-formation figures (company:daily).
+      company: {
+        driver: 'fs',
+        base: './.data/company',
+      },
     },
     experimental: {
       wasm: true,
@@ -301,6 +306,8 @@ export default defineNuxtConfig({
       '40 9 * * *': ['costs:daily'],
       // 09:50 UTC ≈ 06:50 Uruguay: refresh national key figures + drift watchdog.
       '50 9 * * *': ['figures:daily'],
+      // 09:55 UTC ≈ 06:55 Uruguay: refresh company-formation figures (IVA mínimo, BPS, ICOSA).
+      '55 9 * * *': ['company:daily'],
       // 10:10 UTC on the 1st ≈ 07:10 Uruguay: refresh debt-relief usury caps (monthly).
       '10 10 1 * *': ['debt-relief:monthly'],
       // 12:00 UTC = 09:00 Uruguay: send the daily newsletter to confirmed subs.
