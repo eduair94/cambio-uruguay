@@ -4,6 +4,19 @@ dotenv.config();
 import { mongoConfig } from "../config";
 const Schema = MongooseSchema;
 
+/**
+ * Race `p` against a timeout, same idiom validate_cambios.ts uses around
+ * `MongooseServer.startConnectionPromise()`. Needed because that promise never rejects and never
+ * times out on its own (`connectWithRetry` swallows its connection error and the promise just
+ * awaits the "open" event forever) — every scheduled-job entrypoint that dials the DB must wrap
+ * the call in this, or an unreachable Mongo hangs the job forever instead of failing it loudly.
+ */
+export const withTimeout = <T>(p: Promise<T>, ms: number): Promise<T> =>
+  Promise.race([
+    p,
+    new Promise<T>((_, rej) => setTimeout(() => rej(new Error(`timeout >${ms}ms`)), ms)),
+  ]);
+
 export class MongooseServer {
   private static att = 0;
   private static instances: Record<string, MongooseServer> = {};

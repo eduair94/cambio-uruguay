@@ -1,36 +1,30 @@
-// Live debt-relief figures (usury caps + refi rates) for /saldar-deudas-uruguay.
-// Returns the verified baseline merged with the monthly Gemini refresh when
-// available. Cached; a stale/missing store triggers a background refresh so the
-// numbers stay current on their own. Mirrors /api/cost-of-living.
+// Live debt-relief figures (usury caps) for /saldar-deudas-uruguay, proxied from the backend
+// (pm2 `currency-debt-relief` generates them monthly) and merged over this app's verified
+// baseline (refiRates + period stay here — static page content, never Gemini). Zero business
+// logic beyond the merge, zero Gemini key: this route forwards and falls back to the baseline
+// caps when the backend is unreachable.
 import {
-  getStoredDebtRelief,
-  refreshLiveDebtRelief,
+  applyDebtReliefOverrides,
   baselineDebtRelief,
-  ageInDays,
-} from '../utils/debtReliefLive'
-
-let inFlight = false
+  type LiveDebtReliefResponse,
+} from '../utils/debtReliefMerge'
 
 export default defineCachedEventHandler(
   async () => {
-    const stored = await getStoredDebtRelief()
-    // Monthly cadence → treat anything under ~35 days old as fresh.
-    if (stored && ageInDays(stored.asOf) < 35) return stored
-
-    if (!inFlight) {
-      inFlight = true
-      refreshLiveDebtRelief()
-        .catch(() => {})
-        .finally(() => {
-          inFlight = false
-        })
+    const base = useRuntimeConfig().apiBaseServer
+    try {
+      const res = await $fetch<LiveDebtReliefResponse>(`${base}/debt-relief`, { timeout: 8000 })
+      return res ? applyDebtReliefOverrides(res) : baselineDebtRelief()
+    } catch {
+      return baselineDebtRelief()
     }
-    return stored ?? baselineDebtRelief()
   },
   {
     maxAge: 60 * 60 * 6, // 6h
     staleMaxAge: 60 * 60 * 24 * 40,
-    name: 'debt-relief-v1',
+    // Bumped from debt-relief-v1: the old cached payloads (fs useStorage-backed) are still live
+    // and this proxy's shape/source changed enough to not trust stale entries under the old key.
+    name: 'debt-relief-v2',
     getKey: () => 'live',
   }
 )

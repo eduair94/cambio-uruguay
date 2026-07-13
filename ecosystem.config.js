@@ -33,6 +33,97 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Bank/fintech news briefing for /mejores-bancos-uruguay (3 languages).
+      // Daily 10:37 UTC ≈ 07:37 America/Montevideo. Minute 37 is deliberately NOT a multiple of 5
+      // (currency-sync runs */5) and sits after nitro's reddit:sentiment (10:10) so the two never
+      // contend. This is the heaviest Gemini job in the fleet (~36 grounded calls per run).
+      name: "currency-banks-news",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_banks_news.js",
+      cron_restart: "37 10 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
+      // Uruguay's key national figures (salario mínimo, BPC, boleto STM, inflación) via grounded
+      // search. Daily 09:52 UTC ≈ 06:52 America/Montevideo. Minute 52: not a multiple of 5.
+      // The DRIFT WATCHDOG is not here — it stayed in the app (nitro task figures:drift), because
+      // it needs the app's Telegram config and its own dedupe state, and it spends no Gemini call.
+      name: "currency-figures",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_figures.js",
+      cron_restart: "52 9 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
+      // Cost-of-living live figures (salario mínimo, boleto STM, alquileres típicos) for
+      // /herramientas/costo-de-vida. Only the validated figures are stored — the arithmetic that
+      // turns them into a full cost model stays in the app (COST_MODEL). Daily 09:43 UTC ≈ 06:43
+      // America/Montevideo. Minute 43: not a multiple of 5.
+      name: "currency-costs",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_costs.js",
+      cron_restart: "43 9 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
+      // BCU usury caps (topes de usura) for /saldar-deudas-uruguay. Monthly on the 1st, 10:13 UTC
+      // ≈ 07:13 America/Montevideo. Minute 13: not a multiple of 5.
+      name: "currency-debt-relief",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_debt_relief.js",
+      cron_restart: "13 10 1 * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
+      // Daily AI directional lean + external forecast comparison per live currency, for the
+      // PricePredictionCard on /historico. Writes `pricepredictions` in the NUXT APP's database
+      // (classes/appdb.ts, APP_MONGO_URI) — the SAME collection
+      // app/server/api/predictions/[currency].get.ts already reads; that route is untouched. This
+      // is a ledger (one doc per currency+date, unique) kept forever to score past forecasts — it
+      // is never regenerated and never truncated. Refuses to run without APP_MONGO_URI set.
+      // Daily 09:23 UTC ≈ 06:23 America/Montevideo. Minute 23: not a multiple of 5.
+      name: "currency-predictions",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_predictions.js",
+      cron_restart: "23 9 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
+      // Move explanations for /por-que-sube-el-dolar and the histórico chart markers.
+      // 10:07 UTC ≈ 07:07 America/Montevideo — comfortably AFTER nitro's drivers:daily (09:15
+      // UTC), which still ingests the driver snapshots and archives the news this job reads.
+      // Minute 7: not a multiple of 5. Clear of currency-aduana (Mondays 09:30) so two Gemini
+      // jobs never overlap.
+      //
+      // Writes `moveexplanations` in the NUXT APP's database (classes/appdb.ts) — an ARCHIVE
+      // that also holds rows a human researched by hand via POST /api/analysis/backfill. Never
+      // truncated.
+      name: "currency-explain",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_explain.js",
+      cron_restart: "7 10 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
+      // Lender TEA refresh (bancos/financieras/cooperativas/fintech) for /prestamos-uruguay.
+      // Fallback chain: regex parser first (oca/pronto/cash), Gemini-grounded lookup for the rest
+      // (host-gated to the lender's own resolved domain). Daily 08:47 UTC ≈ 05:47
+      // America/Montevideo. Minute 47: not a multiple of 5. The old nitro `loans:scrape` ran 08:45,
+      // which IS a multiple of 5 and therefore raced currency-sync every single day.
+      name: "currency-loans",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_loans.js",
+      cron_restart: "47 8 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Cluster mode, 2 instances: `pm2 reload` (scripts/deploy-backend.sh) then
       // rolls instances one at a time, so a deploy never takes the API down.
       // Safe because the API path writes nothing to disk — ProxyFileService is
