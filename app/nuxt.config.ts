@@ -255,11 +255,9 @@ export default defineNuxtConfig({
         driver: 'fs',
         base: './.data/couriers',
       },
-      // Durable store for daily-scraped lender TEA rates (keeps last good value).
-      loans: {
-        driver: 'fs',
-        base: './.data/loans',
-      },
+      // NOTE: the `loans` mount is gone — lender TEA scraping (regex + Gemini fallback) and its
+      // daily history moved to the backend (classes/loans/*, GET /loan-rates, pm2
+      // currency-loans). This app only proxies + merges (server/api/prestamos.get.ts).
       // Durable store for the tourist-IVA re-verify watchdog (withdraw:iva-check).
       withdraw: {
         driver: 'fs',
@@ -301,8 +299,8 @@ export default defineNuxtConfig({
       '0 11 * * *': ['telegram:summary'],
       // 08:15 UTC ≈ 05:15 Uruguay: refresh courier per-kg shipping rates.
       '15 8 * * *': ['couriers:scrape'],
-      // 08:45 UTC ≈ 05:45 Uruguay: refresh lender TEA rates.
-      '45 8 * * *': ['loans:scrape'],
+      // NOTE: lender TEA scraping (loans:scrape) moved to the backend (pm2 currency-loans,
+      // 08:47 UTC) — this app no longer spends a Gemini call for /prestamos-uruguay.
       // 09:00 UTC Mondays ≈ 06:00 Uruguay: re-verify tourist-IVA facts watchdog.
       '0 9 * * 1': ['withdraw:iva-check'],
       // 07:30 UTC Mondays ≈ 04:30 Uruguay: refresh exchange-house review snapshots.

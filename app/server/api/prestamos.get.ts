@@ -1,29 +1,19 @@
-// Public loan-comparison data: the catalogue with the freshest scraped TEAs layered on top, plus the
-// last-updated timestamp. Cached briefly at the edge. Lazy bootstrap: if rates were never scraped or
-// the last scrape is badly stale (> 2 days), refresh once on demand; scrape failures fall back to the
-// seed catalogue.
-import { refreshAllLenderRates } from '../utils/loanRateRefresh'
-import {
-  applyLoanScrapeResults,
-  getMergedLenders,
-  getLoanRatesUpdatedAt,
-} from '../utils/loanRatesStore'
-
-const STALE_MS = 2 * 24 * 60 * 60 * 1000
+// Public loan-comparison data: catalogue + freshest TEAs, proxied from the backend (pm2
+// currency-loans refreshes daily) and cached at the edge. Zero business logic, zero Gemini: this
+// route only forwards, merges and falls back to the seed catalogue when the backend is unreachable
+// — the page must never render an empty comparison table.
+import { LENDERS } from '../../utils/loans'
+import { mergeLenders, type LoanRatesResponse } from '../utils/loansMerge'
 
 export default defineCachedEventHandler(
   async () => {
-    const last = await getLoanRatesUpdatedAt()
-    const stale = !last || Date.now() - new Date(last).getTime() > STALE_MS
-    if (stale) {
-      try {
-        await applyLoanScrapeResults(await refreshAllLenderRates())
-      } catch {
-        // keep seed / last-good values on any scrape error
-      }
+    const base = useRuntimeConfig().apiBaseServer
+    try {
+      const res = await $fetch<LoanRatesResponse>(`${base}/loan-rates`, { timeout: 8000 })
+      return { lenders: mergeLenders(res?.rates), updatedAt: res?.updatedAt || null }
+    } catch {
+      return { lenders: LENDERS, updatedAt: null }
     }
-    const [lenders, updatedAt] = await Promise.all([getMergedLenders(), getLoanRatesUpdatedAt()])
-    return { lenders, updatedAt }
   },
-  { maxAge: 60 * 30, name: 'prestamos', getKey: () => 'all' }
+  { maxAge: 60 * 30, name: 'prestamos-v2', getKey: () => 'all' }
 )
