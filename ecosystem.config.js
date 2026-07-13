@@ -17,6 +17,18 @@ module.exports = {
     //   log_date_format: "YYYY-MM-DD HH:mm Z",
     // },
     {
+      // Customs problem hub for /problemas-con-la-aduana-uruguay: Reddit corpus + AI labels every
+      // run, legal facts re-checked against the norm (the AI can flag a change, never publish one).
+      // Mondays 08:40 UTC ≈ 05:40 America/Montevideo — after the courier sync, so the two jobs do
+      // not compete for the same Reddit rate limit.
+      name: "currency-aduana",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_aduana.js",
+      cron_restart: "40 8 * * 1",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       name: "currency-server",
       autorestart: true,
       exec_mode: "fork",
