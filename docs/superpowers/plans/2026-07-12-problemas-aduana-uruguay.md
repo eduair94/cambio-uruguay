@@ -1508,8 +1508,17 @@ does not compile without it.
 
 ## Deploy
 
-The Nuxt app (`app/`) deploys itself on push to `main` (CI runs `app/scripts/deploy.sh`). **The root
-Express backend and the weekly sync job do not** — that half is manual, on the VPS:
+The Nuxt app (`app/`) deploys itself on push to `main` (CI runs `app/scripts/deploy.sh`). **As of the
+backend CI/CD work that followed this plan, the root Express backend deploys itself too**: a
+`backend-deploy` job in `.github/workflows/deploy.yml` runs on every push to `main` that touches
+backend paths (`index.ts`, `classes/**`, `sync*.ts`, `ecosystem.config.js`, `tests/**`, etc. — gated
+with `dorny/paths-filter`, not a workflow-level `paths:`, so an app-only push still deploys the app
+and nothing else) and SSHes in to run `scripts/deploy-backend.sh`. That script pulls `main`, builds
+into a staging dir (`dist_staging`, sanity-checked before it ever touches the live `dist/`), swaps it
+in atomically, then `pm2 reload`s `currency-server` — now cluster mode, 2 instances, so the reload is
+a rolling zero-downtime cycle — and starts any pm2 app declared in `ecosystem.config.js` that isn't
+registered yet (this is how `currency-aduana` gets its first-ever `pm2 start`; every run after that
+is a no-op for it, since it's already registered). The manual recipe this replaces was:
 
 ```
 ssh root@104.234.204.107 -p 2223
@@ -1518,6 +1527,22 @@ pm2 restart currency-server
 pm2 start ecosystem.config.js --only currency-aduana   # first deploy only; a redeploy is `pm2 reload`
 pm2 logs currency-aduana --lines 50
 ```
+
+**The very first deploy after the CI/CD change lands still needs a human**, and the ordering is worth
+being explicit about so it isn't surprising: CI's `backend-deploy` job runs `bash
+scripts/deploy-backend.sh` over SSH, but that script does not exist on the VPS until *some* `git pull`
+puts it there. The chicken-and-egg resolves itself on the very next push, though — `scripts/deploy-backend.sh`
+is a tracked file, so it arrives via the **first** automated `git pull` the same way any other new
+committed file would; it does not need to be present *before* that pull starts, only before the SSH
+step tries to *run* it. Concretely: the push that merges the CI/CD change to `main` triggers
+`backend-deploy` (its own diff touches backend paths — `ecosystem.config.js`, the workflow file
+itself, `scripts/deploy-backend.sh`), CI SSHes in, and the run's own `git pull --ff-only origin main`
+inside `scripts/deploy-backend.sh`... except that's circular: the script has to already exist locally
+to run at all. In practice this means **one manual bootstrap is required**: after merging, SSH in once
+and run `cd /root/cambio-uruguay && git pull && bash scripts/deploy-backend.sh` by hand (which also
+exercises the fork→cluster transition for `currency-server` — see the script's own comments on why
+that first reload may not be perfectly gapless the way every reload after it will be). Every push
+after that bootstrap is fully automatic.
 
 `currency-aduana` runs `dist/sync_aduana.js` on pm2's own cron (`cron_restart: "30 9 * * 1"` in
 `ecosystem.config.js` — Mondays 09:30 UTC / ~06:30 Montevideo; note `sync_aduana.ts`'s header

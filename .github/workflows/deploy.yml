@@ -65,3 +65,99 @@ jobs:
           ssh -i ~/.ssh/deploy_key -p "$PORT" -o IdentitiesOnly=yes \
             "$DEPLOY_USER@$HOST" \
             "cd '$APP_DIR' && bash scripts/deploy.sh"
+
+  # --- Root Express backend (index.ts, classes/, sync*.ts, ecosystem.config.js…)
+  # This is a SEPARATE deploy surface from app/ above: different repo area,
+  # different pm2 apps, different deploy script. A CSS-only push to app/ must
+  # not restart the API, and a backend-only push must not rebuild the Nuxt app
+  # — hence the dedicated path filter below instead of a workflow-level `paths:`
+  # (which would wrongly skip the app deploy too).
+  changes:
+    name: Detect changed paths
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'index.ts'
+              - 'classes/**'
+              - 'swagger/**'
+              - 'config/**'
+              - 'interfaces/**'
+              - 'sync*.ts'
+              - '*.ts'
+              - 'ecosystem.config.js'
+              - 'package.json'
+              - 'tsconfig*.json'
+              - 'tests/**'
+              - 'scripts/deploy-backend.sh'
+              - '.github/workflows/deploy.yml'
+
+  backend-test:
+    name: Backend unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # No lockfile is committed at the repo root (package-lock.json is
+      # gitignored there — only app/package-lock.json is deliberately
+      # un-ignored), so install like scripts/deploy-backend.sh does — `npm
+      # install`, not `npm ci`.
+      - run: npm install --no-audit --no-fund
+      - run: npm test
+
+  backend-deploy:
+    name: Backend zero-downtime deploy
+    needs: [backend-test, changes, deploy]
+    # `needs: deploy` (the app deploy job above) is not a functional dependency
+    # — it exists purely to sequence the two deploy jobs so their SSH sessions
+    # never `git pull` the SAME repo tree at the same time (see the race note in
+    # scripts/deploy-backend.sh). `always()` + the explicit result check below
+    # stop that ordering constraint from also blocking a backend deploy just
+    # because the (unrelated) app deploy job happened to fail.
+    if: >-
+      always() &&
+      needs.backend-test.result == 'success' &&
+      needs.changes.outputs.backend == 'true' &&
+      github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run remote backend deploy over SSH
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          PORT: ${{ secrets.DEPLOY_PORT }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          # Path to the repo root on the server. Override with a repo variable
+          # if it ever moves; defaults to the documented location in
+          # scripts/deploy-backend.sh.
+          REPO_DIR: ${{ vars.DEPLOY_REPO_DIR || '/root/cambio-uruguay' }}
+        run: |
+          set -euo pipefail
+          : "${SSH_KEY:?missing repository secret DEPLOY_SSH_KEY}"
+          : "${HOST:?missing repository secret DEPLOY_HOST}"
+          : "${PORT:?missing repository secret DEPLOY_PORT}"
+          : "${DEPLOY_USER:?missing repository secret DEPLOY_USER}"
+
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          # Pin the host key (TOFU on first run) so the SSH session can't be MITM'd.
+          ssh-keyscan -p "$PORT" -H "$HOST" >> ~/.ssh/known_hosts 2>/dev/null
+
+          # deploy-backend.sh pulls main, builds into a staging dir, atomically
+          # swaps dist/ and rolling-`pm2 reload`s currency-server — the live API
+          # never goes down. NOTE: the first-ever run needs the script to
+          # already exist on the server (it lands via this same `git pull`) —
+          # see docs/superpowers/plans/2026-07-12-problemas-aduana-uruguay.md's
+          # Deploy section.
+          ssh -i ~/.ssh/deploy_key -p "$PORT" -o IdentitiesOnly=yes \
+            "$DEPLOY_USER@$HOST" \
+            "cd '$REPO_DIR' && bash scripts/deploy-backend.sh"
