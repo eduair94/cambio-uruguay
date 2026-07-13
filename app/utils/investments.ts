@@ -73,7 +73,7 @@ export const INVESTMENTS: InvestmentOption[] = [
     regulationNote:
       'Supervisado por el BCU como banco (intermediación financiera); NO figura en el registro de Corredores de Bolsa/Agentes de Valores del BCU',
     taxNote:
-      'Intereses y dividendos: IRPF 12% (dividendos de fuente uruguaya, 7%). Desde 2026 (Ley 20.446) las ganancias de capital del exterior también pagan IRPF al 12%. El 8% no es una tasa: es una retención reducida que solo puede aplicar la entidad uruguaya que intermedia y además ejerce la custodia de esos activos, y es definitiva solo si optás por ella. Para activos cotizados comprados antes del 31/12/2025 el costo fiscal es su cotización a esa fecha',
+      'Intereses y dividendos: IRPF 12% (dividendos de fuente uruguaya, 7%). Desde 2026 (Ley 20.446) las ganancias de capital del exterior también pagan IRPF al 12%. El 8% no es una tasa: es una retención reducida que solo puede aplicar la entidad uruguaya que intermedia y además ejerce la custodia de esos activos, y es definitiva solo si optás por ella. Para activos que coticen en bolsas de reconocido prestigio adquiridos antes del 31/12/2025, el costo fiscal es su cotización al 31/12/2025',
     online: true,
     website: 'https://www.itau.com.uy',
     source: 'https://www.itau.com.uy/inst/paratiInversiones.html',
@@ -93,7 +93,7 @@ export const INVESTMENTS: InvestmentOption[] = [
     regulationNote:
       'Supervisado por el Banco Central del Uruguay como banco; NO figura en el registro de Corredores de Bolsa/Agentes de Valores del BCU',
     taxNote:
-      'Intereses y dividendos: IRPF 12% (dividendos de fuente uruguaya, 7%). Desde 2026 (Ley 20.446) las ganancias de capital del exterior también pagan IRPF al 12%. El 8% no es una tasa: es una retención reducida que solo puede aplicar la entidad uruguaya que intermedia y además ejerce la custodia de esos activos, y es definitiva solo si optás por ella. Para activos cotizados comprados antes del 31/12/2025 el costo fiscal es su cotización a esa fecha',
+      'Intereses y dividendos: IRPF 12% (dividendos de fuente uruguaya, 7%). Desde 2026 (Ley 20.446) las ganancias de capital del exterior también pagan IRPF al 12%. El 8% no es una tasa: es una retención reducida que solo puede aplicar la entidad uruguaya que intermedia y además ejerce la custodia de esos activos, y es definitiva solo si optás por ella. Para activos que coticen en bolsas de reconocido prestigio adquiridos antes del 31/12/2025, el costo fiscal es su cotización al 31/12/2025',
     online: false,
     website: 'https://www.santander.com.uy',
     source: 'https://www.santander.com.uy/productos-servicios/inversiones',
@@ -113,7 +113,7 @@ export const INVESTMENTS: InvestmentOption[] = [
     regulationNote:
       'Supervisado por el BCU como banco; NO figura en el registro de Corredores de Bolsa/Agentes de Valores del BCU',
     taxNote:
-      'Los títulos comprados "NO constituyen un depósito en el banco" (sin cobertura del seguro de depósitos). Intereses y dividendos: IRPF 12% (dividendos de fuente uruguaya, 7%); la deuda pública uruguaya está exenta (T7 art. 38 lit. A). Desde 2026 las ganancias de capital del exterior pagan IRPF al 12%; el 8% no es una tasa sino una retención reducida que solo puede aplicar la entidad uruguaya que también ejerce la custodia de esos activos, y solo es definitiva si optás por ella',
+      'Los títulos comprados "NO constituyen un depósito en el banco" (sin cobertura del seguro de depósitos). Intereses y dividendos: IRPF 12% (dividendos de fuente uruguaya, 7%); la deuda pública uruguaya está exenta (T7 art. 38 lit. A). Desde 2026 las ganancias de capital del exterior pagan IRPF al 12%; el 8% no es una tasa sino una retención reducida que solo puede aplicar la entidad uruguaya que también ejerce la custodia de esos activos, y solo es definitiva si optás por ella. Para activos que coticen en bolsas de reconocido prestigio adquiridos antes del 31/12/2025, el costo fiscal es su cotización al 31/12/2025',
     online: true,
     website: 'https://www.brou.com.uy',
     source: 'https://www.brou.com.uy/personas/inversiones/instrumentos-financieros',
@@ -132,7 +132,7 @@ export const INVESTMENTS: InvestmentOption[] = [
     regulationNote:
       'Supervisado por el BCU como banco; NO figura en el registro de Corredores de Bolsa/Agentes de Valores del BCU',
     taxNote:
-      'Intereses y dividendos: IRPF 12% (dividendos de fuente uruguaya, 7%). Desde 2026 (Ley 20.446) las ganancias de capital del exterior también pagan IRPF al 12%. El 8% no es una tasa: es una retención reducida que solo puede aplicar la entidad uruguaya que intermedia y además ejerce la custodia de esos activos, y es definitiva solo si optás por ella. Para activos cotizados comprados antes del 31/12/2025 el costo fiscal es su cotización a esa fecha',
+      'Intereses y dividendos: IRPF 12% (dividendos de fuente uruguaya, 7%). Desde 2026 (Ley 20.446) las ganancias de capital del exterior también pagan IRPF al 12%. El 8% no es una tasa: es una retención reducida que solo puede aplicar la entidad uruguaya que intermedia y además ejerce la custodia de esos activos, y es definitiva solo si optás por ella. Para activos que coticen en bolsas de reconocido prestigio adquiridos antes del 31/12/2025, el costo fiscal es su cotización al 31/12/2025',
     online: false,
     website: 'https://www.scotiabank.com.uy',
     source: 'https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/int_Valores.aspx',
@@ -151,7 +151,7 @@ export const INVESTMENTS: InvestmentOption[] = [
     regulationNote:
       'Supervisado por el BCU como banco (BIC BBVAUYMM); NO figura en el registro de Corredores de Bolsa/Agentes de Valores del BCU',
     taxNote:
-      'Intereses y dividendos: IRPF 12% (dividendos de fuente uruguaya, 7%). Desde 2026 (Ley 20.446) las ganancias de capital del exterior también pagan IRPF al 12%. El 8% no es una tasa: es una retención reducida que solo puede aplicar la entidad uruguaya que intermedia y además ejerce la custodia de esos activos, y es definitiva solo si optás por ella. Para activos cotizados comprados antes del 31/12/2025 el costo fiscal es su cotización a esa fecha',
+      'Intereses y dividendos: IRPF 12% (dividendos de fuente uruguaya, 7%). Desde 2026 (Ley 20.446) las ganancias de capital del exterior también pagan IRPF al 12%. El 8% no es una tasa: es una retención reducida que solo puede aplicar la entidad uruguaya que intermedia y además ejerce la custodia de esos activos, y es definitiva solo si optás por ella. Para activos que coticen en bolsas de reconocido prestigio adquiridos antes del 31/12/2025, el costo fiscal es su cotización al 31/12/2025',
     online: false,
     website: 'https://www.bbva.com.uy',
     source: 'https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/int_Valores.aspx',
@@ -171,7 +171,7 @@ export const INVESTMENTS: InvestmentOption[] = [
     regulationNote:
       'El Fondo de Liquidez Inmediata (FLI) que recibe los fondos está supervisado directamente por el BCU (sólo invierte en depósitos BCU, LRM y papeles soberanos uruguayos); cuenta de inversión abierta a nombre del cliente en Gletir (corredor de bolsa local), FLI administrado por VALO como fiduciario, activos custodiados en el Banco Central',
     taxNote:
-      'Los rendimientos de un fondo de inversión están exentos de IRPF solo si el fondo invierte en valores públicos o en valores privados con oferta pública (Título 7, art. 38 lit. P); el FLI declara invertir únicamente en depósitos del BCU, LRM y títulos soberanos uruguayos. Fuera de ese supuesto, IRPF 12%',
+      'Los rendimientos de un fondo de inversión están exentos de IRPF solo si el fondo invierte en valores públicos o en valores privados con oferta pública (Título 7, art. 38 lit. P). No verificamos si este vehículo encuadra en ese supuesto, así que no asumas que está exento. Fuera de ese supuesto, IRPF 12%',
     online: true,
     website: 'https://www.prexcard.com/uy',
     source:
@@ -192,7 +192,7 @@ export const INVESTMENTS: InvestmentOption[] = [
     regulationNote:
       'Órdenes ruteadas por BECA Advisors (asesor de inversión registrado ante el BCU, nroinst=7155) hacia DriveWealth, LLC (broker-dealer regulado por FINRA/SIPC en EE.UU.); las acciones quedan custodiadas en DriveWealth, no en Prex. La capa de asesoría (BECA) es regulada por el BCU; la capa de brokerage/custodia (DriveWealth) es regulada en EE.UU., no por el BCU',
     taxNote:
-      'Desde 2026 (Ley 20.446) las rentas y ganancias de capital del exterior pagan IRPF al 12%. El 8% no es una tasa: es una retención reducida que solo puede aplicar un bróker uruguayo que además ejerza la custodia de los activos, y acá la custodia está en DriveWealth (EE.UU.). Si ningún agente uruguayo te retiene, corresponden anticipos semestrales al 12% o declaración jurada (F. 1101). Para activos cotizados comprados antes del 31/12/2025, el costo fiscal es su cotización a esa fecha',
+      'Desde 2026 (Ley 20.446) las rentas y ganancias de capital del exterior pagan IRPF al 12%. El 8% no es una tasa: es una retención reducida que solo puede aplicar un bróker uruguayo que además ejerza la custodia de los activos, y acá la custodia está en DriveWealth (EE.UU.). Si ningún agente uruguayo te retiene, corresponden anticipos semestrales al 12% o declaración jurada (F. 1101). Para activos que coticen en bolsas de reconocido prestigio adquiridos antes del 31/12/2025, el costo fiscal es su cotización al 31/12/2025',
     online: true,
     website: 'https://www.prexcard.com/uy',
     source: 'https://www.prexcard.com/ayuda/11',
@@ -213,7 +213,7 @@ export const INVESTMENTS: InvestmentOption[] = [
     regulationNote:
       'Figura en el listado oficial de corredores de bolsa de la BVM y está "regulado y supervisado por la Superintendencia de Servicios Financieros del Banco Central del Uruguay", operando a través de BEVSA. También ofrece acceso al mercado de EE.UU. vía StoneX/Pershing — esa capa NO está regulada por el BCU',
     taxNote:
-      'Deuda pública uruguaya: exenta de IRPF, y no solo el interés (Título 7, art. 38 lit. A). Resto de las rentas de capital: 12% (dividendos de fuente uruguaya, 7%). Desde 2026 las ganancias de capital del exterior pagan IRPF al 12%; el 8% es una retención reducida que solo puede aplicar el bróker uruguayo que además ejerce la custodia de esos activos — Balanz rutea el acceso a EE.UU. vía StoneX/Pershing y no verificamos si actúa como custodio ni como agente de retención. Sin retención, corresponden anticipos semestrales o declaración jurada',
+      'Deuda pública uruguaya: exenta de IRPF, y no solo el interés (Título 7, art. 38 lit. A). Resto de las rentas de capital: 12% (dividendos de fuente uruguaya, 7%). Desde 2026 las ganancias de capital del exterior pagan IRPF al 12%; el 8% es una retención reducida que solo puede aplicar el bróker uruguayo que además ejerce la custodia de esos activos — Balanz rutea el acceso a EE.UU. vía StoneX/Pershing y no verificamos si actúa como custodio ni como agente de retención. Sin retención, corresponden anticipos semestrales o declaración jurada. Para activos que coticen en bolsas de reconocido prestigio adquiridos antes del 31/12/2025, el costo fiscal es su cotización al 31/12/2025',
     online: true,
     website: 'https://balanz.com.uy',
     source: 'https://www.bvm.com.uy/operadores/corredores-de-bolsa',
@@ -233,7 +233,7 @@ export const INVESTMENTS: InvestmentOption[] = [
     regulationNote:
       'Uruguay es país soportado, sin restricción específica encontrada, pero eToro no es una entidad uruguaya ni está regulada por el BCU; según la entidad legal que finalmente da de alta al usuario uruguayo puede estar regulada por CySEC (Chipre), FCA (Reino Unido), ASIC (Australia) o FSAS (Seychelles) — entidad exacta para usuarios de Uruguay no confirmada. No aplica protección de inversores del BCU',
     taxNote:
-      'Desde 2026 (Ley 20.446) las rentas y ganancias de capital del exterior pagan IRPF al 12%. Operando directo con un bróker del exterior NO hay retención uruguaya: te corresponden anticipos semestrales o declaración jurada (F. 1101). El 8% es una retención reducida y solo la puede aplicar un bróker/custodio uruguayo. Para activos cotizados comprados antes del 31/12/2025, el costo fiscal es su cotización a esa fecha',
+      'Desde 2026 (Ley 20.446) las rentas y ganancias de capital del exterior pagan IRPF al 12%. Operando directo con un bróker del exterior NO hay retención uruguaya: te corresponden anticipos semestrales o declaración jurada (F. 1101). El 8% es una retención reducida y solo la puede aplicar un bróker/custodio uruguayo. Para activos que coticen en bolsas de reconocido prestigio adquiridos antes del 31/12/2025, el costo fiscal es su cotización al 31/12/2025',
     online: true,
     website: 'https://www.etoro.com',
     source:
@@ -254,7 +254,7 @@ export const INVESTMENTS: InvestmentOption[] = [
     regulationNote:
       'Uruguay figura como país donde XTB permite apertura de cuenta 100% online; la entidad del grupo XTB que efectivamente atiende a clientes uruguayos no está confirmada (varía) — NO está regulado por el BCU, sin protección del BCU',
     taxNote:
-      'Desde 2026 (Ley 20.446) las rentas y ganancias de capital del exterior pagan IRPF al 12%. Operando directo con un bróker del exterior NO hay retención uruguaya: te corresponden anticipos semestrales o declaración jurada (F. 1101). El 8% es una retención reducida y solo la puede aplicar un bróker/custodio uruguayo. Para activos cotizados comprados antes del 31/12/2025, el costo fiscal es su cotización a esa fecha',
+      'Desde 2026 (Ley 20.446) las rentas y ganancias de capital del exterior pagan IRPF al 12%. Operando directo con un bróker del exterior NO hay retención uruguaya: te corresponden anticipos semestrales o declaración jurada (F. 1101). El 8% es una retención reducida y solo la puede aplicar un bróker/custodio uruguayo. Para activos que coticen en bolsas de reconocido prestigio adquiridos antes del 31/12/2025, el costo fiscal es su cotización al 31/12/2025',
     online: true,
     website: 'https://www.xtb.com',
     source:
