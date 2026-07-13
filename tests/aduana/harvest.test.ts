@@ -54,6 +54,11 @@ describe("harvestAduana", () => {
     expect(searchPosts).toHaveBeenCalledTimes(ADUANA_QUERIES.length);
     expect(out.posts).toBe(1); // surfaced by N queries, stored once
     expect(upserted).toHaveLength(1);
+    // Pin the argument order. The plan this was written from had the client's signature wrong
+    // (`searchSubreddit`, and a 2-arg fetchComments) — a mock that agrees with the plan instead of
+    // with the module passes green and throws on the first real run. This assertion is what makes
+    // that impossible: the ids already in Mongo must reach Reddit's paginator, or nothing dedupes.
+    expect(fetchComments).toHaveBeenCalledWith("uruguay", "abc", expect.any(Set));
   });
 
   it("is a silent no-op without credentials", async () => {
