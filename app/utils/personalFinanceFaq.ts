@@ -368,6 +368,79 @@ export const PERSONAL_FAQS: readonly PersonalFaq[] = Object.freeze([
     tags: ['estafas', 'inversión', 'cripto', 'BCU', 'educación financiera'],
     howCommon: 'comun',
   },
+  {
+    id: 'pago-impuestos-broker-exterior',
+    question: '¿Pago impuestos por mi cuenta en eToro / Interactive Brokers?',
+    shortAnswer:
+      'Sí: desde 2026 tributás 12% de IRPF por los rendimientos y las ganancias de esa cuenta, y como el bróker no retiene nada acá, te corresponden anticipos semestrales o declaración jurada.',
+    answer:
+      'Desde el 1° de enero de 2026 (Ley 20.446), Uruguay grava con IRPF Categoría I al 12% todos los rendimientos (intereses, dividendos) y también las ganancias de capital (vender acciones, ETFs, bonos) que obtenés en una cuenta en el exterior, algo que antes no pasaba con las ganancias de capital. Como Interactive Brokers, eToro o cualquier bróker del exterior no son agentes de retención uruguayos, nadie te descuenta el impuesto automáticamente: te corresponden anticipos semestrales al 12% o presentar una declaración jurada. Un dato valioso: para los activos que ya tenías antes del 31/12/2025 y cotizan en bolsas de reconocido prestigio, el costo fiscal se "actualiza" a su cotización de esa fecha, así que toda la ganancia acumulada antes de 2026 queda fuera del impuesto (el step-up). Podés descontar el impuesto que ya pagaste en el exterior sobre esa misma renta, hasta el tope del IRPF que te corresponde.',
+    category: 'ahorro_inversion',
+    tags: [
+      'IRPF',
+      'bróker exterior',
+      'Interactive Brokers',
+      'eToro',
+      'inversiones',
+      'rentas de fuente extranjera',
+    ],
+    howCommon: 'comun',
+  },
+  {
+    id: 'pago-impuestos-cripto',
+    question: '¿La cripto paga impuestos en Uruguay?',
+    shortAnswer:
+      'No está resuelto: no hay una norma tributaria específica para las criptomonedas, así que no hay una tasa clara ni sobre las ganancias ni sobre si se consideran renta local o del exterior.',
+    answer:
+      'No existe una norma que diga cómo tributan las criptomonedas en Uruguay. La única posición conocida de la DGI es una consulta de 2021 (Consulta N.º 6.419) que las trataría como un bien mueble incorporal, pero no es una ley ni una resolución general, y no accedimos a su texto primario. La Ley 20.345 de activos virtuales tampoco cambió esto: regula a los proveedores de servicios (exchanges) y su supervisión por el BCU, no la tributación. Ni el Decreto 95/026 ni la Resolución DGI 1517/2026 de la reforma de 2026 mencionan la cripto, así que ni siquiera está definido si una ganancia en cripto se considera renta local o de fuente extranjera. Por eso no publicamos un porcentaje: si operás con cripto de forma relevante, consultá a un contador.',
+    category: 'ahorro_inversion',
+    tags: ['cripto', 'impuestos', 'IRPF', 'DGI', 'no resuelto'],
+    howCommon: 'comun',
+  },
+  {
+    id: 'me-retiene-el-banco-irpf',
+    question: '¿El banco me retiene el IRPF solo?',
+    shortAnswer:
+      'Sí, si tu plata está en un banco uruguayo: retiene automáticamente y podés dejar esa retención como definitiva. Si operás con un bróker del exterior, no te retiene nadie.',
+    answer:
+      'En Uruguay, los bancos y demás sujetos pasivos de IRAE retienen automáticamente el IRPF sobre las rentas de capital que generás con ellos —los intereses de un plazo fijo, por ejemplo— y podés optar por dejar esa retención como definitiva, lo que te libera de presentar declaración jurada por esa renta. Los alquileres los retiene la administradora de propiedades al 10,5% del bruto (ojo: eso es la retención, no la tasa real, que es 12% sobre la renta neta). La diferencia grande está en las cuentas en brókers del exterior: ahí no hay agente de retención uruguayo, así que nadie te descuenta nada automáticamente y te corresponden anticipos semestrales al 12% o declaración jurada.',
+    category: 'impuestos_tramites',
+    tags: ['IRPF', 'retención', 'banco', 'DGI', 'bróker exterior'],
+    howCommon: 'comun',
+  },
+  {
+    id: 'tengo-dolares-subio-el-dolar-pago',
+    question: 'Tengo dólares y subió el dólar, ¿pago IRPF?',
+    shortAnswer:
+      'No: la diferencia de cambio por tener dólares (o cualquier moneda extranjera) está expresamente exenta de IRPF.',
+    answer:
+      'No. La ley exonera expresamente la diferencia de cambio que genera la sola tenencia de moneda extranjera (Título 7, art. 38 lit. G y H): si tenés dólares guardados y el tipo de cambio sube, esa "ganancia" en pesos no es una renta gravada. Es una de las respuestas que más se confunden, porque suena parecido a una ganancia de capital, pero la ley la trata distinto. Ojo que esto es distinto de vender un bien (una acción, un inmueble) cobrado en dólares: ahí sí puede haber un incremento patrimonial gravado, pero no por el simple hecho de que el dólar haya subido mientras tenías el billete o el depósito.',
+    category: 'ahorro_inversion',
+    tags: ['IRPF', 'dólares', 'tipo de cambio', 'exención'],
+    howCommon: 'muy_comun',
+  },
+  {
+    id: 'tengo-que-declarar-si-ya-me-retuvieron',
+    question: '¿Tengo que hacer la declaración si ya me retuvieron?',
+    shortAnswer:
+      'No, si podés optar por dejar la retención como definitiva; sí, si tenés rentas sin agente de retención (como un bróker del exterior) o preferís liquidar por lo real.',
+    answer:
+      'Si un agente uruguayo (banco, administradora de propiedades, etc.) ya te retuvo el IRPF, en general podés optar por darle carácter definitivo a esa retención y quedar liberado de presentar la declaración jurada (Formulario 1101) por esa renta. Pero hay casos en los que sí tenés que declarar: cuando tenés rentas sin agente de retención, como una cuenta en un bróker del exterior (ahí corresponden anticipos semestrales y, salvo que los hagas definitivos, declaración jurada), o cuando te conviene liquidar por lo real —por ejemplo, si tu alquiler tiene más gastos deducibles que el 12,5% que asume la retención del 10,5%, presentar la declaración te puede devolver plata. La campaña anual (ejercicio del año anterior) va del 29 de junio al 31 de agosto, sin escalonamiento por cédula.',
+    category: 'impuestos_tramites',
+    tags: ['IRPF', 'declaración jurada', 'Formulario 1101', 'retención'],
+    howCommon: 'ocasional',
+  },
+  {
+    id: 'herede-plata-pago-impuestos',
+    question: 'Heredé, ¿pago impuestos?',
+    shortAnswer:
+      'No: en Uruguay no hay impuesto a las herencias, y la transferencia por sucesión no genera IRPF.',
+    answer:
+      'No. Uruguay no tiene impuesto sucesorio, y la ley del IRPF establece expresamente que la transferencia de bienes por el modo sucesión no se considera una alteración patrimonial gravada (Título 7, art. 27 lit. B). Es otra de las respuestas que sorprenden, porque mucha gente asume que sí hay que pagar algo. Ojo: esto cubre la herencia en sí; si más adelante vendés lo que heredaste (un inmueble, acciones), esa venta sí puede generar un incremento patrimonial gravado, calculado sobre el costo fiscal que corresponda al bien heredado.',
+    category: 'impuestos_tramites',
+    tags: ['herencia', 'IRPF', 'impuesto sucesorio', 'exención'],
+    howCommon: 'comun',
+  },
 ])
 
 /** FAQs grouped by category, in {@link FAQ_CATEGORIES} order, dropping empty groups. */
