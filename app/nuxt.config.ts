@@ -694,11 +694,6 @@ export default defineNuxtConfig({
     // runtimeConfig, not process.env: pm2's runtime env is empty here, so a process.env check
     // would read undefined in prod and leave an endpoint that spends Reddit + AI calls open.
     redditRefreshToken: process.env.NUXT_REDDIT_REFRESH_TOKEN || '',
-    // Gemini API key (server-only) for grounded real-news search on notable
-    // move days — see docs/superpowers/specs/2026-07-08-gemini-news-grounding-design.md.
-    // Baked at build time same as driversIngestToken/ai.apiKey; raw process.env
-    // reads empty at pm2 runtime in this deployment.
-    geminiApiKey: process.env.NUXT_GEMINI_API_KEY || '',
     // User data store + Firebase Admin (server-only secrets)
     mongoUri: process.env.MONGO_URI || '',
     firebase: {
