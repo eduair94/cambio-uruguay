@@ -811,6 +811,52 @@ class AIService {
     throw new Error(`AI analysis failed: ${lastError?.message || "Unknown error"}`);
   }
 
+  /**
+   * Single-shot answer to a closed question: one user message in, the sanitized raw text out
+   * verbatim — the caller parses it. No system prompt, no caching, no completeness/retry logic.
+   *
+   * Deliberately NOT built on getInsight(): that method treats any reply under 20 characters as
+   * a broken response and retries with "generate a COMPLETE response" appended to the prompt —
+   * exactly wrong for a classifier whose valid, intended answer to "is this even about customs?"
+   * is a bare 4-character `null`. Routing a closed classification question through it would
+   * coach the model into inventing a bucket for text that isn't about customs at all on the
+   * retry. Used by classes/aduana/classify.ts, which does its own incremental persistence
+   * (skips keys already labelled) so no cache layer is needed here.
+   *
+   * Returns null when unconfigured (no credentials — silent no-op) or on any request error.
+   */
+  async classify(prompt: string, opts?: { model?: string; maxTokens?: number }): Promise<string | null> {
+    if (!this.client) return null;
+    const model = opts?.model || this.model;
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 30000);
+      let completion;
+      try {
+        completion = await this.client.chat.completions.create(
+          {
+            model,
+            messages: [{ role: "user", content: prompt }],
+            max_tokens: opts?.maxTokens ?? 300,
+            temperature: 0,
+            stream: false,
+          },
+          { signal: controller.signal }
+        );
+      } finally {
+        clearTimeout(timeout);
+      }
+      const raw = completion.choices?.[0]?.message?.content;
+      if (!raw) return null;
+      // Reuse the exact same junk-stripping (<think> blocks, "WormGPT:" prefixes, LaTeX, odd
+      // currency glyphs) getInsight() applies to every other model reply from this provider.
+      return this.sanitizeContent(raw).trim();
+    } catch (error: any) {
+      console.warn("AIService.classify error:", error?.message || error);
+      return null;
+    }
+  }
+
   // Cleanup cache (both the hot Redis layer and the persistent MongoDB store)
   async clearCache(): Promise<void> {
     await redisCache.delPattern(`${AI_CACHE_PREFIX}*`);

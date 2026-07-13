@@ -63,6 +63,20 @@ export interface Quote {
   permalink: string;
 }
 
+/**
+ * The AI's verdict on ONE piece of corpus text, keyed to the postId/commentId it came from.
+ * The model only ever answers this closed question; every count and every choice of quote is
+ * then made by pure, deterministic code (see classes/aduana/classify.ts#aggregate). A text that
+ * is not about a real customs problem yields no AduanaLabel at all — `labelText` returns `null`.
+ */
+export interface AduanaLabel {
+  key: string; // → the source postId/commentId, unique like corpus.ts's own dedupe key
+  bucket: BucketId;
+  outcome: "resuelto" | "pago" | "perdio" | "sin-resolver";
+  lesson: string; // <=140 chars, what to learn from this case
+  confident: boolean; // false when the model itself doubts the bucket — never counted or quoted
+}
+
 /** One problem bucket: what the norm says, what to do, and the claim template. */
 export interface ProblemEntry {
   id: BucketId;
