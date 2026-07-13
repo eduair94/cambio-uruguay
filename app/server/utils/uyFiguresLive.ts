@@ -162,7 +162,8 @@ const WATCHED: Array<{
     label: 'BPC',
     baked: BASELINE.bpc,
     tol: 0.03,
-    where: 'UY_FACTS (personalFinance.ts)',
+    where:
+      'UY_FACTS (personalFinance.ts) y FIGURES (companyTypes.ts): la BPC mueve los topes, las tablas de BPS y las escalas de IRPF — TODAS se fijan por decreto en enero y se actualizan a mano',
   },
 ]
 
