@@ -15,6 +15,8 @@ import { MongooseServer, mongoose } from "./classes/database";
 import server from "./classes/Express/ExpressSetup";
 import { emptyLiveCosts } from "./classes/costs/refresh";
 import { loadCosts } from "./classes/costs/store";
+import { baselineDebtRelief } from "./classes/debt/refresh";
+import { loadDebtRelief } from "./classes/debt/store";
 import { BASELINE_FIGURES } from "./classes/figures/bands";
 import { loadFigures } from "./classes/figures/store";
 import { origins } from "./classes/origins";
@@ -1534,6 +1536,57 @@ const main = async () => {
    */
   server.getJson("cost-of-living", async (req: Request): Promise<any> => {
     return await redisCache.getOrSet("cost-of-living", async () => (await loadCosts()) ?? emptyLiveCosts(), 1800);
+  });
+
+  /**
+   * @openapi
+   * /debt-relief:
+   *   get:
+   *     tags:
+   *       - Indicators
+   *     summary: Topes de usura vigentes del BCU (crédito al consumo)
+   *     description: |
+   *       Datos que alimentan /saldar-deudas-uruguay: los topes de usura que publica el Banco
+   *       Central del Uruguay (Ley 18.212) para crédito al consumo, con y sin autorización de
+   *       descuento, tramo menor a 10.000 UI — vía una búsqueda con grounding (Gemini + Google
+   *       Search). Se sincroniza una vez por mes (pm2 `currency-debt-relief`, día 1).
+   *
+   *       Devuelve SOLO los topes (`usuryCaps`, índice 0 = con descuento, 1 = sin) — `refiRates` y
+   *       `period` son contenido estático de la página y no viven acá. Cada valor debe caer dentro
+   *       de una banda de plausibilidad para ser aceptado; si nada pasa la banda se sirve el
+   *       último baseline verificado. `asOf: null` significa que todavía no se generó ningún dato
+   *       en vivo.
+   *     responses:
+   *       200:
+   *         description: Topes de usura vigentes
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 usuryCaps:
+   *                   type: array
+   *                   items:
+   *                     type: object
+   *                     properties:
+   *                       segmento: { type: string }
+   *                       tasaMedia: { type: number }
+   *                       topeTasa: { type: number }
+   *                       topeMora: { type: number }
+   *                 asOf: { type: string, nullable: true }
+   *                 updated:
+   *                   type: array
+   *                   items: { type: string }
+   *                 sources:
+   *                   type: array
+   *                   items:
+   *                     type: object
+   *                     properties:
+   *                       label: { type: string }
+   *                       url: { type: string }
+   */
+  server.getJson("debt-relief", async (req: Request): Promise<any> => {
+    return await redisCache.getOrSet("debt-relief", async () => (await loadDebtRelief()) ?? baselineDebtRelief(), 1800);
   });
 
   /**

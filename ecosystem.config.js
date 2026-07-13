@@ -69,6 +69,16 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // BCU usury caps (topes de usura) for /saldar-deudas-uruguay. Monthly on the 1st, 10:13 UTC
+      // ≈ 07:13 America/Montevideo. Minute 13: not a multiple of 5.
+      name: "currency-debt-relief",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_debt_relief.js",
+      cron_restart: "13 10 1 * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Cluster mode, 2 instances: `pm2 reload` (scripts/deploy-backend.sh) then
       // rolls instances one at a time, so a deploy never takes the API down.
       // Safe because the API path writes nothing to disk — ProxyFileService is
