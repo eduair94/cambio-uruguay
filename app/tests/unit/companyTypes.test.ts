@@ -323,10 +323,68 @@ describe('applyGates', () => {
     expect(out.find(g => g.regime === 'sas')!.status).toBe('elegible')
   })
 
-  it('bars unipersonal regimes when there are 2+ socios', () => {
-    expect(statusOf({ ...base, people: 'socios' }, 'monotributo')).toBe('excluido')
-    expect(statusOf({ ...base, people: 'socios' }, 'unipersonal-literal-e')).toBe('excluido')
-    expect(statusOf({ ...base, people: 'socios' }, 'srl')).toBe('elegible')
+  it('bars single-holder regimes when there are 2+ socios, but allows SRL', () => {
+    expect(statusOf({ ...base, people: 'socios', sociosCount: 2 }, 'unipersonal-literal-e')).toBe(
+      'excluido'
+    )
+    expect(statusOf({ ...base, people: 'socios', sociosCount: 2 }, 'unipersonal-irae')).toBe(
+      'excluido'
+    )
+    expect(statusOf({ ...base, people: 'socios', sociosCount: 2 }, 'irpf-servicios')).toBe(
+      'excluido'
+    )
+    expect(statusOf({ ...base, people: 'socios', sociosCount: 2 }, 'srl')).toBe('elegible')
+  })
+
+  // Ley 18.083 art. 70 is taxative: a sociedad de hecho of up to 2 socios (or up to 3 if
+  // all are familiares) genuinely CAN be a monotributista. It is NOT excluded outright —
+  // the earlier version of this test wrongly asserted that, and the gate it drove told a
+  // legitimate 2-socio sociedad de hecho that monotributo was illegal for them.
+  describe('monotributo socios gate (Ley 18.083 art. 70)', () => {
+    it('allows a 2-socio sociedad de hecho, no family, no dependientes', () => {
+      const input = { ...base, people: 'socios', sociosCount: 2, sociosFamiliares: false } as const
+      expect(statusOf(input, 'monotributo')).toBe('elegible')
+    })
+
+    it('allows a 3-socio sociedad de hecho when all socios are familiares', () => {
+      const input = { ...base, people: 'socios', sociosCount: 3, sociosFamiliares: true } as const
+      expect(statusOf(input, 'monotributo')).toBe('elegible')
+    })
+
+    it('excludes a 3-socio sociedad de hecho that is NOT exclusively familiares, citing art. 70', () => {
+      const input = { ...base, people: 'socios', sociosCount: 3, sociosFamiliares: false } as const
+      const g = applyGates(input).find(x => x.regime === 'monotributo')!
+      expect(g.status).toBe('excluido')
+      expect(g.reasons.some(r => r.norm.includes('70'))).toBe(true)
+    })
+
+    it('excludes a 4-socio sociedad de hecho even when all socios are familiares', () => {
+      const input = { ...base, people: 'socios', sociosCount: 4, sociosFamiliares: true } as const
+      expect(statusOf(input, 'monotributo')).toBe('excluido')
+    })
+
+    it('excludes a 2-socio sociedad de hecho with 1 dependiente (lits. B/C admit none)', () => {
+      const input = {
+        ...base,
+        people: 'socios',
+        sociosCount: 2,
+        sociosFamiliares: false,
+        employees: 1,
+      } as const
+      expect(statusOf(input, 'monotributo')).toBe('excluido')
+    })
+
+    it('allows a solo unipersonal with 1 dependiente (lit. A admits one)', () => {
+      const input = { ...base, people: 'solo', employees: 1 } as const
+      expect(statusOf(input, 'monotributo')).toBe('elegible')
+    })
+
+    it('is dudoso, not excluido or elegible, when sociosCount is not supplied', () => {
+      const input = { ...base, people: 'socios' } as const
+      const g = applyGates(input).find(x => x.regime === 'monotributo')!
+      expect(g.status).toBe('dudoso')
+      expect(g.reasons.some(r => r.status === 'dudoso' && r.norm.includes('70'))).toBe(true)
+    })
   })
 
   it('cites a norm and a URL on every exclusion', () => {

@@ -55,6 +55,8 @@ const SAS_TRAMITE =
 const UNIP_TRAMITE = 'https://www.gub.uy/tramites/inscripcion-empresa-unipersonal'
 const IRPF_ESCALA =
   'https://www.bps.gub.uy/bps/file/23860/3/2026---comunicado-r-5---valores-escalas-irpf-2026.pdf'
+const LEY18083_70 = 'https://www.impo.com.uy/bases/leyes/18083-2006/70'
+const LEY18874_1 = 'https://www.impo.com.uy/bases/leyes/18874-2011'
 
 /** Verified 2026 constants. Nothing numeric may live outside this object. */
 export const FIGURES = {
@@ -80,6 +82,28 @@ export const FIGURES = {
     15,
     'Superficie máxima del local (monotributo)',
     'https://www.impo.com.uy/bases/decretos/199-2007'
+  ),
+
+  // --- Composición societaria del monotributo (Ley 18.083 art. 70 / Ley 18.874 art. 1) ---
+  // Art. 70 es taxativo sobre quién puede ser monotributista: lit. B admite una sociedad
+  // de hecho de hasta 2 socios sin dependientes; lit. C la extiende a 3 socios SI son
+  // exclusivamente familiares (hasta 4° grado de consanguinidad o 2° de afinidad). El
+  // monotributo social MIDES tiene su propio tope de socios (Ley 18.874 art. 1): no es el
+  // mismo número y no debe copiarse del monotributo común.
+  monotributoSociosMaxSinFamilia: fig(
+    2,
+    'Monotributo: máx. de socios en sociedad de hecho sin vínculo familiar (art. 70 lit. B)',
+    LEY18083_70
+  ),
+  monotributoSociosMaxFamilia: fig(
+    3,
+    'Monotributo: máx. de socios en sociedad de hecho integrada exclusivamente por familiares (art. 70 lit. C)',
+    LEY18083_70
+  ),
+  monotributoSocialSociosMax: fig(
+    5,
+    'Monotributo Social MIDES: máx. de socios en sociedad de hecho',
+    LEY18874_1
   ),
 
   // --- Monotributo (BPS, vigencia enero 2026) ---
@@ -274,6 +298,10 @@ const L = {
     norm: 'Ley 18.083 art. 72',
     url: 'https://www.impo.com.uy/bases/leyes/18083-2006/72',
   },
+  ley18874_1: {
+    norm: 'Ley 18.874 art. 1',
+    url: LEY18874_1,
+  },
   dto199: { norm: 'Decreto 199/007', url: 'https://www.impo.com.uy/bases/decretos/199-2007' },
   titulo4_66E: {
     norm: 'Título 4 art. 66 lit. E',
@@ -300,6 +328,26 @@ export interface WizardInput {
   sells: 'bienes' | 'servicios' | 'ambos'
   clients: 'consumidor-final' | 'empresas' | 'exterior' | 'mixto'
   people: 'solo' | 'conyuge' | 'socios'
+  /**
+   * Total number of socios in the sociedad de hecho, INCLUDING the visitor. Only
+   * meaningful when `people === 'socios'` — a `'solo'`/`'conyuge'` visitor is asking
+   * about the unipersonal branch of Ley 18.083 art. 70 lit. A, which has no socio count.
+   *
+   * Art. 70 lits. B and C are taxative about who may be a monotributista sociedad de
+   * hecho: at most 2 socios with zero dependientes (lit. B), or at most 3 if
+   * `sociosFamiliares` is true (lit. C). When this is left `undefined` for a `'socios'`
+   * visitor, the gate must NOT guess 2 — a fact that decides legality has to be asked
+   * for, not assumed. See `applyGates`, which returns `dudoso` in that case.
+   */
+  sociosCount?: number
+  /**
+   * Whether every socio in the sociedad de hecho is a familiar within the degrees Ley
+   * 18.083 art. 70 lit. C requires (hasta 4° grado de consanguinidad o 2° de afinidad).
+   * Only meaningful together with `sociosCount`, when `people === 'socios'`. It raises
+   * the cap from 2 socios (lit. B) to 3 (lit. C); a `false`/`undefined` value falls back
+   * to the stricter 2-socio, non-family cap — it never widens anything on its own.
+   */
+  sociosFamiliares?: boolean
   /**
    * Number of dependientes. Meaningfully 0, 1, or "2 o más" — kept as `number`
    * (not a `0 | 1 | 2` literal union) because the file's own no-unsourced-number
@@ -358,7 +406,6 @@ export function applyGates(input: WizardInput): GateOutcome[] {
   const servicios = input.sells === 'servicios'
   const anyServicios = input.sells === 'servicios' || input.sells === 'ambos'
   const socios = input.people === 'socios'
-  const solo = !socios
 
   return REGIMES.map(regime => {
     const reasons: GateReason[] = []
@@ -396,23 +443,68 @@ export function applyGates(input: WizardInput): GateOutcome[] {
             L.ley18083_72
           )
         }
-        if (input.people === 'socios') {
-          out(
-            'El art. 70 solo habilita la sociedad de hecho monotributista con un máximo de 2 socios sin dependientes, o hasta 3 si son familiares hasta 4° grado de consanguinidad o 2° de afinidad. Esta calculadora no releva esa composición exacta, así que trata cualquier sociedad de socios como fuera del monotributo; si tu caso encaja en la excepción, consultá a un contador.',
-            L.ley18083_70
-          )
+        // Art. 70 is taxative about who may be a monotributista:
+        //   lit. A — empresa unipersonal (incl. cónyuge/concubino colaborador), máx. 1 dependiente
+        //   lit. B — sociedad de hecho de hasta 2 socios, sin dependientes
+        //   lit. C — sociedad de hecho de hasta 3 socios SI son exclusivamente familiares
+        //            (hasta 4° grado de consanguinidad o 2° de afinidad), sin dependientes
+        // A sociedad de hecho of 2 (or 3, if family) socios genuinely CAN be a monotributista
+        // — it is NOT excluded outright. Monotributo Social MIDES has its own socio cap
+        // (Ley 18.874 art. 1), never the art. 70 lit. B/C numbers.
+        if (socios) {
+          if (regime.id === 'monotributo-social') {
+            const maxSocial = FIGURES.monotributoSocialSociosMax.value
+            if (input.sociosCount === undefined) {
+              doubt(
+                `El monotributo social está disponible para una sociedad de hecho de hasta ${maxSocial} socios, sin dependientes. No sabemos cuántos socios son: necesitamos ese dato para confirmar si calificás.`,
+                L.ley18874_1
+              )
+            } else if (input.sociosCount > maxSocial) {
+              out(
+                `El monotributo social admite una sociedad de hecho de hasta ${maxSocial} socios.`,
+                L.ley18874_1
+              )
+            }
+          } else {
+            const maxSinFamilia = FIGURES.monotributoSociosMaxSinFamilia.value
+            const maxFamilia = FIGURES.monotributoSociosMaxFamilia.value
+            if (input.sociosCount === undefined) {
+              doubt(
+                `El monotributo está disponible para una sociedad de hecho de hasta ${maxSinFamilia} socios, o hasta ${maxFamilia} si son todos familiares (hasta 4° grado de consanguinidad o 2° de afinidad). No sabemos cuántos socios son: necesitamos ese dato para confirmar si calificás.`,
+                L.ley18083_70
+              )
+            } else if (input.sociosFamiliares) {
+              if (input.sociosCount > maxFamilia) {
+                out(
+                  `Como sociedad de hecho integrada exclusivamente por familiares, el monotributo admite como máximo ${maxFamilia} socios.`,
+                  L.ley18083_70
+                )
+              }
+            } else if (input.sociosCount > maxSinFamilia) {
+              out(
+                `El monotributo admite como máximo ${maxSinFamilia} socios sin vínculo familiar (hasta ${maxFamilia} si son todos familiares).`,
+                L.ley18083_70
+              )
+            }
+          }
         }
         if (input.clients === 'empresas' || input.clients === 'exterior') {
           out('El monotributista solo puede vender a consumidores finales.', L.ley18083_71)
         }
-        const maxEmployees = regime.id === 'monotributo-social' ? 0 : solo ? 1 : 0
+        // Lits. B and C both say "sin dependientes": a sociedad de hecho admits none, even
+        // though the unipersonal (lit. A) may have 1.
+        const maxEmployees = regime.id === 'monotributo-social' ? 0 : socios ? 0 : 1
         if (input.employees > maxEmployees) {
-          out(
-            maxEmployees === 0
-              ? 'Esta figura no admite ningún dependiente.'
-              : 'La unipersonal monotributista admite como máximo 1 dependiente.',
-            L.ley18083_70
-          )
+          if (regime.id === 'monotributo-social') {
+            out('El monotributo social no admite ningún dependiente.', L.ley18874_1)
+          } else if (socios) {
+            out(
+              'La sociedad de hecho monotributista no admite ningún dependiente: los lits. B y C del art. 70 exigen "sin dependientes".',
+              L.ley18083_70
+            )
+          } else {
+            out('La unipersonal monotributista admite como máximo 1 dependiente.', L.ley18083_70)
+          }
         }
         if (input.localTooBig) {
           out(
