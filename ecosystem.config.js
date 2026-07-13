@@ -94,6 +94,23 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Move explanations for /por-que-sube-el-dolar and the histórico chart markers.
+      // 10:07 UTC ≈ 07:07 America/Montevideo — comfortably AFTER nitro's drivers:daily (09:15
+      // UTC), which still ingests the driver snapshots and archives the news this job reads.
+      // Minute 7: not a multiple of 5. Clear of currency-aduana (Mondays 09:30) so two Gemini
+      // jobs never overlap.
+      //
+      // Writes `moveexplanations` in the NUXT APP's database (classes/appdb.ts) — an ARCHIVE
+      // that also holds rows a human researched by hand via POST /api/analysis/backfill. Never
+      // truncated.
+      name: "currency-explain",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_explain.js",
+      cron_restart: "7 10 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Lender TEA refresh (bancos/financieras/cooperativas/fintech) for /prestamos-uruguay.
       // Fallback chain: regex parser first (oca/pronto/cash), Gemini-grounded lookup for the rest
       // (host-gated to the lender's own resolved domain). Daily 08:47 UTC ≈ 05:47
