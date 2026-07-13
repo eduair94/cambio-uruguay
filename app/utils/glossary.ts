@@ -645,7 +645,7 @@ export const glossary: readonly GlossaryTerm[] = [
     category: 'impuestos',
     short:
       'El IRPF Categoría I es el impuesto que pagan los residentes uruguayos sobre sus rentas de capital: intereses, dividendos, alquileres y ganancias por la venta de bienes, con una tasa general del 12%.',
-    body: 'Grava las rentas de capital mobiliario e inmobiliario y los incrementos patrimoniales (ganancias por venta) de las personas físicas residentes. La tasa general es 12% sobre la renta neta (Título 7, art. 37 lit. B), con excepciones puntuales: depósitos bancarios según moneda y plazo, dividendos al 7%, y la deuda pública uruguaya, exenta. Desde el 1/1/2026 alcanza también a las rentas y ganancias de capital de fuente extranjera —una cuenta en un bróker del exterior, el alquiler de un inmueble afuera—, algo que antes no se gravaba.',
+    body: 'Grava las rentas de capital mobiliario e inmobiliario y los incrementos patrimoniales (ganancias por venta) de las personas físicas residentes. La tasa general es 12% sobre la renta neta (Título 7, art. 37 lit. B), con excepciones puntuales: depósitos bancarios según moneda y plazo, dividendos de fuente uruguaya al 7%, y la deuda pública uruguaya, exenta. Desde el 1/1/2026 alcanza también a las rentas y ganancias de capital de fuente extranjera —una cuenta en un bróker del exterior, el alquiler de un inmueble afuera—, algo que antes no se gravaba.',
     example:
       'Un plazo fijo en pesos a más de 3 años paga apenas 0,5% de IRPF; uno en dólares al mismo plazo paga 7%.',
     related: ['irpf-categoria-ii', 'incremento-patrimonial', 'renta-de-fuente-extranjera', 'irnr'],

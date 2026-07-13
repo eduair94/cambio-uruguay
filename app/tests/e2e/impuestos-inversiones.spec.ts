@@ -75,8 +75,9 @@ test.describe('calculadora de impuestos sobre inversiones', () => {
   // number that is wrong. That is exactly why they are pinned here.
 
   test('venta con régimen real y sin costo: no publica ningún impuesto', async ({ page }) => {
-    // `capitalGainTax` defaults a missing cost to 0, so with `method: 'real'` the tax
-    // would land on the FULL sale price. The page must BLOCK the result, not guess.
+    // `capitalGainTax` now throws for `method: 'real'` when `cost` is missing (or negative)
+    // instead of defaulting/clamping it to 0, which would land the tax on the FULL sale price.
+    // The page must BLOCK the result before that throw, not guess.
     await page.goto('/herramientas/calculadora-impuestos-inversiones')
 
     await expect(async () => {
@@ -105,8 +106,9 @@ test.describe('calculadora de impuestos sobre inversiones', () => {
   })
 
   test('un monto negativo no mueve el total anual', async ({ page }) => {
-    // `annualIrpfCatI` has no negative guard: a negative amount would produce a negative
-    // "tax" that silently offsets the rest of the year. The UI clamps every amount at 0.
+    // `annualIrpfCatI` now guards against negative amounts, but the UI is the first line of
+    // defense: a negative amount would otherwise produce a negative "tax" that silently
+    // offsets the rest of the year. The UI clamps every amount at 0.
     await page.goto('/herramientas/calculadora-impuestos-inversiones')
 
     await expect(async () => {

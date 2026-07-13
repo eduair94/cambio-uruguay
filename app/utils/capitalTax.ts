@@ -256,16 +256,20 @@ export interface CapitalGainResult {
 export function capitalGainTax(input: {
   salePrice: number
   /**
-   * Inflation-adjusted fiscal cost. MANDATORY for `real` (we throw without it), ignored otherwise.
-   * Defaulting it to 0 would tax the ENTIRE sale price as if it were gain — a number the caller
-   * would publish without noticing. Fail loudly instead of silently over-taxing.
+   * Inflation-adjusted fiscal cost. MANDATORY for `real` (we throw without it), and a negative
+   * cost throws too — a negative fiscal cost is not a thing. Defaulting a missing cost to 0, or
+   * clamping a negative one to 0, would tax the ENTIRE sale price as if it were gain — a number
+   * the caller would publish without noticing. Fail loudly instead of silently over-taxing.
    */
   cost?: number
   method: CapitalGainMethod
 }): CapitalGainResult {
-  if (input.method === 'real' && !Number.isFinite(input.cost as number)) {
+  if (
+    input.method === 'real' &&
+    (!Number.isFinite(input.cost as number) || (input.cost as number) < 0)
+  ) {
     throw new TypeError(
-      'capitalGainTax: `cost` es obligatorio con method "real" — sin costo fiscal el impuesto caería sobre el precio de venta entero. Usá una base ficta si no podés probar el costo.'
+      'capitalGainTax: `cost` es obligatorio y no puede ser negativo con method "real" — sin costo fiscal (o con uno negativo) el impuesto caería sobre el precio de venta entero. Usá una base ficta si no podés probar el costo.'
     )
   }
   const salePrice = nonNegative(input.salePrice)
@@ -273,7 +277,7 @@ export function capitalGainTax(input: {
 
   const taxableBase =
     input.method === 'real'
-      ? Math.max(salePrice - nonNegative(input.cost ?? 0), 0)
+      ? Math.max(salePrice - (input.cost as number), 0)
       : salePrice * (FICTO_BASE_PCT[input.method] / 100)
 
   const tax = taxableBase * (rate / 100)
@@ -395,7 +399,7 @@ export const FOREIGN_CUSTODIAN_WITHHOLDING_PCT = 8
 export const FOREIGN_RULE = rule(
   FOREIGN_GENERAL_PCT,
   'Rentas y ganancias de capital de fuente extranjera',
-  'Título 7, art. 6 num. 2 (Ley 20.446 art. 653); Decreto 95/026',
+  'Título 7, art. 6 num. 2 (Ley 20.446 art. 653); alícuota: art. 37 lit. B; Decreto 95/026',
   DEC_95_026
 )
 

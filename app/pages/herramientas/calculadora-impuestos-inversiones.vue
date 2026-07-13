@@ -218,15 +218,15 @@
                     density="comfortable"
                     :error="costMissing"
                     hide-details
-                    hint="Obligatorio en el régimen real: sin costo, el impuesto se calcularía sobre la venta entera"
+                    hint="Obligatorio en el régimen real: sin costo, o con uno negativo, el impuesto se calcularía sobre la venta entera"
                     persistent-hint
                     data-testid="costo-fiscal"
                   />
                 </VCol>
               </VRow>
 
-              <!-- Trap: with `real` and no cost, the tax would land on the FULL sale
-                   price. We block the result instead of publishing that number. -->
+              <!-- Trap: with `real` and no cost — or a negative one — the tax would land on
+                   the FULL sale price. We block the result instead of publishing that number. -->
               <VAlert
                 v-if="costMissing"
                 type="warning"
@@ -237,9 +237,10 @@
                 data-testid="falta-costo"
               >
                 <strong>Falta el costo fiscal.</strong> En el régimen real la base es
-                <em>precio de venta − costo fiscal actualizado</em>. Si lo dejamos vacío, el cálculo
-                gravaría toda la venta como si fuera ganancia, y ese número sería falso. Ingresá el
-                costo, o cambiá a una base ficta si no lo podés probar.
+                <em>precio de venta − costo fiscal actualizado</em>. Si lo dejamos vacío o en
+                negativo, el cálculo gravaría toda la venta como si fuera ganancia, y ese número
+                sería falso. Ingresá el costo (0 o más), o cambiá a una base ficta si no lo podés
+                probar.
               </VAlert>
             </template>
 
@@ -359,7 +360,7 @@
                 </VRow>
                 <p class="text-body-2 mt-4 mb-2">
                   Tu depósito paga <strong>{{ pct(depositResult.rule.rate) }}</strong> de IRPF sobre
-                  los intereses, así que su tasa nominal de
+                  los intereses, así que su tasa {{ rateKindLabel }} de
                   <strong>{{ pct(safe(annualRatePct)) }}</strong> queda en
                   <strong>{{ pct(depositResult.netAnnualRatePct) }}</strong> neta. La deuda pública
                   uruguaya está <strong>exenta</strong> (Título 7, art. 38 lit. A): su tasa neta es
@@ -402,7 +403,11 @@
                    0,5% of the >3-year peso deposit becomes visible. -->
               <VTable density="comfortable" class="mt-4 breakdown-table">
                 <caption class="text-caption tool-muted text-left pb-2">
-                  La misma tasa nominal de
+                  La misma tasa
+                  {{
+                    rateKindLabel
+                  }}
+                  de
                   {{
                     pct(safe(annualRatePct))
                   }}, a cada plazo legal:
@@ -1051,6 +1056,12 @@ const currencyItems: Array<{ key: Currency; label: string }> = [
 const depositCurrency = computed<Currency>(() =>
   instrument.value === 'pf_ui' ? 'UYU_UI' : instrument.value === 'pf_usd' ? 'USD' : 'UYU'
 )
+/**
+ * A UI-indexed deposit quotes a REAL rate (above inflation); UYU and USD deposits quote a
+ * NOMINAL one. `letraCurrencyCaveat` below already says this explicitly for the UI case —
+ * calling the same rate "nominal" here would contradict it.
+ */
+const rateKindLabel = computed(() => (depositCurrency.value === 'UYU_UI' ? 'real' : 'nominal'))
 /** Which currency the instrument's figures are in — drives the input prefixes and the output format. */
 const isUsdInstrument = computed(
   () => instrument.value === 'pf_usd' || instrument.value === 'exterior'
@@ -1094,12 +1105,16 @@ const foreignResult = computed(() =>
     : null
 )
 
-/** The `real` method with no cost would tax the entire sale price. Block, don't guess. */
+/**
+ * The `real` method with no cost — or a negative one — would tax the entire sale price:
+ * `capitalGainTax` throws for both, but we must catch it here, before the call, so the page
+ * blocks with a message instead of crashing on the module's TypeError.
+ */
 const costMissing = computed(
   () =>
     instrument.value === 'ganancia_local' &&
     gainMethod.value === 'real' &&
-    !(typeof gainCost.value === 'number' && Number.isFinite(gainCost.value))
+    !(typeof gainCost.value === 'number' && Number.isFinite(gainCost.value) && gainCost.value >= 0)
 )
 
 const gainMaybeExempt = computed(

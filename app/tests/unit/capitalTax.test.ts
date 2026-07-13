@@ -142,10 +142,16 @@ describe('capitalTax — incrementos patrimoniales', () => {
     )
   })
 
-  it('un costo negativo no infla la base imponible', () => {
-    const r = capitalGainTax({ salePrice: 100_000, cost: -50_000, method: 'real' })
-    expect(r.taxableBase).toBe(100_000) // se trata como 0, no como +50.000 de base extra
-    expect(r.tax).toBeCloseTo(12_000, 2)
+  it('un costo negativo no se acepta: clamparlo a 0 gravaría la venta entera sin avisar', () => {
+    // A negative fiscal cost is not a thing. Clamping it to 0 (the old behaviour) would
+    // silently tax the FULL sale price — exactly the trap the missing-cost throw exists to
+    // prevent, just reached through a different input.
+    expect(() => capitalGainTax({ salePrice: 100_000, cost: -50_000, method: 'real' })).toThrow(
+      TypeError
+    )
+    expect(() => capitalGainTax({ salePrice: 100_000, cost: -50_000, method: 'real' })).toThrow(
+      /no puede ser negativo/
+    )
   })
 
   it('con costo probado, el ficto puede ser PEOR que el real', () => {
