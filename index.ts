@@ -19,6 +19,7 @@ import { baselineDebtRelief } from "./classes/debt/refresh";
 import { loadDebtRelief } from "./classes/debt/store";
 import { BASELINE_FIGURES } from "./classes/figures/bands";
 import { loadFigures } from "./classes/figures/store";
+import { loadLoanRates } from "./classes/loans/store";
 import { origins } from "./classes/origins";
 import { redisCache } from "./classes/redis_cache";
 import sentryInit from "./sentry";
@@ -1587,6 +1588,57 @@ const main = async () => {
    */
   server.getJson("debt-relief", async (req: Request): Promise<any> => {
     return await redisCache.getOrSet("debt-relief", async () => (await loadDebtRelief()) ?? baselineDebtRelief(), 1800);
+  });
+
+  /**
+   * @openapi
+   * /loan-rates:
+   *   get:
+   *     tags:
+   *       - Indicators
+   *     summary: Tasas efectivas anuales (TEA) publicadas por prestamistas uruguayos
+   *     description: |
+   *       Datos que alimentan \prestamos-uruguay: la TEA representativa publicada por cada
+   *       prestamista (bancos, financieras, cooperativas, fintech), obtenida por un parser regex
+   *       sobre la propia página del prestamista y, cuando no hay parser o falla, por una búsqueda
+   *       con grounding (Gemini + Google Search) que exige que la cita resuelva al dominio propio
+   *       del prestamista. Se sincroniza una vez por día (pm2 `currency-loans`).
+   *
+   *       `rates` trae solo el último valor conocido por prestamista; `history` guarda una entrada
+   *       por prestamista y por día — una serie temporal que nunca se trunca ni se regenera. Un
+   *       scrape fallido o implausible nunca borra el último valor bueno.
+   *     responses:
+   *       200:
+   *         description: TEAs vigentes por prestamista
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 rates:
+   *                   type: object
+   *                   description: Por id de prestamista.
+   *                   additionalProperties:
+   *                     type: object
+   *                     properties:
+   *                       teaPct: { type: number }
+   *                       scrapedAt: { type: string }
+   *                 history:
+   *                   type: object
+   *                   description: Por id de prestamista, un array con una entrada por día.
+   *                   additionalProperties:
+   *                     type: array
+   *                     items:
+   *                       type: object
+   *                       properties:
+   *                         date: { type: string }
+   *                         teaPct: { type: number }
+   *                         source: { type: string }
+   *                         method: { type: string, enum: [regex, gemini] }
+   *                 updatedAt: { type: string }
+   */
+  server.getJson("loan-rates", async (req: Request): Promise<any> => {
+    return await redisCache.getOrSet("loan-rates", async () => await loadLoanRates(), 1800);
   });
 
   /**

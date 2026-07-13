@@ -79,6 +79,19 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Lender TEA refresh (bancos/financieras/cooperativas/fintech) for /prestamos-uruguay.
+      // Fallback chain: regex parser first (oca/pronto/cash), Gemini-grounded lookup for the rest
+      // (host-gated to the lender's own resolved domain). Daily 08:47 UTC ≈ 05:47
+      // America/Montevideo. Minute 47: not a multiple of 5. The old nitro `loans:scrape` ran 08:45,
+      // which IS a multiple of 5 and therefore raced currency-sync every single day.
+      name: "currency-loans",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_loans.js",
+      cron_restart: "47 8 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Cluster mode, 2 instances: `pm2 reload` (scripts/deploy-backend.sh) then
       // rolls instances one at a time, so a deploy never takes the API down.
       // Safe because the API path writes nothing to disk — ProxyFileService is
