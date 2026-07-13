@@ -283,8 +283,9 @@ export default defineNuxtConfig({
     scheduledTasks: {
       // 09:15 UTC ≈ 06:15 Uruguay: refresh macro-driver snapshots + archive daily news.
       '15 9 * * *': ['drivers:daily'],
-      // 09:20 UTC ≈ 06:20 Uruguay: record AI price-lean + external forecasts per currency.
-      '20 9 * * *': ['predictions:daily'],
+      // NOTE: predictions:daily (AI price-lean + external forecasts) moved to the backend
+      // (pm2 currency-predictions, 09:23 UTC) — it now writes the SAME pricepredictions
+      // collection (classes/appdb.ts) that /api/predictions/[currency].get.ts already reads.
       // 09:30 UTC ≈ 06:30 Uruguay: generate the day's blog posts.
       '30 9 * * *': ['blog:daily'],
       // 10:05 UTC ≈ 07:05 Uruguay: compare the backend's freshly-refreshed figures (pm2
@@ -660,10 +661,10 @@ export default defineNuxtConfig({
     // trigger for the daily driver ingest). Unset -> endpoint is open, mirroring
     // /api/blog/generate's NUXT_BLOG_GENERATE_TOKEN pattern.
     driversIngestToken: process.env.NUXT_DRIVERS_INGEST_TOKEN || '',
-    // Optional shared-secret gate for POST /api/predictions/ingest (manual/cron
-    // trigger for the daily price-prediction record). Unset -> endpoint is open,
-    // same convention as driversIngestToken above.
-    predictionsIngestToken: process.env.NUXT_PREDICTIONS_INGEST_TOKEN || '',
+    // NOTE: predictionsIngestToken / POST /api/predictions/ingest is gone — the daily AI
+    // price-lean + external-forecast record moved to the backend (classes/predictions/*, pm2
+    // currency-predictions). The manual trigger it provided is now, on the VPS:
+    // `cd /root/cambio-uruguay && node dist/sync_predictions.js`.
     // AI provider (server-only) for the daily blog generator. OpenAI-compatible
     // wormgpt endpoint; defaults to the latest model. Falls back to the backend
     // /ai/insights when no apiKey is present in this app's environment.
