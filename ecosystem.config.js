@@ -79,6 +79,21 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Daily AI directional lean + external forecast comparison per live currency, for the
+      // PricePredictionCard on /historico. Writes `pricepredictions` in the NUXT APP's database
+      // (classes/appdb.ts, APP_MONGO_URI) — the SAME collection
+      // app/server/api/predictions/[currency].get.ts already reads; that route is untouched. This
+      // is a ledger (one doc per currency+date, unique) kept forever to score past forecasts — it
+      // is never regenerated and never truncated. Refuses to run without APP_MONGO_URI set.
+      // Daily 09:23 UTC ≈ 06:23 America/Montevideo. Minute 23: not a multiple of 5.
+      name: "currency-predictions",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_predictions.js",
+      cron_restart: "23 9 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Lender TEA refresh (bancos/financieras/cooperativas/fintech) for /prestamos-uruguay.
       // Fallback chain: regex parser first (oca/pronto/cash), Gemini-grounded lookup for the rest
       // (host-gated to the lender's own resolved domain). Daily 08:47 UTC ≈ 05:47

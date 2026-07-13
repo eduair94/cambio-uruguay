@@ -20,6 +20,7 @@
     "sync_debt_relief": "ts-node sync_debt_relief.ts",
     "sync_loans": "ts-node sync_loans.ts",
     "import_loan_history": "ts-node import_loan_history.ts",
+    "sync_predictions": "ts-node sync_predictions.ts",
     "sync_favicon": "ts-node sync_favicon.ts",
     "build": "tsc -p tsconfig.production.json",
     "get_locations": "ts-node get_locations.ts",
