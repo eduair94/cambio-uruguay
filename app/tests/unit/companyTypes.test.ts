@@ -43,6 +43,9 @@ const ALL_REGIMES: readonly RegimeId[] = [
 /** UYU value of `n` UI at the UI we publish. Mirrors the module's own conversion. */
 const ui = (n: number) => n * F.uiHoy.value
 
+/** Formats a peso amount exactly like the module's own (private) `uyu()` helper. */
+const uyu = (n: number) => `$${Math.round(n).toLocaleString('es-UY')}`
+
 describe('FIGURES', () => {
   it('exposes every numeric constant as a sourced Figure', () => {
     const entries = Object.entries(FIGURES)
@@ -260,45 +263,81 @@ describe('no-unsourced-number guard', () => {
     ts.ScriptKind.TS
   )
 
-  /** Is `node` (anywhere in its ancestor chain) an argument of a call to `callee(...)`? */
-  const isInsideCallTo = (node: ts.Node, callee: string): boolean => {
+  /**
+   * Is `node` an argument of a call to `callee(...)` that is ITSELF bound — as a property
+   * value, however many `as const` / `satisfies` wrappers sit in between — to a
+   * `VariableDeclaration` named one of `homes`?
+   *
+   * IMPORTANT 2 — the previous version of this check (`isInsideCallTo`) only asked whether the
+   * literal sat inside a call spelled `callee`, ANYWHERE in the file. That approved this decoy,
+   * which passed all 146 tests before this fix:
+   *
+   *   export const SNEAKY = {
+   *     ivaRate: est(0.22, 'IVA tasa básica', 'no la buscamos'),
+   *   } as const satisfies Record<string, Estimate>
+   *
+   * — laundering IVA's 22% (which DOES have a primary source) as "unsourced", provenance as
+   * costume in reverse. `isInsideBracketsTableOf` and `isLockoutYears` (below) were both
+   * already narrowed from matching a SHAPE to requiring binding to the REAL structure; this is
+   * the same precedent applied to `fig()`/`est()`: the call itself must be a property value
+   * that is, through any chain of object literals / `as const` / `satisfies` wrappers, bound to
+   * one of the named declarations that are allowed to hold it. A decoy call of the same name
+   * anywhere else — even one built from a second, shadowing `const est = ...` sharing the exact
+   * identifier — is no longer approved just because it is spelled the same.
+   */
+  const isInsideCallBoundTo = (
+    node: ts.Node,
+    callee: string,
+    homes: readonly string[]
+  ): boolean => {
     for (let p: ts.Node | undefined = node.parent; p; p = p.parent) {
       if (ts.isCallExpression(p) && ts.isIdentifier(p.expression) && p.expression.text === callee) {
-        return true
+        for (let q: ts.Node | undefined = p.parent; q; q = q.parent) {
+          if (
+            ts.isVariableDeclaration(q) &&
+            ts.isIdentifier(q.name) &&
+            homes.includes(q.name.text)
+          ) {
+            return true
+          }
+        }
+        return false
       }
     }
     return false
   }
 
-  /** Is `node` an argument of `fig(...)` — i.e. a value that carries a primary source? */
-  const isInsideFigCall = (node: ts.Node): boolean => isInsideCallTo(node, 'fig')
+  /**
+   * Is `node` an argument of a `fig(...)` call that is itself bound to `FIGURES` — i.e. a
+   * value that carries a primary source, IN THE PLACE the file's header promises it does?
+   *
+   * Matching on the callee's name alone (as this check used to, and as `isInsideEstCall` used
+   * to before IMPORTANT 2) approves a `fig(...)` call anywhere in the file: a decoy object of
+   * the right SHAPE but sitting outside `FIGURES` is invisible to every test that iterates
+   * `Object.entries(FIGURES)` by name — the "sources every figure to a primary domain" test
+   * included, which only ever looks at entries actually IN `FIGURES`. Binding the call to the
+   * `FIGURES` declaration closes that the same way `isInsideEstCall` is closed below.
+   */
+  const isInsideFigCall = (node: ts.Node): boolean => isInsideCallBoundTo(node, 'fig', ['FIGURES'])
 
   /**
-   * Is `node` an argument of `est(...)`? `est()` is the market-estimate constructor: it
+   * Is `node` an argument of an `est(...)` call that is itself bound to `MARKET_ESTIMATES` or
+   * `PRODUCT_THRESHOLDS`? `est()` is the market-estimate / product-threshold constructor: it
    * carries a label and a rationale and flags itself `unsourced: true`. It is exactly as
-   * structured as `fig()`, it just makes the OPPOSITE claim — "no primary source exists
-   * for this, and here is why". That is a claim the guard can verify (the value is inside
-   * an `est()` call), which a bare `4000` in an allowlist was not: the allowlist matches on
-   * `node.text`, so it approved the digits `4000` ANYWHERE in the file, for any purpose.
+   * structured as `fig()`, it just makes the OPPOSITE claim — "no primary source exists for
+   * this, and here is why".
    *
-   * MINOR 9 — SAY THE QUIET PART OUT LOUD: THIS IS THE ONE PLACE THE GUARD TRUSTS INTENT OVER
-   * STRUCTURE. Everywhere else, an exemption is a structural fact the AST can confirm — the
-   * literal is inside a `fig()` call (which the primary-domain test then independently forces
-   * to carry a real URL), or inside a `brackets:` table of a named declaration that carries its
-   * own `source`, or it is an array index. Here, the guard confirms only that the number sits
-   * inside a call to an identifier spelled `est`, and takes on faith that the number really IS
-   * unsourceable rather than merely unsourced. Nothing stops someone declaring a second
-   * `const est = ...`, or laundering a genuine BPS figure through `est()` to dodge the URL
-   * requirement — and `MARKET_ESTIMATES`'s own test checks only the SHAPE (value/label/
-   * rationale/unsourced), never that no primary source exists, because no test can check that.
-   *
-   * This is accepted BY DESIGN: `est()` self-labels, and its output is rendered to the reader
-   * as an explicit "market estimate, not an official figure", so a laundered figure would be
-   * lying in public rather than hiding. But it is a hole the AST cannot close, and it is worth
-   * knowing that it is here rather than discovering it. Adding an `est()` call is a decision a
-   * human must review; adding a `fig()` call is one the tests can police.
+   * MINOR 9 remains true of what is left, even after IMPORTANT 2: nothing stops someone
+   * declaring a SECOND, shadowing `const est = ...`, or genuinely mislabelling a sourced figure
+   * as `unsourced: true` INSIDE `MARKET_ESTIMATES`/`PRODUCT_THRESHOLDS` themselves — no AST can
+   * verify that a rationale is honest, and `MARKET_ESTIMATES`'s own test checks only the SHAPE
+   * (value/label/rationale/unsourced), never that no primary source exists, because no test
+   * can check that. That remains a hole only a human reviewer can close. What THIS fix closes
+   * is the WHERE: an `est()` call now only counts if it lives in one of the two places the
+   * header says it may — not anywhere a call happens to be spelled the same.
    */
-  const isInsideEstCall = (node: ts.Node): boolean => isInsideCallTo(node, 'est')
+  const isInsideEstCall = (node: ts.Node): boolean =>
+    isInsideCallBoundTo(node, 'est', ['MARKET_ESTIMATES', 'PRODUCT_THRESHOLDS'])
 
   /** Is `node` used as an array index, e.g. the `0` in `arr[0]`? */
   const isArrayIndex = (node: ts.Node): boolean => {
@@ -429,6 +468,81 @@ describe('no-unsourced-number guard', () => {
         `Move each one into FIGURES with a primary source (fig(value, label, source)), or — if it ` +
         `is genuinely structural (like the calendar/percentage constants already allowlisted above) ` +
         `— add it to STRUCTURAL_ALLOWLIST in this test with a one-line justification.`
+    ).toEqual([])
+  })
+
+  /**
+   * IMPORTANT 2 — defence in depth for `isInsideEstCall`. That predicate only fires when a
+   * NUMERIC LITERAL sits inside an `est(...)` call, so a decoy call built entirely from string
+   * arguments (`est('not a number', ...)` is nonsensical, but the point generalises: a call
+   * site is a commitment regardless of whether the guard above ever had to inspect one of its
+   * arguments) would never even reach the numeric-literal scan. This test checks the CALL SITE
+   * itself, independently of what is inside it: no `est(` call may exist anywhere in the module
+   * except as a property value of `MARKET_ESTIMATES` or `PRODUCT_THRESHOLDS`.
+   */
+  it('has no est( call site anywhere outside MARKET_ESTIMATES or PRODUCT_THRESHOLDS', () => {
+    const homes = ['MARKET_ESTIMATES', 'PRODUCT_THRESHOLDS']
+    const offenders: string[] = []
+    const visit = (node: ts.Node) => {
+      if (
+        ts.isCallExpression(node) &&
+        ts.isIdentifier(node.expression) &&
+        node.expression.text === 'est'
+      ) {
+        let bound = false
+        for (let q: ts.Node | undefined = node.parent; q; q = q.parent) {
+          if (
+            ts.isVariableDeclaration(q) &&
+            ts.isIdentifier(q.name) &&
+            homes.includes(q.name.text)
+          ) {
+            bound = true
+            break
+          }
+        }
+        if (!bound) {
+          const { line } = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile))
+          offenders.push(`  line ${line + 1}: ${node.getText(sourceFile)}`)
+        }
+      }
+      ts.forEachChild(node, visit)
+    }
+    visit(sourceFile)
+    expect(
+      offenders,
+      `Found est(...) call site(s) outside MARKET_ESTIMATES/PRODUCT_THRESHOLDS:\n${offenders.join('\n')}`
+    ).toEqual([])
+  })
+
+  // Same defence, for the same reason, on the `fig()` side: this is what makes
+  // `isInsideFigCall`'s binding check actually mean something, rather than being unreachable
+  // dead code nobody ever proved closes anything.
+  it('has no fig( call site anywhere outside FIGURES', () => {
+    const offenders: string[] = []
+    const visit = (node: ts.Node) => {
+      if (
+        ts.isCallExpression(node) &&
+        ts.isIdentifier(node.expression) &&
+        node.expression.text === 'fig'
+      ) {
+        let bound = false
+        for (let q: ts.Node | undefined = node.parent; q; q = q.parent) {
+          if (ts.isVariableDeclaration(q) && ts.isIdentifier(q.name) && q.name.text === 'FIGURES') {
+            bound = true
+            break
+          }
+        }
+        if (!bound) {
+          const { line } = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile))
+          offenders.push(`  line ${line + 1}: ${node.getText(sourceFile)}`)
+        }
+      }
+      ts.forEachChild(node, visit)
+    }
+    visit(sourceFile)
+    expect(
+      offenders,
+      `Found fig(...) call site(s) outside FIGURES:\n${offenders.join('\n')}`
     ).toEqual([])
   })
 })
@@ -2237,6 +2351,31 @@ describe('evaluate', () => {
       expect(srl.cannotCost.join(' ')).toContain('16.713')
     })
 
+    // IMPORTANT 1 — `cannotCostReasons` used to emit ONE non-CJPPU message for every regime
+    // with `bpsUnknown`, citing Ley 16.713 art. 172 ("se cobra POR CADA SOCIO que desarrolla
+    // actividad ... Ley 16.713 art. 172"). Art. 172 is right for the SRL and defensible for the
+    // sociedad de hecho — both are in the article's own list ("sociedades colectivas, de
+    // responsabilidad limitada, en comandita y de capital e industria... que desarrollen
+    // actividad de cualquier naturaleza dentro de la empresa"). It is WRONG for the
+    // monotributo, whose aporte is the substitutive, unified contribution of Ley 18.083 art. 70
+    // — a flat pago único BPS's own monotributo table fixes per socio (`monoSocioSociedadHecho`
+    // = $2.088), not the art. 172 aportación ficta patronal. Verified against the article's own
+    // verbatim text (impo.com.uy/bases/leyes/16713-1995/172): it never mentions the monotributo.
+    it('IMPORTANT 1: does not cite Ley 16.713 art. 172 for the monotributo — that article does not govern it', () => {
+      const v = evaluate({ ...shop, people: 'socios' })
+      const mono = v.ranked.find(r => r.regime === 'monotributo')!
+      expect(mono.status).toBe('dudoso') // sociosCount was never supplied
+      expect(mono.comparable).toBe(false)
+      expect(mono.cannotCost.length).toBeGreaterThan(0)
+      const text = mono.cannotCost.join(' ')
+      expect(text).not.toContain('16.713')
+      expect(text).toContain('18.083')
+      expect(text).toContain('70')
+      // It must still name the real, sourced per-socio figure BPS actually charges, not just
+      // disclaim the wrong one.
+      expect(text).toContain(uyu(F.monoSocioSociedadHecho.value))
+    })
+
     it('prices nothing above the IRAE ficto’s legal range (UI 4.000.000)', () => {
       const v = evaluate({
         ...shop,
@@ -2291,6 +2430,26 @@ describe('evaluate', () => {
     })
   })
 
+  // MINOR 3 — `noRecommendation`'s wording asserts "de los regímenes que legalmente podrías
+  // usar, ninguno tiene un costo que podamos calcular ENTERO", and the whole grey-zone warning
+  // block below is gated on `best !== null` (so `recommended === null` ⇒ no warnings at all,
+  // per the "never warns about a regime it did not recommend" test). If a `comparable` DUDOSO
+  // regime ever coexisted with `recommended === null`, the page would state something false (a
+  // priced regime DOES exist) AND suppress the only warning that could tell the reader about
+  // it. It cannot be constructed from the current gate table (`sas` is unconditionally
+  // `elegible`, so whenever ANY regime is comparable, at least one `elegible` one always is,
+  // by the sweep below) — but that is an accident of the current gates, not an enforced
+  // invariant. Pin it so a future gate change fails loudly instead of shipping a false sentence.
+  it('MINOR 3: when there is no recommendation, no comparable regime is a priced DUDOSO one either', () => {
+    for (const { v } of VERDICTS) {
+      if (v.recommended !== null) continue
+      expect(
+        v.ranked.every(r => !(r.comparable && r.status === 'dudoso')),
+        'noRecommendation claims no comparable regime exists — none may be comparable AND dudoso'
+      ).toBe(true)
+    }
+  })
+
   // ---------------------------------------------------------------------------------
   // The warnings are the point of the page, not decoration: they carry what changes the
   // decision but never shows up in the monthly number.
@@ -2303,7 +2462,7 @@ describe('evaluate', () => {
       expect(w).toBeDefined()
       expect(w!.text).toContain('3')
       expect(w!.url).toContain('impo.com.uy')
-      expect(w!.norm!.length).toBeGreaterThan(0)
+      expect(w!.norm.length).toBeGreaterThan(0)
     })
 
     it('does not warn about the lockout when revenue is far from the ceiling', () => {
@@ -2321,6 +2480,19 @@ describe('evaluate', () => {
         )
       expect(warned(tope * ratio + 1000)).toBe(true)
       expect(warned(tope * ratio - 1000)).toBe(false)
+    })
+
+    // NIT — at revenue EXACTLY `ceiling * ratio`, the remaining gap to the ceiling is EXACTLY
+    // `ceiling * (1 - ratio)` — i.e. exactly 15%, not "less than" it. "estás a menos del 15%
+    // del tope" is false at that boundary (you are AT 15%, not under it), even though the
+    // `>=` comparison correctly fires the warning there.
+    it('NIT: does not claim "less than X%" when the revenue sits exactly at the alert ratio', () => {
+      const tope = F.topeMonotributoUnipersonalUyu.value
+      const ratio = PRODUCT_THRESHOLDS.lockoutAlertRatio.value
+      const v = evaluate({ ...shop, annualRevenueUyu: tope * ratio })
+      const w = v.warnings.find(x => x.kind === 'lockout')
+      expect(w).toBeDefined()
+      expect(w!.text).not.toMatch(/menos del/i)
     })
 
     it('warns about unlimited liability, citing the Código Civil for a persona física', () => {
@@ -2381,6 +2553,35 @@ describe('evaluate', () => {
       expect(w!.cheaperByMonthly).toBeGreaterThan(0)
     })
 
+    // MINOR 4 — `cheaperByMonthly = Math.round((best.price - p.price) / 12)` can round to 0
+    // even though the loop above already required `p.price < best.price` (genuinely,
+    // strictly cheaper): a strictly-smaller ANNUAL gap under ~6 UYU/yr rounds to $0/month, and
+    // "te saldría $0 menos por mes" is not a smaller truth than the real number, it is a wrong
+    // one. The fix drops the price clause, not the warning — the legal tension is the point,
+    // not the money.
+    it('MINOR 4: drops the "$0 menos por mes" clause when the rounded saving is 0, but keeps the warning', () => {
+      const input: WizardInput = { ...shop, people: 'socios', sociosCount: 1 }
+      // With exactly 1 "socio", Ley 16.060 art. 1's 2-socio minimum is unmet: every gated
+      // regime that checks it (monotributo, sociedad-hecho, srl, sa) turns DUDOSO on that one
+      // ground, while SAS — which never gates on sociosCount — stays the sole ELEGIBLE,
+      // comparable regime. `accountantMonthly` is added to SAS's total but NOT to
+      // monotributo's (it has no accountant component), so it is the one knob that moves the
+      // GAP between them without moving monotributo's own price — solve for the value that
+      // narrows that gap to a fraction of a peso a month.
+      const sasAtZero = estimateCost('sas', input, 0).totalMonthly!
+      const monoAtZero = estimateCost('monotributo', input, 0).totalMonthly!
+      const accountantMonthly = monoAtZero - sasAtZero + 0.1
+      const v = evaluate(input, accountantMonthly)
+      expect(v.recommended).toBe('sas')
+      const w = v.warnings.find(x => x.kind === 'grey-zone' && x.regime === 'monotributo')
+      expect(w).toBeDefined()
+      expect(w!.cheaperByMonthly).toBe(0)
+      // The warning survives...
+      expect(w!.text.length).toBeGreaterThan(0)
+      // ...but a "$0 menos por mes" clause would be dishonest noise, so it must be gone.
+      expect(w!.text).not.toMatch(/\$0\b/)
+    })
+
     it('surfaces EVERY dudoso reason of the cheaper unrecommended regime, and no other regime’s', () => {
       const v = evaluate({ ...shop, sells: 'servicios', clients: 'exterior' })
       const literalE = v.ranked.find(r => r.regime === 'unipersonal-literal-e')!
@@ -2422,7 +2623,7 @@ describe('evaluate', () => {
       for (const { v } of VERDICTS) {
         for (const w of v.warnings) {
           expect(w.text.length).toBeGreaterThan(0)
-          expect(w.norm!.length, `${w.kind} must cite a norm`).toBeGreaterThan(0)
+          expect(w.norm.length, `${w.kind} must cite a norm`).toBeGreaterThan(0)
           expect(w.url, `${w.kind} must link the norm`).toMatch(/^https:\/\//)
         }
       }

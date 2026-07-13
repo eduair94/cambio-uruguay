@@ -9,9 +9,14 @@
 // kinds: a `Figure` (FIGURES / the bracket tables) carries a PRIMARY SOURCE and a verification
 // date; an `Estimate` in MARKET_ESTIMATES is a market price nobody publishes; an `Estimate` in
 // PRODUCT_THRESHOLDS is an editorial choice about when to warn. `tests/unit/companyTypes.test.ts`
-// walks this file's AST and fails the build on any numeric literal that is none of those. This
-// is a legal-information page: an unsourced number is a bug, and a number wearing the WRONG
-// kind of provenance is a worse one.
+// walks this file's AST and fails the build on any numeric literal that is none of those — where
+// "is" means the literal's `fig()`/`est()` call is itself BOUND to the real FIGURES /
+// MARKET_ESTIMATES / PRODUCT_THRESHOLDS declaration, not merely sitting inside a same-named call
+// anywhere in the file (a decoy `est(0.22, ...)` outside all three is rejected, not waved
+// through) — plus a short, individually-justified allowlist of structural facts (an array
+// index, a lockout's `years`, the {0, 1, 12} calendar/identity constants) that are not claims
+// about the world at all. This is a legal-information page: an unsourced number is a bug, and a
+// number wearing the WRONG kind of provenance is a worse one.
 //
 // The peso ceilings are ANNUAL CONSTANTS published by BPS/DGI, fixed with the UI at
 // the close of the previous ejercicio. They are NOT recomputed from today's UI.
@@ -2144,8 +2149,11 @@ export function estimateCost(
 export interface Warning {
   kind: 'lockout' | 'liability' | 'grey-zone'
   text: string
-  norm?: string
-  url?: string
+  /** NIT — required, like `GateReason.norm`/`Lockout.norm`: every construction site below
+   * already supplies one, and nothing renders a warning without citing what it is about. */
+  norm: string
+  /** NIT — required, like `GateReason.url`/`Lockout.url`, for the same reason. */
+  url: string
   /**
    * Which regime this warning is about. Set on a `grey-zone` warning that names a CHEAPER,
    * un-recommended `dudoso` regime — never `recommended` itself, since `recommended` is never
@@ -2245,11 +2253,34 @@ function cannotCostReasons(regime: RegimeId, input: WizardInput, cost: CostBreak
   const out: string[] = []
 
   if (cost.bpsUnknown) {
-    out.push(
-      cjppuEnJuego(input)
-        ? 'No podemos calcular tu aporte jubilatorio: tenés un título amparado por la Caja de Profesionales Universitarios (CJPPU) y ejercés la profesión, así que no se rige por la tabla de BPS que usamos para todo el mundo — y la CJPPU no publica su escala de forma abierta. Encima, la Ley 17.738 art. 43 deja expresamente abierto que ADEMÁS te corresponda aportar a BPS ("sin perjuicio de las afiliaciones a otros institutos de seguridad social que pudieran corresponder"), sin decir cuándo. Consultá a la Caja: no lo inventamos en ninguna de las dos direcciones.'
-        : `No podemos calcular el aporte a BPS: se cobra POR CADA SOCIO que desarrolla actividad dentro de la empresa (Ley 16.713 art. 172), y no sabemos cuántos socios trabajan acá. No asumimos que sea uno solo: si son dos, el aporte se duplica, y eso puede dar vuelta la comparación entre los regímenes de sociedad.`
-    )
+    // IMPORTANT 1 — this used to emit ONE non-CJPPU message for every regime with
+    // `bpsUnknown`, citing Ley 16.713 art. 172. Art. 172 governs the aportación ficta
+    // patronal of a socio "de las sociedades colectivas, de responsabilidad limitada, en
+    // comandita y de capital e industria ... que desarrolle actividad de cualquier
+    // naturaleza dentro de la empresa" (verified verbatim against
+    // impo.com.uy/bases/leyes/16713-1995/172) — which is exactly right for the SRL and
+    // defensible for the sociedad de hecho, and says NOTHING about the monotributo. The
+    // monotributo's aporte is a different thing entirely: the substitutive, unified pago
+    // único of Ley 18.083 art. 70, whose BPS table fixes the per-socio figure directly
+    // (`monoSocioSociedadHecho`). Citing art. 172 there was a citation that did not support
+    // its use — the exact defect this file exists to catch, one regime over.
+    if (cjppuEnJuego(input)) {
+      out.push(
+        'No podemos calcular tu aporte jubilatorio: tenés un título amparado por la Caja de Profesionales Universitarios (CJPPU) y ejercés la profesión, así que no se rige por la tabla de BPS que usamos para todo el mundo — y la CJPPU no publica su escala de forma abierta. Encima, la Ley 17.738 art. 43 deja expresamente abierto que ADEMÁS te corresponda aportar a BPS ("sin perjuicio de las afiliaciones a otros institutos de seguridad social que pudieran corresponder"), sin decir cuándo. Consultá a la Caja: no lo inventamos en ninguna de las dos direcciones.'
+      )
+    } else if (regime === 'monotributo') {
+      out.push(
+        `No podemos calcular el aporte a BPS: el monotributo es un pago único sustitutivo que la propia tabla de BPS fija (Ley 18.083 art. 70), y en una sociedad de hecho monotributista ese pago se cobra POR SOCIO — ${uyu(FIGURES.monoSocioSociedadHecho.value)} en el régimen pleno. No sabemos cuántos socios trabajan acá: si son dos, el aporte se duplica, y eso puede dar vuelta la comparación entre los regímenes de sociedad.`
+      )
+    } else if (regime === 'monotributo-social') {
+      out.push(
+        `No podemos calcular el aporte a BPS: el monotributo social es el pago único sustitutivo que fija la propia tabla de BPS (Ley 18.874), y no sabemos cuántos socios trabajan en el emprendimiento asociativo. No asumimos un número: eso puede dar vuelta la comparación entre los regímenes de sociedad.`
+      )
+    } else {
+      out.push(
+        `No podemos calcular el aporte a BPS: se cobra POR CADA SOCIO que desarrolla actividad dentro de la empresa (Ley 16.713 art. 172), y no sabemos cuántos socios trabajan acá. No asumimos que sea uno solo: si son dos, el aporte se duplica, y eso puede dar vuelta la comparación entre los regímenes de sociedad.`
+      )
+    }
   }
 
   if (cost.taxUnknown) {
@@ -2353,10 +2384,14 @@ export function evaluate(
   ]
 
   const warnings: Warning[] = []
-  const rec = recommended === null ? undefined : ranked.find(r => r.regime === recommended)
+  // MINOR 5 — `rec` used to be computed here (`ranked.find(r => r.regime === recommended)`),
+  // an O(n) scan whose ONLY use was the guard below. `best.r` is that same object: `best` is
+  // drawn from `priced`, whose entries are pushed straight from `ranked` (see the loop above),
+  // and `recommended` is defined as `best?.r.regime` — so whenever `best` is non-null, `best.r`
+  // IS the ranked entry for `recommended`. Nothing was gained by finding it a second time.
   const regime = recommended === null ? undefined : byId.get(recommended)
 
-  if (rec !== undefined && regime !== undefined && best !== null) {
+  if (regime !== undefined && best !== null) {
     // THE LOCKOUT. It only matters if you are near the ceiling of the regime we are
     // recommending — and "near" is a product judgement, so it is declared as one
     // (PRODUCT_THRESHOLDS, not FIGURES: no norm defines it).
@@ -2371,9 +2406,13 @@ export function evaluate(
         style: 'percent',
         maximumFractionDigits: 0,
       })
+      // NIT — at revenue EXACTLY `ceiling * ratio` (the boundary the `>=` above fires on),
+      // the remaining gap to the ceiling is EXACTLY `margen`, not less than it. "estás a MENOS
+      // DEL 15%" was false right at the boundary; "estás DENTRO DEL 15%" is true there and
+      // everywhere past it, matching the `>=` comparison exactly.
       warnings.push({
         kind: 'lockout',
-        text: `Cuidado: estás a menos del ${margen} del tope de este régimen (${uyu(ceiling)} al año). ${regime.lockout.text} El cerrojo es de ${regime.lockout.years} años, y se dispara aunque te vayas por tu propia voluntad. Si esperás crecer, entrar acá para salir en un año puede costarte más caro que arrancar directamente en el régimen siguiente.`,
+        text: `Cuidado: estás dentro del ${margen} del tope de este régimen (${uyu(ceiling)} al año). ${regime.lockout.text} El cerrojo es de ${regime.lockout.years} años, y se dispara aunque te vayas por tu propia voluntad. Si esperás crecer, entrar acá para salir en un año puede costarte más caro que arrancar directamente en el régimen siguiente.`,
         norm: regime.lockout.norm,
         url: regime.lockout.url,
       })
@@ -2408,11 +2447,21 @@ export function evaluate(
       const cheaperRegime = byId.get(p.r.regime)
       if (cheaperRegime === undefined) continue
       const cheaperByMonthly = Math.round((best.price - p.price) / 12)
+      // MINOR 4 — `p.price < best.price` (checked above) already proved this regime is
+      // genuinely, strictly cheaper — but a strictly-smaller ANNUAL gap of under ~6 UYU can
+      // still round to $0/month. Saying "te saldría $0 menos por mes" is not a smaller truth
+      // than the real number, it is a wrong one: it reads as "there's no saving", when there
+      // is one, just not one worth quantifying to the peso. So the PRICE CLAUSE is dropped
+      // when it would round to $0 — the WARNING is not: the legal tension is the point, the
+      // money is not.
       for (const r of p.r.reasons) {
         if (r.status !== 'dudoso') continue
         warnings.push({
           kind: 'grey-zone',
-          text: `${cheaperRegime.name} te saldría ${uyu(cheaperByMonthly)} menos por mes, pero no te lo recomendamos: ${r.text}`,
+          text:
+            cheaperByMonthly > 0
+              ? `${cheaperRegime.name} te saldría ${uyu(cheaperByMonthly)} menos por mes, pero no te lo recomendamos: ${r.text}`
+              : `${cheaperRegime.name} te saldría un poco menos, pero no te lo recomendamos: ${r.text}`,
           norm: r.norm,
           url: r.url,
           regime: p.r.regime,
