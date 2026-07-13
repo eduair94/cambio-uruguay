@@ -141,10 +141,32 @@ describe('no-unsourced-number guard', () => {
     return !!p && ts.isElementAccessExpression(p) && p.argumentExpression === node
   }
 
-  /** Is `node` inside the `IRPF_CAT2` table (the sourced sibling of FIGURES from finding 2)? */
-  const isInsideIrpfCat2 = (node: ts.Node): boolean => {
+  /**
+   * Is `node` inside the `brackets` property value of the `IRPF_CAT2` declaration
+   * specifically — NOT anywhere under the declaration. Walking up looking only for
+   * `VariableDeclaration IRPF_CAT2` (the previous version of this check) exempted the
+   * ENTIRE object literal, so a sibling of `source`/`verifiedAt`/`brackets` (e.g. a
+   * smuggled `sneakyUnsourcedFicto: 0.42`) rode along for free. Requiring the node to
+   * also be nested inside a `PropertyAssignment` named `brackets` closes that: only
+   * literals inside the array assigned to `brackets:` are exempt.
+   */
+  const isInsideIrpfCat2Brackets = (node: ts.Node): boolean => {
+    let insideBracketsProp = false
     for (let p: ts.Node | undefined = node.parent; p; p = p.parent) {
-      if (ts.isVariableDeclaration(p) && ts.isIdentifier(p.name) && p.name.text === 'IRPF_CAT2') {
+      if (
+        !insideBracketsProp &&
+        ts.isPropertyAssignment(p) &&
+        ts.isIdentifier(p.name) &&
+        p.name.text === 'brackets'
+      ) {
+        insideBracketsProp = true
+      }
+      if (
+        insideBracketsProp &&
+        ts.isVariableDeclaration(p) &&
+        ts.isIdentifier(p.name) &&
+        p.name.text === 'IRPF_CAT2'
+      ) {
         return true
       }
     }
@@ -152,9 +174,15 @@ describe('no-unsourced-number guard', () => {
   }
 
   /**
-   * Is `node` the `years` value of a `Lockout` object literal (one with sibling `norm`
-   * and `url` properties)? The norm/url pair right next to it IS its source — the same
-   * role `Figure.source` plays for FIGURES — so it doesn't need to move into FIGURES.
+   * Is `node` the `years` value of a `Lockout` object literal that is itself bound to a
+   * `lockout:` property (as every `Regime.lockout` is)? Matching on sibling `norm`/`url`
+   * property *names* alone (the previous version of this check) let a decoy object
+   * anywhere in the file — e.g. `{ years: 8675309, norm: '...', url: '...' }`, never
+   * assigned to `lockout:` — through on shape alone. Requiring the object literal's own
+   * parent to be a `PropertyAssignment` named `lockout` binds the exemption to the real
+   * `Regime.lockout` structure, not merely a similarly-shaped object. The norm/url pair
+   * right next to `years` IS its source — the same role `Figure.source` plays for FIGURES
+   * — so it doesn't need to move into FIGURES.
    */
   const isLockoutYears = (node: ts.Node): boolean => {
     const propAssign = node.parent
@@ -162,6 +190,11 @@ describe('no-unsourced-number guard', () => {
     if (!ts.isIdentifier(propAssign.name) || propAssign.name.text !== 'years') return false
     const obj = propAssign.parent
     if (!obj || !ts.isObjectLiteralExpression(obj)) return false
+    const lockoutPropAssign = obj.parent
+    if (!lockoutPropAssign || !ts.isPropertyAssignment(lockoutPropAssign)) return false
+    if (!ts.isIdentifier(lockoutPropAssign.name) || lockoutPropAssign.name.text !== 'lockout') {
+      return false
+    }
     const siblingNames = obj.properties
       .filter(ts.isPropertyAssignment)
       .map(p => (ts.isIdentifier(p.name) ? p.name.text : ''))
@@ -172,17 +205,25 @@ describe('no-unsourced-number guard', () => {
   // arithmetic/the calendar, not verified legal/financial figures. KEEP THIS SHORT: every
   // entry re-opens the hole this test exists to close. A bare rate or ceiling (e.g. 0.12,
   // 4321) must NOT be added here — it belongs in FIGURES with a primary source.
+  //
+  // '100' (percentage-to-fraction conversion divisor) was deliberately REMOVED: paired
+  // with the allowlisted '12', it let an unsourced rate through disguised as arithmetic —
+  // `x * (12 / 100)` is `x * 0.12`, the exact bare rate this guard exists to reject, and it
+  // produced zero guard failures. Nothing in the current file needs a bare 100, and with it
+  // gone there is no way to compose a disguised percentage from what remains ({0, 1, 12}):
+  // every combination of those three is either trivial (0, 1, 12, 12±0, 12±1, 12*0, 12*1)
+  // or the reciprocal of the legitimate monthly-conversion itself (1/12). Do not re-add
+  // '100' (or any other divisor) without re-solving this problem, not just re-hiding it.
   const STRUCTURAL_ALLOWLIST: Record<string, string> = {
     '0': 'neutral/identity value (baseline, "no lockout", loop start)',
     '1': 'neutral/identity value (single unit, multiplier of one)',
     '12': 'months per year — a calendar fact, not a verified figure',
-    '100': 'percentage-to-fraction conversion divisor, not a verified figure',
   }
 
   const isApproved = (node: ts.NumericLiteral): boolean =>
     isInsideFigCall(node) ||
     isArrayIndex(node) ||
-    isInsideIrpfCat2(node) ||
+    isInsideIrpfCat2Brackets(node) ||
     isLockoutYears(node) ||
     node.text in STRUCTURAL_ALLOWLIST
 
