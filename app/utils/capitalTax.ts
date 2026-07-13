@@ -122,10 +122,20 @@ export const GENERAL_RULE = rule(
   T7
 )
 
-/** Dividends and utilidades from IRAE taxpayers — and the dividendos fictos of art. 19. */
+/**
+ * Dividends and utilidades from IRAE taxpayers — and the dividendos fictos of art. 19.
+ *
+ * The 7% is URUGUAYAN-SOURCE ONLY. A dividend paid by a FOREIGN company is renta de fuente
+ * extranjera: it pays 12% (`FOREIGN_RULE`), not 7%. The label carries the "contribuyentes de
+ * IRAE" qualifier so no surface can offer a bare "dividendo" option and hand an IBKR/eToro
+ * holder a 5-point under-declaration.
+ *
+ * `law` is art. 37 lit. B on purpose: that literal is headed "Otras Rentas" and holds BOTH the
+ * 7% dividend row AND the 12% "restantes rentas" row. It is not "the 12%'s article".
+ */
 export const DIVIDEND_RULE = rule(
   7,
-  'Dividendos y utilidades (incluidos los fictos)',
+  'Dividendos y utilidades de contribuyentes de IRAE (incluidos los fictos)',
   'Título 7, art. 37 lit. B',
   T7
 )
@@ -156,6 +166,14 @@ export const CRYPTO_RULE = rule(
   'https://www.impo.com.uy/bases/decretos-originales/95-2026',
   'no-resuelto'
 )
+
+/**
+ * Clamps a money amount at 0 and kills NaN/Infinity. Every amount that reaches a tax
+ * calculation goes through this: a negative "renta" would otherwise produce a NEGATIVE tax
+ * that silently offsets the rest of the year's income. The guard lives HERE, in the module,
+ * so a caller that forgets to sanitise its inputs still cannot publish a wrong total.
+ */
+const nonNegative = (n: number): number => (Number.isFinite(n) ? Math.max(n, 0) : 0)
 
 /** Maps a term in months to the legal bucket. 12 months is still "hasta 1 año". */
 export function termFromMonths(months: number): DepositTerm {
@@ -192,8 +210,8 @@ export function depositReturn(input: {
   const { principal, annualRatePct, termMonths, currency } = input
   const term = termFromMonths(termMonths)
   const r = depositRule(currency, term)
-  const years = Math.max(termMonths, 0) / 12
-  const grossInterest = Math.max(principal, 0) * (annualRatePct / 100) * years
+  const years = nonNegative(termMonths) / 12
+  const grossInterest = nonNegative(principal) * (annualRatePct / 100) * years
   const taxRate = r.rate ?? 0
   const tax = grossInterest * (taxRate / 100)
   return {
@@ -237,16 +255,25 @@ export interface CapitalGainResult {
 
 export function capitalGainTax(input: {
   salePrice: number
-  /** Inflation-adjusted fiscal cost. Required for `real`, ignored otherwise. */
+  /**
+   * Inflation-adjusted fiscal cost. MANDATORY for `real` (we throw without it), ignored otherwise.
+   * Defaulting it to 0 would tax the ENTIRE sale price as if it were gain — a number the caller
+   * would publish without noticing. Fail loudly instead of silently over-taxing.
+   */
   cost?: number
   method: CapitalGainMethod
 }): CapitalGainResult {
-  const salePrice = Math.max(input.salePrice, 0)
+  if (input.method === 'real' && !Number.isFinite(input.cost as number)) {
+    throw new TypeError(
+      'capitalGainTax: `cost` es obligatorio con method "real" — sin costo fiscal el impuesto caería sobre el precio de venta entero. Usá una base ficta si no podés probar el costo.'
+    )
+  }
+  const salePrice = nonNegative(input.salePrice)
   const rate = GENERAL_RULE.rate ?? 12
 
   const taxableBase =
     input.method === 'real'
-      ? Math.max(salePrice - Math.max(input.cost ?? 0, 0), 0)
+      ? Math.max(salePrice - nonNegative(input.cost ?? 0), 0)
       : salePrice * (FICTO_BASE_PCT[input.method] / 100)
 
   const tax = taxableBase * (rate / 100)
@@ -306,8 +333,8 @@ export interface RentTaxResult {
  * sub-lessor.
  */
 export function rentTax(input: { grossRent: number; deductions: number }): RentTaxResult {
-  const gross = Math.max(input.grossRent, 0)
-  const netRent = Math.max(gross - Math.max(input.deductions, 0), 0)
+  const gross = nonNegative(input.grossRent)
+  const netRent = Math.max(gross - nonNegative(input.deductions), 0)
   const rate = GENERAL_RULE.rate ?? 12
   const tax = netRent * (rate / 100)
   const withholding = gross * (RENT_WITHHOLDING_PCT / 100)
@@ -393,10 +420,10 @@ export function foreignIncomeTax(input: {
   /** Analogous tax already paid abroad on the same income (T7 art. 25 — still in force). */
   foreignTaxPaid?: number
 }): ForeignIncomeResult {
-  const amount = Math.max(input.amount, 0)
+  const amount = nonNegative(input.amount)
   const tax = amount * (FOREIGN_GENERAL_PCT / 100)
   // The credit is capped at the IRPF on those same rentas: it never produces a refund.
-  const foreignCreditApplied = Math.min(Math.max(input.foreignTaxPaid ?? 0, 0), tax)
+  const foreignCreditApplied = Math.min(nonNegative(input.foreignTaxPaid ?? 0), tax)
 
   const withholdingRatePct =
     input.withholdingAgent === 'custodio-local'
@@ -484,6 +511,11 @@ export function annualIrpfCatI(
   const unresolved: Array<AnnualIncomeItem['kind']> = []
 
   for (const item of items) {
+    // Clamped ONCE, for every kind: a negative amount on any row would otherwise turn into a
+    // negative tax that offsets the year (the `deposito` and `dividendo` branches multiply the
+    // amount by the rate directly, with nothing else to stop it).
+    const amount = nonNegative(item.amount)
+
     switch (item.kind) {
       case 'deposito': {
         // The annual form takes the INTEREST EARNED, not the principal, so the rate applies
@@ -491,51 +523,53 @@ export function annualIrpfCatI(
         const depRule = depositRule(item.currency, termFromMonths(item.termMonths))
         byItem.push({
           kind: item.kind,
-          amount: item.amount,
-          tax: item.amount * ((depRule.rate ?? 0) / 100),
+          amount,
+          tax: amount * ((depRule.rate ?? 0) / 100),
           rule: depRule,
         })
         break
       }
       case 'dividendo':
+        // 7% — dividends of an IRAE taxpayer. A dividend from a FOREIGN company is not this
+        // row: it is `exterior`, at 12%.
         byItem.push({
           kind: item.kind,
-          amount: item.amount,
-          tax: item.amount * ((DIVIDEND_RULE.rate ?? 0) / 100),
+          amount,
+          tax: amount * ((DIVIDEND_RULE.rate ?? 0) / 100),
           rule: DIVIDEND_RULE,
         })
         break
       case 'deuda_publica':
-        byItem.push({ kind: item.kind, amount: item.amount, tax: 0, rule: PUBLIC_DEBT_RULE })
+        byItem.push({ kind: item.kind, amount, tax: 0, rule: PUBLIC_DEBT_RULE })
         break
       case 'alquiler': {
-        const r = rentTax({ grossRent: item.amount, deductions: item.deductions ?? 0 })
-        byItem.push({ kind: item.kind, amount: item.amount, tax: r.tax, rule: GENERAL_RULE })
+        const r = rentTax({ grossRent: amount, deductions: item.deductions ?? 0 })
+        byItem.push({ kind: item.kind, amount, tax: r.tax, rule: GENERAL_RULE })
         break
       }
       case 'ganancia_local': {
         const r = capitalGainTax({
-          salePrice: item.amount,
+          salePrice: amount,
           cost: item.cost,
           method: item.method ?? 'real',
         })
-        byItem.push({ kind: item.kind, amount: item.amount, tax: r.tax, rule: GENERAL_RULE })
+        byItem.push({ kind: item.kind, amount, tax: r.tax, rule: GENERAL_RULE })
         break
       }
       case 'exterior': {
         const r = foreignIncomeTax({
-          amount: item.amount,
+          amount,
           withholdingAgent: item.withholdingAgent,
           foreignTaxPaid: item.foreignTaxPaid,
         })
         foreignCreditApplied += r.foreignCreditApplied
         if (r.requiresAnticipos) requiresAnticipos = true
-        byItem.push({ kind: item.kind, amount: item.amount, tax: r.taxDue, rule: FOREIGN_RULE })
+        byItem.push({ kind: item.kind, amount, tax: r.taxDue, rule: FOREIGN_RULE })
         break
       }
       case 'cripto':
         unresolved.push('cripto')
-        byItem.push({ kind: item.kind, amount: item.amount, tax: 0, rule: CRYPTO_RULE })
+        byItem.push({ kind: item.kind, amount, tax: 0, rule: CRYPTO_RULE })
         break
     }
   }

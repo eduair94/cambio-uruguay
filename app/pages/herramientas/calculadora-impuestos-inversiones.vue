@@ -112,21 +112,42 @@
               </VCol>
             </VRow>
 
-            <!-- Inputs: dividendo -->
-            <VRow v-else-if="instrument === 'dividendo'" class="g-input mt-1">
-              <VCol cols="12" sm="6">
-                <VTextField
-                  v-model.number="dividendAmount"
-                  type="number"
-                  min="0"
-                  label="Dividendo bruto distribuido"
-                  prefix="$"
-                  variant="outlined"
-                  density="comfortable"
-                  hide-details
-                />
-              </VCol>
-            </VRow>
+            <!-- Inputs: dividendo. The 7% is Uruguayan-source only — the alert below
+                 sends foreign dividends to the instrument that actually taxes them. -->
+            <template v-else-if="instrument === 'dividendo'">
+              <VRow class="g-input mt-1">
+                <VCol cols="12" sm="6">
+                  <VTextField
+                    v-model.number="dividendAmount"
+                    type="number"
+                    min="0"
+                    label="Dividendo bruto distribuido por una empresa uruguaya"
+                    prefix="$"
+                    variant="outlined"
+                    density="comfortable"
+                    hide-details
+                    hint="El 7% es solo para dividendos de contribuyentes de IRAE (empresas uruguayas)"
+                    persistent-hint
+                  />
+                </VCol>
+              </VRow>
+
+              <VAlert
+                type="warning"
+                variant="tonal"
+                density="comfortable"
+                class="mt-5"
+                icon="mdi-earth"
+                data-testid="dividendo-exterior"
+              >
+                <strong>¿Dividendos de una empresa del exterior (IBKR, eToro, DriveWealth)?</strong>
+                Esos <strong>no van acá</strong>: son renta de fuente extranjera y pagan
+                <strong>{{ pct(FOREIGN_GENERAL_PCT) }}</strong
+                >, no {{ pct(DIVIDEND_RULE.rate) }}. Elegí
+                <strong>«Cuenta en un bróker del exterior»</strong> en el selector de arriba (o
+                «Rentas del exterior» en la declaración anual).
+              </VAlert>
+            </template>
 
             <!-- Inputs: alquiler -->
             <VRow v-else-if="instrument === 'alquiler'" class="g-input mt-1">
@@ -319,7 +340,7 @@
                   <VIcon start size="small" color="primary">mdi-scale-balance</VIcon>
                   Contra una Letra del BCU (exenta)
                 </h3>
-                <VRow class="g-input">
+                <VRow v-if="letraComparable" class="g-input">
                   <VCol cols="12" sm="6">
                     <VTextField
                       v-model.number="letraRatePct"
@@ -344,7 +365,11 @@
                   uruguaya está <strong>exenta</strong> (Título 7, art. 38 lit. A): su tasa neta es
                   igual a su nominal.
                 </p>
+                <!-- The verdict only renders for a PESO-NOMINAL deposit: a Letra's rate is a
+                     peso-nominal rate, and a 3% REAL (UI) or a dollar rate is a different
+                     unit. Declaring a winner across units would be a false statement. -->
                 <VAlert
+                  v-if="letraComparable"
                   :type="letraWins ? 'info' : 'success'"
                   variant="tonal"
                   density="compact"
@@ -355,6 +380,21 @@
                   <strong>{{ pct(depositResult.netAnnualRatePct) }} neto</strong> (tu depósito)
                   <strong>vs {{ pct(safe(letraRatePct)) }} neto</strong> (la Letra, exenta).
                   {{ letraVerdict }}
+                </VAlert>
+                <VAlert
+                  v-else
+                  type="info"
+                  variant="tonal"
+                  density="comfortable"
+                  class="mb-0"
+                  icon="mdi-swap-horizontal"
+                  data-testid="comparacion-letra-moneda"
+                >
+                  <strong>Acá no comparamos contra una Letra.</strong> {{ letraCurrencyCaveat }} Lo
+                  único que sí vale para cualquier moneda: la deuda pública uruguaya está
+                  <strong>exenta</strong> de IRPF (Título 7, art. 38 lit. A), mientras que tu
+                  depósito paga <strong>{{ pct(depositResult.rule.rate) }}</strong> sobre los
+                  intereses.
                 </VAlert>
               </VCard>
 
@@ -616,6 +656,18 @@
                   />
                 </VCol>
               </template>
+
+              <!-- Same trap as tab 1: a foreign dividend pays 12%, not 7%. Steer it to the
+                   row that taxes it correctly instead of letting the user under-declare. -->
+              <VCol v-else-if="row.kind === 'dividendo'" cols="12">
+                <p class="text-caption tool-muted mb-0" data-testid="anual-dividendo-exterior">
+                  <VIcon size="x-small" class="mr-1">mdi-earth</VIcon>
+                  Solo dividendos de <strong>empresas uruguayas</strong> (contribuyentes de IRAE),
+                  que pagan {{ pct(DIVIDEND_RULE.rate) }}. Si son de una empresa del exterior (IBKR,
+                  eToro), cargalos como <strong>«Rentas del exterior»</strong>: pagan
+                  {{ pct(FOREIGN_GENERAL_PCT) }}.
+                </p>
+              </VCol>
 
               <template v-else-if="row.kind === 'exterior'">
                 <VCol cols="12" sm="6">
@@ -935,7 +987,10 @@ const instrumentItems: Array<{ key: InstrumentKey; label: string }> = [
   { key: 'pf_ui', label: 'Plazo fijo en pesos con reajuste (UI)' },
   { key: 'pf_usd', label: 'Plazo fijo en dólares' },
   { key: 'deuda_publica', label: 'Letra o bono del Estado (deuda pública uruguaya)' },
-  { key: 'dividendo', label: 'Dividendo o utilidad distribuida' },
+  // The 7% is Uruguayan-source ONLY. Naming this option "Dividendo o utilidad distribuida"
+  // let a holder of IBKR/eToro stock pick it and read a bold "7%" — 5 points under the 12%
+  // the law charges on a foreign dividend. The label now says whose dividend it is.
+  { key: 'dividendo', label: 'Dividendo de una empresa uruguaya (contribuyente de IRAE)' },
   { key: 'alquiler', label: 'Alquiler de un inmueble en Uruguay' },
   { key: 'ganancia_local', label: 'Venta de acciones o ETF (local)' },
   { key: 'exterior', label: 'Cuenta en un bróker del exterior' },
@@ -958,8 +1013,9 @@ const dividendAmount = ref(100_000)
 const rentGross = ref(300_000)
 const rentDeductions = ref(30_000)
 const salePrice = ref(500_000)
-/** Deliberately empty: `capitalGainTax` defaults a missing cost to 0, which would
- *  tax the FULL sale price. We block the result until the user gives us a cost. */
+/** Deliberately empty: without a cost the `real` method would tax the FULL sale price, so
+ *  `capitalGainTax` now THROWS instead of guessing. We block the result until the user gives
+ *  us a cost — the page must never reach the module in that state. */
 const gainCost = ref<number | null>(null)
 const gainMethod = ref<CapitalGainMethod>('real')
 const foreignAmount = ref(5_000)
@@ -1210,6 +1266,20 @@ const agentExplanation = computed(() => {
   }
 })
 
+/**
+ * The Letra's rate is a PESO-NOMINAL rate, so the only deposit it can be compared with is a
+ * peso-nominal one. A UI deposit quotes a REAL rate (3% real is not beaten by 8% nominal) and a
+ * dollar deposit quotes a rate in another currency: asserting a winner across units would be a
+ * false statement, not a rounding issue. Outside `UYU` we drop the verdict and say why.
+ */
+const letraComparable = computed(() => depositCurrency.value === 'UYU')
+
+const letraCurrencyCaveat = computed(() =>
+  depositCurrency.value === 'UYU_UI'
+    ? 'Tu depósito está en pesos con reajuste por UI: su tasa es REAL, por encima de la inflación. La de una Letra en pesos es NOMINAL. Un 3% real y un 8% nominal no son la misma unidad, así que compararlos de frente da un resultado falso.'
+    : 'Tu depósito está en dólares y la tasa de una Letra en pesos es nominal, en otra moneda. Compararlas exigiría suponer un tipo de cambio futuro, y no publicamos supuestos de tipo de cambio.'
+)
+
 const letraWins = computed(
   () => safe(letraRatePct.value) > (depositResult.value?.netAnnualRatePct ?? 0)
 )
@@ -1270,7 +1340,9 @@ interface IncomeRow {
 
 const kindItems: Array<{ key: RowKind; label: string }> = [
   { key: 'deposito', label: 'Intereses de un depósito u ON' },
-  { key: 'dividendo', label: 'Dividendos y utilidades' },
+  // Uruguayan-source only, same reason as the instrument tab: a foreign dividend is
+  // "Rentas del exterior" (12%), never this row (7%).
+  { key: 'dividendo', label: 'Dividendos de una empresa uruguaya (contribuyente de IRAE)' },
   { key: 'deuda_publica', label: 'Deuda pública uruguaya (exenta)' },
   { key: 'alquiler', label: 'Alquiler de un inmueble' },
   { key: 'ganancia_local', label: 'Venta de valores o bienes (local)' },

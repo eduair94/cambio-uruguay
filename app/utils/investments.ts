@@ -73,7 +73,7 @@ export const INVESTMENTS: InvestmentOption[] = [
     regulationNote:
       'Supervisado por el BCU como banco (intermediación financiera); NO figura en el registro de Corredores de Bolsa/Agentes de Valores del BCU',
     taxNote:
-      'Intereses y dividendos: IRPF 12% (dividendos de fuente uruguaya, 7%). Desde 2026 (Ley 20.446) las ganancias de capital del exterior también pagan IRPF al 12%. El 8% no es una tasa: es una retención reducida que solo puede aplicar la entidad uruguaya que intermedia y además ejerce la custodia de esos activos, y es definitiva solo si optás por ella. Para activos que coticen en bolsas de reconocido prestigio adquiridos antes del 31/12/2025, el costo fiscal es su cotización al 31/12/2025',
+      'Intereses de depósitos, ONs y otros títulos con oferta pública: la tasa NO es un 12% plano — sale de la matriz por moneda y plazo del Título 7, art. 37 lit. A (va de 0,5% a 12%: un depósito en pesos a más de 3 años paga 0,5%, uno en dólares al mismo plazo 7%). La matriz completa está en la guía de impuestos sobre inversiones. Dividendos de contribuyentes de IRAE: 7%. Restantes rentas de capital: 12%. Desde 2026 (Ley 20.446) las ganancias de capital del exterior también pagan IRPF al 12%. El 8% no es una tasa: es una retención reducida que solo puede aplicar la entidad uruguaya que intermedia y además ejerce la custodia de esos activos, y es definitiva solo si optás por ella. Para activos que coticen en bolsas de reconocido prestigio adquiridos antes del 31/12/2025, el costo fiscal es su cotización al 31/12/2025',
     online: true,
     website: 'https://www.itau.com.uy',
     source: 'https://www.itau.com.uy/inst/paratiInversiones.html',
@@ -93,7 +93,7 @@ export const INVESTMENTS: InvestmentOption[] = [
     regulationNote:
       'Supervisado por el Banco Central del Uruguay como banco; NO figura en el registro de Corredores de Bolsa/Agentes de Valores del BCU',
     taxNote:
-      'Intereses y dividendos: IRPF 12% (dividendos de fuente uruguaya, 7%). Desde 2026 (Ley 20.446) las ganancias de capital del exterior también pagan IRPF al 12%. El 8% no es una tasa: es una retención reducida que solo puede aplicar la entidad uruguaya que intermedia y además ejerce la custodia de esos activos, y es definitiva solo si optás por ella. Para activos que coticen en bolsas de reconocido prestigio adquiridos antes del 31/12/2025, el costo fiscal es su cotización al 31/12/2025',
+      'Intereses de depósitos, ONs y otros títulos con oferta pública: la tasa NO es un 12% plano — sale de la matriz por moneda y plazo del Título 7, art. 37 lit. A (va de 0,5% a 12%: un depósito en pesos a más de 3 años paga 0,5%, uno en dólares al mismo plazo 7%). La matriz completa está en la guía de impuestos sobre inversiones. Dividendos de contribuyentes de IRAE: 7%. Restantes rentas de capital: 12%. Desde 2026 (Ley 20.446) las ganancias de capital del exterior también pagan IRPF al 12%. El 8% no es una tasa: es una retención reducida que solo puede aplicar la entidad uruguaya que intermedia y además ejerce la custodia de esos activos, y es definitiva solo si optás por ella. Para activos que coticen en bolsas de reconocido prestigio adquiridos antes del 31/12/2025, el costo fiscal es su cotización al 31/12/2025',
     online: false,
     website: 'https://www.santander.com.uy',
     source: 'https://www.santander.com.uy/productos-servicios/inversiones',
@@ -113,7 +113,7 @@ export const INVESTMENTS: InvestmentOption[] = [
     regulationNote:
       'Supervisado por el BCU como banco; NO figura en el registro de Corredores de Bolsa/Agentes de Valores del BCU',
     taxNote:
-      'Los títulos comprados "NO constituyen un depósito en el banco" (sin cobertura del seguro de depósitos). Intereses y dividendos: IRPF 12% (dividendos de fuente uruguaya, 7%); la deuda pública uruguaya está exenta (T7 art. 38 lit. A). Desde 2026 las ganancias de capital del exterior pagan IRPF al 12%; el 8% no es una tasa sino una retención reducida que solo puede aplicar la entidad uruguaya que también ejerce la custodia de esos activos, y solo es definitiva si optás por ella. Para activos que coticen en bolsas de reconocido prestigio adquiridos antes del 31/12/2025, el costo fiscal es su cotización al 31/12/2025',
+      'Los títulos comprados "NO constituyen un depósito en el banco" (sin cobertura del seguro de depósitos). Intereses de depósitos, ONs y otros títulos con oferta pública: la tasa NO es un 12% plano — sale de la matriz por moneda y plazo del Título 7, art. 37 lit. A (va de 0,5% a 12%: un depósito en pesos a más de 3 años paga 0,5%, uno en dólares al mismo plazo 7%). La matriz completa está en la guía de impuestos sobre inversiones. Dividendos de contribuyentes de IRAE: 7%. Restantes rentas de capital: 12%; la deuda pública uruguaya está exenta (T7 art. 38 lit. A). Desde 2026 las ganancias de capital del exterior pagan IRPF al 12%; el 8% no es una tasa sino una retención reducida que solo puede aplicar la entidad uruguaya que también ejerce la custodia de esos activos, y solo es definitiva si optás por ella. Para activos que coticen en bolsas de reconocido prestigio adquiridos antes del 31/12/2025, el costo fiscal es su cotización al 31/12/2025',
     online: true,
     website: 'https://www.brou.com.uy',
     source: 'https://www.brou.com.uy/personas/inversiones/instrumentos-financieros',
@@ -132,7 +132,7 @@ export const INVESTMENTS: InvestmentOption[] = [
     regulationNote:
       'Supervisado por el BCU como banco; NO figura en el registro de Corredores de Bolsa/Agentes de Valores del BCU',
     taxNote:
-      'Intereses y dividendos: IRPF 12% (dividendos de fuente uruguaya, 7%). Desde 2026 (Ley 20.446) las ganancias de capital del exterior también pagan IRPF al 12%. El 8% no es una tasa: es una retención reducida que solo puede aplicar la entidad uruguaya que intermedia y además ejerce la custodia de esos activos, y es definitiva solo si optás por ella. Para activos que coticen en bolsas de reconocido prestigio adquiridos antes del 31/12/2025, el costo fiscal es su cotización al 31/12/2025',
+      'Intereses de depósitos, ONs y otros títulos con oferta pública: la tasa NO es un 12% plano — sale de la matriz por moneda y plazo del Título 7, art. 37 lit. A (va de 0,5% a 12%: un depósito en pesos a más de 3 años paga 0,5%, uno en dólares al mismo plazo 7%). La matriz completa está en la guía de impuestos sobre inversiones. Dividendos de contribuyentes de IRAE: 7%. Restantes rentas de capital: 12%. Desde 2026 (Ley 20.446) las ganancias de capital del exterior también pagan IRPF al 12%. El 8% no es una tasa: es una retención reducida que solo puede aplicar la entidad uruguaya que intermedia y además ejerce la custodia de esos activos, y es definitiva solo si optás por ella. Para activos que coticen en bolsas de reconocido prestigio adquiridos antes del 31/12/2025, el costo fiscal es su cotización al 31/12/2025',
     online: false,
     website: 'https://www.scotiabank.com.uy',
     source: 'https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/int_Valores.aspx',
@@ -151,7 +151,7 @@ export const INVESTMENTS: InvestmentOption[] = [
     regulationNote:
       'Supervisado por el BCU como banco (BIC BBVAUYMM); NO figura en el registro de Corredores de Bolsa/Agentes de Valores del BCU',
     taxNote:
-      'Intereses y dividendos: IRPF 12% (dividendos de fuente uruguaya, 7%). Desde 2026 (Ley 20.446) las ganancias de capital del exterior también pagan IRPF al 12%. El 8% no es una tasa: es una retención reducida que solo puede aplicar la entidad uruguaya que intermedia y además ejerce la custodia de esos activos, y es definitiva solo si optás por ella. Para activos que coticen en bolsas de reconocido prestigio adquiridos antes del 31/12/2025, el costo fiscal es su cotización al 31/12/2025',
+      'Intereses de depósitos, ONs y otros títulos con oferta pública: la tasa NO es un 12% plano — sale de la matriz por moneda y plazo del Título 7, art. 37 lit. A (va de 0,5% a 12%: un depósito en pesos a más de 3 años paga 0,5%, uno en dólares al mismo plazo 7%). La matriz completa está en la guía de impuestos sobre inversiones. Dividendos de contribuyentes de IRAE: 7%. Restantes rentas de capital: 12%. Desde 2026 (Ley 20.446) las ganancias de capital del exterior también pagan IRPF al 12%. El 8% no es una tasa: es una retención reducida que solo puede aplicar la entidad uruguaya que intermedia y además ejerce la custodia de esos activos, y es definitiva solo si optás por ella. Para activos que coticen en bolsas de reconocido prestigio adquiridos antes del 31/12/2025, el costo fiscal es su cotización al 31/12/2025',
     online: false,
     website: 'https://www.bbva.com.uy',
     source: 'https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/int_Valores.aspx',

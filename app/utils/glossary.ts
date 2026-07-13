@@ -706,6 +706,35 @@ export const glossary: readonly GlossaryTerm[] = [
     body: 'Es uno de los cambios menos conocidos de la reforma de rentas del exterior: para activos que coticen en bolsas de reconocido prestigio y que hayas adquirido antes del 31 de diciembre de 2025, el costo fiscal a efectos del IRPF pasa a ser su cotización a esa fecha (Título 7, art. 32 + Decreto 95/026 art. 18), no lo que pagaste originalmente. En la práctica, toda la apreciación que ganó ese activo antes de 2026 no paga impuesto: solo se grava la diferencia entre lo que cotizaba al 31/12/2025 y el precio al que lo vendas. Si el cálculo así da una pérdida, esa pérdida no se puede compensar con otras rentas. La condición —bolsas de reconocido prestigio, comprado antes del 31/12/2025— no es opcional: sin ella no corresponde el step-up.',
     related: ['renta-de-fuente-extranjera', 'incremento-patrimonial', 'irpf-categoria-i'],
   },
+  {
+    slug: 'crs',
+    term: 'CRS (intercambio automático de información financiera)',
+    category: 'impuestos',
+    short:
+      'El CRS es el estándar de intercambio automático de información financiera entre países: Uruguay lo aplica desde 2017 y recibe datos de las cuentas que sus residentes tienen en las jurisdicciones socias.',
+    body: 'Uruguay aplica el Common Reporting Standard desde 2017 (Ley 19.484): informa y también recibe información de forma automática de las jurisdicciones socias. Alcanza cuentas de depósito, cuentas de custodia, participaciones de capital o de deuda, seguros con valor de rescate y rentas vitalicias. Un dato clave y muy malentendido: Estados Unidos no está en el CRS, y Uruguay no figura en la lista de acuerdos FATCA del Tesoro estadounidense; con EE.UU. existe un acuerdo de intercambio a requerimiento, caso por caso, no automático. Eso no significa que una cuenta en el exterior quede fuera del impuesto: desde 2026 las rentas y ganancias de capital del exterior pagan IRPF, y la obligación de declarar es tuya con independencia de lo que la DGI vea o deje de ver.',
+    related: ['renta-de-fuente-extranjera', 'dgi', 'irpf-categoria-i'],
+  },
+  {
+    slug: 'dividendo-ficto',
+    term: 'Dividendo ficto',
+    category: 'impuestos',
+    short:
+      'El dividendo ficto es la utilidad que la ley considera distribuida aunque la empresa no la haya repartido: paga el mismo 7% de IRPF que un dividendo real.',
+    body: 'Está en el art. 19 del Título 7 y sigue vigente en 2026: aunque la empresa no distribuya, la ley puede considerar distribuida parte de la utilidad acumulada y hacerla tributar. La tasa es la misma que la de los dividendos y utilidades distribuidos por contribuyentes de IRAE: 7% (Título 7, art. 37 lit. B). Ese 7% es de fuente uruguaya: los dividendos de una empresa del exterior son renta de fuente extranjera y pagan 12%, no 7%. En el IRNR el tratamiento de los dividendos y de los dividendos fictos también es del 7%.',
+    related: ['irpf-categoria-i', 'irae', 'irnr'],
+  },
+  {
+    slug: 'ficto-20',
+    term: 'Ficto del 20%',
+    category: 'impuestos',
+    short:
+      'El ficto del 20% es una base imponible presunta para calcular un incremento patrimonial: se toma el 20% del precio de venta como ganancia, lo que deja un impuesto efectivo del 2,4% del precio.',
+    body: 'Como el IRPF sobre incrementos patrimoniales es del 12%, aplicar la base ficta del 20% del precio de venta deja un impuesto equivalente al 2,4% del precio. No es el régimen por defecto de la venta de valores: la regla general es la real —precio de venta menos costo fiscal actualizado, por 12%— y el ficto del 20% es obligatorio solo cuando no podés probar el costo, y opcional en casos puntuales (bienes anteriores a la Ley 18.083 y, desde 2026, bienes en el exterior mediante una opción anual en la declaración jurada). Con el costo documentado, el ficto puede salirte más caro que la regla real. Para inmuebles no rurales anteriores al 1/7/2007 existe un ficto distinto, del 15% del precio (1,8% efectivo).',
+    example:
+      'Vendés acciones en $500.000 con un costo fiscal probado de $400.000: por la regla real pagás 12% de $100.000, o sea $12.000. Por el ficto del 20% pagarías 2,4% de $500.000, o sea $12.000 también; si tu costo fuera mayor, el ficto te saldría peor.',
+    related: ['incremento-patrimonial', 'irpf-categoria-i', 'step-up-2025'],
+  },
 ] as const
 
 /** Look up a glossary term by slug. */

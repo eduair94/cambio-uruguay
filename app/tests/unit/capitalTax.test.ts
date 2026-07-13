@@ -5,6 +5,7 @@ import {
   CRYPTO_RULE,
   depositReturn,
   depositRule,
+  DIVIDEND_RULE,
   foreignIncomeTax,
   isCapitalGainExempt,
   isSmallLandlordExempt,
@@ -120,6 +121,31 @@ describe('capitalTax — incrementos patrimoniales', () => {
     const r = capitalGainTax({ salePrice: 200_000, method: 'ficto15' })
     expect(r.tax).toBeCloseTo(3600, 2)
     expect(r.effectiveRatePct).toBeCloseTo(1.8, 2)
+  })
+
+  it('el régimen real SIN costo no grava la venta entera: falla', () => {
+    // The trap: defaulting the missing cost to 0 taxed the FULL sale price (12% de 500.000 =
+    // 60.000) and printed it as if it were the tax on the gain. The module now refuses.
+    expect(() =>
+      capitalGainTax({ salePrice: 500_000, method: 'real' } as {
+        salePrice: number
+        method: 'real'
+      })
+    ).toThrow(TypeError)
+    expect(() => capitalGainTax({ salePrice: 500_000, cost: Number.NaN, method: 'real' })).toThrow(
+      /costo fiscal/
+    )
+    // Un costo de 0 declarado explícitamente sí es válido: es una afirmación del usuario.
+    expect(capitalGainTax({ salePrice: 500_000, cost: 0, method: 'real' }).tax).toBeCloseTo(
+      60_000,
+      2
+    )
+  })
+
+  it('un costo negativo no infla la base imponible', () => {
+    const r = capitalGainTax({ salePrice: 100_000, cost: -50_000, method: 'real' })
+    expect(r.taxableBase).toBe(100_000) // se trata como 0, no como +50.000 de base extra
+    expect(r.tax).toBeCloseTo(12_000, 2)
   })
 
   it('con costo probado, el ficto puede ser PEOR que el real', () => {
@@ -325,5 +351,64 @@ describe('capitalTax — liquidación anual (Cat. I)', () => {
     expect(r.totalTax).toBe(0)
     expect(r.unresolved).toContain('cripto')
     expect(r.byItem[0]?.rule.confidence).toBe('no-resuelto')
+  })
+
+  // The guards below used to live only in the pages. A caller that did not know to add them
+  // would have published a wrong number, so they now live in the module and are pinned here.
+  it('clampea los montos negativos: una renta negativa no baja el impuesto del año', () => {
+    const r = annualIrpfCatI(
+      [
+        { kind: 'dividendo', amount: 100_000 }, // 7% → 7.000
+        { kind: 'dividendo', amount: -500_000 }, // sin guarda: −35.000
+        { kind: 'deposito', amount: -100_000, currency: 'UYU', termMonths: 12 }, // sin guarda: −5.500
+      ],
+      { bpc, uiValue: ui }
+    )
+    expect(r.totalTax).toBeCloseTo(7000, 2)
+    expect(r.byItem.every(i => i.tax >= 0)).toBe(true)
+    expect(r.byItem.every(i => i.amount >= 0)).toBe(true)
+  })
+
+  it('ignora montos no finitos en vez de propagar NaN al total', () => {
+    const r = annualIrpfCatI(
+      [
+        { kind: 'dividendo', amount: Number.NaN },
+        { kind: 'exterior', amount: 100_000, withholdingAgent: 'ninguno' }, // 12% → 12.000
+      ],
+      { bpc, uiValue: ui }
+    )
+    expect(Number.isFinite(r.totalTax)).toBe(true)
+    expect(r.totalTax).toBeCloseTo(12_000, 2)
+  })
+
+  it('una venta en régimen real sin costo hace fallar la liquidación, no la grava entera', () => {
+    expect(() =>
+      annualIrpfCatI([{ kind: 'ganancia_local', amount: 500_000, method: 'real' }], {
+        bpc,
+        uiValue: ui,
+      })
+    ).toThrow(TypeError)
+  })
+})
+
+describe('capitalTax — dividendos: el 7% es de fuente uruguaya', () => {
+  it('la etiqueta de la regla dice de quién es el dividendo (contribuyentes de IRAE)', () => {
+    // A bare "Dividendos y utilidades" label let a foreign dividend (12%) be booked at 7%.
+    expect(DIVIDEND_RULE.rate).toBe(7)
+    expect(DIVIDEND_RULE.label).toMatch(/IRAE/)
+    expect(DIVIDEND_RULE.law).toBe('Título 7, art. 37 lit. B')
+  })
+
+  it('un dividendo del exterior NO es la regla del 7%: paga 12%', () => {
+    const foreign = foreignIncomeTax({ amount: 100_000, withholdingAgent: 'ninguno' })
+    expect(foreign.taxRatePct).toBe(12)
+    expect(foreign.tax).toBeCloseTo(12_000, 2)
+
+    const local = annualIrpfCatI([{ kind: 'dividendo', amount: 100_000 }], {
+      bpc: 6864,
+      uiValue: 6.6142,
+    })
+    expect(local.totalTax).toBeCloseTo(7000, 2)
+    expect(foreign.tax).toBeGreaterThan(local.totalTax) // 5 puntos de diferencia
   })
 })

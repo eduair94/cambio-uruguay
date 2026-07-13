@@ -389,10 +389,13 @@
         icon="mdi-percent-outline"
       >
         Esta es la confusión más cara de la reforma.
-        <strong
-          >La tasa de las rentas de fuente extranjera es {{ pct(FOREIGN_GENERAL_PCT) }}</strong
-        >
-        (Título 7, art. 52 lit. A + Dec. 148/007 arts. 44 quinquies y sexies).
+        <strong>La tasa de las rentas de fuente extranjera es {{ pct(FOREIGN_GENERAL_PCT) }}</strong
+        >: la fuente extranjera entra al IRPF por el <strong>Título 7, art. 6 num. 2</strong>
+        (sustituido por la Ley 20.446, art. 653) y la alícuota es la de las «restantes rentas» del
+        <strong>art. 37 lit. B</strong>. El
+        <strong>{{ pct(FOREIGN_CUSTODIAN_WITHHOLDING_PCT) }} es una retención reducida</strong>, no
+        la tasa, y son otros artículos los que la habilitan: Título 7, art. 52 lit. A + Dec. 148/007
+        arts. 44 quinquies y sexies.
       </VAlert>
       <VTable density="comfortable" class="imp-table mb-3">
         <thead>

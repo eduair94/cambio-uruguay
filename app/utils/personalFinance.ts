@@ -542,7 +542,9 @@ export const UY_FACTS: readonly UyFact[] = Object.freeze([
   },
   {
     fact: 'La Base de Prestaciones y Contribuciones (BPC) es de $6.864 desde el 1 de enero de 2026 (en 2025 era $6.576). Es la unidad de referencia de muchos topes tributarios y prestaciones, por lo que conviene tenerla presente al calcular impuestos.',
-    sourceLabel: 'BPS — Valor de la BPC 2026',
+    // The URL is the BPS IASS page (which is where the BPC 2026 figure was read); the label
+    // must name the page it actually opens, not a page that does not exist.
+    sourceLabel: 'BPS — Impuesto de Asistencia a la Seguridad Social (IASS)',
     sourceUrl:
       'https://www.bps.gub.uy/18002/el-impuesto-de-asistencia-a-la-seguridad-social-iass.html',
     official: true,
