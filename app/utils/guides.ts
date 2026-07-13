@@ -1207,21 +1207,21 @@ export const guides: readonly Guide[] = [
     slug: 'criptomonedas-regulacion-impuestos-uruguay',
     title: 'Criptomonedas en Uruguay: regulación e impuestos (qué dice la ley)',
     description:
-      'Cómo están reguladas las criptomonedas en Uruguay tras la Ley de Activos Virtuales, qué rol tiene el Banco Central y cómo se tratan a efectos impositivos. Guía informativa.',
+      'Cómo están reguladas las criptomonedas en Uruguay tras la Ley de Activos Virtuales, qué rol tiene el Banco Central y por qué su tratamiento impositivo todavía no está resuelto. Guía informativa.',
     tag: 'CRIPTO',
-    updatedAt: '2026-06-20',
+    updatedAt: '2026-07-12',
     sections: [
       {
         heading: 'Las criptomonedas no son moneda de curso legal',
-        body: 'En Uruguay, la única moneda de curso legal es el peso uruguayo: las criptomonedas (Bitcoin, USDT y demás) no son dinero en sentido legal, sino activos. Eso no las hace ilegales —comprarlas, tenerlas y operarlas es legal—, pero sí significa que nadie está obligado a aceptarlas como pago y que su tratamiento jurídico y fiscal es el de un activo, no el de una divisa. Entender esa diferencia es la base para no llevarse sorpresas.',
+        body: 'En Uruguay, la única moneda de curso legal es el peso uruguayo: las criptomonedas (Bitcoin, USDT y demás) no son dinero en sentido legal, sino activos. Eso no las hace ilegales —comprarlas, tenerlas y operarlas es legal—, pero sí significa que nadie está obligado a aceptarlas como pago y que, jurídicamente, no se las trata como una divisa. El tratamiento impositivo es otra cosa, y es justamente lo que todavía no está resuelto: lo vemos más abajo.',
       },
       {
         heading: 'La Ley de Activos Virtuales y el rol del Banco Central',
         body: 'Uruguay aprobó una Ley de Activos Virtuales (Ley N.º 20.345) que incorpora a los proveedores de servicios de activos virtuales (los llamados PSAV: exchanges, plataformas, custodios) bajo la órbita de supervisión del Banco Central del Uruguay (BCU). El objetivo es dar un marco a la actividad —registro, requisitos, prevención de lavado— para quienes prestan estos servicios en el país. Es un marco relativamente nuevo y en desarrollo, así que conviene seguir su reglamentación.',
       },
       {
-        heading: 'Cómo se tratan a efectos impositivos',
-        body: 'A grandes rasgos, la administración tributaria (DGI) considera a las criptomonedas como bienes (activos), no como moneda. Eso implica que las ganancias o rentas vinculadas a operar con cripto pueden tener consecuencias impositivas según el caso y el tipo de contribuyente. No existe un "impuesto a la cripto" separado y simple: se aplican las reglas generales según la operación. Por eso, si operás montos relevantes o de forma habitual, conviene asesorarte para declarar correctamente.',
+        heading: 'Impuestos: no está resuelto, y hay que decirlo así',
+        body: 'No existe una norma tributaria específica que diga cómo tributan las criptomonedas en Uruguay. Por eso acá no vas a encontrar un porcentaje: cualquier tabla que te dé una tasa exacta para cripto se está adelantando a la norma. La única posición oficial conocida de la DGI es la Consulta N.º 6.419 (2021), que —según fuentes secundarias, no accedimos a su texto primario— trataría a las criptomonedas como un bien mueble incorporal; no es una ley ni una resolución general. La Ley 20.345 de activos virtuales tampoco cambió la tributación: regula a los proveedores (PSAV) y su supervisión por el BCU. Y la reforma de 2026 no lo aclaró: ni el Decreto 95/026 ni la Resolución DGI 1517/2026 mencionan la cripto, así que ni siquiera está definido si una ganancia en cripto se considera renta de fuente uruguaya o del exterior. Si operás montos relevantes o de forma habitual, consultá a un contador.',
       },
       {
         heading: 'USDT y "dólar cripto": estable, pero no es un dólar bancario',
@@ -1233,6 +1233,10 @@ export const guides: readonly Guide[] = [
       },
     ],
     related: [
+      {
+        label: 'Impuestos sobre inversiones en Uruguay',
+        to: '/impuestos-inversiones-uruguay',
+      },
       { label: 'Dólar cripto y USDT en Uruguay', to: '/guias/dolar-cripto-usdt-uruguay' },
       { label: 'Glosario: USDT (Tether)', to: '/glosario/usdt' },
       { label: 'Glosario: stablecoin', to: '/glosario/stablecoin' },

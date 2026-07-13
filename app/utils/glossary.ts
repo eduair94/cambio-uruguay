@@ -335,8 +335,8 @@ export const glossary: readonly GlossaryTerm[] = [
     term: 'IASS (Impuesto de Asistencia a la Seguridad Social)',
     category: 'impuestos',
     short:
-      'El IASS grava las jubilaciones y pensiones que superan un mínimo: hasta 108 BPC mensuales está exento, y por encima paga 6%, 24% o 30% según la franja.',
-    body: 'Es el impuesto que pagan los pasivos (jubilados y pensionistas) sobre sus haberes, con una lógica de franjas parecida a la del IRPF (BPS, con BPC 2026 = $6.864): hasta 108 BPC de ingreso mensual está exento (mínimo no imponible mensualizado de 9 BPC); de 108 a 180 BPC se paga 6%; de 180 a 600 BPC, 24%; y por encima de 600 BPC, 30%. Cumple un rol de financiamiento de la seguridad social. Cuidado con las calculadoras que todavía circulan con las cifras viejas (mínimo de 96 BPC y primera franja del 10%): están desactualizadas.',
+      'El IASS grava las jubilaciones y pensiones que superan un mínimo: hasta 108 BPC anuales está exento, y por encima paga 6%, 24% o 30% según la franja.',
+    body: 'Es el impuesto que pagan los pasivos (jubilados y pensionistas) sobre sus haberes, con una lógica de franjas parecida a la del IRPF (BPS, con BPC 2026 = $6.864). Las franjas se expresan en ingresos anuales: hasta 108 BPC está exento (lo que equivale a un mínimo no imponible mensualizado de 9 BPC); de 108 a 180 BPC se paga 6%; de 180 a 600 BPC, 24%; y por encima de 600 BPC, 30%. Cumple un rol de financiamiento de la seguridad social. Cuidado con las calculadoras que todavía circulan con las cifras viejas (mínimo de 96 BPC y primera franja del 10%): están desactualizadas.',
     related: ['irpf', 'irpf-categoria-ii', 'bpc', 'dgi'],
   },
   {
