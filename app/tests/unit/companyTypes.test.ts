@@ -1,5 +1,7 @@
+import { readFileSync } from 'node:fs'
+import * as ts from 'typescript'
 import { describe, expect, it } from 'vitest'
-import { FIGURES, REGIMES, type Figure } from '../../utils/companyTypes'
+import { FIGURES, IRPF_CAT2, REGIMES, type Figure } from '../../utils/companyTypes'
 
 const isFigure = (v: unknown): v is Figure =>
   typeof v === 'object' &&
@@ -12,7 +14,9 @@ const isFigure = (v: unknown): v is Figure =>
 describe('FIGURES', () => {
   it('exposes every numeric constant as a sourced Figure', () => {
     const entries = Object.entries(FIGURES)
-    expect(entries.length).toBeGreaterThan(15)
+    // There are 53 verified figures as of the 2026-07-13 audit. This must be a floor,
+    // not just "some" — a regression that silently drops figures should fail loudly.
+    expect(entries.length).toBeGreaterThanOrEqual(53)
     for (const [key, value] of entries) {
       expect(isFigure(value), `FIGURES.${key} is not a Figure`).toBe(true)
     }
@@ -47,6 +51,37 @@ describe('FIGURES', () => {
   })
 })
 
+describe('IRPF_CAT2', () => {
+  it('carries its own provenance', () => {
+    expect(IRPF_CAT2.source).toMatch(/^https:\/\//)
+    expect(IRPF_CAT2.verifiedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+  })
+
+  it('has strictly ascending upTo and non-decreasing rate, with the top bracket open-ended', () => {
+    const { brackets } = IRPF_CAT2
+    expect(brackets.length).toBeGreaterThan(1)
+    for (let i = 1; i < brackets.length; i++) {
+      const prev = brackets[i - 1]!
+      const curr = brackets[i]!
+      // Every bracket but the last must have a numeric ceiling, strictly greater
+      // than the previous one — otherwise a slice of income falls through the scale.
+      expect(prev.upTo, `bracket ${i - 1} is not the last but has upTo: null`).not.toBeNull()
+      if (prev.upTo !== null) {
+        const currCeiling = curr.upTo ?? Infinity
+        expect(
+          currCeiling,
+          `bracket ${i} upTo (${String(curr.upTo)}) is not strictly greater than bracket ${i - 1} upTo (${prev.upTo})`
+        ).toBeGreaterThan(prev.upTo)
+      }
+      expect(
+        curr.rate,
+        `bracket ${i} rate (${curr.rate}) is lower than bracket ${i - 1} rate (${prev.rate})`
+      ).toBeGreaterThanOrEqual(prev.rate)
+    }
+    expect(brackets[brackets.length - 1]!.upTo).toBeNull()
+  })
+})
+
 describe('REGIMES', () => {
   it('has a unique id, a name and at least one source per regime', () => {
     const ids = REGIMES.map(r => r.id)
@@ -59,10 +94,115 @@ describe('REGIMES', () => {
   })
 
   it('marks every simplified regime that has an exit lockout', () => {
-    const mono = REGIMES.find(r => r.id === 'monotributo')!
-    expect(mono.lockout?.years).toBe(3)
-    expect(mono.lockout?.url).toContain('impo.com.uy')
-    const litE = REGIMES.find(r => r.id === 'unipersonal-literal-e')!
-    expect(litE.lockout?.years).toBe(3)
+    // All three simplified regimes (monotributo social, monotributo, Literal E) carry a
+    // 3-year re-entry lockout if you're forced out. Check all three, not just two of them.
+    const lockoutIds = ['monotributo-social', 'monotributo', 'unipersonal-literal-e'] as const
+    for (const id of lockoutIds) {
+      const regime = REGIMES.find(r => r.id === id)!
+      expect(regime.lockout?.years, `${id} should have a 3-year lockout`).toBe(3)
+      expect(regime.lockout?.url, `${id} lockout should cite a norm URL`).toContain('impo.com.uy')
+      expect(regime.lockout?.norm.length ?? 0, `${id} lockout should cite a norm`).toBeGreaterThan(
+        0
+      )
+    }
+  })
+})
+
+describe('no-unsourced-number guard', () => {
+  // This is the enforcement mechanism for the file's own header comment: "EVERY numeric
+  // constant is a `Figure` ... Nothing numeric may live outside this object." Iterating
+  // `Object.entries(FIGURES)` only proves FIGURES itself is well-formed — it says nothing
+  // about numbers that live OUTSIDE FIGURES (a stray `export const TOPE = 9_999_999`, a
+  // magic number buried in a helper function, etc.). This test reads the module's own
+  // source text and walks its AST looking for exactly that.
+  const sourcePath = new URL('../../utils/companyTypes.ts', import.meta.url)
+  const source = readFileSync(sourcePath, 'utf8')
+  const sourceFile = ts.createSourceFile(
+    'companyTypes.ts',
+    source,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TS
+  )
+
+  /** Is `node` (anywhere in its ancestor chain) an argument of a call to `fig(...)`? */
+  const isInsideFigCall = (node: ts.Node): boolean => {
+    for (let p: ts.Node | undefined = node.parent; p; p = p.parent) {
+      if (ts.isCallExpression(p) && ts.isIdentifier(p.expression) && p.expression.text === 'fig') {
+        return true
+      }
+    }
+    return false
+  }
+
+  /** Is `node` used as an array index, e.g. the `0` in `arr[0]`? */
+  const isArrayIndex = (node: ts.Node): boolean => {
+    const p = node.parent
+    return !!p && ts.isElementAccessExpression(p) && p.argumentExpression === node
+  }
+
+  /** Is `node` inside the `IRPF_CAT2` table (the sourced sibling of FIGURES from finding 2)? */
+  const isInsideIrpfCat2 = (node: ts.Node): boolean => {
+    for (let p: ts.Node | undefined = node.parent; p; p = p.parent) {
+      if (ts.isVariableDeclaration(p) && ts.isIdentifier(p.name) && p.name.text === 'IRPF_CAT2') {
+        return true
+      }
+    }
+    return false
+  }
+
+  /**
+   * Is `node` the `years` value of a `Lockout` object literal (one with sibling `norm`
+   * and `url` properties)? The norm/url pair right next to it IS its source — the same
+   * role `Figure.source` plays for FIGURES — so it doesn't need to move into FIGURES.
+   */
+  const isLockoutYears = (node: ts.Node): boolean => {
+    const propAssign = node.parent
+    if (!propAssign || !ts.isPropertyAssignment(propAssign)) return false
+    if (!ts.isIdentifier(propAssign.name) || propAssign.name.text !== 'years') return false
+    const obj = propAssign.parent
+    if (!obj || !ts.isObjectLiteralExpression(obj)) return false
+    const siblingNames = obj.properties
+      .filter(ts.isPropertyAssignment)
+      .map(p => (ts.isIdentifier(p.name) ? p.name.text : ''))
+    return siblingNames.includes('norm') && siblingNames.includes('url')
+  }
+
+  // Small, individually-justified allowlist of bare structural numbers that are facts of
+  // arithmetic/the calendar, not verified legal/financial figures. KEEP THIS SHORT: every
+  // entry re-opens the hole this test exists to close. A bare rate or ceiling (e.g. 0.12,
+  // 4321) must NOT be added here — it belongs in FIGURES with a primary source.
+  const STRUCTURAL_ALLOWLIST: Record<string, string> = {
+    '0': 'neutral/identity value (baseline, "no lockout", loop start)',
+    '1': 'neutral/identity value (single unit, multiplier of one)',
+    '12': 'months per year — a calendar fact, not a verified figure',
+    '100': 'percentage-to-fraction conversion divisor, not a verified figure',
+  }
+
+  const isApproved = (node: ts.NumericLiteral): boolean =>
+    isInsideFigCall(node) ||
+    isArrayIndex(node) ||
+    isInsideIrpfCat2(node) ||
+    isLockoutYears(node) ||
+    node.text in STRUCTURAL_ALLOWLIST
+
+  it('has no numeric literal outside FIGURES, IRPF_CAT2, or the structural allowlist', () => {
+    const offenders: string[] = []
+    const visit = (node: ts.Node) => {
+      if (ts.isNumericLiteral(node) && !isApproved(node)) {
+        const { line } = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile))
+        offenders.push(`  line ${line + 1}: ${node.getText(sourceFile)}`)
+      }
+      ts.forEachChild(node, visit)
+    }
+    visit(sourceFile)
+
+    expect(
+      offenders,
+      `Found ${offenders.length} unsourced numeric literal(s) in companyTypes.ts:\n${offenders.join('\n')}\n` +
+        `Move each one into FIGURES with a primary source (fig(value, label, source)), or — if it ` +
+        `is genuinely structural (like the calendar/percentage constants already allowlisted above) ` +
+        `— add it to STRUCTURAL_ALLOWLIST in this test with a one-line justification.`
+    ).toEqual([])
   })
 })

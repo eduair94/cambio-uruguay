@@ -198,9 +198,15 @@ export const FIGURES = {
   ),
 } as const satisfies Record<string, Figure>
 
-/** Monthly IRPF Cat. II scale for 2026, in UYU. `upTo: null` = top bracket. */
-export const IRPF_CAT2_BRACKETS: ReadonlyArray<{ upTo: number | null; rate: number }> =
-  Object.freeze([
+/**
+ * Monthly IRPF Cat. II scale for 2026, in UYU. `upTo: null` = top bracket.
+ * Carries its own provenance (like a `Figure`) because it is a table, not a
+ * single value, so it can't be built with `fig()`.
+ */
+export const IRPF_CAT2 = {
+  source: IRPF_ESCALA,
+  verifiedAt: V,
+  brackets: Object.freeze([
     { upTo: 48_048, rate: 0 },
     { upTo: 68_640, rate: 0.1 },
     { upTo: 102_960, rate: 0.15 },
@@ -209,7 +215,8 @@ export const IRPF_CAT2_BRACKETS: ReadonlyArray<{ upTo: number | null; rate: numb
     { upTo: 514_800, rate: 0.27 },
     { upTo: 789_360, rate: 0.31 },
     { upTo: null, rate: 0.36 },
-  ])
+  ]) as ReadonlyArray<{ upTo: number | null; rate: number }>,
+} as const
 
 export type RegimeId =
   | 'monotributo-social'
