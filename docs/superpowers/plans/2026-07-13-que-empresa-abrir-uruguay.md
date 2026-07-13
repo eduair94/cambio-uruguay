@@ -290,6 +290,30 @@ export const FIGURES = {
   // --- IRPF Cat. II ---
   irpfFictoGastos: fig(0.3, 'Ficto de gastos deducible (IRPF Cat. II)', IRPF_ESCALA),
   irpfMinimoNoImponibleMensual: fig(48_048, 'Mínimo no imponible mensual (7 BPC)', IRPF_ESCALA),
+
+  // --- Servicios personales: BPS (verificado en Task 1) ---
+  // El aporte NO es "ficto o ingreso real": es LAS DOS COSAS A LA VEZ.
+  // Jubilatorio + FRL sobre un ficto FIJO, y FONASA sobre lo realmente facturado.
+  spJubilatorioFicto: fig(
+    4594,
+    'Jubilatorio + FRL de servicios personales (11 BFC, columna SS 9/SS 99)',
+    BPS_IC
+  ),
+  spFonasaCoefIrpf: fig(0.7, 'Base de FONASA = facturado sin IVA × 70% (IRPF)', 'https://www.bps.gub.uy/7524/base-de-calculo.html'),
+  spFonasaTasaSolo: fig(0.045, 'Tasa FONASA personal, sin cónyuge ni hijos (base > 2,5 BPC)', 'https://www.bps.gub.uy/10314/tasas-fonasa.html'),
+  spFonasaTasaHijos: fig(0.06, 'Tasa FONASA personal, con hijos', 'https://www.bps.gub.uy/10314/tasas-fonasa.html'),
+  spFonasaTasaConyuge: fig(0.065, 'Tasa FONASA personal, con cónyuge', 'https://www.bps.gub.uy/10314/tasas-fonasa.html'),
+  spFonasaTasaConyugeHijos: fig(0.08, 'Tasa FONASA personal, con cónyuge e hijos', 'https://www.bps.gub.uy/10314/tasas-fonasa.html'),
+  spFonasaMinimo: fig(
+    5020,
+    'Aporte mínimo mensual al FONASA, actividad exclusiva (75% del CPE, Decreto 25/026)',
+    'https://www.bps.gub.uy/21425/actividad-exclusiva.html'
+  ),
+  spFacturacionMinimaAnualBpc: fig(
+    30,
+    'Facturación mínima anual (30 BPC) para conservar la cobertura FONASA',
+    'https://www.bps.gub.uy/21425/actividad-exclusiva.html'
+  ),
 } as const satisfies Record<string, Figure>
 
 /** Monthly IRPF Cat. II scale for 2026, in UYU. `upTo: null` = top bracket. */
@@ -627,6 +651,16 @@ export interface WizardInput {
   family?: 'solo' | 'con-hijos' | 'con-conyuge' | 'con-conyuge-e-hijos'
   /** Already covered by FONASA through a salaried job. */
   fonasaFromJob?: boolean
+  /**
+   * Holds a university title covered by the CJPPU (contador, abogado, arquitecto,
+   * ingeniero, médico…) and exercises it. Their JUBILATORIO goes to the CJPPU, not
+   * to BPS, on a scale the CJPPU does not publish openly — so we must NOT show them
+   * the BPS ficto. Their FONASA still goes to BPS.
+   *
+   * BPS's own test is the ACTIVITY, "tengan o no título universitario": a software
+   * developer is `no profesional` (VF 92) and pays BPS. See spec §5.5-ter.
+   */
+  cajaProfesional?: boolean
 }
 
 export interface GateOutcome {
@@ -889,6 +923,43 @@ describe('estimateCost', () => {
     expect(c.taxMonthly).toBe(F.ivaMinimo.value)
   })
 
+  it('costs the freelancer BPS as flat ficto + FONASA on real billing, with the floor binding', () => {
+    // 600.000/año = 50.000/mes. FONASA base = 50.000 × 70% = 35.000; × 4,5% = 1.575,
+    // which is BELOW the 5.020 floor → the floor binds.
+    const c = estimateCost('irpf-servicios', { ...base, sells: 'servicios' })!
+    expect(c.bpsMonthly).toBe(F.spJubilatorioFicto.value + F.spFonasaMinimo.value) // 9.614
+  })
+
+  it('lifts FONASA above the floor once billing is high enough', () => {
+    // 3.000.000/año = 250.000/mes. Base = 175.000; × 4,5% = 7.875 > 5.020 floor.
+    const c = estimateCost('irpf-servicios', {
+      ...base,
+      sells: 'servicios',
+      annualRevenueUyu: 3_000_000,
+    })!
+    expect(c.bpsMonthly).toBeCloseTo(F.spJubilatorioFicto.value + 7875, 0)
+  })
+
+  it('refuses to invent a BPS figure for a CJPPU professional, and says so', () => {
+    const c = estimateCost('irpf-servicios', {
+      ...base,
+      sells: 'servicios',
+      cajaProfesional: true,
+    })!
+    expect(c.bpsMonthly).toBe(0)
+    expect(c.notes.join(' ')).toContain('CJPPU')
+    expect(c.notes.join(' ')).toContain('NO INCLUYE')
+  })
+
+  it('does NOT give the Ley 19.889 ramp to a unipersonal in IRAE (it is a Literal E benefit)', () => {
+    const nuevo = { ...base, yearsOperating: 0 }
+    expect(estimateCost('unipersonal-irae', nuevo)!.bpsMonthly).toBe(F.bpsUnipersonalPleno.value)
+    // ...but Literal E DOES get it.
+    expect(estimateCost('unipersonal-literal-e', nuevo)!.bpsMonthly).toBe(
+      F.bpsUnipersonalAnio1.value
+    )
+  })
+
   it('charges the SAS administrator BPS even at zero revenue', () => {
     const c = estimateCost('sas', { ...base, annualRevenueUyu: 0 })!
     expect(c.bpsMonthly).toBe(F.bpsAdminSas.value)
@@ -977,14 +1048,54 @@ function monoBps(input: WizardInput): number {
   }
 }
 
-/** Titular of a unipersonal: 11 BFC, with the Ley 19.889 patronal ramp for new companies. */
-function unipersonalBps(input: WizardInput): number {
+/**
+ * Titular of a unipersonal: ficto of 11 BFC.
+ *
+ * The Ley 19.889 art. 229 ramp (75%/50%/25% off the patronal jubilatorio) is NOT a
+ * general "new company" discount: art. 229 → art. 228 → art. 30 Ley 18.083 = the
+ * LITERAL E regime, and art. 229 says the exoneration "cesará en la hipótesis en que
+ * el contribuyente ingrese al régimen general de liquidación del IVA". So it applies
+ * to Literal E and NOT to a unipersonal in IRAE/IVA general. Passing `gradual: false`
+ * is what keeps us from promising a discount that does not exist.
+ */
+function unipersonalBps(input: WizardInput, gradual: boolean): number {
   if (input.fonasaFromJob) return FIGURES.bpsUnipersonalConFonasaDeEmpleo.value
+  if (!gradual) return FIGURES.bpsUnipersonalPleno.value
   const y = input.yearsOperating ?? 0
   if (y < 1) return FIGURES.bpsUnipersonalAnio1.value
   if (y < 2) return FIGURES.bpsUnipersonalAnio2.value
   if (y < 3) return FIGURES.bpsUnipersonalAnio3.value
   return FIGURES.bpsUnipersonalPleno.value
+}
+
+/** The FONASA rate a servicios-personales provider pays, by family situation. */
+function spFonasaRate(input: WizardInput): number {
+  switch (input.family ?? 'solo') {
+    case 'con-hijos':
+      return FIGURES.spFonasaTasaHijos.value
+    case 'con-conyuge':
+      return FIGURES.spFonasaTasaConyuge.value
+    case 'con-conyuge-e-hijos':
+      return FIGURES.spFonasaTasaConyugeHijos.value
+    default:
+      return FIGURES.spFonasaTasaSolo.value
+  }
+}
+
+/**
+ * BPS for a servicios-personales provider. Two components on two DIFFERENT bases —
+ * this is the single most misreported figure on the Uruguayan internet:
+ *   - jubilatorio + FRL: a FLAT ficto (11 BFC) → $4.594, no matter what you bill;
+ *   - FONASA: on your REAL billing (facturado sin IVA × 70%), with a monthly floor.
+ * Returns `null` when the person's jubilatorio goes to a Caja profesional (CJPPU),
+ * whose scale is not published — we refuse to show a number we cannot source.
+ */
+function serviciosPersonalesBps(input: WizardInput): number | null {
+  if (input.cajaProfesional) return null
+  const monthlyBilling = input.annualRevenueUyu / 12
+  const fonasaBase = monthlyBilling * FIGURES.spFonasaCoefIrpf.value
+  const fonasa = Math.max(FIGURES.spFonasaMinimo.value, fonasaBase * spFonasaRate(input))
+  return FIGURES.spJubilatorioFicto.value + fonasa
 }
 
 /** IVA mínimo: the flat quota, or — with e-factura — the LESSER of the quota and 3,3% of billing. */
@@ -1063,7 +1174,8 @@ export function estimateCost(
     }
 
     case 'unipersonal-literal-e': {
-      bpsMonthly = unipersonalBps(input)
+      // Literal E IS the regime the Ley 19.889 ramp applies to (art. 228 → art. 30).
+      bpsMonthly = unipersonalBps(input, true)
       const iva = ivaMinimoMonthly(input)
       taxMonthly = iva.amount
       setupCost = FIGURES.setupUnipersonal.value
@@ -1074,7 +1186,8 @@ export function estimateCost(
     }
 
     case 'unipersonal-irae': {
-      bpsMonthly = unipersonalBps(input)
+      // NO ramp here: art. 229 cesa al entrar al régimen general de IVA.
+      bpsMonthly = unipersonalBps(input, false)
       // IRAE ficto, escala empresarial (Dto. 150/007 art. 64): 12% de la renta bruta
       // en el primer tramo (hasta UI 1.000.000) → 3% efectivo sobre la facturación.
       taxMonthly = monthlyRevenue * 0.12 * FIGURES.irae.value
@@ -1084,24 +1197,39 @@ export function estimateCost(
         'IRAE ficto: la renta neta se estima como un % de la facturación (12% en el primer tramo) y sobre eso se aplica el 25%.'
       )
       notes.push('Además liquidás IVA en régimen general (22%), que cobrás a tus clientes.')
+      notes.push(
+        'La rebaja de aportes patronales para empresas nuevas NO aplica acá: es un beneficio del Literal E y cesa al entrar al régimen general de IVA.'
+      )
       break
     }
 
     case 'irpf-servicios': {
-      // BPS de servicios personales: VER TASK 1. Si no se verificó, se deja en 0 y se
-      // dice explícitamente que falta, en vez de inventar el número.
-      bpsMonthly = 0
+      const sp = serviciosPersonalesBps(input)
+      bpsMonthly = sp ?? 0
       const taxable = monthlyRevenue * (1 - FIGURES.irpfFictoGastos.value)
       taxMonthly = irpfCat2Monthly(taxable)
       setupCost = FIGURES.setupUnipersonal.value
+
+      if (sp === null) {
+        notes.push(
+          'NO INCLUYE TU APORTE JUBILATORIO. Tenés un título amparado por la Caja de Profesionales Universitarios, así que el jubilatorio lo aportás a la CJPPU y no a BPS. La CJPPU no publica su escala de forma abierta: consultala directamente. Tu FONASA sí lo pagás a BPS.'
+        )
+      } else {
+        notes.push(
+          `El BPS son dos cosas sobre bases distintas: ${uyu(FIGURES.spJubilatorioFicto.value)} de jubilatorio sobre un ficto FIJO (no importa cuánto factures), más FONASA sobre lo que realmente facturás (70% de lo facturado × ${(spFonasaRate(input) * 100).toLocaleString('es-UY')}%), con un piso de ${uyu(FIGURES.spFonasaMinimo.value)}.`
+        )
+      }
       notes.push(
         `Se deduce un ficto de gastos del 30% y hay un mínimo no imponible de ${uyu(FIGURES.irpfMinimoNoImponibleMensual.value)} al mes: por eso al principio suele ganarle al IRAE.`
       )
       notes.push(
-        'No incluye el aporte a BPS ni a la Caja profesional que corresponda: depende de tu actividad. Confirmalo antes de decidir.'
+        'La rebaja de aportes para empresas nuevas NO existe en este camino: es un beneficio del Literal E. Pagás el total desde el primer mes.'
       )
       notes.push(
         'Si exportás el servicio y se aprovecha exclusivamente en el exterior, el IVA es tasa 0% y conservás el crédito de IVA de tus compras.'
+      )
+      notes.push(
+        `Si facturás menos de 30 BPC al año (${uyu(30 * FIGURES.bpc.value)}), perdés la cobertura FONASA para el año siguiente.`
       )
       break
     }
