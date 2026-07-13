@@ -1,22 +1,16 @@
-// Daily self-updating source of truth for the volatile figures on
-// /que-empresa-abrir-uruguay. Same guardrailed pattern as debtReliefLive.ts: ask
-// Gemini with grounded search, validate EVERY value against a plausibility band,
-// and keep the verified baseline for anything out of band. A hallucinated number
-// can never reach the page.
+// Source of truth for the volatile figures on /que-empresa-abrir-uruguay.
 //
-// NOTE: most of the app's Gemini refreshes moved to the backend (pm2), so in prod
-// this task typically has no geminiApiKey and gracefully no-ops to the verified
-// baseline — which is the authoritative data anyway. The endpoint and the PURE
-// band validator stay useful if a backend company-figures refresh is added later.
+// ARCHITECTURE: this app does NOT call any LLM — the Gemini refreshes moved to the
+// root Express backend (classes/gemini.ts), and tests/unit/noGeminiInApp.test.ts
+// enforces it. So the app serves the VERIFIED BASELINE (derived from the sourced
+// FIGURES in utils/companyTypes.ts). The PURE band validator below stays ready for
+// the day a backend company-figures refresher writes into the `company` store — it
+// accepts only in-band values, so a bad refresh can never reach the page.
 //
-// The ANNUAL CEILINGS (topes in UI) are deliberately NOT refreshed here: they are
+// The ANNUAL CEILINGS (topes in UI) are never auto-refreshed anywhere: they are
 // constants set by decree each January using the UI at the close of the previous
-// ejercicio, and a search engine will happily return last year's. They stay
-// hand-maintained in utils/companyTypes.ts, and the figures:drift watchdog
-// (figuresDrift.ts) nags when the BPC they depend on drifts.
-//
-// The band validator `applyLiveCompanyFigures` is a PURE function (no I/O) so it is
-// unit-tested directly in plain Node, exactly like debtReliefLive's applyLiveCaps.
+// ejercicio. They stay hand-maintained in utils/companyTypes.ts, and the
+// figures:drift watchdog (figuresDrift.ts) nags when the BPC they depend on drifts.
 import { FIGURES } from '../../utils/companyTypes'
 
 export interface CompanyFigures {
@@ -74,9 +68,10 @@ export function baselineCompanyFigures(): CompanyFigures {
 }
 
 /**
- * Merge a raw Gemini payload over a baseline, accepting only values that fall
+ * Merge a raw refresher payload over a baseline, accepting only values that fall
  * inside their plausibility band. PURE: returns a fresh object, never mutates
- * `baseline`. `updated` lists exactly the keys that were accepted.
+ * `baseline`. `updated` lists exactly the keys that were accepted. Kept for a
+ * future backend refresher; the app itself never produces a payload.
  */
 export function applyLiveCompanyFigures(
   baseline: CompanyFigures,
@@ -92,78 +87,6 @@ export function applyLiveCompanyFigures(
     }
   }
   return { figures, updated }
-}
-
-interface GeminiResponse {
-  candidates?: Array<{
-    content?: { parts?: Array<{ text?: string }> }
-    groundingMetadata?: { groundingChunks?: Array<{ web?: { uri?: string; title?: string } }> }
-  }>
-}
-
-const PROMPT = `Buscá con búsqueda web real y citable los valores ACTUALES y OFICIALES en Uruguay de:
-1. La cuota mensual de IVA mínimo (Literal E, pequeña empresa), en pesos.
-2. El aporte mensual TOTAL de un monotributista unipersonal en régimen pleno, con cobertura FONASA, sin cónyuge ni hijos, en pesos.
-3. El aporte mensual TOTAL a BPS del titular de una empresa unipersonal sin dependientes (categoría 1ª, 11 BFC), beneficiario del SNS, sin cónyuge ni hijos, en pesos.
-4. El aporte mensual TOTAL a BPS del administrador o representante legal de una SAS (15 BFC, con FONASA), soltero sin hijos, en pesos.
-5. El aporte mensual TOTAL a BPS de un socio de SRL con actividad (15 BFC, sin FONASA), en pesos.
-6. El monto ANUAL del ICOSA (Impuesto de Control de las Sociedades Anónimas) al cierre de ejercicio, en pesos.
-Usá SOLO fuentes oficiales: bps.gub.uy, dgi.gub.uy, gub.uy, impo.com.uy.
-Respondé SOLO con un objeto JSON válido, sin texto adicional ni markdown, con este formato exacto y números sin separadores de miles ni símbolos:
-{"ivaMinimo": <num>, "monoPlenoFonasaSolo": <num>, "bpsUnipersonalPleno": <num>, "bpsAdminSas": <num>, "bpsSocioSrl": <num>, "icosaAnual": <num>}
-Si algún dato no lo encontrás en una fuente oficial, poné null. NO INVENTES NINGÚN NÚMERO.`
-
-function parseJsonLoose(text: string): Partial<Record<RefreshableKey, number>> | null {
-  const m = text.match(/\{[\s\S]*\}/)
-  if (!m) return null
-  try {
-    return JSON.parse(m[0]) as Partial<Record<RefreshableKey, number>>
-  } catch {
-    return null
-  }
-}
-
-/** Fetch + validate. Returns the merged figures, or the pure baseline on any failure. */
-export async function refreshCompanyFigures(): Promise<CompanyFigures> {
-  const baseline = baselineCompanyFigures()
-  const apiKey = useRuntimeConfig().geminiApiKey as string | undefined
-  if (!apiKey) return baseline
-
-  try {
-    const res = await $fetch<GeminiResponse>(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
-      {
-        method: 'POST',
-        query: { key: apiKey },
-        body: { contents: [{ parts: [{ text: PROMPT }] }], tools: [{ google_search: {} }] },
-        timeout: 30_000,
-      }
-    )
-    const candidate = res.candidates?.[0]
-    const text = (candidate?.content?.parts ?? [])
-      .map(p => p.text ?? '')
-      .join('')
-      .trim()
-    const data = parseJsonLoose(text)
-    if (!data) return baseline
-
-    const { figures, updated } = applyLiveCompanyFigures(baseline, data)
-    if (updated.length === 0) return baseline
-
-    const chunks = candidate?.groundingMetadata?.groundingChunks ?? []
-    figures.sources = chunks
-      .map(c => c.web)
-      .filter((w): w is { uri: string; title?: string } => Boolean(w?.uri))
-      .slice(0, 6)
-      .map(w => ({ label: w.title || new URL(w.uri).hostname.replace(/^www\./, ''), url: w.uri }))
-    figures.asOf = new Date().toISOString()
-    figures.updated = updated
-
-    await useStorage(STORAGE).setItem(KEY, figures)
-    return figures
-  } catch {
-    return baseline
-  }
 }
 
 export async function getStoredCompanyFigures(): Promise<CompanyFigures | null> {

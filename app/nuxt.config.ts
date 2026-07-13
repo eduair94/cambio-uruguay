@@ -296,10 +296,6 @@ export default defineNuxtConfig({
       // collection (classes/appdb.ts) that /api/predictions/[currency].get.ts already reads.
       // 09:30 UTC ≈ 06:30 Uruguay: generate the day's blog posts.
       '30 9 * * *': ['blog:daily'],
-      // 09:55 UTC ≈ 06:55 Uruguay: refresh company-formation figures (IVA mínimo, BPS, ICOSA).
-      // Still an app-side Gemini refresh: the backend has no company-figures logic, and this
-      // no-ops to the verified baseline when no geminiApiKey is present.
-      '55 9 * * *': ['company:daily'],
       // 10:05 UTC ≈ 07:05 Uruguay: compare the backend's freshly-refreshed figures (pm2
       // currency-figures, 09:52 UTC) with the constants baked into this app, and ping the admin
       // when they drift. Spends no AI call — the Gemini refresh moved to the backend.
