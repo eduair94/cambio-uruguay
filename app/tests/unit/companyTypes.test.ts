@@ -7,13 +7,16 @@ import {
   IRAE_FICTO,
   IRPF_CAT2,
   MARKET_ESTIMATES,
+  PRODUCT_THRESHOLDS,
   REGIMES,
   applyGates,
   estimateCost,
+  evaluate,
   iraeFictoRentaNetaAnual,
   irpfCat2Monthly,
   type Figure,
   type RegimeId,
+  type Verdict,
   type WizardInput,
 } from '../../utils/companyTypes'
 
@@ -1990,5 +1993,408 @@ describe('estimateCost', () => {
         }
       }
     }
+  })
+})
+
+// ---------------------------------------------------------------------------------------
+// The lockout alert ratio ("how close to the ceiling counts as CLOSE?") is a PRODUCT
+// threshold, not a legal figure. No norm defines it — Dto. 199/007 art. 14 has no concept of
+// "cerca del tope" — so it has no primary source and must NOT go into FIGURES, whose test
+// rightly demands a bps/dgi/gub.uy/impo/ine/bcu URL. Inventing one would be exactly the
+// defect IMPORTANT 7 caught: provenance as costume.
+//
+// It is not a market PRICE either, so it does not belong in MARKET_ESTIMATES. It gets its own
+// `est()`-built home, which the AST guard approves STRUCTURALLY (isInsideEstCall) and which
+// tells the reader the truth about itself: unsourced, with a rationale, by design.
+// ---------------------------------------------------------------------------------------
+describe('PRODUCT_THRESHOLDS', () => {
+  it('is an editorial choice with provenance — never a legal figure, never a market price', () => {
+    const entries = Object.entries(PRODUCT_THRESHOLDS)
+    expect(entries.length).toBeGreaterThan(0)
+    for (const [key, e] of entries) {
+      expect(typeof e.value, `PRODUCT_THRESHOLDS.${key}.value`).toBe('number')
+      expect(e.label.length, `PRODUCT_THRESHOLDS.${key}.label`).toBeGreaterThan(0)
+      expect(e.unsourced, `PRODUCT_THRESHOLDS.${key} must be flagged unsourced`).toBe(true)
+      expect(e.rationale.length, `PRODUCT_THRESHOLDS.${key}.rationale`).toBeGreaterThan(0)
+      // It must not be able to pass as a verified figure anywhere that renders "Fuentes"...
+      expect(isFigure(e), `PRODUCT_THRESHOLDS.${key} must not masquerade as a Figure`).toBe(false)
+      expect(key in FIGURES, `PRODUCT_THRESHOLDS.${key} must not also be in FIGURES`).toBe(false)
+      // ...nor as a market price, which is a different (and equally specific) claim.
+      expect(key in MARKET_ESTIMATES, `PRODUCT_THRESHOLDS.${key} is not a market price`).toBe(false)
+    }
+  })
+
+  it('keeps the lockout alert ratio a strict fraction of the ceiling', () => {
+    const r = PRODUCT_THRESHOLDS.lockoutAlertRatio.value
+    expect(r).toBeGreaterThan(0)
+    expect(r).toBeLessThan(1)
+  })
+})
+
+// =======================================================================================
+// evaluate() — THE VERDICT
+//
+// Gates first, cost second. The two rules everything else hangs off:
+//
+//   1. A regime the visitor may not legally use is never recommended. It is not "more
+//      expensive" — it is illegal, and it has no price at all.
+//   2. A regime whose cost we could not COMPLETE is never recommended and never compared by
+//      price. `estimateCost` signals that with `bpsUnknown`/`taxUnknown` and a null total;
+//      a ranker that coalesced either into a number would tell a CJPPU professional that the
+//      freelance path is FREE and beats everything (CRITICAL 1, one layer up).
+// =======================================================================================
+describe('evaluate', () => {
+  const shop: WizardInput = {
+    annualRevenueUyu: 600_000,
+    sells: 'bienes',
+    clients: 'consumidor-final',
+    people: 'solo',
+    employees: 0,
+    needsLimitedLiability: false,
+    otherCompanyRole: false,
+    yearsOperating: 0,
+    family: 'solo',
+  }
+
+  const recOf = (v: Verdict) =>
+    v.recommended === null ? null : v.ranked.find(r => r.regime === v.recommended)!
+
+  /**
+   * A coarse cartesian sweep of the wizard's answer space. The invariants below are not
+   * "true for the inputs we thought of" — they must be true for ALL of them, because the
+   * page will be handed all of them. Evaluated ONCE and shared: `evaluate` is pure.
+   */
+  const GRID: WizardInput[] = (() => {
+    const out: WizardInput[] = []
+    const extras: Partial<WizardInput>[] = [
+      {},
+      { cajaProfesional: true },
+      { needsLimitedLiability: true },
+      { midesEligible: true },
+      { sociosCount: 2, sociosActivos: 2 },
+      { sociosCount: 3, sociosFamiliares: true, sociosActivos: 1 },
+      { employees: 2 },
+      { eFactura: true, yearsOperating: 3 },
+      { fonasaFromJob: true, family: 'con-conyuge-e-hijos' },
+      { administradoresSas: 3, otherCompanyRole: true },
+    ]
+    for (const sells of ['bienes', 'servicios', 'ambos'] as const) {
+      for (const clients of ['consumidor-final', 'empresas', 'exterior', 'mixto'] as const) {
+        for (const people of ['solo', 'conyuge', 'socios'] as const) {
+          for (const annualRevenueUyu of [
+            0, 600_000, 1_150_000, 2_500_000, 12_000_000, 50_000_000,
+          ]) {
+            for (const extra of extras) {
+              out.push({ ...shop, sells, clients, people, annualRevenueUyu, ...extra })
+            }
+          }
+        }
+      }
+    }
+    return out
+  })()
+
+  const VERDICTS = GRID.map(input => ({ input, v: evaluate(input) }))
+
+  it('recommends monotributo to a small shop selling to consumers', () => {
+    expect(evaluate(shop).recommended).toBe('monotributo')
+  })
+
+  it('ranks every regime exactly once, and prices none it ruled illegal', () => {
+    const v = evaluate(shop)
+    expect(v.ranked.length).toBe(REGIMES.length)
+    expect(new Set(v.ranked.map(r => r.regime)).size).toBe(REGIMES.length)
+    for (const r of v.ranked) {
+      if (r.status !== 'excluido') continue
+      expect(r.reasons.length, `${r.regime} must explain its exclusion`).toBeGreaterThan(0)
+      // A regime you may not use has no price. Pricing it would invite exactly the
+      // comparison the gates exist to forbid.
+      expect(r.cost, `${r.regime} is illegal here — it must not carry a price`).toBeNull()
+      expect(r.comparable, r.regime).toBe(false)
+    }
+  })
+
+  // ---------------------------------------------------------------------------------
+  // RULE 1 — the gates outrank the price, always.
+  // ---------------------------------------------------------------------------------
+  it('never recommends an EXCLUIDO regime, for ANY input', () => {
+    for (const { input, v } of VERDICTS) {
+      const rec = recOf(v)
+      if (rec === null) continue
+      expect(
+        rec.status,
+        `recommended ${String(v.recommended)} for ${JSON.stringify(input)}`
+      ).not.toBe('excluido')
+    }
+  })
+
+  it('recommends the cheapest ELIGIBLE regime, not the cheapest overall', () => {
+    // Servicios personales sold to empresas: monotributo would be far and away the cheapest
+    // (Ley 18.083 art. 72 lit. C excludes it, and art. 71 lit. D excludes the clientele too).
+    const input: WizardInput = { ...shop, sells: 'servicios', clients: 'empresas' }
+    const v = evaluate(input)
+    expect(v.recommended).not.toBe('monotributo')
+    expect(v.ranked.find(r => r.regime === 'monotributo')!.status).toBe('excluido')
+
+    // ...and it really WOULD have been cheaper. That is the point: it is not rejected for
+    // being expensive, it is rejected for being illegal.
+    const rec = recOf(v)!
+    const illegalButCheaper = estimateCost('monotributo', input).totalAnnual!
+    expect(illegalButCheaper).toBeLessThan(rec.cost!.totalAnnual!)
+  })
+
+  it('always recommends the cheapest COMPARABLE regime — and prefers ELEGIBLE over DUDOSO at the same price', () => {
+    for (const { v } of VERDICTS) {
+      const prices = v.ranked.filter(r => r.comparable).map(r => r.cost!.totalAnnual!)
+      if (prices.length === 0) {
+        expect(v.recommended, 'nothing comparable ⇒ nothing to recommend').toBeNull()
+        continue
+      }
+      const min = Math.min(...prices)
+      const rec = recOf(v)!
+      expect(rec.cost!.totalAnnual!).toBe(min)
+      const atMin = v.ranked.filter(r => r.comparable && r.cost!.totalAnnual === min)
+      if (atMin.some(r => r.status === 'elegible')) expect(rec.status).toBe('elegible')
+    }
+  })
+
+  // ---------------------------------------------------------------------------------
+  // RULE 2 — an incomplete cost is not a cheap cost. It is not a cost at all.
+  //
+  // `estimateCost` was made to return `null` totals (never 0) precisely so a ranker could
+  // not launder "we cannot know this" into "this is free". This is the layer that had to
+  // actually honour that, and these are the four shapes of un-costable regime it must face.
+  // ---------------------------------------------------------------------------------
+  describe('an incomplete cost is never ranked (CRITICAL 1, at the verdict level)', () => {
+    const cjppu: WizardInput = { ...shop, sells: 'servicios', cajaProfesional: true }
+
+    it('never recommends the CJPPU professional a regime whose BPS it cannot compute', () => {
+      const v = evaluate(cjppu)
+      // Every regime this person may legally use charges an owner contribution whose scale
+      // the CJPPU does not publish. There is no honest recommendation — and SAYING SO is the
+      // answer, not a failure. (The bug this replaces: `totalMonthly: 0` ⇒ "the freelance
+      // path costs nothing and beats every alternative".)
+      expect(v.recommended).toBeNull()
+      expect(v.noRecommendation).toBeTruthy()
+      expect(v.ranked.some(r => r.costIncomplete)).toBe(true)
+    })
+
+    it('still SHOWS the CJPPU regimes — with their status, their reasons, and an honest "we cannot cost this"', () => {
+      const irpf = evaluate(cjppu).ranked.find(r => r.regime === 'irpf-servicios')!
+      expect(irpf.status).not.toBe('excluido')
+      expect(irpf.cost).not.toBeNull()
+      expect(irpf.cost!.totalAnnual).toBeNull()
+      expect(irpf.cost!.bpsUnknown).toBe(true)
+      expect(irpf.costIncomplete).toBe(true)
+      expect(irpf.comparable).toBe(false)
+      expect(irpf.cannotCost.length).toBeGreaterThan(0)
+      expect(irpf.cannotCost.join(' ')).toContain('CJPPU')
+      // The part we DO know is still shown — as a floor, never as a total.
+      expect(irpf.cost!.knownPartialMonthly).toBeGreaterThanOrEqual(0)
+    })
+
+    it('never recommends the SA: it can NEVER be costed (Dto. 150/007 art. 168 lit. a)', () => {
+      for (const { v } of VERDICTS) {
+        expect(
+          v.recommended,
+          'an SA can never use the IRAE ficto, so it can never be priced'
+        ).not.toBe('sa')
+        const sa = v.ranked.find(r => r.regime === 'sa')!
+        if (sa.status === 'excluido') continue
+        expect(sa.comparable, 'the SA is legally open here but still not comparable').toBe(false)
+        expect(sa.cannotCost.join(' ')).toContain('contabilidad suficiente')
+      }
+    })
+
+    it('never recommends an SRL whose active-socio count it was never told', () => {
+      const v = evaluate({ ...shop, people: 'socios', sociosCount: 2 })
+      const srl = v.ranked.find(r => r.regime === 'srl')!
+      expect(srl.status).toBe('elegible') // perfectly legal...
+      expect(srl.comparable).toBe(false) // ...and still not comparable
+      expect(v.recommended).not.toBe('srl')
+      // ...and it names the datum it is missing, and the norm that makes it decisive.
+      expect(srl.cannotCost.join(' ')).toMatch(/socios/i)
+      expect(srl.cannotCost.join(' ')).toContain('16.713')
+    })
+
+    it('prices nothing above the IRAE ficto’s legal range (UI 4.000.000)', () => {
+      const v = evaluate({
+        ...shop,
+        annualRevenueUyu: 50_000_000,
+        people: 'socios',
+        sociosCount: 2,
+        sociosActivos: 2,
+      })
+      for (const id of ['unipersonal-irae', 'sociedad-hecho', 'srl', 'sas', 'sa'] as const) {
+        const r = v.ranked.find(x => x.regime === id)!
+        if (r.status === 'excluido') continue
+        expect(r.comparable, id).toBe(false)
+        expect(r.cannotCost.join(' '), id).toContain('contabilidad suficiente')
+      }
+      expect(v.recommended).toBeNull()
+      expect(v.noRecommendation).toBeTruthy()
+    })
+
+    // The invariant, over the whole answer space: nullness of the total, the `costIncomplete`
+    // flag and `comparable` move in lockstep — and the recommendation never touches an
+    // incomplete one. No `?? 0`, no `?? Infinity`, anywhere.
+    it('never compares an incomplete cost by price, for ANY input', () => {
+      let sawIncomplete = false
+      for (const { v } of VERDICTS) {
+        for (const r of v.ranked) {
+          if (r.cost === null) {
+            expect(r.status, `${r.regime} has no cost but is not excluido`).toBe('excluido')
+            expect(r.comparable, r.regime).toBe(false)
+            continue
+          }
+          const incomplete = r.cost.bpsUnknown || r.cost.taxUnknown
+          expect(r.costIncomplete, r.regime).toBe(incomplete)
+          expect(r.comparable, r.regime).toBe(!incomplete)
+          expect(r.cost.totalAnnual === null, r.regime).toBe(incomplete)
+          if (!incomplete) {
+            expect(r.cannotCost, `${r.regime} can be costed — it has nothing to excuse`).toEqual([])
+            continue
+          }
+          sawIncomplete = true
+          expect(v.recommended, `${r.regime} was recommended with an incomplete cost`).not.toBe(
+            r.regime
+          )
+          expect(
+            r.cannotCost.length,
+            `${r.regime} must say why it cannot be costed`
+          ).toBeGreaterThan(0)
+          expect(r.cost.notes.length, `${r.regime} must explain itself`).toBeGreaterThan(0)
+        }
+      }
+      // Guard the guard: if nothing was ever incomplete, this ran vacuously.
+      expect(sawIncomplete, 'no incomplete cost appeared — the check ran vacuously').toBe(true)
+    })
+  })
+
+  // ---------------------------------------------------------------------------------
+  // The warnings are the point of the page, not decoration: they carry what changes the
+  // decision but never shows up in the monthly number.
+  // ---------------------------------------------------------------------------------
+  describe('warnings', () => {
+    it('warns about the 3-year lockout when revenue is close to the ceiling', () => {
+      const v = evaluate({ ...shop, annualRevenueUyu: 1_150_000 }) // 98% of the mono ceiling
+      expect(v.recommended).toBe('monotributo')
+      const w = v.warnings.find(x => x.kind === 'lockout')
+      expect(w).toBeDefined()
+      expect(w!.text).toContain('3')
+      expect(w!.url).toContain('impo.com.uy')
+      expect(w!.norm!.length).toBeGreaterThan(0)
+    })
+
+    it('does not warn about the lockout when revenue is far from the ceiling', () => {
+      const v = evaluate({ ...shop, annualRevenueUyu: 300_000 })
+      expect(v.warnings.find(x => x.kind === 'lockout')).toBeUndefined()
+    })
+
+    // The threshold is the PUBLISHED one, not a second copy of it hidden in the ranker.
+    it('fires the lockout warning exactly at the published alert ratio', () => {
+      const tope = F.topeMonotributoUnipersonalUyu.value
+      const ratio = PRODUCT_THRESHOLDS.lockoutAlertRatio.value
+      const warned = (rev: number) =>
+        evaluate({ ...shop, annualRevenueUyu: Math.round(rev) }).warnings.some(
+          w => w.kind === 'lockout'
+        )
+      expect(warned(tope * ratio + 1000)).toBe(true)
+      expect(warned(tope * ratio - 1000)).toBe(false)
+    })
+
+    it('warns about unlimited liability, citing the Código Civil for a persona física', () => {
+      const w = evaluate(shop).warnings.find(x => x.kind === 'liability')
+      expect(w).toBeDefined()
+      // A monotributista is a PERSONA FÍSICA, not a sociedad: the prenda general of Código
+      // Civil art. 2372, NOT Ley 16.060 art. 39 (which governs sociedades).
+      expect(w!.norm).toContain('2372')
+      expect(w!.norm).not.toContain('16.060')
+      expect(w!.url).toContain('2372')
+    })
+
+    it('cites Ley 16.060 art. 39 instead when the recommendation IS a sociedad', () => {
+      const v = evaluate({
+        ...shop,
+        people: 'socios',
+        sociosCount: 2,
+        sociosActivos: 2,
+        annualRevenueUyu: 5_000_000,
+      })
+      expect(v.recommended).toBe('sociedad-hecho')
+      const w = v.warnings.find(x => x.kind === 'liability')!
+      expect(w.norm).toContain('16.060')
+      expect(w.norm).toContain('39')
+      expect(w.text).toMatch(/solidar/i)
+    })
+
+    it('does not warn about liability when the recommendation has limited liability', () => {
+      const v = evaluate({ ...shop, needsLimitedLiability: true })
+      expect(v.recommended).toBe('sas')
+      expect(v.warnings.find(x => x.kind === 'liability')).toBeUndefined()
+    })
+
+    it('surfaces the Literal E grey zone as a warning for a freelancer', () => {
+      const v = evaluate({ ...shop, sells: 'servicios', clients: 'exterior' })
+      expect(v.recommended).toBe('unipersonal-literal-e')
+      const w = v.warnings.find(x => x.kind === 'grey-zone')
+      expect(w).toBeDefined()
+      expect(w!.url).toContain('4761')
+    })
+
+    it('surfaces EVERY dudoso reason of the recommended regime, and no other regime’s', () => {
+      const v = evaluate({ ...shop, sells: 'servicios', clients: 'exterior' })
+      const rec = recOf(v)!
+      const greys = v.warnings.filter(w => w.kind === 'grey-zone')
+      expect(greys.length).toBe(rec.reasons.filter(r => r.status === 'dudoso').length)
+      expect(greys.length).toBeGreaterThan(0)
+      for (const w of greys) {
+        expect(
+          rec.reasons.some(r => r.status === 'dudoso' && r.text === w.text),
+          w.text
+        ).toBe(true)
+      }
+    })
+
+    it('warns about nothing when there is nothing to recommend', () => {
+      const v = evaluate({ ...shop, sells: 'servicios', cajaProfesional: true })
+      expect(v.recommended).toBeNull()
+      expect(v.warnings).toEqual([])
+    })
+
+    it('never warns about a regime it did not recommend, for ANY input', () => {
+      for (const { v } of VERDICTS) {
+        if (v.recommended !== null) continue
+        expect(v.warnings, 'no recommendation ⇒ nothing to warn about').toEqual([])
+      }
+    })
+
+    it('always cites a norm and a URL on every warning', () => {
+      for (const { v } of VERDICTS) {
+        for (const w of v.warnings) {
+          expect(w.text.length).toBeGreaterThan(0)
+          expect(w.norm!.length, `${w.kind} must cite a norm`).toBeGreaterThan(0)
+          expect(w.url, `${w.kind} must link the norm`).toMatch(/^https:\/\//)
+        }
+      }
+    })
+  })
+
+  it('gives a reason whenever it declines to recommend anything — and none when it does', () => {
+    for (const { v } of VERDICTS) {
+      expect(v.noRecommendation === null).toBe(v.recommended !== null)
+      if (v.noRecommendation !== null) expect(v.noRecommendation.length).toBeGreaterThan(0)
+    }
+  })
+
+  it('passes the accountant fee through to the cost model', () => {
+    const v = evaluate({ ...shop, needsLimitedLiability: true }, 9999)
+    const sas = v.ranked.find(r => r.regime === 'sas')!
+    expect(sas.cost!.accountantMonthly).toBe(9999)
+    // ...and defaults to the market estimate, never to a bare literal.
+    const d = evaluate({ ...shop, needsLimitedLiability: true })
+    expect(d.ranked.find(r => r.regime === 'sas')!.cost!.accountantMonthly).toBe(
+      MARKET_ESTIMATES.contadorMensual.value
+    )
   })
 })

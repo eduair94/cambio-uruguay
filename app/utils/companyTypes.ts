@@ -5,9 +5,13 @@
 // PURE module (no Vue/Nuxt runtime, relative imports only) so it can be unit-tested
 // in plain Node via vitest.
 //
-// EVERY numeric constant is a `Figure` carrying its primary source and the date it
-// was verified. `tests/unit/companyTypes.test.ts` fails the build if one is added
-// without a source. This is a legal-information page: an unsourced number is a bug.
+// EVERY numeric constant declares what kind of number it is, and there are exactly three
+// kinds: a `Figure` (FIGURES / the bracket tables) carries a PRIMARY SOURCE and a verification
+// date; an `Estimate` in MARKET_ESTIMATES is a market price nobody publishes; an `Estimate` in
+// PRODUCT_THRESHOLDS is an editorial choice about when to warn. `tests/unit/companyTypes.test.ts`
+// walks this file's AST and fails the build on any numeric literal that is none of those. This
+// is a legal-information page: an unsourced number is a bug, and a number wearing the WRONG
+// kind of provenance is a worse one.
 //
 // The peso ceilings are ANNUAL CONSTANTS published by BPS/DGI, fixed with the UI at
 // the close of the previous ejercicio. They are NOT recomputed from today's UI.
@@ -70,6 +74,28 @@ export const MARKET_ESTIMATES = {
     4000,
     'Honorarios mensuales de un contador',
     'Estimación de mercado. No existe fuente primaria: ninguna repartición publica un arancel de contadores. El usuario puede ajustarla.'
+  ),
+} as const satisfies Record<string, Estimate>
+
+/**
+ * Numbers that decide WHEN WE SPEAK, not what anything costs or what the law says.
+ *
+ * These are `Estimate`s (unsourced, with a rationale) for the same reason the accountant fee
+ * is — no primary source exists — but they are a DIFFERENT kind of unsourced. The accountant
+ * fee is a claim about the world that nobody happens to publish. A threshold like "how close
+ * to the ceiling counts as CLOSE?" is not a claim about the world at all: it is an editorial
+ * choice about when a warning is more useful than noise. There is nothing to source, and
+ * inventing a bps/dgi/impo URL for it would be exactly the defect IMPORTANT 7 caught — a
+ * citation that does not support its use, wearing compliance as a costume.
+ *
+ * They live apart from `MARKET_ESTIMATES` so that neither can be rendered as the other: a page
+ * that prints "Estimaciones de mercado" must not list a UX threshold among its prices.
+ */
+export const PRODUCT_THRESHOLDS = {
+  lockoutAlertRatio: est(
+    0.85,
+    'Proporción del tope a partir de la cual avisamos del cerrojo',
+    'Umbral editorial, no una cifra legal ni un precio: NINGUNA norma define "estar cerca del tope" — el Dto. 199/007 art. 14 no tiene ese concepto, solo tiene el tope. Elegimos el 85% porque a esa altura un solo mes bueno, un aumento de precios o la inflación te cruzan dentro del mismo ejercicio, y el cerrojo de 3 años se dispara sin que lo hayas decidido. Es una decisión de producto sobre cuándo hablar, y la declaramos como tal en vez de fabricarle una fuente.'
   ),
 } as const satisfies Record<string, Estimate>
 
@@ -2091,4 +2117,256 @@ export function estimateCost(
     setupCost,
     notes,
   }
+}
+
+// =======================================================================================
+// THE VERDICT
+// =======================================================================================
+
+/**
+ * Something that changes the decision but never shows up in the monthly number. These are the
+ * point of the page, not decoration: the cheapest regime and the right regime are different
+ * questions, and the gap between them is made of exactly these three things.
+ */
+export interface Warning {
+  kind: 'lockout' | 'liability' | 'grey-zone'
+  text: string
+  norm?: string
+  url?: string
+}
+
+/** One regime, judged: legally, then (only then) on price. */
+export interface RankedRegime {
+  regime: RegimeId
+  status: Eligibility
+  reasons: GateReason[]
+  /**
+   * `null` for an `excluido` regime — deliberately, and not as a shortcut. A regime you may
+   * not legally use does not have a price: it is not "more expensive", it is illegal, and
+   * handing it a number invites precisely the comparison the gates exist to forbid.
+   */
+  cost: CostBreakdown | null
+  /**
+   * The cost exists but could not be COMPLETED (`bpsUnknown || taxUnknown`, i.e. a null
+   * total). Not cheap. Not zero. Not comparable. See the contract on `CostBreakdown`.
+   */
+  costIncomplete: boolean
+  /**
+   * The only flag the ranker reads: legally open AND completely costed. Only a `comparable`
+   * regime may be compared by price, and only a `comparable` regime may be recommended.
+   */
+  comparable: boolean
+  /**
+   * The honest "no podemos calcularlo, y por qué", for the reader.
+   *
+   * Derived from the cost's FLAGS and the visitor's own answers — NEVER by sniffing the text
+   * of `notes` (the `CostBreakdown` contract forbids that for good reason: a substring is not
+   * a signal). Empty iff the regime is excluded (where `reasons` already says why) or its cost
+   * is complete (where there is nothing to excuse).
+   */
+  cannotCost: string[]
+  lockout?: Lockout
+}
+
+export interface Verdict {
+  /**
+   * The cheapest regime the visitor may legally use AND whose cost we can actually compute.
+   *
+   * `null` is a REAL ANSWER, not a failure mode: for a CJPPU professional, or for anyone
+   * above UI 4.000.000, every regime open to them has a component we cannot source, and the
+   * honest verdict is "we cannot tell you which is cheapest, and here is exactly why". The
+   * alternative — recommending the one whose unknown parts happen to sum to the smallest
+   * number — is how `totalMonthly: 0` nearly shipped as "the freelance path is free".
+   */
+  recommended: RegimeId | null
+  /** Why we declined to recommend anything. `null` iff `recommended` is non-null. */
+  noRecommendation: string | null
+  /** Every regime, always: comparable ones first (cheapest first), then un-costable, then illegal. */
+  ranked: RankedRegime[]
+  /** Only ever about the RECOMMENDED regime. No recommendation ⇒ no warnings. */
+  warnings: Warning[]
+}
+
+/** The revenue ceiling of a regime, when it has one. `null` = nothing to be close to. */
+function ceilingOf(regime: RegimeId, input: WizardInput): number | null {
+  const socios = input.people === 'socios'
+  switch (regime) {
+    // Ley 18.083 art. 71 for the monotributo; Ley 18.874 art. 4 sets the same two importes
+    // for the monotributo social (60% del límite del unipersonal / 100% del asociativo).
+    case 'monotributo':
+    case 'monotributo-social':
+      return socios
+        ? FIGURES.topeMonotributoSociedadUyu.value
+        : FIGURES.topeMonotributoUnipersonalUyu.value
+    case 'unipersonal-literal-e':
+      return FIGURES.topeLiteralEUyu.value
+    default:
+      return null
+  }
+}
+
+/**
+ * Why a cost could not be completed, in words the visitor can act on.
+ *
+ * Built from the FLAGS (`bpsUnknown` / `taxUnknown`) plus the same predicates `estimateCost`
+ * itself used (`cjppuEnJuego`) — never from the text of `notes`. That is the whole discipline:
+ * an unknown is a structured fact, and every layer that touches it must read it as one.
+ */
+function cannotCostReasons(regime: RegimeId, input: WizardInput, cost: CostBreakdown): string[] {
+  const out: string[] = []
+
+  if (cost.bpsUnknown) {
+    out.push(
+      cjppuEnJuego(input)
+        ? 'No podemos calcular tu aporte jubilatorio: tenés un título amparado por la Caja de Profesionales Universitarios (CJPPU) y ejercés la profesión, así que no se rige por la tabla de BPS que usamos para todo el mundo — y la CJPPU no publica su escala de forma abierta. Encima, la Ley 17.738 art. 43 deja expresamente abierto que ADEMÁS te corresponda aportar a BPS ("sin perjuicio de las afiliaciones a otros institutos de seguridad social que pudieran corresponder"), sin decir cuándo. Consultá a la Caja: no lo inventamos en ninguna de las dos direcciones.'
+        : `No podemos calcular el aporte a BPS: se cobra POR CADA SOCIO que desarrolla actividad dentro de la empresa (Ley 16.713 art. 172), y no sabemos cuántos socios trabajan acá. No asumimos que sea uno solo: si son dos, el aporte se duplica, y eso puede dar vuelta la comparación entre los regímenes de sociedad.`
+    )
+  }
+
+  if (cost.taxUnknown) {
+    out.push(
+      regime === 'sa'
+        ? 'No podemos estimarte el IRAE, y en el caso de la SA no vamos a poder NUNCA: está obligada a liquidar por contabilidad suficiente sin importar cuánto facture (Dto. 150/007 art. 168 lit. A), así que el IRAE ficto no le está disponible en ningún nivel de facturación. Su IRAE depende de su estructura real de gastos, que no conocemos.'
+        : `No podemos estimarte el IRAE: por encima de ${FIGURES.topeIraePreceptivoUi.value.toLocaleString('es-UY')} UI de ingresos (≈ ${uyu(uiToUyuCierre(FIGURES.topeIraePreceptivoUi.value))} al año) la contabilidad suficiente es PRECEPTIVA (Dto. 150/007 art. 168) y el ficto del art. 64 deja de estar disponible. El IRAE real es el 25% de (ingresos − gastos reales) y depende de tu estructura de gastos, que no conocemos. No extrapolamos el ficto fuera de su rango legal.`
+    )
+  }
+
+  if (out.length > 0) {
+    out.push(
+      `Por eso no le ponemos precio ni lo comparamos con los demás. Lo que SÍ sabemos suma ${uyu(cost.knownPartialMonthly)} al mes — pero eso es un PISO, no un total: el costo real es mayor, y no sabemos cuánto. Un número incompleto que se ordena junto a números completos deja de ser incompleto y pasa a ser falso.`
+    )
+  }
+
+  return out
+}
+
+/**
+ * The verdict: which legal form should this person open?
+ *
+ * LEGAL GATES FIRST, COST SECOND, AND AN UNKNOWN IS NEVER A ZERO. Three rules, in order:
+ *
+ *   1. A regime the visitor may not legally use (`excluido`) is never recommended, and is
+ *      never given a price at all. Cost is not a defence against a gate.
+ *   2. A regime whose cost `estimateCost` could not COMPLETE is never recommended and never
+ *      enters the price comparison. It is still SHOWN — with its status, its reasons and an
+ *      honest `cannotCost` — because "we cannot know this" is information, and hiding it is
+ *      what makes people trust the numbers that are left. There is no `?? 0` and no
+ *      `?? Infinity` in this function: an unknown does not enter the sort wearing a number,
+ *      it does not enter the sort.
+ *   3. Among what remains, the CHEAPEST wins — and at equal price, a clearly `elegible`
+ *      regime beats a `dudoso` one. We do NOT promote an `elegible` regime over a cheaper
+ *      `dudoso` one: for a freelancer, Literal E is both the cheapest and a genuine grey zone
+ *      (Consulta DGI 4761), and silently steering them to the dearer path without telling
+ *      them the cheaper one exists would be a worse answer than showing it with the tension
+ *      attached. That is what the `grey-zone` warning is for.
+ *
+ * `recommended: null` is therefore a real, and sometimes the only honest, verdict.
+ */
+export function evaluate(
+  input: WizardInput,
+  accountantMonthly: number = MARKET_ESTIMATES.contadorMensual.value
+): Verdict {
+  const byId = new Map(REGIMES.map(r => [r.id, r]))
+
+  const ranked: RankedRegime[] = applyGates(input).map(g => {
+    const cost = g.status === 'excluido' ? null : estimateCost(g.regime, input, accountantMonthly)
+    const costIncomplete = cost !== null && cost.totalAnnual === null
+    return {
+      regime: g.regime,
+      status: g.status,
+      reasons: g.reasons,
+      cost,
+      costIncomplete,
+      comparable: cost !== null && cost.totalAnnual !== null,
+      cannotCost: cost !== null && costIncomplete ? cannotCostReasons(g.regime, input, cost) : [],
+      lockout: byId.get(g.regime)?.lockout,
+    }
+  })
+
+  // The price is read ONCE, here, and only off a regime that is both legally open and
+  // completely costed. Everything downstream sorts and compares plain numbers, because
+  // nothing that was not a number ever got in.
+  const priced: { r: RankedRegime; price: number }[] = []
+  for (const r of ranked) {
+    if (!r.comparable) continue
+    const price = r.cost?.totalAnnual
+    if (price === undefined || price === null) continue
+    priced.push({ r, price })
+  }
+  priced.sort((a, b) => a.price - b.price)
+
+  const cheapest = priced[0]
+  const best =
+    cheapest === undefined
+      ? null
+      : (priced.find(p => p.price === cheapest.price && p.r.status === 'elegible') ?? cheapest)
+  const recommended = best?.r.regime ?? null
+
+  const noRecommendation =
+    recommended === null
+      ? 'No podemos recomendarte ninguno con los datos que nos diste: de los regímenes que legalmente podrías usar, ninguno tiene un costo que podamos calcular ENTERO. Abajo está cada uno, con lo que sí sabemos, lo que no, y por qué. Preferimos no darte un número antes que darte uno más bajo que el real: el que se ve más barato acá suele ser, justamente, aquel al que le falta la parte más cara.'
+      : null
+
+  // Comparables first (cheapest first), then the legally-open-but-un-costable, then the
+  // illegal. Each regime lands in exactly one bucket, so `ranked.length` is preserved.
+  const ordered: RankedRegime[] = [
+    ...priced.map(p => p.r),
+    ...ranked.filter(r => r.status !== 'excluido' && !r.comparable),
+    ...ranked.filter(r => r.status === 'excluido'),
+  ]
+
+  const warnings: Warning[] = []
+  const rec = recommended === null ? undefined : ranked.find(r => r.regime === recommended)
+  const regime = recommended === null ? undefined : byId.get(recommended)
+
+  if (rec !== undefined && regime !== undefined) {
+    // THE LOCKOUT. It only matters if you are near the ceiling of the regime we are
+    // recommending — and "near" is a product judgement, so it is declared as one
+    // (PRODUCT_THRESHOLDS, not FIGURES: no norm defines it).
+    const ceiling = ceilingOf(regime.id, input)
+    const ratio = PRODUCT_THRESHOLDS.lockoutAlertRatio.value
+    if (
+      ceiling !== null &&
+      regime.lockout !== undefined &&
+      input.annualRevenueUyu >= ceiling * ratio
+    ) {
+      const margen = (1 - ratio).toLocaleString('es-UY', {
+        style: 'percent',
+        maximumFractionDigits: 0,
+      })
+      warnings.push({
+        kind: 'lockout',
+        text: `Cuidado: estás a menos del ${margen} del tope de este régimen (${uyu(ceiling)} al año). ${regime.lockout.text} El cerrojo es de ${regime.lockout.years} años, y se dispara aunque te vayas por tu propia voluntad. Si esperás crecer, entrar acá para salir en un año puede costarte más caro que arrancar directamente en el régimen siguiente.`,
+        norm: regime.lockout.norm,
+        url: regime.lockout.url,
+      })
+    }
+
+    // UNLIMITED LIABILITY. The norm depends on WHAT THE TAXPAYER IS: a sociedad de hecho's
+    // socios answer under Ley 16.060 art. 39 (solidaria, sin beneficio de excusión); a
+    // monotributista / unipersonal / IRPF taxpayer is a PERSONA FÍSICA, and art. 39 has
+    // nothing to say about them — their exposure is the prenda general del Código Civil
+    // art. 2372. Citing art. 39 at a persona física is the wrong norm, confidently.
+    if (regime.liability === 'ilimitada') {
+      const esSociedad = regime.id === 'sociedad-hecho'
+      const l = esSociedad ? L.ley16060_39 : L.codigoCivil2372
+      warnings.push({
+        kind: 'liability',
+        text: esSociedad
+          ? 'Respondés con tu patrimonio personal —tu casa, tu auto, tu cuenta— y además en forma SOLIDARIA: un acreedor puede ir por el 100% de la deuda contra el socio que tenga bienes, sin importar el porcentaje que hayan pactado entre ustedes, y sin beneficio de excusión. Si vas a tomar deuda, contratar empleados o firmar contratos con penalidades, mirá la SRL o la SAS.'
+          : 'En esta figura respondés con tu patrimonio personal: tu casa, tu auto, tu cuenta. No hay persona jurídica separada — la empresa sos vos. Si vas a tomar deuda, contratar empleados, comprar mercadería a crédito o firmar contratos con penalidades, considerá una SAS, que sí separa tu patrimonio del de la empresa.',
+        norm: l.norm,
+        url: l.url,
+      })
+    }
+
+    // THE GREY ZONE. If we are recommending a regime whose legality we could not confirm, the
+    // reader has to hear it from us — every single reason, not a summary of them.
+    for (const r of rec.reasons) {
+      if (r.status !== 'dudoso') continue
+      warnings.push({ kind: 'grey-zone', text: r.text, norm: r.norm, url: r.url })
+    }
+  }
+
+  return { recommended, noRecommendation, ranked: ordered, warnings }
 }
