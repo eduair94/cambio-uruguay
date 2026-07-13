@@ -16,6 +16,7 @@
     "sync_aduana": "ts-node sync_aduana.ts",
     "sync_banks_news": "ts-node sync_banks_news.ts",
     "sync_figures": "ts-node sync_figures.ts",
+    "sync_costs": "ts-node sync_costs.ts",
     "sync_favicon": "ts-node sync_favicon.ts",
     "build": "tsc -p tsconfig.production.json",
     "get_locations": "ts-node get_locations.ts",

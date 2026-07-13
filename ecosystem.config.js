@@ -57,6 +57,18 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Cost-of-living live figures (salario mínimo, boleto STM, alquileres típicos) for
+      // /herramientas/costo-de-vida. Only the validated figures are stored — the arithmetic that
+      // turns them into a full cost model stays in the app (COST_MODEL). Daily 09:43 UTC ≈ 06:43
+      // America/Montevideo. Minute 43: not a multiple of 5.
+      name: "currency-costs",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_costs.js",
+      cron_restart: "43 9 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Cluster mode, 2 instances: `pm2 reload` (scripts/deploy-backend.sh) then
       // rolls instances one at a time, so a deploy never takes the API down.
       // Safe because the API path writes nothing to disk — ProxyFileService is

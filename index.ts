@@ -13,6 +13,8 @@ import { cambio_info } from "./classes/cambioInfo";
 import CambioFortex from "./classes/cambios/fortex";
 import { MongooseServer, mongoose } from "./classes/database";
 import server from "./classes/Express/ExpressSetup";
+import { emptyLiveCosts } from "./classes/costs/refresh";
+import { loadCosts } from "./classes/costs/store";
 import { BASELINE_FIGURES } from "./classes/figures/bands";
 import { loadFigures } from "./classes/figures/store";
 import { origins } from "./classes/origins";
@@ -1482,6 +1484,56 @@ const main = async () => {
    */
   server.getJson("uy-figures", async (req: Request): Promise<any> => {
     return await redisCache.getOrSet("uy-figures", async () => (await loadFigures()) ?? BASELINE_FIGURES, 1800);
+  });
+
+  /**
+   * @openapi
+   * /cost-of-living:
+   *   get:
+   *     tags:
+   *       - Indicators
+   *     summary: Figuras en vivo para el costo de vida en Uruguay (salario, boleto, alquileres)
+   *     description: |
+   *       Datos que alimentan /herramientas/costo-de-vida: salario mínimo, boleto común de
+   *       Montevideo (STM) y alquileres típicos (monoambiente, 1 y 2 dormitorios) vía una búsqueda
+   *       con grounding (Gemini + Google Search). Se sincroniza una vez por día (pm2
+   *       `currency-costs`).
+   *
+   *       Devuelve SOLO las cinco figuras validadas — la app aplica esos valores sobre su propio
+   *       modelo de costos (COST_MODEL), que no vive acá para no duplicar esa tabla. Cada figura
+   *       debe caer dentro de una banda de plausibilidad para ser aceptada; una fuera de banda
+   *       simplemente no aparece en `figures` ni en `updated`. `asOf: null` significa que todavía
+   *       no se generó ningún dato en vivo.
+   *     responses:
+   *       200:
+   *         description: Figuras en vivo de costo de vida
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 figures:
+   *                   type: object
+   *                   properties:
+   *                     salarioMinimo: { type: number, nullable: true }
+   *                     boletoStm: { type: number, nullable: true }
+   *                     rentMono: { type: number, nullable: true }
+   *                     rent1: { type: number, nullable: true }
+   *                     rent2: { type: number, nullable: true }
+   *                 asOf: { type: string, nullable: true }
+   *                 updated:
+   *                   type: array
+   *                   items: { type: string }
+   *                 sources:
+   *                   type: array
+   *                   items:
+   *                     type: object
+   *                     properties:
+   *                       label: { type: string }
+   *                       url: { type: string }
+   */
+  server.getJson("cost-of-living", async (req: Request): Promise<any> => {
+    return await redisCache.getOrSet("cost-of-living", async () => (await loadCosts()) ?? emptyLiveCosts(), 1800);
   });
 
   /**
