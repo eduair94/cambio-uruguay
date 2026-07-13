@@ -25,7 +25,11 @@ module.exports = {
       autorestart: false,
       exec_mode: "fork",
       script: "dist/sync_aduana.js",
-      cron_restart: "40 8 * * 1",
+      // Mondays 09:30 UTC (≈ 06:30 America/Montevideo). The courier sync harvests Reddit DAILY at
+      // 08:15, and reddit.ts's throttle is per-process — two pm2 apps do not share a rate-limit
+      // queue. 75 minutes of clearance is best-effort spacing, not a guarantee: if they do overlap,
+      // both eat 429s, the harvest catch keeps the stored corpus, and nothing is blanked.
+      cron_restart: "30 9 * * 1",
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
