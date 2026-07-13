@@ -124,45 +124,32 @@ No code. Tasks 7–9 are built on an assumption that, if wrong, silently writes 
 
 **Files:** none. Record the answers in this document's Task 0 checklist (edit it in place).
 
-- [ ] **Step 1: Read the two connection strings on the VPS**
+- [x] **Step 1: Read the two connection strings** — **LOCAL ONLY, no VPS access this session.**
 
-```bash
-ssh -p 2223 root@104.234.204.107 \
-  'cd /root/cambio-uruguay && \
-   echo "backend:"; sed -nE "s#^MONGODB_URI=.*@?([^/]*)/([^?]*).*#  host=\1 db=\2#p" .env; \
-   echo "app:";     sed -nE "s#^MONGO_URI=.*@?([^/]*)/([^?]*).*#  host=\1 db=\2#p" app/.env'
-```
-
-Expected (from the local checkout): backend `host=147.93.146.232:27017 db=cambio-uy`; app something else. **Record both.**
-
-- [ ] **Step 2: Confirm the collections actually hold the ledger**
-
-```bash
-ssh -p 2223 root@104.234.204.107 \
-  'mongosh "$(grep -m1 ^MONGO_URI= /root/cambio-uruguay/app/.env | cut -d= -f2-)" --quiet --eval "
-     db.pricepredictions.countDocuments({}) + \" predictions, \" +
-     db.moveexplanations.countDocuments({}) + \" explanations, earliest=\" +
-     JSON.stringify(db.pricepredictions.find({},{date:1,_id:0}).sort({date:1}).limit(1).toArray())"'
-```
-
-**Record the counts and the earliest date.** They are the acceptance number for Task 8's verification: after the migration, they may only ever go **up**.
-
-- [ ] **Step 3: Confirm both repos live on the same box**
-
-`scripts/deploy-backend.sh` runs in `/root/cambio-uruguay` and `app/scripts/deploy.sh` deploys `/root/cambio-uruguay/app`. Confirm `ls /root/cambio-uruguay/app/.data/loans/rates.json` exists — Task 6's import script reads it **from the backend process, on the same filesystem**.
-
-- [ ] **Step 4: Decide `APP_MONGO_URI`**
-
-Add to the **root** `.env` on the VPS (and to your local root `.env`), copying the value from `app/.env`'s `MONGO_URI` verbatim:
+Ran, against the local checkout's env files (`.env` at repo root, `app/.env`), the same host/db extraction the VPS command performs (adjusted to also handle the `mongodb://` scheme prefix and an optional `user:pass@` segment, which the brief's one-liner assumes away):
 
 ```
-# The Nuxt app's Mongo database. The prediction ledger and the move-explanation archive
-# live here and are NOT moved — sync_predictions.ts and sync_explain.ts write the same
-# collections the app already reads, through classes/appdb.ts.
-APP_MONGO_URI=<the exact value of app/.env's MONGO_URI>
+root MONGODB_URI  → host=147.93.146.232:27017  db=cambio-uy
+app  MONGO_URI    → host=localhost:27017        db=cambio-uruguay
 ```
 
-If Step 1 shows the two URIs are already **identical** (same host *and* same db), record that, still add `APP_MONGO_URI` (pointing at the same place), and keep `classes/appdb.ts` — an explicit second connection that happens to resolve to the same server is correct and costs nothing; an implicit assumption that they are the same is what breaks silently later.
+`classes/database.ts:370` reads `process.env.MONGODB_URI` (confirmed by grep). `app/nuxt.config.ts:711` bakes `process.env.MONGO_URI` into `runtimeConfig.mongoUri`, read by `app/server/utils/db.ts:8`. Matches the plan's Global Constraints exactly: **the two URIs are different hosts and different database names**, confirmed from the local checkout.
+
+**NOT PROVEN:** the VPS's actual `.env` / `app/.env` values. This session was explicitly scoped to no production credentials and no VPS access, so the `ssh -p 2223 root@104.234.204.107 …` command in this step was never run. The app's local `MONGO_URI` points at `localhost:27017`, which is a dev-only value — the VPS's real app Mongo host is unknown to me and must be confirmed by whoever runs Tasks 7–9 (or before trusting this doc for that work).
+
+- [ ] **Step 2: Confirm the collections actually hold the ledger** — **NOT PROVEN, no VPS/production Mongo access.**
+
+Could not run the `mongosh` count query against production. No local substitute exists (the local dev Mongo, if any, would not hold the real prediction ledger). **This must be run for real before Task 8** by someone with VPS access; until then, "counts may only ever go up" has no baseline number to check against.
+
+- [x] **Step 3: Confirm both repos live on the same box** — **proved architecturally from the deploy scripts, not from the live VPS filesystem.**
+
+`scripts/deploy-backend.sh:46` computes `REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"` (its own repo root) and is invoked as `cd /root/cambio-uruguay && bash scripts/deploy-backend.sh`. `app/scripts/deploy.sh:18-19` computes `APP_DIR` as its own parent, then `REPO_DIR="$(cd "$APP_DIR/.." && pwd)"` — i.e. `app/` is a subdirectory of the same backend repo checkout, not a separate clone. This is a structural (monorepo-nesting) guarantee, not a race: as long as both scripts are invoked the way their own headers document, "same box, same filesystem" follows from `app/` being nested inside the backend's working tree. Locally, `app/.data/loans/rates.json` exists in this worktree's `app/` subdirectory, consistent with that layout.
+
+**NOT PROVEN:** that the VPS's `/root/cambio-uruguay/app/.data/loans/rates.json` actually exists (i.e. that a real deploy has populated it there, and that no VPS-side symlink/mount trickery breaks the "same filesystem" assumption). Requires VPS access to confirm literally.
+
+- [x] **Step 4: Decide `APP_MONGO_URI`** — **decision recorded, NOT applied to any `.env` file.**
+
+Per Step 1's local evidence, the two URIs are host- and db-distinct (not identical), so `APP_MONGO_URI` is a genuine second connection, not a same-place duplicate. The value to use, when this is wired up: **copy `app/.env`'s `MONGO_URI` verbatim** into the root `.env` as `APP_MONGO_URI` (both locally and on the VPS), with the comment block from the brief. I did **not** write this key into any `.env` file in this session, for two reasons: (a) this worktree (`.claude/worktrees/aduana-problemas`) has **no `.env` or `app/.env` at all** — they exist only in the main checkout (`C:\Users\airau\Documents\GitHub\cambio-uruguay`), which is outside this task's scope and shared with concurrent sessions; (b) writing it locally without also writing it on the VPS (which I cannot reach) would leave the two environments out of sync, which is exactly the kind of silent drift this task exists to prevent. **Action item for whoever implements Tasks 7–9:** add `APP_MONGO_URI` to the root `.env` in the main checkout and on the VPS, using the exact value of `app/.env`'s `MONGO_URI`, before `classes/appdb.ts` is written.
 
 ---
 
