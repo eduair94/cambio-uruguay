@@ -34,6 +34,15 @@ const facts = [
     verifiedAt: '2026-07-11',
     origin: 'baseline',
   },
+  {
+    id: 'tifa.exoneracion_usd',
+    label: 'Umbral de exoneración de IVA (TIFA)',
+    value: 200,
+    unit: 'USD',
+    sourceId: 'ley-18761-tifa',
+    verifiedAt: '2026-07-11',
+    origin: 'baseline',
+  },
 ] as const
 
 describe('verifyCharges', () => {
@@ -72,6 +81,32 @@ describe('verifyCharges', () => {
   it('classifies the flete as the courier price list', () => {
     const [v] = verifyCharges({ charges: [{ id: 'flete', amountUsd: 30 }], facts: [...facts] })
     expect(v.backing).toBe('contrato')
+  })
+
+  // A green "Lo cobra la norma" on an IVA charge must not read as "so this charge is fine": the
+  // shipment may have qualified for the TIFA exoneration and simply never gotten it. The verdict
+  // carries the threshold (read from the fact, never hardcoded) so the page can prompt the
+  // follow-up question instead of silently reassuring someone who may have been overcharged.
+  it('carries the TIFA exemption threshold on an iva verdict, read from the fact', () => {
+    const [v] = verifyCharges({ charges: [{ id: 'iva', amountUsd: 44 }], facts: [...facts] })
+    expect(v.ivaExemptionHintUsd).toBe(200)
+  })
+
+  it('does not set the TIFA hint on a non-iva verdict', () => {
+    const [v] = verifyCharges({
+      charges: [{ id: 'prestacion_unica', amountUsd: 60 }],
+      facts: [...facts],
+    })
+    expect(v.ivaExemptionHintUsd).toBeUndefined()
+  })
+
+  it('leaves the TIFA hint undefined when the fact is missing, rather than a hardcoded 200', () => {
+    const factsWithoutTifa = facts.filter(f => f.id !== 'tifa.exoneracion_usd')
+    const [v] = verifyCharges({
+      charges: [{ id: 'iva', amountUsd: 44 }],
+      facts: [...factsWithoutTifa],
+    })
+    expect(v.ivaExemptionHintUsd).toBeUndefined()
   })
 })
 

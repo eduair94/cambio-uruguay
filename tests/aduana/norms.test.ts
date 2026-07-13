@@ -19,7 +19,7 @@ const NORM_URL = "https://www.impo.com.uy/bases/decretos/50-2026";
 const GROUNDED = [NORM_URL];
 
 const SOURCES: Source[] = [
-  { id: "decreto-50-026", title: "Decreto 50/026", norm: "Decreto 50/026", url: NORM_URL, checkedAt: "2026-07-11" },
+  { id: "decreto-50-026", title: "Decreto 50/026", norm: "Decreto 50/026", url: NORM_URL, checkedAt: "2026-07-11", kind: "norma" },
 ];
 
 const current: AduanaFact[] = [

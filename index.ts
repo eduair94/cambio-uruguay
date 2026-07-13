@@ -1272,7 +1272,7 @@ const main = async () => {
    *       Datos que alimentan /problemas-con-la-aduana-uruguay: doce problemas típicos de compras
    *       importadas y encomiendas (paquete retenido, factura exigida, franquicia agotada, etc.),
    *       cada uno con la norma aplicable, los pasos a seguir y testimonios reales citados de
-   *       r/uruguay. Se sincroniza una vez por semana (pm2 `currency-aduana`, lunes 08:40 UTC):
+   *       r/uruguay. Se sincroniza una vez por semana (pm2 `currency-aduana`, lunes 09:30 UTC):
    *       se cosechan hilos nuevos de Reddit, se etiquetan con IA y se re-chequean los hechos
    *       legales contra la norma oficial (impo.com.uy / gub.uy) con un modelo con acceso a
    *       búsqueda — la IA solo puede señalar un cambio de ley para revisión humana, nunca

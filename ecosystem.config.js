@@ -19,7 +19,7 @@ module.exports = {
     {
       // Customs problem hub for /problemas-con-la-aduana-uruguay: Reddit corpus + AI labels every
       // run, legal facts re-checked against the norm (the AI can flag a change, never publish one).
-      // Mondays 08:40 UTC ≈ 05:40 America/Montevideo — after the courier sync, so the two jobs do
+      // Mondays 09:30 UTC ≈ 06:30 America/Montevideo — after the courier sync, so the two jobs do
       // not compete for the same Reddit rate limit.
       name: "currency-aduana",
       autorestart: false,

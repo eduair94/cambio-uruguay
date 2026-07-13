@@ -26,11 +26,17 @@ vi.mock("../../classes/aduana/corpus", () => ({
 
 import { ADUANA_QUERIES, harvestAduana } from "../../classes/aduana/harvest";
 
+const warnedWith = (needle: string): boolean =>
+  vi.mocked(console.warn).mock.calls.some((args) =>
+    args.some((a) => typeof a === "string" && a.includes(needle))
+  );
+
 describe("harvestAduana", () => {
   beforeEach(() => {
     upserted.length = 0;
     searchPosts.mockReset();
     fetchComments.mockReset();
+    vi.spyOn(console, "warn").mockImplementation(() => {});
   });
 
   it("searches every query and dedupes a thread surfaced by two of them", async () => {
@@ -61,14 +67,20 @@ describe("harvestAduana", () => {
     expect(fetchComments).toHaveBeenCalledWith("uruguay", "abc", expect.any(Set));
   });
 
-  it("is a silent no-op without credentials", async () => {
+  // It is a no-op without credentials — but NOT a silent one (same contract as
+  // gemini.ts#geminiConfigured): before this fix, `threads=0` in the weekly sync summary read
+  // identically for "ran the search and genuinely found nothing new" and "never even tried
+  // because Reddit isn't configured", and only a human can tell those apart from a log line.
+  it("is a no-op without credentials, and it warns instead of staying silent", async () => {
     // vi.resetModules() is required here: without it, the dynamic import below returns the same
     // module instance the top-level static import already cached (bound to the first vi.mock),
     // so redditConfigured() would keep answering `true` and this test would exercise the wrong
     // mock instead of the no-credentials path it's named for.
     vi.resetModules();
     vi.doMock("../../classes/reddit", () => ({ redditConfigured: () => false }));
+    vi.spyOn(console, "warn").mockImplementation(() => {});
     const { harvestAduana: h } = await import("../../classes/aduana/harvest");
     await expect(h()).resolves.toEqual({ posts: 0, comments: 0 });
+    expect(warnedWith("Reddit")).toBe(true);
   });
 });

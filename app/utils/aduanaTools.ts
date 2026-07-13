@@ -34,6 +34,16 @@ export interface ChargeVerdict {
   backing: 'norma' | 'contrato' | 'sin-respaldo'
   explain: string
   sourceId?: string
+  /**
+   * Only set on the 'iva' verdict: the TIFA exemption threshold (USD), read from the
+   * `tifa.exoneracion_usd` fact — never hardcoded. A green "Lo cobra la norma" on IVA is honest
+   * about tributo-vs-courier-price, but it must not read as "so this charge was correct": a
+   * shipment from the US under this threshold may have qualified for the TIFA exoneration and
+   * simply never gotten it, and this verdict has no way to know either way — it only classifies
+   * WHO would charge it if it applies. The page uses this to prompt a follow-up question instead
+   * of silently reassuring someone who may have been overcharged.
+   */
+  ivaExemptionHintUsd?: number
 }
 
 // Which fact backs each tax-like charge. Both facts happen to be established by the same article
@@ -68,9 +78,12 @@ export function verifyCharges(input: { charges: Charge[]; facts: AduanaFact[] })
     if (backingFactId) {
       const fact = findFact(input.facts, backingFactId)
       let label: string
+      let ivaExemptionHintUsd: number | undefined
       if (charge.id === 'iva') {
         label =
           'El IVA sobre un envío en franquicia es un tributo (lo fija la norma, no el courier).'
+        const tifaFact = findFact(input.facts, 'tifa.exoneracion_usd')
+        ivaExemptionHintUsd = tifaFact ? Number(tifaFact.value) : undefined
       } else {
         const tasaFact = findFact(input.facts, 'prestacion_unica.tasa_pct')
         const tasaPart = tasaFact ? ` (${tasaFact.value}% del valor, con un mínimo por envío)` : ''
@@ -82,6 +95,7 @@ export function verifyCharges(input: { charges: Charge[]; facts: AduanaFact[] })
         backing: 'norma',
         sourceId: fact?.sourceId,
         explain: label,
+        ivaExemptionHintUsd,
       }
     }
 

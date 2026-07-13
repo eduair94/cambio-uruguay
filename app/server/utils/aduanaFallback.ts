@@ -3,14 +3,18 @@
 // package is stuck; a blank page is worse than a slightly stale one, so this file guarantees the
 // page always has every fact and every one of the 12 problem procedures to render.
 //
-// This is a COPY, not an import. app/ is excluded from the root tsconfig.json (see Task 2, Step
-// 2), and the root API's tsconfig excludes app/ right back — the two TypeScript programs cannot
-// import across that boundary. The values below were copied verbatim out of
-// classes/aduana/baseline.ts (BASELINE), not retyped from memory. Do not hand-edit a fact's value
-// or a problem's legal text here without first updating classes/aduana/baseline.ts and re-copying
-// — the root-side drift guard at tests/aduana/baseline.test.ts checks BASELINE against
-// app/utils/importRules.ts, not against this file, so a manual edit here can silently drift from
-// the verified norm text without any test catching it.
+// This is a COPY, not an import — at BUILD time. app/ is excluded from the root tsconfig.json
+// (see Task 2, Step 2), and the root API's tsconfig excludes app/ right back, so neither of the
+// two compiled TypeScript programs can import across that boundary. Vitest is a different story:
+// app/vitest.config.ts imports plain .ts modules directly (no build step, no tsconfig project
+// boundary), so app/tests/unit/aduanaFallback.test.ts imports BASELINE straight out of
+// classes/aduana/baseline.ts and asserts this file equals `buildAduanaPayload(BASELINE)` — that
+// drift guard is what actually keeps this copy honest; it is not merely "cannot drift silently
+// forever", it fails CI the moment the two disagree. The values below were copied verbatim out of
+// classes/aduana/baseline.ts (BASELINE), not retyped from memory. Do not hand-edit a fact's value,
+// a source's `kind`, or a problem's legal text here without first updating
+// classes/aduana/baseline.ts and re-copying — the drift test above will catch a mismatch, but
+// there is no reason to make it fail on purpose.
 //
 // Every problem gets quotes: [] and reports: 0: this snapshot carries no Reddit corpus, only the
 // sourced legal facts and procedures. stale is always true — a baseline is, by definition, not a
@@ -45,6 +49,10 @@ export interface AduanaSource {
   norm: string // 'Decreto 50/026'
   url: string
   checkedAt: string // ISO date
+  /** Whether this source IS the law or is an official page merely describing it — see the fuller
+   * rationale on `Source` in classes/aduana/types.ts. Drives the "verificado contra la norma"
+   * badge on the page; never a magic-string check on a fact's `article` text. */
+  kind: 'norma' | 'pagina-oficial'
 }
 
 /**
@@ -930,6 +938,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'Ley 20.446 (16/12/2025), arts. 627-635',
       url: 'https://www.impo.com.uy/bases/leyes/20446-2025/627',
       checkedAt: '2026-07-12',
+      kind: 'norma',
     },
     {
       id: 'ley-20446-628',
@@ -937,6 +946,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'Ley 20.446, art. 628',
       url: 'https://www.impo.com.uy/bases/leyes/20446-2025/628',
       checkedAt: '2026-07-12',
+      kind: 'norma',
     },
     {
       id: 'ley-20446-629',
@@ -944,6 +954,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'Ley 20.446, art. 629',
       url: 'https://www.impo.com.uy/bases/leyes/20446-2025/629',
       checkedAt: '2026-07-12',
+      kind: 'norma',
     },
     {
       id: 'ley-20446-631',
@@ -951,6 +962,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'Ley 20.446, art. 631',
       url: 'https://www.impo.com.uy/bases/leyes/20446-2025/631',
       checkedAt: '2026-07-12',
+      kind: 'norma',
     },
     {
       id: 'ley-20446-632',
@@ -958,6 +970,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'Ley 20.446, art. 632',
       url: 'https://www.impo.com.uy/bases/leyes/20446-2025/632',
       checkedAt: '2026-07-12',
+      kind: 'norma',
     },
     {
       id: 'ley-20446-633',
@@ -965,6 +978,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'Ley 20.446, art. 633',
       url: 'https://www.impo.com.uy/bases/leyes/20446-2025/633',
       checkedAt: '2026-07-12',
+      kind: 'norma',
     },
     {
       id: 'decreto-50-026',
@@ -972,6 +986,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'Decreto 50/026 (promulg. 12/03/2026, publ. 19/03/2026)',
       url: 'https://www.impo.com.uy/bases/decretos/50-2026',
       checkedAt: '2026-07-12',
+      kind: 'norma',
     },
     {
       id: 'rg-dna-09-2026',
@@ -980,6 +995,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'RG DNA 09/2026 (20/04/2026)',
       url: 'https://www.aduanas.gub.uy/innovaportal/file/28428/1/resolucion-9_2026.pdf',
       checkedAt: '2026-07-12',
+      kind: 'norma',
     },
     {
       id: 'rg-dna-10-2026',
@@ -987,6 +1003,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'RG DNA 10/2026 (24/04/2026)',
       url: 'https://impo.com.uy/bases/resoluciones-generales-aduanas-nd/10-2026',
       checkedAt: '2026-07-12',
+      kind: 'norma',
     },
     {
       id: 'dna-comunicado-11-2026',
@@ -994,6 +1011,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'Comunicado AGCE 11/2026 (27/04/2026)',
       url: 'https://www.aduanas.gub.uy/innovaportal/file/28456/1/comunicado-11-2026---registro-acceso-franquicia-epi-27.4.26-revisada-ap-als-de-acuerdo.pdf',
       checkedAt: '2026-07-12',
+      kind: 'pagina-oficial',
     },
     {
       id: 'rg-dna-21-2026',
@@ -1001,6 +1019,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'RG DNA 21/2026 (25/06/2026)',
       url: 'https://www.aduanas.gub.uy/innovaportal/file/28613/1/rg-21-2026.pdf',
       checkedAt: '2026-07-12',
+      kind: 'norma',
     },
     {
       id: 'carou-14',
@@ -1008,6 +1027,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'Ley 19.276 (CAROU), art. 14',
       url: 'https://www.impo.com.uy/bases/codigo-aduanero/19276-2014/14',
       checkedAt: '2026-07-12',
+      kind: 'norma',
     },
     {
       id: 'carou-15',
@@ -1016,6 +1036,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'Ley 19.276 (CAROU), art. 15',
       url: 'https://www.impo.com.uy/bases/codigo-aduanero/19276-2014/15',
       checkedAt: '2026-07-12',
+      kind: 'norma',
     },
     {
       id: 'carou-98',
@@ -1023,6 +1044,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'Ley 19.276 (CAROU), art. 98',
       url: 'https://www.impo.com.uy/bases/codigo-aduanero/19276-2014/98',
       checkedAt: '2026-07-12',
+      kind: 'norma',
     },
     {
       id: 'carou-99',
@@ -1030,6 +1052,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'Ley 19.276 (CAROU), art. 99',
       url: 'https://www.impo.com.uy/bases/codigo-aduanero/19276-2014/99',
       checkedAt: '2026-07-12',
+      kind: 'norma',
     },
     {
       id: 'carou-140',
@@ -1037,6 +1060,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'Ley 19.276 (CAROU), art. 140',
       url: 'https://www.impo.com.uy/bases/codigo-aduanero/19276-2014/140',
       checkedAt: '2026-07-12',
+      kind: 'norma',
     },
     {
       id: 'carou-141',
@@ -1044,6 +1068,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'Ley 19.276 (CAROU), art. 141',
       url: 'https://www.impo.com.uy/bases/codigo-aduanero/19276-2014/141',
       checkedAt: '2026-07-12',
+      kind: 'norma',
     },
     {
       id: 'carou-200',
@@ -1051,6 +1076,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'Ley 19.276 (CAROU), art. 200',
       url: 'https://www.impo.com.uy/bases/codigo-aduanero/19276-2014/200',
       checkedAt: '2026-07-12',
+      kind: 'norma',
     },
     {
       id: 'carou-204',
@@ -1058,6 +1084,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'Ley 19.276 (CAROU), art. 204',
       url: 'https://www.impo.com.uy/bases/codigo-aduanero/19276-2014/204',
       checkedAt: '2026-07-12',
+      kind: 'norma',
     },
     {
       id: 'carou-205',
@@ -1065,6 +1092,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'Ley 19.276 (CAROU), art. 205',
       url: 'https://www.impo.com.uy/bases/codigo-aduanero/19276-2014/205',
       checkedAt: '2026-07-12',
+      kind: 'norma',
     },
     {
       id: 'carou-207',
@@ -1072,6 +1100,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'Ley 19.276 (CAROU), art. 207',
       url: 'https://www.impo.com.uy/bases/codigo-aduanero/19276-2014/207',
       checkedAt: '2026-07-12',
+      kind: 'norma',
     },
     {
       id: 'carou-209',
@@ -1079,6 +1108,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'Ley 19.276 (CAROU), art. 209',
       url: 'https://www.impo.com.uy/bases/codigo-aduanero/19276-2014/209',
       checkedAt: '2026-07-12',
+      kind: 'norma',
     },
     {
       id: 'carou-213',
@@ -1086,6 +1116,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'Ley 19.276 (CAROU), art. 213',
       url: 'https://www.impo.com.uy/bases/codigo-aduanero/19276-2014/213',
       checkedAt: '2026-07-12',
+      kind: 'norma',
     },
     {
       id: 'carou-223',
@@ -1093,6 +1124,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'Ley 19.276 (CAROU), art. 223',
       url: 'https://www.impo.com.uy/bases/codigo-aduanero/19276-2014/223',
       checkedAt: '2026-07-12',
+      kind: 'norma',
     },
     {
       id: 'carou-227',
@@ -1100,6 +1132,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'Ley 19.276 (CAROU), art. 227',
       url: 'https://www.impo.com.uy/bases/codigo-aduanero/19276-2014/227',
       checkedAt: '2026-07-12',
+      kind: 'norma',
     },
     {
       id: 'ley-19009',
@@ -1108,6 +1141,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'Ley 19.009 (22/11/2012), arts. 5, 6, 18, 33, 37',
       url: 'https://www.impo.com.uy/bases/leyes/19009-2012',
       checkedAt: '2026-07-12',
+      kind: 'norma',
     },
     {
       id: 'ursec-185-016',
@@ -1115,6 +1149,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'Res. URSEC 185/016 (09/12/2016), Anexo, arts. 1-29',
       url: 'https://www.impo.com.uy/bases/resoluciones-ursec-originales/185-2016',
       checkedAt: '2026-07-12',
+      kind: 'norma',
     },
     {
       id: 'decreto-209-017',
@@ -1122,6 +1157,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'Decreto 209/017 (04/08/2017), art. 3',
       url: 'https://www.impo.com.uy/bases/decretos/209-2017',
       checkedAt: '2026-07-12',
+      kind: 'norma',
     },
     {
       id: 'ley-17250',
@@ -1129,6 +1165,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'Ley 17.250 (11/08/2000), arts. 6, 12, 13, 16, 30, 31, 42, 47',
       url: 'https://www.impo.com.uy/bases/leyes/17250-2000',
       checkedAt: '2026-07-12',
+      kind: 'norma',
     },
     {
       id: 'ley-18250-76',
@@ -1136,6 +1173,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'Ley 18.250, art. 76 (red. Ley 19.996 art. 352)',
       url: 'https://www.impo.com.uy/bases/leyes/18250-2008/76',
       checkedAt: '2026-07-12',
+      kind: 'norma',
     },
     {
       id: 'ley-18761-tifa',
@@ -1143,6 +1181,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'Ley 18.761 (17/06/2011), art. 7',
       url: 'https://www.impo.com.uy/bases/leyes-internacional/18761-2011',
       checkedAt: '2026-07-12',
+      kind: 'norma',
     },
     {
       id: 'decreto-139-014',
@@ -1150,6 +1189,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'Decreto 139/014, arts. 1, 3, 9, 13',
       url: 'https://www.impo.com.uy/bases/decretos-internacional/139-2014/1',
       checkedAt: '2026-07-12',
+      kind: 'norma',
     },
     {
       id: 'decreto-43-019',
@@ -1157,6 +1197,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'Decreto 43/019',
       url: 'https://www.impo.com.uy/bases/decretos/43-2019',
       checkedAt: '2026-07-12',
+      kind: 'norma',
     },
     {
       id: 'dna-epi',
@@ -1164,6 +1205,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'procedimiento oficial',
       url: 'https://www.aduanas.gub.uy/innovaportal/v/28219/1/innova.front/encomiendas-postales-internacionales.html',
       checkedAt: '2026-07-12',
+      kind: 'pagina-oficial',
     },
     {
       id: 'dna-retenidos',
@@ -1171,6 +1213,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'procedimiento oficial (09/01/2026)',
       url: 'https://www.aduanas.gub.uy/innovaportal/v/28225/1/innova.front/',
       checkedAt: '2026-07-12',
+      kind: 'pagina-oficial',
     },
     {
       id: 'dna-regimen-general',
@@ -1178,6 +1221,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'procedimiento oficial (09/01/2026)',
       url: 'https://www.aduanas.gub.uy/innovaportal/v/28223/1/innova.front/',
       checkedAt: '2026-07-12',
+      kind: 'pagina-oficial',
     },
     {
       id: 'dna-franquicias-usadas',
@@ -1185,6 +1229,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'procedimiento oficial (09/01/2026)',
       url: 'https://www.aduanas.gub.uy/innovaportal/v/28224/1/innova.front/',
       checkedAt: '2026-07-12',
+      kind: 'pagina-oficial',
     },
     {
       id: 'dna-prohibidos',
@@ -1192,6 +1237,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'procedimiento oficial (09/01/2026)',
       url: 'https://www.aduanas.gub.uy/innovaportal/v/28229/1/innova.front/',
       checkedAt: '2026-07-12',
+      kind: 'pagina-oficial',
     },
     {
       id: 'dna-denuncias',
@@ -1199,6 +1245,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'trámite gub.uy',
       url: 'https://www.gub.uy/tramites/recepcion-denuncias-aduana',
       checkedAt: '2026-07-12',
+      kind: 'pagina-oficial',
     },
     {
       id: 'mef-dc-denuncia',
@@ -1206,6 +1253,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'trámite gub.uy (MEF)',
       url: 'https://www.gub.uy/tramites/consulta-yo-reclamo-materia-relaciones-consumo',
       checkedAt: '2026-07-12',
+      kind: 'pagina-oficial',
     },
     {
       id: 'ursec-reclamo',
@@ -1213,6 +1261,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'trámite gub.uy (URSEC)',
       url: 'https://www.gub.uy/tramites/reclamo-consumidores-servicios-telecomunicaciones-postales',
       checkedAt: '2026-07-12',
+      kind: 'pagina-oficial',
     },
     {
       id: 'mudanza-tramite',
@@ -1220,6 +1269,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'trámite gub.uy',
       url: 'https://www.gub.uy/tramites/mudanza-uruguayos-retornan-pais-amparados-ley-18250',
       checkedAt: '2026-07-12',
+      kind: 'pagina-oficial',
     },
     {
       id: 'mef-faq',
@@ -1227,6 +1277,7 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'MEF (24/04/2026)',
       url: 'https://www.gub.uy/ministerio-economia-finanzas/comunicacion/noticias/guia-preguntas-frecuentes-sobre-regimen-envios-postales-franquicias',
       checkedAt: '2026-07-12',
+      kind: 'pagina-oficial',
     },
   ] as AduanaSource[],
   updatedAt: null,

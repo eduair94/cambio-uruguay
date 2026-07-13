@@ -20,7 +20,7 @@
         <VIcon size="14" class="mr-1">mdi-calculator-variant-outline</VIcon>
         ¿Todavía no compraste y querés saber si vas a pagar impuestos?
         <NuxtLink :to="localePath('/franquicia-aduana-uruguay')">
-          Anda a la calculadora de franquicia y aduana </NuxtLink
+          Andá a la calculadora de franquicia y aduana </NuxtLink
         >.
       </p>
     </header>
@@ -170,6 +170,12 @@
               class="verdict-source verdict-source--missing mb-0"
             >
               Es un tributo, pero no pudimos linkear la norma que lo respalda.
+            </p>
+            <p v-if="v.id === 'iva' && v.ivaExemptionHintUsd" class="verdict-hint mb-0 mt-1">
+              <VIcon size="13" class="mr-1">mdi-help-circle-outline</VIcon>
+              ¿Tu compra era de EE.UU. y de hasta US$ {{ v.ivaExemptionHintUsd }}? Entonces revisá
+              si te correspondía la
+              <NuxtLink :to="localePath('/franquicia-aduana-uruguay')">exoneración</NuxtLink>.
             </p>
           </div>
         </div>
@@ -406,25 +412,8 @@
           </div>
 
           <template v-if="p.verified">
-            <!-- La norma -->
-            <div class="norm-block mb-4">
-              <p class="block-label">La norma</p>
-              <p class="norm-text">{{ p.norm }}</p>
-              <div v-if="problemSources(p).length" class="source-chips">
-                <a
-                  v-for="s in problemSources(p)"
-                  :key="s.id"
-                  :href="s.url"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="source-chip"
-                >
-                  <VIcon size="12" class="mr-1">mdi-file-pdf-box</VIcon>{{ s.norm }}
-                </a>
-              </div>
-            </div>
-
-            <!-- Qué hacer -->
+            <!-- Qué hacer: leads. Somebody whose package is stuck needs the steps before the -->
+            <!-- legal write-up — the norm stays fully available, just collapsed below. -->
             <div class="action-block mb-4">
               <p class="block-label">Qué hacer</p>
               <ol class="steps-list">
@@ -454,6 +443,35 @@
                 </VBtn>
               </p>
             </div>
+
+            <!-- La norma: fully present, just collapsed — the steps above already said what to -->
+            <!-- do; this is for whoever wants to read the law itself before acting on it. -->
+            <VExpansionPanels variant="accordion" class="norm-panels mb-4">
+              <VExpansionPanel>
+                <VExpansionPanelTitle>
+                  <span class="block-label mb-0">
+                    <VIcon size="14" class="mr-1">mdi-scale-balance</VIcon>La norma
+                  </span>
+                </VExpansionPanelTitle>
+                <VExpansionPanelText>
+                  <div class="norm-block">
+                    <p class="norm-text">{{ p.norm }}</p>
+                    <div v-if="problemSources(p).length" class="source-chips">
+                      <a
+                        v-for="s in problemSources(p)"
+                        :key="s.id"
+                        :href="s.url"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="source-chip"
+                      >
+                        <VIcon size="12" class="mr-1">mdi-file-pdf-box</VIcon>{{ s.norm }}
+                      </a>
+                    </div>
+                  </div>
+                </VExpansionPanelText>
+              </VExpansionPanel>
+            </VExpansionPanels>
           </template>
 
           <VAlert
@@ -662,9 +680,12 @@ function problemSources(p: AduanaProblem): AduanaSource[] {
   return p.sourceIds.map(id => sourceById(id)).filter((s): s is AduanaSource => Boolean(s))
 }
 
-/** Facts whose article is a DNA web page, not a located norm — badge them, never dress as statute. */
+/** Facts sourced to an official PAGE (DNA/MEF/URSEC portal, trámite, FAQ) rather than a located
+ * norm — badge them, never dress a webpage's claim as statute. Driven by the source's `kind`,
+ * never by a magic-string check on the fact's `article` text: an `article` like "num. 3" reads
+ * exactly as statute-like as a real ley article, so the article text can never be the signal. */
 function isDnaOnly(f: AduanaFact): boolean {
-  return Boolean(f.article?.startsWith('página v/'))
+  return sourceById(f.sourceId)?.kind === 'pagina-oficial'
 }
 
 /** ISO date (or datetime) -> es-UY human date. Never a literal date typed in the template. */
@@ -1069,6 +1090,12 @@ useHead(() => ({
   opacity: 0.75;
   font-style: italic;
 }
+.verdict-hint {
+  font-size: 0.78rem;
+  display: flex;
+  align-items: flex-start;
+  opacity: 0.85;
+}
 
 /* Contador de franquicias */
 .purchase-input {
@@ -1129,6 +1156,11 @@ useHead(() => ({
 .problem-title {
   font-size: 1.05rem;
   font-weight: 800;
+}
+.norm-panels {
+  border: 1px solid rgba(var(--v-border-color), 0.14);
+  border-radius: 10px;
+  overflow: hidden;
 }
 .norm-block {
   border-left: 3px solid rgba(var(--v-theme-primary), 0.55);

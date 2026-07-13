@@ -29,7 +29,14 @@ const SUB = "uruguay";
 export async function harvestAduana(
   opts: { window?: "year" | "all" } = {}
 ): Promise<{ posts: number; comments: number }> {
-  if (!redditConfigured()) return { posts: 0, comments: 0 };
+  // No-op without credentials — but NOT a silent one, same contract as gemini.ts#geminiConfigured:
+  // a skipped safety/data check must say so out loud. Before this, `threads=0` in the sync
+  // summary read identically for "ran the search and found nothing new" and "never even tried",
+  // and only the second one is something a human needs to go fix.
+  if (!redditConfigured()) {
+    console.warn("[aduana] harvest: no Reddit credentials — se omite la cosecha de r/uruguay");
+    return { posts: 0, comments: 0 };
+  }
 
   // One search per query, deduped by thread id: a post surfaced by two different queries is
   // downloaded once and keeps both queries in its `queries` set (see corpus.ts's $addToSet).

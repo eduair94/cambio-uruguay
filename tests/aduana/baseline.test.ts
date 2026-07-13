@@ -77,4 +77,44 @@ describe("aduana baseline", () => {
   it("does not pass vacuously — has a substantial number of facts", () => {
     expect(BASELINE.facts.length).toBeGreaterThan(40);
   });
+
+  // The "verificado contra la norma" badge must never be driven by a magic-string check on a
+  // fact's `article` text (the bug: `article?.startsWith('página v/')` happened to match only the
+  // two existing DNA-only facts — add a 53rd fact sourced to a DNA/MEF/URSEC page with an
+  // article like "num. 3" and the old check would silently badge it as statute). The page now
+  // keys the badge off the SOURCE's `kind`, so every source must carry one, and every fact whose
+  // source is `pagina-oficial` is badgeable purely because of that — regardless of its `article`.
+  it("gives every source a kind, and every pagina-oficial-sourced fact is badgeable by construction", () => {
+    for (const s of BASELINE.sources) {
+      expect(["norma", "pagina-oficial"], `source ${s.id} has no kind`).toContain(s.kind);
+    }
+
+    const sourceById = new Map(BASELINE.sources.map((s) => [s.id, s]));
+    const isBadgeable = (f: (typeof BASELINE.facts)[number]) =>
+      sourceById.get(f.sourceId)?.kind === "pagina-oficial";
+
+    // The two facts the badge was written to protect against dressing as statute.
+    for (const id of ["general.dua_por_persona_por_anio", "despachante.dna_lo_exige_sobre_800"]) {
+      const f = BASELINE.facts.find((x) => x.id === id)!;
+      expect(f, `fact ${id} missing`).toBeDefined();
+      expect(isBadgeable(f)).toBe(true);
+    }
+
+    // Regression for the exact scenario the reviewer described: a fact sourced to a
+    // pagina-oficial source with a statute-shaped article ("num. 3") must still badge — the old
+    // `article?.startsWith('página v/')` check would have missed it, since "num. 3" doesn't start
+    // with that prefix. The new mechanism only looks at the source, so this passes regardless of
+    // what the article text says.
+    const syntheticFact = {
+      ...BASELINE.facts.find((f) => f.sourceId === "dna-regimen-general")!,
+      article: "num. 3",
+    };
+    expect(isBadgeable(syntheticFact)).toBe(true);
+
+    // And the inverse must hold too: a norma-sourced fact is never badgeable, however its
+    // article reads.
+    const normaFact = BASELINE.facts.find((f) => f.id === "franquicia.tope_anual_usd")!;
+    expect(sourceById.get(normaFact.sourceId)!.kind).toBe("norma");
+    expect(isBadgeable(normaFact)).toBe(false);
+  });
 });

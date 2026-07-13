@@ -40,6 +40,15 @@ export interface Source {
   norm: string; // 'Decreto 50/026'
   url: string;
   checkedAt: string; // ISO date
+  /**
+   * Whether this source IS the law (a ley, decreto, RG or CAROU article) or is an official page
+   * that merely DESCRIBES what the DNA/URSEC/MEF says it does (a portal page, a trámite, a FAQ).
+   * This is what the page's "verificado contra la norma" badge keys off — never a magic-string
+   * check on a fact's `article` text. A fact sourced to a `pagina-oficial` source is the DNA's
+   * (or MEF's, or URSEC's) claim about the rule, not the rule itself, however precise-looking its
+   * `article` field reads (e.g. "num. 3" is exactly as plausible-looking as a real ley article).
+   */
+  kind: "norma" | "pagina-oficial";
 }
 
 /**
