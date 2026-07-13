@@ -280,7 +280,9 @@ export default defineNuxtConfig({
         driver: 'fs',
         base: './.data/debt-relief',
       },
-      // Durable store for the live national key figures + drift watchdog (figures:daily).
+      // Durable store for the drift watchdog's dedupe state (figures:drift). The live figures
+      // themselves no longer live here — the Gemini refresh moved to the backend (classes/figures/*,
+      // GET /uy-figures) and this app only proxies + caches them.
       figures: {
         driver: 'fs',
         base: './.data/figures',
@@ -299,8 +301,10 @@ export default defineNuxtConfig({
       '30 9 * * *': ['blog:daily'],
       // 09:40 UTC ≈ 06:40 Uruguay: refresh live cost-of-living figures via Gemini.
       '40 9 * * *': ['costs:daily'],
-      // 09:50 UTC ≈ 06:50 Uruguay: refresh national key figures + drift watchdog.
-      '50 9 * * *': ['figures:daily'],
+      // 10:05 UTC ≈ 07:05 Uruguay: compare the backend's freshly-refreshed figures (pm2
+      // currency-figures, 09:52 UTC) with the constants baked into this app, and ping the admin
+      // when they drift. Spends no AI call — the Gemini refresh moved to the backend.
+      '5 10 * * *': ['figures:drift'],
       // 10:10 UTC on the 1st ≈ 07:10 Uruguay: refresh debt-relief usury caps (monthly).
       '10 10 1 * *': ['debt-relief:monthly'],
       // 12:00 UTC = 09:00 Uruguay: send the daily newsletter to confirmed subs.
