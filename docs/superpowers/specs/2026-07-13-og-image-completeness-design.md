@@ -4,7 +4,7 @@ Date: 2026-07-13
 
 ## Problem
 
-OG image rendering is on-demand via the `nuxt-og-image` module + `app/components/OgImage/Cambio.vue` satori template. There is no manifest: each page opts in by calling `defineOgImageComponent('Cambio', { title, subtitle, tag })` inline. 19 of 81 page files never call it, so those pages fall back to the module's generic default image (or none) when shared on social/Telegram/Discord.
+OG image rendering is on-demand via the `nuxt-og-image` module + `app/components/OgImage/Cambio.vue` satori template. Pages opt in by calling `defineOgImageComponent('Cambio', { title, subtitle, tag })`, either directly or (for every `herramientas/*` calculator) indirectly through the shared `ToolShell` wrapper. A page with neither falls back to the module's generic default image (or none) when shared on social/Telegram/Discord. Exactly one indexable page — `buscar.vue` — has neither (see Part A for how this was narrowed down from an initial over-broad grep).
 
 There is also no way to catch a *future* page missing the composable, or a satori-template regression that 500s at request time, other than someone noticing a bad social preview after the fact.
 
@@ -17,56 +17,36 @@ Two independent pieces:
 
 ## Part A: wire missing pages
 
-19 files currently lack `defineOgImageComponent`. 3 are excluded — all carry `robots: noindex` and are never socially shared, so an OG image is wasted work:
+**Correction (post-spec-approval):** the initial grep for `defineOgImageComponent` only checked each page file directly and flagged 19 files. Investigation for the plan found that all 15 `herramientas/calculadora-*` / `conversor-*` / `costo-de-vida.vue` / `widget-dolar.vue` pages render through the shared `<ToolShell slug="...">` wrapper (`app/components/ToolShell.vue:163-167`), which **already** calls `defineOgImageComponent('Cambio', { title: tool.title, subtitle: tool.description, tag: 'HERRAMIENTA' })` itself, sourced from the tool catalogue (`app/utils/tools.ts`). All 15 catalogue slugs are registered there (verified by grep). So those 15 pages already get real, per-tool OG images today — they were never actually missing one. Adding a second `defineOgImageComponent` call directly in those page files would be redundant at best and a duplicate-registration bug at worst.
+
+3 files are excluded for a different reason — all carry `robots: noindex` and are never socially shared, so an OG image is wasted work:
 
 - `app/pages/offline.vue` (PWA offline fallback)
 - `app/pages/widget.vue` (embed-only iframe target)
 - `app/pages/cuenta/index.vue` (auth-gated account page)
 
-The remaining **16** get wired:
+That leaves exactly **one** genuine gap:
 
 - `app/pages/buscar.vue` (bare landing only — result pages stay noindex, unaffected)
-- `app/pages/herramientas/calculadora-aguinaldo.vue`
-- `app/pages/herramientas/calculadora-impuestos-importacion.vue`
-- `app/pages/herramientas/calculadora-inflacion.vue`
-- `app/pages/herramientas/calculadora-irpf.vue`
-- `app/pages/herramientas/calculadora-iva.vue`
-- `app/pages/herramientas/calculadora-plazo-fijo.vue`
-- `app/pages/herramientas/calculadora-prestamo.vue`
-- `app/pages/herramientas/calculadora-presupuesto-viaje.vue`
-- `app/pages/herramientas/calculadora-propinas.vue`
-- `app/pages/herramientas/calculadora-spread.vue`
-- `app/pages/herramientas/calculadora-sueldo-liquido.vue`
-- `app/pages/herramientas/conversor-de-monedas.vue`
-- `app/pages/herramientas/conversor-unidad-indexada.vue`
-- `app/pages/herramientas/costo-de-vida.vue`
-- `app/pages/herramientas/widget-dolar.vue`
 
-Pattern for each (matches existing sibling pages, e.g. `herramientas/index.vue`, `carrito-importacion.vue`, `alquilar-en-uruguay.vue`):
+Wire it using the page's own existing `useSeoMeta` copy (`app/pages/buscar.vue:137-146`, confirmed `locale` already in scope via `useI18n()` at line 96):
 
 ```ts
 defineOgImageComponent('Cambio', {
-  title,      // reuse the page's existing useSeoMeta title (or its i18n key), not new copy
-  subtitle,   // reuse the page's existing useSeoMeta description, trimmed to ~60-70 chars for the card
-  tag,        // short category label, see below
+  title: () => t('search.pageTitle'),
+  subtitle: () => t('search.pageDescription'),
+  tag: 'BÚSQUEDA',
+  locale: locale.value as 'es' | 'en' | 'pt',
 })
 ```
 
-Tag assignment:
-- `CALCULADORA` — the 10 `calculadora-*.vue` pages
-- `CONVERSOR` — `conversor-de-monedas.vue`, `conversor-unidad-indexada.vue`
-- `HERRAMIENTA` — `widget-dolar.vue`, `costo-de-vida.vue`
-- `BÚSQUEDA` — `buscar.vue`
-
-Whether a page passes `locale` follows that page's existing convention — only pages that already have `locale` in scope (via `useI18n()`) pass it; others omit it, same as current mixed usage across the codebase (some pages hardcode literal ES strings, others use `t()`).
-
-No new copy is invented — title/subtitle come from each page's own `useSeoMeta` block or i18n keys already in the codebase.
+No new copy is invented — title/subtitle reuse the i18n keys the page's `useSeoMeta` block already calls.
 
 ## Part B: OG image QA script
 
 New file: `app/scripts/check-og-images.mjs`, plain Node (no new dependency), matching the existing `app/scripts/lightmode-axe.mjs` convention (`BASE` env var for target, runnable via `node scripts/check-og-images.mjs`).
 
-**Route source:** fetch `${BASE}/api/__sitemap__/urls` — the same live endpoint (`app/server/api/__sitemap__/urls.get.ts`) that generates the real XML sitemap, covering every static route, catalogue slug (guides/tools/glossary/convert/indicators/cotizacion), and API-derived dynamic route (historico, sucursales, dolar/departamento, casa) across all 3 locales. This is a deliberate choice over hand-listing routes: `lightmode-axe.mjs` hand-lists pages and has already drifted (it still probes `/cuenta`, `/widget`, `/offline` — all noindex, per Part A's research). Reusing the sitemap endpoint means the OG check can never drift from what's actually live.
+**Route source:** fetch `${BASE}/api/__sitemap__/urls` — the same live endpoint (`app/server/api/__sitemap__/urls.get.ts`) that generates the real XML sitemap, covering every static route, catalogue slug (guides/tools/glossary/convert/indicators/cotizacion), and API-derived dynamic route (historico, sucursales, dolar/departamento, casa) across all 3 locales. This is a deliberate choice over hand-listing routes: `lightmode-axe.mjs` hand-lists pages and has already drifted (it still probes `/cuenta`, `/widget`, `/offline` — all noindex, per Part A). Reusing the sitemap endpoint means the OG check can never drift from what's actually live — it's also the check that would have caught Part A's original false positive, since it tests actual rendered output rather than grepping page source for the composable call.
 
 **Path selection:** dedupe to unique paths, default locale (`es`) only. The satori template renders the same layout for all three locales from the same props, so one locale is a representative sample; full tri-locale coverage would triple request volume for no meaningful extra signal. Note this scope in the script's summary output.
 
@@ -88,5 +68,5 @@ New file: `app/scripts/check-og-images.mjs`, plain Node (no new dependency), mat
 
 ## Testing
 
-- Part A: `npm run lint` (existing convention — `typecheck` is separately known-broken, see memory `typecheck-broken`) + manual spot-check of 2-3 wired pages via the dev server's `/__og-image__/image/...` URL.
+- Part A: `npm run lint` (existing convention — `typecheck` is separately known-broken, see memory `typecheck-broken`) + manual check of `buscar.vue` via the dev server's `/__og-image__/image/buscar/og.png` URL.
 - Part B: run the script itself against local dev (`npm run dev` in one terminal, `node app/scripts/check-og-images.mjs` in another) — after Part A lands, expect 0 failures. Confirms the script's own logic by exercising it against a known-good state.
