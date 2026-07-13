@@ -134,6 +134,13 @@ watchEffect(() => {
 
 const canonicalUrl = 'https://cambio-uruguay.com/buscar'
 
+defineOgImageComponent('Cambio', {
+  title: () => t('search.pageTitle'),
+  subtitle: () => t('search.pageDescription'),
+  tag: 'BÚSQUEDA',
+  locale: locale.value as 'es' | 'en' | 'pt',
+})
+
 useSeoMeta({
   title: () =>
     query.value
