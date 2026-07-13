@@ -1505,3 +1505,57 @@ does not compile without it.
 **Placeholders:** the only deliberately unwritten content is the legal text itself — `baseline.ts`'s `sources`/`problems` arrays and the research doc. That is not a placeholder dodge: those are the facts, and Task 1 exists precisely because inventing them is the one failure mode that costs a reader money. Everything else ships real code.
 
 **Type consistency:** `AduanaDoc`, `AduanaFact`, `ProblemEntry`, `Quote`, `Source`, `BucketId`, `AduanaLabel` are declared once in `classes/aduana/types.ts` and used unchanged in `store`/`classify`/`norms`/`payload`. `PublicAduanaPayload` is declared in `payload.ts` and re-declared once, deliberately, in `app/server/utils/aduanaFallback.ts` (the two TS programs cannot import across — Task 2 Step 2 explains why, and `tests/aduana/baseline.test.ts` is the drift guard). `aggregate()` / `aggregateFromCorpus()` / `refreshLabels()` are named identically in Task 4, Task 6 and `sync_aduana.ts`.
+
+## Deploy
+
+The Nuxt app (`app/`) deploys itself on push to `main` (CI runs `app/scripts/deploy.sh`). **The root
+Express backend and the weekly sync job do not** — that half is manual, on the VPS:
+
+```
+ssh root@104.234.204.107 -p 2223
+cd /root/cambio-uruguay && git pull && npm install && npm run build
+pm2 restart currency-server
+pm2 start ecosystem.config.js --only currency-aduana   # first deploy only; a redeploy is `pm2 reload`
+pm2 logs currency-aduana --lines 50
+```
+
+`currency-aduana` runs `dist/sync_aduana.js` on pm2's own cron (`cron_restart: "30 9 * * 1"` in
+`ecosystem.config.js` — Mondays 09:30 UTC / ~06:30 Montevideo; note `sync_aduana.ts`'s header
+comment says 08:40 UTC — that comment has drifted from the actual cron and should be corrected in a
+follow-up, it does not affect behavior). `autorestart: false`, so it is meant to run once per cron
+tick and exit, not stay up.
+
+**GEMINI_API_KEY is not in the root `.env`.** `classes/aduana/gemini.ts` reads
+`process.env.GEMINI_API_KEY || process.env.NUXT_GEMINI_API_KEY`, but the actual key value lives only
+in `app/.env` as `NUXT_GEMINI_API_KEY` — a separate process, separate env file, that the root
+backend never loads. Until someone adds a `GEMINI_API_KEY=` (or `NUXT_GEMINI_API_KEY=`) line to the
+root `.env` on the VPS, `classes/aduana/norms.ts`'s weekly re-check is a deliberate no-op: it logs
+`[aduana] norms: no GEMINI_API_KEY — se omite el control de normas` and skips, by design (see the
+header comment on `refreshNorms`) — it does not crash the job, block the harvest, or blank the page.
+
+**REDDIT_CLIENT_ID / REDDIT_CLIENT_SECRET**: `classes/reddit.ts` reads these (plus
+`REDDIT_USER_AGENT`) for `installed_client` auth, and the aduana harvest (`classes/aduana/harvest.ts`)
+reuses that same client. This worktree has no root `.env` to inspect directly (gitignored, VPS-only),
+so this could not be confirmed by reading a file — but the existing daily `reddit:sentiment` task
+(couriers tier-list work, already live in production per prior sessions) uses this exact client and
+these exact env vars today, which is strong indirect evidence they are already set on the VPS.
+Confirm with `pm2 env <id-of-a-running-reddit-consuming-process>` or by checking the root `.env`
+directly before assuming the aduana harvest will authenticate on first run.
+
+**The `classes/couriers/opinions.ts` blocker described earlier in this plan did not reproduce in
+this worktree.** Running `npx tsc -p tsconfig.production.json --noEmit` here produces exactly 8
+errors, all `Cannot find module './sheet_key.json'` (TS2307) in unrelated scraper scripts
+(`add_cambilex.ts`, `add_itau.ts`, `add_new.ts`, `autocomplete_sheet.ts`, `sync_bcu_single.ts`,
+`sync_locations_sheet.ts`, `sync_sheet.ts`, `update_coordinates.ts`) — a gitignored Google Sheets
+credentials file that is expected to be missing on a dev machine and present only on the VPS. No
+file in this worktree imports `classes/couriers/opinions.ts` or anything named `opinions` from that
+path. Either that blocker was already resolved by a merge, or it never applied to this branch's
+checkout. Do not skip the real build on the VPS on the assumption it's still blocked — verify there,
+where `sheet_key.json` actually exists, and treat a clean `npm run build` as the real signal.
+
+**First run of `currency-aduana`**: watch for the `sync_aduana.ts` summary line —
+`[aduana] sync summary: threads=X comments=Y labeled=Z facts=N confirmed=M flagged=K` — and expect
+`threads`/`comments` (the harvest) and `labeled` to be greater than 0. If `flagged` (== `pendingReview`)
+is non-empty, the very next line is `[aduana] NEEDS A HUMAN — facts the AI wants to change: <ids>` —
+that is the alarm that the law may have moved and a human must read the cited source and confirm or
+correct the fact by hand; it is not a bug and the job does not crash because of it.
