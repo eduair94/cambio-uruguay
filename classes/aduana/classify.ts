@@ -13,9 +13,9 @@ import { BUCKET_IDS, type AduanaLabel, type BucketId, type Quote } from "./types
 
 const MAX_QUOTES_PER_BUCKET = 3;
 // Below this, a "quote" is more likely a one-line reaction ("+1", "mismo problema") than an
-// actual testimony. 30 is the floor that still admits a real one-sentence account — e.g. the
-// spec's own fixture "me retuvieron el paquete tres semanas" is 37 chars.
-const MIN_QUOTE_CHARS = 30;
+// actual testimony. 60 is the floor that still admits a real one-sentence account — e.g.
+// "me retuvieron el paquete en la aduana durante tres semanas sin ninguna explicación".
+const MIN_QUOTE_CHARS = 60;
 const MAX_QUOTE_CHARS = 420;
 
 const unquotable = (author: string): boolean =>
