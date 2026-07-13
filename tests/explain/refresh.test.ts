@@ -93,7 +93,7 @@ describe("recordTodayExplanation", () => {
     expect(updateOne).not.toHaveBeenCalled();
   });
 
-  it("writes the doc with narrative:null and the measured drivers when both AI paths fail", async () => {
+  it("omits narrative/headlines from $set (never writes null) when both AI paths fail, but always writes the measured drivers", async () => {
     findNotableMove.mockResolvedValue(MOVE);
     searchMoveNews.mockResolvedValue(null);
     classify.mockResolvedValue(null);
@@ -103,8 +103,29 @@ describe("recordTodayExplanation", () => {
 
     expect(out).toEqual({ recorded: true, date: "2026-06-02" });
     const [, update] = updateOne.mock.calls[0]!;
-    expect(update.$set.narrative).toBeNull();
+    expect(update.$set).not.toHaveProperty("narrative");
+    expect(update.$set).not.toHaveProperty("headlines");
     expect(update.$set.drivers).toEqual(ATTRIBUTION);
-    expect(update.$set.headlines).toEqual([]);
+  });
+
+  // IMPORTANT 1: sync_explain.ts advertises re-running later the same day as the repair path for
+  // a morning Gemini outage. Regression for the bug that made a re-run destructive instead: a
+  // plain unconditional `$set: { narrative, headlines }` would overwrite a good morning row with
+  // `narrative: null` the moment the afternoon re-run's generating call also failed. Omitting the
+  // fields from $set (this test's real assertion — updateOne's `$set` payload, not any find) is
+  // exactly what leaves an existing document's `narrative`/`headlines` untouched in Mongo: fields
+  // absent from $set are not modified.
+  it("never sends a $set update that would blank a same-day row's good narrative on repeated failed re-runs", async () => {
+    findNotableMove.mockResolvedValue(MOVE);
+    searchMoveNews.mockResolvedValue(null);
+    classify.mockResolvedValue(null); // the re-run's Gemini call fails too
+    loadArchivedHeadlines.mockResolvedValue([]);
+
+    await recordTodayExplanation("USD", "2026-06-02");
+
+    const [filter, update, opts] = updateOne.mock.calls[0]!;
+    expect(filter).toEqual({ currency: "USD", date: "2026-06-02" });
+    expect(opts).toEqual({ upsert: true });
+    expect(Object.keys(update.$set).sort()).toEqual(["direction", "drivers", "pctChange"]);
   });
 });

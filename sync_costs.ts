@@ -7,8 +7,19 @@ dotenv.config();
 import { geminiConfigured } from "./classes/gemini";
 import { refreshLiveCosts } from "./classes/costs/refresh";
 import { saveCosts } from "./classes/costs/store";
+import { MongooseServer, withTimeout } from "./classes/database";
 
 async function main(): Promise<void> {
+  // classes/costs/store.ts reads/writes through the default mongoose connection
+  // (MongooseServer.getInstance), which nothing else in this process ever opens — without this,
+  // every Mongo call below buffers and times out after 10s, silently.
+  try {
+    await withTimeout(MongooseServer.startConnectionPromise(), 15000);
+  } catch (e: any) {
+    console.error("[costs] cannot reach MongoDB — refusing to run silently:", e?.message || e);
+    process.exit(1);
+  }
+
   if (!geminiConfigured()) {
     console.warn("[costs] no GEMINI_API_KEY — nothing to do, keeping the stored figures");
     process.exit(0);

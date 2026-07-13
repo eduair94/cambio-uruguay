@@ -15,8 +15,22 @@ dotenv.config();
 
 import { appDbConfigured } from "./classes/appdb";
 import { listActiveCurrencies, recordTodayPrediction } from "./classes/predictions/refresh";
+import { MongooseServer, withTimeout } from "./classes/database";
 
 async function main(): Promise<void> {
+  // classes/predictions/series.ts reads live rates through cambioInfo.ts / cambio.ts, which are
+  // bound to the default mongoose connection (MongooseServer.getInstance) — a DIFFERENT database
+  // from the appdb.ts connection the prediction ledger itself is written to below. Nothing else in
+  // this process ever opens the default connection, so listActiveCurrencies()/fetchRecentSeries()
+  // would otherwise buffer and time out after 10s, silently (swallowed by their own catches —
+  // "0 active currencies" every run, forever).
+  try {
+    await withTimeout(MongooseServer.startConnectionPromise(), 15000);
+  } catch (e: any) {
+    console.error("[predictions] cannot reach MongoDB — refusing to run silently:", e?.message || e);
+    process.exit(1);
+  }
+
   if (!appDbConfigured()) {
     console.error(
       "[predictions] APP_MONGO_URI is not set — refusing to run. Writing this collection to the " +

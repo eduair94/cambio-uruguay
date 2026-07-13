@@ -16,10 +16,22 @@ dotenv.config();
 import fs from "fs";
 import path from "path";
 import { loadLoanRates, saveLoanRates, type HistoryEntry } from "./classes/loans/store";
+import { MongooseServer, withTimeout } from "./classes/database";
 
 const FS_PATH = path.join(__dirname, "..", "app", ".data", "loans", "rates.json");
 
 async function main(): Promise<void> {
+  // classes/loans/store.ts reads/writes through the default mongoose connection
+  // (MongooseServer.getInstance), which nothing else in this process ever opens — without this,
+  // loadLoanRates()/saveLoanRates() buffer and time out after 10s, and this one-shot migration
+  // throws (its only loud symptom) without ever carrying the irreplaceable TEA history across.
+  try {
+    await withTimeout(MongooseServer.startConnectionPromise(), 15000);
+  } catch (e: any) {
+    console.error("[loans-import] cannot reach MongoDB — refusing to run silently:", e?.message || e);
+    process.exit(1);
+  }
+
   if (!fs.existsSync(FS_PATH)) {
     console.warn(`[loans-import] ${FS_PATH} does not exist — nothing to carry over. This is fine on a fresh box.`);
     process.exit(0);

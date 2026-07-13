@@ -7,8 +7,19 @@ dotenv.config();
 import { geminiConfigured } from "./classes/gemini";
 import { refreshLiveDebtRelief } from "./classes/debt/refresh";
 import { saveDebtRelief } from "./classes/debt/store";
+import { MongooseServer, withTimeout } from "./classes/database";
 
 async function main(): Promise<void> {
+  // classes/debt/store.ts reads/writes through the default mongoose connection
+  // (MongooseServer.getInstance), which nothing else in this process ever opens — without this,
+  // every Mongo call below buffers and times out after 10s, silently.
+  try {
+    await withTimeout(MongooseServer.startConnectionPromise(), 15000);
+  } catch (e: any) {
+    console.error("[debt-relief] cannot reach MongoDB — refusing to run silently:", e?.message || e);
+    process.exit(1);
+  }
+
   if (!geminiConfigured()) {
     console.warn("[debt-relief] no GEMINI_API_KEY — nothing to do, keeping the stored caps");
     process.exit(0);

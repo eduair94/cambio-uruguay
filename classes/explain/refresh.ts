@@ -63,10 +63,22 @@ export async function recordTodayExplanation(
     storedHeadlines = await loadArchivedHeadlines(currency, asOf).catch(() => []);
   }
 
-  await MoveExplanationModel.updateOne(
-    { currency, date: asOf },
-    { $set: { pctChange: today.pctChange, direction: today.direction, drivers, narrative, headlines: storedHeadlines } },
-    { upsert: true }
-  );
+  // `narrative`/`headlines` are the only fields a generating call can genuinely FAIL to produce
+  // (vs. drivers/pctChange/direction, which are always computed locally). Re-running this job
+  // later the same day is the documented repair path for a morning Gemini outage (see the header
+  // comment) — but a plain unconditional $set would overwrite a good morning row with `narrative:
+  // null` the moment the afternoon re-run's generating call also fails, destroying it instead of
+  // repairing it. So: only include a field in $set when this run actually produced something: on
+  // upsert (brand-new row) the schema's own `default: null` / `default: []` still applies, and on
+  // update (existing row) the previous good value is left untouched.
+  const setFields: Record<string, unknown> = {
+    pctChange: today.pctChange,
+    direction: today.direction,
+    drivers,
+  };
+  if (narrative !== null) setFields.narrative = narrative;
+  if (storedHeadlines.length > 0) setFields.headlines = storedHeadlines;
+
+  await MoveExplanationModel.updateOne({ currency, date: asOf }, { $set: setFields }, { upsert: true });
   return { recorded: true, date: asOf };
 }

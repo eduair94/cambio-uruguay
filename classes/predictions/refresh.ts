@@ -136,6 +136,15 @@ export async function recordTodayPrediction(
     ? { lean: aiParsed.lean, confidence: aiParsed.confidence, reasoning: aiParsed.reasoning, basedOn: changes }
     : null;
 
-  await PricePredictionModel.updateOne({ currency, date: asOf }, { $set: { ai, externalForecasts } }, { upsert: true });
+  // `ai` is the only field a generating call can genuinely FAIL to produce. A same-day re-run
+  // (or the next day's run finding the same date, e.g. after a manual retry) must never overwrite
+  // a good `ai` analysis with `null` just because THIS run's Gemini call failed — that would
+  // destroy the morning's good row instead of leaving it alone. Only include `ai` in $set when
+  // this run actually produced one: on upsert (brand-new row) the schema's own `default: null`
+  // still applies, and on update (existing row) the previous good value is left untouched.
+  const setFields: Record<string, unknown> = { externalForecasts };
+  if (ai !== null) setFields.ai = ai;
+
+  await PricePredictionModel.updateOne({ currency, date: asOf }, { $set: setFields }, { upsert: true });
   return { recorded: true, date: asOf };
 }

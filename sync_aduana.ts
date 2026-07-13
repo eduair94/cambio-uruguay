@@ -14,8 +14,21 @@ import { harvestAduana } from "./classes/aduana/harvest";
 import { refreshNorms } from "./classes/aduana/norms";
 import { loadAduanaDoc, saveAduanaDoc } from "./classes/aduana/store";
 import { redditConfigured } from "./classes/reddit";
+import { MongooseServer, withTimeout } from "./classes/database";
 
 async function main(): Promise<void> {
+  // classes/aduana/store.ts reads/writes through the default mongoose connection
+  // (MongooseServer.getInstance), which nothing else in this process ever opens — without this,
+  // every Mongo call below buffers and times out after 10s, silently. startConnectionPromise()
+  // itself never rejects/times out on its own, hence the wrapper: an unreachable Mongo must fail
+  // this job loudly, not hang it forever.
+  try {
+    await withTimeout(MongooseServer.startConnectionPromise(), 15000);
+  } catch (e: any) {
+    console.error("[aduana] cannot reach MongoDB — refusing to run silently:", e?.message || e);
+    process.exit(1);
+  }
+
   let doc = await loadAduanaDoc();
 
   // Each stage is checked for credentials BEFORE it runs, independent of what it finds — a stage

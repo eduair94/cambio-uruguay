@@ -19,12 +19,26 @@ dotenv.config();
 import { appDbConfigured } from "./classes/appdb";
 import { recordTodayExplanation } from "./classes/explain/refresh";
 import { DriverSnapshotModel } from "./classes/models/DriverSnapshot";
+import { MongooseServer, withTimeout } from "./classes/database";
 
 // Same list as the app's EXPLAINED_CURRENCIES (app/server/tasks/drivers/daily.ts) — comment there
 // explains why the currency lists differ (news is USD-only, drivers/explanations are USD+EUR+ARS).
 const EXPLAINED_CURRENCIES = ["USD", "EUR", "ARS"];
 
 async function main(): Promise<void> {
+  // classes/explain/moves.ts reads canonical rate series through cambioInfo.ts / cambio.ts, which
+  // are bound to the default mongoose connection (MongooseServer.getInstance) — a DIFFERENT
+  // database from the appdb.ts connection the explanation archive itself is written to below.
+  // Nothing else in this process ever opens the default connection, so findNotableMove() would
+  // otherwise buffer and time out after 10s, silently (returns null for every currency, forever —
+  // indistinguishable from "not a notable move day").
+  try {
+    await withTimeout(MongooseServer.startConnectionPromise(), 15000);
+  } catch (e: any) {
+    console.error("[explain] cannot reach MongoDB — refusing to run silently:", e?.message || e);
+    process.exit(1);
+  }
+
   if (!appDbConfigured()) {
     console.error(
       "[explain] APP_MONGO_URI is not set — refusing to run. Writing this collection to the " +
