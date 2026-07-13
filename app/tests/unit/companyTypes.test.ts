@@ -277,6 +277,23 @@ describe('no-unsourced-number guard', () => {
    * for this, and here is why". That is a claim the guard can verify (the value is inside
    * an `est()` call), which a bare `4000` in an allowlist was not: the allowlist matches on
    * `node.text`, so it approved the digits `4000` ANYWHERE in the file, for any purpose.
+   *
+   * MINOR 9 — SAY THE QUIET PART OUT LOUD: THIS IS THE ONE PLACE THE GUARD TRUSTS INTENT OVER
+   * STRUCTURE. Everywhere else, an exemption is a structural fact the AST can confirm — the
+   * literal is inside a `fig()` call (which the primary-domain test then independently forces
+   * to carry a real URL), or inside a `brackets:` table of a named declaration that carries its
+   * own `source`, or it is an array index. Here, the guard confirms only that the number sits
+   * inside a call to an identifier spelled `est`, and takes on faith that the number really IS
+   * unsourceable rather than merely unsourced. Nothing stops someone declaring a second
+   * `const est = ...`, or laundering a genuine BPS figure through `est()` to dodge the URL
+   * requirement — and `MARKET_ESTIMATES`'s own test checks only the SHAPE (value/label/
+   * rationale/unsourced), never that no primary source exists, because no test can check that.
+   *
+   * This is accepted BY DESIGN: `est()` self-labels, and its output is rendered to the reader
+   * as an explicit "market estimate, not an official figure", so a laundered figure would be
+   * lying in public rather than hiding. But it is a hole the AST cannot close, and it is worth
+   * knowing that it is here rather than discovering it. Adding an `est()` call is a decision a
+   * human must review; adding a `fig()` call is one the tests can police.
    */
   const isInsideEstCall = (node: ts.Node): boolean => isInsideCallTo(node, 'est')
 
@@ -581,6 +598,30 @@ describe('applyGates', () => {
       for (const id of ['monotributo', 'sociedad-hecho', 'srl'] as const) {
         const g = applyGates(input).find(x => x.regime === id)!
         expect(g.status, `${id} should be dudoso for a 1-socio sociedad`).toBe('dudoso')
+      }
+    })
+
+    // ROUND-2 MINOR 10 — `{people:'socios'}` with no `sociosCount` left `sociedad-hecho` and
+    // `srl` sitting at `elegible` while `monotributo` was `dudoso` for the very same gap. The
+    // gate never asked for the datum those two regimes cannot be described (or costed) without
+    // — and Ley 16.060 art. 1's own 2-socio minimum cannot even be CHECKED without it.
+    it('MINOR 10: is dudoso — not elegible — for sociedad de hecho and SRL when sociosCount is missing', () => {
+      const input = { ...base, people: 'socios' } as const
+      for (const id of ['monotributo', 'sociedad-hecho', 'srl'] as const) {
+        const g = applyGates(input).find(x => x.regime === id)!
+        expect(g.status, `${id} must ask how many socios there are`).toBe('dudoso')
+        expect(
+          g.reasons.some(r => r.status === 'dudoso' && /^https:\/\//.test(r.url)),
+          `${id} must cite a norm for the doubt`
+        ).toBe(true)
+      }
+    })
+
+    // ...and supplying it resolves the doubt.
+    it('MINOR 10: becomes elegible once the socio count is supplied', () => {
+      const input = { ...base, people: 'socios', sociosCount: 2 } as const
+      for (const id of ['sociedad-hecho', 'srl'] as const) {
+        expect(applyGates(input).find(x => x.regime === id)!.status, id).toBe('elegible')
       }
     })
   })
@@ -1080,10 +1121,76 @@ describe('estimateCost', () => {
       expect(c.notes.join(' ')).toMatch(/aproximad/i)
     })
 
-    // Dto. 150/007 art. 168 lit. a) → Título 4 art. 12 lit. A num. 1 ("las sociedades
-    // anónimas y las sociedades en comandita por acciones"): an SA is obligated to
-    // contabilidad suficiente at ANY revenue. The ficto is never available to it, so the
-    // flat-12% number the model used to print for an SA was wrong at every level.
+    // MINOR 5 — the art. 168 tope was converted with `uiHoy` (which moves every day). The norm
+    // says otherwise. Art. 168 lit. b), VERBATIM: "siempre que sus ingresos hayan superado en
+    // el ejercicio anterior las UI 4:000.000 ... A VALORES DE CIERRE DE EJERCICIO"; and lit. c)
+    // spells it out again: "A tales efectos se tomará la cotización de la unidad indexada
+    // vigente AL CIERRE DE EJERCICIO." `FIGURES.uiCierre2025` existed for exactly this and was
+    // referenced nowhere in the module.
+    it('MINOR 5: converts the art. 168 tope at the UI de CIERRE, not at today’s UI', () => {
+      const cierre = F.topeIraePreceptivoUi.value * F.uiCierre2025.value // 25.694.800
+      const hoy = F.topeIraePreceptivoUi.value * F.uiHoy.value // 26.460.000
+      expect(cierre).toBeLessThan(hoy)
+
+      // Just BELOW the cierre boundary: the ficto is still available.
+      const below = estimateCost('unipersonal-irae', {
+        ...base,
+        annualRevenueUyu: cierre - 100_000,
+      })
+      expect(below.taxUnknown).toBe(false)
+
+      // BETWEEN the two: correct under the norm (cierre) → un-costable. Under the old, wrong
+      // conversion (hoy) this band still printed a confident IRAE ficto.
+      const between = estimateCost('unipersonal-irae', {
+        ...base,
+        annualRevenueUyu: (cierre + hoy) / 2,
+      })
+      expect(between.taxMonthly).toBeNull()
+      expect(between.taxUnknown).toBe(true)
+    })
+
+    // MINOR 5 (second half) — the "this boundary is approximate" caveat was pushed only on the
+    // branch where the ficto IS available. The branch that flips the regime to UN-COSTABLE
+    // needs it more, not less: a regime must not go from a printed total to "we can't cost
+    // this" on a UI move without telling the reader the boundary is soft.
+    it('MINOR 5: warns that the boundary is approximate on the UN-COSTABLE branch too', () => {
+      const c = estimateCost('unipersonal-irae', { ...base, annualRevenueUyu: 40_000_000 })
+      expect(c.taxUnknown).toBe(true)
+      const notes = c.notes.join(' ')
+      expect(notes).toContain('contabilidad suficiente')
+      expect(notes).toMatch(/aproximad/i)
+      expect(notes).toContain('UI')
+    })
+
+    // MINOR 8 — the module asserted, inside a user-facing string, that art. 64 admits deducting
+    // "hasta 11 BFC por dueño o socio que preste servicios efectivos". Art. 64's empresarial
+    // ficto says only: "la renta neta se determinará DEDUCIENDO LOS SUELDOS DE DUEÑOS O SOCIOS
+    // ADMITIDOS POR LA REGLAMENTACIÓN". There is no 11-BFC cap in it. The 11 BFC lives in a
+    // DIFFERENT inciso of the same article — the AGROPECUARIO one ("b) Por cada dueño o socio,
+    // once Bases Fictas de Contribución mensuales ... a condición de que se presten efectivos
+    // servicios") — which does not govern the empresarial ficto this model applies.
+    //
+    // The AST guard cannot see numbers inside strings, so this class of claim is invisible to
+    // it. Only a test can hold the line.
+    it('MINOR 8: does not invent an 11-BFC cap on the art. 64 sueldos-de-dueños deduction', () => {
+      const notes = estimateCost('unipersonal-irae', {
+        ...base,
+        annualRevenueUyu: 8_000_000,
+      }).notes.join(' ')
+      // It still discloses the (conservative) omission...
+      expect(notes).toMatch(/sueldos de due/i)
+      // ...but it no longer attaches a number the article does not contain.
+      expect(notes).not.toMatch(/11 BFC/i)
+      expect(notes).not.toMatch(/once Bases Fictas/i)
+    })
+
+    // MINOR 7 — the cite here (and in the module) used to say "Título 4 art. 12 lit. A num. 1".
+    // Wrong article. Dto. 150/007 art. 168 lit. a), VERBATIM: "Los sujetos pasivos comprendidos
+    // en los numerales 1 y 4 a 7 del literal A del ARTÍCULO 3º del Título que se reglamenta."
+    // It is art. 3, whose lit. A num. 1 is "las sociedades anónimas y las sociedades en
+    // comandita por acciones" — so an SA is obligated to contabilidad suficiente at ANY
+    // revenue, and the flat-12% number the model used to print for an SA was wrong at every
+    // level. (The module already cited art. 3 correctly one function away; the two disagreed.)
     it('never applies the ficto to an SA — it is always contabilidad suficiente', () => {
       for (const rev of [0, 600_000, 5_000_000, 30_000_000]) {
         const c = estimateCost('sa', { ...socios2, annualRevenueUyu: rev })
@@ -1177,9 +1284,53 @@ describe('estimateCost', () => {
     it('ramps the monotributo sociedad de hecho per socio (BPS: 522 / 1.045 / 2.088)', () => {
       const y = (n: number) =>
         estimateCost('monotributo', { ...socios2, yearsOperating: n }).bpsMonthly
-      expect(y(0)).toBe(F.monoSocioSociedadHechoAnio1.value * 2) // 1.045 — BPS's "dos socios"
-      expect(y(1)).toBe(F.monoSocioSociedadHechoAnio2.value * 2) // 2.088
-      expect(y(2)).toBe(F.monoSocioSociedadHecho.value * 2) // 4.176
+      expect(y(0)).toBe(F.monoSocioSociedadHechoAnio1.value * 2)
+      expect(y(1)).toBe(F.monoSocioSociedadHechoAnio2.value * 2)
+      expect(y(2)).toBe(F.monoSocioSociedadHecho.value * 2)
+    })
+
+    // MINOR 6 — the three assertions above USED to carry comments claiming their results were
+    // "BPS's 'dos socios'" figures. They are not, and the arithmetic never said they were:
+    // 522 × 2 = 1.044, but BPS publishes 1.045. A false claim in a comment is worse than no
+    // comment, because the next author reads it as verification.
+    //
+    // BPS does NOT publish a per-socio unit that it then multiplies. It publishes each CELL,
+    // computed from the 5-BFC ficto per socio and rounded once at the end — so per-socio
+    // multiplication reproduces its table only to within a few pesos. Verified verbatim in
+    // BPS's own PDFs (monotributo-ley-18.083---2026.pdf and monotributo-ley-19.942---2026.pdf,
+    // table "Monotributo: sociedad de hecho"). This test pins the REAL published totals and
+    // the exact size of our approximation, so neither can drift unnoticed.
+    it('records where per-socio multiplication does NOT reproduce BPS’s published totals', () => {
+      // BPS, "Monotributo: sociedad de hecho", Total a pagar (jubilatorio + FRL):
+      //                  primeros 12   segundos 12   desde el mes 25
+      //   Un socio            522          1.045          2.088
+      //   Dos socios        1.045          2.088          4.176
+      //   Tres socios       1.566          3.132          6.265
+      const BPS_PUBLISHED = {
+        1: [522, 1045, 2088],
+        2: [1045, 2088, 4176],
+        3: [1566, 3132, 6265],
+      } as const
+      const perSocio = [
+        F.monoSocioSociedadHechoAnio1.value,
+        F.monoSocioSociedadHechoAnio2.value,
+        F.monoSocioSociedadHecho.value,
+      ]
+      // The per-socio figures ARE exactly BPS's "un socio" row — that much is a true claim.
+      expect(perSocio).toEqual([...BPS_PUBLISHED[1]])
+
+      // ...but multiplying that row does not reproduce the others exactly. Pin the deltas.
+      const deltas: number[] = []
+      for (const socios of [2, 3] as const) {
+        for (let tier = 0; tier < 3; tier++) {
+          deltas.push(BPS_PUBLISHED[socios][tier]! - perSocio[tier]! * socios)
+        }
+      }
+      // dos socios: 1.045−1.044=+1, 2.088−2.090=−2, 4.176−4.176=0
+      // tres socios: 1.566−1.566=0, 3.132−3.135=−3, 6.265−6.264=+1
+      expect(deltas).toEqual([1, -2, 0, 0, -3, 1])
+      // The approximation is bounded by BPS's own rounding — never more than a few pesos.
+      for (const d of deltas) expect(Math.abs(d)).toBeLessThanOrEqual(3)
     })
 
     it('scales with 3 socios too', () => {
@@ -1232,16 +1383,45 @@ describe('estimateCost', () => {
   // conservative or knowingly incomplete; none of them may be silent.
   // ---------------------------------------------------------------------------------
   describe('disclosures', () => {
-    it('MINOR 9: discloses that a titular with FONASA from a job is shown the UNRAMPED figure', () => {
-      const c = estimateCost('unipersonal-literal-e', {
+    // ROUND-2 SOURCE CORRECTION — this test used to assert the OPPOSITE, and it was wrong.
+    // The module claimed, in a comment and in a user-facing note, that "BPS publishes a single
+    // figure for the titular who already has FONASA por un empleo, and does NOT publish a
+    // ramped version of that column". BPS DOES publish it. The Ley 19.889 gradual page
+    // (bps.gub.uy/17829) carries the column "Con aporte al SNS por actividad dependiente
+    // (SS 2, 28, 29 y 30)" in ALL FOUR year tables, 1.ª categoría / 11 BFC:
+    //   primeros 12 meses 3.999 · segundos 4.380 · terceros 4.761 · cuartos (pleno) 5.143.
+    // So the model was OVERCHARGING a brand-new Literal E titular with FONASA from a job by
+    // $1.144/mes, and telling them BPS had not published the number that was on BPS's page.
+    // We now ramp it, from the source. (A "conservative" invention is still an invention.)
+    it('ramps the FONASA-from-a-job column too — BPS publishes it (3.999 / 4.380 / 4.761 / 5.143)', () => {
+      const y = (n: number) =>
+        estimateCost('unipersonal-literal-e', {
+          ...base,
+          yearsOperating: n,
+          fonasaFromJob: true,
+        }).bpsMonthly
+      expect(y(0)).toBe(F.bpsUnipersonalConFonasaDeEmpleoAnio1.value)
+      expect(y(1)).toBe(F.bpsUnipersonalConFonasaDeEmpleoAnio2.value)
+      expect(y(2)).toBe(F.bpsUnipersonalConFonasaDeEmpleoAnio3.value)
+      expect(y(5)).toBe(F.bpsUnipersonalConFonasaDeEmpleo.value)
+      // ...and it no longer claims BPS failed to publish it.
+      const notes = estimateCost('unipersonal-literal-e', {
+        ...base,
+        yearsOperating: 0,
+        fonasaFromJob: true,
+      }).notes.join(' ')
+      expect(notes).not.toMatch(/no publica una versi[óo]n/i)
+    })
+
+    // The IRAE unipersonal gets NO ramp (art. 229 cesa al entrar al régimen general de IVA),
+    // so the FONASA-from-a-job titular there pays the full column at every year.
+    it('gives the FONASA-from-a-job titular no ramp in IRAE (the ramp is a Literal E benefit)', () => {
+      const c = estimateCost('unipersonal-irae', {
         ...base,
         yearsOperating: 0,
         fonasaFromJob: true,
       })
       expect(c.bpsMonthly).toBe(F.bpsUnipersonalConFonasaDeEmpleo.value)
-      const notes = c.notes.join(' ')
-      expect(notes).toContain('19.889')
-      expect(notes).toMatch(/no publica/i)
     })
 
     it('MINOR 10: Literal E explains its own Ley 19.889 ramp, and when it ends', () => {
@@ -1262,6 +1442,517 @@ describe('estimateCost', () => {
     })
   })
 
+  // ---------------------------------------------------------------------------------
+  // ROUND-2 CRITICAL 1 — the SRL's BPS ignored `sociosCount` and always charged ONE socio.
+  //
+  // Ley 16.713 art. 172, VERBATIM: "los socios integrantes de las sociedades colectivas, de
+  // responsabilidad limitada, en comandita y de capital e industria, TENGAN O NO LA CALIDAD
+  // DE ADMINISTRADORES, QUE DESARROLLEN ACTIVIDAD DE CUALQUIER NATURALEZA DENTRO DE LA
+  // EMPRESA, efectuarán su aportación ficta patronal ... sin que pueda ser inferior al
+  // equivalente a QUINCE veces el valor de la Base Ficta de Contribución."
+  //
+  // Three things follow, and the model got all three wrong:
+  //   1. it is PER SOCIO ("los socios ... efectuarán su aportación"), so it scales;
+  //   2. the trigger is ACTIVITY, not ownership — a purely capitalist socio is outside the
+  //      article entirely and pays nothing;
+  //   3. so the datum the cost depends on is "how many socios WORK here", which the wizard
+  //      never asked for. With 2 active socios the SRL is $12.530/mo, not $6.265 — and the
+  //      ranking INVERTED: the SRL was printed as the CHEAPEST option when it is the dearest.
+  // ---------------------------------------------------------------------------------
+  describe('SRL BPS is per socio CON ACTIVIDAD (ROUND-2 CRITICAL 1)', () => {
+    it('multiplies the 15-BFC socio figure by the socios who actually work in the company', () => {
+      for (const activos of [1, 2, 3]) {
+        const c = estimateCost('srl', { ...socios2, sociosCount: 3, sociosActivos: activos })
+        expect(c.bpsMonthly, `${activos} socios activos`).toBe(F.bpsSocioSrl.value * activos)
+        expect(c.bpsUnknown).toBe(false)
+      }
+    })
+
+    // The exact probe from the review: 2 socios, bienes, $5.000.000/año. The SRL was ranked
+    // #1 at $273.180/año; with both socios active it is $348.180 — the MOST expensive of the
+    // three. A ranking page that inverts its ranking is worse than no page.
+    it('no longer ranks the SRL cheapest by pretending it has one socio', () => {
+      const input: WizardInput = {
+        ...base,
+        people: 'socios',
+        sociosCount: 2,
+        sociosActivos: 2,
+        annualRevenueUyu: 5_000_000,
+        sells: 'bienes',
+      }
+      const srl = estimateCost('srl', input)
+      const sh = estimateCost('sociedad-hecho', input)
+      const sas = estimateCost('sas', input)
+      for (const c of [srl, sh, sas]) expect(c.totalAnnual).not.toBeNull()
+
+      // The SRL's BPS is now the whole company's: 2 × 6.265.
+      expect(srl.bpsMonthly).toBe(F.bpsSocioSrl.value * 2)
+      // ...and it is no longer the cheapest of the three. It is the dearest.
+      expect(srl.totalAnnual!).toBeGreaterThan(sh.totalAnnual!)
+      expect(srl.totalAnnual!).toBeGreaterThan(sas.totalAnnual!)
+    })
+
+    // The heart of it: an unknown may never become a measurement. `sociedad-hecho` already
+    // refused to guess; `srl` happily returned a complete $11.765. Same defect, same file.
+    it('REFUSES to cost an SRL when it was never told how many socios work there', () => {
+      const c = estimateCost('srl', { ...socios2, sociosActivos: undefined })
+      expect(c.bpsMonthly).toBeNull()
+      expect(c.bpsUnknown).toBe(true)
+      expect(c.totalMonthly).toBeNull()
+      expect(c.totalAnnual).toBeNull()
+      expect(c.notes.join(' ')).toMatch(/16\.713|actividad/i)
+    })
+
+    it('never silently assumes ONE socio — the bug that inverted the ranking', () => {
+      const unknown = estimateCost('srl', socios2)
+      const oneSocio = estimateCost('srl', { ...socios2, sociosActivos: 1 })
+      expect(unknown.bpsMonthly).toBeNull()
+      expect(unknown.bpsMonthly).not.toBe(oneSocio.bpsMonthly)
+    })
+
+    // Art. 172 charges only socios "que desarrollen actividad". Zero active socios (an SRL run
+    // by a hired manager) is a MEASURED zero, not an unknown one — and it must not be confused
+    // with the unknown above.
+    it('charges nothing when no socio works in the company, and knows that is not an unknown', () => {
+      const c = estimateCost('srl', { ...socios2, sociosActivos: 0 })
+      expect(c.bpsMonthly).toBe(0)
+      expect(c.bpsUnknown).toBe(false)
+      expect(c.totalAnnual).not.toBeNull()
+    })
+
+    it('cites Ley 16.713 art. 172 and explains the "con actividad" trigger', () => {
+      const notes = estimateCost('srl', { ...socios2, sociosActivos: 2 }).notes.join(' ')
+      expect(notes).toContain('16.713')
+      expect(notes).toMatch(/actividad/i)
+    })
+
+    // The sociedad de hecho charges the SAME per-socio-con-actividad way (art. 172's first
+    // limb: "personas físicas que ... ASOCIADAS O NO, ejerzan una actividad lucrativa no
+    // dependiente"), so the finer datum must win there too when we have it. Its cost may not
+    // disagree with the SRL's about who is being charged.
+    it('lets sociosActivos refine the sociedad de hecho too, not just the SRL', () => {
+      const c = estimateCost('sociedad-hecho', {
+        ...base,
+        people: 'socios',
+        sociosCount: 3,
+        sociosActivos: 2,
+      })
+      expect(c.bpsMonthly).toBe(F.bpsSocioSociedadHecho.value * 2)
+    })
+  })
+
+  // ---------------------------------------------------------------------------------
+  // ROUND-2 CRITICAL 1 (SAS half) — the audit the review asked for.
+  //
+  // Ley 19.820 art. 43, VERBATIM: "El administrador o quienes integren el órgano de
+  // administración o, en su caso, el representante legal a los que se refieren los artículos
+  // 29 y 30 ... tributarán contribuciones especiales de seguridad social conforme el régimen
+  // general previsto en el ARTÍCULO 172 DE LA LEY N° 16.713" — the very same article as the
+  // SRL socio. So it is per-administrador, on the same "actividad" logic.
+  //
+  // The review supposed "a SAS may have up to 3 administrators". THE SOURCE SAYS OTHERWISE:
+  // there is NO cap of 3 anywhere in Ley 19.820. Art. 30: "La representación legal de la
+  // sociedad estará a cargo de UNA O MÁS personas físicas o jurídicas, designadas en la forma
+  // prevista en los estatutos." The count is whatever the estatutos say.
+  //
+  // But 1 IS the defensible default here, and unlike the SRL that is not a guess — it is the
+  // law's OWN residual rule. Art. 29: "Salvo que otra cosa se dispusiera en los estatutos, LA
+  // TOTALIDAD de las funciones de administración y representación legal le corresponderán AL
+  // REPRESENTANTE LEGAL" (singular). An SRL cannot default to 1 (Ley 16.060 art. 1 forces ≥2
+  // socios, so "1" is never the statutory shape); a SAS can, and does.
+  // ---------------------------------------------------------------------------------
+  describe('SAS BPS is per administrador (ROUND-2 CRITICAL 1, SAS half)', () => {
+    it('defaults to ONE administrador — Ley 19.820 art. 29’s own residual rule — and says so', () => {
+      const c = estimateCost('sas', base)
+      expect(c.bpsMonthly).toBe(F.bpsAdminSas.value)
+      expect(c.bpsUnknown).toBe(false)
+      const notes = c.notes.join(' ')
+      expect(notes).toContain('19.820')
+      expect(notes).toMatch(/un solo administrador|un administrador|representante legal/i)
+    })
+
+    it('scales with the administradores when the visitor names more than one', () => {
+      for (const n of [1, 2, 3]) {
+        const c = estimateCost('sas', { ...base, administradoresSas: n })
+        expect(c.bpsMonthly, `${n} administradores`).toBe(F.bpsAdminSas.value * n)
+      }
+    })
+
+    // A mere accionista who neither administers nor represents pays nothing: Ley 16.713
+    // art. 172 lists "sociedades colectivas, de responsabilidad limitada, en comandita y de
+    // capital e industria" — a sociedad POR ACCIONES is not among them, and Ley 19.820 art. 43
+    // reaches only the administrador/representante legal. So the SAS's BPS must NOT move with
+    // the number of socios/accionistas.
+    it('does NOT charge accionistas: the socio count must not move the SAS bill', () => {
+      const a = estimateCost('sas', { ...base, people: 'socios', sociosCount: 2, sociosActivos: 2 })
+      const b = estimateCost('sas', { ...base, people: 'socios', sociosCount: 5, sociosActivos: 5 })
+      expect(a.bpsMonthly).toBe(F.bpsAdminSas.value)
+      expect(b.bpsMonthly).toBe(F.bpsAdminSas.value)
+      expect(estimateCost('sas', base).notes.join(' ')).toMatch(/accionista/i)
+    })
+  })
+
+  // ---------------------------------------------------------------------------------
+  // ROUND-2 IMPORTANT 3 — the unipersonal ignored `family`, so Literal E got a fake advantage
+  // of up to $1.561/mo in the one comparison this page exists to decide.
+  //
+  // BPS, "Industria y Comercio" (bps.gub.uy/6665), table "Empresas unipersonales sin
+  // dependientes → Aporte total del beneficiario del SNS", 1.ª categoría / 11 BFC / monto
+  // gravado 20.328, VERBATIM CELLS:
+  //     sin cónyuge · sin hijos (SS 15) = 8.833
+  //     sin cónyuge · con hijos (SS 1)  = 9.502     (+669)
+  //     con cónyuge · sin hijos (SS 17) = 9.725     (+892)
+  //     con cónyuge · con hijos (SS 16) = 10.394    (+1.561)
+  // The deltas are IDENTICAL to the monotributo ones (6.327 → 6.996 / 7.219 / 7.888), which is
+  // what confirms the mapping: it is the same FONASA supplement in both tables.
+  // ---------------------------------------------------------------------------------
+  describe('unipersonal BPS honours the family column (ROUND-2 IMPORTANT 3)', () => {
+    const cases = [
+      { family: 'solo', pleno: F.bpsUnipersonalPleno },
+      { family: 'con-hijos', pleno: F.bpsUnipersonalPlenoHijos },
+      { family: 'con-conyuge', pleno: F.bpsUnipersonalPlenoConyuge },
+      { family: 'con-conyuge-e-hijos', pleno: F.bpsUnipersonalPlenoConyugeHijos },
+    ] as const
+
+    it('selects the family column in the full regime, for BOTH unipersonal regimes', () => {
+      for (const { family, pleno } of cases) {
+        for (const id of ['unipersonal-literal-e', 'unipersonal-irae'] as const) {
+          const c = estimateCost(id, { ...base, family, yearsOperating: 5 })
+          expect(c.bpsMonthly, `${id} ${family}`).toBe(pleno.value)
+        }
+      }
+    })
+
+    it('matches the BPS deltas exactly: +669 con hijos, +892 con cónyuge, +1.561 con ambos', () => {
+      const at = (family: WizardInput['family']) =>
+        estimateCost('unipersonal-literal-e', { ...base, family, yearsOperating: 5 }).bpsMonthly!
+      const solo = at('solo')
+      expect(at('con-hijos') - solo).toBe(669)
+      expect(at('con-conyuge') - solo).toBe(892)
+      expect(at('con-conyuge-e-hijos') - solo).toBe(1561)
+    })
+
+    // BPS's Ley 19.889 gradual page (bps.gub.uy/17829) publishes all four family columns in
+    // all four year tables — so there was nothing to derive here either, and no reason to push
+    // a "BPS does not publish this" note. 1.ª cat / 11 BFC, sin cónyuge·sin hijos → con
+    // cónyuge·con hijos:  año 1  7.689 → 9.250 · año 2  8.070 → 9.631 · año 3  8.451 → 10.012.
+    it('honours the family column DURING the Ley 19.889 ramp too, not just at the end of it', () => {
+      const y = (family: WizardInput['family'], n: number) =>
+        estimateCost('unipersonal-literal-e', { ...base, family, yearsOperating: n }).bpsMonthly
+      expect(y('solo', 0)).toBe(F.bpsUnipersonalAnio1.value)
+      expect(y('con-conyuge-e-hijos', 0)).toBe(F.bpsUnipersonalAnio1ConyugeHijos.value)
+      expect(y('con-hijos', 1)).toBe(F.bpsUnipersonalAnio2Hijos.value)
+      expect(y('con-conyuge', 2)).toBe(F.bpsUnipersonalAnio3Conyuge.value)
+      // The +1.561 supplement is present in every single year of the ramp.
+      for (const n of [0, 1, 2, 5]) {
+        expect(y('con-conyuge-e-hijos', n)! - y('solo', n)!, `año ${n}`).toBe(1561)
+      }
+    })
+
+    // THE BUG, stated as the page's own central head-to-head: monotributo was made to rise
+    // with the family while Literal E was not, so Literal E pocketed an artificial advantage
+    // of up to $1.561/mo for every visitor with a family.
+    it('does not hand Literal E a fake advantage over monotributo for a visitor with a family', () => {
+      const familyGap = (id: RegimeId) => {
+        const solo = estimateCost(id, { ...base, family: 'solo', yearsOperating: 5 }).bpsMonthly!
+        const con = estimateCost(id, {
+          ...base,
+          family: 'con-conyuge-e-hijos',
+          yearsOperating: 5,
+        }).bpsMonthly!
+        return con - solo
+      }
+      // Both regimes must move by the SAME published FONASA supplement. Before the fix,
+      // monotributo moved by 1.561 and Literal E moved by 0.
+      expect(familyGap('monotributo')).toBe(1561)
+      expect(familyGap('unipersonal-literal-e')).toBe(1561)
+      expect(familyGap('unipersonal-literal-e')).toBe(familyGap('monotributo'))
+    })
+
+    // The SAS administrator sits in the SAME BPS table, 2.ª categoría (15 BFC), and carries
+    // the SAME four columns: 10.504 / 11.173 / 11.396 / 12.065. It ignored `family` too — the
+    // identical defect, one regime over. Ley 19.820 art. 43 in fine confirms the SAS
+    // administrator is "incorporado al Seguro Nacional de Salud", so the FONASA columns apply.
+    it('applies the same four family columns to the SAS administrator', () => {
+      const at = (family: WizardInput['family']) =>
+        estimateCost('sas', { ...base, family }).bpsMonthly!
+      expect(at('solo')).toBe(F.bpsAdminSas.value)
+      expect(at('con-hijos')).toBe(F.bpsAdminSasHijos.value)
+      expect(at('con-conyuge')).toBe(F.bpsAdminSasConyuge.value)
+      expect(at('con-conyuge-e-hijos')).toBe(F.bpsAdminSasConyugeHijos.value)
+      // Same published supplement as every other FONASA-bearing owner contribution.
+      expect(at('con-conyuge-e-hijos') - at('solo')).toBe(1561)
+    })
+
+    // The socio of an SRL / sociedad de hecho is expressly NOT a FONASA beneficiary by this
+    // activity (BPS's "No beneficiario del SNS" table, which has no family columns at all), so
+    // these two must NOT move with the family. A regime that moved here would be inventing a
+    // column BPS does not publish.
+    it('does NOT move the non-FONASA socio figures with the family', () => {
+      for (const id of ['srl', 'sociedad-hecho'] as const) {
+        const solo = estimateCost(id, { ...socios2, sociosActivos: 2, family: 'solo' }).bpsMonthly
+        const con = estimateCost(id, {
+          ...socios2,
+          sociosActivos: 2,
+          family: 'con-conyuge-e-hijos',
+        }).bpsMonthly
+        expect(con, `${id} must not invent a FONASA column`).toBe(solo)
+      }
+    })
+  })
+
+  // ---------------------------------------------------------------------------------
+  // ROUND-2 CRITICAL 2 — the CJPPU "unknown" leaked out through the neighbouring regimes.
+  //
+  // `irpf-servicios` correctly REFUSED to total a CJPPU professional. Then the very next
+  // regime handed the same person a complete, cheaper-looking total whose BPS component is an
+  // 11-BFC jubilatorio they do not pay to BPS at all.
+  //
+  // Ley 17.738 art. 43, VERBATIM: "Quedan personal y obligatoriamente sujetos al régimen
+  // establecido en la presente ley, los profesionales universitarios que ejerzan en el país en
+  // forma libre EN NOMBRE PROPIO y para terceros ... El ejercicio de la profesión para terceros
+  // puede ser individual o, repartiéndose los beneficios que de ello provengan, EN SOCIEDAD con
+  // otros profesionales o no profesionales ... SIN PERJUICIO DE LAS AFILIACIONES A OTROS
+  // INSTITUTOS DE SEGURIDAD SOCIAL QUE PUDIERAN CORRESPONDER."
+  //
+  // That last clause is why we refuse rather than guess in EITHER direction: the law expressly
+  // contemplates that BPS may ALSO be owed on top of the CJPPU, and it does not say when. An
+  // empresa unipersonal has no separate legal personality, so it is still "nombre propio" —
+  // squarely inside art. 43. Whether BPS's 11-BFC ficto rides along on top is genuinely
+  // unsettled, and the CJPPU does not publish its scale. Two unknowns, one honest answer.
+  // ---------------------------------------------------------------------------------
+  describe('the CJPPU unknown does not leak into the neighbouring regimes (ROUND-2 CRITICAL 2)', () => {
+    const cjppu: WizardInput = { ...base, sells: 'servicios', cajaProfesional: true }
+
+    it('refuses to total EVERY regime that charges an owner contribution, not just IRPF', () => {
+      for (const id of [
+        'irpf-servicios',
+        'unipersonal-literal-e',
+        'unipersonal-irae',
+        'sociedad-hecho',
+        'srl',
+        'sas',
+      ] as const) {
+        const c = estimateCost(id, { ...cjppu, sociosCount: 2, sociosActivos: 2 })
+        expect(c.bpsMonthly, `${id} must not print a BPS figure`).toBeNull()
+        expect(c.bpsUnknown, `${id} must flag the unknown`).toBe(true)
+        expect(c.totalMonthly, `${id} must not present a total`).toBeNull()
+        expect(c.totalAnnual, `${id} must not present a total`).toBeNull()
+        expect(c.notes.join(' '), `${id} must point at the CJPPU`).toContain('CJPPU')
+      }
+    })
+
+    // THE BUG, exactly as reported: irpf-servicios said null, and unipersonal-irae and the SAS
+    // handed the same person a complete — and cheaper-looking — number.
+    it('never lets one regime refuse while a neighbour answers, for the SAME person', () => {
+      const refused = estimateCost('irpf-servicios', cjppu)
+      expect(refused.totalAnnual).toBeNull()
+      for (const id of ['unipersonal-irae', 'sas'] as const) {
+        expect(estimateCost(id, cjppu).totalAnnual, `${id} answered where IRPF refused`).toBeNull()
+      }
+    })
+
+    // A CJPPU professional selling only BIENES is not exercising the profession through the
+    // company, so the CJPPU is not in play and BPS is knowable as usual. The refusal must be
+    // scoped to the activity that triggers it — not smeared across every input.
+    it('does not fire for a CJPPU title-holder whose business only sells bienes', () => {
+      const bienes: WizardInput = { ...base, sells: 'bienes', cajaProfesional: true }
+      const c = estimateCost('unipersonal-literal-e', bienes)
+      expect(c.bpsUnknown).toBe(false)
+      expect(c.bpsMonthly).toBe(F.bpsUnipersonalPleno.value)
+      expect(c.totalAnnual).not.toBeNull()
+    })
+
+    it('is honest that it cannot resolve the question, in either direction', () => {
+      const notes = estimateCost('unipersonal-irae', cjppu).notes.join(' ')
+      expect(notes).toContain('CJPPU')
+      // It must NOT claim to know the answer — it must send them to the Caja.
+      expect(notes).toMatch(/no podemos|no está resuelto|consultá|consulta/i)
+    })
+  })
+
+  // ---------------------------------------------------------------------------------
+  // THE STRUCTURAL INVARIANT THIS ROUND IS ABOUT.
+  //
+  // Every defect in this review was the same shape: a datum that one regime honours and its
+  // neighbour silently ignores. Because the page RANKS regimes against each other, that is
+  // not a local error — it reorders the answer. So the invariant is cross-regime, and it is
+  // stated over the whole set at once rather than regime by regime:
+  //
+  //   For a given input, if ANY elegible regime reports `bpsUnknown` because of some datum,
+  //   then NO elegible regime whose BPS depends on THAT SAME datum may present a complete
+  //   total. An unknown may not be fatal to one regime and free for its neighbour.
+  //
+  // Implemented as a MUTATION property, so it cannot be satisfied by hardcoding: if supplying
+  // a datum CHANGES a regime's total, then that regime demonstrably depends on it — and it
+  // must therefore refuse to total when the datum is absent. "If the answer moves with the
+  // fact, you may not answer without the fact."
+  // ---------------------------------------------------------------------------------
+  describe('cross-regime invariant: no regime answers with a datum its neighbour needed', () => {
+    /**
+     * A datum the wizard must collect, with two values that a regime depending on it would
+     * price DIFFERENTLY, plus the context in which the datum is meaningful at all.
+     *
+     * `family` is deliberately NOT here, and the distinction is the whole point of this round:
+     * `family: undefined → 'solo'` is a legitimate DEFAULT (a real, modal situation) applied
+     * UNIFORMLY to every regime that has family columns, so it cannot distort the ranking —
+     * every regime moves together. `sociosActivos: undefined → 1` was a SENTINEL pretending to
+     * be a measurement, applied to ONE regime, and it inverted the ranking. A default is fine;
+     * a default that only some regimes honour is the bug.
+     */
+    /**
+     * A regime is allowed to answer WITHOUT a datum in exactly two situations, and neither of
+     * them is "we picked something plausible". Anything else must return `bpsUnknown` + a null
+     * total. Every entry below names the norm that licenses it — an unjustified entry here is
+     * the bug this whole round is about, wearing a permission slip.
+     *
+     *   ENTAILED — the regime's own legal structure FIXES the value, so there is nothing to
+     *   guess. It must also be the CONSERVATIVE (maximal) reading, asserted below: a default
+     *   that could understate is never an entailment, it is a wish.
+     *
+     *   STATUTORY — the NORM supplies the residual value itself. It need not be conservative,
+     *   because it is not our number: it is the law's.
+     */
+    const ENTAILED = {
+      sociosActivos: {
+        monotributo:
+          'Ley 18.083 art. 70 lits. B y C: la sociedad de hecho monotributista es "sin dependientes". Sin empleados, alguien tiene que hacer el trabajo — y solo están los socios. sociosActivos ≡ sociosCount por entailment, no por conveniencia.',
+        'sociedad-hecho':
+          'BPS publica esta cifra en su tabla "Sociedad de hecho SIN DEPENDIENTES", indexada por una columna "Cant. socios": dentro del alcance de esa tabla, todos los socios trabajan.',
+      },
+    } as const
+
+    const STATUTORY = {
+      administradoresSas: {
+        sas: 'Ley 19.820 art. 29: "Salvo que otra cosa se dispusiera en los estatutos, la TOTALIDAD de las funciones de administración y representación legal le corresponderán AL REPRESENTANTE LEGAL" (singular). Uno es la forma estatutaria por defecto de una SAS — es la regla de la norma, no nuestra suposición. La SRL no tiene nada equivalente: la Ley 16.060 art. 1 la obliga a ≥2 socios, así que "1" nunca es su forma por defecto.',
+      },
+    } as const
+
+    const PROBES = [
+      {
+        datum: 'sociosActivos',
+        context: {
+          people: 'socios',
+          sociosCount: 3,
+          sociosFamiliares: true,
+        } as Partial<WizardInput>,
+        // Ascending, so the LAST one is the maximal (most conservative) reading.
+        values: [1, 2, 3].map(n => ({ sociosActivos: n }) as Partial<WizardInput>),
+      },
+      {
+        datum: 'sociosCount',
+        context: { people: 'socios' } as Partial<WizardInput>,
+        values: [
+          { sociosCount: 2, sociosActivos: 2 },
+          { sociosCount: 3, sociosActivos: 3, sociosFamiliares: true },
+        ] as Partial<WizardInput>[],
+      },
+      {
+        datum: 'administradoresSas',
+        context: {} as Partial<WizardInput>,
+        values: [1, 2, 3].map(n => ({ administradoresSas: n }) as Partial<WizardInput>),
+      },
+    ] as const
+
+    it('refuses to total any regime whose answer would MOVE with a datum it was not given', () => {
+      let sawADependency = false
+      for (const { datum, context, values } of PROBES) {
+        const entailed: Record<string, string> = ENTAILED[datum as keyof typeof ENTAILED] ?? {}
+        const statutory: Record<string, string> = STATUTORY[datum as keyof typeof STATUTORY] ?? {}
+
+        for (const id of ALL_REGIMES) {
+          const costs = values.map(v => estimateCost(id, { ...base, ...context, ...v }))
+          const bpsValues = costs.map(c => c.bpsMonthly)
+          // Does this regime's answer demonstrably depend on the datum? If it does not, it has
+          // nothing to refuse and nothing to explain.
+          const dependsOnDatum = new Set(bpsValues).size > 1
+          if (!dependsOnDatum) continue
+          sawADependency = true
+
+          const without = estimateCost(id, { ...base, ...context })
+
+          if (id in entailed) {
+            // Licensed to answer — but ONLY with the maximal reading. A default that could
+            // understate is exactly the bug (assuming 1 socio) with better paperwork.
+            const maximal = bpsValues[bpsValues.length - 1]
+            expect(
+              without.bpsMonthly,
+              `${id} defaults "${datum}", which is only legitimate because: ${entailed[id]!} — and a legitimate default must be the CONSERVATIVE reading, never an understatement.`
+            ).toBe(maximal)
+            expect(without.bpsUnknown, `${id}`).toBe(false)
+            continue
+          }
+
+          if (id in statutory) {
+            // Licensed to answer with the NORM's own residual value (not necessarily maximal).
+            expect(
+              without.bpsMonthly,
+              `${id} defaults "${datum}" to the statutory residual: ${statutory[id]!}`
+            ).toBe(bpsValues[0])
+            expect(without.bpsUnknown, `${id}`).toBe(false)
+            continue
+          }
+
+          // Everyone else: if the answer moves with the fact, you may not answer without it.
+          expect(
+            without.totalAnnual,
+            `${id} priced itself without "${datum}", a datum its own answer demonstrably depends on, and it has no entailment or statutory default licensing that. This is the CRITICAL 1 bug (the SRL silently assuming ONE socio) — it inverted the ranking.`
+          ).toBeNull()
+          expect(without.bpsUnknown, `${id} must FLAG the missing "${datum}"`).toBe(true)
+          expect(without.notes.length, `${id} must explain the missing "${datum}"`).toBeGreaterThan(
+            0
+          )
+        }
+      }
+      // Guard the guard: if no regime depended on any probed datum, the whole thing ran
+      // vacuously and would keep passing after someone deleted the per-socio logic.
+      expect(
+        sawADependency,
+        'no regime depended on any probed datum — the check ran vacuously'
+      ).toBe(true)
+    })
+
+    // The SRL is the regime that had the bug, so pin its refusal directly rather than relying
+    // on the loop above to keep covering it.
+    it('the SRL specifically may never default sociosActivos — it has no entailment to lean on', () => {
+      const input: WizardInput = { ...base, people: 'socios', sociosCount: 2 }
+      expect(estimateCost('srl', input).bpsUnknown).toBe(true)
+      expect(estimateCost('srl', input).totalAnnual).toBeNull()
+      // ...whereas its two neighbours legitimately CAN, because "sin dependientes" entails it.
+      expect(estimateCost('sociedad-hecho', input).bpsMonthly).toBe(
+        F.bpsSocioSociedadHecho.value * 2
+      )
+      expect(estimateCost('monotributo', input).bpsMonthly).toBe(F.monoSocioSociedadHecho.value * 2)
+    })
+
+    // The same claim from the other end: for any single input, the set of ELEGIBLE regimes may
+    // not be split into "refuses to answer" and "answers cheaply" over the same missing fact.
+    it('never presents a complete total beside an elegible neighbour blocked by the same unknown', () => {
+      const inputs: WizardInput[] = [
+        // The CJPPU professional: irpf-servicios refused, unipersonal-irae and sas answered.
+        { ...base, sells: 'servicios', cajaProfesional: true },
+        { ...base, sells: 'ambos', cajaProfesional: true },
+        { ...base, sells: 'servicios', cajaProfesional: true, people: 'socios', sociosCount: 2 },
+      ]
+      for (const input of inputs) {
+        const elegibles = applyGates(input)
+          .filter(g => g.status === 'elegible')
+          .map(g => ({ id: g.regime, cost: estimateCost(g.regime, input) }))
+        // At least one regime must be blocked by the CJPPU — otherwise this runs vacuously.
+        expect(
+          elegibles.some(e => e.cost.bpsUnknown),
+          'no regime saw the CJPPU'
+        ).toBe(true)
+        for (const { id, cost } of elegibles) {
+          expect(
+            cost.totalAnnual,
+            `${id} presented a complete total while a neighbour was blocked by the CJPPU`
+          ).toBeNull()
+        }
+      }
+    })
+  })
+
   // The old monotonicity test capped at 3.000.000 and covered 4 of 9 regimes — which is
   // exactly why the flat-12% IRAE ficto (whose first tramo boundary is at ≈ $6.615.000)
   // slipped through. It now runs well past every tramo boundary AND the UI 4.000.000 tope,
@@ -1269,7 +1960,11 @@ describe('estimateCost', () => {
   it('is monotonically non-decreasing in revenue for EVERY regime, past every tramo boundary', () => {
     const shapes: WizardInput[] = [
       { ...base, sells: 'servicios' },
-      { ...socios2, sells: 'servicios' },
+      // The socios shape now supplies `sociosActivos` — the datum Ley 16.713 art. 172 makes
+      // the per-socio BPS depend on. Without it the SRL and the sociedad de hecho legitimately
+      // refuse to cost themselves (CRITICAL 1), which is exactly what the `uncostable` guard
+      // below encodes.
+      { ...socios2, sells: 'servicios', sociosActivos: 2 },
     ]
     for (const shape of shapes) {
       for (const id of ALL_REGIMES) {
@@ -1283,10 +1978,13 @@ describe('estimateCost', () => {
           expect(c.totalAnnual, `${id} @ ${rev}`).toBeGreaterThanOrEqual(prev)
           prev = c.totalAnnual
         }
-        // Guard the guard: a regime that returns null everywhere would pass vacuously. Two
-        // regimes legitimately do — the SA (never costable: contabilidad suficiente) and a
-        // sociedad de hecho whose socio count we were not given.
-        const uncostable = id === 'sa' || (id === 'sociedad-hecho' && !shape.sociosCount)
+        // Guard the guard: a regime that returns null everywhere would pass vacuously. Some
+        // legitimately do — the SA (never costable: contabilidad suficiente), and the two
+        // per-socio regimes when we were told neither how many socios there are nor how many
+        // of them work in the company.
+        const perSocio = id === 'sociedad-hecho' || id === 'srl'
+        const noSocioData = !shape.sociosActivos && !shape.sociosCount
+        const uncostable = id === 'sa' || (perSocio && noSocioData)
         if (!uncostable) {
           expect(sawNumber, `${id} produced no costable point — the check ran vacuously`).toBe(true)
         }

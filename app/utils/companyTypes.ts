@@ -77,10 +77,34 @@ const BPS_VALORES = 'https://www.bps.gub.uy/5478/valores-actuales.html'
 const BPS_TOPES = 'https://www.bps.gub.uy/23987/tope-de-ingresos-y-capital-de-la-empresa.html'
 const BPS_MONO = 'https://www.bps.gub.uy/6668/monotributo-ley-18083.html'
 const BPS_MONO_GRAD = 'https://www.bps.gub.uy/18051/monotributo-ley-19942.html'
+// MINOR 4 — six figures used to cite the two HTML pages above for values those pages DO NOT
+// CONTAIN. bps.gub.uy/6668 publishes only the "con hijos" columns (6.996 and 7.888); the
+// "sin hijos" ones (6.327 / 7.219) live in the PDF it links. Same for bps.gub.uy/18051 (only
+// 5.430/6.322 and 5.953/6.845 on the page; 4.761 / 5.653 / 5.284 / 6.176 in the PDF). All six
+// values were CORRECT — the citations just did not support them, which is precisely the defect
+// the last round's IMPORTANT 7 was about ("a citation that does not support its use"). They now
+// point at the PDFs, which is where BPS actually publishes them. Same domain, so the
+// primary-source test is satisfied for the right reason rather than by luck.
+const BPS_MONO_PDF = 'https://www.bps.gub.uy/bps/file/6668/23/monotributo-ley-18.083---2026.pdf'
+const BPS_MONO_GRAD_PDF =
+  'https://www.bps.gub.uy/bps/file/18051/8/monotributo-ley-19.942---2026.pdf'
 const BPS_MONO_SOCIAL = 'https://www.bps.gub.uy/6667/monotributo-social-mides-ley-18874.html'
 const BPS_IC = 'https://www.bps.gub.uy/6665/industria-y-comercio.html'
 const BPS_GRADUAL =
   'https://www.bps.gub.uy/17829/regimen-de-aportacion-gradual-vigente-desde-1_2021-ley-19889.html'
+// Ley 16.713 art. 172 — the article that decides WHO pays the socio's BPS, and how many of
+// them. Verbatim: "los socios integrantes de las sociedades colectivas, de responsabilidad
+// limitada, en comandita y de capital e industria, TENGAN O NO LA CALIDAD DE ADMINISTRADORES,
+// QUE DESARROLLEN ACTIVIDAD DE CUALQUIER NATURALEZA DENTRO DE LA EMPRESA, efectuarán su
+// aportación ficta patronal ... sin que pueda ser inferior al equivalente a QUINCE veces el
+// valor de la Base Ficta de Contribución."
+const LEY16713_172 = 'https://www.impo.com.uy/bases/leyes/16713-1995/172'
+// Ley 19.820 art. 43 sends the SAS administrator to that same art. 172; arts. 29 and 30 decide
+// how many administrators there are (see `sasBps`).
+const LEY19820_29 = 'https://www.impo.com.uy/bases/leyes/19820-2019/29'
+const LEY19820_43 = 'https://www.impo.com.uy/bases/leyes/19820-2019/43'
+// Ley 17.738 art. 43 — the CJPPU's own ámbito. See `cjppuEnJuego`.
+const LEY17738_43 = 'https://www.impo.com.uy/bases/leyes/17738-2004/43'
 const DGI_LITERAL_E =
   'https://www.gub.uy/direccion-general-impositiva/comunicacion/publicaciones/tope-ingresos-anuales-para-pequenas-empresas-iva-minimo'
 const DGI_IVA_MINIMO =
@@ -170,9 +194,15 @@ export const FIGURES = {
 
   // --- Monotributo (BPS, vigencia enero 2026) ---
   monoPlenoSinFonasa: fig(2637, 'Monotributo pleno, sin FONASA', BPS_MONO),
-  monoPlenoFonasaSolo: fig(6327, 'Monotributo pleno, con FONASA, sin cónyuge ni hijos', BPS_MONO),
+  // 6.327 and 7.219 are NOT on the HTML page (it publishes only the "con hijos" columns).
+  // They are in the PDF, block "Aporte total", row "Con opción al SNIS". See BPS_MONO_PDF.
+  monoPlenoFonasaSolo: fig(
+    6327,
+    'Monotributo pleno, con FONASA, sin cónyuge ni hijos',
+    BPS_MONO_PDF
+  ),
   monoPlenoFonasaHijos: fig(6996, 'Monotributo pleno, con FONASA, con hijos', BPS_MONO),
-  monoPlenoFonasaConyuge: fig(7219, 'Monotributo pleno, con FONASA, con cónyuge', BPS_MONO),
+  monoPlenoFonasaConyuge: fig(7219, 'Monotributo pleno, con FONASA, con cónyuge', BPS_MONO_PDF),
   monoPlenoFonasaConyugeHijos: fig(
     7888,
     'Monotributo pleno, con FONASA, con cónyuge e hijos',
@@ -186,16 +216,18 @@ export const FIGURES = {
   // Fuente: BPS, "monotributo-ley-19.942---2026.pdf", bloque "Aporte total" (con opción al
   // SNIS), que es inequívoco donde los encabezados del HTML no lo son.
   monoAnio1SinFonasa: fig(1071, 'Monotributo año 1 (25%), sin FONASA', BPS_MONO_GRAD),
+  // 4.761 / 5.653 / 5.284 / 6.176: the HTML page publishes only the "con hijos" columns. These
+  // four are in the PDF, block "Aporte total", row "Con opción al SNIS". See BPS_MONO_GRAD_PDF.
   monoAnio1FonasaSolo: fig(
     4761,
     'Monotributo año 1 (25%), con FONASA, sin cónyuge ni hijos',
-    BPS_MONO_GRAD
+    BPS_MONO_GRAD_PDF
   ),
   monoAnio1FonasaHijos: fig(5430, 'Monotributo año 1 (25%), con FONASA, con hijos', BPS_MONO_GRAD),
   monoAnio1FonasaConyuge: fig(
     5653,
     'Monotributo año 1 (25%), con FONASA, con cónyuge',
-    BPS_MONO_GRAD
+    BPS_MONO_GRAD_PDF
   ),
   monoAnio1FonasaConyugeHijos: fig(
     6322,
@@ -206,13 +238,13 @@ export const FIGURES = {
   monoAnio2FonasaSolo: fig(
     5284,
     'Monotributo año 2 (50%), con FONASA, sin cónyuge ni hijos',
-    BPS_MONO_GRAD
+    BPS_MONO_GRAD_PDF
   ),
   monoAnio2FonasaHijos: fig(5953, 'Monotributo año 2 (50%), con FONASA, con hijos', BPS_MONO_GRAD),
   monoAnio2FonasaConyuge: fig(
     6176,
     'Monotributo año 2 (50%), con FONASA, con cónyuge',
-    BPS_MONO_GRAD
+    BPS_MONO_GRAD_PDF
   ),
   monoAnio2FonasaConyugeHijos: fig(
     6845,
@@ -250,15 +282,82 @@ export const FIGURES = {
   ),
 
   // --- BPS del titular / socios ---
+  // BPS "Industria y Comercio", tabla "Empresas unipersonales sin dependientes → Aporte total
+  // del beneficiario del SNS", 1.ª categoría, 11 BFC, monto gravado 20.328. BPS publishes FOUR
+  // family columns, not one:
+  //     sin cónyuge · sin hijos (SS 15) =  8.833
+  //     sin cónyuge · con hijos (SS 1)  =  9.502   (+669)
+  //     con cónyuge · sin hijos (SS 17) =  9.725   (+892)
+  //     con cónyuge · con hijos (SS 16) = 10.394   (+1.561)
+  // Charging every unipersonal the "solo" column was the same defect the monotributo had last
+  // round, one regime over — and it handed Literal E a fake advantage of up to $1.561/mes over
+  // the monotributo (which HAD been fixed) in the single comparison this page exists to decide.
+  // The deltas are identical to the monotributo's, which is what confirms the mapping: it is
+  // the same FONASA supplement in both tables.
   bpsUnipersonalPleno: fig(8833, 'BPS titular unipersonal (11 BFC, FONASA, soltero)', BPS_IC),
+  bpsUnipersonalPlenoHijos: fig(9502, 'BPS titular unipersonal, con hijos', BPS_IC),
+  bpsUnipersonalPlenoConyuge: fig(9725, 'BPS titular unipersonal, con cónyuge', BPS_IC),
+  bpsUnipersonalPlenoConyugeHijos: fig(
+    10_394,
+    'BPS titular unipersonal, con cónyuge e hijos',
+    BPS_IC
+  ),
+  // The Ley 19.889 ramp publishes the SAME four columns in each of its year tables (BPS_GRADUAL,
+  // "Unipersonales", 1.ª cat / 11 BFC). Nothing here had to be derived.
   bpsUnipersonalAnio1: fig(7689, 'BPS titular unipersonal, año 1 (Ley 19.889)', BPS_GRADUAL),
+  bpsUnipersonalAnio1Hijos: fig(8358, 'BPS titular unipersonal, año 1, con hijos', BPS_GRADUAL),
+  bpsUnipersonalAnio1Conyuge: fig(8581, 'BPS titular unipersonal, año 1, con cónyuge', BPS_GRADUAL),
+  bpsUnipersonalAnio1ConyugeHijos: fig(
+    9250,
+    'BPS titular unipersonal, año 1, con cónyuge e hijos',
+    BPS_GRADUAL
+  ),
   bpsUnipersonalAnio2: fig(8070, 'BPS titular unipersonal, año 2', BPS_GRADUAL),
+  bpsUnipersonalAnio2Hijos: fig(8739, 'BPS titular unipersonal, año 2, con hijos', BPS_GRADUAL),
+  bpsUnipersonalAnio2Conyuge: fig(8962, 'BPS titular unipersonal, año 2, con cónyuge', BPS_GRADUAL),
+  bpsUnipersonalAnio2ConyugeHijos: fig(
+    9631,
+    'BPS titular unipersonal, año 2, con cónyuge e hijos',
+    BPS_GRADUAL
+  ),
   bpsUnipersonalAnio3: fig(8451, 'BPS titular unipersonal, año 3', BPS_GRADUAL),
+  bpsUnipersonalAnio3Hijos: fig(9120, 'BPS titular unipersonal, año 3, con hijos', BPS_GRADUAL),
+  bpsUnipersonalAnio3Conyuge: fig(9343, 'BPS titular unipersonal, año 3, con cónyuge', BPS_GRADUAL),
+  bpsUnipersonalAnio3ConyugeHijos: fig(
+    10_012,
+    'BPS titular unipersonal, año 3, con cónyuge e hijos',
+    BPS_GRADUAL
+  ),
+  // The module USED to assert — in a comment and in a user-facing note — that BPS "does NOT
+  // publish a ramped version of this column". It does. BPS_GRADUAL carries "Con aporte al SNS
+  // por actividad dependiente (SS 2, 28, 29 y 30)" in all four year tables: 3.999 / 4.380 /
+  // 4.761 / 5.143. We were overcharging a brand-new Literal E titular by $1.144/mes and telling
+  // them BPS had not published the number that was sitting on BPS's page.
   bpsUnipersonalConFonasaDeEmpleo: fig(
     5143,
     'BPS titular que ya aporta FONASA por un empleo',
     BPS_IC
   ),
+  bpsUnipersonalConFonasaDeEmpleoAnio1: fig(
+    3999,
+    'BPS titular con FONASA por un empleo, año 1 (Ley 19.889)',
+    BPS_GRADUAL
+  ),
+  bpsUnipersonalConFonasaDeEmpleoAnio2: fig(
+    4380,
+    'BPS titular con FONASA por un empleo, año 2',
+    BPS_GRADUAL
+  ),
+  bpsUnipersonalConFonasaDeEmpleoAnio3: fig(
+    4761,
+    'BPS titular con FONASA por un empleo, año 3',
+    BPS_GRADUAL
+  ),
+  // BPS_GRADUAL, tabla "Sociedades de hecho y SRL", footnote: "(*) Los socios de SRL aportan
+  // como mínimo por la SEGUNDA CATEGORÍA" (15 BFC) — which is the authority for this figure,
+  // and for the sociedad de hecho's 1.ª categoría (11 BFC) one below. Both tables are indexed
+  // by a "Cant. socios" column: the charge is PER SOCIO, and Ley 16.713 art. 172 conditions it
+  // on the socio developing activity in the company.
   bpsSocioSrl: fig(6265, 'BPS socio de SRL con actividad (15 BFC, sin FONASA)', BPS_IC),
   // BPS "Industria y comercio", tabla "Sociedad de hecho sin dependientes": 1 socio, 11 BFC,
   // monto gravado 20.328 → total a pagar 4.594. Es POR SOCIO, y NO incluye FONASA (igual que
@@ -269,7 +368,16 @@ export const FIGURES = {
     'BPS socio de sociedad de hecho sin dependientes (11 BFC, sin FONASA)',
     BPS_IC
   ),
+  // The SAS administrator sits in the SAME "beneficiario del SNS" table as the unipersonal
+  // titular, one categoría up (2.ª, 15 BFC), and therefore carries the SAME four family
+  // columns — 10.504 / 11.173 / 11.396 / 12.065, the identical +669/+892/+1.561 supplement.
+  // It ignored `family` too: the same defect as the unipersonal, one regime over. Ley 19.820
+  // art. 43 in fine puts it beyond doubt that the FONASA columns are the right ones: the
+  // administrator queda "incorporado al Seguro Nacional de Salud regulado por la Ley 18.211".
   bpsAdminSas: fig(10_504, 'BPS administrador de SAS (15 BFC, FONASA obligatorio)', BPS_IC),
+  bpsAdminSasHijos: fig(11_173, 'BPS administrador de SAS, con hijos', BPS_IC),
+  bpsAdminSasConyuge: fig(11_396, 'BPS administrador de SAS, con cónyuge', BPS_IC),
+  bpsAdminSasConyugeHijos: fig(12_065, 'BPS administrador de SAS, con cónyuge e hijos', BPS_IC),
 
   // --- IVA mínimo (Literal E) ---
   ivaMinimo: fig(5910, 'Cuota de IVA mínimo 2026', DGI_IVA_MINIMO),
@@ -426,8 +534,29 @@ export const IRAE_FICTO = {
   ]) as ReadonlyArray<{ upToUi: number | null; rate: number }>,
 } as const
 
-/** UYU value of `ui` Unidades Indexadas, at the UI we publish. */
-const uiToUyu = (unidades: number): number => unidades * FIGURES.uiHoy.value
+/**
+ * UYU value of `unidades` UI at TODAY's UI.
+ *
+ * Correct for the art. 64 TRAMOS, and only for them: art. 64 denominates its scale in UI and
+ * says nothing whatsoever about the date at which to value them, so today's UI is our
+ * disclosed approximation (and `iraeFictoMonthly` discloses it). It is NOT correct for the
+ * art. 168 tope — see `uiToUyuCierre`.
+ */
+const uiToUyuHoy = (unidades: number): number => unidades * FIGURES.uiHoy.value
+
+/**
+ * UYU value of `unidades` UI at the UI de CIERRE DE EJERCICIO.
+ *
+ * MINOR 5 — the art. 168 tope used to be converted with `uiHoy`, a value that moves every
+ * single day, when the norm expressly fixes the date. Art. 168 lit. b), verbatim: obligados a
+ * contabilidad suficiente "siempre que sus ingresos hayan superado en el ejercicio anterior las
+ * UI 4:000.000 ... A VALORES DE CIERRE DE EJERCICIO". Lit. c) repeats it in so many words: "A
+ * tales efectos se tomará la cotización de la unidad indexada vigente AL CIERRE DE EJERCICIO."
+ *
+ * `FIGURES.uiCierre2025` was already in the file, labelled "fija los topes 2026", and was
+ * referenced NOWHERE. It is the right number and this is the one place it belongs.
+ */
+const uiToUyuCierre = (unidades: number): number => unidades * FIGURES.uiCierre2025.value
 
 /**
  * Renta neta ficta (ANNUAL, UYU) for an annual gross revenue, applying the art. 64 tramos
@@ -442,7 +571,7 @@ export function iraeFictoRentaNetaAnual(annualRevenueUyu: number): number {
   let renta = 0
   let floor = 0
   for (const b of IRAE_FICTO.brackets) {
-    const ceiling = b.upToUi === null ? Infinity : uiToUyu(b.upToUi)
+    const ceiling = b.upToUi === null ? Infinity : uiToUyuHoy(b.upToUi)
     if (annualRevenueUyu <= floor) break
     const slice = Math.min(annualRevenueUyu, ceiling) - floor
     renta += slice * b.rate
@@ -459,11 +588,13 @@ export function iraeFictoRentaNetaAnual(annualRevenueUyu: number): number {
  * of (ingresos − gastos reales) — which depends on an expense structure this model does not
  * have, and must not be faked by extrapolating the ficto past its legal range.
  *
- * Approximation we own: the norm tests the ingresos of the EJERCICIO ANTERIOR at the UI de
- * CIERRE, and we only have the visitor's estimated annual revenue at today's UI.
+ * Approximation we own: the norm tests the ingresos of the EJERCICIO ANTERIOR, and we only have
+ * the visitor's estimate for the CURRENT one. We no longer compound that with a second error —
+ * the tope itself is now valued at the UI de cierre the norm names (`uiToUyuCierre`), not at
+ * today's UI, which moves daily and would slide the boundary under the reader's feet.
  */
 function iraeFictoDisponible(annualRevenueUyu: number): boolean {
-  return annualRevenueUyu <= uiToUyu(FIGURES.topeIraePreceptivoUi.value)
+  return annualRevenueUyu <= uiToUyuCierre(FIGURES.topeIraePreceptivoUi.value)
 }
 
 export type RegimeId =
@@ -607,6 +738,44 @@ export interface WizardInput {
    */
   sociosFamiliares?: boolean
   /**
+   * How many socios actually WORK in the company — not how many own it. This is the datum
+   * Ley 16.713 art. 172 makes the socio's BPS depend on, and it is a different fact from
+   * `sociosCount`.
+   *
+   * Art. 172, verbatim: "los socios integrantes de las sociedades colectivas, DE
+   * RESPONSABILIDAD LIMITADA, en comandita y de capital e industria, TENGAN O NO LA CALIDAD DE
+   * ADMINISTRADORES, QUE DESARROLLEN ACTIVIDAD DE CUALQUIER NATURALEZA DENTRO DE LA EMPRESA,
+   * efectuarán su aportación ficta patronal ... sin que pueda ser inferior al equivalente a
+   * quince veces el valor de la Base Ficta de Contribución."
+   *
+   * So the trigger is ACTIVITY, not ownership: a purely capitalist socio who does not work in
+   * the company falls outside the article and pays nothing. And the aportación is made by each
+   * socio ("los socios ... efectuarán SU aportación"), so it MULTIPLIES.
+   *
+   * When this is left `undefined` for a `'socios'` visitor, the SRL and the sociedad de hecho
+   * must NOT guess 1 — `estimateCost` returns `bpsUnknown`. Guessing 1 is what made the SRL
+   * print $6.265 for a company whose two working socios owe $12.530, and it INVERTED the
+   * ranking: the SRL came out cheapest when it was the dearest of the three.
+   *
+   * 0 is a legitimate, MEASURED value (an SRL run by a hired manager, with purely capitalist
+   * socios) — it is not the same thing as `undefined`.
+   */
+  sociosActivos?: number
+  /**
+   * How many administradores / representantes legales the SAS has. Ley 19.820 art. 43 sends
+   * them to the same art. 172 of Ley 16.713 as the SRL socio, so this multiplies too.
+   *
+   * Unlike `sociosActivos`, its absence is ANSWERABLE, and not by a guess of ours: Ley 19.820
+   * art. 29 supplies the default itself — "Salvo que otra cosa se dispusiera en los estatutos,
+   * la TOTALIDAD de las funciones de administración y representación legal le corresponderán AL
+   * REPRESENTANTE LEGAL" (singular). One is the statutory shape of a SAS; the SRL has no such
+   * residual rule (Ley 16.060 art. 1 forces it to ≥2 socios, so 1 is never its default).
+   *
+   * There is NO legal maximum: art. 30 says the representación legal is "a cargo de UNA O MÁS
+   * personas físicas o jurídicas, designadas en la forma prevista en los estatutos".
+   */
+  administradoresSas?: number
+  /**
    * Number of dependientes. Meaningfully 0, 1, or "2 o más" — kept as `number`
    * (not a `0 | 1 | 2` literal union) because the file's own no-unsourced-number
    * guard walks the AST for `ts.NumericLiteral` nodes and does not distinguish
@@ -701,6 +870,23 @@ export function applyGates(input: WizardInput): GateOutcome[] {
       if (sociosCountInconsistent) {
         doubt(
           `Nos dijiste que sos ${String(input.sociosCount)} socio(s), pero una sociedad requiere un mínimo de ${minSocios} personas. Revisá el dato: si en realidad vas solo, corresponde la rama unipersonal.`,
+          L.ley16060_1
+        )
+      }
+    }
+
+    /**
+     * MINOR 10 — the gate used to leave `sociedad-hecho` and `srl` sitting at `elegible` for a
+     * `'socios'` visitor who never told us how many socios there are, while `monotributo` was
+     * correctly `dudoso` on exactly the same gap. It never asked for the datum those regimes
+     * cannot be described without — and Ley 16.060 art. 1's own 2-socio minimum cannot even be
+     * CHECKED without it, so the `elegible` verdict was not something the gate had established.
+     * It was something it had skipped.
+     */
+    const flagMissingSociosCount = () => {
+      if (socios && input.sociosCount === undefined) {
+        doubt(
+          `No sabemos cuántos socios son, y sin ese dato no podemos confirmar que se cumpla el mínimo de ${minSocios} personas (ni calcular el aporte a BPS, que se cobra por cada socio con actividad). Necesitamos ese dato.`,
           L.ley16060_1
         )
       }
@@ -904,6 +1090,7 @@ export function applyGates(input: WizardInput): GateOutcome[] {
           )
         }
         flagInconsistentSociosCount()
+        flagMissingSociosCount()
         break
       }
 
@@ -921,6 +1108,10 @@ export function applyGates(input: WizardInput): GateOutcome[] {
           )
         }
         flagInconsistentSociosCount()
+        // MINOR 10 — only the SRL. The SA's BPS does not depend on the socio count (a director
+        // who draws no sueldo aporta nada), so the datum is not missing for it in the way it is
+        // for the SRL, whose every socio con actividad adds 15 BFC.
+        if (regime.id === 'srl') flagMissingSociosCount()
         break
       }
 
@@ -1000,7 +1191,10 @@ export const REGIMES: readonly Regime[] = Object.freeze([
     short:
       'El camino del profesional independiente: IRPF progresivo con mínimo no imponible, 30% de gastos fictos, e IVA con exportación a tasa 0%.',
     liability: 'ilimitada',
-    sources: [{ label: 'BPS — Escalas de IRPF 2026', url: IRPF_ESCALA }],
+    sources: [
+      { label: 'BPS — Escalas de IRPF 2026', url: IRPF_ESCALA },
+      { label: 'Ley 17.738 art. 43 — actividad profesional amparada (CJPPU)', url: LEY17738_43 },
+    ],
   },
   {
     id: 'unipersonal-irae',
@@ -1018,6 +1212,11 @@ export const REGIMES: readonly Regime[] = Object.freeze([
     liability: 'ilimitada',
     sources: [
       { label: 'Ley 16.060 arts. 36-43', url: 'https://www.impo.com.uy/bases/leyes/16060-1989' },
+      { label: 'BPS — Industria y Comercio (aporte por socio)', url: BPS_IC },
+      {
+        label: 'Ley 16.713 art. 172 — aporta el socio que desarrolla actividad',
+        url: LEY16713_172,
+      },
     ],
   },
   {
@@ -1026,7 +1225,14 @@ export const REGIMES: readonly Regime[] = Object.freeze([
     short:
       'Responsabilidad limitada, mínimo 2 socios. Ceder cuotas exige unanimidad si son 5 socios o menos, más escribano y publicación.',
     liability: 'limitada',
-    sources: [{ label: 'Ley 16.060', url: 'https://www.impo.com.uy/bases/leyes/16060-1989' }],
+    sources: [
+      { label: 'Ley 16.060', url: 'https://www.impo.com.uy/bases/leyes/16060-1989' },
+      { label: 'BPS — Industria y Comercio (aporte por socio)', url: BPS_IC },
+      {
+        label: 'Ley 16.713 art. 172 — 15 BFC por socio que desarrolla actividad',
+        url: LEY16713_172,
+      },
+    ],
   },
   {
     id: 'sas',
@@ -1036,6 +1242,11 @@ export const REGIMES: readonly Regime[] = Object.freeze([
     liability: 'limitada',
     sources: [
       { label: 'Ley 19.820', url: 'https://www.impo.com.uy/bases/leyes/19820-2019' },
+      { label: 'Ley 19.820 art. 29 — órgano de administración', url: LEY19820_29 },
+      {
+        label: 'Ley 19.820 art. 43 — contribuciones de seguridad social del administrador',
+        url: LEY19820_43,
+      },
       { label: 'Trámite SAS digital', url: SAS_TRAMITE },
     ],
   },
@@ -1169,23 +1380,102 @@ function monoFamilyColumn(input: WizardInput): { ramp: number[]; pleno: number }
  *     went unreferenced.
  */
 function monoBps(input: WizardInput): number | null {
+  if (cjppuEnJuego(input)) return null
   if (input.people === 'socios') {
     // A fact that decides the number is asked for, not assumed. (Guessing 2 here would be
     // the same class of bug as `sp ?? 0`: an unknown quietly becoming a measurement.)
-    if (input.sociosCount === undefined) return null
+    const socios = input.sociosActivos ?? input.sociosCount
+    if (socios === undefined) return null
     const perSocio = rampPick(
       [FIGURES.monoSocioSociedadHechoAnio1.value, FIGURES.monoSocioSociedadHechoAnio2.value],
       FIGURES.monoSocioSociedadHecho.value,
       input.yearsOperating
     )
-    return perSocio * input.sociosCount
+    return perSocio * socios
   }
   const { ramp, pleno } = monoFamilyColumn(input)
   return rampPick(ramp, pleno, input.yearsOperating)
 }
 
 /**
- * Titular of a unipersonal: ficto of 11 BFC.
+ * Is the visitor's compulsory retirement contribution (wholly or partly) OUTSIDE BPS, in the
+ * Caja de Profesionales Universitarios — making the owner's contribution unknowable?
+ *
+ * ROUND-2 CRITICAL 2. `irpf-servicios` refused to total a CJPPU professional and then handed
+ * the SAME PERSON a complete, cheaper-looking total on the very next regime, whose BPS
+ * component is an 11-BFC jubilatorio they do not pay to BPS at all. An unknown that is fatal
+ * to one regime and free for its neighbour is not an unknown, it is a ranking bug.
+ *
+ * Ley 17.738 art. 43, verbatim: "Quedan personal y obligatoriamente sujetos al régimen
+ * establecido en la presente ley, los profesionales universitarios que ejerzan en el país en
+ * forma libre EN NOMBRE PROPIO y para terceros ... El ejercicio de la profesión para terceros
+ * puede ser individual o, repartiéndose los beneficios que de ello provengan, EN SOCIEDAD con
+ * otros profesionales o no profesionales o en cooperativas de profesionales, SIN PERJUICIO DE
+ * LAS AFILIACIONES A OTROS INSTITUTOS DE SEGURIDAD SOCIAL QUE PUDIERAN CORRESPONDER."
+ *
+ * WE CANNOT RESOLVE THIS, AND WE SAY SO RATHER THAN PICK A SIDE. Two facts pull against each
+ * other and neither norm settles the collision:
+ *   - an empresa unipersonal has no separate legal personality, so invoicing through one is
+ *     still "en nombre propio" — squarely inside art. 43, jubilatorio to the CJPPU;
+ *   - but art. 43's closing clause expressly contemplates that BPS may ALSO be owed on top
+ *     ("sin perjuicio de las afiliaciones ... que pudieran corresponder"), and for the SAS,
+ *     Ley 19.820 art. 43 positively directs the administrator to art. 172 of Ley 16.713 — i.e.
+ *     to BPS — without saying what happens when that administrator is CJPPU-amparado.
+ * Both readings are defensible; the CJPPU does not publish its scale either way. So the answer
+ * is `null` and a note pointing them at the Caja, in EVERY regime — not a number in either
+ * direction, and above all not a number in one regime and a refusal in the next.
+ *
+ * Scoped to the ACTIVITY that triggers the amparo: a CJPPU title-holder whose company only
+ * sells bienes is not exercising the profession through it, so BPS is knowable as usual.
+ */
+function cjppuEnJuego(input: WizardInput): boolean {
+  return input.cajaProfesional === true && input.sells !== 'bienes'
+}
+
+/** The BPS unipersonal-titular column (año 1 / 2 / 3 / pleno) for a family situation. */
+function unipersonalFamilyColumn(input: WizardInput): { ramp: number[]; pleno: number } {
+  switch (input.family ?? 'solo') {
+    case 'con-hijos':
+      return {
+        ramp: [
+          FIGURES.bpsUnipersonalAnio1Hijos.value,
+          FIGURES.bpsUnipersonalAnio2Hijos.value,
+          FIGURES.bpsUnipersonalAnio3Hijos.value,
+        ],
+        pleno: FIGURES.bpsUnipersonalPlenoHijos.value,
+      }
+    case 'con-conyuge':
+      return {
+        ramp: [
+          FIGURES.bpsUnipersonalAnio1Conyuge.value,
+          FIGURES.bpsUnipersonalAnio2Conyuge.value,
+          FIGURES.bpsUnipersonalAnio3Conyuge.value,
+        ],
+        pleno: FIGURES.bpsUnipersonalPlenoConyuge.value,
+      }
+    case 'con-conyuge-e-hijos':
+      return {
+        ramp: [
+          FIGURES.bpsUnipersonalAnio1ConyugeHijos.value,
+          FIGURES.bpsUnipersonalAnio2ConyugeHijos.value,
+          FIGURES.bpsUnipersonalAnio3ConyugeHijos.value,
+        ],
+        pleno: FIGURES.bpsUnipersonalPlenoConyugeHijos.value,
+      }
+    default:
+      return {
+        ramp: [
+          FIGURES.bpsUnipersonalAnio1.value,
+          FIGURES.bpsUnipersonalAnio2.value,
+          FIGURES.bpsUnipersonalAnio3.value,
+        ],
+        pleno: FIGURES.bpsUnipersonalPleno.value,
+      }
+  }
+}
+
+/**
+ * Titular of a unipersonal: ficto of 11 BFC. Returns `null` when the CJPPU is in play.
  *
  * The Ley 19.889 art. 229 ramp (75%/50%/25% off the patronal jubilatorio) is NOT a
  * general "new company" discount: art. 229 → art. 228 → art. 30 Ley 18.083 = the
@@ -1194,23 +1484,104 @@ function monoBps(input: WizardInput): number | null {
  * to Literal E and NOT to a unipersonal in IRAE/IVA general. Passing `gradual: false`
  * is what keeps us from promising a discount that does not exist.
  *
- * `fonasaFromJob` short-circuits the ramp: BPS publishes a single figure for the titular who
- * already has FONASA por un empleo, and does NOT publish a ramped version of that column. We
- * do not derive one — we show the full figure and say so (`unipersonalBpsNotes`). It is the
- * conservative direction (it may overstate), but an undisclosed conservatism is still a lie.
+ * IMPORTANT 3 — this function used to ignore `input.family` entirely and always return the
+ * "solo" column (8.833). BPS publishes FOUR columns, and the monotributo (which HAD been fixed
+ * last round) rises with the family while this one did not — so Literal E, the monotributo's
+ * direct rival in the one comparison this page exists to decide, pocketed an artificial
+ * advantage of up to $1.561/mes for every visitor with a family.
+ *
+ * `fonasaFromJob` selects BPS's separate "con aporte al SNS por actividad dependiente" column —
+ * and that column IS ramped, contrary to what this module used to assert. See
+ * `bpsUnipersonalConFonasaDeEmpleoAnio1`.
  */
-function unipersonalBps(input: WizardInput, gradual: boolean): number {
-  if (input.fonasaFromJob) return FIGURES.bpsUnipersonalConFonasaDeEmpleo.value
-  if (!gradual) return FIGURES.bpsUnipersonalPleno.value
-  return rampPick(
-    [
-      FIGURES.bpsUnipersonalAnio1.value,
-      FIGURES.bpsUnipersonalAnio2.value,
-      FIGURES.bpsUnipersonalAnio3.value,
-    ],
-    FIGURES.bpsUnipersonalPleno.value,
-    input.yearsOperating
-  )
+function unipersonalBps(input: WizardInput, gradual: boolean): number | null {
+  if (cjppuEnJuego(input)) return null
+  if (input.fonasaFromJob) {
+    if (!gradual) return FIGURES.bpsUnipersonalConFonasaDeEmpleo.value
+    return rampPick(
+      [
+        FIGURES.bpsUnipersonalConFonasaDeEmpleoAnio1.value,
+        FIGURES.bpsUnipersonalConFonasaDeEmpleoAnio2.value,
+        FIGURES.bpsUnipersonalConFonasaDeEmpleoAnio3.value,
+      ],
+      FIGURES.bpsUnipersonalConFonasaDeEmpleo.value,
+      input.yearsOperating
+    )
+  }
+  const { ramp, pleno } = unipersonalFamilyColumn(input)
+  if (!gradual) return pleno
+  return rampPick(ramp, pleno, input.yearsOperating)
+}
+
+/**
+ * How many socios owe the aportación: the ones who WORK in the company (Ley 16.713 art. 172),
+ * not the ones who merely own it. `undefined` = we were never told, and we do not guess.
+ *
+ * The sociedad de hecho may fall back to `sociosCount`: BPS's own table for it is indexed by a
+ * "Cant. socios" column, and a sociedad de hecho — which arises precisely FROM people operating
+ * together without formalising — has no capitalist socios to exclude. An SRL is a capital
+ * company whose cuotistas genuinely may not work there, so it gets no such fallback: for it,
+ * `sociosActivos` is the only answer, and its absence is an unknown, not a 1.
+ */
+function sociosQueAportan(input: WizardInput, allowSociosCountFallback: boolean): number | null {
+  const activos = input.sociosActivos
+  if (activos !== undefined) return activos
+  if (allowSociosCountFallback) return input.sociosCount ?? null
+  return null
+}
+
+/** BPS of an SRL: 15 BFC per socio CON ACTIVIDAD (Ley 16.713 art. 172). Never assumes one. */
+function srlBps(input: WizardInput): number | null {
+  if (cjppuEnJuego(input)) return null
+  const socios = sociosQueAportan(input, false)
+  if (socios === null) return null
+  return FIGURES.bpsSocioSrl.value * socios
+}
+
+/** BPS of a sociedad de hecho: 11 BFC per socio, sin FONASA. */
+function sociedadHechoBps(input: WizardInput): number | null {
+  if (cjppuEnJuego(input)) return null
+  const socios = sociosQueAportan(input, true)
+  if (socios === null) return null
+  return FIGURES.bpsSocioSociedadHecho.value * socios
+}
+
+/** The BPS SAS-administrador column (2.ª categoría, 15 BFC, FONASA) for a family situation. */
+function sasAdminFamilyColumn(input: WizardInput): number {
+  switch (input.family ?? 'solo') {
+    case 'con-hijos':
+      return FIGURES.bpsAdminSasHijos.value
+    case 'con-conyuge':
+      return FIGURES.bpsAdminSasConyuge.value
+    case 'con-conyuge-e-hijos':
+      return FIGURES.bpsAdminSasConyugeHijos.value
+    default:
+      return FIGURES.bpsAdminSas.value
+  }
+}
+
+/**
+ * BPS of a SAS: the administrador/representante legal's 15-BFC ficto, per head.
+ *
+ * Ley 19.820 art. 43: "El administrador o quienes integren el órgano de administración o, en su
+ * caso, el representante legal ... tributarán contribuciones especiales de seguridad social
+ * conforme el régimen general previsto en el ARTÍCULO 172 DE LA LEY N° 16.713" — the very same
+ * article as the SRL socio, so it is per-head on the same activity logic.
+ *
+ * Defaulting to ONE is not a guess here, and that is what separates it from the SRL: Ley 19.820
+ * art. 29 supplies the default itself — "Salvo que otra cosa se dispusiera en los estatutos, la
+ * TOTALIDAD de las funciones de administración y representación legal le corresponderán AL
+ * REPRESENTANTE LEGAL". A SAS with no estatuto stipulation HAS exactly one. An SRL can never
+ * default to one (Ley 16.060 art. 1 forces ≥2 socios), which is why its unknown stays unknown.
+ *
+ * Accionistas pay NOTHING qua accionistas: art. 172 of Ley 16.713 lists "sociedades colectivas,
+ * de responsabilidad limitada, en comandita y de capital e industria" — a sociedad POR ACCIONES
+ * is not among them, and Ley 19.820 art. 43 reaches only the administrador. So this figure must
+ * NOT move with `sociosCount`.
+ */
+function sasBps(input: WizardInput): number | null {
+  if (cjppuEnJuego(input)) return null
+  return sasAdminFamilyColumn(input) * (input.administradoresSas ?? 1)
 }
 
 /** The FONASA rate a servicios-personales provider pays, by family situation. */
@@ -1236,7 +1607,7 @@ function spFonasaRate(input: WizardInput): number {
  * whose scale is not published — we refuse to show a number we cannot source.
  */
 function serviciosPersonalesBps(input: WizardInput): number | null {
-  if (input.cajaProfesional) return null
+  if (cjppuEnJuego(input)) return null
   const monthlyBilling = input.annualRevenueUyu / 12
   const fonasaBase = monthlyBilling * FIGURES.spFonasaCoefIrpf.value
   const fonasa = Math.max(FIGURES.spFonasaMinimo.value, fonasaBase * spFonasaRate(input))
@@ -1316,7 +1687,14 @@ function iraeFictoMonthly(
 
   if (!iraeFictoDisponible(input.annualRevenueUyu)) {
     notes.push(
-      `No podemos estimarte el IRAE: por encima de ${FIGURES.topeIraePreceptivoUi.value.toLocaleString('es-UY')} UI de ingresos (≈ ${uyu(uiToUyu(FIGURES.topeIraePreceptivoUi.value))} al año) la contabilidad suficiente es PRECEPTIVA (Dto. 150/007 art. 168) y el ficto del art. 64 deja de estar disponible. ${contador} No extrapolamos el ficto fuera de su rango legal.`
+      `No podemos estimarte el IRAE: por encima de ${FIGURES.topeIraePreceptivoUi.value.toLocaleString('es-UY')} UI de ingresos (≈ ${uyu(uiToUyuCierre(FIGURES.topeIraePreceptivoUi.value))} al año) la contabilidad suficiente es PRECEPTIVA (Dto. 150/007 art. 168) y el ficto del art. 64 deja de estar disponible. ${contador} No extrapolamos el ficto fuera de su rango legal.`
+    )
+    // MINOR 5 — this caveat used to be pushed ONLY on the branch where the ficto is available.
+    // It belongs here more, not less: this is the branch where the regime stops having a price
+    // at all. A reader must never watch a regime flip from a printed total to "we can't cost
+    // this" without being told the boundary is soft and which year it is measured in.
+    notes.push(
+      `Ese tope está en UI y lo convertimos con la UI de cierre de ejercicio (${FIGURES.uiCierre2025.value.toLocaleString('es-UY')}), que es la que manda el art. 168 ("a valores de cierre de ejercicio"). Además la norma mira los ingresos del EJERCICIO ANTERIOR y vos nos diste una estimación del actual: si estás cerca del límite, tomá la frontera como aproximada — un poco más abajo, este régimen sí tiene un costo estimable.`
     )
     return { amount: null, notes }
   }
@@ -1337,10 +1715,22 @@ function iraeFictoMonthly(
     `IRAE ficto (Dto. 150/007 art. 64): la renta neta NO es un 12% plano. Es una escala por TRAMOS de facturación anual en UI (${tramos}), y cada tramo se aplica solo a la parte de la facturación que cae dentro de él. Sobre esa renta ficta se paga el 25%.`
   )
   notes.push(
-    `Los tramos están en UI y los convertimos con la UI de hoy (${FIGURES.uiHoy.value.toLocaleString('es-UY')}), que se mueve todos los días: si estás cerca del borde de un tramo, tomá la cifra como aproximada.`
+    `Los tramos están en UI y los convertimos con la UI de hoy (${FIGURES.uiHoy.value.toLocaleString('es-UY')}), que se mueve todos los días: si estás cerca del borde de un tramo, tomá la cifra como aproximada. (A diferencia del tope del art. 168, el art. 64 no dice a qué fecha valuar sus tramos, así que esta conversión es nuestra aproximación, no la de la norma.)`
   )
+  // MINOR 8 — this note used to claim art. 64 admits deducting "hasta 11 BFC por dueño o socio
+  // que preste servicios efectivos". It does not. The empresarial ficto says only: "la renta
+  // neta se determinará DEDUCIENDO LOS SUELDOS DE DUEÑOS O SOCIOS ADMITIDOS POR LA
+  // REGLAMENTACIÓN" — no cap, no number. The 11 BFC was lifted from a DIFFERENT inciso of the
+  // same article, the AGROPECUARIO one ("b) Por cada dueño o socio, once Bases Fictas de
+  // Contribución mensuales ... a condición de que se presten efectivos servicios"), which does
+  // not govern the empresarial ficto this model applies. So did "servicios efectivos".
+  //
+  // Worth naming the mechanism: the AST guard walks NumericLiterals and cannot see a number
+  // living inside a string. Every quantity asserted in prose here is outside its reach and can
+  // only be held true by a human reading the norm. We removed the number rather than sourcing
+  // it, because it is not there to source.
   notes.push(
-    'No descontamos los sueldos de dueños o socios que el art. 64 admite restar de la renta ficta (hasta 11 BFC por dueño o socio que preste servicios efectivos): si los cobrás, tu IRAE real será menor que el que mostramos.'
+    'No descontamos los sueldos de dueños o socios que el art. 64 admite restar de la renta ficta ("los sueldos de dueños o socios admitidos por la reglamentación"): si los cobrás, tu IRAE real será menor que el que mostramos.'
   )
 
   return {
@@ -1348,6 +1738,17 @@ function iraeFictoMonthly(
     notes,
   }
 }
+
+/**
+ * The regime-specific half of the CJPPU note. Each states the OPEN QUESTION for that shape of
+ * taxpayer, rather than resolving it — because neither Ley 17.738 nor Ley 19.820 resolves it,
+ * and a guess in either direction is a wrong number on a legal-information page.
+ */
+const unipersonalCjppuCaveat =
+  'Una empresa unipersonal no es una persona jurídica distinta de vos, así que seguís facturando EN NOMBRE PROPIO — que es exactamente el supuesto del art. 43 de la Ley 17.738, el que te ampara en la CJPPU. Lo que la norma NO resuelve es si además te corresponde el ficto de 11 BFC de BPS por la actividad de la empresa: el mismo artículo dice que el amparo rige "sin perjuicio de las afiliaciones a otros institutos de seguridad social que pudieran corresponder", sin decir cuándo corresponden. No lo inventamos en ninguna de las dos direcciones.'
+
+const sociedadCjppuCaveat =
+  'El art. 43 de la Ley 17.738 ampara expresamente el ejercicio de la profesión "en sociedad con otros profesionales o no profesionales", y aclara que eso rige "sin perjuicio de las afiliaciones a otros institutos de seguridad social que pudieran corresponder". O sea: el aporte de socio/administrador a BPS que mostraríamos acá podría deberse ADEMÁS del aporte a la CJPPU, no en su lugar — con lo cual el costo real sería MAYOR, no menor. Ninguna de las dos normas dice cuál es.'
 
 /**
  * Cost of running under `regime`, in UYU.
@@ -1379,9 +1780,25 @@ export function estimateCost(
   /** Notes every regime whose BPS comes from `unipersonalBps` owes the reader. */
   const unipersonalBpsNotes = (gradual: boolean) => {
     if (!input.fonasaFromJob) return
-    if (!gradual) return
     notes.push(
-      'Ya tenés FONASA por un empleo, así que te mostramos la columna del titular con cobertura por otra actividad. BPS no publica una versión REBAJADA de esa columna para la gradualidad de la Ley 19.889, y no la inventamos: si te corresponde la rampa, tu costo real de los primeros 3 años puede ser MENOR que el que mostramos. Confirmalo con BPS.'
+      gradual
+        ? 'Ya tenés FONASA por un empleo, así que te cobramos la columna del titular con cobertura por otra actividad — y sí, esa columna también tiene la rebaja de la Ley 19.889: BPS la publica para los tres primeros años.'
+        : 'Ya tenés FONASA por un empleo, así que te cobramos la columna del titular con cobertura por otra actividad.'
+    )
+  }
+
+  /**
+   * The note a CJPPU-amparado professional is owed, in whatever regime they are looking at.
+   *
+   * Its job is to be USEFUL WITHOUT BEING FALSE. We do not know whether their jubilatorio goes
+   * to the CJPPU instead of BPS, or to the CJPPU on top of BPS — Ley 17.738 art. 43 expressly
+   * leaves both open ("sin perjuicio de las afiliaciones a otros institutos de seguridad social
+   * que pudieran corresponder") — and the CJPPU does not publish its scale either way. So we
+   * refuse to total, and we say exactly why, per regime.
+   */
+  const cjppuNote = (extra: string) => {
+    notes.push(
+      `NO INCLUYE TU APORTE JUBILATORIO. Tenés un título amparado por la Caja de Profesionales Universitarios (CJPPU) y ejercés la profesión, así que tu aporte jubilatorio no se rige por la tabla de BPS que usamos para todo el mundo. ${extra} Encima, la CJPPU no publica su escala de forma abierta: consultala directamente. Por eso NO te mostramos un total — sería menor que el real, y no un poco.`
     )
   }
 
@@ -1393,14 +1810,15 @@ export function estimateCost(
       notes.push(
         `Tu jubilación se construye sobre un ficto de ${uyu(FIGURES.monoBfcFicto.value * FIGURES.bfc.value)} al mes, no sobre lo que realmente ganás.`
       )
-      if (input.people === 'socios') {
+      if (cjppuEnJuego(input)) cjppuNote(sociedadCjppuCaveat)
+      if (input.people === 'socios' && !cjppuEnJuego(input)) {
         if (bpsMonthly === null) {
           notes.push(
             'No podemos calcular el BPS: no sabemos cuántos socios son. En una sociedad de hecho, BPS cobra el aporte POR SOCIO, así que el número depende de ese dato.'
           )
         } else {
           notes.push(
-            `Este es el costo de LA SOCIEDAD, no tu parte: BPS cobra ${uyu(FIGURES.monoSocioSociedadHecho.value)} por socio en el régimen pleno, y lo multiplicamos por los ${String(input.sociosCount)} socios.`
+            `Este es el costo de LA SOCIEDAD, no tu parte: BPS cobra ${uyu(FIGURES.monoSocioSociedadHecho.value)} por socio en el régimen pleno, y lo multiplicamos por los ${String(input.sociosActivos ?? input.sociosCount)} socios.`
           )
           notes.push(
             'La tabla de monotributo de sociedades de hecho de BPS NO publica columna de FONASA: la cifra es jubilatorio + FRL. Si los socios optan por la cobertura del SNIS, el aporte real es mayor y BPS no publica cuánto — preguntá en BPS.'
@@ -1414,16 +1832,22 @@ export function estimateCost(
     }
 
     case 'monotributo-social': {
-      bpsMonthly = rampPick(
-        [
-          FIGURES.monoSocialAnio1SinFonasa.value,
-          FIGURES.monoSocialAnio2SinFonasa.value,
-          FIGURES.monoSocialAnio3SinFonasa.value,
-        ],
-        FIGURES.monoPlenoSinFonasa.value,
-        input.yearsOperating
-      )
+      // Unlike the common monotributo, this regime DOES admit servicios (Ley 18.874 art. 1
+      // expressly covers "prestan servicios"), so a CJPPU professional can actually reach it —
+      // and the same unknown applies. Treating it uniformly is what keeps the leak closed.
+      bpsMonthly = cjppuEnJuego(input)
+        ? null
+        : rampPick(
+            [
+              FIGURES.monoSocialAnio1SinFonasa.value,
+              FIGURES.monoSocialAnio2SinFonasa.value,
+              FIGURES.monoSocialAnio3SinFonasa.value,
+            ],
+            FIGURES.monoPlenoSinFonasa.value,
+            input.yearsOperating
+          )
       setupCost = 0
+      if (bpsMonthly === null) cjppuNote(unipersonalCjppuCaveat)
       notes.push('Sin cobertura FONASA. Con FONASA el aporte es bastante mayor.')
       notes.push('MIDES revisa cada año que tu hogar siga calificando.')
       break
@@ -1436,6 +1860,7 @@ export function estimateCost(
       taxMonthly = iva.amount
       setupCost = FIGURES.setupUnipersonal.value
       notes.push(...iva.notes)
+      if (bpsMonthly === null) cjppuNote(unipersonalCjppuCaveat)
       notes.push('Exonerada de IRAE mientras estés por debajo del tope.')
       // MINOR 10 — the one regime the Ley 19.889 ramp genuinely applies to never explained
       // it, while monotributo (which has a different ramp, Ley 19.942) did.
@@ -1455,6 +1880,8 @@ export function estimateCost(
       accountant = accountantMonthly
       setupCost = FIGURES.setupUnipersonal.value
       notes.push(...irae.notes)
+      if (bpsMonthly === null) cjppuNote(unipersonalCjppuCaveat)
+      unipersonalBpsNotes(false)
       notes.push('Además liquidás IVA en régimen general (22%), que cobrás a tus clientes.')
       notes.push(
         'La rebaja de aportes patronales para empresas nuevas NO aplica acá: es un beneficio del Literal E y cesa al entrar al régimen general de IVA.'
@@ -1470,8 +1897,8 @@ export function estimateCost(
       setupCost = FIGURES.setupUnipersonal.value
 
       if (bpsMonthly === null) {
-        notes.push(
-          'NO INCLUYE TU APORTE JUBILATORIO. Tenés un título amparado por la Caja de Profesionales Universitarios, así que el jubilatorio lo aportás a la CJPPU y no a BPS. La CJPPU no publica su escala de forma abierta: consultala directamente. Tu FONASA sí lo pagás a BPS. Por eso NO te mostramos un total: sería menor que el real, y no un poco.'
+        cjppuNote(
+          'Acá el punto es el más claro de todos: ejercés en forma libre y en nombre propio, así que el jubilatorio lo aportás a la CJPPU y no a BPS (Ley 17.738 art. 43). Tu FONASA sí lo pagás a BPS.'
         )
       } else {
         notes.push(
@@ -1509,20 +1936,27 @@ export function estimateCost(
       // BPS "Industria y comercio", tabla "Sociedad de hecho sin dependientes": el socio
       // aporta 11 BFC → $4.594, POR SOCIO y SIN FONASA (igual que el socio de SRL). El
       // titular de una unipersonal es otra cosa.
-      const socios = input.sociosCount
-      bpsMonthly = socios === undefined ? null : FIGURES.bpsSocioSociedadHecho.value * socios
+      const socios = sociosQueAportan(input, true)
+      bpsMonthly = sociedadHechoBps(input)
       const irae = iraeFictoMonthly(input)
       taxMonthly = irae.amount
       accountant = accountantMonthly
       setupCost = 0
-      if (bpsMonthly === null) {
+      if (cjppuEnJuego(input)) {
+        cjppuNote(sociedadCjppuCaveat)
+      } else if (bpsMonthly === null) {
         notes.push(
           'No podemos calcular el BPS: no sabemos cuántos socios son, y en una sociedad de hecho cada socio aporta por separado.'
         )
       } else {
         notes.push(
-          `Este número es el costo de LA SOCIEDAD, no tu parte: cada socio aporta ${uyu(FIGURES.bpsSocioSociedadHecho.value)} de BPS (11 BFC), y son ${String(socios)} socios. El IRAE también es el de toda la sociedad, sobre la facturación total.`
+          `Este número es el costo de LA SOCIEDAD, no tu parte: cada socio aporta ${uyu(FIGURES.bpsSocioSociedadHecho.value)} de BPS (11 BFC), y son ${String(socios)} socios con actividad. El IRAE también es el de toda la sociedad, sobre la facturación total.`
         )
+        if (input.sociosActivos === undefined) {
+          notes.push(
+            'Contamos que TODOS los socios trabajan en la sociedad. No es una suposición nuestra: la tabla que publica BPS para esta figura es la de la sociedad de hecho SIN DEPENDIENTES, y si no hay empleados el trabajo lo hacen los socios. Si alguno es puramente capitalista y no desarrolla actividad, queda fuera del art. 172 de la Ley 16.713 y no aporta — decínoslo y el número baja.'
+          )
+        }
         notes.push(
           'La tabla de BPS para la sociedad de hecho publica un único importe por socio, SIN columna de FONASA: la cifra es jubilatorio + FRL. Si te corresponde cobertura de salud por esta actividad, el aporte real es mayor y BPS no publica cuánto — preguntá en BPS.'
         )
@@ -1536,16 +1970,30 @@ export function estimateCost(
     }
 
     case 'srl': {
-      bpsMonthly = FIGURES.bpsSocioSrl.value
+      // ROUND-2 CRITICAL 1 — this used to be a flat `FIGURES.bpsSocioSrl.value`: ONE socio,
+      // always, no matter how many people the visitor said they were going into business with.
+      // With two working socios the SRL costs $12.530/mes, not $6.265, and the page RANKED IT
+      // FIRST as the cheapest option when it was in fact the most expensive of the three.
+      bpsMonthly = srlBps(input)
       const irae = iraeFictoMonthly(input)
       taxMonthly = irae.amount
       accountant = accountantMonthly
       setupCost = FIGURES.setupSrl.value
       notes.push(...irae.notes)
-      notes.push(
-        `El BPS que mostramos es el de UN socio con actividad (${uyu(FIGURES.bpsSocioSrl.value)}). Cada socio que además trabaje en la empresa aporta lo suyo.`
-      )
-      notes.push('El BPS del socio solo se paga si desarrolla actividad en la empresa.')
+      if (cjppuEnJuego(input)) {
+        cjppuNote(sociedadCjppuCaveat)
+      } else if (bpsMonthly === null) {
+        notes.push(
+          `No podemos calcular el BPS de la SRL: no sabemos cuántos socios DESARROLLAN ACTIVIDAD en la empresa, y ese es justo el dato del que depende. La Ley 16.713 art. 172 cobra ${uyu(FIGURES.bpsSocioSrl.value)} (15 BFC) por CADA socio "que desarrolle actividad de cualquier naturaleza dentro de la empresa", tenga o no la calidad de administrador. No asumimos que sea uno solo: si son dos, el aporte se duplica, y eso puede dar vuelta la comparación con la SAS y la sociedad de hecho.`
+        )
+      } else {
+        notes.push(
+          `El BPS es el de LA SOCIEDAD: ${uyu(FIGURES.bpsSocioSrl.value)} (15 BFC) por cada uno de los ${String(input.sociosActivos)} socios que trabajan en la empresa. La Ley 16.713 art. 172 lo cobra por socio "que desarrolle actividad de cualquier naturaleza dentro de la empresa", tenga o no la calidad de administrador.`
+        )
+        notes.push(
+          'El socio que NO trabaja en la empresa (puramente capitalista) queda fuera del art. 172 y no aporta por esta vía: tiene que quedar declarado así ante BPS.'
+        )
+      }
       notes.push(
         'Los socios de SRL no están comprendidos en el FONASA por esta actividad: no tenés cobertura de salud por acá.'
       )
@@ -1559,18 +2007,28 @@ export function estimateCost(
     }
 
     case 'sas': {
-      bpsMonthly = FIGURES.bpsAdminSas.value
+      bpsMonthly = sasBps(input)
       const irae = iraeFictoMonthly(input)
       taxMonthly = irae.amount
       accountant = accountantMonthly
       setupCost = FIGURES.setupSas.value
       notes.push(...irae.notes)
-      notes.push(
-        `El administrador paga ${uyu(FIGURES.bpsAdminSas.value)} de BPS al mes AUNQUE NO COBRE SUELDO NI FACTURE UN PESO, y no puede declararse inactivo. Es el costo real de la SAS.`
-      )
+      if (cjppuEnJuego(input)) {
+        cjppuNote(sociedadCjppuCaveat)
+      } else {
+        const admins = input.administradoresSas ?? 1
+        notes.push(
+          `Cada administrador paga ${uyu(sasAdminFamilyColumn(input))} de BPS al mes AUNQUE NO COBRE SUELDO NI FACTURE UN PESO, y no puede declararse inactivo. Es el costo real de la SAS.`
+        )
+        notes.push(
+          input.administradoresSas === undefined
+            ? 'Contamos UN solo administrador, que es lo que la propia Ley 19.820 (art. 29) supone si el estatuto no dice otra cosa: "la totalidad de las funciones de administración y representación legal le corresponderán al representante legal". Si nombrás más de uno, cada uno aporta lo suyo y el costo se multiplica — no hay tope legal de administradores (art. 30: "una o más personas").'
+            : `Nombraste ${String(admins)} administradores, y la Ley 19.820 (art. 43) manda a cada uno al mismo art. 172 de la Ley 16.713 que al socio de SRL: cada uno aporta lo suyo.`
+        )
+      }
       notes.push('A cambio, sí tenés cobertura FONASA.')
       notes.push(
-        'Un accionista que no administra ni representa NO aporta a BPS por ser accionista.'
+        'Un accionista que no administra ni representa NO aporta a BPS por ser accionista: el art. 172 de la Ley 16.713 no alcanza a las sociedades por acciones, y la Ley 19.820 solo llama al administrador.'
       )
       notes.push(
         `Por debajo de ${FIGURES.topeIraePreceptivoUi.value.toLocaleString('es-UY')} UI de ingresos, los dividendos que retirás están EXENTOS de IRPF: la carga total es 25%, no 30,25%.`
@@ -1580,17 +2038,25 @@ export function estimateCost(
 
     case 'sa': {
       // A director who draws no sueldo genuinely contributes nothing — this 0 is a measured
-      // zero, not an unknown one, and `bpsUnknown` stays false.
+      // zero, not an unknown one, and `bpsUnknown` stays false. (It stays a measured zero even
+      // for a CJPPU professional: BPS really does get nothing from an unsalaried director. What
+      // they DO owe the Caja is unknowable, and the note below says so. The total is null
+      // regardless, because the IRAE of an SA never is.)
       bpsMonthly = 0
-      // The ficto is NEVER available to an SA (Dto. 150/007 art. 168 lit. A → Título 4
-      // art. 12 lit. A num. 1). ICOSA, on the other hand, is perfectly knowable — so it
-      // lives in `otherTaxesMonthly` and survives the IRAE being null.
+      // MINOR 7 — this cite used to read "Título 4 art. 12 lit. A num. 1". Wrong article, and
+      // it disagreed with the one `iraeFictoMonthly` gets right a few lines away. Dto. 150/007
+      // art. 168 lit. a), verbatim: "Los sujetos pasivos comprendidos en los numerales 1 y 4 a 7
+      // del literal A del ARTÍCULO 3º del Título que se reglamenta" — art. 3, whose lit. A
+      // num. 1 is "las sociedades anónimas y las sociedades en comandita por acciones". ICOSA,
+      // on the other hand, is perfectly knowable — so it lives in `otherTaxesMonthly` and
+      // survives the IRAE being null.
       const irae = iraeFictoMonthly(input, true)
       taxMonthly = irae.amount
       otherTaxesMonthly = FIGURES.icosaAnual.value / 12
       accountant = accountantMonthly
       setupCost = FIGURES.icosaConstitucion.value
       notes.push(...irae.notes)
+      if (cjppuEnJuego(input)) cjppuNote(sociedadCjppuCaveat)
       notes.push(
         `Pagás ICOSA: ${uyu(FIGURES.icosaConstitucion.value)} al constituirla y ${uyu(FIGURES.icosaAnual.value)} todos los años, para siempre. La SAS y la SRL no lo pagan.`
       )
