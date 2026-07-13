@@ -1,10 +1,39 @@
 import { describe, expect, it } from 'vitest'
-import { buildClaim, diagnose, franchiseStatus, verifyCharges, type ProblemLike } from '../../utils/aduanaTools'
+import {
+  buildClaim,
+  diagnose,
+  franchiseStatus,
+  verifyCharges,
+  type ProblemLike,
+} from '../../utils/aduanaTools'
 
 const facts = [
-  { id: 'franquicia.tope_anual_usd', label: 'Tope anual', value: 800, unit: 'USD', sourceId: 'decreto-50-026', verifiedAt: '2026-07-11', origin: 'baseline' },
-  { id: 'franquicia.max_envios', label: 'Envíos', value: 3, sourceId: 'decreto-50-026', verifiedAt: '2026-07-11', origin: 'baseline' },
-  { id: 'prestacion_unica.minimo_usd', label: 'Mínimo', value: 20, unit: 'USD', sourceId: 'decreto-50-026', verifiedAt: '2026-07-11', origin: 'baseline' },
+  {
+    id: 'franquicia.tope_anual_usd',
+    label: 'Tope anual',
+    value: 800,
+    unit: 'USD',
+    sourceId: 'decreto-50-026',
+    verifiedAt: '2026-07-11',
+    origin: 'baseline',
+  },
+  {
+    id: 'franquicia.max_envios',
+    label: 'Envíos',
+    value: 3,
+    sourceId: 'decreto-50-026',
+    verifiedAt: '2026-07-11',
+    origin: 'baseline',
+  },
+  {
+    id: 'prestacion_unica.minimo_usd',
+    label: 'Mínimo',
+    value: 20,
+    unit: 'USD',
+    sourceId: 'decreto-50-026',
+    verifiedAt: '2026-07-11',
+    origin: 'baseline',
+  },
 ] as const
 
 describe('verifyCharges', () => {
@@ -32,7 +61,10 @@ describe('verifyCharges', () => {
   })
 
   it('classifies the prestación única as a tax and cites its source', () => {
-    const [v] = verifyCharges({ charges: [{ id: 'prestacion_unica', amountUsd: 60 }], facts: [...facts] })
+    const [v] = verifyCharges({
+      charges: [{ id: 'prestacion_unica', amountUsd: 60 }],
+      facts: [...facts],
+    })
     expect(v.backing).toBe('norma')
     expect(v.sourceId).toBeTruthy()
   })
@@ -45,7 +77,10 @@ describe('verifyCharges', () => {
 
 describe('franchiseStatus', () => {
   it('counts the year against the tope and the shipment limit', () => {
-    const out = franchiseStatus({ purchases: [{ valueUsd: 300 }, { valueUsd: 250 }], facts: [...facts] })
+    const out = franchiseStatus({
+      purchases: [{ valueUsd: 300 }, { valueUsd: 250 }],
+      facts: [...facts],
+    })
     expect(out.usedUsd).toBe(550)
     expect(out.remainingUsd).toBe(250)
     expect(out.shipmentsUsed).toBe(2)
@@ -88,7 +123,11 @@ describe('franchiseStatus', () => {
 describe('buildClaim', () => {
   it('fills the template and leaves no placeholder behind', () => {
     const text = buildClaim({
-      problem: { id: 'retenido', title: 'Paquete retenido', claimTemplate: 'Guía {{tracking}}, fecha {{fecha}}. {{descripcion}}' },
+      problem: {
+        id: 'retenido',
+        title: 'Paquete retenido',
+        claimTemplate: 'Guía {{tracking}}, fecha {{fecha}}. {{descripcion}}',
+      },
       tracking: 'ABC123',
       date: '2026-07-01',
       description: 'Sigue retenido.',

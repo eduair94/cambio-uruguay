@@ -957,7 +957,11 @@ useHead(() => ({
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgb(var(--v-theme-primary));
+  /* `primary` (Vuetify blue-darken-2, #1976d2) reads at bold 11px but clears AA (4.5:1) in
+     neither theme against this page's background (3.75:1 light, 4.18:1 dark — axe-flagged both
+     ways). `link` is the token this codebase already carries for exactly this problem: darker in
+     light theme (#1565c0, 4.69:1) and lighter in dark theme (#64b5f6, 8.69:1) — see plugins/vuetify.ts. */
+  color: rgb(var(--v-theme-link));
   margin-bottom: 4px;
 }
 .section-heading {
