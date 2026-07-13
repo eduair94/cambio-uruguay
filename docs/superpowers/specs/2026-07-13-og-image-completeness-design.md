@@ -2,6 +2,10 @@
 
 Date: 2026-07-13
 
+**Status:** Implemented 2026-07-13 — `buscar.vue` wired and confirmed rendering (200 image/png, verified in isolation against a healthy local dev server, twice). `npm run check:og-images` added, unit-tested (11/11), and confirmed working end-to-end: it fetched the live sitemap (673 default-locale routes) and correctly classified 504 passes / 169 failures with a clean exit code.
+
+The 169 failures are all in `/sucursales/*`, `/dolar/*`, `/casa/*` — three dynamic route families this plan never touched (no page in those directories was in Part A's scope). Isolated retesting shows they correlate with `nuxt dev`'s own cold-compile/resource fragility under concurrent load (first-hit Vite compilation of an unvisited dynamic route is slow; hitting ~170 of them at once destabilized the dev process — OOM once, `503 Dev server is unavailable` after a restart), not a code defect in this branch. This matches this project's already-documented dev-mode fragility (memory `lightmode-contrast-audit`: "dev cold-compiles ~80s/page ... run against a **prod** build" for full sweeps). A full 0-failures sweep needs a production build or the deployed site, not local `nuxt dev` — `check:og-images` already supports this via `BASE=<url>`. Whether those three route families have a real, separate OG gap is unverified and out of this plan's scope; flagging as a follow-up candidate.
+
 ## Problem
 
 OG image rendering is on-demand via the `nuxt-og-image` module + `app/components/OgImage/Cambio.vue` satori template. Pages opt in by calling `defineOgImageComponent('Cambio', { title, subtitle, tag })`, either directly or (for every `herramientas/*` calculator) indirectly through the shared `ToolShell` wrapper. A page with neither falls back to the module's generic default image (or none) when shared on social/Telegram/Discord. Exactly one indexable page — `buscar.vue` — has neither (see Part A for how this was narrowed down from an initial over-broad grep).
