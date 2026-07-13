@@ -3,9 +3,12 @@ import * as ts from 'typescript'
 import { describe, expect, it } from 'vitest'
 import {
   FIGURES,
+  FIGURES as F,
   IRPF_CAT2,
   REGIMES,
   applyGates,
+  estimateCost,
+  irpfCat2Monthly,
   type Figure,
   type WizardInput,
 } from '../../utils/companyTypes'
@@ -221,9 +224,20 @@ describe('no-unsourced-number guard', () => {
   // every combination of those three is either trivial (0, 1, 12, 12±0, 12±1, 12*0, 12*1)
   // or the reciprocal of the legitimate monthly-conversion itself (1/12). Do not re-add
   // '100' (or any other divisor) without re-solving this problem, not just re-hiding it.
+  // '4000' is a DIFFERENT kind of exception from the others below: it is the default
+  // `accountantMonthly` in `estimateCost`, a MARKET estimate (what a contador typically
+  // charges), not a legal/financial figure. It cannot go in FIGURES — the "sources every
+  // figure to a primary domain" test above would (rightly) reject it, since no BPS/DGI
+  // page publishes an accountant's going rate — and presenting it as sourced would be a
+  // bigger sin than a bare literal. It is not "structural" either (it is not a fact of
+  // arithmetic or the calendar). It is allowlisted here, deliberately and visibly, as the
+  // documented exception; see task-4-report.md for the full discussion. The page must
+  // label it "estimación de mercado — ajustala" and let the user override it.
   const STRUCTURAL_ALLOWLIST: Record<string, string> = {
     '0': 'neutral/identity value (baseline, "no lockout", loop start)',
     '1': 'neutral/identity value (single unit, multiplier of one)',
+    '4000':
+      'default accountantMonthly — a MARKET estimate, deliberately NOT a FIGURES entry (no primary source exists for it); see comment above',
     '12': 'months per year — a calendar fact, not a verified figure',
   }
 
@@ -614,6 +628,143 @@ describe('applyGates', () => {
         expect(r.norm.length).toBeGreaterThan(0)
         expect(r.url).toMatch(/^https:\/\//)
         expect(r.text.length).toBeGreaterThan(0)
+      }
+    }
+  })
+})
+
+describe('irpfCat2Monthly', () => {
+  it('taxes nothing below the mínimo no imponible', () => {
+    expect(irpfCat2Monthly(48_000)).toBe(0)
+  })
+
+  it('applies the brackets marginally, not as a cliff', () => {
+    // 60.000: first 48.048 at 0%, the remaining 11.952 at 10%.
+    expect(irpfCat2Monthly(60_000)).toBeCloseTo(1195.2, 1)
+  })
+
+  it('is monotonically non-decreasing', () => {
+    let prev = -1
+    for (let m = 0; m <= 1_000_000; m += 10_000) {
+      const t = irpfCat2Monthly(m)
+      expect(t).toBeGreaterThanOrEqual(prev)
+      prev = t
+    }
+  })
+})
+
+describe('estimateCost', () => {
+  const base: WizardInput = {
+    annualRevenueUyu: 600_000,
+    sells: 'bienes',
+    clients: 'consumidor-final',
+    people: 'solo',
+    employees: 0,
+    needsLimitedLiability: false,
+    otherCompanyRole: false,
+    yearsOperating: 5,
+    family: 'solo',
+  }
+
+  it('costs a full-regime monotributo at the BPS table value', () => {
+    const c = estimateCost('monotributo', base)!
+    expect(c.bpsMonthly).toBe(F.monoPlenoFonasaSolo.value)
+    expect(c.taxMonthly).toBe(0) // monotributo substitutes the taxes
+    expect(c.totalMonthly).toBe(F.monoPlenoFonasaSolo.value)
+  })
+
+  it('applies the Ley 19.942 gradual scale to a brand-new monotributo', () => {
+    const c = estimateCost('monotributo', { ...base, yearsOperating: 0 })!
+    expect(c.bpsMonthly).toBe(F.monoAnio1FonasaSolo.value)
+  })
+
+  it('costs Literal E as BPS + the flat IVA mínimo when NOT e-invoicing', () => {
+    const c = estimateCost('unipersonal-literal-e', { ...base, eFactura: false })!
+    expect(c.bpsMonthly).toBe(F.bpsUnipersonalPleno.value)
+    expect(c.taxMonthly).toBe(F.ivaMinimo.value)
+    expect(c.totalMonthly).toBe(F.bpsUnipersonalPleno.value + F.ivaMinimo.value)
+  })
+
+  it('caps the IVA mínimo at 3,3% of monthly billing when e-invoicing', () => {
+    // 600.000/year = 50.000/month. 3,3% = 1.650 < the 5.910 quota.
+    const c = estimateCost('unipersonal-literal-e', { ...base, eFactura: true })!
+    expect(c.taxMonthly).toBeCloseTo(1650, 0)
+    expect(c.notes.join(' ')).toContain('3,3%')
+  })
+
+  it('never charges more than the quota even when 3,3% would exceed it', () => {
+    // 1.900.000/año was the brief's original figure, but under the actual verified 2026
+    // constants (cuota 5.910, tope 3,3%) it can NEVER trigger this branch: even at the
+    // Literal E revenue CEILING (1.959.229/año), monthly billing tops out at ~163.269,
+    // and 3,3% of that is ~5.388 — still below the 5.910 quota. The cap only binds above
+    // ~2.149.091/año (5.910 / 0,033 × 12), which is beyond the Literal E ceiling itself.
+    // estimateCost() computes the raw cost formula and does not itself gate on legal
+    // eligibility (that's applyGates' job), so a revenue above the real ceiling is a
+    // legitimate way to stress-test the Math.min(quota, capped) cap in isolation.
+    const rich = { ...base, annualRevenueUyu: 3_000_000, eFactura: true }
+    const c = estimateCost('unipersonal-literal-e', rich)!
+    expect(c.taxMonthly).toBe(F.ivaMinimo.value)
+  })
+
+  it('costs the freelancer BPS as flat ficto + FONASA on real billing, with the floor binding', () => {
+    // 600.000/año = 50.000/mes. FONASA base = 50.000 × 70% = 35.000; × 4,5% = 1.575,
+    // which is BELOW the 5.020 floor → the floor binds.
+    const c = estimateCost('irpf-servicios', { ...base, sells: 'servicios' })!
+    expect(c.bpsMonthly).toBe(F.spJubilatorioFicto.value + F.spFonasaMinimo.value) // 9.614
+  })
+
+  it('lifts FONASA above the floor once billing is high enough', () => {
+    // 3.000.000/año = 250.000/mes. Base = 175.000; × 4,5% = 7.875 > 5.020 floor.
+    const c = estimateCost('irpf-servicios', {
+      ...base,
+      sells: 'servicios',
+      annualRevenueUyu: 3_000_000,
+    })!
+    expect(c.bpsMonthly).toBeCloseTo(F.spJubilatorioFicto.value + 7875, 0)
+  })
+
+  it('refuses to invent a BPS figure for a CJPPU professional, and says so', () => {
+    const c = estimateCost('irpf-servicios', {
+      ...base,
+      sells: 'servicios',
+      cajaProfesional: true,
+    })!
+    expect(c.bpsMonthly).toBe(0)
+    expect(c.notes.join(' ')).toContain('CJPPU')
+    expect(c.notes.join(' ')).toContain('NO INCLUYE')
+  })
+
+  it('does NOT give the Ley 19.889 ramp to a unipersonal in IRAE (it is a Literal E benefit)', () => {
+    const nuevo = { ...base, yearsOperating: 0 }
+    expect(estimateCost('unipersonal-irae', nuevo)!.bpsMonthly).toBe(F.bpsUnipersonalPleno.value)
+    // ...but Literal E DOES get it.
+    expect(estimateCost('unipersonal-literal-e', nuevo)!.bpsMonthly).toBe(
+      F.bpsUnipersonalAnio1.value
+    )
+  })
+
+  it('charges the SAS administrator BPS even at zero revenue', () => {
+    const c = estimateCost('sas', { ...base, annualRevenueUyu: 0 })!
+    expect(c.bpsMonthly).toBe(F.bpsAdminSas.value)
+    expect(c.totalMonthly).toBeGreaterThanOrEqual(F.bpsAdminSas.value)
+  })
+
+  it('adds ICOSA to the SA and to nobody else', () => {
+    const sa = estimateCost('sa', base)!
+    const sas = estimateCost('sas', base)!
+    expect(sa.setupCost).toBeGreaterThanOrEqual(F.icosaConstitucion.value)
+    expect(sa.notes.join(' ')).toContain('ICOSA')
+    expect(sas.notes.join(' ')).not.toContain('ICOSA')
+  })
+
+  it('is monotonically non-decreasing in revenue for every regime', () => {
+    for (const id of ['monotributo', 'unipersonal-literal-e', 'irpf-servicios', 'sas'] as const) {
+      let prev = -1
+      for (let rev = 0; rev <= 3_000_000; rev += 100_000) {
+        const c = estimateCost(id, { ...base, sells: 'servicios', annualRevenueUyu: rev })
+        if (!c) continue
+        expect(c.totalAnnual, `${id} @ ${rev}`).toBeGreaterThanOrEqual(prev)
+        prev = c.totalAnnual
       }
     }
   })
