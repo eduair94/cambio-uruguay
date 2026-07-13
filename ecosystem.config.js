@@ -17,9 +17,32 @@ module.exports = {
     //   log_date_format: "YYYY-MM-DD HH:mm Z",
     // },
     {
+      // Customs problem hub for /problemas-con-la-aduana-uruguay: Reddit corpus + AI labels every
+      // run, legal facts re-checked against the norm (the AI can flag a change, never publish one).
+      // Mondays 09:30 UTC ≈ 06:30 America/Montevideo — after the courier sync, so the two jobs do
+      // not compete for the same Reddit rate limit.
+      name: "currency-aduana",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_aduana.js",
+      // Mondays 09:30 UTC (≈ 06:30 America/Montevideo). The courier sync harvests Reddit DAILY at
+      // 08:15, and reddit.ts's throttle is per-process — two pm2 apps do not share a rate-limit
+      // queue. 75 minutes of clearance is best-effort spacing, not a guarantee: if they do overlap,
+      // both eat 429s, the harvest catch keeps the stored corpus, and nothing is blanked.
+      cron_restart: "30 9 * * 1",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
+      // Cluster mode, 2 instances: `pm2 reload` (scripts/deploy-backend.sh) then
+      // rolls instances one at a time, so a deploy never takes the API down.
+      // Safe because the API path writes nothing to disk — ProxyFileService is
+      // only used by the aguerrebere/pando scrapers, which run in the separate
+      // currency-sync process, and sync_cambio.ts's file writes live in that
+      // same job, not the server. Mongo and Redis hold all shared state.
       name: "currency-server",
       autorestart: true,
-      exec_mode: "fork",
+      exec_mode: "cluster",
+      instances: 2,
       script: "dist/index.js",
     },
     {

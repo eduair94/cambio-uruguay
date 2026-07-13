@@ -4,6 +4,8 @@ import fs from "fs";
 import moment from "moment-timezone";
 import path from "path";
 import { aiService } from "./classes/ai_service";
+import { buildAduanaPayload } from "./classes/aduana/payload";
+import { loadAduanaDoc } from "./classes/aduana/store";
 import BCU_Details from "./classes/bcu_details";
 import { cambio_info } from "./classes/cambioInfo";
 import CambioFortex from "./classes/cambios/fortex";
@@ -1257,6 +1259,105 @@ const main = async () => {
   });
   server.getJson("locations", async (req: Request): Promise<any> => {
     return await redisCache.getOrSet("locations", () => cambio_info.getMapLocations(), 600);
+  });
+
+  /**
+   * @openapi
+   * /aduana:
+   *   get:
+   *     tags:
+   *       - Aduana
+   *     summary: Guía de problemas con la aduana uruguaya (normas, procedimientos y testimonios citados)
+   *     description: |
+   *       Datos que alimentan /problemas-con-la-aduana-uruguay: doce problemas típicos de compras
+   *       importadas y encomiendas (paquete retenido, factura exigida, franquicia agotada, etc.),
+   *       cada uno con la norma aplicable, los pasos a seguir y testimonios reales citados de
+   *       r/uruguay. Se sincroniza una vez por semana (pm2 `currency-aduana`, lunes 09:30 UTC):
+   *       se cosechan hilos nuevos de Reddit, se etiquetan con IA y se re-chequean los hechos
+   *       legales contra la norma oficial (impo.com.uy / gub.uy) con un modelo con acceso a
+   *       búsqueda — la IA solo puede señalar un cambio de ley para revisión humana, nunca
+   *       publicarlo directamente.
+   *
+   *       Cada hecho (`facts[]`) trae su fuente (`sourceId`, resoluble en `sources[]`) y dos
+   *       fechas que NO son intercambiables: `verifiedAt` es exclusivamente humana — significa que
+   *       una persona abrió el decreto y leyó el número — mientras que `aiCheckedAt` es lo que
+   *       escribe el re-chequeo semanal cuando un modelo con acceso a búsqueda confirmó el mismo
+   *       valor leyendo la norma; es una señal de frescura, no de verificación humana. La página
+   *       debe mostrarlas por separado ("verificado contra la norma" vs. "último control
+   *       automático"), nunca fusionadas.
+   *
+   *       `stale` es `true` cuando el job semanal no corrió en más de dos semanas (o nunca corrió).
+   *       Un problema sin testimonios de Reddit igual se publica: la norma y el procedimiento son
+   *       el contenido, los testimonios son corroboración.
+   *     responses:
+   *       200:
+   *         description: Hechos legales, problemas con procedimiento y testimonios citados
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 facts:
+   *                   type: array
+   *                   items:
+   *                     type: object
+   *                     properties:
+   *                       id: { type: string, example: "franquicia.tope_anual_usd" }
+   *                       label: { type: string }
+   *                       value: { oneOf: [{ type: number }, { type: string }] }
+   *                       unit: { type: string, nullable: true, example: "USD" }
+   *                       sourceId: { type: string }
+   *                       article: { type: string, nullable: true }
+   *                       verifiedAt:
+   *                         type: string
+   *                         description: Fecha ISO — escrita SOLO por un humano que leyó la norma.
+   *                       aiCheckedAt:
+   *                         type: string
+   *                         nullable: true
+   *                         description: Fecha ISO — escrita SOLO por el re-chequeo semanal de la IA.
+   *                       origin: { type: string, enum: [baseline, ai] }
+   *                 problems:
+   *                   type: array
+   *                   items:
+   *                     type: object
+   *                     properties:
+   *                       id: { type: string, example: "retenido" }
+   *                       title: { type: string }
+   *                       symptom: { type: string }
+   *                       norm: { type: string }
+   *                       sourceIds: { type: array, items: { type: string } }
+   *                       steps: { type: array, items: { type: string } }
+   *                       deadline: { type: string, nullable: true }
+   *                       claimTemplate: { type: string, nullable: true }
+   *                       verified: { type: boolean }
+   *                       quotes:
+   *                         type: array
+   *                         items:
+   *                           type: object
+   *                           properties:
+   *                             text: { type: string }
+   *                             author: { type: string }
+   *                             date: { type: string }
+   *                             score: { type: number }
+   *                             permalink: { type: string }
+   *                       reports: { type: number, example: 12 }
+   *                 sources:
+   *                   type: array
+   *                   items:
+   *                     type: object
+   *                     properties:
+   *                       id: { type: string }
+   *                       title: { type: string }
+   *                       norm: { type: string }
+   *                       url: { type: string }
+   *                       checkedAt: { type: string }
+   *                 updatedAt: { type: string, nullable: true }
+   *                 stale:
+   *                   type: boolean
+   *                   description: true cuando el job semanal no corrió en más de dos semanas
+   */
+  server.getJson("aduana", async (req: Request): Promise<any> => {
+    return await redisCache.getOrSet("aduana", async () => buildAduanaPayload(await loadAduanaDoc()), 1800);
   });
 
   /**

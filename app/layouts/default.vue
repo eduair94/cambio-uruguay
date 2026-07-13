@@ -677,22 +677,22 @@ useHead({
 
 /* The app bar is dark in both themes, except the trigger borders, which are
    tuned against white text — re-tone them when the light theme is applied. */
-:global(.v-theme--light) .search-trigger {
+.v-theme--light .search-trigger {
   border-color: rgba(0, 0, 0, 0.18);
   background-color: rgba(0, 0, 0, 0.03);
 }
 
-:global(.v-theme--light) .search-trigger:hover,
-:global(.v-theme--light) .search-trigger:focus-visible {
+.v-theme--light .search-trigger:hover,
+.v-theme--light .search-trigger:focus-visible {
   background-color: rgba(0, 0, 0, 0.06);
 }
 
-:global(.v-theme--light) .search-trigger__kbd {
+.v-theme--light .search-trigger__kbd {
   border-color: rgba(0, 0, 0, 0.2);
 }
 
-:global(.v-theme--light) .search-trigger-icon:hover,
-:global(.v-theme--light) .search-trigger-icon:focus-visible {
+.v-theme--light .search-trigger-icon:hover,
+.v-theme--light .search-trigger-icon:focus-visible {
   background-color: rgba(0, 0, 0, 0.06);
 }
 

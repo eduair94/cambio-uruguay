@@ -13,6 +13,7 @@
     "remove_bcu": "ts-node remove_bcu.ts",
     "remove_date": "ts-node remove_date.ts",
     "sync": "ts-node sync.ts",
+    "sync_aduana": "ts-node sync_aduana.ts",
     "sync_favicon": "ts-node sync_favicon.ts",
     "build": "tsc -p tsconfig.production.json",
     "get_locations": "ts-node get_locations.ts",

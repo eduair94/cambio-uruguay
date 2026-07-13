@@ -181,8 +181,21 @@
 
       <VAlert type="warning" variant="tonal" density="comfortable" class="mt-4" icon="mdi-alert">
         Por encima de <strong>US$ 800</strong> el envío no entra en ninguno de los dos: pasa al
-        <strong>régimen general</strong>. (Eso sí: la ley dice expresamente que
-        <strong>no</strong> necesitás despachante — Ley 20.446 art. 627.)
+        <strong>régimen general</strong>. Ahí, en la práctica, la Aduana
+        <a
+          href="https://www.aduanas.gub.uy/innovaportal/v/28223/1/innova.front/"
+          target="_blank"
+          rel="noopener noreferrer"
+          >te va a exigir un despachante</a
+        >
+        — así lo dice su propia página del régimen general. La norma dice lo contrario: la
+        <strong>Ley 20.446 art. 627</strong>, el <strong>Decreto 50/026 art. 17</strong> y el
+        <strong>CAROU art. 15 lit. A</strong> eximen de despachante a los envíos postales, sin tope
+        de valor. Es un argumento real si querés discutirlo, pero en el mostrador decide la DNA, no
+        la norma. Plan de acción completo en
+        <NuxtLink :to="localePath('/problemas-con-la-aduana-uruguay')">
+          qué hacer si tenés problemas con la Aduana </NuxtLink
+        >.
       </VAlert>
     </section>
 

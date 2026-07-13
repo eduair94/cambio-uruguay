@@ -1,191 +1,260 @@
-// app/utils/rentGuide.ts
-// Data for /alquilar-en-uruguay: portals to search, guarantee options compared,
-// startup-cost breakdown, practical tips (from Reddit r/uruguay + trusted sources)
-// and scam red-flags. PURE data + helpers (no Vue/Nuxt). Informational, not legal
-// or financial advice; verify current terms with each provider.
+// Research-backed content for /alquilar-en-uruguay. Keep volatile prices out of
+// this file: provider conditions and emergency contacts are linked to their
+// primary source and stamped with the last verification date.
+
+export const RENT_GUIDE_LAST_REVIEWED = '2026-07-12'
 
 export interface RentalPortal {
   name: string
   url: string
-  note: string
+  bestFor: string
+  caution?: string
 }
 
 export const RENTAL_PORTALS: readonly RentalPortal[] = Object.freeze([
   {
     name: 'InfoCasas',
     url: 'https://www.infocasas.com.uy/alquiler',
-    note: 'El portal con más oferta de alquiler del país; buenos filtros por zona, precio y dormitorios.',
-  },
-  {
-    name: 'Gallito',
-    url: 'https://www.gallito.com.uy/inmuebles/alquileres',
-    note: 'Clásico uruguayo de avisos; mucha oferta directa de propietarios e inmobiliarias.',
+    bestFor: 'Apartamentos y casas de inmobiliarias; buenos filtros y mapa.',
   },
   {
     name: 'Mercado Libre Inmuebles',
     url: 'https://inmuebles.mercadolibre.com.uy/alquiler',
-    note: 'Amplio catálogo con fotos y ubicación en mapa.',
+    bestFor: 'Oferta amplia y alertas de publicaciones nuevas.',
   },
   {
-    name: 'Properati',
-    url: 'https://www.properati.com.uy/s/alquiler',
-    note: 'Buscador con mapa y estadísticas de precios por zona.',
+    name: 'Gallito',
+    url: 'https://www.gallito.com.uy/inmuebles/alquileres',
+    bestFor: 'Avisos de inmobiliarias y algunos propietarios directos.',
   },
   {
-    name: 'Grupos de Facebook y "alquiler sin garantía"',
-    url: 'https://www.facebook.com/',
-    note: 'Hay muchos grupos barriales de alquiler directo (sin comisión), pero es donde más estafas aparecen: extremá los cuidados.',
+    name: 'Facebook Marketplace y grupos barriales',
+    url: 'https://www.facebook.com/marketplace/category/propertyrentals',
+    bestFor: 'Habitaciones, pensiones, alquiler directo y búsquedas por barrio.',
+    caution:
+      'Es el canal con más riesgo: no entregues una seña antes de verificar persona e inmueble.',
   },
 ])
 
 export interface GuaranteeOption {
   id: string
   name: string
-  howItWorks: string
+  summary: string
+  requirements: string
   cost: string
-  speed: string
-  bestFor: string
-  pros: string[]
-  cons: string[]
+  timing: string
+  tradeoff: string
+  officialUrl: string
 }
 
 export const GUARANTEE_OPTIONS: readonly GuaranteeOption[] = Object.freeze([
   {
     id: 'anda',
-    name: 'Garantía ANDA',
-    howItWorks:
-      'Funciona por retención directa del sueldo: si no pagás, ANDA le paga al propietario y te lo descuenta. Requiere relación laboral formal y estable.',
-    cost: 'Aprox. 3% mensual a cada parte; de las opciones más baratas a la larga.',
-    speed: 'Trámite más lento y burocrático.',
-    bestFor: 'Trabajadores con empleo formal y tiempo para el trámite.',
-    pros: ['Costo bajo en el total del contrato', 'Muy aceptada por inmobiliarias'],
-    cons: ['Necesitás trabajo formal estable', 'Trámite lento', 'Retención sobre el sueldo'],
+    name: 'ANDA',
+    summary: 'Garantía con cobro del alquiler y servicios a través de ANDA.',
+    requirements:
+      'Evalúa ingreso y antigüedad laboral. Si no alcanzan, ANDA indica que puede admitir garante o depósito según el caso.',
+    cost: '3% mensual del alquiler garantizado para el inquilino.',
+    timing: 'Conviene obtener el monto garantizado antes de buscar.',
+    tradeoff: 'Muy aceptada, pero el monto disponible depende de la evaluación del hogar.',
+    officialUrl: 'https://anda.com.uy/garantia-de-alquiler/inquilino/preguntas-frecuentes/',
   },
   {
-    id: 'contaduria',
-    name: 'Garantía de Contaduría (CGN)',
-    howItWorks:
-      'Garantía de alquiler de la Contaduría General de la Nación, también por retención; habitual para funcionarios públicos y otros dependientes.',
-    cost: 'Bajo (esquema de retención similar a ANDA).',
-    speed: 'Trámite lento/administrativo.',
-    bestFor: 'Funcionarios públicos y dependientes con antigüedad.',
-    pros: ['Costo bajo', 'Respaldo estatal'],
-    cons: ['Requisitos de dependencia/antigüedad', 'Burocracia'],
+    id: 'cgn-mvot',
+    name: 'CGN / Fondo de Garantía del MVOT',
+    summary: 'Respaldo estatal administrado con la Contaduría General de la Nación.',
+    requirements:
+      'El acceso depende del convenio o programa. El Fondo MVOT admite ingresos formales o acreditados entre 15 y 100 UR y exige al menos 3 meses de continuidad.',
+    cost: '3% mensual del alquiler para inquilino y propietario; el Fondo MVOT agrega un depósito único del 24% del monto garantizado.',
+    timing: 'Con documentación e inventario acordado, CGN informa firma en hasta 3 días hábiles.',
+    tradeoff:
+      'Costo previsible y respaldo estatal; hay topes, documentación y viviendas que no califican.',
+    officialUrl:
+      'https://www.gub.uy/ministerio-vivienda-ordenamiento-territorial/politicas-y-gestion/garantia-alquiler',
   },
   {
-    id: 'seguro-fianza',
-    name: 'Seguro de fianza (Porto y otros)',
-    howItWorks:
-      'Una aseguradora te afianza: aprueba rápido y no te retiene el sueldo. Ideal si necesitás cerrar ya o sos independiente.',
-    cost: 'Prima anual del orden del 80-90% de un mes de alquiler (muchas veces financiable en cuotas).',
-    speed: 'Aprobación en ~24 horas.',
-    bestFor: 'Freelance, monotributistas o quien necesita mudarse rápido.',
-    pros: ['Rápido', 'No retiene el sueldo', 'Acepta perfiles independientes'],
-    cons: ['Es el más caro por año', 'Se renueva (y se paga) cada año'],
+    id: 'seguro',
+    name: 'Seguro de alquiler',
+    summary: 'Una aseguradora analiza los ingresos y emite una póliza que protege al propietario.',
+    requirements:
+      'Varían por compañía. Porto permite componer ingresos de hasta 5 solicitantes y contempla dependientes, jubilados e independientes con documentación distinta.',
+    cost: 'Se cotiza para cada alquiler y perfil; no uses un porcentaje genérico.',
+    timing: 'Porto anuncia tramitación en el día si la documentación está completa.',
+    tradeoff: 'Suele ser rápido y flexible; la prima se paga y renueva según la póliza.',
+    officialUrl: 'https://www.portoseguro.com.uy/web/guest/modalidad-de-contratacion-alquiler',
   },
   {
-    id: 'deposito',
-    name: 'Depósito en garantía',
-    howItWorks:
-      'En vez de un fiador, depositás dinero como garantía (a veces además del depósito habitual). Se devuelve al final si dejás todo en orden.',
-    cost: 'Suele pedirse 1 a 2 meses de alquiler inmovilizados.',
-    speed: 'Inmediato si tenés el capital.',
-    bestFor: 'Quien tiene ahorro disponible y no consigue fiador/garantía.',
-    pros: ['Sin fiador ni trámite de terceros', 'Rápido'],
-    cons: ['Inmoviliza mucho capital', 'Riesgo de discusión a la devolución'],
+    id: 'bhu',
+    name: 'Depósito en BHU',
+    summary: 'Inquilino y propietario acuerdan dinero inmovilizado en una cuenta en UI.',
+    requirements: 'Acuerdo de ambas partes y apertura de la cuenta de garantía en BHU.',
+    cost: 'Hasta 5 meses para vivienda, más un arancel de apertura de 5% sobre el depósito.',
+    timing: 'Puede acordarse integrarlo hasta en 10 pagos.',
+    tradeoff:
+      'No exige evaluación de sueldo, pero inmoviliza capital y el retiro requiere autorización de la contraparte.',
+    officialUrl:
+      'https://www.bhu.com.uy/preguntas-frecuentes/garantia-de-alquiler/ya-tengo-una-cuenta',
   },
   {
     id: 'sin-garantia',
-    name: 'Alquiler sin garantía (Ley 19.889)',
-    howItWorks:
-      'Un régimen legal que permite alquilar sin garantía tradicional, con reglas propias (plazos y proceso de desalojo más ágil para el propietario). No todas las propiedades lo ofrecen.',
-    cost: 'Sin costo de garantía, pero condiciones contractuales distintas.',
-    speed: 'Depende del propietario que lo acepte.',
-    bestFor: 'Quien no puede acceder a ninguna garantía tradicional.',
-    pros: ['No necesitás fiador ni seguro', 'Acceso más fácil'],
-    cons: ['Menos protección para el inquilino', 'Oferta limitada'],
+    name: 'Régimen sin garantía (Ley 19.889)',
+    summary: 'Contrato especial de vivienda sin garantía de ninguna naturaleza.',
+    requirements:
+      'Debe ser escrito y expresar plazo, precio y que ambas partes aceptan expresamente este régimen.',
+    cost: 'No hay costo de garantía; sí pueden existir comisión y demás costos de entrada.',
+    timing: 'Depende de que el propietario lo ofrezca; no puede imponerse unilateralmente.',
+    tradeoff:
+      'Abre una puerta sin garantía, pero prevé plazos de desalojo más breves. Leé el contrato con especial cuidado.',
+    officialUrl: 'https://www.impo.com.uy/bases/leyes/19889-2020/421',
   },
 ])
 
-export interface StartupCostItem {
+export interface UrgentResource {
+  title: string
+  action: string
+  contact: string
+  url: string
+  scope: string
+}
+
+export const URGENT_HOUSING_RESOURCES: readonly UrgentResource[] = Object.freeze([
+  {
+    title: 'Red Calle 365 — MIDES',
+    action:
+      'Si hoy podés quedar a la intemperie en Montevideo, llamá o escribí para pedir atención y derivación.',
+    contact: '0800 365 0 · WhatsApp 091 365 000',
+    url: 'https://red365.mides.gub.uy/',
+    scope: 'Montevideo',
+  },
+  {
+    title: 'Emergencia en el interior',
+    action:
+      'El canal oficial para avisar o pedir atención por una persona a la intemperie en el interior es Emergencias.',
+    contact: '911',
+    url: 'https://www.gub.uy/ministerio-desarrollo-social/personas-en-calle',
+    scope: 'Interior del país',
+  },
+  {
+    title: 'Línea Azul — INAU',
+    action:
+      'Si hay niñas, niños o adolescentes sin un lugar seguro, contactá la línea de atención del INAU.',
+    contact: '0800 5050 · *5050 desde celular',
+    url: 'https://www.inau.gub.uy/',
+    scope: 'Todo el país',
+  },
+])
+
+export const VISIT_CHECKLIST = Object.freeze([
+  'Probá canillas, cisterna, calefón, enchufes y llaves de luz; mirá el tablero eléctrico.',
+  'Buscá humedad estructural, olor a encierro, pintura recién aplicada sobre manchas y filtraciones.',
+  'Visitá de día y, si podés, volvé en hora pico para medir ruido, transporte y seguridad del recorrido.',
+  'Pedí la última liquidación de gastos comunes y preguntá si hay derramas u obras extraordinarias.',
+  'Confirmá qué queda en la vivienda y que cada desperfecto figure en el inventario con fotos.',
+  'Verificá cobertura celular, fibra disponible, orientación, ventilación, cerraduras y presión de agua.',
+])
+
+export const CONTRACT_CHECKLIST = Object.freeze([
+  'Identidad de propietario, administrador e inquilinos; pedí documentación que acredite quién puede arrendar.',
+  'Dirección y padrón/unidad exactos, destino de vivienda y fecha real de entrega de llaves.',
+  'Precio, moneda, vencimiento, medio de pago y comprobante que recibirás cada mes.',
+  'Índice y frecuencia de reajuste; no firmes una fórmula que no puedas explicar con tus palabras.',
+  'Plazo, renovación, preaviso y consecuencias de retirarte antes de tiempo.',
+  'Quién paga gastos comunes ordinarios, tributos, saneamiento, OSE, UTE y reparaciones.',
+  'Garantía elegida, inventario fechado y mecanismo para documentar daños preexistentes.',
+  'Reglas sobre mascotas, convivencia, subarriendo, mejoras y acceso del propietario.',
+])
+
+export const RENT_RED_FLAGS = Object.freeze([
+  'Piden seña, reserva o transferencia antes de visitar o verificar por videollamada y documentación.',
+  'El supuesto dueño está en el exterior, no puede reunirse y promete enviar las llaves.',
+  'El precio está muy por debajo de avisos comparables y presionan para pagar “hoy”.',
+  'El nombre de la cuenta bancaria no coincide y no explican por escrito quién recibe el dinero.',
+  'Las fotos aparecen en otros avisos, la dirección cambia o evitan mostrar el exterior y el número de puerta.',
+  'No entregan contrato, recibo o datos verificables de la inmobiliaria/administración.',
+])
+
+export interface SearchPostInput {
+  budget?: number | null
+  zones?: string
+  accommodation?: string
+  moveDate?: string
+  guarantee?: string
+  household?: string
+  contact?: string
+}
+
+export function buildRentalSearchPost(input: SearchPostInput): string {
+  const budget = Number(input.budget)
+  const lines = [
+    'Busco alquiler en Uruguay',
+    '',
+    `• Presupuesto total: ${budget > 0 ? `$${Math.round(budget).toLocaleString('es-UY')} por mes` : 'a conversar'}${budget > 0 ? ' (incluidos gastos comunes)' : ''}`,
+    `• Zonas: ${input.zones?.trim() || 'flexible'}`,
+    `• Tipo: ${input.accommodation?.trim() || 'habitación, pensión o vivienda a evaluar'}`,
+    `• Para entrar: ${input.moveDate?.trim() || 'lo antes posible'}`,
+    `• Garantía/ingresos: ${input.guarantee?.trim() || 'a conversar; puedo acreditar mi situación por privado'}`,
+    `• Somos: ${input.household?.trim() || '1 persona'}`,
+    '',
+    'Busco una opción seria. Puedo visitar; no envío seña antes de verificar el lugar y a quien alquila.',
+  ]
+  if (input.contact?.trim()) lines.push(`Contacto: ${input.contact.trim()}`)
+  return lines.join('\n')
+}
+
+export interface RentSource {
   label: string
-  amount: string
+  url: string
+  detail: string
 }
 
-export const STARTUP_COSTS: readonly StartupCostItem[] = Object.freeze([
-  { label: 'Primer mes de alquiler', amount: '1 mes' },
-  { label: 'Garantía (seguro o depósito)', amount: '~0,8 a 2 meses según la opción' },
-  { label: 'Comisión inmobiliaria', amount: 'Habitual: 1 mes + IVA' },
-  { label: 'Conexiones de UTE y OSE', amount: 'Variable' },
-  { label: 'Muebles y electrodomésticos básicos', amount: 'USD 1.000–2.000 si arrancás de cero' },
-])
-
-export interface RentTip {
-  tip: string
-  /** Where the tip comes from (community experience vs. official/legal). */
-  source: 'reddit' | 'oficial' | 'general'
-}
-
-export const RENT_TIPS: readonly RentTip[] = Object.freeze([
+export const RENT_GUIDE_SOURCES: readonly RentSource[] = Object.freeze([
   {
-    tip: 'No te mudes hasta tener juntado el costo de arranque (2 a 3 sueldos) más un fondo de un mes por las dudas. Empezar endeudado es la peor forma de independizarse.',
-    source: 'reddit',
+    label: 'MIDES — Red Calle 365',
+    url: 'https://www.gub.uy/ministerio-desarrollo-social/comunicacion/comunicados/ministerio-desarrollo-social-renueva-telefonos-para-recibir-informacion',
+    detail: 'Canales vigentes para personas a la intemperie, actualizados en abril de 2026.',
   },
   {
-    tip: 'Sacá fotos y video del estado del apartamento el día que entrás y el día que salís. Es lo que te salva la discusión por el depósito al final.',
-    source: 'reddit',
+    label: 'MVOT — Fondo de Garantía de Alquiler',
+    url: 'https://www.gub.uy/ministerio-vivienda-ordenamiento-territorial/politicas-y-gestion/garantia-alquiler',
+    detail: 'Requisitos, topes, comisión y pasos del certificado.',
   },
   {
-    tip: 'Que el alquiler no supere ~30% de tu ingreso. Por encima de eso, el resto del presupuesto (comida, transporte, ahorro) empieza a sufrir.',
-    source: 'general',
+    label: 'MEF / CGN — derechos y obligaciones del inquilino',
+    url: 'https://www.gub.uy/ministerio-economia-finanzas/garantia-de-alquileres/derechos-obligaciones-del-inquilino',
+    detail: 'Inventario, servicios accesorios, reajustes y responsabilidades bajo SGA.',
   },
   {
-    tip: 'Preguntá los gastos comunes ANTES de decidir: en un edificio con amenities pueden sumar $3.000 a $6.500 por mes aparte del alquiler.',
-    source: 'reddit',
+    label: 'BHU — depósito en garantía de alquiler',
+    url: 'https://www.bhu.com.uy/preguntas-frecuentes/garantia-de-alquiler/ya-tengo-una-cuenta',
+    detail: 'Tope, pago en cuotas, arancel y retiro del depósito.',
   },
   {
-    tip: 'Compará las garantías por el costo TOTAL del contrato, no solo por la primera cuota. ANDA/Contaduría salen más baratas a la larga; el seguro te destraba rápido.',
-    source: 'general',
+    label: 'IMPO — Ley 19.889, régimen sin garantía',
+    url: 'https://www.impo.com.uy/bases/leyes/19889-2020/421',
+    detail: 'Condiciones que debe cumplir el contrato para entrar en el régimen.',
   },
   {
-    tip: 'Leé la letra chica del contrato: cada cuánto y por qué índice se reajusta (UI o IPC), el plazo, y quién paga gastos comunes y contribución inmobiliaria.',
-    source: 'oficial',
+    label: 'Ministerio del Interior — prevención de estafas de alquiler',
+    url: 'https://www.gub.uy/ministerio-interior/comunicacion/noticias/advertencia-poblacion-prevencion-estafas-alquileres-temporarios',
+    detail: 'Verificación del anunciante, inmueble y medio de pago.',
   },
   {
-    tip: 'Amueblado ahorra el arranque de muebles pero cuesta más por mes; sin amueblar es más barato mensual pero sumás la inversión inicial. Hacé la cuenta según cuánto pensás quedarte.',
-    source: 'reddit',
+    label: 'Defensa del Consumidor — arrendamientos',
+    url: 'https://www.gub.uy/ministerio-economia-finanzas/defensa-del-consumidor',
+    detail: 'Alcance de reclamos y responsabilidades por humedades estructurales.',
   },
   {
-    tip: 'Alejarte del Centro/costa o mirar el interior baja mucho el alquiler. Compartir apartamento lo baja a menos de la mitad. Probá esas variables en la calculadora de costo de vida.',
-    source: 'general',
+    label: 'Intendencia de Montevideo — asesoramiento jurídico gratuito',
+    url: 'https://montevideo.gub.uy/tipo/area-tematica/convivencia/prestadores-de-servicios-juridicos-gratuitos',
+    detail: 'Defensoría, consultorios y servicio especializado en vivienda.',
   },
   {
-    tip: 'En temporada de poca demanda (otoño/invierno) hay más margen para negociar el precio o pedir que incluyan algún gasto.',
-    source: 'reddit',
+    label: 'Reddit r/uruguay — “Necesito un techo urgente”',
+    url: 'https://www.reddit.com/r/uruguay/comments/1uuq7pd/necesito_un_techo_urgente/',
+    detail: 'Caso que motivó la ruta urgente y el generador de aviso completo.',
   },
-])
-
-export interface RedFlag {
-  flag: string
-}
-
-export const RENT_RED_FLAGS: readonly RedFlag[] = Object.freeze([
-  {
-    flag: 'Te piden una seña o transferencia ANTES de ver el inmueble o firmar. Es la estafa más común: nunca pagues sin ver y sin contrato.',
-  },
-  {
-    flag: 'El precio está muy por debajo del mercado para esa zona. Si es demasiado bueno para ser verdad, casi siempre lo es.',
-  },
-  {
-    flag: '"El dueño está en el exterior y te manda las llaves por correo". Clásico de estafa; no existe.',
-  },
-  { flag: 'No te dejan visitar el apartamento o ponen mil excusas para no mostrarlo.' },
-  {
-    flag: 'Te presionan para decidir en el momento y transferir ya, sin tiempo de leer el contrato.',
-  },
-  { flag: 'Piden datos de tarjeta o pagos por fuera de la inmobiliaria/propietario verificable.' },
 ])
 
 export function guaranteeById(id: string): GuaranteeOption | undefined {
-  return GUARANTEE_OPTIONS.find(g => g.id === id)
+  return GUARANTEE_OPTIONS.find(option => option.id === id)
 }
