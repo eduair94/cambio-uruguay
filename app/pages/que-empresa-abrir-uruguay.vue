@@ -1251,6 +1251,20 @@ const administradoresSasInput = computed<number | undefined>(() => {
   return Number.isFinite(v) && v >= 1 ? v : undefined
 })
 
+/**
+ * Q4 "Con cónyuge o concubino/a" (a unipersonal con cónyuge colaborador, Ley 18.083
+ * art. 70 lit. A) must actually move the FONASA column, not just sit there. So when
+ * the headline question says there is a spouse, fold that into `family` — upgrading
+ * whatever the fine-adjust says to its con-cónyuge variant — instead of leaving the
+ * choice inert until the user also opens Ajustes finos.
+ */
+const effectiveFamily = computed<NonNullable<WizardInput['family']>>(() => {
+  if (people.value !== 'conyuge') return family.value
+  return family.value === 'con-hijos' || family.value === 'con-conyuge-e-hijos'
+    ? 'con-conyuge-e-hijos'
+    : 'con-conyuge'
+})
+
 const input = computed<WizardInput>(() => {
   const socios = people.value === 'socios'
   return {
@@ -1269,7 +1283,7 @@ const input = computed<WizardInput>(() => {
     // WITH the citation. An unasked question stays unasked (IMPORTANT 3).
     administradoresSas: administradoresSasInput.value,
     cajaProfesional: cajaProfesional.value,
-    family: family.value,
+    family: effectiveFamily.value,
     eFactura: eFactura.value,
     yearsOperating: Number(yearsOperating.value) || 0,
     fonasaFromJob: fonasaFromJob.value,
@@ -1717,6 +1731,10 @@ const unknowns = [
   {
     q: '¿Cuántos administradores puede tener una SAS?',
     a: 'No hay máximo legal. La Ley 19.820 art. 30 pone la representación "a cargo de una o más personas", sin techo, y el estatuto lo define. Por defecto asumimos 1 (el residual del art. 29), pero cada administrador con actividad aporta a BPS: si vas a nombrar varios, decínoslo en los ajustes finos, porque cambia el costo.',
+  },
+  {
+    q: '¿Hay condiciones del monotributo que el recomendador no chequea?',
+    a: 'Sí, tres, porque no te las preguntamos y no inventamos una compuerta sin el dato: no verificamos si tenés más de un puesto o local a la vez (Ley 18.083 art. 71 lit. B), ni si tenés otra actividad con aporte patronal (art. 71 lit. C), ni —en el monotributo social— si tu giro es servicio doméstico o construcción, que están excluidos (Decreto 220/012 art. 2). Si alguno es tu caso, el monotributo puede no corresponderte aunque el recomendador no lo marque: confirmalo con BPS o un contador.',
   },
 ]
 
