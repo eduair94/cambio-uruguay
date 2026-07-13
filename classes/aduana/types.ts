@@ -42,7 +42,18 @@ export interface Source {
   checkedAt: string; // ISO date
 }
 
-/** One legal fact. `origin` records whether a human or the AI put the current value there. */
+/**
+ * One legal fact. `origin` records whether a human or the AI put the current value there.
+ *
+ * The two timestamps are NOT interchangeable and the page must not render them as if they were:
+ *  - `verifiedAt` is HUMAN-ONLY. It means somebody opened the decree and read the number. The
+ *    weekly AI refresh never writes it (classes/aduana/norms.ts) — a machine's re-read is not a
+ *    human's verification, and a page whose every date is a model's shrug is worse than a page
+ *    with an honestly old date.
+ *  - `aiCheckedAt` is what the weekly refresh writes when a GROUNDED model re-read the norm and
+ *    found the same value. It is a freshness signal, not a trust signal ("último control
+ *    automático", never "verificado contra la norma").
+ */
 export interface AduanaFact {
   id: string; // 'franquicia.tope_anual_usd'
   label: string;
@@ -50,7 +61,8 @@ export interface AduanaFact {
   unit?: "USD" | "dias" | "pct" | "kg";
   sourceId: string; // → Source.id
   article?: string; // 'art. 15'
-  verifiedAt: string;
+  verifiedAt: string; // ISO date — written by a human only
+  aiCheckedAt?: string; // ISO date — written by the weekly grounded re-check only
   origin: "baseline" | "ai";
 }
 
