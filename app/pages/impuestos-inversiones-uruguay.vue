@@ -40,7 +40,8 @@
       class="mb-6"
       icon="mdi-check-decagram"
     >
-      Cada tasa de esta página lleva el artículo de la ley del que sale y la fecha en que la
+      Casi todas las tasas de esta página llevan el artículo de la ley del que salen (la única
+      excepción es el IASS, que cita su fuente en BPS, sin artículo) y la fecha en que las
       verificamos contra la fuente primaria (<strong>{{ verifiedOnLabel }}</strong
       >). Los montos en pesos no están escritos a mano: se calculan con la <strong>BPC</strong> y la
       <strong>UI</strong> vivas, porque los umbrales legales están expresados en BPC o en UI en la
@@ -806,7 +807,7 @@
       </VTable>
     </VCard>
 
-    <!-- 17. Disclaimer -->
+    <!-- 16. Disclaimer -->
     <VAlert
       type="warning"
       variant="tonal"
@@ -826,7 +827,7 @@
       una tasa: cualquier número que veas por ahí es una interpretación.
     </VAlert>
 
-    <!-- 16. Fuentes -->
+    <!-- 17. Fuentes -->
     <VCard variant="flat" class="imp-section mb-6 pa-5">
       <h2 class="text-subtitle-2 font-weight-bold mb-2">
         <VIcon start size="small" color="primary">mdi-link-variant</VIcon>
@@ -894,6 +895,7 @@ import {
   RENT_WITHHOLDING_PCT,
   SMALL_LANDLORD_MAX_BPC,
   SMALL_LANDLORD_OTHER_CAPITAL_MAX_BPC,
+  VERIFIED_ON,
   depositRule,
   type Currency,
   type DepositTerm,
@@ -911,6 +913,10 @@ const localePath = useLocalePath()
 // when the BPC changes each January and the UI moves daily.
 
 const BPC_FALLBACK = 6864
+// Used only when the rates API returns no rows at all (down/unreachable) — see the `ui`
+// computed below. `currentIndicatorValue` has its OWN internal fallback (the indicator's
+// static `referenceValue`, currently 6.58) for the separate, rarer case where rows come back
+// but none of them is a UI row; that path is intentionally left alone here.
 const UI_FALLBACK = 6.6142
 
 const { data: figures } = await useFetch<{ bpc: number; asOf: string | null }>('/api/uy-figures', {
@@ -926,10 +932,14 @@ const bpc = computed(() => {
 // UI value and the USD reference, instead of hitting the API twice.
 const { rows, bestSell } = useExchangeRates()
 const ui = computed(() => {
+  // `currentIndicatorValue` never returns 0/null — when it can't find a UI row it falls back
+  // to the indicator's static reference value (6.58) instead. So the only reliable signal that
+  // the rates API is actually down is an empty row set: check that FIRST, before calling the
+  // helper, so UI_FALLBACK is the value that's actually used when live data is unavailable.
+  if (!rows.value?.length) return UI_FALLBACK
   const ind = indicatorFromSlug('unidad-indexada')
   if (!ind) return UI_FALLBACK
-  const v = currentIndicatorValue((rows.value ?? []) as ExchangeRate[], ind)
-  return typeof v === 'number' && v > 0 ? v : UI_FALLBACK
+  return currentIndicatorValue(rows.value as ExchangeRate[], ind)
 })
 const usdRate = computed(() => bestSell('USD'))
 
@@ -939,7 +949,6 @@ const bpcToPesos = (units: number) => units * bpc.value
 const usdSuffix = (uyu: number) =>
   usdRate.value && usdRate.value > 0 ? ` ≈ ${formatUSD(uyu / usdRate.value, 0)}` : ''
 
-const VERIFIED_ON = DIVIDEND_RULE.verifiedOn
 const verifiedOnLabel = new Date(`${VERIFIED_ON}T00:00:00`).toLocaleDateString('es-UY', {
   day: 'numeric',
   month: 'long',

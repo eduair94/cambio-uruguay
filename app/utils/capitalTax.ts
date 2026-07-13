@@ -37,7 +37,13 @@ export type DepositTerm = 'hasta_1a' | 'de_1a_3a' | 'mas_3a'
 const T7 = 'https://www.impo.com.uy/bases/todgi-2023/7-2024'
 const DGI_CAPITAL =
   'https://www.gub.uy/direccion-general-impositiva/comunicacion/publicaciones/irpf-rendimientos-capital-mobiliario'
-const VERIFIED = '2026-07-12'
+/**
+ * Exported so callers (the page, tests) can date-stamp copy that is NOT tied to any single
+ * `TaxRule` — e.g. a page-wide "verificado el …" banner. Keeping one module-level date (instead
+ * of reading an arbitrary rule's `verifiedOn`) means re-verifying one rule can never silently
+ * restamp the whole page.
+ */
+export const VERIFIED_ON = '2026-07-12'
 
 const rule = (
   rate: number | null,
@@ -45,7 +51,7 @@ const rule = (
   law: string,
   sourceUrl: string,
   confidence: RuleConfidence = 'confirmado'
-): TaxRule => Object.freeze({ rate, label, law, sourceUrl, verifiedOn: VERIFIED, confidence })
+): TaxRule => Object.freeze({ rate, label, law, sourceUrl, verifiedOn: VERIFIED_ON, confidence })
 
 /**
  * Deposits, ONs and fideicomisos financieros con oferta pública: nine cells by currency
