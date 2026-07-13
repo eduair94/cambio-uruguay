@@ -164,13 +164,14 @@
                 <VCol cols="12" sm="6">
                   <VSelect
                     v-model="gainMethod"
-                    :items="gainMethodItems"
+                    :items="instrumentGainMethodItems"
                     item-title="label"
                     item-value="key"
                     label="Cómo determinás la base"
                     variant="outlined"
                     density="comfortable"
                     hide-details
+                    data-testid="metodo-ganancia"
                   />
                 </VCol>
                 <VCol cols="12" sm="6">
@@ -198,6 +199,7 @@
                     hide-details
                     hint="Obligatorio en el régimen real: sin costo, el impuesto se calcularía sobre la venta entera"
                     persistent-hint
+                    data-testid="costo-fiscal"
                   />
                 </VCol>
               </VRow>
@@ -274,12 +276,15 @@
                   {{ fmt(result.tax) }}
                 </div>
               </div>
+              <!-- THE RATE IS THE LAW'S RATE. Never a derived ratio: see the invariant
+                   on `InstrumentResult`. The overline comes from the result, not from
+                   the template, so no instrument can be labelled with someone else's rate. -->
               <div class="result-box">
-                <div class="text-overline text-grey">Tasa efectiva</div>
+                <div class="text-overline text-grey">{{ result.rateLabel }}</div>
                 <div class="text-h5 font-weight-bold" data-testid="resultado-tasa">
-                  {{ pct(result.effectiveRatePct) }}
+                  {{ pct(result.ratePct) }}
                 </div>
-                <div class="text-caption tool-muted">{{ result.effectiveNote }}</div>
+                <div class="text-caption tool-muted">{{ result.rateNote }}</div>
               </div>
               <div class="result-box">
                 <div class="text-overline text-grey">{{ result.netLabel }}</div>
@@ -349,11 +354,7 @@
                 >
                   <strong>{{ pct(depositResult.netAnnualRatePct) }} neto</strong> (tu depósito)
                   <strong>vs {{ pct(safe(letraRatePct)) }} neto</strong> (la Letra, exenta).
-                  {{
-                    letraWins
-                      ? 'La Letra te deja más, aun con una tasa nominal más baja: no paga IRPF.'
-                      : 'Tu depósito te deja más, incluso después del IRPF.'
-                  }}
+                  {{ letraVerdict }}
                 </VAlert>
               </VCard>
 
@@ -844,6 +845,7 @@ import {
   DIVIDEND_RULE,
   EXEMPT_ANNUAL_UI,
   EXEMPT_PER_OPERATION_UI,
+  FICTO_BASE_PCT,
   FOREIGN_GENERAL_PCT,
   foreignIncomeTax,
   GENERAL_RULE,
@@ -964,11 +966,19 @@ const foreignAmount = ref(5_000)
 const foreignAgent = ref<WithholdingAgent>('ninguno')
 const foreignTaxPaid = ref(0)
 
+/** Every base the law admits. Used by the ANNUAL tab, whose row is the broad
+ *  "Venta de valores o bienes (local)" — a property sale can legitimately land there. */
 const gainMethodItems: Array<{ key: CapitalGainMethod; label: string }> = [
   { key: 'real', label: 'Real: precio − costo fiscal (la regla general)' },
   { key: 'ficto20', label: 'Ficta 20% del precio (obligatoria si no podés probar el costo)' },
   { key: 'ficto15', label: 'Ficta 15% del precio (inmuebles no rurales pre-1/7/2007)' },
 ]
+
+/** Tab 1's instrument is "Venta de acciones o ETF (local)". The 15% ficto is a base for
+ *  PRE-2007 NON-RURAL PROPERTY (spec: "Incrementos patrimoniales" table) — the law does not
+ *  admit it for securities, and offering it here would let a user declare 1,8% of the price
+ *  on a share sale, i.e. UNDER-declare. Only the two bases that can apply to a security. */
+const instrumentGainMethodItems = gainMethodItems.filter(m => m.key !== 'ficto15')
 
 const agentItems: Array<{ key: WithholdingAgent; label: string }> = [
   { key: 'custodio-local', label: 'Un bróker uruguayo que además ejerce la custodia' },
@@ -1046,14 +1056,37 @@ const gainMaybeExempt = computed(
     })
 )
 
+/**
+ * What the result tiles render.
+ *
+ * INVARIANT — the one this whole page exists to protect:
+ * NEVER RENDER A PERCENTAGE BELOW THE STATUTORY RATE UNDER A LABEL CONTAINING THE WORD
+ * "TASA". `ratePct` is therefore ALWAYS the rate the law sets for the applied rule —
+ * never `tax / income`, never `tax / salePrice`.
+ *
+ * Why: the two myths this tool corrects are numbers that a derived ratio manufactures
+ * on its own. Divide tax-after-foreign-credit by income and you land on 8% (the
+ * retención, not the rate) — or on 7% / 6% / 2,4%, every one of them a real Uruguayan
+ * rate for some other income. Divide 12%-of-the-real-gain by the sale price and a
+ * 500.000/400.000 sale prints "2,4%", the exact ficto the spec says is NOT the default.
+ * A caption cannot undo a bold headline: the reader keeps the number.
+ *
+ * Anything derived (the ficto's 2,4% of the price, the credit already applied) goes in
+ * `rateNote`, subordinate to the statutory figure and named as what it is.
+ */
 interface InstrumentResult {
   tax: number
-  effectiveRatePct: number
-  effectiveNote: string
+  /** The STATUTORY rate of `rule`, in percentage points. Never a derived ratio. */
+  ratePct: number
+  /** Overline of the rate tile. Result-driven so it can never mislabel the figure. */
+  rateLabel: string
+  rateNote: string
   net: number
   netLabel: string
   rule: TaxRule
 }
+
+const RATE_LABEL = 'Tasa de IRPF'
 
 /** `null` = nothing to show (crypto, or a blocked calculation). The template must
  *  not render the result block at all in that case. */
@@ -1064,8 +1097,11 @@ const result = computed<InstrumentResult | null>(() => {
     const d = depositResult.value
     return {
       tax: d.tax,
-      effectiveRatePct: d.rule.rate ?? 0,
-      effectiveNote: 'sobre los intereses',
+      ratePct: d.rule.rate ?? 0,
+      rateLabel: RATE_LABEL,
+      // The only instrument where the statutory rate and the effective rate coincide:
+      // the law taxes the interest, and this IS the rate on the interest.
+      rateNote: 'sobre los intereses',
       net: d.netInterest,
       netLabel: 'Interés neto después de IRPF',
       rule: d.rule,
@@ -1078,8 +1114,9 @@ const result = computed<InstrumentResult | null>(() => {
       safe(principal.value) * (safe(annualRatePct.value) / 100) * (safe(termMonths.value) / 12)
     return {
       tax: 0,
-      effectiveRatePct: 0,
-      effectiveNote: 'exenta',
+      ratePct: PUBLIC_DEBT_RULE.rate ?? 0,
+      rateLabel: RATE_LABEL,
+      rateNote: 'exenta: la deuda pública uruguaya no paga IRPF',
       net: gross,
       netLabel: 'Interés neto (no paga IRPF)',
       rule: PUBLIC_DEBT_RULE,
@@ -1092,8 +1129,9 @@ const result = computed<InstrumentResult | null>(() => {
     const tax = amount * (rate / 100)
     return {
       tax,
-      effectiveRatePct: rate,
-      effectiveNote: 'sobre el dividendo bruto',
+      ratePct: rate,
+      rateLabel: RATE_LABEL,
+      rateNote: 'sobre el dividendo bruto',
       net: amount - tax,
       netLabel: 'Dividendo neto',
       rule: DIVIDEND_RULE,
@@ -1102,10 +1140,13 @@ const result = computed<InstrumentResult | null>(() => {
 
   if (rentResult.value) {
     const r = rentResult.value
+    // Tax / gross rent lands BELOW 12% — and with ~12,5% of deductions it lands on
+    // exactly 10,5%, which is the retención, i.e. the other myth. Show the 12%.
     return {
       tax: r.tax,
-      effectiveRatePct: r.effectivePctOfGross,
-      effectiveNote: 'sobre el alquiler bruto (la tasa es 12% sobre la renta neta)',
+      ratePct: GENERAL_RULE.rate ?? 12,
+      rateLabel: RATE_LABEL,
+      rateNote: `sobre la renta neta (${fmt(r.netRent)}, después de tus deducciones)`,
       net: safe(rentGross.value) - r.tax,
       netLabel: 'Alquiler neto después de IRPF',
       rule: GENERAL_RULE,
@@ -1116,14 +1157,20 @@ const result = computed<InstrumentResult | null>(() => {
     if (costMissing.value) return null
     const price = safe(salePrice.value)
     const cost = safe(gainCost.value)
-    const g = capitalGainTax({ salePrice: price, cost, method: gainMethod.value })
-    const isReal = gainMethod.value === 'real'
+    const method = gainMethod.value
+    const g = capitalGainTax({ salePrice: price, cost, method })
     return {
       tax: g.tax,
-      effectiveRatePct: g.effectiveRatePct,
-      effectiveNote: 'sobre el precio de venta',
-      net: isReal ? Math.max(price - cost, 0) - g.tax : price - g.tax,
-      netLabel: isReal ? 'Ganancia neta después de IRPF' : 'Producido neto de la venta',
+      // 12% either way. What the ficto changes is the BASE, not the rate: it is the
+      // base that is 20% of the price, and only that makes the tax 2,4% of the price.
+      ratePct: GENERAL_RULE.rate ?? 12,
+      rateLabel: RATE_LABEL,
+      rateNote:
+        method === 'real'
+          ? 'sobre la ganancia real: precio de venta − costo fiscal actualizado'
+          : `sobre la base ficta (${pct(FICTO_BASE_PCT[method])} del precio), o sea ${pct(g.effectiveRatePct)} del precio de venta`,
+      net: method === 'real' ? Math.max(price - cost, 0) - g.tax : price - g.tax,
+      netLabel: method === 'real' ? 'Ganancia neta después de IRPF' : 'Producido neto de la venta',
       rule: g.rule,
     }
   }
@@ -1133,14 +1180,15 @@ const result = computed<InstrumentResult | null>(() => {
     const amount = safe(foreignAmount.value)
     return {
       tax: f.taxDue,
-      effectiveRatePct: amount > 0 ? (f.taxDue / amount) * 100 : 0,
-      // Never let a reduced figure here read as "the rate": with a foreign-tax credit
-      // the effective rate drops below 12%, and 8% is precisely the number people
-      // already confuse with the rate. Name the 12% in the caption, always.
-      effectiveNote:
+      // NOT `taxDue / amount`: a credit worth 4% of the income would print "8%" — the
+      // exact figure this page exists to stop people calling "the rate". The credit is
+      // a subtraction from the tax, not a discount on the rate; it belongs in the note.
+      ratePct: FOREIGN_GENERAL_PCT,
+      rateLabel: `${RATE_LABEL} (Ley 20.446)`,
+      rateNote:
         f.foreignCreditApplied > 0
-          ? 'la tasa es 12%: esto es lo que queda después de acreditar el impuesto que pagaste en el exterior'
-          : 'la tasa es 12% sobre la renta del exterior',
+          ? `sobre la renta del exterior. Al impuesto ya le restamos ${fmt(f.foreignCreditApplied)} de crédito por lo que pagaste afuera: eso baja el impuesto, no la tasa.`
+          : 'sobre la renta del exterior',
       net: amount - f.taxDue,
       netLabel: 'Renta neta después de IRPF',
       rule: f.rule,
@@ -1165,6 +1213,20 @@ const agentExplanation = computed(() => {
 const letraWins = computed(
   () => safe(letraRatePct.value) > (depositResult.value?.netAnnualRatePct ?? 0)
 )
+
+/**
+ * The Letra can win on the NET rate while its nominal is equal to or higher than the
+ * deposit's — with the shipped defaults (8% / 12 meses / pesos → 7,56% neto vs una Letra
+ * al 8%) the two nominals are exactly equal. Claiming "aun con una tasa nominal más baja"
+ * unconditionally states a falsehood on first paint, so the clause is gated on the nominal
+ * actually being lower.
+ */
+const letraVerdict = computed(() => {
+  if (!letraWins.value) return 'Tu depósito te deja más, incluso después del IRPF.'
+  return safe(letraRatePct.value) < safe(annualRatePct.value)
+    ? 'La Letra te deja más, aun con una tasa nominal más baja: no paga IRPF.'
+    : 'La Letra te deja más: no paga IRPF.'
+})
 
 /** The same capital and nominal rate across the three legal term buckets. This is
  *  where the 0,5% of a >3-year peso deposit becomes visible. */

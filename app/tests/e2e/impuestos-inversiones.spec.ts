@@ -69,4 +69,64 @@ test.describe('calculadora de impuestos sobre inversiones', () => {
     await page.getByTestId('anual-monto').nth(1).locator('input').fill('200000')
     await expect(total).not.toHaveText(before as string)
   })
+
+  // ── The two silent-wrong-number traps ──────────────────────────────────────
+  // Neither of these fails loudly if it regresses: the page would just publish a
+  // number that is wrong. That is exactly why they are pinned here.
+
+  test('venta con régimen real y sin costo: no publica ningún impuesto', async ({ page }) => {
+    // `capitalGainTax` defaults a missing cost to 0, so with `method: 'real'` the tax
+    // would land on the FULL sale price. The page must BLOCK the result, not guess.
+    await page.goto('/herramientas/calculadora-impuestos-inversiones')
+
+    await expect(async () => {
+      await expect(page.getByTestId('resultado-impuesto')).toBeVisible()
+    }).toPass({ timeout: 90_000 })
+
+    // Hydration gate: the SSR assertion above does not prove the select works.
+    await expect(async () => {
+      await page.getByTestId('instrumento').click()
+      await page.getByRole('option', { name: /venta de acciones/i }).click({ timeout: 3_000 })
+      await expect(page.getByTestId('falta-costo')).toBeVisible({ timeout: 3_000 })
+    }).toPass({ timeout: 90_000 })
+
+    // Default method is `real` and the cost starts empty: no tax figure may be shown.
+    await expect(page.getByTestId('resultado-impuesto')).toHaveCount(0)
+    await expect(page.getByTestId('resultado-tasa')).toHaveCount(0)
+    await expect(page.getByTestId('resultado-neto')).toHaveCount(0)
+
+    // With a cost, the result comes back — and the rate tile shows the STATUTORY 12%,
+    // never the tax/price ratio (which for 500.000 − 400.000 would print 2,4%: the
+    // ficto the spec says is NOT the default regime).
+    await page.getByTestId('costo-fiscal').locator('input').fill('400000')
+    await expect(page.getByTestId('resultado-impuesto')).toBeVisible()
+    await expect(page.getByTestId('falta-costo')).toHaveCount(0)
+    await expect(page.getByTestId('resultado-tasa')).toHaveText('12%')
+  })
+
+  test('un monto negativo no mueve el total anual', async ({ page }) => {
+    // `annualIrpfCatI` has no negative guard: a negative amount would produce a negative
+    // "tax" that silently offsets the rest of the year. The UI clamps every amount at 0.
+    await page.goto('/herramientas/calculadora-impuestos-inversiones')
+
+    await expect(async () => {
+      await expect(page.getByTestId('resultado-impuesto')).toBeVisible()
+    }).toPass({ timeout: 90_000 })
+
+    await expect(async () => {
+      await page.getByTestId('tab-anual').click()
+      await expect(page.getByTestId('anual-total')).toBeVisible({ timeout: 3_000 })
+    }).toPass({ timeout: 90_000 })
+
+    const total = page.getByTestId('anual-total')
+    const before = (await total.textContent())?.trim()
+    expect(before).toBeTruthy()
+
+    await page.getByTestId('agregar-renta').click()
+    await expect(page.getByTestId('anual-fila')).toHaveCount(2)
+
+    // Unclamped, −500.000 of "dividendos" would subtract 35.000 from the year's IRPF.
+    await page.getByTestId('anual-monto').nth(1).locator('input').fill('-500000')
+    await expect(total).toHaveText(before as string)
+  })
 })
