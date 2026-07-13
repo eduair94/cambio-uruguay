@@ -245,6 +245,91 @@ Es el camino del freelance profesional (dev, diseñador, consultor), y el **úni
 
 > El ingreso por exportación **sí computa** para el tope del Literal E. No existe norma que lo excluya; tratá como falsa cualquier afirmación de que "las exportaciones no cuentan".
 
+### 5.5-ter Servicios personales — aportación BPS
+
+Es la cifra que le falta al camino del freelance (§5.5-bis). Todo lo de abajo está verificado contra BPS/IMPO el **13/07/2026**.
+
+**El hallazgo: no es una base, son dos.** No es "ficto" ni "ingresos reales" — es **las dos cosas a la vez**, y por eso casi todas las guías la cuentan mal:
+
+| Componente | Base | Cuánto |
+|---|---|---|
+| **Jubilatorio + FRL** | **Ficto** — Categoría 1.ª = **11 BFC = $20.328** | **$4.594/mes**, fijo, factures lo que factures |
+| **Fonasa** | **Ingresos reales** — facturado sin IVA **× 70 %** (si estás en IRPF) | tasa personal sobre esa base, con **mínimo $5.020/mes** |
+
+> BPS lo dice textual: *"Con aportación de Servicios Personales: realizan aportes por el titular o socio **sobre la categoría de fictos correspondiente**. Tienen cobertura médica dentro del SNIS, realizando los aportes al **Fonasa sobre los ingresos derivados de la facturación**."* — [BPS, Trabajadores no dependientes](https://www.bps.gub.uy/16500/trabajadores-no-dependientes.html) · `verifiedAt: 2026-07-13`
+
+**1) Jubilatorio + FRL = $4.594/mes.** Sale de la **misma tabla de fictos de Industria y Comercio** de §5.5, pero de su **segunda tabla** ("No beneficiario del SNS"), columna **SS 9 o SS 99**, Categoría 1.ª (11 BFC, monto gravado $20.328). La nota al pie de BPS es inequívoca:
+> *"(**) **Únicamente para quienes tienen la cobertura Fonasa por la aportación Servicios Personales.**"*
+
+Es exactamente el 22,6 % del ficto (15 % personal + 7,5 % patronal + 0,1 % FRL): $20.328 × 22,6 % = $4.594. **Este es el "$4.594 sin FONASA" que §5.5 advertía que un titular común no puede elegir: sí lo paga el prestador de servicios personales**, porque su Fonasa entra por la otra puerta.
+Fuente: [BPS — Industria y Comercio, vigencia enero 2026](https://www.bps.gub.uy/6665/industria-y-comercio.html) · `verifiedAt: 2026-07-13`
+
+**2) Base de cálculo del Fonasa = facturado sin IVA × 70 %** (contribuyente IRPF). Si optó por IRAE: alícuota = renta neta fiscal / ingresos anuales, y **48 % al inicio**.
+Fuente: [BPS — Base de cálculo](https://www.bps.gub.uy/7524/base-de-calculo.html) · `verifiedAt: 2026-07-13`
+
+**3) Tasas: solo las personales.** *"Se aplican **exclusivamente las tasas de aportes personales Fonasa**"* ([BPS 7527](https://www.bps.gub.uy/7527/tasas-de-aportes-fonasa.html)) — **no hay 5 % patronal ni CCM**. Con la base por encima de **2,5 BPC = $17.160** (≈ facturar más de $24.514 sin IVA/mes):
+
+| Situación familiar | Tasa sobre la base | **Efectivo sobre lo facturado** (×70 %) |
+|---|---|---|
+| **Sin cónyuge, sin hijos** | **4,5 %** | **3,15 %** |
+| Sin cónyuge, con hijos | 6 % | 4,2 % |
+| Con cónyuge, sin hijos | 6,5 % | 4,55 % |
+| Con cónyuge, con hijos | 8 % | 5,6 % |
+
+(Base ≤ 2,5 BPC: 3 % sin cónyuge · 5 % con cónyuge.) Fuente: [BPS — Tasas Fonasa](https://www.bps.gub.uy/10314/) · `verifiedAt: 2026-07-13`
+
+**4) Fonasa es OBLIGATORIO, no opcional.** *"Las personas físicas residentes que prestan servicios personales fuera de la relación de dependencia (…) **son contribuyentes Fonasa** por lo que corresponde su inscripción ante BPS. La condición de beneficiario Fonasa por otra actividad o pasividad, **no libera** al titular de las obligaciones emergentes en la calidad de prestador de servicio personal."* — [BPS — Registro de la actividad](https://www.bps.gub.uy/6115/registro-de-la-actividad.html) · `verifiedAt: 2026-07-13`
+
+**5) Mínimo mensual de Fonasa (actividad exclusiva) = $5.020.** Rige **desde enero 2026** por **Decreto 25/026 (27/01/2026)**: el aporte no puede ser inferior al **75 % del Costo Promedio Equivalente (CPE)** — hasta 12/2025 era el 100 % del CPE. "Actividad exclusiva" = no tenés cobertura del SNS por otra actividad ni por pasividad (el caso del freelance a tiempo completo).
+Fuente: [BPS — Comunicado 6/2026 (PDF)](https://www.bps.gub.uy/bps/file/23864/1/2026---comunicado-6---servicios-personales---nuevo-valor-minimo-para-exclusivos.pdf) + [BPS — Actividad exclusiva](https://www.bps.gub.uy/21425/actividad-exclusiva.html) · `verifiedAt: 2026-07-13`
+
+#### 🌟 El número que va en la página
+
+**Piso BPS del freelance (soltero, sin hijos, actividad exclusiva, 2026):**
+
+| | Mensual |
+|---|---|
+| Jubilatorio + FRL (ficto 11 BFC) | $4.594 |
+| Fonasa (mínimo, 75 % del CPE) | $5.020 |
+| **Total mínimo** | **$9.614** |
+
+**El Fonasa recién supera el mínimo cuando facturás más de ≈ $159.365 sin IVA/mes** ($5.020 ÷ 3,15 %). Por debajo de eso, **el costo BPS es plano: $9.614/mes**, factures $30.000 o $150.000. Por encima, el jubilatorio sigue clavado en $4.594 y el Fonasa pasa a ser **3,15 % de lo facturado**.
+*(Los $159.365 son aritmética sobre las tres cifras verificadas arriba —$5.020, 4,5 % y 70 %—, no una estimación.)*
+
+> ⚠️ **Comparación honesta con §5.5:** el titular de unipersonal de Industria y Comercio paga **$8.833** con Fonasa incluido; el de servicios personales paga **$9.614**. Son regímenes distintos, no una opción a elegir: **la aportación la determina la actividad, no el contribuyente.**
+
+**Facturación mínima para conservar el Fonasa: 30 BPC/año = $205.920** (prorrateable a 2,5 BPC = $17.160 por mes activo). Si no la alcanzás, en diciembre **perdés la cobertura** para vos y tu familia a cargo desde el 1.º de enero siguiente, y debés pasar tu código de seguro de salud a "No beneficiario" antes del 10 de enero. La recuperás dentro del ejercicio siguiente al llegar a las 30 BPC.
+Fuente: [BPS — Actividad exclusiva](https://www.bps.gub.uy/21425/actividad-exclusiva.html) · `verifiedAt: 2026-07-13`
+
+#### ¿BPS o Caja de Profesionales (CJPPU)? — lo que decide qué número ve el lector
+
+BPS publica la regla operativa, y **desarma un mito**: el profesional con caja paraestatal **no se escapa del BPS**, se escapa **solo del jubilatorio**. El **Fonasa lo paga igual, al BPS, por servicios personales** — el tipo de aportación 11 se llama, textualmente, *"Titulares de Servicios Personales **no Profesionales y Profesionales**"*.
+
+| Quién | Jubilatorio | Fonasa |
+|---|---|---|
+| **Profesionales** amparados por la **CJPPU** (VF 89) | **CJPPU** (+ Fondo de Solidaridad) — **no BPS** | **BPS**, sobre facturación |
+| **Escribanos** — Caja Notarial (VF 88) | Caja Notarial — **no BPS** | **BPS**, sobre facturación |
+| **No profesionales** (VF 92) — **acá cae el desarrollador de software** | **BPS**, ficto 11 BFC → **$4.594** | **BPS**, sobre facturación |
+
+BPS lo define **por la actividad, no por el diploma**:
+> *"**No profesionales**: Quienes realizan actividades de servicios personales **no incluidas en la CJPPU o la Caja Notarial, tengan o no título universitario**, se consideran no profesionales y realizan sus aportes al Fonasa por esta aportación y **los previsionales por Industria y Comercio**."*
+> *"A través de empresa unipersonal, se debe inscribir el titular con aportación **Industria y Comercio y Servicios Personales**."* ← **las dos**, no una.
+
+**Desarrollo de software no es una profesión universitaria regulada** (no requiere habilitación ni colegiación para ejercerse), por lo que el dev freelance se registra como **no profesional (VF 92)** y **aporta a BPS**: **$9.614/mes de piso.** Ese es el número de la página.
+⚠️ **Salvedad real:** quien **sí tenga un título amparado** por la CJPPU (contador, arquitecto, ingeniero, abogado, médico…) y lo ejerza libremente aporta el **jubilatorio a la CJPPU**, con otra escala de fictos, y **$4.594 no aplica**. El listado exacto de títulos amparados **no está en la ley** (la fija el Directorio de la CJPPU, arts. 42/44/45 de la [Ley 17.738](https://www.impo.com.uy/bases/leyes/17738-2004)) → ver §9.
+Fuente: [BPS — Registro de la actividad](https://www.bps.gub.uy/6115/registro-de-la-actividad.html) + [BPS — Comunicado 020/2011 (PDF)](https://www.bps.gub.uy/bps/file/1041/2/9938_2011_-_comunicado_020_-_sns_servicios_personales_no_profesionales.pdf) · `verifiedAt: 2026-07-13`
+
+#### ¿Hay gradualidad para el que recién empieza? **No, en este camino no.**
+
+La exoneración de la **Ley 19.889 art. 229** (75 %/50 %/25 % del patronal jubilatorio) alcanza **solo a "los contribuyentes mencionados en el artículo 228"**, es decir a quienes *"queden comprendidos en el régimen de tributación establecido por el **artículo 30 de la Ley N° 18.083**"* — y el art. 30 es, textualmente, el **IVA mínimo del Literal E**: *"Los contribuyentes comprendidos en el **literal E) del artículo 52 del Título 4** (…) realizarán un pago mínimo mensual (…) por concepto de Impuesto al Valor Agregado."*
+
+Y el propio art. 229 remata: *"La exoneración (…) **cesará en la hipótesis en que el contribuyente ingrese al régimen general de liquidación del Impuesto al Valor Agregado**."*
+
+> 🌟 **Consecuencia que hay que decirle al lector:** el camino que esta página recomienda como sólido —**IRPF Cat. II + IVA régimen general**— es precisamente el que **queda fuera de la gradualidad**. El descuento de los primeros 3 años **es un beneficio del Literal E y del monotributo, no del freelance formal en régimen general.** Los $9.614 se pagan **desde el mes 1**.
+
+Coherente con esto, la tabla de **régimen gradual** de BPS deja la celda de la columna "No beneficiario del SNS (SS 9)" **vacía en la Categoría 1.ª** — BPS **no publica** un valor gradual para este caso, y no lo inventamos (→ §9).
+Fuentes: [Ley 19.889 arts. 228-229 (PDF, BPS)](https://www.bps.gub.uy/bps/file/17780/1/arts.-228-229-y-232-ley-19.889-de-9.7.2020---aportacion-gradual-para-micro-y-pequenas-empresas.pdf) · [Ley 18.083 art. 30 (IMPO)](https://www.impo.com.uy/bases/leyes/18083-2006/30) · [BPS — Régimen de aportación gradual](https://www.bps.gub.uy/17829/regimen-de-aportacion-gradual-vigente-desde-1_2021-ley-19889.html) · `verifiedAt: 2026-07-13`
+
 ### 5.6 Sociedades — el hallazgo principal
 
 **IRAE 25% · IVA 22%/10% · Impuesto al Patrimonio 1,5%** (sin mínimo no imponible para personas jurídicas — pero con **abatimiento**: se descuenta el IRAE del ejercicio hasta el 50% del IP, así que una empresa chica rentable suele pagar IP ≈ 0).
@@ -382,6 +467,9 @@ Es contraintuitivo pero es **la mejor señal E-E-A-T de la página**: decir expl
 4. **Estado real de "Empresa en el Día":** páginas de catálogo despublicadas (HTTP 403), aplicación viva, **sin anuncio oficial**. No afirmamos ni que se discontinuó ni que funciona.
 5. **Precio de una "SA ya hecha"**, **honorarios de escribano llave en mano**, **tasas de BROU a empresas**, **costo de la segunda publicación en diario privado**: **nadie publica precio.** Son a cotización.
 6. **Vigencia del Certificado PYME**, **tasas de Bomberos**: no publicadas oficialmente.
+7. **¿Tu título está amparado por la CJPPU?** El listado de profesiones amparadas **no está en la ley**: la Ley 17.738 art. 42 remite a "las profesiones amparadas por el régimen legal que se sustituye" (Ley 12.997, **de pago en IMPO**) más las que **incorpore el Directorio** de la Caja (arts. 44-45), y la Ley 20.410 (2025) no las enumera. **No existe lista oficial en bps.gub.uy, dgi.gub.uy, gub.uy ni impo.com.uy.** Consecuencia práctica: la página afirma que el **desarrollador de software sin título profesional amparado aporta a BPS** (BPS define "no profesional" por la actividad, *"tengan o no título universitario"*), pero **quien tenga un título universitario amparado debe confirmar con la CJPPU** — si lo está, su jubilatorio va a la Caja y **los $4.594 de §5.5-ter no le aplican**. No publicamos la lista de profesiones porque no podemos verificarla.
+8. **Gradualidad Ley 19.889 art. 229 para un servicios-personales que sí esté en Literal E:** sabemos que el art. 229 exige estar en el régimen del art. 30 de la Ley 18.083 (IVA mínimo) y que **cesa** al pasar al régimen general de IVA. Lo que **no** podemos afirmar es cuánto pagaría de jubilatorio un titular de servicios personales que estuviera en Literal E: **BPS deja esa celda literalmente vacía** en la Categoría 1.ª de su tabla de aportación gradual (columna "No beneficiario del SNS (SS 9)"). Podríamos calcular $3.451, pero **BPS no lo publica y no lo inventamos**. La página presenta el camino IRPF Cat. II **sin gradualidad** (que es lo verificado) y no ofrece un número gradual para servicios personales.
+9. **Valor del CPE (Costo Promedio Equivalente) en sí mismo:** BPS publica el **75 % del CPE = $5.020** (Decreto 25/026) pero **no el CPE completo** en una página abierta. Usamos el $5.020, que es el dato operativo; no derivamos el CPE.
 
 ---
 
