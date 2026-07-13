@@ -6,6 +6,8 @@ import path from "path";
 import { aiService } from "./classes/ai_service";
 import { buildAduanaPayload } from "./classes/aduana/payload";
 import { loadAduanaDoc } from "./classes/aduana/store";
+import type { Lang } from "./classes/banks/news";
+import { loadBriefing } from "./classes/banks/store";
 import BCU_Details from "./classes/bcu_details";
 import { cambio_info } from "./classes/cambioInfo";
 import CambioFortex from "./classes/cambios/fortex";
@@ -1358,6 +1360,79 @@ const main = async () => {
    */
   server.getJson("aduana", async (req: Request): Promise<any> => {
     return await redisCache.getOrSet("aduana", async () => buildAduanaPayload(await loadAduanaDoc()), 1800);
+  });
+
+  /**
+   * @openapi
+   * /banks-news:
+   *   get:
+   *     tags:
+   *       - Banks
+   *     summary: Novedades y análisis del sector bancario uruguayo (búsqueda con grounding, citada)
+   *     description: |
+   *       Datos que alimentan la sección de novedades de /mejores-bancos-uruguay: una búsqueda con
+   *       grounding (Gemini + Google Search) por banco/fintech uruguayo, más un análisis de sector
+   *       sintetizado SOLO a partir de lo que esa búsqueda encontró. Se sincroniza una vez por día
+   *       (pm2 `currency-banks-news`).
+   *
+   *       `lang` acepta `es` (default), `en` o `pt`; cualquier otro valor cae a `es`.
+   *
+   *       `unavailable: true` significa que el briefing para ese idioma todavía no se generó nunca
+   *       (por ejemplo, si el job nunca corrió con GEMINI_API_KEY configurada) — no que la búsqueda
+   *       haya fallado esta vez, en cuyo caso se sigue sirviendo el último briefing bueno guardado.
+   *
+   *       `headlines[].link` es la URL REAL de la fuente (resuelta a partir del redirect de Google),
+   *       nunca el wrapper `vertexaisearch.cloud.google.com/grounding-api-redirect/...`.
+   *     parameters:
+   *       - in: query
+   *         name: lang
+   *         schema: { type: string, enum: [es, en, pt], default: es }
+   *         description: Idioma del análisis y los resúmenes. Cualquier otro valor cae a "es".
+   *     responses:
+   *       200:
+   *         description: Novedades por entidad + análisis de sector
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 items:
+   *                   type: array
+   *                   items:
+   *                     type: object
+   *                     properties:
+   *                       id: { type: string, example: "itau" }
+   *                       name: { type: string, example: "Itaú" }
+   *                       insight: { type: string, nullable: true }
+   *                       headlines:
+   *                         type: array
+   *                         items:
+   *                           type: object
+   *                           properties:
+   *                             title: { type: string }
+   *                             source: { type: string, example: "elpais.com.uy" }
+   *                             link:
+   *                               type: string
+   *                               description: URL real de la fuente, nunca el redirect de Google.
+   *                 analysis:
+   *                   type: string
+   *                   nullable: true
+   *                   description: Análisis de sector en Markdown, sintetizado solo de los items.
+   *                 asOf: { type: string }
+   *                 unavailable:
+   *                   type: boolean
+   *                   description: true cuando este idioma todavía no tiene un briefing generado.
+   */
+  server.getJson("banks-news", async (req: Request): Promise<any> => {
+    const raw = String(req.query.lang ?? "es").slice(0, 2);
+    const lang = (["es", "en", "pt"].includes(raw) ? raw : "es") as Lang;
+    return await redisCache.getOrSet(
+      `banks-news:${lang}`,
+      async () => {
+        return (await loadBriefing(lang)) ?? { items: [], analysis: null, asOf: new Date().toISOString(), unavailable: true };
+      },
+      1800
+    );
   });
 
   /**

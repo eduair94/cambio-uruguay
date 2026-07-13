@@ -33,6 +33,18 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Bank/fintech news briefing for /mejores-bancos-uruguay (3 languages).
+      // Daily 10:37 UTC ≈ 07:37 America/Montevideo. Minute 37 is deliberately NOT a multiple of 5
+      // (currency-sync runs */5) and sits after nitro's reddit:sentiment (10:10) so the two never
+      // contend. This is the heaviest Gemini job in the fleet (~36 grounded calls per run).
+      name: "currency-banks-news",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_banks_news.js",
+      cron_restart: "37 10 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Cluster mode, 2 instances: `pm2 reload` (scripts/deploy-backend.sh) then
       // rolls instances one at a time, so a deploy never takes the API down.
       // Safe because the API path writes nothing to disk — ProxyFileService is
