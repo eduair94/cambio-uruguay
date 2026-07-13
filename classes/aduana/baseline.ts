@@ -56,7 +56,6 @@ export const FACT_RANGES: Record<string, [number, number]> = {
   "consumo.multa_ur_max": [1000, 10000],
   "ursec.multa_ui_min": [1000, 20000],
   "ursec.multa_ui_max": [100000, 1000000],
-  "general.dua_por_persona_por_anio": [1, 5],
   "viajero.franquicia_aerea_usd": [100, 2000],
   "viajero.franquicia_terrestre_usd": [50, 1000],
   "viajero.excedente_pct": [1, 100],
@@ -145,8 +144,7 @@ export const BASELINE: AduanaDoc = {
     },
     {
       id: "carou-14",
-      title:
-        "Despachante de aduana — definición y facultades (NO citar como fundamento de preceptividad)",
+      title: "Despachante de aduana — definición y facultades",
       norm: "Ley 19.276 (CAROU), art. 14",
       url: "https://www.impo.com.uy/bases/codigo-aduanero/19276-2014/14",
       checkedAt: "2026-07-12",
@@ -260,8 +258,7 @@ export const BASELINE: AduanaDoc = {
     },
     {
       id: "decreto-209-017",
-      title:
-        "Reglamento de actividades postales — definiciones (queja/reclamación/courier). Su art. 16 es sólo para encomiendas NACIONALES",
+      title: "Reglamento de actividades postales — definiciones (queja/reclamación/courier)",
       norm: "Decreto 209/017 (04/08/2017), art. 3",
       url: "https://www.impo.com.uy/bases/decretos/209-2017",
       checkedAt: "2026-07-12",
@@ -395,7 +392,7 @@ export const BASELINE: AduanaDoc = {
     {
       id: "franquicia.solo_personas_fisicas",
       label: "La franquicia es exclusiva de personas físicas",
-      value: "true",
+      value: "sí — la franquicia es exclusiva de personas físicas",
       sourceId: "decreto-50-026",
       article: "art. 3",
       verifiedAt: "2026-07-11",
@@ -463,7 +460,7 @@ export const BASELINE: AduanaDoc = {
     {
       id: "registro_comprador.obligatorio",
       label: "El registro de identidad del comprador es obligatorio hoy",
-      value: "false",
+      value: "no — hoy es voluntario; sin registro igual se libera la mercadería, hasta que la DNA comunique lo contrario",
       sourceId: "rg-dna-10-2026",
       article: "num. 1.2 y num. 7",
       verifiedAt: "2026-07-12",
@@ -521,7 +518,6 @@ export const BASELINE: AduanaDoc = {
       id: "sancion.vista_previa_dias_habiles",
       label: "Días hábiles de vista previa para descargarse antes de la sanción",
       value: 10,
-      unit: "dias",
       sourceId: "ley-20446-632",
       article: "art. 632",
       verifiedAt: "2026-07-12",
@@ -759,7 +755,6 @@ export const BASELINE: AduanaDoc = {
       id: "consumo.venta_distancia_dias_habiles",
       label: "Días hábiles para rescindir una venta a distancia",
       value: 5,
-      unit: "dias",
       sourceId: "ley-17250",
       article: "art. 16",
       verifiedAt: "2026-07-12",
@@ -803,10 +798,11 @@ export const BASELINE: AduanaDoc = {
     },
     {
       id: "general.dua_por_persona_por_anio",
-      label: "DUA por año que la DNA dice que puede tramitar una persona física",
-      value: 2,
+      label: "Según la DNA: hasta 2 DUA por año por persona física (afirmación de la DNA, sin norma localizada)",
+      value:
+        '"Las personas físicas podrán realizar únicamente hasta dos Documento Único Aduanero (DUA) por año" — es una afirmación de la página de la DNA, no de una norma. No localizamos la norma que lo establece: no está en la Ley 20.446 (arts. 627-635), ni en el Decreto 50/026, ni en el CAROU, ni en la Orden del Día 69/2012 que la propia página enlaza.',
       sourceId: "dna-regimen-general",
-      article: "sin norma localizada (ver investigación §7.4); afirmación de la página DNA v/28223, no de una norma",
+      article: "página v/28223 (09/01/2026)",
       verifiedAt: "2026-07-12",
       origin: "baseline",
     },
@@ -877,7 +873,7 @@ export const BASELINE: AduanaDoc = {
       symptom: "El paquete quedó retenido sin explicación",
       norm:
         "La retención es legal y no requiere causa: los envíos postales internacionales, tengan o no carácter comercial, están sujetos a control aduanero (CAROU art. 141). La DNA confirma que cualquier envío puede ser retenido por control selectivo o aleatorio, y que el destinatario es responsable de justificar todos los datos de su envío. La exigencia documental surge del Decreto 50/026 art. 4 in fine (la DNA debe exigir la información y documentación necesaria) y art. 5 (el envío debe ir acompañado de la documentación que acredite el valor). Causa nueva (2026): si estás registrado en el registro de identidad de la RG DNA 10/2026 y la información del envío no es consistente con la registrada (por ejemplo, pagaste con una tarjeta no declarada), la mercadería NO se libera (num. 6.a.ii). Si no estás registrado, hoy igual se libera, porque el registro es voluntario (num. 1.2 y 7).",
-      sourceIds: ["carou-141", "dna-retenidos", "decreto-50-026", "rg-dna-10-2026"],
+      sourceIds: ["carou-141", "dna-retenidos", "decreto-50-026", "rg-dna-10-2026", "ley-20446-631"],
       steps: [
         "Identificá el operador. Correo Uruguayo (no expreso): declará el envío en la web del operador. Courier: andá directo al paso 3.",
         "Si tras declararlo sigue retenido, pedí agenda: la atención por envíos retenidos es exclusivamente por cita previa; la DNA no da detalles por teléfono ni por mail.",
@@ -910,7 +906,7 @@ export const BASELINE: AduanaDoc = {
         "Antes de comprar (a partir del 1/10/2026), verificá si el vendedor figura en el registro público de empresas extranjeras EPI exonerados. La norma dice que el listado será público, pero al 2026-07-12 no existe URL publicada.",
         "Para la parte (b): registrate en el registro de identidad de la DNA (RG 10/2026), con identidad digital de nivel intermedio (verificado) o superior, vía LUCIA en la web de la DNA. Hoy es voluntario (num. 1.2 y 7); cuando pase a obligatorio, sin registro no se libera la mercadería.",
         "Pagá siempre con tu propia tarjeta, a tu nombre, y que el destinatario del envío seas vos. Si la tarjeta es de otra persona, perdés la franquicia (Decreto 50/026 art. 4 lit. e).",
-        "Si el envío ya está retenido pidiéndote documentación, seguí el procedimiento del bucket \"retenido\".",
+        "Si el envío ya está retenido pidiéndote documentación, seguí los pasos de «El paquete quedó retenido en la aduana».",
       ],
       deadline:
         "El registro del vendedor es exigible desde el 1/10/2026 (RG 21/2026 num. 1). El registro del comprador es voluntario hasta que la DNA lo comunique (RG 10/2026 num. 7).",
@@ -925,7 +921,7 @@ export const BASELINE: AduanaDoc = {
       symptom: "Llegó abierto, faltan cosas",
       norm:
         "Los Prestadores de Servicios Postales (los courier lo son: Ley 19.009 art. 5 num. 4) son responsables por la pérdida, hurto, destrucción o deterioro de envíos con entrega registrada, certificados, expresos/courier, encomiendas y envíos con valor declarado (Res. URSEC 185/016 Anexo art. 15). Deben atender gratis las reclamaciones del impositor y del destinatario (art. 6) y dar recibo o número de referencia (art. 9). El plazo del destinatario es de 48 horas corridas desde la entrega (art. 10); si no reclamás a tiempo o firmás conforme sin declarar el daño, el art. 16 lit. g y h te excluye. La titularidad de la indemnización (arts. 22, 23 y 24) es del IMPOSITOR (quien despachó el envío — en una compra online, el vendedor extranjero), no del destinatario: Ley 19.009 art. 6 lit. H dice que el envío es propiedad del remitente hasta la entrega. Podés reclamar como destinatario (art. 6 inc. 2 y tu plazo del art. 10), pero para cobrar necesitás que el impositor reclame o te ceda sus derechos (art. 26). Si dejaste constancia del daño al recibir el paquete (art. 16 lit. g), la titularidad pasa a ser tuya. Los montos: envío expreso/courier o certificado, 3x el importe abonado si es nacional o 417 UI si es internacional (art. 22); encomienda, 3x el importe si es nacional o 63 UI por kg con tope de 1.252 UI si es internacional, más el importe abonado y los derechos pagados (art. 23); envío con valor declarado y seguro pagado, el valor declarado (art. 24) — la única vía para cobrar el valor real. No se indemnizan daños indirectos ni lucro cesante (art. 20). El courier no responde si el faltante ocurrió mientras el envío estaba retenido por la DNA u otro organismo público (art. 16 lit. e).",
-      sourceIds: ["ursec-185-016", "ley-19009", "dna-denuncias"],
+      sourceIds: ["ursec-185-016", "ley-19009", "dna-denuncias", "ursec-reclamo"],
       steps: [
         "En el momento de la entrega, si el paquete viene abierto, con precinto roto o con menos peso: NO firmes conforme. Dejá constancia escrita del daño en el remito/guía (art. 16 lit. g).",
         "Fotografiá el paquete cerrado, el embalaje, el precinto, la etiqueta con el peso y el contenido.",
@@ -947,7 +943,14 @@ export const BASELINE: AduanaDoc = {
       symptom: "Me cobran gestión, depósito, almacenaje que nadie entiende",
       norm:
         "No todos los cargos tienen el mismo respaldo. La prestación única (60%, mínimo USD 20/envío) es un tributo (Ley 20.446 art. 627; Decreto 50/026 art. 2). El IVA sobre envíos en franquicia también es un tributo (Decreto 50/026 art. 3). El almacenaje/depósito de mercadería retenida va por cuenta del interesado, según la propia DNA, pero el monto es contractual, no está tarifado por norma. El flete, la \"gestión\", el \"handling\" y el \"despacho\" del courier no tienen ninguna norma que los fije: son precio contractual, regido por la Ley 17.250. Esta ley da derecho a información suficiente, clara y veraz en idioma español (art. 6 lit. C, con el mandato operativo del art. 13 inc. 1); la oferta obliga a quien la emite (art. 12); si hay informaciones contradictorias, prevalece la más favorable al consumidor (art. 13 inc. 2); son abusivas las cláusulas que permiten al proveedor modificar unilateralmente el contrato (art. 31 lit. C) o que invierten la carga de la prueba (art. 31 lit. E); y las sanciones van de 20 a 4.000 UR, con decomiso y clausura hasta 90 días (art. 47).",
-      sourceIds: ["ley-20446", "decreto-50-026", "dna-retenidos", "ley-17250"],
+      sourceIds: [
+        "ley-20446",
+        "decreto-50-026",
+        "dna-retenidos",
+        "ley-17250",
+        "mef-dc-denuncia",
+        "carou-223",
+      ],
       steps: [
         "Pedí por escrito el desglose del cargo: qué es tributo (va a la DNA) y qué es precio del operador. El tributo tiene comprobante de pago a la DNA; el resto es del courier.",
         "Comparalo con la cotización/oferta original (captura, mail, web). Si difieren, invocá el artículo 13 de la Ley 17.250.",
@@ -967,8 +970,8 @@ export const BASELINE: AduanaDoc = {
       title: "Se me acabaron las 3 compras o pasé de los USD 800",
       symptom: "Se me acabaron las 3 compras / me pasé de los USD 800",
       norm:
-        "La franquicia es de hasta 3 (tres) veces por año civil por persona física, independientemente de sus montos y características, y todas las franquicias computan tanto para el tope de USD 800 como para el conteo de envíos (Decreto 50/026 art. 4 lit. c). Los regalos también consumen cupo: el valor de los envíos exonerados por acuerdo comercial u obsequio familiar se imputa al cupo anual (art. 3 inc. 2). Libros y medicamentos de uso personal no consumen el tope de USD 800 (art. 4, inciso final; medicamentos con autorización del MSP). La fecha que cuenta para el cupo es la del desaduanamiento, no la de compra ni la de arribo. Si te pasás igual y declarás inexactamente el valor o la procedencia para beneficiarte del régimen, la sanción es una multa igual al doble de los tributos que debieron pagarse, y si reiterás dentro de 12 meses, prohibición de operar el régimen por los 12 meses siguientes (Ley 20.446 art. 632). No existe artículo que regule qué pasa cuando el valor de un envío excede el saldo de franquicia disponible: la conclusión de que \"la franquicia no se parte\" es probable por el diseño del régimen (franquicia \"de hasta USD 800\", sin mecanismo de aplicación parcial, y los dos regímenes son excluyentes), pero no tiene una norma que la sostenga — no se le atribuye artículo.",
-      sourceIds: ["decreto-50-026", "ley-20446-632", "dna-franquicias-usadas"],
+        "La franquicia es de hasta 3 (tres) veces por año civil por persona física, independientemente de sus montos y características, y todas las franquicias computan tanto para el tope de USD 800 como para el conteo de envíos (Decreto 50/026 art. 4 lit. c). Los regalos también consumen cupo: el valor de los envíos exonerados por acuerdo comercial u obsequio familiar se imputa al cupo anual (art. 3 inc. 2). Libros y medicamentos de uso personal no consumen el tope de USD 800 (art. 4, inciso final; medicamentos con autorización del MSP). La fecha que cuenta para el cupo es la del desaduanamiento, no la de compra ni la de arribo. Si te pasás igual y declarás inexactamente el valor o la procedencia para beneficiarte del régimen, la sanción es una multa igual al doble de los tributos que debieron pagarse, y si reiterás dentro de 12 meses, prohibición de operar el régimen por los 12 meses siguientes (Ley 20.446 art. 632). No existe artículo que regule qué pasa cuando el valor de un envío excede el saldo de franquicia disponible: la conclusión de que \"la franquicia no se parte\" es probable por el diseño del régimen (franquicia \"de hasta USD 800\", sin mecanismo de aplicación parcial), pero no tiene una norma que la sostenga.",
+      sourceIds: ["decreto-50-026", "ley-20446-632", "dna-franquicias-usadas", "ley-20446"],
       steps: [
         "Consultá tu cupo real antes de comprar, en el trámite oficial de franquicias utilizadas de la DNA (requiere identidad digital nivel intermedio/verificado o superior). No confundir con el cubo estadístico agregado de la DNA, que no muestra tu cupo personal.",
         "Si ya usaste las 3 o llegaste a USD 800, el próximo envío va por prestación única (60%, mínimo USD 20): no es un castigo, es el otro régimen, y la elección es por envío (Ley 20.446 art. 627). No hay norma que habilite aplicar la franquicia parcialmente a un envío que la excede.",
@@ -987,7 +990,7 @@ export const BASELINE: AduanaDoc = {
       title: "Me pasé de USD 200 (IVA) o de USD 800 (régimen general)",
       symptom: "Me pasé de USD 200 (IVA) o de USD 800 (régimen general)",
       norm:
-        "Hay dos umbrales distintos y la gente los confunde. (a) USD 200 es el umbral de IVA para EE.UU. (TIFA) — Ley 18.761 art. 7 lit. g, Ley 20.446 art. 628, Decreto 50/026 art. 3. Es todo o nada: un dólar por encima y el envío entero paga IVA, sin exención parcial. No existe un tope de franquicia de USD 200 por envío (eso era el Decreto 356/014, derogado). (b) USD 800 es el techo de los dos regímenes especiales: por encima (o más de 20 kg, o mercadería gravada por IMESI), el envío no entra ni en franquicia ni en prestación única, y va a régimen general de importación (Decreto 50/026 arts. 1, 2, 3 y 7; Ley 20.446 art. 633), tramitado por DUA. La DNA exige despachante de aduana en la práctica (v/28223: \"es preceptiva\"), aunque la ley diga lo contrario (Ley 20.446 art. 627, Decreto 50/026 art. 17, CAROU art. 15 lit. A) — nunca citar CAROU art. 14 para esto. La DNA además afirma que las personas físicas pueden hacer hasta dos DUA por año, pero no localizamos la norma que lo establece. El valor que cuenta es el total de la factura original de compra, incluidos todos los conceptos adicionados en ella (Decreto 50/026 art. 5) — el flete que el courier factura aparte no integra ese total.",
+        "Hay dos umbrales distintos y la gente los confunde. (a) USD 200 es el umbral de IVA para EE.UU. (TIFA) — Ley 18.761 art. 7 lit. g, Ley 20.446 art. 628, Decreto 50/026 art. 3. Es todo o nada: un dólar por encima y el envío entero paga IVA, sin exención parcial. No existe un tope de franquicia de USD 200 por envío (eso era el Decreto 356/014, derogado). (b) USD 800 es el techo de los dos regímenes especiales: por encima (o más de 20 kg, o mercadería gravada por IMESI), el envío no entra ni en franquicia ni en prestación única, y va a régimen general de importación (Decreto 50/026 arts. 1, 2, 3 y 7; Ley 20.446 art. 633), tramitado por DUA. La DNA exige despachante de aduana en la práctica (v/28223: \"es preceptiva\"), aunque la ley diga lo contrario (Ley 20.446 art. 627, Decreto 50/026 art. 17, CAROU art. 15 lit. A). La DNA además afirma que las personas físicas pueden hacer hasta dos DUA por año, pero no localizamos la norma que lo establece. El valor que cuenta es el total de la factura original de compra, incluidos todos los conceptos adicionados en ella (Decreto 50/026 art. 5) — el flete que el courier factura aparte no integra ese total.",
       sourceIds: [
         "ley-18761-tifa",
         "ley-20446-628",
@@ -995,6 +998,7 @@ export const BASELINE: AduanaDoc = {
         "ley-20446-633",
         "dna-regimen-general",
         "ley-20446-632",
+        "carou-15",
       ],
       steps: [
         "Verificá el valor con el criterio del artículo 5 del Decreto 50/026: el total de la factura, no el precio del producto.",
@@ -1020,7 +1024,7 @@ export const BASELINE: AduanaDoc = {
       sourceIds: ["ley-20446-633", "decreto-50-026", "dna-prohibidos"],
       steps: [
         "Conseguí el certificado del organismo ANTES de pedir agenda en Aduana: para retirar envíos con mercadería de ingreso restringido y retenidos, hace falta el certificado de autorización del organismo correspondiente antes de cualquier trámite en Aduana.",
-        "Con el certificado en mano, seguí el procedimiento del bucket \"retenido\".",
+        "Con el certificado en mano, seguí los pasos de «El paquete quedó retenido en la aduana».",
         "Si no vas a conseguir el permiso, pedí la devolución a origen a tu costo, dentro de los 30 días, mientras no se haya producido el despacho (Decreto 50/026 art. 7).",
         "Si no hacés ni una cosa ni la otra, a los 30/90 días el envío cae en abandono.",
       ],
@@ -1066,7 +1070,7 @@ export const BASELINE: AduanaDoc = {
       deadline: "10 días hábiles de vista previa (Ley 20.446 art. 632).",
       claimBody: "dna",
       claimTemplate:
-        "Montevideo, {{fecha}}\n\nDirección Nacional de Aduanas\nRef.: Evacuación de vista — art. 632 de la Ley 20.446 — guía {{tracking}}\n\nQuien suscribe, [NOMBRE], CI [CI], habiendo sido notificado el {{fecha}} de la vista conferida en el\nexpediente de referencia, comparece EN TIEMPO Y FORMA dentro del plazo de diez días hábiles previsto\npor el artículo 632 de la Ley 20.446, y DICE:\n\n1. Que no ha existido declaración inexacta del valor ni de la procedencia de la mercadería.\n   {{descripcion}}\n\n2. Que el valor declarado se corresponde con el total de la factura original de compra, incluidos\n   todos los conceptos adicionados en la misma, conforme al artículo 5 del Decreto 50/026, cuya copia\n   se acompaña junto con el comprobante de pago.\n\n3. Que la mercadería fue adquirida para uso personal y sin fines comerciales (artículo 4 literal b)\n   del Decreto 50/026).\n\nEn subsidio, y para el caso de mantenerse la imputación, se solicita la reducción de la multa hasta\nun 50% conforme al numeral 2 del artículo 213 de la Ley 19.276 (Código Aduanero), por haberse actuado\ncon culpa y no con dolo, extremo que surge de la documentación acompañada.\n\nPETITORIO: se tenga por evacuada la vista, se desestime la aplicación de la multa prevista por el\nartículo 632 de la Ley 20.446 y, en subsidio, se considere la ausencia de dolo a los efectos de la\ngraduación de la sanción.\n\nSe acompaña: factura original, comprobante de pago, guía {{tracking}}.\n\n[FIRMA] — [NOMBRE] — CI [CI] — [TELÉFONO] — [EMAIL]",
+        "Montevideo, {{fecha}}\n\nDirección Nacional de Aduanas\nRef.: Evacuación de vista — art. 632 de la Ley 20.446 — guía {{tracking}}\n\nQuien suscribe, [NOMBRE], CI [CI], habiendo sido notificado el {{fecha}} de la vista conferida en el\nexpediente de referencia, comparece EN TIEMPO Y FORMA dentro del plazo de diez días hábiles previsto\npor el artículo 632 de la Ley 20.446, y DICE:\n\n1. Que no ha existido declaración inexacta del valor ni de la procedencia de la mercadería.\n   {{descripcion}}\n\n2. Que el valor declarado se corresponde con el total de la factura original de compra, incluidos\n   todos los conceptos adicionados en la misma, conforme al artículo 5 del Decreto 50/026, cuya copia\n   se acompaña junto con el comprobante de pago.\n\n3. Que la mercadería fue adquirida para uso personal y sin fines comerciales (artículo 4 literal b)\n   del Decreto 50/026).\n\nPETITORIO:\na) Se tenga por evacuada la vista y se desestime la aplicación de la multa prevista por el artículo\n   632 de la Ley 20.446.\nb) En subsidio, y para el caso de mantenerse la imputación, se solicita la reducción de la multa\n   hasta un 50% conforme al numeral 2 del artículo 213 de la Ley 19.276 (Código Aduanero), por\n   haberse actuado con culpa y no con dolo, extremo que surge de la documentación acompañada.\n\nSe acompaña: factura original, comprobante de pago, guía {{tracking}}.\n\n[FIRMA] — [NOMBRE] — CI [CI] — [TELÉFONO] — [EMAIL]",
       verified: true,
     },
     {
@@ -1080,8 +1084,8 @@ export const BASELINE: AduanaDoc = {
         "Que el remitente sea una persona física (no una empresa, no una tienda). Si el \"regalo\" lo despacha un comercio, deja de ser obsequio familiar.",
         "Como no hay factura, el valor sale de la declaración de valor (Decreto 50/026 art. 5); la DNA pide el Formulario Declaración de Valor.",
         "Contá el envío contra tu cupo: consume franquicia, monto y uno de los 3 envíos.",
-        "Si te lo retienen, seguí el procedimiento del bucket \"retenido\", presentando declaración de valor en lugar de factura.",
-        "Si el contenido requiere permiso (medicamentos, alimentos, electrónica con radiofrecuencia), seguí el bucket \"prohibido-o-restringido\": el carácter de regalo no salta al MSP/URSEC/MGAP.",
+        "Si te lo retienen, seguí los pasos de «El paquete quedó retenido en la aduana», presentando declaración de valor en lugar de factura.",
+        "Si el contenido requiere permiso (medicamentos, alimentos, electrónica con radiofrecuencia), seguí los pasos de «Trae algo que necesita permiso (MSP, URSEC, MGAP)»: el carácter de regalo no salta al MSP/URSEC/MGAP.",
       ],
       deadline: "Los generales de retención/abandono: 30/90 días desde el ingreso (Ley 20.446 art. 631).",
       claimBody: "dna",
@@ -1094,15 +1098,22 @@ export const BASELINE: AduanaDoc = {
       title: "30 días o más y el tracking no se mueve",
       symptom: "30+ días, el tracking no se mueve",
       norm:
-        "No existe un plazo legal de entrega para un envío internacional. Lo que sí existe: el envío expreso o courier se define por un plazo preestablecido de entrega menor a la norma del operador, con rastreo desde la admisión hasta la entrega (Decreto 209/017 art. 3 lit. j) — el plazo que obliga es el que el operador prometió. No existe una regla de \"publicar cada evento de tracking dentro de las 24 horas\" para envíos internacionales: esa regla (Decreto 209/017 art. 16 lit. b) es sólo para encomiendas nacionales y no aplica a este bucket, que es íntegramente internacional. Los prestadores deben asegurar continuidad, regularidad y calidad del servicio (Ley 19.009 art. 18); deben atender gratis las reclamaciones por incumplimiento de calidad o cualquier otro incumplimiento (Res. URSEC 185/016 art. 6); y la oferta (el plazo publicado al contratar) vincula a quien la emite (Ley 17.250 art. 12). La causa más común de la demora no es el courier: si el envío está retenido por la DNA, el courier no responde (Res. 185/016 art. 16 lit. e). Si el envío nunca llega, deja de ser demora y pasa a ser pérdida (bucket \"roto-o-incompleto\"), con la indemnización tasada de los arts. 22-23 — y el titular de esa indemnización es el impositor, no el destinatario (arts. 22-24 y Ley 19.009 art. 6 lit. H), salvo que el impositor reclame o ceda sus derechos (art. 26).",
-      sourceIds: ["decreto-209-017", "ley-19009", "ursec-185-016", "ley-17250", "ley-20446-631"],
+        "No existe un plazo legal de entrega para un envío internacional. Lo que sí existe: el envío expreso o courier se define por un plazo preestablecido de entrega menor a la norma del operador, con rastreo desde la admisión hasta la entrega (Decreto 209/017 art. 3 lit. j) — el plazo que obliga es el que el operador prometió. No existe una regla de \"publicar cada evento de tracking dentro de las 24 horas\" para envíos internacionales: esa regla (Decreto 209/017 art. 16 lit. b) es sólo para encomiendas nacionales y no aplica acá, que es un caso íntegramente internacional. Los prestadores deben asegurar continuidad, regularidad y calidad del servicio (Ley 19.009 art. 18); deben atender gratis las reclamaciones por incumplimiento de calidad o cualquier otro incumplimiento (Res. URSEC 185/016 art. 6); y la oferta (el plazo publicado al contratar) vincula a quien la emite (Ley 17.250 art. 12). La causa más común de la demora no es el courier: si el envío está retenido por la DNA, el courier no responde (Res. 185/016 art. 16 lit. e). Si el envío nunca llega, deja de ser demora y pasa a ser pérdida («Llegó abierto o faltan cosas»), con la indemnización tasada de los arts. 22-23 — y el titular de esa indemnización es el impositor, no el destinatario (arts. 22-24 y Ley 19.009 art. 6 lit. H), salvo que el impositor reclame o ceda sus derechos (art. 26).",
+      sourceIds: [
+        "decreto-209-017",
+        "ley-19009",
+        "ursec-185-016",
+        "ley-17250",
+        "ley-20446-631",
+        "ursec-reclamo",
+      ],
       steps: [
-        "Determiná dónde está trabado. Si el tracking dice retenido/en aduana, es el bucket \"retenido\", y el reloj que corre es el de abandono a los 90 días desde el ingreso al país (Ley 20.446 art. 631). Esto es urgente.",
+        "Determiná dónde está trabado. Si el tracking dice retenido/en aduana, es el caso de «El paquete quedó retenido en la aduana», y el reloj que corre es el de abandono a los 90 días desde el ingreso al país (Ley 20.446 art. 631). Esto es urgente.",
         "Si es demora del operador, presentá reclamación formal ante el courier (Res. 185/016 art. 6). Exigí número de referencia (art. 9).",
         "El operador debe darte respuesta preliminar en 15 días corridos y resolución final en 90 días corridos, envío internacional (art. 11).",
         "Vencido el plazo sin respuesta, el art. 14 habilita continuar con las instancias siguientes.",
         "Escalá a URSEC dentro de los 30 días corridos (art. 13). URSEC resuelve en 60 días corridos y puede sancionar al operador (Ley 19.009 art. 33: multa de 5.000 a 500.000 UI, suspensión, pérdida de licencia).",
-        "Si el envío nunca llega, pasa a ser pérdida (bucket \"roto-o-incompleto\"). El titular de la indemnización es el impositor: pedile al vendedor que abra el reclamo en origen o que firme la cesión del art. 26. La vía realmente tuya suele ser la del vendedor/marketplace (garantía de entrega, Ley 17.250), no la postal.",
+        "Si el envío nunca llega, pasa a ser pérdida («Llegó abierto o faltan cosas»). El titular de la indemnización es el impositor: pedile al vendedor que abra el reclamo en origen o que firme la cesión del art. 26. La vía realmente tuya suele ser la del vendedor/marketplace (garantía de entrega, Ley 17.250), no la postal.",
       ],
       deadline:
         "90 días desde el ingreso al país habilita el abandono (Ley 20.446 art. 631 num. 2) — corre aunque estés esperando respuesta del courier. Para escalar a URSEC: 30 días corridos desde la resolución final del operador (o desde que venció su plazo).",
@@ -1116,8 +1127,15 @@ export const BASELINE: AduanaDoc = {
       title: "Traer la notebook en la valija o mudarme de vuelta",
       symptom: "Traer la notebook en la valija / mudarme de vuelta",
       norm:
-        "Son dos regímenes distintos, que no se mezclan. (a) Equipaje de viajero (Decreto 139/014 + Decreto 43/019): franquicia de USD 500 (aérea/marítima) o USD 300 (frontera terrestre) — Decreto 43/019 art. 1; una vez por mes — Decreto 139/014 art. 9; 50% sobre el excedente — art. 13; sin despachante — CAROU art. 15 lit. B; el test es cualitativo — Decreto 139/014 art. 1: equipaje es lo destinado a uso o consumo personal, siempre que por su cantidad, naturaleza o variedad no permita presumir fines comerciales o industriales (no hay número). Traer bienes de tu profesión o estudio está expresamente contemplado (art. 3) y no te saca automáticamente del régimen de equipaje. Ocultar el bien es contrabando, con sanciones acumulativas (CAROU art. 211). (b) Mudanza de uruguayo que retorna (Ley 18.250 art. 76, redacción dada por Ley 19.996 art. 352): todo uruguayo con más de 2 años de residencia en el exterior que decida residir definitivamente en el país puede introducir, por única vez, libre de todo trámite cambiario y exento de derechos de aduana, tributos o gravámenes conexos: los bienes muebles y efectos que alhajan su casa habitación (menaje); las herramientas, máquinas, aparatos e instrumentos vinculados con su profesión, arte u oficio; y un vehículo automotor de su propiedad, no transferible por 2 años desde su empadronamiento. En estas operaciones no es preceptiva la intervención del despachante de aduana (concordante: CAROU art. 15 lit. E). El equipaje NO acompañado (mudanza parcial, \"me mando la PC aparte\") sigue sin verificarse: no encontramos fuente primaria que confirme si le aplica la misma franquicia de USD 500 o un régimen distinto.",
-      sourceIds: ["decreto-139-014", "decreto-43-019", "ley-18250-76", "mudanza-tramite"],
+        "Son dos regímenes distintos, que no se mezclan. (a) Equipaje de viajero (Decreto 139/014 + Decreto 43/019): franquicia de USD 500 (aérea/marítima) o USD 300 (frontera terrestre) — Decreto 43/019 art. 1; una vez por mes — Decreto 139/014 art. 9; 50% sobre el excedente — art. 13; sin despachante — CAROU art. 15 lit. B; el test es cualitativo — Decreto 139/014 art. 1: equipaje es lo destinado a uso o consumo personal, siempre que por su cantidad, naturaleza o variedad no permita presumir fines comerciales o industriales (no hay número). Traer bienes de tu profesión o estudio está expresamente contemplado (art. 3) y no te saca automáticamente del régimen de equipaje. Ocultar el bien puede constituir contrabando (CAROU art. 209). (b) Mudanza de uruguayo que retorna (Ley 18.250 art. 76, redacción dada por Ley 19.996 art. 352): todo uruguayo con más de 2 años de residencia en el exterior que decida residir definitivamente en el país puede introducir, por única vez, libre de todo trámite cambiario y exento de derechos de aduana, tributos o gravámenes conexos: los bienes muebles y efectos que alhajan su casa habitación (menaje); las herramientas, máquinas, aparatos e instrumentos vinculados con su profesión, arte u oficio; y un vehículo automotor de su propiedad, no transferible por 2 años desde su empadronamiento. En estas operaciones no es preceptiva la intervención del despachante de aduana (concordante: CAROU art. 15 lit. E). El equipaje NO acompañado (mudanza parcial, \"me mando la PC aparte\") sigue sin verificarse: no encontramos fuente primaria que confirme si le aplica la misma franquicia de USD 500 o un régimen distinto.",
+      sourceIds: [
+        "decreto-139-014",
+        "decreto-43-019",
+        "ley-18250-76",
+        "mudanza-tramite",
+        "carou-15",
+        "carou-209",
+      ],
       steps: [
         "El trámite de mudanza se inicia en el Consulado uruguayo del país donde residís, acreditando 2 años de residencia y certificando la lista de bienes.",
         "Es por única vez: no se fracciona en varios envíos a conveniencia.",

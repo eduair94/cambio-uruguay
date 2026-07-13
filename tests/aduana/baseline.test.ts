@@ -39,6 +39,8 @@ describe("aduana baseline", () => {
       const host = new URL(src!.url).hostname;
       expect(OFFICIAL_HOSTS.some((h) => host === h || host.endsWith(`.${h}`))).toBe(true);
       expect(f.origin).toBe("baseline");
+      expect(f.article, `fact ${f.id} has no article`).toBeTruthy();
+      expect(f.verifiedAt, `fact ${f.id} has no verifiedAt`).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     }
   });
 
@@ -52,7 +54,16 @@ describe("aduana baseline", () => {
 
   it("gives every numeric fact a plausibility range for the AI gate", () => {
     for (const f of BASELINE.facts) {
-      if (typeof f.value === "number") expect(FACT_RANGES[f.id]).toBeDefined();
+      if (typeof f.value === "number") {
+        const r = FACT_RANGES[f.id];
+        expect(r, `no range for ${f.id}`).toBeDefined();
+        expect(f.value).toBeGreaterThanOrEqual(r[0]);
+        expect(f.value).toBeLessThanOrEqual(r[1]);
+      }
     }
+  });
+
+  it("does not pass vacuously — has a substantial number of facts", () => {
+    expect(BASELINE.facts.length).toBeGreaterThan(40);
   });
 });
