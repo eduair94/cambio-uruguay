@@ -1,0 +1,1229 @@
+// The customs guide's embedded fallback — the last link in the cascade live backend →
+// nitro cache → this baseline. Somebody arrives on /problemas-con-la-aduana-uruguay because a
+// package is stuck; a blank page is worse than a slightly stale one, so this file guarantees the
+// page always has every fact and every one of the 12 problem procedures to render.
+//
+// This is a COPY, not an import. app/ is excluded from the root tsconfig.json (see Task 2, Step
+// 2), and the root API's tsconfig excludes app/ right back — the two TypeScript programs cannot
+// import across that boundary. The values below were copied verbatim out of
+// classes/aduana/baseline.ts (BASELINE), not retyped from memory. Do not hand-edit a fact's value
+// or a problem's legal text here without first updating classes/aduana/baseline.ts and re-copying
+// — the root-side drift guard at tests/aduana/baseline.test.ts checks BASELINE against
+// app/utils/importRules.ts, not against this file, so a manual edit here can silently drift from
+// the verified norm text without any test catching it.
+//
+// Every problem gets quotes: [] and reports: 0: this snapshot carries no Reddit corpus, only the
+// sourced legal facts and procedures. stale is always true — a baseline is, by definition, not a
+// live read.
+//
+// AduanaFact carries two distinct timestamps and both must survive unchanged wherever this data
+// flows (see classes/aduana/types.ts for the full rationale):
+//  - verifiedAt is HUMAN-ONLY — somebody opened the decree and read the number.
+//  - aiCheckedAt is written only by the weekly grounded AI re-check; it is a freshness signal,
+//    never a trust signal ("último control automático", never "verificado contra la norma").
+// The baseline itself has no aiCheckedAt values — every fact here has origin: 'baseline' and was
+// never touched by the AI refresh.
+
+export type BucketId =
+  | 'retenido'
+  | 'factura-exigida'
+  | 'roto-o-incompleto'
+  | 'cobro-abusivo'
+  | 'franquicia-agotada'
+  | 'supera-monto'
+  | 'prohibido-o-restringido'
+  | 'decomiso-subasta'
+  | 'comercial-vs-personal'
+  | 'encomienda-regalo'
+  | 'demora-extrema'
+  | 'mudanza-y-viajero'
+
+/** A norm we cite. `url` MUST be the PDF, never an Aduanas HTML stub page. */
+export interface AduanaSource {
+  id: string
+  title: string
+  norm: string // 'Decreto 50/026'
+  url: string
+  checkedAt: string // ISO date
+}
+
+/**
+ * One legal fact. `origin` records whether a human or the AI put the current value there.
+ *
+ * verifiedAt and aiCheckedAt are NOT interchangeable — see the header comment above.
+ */
+export interface AduanaFact {
+  id: string // 'franquicia.tope_anual_usd'
+  label: string
+  value: number | string
+  unit?: 'USD' | 'dias' | 'pct' | 'kg'
+  sourceId: string // -> AduanaSource.id
+  article?: string // 'art. 15'
+  verifiedAt: string // ISO date — written by a human only
+  aiCheckedAt?: string // ISO date — written by the weekly grounded re-check only
+  origin: 'baseline' | 'ai'
+}
+
+/** A cited testimony. Text is trimmed, never rewritten. */
+export interface AduanaQuote {
+  text: string
+  author: string
+  date: string // 'YYYY-MM-DD'
+  score: number
+  permalink: string
+}
+
+/** One problem bucket: what the norm says, what to do, and the claim template. */
+export interface AduanaProblem {
+  id: BucketId
+  title: string
+  symptom: string // what the user would say happened to them
+  norm: string // plain-language statement of the rule
+  sourceIds: string[]
+  steps: string[] // numbered plan of action
+  deadline?: string // legal deadline, when one exists
+  claimBody?: 'courier' | 'dna' | 'defensa-consumidor' | 'ursec'
+  claimTemplate?: string // {{tracking}}, {{fecha}}, {{descripcion}} placeholders
+  verified: boolean // false -> the page says "no lo pudimos verificar"
+  quotes: AduanaQuote[]
+  reports: number
+}
+
+// Structurally identical to the backend's PublicAduanaPayload (classes/aduana/payload.ts) — the
+// page has one shape to render regardless of which link in the cascade served it.
+export interface PublicAduanaPayload {
+  facts: AduanaFact[]
+  problems: AduanaProblem[]
+  sources: AduanaSource[]
+  updatedAt: string | null
+  stale: boolean
+}
+
+export const ADUANA_FALLBACK: PublicAduanaPayload = {
+  facts: [
+    {
+      id: 'franquicia.tope_anual_usd',
+      label: 'Tope anual de la franquicia',
+      value: 800,
+      unit: 'USD',
+      sourceId: 'decreto-50-026',
+      article: 'art. 3 y art. 4 lit. c',
+      verifiedAt: '2026-07-11',
+      origin: 'baseline',
+    },
+    {
+      id: 'franquicia.max_envios',
+      label: 'Cantidad máxima de envíos anuales en franquicia',
+      value: 3,
+      sourceId: 'decreto-50-026',
+      article: 'art. 4 lit. c',
+      verifiedAt: '2026-07-11',
+      origin: 'baseline',
+    },
+    {
+      id: 'franquicia.solo_personas_fisicas',
+      label: 'La franquicia es exclusiva de personas físicas',
+      value: 'sí — la franquicia es exclusiva de personas físicas',
+      sourceId: 'decreto-50-026',
+      article: 'art. 3',
+      verifiedAt: '2026-07-11',
+      origin: 'baseline',
+    },
+    {
+      id: 'franquicia.peso_max_kg',
+      label: 'Peso máximo del envío',
+      value: 20,
+      unit: 'kg',
+      sourceId: 'decreto-50-026',
+      article: 'art. 1',
+      verifiedAt: '2026-07-11',
+      origin: 'baseline',
+    },
+    {
+      id: 'prestacion_unica.tasa_pct',
+      label: 'Alícuota de la prestación única (régimen simplificado)',
+      value: 60,
+      unit: 'pct',
+      sourceId: 'ley-20446',
+      article: 'art. 627',
+      verifiedAt: '2026-07-11',
+      origin: 'baseline',
+    },
+    {
+      id: 'prestacion_unica.minimo_usd',
+      label: 'Mínimo de la prestación única',
+      value: 20,
+      unit: 'USD',
+      sourceId: 'ley-20446',
+      article: 'art. 627',
+      verifiedAt: '2026-07-11',
+      origin: 'baseline',
+    },
+    {
+      id: 'tifa.exoneracion_usd',
+      label: 'Umbral de exoneración de IVA para compras de EE.UU. (TIFA)',
+      value: 200,
+      unit: 'USD',
+      sourceId: 'ley-18761-tifa',
+      article: 'art. 7 lit. g',
+      verifiedAt: '2026-07-11',
+      origin: 'baseline',
+    },
+    {
+      id: 'valor.base',
+      label: 'Qué valor se toma como base',
+      value: 'total de la factura original de compra, incluidos todos los conceptos adicionados',
+      sourceId: 'decreto-50-026',
+      article: 'art. 5',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'registro_vendedor.exigible_desde',
+      label: 'Fecha desde la que es exigible el registro del vendedor extranjero',
+      value: '2026-10-01',
+      sourceId: 'rg-dna-21-2026',
+      article: 'num. 1',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'registro_comprador.obligatorio',
+      label: 'El registro de identidad del comprador es obligatorio hoy',
+      value:
+        'no — hoy es voluntario; sin registro igual se libera la mercadería, hasta que la DNA comunique lo contrario',
+      sourceId: 'rg-dna-10-2026',
+      article: 'num. 1.2 y num. 7',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'restringidas.plazo_devolucion_dias',
+      label: 'Plazo para devolver a origen mercadería restringida sin permiso',
+      value: 30,
+      unit: 'dias',
+      sourceId: 'decreto-50-026',
+      article: 'art. 7',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'abandono.plazo_incumplimiento_dias',
+      label:
+        'Plazo de incumplimiento (tributos impagos) que habilita el abandono, desde el ingreso al país',
+      value: 30,
+      unit: 'dias',
+      sourceId: 'ley-20446-631',
+      article: 'art. 631 num. 1',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'abandono.plazo_no_retiro_dias',
+      label: 'Plazo sin retirar el envío que habilita el abandono, desde el ingreso al país',
+      value: 90,
+      unit: 'dias',
+      sourceId: 'ley-20446-631',
+      article: 'art. 631 num. 2',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'multa.declaracion_inexacta',
+      label: 'Multa por declarar inexactamente el valor o la procedencia',
+      value: 'el doble de los tributos que debieron pagarse',
+      sourceId: 'ley-20446-632',
+      article: 'art. 632',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'multa.reiteracion_prohibicion_meses',
+      label: 'Meses de prohibición de operar el régimen si se reitera la declaración inexacta',
+      value: 12,
+      sourceId: 'ley-20446-632',
+      article: 'art. 632',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'sancion.vista_previa_dias_habiles',
+      label: 'Días hábiles de vista previa para descargarse antes de la sanción',
+      value: 10,
+      sourceId: 'ley-20446-632',
+      article: 'art. 632',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'sancion.impago_abandono_dias',
+      label:
+        'Días desde la sanción determinada, sin pagar la multa, para caer en abandono infraccional',
+      value: 90,
+      unit: 'dias',
+      sourceId: 'ley-20446-632',
+      article: 'art. 632',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'contravencion.multa_ui_min',
+      label: 'Multa mínima por contravención (UI)',
+      value: 400,
+      sourceId: 'carou-200',
+      article: 'art. 200 num. 3',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'contravencion.multa_ui_max',
+      label: 'Multa máxima por contravención (UI)',
+      value: 4000,
+      sourceId: 'carou-200',
+      article: 'art. 200 num. 3',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'defraudacion.multa',
+      label: 'Multa por defraudación',
+      value: 'el doble del perjuicio fiscal',
+      sourceId: 'carou-204',
+      article: 'art. 204 num. 2',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'defraudacion_valor.multa',
+      label: 'Multa por defraudación de valor',
+      value: 'el doble de los tributos adeudados',
+      sourceId: 'carou-205',
+      article: 'art. 205 num. 2',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'prescripcion.reclamo_particular_anios',
+      label: 'Años para prescribir el reclamo de un particular en materia aduanera',
+      value: 2,
+      sourceId: 'carou-223',
+      article: 'art. 223 num. 3',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'prescripcion.fisco_anios',
+      label: 'Años para prescribir el reclamo del Fisco',
+      value: 5,
+      sourceId: 'carou-223',
+      article: 'art. 223 num. 1',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'postal.reclamo_destinatario_horas',
+      label: 'Horas corridas desde la entrega para que el destinatario reclame',
+      value: 48,
+      sourceId: 'ursec-185-016',
+      article: 'Anexo art. 10',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'postal.reclamo_impositor_intl_dias',
+      label: 'Días corridos para que el impositor reclame un envío internacional',
+      value: 30,
+      unit: 'dias',
+      sourceId: 'ursec-185-016',
+      article: 'Anexo art. 10',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'postal.reclamo_impositor_nacional_dias',
+      label: 'Días corridos para que el impositor reclame un envío nacional',
+      value: 15,
+      unit: 'dias',
+      sourceId: 'ursec-185-016',
+      article: 'Anexo art. 10',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'postal.respuesta_preliminar_dias',
+      label: 'Días corridos para la respuesta preliminar del operador',
+      value: 15,
+      unit: 'dias',
+      sourceId: 'ursec-185-016',
+      article: 'Anexo art. 11',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'postal.resolucion_final_intl_dias',
+      label: 'Días corridos para la resolución final, envío internacional',
+      value: 90,
+      unit: 'dias',
+      sourceId: 'ursec-185-016',
+      article: 'Anexo art. 11',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'postal.resolucion_final_nacional_dias',
+      label: 'Días corridos para la resolución final, envío nacional',
+      value: 30,
+      unit: 'dias',
+      sourceId: 'ursec-185-016',
+      article: 'Anexo art. 11',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'postal.escalar_ursec_dias',
+      label: 'Días corridos desde la resolución final para escalar a URSEC',
+      value: 30,
+      unit: 'dias',
+      sourceId: 'ursec-185-016',
+      article: 'Anexo art. 13',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'postal.ursec_resuelve_dias',
+      label: 'Días corridos en que URSEC resuelve',
+      value: 60,
+      unit: 'dias',
+      sourceId: 'ursec-185-016',
+      article: 'Anexo art. 13',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'postal.indemniz_titular',
+      label: 'Quién es el titular de la indemnización postal',
+      value: 'el impositor (el que despachó el envío — en una compra online, el vendedor)',
+      sourceId: 'ursec-185-016',
+      article: 'Anexo arts. 22, 23 y 24',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'postal.indemniz_courier_intl_ui',
+      label: 'Indemnización de envío expreso/courier internacional (UI, al impositor)',
+      value: 417,
+      sourceId: 'ursec-185-016',
+      article: 'Anexo art. 22',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'postal.indemniz_encomienda_intl_ui_kg',
+      label: 'Indemnización de encomienda internacional, por kg (UI, al impositor)',
+      value: 63,
+      sourceId: 'ursec-185-016',
+      article: 'Anexo art. 23',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'postal.indemniz_encomienda_intl_tope_ui',
+      label: 'Tope de indemnización por encomienda internacional (UI)',
+      value: 1252,
+      sourceId: 'ursec-185-016',
+      article: 'Anexo art. 23',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'postal.indemniz_nacional_multiplicador',
+      label: 'Multiplicador de indemnización nacional sobre el importe abonado',
+      value: 3,
+      sourceId: 'ursec-185-016',
+      article: 'Anexo arts. 22 y 23',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'postal.cesion_derechos',
+      label: 'Cesión de derechos sobre la indemnización',
+      value:
+        'el impositor puede ceder sus derechos sobre el envío al destinatario (y a la inversa); cualquiera de los dos puede autorizar a un tercero a recibir la indemnización',
+      sourceId: 'ursec-185-016',
+      article: 'Anexo art. 26',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'postal.propiedad_envio',
+      label: 'Propiedad del envío hasta la entrega',
+      value: 'el envío es propiedad del remitente hasta el momento de la entrega al destinatario',
+      sourceId: 'ley-19009',
+      article: 'art. 6 lit. H',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'postal.pago_indemniz_horas',
+      label: 'Horas desde la notificación de la resolución final para pagar la indemnización',
+      value: 72,
+      sourceId: 'ursec-185-016',
+      article: 'Anexo art. 25',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'postal.pago_indemniz_intl_dias',
+      label:
+        'Días desde el día siguiente al reclamo para pagar la indemnización en reclamaciones internacionales',
+      value: 90,
+      unit: 'dias',
+      sourceId: 'ursec-185-016',
+      article: 'Anexo art. 25',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'consumo.venta_distancia_dias_habiles',
+      label: 'Días hábiles para rescindir una venta a distancia',
+      value: 5,
+      sourceId: 'ley-17250',
+      article: 'art. 16',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'consumo.multa_ur_min',
+      label: 'Multa mínima de Defensa del Consumidor (UR)',
+      value: 20,
+      sourceId: 'ley-17250',
+      article: 'art. 47 num. 2',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'consumo.multa_ur_max',
+      label: 'Multa máxima de Defensa del Consumidor (UR)',
+      value: 4000,
+      sourceId: 'ley-17250',
+      article: 'art. 47 num. 2',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'ursec.multa_ui_min',
+      label: 'Multa mínima que puede aplicar URSEC (UI)',
+      value: 5000,
+      sourceId: 'ley-19009',
+      article: 'art. 33 lit. C',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'ursec.multa_ui_max',
+      label: 'Multa máxima que puede aplicar URSEC (UI)',
+      value: 500000,
+      sourceId: 'ley-19009',
+      article: 'art. 33 lit. C',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'general.dua_por_persona_por_anio',
+      label:
+        'Según la DNA: hasta 2 DUA por año por persona física (afirmación de la DNA, sin norma localizada)',
+      value:
+        '"Las personas físicas podrán realizar únicamente hasta dos Documento Único Aduanero (DUA) por año" — es una afirmación de la página de la DNA, no de una norma. No localizamos la norma que lo establece: no está en la Ley 20.446 (arts. 627-635), ni en el Decreto 50/026, ni en el CAROU, ni en la Orden del Día 69/2012 que la propia página enlaza.',
+      sourceId: 'dna-regimen-general',
+      article: 'página v/28223 (09/01/2026)',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'despachante.dna_lo_exige_sobre_800',
+      label: 'La DNA exige despachante de aduana por encima de USD 800, en la práctica',
+      value:
+        '"se requiere la contratación de un Despachante de Aduana … La intervención del Despachante de Aduana en el Régimen de importación es preceptiva"',
+      sourceId: 'dna-regimen-general',
+      article: 'página v/28223 (09/01/2026)',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'despachante.la_ley_no_lo_exige',
+      label: 'La ley NO exige despachante de aduana para envíos postales internacionales',
+      value:
+        '"Los envíos postales internacionales no requerirán intervención de Despachante de Aduana" (párrafo autónomo, sin acotar por monto)',
+      sourceId: 'ley-20446',
+      article: 'art. 627 inc. 4; concordantes: Decreto 50/026 art. 17 y CAROU art. 15 lit. A',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'viajero.franquicia_aerea_usd',
+      label: 'Franquicia de equipaje de viajero, vía aérea o marítima',
+      value: 500,
+      unit: 'USD',
+      sourceId: 'decreto-43-019',
+      article: 'art. 1',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'viajero.franquicia_terrestre_usd',
+      label: 'Franquicia de equipaje de viajero, frontera terrestre',
+      value: 300,
+      unit: 'USD',
+      sourceId: 'decreto-43-019',
+      article: 'art. 1',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'viajero.excedente_pct',
+      label: 'Tasa sobre el excedente de la franquicia de viajero',
+      value: 50,
+      unit: 'pct',
+      sourceId: 'decreto-139-014',
+      article: 'art. 13',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+    {
+      id: 'mudanza.anios_residencia_exterior',
+      label: 'Años de residencia en el exterior exigidos para la franquicia de mudanza',
+      value: 2,
+      sourceId: 'ley-18250-76',
+      article: 'art. 76',
+      verifiedAt: '2026-07-12',
+      origin: 'baseline',
+    },
+  ] as AduanaFact[],
+  problems: [
+    {
+      id: 'retenido',
+      title: 'El paquete quedó retenido en la aduana',
+      symptom: 'El paquete quedó retenido sin explicación',
+      norm: 'La retención es legal y no requiere causa: los envíos postales internacionales, tengan o no carácter comercial, están sujetos a control aduanero (CAROU art. 141). La DNA confirma que cualquier envío puede ser retenido por control selectivo o aleatorio, y que el destinatario es responsable de justificar todos los datos de su envío. La exigencia documental surge del Decreto 50/026 art. 4 in fine (la DNA debe exigir la información y documentación necesaria) y art. 5 (el envío debe ir acompañado de la documentación que acredite el valor). Causa nueva (2026): si estás registrado en el registro de identidad de la RG DNA 10/2026 y la información del envío no es consistente con la registrada (por ejemplo, pagaste con una tarjeta no declarada), la mercadería NO se libera (num. 6.a.ii). Si no estás registrado, hoy igual se libera, porque el registro es voluntario (num. 1.2 y 7).',
+      sourceIds: [
+        'carou-141',
+        'dna-retenidos',
+        'decreto-50-026',
+        'rg-dna-10-2026',
+        'ley-20446-631',
+      ],
+      steps: [
+        'Identificá el operador. Correo Uruguayo (no expreso): declará el envío en la web del operador. Courier: andá directo al paso 3.',
+        'Si tras declararlo sigue retenido, pedí agenda: la atención por envíos retenidos es exclusivamente por cita previa; la DNA no da detalles por teléfono ni por mail.',
+        'Presentate el día y hora asignados, en persona y con la documentación en papel: Correo Uruguayo → Centro Operativo, Misiones 1310 esq. Buenos Aires, Ciudad Vieja. Courier → Terminal de Cargas del Uruguay, Camino Carrasco esq. Av. de las Américas, lunes a viernes 9:00-16:00.',
+        'Llevá: cédula vigente; guía aérea; factura y orden de compra (valor, naturaleza, datos de vendedor y comprador, medio de pago); comprobante de pago impreso y el plástico de la tarjeta con la que pagaste; declaración de valor cuando corresponda; certificados de otros organismos si la mercadería lo requiere; carta autorización + fotocopia del documento del titular si no vas vos.',
+        'Pagá los tributos que correspondan y retirá. El almacenaje corre por tu cuenta.',
+      ],
+      deadline:
+        'No hay plazo para que la DNA resuelva. Pero corre tu reloj: a los 30 días desde el ingreso al país (si hubo incumplimiento y no pagaste los tributos) o a los 90 días desde el ingreso (si no lo retiraste), la mercadería puede ser declarada en abandono no infraccional (Ley 20.446 art. 631).',
+      claimBody: 'dna',
+      claimTemplate:
+        'Montevideo, {{fecha}}\n\nDirección Nacional de Aduanas\nRef.: Envío postal internacional retenido — guía {{tracking}}\n\nQuien suscribe, [NOMBRE], titular de la cédula de identidad [CI], en calidad de destinatario del\nenvío postal internacional identificado con la guía {{tracking}}, se presenta y DICE:\n\n1. Que el envío de referencia se encuentra retenido desde el {{fecha}}. {{descripcion}}\n\n2. Que acompaño la documentación exigida por el artículo 5 del Decreto 50/026 y por la Dirección\n   Nacional de Aduanas para el trámite de envíos retenidos: cédula de identidad, guía, factura y\n   orden de compra con detalle de valor, naturaleza de la mercadería y medio de pago, comprobante\n   de la transacción y el instrumento de pago utilizado.\n\n3. Que la mercadería es para mi uso personal y sin fines comerciales, conforme al literal b) del\n   artículo 4 del Decreto 50/026, y que el titular del medio de pago, del que suscribe la compra y\n   del destinatario del envío son la misma persona (literal e) del mismo artículo).\n\nPETITORIO: se sirva verificar la documentación acompañada, liquidar los tributos que correspondan\ny disponer el libramiento de la mercadería.\n\n[FIRMA] — [NOMBRE] — CI [CI] — [TELÉFONO] — [EMAIL]',
+      verified: true,
+      quotes: [],
+      reports: 0,
+    },
+    {
+      id: 'factura-exigida',
+      title: 'Me piden documentación para no pagar IVA (compras de EE.UU.)',
+      symptom: 'Me piden documentación para no pagar IVA (compras de EE.UU.)',
+      norm: 'Hay dos exigencias distintas que la gente mezcla. (a) Lo que se le exige al VENDEDOR extranjero — RG DNA 09/2026: la empresa extranjera debe registrarse ante el Departamento Escribanía de la DNA (Anexo I num. 4), únicamente de forma presencial, por expediente electrónico (GEX) en Mesa de Entrada, con certificación notarial expedida en Uruguay (Anexo I num. 7 lit. c + Anexo II). La factura debe llevar una leyenda específica sobre residencia fiscal en EE.UU. (num. 5 y 6). Si el envío trae facturas de varios emisores, basta con que uno no esté registrado para que todo el envío pierda la exoneración (num. 12), y LUCIA valida automáticamente el identificador (num. 13). Es exigible desde el 1/10/2026, ya prorrogado dos veces (RG 21/2026 num. 1). El comprador uruguayo NO puede cumplir esta parte: el que se registra es el vendedor. (b) Lo que se le exige al COMPRADOR — Decreto 50/026 art. 4: persona física mayor de edad con documento uruguayo (lit. a); uso personal sin fines comerciales (lit. b); pago con tarjeta de crédito/débito internacional o dinero electrónico de una institución regulada por el BCU (lit. d); el titular del medio de pago debe coincidir con el titular de la compra y el destinatario (lit. e); autorización a las administradoras de tarjetas a informar a la DNA (lit. f, base Ley 20.446 art. 627 inc. 3); mecanismos de control de identidad digital de la DNA (lit. g); y registrarse por única vez ante la DNA (RG DNA 10/2026).',
+      sourceIds: [
+        'rg-dna-09-2026',
+        'decreto-50-026',
+        'rg-dna-10-2026',
+        'rg-dna-21-2026',
+        'ley-20446',
+      ],
+      steps: [
+        'No busques un papel para "arreglar" la parte (a): si el vendedor no está registrado ante la DNA, no hay documento que vos puedas presentar. La exoneración de IVA no aplica y el envío tributa. Es una decisión del vendedor, no tuya.',
+        'Antes de comprar (a partir del 1/10/2026), verificá si el vendedor figura en el registro público de empresas extranjeras EPI exonerados. La norma dice que el listado será público, pero al 2026-07-12 no existe URL publicada.',
+        'Para la parte (b): registrate en el registro de identidad de la DNA (RG 10/2026), con identidad digital de nivel intermedio (verificado) o superior, vía LUCIA en la web de la DNA. Hoy es voluntario (num. 1.2 y 7); cuando pase a obligatorio, sin registro no se libera la mercadería.',
+        'Pagá siempre con tu propia tarjeta, a tu nombre, y que el destinatario del envío seas vos. Si la tarjeta es de otra persona, perdés la franquicia (Decreto 50/026 art. 4 lit. e).',
+        'Si el envío ya está retenido pidiéndote documentación, seguí los pasos de «El paquete quedó retenido en la aduana».',
+      ],
+      deadline:
+        'El registro del vendedor es exigible desde el 1/10/2026 (RG 21/2026 num. 1). El registro del comprador es voluntario hasta que la DNA lo comunique (RG 10/2026 num. 7).',
+      claimBody: 'dna',
+      claimTemplate:
+        'Montevideo, {{fecha}}\n\nDirección Nacional de Aduanas — Área Gestión de Comercio Exterior\nRef.: Exoneración de IVA — Acuerdo Comercial EE.UU. — guía {{tracking}}\n\nQuien suscribe, [NOMBRE], CI [CI], destinatario del envío postal internacional guía {{tracking}},\nDICE:\n\n1. Que el envío procede de Estados Unidos de América, país declarado habilitado por el numeral 1\n   del Anexo I de la Resolución General DNA N° 09/2026.\n\n2. Que la factura comercial que acompaña el envío fue emitida por [VENDEDOR], y que conforme al\n   numeral 10 del Anexo I de la citada Resolución, su emisor se encuentra registrado ante la\n   Dirección Nacional de Aduanas. {{descripcion}}\n\n3. Que el valor de factura no supera los USD 200, umbral de la exoneración prevista en el artículo 7\n   de la Ley 18.761 (Acuerdo Marco sobre Comercio e Inversión con los Estados Unidos de América).\n\n4. Que se ha liquidado Impuesto al Valor Agregado sobre el envío, pese a cumplirse las condiciones\n   del artículo 3 del Decreto 50/026.\n\nPETITORIO: se revise la liquidación practicada y se aplique la exoneración del Impuesto al Valor\nAgregado que corresponde al envío de referencia.\n\n[FIRMA] — [NOMBRE] — CI [CI] — [TELÉFONO] — [EMAIL]',
+      verified: true,
+      quotes: [],
+      reports: 0,
+    },
+    {
+      id: 'roto-o-incompleto',
+      title: 'Llegó abierto o faltan cosas',
+      symptom: 'Llegó abierto, faltan cosas',
+      norm: 'Los Prestadores de Servicios Postales (los courier lo son: Ley 19.009 art. 5 num. 4) son responsables por la pérdida, hurto, destrucción o deterioro de envíos con entrega registrada, certificados, expresos/courier, encomiendas y envíos con valor declarado (Res. URSEC 185/016 Anexo art. 15). Deben atender gratis las reclamaciones del impositor y del destinatario (art. 6) y dar recibo o número de referencia (art. 9). El plazo del destinatario es de 48 horas corridas desde la entrega (art. 10); si no reclamás a tiempo o firmás conforme sin declarar el daño, el art. 16 lit. g y h te excluye. La titularidad de la indemnización (arts. 22, 23 y 24) es del IMPOSITOR (quien despachó el envío — en una compra online, el vendedor extranjero), no del destinatario: Ley 19.009 art. 6 lit. H dice que el envío es propiedad del remitente hasta la entrega. Podés reclamar como destinatario (art. 6 inc. 2 y tu plazo del art. 10), pero para cobrar necesitás que el impositor reclame o te ceda sus derechos (art. 26). Si dejaste constancia del daño al recibir el paquete (art. 16 lit. g), la titularidad pasa a ser tuya. Los montos: envío expreso/courier o certificado, 3x el importe abonado si es nacional o 417 UI si es internacional (art. 22); encomienda, 3x el importe si es nacional o 63 UI por kg con tope de 1.252 UI si es internacional, más el importe abonado y los derechos pagados (art. 23); envío con valor declarado y seguro pagado, el valor declarado (art. 24) — la única vía para cobrar el valor real. No se indemnizan daños indirectos ni lucro cesante (art. 20). El courier no responde si el faltante ocurrió mientras el envío estaba retenido por la DNA u otro organismo público (art. 16 lit. e).',
+      sourceIds: ['ursec-185-016', 'ley-19009', 'dna-denuncias', 'ursec-reclamo'],
+      steps: [
+        'En el momento de la entrega, si el paquete viene abierto, con precinto roto o con menos peso: NO firmes conforme. Dejá constancia escrita del daño en el remito/guía (art. 16 lit. g).',
+        'Fotografiá el paquete cerrado, el embalaje, el precinto, la etiqueta con el peso y el contenido.',
+        'Presentá la reclamación formal ante el courier dentro de las 48 horas de la entrega (art. 10). Exigí recibo o número de referencia (art. 9).',
+        'El courier tiene 15 días corridos para una respuesta preliminar y 90 días corridos (envío internacional) para la resolución final (art. 11).',
+        'Si te la rechaza o vence el plazo sin respuesta, escalá a URSEC dentro de los 30 días corridos siguientes (art. 13). URSEC resuelve en 60 días corridos. No podés ir a URSEC antes de agotar la instancia ante el courier.',
+        'Si la indemnización se reconoce y no la pagan: el art. 25 fija dos plazos alternativos — 72 horas corridas desde la notificación de la resolución final, o 90 días a contar del día siguiente al de la reclamación en el caso de reclamaciones internacionales (que es el caso de un envío del exterior). El incumplimiento habilita a URSEC a sancionar (Ley 19.009 art. 6 lit. G num. 3; multas de 5.000 a 500.000 UI, art. 33).',
+        'Si el paquete nunca llegó a entregarse, la indemnización es del impositor (arts. 22-24): necesitás que reclame el vendedor o que te ceda sus derechos (art. 26).',
+      ],
+      deadline:
+        '48 horas corridas desde la entrega, para que el destinatario reclame (Res. URSEC 185/016 Anexo art. 10). Es el plazo más corto de toda la guía.',
+      claimBody: 'courier',
+      claimTemplate:
+        '[CIUDAD], {{fecha}}\n\n[OPERADOR POSTAL / COURIER]\nRef.: RECLAMACIÓN — envío {{tracking}} — entrega con faltante/deterioro\n\nQuien suscribe, [NOMBRE], CI [CI], destinatario del envío {{tracking}}, presenta RECLAMACIÓN en los\ntérminos del artículo 6 del Reglamento de Reclamaciones e Indemnizaciones del Servicio Postal\n(Resolución URSEC N° 185/016), y DICE:\n\n1. Que el envío de referencia me fue entregado el {{fecha}}, en las siguientes condiciones:\n   {{descripcion}}\n\n2. Que dejé constancia del daño/faltante al momento de la entrega, conforme al literal g) del\n   artículo 16 del citado Reglamento, y acompaño registro fotográfico.\n\n3. Que la presente reclamación se interpone dentro de las 48 (cuarenta y ocho) horas corridas desde\n   la entrega, plazo previsto por el artículo 10 del Reglamento.\n\n4. Que, conforme al artículo 15, los Prestadores de Servicios Postales son responsables por la\n   pérdida, hurto, destrucción o deterioro de los envíos expresos o courier y de las encomiendas.\n\nPETITORIO:\na) Se me expida recibo o número de referencia de esta reclamación (artículo 9 del Reglamento).\nb) Se emita respuesta preliminar dentro de los 15 días corridos y resolución final dentro de los\n   plazos del artículo 11.\nc) Se abone la indemnización que corresponde conforme a los artículos 22 y 23 del Reglamento.\n\nSe deja constancia de que, vencidos los plazos sin resolución satisfactoria, se someterá la\ncontroversia a conocimiento de la URSEC conforme al artículo 13 del Reglamento y al artículo 37 de\nla Ley 19.009.\n\n[FIRMA] — [NOMBRE] — CI [CI] — [TELÉFONO] — [EMAIL]',
+      verified: true,
+      quotes: [],
+      reports: 0,
+    },
+    {
+      id: 'cobro-abusivo',
+      title: 'Me cobran gestión, depósito o almacenaje que nadie entiende',
+      symptom: 'Me cobran gestión, depósito, almacenaje que nadie entiende',
+      norm: 'No todos los cargos tienen el mismo respaldo. La prestación única (60%, mínimo USD 20/envío) es un tributo (Ley 20.446 art. 627; Decreto 50/026 art. 2). El IVA sobre envíos en franquicia también es un tributo (Decreto 50/026 art. 3). El almacenaje/depósito de mercadería retenida va por cuenta del interesado, según la propia DNA, pero el monto es contractual, no está tarifado por norma. El flete, la "gestión", el "handling" y el "despacho" del courier no tienen ninguna norma que los fije: son precio contractual, regido por la Ley 17.250. Esta ley da derecho a información suficiente, clara y veraz en idioma español (art. 6 lit. C, con el mandato operativo del art. 13 inc. 1); la oferta obliga a quien la emite (art. 12); si hay informaciones contradictorias, prevalece la más favorable al consumidor (art. 13 inc. 2); son abusivas las cláusulas que permiten al proveedor modificar unilateralmente el contrato (art. 31 lit. C) o que invierten la carga de la prueba (art. 31 lit. E); y las sanciones van de 20 a 4.000 UR, con decomiso y clausura hasta 90 días (art. 47).',
+      sourceIds: [
+        'ley-20446',
+        'decreto-50-026',
+        'dna-retenidos',
+        'ley-17250',
+        'mef-dc-denuncia',
+        'carou-223',
+      ],
+      steps: [
+        'Pedí por escrito el desglose del cargo: qué es tributo (va a la DNA) y qué es precio del operador. El tributo tiene comprobante de pago a la DNA; el resto es del courier.',
+        'Comparalo con la cotización/oferta original (captura, mail, web). Si difieren, invocá el artículo 13 de la Ley 17.250.',
+        'Reclamá por escrito al courier y guardá constancia.',
+        'Si no lo resuelve, andá a Defensa del Consumidor (0800 7005). Puede citar al proveedor (art. 42 lit. F) y sancionarlo (art. 47).',
+        'Si el cargo es de un operador postal y va atado a una falla del servicio (demora, pérdida, deterioro), la vía específica es URSEC.',
+      ],
+      deadline:
+        'Sin plazo legal específico para reclamar el precio. Si el cargo va atado a una compra a distancia, tenés 5 días hábiles para rescindir (Ley 17.250 art. 16). Todo reclamo del particular en materia aduanera prescribe a los 2 años (CAROU art. 223 num. 3).',
+      claimBody: 'defensa-consumidor',
+      claimTemplate:
+        'Montevideo, {{fecha}}\n\nÁrea Defensa del Consumidor — Ministerio de Economía y Finanzas\nRef.: Reclamo — cobros no informados — envío {{tracking}}\n\nQuien suscribe, [NOMBRE], CI [CI], con domicilio en [DOMICILIO], presenta reclamo contra\n[EMPRESA / COURIER], RUT [RUT si se conoce], y DICE:\n\n1. Que contraté el servicio de [SERVICIO] para el envío identificado con la guía {{tracking}}.\n\n2. Que la oferta publicada / la cotización que me fue comunicada el {{fecha}} indicaba un costo de\n   [MONTO OFERTADO], y que finalmente se me cobró [MONTO COBRADO], por conceptos que no me fueron\n   informados de manera clara y previa. {{descripcion}}\n\n3. Que el artículo 6 literal C) de la Ley 17.250 consagra el derecho del consumidor a información\n   suficiente, clara y veraz, en idioma español; que el artículo 12 establece que la oferta vincula a\n   quien la emite; y que el inciso segundo del artículo 13 dispone que, ante informaciones\n   contradictorias, prevalece la más favorable al consumidor.\n\n4. Que los cargos aplicados unilateralmente y no informados configuran, además, la hipótesis del\n   artículo 31 literal C) de la citada ley (cláusulas que autorizan al proveedor a modificar los\n   términos del contrato).\n\nPETITORIO:\na) Se cite al proveedor conforme al artículo 42 literal F) de la Ley 17.250.\nb) Se disponga la devolución de lo cobrado en exceso sobre la oferta original.\nc) Se apliquen las sanciones del artículo 47 si se constata la infracción.\n\nSe acompaña: oferta/cotización original, factura emitida por el proveedor, comprobante de pago.\n\n[FIRMA] — [NOMBRE] — CI [CI] — [TELÉFONO] — [EMAIL]',
+      verified: true,
+      quotes: [],
+      reports: 0,
+    },
+    {
+      id: 'franquicia-agotada',
+      title: 'Se me acabaron las 3 compras o pasé de los USD 800',
+      symptom: 'Se me acabaron las 3 compras / me pasé de los USD 800',
+      norm: 'La franquicia es de hasta 3 (tres) veces por año civil por persona física, independientemente de sus montos y características, y todas las franquicias computan tanto para el tope de USD 800 como para el conteo de envíos (Decreto 50/026 art. 4 lit. c). Los regalos también consumen cupo: el valor de los envíos exonerados por acuerdo comercial u obsequio familiar se imputa al cupo anual (art. 3 inc. 2). Libros y medicamentos de uso personal no consumen el tope de USD 800 (art. 4, inciso final; medicamentos con autorización del MSP). La fecha que cuenta para el cupo es la del desaduanamiento, no la de compra ni la de arribo. Si te pasás igual y declarás inexactamente el valor o la procedencia para beneficiarte del régimen, la sanción es una multa igual al doble de los tributos que debieron pagarse, y si reiterás dentro de 12 meses, prohibición de operar el régimen por los 12 meses siguientes (Ley 20.446 art. 632). No existe artículo que regule qué pasa cuando el valor de un envío excede el saldo de franquicia disponible: la conclusión de que "la franquicia no se parte" es probable por el diseño del régimen (franquicia "de hasta USD 800", sin mecanismo de aplicación parcial), pero no tiene una norma que la sostenga.',
+      sourceIds: ['decreto-50-026', 'ley-20446-632', 'dna-franquicias-usadas', 'ley-20446'],
+      steps: [
+        'Consultá tu cupo real antes de comprar, en el trámite oficial de franquicias utilizadas de la DNA (requiere identidad digital nivel intermedio/verificado o superior). No confundir con el cubo estadístico agregado de la DNA, que no muestra tu cupo personal.',
+        'Si ya usaste las 3 o llegaste a USD 800, el próximo envío va por prestación única (60%, mínimo USD 20): no es un castigo, es el otro régimen, y la elección es por envío (Ley 20.446 art. 627). No hay norma que habilite aplicar la franquicia parcialmente a un envío que la excede.',
+        'Si el envío supera USD 800, va a régimen general, y en la práctica la DNA va a exigir despachante de aduana, aunque la ley diga lo contrario.',
+        'Si te notifican una multa del art. 632, tenés 10 días hábiles de vista previa para defenderte.',
+      ],
+      deadline:
+        '10 días hábiles de vista previa (Ley 20.446 art. 632) para evacuar el descargo antes de que la DNA dicte el acto sancionatorio. Si a los 90 días de determinada la sanción no pagás la multa, la mercadería pasa a abandono infraccional.',
+      claimBody: 'dna',
+      claimTemplate:
+        'Montevideo, {{fecha}}\n\nDirección Nacional de Aduanas\nRef.: Evacuación de vista — art. 632 de la Ley 20.446 — guía {{tracking}}\n\nQuien suscribe, [NOMBRE], CI [CI], habiendo sido notificado el {{fecha}} de la vista conferida en el\nexpediente de referencia, comparece EN TIEMPO Y FORMA dentro del plazo de diez días hábiles previsto\npor el artículo 632 de la Ley 20.446, y DICE:\n\n1. Que no ha existido declaración inexacta del valor ni de la procedencia de la mercadería.\n   {{descripcion}}\n\n2. Que el valor declarado se corresponde con el total de la factura original de compra, incluidos\n   todos los conceptos adicionados en la misma, conforme al artículo 5 del Decreto 50/026, cuya copia\n   se acompaña junto con el comprobante de pago.\n\n3. Que la mercadería fue adquirida para uso personal y sin fines comerciales (artículo 4 literal b)\n   del Decreto 50/026).\n\nPETITORIO: se tenga por evacuada la vista, se desestime la aplicación de la multa prevista por el\nartículo 632 de la Ley 20.446 y, en subsidio, se considere la ausencia de dolo a los efectos de la\ngraduación de la sanción.\n\nSe acompaña: factura original, comprobante de pago, guía {{tracking}}.\n\n[FIRMA] — [NOMBRE] — CI [CI] — [TELÉFONO] — [EMAIL]',
+      verified: true,
+      quotes: [],
+      reports: 0,
+    },
+    {
+      id: 'supera-monto',
+      title: 'Me pasé de USD 200 (IVA) o de USD 800 (régimen general)',
+      symptom: 'Me pasé de USD 200 (IVA) o de USD 800 (régimen general)',
+      norm: 'Hay dos umbrales distintos y la gente los confunde. (a) USD 200 es el umbral de IVA para EE.UU. (TIFA) — Ley 18.761 art. 7 lit. g, Ley 20.446 art. 628, Decreto 50/026 art. 3. Es todo o nada: un dólar por encima y el envío entero paga IVA, sin exención parcial. No existe un tope de franquicia de USD 200 por envío (eso era el Decreto 356/014, derogado). (b) USD 800 es el techo de los dos regímenes especiales: por encima (o más de 20 kg, o mercadería gravada por IMESI), el envío no entra ni en franquicia ni en prestación única, y va a régimen general de importación (Decreto 50/026 arts. 1, 2, 3 y 7; Ley 20.446 art. 633), tramitado por DUA. La DNA exige despachante de aduana en la práctica (v/28223: "es preceptiva"), aunque la ley diga lo contrario (Ley 20.446 art. 627, Decreto 50/026 art. 17, CAROU art. 15 lit. A). La DNA además afirma que las personas físicas pueden hacer hasta dos DUA por año, pero no localizamos la norma que lo establece. El valor que cuenta es el total de la factura original de compra, incluidos todos los conceptos adicionados en ella (Decreto 50/026 art. 5) — el flete que el courier factura aparte no integra ese total.',
+      sourceIds: [
+        'ley-18761-tifa',
+        'ley-20446-628',
+        'decreto-50-026',
+        'ley-20446-633',
+        'dna-regimen-general',
+        'ley-20446-632',
+        'carou-15',
+      ],
+      steps: [
+        'Verificá el valor con el criterio del artículo 5 del Decreto 50/026: el total de la factura, no el precio del producto.',
+        'La conversión se hace al arbitraje del BCU del día hábil anterior al despacho (Decreto 50/026 art. 6).',
+        'Si pasás de USD 200 (EE.UU.), pagás IVA sobre el total: no hay nada que reclamar, es la norma.',
+        'Si pasás de USD 800 / 20 kg / IMESI, en los hechos vas a tener que contratar un despachante de aduana; que la ley no lo imponga no te va a servir en el mostrador.',
+        'Alternativa antes del despacho: si la mercadería está restringida o requiere una autorización que no tenés, el artículo 7 del Decreto 50/026 te permite devolverla a origen a tu costo dentro de 30 días, mientras no se haya producido el despacho.',
+        'Si la DNA te imputa haber declarado inexactamente el valor o la procedencia y no reconocés el incumplimiento, tenés vista previa de 10 días hábiles (Ley 20.446 art. 632) para evacuarla. Esa vista es un trámite dentro del procedimiento sancionatorio del art. 632, no un recurso general contra una valoración con la que no estás de acuerdo cuando no hay imputación.',
+      ],
+      deadline:
+        '10 días hábiles de vista previa si hay imputación del art. 632. 30 días para devolver a origen (art. 7), mientras no se haya producido el despacho.',
+      claimBody: 'dna',
+      claimTemplate:
+        'Montevideo, {{fecha}}\n\nDirección Nacional de Aduanas\nRef.: Evacuación de vista — art. 632 de la Ley 20.446 — guía {{tracking}}\n\nQuien suscribe, [NOMBRE], CI [CI], habiendo sido notificado el {{fecha}} de la vista conferida en el\nexpediente de referencia, comparece EN TIEMPO Y FORMA dentro del plazo de diez días hábiles previsto\npor el artículo 632 de la Ley 20.446, y DICE:\n\n1. Que no ha existido declaración inexacta del valor ni de la procedencia de la mercadería.\n   {{descripcion}}\n\n2. Que el valor declarado se corresponde con el total de la factura original de compra, incluidos\n   todos los conceptos adicionados en la misma, conforme al artículo 5 del Decreto 50/026, cuya copia\n   se acompaña junto con el comprobante de pago.\n\n3. Que la mercadería fue adquirida para uso personal y sin fines comerciales (artículo 4 literal b)\n   del Decreto 50/026).\n\nPETITORIO: se tenga por evacuada la vista, se desestime la aplicación de la multa prevista por el\nartículo 632 de la Ley 20.446 y, en subsidio, se considere la ausencia de dolo a los efectos de la\ngraduación de la sanción.\n\nSe acompaña: factura original, comprobante de pago, guía {{tracking}}.\n\n[FIRMA] — [NOMBRE] — CI [CI] — [TELÉFONO] — [EMAIL]',
+      verified: true,
+      quotes: [],
+      reports: 0,
+    },
+    {
+      id: 'prohibido-o-restringido',
+      title: 'Trae algo que necesita permiso (MSP, URSEC, MGAP)',
+      symptom: 'Trae algo que necesita permiso (MSP, URSEC, MGAP)',
+      norm: 'El régimen de EPI no se aplica en ningún caso a mercadería gravada por IMESI, y puede no aplicarse a mercadería restringida — aquella que requiere autorización de algún organismo competente para su importación, exportación o comercialización (Ley 20.446 art. 633). El Decreto 50/026 art. 7 no se aplica a mercadería gravada por IMESI ni a la que requiera autorización de un organismo competente y carezca de ella, pero da la salida: si aún no se produjo el despacho, el interesado puede devolverla a su costo al lugar de procedencia dentro del plazo de 30 días, siempre que no haya incurrido en incumplimiento de la normativa vigente. El corte legal es el DESPACHO, no la verificación: que la DNA haya abierto o revisado el envío no cierra esta puerta. Libros y medicamentos de uso personal quedan exceptuados del tope de USD 800 (art. 4 inc. final; medicamentos con autorización del MSP). Quién autoriza qué: MSP (medicamentos, suplementos, vitaminas, productos médicos, ortopédicos, oftalmológicos, odontológicos, higiene, cuidado personal, belleza); URSEC (todo lo que emite radiofrecuencia: celulares, drones, baby-call, GPS, terminales satelitales, repetidores WiFi, walkie-talkies, cámaras con conexión celular, tablets con celular — certificados online por la VUCE); MGAP (productos de origen animal y vegetal, semillas, alimentos).',
+      sourceIds: ['ley-20446-633', 'decreto-50-026', 'dna-prohibidos'],
+      steps: [
+        'Conseguí el certificado del organismo ANTES de pedir agenda en Aduana: para retirar envíos con mercadería de ingreso restringido y retenidos, hace falta el certificado de autorización del organismo correspondiente antes de cualquier trámite en Aduana.',
+        'Con el certificado en mano, seguí los pasos de «El paquete quedó retenido en la aduana».',
+        'Si no vas a conseguir el permiso, pedí la devolución a origen a tu costo, dentro de los 30 días, mientras no se haya producido el despacho (Decreto 50/026 art. 7).',
+        'Si no hacés ni una cosa ni la otra, a los 30/90 días el envío cae en abandono.',
+      ],
+      deadline:
+        '30 días para devolver a origen, mientras no se haya producido el despacho (Decreto 50/026 art. 7).',
+      claimBody: 'dna',
+      claimTemplate:
+        'Montevideo, {{fecha}}\n\nDirección Nacional de Aduanas / [OPERADOR POSTAL]\nRef.: Solicitud de retorno a origen — art. 7 del Decreto 50/026 — guía {{tracking}}\n\nQuien suscribe, [NOMBRE], CI [CI], destinatario del envío postal internacional guía {{tracking}},\narribado al país el {{fecha}}, DICE:\n\n1. Que el envío contiene mercadería que requiere autorización de [ORGANISMO: MSP / URSEC / MGAP] para\n   su importación, autorización con la que no cuento. {{descripcion}}\n\n2. Que no se ha producido el despacho de la mercadería y que no he incurrido en incumplimiento alguno\n   de la normativa vigente.\n\n3. Que el artículo 7 del Decreto 50/026 habilita al interesado a devolver la mercadería a su costo al\n   lugar de procedencia dentro del plazo de 30 (treinta) días, en estas exactas condiciones.\n\nPETITORIO: se autorice el retorno a origen del envío de referencia, a mi costo, dentro del plazo legal.\n\n[FIRMA] — [NOMBRE] — CI [CI] — [TELÉFONO] — [EMAIL]',
+      verified: true,
+      quotes: [],
+      reports: 0,
+    },
+    {
+      id: 'decomiso-subasta',
+      title: 'Se lo quedaron o lo remataron',
+      symptom: 'Se lo quedaron / lo remataron',
+      norm: 'Hay que distinguir dos abandonos. (a) Abandono NO infraccional (Ley 20.446 art. 631, el que aplica a envíos postales): la DNA puede declararlo a solicitud de cualquier interesado cuando hay incumplimiento del régimen y no se pagan los tributos dentro de los 30 días desde el ingreso al país, o cuando el envío no se retiró dentro de los 90 días desde su ingreso. El abandono exime al propietario de los tributos impagos, pero la DNA remata la mercadería sin base y al mejor postor, y del producido hasta un 30% va al depositario y el resto a la DNA: no se recupera nada. La defensa que existe es el requisito de notificación: el peticionante debe acreditar la notificación (por medio fehaciente o Diario Oficial) de la intimación al retiro bajo apercibimiento de declarar el abandono, requisito que deja de ser exigible pasados dos años del ingreso. Si nunca intimaron al retiro (y no pasaron dos años), la declaración de abandono está viciada. (b) Abandono INFRACCIONAL (CAROU art. 207): mercadería que haga presumir preparación de contrabando o aprehendida sin responsable identificable, implica el comiso; también se cae acá por no pagar la multa del art. 632 dentro de los 90 días de determinada la sanción. El abandono no infraccional también se tramita ante los Juzgados Letrados de Aduana (CAROU arts. 98 y 99), con oposición posible de quien se considere con derecho a la mercadería (art. 99 num. 4) y apelación con efecto suspensivo (art. 99 num. 6).',
+      sourceIds: [
+        'ley-20446-631',
+        'carou-207',
+        'carou-98',
+        'carou-99',
+        'carou-223',
+        'ley-20446-632',
+      ],
+      steps: [
+        'Actuá antes de los 30 días (si hay incumplimiento y tributos impagos) o de los 90 días (si no retiraste). Después, la ventana se cierra sola.',
+        'Si te notificaron la intimación al retiro, retirá o pagá ya: esa notificación es el reloj.',
+        'Si te enterás de que fue declarado en abandono sin haber sido intimado, pedí por escrito a la DNA la constancia de la notificación que el peticionante estaba obligado a acreditar. Sin esa constancia, la declaración es impugnable (salvo que hayan pasado dos años del ingreso).',
+        'Si el trámite es judicial (CAROU art. 99), presentate y oponete: el art. 99 num. 4 prevé expresamente la oposición de quien se considere con derecho a la mercadería.',
+        'El reclamo del particular prescribe a los 2 años desde el hecho (CAROU art. 223 num. 3).',
+      ],
+      deadline:
+        '30 / 90 días desde el ingreso al país (Ley 20.446 art. 631). 2 años para reclamar (CAROU art. 223.3).',
+      claimBody: 'dna',
+      claimTemplate:
+        'Montevideo, {{fecha}}\n\nDirección Nacional de Aduanas\nRef.: Envío {{tracking}} — abandono no infraccional — art. 631 de la Ley 20.446\n\nQuien suscribe, [NOMBRE], CI [CI], consignatario del envío postal internacional guía {{tracking}},\ningresado al país el {{fecha}}, DICE:\n\n1. Que he tomado conocimiento de que se habría promovido / declarado el abandono no infraccional del\n   envío de referencia. {{descripcion}}\n\n2. Que el artículo 631 de la Ley 20.446 exige, en todos los casos, que el peticionante ACREDITE la\n   notificación —por medio fehaciente o por el Diario Oficial— de la intimación al retiro de la\n   mercadería bajo apercibimiento de declararla en abandono.\n\n3. Que el suscrito NO fue notificado de intimación alguna al retiro, y que no han transcurrido dos\n   años desde el ingreso de la mercadería a territorio aduanero, por lo que el requisito de\n   notificación resulta plenamente exigible.\n\nPETITORIO:\na) Se me expida constancia de la notificación de la intimación al retiro que el peticionante debió\n   acreditar, o de su inexistencia.\nb) En caso de no haberse cumplido dicho requisito, se deje sin efecto la declaración de abandono y se\n   me intime en legal forma al retiro, liquidándose los tributos que correspondan.\nc) Se suspenda todo acto de remate hasta la resolución de la presente.\n\n[FIRMA] — [NOMBRE] — CI [CI] — [TELÉFONO] — [EMAIL]',
+      verified: true,
+      quotes: [],
+      reports: 0,
+    },
+    {
+      id: 'comercial-vs-personal',
+      title: 'Me lo tratan como importación comercial',
+      symptom: 'Me lo tratan como importación comercial',
+      norm: 'El test legal es cualitativo, no numérico. La franquicia exige que sea para uso personal y sin fines comerciales (Decreto 50/026 art. 4 lit. b), y es sólo para personas físicas (art. 3). El obsequio familiar exige que sea un envío no comercial entre las partes, remitido y consignado por personas físicas, con mercadería en cantidades razonables, nueva o usada, para uso o consumo personal del destinatario y sin fines comerciales (art. 3). Los EPI están sujetos a control aduanero tengan o no carácter comercial (CAROU art. 141). No existe un número: no hay norma que diga "hasta 3 unidades" o "hasta X dólares es personal" — son estándares cualitativos aplicados caso a caso por el funcionario. Si te lo recalifican, perdés la franquicia para esa operación y se aplica la prestación única (60%, mínimo USD 20 — Decreto 50/026 art. 15), pero esa operación no computa para el límite de los 3 envíos ni el tope de USD 800. Si además hubo declaración inexacta de valor o procedencia, se aplica la multa del doble de los tributos (Ley 20.446 art. 632), o en su caso defraudación (CAROU art. 204, multa igual al doble del perjuicio fiscal) o defraudación de valor (CAROU art. 205). Sin documentación u ocultamiento, puede constituir contrabando (CAROU art. 209). En defraudación, defraudación de valor, desvío de exoneraciones y contrabando, la multa puede reducirse hasta en un 50% si se prueba haber actuado con culpa y no dolo (CAROU art. 213 num. 2); en contravención y diferencia, en cambio, no es admisible ninguna excusa fundada en la buena fe.',
+      sourceIds: [
+        'decreto-50-026',
+        'carou-141',
+        'ley-20446-632',
+        'carou-204',
+        'carou-205',
+        'carou-209',
+        'carou-213',
+        'carou-200',
+        'carou-227',
+      ],
+      steps: [
+        'Documentá el uso personal: para qué es, por qué esa cantidad, quién lo va a usar.',
+        'Si son varias unidades iguales, esperá la recalificación: es el patrón que la dispara.',
+        'Si te notifican sanción, tenés vista previa de 10 días hábiles (Ley 20.446 art. 632). Contestá invocando culpa, no dolo (CAROU art. 213 num. 2), para acceder a la reducción de hasta el 50%.',
+        'Las infracciones aduaneras (salvo contravención) las juzga el Juzgado Letrado de Aduana (CAROU art. 227), no la DNA. La contravención (multa de 400 a 4.000 UI, CAROU art. 200) sí la aplica la DNA.',
+      ],
+      deadline: '10 días hábiles de vista previa (Ley 20.446 art. 632).',
+      claimBody: 'dna',
+      claimTemplate:
+        'Montevideo, {{fecha}}\n\nDirección Nacional de Aduanas\nRef.: Evacuación de vista — art. 632 de la Ley 20.446 — guía {{tracking}}\n\nQuien suscribe, [NOMBRE], CI [CI], habiendo sido notificado el {{fecha}} de la vista conferida en el\nexpediente de referencia, comparece EN TIEMPO Y FORMA dentro del plazo de diez días hábiles previsto\npor el artículo 632 de la Ley 20.446, y DICE:\n\n1. Que no ha existido declaración inexacta del valor ni de la procedencia de la mercadería.\n   {{descripcion}}\n\n2. Que el valor declarado se corresponde con el total de la factura original de compra, incluidos\n   todos los conceptos adicionados en la misma, conforme al artículo 5 del Decreto 50/026, cuya copia\n   se acompaña junto con el comprobante de pago.\n\n3. Que la mercadería fue adquirida para uso personal y sin fines comerciales (artículo 4 literal b)\n   del Decreto 50/026).\n\nPETITORIO:\na) Se tenga por evacuada la vista y se desestime la aplicación de la multa prevista por el artículo\n   632 de la Ley 20.446.\nb) En subsidio, y para el caso de mantenerse la imputación, se solicita la reducción de la multa\n   hasta un 50% conforme al numeral 2 del artículo 213 de la Ley 19.276 (Código Aduanero), por\n   haberse actuado con culpa y no con dolo, extremo que surge de la documentación acompañada.\n\nSe acompaña: factura original, comprobante de pago, guía {{tracking}}.\n\n[FIRMA] — [NOMBRE] — CI [CI] — [TELÉFONO] — [EMAIL]',
+      verified: true,
+      quotes: [],
+      reports: 0,
+    },
+    {
+      id: 'encomienda-regalo',
+      title: 'Un familiar me manda algo del exterior',
+      symptom: 'Un familiar me manda algo del exterior',
+      norm: 'Quedan exentos del pago de todo tributo los envíos postales internacionales con obsequios familiares (Ley 20.446 art. 628, inciso final). Es obsequio familiar el envío que cumple las cuatro condiciones del Decreto 50/026 art. 3: no comercial entre las partes; remitido y consignado por personas físicas; mercadería en cantidades razonables, nueva o usada; y para uso o consumo personal del destinatario, sin fines comerciales. Dos trampas: el regalo CONSUME tu franquicia, porque su valor se imputa al cupo anual (art. 3 inc. 2), consumiendo tanto el monto como uno de los 3 envíos; pero NO te exige tarjeta, porque el requisito de pago con tarjeta del art. 4 lit. d) sólo aplica "en caso que la encomienda contenga una compra" — un regalo no lo es — y la RG DNA 10/2026 num. 4 confirma que la información de medios de pago no es obligatoria para quienes reciben únicamente obsequios familiares.',
+      sourceIds: ['ley-20446-628', 'decreto-50-026', 'rg-dna-10-2026', 'dna-retenidos'],
+      steps: [
+        'Que el remitente sea una persona física (no una empresa, no una tienda). Si el "regalo" lo despacha un comercio, deja de ser obsequio familiar.',
+        'Como no hay factura, el valor sale de la declaración de valor (Decreto 50/026 art. 5); la DNA pide el Formulario Declaración de Valor.',
+        'Contá el envío contra tu cupo: consume franquicia, monto y uno de los 3 envíos.',
+        'Si te lo retienen, seguí los pasos de «El paquete quedó retenido en la aduana», presentando declaración de valor en lugar de factura.',
+        'Si el contenido requiere permiso (medicamentos, alimentos, electrónica con radiofrecuencia), seguí los pasos de «Trae algo que necesita permiso (MSP, URSEC, MGAP)»: el carácter de regalo no salta al MSP/URSEC/MGAP.',
+      ],
+      deadline:
+        'Los generales de retención/abandono: 30/90 días desde el ingreso (Ley 20.446 art. 631).',
+      claimBody: 'dna',
+      claimTemplate:
+        'Montevideo, {{fecha}}\n\nDirección Nacional de Aduanas\nRef.: Envío postal internacional retenido — guía {{tracking}}\n\nQuien suscribe, [NOMBRE], titular de la cédula de identidad [CI], en calidad de destinatario del\nenvío postal internacional identificado con la guía {{tracking}}, se presenta y DICE:\n\n1. Que el envío de referencia se encuentra retenido desde el {{fecha}}. {{descripcion}}\n\n2. Que el envío constituye un OBSEQUIO FAMILIAR en los términos del artículo 3 del Decreto 50/026:\n   se trata de un envío no comercial entre las partes, remitido y consignado por personas físicas, que\n   contiene mercadería en cantidades razonables para mi uso personal y sin fines comerciales. Acompaño\n   la correspondiente Declaración de Valor, no existiendo factura de compra por tratarse de un\n   obsequio. Conforme al numeral 4 de la Resolución General DNA N° 10/2026, la información sobre\n   medios de pago no resulta exigible en este caso.\n\n3. Que la mercadería es para mi uso personal y sin fines comerciales, conforme al literal b) del\n   artículo 4 del Decreto 50/026.\n\nPETITORIO: se sirva verificar la documentación acompañada, liquidar los tributos que correspondan\ny disponer el libramiento de la mercadería.\n\n[FIRMA] — [NOMBRE] — CI [CI] — [TELÉFONO] — [EMAIL]',
+      verified: true,
+      quotes: [],
+      reports: 0,
+    },
+    {
+      id: 'demora-extrema',
+      title: '30 días o más y el tracking no se mueve',
+      symptom: '30+ días, el tracking no se mueve',
+      norm: 'No existe un plazo legal de entrega para un envío internacional. Lo que sí existe: el envío expreso o courier se define por un plazo preestablecido de entrega menor a la norma del operador, con rastreo desde la admisión hasta la entrega (Decreto 209/017 art. 3 lit. j) — el plazo que obliga es el que el operador prometió. No existe una regla de "publicar cada evento de tracking dentro de las 24 horas" para envíos internacionales: esa regla (Decreto 209/017 art. 16 lit. b) es sólo para encomiendas nacionales y no aplica acá, que es un caso íntegramente internacional. Los prestadores deben asegurar continuidad, regularidad y calidad del servicio (Ley 19.009 art. 18); deben atender gratis las reclamaciones por incumplimiento de calidad o cualquier otro incumplimiento (Res. URSEC 185/016 art. 6); y la oferta (el plazo publicado al contratar) vincula a quien la emite (Ley 17.250 art. 12). La causa más común de la demora no es el courier: si el envío está retenido por la DNA, el courier no responde (Res. 185/016 art. 16 lit. e). Si el envío nunca llega, deja de ser demora y pasa a ser pérdida («Llegó abierto o faltan cosas»), con la indemnización tasada de los arts. 22-23 — y el titular de esa indemnización es el impositor, no el destinatario (arts. 22-24 y Ley 19.009 art. 6 lit. H), salvo que el impositor reclame o ceda sus derechos (art. 26).',
+      sourceIds: [
+        'decreto-209-017',
+        'ley-19009',
+        'ursec-185-016',
+        'ley-17250',
+        'ley-20446-631',
+        'ursec-reclamo',
+      ],
+      steps: [
+        'Determiná dónde está trabado. Si el tracking dice retenido/en aduana, es el caso de «El paquete quedó retenido en la aduana», y el reloj que corre es el de abandono a los 90 días desde el ingreso al país (Ley 20.446 art. 631). Esto es urgente.',
+        'Si es demora del operador, presentá reclamación formal ante el courier (Res. 185/016 art. 6). Exigí número de referencia (art. 9).',
+        'El operador debe darte respuesta preliminar en 15 días corridos y resolución final en 90 días corridos, envío internacional (art. 11).',
+        'Vencido el plazo sin respuesta, el art. 14 habilita continuar con las instancias siguientes.',
+        'Escalá a URSEC dentro de los 30 días corridos (art. 13). URSEC resuelve en 60 días corridos y puede sancionar al operador (Ley 19.009 art. 33: multa de 5.000 a 500.000 UI, suspensión, pérdida de licencia).',
+        'Si el envío nunca llega, pasa a ser pérdida («Llegó abierto o faltan cosas»). El titular de la indemnización es el impositor: pedile al vendedor que abra el reclamo en origen o que firme la cesión del art. 26. La vía realmente tuya suele ser la del vendedor/marketplace (garantía de entrega, Ley 17.250), no la postal.',
+      ],
+      deadline:
+        '90 días desde el ingreso al país habilita el abandono (Ley 20.446 art. 631 num. 2) — corre aunque estés esperando respuesta del courier. Para escalar a URSEC: 30 días corridos desde la resolución final del operador (o desde que venció su plazo).',
+      claimBody: 'courier',
+      claimTemplate:
+        '[CIUDAD], {{fecha}}\n\n[OPERADOR POSTAL / COURIER]\nRef.: RECLAMACIÓN — demora en la entrega — envío {{tracking}}\n\nQuien suscribe, [NOMBRE], CI [CI], presenta RECLAMACIÓN conforme al artículo 6 del Reglamento de\nReclamaciones e Indemnizaciones del Servicio Postal (Resolución URSEC N° 185/016), y DICE:\n\n1. Que el envío {{tracking}} fue admitido el {{fecha}}, bajo la modalidad de envío expreso o courier,\n   con un plazo de entrega ofrecido de [PLAZO OFRECIDO].\n\n2. Que a la fecha el envío no ha sido entregado y el sistema de trazabilidad no registra eventos desde\n   el {{fecha}}. {{descripcion}}\n\n3. Que el artículo 3 literal j) del Decreto 209/017 define al envío expreso o courier por su plazo\n   preestablecido de entrega y su rastreo desde la admisión hasta la entrega, y que el artículo 12 de\n   la Ley 17.250 dispone que la oferta vincula a quien la emite.\n\nPETITORIO:\na) Se me expida número de referencia de esta reclamación (artículo 9 del Reglamento).\nb) Se informe la ubicación y el estado real del envío, y si el mismo se encuentra retenido por la\n   Dirección Nacional de Aduanas.\nc) Se emita respuesta preliminar dentro de los 15 días corridos y resolución final dentro de los 90\n   días corridos previstos por el artículo 11 del Reglamento.\n\nSe deja constancia de que, vencidos dichos plazos, la controversia será sometida a conocimiento de la\nURSEC conforme al artículo 13 del Reglamento y al artículo 37 de la Ley 19.009.\n\n[FIRMA] — [NOMBRE] — CI [CI] — [TELÉFONO] — [EMAIL]',
+      verified: true,
+      quotes: [],
+      reports: 0,
+    },
+    {
+      id: 'mudanza-y-viajero',
+      title: 'Traer la notebook en la valija o mudarme de vuelta',
+      symptom: 'Traer la notebook en la valija / mudarme de vuelta',
+      norm: 'Son dos regímenes distintos, que no se mezclan. (a) Equipaje de viajero (Decreto 139/014 + Decreto 43/019): franquicia de USD 500 (aérea/marítima) o USD 300 (frontera terrestre) — Decreto 43/019 art. 1; una vez por mes — Decreto 139/014 art. 9; 50% sobre el excedente — art. 13; sin despachante — CAROU art. 15 lit. B; el test es cualitativo — Decreto 139/014 art. 1: equipaje es lo destinado a uso o consumo personal, siempre que por su cantidad, naturaleza o variedad no permita presumir fines comerciales o industriales (no hay número). Traer bienes de tu profesión o estudio está expresamente contemplado (art. 3) y no te saca automáticamente del régimen de equipaje. Ocultar el bien puede constituir contrabando (CAROU art. 209). (b) Mudanza de uruguayo que retorna (Ley 18.250 art. 76, redacción dada por Ley 19.996 art. 352): todo uruguayo con más de 2 años de residencia en el exterior que decida residir definitivamente en el país puede introducir, por única vez, libre de todo trámite cambiario y exento de derechos de aduana, tributos o gravámenes conexos: los bienes muebles y efectos que alhajan su casa habitación (menaje); las herramientas, máquinas, aparatos e instrumentos vinculados con su profesión, arte u oficio; y un vehículo automotor de su propiedad, no transferible por 2 años desde su empadronamiento. En estas operaciones no es preceptiva la intervención del despachante de aduana (concordante: CAROU art. 15 lit. E). El equipaje NO acompañado (mudanza parcial, "me mando la PC aparte") sigue sin verificarse: no encontramos fuente primaria que confirme si le aplica la misma franquicia de USD 500 o un régimen distinto.',
+      sourceIds: [
+        'decreto-139-014',
+        'decreto-43-019',
+        'ley-18250-76',
+        'mudanza-tramite',
+        'carou-15',
+        'carou-209',
+      ],
+      steps: [
+        'El trámite de mudanza se inicia en el Consulado uruguayo del país donde residís, acreditando 2 años de residencia y certificando la lista de bienes.',
+        'Es por única vez: no se fracciona en varios envíos a conveniencia.',
+        'No necesitás despachante de aduana (Ley 18.250 art. 76 in fine).',
+      ],
+      deadline:
+        'Sin plazo legal para el trámite. El requisito temporal es de 2 años de residencia previa en el exterior.',
+      verified: true,
+      quotes: [],
+      reports: 0,
+    },
+  ] as AduanaProblem[],
+  sources: [
+    {
+      id: 'ley-20446',
+      title: 'Presupuesto Nacional 2025-2029 — régimen de envíos postales internacionales',
+      norm: 'Ley 20.446 (16/12/2025), arts. 627-635',
+      url: 'https://www.impo.com.uy/bases/leyes/20446-2025/627',
+      checkedAt: '2026-07-12',
+    },
+    {
+      id: 'ley-20446-628',
+      title: 'Acuerdos comerciales internacionales y obsequios familiares',
+      norm: 'Ley 20.446, art. 628',
+      url: 'https://www.impo.com.uy/bases/leyes/20446-2025/628',
+      checkedAt: '2026-07-12',
+    },
+    {
+      id: 'ley-20446-629',
+      title: 'Medidas que puede adoptar el Poder Ejecutivo',
+      norm: 'Ley 20.446, art. 629',
+      url: 'https://www.impo.com.uy/bases/leyes/20446-2025/629',
+      checkedAt: '2026-07-12',
+    },
+    {
+      id: 'ley-20446-631',
+      title: 'Abandono no infraccional y remate',
+      norm: 'Ley 20.446, art. 631',
+      url: 'https://www.impo.com.uy/bases/leyes/20446-2025/631',
+      checkedAt: '2026-07-12',
+    },
+    {
+      id: 'ley-20446-632',
+      title: 'Multa por declaración inexacta de valor o procedencia',
+      norm: 'Ley 20.446, art. 632',
+      url: 'https://www.impo.com.uy/bases/leyes/20446-2025/632',
+      checkedAt: '2026-07-12',
+    },
+    {
+      id: 'ley-20446-633',
+      title: 'IMESI y mercadería restringida excluidas del régimen',
+      norm: 'Ley 20.446, art. 633',
+      url: 'https://www.impo.com.uy/bases/leyes/20446-2025/633',
+      checkedAt: '2026-07-12',
+    },
+    {
+      id: 'decreto-50-026',
+      title: 'Reglamentación del régimen de envíos postales internacionales',
+      norm: 'Decreto 50/026 (promulg. 12/03/2026, publ. 19/03/2026)',
+      url: 'https://www.impo.com.uy/bases/decretos/50-2026',
+      checkedAt: '2026-07-12',
+    },
+    {
+      id: 'rg-dna-09-2026',
+      title:
+        'Exoneración de IVA en EPI al amparo del art. 3 del Decreto 50/026 — registro de vendedores extranjeros',
+      norm: 'RG DNA 09/2026 (20/04/2026)',
+      url: 'https://www.aduanas.gub.uy/innovaportal/file/28428/1/resolucion-9_2026.pdf',
+      checkedAt: '2026-07-12',
+    },
+    {
+      id: 'rg-dna-10-2026',
+      title: 'Protección de la identidad del usuario en el uso de franquicias',
+      norm: 'RG DNA 10/2026 (24/04/2026)',
+      url: 'https://impo.com.uy/bases/resoluciones-generales-aduanas-nd/10-2026',
+      checkedAt: '2026-07-12',
+    },
+    {
+      id: 'dna-comunicado-11-2026',
+      title: 'Comunicado — registro de acceso a la franquicia EPI',
+      norm: 'Comunicado AGCE 11/2026 (27/04/2026)',
+      url: 'https://www.aduanas.gub.uy/innovaportal/file/28456/1/comunicado-11-2026---registro-acceso-franquicia-epi-27.4.26-revisada-ap-als-de-acuerdo.pdf',
+      checkedAt: '2026-07-12',
+    },
+    {
+      id: 'rg-dna-21-2026',
+      title: 'Prórroga de la exigibilidad de la RG 09/2026 hasta el 1/10/2026',
+      norm: 'RG DNA 21/2026 (25/06/2026)',
+      url: 'https://www.aduanas.gub.uy/innovaportal/file/28613/1/rg-21-2026.pdf',
+      checkedAt: '2026-07-12',
+    },
+    {
+      id: 'carou-14',
+      title: 'Despachante de aduana — definición y facultades',
+      norm: 'Ley 19.276 (CAROU), art. 14',
+      url: 'https://www.impo.com.uy/bases/codigo-aduanero/19276-2014/14',
+      checkedAt: '2026-07-12',
+    },
+    {
+      id: 'carou-15',
+      title:
+        'Intervención NO preceptiva del despachante — lit. A) EPI de carácter no comercial, sin tope de valor',
+      norm: 'Ley 19.276 (CAROU), art. 15',
+      url: 'https://www.impo.com.uy/bases/codigo-aduanero/19276-2014/15',
+      checkedAt: '2026-07-12',
+    },
+    {
+      id: 'carou-98',
+      title: 'Abandono — casos',
+      norm: 'Ley 19.276 (CAROU), art. 98',
+      url: 'https://www.impo.com.uy/bases/codigo-aduanero/19276-2014/98',
+      checkedAt: '2026-07-12',
+    },
+    {
+      id: 'carou-99',
+      title: 'Abandono no infraccional — procedimiento judicial',
+      norm: 'Ley 19.276 (CAROU), art. 99',
+      url: 'https://www.impo.com.uy/bases/codigo-aduanero/19276-2014/99',
+      checkedAt: '2026-07-12',
+    },
+    {
+      id: 'carou-140',
+      title: 'Régimen de envíos postales internacionales — definición',
+      norm: 'Ley 19.276 (CAROU), art. 140',
+      url: 'https://www.impo.com.uy/bases/codigo-aduanero/19276-2014/140',
+      checkedAt: '2026-07-12',
+    },
+    {
+      id: 'carou-141',
+      title: 'Control aduanero de los EPI (tengan o no carácter comercial)',
+      norm: 'Ley 19.276 (CAROU), art. 141',
+      url: 'https://www.impo.com.uy/bases/codigo-aduanero/19276-2014/141',
+      checkedAt: '2026-07-12',
+    },
+    {
+      id: 'carou-200',
+      title: 'Infracción de contravención',
+      norm: 'Ley 19.276 (CAROU), art. 200',
+      url: 'https://www.impo.com.uy/bases/codigo-aduanero/19276-2014/200',
+      checkedAt: '2026-07-12',
+    },
+    {
+      id: 'carou-204',
+      title: 'Infracción de defraudación',
+      norm: 'Ley 19.276 (CAROU), art. 204',
+      url: 'https://www.impo.com.uy/bases/codigo-aduanero/19276-2014/204',
+      checkedAt: '2026-07-12',
+    },
+    {
+      id: 'carou-205',
+      title: 'Infracción de defraudación de valor',
+      norm: 'Ley 19.276 (CAROU), art. 205',
+      url: 'https://www.impo.com.uy/bases/codigo-aduanero/19276-2014/205',
+      checkedAt: '2026-07-12',
+    },
+    {
+      id: 'carou-207',
+      title: 'Abandono infraccional (comiso)',
+      norm: 'Ley 19.276 (CAROU), art. 207',
+      url: 'https://www.impo.com.uy/bases/codigo-aduanero/19276-2014/207',
+      checkedAt: '2026-07-12',
+    },
+    {
+      id: 'carou-209',
+      title: 'Infracción de contrabando',
+      norm: 'Ley 19.276 (CAROU), art. 209',
+      url: 'https://www.impo.com.uy/bases/codigo-aduanero/19276-2014/209',
+      checkedAt: '2026-07-12',
+    },
+    {
+      id: 'carou-213',
+      title: 'Responsabilidad — culpa/dolo; responsabilidad objetiva',
+      norm: 'Ley 19.276 (CAROU), art. 213',
+      url: 'https://www.impo.com.uy/bases/codigo-aduanero/19276-2014/213',
+      checkedAt: '2026-07-12',
+    },
+    {
+      id: 'carou-223',
+      title: 'Prescripción (5 años Fisco / 2 años reclamos de particulares)',
+      norm: 'Ley 19.276 (CAROU), art. 223',
+      url: 'https://www.impo.com.uy/bases/codigo-aduanero/19276-2014/223',
+      checkedAt: '2026-07-12',
+    },
+    {
+      id: 'carou-227',
+      title: 'Competencia: Juzgados Letrados de Aduana (salvo contravención)',
+      norm: 'Ley 19.276 (CAROU), art. 227',
+      url: 'https://www.impo.com.uy/bases/codigo-aduanero/19276-2014/227',
+      checkedAt: '2026-07-12',
+    },
+    {
+      id: 'ley-19009',
+      title:
+        'Régimen General de las Actividades Postales (courier incluido; art. 6 lit. H: el envío es propiedad del remitente hasta la entrega)',
+      norm: 'Ley 19.009 (22/11/2012), arts. 5, 6, 18, 33, 37',
+      url: 'https://www.impo.com.uy/bases/leyes/19009-2012',
+      checkedAt: '2026-07-12',
+    },
+    {
+      id: 'ursec-185-016',
+      title: 'Reglamento de Reclamaciones e Indemnizaciones del Servicio Postal',
+      norm: 'Res. URSEC 185/016 (09/12/2016), Anexo, arts. 1-29',
+      url: 'https://www.impo.com.uy/bases/resoluciones-ursec-originales/185-2016',
+      checkedAt: '2026-07-12',
+    },
+    {
+      id: 'decreto-209-017',
+      title: 'Reglamento de actividades postales — definiciones (queja/reclamación/courier)',
+      norm: 'Decreto 209/017 (04/08/2017), art. 3',
+      url: 'https://www.impo.com.uy/bases/decretos/209-2017',
+      checkedAt: '2026-07-12',
+    },
+    {
+      id: 'ley-17250',
+      title: 'Relaciones de consumo — Defensa del Consumidor',
+      norm: 'Ley 17.250 (11/08/2000), arts. 6, 12, 13, 16, 30, 31, 42, 47',
+      url: 'https://www.impo.com.uy/bases/leyes/17250-2000',
+      checkedAt: '2026-07-12',
+    },
+    {
+      id: 'ley-18250-76',
+      title: 'Mudanza de uruguayos que retornan (menaje, herramientas, 1 vehículo)',
+      norm: 'Ley 18.250, art. 76 (red. Ley 19.996 art. 352)',
+      url: 'https://www.impo.com.uy/bases/leyes/18250-2008/76',
+      checkedAt: '2026-07-12',
+    },
+    {
+      id: 'ley-18761-tifa',
+      title: 'TIFA — exoneración tributaria en envíos de entrega rápida',
+      norm: 'Ley 18.761 (17/06/2011), art. 7',
+      url: 'https://www.impo.com.uy/bases/leyes-internacional/18761-2011',
+      checkedAt: '2026-07-12',
+    },
+    {
+      id: 'decreto-139-014',
+      title: 'Régimen de equipaje MERCOSUR',
+      norm: 'Decreto 139/014, arts. 1, 3, 9, 13',
+      url: 'https://www.impo.com.uy/bases/decretos-internacional/139-2014/1',
+      checkedAt: '2026-07-12',
+    },
+    {
+      id: 'decreto-43-019',
+      title: 'Franquicia de viajero a USD 500',
+      norm: 'Decreto 43/019',
+      url: 'https://www.impo.com.uy/bases/decretos/43-2019',
+      checkedAt: '2026-07-12',
+    },
+    {
+      id: 'dna-epi',
+      title: 'DNA — Envíos Postales Internacionales (portal 2026 vigente)',
+      norm: 'procedimiento oficial',
+      url: 'https://www.aduanas.gub.uy/innovaportal/v/28219/1/innova.front/encomiendas-postales-internacionales.html',
+      checkedAt: '2026-07-12',
+    },
+    {
+      id: 'dna-retenidos',
+      title: 'DNA — Envíos retenidos (agenda + documentación)',
+      norm: 'procedimiento oficial (09/01/2026)',
+      url: 'https://www.aduanas.gub.uy/innovaportal/v/28225/1/innova.front/',
+      checkedAt: '2026-07-12',
+    },
+    {
+      id: 'dna-regimen-general',
+      title: 'DNA — Importación Régimen General (DUA)',
+      norm: 'procedimiento oficial (09/01/2026)',
+      url: 'https://www.aduanas.gub.uy/innovaportal/v/28223/1/innova.front/',
+      checkedAt: '2026-07-12',
+    },
+    {
+      id: 'dna-franquicias-usadas',
+      title: 'DNA — Consulte franquicias utilizadas',
+      norm: 'procedimiento oficial (09/01/2026)',
+      url: 'https://www.aduanas.gub.uy/innovaportal/v/28224/1/innova.front/',
+      checkedAt: '2026-07-12',
+    },
+    {
+      id: 'dna-prohibidos',
+      title: 'DNA — Productos que requieren permisos o no pueden ingresar',
+      norm: 'procedimiento oficial (09/01/2026)',
+      url: 'https://www.aduanas.gub.uy/innovaportal/v/28229/1/innova.front/',
+      checkedAt: '2026-07-12',
+    },
+    {
+      id: 'dna-denuncias',
+      title: 'DNA — Recepción de denuncias en aduana',
+      norm: 'trámite gub.uy',
+      url: 'https://www.gub.uy/tramites/recepcion-denuncias-aduana',
+      checkedAt: '2026-07-12',
+    },
+    {
+      id: 'mef-dc-denuncia',
+      title: 'Consulta, reclamo y/o denuncia en materia de defensa del consumidor',
+      norm: 'trámite gub.uy (MEF)',
+      url: 'https://www.gub.uy/tramites/consulta-yo-reclamo-materia-relaciones-consumo',
+      checkedAt: '2026-07-12',
+    },
+    {
+      id: 'ursec-reclamo',
+      title: 'Reclamo de consumidores de servicios de telecomunicaciones y postales',
+      norm: 'trámite gub.uy (URSEC)',
+      url: 'https://www.gub.uy/tramites/reclamo-consumidores-servicios-telecomunicaciones-postales',
+      checkedAt: '2026-07-12',
+    },
+    {
+      id: 'mudanza-tramite',
+      title: 'Mudanza de uruguayos que retornan al país (Ley 18.250)',
+      norm: 'trámite gub.uy',
+      url: 'https://www.gub.uy/tramites/mudanza-uruguayos-retornan-pais-amparados-ley-18250',
+      checkedAt: '2026-07-12',
+    },
+    {
+      id: 'mef-faq',
+      title: 'Guía de preguntas frecuentes sobre el régimen de envíos postales',
+      norm: 'MEF (24/04/2026)',
+      url: 'https://www.gub.uy/ministerio-economia-finanzas/comunicacion/noticias/guia-preguntas-frecuentes-sobre-regimen-envios-postales-franquicias',
+      checkedAt: '2026-07-12',
+    },
+  ] as AduanaSource[],
+  updatedAt: null,
+  stale: true,
+}
