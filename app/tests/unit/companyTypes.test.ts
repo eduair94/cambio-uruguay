@@ -2648,3 +2648,295 @@ describe('evaluate', () => {
     )
   })
 })
+
+// =======================================================================================
+// ROUND-3 — the two things a legal-information page may never do: price an unknown at zero,
+// and price a régimen the law has already closed.
+// =======================================================================================
+
+describe('ROUND-3 CRITICAL 1 — no régimen may be priced at zero', () => {
+  const base: WizardInput = {
+    annualRevenueUyu: 600_000,
+    sells: 'bienes',
+    clients: 'consumidor-final',
+    people: 'solo',
+    employees: 0,
+    needsLimitedLiability: false,
+    otherCompanyRole: false,
+    yearsOperating: 0,
+    family: 'solo',
+  }
+  // The exact repro: "2 o más socios" → 2 socios → "¿Cuántos TRABAJAN?" = "Ninguno (la maneja un
+  // gerente contratado)". Three clicks from the default. It rendered:
+  //   Monotributo · APORTES BPS $0 · TOTAL MENSUAL $0 · $0 al año — ranked FIRST.
+  const gerente: WizardInput = {
+    ...base,
+    people: 'socios',
+    sociosCount: 2,
+    sociosActivos: 0,
+    employees: 0,
+  }
+
+  // (a) THE MONOTRIBUTO WAS READING THE WRONG FIELD. `sociosActivos` implements Ley 16.713
+  // art. 172's "socio con actividad" test — and art. 172 does not govern the monotributo at all
+  // (the module says so itself). The monotributo's pago único is the substitutive contribution
+  // of Ley 18.083 art. 70, and BPS's own table for it is indexed by a "Cant. socios" column.
+  it('prices the monotributo sociedad de hecho off sociosCount (BPS "Cant. socios"), not sociosActivos', () => {
+    const perSocio = F.monoSocioSociedadHechoAnio1.value // yearsOperating: 0
+    const c = estimateCost('monotributo', {
+      ...base,
+      people: 'socios',
+      sociosCount: 2,
+      sociosActivos: 1,
+      employees: 1,
+    })
+    expect(c.bpsMonthly).toBe(perSocio * 2)
+  })
+
+  it('still lets Ley 16.713 art. 172 govern the SRL and the sociedad de hecho (sociosActivos)', () => {
+    const shared = { ...base, people: 'socios', sociosCount: 3, sociosActivos: 2, employees: 1 }
+    expect(estimateCost('srl', shared).bpsMonthly).toBe(F.bpsSocioSrl.value * 2)
+    expect(estimateCost('sociedad-hecho', shared).bpsMonthly).toBe(
+      F.bpsSocioSociedadHecho.value * 2
+    )
+  })
+
+  // (b) NOBODY IS IN THE COMPANY, AND NOTHING NOTICED. Both regimes are priced off BPS's
+  // "SIN DEPENDIENTES" tables, and the monotributo sociedad de hecho is legally "sin
+  // dependientes" (Ley 18.083 art. 70 lits. B y C). "Zero socios work here" + "zero
+  // dependientes" = nobody performs the activity. That is contradictory input, not a cheap
+  // company, and it must not be priced.
+  it('refuses to price the sin-dependientes regimes when NOBODY works in the company', () => {
+    for (const id of ['monotributo', 'sociedad-hecho'] as const) {
+      const c = estimateCost(id, gerente)
+      expect(c.bpsMonthly, id).toBeNull()
+      expect(c.bpsUnknown, id).toBe(true)
+      expect(c.totalMonthly, id).toBeNull()
+      expect(c.totalAnnual, id).toBeNull()
+      expect(c.notes.join(' '), id).toMatch(/dependiente|contradic|nadie/i)
+    }
+  })
+
+  it('explains the contradiction instead of pricing it, and never ranks it', () => {
+    const v = evaluate(gerente)
+    const mono = v.ranked.find(r => r.regime === 'monotributo')!
+    expect(mono.comparable).toBe(false)
+    expect(mono.cannotCost.length).toBeGreaterThan(0)
+    expect(v.recommended).not.toBe('monotributo')
+  })
+
+  // THE INVARIANT, not just the repro. A complete total of zero is not a price: every regime
+  // charges the owner SOMETHING, so a zero can only mean a component went missing on the way.
+  it('never returns a complete total of $0 — for ANY reachable wizard state', () => {
+    const inputs: WizardInput[] = []
+    for (const sells of ['bienes', 'servicios', 'ambos'] as const) {
+      for (const people of ['solo', 'conyuge', 'socios'] as const) {
+        for (const employees of [0, 1, 2]) {
+          for (const sociosActivos of [undefined, 0, 1, 2]) {
+            for (const sociosCount of [undefined, 2, 3]) {
+              for (const annualRevenueUyu of [0, 600_000, 5_000_000, 30_000_000]) {
+                for (const yearsOperating of [0, 3]) {
+                  inputs.push({
+                    ...base,
+                    sells,
+                    people,
+                    employees,
+                    sociosActivos,
+                    sociosCount,
+                    annualRevenueUyu,
+                    yearsOperating,
+                  })
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    for (const input of inputs) {
+      for (const id of ALL_REGIMES) {
+        const c = estimateCost(id, input)
+        if (c.totalMonthly === null) continue
+        expect(
+          c.totalMonthly,
+          `${id} priced itself at ${String(c.totalMonthly)} for ${JSON.stringify(input)} — a total of zero is not a price, it is a missing component wearing one`
+        ).toBeGreaterThan(0)
+      }
+    }
+  })
+})
+
+// ---------------------------------------------------------------------------------------
+// ROUND-3 CRITICAL 2 — above the límite, IRPF Cat. II is a régimen with an expiry date, and
+// the page was recommending it with a precise monthly total on the very screen that said the
+// IRAE was preceptivo.
+//
+// THE NORM, VERBATIM (Dto. 150/007 art. 7, "Rentas comprendidas en el IRPF. Inclusión
+// preceptiva" — NOT art. 168 lit. c, which governs contabilidad suficiente and does not
+// mention servicios personales at all; that is lit. d, a different case entirely):
+//
+//   "Los contribuyentes del Impuesto a las Rentas de las Personas Físicas deberán comparar el
+//    monto de las rentas que obtengan EN EL EJERCICIO derivadas de la prestación de servicios
+//    personales fuera de la relación de dependencia con el que resulte de convertir a moneda
+//    nacional UI 4.000.000 (cuatro millones de unidades indexadas) A LA COTIZACIÓN DE CIERRE
+//    DEL EJERCICIO. Cuando el monto de las rentas referidas supere el antedicho límite, deberá
+//    liquidarse obligatoriamente el impuesto que se reglamenta A PARTIR DEL PRIMER MES DEL
+//    EJERCICIO SIGUIENTE."
+// ---------------------------------------------------------------------------------------
+describe('ROUND-3 CRITICAL 2 — IRPF Cat. II above UI 4.000.000 (Dto. 150/007 art. 7)', () => {
+  const freelance: WizardInput = {
+    annualRevenueUyu: 30_000_000,
+    sells: 'servicios',
+    clients: 'empresas',
+    people: 'solo',
+    employees: 0,
+    needsLimitedLiability: false,
+    otherCompanyRole: false,
+    yearsOperating: 5,
+    family: 'solo',
+  }
+  const cierre = (n: number) => n * F.uiCierre2025.value
+
+  it('flags irpf-servicios above the límite, citing the article that actually says so', () => {
+    const g = applyGates(freelance).find(x => x.regime === 'irpf-servicios')!
+    expect(g.status).not.toBe('elegible')
+    expect(g.reasons.some(r => r.url.includes('150-2007/7'))).toBe(true)
+    expect(g.reasons.some(r => /ejercicio siguiente/i.test(r.text))).toBe(true)
+  })
+
+  it('refuses to put a monthly total on it — the same refusal its neighbours already make', () => {
+    for (const id of ['irpf-servicios', 'unipersonal-irae', 'sas'] as const) {
+      const c = estimateCost(id, freelance)
+      expect(c.taxUnknown, id).toBe(true)
+      expect(c.taxMonthly, id).toBeNull()
+      expect(c.totalMonthly, id).toBeNull()
+    }
+  })
+
+  it('never recommends it, and never compares it on price', () => {
+    const v = evaluate(freelance)
+    expect(v.recommended).not.toBe('irpf-servicios')
+    const irpf = v.ranked.find(r => r.regime === 'irpf-servicios')!
+    expect(irpf.comparable).toBe(false)
+    expect(irpf.cannotCost.length).toBeGreaterThan(0)
+  })
+
+  // The frontier is measured with the UI DE CIERRE, which the article names in so many words —
+  // not with today's UI, which moves daily and would slide the boundary under the reader's feet.
+  it('measures the frontier at the UI de cierre, not at the UI de hoy', () => {
+    const belowCierre = estimateCost('irpf-servicios', {
+      ...freelance,
+      annualRevenueUyu: Math.floor(cierre(F.topeIrpfIraePreceptivoUi.value)) - 1,
+    })
+    expect(belowCierre.taxUnknown).toBe(false)
+    expect(belowCierre.totalMonthly).not.toBeNull()
+
+    // Between the two conversions: over the cierre tope, still under today's. It must be OUT.
+    const between = estimateCost('irpf-servicios', {
+      ...freelance,
+      annualRevenueUyu: Math.ceil((cierre(4_000_000) + ui(4_000_000)) / 2),
+    })
+    expect(between.taxUnknown).toBe(true)
+  })
+
+  // Below the límite nothing changes: this is still the solid path for a freelancer.
+  it('leaves the ordinary freelancer alone', () => {
+    const v = evaluate({ ...freelance, annualRevenueUyu: 600_000, clients: 'exterior' })
+    expect(v.recommended).toBe('irpf-servicios')
+  })
+})
+
+// ---------------------------------------------------------------------------------------
+// ROUND-3 IMPORTANT 4 — "Lo que SÍ sabemos suma $0 al mes" is the forbidden sentence, and it
+// was one click off the normal path: click "2 o más socios" and change nothing, and the
+// Monotributo card said exactly that (bps null, tax 0, contador 0).
+// ---------------------------------------------------------------------------------------
+describe('ROUND-3 IMPORTANT 4 — an un-costable regime never quotes a floor of $0', () => {
+  const base: WizardInput = {
+    annualRevenueUyu: 600_000,
+    sells: 'bienes',
+    clients: 'consumidor-final',
+    people: 'solo',
+    employees: 0,
+    needsLimitedLiability: false,
+    otherCompanyRole: false,
+    yearsOperating: 0,
+    family: 'solo',
+  }
+
+  it('drops the price clause entirely when NOTHING is known', () => {
+    const v = evaluate({ ...base, people: 'socios' })
+    const mono = v.ranked.find(r => r.regime === 'monotributo')!
+    const text = mono.cannotCost.join(' ')
+    expect(text.length).toBeGreaterThan(0)
+    expect(text).not.toMatch(/\$\s?0(?![\d.,])/)
+    expect(text).toMatch(/ni un piso|ning[uú]n componente/i)
+  })
+
+  // ...and it still shows a floor WHEN THERE IS ONE. The CJPPU professional at $600.000/año has
+  // none — their BPS is unknowable and their IRPF is genuinely zero (below the mínimo no
+  // imponible), so there is nothing to floor. At $3.000.000 the IRPF is real, and it is.
+  it('still shows the floor when there IS one', () => {
+    const v = evaluate({
+      ...base,
+      sells: 'servicios',
+      cajaProfesional: true,
+      annualRevenueUyu: 3_000_000,
+    })
+    const irpf = v.ranked.find(r => r.regime === 'irpf-servicios')!
+    expect(irpf.cost!.knownPartialMonthly).toBeGreaterThan(0)
+    expect(irpf.cannotCost.join(' ')).toMatch(/PISO/)
+  })
+
+  it('never quotes a zero anywhere in cannotCost, for any input', () => {
+    for (const people of ['solo', 'socios'] as const) {
+      for (const sells of ['bienes', 'servicios'] as const) {
+        for (const cajaProfesional of [false, true]) {
+          for (const annualRevenueUyu of [0, 600_000, 30_000_000]) {
+            const v = evaluate({ ...base, people, sells, cajaProfesional, annualRevenueUyu })
+            for (const r of v.ranked) {
+              expect(
+                r.cannotCost.join(' '),
+                `${r.regime} quoted a floor of $0 — the forbidden sentence`
+              ).not.toMatch(/\$\s?0(?![\d.,])/)
+            }
+          }
+        }
+      }
+    }
+  })
+})
+
+// ---------------------------------------------------------------------------------------
+// ROUND-3 IMPORTANT 3 — the page laundered a default into a user statement ("Nombraste 1
+// administradores"), killing the art. 29 branch that justified the number. The engine's note
+// must be grammatical, and must never claim the visitor said something they did not.
+// ---------------------------------------------------------------------------------------
+describe('ROUND-3 IMPORTANT 3 — the SAS administrador note', () => {
+  const base: WizardInput = {
+    annualRevenueUyu: 600_000,
+    sells: 'bienes',
+    clients: 'consumidor-final',
+    people: 'solo',
+    employees: 0,
+    needsLimitedLiability: false,
+    otherCompanyRole: false,
+    yearsOperating: 5,
+    family: 'solo',
+  }
+
+  it('discloses the statutory default (art. 29) and does NOT claim the visitor named it', () => {
+    const notes = estimateCost('sas', base).notes.join(' ')
+    expect(notes).toContain('art. 29')
+    expect(notes).not.toMatch(/Nombraste/)
+  })
+
+  it('pluralises the count it was actually given', () => {
+    expect(estimateCost('sas', { ...base, administradoresSas: 1 }).notes.join(' ')).toMatch(
+      /1 administrador\b/
+    )
+    expect(estimateCost('sas', { ...base, administradoresSas: 2 }).notes.join(' ')).toMatch(
+      /2 administradores\b/
+    )
+  })
+})

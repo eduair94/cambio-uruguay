@@ -337,15 +337,18 @@
                   v-model.number="administradoresSas"
                   type="number"
                   min="1"
+                  placeholder="Por defecto 1 (Ley 19.820 art. 29)"
+                  persistent-placeholder
                   label="Administradores / representantes legales de la SAS"
                   variant="outlined"
                   density="comfortable"
                   hide-details
                 />
                 <p class="text-caption text-medium-emphasis mt-1 mb-0">
-                  Cada uno paga su propio BPS. La Ley 19.820 art. 29 supone
-                  <strong>uno</strong> si el estatuto no dice otra cosa, y el art. 30 no fija un
-                  máximo.
+                  Dejalo vacío y contamos <strong>uno</strong>: no es una suposición nuestra sino la
+                  de la propia Ley 19.820 (art. 29), que se lo adjudica todo al representante legal
+                  si el estatuto no dice otra cosa. El art. 30 no fija un máximo. Cada administrador
+                  paga su propio BPS.
                 </p>
               </VCol>
 
@@ -380,12 +383,12 @@
 
     <VCard data-testid="verdict" variant="flat" class="verdict-card pa-5 pa-sm-6 mb-6">
       <!-- 3a. No hay recomendación posible. Es una respuesta, no un error. -->
-      <template v-if="verdict.recommended === null">
+      <template v-if="verdict.recommended === null || zeroPricedRecommendation">
         <div class="d-flex align-center ga-2 mb-3">
           <VIcon color="warning" size="28">mdi-help-circle-outline</VIcon>
           <h3 class="text-h6 font-weight-bold mb-0">No podemos recomendarte un régimen</h3>
         </div>
-        <p class="text-body-2 mb-0">{{ verdict.noRecommendation }}</p>
+        <p class="text-body-2 mb-0">{{ noVerdictText }}</p>
         <VAlert type="info" variant="tonal" density="comfortable" class="mt-4">
           Esto <strong>no</strong> es una falla de la herramienta: es el resultado honesto. Darte el
           régimen “más barato” cuando a todos les falta la parte más cara del cálculo sería
@@ -394,8 +397,8 @@
         </VAlert>
       </template>
 
-      <!-- 3b. Hay recomendación. -->
-      <template v-else-if="recommended && recommended.cost">
+      <!-- 3b. Hay recomendación, y tiene un precio de verdad. -->
+      <template v-else-if="recommended && recommended.cost && recommendedPriced">
         <div class="d-flex flex-wrap align-center ga-2 mb-2">
           <VIcon color="primary" size="28">mdi-check-decagram</VIcon>
           <h3 class="text-h5 font-weight-bold mb-0">{{ regimeName(recommended.regime) }}</h3>
@@ -506,18 +509,13 @@
             {{ statusLabel(r.status) }}
           </VChip>
           <VChip
-            v-if="r.status !== 'excluido' && r.comparable && r.cost?.totalMonthly !== null"
+            v-if="r.status !== 'excluido' && r.comparable && isPrice(r.cost?.totalMonthly)"
             size="x-small"
             variant="tonal"
           >
             {{ money(r.cost?.totalMonthly) }} / mes
           </VChip>
-          <VChip
-            v-else-if="r.status !== 'excluido' && !r.comparable"
-            size="x-small"
-            variant="tonal"
-            color="warning"
-          >
+          <VChip v-else-if="r.status !== 'excluido'" size="x-small" variant="tonal" color="warning">
             Sin precio calculable
           </VChip>
         </div>
@@ -642,15 +640,38 @@
             </tbody>
           </VTable>
           <p class="text-caption text-medium-emphasis mb-0">
-            Base: Título 7 art. 38 lit. C + Dto. 148/007 art. 20-TER. Aplica a la SAS porque la
+            Base:
             <a
-              href="https://www.impo.com.uy/bases/leyes/19820-2019"
+              href="https://www.impo.com.uy/bases/todgi-2023/7-2024"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Título 7 art. 38 lit. C</a
+            >, reglamentado por el
+            <a
+              href="https://www.impo.com.uy/bases/decretos/148-2007"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Dto. 148/007</a
+            >, que exonera las utilidades “distribuidas por las sociedades personales cuyos ingresos
+            no hayan superado en el ejercicio que dé origen a la distribución el límite establecido
+            para liquidar preceptivamente el IRAE en el régimen de contabilidad suficiente” — y ese
+            límite (art. 20-TER del mismo decreto) es justamente
+            {{ uiLabel(FIGURES.topeIraePreceptivoUi.value) }} UI de ingresos del ejercicio anterior,
+            a valores de cierre. Aplica a la SAS porque la
+            <a
+              href="https://www.impo.com.uy/bases/leyes/19820-2019/42"
               target="_blank"
               rel="noopener noreferrer"
               >Ley 19.820 art. 42</a
             >
             la asimila a las sociedades personales a todos los efectos tributarios, incluida la
-            distribución de utilidades — y DGI lo confirmó en la Consulta 6306.
+            distribución de utilidades — y DGI lo confirmó en la
+            <a
+              href="https://www.impo.com.uy/bases/consultas-tributarias/6306-2020"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Consulta 6306</a
+            >.
           </p>
         </VCard>
       </VCol>
@@ -688,6 +709,25 @@
             <strong>{{ money(FIGURES.bpsAdminSas.value) }} por mes</strong> aunque el negocio no
             arranque. Es el costo real de la figura, y casi nunca aparece en los comparativos.
           </VAlert>
+          <p class="text-caption text-medium-emphasis mt-3 mb-0">
+            Base:
+            <a
+              href="https://www.impo.com.uy/bases/leyes/16713-1995/171"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Ley 16.713 art. 171 lit. A</a
+            >
+            — exentos los Directores “que no perciben remuneración de clase alguna, debiéndose
+            probar dicho extremo, mediante certificado notarial o contable” (o sea: la exoneración
+            existe, pero hay que probarla) — y
+            <a
+              href="https://www.impo.com.uy/bases/leyes/19820-2019/43"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Ley 19.820 art. 43</a
+            >, que manda al administrador de la SAS al art. 172 de la Ley 16.713 y le cierra esa
+            puerta: “en ningún caso regirá la exoneración del artículo 171”.
+          </p>
         </VCard>
       </VCol>
     </VRow>
@@ -945,7 +985,9 @@
       <ul class="apoyo-notes mb-2">
         <li>
           Los porcentajes de INEFOP <strong>80/70/50</strong> que repiten las consultoras son de un
-          PDF de 2019. Los vigentes son <strong>85/75/60</strong>.
+          PDF de 2019. Los vigentes son <strong>85/75/60/40/50</strong> — cinco tramos, no tres (85%
+          micro, 75% pequeña, 60% mediana, y dos tramos más en la grilla vigente). Confirmá cuál te
+          toca antes de presupuestar la capacitación.
         </li>
         <li>
           ANDE Semilla exige facturación ≤ $2.000.000 en 6 meses; ANII exige ≤ $2.400.000.
@@ -953,8 +995,9 @@
         </li>
       </ul>
       <p class="text-caption mb-0">
-        Cifras y fechas verificadas contra las bases oficiales el {{ verifiedAt }}. Los llamados
-        cambian: confirmá en la web del organismo (<a
+        Cifras y fechas de los apoyos verificadas contra la web del organismo el
+        {{ APOYOS_VERIFIED_AT }} (los apoyos tienen su propia fecha: no son cifras legales y no se
+        mueven con ellas). Los llamados cambian: confirmá en la web del organismo (<a
           href="https://www.ande.org.uy/"
           target="_blank"
           rel="noopener noreferrer"
@@ -1003,8 +1046,9 @@
         Fuentes primarias
       </h2>
       <p class="text-caption text-medium-emphasis mb-3">
-        {{ sources.length }} fuentes, todas oficiales (BPS, DGI, IMPO, gub.uy). Ninguna cifra de
-        esta página se publica sin una de ellas. Última verificación:
+        {{ sources.length }} fuentes, todas oficiales (BPS, DGI, IMPO, gub.uy). Ninguna cifra legal
+        de esta página —topes, aportes, tasas— se publica sin una de ellas; los montos de los apoyos
+        llevan su propia fecha de verificación contra la web de cada organismo. Última verificación:
         <strong>{{ verifiedAt }}</strong
         >.
       </p>
@@ -1131,7 +1175,17 @@ const fonasaFromJob = ref(false)
 const localTooBig = ref(false)
 const midesEligible = ref(false)
 const assets = ref<number | null>(null)
-const administradoresSas = ref(1)
+/**
+ * IMPORTANT 3 — this used to be `ref(1)`, and the input was clamped with `Math.max(1, …)`, so the
+ * engine NEVER saw `undefined`. That killed the one branch that had a law behind it: Ley 19.820
+ * art. 29 supplies the default itself ("salvo que otra cosa se dispusiera en los estatutos, la
+ * totalidad de las funciones … le corresponderán AL REPRESENTANTE LEGAL"), and the engine
+ * discloses exactly that when it is not told a number. What rendered instead was "Nombraste 1
+ * administradores" — a claim about something the visitor never said, with the citation that
+ * justified it thrown away. `null` = we were never told. The engine's `?? 1` and its art. 29 note
+ * do the rest.
+ */
+const administradoresSas = ref<number | null>(null)
 const accountant = ref(MARKET_ESTIMATES.contadorMensual.value)
 
 const sociosCountItems = [
@@ -1157,12 +1211,17 @@ const familyItems = [
   { title: 'Con cónyuge o concubino/a', value: 'con-conyuge' },
   { title: 'Con cónyuge e hijos a cargo', value: 'con-conyuge-e-hijos' },
 ]
+/**
+ * MINOR 5 — there used to be a fifth option, `{ title: 'Cuarto año o más (régimen pleno)', value:
+ * 4 }`, and it produced output IDENTICAL to `value: 3`: every ramp in the engine is at most 3
+ * long, so anything past its end lands on the pleno figure. It was also off by one — 4 FULL years
+ * of activity is your fifth year, not your fourth. One option per distinct answer.
+ */
 const yearsItems = [
   { title: 'Recién arranco (año 1)', value: 0 },
   { title: 'Segundo año', value: 1 },
   { title: 'Tercer año', value: 2 },
-  { title: 'Cuarto año', value: 3 },
-  { title: 'Cuarto año o más (régimen pleno)', value: 4 },
+  { title: 'Cuarto año o más (régimen pleno)', value: 3 },
 ]
 
 // ── live USD, for the revenue toggle ──────────────────────────────────────────
@@ -1176,6 +1235,20 @@ const annualRevenueUyu = computed(() => {
 const accountantFee = computed(() => {
   const v = Number(accountant.value)
   return Number.isFinite(v) && v >= 0 ? v : MARKET_ESTIMATES.contadorMensual.value
+})
+
+/**
+ * What the visitor actually TOLD us about the número de administradores — `undefined` when they
+ * did not, which is the default and the normal case.
+ *
+ * A blank, a zero or a negative is NOT a measured zero: Ley 19.820 arts. 29 y 30 put the
+ * administración "a cargo de UNA O MÁS personas", so a SAS with zero administradores does not
+ * exist and "0" can only be an empty or mistyped field. It goes back to `undefined`, and the
+ * engine answers with the statutory one — citing art. 29 for it.
+ */
+const administradoresSasInput = computed<number | undefined>(() => {
+  const v = Math.floor(Number(administradoresSas.value))
+  return Number.isFinite(v) && v >= 1 ? v : undefined
 })
 
 const input = computed<WizardInput>(() => {
@@ -1192,7 +1265,9 @@ const input = computed<WizardInput>(() => {
     sociosCount: socios ? (sociosCount.value ?? undefined) : undefined,
     sociosActivos: socios ? (sociosActivos.value ?? undefined) : undefined,
     sociosFamiliares: socios ? sociosFamiliares.value : undefined,
-    administradoresSas: Math.max(1, Math.floor(Number(administradoresSas.value) || 1)),
+    // Never `?? 1`: Ley 19.820 art. 29 already supplies the residual, and the engine applies it
+    // WITH the citation. An unasked question stays unasked (IMPORTANT 3).
+    administradoresSas: administradoresSasInput.value,
     cajaProfesional: cajaProfesional.value,
     family: family.value,
     eFactura: eFactura.value,
@@ -1215,15 +1290,53 @@ const liabilityOf = (id: RegimeId) => regimeOf(id)?.liability ?? 'ilimitada'
 const recommended = computed<RankedRegime | null>(
   () => verdict.value.ranked.find(r => r.regime === verdict.value.recommended) ?? null
 )
+
+/**
+ * IS THIS A PRICE? — the guard the renderer did not have.
+ *
+ * It guarded `null` (`bpsValue`/`taxValue` → "No calculable") and never guarded a ZERO, so a
+ * regime whose components had quietly collapsed to nothing printed "$ 0 / mes" as a price, in the
+ * verdict card and in the comparison table, ranked first. The engine bug that produced it is
+ * fixed — but "$0 as a price" is a CLASS of bug, and the class is what has to become
+ * unshippable: every regime on this page charges the owner something, so a zero can only ever
+ * mean a component went missing on the way here. It is never news the visitor can act on, and it
+ * is always the cheapest-looking number on the screen.
+ *
+ * Rounded, because the page renders rounded pesos: $0,40 must not print as "$ 0" either.
+ */
+const isPrice = (n: number | null | undefined): n is number =>
+  typeof n === 'number' && Number.isFinite(n) && Math.round(n) > 0
+
+/** Only a regime with a REAL price may be presented as the recommendation. */
+const recommendedPriced = computed(
+  () => recommended.value !== null && isPrice(recommended.value.cost?.totalMonthly)
+)
+
+/** True when the engine picked a regime but its total is not a price. Then we show no verdict. */
+const zeroPricedRecommendation = computed(
+  () => verdict.value.recommended !== null && !recommendedPriced.value
+)
+
+const noVerdictText = computed(
+  () =>
+    verdict.value.noRecommendation ??
+    'Con los datos que nos diste, el régimen más barato de los que podrías usar da un costo mensual de CERO — y cero no es un precio: es la señal de que falta un componente. Puede ser un dato del formulario que se contradice con otro (por ejemplo, que nadie trabaje en la empresa y tampoco haya empleados), unos honorarios de contador puestos en cero, o una facturación en cero. Preferimos decírtelo antes que mostrarte un $0 que no vas a pagar: revisá la facturación, los honorarios y cuántos socios trabajan en la empresa.'
+)
+
+/** Everything we did NOT present as the verdict — so nothing ever disappears from the page. */
 const others = computed(() =>
-  verdict.value.ranked.filter(r => r.regime !== verdict.value.recommended)
+  verdict.value.ranked.filter(
+    r => !recommendedPriced.value || r.regime !== verdict.value.recommended
+  )
 )
 
 /** How much MORE per month than the recommendation. `null` when either side has no price. */
 function extraCost(r: RankedRegime): number | null {
   const mine = r.cost?.totalMonthly
   const best = recommended.value?.cost?.totalMonthly
-  if (mine === undefined || mine === null || best === undefined || best === null) return null
+  // Both sides must be REAL prices: comparing against a recommendation we are not even showing
+  // (because its total is not a price) would quote a difference from nothing.
+  if (!recommendedPriced.value || !isPrice(mine) || !isPrice(best)) return null
   const diff = Math.round(mine - best)
   return diff > 0 ? diff : null
 }
@@ -1247,6 +1360,10 @@ const warningTitle = (w: Warning) =>
  */
 function bpsValue(cost: CostBreakdown): string {
   if (cost.bpsUnknown || cost.bpsMonthly === null) return 'No calculable'
+  // A MEASURED zero (an SRL whose socios are purely capitalist: Ley 16.713 art. 172 charges only
+  // the socio "que desarrolle actividad"). It is a real fact, and it is still not a price — so it
+  // is said in words, not printed as "$ 0" next to numbers that are.
+  if (Math.round(cost.bpsMonthly) <= 0) return 'Nadie aporta'
   return money(cost.bpsMonthly)
 }
 
@@ -1272,8 +1389,12 @@ function taxTitle(id: RegimeId): string {
  */
 function taxValue(id: RegimeId, cost: CostBreakdown): string {
   if (cost.taxUnknown || cost.taxMonthly === null) return 'No calculable'
-  if (cost.taxMonthly === 0 && (id === 'monotributo' || id === 'monotributo-social')) {
-    return 'En el pago único'
+  if (Math.round(cost.taxMonthly) <= 0) {
+    // The monotributo's zero is a SUBSTITUTION, not an absence — saying "$0" is how a reader ends
+    // up believing the regime has no tax rather than that its tax is inside the pago único. The
+    // other regimes' zero is a real exemption (bajo el mínimo no imponible del IRPF, o sin
+    // facturación). Neither is a price.
+    return id === 'monotributo' || id === 'monotributo-social' ? 'En el pago único' : 'No pagás'
   }
   return money(cost.taxMonthly)
 }
@@ -1287,9 +1408,20 @@ const topeMonotributoLabel = computed(() =>
     ? money(FIGURES.topeMonotributoSociedadUyu.value)
     : money(FIGURES.topeMonotributoUnipersonalUyu.value)
 )
-const sinTope = computed(
+/**
+ * Two different rules that share a number, and used to share a sentence — which is how the IRPF
+ * row ended up asserting the IRAE ficto's rule (art. 168 lit. b, about an IRAE taxpayer's books)
+ * as if it governed a persona física in Categoría II. It does not: what closes the IRPF path is
+ * the inclusión preceptiva of Dto. 150/007 art. 7, measured on the rentas of the CURRENT ejercicio
+ * and biting from the first month of the NEXT one.
+ */
+const sinTopeIrae = computed(
   () =>
-    `Sin tope propio; sobre ${uiLabel(FIGURES.topeIraePreceptivoUi.value)} UI el IRAE real es preceptivo`
+    `Sin tope propio; sobre ${uiLabel(FIGURES.topeIraePreceptivoUi.value)} UI (ingresos del ejercicio anterior) la contabilidad suficiente es preceptiva y el IRAE pasa a ser real`
+)
+const sinTopeIrpf = computed(
+  () =>
+    `Sin tope propio, pero sobre ${uiLabel(FIGURES.topeIrpfIraePreceptivoUi.value)} UI de rentas del ejercicio el IRAE es PRECEPTIVO desde el primer mes del ejercicio siguiente (Dto. 150/007 art. 7): este régimen se termina`
 )
 
 interface CmpRow {
@@ -1313,7 +1445,8 @@ const dividendosSocietarios = computed(
 const comparison = computed<CmpRow[]>(() =>
   REGIMES.map(reg => {
     const r = verdict.value.ranked.find(x => x.regime === reg.id)
-    const priced = r?.comparable === true && r.cost?.totalMonthly !== null
+    // `isPrice`, not `!== null`: a zero is not a price here either (CRITICAL 1, page half).
+    const priced = r?.comparable === true && isPrice(r.cost?.totalMonthly)
     const cost =
       r === undefined
         ? '—'
@@ -1357,7 +1490,7 @@ const comparison = computed<CmpRow[]>(() =>
       case 'irpf-servicios':
         return {
           ...base,
-          tope: sinTope.value,
+          tope: sinTopeIrpf.value,
           mono: 'No — Ley 18.083 art. 72 lit. C',
           litE: 'Zona gris (Consulta DGI 4761)',
           dividendos: '—',
@@ -1375,7 +1508,7 @@ const comparison = computed<CmpRow[]>(() =>
       case 'sociedad-hecho':
         return {
           ...base,
-          tope: sinTope.value,
+          tope: sinTopeIrae.value,
           mono: `Sí — hasta ${FIGURES.monotributoSociosMaxSinFamilia.value} socios (${FIGURES.monotributoSociosMaxFamilia.value} si son familiares)`,
           litE: 'Sí',
           dividendos: '—',
@@ -1384,7 +1517,7 @@ const comparison = computed<CmpRow[]>(() =>
       case 'srl':
         return {
           ...base,
-          tope: sinTope.value,
+          tope: sinTopeIrae.value,
           mono: 'No — Ley 18.083 art. 70 es taxativo',
           litE: 'Sí',
           dividendos: dividendosSocietarios.value,
@@ -1393,7 +1526,7 @@ const comparison = computed<CmpRow[]>(() =>
       case 'sas':
         return {
           ...base,
-          tope: sinTope.value,
+          tope: sinTopeIrae.value,
           mono: 'No — Ley 18.083 art. 70 es taxativo',
           litE: 'Sí',
           dividendos: dividendosSocietarios.value,
@@ -1485,6 +1618,14 @@ const myths = [
   },
 ]
 
+/**
+ * MINOR 6 — the apoyos block used to read its date from `FIGURES.bpc.verifiedAt`, so bumping the
+ * BPC (a BPS figure, refreshed every January) silently re-dated every ANDE / ANII / INEFOP claim
+ * on the page. They are not the same fact and they do not move together: a llamado closes when it
+ * closes. Their own date, checked against the organismo's own site.
+ */
+const APOYOS_VERIFIED_AT = '2026-07-13'
+
 const apoyos = [
   {
     name: 'ANDE Semilla 2026',
@@ -1513,7 +1654,8 @@ const apoyos = [
   },
   {
     name: 'INEFOP — Capacitación Estándar',
-    gives: 'Subsidio del 85% (micro), 75% (pequeña) o 60% (mediana). Requiere Certificado PYME.',
+    gives:
+      'Subsidio del 85% (micro), 75% (pequeña) o 60% (mediana) — la grilla vigente tiene cinco tramos: 85/75/60/40/50. Requiere Certificado PYME.',
     status: 'Permanente',
     color: 'primary',
   },
@@ -1567,6 +1709,14 @@ const unknowns = [
   {
     q: '¿El IRAE y el IRPF que muestran son exactos?',
     a: 'No: son un TECHO, a propósito. Al IRAE ficto no le descontamos los sueldos de dueños o socios que el art. 64 admite restar, porque no te preguntamos si te pagás sueldo. Al IRPF no le restamos el crédito por deducciones (aportes, hijos a cargo), que se descuenta a una tasa del 14% o del 8%. En los dos casos, lo que realmente pagarías es MENOS que lo que mostramos — nunca más. Preferimos errar para el lado que no te deja mal parado.',
+  },
+  {
+    q: `El tope de ${uiLabel(FIGURES.topeIraePreceptivoUi.value)} UI, ¿se mide sobre lo que facturás este año o el anterior?`,
+    a: 'Sobre el ejercicio ANTERIOR. La contabilidad suficiente se vuelve preceptiva "cuando los ingresos del ejercicio anterior superen" el tope, así que el régimen de este año depende de lo que facturaste el pasado. El formulario solo conoce tu facturación estimada de hoy, no la del año que cerró: cerca del tope, tomá el resultado como una señal para confirmar tu situación real con un contador, no como un veredicto.',
+  },
+  {
+    q: '¿Cuántos administradores puede tener una SAS?',
+    a: 'No hay máximo legal. La Ley 19.820 art. 30 pone la representación "a cargo de una o más personas", sin techo, y el estatuto lo define. Por defecto asumimos 1 (el residual del art. 29), pero cada administrador con actividad aporta a BPS: si vas a nombrar varios, decínoslo en los ajustes finos, porque cambia el costo.',
   },
 ]
 

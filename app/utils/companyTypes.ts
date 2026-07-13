@@ -153,6 +153,30 @@ const IRPF_ESCALA =
   'https://www.bps.gub.uy/bps/file/23860/3/2026---comunicado-r-5---valores-escalas-irpf-2026.pdf'
 const DEC150_64 = 'https://www.impo.com.uy/bases/decretos/150-2007/64'
 const DEC150_168 = 'https://www.impo.com.uy/bases/decretos/150-2007/168'
+// ROUND-3 CRITICAL 2 — the article that ACTUALLY closes IRPF Cat. II above the límite, and it
+// is NOT art. 168 lit. c. Art. 168 governs CONTABILIDAD SUFICIENTE (who must keep books), and
+// its lit. c reaches "los contribuyentes del IRPF ... que OPTEN por liquidar este tributo de
+// acuerdo a lo dispuesto en el artículo 6º" — i.e. people who are ALREADY in the IRAE. It never
+// mentions servicios personales at all (that is lit. d, about a socio who bills their own
+// company). Citing it for the preceptividad would have been a citation that does not support
+// its use — the exact defect this module exists to catch.
+//
+// Dto. 150/007 art. 7, "Rentas comprendidas en el IRPF. Inclusión preceptiva", VERBATIM:
+//   "Los contribuyentes del Impuesto a las Rentas de las Personas Físicas deberán comparar el
+//    monto de las rentas que obtengan EN EL EJERCICIO derivadas de la prestación de servicios
+//    personales fuera de la relación de dependencia con el que resulte de convertir a moneda
+//    nacional UI 4.000.000 (cuatro millones de unidades indexadas) A LA COTIZACIÓN DE CIERRE DEL
+//    EJERCICIO. Cuando el monto de las rentas referidas supere el antedicho límite, deberá
+//    liquidarse obligatoriamente el impuesto que se reglamenta A PARTIR DEL PRIMER MES DEL
+//    EJERCICIO SIGUIENTE."
+// Three things follow, and we implement all three rather than the version in our heads:
+//   1. the límite is measured on the rentas of THE CURRENT ejercicio (unlike art. 168 lit. b,
+//      which looks at the ejercicio ANTERIOR) — so the wizard's own estimate is the right ruler;
+//   2. it is valued at the UI de CIERRE, which is why this uses `uiToUyuCierre`;
+//   3. the obligation bites FROM THE FOLLOWING EJERCICIO — so this year the visitor really is
+//      still an IRPF taxpayer, and a hard `excluido` would overstate the norm. What it is NOT is
+//      a régimen we may price, rank and RECOMMEND: within a year it becomes IRAE, by law.
+const DEC150_7 = 'https://www.impo.com.uy/bases/decretos/150-2007/7'
 const LEY18083_70 = 'https://www.impo.com.uy/bases/leyes/18083-2006/70'
 const LEY18874_1 = 'https://www.impo.com.uy/bases/leyes/18874-2011/1'
 const LEY16060_1 = 'https://www.impo.com.uy/bases/leyes/16060-1989/1'
@@ -182,6 +206,17 @@ export const FIGURES = {
     4_000_000,
     'Tope por encima del cual la contabilidad suficiente es preceptiva y el IRAE ficto deja de estar disponible (UI, ingresos del ejercicio anterior)',
     DEC150_168
+  ),
+  // The SAME number, set by a DIFFERENT norm for a DIFFERENT taxpayer, and therefore its own
+  // Figure. `topeIraePreceptivoUi` (art. 168 lit. b) decides whether an IRAE taxpayer may still
+  // use the ficto del art. 64. This one (art. 7) decides whether a servicios-personales IRPF
+  // taxpayer stays in the IRPF at all. Sharing one constant between them would have been exactly
+  // the source-laundering the module already removed once: one number, one arbitrary URL, two
+  // unrelated legal uses. They happen to be equal in 2026; nothing in either norm makes them so.
+  topeIrpfIraePreceptivoUi: fig(
+    4_000_000,
+    'Rentas anuales por servicios personales por encima de las cuales el IRAE es preceptivo desde el primer mes del ejercicio siguiente (UI, rentas del ejercicio, cotización de cierre)',
+    DEC150_7
   ),
   topeLocalM2: fig(
     15,
@@ -628,6 +663,49 @@ function iraeFictoDisponible(annualRevenueUyu: number): boolean {
   return annualRevenueUyu <= uiToUyuCierre(FIGURES.topeIraePreceptivoUi.value)
 }
 
+/**
+ * Has this servicios-personales provider crossed the límite that makes the IRAE PRECEPTIVO?
+ *
+ * ROUND-3 CRITICAL 2. `applyGates` had no revenue gate at all on `irpf-servicios`, and
+ * `irpfCat2Monthly` always returns a number — so the regime stayed `comparable` at ANY revenue,
+ * and the page recommended IRPF Cat. II, with a precise monthly total, on the very screen whose
+ * comparison table said the IRAE was preceptivo above the tope. `unipersonal-irae` and `sas`
+ * said "No calculable" at the same revenue. The same visitor, three regimes, two answers.
+ *
+ * Dto. 150/007 art. 7 (verbatim at `DEC150_7`): the rentas of THE EJERCICIO are compared against
+ * UI 4.000.000 at the COTIZACIÓN DE CIERRE, and above it the IRAE must be liquidated "a partir
+ * del primer mes del ejercicio siguiente". Note what the article does NOT say: it does not
+ * expel anyone from the IRPF in the current ejercicio. So this is not an exclusion — it is the
+ * end of the road, one ejercicio out, and the honest thing is to refuse to put a monthly price
+ * on a path the law closes within the year.
+ */
+function irpfIraePreceptivo(annualRevenueUyu: number): boolean {
+  return annualRevenueUyu > uiToUyuCierre(FIGURES.topeIrpfIraePreceptivoUi.value)
+}
+
+/**
+ * NOBODY IS IN THE COMPANY — and until ROUND-3, nothing noticed.
+ *
+ * The wizard can be told, at the same time, that NO socio works in the company ("la maneja un
+ * gerente contratado") and that there are NO dependientes. Those two answers cannot both be
+ * true: a hired gerente IS a dependiente, and with neither socios nor dependientes there is
+ * nobody left to perform the activity at all.
+ *
+ * It is not a harmless inconsistency, because both regimes below are priced off BPS's
+ * "SIN DEPENDIENTES" tables — and for the monotributo the "sin dependientes" is not a table
+ * heading but the law itself (Ley 18.083 art. 70 lits. B y C). Multiplying a per-socio figure by
+ * zero produced $0/mes, `bpsUnknown: false`, `comparable: true` — and the ranker duly put
+ * Monotributo · TOTAL MENSUAL $0 first, three clicks from the wizard's defaults.
+ *
+ * A contradiction is an UNKNOWN, not a zero. We say which two answers collide and ask for one
+ * of them again. (The SRL is deliberately NOT here: art. 172 charges only socios "que
+ * desarrollen actividad", and an SRL whose cuotistas are purely capitalist is an ordinary,
+ * lawful shape whose measured zero the module already blesses.)
+ */
+function nadieEnLaEmpresa(input: WizardInput): boolean {
+  return input.people === 'socios' && input.sociosActivos === 0 && input.employees === 0
+}
+
 export type RegimeId =
   | 'monotributo-social'
   | 'monotributo'
@@ -712,6 +790,13 @@ const L = {
   consulta4761: {
     norm: 'Consulta DGI 4761',
     url: 'https://www.impo.com.uy/bases/consultas-tributarias/4761-2008',
+  },
+  // The inclusión preceptiva of a servicios-personales provider in the IRAE. See `DEC150_7`
+  // for the verbatim text and for why art. 168 lit. c — the article we nearly cited — is the
+  // wrong one.
+  dto150_7: {
+    norm: 'Dto. 150/007 art. 7',
+    url: DEC150_7,
   },
   // The 2-person floor of every sociedad comercial. NOT art. 223, which caps the SRL at 50
   // socios and sets no minimum whatsoever.
@@ -1123,6 +1208,19 @@ export function applyGates(input: WizardInput): GateOutcome[] {
             L.titulo7
           )
         }
+        // ROUND-3 CRITICAL 2 — the gate that was not there. `dudoso`, not `excluido`, and the
+        // article is the reason: art. 7 does not take the IRPF away from you in the ejercicio
+        // you cross the límite, it obliges the IRAE "a partir del primer mes del EJERCICIO
+        // SIGUIENTE". So the honest verdict is not "you may not use this" — it is "the law is
+        // taking this away from you within the year, and we will not recommend it to you".
+        // `dudoso` is never recommended, however cheap, which is exactly the outcome we need.
+        if (anyServicios && irpfIraePreceptivo(input.annualRevenueUyu)) {
+          const tope = FIGURES.topeIrpfIraePreceptivoUi.value
+          doubt(
+            `Con esa facturación el IRAE deja de ser opcional. El Dto. 150/007 art. 7 manda comparar las rentas del EJERCICIO por servicios personales con ${tope.toLocaleString('es-UY')} UI (≈ ${uyu(uiToUyuCierre(tope))} a la cotización de cierre), y por encima de ese límite "deberá liquidarse obligatoriamente el impuesto [IRAE] a partir del primer mes del ejercicio siguiente". Este ejercicio todavía liquidás IRPF Cat. II; el siguiente, no — y ahí el IRAE es real (contabilidad suficiente preceptiva), que depende de tus gastos y no podemos estimarte. No te recomendamos un régimen del que la ley te saca en menos de un año: mirá directamente el IRAE.`,
+            L.dto150_7
+          )
+        }
         break
       }
 
@@ -1426,9 +1524,19 @@ function monoFamilyColumn(input: WizardInput): { ramp: number[]; pleno: number }
 function monoBps(input: WizardInput): number | null {
   if (cjppuEnJuego(input)) return null
   if (input.people === 'socios') {
+    // ROUND-3 CRITICAL 1(a) — this used to read `input.sociosActivos ?? input.sociosCount`, and
+    // the fallback hid the error: `sociosActivos` is the datum of Ley 16.713 art. 172 ("el socio
+    // QUE DESARROLLE ACTIVIDAD"), and art. 172 does not govern the monotributo at all — this file
+    // says so itself, in `cannotCostReasons`. The monotributo is the SUBSTITUTIVE pago único of
+    // Ley 18.083 art. 70, and the BPS table that fixes it ("Monotributo: sociedad de hecho") is
+    // indexed by a "Cant. socios" column: it charges per SOCIO, not per socio con actividad.
+    // Reading art. 172's field here made a 2-socio sociedad de hecho whose socios do not
+    // personally work in it cost 2 × $522 × 0 = $0/mes. The right answer is $1.044.
+    //
     // A fact that decides the number is asked for, not assumed. (Guessing 2 here would be
     // the same class of bug as `sp ?? 0`: an unknown quietly becoming a measurement.)
-    const socios = input.sociosActivos ?? input.sociosCount
+    if (nadieEnLaEmpresa(input)) return null
+    const socios = input.sociosCount
     if (socios === undefined) return null
     const perSocio = rampPick(
       [FIGURES.monoSocioSociedadHechoAnio1.value, FIGURES.monoSocioSociedadHechoAnio2.value],
@@ -1582,9 +1690,16 @@ function srlBps(input: WizardInput): number | null {
   return FIGURES.bpsSocioSrl.value * socios
 }
 
-/** BPS of a sociedad de hecho: 11 BFC per socio, sin FONASA. */
+/**
+ * BPS of a sociedad de hecho: 11 BFC per socio, sin FONASA.
+ *
+ * ROUND-3 CRITICAL 1(b) — priced off BPS's "Sociedad de hecho SIN DEPENDIENTES" table, so
+ * "ningún socio trabaja" + "ningún dependiente" is not a company with no BPS bill: it is a
+ * company with nobody in it. See `nadieEnLaEmpresa`.
+ */
 function sociedadHechoBps(input: WizardInput): number | null {
   if (cjppuEnJuego(input)) return null
+  if (nadieEnLaEmpresa(input)) return null
   const socios = sociosQueAportan(input, true)
   if (socios === null) return null
   return FIGURES.bpsSocioSociedadHecho.value * socios
@@ -1791,6 +1906,14 @@ function iraeFictoMonthly(
 const unipersonalCjppuCaveat =
   'Una empresa unipersonal no es una persona jurídica distinta de vos, así que seguís facturando EN NOMBRE PROPIO — que es exactamente el supuesto del art. 43 de la Ley 17.738, el que te ampara en la CJPPU. Lo que la norma NO resuelve es si además te corresponde el ficto de 11 BFC de BPS por la actividad de la empresa: el mismo artículo dice que el amparo rige "sin perjuicio de las afiliaciones a otros institutos de seguridad social que pudieran corresponder", sin decir cuándo corresponden. No lo inventamos en ninguna de las dos direcciones.'
 
+/**
+ * The two answers that cannot both be true. See `nadieEnLaEmpresa`. Shown as a NOTE by
+ * `estimateCost` and as a `cannotCost` reason by `cannotCostReasons` — the same fact, told once
+ * in each layer, and derived in both from the FLAGS and the input, never from this string.
+ */
+const nadieEnLaEmpresaCaveat =
+  'Hay una contradicción en lo que nos dijiste, y preferimos señalarla antes que ponerle un precio: nos dijiste que NINGÚN socio trabaja en la empresa y, a la vez, que NO hay dependientes. Entonces no queda nadie que haga la actividad. Si en los hechos la maneja un gerente contratado, ese gerente ES un dependiente — y las tablas de BPS con las que se cotiza esta figura son justamente las de "SIN DEPENDIENTES" (en el monotributo no es un encabezado de tabla sino la ley: los lits. B y C del art. 70 de la Ley 18.083 exigen que no haya ninguno). Corregí uno de los dos datos —cuántos dependientes tiene, o cuántos socios trabajan— y te damos el número.'
+
 const sociedadCjppuCaveat =
   'El art. 43 de la Ley 17.738 ampara expresamente el ejercicio de la profesión "en sociedad con otros profesionales o no profesionales", y aclara que eso rige "sin perjuicio de las afiliaciones a otros institutos de seguridad social que pudieran corresponder". O sea: el aporte de socio/administrador a BPS que mostraríamos acá podría deberse ADEMÁS del aporte a la CJPPU, no en su lugar — con lo cual el costo real sería MAYOR, no menor. Ninguna de las dos normas dice cuál es.'
 
@@ -1856,13 +1979,15 @@ export function estimateCost(
       )
       if (cjppuEnJuego(input)) cjppuNote(sociedadCjppuCaveat)
       if (input.people === 'socios' && !cjppuEnJuego(input)) {
-        if (bpsMonthly === null) {
+        if (nadieEnLaEmpresa(input)) {
+          notes.push(nadieEnLaEmpresaCaveat)
+        } else if (bpsMonthly === null) {
           notes.push(
             'No podemos calcular el BPS: no sabemos cuántos socios son. En una sociedad de hecho, BPS cobra el aporte POR SOCIO, así que el número depende de ese dato.'
           )
         } else {
           notes.push(
-            `Este es el costo de LA SOCIEDAD, no tu parte: BPS cobra ${uyu(FIGURES.monoSocioSociedadHecho.value)} por socio en el régimen pleno, y lo multiplicamos por los ${String(input.sociosActivos ?? input.sociosCount)} socios.`
+            `Este es el costo de LA SOCIEDAD, no tu parte: BPS cobra ${uyu(FIGURES.monoSocioSociedadHecho.value)} por socio en el régimen pleno, y lo multiplicamos por los ${String(input.sociosCount)} socios que nos dijiste. Ojo: acá NO manda el art. 172 de la Ley 16.713 (el del "socio con actividad") — el monotributo es el pago único sustitutivo de la Ley 18.083 art. 70, y la tabla que BPS publica para él se indexa por la CANTIDAD DE SOCIOS, trabajen o no.`
           )
           notes.push(
             'La tabla de monotributo de sociedades de hecho de BPS NO publica columna de FONASA: la cifra es jubilatorio + FRL. Si los socios optan por la cobertura del SNIS, el aporte real es mayor y BPS no publica cuánto — preguntá en BPS.'
@@ -1936,9 +2061,38 @@ export function estimateCost(
     case 'irpf-servicios': {
       // CRITICAL 1 — `sp ?? 0` used to launder "we cannot know this" into "this is free".
       bpsMonthly = serviciosPersonalesBps(input)
-      const taxable = monthlyRevenue * (1 - FIGURES.irpfFictoGastos.value)
-      taxMonthly = irpfCat2Monthly(taxable)
       setupCost = FIGURES.setupUnipersonal.value
+
+      // ROUND-3 CRITICAL 2 — above the límite of Dto. 150/007 art. 7 there is no honest monthly
+      // number for this path. The IRPF of the CURRENT ejercicio is still computable, and that is
+      // precisely the trap: printing it as "el costo de este régimen" would be a 12-month answer
+      // to a multi-year question, on a page whose entire job is choosing a régimen to OPEN. From
+      // the first month of the next ejercicio this person is in the IRAE — and there, above the
+      // tope, the ficto del art. 64 is gone too (Dto. 150/007 art. 168: contabilidad suficiente
+      // preceptiva), so the tax becomes IRAE REAL, which depends on an expense structure we do
+      // not have. `unipersonal-irae` and `sas` already refuse at this exact revenue. So does this.
+      if (irpfIraePreceptivo(input.annualRevenueUyu)) {
+        const tope = FIGURES.topeIrpfIraePreceptivoUi.value
+        taxMonthly = null
+        notes.push(
+          `No podemos ponerle un costo mensual a este camino: por encima de ${tope.toLocaleString('es-UY')} UI de rentas por servicios personales (≈ ${uyu(uiToUyuCierre(tope))} al año, a la cotización de cierre), el Dto. 150/007 art. 7 obliga a liquidar IRAE "a partir del primer mes del ejercicio siguiente". El IRPF de ESTE ejercicio todavía se calcula; el del que viene no existe, y el IRAE que lo reemplaza es el REAL —25% de (ingresos − gastos reales)— porque arriba del tope la contabilidad suficiente es preceptiva y el ficto del art. 64 deja de estar disponible. No conocemos tu estructura de gastos: para esto necesitás un contador.`
+        )
+        notes.push(
+          `Ese límite lo mira la norma sobre las rentas del EJERCICIO (no del anterior, a diferencia del tope del art. 168) y lo convierte con la UI de CIERRE de ejercicio (${FIGURES.uiCierre2025.value.toLocaleString('es-UY')}), no con la de hoy. Si estás cerca del límite, tomá la frontera como aproximada: un poco más abajo, este régimen sí tiene un costo estimable.`
+        )
+      } else {
+        const taxable = monthlyRevenue * (1 - FIGURES.irpfFictoGastos.value)
+        taxMonthly = irpfCat2Monthly(taxable)
+        // MINOR 11 — IRPF Cat. II lets you subtract a CRÉDITO por deducciones (aportes
+        // jubilatorios, FONASA, FRL, hijos a cargo) computed at 14% u 8% según el nivel de
+        // ingresos. We do not collect the inputs it needs, so we do not compute it — but the
+        // omission runs against the taxpayer, and an undisclosed conservatism is still wrong.
+        // (Scoped to the branch that actually SHOWS an IRPF: above the tope there is no number
+        // for it to be a techo of.)
+        notes.push(
+          'El IRPF que mostramos es MAYOR al que realmente pagarías: no le restamos el crédito por DEDUCCIONES (aportes jubilatorios, FONASA, FRL, hijos a cargo), que se descuenta del impuesto a una tasa del 14% o del 8% según tu nivel de ingresos. Nos faltan datos para calcularlo; tomá el IRPF como un techo.'
+        )
+      }
 
       if (bpsMonthly === null) {
         cjppuNote(
@@ -1951,13 +2105,6 @@ export function estimateCost(
       }
       notes.push(
         `Se deduce un ficto de gastos del 30% y hay un mínimo no imponible de ${uyu(FIGURES.irpfMinimoNoImponibleMensual.value)} al mes: por eso al principio suele ganarle al IRAE.`
-      )
-      // MINOR 11 — IRPF Cat. II lets you subtract a CRÉDITO por deducciones (aportes
-      // jubilatorios, FONASA, FRL, hijos a cargo) computed at 14% u 8% según el nivel de
-      // ingresos. We do not collect the inputs it needs, so we do not compute it — but the
-      // omission runs against the taxpayer, and an undisclosed conservatism is still wrong.
-      notes.push(
-        'El IRPF que mostramos es MAYOR al que realmente pagarías: no le restamos el crédito por DEDUCCIONES (aportes jubilatorios, FONASA, FRL, hijos a cargo), que se descuenta del impuesto a una tasa del 14% o del 8% según tu nivel de ingresos. Nos faltan datos para calcularlo; tomá el IRPF como un techo.'
       )
       notes.push(
         'La rebaja de aportes para empresas nuevas NO existe en este camino: es un beneficio del Literal E. Pagás el total desde el primer mes.'
@@ -1988,6 +2135,8 @@ export function estimateCost(
       setupCost = 0
       if (cjppuEnJuego(input)) {
         cjppuNote(sociedadCjppuCaveat)
+      } else if (nadieEnLaEmpresa(input)) {
+        notes.push(nadieEnLaEmpresaCaveat)
       } else if (bpsMonthly === null) {
         notes.push(
           'No podemos calcular el BPS: no sabemos cuántos socios son, y en una sociedad de hecho cada socio aporta por separado.'
@@ -2064,10 +2213,17 @@ export function estimateCost(
         notes.push(
           `Cada administrador paga ${uyu(sasAdminFamilyColumn(input))} de BPS al mes AUNQUE NO COBRE SUELDO NI FACTURE UN PESO, y no puede declararse inactivo. Es el costo real de la SAS.`
         )
+        // ROUND-3 IMPORTANT 3 — the `undefined` branch was DEAD CODE: the page initialised the
+        // field to `1` and clamped it with `Math.max(1, …)`, so the engine was never handed
+        // `undefined` and always took the second branch — which told every visitor "Nombraste 1
+        // administradores": a false claim about what they had said (they had said nothing), an
+        // ungrammatical one, and it threw away the art. 29 citation that JUSTIFIES the 1. The one
+        // input where the law supplies its own default was the one the page turned into a fake
+        // measurement. The page now passes `undefined`; this branch is live again.
         notes.push(
           input.administradoresSas === undefined
             ? 'Contamos UN solo administrador, que es lo que la propia Ley 19.820 (art. 29) supone si el estatuto no dice otra cosa: "la totalidad de las funciones de administración y representación legal le corresponderán al representante legal". Si nombrás más de uno, cada uno aporta lo suyo y el costo se multiplica — no hay tope legal de administradores (art. 30: "una o más personas").'
-            : `Nombraste ${String(admins)} administradores, y la Ley 19.820 (art. 43) manda a cada uno al mismo art. 172 de la Ley 16.713 que al socio de SRL: cada uno aporta lo suyo.`
+            : `Nos dijiste que la SAS tiene ${String(admins)} ${admins === 1 ? 'administrador' : 'administradores'}, y la Ley 19.820 (art. 43) manda a cada uno al mismo art. 172 de la Ley 16.713 que al socio de SRL: cada uno aporta lo suyo.`
         )
       }
       notes.push('A cambio, sí tenés cobertura FONASA.')
@@ -2268,6 +2424,10 @@ function cannotCostReasons(regime: RegimeId, input: WizardInput, cost: CostBreak
       out.push(
         'No podemos calcular tu aporte jubilatorio: tenés un título amparado por la Caja de Profesionales Universitarios (CJPPU) y ejercés la profesión, así que no se rige por la tabla de BPS que usamos para todo el mundo — y la CJPPU no publica su escala de forma abierta. Encima, la Ley 17.738 art. 43 deja expresamente abierto que ADEMÁS te corresponda aportar a BPS ("sin perjuicio de las afiliaciones a otros institutos de seguridad social que pudieran corresponder"), sin decir cuándo. Consultá a la Caja: no lo inventamos en ninguna de las dos direcciones.'
       )
+    } else if (nadieEnLaEmpresa(input)) {
+      // ROUND-3 CRITICAL 1(b). Not "we don't know how many socios" — we know exactly what you
+      // told us, and the two answers cannot both be true. See `nadieEnLaEmpresa`.
+      out.push(nadieEnLaEmpresaCaveat)
     } else if (regime === 'monotributo') {
       out.push(
         `No podemos calcular el aporte a BPS: el monotributo es un pago único sustitutivo que la propia tabla de BPS fija (Ley 18.083 art. 70), y en una sociedad de hecho monotributista ese pago se cobra POR SOCIO — ${uyu(FIGURES.monoSocioSociedadHecho.value)} en el régimen pleno. No sabemos cuántos socios trabajan acá: si son dos, el aporte se duplica, y eso puede dar vuelta la comparación entre los regímenes de sociedad.`
@@ -2284,16 +2444,47 @@ function cannotCostReasons(regime: RegimeId, input: WizardInput, cost: CostBreak
   }
 
   if (cost.taxUnknown) {
-    out.push(
-      regime === 'sa'
-        ? 'No podemos estimarte el IRAE, y en el caso de la SA no vamos a poder NUNCA: está obligada a liquidar por contabilidad suficiente sin importar cuánto facture (Dto. 150/007 art. 168 lit. A), así que el IRAE ficto no le está disponible en ningún nivel de facturación. Su IRAE depende de su estructura real de gastos, que no conocemos.'
-        : `No podemos estimarte el IRAE: por encima de ${FIGURES.topeIraePreceptivoUi.value.toLocaleString('es-UY')} UI de ingresos (≈ ${uyu(uiToUyuCierre(FIGURES.topeIraePreceptivoUi.value))} al año) la contabilidad suficiente es PRECEPTIVA (Dto. 150/007 art. 168) y el ficto del art. 64 deja de estar disponible. El IRAE real es el 25% de (ingresos − gastos reales) y depende de tu estructura de gastos, que no conocemos. No extrapolamos el ficto fuera de su rango legal.`
-    )
+    if (regime === 'sa') {
+      out.push(
+        'No podemos estimarte el IRAE, y en el caso de la SA no vamos a poder NUNCA: está obligada a liquidar por contabilidad suficiente sin importar cuánto facture (Dto. 150/007 art. 168 lit. A), así que el IRAE ficto no le está disponible en ningún nivel de facturación. Su IRAE depende de su estructura real de gastos, que no conocemos.'
+      )
+    } else if (regime === 'irpf-servicios') {
+      // ROUND-3 CRITICAL 2 — the ONE regime here whose tax is not an IRAE, and whose unknown has
+      // a different shape: the number for THIS ejercicio exists, and the régimen does not survive
+      // it. Citing the art. 168 tope (as the generic branch below does) would be citing the right
+      // number from the wrong norm — art. 7 is the article that closes this door.
+      const tope = FIGURES.topeIrpfIraePreceptivoUi.value
+      out.push(
+        `No le ponemos un costo mensual, aunque el IRPF de este año sí se pueda calcular. Por encima de ${tope.toLocaleString('es-UY')} UI de rentas por servicios personales (≈ ${uyu(uiToUyuCierre(tope))} al año, a la cotización de cierre de ejercicio), el Dto. 150/007 art. 7 obliga a liquidar IRAE "a partir del primer mes del ejercicio siguiente": este régimen se te termina dentro del año. Y el IRAE que lo reemplaza es el REAL —arriba de ese tope la contabilidad suficiente es preceptiva y el ficto del art. 64 no está disponible—, que depende de tus gastos reales y no conocemos. Darte un total mensual de un camino que la ley cierra en menos de un año sería el error más caro de la página.`
+      )
+    } else {
+      out.push(
+        `No podemos estimarte el IRAE: por encima de ${FIGURES.topeIraePreceptivoUi.value.toLocaleString('es-UY')} UI de ingresos (≈ ${uyu(uiToUyuCierre(FIGURES.topeIraePreceptivoUi.value))} al año) la contabilidad suficiente es PRECEPTIVA (Dto. 150/007 art. 168) y el ficto del art. 64 deja de estar disponible. El IRAE real es el 25% de (ingresos − gastos reales) y depende de tu estructura de gastos, que no conocemos. No extrapolamos el ficto fuera de su rango legal.`
+      )
+    }
   }
 
   if (out.length > 0) {
+    // ROUND-3 IMPORTANT 4 — "Lo que SÍ sabemos suma $0 al mes" is the forbidden sentence, and it
+    // was reachable one click off the normal path (people: 'socios', nothing else touched: bps
+    // null, tax 0, contador 0). A floor of zero is not a floor — it is the same "$0 as a price"
+    // this round exists to kill, wearing a caveat.
+    //
+    // The condition is on HOW MANY components we actually know, not on their sum: a sum can be
+    // zero for two very different reasons, and only one of them ("we know these components and
+    // they are genuinely free") is a floor worth printing. The rounded sum is checked too, so a
+    // sub-peso floor can never round its way back to "$0".
+    const conocidos = [
+      cost.bpsUnknown ? null : cost.bpsMonthly,
+      cost.taxUnknown ? null : cost.taxMonthly,
+      cost.otherTaxesMonthly,
+      cost.accountantMonthly,
+    ].filter((n): n is number => n !== null && n > 0)
+
     out.push(
-      `Por eso no le ponemos precio ni lo comparamos con los demás. Lo que SÍ sabemos suma ${uyu(cost.knownPartialMonthly)} al mes — pero eso es un PISO, no un total: el costo real es mayor, y no sabemos cuánto. Un número incompleto que se ordena junto a números completos deja de ser incompleto y pasa a ser falso.`
+      conocidos.length === 0 || Math.round(cost.knownPartialMonthly) <= 0
+        ? 'Por eso no le ponemos precio ni lo comparamos con los demás. No conocemos NINGÚN componente de este costo: no tenemos ni un piso que mostrarte. Un número incompleto que se ordena junto a números completos deja de ser incompleto y pasa a ser falso — y un piso de cero sería lo mismo, con una nota al pie.'
+        : `Por eso no le ponemos precio ni lo comparamos con los demás. Lo que SÍ sabemos suma ${uyu(cost.knownPartialMonthly)} al mes — pero eso es un PISO, no un total: el costo real es mayor, y no sabemos cuánto. Un número incompleto que se ordena junto a números completos deja de ser incompleto y pasa a ser falso.`
     )
   }
 
