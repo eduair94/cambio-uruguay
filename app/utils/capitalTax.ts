@@ -330,3 +330,215 @@ export function isSmallLandlordExempt(input: {
   if (input.annualRentUyu > SMALL_LANDLORD_MAX_BPC * input.bpc) return false
   return input.otherCapitalIncomeUyu <= SMALL_LANDLORD_OTHER_CAPITAL_MAX_BPC * input.bpc
 }
+
+// ── Rentas de fuente extranjera (Ley 20.446, vigente 1/1/2026) ───────────────
+//
+// Before 2026 only foreign *rendimientos de capital mobiliario* (interest, dividends) were
+// taxed, at 12%; foreign CAPITAL GAINS were not taxed at all. Ley 20.446 extended IRPF to all
+// foreign capital income — including rental income from foreign property — and, for the first
+// time, to foreign capital gains. Derivatives, royalties, trademarks, patents and the leasing
+// of movable goods stay OUT (T7 art. 18 lit. A, C and D).
+
+const DEC_95_026 = 'https://www.impo.com.uy/bases/decretos-originales/95-2026'
+
+/** Who, if anyone, withholds on your foreign income. */
+export type WithholdingAgent =
+  /** A Uruguayan broker that intermediates AND custodies the foreign assets (Dec. 148/007 art. 44 quinquies). */
+  | 'custodio-local'
+  /** A bank, corredor de bolsa, fondo or fideicomiso acting for third parties without custody (art. 44 quater). */
+  | 'otro-agente'
+  /** No Uruguayan agent at all — e.g. holding an account directly with a foreign broker. */
+  | 'ninguno'
+
+/** The actual tax rate on foreign capital income. */
+export const FOREIGN_GENERAL_PCT = 12
+/**
+ * The REDUCED WITHHOLDING a local custodian may apply (T7 art. 52 lit. A, implemented by
+ * Dec. 95/026 → Dec. 148/007 arts. 44 quinquies/sexies). It is a withholding, NOT a tax rate,
+ * and it is only definitive if the taxpayer OPTS for that.
+ */
+export const FOREIGN_CUSTODIAN_WITHHOLDING_PCT = 8
+
+export const FOREIGN_RULE = rule(
+  FOREIGN_GENERAL_PCT,
+  'Rentas y ganancias de capital de fuente extranjera',
+  'Título 7, art. 6 num. 2 (Ley 20.446 art. 653); Decreto 95/026',
+  DEC_95_026
+)
+
+export interface ForeignIncomeResult {
+  taxRatePct: number
+  /** The withholding an agent would apply, or `null` when nobody withholds. */
+  withholdingRatePct: number | null
+  /** Whether the taxpayer may elect to treat the withholding as definitive (and skip the DJ). */
+  canOptForDefinitive: boolean
+  /** With no withholding agent, semi-annual advance payments are mandatory (Dec. 95/026 arts. 44 duodecies/terdecies). */
+  requiresAnticipos: boolean
+  tax: number
+  foreignCreditApplied: number
+  /** Tax after crediting foreign tax paid. Never negative — the credit does not refund. */
+  taxDue: number
+  rule: TaxRule
+}
+
+export function foreignIncomeTax(input: {
+  amount: number
+  withholdingAgent: WithholdingAgent
+  /** Analogous tax already paid abroad on the same income (T7 art. 25 — still in force). */
+  foreignTaxPaid?: number
+}): ForeignIncomeResult {
+  const amount = Math.max(input.amount, 0)
+  const tax = amount * (FOREIGN_GENERAL_PCT / 100)
+  // The credit is capped at the IRPF on those same rentas: it never produces a refund.
+  const foreignCreditApplied = Math.min(Math.max(input.foreignTaxPaid ?? 0, 0), tax)
+
+  const withholdingRatePct =
+    input.withholdingAgent === 'custodio-local'
+      ? FOREIGN_CUSTODIAN_WITHHOLDING_PCT
+      : input.withholdingAgent === 'otro-agente'
+        ? FOREIGN_GENERAL_PCT
+        : null
+
+  return {
+    taxRatePct: FOREIGN_GENERAL_PCT,
+    withholdingRatePct,
+    canOptForDefinitive: withholdingRatePct !== null,
+    requiresAnticipos: input.withholdingAgent === 'ninguno',
+    tax,
+    foreignCreditApplied,
+    taxDue: tax - foreignCreditApplied,
+    rule: FOREIGN_RULE,
+  }
+}
+
+/**
+ * Step-up al 31/12/2025 (T7 art. 32 + Dec. 95/026 art. 18) — the most valuable and least
+ * publicised part of the reform. For assets listed on a "bolsa de reconocido prestigio" and
+ * acquired before 31/12/2025, the fiscal cost is their quoted value on that date, so ALL the
+ * appreciation earned before 2026 falls outside the tax. A loss computed this way cannot be
+ * offset against other income.
+ */
+export function stepUpCost(input: {
+  originalCost: number
+  valueAt20251231: number
+  acquiredBefore2026: boolean
+  listedOnRecognisedExchange: boolean
+}): number {
+  return input.acquiredBefore2026 && input.listedOnRecognisedExchange
+    ? input.valueAt20251231
+    : input.originalCost
+}
+
+// ── Liquidación anual (IRPF Categoría I, Formulario 1101) ────────────────────
+
+export type AnnualIncomeItem =
+  | { kind: 'deposito'; amount: number; currency: Currency; termMonths: number }
+  | { kind: 'dividendo'; amount: number }
+  | { kind: 'deuda_publica'; amount: number }
+  | { kind: 'alquiler'; amount: number; deductions?: number }
+  | { kind: 'ganancia_local'; amount: number; cost?: number; method?: CapitalGainMethod }
+  | {
+      kind: 'exterior'
+      amount: number
+      foreignTaxPaid?: number
+      withholdingAgent: WithholdingAgent
+    }
+  | { kind: 'cripto'; amount: number }
+
+export interface AnnualItemResult {
+  kind: AnnualIncomeItem['kind']
+  amount: number
+  tax: number
+  rule: TaxRule
+}
+
+export interface AnnualIrpfResult {
+  totalTax: number
+  byItem: AnnualItemResult[]
+  foreignCreditApplied: number
+  /** True when at least one foreign item has no withholding agent. */
+  requiresAnticipos: boolean
+  /** Item kinds whose treatment the law does not settle (today: only `cripto`). */
+  unresolved: Array<AnnualIncomeItem['kind']>
+}
+
+/**
+ * Adds up a year of Categoría I income. `bpc` and `uiValue` are passed in (never hardcoded)
+ * so the caller decides whether they come from the live endpoints or from a fallback.
+ *
+ * `cripto` contributes 0 and is reported under `unresolved` — we do not guess a rate.
+ */
+export function annualIrpfCatI(
+  items: AnnualIncomeItem[],
+  _opts: { bpc: number; uiValue: number }
+): AnnualIrpfResult {
+  const byItem: AnnualItemResult[] = []
+  let foreignCreditApplied = 0
+  let requiresAnticipos = false
+  const unresolved: Array<AnnualIncomeItem['kind']> = []
+
+  for (const item of items) {
+    switch (item.kind) {
+      case 'deposito': {
+        // The annual form takes the INTEREST EARNED, not the principal, so the rate applies
+        // directly. Do NOT reuse `depositReturn` here — it expects a principal + nominal rate.
+        const depRule = depositRule(item.currency, termFromMonths(item.termMonths))
+        byItem.push({
+          kind: item.kind,
+          amount: item.amount,
+          tax: item.amount * ((depRule.rate ?? 0) / 100),
+          rule: depRule,
+        })
+        break
+      }
+      case 'dividendo':
+        byItem.push({
+          kind: item.kind,
+          amount: item.amount,
+          tax: item.amount * ((DIVIDEND_RULE.rate ?? 0) / 100),
+          rule: DIVIDEND_RULE,
+        })
+        break
+      case 'deuda_publica':
+        byItem.push({ kind: item.kind, amount: item.amount, tax: 0, rule: PUBLIC_DEBT_RULE })
+        break
+      case 'alquiler': {
+        const r = rentTax({ grossRent: item.amount, deductions: item.deductions ?? 0 })
+        byItem.push({ kind: item.kind, amount: item.amount, tax: r.tax, rule: GENERAL_RULE })
+        break
+      }
+      case 'ganancia_local': {
+        const r = capitalGainTax({
+          salePrice: item.amount,
+          cost: item.cost,
+          method: item.method ?? 'real',
+        })
+        byItem.push({ kind: item.kind, amount: item.amount, tax: r.tax, rule: GENERAL_RULE })
+        break
+      }
+      case 'exterior': {
+        const r = foreignIncomeTax({
+          amount: item.amount,
+          withholdingAgent: item.withholdingAgent,
+          foreignTaxPaid: item.foreignTaxPaid,
+        })
+        foreignCreditApplied += r.foreignCreditApplied
+        if (r.requiresAnticipos) requiresAnticipos = true
+        byItem.push({ kind: item.kind, amount: item.amount, tax: r.taxDue, rule: FOREIGN_RULE })
+        break
+      }
+      case 'cripto':
+        unresolved.push('cripto')
+        byItem.push({ kind: item.kind, amount: item.amount, tax: 0, rule: CRYPTO_RULE })
+        break
+    }
+  }
+
+  return {
+    totalTax: byItem.reduce((sum, i) => sum + i.tax, 0),
+    byItem,
+    foreignCreditApplied,
+    requiresAnticipos,
+    unresolved,
+  }
+}

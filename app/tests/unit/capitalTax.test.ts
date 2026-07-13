@@ -1,14 +1,18 @@
 import { describe, expect, it } from 'vitest'
 import {
+  annualIrpfCatI,
   capitalGainTax,
   CRYPTO_RULE,
   depositReturn,
   depositRule,
+  foreignIncomeTax,
   isCapitalGainExempt,
   isSmallLandlordExempt,
   rentTax,
   RENT_WITHHOLDING_PCT,
+  stepUpCost,
   termFromMonths,
+  type AnnualIncomeItem,
   type Currency,
   type DepositTerm,
 } from '../../utils/capitalTax'
@@ -208,5 +212,118 @@ describe('capitalTax — alquileres', () => {
         bpc,
       })
     ).toBe(false)
+  })
+})
+
+describe('capitalTax — rentas del exterior (Ley 20.446, vigencia 1/1/2026)', () => {
+  it('la TASA es 12%: el 8% es una retención, no una alícuota', () => {
+    const r = foreignIncomeTax({ amount: 100_000, withholdingAgent: 'ninguno' })
+    expect(r.taxRatePct).toBe(12)
+    expect(r.tax).toBeCloseTo(12_000, 2)
+    expect(r.withholdingRatePct).toBeNull()
+  })
+
+  it('solo un custodio/bróker local puede retener al 8%', () => {
+    const custodio = foreignIncomeTax({ amount: 100_000, withholdingAgent: 'custodio-local' })
+    expect(custodio.withholdingRatePct).toBe(8)
+    expect(custodio.canOptForDefinitive).toBe(true)
+
+    // Un banco o corredor que NO ejerce la custodia retiene 12%, no 8%.
+    const otro = foreignIncomeTax({ amount: 100_000, withholdingAgent: 'otro-agente' })
+    expect(otro.withholdingRatePct).toBe(12)
+  })
+
+  it('sin agente de retención (bróker del exterior) hay anticipos semestrales', () => {
+    const r = foreignIncomeTax({ amount: 100_000, withholdingAgent: 'ninguno' })
+    expect(r.requiresAnticipos).toBe(true)
+
+    const conCustodio = foreignIncomeTax({ amount: 100_000, withholdingAgent: 'custodio-local' })
+    expect(conCustodio.requiresAnticipos).toBe(false)
+  })
+
+  it('acredita el impuesto pagado en el exterior, topeado al IRPF de esas mismas rentas', () => {
+    // Impuesto extranjero menor al IRPF: se acredita entero.
+    const parcial = foreignIncomeTax({
+      amount: 100_000,
+      withholdingAgent: 'ninguno',
+      foreignTaxPaid: 5000,
+    })
+    expect(parcial.foreignCreditApplied).toBeCloseTo(5000, 2)
+    expect(parcial.taxDue).toBeCloseTo(7000, 2) // 12.000 − 5.000
+
+    // Impuesto extranjero mayor: el crédito se topea, nunca da saldo a favor.
+    const topeado = foreignIncomeTax({
+      amount: 100_000,
+      withholdingAgent: 'ninguno',
+      foreignTaxPaid: 20_000,
+    })
+    expect(topeado.foreignCreditApplied).toBeCloseTo(12_000, 2)
+    expect(topeado.taxDue).toBe(0)
+  })
+})
+
+describe('capitalTax — step-up al 31/12/2025', () => {
+  it('para activos cotizados comprados antes de 2026, el costo es la cotización al 31/12/2025', () => {
+    // Compradas en 2015 a 10.000; valían 80.000 al 31/12/2025; vendidas a 100.000.
+    const cost = stepUpCost({
+      originalCost: 10_000,
+      valueAt20251231: 80_000,
+      acquiredBefore2026: true,
+      listedOnRecognisedExchange: true,
+    })
+    expect(cost).toBe(80_000)
+
+    const gain = capitalGainTax({ salePrice: 100_000, cost, method: 'real' })
+    expect(gain.tax).toBeCloseTo(2400, 2) // 12% de 20.000, no de 90.000
+  })
+
+  it('no aplica a activos comprados en 2026 o después', () => {
+    expect(
+      stepUpCost({
+        originalCost: 10_000,
+        valueAt20251231: 80_000,
+        acquiredBefore2026: false,
+        listedOnRecognisedExchange: true,
+      })
+    ).toBe(10_000)
+  })
+
+  it('no aplica a activos que no cotizan en bolsas de reconocido prestigio', () => {
+    expect(
+      stepUpCost({
+        originalCost: 10_000,
+        valueAt20251231: 80_000,
+        acquiredBefore2026: true,
+        listedOnRecognisedExchange: false,
+      })
+    ).toBe(10_000)
+  })
+})
+
+describe('capitalTax — liquidación anual (Cat. I)', () => {
+  const bpc = 6864
+  const ui = 6.6142
+
+  it('suma las rentas del año y aplica el crédito por impuesto del exterior', () => {
+    const items: AnnualIncomeItem[] = [
+      { kind: 'deposito', amount: 100_000, currency: 'UYU', termMonths: 24 }, // 2,5% → 2.500
+      { kind: 'dividendo', amount: 50_000 }, // 7% → 3.500
+      { kind: 'deuda_publica', amount: 200_000 }, // exenta → 0
+      { kind: 'exterior', amount: 100_000, foreignTaxPaid: 5000, withholdingAgent: 'ninguno' }, // 12.000 − 5.000 = 7.000
+    ]
+    const r = annualIrpfCatI(items, { bpc, uiValue: ui })
+
+    expect(r.totalTax).toBeCloseTo(2500 + 3500 + 0 + 7000, 2)
+    expect(r.foreignCreditApplied).toBeCloseTo(5000, 2)
+    expect(r.requiresAnticipos).toBe(true) // hay renta del exterior sin retención
+    expect(r.byItem).toHaveLength(4)
+    expect(r.byItem[2]?.tax).toBe(0)
+  })
+
+  it('marca la cripto como no resuelta y NO le asigna impuesto', () => {
+    const r = annualIrpfCatI([{ kind: 'cripto', amount: 500_000 }], { bpc, uiValue: ui })
+    expect(r.totalTax).toBe(0)
+    expect(r.unresolved).toContain('cripto')
+    expect(r.byItem[0]?.rule.confidence).toBe('no-resuelto')
   })
 })
