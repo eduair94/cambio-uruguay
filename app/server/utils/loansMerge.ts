@@ -7,7 +7,10 @@ import { LENDERS } from '../../utils/loans'
 
 export interface LoanRatesResponse {
   rates: Record<string, { teaPct: number; scrapedAt: string }>
-  history: Record<string, Array<{ date: string; teaPct: number; source?: string; method: 'regex' | 'gemini' }>>
+  history: Record<
+    string,
+    Array<{ date: string; teaPct: number; source?: string; method: 'regex' | 'gemini' }>
+  >
   updatedAt: string
 }
 

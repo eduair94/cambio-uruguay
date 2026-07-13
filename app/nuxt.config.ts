@@ -282,6 +282,9 @@ export default defineNuxtConfig({
     },
     scheduledTasks: {
       // 09:15 UTC ≈ 06:15 Uruguay: refresh macro-driver snapshots + archive daily news.
+      // NOTE: this task USED TO also record move explanations (Gemini). That stage moved to the
+      // backend (pm2 currency-explain, 10:07 UTC) — it now writes the SAME moveexplanations
+      // collection (classes/appdb.ts) that /api/analysis/[currency].get.ts already reads.
       '15 9 * * *': ['drivers:daily'],
       // NOTE: predictions:daily (AI price-lean + external forecasts) moved to the backend
       // (pm2 currency-predictions, 09:23 UTC) — it now writes the SAME pricepredictions
