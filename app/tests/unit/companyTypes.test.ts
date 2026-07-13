@@ -2034,7 +2034,7 @@ describe('PRODUCT_THRESHOLDS', () => {
 // =======================================================================================
 // evaluate() — THE VERDICT
 //
-// Gates first, cost second. The two rules everything else hangs off:
+// Gates first, cost second. The rules everything else hangs off:
 //
 //   1. A regime the visitor may not legally use is never recommended. It is not "more
 //      expensive" — it is illegal, and it has no price at all.
@@ -2042,6 +2042,12 @@ describe('PRODUCT_THRESHOLDS', () => {
 //      price. `estimateCost` signals that with `bpsUnknown`/`taxUnknown` and a null total;
 //      a ranker that coalesced either into a number would tell a CJPPU professional that the
 //      freelance path is FREE and beats everything (CRITICAL 1, one layer up).
+//   3. A DUDOSO regime is never recommended, however cheap — not at a tie, and not even when
+//      it is strictly the cheapest comparable one. A cheaper DUDOSO alternative is still
+//      SHOWN, priced, and called out by an explicit warning naming it and quantifying the
+//      saving — never silently promoted into the recommendation (concern 1, fixed: the page
+//      used to recommend Literal E to a freelancer over the uncontested IRPF Cat. II path to
+//      save $447/mes, on a page whose entire point is not giving wrong legal advice).
 // =======================================================================================
 describe('evaluate', () => {
   const shop: WizardInput = {
@@ -2143,18 +2149,32 @@ describe('evaluate', () => {
     expect(illegalButCheaper).toBeLessThan(rec.cost!.totalAnnual!)
   })
 
-  it('always recommends the cheapest COMPARABLE regime — and prefers ELEGIBLE over DUDOSO at the same price', () => {
+  it('always recommends the cheapest ELEGIBLE comparable regime — a DUDOSO one is NEVER recommended, however cheap', () => {
     for (const { v } of VERDICTS) {
-      const prices = v.ranked.filter(r => r.comparable).map(r => r.cost!.totalAnnual!)
-      if (prices.length === 0) {
-        expect(v.recommended, 'nothing comparable ⇒ nothing to recommend').toBeNull()
+      const eligiblePrices = v.ranked
+        .filter(r => r.comparable && r.status === 'elegible')
+        .map(r => r.cost!.totalAnnual!)
+      if (eligiblePrices.length === 0) {
+        expect(v.recommended, 'no ELEGIBLE comparable regime ⇒ nothing to recommend').toBeNull()
         continue
       }
-      const min = Math.min(...prices)
+      const min = Math.min(...eligiblePrices)
       const rec = recOf(v)!
+      // The recommendation is always ELEGIBLE — never DUDOSO, even when a comparable DUDOSO
+      // regime would have been cheaper. That is the whole point of this fix.
+      expect(rec.status).toBe('elegible')
       expect(rec.cost!.totalAnnual!).toBe(min)
-      const atMin = v.ranked.filter(r => r.comparable && r.cost!.totalAnnual === min)
-      if (atMin.some(r => r.status === 'elegible')) expect(rec.status).toBe('elegible')
+    }
+  })
+
+  it('never recommends a DUDOSO regime, for ANY input — not even when it is the cheapest comparable one', () => {
+    for (const { input, v } of VERDICTS) {
+      const rec = recOf(v)
+      if (rec === null) continue
+      expect(
+        rec.status,
+        `recommended ${String(v.recommended)} for ${JSON.stringify(input)}`
+      ).not.toBe('dudoso')
     }
   })
 
@@ -2334,23 +2354,52 @@ describe('evaluate', () => {
       expect(v.warnings.find(x => x.kind === 'liability')).toBeUndefined()
     })
 
-    it('surfaces the Literal E grey zone as a warning for a freelancer', () => {
+    // CONCERN 1, fixed — Literal E is the CHEAPEST comparable regime for a solo freelancer
+    // (Consulta DGI 4761 makes it `dudoso`, not `elegible`), but the page's whole reason to
+    // exist is not steering someone into a contested position to save $447/mes. The solid,
+    // uncontested path (IRPF Cat. II) is the recommendation; Literal E is still shown, priced,
+    // and its cheaper price is called out explicitly rather than buried.
+    it('recommends the SOLID path (IRPF Cat. II), not the cheaper contested one, for a freelancer', () => {
       const v = evaluate({ ...shop, sells: 'servicios', clients: 'exterior' })
-      expect(v.recommended).toBe('unipersonal-literal-e')
+      expect(v.recommended).toBe('irpf-servicios')
+
+      const literalE = v.ranked.find(r => r.regime === 'unipersonal-literal-e')!
+      // The contested regime is still SHOWN, priced, and genuinely cheaper — just never
+      // recommended.
+      expect(literalE.status).toBe('dudoso')
+      expect(literalE.comparable).toBe(true)
+      expect(literalE.cost!.totalAnnual).not.toBeNull()
+      const rec = recOf(v)!
+      expect(literalE.cost!.totalAnnual!).toBeLessThan(rec.cost!.totalAnnual!)
+
+      // ...and the cheaper-but-contested path is called out EXPLICITLY, not buried: which
+      // regime, how much cheaper per month, and the exact reason (with its norm/URL).
       const w = v.warnings.find(x => x.kind === 'grey-zone')
       expect(w).toBeDefined()
       expect(w!.url).toContain('4761')
+      expect(w!.regime).toBe('unipersonal-literal-e')
+      expect(w!.cheaperByMonthly).toBeGreaterThan(0)
     })
 
-    it('surfaces EVERY dudoso reason of the recommended regime, and no other regime’s', () => {
+    it('surfaces EVERY dudoso reason of the cheaper unrecommended regime, and no other regime’s', () => {
       const v = evaluate({ ...shop, sells: 'servicios', clients: 'exterior' })
-      const rec = recOf(v)!
+      const literalE = v.ranked.find(r => r.regime === 'unipersonal-literal-e')!
+      expect(literalE.status).toBe('dudoso')
       const greys = v.warnings.filter(w => w.kind === 'grey-zone')
-      expect(greys.length).toBe(rec.reasons.filter(r => r.status === 'dudoso').length)
+      expect(greys.length).toBe(literalE.reasons.filter(r => r.status === 'dudoso').length)
       expect(greys.length).toBeGreaterThan(0)
       for (const w of greys) {
+        expect(w.regime).toBe('unipersonal-literal-e')
+        // The warning's own norm/url come straight from the reason (never re-typed), and the
+        // reason's exact wording is embedded in the warning's prose, not summarised away.
         expect(
-          rec.reasons.some(r => r.status === 'dudoso' && r.text === w.text),
+          literalE.reasons.some(
+            r =>
+              r.status === 'dudoso' &&
+              r.norm === w.norm &&
+              r.url === w.url &&
+              w.text.includes(r.text)
+          ),
           w.text
         ).toBe(true)
       }

@@ -849,6 +849,23 @@ export interface GateOutcome {
 const uyu = (n: number) => `$${Math.round(n).toLocaleString('es-UY')}`
 
 /**
+ * The revenue ceiling shared by the monotributo (Ley 18.083 art. 71) and the monotributo
+ * social (Ley 18.874 art. 4, which reuses the SAME two importes — 60% del límite del
+ * unipersonal / 100% del asociativo — rather than defining its own; DGI's published topes
+ * already ARE those 60%/100% figures, so no multiplication happens here).
+ *
+ * `applyGates` (both the `monotributo` and `monotributo-social` cases) and `ceilingOf` used to
+ * each re-derive "which of the two topes applies" independently. The two VALUES could never
+ * drift — they read the same `FIGURES` either way — but the RULE could, if one copy were
+ * edited and the other forgotten. One helper, so there is only one rule to edit.
+ */
+function monotributoTope(input: WizardInput): number {
+  return input.people === 'socios'
+    ? FIGURES.topeMonotributoSociedadUyu.value
+    : FIGURES.topeMonotributoUnipersonalUyu.value
+}
+
+/**
  * Rule each regime in or out on LEGAL grounds alone. Cost never enters here: a
  * regime you don't qualify for isn't "more expensive", it's illegal.
  *
@@ -956,10 +973,8 @@ export function applyGates(input: WizardInput): GateOutcome[] {
           }
         }
         // Art. 4 sets its own tope: 60% del límite para el unipersonal, 100% para el
-        // asociativo — los mismos importes que ya tenemos verificados.
-        const topeSocial = socios
-          ? FIGURES.topeMonotributoSociedadUyu.value
-          : FIGURES.topeMonotributoUnipersonalUyu.value
+        // asociativo — los mismos importes que ya tenemos verificados (see `monotributoTope`).
+        const topeSocial = monotributoTope(input)
         if (input.annualRevenueUyu > topeSocial) {
           out(`Superás el tope de ingresos (${uyu(topeSocial)} al año en 2026).`, L.ley18874_4)
         }
@@ -1052,9 +1067,7 @@ export function applyGates(input: WizardInput): GateOutcome[] {
             L.dto199
           )
         }
-        const tope = socios
-          ? FIGURES.topeMonotributoSociedadUyu.value
-          : FIGURES.topeMonotributoUnipersonalUyu.value
+        const tope = monotributoTope(input)
         if (input.annualRevenueUyu > tope) {
           out(`Superás el tope de ingresos (${uyu(tope)} al año en 2026).`, L.ley18083_71)
         }
@@ -2133,6 +2146,20 @@ export interface Warning {
   text: string
   norm?: string
   url?: string
+  /**
+   * Which regime this warning is about. Set on a `grey-zone` warning that names a CHEAPER,
+   * un-recommended `dudoso` regime — never `recommended` itself, since `recommended` is never
+   * `dudoso` (see `evaluate`, rule 3). Absent on `lockout`/`liability`, which are implicitly
+   * about the recommendation.
+   */
+  regime?: RegimeId
+  /**
+   * Only on a `grey-zone` warning about a cheaper un-recommended alternative: how much LESS
+   * it would cost per month than `recommended`. A structured number, not a string baked into
+   * `text`, so the page can render it (bold it, format it, translate it) independently of the
+   * prose. Absent otherwise.
+   */
+  cheaperByMonthly?: number
 }
 
 /** One regime, judged: legally, then (only then) on price. */
@@ -2183,21 +2210,23 @@ export interface Verdict {
   noRecommendation: string | null
   /** Every regime, always: comparable ones first (cheapest first), then un-costable, then illegal. */
   ranked: RankedRegime[]
-  /** Only ever about the RECOMMENDED regime. No recommendation ⇒ no warnings. */
+  /**
+   * Mostly about the RECOMMENDED regime (`lockout`, `liability`) — plus, when a cheaper
+   * `dudoso` regime exists, a `grey-zone` warning that names IT instead (see `evaluate`,
+   * rule 3): the visitor deserves to know the cheaper contested path exists and exactly why
+   * we declined to recommend it, not just what we picked. No recommendation ⇒ no warnings:
+   * rule 4 forbids falling back to a `dudoso` price, so there is nothing to compare against.
+   */
   warnings: Warning[]
 }
 
 /** The revenue ceiling of a regime, when it has one. `null` = nothing to be close to. */
 function ceilingOf(regime: RegimeId, input: WizardInput): number | null {
-  const socios = input.people === 'socios'
   switch (regime) {
-    // Ley 18.083 art. 71 for the monotributo; Ley 18.874 art. 4 sets the same two importes
-    // for the monotributo social (60% del límite del unipersonal / 100% del asociativo).
+    // Same rule `applyGates` uses for these two regimes — see `monotributoTope`.
     case 'monotributo':
     case 'monotributo-social':
-      return socios
-        ? FIGURES.topeMonotributoSociedadUyu.value
-        : FIGURES.topeMonotributoUnipersonalUyu.value
+      return monotributoTope(input)
     case 'unipersonal-literal-e':
       return FIGURES.topeLiteralEUyu.value
     default:
@@ -2243,7 +2272,7 @@ function cannotCostReasons(regime: RegimeId, input: WizardInput, cost: CostBreak
 /**
  * The verdict: which legal form should this person open?
  *
- * LEGAL GATES FIRST, COST SECOND, AND AN UNKNOWN IS NEVER A ZERO. Three rules, in order:
+ * LEGAL GATES FIRST, COST SECOND, AND AN UNKNOWN IS NEVER A ZERO. Four rules, in order:
  *
  *   1. A regime the visitor may not legally use (`excluido`) is never recommended, and is
  *      never given a price at all. Cost is not a defence against a gate.
@@ -2253,12 +2282,19 @@ function cannotCostReasons(regime: RegimeId, input: WizardInput, cost: CostBreak
  *      what makes people trust the numbers that are left. There is no `?? 0` and no
  *      `?? Infinity` in this function: an unknown does not enter the sort wearing a number,
  *      it does not enter the sort.
- *   3. Among what remains, the CHEAPEST wins — and at equal price, a clearly `elegible`
- *      regime beats a `dudoso` one. We do NOT promote an `elegible` regime over a cheaper
- *      `dudoso` one: for a freelancer, Literal E is both the cheapest and a genuine grey zone
- *      (Consulta DGI 4761), and silently steering them to the dearer path without telling
- *      them the cheaper one exists would be a worse answer than showing it with the tension
- *      attached. That is what the `grey-zone` warning is for.
+ *   3. Among what remains, the cheapest `elegible` regime wins. A `dudoso` regime is NEVER
+ *      recommended — not at a tie, and not even when it is strictly cheaper, and not even when
+ *      it is the only priced option. For a freelancer, Literal E is both the cheapest
+ *      comparable regime and a genuine legal grey zone (Consulta DGI 4761); recommending the
+ *      contested path to save a few hundred pesos a month is exactly the failure this page
+ *      exists to avoid, so we recommend the solid path (IRPF Cat. II) instead. The `dudoso`
+ *      regime is still SHOWN, with its price and its reason — and because a visitor deserves
+ *      to know a cheaper contested path exists rather than have it quietly buried, a
+ *      `grey-zone` warning says so explicitly: which regime, how much cheaper per month, and
+ *      the exact reason (with its norm and URL) we are declining to recommend it anyway.
+ *   4. If NO `elegible` regime has a complete, comparable cost, `recommended` stays `null`.
+ *      We do NOT fall back to a `dudoso` price just because it is the only one available:
+ *      "we can't recommend anything" is the honest verdict, not "here's the contested one".
  *
  * `recommended: null` is therefore a real, and sometimes the only honest, verdict.
  */
@@ -2295,11 +2331,12 @@ export function evaluate(
   }
   priced.sort((a, b) => a.price - b.price)
 
-  const cheapest = priced[0]
-  const best =
-    cheapest === undefined
-      ? null
-      : (priced.find(p => p.price === cheapest.price && p.r.status === 'elegible') ?? cheapest)
+  // RULE 3 — the recommendation is drawn from `elegible` priced regimes ONLY. A `dudoso`
+  // regime never enters this pool, however cheap: `priced` is sorted ascending, so the first
+  // `elegible` entry in it is, by construction, the cheapest `elegible` one. A cheaper
+  // `dudoso` regime (if any) is reported below as a warning, never promoted here.
+  const eligiblePriced = priced.filter(p => p.r.status === 'elegible')
+  const best = eligiblePriced[0] ?? null
   const recommended = best?.r.regime ?? null
 
   const noRecommendation =
@@ -2319,7 +2356,7 @@ export function evaluate(
   const rec = recommended === null ? undefined : ranked.find(r => r.regime === recommended)
   const regime = recommended === null ? undefined : byId.get(recommended)
 
-  if (rec !== undefined && regime !== undefined) {
+  if (rec !== undefined && regime !== undefined && best !== null) {
     // THE LOCKOUT. It only matters if you are near the ceiling of the regime we are
     // recommending — and "near" is a product judgement, so it is declared as one
     // (PRODUCT_THRESHOLDS, not FIGURES: no norm defines it).
@@ -2360,11 +2397,28 @@ export function evaluate(
       })
     }
 
-    // THE GREY ZONE. If we are recommending a regime whose legality we could not confirm, the
-    // reader has to hear it from us — every single reason, not a summary of them.
-    for (const r of rec.reasons) {
-      if (r.status !== 'dudoso') continue
-      warnings.push({ kind: 'grey-zone', text: r.text, norm: r.norm, url: r.url })
+    // THE CHEAPER GREY ZONE. `recommended` is, by construction (rule 3), never `dudoso` — but
+    // a `dudoso` regime can still be cheaper, and quietly recommending the dearer-but-certain
+    // path without admitting that is a milder version of the exact dishonesty we just fixed.
+    // So: every comparable `dudoso` regime cheaper than the recommendation gets named, with
+    // how much less it would cost per month and the precise reason (norm + URL) we are
+    // declining to recommend it anyway — one warning per `dudoso` reason, never summarised.
+    for (const p of priced) {
+      if (p.r.status !== 'dudoso' || p.price >= best.price) continue
+      const cheaperRegime = byId.get(p.r.regime)
+      if (cheaperRegime === undefined) continue
+      const cheaperByMonthly = Math.round((best.price - p.price) / 12)
+      for (const r of p.r.reasons) {
+        if (r.status !== 'dudoso') continue
+        warnings.push({
+          kind: 'grey-zone',
+          text: `${cheaperRegime.name} te saldría ${uyu(cheaperByMonthly)} menos por mes, pero no te lo recomendamos: ${r.text}`,
+          norm: r.norm,
+          url: r.url,
+          regime: p.r.regime,
+          cheaperByMonthly,
+        })
+      }
     }
   }
 
