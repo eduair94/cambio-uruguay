@@ -270,11 +270,6 @@ export default defineNuxtConfig({
         driver: 'fs',
         base: './.data/casas-reviews',
       },
-      // Durable store for the live cost-of-living figures (costs:daily).
-      costs: {
-        driver: 'fs',
-        base: './.data/costs',
-      },
       // Durable store for the live debt-relief figures (debt-relief:monthly).
       'debt-relief': {
         driver: 'fs',
@@ -299,8 +294,6 @@ export default defineNuxtConfig({
       '20 9 * * *': ['predictions:daily'],
       // 09:30 UTC ≈ 06:30 Uruguay: generate the day's blog posts.
       '30 9 * * *': ['blog:daily'],
-      // 09:40 UTC ≈ 06:40 Uruguay: refresh live cost-of-living figures via Gemini.
-      '40 9 * * *': ['costs:daily'],
       // 10:05 UTC ≈ 07:05 Uruguay: compare the backend's freshly-refreshed figures (pm2
       // currency-figures, 09:52 UTC) with the constants baked into this app, and ping the admin
       // when they drift. Spends no AI call — the Gemini refresh moved to the backend.
