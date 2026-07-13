@@ -13,6 +13,7 @@
     "start": "node .output/server/index.mjs",
     "lint": "eslint",
     "lintfix": "eslint --fix",
+    "check:og-images": "node scripts/check-og-images.mjs",
     "typecheck": "nuxt typecheck",
     "test": "vitest run",
     "test:unit": "vitest run",
