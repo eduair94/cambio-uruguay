@@ -1490,7 +1490,7 @@ git commit -m "refactor(gemini)!: the app can no longer reach Gemini — key and
 
 ### Task 11: Deploy and verify
 
-- [ ] **Step 1: Final `ecosystem.config.js` review** — seven new fork/cron apps, none `exec_mode: "cluster"`, none `autorestart: true`, every minute not a multiple of 5:
+- [x] **Step 1: Final `ecosystem.config.js` review** — seven new fork/cron apps, none `exec_mode: "cluster"`, none `autorestart: true`, every minute not a multiple of 5:
 
 | pm2 app | cron (UTC) | ≈ Montevideo | Gemini calls / run |
 |---|---|---|---|
@@ -1504,15 +1504,15 @@ git commit -m "refactor(gemini)!: the app can no longer reach Gemini — key and
 
 Existing, unchanged: `currency-sync` (`*/5`), `currency-aduana` (`30 9 * * 1`), `currency-server` (cluster ×2), `currency-sheet`, `currency-mcp`, the bots. Nitro keeps: `drivers:daily` 09:15 (2 stages), `blog:daily` 09:30, `figures:drift` 10:05 (new, no AI), `reddit:sentiment` 10:10, `telegram:summary` 11:00, `newsletter:daily` 12:00, `alerts:check` */10, `couriers:scrape` 08:15, `withdraw:iva-check` Mon 09:00, `casas:reviews` Mon 07:30.
 
-- [ ] **Step 2: `scripts/deploy-backend.sh`** — the array reads:
+- [x] **Step 2: `scripts/deploy-backend.sh`** — the array reads (already correct, verified in the current tree, no edit needed):
 
 ```bash
 OTHER_APPS=(currency-sync currency-aduana currency-sheet currency-banks-news currency-figures currency-costs currency-debt-relief currency-loans currency-predictions currency-explain)
 ```
 
-- [ ] **Step 3: `tests/no_scheduler_in_api.test.ts` must still pass.** Nothing in this plan adds a timer to `index.ts` — the five new routes are pure reads. Run `npx vitest run tests/no_scheduler_in_api.test.ts` and confirm.
+- [x] **Step 3: `tests/no_scheduler_in_api.test.ts` must still pass.** Nothing in this plan adds a timer to `index.ts` — the five new routes are pure reads. `npx vitest run tests/no_scheduler_in_api.test.ts` → 1 file, 1 test, PASS.
 
-- [ ] **Step 4: Deploy and smoke-test each endpoint**
+- [ ] **Step 4: Deploy and smoke-test each endpoint — REQUIRES A HUMAN, cannot be done from this worktree.** This branch has not been merged to `main`, and CI only deploys on push to `main` (`.github/workflows/deploy.yml`). Once merged and the backend deploy has run:
 
 ```bash
 for p in banks-news uy-figures cost-of-living debt-relief loan-rates; do
@@ -1520,11 +1520,34 @@ for p in banks-news uy-figures cost-of-living debt-relief loan-rates; do
 done
 ```
 
-Then each page: `/mejores-bancos-uruguay`, `/salud-financiera`, `/herramientas/costo-de-vida`, `/saldar-deudas-uruguay`, `/prestamos-uruguay`, `/historico`, `/por-que-sube-el-dolar`.
+**What "healthy" looks like per endpoint** (all five wrap their store read in `?? <fallback>` in `index.ts`, so they always return HTTP 200 with valid JSON — a fallback body is healthy too, an HTTP error or empty body is not):
+| Endpoint | Healthy 200 body | Before the first cron run |
+|---|---|---|
+| `GET /banks-news?lang=es\|en\|pt` | `{ items:[...], analysis, asOf, unavailable? }` | `{ items: [], analysis: null, asOf: now, unavailable: true }` — graceful, not an error |
+| `GET /uy-figures` | `{ salarioMinimo, bpc, boletoStm, inflacionAnual, asOf, updated:[], sources:[] }` | `BASELINE_FIGURES` with `asOf: null` |
+| `GET /cost-of-living` | `{ figures: {salarioMinimo, boletoStm, rentMono, rent1, rent2}, asOf, updated:[], sources:[] }` | `emptyLiveCosts()` — all figures `null`, `asOf: null` |
+| `GET /debt-relief` | `{ usuryCaps:[{segmento,tasaMedia,topeTasa,topeMora}], asOf, updated:[], sources:[] }` | `baselineDebtRelief()` verified BCU caps, `asOf: null` |
+| `GET /loan-rates` | `{ rates: {<lenderId>: {teaPct, scrapedAt}}, history: {<lenderId>: [{date,teaPct,source,method}]}, updatedAt }` | empty `{rates:{}, history:{}, updatedAt:""}` **until `import_loan_history.ts` runs — see below** |
 
-- [ ] **Step 5: Prove the fallbacks.** Stop the backend (`pm2 stop currency-server`), reload each of the seven pages, confirm every one renders its baseline with **no error and no empty shell**, restart (`pm2 start currency-server`). This is the only way to know the fallbacks are real.
+Then load each page and confirm it renders (no blank shell, no error): `/mejores-bancos-uruguay`, `/salud-financiera`, `/herramientas/costo-de-vida`, `/saldar-deudas-uruguay`, `/prestamos-uruguay`, `/historico`, `/por-que-sube-el-dolar`. The last two read Mongo directly and do not depend on these five endpoints at all.
 
-- [ ] **Step 6: Commit + update the memory note.**
+**Note there is no `/predictions` or `/analysis`/`explain` backend endpoint to smoke-test.** `sync_predictions.ts` and `sync_explain.ts` write straight to the app's own Mongo via `classes/appdb.ts`; the app's existing `/api/predictions/:currency` and `/api/analysis/:currency` routes read that Mongo directly and were not changed. Verified: `index.ts` has no `predictions`/`explain` route registration.
+
+**Deploy ordering — read this before panicking.** `.github/workflows/deploy.yml`'s `backend-deploy` job has `needs: [backend-test, changes, deploy]`, where `deploy` is the **app** job — confirmed in the workflow file. So on the merge commit that ships this whole plan, the app (with its five thin proxies) goes live *before* the backend (with the five new routes) does. For the few minutes between those two SSH deploys, every one of the five endpoints above 404s at the Nuxt-proxy layer and each page silently serves its fallback baseline (same table as `## Risks` below). **This is expected, not a regression — do not roll back for it.** It self-resolves the moment `backend-deploy` finishes.
+
+**Manual VPS actions a human must perform (none of these are automated by CI):**
+1. **Add `APP_MONGO_URI` to the root `.env` on the VPS**, or `currency-predictions` and `currency-explain` `process.exit(1)` on every run (see `classes/appdb.ts#appConnection` and `sync_predictions.ts`/`sync_explain.ts`, both of which refuse to start without it — verified in code). **Value: copy `app/.env`'s `MONGO_URI` verbatim** — the app's Mongo runs on the same VPS, so `localhost` reaches it from the backend process too. Do **not** put the actual credential in this repo, in `.env.sample`, or in any commit — this is an action taken directly on the server (`ssh -p 2223 root@104.234.204.107` → edit `/root/cambio-uruguay/.env`). This was already flagged and deliberately left undone in Task 0 (see its Step 4 note above) — it is still undone as of this task.
+2. **Remove `NUXT_GEMINI_API_KEY` from the VPS's `app/.env`** (`/root/cambio-uruguay/app/.env`), and only after the app half of every earlier task (2–10) is deployed and the app has been **rebuilt** — `runtimeConfig` is baked at `nuxt build` time, so a running-but-not-rebuilt app keeps using whatever value was baked into its last build regardless of what `app/.env` says now. Confirm the backend keeps its own copy: `grep -c '^GEMINI_API_KEY=' /root/cambio-uruguay/.env` → `1`.
+3. **Run `import_loan_history.ts` exactly once**, on the VPS, after `npm run build` (so `dist/import_loan_history.js` exists) but **before** relying on `/loan-rates`' `history` for anything — the daily TEA time series in `app/.data/loans/rates.json` cannot be regenerated once the app's `loans` nitro mount is deleted, so this is the one truly irreplaceable dataset in the whole migration:
+   ```bash
+   cd /root/cambio-uruguay && node dist/import_loan_history.js
+   ```
+   **Confirmed idempotent by reading the code** (`import_loan_history.ts`, root of this repo): it loads the current Mongo doc via `loadLoanRates()`, then for each `(lenderId, date)` pair in the fs file it `continue`s if Mongo **already has that date** (`if (have.has(entry.date)) continue`) — Mongo always wins over the fs file, so a second run carries zero additional rows and neither duplicates nor overwrites anything. It also only seeds the `rates` map when Mongo's `rates` object is still empty (`if (!Object.keys(mongoDoc.rates).length …)`), so it can never clobber a value the cron has already written. Running it twice, or running it after `currency-loans` has already run once, is safe — it is not, however, useful to run it a second time (nothing left to carry after the first run), so once is enough.
+   It targets `classes/loans/store.ts`, which uses the **backend's own** `MongooseServer` (not `appdb`) — it does **not** need `APP_MONGO_URI` to run, only the backend's existing `MONGODB_URI`.
+
+- [ ] **Step 5: Prove the fallbacks — REQUIRES A HUMAN, on the live VPS, after Step 4.** Stop the backend (`pm2 stop currency-server`), reload each of the seven pages, confirm every one renders its baseline with **no error and no empty shell**, restart (`pm2 start currency-server`). This is the only way to know the fallbacks are real. (Verified locally instead, in this session, by booting `npm run dev` with no `NUXT_GEMINI_API_KEY` in the environment at all — see the task report — which proves the app-side half of the same claim: no page depends on a live Gemini key to render.)
+
+- [ ] **Step 6: Commit + update the memory note.** — code-level parts of Task 11 (Steps 1–3) are committed as part of this task's commit (no file changes were needed for `ecosystem.config.js` or `scripts/deploy-backend.sh` — both were already correct from Tasks 2–9). Steps 4–5 remain open until a human merges to `main` and runs them on the VPS; do not check them off until the actual `curl`/page-load output has been observed against production.
 
 ---
 
