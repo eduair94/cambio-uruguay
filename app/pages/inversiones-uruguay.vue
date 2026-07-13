@@ -193,29 +193,57 @@
       </h2>
       <p class="text-body-2 mb-3">
         Los residentes fiscales uruguayos pagan
-        <strong>IRPF sobre las rentas de capital mobiliario</strong> (intereses, dividendos y
-        ganancias de capital) a una tasa general del <strong>12%</strong>, aunque varios
-        instrumentos tienen tasas reducidas: depósitos en pesos no indexados 5,5% (hasta 1 año),
-        2,5% (1 a 3 años) o 0,5% (más de 3 años); depósitos en UI 10%/7%/5% según plazo; depósitos
-        en moneda extranjera 12% (hasta 3 años) o 7% (más de 3 años). Las ganancias de capital por
-        venta de valores pueden tributar sobre una base ficta del 20% del precio de venta, lo que
-        equivale a una tasa efectiva de aproximadamente 2,4%.
+        <strong>IRPF Categoría I sobre las rentas de capital</strong> (intereses, dividendos,
+        alquileres y ganancias de capital) a una tasa general del <strong>12%</strong> (los
+        dividendos de fuente uruguaya, al 7%). Los depósitos a plazo tienen tasas reducidas según
+        moneda y plazo: en <strong>pesos</strong> no indexados, 5,5% (hasta 1 año), 2,5% (de 1 a 3
+        años) y 0,5% (más de 3 años); en <strong>UI</strong>, 10%, 7% y 5%; en
+        <strong>moneda extranjera</strong>, 12% hasta 1 año, 12% de 1 a 3 años y 7% a más de 3 años.
+        Al <strong>vender valores</strong>, el régimen por defecto es el <strong>real</strong>: 12%
+        sobre la ganancia (precio de venta menos costo fiscal actualizado). La base ficta del 20%
+        del precio (≈ 2,4% efectivo) <strong>no es la regla general</strong>: es obligatoria solo
+        cuando no se puede probar el costo, y opcional en casos puntuales (bienes anteriores a la
+        Ley 18.083 y, desde 2026, bienes en el exterior).
       </p>
       <p class="text-body-2 mb-3">
         Desde el 1° de enero de 2026, la Ley de Presupuesto (20.446) extendió el IRPF a las rentas y
-        ganancias de capital de fuente extranjera que antes no estaban gravadas —relevante para
-        quienes invierten en brokers internacionales como eToro o XTB—, con la tasa general del 12%
-        o una retención definitiva reducida del 8% cuando un agente residente en Uruguay actúa como
-        retentor. Los no residentes tributan IRNR, generalmente también al 12%.
+        <strong>ganancias de capital de fuente extranjera</strong> que antes no estaban gravadas
+        —relevante para quienes invierten con brokers internacionales como eToro o XTB—. La
+        <strong>tasa es 12%</strong>. El <strong>8% no es una tasa</strong>: es una
+        <strong>retención reducida</strong> que solo puede aplicar una entidad uruguaya que
+        intermedie y además <strong>ejerza la custodia</strong> de esos activos (un bróker/custodio
+        local), y es definitiva únicamente <strong>si el contribuyente opta</strong> por tomarla
+        como tal. Operando directo con un bróker del exterior
+        <strong>no hay retención uruguaya</strong>: corresponden
+        <strong>anticipos semestrales</strong> al 12% o declaración jurada (Formulario 1101). El
+        dato más valioso de la reforma es el <strong>step-up al 31/12/2025</strong>: para activos
+        que coticen en bolsas de reconocido prestigio y hayas comprado antes de esa fecha, el costo
+        fiscal es su <strong>cotización al 31/12/2025</strong>, así que toda la apreciación anterior
+        a 2026 queda fuera del impuesto. Los no residentes tributan IRNR, generalmente también al
+        12%.
       </p>
       <p class="text-body-2 mb-0">
-        Existe una <strong>exoneración confirmada</strong>: los intereses de la deuda pública
-        uruguaya (Bonos del Tesoro, Letras de Tesorería, Letras de Regulación Monetaria del BCU y
-        Bonos Globales en UI) están exentos de IRPF y de Impuesto al Patrimonio, tanto para
-        residentes como para no residentes. Los rendimientos de los fondos de las AFAP también están
-        exonerados. Estas reglas tienen matices por instrumento y situación personal:
-        <strong>consultá siempre con un contador</strong> antes de declarar.
+        Existe una <strong>exoneración confirmada</strong>: la deuda pública uruguaya (Bonos del
+        Tesoro, Letras de Tesorería, Letras de Regulación Monetaria del BCU y Bonos Globales en UI)
+        está exenta de IRPF y de Impuesto al Patrimonio, tanto para residentes como para no
+        residentes —y no solo el interés: el Título 7, art. 38 lit. A exonera también la ganancia de
+        capital por transferirlos—. Los rendimientos de los fondos de las AFAP también están
+        exonerados. La <strong>cripto</strong>, en cambio, es una zona gris: no hay norma tributaria
+        específica (la Ley 20.345 regula a los proveedores, no la tributación) y ni el Decreto
+        95/026 ni la Resolución DGI 1517/2026 la mencionan, así que
+        <strong>no publicamos un porcentaje</strong> para ella. Estas reglas tienen matices por
+        instrumento y situación personal: <strong>consultá siempre con un contador</strong> antes de
+        declarar.
       </p>
+      <VBtn
+        :to="localePath('/impuestos-inversiones-uruguay')"
+        variant="text"
+        color="primary"
+        class="px-0 mt-3"
+      >
+        <VIcon start size="small">mdi-file-percent-outline</VIcon>
+        Ver la guía completa: impuestos sobre inversiones en Uruguay
+      </VBtn>
     </VCard>
 
     <!-- Disclaimer -->
@@ -483,7 +511,7 @@ useHead(() => ({
                 name: '¿Cómo se pagan impuestos por invertir en Uruguay?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Los residentes fiscales uruguayos pagan IRPF sobre las rentas de capital mobiliario (intereses, dividendos y ganancias de capital) a una tasa general del 12%, con tasas reducidas para varios instrumentos (por ejemplo, depósitos en pesos o en UI según el plazo). Desde 2026 el IRPF también grava las rentas de fuente extranjera, relevante para quienes usan brokers internacionales. Los intereses de la deuda pública uruguaya (Bonos del Tesoro, Letras de Tesorería, LRM) están exentos de IRPF. Los no residentes tributan IRNR. Consultá siempre con un contador y las publicaciones oficiales de la DGI antes de declarar.',
+                  text: 'Los residentes fiscales uruguayos pagan IRPF Categoría I sobre las rentas de capital (intereses, dividendos, alquileres y ganancias de capital) a una tasa general del 12%; los dividendos de fuente uruguaya, al 7%. Los depósitos a plazo tienen tasas reducidas según moneda y plazo: en pesos 5,5% (hasta 1 año), 2,5% (1 a 3 años) y 0,5% (más de 3 años); en UI 10%, 7% y 5%; en moneda extranjera 12%, 12% y 7%. Al vender valores, la regla por defecto es el régimen real: 12% sobre la ganancia (precio menos costo fiscal actualizado); la base ficta del 20% del precio (≈ 2,4% efectivo) es obligatoria solo si no se puede probar el costo, no es el régimen general. Desde 2026 (Ley 20.446) el IRPF también grava las rentas y ganancias de capital de fuente extranjera, al 12%: el 8% no es una tasa, es una retención reducida que solo puede aplicar un bróker o custodio uruguayo que ejerza la custodia de los activos, y es definitiva solo si el contribuyente opta por ella. Con un bróker del exterior no hay retención uruguaya: corresponden anticipos semestrales o declaración jurada (Formulario 1101). Para activos que coticen en bolsas de reconocido prestigio adquiridos antes del 31/12/2025, el costo fiscal es su cotización al 31/12/2025. La deuda pública uruguaya (Bonos del Tesoro, Letras de Tesorería, LRM) está exenta de IRPF, tanto el interés como la ganancia de capital al transferirla. Los no residentes tributan IRNR. Consultá siempre con un contador y las publicaciones oficiales de la DGI antes de declarar.',
                 },
               },
             ],

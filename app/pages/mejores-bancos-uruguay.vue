@@ -672,6 +672,22 @@
       las condiciones vigentes en el sitio de cada entidad antes de decidir.
     </VAlert>
 
+    <VAlert
+      type="info"
+      variant="tonal"
+      density="comfortable"
+      class="mt-4"
+      icon="mdi-file-percent-outline"
+    >
+      Los bancos uruguayos <strong>retienen el IRPF sobre tus rentas de capital</strong>
+      (plazo fijo, dividendos) de forma automática, y podés dejar esa retención como definitiva; un
+      <strong>bróker del exterior no te retiene nada</strong>. Más en la
+      <NuxtLink :to="localePath('/impuestos-inversiones-uruguay')">
+        guía de impuestos sobre inversiones
+      </NuxtLink>
+      .
+    </VAlert>
+
     <!-- Sources -->
     <VCard variant="flat" class="sources-card mt-4 pa-5">
       <h2 class="text-subtitle-2 font-weight-bold mb-2">

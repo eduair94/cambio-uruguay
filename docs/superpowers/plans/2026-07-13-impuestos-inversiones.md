@@ -901,20 +901,15 @@ export function annualIrpfCatI(
   for (const item of items) {
     switch (item.kind) {
       case 'deposito': {
-        const r = depositReturn({
-          principal: item.amount,
-          annualRatePct: 100, // amount IS the interest: tax it directly
-          termMonths: item.termMonths,
-          currency: item.currency,
-        })
-        const ruleForTerm = depositRule(item.currency, termFromMonths(item.termMonths))
+        // The annual form takes the INTEREST EARNED, not the principal, so the rate applies
+        // directly. Do NOT reuse `depositReturn` here — it expects a principal + nominal rate.
+        const depRule = depositRule(item.currency, termFromMonths(item.termMonths))
         byItem.push({
           kind: item.kind,
           amount: item.amount,
-          tax: item.amount * ((ruleForTerm.rate ?? 0) / 100),
-          rule: ruleForTerm,
+          tax: item.amount * ((depRule.rate ?? 0) / 100),
+          rule: depRule,
         })
-        void r
         break
       }
       case 'dividendo':
@@ -970,18 +965,12 @@ export function annualIrpfCatI(
 }
 ```
 
-> Note on the `deposito` branch: the annual form takes the INTEREST EARNED, not the principal, so the rate is applied directly. Do not reuse `depositReturn` there — it expects a principal and a nominal rate. (Delete the `void r` scaffold if you refactor; it exists only to keep the term lookup honest.)
-
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `cd app && npx vitest run tests/unit/capitalTax.test.ts && npx vitest run tests/unit/capitalTax.test.ts --reporter=verbose | tail -5`
+Run: `cd app && npx vitest run tests/unit/capitalTax.test.ts`
 Expected: PASS, all blocks green.
 
-- [ ] **Step 5: Clean up the `deposito` branch**
-
-Remove the unused `depositReturn` call and the `void r` line — the branch only needs `depositRule(item.currency, termFromMonths(item.termMonths))`. Re-run the tests; they must still pass.
-
-- [ ] **Step 6: Commit**
+- [ ] **Step 5: Commit**
 
 ```bash
 git add app/utils/capitalTax.ts app/tests/unit/capitalTax.test.ts

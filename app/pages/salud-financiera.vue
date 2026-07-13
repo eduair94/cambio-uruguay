@@ -111,6 +111,14 @@
                     {{ item.tip }}
                   </p>
                 </div>
+                <p v-if="pillar.id === 'ahorro'" class="text-caption text-grey-lighten-1 mt-1 mb-0">
+                  Lo que rinde tu ahorro también paga IRPF: hasta 0,5% en un plazo fijo largo en
+                  pesos, 12% en la mayoría de las rentas de capital. Mirá cuánto te toca en la
+                  <NuxtLink :to="localePath('/impuestos-inversiones-uruguay')" class="salud-link">
+                    guía de impuestos sobre inversiones
+                  </NuxtLink>
+                  .
+                </p>
               </VExpansionPanelText>
             </VExpansionPanel>
           </VExpansionPanels>

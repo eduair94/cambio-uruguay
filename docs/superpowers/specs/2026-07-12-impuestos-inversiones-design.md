@@ -92,7 +92,9 @@ Trampa: en el HTML de DGI la celda "USD / 1–3 años" es un `rowspan` del 12%. 
 
 ### Resto de las tasas
 - General ("restantes rentas"): **12%** — T7 art. 37 lit. B.
-- Dividendos y utilidades de contribuyentes de IRAE, **y dividendos fictos del art. 19** (siguen vigentes en 2026): **7%**.
+- Dividendos y utilidades de contribuyentes de IRAE, **y dividendos fictos del art. 19** (siguen vigentes en 2026): **7%** — **T7 art. 37 lit. B**.
+  ⚠️ El art. 37 **lit. B** se titula *"Otras Rentas"* y contiene **las dos filas**: la de dividendos y utilidades al **7%** *y* la de "restantes rentas" al **12%**. No es "el artículo del 12%": es el de ambos. Citar el 7% con `Título 7, art. 37 lit. B` es correcto, y ya hizo tropezar a más de un revisor.
+  El 7% es **solo de fuente uruguaya** (dividendos distribuidos por **contribuyentes de IRAE**). Los dividendos de una empresa **del exterior** son renta de fuente extranjera y pagan **12%** (ver más abajo): toda etiqueta de UI que ofrezca "dividendo" debe dejar eso fuera de toda duda.
 - Exoneración de dividendos de unipersonales/sociedades personales con ingresos ≤ 4.000.000 UI.
 - **Deuda pública uruguaya (Bonos del Tesoro, Letras de Tesorería, LRM del BCU, Globales en UI): EXENTA** de IRPF — y no solo el interés: T7 art. 38 lit. A exonera *"cualquier otro rendimiento de capital o incremento patrimonial derivado de la tenencia o transferencia"*. También **no computable** en Impuesto al Patrimonio (T14 art. 23). Idéntico para IRNR (T8 art. 19 lit. A).
 - **FCI locales**: exentos **solo si** invierten en valores públicos o privados con oferta pública (T7 art. 38 lit. P). Si invierten en otra cosa, no aplica.
@@ -136,12 +138,14 @@ Ley **20.446** (Presupuesto), D.Of. 08/01/2026, **vigencia 1/1/2026**. Reglament
 
 Antes (Ley 18.718, 2011–2025): solo se gravaban los **rendimientos** de capital **mobiliario** del exterior (intereses, dividendos) al 12%. **Las ganancias de capital del exterior no estaban gravadas.**
 
-Qué cambió (T7 art. 6 num. 2, sustituido):
+Qué cambió (**T7 art. 6 num. 2, sustituido por la Ley 20.446 art. 653**; el mismo art. 653, en su **num. 9**, sustituyó el **T7 art. 52 lit. A**):
 1. Se amplía a **todos los rendimientos de capital**, incluido el **inmobiliario** (alquiler de inmueble en el exterior).
 2. Se gravan por primera vez los **incrementos patrimoniales** del exterior (vender acciones, ETFs, bonos extranjeros).
 3. **Excepciones** (art. 18 lit. A, C, D): regalías, marcas, patentes, llaves, derechos de autor, arrendamiento de bienes muebles, cesión de imagen e **instrumentos financieros derivados**.
 
-**Tasa: 12%.** El **8% es una retención reducida, no una tasa** (T7 art. 52 lit. A + Dec. 148/007 arts. 44 quinquies y sexies):
+**Tasa: 12%.** Quién la fija: la **fuente** de la renta la trae al IRPF el **T7 art. 6 num. 2** (sustituido por la **Ley 20.446 art. 653**), y la **alícuota** es la de "restantes rentas" del **T7 art. 37 lit. B**. El **art. 52 lit. A NO es la norma de la tasa**: es la de la retención.
+
+El **8% es una retención reducida, no una tasa** (**T7 art. 52 lit. A** —sustituido por la **Ley 20.446 art. 653 num. 9**— + **Dec. 148/007 arts. 44 quinquies y sexies**, redacción del Dec. 95/026):
 - Solo puede retener al 8% una **entidad residente que intermedie profesional y habitualmente activos mobiliarios en entidades no residentes Y EJERZA LA CUSTODIA** de esos activos. Es decir, un **bróker/custodio uruguayo**. No "cualquier agente residente", no un banco cualquiera.
 - Es **definitiva solo si el contribuyente OPTA** por tomarla como tal (y así se libera de la DJ).
 - Otros agentes (bancos, corredores de bolsa, fondos, fideicomisos que actúan por cuenta y orden de terceros — art. 44 quater) retienen **12%**, y solo por incrementos patrimoniales.

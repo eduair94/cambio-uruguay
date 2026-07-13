@@ -195,6 +195,16 @@
         </div>
       </div>
 
+      <VAlert type="info" variant="tonal" density="comfortable" class="mt-4">
+        Esta calculadora es de <strong>IRPF Categoría II</strong> (rentas del trabajo). Si lo que
+        querés saber es cuánto pagás por un plazo fijo, un dividendo, un alquiler o tu cuenta en un
+        bróker del exterior, eso es <strong>Categoría I</strong>:
+        <NuxtLink :to="localePath('/herramientas/calculadora-impuestos-inversiones')">
+          calculadora de impuestos sobre inversiones
+        </NuxtLink>
+        .
+      </VAlert>
+
       <!-- IRPF detail -->
       <VExpansionPanels flat class="adv-panels mt-4">
         <VExpansionPanel eager>

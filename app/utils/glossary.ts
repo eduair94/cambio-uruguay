@@ -309,8 +309,8 @@ export const glossary: readonly GlossaryTerm[] = [
     category: 'impuestos',
     short:
       'El IRPF grava los ingresos de las personas; sobre las rentas del trabajo se aplica de forma progresiva por franjas expresadas en BPC.',
-    body: 'El IRPF de las rentas del trabajo se calcula mes a mes sobre el sueldo nominal, aplicando tasas crecientes a medida que el ingreso sube de franja (esquema marginal). Cada franja se expresa en múltiplos de BPC y solo la porción que cae dentro de cada tramo paga la tasa de ese tramo. Existen deducciones (hijos, aportes, etc.) que reducen el impuesto. Las cifras se actualizan cada año.',
-    related: ['bpc', 'iass', 'irae', 'dgi'],
+    body: 'El IRPF de las rentas del trabajo (lo que técnicamente se llama IRPF Categoría II) se calcula mes a mes sobre el sueldo nominal, aplicando tasas crecientes a medida que el ingreso sube de franja (esquema marginal). Cada franja se expresa en múltiplos de BPC y solo la porción que cae dentro de cada tramo paga la tasa de ese tramo. Existen deducciones (hijos, aportes, etc.) que reducen el impuesto. Las cifras se actualizan cada año. Las rentas de capital —plazo fijo, dividendos, alquileres, venta de acciones— pagan un IRPF distinto, el Categoría I, con sus propias tasas.',
+    related: ['bpc', 'iass', 'irae', 'dgi', 'irpf-categoria-ii', 'irpf-categoria-i'],
   },
   {
     slug: 'imesi',
@@ -335,9 +335,9 @@ export const glossary: readonly GlossaryTerm[] = [
     term: 'IASS (Impuesto de Asistencia a la Seguridad Social)',
     category: 'impuestos',
     short:
-      'El IASS grava las jubilaciones y pensiones por encima de un mínimo, de forma progresiva por franjas.',
-    body: 'Es el impuesto que pagan los pasivos (jubilados y pensionistas) sobre sus haberes que superan cierto umbral, con tasas crecientes similares en lógica a las del IRPF. Como el IRPF, se expresa y actualiza usando referencias indexadas. Cumple un rol de financiamiento de la seguridad social.',
-    related: ['irpf', 'bpc', 'dgi'],
+      'El IASS grava las jubilaciones y pensiones que superan un mínimo: hasta 108 BPC anuales está exento, y por encima paga 6%, 24% o 30% según la franja.',
+    body: 'Es el impuesto que pagan los pasivos (jubilados y pensionistas) sobre sus haberes, con una lógica de franjas parecida a la del IRPF (BPS, con BPC 2026 = $6.864). Las franjas se expresan en ingresos anuales: hasta 108 BPC está exento (lo que equivale a un mínimo no imponible mensualizado de 9 BPC); de 108 a 180 BPC se paga 6%; de 180 a 600 BPC, 24%; y por encima de 600 BPC, 30%. Cumple un rol de financiamiento de la seguridad social. Cuidado con las calculadoras que todavía circulan con las cifras viejas (mínimo de 96 BPC y primera franja del 10%): están desactualizadas.',
+    related: ['irpf', 'irpf-categoria-ii', 'bpc', 'dgi'],
   },
   {
     slug: 'arancel-aduanero',
@@ -636,6 +636,104 @@ export const glossary: readonly GlossaryTerm[] = [
       'Es el documento en el que se declara de dónde provienen los fondos de una operación, exigido por las normas de prevención de lavado de activos.',
     body: 'La declaración jurada de origen (y destino) de fondos es un formulario que las casas de cambio, bancos y otras instituciones piden cuando una operación supera ciertos montos, en cumplimiento de las normas de prevención de lavado de activos del Banco Central del Uruguay. En el caso del cambio de divisas, suele solicitarse junto con el documento de identidad cuando la operación supera el orden de los USD 3.000 diarios. No implica sospecha sobre la persona: es un requisito legal que aplica por igual a todos para dar trazabilidad a las operaciones de mayor monto.',
     related: ['casa-de-cambio', 'bcu'],
+  },
+
+  // ---- Impuestos sobre inversiones (reforma 2026) ----
+  {
+    slug: 'irpf-categoria-i',
+    term: 'IRPF Categoría I (rentas de capital)',
+    category: 'impuestos',
+    short:
+      'El IRPF Categoría I es el impuesto que pagan los residentes uruguayos sobre sus rentas de capital: intereses, dividendos, alquileres y ganancias por la venta de bienes, con una tasa general del 12%.',
+    body: 'Grava las rentas de capital mobiliario e inmobiliario y los incrementos patrimoniales (ganancias por venta) de las personas físicas residentes. La tasa general es 12% sobre la renta neta (Título 7, art. 37 lit. B), con excepciones puntuales: depósitos bancarios según moneda y plazo, dividendos de fuente uruguaya al 7%, y la deuda pública uruguaya, exenta. Desde el 1/1/2026 alcanza también a las rentas y ganancias de capital de fuente extranjera —una cuenta en un bróker del exterior, el alquiler de un inmueble afuera—, algo que antes no se gravaba.',
+    example:
+      'Un plazo fijo en pesos a más de 3 años paga apenas 0,5% de IRPF; uno en dólares al mismo plazo paga 7%.',
+    related: ['irpf-categoria-ii', 'incremento-patrimonial', 'renta-de-fuente-extranjera', 'irnr'],
+  },
+  {
+    slug: 'irpf-categoria-ii',
+    term: 'IRPF Categoría II (rentas del trabajo)',
+    category: 'impuestos',
+    short:
+      'El IRPF Categoría II es el impuesto sobre las rentas del trabajo (el sueldo): se calcula por franjas progresivas expresadas en BPC, con deducciones por hijos, aportes y otros gastos.',
+    body: 'Es el IRPF que te retienen del sueldo cada mes: se aplica un esquema progresivo por franjas, de 0% a 36%, sobre el ingreso nominal, y después se descuenta un crédito por las deducciones admitidas (aportes jubilatorios, hijos a cargo, FONASA, entre otras). Se liquida en los Formularios 1102/1103. No incluye rentas de capital —plazo fijo, dividendos, alquileres, venta de acciones o una cuenta en un bróker del exterior—: esas pagan el IRPF Categoría I, un impuesto distinto con sus propias tasas.',
+    related: ['irpf-categoria-i', 'bpc', 'iass'],
+  },
+  {
+    slug: 'irnr',
+    term: 'IRNR (Impuesto a la Renta de los No Residentes)',
+    category: 'impuestos',
+    short:
+      'El IRNR es el impuesto que pagan las personas físicas no residentes sobre las rentas que obtienen en Uruguay; usa en general las mismas tasas que el IRPF Categoría I.',
+    body: 'Lo pagan quienes no califican como residentes fiscales uruguayos por las rentas de fuente uruguaya que obtienen: depósitos, alquileres, dividendos, ganancias de capital. Usa la misma matriz de nueve tasas que el IRPF Categoría I para depósitos, 7% para dividendos y dividendos fictos, 12% para el resto, y la deuda pública uruguaya también está exenta. Una diferencia importante: las entidades radicadas en países o regímenes de baja o nula tributación (BONT) tributan al 25%, salvo que se trate de dividendos de una empresa contribuyente de IRAE.',
+    related: ['irpf-categoria-i', 'residencia-fiscal', 'irae'],
+  },
+  {
+    slug: 'incremento-patrimonial',
+    term: 'Incremento patrimonial',
+    category: 'impuestos',
+    short:
+      'Un incremento patrimonial es la ganancia de capital: la diferencia entre el precio de venta y el costo fiscal actualizado de un bien, que tributa IRPF.',
+    body: 'La regla general es (precio de venta − costo fiscal actualizado por UI/IPC) × 12% (Título 7, arts. 29 y 32): eso es lo que pagás al vender con costo probado, sea un inmueble, acciones u otro bien. Existen bases fictas —15% o 20% del precio de venta, según el caso— pero son obligatorias solo cuando no hay costo probable, u opcionales en casos puntuales (inmuebles anteriores a julio de 2007, bienes previos a la Ley 18.083, o, desde 2026, bienes en el exterior). El ficto del 20% (2,4% efectivo) no es el régimen por defecto para vender valores: con el costo documentado se aplica la fórmula real al 12%. Además hay una exoneración para operaciones chicas: cada venta hasta 30.000 UI, y una suma anual de esas operaciones menores por debajo de 90.000 UI, queda exenta (Título 7, art. 38 lit. I).',
+    related: ['irpf-categoria-i', 'step-up-2025', 'renta-de-fuente-extranjera'],
+  },
+  {
+    slug: 'renta-de-fuente-extranjera',
+    term: 'Renta de fuente extranjera',
+    category: 'impuestos',
+    short:
+      'Desde el 1/1/2026, Uruguay grava con IRPF todos los rendimientos y las ganancias de capital que un residente obtiene en el exterior, no solo los intereses y dividendos.',
+    body: 'Antes de la reforma (Ley 18.718, vigente 2011–2025) solo se gravaban los rendimientos de capital mobiliario del exterior —intereses y dividendos— al 12%; las ganancias de capital del exterior no pagaban nada. La Ley 20.446 (vigente desde el 1/1/2026, reglamentada por el Decreto 95/026 y la Resolución DGI 1517/2026) amplió el impuesto a todos los rendimientos de capital, incluido el alquiler de un inmueble en el exterior, y por primera vez alcanza también los incrementos patrimoniales del exterior (vender acciones, ETFs o bonos extranjeros). La tasa sigue siendo 12%.',
+    example:
+      'Un bróker uruguayo que además ejerce la custodia de esos activos puede retener un 8% reducido —una retención, no la tasa, y definitiva solo si vos optás por eso—. Si operás directo con un bróker del exterior, nadie retiene nada acá y corresponden anticipos semestrales al 12% o declaración jurada.',
+    related: ['irpf-categoria-i', 'step-up-2025', 'residencia-fiscal'],
+  },
+  {
+    slug: 'residencia-fiscal',
+    term: 'Residencia fiscal',
+    category: 'impuestos',
+    short:
+      'Sos residente fiscal en Uruguay si pasás más de 183 días al año en el país, o si acá está el centro de tus intereses económicos o vitales.',
+    body: 'Basta con cumplir cualquiera de estas condiciones (Título 7, art. 2): estar más de 183 días en el año civil, o tener acá el núcleo principal de tus actividades o intereses económicos o vitales (por ejemplo, si tu cónyuge e hijos menores viven habitualmente en Uruguay, se presume que también sos residente). Para contar los días cuentan todas las presencias físicas efectivas, y las ausencias esporádicas de hasta 30 días corridos se siguen contando como presencia, salvo que tengas un certificado de residencia fiscal de otro país. Obtener solo rentas puras de capital no alcanza para configurar la residencia por actividades. También se puede acceder a la residencia fiscal invirtiendo, por ejemplo comprando un inmueble por UI 3.500.000 (desde el 1/7/2020) con al menos 60 días de presencia efectiva en el país.',
+    related: ['irnr', 'irpf-categoria-i', 'renta-de-fuente-extranjera'],
+  },
+  {
+    slug: 'step-up-2025',
+    term: 'Step-up al 31/12/2025',
+    category: 'impuestos',
+    short:
+      'Para activos financieros que cotizan en bolsas de reconocido prestigio adquiridos antes del 31/12/2025, el costo fiscal se actualiza a su cotización de esa fecha: toda la ganancia anterior a 2026 queda fuera del impuesto.',
+    body: 'Es uno de los cambios menos conocidos de la reforma de rentas del exterior: para activos que coticen en bolsas de reconocido prestigio y que hayas adquirido antes del 31 de diciembre de 2025, el costo fiscal a efectos del IRPF pasa a ser su cotización a esa fecha (Título 7, art. 32 + Decreto 95/026 art. 18), no lo que pagaste originalmente. En la práctica, toda la apreciación que ganó ese activo antes de 2026 no paga impuesto: solo se grava la diferencia entre lo que cotizaba al 31/12/2025 y el precio al que lo vendas. Si el cálculo así da una pérdida, esa pérdida no se puede compensar con otras rentas. La condición —bolsas de reconocido prestigio, comprado antes del 31/12/2025— no es opcional: sin ella no corresponde el step-up.',
+    related: ['renta-de-fuente-extranjera', 'incremento-patrimonial', 'irpf-categoria-i'],
+  },
+  {
+    slug: 'crs',
+    term: 'CRS (intercambio automático de información financiera)',
+    category: 'impuestos',
+    short:
+      'El CRS es el estándar de intercambio automático de información financiera entre países: Uruguay lo aplica desde 2017 y recibe datos de las cuentas que sus residentes tienen en las jurisdicciones socias.',
+    body: 'Uruguay aplica el Common Reporting Standard desde 2017 (Ley 19.484): informa y también recibe información de forma automática de las jurisdicciones socias. Alcanza cuentas de depósito, cuentas de custodia, participaciones de capital o de deuda, seguros con valor de rescate y rentas vitalicias. Un dato clave y muy malentendido: Estados Unidos no está en el CRS, y Uruguay no figura en la lista de acuerdos FATCA del Tesoro estadounidense; con EE.UU. existe un acuerdo de intercambio a requerimiento, caso por caso, no automático. Eso no significa que una cuenta en el exterior quede fuera del impuesto: desde 2026 las rentas y ganancias de capital del exterior pagan IRPF, y la obligación de declarar es tuya con independencia de lo que la DGI vea o deje de ver.',
+    related: ['renta-de-fuente-extranjera', 'dgi', 'irpf-categoria-i'],
+  },
+  {
+    slug: 'dividendo-ficto',
+    term: 'Dividendo ficto',
+    category: 'impuestos',
+    short:
+      'El dividendo ficto es la utilidad que la ley considera distribuida aunque la empresa no la haya repartido: paga el mismo 7% de IRPF que un dividendo real.',
+    body: 'Está en el art. 19 del Título 7 y sigue vigente en 2026: aunque la empresa no distribuya, la ley puede considerar distribuida parte de la utilidad acumulada y hacerla tributar. La tasa es la misma que la de los dividendos y utilidades distribuidos por contribuyentes de IRAE: 7% (Título 7, art. 37 lit. B). Ese 7% es de fuente uruguaya: los dividendos de una empresa del exterior son renta de fuente extranjera y pagan 12%, no 7%. En el IRNR el tratamiento de los dividendos y de los dividendos fictos también es del 7%.',
+    related: ['irpf-categoria-i', 'irae', 'irnr'],
+  },
+  {
+    slug: 'ficto-20',
+    term: 'Ficto del 20%',
+    category: 'impuestos',
+    short:
+      'El ficto del 20% es una base imponible presunta para calcular un incremento patrimonial: se toma el 20% del precio de venta como ganancia, lo que deja un impuesto efectivo del 2,4% del precio.',
+    body: 'Como el IRPF sobre incrementos patrimoniales es del 12%, aplicar la base ficta del 20% del precio de venta deja un impuesto equivalente al 2,4% del precio. No es el régimen por defecto de la venta de valores: la regla general es la real —precio de venta menos costo fiscal actualizado, por 12%— y el ficto del 20% es obligatorio solo cuando no podés probar el costo, y opcional en casos puntuales (bienes anteriores a la Ley 18.083 y, desde 2026, bienes en el exterior mediante una opción anual en la declaración jurada). Con el costo documentado, el ficto puede salirte más caro que la regla real. Para inmuebles no rurales anteriores al 1/7/2007 existe un ficto distinto, del 15% del precio (1,8% efectivo).',
+    example:
+      'Vendés acciones en $500.000 con un costo fiscal probado de $400.000: por la regla real pagás 12% de $100.000, o sea $12.000. Por el ficto del 20% pagarías 2,4% de $500.000, o sea $12.000 también; si tu costo fuera mayor, el ficto te saldría peor.',
+    related: ['incremento-patrimonial', 'irpf-categoria-i', 'step-up-2025'],
   },
 ] as const
 
