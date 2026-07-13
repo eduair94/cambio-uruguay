@@ -23,7 +23,7 @@ export function ogImageUrl(base, path) {
 export function filterDefaultLocalePaths(urls) {
   const paths = new Set()
   for (const { loc } of urls) {
-    if (/^\/(en|pt)(\/|$)/.test(loc)) continue
+    if (/^\/(?:en|pt)(?:\/|$)/.test(loc)) continue
     paths.add(loc)
   }
   return [...paths]
