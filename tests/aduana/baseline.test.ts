@@ -63,6 +63,17 @@ describe("aduana baseline", () => {
     }
   });
 
+  // A range on a non-numeric fact is how the "2 DUA por año" hole was open: an unsourced DNA
+  // assertion carrying a plausibility range looks, to the AI gate, exactly like a fact the gate can
+  // validate — so the AI could re-number it freely, with nothing to check it against. Keeping the
+  // range set free of orphans is what holds that door shut.
+  it("has no orphan ranges — a range implies a numeric fact", () => {
+    const numericIds = new Set(
+      BASELINE.facts.filter(f => typeof f.value === "number").map(f => f.id)
+    );
+    expect(Object.keys(FACT_RANGES).filter(k => !numericIds.has(k))).toEqual([]);
+  });
+
   it("does not pass vacuously — has a substantial number of facts", () => {
     expect(BASELINE.facts.length).toBeGreaterThan(40);
   });
