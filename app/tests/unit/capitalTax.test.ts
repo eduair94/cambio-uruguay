@@ -1,8 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import {
+  capitalGainTax,
   CRYPTO_RULE,
   depositReturn,
   depositRule,
+  isCapitalGainExempt,
+  isSmallLandlordExempt,
+  rentTax,
+  RENT_WITHHOLDING_PCT,
   termFromMonths,
   type Currency,
   type DepositTerm,
@@ -83,5 +88,125 @@ describe('capitalTax — cripto', () => {
   it('no tiene tasa: es zona gris no resuelta', () => {
     expect(CRYPTO_RULE.rate).toBeNull()
     expect(CRYPTO_RULE.confidence).toBe('no-resuelto')
+  })
+})
+
+describe('capitalTax — incrementos patrimoniales', () => {
+  it('el régimen REAL es el default: 12% sobre (precio − costo actualizado)', () => {
+    const r = capitalGainTax({ salePrice: 100_000, cost: 60_000, method: 'real' })
+    expect(r.taxableBase).toBe(40_000)
+    expect(r.tax).toBeCloseTo(4800, 2)
+    expect(r.effectiveRatePct).toBeCloseTo(4.8, 2) // sobre el precio de venta
+  })
+
+  it('una pérdida no genera impuesto', () => {
+    const r = capitalGainTax({ salePrice: 50_000, cost: 80_000, method: 'real' })
+    expect(r.taxableBase).toBe(0)
+    expect(r.tax).toBe(0)
+  })
+
+  it('el ficto del 20% da 2,4% efectivo — pero NO es el default', () => {
+    const r = capitalGainTax({ salePrice: 100_000, method: 'ficto20' })
+    expect(r.taxableBase).toBe(20_000)
+    expect(r.tax).toBeCloseTo(2400, 2)
+    expect(r.effectiveRatePct).toBeCloseTo(2.4, 2)
+  })
+
+  it('el ficto del 15% (inmuebles pre-2007) da 1,8% efectivo', () => {
+    const r = capitalGainTax({ salePrice: 200_000, method: 'ficto15' })
+    expect(r.tax).toBeCloseTo(3600, 2)
+    expect(r.effectiveRatePct).toBeCloseTo(1.8, 2)
+  })
+
+  it('con costo probado, el ficto puede ser PEOR que el real', () => {
+    const real = capitalGainTax({ salePrice: 100_000, cost: 95_000, method: 'real' })
+    const ficto = capitalGainTax({ salePrice: 100_000, method: 'ficto20' })
+    expect(real.tax).toBeLessThan(ficto.tax)
+  })
+
+  it('exonera operaciones chicas: ≤30.000 UI cada una y <90.000 UI al año', () => {
+    const ui = 6.6142
+    // Operación de 25.000 UI, con 50.000 UI acumuladas antes en el año.
+    expect(
+      isCapitalGainExempt({
+        operationAmountUyu: 25_000 * ui,
+        yearSubThresholdTotalUyu: 50_000 * ui,
+        uiValue: ui,
+      })
+    ).toBe(true)
+    // Misma operación, pero el año ya acumula 80.000 UI → supera las 90.000 UI.
+    expect(
+      isCapitalGainExempt({
+        operationAmountUyu: 25_000 * ui,
+        yearSubThresholdTotalUyu: 80_000 * ui,
+        uiValue: ui,
+      })
+    ).toBe(false)
+    // Operación grande: no exonera, aunque el año esté vacío.
+    expect(
+      isCapitalGainExempt({
+        operationAmountUyu: 40_000 * ui,
+        yearSubThresholdTotalUyu: 0,
+        uiValue: ui,
+      })
+    ).toBe(false)
+  })
+})
+
+describe('capitalTax — alquileres', () => {
+  it('la TASA es 12% sobre la renta neta; el 10,5% es la RETENCIÓN sobre el bruto', () => {
+    expect(RENT_WITHHOLDING_PCT).toBe(10.5)
+    const r = rentTax({ grossRent: 30_000, deductions: 4000 })
+    expect(r.netRent).toBe(26_000)
+    expect(r.tax).toBeCloseTo(3120, 2) // 26.000 × 12%
+    expect(r.withholding).toBeCloseTo(3150, 2) // 30.000 × 10,5%
+    expect(r.effectivePctOfGross).toBeCloseTo(10.4, 2)
+  })
+
+  it('sin deducciones, liquidar por lo real es PEOR que dejar la retención', () => {
+    const r = rentTax({ grossRent: 30_000, deductions: 0 })
+    expect(r.tax).toBeCloseTo(3600, 2) // 12% del bruto
+    expect(r.tax).toBeGreaterThan(r.withholding)
+  })
+
+  it('exonera al pequeño arrendador: ≤40 BPC al año Y levantamiento del secreto bancario', () => {
+    const bpc = 6864
+    // Cumple el monto y renuncia al secreto → exento.
+    expect(
+      isSmallLandlordExempt({
+        annualRentUyu: 30 * bpc,
+        otherCapitalIncomeUyu: 0,
+        waivesBankSecrecy: true,
+        bpc,
+      })
+    ).toBe(true)
+    // Mismo monto, pero NO autoriza el levantamiento del secreto bancario → NO exento.
+    // (La condición legal es ésta, no "identificar al inquilino".)
+    expect(
+      isSmallLandlordExempt({
+        annualRentUyu: 30 * bpc,
+        otherCapitalIncomeUyu: 0,
+        waivesBankSecrecy: false,
+        bpc,
+      })
+    ).toBe(false)
+    // Supera las 40 BPC → no exento.
+    expect(
+      isSmallLandlordExempt({
+        annualRentUyu: 45 * bpc,
+        otherCapitalIncomeUyu: 0,
+        waivesBankSecrecy: true,
+        bpc,
+      })
+    ).toBe(false)
+    // Tiene otros rendimientos de capital > 3 BPC → la exoneración no opera.
+    expect(
+      isSmallLandlordExempt({
+        annualRentUyu: 30 * bpc,
+        otherCapitalIncomeUyu: 4 * bpc,
+        waivesBankSecrecy: true,
+        bpc,
+      })
+    ).toBe(false)
   })
 })

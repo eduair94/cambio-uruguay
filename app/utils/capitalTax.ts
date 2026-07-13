@@ -199,3 +199,134 @@ export function depositReturn(input: {
     netAnnualRatePct: annualRatePct * (1 - taxRate / 100),
   }
 }
+
+// ── Incrementos patrimoniales (capital gains) ────────────────────────────────
+
+/**
+ * How the taxable base is determined.
+ * - `real`: (sale price − inflation-adjusted cost) × 12%. THE DEFAULT.
+ * - `ficto20`: 20% of the sale price as base → 2,4% of the price. MANDATORY only when the
+ *   cost cannot be proven; an OPTION for pre-2007 assets and (since 2026) an annual option
+ *   for foreign assets. It is NOT the default regime for selling securities.
+ * - `ficto15`: 15% of the sale price → 1,8%. Non-rural property bought before 1/7/2007, and
+ *   (since 2026) an annual option for foreign property.
+ */
+export type CapitalGainMethod = 'real' | 'ficto20' | 'ficto15'
+
+export const FICTO_BASE_PCT: Readonly<Record<Exclude<CapitalGainMethod, 'real'>, number>> =
+  Object.freeze({ ficto20: 20, ficto15: 15 })
+
+/** T7 art. 38 lit. I: each operation ≤ 30.000 UI, and those operations summing < 90.000 UI/year. */
+export const EXEMPT_PER_OPERATION_UI = 30_000
+export const EXEMPT_ANNUAL_UI = 90_000
+
+export interface CapitalGainResult {
+  method: CapitalGainMethod
+  taxableBase: number
+  tax: number
+  /** Tax as a % of the sale price — the number people compare (2,4% / 1,8% / whatever real gives). */
+  effectiveRatePct: number
+  rule: TaxRule
+}
+
+export function capitalGainTax(input: {
+  salePrice: number
+  /** Inflation-adjusted fiscal cost. Required for `real`, ignored otherwise. */
+  cost?: number
+  method: CapitalGainMethod
+}): CapitalGainResult {
+  const salePrice = Math.max(input.salePrice, 0)
+  const rate = GENERAL_RULE.rate ?? 12
+
+  const taxableBase =
+    input.method === 'real'
+      ? Math.max(salePrice - Math.max(input.cost ?? 0, 0), 0)
+      : salePrice * (FICTO_BASE_PCT[input.method] / 100)
+
+  const tax = taxableBase * (rate / 100)
+  return {
+    method: input.method,
+    taxableBase,
+    tax,
+    effectiveRatePct: salePrice > 0 ? (tax / salePrice) * 100 : 0,
+    rule: GENERAL_RULE,
+  }
+}
+
+/**
+ * T7 art. 38 lit. I. Both conditions must hold: this operation is at or under 30.000 UI, AND
+ * the year's operations under that threshold (this one included) stay below 90.000 UI.
+ */
+export function isCapitalGainExempt(input: {
+  operationAmountUyu: number
+  /** Sum of the year's earlier sub-threshold operations, in pesos. */
+  yearSubThresholdTotalUyu: number
+  uiValue: number
+}): boolean {
+  const opUi = input.operationAmountUyu / input.uiValue
+  if (opUi > EXEMPT_PER_OPERATION_UI) return false
+  const yearUi = (input.yearSubThresholdTotalUyu + input.operationAmountUyu) / input.uiValue
+  return yearUi < EXEMPT_ANNUAL_UI
+}
+
+// ── Alquileres (rental income) ───────────────────────────────────────────────
+
+/**
+ * Dec. 148/007 art. 37: the withholding on rent of property in Uruguay is 10,5% of the GROSS.
+ * It is NOT the tax rate — the tax is 12% of the NET (T7 art. 37 lit. B + art. 35 lit. A).
+ * The 10,5% is 12% × 87,5%, i.e. it assumes ~12,5% of deductible expenses. The taxpayer may
+ * keep it as definitive or liquidate on the real figures.
+ */
+export const RENT_WITHHOLDING_PCT = 10.5
+
+/** T7 art. 38 lit. J thresholds, in BPC. */
+export const SMALL_LANDLORD_MAX_BPC = 40
+export const SMALL_LANDLORD_OTHER_CAPITAL_MAX_BPC = 3
+
+export interface RentTaxResult {
+  netRent: number
+  tax: number
+  withholding: number
+  /** The real tax as a % of gross rent — compare it against the 10,5% withholding. */
+  effectivePctOfGross: number
+  /** True when liquidating on real figures beats leaving the withholding as definitive. */
+  realBeatsWithholding: boolean
+}
+
+/**
+ * Deductions admitted by T7 art. 16: the PROPERTY MANAGER's commission (not any estate-agent
+ * fee), professional fees for signing/renewing the contract, the VAT on those, Contribución
+ * Inmobiliaria, Impuesto de Enseñanza Primaria, and (for sub-lets) the rent paid by the
+ * sub-lessor.
+ */
+export function rentTax(input: { grossRent: number; deductions: number }): RentTaxResult {
+  const gross = Math.max(input.grossRent, 0)
+  const netRent = Math.max(gross - Math.max(input.deductions, 0), 0)
+  const rate = GENERAL_RULE.rate ?? 12
+  const tax = netRent * (rate / 100)
+  const withholding = gross * (RENT_WITHHOLDING_PCT / 100)
+  return {
+    netRent,
+    tax,
+    withholding,
+    effectivePctOfGross: gross > 0 ? (tax / gross) * 100 : 0,
+    realBeatsWithholding: tax < withholding,
+  }
+}
+
+/**
+ * T7 art. 38 lit. J. The condition is NOT "identifying the tenant" — that is art. 51, which
+ * gives the TENANT a credit of up to 8% of the rent for identifying the LANDLORD. This
+ * exemption requires expressly authorising the lifting of BANK SECRECY, with annual rent at
+ * or under 40 BPC and no other capital income above 3 BPC.
+ */
+export function isSmallLandlordExempt(input: {
+  annualRentUyu: number
+  otherCapitalIncomeUyu: number
+  waivesBankSecrecy: boolean
+  bpc: number
+}): boolean {
+  if (!input.waivesBankSecrecy) return false
+  if (input.annualRentUyu > SMALL_LANDLORD_MAX_BPC * input.bpc) return false
+  return input.otherCapitalIncomeUyu <= SMALL_LANDLORD_OTHER_CAPITAL_MAX_BPC * input.bpc
+}
