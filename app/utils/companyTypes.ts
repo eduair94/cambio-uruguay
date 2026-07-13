@@ -32,6 +32,47 @@ const fig = (value: number, label: string, source: string): Figure => ({
   verifiedAt: V,
 })
 
+/**
+ * A number that is honest but NOT sourceable: a market estimate. It is the exact opposite
+ * claim to a `Figure` — "no primary source exists for this, and here is why" — and it is
+ * every bit as structured, so the page can render the caveat FROM DATA instead of
+ * hardcoding a disclaimer string next to a bare literal.
+ *
+ * It deliberately does NOT satisfy `Figure`: it has no `source`, so the "every figure is
+ * sourced to a primary domain" test never sees it, and it can never be mistaken for a
+ * verified legal/financial figure by anything that iterates `FIGURES` to render "Fuentes".
+ */
+export interface Estimate {
+  value: number
+  label: string
+  unsourced: true
+  rationale: string
+}
+
+const est = (value: number, label: string, rationale: string): Estimate => ({
+  value,
+  label,
+  unsourced: true,
+  rationale,
+})
+
+/**
+ * Estimates of market prices. NOT figures. Never publish these as if they were sourced.
+ *
+ * The AST guard in `tests/unit/companyTypes.test.ts` approves numeric literals inside an
+ * `est(...)` call exactly as it approves those inside a `fig(...)` call: the approval is a
+ * structural claim about WHERE the number lives, not about which digits it has. (The
+ * previous mechanism — allowlisting the string `'4000'` — approved those four digits
+ * anywhere in the file, for any purpose. That was the exception pointed backwards.)
+ */
+export const MARKET_ESTIMATES = {
+  contadorMensual: est(
+    4000,
+    'Honorarios mensuales de un contador',
+    'Estimación de mercado. No existe fuente primaria: ninguna repartición publica un arancel de contadores. El usuario puede ajustarla.'
+  ),
+} as const satisfies Record<string, Estimate>
+
 const BPS_VALORES = 'https://www.bps.gub.uy/5478/valores-actuales.html'
 const BPS_TOPES = 'https://www.bps.gub.uy/23987/tope-de-ingresos-y-capital-de-la-empresa.html'
 const BPS_MONO = 'https://www.bps.gub.uy/6668/monotributo-ley-18083.html'
@@ -55,6 +96,8 @@ const SAS_TRAMITE =
 const UNIP_TRAMITE = 'https://www.gub.uy/tramites/inscripcion-empresa-unipersonal'
 const IRPF_ESCALA =
   'https://www.bps.gub.uy/bps/file/23860/3/2026---comunicado-r-5---valores-escalas-irpf-2026.pdf'
+const DEC150_64 = 'https://www.impo.com.uy/bases/decretos/150-2007/64'
+const DEC150_168 = 'https://www.impo.com.uy/bases/decretos/150-2007/168'
 const LEY18083_70 = 'https://www.impo.com.uy/bases/leyes/18083-2006/70'
 const LEY18874_1 = 'https://www.impo.com.uy/bases/leyes/18874-2011/1'
 const LEY16060_1 = 'https://www.impo.com.uy/bases/leyes/16060-1989/1'
@@ -74,10 +117,16 @@ export const FIGURES = {
   topeMonotributoActivosUyu: fig(979_614, 'Tope de activos del monotributo 2026', BPS_TOPES),
   topeLiteralEUi: fig(305_000, 'Tope Literal E (UI)', DGI_LITERAL_E),
   topeLiteralEUyu: fig(1_959_229, 'Tope Literal E 2026', DGI_LITERAL_E),
+  // Dec. 150/007 art. 168 lit. b), verbatim: obligados a contabilidad suficiente "siempre que
+  // sus ingresos hayan superado en el ejercicio anterior las UI 4:000.000 ... a valores de
+  // cierre de ejercicio". Above it, el ficto del art. 64 deja de estar disponible (art. 64:
+  // "Los contribuyentes que NO ESTÉN OBLIGADOS a llevar contabilidad suficiente podrán
+  // determinar sus rentas netas en forma ficta"). Antes estaba sourced a la página de topes
+  // del Literal E de DGI, que no dice nada de esto.
   topeIraePreceptivoUi: fig(
     4_000_000,
-    'Tope de IRAE preceptivo / dividendos exentos (UI)',
-    DGI_LITERAL_E
+    'Tope por encima del cual la contabilidad suficiente es preceptiva y el IRAE ficto deja de estar disponible (UI, ingresos del ejercicio anterior)',
+    DEC150_168
   ),
   topeLocalM2: fig(
     15,
@@ -129,10 +178,62 @@ export const FIGURES = {
     'Monotributo pleno, con FONASA, con cónyuge e hijos',
     BPS_MONO
   ),
+  // La gradualidad de la Ley 19.942 rebaja el JUBILATORIO (522 / 1.045 / 2.088), no el
+  // FONASA: el aporte al SNS es el mismo en los tres tramos (4.239 solo, 4.908 con hijos,
+  // 5.131 con cónyuge, 5.800 con cónyuge e hijos). Por eso las cuatro columnas familiares
+  // existen en los años 1 y 2 igual que en el régimen pleno — y cobrarle a todos la columna
+  // "solo" durante la rampa subfacturaba hasta $1.561/mes al monotributista con familia.
+  // Fuente: BPS, "monotributo-ley-19.942---2026.pdf", bloque "Aporte total" (con opción al
+  // SNIS), que es inequívoco donde los encabezados del HTML no lo son.
   monoAnio1SinFonasa: fig(1071, 'Monotributo año 1 (25%), sin FONASA', BPS_MONO_GRAD),
-  monoAnio1FonasaSolo: fig(4761, 'Monotributo año 1 (25%), con FONASA', BPS_MONO_GRAD),
+  monoAnio1FonasaSolo: fig(
+    4761,
+    'Monotributo año 1 (25%), con FONASA, sin cónyuge ni hijos',
+    BPS_MONO_GRAD
+  ),
+  monoAnio1FonasaHijos: fig(5430, 'Monotributo año 1 (25%), con FONASA, con hijos', BPS_MONO_GRAD),
+  monoAnio1FonasaConyuge: fig(
+    5653,
+    'Monotributo año 1 (25%), con FONASA, con cónyuge',
+    BPS_MONO_GRAD
+  ),
+  monoAnio1FonasaConyugeHijos: fig(
+    6322,
+    'Monotributo año 1 (25%), con FONASA, con cónyuge e hijos',
+    BPS_MONO_GRAD
+  ),
   monoAnio2SinFonasa: fig(1594, 'Monotributo año 2 (50%), sin FONASA', BPS_MONO_GRAD),
-  monoAnio2FonasaSolo: fig(5284, 'Monotributo año 2 (50%), con FONASA', BPS_MONO_GRAD),
+  monoAnio2FonasaSolo: fig(
+    5284,
+    'Monotributo año 2 (50%), con FONASA, sin cónyuge ni hijos',
+    BPS_MONO_GRAD
+  ),
+  monoAnio2FonasaHijos: fig(5953, 'Monotributo año 2 (50%), con FONASA, con hijos', BPS_MONO_GRAD),
+  monoAnio2FonasaConyuge: fig(
+    6176,
+    'Monotributo año 2 (50%), con FONASA, con cónyuge',
+    BPS_MONO_GRAD
+  ),
+  monoAnio2FonasaConyugeHijos: fig(
+    6845,
+    'Monotributo año 2 (50%), con FONASA, con cónyuge e hijos',
+    BPS_MONO_GRAD
+  ),
+
+  // Monotributo de una SOCIEDAD DE HECHO: BPS publica el aporte POR SOCIO y lo multiplica
+  // por la cantidad de socios (tabla "Monotributo: sociedad de hecho ley 19.942": un socio
+  // 522/1.045/2.088, dos socios 1.045/2.088/4.176, tres socios 1.566/3.132/6.265). Esa
+  // tabla NO tiene columna de FONASA/SNS: BPS no la publica. No la inventamos.
+  monoSocioSociedadHechoAnio1: fig(
+    522,
+    'Monotributo sociedad de hecho, año 1 (25%): jubilatorio + FRL por socio',
+    BPS_MONO_GRAD
+  ),
+  monoSocioSociedadHechoAnio2: fig(
+    1045,
+    'Monotributo sociedad de hecho, año 2 (50%): jubilatorio + FRL por socio',
+    BPS_MONO_GRAD
+  ),
   monoSocioSociedadHecho: fig(2088, 'Monotributo, jubilatorio + FRL por socio', BPS_MONO),
 
   // --- Monotributo Social MIDES ---
@@ -159,6 +260,15 @@ export const FIGURES = {
     BPS_IC
   ),
   bpsSocioSrl: fig(6265, 'BPS socio de SRL con actividad (15 BFC, sin FONASA)', BPS_IC),
+  // BPS "Industria y comercio", tabla "Sociedad de hecho sin dependientes": 1 socio, 11 BFC,
+  // monto gravado 20.328 → total a pagar 4.594. Es POR SOCIO, y NO incluye FONASA (igual que
+  // el socio de SRL). No es el titular de la unipersonal (8.833 = 11 BFC + FONASA): el socio
+  // de una sociedad personal no queda amparado por el FONASA por esta actividad.
+  bpsSocioSociedadHecho: fig(
+    4594,
+    'BPS socio de sociedad de hecho sin dependientes (11 BFC, sin FONASA)',
+    BPS_IC
+  ),
   bpsAdminSas: fig(10_504, 'BPS administrador de SAS (15 BFC, FONASA obligatorio)', BPS_IC),
 
   // --- IVA mínimo (Literal E) ---
@@ -234,13 +344,6 @@ export const FIGURES = {
     'https://www.bps.gub.uy/21425/actividad-exclusiva.html'
   ),
 
-  // --- IRAE ficto (escala empresarial) ---
-  iraeFictoPrimerTramo: fig(
-    0.12,
-    'IRAE ficto: % de la facturación que se presume renta neta en el primer tramo (hasta UI 1.000.000)',
-    'https://www.impo.com.uy/bases/decretos/150-2007/64'
-  ),
-
   // --- Ficto jubilatorio de referencia (monotributo) ---
   // BPS, verbatim: "realizan sus aportes jubilatorios y el Fondo de Reconversión Laboral
   // (FRL) sobre la base de un monto predeterminado que equivale a 5 BFC" — a DIFFERENT,
@@ -251,23 +354,17 @@ export const FIGURES = {
     'https://www.bps.gub.uy/10444/aportacion-de-monotributo.html'
   ),
 
-  // --- Umbrales de gradualidad (años de actividad) ---
-  // The three ramped regimes (monotributo Ley 19.942, Literal E/unipersonal Ley 19.889,
-  // IVA mínimo gradual, monotributo social Ley 18.874) all tier by full calendar years
-  // of activity: año 1 (< 1 year, already covered by the {0,1,12} allowlist), año 2
-  // (< 2 years) and año 3 (< 3 years, monotributo social only). The `< 1` comparisons
-  // need no entry here since `1` is already structurally allowlisted; `2` and `3` are
-  // the legal tier boundaries themselves, so they get sourced like any other tope.
-  gradualidadAnio2Umbral: fig(
-    2,
-    'Corte de años de actividad para pasar del tramo "año 1" al "año 2" en los regímenes graduales de BPS/DGI (monotributo, Literal E, IVA mínimo)',
-    BPS_GRADUAL
-  ),
-  gradualidadAnio3Umbral: fig(
-    3,
-    'Corte de años de actividad para pasar al tramo "año 3" (monotributo social, Ley 18.874)',
-    BPS_MONO_SOCIAL
-  ),
+  // NOTE — `gradualidadAnio2Umbral` / `gradualidadAnio3Umbral` USED to live here and were
+  // REMOVED (IMPORTANT 7). They were tier ORDINALS ("año 2", "año 3"), not quantities: each
+  // was handed one arbitrary source and then used across four different legal regimes — the
+  // "año 3" boundary was sourced to Ley 18.874 (monotributo SOCIAL) while deciding the Ley
+  // 19.889 UNIPERSONAL boundary, a different law entirely. Both the AST guard and the
+  // primary-domain test passed while the citation attached to the number did not support its
+  // use: the exact failure the guard exists to prevent, wearing compliance as a costume. And
+  // if the page ever iterates FIGURES to render "Fuentes", they would have shown up as
+  // sourced legal figures. They are not. The ramps are arrays now (see `rampPick`), and the
+  // boundaries are their INDICES — which is all they ever were. The VALUES in each ramp are
+  // still Figures, each sourced to the norm that actually publishes it.
 } as const satisfies Record<string, Figure>
 
 /**
@@ -289,6 +386,85 @@ export const IRPF_CAT2 = {
     { upTo: null, rate: 0.36 },
   ]) as ReadonlyArray<{ upTo: number | null; rate: number }>,
 } as const
+
+/**
+ * IRAE ficto: the empresarial scale of Decreto 150/007 art. 64 (inciso 3º, redacción dada
+ * por Dec. 71/023), for ejercicios iniciados a partir del 1/1/2023. Carries its own
+ * provenance, like `IRPF_CAT2`, because it is a table rather than a single value.
+ *
+ * The brackets are denominated in UI and run on the ANNUAL "ventas, servicios y demás
+ * rentas brutas del ejercicio". The resulting renta neta ficta is then taxed at
+ * `FIGURES.irae` (25%).
+ *
+ * MARGINAL, NOT A SINGLE-RATE LOOKUP — and the article settles it in its own words.
+ * Inciso 3º, verbatim:
+ *
+ *   "Para ejercicios iniciados a partir del 1º de enero de 2023, a las ventas, servicios y
+ *    demás rentas brutas del ejercicio COMPRENDIDAS EN CADA TRAMO, se aplicará el porcentaje
+ *    correspondiente A DICHO TRAMO, de acuerdo a la siguiente escala".
+ *
+ * "comprendidas en cada tramo ... el porcentaje correspondiente a dicho tramo" is a
+ * bracket-by-bracket instruction: each SLICE of revenue carries its own percentage. The
+ * contrast with the inciso it replaced is deliberate and decisive — the old (pre-2023)
+ * scale, still visible right above it in the norm, WAS a lookup: "la renta neta se
+ * determinará ... a la cifra que resulte de MULTIPLICAR las ventas, servicios y demás
+ * rentas brutas del ejercicio POR EL PORCENTAJE QUE CORRESPONDA según la siguiente escala".
+ * The 2023 redacción swapped that wording out. So: marginal.
+ *
+ * (Had the text been ambiguous, the conservative reading — the one that does not understate
+ * the tax — would have been the single-rate lookup, since the upper tramos are far higher.
+ * It is not ambiguous, so we implement what it says.)
+ */
+export const IRAE_FICTO = {
+  source: DEC150_64,
+  verifiedAt: V,
+  brackets: Object.freeze([
+    { upToUi: 1_000_000, rate: 0.12 },
+    { upToUi: 2_000_000, rate: 0.14 },
+    { upToUi: 3_000_000, rate: 0.48 },
+    { upToUi: null, rate: 0.6 },
+  ]) as ReadonlyArray<{ upToUi: number | null; rate: number }>,
+} as const
+
+/** UYU value of `ui` Unidades Indexadas, at the UI we publish. */
+const uiToUyu = (unidades: number): number => unidades * FIGURES.uiHoy.value
+
+/**
+ * Renta neta ficta (ANNUAL, UYU) for an annual gross revenue, applying the art. 64 tramos
+ * marginally. Exported so the tests can pin the arithmetic independently of `estimateCost`.
+ *
+ * Does NOT deduct "los sueldos de dueños o socios admitidos por la reglamentación", which
+ * art. 64 subtracts from the ficto — we do not collect whether the owner draws a sueldo. The
+ * omission is CONSERVATIVE (it overstates the IRAE); `estimateCost` discloses it.
+ */
+export function iraeFictoRentaNetaAnual(annualRevenueUyu: number): number {
+  if (annualRevenueUyu <= 0) return 0
+  let renta = 0
+  let floor = 0
+  for (const b of IRAE_FICTO.brackets) {
+    const ceiling = b.upToUi === null ? Infinity : uiToUyu(b.upToUi)
+    if (annualRevenueUyu <= floor) break
+    const slice = Math.min(annualRevenueUyu, ceiling) - floor
+    renta += slice * b.rate
+    floor = ceiling
+  }
+  return renta
+}
+
+/**
+ * Is the ficto legally available at this revenue? Dec. 150/007 art. 168 lit. b): above
+ * UI 4.000.000 of ingresos, contabilidad suficiente is PRECEPTIVA, and art. 64 opens with
+ * "Los contribuyentes que NO ESTÉN OBLIGADOS a llevar contabilidad suficiente podrán
+ * determinar sus rentas netas en forma ficta". Above the tope, the tax is IRAE REAL — 25%
+ * of (ingresos − gastos reales) — which depends on an expense structure this model does not
+ * have, and must not be faked by extrapolating the ficto past its legal range.
+ *
+ * Approximation we own: the norm tests the ingresos of the EJERCICIO ANTERIOR at the UI de
+ * CIERRE, and we only have the visitor's estimated annual revenue at today's UI.
+ */
+function iraeFictoDisponible(annualRevenueUyu: number): boolean {
+  return annualRevenueUyu <= uiToUyu(FIGURES.topeIraePreceptivoUi.value)
+}
 
 export type RegimeId =
   | 'monotributo-social'
@@ -873,15 +1049,48 @@ export const REGIMES: readonly Regime[] = Object.freeze([
   },
 ])
 
+/**
+ * What a regime costs — or, where we cannot know, an explicit admission that we cannot.
+ *
+ * INCOMPLETENESS IS MACHINE-READABLE. It used to be a substring in `notes` while the
+ * numbers quietly said something else: `bpsMonthly = sp ?? 0` turned "we cannot know this"
+ * into "this is free" the moment it crossed the function boundary, and a CJPPU professional
+ * came back with `totalAnnual: 0`. A consumer that RANKS regimes would have put the most
+ * expensive path first, as the cheapest, with a footnote nobody reads.
+ *
+ * THE CONTRACT, for any consumer that compares or ranks these (Task 5):
+ *   `totalMonthly` / `totalAnnual` are `null` IF AND ONLY IF some component is unknown
+ *   (`bpsUnknown || taxUnknown`). A null total is NOT zero, NOT cheap, and NOT comparable.
+ *   REFUSE TO RANK IT — show it separately, with its `notes`. Never `?? 0` it, never
+ *   `?? Infinity` it into a sort and call that handled.
+ */
 export interface CostBreakdown {
-  /** Owner's BPS contribution, UYU/month. */
-  bpsMonthly: number
-  /** Taxes, UYU/month (IVA mínimo, IRPF, IRAE — whichever applies). */
-  taxMonthly: number
-  /** Market estimate, NOT an official figure. The user can change it. */
+  /** Owner's BPS contribution, UYU/month. `null` when we cannot source it. */
+  bpsMonthly: number | null
+  /** True iff `bpsMonthly` is null. Never infer this from the text of `notes`. */
+  bpsUnknown: boolean
+  /**
+   * Revenue-dependent tax, UYU/month (IVA mínimo, IRPF, IRAE ficto — whichever applies).
+   * `null` when the tax cannot be modelled at all: IRAE real, above the ficto's legal
+   * range, or an SA (always contabilidad suficiente).
+   */
+  taxMonthly: number | null
+  /** True iff `taxMonthly` is null. */
+  taxUnknown: boolean
+  /** Fixed taxes that do not depend on the renta and stay knowable regardless (ICOSA). */
+  otherTaxesMonthly: number
+  /** Market estimate (`MARKET_ESTIMATES.contadorMensual`), NOT an official figure. */
   accountantMonthly: number
-  totalMonthly: number
-  totalAnnual: number
+  /** `null` iff the cost is incomplete. See the contract above. */
+  totalMonthly: number | null
+  /** `null` iff the cost is incomplete. See the contract above. */
+  totalAnnual: number | null
+  /**
+   * The sum of the components we DO know. For DISPLAY only — so an incomplete regime can
+   * still show the reader something real ("al menos X, más lo que no podemos calcular").
+   * It is NOT a total and must never be ranked against one.
+   */
+  knownPartialMonthly: number
   /** One-off cost to open, UYU. */
   setupCost: number
   /** Plain-language caveats shown under the number. */
@@ -903,22 +1112,76 @@ export function irpfCat2Monthly(taxableMonthly: number): number {
   return tax
 }
 
-/** Pick the right column of the BPS monotributo table for this family situation. */
-function monoBps(input: WizardInput): number {
-  const y = input.yearsOperating ?? 0
-  const family = input.family ?? 'solo'
-  if (y < 1) return FIGURES.monoAnio1FonasaSolo.value
-  if (y < FIGURES.gradualidadAnio2Umbral.value) return FIGURES.monoAnio2FonasaSolo.value
-  switch (family) {
+/**
+ * Pick the tier of a gradual regime by full years of activity: `ramp[0]` is the first year,
+ * `ramp[1]` the second, and anything past the end of the ramp is the full (pleno) figure.
+ *
+ * The tier boundaries ("año 2", "año 3") are ORDINALS — they are the INDICES of this array.
+ * They are deliberately NOT FIGURES entries: a URL bolted onto the number `2` would be
+ * provenance theatre, not provenance (and the one we used to have cited the wrong law
+ * entirely — see the NOTE at the end of FIGURES). The VALUES in each ramp are Figures, each
+ * sourced to the norm that actually publishes it. That is where the sourcing belongs.
+ */
+const rampPick = <T>(ramp: readonly T[], pleno: T, yearsOperating?: number): T => {
+  const y = Math.floor(Math.max(0, yearsOperating ?? 0))
+  return ramp[y] ?? pleno
+}
+
+/** The BPS monotributo column (año 1 / año 2 / pleno) for a family situation. */
+function monoFamilyColumn(input: WizardInput): { ramp: number[]; pleno: number } {
+  switch (input.family ?? 'solo') {
     case 'con-hijos':
-      return FIGURES.monoPlenoFonasaHijos.value
+      return {
+        ramp: [FIGURES.monoAnio1FonasaHijos.value, FIGURES.monoAnio2FonasaHijos.value],
+        pleno: FIGURES.monoPlenoFonasaHijos.value,
+      }
     case 'con-conyuge':
-      return FIGURES.monoPlenoFonasaConyuge.value
+      return {
+        ramp: [FIGURES.monoAnio1FonasaConyuge.value, FIGURES.monoAnio2FonasaConyuge.value],
+        pleno: FIGURES.monoPlenoFonasaConyuge.value,
+      }
     case 'con-conyuge-e-hijos':
-      return FIGURES.monoPlenoFonasaConyugeHijos.value
+      return {
+        ramp: [
+          FIGURES.monoAnio1FonasaConyugeHijos.value,
+          FIGURES.monoAnio2FonasaConyugeHijos.value,
+        ],
+        pleno: FIGURES.monoPlenoFonasaConyugeHijos.value,
+      }
     default:
-      return FIGURES.monoPlenoFonasaSolo.value
+      return {
+        ramp: [FIGURES.monoAnio1FonasaSolo.value, FIGURES.monoAnio2FonasaSolo.value],
+        pleno: FIGURES.monoPlenoFonasaSolo.value,
+      }
   }
+}
+
+/**
+ * BPS of a monotributista. Returns `null` when we cannot know it.
+ *
+ * Two things used to be wrong here:
+ *   - the family switch was only reached from year 2 on, so a year-1 monotributista con
+ *     cónyuge e hijos was charged the SOLO column (4.761 instead of 6.322). BPS publishes
+ *     all four family columns for the ramp years too — the gradualidad rebaja el
+ *     jubilatorio, not el FONASA — so there was never anything to derive.
+ *   - a sociedad de hecho was priced as a single unipersonal at the PLENO column (6.327),
+ *     for any number of socios, while the per-socio figure BPS publishes for exactly this
+ *     went unreferenced.
+ */
+function monoBps(input: WizardInput): number | null {
+  if (input.people === 'socios') {
+    // A fact that decides the number is asked for, not assumed. (Guessing 2 here would be
+    // the same class of bug as `sp ?? 0`: an unknown quietly becoming a measurement.)
+    if (input.sociosCount === undefined) return null
+    const perSocio = rampPick(
+      [FIGURES.monoSocioSociedadHechoAnio1.value, FIGURES.monoSocioSociedadHechoAnio2.value],
+      FIGURES.monoSocioSociedadHecho.value,
+      input.yearsOperating
+    )
+    return perSocio * input.sociosCount
+  }
+  const { ramp, pleno } = monoFamilyColumn(input)
+  return rampPick(ramp, pleno, input.yearsOperating)
 }
 
 /**
@@ -930,15 +1193,24 @@ function monoBps(input: WizardInput): number {
  * el contribuyente ingrese al régimen general de liquidación del IVA". So it applies
  * to Literal E and NOT to a unipersonal in IRAE/IVA general. Passing `gradual: false`
  * is what keeps us from promising a discount that does not exist.
+ *
+ * `fonasaFromJob` short-circuits the ramp: BPS publishes a single figure for the titular who
+ * already has FONASA por un empleo, and does NOT publish a ramped version of that column. We
+ * do not derive one — we show the full figure and say so (`unipersonalBpsNotes`). It is the
+ * conservative direction (it may overstate), but an undisclosed conservatism is still a lie.
  */
 function unipersonalBps(input: WizardInput, gradual: boolean): number {
   if (input.fonasaFromJob) return FIGURES.bpsUnipersonalConFonasaDeEmpleo.value
   if (!gradual) return FIGURES.bpsUnipersonalPleno.value
-  const y = input.yearsOperating ?? 0
-  if (y < 1) return FIGURES.bpsUnipersonalAnio1.value
-  if (y < FIGURES.gradualidadAnio2Umbral.value) return FIGURES.bpsUnipersonalAnio2.value
-  if (y < FIGURES.gradualidadAnio3Umbral.value) return FIGURES.bpsUnipersonalAnio3.value
-  return FIGURES.bpsUnipersonalPleno.value
+  return rampPick(
+    [
+      FIGURES.bpsUnipersonalAnio1.value,
+      FIGURES.bpsUnipersonalAnio2.value,
+      FIGURES.bpsUnipersonalAnio3.value,
+    ],
+    FIGURES.bpsUnipersonalPleno.value,
+    input.yearsOperating
+  )
 }
 
 /** The FONASA rate a servicios-personales provider pays, by family situation. */
@@ -972,54 +1244,146 @@ function serviciosPersonalesBps(input: WizardInput): number | null {
 }
 
 /** IVA mínimo: the flat quota, or — with e-factura — the LESSER of the quota and 3,3% of billing. */
-function ivaMinimoMonthly(input: WizardInput): { amount: number; note: string | null } {
-  const y = input.yearsOperating ?? 0
-  const quota =
-    y < 1
-      ? FIGURES.ivaMinimoAnio1.value
-      : y < FIGURES.gradualidadAnio2Umbral.value
-        ? FIGURES.ivaMinimoAnio2.value
-        : FIGURES.ivaMinimo.value
+function ivaMinimoMonthly(input: WizardInput): { amount: number; notes: string[] } {
+  const quota = rampPick(
+    [FIGURES.ivaMinimoAnio1.value, FIGURES.ivaMinimoAnio2.value],
+    FIGURES.ivaMinimo.value,
+    input.yearsOperating
+  )
+  const notes: string[] = []
   if (!input.eFactura) {
-    return {
-      amount: quota,
-      note: 'Sin e-factura pagás la cuota fija completa. Con e-factura pagarías el menor entre la cuota y el 3,3% de lo que factures cada mes — y si un mes no facturás, no pagás nada.',
-    }
+    notes.push(
+      'Sin e-factura pagás la cuota fija completa. Con e-factura pagarías el menor entre la cuota y el 3,3% de lo que factures cada mes — y si un mes no facturás, no pagás nada.'
+    )
+    return { amount: quota, notes }
   }
+
   const monthly = input.annualRevenueUyu / 12
   const capped = monthly * FIGURES.ivaMinimoTopeEfactura.value
   const amount = Math.min(quota, capped)
+  notes.push(
+    amount < quota
+      ? 'Con e-factura pagás el 3,3% de lo facturado en el mes, porque es menor que la cuota fija. Si un mes no facturás, no pagás nada.'
+      : 'Con e-factura pagás el menor entre la cuota y el 3,3% del mes; a tu nivel de facturación, la cuota es lo menor.'
+  )
+
+  // The finding nobody else publishes: in the FULL regime (cuota plena), with even billing,
+  // the 3,3% cap ALWAYS wins inside the Literal E ceiling — the two can't even meet. Billing
+  // evenly at the very ceiling is $163.269/mes, and 3,3% of that is $5.388, still under the
+  // $5.910 quota. So an e-invoicing Literal E in the full regime effectively never pays the
+  // flat quota on even billing; only a LUMPY month (above ~$179.091) reaches it. During the
+  // gradual years the quota is lower, so it does bind at ordinary revenues — which is why
+  // this note is scoped to the pleno case rather than stated as a universal.
+  const quotaBindsAt = quota / FIGURES.ivaMinimoTopeEfactura.value
+  if (quota === FIGURES.ivaMinimo.value) {
+    const atCeiling = FIGURES.topeLiteralEUyu.value / 12
+    notes.push(
+      `Dato poco conocido: en el régimen pleno, con facturación pareja, el 3,3% SIEMPRE le gana a la cuota. Incluso facturando justo en el tope del Literal E (${uyu(atCeiling)} al mes), el 3,3% son ${uyu(atCeiling * FIGURES.ivaMinimoTopeEfactura.value)} — menos que la cuota de ${uyu(quota)}. Solo pagarías la cuota en un mes con un pico por encima de ${uyu(quotaBindsAt)}.`
+    )
+  } else {
+    notes.push(
+      `Estás en la cuota gradual (${uyu(quota)}): a diferencia de la cuota plena, esta SÍ te puede tocar, porque el 3,3% la supera desde ${uyu(quotaBindsAt)} de facturación mensual.`
+    )
+  }
+  return { amount, notes }
+}
+
+/**
+ * Monthly IRAE under the ficto of Dec. 150/007 art. 64, or `null` when the ficto is not
+ * legally available (contabilidad suficiente preceptiva → IRAE real).
+ *
+ * `alwaysContabilidadSuficiente` is for the SA: Dec. 150/007 art. 168 lit. a) obliges "los
+ * sujetos pasivos comprendidos en los numerales 1 y 4 a 7 del literal A del artículo 3°",
+ * and numeral 1 of that literal is, verbatim, "las sociedades anónimas y las sociedades en
+ * comandita por acciones". An SA is therefore obligated at ANY revenue, so the ficto is
+ * never available to it and the flat 12% we used to print for an SA was wrong at every
+ * level, not just above the tope.
+ */
+function iraeFictoMonthly(
+  input: WizardInput,
+  alwaysContabilidadSuficiente = false
+): { amount: number | null; notes: string[] } {
+  const notes: string[] = []
+  const contador =
+    'El IRAE real es el 25% de (ingresos − gastos reales) y depende de tu estructura de gastos, que no conocemos: para esto necesitás un contador.'
+
+  if (alwaysContabilidadSuficiente) {
+    notes.push(
+      `No podemos estimarte el IRAE. Las sociedades anónimas están OBLIGADAS a liquidar por contabilidad suficiente sin importar cuánto facturen (Dto. 150/007 art. 168 lit. A, que remite al numeral 1 del literal A: "las sociedades anónimas y las sociedades en comandita por acciones"), así que el IRAE ficto no está disponible para una SA en ningún nivel de facturación. ${contador}`
+    )
+    return { amount: null, notes }
+  }
+
+  if (!iraeFictoDisponible(input.annualRevenueUyu)) {
+    notes.push(
+      `No podemos estimarte el IRAE: por encima de ${FIGURES.topeIraePreceptivoUi.value.toLocaleString('es-UY')} UI de ingresos (≈ ${uyu(uiToUyu(FIGURES.topeIraePreceptivoUi.value))} al año) la contabilidad suficiente es PRECEPTIVA (Dto. 150/007 art. 168) y el ficto del art. 64 deja de estar disponible. ${contador} No extrapolamos el ficto fuera de su rango legal.`
+    )
+    return { amount: null, notes }
+  }
+
+  const tramos = IRAE_FICTO.brackets
+    .map(b => {
+      const pct = b.rate.toLocaleString('es-UY', {
+        style: 'percent',
+        maximumFractionDigits: 0,
+      })
+      return b.upToUi === null
+        ? `${pct} en adelante`
+        : `${pct} hasta UI ${b.upToUi.toLocaleString('es-UY')}`
+    })
+    .join(', ')
+
+  notes.push(
+    `IRAE ficto (Dto. 150/007 art. 64): la renta neta NO es un 12% plano. Es una escala por TRAMOS de facturación anual en UI (${tramos}), y cada tramo se aplica solo a la parte de la facturación que cae dentro de él. Sobre esa renta ficta se paga el 25%.`
+  )
+  notes.push(
+    `Los tramos están en UI y los convertimos con la UI de hoy (${FIGURES.uiHoy.value.toLocaleString('es-UY')}), que se mueve todos los días: si estás cerca del borde de un tramo, tomá la cifra como aproximada.`
+  )
+  notes.push(
+    'No descontamos los sueldos de dueños o socios que el art. 64 admite restar de la renta ficta (hasta 11 BFC por dueño o socio que preste servicios efectivos): si los cobrás, tu IRAE real será menor que el que mostramos.'
+  )
+
   return {
-    amount,
-    note:
-      amount < quota
-        ? 'Con e-factura pagás el 3,3% de lo facturado en el mes, porque es menor que la cuota fija. Si un mes no facturás, no pagás nada.'
-        : 'Con e-factura pagás el menor entre la cuota y el 3,3% del mes; a tu nivel de facturación, la cuota es lo menor.',
+    amount: (iraeFictoRentaNetaAnual(input.annualRevenueUyu) * FIGURES.irae.value) / 12,
+    notes,
   }
 }
 
 /**
- * Cost of running under `regime`, in UYU. Returns `null` for a regime we do not
- * cost (because the honest answer depends on facts we don't have).
+ * Cost of running under `regime`, in UYU.
  *
- * The accountant fee is a MARKET estimate, never an official figure — deliberately
- * NOT in FIGURES (whose "sources every figure to a primary domain" test would reject
- * it, and rightly so: nobody publishes an authoritative accountant rate). It is a
- * bare literal by necessity; see the STRUCTURAL_ALLOWLIST entry for `4000` in
- * companyTypes.test.ts and task-4-report.md for why that is the deliberate,
- * disclosed exception rather than a FIGURES entry or a silent guard workaround.
+ * ALWAYS returns a `CostBreakdown` — never `null`. It used to declare `| null` and never
+ * return it: an unreachable branch in the signature is a lie the type system enforces on
+ * every caller (they all wrote `estimateCost(...)!`). Incompleteness is now expressed
+ * INSIDE the breakdown, where it belongs and where it can be acted on: see the contract on
+ * `CostBreakdown`. A regime we cannot fully cost comes back with `bpsUnknown`/`taxUnknown`
+ * set and `totalMonthly`/`totalAnnual` null — not with a zero that reads as "free".
+ *
+ * The accountant fee is a MARKET estimate (`MARKET_ESTIMATES.contadorMensual`), never an
+ * official figure: no repartición publishes an arancel de contadores, so it cannot honestly
+ * be a `Figure`. It carries its own label and rationale instead, which the page renders.
  */
 export function estimateCost(
   regime: RegimeId,
   input: WizardInput,
-  accountantMonthly = 4000
-): CostBreakdown | null {
+  accountantMonthly = MARKET_ESTIMATES.contadorMensual.value
+): CostBreakdown {
   const monthlyRevenue = input.annualRevenueUyu / 12
   const notes: string[] = []
-  let bpsMonthly = 0
-  let taxMonthly = 0
+  let bpsMonthly: number | null = 0
+  let taxMonthly: number | null = 0
+  let otherTaxesMonthly = 0
   let accountant = 0
   let setupCost = 0
+
+  /** Notes every regime whose BPS comes from `unipersonalBps` owes the reader. */
+  const unipersonalBpsNotes = (gradual: boolean) => {
+    if (!input.fonasaFromJob) return
+    if (!gradual) return
+    notes.push(
+      'Ya tenés FONASA por un empleo, así que te mostramos la columna del titular con cobertura por otra actividad. BPS no publica una versión REBAJADA de esa columna para la gradualidad de la Ley 19.889, y no la inventamos: si te corresponde la rampa, tu costo real de los primeros 3 años puede ser MENOR que el que mostramos. Confirmalo con BPS.'
+    )
+  }
 
   switch (regime) {
     case 'monotributo': {
@@ -1029,22 +1393,36 @@ export function estimateCost(
       notes.push(
         `Tu jubilación se construye sobre un ficto de ${uyu(FIGURES.monoBfcFicto.value * FIGURES.bfc.value)} al mes, no sobre lo que realmente ganás.`
       )
-      if ((input.yearsOperating ?? 0) < FIGURES.gradualidadAnio2Umbral.value) {
+      if (input.people === 'socios') {
+        if (bpsMonthly === null) {
+          notes.push(
+            'No podemos calcular el BPS: no sabemos cuántos socios son. En una sociedad de hecho, BPS cobra el aporte POR SOCIO, así que el número depende de ese dato.'
+          )
+        } else {
+          notes.push(
+            `Este es el costo de LA SOCIEDAD, no tu parte: BPS cobra ${uyu(FIGURES.monoSocioSociedadHecho.value)} por socio en el régimen pleno, y lo multiplicamos por los ${String(input.sociosCount)} socios.`
+          )
+          notes.push(
+            'La tabla de monotributo de sociedades de hecho de BPS NO publica columna de FONASA: la cifra es jubilatorio + FRL. Si los socios optan por la cobertura del SNIS, el aporte real es mayor y BPS no publica cuánto — preguntá en BPS.'
+          )
+        }
+      }
+      if (rampPick([true, true], false, input.yearsOperating)) {
         notes.push('Estás en la gradualidad de la Ley 19.942 (25% el primer año, 50% el segundo).')
       }
       break
     }
 
     case 'monotributo-social': {
-      const y = input.yearsOperating ?? 0
-      bpsMonthly =
-        y < 1
-          ? FIGURES.monoSocialAnio1SinFonasa.value
-          : y < FIGURES.gradualidadAnio2Umbral.value
-            ? FIGURES.monoSocialAnio2SinFonasa.value
-            : y < FIGURES.gradualidadAnio3Umbral.value
-              ? FIGURES.monoSocialAnio3SinFonasa.value
-              : FIGURES.monoPlenoSinFonasa.value
+      bpsMonthly = rampPick(
+        [
+          FIGURES.monoSocialAnio1SinFonasa.value,
+          FIGURES.monoSocialAnio2SinFonasa.value,
+          FIGURES.monoSocialAnio3SinFonasa.value,
+        ],
+        FIGURES.monoPlenoSinFonasa.value,
+        input.yearsOperating
+      )
       setupCost = 0
       notes.push('Sin cobertura FONASA. Con FONASA el aporte es bastante mayor.')
       notes.push('MIDES revisa cada año que tu hogar siga calificando.')
@@ -1057,8 +1435,14 @@ export function estimateCost(
       const iva = ivaMinimoMonthly(input)
       taxMonthly = iva.amount
       setupCost = FIGURES.setupUnipersonal.value
-      if (iva.note) notes.push(iva.note)
+      notes.push(...iva.notes)
       notes.push('Exonerada de IRAE mientras estés por debajo del tope.')
+      // MINOR 10 — the one regime the Ley 19.889 ramp genuinely applies to never explained
+      // it, while monotributo (which has a different ramp, Ley 19.942) did.
+      notes.push(
+        `Este es el único régimen con la rebaja de aportes patronales de la Ley 19.889 para empresas nuevas: pagás 25% menos el primer año, 50% menos el segundo y 75% menos el tercero, y desde el CUARTO año pagás el aporte completo (${uyu(FIGURES.bpsUnipersonalPleno.value)}). La rebaja cesa antes si entrás al régimen general de IVA.`
+      )
+      unipersonalBpsNotes(true)
       notes.push('Respondés con tu patrimonio personal: la unipersonal no es una persona jurídica.')
       break
     }
@@ -1066,14 +1450,11 @@ export function estimateCost(
     case 'unipersonal-irae': {
       // NO ramp here: art. 229 cesa al entrar al régimen general de IVA.
       bpsMonthly = unipersonalBps(input, false)
-      // IRAE ficto, escala empresarial (Dto. 150/007 art. 64): 12% de la renta bruta
-      // en el primer tramo (hasta UI 1.000.000) → 3% efectivo sobre la facturación.
-      taxMonthly = monthlyRevenue * FIGURES.iraeFictoPrimerTramo.value * FIGURES.irae.value
+      const irae = iraeFictoMonthly(input)
+      taxMonthly = irae.amount
       accountant = accountantMonthly
       setupCost = FIGURES.setupUnipersonal.value
-      notes.push(
-        'IRAE ficto: la renta neta se estima como un % de la facturación (12% en el primer tramo) y sobre eso se aplica el 25%.'
-      )
+      notes.push(...irae.notes)
       notes.push('Además liquidás IVA en régimen general (22%), que cobrás a tus clientes.')
       notes.push(
         'La rebaja de aportes patronales para empresas nuevas NO aplica acá: es un beneficio del Literal E y cesa al entrar al régimen general de IVA.'
@@ -1082,15 +1463,15 @@ export function estimateCost(
     }
 
     case 'irpf-servicios': {
-      const sp = serviciosPersonalesBps(input)
-      bpsMonthly = sp ?? 0
+      // CRITICAL 1 — `sp ?? 0` used to launder "we cannot know this" into "this is free".
+      bpsMonthly = serviciosPersonalesBps(input)
       const taxable = monthlyRevenue * (1 - FIGURES.irpfFictoGastos.value)
       taxMonthly = irpfCat2Monthly(taxable)
       setupCost = FIGURES.setupUnipersonal.value
 
-      if (sp === null) {
+      if (bpsMonthly === null) {
         notes.push(
-          'NO INCLUYE TU APORTE JUBILATORIO. Tenés un título amparado por la Caja de Profesionales Universitarios, así que el jubilatorio lo aportás a la CJPPU y no a BPS. La CJPPU no publica su escala de forma abierta: consultala directamente. Tu FONASA sí lo pagás a BPS.'
+          'NO INCLUYE TU APORTE JUBILATORIO. Tenés un título amparado por la Caja de Profesionales Universitarios, así que el jubilatorio lo aportás a la CJPPU y no a BPS. La CJPPU no publica su escala de forma abierta: consultala directamente. Tu FONASA sí lo pagás a BPS. Por eso NO te mostramos un total: sería menor que el real, y no un poco.'
         )
       } else {
         notes.push(
@@ -1099,6 +1480,13 @@ export function estimateCost(
       }
       notes.push(
         `Se deduce un ficto de gastos del 30% y hay un mínimo no imponible de ${uyu(FIGURES.irpfMinimoNoImponibleMensual.value)} al mes: por eso al principio suele ganarle al IRAE.`
+      )
+      // MINOR 11 — IRPF Cat. II lets you subtract a CRÉDITO por deducciones (aportes
+      // jubilatorios, FONASA, FRL, hijos a cargo) computed at 14% u 8% según el nivel de
+      // ingresos. We do not collect the inputs it needs, so we do not compute it — but the
+      // omission runs against the taxpayer, and an undisclosed conservatism is still wrong.
+      notes.push(
+        'El IRPF que mostramos es MAYOR al que realmente pagarías: no le restamos el crédito por DEDUCCIONES (aportes jubilatorios, FONASA, FRL, hijos a cargo), que se descuenta del impuesto a una tasa del 14% o del 8% según tu nivel de ingresos. Nos faltan datos para calcularlo; tomá el IRPF como un techo.'
       )
       notes.push(
         'La rebaja de aportes para empresas nuevas NO existe en este camino: es un beneficio del Literal E. Pagás el total desde el primer mes.'
@@ -1113,10 +1501,33 @@ export function estimateCost(
     }
 
     case 'sociedad-hecho': {
-      bpsMonthly = FIGURES.bpsUnipersonalPleno.value
-      taxMonthly = monthlyRevenue * FIGURES.iraeFictoPrimerTramo.value * FIGURES.irae.value
+      // IMPORTANT 5 — this used to charge `bpsUnipersonalPleno` (8.833: the UNIPERSONAL
+      // TITULAR's 11 BFC *plus* FONASA) to a regime that legally requires ≥2 socios, while
+      // taxing the WHOLE company's revenue. The total mixed a one-person BPS base with a
+      // whole-company tax base: it was neither "your cost" nor "the company's cost".
+      //
+      // BPS "Industria y comercio", tabla "Sociedad de hecho sin dependientes": el socio
+      // aporta 11 BFC → $4.594, POR SOCIO y SIN FONASA (igual que el socio de SRL). El
+      // titular de una unipersonal es otra cosa.
+      const socios = input.sociosCount
+      bpsMonthly = socios === undefined ? null : FIGURES.bpsSocioSociedadHecho.value * socios
+      const irae = iraeFictoMonthly(input)
+      taxMonthly = irae.amount
       accountant = accountantMonthly
       setupCost = 0
+      if (bpsMonthly === null) {
+        notes.push(
+          'No podemos calcular el BPS: no sabemos cuántos socios son, y en una sociedad de hecho cada socio aporta por separado.'
+        )
+      } else {
+        notes.push(
+          `Este número es el costo de LA SOCIEDAD, no tu parte: cada socio aporta ${uyu(FIGURES.bpsSocioSociedadHecho.value)} de BPS (11 BFC), y son ${String(socios)} socios. El IRAE también es el de toda la sociedad, sobre la facturación total.`
+        )
+        notes.push(
+          'La tabla de BPS para la sociedad de hecho publica un único importe por socio, SIN columna de FONASA: la cifra es jubilatorio + FRL. Si te corresponde cobertura de salud por esta actividad, el aporte real es mayor y BPS no publica cuánto — preguntá en BPS.'
+        )
+      }
+      notes.push(...irae.notes)
       notes.push(
         'Responsabilidad SOLIDARIA e ILIMITADA: un acreedor puede ir por el 100% de la deuda contra el socio que tenga bienes, sin importar el % pactado.'
       )
@@ -1126,9 +1537,14 @@ export function estimateCost(
 
     case 'srl': {
       bpsMonthly = FIGURES.bpsSocioSrl.value
-      taxMonthly = monthlyRevenue * FIGURES.iraeFictoPrimerTramo.value * FIGURES.irae.value
+      const irae = iraeFictoMonthly(input)
+      taxMonthly = irae.amount
       accountant = accountantMonthly
       setupCost = FIGURES.setupSrl.value
+      notes.push(...irae.notes)
+      notes.push(
+        `El BPS que mostramos es el de UN socio con actividad (${uyu(FIGURES.bpsSocioSrl.value)}). Cada socio que además trabaje en la empresa aporta lo suyo.`
+      )
       notes.push('El BPS del socio solo se paga si desarrolla actividad en la empresa.')
       notes.push(
         'Los socios de SRL no están comprendidos en el FONASA por esta actividad: no tenés cobertura de salud por acá.'
@@ -1144,9 +1560,11 @@ export function estimateCost(
 
     case 'sas': {
       bpsMonthly = FIGURES.bpsAdminSas.value
-      taxMonthly = monthlyRevenue * FIGURES.iraeFictoPrimerTramo.value * FIGURES.irae.value
+      const irae = iraeFictoMonthly(input)
+      taxMonthly = irae.amount
       accountant = accountantMonthly
       setupCost = FIGURES.setupSas.value
+      notes.push(...irae.notes)
       notes.push(
         `El administrador paga ${uyu(FIGURES.bpsAdminSas.value)} de BPS al mes AUNQUE NO COBRE SUELDO NI FACTURE UN PESO, y no puede declararse inactivo. Es el costo real de la SAS.`
       )
@@ -1155,18 +1573,24 @@ export function estimateCost(
         'Un accionista que no administra ni representa NO aporta a BPS por ser accionista.'
       )
       notes.push(
-        `Por debajo de 4.000.000 UI de ingresos, los dividendos que retirás están EXENTOS de IRPF: la carga total es 25%, no 30,25%.`
+        `Por debajo de ${FIGURES.topeIraePreceptivoUi.value.toLocaleString('es-UY')} UI de ingresos, los dividendos que retirás están EXENTOS de IRPF: la carga total es 25%, no 30,25%.`
       )
       break
     }
 
     case 'sa': {
+      // A director who draws no sueldo genuinely contributes nothing — this 0 is a measured
+      // zero, not an unknown one, and `bpsUnknown` stays false.
       bpsMonthly = 0
-      taxMonthly =
-        monthlyRevenue * FIGURES.iraeFictoPrimerTramo.value * FIGURES.irae.value +
-        FIGURES.icosaAnual.value / 12
+      // The ficto is NEVER available to an SA (Dto. 150/007 art. 168 lit. A → Título 4
+      // art. 12 lit. A num. 1). ICOSA, on the other hand, is perfectly knowable — so it
+      // lives in `otherTaxesMonthly` and survives the IRAE being null.
+      const irae = iraeFictoMonthly(input, true)
+      taxMonthly = irae.amount
+      otherTaxesMonthly = FIGURES.icosaAnual.value / 12
       accountant = accountantMonthly
       setupCost = FIGURES.icosaConstitucion.value
+      notes.push(...irae.notes)
       notes.push(
         `Pagás ICOSA: ${uyu(FIGURES.icosaConstitucion.value)} al constituirla y ${uyu(FIGURES.icosaAnual.value)} todos los años, para siempre. La SAS y la SRL no lo pagan.`
       )
@@ -1181,13 +1605,23 @@ export function estimateCost(
     }
   }
 
-  const totalMonthly = bpsMonthly + taxMonthly + accountant
+  const bpsUnknown = bpsMonthly === null
+  const taxUnknown = taxMonthly === null
+  const knownPartialMonthly = (bpsMonthly ?? 0) + (taxMonthly ?? 0) + otherTaxesMonthly + accountant
+  // The invariant every consumer relies on: a total exists ONLY when every component does.
+  const complete = !bpsUnknown && !taxUnknown
+  const totalMonthly = complete ? knownPartialMonthly : null
+
   return {
     bpsMonthly,
+    bpsUnknown,
     taxMonthly,
+    taxUnknown,
+    otherTaxesMonthly,
     accountantMonthly: accountant,
     totalMonthly,
-    totalAnnual: totalMonthly * 12,
+    totalAnnual: totalMonthly === null ? null : totalMonthly * 12,
+    knownPartialMonthly,
     setupCost,
     notes,
   }

@@ -207,6 +207,10 @@ $7.689 (año 1) → $8.070 (año 2) → $8.451 (año 3) → $8.833 (año 4+).
 
 **Piso mensual Literal E (régimen pleno, titular soltero con FONASA):** $8.833 + $5.910 = **$14.743**. Con e-factura: **desde $8.833** (el IVA mínimo se vuelve variable).
 
+🌟 **Hallazgo propio (nadie lo dice): en el régimen PLENO, con facturación pareja, el tope del 3,3% le gana SIEMPRE a la cuota — las dos ni siquiera se pueden cruzar.**
+La cuota plena es $5.910/mes. El 3,3% la alcanzaría recién facturando **$179.091 en un mes** ($5.910 ÷ 0,033). Pero el tope del Literal E es **$1.959.229 al año** = **$163.269/mes** facturando parejo, y el 3,3% de eso son **$5.388** — todavía por debajo de la cuota. Es decir: **un Literal E con e-factura, en régimen pleno y facturando parejo, nunca llega a pagar la cuota fija.** Solo la pagaría en un **mes con un pico** por encima de $179.091 (compensado por meses flojos, algo perfectamente legal y bastante común).
+> ⚠️ **Esto NO vale en la gradualidad.** Las cuotas graduales son más chicas ($1.478 y $2.955), así que **sí** se cruzan con el 3,3% dentro del tope: la cuota de año 2 empieza a ganar desde **$89.545/mes** (≈ $1.074.545/año), muy por dentro del régimen. Un análisis que solo mira la cuota plena concluye —mal— que el tope "solo puede atar por encima del tope del Literal E".
+
 **Otros dos beneficios de e-factura poco conocidos:**
 - La empresa que **le compra a un Literal E puede deducir ese gasto del IRAE**, si paga con e-factura y transferencia electrónica. → Desarma parcialmente el mito de "no te van a comprar porque no das crédito fiscal": para **IRAE** sí sirve; para **IVA** no.
 - Subsidio de hasta **UI 80/mes** (tope $514 en 2026) sobre el costo del servicio de facturación electrónica, vigente hasta el 31/12/2026.
@@ -334,6 +338,23 @@ Fuentes: [Ley 19.889 arts. 228-229 (PDF, BPS)](https://www.bps.gub.uy/bps/file/1
 
 **IRAE 25% · IVA 22%/10% · Impuesto al Patrimonio 1,5%** (sin mínimo no imponible para personas jurídicas — pero con **abatimiento**: se descuenta el IRAE del ejercicio hasta el 50% del IP, así que una empresa chica rentable suele pagar IP ≈ 0).
 
+#### 5.6-bis El IRAE ficto es una escala de 4 tramos, NO un 12% plano
+
+[Decreto 150/007 art. 64](https://www.impo.com.uy/bases/decretos/150-2007/64), inciso 3º (redacción del Dto. 71/023), para ejercicios iniciados **desde el 1/1/2023**. Los tramos están en **UI** y corren sobre la facturación **anual** bruta:
+
+| Más de | Hasta | % de renta neta ficta | IRAE efectivo sobre la facturación de ese tramo |
+|---|---|---|---|
+| UI 0 | UI 1.000.000 (≈ $6.615.000) | **12%** | 3,0% |
+| UI 1.000.000 | UI 2.000.000 (≈ $13.230.000) | **14%** | 3,5% |
+| UI 2.000.000 | UI 3.000.000 (≈ $19.845.000) | **48%** | 12,0% |
+| UI 3.000.000 | en adelante | **60%** | 15,0% |
+
+**Es MARGINAL, no un lookup de tasa única sobre el total.** El artículo lo dice con todas las letras: *"a las ventas, servicios y demás rentas brutas del ejercicio **comprendidas en cada tramo**, se aplicará el porcentaje correspondiente **a dicho tramo**"*. El contraste con el inciso que reemplazó es deliberado: la escala vieja (pre-2023, todavía visible arriba en la norma) **sí** era un lookup — *"multiplicar las ventas... **por el porcentaje que corresponda** según la siguiente escala"*. La redacción de 2023 cambió esa frase. No hay ambigüedad que resolver.
+
+⚠️ **Tope duro del ficto: UI 4.000.000.** [Dto. 150/007 art. 168 lit. b)](https://www.impo.com.uy/bases/decretos/150-2007/168) hace **preceptiva la contabilidad suficiente** por encima de **UI 4.000.000 de ingresos del ejercicio anterior**, y el art. 64 solo habilita el ficto a *"los contribuyentes que **no estén obligados** a llevar contabilidad suficiente"*. Por encima de ese tope el impuesto es **IRAE real** (25% de ingresos − gastos reales), que depende de la estructura de gastos y **esta página no lo puede calcular**: lo decimos y mandamos al contador. No extrapolamos el ficto fuera de su rango legal.
+
+🌟 **La SA NO puede usar el ficto — a ningún nivel de facturación.** El art. 168 **lit. a)** obliga a contabilidad suficiente a *"los sujetos pasivos comprendidos en los **numerales 1** y 4 a 7 del literal A del artículo 3º"*, y el numeral 1 de ese literal es, textual, *"**las sociedades anónimas** y las sociedades en comandita por acciones"* ([Título 4 art. 12 lit. A](https://impo.impo.com.uy/bases/todgi2023/101-2024/12_T4) en la numeración del T.O. 2023). Es decir: para una SA **no existe** el IRAE ficto, ni siquiera facturando $500.000 al año. La SRL, la sociedad de hecho y la **SAS** (nombrada expresamente en el lit. b) sí lo tienen, mientras estén por debajo de UI 4.000.000.
+
 🌟 **Dividendos — lo que casi ninguna guía dice bien:**
 
 | Situación | IRAE | IRPF dividendos | **Total efectivo** |
@@ -358,12 +379,15 @@ Base: Título 7 **art. 38 lit. C** (exonera utilidades distribuidas por *empresa
 
 | Quién | Ficto | FONASA | **Costo mensual mínimo 2026** |
 |---|---|---|---|
-| Titular unipersonal / socio soc. de hecho | 11 BFC = $20.328 | opcional | $8.833 (con FONASA, soltero) |
+| Titular unipersonal | 11 BFC = $20.328 | sí (beneficiario) | $8.833 (con FONASA, soltero) |
+| **Socio de sociedad de hecho** sin dependientes | 11 BFC = $20.328 | **BPS no publica columna** | **$4.594 — POR SOCIO** |
 | **Socio de SRL** con actividad | 15 BFC = $27.719 | **no comprendido** | **$6.265** |
 | **Administrador / representante legal de SAS** | 15 BFC = $27.719 | **obligatorio** | **$10.504** (soltero) |
 | Director de SA **remunerado** | 30 BFC = $55.439 | no | $12.529 |
 | Director de SA **NO remunerado** | — | — | **$0 — EXENTO** (Ley 16.713 art. 171 lit. A) |
 | Director de SAS **no remunerado** | 15 BFC | sí | **al menos uno paga $10.504** — *"En ningún caso regirá la exoneración del art. 171"* |
+
+> ⚠️ **La fila del socio de sociedad de hecho antes decía "$8.833", copiada del titular unipersonal.** Es incorrecto: BPS tiene su propia tabla, *"Sociedad de hecho sin dependientes"*, y ahí el socio con ficto de 11 BFC paga **$4.594 — que es jubilatorio + FRL, sin FONASA**. Los $8.833 del titular unipersonal son 11 BFC **más FONASA**. Y es **por socio**: una sociedad de hecho de 2 socios paga **$9.188**, no $8.833. El modelo (`estimateCost`) ahora multiplica por `sociosCount` y **se niega a costear una sociedad cuyo número de socios no le dijeron**.
 
 > 🌟 **El trade-off SA vs SAS que nadie cuenta:** en una SA, el director que no cobra **no aporta nada**. En una SAS, el administrador **nunca** se exonera y **no puede declararse "sin actividad"**. A cambio, el de la SAS obtiene FONASA; el de la SA, no.
 > **Una SAS unipersonal (accionista único = administrador) paga como mínimo $10.504/mes aunque no facture un peso.**
@@ -470,6 +494,12 @@ Es contraintuitivo pero es **la mejor señal E-E-A-T de la página**: decir expl
 7. **¿Tu título está amparado por la CJPPU?** El listado de profesiones amparadas **no está en la ley**: la Ley 17.738 art. 42 remite a "las profesiones amparadas por el régimen legal que se sustituye" (Ley 12.997, **de pago en IMPO**) más las que **incorpore el Directorio** de la Caja (arts. 44-45), y la Ley 20.410 (2025) no las enumera. **No existe lista oficial en bps.gub.uy, dgi.gub.uy, gub.uy ni impo.com.uy.** Consecuencia práctica: la página afirma que el **desarrollador de software sin título profesional amparado aporta a BPS** (BPS define "no profesional" por la actividad, *"tengan o no título universitario"*), pero **quien tenga un título universitario amparado debe confirmar con la CJPPU** — si lo está, su jubilatorio va a la Caja y **los $4.594 de §5.5-ter no le aplican**. No publicamos la lista de profesiones porque no podemos verificarla.
 8. **Gradualidad Ley 19.889 art. 229 para un servicios-personales que sí esté en Literal E:** sabemos que el art. 229 exige estar en el régimen del art. 30 de la Ley 18.083 (IVA mínimo) y que **cesa** al pasar al régimen general de IVA. Lo que **no** podemos afirmar es cuánto pagaría de jubilatorio un titular de servicios personales que estuviera en Literal E: **BPS deja esa celda literalmente vacía** en la Categoría 1.ª de su tabla de aportación gradual (columna "No beneficiario del SNS (SS 9)"). Podríamos calcular $3.451, pero **BPS no lo publica y no lo inventamos**. La página presenta el camino IRPF Cat. II **sin gradualidad** (que es lo verificado) y no ofrece un número gradual para servicios personales.
 9. **Valor del CPE (Costo Promedio Equivalente) en sí mismo:** BPS publica el **75 % del CPE = $5.020** (Decreto 25/026) pero **no el CPE completo** en una página abierta. Usamos el $5.020, que es el dato operativo; no derivamos el CPE.
+10. **¿Los tramos del IRAE ficto son marginales o un lookup de tasa única?** **Sí lo podemos afirmar: son MARGINALES**, y no por interpretación sino por el texto — Dto. 150/007 art. 64, inciso 3º: *"a las ventas... **comprendidas en cada tramo**, se aplicará el porcentaje correspondiente **a dicho tramo**"* (ver §5.6-bis). Se deja anotado acá porque una revisión anterior no pudo resolverlo y la diferencia entre ambas lecturas es enorme (a UI 1.500.000: 12,7% de renta ficta marginal vs. 14% en lookup). Lo que **NO** podemos calcular es el **IRAE real** por encima de **UI 4.000.000**, donde la contabilidad suficiente es preceptiva: depende de los gastos reales. Ahí la página **no da un número** y lo dice.
+11. **El IRAE ficto que mostramos está SOBREESTIMADO, a propósito.** El art. 64 permite deducir de la renta ficta *"los sueldos de dueños o socios admitidos por la reglamentación"* (hasta 11 BFC mensuales por dueño o socio que preste servicios efectivos y aporte). **No lo descontamos**, porque no preguntamos si el dueño se paga sueldo. El IRAE que mostramos es por lo tanto un **techo**, no una predicción.
+12. **El IRPF Cat. II que mostramos también está SOBREESTIMADO.** No le restamos el **crédito por deducciones** (aportes jubilatorios, FONASA, FRL, hijos a cargo), que se descuenta del impuesto a la tasa del **14% u 8%** según el nivel de ingresos. Calcularlo exige datos que el wizard no pide. Lo decimos en la ficha del régimen: **tomá el IRPF como un techo.**
+13. **FONASA del socio de una sociedad de hecho:** la tabla de BPS (*"Sociedad de hecho sin dependientes"*, y la de monotributo de la Ley 19.942) publica **un único importe por socio, sin columna de FONASA/SNS**. No sabemos si el socio puede optar por la cobertura ni cuánto le costaría. **No lo derivamos**: mostramos lo que BPS publica (jubilatorio + FRL) y avisamos que, si le corresponde cobertura, el aporte real es mayor.
+14. **Gradualidad Ley 19.889 para un titular que YA tiene FONASA por un empleo:** BPS publica la columna del titular con cobertura por otra actividad (**$5.143**) pero **no publica una versión rebajada de esa columna** para los años 1–3 de la rampa. Mostramos el importe pleno —que puede **sobreestimar** el costo real de los primeros años— y lo decimos, en vez de inventar el número o de aplicarle la rampa por analogía.
+15. **La frontera del UI 4.000.000 se mueve todos los días.** La norma mide los ingresos del **ejercicio anterior** a la **UI de cierre de ejercicio**; nosotros solo tenemos la facturación anual estimada del visitante y la **UI de hoy**. Cerca del borde de cualquier tramo (o del tope), la estimación es **aproximada**, y la ficha lo dice.
 
 ---
 
