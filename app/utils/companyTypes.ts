@@ -56,7 +56,8 @@ const UNIP_TRAMITE = 'https://www.gub.uy/tramites/inscripcion-empresa-unipersona
 const IRPF_ESCALA =
   'https://www.bps.gub.uy/bps/file/23860/3/2026---comunicado-r-5---valores-escalas-irpf-2026.pdf'
 const LEY18083_70 = 'https://www.impo.com.uy/bases/leyes/18083-2006/70'
-const LEY18874_1 = 'https://www.impo.com.uy/bases/leyes/18874-2011'
+const LEY18874_1 = 'https://www.impo.com.uy/bases/leyes/18874-2011/1'
+const LEY16060_1 = 'https://www.impo.com.uy/bases/leyes/16060-1989/1'
 
 /** Verified 2026 constants. Nothing numeric may live outside this object. */
 export const FIGURES = {
@@ -102,8 +103,20 @@ export const FIGURES = {
   ),
   monotributoSocialSociosMax: fig(
     5,
-    'Monotributo Social MIDES: máx. de socios en sociedad de hecho',
+    'Monotributo Social MIDES: máx. de socios del emprendimiento asociativo (art. 1 lit. B)',
     LEY18874_1
+  ),
+
+  // --- Pluralidad societaria (Ley 16.060 art. 1) ---
+  // "Habrá sociedad comercial cuando DOS O MÁS personas, físicas o jurídicas se obliguen a
+  // realizar aportes". This is the norm that sets the 2-person floor — for the SRL, for the
+  // SA, and for the sociedad de hecho alike. It is NOT art. 223, which only caps the SRL at
+  // 50 socios and sets no minimum at all. The SAS is the express exception: Ley 19.820
+  // art. 11 lets it be constituted "por una persona física".
+  pluralidadMinimaSocios: fig(
+    2,
+    'Mínimo de personas para que haya sociedad comercial (Ley 16.060 art. 1)',
+    LEY16060_1
   ),
 
   // --- Monotributo (BPS, vigencia enero 2026) ---
@@ -302,22 +315,56 @@ const L = {
     norm: 'Ley 18.874 art. 1',
     url: LEY18874_1,
   },
+  ley18874_2: {
+    norm: 'Ley 18.874 art. 2',
+    url: 'https://www.impo.com.uy/bases/leyes/18874-2011/2',
+  },
+  ley18874_4: {
+    norm: 'Ley 18.874 art. 4',
+    url: 'https://www.impo.com.uy/bases/leyes/18874-2011/4',
+  },
   dto199: { norm: 'Decreto 199/007', url: 'https://www.impo.com.uy/bases/decretos/199-2007' },
   titulo4_66E: {
     norm: 'Título 4 art. 66 lit. E',
     url: 'https://www.impo.com.uy/bases/todgi-2023/4-2024',
   },
+  // IRPF is Título 7. Título 4 is IRAE — a different tax on a different taxpayer, and the
+  // wrong authority for anything said about servicios personales as renta de trabajo.
+  // Título 7 art. 45: "Serán rentas de esta naturaleza, las originadas en la prestación de
+  // servicios personales fuera de la relación de dependencia".
+  titulo7: {
+    norm: 'Título 7 (IRPF) art. 45',
+    url: 'https://www.impo.com.uy/bases/todgi-2023/7-2024',
+  },
   consulta4761: {
     norm: 'Consulta DGI 4761',
     url: 'https://www.impo.com.uy/bases/consultas-tributarias/4761-2008',
   },
-  ley16060_223: {
-    norm: 'Ley 16.060 art. 223',
-    url: 'https://www.impo.com.uy/bases/leyes/16060-1989',
+  // The 2-person floor of every sociedad comercial. NOT art. 223, which caps the SRL at 50
+  // socios and sets no minimum whatsoever.
+  ley16060_1: {
+    norm: 'Ley 16.060 art. 1',
+    url: LEY16060_1,
   },
+  // Solidary, unlimited liability of the socios of a sociedad de hecho: "los socios serán
+  // responsables solidariamente por las obligaciones sociales sin poder invocar el beneficio
+  // de excusión". This governs SOCIEDADES — it says nothing about a persona física.
   ley16060_39: {
     norm: 'Ley 16.060 art. 39',
-    url: 'https://www.impo.com.uy/bases/leyes/16060-1989',
+    url: 'https://www.impo.com.uy/bases/leyes/16060-1989/39',
+  },
+  // A monotributista / unipersonal / IRPF taxpayer is a PERSONA FÍSICA, not a sociedad. The
+  // source of their unlimited liability is the prenda general: "Los bienes todos del deudor,
+  // exceptuándose los no embargables, son la garantía común de sus acreedores".
+  codigoCivil2372: {
+    norm: 'Código Civil art. 2372',
+    url: 'https://www.impo.com.uy/bases/codigo-civil/16603-1994/2372',
+  },
+  // Ley 16.060 has nothing to say about the unipersonal: it is not a sociedad at all. The
+  // authority for "one titular" is the DGI/BPS registration itself.
+  unipersonal: {
+    norm: 'DGI/BPS — Inscripción de empresa unipersonal',
+    url: UNIP_TRAMITE,
   },
 } as const
 
@@ -414,23 +461,89 @@ export function applyGates(input: WizardInput): GateOutcome[] {
     const doubt = (text: string, l: { norm: string; url: string }) =>
       reasons.push({ status: 'dudoso', text, norm: l.norm, url: l.url })
 
-    // Unlimited liability kills every simple regime when the visitor needs a shield.
+    // Unlimited liability kills every simple regime when the visitor needs a shield — but the
+    // NORM that imposes it depends on what the taxpayer IS. A sociedad de hecho's socios are
+    // liable under Ley 16.060 art. 39 (solidary, no beneficio de excusión). A monotributista,
+    // a unipersonal or an IRPF taxpayer is a PERSONA FÍSICA — not a sociedad, so art. 39 has
+    // nothing to say about them. Their exposure is the prenda general of Código Civil
+    // art. 2372: "Los bienes todos del deudor ... son la garantía común de sus acreedores".
     if (input.needsLimitedLiability && regime.liability === 'ilimitada') {
-      out(
-        'Necesitás responsabilidad limitada, y en esta figura respondés con tu patrimonio personal.',
-        L.ley16060_39
-      )
+      if (regime.id === 'sociedad-hecho') {
+        out(
+          'Necesitás responsabilidad limitada, y acá respondés con tu patrimonio personal, en forma solidaria con los demás socios y sin beneficio de excusión.',
+          L.ley16060_39
+        )
+      } else {
+        out(
+          'Necesitás responsabilidad limitada, y en esta figura respondés con tu patrimonio personal: no hay separación entre vos y la empresa.',
+          L.codigoCivil2372
+        )
+      }
+    }
+
+    // A sociedad needs "dos o más personas" (Ley 16.060 art. 1). One socio is not a legal
+    // outcome, it is inconsistent input — we say so rather than silently rating it elegible.
+    const minSocios = FIGURES.pluralidadMinimaSocios.value
+    const sociosCountInconsistent =
+      socios && input.sociosCount !== undefined && input.sociosCount < minSocios
+    const flagInconsistentSociosCount = () => {
+      if (sociosCountInconsistent) {
+        doubt(
+          `Nos dijiste que sos ${String(input.sociosCount)} socio(s), pero una sociedad requiere un mínimo de ${minSocios} personas. Revisá el dato: si en realidad vas solo, corresponde la rama unipersonal.`,
+          L.ley16060_1
+        )
+      }
     }
 
     switch (regime.id) {
-      case 'monotributo':
+      // Monotributo Social is governed by Ley 18.874 and its reglamento (Decreto 220/012) —
+      // NOT by Ley 18.083 arts. 71-72. Art. 1, verbatim: "Quienes producen y comercializan
+      // bienes Y PRESTAN SERVICIOS, no tengan personal dependiente y cumplan con las
+      // condiciones establecidas en LOS ARTÍCULOS SIGUIENTES" — i.e. 18.874's own arts. 2-4.
+      // So: servicios personales are ALLOWED; there is NO consumidor-final rule, NO 15 m²
+      // local rule, and NO activos ceiling. Gating this regime on art. 71/72 denied it to
+      // exactly the below-poverty-line households it was written for.
       case 'monotributo-social': {
-        if (regime.id === 'monotributo-social' && !input.midesEligible) {
+        if (!input.midesEligible) {
           out(
-            'Requiere calificación previa de MIDES: el hogar debe estar bajo la línea de pobreza o en situación de vulnerabilidad.',
-            { norm: 'Ley 18.874 art. 2', url: 'https://www.impo.com.uy/bases/leyes/18874-2011' }
+            'Requiere calificación previa de MIDES: el hogar debe estar bajo la línea de pobreza o en situación de vulnerabilidad. La calificación es previa y está exclusivamente a cargo del MIDES.',
+            L.ley18874_2
           )
         }
+        // Art. 1: "no tengan personal dependiente" — zero, with no unipersonal exception.
+        if (input.employees > 0) {
+          out(
+            'El monotributo social no admite ningún dependiente: el art. 1 exige que no tengan personal dependiente.',
+            L.ley18874_1
+          )
+        }
+        if (socios) {
+          flagInconsistentSociosCount()
+          const maxSocial = FIGURES.monotributoSocialSociosMax.value
+          if (input.sociosCount === undefined) {
+            doubt(
+              `El monotributo social admite un emprendimiento asociativo de hasta ${maxSocial} socios, sin dependientes. No sabemos cuántos socios son: necesitamos ese dato para confirmar si calificás.`,
+              L.ley18874_1
+            )
+          } else if (input.sociosCount > maxSocial) {
+            out(
+              `El monotributo social admite un emprendimiento asociativo de hasta ${maxSocial} socios.`,
+              L.ley18874_1
+            )
+          }
+        }
+        // Art. 4 sets its own tope: 60% del límite para el unipersonal, 100% para el
+        // asociativo — los mismos importes que ya tenemos verificados.
+        const topeSocial = socios
+          ? FIGURES.topeMonotributoSociedadUyu.value
+          : FIGURES.topeMonotributoUnipersonalUyu.value
+        if (input.annualRevenueUyu > topeSocial) {
+          out(`Superás el tope de ingresos (${uyu(topeSocial)} al año en 2026).`, L.ley18874_4)
+        }
+        break
+      }
+
+      case 'monotributo': {
         if (anyServicios) {
           out(
             'El monotributo excluye a quienes prestan servicios personales fuera de la relación de dependencia.',
@@ -449,55 +562,59 @@ export function applyGates(input: WizardInput): GateOutcome[] {
         //   lit. C — sociedad de hecho de hasta 3 socios SI son exclusivamente familiares
         //            (hasta 4° grado de consanguinidad o 2° de afinidad), sin dependientes
         // A sociedad de hecho of 2 (or 3, if family) socios genuinely CAN be a monotributista
-        // — it is NOT excluded outright. Monotributo Social MIDES has its own socio cap
-        // (Ley 18.874 art. 1), never the art. 70 lit. B/C numbers.
+        // — it is NOT excluded outright.
         if (socios) {
-          if (regime.id === 'monotributo-social') {
-            const maxSocial = FIGURES.monotributoSocialSociosMax.value
-            if (input.sociosCount === undefined) {
-              doubt(
-                `El monotributo social está disponible para una sociedad de hecho de hasta ${maxSocial} socios, sin dependientes. No sabemos cuántos socios son: necesitamos ese dato para confirmar si calificás.`,
-                L.ley18874_1
-              )
-            } else if (input.sociosCount > maxSocial) {
+          flagInconsistentSociosCount()
+          const maxSinFamilia = FIGURES.monotributoSociosMaxSinFamilia.value
+          const maxFamilia = FIGURES.monotributoSociosMaxFamilia.value
+          if (input.sociosCount === undefined) {
+            doubt(
+              `El monotributo está disponible para una sociedad de hecho de hasta ${maxSinFamilia} socios, o hasta ${maxFamilia} si son todos familiares (hasta 4° grado de consanguinidad o 2° de afinidad). No sabemos cuántos socios son: necesitamos ese dato para confirmar si calificás.`,
+              L.ley18083_70
+            )
+          } else if (input.sociosFamiliares) {
+            if (input.sociosCount > maxFamilia) {
               out(
-                `El monotributo social admite una sociedad de hecho de hasta ${maxSocial} socios.`,
-                L.ley18874_1
-              )
-            }
-          } else {
-            const maxSinFamilia = FIGURES.monotributoSociosMaxSinFamilia.value
-            const maxFamilia = FIGURES.monotributoSociosMaxFamilia.value
-            if (input.sociosCount === undefined) {
-              doubt(
-                `El monotributo está disponible para una sociedad de hecho de hasta ${maxSinFamilia} socios, o hasta ${maxFamilia} si son todos familiares (hasta 4° grado de consanguinidad o 2° de afinidad). No sabemos cuántos socios son: necesitamos ese dato para confirmar si calificás.`,
-                L.ley18083_70
-              )
-            } else if (input.sociosFamiliares) {
-              if (input.sociosCount > maxFamilia) {
-                out(
-                  `Como sociedad de hecho integrada exclusivamente por familiares, el monotributo admite como máximo ${maxFamilia} socios.`,
-                  L.ley18083_70
-                )
-              }
-            } else if (input.sociosCount > maxSinFamilia) {
-              out(
-                `El monotributo admite como máximo ${maxSinFamilia} socios sin vínculo familiar (hasta ${maxFamilia} si son todos familiares).`,
+                `Como sociedad de hecho integrada exclusivamente por familiares, el monotributo admite como máximo ${maxFamilia} socios.`,
                 L.ley18083_70
               )
             }
+          } else if (input.sociosCount > maxSinFamilia) {
+            out(
+              `El monotributo admite como máximo ${maxSinFamilia} socios sin vínculo familiar (hasta ${maxFamilia} si son todos familiares).`,
+              L.ley18083_70
+            )
           }
         }
-        if (input.clients === 'empresas' || input.clients === 'exterior') {
-          out('El monotributista solo puede vender a consumidores finales.', L.ley18083_71)
+        // Art. 71 lit. D, verbatim: "Enajenen bienes y presten servicios EXCLUSIVAMENTE a
+        // consumidores finales." Exclusivamente is the whole condition.
+        if (input.clients === 'empresas') {
+          out(
+            'El régimen exige vender exclusivamente a consumidores finales, y una empresa que compra para su giro no lo es.',
+            L.ley18083_71
+          )
+        }
+        if (input.clients === 'mixto') {
+          out(
+            'El régimen exige vender EXCLUSIVAMENTE a consumidores finales: una clientela mixta (parte consumidores finales, parte empresas) no cumple esa exclusividad, aunque la mayoría de tus ventas sean a consumidores.',
+            L.ley18083_71
+          )
+        }
+        // Exporting is NOT settled by the text. A foreign end consumer IS a consumidor final,
+        // and lit. D says nothing about the buyer being domestic — the article only empowers
+        // the Poder Ejecutivo to carve out exceptions "en función de la naturaleza de los
+        // bienes y servicios". So we surface the tension instead of inventing an exclusion.
+        if (input.clients === 'exterior') {
+          doubt(
+            'La norma exige vender exclusivamente a consumidores finales, pero no dice nada sobre si el comprador puede estar en el exterior — y un consumidor final del exterior sigue siendo un consumidor final. Que una exportación califique no está resuelto por el texto: consultá un contador. (Si lo que exportás son servicios, el punto suele ser abstracto: el art. 72 lit. C ya excluye del monotributo a los servicios personales.)',
+            L.ley18083_71
+          )
         }
         // Lits. B and C both say "sin dependientes": a sociedad de hecho admits none, even
         // though the unipersonal (lit. A) may have 1.
-        const maxEmployees = regime.id === 'monotributo-social' ? 0 : socios ? 0 : 1
+        const maxEmployees = socios ? 0 : 1
         if (input.employees > maxEmployees) {
-          if (regime.id === 'monotributo-social') {
-            out('El monotributo social no admite ningún dependiente.', L.ley18874_1)
-          } else if (socios) {
+          if (socios) {
             out(
               'La sociedad de hecho monotributista no admite ningún dependiente: los lits. B y C del art. 70 exigen "sin dependientes".',
               L.ley18083_70
@@ -519,7 +636,6 @@ export function applyGates(input: WizardInput): GateOutcome[] {
           out(`Superás el tope de ingresos (${uyu(tope)} al año en 2026).`, L.ley18083_71)
         }
         if (
-          regime.id === 'monotributo' &&
           input.assetsUyu !== undefined &&
           input.assetsUyu > FIGURES.topeMonotributoActivosUyu.value
         ) {
@@ -533,8 +649,10 @@ export function applyGates(input: WizardInput): GateOutcome[] {
 
       case 'unipersonal-literal-e':
       case 'unipersonal-irae': {
+        // Ley 16.060 governs SOCIEDADES; a unipersonal is not one, so it is the wrong
+        // authority here. The DGI/BPS registration is what defines the single titular.
         if (socios) {
-          out('Una unipersonal, por definición, tiene un solo titular.', L.ley16060_223)
+          out('Una unipersonal, por definición, tiene un solo titular.', L.unipersonal)
         }
         if (regime.id === 'unipersonal-literal-e') {
           if (input.annualRevenueUyu > FIGURES.topeLiteralEUyu.value) {
@@ -554,13 +672,14 @@ export function applyGates(input: WizardInput): GateOutcome[] {
       }
 
       case 'irpf-servicios': {
+        // IRPF is Título 7. Título 4 is IRAE — a different tax entirely.
         if (socios) {
-          out('Es el régimen de una persona física, no de una sociedad.', L.titulo4_66E)
+          out('Es el régimen de una persona física, no de una sociedad.', L.titulo7)
         }
         if (!anyServicios) {
           out(
             'Aplica a servicios personales fuera de la relación de dependencia, no a la venta de bienes.',
-            L.titulo4_66E
+            L.titulo7
           )
         }
         break
@@ -568,23 +687,33 @@ export function applyGates(input: WizardInput): GateOutcome[] {
 
       case 'sociedad-hecho': {
         if (!socios) {
-          out('Requiere dos o más personas operando juntas.', L.ley16060_223)
+          out(
+            `Requiere dos o más personas operando juntas: habrá sociedad cuando ${minSocios} o más personas se obliguen a realizar aportes.`,
+            L.ley16060_1
+          )
         }
+        flagInconsistentSociosCount()
         break
       }
 
-      case 'srl': {
+      // Ley 16.060 art. 1's pluralidad requirement ("Habrá sociedad comercial cuando DOS O MÁS
+      // personas...") applies to the SRL and the SA IDENTICALLY. Gating one and not the other
+      // was arbitrary. The SAS is the genuine exception — Ley 19.820 art. 11 lets it be
+      // constituted "por una persona física" — so it stays ungated.
+      case 'srl':
+      case 'sa': {
         if (!socios) {
+          const figura = regime.id === 'srl' ? 'La SRL' : 'La SA'
           out(
-            'La SRL exige un mínimo de 2 socios. Si vas solo, la figura equivalente es la SAS.',
-            L.ley16060_223
+            `${figura} exige un mínimo de ${minSocios} socios. Si vas solo, la figura equivalente es la SAS, que sí puede constituirse por una sola persona física.`,
+            L.ley16060_1
           )
         }
+        flagInconsistentSociosCount()
         break
       }
 
       case 'sas':
-      case 'sa':
         break
     }
 
@@ -609,9 +738,16 @@ export const REGIMES: readonly Regime[] = Object.freeze([
       years: 3,
       text: 'Si superás el tope quedás fuera; podés volver al ejercicio siguiente con el aval de MIDES.',
       norm: 'Ley 18.874 art. 4',
-      url: 'https://www.impo.com.uy/bases/leyes/18874-2011',
+      url: 'https://www.impo.com.uy/bases/leyes/18874-2011/4',
     },
-    sources: [{ label: 'BPS — Monotributo social', url: BPS_MONO_SOCIAL }],
+    sources: [
+      { label: 'BPS — Monotributo social', url: BPS_MONO_SOCIAL },
+      { label: 'Ley 18.874', url: 'https://www.impo.com.uy/bases/leyes/18874-2011' },
+      {
+        label: 'Decreto 220/012 (reglamento)',
+        url: 'https://www.impo.com.uy/bases/decretos/220-2012',
+      },
+    ],
   },
   {
     id: 'monotributo',

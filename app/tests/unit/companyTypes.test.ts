@@ -273,11 +273,14 @@ describe('applyGates', () => {
     expect(statusOf(base, 'monotributo')).toBe('elegible')
   })
 
+  // `reasons` is an array whose ORDER is an implementation detail: adding a gate (e.g. the
+  // needsLimitedLiability one, which is pushed before the per-regime switch) reshuffles it.
+  // Asserting on `reasons[0]` couples these tests to that order, so they assert on
+  // `reasons.some(...)` — the claim is "this reason is present", never "it is first".
   it('bars servicios personales from monotributo (Ley 18.083 art. 72 lit. C)', () => {
     const g = applyGates({ ...base, sells: 'servicios' }).find(x => x.regime === 'monotributo')!
     expect(g.status).toBe('excluido')
-    expect(g.reasons[0]!.norm).toContain('72')
-    expect(g.reasons[0]!.url).toMatch(/^https:\/\//)
+    expect(g.reasons.some(r => r.norm.includes('72') && /^https:\/\//.test(r.url))).toBe(true)
   })
 
   it('flags Literal E as DUDOSO — not excluded — for pure servicios personales', () => {
@@ -285,7 +288,7 @@ describe('applyGates', () => {
       x => x.regime === 'unipersonal-literal-e'
     )!
     expect(g.status).toBe('dudoso')
-    expect(g.reasons[0]!.url).toContain('4761')
+    expect(g.reasons.some(r => r.url.includes('4761'))).toBe(true)
   })
 
   it('bars monotributo when the client is a company (art. 71 lit. D)', () => {
@@ -384,6 +387,218 @@ describe('applyGates', () => {
       const g = applyGates(input).find(x => x.regime === 'monotributo')!
       expect(g.status).toBe('dudoso')
       expect(g.reasons.some(r => r.status === 'dudoso' && r.norm.includes('70'))).toBe(true)
+    })
+  })
+
+  // Ley 18.083 art. 71 lit. D: "Enajenen bienes y presten servicios EXCLUSIVAMENTE a
+  // consumidores finales." A mixed clientele is, by the plain text, not exclusive.
+  describe('monotributo clientele gate (Ley 18.083 art. 71 lit. D)', () => {
+    it('excludes a MIXED clientele — the norm demands selling exclusively to consumidores finales', () => {
+      const g = applyGates({ ...base, clients: 'mixto' }).find(x => x.regime === 'monotributo')!
+      expect(g.status).toBe('excluido')
+      expect(g.reasons.some(r => r.norm.includes('71'))).toBe(true)
+    })
+
+    it('excludes selling to empresas, citing art. 71', () => {
+      const g = applyGates({ ...base, clients: 'empresas' }).find(x => x.regime === 'monotributo')!
+      expect(g.status).toBe('excluido')
+      expect(g.reasons.some(r => r.norm.includes('71'))).toBe(true)
+    })
+
+    // A foreign end consumer IS a consumidor final. Art. 71 lit. D says nothing about the
+    // buyer being domestic, so "exterior" is an unsettled question, not an exclusion.
+    it('is DUDOSO — not excluido — for exports, since a foreign buyer can still be a consumidor final', () => {
+      const g = applyGates({ ...base, clients: 'exterior' }).find(x => x.regime === 'monotributo')!
+      expect(g.status).toBe('dudoso')
+      expect(g.reasons.some(r => r.status === 'dudoso' && r.norm.includes('71'))).toBe(true)
+      expect(g.reasons.some(r => r.status === 'excluido')).toBe(false)
+    })
+  })
+
+  // MINOR 6 — a one-socio sociedad de hecho is an impossibility (Ley 16.060 art. 1 requires
+  // "dos o más personas"). It is inconsistent input, not a legal outcome: never `elegible`.
+  describe('sociosCount validation', () => {
+    it('is dudoso, not elegible, when people=socios but sociosCount is 1', () => {
+      const input = { ...base, people: 'socios', sociosCount: 1 } as const
+      for (const id of ['monotributo', 'sociedad-hecho', 'srl'] as const) {
+        const g = applyGates(input).find(x => x.regime === id)!
+        expect(g.status, `${id} should be dudoso for a 1-socio sociedad`).toBe('dudoso')
+      }
+    })
+  })
+
+  // CRITICAL 2 — Monotributo Social is governed by Ley 18.874 (and Decreto 220/012), NOT by
+  // Ley 18.083 arts. 71-72. Ley 18.874 art. 1, verbatim: "Quienes producen y comercializan
+  // bienes Y PRESTAN SERVICIOS, no tengan personal dependiente y cumplan con las condiciones
+  // establecidas en los artículos siguientes" — i.e. 18.874's own arts. 2-4. Gating this
+  // regime on art. 71/72 denied it to exactly the below-poverty-line households it was
+  // written for.
+  describe('monotributo social (Ley 18.874 — NOT Ley 18.083)', () => {
+    const mides: WizardInput = { ...base, midesEligible: true }
+    const social = (input: WizardInput) =>
+      applyGates(input).find(x => x.regime === 'monotributo-social')!
+
+    it('never cites Ley 18.083: those articles do not govern this regime', () => {
+      const inputs: WizardInput[] = [
+        mides,
+        { ...mides, sells: 'servicios' },
+        { ...mides, sells: 'ambos' },
+        { ...mides, clients: 'empresas' },
+        { ...mides, clients: 'mixto' },
+        { ...mides, clients: 'exterior' },
+        { ...mides, localTooBig: true },
+        { ...mides, employees: 2 },
+        { ...mides, people: 'socios', sociosCount: 6 },
+        { ...mides, annualRevenueUyu: 9_000_000 },
+        { ...mides, otherCompanyRole: true },
+      ]
+      for (const input of inputs) {
+        for (const r of social(input).reasons) {
+          expect(r.norm, `monotributo-social must not be gated on ${r.norm}`).not.toContain(
+            '18.083'
+          )
+          expect(r.url, `monotributo-social must not cite ${r.url}`).not.toContain('18083')
+        }
+      }
+    })
+
+    it('ALLOWS servicios personales — art. 1 expressly covers "prestan servicios"', () => {
+      expect(social({ ...mides, sells: 'servicios' }).status).toBe('elegible')
+      expect(social({ ...mides, sells: 'ambos' }).status).toBe('elegible')
+    })
+
+    it('has no consumidor-final rule: selling to empresas, mixto or exterior is fine', () => {
+      for (const clients of ['empresas', 'mixto', 'exterior'] as const) {
+        expect(social({ ...mides, clients }).status, `clients=${clients}`).toBe('elegible')
+      }
+    })
+
+    it('has no 15 m² local rule and no activos ceiling', () => {
+      expect(social({ ...mides, localTooBig: true }).status).toBe('elegible')
+      expect(
+        social({ ...mides, assetsUyu: FIGURES.topeMonotributoActivosUyu.value * 10 }).status
+      ).toBe('elegible')
+    })
+
+    it('requires MIDES qualification (art. 2)', () => {
+      const g = social(base)
+      expect(g.status).toBe('excluido')
+      expect(g.reasons.some(r => r.norm.includes('18.874') && r.norm.includes('2'))).toBe(true)
+    })
+
+    it('admits ZERO dependientes (art. 1: "no tengan personal dependiente")', () => {
+      expect(social(mides).status).toBe('elegible')
+      const g = social({ ...mides, employees: 1 })
+      expect(g.status).toBe('excluido')
+      expect(g.reasons.some(r => r.norm.includes('18.874'))).toBe(true)
+    })
+
+    it('admits an asociativo of up to 5 socios (art. 1 lit. B), and no more', () => {
+      const socios = (n: number) => ({ ...mides, people: 'socios', sociosCount: n }) as WizardInput
+      expect(social(socios(FIGURES.monotributoSocialSociosMax.value)).status).toBe('elegible')
+      const g = social(socios(FIGURES.monotributoSocialSociosMax.value + 1))
+      expect(g.status).toBe('excluido')
+      expect(g.reasons.some(r => r.norm.includes('18.874'))).toBe(true)
+    })
+
+    it('applies its own income ceiling (art. 4)', () => {
+      const g = social({ ...mides, annualRevenueUyu: 9_000_000 })
+      expect(g.status).toBe('excluido')
+      expect(g.reasons.some(r => r.norm.includes('18.874'))).toBe(true)
+    })
+  })
+
+  // IMPORTANT 3 / 4 — on a page whose authority rests entirely on its citations, a wrong
+  // cite IS the defect. Ley 16.060 art. 223 is about SRL capital in cuotas and the 50-socio
+  // MAXIMUM; it sets no minimum, and it has nothing to say about unipersonales.
+  describe('citations', () => {
+    const allReasons = (input: WizardInput) => applyGates(input).flatMap(g => g.reasons)
+
+    it('never cites Ley 16.060 art. 223 (it sets no minimum of socios)', () => {
+      const inputs: WizardInput[] = [
+        base,
+        { ...base, people: 'socios', sociosCount: 2 },
+        { ...base, needsLimitedLiability: true },
+        { ...base, sells: 'servicios' },
+      ]
+      for (const input of inputs) {
+        for (const r of allReasons(input)) {
+          expect(r.norm).not.toContain('223')
+        }
+      }
+    })
+
+    it('grounds the 2-socio minimum of SRL and SA in Ley 16.060 art. 1', () => {
+      for (const id of ['srl', 'sa'] as const) {
+        const g = applyGates(base).find(x => x.regime === id)!
+        expect(g.status, `${id} should exclude a solo founder`).toBe('excluido')
+        expect(
+          g.reasons.some(r => r.norm.includes('16.060') && r.norm.includes('1')),
+          `${id} should cite Ley 16.060 art. 1`
+        ).toBe(true)
+        expect(g.reasons.some(r => r.url.includes('/16060-1989/1'))).toBe(true)
+      }
+      // The SAS is genuinely unipersonal (Ley 19.820 art. 11) — it stays open.
+      expect(statusOf(base, 'sas')).toBe('elegible')
+    })
+
+    it('grounds the sociedad de hecho pluralidad in Ley 16.060 art. 1', () => {
+      const g = applyGates(base).find(x => x.regime === 'sociedad-hecho')!
+      expect(g.status).toBe('excluido')
+      expect(g.reasons.some(r => r.url.includes('/16060-1989/1'))).toBe(true)
+    })
+
+    it('does not cite Ley 16.060 for the unipersonal — it is not a sociedad', () => {
+      const input = { ...base, people: 'socios', sociosCount: 2 } as const
+      for (const id of ['unipersonal-literal-e', 'unipersonal-irae'] as const) {
+        const g = applyGates(input).find(x => x.regime === id)!
+        expect(g.status).toBe('excluido')
+        for (const r of g.reasons) {
+          expect(r.norm, `${id} should not be gated on Ley 16.060`).not.toContain('16.060')
+        }
+        expect(g.reasons.some(r => r.url.includes('empresa-unipersonal'))).toBe(true)
+      }
+    })
+
+    it('grounds the unlimited liability of personas físicas in the Código Civil, not Ley 16.060 art. 39', () => {
+      const out = applyGates({ ...base, needsLimitedLiability: true })
+      // Monotributo / unipersonal / IRPF are PERSONAS FÍSICAS, not sociedades: their
+      // unlimited liability is the prenda general of Código Civil art. 2372.
+      for (const id of [
+        'monotributo',
+        'monotributo-social',
+        'unipersonal-literal-e',
+        'unipersonal-irae',
+        'irpf-servicios',
+      ] as const) {
+        const g = out.find(x => x.regime === id)!
+        const liability = g.reasons.filter(r => r.text.includes('patrimonio personal'))
+        expect(liability.length, `${id} should have a liability reason`).toBeGreaterThan(0)
+        for (const r of liability) {
+          expect(r.norm, `${id} liability must not cite Ley 16.060 art. 39`).not.toContain('16.060')
+          expect(r.norm).toContain('2372')
+        }
+      }
+      // Ley 16.060 art. 39 IS the right cite for a sociedad de hecho.
+      const sh = out.find(x => x.regime === 'sociedad-hecho')!
+      expect(sh.reasons.some(r => r.norm.includes('16.060') && r.norm.includes('39'))).toBe(true)
+      expect(sh.reasons.some(r => r.url.includes('/16060-1989/39'))).toBe(true)
+    })
+
+    it('cites Título 7 (IRPF), not Título 4 (IRAE), on the irpf-servicios gates', () => {
+      const inputs: WizardInput[] = [
+        { ...base, people: 'socios', sociosCount: 2 },
+        { ...base, sells: 'bienes' },
+      ]
+      for (const input of inputs) {
+        const g = applyGates(input).find(x => x.regime === 'irpf-servicios')!
+        expect(g.status).toBe('excluido')
+        for (const r of g.reasons) {
+          if (r.text.includes('patrimonio personal')) continue
+          expect(r.norm, 'IRPF is Título 7, not Título 4').not.toContain('Título 4')
+          expect(r.url).toContain('todgi-2023/7')
+        }
+      }
     })
   })
 
