@@ -94,16 +94,63 @@ rm -rf "$PREV"
 [ -d "$REPO_DIR/dist" ] && mv "$REPO_DIR/dist" "$PREV"
 mv "$STAGING" "$REPO_DIR/dist"
 
-log "Reloading $PM2_NAME (rolling, cluster mode)…"
+log "Checking $PM2_NAME's registered pm2 topology…"
+# `pm2 reload ecosystem.config.js --only …` — even passing the ecosystem file, NOT
+# just a bare `pm2 reload <name>` — re-reads env vars and the script path, but pm2
+# does NOT use it to change exec_mode or instance count of an ALREADY-REGISTERED
+# process: those live in pm2's own stored process config and only change via `pm2
+# delete` + `pm2 start` (or `pm2 scale`). currency-server is moving from fork/
+# 1-instance to cluster/2-instances (see ecosystem.config.js) — on a server where
+# it's still registered as fork/1, a plain reload would silently keep it that way
+# forever, and every "rolling" reload after that would actually be a hard restart
+# with a downtime blip. Detect the mismatch and fix it once, on purpose.
+#
+# No `jq` assumed on the VPS — parse `pm2 jlist` and ecosystem.config.js with node,
+# which is guaranteed present (it's what runs pm2 and this app). `pm2 jlist` emits
+# one array entry PER OS PROCESS, so a 2-instance cluster app appears as two entries
+# sharing the same `name` — counting matches gives the actual running instance count.
+CURRENT_TOPOLOGY="$(pm2 jlist | PM2_APP_NAME="$PM2_NAME" node -e '
+  let data = "";
+  process.stdin.on("data", (d) => { data += d; });
+  process.stdin.on("end", () => {
+    try {
+      const list = JSON.parse(data);
+      const procs = list.filter((p) => p.name === process.env.PM2_APP_NAME);
+      if (procs.length === 0) {
+        process.stdout.write("absent");
+      } else {
+        const mode = (procs[0].pm2_env && procs[0].pm2_env.exec_mode) || "unknown";
+        process.stdout.write(mode + " " + procs.length);
+      }
+    } catch (e) {
+      process.stdout.write("parse_error");
+    }
+  });
+')"
+DESIRED_TOPOLOGY="$(PM2_APP_NAME="$PM2_NAME" node -e '
+  const cfg = require("./ecosystem.config.js");
+  const app = cfg.apps.find((a) => a.name === process.env.PM2_APP_NAME);
+  if (!app) { process.stdout.write("missing_from_config"); process.exit(0); }
+  const mode = app.exec_mode === "cluster" ? "cluster_mode" : "fork_mode";
+  const instances = app.instances || 1;
+  process.stdout.write(mode + " " + instances);
+')"
+log "  registered: ${CURRENT_TOPOLOGY} | desired: ${DESIRED_TOPOLOGY}"
+
 if pm2 describe "$PM2_NAME" >/dev/null 2>&1; then
-  # `pm2 reload ecosystem.config.js --only …` — NOT a bare `pm2 reload <name>` —
-  # so pm2 re-reads this file's app definition. This matters on the FIRST run
-  # after this change: currency-server is moving from fork/1-instance to
-  # cluster/2-instances (see ecosystem.config.js), and a bare `pm2 reload
-  # currency-server` reloads using pm2's already-stored process config, which
-  # would silently keep the old fork/1-instance topology forever. Every reload
-  # after that first transition is a true zero-downtime rolling cycle.
-  pm2 reload ecosystem.config.js --only "$PM2_NAME" --update-env
+  if [ "$CURRENT_TOPOLOGY" = "$DESIRED_TOPOLOGY" ]; then
+    log "Reloading $PM2_NAME (rolling, zero-downtime)…"
+    pm2 reload ecosystem.config.js --only "$PM2_NAME" --update-env
+  else
+    # Mismatch (or the topology couldn't be determined — "parse_error"/"absent" despite
+    # `pm2 describe` succeeding, e.g. a pm2 output-format change). Fail safe: delete and
+    # re-start from the ecosystem file rather than risk a silent reload-no-op. This is a
+    # ONE-TIME event — once registered as cluster/2, every future deploy takes the branch
+    # above (true rolling reload, no restart blip).
+    log "!!! ONE-TIME TOPOLOGY CONVERSION for $PM2_NAME: registered as '${CURRENT_TOPOLOGY}', ecosystem.config.js now wants '${DESIRED_TOPOLOGY}'. 'pm2 reload' cannot change exec_mode/instances on a running app, so this WILL cost one brief restart (not rolling) — every deploy after this one is zero-downtime again."
+    pm2 delete "$PM2_NAME"
+    pm2 start ecosystem.config.js --only "$PM2_NAME"
+  fi
 else
   log "  $PM2_NAME not registered yet — starting for the first time…"
   pm2 start ecosystem.config.js --only "$PM2_NAME"
