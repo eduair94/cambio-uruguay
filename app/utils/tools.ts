@@ -155,6 +155,22 @@ export const tools: readonly Tool[] = [
     ],
   },
   {
+    slug: 'calculadora-impuestos-inversiones',
+    title: 'Calculadora de impuestos sobre inversiones (IRPF rentas de capital)',
+    description:
+      'Cuánto IRPF pagás por un plazo fijo, un dividendo, un alquiler, la venta de acciones o tu cuenta en un bróker del exterior — y cuál es tu rendimiento NETO después de impuestos.',
+    icon: 'mdi-chart-box-outline',
+    category: 'impuestos',
+    keywords: [
+      'impuesto a las ganancias uruguay',
+      'irpf inversiones',
+      'irpf rentas de capital',
+      'impuestos plazo fijo uruguay',
+      'impuestos broker exterior uruguay',
+      'cuanto pago de irpf por invertir',
+    ],
+  },
+  {
     slug: 'costo-de-vida',
     title: 'Calculadora de costo de vida y presupuesto en Uruguay',
     description:

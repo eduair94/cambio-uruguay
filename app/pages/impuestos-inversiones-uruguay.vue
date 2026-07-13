@@ -27,7 +27,16 @@
             </p>
           </div>
         </div>
-        <div class="d-flex justify-start justify-md-end mt-3">
+        <div class="d-flex justify-start justify-md-end align-center ga-2 mt-3 flex-wrap">
+          <VBtn
+            :to="localePath('/herramientas/calculadora-impuestos-inversiones')"
+            color="white"
+            variant="flat"
+            size="small"
+          >
+            <VIcon start size="small">mdi-calculator-variant-outline</VIcon>
+            Calcular mi IRPF de inversiones
+          </VBtn>
           <ShareButtons text="Impuestos sobre inversiones en Uruguay: guía del IRPF Categoría I" />
         </div>
       </div>
@@ -848,7 +857,25 @@
 
     <!-- Related -->
     <VRow class="my-6">
-      <VCol cols="12" md="6">
+      <VCol cols="12" md="4">
+        <VCard
+          :to="localePath('/herramientas/calculadora-impuestos-inversiones')"
+          class="cross-link pa-4 h-100"
+          hover
+          variant="flat"
+        >
+          <VIcon color="primary" class="mb-2">mdi-chart-box-outline</VIcon>
+          <h2 class="text-subtitle-1 font-weight-bold mb-1">
+            Calculadora de impuestos sobre inversiones
+          </h2>
+          <p class="text-body-2 imp-muted mb-0">
+            Las mismas tasas de esta página, aplicadas a tu caso: cuánto IRPF paga tu plazo fijo, tu
+            dividendo, tu alquiler o tu cuenta en el exterior, y cuál es tu
+            <strong>rendimiento neto</strong>. También arma tu declaración anual.
+          </p>
+        </VCard>
+      </VCol>
+      <VCol cols="12" md="4">
         <VCard
           :to="localePath('/inversiones-uruguay')"
           class="cross-link pa-4 h-100"
@@ -863,7 +890,7 @@
           </p>
         </VCard>
       </VCol>
-      <VCol cols="12" md="6">
+      <VCol cols="12" md="4">
         <VCard
           :to="localePath('/herramientas/calculadora-irpf')"
           class="cross-link pa-4 h-100"
