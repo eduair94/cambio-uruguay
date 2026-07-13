@@ -76,7 +76,8 @@
                     El BCU llama a esto una agenda “gradual de incentivos” y modificó los encajes
                     para favorecer la intermediación en pesos y UI.
                   </p>
-                  <a :href="sources[0].url" target="_blank" rel="noopener noreferrer"
+                  <a :href="sources[0].url"
+target="_blank" rel="noopener noreferrer"
                     >BCU, junio de 2026 ↗</a
                   >
                 </div>
@@ -148,7 +149,8 @@
                 la oferta de préstamos en pesos y que una mayor liquidez en moneda local podría
                 reducir los márgenes bancarios. Es evidencia a favor del mecanismo, no una garantía
                 de que cada medida concreta llegue al consumidor.
-                <a :href="sources[3].url" target="_blank" rel="noopener noreferrer"
+                <a :href="sources[3].url"
+target="_blank" rel="noopener noreferrer"
                   >Ver informe ↗</a
                 >
               </p>
@@ -260,7 +262,8 @@
                     menos favorable para moneda extranjera. El encaje es la parte de los depósitos
                     que el banco debe inmovilizar en el BCU.
                   </p>
-                  <a :href="sources[1].url" target="_blank" rel="noopener noreferrer"
+                  <a :href="sources[1].url"
+target="_blank" rel="noopener noreferrer"
                     >Resolución D/383/2025 ↗</a
                   >
                 </div>
@@ -274,7 +277,8 @@
                     corto plazo en pesos y UI, con convergencia a 12% desde setiembre, y profundizó
                     el ajuste para moneda extranjera.
                   </p>
-                  <a :href="sources[0].url" target="_blank" rel="noopener noreferrer"
+                  <a :href="sources[0].url"
+target="_blank" rel="noopener noreferrer"
                     >Comunicado del BCU ↗</a
                   >
                 </div>
@@ -1190,28 +1194,28 @@ h2 {
     scroll-behavior: smooth;
   }
 }
-:global(.v-theme--dark) .peso-page {
+.v-theme--dark .peso-page {
   --ink: #e7efec;
   --muted: #b2c1bd;
   --paper: #0d1919;
   background: var(--paper);
 }
-:global(.v-theme--dark) .verdict-card,
-:global(.v-theme--dark) .benefit-card,
-:global(.v-theme--dark) .mechanism,
-:global(.v-theme--dark) .risk-table {
+.v-theme--dark .verdict-card,
+.v-theme--dark .benefit-card,
+.v-theme--dark .mechanism,
+.v-theme--dark .risk-table {
   background: #142322;
   border-color: #30433f;
 }
-:global(.v-theme--dark) .fact-strip {
+.v-theme--dark .fact-strip {
   background: #172725;
 }
-:global(.v-theme--dark) .step-arrow {
+.v-theme--dark .step-arrow {
   background: #0d1919;
 }
-:global(.v-theme--dark) .claim-row,
-:global(.v-theme--dark) .sources li,
-:global(.v-theme--dark) .sources ol {
+.v-theme--dark .claim-row,
+.v-theme--dark .sources li,
+.v-theme--dark .sources ol {
   border-color: #334440;
 }
 </style>
