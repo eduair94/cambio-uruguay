@@ -621,9 +621,12 @@ beneficiarte del régimen se sanciona con **multa igual al DOBLE de los tributos
    intermedio/verificado o superior).
    ⚠ **No confundir** con `aduanas.gub.uy/innovaportal/v/18715` — ése es un **cubo estadístico agregado**, no tu cupo.
 2. Si ya usaste las 3 o llegaste a USD 800: el próximo envío va por **prestación única** (60%, mínimo USD 20) —
-   no es un castigo, es el otro régimen. Los dos regímenes son **excluyentes**, nunca se combinan
-   (Decreto 50/026 arts. 2 y 3: la franquicia es *"adicionalmente"* al régimen de prestación única, y es *"de hasta
-   USD 800"* — no hay norma que habilite aplicarla parcialmente; ver la advertencia del punto 2 de arriba y §7.8).
+   no es un castigo, es el otro régimen. La elección es **por envío**: Ley 20.446 art. 627 dice que los destinatarios
+   *"podrán **optar** por pagar una única prestación tributaria"*. No hay norma que habilite aplicar la franquicia
+   **parcialmente** a un envío que la excede — ver §7.8, donde eso queda declarado como NO verificado.
+   ⚠ No usar el *"adicionalmente"* del art. 3 del Decreto 50/026 como prueba de exclusividad: esa palabra dice que la
+   franquicia existe **además** del régimen de prestación única, o sea que los dos **coexisten**. Citarla para lo
+   contrario es leerla al revés.
 3. Si el envío supera **USD 800** → **régimen general**, y la **DNA te va a exigir despachante** (v/28223), aunque
    la ley diga lo contrario (§3.1 y §4.6).
 4. Si te notifican una **multa** del art. 632: tenés **10 días hábiles de vista previa** para defenderte (ver abajo).
