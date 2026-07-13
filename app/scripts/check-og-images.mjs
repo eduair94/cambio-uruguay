@@ -12,7 +12,7 @@ import {
 } from './lib/og-image-check.mjs'
 
 const BASE = process.env.BASE || 'http://localhost:3000'
-const CONCURRENCY = 5
+const CONCURRENCY = Number(process.env.OG_CONCURRENCY) || 5
 
 async function fetchSitemapPaths() {
   const res = await fetch(`${BASE}/api/__sitemap__/urls`)
@@ -26,7 +26,7 @@ async function fetchSitemapPaths() {
 async function checkPath(path) {
   const url = ogImageUrl(BASE, path)
   try {
-    const res = await fetch(url)
+    const res = await fetch(url, { signal: AbortSignal.timeout(15000) })
     const buf = await res.arrayBuffer()
     const verdict = evaluateOgImageResponse({
       ok: res.ok,
