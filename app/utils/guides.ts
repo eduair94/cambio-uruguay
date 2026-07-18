@@ -12,6 +12,7 @@
 
 // The 50 Reddit-mined economy/finance/legal guides live in their own module and
 // are appended to the catalogue below (keeps this file focused on the core set).
+import { parejaGuides } from './guidesPareja'
 import { redditGuides } from './guidesReddit'
 
 /** A single titled section within a guide. `body` is plain prose (no markup). */
@@ -1325,6 +1326,9 @@ export const guides: readonly Guide[] = [
   // inversión, jubilación...). Defined in `guidesReddit.ts`, appended here so
   // `getGuide`/`guideSlugs`/the sitemap/the search index pick them up for free.
   ...redditGuides,
+  // Couple & family money guides (régimen patrimonial, separación de bienes,
+  // unión concubinaria, dividir gastos, divorcio). Same free wiring.
+  ...parejaGuides,
 ]
 
 /**

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import { getHub, guideHubs, hubGuides, hubOfGuide, hubSlugs } from '../../utils/guideHubs'
 import { getGuide } from '../../utils/guides'
+import { parejaGuides } from '../../utils/guidesPareja'
 import { redditGuides } from '../../utils/guidesReddit'
 
 describe('guideHubs catalogue integrity', () => {
@@ -54,9 +55,9 @@ describe('guideHubs catalogue integrity', () => {
     expect(new Set(inHubs).size, 'a guide appears in more than one hub').toBe(inHubs.length)
   })
 
-  it('covers every Reddit-mined guide in exactly one hub', () => {
+  it('covers every Reddit-mined and couple/family guide in exactly one hub', () => {
     const inHubs = new Set(guideHubs.flatMap(h => h.guideSlugs))
-    for (const guide of redditGuides) {
+    for (const guide of [...redditGuides, ...parejaGuides]) {
       expect(hubOfGuide(guide.slug), `guide ${guide.slug} is in no hub`).toBeDefined()
       expect(inHubs.has(guide.slug)).toBe(true)
     }

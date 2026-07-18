@@ -301,6 +301,55 @@ export const guideHubs: readonly GuideHub[] = [
     relatedHubs: ['comprar-vivienda-uruguay', 'finanzas-personales-y-jubilacion-uruguay'],
   },
   {
+    slug: 'pareja-familia-y-dinero-uruguay',
+    title: 'Pareja, familia y dinero en Uruguay',
+    seoTitle: 'Economía de pareja en Uruguay: separación de bienes, gastos y finanzas juntos',
+    description:
+      'Cómo manejar el dinero en pareja en Uruguay: régimen patrimonial, separación de bienes, unión concubinaria, dividir gastos, cuenta conjunta y qué pasa en un divorcio.',
+    tag: 'PAREJA',
+    icon: 'mdi-account-heart-outline',
+    intro:
+      'Convivir es también compartir plata, y ahí aparecen dudas legales y prácticas por igual: ¿qué régimen rige tu matrimonio, sociedad conyugal o separación de bienes? ¿Qué derechos da la unión concubinaria? Y en el día a día, ¿cómo dividir los gastos, conviene una cuenta conjunta, cómo hablar de dinero sin pelear? Este tema junta la parte legal y la práctica para que organicen su economía de pareja de forma clara, justa y sin sorpresas, cualquiera sea la forma de su relación.',
+    guideSlugs: [
+      'regimen-patrimonial-matrimonio-uruguay',
+      'separacion-de-bienes-uruguay',
+      'union-concubinaria-uruguay',
+      'como-dividir-gastos-en-pareja-uruguay',
+      'cuenta-conjunta-o-separada-pareja-uruguay',
+      'hablar-de-dinero-en-pareja-uruguay',
+      'division-de-bienes-en-el-divorcio-uruguay',
+      'proteger-tu-patrimonio-en-pareja-uruguay',
+    ],
+    resources: [
+      {
+        label: 'Hacer un testamento',
+        description: 'Ordenar la herencia respetando la legítima.',
+        to: '/guias/hacer-un-testamento-uruguay',
+      },
+      {
+        label: 'Armar un presupuesto',
+        description: 'La base de las finanzas compartidas.',
+        to: '/guias/armar-un-presupuesto-personal-uruguay',
+      },
+      {
+        label: 'Abrir una cuenta bancaria',
+        description: 'Para la cuenta conjunta o separada.',
+        to: '/guias/abrir-una-cuenta-bancaria-uruguay',
+      },
+      {
+        label: 'Salud financiera',
+        description: 'Diagnóstico para ordenar la economía.',
+        to: '/salud-financiera',
+      },
+      {
+        label: 'Mejores bancos de Uruguay',
+        description: 'Elegir dónde tener las cuentas.',
+        to: '/mejores-bancos-uruguay',
+      },
+    ],
+    relatedHubs: ['herencias-y-sucesiones-uruguay', 'finanzas-personales-y-jubilacion-uruguay'],
+  },
+  {
     slug: 'comprar-y-mantener-auto-uruguay',
     title: 'Comprar y mantener un auto en Uruguay',
     seoTitle: 'Comprar un auto en Uruguay: 0km o usado, crédito prendario y costos',
