@@ -430,15 +430,35 @@
     </section>
 
     <section class="mb-10" aria-labelledby="faq-title">
-      <h2 id="faq-title" class="section-heading mb-4">Preguntas que aparecen una y otra vez</h2>
-      <VExpansionPanels variant="accordion" class="faq-panels">
-        <VExpansionPanel v-for="faq in faqs" :key="faq.q">
-          <VExpansionPanelTitle>{{ faq.q }}</VExpansionPanelTitle>
-          <VExpansionPanelText
-            ><p class="mb-0">{{ faq.a }}</p></VExpansionPanelText
-          >
-        </VExpansionPanel>
-      </VExpansionPanels>
+      <h2 id="faq-title" class="section-heading mb-2">Preguntas frecuentes al alquilar</h2>
+      <p class="text-body-2 text-medium-emphasis mb-5">
+        Lo que más se pregunta sobre alquilar en Uruguay, ordenado por tema y con la fuente oficial
+        de cada respuesta. Nacido de las dudas reales en foros como r/uruguay y r/montevideo.
+      </p>
+      <div v-for="group in faqGroups" :key="group.category.id" class="faq-group mb-5">
+        <h3 class="faq-cat-title mb-2">
+          <VIcon :icon="group.category.icon" size="20" color="primary" start />
+          {{ group.category.title }}
+        </h3>
+        <VExpansionPanels variant="accordion" class="faq-panels">
+          <VExpansionPanel v-for="faq in group.entries" :key="faq.q">
+            <VExpansionPanelTitle>{{ faq.q }}</VExpansionPanelTitle>
+            <VExpansionPanelText>
+              <p class="mb-0">{{ faq.a }}</p>
+              <a
+                v-if="faq.sourceUrl"
+                :href="faq.sourceUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="faq-source"
+              >
+                Fuente oficial
+                <VIcon size="13" icon="mdi-open-in-new" />
+              </a>
+            </VExpansionPanelText>
+          </VExpansionPanel>
+        </VExpansionPanels>
+      </div>
     </section>
 
     <VCard variant="flat" class="sources-card pa-5 pa-sm-6 mb-6">
@@ -481,8 +501,10 @@ import {
   VISIT_CHECKLIST,
   buildRentalSearchPost,
 } from '~/utils/rentGuide'
+import { RENT_FAQ, rentFaqByCategory } from '~/utils/rentFaq'
 
 const localePath = useLocalePath()
+const faqGroups = rentFaqByCategory()
 const portals = RENTAL_PORTALS
 const guarantees = GUARANTEE_OPTIONS
 const urgentResources = URGENT_HOUSING_RESOURCES
@@ -549,69 +571,6 @@ function formatReviewedDate(iso: string) {
 }
 const lastReviewedLabel = formatReviewedDate(RENT_GUIDE_LAST_REVIEWED)
 
-const faqs = [
-  {
-    q: 'No tengo garantía, ¿igual puedo alquilar?',
-    a: 'Sí existe un régimen legal sin garantía, pero el propietario debe ofrecerlo y el contrato escrito debe acogerse expresamente a la Ley 19.889. La oferta es más escasa y los plazos de desalojo son más breves. También podés evaluar seguro, sumar ingresos de otras personas cuando el proveedor lo admita o acordar depósito en BHU.',
-  },
-  {
-    q: '¿Puedo usar la garantía de otra persona?',
-    a: 'Depende del proveedor. Porto permite componer ingresos de hasta cinco solicitantes y ANDA indica que puede evaluar un garante cuando ingreso o antigüedad no alcanzan. Esa persona asume una obligación real: no la agregues sin que entienda y acepte el contrato.',
-  },
-  {
-    q: '¿Una habitación o pensión usa las mismas garantías?',
-    a: 'No necesariamente. CGN excluye habitaciones de pensiones e inquilinatos porque exige un área de uso exclusivo con cocina y baño. En pensiones se suelen pactar otras condiciones; pedí recibo, reglas y forma de salida por escrito.',
-  },
-  {
-    q: '¿Cuánto depósito pueden pedirme?',
-    a: 'Para vivienda, el depósito formal en garantía acordado entre las partes puede llegar hasta cinco meses de alquiler y debe canalizarse por BHU. El BHU informa que puede integrarse hasta en diez pagos si ambas partes lo acuerdan y cobra un arancel de apertura del 5% del depósito.',
-  },
-  {
-    q: '¿Quién paga una humedad o una reparación?',
-    a: 'Defensa del Consumidor señala que la humedad estructural corresponde al arrendador. Otras reparaciones dependen del origen, el régimen y el contrato. Documentá el problema, notificá por un canal que deje constancia y buscá asesoramiento si no se resuelve.',
-  },
-  {
-    q: '¿Qué hago si ya recibí una intimación o aviso de desalojo?',
-    a: 'No ignores plazos ni confíes solo en redes. Contactá la Defensoría Pública, un consultorio jurídico gratuito o un abogado y llevá contrato, recibos, mensajes y la notificación completa. Defensa del Consumidor no interviene cuando la acción judicial ya comenzó.',
-  },
-  {
-    q: '¿El depósito de garantía se devuelve al terminar el contrato?',
-    a: 'Sí: el depósito es tuyo y funciona como respaldo, no como un pago al propietario. Al finalizar, se devuelve si entregás la vivienda en las condiciones pactadas y sin deudas. El propietario puede descontar alquileres o servicios impagos y los daños que excedan el desgaste normal por uso; las reparaciones que hacen a la habitabilidad (humedades, cañerías) son de su cargo, no del tuyo. El plazo y la forma de devolución deben figurar en el contrato: leé esa cláusula antes de firmar y, si no te lo devuelven sin motivo, podés reclamar en Defensa del Consumidor.',
-  },
-  {
-    q: '¿La comisión de la inmobiliaria se calcula sobre el alquiler o también sobre los gastos comunes?',
-    a: 'Solo sobre el alquiler. La comisión de intermediación equivale a un mes de alquiler más IVA, en un único pago al firmar, y se calcula sobre el precio del alquiler, no sobre los gastos comunes. Por ejemplo, con un alquiler de $1.000 y gastos comunes de $500, la comisión se calcula sobre $1.000. Pedí siempre factura con el IVA discriminado.',
-  },
-  {
-    q: '¿Qué son los gastos comunes y quién los paga?',
-    a: 'En un apartamento en propiedad horizontal, los gastos comunes ordinarios (limpieza, portería, ascensor, mantenimiento, saneamiento) los paga el inquilino como servicio accesorio, junto con UTE, OSE y tributos municipales. Los gastos extraordinarios y las obras estructurales del edificio corresponden al propietario. Pedí la última liquidación de gastos comunes antes de firmar para no llevarte sorpresas.',
-  },
-  {
-    q: '¿Cada cuánto y con qué índice aumenta el alquiler?',
-    a: 'El alquiler se reajusta cada 12 meses. En los contratos bajo la LUC (Ley 19.889), si no se pacta otra cosa, el ajuste anual es la variación del Índice de Precios al Consumo (IPC). Confirmá en el contrato el índice y la frecuencia antes de firmar y no aceptes una fórmula que no puedas explicar con tus palabras.',
-  },
-  {
-    q: '¿Quién paga una reparación, como una humedad?',
-    a: 'Las reparaciones que hacen a la habitabilidad de la vivienda (humedades, roturas de cañerías) son de cargo del propietario. Las reparaciones locativas que surgen del uso corriente corren por tu cuenta. Documentá el problema con fotos y notificalo por un canal que deje constancia; si no se resuelve, consultá en Defensa del Consumidor.',
-  },
-  {
-    q: '¿Puedo descontar el alquiler de mis impuestos (IRPF o IASS)?',
-    a: 'Sí. Si generás IRPF por rentas de trabajo (o cobrás jubilación o pensión gravada por IASS) y alquilás tu vivienda permanente, podés computar un crédito fiscal del 8% del alquiler efectivamente pagado en el año. Requisitos: contrato escrito (aunque esté vencido) con plazo de un año o más, ser titular del contrato e identificar al arrendador con nombre y cédula o RUC. No hace falta que el contrato esté inscripto. Se reclama en la declaración jurada de IRPF (formularios 1102 o 1103); si el crédito supera tu IRPF y cobrás jubilación gravada, el excedente se imputa al IASS.',
-  },
-  {
-    q: '¿Puedo alquilar por menos de un año?',
-    a: 'En el régimen común (Ley 14.219) el plazo mínimo para vivienda es de dos años, así que no podés pactar menos bajo ese régimen. En el régimen sin garantía de la LUC (Ley 19.889) las partes pactan el plazo libremente, con prórroga automática si nadie avisa 30 días antes del vencimiento. Para estadías cortas están los alquileres temporarios (amueblados, por semanas o meses), que se rigen por sus propias condiciones y suelen ser más caros por mes.',
-  },
-  {
-    q: '¿Puedo rescindir el contrato antes de tiempo?',
-    a: 'Depende del régimen. En el régimen común (Ley 14.219), el inquilino puede rescindir después del primer año, avisando con 60 días de anticipación y pagando la indemnización que fije el contrato. En el régimen sin garantía de la LUC, el contrato suele poder terminarse con un preaviso menor, según lo pactado. Leé la cláusula de rescisión antes de firmar y avisá siempre por un medio que deje constancia.',
-  },
-  {
-    q: 'Trabajo por mi cuenta, ¿cómo pruebo mis ingresos?',
-    a: 'Si no tenés recibo de sueldo, la garantía o la inmobiliaria suele pedir un certificado de ingresos firmado por un contador público, acompañado de facturas, movimientos bancarios o tu situación en DGI y BPS. Como referencia, las garantías miran que el alquiler no supere cierto porcentaje de tu ingreso: por ejemplo, Porto asegura hasta el 30% del ingreso líquido y ANDA pide que el alquiler no pase el 40% del ingreso nominal.',
-  },
-]
-
 const canonicalUrl = 'https://cambio-uruguay.com/alquilar-en-uruguay'
 const title = 'Cómo alquilar en Uruguay: guía definitiva y ruta urgente (2026)'
 const description =
@@ -669,7 +628,7 @@ useHead(() => ({
           },
           {
             '@type': 'FAQPage',
-            mainEntity: faqs.map(faq => ({
+            mainEntity: RENT_FAQ.map(faq => ({
               '@type': 'Question',
               name: faq.q,
               acceptedAnswer: { '@type': 'Answer', text: faq.a },
@@ -825,6 +784,29 @@ useHead(() => ({
   border: 1px solid rgba(var(--v-border-color), 0.15);
   border-radius: 16px;
   overflow: hidden;
+}
+.faq-cat-title {
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+}
+.faq-source {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: rgb(var(--v-theme-primary));
+  text-decoration: none;
+}
+.v-theme--light .faq-source {
+  color: #0d47a1;
+}
+.faq-source:hover {
+  text-decoration: underline;
 }
 .guarantee-grid {
   display: grid;
