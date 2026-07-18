@@ -473,6 +473,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { courierImport, generalImport } from '~/utils/importTax'
+import { regimeRulesFromPayload } from '~/utils/regimeOverlay'
 import {
   IMPORT_PRODUCT_TYPES,
   productRegimeStatus,
@@ -534,6 +535,12 @@ const courierItems = computed<Courier[]>(() => {
   const withRate = (couriersData.value?.couriers ?? []).filter(c => c.perKgUsd != null)
   return withRate.length ? withRate : ESTIMATOR_COURIERS
 })
+
+// Live regime figures (amounts + the Oct seller-registry date) from /api/aduana, so the calculator
+// tracks the norm without a redeploy. regimeRulesFromPayload deep-merges over the static baseline,
+// so a missing/garbage payload can never drop a rule; on a fetch failure we keep the baseline.
+const { data: aduanaData } = await useFetch('/api/aduana', { key: 'aduana-overlay' })
+const regimeOverlay = computed(() => regimeRulesFromPayload(aduanaData.value))
 function courierById(id: string): Courier {
   return courierItems.value.find(c => c.id === id) ?? courierItems.value[0]!
 }
@@ -607,14 +614,17 @@ const sources = [
 
 const result = computed(() =>
   regime.value === 'courier'
-    ? courierImport({
-        value: value.value || 0,
-        shipping: shipping.value || 0,
-        origin: origin.value,
-        useFranchise: useFranchise.value,
-        franchiseAvailable: franchiseAvailable.value || 0,
-        ivaPct: productTax.value.ivaPct,
-      })
+    ? courierImport(
+        {
+          value: value.value || 0,
+          shipping: shipping.value || 0,
+          origin: origin.value,
+          useFranchise: useFranchise.value,
+          franchiseAvailable: franchiseAvailable.value || 0,
+          ivaPct: productTax.value.ivaPct,
+        },
+        regimeOverlay.value.rules
+      )
     : generalImport({
         value: value.value || 0,
         shipping: shipping.value || 0,

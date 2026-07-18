@@ -20,13 +20,12 @@
 // module only prices the decision that module makes.
 import { round, URUGUAY } from './calculators'
 import {
-  FRANCHISE_ANNUAL_USD,
-  SIMPLIFIED_MIN_USD,
-  SIMPLIFIED_RATE_PCT,
+  DEFAULT_REGIME_RULES,
   USA_IVA_EXEMPTION_USD,
   resolveRegime,
   type CourierRegime,
   type ImportOrigin,
+  type RegimeRules,
 } from './importRules'
 
 export type { ImportOrigin }
@@ -120,7 +119,10 @@ export const TIFA_IVA_EXEMPTION_USD = USA_IVA_EXEMPTION_USD
  * own shipping), per Decreto art. 5. The courier's separately-billed freight is not on that
  * invoice and is added to the landed cost untaxed.
  */
-export function courierImport(input: CourierInput): ImportTaxResult {
+export function courierImport(
+  input: CourierInput,
+  rules: RegimeRules = DEFAULT_REGIME_RULES
+): ImportTaxResult {
   const value = Math.max(input.value || 0, 0)
   const courierFreight = Math.max(input.shipping || 0, 0) // separately billed → outside thresholds
   const sellerShipping = Math.max(input.sellerShipping || 0, 0)
@@ -132,19 +134,24 @@ export function courierImport(input: CourierInput): ImportTaxResult {
   const invoiceValue = round(value + sellerShipping + salesTax + insurance)
 
   const origin: ImportOrigin = input.origin ?? 'other'
-  const ratePct = input.ratePct ?? SIMPLIFIED_RATE_PCT
-  const minTax = input.minTax ?? SIMPLIFIED_MIN_USD
+  // `rules` is the live overlay from /api/aduana (or DEFAULT_REGIME_RULES); an explicit per-call
+  // input.* still wins over both, so callers can force a value in tests.
+  const ratePct = input.ratePct ?? rules.simplifiedRatePct
+  const minTax = input.minTax ?? rules.simplifiedMinUsd
   const ivaPct = input.ivaPct ?? URUGUAY.iva.basica
 
-  const decision = resolveRegime({
-    valueUsd: invoiceValue,
-    origin,
-    franchiseAvailableUsd: input.franchiseAvailable ?? FRANCHISE_ANNUAL_USD,
-    shipmentsUsed: input.shipmentsUsed ?? 0,
-    useFranchise: input.useFranchise ?? false,
-    sellerRegistered: input.sellerRegistered,
-    today: input.today,
-  })
+  const decision = resolveRegime(
+    {
+      valueUsd: invoiceValue,
+      origin,
+      franchiseAvailableUsd: input.franchiseAvailable ?? rules.franchiseAnnualUsd,
+      shipmentsUsed: input.shipmentsUsed ?? 0,
+      useFranchise: input.useFranchise ?? false,
+      sellerRegistered: input.sellerRegistered,
+      today: input.today,
+    },
+    rules
+  )
 
   const breakdown: TaxLine[] = [{ label: 'Mercadería', amount: round(value) }]
   if (sellerShipping > 0)
@@ -161,7 +168,7 @@ export function courierImport(input: CourierInput): ImportTaxResult {
     breakdown.push({ label: 'Franquicia anual (exenta de aranceles)', amount: -invoiceValue })
     breakdown.push({
       label: decision.ivaExempt
-        ? `IVA exonerado (EE.UU. hasta US$ ${USA_IVA_EXEMPTION_USD})`
+        ? `IVA exonerado (EE.UU. hasta US$ ${rules.usaIvaExemptionUsd})`
         : `IVA (${ivaPct}%) sobre el valor de la factura`,
       amount: iva,
     })

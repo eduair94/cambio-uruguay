@@ -301,16 +301,23 @@
 import {
   FRANCHISE_ANNUAL_USD,
   LAST_RESEARCHED,
-  SELLER_REGISTRY_ENFORCED_FROM,
   SIMPLIFIED_MIN_USD,
   SIMPLIFIED_RATE_PCT,
   USA_IVA_EXEMPTION_USD,
   isSellerRegistryEnforced,
   resolveRegime,
 } from '~/utils/importRules'
+import { regimeRulesFromPayload } from '~/utils/regimeOverlay'
 import { URUGUAY } from '~/utils/calculators'
 
 const localePath = useLocalePath()
+
+// Live regime figures from /api/aduana (amounts + the Oct seller-registry date), deep-merged over
+// the static baseline so a missing/garbage payload can never drop a rule. The semáforo, the verdict
+// and the "desde X" label all read this, so a prórroga or amount change shows up without a redeploy.
+const { data: aduanaData } = await useFetch('/api/aduana', { key: 'aduana-overlay' })
+const overlay = computed(() => regimeRulesFromPayload(aduanaData.value))
+const rules = computed(() => overlay.value.rules)
 
 const origin = ref<'usa' | 'other'>('usa')
 const invoiceTotal = ref(150)
@@ -318,20 +325,23 @@ const franchiseAvailable = ref(FRANCHISE_ANNUAL_USD)
 const shipmentsUsed = ref(0)
 const sellerRegistered = ref(true)
 
-/** Only ask about the seller once the answer can actually change the outcome. */
+/** Only ask about the seller once the answer can actually change the outcome (live date). */
 const showSellerQuestion = computed(
-  () => origin.value === 'usa' && isSellerRegistryEnforced(new Date())
+  () => origin.value === 'usa' && isSellerRegistryEnforced(new Date(), rules.value)
 )
 
 const decision = computed(() =>
-  resolveRegime({
-    valueUsd: invoiceTotal.value || 0,
-    origin: origin.value,
-    franchiseAvailableUsd: franchiseAvailable.value || 0,
-    shipmentsUsed: shipmentsUsed.value || 0,
-    useFranchise: true,
-    sellerRegistered: sellerRegistered.value,
-  })
+  resolveRegime(
+    {
+      valueUsd: invoiceTotal.value || 0,
+      origin: origin.value,
+      franchiseAvailableUsd: franchiseAvailable.value || 0,
+      shipmentsUsed: shipmentsUsed.value || 0,
+      useFranchise: true,
+      sellerRegistered: sellerRegistered.value,
+    },
+    rules.value
+  )
 )
 
 const verdictTone = computed(() => {
@@ -346,7 +356,7 @@ const verdictTitle = computed(() => {
   if (decision.value.regime === 'general') return 'Este envío no entra en el régimen simplificado'
   if (decision.value.ivaExempt) return 'No pagás IVA'
   if (decision.value.regime === 'franquicia') return 'Usás la franquicia, pero pagás IVA'
-  return `Pagás la prestación única (${SIMPLIFIED_RATE_PCT}%)`
+  return `Pagás la prestación única (${rules.value.simplifiedRatePct}%)`
 })
 
 /** The money line, computed from the same sourced rules the calculator uses. */
@@ -355,7 +365,10 @@ const taxLine = computed(() => {
   const d = decision.value
   if (d.regime === 'general') return null
   if (d.regime === 'simplificado') {
-    const tax = Math.max((v * SIMPLIFIED_RATE_PCT) / 100, v > 0 ? SIMPLIFIED_MIN_USD : 0)
+    const tax = Math.max(
+      (v * rules.value.simplifiedRatePct) / 100,
+      v > 0 ? rules.value.simplifiedMinUsd : 0
+    )
     return `Impuesto estimado: US$ ${tax.toFixed(2)}`
   }
   if (d.ivaExempt) return 'Impuesto estimado: US$ 0,00'
@@ -363,7 +376,8 @@ const taxLine = computed(() => {
   return `IVA estimado (${URUGUAY.iva.basica}%): US$ ${iva.toFixed(2)}`
 })
 
-const ENFORCED_LABEL = formatDate(SELLER_REGISTRY_ENFORCED_FROM)
+// Reactive to the live overlay: a prórroga moves this "desde X" label without a redeploy.
+const ENFORCED_LABEL = computed(() => formatDate(rules.value.sellerRegistryEnforcedFrom))
 const LAST_RESEARCHED_LABEL = formatDate(LAST_RESEARCHED)
 
 function formatDate(iso: string): string {
