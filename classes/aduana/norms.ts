@@ -26,9 +26,9 @@
 // And `verifiedAt` is HUMAN-ONLY. A machine's re-read is not a human's verification: a confirmation
 // from the AI sets `aiCheckedAt`, which the page renders as "último control automático", never as
 // "verificado contra la norma".
-import { FACT_RANGES, OFFICIAL_HOSTS } from "./baseline";
+import { DENYLIST_URLS, FACT_DATE_RANGES, FACT_RANGES, OFFICIAL_HOSTS } from "./baseline";
 import { askGrounded, geminiConfigured } from "./gemini";
-import type { AduanaDoc, AduanaFact, Source } from "./types";
+import type { AduanaDoc, AduanaFact, AduanaOverride, Source } from "./types";
 
 /** Facts per AI call. One call for all 52 is ~2.5k tokens of reply — one truncation loses them all. */
 const BATCH_SIZE = 10;
@@ -37,6 +37,8 @@ interface Proposal {
   id: string;
   value: number | string;
   sourceUrl: string;
+  /** A SECOND, independent official page stating the same value — required to auto-publish a CHANGE. */
+  corroborationUrl?: string;
   article?: string;
 }
 
@@ -113,6 +115,66 @@ const inRange = (id: string, value: number | string): boolean => {
   return n >= range[0] && n <= range[1];
 };
 
+/** host + pathname (no query, no trailing slash), lowercased — the identity of an official page. */
+const normPath = (url: string): string | null => {
+  const u = safeUrl(url);
+  const host = hostOf(url);
+  if (!u || !host) return null;
+  return `${host}${u.pathname.replace(/\/+$/, "")}`.toLowerCase();
+};
+
+/**
+ * Is this citation one of the pages we KNOW publishes the repealed numbers (Decreto 356/014)?
+ * A denylisted page is discarded outright — never counted toward the 2-source requirement — because
+ * a page that actively serves a wrong number must never help publish one. Belt-and-suspenders next to
+ * the 2-independent-source rule (the repealed figures can't find a 2nd agreeing official source
+ * anyway). Matched by host+path PREFIX so `?x=1` / trailing-slash variants can't slip past it.
+ */
+const isDenylisted = (url: string): boolean => {
+  const p = normPath(url);
+  if (!p) return true; // unparseable ⇒ untrusted
+  return DENYLIST_URLS.some((d) => {
+    const dp = normPath(d);
+    return dp !== null && p.startsWith(dp);
+  });
+};
+
+/** A date fact's value is a YYYY-MM-DD inside its declared window. Rejects numbers and bad strings. */
+const inDateRange = (id: string, value: number | string): boolean => {
+  const win = FACT_DATE_RANGES[id];
+  if (!win) return false;
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  return value >= win[0] && value <= win[1];
+};
+
+/**
+ * The corroboration count that gates auto-publish: how many of the given citations are DISTINCT
+ * official pages the model actually retrieved and that we do not denylist. Each must be
+ * grounded (host in `groundingUris`), on an official host, not a bare homepage, and not denylisted;
+ * duplicates by host+path collapse to one. Returns the surviving URLs. A CHANGE is only published
+ * when this returns ≥ 2 — two independent official sources agreeing is what a repealed-page citation
+ * (or a single misread scan) can never assemble.
+ */
+function independentOfficialCitations(urls: string[], groundingUris: string[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const url of urls) {
+    if (!url) continue;
+    const u = safeUrl(url);
+    if (!u || u.pathname.length <= 1) continue; // homepage / unparseable
+    if (!isOfficial(url) || isDenylisted(url) || !isGrounded(url, groundingUris)) continue;
+    const key = normPath(url);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    out.push(url);
+  }
+  return out;
+}
+
+/** Valid for a fact's TYPE: date facts use the date window, everything else the numeric range. */
+const isValidForFact = (id: string, value: number | string): boolean =>
+  id in FACT_DATE_RANGES ? inDateRange(id, value) : inRange(id, value);
+
 function parseProposals(raw: unknown): Proposal[] {
   if (!Array.isArray(raw)) return [];
   return raw.filter(
@@ -141,9 +203,10 @@ export function applyProposals(
   raw: unknown,
   groundingUris: string[],
   sources: Source[]
-): { facts: AduanaFact[]; pendingReview: string[] } {
+): { facts: AduanaFact[]; overrides: AduanaOverride[]; pendingReview: string[] } {
   const proposals = parseProposals(raw);
   const pendingReview: string[] = [];
+  const overrides: AduanaOverride[] = [];
   const today = new Date().toISOString().slice(0, 10);
 
   // Two proposals for the same id contradict each other, and `.find()` would silently obey the
@@ -160,14 +223,43 @@ export function applyProposals(
     }
 
     const p = proposals.find((x) => x.id === fact.id)!;
+    const changed = String(p.value) !== String(fact.value);
 
+    // ── CHANGED value → the AUTO-PUBLISH guardrail. A new law lives on a NEW page, so this path
+    // deliberately does NOT require the citation to be the fact's own prior source (that check is
+    // for the conservative re-stamp below). Instead it demands TWO independent official pages
+    // agreeing on the value (grounded, official, distinct, none denylisted) AND a value valid for
+    // the fact's type. That pair is exactly what the repealed-numbers page — denylisted, and unable
+    // to find a second official source that agrees — can never assemble. The value is written to an
+    // OVERRIDE, never onto the fact, and `verifiedAt` is never touched: a machine may publish a
+    // fresh number, it may not certify it as human-read.
+    if (changed) {
+      const cites = independentOfficialCitations(
+        [p.sourceUrl, p.corroborationUrl].filter((x): x is string => !!x),
+        groundingUris
+      );
+      if (cites.length >= 2 && isValidForFact(fact.id, p.value)) {
+        overrides.push({
+          id: fact.id,
+          value: p.value,
+          publishedAt: today,
+          basedOnValue: String(fact.value),
+          sources: cites.slice(0, 2),
+          prevValue: fact.value,
+        });
+        return fact; // the fact object is never mutated — the override serves at merge time
+      }
+      pendingReview.push(fact.id); // a change we could not safely publish — a human looks
+      return fact;
+    }
+
+    // ── UNCHANGED value → the conservative single-source re-stamp (unchanged behaviour): grounded,
+    // a real page (not a homepage), on THIS fact's own source host, official, valid → refresh
+    // aiCheckedAt only.
     if (!isGrounded(p.sourceUrl, groundingUris)) {
       pendingReview.push(fact.id); // cited a page it never retrieved
       return fact;
     }
-
-    // GATE 1b/1c — a citation being on SOME official host is not enough (see isGrounded's doc):
-    // it has to be a real page (not a bare homepage) on THIS fact's own source host.
     const own = sources.find((s) => s.id === fact.sourceId);
     const u = safeUrl(p.sourceUrl);
     if (!u || u.pathname.length <= 1) {
@@ -178,13 +270,8 @@ export function applyProposals(
       pendingReview.push(fact.id); // grounded on an official host, but not this fact's own source
       return fact;
     }
-
-    if (!isOfficial(p.sourceUrl) || !inRange(fact.id, p.value)) {
+    if (!isOfficial(p.sourceUrl) || !isValidForFact(fact.id, p.value)) {
       pendingReview.push(fact.id);
-      return fact;
-    }
-    if (String(p.value) !== String(fact.value)) {
-      pendingReview.push(fact.id); // a real change of law is confirmed by a human, never by us
       return fact;
     }
 
@@ -193,7 +280,7 @@ export function applyProposals(
     return { ...fact, aiCheckedAt: today };
   });
 
-  return { facts, pendingReview };
+  return { facts, overrides, pendingReview };
 }
 
 /** A model that has been told "no markdown" still fences its JSON often enough to matter. */
@@ -239,6 +326,7 @@ export async function refreshNorms(doc: AduanaDoc): Promise<AduanaDoc> {
     const batches = chunk(doc.facts, BATCH_SIZE);
     let facts = doc.facts;
     const flagged: string[] = [];
+    const runOverrides: AduanaOverride[] = [];
     let checked = 0;
     let confirmed = 0;
 
@@ -270,10 +358,26 @@ export async function refreshNorms(doc: AduanaDoc): Promise<AduanaDoc> {
       const result = applyProposals(before, parsed, reply.sourceUris, doc.sources);
       facts = result.facts;
       flagged.push(...result.pendingReview);
+      runOverrides.push(...result.overrides);
       checked += batch.length;
       // applyProposals returns a fact by reference unless it was confirmed, so identity counts it.
       confirmed += facts.filter((f, idx) => f !== before[idx]).length;
     }
+
+    // Merge this run's overrides into the doc's. `basedOnValue` MUST stay anchored to the BASELINE
+    // value, not the currently-served (already-overridden) one — otherwise a SECOND change (a third
+    // prórroga after a second) would record basedOnValue = the first override's value, and
+    // mergeAduanaDoc (which compares basedOnValue against baseline.ts) would discharge it on the next
+    // load, silently reverting. applyProposals sees the served value, so re-anchor here from the
+    // prior override when one exists. New id → last write wins.
+    const existingOverrides = doc.overrides ?? []; // tolerate a pre-migration Mongo doc
+    const anchored = runOverrides.map((o) => {
+      const prior = existingOverrides.find((e) => e.id === o.id);
+      return prior ? { ...o, basedOnValue: prior.basedOnValue } : o;
+    });
+    const overrideById = new Map<string, AduanaOverride>(existingOverrides.map((o) => [o.id, o]));
+    for (const o of anchored) overrideById.set(o.id, o);
+    const overrides = [...overrideById.values()];
 
     // Same identity trick as the confirmed-count above, but against the ORIGINAL doc.facts: any
     // fact whose reference changed across the whole run was confirmed this run, so its flag (if
@@ -283,14 +387,21 @@ export async function refreshNorms(doc: AduanaDoc): Promise<AduanaDoc> {
     const pendingReview = [...new Set([...doc.pendingReview, ...flagged])].filter(
       (id) => !confirmedIds.has(id)
     );
+    const publishedThisRun = anchored.length;
     console.log(
-      `[aduana] norms: ${checked}/${doc.facts.length} facts checked, ${confirmed} confirmed by the AI, ${flagged.length} flagged this run (${pendingReview.length} open in total)`
+      `[aduana] norms: ${checked}/${doc.facts.length} facts checked, ${confirmed} confirmed by the AI, ${publishedThisRun} auto-published, ${flagged.length} flagged this run (${pendingReview.length} open in total)`
     );
+    if (publishedThisRun > 0) {
+      console.warn(
+        "[aduana] norms AUTO-PUBLISHED (2 official sources, in range) — review/rollback in baseline.ts:",
+        anchored.map((o) => `${o.id}=${o.value}`)
+      );
+    }
     if (pendingReview.length > 0) {
       console.warn("[aduana] norms NEEDS A HUMAN — pendingReview:", pendingReview);
     }
 
-    return { ...doc, facts, pendingReview };
+    return { ...doc, facts, overrides, pendingReview };
   } catch (error: any) {
     console.warn("[aduana] norms: refreshNorms error:", error?.message || error);
     return doc;

@@ -12,6 +12,7 @@ vi.mock("../../classes/aduana/gemini", () => ({
 }));
 
 import { askGrounded, geminiConfigured } from "../../classes/aduana/gemini";
+import { BASELINE, DENYLIST_URLS } from "../../classes/aduana/baseline";
 import { applyProposals, refreshNorms } from "../../classes/aduana/norms";
 
 const NORM_URL = "https://www.impo.com.uy/bases/decretos/50-2026";
@@ -174,6 +175,97 @@ describe("applyProposals", () => {
   });
 });
 
+describe("applyProposals — auto-publish guardrail", () => {
+  const dateFact: AduanaFact = {
+    id: "franquicia.registro_vendedor_desde",
+    label: "Fecha registro vendedor",
+    value: "2026-10-01",
+    sourceId: "rg-dna-21-2026",
+    article: "num. 1",
+    verifiedAt: "2026-07-11",
+    origin: "baseline",
+  };
+  const rgSrc: Source = {
+    id: "rg-dna-21-2026",
+    title: "RG 21/2026",
+    norm: "RG DNA 21/2026",
+    url: "https://www.aduanas.gub.uy/innovaportal/file/28613/1/rg-21-2026.pdf",
+    checkedAt: "2026-07-11",
+    kind: "norma",
+  };
+  const mefUrl =
+    "https://www.gub.uy/ministerio-economia-finanzas/comunicacion/noticias/guia-preguntas-frecuentes";
+
+  it("auto-publishes a CHANGED date when 2 independent official grounded sources agree", () => {
+    const raw = [
+      { id: dateFact.id, value: "2027-01-01", sourceUrl: rgSrc.url, corroborationUrl: mefUrl },
+    ];
+    const grounding = [rgSrc.url, mefUrl];
+    const { overrides, facts, pendingReview } = applyProposals([dateFact], raw, grounding, [rgSrc]);
+    expect(overrides).toHaveLength(1);
+    expect(overrides[0]).toMatchObject({
+      id: dateFact.id,
+      value: "2027-01-01",
+      basedOnValue: "2026-10-01",
+      prevValue: "2026-10-01",
+    });
+    expect([...overrides[0].sources].sort()).toEqual([mefUrl, rgSrc.url].sort());
+    expect(pendingReview).not.toContain(dateFact.id); // published, not flagged
+    expect(facts[0].value).toBe("2026-10-01"); // the fact object is never mutated
+  });
+
+  it("does NOT auto-publish a changed value with only ONE source — flags instead", () => {
+    const raw = [{ id: dateFact.id, value: "2027-01-01", sourceUrl: rgSrc.url }];
+    const { overrides, pendingReview } = applyProposals([dateFact], raw, [rgSrc.url], [rgSrc]);
+    expect(overrides).toHaveLength(0);
+    expect(pendingReview).toContain(dateFact.id);
+  });
+
+  it("never lets a denylisted page be one of the 2 sources (the repealed-numbers trap)", () => {
+    const minFact = BASELINE.facts.find((f) => f.id === "prestacion_unica.minimo_usd")!; // value 20
+    const src = BASELINE.sources.find((s) => s.id === minFact.sourceId)!;
+    const denyUrl = DENYLIST_URLS[0]; // v/27950 still publishes USD 10
+    const raw = [
+      { id: minFact.id, value: 10, sourceUrl: denyUrl, corroborationUrl: `${denyUrl}?x=1` },
+    ];
+    const { overrides, pendingReview } = applyProposals(
+      [minFact],
+      raw,
+      [denyUrl, `${denyUrl}?x=1`],
+      [src]
+    );
+    expect(overrides).toHaveLength(0); // the repealed 10 can never publish
+    expect(pendingReview).toContain(minFact.id);
+  });
+
+  it("rejects an out-of-window date and a number proposed for a date fact", () => {
+    const outOfWindow = [
+      { id: dateFact.id, value: "2099-01-01", sourceUrl: rgSrc.url, corroborationUrl: mefUrl },
+    ];
+    expect(
+      applyProposals([dateFact], outOfWindow, [rgSrc.url, mefUrl], [rgSrc]).overrides
+    ).toHaveLength(0);
+    const numericForDate = [
+      { id: dateFact.id, value: 800, sourceUrl: rgSrc.url, corroborationUrl: mefUrl },
+    ];
+    expect(
+      applyProposals([dateFact], numericForDate, [rgSrc.url, mefUrl], [rgSrc]).overrides
+    ).toHaveLength(0);
+  });
+
+  it("auto-publishes a CHANGED numeric fact only when both sources are in range and independent", () => {
+    const minFact = BASELINE.facts.find((f) => f.id === "prestacion_unica.minimo_usd")!; // 20, range [1,200]
+    const impo = "https://www.impo.com.uy/bases/leyes/20446-2025/627";
+    const mef = "https://www.gub.uy/ministerio-economia-finanzas/comunicacion/noticias/nuevo-minimo";
+    const raw = [{ id: minFact.id, value: 25, sourceUrl: impo, corroborationUrl: mef }];
+    const { overrides } = applyProposals([minFact], raw, [impo, mef], [
+      { ...BASELINE.sources.find((s) => s.id === minFact.sourceId)!, url: impo },
+    ]);
+    expect(overrides).toHaveLength(1);
+    expect(overrides[0].value).toBe(25);
+  });
+});
+
 const mockedConfigured = vi.mocked(geminiConfigured);
 const mockedAsk = vi.mocked(askGrounded);
 
@@ -184,6 +276,7 @@ const docWith = (facts: AduanaFact[], pendingReview: string[] = []): AduanaDoc =
   counts: {},
   sources: SOURCES,
   pendingReview,
+  overrides: [],
   updatedAt: null,
 });
 
