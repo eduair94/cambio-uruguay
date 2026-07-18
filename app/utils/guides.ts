@@ -39,6 +39,14 @@ export interface GuideStep {
   text: string
 }
 
+/** One question/answer pair, rendered as an FAQ block and emitted as FAQPage JSON-LD. */
+export interface GuideFaq {
+  /** The question, rendered as the FAQ item heading. */
+  q: string
+  /** The answer prose, one or more sentences. */
+  a: string
+}
+
 /** A complete editorial guide, addressable at `/guias/{slug}`. */
 export interface Guide {
   /** URL-safe identifier, unique across {@link guides} (e.g. `'comprar-dolares-mejor-precio'`). */
@@ -60,6 +68,11 @@ export interface Guide {
    * emits HowTo JSON-LD (in addition to Article) for AI step extraction.
    */
   steps?: GuideStep[]
+  /**
+   * Optional question/answer pairs. When present, the page renders an FAQ block
+   * and emits FAQPage JSON-LD (in addition to Article) for AI Overview / rich results.
+   */
+  faqs?: GuideFaq[]
 }
 
 /**

@@ -8,6 +8,75 @@ import type { Guide } from './guides'
 
 export const redditGuides: readonly Guide[] = [
   {
+    slug: 'no-pagar-prestamo-e-irse-del-pais-uruguay',
+    title: '¿Qué pasa si no pago un préstamo en Uruguay (y me voy del país)?',
+    description:
+      'Consecuencias reales de no pagar un préstamo bancario en Uruguay: por qué es un incumplimiento civil y no un delito, qué te pueden embargar, el Clearing y el BCU, la prescripción, qué pasa si te vas a Brasil, y las salidas legítimas.',
+    tag: 'DEUDA',
+    updatedAt: '2026-07-18',
+    sections: [
+      {
+        heading: 'La regla: no pagar no es delito, y no hay cárcel por deudas',
+        body: 'Empecemos por lo más importante, porque es donde circula más mito. En Uruguay no pagar un préstamo NO es un delito: es un incumplimiento civil de un contrato, igual que si no pagás el alquiler o una factura. Y no existe la prisión por deudas. Lo dice la Constitución en su artículo 52 —«Nadie podrá ser privado de su libertad por deudas»— y lo repite el Pacto de San José de Costa Rica en el artículo 7.7, que Uruguay ratificó por la Ley 15.737. La única excepción es la deuda de alimentos (pensión alimenticia); las deudas bancarias, comerciales o de tarjeta nunca llevan a la cárcel por el solo hecho de no pagarlas. Entonces «me van a meter preso» es falso para un préstamo común. Ahora bien, que no vayas preso no significa que no pase nada: pasa, y bastante, pero por la vía civil, que es de lo que hablamos a continuación.',
+      },
+      {
+        heading: 'Lo que sí pasa: mora, juicio ejecutivo y embargo',
+        body: 'Cuando dejás de pagar, el banco no llama a la policía: activa el cobro civil. Primero corren la mora y los intereses moratorios sobre el saldo vencido, con un límite: si superan los topes que publica el BCU se configura usura (Ley 18.212) y el acreedor pierde el derecho a cobrar esos intereses y cargos. Después suele ceder el vale a un estudio jurídico, que promueve un juicio ejecutivo. Ojo con esto: el pagaré que firmaste al sacar el préstamo es «título ejecutivo», así que el juez condena a pagar y decreta el embargo genérico de tus bienes ANTES de notificarte la demanda (Código General del Proceso, arts. 353 a 355). O sea, te enterás con el embargo ya trabado. A eso se suma el registro negativo, que para muchos es la consecuencia más dura y más larga.',
+      },
+      {
+        heading: '«No tengo bienes ni ingresos, vivo con mi madre»: qué pueden embargar',
+        body: 'Este es tu escenario, así que vamos al detalle. Solo tu propio patrimonio responde por tu deuda: los bienes de tu madre no se tocan, porque la garantía de un acreedor son «los bienes todos del deudor», no los de un tercero (Código Civil, art. 2372). Su casa y su cuenta están fuera, salvo que le hayas puesto bienes tuyos a nombre de ella para esconderte (ahí hay acción revocatoria). Si no tenés nada registrable ni ingresos formales, en los hechos puede no haber nada útil para embargar. Y aunque consigas un empleo en blanco, el sueldo, la jubilación y la pensión son inembargables por deuda bancaria común: solo se retiene hasta un tercio por tributos o alimentos (CGP art. 381). También son inembargables los muebles del hogar y las herramientas de tu oficio. Pero atención: «no tener nada hoy» no borra la deuda.',
+      },
+      {
+        heading: 'La deuda no desaparece, y la prescripción no corre por irte',
+        body: 'Que hoy no haya nada para embargar no extingue la obligación: la deuda sigue viva, sumando intereses, y la sentencia conserva fuerza ejecutiva por años. Si mañana comprás un auto, heredás o cobrás en blanco, te lo pueden ejecutar reiterando el embargo (CGP arts. 371 y ss.). ¿Y la prescripción? Existe —según el instrumento, la acción del vale prescribe a los 4 años y la acción personal ordinaria a los 10 (Código Civil art. 1216, reforma de la LUC)—, pero tiene tres trampas. Uno: no opera sola; hay que oponerla como excepción en el juicio y el juez no puede declararla de oficio (art. 1191). Dos: se interrumpe y vuelve a cero si el banco te demanda o si vos reconocés la deuda (pagás una cuota, refinanciás). Tres: irte del país no suspende ni acelera el plazo. Fugarte no «asegura» la prescripción.',
+      },
+      {
+        heading: 'Irte a Brasil no borra nada (y puede complicarlo)',
+        body: 'Mudarte al exterior no extingue la deuda ni frena el juicio, que sigue su curso acá. Cobrarte en Brasil es jurídicamente posible pero engorroso: el banco necesitaría una sentencia firme uruguaya y luego pedir su reconocimiento por el Protocolo de Las Leñas del Mercosur (Ley 16.971), con homologación exclusiva del Superior Tribunal de Justiça y ejecución posterior con abogado allá. Por el costo, para montos chicos casi nunca se persigue afuera; pero es un derecho que el acreedor conserva, y apenas volvés a Uruguay te ejecutan directo. Y acá aparece el riesgo que conviene mirar de frente: irse «para no pagar» puede dejar de ser un simple incumplimiento civil. La insolvencia fraudulenta (Código Penal art. 255) contempla justamente al deudor que «se traslada al extranjero» para sustraerse al pago. Es un delito de instancia privada, que denuncia el acreedor y recién tras fracasar el cobro civil, pero existe.',
+      },
+      {
+        heading: 'Cuándo el impago se vuelve penal, y las salidas legítimas',
+        body: 'Para que haya estafa (Código Penal art. 347) no alcanza con no pagar: tiene que haber existido un engaño o ardid desde el inicio, con la intención de no devolver ya al momento de contratar (por ejemplo, declarar ingresos falsos o usar identidad ajena). Tomar un preaprobado real, con tus datos verdaderos, y después no poder pagar, en principio queda en lo civil. Es casuístico y de prueba difícil, pero no es un riesgo puramente teórico. La conclusión honesta: la fuga no borra la deuda, te arruina el crédito por años y puede escalar de lo civil a lo penal. Si estás sin ingresos, la salida sana es no tomar el préstamo; y si ya estás endeudado, renegociar o refinanciar con el banco antes de caer en mora, y usar los canales legítimos: Defensa del Consumidor del MEF (Ley 17.250), los topes de usura del BCU y el Consultorio Jurídico gratuito de la UdelaR. Esto es información general, no asesoramiento legal: para tu caso, consultá a un abogado.',
+      },
+    ],
+    related: [
+      { label: 'Saldar y negociar deudas', to: '/saldar-deudas-uruguay' },
+      { label: 'Salir del Clearing', to: '/salir-del-clearing' },
+      { label: 'Refinanciar deudas', to: '/guias/refinanciar-deudas-uruguay' },
+      {
+        label: 'Ser garante o codeudor: riesgos',
+        to: '/guias/ser-garante-o-codeudor-riesgos-uruguay',
+      },
+    ],
+    faqs: [
+      {
+        q: '¿Puedo ir preso por no pagar un préstamo en Uruguay?',
+        a: 'No. No pagar un préstamo es un incumplimiento civil, no un delito, y en Uruguay no existe prisión por deudas: lo garantizan la Constitución (art. 52) y el Pacto de San José de Costa Rica (art. 7.7). La única excepción es la deuda de alimentos, no las deudas bancarias o de tarjeta. Otra cosa es si desde el inicio hubo engaño (estafa) o si te fugás del país ocultando bienes para no pagar (insolvencia fraudulenta): esas figuras penales son excepcionales y hay que probarlas, pero existen.',
+      },
+      {
+        q: 'Si no tengo bienes ni trabajo formal, ¿pueden embargarme algo?',
+        a: 'Si no tenés bienes registrables ni ingresos formales, en los hechos puede no haber nada útil para embargar. Y aunque consigas empleo en blanco, el sueldo, la jubilación y la pensión son inembargables por una deuda bancaria común: solo se retiene hasta un tercio por deudas tributarias o pensión alimenticia (CGP art. 381). También son inembargables los muebles del hogar y las herramientas de tu oficio. Pero la deuda no desaparece: sigue con intereses y te la pueden ejecutar si en el futuro adquirís bienes o ingresos.',
+      },
+      {
+        q: '¿Pueden embargar la casa o la cuenta de mi madre por mi deuda?',
+        a: 'No. Solo tu propio patrimonio responde por tu deuda: la garantía del acreedor son «los bienes todos del deudor», no los de un tercero (Código Civil art. 2372). La casa, la cuenta y los bienes de tu madre están fuera de alcance por una deuda que es tuya. La única salvedad es que le hayas traspasado bienes tuyos a nombre de ella para esconderte del acreedor: en ese caso se puede atacar ese traspaso con la acción revocatoria (pauliana), pero se trata de bienes que eran tuyos, no del patrimonio propio de tu madre.',
+      },
+      {
+        q: 'Si me voy a Brasil y no vuelvo, ¿se borra la deuda?',
+        a: 'No. Irte del país no extingue la deuda ni frena el juicio, que sigue su curso en Uruguay, y la prescripción tampoco corre a tu favor por ausentarte. Cobrarte en Brasil es posible pero costoso: el banco necesita sentencia firme uruguaya y homologación ante el STJ vía Protocolo de Las Leñas (Ley 16.971), algo que rara vez se hace por montos chicos. Pero apenas reingresás a Uruguay te ejecutan directo, y el antecedente en el Clearing y el BCU te espera. Peor aún: irse «para no pagar» puede configurar insolvencia fraudulenta (Código Penal art. 255).',
+      },
+      {
+        q: '¿La deuda prescribe si dejo pasar el tiempo?',
+        a: 'Puede prescribir, pero no es tan simple. Según el instrumento, la acción del vale/pagaré prescribe a los 4 años y la acción personal ordinaria a los 10 (Código Civil art. 1216, reforma de la LUC). Tres advertencias: la prescripción no opera sola, hay que oponerla como excepción en el juicio (el juez no la declara de oficio, art. 1191); se interrumpe y vuelve a cero si el banco te demanda o si vos reconocés la deuda (pagar una cuota, refinanciar); e irte del país no la suspende ni la acelera. No es una estrategia para «esperar y evadir».',
+      },
+      {
+        q: '¿Qué conviene hacer si tengo un preaprobado pero no puedo pagarlo?',
+        a: 'Si estás sin ingresos, lo más sano es no tomarlo: un preaprobado es una oferta comercial del banco, no plata que te sobre, y sin capacidad de pago solo te endeuda y te arruina el historial en el Clearing y el BCU por años. Si ya tenés deudas, lo mejor es renegociar o refinanciar con la institución antes de caer en mora (reprogramar plazos, bajar la cuota, unificar). Y tenés canales legítimos: el Área de Defensa del Consumidor del MEF (Ley 17.250), los topes de usura del BCU y el Consultorio Jurídico gratuito de la Facultad de Derecho de la UdelaR.',
+      },
+    ],
+  },
+  {
     slug: 'como-rescindir-contrato-alquiler-uruguay',
     title: 'Cómo rescindir un contrato de alquiler en Uruguay',
     description:
@@ -1513,6 +1582,10 @@ export const redditGuides: readonly Guide[] = [
         body: 'Cuando te despiden sin que haya una causa grave, tenés derecho a una indemnización por despido. Para los trabajadores mensuales, la regla general es de un mes de sueldo por cada año trabajado, computándose también la fracción de año: cualquier fracción, por chica que sea, suele generar derecho a una mensualidad completa aunque no llegues a completar otro año entero. Esa indemnización tiene un tope: no puede superar el equivalente a seis mensualidades, por más años que lleves en la empresa. Para los jornaleros existe un régimen propio, calculado en jornales según los días trabajados, con su propio tope. La indemnización compensa la pérdida del empleo y es distinta del resto de partidas que se te adeudan por el trabajo ya realizado, que se pagan igual.',
       },
       {
+        heading: 'Qué entra en el "mes de sueldo" que se usa de base',
+        body: 'Acá conviene frenar en un punto que casi nadie te explica: el "mes de sueldo" de la indemnización no es tu salario base a secas. La ley habla de la remuneración total de un mes de trabajo, y tanto el Ministerio de Trabajo como la jurisprudencia lo entienden en sentido amplio: integra todo lo que tenga naturaleza salarial y sea normal, habitual y permanente, cualquiera sea su forma de pago. En criollo, la base incluye tus partidas habituales variables —comisiones, horas extra, nocturnidad, quebranto de caja— computadas por promedio, en general de los últimos doce meses, no por el mes pico. También suman su incidencia el aguinaldo, la licencia y el salario vacacional: no como un mes aparte, sino elevando el valor mensual de cálculo en el orden de un quinto. Y las retribuciones en especie normales y permanentes que costea la empresa —pensá en un seguro de salud o mutualista pagado por el empleador— tienen argumento fuerte para integrar la base por su naturaleza salarial. Este último punto es contestado y depende de cada caso: la empresa puede oponer que es un beneficio asistencial exento de aportes. Por eso, pedí la liquidación desglosada y, si dudás, hacela revisar antes de firmar.',
+      },
+      {
         heading: 'Mensuales, jornaleros y el tope',
         body: 'La distinción entre mensual y jornalero cambia el cálculo. El mensual cobra por mes y su indemnización se mide en mensualidades, con tope de seis. El jornalero cobra por día trabajado y su indemnización se mide en jornales, en función de cuántas jornadas acumuló, también con un tope máximo de jornales. En ambos casos la lógica es la misma: proteger al trabajador frente a la pérdida del empleo, pero con un límite para no volver el despido impagable. Si tu forma de contratación no es clara, o combinás modalidades, conviene revisar tus recibos, porque de ahí depende bajo qué régimen te corresponde calcular la indemnización.',
       },
@@ -1540,6 +1613,32 @@ export const redditGuides: readonly Guide[] = [
       },
       { label: 'Entender tu recibo de sueldo', to: '/guias/entender-tu-recibo-de-sueldo-uruguay' },
       { label: 'Cómo se calcula el aguinaldo', to: '/guias/como-se-calcula-el-aguinaldo-uruguay' },
+    ],
+    faqs: [
+      {
+        q: '¿La indemnización por despido se calcula solo sobre el salario base?',
+        a: 'No. La base no es el salario base o nominal a secas, sino la "remuneración total correspondiente a un mes de trabajo". Integra todas las partidas de naturaleza salarial que sean normales, habituales y permanentes, cualquiera sea la forma en que se liquiden o se paguen. Es un criterio firme del Ministerio de Trabajo y de la jurisprudencia laboral.',
+      },
+      {
+        q: '¿Las comisiones y horas extra entran en la base del despido?',
+        a: 'Sí, si son habituales, pero se computan por promedio —el criterio general es el promedio de los últimos 12 meses—, no por el mes más alto ni por un mes aislado. Lo que se excluye es lo ocasional o extraordinario. Lo mismo aplica a nocturnidad, quebranto de caja y otras partidas variables habituales.',
+      },
+      {
+        q: '¿El seguro de salud o mutualista que paga la empresa integra la base indemnizatoria?',
+        a: 'Es un punto contestado y casuístico. Hay un argumento fuerte a favor: una retribución en especie normal y permanente costeada por la empresa tiene naturaleza salarial, y eso apoya que integre la base. Pero no es automático: no hay jurisprudencia firme que lo resuelva puntualmente, y la empresa puede oponer que es una prestación asistencial expresamente exenta de aportes. Depende de la prueba de la habitualidad, del recibo y del contrato, y del criterio del juez. Si te lo dejaron afuera, es razonable plantearlo, pero conviene asesorarte antes.',
+      },
+      {
+        q: 'En el recibo, el seguro figura como ingreso y después se descuenta. ¿Qué significa eso?',
+        a: 'Es la mecánica típica del salario en especie: se imputa como remuneración en el nominal y luego se neutraliza porque no te lo pagan en efectivo, sino que la empresa se lo abona directo al prestador. Ese patrón es un indicio de que lo tratan como retribución, lo que refuerza el argumento de incluirlo en la base. Pero por sí solo no lo prueba de forma definitiva: es compatible tanto con un salario en especie gravado como con la documentación de una prestación exenta.',
+      },
+      {
+        q: '¿Si una partida no aporta a BPS, entonces no integra la indemnización?',
+        a: 'No necesariamente. "Materia gravada" (aporte a BPS) y "salario a efectos indemnizatorios" son conceptos distintos. El que decide para la base es la naturaleza salarial, no si aporta. De hecho hay partidas exentas de aportes —como los tickets de alimentación— que igual computan para la indemnización. Que una partida no aporte a BPS es solo un indicio, no la regla.',
+      },
+      {
+        q: '¿El aguinaldo y el salario vacacional integran la base del despido?',
+        a: 'No se suman como un mes extra aparte, pero sí integran la base a través de su incidencia o alícuota, que eleva el valor mensual de cómputo: aguinaldo alrededor de 1/12 (~8,33%), más las incidencias de licencia y salario vacacional, sumando en conjunto cerca del 19-20%. El aguinaldo es indiscutido. El salario vacacional es un punto contestado: una tesis minoritaria le niega naturaleza salarial y lo excluiría, aunque la posición mayoritaria lo incluye.',
+      },
     ],
   },
   {

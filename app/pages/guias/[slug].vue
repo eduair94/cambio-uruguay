@@ -55,6 +55,21 @@
             </ol>
           </section>
 
+          <!-- FAQ (also emitted as FAQPage schema) -->
+          <section v-if="guide.faqs?.length" class="guide-faqs mb-2">
+            <h2 class="text-h5 font-weight-bold mb-3">Preguntas frecuentes</h2>
+            <VExpansionPanels variant="accordion" class="guide-faq-panels">
+              <VExpansionPanel v-for="(faq, i) in guide.faqs" :key="i">
+                <VExpansionPanelTitle class="font-weight-medium">
+                  {{ faq.q }}
+                </VExpansionPanelTitle>
+                <VExpansionPanelText>
+                  <p class="text-body-1 text-grey-lighten-1 guide-prose mb-0">{{ faq.a }}</p>
+                </VExpansionPanelText>
+              </VExpansionPanel>
+            </VExpansionPanels>
+          </section>
+
           <!-- CTA to the comparator -->
           <VCard class="cta-guide my-8 pa-6 text-center" variant="flat">
             <h2 class="text-h6 font-weight-bold mb-2 text-white">{{ t('guias.ctaTitle') }}</h2>
@@ -256,6 +271,19 @@ useHead({
                       position: i + 1,
                       name: s.name,
                       text: s.text,
+                    })),
+                  },
+                ]
+              : []),
+            // FAQPage for guides with Q&A — feeds AI Overview / rich-result answers.
+            ...(guide.value?.faqs?.length
+              ? [
+                  {
+                    '@type': 'FAQPage',
+                    mainEntity: guide.value.faqs.map(f => ({
+                      '@type': 'Question',
+                      name: f.q,
+                      acceptedAnswer: { '@type': 'Answer', text: f.a },
                     })),
                   },
                 ]

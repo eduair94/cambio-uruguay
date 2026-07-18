@@ -401,6 +401,7 @@ export const guideHubs: readonly GuideHub[] = [
       'mejorar-historial-crediticio-uruguay',
       'ser-garante-o-codeudor-riesgos-uruguay',
       'salir-de-deudas-de-tarjeta-uruguay',
+      'no-pagar-prestamo-e-irse-del-pais-uruguay',
     ],
     resources: [
       {
