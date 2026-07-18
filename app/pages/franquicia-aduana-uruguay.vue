@@ -135,7 +135,8 @@
         Es la confusión más cara del régimen nuevo: un envío entra en
         <strong>uno o en el otro</strong>, nunca se parte entre los dos. Si te quedan US$ 100 de
         cupo y comprás por US$ 500, <em>no</em> pagás IVA por 100 y 60% por 400: pagás
-        <strong>60% de los 500</strong> (Decreto 50/026, art. 15).
+        <strong>60% de los 500</strong> (se desprende del diseño de los arts. 2 y 3 del Decreto
+        50/026, no de un artículo puntual).
       </p>
 
       <VRow>
@@ -222,6 +223,26 @@
             pagar IVA, te quedan US$ 602 y <strong>dos</strong> envíos — no tres (FAQ del MEF).
           </li>
         </ol>
+      </VCard>
+    </section>
+
+    <!-- FAQ: coupons / discounts and the USD 200 line -->
+    <section class="mb-8">
+      <h2 class="section-heading mb-1">Preguntas frecuentes</h2>
+      <p class="text-body-2 text-medium-emphasis mb-4">
+        Las dudas que más se repiten sobre el valor que mira la Aduana.
+      </p>
+
+      <VCard variant="flat" class="faq pa-2 pa-sm-4">
+        <VExpansionPanels variant="accordion" class="faq-panels">
+          <VExpansionPanel v-for="(f, i) in faqs" :key="i">
+            <VExpansionPanelTitle class="faq-q">{{ f.q }}</VExpansionPanelTitle>
+            <VExpansionPanelText>
+              <!-- eslint-disable-next-line vue/no-v-html -->
+              <div class="faq-a" v-html="f.a" />
+            </VExpansionPanelText>
+          </VExpansionPanel>
+        </VExpansionPanels>
       </VCard>
     </section>
 
@@ -424,8 +445,16 @@ const sources = [
   },
   {
     label:
-      'Decreto 50/026 — franquicia, valor de la factura (art. 5) y regímenes excluyentes (art. 15)',
+      'Decreto 50/026 — franquicia y valor de la factura (art. 5); los dos regímenes son alternativos (arts. 2 y 3); el art. 15 regula el incumplimiento',
     url: 'https://www.impo.com.uy/bases/decretos/50-2026',
+  },
+  {
+    label: 'DNA — Valor en aduana: método del valor de transacción (precio realmente pagado)',
+    url: 'https://www.aduanas.gub.uy/innovaportal/v/2806/8/innova.front/valor-en-aduana.html',
+  },
+  {
+    label: 'OMC — Valoración en aduana (Acuerdo relativo al art. VII del GATT)',
+    url: 'https://www.wto.org/spanish/tratop_s/cusval_s/cusval_info_s.htm',
   },
   {
     label: 'Resolución General 09/2026 (Aduana) — registro de vendedores y validación en LUCIA',
@@ -442,6 +471,30 @@ const sources = [
   {
     label: 'MEF — guía de preguntas frecuentes del régimen de envíos postales',
     url: 'https://www.gub.uy/ministerio-economia-finanzas/comunicacion/noticias/guia-preguntas-frecuentes-sobre-regimen-envios-postales-franquicias',
+  },
+]
+
+// FAQ — the value Aduana actually looks at. `a` is HTML (rendered), `aText` is the plain-text twin
+// used in the FAQPage schema. Every figure/claim is sourced above; verified against Decreto 50/026
+// art. 5, la DNA (valor en aduana) y el Acuerdo de Valoración de la OMC.
+const faqs = [
+  {
+    q: 'Uso un cupón de descuento en el carrito que deja el producto abajo de US$ 200. ¿Entra por franquicia o pago 60%?',
+    a: 'Entra por franquicia y, si es una compra de <strong>EE.UU.</strong>, además queda <strong>sin IVA</strong> —siempre que el cupón esté realmente aplicado y el <strong>total de la factura</strong> no supere los US$ 200—. La Aduana mira el total de la factura de compra <em>ya con el descuento restado</em> (<a href="https://www.impo.com.uy/bases/decretos/50-2026/5" target="_blank" rel="noopener noreferrer">Decreto 50/026, art. 5</a>), no el precio de lista. Es el método de <strong>valor de transacción</strong> de la OMC: el valor es “el precio realmente pagado o por pagar”, así que un descuento genuino no se “vuelve a sumar” (<a href="https://www.aduanas.gub.uy/innovaportal/v/2806/8/innova.front/valor-en-aduana.html" target="_blank" rel="noopener noreferrer">DNA — valor en aduana</a>). <strong>Ojo con el malentendido más común:</strong> cruzar los US$ 200 <em>no</em> te lleva al 60% —te prende el <strong>IVA (~22%)</strong>—. El 60% (prestación única) es el régimen <em>alternativo</em>, para cuando NO usás la franquicia (agotaste los 3 envíos o el tope de US$ 800 del año).',
+    aText:
+      'Sí, entra por franquicia y, si es compra de EE.UU., queda sin IVA, siempre que el cupón esté realmente aplicado y el total de la factura no supere los US$ 200. La Aduana valora sobre el total de la factura de compra ya con el descuento restado (Decreto 50/026, art. 5), no sobre el precio de lista. Es el método de valor de transacción de la OMC: el valor es el precio realmente pagado, así que un descuento genuino no se vuelve a sumar. Importante: cruzar los US$ 200 no te lleva al 60%, te prende el IVA (~22%). El 60% (prestación única) es el régimen alternativo, para cuando no usás la franquicia (agotaste los 3 envíos o el tope de US$ 800 del año).',
+  },
+  {
+    q: '¿La Aduana puede desconocer el descuento y cobrarme igual?',
+    a: 'Si es un cupón <strong>real y reflejado en la factura o comprobante</strong>, se sostiene: guardá ese comprobante con el descuento ya aplicado. La Aduana puede exigir la factura o la declaración de valor (art. 5) y, ante una <em>“duda razonable”</em>, cuestionar y revaluar un valor artificialmente bajo (control antisubfacturación, previsto en el Acuerdo de Valoración de la OMC). Un descuento <strong>genuino</strong> —pactado al momento de la compra, no inventado ni fuera de la factura— se defiende sin problema.',
+    aText:
+      'Si el cupón es real y está reflejado en la factura o comprobante, se sostiene: guardá ese comprobante con el descuento ya aplicado. La Aduana puede exigir la factura o la declaración de valor (art. 5) y, ante una duda razonable, cuestionar y revaluar un valor artificialmente bajo (control antisubfacturación del Acuerdo de Valoración de la OMC). Un descuento genuino, pactado al momento de la compra y reflejado en la factura, se defiende sin problema.',
+  },
+  {
+    q: 'Entonces, ¿los US$ 200 son el tope de la franquicia?',
+    a: 'No, son dos límites distintos. El tope de la <strong>franquicia es US$ 800 al año</strong> (en un máximo de 3 envíos). Los <strong>US$ 200</strong> son la línea del <strong>IVA</strong> para compras de EE.UU. (acuerdo <strong>TIFA</strong>): hasta ahí, 0% de IVA; un dólar más y pagás IVA sobre el total. Y es el <strong>total final</strong>: precio − cupón + <em>sales tax</em> + el envío que te cobre el vendedor. Si el sales tax lo empuja de nuevo arriba de US$ 200, perdés la exoneración.',
+    aText:
+      'No, son dos límites distintos. El tope de la franquicia es US$ 800 al año (máximo 3 envíos). Los US$ 200 son la línea del IVA para compras de EE.UU. (acuerdo TIFA): hasta ahí 0% de IVA; un dólar más y pagás IVA sobre el total. Y es el total final: precio − cupón + sales tax + el envío que cobre el vendedor. Si el sales tax lo empuja de nuevo arriba de US$ 200, perdés la exoneración.',
   },
 ]
 
@@ -473,7 +526,21 @@ useHead(() => ({
     {
       name: 'keywords',
       content:
-        'franquicia aduana uruguay, comprar en el exterior uruguay, iva compras exterior, courier uruguay impuestos, decreto 50/026, us$ 800 franquicia, tiendamia iva, aduana 1 de octubre 2026',
+        'franquicia aduana uruguay, comprar en el exterior uruguay, iva compras exterior, courier uruguay impuestos, decreto 50/026, us$ 800 franquicia, tiendamia iva, aduana 1 de octubre 2026, cupon descuento aduana, descuento valor factura aduana, us 200 iva ee.uu.',
+    },
+  ],
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: faqs.map(f => ({
+          '@type': 'Question',
+          name: f.q,
+          acceptedAnswer: { '@type': 'Answer', text: f.aText },
+        })),
+      }),
     },
   ],
 }))
@@ -556,5 +623,27 @@ useHead(() => ({
     grid-template-columns: 1fr;
     gap: 4px;
   }
+}
+.faq {
+  border: 1px solid rgba(var(--v-border-color), 0.14);
+  border-radius: 14px;
+}
+.faq-q {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+.faq-a {
+  font-size: 0.9rem;
+  line-height: 1.65;
+}
+.faq-a :deep(a),
+.faq-a a {
+  color: rgb(var(--v-theme-link));
+  font-weight: 600;
+  text-decoration: none;
+}
+.faq-a :deep(a):hover,
+.faq-a a:hover {
+  text-decoration: underline;
 }
 </style>

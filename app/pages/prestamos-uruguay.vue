@@ -192,6 +192,132 @@
       </VCard>
     </div>
 
+    <!-- Gremial / union credit -->
+    <section class="mb-6">
+      <h2 class="text-h6 font-weight-bold mb-3 prestamos-group-title">
+        <VIcon start size="small" color="primary">mdi-account-group-outline</VIcon>
+        ¿Los sindicatos dan préstamos? El fondo solidario o la cooperativa de tu gremio
+      </h2>
+
+      <VCard class="prestamos-card pa-4 pa-sm-6">
+        <p class="text-body-2 gremial-intro mb-3">
+          Sí, pero conviene separar dos cosas. Muchos gremios tienen un
+          <strong>fondo solidario</strong> —se financia con la cuota sindical— que asiste al
+          afiliado en un apuro: a veces como ayuda que no se devuelve, a veces como
+          <strong>préstamo con devolución</strong>. Y varios sectores tienen además su propia
+          <strong>cooperativa de ahorro y crédito</strong>, que sí presta a los socios y muchas
+          veces con tasas que le ganan a cualquier financiera de la tabla de arriba.
+        </p>
+        <p class="text-body-2 gremial-intro mb-4">
+          Lo puso sobre la mesa una noticia de julio de 2026: un dirigente de
+          <strong>ADEOM</strong> (municipales de Montevideo) contó que el sindicato tiene
+          <em>“un fondo solidario con reembolso y con garantía”</em>, para necesidades como no poder
+          pagar UTE, OSE o alguna cuenta, una operación, o casos excepcionales. Se supo porque el
+          consejo ejecutivo aprobó —contra el voto de la propia conducción— un préstamo de US$ 1.000
+          + IVA a un funcionario sumariado para financiar una apelación.
+          <a
+            href="https://www.elobservador.com.uy/nacional/jefe-que-se-masturbaba-el-trabajo-fue-sumariado-la-im-y-recibio-un-prestamo-adeom-apelar-pese-oposicion-los-lideres-n6051034"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="prestamos-link"
+            >(El Observador)</a
+          >
+        </p>
+
+        <div class="gremial-mechanisms mb-4">
+          <div class="gremial-mech">
+            <VIcon size="18" color="primary" class="mr-1">mdi-hand-heart-outline</VIcon>
+            <span>
+              <strong>Fondo solidario del sindicato.</strong> Se nutre de la cuota sindical y asiste
+              casos puntuales. A veces es ayuda no reembolsable; a veces, un préstamo con aval de la
+              directiva y sin interés. Ejemplo documentado: el
+              <strong>Fondo de Solidaridad de ATES–FeNaPES</strong> (docentes) —“un fondo de dinero
+              que se presta a las personas afiliadas que lo necesitan”, solo para afiliados con 6+
+              meses, con aval de la directiva y <strong>sin cobrar interés</strong> (el saldo solo
+              se ajusta por los aumentos salariales), con devolución obligatoria para que el fondo
+              siga girando—.
+            </span>
+          </div>
+          <div class="gremial-mech">
+            <VIcon size="18" color="primary" class="mr-1">mdi-bank-outline</VIcon>
+            <span>
+              <strong>Cooperativa de ahorro y crédito del sector.</strong> Presta a sus socios,
+              muchas veces por descuento de haberes (retención), con tasas bajas. No es para el
+              público general: hay que pertenecer al sector o hacerse socio.
+            </span>
+          </div>
+        </div>
+
+        <p class="text-caption text-grey-lighten-1 mb-2">
+          Cooperativas y cajas por sector (para afiliados/socios):
+        </p>
+        <div v-for="g in gremialLenders" :key="g.id" class="lender-card">
+          <div class="d-flex align-center justify-space-between ga-2 mb-1">
+            <span class="text-subtitle-1 font-weight-bold">{{ g.name }}</span>
+            <span class="gremial-sector-chip">{{ g.sector }}</span>
+          </div>
+          <p class="text-body-2 mb-2">{{ g.detail }}</p>
+          <a
+            :href="g.source"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="prestamos-link text-caption"
+          >
+            {{ hostOf(g.source) }}
+          </a>
+        </div>
+
+        <VAlert
+          type="warning"
+          variant="tonal"
+          density="comfortable"
+          class="mt-4"
+          icon="mdi-alert-outline"
+        >
+          <p class="mb-1"><strong>Cuatro cosas antes de entusiasmarte:</strong></p>
+          <ul class="gremial-caveats">
+            <li>
+              <strong>Solo para afiliados o socios.</strong> No es una alternativa abierta al
+              público: tenés que pertenecer al gremio o asociarte a la cooperativa.
+            </li>
+            <li>
+              <strong>El BCU no las regula como a un banco.</strong> Los fondos solidarios y las
+              cooperativas que no captan ahorro del público quedan fuera de la supervisión del BCU
+              (Decreto-Ley 15.322); el régimen de entidades otorgantes de crédito excluye
+              expresamente el crédito que los organismos gremiales y de seguridad social dan a sus
+              propios afiliados. Menos supervisión externa: pesa más la gobernanza interna.
+            </li>
+            <li>
+              <strong>No lo confundas con una “Caja de Auxilio”.</strong> Las Cajas de Auxilio
+              (Seguros Convencionales de Enfermedad) son fondos de <strong>salud</strong>
+              controlados por el BPS (Decreto-Ley 14.407, Ley 18.731) —no prestan dinero—.
+            </li>
+            <li>
+              <strong>Ojo con la transparencia.</strong> El caso más resonante fue el desvío de
+              plata del <strong>FOSVOC</strong> (fondo de vivienda de la construcción, cogestionado
+              por el sindicato SUNCA): la Justicia condenó en junio de 2025 a tres ex dirigentes por
+              una maniobra estimada en torno a US$ 1 millón.
+            </li>
+          </ul>
+        </VAlert>
+
+        <VAlert
+          type="success"
+          variant="tonal"
+          density="comfortable"
+          class="mt-3"
+          icon="mdi-check-circle-outline"
+        >
+          <strong>En resumen:</strong> si pertenecés a un gremio con cooperativa —policía,
+          militares, docentes, escribanos, bancarios— preguntá <em>ahí</em> antes que en una
+          financiera: hay líneas (CAOFA en UI desde 5–8,5%, cooperativas magisteriales topadas por
+          la ley de usura) que le ganan a todo lo de arriba. Para una urgencia puntual, el fondo
+          solidario de tu sindicato puede ser ayuda no reembolsable o un préstamo sin interés, pero
+          es discrecional y para casos acotados.
+        </VAlert>
+      </VCard>
+    </section>
+
     <!-- Disclaimer -->
     <VAlert
       type="warning"
@@ -347,6 +473,89 @@ const officialSources = [
     label: 'MEF — Crédito de la Casa: tasas vigentes 2026',
     url: 'https://www.gub.uy/ministerio-economia-finanzas/politicas-y-gestion/tasas-empresas-credito-casa-ano-2026',
   },
+  {
+    label: 'El Observador — ADEOM y su fondo solidario “con reembolso y con garantía” (jul. 2026)',
+    url: 'https://www.elobservador.com.uy/nacional/jefe-que-se-masturbaba-el-trabajo-fue-sumariado-la-im-y-recibio-un-prestamo-adeom-apelar-pese-oposicion-los-lideres-n6051034',
+  },
+  {
+    label: 'FeNaPES — Reglamento del Fondo de Solidaridad (préstamo a afiliados, sin interés)',
+    url: 'https://fenapes.org.uy/sites/default/files/Reglamento-Fondo-de-Solidaridad.pdf',
+  },
+  {
+    label: 'BCU — Cooperativas de intermediación financiera (incluye FUCEREP)',
+    url: 'https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/Cooperativas-de-intermediación.aspx',
+  },
+  {
+    label: 'IMPO — Decreto-Ley 15.322: qué es intermediación financiera (perímetro del BCU)',
+    url: 'https://www.bcu.gub.uy/Leyes%20y%20Decretos/ley15322.pdf',
+  },
+  {
+    label:
+      'IMPO — Decreto-Ley 14.407: Cajas de Auxilio / Seguros Convencionales de Enfermedad (salud, no préstamos)',
+    url: 'https://www.impo.com.uy/bases/decretos-ley/14407-1975/41',
+  },
+  {
+    label:
+      'Subrayado — condena a tres ex dirigentes del SUNCA por el desvío del FOSVOC (jun. 2025)',
+    url: 'https://www.subrayado.com.uy/tres-exintegrantes-del-sunca-condenados-apropiacion-indebida-estafa-asociacion-delinquir-y-asistencia-al-lavado-n979574',
+  },
+]
+
+// Sector / gremial credit: member-only cooperatives and solidarity funds — a separate animal from
+// the open-to-public lenders in LENDERS (no public TEA table, membership required), surfaced by the
+// July-2026 ADEOM news. Every entry is sourced; terms verified against primary/official sources.
+const gremialLenders = [
+  {
+    id: 'copac',
+    name: 'COPAC',
+    sector: 'Policía',
+    detail:
+      'Cooperativa policial de ahorro y crédito (1982): se creó para dar préstamos en efectivo de bajo interés a policías en actividad y retirados.',
+    source: 'https://www.copac.com.uy/nosotros',
+  },
+  {
+    id: 'caofa',
+    name: 'CAOFA',
+    sector: 'FF.AA. (oficiales)',
+    detail:
+      'Líneas en Unidades Indexadas muy bajas: “blanda” 7,5%, médica 8,5%, licencia/hipotecario 5% (hasta 15 años) y cadetes 0%; amortizable en pesos ~21,5–27,5%. Cuota tope 35% del líquido, por descuento de haberes, hasta 3 préstamos a la vez.',
+    source: 'https://caofa.com.uy/lineas-de-prestamo/',
+  },
+  {
+    id: 'caccsoe',
+    name: 'CACCSOE',
+    sector: 'FF.AA. (subalternos)',
+    detail:
+      'Cooperativa de ahorro y crédito del personal subalterno de las Fuerzas Armadas: presta a socios militares (consumo, vehículo y vivienda, estas últimas en UI a largo plazo).',
+    source: 'https://finanzas.com.uy/prestamos-de-caccsoe/',
+  },
+  {
+    id: 'magisteriales',
+    name: 'COMAG · COMAJA · COMAC',
+    sector: 'Docentes',
+    detail:
+      'Cooperativas magisteriales con “crédito social”: préstamos a socios por convenio de retención de haberes, con tasas topadas por la ley de usura (18.212). COMAJA (Artigas) presta desde $5.000 hasta $150.000–$300.000 y se plantea como alternativa cooperativa al préstamo caro.',
+    source:
+      'https://grupormultimedio.com/comaja-prestamos-de-bajo-interes-para-los-socios-id91020/',
+  },
+  {
+    id: 'caja-notarial',
+    name: 'Caja Notarial',
+    sector: 'Escribanos',
+    detail:
+      '“Préstamos sociales” en pesos para escribanos, jubilados y empleados afiliados: $10.000–$280.000, hasta 24 cuotas, TEA 25% + IVA, con cancelación automática por fallecimiento.',
+    source:
+      'https://www.cajanotarial.org.uy/innovaportal/v/2797/1/innova.front/prestamos-sociales-en-moneda-nacional.html',
+  },
+  {
+    id: 'fucerep-gremial',
+    name: 'FUCEREP',
+    sector: 'Origen: funcionarios del BROU',
+    detail:
+      'Nació en 1974 entre funcionarios del BROU; hoy es una cooperativa de intermediación financiera supervisada por el BCU y de vínculo abierto —por eso ya figura en la tabla de arriba—. Presta a socios, habitualmente por convenio de retención.',
+    source:
+      'https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/Cooperativas-de-intermediación.aspx',
+  },
 ]
 
 const canonicalUrl = 'https://cambio-uruguay.com/prestamos-uruguay'
@@ -379,7 +588,7 @@ useHead(() => ({
     {
       name: 'keywords',
       content:
-        'prestamos uruguay, préstamo personal uruguay, tasa de interés uruguay, banco préstamo uruguay, financiera uruguay, cooperativa crédito uruguay, tea préstamo uruguay, bcu tasas',
+        'prestamos uruguay, préstamo personal uruguay, tasa de interés uruguay, banco préstamo uruguay, financiera uruguay, cooperativa crédito uruguay, tea préstamo uruguay, bcu tasas, préstamo sindicato uruguay, fondo solidario sindical, cooperativa gremial uruguay, caja de auxilio, adeom préstamo, caofa copac comag préstamos',
     },
   ],
   script: [
@@ -448,6 +657,22 @@ useHead(() => ({
                 acceptedAnswer: {
                   '@type': 'Answer',
                   text: 'El BCU publica tasas medias del sistema financiero y un tope de usura que las entidades no pueden superar. En préstamos al consumo de montos pequeños (operaciones en pesos por menos de 10.000 UI), las financieras pueden cobrar más del 100% TEA, dentro del límite legal. Consultá los topes vigentes en el sitio del BCU antes de firmar cualquier contrato.',
+                },
+              },
+              {
+                '@type': 'Question',
+                name: '¿Los sindicatos pueden dar préstamos en Uruguay?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'Sí. Muchos gremios tienen un fondo solidario, financiado con la cuota sindical, que asiste a afiliados en apuros —a veces como ayuda no reembolsable y a veces como préstamo con devolución, con aval de la directiva y sin interés (por ejemplo el Fondo de Solidaridad de ATES–FeNaPES para docentes o el fondo solidario “con reembolso y con garantía” de ADEOM)—. Además, varios sectores tienen su propia cooperativa de ahorro y crédito que sí presta a los socios: COPAC (policía), CAOFA y CACCSOE (Fuerzas Armadas), COMAG/COMAJA (docentes), la Caja Notarial (escribanos) o FUCEREP (origen en funcionarios del BROU). Son solo para afiliados o socios y, salvo las cooperativas de intermediación financiera, el BCU no las supervisa como a un banco.',
+                },
+              },
+              {
+                '@type': 'Question',
+                name: '¿Un fondo solidario sindical es lo mismo que una Caja de Auxilio?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'No. Una Caja de Auxilio (o Seguro Convencional de Enfermedad) es un fondo de salud creado por convenio colectivo y controlado por el BPS (Decreto-Ley 14.407 y Ley 18.731): cubre asistencia médica y subsidios por enfermedad, no presta dinero. El fondo solidario de un sindicato, en cambio, se financia con la cuota sindical y puede dar ayudas o préstamos a los afiliados. Son cosas distintas.',
                 },
               },
             ],
@@ -607,5 +832,51 @@ useHead(() => ({
   display: inline-flex;
   align-items: center;
   gap: 1px;
+}
+
+/* Gremial / union-credit section */
+.gremial-intro {
+  line-height: 1.65;
+}
+.gremial-mechanisms {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.gremial-mech {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  padding: 12px 14px;
+  background: rgba(124, 58, 237, 0.08);
+  border: 1px solid rgba(124, 58, 237, 0.2);
+  border-radius: 10px;
+}
+.gremial-sector-chip {
+  flex: none;
+  display: inline-block;
+  background: rgba(124, 58, 237, 0.14);
+  color: #a78bfa;
+  border: 1px solid rgba(124, 58, 237, 0.3);
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+.v-theme--light .gremial-sector-chip {
+  color: #6d28d9;
+  background: rgba(124, 58, 237, 0.1);
+}
+.gremial-caveats {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.86rem;
+  line-height: 1.55;
 }
 </style>
