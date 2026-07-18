@@ -866,7 +866,8 @@
     "indicatorsLink": "Valor da UI, da UR e da BPC hoje"
   },
   "temas": {
-    "nav": "Temas"
+    "nav": "Temas",
+    "navMapa": "Mapa de temas"
   },
   "guias": {
     "nav": "Guias",

@@ -15,6 +15,8 @@ import { MongooseServer, mongoose } from "./classes/database";
 import server from "./classes/Express/ExpressSetup";
 import { emptyLiveCosts } from "./classes/costs/refresh";
 import { loadCosts } from "./classes/costs/store";
+import { emptyTemasAnalysis } from "./classes/temas-analysis/refresh";
+import { loadTemasAnalysis } from "./classes/temas-analysis/store";
 import { baselineDebtRelief } from "./classes/debt/refresh";
 import { loadDebtRelief } from "./classes/debt/store";
 import { BASELINE_FIGURES } from "./classes/figures/bands";
@@ -1537,6 +1539,29 @@ const main = async () => {
    */
   server.getJson("cost-of-living", async (req: Request): Promise<any> => {
     return await redisCache.getOrSet("cost-of-living", async () => (await loadCosts()) ?? emptyLiveCosts(), 1800);
+  });
+
+  /**
+   * @openapi
+   * /temas-analysis:
+   *   get:
+   *     tags:
+   *       - Indicators
+   *     summary: Lectura trimestral por IA de los temas de dinero más consultados en Uruguay
+   *     description: >
+   *       Análisis generado con Gemini (grounded) sobre el ranking de temas de dinero de Reddit,
+   *       regenerado cada 90 días. Solo lee el último snapshot almacenado; nunca gasta una llamada
+   *       de IA. Devuelve `{ overview: string[], topics: {id,trend,insight}[], sources, asOf }`.
+   *     responses:
+   *       200:
+   *         description: Análisis almacenado (o vacío si aún no se generó).
+   */
+  server.getJson("temas-analysis", async (req: Request): Promise<any> => {
+    return await redisCache.getOrSet(
+      "temas-analysis",
+      async () => (await loadTemasAnalysis()) ?? emptyTemasAnalysis(),
+      1800
+    );
   });
 
   /**

@@ -69,6 +69,21 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Quarterly AI reading of the most-consulted money topics for the app's /mapa-de-temas.
+      // Reads the topic ranking from the NUXT APP's database (classes/appdb.ts, `reddittopics`) and
+      // writes its own analysis to the backend DB (`temas_analysis_data`). The cron fires DAILY at
+      // 11:17 UTC ≈ 08:17 America/Montevideo, but sync_temas_analysis.ts self-gates to 90 days on
+      // the stored `asOf`, so it only spends a Gemini call once a quarter. Minute 17: not a multiple
+      // of 5 (clear of currency-sync), and after nitro's reddit:sentiment (10:10) so the topic
+      // snapshot it reads is already refreshed for the day. Refuses to run without APP_MONGO_URI.
+      name: "currency-temas-analysis",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_temas_analysis.js",
+      cron_restart: "17 11 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // BCU usury caps (topes de usura) for /saldar-deudas-uruguay. Monthly on the 1st, 10:13 UTC
       // ≈ 07:13 America/Montevideo. Minute 13: not a multiple of 5.
       name: "currency-debt-relief",
