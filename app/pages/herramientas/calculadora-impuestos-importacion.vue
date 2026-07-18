@@ -1,5 +1,10 @@
 <template>
-  <ToolShell slug="calculadora-impuestos-importacion" :faq="faq" :sources="sources">
+  <ToolShell
+    slug="calculadora-impuestos-importacion"
+    :faq="faq"
+    :sources="sources"
+    content-layout="below"
+  >
     <VCard class="pa-4 pa-sm-6">
       <!-- Regime selector: full-width segmented control -->
       <div class="text-overline text-grey mb-2">Régimen de importación</div>
@@ -370,90 +375,127 @@
       </VTable>
     </VCard>
 
+    <template #tips>
+      <h2>Ojo con estos detalles</h2>
+      <ul>
+        <li>
+          <strong>Sobre qué se calcula:</strong> el valor es el <em>total de la factura</em> de
+          compra, con todos los conceptos que figuren en ella (Decreto 50/026, art. 5). Un descuento
+          o cupón que baje ese total facturado baja la base; el <em>sales tax</em> y el envío que te
+          cobra el vendedor, si aparecen en la factura, la suben.
+        </li>
+        <li>
+          <strong>El flete del courier va aparte:</strong> lo que te cobra el courier por traerlo no
+          está en la factura del vendedor, así que en el régimen courier no integra la base ni paga
+          IVA: solo se suma al total.
+        </li>
+        <li>
+          <strong>Es todo o nada:</strong> un dólar por encima de US$ 200 (EE.UU.) y pagás IVA sobre
+          el total, nunca sobre "el excedente".
+        </li>
+        <li>
+          <strong>Guardá la factura:</strong> el envío debe ir acompañado de la documentación que
+          acredite el valor (art. 5).
+        </li>
+      </ul>
+    </template>
+
     <template #content>
-      <h2>Cómo funciona</h2>
-      <p>
-        <strong>Compra online (courier):</strong> hay
-        <strong>dos regímenes y son excluyentes</strong>
-        — un envío entra en uno o en el otro, nunca se parte entre los dos (Decreto 50/026, art.
-        15).
-      </p>
-      <ul>
-        <li>
-          <strong>Franquicia:</strong> hasta <strong>US$ 800 por año</strong> en un máximo de
-          <strong>3 envíos</strong>, sin <em>aranceles</em>. Igual paga
-          <strong>IVA (tasa básica 22%)</strong>, salvo una excepción: las compras
-          <strong>de EE.UU. de hasta US$ 200</strong> quedan exoneradas de IVA (acuerdo TIFA). Es
-          <strong>todo o nada</strong>: un dólar por encima de US$ 200 y pagás IVA sobre el total.
-        </li>
-        <li>
-          <strong>Prestación única:</strong> si el envío no entra en la franquicia —porque ya usaste
-          los 3 envíos, o porque lo que te queda de cupo no lo cubre— paga
-          <strong>60% del valor, con un mínimo de US$ 20</strong> por envío. El envío completo, no
-          "el excedente".
-        </li>
-      </ul>
-      <p>
-        Ojo con el <strong>valor</strong> que se mira para los topes de US$ 200 y US$ 800: es el
-        <strong>total de la factura</strong> — precio + <em>sales tax</em> + el envío que te cobre
-        el vendedor (Decreto 50/026, art. 5). Y por encima de <strong>US$ 800</strong> el envío no
-        entra en ninguno de los dos regímenes: pasa al régimen general y no lo calculamos acá.
-      </p>
-      <p>
-        <strong>Desde el 1.º de octubre de 2026</strong> la exoneración de IVA de EE.UU. va a
-        exigir, además, que el <em>vendedor</em> esté registrado ante la Aduana (RG 09/2026). Hoy
-        todavía no se exige: ya se prorrogó dos veces.
-      </p>
-      <p>
-        En este régimen el IVA y la tasa única se calculan siempre sobre el
-        <strong>costo interno del producto</strong> (el valor de la factura del vendedor). El
-        <strong>flete del courier no paga IVA</strong>: es un costo aparte que se muestra explícito
-        y se suma al total. ¿No sabés qué courier conviene?
-        <NuxtLink :to="localePath('/couriers-uruguay')" class="tool-link">
-          Compará los couriers disponibles en Uruguay</NuxtLink
-        >.
-      </p>
-      <p>
-        <strong>Régimen general:</strong> aplica para importaciones formales. Se calcula el valor
-        CIF (mercadería + flete + seguro), se suman el arancel y la tasa consular, y sobre esa base
-        se aplica el <strong>IVA del 22%</strong>. Algunos productos pagan además IMESI.
-      </p>
-      <p>
-        Los aranceles dependen del producto y el origen: muchos bienes del Mercosur pagan 0%. Ajustá
-        los porcentajes según tu caso o consultá a tu despachante.
-      </p>
-      <h2>Tipo de producto: IVA, trámites y prohibidos</h2>
-      <p>
-        Elegí el <strong>tipo de producto</strong> para ajustar el IVA y ver si necesitás trámites:
-      </p>
-      <ul>
-        <li>
-          <strong>No pagan IVA:</strong> libros, diarios y revistas están exentos. Los
-          <strong>medicamentos</strong> pagan la tasa mínima del 10%.
-        </li>
-        <li>
-          <strong>Pagan IVA 22%:</strong> el resto de los bienes (electrónica, ropa, juguetes,
-          etc.).
-        </li>
-        <li>
-          <strong>Requieren trámites adicionales:</strong> celulares y equipos con radiofrecuencia,
-          drones y GPS necesitan homologación de <strong>URSEC</strong> (vía VUCE); medicamentos,
-          suplementos, cosméticos y productos médicos pasan por el <strong>MSP</strong>; semillas,
-          plantas, fertilizantes y alimentos por el <strong>MGAP</strong>; armas y réplicas por el
-          Servicio de Material y Armamento del Ejército.
-        </li>
-        <li>
-          <strong>Prohibidos por courier:</strong> vaporizadores y cigarrillos electrónicos,
-          pirotecnia, inflamables, baterías sueltas y power banks, dinero en efectivo y sustancias
-          controladas. Bebidas alcohólicas, tabaco, perfumería y vehículos pagan IMESI y solo
-          ingresan por importación formal (régimen general).
-        </li>
-      </ul>
-      <p>
-        Las listas son orientativas y <strong>no taxativas</strong>: pueden variar según la
-        cantidad, el uso y la normativa vigente. Confirmá siempre con Aduanas y el organismo
-        correspondiente.
-      </p>
+      <div class="tool-article-grid">
+        <section>
+          <h2>Cómo funciona</h2>
+          <p>
+            <strong>Compra online (courier):</strong> hay
+            <strong>dos regímenes y son excluyentes</strong>
+            — un envío entra en uno o en el otro, nunca se parte entre los dos (Decreto 50/026, art.
+            15).
+          </p>
+          <ul>
+            <li>
+              <strong>Franquicia:</strong> hasta <strong>US$ 800 por año</strong> en un máximo de
+              <strong>3 envíos</strong>, sin <em>aranceles</em>. Igual paga
+              <strong>IVA (tasa básica 22%)</strong>, salvo una excepción: las compras
+              <strong>de EE.UU. de hasta US$ 200</strong> quedan exoneradas de IVA (acuerdo TIFA).
+              Es <strong>todo o nada</strong>: un dólar por encima de US$ 200 y pagás IVA sobre el
+              total.
+            </li>
+            <li>
+              <strong>Prestación única:</strong> si el envío no entra en la franquicia —porque ya
+              usaste los 3 envíos, o porque lo que te queda de cupo no lo cubre— paga
+              <strong>60% del valor, con un mínimo de US$ 20</strong> por envío. El envío completo,
+              no "el excedente".
+            </li>
+          </ul>
+          <p>
+            Ojo con el <strong>valor</strong> que se mira para los topes de US$ 200 y US$ 800: es el
+            <strong>total de la factura</strong> — precio + <em>sales tax</em> + el envío que te
+            cobre el vendedor (Decreto 50/026, art. 5). Y por encima de <strong>US$ 800</strong> el
+            envío no entra en ninguno de los dos regímenes: pasa al régimen general y no lo
+            calculamos acá.
+          </p>
+          <p>
+            <strong>Desde el 1.º de octubre de 2026</strong> la exoneración de IVA de EE.UU. va a
+            exigir, además, que el <em>vendedor</em> esté registrado ante la Aduana (RG 09/2026).
+            Hoy todavía no se exige: ya se prorrogó dos veces.
+          </p>
+          <p>
+            En este régimen el IVA y la tasa única se calculan siempre sobre el
+            <strong>costo interno del producto</strong> (el valor de la factura del vendedor). El
+            <strong>flete del courier no paga IVA</strong>: es un costo aparte que se muestra
+            explícito y se suma al total. ¿No sabés qué courier conviene?
+            <NuxtLink :to="localePath('/couriers-uruguay')" class="tool-link">
+              Compará los couriers disponibles en Uruguay</NuxtLink
+            >.
+          </p>
+          <p>
+            <strong>Régimen general:</strong> aplica para importaciones formales. Se calcula el
+            valor CIF (mercadería + flete + seguro), se suman el arancel y la tasa consular, y sobre
+            esa base se aplica el <strong>IVA del 22%</strong>. Algunos productos pagan además
+            IMESI.
+          </p>
+          <p>
+            Los aranceles dependen del producto y el origen: muchos bienes del Mercosur pagan 0%.
+            Ajustá los porcentajes según tu caso o consultá a tu despachante.
+          </p>
+        </section>
+
+        <section>
+          <h2>Tipo de producto: IVA, trámites y prohibidos</h2>
+          <p>
+            Elegí el <strong>tipo de producto</strong> para ajustar el IVA y ver si necesitás
+            trámites:
+          </p>
+          <ul>
+            <li>
+              <strong>No pagan IVA:</strong> libros, diarios y revistas están exentos. Los
+              <strong>medicamentos</strong> pagan la tasa mínima del 10%.
+            </li>
+            <li>
+              <strong>Pagan IVA 22%:</strong> el resto de los bienes (electrónica, ropa, juguetes,
+              etc.).
+            </li>
+            <li>
+              <strong>Requieren trámites adicionales:</strong> celulares y equipos con
+              radiofrecuencia, drones y GPS necesitan homologación de <strong>URSEC</strong> (vía
+              VUCE); medicamentos, suplementos, cosméticos y productos médicos pasan por el
+              <strong>MSP</strong>; semillas, plantas, fertilizantes y alimentos por el
+              <strong>MGAP</strong>; armas y réplicas por el Servicio de Material y Armamento del
+              Ejército.
+            </li>
+            <li>
+              <strong>Prohibidos por courier:</strong> vaporizadores y cigarrillos electrónicos,
+              pirotecnia, inflamables, baterías sueltas y power banks, dinero en efectivo y
+              sustancias controladas. Bebidas alcohólicas, tabaco, perfumería y vehículos pagan
+              IMESI y solo ingresan por importación formal (régimen general).
+            </li>
+          </ul>
+          <p>
+            Las listas son orientativas y <strong>no taxativas</strong>: pueden variar según la
+            cantidad, el uso y la normativa vigente. Confirmá siempre con Aduanas y el organismo
+            correspondiente.
+          </p>
+        </section>
+      </div>
     </template>
 
     <template #disclaimer>

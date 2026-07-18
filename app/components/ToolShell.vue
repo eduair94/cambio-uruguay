@@ -26,8 +26,13 @@
       </div>
     </VCard>
 
-    <!-- Calculator -->
-    <VRow>
+    <!-- Calculator + explainer. Two layouts:
+         - aside (default): explainer is a right sidebar. Good when it's short
+           enough to roughly match the calculator's height.
+         - below: centered calculator, full-width editorial explainer beneath.
+           Use for article-length explainers that would otherwise leave a tall
+           column of dead space next to a short calculator. -->
+    <VRow v-if="asideLayout">
       <VCol cols="12" :md="hasContent ? 7 : 12" :lg="hasContent ? 8 : 12">
         <slot />
       </VCol>
@@ -39,6 +44,28 @@
         </VCard>
       </VCol>
     </VRow>
+
+    <template v-else>
+      <!-- Calculator left; optional short tips/disclaimers as the right column. -->
+      <VRow v-if="hasTips">
+        <VCol cols="12" md="8">
+          <slot />
+        </VCol>
+        <VCol cols="12" md="4">
+          <VCard variant="flat" class="tool-aside tool-tips pa-5">
+            <slot name="tips" />
+          </VCard>
+        </VCol>
+      </VRow>
+      <div v-else class="tool-stack-calc">
+        <slot />
+      </div>
+
+      <!-- Long, article-length explainer: full width beneath, two editorial columns. -->
+      <VCard v-if="hasContent" variant="flat" class="tool-section tool-article mt-6 pa-5 pa-md-8">
+        <slot name="content" />
+      </VCard>
+    </template>
 
     <!-- Disclaimer -->
     <VAlert
@@ -135,6 +162,13 @@ const props = defineProps<{
   hideDisclaimer?: boolean
   /** Optional list of official sources rendered in a "Fuentes" block. */
   sources?: Array<{ label: string; url: string }>
+  /**
+   * Where the `#content` explainer goes:
+   * - `aside` (default): narrow right sidebar next to the calculator.
+   * - `below`: full-width editorial section under a centered calculator —
+   *   for long, article-length explainers.
+   */
+  contentLayout?: 'aside' | 'below'
 }>()
 
 const localePath = useLocalePath()
@@ -142,6 +176,8 @@ const slots = useSlots()
 
 const tool = computed(() => getTool(props.slug))
 const hasContent = computed(() => Boolean(slots.content))
+const hasTips = computed(() => Boolean(slots.tips))
+const asideLayout = computed(() => props.contentLayout !== 'below')
 
 // Related tools: same category first, then fill up to 6 with others.
 const relatedTools = computed(() => {
@@ -313,6 +349,104 @@ useHead(() => ({
 .v-theme--light .tool-aside :deep(p) {
   color: rgba(0, 0, 0, 0.78);
 }
+
+/* ── Stacked layout (contentLayout="below") ─────────────────────────────
+   The calculator spans the full container width (matching the header and the
+   explainer below it); the explainer sits beneath as an editorial two-column
+   read. No max-width cap — the card lines up edge-to-edge with the header. */
+.tool-stack-calc {
+  width: 100%;
+}
+
+/* Short tips / disclaimers card sitting to the right of the calculator. Reuses
+   the .tool-aside surface + heading; adds a compact bullet list. It stays its
+   natural (short) height at the top of the column — the tall calculator drives
+   the row, so there's no dead space under the primary content. */
+.tool-tips :deep(ul) {
+  margin: 0;
+  padding-left: 1.15rem;
+}
+.tool-tips :deep(li) {
+  line-height: 1.65;
+  margin-bottom: 0.95rem;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+.tool-tips :deep(li:last-child) {
+  margin-bottom: 0;
+}
+.tool-tips :deep(li strong) {
+  color: rgba(255, 255, 255, 0.95);
+}
+.v-theme--light .tool-tips :deep(li) {
+  color: rgba(0, 0, 0, 0.78);
+}
+.v-theme--light .tool-tips :deep(li strong) {
+  color: rgba(0, 0, 0, 0.92);
+}
+
+/* Each top-level <section> of the explainer becomes one column; they wrap to a
+   single column below ~700px. Column-gap is generous so the two reads stay
+   visually distinct without a rule between them. */
+.tool-article :deep(.tool-article-grid) {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem 3.5rem;
+  align-items: start;
+}
+
+.tool-article :deep(h2) {
+  position: relative;
+  padding-left: 0.85rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 1.75rem 0 0.85rem;
+}
+/* First heading in a column shouldn't push down from the card's top padding. */
+.tool-article :deep(section > h2:first-child) {
+  margin-top: 0;
+}
+/* Gradient accent bar echoing the page header — the one quiet flourish. */
+.tool-article :deep(h2)::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.2em;
+  bottom: 0.1em;
+  width: 3px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #2f81f7 0%, #16c784 100%);
+}
+
+.tool-article :deep(p),
+.tool-article :deep(li) {
+  line-height: 1.7;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+.tool-article :deep(p) {
+  margin-bottom: 0.9rem;
+}
+.tool-article :deep(ul) {
+  margin: 0 0 0.9rem;
+  padding-left: 1.2rem;
+}
+.tool-article :deep(li) {
+  margin-bottom: 0.55rem;
+}
+.tool-article :deep(a) {
+  color: rgb(var(--v-theme-link));
+  font-weight: 600;
+  text-decoration: none;
+}
+.tool-article :deep(a:hover) {
+  text-decoration: underline;
+}
+
+.v-theme--light .tool-article :deep(p),
+.v-theme--light .tool-article :deep(li) {
+  color: rgba(0, 0, 0, 0.78);
+}
 </style>
 
 <!--
@@ -325,7 +459,7 @@ useHead(() => ({
 <style>
 /* Comfortable row-gap for stacked input rows */
 .tool-page .g-input {
-  row-gap: 4px;
+  row-gap: 10px;
 }
 
 /* Full-width segmented control for mode / régimen selectors */
@@ -347,13 +481,13 @@ useHead(() => ({
 .tool-page .result-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 12px;
+  gap: 16px;
 }
 .tool-page .result-box {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 10px;
-  padding: 14px 16px;
+  padding: 18px 18px;
 }
 
 /* Highlighted secondary panel (e.g. estimate-by-weight) and its inner row */
@@ -368,10 +502,14 @@ useHead(() => ({
   border-radius: 10px;
 }
 
-/* Breakdown / detail tables */
+/* Breakdown / detail tables — a touch more row height so multi-line labels
+   don't feel cramped. */
 .tool-page .breakdown-table td,
 .tool-page .breakdown-table th {
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 10px;
+  padding-bottom: 10px;
+  line-height: 1.45;
 }
 .tool-page .breakdown-table .total-row td {
   border-top: 2px solid rgba(255, 255, 255, 0.15);
