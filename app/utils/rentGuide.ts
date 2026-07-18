@@ -2,7 +2,7 @@
 // this file: provider conditions and emergency contacts are linked to their
 // primary source and stamped with the last verification date.
 
-export const RENT_GUIDE_LAST_REVIEWED = '2026-07-12'
+export const RENT_GUIDE_LAST_REVIEWED = '2026-07-18'
 
 export interface RentalPortal {
   name: string
@@ -247,6 +247,18 @@ export const RENT_GUIDE_SOURCES: readonly RentSource[] = Object.freeze([
     label: 'Intendencia de Montevideo — asesoramiento jurídico gratuito',
     url: 'https://montevideo.gub.uy/tipo/area-tematica/convivencia/prestadores-de-servicios-juridicos-gratuitos',
     detail: 'Defensoría, consultorios y servicio especializado en vivienda.',
+  },
+  {
+    label: 'ADIU — Honorarios inmobiliarios en alquileres',
+    url: 'https://adiu.uy/articulo.aspx?id=271',
+    detail:
+      'La comisión de la inmobiliaria equivale a un mes de alquiler más IVA y se calcula sobre el alquiler, no sobre los gastos comunes.',
+  },
+  {
+    label: 'MEF — Preguntas frecuentes sobre garantía de alquileres',
+    url: 'https://www.gub.uy/ministerio-economia-finanzas/comunicacion/publicaciones/preguntas-frecuentes-sobre-garantia-alquileres',
+    detail:
+      'Costo del contrato y comisión (se aplica sobre el alquiler, no sobre servicios ni gastos comunes), reajuste cada 12 meses y responsabilidades por reparaciones.',
   },
   {
     label: 'Reddit r/uruguay — “Necesito un techo urgente”',

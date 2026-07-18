@@ -340,8 +340,8 @@
           <VIcon color="primary" class="mb-3">mdi-office-building-outline</VIcon>
           <h3>Comisión</h3>
           <p>
-            Es habitual que la inmobiliaria cobre comisión, pero el monto es comercial: pedilo con
-            IVA y factura.
+            Suele ser un mes de alquiler más IVA, en un único pago al firmar. Se calcula sobre el
+            alquiler, <strong>no</strong> sobre los gastos comunes. Pedila con IVA y factura.
           </p>
         </VCard>
         <VCard variant="flat" class="entry-card pa-5">
@@ -573,6 +573,26 @@ const faqs = [
   {
     q: '¿Qué hago si ya recibí una intimación o aviso de desalojo?',
     a: 'No ignores plazos ni confíes solo en redes. Contactá la Defensoría Pública, un consultorio jurídico gratuito o un abogado y llevá contrato, recibos, mensajes y la notificación completa. Defensa del Consumidor no interviene cuando la acción judicial ya comenzó.',
+  },
+  {
+    q: '¿El depósito de garantía se devuelve al terminar el contrato?',
+    a: 'Sí: el depósito es tuyo y funciona como respaldo, no como un pago al propietario. Al finalizar, se devuelve si entregás la vivienda en las condiciones pactadas y sin deudas. El propietario puede descontar alquileres o servicios impagos y los daños que excedan el desgaste normal por uso; las reparaciones que hacen a la habitabilidad (humedades, cañerías) son de su cargo, no del tuyo. El plazo y la forma de devolución deben figurar en el contrato: leé esa cláusula antes de firmar y, si no te lo devuelven sin motivo, podés reclamar en Defensa del Consumidor.',
+  },
+  {
+    q: '¿La comisión de la inmobiliaria se calcula sobre el alquiler o también sobre los gastos comunes?',
+    a: 'Solo sobre el alquiler. La comisión de intermediación equivale a un mes de alquiler más IVA, en un único pago al firmar, y se calcula sobre el precio del alquiler, no sobre los gastos comunes. Por ejemplo, con un alquiler de $1.000 y gastos comunes de $500, la comisión se calcula sobre $1.000. Pedí siempre factura con el IVA discriminado.',
+  },
+  {
+    q: '¿Qué son los gastos comunes y quién los paga?',
+    a: 'En un apartamento en propiedad horizontal, los gastos comunes ordinarios (limpieza, portería, ascensor, mantenimiento, saneamiento) los paga el inquilino como servicio accesorio, junto con UTE, OSE y tributos municipales. Los gastos extraordinarios y las obras estructurales del edificio corresponden al propietario. Pedí la última liquidación de gastos comunes antes de firmar para no llevarte sorpresas.',
+  },
+  {
+    q: '¿Cada cuánto y con qué índice aumenta el alquiler?',
+    a: 'El alquiler se reajusta cada 12 meses. En los contratos bajo la LUC (Ley 19.889), si no se pacta otra cosa, el ajuste anual es la variación del Índice de Precios al Consumo (IPC). Confirmá en el contrato el índice y la frecuencia antes de firmar y no aceptes una fórmula que no puedas explicar con tus palabras.',
+  },
+  {
+    q: '¿Quién paga una reparación, como una humedad?',
+    a: 'Las reparaciones que hacen a la habitabilidad de la vivienda (humedades, roturas de cañerías) son de cargo del propietario. Las reparaciones locativas que surgen del uso corriente corren por tu cuenta. Documentá el problema con fotos y notificalo por un canal que deje constancia; si no se resuelve, consultá en Defensa del Consumidor.',
   },
 ]
 
