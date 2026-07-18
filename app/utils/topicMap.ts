@@ -20,7 +20,7 @@ export const TOPIC_HUB: Readonly<Record<string, string>> = Object.freeze({
   'sueldo-trabajo': 'sueldo-trabajo-e-impuestos-uruguay',
   'compras-import': 'importaciones-y-aduana-uruguay',
   'precios-inflacion': 'economia-y-mercado-uruguay',
-  'emprender-empresa': 'economia-y-mercado-uruguay',
+  'emprender-empresa': 'emprender-y-empresa-uruguay',
   'jubilacion-afap': 'finanzas-personales-y-jubilacion-uruguay',
   cripto: 'ahorrar-e-invertir-uruguay',
 })

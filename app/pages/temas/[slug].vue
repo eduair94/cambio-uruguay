@@ -53,11 +53,11 @@
               <VCol v-for="res in hub.resources" :key="res.to" cols="12" sm="6">
                 <VCard
                   :to="localePath(res.to)"
-                  class="hub-resource-card pa-4 h-100 d-flex align-start ga-3"
+                  class="hub-resource-card pa-4 h-100 d-flex align-center ga-3"
                   hover
                   variant="flat"
                 >
-                  <VIcon color="primary" class="mt-1">mdi-arrow-right-circle-outline</VIcon>
+                  <VIcon color="primary">mdi-arrow-right-circle-outline</VIcon>
                   <div>
                     <h3 class="text-subtitle-2 font-weight-bold mb-1">{{ res.label }}</h3>
                     <p class="text-body-2 text-grey-lighten-1 mb-0">{{ res.description }}</p>

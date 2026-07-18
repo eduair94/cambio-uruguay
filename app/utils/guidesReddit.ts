@@ -2534,9 +2534,15 @@ export const redditGuides: readonly Guide[] = [
       },
     ],
     related: [
-      { label: 'Comprar online del exterior: impuestos', to: '/guias/comprar-online-exterior-impuestos' },
+      {
+        label: 'Comprar online del exterior: impuestos',
+        to: '/guias/comprar-online-exterior-impuestos',
+      },
       { label: 'Comprar en Amazon desde Uruguay', to: '/guias/comprar-en-amazon-desde-uruguay' },
-      { label: 'Calculadora de impuestos de importación', to: '/herramientas/calculadora-impuestos-importacion' },
+      {
+        label: 'Calculadora de impuestos de importación',
+        to: '/herramientas/calculadora-impuestos-importacion',
+      },
       { label: 'Couriers de Uruguay', to: '/couriers-uruguay' },
     ],
     faqs: [
@@ -2588,8 +2594,14 @@ export const redditGuides: readonly Guide[] = [
       },
     ],
     related: [
-      { label: 'Cómo importar de AliExpress a Uruguay', to: '/guias/importar-de-aliexpress-a-uruguay' },
-      { label: 'Comprar online del exterior: impuestos', to: '/guias/comprar-online-exterior-impuestos' },
+      {
+        label: 'Cómo importar de AliExpress a Uruguay',
+        to: '/guias/importar-de-aliexpress-a-uruguay',
+      },
+      {
+        label: 'Comprar online del exterior: impuestos',
+        to: '/guias/comprar-online-exterior-impuestos',
+      },
       { label: 'Franquicia y aduana', to: '/franquicia-aduana-uruguay' },
       { label: 'Problemas con la aduana', to: '/problemas-con-la-aduana-uruguay' },
     ],
@@ -2688,7 +2700,10 @@ export const redditGuides: readonly Guide[] = [
       },
     ],
     related: [
-      { label: 'Cómo elegir tarjeta por beneficios', to: '/guias/elegir-tarjeta-credito-beneficios-uruguay' },
+      {
+        label: 'Cómo elegir tarjeta por beneficios',
+        to: '/guias/elegir-tarjeta-credito-beneficios-uruguay',
+      },
       { label: 'Ranking de tarjetas de crédito', to: '/tarjetas-de-credito-uruguay' },
       { label: 'Salir de las deudas de tarjeta', to: '/guias/salir-de-deudas-de-tarjeta-uruguay' },
       { label: 'Tarjeta de débito vs crédito', to: '/guias/tarjeta-debito-vs-credito-uruguay' },
@@ -2738,7 +2753,10 @@ export const redditGuides: readonly Guide[] = [
       },
     ],
     related: [
-      { label: 'Cómo elegir tarjeta por beneficios', to: '/guias/elegir-tarjeta-credito-beneficios-uruguay' },
+      {
+        label: 'Cómo elegir tarjeta por beneficios',
+        to: '/guias/elegir-tarjeta-credito-beneficios-uruguay',
+      },
       { label: 'Estafas y fraudes en Uruguay', to: '/estafas-uruguay' },
       { label: 'Salir de las deudas de tarjeta', to: '/guias/salir-de-deudas-de-tarjeta-uruguay' },
       { label: 'Salud financiera', to: '/salud-financiera' },
@@ -2755,6 +2773,389 @@ export const redditGuides: readonly Guide[] = [
       {
         q: '¿Con cuál estoy más protegido si me clonan la tarjeta?',
         a: 'En general, con la tarjeta de crédito, porque la plata todavía no salió de tu cuenta y tenés margen para desconocer el consumo antes de pagar el resumen. Con débito, el dinero ya se debitó y recuperarlo puede ser más lento. En ambos casos, avisá de inmediato al emisor y dejá el reclamo por escrito. Para compras online en sitios desconocidos, muchos usan crédito o una prepaga con poco saldo para acotar el riesgo.',
+      },
+    ],
+  },
+  {
+    slug: 'reforma-jubilatoria-uruguay-que-cambia',
+    title: 'Reforma jubilatoria en Uruguay: qué cambia y a quién le aplica',
+    description:
+      'Qué cambia con la reforma jubilatoria (Ley 20.130) en Uruguay: el nuevo Sistema Previsional Común, cómo sube la edad de retiro según el año en que naciste y cómo afecta tu jubilación.',
+    tag: 'REFORMA',
+    updatedAt: '2026-07-18',
+    sections: [
+      {
+        heading: 'Qué es la reforma y por qué se hizo',
+        body: 'La reforma de la seguridad social (Ley 20.130, aprobada en 2023) crea un Sistema Previsional Común: un conjunto de reglas parejas para calcular las jubilaciones de las distintas cajas —BPS, Caja Bancaria, Caja Notarial, Caja de Jubilaciones de Profesionales Universitarios y los retiros policial y militar—, que hasta ahora funcionaban con criterios diferentes. La lógica de fondo es que la gente vive más años y el sistema anterior se volvía difícil de financiar, así que la reforma sube de a poco la edad de retiro y unifica la forma de calcular la prestación. No cambia todo de golpe ni para todos: se aplica por generaciones y con una transición larga.',
+      },
+      {
+        heading: 'La edad de retiro sube, pero por generación',
+        body: 'El cambio más comentado es la edad mínima para jubilarse, que se mueve hacia los 65 años, pero no aplica igual a todos. Quienes nacieron antes de 1973 mantienen el régimen anterior: 60 años de edad y 30 de servicios. Para los nacidos entre 1973 y 1976 la edad mínima sube de a un año por año de nacimiento: 61 años para los de 1973, 62 para los de 1974, 63 para los de 1975 y 64 para los de 1976. Y desde los nacidos en 1977 en adelante rige la nueva edad de 65 años. Hay excepciones para carreras largas y para tareas de alto desgaste físico, que pueden permitir retirarse antes.',
+      },
+      {
+        heading: 'Un sistema mixto y obligatorio: BPS más AFAP',
+        body: 'Con la reforma, el régimen mixto pasa a ser obligatorio: una parte de tu aporte va al pilar de reparto o solidaridad (el BPS, donde los que trabajan financian a los jubilados de hoy) y otra parte a un pilar de ahorro individual en una AFAP (una cuenta a tu nombre que se invierte). Antes, esa combinación dependía del nivel de ingreso; ahora los dos pilares conviven de forma obligatoria. Tu jubilación final suma lo que te paga el BPS por el pilar de reparto y la renta que financia tu ahorro acumulado en la AFAP.',
+      },
+      {
+        heading: 'Cómo se calcula la jubilación ahora',
+        body: 'La reforma también cambia la fórmula. El sueldo básico jubilatorio pasa a calcularse como el promedio de tus 20 años de mejores ingresos actualizados, y la tasa de reemplazo se arma sumando alrededor de 1,5% por cada año de trabajo aportado. Como el pasaje del régimen anterior al nuevo es gradual, quienes queden en el período de transición —en términos generales, quienes configuren la causal jubilatoria entre 2033 y 2043— tendrán una jubilación calculada con una regla de proporcionalidad que combina las reglas anteriores con las nuevas. Es un cálculo complejo y muy dependiente de tu historia laboral concreta.',
+      },
+      {
+        heading: 'Qué hacer con esta información',
+        body: 'Esto es orientación general, no asesoramiento previsional: la reforma es larga y llena de excepciones, y tu situación depende de tu año de nacimiento, tu caja y tu historia de aportes. Para saber a qué edad podés jubilarte y con cuánto, lo más seguro es pedir tu historia laboral y una proyección en el BPS (o en la caja que te corresponda), y revisar el estado de tu cuenta en tu AFAP. Si tu caso es complejo —cambios de caja, años trabajados en el exterior, tareas especiales—, un contador o un abogado laboralista puede ayudarte a ubicar tu mejor momento para retirarte.',
+      },
+    ],
+    related: [
+      {
+        label: 'Jubilación y AFAP: cómo funciona',
+        to: '/guias/jubilacion-y-afap-como-funciona-uruguay',
+      },
+      { label: 'Elegir o cambiarte de AFAP', to: '/guias/elegir-o-cambiar-de-afap-uruguay' },
+      { label: 'Planificar tu retiro', to: '/guias/planificar-tu-retiro-uruguay' },
+      { label: 'Entender tu recibo de sueldo', to: '/guias/entender-tu-recibo-de-sueldo-uruguay' },
+    ],
+    faqs: [
+      {
+        q: '¿A qué edad me puedo jubilar con la reforma?',
+        a: 'Depende de tu año de nacimiento. Quienes nacieron antes de 1973 mantienen 60 años (con 30 de servicios); los nacidos entre 1973 y 1976 suben un año por cada año de nacimiento (61 en 1973, 62 en 1974, 63 en 1975 y 64 en 1976); y desde los nacidos en 1977 rige la edad de 65 años. Hay excepciones por carreras largas o tareas de alto desgaste. Para tu caso exacto, consultá al BPS.',
+      },
+      {
+        q: '¿La reforma me cambia algo si nací antes de 1973?',
+        a: 'En lo esencial mantenés el régimen anterior: 60 años de edad y 30 de servicios. La creación del Sistema Previsional Común y su transición apuntan sobre todo a las generaciones siguientes. De todos modos, conviene confirmar tu situación puntual en el BPS, porque influyen los años aportados y la caja que te corresponda.',
+      },
+      {
+        q: '¿Ahora es obligatorio aportar a una AFAP?',
+        a: 'Sí. Con el régimen mixto obligatorio, parte de tu aporte va al BPS (pilar de reparto) y parte a una AFAP (pilar de ahorro individual). Lo que elegís es cuál AFAP administra tu ahorro, y podés cambiarte según las reglas vigentes.',
+      },
+    ],
+  },
+  {
+    slug: 'elegir-o-cambiar-de-afap-uruguay',
+    title: 'Cómo elegir o cambiarte de AFAP en Uruguay',
+    description:
+      'Cómo elegir la AFAP que más te conviene para tu jubilación en Uruguay y cuándo podés cambiarte: comisión de administración, rentabilidad, subfondos y qué mirar antes de decidir.',
+    tag: 'AFAP',
+    updatedAt: '2026-07-18',
+    sections: [
+      {
+        heading: 'Por qué importa cuál AFAP tenés',
+        body: 'El aporte a la AFAP es obligatorio, pero cuál AFAP administra tu ahorro no es un detalle: de eso dependen la comisión que te descuentan y cómo se invierte tu plata durante décadas. Muchos quedan en la AFAP que les asignaron por defecto al empezar a trabajar y nunca la revisan. Como es ahorro individual —una cuenta a tu nombre que se transforma en una renta cuando te retirás—, pequeñas diferencias de comisión o de rendimiento, sostenidas por treinta o cuarenta años, terminan pesando bastante en cuánto vas a cobrar.',
+      },
+      {
+        heading: 'Qué AFAP hay y quién las controla',
+        body: 'AFAP significa Administradora de Fondos de Ahorro Previsional. En Uruguay hay varias, entre ellas República AFAP, vinculada al Estado, y otras privadas. Todas están reguladas y supervisadas por el Banco Central del Uruguay, que fija reglas comunes de inversión e información. Eso no quiere decir que rindan o cobren igual: compiten en comisión, en atención y en resultados, y por eso conviene compararlas en lugar de asumir que son todas lo mismo.',
+      },
+      {
+        heading: 'Las tres cosas que conviene comparar',
+        body: 'Mirá tres puntos. Primero, la comisión de administración: es lo que te descuentan y erosiona tu ahorro año a año, así que a igualdad de todo lo demás, menor comisión es mejor. Segundo, la rentabilidad histórica del fondo, teniendo claro que los rendimientos pasados no garantizan los futuros. Tercero, el subfondo en el que estás: el sistema suele mover tu dinero de un fondo con inversiones algo más expuestas al riesgo cuando sos joven a uno más conservador cerca del retiro, para proteger lo acumulado. Tené presente que, en Uruguay, buena parte de lo que administran las AFAP está colocado en títulos del Estado, incluso en el subfondo más agresivo.',
+      },
+      {
+        heading: 'Cómo y cuándo cambiarte',
+        body: 'Cambiarte de AFAP es un trámite gratuito que hacés vos, pero no se puede a cada rato: hay límites de frecuencia y, en algunos casos, una permanencia mínima antes de poder moverte de nuevo. Las condiciones exactas pueden variar, así que confirmá las reglas vigentes en la AFAP a la que querés pasarte o en el BPS antes de iniciar el trámite. Y no te cambies por impulso ni por un regalo de bienvenida: lo que de verdad mueve tu jubilación es la comisión y el rendimiento de mediano plazo, no una promoción puntual.',
+      },
+      {
+        heading: 'Información general y próximos pasos',
+        body: 'Esta es una guía informativa, no asesoramiento previsional. Revisá tus estados de cuenta, compará las comisiones y rentabilidades publicadas y, si tenés dudas sobre qué subfondo te conviene según tu edad, consultá en tu AFAP o con un asesor. Lo esencial: no dejes tu ahorro jubilatorio en piloto automático solo porque el aporte es obligatorio, porque la AFAP que te asignaron por defecto no es necesariamente la que más te conviene.',
+      },
+    ],
+    related: [
+      {
+        label: 'Jubilación y AFAP: cómo funciona',
+        to: '/guias/jubilacion-y-afap-como-funciona-uruguay',
+      },
+      {
+        label: 'Reforma jubilatoria: qué cambia',
+        to: '/guias/reforma-jubilatoria-uruguay-que-cambia',
+      },
+      { label: 'Planificar tu retiro', to: '/guias/planificar-tu-retiro-uruguay' },
+      { label: 'Cómo empezar a invertir', to: '/guias/como-empezar-a-invertir-uruguay' },
+    ],
+    faqs: [
+      {
+        q: '¿Conviene cambiarse de AFAP?',
+        a: 'Puede convenir si otra AFAP cobra menos comisión o rinde mejor de forma consistente, no por un incentivo puntual de bienvenida. Compará la comisión de administración y la rentabilidad histórica, y confirmá las reglas vigentes para cambiarte antes de hacer el trámite.',
+      },
+      {
+        q: '¿Qué es un subfondo?',
+        a: 'Es la cartera donde se invierte tu ahorro dentro de la AFAP. El sistema suele moverte de un subfondo más expuesto al riesgo cuando sos joven a uno más conservador cerca del retiro, para proteger lo que ya acumulaste.',
+      },
+      {
+        q: '¿Puedo no tener AFAP?',
+        a: 'No: con el régimen mixto obligatorio, parte de tu aporte va sí o sí a una AFAP. Lo que elegís es cuál. Si nunca la elegiste, es probable que te hayan asignado una por defecto, y conviene revisar si es la que más te conviene.',
+      },
+    ],
+  },
+  {
+    slug: 'comprar-criptomonedas-en-uruguay',
+    title: 'Cómo comprar criptomonedas en Uruguay (sin perderte)',
+    description:
+      'Cómo comprar criptomonedas en Uruguay paso a paso: exchanges locales registrados como PSAV ante el BCU, plataformas internacionales, P2P, en qué wallet guardar tus Bitcoin o USDT y qué costos y riesgos mirar.',
+    tag: 'CRIPTO',
+    updatedAt: '2026-07-18',
+    sections: [
+      {
+        heading: 'Antes de comprar: qué es legal y qué no',
+        body: 'Comprar, tener y operar criptomonedas en Uruguay es legal, pero conviene arrancar con dos ideas claras. Una: las criptomonedas (Bitcoin, USDT, Ethereum) no son moneda de curso legal —la única es el peso—, así que son activos, no dinero, y nadie está obligado a aceptarlas como pago. Dos: desde la Ley 20.345 de activos virtuales, los proveedores de servicios cripto (los PSAV: exchanges, plataformas, custodios) quedaron bajo la supervisión del Banco Central del Uruguay. Antes de elegir dónde comprar, fijate si la plataforma está registrada como PSAV ante el BCU: es la señal de que opera dentro del marco local.',
+      },
+      {
+        heading: 'Las tres formas de comprar',
+        body: 'Hay tres caminos habituales. El primero es un exchange local registrado como PSAV: comprás con transferencia, giro o efectivo en pesos y tenés soporte en el país. El segundo es un exchange internacional grande, elegido por su liquidez y variedad; muchos uruguayos los usan aunque no estén registrados localmente, y ahí operás bajo sus términos internacionales. El tercero es el P2P (persona a persona) dentro de esas plataformas: comprás directamente a otro usuario que acepta transferencia bancaria o redes de cobranza en pesos. Cada vía tiene su equilibrio entre comodidad, costo y respaldo.',
+      },
+      {
+        heading: 'El paso a paso',
+        body: 'En general el proceso es parecido: te registrás y hacés la verificación de identidad (KYC), que la normativa de prevención de lavado exige; cargás fondos por el método que ofrezca la plataforma (transferencia, tarjeta, efectivo o P2P); elegís la cripto y confirmás la compra; y la recibís en tu cuenta. Prestá atención al costo real, que no es solo la comisión visible sino también el spread entre el precio de compra y de venta, y a los cargos por pagar con tarjeta, que suelen ser más altos que por transferencia.',
+      },
+      {
+        heading: 'Dónde guardar lo que comprás',
+        body: 'Una vez que comprás, tus cripto pueden quedar en la wallet del exchange (custodia de terceros: cómodo, pero dependés de esa plataforma) o pasarlas a una wallet propia (autocustodia: vos controlás las claves). La frase que se repite en el ambiente, "not your keys, not your coins", apunta a esto: si no tenés las claves, en el fondo confiás en un tercero. La autocustodia te da control, pero también responsabilidad total: si perdés tu frase de recuperación (seed phrase), no hay soporte que te devuelva los fondos. Para montos chicos, la wallet del exchange alcanza; para montos importantes, mucha gente prefiere la autocustodia.',
+      },
+      {
+        heading: 'Costos, riesgos y estafas',
+        body: 'Más allá de la operativa, tené presente que la cripto es volátil —su precio puede subir o bajar fuerte en poco tiempo— y que es terreno fértil para estafas: promesas de rendimiento fijo, "gurús del trading" que multiplican tu plata, falsos soportes que te piden la frase de recuperación. Ninguna plataforma seria te pide tu seed phrase. Usá plataformas con trayectoria, desconfiá de lo que suena demasiado bueno para ser verdad y no pongas plata que no puedas perder.',
+      },
+      {
+        heading: 'Impuestos: todavía no está resuelto',
+        body: 'El tratamiento impositivo de la cripto en Uruguay no está definido por una norma específica, así que desconfiá de cualquier tabla que te dé un porcentaje exacto. Si operás montos relevantes o de forma habitual, consultá a un contador y revisá nuestra guía de regulación e impuestos, donde explicamos qué dice —y qué no dice— la ley. Esta guía es informativa y no constituye asesoramiento financiero ni legal.',
+      },
+    ],
+    related: [
+      {
+        label: 'Criptomonedas: regulación e impuestos',
+        to: '/guias/criptomonedas-regulacion-impuestos-uruguay',
+      },
+      { label: 'Dólar cripto y USDT', to: '/guias/dolar-cripto-usdt-uruguay' },
+      {
+        label: 'Errores y estafas al invertir',
+        to: '/guias/errores-y-estafas-al-invertir-uruguay',
+      },
+      { label: 'Glosario: USDT', to: '/glosario/usdt' },
+      { label: 'Dónde invertir en Uruguay', to: '/inversiones-uruguay' },
+    ],
+    faqs: [
+      {
+        q: '¿Es legal comprar criptomonedas en Uruguay?',
+        a: 'Sí. Comprarlas, tenerlas y operarlas es legal. No son moneda de curso legal, y desde la Ley 20.345 los proveedores de servicios de activos virtuales (PSAV) están bajo la supervisión del Banco Central del Uruguay. Antes de elegir plataforma, verificá que esté registrada como PSAV ante el BCU.',
+      },
+      {
+        q: '¿Dónde compro USDT o Bitcoin?',
+        a: 'Hay tres vías: un exchange local registrado como PSAV, un exchange internacional grande o el P2P (comprarle a otro usuario). Compará costos —comisión y spread— y verificá el registro PSAV ante el BCU cuando se trate de un operador local.',
+      },
+      {
+        q: '¿Binance funciona en Uruguay?',
+        a: 'Es un exchange internacional que usan muchos uruguayos por su liquidez, pero no está registrado localmente como PSAV, así que operás bajo sus términos internacionales. Para cargar o retirar pesos se suele usar el mercado P2P. Sea cual sea la plataforma, cuidá la seguridad de tu cuenta y de tu wallet.',
+      },
+      {
+        q: '¿Pago impuestos por mis criptomonedas?',
+        a: 'No hay una norma tributaria específica que fije una tasa para la cripto en Uruguay, y el tema no está resuelto. Si operás montos importantes o de forma habitual, consultá a un contador; desconfiá de quien te asegure un porcentaje exacto.',
+      },
+    ],
+  },
+  {
+    slug: 'salario-minimo-uruguay-cuanto-es',
+    title: 'Salario mínimo en Uruguay: cuánto es y cómo se ajusta',
+    description:
+      'Cuánto es el salario mínimo nacional en Uruguay en 2026, cómo y cuándo se ajusta, y por qué no es lo mismo que el mínimo de tu categoría por consejo de salarios.',
+    tag: 'SALARIO',
+    updatedAt: '2026-07-18',
+    sections: [
+      {
+        heading: 'Cuánto es el salario mínimo hoy',
+        body: 'El Salario Mínimo Nacional (SMN) es el piso legal por debajo del cual no se puede pagar un sueldo por la jornada completa en Uruguay. En 2026 quedó fijado en $24.572 desde el 1.º de enero y sube a $25.383 desde el 1.º de julio, tras un ajuste adicional de 3,3%. Llevado a otras formas, el valor de mitad de año equivale a un jornal de $1.015,32 y a $126,92 la hora. Estos montos surgen de un decreto del Poder Ejecutivo (Decreto 319/025) y los fija y actualiza el Ministerio de Trabajo y Seguridad Social (MTSS).',
+      },
+      {
+        heading: 'Qué es y qué no es el SMN',
+        body: 'El SMN es un mínimo nacional y general, pero no es el sueldo mínimo que te corresponde en la mayoría de los trabajos. Casi todas las actividades tienen, además, un salario mínimo por categoría fijado en los Consejos de Salarios, que suele ser bastante más alto que el SMN y depende del sector y de tu tarea. Es decir: si trabajás en un rubro con convenio, tu piso real es el de tu categoría, no el SMN. El Salario Mínimo Nacional funciona más como referencia legal y base de algunos cálculos que como el sueldo típico de mercado.',
+      },
+      {
+        heading: 'Cómo y cuándo se ajusta',
+        body: 'El valor lo fija el Poder Ejecutivo por decreto, normalmente una vez al año a partir de enero, y a veces con un ajuste intermedio a mitad de año, como pasó en 2026. La idea del ajuste es acompañar la inflación y recuperar poder de compra. Como es un número que cambia, cualquier monto que veas conviene chequearlo contra la última actualización del MTSS antes de usarlo para una cuenta concreta.',
+      },
+      {
+        heading: 'Qué te descuentan a nivel del mínimo',
+        body: 'Un sueldo al nivel del SMN igual tiene descuentos: aportás a la seguridad social (BPS, en el orden del 15% del nominal) y al FONASA para la cobertura de salud, más el pequeño aporte al Fondo de Reconversión Laboral. Lo que no pagás es IRPF, porque a ese nivel tu ingreso queda por debajo del mínimo no imponible, que arranca en 7 BPC mensuales (con la BPC de 2026 en $6.864, son unos $48.048). Para ver cómo queda tu líquido según tu nominal, podés usar nuestra calculadora de sueldo líquido.',
+      },
+      {
+        heading: 'Dónde confirmar el valor vigente',
+        body: 'Esta guía es informativa y el monto del salario mínimo se actualiza periódicamente, así que para un cálculo formal confirmá el valor vigente en el MTSS o en el recibo oficial. Y si te ofrecen un puesto "por el mínimo", fijate si tu actividad tiene un mínimo por categoría más alto en los Consejos de Salarios: muchas veces el piso real de tu trabajo está por encima del SMN.',
+      },
+    ],
+    related: [
+      { label: 'Entender tu recibo de sueldo', to: '/guias/entender-tu-recibo-de-sueldo-uruguay' },
+      { label: 'Calculadora de sueldo líquido', to: '/herramientas/calculadora-sueldo-liquido' },
+      { label: 'Cómo se calcula el aguinaldo', to: '/guias/como-se-calcula-el-aguinaldo-uruguay' },
+      { label: 'Cómo funciona el IRPF', to: '/guias/como-funciona-el-irpf-uruguay' },
+    ],
+    faqs: [
+      {
+        q: '¿Cuánto es el salario mínimo en Uruguay en 2026?',
+        a: 'El Salario Mínimo Nacional es de $24.572 desde enero de 2026 y de $25.383 desde julio de 2026 (equivalente a un jornal de $1.015,32 y a $126,92 la hora). Lo fija el MTSS por decreto y conviene confirmar el valor vigente, porque se actualiza.',
+      },
+      {
+        q: '¿El mínimo de mi categoría es el SMN?',
+        a: 'No necesariamente. La mayoría de las actividades tiene un salario mínimo por categoría, fijado en los Consejos de Salarios, casi siempre más alto que el Salario Mínimo Nacional. Si tu rubro tiene convenio, tu piso real es el de tu categoría.',
+      },
+      {
+        q: '¿Se paga IRPF sobre el salario mínimo?',
+        a: 'No: a ese nivel el ingreso está por debajo del mínimo no imponible de 7 BPC, así que no genera IRPF. Sí se aporta a la seguridad social (BPS) y al FONASA.',
+      },
+    ],
+  },
+  {
+    slug: 'monotributo-uruguay-que-es-y-cuando-conviene',
+    title: 'Monotributo en Uruguay: qué es y cuándo conviene',
+    description:
+      'Qué es el monotributo en Uruguay, cuánto se paga y los topes de ingresos 2026, y cuándo conviene frente a una empresa unipersonal para emprender o facturar en chico.',
+    tag: 'MONOTRIBUTO',
+    updatedAt: '2026-07-18',
+    sections: [
+      {
+        heading: 'Qué es el monotributo',
+        body: 'El monotributo es un régimen pensado para emprendimientos de reducida dimensión que unifica, en un único pago mensual a BPS, los aportes a la seguridad social y los impuestos nacionales (Ley 18.083). En lugar de liquidar IVA e impuestos por separado, pagás una cuota fija y quedás al día. Es la puerta de entrada más simple para formalizar un pequeño negocio: una feria, una venta de comida, un oficio o un emprendimiento que recién arranca y le vende sobre todo al consumidor final.',
+      },
+      {
+        heading: 'Los topes 2026: hasta cuánto podés facturar',
+        body: 'El monotributo tiene límites de facturación. En 2026, un monotributista unipersonal puede facturar hasta 183.000 UI al año (unos $1.175.537), y una sociedad de hecho de dos socios hasta 305.000 UI (unos $1.959.229), con un tope de activos de 152.500 UI (unos $979.614). Los topes se fijan en Unidades Indexadas, que se mantienen estables, y su equivalente en pesos se actualiza cada año. Si superás esos límites, ya no podés seguir en monotributo y tenés que pasar a otro régimen, típicamente una empresa unipersonal.',
+      },
+      {
+        heading: 'Cuánto se paga',
+        body: 'La cuota mensual es un monto fijo que publica el BPS y que incluye tus aportes jubilatorios; podés sumar la cobertura de salud (FONASA) para vos y tu familia. Para quienes recién arrancan existe una escala gradual, con reducción de aportes en los primeros años (Ley 19.942), que abarata el costo al principio. La ventaja es la previsibilidad: sabés cuánto pagás por mes y no manejás IVA en tus ventas. La contracara es que, al no discriminar IVA, no siempre servís para clientes que necesitan descontarlo.',
+      },
+      {
+        heading: 'El Monotributo Social MIDES',
+        body: 'Aparte del monotributo común existe el Monotributo Social MIDES (Ley 18.874), pensado para personas u hogares en situación de vulnerabilidad que encaran un emprendimiento. Maneja los mismos topes de ingresos que el monotributo común, pero se distingue por dos cosas: la elegibilidad es restringida —hay que estar en situación de vulnerabilidad y contar con la autorización previa del MIDES— y la escala de aportes reducidos es más larga (paga 25% el primer año, 50% el segundo, 75% el tercero y recién 100% a partir del cuarto), lo que lo hace más barato al arrancar. Si estás empezando desde una situación económica difícil, conviene consultar en el BPS o el MIDES si calificás antes de inscribirte en el monotributo común.',
+      },
+      {
+        heading: 'Monotributo o unipersonal: cuándo conviene cada uno',
+        body: 'A grandes rasgos, el monotributo conviene cuando facturás poco, le vendés sobre todo a consumidores finales y valorás la simplicidad y el costo bajo. La empresa unipersonal conviene cuando superás los topes, cuando tus clientes necesitan que les factures con IVA, o cuando tu actividad no encaja en el monotributo. Muchos arrancan en monotributo y pasan a unipersonal cuando el negocio crece. Para comparar tu caso concreto con números, mirá nuestra página de qué empresa abrir. Esta guía es informativa; ante la duda, consultá con un contador o directamente en BPS y DGI.',
+      },
+    ],
+    related: [
+      { label: 'Abrir una empresa unipersonal', to: '/guias/abrir-empresa-unipersonal-uruguay' },
+      { label: 'Cómo facturar como freelancer', to: '/guias/facturar-como-freelancer-uruguay' },
+      { label: 'Qué empresa abrir', to: '/que-empresa-abrir-uruguay' },
+      { label: 'Cómo funciona el IRPF', to: '/guias/como-funciona-el-irpf-uruguay' },
+    ],
+    faqs: [
+      {
+        q: '¿Cuánto se paga de monotributo?',
+        a: 'Se paga una cuota mensual fija que publica el BPS, que incluye tus aportes jubilatorios y, opcionalmente, la cobertura de salud (FONASA). Para los primeros años hay una escala gradual con aportes reducidos. No liquidás IVA por venta: ya está incluido en la cuota.',
+      },
+      {
+        q: '¿Cuál es el tope de facturación del monotributo en 2026?',
+        a: 'En 2026, hasta 183.000 UI al año (unos $1.175.537) para el monotributista unipersonal y 305.000 UI (unos $1.959.229) para la sociedad de hecho de dos socios, con un tope de activos de 152.500 UI (unos $979.614). El tope en UI es estable y su equivalente en pesos se actualiza cada año.',
+      },
+      {
+        q: '¿Puedo darle una factura con IVA a una empresa?',
+        a: 'No: el monotributo no discrimina IVA, así que tu comprobante no le sirve al cliente que necesita descontarlo. Si trabajás sobre todo con empresas que piden IVA, probablemente te convenga una empresa unipersonal en vez del monotributo.',
+      },
+    ],
+  },
+  {
+    slug: 'abrir-empresa-unipersonal-uruguay',
+    title: 'Cómo abrir una empresa unipersonal en Uruguay',
+    description:
+      'Cómo abrir una empresa unipersonal en Uruguay paso a paso: inscripción en DGI y BPS, el régimen de pequeña empresa (Literal E) e IVA mínimo, costos y cuándo conviene para emprender.',
+    tag: 'UNIPERSONAL',
+    updatedAt: '2026-07-18',
+    sections: [
+      {
+        heading: 'Qué es una empresa unipersonal',
+        body: 'Una empresa unipersonal es una persona física que realiza una actividad económica por cuenta propia. Es la forma más simple y barata de formalizarse para emprender o facturar como profesional, y por eso es muy común entre freelancers, oficios y pequeños comercios. Su gran contra es que no separa tu patrimonio del de la empresa: respondés por las deudas del negocio con tus bienes personales. Si tu actividad tiene riesgo o pensás crecer bastante, quizás convenga evaluar una SAS o una SRL, que sí limitan la responsabilidad.',
+      },
+      {
+        heading: 'El paso a paso para abrirla',
+        body: 'Abrir una unipersonal implica inscribirte en la Dirección General Impositiva (DGI) y en el BPS. Obtenés tu número de RUT, definís tu actividad y giro, y quedás habilitado para emitir comprobantes. Hoy la facturación es electrónica, así que vas a necesitar habilitarte como emisor de comprobantes fiscales electrónicos (e-ticket y e-factura). El trámite es relativamente ágil y muchos lo hacen con la ayuda de un contador, que además te orienta sobre el régimen impositivo que más te conviene.',
+      },
+      {
+        heading: 'Los impuestos: el régimen de pequeña empresa (Literal E)',
+        body: 'Si tus ingresos son chicos, entrás en el régimen de pequeña empresa, conocido como Literal E: quedás exonerado de IRAE y pagás un IVA mínimo mensual fijo (en 2026, $5.910, con una rebaja los dos primeros años: $1.478 el primero y $2.955 el segundo). Si documentás todo por e-factura, ese IVA mínimo pasa a ser el menor entre la cuota fija y el 3,3% de lo que facturás. Podés estar en Literal E mientras tus ingresos anuales no superen 305.000 UI (unos $1.959.229 en 2026). Un detalle fino: para servicios personales puros, el encuadre en Literal E está en tensión con la norma, así que conviene confirmarlo con un contador.',
+      },
+      {
+        heading: 'Qué pasa si crecés',
+        body: 'Si superás el tope del Literal E, dejás de pagar el IVA mínimo y pasás al régimen general: IRAE al 25% (sobre la renta ficta o real) e IVA común sobre tus ventas. Ese cambio no es en sí mismo malo —significa que estás facturando más—, pero implica más obligaciones contables, por lo que ahí un contador deja de ser opcional. Conviene tener esto en el radar desde el arranque para no llevarte una sorpresa el año en que el negocio despega.',
+      },
+      {
+        heading: 'Unipersonal, monotributo o sociedad: cómo decidir',
+        body: 'La unipersonal compite sobre todo con el monotributo (más simple y barato, pero con topes más bajos y sin IVA) y con las sociedades como la SAS o la SRL (más caras de mantener, pero con responsabilidad limitada). La regla práctica: monotributo si facturás poco y le vendés a consumidores; unipersonal si necesitás dar IVA o superaste el monotributo; sociedad si querés proteger tu patrimonio o tener socios. Para ver los números de cada opción según tu ingreso, usá nuestra página de qué empresa abrir. Esta guía es informativa y no reemplaza el asesoramiento de un contador.',
+      },
+    ],
+    related: [
+      {
+        label: 'Monotributo: qué es y cuándo conviene',
+        to: '/guias/monotributo-uruguay-que-es-y-cuando-conviene',
+      },
+      { label: 'Cómo facturar como freelancer', to: '/guias/facturar-como-freelancer-uruguay' },
+      { label: 'Qué empresa abrir', to: '/que-empresa-abrir-uruguay' },
+      { label: 'Cómo funciona el IRPF', to: '/guias/como-funciona-el-irpf-uruguay' },
+    ],
+    faqs: [
+      {
+        q: '¿Qué diferencia hay entre unipersonal y monotributo?',
+        a: 'El monotributo es más simple y barato, pero con topes de facturación bajos y sin manejar IVA; la empresa unipersonal permite facturar más y dar IVA, con más obligaciones. Muchos arrancan en monotributo y pasan a unipersonal cuando el negocio crece o cuando sus clientes necesitan IVA.',
+      },
+      {
+        q: '¿Tengo que cobrar IVA en una unipersonal?',
+        a: 'En el régimen de pequeña empresa (Literal E) pagás un IVA mínimo mensual fijo en lugar de IVA sobre cada venta, y quedás exento de IRAE mientras no superes el tope. Si lo superás, pasás al IVA en régimen general y al IRAE.',
+      },
+      {
+        q: '¿Respondo con mis bienes personales?',
+        a: 'Sí: la empresa unipersonal no separa tu patrimonio del de la empresa, así que respondés por las deudas del negocio con tus bienes personales. Si querés limitar esa responsabilidad, evaluá una SAS o una SRL.',
+      },
+    ],
+  },
+  {
+    slug: 'facturar-como-freelancer-uruguay',
+    title: 'Cómo facturar como freelancer en Uruguay',
+    description:
+      'Cómo facturar como freelancer o emprendedor en Uruguay: por qué necesitás monotributo o empresa unipersonal, cómo funciona la e-factura, cómo le facturás a un cliente del exterior y qué impuestos pagás.',
+    tag: 'FACTURACIÓN',
+    updatedAt: '2026-07-18',
+    sections: [
+      {
+        heading: 'Para facturar hay que estar formalizado',
+        body: 'En Uruguay no se puede emitir una factura válida "a título personal" sin más: para facturar necesitás estar inscripto en un régimen, y para un freelancer las dos puertas de entrada son el monotributo o la empresa unipersonal. El monotributo es más simple y barato para montos chicos; la unipersonal permite facturar más y manejar IVA. Elegir bien el régimen es el primer paso, porque de eso dependen cuánto pagás y a qué clientes les podés facturar.',
+      },
+      {
+        heading: 'Cómo se emite una factura hoy',
+        body: 'Cómo emitís la factura depende de tu régimen. Si sos contribuyente de IVA —por ejemplo, una empresa unipersonal— tenés que emitir comprobantes fiscales electrónicos (CFE): e-tickets a consumidor final y e-facturas a otras empresas, para lo que necesitás un certificado electrónico y una herramienta de emisión, que puede ser un software de facturación o un servicio tercerizado. Los monotributistas, en cambio, están exceptuados de la facturación electrónica: pueden seguir emitiendo boletas o facturas en papel y no precisan certificado. En cualquier caso, guardá siempre tus comprobantes: son tu respaldo ante la DGI y lo que te van a pedir tus clientes empresa.',
+      },
+      {
+        heading: 'Facturarle a un cliente del exterior',
+        body: 'Cobrar de afuera es una de las grandes ventajas del trabajo freelance, y también genera dudas. La exportación de servicios tiene un tratamiento de IVA distinto al de una venta local —habitualmente no lleva IVA uruguayo—, pero las condiciones dependen del tipo de servicio y de dónde se aprovecha, así que conviene confirmar tu caso con un contador. En lo operativo, vas a cobrar en dólares y después convertir o mantener según te convenga; para el detalle impositivo de trabajar para clientes del exterior tenemos una guía específica.',
+      },
+      {
+        heading: 'Qué impuestos pagás según el régimen',
+        body: 'Si estás en monotributo, tu pago es único y previsible: la cuota mensual cubre aportes e impuestos nacionales, sin liquidar IVA por venta. Si estás en unipersonal, en el régimen de pequeña empresa (Literal E) pagás un IVA mínimo mensual y quedás exento de IRAE mientras no superes el tope; por encima, pasás al IVA general y al IRAE. En ambos casos aportás a BPS como titular. Tener claro qué te toca evita sustos con la DGI y te ayuda a poner bien el precio de tu trabajo.',
+      },
+      {
+        heading: 'Errores comunes al empezar a facturar',
+        body: 'Los tropiezos típicos son: trabajar sin factura y que un cliente te la termine exigiendo; mezclar la plata del negocio con la personal, lo que complica llevar la cuenta; no guardar los comprobantes; y no considerar los impuestos al fijar el precio, para después descubrir que el margen era menor de lo que parecía. Formalizarte desde el arranque, aunque sea en monotributo, te evita casi todos. Esta guía es informativa; para armar bien tu esquema, sobre todo si facturás al exterior o crecés rápido, consultá con un contador.',
+      },
+    ],
+    related: [
+      {
+        label: 'Monotributo: qué es y cuándo conviene',
+        to: '/guias/monotributo-uruguay-que-es-y-cuando-conviene',
+      },
+      { label: 'Abrir una empresa unipersonal', to: '/guias/abrir-empresa-unipersonal-uruguay' },
+      {
+        label: 'Trabajar para el exterior desde Uruguay',
+        to: '/guias/trabajar-para-el-exterior-desde-uruguay',
+      },
+      { label: 'Qué empresa abrir', to: '/que-empresa-abrir-uruguay' },
+    ],
+    faqs: [
+      {
+        q: '¿Puedo facturar sin tener empresa?',
+        a: 'No: para emitir una factura válida hay que estar formalizado, y para un freelancer eso significa inscribirse en monotributo o en una empresa unipersonal. Recién ahí podés emitir comprobantes válidos por tu trabajo.',
+      },
+      {
+        q: '¿Cómo le facturo a un cliente de EE.UU. o Europa?',
+        a: 'Con tu régimen inscripto emitís la e-factura correspondiente a la exportación de servicios, que habitualmente no lleva IVA uruguayo. El tratamiento exacto depende del servicio y del caso, así que conviene confirmarlo con un contador. Vas a cobrar en dólares.',
+      },
+      {
+        q: '¿Necesito sí o sí e-factura?',
+        a: 'Depende de tu régimen. Si sos contribuyente de IVA (por ejemplo, una empresa unipersonal), sí: tenés que emitir comprobantes fiscales electrónicos (e-tickets y e-facturas) con un certificado electrónico. Los monotributistas están exceptuados de la facturación electrónica y pueden emitir boletas en papel.',
       },
     ],
   },

@@ -33,6 +33,15 @@ useHead({
   },
 })
 
+// Site-wide default og:image:alt / twitter:image:alt. nuxt-og-image emits the
+// image + dimensions but never an alt, so without this the branded preview has
+// no alt text on any page. Pages with a more specific alt override via their
+// own useSeoMeta({ ogImageAlt }); this is the floor so every page has one.
+useSeoMeta({
+  ogImageAlt: 'Cambio Uruguay: cotización del dólar hoy y comparador de casas de cambio',
+  twitterImageAlt: 'Cambio Uruguay: cotización del dólar hoy y comparador de casas de cambio',
+})
+
 // Google AdSense: inject the loader + account meta only when a publisher id is
 // configured (NUXT_PUBLIC_ADSENSE_PUB_ID). Empty by default so nothing loads
 // until the AdSense account exists — applying later is a config change, not a

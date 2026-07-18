@@ -1147,30 +1147,29 @@ useHead({
   ],
 })
 
-// SEO Configuration with multilingual support
+// SEO Configuration with multilingual support. Own title/description (NOT the
+// homepage's seo.home* keys) so /avanzado doesn't duplicate "/" in the SERP —
+// they share the same query intent but must be distinct pages. og:url is this
+// page's own canonical, not the homepage (filter query params don't fork it).
 useSeoMeta({
-  title: () => t('seo.homeTitle'),
-  description: () => t('seo.homeDescription'),
+  title: () => t('seo.advancedTitle'),
+  description: () => t('seo.advancedDescription'),
   keywords: () => t('seo.homeKeywords'),
-  ogTitle: () => t('seo.homeTitle'),
-  ogDescription: () => t('seo.homeDescription'),
+  ogTitle: () => t('seo.advancedTitle'),
+  ogDescription: () => t('seo.advancedDescription'),
   ogType: 'website',
-  ogUrl: () => {
-    const baseUrl = 'https://cambio-uruguay.com'
-    const queryString = new URLSearchParams(route.query as Record<string, string>).toString()
-    return queryString ? `${baseUrl}?${queryString}` : baseUrl
-  },
+  ogUrl: 'https://cambio-uruguay.com/avanzado',
   twitterCard: 'summary_large_image',
-  twitterTitle: () => t('seo.homeTitle'),
-  twitterDescription: () => t('seo.homeDescription'),
-  ogImageAlt: () => t('seo.homeTitle'),
-  twitterImageAlt: () => t('seo.homeTitle'),
+  twitterTitle: () => t('seo.advancedTitle'),
+  twitterDescription: () => t('seo.advancedDescription'),
+  ogImageAlt: () => t('seo.advancedTitle'),
+  twitterImageAlt: () => t('seo.advancedTitle'),
 })
 
 // Branded, copyright-free OG image generated server-side (page had no image).
 defineOgImageComponent('Cambio', {
   title: () => t('avanzado'),
-  subtitle: () => t('seo.homeDescription'),
+  subtitle: () => t('seo.advancedDescription'),
   tag: () => t('avanzado'),
   locale: locale.value as 'es' | 'en' | 'pt',
 })

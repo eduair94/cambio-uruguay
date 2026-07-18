@@ -168,6 +168,24 @@ const formatDate = (iso: string) =>
 
 const canonicalUrl = computed(() => `https://cambio-uruguay.com/blog/${slug.value}`)
 
+// The daily blog generator can emit the same headline on different days (e.g.
+// "Dólar en Uruguay: impacto de los mercados globales" ran 8x), which produced
+// duplicate <title>s across posts — a duplicate-content signal. Append the
+// post's date so every SEO title is unique; the <h1> stays clean (post.title).
+const seoDate = computed(() =>
+  post.value
+    ? new Date(post.value.date + 'T12:00:00').toLocaleDateString('es-UY', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      })
+    : ''
+)
+const seoTitle = computed(() => {
+  const base = post.value?.title ?? 'Blog'
+  return seoDate.value ? `${base} — ${seoDate.value}` : base
+})
+
 defineOgImageComponent('Cambio', {
   title: () => post.value?.title ?? 'Blog',
   subtitle: () => post.value?.summary ?? '',
@@ -175,14 +193,14 @@ defineOgImageComponent('Cambio', {
 })
 
 useSeoMeta({
-  title: () => `${post.value?.title ?? 'Blog'} | Cambio Uruguay`,
+  title: () => `${seoTitle.value} | Cambio Uruguay`,
   description: () => post.value?.summary ?? '',
-  ogTitle: () => post.value?.title ?? 'Blog',
+  ogTitle: () => seoTitle.value,
   ogDescription: () => post.value?.summary ?? '',
   ogType: 'article',
   ogUrl: () => canonicalUrl.value,
   twitterCard: 'summary_large_image',
-  twitterTitle: () => post.value?.title ?? 'Blog',
+  twitterTitle: () => seoTitle.value,
 })
 
 useHead({

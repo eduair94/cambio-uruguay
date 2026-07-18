@@ -457,6 +457,7 @@ export const guideHubs: readonly GuideHub[] = [
       'despido-y-liquidacion-uruguay',
       'como-funciona-el-irpf-uruguay',
       'trabajar-para-el-exterior-desde-uruguay',
+      'salario-minimo-uruguay-cuanto-es',
     ],
     resources: [
       {
@@ -480,7 +481,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/que-empresa-abrir-uruguay',
       },
     ],
-    relatedHubs: ['deudas-y-credito-uruguay', 'ahorrar-e-invertir-uruguay'],
+    relatedHubs: [
+      'deudas-y-credito-uruguay',
+      'ahorrar-e-invertir-uruguay',
+      'emprender-y-empresa-uruguay',
+    ],
   },
   {
     slug: 'ahorrar-e-invertir-uruguay',
@@ -501,6 +506,7 @@ export const guideHubs: readonly GuideHub[] = [
       'conviene-ahorrar-en-dolares-uruguay',
       'interes-compuesto-explicado-uruguay',
       'errores-y-estafas-al-invertir-uruguay',
+      'comprar-criptomonedas-en-uruguay',
     ],
     resources: [
       {
@@ -545,6 +551,8 @@ export const guideHubs: readonly GuideHub[] = [
       'armar-un-presupuesto-personal-uruguay',
       'que-seguros-conviene-tener-uruguay',
       'jubilacion-y-afap-como-funciona-uruguay',
+      'reforma-jubilatoria-uruguay-que-cambia',
+      'elegir-o-cambiar-de-afap-uruguay',
       'planificar-tu-retiro-uruguay',
       'abrir-una-cuenta-bancaria-uruguay',
       'billeteras-digitales-uruguay-como-funcionan',
@@ -579,6 +587,46 @@ export const guideHubs: readonly GuideHub[] = [
       },
     ],
     relatedHubs: ['ahorrar-e-invertir-uruguay', 'deudas-y-credito-uruguay'],
+  },
+  {
+    slug: 'emprender-y-empresa-uruguay',
+    title: 'Emprender y tener una empresa en Uruguay',
+    seoTitle:
+      'Emprender en Uruguay: monotributo, empresa unipersonal, facturar y qué empresa abrir',
+    description:
+      'Formalizar y hacer crecer tu emprendimiento en Uruguay: monotributo, empresa unipersonal, cómo facturar como freelancer, e-factura, impuestos y qué forma jurídica conviene.',
+    tag: 'EMPRENDER',
+    icon: 'mdi-rocket-launch-outline',
+    intro:
+      'Arrancar un negocio o facturar por tu cuenta en Uruguay pasa, tarde o temprano, por formalizarte: elegir entre el monotributo y la empresa unipersonal, entender la e-factura, saber cómo le cobrás a un cliente del exterior y qué impuestos te tocan según cuánto factures. Este tema reúne las guías que desarman esos primeros pasos —del monotributo para lo chico a la unipersonal cuando crecés— y las herramientas para elegir la forma jurídica que más te conviene, sin jerga y con las cifras vigentes.',
+    guideSlugs: [
+      'monotributo-uruguay-que-es-y-cuando-conviene',
+      'abrir-empresa-unipersonal-uruguay',
+      'facturar-como-freelancer-uruguay',
+    ],
+    resources: [
+      {
+        label: 'Qué empresa abrir',
+        description: 'Comparador de formas jurídicas según tu ingreso.',
+        to: '/que-empresa-abrir-uruguay',
+      },
+      {
+        label: 'Trabajar para el exterior',
+        description: 'Facturar y cobrar a clientes de afuera.',
+        to: '/guias/trabajar-para-el-exterior-desde-uruguay',
+      },
+      {
+        label: 'Mejores bancos de Uruguay',
+        description: 'Dónde abrir la cuenta del emprendimiento.',
+        to: '/mejores-bancos-uruguay',
+      },
+      {
+        label: 'Calculadora de sueldo líquido',
+        description: 'Del nominal al líquido, con aportes.',
+        to: '/herramientas/calculadora-sueldo-liquido',
+      },
+    ],
+    relatedHubs: ['sueldo-trabajo-e-impuestos-uruguay', 'ahorrar-e-invertir-uruguay'],
   },
 ]
 
