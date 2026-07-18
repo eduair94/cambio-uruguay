@@ -9,6 +9,7 @@
 //   { withSummaries: false } → skip the AI prose pass (numbers only)
 import { refreshRedditSentiment } from '../../utils/redditSentimentStore'
 import { refreshScamRadar } from '../../utils/scamRadarStore'
+import { refreshRedditTopics } from '../../utils/redditTopicsStore'
 
 export default defineTask({
   meta: {
@@ -22,6 +23,8 @@ export default defineTask({
     const result = await refreshRedditSentiment({ window, withSummaries })
     // Same corpus, second read: the scam radar on /estafas-uruguay. No new data source.
     const radar = await refreshScamRadar()
-    return { result: { ...result, radar } }
+    // Broad money/economy harvest + topic radar on /temas-de-dinero-reddit.
+    const topics = await refreshRedditTopics({ window })
+    return { result: { ...result, radar, topics } }
   },
 })

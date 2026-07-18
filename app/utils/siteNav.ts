@@ -352,6 +352,22 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        to: '/temas-de-dinero-reddit',
+        labelKey: 'nav.redditTopics',
+        icon: 'mdi-reddit',
+        priority: 0.6,
+        changefreq: 'daily',
+        fresh: true,
+        keywords: [
+          'temas de dinero reddit',
+          'que pregunta la gente sobre plata',
+          'reddit uruguay finanzas',
+          'de que habla uruguay dinero',
+          'dudas de plata reddit',
+          'economia personal reddit',
+        ],
+      },
+      {
         to: '/por-que-el-bcu-quiere-mas-pesos',
         labelKey: 'nav.desdolarizacion',
         icon: 'mdi-currency-usd-off',

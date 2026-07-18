@@ -16,6 +16,7 @@
 // the scam radar once, and the radar shipped empty.
 import { refreshRedditSentiment } from '../../utils/redditSentimentStore'
 import { refreshScamRadar } from '../../utils/scamRadarStore'
+import { refreshRedditTopics } from '../../utils/redditTopicsStore'
 
 export default defineEventHandler(async event => {
   const required = useRuntimeConfig().redditRefreshToken as string | undefined
@@ -38,5 +39,6 @@ export default defineEventHandler(async event => {
   })
   // Same corpus, second read — exactly what the task does.
   const radar = await refreshScamRadar()
-  return { ok: true, ...result, radar }
+  const topics = await refreshRedditTopics({ window: q.window === 'all' ? 'all' : 'year' })
+  return { ok: true, ...result, radar, topics }
 })
