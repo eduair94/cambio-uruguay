@@ -69,6 +69,17 @@
           <VCard variant="flat" class="related-links pa-5">
             <h2 class="text-subtitle-1 font-weight-bold mb-3">{{ t('guias.relatedTitle') }}</h2>
             <div class="d-flex flex-wrap ga-2">
+              <VChip
+                v-if="hub"
+                :to="localePath(`/temas/${hub.slug}`)"
+                color="primary"
+                variant="flat"
+                size="small"
+                link
+              >
+                <VIcon start size="small">{{ hub.icon }}</VIcon>
+                Tema: {{ hub.title }}
+              </VChip>
               <VChip :to="localePath('/')" color="primary" variant="tonal" size="small" link>
                 <VIcon start size="small">mdi-home</VIcon>
                 {{ t('guias.linkHome') }}
@@ -114,6 +125,7 @@
 </template>
 
 <script setup lang="ts">
+import { hubOfGuide } from '~/utils/guideHubs'
 import { getGuide, guideSlugs } from '~/utils/guides'
 
 // Reject unknown slugs at the route guard so they 404 (on SSR and client nav)
@@ -130,6 +142,8 @@ const route = useRoute()
 
 const slug = computed(() => String(route.params.slug ?? ''))
 const guide = computed(() => getGuide(slug.value))
+// The topic hub this guide belongs to, if any — the spoke → hub backlink.
+const hub = computed(() => hubOfGuide(slug.value))
 
 // Belt-and-suspenders: `validate` already 404s unknown slugs, but guard the
 // setup too so the template's `v-if` never renders an undefined guide.

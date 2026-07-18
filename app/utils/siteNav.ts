@@ -285,6 +285,28 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         keywords: ['guias', 'tutorial', 'como', 'aprender', 'explicacion'],
       },
       {
+        to: '/temas',
+        labelKey: 'temas.nav',
+        icon: 'mdi-shape-outline',
+        priority: 0.7,
+        changefreq: 'weekly',
+        keywords: [
+          'temas',
+          'guias por tema',
+          'alquiler',
+          'herencia',
+          'sucesion',
+          'deudas',
+          'credito',
+          'sueldo',
+          'aguinaldo',
+          'jubilacion',
+          'invertir',
+          'finanzas personales',
+          'educacion financiera',
+        ],
+      },
+      {
         to: '/glosario',
         labelKey: 'nav.glosario',
         icon: 'mdi-book-alphabet',
@@ -870,6 +892,7 @@ export const DYNAMIC_ROUTE_KEYS: Readonly<Record<string, string>> = Object.freez
   'historico/[origin]/[currency]/[[type]]': 'market',
   'indicadores/[indicador]': 'tools',
   'sucursales/[origin]/[[location]]': 'houses',
+  'temas/[slug]': 'learn',
 })
 
 /** Curated suggestions shown in the palette's empty state. */

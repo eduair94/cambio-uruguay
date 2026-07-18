@@ -29,6 +29,7 @@ import {
   type CurrencyLang,
 } from './currencyPages'
 import { glossary } from './glossary'
+import { guideHubs } from './guideHubs'
 import { guides } from './guides'
 import { indicators } from './indicators'
 import { fold, makeDoc, navToDocs, type SearchDoc } from './siteNav'
@@ -146,6 +147,24 @@ export function buildSearchIndex(ctx: SearchIndexContext): SearchDoc[] {
         icon: 'mdi-book-open-variant',
         to: `/guias/${guide.slug}`,
         keywords: [guide.tag],
+      })
+    )
+  }
+
+  for (const hub of guideHubs) {
+    docs.push(
+      makeDoc({
+        id: `hub:${hub.slug}`,
+        type: 'guide',
+        section: 'learn',
+        title: hub.title,
+        description: hub.description,
+        icon: hub.icon,
+        to: `/temas/${hub.slug}`,
+        // Deliberately NOT hub.tag: a tag like "CRÉDITO" would grab the bare
+        // "credito" keyword bonus and outrank the canonical /prestamos-uruguay
+        // hub. Hubs stay findable through their title + description haystack.
+        keywords: ['tema', 'guias'],
       })
     )
   }

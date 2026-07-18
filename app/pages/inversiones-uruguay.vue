@@ -316,6 +316,44 @@
       </VCol>
     </VRow>
 
+    <!-- Learn-to-invest guides + external educational resources -->
+    <VCard variant="flat" class="inversiones-section mt-4 pa-5 pa-sm-6">
+      <h2 class="text-subtitle-1 font-weight-bold mb-2">
+        <VIcon start size="small" color="primary">mdi-school-outline</VIcon>
+        Aprender a invertir: guías y recursos
+      </h2>
+      <p class="text-body-2 text-grey-lighten-1 mb-3">
+        Antes de elegir un instrumento conviene entender lo básico. Estas guías te explican paso a
+        paso cómo funciona invertir en Uruguay, sin tecnicismos:
+      </p>
+      <div class="d-flex flex-wrap ga-2 mb-4">
+        <VChip
+          v-for="link in learnGuides"
+          :key="link.to"
+          :to="localePath(link.to)"
+          color="primary"
+          variant="tonal"
+          size="small"
+          link
+        >
+          <VIcon start size="small">mdi-book-open-variant</VIcon>
+          {{ link.label }}
+        </VChip>
+      </div>
+      <p class="text-body-2 text-grey-lighten-1 mb-1">
+        <strong>Recurso recomendado:</strong> si querés formarte en análisis fundamental y finanzas
+        personales sin costo, en Uruguay existe
+        <a
+          href="https://foroagora.org"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inversiones-ext-link"
+          >Foro Ágora</a
+        >, una iniciativa sin fines de lucro de educación financiera para jóvenes, con la premisa de
+        <em>“educación antes que especulación”</em>.
+      </p>
+    </VCard>
+
     <!-- CTA -->
     <VCard class="cta-inversiones mt-6 pa-6 text-center" variant="flat">
       <h2 class="text-h6 font-weight-bold mb-2 text-white">¿Cuánto rendiría tu plazo fijo?</h2>
@@ -419,6 +457,19 @@ const officialSources = [
     label: 'IMPO — Ley 20.345 (activos virtuales)',
     url: 'https://www.impo.com.uy/bases/leyes-originales/20345-2024',
   },
+]
+
+// Educational guides that teach the fundamentals before choosing an instrument.
+const learnGuides = [
+  { label: 'Empezar a invertir desde cero', to: '/guias/como-empezar-a-invertir-uruguay' },
+  { label: 'Interés compuesto', to: '/guias/interes-compuesto-explicado-uruguay' },
+  { label: '¿Conviene un plazo fijo?', to: '/guias/plazo-fijo-en-uruguay-conviene' },
+  {
+    label: 'La bolsa de USA desde Uruguay',
+    to: '/guias/invertir-en-la-bolsa-de-usa-desde-uruguay',
+  },
+  { label: 'Bonos y renta fija', to: '/guias/bonos-y-renta-fija-uruguay' },
+  { label: 'Errores y estafas al invertir', to: '/guias/errores-y-estafas-al-invertir-uruguay' },
 ]
 
 const canonicalUrl = 'https://cambio-uruguay.com/inversiones-uruguay'
@@ -597,6 +648,7 @@ useHead(() => ({
 }
 
 .inversiones-link,
+.inversiones-ext-link,
 .inversiones-sources a {
   color: rgb(var(--v-theme-link));
   font-weight: 600;
@@ -604,6 +656,7 @@ useHead(() => ({
 }
 
 .inversiones-link:hover,
+.inversiones-ext-link:hover,
 .inversiones-sources a:hover {
   text-decoration: underline;
 }

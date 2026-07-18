@@ -1,6 +1,7 @@
 import { convertSlugs } from '../../../utils/convert'
 import { listCurrencySlugs } from '../../../utils/currencyPages'
 import { glossarySlugs } from '../../../utils/glossary'
+import { hubSlugs } from '../../../utils/guideHubs'
 import { guideSlugs } from '../../../utils/guides'
 import { listIndicatorSlugs } from '../../../utils/indicators'
 import { NAV_SECTIONS, UNLISTED_ROUTES } from '../../../utils/siteNav'
@@ -81,6 +82,7 @@ export default defineEventHandler(async _event => {
 
   // --- Catalogue long tail: pure data, no I/O -------------------------------
   guideSlugs().forEach(slug => addUrlsForAllLocales(`/guias/${slug}`, 0.7, 'weekly'))
+  hubSlugs().forEach(slug => addUrlsForAllLocales(`/temas/${slug}`, 0.7, 'weekly'))
   toolSlugs().forEach(slug => addUrlsForAllLocales(`/herramientas/${slug}`, 0.7, 'weekly'))
   glossarySlugs().forEach(slug => addUrlsForAllLocales(`/glosario/${slug}`, 0.6, 'monthly'))
   convertSlugs().forEach(slug => addUrlsForAllLocales(`/convertir/${slug}`, 0.6, 'weekly'))
