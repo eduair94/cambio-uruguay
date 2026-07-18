@@ -33,6 +33,19 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Daily boost of the aduana sync, but ONLY inside the Oct-decree window (2026-09-01..2026-11-01):
+      // sync_aduana_daily.ts gates on the date and no-ops outside it, so this needs no turning off
+      // after November. 09:40 UTC — 10 min after the weekly Monday run, and the sync is idempotent, so
+      // the one in-window Monday where both fire changes nothing. Must be in OTHER_APPS in
+      // scripts/deploy-backend.sh or it never starts on the VPS.
+      name: "currency-aduana-daily",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_aduana_daily.js",
+      cron_restart: "40 9 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Bank/fintech news briefing for /mejores-bancos-uruguay (3 languages).
       // Daily 10:37 UTC ≈ 07:37 America/Montevideo. Minute 37 is deliberately NOT a multiple of 5
       // (currency-sync runs */5) and sits after nitro's reddit:sentiment (10:10) so the two never
