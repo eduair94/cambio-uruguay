@@ -74,8 +74,10 @@ import {
   VToolbarTitle,
   VTooltip,
 } from 'vuetify/components'
-import '~/assets/variables.scss'
 
+// variables.scss (the customized Vuetify base stylesheet) is loaded globally via
+// nuxt.config `css[]`, not imported here, so its @use 'vuetify' output isn't
+// duplicated.
 import * as directives from 'vuetify/directives'
 import colors from 'vuetify/util/colors'
 
@@ -106,6 +108,21 @@ const MediumIcon = brandIcon(
 export default defineNuxtPlugin(nuxtApp => {
   const vuetify = createVuetify({
     ssr: true,
+    // Vuetify 4 shrank the breakpoint thresholds (md 960→840, lg 1280→1145,
+    // xl 1920→1545, xxl 2560→2138). Restore the v3 values so `useDisplay()`
+    // (mdAndUp, mobile, …) reflows at the same widths as the CSS grid — whose
+    // breakpoints are pinned to the same values via $grid-breakpoints in
+    // assets/variables.scss. Keep both in sync.
+    display: {
+      thresholds: {
+        xs: 0,
+        sm: 600,
+        md: 960,
+        lg: 1280,
+        xl: 1920,
+        xxl: 2560,
+      },
+    },
     icons: {
       defaultSet: 'mdi',
       sets: { mdi },

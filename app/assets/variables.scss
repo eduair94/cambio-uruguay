@@ -1,6 +1,59 @@
-// assets/vuetifyTheme.scss
-$font: 'Open Sans', sans-serif;
+// assets/variables.scss
+//
+// SOLE source of Vuetify's base stylesheet (settings + generic + elements +
+// utilities). `@use 'vuetify'` compiles the customized bundle; the precompiled
+// `vuetify/styles` is intentionally NOT loaded in nuxt.config (it would emit an
+// un-customized duplicate that overrides these reverts under v4's cascade
+// layers). Per-component CSS (VBtn/VCard/…) is injected separately by the
+// component JS imports and is unaffected by this file.
+//
+// ── Vuetify 4 upgrade: look-preserving reverts ──────────────────────────────
+// Vuetify 4 moved typography to Material Design 3 (renaming/removing the v3
+// `.text-h1…`, `.text-subtitle-*`, `.text-body-*`, `.text-caption`,
+// `.text-overline`, `.text-button` helper classes) and shrank the grid
+// breakpoints. This site uses ~1300 of those classes across ~120 files, so we
+// restore the v3 (MD2) type scale and breakpoints here to land v4 with the v3
+// look intact. MD3 adoption is a deliberate follow-up. SASS allows only ONE
+// `with` per `@use`, so every revert map lives in the single block below.
+//
+// `.text-overline` / `.text-button` UPPERCASE is restored in
+// assets/css/legacy-vuetify.css (the v4 typography utility no longer emits
+// `text-transform`), alongside the MD2 elevation shadows.
+
+$font: ('Open Sans', sans-serif);
 
 @use 'vuetify' with (
-  $body-font-family: $font
+  $body-font-family: $font,
+
+  // Restore the Material Design 2 type scale so the v3 `.text-*` helper classes
+  // keep their exact sizing/weight. Merged with v4's MD3 map (no key overlap),
+  // so both the old and new class names resolve.
+  $typography: (
+    'h1': ('size': 6rem, 'weight': 300, 'line-height': 1, 'letter-spacing': -0.015625em, 'font-family': $font),
+    'h2': ('size': 3.75rem, 'weight': 300, 'line-height': 1, 'letter-spacing': -0.0083333333em, 'font-family': $font),
+    'h3': ('size': 3rem, 'weight': 400, 'line-height': 1.05, 'letter-spacing': normal, 'font-family': $font),
+    'h4': ('size': 2.125rem, 'weight': 400, 'line-height': 1.175, 'letter-spacing': 0.0073529412em, 'font-family': $font),
+    'h5': ('size': 1.5rem, 'weight': 400, 'line-height': 1.333, 'letter-spacing': normal, 'font-family': $font),
+    'h6': ('size': 1.25rem, 'weight': 500, 'line-height': 1.6, 'letter-spacing': 0.0125em, 'font-family': $font),
+    'subtitle-1': ('size': 1rem, 'weight': normal, 'line-height': 1.75, 'letter-spacing': 0.009375em, 'font-family': $font),
+    'subtitle-2': ('size': 0.875rem, 'weight': 500, 'line-height': 1.6, 'letter-spacing': 0.0071428571em, 'font-family': $font),
+    'body-1': ('size': 1rem, 'weight': 400, 'line-height': 1.5, 'letter-spacing': 0.03125em, 'font-family': $font),
+    'body-2': ('size': 0.875rem, 'weight': 400, 'line-height': 1.425, 'letter-spacing': 0.0178571429em, 'font-family': $font),
+    'button': ('size': 0.875rem, 'weight': 500, 'line-height': 2.6, 'letter-spacing': 0.0892857143em, 'font-family': $font),
+    'caption': ('size': 0.75rem, 'weight': 400, 'line-height': 1.667, 'letter-spacing': 0.0333333333em, 'font-family': $font),
+    'overline': ('size': 0.75rem, 'weight': 500, 'line-height': 2.667, 'letter-spacing': 0.1666666667em, 'font-family': $font)
+  ),
+
+  // Restore v3 grid breakpoints (v4 shrank md 960→840, lg 1280→1145, xl
+  // 1920→1545, xxl 2560→2138). Keeps every `md=`/`lg=` column reflowing at the
+  // same widths as before. The runtime `display.thresholds` in plugins/vuetify.ts
+  // mirrors these so `useDisplay()` agrees with the CSS.
+  $grid-breakpoints: (
+    'xs': 0,
+    'sm': 600px,
+    'md': 960px,
+    'lg': 1280px,
+    'xl': 1920px,
+    'xxl': 2560px
+  )
 );

@@ -7,7 +7,7 @@
       color="primary"
       bottom
       left
-      multi-line
+      min-height="68"
       class="pwa-install-banner"
     >
       <div class="d-flex align-center">

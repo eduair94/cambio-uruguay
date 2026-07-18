@@ -29,7 +29,9 @@ export function useThemeMode() {
 
   function apply() {
     if (!import.meta.client) return
-    theme.global.name.value = applied.value
+    // Vuetify 4: switch themes via theme.change() (v3's writable
+    // theme.global.name.value setter is gone).
+    theme.change(applied.value)
     // Mirror the applied theme onto <html> so global CSS (body background,
     // app-bar) that lives outside Vuetify's theme class can react to it.
     document.documentElement.setAttribute('data-theme', applied.value)

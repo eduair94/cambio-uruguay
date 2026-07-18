@@ -291,7 +291,7 @@
 import { useSeoMeta } from '#imports'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useDisplay } from 'vuetify/lib/composables/display.mjs'
+import { useDisplay } from 'vuetify'
 import type { ExchangeRate } from '~/types/api'
 import {
   currencyContext,

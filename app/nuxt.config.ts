@@ -134,7 +134,19 @@ export default defineNuxtConfig({
   },
 
   // Global CSS
-  css: ['vuetify/styles', '@mdi/font/css/materialdesignicons.min.css', '~/assets/css/critical.css'],
+  // NOTE: '~/assets/variables.scss' (not 'vuetify/styles') is the base Vuetify
+  // stylesheet — it `@use`s Vuetify with the v4→v3 look-preserving reverts
+  // (typography/grid/font). Loading the precompiled 'vuetify/styles' as well
+  // would emit an un-customized duplicate that overrides those reverts under
+  // v4 cascade layers, so it is intentionally omitted. Per-component CSS is
+  // still injected by the component JS imports (build.transpile: ['vuetify']).
+  // legacy-vuetify.css restores the MD2 elevation shadows + overline/button case.
+  css: [
+    '~/assets/variables.scss',
+    '@mdi/font/css/materialdesignicons.min.css',
+    '~/assets/css/critical.css',
+    '~/assets/css/legacy-vuetify.css',
+  ],
   // Server Configuration
   devServer: {
     port: 3311,

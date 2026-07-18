@@ -56,7 +56,7 @@
         hide-details
         class="mb-3"
       >
-        <template #item="{ props: itemProps, item }">
+        <template #item="{ props: itemProps, internalItem: item }">
           <VListItem v-bind="itemProps" :prepend-icon="item.raw.icon" />
         </template>
       </VSelect>

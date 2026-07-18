@@ -98,10 +98,10 @@
           return-obj
           @update:model-value="$emit('update:code', $event)"
         >
-          <template #selection="{ item }">
+          <template #selection="{ internalItem: item }">
             <span v-if="item.raw">{{ item.raw.value }} - {{ getTexts(item.raw) }}</span>
           </template>
-          <template #item="{ props: itemProps, item }">
+          <template #item="{ props: itemProps, internalItem: item }">
             <VListItem
               v-if="item.raw.value"
               v-bind="itemProps"
@@ -118,11 +118,11 @@
           :label="wantTo === 'buy' ? $t('pay') : $t('get')"
           @update:model-value="$emit('update:codeWith', $event)"
         >
-          <template #selection="{ item }">
+          <template #selection="{ internalItem: item }">
             <span v-if="item.raw">{{ item.raw.value }} - {{ getTexts(item.raw) }}</span>
           </template>
 
-          <template #item="{ props: itemProps, item }">
+          <template #item="{ props: itemProps, internalItem: item }">
             <VListItem
               v-if="item.raw.value"
               v-bind="itemProps"
@@ -140,10 +140,10 @@
           :label="$t('departments')"
           @update:model-value="$emit('update:location', $event)"
         >
-          <template #selection="{ item }">
+          <template #selection="{ internalItem: item }">
             <span>{{ capitalize(item.value) }}</span>
           </template>
-          <template #item="{ item, props: itemProps }">
+          <template #item="{ internalItem: item, props: itemProps }">
             <VListItem v-bind="itemProps" :title="capitalize(item.raw.value)" />
           </template>
         </VSelect>
