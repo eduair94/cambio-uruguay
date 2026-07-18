@@ -30,6 +30,7 @@ function docWith(facts: AduanaFact[], extra: Partial<AduanaDoc> = {}): AduanaDoc
     counts: {},
     sources: [],
     pendingReview: [],
+    overrides: [],
     updatedAt: null,
     ...extra,
   };

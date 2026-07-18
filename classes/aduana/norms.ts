@@ -316,7 +316,7 @@ function chunk<T>(items: T[], size: number): T[][] {
  * union at the end, because a dispute that is resolved is not a dispute anymore, and a list that
  * only ever grows is a list a human eventually stops reading.
  */
-export async function refreshNorms(doc: AduanaDoc): Promise<AduanaDoc> {
+export async function refreshNorms(doc: AduanaDoc, candidateUrls: string[] = []): Promise<AduanaDoc> {
   if (!geminiConfigured()) {
     console.warn("[aduana] norms: no GEMINI_API_KEY — se omite el control de normas");
     return doc;
@@ -334,7 +334,7 @@ export async function refreshNorms(doc: AduanaDoc): Promise<AduanaDoc> {
       const batch = batches[i];
       const tag = `batch ${i + 1}/${batches.length}`;
 
-      const reply = await askGrounded(buildPrompt(batch, doc.sources));
+      const reply = await askGrounded(buildPrompt(batch, doc.sources, candidateUrls));
       if (!reply) {
         console.warn(`[aduana] norms: no grounded reply for ${tag} — skipped`);
         continue;
@@ -419,7 +419,7 @@ export async function refreshNorms(doc: AduanaDoc): Promise<AduanaDoc> {
  * omitted fact gets no aiCheckedAt, so its timestamp visibly goes stale instead of silently
  * refreshing.
  */
-function buildPrompt(facts: AduanaFact[], sources: Source[]): string {
+function buildPrompt(facts: AduanaFact[], sources: Source[], candidateUrls: string[] = []): string {
   const sourceById = new Map(sources.map((s) => [s.id, s]));
   const rows = facts.map((f) => {
     const src = sourceById.get(f.sourceId);
@@ -432,14 +432,25 @@ function buildPrompt(facts: AduanaFact[], sources: Source[]): string {
     };
   });
 
+  // Only appended when discovery found resoluciones newer than we cite. The model is asked to open
+  // them and see whether any CHANGES a fact — that is the path by which a fresh prórroga of the
+  // seller-registry date, or a new amount, reaches the guardrail. A change is only publishable with
+  // TWO independent official sources, so the model is told to supply `corroborationUrl`; without a
+  // second official source it must omit the change and a human is alerted instead.
+  const candidateBlock = candidateUrls.length
+    ? `\n\nNORMAS NUEVAS A REVISAR (por si modifican algún hecho de arriba): ${candidateUrls.join(", ")}`
+    : "";
+
   return `Sos un verificador de normas aduaneras uruguayas. Para cada hecho de la lista, BUSCÁ la norma citada en su fuente oficial (impo.com.uy o gub.uy), ABRÍ la página, leela, y confirmá si el valor que publicamos sigue vigente.
 Devolvé SOLO un JSON array (sin markdown, sin \`\`\`, sin explicación), con un objeto por cada hecho que hayas podido verificar leyendo la norma:
-[{"id":"<id>","value":<mismo tipo que currentValue>,"sourceUrl":"<url exacta de la página oficial que leíste>","article":"<articulo>"}]
+[{"id":"<id>","value":<mismo tipo que currentValue>,"sourceUrl":"<url exacta de la página oficial que leíste>","corroborationUrl":"<segunda url oficial independiente — SOLO si el valor cambió>","article":"<articulo>"}]
 REGLAS:
 - Si NO encontraste la norma, no pudiste abrir la página, o no estás seguro: OMITÍ ese hecho, no lo incluyas en el array. Omitir es la respuesta correcta cuando no verificaste. Repetir el valor sin haberlo leído NO lo es.
 - "sourceUrl" tiene que ser la página oficial que efectivamente abriste en esta búsqueda, no la que te pasamos de memoria.
+- Si el valor CAMBIÓ respecto de currentValue, incluí "corroborationUrl" con una SEGUNDA página oficial INDEPENDIENTE (otro dominio o documento oficial) que confirme el nuevo valor. Si no encontrás dos fuentes oficiales que coincidan, NO propongas el cambio: omití el hecho.
+- Para valores de fecha, usá el formato YYYY-MM-DD.
 - No inventes ids nuevos. No devuelvas texto fuera del JSON.
 
 HECHOS:
-${JSON.stringify(rows, null, 2)}`;
+${JSON.stringify(rows, null, 2)}${candidateBlock}`;
 }
