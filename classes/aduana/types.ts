@@ -112,6 +112,25 @@ export interface ProblemEntry {
   verified: boolean; // false → the page says "no lo pudimos verificar"
 }
 
+/**
+ * A value the weekly grounded re-check AUTO-PUBLISHED because it passed the guardrail:
+ * denylisted-source-free, ≥2 independent official sources agreeing, and in range / a valid date.
+ *
+ * Mongo-owned, exactly like quotes/counts — never carried by the baseline FILE. It serves OVER the
+ * baseline value UNLESS a human has since edited baseline.ts (then `basedOnValue` diverges from the
+ * file's current value and the override is discharged; editing the file IS the confirm / overrule /
+ * rollback, the same mechanism that discharges `pendingReview`). `verifiedAt` is never written by
+ * this path — an auto-published fact renders as machine-updated, never "verificado contra la norma".
+ */
+export interface AduanaOverride {
+  id: string; // → AduanaFact.id
+  value: number | string;
+  publishedAt: string; // ISO date the AI published it
+  basedOnValue: string; // String()-normalized baseline value at publish time
+  sources: string[]; // the 2 corroborating official URLs
+  prevValue: number | string;
+}
+
 export interface AduanaDoc {
   facts: AduanaFact[];
   problems: ProblemEntry[];
@@ -120,5 +139,7 @@ export interface AduanaDoc {
   sources: Source[];
   /** Fact ids the AI wanted to change and we did NOT publish. Surfaced in logs and /estado. */
   pendingReview: string[];
+  /** Values the AI auto-published behind the guardrail. Mongo-owned; see AduanaOverride. */
+  overrides: AduanaOverride[];
   updatedAt: string | null;
 }

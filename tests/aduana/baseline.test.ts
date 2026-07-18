@@ -1,7 +1,13 @@
 import fs from "fs";
 import path from "path";
 import { describe, expect, it } from "vitest";
-import { BASELINE, FACT_RANGES, OFFICIAL_HOSTS } from "../../classes/aduana/baseline";
+import {
+  BASELINE,
+  DENYLIST_URLS,
+  FACT_DATE_RANGES,
+  FACT_RANGES,
+  OFFICIAL_HOSTS,
+} from "../../classes/aduana/baseline";
 import { BUCKET_IDS } from "../../classes/aduana/types";
 
 /** Read a `export const NAME = 123` numeric constant straight out of the app's rules module. */
@@ -13,6 +19,17 @@ function appConstant(name: string): number {
   const m = new RegExp(`export const ${name} = (\\d+(?:\\.\\d+)?)`).exec(src);
   if (!m) throw new Error(`${name} not found in app/utils/importRules.ts`);
   return Number(m[1]);
+}
+
+/** Read a `export const NAME = '...'` string constant from the app's rules module. */
+function appStringConstant(name: string): string {
+  const src = fs.readFileSync(
+    path.join(__dirname, "..", "..", "app", "utils", "importRules.ts"),
+    "utf8"
+  );
+  const m = new RegExp(`export const ${name} = '([^']+)'`).exec(src);
+  if (!m) throw new Error(`${name} not found in app/utils/importRules.ts`);
+  return m[1];
 }
 
 const factValue = (id: string): number => {
@@ -76,6 +93,32 @@ describe("aduana baseline", () => {
 
   it("does not pass vacuously — has a substantial number of facts", () => {
     expect(BASELINE.facts.length).toBeGreaterThan(40);
+  });
+
+  // The October datum: it must be a first-class, watchable fact, and it must never silently drift
+  // from the calculator's constant (the whole reason importRules.ts and this baseline are drift-guarded).
+  it("carries the Oct seller-registry date as a string fact, matching the app constant", () => {
+    const f = BASELINE.facts.find((x) => x.id === "franquicia.registro_vendedor_desde");
+    expect(f, "date fact missing").toBeDefined();
+    expect(typeof f!.value).toBe("string");
+    expect(f!.value as string).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(f!.value).toBe(appStringConstant("SELLER_REGISTRY_ENFORCED_FROM"));
+  });
+
+  it("gives the date fact a plausibility window, not a numeric range", () => {
+    expect(FACT_DATE_RANGES["franquicia.registro_vendedor_desde"]).toEqual([
+      "2026-07-01",
+      "2027-12-31",
+    ]);
+    expect(FACT_RANGES["franquicia.registro_vendedor_desde"]).toBeUndefined();
+  });
+
+  it("denylists the repealed-numbers page", () => {
+    expect(DENYLIST_URLS.some((u) => u.includes("/v/27950"))).toBe(true);
+  });
+
+  it("initialises overrides as an empty array", () => {
+    expect(BASELINE.overrides).toEqual([]);
   });
 
   // The "verificado contra la norma" badge must never be driven by a magic-string check on a

@@ -19,6 +19,27 @@ import type { AduanaDoc } from "./types";
 /** Hosts we accept as a source of law. Anything else is rejected by the norms gate. */
 export const OFFICIAL_HOSTS = ["gub.uy", "impo.com.uy"];
 
+/**
+ * Official pages that publish REPEALED numbers (Decreto 356/014: USD 10 mínimo, USD 200 por envío).
+ * A citation to any of these is DISCARDED by the auto-publish gate — it is never counted toward the
+ * 2-independent-source requirement. This is belt-and-suspenders alongside that rule: the repealed
+ * figures could never assemble a 2nd independent official source that agrees anyway, but a page that
+ * actively serves the wrong number must not be trusted for anything. Matching is by host+path prefix.
+ */
+export const DENYLIST_URLS: string[] = [
+  "https://www.aduanas.gub.uy/innovaportal/v/27950/8/innova.front/encomiendas-postales",
+];
+
+/**
+ * Plausible window per DATE-string fact. A date fact has no FACT_RANGES entry (that is numeric); the
+ * gate validates its value as a YYYY-MM-DD inside this window instead. Same role as FACT_RANGES: the
+ * only thing that lets the AI re-stamp/publish a date at all, and a number proposed for a date fact
+ * (or a date proposed for a numeric one) is rejected.
+ */
+export const FACT_DATE_RANGES: Record<string, [string, string]> = {
+  "franquicia.registro_vendedor_desde": ["2026-07-01", "2027-12-31"],
+};
+
 /** Plausible range per numeric fact. A proposal outside its range is rejected, never published. */
 export const FACT_RANGES: Record<string, [number, number]> = {
   "franquicia.tope_anual_usd": [100, 5000],
@@ -429,6 +450,21 @@ export const BASELINE: AduanaDoc = {
       value: 3,
       sourceId: "decreto-50-026",
       article: "art. 4 lit. c",
+      verifiedAt: "2026-07-11",
+      origin: "baseline",
+    },
+    {
+      // THE OCTOBER DATUM. Its value is a DATE, so it is validated against FACT_DATE_RANGES, not a
+      // numeric FACT_RANGES entry. Mirrors app/utils/importRules.ts#SELLER_REGISTRY_ENFORCED_FROM
+      // (the drift-guard test asserts they match). Already postponed twice (RG 12/2026 → 1/7,
+      // RG 21/2026 → 1/10); a third prórroga is likely — the auto-publish gate can move it when two
+      // independent official sources agree, and a human confirms by editing this file.
+      id: "franquicia.registro_vendedor_desde",
+      label:
+        "Fecha desde la que la exoneración de IVA de EE.UU. exige que el vendedor esté registrado ante la DNA",
+      value: "2026-10-01",
+      sourceId: "rg-dna-21-2026",
+      article: "num. 1",
       verifiedAt: "2026-07-11",
       origin: "baseline",
     },
@@ -1191,5 +1227,6 @@ export const BASELINE: AduanaDoc = {
   quotes: {},
   counts: {},
   pendingReview: [],
+  overrides: [],
   updatedAt: null,
 };
