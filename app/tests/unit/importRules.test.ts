@@ -5,8 +5,10 @@
 // a Uruguayan would have paid for.
 import { describe, expect, it } from 'vitest'
 import {
+  DEFAULT_REGIME_RULES,
   FRANCHISE_ANNUAL_USD,
   FRANCHISE_MAX_SHIPMENTS,
+  type RegimeRules,
   SELLER_REGISTRY_ENFORCED_FROM,
   SIMPLIFIED_MIN_USD,
   SIMPLIFIED_RATE_PCT,
@@ -125,5 +127,56 @@ describe('above USD 800 neither regime applies', () => {
     expect(d.regime).toBe('general')
     expect(d.ivaExempt).toBe(false)
     expect(d.reasons.join(' ')).toMatch(/supera/i)
+  })
+})
+
+describe('injectable RegimeRules overlay', () => {
+  const base = {
+    valueUsd: 100,
+    origin: 'usa' as const,
+    franchiseAvailableUsd: 800,
+    shipmentsUsed: 0,
+    useFranchise: true,
+  }
+
+  it('DEFAULT_REGIME_RULES equals the static constants (no drift from the fallback)', () => {
+    expect(DEFAULT_REGIME_RULES).toEqual({
+      franchiseAnnualUsd: FRANCHISE_ANNUAL_USD,
+      simplifiedRatePct: SIMPLIFIED_RATE_PCT,
+      simplifiedMinUsd: SIMPLIFIED_MIN_USD,
+      usaIvaExemptionUsd: USA_IVA_EXEMPTION_USD,
+      sellerRegistryEnforcedFrom: SELLER_REGISTRY_ENFORCED_FROM,
+    })
+  })
+
+  it('uses the live overlay date, not the static constant', () => {
+    const rules: RegimeRules = { ...DEFAULT_REGIME_RULES, sellerRegistryEnforcedFrom: '2027-01-01' }
+    // A US$150 US shipment on 2026-11-01: enforced under the default (>= 2026-10-01), but a 3rd
+    // prórroga to 2027-01-01 means the seller-registration is NOT yet required, so it stays exempt.
+    expect(isSellerRegistryEnforced(new Date('2026-11-01T00:00:00Z'), rules)).toBe(false)
+    expect(isSellerRegistryEnforced(new Date('2026-11-01T00:00:00Z'))).toBe(true) // default = 2026-10-01
+
+    const withPushedDate = resolveRegime(
+      { ...base, valueUsd: 150, sellerRegistered: false, today: new Date('2026-11-01T00:00:00Z') },
+      rules
+    )
+    expect(withPushedDate.regime).toBe('franquicia')
+    expect(withPushedDate.ivaExempt).toBe(true) // date pushed → still exempt
+  })
+
+  it('prices with an overlaid minimum', () => {
+    const rules: RegimeRules = { ...DEFAULT_REGIME_RULES, simplifiedMinUsd: 25 }
+    const d = resolveRegime(
+      { valueUsd: 30, origin: 'other', franchiseAvailableUsd: 0, shipmentsUsed: 0, useFranchise: false },
+      rules
+    )
+    expect(d.regime).toBe('simplificado')
+    expect(d.reasons.join(' ')).toContain('25')
+  })
+
+  it('falls back to the static baseline when no overlay is passed (no regression)', () => {
+    const d = resolveRegime({ ...base, today: new Date('2026-07-01T00:00:00Z') })
+    expect(d.regime).toBe('franquicia')
+    expect(d.ivaExempt).toBe(true)
   })
 })

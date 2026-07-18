@@ -65,6 +65,32 @@ export const SIMPLIFIED_MIN_USD = 20
  */
 export const USA_IVA_EXEMPTION_USD = 200
 
+/**
+ * The subset of regime figures that can move — the amounts the backend tracks as facts, plus the
+ * October enforcement date. Passing a `rules` overlay to `resolveRegime` / `isSellerRegistryEnforced`
+ * lets the live `/api/aduana` values drive the calculator and the semáforo; the constants above are
+ * the baseline fallback, assembled here into `DEFAULT_REGIME_RULES`. `FRANCHISE_MAX_SHIPMENTS` and
+ * `MAX_WEIGHT_KG` stay static on purpose — the decree in play changes the date and the amounts, not
+ * the 3-envíos / 20-kg structure. This is how the app stays a single source of truth WITHOUT ever
+ * calling Gemini (it only reads its own /api/aduana proxy — noGeminiInApp stays green).
+ */
+export interface RegimeRules {
+  franchiseAnnualUsd: number
+  simplifiedRatePct: number
+  simplifiedMinUsd: number
+  usaIvaExemptionUsd: number
+  /** YYYY-MM-DD */
+  sellerRegistryEnforcedFrom: string
+}
+
+export const DEFAULT_REGIME_RULES: RegimeRules = {
+  franchiseAnnualUsd: FRANCHISE_ANNUAL_USD,
+  simplifiedRatePct: SIMPLIFIED_RATE_PCT,
+  simplifiedMinUsd: SIMPLIFIED_MIN_USD,
+  usaIvaExemptionUsd: USA_IVA_EXEMPTION_USD,
+  sellerRegistryEnforcedFrom: SELLER_REGISTRY_ENFORCED_FROM,
+}
+
 /** Which regime a shipment falls under. They are ALTERNATIVE, never combined. */
 export type CourierRegime = 'franquicia' | 'simplificado' | 'general'
 
@@ -107,9 +133,12 @@ export function toISODate(d: Date): string {
   return d.toISOString().slice(0, 10)
 }
 
-/** Is the DNA seller-registration requirement exigible on `today`? */
-export function isSellerRegistryEnforced(today: Date): boolean {
-  return toISODate(today) >= SELLER_REGISTRY_ENFORCED_FROM
+/** Is the DNA seller-registration requirement exigible on `today`? Uses the live date if provided. */
+export function isSellerRegistryEnforced(
+  today: Date,
+  rules: RegimeRules = DEFAULT_REGIME_RULES
+): boolean {
+  return toISODate(today) >= rules.sellerRegistryEnforcedFrom
 }
 
 /**
@@ -128,16 +157,19 @@ export function isSellerRegistryEnforced(today: Date): boolean {
  *  - above USD 800 a shipment fits neither regime and goes to the general one (Decreto 50/026
  *    arts. 2 y 3), which this calculator does not attempt to price.
  */
-export function resolveRegime(input: RegimeInput): RegimeDecision {
+export function resolveRegime(
+  input: RegimeInput,
+  rules: RegimeRules = DEFAULT_REGIME_RULES
+): RegimeDecision {
   const today = input.today ?? new Date()
-  const registryEnforced = isSellerRegistryEnforced(today)
+  const registryEnforced = isSellerRegistryEnforced(today, rules)
   const value = Math.max(input.valueUsd || 0, 0)
   const reasons: string[] = []
 
   // Neither regime reaches past USD 800 (Decreto arts. 2 y 3): it is a formal import.
-  if (value > FRANCHISE_ANNUAL_USD) {
+  if (value > rules.franchiseAnnualUsd) {
     reasons.push(
-      `El envío supera US$ ${FRANCHISE_ANNUAL_USD}: no entra en franquicia ni en el régimen simplificado.`
+      `El envío supera US$ ${rules.franchiseAnnualUsd}: no entra en franquicia ni en el régimen simplificado.`
     )
     return { regime: 'general', ivaExempt: false, reasons, registryEnforced }
   }
@@ -157,28 +189,28 @@ export function resolveRegime(input: RegimeInput): RegimeDecision {
 
   if (!useFranchise) {
     reasons.push(
-      `Paga la prestación única: ${SIMPLIFIED_RATE_PCT}% del valor, mínimo US$ ${SIMPLIFIED_MIN_USD}.`
+      `Paga la prestación única: ${rules.simplifiedRatePct}% del valor, mínimo US$ ${rules.simplifiedMinUsd}.`
     )
     return { regime: 'simplificado', ivaExempt: false, reasons, registryEnforced }
   }
 
   // Franchise: exempt from aranceles, but IVA still applies — except the TIFA carve-out.
-  const withinUsaThreshold = input.origin === 'usa' && value <= USA_IVA_EXEMPTION_USD
+  const withinUsaThreshold = input.origin === 'usa' && value <= rules.usaIvaExemptionUsd
   const sellerOk = !registryEnforced || input.sellerRegistered === true
   const ivaExempt = withinUsaThreshold && sellerOk
 
   reasons.push('Entra en la franquicia anual: exenta de aranceles.')
-  if (input.origin === 'usa' && value > USA_IVA_EXEMPTION_USD) {
+  if (input.origin === 'usa' && value > rules.usaIvaExemptionUsd) {
     reasons.push(
-      `La exoneración de IVA de EE.UU. es hasta US$ ${USA_IVA_EXEMPTION_USD} y es todo o nada: por US$ ${value} pagás IVA sobre el total.`
+      `La exoneración de IVA de EE.UU. es hasta US$ ${rules.usaIvaExemptionUsd} y es todo o nada: por US$ ${value} pagás IVA sobre el total.`
     )
   }
   if (withinUsaThreshold && registryEnforced && input.sellerRegistered !== true) {
     reasons.push(
-      'Desde el 1/10/2026 la exoneración exige que el vendedor esté registrado ante la Aduana. Si no lo está, el envío paga IVA.'
+      `Desde el ${rules.sellerRegistryEnforcedFrom} la exoneración exige que el vendedor esté registrado ante la Aduana. Si no lo está, el envío paga IVA.`
     )
   }
-  if (ivaExempt) reasons.push(`Sin IVA: compra en EE.UU. de hasta US$ ${USA_IVA_EXEMPTION_USD}.`)
+  if (ivaExempt) reasons.push(`Sin IVA: compra en EE.UU. de hasta US$ ${rules.usaIvaExemptionUsd}.`)
 
   return { regime: 'franquicia', ivaExempt, reasons, registryEnforced }
 }
