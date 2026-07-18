@@ -594,6 +594,22 @@ const faqs = [
     q: '¿Quién paga una reparación, como una humedad?',
     a: 'Las reparaciones que hacen a la habitabilidad de la vivienda (humedades, roturas de cañerías) son de cargo del propietario. Las reparaciones locativas que surgen del uso corriente corren por tu cuenta. Documentá el problema con fotos y notificalo por un canal que deje constancia; si no se resuelve, consultá en Defensa del Consumidor.',
   },
+  {
+    q: '¿Puedo descontar el alquiler de mis impuestos (IRPF o IASS)?',
+    a: 'Sí. Si generás IRPF por rentas de trabajo (o cobrás jubilación o pensión gravada por IASS) y alquilás tu vivienda permanente, podés computar un crédito fiscal del 8% del alquiler efectivamente pagado en el año. Requisitos: contrato escrito (aunque esté vencido) con plazo de un año o más, ser titular del contrato e identificar al arrendador con nombre y cédula o RUC. No hace falta que el contrato esté inscripto. Se reclama en la declaración jurada de IRPF (formularios 1102 o 1103); si el crédito supera tu IRPF y cobrás jubilación gravada, el excedente se imputa al IASS.',
+  },
+  {
+    q: '¿Puedo alquilar por menos de un año?',
+    a: 'En el régimen común (Ley 14.219) el plazo mínimo para vivienda es de dos años, así que no podés pactar menos bajo ese régimen. En el régimen sin garantía de la LUC (Ley 19.889) las partes pactan el plazo libremente, con prórroga automática si nadie avisa 30 días antes del vencimiento. Para estadías cortas están los alquileres temporarios (amueblados, por semanas o meses), que se rigen por sus propias condiciones y suelen ser más caros por mes.',
+  },
+  {
+    q: '¿Puedo rescindir el contrato antes de tiempo?',
+    a: 'Depende del régimen. En el régimen común (Ley 14.219), el inquilino puede rescindir después del primer año, avisando con 60 días de anticipación y pagando la indemnización que fije el contrato. En el régimen sin garantía de la LUC, el contrato suele poder terminarse con un preaviso menor, según lo pactado. Leé la cláusula de rescisión antes de firmar y avisá siempre por un medio que deje constancia.',
+  },
+  {
+    q: 'Trabajo por mi cuenta, ¿cómo pruebo mis ingresos?',
+    a: 'Si no tenés recibo de sueldo, la garantía o la inmobiliaria suele pedir un certificado de ingresos firmado por un contador público, acompañado de facturas, movimientos bancarios o tu situación en DGI y BPS. Como referencia, las garantías miran que el alquiler no supere cierto porcentaje de tu ingreso: por ejemplo, Porto asegura hasta el 30% del ingreso líquido y ANDA pide que el alquiler no pase el 40% del ingreso nominal.',
+  },
 ]
 
 const canonicalUrl = 'https://cambio-uruguay.com/alquilar-en-uruguay'

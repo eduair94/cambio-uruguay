@@ -261,6 +261,18 @@ export const RENT_GUIDE_SOURCES: readonly RentSource[] = Object.freeze([
       'Costo del contrato y comisión (se aplica sobre el alquiler, no sobre servicios ni gastos comunes), reajuste cada 12 meses y responsabilidades por reparaciones.',
   },
   {
+    label: 'DGI — Crédito fiscal por arrendamiento (IRPF)',
+    url: 'https://www.gub.uy/direccion-general-impositiva/comunicacion/publicaciones/credito-fiscal-arrendamiento-inmuebles-irpf',
+    detail:
+      'El inquilino de vivienda permanente puede computar un crédito del 8% del alquiler pagado contra el IRPF (con contrato escrito de un año o más e identificando al arrendador); el excedente se imputa al IASS.',
+  },
+  {
+    label: 'IMPO — Ley 14.219, arrendamientos (régimen común)',
+    url: 'https://www.impo.com.uy/bases/decretos-ley/14219-1974',
+    detail:
+      'Plazo mínimo de vivienda de dos años, tope del depósito en garantía (cinco meses de alquiler para vivienda) y reajuste anual por el IPC.',
+  },
+  {
     label: 'Reddit r/uruguay — “Necesito un techo urgente”',
     url: 'https://www.reddit.com/r/uruguay/comments/1uuq7pd/necesito_un_techo_urgente/',
     detail: 'Caso que motivó la ruta urgente y el generador de aviso completo.',
