@@ -16,8 +16,9 @@ import { redditConfigured, searchSubreddit } from './reddit'
 import { matchEntities } from '../../utils/redditSentiment'
 import { aggregateTopics, type TopicPost } from '../../utils/redditTopics'
 
-/** Where Uruguayans talk about money. */
-const SUBS = ['uruguay', 'UruguayFinanzas', 'Burises', 'Montevideo'] as const
+/** Where Uruguayans talk about money. LegalUruguay added for the legal/financial
+ * questions (deuda, clearing, alquiler, herencia, despido) that the money topics classify. */
+const SUBS = ['uruguay', 'UruguayFinanzas', 'Burises', 'Montevideo', 'LegalUruguay'] as const
 
 /** Broad, curated money/economy queries. Kept representative (not exhaustive) so a run
  * stays under a couple of minutes; classification then works over the whole corpus. */

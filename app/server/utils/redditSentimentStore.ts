@@ -32,7 +32,14 @@ import {
 } from '../../utils/redditSentiment'
 
 /** Where Uruguayans actually argue about banks. */
-const SUBS = ['uruguay', 'Burises', 'UruguayFinanzas', 'Montevideo', 'uruguayNOfiltro'] as const
+const SUBS = [
+  'uruguay',
+  'Burises',
+  'UruguayFinanzas',
+  'Montevideo',
+  'uruguayNOfiltro',
+  'LegalUruguay',
+] as const
 
 /** Comment downloads per run. The daily budget; anything left over waits for tomorrow. */
 const MAX_COMMENT_FETCHES = 120
