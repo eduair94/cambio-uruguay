@@ -380,9 +380,15 @@
       <ul>
         <li>
           <strong>Sobre qué se calcula:</strong> el valor es el <em>total de la factura</em> de
-          compra, con todos los conceptos que figuren en ella (Decreto 50/026, art. 5). Un descuento
-          o cupón que baje ese total facturado baja la base; el <em>sales tax</em> y el envío que te
-          cobra el vendedor, si aparecen en la factura, la suben.
+          compra, con todos los conceptos que figuren en ella (Decreto 50/026, art. 5) — no un
+          precio de lista. El <em>sales tax</em> y el envío que te cobra el vendedor, si aparecen en
+          la factura, la suben.
+        </li>
+        <li>
+          <strong>Cupón sí, gift card no:</strong> un cupón rebaja el precio → baja el total
+          facturado → baja la base. Una gift card es un <em>medio de pago</em> (art. 4): pagás con
+          ella pero el precio no cambia, así que se declara el valor completo. Producto de US$ 200
+          pagado con US$ 100 de gift card = se declara US$ 200.
         </li>
         <li>
           <strong>El flete del courier va aparte:</strong> lo que te cobra el courier por traerlo no
@@ -620,6 +626,11 @@ const localePath = useLocalePath()
 
 const sources = [
   {
+    label:
+      'Decreto N° 50/026 — Régimen de envíos postales internacionales (art. 5 valor, art. 4 medio de pago)',
+    url: 'https://www.impo.com.uy/bases/decretos-originales/50-2026',
+  },
+  {
     label: 'Dirección Nacional de Aduanas — Nuevo régimen de franquicias (mayo 2026)',
     url: 'https://www.aduanas.gub.uy/innovaportal/v/28455/1/innova.front/desde-el-1%C2%BA-de-mayo-comienza-a-regir-el-nuevo-regimen-de-franquicias-de-envios-postales-internacionales.html',
   },
@@ -705,6 +716,10 @@ const faq = [
   {
     q: '¿El flete del courier paga IVA?',
     a: 'No en el régimen courier (compra online): el IVA y la tasa única se calculan siempre sobre el costo interno del producto (el valor de la factura del vendedor), nunca sobre el flete del courier. El envío es un costo aparte que se muestra explícito y se suma al total. Distinto es el régimen general de importación formal, donde el flete sí integra el valor CIF sobre el que se calcula el IVA.',
+  },
+  {
+    q: '¿Un cupón de descuento baja el valor? ¿Y si pago con una gift card?',
+    a: 'Son cosas distintas y se tratan distinto. El valor sobre el que se cobra es el total de la factura de compra: el Decreto 50/026 (art. 5) dice que el valor "será el que surja del total de la factura original de compra, incluidos todos los conceptos que figuren adicionados en la misma". La Aduana toma lo que dice la factura, no un precio de lista del producto. Un cupón o descuento rebaja el precio: baja el total facturado y, por lo tanto, baja la base. No es una forma de pago, es un menor precio. Una gift card, en cambio, es un medio de pago: la usás para pagar, pero el precio del producto no cambia, así que la factura sigue diciendo el valor completo y ese es el que se declara. Caso extremo: un producto de US$ 200 que pagás con US$ 100 de gift card + US$ 100 de tarjeta se declara igual por US$ 200, no por US$ 100 — la gift card no descuenta nada del valor. Ojo, además: el régimen exige pagar con tarjeta de crédito o débito internacional o dinero electrónico a nombre del destinatario (art. 4), así que pagar con una gift card de tienda puede hacer que te retengan el envío.',
   },
   {
     q: '¿Qué productos no pagan IVA al importar?',
