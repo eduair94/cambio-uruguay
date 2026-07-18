@@ -10,7 +10,7 @@
 
     <!-- Header -->
     <VCard class="overflow-hidden mb-4" elevation="8">
-      <div class="bg-gradient-mapa pa-6">
+      <div class="bg-gradient-mapa pa-6 on-dark">
         <span class="mapa-eyebrow">MAPA ANALÍTICO · ACTUALIZACIÓN TRIMESTRAL</span>
         <h1 class="text-h5 text-md-h4 font-weight-bold text-white mb-2 mt-1">
           Qué consultan los uruguayos sobre dinero
@@ -110,7 +110,7 @@
               </div>
             </div>
             <ClientOnly>
-              <TopicMapChart
+              <MapaTopicMapChart
                 :points="mapPoints"
                 :mode="mapMode"
                 :dark="isDark"
@@ -234,7 +234,7 @@
       </p>
       <VCard class="pa-3 pa-sm-4" variant="flat">
         <ClientOnly>
-          <TopicRankingChart
+          <MapaTopicRankingChart
             v-if="hasDemand"
             :points="rankPoints"
             :dark="isDark"
@@ -261,7 +261,7 @@
         <strong class="gap-text">gaps</strong> son las oportunidades de contenido más claras.
       </p>
       <VCard variant="flat" class="overflow-hidden">
-        <VTable class="coverage-table" density="comfortable">
+        <VTable class="coverage-table cu-mobile-cards" density="comfortable">
           <thead>
             <tr>
               <th>Tema</th>
@@ -278,13 +278,13 @@
               :class="{ 'is-gap': t.status === 'gap' }"
               @click="select(t.id)"
             >
-              <td>
+              <td data-label="">
                 <div class="d-flex align-center ga-2">
                   <span class="cov-sq" :style="{ background: t.color }" />
                   <span class="font-weight-medium">{{ t.label }}</span>
                 </div>
               </td>
-              <td class="d-none d-sm-table-cell cov-demand">
+              <td class="d-none d-sm-table-cell cov-demand" data-label="Demanda 90d">
                 <VProgressLinear
                   v-if="hasDemand"
                   :model-value="maxRecent ? (t.recent / maxRecent) * 100 : 0"
@@ -295,8 +295,8 @@
                 />
                 <span v-else class="text-grey-lighten-1">—</span>
               </td>
-              <td class="text-center num-cell">{{ t.cov }}</td>
-              <td class="text-center">
+              <td class="text-center num-cell" data-label="Cobertura">{{ t.cov }}</td>
+              <td class="text-center" data-label="Estado">
                 <VChip size="x-small" variant="flat" :style="statusChipStyle(t.status)">
                   {{ STATUS_LABEL[t.status] }}
                 </VChip>
@@ -427,6 +427,12 @@
 import { useTheme } from 'vuetify'
 import type { PublishedTopicsResponse } from '~/utils/redditTopicsClient'
 import type { TemasAnalysis } from '~/utils/temasAnalysis'
+// The ECharts charts live in components/mapa/*.client.vue, so Nuxt auto-imports
+// them under their directory-prefixed names <MapaTopicMapChart> /
+// <MapaTopicRankingChart> (used in the template above). Referencing the .client
+// components by their auto-import name keeps them server-safe: on the server they
+// resolve to a client-only placeholder, so ECharts never runs during SSR. Do NOT
+// import them explicitly — that pulls ECharts into the SSR bundle and 500s the page.
 
 const localePath = useLocalePath()
 const vTheme = useTheme()

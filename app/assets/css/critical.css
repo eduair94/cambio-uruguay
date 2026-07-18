@@ -233,6 +233,31 @@ button:focus-visible,
 }
 
 /* ------------------------------------------------------------------ */
+/* `.on-dark` — permanently-dark / colored banner slabs keep LIGHT text */
+/* in BOTH themes.                                                      */
+/* Hero slabs authored dark-first use a fixed dark/colored gradient     */
+/* that does NOT flip in light mode (no `.v-theme--light` override on    */
+/* their bg). But the light-theme grey/`text-white` remaps above darken  */
+/* their descendant text onto that dark surface (invisible, ~1.x:1).     */
+/* Tag such a slab `.on-dark` to opt its subtree out of the darkening.   */
+/* Higher specificity (3 classes) beats the 2-class remaps regardless of */
+/* source order.                                                         */
+/* ------------------------------------------------------------------ */
+.v-theme--light .on-dark .text-grey-lighten-1,
+.v-theme--light .on-dark .text-grey-lighten-2,
+.v-theme--light .on-dark .text-grey-lighten-3,
+.v-theme--light .on-dark .text-grey-lighten-4,
+.v-theme--light .on-dark .text-grey,
+.v-theme--light .on-dark .text-grey-darken-1,
+.v-theme--light .on-dark .text-grey-darken-2 {
+  color: rgba(255, 255, 255, 0.72) !important;
+}
+.v-theme--light .on-dark .text-white,
+.v-theme--light .on-dark.text-white {
+  color: #fff !important;
+}
+
+/* ------------------------------------------------------------------ */
 /* Engagement animations (CSS-only, reduced-motion aware)              */
 /* ------------------------------------------------------------------ */
 

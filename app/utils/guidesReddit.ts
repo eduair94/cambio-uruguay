@@ -2500,4 +2500,262 @@ export const redditGuides: readonly Guide[] = [
       { label: 'Salud financiera', to: '/salud-financiera' },
     ],
   },
+  {
+    slug: 'importar-de-aliexpress-a-uruguay',
+    title: 'Cómo importar de AliExpress a Uruguay: courier, franquicia e impuestos',
+    description:
+      'Cómo importar de AliExpress a Uruguay por courier: la franquicia anual de USD 800, el régimen simplificado del 60%, por qué la exoneración de IVA de USD 200 NO aplica a China y cómo estimar el costo real de tu compra internacional.',
+    tag: 'IMPORTACIÓN',
+    updatedAt: '2026-07-18',
+    sections: [
+      {
+        heading: 'AliExpress entra por el régimen de courier',
+        body: 'Cuando comprás en AliExpress y te lo mandan "puerta a puerta", la compra entra a Uruguay por el régimen de envíos postales internacionales (courier), el mismo camino de cualquier compra personal sin fines comerciales. Ese régimen se reescribió en 2026 (Ley 20.446, Decreto 50/026 y la Resolución General DNA 09/2026), así que muchas "reglas" que todavía circulan en foros quedaron viejas. La idea central es simple: para cada envío elegís entre usar tu franquicia anual o pagar el régimen simplificado, y son caminos alternativos, nunca se combinan en un mismo paquete.',
+      },
+      {
+        heading: 'La franquicia anual: USD 800, hasta 3 envíos y 20 kg',
+        body: 'La franquicia te permite traer hasta USD 800 acumulados por año calendario, repartidos en un máximo de 3 envíos, con un tope de 20 kg por envío. Lo que entra en la franquicia queda exento de aranceles de importación. Como es un cupo anual y limitado a tres usos, conviene administrarlo: no te conviene "quemar" un envío de franquicia en una compra de USD 15 si después vas a querer traer algo más caro. Ese valor de USD 800 y los tres envíos salen del Decreto 50/026 (arts. 3 y 4); el tope de 20 kg también.',
+      },
+      {
+        heading: 'Ojo: el "USD 200 sin impuestos" es solo para EE.UU.',
+        body: 'Este es el malentendido más caro con AliExpress. La exoneración de IVA de hasta USD 200 por envío existe, pero es un beneficio del acuerdo comercial con Estados Unidos (TIFA, Ley 18.761): aplica a compras cuyo origen es EE.UU., no a compras de China. AliExpress despacha mayormente desde China, así que tu compra, aunque uses la franquicia y quede exenta de aranceles, en principio no goza de esa exoneración de IVA. Por eso no asumas que "hasta 200 dólares no pago nada": esa frase vale para Amazon con origen EE.UU., no para AliExpress.',
+      },
+      {
+        heading: 'Si no usás la franquicia: 60% del valor, mínimo USD 20',
+        body: 'El envío que no entra por franquicia paga el régimen simplificado: una tasa única del 60% sobre el valor de la compra, con un pago mínimo de USD 20 por envío (Ley 20.446 art. 627). Es un cálculo directo: valor × 0,60, y si eso da menos de USD 20, pagás USD 20. A ese impuesto sumale siempre el flete y los cargos que te cobra el courier, que se facturan aparte. Para compras chicas de AliExpress, ese mínimo de USD 20 muchas veces pesa más que el producto, así que conviene juntar la compra en un solo envío antes que fraccionarla.',
+      },
+      {
+        heading: 'Qué valor cuenta para los topes (y qué no)',
+        body: 'El valor que se mira para la franquicia y para los umbrales es el total de la factura de compra: el precio del producto más cualquier concepto que el vendedor agregue en esa misma factura (por ejemplo, el envío que cobra AliExpress). El flete que te cobra el courier por separado no forma parte de ese valor de factura. Y si el envío supera los USD 800, ya no entra en franquicia ni en el régimen simplificado: pasa al régimen general (importación formal), que es otro trámite. Una advertencia útil: hay páginas viejas que hablan de un mínimo de USD 10 o de un tope de USD 200 por envío; eso era el Decreto 356/014, que fue derogado. No te guíes por esos números.',
+      },
+      {
+        heading: 'Estimá el costo antes de pagar',
+        body: 'Antes de confirmar el carrito, hacé la cuenta completa: producto + envío del vendedor + impuesto (franquicia o 60%) + flete y cargos del courier. Muchas veces una compra que parecía baratísima deja de convenir una vez cargados todos los costos, sobre todo frente a algo similar que conseguís en plaza. Para no hacerlo a mano, usá nuestra calculadora de impuestos de importación y el carrito de importación: ingresás el valor, elegís si aplicás franquicia y ves el costo total estimado. Son valores de referencia; verificá siempre las condiciones vigentes con Aduanas y con tu courier antes de comprar.',
+      },
+    ],
+    related: [
+      { label: 'Comprar online del exterior: impuestos', to: '/guias/comprar-online-exterior-impuestos' },
+      { label: 'Comprar en Amazon desde Uruguay', to: '/guias/comprar-en-amazon-desde-uruguay' },
+      { label: 'Calculadora de impuestos de importación', to: '/herramientas/calculadora-impuestos-importacion' },
+      { label: 'Couriers de Uruguay', to: '/couriers-uruguay' },
+    ],
+    faqs: [
+      {
+        q: '¿Cuánto puedo importar por año de AliExpress sin pagar aranceles?',
+        a: 'La franquicia anual es de USD 800 acumulados por año calendario, en un máximo de 3 envíos y hasta 20 kg cada uno (Decreto 50/026). Lo que entra en la franquicia queda exento de aranceles de importación. Ahora bien, "exento de aranceles" no siempre es "no pago nada": la exoneración de IVA de hasta USD 200 aplica a compras de origen EE.UU., no a China, así que una compra de AliExpress dentro de la franquicia puede igual tributar IVA. A los impuestos sumale siempre el flete y los cargos del courier.',
+      },
+      {
+        q: '¿Por qué a AliExpress no le aplica la exoneración de USD 200?',
+        a: 'Porque esa exoneración de IVA sale del acuerdo comercial con Estados Unidos (TIFA, Ley 18.761) y beneficia a las compras de origen EE.UU. de hasta USD 200 de factura. AliExpress despacha mayormente desde China, así que ese beneficio no le corresponde. Es un error común creer que "hasta 200 dólares no se paga nada" en cualquier compra: esa regla es para EE.UU. (típicamente Amazon), no para las plataformas chinas.',
+      },
+      {
+        q: '¿Conviene dividir la compra en varios paquetes chicos?',
+        a: 'Casi nunca. El régimen simplificado tiene un mínimo de USD 20 por envío, así que fraccionar multiplica ese piso y, además, gastás más envíos de franquicia (solo tenés 3 al año). Salvo que te acerques al tope de 20 kg o de USD 800, suele convenir juntar todo en un mismo envío. Hacé la cuenta con la calculadora antes de decidir.',
+      },
+    ],
+  },
+  {
+    slug: 'comprar-en-amazon-desde-uruguay',
+    title: 'Comprar en Amazon desde Uruguay: courier, aduana y costo real',
+    description:
+      'Cómo comprar en Amazon desde Uruguay por courier: la exoneración de IVA de USD 200 para compras de EE.UU. (todo o nada), la franquicia de USD 800, qué mira la aduana y el registro del vendedor desde octubre de 2026.',
+    tag: 'IMPORTACIÓN',
+    updatedAt: '2026-07-18',
+    sections: [
+      {
+        heading: 'Amazon, EE.UU. y por qué el origen importa',
+        body: 'Comprar en Amazon y traerlo por courier tiene una ventaja concreta frente a las plataformas chinas: como el origen suele ser Estados Unidos, aplica la exoneración de IVA que Uruguay acordó con EE.UU. (TIFA, Ley 18.761). Por eso, para una misma plata, una compra de Amazon puede salir bastante más barata "puesta en Uruguay" que la misma de AliExpress. El régimen es el reescrito en 2026 (Ley 20.446, Decreto 50/026, Resolución General DNA 09/2026): elegís entre tu franquicia anual o el régimen simplificado, nunca los dos en un mismo paquete.',
+      },
+      {
+        heading: 'La exoneración de USD 200: todo o nada',
+        body: 'Las compras de origen EE.UU. de hasta USD 200 de valor de factura quedan exoneradas de IVA. El detalle que hay que tener clarísimo es que es todo o nada: si tu factura da USD 201, no pagás IVA "solo por el excedente", pagás IVA sobre el total. Por eso, si tu compra está en el borde, conviene ajustarla para no cruzar los USD 200. Y ojo con un mito muy repetido: ese USD 200 es el umbral de la exoneración de IVA, no un "tope por envío". No existe un límite de USD 200 por paquete; eso era el viejo Decreto 356/014, derogado.',
+      },
+      {
+        heading: 'Qué valor cuenta: el total de la factura',
+        body: 'El valor que se mira para el umbral de USD 200 y para la franquicia es el total de la factura de compra: el precio del producto, el sales tax que te cobre Amazon y cualquier envío que figure en esa misma factura. Lo que el courier te factura aparte por el flete no entra en ese valor. Es un punto clave para no cruzar los USD 200 sin querer: sumá bien todos los conceptos que Amazon incluye en tu comprobante antes de confirmar.',
+      },
+      {
+        heading: 'La franquicia anual y cuándo te conviene',
+        body: 'Además de la exoneración de EE.UU., tenés la franquicia anual de USD 800 en hasta 3 envíos por año calendario, con tope de 20 kg por envío, exenta de aranceles. Para una compra de EE.UU. de hasta USD 200, la franquicia combinada con la exoneración de IVA hace que el impuesto sea mínimo o nulo (te queda el costo del courier). Si tu compra supera los USD 200 pero no los USD 800, podés usar la franquicia igual: te ahorrás aranceles, pero pagás IVA sobre el total. Y por encima de USD 800 el envío pasa al régimen general, que es una importación formal.',
+      },
+      {
+        heading: 'El cambio de octubre de 2026: el vendedor registrado',
+        body: 'Hay una condición nueva que conviene tener en el radar. A partir del 1 de octubre de 2026, para que una compra de EE.UU. mantenga la exoneración de IVA, el emisor de la factura (el vendedor o la plataforma, no el courier) tiene que estar registrado ante la Aduana, y el sistema lo valida de forma automática. Si el vendedor no está registrado, el envío pagaría IVA aunque sea de EE.UU. y esté por debajo de USD 200. Esa fecha ya se postergó dos veces, así que podría moverse de nuevo; antes de una compra grande, verificá si ya está en vigencia. Es la diferencia entre pagar o no pagar el IVA, así que no la pases por alto.',
+      },
+      {
+        heading: 'Estimá el costo y desconfiá de las páginas viejas',
+        body: 'Antes de comprar, sumá todo: producto + sales tax + envío de Amazon + impuesto que corresponda + flete y cargos del courier. Nuestra calculadora de impuestos de importación y el carrito de importación te dan el costo total estimado para el régimen courier. Una recomendación honesta: no te guíes por la vieja página de "Encomiendas Postales" de Aduanas que menciona un mínimo de USD 10 y un tope de USD 200 por envío; describe el Decreto 356/014, que fue derogado, y te va a confirmar números que ya no rigen. Verificá siempre con la normativa vigente y con tu courier.',
+      },
+    ],
+    related: [
+      { label: 'Cómo importar de AliExpress a Uruguay', to: '/guias/importar-de-aliexpress-a-uruguay' },
+      { label: 'Comprar online del exterior: impuestos', to: '/guias/comprar-online-exterior-impuestos' },
+      { label: 'Franquicia y aduana', to: '/franquicia-aduana-uruguay' },
+      { label: 'Problemas con la aduana', to: '/problemas-con-la-aduana-uruguay' },
+    ],
+    faqs: [
+      {
+        q: '¿Hasta cuánto puedo comprar en Amazon sin pagar impuestos?',
+        a: 'Las compras de origen EE.UU. de hasta USD 200 de valor de factura están exoneradas de IVA (TIFA, Ley 18.761), y con la franquicia anual quedan además exentas de aranceles. Pero es todo o nada: si te pasás de USD 200, pagás IVA sobre el total, no solo sobre el excedente. Recordá que USD 200 es el umbral de la exoneración de IVA, no un tope por envío: no existe un límite de USD 200 por paquete.',
+      },
+      {
+        q: '¿El envío del courier cuenta para llegar a los USD 200?',
+        a: 'No. El valor que se mira es el total de la factura de compra: producto, sales tax y el envío que figure en la propia factura de Amazon. El flete que el courier te cobra por separado no forma parte de ese valor. Sumá bien lo que Amazon incluye en tu comprobante para no cruzar los USD 200 sin querer.',
+      },
+      {
+        q: '¿Qué es lo del "vendedor registrado" desde octubre de 2026?',
+        a: 'Desde el 1 de octubre de 2026, para conservar la exoneración de IVA en compras de EE.UU., el emisor de la factura (el vendedor o la plataforma) debe estar registrado ante la Aduana, con validación automática del sistema. Si no lo está, el envío pagaría IVA aunque sea de EE.UU. y esté por debajo de USD 200. La fecha ya se postergó dos veces y podría moverse otra vez, así que conviene verificar si ya rige antes de una compra importante.',
+      },
+    ],
+  },
+  {
+    slug: 'elegir-tarjeta-credito-beneficios-uruguay',
+    title: 'Cómo elegir la tarjeta de crédito con mejores beneficios en Uruguay',
+    description:
+      'Cómo comparar tarjetas de crédito en Uruguay por sus beneficios reales: la red de descuentos, la acumulación de puntos o millas, el canje, el costo anual y cómo elegir la tarjeta que rinde para cómo gastás vos.',
+    tag: 'TARJETAS',
+    updatedAt: '2026-07-18',
+    sections: [
+      {
+        heading: 'No hay "la mejor tarjeta", hay la mejor para vos',
+        body: 'La pregunta de moda en los foros es "¿cuál es la mejor tarjeta de crédito?", y la respuesta honesta es que depende de cómo gastás. Una tarjeta con excelentes descuentos en supermercados no le sirve a quien casi no cocina; un programa de millas es oro para quien viaja y trasto para quien no. Antes de mirar rankings, mirá tu propio consumo: dónde se te va la plata cada mes (súper, combustible, gastronomía, online, viajes). La tarjeta que más te conviene es la que devuelve beneficios justo ahí.',
+      },
+      {
+        heading: 'Los cinco factores que definen el beneficio real',
+        body: 'Para comparar tarjetas sin marearte, mirá cinco cosas. Primero, la red de descuentos: qué comercios y qué días te descuentan, porque en Uruguay ese suele ser el beneficio que más plata devuelve en el día a día. Segundo, la acumulación: cuántos puntos, millas o cashback ganás por peso gastado, traducido a valor real. Tercero, el canje: qué podés canjear y qué tan fácil y conveniente es (un punto que no podés usar no vale nada). Cuarto, el costo: el cargo anual y de mantenimiento frente a lo que devuelve. Y quinto, la flexibilidad: si los puntos vencen, si se transfieren y qué opciones de uso tenés.',
+      },
+      {
+        heading: 'La red de descuentos pesa más que la letra chica del programa',
+        body: 'En la práctica, para el consumo cotidiano el descuento directo en la caja rinde más que acumular puntos que después cuesta canjear. Los bancos y emisores en Uruguay arman calendarios de descuentos por día y por rubro (súper tal día, gastronomía otro, combustible otro). Si sos ordenado y comprás el día que toca, esos descuentos superan fácil a cualquier programa de puntos. Fijate que los descuentos sean en comercios donde realmente comprás y que no tengan topes tan bajos que los vuelvan simbólicos.',
+      },
+      {
+        heading: 'El costo anual: el beneficio tiene que superarlo',
+        body: 'Muchas tarjetas premium prometen beneficios espectaculares pero cobran un cargo anual alto. La cuenta es simple: sumá en un año lo que realmente vas a usar en descuentos y canjes, y restale el costo anual y de mantenimiento. Si el neto es negativo o apenas positivo, esa tarjeta "de beneficios" no te conviene. Para muchos perfiles, una tarjeta gratuita o barata con buenos descuentos de súper y combustible rinde más que una premium cara. No pagues por beneficios que no vas a aprovechar.',
+      },
+      {
+        heading: 'Cómo usar nuestro ranking para decidir',
+        body: 'Para no comparar de memoria, en Cambio Uruguay tenemos un ranking de tarjetas de crédito que puntúa cada programa con una rúbrica transparente: acumulación, red de descuentos, canje, costo, flexibilidad y cobertura, con un puntaje calculado (no puesto a dedo) para que sea auditable. Entrá, ordená por la dimensión que más te importa según tu consumo y quedate con dos o tres candidatas. Después confirmá las condiciones vigentes directamente con el emisor antes de pedirla: los beneficios cambian seguido y conviene chequear la letra chica actual.',
+      },
+    ],
+    related: [
+      { label: 'Ranking de tarjetas de crédito', to: '/tarjetas-de-credito-uruguay' },
+      { label: 'Cashback, millas o puntos', to: '/guias/cashback-millas-o-puntos-uruguay' },
+      { label: 'Pagar cuentas con tarjeta', to: '/pagar-cuentas-con-tarjeta' },
+      { label: '¿Conviene comprar en cuotas?', to: '/conviene-comprar-en-cuotas' },
+    ],
+    faqs: [
+      {
+        q: '¿Cuál es la mejor tarjeta de crédito de Uruguay?',
+        a: 'No hay una sola mejor para todos: depende de cómo gastás. Si tu gasto fuerte es supermercado y combustible, priorizá la red de descuentos por día; si viajás, un programa de millas; si querés simplicidad, cashback. Mirá los cinco factores —red de descuentos, acumulación, canje, costo anual y flexibilidad— y elegí la que devuelve beneficios justo donde vos gastás. Nuestro ranking de tarjetas te ayuda a comparar con una rúbrica transparente.',
+      },
+      {
+        q: '¿Conviene una tarjeta premium con cargo anual alto?',
+        a: 'Solo si el beneficio que vas a usar de verdad supera ese costo. Hacé la cuenta: sumá en un año los descuentos y canjes que realmente vas a aprovechar y restale el cargo anual y de mantenimiento. Para muchos perfiles, una tarjeta gratuita o barata con buenos descuentos de súper y combustible rinde más que una premium cara con beneficios que no se usan.',
+      },
+      {
+        q: '¿Los descuentos o los puntos rinden más?',
+        a: 'Para el consumo cotidiano, en general el descuento directo en la caja rinde más que acumular puntos que después cuesta canjear, sobre todo si aprovechás los descuentos por día en súper, gastronomía y combustible. Los puntos y las millas brillan en perfiles específicos (viajeros, gasto alto y canjes convenientes). Un punto que no podés canjear con comodidad no vale nada.',
+      },
+    ],
+  },
+  {
+    slug: 'cashback-millas-o-puntos-uruguay',
+    title: 'Cashback, millas o puntos: qué conviene según cómo gastás',
+    description:
+      'Cashback, millas o puntos de tarjeta en Uruguay: cómo se diferencian, cómo calcular el valor real de cada uno, a quién le conviene cada tipo y los errores que hacen perder los beneficios de tarjeta.',
+    tag: 'TARJETAS',
+    updatedAt: '2026-07-18',
+    sections: [
+      {
+        heading: 'Tres formas distintas de que la tarjeta te devuelva algo',
+        body: 'Los programas de beneficios de tarjeta suelen premiarte de tres maneras: cashback (te devuelven un porcentaje de lo gastado, en plata o crédito en el resumen), millas (puntos que canjeás por pasajes o productos de viaje) y puntos genéricos (canjeables por un catálogo, gift cards o descuentos). No son mejores ni peores en abstracto: rinden distinto según cómo y cuánto gastes. Entender la diferencia te evita elegir un programa vistoso que en tu caso concreto devuelve poco.',
+      },
+      {
+        heading: 'El cashback: simple y predecible',
+        body: 'El cashback es el más transparente: sabés exactamente cuánto te vuelve, porque es un porcentaje de lo que gastás, sin que tengas que "adivinar" el valor de un punto. Es ideal para quien quiere algo sencillo y sin vueltas, y para quien no viaja lo suficiente como para exprimir un programa de millas. Su límite es que rara vez es el que más devuelve para el gran gastador: los porcentajes de cashback suelen ser modestos y a veces tienen topes mensuales. Pero como referencia, si no querés hacer cálculos, el cashback casi siempre es una elección segura.',
+      },
+      {
+        heading: 'Millas y puntos: valen lo que valga el canje',
+        body: 'Acá está la trampa que hace que mucha gente pierda plata sin darse cuenta. Un punto o una milla no tienen un valor fijo: valen lo que consigas al canjearlos. El mismo punto puede rendir el doble canjeado por un pasaje que por una licuadora del catálogo. Para saber si un programa de millas te conviene, calculá el valor por punto: dividí lo que te cuesta en plata aquello que canjeás entre la cantidad de puntos que gastaste. Si ese valor por punto es bueno y vas a viajar, las millas pueden ganarle lejos al cashback. Si no, terminás juntando puntos que canjeás mal o que se vencen.',
+      },
+      {
+        heading: 'A quién le conviene cada uno',
+        body: 'Como regla práctica: si viajás con cierta frecuencia y sabés canjear en pasajes, las millas suelen rendir más. Si gastás mucho y sos ordenado para canjear bien, un buen programa de puntos puede convenir. Y si querés simplicidad, no viajás tanto o preferís no depender de catálogos y vencimientos, el cashback es lo más eficiente por esfuerzo. Muchos terminan con dos tarjetas: una de cashback para el gasto diario y otra de millas para grandes compras o viajes. Lo importante es no elegir por el marketing sino por tu patrón real de gasto.',
+      },
+      {
+        heading: 'Los errores que hacen perder los beneficios',
+        body: 'Tres errores tiran a la basura los beneficios de tarjeta. Uno: dejar vencer los puntos o millas por no usarlos a tiempo; fijate siempre el vencimiento. Dos: canjear por lo primero que aparece en el catálogo, que suele ser el peor valor por punto. Y tres —el más caro de todos— financiar el gasto en el saldo de la tarjeta para "acumular más": los intereses del saldo son altísimos y se comen cualquier beneficio muchas veces. La regla de oro es que los beneficios solo valen la pena si pagás el resumen completo cada mes. Si arrastrás saldo, ningún cashback ni milla compensa lo que pagás de interés.',
+      },
+    ],
+    related: [
+      { label: 'Cómo elegir tarjeta por beneficios', to: '/guias/elegir-tarjeta-credito-beneficios-uruguay' },
+      { label: 'Ranking de tarjetas de crédito', to: '/tarjetas-de-credito-uruguay' },
+      { label: 'Salir de las deudas de tarjeta', to: '/guias/salir-de-deudas-de-tarjeta-uruguay' },
+      { label: 'Tarjeta de débito vs crédito', to: '/guias/tarjeta-debito-vs-credito-uruguay' },
+    ],
+    faqs: [
+      {
+        q: '¿Qué conviene más: cashback, millas o puntos?',
+        a: 'Depende de tu perfil. El cashback es simple y predecible, ideal si querés algo sin vueltas y no viajás tanto. Las millas suelen rendir más si viajás y sabés canjear en pasajes. Los puntos genéricos convienen si gastás mucho y canjeás con buen valor. Un punto o una milla valen lo que valga el canje, así que calculá el valor por punto antes de decidir; si no querés hacer cuentas, el cashback casi siempre es una elección segura.',
+      },
+      {
+        q: '¿Cómo calculo el valor real de un punto o una milla?',
+        a: 'Dividí lo que te costaría en plata aquello que canjeás entre la cantidad de puntos o millas que gastás. Por ejemplo, si un pasaje que vale cierto monto lo sacás con una cantidad de millas, ese cociente es tu valor por punto. Compará ese valor contra lo que te devolvería el mismo gasto en cashback. Así sabés si el programa de puntos realmente te conviene o si estás canjeando mal.',
+      },
+      {
+        q: '¿Vale la pena gastar más para acumular más beneficios?',
+        a: 'No. Gastar de más o financiar en el saldo de la tarjeta para juntar puntos es el error más caro: los intereses del saldo son muy altos y se comen cualquier beneficio. Los cashback, millas y puntos solo rinden si pagás el resumen completo todos los meses. Si arrastrás saldo, ningún beneficio compensa el interés que pagás.',
+      },
+    ],
+  },
+  {
+    slug: 'tarjeta-debito-vs-credito-uruguay',
+    title: 'Tarjeta de débito vs crédito en Uruguay: cuándo usar cada una',
+    description:
+      'Tarjeta de débito o de crédito en Uruguay: diferencias reales, la rebaja de IVA en pagos electrónicos (Ley 19.210), protección ante fraude, cómo cuidar el presupuesto y cuándo conviene cada una.',
+    tag: 'TARJETAS',
+    updatedAt: '2026-07-18',
+    sections: [
+      {
+        heading: 'La diferencia de fondo: tu plata ahora vs plata prestada',
+        body: 'La tarjeta de débito descuenta directo de tu cuenta: gastás lo que tenés, sin deuda ni intereses. La tarjeta de crédito te presta: comprás ahora y pagás en el resumen del mes siguiente, y si no pagás el total, te cobran intereses. Esa es la diferencia que ordena todo lo demás. El débito te ata al presupuesto real (no podés gastar lo que no tenés); el crédito te da aire y beneficios, pero también la puerta a endeudarte si lo usás mal. Ninguna es "mejor" en abstracto: sirven para cosas distintas.',
+      },
+      {
+        heading: 'Lo bueno del crédito: financiación gratis y beneficios',
+        body: 'Usada con disciplina, la tarjeta de crédito tiene dos ventajas reales. Una es la financiación sin interés dentro del período: entre que comprás y que vence el resumen pasan varias semanas en las que usaste el dinero del banco gratis, siempre que pagues el total. La otra son los beneficios: descuentos por día, cuotas sin recargo en algunos comercios, puntos, millas o cashback, que el débito no suele dar en la misma medida. La condición para que todo esto valga es una sola: pagar el resumen completo cada mes. Si arrastrás saldo, los intereses borran cualquier beneficio.',
+      },
+      {
+        heading: 'Lo bueno del débito: presupuesto y la rebaja de IVA',
+        body: 'El débito tiene su propia fortaleza: te obliga a gastar solo lo que tenés, que es la mejor defensa contra endeudarte. Y suma un beneficio que mucha gente ignora: por la Ley 19.210 de inclusión financiera, los pagos con tarjeta de débito y otros medios electrónicos tienen una rebaja de IVA respecto de pagar en efectivo. El detalle del descuento fue cambiando con el tiempo, así que conviene verificar el porcentaje vigente, pero la lógica se mantiene: pagar con débito puede salir un poco más barato que pagar en efectivo. Para el gasto cotidiano de quien quiere ordenarse, el débito es una gran herramienta.',
+      },
+      {
+        heading: 'Protección ante fraude: no son iguales',
+        body: 'Si te clonan o usan la tarjeta sin autorización, el crédito suele dejarte mejor parado: como la plata todavía no salió de tu cuenta, tenés margen para desconocer el consumo antes de pagar el resumen. Con el débito, en cambio, el dinero ya se fue de tu cuenta y recuperarlo puede ser más lento y trabajoso. En cualquiera de los dos casos, ante un consumo que no reconocés, avisá de inmediato al emisor y dejá el reclamo por escrito. Para compras online en sitios que no conocés, mucha gente prefiere el crédito justamente por ese margen, o usa una tarjeta prepaga con poco saldo para acotar el riesgo.',
+      },
+      {
+        heading: 'La regla práctica para usar cada una',
+        body: 'Una guía sencilla: usá débito para el gasto corriente y para cuando quieras respetar el presupuesto a rajatabla; usá crédito para aprovechar descuentos, cuotas sin recargo y beneficios, siempre que puedas pagar el total del resumen. Evitá el crédito para gastos que no vas a poder cubrir el mes que viene: ahí empieza la bola de nieve del saldo. Y sea cual sea la que uses, controlá los movimientos seguido: detectar a tiempo un consumo raro es la mejor protección. Esta es información general; para tu caso, mirá las condiciones de tu banco y tu propia capacidad de pago.',
+      },
+    ],
+    related: [
+      { label: 'Cómo elegir tarjeta por beneficios', to: '/guias/elegir-tarjeta-credito-beneficios-uruguay' },
+      { label: 'Estafas y fraudes en Uruguay', to: '/estafas-uruguay' },
+      { label: 'Salir de las deudas de tarjeta', to: '/guias/salir-de-deudas-de-tarjeta-uruguay' },
+      { label: 'Salud financiera', to: '/salud-financiera' },
+    ],
+    faqs: [
+      {
+        q: '¿Conviene usar débito o crédito para las compras diarias?',
+        a: 'Para el gasto cotidiano, el débito ayuda a respetar el presupuesto porque solo gastás lo que tenés, y suma la rebaja de IVA en pagos electrónicos (Ley 19.210). El crédito conviene para aprovechar descuentos, cuotas sin recargo y beneficios, pero solo si pagás el resumen completo cada mes. Muchos combinan: débito para lo corriente y crédito para las compras con beneficio, pagando siempre el total.',
+      },
+      {
+        q: '¿Es cierto que pagar con débito sale más barato que en efectivo?',
+        a: 'Sí, por la Ley 19.210 de inclusión financiera los pagos con débito y otros medios electrónicos tienen una rebaja de IVA frente al efectivo. El porcentaje exacto fue variando con el tiempo, así que conviene verificar el vigente, pero la ventaja se mantiene. Es un motivo más para usar débito en el gasto de todos los días.',
+      },
+      {
+        q: '¿Con cuál estoy más protegido si me clonan la tarjeta?',
+        a: 'En general, con la tarjeta de crédito, porque la plata todavía no salió de tu cuenta y tenés margen para desconocer el consumo antes de pagar el resumen. Con débito, el dinero ya se debitó y recuperarlo puede ser más lento. En ambos casos, avisá de inmediato al emisor y dejá el reclamo por escrito. Para compras online en sitios desconocidos, muchos usan crédito o una prepaga con poco saldo para acotar el riesgo.',
+      },
+    ],
+  },
 ]

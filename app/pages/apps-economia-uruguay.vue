@@ -10,7 +10,7 @@
 
     <!-- Header -->
     <VCard class="overflow-hidden mb-4" elevation="8">
-      <div class="bg-gradient-apps pa-6">
+      <div class="bg-gradient-apps pa-6 on-dark">
         <div class="d-flex align-center ga-4 flex-wrap">
           <VAvatar size="56" class="d-none d-md-flex bg-white">
             <VIcon size="32" color="primary">mdi-cellphone-cog</VIcon>

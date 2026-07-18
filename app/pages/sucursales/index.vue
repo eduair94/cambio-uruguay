@@ -4,7 +4,7 @@
     <v-row>
       <v-col cols="12">
         <v-card class="overflow-hidden" elevation="8">
-          <div class="bg-gradient-to-r from-blue-600 to-purple-600 pa-6">
+          <div class="bg-gradient-to-r from-blue-600 to-purple-600 pa-6 on-dark">
             <v-row align="center" no-gutters>
               <v-col cols="12" md="8">
                 <div class="d-flex align-center mb-3">

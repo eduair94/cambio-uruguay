@@ -4,7 +4,7 @@
     <v-row>
       <v-col cols="12">
         <v-card class="overflow-hidden" elevation="8">
-          <div class="bg-gradient-compare pa-4">
+          <div class="bg-gradient-compare pa-4 on-dark">
             <div class="d-flex align-center ga-3 flex-wrap">
               <v-avatar size="56" class="d-none d-md-flex bg-white">
                 <v-icon size="32" color="primary">mdi-chart-multiple</v-icon>

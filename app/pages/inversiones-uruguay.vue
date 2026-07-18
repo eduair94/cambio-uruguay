@@ -10,7 +10,7 @@
 
     <!-- Header -->
     <VCard class="overflow-hidden mb-4" elevation="8">
-      <div class="bg-gradient-inversiones pa-6">
+      <div class="bg-gradient-inversiones pa-6 on-dark">
         <div class="d-flex align-center ga-4 flex-wrap">
           <VAvatar size="56" class="d-none d-md-flex bg-white">
             <VIcon size="32" color="primary">mdi-chart-line</VIcon>
@@ -60,7 +60,7 @@
       <VCard class="inversiones-card pa-4 pa-sm-6">
         <!-- Desktop: table -->
         <div class="d-none d-md-block">
-          <VTable density="comfortable" class="inversiones-table">
+          <VTable density="comfortable" class="inversiones-table cu-mobile-cards">
             <thead>
               <tr>
                 <th>Entidad</th>
@@ -73,16 +73,16 @@
             </thead>
             <tbody>
               <tr v-for="i in group.items" :key="i.id">
-                <td class="font-weight-medium">{{ i.name }}</td>
-                <td>{{ riskLabel(i.riskLevel) }}</td>
-                <td class="text-right">{{ minInvestmentLabel(i) }}</td>
-                <td>
+                <td class="font-weight-medium" data-label="">{{ i.name }}</td>
+                <td data-label="Riesgo">{{ riskLabel(i.riskLevel) }}</td>
+                <td class="text-right" data-label="Mín. inversión">{{ minInvestmentLabel(i) }}</td>
+                <td data-label="Regulación">
                   <span class="inversiones-note">{{ i.regulationNote }}</span>
                 </td>
-                <td>
+                <td data-label="Comisiones">
                   <span class="inversiones-note">{{ i.feesNote }}</span>
                 </td>
-                <td>
+                <td data-label="Sitio">
                   <a
                     :href="i.website"
                     target="_blank"

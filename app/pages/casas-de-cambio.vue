@@ -10,7 +10,7 @@
 
     <!-- Header -->
     <VCard class="overflow-hidden mb-4" elevation="8">
-      <div class="bg-gradient-casas pa-6">
+      <div class="bg-gradient-casas pa-6 on-dark">
         <div class="d-flex align-center ga-4 flex-wrap">
           <VAvatar size="56" class="d-none d-md-flex bg-white">
             <VIcon size="32" color="primary">mdi-bank</VIcon>
@@ -115,7 +115,7 @@
 
       <!-- Desktop table -->
       <div class="d-none d-md-block table-wrap">
-        <VTable density="comfortable" class="casas-table">
+        <VTable density="comfortable" class="casas-table cu-mobile-cards">
           <thead>
             <tr>
               <th>{{ c.colCasa }}</th>
@@ -129,7 +129,7 @@
           </thead>
           <tbody>
             <tr v-for="r in visibleRows" :key="r.code" data-testid="casas-row">
-              <td>
+              <td data-label="">
                 <NuxtLink
                   :to="localePath(`/casa/${r.code}`)"
                   class="casas-link font-weight-medium"
@@ -144,7 +144,7 @@
                   {{ categoryLabel(r.category) }}
                 </VChip>
               </td>
-              <td>
+              <td :data-label="c.colRating">
                 <template v-if="r.googleRating != null">
                   <span
                     class="casas-stars"
@@ -186,15 +186,27 @@
                 </template>
                 <span v-else class="text-caption text-grey">{{ c.noData }}</span>
               </td>
-              <td class="text-right" :class="{ 'best-cell': r.usd && r.usd.gapBuyPct === 0 }">
+              <td
+                class="text-right"
+                :class="{ 'best-cell': r.usd && r.usd.gapBuyPct === 0 }"
+                :data-label="c.colBuy"
+              >
                 {{ rateLabel(r.usd?.buy) }}
               </td>
-              <td class="text-right" :class="{ 'best-cell': r.usd && r.usd.gapSellPct === 0 }">
+              <td
+                class="text-right"
+                :class="{ 'best-cell': r.usd && r.usd.gapSellPct === 0 }"
+                :data-label="c.colSell"
+              >
                 {{ rateLabel(r.usd?.sell) }}
               </td>
-              <td class="text-right">{{ r.usd ? `${fmt(r.usd.spreadPct)}%` : '—' }}</td>
-              <td>{{ r.deptCount ? coverageLabel(r.deptCount) : '—' }}</td>
-              <td class="casas-actions">
+              <td class="text-right" :data-label="c.colSpread">
+                {{ r.usd ? `${fmt(r.usd.spreadPct)}%` : '—' }}
+              </td>
+              <td :data-label="c.colCoverage">
+                {{ r.deptCount ? coverageLabel(r.deptCount) : '—' }}
+              </td>
+              <td class="casas-actions" :data-label="c.colLinks">
                 <a
                   v-if="r.website"
                   :href="r.website"

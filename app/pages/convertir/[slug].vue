@@ -13,7 +13,7 @@
 
           <!-- Header card with the headline result -->
           <VCard class="overflow-hidden mb-5" elevation="8">
-            <div class="bg-gradient-convert pa-6">
+            <div class="bg-gradient-convert pa-6 on-dark">
               <h1 class="text-h5 text-md-h4 font-weight-bold text-white mb-2">{{ title }}</h1>
               <p v-if="pending" class="text-body-1 text-grey-lighten-2 mb-0">
                 Cargando cotización en vivo…

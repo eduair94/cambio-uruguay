@@ -3,7 +3,7 @@
     <VRow justify="center">
       <VCol cols="12" md="10" lg="9">
         <VCard class="overflow-hidden mb-5" elevation="8">
-          <div class="hero pa-6">
+          <div class="hero pa-6 on-dark">
             <h1 class="text-h5 text-md-h4 font-weight-bold text-white mb-1">
               {{ $t('mejorCasa.h1') }}
             </h1>
@@ -39,7 +39,7 @@
         </VCard>
 
         <VCard v-else-if="ranking.ranked.length" class="pa-0 mb-5">
-          <VTable density="comfortable">
+          <VTable density="comfortable" class="cu-mobile-cards">
             <thead>
               <tr>
                 <th>#</th>
@@ -50,14 +50,19 @@
             </thead>
             <tbody>
               <tr v-for="(house, i) in ranking.ranked" :key="house.origin">
-                <td>{{ i + 1 }}</td>
-                <td>
+                <td data-label="#">{{ i + 1 }}</td>
+                <td data-label="">
                   <NuxtLink :to="localePath(`/casa/${house.origin}`)" class="casa-link">
                     {{ house.name }}
                   </NuxtLink>
                 </td>
-                <td class="text-end font-weight-medium">${{ formatRate(house.rate) }}</td>
-                <td class="text-end d-none d-sm-table-cell text-medium-emphasis">
+                <td class="text-end font-weight-medium" :data-label="$t('mejorCasa.colRate')">
+                  ${{ formatRate(house.rate) }}
+                </td>
+                <td
+                  class="text-end d-none d-sm-table-cell text-medium-emphasis"
+                  :data-label="$t('mejorCasa.colSavings')"
+                >
                   <span v-if="house.savingsVsAvg > 0">
                     ${{ formatMoney(house.savingsVsAvg) }}
                   </span>

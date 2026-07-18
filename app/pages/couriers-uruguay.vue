@@ -10,7 +10,7 @@
 
     <!-- Header -->
     <VCard class="overflow-hidden mb-4" elevation="8">
-      <div class="bg-gradient-couriers pa-6">
+      <div class="bg-gradient-couriers pa-6 on-dark">
         <div class="d-flex align-center ga-4 flex-wrap">
           <VAvatar size="56" class="d-none d-md-flex bg-white">
             <VIcon size="32" color="primary">mdi-truck-fast-outline</VIcon>
@@ -64,7 +64,7 @@
 
       <!-- Desktop: table -->
       <div class="d-none d-md-block">
-        <VTable density="comfortable" class="couriers-table">
+        <VTable density="comfortable" class="couriers-table cu-mobile-cards">
           <thead>
             <tr>
               <th>Courier</th>
@@ -78,12 +78,12 @@
           </thead>
           <tbody>
             <tr v-for="c in couriers" :key="c.id">
-              <td class="font-weight-medium">{{ c.name }}</td>
-              <td class="text-grey-lighten-1">{{ c.modality }}</td>
-              <td class="text-right">{{ rateLabel(c.perKgUsd) }}</td>
-              <td class="text-right">{{ rateLabel(c.baseUsd) }}</td>
-              <td class="text-grey-lighten-1">{{ c.transit ?? '—' }}</td>
-              <td>
+              <td class="font-weight-medium" data-label="">{{ c.name }}</td>
+              <td class="text-grey-lighten-1" data-label="Modalidad">{{ c.modality }}</td>
+              <td class="text-right" data-label="US$/kg (ref.)">{{ rateLabel(c.perKgUsd) }}</td>
+              <td class="text-right" data-label="Cargo fijo">{{ rateLabel(c.baseUsd) }}</td>
+              <td class="text-grey-lighten-1" data-label="Demora">{{ c.transit ?? '—' }}</td>
+              <td data-label="Reputación">
                 <template v-if="c.rating != null">
                   <span
                     class="courier-stars"
@@ -113,7 +113,7 @@
                 </template>
                 <template v-else>—</template>
               </td>
-              <td>
+              <td data-label="Sitio">
                 <a :href="c.source" target="_blank" rel="noopener noreferrer" class="couriers-link">
                   {{ hostOf(c.website) }}
                 </a>

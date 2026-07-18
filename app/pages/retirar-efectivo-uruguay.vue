@@ -10,7 +10,7 @@
 
     <!-- Header -->
     <VCard class="overflow-hidden mb-4" elevation="8">
-      <div class="bg-gradient-withdraw pa-6">
+      <div class="bg-gradient-withdraw pa-6 on-dark">
         <div class="d-flex align-center ga-4 flex-wrap">
           <VAvatar size="56" class="d-none d-md-flex bg-white">
             <VIcon size="32" color="primary">mdi-cash-multiple</VIcon>
@@ -172,7 +172,12 @@
       <VBtn :to="localePath('/comparar')" color="primary" variant="elevated" class="cta-btn">
         <VIcon start>mdi-chart-multiple</VIcon>{{ c.ui.ctaButton }}
       </VBtn>
-      <VBtn :to="{ path: localePath('/mapa'), query: { cash: '1' } }" color="teal" variant="tonal" class="cta-btn mt-3">
+      <VBtn
+        :to="{ path: localePath('/mapa'), query: { cash: '1' } }"
+        color="teal"
+        variant="tonal"
+        class="cta-btn mt-3"
+      >
         <VIcon start>mdi-map-marker-radius</VIcon>{{ c.ui.mapButton }}
       </VBtn>
     </VCard>

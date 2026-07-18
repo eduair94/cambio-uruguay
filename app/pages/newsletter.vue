@@ -14,7 +14,7 @@
         </VAlert>
 
         <VCard elevation="6" class="overflow-hidden">
-          <div class="bg-gradient-news pa-5 text-white">
+          <div class="bg-gradient-news pa-5 text-white on-dark">
             <div class="d-flex align-center ga-3">
               <VIcon size="36">mdi-email-newsletter</VIcon>
               <div>

@@ -10,7 +10,7 @@
 
     <!-- 1. Header / intro -->
     <VCard class="overflow-hidden mb-4" elevation="8">
-      <div class="bg-gradient-imp pa-6">
+      <div class="bg-gradient-imp pa-6 on-dark">
         <div class="d-flex align-center ga-4 flex-wrap">
           <VAvatar size="56" class="d-none d-md-flex bg-white">
             <VIcon size="32" color="primary">mdi-file-percent-outline</VIcon>
@@ -70,7 +70,7 @@
         <strong>plazo</strong>. Son nueve celdas, y esta tabla las muestra todas.
       </p>
 
-      <VTable density="comfortable" class="imp-table mb-3">
+      <VTable density="comfortable" class="imp-table cu-mobile-cards mb-3">
         <thead>
           <tr>
             <th>Moneda</th>
@@ -79,11 +79,12 @@
         </thead>
         <tbody>
           <tr v-for="row in depositRows" :key="row.currency">
-            <td class="font-weight-medium">{{ row.label }}</td>
+            <td class="font-weight-medium" data-label="">{{ row.label }}</td>
             <td
               v-for="t in depositTerms"
               :key="t.key"
               class="text-right font-weight-bold imp-rate-cell"
+              :data-label="t.label"
             >
               {{ pct(depositRule(row.currency, t.key).rate) }}
             </td>
@@ -217,7 +218,7 @@
         se toma un porcentaje del precio de venta como base imponible y sobre eso se paga el 12%:
       </p>
 
-      <VTable density="comfortable" class="imp-table mb-3">
+      <VTable density="comfortable" class="imp-table cu-mobile-cards mb-3">
         <thead>
           <tr>
             <th>Caso</th>
@@ -228,10 +229,10 @@
         </thead>
         <tbody>
           <tr v-for="(f, i) in fictoCases" :key="'f' + i">
-            <td class="font-weight-medium">{{ f.caso }}</td>
-            <td>{{ f.base }}</td>
-            <td>{{ f.efectiva }}</td>
-            <td>{{ f.naturaleza }}</td>
+            <td class="font-weight-medium" data-label="">{{ f.caso }}</td>
+            <td data-label="Base ficta">{{ f.base }}</td>
+            <td data-label="Tasa efectiva">{{ f.efectiva }}</td>
+            <td data-label="Naturaleza">{{ f.naturaleza }}</td>
           </tr>
         </tbody>
       </VTable>
@@ -397,7 +398,7 @@
         la tasa, y son otros artículos los que la habilitan: Título 7, art. 52 lit. A + Dec. 148/007
         arts. 44 quinquies y sexies.
       </VAlert>
-      <VTable density="comfortable" class="imp-table mb-3">
+      <VTable density="comfortable" class="imp-table cu-mobile-cards mb-3">
         <thead>
           <tr>
             <th>Quién opera tu inversión</th>
@@ -407,34 +408,38 @@
         </thead>
         <tbody>
           <tr>
-            <td class="font-weight-medium">
+            <td class="font-weight-medium" data-label="">
               Bróker uruguayo que además <strong>ejerce la custodia</strong> de los activos
             </td>
-            <td class="font-weight-bold imp-rate-cell">
+            <td class="font-weight-bold imp-rate-cell" data-label="Qué te retiene">
               {{ pct(FOREIGN_CUSTODIAN_WITHHOLDING_PCT) }} (retención reducida)
             </td>
-            <td>
+            <td data-label="Sobre qué">
               Las rentas que administra. Es definitiva <strong>solo si vos optás</strong> por
               tomarla como tal (y así te liberás de la declaración jurada).
             </td>
           </tr>
           <tr>
-            <td class="font-weight-medium">
+            <td class="font-weight-medium" data-label="">
               Otro agente local sin custodia: banco, corredor de bolsa, fondo o fideicomiso que
               actúa por cuenta y orden de terceros (art. 44 quater)
             </td>
-            <td class="font-weight-bold imp-rate-cell">{{ pct(FOREIGN_GENERAL_PCT) }}</td>
-            <td>
+            <td class="font-weight-bold imp-rate-cell" data-label="Qué te retiene">
+              {{ pct(FOREIGN_GENERAL_PCT) }}
+            </td>
+            <td data-label="Sobre qué">
               <strong>Solo los incrementos patrimoniales</strong> — no es una retención sobre todas
               tus rentas del exterior.
             </td>
           </tr>
           <tr>
-            <td class="font-weight-medium">
+            <td class="font-weight-medium" data-label="">
               Ningún agente uruguayo (por ejemplo, cuenta directa en un bróker del exterior)
             </td>
-            <td class="font-weight-bold imp-rate-cell">Nadie retiene</td>
-            <td>
+            <td class="font-weight-bold imp-rate-cell" data-label="Qué te retiene">
+              Nadie retiene
+            </td>
+            <td data-label="Sobre qué">
               <strong>Anticipos semestrales obligatorios al {{ pct(FOREIGN_GENERAL_PCT) }}</strong>
               (Dec. 95/026 arts. 44 duodecies y terdecies). Pueden hacerse definitivos y liberarte
               de la declaración jurada.
@@ -515,7 +520,7 @@
       </p>
 
       <h3 class="text-subtitle-1 font-weight-bold mb-2">Residencia por inversión</h3>
-      <VTable density="comfortable" class="imp-table mb-4">
+      <VTable density="comfortable" class="imp-table cu-mobile-cards mb-4">
         <thead>
           <tr>
             <th>Vía</th>
@@ -528,12 +533,12 @@
           <tr v-for="(r, i) in residencyRoutes" :key="'r' + i">
             <!-- Static, authored-in-code copy (no user input): the markup is the emphasis. -->
             <!-- eslint-disable-next-line vue/no-v-html -->
-            <td class="font-weight-medium" v-html="r.via" />
-            <td class="text-right">UI {{ formatInt(r.ui) }}</td>
-            <td class="text-right imp-rate-cell">
+            <td class="font-weight-medium" data-label="" v-html="r.via" />
+            <td class="text-right" data-label="Umbral">UI {{ formatInt(r.ui) }}</td>
+            <td class="text-right imp-rate-cell" data-label="Equivalente hoy">
               {{ formatUYU(uiToPesos(r.ui), 0) }}{{ usdSuffix(uiToPesos(r.ui)) }}
             </td>
-            <td>{{ r.extra }}</td>
+            <td data-label="Condición extra">{{ r.extra }}</td>
           </tr>
         </tbody>
       </VTable>
@@ -681,7 +686,7 @@
         <strong>la mayoría de las calculadoras uruguayas lo publica mal</strong>. Estas son las
         franjas vigentes, con la BPC de hoy ({{ formatUYU(bpc, 0) }}):
       </p>
-      <VTable density="comfortable" class="imp-table mb-3">
+      <VTable density="comfortable" class="imp-table cu-mobile-cards mb-3">
         <thead>
           <tr>
             <th>Ingresos anuales</th>
@@ -691,9 +696,11 @@
         </thead>
         <tbody>
           <tr v-for="(b, i) in iassBrackets" :key="'i' + i">
-            <td class="font-weight-medium">{{ b.label }}</td>
-            <td class="text-right">{{ b.pesos }}</td>
-            <td class="text-right font-weight-bold imp-rate-cell">{{ b.rate }}</td>
+            <td class="font-weight-medium" data-label="">{{ b.label }}</td>
+            <td class="text-right" data-label="En pesos (BPC de hoy)">{{ b.pesos }}</td>
+            <td class="text-right font-weight-bold imp-rate-cell" data-label="Tasa">
+              {{ b.rate }}
+            </td>
           </tr>
         </tbody>
       </VTable>
@@ -801,7 +808,7 @@
         <VIcon start size="small" color="primary">mdi-comment-remove-outline</VIcon>
         Mitos que circulan (y lo que dice la norma)
       </h2>
-      <VTable density="comfortable" class="imp-table imp-myths">
+      <VTable density="comfortable" class="imp-table imp-myths cu-mobile-cards">
         <thead>
           <tr>
             <th>Lo que se dice</th>
@@ -810,10 +817,10 @@
         </thead>
         <tbody>
           <tr v-for="(m, i) in myths" :key="'m' + i">
-            <td class="imp-myth-claim">«{{ m.myth }}»</td>
+            <td class="imp-myth-claim" data-label="Lo que se dice">«{{ m.myth }}»</td>
             <!-- Static, authored-in-code copy (no user input): the markup is the emphasis. -->
             <!-- eslint-disable-next-line vue/no-v-html -->
-            <td v-html="m.truth" />
+            <td data-label="Lo que dice la norma" v-html="m.truth" />
           </tr>
         </tbody>
       </VTable>

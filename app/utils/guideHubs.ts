@@ -108,7 +108,12 @@ export const guideHubs: readonly GuideHub[] = [
     icon: 'mdi-package-variant-closed',
     intro:
       'Comprar afuera y traerlo a Uruguay tiene reglas que conviene entender antes de pagar: el régimen de courier y la franquicia, los impuestos que se aplican, qué podés traer del viaje y qué hacer si un paquete queda trabado en la aduana. Reunimos las páginas y calculadoras que te dicen, de antemano, cuánto vas a pagar de verdad por tu compra internacional.',
-    guideSlugs: ['comprar-online-exterior-impuestos', 'enviar-recibir-dinero-exterior'],
+    guideSlugs: [
+      'comprar-online-exterior-impuestos',
+      'importar-de-aliexpress-a-uruguay',
+      'comprar-en-amazon-desde-uruguay',
+      'enviar-recibir-dinero-exterior',
+    ],
     resources: [
       {
         label: 'Couriers de Uruguay',
@@ -402,6 +407,9 @@ export const guideHubs: readonly GuideHub[] = [
       'ser-garante-o-codeudor-riesgos-uruguay',
       'salir-de-deudas-de-tarjeta-uruguay',
       'no-pagar-prestamo-e-irse-del-pais-uruguay',
+      'elegir-tarjeta-credito-beneficios-uruguay',
+      'cashback-millas-o-puntos-uruguay',
+      'tarjeta-debito-vs-credito-uruguay',
     ],
     resources: [
       {

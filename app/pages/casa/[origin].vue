@@ -7,7 +7,7 @@
     <v-row>
       <v-col cols="12">
         <v-card class="overflow-hidden" elevation="8">
-          <div class="bg-gradient-casa pa-6">
+          <div class="bg-gradient-casa pa-6 on-dark">
             <div class="d-flex align-center ga-4 flex-wrap">
               <v-avatar size="56" class="d-none d-md-flex bg-white">
                 <v-icon size="32" color="primary">mdi-bank</v-icon>
