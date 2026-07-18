@@ -34,4 +34,24 @@ describe("buildAduanaPayload", () => {
 
     expect(out.pendingReview).toEqual(["franquicia.tope_anual_usd"]);
   });
+
+  it("badges an auto-published fact with its machine-update metadata", () => {
+    const id = "franquicia.registro_vendedor_desde";
+    const doc = {
+      ...BASELINE,
+      // buildAduanaPayload receives the MERGED doc: the fact already carries the override value.
+      facts: BASELINE.facts.map((f) => (f.id === id ? { ...f, value: "2027-01-01", origin: "ai" as const } : f)),
+      overrides: [
+        { id, value: "2027-01-01", publishedAt: "2026-09-30", basedOnValue: "2026-10-01", sources: ["u1", "u2"], prevValue: "2026-10-01" },
+      ],
+    };
+    const out = buildAduanaPayload(doc);
+    const fact = out.facts.find((f) => f.id === id)!;
+    expect(fact.autoPublished).toBe(true);
+    expect(fact.publishedAt).toBe("2026-09-30");
+    expect(fact.prevValue).toBe("2026-10-01");
+    expect(fact.overrideSources).toEqual(["u1", "u2"]);
+    // a fact WITHOUT an override carries none of that metadata
+    expect(out.facts.find((f) => f.id === "franquicia.tope_anual_usd")!.autoPublished).toBeUndefined();
+  });
 });

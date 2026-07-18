@@ -122,6 +122,61 @@ describe("mergeAduanaDoc", () => {
   });
 });
 
+describe("mergeAduanaDoc — auto-published overrides", () => {
+  const dateId = "franquicia.registro_vendedor_desde";
+
+  it("serves an AI override over the baseline value while the baseline is unchanged", () => {
+    const base = emptyAduanaDoc();
+    const f = base.facts.find((x) => x.id === dateId)!;
+    const merged = mergeAduanaDoc(
+      {
+        overrides: [
+          { id: dateId, value: "2027-01-01", publishedAt: "2026-09-30", basedOnValue: String(f.value), sources: ["a", "b"], prevValue: f.value },
+        ],
+      },
+      base
+    );
+    const got = merged.facts.find((x) => x.id === dateId)!;
+    expect(got.value).toBe("2027-01-01");
+    expect(got.origin).toBe("ai");
+    expect(merged.overrides).toHaveLength(1);
+  });
+
+  it("discharges the override once a human edits baseline.ts (basedOnValue diverges)", () => {
+    const base = emptyAduanaDoc();
+    const f = base.facts.find((x) => x.id === dateId)!;
+    f.value = "2027-01-01"; // the human promoted it in the file…
+    f.verifiedAt = "2026-10-05";
+    const merged = mergeAduanaDoc(
+      {
+        overrides: [
+          { id: dateId, value: "2027-01-01", publishedAt: "2026-09-30", basedOnValue: "2026-10-01", sources: ["a", "b"], prevValue: "2026-10-01" },
+        ],
+      },
+      base
+    );
+    const got = merged.facts.find((x) => x.id === dateId)!;
+    expect(got.value).toBe("2027-01-01");
+    expect(got.origin).toBe("baseline"); // human-verified, NOT the discharged AI override
+    expect(merged.overrides).toEqual([]); // discharged
+  });
+
+  it("does not apply an override whose fact was rolled back in the baseline", () => {
+    const base = emptyAduanaDoc();
+    const f = base.facts.find((x) => x.id === dateId)!; // baseline still 2026-10-01
+    const merged = mergeAduanaDoc(
+      {
+        overrides: [
+          { id: dateId, value: "2027-06-01", publishedAt: "2026-09-30", basedOnValue: "2027-01-01", sources: ["a", "b"], prevValue: "2027-01-01" },
+        ],
+      },
+      base
+    );
+    expect(merged.facts.find((x) => x.id === dateId)!.value).toBe(f.value); // baseline wins
+    expect(merged.overrides).toEqual([]);
+  });
+});
+
 describe("emptyAduanaDoc", () => {
   it("is a deep, independent copy of BASELINE each call", () => {
     const a = emptyAduanaDoc();

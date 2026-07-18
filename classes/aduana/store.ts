@@ -61,13 +61,32 @@ export function mergeAduanaDoc(
     return String(storedFactById.get(id)?.value) === String(baseFact.value);
   });
 
+  // AUTO-PUBLISHED OVERRIDES — the ONE place Mongo may move a fact's VALUE, and only under human
+  // precedence. An override carries `basedOnValue`, the baseline value at publish time. If the
+  // baseline FILE still holds that value, the human has not weighed in, so the AI's value serves
+  // (origin 'ai', badged machine-updated on the page, publishedAt as its freshness stamp). The
+  // moment a human edits baseline.ts — to confirm the AI's value with a fresh verifiedAt, to
+  // overrule it, or to roll it back — baseline.value diverges from basedOnValue and the override is
+  // discharged: the file wins, exactly as it does for pendingReview above. Precedence:
+  // human-verified (baseline) > AI-published (override) > baseline default.
+  const liveOverrides = (stored.overrides ?? []).filter((o) => {
+    const baseFact = baseFactById.get(o.id);
+    return baseFact !== undefined && String(baseFact.value) === o.basedOnValue;
+  });
+  const overrideById = new Map(liveOverrides.map((o) => [o.id, o]));
+  const factsWithOverrides = facts.map((f) => {
+    const o = overrideById.get(f.id);
+    return o ? { ...f, value: o.value, origin: "ai" as const, aiCheckedAt: o.publishedAt } : f;
+  });
+
   return {
-    ...base, // facts (below), problems and sources: the baseline file, always — never Mongo's copy
-    facts,
+    ...base, // problems and sources: the baseline file, always — never Mongo's copy
+    facts: factsWithOverrides,
     quotes: stored.quotes ?? base.quotes,
     counts: stored.counts ?? base.counts,
     updatedAt: stored.updatedAt ?? base.updatedAt,
     pendingReview,
+    overrides: liveOverrides,
   };
 }
 
