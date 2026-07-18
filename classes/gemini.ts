@@ -21,9 +21,74 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const ENDPOINT =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
+// Model is env-overridable so a billing upgrade can swap in a bigger model with no code change.
+// The default MUST be a model that is still served AND still supports the google_search grounding
+// tool: `gemini-2.5-flash` was retired mid-2026 ("no longer available to new users" → a hard 404 on
+// generateContent) and, because this shared client is the single Gemini path for every scheduled
+// job, that one dead id silently took the WHOLE fleet down (banks-news / uy-figures / cost-of-living
+// / debt-relief / aduana / loan Gemini-lenders / predictions / explain all stopped writing; only
+// loan-rates' regex fallback kept producing). `gemini-2.5-flash-lite` is the current grounding-
+// capable model verified working on the free-tier key.
+export const GEMINI_MODEL = (process.env.GEMINI_MODEL || "gemini-2.5-flash-lite").trim();
+const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 const TIMEOUT_MS = 30000;
+/** Transient statuses worth retrying: 429 = free-tier per-minute quota, 503 = model overloaded. */
+const RETRY_STATUSES = new Set([429, 503]);
+const MAX_RETRIES = 4;
+
+// Free-tier keys cap *grounded* generateContent at a low requests-per-minute rate. A caller firing
+// at concurrency 4 (banks-news) blows past that in the first second and every call after the first
+// draws a 429 — backoff alone can't recover because the whole burst keeps re-arriving. Setting
+// GEMINI_MIN_INTERVAL_MS>0 paces the START of successive Gemini requests through one shared slot
+// clock, serialising spacing across all concurrent callers regardless of their own concurrency
+// (e.g. 15000 keeps a free-tier key under its grounded RPM). Default is 0 (no pacing): this project
+// runs on a billed key whose RPM is high enough for concurrency 4, and 0 keeps the mocked test
+// suite instant.
+const MIN_INTERVAL_MS = ((): number => {
+  const raw = Number(process.env.GEMINI_MIN_INTERVAL_MS);
+  return Number.isFinite(raw) && raw > 0 ? raw : 0;
+})();
+let nextSlot = 0;
+async function pace(): Promise<void> {
+  if (MIN_INTERVAL_MS <= 0) return;
+  const now = Date.now();
+  const wait = Math.max(0, nextSlot - now);
+  nextSlot = Math.max(now, nextSlot) + MIN_INTERVAL_MS;
+  if (wait > 0) await new Promise((r) => setTimeout(r, wait));
+}
+
+/**
+ * POST to Gemini with backoff on transient rate-limit / overload responses. The free-tier key has a
+ * low requests-per-minute cap, so a burst (banks-news fires 11 grounded calls/lang at concurrency 4)
+ * routinely draws 429s that a single-shot request would drop as `null` — losing that entity's news
+ * for the day. Honour `Retry-After` when Google sends it, else exponential backoff with jitter so
+ * the concurrent workers don't retry in lockstep. Any non-transient error (404 dead model, 400 bad
+ * request) throws immediately — the caller's try/catch still turns it into the module's `null`.
+ */
+async function postGemini(body: unknown, timeoutMs: number, apiKey: string): Promise<{ data: GeminiResponse }> {
+  let lastErr: any;
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      await pace();
+      return await axios.post<GeminiResponse>(ENDPOINT, body, {
+        params: { key: apiKey },
+        timeout: timeoutMs,
+        headers: { "Content-Type": "application/json" },
+      });
+    } catch (err: any) {
+      lastErr = err;
+      const status = err?.response?.status;
+      if (!RETRY_STATUSES.has(status) || attempt === MAX_RETRIES) throw err;
+      const retryAfter = Number(err?.response?.headers?.["retry-after"]);
+      const waitMs =
+        Number.isFinite(retryAfter) && retryAfter > 0
+          ? retryAfter * 1000
+          : Math.min(30000, 1500 * 2 ** attempt) + Math.floor(Math.random() * 1000);
+      await new Promise((r) => setTimeout(r, waitMs));
+    }
+  }
+  throw lastErr;
+}
 /** Following one grounding redirect must never hold a scheduled job hostage. */
 const RESOLVE_TIMEOUT_MS = 8000;
 const MAX_CHUNKS = 20;
@@ -143,17 +208,13 @@ export async function askGrounded(prompt: string): Promise<GroundedReply | null>
   if (!apiKey) return null;
 
   try {
-    const res = await axios.post<GeminiResponse>(
-      ENDPOINT,
+    const res = await postGemini(
       {
         contents: [{ parts: [{ text: prompt }] }],
         tools: [{ google_search: {} }],
       },
-      {
-        params: { key: apiKey },
-        timeout: TIMEOUT_MS,
-        headers: { "Content-Type": "application/json" },
-      }
+      TIMEOUT_MS,
+      apiKey
     );
 
     const candidate = res.data?.candidates?.[0];
@@ -241,11 +302,7 @@ export async function askPlain(prompt: string, timeoutMs = TIMEOUT_MS): Promise<
   const apiKey = process.env.GEMINI_API_KEY || process.env.NUXT_GEMINI_API_KEY;
   if (!apiKey) return null;
   try {
-    const res = await axios.post<GeminiResponse>(
-      ENDPOINT,
-      { contents: [{ parts: [{ text: prompt }] }] },
-      { params: { key: apiKey }, timeout: timeoutMs, headers: { "Content-Type": "application/json" } }
-    );
+    const res = await postGemini({ contents: [{ parts: [{ text: prompt }] }] }, timeoutMs, apiKey);
     const text = (res.data?.candidates?.[0]?.content?.parts ?? []).map((p) => p.text ?? "").join("").trim();
     return text || null;
   } catch (error: any) {
