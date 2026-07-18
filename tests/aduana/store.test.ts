@@ -124,7 +124,7 @@ describe("mergeAduanaDoc", () => {
 });
 
 describe("mergeAduanaDoc — auto-published overrides", () => {
-  const dateId = "franquicia.registro_vendedor_desde";
+  const dateId = "registro_vendedor.exigible_desde";
 
   it("serves an AI override over the baseline value while the baseline is unchanged", () => {
     const base = emptyAduanaDoc();

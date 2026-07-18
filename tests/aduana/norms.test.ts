@@ -177,7 +177,7 @@ describe("applyProposals", () => {
 
 describe("applyProposals — auto-publish guardrail", () => {
   const dateFact: AduanaFact = {
-    id: "franquicia.registro_vendedor_desde",
+    id: "registro_vendedor.exigible_desde",
     label: "Fecha registro vendedor",
     value: "2026-10-01",
     sourceId: "rg-dna-21-2026",

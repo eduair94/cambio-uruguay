@@ -9,7 +9,7 @@ describe("buildAlerts", () => {
   it("emits one line per state change, each carrying its identifying detail", () => {
     const msgs = buildAlerts({
       published: [
-        { id: "franquicia.registro_vendedor_desde", value: "2027-01-01", prevValue: "2026-10-01" },
+        { id: "registro_vendedor.exigible_desde", value: "2027-01-01", prevValue: "2026-10-01" },
       ],
       flagged: ["prestacion_unica.minimo_usd"],
       discovered: [

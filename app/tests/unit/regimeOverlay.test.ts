@@ -15,7 +15,7 @@ describe('regimeRulesFromPayload', () => {
   it('maps fact ids onto RegimeRules, leaving untouched keys at their default', () => {
     const { rules } = regimeRulesFromPayload(
       payload([
-        { id: 'franquicia.registro_vendedor_desde', value: '2027-01-01' },
+        { id: 'registro_vendedor.exigible_desde', value: '2027-01-01' },
         { id: 'prestacion_unica.minimo_usd', value: 25 },
       ])
     )
@@ -34,7 +34,7 @@ describe('regimeRulesFromPayload', () => {
     const { rules } = regimeRulesFromPayload(
       payload([
         { id: 'prestacion_unica.minimo_usd', value: 'veinte' }, // not a number
-        { id: 'franquicia.registro_vendedor_desde', value: 20260101 }, // not a date string
+        { id: 'registro_vendedor.exigible_desde', value: 20260101 }, // not a date string
       ])
     )
     expect(rules.simplifiedMinUsd).toBe(DEFAULT_REGIME_RULES.simplifiedMinUsd)

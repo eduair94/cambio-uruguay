@@ -36,7 +36,7 @@ describe("buildAduanaPayload", () => {
   });
 
   it("badges an auto-published fact with its machine-update metadata", () => {
-    const id = "franquicia.registro_vendedor_desde";
+    const id = "registro_vendedor.exigible_desde";
     const doc = {
       ...BASELINE,
       // buildAduanaPayload receives the MERGED doc: the fact already carries the override value.

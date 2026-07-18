@@ -12,7 +12,7 @@ const FACT_TO_RULE: Record<string, keyof RegimeRules> = {
   'prestacion_unica.tasa_pct': 'simplifiedRatePct',
   'prestacion_unica.minimo_usd': 'simplifiedMinUsd',
   'tifa.exoneracion_usd': 'usaIvaExemptionUsd',
-  'franquicia.registro_vendedor_desde': 'sellerRegistryEnforcedFrom',
+  'registro_vendedor.exigible_desde': 'sellerRegistryEnforcedFrom',
 }
 
 export interface RegimeOverlay {

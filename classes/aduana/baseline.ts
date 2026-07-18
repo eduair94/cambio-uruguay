@@ -37,7 +37,13 @@ export const DENYLIST_URLS: string[] = [
  * (or a date proposed for a numeric one) is rejected.
  */
 export const FACT_DATE_RANGES: Record<string, [string, string]> = {
-  "franquicia.registro_vendedor_desde": ["2026-07-01", "2027-12-31"],
+  // THE OCTOBER DATUM (fact `registro_vendedor.exigible_desde`): the seller-registry enforcement
+  // date, a DATE string validated against this window instead of a numeric FACT_RANGES entry. It
+  // mirrors app/utils/importRules.ts#SELLER_REGISTRY_ENFORCED_FROM (the drift-guard asserts they
+  // match). Already postponed twice (RG 12/2026 → 1/7, RG 21/2026 → 1/10); a third prórroga is
+  // likely — the auto-publish gate can move it when two independent official sources agree, and a
+  // human confirms by editing this file.
+  "registro_vendedor.exigible_desde": ["2026-07-01", "2027-12-31"],
 };
 
 /** Plausible range per numeric fact. A proposal outside its range is rejected, never published. */
@@ -450,21 +456,6 @@ export const BASELINE: AduanaDoc = {
       value: 3,
       sourceId: "decreto-50-026",
       article: "art. 4 lit. c",
-      verifiedAt: "2026-07-11",
-      origin: "baseline",
-    },
-    {
-      // THE OCTOBER DATUM. Its value is a DATE, so it is validated against FACT_DATE_RANGES, not a
-      // numeric FACT_RANGES entry. Mirrors app/utils/importRules.ts#SELLER_REGISTRY_ENFORCED_FROM
-      // (the drift-guard test asserts they match). Already postponed twice (RG 12/2026 → 1/7,
-      // RG 21/2026 → 1/10); a third prórroga is likely — the auto-publish gate can move it when two
-      // independent official sources agree, and a human confirms by editing this file.
-      id: "franquicia.registro_vendedor_desde",
-      label:
-        "Fecha desde la que la exoneración de IVA de EE.UU. exige que el vendedor esté registrado ante la DNA",
-      value: "2026-10-01",
-      sourceId: "rg-dna-21-2026",
-      article: "num. 1",
       verifiedAt: "2026-07-11",
       origin: "baseline",
     },

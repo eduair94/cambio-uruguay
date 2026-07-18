@@ -98,7 +98,7 @@ describe("aduana baseline", () => {
   // The October datum: it must be a first-class, watchable fact, and it must never silently drift
   // from the calculator's constant (the whole reason importRules.ts and this baseline are drift-guarded).
   it("carries the Oct seller-registry date as a string fact, matching the app constant", () => {
-    const f = BASELINE.facts.find((x) => x.id === "franquicia.registro_vendedor_desde");
+    const f = BASELINE.facts.find((x) => x.id === "registro_vendedor.exigible_desde");
     expect(f, "date fact missing").toBeDefined();
     expect(typeof f!.value).toBe("string");
     expect(f!.value as string).toMatch(/^\d{4}-\d{2}-\d{2}$/);
@@ -106,11 +106,11 @@ describe("aduana baseline", () => {
   });
 
   it("gives the date fact a plausibility window, not a numeric range", () => {
-    expect(FACT_DATE_RANGES["franquicia.registro_vendedor_desde"]).toEqual([
+    expect(FACT_DATE_RANGES["registro_vendedor.exigible_desde"]).toEqual([
       "2026-07-01",
       "2027-12-31",
     ]);
-    expect(FACT_RANGES["franquicia.registro_vendedor_desde"]).toBeUndefined();
+    expect(FACT_RANGES["registro_vendedor.exigible_desde"]).toBeUndefined();
   });
 
   it("denylists the repealed-numbers page", () => {

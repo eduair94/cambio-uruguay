@@ -546,6 +546,15 @@
                   >
                     control automático en disputa — pendiente de revisión humana
                   </VChip>
+                  <VChip
+                    v-if="f.autoPublished"
+                    size="x-small"
+                    color="info"
+                    variant="tonal"
+                    class="ml-2"
+                  >
+                    actualización automática — sin verificación humana
+                  </VChip>
                 </div>
                 <div class="fact-meta">
                   <a
@@ -557,10 +566,16 @@
                     {{ sourceById(f.sourceId)!.norm
                     }}<template v-if="f.article"> — {{ f.article }}</template>
                   </a>
-                  <span class="fact-verified"
-                    >verificado contra la norma el {{ formatDate(f.verifiedAt) }}</span
-                  >
-                  <span v-if="f.aiCheckedAt" class="fact-ai-checked">
+                  <span v-if="!f.autoPublished" class="fact-verified">
+                    verificado contra la norma el {{ formatDate(f.verifiedAt) }}
+                  </span>
+                  <span v-else class="fact-auto-published">
+                    actualizado automáticamente el {{ formatDate(f.publishedAt || '') }} — sin
+                    verificación humana{{
+                      f.prevValue !== undefined ? ` (antes: ${f.prevValue})` : ''
+                    }}
+                  </span>
+                  <span v-if="f.aiCheckedAt && !f.autoPublished" class="fact-ai-checked">
                     último control automático: {{ formatDate(f.aiCheckedAt) }}
                   </span>
                 </div>
@@ -1292,6 +1307,12 @@ useHead(() => ({
 .fact-ai-checked {
   font-style: italic;
   opacity: 0.55;
+}
+/* An auto-published value is machine-updated, not human-verified — it replaces the "verificado
+   contra la norma" line, never sits beside it. See AduanaOverride in classes/aduana/types.ts. */
+.fact-auto-published {
+  font-style: italic;
+  opacity: 0.7;
 }
 
 /* Cross-links */
