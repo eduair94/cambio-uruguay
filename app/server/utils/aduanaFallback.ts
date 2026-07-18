@@ -70,6 +70,13 @@ export interface AduanaFact {
   verifiedAt: string // ISO date — written by a human only
   aiCheckedAt?: string // ISO date — written by the weekly grounded re-check only
   origin: 'baseline' | 'ai'
+  // Present only when the guardrail auto-published this fact's value (backend PublicAduanaFact).
+  // The page badges it "actualizado automáticamente, sin verificación humana" — never "verificado
+  // contra la norma".
+  autoPublished?: boolean
+  publishedAt?: string
+  prevValue?: number | string
+  overrideSources?: string[]
 }
 
 /** A cited testimony. Text is trimmed, never rewritten. */
