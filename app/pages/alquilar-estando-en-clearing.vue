@@ -183,7 +183,7 @@
     </p>
     <VCard variant="flat" class="section-card pa-2 pa-sm-4 mb-4">
       <div class="table-scroll">
-        <VTable density="comfortable">
+        <VTable density="comfortable" class="cu-mobile-cards">
           <thead>
             <tr>
               <th>Ruta</th>
@@ -193,13 +193,15 @@
           </thead>
           <tbody>
             <tr v-for="route in routes" :key="route.id">
-              <td class="font-weight-medium">{{ route.name }}</td>
-              <td>
+              <td class="font-weight-medium" data-label="">{{ route.name }}</td>
+              <td data-label="¿Mira tu clearing?">
                 <VChip :color="checkColor(route.checksClearing)" size="small" variant="tonal" label>
                   {{ checkLabel[route.checksClearing] }}
                 </VChip>
               </td>
-              <td class="evaluates-cell text-body-2">{{ route.evaluates }}</td>
+              <td class="evaluates-cell text-body-2" data-label="Qué evalúa">
+                {{ route.evaluates }}
+              </td>
             </tr>
           </tbody>
         </VTable>

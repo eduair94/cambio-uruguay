@@ -146,6 +146,7 @@ export default defineNuxtConfig({
     '@mdi/font/css/materialdesignicons.min.css',
     '~/assets/css/critical.css',
     '~/assets/css/legacy-vuetify.css',
+    '~/assets/css/responsive-tables.css',
   ],
   // Server Configuration
   devServer: {

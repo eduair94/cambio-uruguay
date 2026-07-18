@@ -1,7 +1,7 @@
 <template>
   <VCard class="panel pa-4" variant="flat">
     <div class="text-subtitle-1 font-weight-bold mb-3">{{ $t('panel.title') }}</div>
-    <VTable density="comfortable" class="panel-table">
+    <VTable density="comfortable" class="panel-table cu-mobile-cards">
       <thead>
         <tr>
           <th>{{ $t('panel.currency') }}</th>
@@ -12,10 +12,10 @@
       </thead>
       <tbody>
         <tr v-for="c in currencies" :key="c">
-          <td class="font-weight-medium">{{ c }}</td>
-          <td class="text-right">{{ fmt(bestBuy(c)) }}</td>
-          <td class="text-right">{{ fmt(bestSell(c)) }}</td>
-          <td class="trend-col">
+          <td class="font-weight-medium" data-label="">{{ c }}</td>
+          <td class="text-right" :data-label="$t('panel.buy')">{{ fmt(bestBuy(c)) }}</td>
+          <td class="text-right" :data-label="$t('panel.sell')">{{ fmt(bestSell(c)) }}</td>
+          <td class="trend-col" :data-label="$t('panel.trend')">
             <Sparkline
               v-if="c === 'USD' && momentum.sparkline.length > 1"
               :values="momentum.sparkline"

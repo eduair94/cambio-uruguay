@@ -566,7 +566,7 @@
 
     <VCard variant="flat" class="section-card mb-6">
       <div class="table-scroll">
-        <VTable density="comfortable" class="cmp-table">
+        <VTable density="comfortable" class="cmp-table cu-mobile-cards">
           <thead>
             <tr>
               <th>Régimen</th>
@@ -581,10 +581,10 @@
           </thead>
           <tbody>
             <tr v-for="row in comparison" :key="row.id">
-              <td class="font-weight-bold">{{ row.name }}</td>
-              <td>{{ row.tope }}</td>
-              <td :class="row.costClass">{{ row.cost }}</td>
-              <td>
+              <td class="font-weight-bold" data-label="">{{ row.name }}</td>
+              <td data-label="Tope de ingresos">{{ row.tope }}</td>
+              <td :class="row.costClass" data-label="Costo mensual (tu caso)">{{ row.cost }}</td>
+              <td data-label="Responsabilidad">
                 <VChip
                   size="x-small"
                   variant="tonal"
@@ -593,10 +593,10 @@
                   {{ row.liability }}
                 </VChip>
               </td>
-              <td>{{ row.mono }}</td>
-              <td>{{ row.litE }}</td>
-              <td>{{ row.dividendos }}</td>
-              <td>{{ row.apertura }}</td>
+              <td data-label="¿Monotributo?">{{ row.mono }}</td>
+              <td data-label="¿Literal E?">{{ row.litE }}</td>
+              <td data-label="Dividendos">{{ row.dividendos }}</td>
+              <td data-label="Costo de apertura">{{ row.apertura }}</td>
             </tr>
           </tbody>
         </VTable>
@@ -787,7 +787,7 @@
             al principio suele ganarle al IRAE.
           </p>
           <div class="table-scroll">
-            <VTable density="compact" class="mini-table">
+            <VTable density="compact" class="mini-table cu-mobile-cards">
               <thead>
                 <tr>
                   <th>Renta computable mensual</th>
@@ -796,8 +796,8 @@
               </thead>
               <tbody>
                 <tr v-for="(b, i) in IRPF_CAT2.brackets" :key="i">
-                  <td>{{ bracketLabel(i, b.upTo, IRPF_CAT2.brackets) }}</td>
-                  <td class="text-right font-weight-bold">{{ pct(b.rate) }}</td>
+                  <td data-label="">{{ bracketLabel(i, b.upTo, IRPF_CAT2.brackets) }}</td>
+                  <td class="text-right font-weight-bold" data-label="Tasa">{{ pct(b.rate) }}</td>
                 </tr>
               </tbody>
             </VTable>
@@ -823,7 +823,7 @@
             se paga el {{ pct(FIGURES.irae.value) }}.
           </p>
           <div class="table-scroll">
-            <VTable density="compact" class="mini-table">
+            <VTable density="compact" class="mini-table cu-mobile-cards">
               <thead>
                 <tr>
                   <th>Tramo de facturación anual</th>
@@ -833,9 +833,9 @@
               </thead>
               <tbody>
                 <tr v-for="(b, i) in IRAE_FICTO.brackets" :key="i">
-                  <td>{{ uiBracketLabel(i, b.upToUi, IRAE_FICTO.brackets) }}</td>
-                  <td class="text-right">{{ pct(b.rate) }}</td>
-                  <td class="text-right font-weight-bold">
+                  <td data-label="">{{ uiBracketLabel(i, b.upToUi, IRAE_FICTO.brackets) }}</td>
+                  <td class="text-right" data-label="Renta ficta">{{ pct(b.rate) }}</td>
+                  <td class="text-right font-weight-bold" data-label="IRAE efectivo">
                     {{ pct(b.rate * FIGURES.irae.value, 1) }}
                   </td>
                 </tr>
@@ -909,7 +909,7 @@
 
     <VCard variant="flat" class="section-card mb-4">
       <div class="table-scroll">
-        <VTable density="comfortable">
+        <VTable density="comfortable" class="cu-mobile-cards">
           <thead>
             <tr>
               <th>Organismo</th>
@@ -919,13 +919,13 @@
           </thead>
           <tbody>
             <tr v-for="t in tramites" :key="t.org">
-              <td class="font-weight-bold">{{ t.org }}</td>
-              <td>
+              <td class="font-weight-bold" data-label="">{{ t.org }}</td>
+              <td data-label="¿Obligatorio?">
                 <VChip size="x-small" variant="tonal" :color="t.always ? 'error' : 'primary'">
                   {{ t.always ? 'SIEMPRE' : 'Condicional' }}
                 </VChip>
               </td>
-              <td>{{ t.when }}</td>
+              <td data-label="¿Cuándo?">{{ t.when }}</td>
             </tr>
           </tbody>
         </VTable>
@@ -957,7 +957,7 @@
 
     <VCard variant="flat" class="section-card mb-3">
       <div class="table-scroll">
-        <VTable density="comfortable">
+        <VTable density="comfortable" class="cu-mobile-cards">
           <thead>
             <tr>
               <th>Programa</th>
@@ -967,9 +967,9 @@
           </thead>
           <tbody>
             <tr v-for="a in apoyos" :key="a.name">
-              <td class="font-weight-bold">{{ a.name }}</td>
-              <td>{{ a.gives }}</td>
-              <td>
+              <td class="font-weight-bold" data-label="">{{ a.name }}</td>
+              <td data-label="Qué da">{{ a.gives }}</td>
+              <td data-label="Estado">
                 <VChip size="x-small" variant="tonal" :color="a.color">{{ a.status }}</VChip>
               </td>
             </tr>

@@ -88,7 +88,7 @@
 
       <!-- Per-casa table -->
       <v-card variant="outlined" class="mt-2">
-        <v-table density="comfortable" class="estado-table">
+        <v-table density="comfortable" class="estado-table cu-mobile-cards">
           <thead>
             <tr>
               <th>{{ t('estado.colCasa') }}</th>
@@ -100,7 +100,7 @@
           </thead>
           <tbody>
             <tr v-for="s in data.scrapers" :key="s.origin">
-              <td>
+              <td data-label="">
                 <a
                   v-if="s.website"
                   :href="s.website"
@@ -113,7 +113,7 @@
                 <span v-else>{{ s.name }}</span>
                 <div class="text-caption text-medium-emphasis">{{ s.origin }}</div>
               </td>
-              <td>
+              <td :data-label="t('estado.colStatus')">
                 <div class="status-cell">
                   <v-chip
                     :color="statusMeta[s.status].color"
@@ -129,16 +129,22 @@
                   </div>
                 </div>
               </td>
-              <td class="text-center d-none d-sm-table-cell">
+              <td
+                class="text-center d-none d-sm-table-cell"
+                :data-label="t('estado.colCurrencies')"
+              >
                 <span class="text-body-2">{{ s.currencies.length || '—' }}</span>
               </td>
-              <td class="text-right d-none d-md-table-cell">
+              <td class="text-right d-none d-md-table-cell" :data-label="t('estado.colUsd')">
                 <span v-if="s.usdBuy && s.usdSell" class="text-body-2">
                   {{ fmt(s.usdBuy) }} / {{ fmt(s.usdSell) }}
                 </span>
                 <span v-else class="text-medium-emphasis">—</span>
               </td>
-              <td class="text-right d-none d-md-table-cell text-body-2">
+              <td
+                class="text-right d-none d-md-table-cell text-body-2"
+                :data-label="t('estado.colDuration')"
+              >
                 {{ s.durationMs != null ? ms(s.durationMs) : '—' }}
               </td>
             </tr>

@@ -305,6 +305,15 @@ useHead({
   line-height: 1.8;
 }
 
+/* FAQ question: multi-line titles were cramped (Vuetify's default title
+   line-height is tight). Give them breathing room top/bottom and per-line. */
+.guide-faq-panels :deep(.v-expansion-panel-title) {
+  line-height: 1.5;
+  padding-top: 0.85rem;
+  padding-bottom: 0.85rem;
+  min-height: 3.25rem;
+}
+
 .guide-steps-list {
   padding-left: 1.25rem;
   line-height: 1.7;

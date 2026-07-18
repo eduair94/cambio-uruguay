@@ -213,7 +213,7 @@
 
       <VCard variant="flat" class="cost-card pa-2 pa-sm-5 mb-4">
         <div class="table-scroll">
-          <VTable density="comfortable">
+          <VTable density="comfortable" class="cu-mobile-cards">
             <thead>
               <tr>
                 <th>Vivienda en Montevideo</th>
@@ -224,8 +224,13 @@
             </thead>
             <tbody>
               <tr v-for="row in zoneRows" :key="row.key">
-                <td class="font-weight-medium">{{ row.label }}</td>
-                <td v-for="zone in zoneCols" :key="zone.id" class="text-right">
+                <td class="font-weight-medium" data-label="">{{ row.label }}</td>
+                <td
+                  v-for="zone in zoneCols"
+                  :key="zone.id"
+                  class="text-right"
+                  :data-label="zone.label"
+                >
                   {{ formatUYU(row[zone.id]) }}
                 </td>
               </tr>

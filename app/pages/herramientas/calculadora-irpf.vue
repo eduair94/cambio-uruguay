@@ -47,7 +47,7 @@
         </div>
       </div>
 
-      <VTable density="comfortable" class="mt-4 breakdown-table">
+      <VTable density="comfortable" class="mt-4 breakdown-table cu-mobile-cards">
         <thead>
           <tr>
             <th>Franja</th>
@@ -58,10 +58,14 @@
         </thead>
         <tbody>
           <tr v-for="(d, i) in r.detail" :key="i">
-            <td>{{ formatUYU(d.from, 0) }} – {{ d.to === null ? '∞' : formatUYU(d.to, 0) }}</td>
-            <td class="text-right">{{ d.rate }}%</td>
-            <td class="text-right">{{ formatUYU(d.taxable, 0) }}</td>
-            <td class="text-right font-weight-medium">{{ formatUYU(d.tax) }}</td>
+            <td data-label="">
+              {{ formatUYU(d.from, 0) }} – {{ d.to === null ? '∞' : formatUYU(d.to, 0) }}
+            </td>
+            <td class="text-right" data-label="Tasa">{{ d.rate }}%</td>
+            <td class="text-right" data-label="Gravado">{{ formatUYU(d.taxable, 0) }}</td>
+            <td class="text-right font-weight-medium" data-label="Impuesto">
+              {{ formatUYU(d.tax) }}
+            </td>
           </tr>
         </tbody>
       </VTable>

@@ -129,7 +129,7 @@
       }}). La línea base "negociar directo" es el patrón contra el que se miden las plataformas.
     </p>
     <div style="overflow-x: auto">
-      <VTable density="comfortable">
+      <VTable density="comfortable" class="cu-mobile-cards">
         <thead>
           <tr>
             <th>#</th>
@@ -142,12 +142,12 @@
         </thead>
         <tbody>
           <tr v-for="s in ranked" :key="s.id">
-            <td>{{ medal(s.rank) || s.rank }}</td>
-            <td class="font-weight-medium">{{ s.name }}</td>
-            <td class="text-caption">{{ s.operador }}</td>
-            <td class="text-caption">{{ s.quienPaga }}</td>
-            <td>{{ s.bcuRegulado ? 'Sí' : 'No' }}</td>
-            <td class="text-right font-weight-bold">{{ s.overall }}</td>
+            <td data-label="#">{{ medal(s.rank) || s.rank }}</td>
+            <td class="font-weight-medium" data-label="">{{ s.name }}</td>
+            <td class="text-caption" data-label="Quién está detrás">{{ s.operador }}</td>
+            <td class="text-caption" data-label="¿Quién paga?">{{ s.quienPaga }}</td>
+            <td data-label="¿BCU?">{{ s.bcuRegulado ? 'Sí' : 'No' }}</td>
+            <td class="text-right font-weight-bold" data-label="Puntaje">{{ s.overall }}</td>
           </tr>
         </tbody>
       </VTable>
@@ -202,7 +202,7 @@
       ¿Necesitás consolidar? Compará opciones de refinanciación en
       <NuxtLink :to="localePath('/prestamos-uruguay')">préstamos en Uruguay</NuxtLink>.
     </p>
-    <VTable density="comfortable" class="mt-2">
+    <VTable density="comfortable" class="mt-2 cu-mobile-cards">
       <thead>
         <tr>
           <th>Institución</th>
@@ -213,10 +213,10 @@
       </thead>
       <tbody>
         <tr v-for="r in DEBT_RELIEF_BASELINE.refiRates" :key="r.institucion + r.producto">
-          <td class="font-weight-medium">{{ r.institucion }}</td>
-          <td>{{ r.producto }}</td>
-          <td>{{ r.tasa }}</td>
-          <td class="text-caption">{{ r.nota }}</td>
+          <td class="font-weight-medium" data-label="">{{ r.institucion }}</td>
+          <td data-label="Producto">{{ r.producto }}</td>
+          <td data-label="Tasa">{{ r.tasa }}</td>
+          <td class="text-caption" data-label="Nota">{{ r.nota }}</td>
         </tr>
       </tbody>
     </VTable>

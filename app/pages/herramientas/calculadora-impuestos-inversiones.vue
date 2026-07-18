@@ -401,7 +401,7 @@
 
               <!-- The same deposit at each legal term bucket: this is where the
                    0,5% of the >3-year peso deposit becomes visible. -->
-              <VTable density="comfortable" class="mt-4 breakdown-table">
+              <VTable density="comfortable" class="mt-4 breakdown-table cu-mobile-cards">
                 <caption class="text-caption tool-muted text-left pb-2">
                   La misma tasa
                   {{
@@ -425,9 +425,13 @@
                     :key="row.key"
                     :class="{ 'current-term': row.key === depositResult.term }"
                   >
-                    <td>{{ row.label }}</td>
-                    <td class="text-right">{{ pct(row.rate) }}</td>
-                    <td class="text-right font-weight-bold">{{ pct(row.netAnnualRatePct) }}</td>
+                    <td data-label="">{{ row.label }}</td>
+                    <td class="text-right" data-label="IRPF sobre los intereses">
+                      {{ pct(row.rate) }}
+                    </td>
+                    <td class="text-right font-weight-bold" data-label="Tasa neta anual">
+                      {{ pct(row.netAnnualRatePct) }}
+                    </td>
                   </tr>
                 </tbody>
               </VTable>
@@ -760,7 +764,7 @@
             </div>
           </div>
 
-          <VTable density="comfortable" class="mt-4 breakdown-table">
+          <VTable density="comfortable" class="mt-4 breakdown-table cu-mobile-cards">
             <thead>
               <tr>
                 <th>Renta</th>
@@ -771,20 +775,22 @@
             </thead>
             <tbody>
               <tr v-for="(item, i) in annual.byItem" :key="i">
-                <td class="font-weight-medium">{{ kindLabel(item.kind) }}</td>
-                <td class="text-right">{{ formatUYU(item.amount, 0) }}</td>
-                <td class="text-right font-weight-medium">
+                <td class="font-weight-medium" data-label="">{{ kindLabel(item.kind) }}</td>
+                <td class="text-right" data-label="Monto">{{ formatUYU(item.amount, 0) }}</td>
+                <td class="text-right font-weight-medium" data-label="IRPF">
                   <!-- Crypto has no rate: it must never show a number here either. -->
                   <template v-if="item.kind === 'cripto'">—</template>
                   <template v-else>{{ formatUYU(item.tax) }}</template>
                 </td>
-                <td class="text-caption">{{ item.rule.law }}</td>
+                <td class="text-caption" data-label="Norma">{{ item.rule.law }}</td>
               </tr>
               <tr class="total-row">
-                <td class="font-weight-bold">Total</td>
-                <td />
-                <td class="text-right font-weight-bold">{{ formatUYU(annual.totalTax) }}</td>
-                <td />
+                <td class="font-weight-bold" data-label="">Total</td>
+                <td data-label="Monto" />
+                <td class="text-right font-weight-bold" data-label="IRPF">
+                  {{ formatUYU(annual.totalTax) }}
+                </td>
+                <td data-label="Norma" />
               </tr>
             </tbody>
           </VTable>
