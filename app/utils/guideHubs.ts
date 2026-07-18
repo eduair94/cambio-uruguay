@@ -1,17 +1,25 @@
-// Topic hubs: SEO landing pages that group the Reddit-mined guides into
+// Topic hubs: SEO landing pages that organise the whole site into intuitive,
 // interconnected themes (hub-and-spoke). Each hub is one page at `/temas/{slug}`
-// that introduces a theme and links every guide in it; the guides link back to
-// their hub. This is the internal-linking spine that tells search engines (and
-// AI) how the 50 guides relate.
+// that introduces a theme, links every guide in it and points to the related
+// tools and pages elsewhere on the site. Together they are the tidy directory of
+// everything Cambio Uruguay offers, grouped by what the user is trying to do.
 //
 // PURE module (no Vue/Nuxt runtime, relative imports only) so it can be unit
 // tested and reused by the page, the sitemap route and the search index. The
 // hub → guide relationship is validated by `guideHubs.test.ts`: every
-// `guideSlugs` entry must resolve to a real guide, and every Reddit guide must
-// belong to exactly one hub.
+// `guideSlugs` entry must resolve to a real guide, no guide belongs to two hubs,
+// and every Reddit-mined guide belongs to exactly one hub.
 import { getGuide, type Guide } from './guides'
 
-/** One thematic hub grouping several guides. */
+/** A link from a hub to another page or tool on the site, with a short blurb. */
+export interface HubResource {
+  label: string
+  description: string
+  /** App-relative path (passed through `localePath`). */
+  to: string
+}
+
+/** One thematic hub grouping guides plus the related tools and pages. */
 export interface GuideHub {
   /** URL-safe id, unique across {@link guideHubs} (addressable at `/temas/{slug}`). */
   slug: string
@@ -29,16 +37,161 @@ export interface GuideHub {
   intro: string
   /** Slugs of the guides in this hub, in reading order. */
   guideSlugs: readonly string[]
-  /** Extra internal links (tools / existing pages) relevant to the theme. */
-  related?: readonly { label: string; to: string }[]
+  /** Related tools / pages elsewhere on the site, shown as a "seguí en" section. */
+  resources?: readonly HubResource[]
   /** Sibling hub slugs, for cross-hub navigation. */
   relatedHubs?: readonly string[]
 }
 
 export const guideHubs: readonly GuideHub[] = [
   {
+    slug: 'dolar-y-casas-de-cambio-uruguay',
+    title: 'Dólar y casas de cambio en Uruguay',
+    seoTitle: 'Dólar y casas de cambio en Uruguay: mejor precio, comparador y guías',
+    description:
+      'Todo sobre el dólar en Uruguay: comparar el precio entre casas de cambio, entender BILLETE, CABLE y TRANSFERENCIA, y cambiar al mejor precio con nuestras guías y herramientas.',
+    tag: 'DÓLAR',
+    icon: 'mdi-cash-multiple',
+    intro:
+      'El corazón de Cambio Uruguay: encontrar el mejor precio del dólar y las divisas. Acá reunimos el comparador en vivo de más de 40 casas de cambio, el histórico, el mapa de sucursales y las guías que explican cómo leer una cotización, qué significan los tipos de operación y cuándo conviene cambiar. Si querés comprar o vender dólares, euros o reales sin dejar plata en el camino, empezá por acá.',
+    guideSlugs: [
+      'conviene-comprar-dolares-hoy',
+      'comprar-dolares-mejor-precio',
+      'billete-cable-transferencia',
+      'mejor-momento-cambiar-divisas',
+      'como-leer-cotizacion-dolar',
+      'casas-de-cambio-vs-bancos',
+      'evitar-comisiones-cambio',
+    ],
+    resources: [
+      {
+        label: 'Comparador de cotizaciones',
+        description: 'El dólar en más de 40 casas de cambio, en vivo.',
+        to: '/comparar',
+      },
+      {
+        label: 'Dólar hoy',
+        description: 'La cotización del día y su evolución.',
+        to: '/dolar-hoy',
+      },
+      {
+        label: 'Casas de cambio',
+        description: 'Directorio y reputación de las casas.',
+        to: '/casas-de-cambio',
+      },
+      {
+        label: 'Casa de cambio cerca de mí',
+        description: 'La mejor opción según dónde estás.',
+        to: '/casa-de-cambio-cerca-de-mi',
+      },
+      { label: 'Mapa de sucursales', description: 'Dónde cambiar, en el mapa.', to: '/mapa' },
+      {
+        label: 'Conversor de monedas',
+        description: 'Convertí montos al instante.',
+        to: '/herramientas/conversor-de-monedas',
+      },
+      {
+        label: 'Calculadora de spread',
+        description: 'Cuánto te cuesta el diferencial.',
+        to: '/herramientas/calculadora-spread',
+      },
+    ],
+    relatedHubs: ['economia-y-mercado-uruguay', 'ahorrar-e-invertir-uruguay'],
+  },
+  {
+    slug: 'importaciones-y-aduana-uruguay',
+    title: 'Importar y aduana en Uruguay',
+    seoTitle: 'Importar a Uruguay: courier, franquicia, aduana e impuestos',
+    description:
+      'Comprar del exterior a Uruguay sin sorpresas: régimen de courier y franquicia, impuestos, la franquicia del viajero, problemas con la aduana y calculadoras de costo final.',
+    tag: 'ADUANA',
+    icon: 'mdi-package-variant-closed',
+    intro:
+      'Comprar afuera y traerlo a Uruguay tiene reglas que conviene entender antes de pagar: el régimen de courier y la franquicia, los impuestos que se aplican, qué podés traer del viaje y qué hacer si un paquete queda trabado en la aduana. Reunimos las páginas y calculadoras que te dicen, de antemano, cuánto vas a pagar de verdad por tu compra internacional.',
+    guideSlugs: ['comprar-online-exterior-impuestos', 'enviar-recibir-dinero-exterior'],
+    resources: [
+      {
+        label: 'Couriers de Uruguay',
+        description: 'Comparativa de servicios puerta a puerta.',
+        to: '/couriers-uruguay',
+      },
+      {
+        label: 'Franquicia de aduana',
+        description: 'Qué podés importar sin pagar de más.',
+        to: '/franquicia-aduana-uruguay',
+      },
+      {
+        label: 'Franquicia del viajero',
+        description: 'Qué traer del exterior sin impuestos.',
+        to: '/franquicia-viajero-uruguay',
+      },
+      {
+        label: 'Problemas con la aduana',
+        description: 'Qué hacer si tu paquete queda trabado.',
+        to: '/problemas-con-la-aduana-uruguay',
+      },
+      {
+        label: 'Calculadora de impuestos de importación',
+        description: 'El costo final de tu compra.',
+        to: '/herramientas/calculadora-impuestos-importacion',
+      },
+      {
+        label: 'Carrito de importación',
+        description: 'Estimá el costo puesto en Uruguay.',
+        to: '/herramientas/carrito-importacion',
+      },
+    ],
+    relatedHubs: ['dolar-y-casas-de-cambio-uruguay', 'economia-y-mercado-uruguay'],
+  },
+  {
+    slug: 'economia-y-mercado-uruguay',
+    title: 'Economía y mercado en Uruguay',
+    seoTitle: 'Economía de Uruguay: por qué sube el dólar, inflación, indicadores y noticias',
+    description:
+      'Entendé la economía uruguaya: por qué sube el dólar, la inflación, los indicadores (UI, UR, BPC), las noticias y cómo proteger tus ahorros de la suba de precios.',
+    tag: 'ECONOMÍA',
+    icon: 'mdi-chart-areaspline',
+    intro:
+      '¿Por qué sube el dólar? ¿Qué pasa con la inflación y cómo afecta tus ahorros? Este tema reúne las páginas y guías que explican el contexto económico uruguayo sin tecnicismos: los indicadores que mueven todo (UI, UR, BPC), las noticias, la relación entre inflación y dólar, y qué mirar para no perder poder de compra. Entender el mercado es el primer paso para tomar mejores decisiones con tu plata.',
+    guideSlugs: [
+      'inflacion-y-dolar-uruguay',
+      'como-afecta-la-fed-al-dolar',
+      'proteger-ahorros-de-la-inflacion',
+      'unidad-indexada-explicada',
+    ],
+    resources: [
+      {
+        label: 'Economía de Uruguay',
+        description: 'Noticias económicas por tema, con IA.',
+        to: '/economia-uruguay',
+      },
+      {
+        label: 'Por qué sube el dólar',
+        description: 'Las razones detrás del precio.',
+        to: '/por-que-sube-el-dolar',
+      },
+      {
+        label: 'Indicadores (UI, UR, BPC)',
+        description: 'Los valores que indexan todo.',
+        to: '/indicadores',
+      },
+      { label: 'Noticias', description: 'Actualidad del dólar y la economía.', to: '/noticias' },
+      {
+        label: 'Advertencias del BCU',
+        description: 'Entidades no autorizadas.',
+        to: '/advertencias-bcu',
+      },
+      {
+        label: 'Conversor de Unidad Indexada',
+        description: 'Pasá de UI a pesos y viceversa.',
+        to: '/herramientas/conversor-unidad-indexada',
+      },
+    ],
+    relatedHubs: ['dolar-y-casas-de-cambio-uruguay', 'ahorrar-e-invertir-uruguay'],
+  },
+  {
     slug: 'alquiler-y-vivienda-uruguay',
-    title: 'Alquilar en Uruguay: guía completa',
+    title: 'Alquilar en Uruguay',
     seoTitle: 'Alquilar en Uruguay: garantías, contratos y derechos del inquilino',
     description:
       'Todo sobre alquilar en Uruguay: tipos de garantía, depósito, cómo rescindir el contrato, derechos del inquilino y alquiler temporario. Guías claras y verificadas.',
@@ -55,9 +208,22 @@ export const guideHubs: readonly GuideHub[] = [
       'que-revisar-antes-de-firmar-alquiler',
       'alquiler-temporario-uruguay',
     ],
-    related: [
-      { label: 'Guía para alquilar', to: '/alquilar-en-uruguay' },
-      { label: 'Costo de vida', to: '/herramientas/costo-de-vida' },
+    resources: [
+      {
+        label: 'Guía para alquilar',
+        description: 'Desde conseguir techo hasta firmar.',
+        to: '/alquilar-en-uruguay',
+      },
+      {
+        label: 'Alquilar estando en el Clearing',
+        description: 'Sí se puede: cómo hacerlo.',
+        to: '/alquilar-estando-en-clearing',
+      },
+      {
+        label: 'Costo de vida',
+        description: 'Cuánto necesitás para vivir donde querés.',
+        to: '/herramientas/costo-de-vida',
+      },
     ],
     relatedHubs: ['comprar-vivienda-uruguay', 'deudas-y-credito-uruguay'],
   },
@@ -79,9 +245,22 @@ export const guideHubs: readonly GuideHub[] = [
       'comprar-un-terreno-uruguay',
       'promesa-de-compraventa-uruguay',
     ],
-    related: [
-      { label: 'Conversor de Unidad Indexada', to: '/herramientas/conversor-unidad-indexada' },
-      { label: 'Mejores bancos de Uruguay', to: '/mejores-bancos-uruguay' },
+    resources: [
+      {
+        label: 'Conversor de Unidad Indexada',
+        description: 'La UI/UR de tu crédito, en pesos.',
+        to: '/herramientas/conversor-unidad-indexada',
+      },
+      {
+        label: 'Mejores bancos de Uruguay',
+        description: 'Dónde buscar tu hipoteca.',
+        to: '/mejores-bancos-uruguay',
+      },
+      {
+        label: 'Calculadora de préstamo',
+        description: 'Simulá la cuota mensual.',
+        to: '/herramientas/calculadora-prestamo',
+      },
     ],
     relatedHubs: ['alquiler-y-vivienda-uruguay', 'herencias-y-sucesiones-uruguay'],
   },
@@ -102,9 +281,22 @@ export const guideHubs: readonly GuideHub[] = [
       'legitima-y-herederos-forzosos-uruguay',
       'hay-impuesto-a-la-herencia-uruguay',
     ],
-    related: [
-      { label: 'Costos de escrituración', to: '/guias/costos-de-escrituracion-uruguay' },
-      { label: 'Saldar deudas', to: '/saldar-deudas-uruguay' },
+    resources: [
+      {
+        label: 'Costos de escrituración',
+        description: 'El ITP y los gastos de transmisión.',
+        to: '/guias/costos-de-escrituracion-uruguay',
+      },
+      {
+        label: 'Saldar deudas',
+        description: 'Si el fallecido dejó deudas.',
+        to: '/saldar-deudas-uruguay',
+      },
+      {
+        label: 'Salir del Clearing',
+        description: 'Central de Riesgos vs Clearing.',
+        to: '/salir-del-clearing',
+      },
     ],
     relatedHubs: ['comprar-vivienda-uruguay', 'finanzas-personales-y-jubilacion-uruguay'],
   },
@@ -124,9 +316,22 @@ export const guideHubs: readonly GuideHub[] = [
       'costos-de-tener-auto-uruguay',
       'transferir-un-auto-uruguay',
     ],
-    related: [
-      { label: 'Calculadora de préstamo', to: '/herramientas/calculadora-prestamo' },
-      { label: 'Préstamos en Uruguay', to: '/prestamos-uruguay' },
+    resources: [
+      {
+        label: 'Calculadora de préstamo',
+        description: 'Simulá el crédito prendario.',
+        to: '/herramientas/calculadora-prestamo',
+      },
+      {
+        label: 'Préstamos en Uruguay',
+        description: 'Comparar opciones de financiación.',
+        to: '/prestamos-uruguay',
+      },
+      {
+        label: 'Estafas en Uruguay',
+        description: 'Evitar fraudes al comprar de particular.',
+        to: '/estafas-uruguay',
+      },
     ],
     relatedHubs: ['deudas-y-credito-uruguay', 'finanzas-personales-y-jubilacion-uruguay'],
   },
@@ -148,10 +353,32 @@ export const guideHubs: readonly GuideHub[] = [
       'ser-garante-o-codeudor-riesgos-uruguay',
       'salir-de-deudas-de-tarjeta-uruguay',
     ],
-    related: [
-      { label: 'Salir del Clearing', to: '/salir-del-clearing' },
-      { label: 'Saldar deudas', to: '/saldar-deudas-uruguay' },
-      { label: 'Calculadora de préstamo', to: '/herramientas/calculadora-prestamo' },
+    resources: [
+      {
+        label: 'Salir del Clearing',
+        description: 'Cómo funciona y cómo salir.',
+        to: '/salir-del-clearing',
+      },
+      {
+        label: 'Saldar deudas',
+        description: 'Negociar y ordenar tus deudas.',
+        to: '/saldar-deudas-uruguay',
+      },
+      {
+        label: 'Préstamos en Uruguay',
+        description: 'Comparar antes de pedir.',
+        to: '/prestamos-uruguay',
+      },
+      {
+        label: 'Tarjetas de crédito',
+        description: 'Ranking y beneficios reales.',
+        to: '/tarjetas-de-credito-uruguay',
+      },
+      {
+        label: 'Calculadora de préstamo',
+        description: 'Cuota, TEA y costo total.',
+        to: '/herramientas/calculadora-prestamo',
+      },
     ],
     relatedHubs: ['sueldo-trabajo-e-impuestos-uruguay', 'finanzas-personales-y-jubilacion-uruguay'],
   },
@@ -162,7 +389,7 @@ export const guideHubs: readonly GuideHub[] = [
     description:
       'Entendé tu sueldo en Uruguay: recibo (nominal vs líquido), aguinaldo, licencia y salario vacacional, despido y liquidación, IRPF y trabajar para el exterior.',
     tag: 'TRABAJO',
-    icon: 'mdi-cash-multiple',
+    icon: 'mdi-briefcase-outline',
     intro:
       '¿Por qué tu líquido es tanto menor que el nominal? ¿Cómo se calcula el aguinaldo, la licencia o lo que te corresponde si te despiden? Estas guías explican, sin jerga, cómo se arma tu sueldo en Uruguay, qué te descuentan y por qué, cómo funciona el IRPF por franjas y qué tener en cuenta si trabajás para clientes del exterior. Saber leer tu recibo y entender estos derechos es el primer paso para reclamar lo que corresponde y planificar mejor.',
     guideSlugs: [
@@ -173,10 +400,27 @@ export const guideHubs: readonly GuideHub[] = [
       'como-funciona-el-irpf-uruguay',
       'trabajar-para-el-exterior-desde-uruguay',
     ],
-    related: [
-      { label: 'Calculadora de sueldo líquido', to: '/herramientas/calculadora-sueldo-liquido' },
-      { label: 'Calculadora de IRPF', to: '/herramientas/calculadora-irpf' },
-      { label: 'Calculadora de aguinaldo', to: '/herramientas/calculadora-aguinaldo' },
+    resources: [
+      {
+        label: 'Calculadora de sueldo líquido',
+        description: 'Del nominal al líquido, con aportes.',
+        to: '/herramientas/calculadora-sueldo-liquido',
+      },
+      {
+        label: 'Calculadora de IRPF',
+        description: 'Cuánto IRPF pagás por franjas.',
+        to: '/herramientas/calculadora-irpf',
+      },
+      {
+        label: 'Calculadora de aguinaldo',
+        description: 'Tu SAC según lo ganado.',
+        to: '/herramientas/calculadora-aguinaldo',
+      },
+      {
+        label: 'Qué empresa abrir',
+        description: 'Para facturar como unipersonal o empresa.',
+        to: '/que-empresa-abrir-uruguay',
+      },
     ],
     relatedHubs: ['deudas-y-credito-uruguay', 'ahorrar-e-invertir-uruguay'],
   },
@@ -200,12 +444,34 @@ export const guideHubs: readonly GuideHub[] = [
       'interes-compuesto-explicado-uruguay',
       'errores-y-estafas-al-invertir-uruguay',
     ],
-    related: [
-      { label: 'Dónde invertir en Uruguay', to: '/inversiones-uruguay' },
-      { label: 'Impuestos a las inversiones', to: '/impuestos-inversiones-uruguay' },
-      { label: 'Calculadora de plazo fijo', to: '/herramientas/calculadora-plazo-fijo' },
+    resources: [
+      {
+        label: 'Dónde invertir en Uruguay',
+        description: 'Bancos, brokers, renta fija y cripto.',
+        to: '/inversiones-uruguay',
+      },
+      {
+        label: 'Impuestos a las inversiones',
+        description: 'Cómo tributan tus rentas.',
+        to: '/impuestos-inversiones-uruguay',
+      },
+      {
+        label: 'Invertir en proyectos uruguayos',
+        description: 'Economía real: agro, inmobiliario y más.',
+        to: '/invertir-en-proyectos-uruguayos',
+      },
+      {
+        label: 'Calculadora de plazo fijo',
+        description: 'Simulá el rendimiento.',
+        to: '/herramientas/calculadora-plazo-fijo',
+      },
+      {
+        label: 'Calculadora de impuestos a inversiones',
+        description: 'El IRPF de tus rentas de capital.',
+        to: '/herramientas/calculadora-impuestos-inversiones',
+      },
     ],
-    relatedHubs: ['finanzas-personales-y-jubilacion-uruguay', 'sueldo-trabajo-e-impuestos-uruguay'],
+    relatedHubs: ['finanzas-personales-y-jubilacion-uruguay', 'economia-y-mercado-uruguay'],
   },
   {
     slug: 'finanzas-personales-y-jubilacion-uruguay',
@@ -227,10 +493,32 @@ export const guideHubs: readonly GuideHub[] = [
       'como-evitar-estafas-financieras-uruguay',
       'educacion-financiera-para-jovenes-uruguay',
     ],
-    related: [
-      { label: 'Salud financiera', to: '/salud-financiera' },
-      { label: 'Apps de economía', to: '/apps-economia-uruguay' },
-      { label: 'Estafas en Uruguay', to: '/estafas-uruguay' },
+    resources: [
+      {
+        label: 'Salud financiera',
+        description: 'Diagnóstico e ideas de ingreso extra.',
+        to: '/salud-financiera',
+      },
+      {
+        label: 'Mejores bancos de Uruguay',
+        description: 'Comparativa de bancos y fintech.',
+        to: '/mejores-bancos-uruguay',
+      },
+      {
+        label: 'Apps de economía',
+        description: 'Las apps que te ordenan la plata.',
+        to: '/apps-economia-uruguay',
+      },
+      {
+        label: 'Preguntas de finanzas personales',
+        description: 'Las dudas más comunes, respondidas.',
+        to: '/preguntas-economia-personal',
+      },
+      {
+        label: 'Estafas en Uruguay',
+        description: 'Reconocer y evitar fraudes.',
+        to: '/estafas-uruguay',
+      },
     ],
     relatedHubs: ['ahorrar-e-invertir-uruguay', 'deudas-y-credito-uruguay'],
   },

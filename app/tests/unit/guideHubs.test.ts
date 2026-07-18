@@ -19,7 +19,10 @@ describe('guideHubs catalogue integrity', () => {
       expect(hub.tag.trim().length).toBeGreaterThan(0)
       expect(hub.icon.startsWith('mdi-')).toBe(true)
       expect(hub.intro.trim().length).toBeGreaterThan(0)
-      expect(hub.guideSlugs.length).toBeGreaterThanOrEqual(3)
+      // A hub is substantial: at least three things to click, guides + resources.
+      const items = hub.guideSlugs.length + (hub.resources?.length ?? 0)
+      expect(items, `hub ${hub.slug} is too thin`).toBeGreaterThanOrEqual(3)
+      expect(hub.guideSlugs.length, `hub ${hub.slug} has no guides`).toBeGreaterThanOrEqual(2)
     }
   })
 
@@ -31,12 +34,13 @@ describe('guideHubs catalogue integrity', () => {
     }
   })
 
-  it('points every related link and related hub at something valid', () => {
+  it('points every resource and related hub at something valid', () => {
     const hubSet = new Set(hubSlugs())
     for (const hub of guideHubs) {
-      for (const link of hub.related ?? []) {
-        expect(link.label.trim().length).toBeGreaterThan(0)
-        expect(link.to.startsWith('/')).toBe(true)
+      for (const res of hub.resources ?? []) {
+        expect(res.label.trim().length).toBeGreaterThan(0)
+        expect(res.description.trim().length).toBeGreaterThan(0)
+        expect(res.to.startsWith('/')).toBe(true)
       }
       for (const other of hub.relatedHubs ?? []) {
         expect(hubSet.has(other), `hub ${hub.slug} → unknown related hub ${other}`).toBe(true)
@@ -45,16 +49,17 @@ describe('guideHubs catalogue integrity', () => {
     }
   })
 
-  it('covers every Reddit-mined guide in exactly one hub', () => {
+  it('never places the same guide in two hubs', () => {
     const inHubs = guideHubs.flatMap(h => h.guideSlugs)
-    // No guide is placed in two hubs.
-    expect(new Set(inHubs).size).toBe(inHubs.length)
-    // Every Reddit guide belongs to a hub.
+    expect(new Set(inHubs).size, 'a guide appears in more than one hub').toBe(inHubs.length)
+  })
+
+  it('covers every Reddit-mined guide in exactly one hub', () => {
+    const inHubs = new Set(guideHubs.flatMap(h => h.guideSlugs))
     for (const guide of redditGuides) {
       expect(hubOfGuide(guide.slug), `guide ${guide.slug} is in no hub`).toBeDefined()
+      expect(inHubs.has(guide.slug)).toBe(true)
     }
-    // The hubs contain exactly the Reddit guides, nothing extra.
-    expect(new Set(inHubs)).toEqual(new Set(redditGuides.map(g => g.slug)))
   })
 
   it('exposes helpers consistently', () => {

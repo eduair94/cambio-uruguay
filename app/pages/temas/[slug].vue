@@ -47,25 +47,25 @@
           </VRow>
 
           <!-- Related tools / pages -->
-          <VCard v-if="hub.related?.length" variant="flat" class="hub-related pa-5 mb-4">
-            <h2 class="text-subtitle-1 font-weight-bold mb-3">
-              Herramientas y páginas relacionadas
-            </h2>
-            <div class="d-flex flex-wrap ga-2">
-              <VChip
-                v-for="link in hub.related"
-                :key="link.to"
-                :to="localePath(link.to)"
-                color="primary"
-                variant="tonal"
-                size="small"
-                link
-              >
-                <VIcon start size="small">mdi-link-variant</VIcon>
-                {{ link.label }}
-              </VChip>
-            </div>
-          </VCard>
+          <template v-if="hub.resources?.length">
+            <h2 class="text-h6 font-weight-bold mb-3 mt-2">Herramientas y páginas del tema</h2>
+            <VRow class="mb-4" data-testid="hub-resources">
+              <VCol v-for="res in hub.resources" :key="res.to" cols="12" sm="6">
+                <VCard
+                  :to="localePath(res.to)"
+                  class="hub-resource-card pa-4 h-100 d-flex align-start ga-3"
+                  hover
+                  variant="flat"
+                >
+                  <VIcon color="primary" class="mt-1">mdi-arrow-right-circle-outline</VIcon>
+                  <div>
+                    <h3 class="text-subtitle-2 font-weight-bold mb-1">{{ res.label }}</h3>
+                    <p class="text-body-2 text-grey-lighten-1 mb-0">{{ res.description }}</p>
+                  </div>
+                </VCard>
+              </VCol>
+            </VRow>
+          </template>
 
           <!-- Other hubs -->
           <VCard v-if="relatedHubs.length" variant="flat" class="hub-related pa-5 mb-4">
@@ -231,6 +231,19 @@ useHead({
 }
 .hub-guide-card:hover {
   border-color: rgba(33, 150, 243, 0.4);
+}
+.hub-resource-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  transition: border-color 0.2s ease;
+}
+.hub-resource-card:hover {
+  border-color: rgba(33, 150, 243, 0.4);
+}
+.v-theme--light .hub-resource-card {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.08);
 }
 .v-theme--light .hub-guide-card {
   background: rgba(0, 0, 0, 0.02);
