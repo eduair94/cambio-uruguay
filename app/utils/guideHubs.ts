@@ -452,6 +452,8 @@ export const guideHubs: readonly GuideHub[] = [
       '¿Por qué tu líquido es tanto menor que el nominal? ¿Cómo se calcula el aguinaldo, la licencia o lo que te corresponde si te despiden? Estas guías explican, sin jerga, cómo se arma tu sueldo en Uruguay, qué te descuentan y por qué, cómo funciona el IRPF por franjas y qué tener en cuenta si trabajás para clientes del exterior. Saber leer tu recibo y entender estos derechos es el primer paso para reclamar lo que corresponde y planificar mejor.',
     guideSlugs: [
       'entender-tu-recibo-de-sueldo-uruguay',
+      'horas-extra-en-uruguay',
+      'llegar-tarde-tolerancia-y-sanciones-uruguay',
       'como-se-calcula-el-aguinaldo-uruguay',
       'licencia-y-salario-vacacional-uruguay',
       'despido-y-liquidacion-uruguay',

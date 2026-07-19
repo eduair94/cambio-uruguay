@@ -3159,4 +3159,191 @@ export const redditGuides: readonly Guide[] = [
       },
     ],
   },
+  {
+    slug: 'horas-extra-en-uruguay',
+    title: 'Horas extra en Uruguay: cuándo se generan y cómo se pagan',
+    description:
+      'Cuándo una hora es «extra» en Uruguay (tope de 8 horas diarias y 44 o 48 semanales), cuánto se paga (100% de recargo en días hábiles y 150% en descanso o feriado), por qué el pago es irrenunciable y cómo reclamar las horas extra impagas.',
+    tag: 'HORAS EXTRA',
+    updatedAt: '2026-07-19',
+    sections: [
+      {
+        heading: 'Cuándo una hora es «extra»: el doble tope de la jornada',
+        body: 'Una hora extra es toda la que trabajás por encima del límite horario que te corresponde. Y en Uruguay ese límite es doble: hay un tope diario de 8 horas, que rige para todas las actividades, y un tope semanal que cambia según el sector: 48 horas en la industria y 44 en el comercio. Superar cualquiera de los dos ya genera horas extra, de forma independiente: si un día trabajás 10 horas, esas 2 horas son extra aunque en la semana no llegues a las 44 o 48; y a la inversa, podés generar extra por pasarte del tope semanal aun cumpliendo 8 horas diarias. El tope de 8 horas nace de la Ley 5.350 de 1915 (la histórica «ley de las ocho horas»); las 44 horas del comercio están fijadas por el Decreto-Ley 14.320 de 1974 (una norma con fuerza de ley, no un simple decreto). Ojo con un punto que casi nadie mira: si tu convenio del Consejo de Salarios fija una jornada menor —por ejemplo 6 horas—, la hora extra se cuenta a partir de ese tope convencional, no de las 8. Siempre conviene mirar primero el convenio de tu rama.',
+      },
+      {
+        heading: 'Cuánto se paga: 100% en días hábiles, 150% en descanso o feriado',
+        body: 'Acá está el corazón del tema, y donde más se equivocan tanto empleadores como trabajadores. La Ley 15.996 (de 1988, reglamentada por el Decreto 550/989) fija dos recargos según cuándo se trabaje la hora extra. En día hábil, la hora extra se paga con 100% de recargo sobre el valor de la hora simple: es decir, cada hora extra vale el doble de una hora común. En día de descanso semanal o feriado, el recargo es del 150%: la hora vale dos veces y media la hora normal. Ese 150% no se suma al 100%, lo reemplaza. Son pisos mínimos legales: el convenio colectivo de tu sector puede fijar recargos más altos, nunca más bajos. Y el recargo de la hora extra en feriado es un rubro distinto del jornal del feriado en sí, así que en un feriado trabajado pueden convivir varias partidas. Si en tu recibo las horas extra aparecen pagadas «al valor normal» o sin recargo, algo está mal.',
+      },
+      {
+        heading: 'Cómo se calcula el valor de tu hora extra',
+        body: 'El método que se usa en la práctica es sencillo. Para un trabajador mensual: se toma el sueldo nominal y se divide entre 30 para obtener el jornal diario, y ese jornal se divide entre las horas de la jornada (8, o las que corresponda) para obtener el valor de la hora simple; sobre ese valor se aplica el recargo del 100% o del 150%. Para un jornalero, se parte directamente de su valor hora. Una aclaración honesta: ese divisor «entre 30» es un criterio de práctica y doctrina, muy extendido (lo usa hasta el PIT-CNT como principio general), pero no es una fórmula que la ley imponga con esas palabras, y puede variar según lo que fije el convenio de tu rama. Lo que sí está en la norma es el recargo y la jornada de referencia. Un dato que suele olvidarse: las horas extra también inciden en tu licencia y salario vacacional. El Decreto 550/989 (arts. 12 a 14) manda promediar las horas extra del año y computarlas en el jornal de licencia, así que trabajar horas extra durante el año engrosa después esas partidas.',
+      },
+      {
+        heading: 'Es un derecho irrenunciable: no se puede «arreglar» no cobrarlas',
+        body: 'Esta es la parte que conviene tener clarísima. Si las horas se trabajaron, el empleador está obligado a pagarlas, y el trabajador no puede renunciar válidamente a cobrarlas. La obligación nace por el solo hecho de haber trabajado por encima del límite, incluso sin una autorización formal previa: si el empleador las pidió, las consintió o simplemente las toleró, se pagan. Por eso los pactos de «sueldo global que ya incluye todo» o de «acá no se cobran horas extra» no tienen valor para tapar el recargo: la irrenunciabilidad de los derechos laborales es un principio de orden público, respaldado por la protección constitucional del trabajo (Constitución, art. 54). Distinto es una transacción al terminar el vínculo, sobre créditos dudosos y con requisitos: eso la ley lo admite. Pero renunciar de antemano a cobrar horas que realmente hiciste, no. Para el que supervisa, la lección es la misma en espejo: que un empleado reclame sus horas extra no es una «complicación» ni un capricho, es ejercer un derecho, y la respuesta correcta —y más barata— es verificar los registros y pagar lo que se deba.',
+      },
+      {
+        heading: 'Quiénes quedan afuera y los descansos que hay que respetar',
+        body: 'No todo el mundo cobra horas extra: el Decreto 611/980 deja fuera de la limitación de la jornada —y por lo tanto del cobro de extras— a algunas categorías, como el personal superior o de dirección, los profesionales de alta especialización y los viajantes, vendedores de plaza y cobradores que trabajan fuera del establecimiento. Para el resto, además del pago, hay límites pensados para proteger la salud: en la práctica el Ministerio de Trabajo maneja como referencia un máximo del orden de 8 horas extra semanales con consentimiento del trabajador (un criterio administrativo, no un número literal de la ley), y por encima habría que pedir autorización. Y pase lo que pase deben respetarse los descansos: el descanso intermedio dentro de la jornada (como mínimo media hora) y el descanso semanal de la Ley 7.318 (24 horas seguidas en la industria, 36 en el comercio). Las horas extra no pueden usarse para borrar esos descansos.',
+      },
+      {
+        heading: 'Cómo se prueba y qué pasa si no te las pagan',
+        body: 'La prueba es clave, y acá el sistema tiende a proteger al trabajador cuando el empleador no cumple con su deber de registrar. El empleador está obligado a llevar la documentación de control —hoy la Planilla de Trabajo Unificada se registra ante el BPS (Decreto 278/017), más el registro de horario y los recibos con detalle—, todo bajo la fiscalización del MTSS y de la Inspección General del Trabajo (IGTSS). En un juicio, el trabajador primero tiene que acreditar que hizo horas extra; probado eso, la carga de demostrar cuántas fueron recae sobre el empleador, porque es quien debe tener los registros. Si los tiene y no los muestra, los tribunales tienden a estarse, dentro de lo razonable, al número que denuncia el trabajador (así lo reafirmó la Suprema Corte en la Sentencia 117/2026). Si no te pagan, tenés dos vías: la administrativa, denunciando ante la IGTSS, que puede multar al empleador (de 1 a 150 jornales por trabajador afectado, Ley 15.903 art. 289); y la judicial, que exige pasar antes por una audiencia de conciliación en el MTSS (Ley 18.572). La multa de la IGTSS va al Estado y no reemplaza el cobro de lo que te deben: son cosas distintas.',
+      },
+      {
+        heading: 'Hasta cuándo podés reclamar, y una aclaración',
+        body: 'Los créditos laborales no duran para siempre. Según la Ley 18.091, la acción para reclamar prescribe al año contado desde el día siguiente al cese de la relación laboral, y hacia atrás solo se pueden reclamar los rubros generados en los últimos 5 años. La sola presentación ante el MTSS pidiendo audiencia de conciliación interrumpe ese plazo, así que si estás por quedarte sin tiempo, ese trámite lo frena. Esto es información general y no reemplaza el asesoramiento para tu caso: los recargos son pisos que tu convenio puede mejorar, y los detalles dependen de tu sector, tu categoría y tu documentación. El Ministerio de Trabajo es la referencia oficial, y si el monto es importante conviene un abogado laboralista; también existe asesoría gratuita en el Consultorio Jurídico de la Facultad de Derecho de la UdelaR y en los sindicatos del PIT-CNT.',
+      },
+    ],
+    related: [
+      { label: 'Entender tu recibo de sueldo', to: '/guias/entender-tu-recibo-de-sueldo-uruguay' },
+      {
+        label: 'Llegar tarde, tolerancia y sanciones',
+        to: '/guias/llegar-tarde-tolerancia-y-sanciones-uruguay',
+      },
+      { label: 'Despido y liquidación', to: '/guias/despido-y-liquidacion-uruguay' },
+      { label: 'Calculadora de sueldo líquido', to: '/herramientas/calculadora-sueldo-liquido' },
+    ],
+    steps: [
+      {
+        name: 'Juntá la prueba de las horas',
+        text: 'Reuní todo lo que muestre que trabajaste de más: marcaciones, planillas, correos, mensajes, fotos con hora, testigos. Cuanto mejor documentado, más fácil es el reclamo.',
+      },
+      {
+        name: 'Calculá lo que te deben',
+        text: 'Estimá tu valor hora (sueldo ÷ 30 ÷ horas de la jornada) y aplicá el recargo: 100% en días hábiles, 150% en descanso o feriado. Sumá las horas por período, sin olvidar la incidencia en licencia y aguinaldo.',
+      },
+      {
+        name: 'Planteálo primero en la empresa',
+        text: 'Muchas veces se resuelve mostrando los números a la empresa o a Recursos Humanos. Dejá constancia escrita de tu reclamo: eso también sirve como prueba después.',
+      },
+      {
+        name: 'Pedí conciliación en el MTSS',
+        text: 'Si no se soluciona, presentá una solicitud de audiencia de conciliación en el Ministerio de Trabajo. Es obligatoria antes de un juicio y, además, interrumpe la prescripción de tu crédito.',
+      },
+      {
+        name: 'Denunciá ante la IGTSS y asesorate',
+        text: 'Podés denunciar el incumplimiento ante la Inspección General del Trabajo (IGTSS). Y para el reclamo formal, buscá un abogado laboralista o la asesoría gratuita del Consultorio Jurídico de la UdelaR o de tu sindicato.',
+      },
+    ],
+    faqs: [
+      {
+        q: '¿Me tienen que pagar las horas extra aunque nadie me las «autorizó» por escrito?',
+        a: 'Sí. La obligación de pagar nace por el solo hecho de haber trabajado por encima del límite de la jornada. Si el empleador te pidió quedarte, lo consintió o simplemente lo toleró, esas horas se pagan con su recargo, exista o no una autorización formal. La falta de un papel no borra el trabajo hecho; lo que importa es que puedas probar que las horas se realizaron.',
+      },
+      {
+        q: '¿Cuánto es exactamente el recargo por hora extra?',
+        a: 'En día hábil, 100% de recargo: la hora extra vale el doble de la hora común. En día de descanso semanal o feriado, 150%: vale dos veces y media la hora normal (y ese 150% reemplaza al 100%, no se suman). Son los mínimos que fija la Ley 15.996; el convenio colectivo de tu rama puede establecer recargos superiores, pero nunca inferiores.',
+      },
+      {
+        q: 'Firmé un contrato que dice que mi sueldo «ya incluye las horas extra». ¿Puedo reclamar igual?',
+        a: 'En principio sí. El pago de las horas extra es un derecho irrenunciable, y los pactos de «sueldo global» que pretenden absorber el recargo son rechazados por la doctrina y la jurisprudencia: no eximen de pagar las horas realmente trabajadas con su recargo. Renunciar de antemano a un derecho cierto no es válido. Distinto es una transacción sobre créditos dudosos al terminar el vínculo, que la ley admite con requisitos.',
+      },
+      {
+        q: '¿Me pueden obligar a hacer horas extra?',
+        a: 'Como regla, las horas extra son voluntarias y requieren tu consentimiento, salvo situaciones de urgencia o fuerza mayor, o lo que específicamente pacten tu contrato o el convenio de tu sector. El Ministerio de Trabajo maneja como referencia un tope del orden de 8 horas extra semanales. Pero cuidado: que sean voluntarias no cambia la otra cara de la moneda: si las hacés, te las tienen que pagar con recargo.',
+      },
+      {
+        q: '¿Hasta cuándo puedo reclamar horas extra que no me pagaron?',
+        a: 'Según la Ley 18.091, la acción prescribe al año desde el día siguiente al cese de la relación laboral, y solo podés reclamar hacia atrás los rubros de los últimos 5 años. Presentar una solicitud de audiencia de conciliación en el MTSS interrumpe la prescripción, así que si el plazo se te viene encima, ese trámite lo frena mientras gestionás el reclamo.',
+      },
+      {
+        q: 'Soy supervisor y un empleado me reclama horas extra. ¿Qué hago?',
+        a: 'Tomarlo como lo que es: un derecho, no una complicación. Verificá los registros de horario y, si efectivamente hizo horas por encima de su jornada, pagalas con el recargo que corresponda. Lo que no podés hacer es tomar represalias por el reclamo —descontarle, sancionarlo o endurecer su trato—: eso puede configurar un despido abusivo con indemnización agravada. La salida correcta y más económica es pagar lo que se debe.',
+      },
+    ],
+  },
+  {
+    slug: 'llegar-tarde-tolerancia-y-sanciones-uruguay',
+    title: 'Llegar tarde, tolerancia y sanciones en el trabajo (Uruguay)',
+    description:
+      'Cómo funcionan la tolerancia de llegada, los descuentos por llegar tarde y las sanciones laborales en Uruguay: por qué no hay una ley que obligue a dar «minutos de tolerancia», qué puede y qué no puede hacer el empleador, y cuándo la impuntualidad puede costar el trabajo.',
+    tag: 'PUNTUALIDAD',
+    updatedAt: '2026-07-19',
+    sections: [
+      {
+        heading: '¿Hay una ley de «minutos de tolerancia»? No: depende de tu empresa o convenio',
+        body: 'Empecemos por desarmar un mito muy común. En el sector privado uruguayo no existe ninguna ley general que obligue al empleador a dar «minutos de tolerancia» para llegar tarde. La legislación laboral es dispersa y no está codificada, y ese margen de tolerancia solo existe cuando lo establece alguna de tres fuentes: el reglamento interno o la política de la empresa, tu contrato individual, o el convenio colectivo de tu rama (Consejo de Salarios). Por eso, si querés saber si «tenés» tolerancia y de cuánto, la respuesta no está en la ley sino en tu convenio y en el reglamento de tu lugar. Como referencia, en el sector público sí hay una tolerancia reglada (60 minutos mensuales, Decreto 319/010), pero eso rige para funcionarios públicos y no se traslada al privado: sirve nada más para ilustrar que la tolerancia es siempre reglamentaria o sectorial, nunca un piso legal universal.',
+      },
+      {
+        heading: 'Dentro de la tolerancia no hay falta, aunque llegues siempre al límite',
+        body: 'Este es el punto que más se malinterpreta, sobre todo desde el lado de quien supervisa. Cuando una empresa concede una tolerancia, está definiendo una zona donde llegar «tarde» se considera, a todos los efectos, llegar puntual. Dentro de ese margen no hay incumplimiento, y sin incumplimiento no hay nada que sancionar: ni una observación, ni un descuento, ni una «marca» en el legajo. Y esto incluye al que llega siempre pegado al límite: usar toda la tolerancia disponible no es una infracción ni una viveza, es usar un beneficio que la empresa otorgó. La falta recién aparece cuando se supera la tolerancia, no cuando se la aprovecha hasta el último minuto. Sancionar a alguien por llegar dentro del margen sería una sanción sin falta —contraria a la razonabilidad, a la igualdad de trato y a la buena fe (Código Civil, art. 1291)—, y encima expone a la empresa a un reclamo. Si a un supervisor le molesta que alguien «raspe» la tolerancia, el problema no es el empleado: es la política, y se cambia por la vía correcta, no castigando a una persona.',
+      },
+      {
+        heading: 'El descuento por llegar tarde: proporcional, nunca una multa',
+        body: 'Cuando la llegada tarde sí supera la tolerancia, hay que distinguir dos cosas que se confunden todo el tiempo. Una es el descuento proporcional: la empresa puede no pagar el tiempo efectivamente no trabajado, porque a trabajo no prestado no corresponde salario. Si llegaste 20 minutos tarde fuera de tolerancia, te pueden descontar esos 20 minutos. Eso es legítimo y no es un castigo. Otra cosa muy distinta —y prohibida— es la multa: descontar más tiempo del que faltaste, «de castigo». Descontar una hora, o un día, por una tardanza de 20 minutos es una multa pecuniaria que viola la intangibilidad del salario, protegida por el Convenio 95 de la OIT (ratificado por la Ley 12.030) y rechazada por la jurisprudencia; la propia Institución Nacional de Derechos Humanos calificó ese tipo de descuentos punitivos como una violación flagrante. En criollo: te pueden descontar lo que no trabajaste, jamás usar tu sueldo como herramienta de castigo.',
+      },
+      {
+        heading: 'El poder disciplinario del empleador y sus límites',
+        body: 'El empleador tiene poder disciplinario: es la contracara de la subordinación, y le permite sancionar faltas reales. Pero en Uruguay ese poder no está reglamentado por ley en el sector privado, y sus límites los construyeron la doctrina y la jurisprudencia. Para que una sanción sea válida tiene que cumplir varias condiciones: partir de una falta laboral real y vinculada al trabajo; ser proporcional a la gravedad; ser gradual (empezar por lo leve y escalar ante la reiteración); ser contemporánea (sancionar cerca del hecho, porque dejar pasar mucho tiempo se lee como perdón tácito); no castigar dos veces la misma falta (non bis in idem); no ser retroactiva; aplicarse con igualdad de trato, sin elegir a dedo; y respetar la dignidad del trabajador. Además, la carga de probar la falta recae en el empleador. Una sanción que se sale de estos carriles es ilegítima, se puede impugnar y, si es grave, puede habilitar al trabajador a considerarse despedido (despido indirecto) y cobrar la indemnización.',
+      },
+      {
+        heading: 'La escala de sanciones: de la observación al despido',
+        body: 'Las sanciones válidas van de menor a mayor, y esa gradualidad no es un detalle: es un requisito. Primero, la observación o llamado de atención verbal, para faltas leves. Después, el apercibimiento o amonestación escrita, que queda como constancia en el legajo. Más arriba, la suspensión disciplinaria sin goce de sueldo, que es la única sanción con contenido económico admitida —no viola la intangibilidad salarial porque durante la suspensión no hay trabajo prestado— y que la jurisprudencia acota (suele empezar en un día y escalar con la reiteración, con un tope del orden de 15 días). Y en el extremo, el despido. Atención con una distinción fina: la suspensión disciplinaria (por una falta ya probada) se admite; la suspensión preventiva sin sueldo (mientras se investiga, antes de probar nada) no, porque descontar el salario antes de acreditar la falta sería un castigo anticipado. Y nunca son sanciones válidas la multa, el descuento punitivo del salario ni empeorar las condiciones de trabajo como represalia.',
+      },
+      {
+        heading: '¿Pueden cambiar la tolerancia o el horario? El ius variandi',
+        body: 'Sí, dentro de ciertos límites. El empleador tiene el llamado ius variandi: la facultad de adecuar las condiciones no esenciales del trabajo a una necesidad real de la empresa. Tampoco está codificado en Uruguay, pero la doctrina y la jurisprudencia le marcan la cancha: el cambio tiene que responder a una necesidad concreta y no a un capricho, ser razonable, aplicarse hacia el futuro (nunca retroactivamente) con un preaviso razonable, y no causar un perjuicio material ni moral al trabajador. Llevado a la puntualidad: una empresa puede endurecer o eliminar una tolerancia que hasta ahora daba, pero debe comunicarlo antes, por escrito y para todo el personal por igual. Lo que no puede es sancionar hacia atrás tardanzas que en su momento estaban amparadas por la tolerancia vigente, ni usar el cambio de regla como castigo dirigido a una persona. Si la variación recae sobre algo esencial o causa un perjuicio, se vuelve abusiva y habilita el despido indirecto indemnizado.',
+      },
+      {
+        heading: 'Cuándo la impuntualidad puede costar el trabajo, y una aclaración',
+        body: 'Las llegadas tarde y las inasistencias reiteradas e injustificadas pueden, en el extremo, configurar notoria mala conducta y habilitar el despido sin indemnización (Ley 12.597, art. 10). Pero el estándar es exigente y rara vez se llega ahí de un día para el otro: la ley pone la carga de probar los hechos en el empleador, y la jurisprudencia exige que la conducta sea reiterada y persistente, que haya sido sancionada gradualmente antes (observaciones, apercibimientos escritos, suspensiones) y que el trabajador igual haya persistido, todo documentado y notificado. En la duda, se aplica el régimen indemnizatorio común, es decir, el despido se paga. Un párrafo final importante: los dos problemas típicos —el que reclama horas extra y el que llega justo dentro de la tolerancia— son independientes y no se mezclan. No se puede castigar al puntual por «rasparla», ni negarle o descontarle las horas extra al que las reclama; cruzar ambos, o tomar represalias por un reclamo, puede configurar despido abusivo con indemnización agravada (Código Civil, arts. 1319 y 1321; Suprema Corte, Sentencia 1402/2019). Esto es información general y no asesoramiento: mirá siempre tu convenio y tu reglamento, y ante un conflicto consultá en el MTSS o con asesoría jurídica (gratuita en el Consultorio de la UdelaR o en tu sindicato).',
+      },
+    ],
+    related: [
+      { label: 'Horas extra en Uruguay', to: '/guias/horas-extra-en-uruguay' },
+      { label: 'Despido y liquidación', to: '/guias/despido-y-liquidacion-uruguay' },
+      { label: 'Entender tu recibo de sueldo', to: '/guias/entender-tu-recibo-de-sueldo-uruguay' },
+      { label: 'Cuánto es el salario mínimo', to: '/guias/salario-minimo-uruguay-cuanto-es' },
+    ],
+    steps: [
+      {
+        name: 'Pedí la sanción por escrito',
+        text: 'Si te sancionan, pedí que te lo comuniquen por escrito, con el hecho concreto y la fecha. Una sanción sin falta clara, tardía o desproporcionada es impugnable, y el papel te sirve de prueba.',
+      },
+      {
+        name: 'Revisá tu convenio y el reglamento interno',
+        text: 'Fijate qué tolerancia y qué régimen de sanciones aplican realmente a tu caso: pueden estar en el convenio de tu rama o en el reglamento de la empresa. La ley general no fija tolerancia; tu convenio puede ser más favorable.',
+      },
+      {
+        name: 'Presentá tus descargos',
+        text: 'Si la sanción es injusta o el hecho estaba dentro de la tolerancia, dejá tu versión por escrito. Mostrá que no hubo falta (llegaste dentro del margen) o que el descuento excede el tiempo no trabajado.',
+      },
+      {
+        name: 'Llevalo al MTSS si no se resuelve',
+        text: 'Ante un conflicto que no se destraba —una multa, una suspensión abusiva o un descuento punitivo—, podés pedir una audiencia de conciliación en el Ministerio de Trabajo, paso previo y obligatorio a cualquier juicio laboral.',
+      },
+      {
+        name: 'Buscá asesoría gratuita',
+        text: 'Para evaluar si una sanción o un despido son legítimos, consultá con un abogado laboralista o con la asesoría gratuita del Consultorio Jurídico de la Facultad de Derecho de la UdelaR o de tu sindicato del PIT-CNT.',
+      },
+    ],
+    faqs: [
+      {
+        q: 'Llego siempre justo al límite de la tolerancia. ¿Me pueden sancionar por eso?',
+        a: 'No. Llegar dentro de la tolerancia vigente —incluso en el último minuto— se considera puntual a todos los efectos. No hay falta, y sin falta no hay sanción ni descuento posible. Usar toda la tolerancia que la empresa concede no es una infracción. Si la empresa quiere cambiar esa política, puede hacerlo hacia el futuro y para todos por igual, pero no sancionarte por aprovechar el margen que hoy está vigente.',
+      },
+      {
+        q: '¿Me pueden descontar más tiempo del que llegué tarde, como castigo?',
+        a: 'No. Te pueden descontar el tiempo que efectivamente no trabajaste (si llegaste 15 minutos tarde fuera de tolerancia, esos 15 minutos), porque a trabajo no prestado no corresponde salario. Pero descontar más «de castigo» —una hora o un día por una tardanza chica— es una multa pecuniaria prohibida: viola la intangibilidad del salario (Convenio OIT 95, ratificado por la Ley 12.030). El descuento debe ser proporcional, nunca punitivo.',
+      },
+      {
+        q: '¿La empresa está obligada por ley a darme minutos de tolerancia?',
+        a: 'No en el sector privado. Ninguna ley general obliga a conceder tolerancia; existe solo si la fija el reglamento interno, tu contrato o el convenio colectivo de tu rama. Por eso, para saber si tenés tolerancia y de cuánto, hay que mirar tu convenio y el reglamento de tu lugar, no la ley. (En el sector público sí hay una tolerancia reglada, pero no se aplica al ámbito privado.)',
+      },
+      {
+        q: '¿Pueden suspenderme sin sueldo por llegar tarde?',
+        a: 'Puede ser una sanción válida, pero con condiciones. La suspensión disciplinaria sin goce de sueldo se admite para faltas reales, siempre que sea proporcional, gradual (normalmente después de observaciones y apercibimientos previos) y contemporánea al hecho. No se admite la suspensión preventiva sin sueldo antes de probar la falta, ni suspender por algo que estaba dentro de la tolerancia. La jurisprudencia además acota la duración (suele topearse en el orden de los 15 días).',
+      },
+      {
+        q: '¿Pueden echarme sin indemnización por llegadas tarde?',
+        a: 'Solo en casos extremos. La impuntualidad reiterada e injustificada puede llegar a configurar notoria mala conducta, que priva de la indemnización (Ley 12.597, art. 10), pero el estándar es muy exigente: la conducta debe ser persistente, haber sido sancionada gradualmente antes y estar documentada, y la carga de probarlo la tiene el empleador. En la duda, el despido se paga igual con la indemnización común. Rara vez una o dos tardanzas justifican perder la indemnización.',
+      },
+      {
+        q: 'Reclamé horas extra y ahora me aprietan con la puntualidad. ¿Es legal?',
+        a: 'No, y es un terreno peligroso para la empresa. Los dos temas son independientes: reclamar horas extra impagas es ejercer un derecho, y responder con sanciones, descuentos o un endurecimiento selectivo de la disciplina puede configurar una represalia. Un despido motivado por el reclamo es un despido abusivo, con indemnización agravada por encima de la común (Código Civil, arts. 1319 y 1321; Suprema Corte, Sentencia 1402/2019). Si te pasa, documentá la secuencia (reclamo primero, «apriete» después) y asesorate.',
+      },
+    ],
+  },
 ]
