@@ -108,7 +108,7 @@ useHead({
   line-height: 1.7;
 }
 .contact-email {
-  color: #fff;
+  color: rgb(var(--v-theme-primary));
   text-decoration: none;
   font-weight: 700;
   word-break: break-all;
