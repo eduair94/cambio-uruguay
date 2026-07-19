@@ -832,6 +832,31 @@ export const DEBIT_SOURCES: readonly SourceLink[] = Object.freeze([
   },
 ])
 
+/**
+ * Which Reddit-tracked issuer each card belongs to (ids from REDDIT_ENTITIES in
+ * utils/redditSentiment.ts). Reddit talks about the *issuer* ("Prex", "OCA"), not
+ * about a specific plastic, so several cards can map to the same entity. A card
+ * with no entry simply shows no Reddit block — silence beats a wrong attribution.
+ */
+export const DEBIT_REDDIT_ENTITY: Readonly<Record<string, string>> = Object.freeze({
+  prex: 'prex',
+  'oca-blue': 'oca',
+  takenos: 'takenos',
+  astropay: 'astropay',
+  'itau-debito': 'itau',
+  'bbva-debito': 'bbva',
+  midinero: 'midinero',
+  'brou-debito': 'brou',
+  'scotiabank-debito': 'scotiabank',
+  'santander-debito': 'santander',
+  'mercado-pago': 'mercadopago',
+})
+
+/** The distinct Reddit entities behind the debit/prepaid cards we rank. */
+export const DEBIT_REDDIT_IDS: readonly string[] = Object.freeze([
+  ...new Set(Object.values(DEBIT_REDDIT_ENTITY)),
+])
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Scoring — overall is computed from per-dimension scores (never hand-set).
 // ─────────────────────────────────────────────────────────────────────────────

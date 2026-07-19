@@ -390,10 +390,26 @@
                 <VIcon size="12">mdi-open-in-new</VIcon>{{ s.publisher }}
               </a>
             </div>
+
+            <!-- What Uruguayans say about this issuer on Reddit (daily snapshot) -->
+            <RedditEntityBlock
+              :entity-id="DEBIT_REDDIT_ENTITY[r.id]"
+              note="Comentarios reales de uruguayos sobre el emisor, no editados. Reddit se queja más de lo que elogia: es una señal, no el veredicto — no toca el puntaje de arriba."
+            />
           </div>
         </div>
       </VCard>
     </section>
+
+    <!-- What Reddit says about these issuers -->
+    <RedditSentimentSection :ids="DEBIT_REDDIT_IDS" class="mb-8">
+      <template #intro>
+        Los puntajes de arriba son nuestro criterio. Esto es el contrapeso: lo que dicen los
+        uruguayos en Reddit sobre <strong>los emisores</strong> de estas tarjetas. Ojo con la
+        diferencia: Reddit opina del emisor (la app, la atención, los problemas), no de la comisión
+        de una tarjeta puntual —para eso están los números y las fuentes de arriba.
+      </template>
+    </RedditSentimentSection>
 
     <!-- Head-to-head -->
     <VCard variant="flat" class="pa-4 pa-sm-5 mb-5">
@@ -511,6 +527,8 @@
 import {
   DEBIT_CARDS,
   DEBIT_CARDS_LAST_REVIEWED,
+  DEBIT_REDDIT_ENTITY,
+  DEBIT_REDDIT_IDS,
   DEBIT_RUBRIC,
   DEBIT_SOURCES,
   KIND_LABELS,

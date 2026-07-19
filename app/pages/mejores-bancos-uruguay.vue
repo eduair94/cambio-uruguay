@@ -290,49 +290,7 @@
           </p>
 
           <!-- What Uruguayans say about THIS entity on Reddit (daily snapshot) -->
-          <ClientOnly>
-            <div v-if="redditFor(r.entity.id)" class="ficha-reddit mt-4">
-              <div class="d-flex align-center flex-wrap ga-2 mb-2">
-                <VIcon size="16" color="primary">mdi-reddit</VIcon>
-                <span class="text-caption font-weight-bold">Qué dicen en Reddit</span>
-                <VChip
-                  size="x-small"
-                  variant="tonal"
-                  :color="netColor(redditFor(r.entity.id)!.net)"
-                  class="font-weight-bold"
-                >
-                  {{ redditFor(r.entity.id)!.label }}
-                  ({{ redditFor(r.entity.id)!.net > 0 ? '+' : ''
-                  }}{{ redditFor(r.entity.id)!.net }})
-                </VChip>
-                <span class="text-caption text-medium-emphasis">
-                  {{ redditFor(r.entity.id)!.opinions }} opiniones ·
-                  {{ redditFor(r.entity.id)!.positive }} a favor /
-                  {{ redditFor(r.entity.id)!.negative }} en contra
-                </span>
-              </div>
-              <p v-if="redditFor(r.entity.id)!.summary" class="reddit-summary mb-2">
-                {{ redditFor(r.entity.id)!.summary }}
-              </p>
-              <ul class="reddit-quotes">
-                <li v-for="(q, i) in redditFor(r.entity.id)!.quotes" :key="i">
-                  <a
-                    :href="q.permalink"
-                    target="_blank"
-                    rel="noopener noreferrer nofollow"
-                    :class="q.polarity < 0 ? 'q-neg' : 'q-pos'"
-                  >
-                    <span class="q-mark">“</span>{{ q.text }}<span class="q-mark">”</span>
-                    <span class="q-meta">r/{{ q.sub }} · {{ q.date }} · {{ q.score }} votos</span>
-                  </a>
-                </li>
-              </ul>
-              <p class="text-caption text-medium-emphasis mt-2 mb-0">
-                Comentarios reales de uruguayos, no editados. Reddit se queja más de lo que elogia:
-                es una señal, no el veredicto — no toca el puntaje de arriba.
-              </p>
-            </div>
-          </ClientOnly>
+          <RedditEntityBlock :entity-id="r.entity.id" />
         </VExpansionPanelText>
       </VExpansionPanel>
     </VExpansionPanels>
@@ -535,126 +493,16 @@
     </section>
 
     <!-- What Reddit says -->
-    <section class="reddit-section mt-8" aria-label="Qué dice Reddit de cada banco">
-      <h2 class="section-heading mb-1">Qué dice Reddit</h2>
-      <p class="text-body-2 text-medium-emphasis mb-4">
+    <RedditSentimentSection :ids="REDDIT_BANK_IDS" class="mt-8">
+      <template #intro>
         Nuestro puntaje es nuestro criterio. Esto es el contrapeso: lo que dicen los uruguayos en
         Reddit. Todos los días buscamos los hilos de bancos y fintech en
         <span class="text-medium-emphasis">{{ redditSubs }}</span
         >, atribuimos cada frase al banco del que habla y la puntuamos. El número sale de las
         opiniones, no de las menciones al pasar —y si a alguien casi nadie lo juzgó, decimos
         <em>sin datos</em> en vez de inventar un veredicto.
-      </p>
-
-      <ClientOnly>
-        <template #default>
-          <VCard
-            v-if="redditPending"
-            variant="flat"
-            class="news-placeholder pa-6 d-flex align-center"
-          >
-            <VProgressCircular indeterminate size="22" width="2" color="primary" class="mr-3" />
-            <span class="text-body-2 text-medium-emphasis">Leyendo Reddit…</span>
-          </VCard>
-
-          <template v-else-if="redditJudged.length">
-            <div class="reddit-grid">
-              <VCard
-                v-for="e in redditJudged"
-                :key="e.id"
-                variant="flat"
-                class="reddit-card pa-4"
-                :class="`rd-${netClass(e.net)}`"
-              >
-                <div class="d-flex align-center ga-2 mb-2">
-                  <span class="tile-mono" :style="monoStyle(e.id)">{{ monogram(e.name) }}</span>
-                  <span class="text-subtitle-2 font-weight-bold">{{ e.name }}</span>
-                  <VChip
-                    size="x-small"
-                    variant="tonal"
-                    class="ml-auto font-weight-bold"
-                    :color="netColor(e.net)"
-                  >
-                    {{ e.label }}
-                  </VChip>
-                </div>
-
-                <!-- Net sentiment, −100 … +100, drawn from the centre -->
-                <div
-                  class="rd-bar"
-                  role="img"
-                  :aria-label="`Sentimiento neto de ${e.name}: ${e.net} sobre 100`"
-                >
-                  <span class="rd-zero" />
-                  <span
-                    class="rd-fill"
-                    :style="{
-                      left: e.net >= 0 ? '50%' : `${50 + e.net / 2}%`,
-                      width: `${Math.abs(e.net) / 2}%`,
-                      background: netHue(e.net),
-                    }"
-                  />
-                </div>
-                <p class="rd-counts mb-3">
-                  <strong :style="{ color: netHue(e.net) }"
-                    >{{ e.net > 0 ? '+' : '' }}{{ e.net }}</strong
-                  >
-                  · {{ e.opinions }} opiniones ({{ e.positive }} 👍 / {{ e.negative }} 👎) sobre
-                  {{ e.mentions }} menciones
-                </p>
-
-                <p v-if="e.summary" class="reddit-summary mb-3">{{ e.summary }}</p>
-
-                <ul v-if="e.quotes.length" class="reddit-quotes">
-                  <li v-for="(q, i) in e.quotes.slice(0, 3)" :key="i">
-                    <a
-                      :href="q.permalink"
-                      target="_blank"
-                      rel="noopener noreferrer nofollow"
-                      :class="q.polarity < 0 ? 'q-neg' : 'q-pos'"
-                    >
-                      <span class="q-mark">“</span>{{ q.text }}<span class="q-mark">”</span>
-                      <span class="q-meta">r/{{ q.sub }} · {{ q.date }}</span>
-                    </a>
-                  </li>
-                </ul>
-
-                <div v-if="e.themes.length" class="d-flex flex-wrap ga-1 mt-3">
-                  <VChip
-                    v-for="t in e.themes.slice(0, 3)"
-                    :key="t.theme"
-                    size="x-small"
-                    variant="tonal"
-                    color="primary"
-                  >
-                    {{ THEME_LABELS[t.theme] ?? t.theme }} · {{ t.count }}
-                  </VChip>
-                </div>
-              </VCard>
-            </div>
-
-            <p v-if="redditUnjudged.length" class="text-caption text-medium-emphasis mt-4 mb-0">
-              <VIcon size="14" class="mr-1">mdi-help-circle-outline</VIcon>
-              Sin datos suficientes en Reddit ({{ redditMinSample }} opiniones mínimo):
-              <strong>{{ redditUnjudged.map(e => e.name).join(', ') }}</strong
-              >. Que no se hable de un banco no dice nada bueno ni malo de él.
-            </p>
-            <p class="text-caption text-medium-emphasis mt-2 mb-0">
-              <VIcon size="14" class="mr-1">mdi-alert-outline</VIcon>
-              Reddit amplifica la queja: se escribe más cuando algo sale mal, y quien postea es una
-              porción joven y urbana del país. Tomalo como una señal, no como el veredicto del
-              mercado — por eso no toca los puntajes de arriba.
-              <span v-if="redditAsOf">Actualizado {{ redditAsOf }}.</span>
-            </p>
-          </template>
-        </template>
-        <template #fallback>
-          <VCard variant="flat" class="news-placeholder pa-6">
-            <span class="text-body-2 text-medium-emphasis">Cargando opiniones…</span>
-          </VCard>
-        </template>
-      </ClientOnly>
-    </section>
+      </template>
+    </RedditSentimentSection>
 
     <!-- Disclaimer -->
     <VAlert
@@ -766,6 +614,8 @@ import {
   type EntityKind,
   type ProfilePreset,
 } from '~/utils/bankTierlist'
+import { monoStyle, monogram, readableOn } from '~/utils/brandColors'
+import { REDDIT_BANK_IDS } from '~/utils/redditSentiment'
 
 const localePath = useLocalePath()
 const redditUrl = 'https://www.reddit.com/r/Burises/comments/1ut5srl/top_peores_bancos_de_uruguay/'
@@ -832,20 +682,8 @@ function openFicha(id: string) {
 }
 
 // --- presentation helpers ---
-const BRAND: Record<string, string> = {
-  mercadopago: '#00a5e0',
-  itau: '#ec7000',
-  santander: '#ec0000',
-  brou: '#0072bc',
-  bbva: '#1464a5',
-  takenos: '#6c5ce7',
-  heritage: '#0f4c81',
-  astropay: '#00b487',
-  scotiabank: '#d5121a',
-  prex: '#ff5a1f',
-  btg: '#00274d',
-}
-const brand = (id: string) => BRAND[id] ?? '#64748b'
+// Brand colours, contrast picking and monograms live in ~/utils/brandColors so the
+// bank tier list and the two card rankings render the same issuer identically.
 
 const TIER_HUE: Record<TierId, string> = {
   S: '#059669',
@@ -854,30 +692,6 @@ const TIER_HUE: Record<TierId, string> = {
   C: '#eab308',
   D: '#f97316',
   F: '#ef4444',
-}
-
-/**
- * Pick the text colour (near-black or white) with the better contrast against a
- * background hex. Brand and tier colours span the whole lightness range, so
- * hardcoding white would fail WCAG on the light ones (Mercado Pago, Astropay, the
- * lime/amber tiers). This keeps every chip legible in both themes.
- */
-function readableOn(hex: string): string {
-  const h = hex.replace('#', '')
-  const toLin = (c: number) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4))
-  const r = toLin(parseInt(h.slice(0, 2), 16) / 255)
-  const g = toLin(parseInt(h.slice(2, 4), 16) / 255)
-  const b = toLin(parseInt(h.slice(4, 6), 16) / 255)
-  const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b
-  const vsWhite = 1.05 / (lum + 0.05)
-  const vsBlack = (lum + 0.05) / 0.05
-  return vsBlack > vsWhite ? '#0b1220' : '#ffffff'
-}
-
-/** Monogram chip: brand background + a text colour that actually contrasts with it. */
-function monoStyle(id: string) {
-  const bg = brand(id)
-  return { background: bg, color: readableOn(bg) }
 }
 
 function gemStyle(t: TierId) {
@@ -903,13 +717,6 @@ function scoreHue(score: number): string {
   if (score >= 54) return '#ca8a04'
   if (score >= 44) return '#ea580c'
   return '#dc2626'
-}
-
-function monogram(name: string): string {
-  if (name === 'Mercado Pago') return 'MP'
-  if (name === 'Banco Heritage') return 'H'
-  if (name === 'BTG Pactual') return 'BTG'
-  return name.slice(0, 2).toUpperCase()
 }
 
 function emptyCaption(t: TierId): string {
@@ -988,83 +795,9 @@ function newsParagraphs(text: string | null): string[] {
 }
 
 // --- what Reddit says (daily snapshot from MongoDB; never a live Reddit call) ---
-interface RedditQuote {
-  text: string
-  permalink: string
-  date: string
-  score: number
-  sub: string
-  polarity: number
-}
-interface RedditEntitySentiment {
-  id: string
-  name: string
-  mentions: number
-  positive: number
-  negative: number
-  neutral: number
-  opinions: number
-  net: number
-  label: string
-  themes: { theme: string; count: number }[]
-  quotes: RedditQuote[]
-  summary: string | null
-  latestMentionDate: string | null
-}
-interface RedditSnapshot {
-  entities: RedditEntitySentiment[]
-  asOf: string | null
-  empty: boolean
-  subs: string[]
-  minSample: number
-}
-
-const THEME_LABELS: Record<string, string> = {
-  app: 'App',
-  comisiones: 'Comisiones',
-  atencion: 'Atención',
-  usd: 'Dólares',
-  productos: 'Productos',
-  cobertura: 'Cobertura',
-}
-
-const { data: reddit, pending: redditPending } = useLazyFetch<RedditSnapshot>(
-  '/api/reddit-sentiment',
-  { server: false }
-)
-
-/** Entities Reddit actually judged (enough opinions to say something). */
-const redditJudged = computed(() =>
-  (reddit.value?.entities ?? [])
-    .filter(e => e.label !== 'sin datos')
-    .sort((a, b) => b.opinions - a.opinions)
-)
-/** Named but barely judged — we say so instead of pretending silence is a verdict. */
-const redditUnjudged = computed(() =>
-  (reddit.value?.entities ?? []).filter(e => e.label === 'sin datos' && e.mentions > 0)
-)
-const redditMinSample = computed(() => reddit.value?.minSample ?? 5)
-const redditSubs = computed(() =>
-  (reddit.value?.subs ?? ['uruguay', 'Burises', 'UruguayFinanzas']).map(s => `r/${s}`).join(', ')
-)
-const redditAsOf = computed(() => {
-  const iso = reddit.value?.asOf
-  if (!iso) return ''
-  const d = new Date(iso)
-  return isNaN(d.getTime())
-    ? ''
-    : d.toLocaleDateString('es-UY', { day: 'numeric', month: 'long', year: 'numeric' })
-})
-
-/** The Reddit verdict for one tier-list entity, or null when Reddit hasn't judged it. */
-function redditFor(id: string): RedditEntitySentiment | null {
-  const e = (reddit.value?.entities ?? []).find(x => x.id === id)
-  return e && e.label !== 'sin datos' && e.quotes.length ? e : null
-}
-
-const netClass = (net: number) => (net >= 15 ? 'pos' : net > -15 ? 'mix' : 'neg')
-const netColor = (net: number) => (net >= 15 ? 'success' : net > -15 ? 'warning' : 'error')
-const netHue = (net: number) => (net >= 15 ? '#16a34a' : net > -15 ? '#ca8a04' : '#dc2626')
+// The rendering lives in <RedditSentimentSection> / <RedditEntityBlock>, shared with
+// the debit- and credit-card rankings; here we only need the sub list for the intro.
+const { subs: redditSubs } = useRedditSentiment()
 
 // --- SEO ---
 const canonicalUrl = 'https://cambio-uruguay.com/mejores-bancos-uruguay'
@@ -1817,101 +1550,7 @@ useHead(() => ({
   line-height: 1.6;
 }
 
-/* Per-ficha Reddit block */
-.ficha-reddit {
-  border-top: 1px dashed rgba(var(--v-border-color), 0.22);
-  padding-top: 12px;
-}
-
-/* What Reddit says */
-.reddit-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 12px;
-}
-.reddit-card {
-  border: 1px solid rgba(var(--v-border-color), 0.14);
-  border-radius: 14px;
-}
-.reddit-card.rd-neg {
-  border-left: 3px solid #dc2626;
-}
-.reddit-card.rd-mix {
-  border-left: 3px solid #ca8a04;
-}
-.reddit-card.rd-pos {
-  border-left: 3px solid #16a34a;
-}
-/* Net sentiment bar: zero sits in the middle, the fill grows to its side. */
-.rd-bar {
-  position: relative;
-  height: 6px;
-  border-radius: 999px;
-  background: rgba(var(--v-border-color), 0.16);
-  overflow: hidden;
-}
-.rd-zero {
-  position: absolute;
-  left: 50%;
-  top: 0;
-  bottom: 0;
-  width: 1px;
-  background: rgba(var(--v-theme-on-surface), 0.35);
-}
-.rd-fill {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  border-radius: 999px;
-}
-.rd-counts {
-  font-size: 0.74rem;
-  opacity: 0.75;
-  margin-top: 6px;
-  margin-bottom: 0;
-}
-.reddit-summary {
-  font-size: 0.85rem;
-  line-height: 1.6;
-  opacity: 0.9;
-}
-.reddit-quotes {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.reddit-quotes a {
-  display: block;
-  font-size: 0.78rem;
-  line-height: 1.5;
-  text-decoration: none;
-  border-radius: 8px;
-  padding: 6px 8px;
-  background: rgba(var(--v-border-color), 0.08);
-  color: rgb(var(--v-theme-on-surface));
-  opacity: 0.92;
-}
-.reddit-quotes a:hover {
-  background: rgba(var(--v-theme-primary), 0.1);
-}
-.reddit-quotes a.q-neg {
-  border-left: 2px solid rgba(220, 38, 38, 0.75);
-}
-.reddit-quotes a.q-pos {
-  border-left: 2px solid rgba(22, 163, 74, 0.75);
-}
-.q-mark {
-  opacity: 0.45;
-}
-.q-meta {
-  display: block;
-  font-size: 0.68rem;
-  opacity: 0.6;
-  margin-top: 3px;
-}
+/* Reddit rendering moved to components/reddit/* (shared with the card rankings). */
 
 /* News detail dialog */
 .news-dialog {

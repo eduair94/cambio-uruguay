@@ -167,6 +167,97 @@ export const REDDIT_ENTITIES: readonly RedditEntity[] = Object.freeze([
     queries: ['HSBC'],
     patterns: [bounded('hsbc')],
   },
+  // --- Card issuers (for /tarjetas-de-debito-uruguay and /tarjetas-de-credito-uruguay) ---
+  {
+    id: 'oca',
+    name: 'OCA',
+    queries: ['OCA Uruguay', 'tarjeta OCA', 'OCA Blue'],
+    // `bounded` guards the word edges, so "boca", "poca", "loca", "toca" and "Boca"
+    // cannot match — the preceding letter is inside the [a-z0-9] lookbehind.
+    patterns: [bounded('oca'), bounded('oca\\s?blue')],
+  },
+  {
+    id: 'midinero',
+    name: 'MiDinero',
+    queries: ['MiDinero', 'tarjeta MiDinero'],
+    // ONE WORD ONLY, deliberately. "mi dinero" is ordinary Spanish for "my money"
+    // ("saqué mi dinero", "perdí mi dinero"); matching it with a space would attribute
+    // half the subreddit's savings talk to this card.
+    patterns: [bounded('midinero')],
+  },
+  {
+    id: 'creditel',
+    name: 'Creditel',
+    queries: ['Creditel'],
+    patterns: [bounded('creditel')],
+  },
+  {
+    id: 'passcard',
+    name: 'PassCard',
+    queries: ['PassCard'],
+    // One word only: "pass card" as two words is generic English.
+    patterns: [bounded('passcard')],
+  },
+  {
+    id: 'cabal',
+    name: 'Cabal',
+    queries: ['tarjeta Cabal', 'Cabal Uruguay'],
+    patterns: [bounded('cabal')],
+  },
+  {
+    id: 'tiendainglesa',
+    name: 'Tienda Inglesa',
+    queries: ['Tienda Inglesa', 'Club Card Tienda Inglesa'],
+    patterns: [bounded('tienda\\s?inglesa')],
+  },
+  // Deliberately NOT tracked — their names are ordinary Spanish words and any
+  // pattern loose enough to catch the brand also catches everyday speech, which
+  // would poison the sentiment rather than measure it:
+  //   ANDA    → "anda" / "no anda la app" (the verb, everywhere in complaint threads)
+  //   Pronto! → "pronto" ("soon")
+  //   Líder   → "lider" ("leader")
+  // If we ever want them, they need a disambiguating second token, not a bare word.
+])
+
+/**
+ * Which entities belong to which page's conversation. The catalogue is shared
+ * (one harvest, one score), but each page should only quote the brands it ranks:
+ * the bank tier list has no business listing Creditel, and the card pages have no
+ * business listing Banco Heritage.
+ */
+export const REDDIT_BANK_IDS: readonly string[] = Object.freeze([
+  'brou',
+  'itau',
+  'santander',
+  'scotiabank',
+  'bbva',
+  'btg',
+  'hsbc',
+  'heritage',
+  'mercadopago',
+  'prex',
+  'astropay',
+  'takenos',
+])
+
+/** Issuers behind the debit/prepaid and credit cards we rank. */
+export const REDDIT_CARD_IDS: readonly string[] = Object.freeze([
+  'prex',
+  'oca',
+  'midinero',
+  'mercadopago',
+  'astropay',
+  'takenos',
+  'brou',
+  'itau',
+  'santander',
+  'scotiabank',
+  'bbva',
+  'btg',
+  'creditel',
+  'passcard',
+  'cabal',
+  'tiendainglesa',
 ])
 
 /** Lower-case + strip diacritics, so "PÉSIMO" and "pesimo" are the same word. */

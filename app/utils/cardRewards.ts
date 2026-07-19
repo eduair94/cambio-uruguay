@@ -1197,6 +1197,45 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
   },
 ])
 
+/**
+ * Which Reddit-tracked issuer each programme belongs to (ids from REDDIT_ENTITIES
+ * in utils/redditSentiment.ts). Reddit talks about the *issuer* ("Itaú", "OCA"),
+ * not about a specific plastic, so the four Itaú cards share one entity.
+ *
+ * Deliberately incomplete: ANDA, Pronto! and Líder are NOT tracked because their
+ * names are ordinary Spanish words ("anda", "pronto", "líder") and any pattern
+ * loose enough to catch the brand also catches everyday speech. A programme with
+ * no entry shows no Reddit block — silence beats a wrong attribution.
+ */
+export const PROGRAM_REDDIT_ENTITY: Readonly<Record<string, string>> = Object.freeze({
+  'brou-recompensa': 'brou',
+  'mercado-pago-uruguay': 'mercadopago',
+  'club-tienda-inglesa-puntos': 'tiendainglesa',
+  'prex-uruguay': 'prex',
+  'scotia-puntos': 'scotiabank',
+  'midinero-uruguay': 'midinero',
+  'santander-soy-santander-puntos': 'santander',
+  'bbva-puntos-bbva': 'bbva',
+  'bbva-comunidad-plus': 'bbva',
+  'itau-volar': 'itau',
+  'itau-volar-platinum': 'itau',
+  'itau-latam-pass-platinum': 'itau',
+  'itau-volar-black': 'itau',
+  'scotia-puntos-american-express': 'scotiabank',
+  'itau-latam-pass-internacional': 'itau',
+  'oca-oca-blue': 'oca',
+  'scotia-club-card-tienda-inglesa': 'scotiabank',
+  'creditel-credipuntos': 'creditel',
+  'passcard-puntos-pass': 'passcard',
+  'cabal-uruguay': 'cabal',
+  'btg-uruguay-tdc': 'btg',
+})
+
+/** The distinct Reddit entities behind the credit-card programmes we rank. */
+export const PROGRAM_REDDIT_IDS: readonly string[] = Object.freeze([
+  ...new Set(Object.values(PROGRAM_REDDIT_ENTITY)),
+])
+
 const WEIGHT_SUM = REWARD_RUBRIC.reduce((s, d) => s + d.weight, 0)
 
 /** Weighted 0–100 overall score computed from a program's per-dimension scores. */

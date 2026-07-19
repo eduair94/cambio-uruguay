@@ -213,10 +213,26 @@
               <VIcon size="13">mdi-account-check-outline</VIcon>
               Ideal para: {{ p.bestFor }}
             </p>
+
+            <!-- What Uruguayans say about this issuer on Reddit (daily snapshot) -->
+            <RedditEntityBlock
+              :entity-id="PROGRAM_REDDIT_ENTITY[p.id]"
+              note="Comentarios reales de uruguayos sobre el emisor, no editados. Reddit se queja más de lo que elogia: es una señal, no el veredicto — no toca el puntaje de arriba."
+            />
           </VExpansionPanelText>
         </VExpansionPanel>
       </VExpansionPanels>
     </div>
+
+    <!-- What Reddit says about these issuers -->
+    <RedditSentimentSection :ids="PROGRAM_REDDIT_IDS" class="mt-8">
+      <template #intro>
+        El ranking de arriba mide el programa de puntos con una rúbrica fija. Esto es otra cosa: lo
+        que dicen los uruguayos en Reddit sobre <strong>los emisores</strong>. Un programa puede
+        acumular muy bien y aun así tener una app o una atención que la gente sufre —conviene leer
+        las dos cosas antes de pedir una tarjeta.
+      </template>
+    </RedditSentimentSection>
 
     <!-- Transversal benefits -->
     <VCard variant="flat" class="tarjetas-section mt-6 pa-5 pa-sm-6">
@@ -308,6 +324,8 @@ import {
   REWARD_RUBRIC,
   ISSUER_TYPE_LABELS,
   NETWORK_LABELS,
+  PROGRAM_REDDIT_ENTITY,
+  PROGRAM_REDDIT_IDS,
   medalFor,
   type IssuerType,
 } from '~/utils/cardRewards'
