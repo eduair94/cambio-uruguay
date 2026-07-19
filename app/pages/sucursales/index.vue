@@ -83,7 +83,7 @@
           type="info"
           variant="tonal"
           density="comfortable"
-          class="mt-3"
+          class="mt-3 mb-4"
           icon="mdi-cash-multiple"
         >
           {{ $t('sucursales.retirarTip') }}
