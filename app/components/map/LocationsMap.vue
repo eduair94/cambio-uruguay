@@ -83,6 +83,8 @@ let userMarker: any = null
 let radiusCircle: any = null
 let initStarted = false
 const markersById = new Map<string, any>()
+const branchById = new Map<string, Branch>()
+let currentHighlightId: string | null = null
 
 // Stable colour per origin (hash → hue) so each casa is visually distinct.
 function colorFor(origin: string): string {
@@ -184,6 +186,7 @@ function renderMarkers() {
   if (!cluster) return
   cluster.clearLayers()
   markersById.clear()
+  branchById.clear()
   const popup = props.popupFor || defaultPopup
   for (const b of props.branches) {
     // title/alt give the (keyboard-focusable) marker an accessible name so it
@@ -197,8 +200,32 @@ function renderMarkers() {
     m.bindPopup(popup(b))
     m.on('click', () => emit('marker-click', b))
     markersById.set(b.id, m)
+    branchById.set(b.id, b)
     cluster.addLayer(m)
   }
+  currentHighlightId = props.highlightId ?? null
+}
+
+// Swap only the affected marker icons when the highlight changes. A full
+// renderMarkers() here would clearLayers() and rebuild every marker — which
+// destroys the marker the user just clicked and closes its popup before it can
+// show (the "double-click to open the popup" bug), since a marker click sets
+// highlightId in the same tick.
+function applyHighlight(id: string | null) {
+  const next = id ?? null
+  if (currentHighlightId === next) return
+  const prev = currentHighlightId
+  if (prev) {
+    const m = markersById.get(prev)
+    const b = branchById.get(prev)
+    if (m && b) m.setIcon(pinIcon(b.origin, false))
+  }
+  if (next) {
+    const m = markersById.get(next)
+    const b = branchById.get(next)
+    if (m && b) m.setIcon(pinIcon(b.origin, true))
+  }
+  currentHighlightId = next
 }
 
 function renderUser() {
@@ -238,12 +265,14 @@ onBeforeUnmount(() => {
   radiusCircle = null
   initStarted = false
   markersById.clear()
+  branchById.clear()
+  currentHighlightId = null
 })
 
 watch(() => props.branches, () => renderMarkers(), { deep: false })
 watch(() => props.cashPoints, () => renderCashPoints(), { deep: false })
 watch(() => [props.userLocation, props.radiusKm], () => renderUser(), { deep: true })
-watch(() => props.highlightId, () => renderMarkers())
+watch(() => props.highlightId, id => applyHighlight(id ?? null))
 </script>
 
 <style scoped>
