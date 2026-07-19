@@ -208,6 +208,57 @@
       </VExpansionPanels>
     </section>
 
+    <!-- Share this guide -->
+    <section class="mb-8" aria-label="Compartí esta guía">
+      <VCard variant="flat" class="share-card pa-5 pa-sm-6">
+        <div class="d-flex align-center ga-2 mb-2">
+          <VIcon color="primary">mdi-share-variant-outline</VIcon>
+          <h2 class="text-subtitle-1 font-weight-bold mb-0">
+            ¿Le pasó a alguien? Pasale la respuesta
+          </h2>
+        </div>
+        <p class="text-body-2 text-medium-emphasis mb-4">
+          Respuesta lista para pegar en Reddit, Instagram o un grupo de WhatsApp: cita la ley y
+          enlaza esta guía.
+        </p>
+        <VCard variant="flat" class="reply-box pa-4 mb-3">
+          <p class="reply-text mb-0">{{ replyText }}</p>
+        </VCard>
+        <div class="d-flex flex-wrap ga-2">
+          <VBtn
+            :color="replyCopied ? 'success' : 'primary'"
+            variant="tonal"
+            size="small"
+            :prepend-icon="replyCopied ? 'mdi-check' : 'mdi-content-copy'"
+            @click="copyReply"
+          >
+            {{ replyCopied ? 'Copiado' : 'Copiar respuesta' }}
+          </VBtn>
+          <VBtn
+            :href="waShare"
+            target="_blank"
+            rel="noopener noreferrer"
+            color="success"
+            variant="tonal"
+            size="small"
+            prepend-icon="mdi-whatsapp"
+          >
+            WhatsApp
+          </VBtn>
+          <VBtn
+            :href="xShare"
+            target="_blank"
+            rel="noopener noreferrer"
+            variant="tonal"
+            size="small"
+            prepend-icon="mdi-alpha-x-box-outline"
+          >
+            X / Twitter
+          </VBtn>
+        </div>
+      </VCard>
+    </section>
+
     <!-- Sources -->
     <VCard variant="flat" class="sources-card pa-5 mb-6">
       <h2 class="text-subtitle-2 font-weight-bold mb-2">
@@ -296,8 +347,34 @@ async function copyLetter() {
   }
 }
 
-// --- SEO ---
 const canonicalUrl = 'https://cambio-uruguay.com/derechos-consumidor-compras-online'
+
+// --- Compartí esta guía: respuesta lista para pegar en redes ---
+const replyText =
+  'No te quedes en "no compren ahí": te ampara la Ley 17.250. Comprar por web es una venta a ' +
+  'distancia — si te cobraron y no entregan, por el art. 33 elegís vos entre que te entreguen, te ' +
+  'cambien el producto o te devuelvan todo lo pagado actualizado. Y dentro de 5 días hábiles podés ' +
+  'cancelar sin dar motivo (art. 16); el "no se aceptan devoluciones" es nulo. Reclamá gratis en ' +
+  `Defensa del Consumidor: 0800 7005. Guía + modelo de reclamo: ${canonicalUrl}`
+const shareShort =
+  'Compré online y no me entregan: la Ley 17.250 me da 5 días para cancelar y derecho a que me ' +
+  'devuelvan todo (o me entreguen). Reclamo gratis en Defensa del Consumidor 0800 7005. Guía + ' +
+  'modelo de reclamo:'
+const waShare = `https://wa.me/?text=${encodeURIComponent(replyText)}`
+const xShare = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareShort)}&url=${encodeURIComponent(canonicalUrl)}`
+
+const replyCopied = ref(false)
+async function copyReply() {
+  try {
+    await navigator.clipboard.writeText(replyText)
+    replyCopied.value = true
+    setTimeout(() => (replyCopied.value = false), 2000)
+  } catch {
+    replyCopied.value = false
+  }
+}
+
+// --- SEO ---
 const title =
   'Derechos del consumidor en compras online (Uruguay): qué hacer si te cobran y no entregan'
 const description =
@@ -430,9 +507,24 @@ useHead(() => ({
 .ladder,
 .right-card,
 .xlink-card,
+.share-card,
 .sources-card {
   border: 1px solid rgba(var(--v-border-color), 0.14);
   border-radius: 14px;
+}
+
+/* Share */
+.share-card {
+  border-left: 3px solid rgb(var(--v-theme-primary));
+}
+.reply-box {
+  background: rgba(var(--v-theme-primary), 0.05);
+  border: 1px dashed rgba(var(--v-theme-primary), 0.35);
+  border-radius: 12px;
+}
+.reply-text {
+  font-size: 0.86rem;
+  line-height: 1.65;
 }
 .verdict {
   border-left: 3px solid #16a34a;
