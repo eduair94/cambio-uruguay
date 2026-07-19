@@ -200,6 +200,143 @@
       </VAlert>
     </section>
 
+    <section id="comunidades" class="anchor-section mb-10" aria-labelledby="comunidades-title">
+      <p class="step-kicker">Ampliá el alcance</p>
+      <h2 id="comunidades-title" class="section-heading mb-2">
+        Grupos y comunidades: dónde publicar tu búsqueda y ver más ofertas
+      </h2>
+      <p class="text-body-2 text-medium-emphasis mb-4">
+        Más allá de los portales, mucha oferta —sobre todo en el interior y de dueño directo— vive
+        en grupos de Facebook, Reddit y plataformas de compartir. Acá tenés un directorio revisado
+        por reputación: publicá tu aviso en varios a la vez y multiplicá quién lo ve.
+        <a href="#armar-busqueda" class="inline-link">Armá primero tu aviso</a>
+        y pegá el mismo texto en cada canal.
+      </p>
+
+      <div class="risk-legend mb-6">
+        <span class="risk-legend-title">Cómo leer el riesgo</span>
+        <div v-for="level in riskLevels" :key="level" class="risk-legend-item">
+          <VChip :color="riskMeta(level).color" size="x-small" variant="flat" label>
+            <VIcon start size="13">{{ riskMeta(level).icon }}</VIcon>
+            {{ riskMeta(level).short }}
+          </VChip>
+          <span>{{ riskMeta(level).legend }}</span>
+        </div>
+      </div>
+
+      <VAlert type="error" variant="tonal" density="comfortable" class="mb-8" border="start">
+        <strong>Regla que no cambia según el canal:</strong> los grupos abiertos concentran estafas.
+        Difundí tu búsqueda donde quieras, pero nunca envíes seña, reserva ni depósito antes de ver
+        el lugar en persona y confirmar quién alquila.
+        <a href="#estafas-title" class="inline-link on-error">Mirá las señales para frenar</a>.
+      </VAlert>
+
+      <div v-for="group in cardGroups" :key="group.meta.id" class="channel-block mb-8">
+        <h3 class="channel-block-title">
+          <VIcon :icon="group.meta.icon" size="20" color="primary" start />
+          {{ group.meta.title }}
+        </h3>
+        <p class="channel-block-intro">{{ group.meta.intro }}</p>
+        <VRow>
+          <VCol v-for="ch in group.channels" :key="ch.url" cols="12" sm="6" md="4">
+            <VCard
+              :href="ch.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="channel-card pa-4 h-100"
+              variant="flat"
+              hover
+            >
+              <div class="d-flex align-center justify-space-between ga-2 mb-1">
+                <span class="channel-kind">{{ kindLabel(ch.kind) }}</span>
+                <VChip :color="riskMeta(ch.risk).color" size="x-small" variant="flat" label>
+                  <VIcon start size="13">{{ riskMeta(ch.risk).icon }}</VIcon>
+                  {{ riskMeta(ch.risk).short }}
+                </VChip>
+              </div>
+              <h4 class="channel-name">
+                {{ ch.name }}
+                <VIcon size="14" class="channel-ext">mdi-open-in-new</VIcon>
+              </h4>
+              <div class="channel-chips">
+                <VChip size="x-small" variant="tonal">{{ ch.region }}</VChip>
+                <VChip size="x-small" variant="tonal" color="primary">
+                  {{ audienceLabel(ch.audience) }}
+                </VChip>
+              </div>
+              <p class="channel-note">{{ ch.note }}</p>
+            </VCard>
+          </VCol>
+        </VRow>
+      </div>
+
+      <div class="channel-block mb-8">
+        <h3 class="channel-block-title">
+          <VIcon icon="mdi-facebook" size="20" color="primary" start />
+          Grupos de Facebook por zona
+        </h3>
+        <p class="channel-block-intro">
+          El canal con más volumen y la mejor cobertura del interior, pero también el de más
+          estafas. Elegí tu departamento; casi todos son grupos abiertos, así que la regla anterior
+          aplica sin excepción.
+        </p>
+        <VExpansionPanels variant="accordion" class="region-panels">
+          <VExpansionPanel v-for="region in fbByRegion" :key="region.region.id" eager>
+            <VExpansionPanelTitle>
+              <VIcon :icon="region.region.icon" size="18" color="primary" start />
+              <strong>{{ region.region.title }}</strong>
+              <VChip size="x-small" variant="tonal" class="ml-2">{{
+                region.channels.length
+              }}</VChip>
+            </VExpansionPanelTitle>
+            <VExpansionPanelText>
+              <VRow>
+                <VCol v-for="ch in region.channels" :key="ch.url" cols="12" sm="6">
+                  <VCard
+                    :href="ch.url"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="channel-card pa-4 h-100"
+                    variant="flat"
+                    hover
+                  >
+                    <div class="d-flex align-center justify-space-between ga-2 mb-1">
+                      <span class="channel-kind">{{ kindLabel(ch.kind) }}</span>
+                      <VChip :color="riskMeta(ch.risk).color" size="x-small" variant="flat" label>
+                        <VIcon start size="13">{{ riskMeta(ch.risk).icon }}</VIcon>
+                        {{ riskMeta(ch.risk).short }}
+                      </VChip>
+                    </div>
+                    <h4 class="channel-name">
+                      {{ ch.name }}
+                      <VIcon size="14" class="channel-ext">mdi-open-in-new</VIcon>
+                    </h4>
+                    <div class="channel-chips">
+                      <VChip size="x-small" variant="tonal">{{ ch.region }}</VChip>
+                      <VChip size="x-small" variant="tonal" color="primary">
+                        {{ audienceLabel(ch.audience) }}
+                      </VChip>
+                    </div>
+                    <p class="channel-note">{{ ch.note }}</p>
+                  </VCard>
+                </VCol>
+              </VRow>
+            </VExpansionPanelText>
+          </VExpansionPanel>
+        </VExpansionPanels>
+      </div>
+
+      <VAlert type="info" variant="tonal" density="comfortable" icon="mdi-message-alert-outline">
+        <strong>{{ messagingNote.title }}.</strong> {{ messagingNote.body }}
+      </VAlert>
+
+      <p class="text-caption text-medium-emphasis mt-4 mb-0">
+        Canales verificados el {{ communitiesReviewedLabel }}. Los portales grandes (InfoCasas,
+        Mercado Libre) están arriba, en el Paso 2. Si un grupo cambió de nombre o cerró, usá las
+        búsquedas en vivo para encontrar el vigente.
+      </p>
+    </section>
+
     <section class="mb-10" aria-labelledby="presupuesto-title">
       <p class="step-kicker">Paso 3</p>
       <h2 id="presupuesto-title" class="section-heading mb-2">
@@ -507,6 +644,19 @@ import {
   buildRentalSearchPost,
 } from '~/utils/rentGuide'
 import { RENT_FAQ, rentFaqByCategory } from '~/utils/rentFaq'
+import {
+  AUDIENCE_LABEL,
+  CHANNEL_GROUPS,
+  KIND_LABEL,
+  RENT_COMMUNITIES_LAST_REVIEWED,
+  RENT_COMMUNITIES_MESSAGING_NOTE,
+  RISK_META,
+  channelsByGroup,
+  facebookGroupsByRegion,
+  type ChannelAudience,
+  type ChannelKind,
+  type ChannelRisk,
+} from '~/utils/rentCommunities'
 
 const localePath = useLocalePath()
 const faqGroups = rentFaqByCategory()
@@ -517,6 +667,17 @@ const visitChecklist = VISIT_CHECKLIST
 const contractChecklist = CONTRACT_CHECKLIST
 const redFlags = RENT_RED_FLAGS
 const sources = RENT_GUIDE_SOURCES
+
+const riskLevels: ChannelRisk[] = ['bajo', 'medio', 'alto']
+const cardGroups = CHANNEL_GROUPS.filter(g => g.id !== 'facebook').map(meta => ({
+  meta,
+  channels: channelsByGroup(meta.id),
+}))
+const fbByRegion = facebookGroupsByRegion()
+const messagingNote = RENT_COMMUNITIES_MESSAGING_NOTE
+const riskMeta = (r: ChannelRisk) => RISK_META[r]
+const audienceLabel = (a: ChannelAudience) => AUDIENCE_LABEL[a]
+const kindLabel = (k: ChannelKind) => KIND_LABEL[k]
 
 const searchForm = reactive({
   budget: 0,
@@ -575,6 +736,7 @@ function formatReviewedDate(iso: string) {
   })
 }
 const lastReviewedLabel = formatReviewedDate(RENT_GUIDE_LAST_REVIEWED)
+const communitiesReviewedLabel = formatReviewedDate(RENT_COMMUNITIES_LAST_REVIEWED)
 
 const canonicalUrl = 'https://cambio-uruguay.com/alquilar-en-uruguay'
 const title = 'Cómo alquilar en Uruguay: guía definitiva y ruta urgente (2026)'
@@ -917,6 +1079,104 @@ useHead(() => ({
 }
 .sources-list span {
   color: rgba(var(--v-theme-on-surface), 0.62);
+}
+.inline-link {
+  color: rgb(var(--v-theme-primary));
+  font-weight: 700;
+  text-decoration: underline;
+}
+.v-theme--light .inline-link {
+  color: #0d47a1;
+}
+.inline-link.on-error {
+  color: inherit;
+  text-decoration: underline;
+}
+.risk-legend {
+  align-items: center;
+  background: rgba(var(--v-theme-on-surface), 0.03);
+  border: 1px solid rgba(var(--v-border-color), 0.15);
+  border-radius: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  padding: 12px 16px;
+}
+.risk-legend-title {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(var(--v-theme-on-surface), 0.6);
+}
+.risk-legend-item {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+.risk-legend-item span {
+  color: rgba(var(--v-theme-on-surface), 0.72);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+.channel-block-title {
+  align-items: center;
+  display: flex;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  margin-bottom: 4px;
+}
+.channel-block-intro {
+  color: rgba(var(--v-theme-on-surface), 0.68);
+  font-size: 0.85rem;
+  line-height: 1.55;
+  margin-bottom: 14px;
+  max-width: 760px;
+}
+.channel-card {
+  border: 1px solid rgba(var(--v-border-color), 0.15);
+  border-radius: 14px;
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.15s ease;
+}
+.channel-card:hover {
+  border-color: rgba(var(--v-theme-primary), 0.5);
+}
+.channel-kind {
+  color: rgba(var(--v-theme-on-surface), 0.5);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.channel-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.3;
+  margin-bottom: 8px;
+}
+.channel-ext {
+  color: rgba(var(--v-theme-on-surface), 0.4);
+  vertical-align: baseline;
+}
+.channel-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.channel-note {
+  color: rgba(var(--v-theme-on-surface), 0.72);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  margin: 0;
+}
+.region-panels {
+  border: 1px solid rgba(var(--v-border-color), 0.15);
+  border-radius: 16px;
+  overflow: hidden;
 }
 @media (max-width: 900px) {
   .entry-grid {
