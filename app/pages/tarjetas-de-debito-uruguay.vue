@@ -298,7 +298,7 @@
             <span v-if="medalFor(r.rank)">{{ medalFor(r.rank) }}</span>
             <span v-else>#{{ r.rank }}</span>
           </div>
-          <div class="flex-grow-1">
+          <div class="flex-grow-1 rank-body">
             <div class="d-flex flex-wrap align-center ga-2">
               <h3 class="text-subtitle-1 font-weight-bold mb-0">{{ r.name }}</h3>
               <VChip size="x-small" variant="tonal">{{ KIND_LABELS[r.kind] }}</VChip>
@@ -348,14 +348,17 @@
             </div>
 
             <div v-if="r.signals.length" class="d-flex flex-wrap ga-2 mt-2">
-              <span
+              <VChip
                 v-for="(s, i) in r.signals"
                 :key="i"
+                size="small"
+                variant="tonal"
+                label
+                :color="signalColor(s.tone)"
                 class="signal-chip"
-                :class="`signal-chip--${s.tone}`"
               >
-                <strong>{{ s.label }}:</strong> {{ s.value }}
-              </span>
+                <strong class="mr-1">{{ s.label }}:</strong> {{ s.value }}
+              </VChip>
             </div>
 
             <VRow class="mt-1" dense>
@@ -594,6 +597,10 @@ const h2hRows = computed(() =>
     })
     .sort((a, b) => a.totalPesos - b.totalPesos)
 )
+
+function signalColor(tone: 'pos' | 'neg' | 'neutral'): string | undefined {
+  return tone === 'pos' ? 'success' : tone === 'neg' ? 'error' : undefined
+}
 
 // ── Static content ──
 const tips = [
@@ -976,7 +983,13 @@ function fmtPesos(n: number): string {
 }
 
 /* Rank card */
+/* Let the text column shrink inside the flex row so long notes/chips wrap
+   instead of forcing horizontal overflow (flex items default to min-width:auto). */
+.rank-body {
+  min-width: 0;
+}
 .rank-badge {
+  flex: 0 0 auto;
   min-width: 42px;
   height: 42px;
   border-radius: 10px;
@@ -986,6 +999,9 @@ function fmtPesos(n: number): string {
   justify-content: center;
   font-weight: 800;
   font-size: 1.1rem;
+}
+.rank-score {
+  white-space: nowrap;
 }
 .rank-score-num {
   font-size: 1.3rem;
@@ -1004,17 +1020,24 @@ function fmtPesos(n: number): string {
   margin-top: 4px;
   color: rgba(var(--v-theme-on-surface), 0.85);
 }
+.fee-line > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.fee-line :deep(.v-icon) {
+  flex: 0 0 auto;
+  margin-top: 2px;
+}
+/* Signal chips: allow the label to wrap so a long value never overflows the card. */
 .signal-chip {
-  font-size: 0.75rem;
-  padding: 2px 8px;
-  border-radius: 8px;
-  background: rgba(var(--v-theme-on-surface), 0.06);
+  height: auto;
+  min-height: 26px;
+  max-width: 100%;
 }
-.signal-chip--pos {
-  background: rgba(5, 150, 105, 0.12);
-}
-.signal-chip--neg {
-  background: rgba(220, 38, 38, 0.12);
+.signal-chip :deep(.v-chip__content) {
+  white-space: normal;
+  padding-block: 4px;
+  line-height: 1.3;
 }
 .pros,
 .cons {
