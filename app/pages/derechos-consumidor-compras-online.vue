@@ -91,7 +91,7 @@
       </p>
       <VCard variant="flat" class="letter pa-4 pa-sm-5">
         <pre class="letter-text">{{ letter }}</pre>
-        <div class="d-flex justify-end mt-3">
+        <div class="d-flex justify-end flex-wrap ga-2 mt-3">
           <VBtn
             :color="copied ? 'success' : 'primary'"
             variant="tonal"
@@ -101,6 +101,13 @@
           >
             {{ copied ? 'Copiado' : 'Copiar el reclamo' }}
           </VBtn>
+          <SendMessage
+            :text="letter"
+            :actions="letterSendActions"
+            trigger-label="Enviar el reclamo"
+            dialog-title="¿A dónde mandás el reclamo?"
+            intro="Primero reclamá al comercio. Si no responde en el plazo, escalá a Defensa del Consumidor."
+          />
         </div>
       </VCard>
     </section>
@@ -292,6 +299,8 @@ import {
   KEY_FIGURES,
   scenarioById,
 } from '~/utils/consumerRights'
+import type { SendAction } from '~/utils/messageChannels'
+import { DEFENSA_CONSUMIDOR_FORM, DEFENSA_CONSUMIDOR_PHONE } from '~/utils/officialContacts'
 
 const localePath = useLocalePath()
 
@@ -348,6 +357,37 @@ async function copyLetter() {
     copied.value = false
   }
 }
+
+// Where the reclamo goes. The letter is addressed to the SELLER (user fills the address in their
+// mail client). Defensa del Consumidor only takes reclamos through a login-gated web form or by
+// phone — never email — so those are open-the-form / call, with the text on the clipboard to paste.
+const letterSendActions = computed<SendAction[]>(() => [
+  {
+    channel: 'email',
+    label: 'Enviar por correo al comercio',
+    subject: 'Reclamo en materia de relación de consumo',
+    icon: 'mdi-email-outline',
+    color: 'primary',
+    note: 'Se abre tu correo; agregá la dirección del comercio.',
+  },
+  {
+    channel: 'link',
+    label: 'Reclamar en Defensa del Consumidor',
+    openUrl: DEFENSA_CONSUMIDOR_FORM,
+    icon: 'mdi-gavel',
+    color: 'deep-purple',
+    copyFirst: true,
+    note: 'Trámite gratuito (requiere usuario gub.uy). Pegá el reclamo en el formulario.',
+  },
+  {
+    channel: 'link',
+    label: `Llamar a Defensa del Consumidor (${DEFENSA_CONSUMIDOR_PHONE})`,
+    openUrl: `tel:${DEFENSA_CONSUMIDOR_PHONE.replace(/\s/g, '')}`,
+    icon: 'mdi-phone',
+    color: 'green-darken-1',
+    note: 'Línea gratuita, lunes a viernes de 9:30 a 16 h.',
+  },
+])
 
 const canonicalUrl = 'https://cambio-uruguay.com/derechos-consumidor-compras-online'
 

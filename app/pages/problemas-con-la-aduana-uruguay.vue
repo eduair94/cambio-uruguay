@@ -361,7 +361,7 @@
             label="Tu reclamo"
           />
 
-          <div class="d-flex justify-end mt-2">
+          <div class="d-flex justify-end flex-wrap ga-2 mt-2">
             <VBtn
               :color="claimCopied ? 'success' : 'primary'"
               variant="tonal"
@@ -372,6 +372,14 @@
             >
               {{ claimCopied ? 'Copiado' : 'Copiar el reclamo' }}
             </VBtn>
+            <SendMessage
+              v-if="claimText && claimSendActions.length"
+              :text="claimText"
+              :actions="claimSendActions"
+              trigger-label="Presentar el reclamo"
+              :dialog-title="claimSendTitle"
+              intro="Los organismos no aceptan reclamos pre-cargados: te copiamos el texto para que lo pegues o lo lleves impreso."
+            />
           </div>
         </template>
 
@@ -671,6 +679,15 @@ import {
   type FranchiseStatus,
   type PublicAduanaPayload,
 } from '~/utils/aduanaTools'
+import type { SendAction } from '~/utils/messageChannels'
+import {
+  DEFENSA_CONSUMIDOR_FORM,
+  DEFENSA_CONSUMIDOR_PHONE,
+  DNA_EMAIL,
+  DNA_RETENIDOS_PORTAL,
+  URSEC_EMAIL,
+  URSEC_POSTAL_FORM,
+} from '~/utils/officialContacts'
 
 const localePath = useLocalePath()
 
@@ -887,6 +904,111 @@ async function copyClaimText() {
     claimCopied.value = false
   }
 }
+
+// Where the claim is presented depends on the selected problem's `claimBody`. Every authority here
+// takes the claim in person or through its own (login-gated) web form — none can be prefilled — so
+// each option copies the text first (see the dialog intro). The DNA and a private courier also
+// accept a written email backup. Verified contacts live in officialContacts.ts.
+const claimProblem = computed<AduanaProblem | null>(
+  () => claimableProblems.value.find(p => p.id === claimProblemId.value) ?? null
+)
+const claimBody = computed(() => claimProblem.value?.claimBody ?? null)
+const trackingForSubject = computed(() => claimTracking.value.trim() || '[guía]')
+
+const claimSendTitle = computed(() => {
+  switch (claimBody.value) {
+    case 'dna':
+      return 'Presentar ante la Aduana'
+    case 'courier':
+      return 'Presentar ante el courier'
+    case 'ursec':
+      return 'Presentar ante URSEC'
+    case 'defensa-consumidor':
+      return 'Presentar ante Defensa del Consumidor'
+    default:
+      return 'Presentar el reclamo'
+  }
+})
+
+const claimSendActions = computed<SendAction[]>(() => {
+  const t = trackingForSubject.value
+  switch (claimBody.value) {
+    case 'dna':
+      return [
+        {
+          channel: 'email',
+          label: 'Enviar por correo a la Aduana',
+          to: DNA_EMAIL,
+          subject: `Envío postal internacional — guía ${t}`,
+          icon: 'mdi-email-outline',
+          color: 'primary',
+          note: 'Respaldo escrito. Un paquete retenido se destraba en persona con cita, no por correo.',
+        },
+        {
+          channel: 'link',
+          label: 'Ver «Envíos retenidos» y pedir cita',
+          openUrl: DNA_RETENIDOS_PORTAL,
+          icon: 'mdi-calendar-clock',
+          color: 'blue-darken-1',
+          note: 'Página oficial con los datos para agendar la cita presencial.',
+        },
+      ]
+    case 'courier':
+      return [
+        {
+          channel: 'email',
+          label: 'Enviar por correo a tu courier',
+          subject: `Reclamación — envío ${t}`,
+          icon: 'mdi-email-outline',
+          color: 'primary',
+          note: 'Se abre tu correo; agregá la casilla de reclamos de tu courier (DHL, UPS, Correo…).',
+        },
+      ]
+    case 'ursec':
+      return [
+        {
+          channel: 'link',
+          label: 'Reclamar en URSEC (formulario)',
+          openUrl: URSEC_POSTAL_FORM,
+          icon: 'mdi-gavel',
+          color: 'deep-purple',
+          copyFirst: true,
+          note: 'El reclamo formal es el formulario en línea. Pegá el texto ahí.',
+        },
+        {
+          channel: 'email',
+          label: 'Enviar a URSEC (mesa de entrada)',
+          to: URSEC_EMAIL,
+          subject: `Reclamo servicio postal — envío ${t}`,
+          icon: 'mdi-email-outline',
+          color: 'primary',
+          note: 'Respaldo; el canal formal es el formulario.',
+        },
+      ]
+    case 'defensa-consumidor':
+      return [
+        {
+          channel: 'link',
+          label: 'Reclamar en Defensa del Consumidor',
+          openUrl: DEFENSA_CONSUMIDOR_FORM,
+          icon: 'mdi-gavel',
+          color: 'deep-purple',
+          copyFirst: true,
+          note: 'Trámite gratuito (requiere usuario gub.uy). Pegá el reclamo.',
+        },
+        {
+          channel: 'link',
+          label: `Llamar al ${DEFENSA_CONSUMIDOR_PHONE}`,
+          openUrl: `tel:${DEFENSA_CONSUMIDOR_PHONE.replace(/\s/g, '')}`,
+          icon: 'mdi-phone',
+          color: 'green-darken-1',
+          note: 'Defensa del Consumidor, lunes a viernes de 9:30 a 16 h.',
+        },
+      ]
+    default:
+      return []
+  }
+})
 
 /** Lets the diagnosis view and the per-problem "Qué hacer" block jump straight into the generator. */
 function useProblemForClaim(id: BucketId) {

@@ -97,7 +97,7 @@
       </p>
       <VCard variant="flat" class="letter pa-4 pa-sm-5">
         <pre class="letter-text">{{ letter }}</pre>
-        <div class="d-flex justify-end mt-3">
+        <div class="d-flex justify-end flex-wrap ga-2 mt-3">
           <VBtn
             :color="copied ? 'success' : 'primary'"
             variant="tonal"
@@ -107,6 +107,13 @@
           >
             {{ copied ? 'Copiado' : 'Copiar el reclamo' }}
           </VBtn>
+          <SendMessage
+            :text="letter"
+            :actions="letterSendActions"
+            trigger-label="Presentar el reclamo"
+            dialog-title="¿A dónde presentás el reclamo?"
+            intro="Primero reclamá a tu banco o billetera y exigí constancia. Si no responde, escalá al BCU o a Defensa del Consumidor."
+          />
         </div>
       </VCard>
     </section>
@@ -288,6 +295,12 @@ import {
   type Certainty,
   type WhoPays,
 } from '~/utils/fraudRights'
+import type { SendAction } from '~/utils/messageChannels'
+import {
+  BCU_DENUNCIA_FORM,
+  DEFENSA_CONSUMIDOR_FORM,
+  DEFENSA_CONSUMIDOR_PHONE,
+} from '~/utils/officialContacts'
 
 const activeId = ref(FRAUD_SCENARIOS[0]!.id)
 const active = computed(() => scenarioById(activeId.value))
@@ -390,6 +403,39 @@ async function copyLetter() {
     copied.value = false
   }
 }
+
+// Where the reclamo goes. The letter is addressed to the reader's OWN bank/wallet (the emisor) —
+// user-supplied, so the email opens with the body and the reader fills the address. The BCU and
+// Defensa del Consumidor take denuncias only through login-gated web forms (never email), so those
+// escalations open the form with the text on the clipboard. Verified links in officialContacts.ts.
+const letterSendActions = computed<SendAction[]>(() => [
+  {
+    channel: 'email',
+    label: 'Enviar por correo a tu banco / billetera',
+    subject: 'Reclamo por operaciones desconocidas',
+    icon: 'mdi-email-outline',
+    color: 'primary',
+    note: 'Se abre tu correo; agregá la casilla de tu institución. Pedí siempre constancia con fecha y hora.',
+  },
+  {
+    channel: 'link',
+    label: 'Denunciar ante el BCU',
+    openUrl: BCU_DENUNCIA_FORM,
+    icon: 'mdi-bank-outline',
+    color: 'indigo',
+    copyFirst: true,
+    note: 'Denuncia de usuario financiero (formulario en línea). El BCU supervisa, pero no ordena la devolución.',
+  },
+  {
+    channel: 'link',
+    label: 'Reclamar en Defensa del Consumidor',
+    openUrl: DEFENSA_CONSUMIDOR_FORM,
+    icon: 'mdi-gavel',
+    color: 'deep-purple',
+    copyFirst: true,
+    note: `Trámite gratuito (usuario gub.uy) o al ${DEFENSA_CONSUMIDOR_PHONE}. Pegá el reclamo en el formulario.`,
+  },
+])
 
 const sources = [
   {

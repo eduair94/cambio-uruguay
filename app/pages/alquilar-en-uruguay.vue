@@ -157,6 +157,13 @@
           <VBtn color="primary" prepend-icon="mdi-content-copy" @click="copyPost">
             Copiar aviso
           </VBtn>
+          <SendMessage
+            :text="generatedPost"
+            :actions="postSendActions"
+            trigger-label="Publicar el aviso"
+            dialog-title="¿Dónde publicás tu búsqueda?"
+            intro="Reddit es el canal más seguro (todo perfil tiene historial). Para grupos de Facebook, copiá el aviso y publicalo en los de abajo."
+          />
           <span class="text-body-2" role="status" aria-live="polite">{{ copyStatus }}</span>
         </div>
       </VCard>
@@ -632,6 +639,7 @@
 <script setup lang="ts">
 import { COST_MODEL } from '~/utils/costOfLiving'
 import { formatUYU } from '~/utils/format'
+import { redditSubmit, type SendAction } from '~/utils/messageChannels'
 import {
   CONTRACT_CHECKLIST,
   GUARANTEE_OPTIONS,
@@ -696,6 +704,38 @@ const accommodationOptions = [
 ]
 const generatedPost = computed(() => buildRentalSearchPost(searchForm))
 const copyStatus = ref('')
+
+// Where a "busco alquiler" post can be published, safest-first. Reddit's submit page pre-fills the
+// post; WhatsApp/Telegram forward the text; Facebook groups can't be pre-filled, so those are the
+// curated accordion below (copy-then-paste).
+const postSendActions = computed<SendAction[]>(() => [
+  {
+    channel: 'link',
+    label: 'Publicar en r/uruguay (Reddit)',
+    openUrl: redditSubmit('uruguay', 'Busco alquiler en Uruguay', generatedPost.value),
+    icon: 'mdi-reddit',
+    color: '#FF4500',
+    copyFirst: true,
+    note: 'El canal más seguro. Se abre el editor de Reddit con el título; pegá el aviso en el cuerpo (te lo copiamos).',
+  },
+  {
+    channel: 'link',
+    label: 'Publicar en r/monte_video',
+    openUrl: redditSubmit('monte_video', 'Busco alquiler en Uruguay', generatedPost.value),
+    icon: 'mdi-reddit',
+    color: '#FF4500',
+    copyFirst: true,
+    note: 'Montevideo. Pegá el aviso en el cuerpo del post.',
+  },
+  {
+    channel: 'whatsapp',
+    label: 'Enviar por WhatsApp',
+    icon: 'mdi-whatsapp',
+    color: '#25D366',
+    note: 'Reenvialo a tus contactos o a un grupo del que ya seas parte.',
+  },
+  { channel: 'telegram', label: 'Enviar por Telegram', icon: '$telegram', color: '#229ED9' },
+])
 
 async function copyPost() {
   try {
