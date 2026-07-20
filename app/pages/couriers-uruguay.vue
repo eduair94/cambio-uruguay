@@ -180,6 +180,29 @@
       </div>
     </VCard>
 
+    <!-- Correo Uruguayo: the postal channel most guides forget -->
+    <VCard variant="flat" class="couriers-section mt-6 pa-5">
+      <h2 class="text-subtitle-1 font-weight-bold mb-2">¿Y si llega por el Correo Uruguayo?</h2>
+      <p class="text-body-2 text-grey-lighten-1 mb-3">
+        No todo llega por un courier privado. El envío estándar o gratis de AliExpress, Shein, Temu
+        y el correo común de Etsy o eBay entra como <strong>envío postal</strong> y te lo entrega el
+        Correo Uruguayo. Puede ser <strong>exprés</strong> (los EMS y Casilla Mía, con seguimiento
+        que empieza con E) o <strong>no exprés</strong> (las modalidades PP y SIMPLE, seguimiento de
+        dos letras + nueve números + dos letras, tipo RJ284204981CN). Ahí la declaración la hacés
+        vos en la web del Correo, no la gestiona un courier.
+      </p>
+      <p class="text-body-2 text-grey-lighten-1 mb-0">
+        Buena noticia: desde mayo de 2026 <strong>da igual el canal</strong> para el impuesto. El
+        Decreto 50/026 regula por igual a los operadores postales públicos y privados, así que el
+        tope anual de US$ 800 y el régimen del 60% son los mismos para el Correo y para cualquier
+        courier. Cuidado, eso sí:
+        <NuxtLink :to="localePath('/franquicia-aduana-uruguay')" class="couriers-link">
+          la página del Correo para declarar todavía publica un tope viejo de US$ 50 por envío no
+          exprés </NuxtLink
+        >, derogado desde el 1.º de mayo de 2026.
+      </p>
+    </VCard>
+
     <!-- Other options -->
     <VCard variant="flat" class="couriers-section mt-6 pa-5">
       <h2 class="text-subtitle-1 font-weight-bold mb-3">Otras opciones</h2>
@@ -191,6 +214,25 @@
           — {{ o.note }}
         </li>
       </ul>
+    </VCard>
+
+    <!-- Seguí leyendo: this page used to dead-end into just the calculator -->
+    <VCard variant="flat" class="couriers-section mt-6 pa-5">
+      <h2 class="text-subtitle-1 font-weight-bold mb-3">Seguí leyendo</h2>
+      <div class="d-flex flex-wrap ga-2">
+        <VChip
+          v-for="link in relatedPages"
+          :key="link.to"
+          :to="localePath(link.to)"
+          color="primary"
+          variant="tonal"
+          size="small"
+          link
+        >
+          <VIcon start size="small">{{ link.icon }}</VIcon>
+          {{ link.label }}
+        </VChip>
+      </div>
     </VCard>
 
     <!-- Disclaimer -->
@@ -290,6 +332,36 @@ function hostOf(url: string): string {
     .replace(/\/.*$/, '')
 }
 
+// Internal destinations a courier reader needs next — this page used to link out to nothing but
+// the calculator, a near dead-end at the exact moment someone is about to buy.
+const relatedPages = [
+  {
+    label: 'Calculadora de impuestos de importación',
+    to: '/herramientas/calculadora-impuestos-importacion',
+    icon: 'mdi-calculator',
+  },
+  {
+    label: 'Carrito de importación',
+    to: '/herramientas/carrito-importacion',
+    icon: 'mdi-cart-outline',
+  },
+  {
+    label: 'Franquicia y aduana: ¿pagás IVA?',
+    to: '/franquicia-aduana-uruguay',
+    icon: 'mdi-scale-balance',
+  },
+  {
+    label: 'Problemas con la aduana',
+    to: '/problemas-con-la-aduana-uruguay',
+    icon: 'mdi-package-variant-closed-remove',
+  },
+  {
+    label: 'Cómo importar de AliExpress',
+    to: '/guias/importar-de-aliexpress-a-uruguay',
+    icon: 'mdi-cart-arrow-down',
+  },
+]
+
 // Broader landscape, linked but not part of the per-kg estimator.
 const otherOptions = [
   {
@@ -346,6 +418,14 @@ const sources = [
   { label: 'Casilla Mía — Tarifas', url: 'https://www.casillamia.uy/Tarifas' },
   { label: 'Punto Mío', url: 'https://www.puntomio.uy' },
   { label: 'Correo Uruguayo — Tarifas', url: 'https://www.correo.com.uy/tarifas' },
+  {
+    label: 'Correo Uruguayo — Paquetes internacionales (pequeño paquete, EMS, encomienda)',
+    url: 'https://www.correo.com.uy/paquetes-internacionales',
+  },
+  {
+    label: 'Correo Uruguayo — Cómo declarar su compra u obsequio (envíos no exprés y EMS)',
+    url: 'https://www.correo.com.uy/como-declarar-su-compra-u-obsequio',
+  },
 ]
 
 const canonicalUrl = 'https://cambio-uruguay.com/couriers-uruguay'

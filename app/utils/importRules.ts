@@ -91,6 +91,58 @@ export const DEFAULT_REGIME_RULES: RegimeRules = {
   sellerRegistryEnforcedFrom: SELLER_REGISTRY_ENFORCED_FROM,
 }
 
+/**
+ * How the shipment physically arrives. The decree does not distinguish modalities — but the
+ * OPERATOR does, and the operator is who decides at the counter.
+ *
+ *  - `courier`        private door-to-door (DAC, UPS, FedEx, Gripper, Casilla Mía courier, Punto
+ *                     Mío, Tiendamia…). The USD 800/3-shipment annual franquicia is the only ceiling.
+ *  - `postal-ems`     Correo Uruguayo EMS (Express Mail Service). Tracking starts with E.
+ *  - `postal-simple`  Correo Uruguayo NO exprés — the "PP, SIMPLE" modalities. This is where
+ *                     AliExpress/Shein/Temu "envío gratis" and most Etsy/eBay standard shipping
+ *                     land, and it is the channel our guides used to ignore entirely.
+ */
+export type ArrivalChannel = 'courier' | 'postal-ems' | 'postal-simple'
+
+/**
+ * The per-shipment franquicia ceilings that applied BY MODALITY until 30/04/2026 — and no longer.
+ * `null` = no per-shipment ceiling for that channel even under the old regime.
+ *
+ * They are Decreto 356/014 art. 3 ("entrega no expresa … no supere … U$S 50,00") and art. 4
+ * ("entrega expresa … no exceda los U$S 200,00"), DEROGADO by Decreto 50/026 art. 19, whose art.
+ * 18 sets the full entry into force at 1/5/2026. The MEF's own comparison table files
+ * "US$ 200 (Expreso) / US$ 50 (No expreso)" under "Régimen Actual (Hasta 30/04/2026)" and
+ * replaces it with "Tope anual acumulado de US$ 800"; its FAQ adds "No es un tope por compra".
+ *
+ * WHY THEY ARE STILL HERE, then: two official pages keep publishing them, so readers keep hitting
+ * them and believing them —
+ *   - Correo Uruguayo, "Cómo declarar su compra u obsequio" (paso 3), still says franquicia only
+ *     up to US$ 50 non-express / US$ 200 EMS, contradicting its own paso 4 (self-manage up to
+ *     US$ 800), its own current FAQ, and the decree. https://www.correo.com.uy/como-declarar-su-compra-u-obsequio
+ *   - DNA's "Encomiendas Postales" glossary (21/10/2025) repeats the same pair plus the US$ 10
+ *     minimum.
+ * The old regime really did bite: every reported case of "tenía franquicia y me cobraron igual"
+ * we found (r/uruguay, oct-2025 — US$ 118 de AliExpress, US$ 75 cobrados; ene-2026 — Etsy Brasil)
+ * predates 1/5/2026. We surface the discrepancy and tell the reader what to do if the Correo form
+ * still refuses; we do NOT price a repealed rule. Same discipline as the note at the top of this
+ * file about the DNA page.
+ */
+export const LEGACY_CHANNEL_FRANCHISE_CAP_USD: Record<ArrivalChannel, number | null> = {
+  courier: null,
+  'postal-ems': 200,
+  'postal-simple': 50,
+}
+
+/** Last day the modality caps above were in force (Decreto 50/026 arts. 18 y 19). */
+export const LEGACY_CHANNEL_CAPS_UNTIL = '2026-04-30'
+
+/** Human label per channel, used in the reasons the resolver hands back to the page. */
+export const CHANNEL_LABEL: Record<ArrivalChannel, string> = {
+  courier: 'courier privado',
+  'postal-ems': 'EMS del Correo (exprés)',
+  'postal-simple': 'correo no exprés (PP, SIMPLE)',
+}
+
 /** Which regime a shipment falls under. They are ALTERNATIVE, never combined. */
 export type CourierRegime = 'franquicia' | 'simplificado' | 'general'
 
@@ -112,6 +164,11 @@ export interface RegimeInput {
   shipmentsUsed: number
   /** Whether the reader asked to use their franchise on this shipment. */
   useFranchise: boolean
+  /**
+   * How the parcel arrives. Defaults to `'courier'` — the historical behaviour of this module,
+   * so every existing caller keeps its result until it opts in.
+   */
+  channel?: ArrivalChannel
   /** Is the invoice issuer registered with the DNA? Only consulted once enforcement starts. */
   sellerRegistered?: boolean
   /** Resolution date; defaults to today. Injectable so the rules are testable. */
@@ -126,6 +183,13 @@ export interface RegimeDecision {
   reasons: string[]
   /** Whether the seller-registration condition is being enforced on `today`. */
   registryEnforced: boolean
+  /**
+   * Present when the parcel arrives by post and would have BLOWN the repealed modality cap
+   * (see {@link LEGACY_CHANNEL_FRANCHISE_CAP_USD}). The regime above is what the norm says; this
+   * flag lets the page warn that Correo's declaration page still publishes the old ceiling, so
+   * the form may refuse the franquicia and charge the 60% anyway.
+   */
+  legacyChannelCap?: { channel: ArrivalChannel; capUsd: number }
 }
 
 /** YYYY-MM-DD in UTC — date-only strings compare correctly with `<=`. */
@@ -153,9 +217,15 @@ export function isSellerRegistryEnforced(
  *    al régimen de prestación única", art. 3, and prestación única applies to the invoice
  *    value as a whole, art. 2). Verified 2026-07-12 — do not re-attach art. 15 to this rule;
  *  - the franchise ceiling is USD 800 ACCUMULATED PER YEAR across at most 3 shipments (Decreto
- *    50/026 art. 3 y art. 4 lit. c) — there is no per-shipment cap;
+ *    50/026 art. 3 y art. 4 lit. c) — the NORM sets no per-shipment cap;
  *  - above USD 800 a shipment fits neither regime and goes to the general one (Decreto 50/026
  *    arts. 2 y 3), which this calculator does not attempt to price.
+ *
+ * The modality (express vs non-express) has NO fiscal consequence since 1/5/2026 — Decreto 50/026
+ * art. 1 covers "operadores postales, públicos o privados" alike, one regime and one franquicia
+ * counter for Correo and for a private courier. Passing `channel` never changes the regime; it
+ * only raises {@link RegimeDecision.legacyChannelCap} so the page can warn the reader that the
+ * Correo form still publishes the repealed per-modality ceiling.
  */
 export function resolveRegime(
   input: RegimeInput,
@@ -165,6 +235,14 @@ export function resolveRegime(
   const registryEnforced = isSellerRegistryEnforced(today, rules)
   const value = Math.max(input.valueUsd || 0, 0)
   const reasons: string[] = []
+
+  // Heads-up, never a rule: the modality cap the Correo form may still apply (repealed 30/4/2026).
+  const channel = input.channel ?? 'courier'
+  const legacyCap = LEGACY_CHANNEL_FRANCHISE_CAP_USD[channel]
+  const legacyChannelCap =
+    input.useFranchise && legacyCap !== null && value > legacyCap
+      ? { channel, capUsd: legacyCap }
+      : undefined
 
   // Neither regime reaches past USD 800 (Decreto arts. 2 y 3): it is a formal import.
   if (value > rules.franchiseAnnualUsd) {
@@ -191,7 +269,7 @@ export function resolveRegime(
     reasons.push(
       `Paga la prestación única: ${rules.simplifiedRatePct}% del valor, mínimo US$ ${rules.simplifiedMinUsd}.`
     )
-    return { regime: 'simplificado', ivaExempt: false, reasons, registryEnforced }
+    return { regime: 'simplificado', ivaExempt: false, reasons, registryEnforced, legacyChannelCap }
   }
 
   // Franchise: exempt from aranceles, but IVA still applies — except the TIFA carve-out.
@@ -212,5 +290,5 @@ export function resolveRegime(
   }
   if (ivaExempt) reasons.push(`Sin IVA: compra en EE.UU. de hasta US$ ${rules.usaIvaExemptionUsd}.`)
 
-  return { regime: 'franquicia', ivaExempt, reasons, registryEnforced }
+  return { regime: 'franquicia', ivaExempt, reasons, registryEnforced, legacyChannelCap }
 }

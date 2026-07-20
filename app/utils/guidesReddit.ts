@@ -2549,11 +2549,25 @@ export const redditGuides: readonly Guide[] = [
     description:
       'Cómo importar de AliExpress a Uruguay por courier: la franquicia anual de USD 800, el régimen simplificado del 60%, por qué la exoneración de IVA de USD 200 NO aplica a China y cómo estimar el costo real de tu compra internacional.',
     tag: 'IMPORTACIÓN',
-    updatedAt: '2026-07-18',
+    updatedAt: '2026-07-20',
     sections: [
       {
-        heading: 'AliExpress entra por el régimen de courier',
-        body: 'Cuando comprás en AliExpress y te lo mandan "puerta a puerta", la compra entra a Uruguay por el régimen de envíos postales internacionales (courier), el mismo camino de cualquier compra personal sin fines comerciales. Ese régimen se reescribió en 2026 (Ley 20.446, Decreto 50/026 y la Resolución General DNA 09/2026), así que muchas "reglas" que todavía circulan en foros quedaron viejas. La idea central es simple: para cada envío elegís entre usar tu franquicia anual o pagar el régimen simplificado, y son caminos alternativos, nunca se combinan en un mismo paquete.',
+        heading: 'AliExpress entra por el régimen de envíos postales',
+        body: 'Cuando comprás en AliExpress y te lo mandan "puerta a puerta", la compra entra a Uruguay por el régimen de envíos postales internacionales, el mismo camino de cualquier compra personal sin fines comerciales. Ese régimen se reescribió en 2026 (Ley 20.446, Decreto 50/026 y la Resolución General DNA 09/2026), así que muchas "reglas" que todavía circulan en foros quedaron viejas. La idea central es simple: para cada envío elegís entre usar tu franquicia anual o pagar el régimen simplificado, y son caminos alternativos, nunca se combinan en un mismo paquete.',
+      },
+      {
+        heading: 'Tu paquete llega por correo no exprés (y eso ya no cambia el impuesto)',
+        body: 'El envío estándar o gratis de AliExpress no viaja por un courier privado: llega como envío postal no exprés y te lo entrega el Correo Uruguayo. Lo reconocés por el número de seguimiento, de dos letras + nueve números + dos letras, tipo RJ284204981CN; los exprés son solo los EMS y empiezan con E, como EC123456789US. Hasta el 30 de abril de 2026 esa diferencia era carísima: la franquicia se cortaba en USD 50 por envío en el correo no exprés y en USD 200 en el exprés (artículos 3 y 4 del Decreto 356/014), y por eso se llenó de casos de gente con franquicia disponible a la que igual le cobraron el 60%. Ese decreto quedó derogado por el artículo 19 del Decreto 50/026: desde el 1.º de mayo de 2026 hay un solo régimen para el Correo y para los couriers, con tope anual de USD 800 y sin tope por envío. La tabla oficial del MEF ubica esos USD 50 y USD 200 en la columna "hasta 30/04/2026".',
+        links: [
+          { label: 'Franquicia y aduana: los topes de hoy', to: '/franquicia-aduana-uruguay' },
+        ],
+      },
+      {
+        heading: 'Ojo con la página del Correo: todavía publica el tope viejo',
+        body: 'Acá está la trampa que sigue viva. La página del Correo Uruguayo donde declarás tu compra ("Cómo declarar su compra u obsequio") dice en su paso 3 que si el envío llega por correo no exprés solo podés ampararte en la franquicia hasta USD 50, y hasta USD 200 si es EMS. Dos párrafos después, en el paso 4, dice que podés gestionar vos el pago siempre que la mercadería no supere los USD 800: se contradice sola. La página de "Encomiendas Postales" de la Aduana, de octubre de 2025, repite lo mismo y agrega un mínimo de USD 10 que también quedó viejo. Si al declarar el sistema no te ofrece la franquicia por superar los USD 50, no lo pagues resignado: reclamá citando el Decreto 50/026 y la guía del MEF del 24 de abril de 2026, ante la Aduana (info@aduanas.gub.uy) y ante el Correo (0800 2108 o WhatsApp 098 01 2108).',
+        links: [
+          { label: 'Qué hacer si te retienen el paquete', to: '/problemas-con-la-aduana-uruguay' },
+        ],
       },
       {
         heading: 'La franquicia anual: USD 800, hasta 3 envíos y 20 kg',
@@ -2569,11 +2583,18 @@ export const redditGuides: readonly Guide[] = [
       },
       {
         heading: 'Qué valor cuenta para los topes (y qué no)',
-        body: 'El valor que se mira para la franquicia y para los umbrales es el total de la factura de compra: el precio del producto más cualquier concepto que el vendedor agregue en esa misma factura (por ejemplo, el envío que cobra AliExpress). El flete que te cobra el courier por separado no forma parte de ese valor de factura. Y si el envío supera los USD 800, ya no entra en franquicia ni en el régimen simplificado: pasa al régimen general (importación formal), que es otro trámite. Una advertencia útil: hay páginas viejas que hablan de un mínimo de USD 10 o de un tope de USD 200 por envío; eso era el Decreto 356/014, que fue derogado. No te guíes por esos números.',
+        body: 'El valor que se mira para la franquicia y para los umbrales es el total de la factura de compra: el precio del producto más cualquier concepto que el vendedor agregue en esa misma factura (por ejemplo, el envío que cobra AliExpress). El Correo aclara que el flete y el seguro cuentan si figuran en el comprobante de compra; el flete que te cobra un courier por separado, no. Si el envío supera los USD 800 o los 20 kg, ya no entra en franquicia ni en el régimen simplificado: pasa al régimen general y ahí sí necesitás despachante. Una advertencia útil: hay páginas oficiales que todavía hablan de un mínimo de USD 10 o de un tope de USD 200 por envío; eso era el Decreto 356/014, derogado. El único USD 200 que sigue vigente es otra cosa: el techo de la exoneración de IVA para compras de origen estadounidense.',
       },
       {
         heading: 'Estimá el costo antes de pagar',
         body: 'Antes de confirmar el carrito, hacé la cuenta completa: producto + envío del vendedor + impuesto (franquicia o 60%) + flete y cargos del courier. Muchas veces una compra que parecía baratísima deja de convenir una vez cargados todos los costos, sobre todo frente a algo similar que conseguís en plaza. Para no hacerlo a mano, usá nuestra calculadora de impuestos de importación y el carrito de importación: ingresás el valor, elegís si aplicás franquicia y ves el costo total estimado. Son valores de referencia; verificá siempre las condiciones vigentes con Aduanas y con tu courier antes de comprar.',
+        links: [
+          {
+            label: 'Calculadora de impuestos de importación',
+            to: '/herramientas/calculadora-impuestos-importacion',
+          },
+          { label: 'Carrito de importación', to: '/herramientas/carrito-importacion' },
+        ],
       },
     ],
     related: [
@@ -2586,7 +2607,10 @@ export const redditGuides: readonly Guide[] = [
         label: 'Calculadora de impuestos de importación',
         to: '/herramientas/calculadora-impuestos-importacion',
       },
+      { label: 'Carrito de importación', to: '/herramientas/carrito-importacion' },
       { label: 'Couriers de Uruguay', to: '/couriers-uruguay' },
+      { label: 'Franquicia y aduana', to: '/franquicia-aduana-uruguay' },
+      { label: 'Problemas con la aduana', to: '/problemas-con-la-aduana-uruguay' },
     ],
     faqs: [
       {
@@ -2599,7 +2623,46 @@ export const redditGuides: readonly Guide[] = [
       },
       {
         q: '¿Conviene dividir la compra en varios paquetes chicos?',
-        a: 'Casi nunca. El régimen simplificado tiene un mínimo de USD 20 por envío, así que fraccionar multiplica ese piso y, además, gastás más envíos de franquicia (solo tenés 3 al año). Salvo que te acerques al tope de 20 kg o de USD 800, suele convenir juntar todo en un mismo envío. Hacé la cuenta con la calculadora antes de decidir.',
+        a: 'Casi nunca. El régimen simplificado tiene un mínimo de USD 20 por envío, así que fraccionar multiplica ese piso y, además, gastás más envíos de franquicia (solo tenés 3 al año). Y si el vendedor te manda una misma compra en varios paquetes, la Aduana exige una declaración por cada uno aunque compartan factura. Salvo que te acerques al tope de 20 kg o de USD 800, suele convenir juntar todo en un mismo envío. Hacé la cuenta con la calculadora antes de decidir.',
+      },
+      {
+        q: 'Me llegó por el Correo y no me deja usar la franquicia porque supera USD 50. ¿Es correcto?',
+        a: 'No, ya no. Ese tope de USD 50 para el correo no exprés era el artículo 3 del Decreto 356/014, derogado por el artículo 19 del Decreto 50/026 con efecto desde el 1.º de mayo de 2026. Hoy la modalidad no cambia nada: el decreto regula por igual a los operadores postales "públicos o privados", y la guía del MEF dice textualmente que el tope de USD 800 "no es un tope por compra". El problema es que la página del Correo donde declarás todavía publica el límite viejo. Si el formulario te lo niega, reclamá ante la Aduana (info@aduanas.gub.uy, 2915 0007) y ante el Correo (0800 2108) citando el Decreto 50/026 y la guía del MEF del 24 de abril de 2026. Guardá capturas: si el envío queda retenido, el reclamo se hace con la documentación en mano.',
+      },
+      {
+        q: '¿Puedo declarar mi compra de AliExpress como obsequio para no pagar?',
+        a: 'No. La exoneración de obsequio familiar existe (artículo 3 del Decreto 50/026) y exime de todo tributo, pero exige que el envío sea no comercial entre las partes, remitido y consignado por personas físicas, con mercadería en cantidades razonables para uso personal. Una compra a una tienda no encuadra, y declarar mal el valor o el origen tiene sanción propia: la Ley 20.446 (art. 632) prevé una multa del doble de los tributos que correspondían, y la reincidencia dentro de los 12 meses te deja fuera del régimen por un año. Además, en las compras te piden el medio de pago; en los obsequios no, y esa diferencia es justamente lo que la Aduana mira.',
+      },
+    ],
+    sources: [
+      {
+        label:
+          'Decreto 50/026 — régimen vigente: art. 1 (operadores públicos o privados), art. 3 (franquicia y obsequio familiar), art. 19 (deroga el 356/014)',
+        url: 'https://www.impo.com.uy/bases/decretos/50-2026',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Decreto 356/014 (texto original) — arts. 3 y 4: los viejos topes de USD 50 (no exprés) y USD 200 (exprés)',
+        url: 'https://www.impo.com.uy/bases/decretos-originales/356-2014',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Cómo declarar su compra u obsequio — formato del tracking, EMS vs no exprés y medio de pago (su paso 3 todavía publica los topes derogados)',
+        url: 'https://www.correo.com.uy/como-declarar-su-compra-u-obsequio',
+        publisher: 'Correo Uruguayo',
+      },
+      {
+        label:
+          'Guía de preguntas frecuentes del régimen de envíos postales: "No es un tope por compra"',
+        url: 'https://www.gub.uy/ministerio-economia-finanzas/comunicacion/noticias/guia-preguntas-frecuentes-sobre-regimen-envios-postales-franquicias',
+        publisher: 'MEF',
+      },
+      {
+        label: 'Ley 20.446 art. 627 — prestación única del 60%, mínimo USD 20, sin despachante',
+        url: 'https://www.impo.com.uy/bases/leyes/20446-2025/627',
+        publisher: 'IMPO',
       },
     ],
   },
@@ -2609,7 +2672,7 @@ export const redditGuides: readonly Guide[] = [
     description:
       'Cómo comprar en Amazon desde Uruguay por courier: la exoneración de IVA de USD 200 para compras de EE.UU. (todo o nada), la franquicia de USD 800, qué mira la aduana y el registro del vendedor desde octubre de 2026.',
     tag: 'IMPORTACIÓN',
-    updatedAt: '2026-07-18',
+    updatedAt: '2026-07-20',
     sections: [
       {
         heading: 'Amazon, EE.UU. y por qué el origen importa',
@@ -2633,7 +2696,14 @@ export const redditGuides: readonly Guide[] = [
       },
       {
         heading: 'Estimá el costo y desconfiá de las páginas viejas',
-        body: 'Antes de comprar, sumá todo: producto + sales tax + envío de Amazon + impuesto que corresponda + flete y cargos del courier. Nuestra calculadora de impuestos de importación y el carrito de importación te dan el costo total estimado para el régimen courier. Una recomendación honesta: no te guíes por la vieja página de "Encomiendas Postales" de Aduanas que menciona un mínimo de USD 10 y un tope de USD 200 por envío; describe el Decreto 356/014, que fue derogado, y te va a confirmar números que ya no rigen. Verificá siempre con la normativa vigente y con tu courier.',
+        links: [
+          {
+            label: 'Calculadora de impuestos de importación',
+            to: '/herramientas/calculadora-impuestos-importacion',
+          },
+          { label: 'Carrito de importación', to: '/herramientas/carrito-importacion' },
+        ],
+        body: 'Antes de comprar, sumá todo: producto + sales tax + envío de Amazon + impuesto que corresponda + flete y cargos del courier. Nuestra calculadora de impuestos de importación y el carrito de importación te dan el costo total estimado. Una recomendación honesta: hay dos páginas oficiales que te van a confirmar números que ya no rigen. La de "Encomiendas Postales" de Aduanas menciona un mínimo de USD 10 y un tope de USD 200 por envío, y la del Correo Uruguayo para declarar tu compra todavía dice que la franquicia se corta en USD 50 si el envío llega por correo no exprés y en USD 200 si es EMS. Las dos describen el Decreto 356/014, derogado por el artículo 19 del Decreto 50/026 desde el 1.º de mayo de 2026. Verificá siempre con la normativa vigente y con tu courier.',
       },
     ],
     related: [
@@ -2660,6 +2730,35 @@ export const redditGuides: readonly Guide[] = [
       {
         q: '¿Qué es lo del "vendedor registrado" desde octubre de 2026?',
         a: 'Desde el 1 de octubre de 2026, para conservar la exoneración de IVA en compras de EE.UU., el emisor de la factura (el vendedor o la plataforma) debe estar registrado ante la Aduana, con validación automática del sistema. Si no lo está, el envío pagaría IVA aunque sea de EE.UU. y esté por debajo de USD 200. La fecha ya se postergó dos veces y podría moverse otra vez, así que conviene verificar si ya rige antes de una compra importante.',
+      },
+      {
+        q: 'Si Amazon me lo manda por correo común en vez de courier, ¿cambia algo?',
+        a: 'Para el impuesto, no: desde mayo de 2026 el Decreto 50/026 regula por igual los envíos de los operadores postales "públicos o privados", así que el Correo Uruguayo y un courier privado comparten régimen, tope anual y contador de franquicia. Hay una letra chica que conviene tener en el radar igual: el texto del acuerdo con Estados Unidos (TIFA) habla de "envíos de entrega rápida" en el artículo que fija los USD 200, aunque la Aduana viene aplicando la exoneración a todo envío de origen estadounidense sin distinguir modalidad. Nadie lo discutió formalmente, pero si comprás cerca del umbral y te lo mandan por correo común, sabelo. Y cuidado con la página del Correo para declarar: todavía publica los topes por modalidad del decreto derogado.',
+      },
+    ],
+    sources: [
+      {
+        label:
+          'Decreto 50/026 — art. 1: el régimen alcanza a los operadores postales públicos o privados; art. 19: deroga el Decreto 356/014',
+        url: 'https://www.impo.com.uy/bases/decretos/50-2026',
+        publisher: 'IMPO',
+      },
+      {
+        label: 'Ley 18.761 — acuerdo TIFA, art. 7 lit. g: envíos de hasta USD 200',
+        url: 'https://www.impo.com.uy/bases/leyes-internacional/18761-2011',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Desde el 1.º de mayo rige el nuevo régimen de franquicias: la exoneración de IVA aplica por envío de hasta USD 200',
+        url: 'https://www.aduanas.gub.uy/innovaportal/v/28455/1/innova.front/desde-el-1%C2%BA-de-mayo-comienza-a-regir-el-nuevo-regimen-de-franquicias-de-envios-postales-internacionales.html',
+        publisher: 'Dirección Nacional de Aduanas',
+      },
+      {
+        label:
+          'Resolución General 21/2026 — prórroga del registro de vendedores al 1.º de octubre de 2026',
+        url: 'https://www.aduanas.gub.uy/innovaportal/file/28613/1/rg-21-2026.pdf',
+        publisher: 'Dirección Nacional de Aduanas',
       },
     ],
   },

@@ -51,6 +51,34 @@
             </VBtnToggle>
           </VCol>
 
+          <VCol cols="12">
+            <div class="text-overline text-medium-emphasis mb-2">¿Cómo llega el paquete?</div>
+            <VBtnToggle
+              v-model="channel"
+              color="primary"
+              mandatory
+              divided
+              variant="outlined"
+              class="w-100 mb-1 channel-toggle"
+            >
+              <VBtn value="courier" class="flex-grow-1">
+                <VIcon start>mdi-truck-fast-outline</VIcon>
+                Courier privado
+              </VBtn>
+              <VBtn value="postal-ems" class="flex-grow-1">
+                <VIcon start>mdi-email-fast-outline</VIcon>
+                Correo EMS <span class="d-none d-sm-inline">&nbsp;(exprés)</span>
+              </VBtn>
+              <VBtn value="postal-simple" class="flex-grow-1">
+                <VIcon start>mdi-mailbox-outline</VIcon>
+                Correo no exprés
+              </VBtn>
+            </VBtnToggle>
+            <p class="text-caption text-medium-emphasis mb-4">
+              {{ channelHint }}
+            </p>
+          </VCol>
+
           <VCol cols="12" sm="6">
             <VTextField
               v-model.number="invoiceTotal"
@@ -114,6 +142,22 @@
           </p>
         </VAlert>
 
+        <!-- The reader is entitled to the franquicia, but the Correo form may not offer it. -->
+        <VAlert
+          v-if="legacyCap"
+          type="warning"
+          variant="tonal"
+          density="comfortable"
+          class="mt-3"
+          icon="mdi-alert-outline"
+        >
+          <strong>Puede que el Correo no te ofrezca la franquicia.</strong> Su página de declaración
+          todavía dice que en {{ CHANNEL_LABEL[legacyCap.channel] }} la franquicia llega hasta US$
+          {{ legacyCap.capUsd }} por envío. Ese tope está <strong>derogado</strong> desde el 1.º de
+          mayo de 2026 (Decreto 356/014 arts. 3 y 4, derogados por el Decreto 50/026 art. 19). Si el
+          formulario te lo niega, reclamalo: no es la norma vigente.
+        </VAlert>
+
         <p class="text-caption text-medium-emphasis mt-3 mb-0">
           <VIcon size="14" class="mr-1">mdi-calculator-variant-outline</VIcon>
           ¿Querés el número final, con flete incluido?
@@ -148,6 +192,10 @@
             </div>
             <ul class="regime-list">
               <li><strong>US$ 800 por año</strong>, acumulados — no por envío.</li>
+              <li>
+                Da igual si llega por <strong>Correo</strong> (exprés o no) o por
+                <strong>courier</strong>: es un único régimen y un único contador.
+              </li>
               <li>Hasta <strong>3 envíos</strong> por año civil, 20 kg cada uno.</li>
               <li>No paga <strong>aranceles</strong>… pero <strong>sí paga IVA</strong>.</li>
               <li>
@@ -198,6 +246,104 @@
           qué hacer si tenés problemas con la Aduana </NuxtLink
         >.
       </VAlert>
+    </section>
+
+    <!-- The channel: express vs non-express, and the cap that no longer exists -->
+    <section class="mb-8">
+      <h2 class="section-heading mb-1">
+        Correo exprés, no exprés y courier: qué cambió (y qué te van a seguir diciendo mal)
+      </h2>
+      <p class="text-body-2 text-medium-emphasis mb-4">
+        Hasta el <strong>30 de abril de 2026</strong>, cuánto podías traer sin pagar dependía de
+        <em>cómo</em> llegaba el paquete: US$ 50 si venía por correo no exprés y US$ 200 si venía
+        exprés. Eso se terminó: hoy es <strong>un solo régimen</strong> para el Correo y para
+        cualquier courier privado, con un <strong>tope anual de US$ 800</strong> y sin tope por
+        envío. El problema es que hay páginas oficiales que todavía publican los números viejos.
+      </p>
+
+      <div class="table-scroll">
+        <table class="channel-table cu-mobile-cards">
+          <thead>
+            <tr>
+              <th>Cómo llega</th>
+              <th>Cómo lo reconocés</th>
+              <th>Hasta 30/4/2026</th>
+              <th>Hoy</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Correo no exprés (PP, SIMPLE)</td>
+              <td data-label="Cómo lo reconocés">
+                Dos letras + nueve números + dos letras: RJ284204981CN. Es el "envío gratis" de
+                AliExpress, Shein o Temu y el estándar de Etsy o eBay
+              </td>
+              <td data-label="Hasta 30/4/2026">Franquicia solo hasta US$ 50 por envío</td>
+              <td data-label="Hoy">
+                <strong>Sin tope por envío</strong> — US$ 800 al año, en 3 envíos
+              </td>
+            </tr>
+            <tr>
+              <td>Correo exprés (EMS)</td>
+              <td data-label="Cómo lo reconocés">
+                Tracking que empieza con E: EC123456789US. Solo EMS y Casilla Mía
+              </td>
+              <td data-label="Hasta 30/4/2026">Franquicia solo hasta US$ 200 por envío</td>
+              <td data-label="Hoy"><strong>Sin tope por envío</strong> — el mismo régimen</td>
+            </tr>
+            <tr>
+              <td>Courier privado</td>
+              <td data-label="Cómo lo reconocés">
+                Lo contratás vos: Tiendamia, Exur, USX, Gripper, Punto Mío, Aeropost, DHL, UPS,
+                FedEx
+              </td>
+              <td data-label="Hasta 30/4/2026">Era la vía "exprés": US$ 200 por envío</td>
+              <td data-label="Hoy"><strong>Sin tope por envío</strong> — el mismo régimen</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <VAlert type="warning" variant="tonal" density="comfortable" class="mt-4" icon="mdi-alert">
+        <p class="mb-2">
+          <strong>Dos páginas oficiales siguen publicando el régimen viejo.</strong> La del
+          <a
+            href="https://www.correo.com.uy/como-declarar-su-compra-u-obsequio"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Correo Uruguayo para declarar tu compra</a
+          >
+          dice, en el paso 3, que la franquicia llega hasta US$ 50 si el envío es no exprés y hasta
+          US$ 200 si es EMS — y en el paso 4, dos párrafos después, que podés gestionar vos hasta
+          US$ 800. Se contradice sola. La de "Encomiendas Postales" de la Aduana (21/10/2025) repite
+          lo mismo y agrega el mínimo de US$ 10.
+        </p>
+        <p class="mb-0">
+          Los dos topes son los <strong>artículos 3 y 4 del Decreto 356/014</strong>, derogado por
+          el <strong>artículo 19 del Decreto 50/026</strong>. La tabla oficial del MEF los ubica en
+          la columna "Régimen Actual (Hasta 30/04/2026)" y los reemplaza por el tope anual de US$
+          800; su guía agrega, textual: <em>"No es un tope por compra"</em>.
+        </p>
+      </VAlert>
+
+      <VAlert type="info" variant="tonal" density="comfortable" class="mt-3" icon="mdi-lifebuoy">
+        <strong>Si el formulario del Correo igual te niega la franquicia</strong> por superar los
+        US$ 50 en un envío no exprés: no lo pagues resignado. Reclamá citando el Decreto 50/026
+        (arts. 1, 3 y 19) y la guía del MEF del 24/4/2026, ante la DNA (info@aduanas.gub.uy, 2915
+        0007) y ante el Correo (0800 2108 o WhatsApp 098 01 2108). Y si ya te lo retuvieron, el paso
+        a paso está en
+        <NuxtLink :to="localePath('/problemas-con-la-aduana-uruguay')">
+          problemas con la Aduana </NuxtLink
+        >.
+      </VAlert>
+
+      <p class="text-caption text-medium-emphasis mt-3 mb-0">
+        <VIcon size="14" class="mr-1">mdi-information-outline</VIcon>
+        Lo que sí sigue dependiendo de la modalidad: el precio, el plazo y el seguimiento. Y una
+        letra chica del acuerdo con EE.UU.: el texto del TIFA habla de "envíos de entrega rápida",
+        aunque la Aduana aplica la exoneración a todo envío de origen estadounidense de hasta US$
+        200. Si comprás en EE.UU. y te lo mandan por correo común, tenelo en el radar.
+      </p>
     </section>
 
     <!-- The all-or-nothing trap -->
@@ -304,9 +450,11 @@
       </ul>
       <p class="text-caption text-medium-emphasis mt-3 mb-0">
         Verificado contra fuente primaria el {{ LAST_RESEARCHED_LABEL }}. Ojo: la página
-        "Encomiendas Postales" de la Aduana todavía describe el régimen
+        "Encomiendas Postales" de la <strong>Aduana</strong> todavía describe el régimen
         <strong>derogado</strong> (mínimo de US$ 10, US$ 200 por envío) — si la leés, te va a
-        confundir.
+        confundir. Lo mismo el paso 3 de la página del <strong>Correo</strong> para declarar, con
+        sus topes de US$ 50 y US$ 200 por envío: los citamos abajo justamente para que puedas
+        verificar que ya no rigen.
       </p>
     </VCard>
 
@@ -320,6 +468,7 @@
 
 <script setup lang="ts">
 import {
+  CHANNEL_LABEL,
   FRANCHISE_ANNUAL_USD,
   LAST_RESEARCHED,
   SIMPLIFIED_MIN_USD,
@@ -327,6 +476,7 @@ import {
   USA_IVA_EXEMPTION_USD,
   isSellerRegistryEnforced,
   resolveRegime,
+  type ArrivalChannel,
 } from '~/utils/importRules'
 import { regimeRulesFromPayload } from '~/utils/regimeOverlay'
 import { URUGUAY } from '~/utils/calculators'
@@ -341,6 +491,7 @@ const overlay = computed(() => regimeRulesFromPayload(aduanaData.value))
 const rules = computed(() => overlay.value.rules)
 
 const origin = ref<'usa' | 'other'>('usa')
+const channel = ref<ArrivalChannel>('courier')
 const invoiceTotal = ref(150)
 const franchiseAvailable = ref(FRANCHISE_ANNUAL_USD)
 const shipmentsUsed = ref(0)
@@ -360,10 +511,29 @@ const decision = computed(() =>
       shipmentsUsed: shipmentsUsed.value || 0,
       useFranchise: true,
       sellerRegistered: sellerRegistered.value,
+      channel: channel.value,
     },
     rules.value
   )
 )
+
+/**
+ * What the chosen channel means. Since 1/5/2026 the modality has no fiscal effect (Decreto 50/026
+ * art. 1: "operadores postales, públicos o privados"), so this only helps the reader identify the
+ * channel — and warns them about the ceiling Correo's page still publishes.
+ */
+const channelHint = computed(() => {
+  if (channel.value === 'courier') {
+    return 'Lo contratás vos: Tiendamia, Exur, USX, Gripper, Punto Mío, Aeropost, DHL, UPS, FedEx.'
+  }
+  if (channel.value === 'postal-ems') {
+    return 'Correo Uruguayo EMS / Casilla Mía: el tracking empieza con E (ej. EC123456789US).'
+  }
+  return 'Envío estándar del Correo (PP, SIMPLE): dos letras + nueve números + dos letras (ej. RJ284204981CN). Acá cae el "envío gratis" de AliExpress, Shein o Temu.'
+})
+
+/** The old per-modality ceiling this parcel would have blown, when Correo's page may still apply it. */
+const legacyCap = computed(() => decision.value.legacyChannelCap)
 
 const verdictTone = computed(() => {
   if (decision.value.regime === 'general') return 'warning'
@@ -472,6 +642,34 @@ const sources = [
     label: 'MEF — guía de preguntas frecuentes del régimen de envíos postales',
     url: 'https://www.gub.uy/ministerio-economia-finanzas/comunicacion/noticias/guia-preguntas-frecuentes-sobre-regimen-envios-postales-franquicias',
   },
+  {
+    label:
+      'Correo Uruguayo — «Cómo declarar su compra u obsequio»: cómo se declara, formato del tracking y medio de pago (ojo: su paso 3 todavía publica los topes derogados de US$ 50 / US$ 200 por envío)',
+    url: 'https://www.correo.com.uy/como-declarar-su-compra-u-obsequio',
+  },
+  {
+    label:
+      'Decreto 356/014 (texto original) — arts. 3 y 4: de ahí salían los US$ 50 del correo no exprés y los US$ 200 del exprés, hoy derogados',
+    url: 'https://www.impo.com.uy/bases/decretos-originales/356-2014',
+  },
+  {
+    label:
+      'MEF — el régimen nuevo explicado, con la tabla que ubica los US$ 50 / US$ 200 en «Hasta 30/04/2026»',
+    url: 'https://www.gub.uy/ministerio-economia-finanzas/comunicacion/noticias/gobierno-reglamenta-regimen-para-envios-postales-internacionales',
+  },
+  {
+    label:
+      'Correo Uruguayo — preguntas frecuentes sobre encomiendas internacionales: obsequio familiar, IMESI, medio de pago, 20 kg, varios paquetes',
+    url: 'https://www.correo.com.uy/sobre-encomiendas-internacionales',
+  },
+  {
+    label: 'Correo Uruguayo — declarar el envío (plataforma Ahíva)',
+    url: 'https://ahiva.correo.com.uy/aduanas-web/login',
+  },
+  {
+    label: 'DNA — consultá cuánta franquicia te queda este año (requiere usuario gub.uy)',
+    url: 'https://aplicaciones.aduanas.gub.uy/LuciapubX/DECLARACIONES.Cargas.HWCantEncPostales.aspx',
+  },
 ]
 
 // FAQ — the value Aduana actually looks at. `a` is HTML (rendered), `aText` is the plain-text twin
@@ -496,13 +694,55 @@ const faqs = [
     aText:
       'No, son dos límites distintos. El tope de la franquicia es US$ 800 al año (máximo 3 envíos). Los US$ 200 son la línea del IVA para compras de EE.UU. (acuerdo TIFA): hasta ahí 0% de IVA; un dólar más y pagás IVA sobre el total. Y es el total final: precio − cupón + sales tax + el envío que cobre el vendedor. Si el sales tax lo empuja de nuevo arriba de US$ 200, perdés la exoneración.',
   },
+  {
+    q: 'Mi envío llega por correo no exprés. ¿Puedo usar la franquicia igual?',
+    a: 'Sí. Desde el 1.º de mayo de 2026 la modalidad <strong>ya no cambia nada</strong>: el Decreto 50/026 (art. 1) regula por igual los envíos de los <em>"operadores postales, públicos o privados"</em>, así que el Correo y un courier comparten régimen, tope anual y contador de franquicia. Los viejos límites por envío —<strong>US$ 50</strong> para el correo no exprés y <strong>US$ 200</strong> para el exprés— eran los arts. 3 y 4 del <strong>Decreto 356/014</strong>, <strong>derogado</strong> por el art. 19 del 50/026. La tabla del MEF los pone en la columna "Hasta 30/04/2026" y su guía dice, textual: <em>"No es un tope por compra"</em>. <strong>Pero ojo:</strong> la <a href="https://www.correo.com.uy/como-declarar-su-compra-u-obsequio" target="_blank" rel="noopener noreferrer">página del Correo para declarar</a> todavía publica los topes viejos en el paso 3 (y se contradice en el paso 4). Si el formulario te niega la franquicia, reclamá: no es la norma vigente. Igual te conviene saber cómo llega tu paquete: el exprés son <em>solo</em> los EMS (tracking que empieza con E, ej. <code>EC123456789US</code>); el no exprés es dos letras + nueve números + dos letras, como <code>RJ284204981CN</code>, y ahí caen el "envío gratis" de AliExpress, Shein o Temu.',
+    aText:
+      'Sí. Desde el 1 de mayo de 2026 la modalidad ya no cambia nada: el Decreto 50/026 art. 1 regula por igual a los operadores postales públicos o privados, así que el Correo y un courier comparten régimen, tope anual y contador de franquicia. Los viejos límites por envío (US$ 50 para correo no exprés y US$ 200 para exprés) eran los arts. 3 y 4 del Decreto 356/014, derogado por el art. 19 del 50/026; la tabla del MEF los ubica en la columna "Hasta 30/04/2026" y su guía dice "No es un tope por compra". Pero la página del Correo para declarar todavía publica los topes viejos en el paso 3 y se contradice en el paso 4: si el formulario te niega la franquicia, reclamá. Para identificar la modalidad: el exprés son solo los EMS (tracking que empieza con E, por ejemplo EC123456789US) y el no exprés es dos letras + nueve números + dos letras, como RJ284204981CN.',
+  },
+  {
+    q: 'Me manda un regalo un familiar del exterior. ¿Paga impuestos?',
+    a: 'No, si es un <strong>obsequio familiar</strong> genuino. El art. 3 del Decreto 50/026 exonera de <em>todo tributo</em> —incluido el IVA— a los envíos con obsequios familiares, y el Correo lo define así: envío <strong>no comercial entre las partes</strong>, remitido y consignado por <strong>personas físicas</strong>, con mercadería en <strong>cantidades razonables</strong>, nueva o usada, para uso o consumo personal del destinatario. Dos detalles que importan: el obsequio <strong>igual usa un envío de tu cupo de 3</strong> y sigue sujeto a los topes anuales, y para acreditar el valor no se presenta factura sino una <strong>declaración de valor</strong>. En los obsequios no te piden el medio de pago; en las compras sí.',
+    aText:
+      'No, si es un obsequio familiar genuino. El art. 3 del Decreto 50/026 exonera de todo tributo, incluido el IVA, a los envíos con obsequios familiares, y el Correo los define como envío no comercial entre las partes, remitido y consignado por personas físicas, con mercadería en cantidades razonables, nueva o usada, para uso o consumo personal del destinatario. El obsequio igual usa un envío del cupo de 3 y sigue sujeto a los topes anuales; el valor se acredita con una declaración de valor, no con factura. En los obsequios no se pide el medio de pago; en las compras sí.',
+  },
+  {
+    q: '¿Qué no puedo traer nunca por este régimen?',
+    a: 'Todo lo <strong>gravado por IMESI</strong> queda fuera de la franquicia y del régimen simplificado: bebidas alcohólicas y bebidas sin alcohol concentradas (incluidos suplementos nutricionales concentrados), tabaco y cigarrillos, aceites y grasas lubricantes, y <strong>perfumería y cosméticos</strong> —el que más sorprende—. Tampoco entran los productos de origen animal y vegetal no autorizados (listado del MGAP) ni lo prohibido por seguridad: inflamables, gases comprimidos, explosivos, corrosivos, armas, baterías de litio sueltas y líquidos. Los <strong>lentes de sol</strong> se pueden traer hasta <strong>dos unidades, una sola vez</strong>, y requieren certificado del Sector Óptico del MSP por VUCE antes de liberarse.',
+    aText:
+      'Todo lo gravado por IMESI queda fuera: bebidas alcohólicas, bebidas sin alcohol concentradas y suplementos concentrados, tabaco y cigarrillos, aceites y grasas lubricantes, y perfumería y cosméticos. Tampoco entran productos de origen animal y vegetal no autorizados (listado del MGAP) ni lo prohibido por seguridad: inflamables, gases comprimidos, explosivos, corrosivos, armas, baterías de litio sueltas y líquidos. Los lentes de sol se pueden traer hasta dos unidades, una sola vez, con certificado del Sector Óptico del MSP tramitado por VUCE.',
+  },
+  {
+    q: 'El vendedor me mandó la compra en varios paquetes. ¿Qué hago?',
+    a: 'Una <strong>declaración por cada paquete</strong>, aunque compartan la misma factura: así lo exige la Aduana y lo confirma el Correo. Y cada paquete se cuenta como un envío, así que una compra partida en tres te puede consumir <strong>los tres usos de franquicia del año</strong>. Si podés, pedile al vendedor que lo mande junto. Ojo también con el peso: por encima de <strong>20 kg</strong> el envío sale del régimen y necesita despachante.',
+    aText:
+      'Una declaración por cada paquete, aunque compartan la misma factura. Cada paquete cuenta como un envío, así que una compra partida en tres puede consumirte los tres usos de franquicia del año; conviene pedirle al vendedor que lo mande junto. Por encima de 20 kg el envío sale del régimen y necesita despachante.',
+  },
+  {
+    q: '¿Qué datos de la tarjeta tengo que dar al declarar?',
+    a: 'Los <strong>últimos cuatro números</strong> de la tarjeta de crédito o débito internacional, el <strong>nombre completo del titular tal como figura en el plástico</strong> y el <strong>emisor</strong> (Visa, Mastercard, Diners…). No hace falta el banco. Podés usar una <strong>extensión</strong> de la tarjeta de otra persona siempre que tu nombre completo figure en el plástico. Lo que no se puede es que el titular del pago, el de la compra y el destinatario sean personas distintas: ahí perdés la franquicia (Decreto 50/026, art. 4 lit. e). Y los datos personales tienen que coincidir <strong>letra por letra con la cédula</strong>: la DNA los cruza con Identificación Civil.',
+    aText:
+      'Los últimos cuatro números de la tarjeta, el nombre completo del titular tal como figura en el plástico y el emisor (Visa, Mastercard, Diners). No hace falta el banco. Se puede usar una extensión de la tarjeta de otra persona si tu nombre completo figura en el plástico. El titular del pago, el de la compra y el destinatario deben ser la misma persona (Decreto 50/026 art. 4 lit. e), y los datos deben coincidir exactamente con la cédula porque la DNA los cruza con Identificación Civil.',
+  },
+  {
+    q: '¿Puedo traer mercadería para revender?',
+    a: 'Con la <strong>franquicia no</strong>: es solo para uso o consumo personal, y el propio Correo pone el ejemplo —dos camisas se presumen personales; diez o veinte, comerciales—. Pero con el <strong>régimen de prestación única (60%) sí</strong>: el Correo confirma que se puede ingresar mercadería para vender en plaza pagando el 60% del valor, hasta US$ 800 y 20 kg, sin despachante. Tampoco podés recibir un envío <strong>a nombre de una empresa</strong> ni siendo <strong>menor de edad</strong>: el régimen es de personas físicas mayores de edad.',
+    aText:
+      'Con la franquicia no: es solo para uso o consumo personal (el Correo ejemplifica que dos camisas se presumen personales y diez o veinte, comerciales). Con el régimen de prestación única del 60% sí se puede ingresar mercadería para vender en plaza, hasta US$ 800 y 20 kg, sin despachante. No se puede recibir un envío a nombre de una empresa ni siendo menor de edad: el régimen es para personas físicas mayores de edad.',
+  },
+  {
+    q: '¿Y si no declaro o no voy a pagar?',
+    a: 'Si no declarás, el envío <strong>queda retenido</strong> por la Aduana y se te acumulan demoras y costos de depósito. Y hay un reloj: pasados <strong>30 días</strong> de retenido, el Correo avisa que el envío se declara <strong>en abandono</strong> (la Ley 20.446 art. 631 fija 30 días desde el ingreso cuando hubo incumplimiento y no pagaste los tributos, y 90 días si simplemente no lo retiraste). Perdido el plazo, perdiste la mercadería. Si tu paquete ya está trabado, tenemos el paso a paso.',
+    aText:
+      'Si no declarás, el envío queda retenido por la Aduana y se acumulan demoras y costos de depósito. Pasados 30 días de retenido el Correo avisa que el envío se declara en abandono; la Ley 20.446 art. 631 fija 30 días desde el ingreso cuando hubo incumplimiento y no se pagaron los tributos, y 90 días si simplemente no se retiró. Vencido el plazo se pierde la mercadería.',
+  },
 ]
 
 // --- SEO ---
 const canonicalUrl = 'https://cambio-uruguay.com/franquicia-aduana-uruguay'
 const title = 'Franquicia y aduana en Uruguay 2026: ¿tu compra del exterior paga IVA?'
 const description =
-  'Qué regla rige hoy y qué cambia el 1.º de octubre de 2026. Franquicia de US$ 800 en 3 envíos, prestación única del 60% (mínimo US$ 20) y la exoneración de IVA para compras de EE.UU. de hasta US$ 200. Con el decreto y las resoluciones linkeadas.'
+  'Qué regla rige hoy y qué cambia el 1.º de octubre de 2026. Franquicia de US$ 800 en 3 envíos, prestación única del 60% (mínimo US$ 20), la exoneración de IVA para compras de EE.UU. de hasta US$ 200, y por qué los topes de US$ 50 (correo no exprés) y US$ 200 (EMS) que todavía publica el Correo están derogados desde mayo de 2026.'
 
 defineOgImageComponent('Cambio', {
   title: '¿Tu compra del exterior paga IVA?',
@@ -526,7 +766,7 @@ useHead(() => ({
     {
       name: 'keywords',
       content:
-        'franquicia aduana uruguay, comprar en el exterior uruguay, iva compras exterior, courier uruguay impuestos, decreto 50/026, us$ 800 franquicia, tiendamia iva, aduana 1 de octubre 2026, cupon descuento aduana, descuento valor factura aduana, us 200 iva ee.uu.',
+        'franquicia aduana uruguay, comprar en el exterior uruguay, iva compras exterior, courier uruguay impuestos, decreto 50/026, us$ 800 franquicia, tiendamia iva, aduana 1 de octubre 2026, cupon descuento aduana, descuento valor factura aduana, us 200 iva ee.uu., envio no expreso correo uruguayo, franquicia 50 dolares correo, ems casilla mia franquicia, declarar compra correo uruguayo, obsequio familiar aduana uruguay',
     },
   ],
   script: [
@@ -572,6 +812,35 @@ useHead(() => ({
   padding-left: 18px;
   font-size: 0.88rem;
   line-height: 1.6;
+}
+.channel-toggle .v-btn {
+  font-size: 0.78rem;
+}
+.table-scroll {
+  overflow-x: auto;
+}
+.channel-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+.channel-table th,
+.channel-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(var(--v-border-color), 0.14);
+  text-align: left;
+  vertical-align: top;
+  line-height: 1.5;
+}
+.channel-table thead th {
+  font-weight: 700;
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(var(--v-theme-on-surface), 0.6);
+}
+.channel-table tbody td:first-child {
+  font-weight: 700;
 }
 .regime-list,
 .trap-list {

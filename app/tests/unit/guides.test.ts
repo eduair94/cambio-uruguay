@@ -94,3 +94,66 @@ describe('guides catalogue integrity', () => {
     }
   })
 })
+
+// A guide body is plain text: `pages/guias/[slug].vue` interpolates it with `{{ }}`, so a tool
+// named in prose is NOT a link. For months several guides said "usá nuestra calculadora de
+// impuestos de importación" and the reader had no way to reach it — the page was a dead end.
+// This guard makes naming a tool in prose imply linking it, from either the section's own
+// `links` or the guide's `related` chips.
+const TOOL_MENTIONS: Array<{ phrase: RegExp; to: string }> = [
+  {
+    phrase: /calculadora de impuestos de importación|calculadora de importación/i,
+    to: '/herramientas/calculadora-impuestos-importacion',
+  },
+  { phrase: /carrito de importación/i, to: '/herramientas/carrito-importacion' },
+  { phrase: /calculadora de sueldo líquido/i, to: '/herramientas/calculadora-sueldo-liquido' },
+  { phrase: /calculadora de IRPF/i, to: '/herramientas/calculadora-irpf' },
+  { phrase: /calculadora de costo de vida/i, to: '/herramientas/costo-de-vida' },
+]
+
+describe('guides link the tools they name', () => {
+  it('never names a tool in prose without linking it somewhere on the page', () => {
+    const offenders: string[] = []
+
+    for (const guide of guides) {
+      const guideLinks = new Set((guide.related ?? []).map(l => l.to))
+
+      for (const section of guide.sections) {
+        const sectionLinks = new Set([...guideLinks, ...(section.links ?? []).map(l => l.to)])
+        const text = `${section.heading} ${section.body}`
+        for (const { phrase, to } of TOOL_MENTIONS) {
+          if (phrase.test(text) && !sectionLinks.has(to)) {
+            offenders.push(`${guide.slug} › «${section.heading}» menciona ${to} sin enlazarlo`)
+          }
+        }
+      }
+
+      // FAQ answers render as plain text too, so their only possible link is `related`.
+      for (const faq of guide.faqs ?? []) {
+        const text = `${faq.q} ${faq.a}`
+        for (const { phrase, to } of TOOL_MENTIONS) {
+          if (phrase.test(text) && !guideLinks.has(to)) {
+            offenders.push(`${guide.slug} › FAQ «${faq.q}» menciona ${to} sin enlazarlo`)
+          }
+        }
+      }
+    }
+
+    expect(offenders).toEqual([])
+  })
+
+  it('gives every section link and source the required fields', () => {
+    for (const guide of guides) {
+      for (const section of guide.sections) {
+        for (const link of section.links ?? []) {
+          expect(link.label.trim().length).toBeGreaterThan(0)
+          expect(link.to.startsWith('/')).toBe(true)
+        }
+      }
+      for (const source of guide.sources ?? []) {
+        expect(source.label.trim().length).toBeGreaterThan(0)
+        expect(source.url).toMatch(/^https?:\/\//)
+      }
+    }
+  })
+})

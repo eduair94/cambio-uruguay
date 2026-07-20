@@ -31,6 +31,26 @@ export interface GuideSection {
   body: string
   /** Optional scannable comparison table, rendered after the prose. */
   table?: GuideTable
+  /**
+   * Optional internal links rendered right under this section's prose.
+   *
+   * The body is interpolated with `{{ }}`, so a tool named in the text is NOT clickable — a guide
+   * that said "usá nuestra calculadora de impuestos de importación" left the reader with nowhere
+   * to click. Put the destination here and it renders beside the paragraph that motivates it,
+   * instead of only in the `related` chips at the very bottom. Enforced by
+   * `tests/unit/guides.test.ts` ("guides link the tools they name").
+   */
+  links?: GuideLink[]
+}
+
+/** An external source backing a guide's claims, rendered in a "Fuentes" card. */
+export interface GuideSource {
+  /** What the source says, in the reader's language. */
+  label: string
+  /** Absolute URL (http/https). */
+  url: string
+  /** Who publishes it, e.g. `'Correo Uruguayo'`. Shown after the label. */
+  publisher?: string
 }
 
 /** A related internal link rendered at the foot of a guide. */
@@ -83,6 +103,12 @@ export interface Guide {
    * and emits FAQPage JSON-LD (in addition to Article) for AI Overview / rich results.
    */
   faqs?: GuideFaq[]
+  /**
+   * Optional primary sources, rendered as a "Fuentes" card at the foot of the guide. Use it on
+   * any guide that states a legal figure (a franquicia cap, a rate, a deadline) so the reader can
+   * check the number against the operator or the norm instead of trusting us.
+   */
+  sources?: GuideSource[]
 }
 
 /**
@@ -266,19 +292,31 @@ export const guides: readonly Guide[] = [
     description:
       'Cómo funciona la franquicia courier de USD 800, cuándo pagás el 60% del régimen simplificado y cómo estimar el costo total de una compra online del exterior en Uruguay.',
     tag: 'IMPORTACIÓN',
-    updatedAt: '2026-06-17',
+    updatedAt: '2026-07-20',
     sections: [
       {
-        heading: 'El régimen courier: la vía habitual para compras online',
-        body: 'Cuando comprás en una tienda del exterior y te lo envían "puerta a puerta", la operación entra por el régimen de encomiendas postales (courier). Es el camino más común para compras personales sin fines comerciales, y tiene reglas propias distintas a la importación formal. Conocerlas antes de comprar evita sorpresas al momento de recibir el paquete y pagar para liberarlo.',
+        heading: 'El régimen de envíos postales: la vía habitual para compras online',
+        body: 'Cuando comprás en una tienda del exterior y te lo envían "puerta a puerta", la operación entra por el régimen de envíos postales internacionales. Es el camino más común para compras personales sin fines comerciales, y tiene reglas propias distintas a la importación formal. Conocerlas antes de comprar evita sorpresas al momento de recibir el paquete y pagar para liberarlo.',
+      },
+      {
+        heading: 'Da igual si llega por el Correo o por un courier',
+        body: 'Mucha gente cree que hay dos regímenes distintos según quién te traiga el paquete. No los hay: el Decreto 50/026 regula en su artículo 1 los envíos en los que intervienen los operadores postales "públicos o privados", así que el Correo Uruguayo y un courier privado comparten el mismo régimen, el mismo tope anual y el mismo contador de franquicia, que es único por persona y se consulta en la web de la Aduana. Sí conviene saber cómo llega tu paquete, porque cambia el precio, el plazo y el trámite: los envíos exprés son únicamente los EMS (Express Mail Service y Casilla Mía), con seguimiento que empieza con E; los no exprés son las modalidades PP y SIMPLE, con seguimiento de dos letras + nueve números + dos letras. Si llega por el Correo, la declaración la hacés vos en la web del Correo; si llega por un courier privado, la gestiona el courier.',
+        links: [
+          { label: 'Comparar couriers de Uruguay', to: '/couriers-uruguay' },
+          { label: 'Franquicia y aduana: las reglas', to: '/franquicia-aduana-uruguay' },
+        ],
+      },
+      {
+        heading: 'Cuidado con los topes por envío que todavía circulan',
+        body: 'Hasta el 30 de abril de 2026 el tope dependía de la modalidad: USD 50 por envío si llegaba por correo no exprés y USD 200 si era exprés, según los artículos 3 y 4 del Decreto 356/014. Ese decreto quedó derogado por el artículo 19 del Decreto 50/026, y la tabla oficial del MEF ubica esos dos números en la columna "hasta 30/04/2026". El problema es que siguen publicados: la página del Correo Uruguayo donde declarás tu compra los repite en su paso 3 y después se contradice en el paso 4, y la página de "Encomiendas Postales" de la Aduana suma un mínimo de USD 10 que también quedó viejo. Si al declarar te niegan la franquicia por uno de esos topes, reclamá citando el Decreto 50/026 y la guía del MEF del 24 de abril de 2026.',
       },
       {
         heading: 'La franquicia anual de USD 800',
-        body: 'Desde mayo de 2026 rige una franquicia anual de hasta USD 800 por persona, que se puede usar hasta 3 veces al año, con un máximo de 20 kg por envío. Lo que entra dentro de la franquicia no paga impuestos de importación (sí los costos del courier). La clave es que la franquicia es anual: conviene administrarla durante el año y no agotarla en una sola compra si pensás traer más cosas.',
+        body: 'Desde mayo de 2026 rige una franquicia anual de hasta USD 800 por persona, que se puede usar hasta 3 veces al año, con un máximo de 20 kg por envío. Lo que entra dentro de la franquicia queda exento de aranceles, pero igual paga IVA del 22%, salvo dos excepciones: las compras de origen estadounidense de hasta USD 200 (acuerdo TIFA) y los obsequios familiares, que quedan exentos de todo tributo. La franquicia exige además ser mayor de edad, con documento uruguayo, para uso personal y pagando con una tarjeta internacional o dinero electrónico cuyo titular seas vos y que además seas el destinatario. La clave es que es anual: conviene administrarla y no agotarla en una compra chica si pensás traer más cosas.',
       },
       {
         heading: 'El régimen simplificado: 60% sobre el valor',
-        body: 'Los envíos que no califican para la franquicia tributan bajo el régimen simplificado, que aplica una tasa única del 60% sobre el valor declarado de la compra, con un mínimo. Es un cálculo sencillo: si traés algo por fuera de la franquicia, multiplicá el valor por 0,60 para estimar el impuesto. A ese costo hay que sumarle el flete y los cargos del courier.',
+        body: 'Los envíos que no califican para la franquicia tributan bajo el régimen simplificado o prestación única, que aplica una tasa única del 60% sobre el valor de la compra, con un mínimo de USD 20 por envío. Es un cálculo sencillo: si traés algo por fuera de la franquicia, multiplicá el valor por 0,60 para estimar el impuesto, y si da menos de USD 20, pagás USD 20. Se aplica al envío entero, nunca al excedente, y no se le suma IVA aparte. A diferencia de la franquicia, no tiene límite de veces al año y sí admite mercadería para revender. A ese costo hay que sumarle el flete y los cargos del courier.',
       },
       {
         heading: 'Cómo estimar el costo total antes de comprar',
@@ -286,7 +324,72 @@ export const guides: readonly Guide[] = [
       },
       {
         heading: 'Usá la calculadora de impuestos de importación',
-        body: 'Para no hacer las cuentas a mano, nuestra calculadora de impuestos de importación te permite ingresar el valor, elegir si aplicás la franquicia y ver el impuesto y el costo total estimado, tanto para el régimen courier como para el general. Recordá que son valores de referencia: verificá siempre las condiciones vigentes con Aduanas y tu courier antes de comprar.',
+        body: 'Para no hacer las cuentas a mano, nuestra calculadora de impuestos de importación te permite ingresar el valor, elegir si aplicás la franquicia y ver el impuesto y el costo total estimado, tanto para el régimen courier como para el general. Si traés varias cosas de una, el carrito de importación hace la cuenta del envío completo. Recordá que son valores de referencia: verificá siempre las condiciones vigentes con Aduanas y tu courier antes de comprar.',
+        links: [
+          {
+            label: 'Calculadora de impuestos de importación',
+            to: '/herramientas/calculadora-impuestos-importacion',
+          },
+          { label: 'Carrito de importación', to: '/herramientas/carrito-importacion' },
+        ],
+      },
+    ],
+    related: [
+      { label: 'Franquicia y aduana: ¿pagás IVA?', to: '/franquicia-aduana-uruguay' },
+      { label: 'Couriers de Uruguay', to: '/couriers-uruguay' },
+      { label: 'Problemas con la aduana', to: '/problemas-con-la-aduana-uruguay' },
+      {
+        label: 'Cómo importar de AliExpress',
+        to: '/guias/importar-de-aliexpress-a-uruguay',
+      },
+      { label: 'Comprar en Amazon desde Uruguay', to: '/guias/comprar-en-amazon-desde-uruguay' },
+    ],
+    faqs: [
+      {
+        q: '¿El flete y el seguro cuentan para el tope de USD 800?',
+        a: 'Cuentan si figuran en el comprobante de compra. El Correo Uruguayo lo dice expresamente: si el flete aparece descrito en la factura comercial, se cuenta dentro del monto considerado para el uso de la franquicia, y lo mismo con el seguro. El flete que un courier te factura por separado no integra ese valor: se suma a tu costo total, pero no a la base sobre la que se calculan los impuestos.',
+      },
+      {
+        q: '¿Qué pasa si el vendedor manda mi compra en varios paquetes?',
+        a: 'Cada paquete necesita su propia declaración, aunque compartan la misma factura, y cada uno cuenta como un envío. Es decir que una sola compra dividida en tres paquetes puede consumirte los tres usos de franquicia del año. Si podés, pedile al vendedor que lo despache junto.',
+      },
+      {
+        q: '¿Qué no puedo traer por este régimen?',
+        a: 'Nada gravado por IMESI: bebidas alcohólicas, bebidas concentradas sin alcohol y suplementos concentrados, tabaco y cigarrillos, aceites y grasas lubricantes, y perfumería y cosméticos. Tampoco productos de origen animal o vegetal no autorizados por el MGAP, ni lo prohibido por seguridad (inflamables, gases comprimidos, explosivos, corrosivos, armas, baterías de litio sueltas). Y hay casos con trámite previo: los lentes de sol se limitan a dos unidades por única vez y requieren certificado del Sector Óptico del MSP por VUCE. Por encima de 20 kg o de USD 800 el envío sale del régimen y necesita despachante de aduana.',
+      },
+      {
+        q: '¿Qué pasa si no declaro o no pago?',
+        a: 'El envío queda retenido por la Aduana y se te acumulan demoras y costo de depósito. Pasados 30 días de retenido, el Correo advierte que se declara en abandono; la Ley 20.446 (art. 631) fija 30 días desde el ingreso cuando hubo incumplimiento y no pagaste los tributos, y 90 días si simplemente no lo retiraste. La mercadería abandonada se remata. Y declarar mal el valor o el origen tiene sanción propia: multa del doble de los tributos que correspondían (art. 632).',
+      },
+    ],
+    sources: [
+      {
+        label:
+          'Decreto 50/026 — art. 1 (operadores postales públicos o privados), art. 3 (franquicia, obsequio familiar), art. 5 (valor de factura), art. 19 (deroga el 356/014)',
+        url: 'https://www.impo.com.uy/bases/decretos/50-2026',
+        publisher: 'IMPO',
+      },
+      {
+        label: 'Ley 20.446 art. 627 — prestación única del 60%, mínimo USD 20, sin despachante',
+        url: 'https://www.impo.com.uy/bases/leyes/20446-2025/627',
+        publisher: 'IMPO',
+      },
+      {
+        label: 'Guía de preguntas frecuentes del régimen de envíos postales y franquicias',
+        url: 'https://www.gub.uy/ministerio-economia-finanzas/comunicacion/noticias/guia-preguntas-frecuentes-sobre-regimen-envios-postales-franquicias',
+        publisher: 'MEF',
+      },
+      {
+        label:
+          'Preguntas frecuentes sobre encomiendas internacionales: obsequio familiar, IMESI, flete y seguro, varios paquetes, medio de pago',
+        url: 'https://www.correo.com.uy/sobre-encomiendas-internacionales',
+        publisher: 'Correo Uruguayo',
+      },
+      {
+        label:
+          'Cómo declarar su compra u obsequio (ojo: su paso 3 todavía publica los topes derogados de USD 50 y USD 200 por envío)',
+        url: 'https://www.correo.com.uy/como-declarar-su-compra-u-obsequio',
+        publisher: 'Correo Uruguayo',
       },
     ],
   },

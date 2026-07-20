@@ -612,6 +612,16 @@
           </NuxtLink>
         </VCol>
         <VCol cols="12" sm="6" md="3">
+          <NuxtLink
+            :to="localePath('/herramientas/calculadora-impuestos-importacion')"
+            class="cross-link"
+          >
+            <VIcon color="primary" class="mb-2">mdi-calculator</VIcon>
+            <span class="cross-title">Calculá los impuestos</span>
+            <span class="cross-desc">Antes de pagar, mirá cuánto debería salir.</span>
+          </NuxtLink>
+        </VCol>
+        <VCol cols="12" sm="6" md="3">
           <NuxtLink :to="localePath('/estafas-uruguay')" class="cross-link">
             <VIcon color="primary" class="mb-2">mdi-shield-alert-outline</VIcon>
             <span class="cross-title">Me estafaron</span>

@@ -133,6 +133,30 @@ describe('courierImport', () => {
     const r = courierImport({ value: 100, useFranchise: false, today: TODAY })
     expect(r.breakdown.some(l => /flete/i.test(l.label))).toBe(false)
   })
+
+  // The r/uruguay case (oct-2025): USD 118 from AliExpress by Correo, franquicia available and
+  // USD 75 charged anyway — the old USD 50 non-express cap. That cap died on 30/04/2026, so the
+  // same parcel today prices identically whichever way it arrives; what survives is the warning.
+  it('prices a non-express parcel exactly like a courier one, and flags the repealed cap', () => {
+    const postal = courierImport({
+      value: 118,
+      origin: 'other',
+      useFranchise: true,
+      channel: 'postal-simple',
+      today: TODAY,
+    })
+    const byCourier = courierImport({
+      value: 118,
+      origin: 'other',
+      useFranchise: true,
+      channel: 'courier',
+      today: TODAY,
+    })
+    expect(postal.regime).toBe('franquicia')
+    expect(postal.totalTax).toBe(byCourier.totalTax)
+    expect(postal.legacyChannelCap).toEqual({ channel: 'postal-simple', capUsd: 50 })
+    expect(byCourier.legacyChannelCap).toBeUndefined()
+  })
 })
 
 describe('courierShipping', () => {

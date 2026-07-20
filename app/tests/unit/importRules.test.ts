@@ -7,6 +7,8 @@ import { describe, expect, it } from 'vitest'
 import {
   DEFAULT_REGIME_RULES,
   FRANCHISE_ANNUAL_USD,
+  LEGACY_CHANNEL_CAPS_UNTIL,
+  LEGACY_CHANNEL_FRANCHISE_CAP_USD,
   FRANCHISE_MAX_SHIPMENTS,
   type RegimeRules,
   SELLER_REGISTRY_ENFORCED_FROM,
@@ -121,6 +123,62 @@ describe('a shipment is never split between regimes', () => {
   })
 })
 
+// The modality trap. Until 30/04/2026 the franquicia was capped PER SHIPMENT by how the parcel
+// arrived: USD 50 non-express (Decreto 356/014 art. 3), USD 200 express (art. 4). Decreto 50/026
+// art. 19 repealed that decree and art. 1 covers "operadores postales, públicos o privados"
+// alike — one regime, one counter, Correo or courier. But Correo's declaration page (paso 3) and
+// DNA's 2025 glossary still publish the old pair, so the reader is told a repealed rule by two
+// official sources. We warn; we never price it.
+describe('the arrival channel never changes the regime any more', () => {
+  it('lets a USD 118 non-express parcel use the franquicia — the USD 50 cap is repealed', () => {
+    const d = resolveRegime({ ...base, valueUsd: 118, origin: 'other', channel: 'postal-simple' })
+    expect(d.regime).toBe('franquicia')
+  })
+
+  it('treats Correo and a private courier identically (Decreto 50/026 art. 1)', () => {
+    const byPost = resolveRegime({ ...base, valueUsd: 300, origin: 'other', channel: 'postal-ems' })
+    const byCourier = resolveRegime({ ...base, valueUsd: 300, origin: 'other', channel: 'courier' })
+    expect(byPost.regime).toBe(byCourier.regime)
+    expect(byPost.ivaExempt).toBe(byCourier.ivaExempt)
+  })
+
+  it('defaults to the courier channel when none is given', () => {
+    expect(resolveRegime({ ...base, valueUsd: 700, origin: 'other' }).regime).toBe('franquicia')
+  })
+
+  it('flags the repealed cap so the page can warn the reader the form may refuse', () => {
+    expect(LEGACY_CHANNEL_FRANCHISE_CAP_USD['postal-simple']).toBe(50)
+    expect(LEGACY_CHANNEL_FRANCHISE_CAP_USD['postal-ems']).toBe(200)
+    expect(LEGACY_CHANNEL_FRANCHISE_CAP_USD.courier).toBeNull()
+    expect(LEGACY_CHANNEL_CAPS_UNTIL).toBe('2026-04-30')
+
+    const d = resolveRegime({ ...base, valueUsd: 118, origin: 'other', channel: 'postal-simple' })
+    expect(d.legacyChannelCap).toEqual({ channel: 'postal-simple', capUsd: 50 })
+  })
+
+  it('does not flag a parcel that fits under the old cap, nor a courier one', () => {
+    expect(
+      resolveRegime({ ...base, valueUsd: 40, origin: 'other', channel: 'postal-simple' })
+        .legacyChannelCap
+    ).toBeUndefined()
+    expect(
+      resolveRegime({ ...base, valueUsd: 700, origin: 'other', channel: 'courier' })
+        .legacyChannelCap
+    ).toBeUndefined()
+  })
+
+  it('does not flag a reader who is not asking for the franquicia', () => {
+    const d = resolveRegime({
+      ...base,
+      valueUsd: 118,
+      channel: 'postal-simple',
+      useFranchise: false,
+    })
+    expect(d.regime).toBe('simplificado')
+    expect(d.legacyChannelCap).toBeUndefined()
+  })
+})
+
 describe('above USD 800 neither regime applies', () => {
   it('routes it to the general regime instead of inventing a number', () => {
     const d = resolveRegime({ ...base, valueUsd: 801 })
@@ -167,7 +225,13 @@ describe('injectable RegimeRules overlay', () => {
   it('prices with an overlaid minimum', () => {
     const rules: RegimeRules = { ...DEFAULT_REGIME_RULES, simplifiedMinUsd: 25 }
     const d = resolveRegime(
-      { valueUsd: 30, origin: 'other', franchiseAvailableUsd: 0, shipmentsUsed: 0, useFranchise: false },
+      {
+        valueUsd: 30,
+        origin: 'other',
+        franchiseAvailableUsd: 0,
+        shipmentsUsed: 0,
+        useFranchise: false,
+      },
       rules
     )
     expect(d.regime).toBe('simplificado')

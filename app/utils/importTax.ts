@@ -23,12 +23,13 @@ import {
   DEFAULT_REGIME_RULES,
   USA_IVA_EXEMPTION_USD,
   resolveRegime,
+  type ArrivalChannel,
   type CourierRegime,
   type ImportOrigin,
   type RegimeRules,
 } from './importRules'
 
-export type { ImportOrigin }
+export type { ArrivalChannel, ImportOrigin }
 
 /** A single labelled line in a tax breakdown (amounts in the input currency). */
 export interface TaxLine {
@@ -56,6 +57,11 @@ export interface ImportTaxResult {
   ivaExempt?: boolean
   /** Courier only: why, in the reader's language. */
   reasons?: string[]
+  /**
+   * Courier only: set when the parcel arrives by post over the REPEALED per-modality ceiling, so
+   * the page can warn that Correo's declaration form may still refuse the franquicia.
+   */
+  legacyChannelCap?: { channel: ArrivalChannel; capUsd: number }
 }
 
 /** Inputs for the courier ("puerta a puerta") regime. */
@@ -76,6 +82,12 @@ export interface CourierInput {
   insurance?: number
   /** Where the invoice was issued; `'usa'` enables the TIFA IVA exoneration ≤ USD 200. */
   origin?: ImportOrigin
+  /**
+   * How the parcel arrives (private courier vs Correo Uruguayo EMS vs correo no exprés). On the
+   * postal channel the operator caps the franquicia per shipment, so a USD 118 non-express parcel
+   * pays the 60% even with franquicia available. Defaults to `'courier'`.
+   */
+  channel?: ArrivalChannel
   /** Whether to apply the annual franchise to this shipment. */
   useFranchise?: boolean
   /** Franchise USD still available this calendar year. */
@@ -148,6 +160,7 @@ export function courierImport(
       shipmentsUsed: input.shipmentsUsed ?? 0,
       useFranchise: input.useFranchise ?? false,
       sellerRegistered: input.sellerRegistered,
+      channel: input.channel,
       today: input.today,
     },
     rules
@@ -201,6 +214,7 @@ export function courierImport(
     regime: decision.regime,
     ivaExempt: decision.ivaExempt,
     reasons: decision.reasons,
+    legacyChannelCap: decision.legacyChannelCap,
   }
 }
 

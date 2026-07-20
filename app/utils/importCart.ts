@@ -20,6 +20,7 @@ import {
   SIMPLIFIED_RATE_PCT,
   USA_IVA_EXEMPTION_USD,
   resolveRegime,
+  type ArrivalChannel,
 } from './importRules'
 import {
   productRegimeStatus,
@@ -54,6 +55,12 @@ export interface CartSettings {
   regime: 'courier' | 'general'
   /** Shipment origin (courier TIFA IVA exemption). */
   origin?: 'usa' | 'other'
+  /**
+   * How the parcel arrives: private courier, Correo EMS or correo no exprés. On the postal
+   * channel Correo caps the franquicia per shipment (US$ 200 EMS / US$ 50 no exprés), so the
+   * whole basket can lose it. Defaults to `'courier'`.
+   */
+  channel?: ArrivalChannel
   /** Whether to apply the courier franchise to this shipment. */
   useFranchise?: boolean
   /** Franchise still available this calendar year (USD). */
@@ -170,6 +177,7 @@ export function computeCart(items: CartItem[], settings: CartSettings): CartResu
           shipmentsUsed: settings.shipmentsUsed ?? 0,
           useFranchise: !!settings.useFranchise,
           sellerRegistered: settings.sellerRegistered,
+          channel: settings.channel,
           today: settings.today,
         })
       : null

@@ -63,6 +63,22 @@
                   </tbody>
                 </table>
               </div>
+              <!-- Contextual links: the tool/page this very section talks about, clickable where
+                   the reader is reading about it (the body itself is plain text). -->
+              <div v-if="section.links?.length" class="d-flex flex-wrap ga-2 mt-3">
+                <VChip
+                  v-for="link in section.links"
+                  :key="link.to"
+                  :to="localePath(link.to)"
+                  color="primary"
+                  variant="tonal"
+                  size="small"
+                  link
+                >
+                  <VIcon start size="small">mdi-arrow-right-circle-outline</VIcon>
+                  {{ link.label }}
+                </VChip>
+              </div>
             </section>
           </article>
 
@@ -91,6 +107,24 @@
               </VExpansionPanel>
             </VExpansionPanels>
           </section>
+
+          <!-- Sources: primary references for any legal figure stated above -->
+          <VCard v-if="guide.sources?.length" variant="flat" class="guide-sources mt-8 pa-5">
+            <h2 class="text-subtitle-1 font-weight-bold mb-3">
+              <VIcon start size="small" color="primary">mdi-link-variant</VIcon>
+              Fuentes
+            </h2>
+            <ul class="guide-sources-list">
+              <li v-for="(source, i) in guide.sources" :key="i">
+                <a :href="source.url" target="_blank" rel="noopener noreferrer">{{
+                  source.label
+                }}</a>
+                <span v-if="source.publisher" class="source-publisher">
+                  — {{ source.publisher }}
+                </span>
+              </li>
+            </ul>
+          </VCard>
 
           <!-- CTA to the comparator -->
           <VCard class="cta-guide my-8 pa-6 text-center" variant="flat">
@@ -389,9 +423,31 @@ useHead({
   border-radius: 12px;
 }
 
-.related-links {
+.related-links,
+.guide-sources {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
+}
+.guide-sources-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+.guide-sources-list a {
+  color: rgb(var(--v-theme-link));
+  text-decoration: none;
+  font-weight: 600;
+}
+.guide-sources-list a:hover {
+  text-decoration: underline;
+}
+.source-publisher {
+  color: rgba(var(--v-theme-on-surface), 0.6);
 }
 </style>

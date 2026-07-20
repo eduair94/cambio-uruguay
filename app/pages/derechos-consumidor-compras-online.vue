@@ -172,7 +172,7 @@
     <section class="mb-8">
       <VRow>
         <VCol cols="12" md="6">
-          <NuxtLink to="/estafas-uruguay" class="xlink">
+          <NuxtLink :to="localePath('/estafas-uruguay')" class="xlink">
             <VCard variant="flat" class="xlink-card pa-5 h-100">
               <VIcon color="warning" class="mb-2">mdi-shield-alert-outline</VIcon>
               <p class="xlink-title mb-1">¿Fue una estafa con el medio de pago?</p>
@@ -184,7 +184,7 @@
           </NuxtLink>
         </VCol>
         <VCol cols="12" md="6">
-          <NuxtLink to="/problemas-con-la-aduana-uruguay" class="xlink">
+          <NuxtLink :to="localePath('/problemas-con-la-aduana-uruguay')" class="xlink">
             <VCard variant="flat" class="xlink-card pa-5 h-100">
               <VIcon color="primary" class="mb-2">mdi-package-variant-closed</VIcon>
               <p class="xlink-title mb-1">¿Compraste en el exterior y quedó en la aduana?</p>
@@ -292,6 +292,8 @@ import {
   KEY_FIGURES,
   scenarioById,
 } from '~/utils/consumerRights'
+
+const localePath = useLocalePath()
 
 const activeId = ref(CONSUMER_SCENARIOS[0]!.id)
 const active = computed(() => scenarioById(activeId.value))

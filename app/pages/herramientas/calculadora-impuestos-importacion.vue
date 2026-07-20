@@ -26,8 +26,51 @@
         </VBtn>
       </VBtnToggle>
 
-      <!-- Origin (courier only): drives the USA/TIFA IVA exemption -->
+      <!-- Arrival channel (courier only): the operator's own franquicia cap per shipment -->
       <template v-if="regime === 'courier'">
+        <div class="text-overline text-grey mb-2">¿Cómo llega?</div>
+        <VBtnToggle
+          v-model="channel"
+          color="primary"
+          mandatory
+          divided
+          variant="outlined"
+          class="seg-toggle mb-2"
+        >
+          <VBtn value="courier" class="seg-btn">
+            <VIcon start>mdi-truck-fast-outline</VIcon>
+            Courier
+          </VBtn>
+          <VBtn value="postal-ems" class="seg-btn">
+            <VIcon start>mdi-email-fast-outline</VIcon>
+            Correo EMS
+          </VBtn>
+          <VBtn value="postal-simple" class="seg-btn">
+            <VIcon start>mdi-mailbox-outline</VIcon>
+            Correo no exprés
+          </VBtn>
+        </VBtnToggle>
+        <p class="text-caption text-grey-lighten-1 mb-3">
+          {{ channelHint }} Desde mayo de 2026 la modalidad no cambia el impuesto: es un solo
+          régimen para el Correo y para los couriers.
+          <NuxtLink :to="localePath('/franquicia-aduana-uruguay')" class="tool-link">
+            Qué cambió y qué páginas siguen desactualizadas
+          </NuxtLink>
+        </p>
+        <VAlert
+          v-if="legacyCap"
+          type="warning"
+          variant="tonal"
+          density="compact"
+          class="mb-6"
+          icon="mdi-alert-outline"
+        >
+          Al declarar en la web del Correo puede que no te ofrezca la franquicia: su paso 3 todavía
+          dice que en {{ CHANNEL_LABEL[legacyCap.channel] }} llega hasta US$
+          {{ legacyCap.capUsd }} por envío. Ese tope está derogado desde el 1.º de mayo de 2026
+          (Decreto 356/014 arts. 3 y 4 → Decreto 50/026 art. 19). Si te lo niegan, reclamalo.
+        </VAlert>
+
         <div class="text-overline text-grey mb-2">Origen del envío</div>
         <VBtnToggle
           v-model="origin"
@@ -433,11 +476,25 @@
             </li>
           </ul>
           <p>
+            <strong>¿Cambia algo si llega por el Correo y no por un courier?</strong> Desde el 1.º
+            de mayo de 2026, <strong>no</strong>: el Decreto 50/026 (art. 1) regula por igual los
+            envíos de los <em>"operadores postales, públicos o privados"</em>, con un único tope
+            anual y un único contador de franquicia. Los viejos límites por envío —US$ 50 para el
+            <strong>correo no exprés (PP, SIMPLE)</strong>, US$ 200 para el
+            <strong>exprés (EMS)</strong>— eran los arts. 3 y 4 del Decreto 356/014,
+            <strong>derogado</strong>. Cuidado, porque la página del Correo para declarar todavía
+            los publica: el detalle está en
+            <NuxtLink :to="localePath('/franquicia-aduana-uruguay')"> franquicia y aduana </NuxtLink
+            >, y las tarifas de cada vía en
+            <NuxtLink :to="localePath('/couriers-uruguay')">couriers de Uruguay</NuxtLink>.
+          </p>
+          <p>
             Ojo con el <strong>valor</strong> que se mira para los topes de US$ 200 y US$ 800: es el
             <strong>total de la factura</strong> — precio + <em>sales tax</em> + el envío que te
-            cobre el vendedor (Decreto 50/026, art. 5). Y por encima de <strong>US$ 800</strong> el
-            envío no entra en ninguno de los dos regímenes: pasa al régimen general y no lo
-            calculamos acá.
+            cobre el vendedor (Decreto 50/026, art. 5), y el Correo aclara que el
+            <strong>flete y el seguro cuentan si figuran en el comprobante de compra</strong>. Y por
+            encima de <strong>US$ 800</strong> el envío no entra en ninguno de los dos regímenes:
+            pasa al régimen general y no lo calculamos acá.
           </p>
           <p>
             <strong>Desde el 1.º de octubre de 2026</strong> la exoneración de IVA de EE.UU. va a
@@ -521,6 +578,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { courierImport, generalImport } from '~/utils/importTax'
+import { CHANNEL_LABEL, type ArrivalChannel } from '~/utils/importRules'
 import { regimeRulesFromPayload } from '~/utils/regimeOverlay'
 import {
   IMPORT_PRODUCT_TYPES,
@@ -533,6 +591,7 @@ import { formatUSD } from '~/utils/format'
 
 const regime = ref<'courier' | 'general'>('courier')
 const origin = ref<'usa' | 'other'>('usa')
+const channel = ref<ArrivalChannel>('courier')
 const value = ref(150)
 const shipping = ref(0)
 const insurance = ref(0)
@@ -624,6 +683,26 @@ watch(computedShipping, v => {
 
 const localePath = useLocalePath()
 
+/**
+ * One line explaining what the chosen channel does to the franquicia. The cap is the operator's,
+ * not the decree's — see CHANNEL_FRANCHISE_CAP_USD for the source.
+ */
+const channelHint = computed(() => {
+  if (channel.value === 'courier') {
+    return 'Courier privado (Tiendamia, Exur, USX, Gripper, Punto Mío, DHL, UPS, FedEx).'
+  }
+  if (channel.value === 'postal-ems') {
+    return 'Correo Uruguayo EMS / Casilla Mía: el tracking empieza con E (ej. EC123456789US).'
+  }
+  return 'Correo no exprés (PP, SIMPLE): dos letras + nueve números + dos letras, ej. RJ284204981CN. Es el "envío gratis" de AliExpress, Shein o Temu.'
+})
+
+/**
+ * The repealed per-modality ceiling this shipment would have blown. The tax above already ignores
+ * it (it died on 30/04/2026); this only warns that Correo's form still publishes it.
+ */
+const legacyCap = computed(() => result.value.legacyChannelCap)
+
 const sources = [
   {
     label:
@@ -637,6 +716,16 @@ const sources = [
   {
     label: 'MEF — Preguntas frecuentes sobre el régimen de envíos postales (franquicias)',
     url: 'https://www.gub.uy/ministerio-economia-finanzas/comunicacion/noticias/guia-preguntas-frecuentes-sobre-regimen-envios-postales-franquicias',
+  },
+  {
+    label:
+      'Correo Uruguayo — «Cómo declarar su compra u obsequio» (su paso 3 todavía publica los topes derogados de US$ 50 / US$ 200 por envío)',
+    url: 'https://www.correo.com.uy/como-declarar-su-compra-u-obsequio',
+  },
+  {
+    label:
+      'Correo Uruguayo — preguntas frecuentes: el flete y el seguro cuentan si figuran en la factura',
+    url: 'https://www.correo.com.uy/sobre-encomiendas-internacionales',
   },
   {
     label: 'Aduanas — Mercaderías controladas por otros organismos',
@@ -672,6 +761,7 @@ const result = computed(() =>
           value: value.value || 0,
           shipping: shipping.value || 0,
           origin: origin.value,
+          channel: channel.value,
           useFranchise: useFranchise.value,
           franchiseAvailable: franchiseAvailable.value || 0,
           ivaPct: productTax.value.ivaPct,
@@ -704,6 +794,14 @@ const faq = [
   {
     q: '¿Por qué importa si el envío viene de Estados Unidos?',
     a: 'Por el acuerdo TIFA entre Uruguay y EE.UU., los envíos desde Estados Unidos de hasta US$ 200 mantienen la exoneración de IVA. Si el envío de EE.UU. supera los US$ 200, o si proviene de cualquier otro país, se aplica el IVA del 22% sobre la franquicia.',
+  },
+  {
+    q: 'Tengo franquicia disponible y el Correo igual me cobra. ¿Por qué?',
+    a: 'Hasta el 30 de abril de 2026 pasaba por la modalidad: la franquicia se cortaba en US$ 50 si el envío llegaba por correo no exprés (PP o SIMPLE — el "envío gratis" de AliExpress, Shein o Temu) y en US$ 200 si llegaba exprés. Eran los arts. 3 y 4 del Decreto 356/014, derogados por el art. 19 del Decreto 50/026: hoy hay un solo régimen para el Correo y para los couriers, con tope anual de US$ 800 en 3 envíos y sin límite por envío. Ojo, igual: la página del Correo para declarar todavía publica los topes viejos en su paso 3 (y se contradice en el paso 4, que te deja gestionar hasta US$ 800). Si el formulario te niega la franquicia por eso, reclamalo citando el Decreto 50/026 ante la DNA (info@aduanas.gub.uy) y el Correo (0800 2108). Otros motivos posibles: ya usaste los 3 envíos del año, el saldo no cubre el envío entero (la franquicia no se parte), el titular del pago no coincide con el destinatario, o el producto está gravado por IMESI.',
+  },
+  {
+    q: '¿El flete y el seguro cuentan para el tope de la franquicia?',
+    a: 'Cuentan si figuran en el comprobante de compra. El Correo Uruguayo lo dice expresamente: si el flete aparece descrito en la factura comercial, se cuenta dentro del monto considerado para el uso de la franquicia, y lo mismo con el seguro. Lo que el courier te factura por separado, en cambio, no forma parte del valor de la factura del vendedor: se suma al costo total pero no a la base imponible.',
   },
   {
     q: '¿Cuánto se paga si el envío no entra en la franquicia?',
