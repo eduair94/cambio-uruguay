@@ -1251,7 +1251,9 @@
     "sitemap": "Mapa do site",
     "twitter": "Twitter",
     "linkedin": "Sobre o autor",
-    "mejorCasa": "Melhor casa de câmbio"
+    "mejorCasa": "Melhor casa de câmbio",
+    "liveDataHint": "Dados ao vivo",
+    "viewFullSitemap": "Ver todo o site"
   },
   "sitemapPage": {
     "h1": "Mapa do site Cambio Uruguay",

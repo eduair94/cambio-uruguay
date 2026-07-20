@@ -1258,7 +1258,9 @@
     "sitemap": "Sitemap",
     "twitter": "Twitter",
     "linkedin": "About the author",
-    "mejorCasa": "Best exchange house"
+    "mejorCasa": "Best exchange house",
+    "liveDataHint": "Live data",
+    "viewFullSitemap": "View the whole site"
   },
   "sitemapPage": {
     "h1": "Cambio Uruguay sitemap",

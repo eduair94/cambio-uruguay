@@ -139,8 +139,14 @@
           {{ navLabel(item) }}
         </VBtn>
 
-        <!-- "Más" is now grouped by section rather than a flat list of 13 links,
-             and it carries the pages that used to be footer-only or orphaned. -->
+        <!-- "Más" is grouped by section rather than a flat list of links. The
+             panel is a mega-menu of `MEGA_MENU_COLUMNS` explicit columns (not a
+             single-column VList) so 11 sections / ~56 links reflow into short
+             columns instead of one column behind a ~78vh scrollbar. Columns are
+             pre-balanced by entry count (see `bucketIntoColumns` below) rather
+             than left to CSS `columns: N`, whose auto-balance heuristic proved
+             ~20% less even than a plain greedy bin-pack against this section's
+             very uneven section sizes (3 to 8 entries each). -->
         <VMenu location="bottom start" transition="slide-y-transition">
           <template #activator="{ props, isActive }">
             <VBtn
@@ -154,29 +160,50 @@
               <VIcon end size="small">mdi-chevron-down</VIcon>
             </VBtn>
           </template>
-          <VList class="more-menu" density="comfortable" nav>
-            <template v-for="section in moreGroups" :key="section.id">
-              <VListSubheader>{{ $t(section.titleKey) }}</VListSubheader>
-              <template v-for="entry in section.entries" :key="entry.to ?? entry.href">
-                <VListItem
-                  v-if="entry.to"
-                  :to="localePath(entry.to)"
-                  :active="isActiveRoute(entry.to)"
-                >
-                  <template #prepend>
-                    <VIcon>{{ entry.icon }}</VIcon>
-                  </template>
-                  <VListItemTitle>{{ $t(entry.labelKey) }}</VListItemTitle>
-                </VListItem>
-                <VListItem v-else :href="entry.href" target="_blank" rel="noopener noreferrer">
-                  <template #prepend>
-                    <VIcon>{{ entry.icon }}</VIcon>
-                  </template>
-                  <VListItemTitle>{{ $t(entry.labelKey) }}</VListItemTitle>
-                </VListItem>
-              </template>
-            </template>
-          </VList>
+          <div class="mega-menu">
+            <nav class="mega-menu__grid" :aria-label="$t('navMore')">
+              <div v-for="(column, ci) in megaMenuColumns" :key="ci" class="mega-menu__col">
+                <div v-for="section in column" :key="section.id" class="mega-menu__section">
+                  <p class="mega-menu__heading">{{ $t(section.titleKey) }}</p>
+                  <ul class="mega-menu__list">
+                    <li v-for="entry in section.entries" :key="entry.to ?? entry.href">
+                      <NuxtLink
+                        v-if="entry.to"
+                        :to="localePath(entry.to)"
+                        class="mega-menu__link"
+                        :class="{ 'mega-menu__link--active': isActiveRoute(entry.to) }"
+                      >
+                        <VIcon size="18" class="mega-menu__icon">{{ entry.icon }}</VIcon>
+                        <span class="mega-menu__label">{{ $t(entry.labelKey) }}</span>
+                        <span
+                          v-if="entry.fresh"
+                          class="mega-menu__live"
+                          :title="$t('nav.liveDataHint')"
+                          :aria-label="$t('nav.liveDataHint')"
+                        />
+                      </NuxtLink>
+                      <a
+                        v-else
+                        :href="entry.href"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="mega-menu__link"
+                      >
+                        <VIcon size="18" class="mega-menu__icon">{{ entry.icon }}</VIcon>
+                        <span class="mega-menu__label">{{ $t(entry.labelKey) }}</span>
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </nav>
+            <div class="mega-menu__footer">
+              <NuxtLink :to="localePath('/mapa-del-sitio')" class="mega-menu__all">
+                {{ $t('nav.viewFullSitemap') }}
+                <VIcon size="16">mdi-arrow-right</VIcon>
+              </NuxtLink>
+            </div>
+          </div>
         </VMenu>
       </nav>
 
@@ -241,7 +268,7 @@
 <script setup lang="ts">
 import { useLocalePath } from '#imports'
 import { useLoadingStore } from '~/stores/loading'
-import { NAV_SECTIONS, type NavEntry } from '~/utils/siteNav'
+import { NAV_SECTIONS, type NavEntry, type NavSection } from '~/utils/siteNav'
 
 const route = useRoute()
 const router = useRouter()
@@ -312,6 +339,41 @@ const moreGroups = computed(() =>
     s => s.entries.length > 0
   )
 )
+
+/**
+ * Split sections into `columnCount` columns balanced by entry count (a header
+ * plus one row per entry), longest section first (LPT scheduling) so no
+ * single column ends up disproportionately tall. Columns keep each section's
+ * relative order intact and are themselves ordered by their earliest section,
+ * so column 1 still opens with whatever leads `NAV_SECTIONS`.
+ */
+function bucketIntoColumns(sections: readonly NavSection[], columnCount: number) {
+  const weighted = sections.map((section, index) => ({
+    section,
+    index,
+    weight: section.entries.length + 1,
+  }))
+  const byWeightDesc = [...weighted].sort((a, b) => b.weight - a.weight)
+  const columns = Array.from({ length: columnCount }, () => ({
+    items: [] as typeof weighted,
+    total: 0,
+  }))
+  for (const item of byWeightDesc) {
+    const shortest = columns.reduce((min, col) => (col.total < min.total ? col : min))
+    shortest.items.push(item)
+    shortest.total += item.weight
+  }
+  return columns
+    .map(col => ({
+      minIndex: Math.min(...col.items.map(item => item.index)),
+      sections: col.items.sort((a, b) => a.index - b.index).map(item => item.section),
+    }))
+    .sort((a, b) => a.minIndex - b.minIndex)
+    .map(col => col.sections)
+}
+
+const MEGA_MENU_COLUMNS = 4
+const megaMenuColumns = computed(() => bucketIntoColumns(moreGroups.value, MEGA_MENU_COLUMNS))
 const navLabel = (entry: NavEntry): string => t(entry.labelKey)
 
 // Open the drawer group that owns the current route, so a mobile visitor lands
@@ -591,12 +653,168 @@ useHead({
   background-color: rgba(var(--v-theme-info), 0.12) !important;
 }
 
-/* "Más" dropdown panel */
-.more-menu {
-  min-width: 264px;
-  max-height: 78vh;
+/* "Más" mega-menu panel. `megaMenuColumns` (default.vue script) pre-balances
+   sections into MEGA_MENU_COLUMNS real columns, so the panel stays a few
+   short columns tall instead of a single ~57-row column capped at 78vh
+   behind a scrollbar. A max-height + scroll is kept only as a safety net for
+   short viewports. */
+.mega-menu {
+  width: min(880px, 92vw);
+  max-height: 88vh;
+  overflow-y: auto;
+  padding: 18px 22px 12px;
   border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, 0.08);
+  background-color: rgb(var(--v-theme-surface));
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.32);
+}
+
+.mega-menu__grid {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.mega-menu__col {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.mega-menu__section {
+  min-width: 0;
+}
+
+.mega-menu__heading {
+  margin: 0 0 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+
+.mega-menu__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mega-menu__link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  color: inherit;
+  text-decoration: none;
+  font-size: 0.86rem;
+  line-height: 1.3;
+  transition: background-color 0.15s ease;
+}
+
+.mega-menu__icon {
+  flex: 0 0 auto;
+  opacity: 0.7;
+}
+
+.mega-menu__label {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.mega-menu__link:hover,
+.mega-menu__link:focus-visible {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.mega-menu__link:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-info));
+  outline-offset: -2px;
+}
+
+.mega-menu__link--active {
+  color: rgb(var(--v-theme-info));
+  background-color: rgba(var(--v-theme-info), 0.12);
+}
+
+/* Live-data signal: a quiet pulse on the ~1 in 4 links backed by data that
+   updates on its own (rates, scraped news, daily-refreshed rankings), so
+   "fresh" isn't just internal sitemap metadata — it tells the visitor which
+   destinations are worth a second look today. */
+.mega-menu__live {
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  margin-inline-start: 4px;
+  border-radius: 50%;
+  background-color: rgb(var(--v-theme-info));
+  animation: mega-menu-live-pulse 2.2s ease-in-out infinite;
+}
+
+@keyframes mega-menu-live-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mega-menu__live {
+    animation: none;
+  }
+}
+
+.mega-menu__footer {
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.mega-menu__all {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  color: rgb(var(--v-theme-info));
+  text-decoration: none;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.mega-menu__all:hover,
+.mega-menu__all:focus-visible {
+  text-decoration: underline;
+}
+
+.v-theme--light .mega-menu {
+  border-color: #e3e6ea;
+  box-shadow: 0 16px 40px rgba(20, 25, 40, 0.14);
+}
+
+.v-theme--light .mega-menu__heading {
+  border-bottom-color: #e3e6ea;
+}
+
+.v-theme--light .mega-menu__link:hover,
+.v-theme--light .mega-menu__link:focus-visible {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.v-theme--light .mega-menu__footer {
+  border-top-color: #e3e6ea;
 }
 
 /* Search triggers. Both reserve their footprint in the SSR HTML so hydration
