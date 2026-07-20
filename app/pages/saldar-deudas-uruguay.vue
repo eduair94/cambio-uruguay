@@ -1,5 +1,5 @@
 <template>
-  <VContainer class="page py-6" style="max-width: 1100px">
+  <VContainer class="page py-6">
     <VBtn :to="localePath('/salud-financiera')" variant="text" size="small" class="px-1 mb-2">
       <VIcon start icon="mdi-arrow-left" /> Salud financiera
     </VBtn>

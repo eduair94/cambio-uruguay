@@ -809,9 +809,6 @@ useHead(() => ({
 </script>
 
 <style scoped>
-.rent-page {
-  max-width: 1100px;
-}
 .hero {
   max-width: 900px;
 }

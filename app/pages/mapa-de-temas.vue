@@ -697,11 +697,6 @@ useHead(() => ({
 </script>
 
 <style scoped>
-.mapa-temas-page {
-  max-width: 1100px;
-  margin: 0 auto;
-}
-
 /* Header hero */
 .bg-gradient-mapa {
   background:
