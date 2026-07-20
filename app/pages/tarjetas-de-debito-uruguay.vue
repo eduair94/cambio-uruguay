@@ -299,8 +299,14 @@
             <span v-else>#{{ r.rank }}</span>
           </div>
           <div class="flex-grow-1 rank-body">
-            <div class="d-flex flex-wrap align-center ga-2">
-              <h3 class="text-subtitle-1 font-weight-bold mb-0">{{ r.name }}</h3>
+            <div class="d-flex align-center ga-2">
+              <h3 class="text-subtitle-1 font-weight-bold mb-0 flex-grow-1">{{ r.name }}</h3>
+              <div class="rank-score">
+                <span class="rank-score-num">{{ r.overall }}</span
+                ><span class="rank-score-den">/100</span>
+              </div>
+            </div>
+            <div class="d-flex flex-wrap align-center ga-2 mt-1">
               <VChip size="x-small" variant="tonal">{{ KIND_LABELS[r.kind] }}</VChip>
               <VChip
                 v-if="r.fundeaEnUsd"
@@ -329,11 +335,6 @@
               >
                 Verificado
               </VChip>
-              <VSpacer />
-              <div class="rank-score">
-                <span class="rank-score-num">{{ r.overall }}</span
-                ><span class="rank-score-den">/100</span>
-              </div>
             </div>
 
             <p class="text-body-2 mt-2 mb-2">{{ r.verdict }}</p>
