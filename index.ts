@@ -15,6 +15,8 @@ import { MongooseServer, mongoose } from "./classes/database";
 import server from "./classes/Express/ExpressSetup";
 import { emptyLiveCosts } from "./classes/costs/refresh";
 import { loadCosts } from "./classes/costs/store";
+import { emptyLiveFinancing } from "./classes/financing/refresh";
+import { loadFinancing } from "./classes/financing/store";
 import { emptyTemasAnalysis } from "./classes/temas-analysis/refresh";
 import { loadTemasAnalysis } from "./classes/temas-analysis/store";
 import { baselineDebtRelief } from "./classes/debt/refresh";
@@ -1539,6 +1541,13 @@ const main = async () => {
    */
   server.getJson("cost-of-living", async (req: Request): Promise<any> => {
     return await redisCache.getOrSet("cost-of-living", async () => (await loadCosts()) ?? emptyLiveCosts(), 1800);
+  });
+
+  // Live financing figures (TPM, inflación, plazo fijo/fondo en pesos, tope de usura) for the app's
+  // /conviene-comprar-en-cuotas. pm2 `currency-financing` refreshes them weekly; the app proxies
+  // this route and applies its own INSTRUMENTOS baseline (app/server/utils/financingMerge.ts).
+  server.getJson("financing-rates", async (req: Request): Promise<any> => {
+    return await redisCache.getOrSet("financing-rates", async () => (await loadFinancing()) ?? emptyLiveFinancing(), 1800);
   });
 
   /**

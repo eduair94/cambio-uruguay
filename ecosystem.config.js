@@ -82,6 +82,19 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Financing live figures (TPM, inflación, plazo fijo/fondo en pesos, tope de usura) for the
+      // app's /conviene-comprar-en-cuotas. Weekly Mondays 10:20 UTC ≈ 07:20 America/Montevideo —
+      // these are policy rates and bank boards, not prices, so a weekly cadence is enough. Minute
+      // 20 is not a multiple of 5 (clear of currency-sync). Must be in OTHER_APPS in
+      // scripts/deploy-backend.sh or it never starts on the VPS.
+      name: "currency-financing",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_financing.js",
+      cron_restart: "20 10 * * 1",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Quarterly AI reading of the most-consulted money topics for the app's /mapa-de-temas.
       // Reads the topic ranking from the NUXT APP's database (classes/appdb.ts, `reddittopics`) and
       // writes its own analysis to the backend DB (`temas_analysis_data`). The cron fires DAILY at
