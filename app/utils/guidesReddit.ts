@@ -1686,11 +1686,16 @@ export const redditGuides: readonly Guide[] = [
     description:
       'Cómo facturar y tributar si trabajás freelance para clientes del exterior desde Uruguay: unipersonal, IVA tasa cero por exportación de servicios, IRAE y aportes BPS.',
     tag: 'EXTERIOR',
-    updatedAt: '2026-07-18',
+    updatedAt: '2026-07-19',
     sections: [
       {
         heading: 'Formalizarte: por qué necesitás una empresa',
         body: 'Si trabajás por tu cuenta para clientes de afuera, en algún momento vas a necesitar facturarles, y para eso hace falta estar formalizado ante la DGI y el BPS. Cobrar a una cuenta personal sin factura funciona hasta que el cliente pide comprobante, el banco pregunta por el origen de los fondos o querés acceder a crédito o a cobertura de salud propia. Formalizarte también te da historia laboral y aportes jubilatorios. La vía más común para un freelance es abrir una empresa unipersonal, donde vos sos el titular. Es un trámite relativamente accesible y te habilita a emitir facturas, incluidas las de exportación de servicios, que son las que vas a usar con el exterior.',
+      },
+      {
+        heading:
+          'Por qué el banco te complica recibir la plata (y no, no hace falta abrir cuenta afuera)',
+        body: 'Es un reclamo que se repite en Reddit: consultás en un banco cómo cobrar ingresos del exterior (gaming, streaming, clientes freelance) y te cruzás con evasivas o directamente con un gerente que te sugiere abrir la cuenta en Paraguay o Estados Unidos. No hay una ley uruguaya que te lo prohíba ni sos un caso único en el mundo: los bancos están obligados por las normas de prevención de lavado de activos (Circular 2.311 del BCU) a conocer la actividad y el origen de los fondos de cada cliente, y una cuenta personal que empieza a recibir transferencias recurrentes desde afuera sin factura ni contrato de por medio activa esos controles, sea el ingreso de un cliente freelance, de una plataforma de streaming o de un torneo. BROU, como banco estatal grande, suele ser el más estricto en este punto (además, bloquea las transferencias de Revolut). La salida real no es cambiarte de país: es facturar esa plata formalizándote (ver abajo) para que la transferencia quede justificada, o mientras tanto recibirla por una fintech armada para esto, como Takenos, y pasarla a pesos de a poco asumiendo su comisión de cash-out. Y antes de resignarte a un solo banco, compará: en la comparativa de bancos del sitio hay un filtro pensado justo para cobrar del exterior en dólares, donde varias entidades privadas puntúan mejor que BROU en esta operativa.',
       },
       {
         heading: 'Unipersonal, Literal E y monotributo',
@@ -1717,6 +1722,7 @@ export const redditGuides: readonly Guide[] = [
       { label: 'Qué empresa abrir', to: '/que-empresa-abrir-uruguay' },
       { label: 'Cómo funciona el IRPF', to: '/guias/como-funciona-el-irpf-uruguay' },
       { label: 'Cómo empezar a invertir', to: '/guias/como-empezar-a-invertir-uruguay' },
+      { label: 'Mejores bancos de Uruguay', to: '/mejores-bancos-uruguay' },
     ],
     steps: [
       {

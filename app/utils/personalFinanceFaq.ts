@@ -259,6 +259,27 @@ export const PERSONAL_FAQS: readonly PersonalFaq[] = Object.freeze([
     howCommon: 'comun',
   },
   {
+    id: 'banco-no-me-deja-cobrar-del-exterior',
+    question:
+      '¿Por qué mi banco no me deja recibir la plata que gano afuera (gaming, streaming, freelance)?',
+    shortAnswer:
+      'No es una prohibición ni una rareza uruguaya: es control de lavado de activos por ingresos sin factura; formalizate o usá una fintech mientras tanto.',
+    answer:
+      'Es un reclamo que se repite en Reddit: consultás en un banco cómo cobrar ingresos del exterior (gaming, streaming, clientes freelance) y te encontrás con evasivas o hasta con un gerente que te sugiere abrir la cuenta en otro país. No hay ninguna ley uruguaya que te lo impida ni sos un caso único en el mundo: los bancos están obligados por las normas de prevención de lavado de activos (Circular 2.311 del BCU) a conocer el origen de los fondos de cada cliente, y una cuenta personal que empieza a recibir transferencias recurrentes desde afuera sin factura de por medio activa esos controles. BROU, al ser el banco estatal más grande, suele ser el más estricto en este punto. La salida real es formalizarte como monotributista o empresa unipersonal para facturar esos ingresos, así la transferencia queda justificada, o mientras tanto recibirla por una fintech armada para esto como Takenos y pasarla a pesos de a poco. Antes de resignarte a un solo banco, compará: hay entidades privadas que puntúan bastante mejor que BROU en operativa con el exterior.',
+    category: 'impuestos_tramites',
+    tags: [
+      'exterior',
+      'gaming',
+      'streaming',
+      'freelance',
+      'BROU',
+      'lavado de activos',
+      'transferencia internacional',
+      'origen de fondos',
+    ],
+    howCommon: 'comun',
+  },
+  {
     id: 'irpf-como-funciona',
     question: '¿Cómo funciona el IRPF y por qué a veces me devuelven?',
     shortAnswer:
