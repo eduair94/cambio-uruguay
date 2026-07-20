@@ -1695,7 +1695,28 @@ export const redditGuides: readonly Guide[] = [
       {
         heading:
           'Por qué el banco te complica recibir la plata (y no, no hace falta abrir cuenta afuera)',
-        body: 'Es un reclamo que se repite en Reddit: consultás en un banco cómo cobrar ingresos del exterior (gaming, streaming, clientes freelance) y te cruzás con evasivas o con un gerente que te sugiere abrir la cuenta en otro país. No hay una ley uruguaya que te lo prohíba: los bancos están obligados por la Circular N.º 2.311 del BCU (23/11/2018, Recopilación de Normas de Prevención de Lavado de Activos, consultable en bcu.gub.uy) a justificar la procedencia de los fondos y documentar la situación patrimonial y económica de cada cliente. Una cuenta personal que recibe transferencias recurrentes desde afuera sin factura ni contrato de por medio activa esos controles en cualquier banco del mundo, no solo acá. BROU, como banco estatal grande, suele ser el más estricto en este punto (además, bloquea las transferencias de Revolut). Abajo está la salida real —formalizarte— y, en las preguntas frecuentes, por qué conviene no resignarse a un solo banco.',
+        body: 'Es un reclamo que se repite en Reddit: consultás en un banco cómo cobrar ingresos del exterior (gaming, streaming, clientes freelance) y te cruzás con evasivas o con un gerente que te sugiere abrir la cuenta en otro país. No hay una ley uruguaya que te lo prohíba: los bancos están obligados por la Circular N.º 2.311 del BCU (23/11/2018, Recopilación de Normas de Prevención de Lavado de Activos, consultable en bcu.gub.uy) a justificar la procedencia de los fondos y documentar la situación patrimonial y económica de cada cliente. Una cuenta personal que recibe transferencias recurrentes desde afuera sin factura ni contrato de por medio activa esos controles en cualquier banco del mundo, no solo acá. BROU, como banco estatal grande, suele ser el más estricto en este punto (además, bloquea las transferencias de Revolut). Las dos salidas reales, en resumen:',
+        table: {
+          headers: ['', 'Formalizarte (facturar)', 'Fintech mientras tanto (ej. Takenos)'],
+          rows: [
+            [
+              'Qué es',
+              'Monotributo o unipersonal emitiendo factura de exportación de servicios',
+              'Billetera en USD/EUR para freelancers, sin factura',
+            ],
+            ['Para arrancar', 'Días a semanas (alta en DGI y BPS)', 'Minutos (alta online)'],
+            [
+              'Costo',
+              'Aportes BPS fijos: ~$3.900/mes sin FONASA, ~$6.500 con FONASA (monotributo 2026)',
+              '3% al pasar el dinero a pesos en Uruguay',
+            ],
+            [
+              'Resuelve el problema de fondo',
+              'Sí: la transferencia queda justificada ante cualquier banco y sumás jubilación',
+              'No: cobrás rápido, pero el banco uruguayo sigue sin ver una factura',
+            ],
+          ],
+        },
       },
       {
         heading: 'Unipersonal, Literal E y monotributo',

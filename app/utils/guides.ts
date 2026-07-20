@@ -15,12 +15,22 @@
 import { parejaGuides } from './guidesPareja'
 import { redditGuides } from './guidesReddit'
 
+/** An optional comparison table rendered below a section's prose. */
+export interface GuideTable {
+  /** Column headers. The first column is the row label (left-aligned, no data-label). */
+  headers: string[]
+  /** Each row has exactly `headers.length` cells, first cell is the row label. */
+  rows: string[][]
+}
+
 /** A single titled section within a guide. `body` is plain prose (no markup). */
 export interface GuideSection {
   /** Section heading, rendered as an `<h2>` on the guide page. */
   heading: string
   /** Section prose. May contain multiple sentences; rendered as a paragraph. */
   body: string
+  /** Optional scannable comparison table, rendered after the prose. */
+  table?: GuideTable
 }
 
 /** A related internal link rendered at the foot of a guide. */

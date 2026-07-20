@@ -62,6 +62,19 @@ describe('guides catalogue integrity', () => {
     }
   })
 
+  it('gives every section table consistent, non-empty rows', () => {
+    for (const guide of guides) {
+      for (const section of guide.sections) {
+        if (!section.table) continue
+        expect(section.table.headers.length).toBeGreaterThan(1)
+        for (const row of section.table.rows) {
+          expect(row.length).toBe(section.table.headers.length)
+          for (const cell of row) expect(cell.trim().length).toBeGreaterThan(0)
+        }
+      }
+    }
+  })
+
   it('gives every related link and step the required fields', () => {
     for (const guide of guides) {
       for (const link of guide.related ?? []) {

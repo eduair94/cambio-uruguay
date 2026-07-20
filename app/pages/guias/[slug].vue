@@ -41,6 +41,28 @@
             <section v-for="(section, i) in guide.sections" :key="i" class="mb-6">
               <h2 class="text-h5 font-weight-bold mb-3">{{ section.heading }}</h2>
               <p class="text-body-1 text-grey-lighten-1 guide-prose">{{ section.body }}</p>
+              <div v-if="section.table" class="table-scroll mt-3">
+                <table class="guide-table cu-mobile-cards">
+                  <thead>
+                    <tr>
+                      <th v-for="(header, hi) in section.table.headers" :key="hi">
+                        {{ header }}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(row, ri) in section.table.rows" :key="ri">
+                      <td
+                        v-for="(cell, ci) in row"
+                        :key="ci"
+                        :data-label="ci === 0 ? '' : section.table.headers[ci]"
+                      >
+                        {{ cell }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </section>
           </article>
 
@@ -320,6 +342,34 @@ useHead({
 }
 .guide-steps-list li {
   padding-left: 0.25rem;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+.guide-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.guide-table th,
+.guide-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(var(--v-border-color), 0.12);
+  text-align: left;
+  vertical-align: top;
+}
+.guide-table thead th {
+  font-weight: 700;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: rgba(var(--v-theme-on-surface), 0.6);
+}
+.guide-table tbody th:first-child,
+.guide-table tbody td:first-child {
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .guide-link {
