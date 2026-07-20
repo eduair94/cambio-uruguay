@@ -1,5 +1,5 @@
-import { cambio_info } from "./classes/cambioInfo";
-import { MongooseServer } from "./classes/database";
+import { cambio_info } from "../../classes/cambioInfo";
+import { MongooseServer } from "../../classes/database";
 
 async function main() {
   await MongooseServer.startConnectionPromise();

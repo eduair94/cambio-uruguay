@@ -1,7 +1,7 @@
-import { Cambio } from "./classes/cambio";
-import { MongooseServer } from "./classes/database";
-import { origins } from "./classes/origins";
-import { CambioObj } from "./interfaces/Cambio";
+import { Cambio } from "../../classes/cambio";
+import { MongooseServer } from "../../classes/database";
+import { origins } from "../../classes/origins";
+import { CambioObj } from "../../interfaces/Cambio";
 import "dotenv/config";
 
 // Some UY gov / casa de cambio sites have invalid TLS chains

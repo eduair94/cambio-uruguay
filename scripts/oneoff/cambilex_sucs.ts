@@ -1,5 +1,5 @@
-import CambioCambilex from "./classes/cambios/cambilex";
-import { MongooseServer } from "./classes/database";
+import CambioCambilex from "../../classes/cambios/cambilex";
+import { MongooseServer } from "../../classes/database";
 
 async function main() {
   await MongooseServer.startConnectionPromise();

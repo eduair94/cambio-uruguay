@@ -1,6 +1,6 @@
-import BCU_Details from "./classes/bcu_details";
-import { cambio_info } from "./classes/cambioInfo";
-import { MongooseServer } from "./classes/database";
+import BCU_Details from "../../classes/bcu_details";
+import { cambio_info } from "../../classes/cambioInfo";
+import { MongooseServer } from "../../classes/database";
 
 const main = async () => {
   await MongooseServer.startConnectionPromise();

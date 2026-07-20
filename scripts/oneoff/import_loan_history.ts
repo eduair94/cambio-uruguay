@@ -15,8 +15,8 @@ dotenv.config();
 
 import fs from "fs";
 import path from "path";
-import { loadLoanRates, saveLoanRates, type HistoryEntry } from "./classes/loans/store";
-import { MongooseServer, withTimeout } from "./classes/database";
+import { loadLoanRates, saveLoanRates, type HistoryEntry } from "../../classes/loans/store";
+import { MongooseServer, withTimeout } from "../../classes/database";
 
 const FS_PATH = path.join(__dirname, "..", "app", ".data", "loans", "rates.json");
 

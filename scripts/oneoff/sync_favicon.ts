@@ -1,6 +1,6 @@
-import { Cambio } from "./classes/cambio";
-import { MongooseServer } from "./classes/database";
-import { sync_favicon } from "./classes/sync_favicon";
+import { Cambio } from "../../classes/cambio";
+import { MongooseServer } from "../../classes/database";
+import { sync_favicon } from "../../classes/sync_favicon";
 process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
 
 const main = async () => {

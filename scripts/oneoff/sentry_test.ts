@@ -1,6 +1,6 @@
 import '@sentry/tracing';
 import dotenv from "dotenv";
-import sentryInit from "./sentry";
+import sentryInit from "../../sentry";
 dotenv.config();
 const e = process.env;
 console.log("Sentry Init", e.sentry_dsn);

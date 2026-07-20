@@ -1,7 +1,7 @@
 import { GoogleSpreadsheet } from "google-spreadsheet";
-import { cambio_info } from "./classes/cambioInfo";
-import { MongooseServer } from "./classes/database";
-import * as credentials from "./sheet_key.json";
+import { cambio_info } from "../../classes/cambioInfo";
+import { MongooseServer } from "../../classes/database";
+import * as credentials from "../../sheet_key.json";
 
 const main = async () => {
   await MongooseServer.startConnectionPromise();

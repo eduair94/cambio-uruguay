@@ -1,7 +1,7 @@
 import axios from "axios";
 import axiosRetry from "axios-retry";
-import BCU_Details from "./classes/bcu_details";
-import { MongooseServer } from "./classes/database";
+import BCU_Details from "../../classes/bcu_details";
+import { MongooseServer } from "../../classes/database";
 process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
 axiosRetry(axios, {
   retries: 10, // number of retries

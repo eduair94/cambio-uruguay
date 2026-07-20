@@ -1,9 +1,9 @@
 import { GoogleSpreadsheet } from "google-spreadsheet";
-import BCU_Details from "./classes/bcu_details";
-import { cambio_info } from "./classes/cambioInfo";
-import { MongooseServer } from "./classes/database";
-import { origins } from "./classes/origins";
-import * as credentials from "./sheet_key.json";
+import BCU_Details from "../../classes/bcu_details";
+import { cambio_info } from "../../classes/cambioInfo";
+import { MongooseServer } from "../../classes/database";
+import { origins } from "../../classes/origins";
+import * as credentials from "../../sheet_key.json";
 
 const origin = process.argv[2];
 const find = origins[origin];

@@ -1,6 +1,6 @@
-import CambioPrex from './classes/cambios/prex';
-import { MongooseServer } from './classes/database';
-import sentryInit from './sentry';
+import CambioPrex from '../../classes/cambios/prex';
+import { MongooseServer } from '../../classes/database';
+import sentryInit from '../../sentry';
 
 const main = async () => {
 	sentryInit();

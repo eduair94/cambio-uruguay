@@ -1,7 +1,7 @@
 import moment from "moment-timezone";
-import { buildUpsertOps, chunkDateRange, detectGaps, type DateGap } from "./classes/bcu_backfill";
-import { fetchCotizaciones, type BcuQuote } from "./classes/bcu_soap";
-import { MongooseServer, Schema } from "./classes/database";
+import { buildUpsertOps, chunkDateRange, detectGaps, type DateGap } from "../../classes/bcu_backfill";
+import { fetchCotizaciones, type BcuQuote } from "../../classes/bcu_soap";
+import { MongooseServer, Schema } from "../../classes/database";
 
 /**
  * Backfill missing BCU history in the `cambio-uy` collection from the BCU SOAP

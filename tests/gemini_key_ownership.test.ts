@@ -12,7 +12,10 @@ describe("the Gemini key has exactly one owner", () => {
     const callers: string[] = [];
     const walk = (dir: string): void => {
       for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
-        if (["node_modules", "dist", ".git", "app", "mcp", "bots", "docs"].includes(e.name)) continue;
+        // `.claude` holds git worktrees (this repo's standard agent workflow), each a full checkout
+        // with its own classes/gemini.ts — walking in would false-red on the duplicate owner. CI checks
+        // out clean so never hits it; excluding it just makes local worktree runs match CI.
+        if (["node_modules", "dist", ".git", "app", "mcp", "bots", "docs", ".claude"].includes(e.name)) continue;
         const full = path.join(dir, e.name);
         if (e.isDirectory()) walk(full);
         else if (e.name.endsWith(".ts") && !e.name.endsWith(".test.ts")) {

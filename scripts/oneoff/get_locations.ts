@@ -1,6 +1,6 @@
-import { Cambio } from "./classes/cambio";
-import { MongooseServer } from "./classes/database";
-import { origins } from "./classes/origins";
+import { Cambio } from "../../classes/cambio";
+import { MongooseServer } from "../../classes/database";
+import { origins } from "../../classes/origins";
 
 async function main() {
   // Every getLocations() write goes through MongooseServer, whose model calls

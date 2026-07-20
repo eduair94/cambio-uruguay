@@ -1,8 +1,8 @@
 import { GoogleSpreadsheet, GoogleSpreadsheetRow } from "google-spreadsheet";
-import { cambio_info } from "./classes/cambioInfo";
-import { MongooseServer } from "./classes/database";
-import { sleep } from "./config/config";
-import * as credentials from "./sheet_key.json";
+import { cambio_info } from "../../classes/cambioInfo";
+import { MongooseServer } from "../../classes/database";
+import { sleep } from "../../config/config";
+import * as credentials from "../../sheet_key.json";
 
 async function saveRow(row: GoogleSpreadsheetRow, att = 0) {
   try {

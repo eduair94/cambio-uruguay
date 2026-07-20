@@ -1,6 +1,6 @@
 import { apiReference } from "@scalar/express-api-reference";
 import express from "express";
-import { swaggerSpec } from "./swagger/config";
+import { swaggerSpec } from "../../swagger/config";
 
 const app = express();
 const port = 3529;
