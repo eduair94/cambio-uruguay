@@ -50,7 +50,7 @@
             <ol class="guide-steps-list">
               <li v-for="(step, i) in guide.steps" :key="i" class="mb-3">
                 <span class="font-weight-bold">{{ step.name }}.</span>
-                <span class="text-grey-lighten-1"> {{ step.text }}</span>
+                <span class="text-grey-lighten-1">{{ ' ' + step.text }}</span>
               </li>
             </ol>
           </section>

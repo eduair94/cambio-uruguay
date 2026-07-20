@@ -1695,7 +1695,7 @@ export const redditGuides: readonly Guide[] = [
       {
         heading:
           'Por qué el banco te complica recibir la plata (y no, no hace falta abrir cuenta afuera)',
-        body: 'Es un reclamo que se repite en Reddit: consultás en un banco cómo cobrar ingresos del exterior (gaming, streaming, clientes freelance) y te cruzás con evasivas o directamente con un gerente que te sugiere abrir la cuenta en Paraguay o Estados Unidos. No hay una ley uruguaya que te lo prohíba ni sos un caso único en el mundo: los bancos están obligados por las normas de prevención de lavado de activos (Circular 2.311 del BCU) a conocer la actividad y el origen de los fondos de cada cliente, y una cuenta personal que empieza a recibir transferencias recurrentes desde afuera sin factura ni contrato de por medio activa esos controles, sea el ingreso de un cliente freelance, de una plataforma de streaming o de un torneo. BROU, como banco estatal grande, suele ser el más estricto en este punto (además, bloquea las transferencias de Revolut). La salida real no es cambiarte de país: es facturar esa plata formalizándote (ver abajo) para que la transferencia quede justificada, o mientras tanto recibirla por una fintech armada para esto, como Takenos, y pasarla a pesos de a poco asumiendo su comisión de cash-out. Y antes de resignarte a un solo banco, compará: en la comparativa de bancos del sitio hay un filtro pensado justo para cobrar del exterior en dólares, donde varias entidades privadas puntúan mejor que BROU en esta operativa.',
+        body: 'Es un reclamo que se repite en Reddit: consultás en un banco cómo cobrar ingresos del exterior (gaming, streaming, clientes freelance) y te cruzás con evasivas o con un gerente que te sugiere abrir la cuenta en otro país. No hay una ley uruguaya que te lo prohíba: los bancos están obligados por la Circular N.º 2.311 del BCU (23/11/2018, Recopilación de Normas de Prevención de Lavado de Activos, consultable en bcu.gub.uy) a justificar la procedencia de los fondos y documentar la situación patrimonial y económica de cada cliente. Una cuenta personal que recibe transferencias recurrentes desde afuera sin factura ni contrato de por medio activa esos controles en cualquier banco del mundo, no solo acá. BROU, como banco estatal grande, suele ser el más estricto en este punto (además, bloquea las transferencias de Revolut). Abajo está la salida real —formalizarte— y, en las preguntas frecuentes, por qué conviene no resignarse a un solo banco.',
       },
       {
         heading: 'Unipersonal, Literal E y monotributo',
@@ -1723,6 +1723,12 @@ export const redditGuides: readonly Guide[] = [
       { label: 'Cómo funciona el IRPF', to: '/guias/como-funciona-el-irpf-uruguay' },
       { label: 'Cómo empezar a invertir', to: '/guias/como-empezar-a-invertir-uruguay' },
       { label: 'Mejores bancos de Uruguay', to: '/mejores-bancos-uruguay' },
+      { label: 'Tarjetas de débito y comisiones USD', to: '/tarjetas-de-debito-uruguay' },
+      { label: 'Apps para cobrar del exterior', to: '/apps-economia-uruguay' },
+      {
+        label: 'Glosario: origen de fondos',
+        to: '/glosario/declaracion-jurada-origen-de-fondos',
+      },
     ],
     steps: [
       {
@@ -1744,6 +1750,16 @@ export const redditGuides: readonly Guide[] = [
       {
         name: 'Cumplí las obligaciones periódicas',
         text: 'Pagá los aportes mensuales al BPS y presentá las declaraciones de impuestos en fecha. Apoyate en un contador para las liquidaciones y los tipos de cambio.',
+      },
+    ],
+    faqs: [
+      {
+        q: '¿Es legal recibir pagos del exterior (gaming, streaming, clientes freelance) en un banco uruguayo?',
+        a: 'Sí, no hay ninguna restricción legal para recibir ingresos del exterior en una cuenta uruguaya. Lo que exige el banco es poder justificar el origen de esos fondos, según la Circular N.º 2.311 del BCU, y por eso pide factura, contrato u otro respaldo cuando la transferencia se vuelve recurrente. Facturando esos ingresos como monotributista o unipersonal, el trámite se destraba.',
+      },
+      {
+        q: '¿Por qué el gerente me sugirió abrir la cuenta en Paraguay o Estados Unidos en vez de ayudarme?',
+        a: 'Porque para un banco, sobre todo uno estatal grande como BROU, es más simple decir que no a una cuenta personal con ingresos recurrentes sin factura que asumir el análisis que exige la normativa antilavado. No es una política exclusiva contra vos: un banco privado suele puntuar mejor en operativa con el exterior, o podés formalizarte primero y volver a golpear la puerta con la documentación en regla.',
       },
     ],
   },
