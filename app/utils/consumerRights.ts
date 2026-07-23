@@ -17,6 +17,8 @@
 /** Cuál es la palanca legal más fuerte de cada caso — texto corto para el chip. */
 export interface ConsumerScenario {
   id: string
+  /** Agrupa los incidentes para que una lista larga siga siendo escaneable. */
+  group: ConsumerScenarioGroupId
   /** Lo que le pasó, en las palabras en que la gente lo cuenta. */
   label: string
   /** Un renglón para la tarjeta. */
@@ -32,6 +34,25 @@ export interface ConsumerScenario {
   deadlines: string[]
   /** Qué juntar antes de reclamar. */
   evidence: string[]
+  /** Renglones editables que aterrizan el incidente en el modelo de reclamo. */
+  complaintFacts: string[]
+  /** Soluciones razonables para este incidente; una se inserta en el reclamo. */
+  remedies: ConsumerRemedy[]
+}
+
+export type ConsumerScenarioGroupId = 'entrega' | 'producto' | 'cobro' | 'oferta-servicio'
+
+export interface ConsumerScenarioGroup {
+  id: ConsumerScenarioGroupId
+  label: string
+  description: string
+  icon: string
+}
+
+export interface ConsumerRemedy {
+  id: string
+  label: string
+  request: string
 }
 
 /** Un derecho de fondo del consumidor online. */
@@ -66,6 +87,46 @@ export interface KeyFigure {
   value: string
 }
 
+/** Categorías reales del problema; ordenan el selector sin esconder ningún caso. */
+export const CONSUMER_SCENARIO_GROUPS: readonly ConsumerScenarioGroup[] = Object.freeze([
+  {
+    id: 'entrega',
+    label: 'Entrega y pedido',
+    description: 'No llegó, llegó tarde, incompleto, equivocado o dañado.',
+    icon: 'mdi-truck-delivery-outline',
+  },
+  {
+    id: 'producto',
+    label: 'Producto y garantía',
+    description: 'Fallas, reparación, producto usado o un riesgo de seguridad.',
+    icon: 'mdi-tools',
+  },
+  {
+    id: 'cobro',
+    label: 'Cancelación y cobros',
+    description: 'No cancelan, no reintegran, cobran de más o renuevan solos.',
+    icon: 'mdi-credit-card-outline',
+  },
+  {
+    id: 'oferta-servicio',
+    label: 'Oferta y servicios',
+    description: 'Publicidad engañosa, servicio incumplido o algo no solicitado.',
+    icon: 'mdi-file-document-alert-outline',
+  },
+])
+
+/** Excepciones taxativas al retracto de las ventas a distancia (Ley 17.250, art. 16-BIS). */
+export const RETRACT_EXCEPTIONS: readonly string[] = Object.freeze([
+  'Productos hechos según tus especificaciones o claramente personalizados.',
+  'Productos que se deterioran o vencen con rapidez.',
+  'Productos precintados que no admiten devolución por salud o higiene, si abriste el precinto.',
+  'Grabaciones, videos o software precintados, si los abriste después de recibirlos.',
+  'Prensa diaria, publicaciones periódicas o revistas, salvo suscripciones.',
+  'Compras realizadas mediante subasta pública.',
+  'Alojamiento no residencial, comida o actividades de esparcimiento con fecha o período específico.',
+  'Contenido digital sin soporte físico cuya ejecución comenzó con tu consentimiento expreso y sabiendo que perdías el desistimiento.',
+])
+
 export const INTRO =
   'Comprar por internet, teléfono, TV o catálogo en Uruguay está amparado por la Ley 17.250 de ' +
   'Relaciones de Consumo, una norma de ORDEN PÚBLICO cuyos derechos son IRRENUNCIABLES: ninguna ' +
@@ -86,6 +147,7 @@ export const GOLDEN_RULE =
 export const CONSUMER_SCENARIOS: readonly ConsumerScenario[] = Object.freeze([
   {
     id: 'cobraron-no-entregan',
+    group: 'entrega',
     label: 'Me cobraron y no entregan (ni cancelan ni devuelven)',
     short: 'Pagaste, no llega, no te cancelan y no te devuelven.',
     icon: 'mdi-package-variant-remove',
@@ -98,8 +160,8 @@ export const CONSUMER_SCENARIOS: readonly ConsumerScenario[] = Object.freeze([
       'de la compra a distancia, podés arrepentirte sin causa (art. 16). Si pagaste con tarjeta, en ' +
       'paralelo podés pedir el contracargo a tu emisor (no es un derecho de la ley, sino una regla de las ' +
       'redes Visa/Mastercard y de tu contrato de tarjeta). Si pagaste por transferencia o por Abitab/' +
-      'RedPagos no hay contracargo: la recuperación pasa por la denuncia penal por estafa y la mediación ' +
-      'de Defensa del Consumidor.',
+      'RedPagos no hay contracargo: reclamá al vendedor y ante Defensa del Consumidor; la denuncia penal ' +
+      'corresponde solamente si hay indicios de una estafa, no por cualquier atraso.',
     articles: [
       'Ley 17.250 art. 33 — incumplimiento: cumplimiento forzado, sustitución o resolución con devolución actualizada, a tu elección',
       'Ley 17.250 art. 16 — arrepentimiento en la venta a distancia (5 días hábiles)',
@@ -107,7 +169,7 @@ export const CONSUMER_SCENARIOS: readonly ConsumerScenario[] = Object.freeze([
     ],
     deadlines: [
       'Arrepentimiento: 5 días hábiles desde el contrato o desde la entrega, a tu opción.',
-      'Contracargo con tarjeta: orientativo ~120 días de la red, pero el emisor local suele exigir mucho menos — confirmalo con tu banco apenas veas el cargo.',
+      'Contracargo con tarjeta: el plazo depende del emisor, la red y tu contrato — confirmalo con tu banco apenas detectes el incumplimiento.',
     ],
     evidence: [
       'Comprobante de pago (voucher, resumen de tarjeta, transferencia o giro).',
@@ -115,9 +177,30 @@ export const CONSUMER_SCENARIOS: readonly ConsumerScenario[] = Object.freeze([
       'Captura de la publicación con el precio y el plazo de entrega prometido.',
       'Chats, mails y WhatsApp con el vendedor (incluido el "está en cadetería").',
     ],
+    complaintFacts: [
+      'Producto o servicio comprado: [___].',
+      'Importe y medio de pago: [___].',
+      'Fecha o plazo de entrega prometido: [___].',
+      'Al día de hoy no recibí la compra ni una solución: [describí los reclamos previos].',
+    ],
+    remedies: [
+      {
+        id: 'entrega',
+        label: 'Que entreguen lo comprado',
+        request:
+          'Exijo el cumplimiento de la compra y la entrega efectiva de lo adquirido dentro de [48/72] horas, sin costos adicionales.',
+      },
+      {
+        id: 'devolucion',
+        label: 'Cancelar y recuperar lo pagado',
+        request:
+          'Resuelvo el contrato y exijo la restitución inmediata de todo lo pagado, monetariamente actualizada, más los daños y perjuicios que correspondan.',
+      },
+    ],
   },
   {
     id: 'no-cancelan',
+    group: 'cobro',
     label: 'No me dejan cancelar la compra',
     short: 'Estás dentro de los días y no te aceptan el arrepentimiento.',
     icon: 'mdi-cart-off',
@@ -141,9 +224,24 @@ export const CONSUMER_SCENARIOS: readonly ConsumerScenario[] = Object.freeze([
       'Comprobante de pago.',
       'Captura de los términos y condiciones donde falte (o figure) el aviso del derecho de arrepentimiento.',
     ],
+    complaintFacts: [
+      'Compra o contrato celebrado a distancia el: [fecha].',
+      'Producto o servicio: [___].',
+      'Comuniqué mi arrepentimiento por [medio] el [fecha] y adjunto constancia.',
+      'El comercio rechazó o ignoró la cancelación: [respuesta recibida].',
+    ],
+    remedies: [
+      {
+        id: 'cancelacion',
+        label: 'Cancelar y obtener el reintegro',
+        request:
+          'Comunico el ejercicio del derecho de retracto, solicito que se deje sin efecto el contrato y que se restituya inmediatamente todo lo pagado por el mismo medio de pago.',
+      },
+    ],
   },
   {
     id: 'no-devuelven',
+    group: 'cobro',
     label: 'No me devuelven la plata',
     short: 'Corresponde la devolución y no te reintegran.',
     icon: 'mdi-cash-refund',
@@ -159,16 +257,31 @@ export const CONSUMER_SCENARIOS: readonly ConsumerScenario[] = Object.freeze([
     ],
     deadlines: [
       'La restitución debe ser inmediata; la demora habilita a exigir el reajuste de lo adeudado.',
-      'Reclamo ante Defensa del Consumidor: duración estimada ~45 días hábiles; seguimiento a los 15 días hábiles.',
+      'Reclamo ante Defensa del Consumidor: duración estimada 45 días corridos; seguimiento a los 15 días hábiles del envío al proveedor.',
     ],
     evidence: [
       'Constancia de la devolución acordada o reclamada.',
       'Comprobante de pago original.',
       'Fechas de las comunicaciones para acreditar la demora.',
     ],
+    complaintFacts: [
+      'Compra o contrato: [___].',
+      'Importe a reintegrar y medio de pago original: [___].',
+      'La devolución fue solicitada o aceptada el: [fecha].',
+      'Desde esa fecha no recibí el reintegro: [describí respuestas o comprobantes].',
+    ],
+    remedies: [
+      {
+        id: 'reintegro',
+        label: 'Cobrar el reintegro pendiente',
+        request:
+          'Exijo la restitución inmediata de la totalidad de lo pagado por el mismo medio de pago, monetariamente actualizada por la demora.',
+      },
+    ],
   },
   {
     id: 'esta-en-cadeteria',
+    group: 'entrega',
     label: 'Dice "está en cadetería" y nunca llega',
     short: '"Ya salió", "está en el día"… y no aparece.',
     icon: 'mdi-truck-alert-outline',
@@ -181,7 +294,7 @@ export const CONSUMER_SCENARIOS: readonly ConsumerScenario[] = Object.freeze([
       'cadetería" un día tras otro no suspende ni corre ningún plazo a favor del comercio: la excusa no es cumplimiento.',
     articles: [
       'Ley 17.250 art. 14 — las precisiones de la oferta (incluido el plazo de entrega) obligan e integran el contrato',
-      'Ley 17.250 art. 32 — el proveedor responde por los vicios o la falta de conformidad de lo entregado',
+      'Ley 17.250 art. 32 — deber de buena fe e información también durante la ejecución del contrato',
       'Ley 17.250 art. 33 — ante el incumplimiento, elegís cumplimiento, sustitución o resolución con devolución actualizada',
     ],
     deadlines: [
@@ -193,9 +306,30 @@ export const CONSUMER_SCENARIOS: readonly ConsumerScenario[] = Object.freeze([
       'Seguimiento del envío, si existe.',
       'Comprobante de pago.',
     ],
+    complaintFacts: [
+      'Producto y número de pedido: [___].',
+      'Entrega prometida para el: [fecha].',
+      'Estado o seguimiento informado por el comercio: [___].',
+      'Días de atraso y reclamos ya realizados: [___].',
+    ],
+    remedies: [
+      {
+        id: 'entrega-seguimiento',
+        label: 'Entrega inmediata con seguimiento',
+        request:
+          'Exijo la entrega efectiva dentro de [48/72] horas y el envío de un comprobante de despacho y seguimiento verificable, sin costos adicionales.',
+      },
+      {
+        id: 'resolver-atraso',
+        label: 'Cancelar por el atraso',
+        request:
+          'Ante el incumplimiento del plazo prometido, resuelvo el contrato y exijo la devolución inmediata de todo lo pagado, monetariamente actualizada.',
+      },
+    ],
   },
   {
     id: 'producto-defectuoso',
+    group: 'producto',
     label: 'Llegó un producto fallado o distinto al publicado',
     short: 'Vino roto, no funciona o no es lo que compraste.',
     icon: 'mdi-package-variant-closed-remove',
@@ -206,7 +340,7 @@ export const CONSUMER_SCENARIOS: readonly ConsumerScenario[] = Object.freeze([
       'publicado, además la oferta te obliga a tu favor. Ninguna cláusula que exonere al vendedor por vicios es ' +
       'válida: es abusiva. Esta garantía legal es un mínimo y es adicional a cualquier garantía comercial que te den.',
     articles: [
-      'Ley 17.250 art. 32 — responsabilidad del proveedor por vicios o falta de conformidad',
+      'Ley 17.250 art. 32 — buena fe y deber de informar durante la ejecución del contrato',
       'Ley 17.250 art. 33 — reparación, sustitución o resolución con devolución actualizada, a tu elección',
       'Ley 17.250 art. 37 — plazos de caducidad de la garantía legal (vicios aparentes y ocultos)',
       'Ley 17.250 art. 31 — la cláusula que exonera al vendedor por vicios es abusiva',
@@ -221,9 +355,36 @@ export const CONSUMER_SCENARIOS: readonly ConsumerScenario[] = Object.freeze([
       'Factura o boleta y el certificado de garantía, si lo hay.',
       'Comunicaciones reclamando el arreglo o el cambio.',
     ],
+    complaintFacts: [
+      'Producto, marca, modelo y número de serie: [___].',
+      'Fecha de entrega: [___].',
+      'Defecto detectado y fecha en que apareció: [___].',
+      'Uso normal realizado y reclamos o diagnósticos previos: [___].',
+    ],
+    remedies: [
+      {
+        id: 'reparacion',
+        label: 'Reparación sin costo',
+        request:
+          'Exijo la reparación integral del producto, sin costo, dentro de un plazo razonable y con constancia escrita de las piezas y fechas de reparación.',
+      },
+      {
+        id: 'sustitucion',
+        label: 'Cambio por uno equivalente',
+        request:
+          'Exijo la sustitución del producto defectuoso por otro nuevo, equivalente y conforme a lo publicado, sin costos adicionales.',
+      },
+      {
+        id: 'devolucion-defecto',
+        label: 'Devolución del dinero',
+        request:
+          'Resuelvo el contrato por falta de conformidad y exijo la restitución de todo lo pagado, monetariamente actualizada, más los daños que correspondan.',
+      },
+    ],
   },
   {
     id: 'publicidad-enganosa',
+    group: 'oferta-servicio',
     label: 'La publicidad era engañosa',
     short: 'Prometían algo que no cumplieron.',
     icon: 'mdi-bullhorn-variant-outline',
@@ -247,6 +408,408 @@ export const CONSUMER_SCENARIOS: readonly ConsumerScenario[] = Object.freeze([
       'Captura o grabación del aviso engañoso, con fecha.',
       'Comprobante de lo que efectivamente recibiste vs. lo publicitado.',
       'Comprobante de pago.',
+    ],
+    complaintFacts: [
+      'Producto o servicio contratado: [___].',
+      'Promesa concreta de la publicidad: [___].',
+      'Lo que efectivamente recibí o se me cobró: [___].',
+      'Adjunto captura o copia del anuncio difundido el: [fecha].',
+    ],
+    remedies: [
+      {
+        id: 'cumplir-publicidad',
+        label: 'Que cumplan lo anunciado',
+        request:
+          'Exijo el cumplimiento íntegro de las condiciones publicitadas, que integran el contrato, sin costo adicional.',
+      },
+      {
+        id: 'resolver-publicidad',
+        label: 'Cancelar y recuperar lo pagado',
+        request:
+          'Resuelvo el contrato por incumplimiento de la oferta y exijo la restitución de todo lo pagado, monetariamente actualizada.',
+      },
+    ],
+  },
+  {
+    id: 'pedido-incompleto-equivocado-danado',
+    group: 'entrega',
+    label: 'Llegó incompleto, equivocado o dañado en el envío',
+    short: 'Faltan piezas, mandaron otro producto o llegó golpeado.',
+    icon: 'mdi-package-variant-closed-alert',
+    lever: 'Arts. 14 y 33: la entrega debe coincidir',
+    answer:
+      'Recibir algo distinto, incompleto o dañado no es cumplimiento. Si el envío era parte de la compra o fue ' +
+      'organizado por el vendedor, reclamale al comercio: no puede derivarte sin más al correo o a la cadetería. ' +
+      'Podés exigir que complete o sustituya el pedido sin costo, aceptar una reparación equivalente o resolver el ' +
+      'contrato con devolución actualizada, más los daños que correspondan. Si contrataste al transportista por ' +
+      'separado, puede existir además un reclamo propio contra ese transportista.',
+    articles: [
+      'Ley 17.250 art. 14 — la descripción y las condiciones publicadas integran el contrato',
+      'Ley 17.250 art. 33 — ante el incumplimiento elegís cumplimiento, sustitución o resolución',
+      'Ley 17.250 art. 37 — plazos para reclamar vicios aparentes u ocultos',
+    ],
+    deadlines: [
+      'Avisá el faltante, error o daño apenas abrís el paquete y antes de descartar el embalaje.',
+      'Si funciona como vicio aparente: 30 días para no duraderos o 90 días para duraderos desde la entrega.',
+    ],
+    evidence: [
+      'Video o fotos de la apertura, el embalaje, la etiqueta y el estado del contenido.',
+      'Remito o detalle del pedido para mostrar qué faltó o qué modelo correspondía.',
+      'Captura de la publicación y comprobante de pago.',
+      'Constancia del reclamo inmediato al vendedor y, si corresponde, al transportista.',
+    ],
+    complaintFacts: [
+      'Producto y número de pedido: [___].',
+      'Fecha de entrega y empresa que transportó: [___].',
+      'Lo comprado: [___]. Lo efectivamente recibido: [___].',
+      'Faltante, error o daño documentado: [___].',
+    ],
+    remedies: [
+      {
+        id: 'completar-sustituir',
+        label: 'Completar o cambiar el pedido',
+        request:
+          'Exijo que se complete o sustituya el pedido por el producto correcto y en perfecto estado, sin costo adicional, dentro de [48/72] horas.',
+      },
+      {
+        id: 'devolucion-pedido',
+        label: 'Devolverlo y recuperar lo pagado',
+        request:
+          'Resuelvo el contrato por entrega no conforme y exijo la restitución de todo lo pagado, monetariamente actualizada, incluyendo los gastos de envío.',
+      },
+    ],
+  },
+  {
+    id: 'garantia-reparacion-incumplida',
+    group: 'producto',
+    label: 'No cumplen la garantía o la reparación se eterniza',
+    short: 'No reciben el producto, lo devuelven igual o no dan constancia.',
+    icon: 'mdi-wrench-clock-outline',
+    lever: 'Art. 23: garantía escrita y trazable',
+    answer:
+      'Si ofrecieron garantía, deben entregarla por escrito y cumplir su cobertura. Cada reparación en garantía ' +
+      'debe dejar constancia de qué se hizo, qué piezas se cambiaron y las fechas de ingreso y devolución. Todo el ' +
+      'tiempo que quedaste sin el producto prolonga el plazo de garantía. Si la reparación prometida no se cumple, ' +
+      'podés usar las opciones del art. 33; y aun sin garantía comercial conservás el reclamo por vicios del art. 37.',
+    articles: [
+      'Ley 17.250 art. 23 — contenido de la garantía, constancia de reparación y extensión del plazo',
+      'Ley 17.250 art. 33 — opciones frente al incumplimiento de la garantía ofrecida',
+      'Ley 17.250 art. 37 — reclamo por vicios aunque no exista garantía comercial',
+    ],
+    deadlines: [
+      'La garantía contractual rige por el plazo ofrecido y se extiende por todo el tiempo que el producto esté en reparación.',
+      'Sin garantía comercial: vicios aparentes, 30/90 días; ocultos, aparición dentro de 6 meses y reclamo dentro de 3 meses.',
+    ],
+    evidence: [
+      'Certificado o publicación donde ofrecieron la garantía.',
+      'Órdenes de servicio, constancias de ingreso y diagnóstico técnico.',
+      'Fechas exactas en que entregaste y recuperaste el producto.',
+      'Fotos o videos que demuestren que la falla continúa.',
+    ],
+    complaintFacts: [
+      'Producto, número de serie y garantía ofrecida: [___].',
+      'Ingresó al servicio técnico el [fecha] por la falla: [___].',
+      'Reparaciones realizadas o respuesta recibida: [___].',
+      'Tiempo total sin poder usar el producto: [___].',
+    ],
+    remedies: [
+      {
+        id: 'cumplir-garantia',
+        label: 'Que cumplan la garantía',
+        request:
+          'Exijo el cumplimiento efectivo de la garantía, sin costo y dentro de [plazo], con constancia completa de la reparación y extensión del plazo de cobertura.',
+      },
+      {
+        id: 'sustituir-garantia',
+        label: 'Cambio por falla reiterada',
+        request:
+          'Ante la reparación incumplida o ineficaz, exijo la sustitución por un producto equivalente y en perfecto funcionamiento, sin costo.',
+      },
+      {
+        id: 'resolver-garantia',
+        label: 'Devolución del dinero',
+        request:
+          'Ante el incumplimiento de la garantía, resuelvo el contrato y exijo la devolución de lo pagado, monetariamente actualizada.',
+      },
+    ],
+  },
+  {
+    id: 'usado-como-nuevo',
+    group: 'producto',
+    label: 'Me vendieron como nuevo algo usado o reacondicionado',
+    short: 'Tenía uso, piezas cambiadas o un defecto que no informaron.',
+    icon: 'mdi-package-variant',
+    lever: 'Art. 19: debían avisarlo claramente',
+    answer:
+      'La oferta de un producto defectuoso, usado o reconstituido debe decirlo de forma clara y visible. Si te lo ' +
+      'vendieron como nuevo, la entrega no coincide con la oferta y podés exigir un producto nuevo conforme a lo ' +
+      'publicado o resolver la compra con devolución actualizada. Guardá la publicación: lo informado obliga al vendedor.',
+    articles: [
+      'Ley 17.250 art. 19 — debe informarse de forma clara y visible si es defectuoso, usado o reconstituido',
+      'Ley 17.250 art. 14 — la información publicada integra el contrato',
+      'Ley 17.250 art. 33 — cumplimiento, sustitución o resolución a elección del consumidor',
+    ],
+    deadlines: [
+      'Reclamá apenas detectes señales de uso o reacondicionamiento y conservá el estado del producto.',
+      'Si existe un vicio aparente, aplican 30 días (no duradero) o 90 días (duradero) desde la entrega.',
+    ],
+    evidence: [
+      'Captura donde se ofrecía como nuevo.',
+      'Fotos del desgaste, sellos abiertos, ciclos de uso, piezas o embalaje.',
+      'Número de serie y diagnóstico que permita acreditar uso previo, si existe.',
+      'Factura, boleta y comunicaciones con el vendedor.',
+    ],
+    complaintFacts: [
+      'Producto ofrecido como nuevo: [marca, modelo y serie].',
+      'Fecha de entrega: [___].',
+      'Indicios de uso, reconstrucción o defecto no informado: [___].',
+      'La publicación o factura lo describía como: [___].',
+    ],
+    remedies: [
+      {
+        id: 'nuevo-conforme',
+        label: 'Recibir uno realmente nuevo',
+        request:
+          'Exijo la sustitución por un producto nuevo, sellado y conforme a la oferta, sin costo adicional.',
+      },
+      {
+        id: 'devolucion-usado',
+        label: 'Devolverlo y recuperar lo pagado',
+        request:
+          'Resuelvo el contrato por información omitida y entrega no conforme, y exijo la restitución actualizada de todo lo pagado.',
+      },
+    ],
+  },
+  {
+    id: 'producto-peligroso',
+    group: 'producto',
+    label: 'El producto parece peligroso o causó un daño',
+    short: 'Sobrecalienta, da descarga, se incendia o pone en riesgo la salud.',
+    icon: 'mdi-alert-octagon-outline',
+    lever: 'Arts. 6 a 11: salud y seguridad',
+    answer:
+      'Dejá de usarlo y no intentes repararlo por tu cuenta. La ley protege la salud y la seguridad, exige advertir ' +
+      'los riesgos y obliga al proveedor a comunicar a autoridades y consumidores una peligrosidad conocida después ' +
+      'de la venta. Además del reclamo para retirar, cambiar o devolver el producto, una situación de riesgo amerita ' +
+      'denuncia ante Defensa del Consumidor. Si hubo lesiones o daños materiales, conservá todo y buscá asesoramiento profesional.',
+    articles: [
+      'Ley 17.250 art. 6 lit. A y arts. 7 a 11 — protección, información y comunicación de riesgos',
+      'Ley 17.250 art. 34 — responsabilidad cuando el vicio o riesgo causa un daño',
+      'Ley 17.250 art. 38 — prescripción de la acción por daños personales',
+    ],
+    deadlines: [
+      'Suspendé el uso y reportá el riesgo de inmediato; no esperes a que venza la garantía.',
+      'Daños personales: la acción prescribe a los 4 años desde que conociste el daño, el defecto y la identidad del productor; se extingue a los 10 años de la puesta en el mercado.',
+    ],
+    evidence: [
+      'Fotos o video del riesgo, sin exponerte nuevamente.',
+      'Producto, embalaje, cargador, manual y número de serie: no los descartes.',
+      'Factura, publicación y cualquier alerta o aviso del fabricante.',
+      'Informes médicos, técnicos, de Bomberos o presupuestos de daños, si corresponde.',
+    ],
+    complaintFacts: [
+      'Producto, marca, modelo y serie: [___].',
+      'Riesgo o incidente ocurrido el [fecha]: [___].',
+      'Daños personales o materiales producidos: [___].',
+      'Medidas tomadas y aviso previo al proveedor: [___].',
+    ],
+    remedies: [
+      {
+        id: 'retiro-seguro',
+        label: 'Retiro seguro y sustitución',
+        request:
+          'Exijo el retiro seguro del producto a cargo del proveedor y su sustitución por otro que no presente el riesgo, sin costo.',
+      },
+      {
+        id: 'devolucion-peligro',
+        label: 'Retiro y devolución del dinero',
+        request:
+          'Resuelvo el contrato y exijo el retiro seguro del producto, la devolución actualizada de lo pagado y el resarcimiento de los daños acreditados.',
+      },
+    ],
+  },
+  {
+    id: 'precio-cargo-no-informado',
+    group: 'cobro',
+    label: 'Me cobraron otro precio o un cargo no informado',
+    short: 'El total cambió, apareció una comisión o cobraron más cuotas.',
+    icon: 'mdi-receipt-text-alert-outline',
+    lever: 'Art. 15: precio total antes de comprar',
+    answer:
+      'Antes de contratar deben informarte el precio con impuestos, la financiación, cantidad y periodicidad de ' +
+      'pagos, intereses y gastos adicionales. El precio y las condiciones publicadas integran el contrato. Si te ' +
+      'cobraron más o agregaron un concepto no informado, reclamá la diferencia o resolvé el contrato por incumplimiento.',
+    articles: [
+      'Ley 17.250 art. 15 — precio con impuestos, financiación, intereses y gastos antes de contratar',
+      'Ley 17.250 arts. 13 y 14 — prevalece la información más favorable y lo publicado obliga',
+      'Ley 17.250 art. 33 — opciones ante el incumplimiento',
+    ],
+    deadlines: [
+      'Reclamá apenas aparezca el cargo y antes del vencimiento del resumen si pagaste con tarjeta.',
+      'Los plazos para desconocer o disputar el cargo con el emisor dependen del contrato y del medio de pago: consultalos de inmediato.',
+    ],
+    evidence: [
+      'Captura del precio final, carrito y condiciones de cuotas antes de confirmar.',
+      'Factura, comprobante y resumen donde aparece la diferencia.',
+      'Detalle del cargo, comisión, interés o cuota que no fue informado.',
+      'Respuesta del comercio y número de reclamo ante el emisor, si existe.',
+    ],
+    complaintFacts: [
+      'Precio total y condiciones informadas antes de comprar: [___].',
+      'Importe o concepto efectivamente cobrado: [___].',
+      'Diferencia reclamada: [___].',
+      'Fecha, medio de pago y comprobante: [___].',
+    ],
+    remedies: [
+      {
+        id: 'reintegrar-diferencia',
+        label: 'Reintegro de la diferencia',
+        request:
+          'Exijo el reintegro inmediato de la diferencia y la corrección de las cuotas o cargos para respetar el precio y las condiciones informadas.',
+      },
+      {
+        id: 'resolver-cargo',
+        label: 'Cancelar por el cobro incorrecto',
+        request:
+          'Resuelvo el contrato por cobro no informado y exijo la restitución actualizada de todo lo pagado y la anulación de cargos pendientes.',
+      },
+    ],
+  },
+  {
+    id: 'renovacion-cobro-recurrente',
+    group: 'cobro',
+    label: 'Renovaron la suscripción o siguen cobrando después de la baja',
+    short: 'Se renovó sola, no tramitan la baja o reaparecen cargos.',
+    icon: 'mdi-autorenew-off',
+    lever: 'Art. 31 lit. I: baja dentro de 60 días',
+    answer:
+      'Es abusiva la cláusula que te obliga a avisar antes de una fecha límite para evitar la renovación automática. ' +
+      'Dentro de los 60 días corridos desde la renovación podés rescindir o resolver el contrato, incluso si es una ' +
+      'cuota social o afiliación, y el proveedor tiene como máximo 15 días corridos para procesar la baja. Guardá ' +
+      'constancia: los cobros posteriores a la baja efectiva o por un servicio no prestado también se reclaman.',
+    articles: [
+      'Ley 17.250 art. 31 lit. I — rescisión dentro de 60 días de la renovación y baja en máximo 15 días',
+      'Ley 17.250 art. 31 lits. B y H — no vale la renuncia de derechos ni tomar el silencio como aceptación',
+      'Ley 17.250 art. 33 — remedios frente a cargos o prestaciones incumplidas',
+    ],
+    deadlines: [
+      'Pedí la baja dentro de los 60 días corridos desde la renovación automática.',
+      'El proveedor tiene un máximo de 15 días corridos desde tu solicitud para procesarla.',
+    ],
+    evidence: [
+      'Contrato y fecha exacta de la renovación.',
+      'Constancia fechada de la solicitud de baja.',
+      'Resúmenes o recibos con los cobros posteriores.',
+      'Capturas donde la empresa niega la baja o exige un preaviso vencido.',
+    ],
+    complaintFacts: [
+      'Servicio, suscripción o afiliación: [___].',
+      'Fecha de renovación automática: [___].',
+      'Solicité la baja el [fecha] por [medio], con número de gestión [___].',
+      'Cobros posteriores o respuesta recibida: [___].',
+    ],
+    remedies: [
+      {
+        id: 'procesar-baja',
+        label: 'Procesar la baja',
+        request:
+          'Solicito la rescisión de la renovación automática y exijo que la baja se procese dentro del máximo legal de 15 días corridos, cesando los cobros.',
+      },
+      {
+        id: 'reintegrar-post-baja',
+        label: 'Baja y devolución de cobros posteriores',
+        request:
+          'Exijo la baja definitiva y el reintegro de todo cargo efectuado después de la fecha en que debió quedar procesada, con anulación de débitos futuros.',
+      },
+    ],
+  },
+  {
+    id: 'servicio-digital-no-prestado',
+    group: 'oferta-servicio',
+    label: 'El servicio o contenido digital no se prestó como prometieron',
+    short: 'Curso, reserva, software o trabajo pagado que no funciona o quedó a medias.',
+    icon: 'mdi-laptop-off',
+    lever: 'Arts. 20 y 33: descripción y plazo obligan',
+    answer:
+      'La oferta de servicios debe informar quién presta, qué incluye, materiales o tecnología, plazo, precio y ' +
+      'garantía cuando exista. Si no lo prestan, queda incompleto o no coincide con lo contratado, podés exigir ' +
+      'cumplimiento, aceptar una prestación equivalente o resolver con devolución actualizada. En un retracto, ' +
+      'solo pagás la parte efectivamente ejecutada; el contenido digital ya iniciado tiene una excepción específica ' +
+      'si consentiste expresamente comenzar y reconociste perder el desistimiento.',
+    articles: [
+      'Ley 17.250 art. 20 — información obligatoria en la oferta de servicios',
+      'Ley 17.250 art. 33 — opciones ante servicio no prestado o no conforme',
+      'Ley 17.250 arts. 16 y 16-BIS lit. H — retracto, parte ejecutada y excepción del contenido digital iniciado',
+    ],
+    deadlines: [
+      'Si usás el retracto y no aplica una excepción: 5 días hábiles desde el contrato o la entrega, a tu opción.',
+      'Si es incumplimiento, reclamá apenas venza el plazo o compruebes que el servicio no coincide.',
+    ],
+    evidence: [
+      'Descripción, alcance, fecha y condiciones del servicio publicado.',
+      'Comprobante de pago y contrato o correo de confirmación.',
+      'Capturas del error, contenido inaccesible o entregable incompleto.',
+      'Registro de horas, sesiones o parte efectivamente prestada.',
+    ],
+    complaintFacts: [
+      'Servicio o contenido contratado: [___].',
+      'Alcance y fecha de cumplimiento prometidos: [___].',
+      'Parte efectivamente prestada: [___].',
+      'Incumplimiento, error o faltante: [___].',
+    ],
+    remedies: [
+      {
+        id: 'cumplir-servicio',
+        label: 'Que completen o corrijan el servicio',
+        request:
+          'Exijo el cumplimiento completo y conforme del servicio dentro de [plazo], sin costo adicional.',
+      },
+      {
+        id: 'devolver-servicio',
+        label: 'Devolución total o de la parte no prestada',
+        request:
+          'Resuelvo el contrato y exijo la devolución inmediata y actualizada de lo pagado por la parte no ejecutada, o de la totalidad si la prestación carece de utilidad.',
+      },
+    ],
+  },
+  {
+    id: 'producto-servicio-no-solicitado',
+    group: 'oferta-servicio',
+    label: 'Me enviaron o activaron algo que nunca pedí',
+    short: 'Llegó un producto o apareció un servicio sin haberlo contratado.',
+    icon: 'mdi-package-variant-remove',
+    lever: 'Art. 22 lit. D: no pagás ni devolvés',
+    answer:
+      'Enviar un producto o activar un servicio que no pediste es una práctica abusiva. La ley lo equipara a una ' +
+      'muestra gratis: no genera obligación de pago ni de devolución. No uses ni aceptes condiciones nuevas; ' +
+      'dejá constancia de que nunca lo solicitaste y reclamá la anulación de cualquier cargo o deuda asociada.',
+    articles: [
+      'Ley 17.250 art. 22 lit. D — lo no solicitado no genera obligación de pago ni devolución',
+      'Ley 17.250 art. 31 lit. H — el silencio no puede tomarse como aceptación',
+    ],
+    deadlines: [
+      'Desconocé por escrito el producto, servicio o cargo apenas lo detectes.',
+      'Si aparece en una tarjeta o débito, avisá también al emisor dentro de su plazo contractual.',
+    ],
+    evidence: [
+      'Foto del paquete, etiqueta o pantalla donde aparece el servicio.',
+      'Contrato y comunicaciones que muestran que nunca lo solicitaste.',
+      'Factura, resumen o estado de cuenta si generaron un cargo.',
+      'Constancia del desconocimiento enviado al proveedor.',
+    ],
+    complaintFacts: [
+      'Producto o servicio no solicitado: [___].',
+      'Fecha en que fue enviado, activado o cobrado: [___].',
+      'Nunca presté consentimiento ni realicé este pedido: [detalles].',
+      'Cargo, factura o deuda generada: [___].',
+    ],
+    remedies: [
+      {
+        id: 'anular-no-solicitado',
+        label: 'Anular el servicio o cargo',
+        request:
+          'Exijo la baja inmediata del servicio, la anulación de todo cargo o deuda y confirmación escrita de saldo cero; dejo constancia de que no existe obligación de pago ni devolución.',
+      },
     ],
   },
 ])
@@ -344,6 +907,46 @@ export const CONSUMER_RIGHTS: readonly ConsumerRight[] = Object.freeze([
       'aceptado. La lista del art. 31 no es taxativa: puede haber otras cláusulas abusivas. Podés pedir su nulidad ' +
       'y el juez integra el contrato.',
   },
+  {
+    title: 'El precio final y todos los cargos deben aparecer antes de comprar',
+    plain:
+      'La oferta debe mostrar el precio con impuestos. Si hay crédito o cuotas, también debe informar el total ' +
+      'financiado, cantidad y frecuencia de pagos, intereses y cualquier gasto extra.',
+    articles: ['Ley 17.250 art. 15'],
+    practical:
+      'Guardá una captura del último paso del carrito. Si el cobro no coincide, exigí que respeten el precio ' +
+      'informado o que reintegren la diferencia; avisá además al emisor si aparece en una tarjeta.',
+  },
+  {
+    title: 'Podés salir de una renovación automática',
+    plain:
+      'No pueden imponerte una fecha límite previa a la renovación para dejarte atrapado. Desde que se renueva ' +
+      'automáticamente tenés 60 días corridos para pedir la baja y la empresa tiene hasta 15 días corridos para procesarla.',
+    articles: ['Ley 17.250 art. 31 lit. I'],
+    practical:
+      'Pedí la baja por un medio que deje fecha y número de gestión. Guardá los resúmenes y reclamá cualquier ' +
+      'cobro que continúe después del plazo máximo de procesamiento.',
+  },
+  {
+    title: 'Lo que nunca pediste no se paga ni se devuelve',
+    plain:
+      'Un producto enviado o un servicio activado sin solicitud previa se considera una práctica abusiva y se ' +
+      'equipara a una muestra gratis: no genera obligación de pago ni de devolución.',
+    articles: ['Ley 17.250 art. 22 lit. D'],
+    practical:
+      'Desconocelo por escrito, pedí saldo cero y no aceptes condiciones posteriores. Si lo cargaron a una ' +
+      'tarjeta o cuenta, notificá también al emisor.',
+  },
+  {
+    title: 'Deben advertirte si es usado, reacondicionado o peligroso',
+    plain:
+      'La condición de defectuoso, usado o reconstituido debe figurar clara y visible. Además, los riesgos para ' +
+      'la salud o seguridad deben informarse y una peligrosidad conocida después de la venta debe comunicarse.',
+    articles: ['Ley 17.250 arts. 7 a 11', 'Ley 17.250 art. 17', 'Ley 17.250 art. 19'],
+    practical:
+      'Si hay riesgo, dejá de usar el producto, conservá toda la prueba y presentá además una denuncia ante ' +
+      'Defensa del Consumidor. Si hubo daño personal o material, buscá asesoramiento profesional.',
+  },
 ])
 
 /** La escalera de reclamo, en el orden en que hay que darla. */
@@ -419,7 +1022,7 @@ export const CONSUMER_FAQS: readonly Faq[] = Object.freeze([
   },
   {
     q: 'Pagué por transferencia o Abitab/RedPagos y no llegó nada. ¿Tengo cómo recuperarlo?',
-    a: 'En esos medios no existe contracargo: una vez acreditado o cobrado, no hay reversa unilateral. La recuperación depende de la denuncia penal por estafa (los giros por redes de cobranza exigen la cédula del beneficiario, lo que ayuda a identificarlo) y de la mediación de Defensa del Consumidor. La protección es bastante menor que con tarjeta.',
+    a: 'En esos medios no existe contracargo: una vez acreditado o cobrado, no hay reversa unilateral. Reclamá por escrito al vendedor y usá la mediación de Defensa del Consumidor. Si además hay indicios concretos de engaño deliberado o el vendedor desapareció, puede corresponder una denuncia penal por estafa; un simple atraso no la configura automáticamente.',
   },
   {
     q: 'El producto vino fallado. ¿Hasta cuándo puedo reclamar?',
@@ -430,8 +1033,40 @@ export const CONSUMER_FAQS: readonly Faq[] = Object.freeze([
     a: 'No, si esa cláusula recorta tus derechos legales. Son nulas por abusivas las cláusulas que exoneran responsabilidad por vicios, te hacen renunciar a derechos o toman tu silencio como aceptación. La ley es de orden público: esos derechos son irrenunciables.',
   },
   {
+    q: '¿El retracto de 5 días aplica a cualquier compra online?',
+    a: 'No. El art. 16-BIS excluye, entre otros, productos personalizados, perecederos, ciertos productos de salud o higiene desprecintados, software o grabaciones precintadas que abriste, subastas públicas, alojamiento/comida/esparcimiento con fecha específica y contenido digital iniciado con consentimiento expreso y aviso de pérdida del desistimiento. Aunque no haya retracto, conservás tus derechos si existe defecto o incumplimiento.',
+  },
+  {
+    q: 'Me llegó otro producto, faltan piezas o vino roto. ¿Le reclamo al vendedor o al correo?',
+    a: 'Si el envío era parte de la compra o lo organizó el vendedor, reclamale al comercio: la entrega debe coincidir con el contrato y podés exigir que complete o cambie el pedido, o resolver la compra. Si contrataste al transportista por separado, puede existir además un reclamo propio contra él. Documentá el embalaje y el contenido apenas lo abrís.',
+  },
+  {
+    q: 'No me dieron garantía escrita. ¿Igual puedo reclamar por una falla?',
+    a: 'Sí. La garantía comercial puede no existir, pero el MEF confirma que aun así podés reclamar por vicios aparentes u ocultos dentro de los plazos del art. 37. Si la garantía fue ofrecida, debe entregarse por escrito y cumplir los requisitos del art. 23.',
+  },
+  {
+    q: '¿Qué pasa con el plazo mientras el producto está en el service?',
+    a: 'Todo el tiempo durante el cual no podés usar el producto por una reparación en garantía prolonga el plazo de la garantía contractual. Además, deben darte una constancia con la reparación, piezas cambiadas y fechas de ingreso y devolución.',
+  },
+  {
+    q: 'Se renovó automáticamente una suscripción. ¿Todavía puedo darla de baja?',
+    a: 'Sí. Dentro de los 60 días corridos desde la renovación automática podés rescindir o resolver el contrato, incluso una cuota social o afiliación. El proveedor tiene un máximo de 15 días corridos para procesar la baja (art. 31 lit. I).',
+  },
+  {
+    q: 'Me enviaron algo que nunca pedí. ¿Tengo que pagarlo o devolverlo?',
+    a: 'No. El art. 22 lit. D equipara el producto o servicio no solicitado a una muestra gratis: no genera obligación de pago ni de devolución. Desconocelo por escrito y pedí que anulen cualquier cargo o deuda.',
+  },
+  {
+    q: 'El producto está bien, pero cambié de opinión. ¿Siempre tienen que aceptarme el cambio?',
+    a: 'No siempre. En una compra online podés usar el retracto dentro de 5 días hábiles si no aplica una excepción del art. 16-BIS. Fuera de ese derecho, el cambio por gusto, talle o preferencia solo es exigible si el comercio lo ofreció en la factura, publicación o condiciones de venta. Esto es distinto de un producto defectuoso o no conforme, que sí habilita un reclamo legal.',
+  },
+  {
+    q: 'Compré a través de un marketplace. ¿A quién reclamo?',
+    a: 'Reclamá primero al vendedor identificado en la factura o pedido y usá también el sistema de protección del marketplace. Guardá los datos de ambos y toda la conversación. La responsabilidad concreta de la plataforma depende de su intervención en la oferta, el cobro y la entrega; si no se resuelve, incluí esos datos en el reclamo ante Defensa del Consumidor.',
+  },
+  {
     q: '¿Cuánto cuesta reclamar y cuánto demora?',
-    a: 'El trámite ante Defensa del Consumidor es gratuito. La duración estimada es de unos 45 días hábiles; podés consultar el estado llamando al 0800 7005 a los 15 días hábiles de que la oficina envía el reclamo al proveedor.',
+    a: 'El trámite ante Defensa del Consumidor es gratuito. La duración total estimada es de 45 días corridos; podés consultar el estado llamando al 0800 7005 a los 15 días hábiles de que la oficina envía el reclamo al proveedor.',
   },
   {
     q: '¿Qué sanciones puede recibir la tienda?',
@@ -448,6 +1083,21 @@ export const CONSUMER_SOURCES: readonly SourceLink[] = Object.freeze([
   {
     label: 'Ley 17.250 art. 16 — derecho de retracto (arrepentimiento en ventas a distancia)',
     url: 'https://www.impo.com.uy/bases/leyes/17250-2000/16',
+    publisher: 'IMPO — Centro de Información Oficial',
+  },
+  {
+    label: 'Ley 17.250 art. 16-BIS — excepciones al derecho de retracto',
+    url: 'https://www.impo.com.uy/bases/leyes/17250-2000/16_BIS',
+    publisher: 'IMPO — Centro de Información Oficial',
+  },
+  {
+    label: 'Ley 17.250 art. 15 — precio, financiación y gastos que deben informarse',
+    url: 'https://www.impo.com.uy/bases/leyes/17250-2000/15',
+    publisher: 'IMPO — Centro de Información Oficial',
+  },
+  {
+    label: 'Ley 17.250 arts. 19, 22 y 23 — usados, productos no solicitados y garantías',
+    url: 'https://www.impo.com.uy/bases/leyes/17250-2000',
     publisher: 'IMPO — Centro de Información Oficial',
   },
   {
@@ -486,6 +1136,11 @@ export const CONSUMER_SOURCES: readonly SourceLink[] = Object.freeze([
     publisher: 'MEF',
   },
   {
+    label: 'Preguntas frecuentes oficiales — cambios, retracto, garantías y renovaciones',
+    url: 'https://www.gub.uy/ministerio-economia-finanzas/defensa-del-consumidor',
+    publisher: 'MEF — Unidad Defensa del Consumidor',
+  },
+  {
     label: 'Decreto 244/000 — reglamentario de la Ley 17.250',
     url: 'https://www.impo.com.uy/bases/decretos/244-2000',
     publisher: 'IMPO — Centro de Información Oficial',
@@ -500,7 +1155,7 @@ export const KEY_FIGURES: readonly KeyFigure[] = Object.freeze([
   { label: 'Vicios ocultos', value: 'Aparecer en 6 meses; reclamar en 3' },
   { label: 'Defensa del Consumidor (MEF)', value: '0800 7005' },
   { label: 'Costo del reclamo', value: 'Gratuito' },
-  { label: 'Duración estimada', value: '~45 días hábiles' },
+  { label: 'Duración estimada', value: '45 días corridos' },
   { label: 'Descargos del infractor', value: '10 días hábiles' },
   { label: 'Multa al infractor', value: '20 a 4.000 UR' },
   { label: 'Clausura temporal máxima', value: 'Hasta 90 días' },
@@ -509,4 +1164,49 @@ export const KEY_FIGURES: readonly KeyFigure[] = Object.freeze([
 /** Buscar un escenario por id. */
 export function scenarioById(id: string): ConsumerScenario | undefined {
   return CONSUMER_SCENARIOS.find(s => s.id === id)
+}
+
+/** Genera el texto final sin depender de Vue, para poder probar cada incidente y solución. */
+export function buildConsumerComplaint(scenarioId: string, remedyId?: string): string {
+  const scenario = scenarioById(scenarioId)
+  if (!scenario) return ''
+
+  const remedy = scenario.remedies.find(item => item.id === remedyId) ?? scenario.remedies[0]
+  if (!remedy) return ''
+
+  const articles = scenario.articles
+    .map(article => article.split(' — ')[0])
+    .slice(0, 4)
+    .join('; ')
+  const facts = scenario.complaintFacts.map(fact => `- ${fact}`).join('\n')
+
+  return `[localidad], [fecha]
+
+A: [nombre legal del comercio o proveedor]
+De: [tu nombre completo], C.I. [tu cédula]
+Compra, pedido o contrato N.º: [número] — Fecha: [fecha]
+
+RECLAMO EN MATERIA DE RELACIÓN DE CONSUMO
+Tipo de incidente: ${scenario.label}
+
+Hechos:
+${facts}
+
+Solicitud:
+${remedy.request}
+
+Fundo este reclamo en la Ley 17.250 de Relaciones de Consumo (${articles}). Dejo constancia de
+que sus disposiciones son de orden público y de que adjunto la documentación que acredita los
+hechos. Solicito una respuesta concreta por este mismo medio dentro de [48/72] horas.
+
+Si no recibo una solución, presentaré el reclamo y la documentación ante la Unidad Defensa del
+Consumidor del Ministerio de Economía y Finanzas, sin perjuicio de las demás acciones que
+correspondan.
+
+Adjuntos: [factura o comprobante], [capturas], [fotos o video], [reclamos previos].
+
+Saluda atentamente,
+[firma]
+[nombre] — C.I. [cédula]
+[teléfono] — [correo]`
 }
