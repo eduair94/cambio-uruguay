@@ -7,13 +7,16 @@
 // are pinned so a future edit cannot silently reintroduce the wrong citation.
 import { describe, expect, it } from 'vitest'
 import {
+  buildConsumerComplaint,
   COMPLAINT_STEPS,
   CONSUMER_FAQS,
   CONSUMER_RIGHTS,
+  CONSUMER_SCENARIO_GROUPS,
   CONSUMER_SCENARIOS,
   CONSUMER_SOURCES,
   GOLDEN_RULE,
   KEY_FIGURES,
+  RETRACT_EXCEPTIONS,
   scenarioById,
 } from '../../utils/consumerRights'
 
@@ -37,6 +40,13 @@ describe('consumer scenario integrity', () => {
       expect(s.deadlines.length, s.id).toBeGreaterThan(0)
       expect(s.evidence.length, s.id).toBeGreaterThan(0)
       expect(s.lever.length, s.id).toBeGreaterThan(0)
+      expect(s.complaintFacts.length, s.id).toBeGreaterThan(0)
+      expect(s.remedies.length, s.id).toBeGreaterThan(0)
+      expect(
+        CONSUMER_SCENARIO_GROUPS.some(group => group.id === s.group),
+        s.id
+      ).toBe(true)
+      expect(new Set(s.remedies.map(remedy => remedy.id)).size, s.id).toBe(s.remedies.length)
     }
   })
 
@@ -44,6 +54,51 @@ describe('consumer scenario integrity', () => {
     for (const id of ['cobraron-no-entregan', 'no-cancelan', 'no-devuelven', 'esta-en-cadeteria']) {
       expect(scenarioById(id), id).toBeTruthy()
     }
+  })
+
+  it('covers delivery, product, charge and service incidents comprehensively', () => {
+    expect(CONSUMER_SCENARIOS.length).toBeGreaterThanOrEqual(14)
+    for (const id of [
+      'pedido-incompleto-equivocado-danado',
+      'producto-defectuoso',
+      'garantia-reparacion-incumplida',
+      'usado-como-nuevo',
+      'producto-peligroso',
+      'precio-cargo-no-informado',
+      'renovacion-cobro-recurrente',
+      'servicio-digital-no-prestado',
+      'producto-servicio-no-solicitado',
+    ]) {
+      expect(scenarioById(id), id).toBeTruthy()
+    }
+  })
+})
+
+describe('incident-specific complaint builder', () => {
+  it('changes both the facts and legal request with the selected incident', () => {
+    const delivery = buildConsumerComplaint('cobraron-no-entregan', 'entrega')
+    const defective = buildConsumerComplaint('producto-defectuoso', 'reparacion')
+
+    expect(delivery).toContain('Tipo de incidente: Me cobraron y no entregan')
+    expect(delivery).toContain('entrega efectiva')
+    expect(defective).toContain('Tipo de incidente: Llegó un producto fallado')
+    expect(defective).toContain('reparación integral')
+    expect(defective).toContain('Defecto detectado')
+    expect(delivery).not.toBe(defective)
+  })
+
+  it('changes the requested remedy without losing the selected incident', () => {
+    const repair = buildConsumerComplaint('producto-defectuoso', 'reparacion')
+    const refund = buildConsumerComplaint('producto-defectuoso', 'devolucion-defecto')
+
+    expect(repair).toContain('reparación integral')
+    expect(refund).toContain('Resuelvo el contrato')
+    expect(repair).toContain('Ley 17.250')
+    expect(refund).toContain('Ley 17.250')
+  })
+
+  it('returns an empty letter for an unknown incident', () => {
+    expect(buildConsumerComplaint('no-existe')).toBe('')
   })
 })
 
@@ -126,6 +181,18 @@ describe('rights, steps, figures and sources', () => {
       expect(f.q.length).toBeGreaterThan(0)
       expect(f.a.length).toBeGreaterThan(0)
     }
+  })
+
+  it('pins all eight statutory retract exceptions', () => {
+    expect(RETRACT_EXCEPTIONS).toHaveLength(8)
+    expect(RETRACT_EXCEPTIONS.join(' ')).toMatch(/personalizados/i)
+    expect(RETRACT_EXCEPTIONS.join(' ')).toMatch(/contenido digital/i)
+  })
+
+  it('publishes the official 45-day estimate as calendar days', () => {
+    const duration = KEY_FIGURES.find(f => /duraci[oó]n estimada/i.test(f.label))!
+    expect(duration.value).toMatch(/45 d[ií]as corridos/i)
+    expect(duration.value).not.toMatch(/h[aá]biles/i)
   })
 
   it('states the golden rule: orden público, derechos irrenunciables', () => {
