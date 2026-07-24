@@ -226,6 +226,9 @@ test('/mapa-del-sitio links the pages that used to be orphaned', async ({ page }
   for (const route of ['/preguntas-frecuentes', '/por-que-sube-el-dolar', '/dolar/records']) {
     await expect(body.locator(`a[href="${route}"]`)).toHaveCount(1)
   }
+  for (const origin of ['oca', 'santander', 'scotiabank']) {
+    await expect(body.locator(`a[href="/casa/${origin}"]`)).toHaveCount(1)
+  }
   expect(await body.locator('a[href^="/herramientas/"]').count()).toBeGreaterThanOrEqual(14)
   expect(await body.locator('a[href^="/casa/"]').count()).toBeGreaterThanOrEqual(40)
 })

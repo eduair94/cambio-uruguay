@@ -22,6 +22,9 @@ describe('buildSearchIndex', () => {
       '/convertir/100-dolares-a-pesos-uruguayos'
     )
     expect(byId.get('casa:brou')?.to).toBe('/casa/brou')
+    expect(byId.get('casa:oca')?.to).toBe('/casa/oca')
+    expect(byId.get('casa:santander')?.to).toBe('/casa/santander')
+    expect(byId.get('casa:scotiabank')?.to).toBe('/casa/scotiabank')
     expect(docs.some(d => d.type === 'glossary')).toBe(true)
     expect(docs.some(d => d.type === 'guide')).toBe(true)
     expect(docs.some(d => d.type === 'indicator')).toBe(true)

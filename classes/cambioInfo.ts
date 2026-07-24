@@ -4,6 +4,19 @@ import BCU_Details from "./bcu_details";
 import { Cambio } from "./cambio";
 import { origins } from "./origins";
 
+export function mergeOriginDepartments(...sources: unknown[]): string[] {
+  const departments = new Set<string>();
+  for (const source of sources) {
+    if (!Array.isArray(source)) continue;
+    for (const value of source) {
+      if (typeof value !== "string") continue;
+      const department = value.trim().toUpperCase();
+      if (department) departments.add(department);
+    }
+  }
+  return [...departments].sort((a, b) => a.localeCompare(b, "es"));
+}
+
 class CambioInfo extends Cambio {
   name: string;
   website: string;
@@ -46,6 +59,21 @@ class CambioInfo extends Cambio {
     if (!this.localData) {
       const localData = {};
       const bcu_details = new BCU_Details();
+      const activeBranches = await this.db_suc.allEntries({
+        status: { $ne: 0 },
+      });
+      const branchDepartments: Record<string, string[]> = {};
+      if (Array.isArray(activeBranches)) {
+        for (const branch of activeBranches) {
+          const origin = branch?.origin;
+          const department = branch?.Departamento;
+          if (typeof origin !== "string" || typeof department !== "string") {
+            continue;
+          }
+          if (!branchDepartments[origin]) branchDepartments[origin] = [];
+          branchDepartments[origin].push(department);
+        }
+      }
       for (let origin in origins) {
         try {
           const exchange: Cambio = new origins[origin](origin);
@@ -55,7 +83,10 @@ class CambioInfo extends Cambio {
             website: exchange.website,
             maps: exchange.getMaps(),
             bcu: (exchange as any).bcu,
-            departments: data && data.departments ? data.departments : [],
+            departments: mergeOriginDepartments(
+              data?.departments,
+              branchDepartments[origin]
+            ),
           };
         } catch (e) {
           console.error(e);

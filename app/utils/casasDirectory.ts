@@ -1822,6 +1822,51 @@ export const CASAS_REPUTATION: CasaReputation[] = [
     ],
   },
   {
+    code: 'oca',
+    name: 'OCA',
+    category: 'fintech',
+    googleRating: null,
+    googleReviewCount: null,
+    ratingSource: null,
+    branchNote:
+      'OCA tiene una red amplia de locales de atención en Montevideo y el interior. Cada local mantiene su propia ficha pública; no usamos una única sucursal como reputación global de toda la institución.',
+    founded: null,
+    services: [
+      'cotización de dólar para clientes en Mi Cuenta',
+      'gestión digital desde OCA App',
+      'cuenta OCA Blue y tarjeta internacional',
+      'tarjetas de crédito y beneficios',
+      'préstamos y financiación',
+      'red de locales de atención en Montevideo e interior',
+    ],
+    strengths: [
+      'Publica una cotización oficial de compra y venta de USD dentro de Mi Cuenta',
+      'Combina canales digitales con una red física extensa en buena parte del país',
+      'OCA App centraliza tarjetas, estados de cuenta, pagos, beneficios y OCA Blue',
+      'La cotización se releva desde la fuente autenticada de la propia institución',
+    ],
+    weaknesses: [
+      'La cotización no es pública: requiere ser cliente e iniciar sesión en Mi Cuenta',
+      'No es una casa de cambio abierta al público; la operativa depende de los productos OCA',
+      'Las reseñas están fragmentadas entre numerosos locales y no hay una ficha única representativa',
+    ],
+    press: [],
+    sources: [
+      {
+        label: 'OCA — sitio oficial',
+        url: 'https://oca.uy/',
+      },
+      {
+        label: 'OCA — acceso oficial a Mi Cuenta',
+        url: 'https://micuentanuevo.oca.com.uy/trx/login',
+      },
+      {
+        label: 'BCU — información oficial sobre OCA',
+        url: 'https://www.bcu.gub.uy/Sistema-de-Pagos/Paginas/ocade.aspx',
+      },
+    ],
+  },
+  {
     code: 'prex',
     name: 'Prex',
     category: 'fintech',
@@ -1878,6 +1923,96 @@ export const CASAS_REPUTATION: CasaReputation[] = [
       {
         label: 'AppBrain — Prex Uruguay Android (4,31/5, ~27.000 calificaciones)',
         url: 'https://www.appbrain.com/app/prex-uruguay/air.Prex',
+      },
+    ],
+  },
+  {
+    code: 'santander',
+    name: 'Santander',
+    category: 'banco',
+    googleRating: null,
+    googleReviewCount: null,
+    ratingSource: null,
+    branchNote:
+      'Santander opera múltiples sucursales y puntos de atención en Montevideo y el interior. Las reseñas públicas corresponden a locales individuales, por lo que no atribuimos la nota de una sola sucursal a todo el banco.',
+    founded: null,
+    services: [
+      'cotización de dólar para clientes en Supernet',
+      'compra y venta de moneda entre cuentas',
+      'banca web y app móvil',
+      'transferencias nacionales e internacionales',
+      'cuentas, tarjetas, préstamos e inversiones',
+      'red de sucursales y puntos de atención',
+    ],
+    strengths: [
+      'Cotización USD oficial integrada a la banca digital para clientes',
+      'Canales web y móvil con operativa bancaria completa',
+      'Red de atención en Montevideo y varios departamentos del interior',
+      'La cotización se releva directamente desde la API autenticada de Supernet',
+    ],
+    weaknesses: [
+      'La cotización no está publicada en una pizarra abierta: requiere autenticación',
+      'Para operar es necesario ser cliente y disponer de cuentas en las monedas involucradas',
+      'Las calificaciones varían por sucursal y no existe una única ficha de Google representativa',
+    ],
+    press: [],
+    sources: [
+      {
+        label: 'Santander Uruguay — sitio oficial',
+        url: 'https://www.santander.com.uy/',
+      },
+      {
+        label: 'Santander Uruguay — acceso oficial a Supernet',
+        url: 'https://supernet.santander.com.uy/Supernet_UI/',
+      },
+      {
+        label: 'BCU — ficha institucional de Santander Uruguay (n.º 1137)',
+        url: 'https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=1137',
+      },
+    ],
+  },
+  {
+    code: 'scotiabank',
+    name: 'Scotiabank',
+    category: 'banco',
+    googleRating: null,
+    googleReviewCount: null,
+    ratingSource: null,
+    branchNote:
+      'Scotiabank cuenta con sucursales y puntos de atención en Montevideo y el interior. Como las reseñas se publican por local, evitamos presentar la calificación de una sucursal como nota global del banco.',
+    founded: null,
+    services: [
+      'cotización de dólar billete y dólar Internet en Scotia en Línea',
+      'cotización de euro por transferencia y Unidad Indexada',
+      'banca web y Scotia Móvil',
+      'transferencias entre cuentas y a terceros',
+      'cuentas, tarjetas, préstamos y plazos fijos',
+      'red de sucursales y cajeros',
+    ],
+    strengths: [
+      'Publica cotizaciones diferenciadas para dólar de mostrador y operativa por Internet',
+      'Ofrece cotización de EUR por transferencia y de Unidad Indexada',
+      'Integra la compra y venta de moneda con su banca digital',
+      'La cotización se releva desde el widget autenticado oficial de Scotia en Línea',
+    ],
+    weaknesses: [
+      'Las cotizaciones requieren iniciar sesión y no están disponibles en una pizarra pública',
+      'La operativa digital requiere ser cliente y tener productos habilitados',
+      'Las reseñas están distribuidas entre múltiples sucursales sin una ficha global comparable',
+    ],
+    press: [],
+    sources: [
+      {
+        label: 'Scotiabank Uruguay — sitio oficial',
+        url: 'https://www.scotiabank.com.uy/',
+      },
+      {
+        label: 'Scotiabank Uruguay — acceso oficial a Scotia en Línea',
+        url: 'https://www1.scotiabank.com.uy/scotiaenlinea/login',
+      },
+      {
+        label: 'BCU — ficha institucional de Scotiabank Uruguay (n.º 1128)',
+        url: 'https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=1128',
       },
     ],
   },
@@ -2356,8 +2491,8 @@ const CONTENT: Record<'es' | 'en' | 'pt', CasasContent> = {
     contextTitle: '¿Casa de cambio, banco o fintech?',
     context: [
       'Las casas de cambio viven de comprar y vender moneda, y compiten entre sí cuadra a cuadra: por eso suelen ofrecer mejor precio que los bancos para el cambio de billetes, sin necesidad de ser cliente.',
-      'Los bancos (BROU, Itaú) convienen sobre todo si ya sos cliente: el tipo de cambio por canales electrónicos (como eBROU) suele mejorar al de mostrador, y evitás moverte con efectivo. Como referencia neutral, el BCU publica a diario el tipo de cambio interbancario, que es mayorista: ninguna ventanilla te va a dar ese precio exacto.',
-      'Las fintech como Prex operan 100% desde la app, con cotización propia: convienen para saldos digitales y compras, pero para billetes físicos seguís necesitando una ventanilla.',
+      'Los bancos (BROU, Itaú, Santander y Scotiabank) convienen sobre todo si ya sos cliente: el tipo de cambio por canales electrónicos suele mejorar al de mostrador, y evitás moverte con efectivo. Como referencia neutral, el BCU publica a diario el tipo de cambio interbancario, que es mayorista: ninguna ventanilla te va a dar ese precio exacto.',
+      'Las fintech y emisoras como Prex y OCA operan desde sus canales digitales, con cotización propia para clientes: convienen para saldos y compras, pero para billetes físicos seguís necesitando una ventanilla habilitada.',
     ],
     borderTitle: 'En la frontera y el interior',
     border: [
@@ -2482,8 +2617,8 @@ const CONTENT: Record<'es' | 'en' | 'pt', CasasContent> = {
     contextTitle: 'Exchange house, bank or fintech?',
     context: [
       'Exchange houses make their living buying and selling currency and compete block by block, so they usually beat bank counters on cash rates — no account needed.',
-      'Banks (BROU, Itaú) pay off mainly if you are already a customer: electronic channels such as eBROU improve on the counter rate and you avoid carrying cash. As a neutral reference, the central bank (BCU) publishes the daily interbank rate — a wholesale price no counter will match exactly.',
-      'Fintechs like Prex run entirely in-app with their own rate: great for digital balances and purchases, but for physical banknotes you still need a counter.',
+      'Banks (BROU, Itaú, Santander and Scotiabank) pay off mainly if you are already a customer: electronic channels can improve on the counter rate and you avoid carrying cash. As a neutral reference, the central bank (BCU) publishes the daily interbank rate — a wholesale price no counter will match exactly.',
+      'Fintechs and issuers such as Prex and OCA use their digital channels and customer rates: they work well for balances and purchases, but physical banknotes still require an authorized counter.',
     ],
     borderTitle: 'Border towns and the interior',
     border: [
@@ -2608,8 +2743,8 @@ const CONTENT: Record<'es' | 'en' | 'pt', CasasContent> = {
     contextTitle: 'Casa de câmbio, banco ou fintech?',
     context: [
       'As casas de câmbio vivem de comprar e vender moeda e competem quarteirão a quarteirão: por isso costumam oferecer preço melhor que os bancos para dinheiro em espécie, sem exigir conta.',
-      'Os bancos (BROU, Itaú) valem a pena principalmente se você já é cliente: canais eletrônicos como o eBROU melhoram o preço do balcão e evitam andar com dinheiro. Como referência neutra, o banco central (BCU) publica diariamente o câmbio interbancário — um preço de atacado que nenhum balcão paga exatamente.',
-      'Fintechs como a Prex operam 100% no app, com cotação própria: ótimas para saldo digital e compras, mas para notas físicas você ainda precisa de um balcão.',
+      'Os bancos (BROU, Itaú, Santander e Scotiabank) valem a pena principalmente se você já é cliente: os canais eletrônicos podem melhorar o preço do balcão e evitam andar com dinheiro. Como referência neutra, o banco central (BCU) publica diariamente o câmbio interbancário — um preço de atacado que nenhum balcão paga exatamente.',
+      'Fintechs e emissores como Prex e OCA usam seus canais digitais e cotações para clientes: são úteis para saldos e compras, mas para notas físicas você ainda precisa de um balcão autorizado.',
     ],
     borderTitle: 'Na fronteira e no interior',
     border: [

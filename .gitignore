@@ -60,6 +60,7 @@ oca_session.json
 prex_session.txt
 santander_session.json
 santander_session.json.*.tmp
+scotiabank_session.json
 last_sync.txt
 .output
 proxy_scrape.json

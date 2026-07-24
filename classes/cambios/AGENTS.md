@@ -3,8 +3,8 @@
 One scraper per casa de cambio / bank: each fetches its own USD (+ARS/BRL/EUR/…) buy/sell and returns normalized rate rows.
 
 ## Layout
-- 51 `.ts` files, one class per casa, all `extends Cambio` (../cambio.ts), `export default`.
-- Registered in `../origins.ts` `origins` map: **45 active keys, 5 commented-out** with inline reasons (cambio_salto_grande, mas_cambio, cambio_vexel, cambio_velso, aspen). Only registered keys run.
+- 52 `.ts` files, one class per casa, all `extends Cambio` (../cambio.ts), `export default`.
+- Registered in `../origins.ts` `origins` map: **46 active keys, 5 commented-out** with inline reasons (cambio_salto_grande, mas_cambio, cambio_vexel, cambio_velso, aspen). Only registered keys run.
 - **Registry KEY = the `origin` string** (DB identifier + display-name lookup via ../cambioInfo.ts), passed to `new Class(key)`. Key ≠ filename often: `la_favorita`→lafavorita.ts, `cambio_rynder`→rynder.ts, `matriz`→cambio_matriz.ts, `itau`→itau.ts, `bcu`→bcu.ts.
 
 ## Contract (../cambio.ts `abstract class Cambio`)
@@ -22,6 +22,7 @@ Subclass sets instance fields + implements one method:
 - **Session auth — prex.ts:** minted PHPSESSID web session (`prexWebLogin`: GET/POST `/login` → OTP polled from `PREX_OTP_URL` mailbox → `int_do_clave`), cached to `prex_session.txt`; falls back to mobile API. Envs: `PREX_LOGIN_USER`/`PREX_LOGIN_PASSWORD`/`PREX_OTP_URL`/`PREX_USER_ID`/`PREX_SESSION_ID`, `prexEmail`/`prexPassword`; optional `proxy.txt` (http proxy). Only pushes USD when finite & >0. Also `../../scripts/oneoff/prex.ts` (`npm run prex`).
 - **Session auth — oca.ts:** logs into OCA Mi Cuenta with `OCA_LOGIN_USER`/`OCA_LOGIN_PASSWORD`, parses the server-rendered `.tabla-cotizacion`, and caches only `AWSALB`/`AWSALBCORS`/`JSESSIONID` in gitignored `oca_session.json`. It reuses the session until the table disappears, then logs in again. Also `../../scripts/oneoff/oca.ts` (`npm run oca`).
 - **Session auth — santander.ts:** calls Santander Supernet's protected API with `SANTANDER_LOGIN_USER`/`SANTANDER_LOGIN_PASSWORD`, refreshes an expired authenticated session once, and caches its token/session in gitignored `santander_session.json`. Also `../../scripts/oneoff/santander.ts` (`npm run santander`).
+- **Session auth — scotiabank.ts:** logs into Scotia en Línea with `SCOTIABANK_LOGIN_USER`/`SCOTIABANK_LOGIN_PASSWORD`, reads the authenticated `bannerAndMarketRateInfo` widget, and caches only `JSESSIONID`/`NAZCA*` cookies in gitignored `scotiabank_session.json`. Emits cash USD, internet USD, transfer EUR, and UI. Also `../../scripts/oneoff/scotiabank.ts` (`npm run scotiabank`).
 - **Proxy+retry — cambio_aguerrebere.ts, cambio_pando.ts:** `ProxyFileService.getInstance().getNextProxy()` (socks5) + `axios-retry` (403/5xx) + browser UA. `../ProxyFileService.ts` pulls proxyscrape (`PROXY_SCRAPE_API_KEY`), caches `proxy_scrape.json`. pando = Astro behind Cloudflare bot-fight (IP-based 403 → needs prod/proxy).
 - **Puppeteer — cambio_regul.ts** (JS-rendered). **cambio18.ts** = Wix: rates NOT in DOM, parsed from inlined `<script id="wix-warmup-data">` JSON (recursive walk), no puppeteer.
 - **bcu.ts** SOAP-primary via `../bcu_soap.ts`; emits USD BILLETE/CABLE/PROMED.FONDO (central-bank reference).

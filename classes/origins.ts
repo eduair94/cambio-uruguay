@@ -44,6 +44,7 @@ import Nonica from "./cambios/nonica";
 import CambioOca from "./cambios/oca";
 import CambioPrex from "./cambios/prex";
 import Rynder from "./cambios/rynder";
+import CambioScotiabank from "./cambios/scotiabank";
 import CambioSantander from "./cambios/santander";
 import CambioSuizo from "./cambios/suizo";
 import Tradelix from "./cambios/tradelix";
@@ -57,6 +58,7 @@ export const origins = {
   cambio_maiorano: CambioMaiorano,
   oca: CambioOca,
   prex: CambioPrex,
+  scotiabank: CambioScotiabank,
   santander: CambioSantander,
   alter_cambio: AlterCambio,
   cambio_rynder: Rynder,

@@ -72,6 +72,14 @@ describe('CASAS_REPUTATION invariants', () => {
     )
   })
 
+  it('includes every authenticated exchange provider in the shared catalogue', () => {
+    const byCode = new Map(CASAS_REPUTATION.map(c => [c.code, c]))
+
+    expect(byCode.get('oca')).toMatchObject({ name: 'OCA', category: 'fintech' })
+    expect(byCode.get('santander')).toMatchObject({ name: 'Santander', category: 'banco' })
+    expect(byCode.get('scotiabank')).toMatchObject({ name: 'Scotiabank', category: 'banco' })
+  })
+
   it('ratings are in range and always sourced', () => {
     for (const c of CASAS_REPUTATION) {
       if (c.googleRating != null) {

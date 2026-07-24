@@ -18,6 +18,10 @@ test('casas directory renders the comparison with reputation + live data', async
     expect(rows).toBeGreaterThan(20)
   }).toPass({ timeout: 30_000 })
 
+  for (const origin of ['oca', 'santander', 'scotiabank']) {
+    await expect(page.locator(`a[href$="/casa/${origin}"]:visible`).first()).toBeVisible()
+  }
+
   // Best-for picks resolve to concrete houses once data is in.
   await expect(page.locator('[data-testid="casas-pick-coverage"]')).toBeVisible()
 
@@ -47,10 +51,9 @@ test('casas directory category filter narrows the rows', async ({ page }) => {
     expect((await bancoBtn.getAttribute('class')) ?? '').toContain('v-btn--active')
   }).toPass({ timeout: 60_000 })
 
-  // Only the banks (BROU, Itaú) remain.
+  // Only the banks (BROU, Itaú, Santander and Scotiabank) remain.
   await expect(async () => {
     const rows = await page.locator('[data-testid="casas-row"]:visible').count()
-    expect(rows).toBeLessThanOrEqual(4)
-    expect(rows).toBeGreaterThan(0)
+    expect(rows).toBe(4)
   }).toPass({ timeout: 15_000 })
 })
