@@ -587,7 +587,7 @@ Todos los timestamps y fechas están en la zona horaria de Uruguay (America/Mont
                   error: 'Invalid origin parameter',
                   parameter: 'origin',
                   value: 'invalid_exchange',
-                  validValues: ['la_favorita', 'cambio_minas', 'brou', 'cambio_regul', 'itau', 'prex', 'bcu', 'cambilex'],
+                  validValues: ['la_favorita', 'cambio_minas', 'brou', 'cambio_regul', 'itau', 'oca', 'prex', 'santander', 'bcu', 'cambilex'],
                   suggestion: 'Use /parameters/origins to get all valid origins'
                 }
               },

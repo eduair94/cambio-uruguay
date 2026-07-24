@@ -6,7 +6,9 @@
   "scripts": {
     "bcu_single": "ts-node scripts/oneoff/sync_bcu_single.ts",
     "bcu_backfill": "ts-node scripts/oneoff/bcu_backfill.ts",
+    "oca": "ts-node scripts/oneoff/oca.ts",
     "prex": "ts-node scripts/oneoff/prex.ts",
+    "santander": "ts-node scripts/oneoff/santander.ts",
     "sentry_test": "ts-node scripts/oneoff/sentry_test.ts",
     "bcu_details": "ts-node scripts/oneoff/get_bcu_details.ts",
     "dev": "ts-node index.ts",

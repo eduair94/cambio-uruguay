@@ -36,7 +36,7 @@ Root pm2 entrypoints live at repo root: `index.ts`, `sync.ts`, `sync_aduana*.ts`
 |---|---|
 | `app/` | Nuxt frontend (separate package, own MongoDB) — see `app/AGENTS.md` |
 | `classes/` | backend logic — see `classes/AGENTS.md` |
-| `classes/cambios/` | 49 per-casa scraper modules (48 registered in `origins.ts`) — see `classes/cambios/AGENTS.md` |
+| `classes/cambios/` | 51 per-casa scraper modules (45 active keys in `origins.ts`) — see `classes/cambios/AGENTS.md` |
 | `bots/` | Telegram/Discord/Twitter bots — see `bots/AGENTS.md` + `bots/README.md` |
 | `mcp/` | open-source MCP server — see `mcp/AGENTS.md`, `mcp/README.md`, `mcp/DEPLOY.md` |
 | `tests/` | root vitest backend suite — see `tests/AGENTS.md` |

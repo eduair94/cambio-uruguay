@@ -56,7 +56,10 @@ serviceAccount.json
 .env
 
 proxy.txt
+oca_session.json
 prex_session.txt
+santander_session.json
+santander_session.json.*.tmp
 last_sync.txt
 .output
 proxy_scrape.json

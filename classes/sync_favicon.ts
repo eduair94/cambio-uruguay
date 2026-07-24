@@ -13,6 +13,7 @@ import CambioGales from "./cambios/gales";
 import CambioIndumex from "./cambios/indumex";
 import CambioLaFavorita from "./cambios/lafavorita";
 import CambioPrex from "./cambios/prex";
+import CambioSantander from "./cambios/santander";
 import CambioSuizo from "./cambios/suizo";
 import CambioVarlix from "./cambios/varlix";
 
@@ -31,6 +32,7 @@ const sync_favicon = async () => {
     fortex: CambioFortex,
     indumex: CambioIndumex,
     prex: CambioPrex,
+    santander: CambioSantander,
     varlix: CambioVarlix,
   };
   await cambio_info.clearDB();

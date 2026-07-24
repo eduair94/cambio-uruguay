@@ -2041,8 +2041,8 @@ const main = async () => {
    *               success:
    *                 summary: Casas de cambio disponibles
    *                 value:
-   *                   origins: ["la_favorita", "cambio_minas", "brou", "cambio_regul", "itau", "prex", "bcu", "cambilex"]
-   *                   count: 42
+   *                   origins: ["la_favorita", "cambio_minas", "brou", "cambio_regul", "itau", "oca", "prex", "santander", "bcu", "cambilex"]
+   *                   count: 45
    */
   server.getJson("parameters/origins", async (req: Request): Promise<any> => {
     const availableOrigins = Object.keys(origins).sort();
@@ -2306,7 +2306,7 @@ const main = async () => {
    *               success:
    *                 summary: Todos los parámetros
    *                 value:
-   *                   origins: ["la_favorita", "brou", "cambio_minas", "itau", "prex"]
+   *                   origins: ["la_favorita", "brou", "cambio_minas", "itau", "oca", "prex", "santander"]
    *                   currencies: ["USD", "EUR", "ARS", "BRL", "XAU", "UI"]
    *                   types: ["", "BILLETE", "CABLE", "INTERBANCARIO"]
    *                   locations: ["Montevideo", "Canelones", "Maldonado"]

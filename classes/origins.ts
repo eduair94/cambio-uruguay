@@ -26,6 +26,7 @@ import CambioPernas from "./cambios/cambio_pernas";
 import CambioPrincipal from "./cambios/cambio_principal";
 import CambioRegul from "./cambios/cambio_regul";
 import CambioRomantico from "./cambios/cambio_romantico";
+import CambioSaltoGrande from "./cambios/cambio_salto_grande";
 import CambioSicurezza from "./cambios/cambio_sicurezza";
 import CambioSir from "./cambios/cambio_sir";
 import CambioVarzy from "./cambios/cambio_varzy";
@@ -38,9 +39,12 @@ import CambioGales from "./cambios/gales";
 import CambioIndumex from "./cambios/indumex";
 import Itau from "./cambios/itau";
 import CambioLaFavorita from "./cambios/lafavorita";
+import MasCambio from "./cambios/mas_cambio";
 import Nonica from "./cambios/nonica";
+import CambioOca from "./cambios/oca";
 import CambioPrex from "./cambios/prex";
 import Rynder from "./cambios/rynder";
+import CambioSantander from "./cambios/santander";
 import CambioSuizo from "./cambios/suizo";
 import Tradelix from "./cambios/tradelix";
 import CambioVarlix from "./cambios/varlix";
@@ -51,7 +55,9 @@ export const origins = {
   cambio_minas: CambioMinas,
   cambio_regul: CambioRegul,
   cambio_maiorano: CambioMaiorano,
+  oca: CambioOca,
   prex: CambioPrex,
+  santander: CambioSantander,
   alter_cambio: AlterCambio,
   cambio_rynder: Rynder,
   cambio_sir: CambioSir,
@@ -94,4 +100,18 @@ export const origins = {
   cambio18: Cambio18,
   indumex: CambioIndumex,
   varlix: CambioVarlix,
+};
+
+/**
+ * Location auditing also covers casas whose quotation scraper is temporarily
+ * disabled. Their physical branches can remain open even when their online
+ * rate table is unavailable.
+ */
+export const locationOrigins = {
+  ...origins,
+  cambio_salto_grande: CambioSaltoGrande,
+  mas_cambio: MasCambio,
+  cambio_vexel: CambioVexel,
+  cambio_velso: CambioVelso,
+  aspen: CambioAspen,
 };

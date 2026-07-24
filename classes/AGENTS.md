@@ -1,5 +1,5 @@
 # classes/ — AGENTS
-Root Express backend: ~49 casa-de-cambio scrapers + self-updating data subsystems, all TypeScript on ts-node. Runs as the API process **and** as many one-file pm2 cron jobs.
+Root Express backend: ~51 casa-de-cambio scrapers + self-updating data subsystems, all TypeScript on ts-node. Runs as the API process **and** as many one-file pm2 cron jobs.
 
 ## Run / build / test (from repo root, NOT here)
 - `npm run dev` → `ts-node index.ts` (Express API; wires cambioInfo, aduana, banks, costs, figures, debt, loans, temas).
@@ -14,7 +14,7 @@ Root Express backend: ~49 casa-de-cambio scrapers + self-updating data subsystem
 ## Cron tripwire — the #1 silent-bug source
 Any entrypoint whose relative-import graph touches `MongooseServer.getInstance(` MUST call `MongooseServer.startConnectionPromise()` (wrapped in withTimeout) as the first thing in `main()`, else every Mongo op buffers 10s then the job catches-and-exits(0): pm2 reports success forever while writing nothing. Enforced by `tests/sync/connect_tripwire.test.ts` (static import-graph walk over root `sync_*/import_*`). app-Mongo bridge (`appdb.ts`) is NOT policed by it.
 
-## Casa scrapers (`cambios/`, 49 files, 48 registered)
+## Casa scrapers (`cambios/`, 51 files, 45 active origins)
 - `cambio.ts` = abstract base (axios+cheerio, `axios.defaults.timeout=15000`, moment tz America/Montevideo, BCU sucursal lookup, `sync_data`). `cambioInfo.ts` = read/query facade over stored markets. `sync_cambio.ts` = iterate `origins` map → `new Class(); .sync_data()`, 500ms throttle, writes `last_sync.txt`/`last_sync_results.json`. `origins.ts` = origin-key → scraper-class registry (add a new casa here).
 - **DB-derived scrapers** (`cambio_federal.ts`, `cambio_argentino.ts`, `cambio_romantico.ts`) don't fetch a site — they read `origin:"brou"` rows from Mongo and re-map them. They FALSE-FAIL when validated standalone without a live backend-Mongo connection.
 - See **`classes/cambios/AGENTS.md`** for per-scraper detail.

@@ -4,6 +4,7 @@ import getDistance from "geolib/es/getDistance";
 import moment from "moment-timezone";
 import { CambioObj } from "../interfaces/Cambio";
 import { MongooseServer, Schema } from "./database";
+import { reconcileLocationIds } from "./location_sync";
 moment.tz.setDefault("America/Montevideo");
 
 // Set a default timeout for all axios requests to prevent hanging on unresponsive servers
@@ -77,17 +78,62 @@ abstract class Cambio {
       .get();
     const intNumber = new URL(bcu).searchParams.get("nroinst");
     if (!intNumber) throw new Error("No institution number");
+    if (locations.length === 0) {
+      throw new Error("BCU returned no branches; refusing to reconcile");
+    }
+
+    const existing = await this.db_suc.allEntries({ origin: this.origin });
+    const currentIds = locations.map((loc) => `${intNumber}-${loc}`);
+    const reconciliation = reconcileLocationIds(
+      existing,
+      currentIds,
+      "bcu",
+      (id) => id.startsWith(`${intNumber}-`)
+    );
+    const verifiedAt = new Date();
     let departments = [];
     console.log(this.origin, "Sucursales:", locations.length);
     for (let loc of locations) {
       const locInfo = await this.getLocation(intNumber, loc);
+      if (!locInfo?.sucursal) {
+        throw new Error(`BCU returned no details for branch ${loc}`);
+      }
       const department = locInfo.sucursal.Departamento;
       const id = intNumber + "-" + loc;
-      await this.db_suc.getAnUpdateEntryAlt({ id }, { origin: this.origin, ...locInfo.sucursal });
+      const status = reconciliation.currentStatusById.get(id) ?? 1;
+      await this.db_suc.getAnUpdateEntryAlt(
+        { id },
+        {
+          origin: this.origin,
+          ...locInfo.sucursal,
+          status,
+          source: "bcu",
+          sourceUrl: bcu,
+          sourceLastSeenAt: verifiedAt,
+          ...(status === 1 ? { closedAt: null, closedSource: null } : {}),
+        }
+      );
       if (department && !departments.includes(department)) {
         departments.push(department);
       }
     }
+
+    for (const id of reconciliation.idsToClose) {
+      await this.db_suc.updateOneAlt(
+        { id },
+        {
+          status: 0,
+          closedAt: verifiedAt,
+          closedSource: "bcu",
+          sourceUrl: bcu,
+        }
+      );
+    }
+    console.log(
+      this.origin,
+      "Sucursales cerradas por reconciliación BCU:",
+      reconciliation.idsToClose.length
+    );
     return departments;
   }
 
