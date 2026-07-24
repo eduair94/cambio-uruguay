@@ -4,6 +4,7 @@ import fs from "fs";
 import "dotenv/config";
 import { CambioObj } from "../../interfaces/Cambio";
 import { Cambio } from "../cambio";
+import { fetchDolarAhoraUsdRate } from "./dolarahora";
 
 const SCOTIABANK_BASE_URL =
   "https://www1.scotiabank.com.uy/scotiaenlinea";
@@ -345,9 +346,15 @@ class CambioScotiabank extends Cambio {
     }
 
     if (!rates) {
-      console.warn(
-        "Scotiabank: skipping rates because no valid quotation was found"
-      );
+      console.warn("Scotiabank: authenticated quote unavailable; trying DólarAhora");
+      const fallback = await fetchDolarAhoraUsdRate("scotia");
+      if (fallback) {
+        console.log(
+          `Scotiabank online USD fallback: buy=${fallback.buy}, sell=${fallback.sell}`
+        );
+        return [fallback];
+      }
+      console.warn("Scotiabank: skipping rates because no valid quotation was found");
       return [];
     }
 

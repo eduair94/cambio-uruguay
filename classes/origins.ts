@@ -1,6 +1,7 @@
 import Aeromar from "./cambios/aeromar";
 import AlterCambio from "./cambios/alter_cambio";
 import BalumaCambio from "./cambios/baluma_cambio";
+import CambioBbva from "./cambios/bbva";
 import CambioBCU from "./cambios/bcu";
 import CambioBrou from "./cambios/brou";
 import Cambial from "./cambios/cambial";
@@ -64,6 +65,7 @@ export const origins = {
   cambio_rynder: Rynder,
   cambio_sir: CambioSir,
   aeromar: Aeromar,
+  bbva: CambioBbva,
   brou: CambioBrou,
   fortex: CambioFortex,
   cambio_argentino: CambioArgentino,

@@ -52,6 +52,7 @@ export interface LabelSet {
   bestSell: string;
   lowestSpread: string;
   market: string;
+  vs24h: string;
   news: string;
   updated: string;
   house: string;
@@ -77,6 +78,7 @@ const LABELS: Record<Lang, LabelSet> = {
     bestSell: "Mejor venta",
     lowestSpread: "Menor spread",
     market: "Promedio mercado",
+    vs24h: "vs. 24 h",
     news: "Noticias",
     updated: "Actualizado",
     house: "Casa",
@@ -100,6 +102,7 @@ const LABELS: Record<Lang, LabelSet> = {
     bestSell: "Best sell",
     lowestSpread: "Lowest spread",
     market: "Market average",
+    vs24h: "vs. 24h",
     news: "News",
     updated: "Updated",
     house: "House",
@@ -123,6 +126,7 @@ const LABELS: Record<Lang, LabelSet> = {
     bestSell: "Melhor venda",
     lowestSpread: "Menor spread",
     market: "Média do mercado",
+    vs24h: "vs. 24 h",
     news: "Notícias",
     updated: "Atualizado",
     house: "Casa",

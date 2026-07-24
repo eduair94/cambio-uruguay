@@ -173,6 +173,267 @@ const main = async () => {
 
   /**
    * @openapi
+   * /changes:
+   *   get:
+   *     tags: [Evolution]
+   *     summary: Últimos cambios reales de cotización
+   *     description: Devuelve únicamente transiciones donde cambió compra o venta; las verificaciones sin cambios no generan registros.
+   *     parameters:
+   *       - { name: origin, in: query, schema: { type: string } }
+   *       - { name: code, in: query, schema: { type: string, example: USD } }
+   *       - { name: type, in: query, schema: { type: string } }
+   *       - { name: since, in: query, schema: { type: string, format: date-time } }
+   *       - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 200, default: 100 } }
+   *     responses:
+   *       200:
+   *         description: Cambios ordenados del más reciente al más antiguo
+   */
+  server.getJson("changes", async (req: Request): Promise<any> => {
+    const origin = req.query.origin
+      ? String(req.query.origin).trim().toLowerCase()
+      : undefined;
+    if (origin) {
+      const validation = validateOrigin(origin);
+      if (!validation.isValid) {
+        throw new ValidationError("Invalid origin parameter", validation.error);
+      }
+    }
+
+    const since = req.query.since
+      ? new Date(String(req.query.since))
+      : undefined;
+    if (since && Number.isNaN(since.getTime())) {
+      throw new ValidationError(
+        "Invalid since parameter",
+        createValidationError(
+          "since",
+          String(req.query.since),
+          [],
+          "Since must be a valid ISO date-time"
+        )
+      );
+    }
+
+    const rawLimit = req.query.limit === undefined
+      ? 100
+      : Number(req.query.limit);
+    if (!Number.isInteger(rawLimit) || rawLimit < 1 || rawLimit > 200) {
+      throw new ValidationError(
+        "Invalid limit parameter",
+        createValidationError(
+          "limit",
+          String(req.query.limit),
+          [],
+          "Limit must be an integer between 1 and 200"
+        )
+      );
+    }
+
+    const changes = await cambio_info.get_rate_changes({
+      origin,
+      code: req.query.code
+        ? String(req.query.code).trim().toUpperCase()
+        : undefined,
+      type: req.query.type === undefined
+        ? undefined
+        : String(req.query.type).trim(),
+      since,
+      limit: rawLimit,
+    });
+    return { asOf: new Date().toISOString(), changes };
+  });
+
+  /**
+   * @openapi
+   * /market-change:
+   *   get:
+   *     tags: [Evolution]
+   *     summary: Variación del mercado contra una hora exacta
+   *     description: Compara el promedio actual con el estado reconstruido exactamente N horas atrás (24 por defecto).
+   *     parameters:
+   *       - { name: hours, in: query, schema: { type: integer, minimum: 1, maximum: 720, default: 24 } }
+   *     responses:
+   *       200:
+   *         description: Variación por moneda usando las mismas cotizaciones en ambos extremos
+   */
+  server.getJson("market-change", async (req: Request): Promise<any> => {
+    const hours = req.query.hours === undefined
+      ? 24
+      : Number(req.query.hours);
+    if (!Number.isInteger(hours) || hours < 1 || hours > 720) {
+      throw new ValidationError(
+        "Invalid hours parameter",
+        createValidationError(
+          "hours",
+          String(req.query.hours),
+          [],
+          "Hours must be an integer between 1 and 720"
+        )
+      );
+    }
+
+    return redisCache.getOrSet(
+      `market-change:${hours}`,
+      () => cambio_info.get_market_change(hours),
+      30
+    );
+  });
+
+  /**
+   * @openapi
+   * /analytics/rates:
+   *   get:
+   *     tags: [Evolution]
+   *     summary: Series de cotización por hora o por día
+   *     description: Reconstruye el último valor conocido de cada casa por intervalo, usando el ledger intradía y el histórico diario anterior.
+   *     parameters:
+   *       - { name: code, in: query, schema: { type: string, example: USD } }
+   *       - { name: origins, in: query, schema: { type: string }, description: Lista de origins separada por comas }
+   *       - { name: from, in: query, required: true, schema: { type: string, format: date-time } }
+   *       - { name: to, in: query, required: true, schema: { type: string, format: date-time } }
+   *       - { name: interval, in: query, schema: { type: string, enum: [hour, day], default: hour } }
+   *     responses:
+   *       200:
+   *         description: Series alineadas por intervalo y catálogo de filtros disponibles
+   */
+  server.getJson("analytics/rates", async (req: Request): Promise<any> => {
+    const code = String(req.query.code || "USD").trim().toUpperCase();
+    if (!/^[A-Z]{2,5}$/.test(code)) {
+      throw new ValidationError(
+        "Invalid code parameter",
+        createValidationError(
+          "code",
+          code,
+          [],
+          "Code must contain between 2 and 5 uppercase letters"
+        )
+      );
+    }
+
+    const from = new Date(String(req.query.from || ""));
+    const to = new Date(String(req.query.to || ""));
+    if (
+      Number.isNaN(from.getTime()) ||
+      Number.isNaN(to.getTime()) ||
+      from >= to
+    ) {
+      throw new ValidationError(
+        "Invalid analytics date range",
+        createValidationError(
+          "from/to",
+          `${req.query.from || ""}/${req.query.to || ""}`,
+          [],
+          "From and to must be valid ISO date-times, and from must precede to"
+        )
+      );
+    }
+
+    const interval =
+      req.query.interval === undefined
+        ? "hour"
+        : String(req.query.interval).trim().toLowerCase();
+    if (interval !== "hour" && interval !== "day") {
+      throw new ValidationError(
+        "Invalid interval parameter",
+        createValidationError(
+          "interval",
+          interval,
+          ["hour", "day"]
+        )
+      );
+    }
+
+    const rangeDays = (to.getTime() - from.getTime()) / 86_400_000;
+    const maxDays = interval === "hour" ? 31 : 730;
+    if (rangeDays > maxDays) {
+      throw new ValidationError(
+        "Analytics range is too large",
+        createValidationError(
+          "from/to",
+          `${rangeDays.toFixed(1)} days`,
+          [],
+          `${interval} interval supports at most ${maxDays} days`
+        )
+      );
+    }
+
+    const originsParam = req.query.origins
+      ? String(req.query.origins)
+          .split(",")
+          .map(value => value.trim().toLowerCase())
+          .filter(Boolean)
+      : [];
+    const selectedOrigins = [...new Set(originsParam)];
+    if (selectedOrigins.length > 60) {
+      throw new ValidationError(
+        "Too many origins",
+        createValidationError(
+          "origins",
+          String(selectedOrigins.length),
+          [],
+          "At most 60 origins can be requested"
+        )
+      );
+    }
+    for (const origin of selectedOrigins) {
+      const validation = validateOrigin(origin);
+      if (!validation.isValid || origin === "bcu") {
+        throw new ValidationError(
+          "Invalid origin parameter",
+          validation.error ||
+            createValidationError(
+              "origin",
+              origin,
+              Object.keys(origins).filter(value => value !== "bcu")
+            )
+        );
+      }
+    }
+
+    const normalizedOrigins = selectedOrigins.sort();
+    const cacheKey = [
+      "rate-analytics",
+      code,
+      interval,
+      from.toISOString(),
+      to.toISOString(),
+      normalizedOrigins.join(",") || "all",
+    ].join(":");
+    return redisCache.getOrSet(
+      cacheKey,
+      () =>
+        cambio_info.get_rate_analytics({
+          code,
+          origins: normalizedOrigins.length ? normalizedOrigins : undefined,
+          from,
+          to,
+          interval,
+        }),
+      30
+    );
+  });
+
+  /**
+   * @openapi
+   * /analytics/branches:
+   *   get:
+   *     tags: [Evolution]
+   *     summary: Sucursales disponibles para filtrar analíticas
+   *     description: Incluye sucursales activas aunque todavía no tengan coordenadas para el mapa.
+   *     responses:
+   *       200:
+   *         description: Catálogo de sucursales activas
+   */
+  server.getJson("analytics/branches", async (): Promise<any> => {
+    return redisCache.getOrSet(
+      "rate-analytics:branches",
+      () => cambio_info.getAnalyticsBranches(),
+      600
+    );
+  });
+
+  /**
+   * @openapi
    * /ping:
    *   get:
    *     tags:

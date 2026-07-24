@@ -130,6 +130,7 @@ describe("formatDailyTelegram", () => {
   it("still ships head + news + footer when the AI summary is empty", () => {
     const out = formatDailyTelegram(daily, "", "es");
     expect(out).toContain("USD");
+    expect(out).toContain("vs. 24 h");
     expect(out).toContain("Dólar sube");
     expect(out).toContain("https://cambio-uruguay.com");
   });

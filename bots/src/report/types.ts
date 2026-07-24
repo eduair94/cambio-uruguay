@@ -6,7 +6,7 @@ export interface CurrencyDelta {
   code: string;
   marketAvgBuy: number;
   marketAvgSell: number;
-  /** % change of the best sell price vs the previous business day. */
+  /** % change of the market average sell price vs exactly 24 hours earlier. */
   changePct: number;
   bestBuy: { name: string; rate: number };
   bestSell: { name: string; rate: number };

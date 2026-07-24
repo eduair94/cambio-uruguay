@@ -122,6 +122,23 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         keywords: ['comparar', 'comparacion', 'versus', 'superponer'],
       },
       {
+        to: '/analiticas',
+        labelKey: 'rateAnalytics.nav',
+        icon: 'mdi-chart-timeline-variant-shimmer',
+        priority: 0.9,
+        changefreq: 'hourly',
+        fresh: true,
+        primary: true,
+        keywords: [
+          'analiticas',
+          'cotizaciones por hora',
+          'periodo',
+          'poder de compra',
+          'sucursales',
+          'departamento',
+        ],
+      },
+      {
         to: '/avanzado',
         labelKey: 'avanzado',
         icon: 'mdi-cog',
@@ -129,6 +146,15 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         changefreq: 'hourly',
         fresh: true,
         keywords: ['avanzado', 'tabla', 'filtros', 'todas las casas'],
+      },
+      {
+        to: '/ultimos-cambios',
+        labelKey: 'rateChanges.nav',
+        icon: 'mdi-swap-horizontal-bold',
+        priority: 0.8,
+        changefreq: 'hourly',
+        fresh: true,
+        keywords: ['ultimos cambios', 'en vivo', 'movimientos', 'cotizaciones', 'alertas'],
       },
       {
         to: '/por-que-sube-el-dolar',
@@ -1023,6 +1049,7 @@ export const POPULAR: readonly string[] = Object.freeze([
   '/cotizacion/dolar',
   '/herramientas/conversor-de-monedas',
   '/comparar',
+  '/analiticas',
 ])
 
 /** Every internal `to` in the navigation model, in section order. */

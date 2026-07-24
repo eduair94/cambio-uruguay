@@ -97,7 +97,7 @@ function fitNewsBlock(items: NewsItem[], lang: Lang, budget: number): string {
 function dailyLines(data: DailyReportData, lang: Lang): string[] {
   const t = L(lang);
   return data.currencies.map((c) => {
-    return `${arrow(c.changePct)} *${c.code}* ${fmtUYU(c.bestSell.rate, lang)} (${fmtPct(c.changePct)}) · ${t.bestBuy}: ${c.bestBuy.name}`;
+    return `${arrow(c.changePct)} *${c.code}* ${fmtUYU(c.bestSell.rate, lang)} (${fmtPct(c.changePct)} ${t.vs24h}) · ${t.bestBuy}: ${c.bestBuy.name}`;
   });
 }
 
@@ -134,7 +134,7 @@ export function formatDailyTwitter(data: DailyReportData, lang: Lang): string {
   const t = L(lang);
   const head = `📊 ${t.dailyTitle} ${data.date}`;
   const lines = data.currencies.map(
-    (c) => `${arrow(c.changePct)} ${c.code} ${fmtUYU(c.bestSell.rate, lang)} ${fmtPct(c.changePct)}`
+    (c) => `${arrow(c.changePct)} ${c.code} ${fmtUYU(c.bestSell.rate, lang)} ${fmtPct(c.changePct)} ${t.vs24h}`
   );
   const url = "cambio-uruguay.com";
   // Add currency lines while staying under the cap, always keeping head + url.

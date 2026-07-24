@@ -598,10 +598,14 @@
           </VCol>
         </VRow>
         <PromoVideo :label="t('promo.heading')" />
-        <div class="d-flex justify-center mt-6">
+        <div class="d-flex justify-center flex-wrap ga-3 mt-6">
           <VBtn :to="localePath('/comparar')" color="primary" variant="elevated" size="large">
             <VIcon start>mdi-chart-multiple</VIcon>
             {{ t('promo.cta') }}
+          </VBtn>
+          <VBtn :to="localePath('/analiticas')" color="primary" variant="outlined" size="large">
+            <VIcon start>mdi-chart-timeline-variant-shimmer</VIcon>
+            {{ t('rateAnalytics.nav') }}
           </VBtn>
         </div>
       </VContainer>

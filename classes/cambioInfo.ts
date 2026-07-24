@@ -3,6 +3,18 @@ import { CambioObj } from "../interfaces/Cambio";
 import BCU_Details from "./bcu_details";
 import { Cambio } from "./cambio";
 import { origins } from "./origins";
+import {
+  buildRateAnalytics,
+  RateAnalyticsQuery,
+  RateAnalyticsResponse,
+} from "./rate_analytics";
+import {
+  buildMarketChangeSummary,
+  listRateChanges,
+  MarketChangeSummary,
+  RateChange,
+  RateChangeQuery,
+} from "./rate_changes";
 
 export function mergeOriginDepartments(...sources: unknown[]): string[] {
   const departments = new Set<string>();
@@ -54,6 +66,36 @@ class CambioInfo extends Cambio {
         mapUrl: s.map || "",
       }))
       .filter((b: any) => !isNaN(b.lat) && !isNaN(b.lng) && b.lat !== 0 && b.lng !== 0);
+  }
+  async getAnalyticsBranches(): Promise<any[]> {
+    const branches = await this.db_suc.allEntries({
+      status: { $ne: 0 },
+    });
+    return branches
+      .filter(
+        (branch: any) =>
+          typeof branch?.origin === "string" &&
+          Boolean((origins as Record<string, unknown>)[branch.origin])
+      )
+      .map((branch: any, index: number) => {
+        const origin = branch.origin.trim().toLowerCase();
+        const id = String(branch.id || `${origin}-${index}`);
+        return {
+          key: `${origin}:${id}`,
+          origin,
+          id,
+          name: String(branch.Nombre || "").trim(),
+          dept: String(branch.Departamento || "").trim().toUpperCase(),
+          locality: String(branch.Localidad || "").trim(),
+          address: String(branch.Direccion || "").trim(),
+        };
+      })
+      .sort((a: any, b: any) =>
+        `${a.dept}|${a.origin}|${a.name}`.localeCompare(
+          `${b.dept}|${b.origin}|${b.name}`,
+          "es"
+        )
+      );
   }
   async get_local_data() {
     if (!this.localData) {
@@ -178,6 +220,25 @@ class CambioInfo extends Cambio {
     }
     const obj = await this.db.allEntriesSort({ date }, { code: -1, sell: 1, buy: 1 });
     return obj as any;
+  }
+  async get_rate_changes(query: RateChangeQuery = {}): Promise<RateChange[]> {
+    return listRateChanges(query);
+  }
+  async get_market_change(hours = 24): Promise<MarketChangeSummary> {
+    const current = await this.get_data();
+    return buildMarketChangeSummary(current, this.db, hours);
+  }
+  async get_rate_analytics(
+    query: RateAnalyticsQuery
+  ): Promise<RateAnalyticsResponse> {
+    const current = await this.get_data();
+    const houseNames = Object.fromEntries(
+      Object.keys(origins).map(origin => {
+        const exchange: Cambio = new (origins as any)[origin](origin);
+        return [origin, exchange.name];
+      })
+    );
+    return buildRateAnalytics(current, this.db, query, houseNames);
   }
   async get_currency_evolution(origin: string, code: string, periodMonths: number = 6, type?: string): Promise<any> {
     // Calculate date range based on the period requested

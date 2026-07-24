@@ -36,6 +36,24 @@ export interface HouseInfo {
   departments?: string[];
 }
 
+export interface MarketChangeCurrency {
+  code: string;
+  matchedQuotes: number;
+  currentAvgBuy: number;
+  currentAvgSell: number;
+  baselineAvgBuy: number;
+  baselineAvgSell: number;
+  buyChangePct: number;
+  sellChangePct: number;
+}
+
+export interface MarketChangeResult {
+  asOf: string;
+  baselineAt: string;
+  hours: number;
+  currencies: MarketChangeCurrency[];
+}
+
 /** Read-only seam over the public API consumed by the tool handlers. */
 export interface CambioApi {
   /** `GET /` — every house's current quotes for every currency. */
@@ -44,6 +62,8 @@ export interface CambioApi {
   getLocalData(): Promise<Record<string, HouseInfo>>;
   /** `GET /evolution/:origin/:currency?period=N` — historical series + stats. */
   getEvolution(origin: string, currency: string, period?: number): Promise<unknown>;
+  /** Market averages compared against the reconstructed exact baseline. */
+  getMarketChange?(hours?: number): Promise<MarketChangeResult>;
   /** Latest UY dollar/economy headlines (Google News RSS). */
   getNews(limit?: number): Promise<NewsItem[]>;
   /** `POST /ai/insights` — AI market/currency analysis. */
@@ -106,6 +126,8 @@ export function httpCambioApi(baseUrl: string = DEFAULT_BASE_URL): CambioApi {
     getLocalData: () => get<Record<string, HouseInfo>>("/localData"),
     getEvolution: (origin, currency, period = 6) =>
       get<unknown>(`/evolution/${encodeURIComponent(origin)}/${encodeURIComponent(currency)}?period=${period}`),
+    getMarketChange: (hours = 24) =>
+      get<MarketChangeResult>(`/market-change?hours=${hours}`),
     getNews,
     getInsight,
   };

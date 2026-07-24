@@ -78,6 +78,7 @@ describe('CASAS_REPUTATION invariants', () => {
     expect(byCode.get('oca')).toMatchObject({ name: 'OCA', category: 'fintech' })
     expect(byCode.get('santander')).toMatchObject({ name: 'Santander', category: 'banco' })
     expect(byCode.get('scotiabank')).toMatchObject({ name: 'Scotiabank', category: 'banco' })
+    expect(byCode.get('bbva')).toMatchObject({ name: 'BBVA', category: 'banco' })
   })
 
   it('ratings are in range and always sourced', () => {

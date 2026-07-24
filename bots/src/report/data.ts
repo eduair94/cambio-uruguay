@@ -1,7 +1,10 @@
-// Builds the structured daily report + alert payloads from the public API,
-// reusing mcp's pure tool handlers. Day-over-day change uses the best-sell
-// house's evolution series (daily granularity).
-import type { CambioApi } from "cambio-uruguay-mcp/api";
+// Builds the structured daily report + alert payloads from the public API.
+// The primary comparison is the current market average against the
+// reconstructed state exactly 24 hours earlier.
+import type {
+  CambioApi,
+  MarketChangeResult,
+} from "cambio-uruguay-mcp/api";
 import { getNews, getRates } from "cambio-uruguay-mcp/tools";
 import type { BotConfig } from "../config.js";
 import type { AlertData, CurrencyDelta, DailyReportData } from "./types.js";
@@ -44,20 +47,40 @@ async function safeEvolution(api: CambioApi, origin: string, currency: string): 
   }
 }
 
+async function safeMarketChange(
+  api: CambioApi,
+  hours = 24
+): Promise<MarketChangeResult | null> {
+  if (!api.getMarketChange) return null;
+  try {
+    return await api.getMarketChange(hours);
+  } catch (err) {
+    console.error(`market-change ${hours}h failed:`, err);
+    return null;
+  }
+}
+
 export async function buildDailyData(api: CambioApi, cfg: BotConfig): Promise<DailyReportData> {
   const currencies: CurrencyDelta[] = [];
   let date = new Date().toISOString().slice(0, 10);
+  const marketChange = await safeMarketChange(api, 24);
+  const marketChangeByCode = new Map(
+    (marketChange?.currencies ?? []).map(row => [row.code.toUpperCase(), row])
+  );
 
   for (const code of cfg.reportCurrencies) {
     try {
       const r = await getRates(api, { currency: code });
       date = r.date.slice(0, 10);
-      const evo = await safeEvolution(api, r.bestSell.origin, code);
+      const exact24h = marketChangeByCode.get(code.toUpperCase());
+      const evo = exact24h
+        ? null
+        : await safeEvolution(api, r.bestSell.origin, code);
       currencies.push({
         code,
         marketAvgBuy: r.marketAvgBuy,
         marketAvgSell: r.marketAvgSell,
-        changePct: dayOverDayPct(evo),
+        changePct: exact24h?.sellChangePct ?? dayOverDayPct(evo),
         bestBuy: { name: r.bestBuy.name, rate: r.bestBuy.rate },
         bestSell: { name: r.bestSell.name, rate: r.bestSell.rate },
         lowestSpread: { name: r.lowestSpread.name, spread: r.lowestSpread.spread },
@@ -77,8 +100,22 @@ export async function buildDailyData(api: CambioApi, cfg: BotConfig): Promise<Da
   return { date, currencies, news };
 }
 
-/** Current best-sell vs yesterday's sell for one currency (null if no baseline). */
+/** Current market average vs exactly 24 hours ago (daily evolution is a legacy fallback). */
 export async function buildAlertData(api: CambioApi, currency: string): Promise<AlertData | null> {
+  const marketChange = await safeMarketChange(api, 24);
+  const exact24h = marketChange?.currencies.find(
+    row => row.code.toUpperCase() === currency.toUpperCase()
+  );
+  if (exact24h && exact24h.baselineAvgSell !== 0) {
+    return {
+      code: currency.toUpperCase(),
+      current: exact24h.currentAvgSell,
+      baseline: exact24h.baselineAvgSell,
+      changePct: exact24h.sellChangePct,
+      direction: exact24h.sellChangePct >= 0 ? "up" : "down",
+    };
+  }
+
   const r = await getRates(api, { currency });
   const evo = await safeEvolution(api, r.bestSell.origin, currency);
   const days = dailySells(evo);

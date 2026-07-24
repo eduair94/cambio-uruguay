@@ -1,6 +1,7 @@
 import fs from "fs";
 import { Cambio } from "./cambio";
 import { origins } from "./origins";
+import { publishPendingRateChanges } from "./rate_changes";
 
 interface SyncOriginResult {
   origin: string;
@@ -42,6 +43,14 @@ const sync_cambios = async () => {
       await delay(ORIGIN_DELAY_MS);
     }
   }
+
+  const telegram = await publishPendingRateChanges().catch((error) => {
+    console.error("Could not publish pending rate changes:", error);
+    return { sent: 0, pending: 0 };
+  });
+  console.log(
+    `Rate changes Telegram: ${telegram.sent} sent, ${telegram.pending} pending`
+  );
 
   // Store the current date and time of the sync
   const date = new Date();

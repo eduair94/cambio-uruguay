@@ -2,7 +2,7 @@
 // PURE (no Vue/Nuxt imports) so unit tests and server code can import freely.
 
 /** Date the reputation snapshot (ratings, press, strengths) was researched. */
-export const CASAS_LAST_RESEARCHED = '2026-07-04'
+export const CASAS_LAST_RESEARCHED = '2026-07-24'
 
 export const CASAS_PATH = '/casas-de-cambio'
 
@@ -1716,6 +1716,51 @@ export const CASAS_REPUTATION: CasaReputation[] = [
       {
         label: 'Wikipedia - Banco Itaú (Uruguay): historia y fundación 1978',
         url: 'https://es.wikipedia.org/wiki/Banco_Ita%C3%BA_(Uruguay)',
+      },
+    ],
+  },
+  {
+    code: 'bbva',
+    name: 'BBVA',
+    category: 'banco',
+    googleRating: null,
+    googleReviewCount: null,
+    ratingSource: null,
+    branchNote:
+      'BBVA opera varias sucursales y puntos de atención en Uruguay. Las reseñas públicas corresponden a locales individuales, por lo que no atribuimos la nota de una sola sucursal a todo el banco.',
+    founded: null,
+    services: [
+      'cotización online de compra y venta de USD',
+      'compra y venta de moneda entre cuentas',
+      'banca web y app móvil',
+      'transferencias nacionales e internacionales',
+      'cuentas, tarjetas, préstamos e inversiones',
+      'red de sucursales y cajeros',
+    ],
+    strengths: [
+      'La cotización online de USD se incorpora al comparador general y al historial de cambios',
+      'Canales web y móvil con operativa bancaria completa',
+      'Presencia física en Montevideo y el interior',
+      'Entidad registrada y supervisada por el Banco Central del Uruguay',
+    ],
+    weaknesses: [
+      'La cotización incorporada proviene del relevamiento público de DolarAhora y no de una API oficial de BBVA',
+      'Para operar digitalmente es necesario ser cliente y tener cuentas habilitadas',
+      'Las calificaciones varían por sucursal y no existe una única ficha de Google representativa',
+    ],
+    press: [],
+    sources: [
+      {
+        label: 'BBVA Uruguay — sitio oficial',
+        url: 'https://www.bbva.com.uy/',
+      },
+      {
+        label: 'DolarAhora — cotización pública de BBVA',
+        url: 'https://dolarahora.uy/?institutions=bbva',
+      },
+      {
+        label: 'BCU — ficha institucional de BBVA Uruguay (n.º 1153)',
+        url: 'https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=1153',
       },
     ],
   },

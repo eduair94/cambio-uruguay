@@ -8,6 +8,7 @@
     "bcu_backfill": "ts-node scripts/oneoff/bcu_backfill.ts",
     "oca": "ts-node scripts/oneoff/oca.ts",
     "prex": "ts-node scripts/oneoff/prex.ts",
+    "bbva": "ts-node scripts/oneoff/bbva.ts",
     "scotiabank": "ts-node scripts/oneoff/scotiabank.ts",
     "santander": "ts-node scripts/oneoff/santander.ts",
     "sentry_test": "ts-node scripts/oneoff/sentry_test.ts",

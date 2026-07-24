@@ -108,3 +108,38 @@ export interface EvolutionResponse {
   evolution: EvolutionPoint[]
   localData: EvolutionLocalData
 }
+
+export type RateAnalyticsInterval = 'hour' | 'day'
+
+export interface RateAnalyticsPoint {
+  at: string
+  buy: number | null
+  sell: number | null
+}
+
+export interface RateAnalyticsSeries {
+  origin: string
+  houseName: string
+  type: ExchangeType | string
+  currentBuy: number
+  currentSell: number
+  points: RateAnalyticsPoint[]
+}
+
+export interface RateAnalyticsOrigin {
+  origin: string
+  houseName: string
+  currencies: string[]
+}
+
+export interface RateAnalyticsResponse {
+  asOf: string
+  from: string
+  to: string
+  code: string
+  interval: RateAnalyticsInterval
+  intradayCoverageStart: string | null
+  availableCurrencies: string[]
+  availableOrigins: RateAnalyticsOrigin[]
+  series: RateAnalyticsSeries[]
+}

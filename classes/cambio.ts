@@ -6,6 +6,11 @@ import moment from "moment-timezone";
 import { CambioObj } from "../interfaces/Cambio";
 import { MongooseServer, Schema } from "./database";
 import { reconcileLocationIds } from "./location_sync";
+import {
+  detectRateChanges,
+  loadLatestRateStates,
+  recordRateChanges,
+} from "./rate_changes";
 moment.tz.setDefault("America/Montevideo");
 
 // Set a default timeout for all axios requests to prevent hanging on unresponsive servers
@@ -275,13 +280,28 @@ abstract class Cambio {
     console.log("Data", data);
   }
 
-  async sync_data() {
+  async sync_data(): Promise<void> {
     const data = await this.get_data();
     console.log("Data", data, this.origin);
     if (data.length === 0) {
       console.error("Empty", this.origin);
       return;
     }
+
+    // Verification runs constantly, but the append-only ledger only receives
+    // rows when either side of a quote actually changed.
+    const previous = await loadLatestRateStates(this.origin, this.db);
+    const observedAt = new Date();
+    const changes = detectRateChanges(
+      this.origin,
+      this.name,
+      data,
+      previous,
+      observedAt
+    );
+    // Persist the transition before overwriting today's snapshot. If the
+    // snapshot upsert fails, the ledger remains the exact state for the retry.
+    await recordRateChanges(changes);
 
     // Batch all saves into a single bulkWrite operation instead of individual findOneAndUpdate calls
     const date = moment.tz("America/Montevideo").startOf("day").toDate();
@@ -325,6 +345,7 @@ abstract class Cambio {
       await this.db.bulkUpsert(operations);
       console.log(`Bulk upserted ${operations.length} entries for ${this.origin}`);
     }
+
   }
 
   abstract get_data(): Promise<CambioObj[]>;
