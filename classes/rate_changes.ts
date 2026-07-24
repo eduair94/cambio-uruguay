@@ -52,6 +52,11 @@ type RateState = Pick<CambioObj, "code" | "type" | "name" | "buy" | "sell"> & {
   origin?: string;
 };
 
+type DailyRateState = RateState & {
+  origin: string;
+  date: Date | string;
+};
+
 const rateChangeSchema = new Schema(
   {
     origin: { type: String, required: true },
@@ -219,7 +224,65 @@ export async function recordRateChanges(changes: RateChange[]): Promise<void> {
   );
 }
 
-export async function listRateChanges(query: RateChangeQuery = {}): Promise<RateChange[]> {
+export function buildDailyRateChanges(
+  rows: DailyRateState[],
+  houseNames: Record<string, string> = {}
+): RateChange[] {
+  const groups = new Map<string, DailyRateState[]>();
+  for (const row of rows) {
+    if (
+      !isPublicRate(row) ||
+      !Number.isFinite(row.buy) ||
+      !Number.isFinite(row.sell)
+    ) {
+      continue;
+    }
+    const key = fullRateKey(row);
+    const group = groups.get(key) || [];
+    group.push(row);
+    groups.set(key, group);
+  }
+
+  const changes: RateChange[] = [];
+  for (const group of groups.values()) {
+    group.sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+    for (let index = 0; index < group.length - 1; index++) {
+      const current = group[index]!;
+      const previous = group[index + 1]!;
+      const buyChanged = current.buy !== previous.buy;
+      const sellChanged = current.sell !== previous.sell;
+      if (!buyChanged && !sellChanged) continue;
+
+      changes.push({
+        origin: current.origin,
+        houseName: houseNames[current.origin] || current.origin,
+        code: current.code.toUpperCase(),
+        type: current.type || "",
+        name: current.name,
+        previousBuy: previous.buy,
+        previousSell: previous.sell,
+        buy: current.buy,
+        sell: current.sell,
+        buyChanged,
+        sellChanged,
+        observedAt: new Date(current.date),
+        telegramReportedAt: null,
+      });
+    }
+  }
+
+  return changes.sort(
+    (a, b) => b.observedAt.getTime() - a.observedAt.getTime()
+  );
+}
+
+export async function listRateChanges(
+  query: RateChangeQuery = {},
+  currentRatesDb?: MongooseServer,
+  houseNames: Record<string, string> = {}
+): Promise<RateChange[]> {
   const filter: Record<string, unknown> = {};
   if (query.origin) filter.origin = query.origin;
   if (query.code) filter.code = query.code.toUpperCase();
@@ -227,13 +290,57 @@ export async function listRateChanges(query: RateChangeQuery = {}): Promise<Rate
   if (query.since) filter.observedAt = { $gte: query.since };
 
   const limit = Math.min(Math.max(query.limit || 100, 1), 200);
-  return (await changeDb()
+  const ledger = (await changeDb()
     .getModel()
     .find(filter)
     .select("-__v")
     .sort({ observedAt: -1 })
     .limit(limit)
     .lean()) as unknown as RateChange[];
+  if (!currentRatesDb || ledger.length >= limit) return ledger;
+
+  const dailyFilter: Record<string, unknown> = {
+    date: {
+      $gte:
+        query.since ||
+        moment.tz("America/Montevideo").subtract(45, "days").startOf("day").toDate(),
+    },
+  };
+  if (query.origin) dailyFilter.origin = query.origin;
+  if (query.code) dailyFilter.code = query.code.toUpperCase();
+  if (query.type !== undefined) dailyFilter.type = query.type;
+
+  const dailyRows = (await currentRatesDb
+    .getModel()
+    .find(dailyFilter)
+    .select("origin code type name buy sell date")
+    .sort({ date: -1 })
+    .limit(20_000)
+    .lean()) as unknown as DailyRateState[];
+  const dailyChanges = buildDailyRateChanges(dailyRows, houseNames);
+  const ledgerDays = new Set(
+    ledger.map(
+      change =>
+        `${fullRateKey(change)}|${moment
+          .tz(change.observedAt, "America/Montevideo")
+          .format("YYYY-MM-DD")}`
+    )
+  );
+  const fallback = dailyChanges.filter(
+    change =>
+      !ledgerDays.has(
+        `${fullRateKey(change)}|${moment
+          .tz(change.observedAt, "America/Montevideo")
+          .format("YYYY-MM-DD")}`
+      )
+  );
+
+  return [...ledger, ...fallback]
+    .sort(
+      (a, b) =>
+        new Date(b.observedAt).getTime() - new Date(a.observedAt).getTime()
+    )
+    .slice(0, limit);
 }
 
 async function historicalFallbackStates(

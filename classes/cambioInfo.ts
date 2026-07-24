@@ -222,7 +222,13 @@ class CambioInfo extends Cambio {
     return obj as any;
   }
   async get_rate_changes(query: RateChangeQuery = {}): Promise<RateChange[]> {
-    return listRateChanges(query);
+    const houseNames = Object.fromEntries(
+      Object.keys(origins).map(origin => {
+        const exchange: Cambio = new (origins as any)[origin](origin);
+        return [origin, exchange.name];
+      })
+    );
+    return listRateChanges(query, this.db, houseNames);
   }
   async get_market_change(hours = 24): Promise<MarketChangeSummary> {
     const current = await this.get_data();

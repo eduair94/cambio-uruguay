@@ -131,36 +131,6 @@
             </template>
           </VAutocomplete>
         </VCol>
-        <VCol cols="12">
-          <VAutocomplete
-            v-model="selectedBranches"
-            :items="branchOptions"
-            :label="t('rateAnalytics.branches')"
-            multiple
-            chips
-            closable-chips
-            item-title="title"
-            item-value="value"
-            variant="outlined"
-            density="comfortable"
-            hide-details
-            :disabled="branchOptions.length === 0"
-          >
-            <template #selection="{ item, index }">
-              <VChip
-                v-if="index < 2"
-                size="small"
-                closable
-                @click:close="removeBranch(String(item.value))"
-              >
-                {{ item.title }}
-              </VChip>
-              <span v-else-if="index === 2" class="text-caption text-medium-emphasis">
-                +{{ selectedBranches.length - 2 }}
-              </span>
-            </template>
-          </VAutocomplete>
-        </VCol>
       </VRow>
 
       <VAlert
@@ -179,7 +149,7 @@
           size="large"
           prepend-icon="mdi-chart-line"
           :loading="pending"
-          :disabled="effectiveOrigins.length === 0"
+          :disabled="selectedOrigins.length === 0"
           @click="applyFilters"
         >
           {{ t('rateAnalytics.apply') }}
@@ -438,7 +408,6 @@ const selectedPeriod = ref(1)
 const selectedInterval = ref<RateAnalyticsInterval>('hour')
 const selectedDepartment = ref<string | null>(null)
 const selectedOrigins = ref<string[]>([])
-const selectedBranches = ref<string[]>([])
 const uyuBudget = ref(10_000)
 const chartMode = ref<'average' | 'houses'>('average')
 const houseSide = ref<'buy' | 'sell'>('sell')
@@ -506,51 +475,17 @@ const eligibleBranches = computed(() =>
       (!selectedDepartment.value || branch.dept === selectedDepartment.value)
   )
 )
-const branchOptions = computed(() =>
-  eligibleBranches.value
-    .map(branch => ({
-      title: [branch.name || branch.address || branch.id, branch.locality || branch.dept]
-        .filter(Boolean)
-        .join(' · '),
-      value: branch.key,
-    }))
-    .sort((a, b) => a.title.localeCompare(b.title, locale.value))
-)
-const branchFilterActive = computed(
-  () =>
-    branchOptions.value.length > 0 && selectedBranches.value.length !== branchOptions.value.length
-)
-const effectiveOrigins = computed(() => {
-  if (!branchFilterActive.value) return selectedOrigins.value
-  const selected = new Set(selectedBranches.value)
-  return [
-    ...new Set(
-      eligibleBranches.value.filter(branch => selected.has(branch.key)).map(branch => branch.origin)
-    ),
-  ]
-})
-
 const selectAllForCurrentFilters = () => {
   selectedOrigins.value = originOptions.value.map(option => option.value)
-  nextTick(() => {
-    selectedBranches.value = branchOptions.value.map(option => option.value)
-  })
 }
 const removeOrigin = (origin: string) => {
   selectedOrigins.value = selectedOrigins.value.filter(value => value !== origin)
 }
-const removeBranch = (branch: string) => {
-  selectedBranches.value = selectedBranches.value.filter(value => value !== branch)
-}
-
 if (analytics.value) selectAllForCurrentFilters()
 
 watch([selectedCurrency, selectedDepartment], () => {
   if (selectedPeriod.value > 31) selectedInterval.value = 'day'
   selectAllForCurrentFilters()
-})
-watch(selectedOrigins, () => {
-  selectedBranches.value = branchOptions.value.map(option => option.value)
 })
 watch(selectedPeriod, days => {
   if (days > 31) selectedInterval.value = 'day'
@@ -560,7 +495,7 @@ const applyFilters = () => {
   const days = selectedPeriod.value
   const interval = days > 31 ? 'day' : selectedInterval.value
   selectedInterval.value = interval
-  appliedQuery.value = makeQuery(selectedCurrency.value, days, interval, effectiveOrigins.value)
+  appliedQuery.value = makeQuery(selectedCurrency.value, days, interval, selectedOrigins.value)
 }
 
 const resetFilters = () => {
@@ -772,11 +707,7 @@ const formatDateTime = (value: string) =>
     timeZone: 'America/Montevideo',
   }).format(new Date(value))
 const branchCount = (origin: string) => {
-  const selected = new Set(selectedBranches.value)
-  const branches = eligibleBranches.value.filter(branch => branch.origin === origin)
-  return branchFilterActive.value
-    ? branches.filter(branch => selected.has(branch.key)).length
-    : branches.length
+  return eligibleBranches.value.filter(branch => branch.origin === origin).length
 }
 
 const canonical = 'https://cambio-uruguay.com/analiticas'

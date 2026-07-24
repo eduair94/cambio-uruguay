@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildDailyRateChanges,
   detectRateChanges,
   formatRateChangeMessage,
 } from "../classes/rate_changes";
@@ -57,5 +58,41 @@ describe("change-only rate ledger", () => {
     expect(message).toContain("41,2");
     expect(message).toContain("41,25");
     expect(message).toContain("cambio-uruguay.com/ultimos-cambios");
+  });
+
+  it("reconstructs real daily transitions when the intraday ledger is still empty", () => {
+    const changes = buildDailyRateChanges(
+      [
+        {
+          origin: "brou",
+          date: new Date("2026-07-24T03:00:00.000Z"),
+          code: "USD",
+          type: "",
+          name: "Dólar",
+          buy: 39.2,
+          sell: 41.3,
+        },
+        {
+          origin: "brou",
+          date: new Date("2026-07-23T03:00:00.000Z"),
+          code: "USD",
+          type: "",
+          name: "Dólar",
+          buy: 39.1,
+          sell: 41.2,
+        },
+      ],
+      { brou: "BROU" }
+    );
+
+    expect(changes).toHaveLength(1);
+    expect(changes[0]).toMatchObject({
+      origin: "brou",
+      houseName: "BROU",
+      previousBuy: 39.1,
+      buy: 39.2,
+      previousSell: 41.2,
+      sell: 41.3,
+    });
   });
 });
