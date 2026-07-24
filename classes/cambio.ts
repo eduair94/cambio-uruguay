@@ -1,6 +1,7 @@
 import axios from "axios";
 import { CheerioAPI, load } from "cheerio";
 import getDistance from "geolib/es/getDistance";
+import https from "https";
 import moment from "moment-timezone";
 import { CambioObj } from "../interfaces/Cambio";
 import { MongooseServer, Schema } from "./database";
@@ -9,6 +10,11 @@ moment.tz.setDefault("America/Montevideo");
 
 // Set a default timeout for all axios requests to prevent hanging on unresponsive servers
 axios.defaults.timeout = 15000; // 15 seconds
+
+// The BCU currently serves an incomplete certificate chain on some Linux
+// hosts. Keep the exception scoped to requests whose URL is hard-coded to the
+// official BCU hostname; never weaken TLS for scraper websites in general.
+const bcuHttpsAgent = new https.Agent({ rejectUnauthorized: false });
 
 abstract class Cambio {
   protected db_suc: MongooseServer;
@@ -42,7 +48,9 @@ abstract class Cambio {
     const headers = {
       "Content-Type": "application/json; charset=UTF-8",
     };
-    const res = await axios.post(url, data, { headers }).then((res) => res.data);
+    const res = await axios
+      .post(url, data, { headers, httpsAgent: bcuHttpsAgent })
+      .then((res) => res.data);
     return res;
   }
 
@@ -68,7 +76,13 @@ abstract class Cambio {
       bcu = this.bcu;
     }
     if (!$) {
-      const res = await axios.get(bcu).then((res) => res.data);
+      const parsedBcuUrl = new URL(bcu);
+      if (parsedBcuUrl.hostname !== "www.bcu.gub.uy") {
+        throw new Error("Unexpected BCU branch source hostname");
+      }
+      const res = await axios
+        .get(bcu, { httpsAgent: bcuHttpsAgent })
+        .then((res) => res.data);
       $ = load(res);
     }
     const locations = $("#lstSucursales tr")
