@@ -3,6 +3,7 @@ import { cambio_info } from "../../classes/cambioInfo";
 import { MongooseServer, withTimeout } from "../../classes/database";
 import { locationOrigins } from "../../classes/origins";
 import { syncSantanderOfficialCoordinates } from "../../classes/santander_locations";
+import { syncScotiabankOfficialCoordinates } from "../../classes/scotiabank_locations";
 
 async function main() {
   // Every getLocations() write goes through MongooseServer, whose model calls
@@ -30,10 +31,12 @@ async function main() {
     try {
       const before = await cambio_info.getMarkets({ origin });
       const departments = await exchange.getLocations();
-      const coordinateSync =
-        origin === "santander"
-          ? await syncSantanderOfficialCoordinates()
-          : undefined;
+      let coordinateSync;
+      if (origin === "santander") {
+        coordinateSync = await syncSantanderOfficialCoordinates();
+      } else if (origin === "scotiabank") {
+        coordinateSync = await syncScotiabankOfficialCoordinates();
+      }
       const after = await cambio_info.getMarkets({ origin });
       report.push({
         origin,
