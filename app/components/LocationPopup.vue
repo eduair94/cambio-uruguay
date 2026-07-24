@@ -69,6 +69,7 @@ import 'leaflet/dist/leaflet.css'
 
 const { $i18n } = useNuxtApp()
 const apiService = useApiService()
+const config = useRuntimeConfig()
 
 const radius = ref(0)
 const loadingDistances = ref(false)
@@ -76,7 +77,7 @@ const dialog = ref(false)
 const latitude = ref(0)
 const search = ref('')
 const longitude = ref(0)
-const apiKey = 'XFXIuNUKjvNkruE6DSkR'
+const apiKey = config.public.maptilerApiKey
 
 const map = ref<any>(null)
 const searchInput = ref<HTMLInputElement | null>(null)

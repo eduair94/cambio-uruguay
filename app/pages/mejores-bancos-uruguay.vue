@@ -160,8 +160,8 @@
             tiendas (Google Play y App Store, ponderado por cantidad de reseñas) y después lo
             ajustamos por la <em>tendencia</em> de las reseñas recientes, por funciones que faltan
             (Apple Pay, Google Pay) y por el tamaño de la muestra. Donde no hay muestra local
-            razonable —Takenos tiene 1 reseña en la App Store uruguaya; Heritage, 13— lo decimos en
-            la ficha y puntuamos conservador en vez de inventar un número.
+            razonable —Heritage tiene apenas 13 reseñas en la App Store uruguaya— lo decimos en la
+            ficha y puntuamos conservador en vez de inventar un número.
           </p>
           <div v-for="dim in BANK_RUBRIC" :key="dim.id" class="method-dim">
             <div class="d-flex align-center justify-space-between mb-1">
@@ -333,11 +333,6 @@
             puntuadas del tablero (4,8/5 con 210 mil reseñas) y fue la primera en pagar rendimientos
             diarios en Uruguay, dos meses antes que Mercado Pago. Le castigábamos dos veces lo mismo
             (producto y comisiones). Sale del último tier; su problema sigue siendo la atención.
-          </li>
-          <li>
-            <strong>Takenos: nos comimos la letra chica.</strong> Cobrar del exterior es gratis,
-            pero <em>sacar</em> la plata cuesta 3%, y no tiene rieles en pesos. Decíamos “sin
-            comisiones” y “casi instantáneo”: las dos cosas eran falsas.
           </li>
         </ul>
       </VCard>
@@ -575,7 +570,7 @@
           <VIcon color="primary" class="mb-2">mdi-cellphone-cog</VIcon>
           <h3 class="text-subtitle-1 font-weight-bold mb-1">Apps de dinero</h3>
           <p class="text-body-2 text-medium-emphasis mb-0">
-            Prex, Mercado Pago, Astropay y más, comparadas.
+            Prex, Mercado Pago y las tarjetas bancarias locales, comparadas.
           </p>
         </VCard>
       </VCol>
@@ -803,7 +798,7 @@ const { subs: redditSubs } = useRedditSentiment()
 const canonicalUrl = 'https://cambio-uruguay.com/mejores-bancos-uruguay'
 const title = 'Los mejores bancos de Uruguay 2026: tier list de bancos y fintech'
 const description =
-  'Tier list interactiva de los bancos y fintech de Uruguay (BROU, Itaú, Santander, BBVA, Scotiabank, BTG Pactual (ex HSBC), Heritage, Mercado Pago, Prex, Astropay, Takenos). Rankeados con datos: puntajes reales de las tiendas, comisiones, atención, dólares y cobertura, más lo que dicen los uruguayos en Reddit. Reordená según lo que te importa.'
+  'Tier list interactiva de bancos y fintech que ofrecen productos al público en Uruguay (BROU, Itaú, Santander, BBVA, Scotiabank, BTG Pactual, Heritage, Mercado Pago y Prex). Rankeados con datos de apps, comisiones, atención, dólares y cobertura.'
 
 defineOgImageComponent('Cambio', {
   title: 'Mejores bancos de Uruguay',
@@ -876,15 +871,6 @@ const sources = [
     url: 'https://es.trustpilot.com/review/www.prexcard.com',
   },
   {
-    label: 'Astropay — Trustpilot (~4,2/5, 9.611 reseñas)',
-    url: 'https://www.trustpilot.com/review/app.astropay.com',
-  },
-  { label: 'Takenos — Trustpilot (~3,6/5)', url: 'https://www.trustpilot.com/review/takenos.com' },
-  {
-    label: 'Takenos — comisiones de retiro (centro de ayuda)',
-    url: 'https://help.takenos.com/en/articles/9820507',
-  },
-  {
     label: 'Scotiabank — modificación de retiros Banred (Cuenta Sueldo)',
     url: 'https://www.scotiabank.com.uy/Acerca-de/novedades/Aviso-banred-cuenta-sueldo',
   },
@@ -904,7 +890,7 @@ useHead(() => ({
     {
       name: 'keywords',
       content:
-        'mejores bancos uruguay, peores bancos uruguay, mejor banco uruguay, tier list bancos uruguay, brou itau santander scotiabank bbva, mercado pago prex astropay takenos, comparativa bancos uruguay, btg pactual uruguay, hsbc uruguay btg pactual, hsbc pasa a btg, santander apple pay uruguay',
+        'mejores bancos uruguay, peores bancos uruguay, mejor banco uruguay, tier list bancos uruguay, brou itau santander scotiabank bbva, mercado pago prex, comparativa bancos uruguay, btg pactual uruguay, hsbc uruguay btg pactual, hsbc pasa a btg, santander apple pay uruguay',
     },
   ],
   script: [

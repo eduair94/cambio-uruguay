@@ -21,9 +21,8 @@
 //
 // `app` is ANCHORED to the real store scores (Google Play + App Store, weighted by review
 // count), then adjusted for the trend of RECENT reviews, feature gaps (Apple Pay / Google
-// Pay) and sample size. Where there is no meaningful local sample (Takenos: 1 iOS rating;
-// Heritage: 13; Astropay: 193) we say so on the card and score conservatively instead of
-// inventing a number.
+// Pay) and sample size. Where there is no meaningful local sample (Heritage: 13) we say so
+// on the card and score conservatively instead of inventing a number.
 //
 // Last fact-check: 2026-07-11. That pass corrected five things we had wrong:
 //   1. Santander DOES have Apple Pay (since ago-2025) — and Google Pay too.
@@ -124,7 +123,7 @@ export interface TierMeta {
  * Tier thresholds. S is intentionally hard to reach: with balanced criteria no Uruguayan
  * bank or fintech clears 85 — the local system has a ceiling, and saying so is the point.
  * Change the active criteria on the page and the picture shifts: a USD-focused reader sends
- * Heritage and Takenos into S; an "atención" filter drops the worst into F.
+ * Heritage into S; an "atención" filter drops the worst into F.
  */
 export const TIERS: readonly TierMeta[] = Object.freeze([
   { id: 'S', label: 'S', blurb: 'De otro nivel. Casi imposible con criterios parejos.', min: 85 },
@@ -305,34 +304,6 @@ export const BANKS: readonly BankEntity[] = Object.freeze([
       'Nos escribieron diciendo que la app "es una bosta y encima se ve espantosa". Tienen media razón, y nos hicieron mirar mejor. "Una bosta" exagera: en histórico puntúa 4,61/5 en Play y 4,76/5 en la App Store. Pero nuestro "app de referencia" con 84/100 era indefendible: viene en caída desde mediados de 2025 (promedio mensual 4,45 → 2,58), las últimas 60 reseñas dan 3,1/5 con 32% de una estrella, y es el único banco del tablero sin Apple Pay ni Google Pay. Lo que NO encontramos es lo de "espantosa": de las 50 reseñas negativas más recientes, casi ninguna habla del diseño — se quejan de que no anda, no de cómo se ve. Bajamos la app de 84 a 62.',
   },
   {
-    id: 'takenos',
-    name: 'Takenos',
-    kind: 'fintech',
-    identity: 'Fintech (cuenta USD para freelancers)',
-    tagline: 'Cobrás gratis del exterior; sacarlo te cuesta 3%.',
-    scores: { app: 64, comisiones: 48, atencion: 52, usd: 88, productos: 56, cobertura: 48 },
-    signals: [
-      { label: 'Cuenta USD en EEUU', value: 'ACH gratis, 1 a 3 días', tone: 'pos' },
-      { label: 'Sacar la plata', value: '3% (ACH o USDT)', tone: 'neg' },
-      { label: 'Rieles uruguayos', value: 'ninguno (ni entra ni sale UYU)', tone: 'neg' },
-      { label: 'Trustpilot', value: '3,6/5 (140 reseñas)', tone: 'neutral' },
-    ],
-    bestFor:
-      'Freelancers que COBRAN del exterior en dólares y los dejan ahí o los gastan con la tarjeta. Si tu plan es pasarlos a pesos en Uruguay, mirá el 3% antes.',
-    pros: [
-      'Cuenta en dólares en EEUU a tu nombre: recibís USD por ACH sin comisión (acredita en 1 a 3 días hábiles).',
-      'También recibís euros por SEPA y cripto; el saldo queda en dólares digitales y la tarjeta se usa en cualquier país.',
-    ],
-    cons: [
-      'Sacar la plata cuesta 3% (ACH o USDT). Para un uruguayo NO hay salida gratis: el 1% es solo para usuarios de Argentina/Ecuador o para fondos que vienen de Deel, Ontop, PayPal o Airbnb.',
-      'No tiene rieles uruguayos: no entra ni sale UYU. La tarjeta cuesta USD 5 (virtual) o USD 20 + USD 20 de envío (física), más 1% por compra.',
-      'Es una fintech argentina, no uruguaya, y el soporte "24/7 por WhatsApp" que decíamos no está publicado en ningún lado.',
-      'Cola de reseñas negativas sobre recuperar fondos y cuentas cerradas con saldo adentro.',
-    ],
-    verdict:
-      'Nos habíamos comido la letra chica. Sigue siendo lo mejor para COBRAR del exterior: te da una cuenta en dólares en EEUU y recibís por ACH sin comisión. El problema es la salida — sacar esos dólares a Uruguay cuesta 3% (ACH o USDT) y no tiene rieles en pesos, así que ni entra ni sale UYU. Marcá el filtro "dólares" y se dispara a S; marcá "comisiones" y se derrumba. Antes decíamos "sin comisiones" y "casi instantáneo": las dos cosas eran falsas.',
-  },
-  {
     id: 'heritage',
     name: 'Banco Heritage',
     kind: 'banco',
@@ -357,31 +328,6 @@ export const BANKS: readonly BankEntity[] = Object.freeze([
     ],
     verdict:
       'El secreto de los que ahorran en dólares. Con criterios parejos queda en B por su cobertura chica, pero filtrá por "dólares" o "atención" y se va al tope. No es para todos —arranca en US$ 10.000, dato que antes nos faltaba—; para su nicho, es de lo mejor.',
-  },
-  {
-    id: 'astropay',
-    name: 'Astropay',
-    kind: 'fintech',
-    identity: 'Fintech de origen uruguayo (hoy con sede en Londres)',
-    tagline: 'Billetera global con buenas reseñas y una cola de trabas.',
-    scores: { app: 74, comisiones: 60, atencion: 56, usd: 78, productos: 54, cobertura: 70 },
-    signals: [
-      { label: 'Trustpilot', value: '4,2/5 (9.611 reseñas)', tone: 'pos' },
-      { label: 'Depósitos', value: 'rápidos', tone: 'pos' },
-      { label: 'KYC / retiros', value: 'trabas puntuales', tone: 'neg' },
-    ],
-    bestFor: 'Compras online, plataformas internacionales y mover dólares entre servicios.',
-    pros: [
-      'Buen puntaje en Trustpilot (4,2/5 sobre 9.611 reseñas, la muestra más grande del tablero); rápida e integrada con muchas plataformas.',
-      'Origen uruguayo; útil para tarjeta en USD y pagos transfronterizos.',
-    ],
-    cons: [
-      'Minoría real de casos: verificación KYC lenta y cuentas bloqueadas sin explicación.',
-      'Producto acotado a billetera/prepaga; piden comisiones más bajas.',
-      'Muestra local mínima: 193 reseñas en la App Store uruguaya y sin listado propio en Google Play — puntuamos su app conservador, no medida.',
-    ],
-    verdict:
-      'Buen promedio de reseñas y práctica para pagos internacionales, con una cola de problemas de KYC y retiros que conviene tener presente. Sólida en su rubro, no un reemplazo bancario.',
   },
   {
     id: 'scotiabank',

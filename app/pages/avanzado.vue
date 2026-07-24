@@ -41,6 +41,26 @@
           <div>
             <div class="px-3 pt-0 pt-3">
               <DonationSection :day="day" />
+              <VAlert
+                v-if="activePreferentialRate"
+                class="preferential-alert mb-4"
+                color="teal-darken-3"
+                variant="tonal"
+                density="comfortable"
+                icon="mdi-layers-triple"
+              >
+                <div class="font-weight-bold">{{ t('preferentialRates.activeTitle') }}</div>
+                <div class="text-body-2 mt-1">
+                  {{
+                    t('preferentialRates.activeText', {
+                      provider: activePreferentialRate.displayName,
+                      amount: formatPlainNumber(amount),
+                      currency: code,
+                      range: activePreferentialRange,
+                    })
+                  }}
+                </div>
+              </VAlert>
               <div>
                 <ExchangeFilters
                   :selected-exchange-house="selectedExchangeHouse"
@@ -76,7 +96,7 @@
                   @update:amount="
                     value => {
                       amount = parseFloat(value)
-                      setPrice()
+                      updateTable()
                     }
                   "
                   @update:code="
@@ -128,6 +148,43 @@
         </template>
       </ExchangeDataTable>
     </div>
+
+    <VCard
+      tag="section"
+      variant="outlined"
+      class="preferential-methodology pa-4 pa-md-5 mb-5"
+      aria-labelledby="preferential-methodology-title"
+    >
+      <div class="d-flex align-start ga-3">
+        <VIcon color="teal-lighten-1" size="28">mdi-scale-balance</VIcon>
+        <div>
+          <h2 id="preferential-methodology-title" class="text-h6 font-weight-bold mb-2">
+            {{ t('preferentialRates.methodologyTitle') }}
+          </h2>
+          <p class="text-body-2 text-medium-emphasis mb-3">
+            {{ t('preferentialRates.methodologyText') }}
+          </p>
+          <div class="d-flex flex-wrap ga-2">
+            <VChip size="small" color="teal" variant="tonal" prepend-icon="mdi-sort">
+              {{ t('preferentialRates.methodologyRanking') }}
+            </VChip>
+            <VChip size="small" color="teal" variant="tonal" prepend-icon="mdi-history">
+              {{ t('preferentialRates.methodologyHistory') }}
+            </VChip>
+            <VChip size="small" color="teal" variant="tonal" prepend-icon="mdi-shield-lock">
+              {{ t('preferentialRates.methodologyPrivacy') }}
+            </VChip>
+          </div>
+          <NuxtLink
+            :to="localePath('/desarrolladores')"
+            class="d-inline-flex align-center ga-1 text-teal-lighten-2 mt-3"
+          >
+            {{ t('preferentialRates.apiLink') }}
+            <VIcon size="16">mdi-arrow-right</VIcon>
+          </NuxtLink>
+        </div>
+      </div>
+    </VCard>
 
     <div class="d-flex flex-wrap grid-list-md ga-3">
       <v-btn
@@ -199,10 +256,13 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import type { PreferentialRatesCatalog } from '~/types/api'
+import { applyPreferentialRates, type AppliedPreferentialRate } from '~/utils/preferentialRates'
 
 // Initialize API service
 const apiService = useApiService()
 const { t, locale } = useI18n()
+const localePath = useLocalePath()
 const route = useRoute()
 const router = useRouter()
 const { start, finish } = useLoadingIndicator()
@@ -226,6 +286,7 @@ interface ExchangeItem {
     location?: string
   } | null
   distance?: number
+  preferentialRate?: AppliedPreferentialRate
 }
 
 interface ExchangeHouseOption {
@@ -256,12 +317,19 @@ const df = {
   }),
 }
 
+const routeAmount = Number(
+  Array.isArray(route.query.amount) ? route.query.amount[0] : route.query.amount
+)
+const initialAmount = Number.isFinite(routeAmount) && routeAmount >= 0 ? routeAmount : df.amount
+
 // Reactive data
 const snackColor = ref<string>('green darken-4')
 const routeHasQuery = ref<boolean>(false)
+const pageMounted = ref<boolean>(false)
 const hiddenWidgets = ref<boolean>(false)
 const hasScroll = ref<boolean>(false)
 const allItems = ref<ExchangeItem[]>([])
+const preferentialCatalog = ref<PreferentialRatesCatalog | null>(null)
 const snackbar = ref<boolean>(false)
 const snackBarText = ref<string>('')
 const showApiAlert = ref<boolean>(true)
@@ -271,7 +339,7 @@ const selectedExchangeHouse = ref<ExchangeHouseOption[]>([])
 const exchangeHouseOptions = ref<ExchangeHouseOption[]>([])
 const locations = ref<string[]>(['TODOS', 'MONTEVIDEO'])
 const money = ref<string[]>(['USD', 'ARS', 'BRL', 'EUR', 'GBP', 'UYU'])
-const amount = ref<number>(df.amount)
+const amount = ref<number>(initialAmount)
 const wantTo = ref<'buy' | 'sell'>(df.wantTo)
 const notConditional = ref<boolean>(false)
 const day = ref<string>('')
@@ -293,6 +361,29 @@ const scrollWidth = ref<number>(0)
 const wrapper2 = ref<HTMLElement | null>(null)
 
 // Computed properties
+const activePreferentialRate = computed(
+  () => items.value.find(item => item.preferentialRate)?.preferentialRate ?? null
+)
+
+const formatPlainNumber = (value: number) =>
+  value.toLocaleString(locale.value, { maximumFractionDigits: 2 })
+
+const activePreferentialRange = computed(() => {
+  const rate = activePreferentialRate.value
+  if (!rate) return ''
+  if (rate.maxAmount === null) {
+    return t('preferentialRates.rangeOpen', {
+      min: formatPlainNumber(rate.minAmount),
+      currency: rate.currency,
+    })
+  }
+  return t('preferentialRates.range', {
+    min: formatPlainNumber(rate.minAmount),
+    max: formatPlainNumber(rate.maxAmount),
+    currency: rate.currency,
+  })
+})
+
 const moneyOptions = computed<MoneyOption[]>(() => {
   return money.value.map((code: string) => ({
     text: t('codes.' + code),
@@ -527,7 +618,11 @@ const fetchDataForDate = async () => {
   start()
   const date = selectedDate.value
   try {
-    const data = await apiService.getProcessedExchangeData(date)
+    const [data, preferentialRates] = await Promise.all([
+      apiService.getProcessedExchangeData(date),
+      apiService.getPreferentialRates(),
+    ])
+    preferentialCatalog.value = preferentialRates
     if (data.error) {
       console.log('Data', data)
 
@@ -570,8 +665,17 @@ const fetchDataForDate = async () => {
 }
 
 const updateTable = () => {
+  const sourceItems = applyPreferentialRates(
+    allItems.value,
+    preferentialCatalog.value,
+    selectedDate.value,
+    code.value,
+    amount.value,
+    codeWith.value
+  )
+
   if (code.value === 'UYU') {
-    items.value = allItems.value.filter(
+    items.value = sourceItems.filter(
       el =>
         (!code.value || el.code === codeWith.value) &&
         (!notInterBank.value || !el.isInterBank || onlyInterBank.value.includes(code.value)) &&
@@ -581,7 +685,7 @@ const updateTable = () => {
           el.localData.departments.includes(location.value))
     )
   } else {
-    items.value = allItems.value.filter(
+    items.value = sourceItems.filter(
       el =>
         (!code.value || el.code === code.value) &&
         (!notInterBank.value || !el.isInterBank || onlyInterBank.value.includes(code.value)) &&
@@ -605,7 +709,7 @@ const updateTable = () => {
     items.value = items.value
       .filter(el => {
         if (code.value === 'UYU') return true
-        const f = allItems.value.find(
+        const f = sourceItems.find(
           e => e.origin === el.origin && e.code === codeWith.value && e.type === el.type
         )
         codeOrigins[el.origin + (el.type ? el.type : '')] = f
@@ -652,14 +756,10 @@ const setPrice = () => {
   }
 
   // Change route
-  if (routeHasQuery.value) {
-    const toPush = {
-      ...route.query,
-      query,
-    }
-    console.log('Updating route with query:', toPush)
+  if (routeHasQuery.value && pageMounted.value) {
+    console.log('Updating route with query:', query)
     try {
-      router.push(toPush)
+      router.push({ query })
     } catch {
       // Ignore parsing errors for invalid query parameters
     }
@@ -741,11 +841,15 @@ const { data: initialData } = await useAsyncData(
     const currentDate = getDateFromQuery()
 
     try {
-      const result = await apiService.getProcessedExchangeData(currentDate)
+      const [result, preferentialRates] = await Promise.all([
+        apiService.getProcessedExchangeData(currentDate),
+        apiService.getPreferentialRates(),
+      ])
 
       // Also return the query parameters for client-side state initialization
       return {
         ...result,
+        preferentialRates,
         queryParams: route.query,
         fetchedDate: currentDate,
       }
@@ -755,6 +859,7 @@ const { data: initialData } = await useAsyncData(
         localData: [],
         locations: [],
         exchangeData: [],
+        preferentialRates: null,
         error: error,
         queryParams: route.query,
         fetchedDate: currentDate,
@@ -768,6 +873,7 @@ const { data: initialData } = await useAsyncData(
         localData: [],
         locations: [],
         exchangeData: [],
+        preferentialRates: null,
         error: null,
         queryParams: {},
         fetchedDate: new Date().toLocaleDateString('en-CA', {
@@ -799,6 +905,7 @@ if (initialData.value && initialData.value.exchangeData) {
 
   // Set the data
   allItems.value = initialData.value.exchangeData
+  preferentialCatalog.value = initialData.value.preferentialRates
   locations.value = initialData.value.locations || ['TODOS', 'MONTEVIDEO']
 
   // Set the date if it was fetched from query params
@@ -815,6 +922,11 @@ if (initialData.value && initialData.value.exchangeData) {
     }
   }
 
+  // Apply filters before the first render on both server and client. Waiting
+  // until onMounted would render the default USD 100 table during SSR and then
+  // replace it with the URL amount, causing a hydration mismatch.
+  applyServerSideQueryParams(initialData.value.queryParams)
+
   buildExchangeHouseOptions()
   getData()
 }
@@ -826,11 +938,11 @@ if (initialData.value && initialData.value.exchangeData) {
  * @param allowedValues - Array of allowed values for enum-like parameters
  * @returns The sanitized value or null if invalid
  */
-const validateQueryParam = (
+function validateQueryParam(
   value: any,
   type: 'string' | 'number' | 'boolean' | 'date',
   allowedValues?: string[]
-): any => {
+): any {
   if (value === undefined || value === null) return null
 
   try {
@@ -880,7 +992,7 @@ const validateQueryParam = (
  * Apply query parameters from server-side data
  * This function applies query parameters that were passed from server-side
  */
-const applyServerSideQueryParams = (queryParams: any) => {
+function applyServerSideQueryParams(queryParams: any) {
   if (!queryParams || typeof queryParams !== 'object') return
 
   try {
@@ -1090,6 +1202,7 @@ onMounted(() => {
   if (localStorage.getItem('hideWidgets') === 'true') {
     hiddenWidgets.value = true
   }
+  pageMounted.value = true
 })
 
 // Structured Data for SEO
@@ -1174,3 +1287,15 @@ defineOgImageComponent('Cambio', {
   locale: locale.value as 'es' | 'en' | 'pt',
 })
 </script>
+
+<style scoped>
+.preferential-alert {
+  border: 1px solid rgba(77, 182, 172, 0.45);
+}
+
+.preferential-methodology {
+  border-color: rgba(77, 182, 172, 0.35);
+  background:
+    linear-gradient(135deg, rgba(0, 105, 92, 0.12), transparent 56%), rgb(var(--v-theme-surface));
+}
+</style>

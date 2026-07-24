@@ -12,6 +12,7 @@ API completa para obtener tipos de cambio y información de casas de cambio en U
 
 Esta API proporciona:
 - Tipos de cambio actualizados en tiempo real
+- Cotizaciones preferenciales por proveedor, monto e histórico diario
 - Información de ubicaciones de casas de cambio
 - Datos históricos de evolución de monedas
 - Búsqueda por geolocalización

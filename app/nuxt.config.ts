@@ -760,6 +760,9 @@ export default defineNuxtConfig({
       // (OSM's tile usage policy forbids heavy use of its public tiles).
       tileUrl:
         process.env.NUXT_PUBLIC_TILE_URL || 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      // Public at runtime, but sourced from the environment so it is never
+      // committed to Git.
+      maptilerApiKey: process.env.NUXT_PUBLIC_MAPTILER_API_KEY || '',
       // Telegram bot username (public) for the Login Widget on /cuenta.
       telegramBotUsername: process.env.TELEGRAM_BOT_USERNAME || '',
       // Optional Discord community invite shown on /conectar. Empty -> login-only card.

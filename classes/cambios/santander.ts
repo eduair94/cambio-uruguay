@@ -5,6 +5,11 @@ import path from "path";
 import { gunzipSync, gzipSync } from "zlib";
 import { CambioObj } from "../../interfaces/Cambio";
 import { Cambio } from "../cambio";
+import {
+  applySantanderPreferentialRates,
+  normalizeSantanderPreferentialRates,
+} from "../santander-preferential/store";
+import type { SantanderPreferentialSourceRate } from "../santander-preferential/store";
 
 const API_BASE_URL =
   "https://api.santander.com.uy/Santander_ICBanking_WebApi/api/";
@@ -20,6 +25,8 @@ const USER_IMAGE_FOR_LOGIN_TYPE =
   "Infocorp.UIProcess.MethodParameters.Framework.Authentication.GetUserImageForLoginIn, Infocorp.UIProcess.MethodParameters";
 const PUBLIC_QUOTATION_TYPE =
   "Tailored.ICBanking.UIProcess.MethodParameters.Custom.GetPublicQuotationIn, Tailored.ICBanking.UIProcess";
+const SANTANDER_EXCHANGE_RATE_TYPE =
+  "Tailored.ICBanking.UIProcess.MethodParameters.Custom.GetSantanderExchangeRateIn, Tailored.ICBanking.UIProcess";
 const EXTENDED_BOOLEAN_TYPE =
   "Infocorp.UIProcess.Entities.Framework.Common.ExtendedPropertyValueBoolean, Infocorp.UIProcess.Entities";
 const EXTENDED_STRING_TYPE =
@@ -39,6 +46,14 @@ interface SantanderSessionCache {
 interface SantanderQuoteResponse {
   buyUSDBB?: number | string;
   sellUSDBB?: number | string;
+}
+
+export interface SantanderExchangeRateResponse {
+  cotizations?: SantanderPreferentialSourceRate[];
+  operationResult?: {
+    value?: string;
+    valueName?: string;
+  };
 }
 
 interface ProtectedRequestOptions {
@@ -862,7 +877,23 @@ export class SantanderApiClient {
     });
   }
 
-  async getPublicQuotation(): Promise<SantanderQuoteResponse> {
+  private async requestPreferentialRates(): Promise<SantanderExchangeRateResponse> {
+    return this.protectedRequest({
+      method: "GET",
+      path: "Custom/Custom/GetSantanderExchangeRate",
+      payload: {
+        $type: SANTANDER_EXCHANGE_RATE_TYPE,
+        extendedProperties: {
+          isDictionary: true,
+          _keys: [],
+        },
+      },
+    });
+  }
+
+  private async authenticatedRequest<T>(
+    request: () => Promise<T>
+  ): Promise<T> {
     await this.initialize();
 
     let authenticatedWithCredentials = false;
@@ -872,9 +903,9 @@ export class SantanderApiClient {
     }
 
     try {
-      const quotation = await this.requestPublicQuotation();
+      const response = await request();
       if (authenticatedWithCredentials) this.saveSessionCache();
-      return quotation;
+      return response;
     } catch (error) {
       const unauthorized =
         error instanceof SantanderApiError && error.status === 401;
@@ -892,14 +923,24 @@ export class SantanderApiClient {
       this.sessionId = undefined;
       await this.initialize(true);
       await this.signIn();
-      const quotation = await this.requestPublicQuotation();
+      const response = await request();
       this.saveSessionCache();
-      return quotation;
+      return response;
     }
+  }
+
+  async getPublicQuotation(): Promise<SantanderQuoteResponse> {
+    return this.authenticatedRequest(() => this.requestPublicQuotation());
+  }
+
+  async getPreferentialRates(): Promise<SantanderExchangeRateResponse> {
+    return this.authenticatedRequest(() => this.requestPreferentialRates());
   }
 }
 
 class CambioSantander extends Cambio {
+  private readonly client = new SantanderApiClient();
+
   name = "Santander";
   bcu =
     "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=1137";
@@ -907,9 +948,28 @@ class CambioSantander extends Cambio {
   favicon = "https://www.santander.com.uy/";
 
   async get_data(): Promise<CambioObj[]> {
-    const client = new SantanderApiClient();
-    const response = await client.getPublicQuotation();
+    const response = await this.client.getPublicQuotation();
     return [parseSantanderPublicQuotation(response)];
+  }
+
+  async sync_data(): Promise<void> {
+    await super.sync_data();
+
+    try {
+      const response = await this.client.getPreferentialRates();
+      const rates = normalizeSantanderPreferentialRates(
+        response.cotizations ?? []
+      );
+      await applySantanderPreferentialRates(rates);
+      console.log(
+        `Stored ${rates.length} Santander preferential exchange rates`
+      );
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      console.error(
+        `Santander preferential rate sync failed; keeping the last good snapshot: ${detail}`
+      );
+    }
   }
 }
 

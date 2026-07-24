@@ -117,7 +117,7 @@
           </div>
           <VRow>
             <VCol cols="12" md="7">
-              <VSelect
+              <VAutocomplete
                 v-model="activeId"
                 :items="incidentOptions"
                 label="Tipo de incidente"
@@ -128,7 +128,7 @@
               />
             </VCol>
             <VCol cols="12" md="5">
-              <VSelect
+              <VAutocomplete
                 v-model="selectedRemedyId"
                 :items="remedyOptions"
                 label="Qué querés que haga el comercio"

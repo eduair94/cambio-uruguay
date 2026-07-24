@@ -15,6 +15,10 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  secret-scan:
+    name: Secret scan gate
+    uses: ./.github/workflows/secret-scan.yml
+
   test:
     name: Unit tests
     runs-on: ubuntu-latest
@@ -33,7 +37,7 @@ jobs:
 
   deploy:
     name: Zero-downtime deploy
-    needs: test
+    needs: [secret-scan, test]
     # Deploy only for pushes to main (and manual dispatch on main); never for PRs.
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
@@ -115,7 +119,7 @@ jobs:
 
   backend-deploy:
     name: Backend zero-downtime deploy
-    needs: [backend-test, changes, deploy]
+    needs: [secret-scan, backend-test, changes, deploy]
     # `needs: deploy` (the app deploy job above) is not a functional dependency
     # — it exists purely to sequence the two deploy jobs so their SSH sessions
     # never `git pull` the SAME repo tree at the same time (see the race note in
@@ -124,6 +128,7 @@ jobs:
     # because the (unrelated) app deploy job happened to fail.
     if: >-
       always() &&
+      needs.secret-scan.result == 'success' &&
       needs.backend-test.result == 'success' &&
       needs.changes.outputs.backend == 'true' &&
       github.event_name == 'push' && github.ref == 'refs/heads/main'

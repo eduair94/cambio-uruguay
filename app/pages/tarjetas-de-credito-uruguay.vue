@@ -57,23 +57,20 @@
       </VExpansionPanel>
     </VExpansionPanels>
 
-    <!-- Podium (top 3) -->
-    <div class="podium mb-8">
-      <VCard
-        v-for="p in podium"
-        :key="p.id"
-        class="podium-card pa-4 text-center"
-        :class="`podium-${p.rank}`"
-        variant="flat"
-      >
-        <div class="podium-medal">{{ medalFor(p.rank) }}</div>
-        <div class="podium-score">{{ p.overall }}</div>
-        <div class="text-caption text-grey-lighten-1 mb-2">/ 100</div>
-        <h2 class="text-subtitle-1 font-weight-bold mb-1 podium-name">{{ p.name }}</h2>
-        <p class="text-caption text-grey-lighten-1 mb-2">{{ p.issuer }}</p>
-        <p class="text-body-2 podium-bestfor">{{ p.bestFor }}</p>
-      </VCard>
-    </div>
+    <!-- Tier list: shared score bands keep this top comparable with the debit-card page. -->
+    <section class="mb-8" aria-labelledby="credit-tier-title">
+      <h2 id="credit-tier-title" class="text-h6 font-weight-bold mb-1">
+        Tier list de tarjetas y programas disponibles en Uruguay
+      </h2>
+      <p class="text-body-2 text-medium-emphasis mb-3">
+        Es una lectura rápida del mismo puntaje ponderado. Los tiers se calculan; no reemplazan el
+        detalle de acumulación, costo y canje que aparece debajo.
+      </p>
+      <RankingTierBoard
+        :items="tierItems"
+        aria-label="Tier list de tarjetas de crédito y programas disponibles en Uruguay"
+      />
+    </section>
 
     <!-- Issuer filter -->
     <div class="d-flex flex-wrap align-center ga-2 mb-4">
@@ -99,7 +96,7 @@
     </div>
 
     <!-- Full ranking -->
-    <div v-for="p in visible" :key="p.id" class="rank-card mb-3">
+    <div v-for="p in visible" :id="`programa-${p.id}`" :key="p.id" class="rank-card mb-3">
       <div class="rank-head pa-4 pa-sm-5">
         <div class="d-flex align-start ga-3">
           <div class="rank-badge" :class="rankTone(p.rank)">
@@ -334,7 +331,13 @@ const localePath = useLocalePath()
 
 const rubric = REWARD_RUBRIC
 const ranked = rankedPrograms()
-const podium = computed(() => ranked.slice(0, 3))
+const tierItems = ranked.map(program => ({
+  id: program.id,
+  name: program.name,
+  score: program.overall,
+  href: `#programa-${program.id}`,
+  brandId: PROGRAM_REDDIT_ENTITY[program.id],
+}))
 
 const selectedType = ref<IssuerType | 'all'>('all')
 const issuerTypes = computed(() => {

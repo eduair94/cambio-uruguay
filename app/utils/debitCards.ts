@@ -22,7 +22,7 @@
 // and say so in feeNote. Informational, not financial advice.
 
 /** Date (YYYY-MM-DD) the fees below were last verified against sources. */
-export const DEBIT_CARDS_LAST_REVIEWED = '2026-07-19'
+export const DEBIT_CARDS_LAST_REVIEWED = '2026-07-22'
 
 /** IVA rate applied on the issuer's international-purchase commission in Uruguay. */
 export const IVA_RATE = 0.22
@@ -167,12 +167,15 @@ export const NETWORK_LABELS: Readonly<Record<CardNetwork, string>> = Object.free
 // DATA — from the research + adversarial-verify workflow (2026-07-19).
 // Each commission/fee is an issuer official figure unless estimate=true.
 // Key verified corrections vs. street lore:
-//   - Takenos charges 1% (not ~3%); it is USD-native, so no peso→USD spread.
 //   - OCA *Blue* (débito/prepaga) has 0% foreign-purchase recargo; the 2%+IVA is
 //     the OCA *credit* card — a different product.
 //   - Itaú and BBVA débito charge 0% recargo (their 3%+IVA is for credit cards).
 //   - Mercado Pago has 0% commission but is peso-only with a large hidden FX
 //     spread (~4% "dólar tarjeta"), so it is the priciest here for USD buys.
+// Uruguay-only admission rule: a card enters this catalogue only when an official
+// source shows that a resident can request it in Uruguay. TakeCard and AstroCard
+// were removed on 2026-07-22 because their issuers document other markets but do
+// not document consumer-card availability for residents of Uruguay.
 // ─────────────────────────────────────────────────────────────────────────────
 export const DEBIT_CARDS: readonly DebitCard[] = Object.freeze([
   {
@@ -289,122 +292,6 @@ export const DEBIT_CARDS: readonly DebitCard[] = Object.freeze([
         label: 'OCA — preguntas frecuentes (crédito 2%+IVA, para distinguir del débito)',
         url: 'https://oca.uy/preguntas-frecuentes.html',
         publisher: 'OCA',
-      },
-    ],
-  },
-  {
-    id: 'takenos',
-    name: 'Takenos (TakeCard)',
-    issuer: 'Takenos',
-    kind: 'fintech',
-    networks: ['visa'],
-    comisionExteriorPct: 1,
-    cargoFijoUsd: 0,
-    ivaSobreComision: false,
-    fundeaEnUsd: true,
-    fxSpreadNote:
-      'Cuenta y tarjeta nativas en dólares (Visa emitida en EE. UU.). Pagando en USD el cambio es 1:1 sin spread; solo se suma el 1%. No maneja saldo en pesos uruguayos ni convierte pesos→USD.',
-    feeNote:
-      'Compra internacional en USD: 1% por transacción, sin cargo fijo, sin IVA y 1:1 sin spread. Corrige el "~3%" que a veces se cita.',
-    estimate: false,
-    scores: {
-      comisionExterior: 90,
-      spreadCambio: 100,
-      saldoUSD: 100,
-      costo: 78,
-      aceptacion: 85,
-      recarga: 72,
-    },
-    signals: [
-      { label: 'Comisión', value: '1% por transacción', tone: 'pos' },
-      { label: 'Cambio', value: '1:1 sin spread (USD nativo)', tone: 'pos' },
-      { label: 'IVA', value: 'No aplica (emisor extranjero)', tone: 'pos' },
-    ],
-    pros: [
-      'Cuenta en dólares: cero spread al pagar en USD',
-      'Solo 1% de comisión, sin cargo fijo',
-      'Pensada para freelancers que cobran del exterior',
-    ],
-    cons: [
-      'Hay que fondear en dólares (ACH gratis, wire US$ 25, USDT gratis)',
-      'Orientada a Argentina; verificá disponibilidad y soporte en UY',
-      'Menos práctica para cargar desde pesos uruguayos',
-    ],
-    bestFor:
-      'Quien ya tiene ingresos o ahorros en dólares y quiere el menor costo por compra en USD.',
-    verdict:
-      'El costo más bajo por dólar gastado: 1% y sin spread porque la cuenta ya es en dólares. Ideal si podés fondearla en USD; menos cómoda si tu plata está en pesos.',
-    verified: true,
-    sources: [
-      {
-        label: 'Takenos — costos y comisiones de la TakeCard (1% por transacción)',
-        url: 'https://help.takenos.com/en/articles/9718086-cuales-son-los-costos-y-comisiones-de-la-takecard',
-        publisher: 'Takenos',
-      },
-      {
-        label: 'Takenos — tipo de cambio con la TakeCard',
-        url: 'https://help.takenos.com/en/articles/9718013-tipo-de-cambio-con-takecard-todo-lo-que-necesitas-saber',
-        publisher: 'Takenos',
-      },
-    ],
-  },
-  {
-    id: 'astropay',
-    name: 'AstroPay',
-    issuer: 'AstroPay',
-    kind: 'fintech',
-    networks: ['mastercard', 'visa'],
-    comisionExteriorPct: null,
-    cargoFijoUsd: null,
-    ivaSobreComision: false,
-    fundeaEnUsd: true,
-    fxSpreadNote:
-      'Billetera multimoneda. Si pagás desde saldo en USD (o USDT) no hay conversión. Desde pesos, convierte al tipo mostrado en la app; comparadores estiman ~1–1,5% de spread (no oficial).',
-    feeNote:
-      'No publica comisión ni cargo fijo por compra internacional: muestra el tipo de cambio y el monto final antes de confirmar. El costo real es el spread de conversión (estimado, no oficial).',
-    estimate: true,
-    scores: {
-      comisionExterior: 90,
-      spreadCambio: 78,
-      saldoUSD: 92,
-      costo: 85,
-      aceptacion: 88,
-      recarga: 75,
-    },
-    signals: [
-      { label: 'Comisión de compra', value: 'No publicada', tone: 'neutral' },
-      { label: 'Spread estimado', value: '~1–1,5% (comparadores)', tone: 'neutral' },
-      { label: 'Saldo en dólares/USDT', value: 'Sí', tone: 'pos' },
-    ],
-    pros: [
-      'Pensada para gaming y compras internacionales',
-      'Saldo en USD/USDT para evitar conversión',
-      'Muestra el tipo de cambio antes de confirmar',
-    ],
-    cons: [
-      'No publica comisión ni spread: el costo real es una estimación',
-      'Se reserva variar comisiones según monto y mercado',
-      'Tarjetas virtuales de emisor extranjero',
-    ],
-    bestFor: 'Compras y depósitos de juegos, sobre todo si mantenés saldo en dólares o USDT.',
-    verdict:
-      'Muy usada para gaming y sin comisión de compra explícita, pero AstroPay no publica el spread: el costo real (~1–1,5% estimado) sale de comparadores, no del emisor. Fijate siempre el tipo que muestra la app antes de confirmar.',
-    verified: false,
-    sources: [
-      {
-        label: 'AstroPay — AstroCard Global (tipo de cambio en la app)',
-        url: 'https://www.astropay.com/rest-of-the-world/cards-global',
-        publisher: 'AstroPay',
-      },
-      {
-        label: 'AstroPay — currency exchange',
-        url: 'https://www.astropay.com/currency-exchange',
-        publisher: 'AstroPay',
-      },
-      {
-        label: 'AstroPay — comisiones (comparador, estimación de spread)',
-        url: 'https://www.ewalletbooster.com/en/astropay/astropay-fees',
-        publisher: 'eWalletBooster (secundaria)',
       },
     ],
   },
@@ -841,8 +728,6 @@ export const DEBIT_SOURCES: readonly SourceLink[] = Object.freeze([
 export const DEBIT_REDDIT_ENTITY: Readonly<Record<string, string>> = Object.freeze({
   prex: 'prex',
   'oca-blue': 'oca',
-  takenos: 'takenos',
-  astropay: 'astropay',
   'itau-debito': 'itau',
   'bbva-debito': 'bbva',
   midinero: 'midinero',

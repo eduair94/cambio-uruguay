@@ -236,8 +236,6 @@ export const REDDIT_BANK_IDS: readonly string[] = Object.freeze([
   'heritage',
   'mercadopago',
   'prex',
-  'astropay',
-  'takenos',
 ])
 
 /** Issuers behind the debit/prepaid and credit cards we rank. */
@@ -246,8 +244,6 @@ export const REDDIT_CARD_IDS: readonly string[] = Object.freeze([
   'oca',
   'midinero',
   'mercadopago',
-  'astropay',
-  'takenos',
   'brou',
   'itau',
   'santander',

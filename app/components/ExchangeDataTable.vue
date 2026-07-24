@@ -28,15 +28,60 @@
     </template>
 
     <template #item.buy="{ item }">
-      <span>{{ formatNumber(item.buy) }}</span>
+      <div class="rate-cell py-1">
+        <span :class="{ 'font-weight-bold text-teal-lighten-2': item.preferentialRate }">
+          {{ formatNumber(item.buy) }}
+        </span>
+        <small v-if="item.preferentialRate" class="published-rate">
+          {{
+            $t('preferentialRates.published', {
+              rate: formatNumber(item.preferentialRate.publishedBuy),
+            })
+          }}
+        </small>
+      </div>
     </template>
 
     <template #item.sell="{ item }">
-      <span>{{ formatNumber(item.sell) }}</span>
+      <div class="rate-cell py-1">
+        <span :class="{ 'font-weight-bold text-teal-lighten-2': item.preferentialRate }">
+          {{ formatNumber(item.sell) }}
+        </span>
+        <small v-if="item.preferentialRate" class="published-rate">
+          {{
+            $t('preferentialRates.published', {
+              rate: formatNumber(item.preferentialRate.publishedSell),
+            })
+          }}
+        </small>
+      </div>
     </template>
 
     <template #item.condition="{ item }">
-      <div v-if="item.condition" class="py-md-1">
+      <div v-if="item.preferentialRate" class="preferential-condition py-2">
+        <VChip
+          size="x-small"
+          color="teal-lighten-1"
+          variant="flat"
+          prepend-icon="mdi-layers-triple"
+          class="mb-1"
+        >
+          {{ $t('preferentialRates.badge') }}
+        </VChip>
+        <div class="text-caption">{{ $t(item.condition) }}</div>
+        <div class="text-caption font-weight-medium mt-1">
+          {{ formatPreferentialRange(item.preferentialRate) }}
+        </div>
+        <a
+          :href="item.preferentialRate.source"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-caption text-teal-lighten-2"
+        >
+          {{ $t('preferentialRates.verifyProvider') }}
+        </a>
+      </div>
+      <div v-else-if="item.condition" class="py-md-1">
         {{ $t(item.condition) }}
       </div>
     </template>
@@ -135,6 +180,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const localePath = useLocalePath()
+const { t, locale } = useI18n()
 
 const { smAndDown } = useDisplay()
 
@@ -142,10 +188,32 @@ const itemClass = (item: any) => {
   if (item.isInterBank) {
     return 'bg-purple-darken-4'
   }
+  if (item.preferentialRate) {
+    return 'preferential-row'
+  }
   if (item.condition) {
     return 'bg-grey-darken-3'
   }
   return ''
+}
+
+const formatPreferentialRange = (rate: {
+  currency: string
+  minAmount: number
+  maxAmount: number | null
+}) => {
+  const format = (value: number) => value.toLocaleString(locale.value, { maximumFractionDigits: 2 })
+  if (rate.maxAmount === null) {
+    return t('preferentialRates.rangeOpen', {
+      min: format(rate.minAmount),
+      currency: rate.currency,
+    })
+  }
+  return t('preferentialRates.range', {
+    min: format(rate.minAmount),
+    max: format(rate.maxAmount),
+    currency: rate.currency,
+  })
 }
 
 const formatNumber = (num: number) => {
@@ -202,6 +270,26 @@ const formatDistance = (distance: number) => {
 .website_link {
   word-break: break-all;
 }
+.rate-cell {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.published-rate {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.68rem;
+  text-decoration: line-through;
+  white-space: nowrap;
+}
+.preferential-condition {
+  min-width: 180px;
+}
+:deep(.preferential-row) {
+  background: rgba(0, 137, 123, 0.14);
+}
+:deep(.preferential-row td:first-child) {
+  box-shadow: inset 3px 0 0 #4db6ac;
+}
 .v-chip {
   font-weight: 600;
   .v-chip__content {
@@ -214,5 +302,11 @@ const formatDistance = (distance: number) => {
    (red) / neutral — dark ink clears AA on every one of those pale tonal fills. */
 .v-theme--light .v-chip .v-chip__content {
   color: rgba(0, 0, 0, 0.87) !important;
+}
+.v-theme--light .published-rate {
+  color: rgba(0, 0, 0, 0.58);
+}
+.v-theme--light .text-teal-lighten-2 {
+  color: #00695c !important;
 }
 </style>

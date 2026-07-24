@@ -133,6 +133,12 @@ describe('board + ranking', () => {
     expect(ids).not.toContain('hsbc')
   })
 
+  it('excludes fintechs without documented consumer availability in Uruguay', () => {
+    const ids = BANKS.map(bank => bank.id)
+    expect(ids).not.toContain('takenos')
+    expect(ids).not.toContain('astropay')
+  })
+
   it('Prex is no longer bottom-tier: the best-rated app on the board, sunk by its support', () => {
     // We used to score Prex productos=40 AND comisiones=46 — punishing the same defect twice.
     // Corrected, it clears D. What still drags it down is `atencion`, and only that.
@@ -147,11 +153,10 @@ describe('board + ranking', () => {
 })
 
 describe('interactive re-tiering', () => {
-  it('a USD-only view sends the dollar specialists into S', () => {
+  it('a USD-only view sends the local dollar specialist into S', () => {
     const ranked = rankEntities(['usd'])
     const top = ranked.filter(r => r.tier === 'S').map(r => r.entity.id)
     expect(top).toContain('heritage')
-    expect(top).toContain('takenos')
   })
 
   it('an attention-only view drops Prex to F', () => {

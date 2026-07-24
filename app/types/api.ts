@@ -17,6 +17,44 @@ export interface ExchangeRate {
   sell?: number
 }
 
+export interface PreferentialRateBand {
+  currency: string
+  buy: number
+  sell: number
+  minAmount: number
+  /** Exclusive upper boundary. `null` means there is no upper limit. */
+  maxAmount: number | null
+  arbitrageBuy?: number
+  arbitrageSell?: number
+}
+
+export interface PreferentialRateSnapshot {
+  date: string
+  scrapedAt: string
+  rates: PreferentialRateBand[]
+  selectedRate: PreferentialRateBand | null
+}
+
+export interface PreferentialRateProvider {
+  provider: string
+  displayName: string
+  source: string
+  requiresAuthentication: boolean
+  currencies: string[]
+  boundaryRule: string
+  current: PreferentialRateSnapshot | null
+  history: PreferentialRateSnapshot[]
+  updatedAt: string
+}
+
+export interface PreferentialRatesCatalog {
+  currency: string | null
+  amount: number | null
+  providers: PreferentialRateProvider[]
+  providerCount: number
+  updatedAt: string
+}
+
 export interface EvolutionPoint {
   date: string
   buy: number

@@ -28,6 +28,10 @@ class CambioSir extends Cambio {
     },
   };
   async get_data(): Promise<CambioObj[]> {
+    const instance = process.env.CAMBIO_SIR_INSTANCE;
+    if (!instance) {
+      throw new Error("CAMBIO_SIR_INSTANCE is not configured");
+    }
     const params = {
       pageId: "z3e4p",
       compId: "comp-jcuns6fw",
@@ -39,8 +43,7 @@ class CambioSir extends Cambio {
       regionalLanguage: "es",
       width: "481",
       height: "202",
-      instance:
-        "9zozl0SJfZFU4rI3Pg9gQ06iAugeuyWN1FW9lzp3HX0.eyJpbnN0YW5jZUlkIjoiOTkxNzhjOWEtYzcwMS00NmE0LWIyZWItODAyMDEwZTU4OTk1IiwiYXBwRGVmSWQiOiIxMzQxMzlmMy1mMmEwLTJjMmMtNjkzYy1lZDIyMTY1Y2ZkODQiLCJtZXRhU2l0ZUlkIjoiNTFiZGIzMzUtYjJhNi00NjRmLTkyZTItZTZhMmNiMTM4YzUyIiwic2lnbkRhdGUiOiIyMDI1LTA2LTA2VDAxOjQ4OjIzLjI1MVoiLCJkZW1vTW9kZSI6ZmFsc2UsImFpZCI6IjEwYTE5ZDcwLTU2NDEtNGFmMS1hYzEyLTU1YjkyOTlmOTM1MiIsImJpVG9rZW4iOiJjOGFhM2ZhZi03NWE3LTAwZWItMjAwOS02NjgyZGJmNjA1YzciLCJzaXRlT3duZXJJZCI6IjEwOGFjOTAxLTRiYjQtNGViNi1hNjI2LTJiMTBhYzVmNDg0YSIsImJzIjoiY3dLem9yblFIRV9VQXhpM1NqQnZjSEV2OVVUNDBDRV9zTXJEeVpHM0kyMCIsInNjZCI6IjIwMTgtMDEtMjNUMTg6NDA6MjMuODE0WiJ9",
+      instance,
       commonConfig: "%7B%22brand%22%3A%22wix%22%2C%22host%22%3A%22VIEWER%22%2C%22bsi%22%3A%2281ab3991-92dd-433c-882d-89a256c4ef47%7C1%22%2C%22siteRevision%22%3A%221188%22%2C%22renderingFlow%22%3A%22NONE%22%2C%22language%22%3A%22es%22%2C%22locale%22%3A%22%22%2C%22BSI%22%3A%2281ab3991-92dd-433c-882d-89a256c4ef47%7C1%22%7D",
       currentRoute: ".%2F",
       vsi: "69ac1175-63a7-43be-8ff1-f7a217524f0d",

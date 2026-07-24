@@ -103,6 +103,47 @@ npm run dev</code></pre>
         </VCol>
       </VRow>
 
+      <VCard variant="outlined" class="preferential-api-card pa-4 mt-6">
+        <div class="d-flex flex-column flex-md-row align-md-center ga-3">
+          <div class="flex-grow-1">
+            <div class="d-flex align-center ga-2 mb-1">
+              <VIcon color="teal">mdi-layers-triple</VIcon>
+              <h2 class="text-subtitle-1 font-weight-bold">
+                {{ t('preferentialRates.developerTitle') }}
+              </h2>
+            </div>
+            <p class="text-body-2 text-medium-emphasis mb-2">
+              {{ t('preferentialRates.developerText') }}
+            </p>
+            <div class="text-caption font-weight-medium mb-1">
+              {{ t('preferentialRates.developerExample') }}
+            </div>
+            <code class="preferential-endpoint">{{ PREFERENTIAL_URL }}</code>
+          </div>
+          <div class="d-flex flex-wrap ga-2">
+            <VBtn
+              :href="PREFERENTIAL_URL"
+              target="_blank"
+              rel="noopener noreferrer"
+              size="small"
+              color="teal"
+              variant="tonal"
+              prepend-icon="mdi-open-in-new"
+            >
+              JSON
+            </VBtn>
+            <VBtn
+              size="small"
+              variant="text"
+              prepend-icon="mdi-content-copy"
+              @click="copy(PREFERENTIAL_URL)"
+            >
+              {{ t('dev.copyUrl') }}
+            </VBtn>
+          </div>
+        </div>
+      </VCard>
+
       <!-- MCP server config (reuses the shared card used on /conectar). -->
       <div class="mt-6" style="max-width: 640px">
         <p class="text-subtitle-2 font-weight-bold mb-2">
@@ -158,6 +199,7 @@ const REPO_URL = 'https://github.com/eduair94/cambio-uruguay'
 const API_BASE = (config.public as { apiBase?: string }).apiBase || 'https://api.cambio-uruguay.com'
 const SITE_URL = (config.public as { siteUrl?: string }).siteUrl || 'https://cambio-uruguay.com'
 const SPEC_URL = `${SITE_URL}/openapi.json`
+const PREFERENTIAL_URL = `${API_BASE}/preferential-rates?provider=santander&currency=USD&amount=5000`
 
 // Seed Scalar's dark mode from the site theme. Scalar keeps its own toggle
 // afterwards; SSR default is dark, matching the site's dark-first default.
@@ -208,6 +250,22 @@ useSeoMeta({
 }
 .dev-codeblock code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+.preferential-api-card {
+  border-color: rgba(0, 150, 136, 0.4);
+  background:
+    linear-gradient(135deg, rgba(0, 121, 107, 0.1), transparent 60%), rgb(var(--v-theme-surface));
+}
+.preferential-endpoint {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: rgba(127, 127, 127, 0.12);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.78rem;
+  white-space: nowrap;
 }
 :deep(.dev-mono input) {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;

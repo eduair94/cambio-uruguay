@@ -24,6 +24,14 @@ import { loadDebtRelief } from "./classes/debt/store";
 import { BASELINE_FIGURES } from "./classes/figures/bands";
 import { loadFigures } from "./classes/figures/store";
 import { loadLoanRates } from "./classes/loans/store";
+import {
+  buildSantanderPreferentialRatesResponse,
+  loadSantanderPreferentialRates,
+} from "./classes/santander-preferential/store";
+import {
+  loadPreferentialRatesCatalog,
+  preferentialRateProviderIds,
+} from "./classes/preferential-rates/catalog";
 import { origins } from "./classes/origins";
 import { redisCache } from "./classes/redis_cache";
 import sentryInit from "./sentry";
@@ -1677,6 +1685,295 @@ const main = async () => {
 
   /**
    * @openapi
+   * /preferential-rates:
+   *   get:
+   *     tags:
+   *       - Exchange Data
+   *     summary: Cotizaciones preferenciales por proveedor y monto
+   *     description: |
+   *       Contrato común para bancos, fintech y plataformas que publican distintas
+   *       cotizaciones según el monto. Devuelve la captura vigente y una captura por
+   *       día calendario de Uruguay. Actualmente incluye Santander; nuevos proveedores
+   *       se agregan mediante adaptadores sin cambiar el contrato.
+   *
+   *       `minAmount` es inclusivo, `maxAmount` es exclusivo y `null` significa que
+   *       no existe límite superior. Al enviar `currency` y `amount`, cada captura
+   *       incluye `selectedRate` con la franja aplicable. Las credenciales y sesiones
+   *       usadas para consultar fuentes autenticadas nunca forman parte de la respuesta.
+   *     parameters:
+   *       - name: provider
+   *         in: query
+   *         required: false
+   *         description: Limita el resultado a un proveedor registrado.
+   *         schema: { type: string, enum: [santander], example: santander }
+   *       - name: currency
+   *         in: query
+   *         required: false
+   *         description: Código ISO 4217 de tres letras.
+   *         schema: { type: string, pattern: '^[A-Za-z]{3}$', example: USD }
+   *       - name: amount
+   *         in: query
+   *         required: false
+   *         description: Monto en la moneda consultada. Requiere enviar currency.
+   *         schema: { type: number, minimum: 0, example: 5000 }
+   *     responses:
+   *       200:
+   *         description: Catálogo de tasas por monto y su histórico diario
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 currency: { type: string, nullable: true, example: USD }
+   *                 amount: { type: number, nullable: true, example: 5000 }
+   *                 providerCount: { type: integer, example: 1 }
+   *                 updatedAt: { type: string, format: date-time }
+   *                 providers:
+   *                   type: array
+   *                   items:
+   *                     type: object
+   *                     properties:
+   *                       provider: { type: string, example: santander }
+   *                       displayName: { type: string, example: Santander }
+   *                       source: { type: string, format: uri }
+   *                       requiresAuthentication: { type: boolean, example: true }
+   *                       currencies:
+   *                         type: array
+   *                         items: { type: string }
+   *                       boundaryRule: { type: string }
+   *                       current:
+   *                         type: object
+   *                         nullable: true
+   *                         properties:
+   *                           date: { type: string, format: date }
+   *                           scrapedAt: { type: string, format: date-time }
+   *                           rates:
+   *                             type: array
+   *                             items:
+   *                               type: object
+   *                               properties:
+   *                                 currency: { type: string, example: USD }
+   *                                 buy: { type: number, example: 39.4 }
+   *                                 sell: { type: number, example: 40.95 }
+   *                                 minAmount: { type: number, example: 1001 }
+   *                                 maxAmount: { type: number, nullable: true, example: 10000 }
+   *                           selectedRate:
+   *                             type: object
+   *                             nullable: true
+   *                       history:
+   *                         type: array
+   *                         items: { type: object }
+   *                       updatedAt: { type: string, format: date-time }
+   *       400:
+   *         description: Proveedor, moneda o monto inválido
+   */
+  server.getJson(
+    "preferential-rates",
+    async (req: Request): Promise<any> => {
+      const rawProvider = req.query.provider;
+      const rawCurrency = req.query.currency;
+      const rawAmount = req.query.amount;
+      const provider =
+        rawProvider === undefined
+          ? undefined
+          : String(rawProvider).trim().toLowerCase();
+      const currency =
+        rawCurrency === undefined
+          ? undefined
+          : String(rawCurrency).trim().toUpperCase();
+      const amount =
+        rawAmount === undefined ? undefined : Number(String(rawAmount));
+
+      if (
+        provider !== undefined &&
+        !preferentialRateProviderIds.includes(provider)
+      ) {
+        throw new ValidationError(
+          "Invalid provider parameter",
+          createValidationError(
+            "provider",
+            String(rawProvider),
+            preferentialRateProviderIds,
+            "Use one of the registered preferential-rate providers"
+          )
+        );
+      }
+      if (currency !== undefined && !/^[A-Z]{3}$/.test(currency)) {
+        throw new ValidationError(
+          "Invalid currency parameter",
+          createValidationError(
+            "currency",
+            String(rawCurrency),
+            [],
+            "Currency must be a three-letter ISO code such as USD"
+          )
+        );
+      }
+      if (
+        amount !== undefined &&
+        (!Number.isFinite(amount) || amount < 0)
+      ) {
+        throw new ValidationError(
+          "Invalid amount parameter",
+          createValidationError(
+            "amount",
+            String(rawAmount),
+            [],
+            "Amount must be a finite number greater than or equal to zero"
+          )
+        );
+      }
+      if (amount !== undefined && currency === undefined) {
+        throw new ValidationError(
+          "Currency is required when amount is provided",
+          createValidationError(
+            "currency",
+            "",
+            [],
+            "Send currency together with amount so the applicable band can be selected"
+          )
+        );
+      }
+
+      return await loadPreferentialRatesCatalog(
+        provider,
+        currency,
+        amount
+      );
+    }
+  );
+
+  /**
+   * @openapi
+   * /santander/preferential-rates:
+   *   get:
+   *     tags:
+   *       - Exchange Data
+   *     summary: Cotizaciones preferenciales de Santander por monto
+   *     description: |
+   *       Devuelve las franjas de compra y venta que Santander muestra dentro de Supernet,
+   *       junto con una fotografía por día calendario de Uruguay. La sincronización normal
+   *       de cotizaciones actualiza la entrada del día sin duplicarla; una falla nunca borra
+   *       el último dato válido.
+   *
+   *       `minAmount` es inclusivo, `maxAmount` es exclusivo y `null` representa una franja
+   *       sin límite superior. Si se envía `amount`, el endpoint agrega `selectedRate` para
+   *       ese monto en la cotización vigente y en cada punto histórico. Cuando `amount` se
+   *       envía sin `currency`, se usa USD.
+   *     parameters:
+   *       - name: currency
+   *         in: query
+   *         required: false
+   *         description: Código ISO de tres letras. Si se omite, se devuelven todas las monedas.
+   *         schema: { type: string, pattern: '^[A-Za-z]{3}$', example: USD }
+   *       - name: amount
+   *         in: query
+   *         required: false
+   *         description: Monto en la moneda consultada usado para elegir la franja.
+   *         schema: { type: number, minimum: 0, example: 5000 }
+   *     responses:
+   *       200:
+   *         description: Tasas vigentes e histórico diario
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 bank: { type: string, example: santander }
+   *                 source: { type: string }
+   *                 currency: { type: string, nullable: true }
+   *                 amount: { type: number, nullable: true }
+   *                 currencies:
+   *                   type: array
+   *                   items: { type: string }
+   *                 boundaryRule: { type: string }
+   *                 current:
+   *                   type: object
+   *                   nullable: true
+   *                 history:
+   *                   type: array
+   *                   items: { type: object }
+   *                 updatedAt: { type: string }
+   *       400:
+   *         description: Moneda o monto inválido
+   */
+  server.getJson(
+    "santander/preferential-rates",
+    async (req: Request): Promise<any> => {
+      const rawCurrency = req.query.currency;
+      const rawAmount = req.query.amount;
+      const amount =
+        rawAmount === undefined ? undefined : Number(String(rawAmount));
+      const currency =
+        rawCurrency === undefined
+          ? amount === undefined
+            ? undefined
+            : "USD"
+          : String(rawCurrency).trim().toUpperCase();
+
+      if (currency !== undefined && !/^[A-Z]{3}$/.test(currency)) {
+        throw new ValidationError(
+          "Invalid currency parameter",
+          createValidationError(
+            "currency",
+            String(rawCurrency),
+            [],
+            "Currency must be a three-letter ISO code such as USD"
+          )
+        );
+      }
+      if (
+        amount !== undefined &&
+        (!Number.isFinite(amount) || amount < 0)
+      ) {
+        throw new ValidationError(
+          "Invalid amount parameter",
+          createValidationError(
+            "amount",
+            String(rawAmount),
+            [],
+            "Amount must be a finite number greater than or equal to zero"
+          )
+        );
+      }
+
+      const doc = await loadSantanderPreferentialRates();
+      const snapshots = doc.current
+        ? [doc.current, ...doc.history]
+        : doc.history;
+      const availableCurrencies = [
+        ...new Set(
+          snapshots.flatMap((snapshot) =>
+            snapshot.rates.map((rate) => rate.currency)
+          )
+        ),
+      ].sort();
+      if (
+        currency !== undefined &&
+        availableCurrencies.length > 0 &&
+        !availableCurrencies.includes(currency)
+      ) {
+        throw new ValidationError(
+          "Unsupported currency parameter",
+          createValidationError(
+            "currency",
+            currency,
+            availableCurrencies,
+            "Use one of the currencies returned by this endpoint"
+          )
+        );
+      }
+
+      return buildSantanderPreferentialRatesResponse(
+        doc,
+        currency,
+        amount
+      );
+    }
+  );
+
+  /**
+   * @openapi
    * /fortex:
    *   get:
    *     tags:
@@ -1761,7 +2058,10 @@ const main = async () => {
    *                         type: string
    */
   server.getJson("position_stack", async (req: Request): Promise<any> => {
-    const api = "f2b2a4c548e317a2ed6b4a570fd42241";
+    const api = process.env.POSITIONSTACK_API_KEY;
+    if (!api) {
+      throw new Error("POSITIONSTACK_API_KEY is not configured");
+    }
     const query = req.query.query as string;
     const limit = req.query.limit as string;
     const [latitude, longitude] = query.split(",").map((x) => parseFloat(x));

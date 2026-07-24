@@ -254,25 +254,20 @@
       </VExpansionPanel>
     </VExpansionPanels>
 
-    <!-- Podium -->
-    <section v-if="podium.length" class="mb-6" aria-label="Podio de tarjetas">
-      <h2 class="text-h6 font-weight-bold mb-3">El podio para comprar en dólares</h2>
-      <VRow dense>
-        <VCol v-for="r in podium" :key="r.id" cols="12" sm="4">
-          <VCard variant="tonal" class="podium-card h-100 pa-4" :class="`podium--${r.rank}`">
-            <div class="d-flex align-center ga-2 mb-2">
-              <span class="podium-medal">{{ medalFor(r.rank) }}</span>
-              <div>
-                <div class="font-weight-bold">{{ r.name }}</div>
-                <div class="text-caption text-medium-emphasis">{{ KIND_LABELS[r.kind] }}</div>
-              </div>
-              <VSpacer />
-              <span class="podium-score">{{ r.overall }}</span>
-            </div>
-            <p class="text-body-2 mb-0">{{ r.bestFor }}</p>
-          </VCard>
-        </VCol>
-      </VRow>
+    <!-- Tier list: a fast editorial view, separate from the detailed cost ranking below. -->
+    <section class="mb-6" aria-labelledby="debit-tier-title">
+      <h2 id="debit-tier-title" class="text-h6 font-weight-bold mb-1">
+        Tier list de tarjetas que se pueden pedir en Uruguay
+      </h2>
+      <p class="text-body-2 text-medium-emphasis mb-3">
+        El tier sale del mismo puntaje ponderado del ranking. Solo incluimos tarjetas con evidencia
+        oficial de alta para residentes uruguayos; no alcanza con que una tarjeta extranjera
+        funcione al pagar desde Uruguay.
+      </p>
+      <RankingTierBoard
+        :items="tierItems"
+        aria-label="Tier list de tarjetas disponibles en Uruguay"
+      />
     </section>
 
     <!-- Kind filter -->
@@ -292,7 +287,13 @@
 
     <!-- Full ranking -->
     <section class="mb-8" aria-label="Ranking de tarjetas">
-      <VCard v-for="r in visibleRanked" :key="r.id" variant="outlined" class="rank-card mb-3 pa-4">
+      <VCard
+        v-for="r in visibleRanked"
+        :id="`tarjeta-${r.id}`"
+        :key="r.id"
+        variant="outlined"
+        class="rank-card mb-3 pa-4"
+      >
         <div class="d-flex align-start ga-3">
           <div class="rank-badge">
             <span v-if="medalFor(r.rank)">{{ medalFor(r.rank) }}</span>
@@ -545,7 +546,13 @@ const localePath = useLocalePath()
 
 // ── Ranking ──
 const ranked = rankedCards()
-const podium = ranked.slice(0, 3)
+const tierItems = ranked.map(card => ({
+  id: card.id,
+  name: card.name,
+  score: card.overall,
+  href: `#tarjeta-${card.id}`,
+  brandId: DEBIT_REDDIT_ENTITY[card.id],
+}))
 
 type KindFilter = 'todas' | CardKind
 const kindFilter = ref<KindFilter>('todas')
@@ -682,7 +689,7 @@ const canonicalUrl = 'https://cambio-uruguay.com/tarjetas-de-debito-uruguay'
 const title =
   'Tarjetas de débito y prepagas para comprar en dólares (Uruguay 2026): comisiones reales'
 const description =
-  'Cuánto te cobran de verdad al comprar en dólares o ítems de juegos con Prex, OCA, MiDinero, AstroPay, Mercado Pago y débito de BROU, Itaú, Santander y más. Calculadora del caso real (USD 49,99 → ~$2.168), ranking con datos y las dos comisiones que se apilan: la del exterior y el spread al pasar pesos a dólares.'
+  'Cuánto te cobran de verdad al comprar en dólares o ítems de juegos con tarjetas disponibles en Uruguay: Prex, OCA, MiDinero, Mercado Pago y débito de BROU, Itaú, Santander y más. Tier list, calculadora y ranking con datos.'
 
 defineOgImageComponent('Cambio', {
   title: 'Comprar en dólares en Uruguay',
@@ -708,7 +715,7 @@ useHead(() => ({
     {
       name: 'keywords',
       content:
-        'tarjetas de debito uruguay, comprar en dolares uruguay, prex comision, prex compra exterior, oca comision dolares, pagar juegos online uruguay, comprar en steam uruguay, comision compra internacional, tarjeta prepaga dolares, astropay comision, spread de cambio uruguay',
+        'tarjetas de debito uruguay, tier list tarjetas uruguay, comprar en dolares uruguay, prex comision, prex compra exterior, oca comision dolares, pagar juegos online uruguay, comprar en steam uruguay, comision compra internacional, tarjeta prepaga dolares, spread de cambio uruguay',
     },
   ],
   script: [

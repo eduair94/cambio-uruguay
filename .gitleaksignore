@@ -1,0 +1,5 @@
+# Exact public-client findings that are intentionally committed. Firebase Web
+# API keys are identifiers exposed to browsers by design, not server secrets.
+# Fingerprints are line-specific: changing either value causes the scan to fail.
+app/public/firebase-messaging-extra.js:gcp-api-key:6
+docs/superpowers/plans/2026-06-18-pwa-installable-offline.md:gcp-api-key:534

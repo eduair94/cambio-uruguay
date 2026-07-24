@@ -50,7 +50,13 @@ describe('debitCards - rubric', () => {
 
 describe('debitCards - catalogue integrity', () => {
   it('has a solid, comprehensive set of cards', () => {
-    expect(DEBIT_CARDS.length).toBeGreaterThanOrEqual(10)
+    expect(DEBIT_CARDS.length).toBeGreaterThanOrEqual(9)
+  })
+
+  it('contains only cards with documented availability for residents of Uruguay', () => {
+    const ids = DEBIT_CARDS.map(card => card.id)
+    expect(ids).not.toContain('takenos')
+    expect(ids).not.toContain('astropay')
   })
 
   it('every card has unique id, non-empty prose and valid enums', () => {

@@ -1,4 +1,5 @@
 import { saveSnapshot, loadSnapshot, resolveExchangeResult } from '~/utils/ratesSnapshot'
+import type { PreferentialRatesCatalog } from '~/types/api'
 
 // Define interfaces for API responses
 interface GeocodeData {
@@ -276,6 +277,27 @@ export const useApiService = () => {
   }
 
   /**
+   * Fetch the provider-agnostic amount-band catalog. The comparison applies
+   * bands locally so changing the amount does not trigger a network request.
+   */
+  const getPreferentialRates = async (): Promise<PreferentialRatesCatalog> => {
+    try {
+      return await $fetch<PreferentialRatesCatalog>('/preferential-rates', {
+        baseURL: getApiBaseUrl(),
+      })
+    } catch (error) {
+      console.error('Preferential rates error:', error)
+      return {
+        currency: null,
+        amount: null,
+        providers: [],
+        providerCount: 0,
+        updatedAt: '',
+      }
+    }
+  }
+
+  /**
    * Extract detailed error information from various error types
    */
   const extractErrorDetails = (error: any) => {
@@ -464,6 +486,7 @@ export const useApiService = () => {
     getExchangeDataWithLocal,
     processExchangeData,
     getProcessedExchangeData,
+    getPreferentialRates,
     getEvolutionData,
     getExchangesByOriginLocation,
     extractErrorDetails,
