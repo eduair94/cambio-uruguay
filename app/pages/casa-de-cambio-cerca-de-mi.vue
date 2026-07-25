@@ -3,8 +3,8 @@
     <h1 class="text-h5 mb-2">{{ t('nearbyCasas.title') }}</h1>
     <p class="text-body-2 mb-4">{{ t('nearbyCasas.subtitle') }}</p>
 
-    <v-row dense align="end" class="mb-2">
-      <v-col cols="6" sm="4" md="3">
+    <v-row dense align="end" class="nearby-controls mb-2">
+      <v-col cols="12" sm="4" md="3">
         <v-select
           v-model="currency"
           :items="currencyItems"
@@ -14,7 +14,7 @@
           hide-details
         />
       </v-col>
-      <v-col cols="6" sm="4" md="3">
+      <v-col cols="12" sm="4" md="3">
         <v-select
           v-model="direction"
           :items="directionItems"
@@ -78,7 +78,7 @@
         color="primary"
         variant="outlined"
         divided
-        class="mb-3"
+        class="nearby-sort mb-3"
       >
         <v-btn value="smart" size="small">{{ t('nearbyCasas.sortSmart') }}</v-btn>
         <v-btn value="distance" size="small">{{ t('nearbyCasas.sortDistance') }}</v-btn>
@@ -275,3 +275,23 @@ useHead(() => ({
   ],
 }))
 </script>
+
+<style scoped>
+.nearby-casas-page {
+  max-width: 1200px;
+  margin-inline: auto;
+}
+
+@media (max-width: 599.98px) {
+  .nearby-sort {
+    display: flex;
+    width: 100%;
+  }
+
+  .nearby-sort .v-btn {
+    flex: 1 1 0;
+    min-width: 0;
+    padding-inline: 8px;
+  }
+}
+</style>
