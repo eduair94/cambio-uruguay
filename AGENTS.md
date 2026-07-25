@@ -24,6 +24,8 @@ Root map of a multi-package monorepo behind [cambio-uruguay.com](https://cambio-
 | currency-explain | dist/sync_explain.js | 7 10 * * * | writes APP DB `moveexplanations` |
 | currency-debt-relief | dist/sync_debt_relief.js | 13 10 1 * * | monthly; BCU usury caps |
 | currency-temas-analysis | dist/sync_temas_analysis.js | 17 11 * * * | reads app DB, writes backend `temas_analysis_data`; self-gates 90d; needs `APP_MONGO_URI` |
+| currency-chair-tiers | dist/sync_chair_tiers.js | 31 12 * * 0 | weekly r/CharruaDevs chair tier list → APP DB `chairtiersnapshots` |
+| currency-chairs | dist/sync_chairs.js | 41 11 * * * | daily desk-chair market: ML (:9656) + UY storefronts + FB Marketplace (:9657) → APP DB `chaircatalogproducts` |
 | currency-mcp | mcp/dist/index.js (cwd ./mcp) | — | HTTP :8788 |
 | currency-bot-telegram / -discord | bots/dist/entries/{telegram,discord}.js | — | read `bots/.env` |
 | currency-daily | bots/dist/entries/daily_report.js | 0 12 * * * | |

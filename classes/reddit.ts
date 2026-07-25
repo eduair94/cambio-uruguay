@@ -51,6 +51,8 @@ export interface RedditCommentRaw {
   score: number;
   createdUtc: number;
   permalink: string;
+  parentId?: string | null;
+  depth?: number;
 }
 
 interface RedditConfig {
@@ -207,6 +209,8 @@ interface RawComment {
   score?: number;
   created_utc: number;
   permalink?: string;
+  parent_id?: string;
+  depth?: number;
   replies?: Listing<RawComment> | "";
 }
 
@@ -278,7 +282,18 @@ const MORE_BATCH = 100;
 const MAX_MORE_ROUNDS = 40;
 
 /** Walk a comment listing, collecting real comments and the ids of collapsed "more" stubs. */
-function walkComments(listing: Listing<RawComment> | "" | undefined, out: RedditCommentRaw[], moreIds: string[]): void {
+function bareRedditId(value?: string): string | null {
+  if (!value || value.startsWith("t3_")) return null;
+  return value.replace(/^t1_/, "");
+}
+
+function walkComments(
+  listing: Listing<RawComment> | "" | undefined,
+  out: RedditCommentRaw[],
+  moreIds: string[],
+  depth = 0,
+  parentId: string | null = null
+): void {
   if (!listing || typeof listing !== "object") return;
   for (const child of listing.data?.children ?? []) {
     if (child.kind === "more") {
@@ -298,9 +313,11 @@ function walkComments(listing: Listing<RawComment> | "" | undefined, out: Reddit
         score: d.score ?? 0,
         createdUtc: d.created_utc,
         permalink: d.permalink ? `https://reddit.com${d.permalink}` : "",
+        parentId: bareRedditId(d.parent_id) ?? parentId,
+        depth: Number.isFinite(d.depth) ? Number(d.depth) : depth,
       });
     }
-    walkComments(d.replies, out, moreIds);
+    walkComments(d.replies, out, moreIds, depth + 1, d.id);
   }
 }
 
@@ -392,6 +409,8 @@ export async function fetchComments(
         score: d.score ?? 0,
         createdUtc: d.created_utc,
         permalink: d.permalink ? `https://reddit.com${d.permalink}` : "",
+        parentId: bareRedditId(d.parent_id),
+        depth: Number.isFinite(d.depth) ? Number(d.depth) : 0,
       });
     }
   }

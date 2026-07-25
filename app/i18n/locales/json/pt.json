@@ -1424,6 +1424,7 @@
     "saludFinanciera": "Saúde financeira",
     "apps": "Apps de dinheiro",
     "redditTopics": "Temas de dinheiro no Reddit",
+    "chairTiers": "Cadeiras segundo r/CharruaDevs",
     "salirClearing": "Sair do clearing",
     "queEmpresaAbrir": "Que empresa abrir",
     "saldarDeudas": "Quitar dívidas",
@@ -1595,5 +1596,416 @@
     "error": "Não foi possível carregar as análises. Verifique os filtros e tente novamente.",
     "metaTitle": "Análises do dólar e cotações por hora no Uruguai",
     "metaDescription": "Analise cotações por hora e período, compare casas de câmbio por departamento e calcule a evolução do seu poder de compra."
+  },
+  "chairMarket": {
+    "kicker": "Preços no Uruguai",
+    "title": "Uma cadeira, todas as ofertas que encontramos",
+    "lead": "Agrupamos anúncios de lojas uruguaias e marketplaces por modelo para você não precisar comparar duplicatas manualmente.",
+    "statChairs": "Cadeiras",
+    "statOffers": "Ofertas",
+    "statSellers": "Vendedores",
+    "statUpdated": "Atualizado",
+    "searchLabel": "Buscar cadeira ou marca",
+    "sortLabel": "Ordenar",
+    "brandLabel": "Marca",
+    "categoryLabel": "Filtrar por tipo de cadeira",
+    "conditionLabel": "Filtrar por condição",
+    "budgetLabel": "Orçamento máximo",
+    "budgetAny": "Sem limite",
+    "showing": "Mostrando {shown} de {total} cadeiras",
+    "empty": "Nenhuma cadeira corresponde a esses filtros.",
+    "ratingAria": "{stars} de 5 estrelas, calculadas com {count} avaliações",
+    "ratingCount": "{count} avaliações",
+    "noRating": "Sem avaliações suficientes",
+    "fromPrice": "A partir de {price}",
+    "upTo": "até {price}",
+    "noPrice": "Preço sob consulta",
+    "viewChair": "Ver cadeira",
+    "goToOffer": "Comprar em {seller}",
+    "loadMore": "Ver mais cadeiras",
+    "allBrands": "Todas as marcas",
+    "category": {
+      "all": "Todas",
+      "ergonomic": "Ergonômicas",
+      "gaming": "Gaming",
+      "executive": "Executivas",
+      "operative": "Operacionais",
+      "unknown": "Sem classificação"
+    },
+    "condition": {
+      "all": "Novas e usadas",
+      "new": "Novas",
+      "used": "Usadas"
+    },
+    "sort": {
+      "relevance": "Melhor sinal",
+      "priceAsc": "Menor preço",
+      "priceDesc": "Maior preço",
+      "rating": "Mais bem avaliadas",
+      "sellers": "Mais vendedores"
+    },
+    "source": {
+      "mercadolibre": "Mercado Livre",
+      "facebook": "Facebook Marketplace",
+      "store": "Lojas locais"
+    },
+    "sourcesTitle": "Cobertura e estado das fontes",
+    "sourcesNote": "Os preços em USD usam uma referência de 1 USD = {rate} UYU. Confirme o total e o estoque antes de comprar.",
+    "sourceName": "Fonte",
+    "sourceListings": "Anúncios",
+    "sourceStatus": "Estado",
+    "sourceOk": "Atualizada",
+    "sourceFail": "Com observações"
+  },
+  "chairDetail": {
+    "notFound": "Não encontramos esta cadeira no catálogo atual.",
+    "backToDirectory": "Voltar a todas as cadeiras",
+    "photoOf": "Ver foto publicada por {seller}",
+    "photoCredit": "Imagem publicada por",
+    "bestPrice": "Melhor preço observado",
+    "bestNew": "Melhor nova",
+    "bestUsed": "Melhor usada",
+    "sellers": "Vendedores",
+    "buyAt": "Comprar em {seller} por {price}",
+    "offersTitle": "Todos os preços e links de compra",
+    "offersLead": "Cada anúncio mantém seu vendedor, condição, moeda e link original.",
+    "offerCount": "{count} ofertas",
+    "seller": "Vendedor",
+    "listing": "Anúncio",
+    "condition": "Condição",
+    "price": "Preço",
+    "freeShipping": "Frete grátis informado",
+    "outOfStock": "Sem estoque na última verificação",
+    "priceDisclaimer": "Preços observados em {date}; podem mudar. Conversão usada: 1 USD = {rate} UYU. Confirme estoque, garantia e custo final.",
+    "historyTitle": "Como o preço variou",
+    "historyLead": "Mediana observada durante {days} verificações.",
+    "historyAria": "Evolução do preço de {first} até {last}",
+    "opinionTitle": "Resumo do que dizem os usuários",
+    "signalsTitle": "Como a avaliação é composta",
+    "signalsLead": "A nota combina sinais com pesos diferentes e não inventa estrelas quando falta evidência.",
+    "specsTitle": "Dados publicados do modelo",
+    "specsLead": "Especificações reunidas dos anúncios disponíveis.",
+    "reviewsTitle": "Avaliações e menções relacionadas",
+    "relatedTitle": "Outras cadeiras para comparar",
+    "confidence": {
+      "low": "evidência baixa",
+      "medium": "evidência média",
+      "high": "evidência alta"
+    },
+    "conditionValue": {
+      "new": "Nova",
+      "refurbished": "Recondicionada",
+      "used": "Usada",
+      "unknown": "A confirmar"
+    },
+    "signal": {
+      "reddit": "Reddit",
+      "mercadolibre": "Mercado Livre",
+      "store": "Lojas",
+      "expert": "Fontes especializadas"
+    },
+    "metaTitle": "{chair}: preços e avaliações no Uruguai",
+    "metaDescription": "Compare preços, vendedores, avaliações e evidências de {chair} no Uruguai.",
+    "metaFallbackTitle": "Cadeiras de escritório no Uruguai",
+    "metaFallbackSubtitle": "Preços e opiniões reunidos por modelo",
+    "ogSubtitle": "A partir de {price} em {sellers} vendedores"
+  },
+  "chairTiers": {
+    "realComments": "comentários reais",
+    "h1": "A cadeira que aguenta sua jornada, segundo quem já testou.",
+    "lead": "Analisamos conversas reais do r/CharruaDevs, separamos menções por marca e modelo e medimos consenso, amostra e temas recorrentes. Sem links de afiliados nem avaliações inventadas.",
+    "priorityAria": "Ordenar cadeiras por prioridade de uso",
+    "priorityQuestion": "O que pesa no fim do dia?",
+    "priority": {
+      "overall": "Quero a melhor evidência",
+      "comfort": "Termino desconfortável",
+      "support": "Minhas costas doem",
+      "adjustability": "Não consigo ajustar",
+      "durability": "Quero que dure",
+      "value": "Não quero pagar demais",
+      "heat": "Sinto muito calor"
+    },
+    "snapshotAria": "Resumo do sinal mais forte nos dados",
+    "strongestSignal": "Sinal mais bem sustentado para este critério",
+    "comments": "Comentários",
+    "threads": "Tópicos",
+    "authors": "Autores",
+    "updated": "Atualizado em {date}",
+    "collecting": "Estamos reunindo a primeira amostra verificável.",
+    "trust": {
+      "deterministic": "O tier vem de uma fórmula, não de uma opinião",
+      "authors": "A amostra conta autores únicos",
+      "sources": "Cada evidência abre o comentário original"
+    },
+    "error": "Não foi possível carregar o retrato atual. O ranking salvo não foi alterado.",
+    "retry": "Tentar novamente",
+    "loading": "Carregando análise de cadeiras",
+    "emptyTitle": "Ainda não há amostra suficiente",
+    "emptyText": "O coletor está configurado. Os tiers aparecerão aqui quando houver menções identificáveis suficientes.",
+    "boardKicker": "Bancada de evidências",
+    "boardTitle": "O consenso, com todas as nuances visíveis",
+    "boardLead": "O tier resume o sinal geral. Dentro de cada faixa, sua prioridade reordena as cadeiras pelos temas detectados sem alterar a nota nem esconder opiniões contrárias.",
+    "tier": {
+      "S": {
+        "label": "Consenso excepcional",
+        "description": "Sinal muito positivo e amostra ampla."
+      },
+      "A": {
+        "label": "Recomendação sólida",
+        "description": "Mais elogios que críticas, com evidência útil."
+      },
+      "B": {
+        "label": "Cumpre com ressalvas",
+        "description": "Balanço favorável ou misto conforme o uso."
+      },
+      "C": {
+        "label": "Pense duas vezes",
+        "description": "Sinal fraco ou muito dividido."
+      },
+      "D": {
+        "label": "Sinal ruim",
+        "description": "As críticas pesam mais que os elogios."
+      }
+    },
+    "chairCount": "{count} cadeiras nesta faixa",
+    "priorityMatch": "combina com sua prioridade",
+    "scoreAria": "Pontuação de evidência: {score} de 100",
+    "opinionMix": "{positive} positivas · {neutral} neutras · {negative} negativas",
+    "sample": "{sources} fontes relacionadas · {authors} autores",
+    "confidence": {
+      "low": "confiança baixa",
+      "medium": "confiança média",
+      "high": "confiança alta"
+    },
+    "theme": {
+      "comfort": "conforto",
+      "ergonomics": "ergonomia",
+      "adjustability": "ajustes",
+      "durability": "durabilidade",
+      "value": "custo-benefício",
+      "support": "apoio lombar",
+      "heat": "ventilação",
+      "build": "construção"
+    },
+    "sentimentAria": "{positive}% de opiniões positivas, {neutral}% neutras e {negative}% negativas",
+    "reviewAria": "Avaliação geral, prós e contras da {chair}",
+    "pros": "O que o Reddit aprovou",
+    "cons": "O que gerou dúvidas",
+    "supportedBy": "Fontes vinculadas: {count}",
+    "noRepeatedPros": "Nenhuma vantagem aparece com clareza suficiente.",
+    "noRepeatedCons": "Nenhuma desvantagem recorrente foi encontrada; isso não significa que não exista.",
+    "buyKicker": "Onde comprar no Uruguai",
+    "buyTitle": "Ofertas verificadas para {chair}",
+    "priceDisclaimer": "Preços observados, não garantidos. Confirme estoque, tamanho, garantia e total antes de comprar.",
+    "priceChecked": "verificado em {date}",
+    "photos": {
+      "openAria": "Abrir galeria de {chair}; imagens: {count}",
+      "count": "{count} fotos",
+      "enlarge": "Ampliar",
+      "dialogAria": "Galeria de fotos de {chair}",
+      "counter": "{index} de {total}",
+      "zoomOut": "Reduzir imagem",
+      "zoomIn": "Ampliar imagem",
+      "close": "Fechar galeria",
+      "previous": "Foto anterior",
+      "next": "Próxima foto",
+      "goTo": "Ir para a foto {index}",
+      "source": "Ver produto em {source}"
+    },
+    "fromPrice": "A partir de {price}",
+    "approx": "≈ {price}",
+    "tone": {
+      "positive": "Positiva",
+      "neutral": "Neutra",
+      "negative": "Negativa"
+    },
+    "budget": {
+      "kicker": "Seu orçamento decide",
+      "title": "Qual é a melhor cadeira que cabe no bolso?",
+      "lead": "Mova o controle ou digite um valor. Convertemos as ofertas com a melhor cotação pública de venda do USD de hoje e priorizamos tier e evidência; o preço apenas define as opções elegíveis.",
+      "currencyAria": "Moeda do orçamento",
+      "sliderAria": "Ajustar orçamento",
+      "inputLabel": "Máximo",
+      "rate": "Conversão de referência: 1 USD = {rate}",
+      "rateUnavailable": "Não foi possível carregar a cotação USD/UYU; apenas ofertas na moeda escolhida serão comparadas.",
+      "bestFit": "Melhor opção dentro do orçamento",
+      "reason": "Tier {tier}, {score}/100. {count} ofertas cabem no seu orçamento.",
+      "openOffer": "Ver esta oferta",
+      "noFitTitle": "Nenhuma oferta cabe ainda",
+      "noFitText": "Aumente o orçamento ou troque a moeda para ampliar as opções."
+    },
+    "channel": {
+      "local-store": "Loja local",
+      "marketplace": "Marketplace",
+      "importer": "Importação",
+      "comparator": "Comparador"
+    },
+    "condition": {
+      "new": "Novo",
+      "refurbished": "Recondicionado",
+      "used": "Usado",
+      "unknown": "Condição a confirmar"
+    },
+    "openEvidence": "Abrir {count} comentários que sustentam esta leitura",
+    "openAllEvidence": "Ver as {count} fontes relacionadas: posts, comentários e respostas",
+    "sourceCount": {
+      "posts": "{count} posts",
+      "comments": "{count} comentários",
+      "replies": "{count} respostas"
+    },
+    "sourceType": {
+      "post": "Post original",
+      "comment": "Comentário",
+      "reply": "Resposta · nível {depth}"
+    },
+    "openReddit": "Ver no Reddit",
+    "watchKicker": "Em observação",
+    "watchTitle": "Mencionadas, mas ainda sem base para rankear",
+    "watchText": "Estas cadeiras apareceram na conversa, mas têm menos de três comentários classificáveis. Mantê-las separadas evita transformar uma anedota em recomendação.",
+    "methodKicker": "Método aberto",
+    "methodTitle": "O que a IA faz e o que não permitimos que faça",
+    "methodLead": "Um classificador local conservador garante modelos explícitos; Gemini enriquece a linguagem coloquial quando há cota. Pontuação, confiança e tier usam regras visíveis e repetíveis.",
+    "visitSubreddit": "Visitar r/CharruaDevs",
+    "method": {
+      "harvest": {
+        "title": "1. Coleta com OAuth do Reddit",
+        "text": "Buscamos cinco anos de tópicos no r/CharruaDevs e guardamos no MongoDB cada post, comentário e resposta, incluindo hierarquia, data, pontuação e link original."
+      },
+      "classify": {
+        "title": "2. Classificação fonte por fonte",
+        "text": "O classificador local analisa posts, comentários e respostas; Gemini pode enriquecer a leitura com o contexto do tópico. Só se aceita uma marca ou modelo reconhecível, nunca uma menção genérica."
+      },
+      "score": {
+        "title": "3. Agregação determinística",
+        "text": "Cada fonte é ponderada por votos e recência. O resultado combina sentimento, número de fontes e autores únicos. São necessárias pelo menos três fontes classificáveis para entrar em um tier e seis para chegar ao S."
+      },
+      "limits": {
+        "title": "4. Limites a considerar",
+        "text": "Isto mede o que uma comunidade publicou; não comprova ergonomia clínica, disponibilidade nem preço atual. Pessoas muito satisfeitas ou insatisfeitas podem comentar mais que a média."
+      }
+    },
+    "closeTitle": "Use o ranking como filtro, não como substituto de sentar.",
+    "closeText": "Abra as evidências, compare sua altura e sua jornada e teste a cadeira se puder.",
+    "shareText": "Tier list de cadeiras de escritório segundo r/CharruaDevs",
+    "moreReddit": "Ver mais dados do Reddit",
+    "ogTitle": "Cadeiras de escritório segundo r/CharruaDevs",
+    "ogSubtitle": "Tier list com comentários reais, amostra e método aberto",
+    "metaTitle": "Melhores cadeiras de escritório no Uruguai segundo r/CharruaDevs",
+    "metaDescription": "Melhores cadeiras de escritório no Uruguai segundo posts, comentários e respostas do r/CharruaDevs, com prós, contras, preços locais e calculadora."
+  },
+  "chairMarket": {
+    "kicker": "Diretório de preços",
+    "title": "Todas as cadeiras de escritório à venda no Uruguai",
+    "lead": "Uma linha por cadeira, com o preço de cada plataforma ao lado. Se a mesma cadeira está no Mercado Livre, na loja oficial e no Marketplace, você a vê uma única vez com as três ofertas.",
+    "statChairs": "Cadeiras",
+    "statOffers": "Ofertas",
+    "statSellers": "Vendedores",
+    "statUpdated": "Atualizado",
+    "searchLabel": "Buscar por marca ou modelo",
+    "sortLabel": "Ordenar por",
+    "brandLabel": "Marca",
+    "allBrands": "Todas as marcas",
+    "categoryLabel": "Tipo de cadeira",
+    "conditionLabel": "Estado",
+    "budgetLabel": "Orçamento máximo",
+    "budgetAny": "Sem limite",
+    "showing": "Mostrando {shown} de {total} cadeiras",
+    "empty": "Ainda não há dados de mercado publicados. A coleta roda todos os dias.",
+    "loadMore": "Ver mais cadeiras",
+    "viewChair": "Ver ficha",
+    "goToOffer": "Ir para {seller}",
+    "fromPrice": "A partir de {price}",
+    "upTo": "até {price}",
+    "noPrice": "Sem preço publicado",
+    "ratingCount": "{count} opiniões",
+    "noRating": "Sem avaliações suficientes",
+    "ratingAria": "{stars} de 5 estrelas segundo {count} opiniões",
+    "sourcesTitle": "De onde vêm estes preços",
+    "sourcesNote": "Os preços são lidos todos os dias em cada loja e marketplace. Para poder compará-los, os publicados em dólares são convertidos a pesos com a cotação de referência do dia (US$ 1 = $ {rate}); o preço original sempre aparece na ficha.",
+    "sourceName": "Fonte",
+    "sourceListings": "Publicações",
+    "sourceStatus": "Estado",
+    "sourceOk": "Lida",
+    "sourceFail": "Sem dados",
+    "sort": {
+      "relevance": "Mais relevantes",
+      "priceAsc": "Menor preço",
+      "priceDesc": "Maior preço",
+      "rating": "Melhor avaliadas",
+      "sellers": "Mais vendedores"
+    },
+    "category": {
+      "all": "Todas",
+      "ergonomic": "Ergonômicas",
+      "gaming": "Gamer",
+      "executive": "Executivas",
+      "operative": "Operacionais",
+      "unknown": "Sem classificar"
+    },
+    "condition": {
+      "all": "Novas e usadas",
+      "new": "Novas",
+      "used": "Usadas"
+    },
+    "source": {
+      "store": "Lojas uruguaias",
+      "mercadolibre": "Mercado Livre",
+      "facebook": "Marketplace"
+    }
+  },
+  "chairDetail": {
+    "notFound": "Não encontramos essa cadeira no levantamento atual.",
+    "backToDirectory": "Voltar ao diretório de cadeiras",
+    "photoOf": "Foto publicada por {seller}",
+    "photoCredit": "Foto de",
+    "bestPrice": "Melhor preço",
+    "bestNew": "Melhor preço nova",
+    "bestUsed": "Melhor preço usada",
+    "sellers": "Vendedores",
+    "buyAt": "Comprar em {seller} por {price}",
+    "offersTitle": "Onde comprar e por quanto",
+    "offersLead": "Uma linha por vendedor. Quando um vendedor publica a mesma cadeira várias vezes, mantemos a mais barata.",
+    "offerCount": "{count} ofertas",
+    "seller": "Vendedor",
+    "listing": "Publicação",
+    "condition": "Estado",
+    "price": "Preço",
+    "freeShipping": "Frete grátis",
+    "outOfStock": "Sem estoque",
+    "conditionValue": {
+      "new": "Nova",
+      "used": "Usada",
+      "refurbished": "Recondicionada",
+      "unknown": "Não especificado"
+    },
+    "priceDisclaimer": "Preços observados em {date}. Os valores em dólares são convertidos a pesos com a cotação de referência US$ 1 = $ {rate} apenas para permitir a comparação; confirme sempre o preço final no site do vendedor.",
+    "historyTitle": "Como o preço se moveu",
+    "historyLead": "Mediana diária das ofertas levantadas, {days} registros.",
+    "historyAria": "Evolução do preço, de {first} a {last}",
+    "opinionTitle": "O que dizem quem usa",
+    "signalsTitle": "Como a nota é calculada",
+    "signalsLead": "Cada fonte pesa conforme o tamanho da amostra. As avaliações de um marketplace são contadas uma única vez, mesmo que dez vendedores anunciem a mesma cadeira.",
+    "signal": {
+      "reddit": "r/CharruaDevs",
+      "mercadolibre": "Compradores do Mercado Livre",
+      "store": "Avaliações da loja",
+      "expert": "Usuários no Reddit internacional"
+    },
+    "confidence": {
+      "low": "Amostra pequena",
+      "medium": "Amostra média",
+      "high": "Amostra sólida"
+    },
+    "specsTitle": "Ficha técnica",
+    "specsLead": "Dados declarados pelos vendedores, não medidos por nós.",
+    "reviewsTitle": "Opiniões de usuários",
+    "evidenceTitle": "As {count} fontes relacionadas do Reddit",
+    "evidenceLead": "Inclui posts, comentários e respostas. Cada item abre a fonte original para você ler no contexto.",
+    "relatedTitle": "Outras cadeiras na mesma faixa",
+    "metaTitle": "{name}: preços no Uruguai e opiniões reais",
+    "metaDescription": "{name} no Uruguai: a partir de {price}, comparada em {sellers} vendedores, com opiniões reais e ficha técnica.",
+    "metaFallbackTitle": "Cadeira de escritório no Uruguai",
+    "metaFallbackSubtitle": "Preços e opiniões de cadeiras de escritório no Uruguai.",
+    "ogSubtitle": "A partir de {price} · {sellers} vendedores"
   }
 }

@@ -110,6 +110,34 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Weekly r/CharruaDevs desktop-chair evidence refresh. Harvests Reddit with the existing
+      // OAuth client, asks backend Gemini for post/comment/reply labels plus sourced pros/cons,
+      // computes tiers deterministically, and writes the public snapshot to the NUXT APP's MongoDB.
+      // Sundays 12:31 UTC ≈ 09:31 America/Montevideo; low cadence respects both provider quotas.
+      name: "currency-chair-tiers",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_chair_tiers.js",
+      env: { GEMINI_MIN_INTERVAL_MS: "10000" },
+      cron_restart: "31 12 * * 0",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
+      // Daily desk-chair market harvest for the /sillas-escritorio-uruguay directory. Reads
+      // MercadoLibre (scraper service on :9656), the Uruguayan storefronts through their own
+      // sitemap/products.json contracts, and Facebook Marketplace (browser service on :9657);
+      // merges every listing into one row per chair and writes the catalogue to the NUXT APP's
+      // MongoDB. 11:41 UTC ≈ 08:41 America/Montevideo, after the stores publish overnight price
+      // changes and clear of the other Gemini jobs. Minute 41: not a multiple of 5.
+      name: "currency-chairs",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_chairs.js",
+      env: { GEMINI_MIN_INTERVAL_MS: "10000" },
+      cron_restart: "41 11 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // BCU usury caps (topes de usura) for /saldar-deudas-uruguay. Monthly on the 1st, 10:13 UTC
       // ≈ 07:13 America/Montevideo. Minute 13: not a multiple of 5.
       name: "currency-debt-relief",

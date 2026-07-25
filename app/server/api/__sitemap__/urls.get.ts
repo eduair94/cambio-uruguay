@@ -6,7 +6,9 @@ import { guideSlugs } from '../../../utils/guides'
 import { listIndicatorSlugs } from '../../../utils/indicators'
 import { NAV_SECTIONS, UNLISTED_ROUTES } from '../../../utils/siteNav'
 import { toolSlugs } from '../../../utils/tools'
+import { ChairCatalogProductModel } from '../../models/ChairCatalogProduct'
 import { listPosts } from '../../utils/blog'
+import { connectDb } from '../../utils/db'
 
 interface SitemapUrl {
   loc: string
@@ -121,6 +123,28 @@ export default defineEventHandler(async _event => {
     })
   } catch (blogError) {
     console.warn('Failed to add blog posts to sitemap:', blogError)
+  }
+
+  // --- Desk-chair pages: Mongo-derived, independently fallible --------------
+  // One URL per chair currently on sale. Chairs whose offers stopped appearing
+  // are excluded by the same `lastSeen` window the directory uses, so the
+  // sitemap never advertises a page that says "sin ofertas".
+  try {
+    await connectDb()
+    const cutoff = new Date(Date.now() - 7 * 86_400_000).toISOString().slice(0, 10)
+    const chairs = await ChairCatalogProductModel.find({ lastSeen: { $gte: cutoff } })
+      .select({ slug: 1, lastSeen: 1 })
+      .lean()
+    chairs.forEach(chair => {
+      addUrlsForAllLocales(
+        `/sillas-escritorio-uruguay/${chair.slug}`,
+        0.6,
+        'weekly',
+        chair.lastSeen
+      )
+    })
+  } catch (chairError) {
+    console.warn('Failed to add chair pages to sitemap:', chairError)
   }
 
   // --- API-derived routes: best effort --------------------------------------

@@ -1431,6 +1431,7 @@
     "saludFinanciera": "Financial health",
     "apps": "Money apps",
     "redditTopics": "Money topics on Reddit",
+    "chairTiers": "Chairs according to r/CharruaDevs",
     "salirClearing": "Getting out of the clearing",
     "queEmpresaAbrir": "Which company to open",
     "saldarDeudas": "Settle debts",
@@ -1602,5 +1603,416 @@
     "error": "We could not load analytics. Check the filters and try again.",
     "metaTitle": "Dollar analytics and hourly exchange rates in Uruguay",
     "metaDescription": "Analyze hourly and period exchange rates, compare houses by department and calculate how your purchasing power evolves."
+  },
+  "chairMarket": {
+    "kicker": "Prices in Uruguay",
+    "title": "One chair, every offer we found",
+    "lead": "We group listings from Uruguayan stores and marketplaces by model so you do not have to compare duplicates manually.",
+    "statChairs": "Chairs",
+    "statOffers": "Offers",
+    "statSellers": "Sellers",
+    "statUpdated": "Updated",
+    "searchLabel": "Search chair or brand",
+    "sortLabel": "Sort",
+    "brandLabel": "Brand",
+    "categoryLabel": "Filter by chair type",
+    "conditionLabel": "Filter by condition",
+    "budgetLabel": "Maximum budget",
+    "budgetAny": "No limit",
+    "showing": "Showing {shown} of {total} chairs",
+    "empty": "No chairs match these filters.",
+    "ratingAria": "{stars} out of 5 stars, calculated from {count} reviews",
+    "ratingCount": "{count} reviews",
+    "noRating": "Not enough reviews",
+    "fromPrice": "From {price}",
+    "upTo": "up to {price}",
+    "noPrice": "Ask for price",
+    "viewChair": "View chair",
+    "goToOffer": "Buy at {seller}",
+    "loadMore": "Show more chairs",
+    "allBrands": "All brands",
+    "category": {
+      "all": "All",
+      "ergonomic": "Ergonomic",
+      "gaming": "Gaming",
+      "executive": "Executive",
+      "operative": "Task chairs",
+      "unknown": "Unclassified"
+    },
+    "condition": {
+      "all": "New and used",
+      "new": "New",
+      "used": "Used"
+    },
+    "sort": {
+      "relevance": "Best signal",
+      "priceAsc": "Lowest price",
+      "priceDesc": "Highest price",
+      "rating": "Best rated",
+      "sellers": "Most sellers"
+    },
+    "source": {
+      "mercadolibre": "Mercado Libre",
+      "facebook": "Facebook Marketplace",
+      "store": "Local stores"
+    },
+    "sourcesTitle": "Source coverage and status",
+    "sourcesNote": "USD prices use a reference rate of 1 USD = {rate} UYU. Confirm the final price and stock before buying.",
+    "sourceName": "Source",
+    "sourceListings": "Listings",
+    "sourceStatus": "Status",
+    "sourceOk": "Up to date",
+    "sourceFail": "Needs attention"
+  },
+  "chairDetail": {
+    "notFound": "We could not find this chair in the current catalog.",
+    "backToDirectory": "Back to all chairs",
+    "photoOf": "View photo published by {seller}",
+    "photoCredit": "Image published by",
+    "bestPrice": "Best observed price",
+    "bestNew": "Best new",
+    "bestUsed": "Best used",
+    "sellers": "Sellers",
+    "buyAt": "Buy at {seller} for {price}",
+    "offersTitle": "All prices and purchase links",
+    "offersLead": "Every listing keeps its seller, condition, currency, and original link.",
+    "offerCount": "{count} offers",
+    "seller": "Seller",
+    "listing": "Listing",
+    "condition": "Condition",
+    "price": "Price",
+    "freeShipping": "Free shipping reported",
+    "outOfStock": "Out of stock at last check",
+    "priceDisclaimer": "Prices observed on {date}; they may change. Rate used: 1 USD = {rate} UYU. Confirm stock, warranty, and final cost.",
+    "historyTitle": "How the price moved",
+    "historyLead": "Observed median over {days} checks.",
+    "historyAria": "Price movement from {first} to {last}",
+    "opinionTitle": "Summary of what users say",
+    "signalsTitle": "How the rating is built",
+    "signalsLead": "The score combines signals with different weights and does not invent stars when evidence is missing.",
+    "specsTitle": "Published model details",
+    "specsLead": "Specifications collected from the available listings.",
+    "reviewsTitle": "Related reviews and mentions",
+    "relatedTitle": "Other chairs to compare",
+    "confidence": {
+      "low": "low evidence",
+      "medium": "medium evidence",
+      "high": "high evidence"
+    },
+    "conditionValue": {
+      "new": "New",
+      "refurbished": "Refurbished",
+      "used": "Used",
+      "unknown": "To be confirmed"
+    },
+    "signal": {
+      "reddit": "Reddit",
+      "mercadolibre": "Mercado Libre",
+      "store": "Stores",
+      "expert": "Specialist sources"
+    },
+    "metaTitle": "{chair}: prices and reviews in Uruguay",
+    "metaDescription": "Compare prices, sellers, reviews, and evidence for {chair} in Uruguay.",
+    "metaFallbackTitle": "Desk chairs in Uruguay",
+    "metaFallbackSubtitle": "Prices and opinions grouped by model",
+    "ogSubtitle": "From {price} across {sellers} sellers"
+  },
+  "chairTiers": {
+    "realComments": "real comments",
+    "h1": "The chair that survives your workday, according to people who already tried it.",
+    "lead": "We analyze real r/CharruaDevs conversations, separate mentions by brand and model, and measure consensus, sample size, and recurring themes. No affiliate links or invented reviews.",
+    "priorityAria": "Sort chairs by work priority",
+    "priorityQuestion": "What catches up with you by the end of the day?",
+    "priority": {
+      "overall": "Show me the best evidence",
+      "comfort": "I end the day uncomfortable",
+      "support": "My back is killing me",
+      "adjustability": "I cannot get it adjusted",
+      "durability": "I want it to last",
+      "value": "I do not want to overpay",
+      "heat": "I run hot"
+    },
+    "snapshotAria": "Summary of the strongest signal in the data",
+    "strongestSignal": "Best-supported signal for this criterion",
+    "comments": "Comments",
+    "threads": "Threads",
+    "authors": "Authors",
+    "updated": "Updated {date}",
+    "collecting": "We are gathering the first verifiable sample.",
+    "trust": {
+      "deterministic": "A formula assigns the tier, not an opinion",
+      "authors": "The sample counts unique authors",
+      "sources": "Every piece of evidence opens the original comment"
+    },
+    "error": "We could not load the current snapshot. The stored ranking was not changed.",
+    "retry": "Try again",
+    "loading": "Loading chair analytics",
+    "emptyTitle": "There is not enough evidence yet",
+    "emptyText": "The collector is configured. Tiers will appear here once enough identifiable mentions have been gathered.",
+    "boardKicker": "Evidence bench",
+    "boardTitle": "The consensus, with every caveat visible",
+    "boardLead": "The tier summarizes the overall signal. Within each band, your priority reorders chairs by detected themes without changing the score or hiding negative opinions.",
+    "tier": {
+      "S": {
+        "label": "Exceptional consensus",
+        "description": "Very positive signal and a broad sample."
+      },
+      "A": {
+        "label": "Solid recommendation",
+        "description": "More praise than criticism, backed by useful evidence."
+      },
+      "B": {
+        "label": "Works with caveats",
+        "description": "Favorable or mixed depending on the use."
+      },
+      "C": {
+        "label": "Think twice",
+        "description": "Weak or highly divided signal."
+      },
+      "D": {
+        "label": "Poor signal",
+        "description": "Criticism outweighs praise."
+      }
+    },
+    "chairCount": "{count} chairs in this band",
+    "priorityMatch": "matches your priority",
+    "scoreAria": "Evidence score: {score} out of 100",
+    "opinionMix": "{positive} positive · {neutral} neutral · {negative} negative",
+    "sample": "{sources} related sources · {authors} authors",
+    "confidence": {
+      "low": "low confidence",
+      "medium": "medium confidence",
+      "high": "high confidence"
+    },
+    "theme": {
+      "comfort": "comfort",
+      "ergonomics": "ergonomics",
+      "adjustability": "adjustability",
+      "durability": "durability",
+      "value": "value",
+      "support": "lumbar support",
+      "heat": "ventilation",
+      "build": "construction"
+    },
+    "sentimentAria": "{positive}% positive, {neutral}% neutral, and {negative}% negative opinions",
+    "reviewAria": "Overall review, pros and cons for {chair}",
+    "pros": "What Reddit liked",
+    "cons": "What raised concerns",
+    "supportedBy": "Linked sources: {count}",
+    "noRepeatedPros": "No advantage is repeated clearly enough.",
+    "noRepeatedCons": "No recurring drawback was found; that does not mean none exists.",
+    "buyKicker": "Where to buy in Uruguay",
+    "buyTitle": "Verified offers for {chair}",
+    "priceDisclaimer": "Observed prices, not guaranteed. Confirm stock, size, warranty and final total before buying.",
+    "priceChecked": "checked {date}",
+    "photos": {
+      "openAria": "Open {chair} gallery; images: {count}",
+      "count": "{count} photos",
+      "enlarge": "Enlarge",
+      "dialogAria": "Photo gallery for {chair}",
+      "counter": "{index} of {total}",
+      "zoomOut": "Zoom out",
+      "zoomIn": "Zoom in",
+      "close": "Close gallery",
+      "previous": "Previous photo",
+      "next": "Next photo",
+      "goTo": "Go to photo {index}",
+      "source": "View product at {source}"
+    },
+    "fromPrice": "From {price}",
+    "approx": "≈ {price}",
+    "tone": {
+      "positive": "Positive",
+      "neutral": "Neutral",
+      "negative": "Negative"
+    },
+    "budget": {
+      "kicker": "Your budget leads",
+      "title": "What is the best chair you can afford?",
+      "lead": "Move the slider or enter an amount. Offers are converted with today's best public USD sell rate, then ranked by tier and evidence; price only decides which options qualify.",
+      "currencyAria": "Budget currency",
+      "sliderAria": "Adjust budget",
+      "inputLabel": "Maximum",
+      "rate": "Reference conversion: 1 USD = {rate}",
+      "rateUnavailable": "The USD/UYU rate is unavailable; only offers in the selected currency are compared.",
+      "bestFit": "Best option within budget",
+      "reason": "Tier {tier}, {score}/100. {count} offers fit your budget.",
+      "openOffer": "Open this offer",
+      "noFitTitle": "No offer fits yet",
+      "noFitText": "Raise the budget or switch currencies to widen the options."
+    },
+    "channel": {
+      "local-store": "Local store",
+      "marketplace": "Marketplace",
+      "importer": "Importer",
+      "comparator": "Price comparison"
+    },
+    "condition": {
+      "new": "New",
+      "refurbished": "Refurbished",
+      "used": "Used",
+      "unknown": "Condition unconfirmed"
+    },
+    "openEvidence": "Open {count} comments supporting this reading",
+    "openAllEvidence": "View all {count} related sources: posts, comments and replies",
+    "sourceCount": {
+      "posts": "{count} posts",
+      "comments": "{count} comments",
+      "replies": "{count} replies"
+    },
+    "sourceType": {
+      "post": "Original post",
+      "comment": "Comment",
+      "reply": "Reply · level {depth}"
+    },
+    "openReddit": "View on Reddit",
+    "watchKicker": "Watchlist",
+    "watchTitle": "Mentioned, but not ready to rank",
+    "watchText": "These chairs appeared in the conversation but have fewer than three classifiable comments. Keeping them separate prevents an anecdote from becoming a recommendation.",
+    "methodKicker": "Open method",
+    "methodTitle": "What AI does and what it is not allowed to do",
+    "methodLead": "A conservative local classifier secures explicit models; Gemini enriches colloquial language when quota is available. Scores, confidence, and tiers use visible, repeatable rules.",
+    "visitSubreddit": "Visit r/CharruaDevs",
+    "method": {
+      "harvest": {
+        "title": "1. Reddit OAuth collection",
+        "text": "We search five years of r/CharruaDevs threads and store every post, comment, and reply in MongoDB, including its hierarchy, date, score, and original link."
+      },
+      "classify": {
+        "title": "2. Source-level classification",
+        "text": "The local classifier analyzes posts, comments, and replies; Gemini can enrich that reading with thread context. Only a recognizable brand or model is accepted, never a generic mention."
+      },
+      "score": {
+        "title": "3. Deterministic aggregation",
+        "text": "Each source is weighted by votes and recency. The result combines sentiment, source count, and unique authors. A chair needs at least three classifiable sources to enter a tier and six to reach S."
+      },
+      "limits": {
+        "title": "4. Limits to keep in mind",
+        "text": "This measures what one community published; it does not prove clinical ergonomics, availability, or current price. Very satisfied or dissatisfied people may comment more often than average."
+      }
+    },
+    "closeTitle": "Use the ranking as a filter, not as a substitute for sitting down.",
+    "closeText": "Open the evidence, compare your height and workday, and try the chair if you can.",
+    "shareText": "Desktop chair tier list according to r/CharruaDevs",
+    "moreReddit": "Explore more Reddit data",
+    "ogTitle": "Desktop chairs according to r/CharruaDevs",
+    "ogSubtitle": "Tier list with real comments, sample size, and an open method",
+    "metaTitle": "Best desktop chairs in Uruguay according to r/CharruaDevs",
+    "metaDescription": "Best desktop chairs in Uruguay from r/CharruaDevs posts, comments, and replies, with pros, cons, local prices, and a budget calculator."
+  },
+  "chairMarket": {
+    "kicker": "Price directory",
+    "title": "Every desk chair on sale in Uruguay",
+    "lead": "One row per chair, with each platform priced beside it. If the same chair is on Mercado Libre, in the official store and on Marketplace, you see it once with all three offers.",
+    "statChairs": "Chairs",
+    "statOffers": "Offers",
+    "statSellers": "Sellers",
+    "statUpdated": "Updated",
+    "searchLabel": "Search by brand or model",
+    "sortLabel": "Sort by",
+    "brandLabel": "Brand",
+    "allBrands": "All brands",
+    "categoryLabel": "Chair type",
+    "conditionLabel": "Condition",
+    "budgetLabel": "Maximum budget",
+    "budgetAny": "No limit",
+    "showing": "Showing {shown} of {total} chairs",
+    "empty": "No market data published yet. The harvest runs every day.",
+    "loadMore": "Show more chairs",
+    "viewChair": "View chair",
+    "goToOffer": "Go to {seller}",
+    "fromPrice": "From {price}",
+    "upTo": "up to {price}",
+    "noPrice": "No published price",
+    "ratingCount": "{count} opinions",
+    "noRating": "Not enough reviews",
+    "ratingAria": "{stars} out of 5 stars from {count} opinions",
+    "sourcesTitle": "Where these prices come from",
+    "sourcesNote": "Prices are read daily from each store and marketplace. To compare them, prices published in dollars are converted to pesos with the reference rate of the day (US$ 1 = $ {rate}); the original price is always shown on the chair page.",
+    "sourceName": "Source",
+    "sourceListings": "Listings",
+    "sourceStatus": "Status",
+    "sourceOk": "Read",
+    "sourceFail": "No data",
+    "sort": {
+      "relevance": "Most relevant",
+      "priceAsc": "Lowest price",
+      "priceDesc": "Highest price",
+      "rating": "Best rated",
+      "sellers": "Most sellers"
+    },
+    "category": {
+      "all": "All",
+      "ergonomic": "Ergonomic",
+      "gaming": "Gaming",
+      "executive": "Executive",
+      "operative": "Task",
+      "unknown": "Unclassified"
+    },
+    "condition": {
+      "all": "New and used",
+      "new": "New",
+      "used": "Used"
+    },
+    "source": {
+      "store": "Uruguayan stores",
+      "mercadolibre": "Mercado Libre",
+      "facebook": "Marketplace"
+    }
+  },
+  "chairDetail": {
+    "notFound": "We could not find that chair in the current harvest.",
+    "backToDirectory": "Back to the chair directory",
+    "photoOf": "Photo published by {seller}",
+    "photoCredit": "Photo by",
+    "bestPrice": "Best price",
+    "bestNew": "Best price, new",
+    "bestUsed": "Best price, used",
+    "sellers": "Sellers",
+    "buyAt": "Buy at {seller} for {price}",
+    "offersTitle": "Where to buy it and for how much",
+    "offersLead": "One row per seller. When a seller lists the same chair several times, we keep the cheapest.",
+    "offerCount": "{count} offers",
+    "seller": "Seller",
+    "listing": "Listing",
+    "condition": "Condition",
+    "price": "Price",
+    "freeShipping": "Free shipping",
+    "outOfStock": "Out of stock",
+    "conditionValue": {
+      "new": "New",
+      "used": "Used",
+      "refurbished": "Refurbished",
+      "unknown": "Unspecified"
+    },
+    "priceDisclaimer": "Prices observed on {date}. Amounts in dollars are converted to pesos at the reference rate US$ 1 = $ {rate} only so they can be compared; always confirm the final price on the seller site.",
+    "historyTitle": "How the price moved",
+    "historyLead": "Daily median of the observed offers, {days} records.",
+    "historyAria": "Price history, from {first} to {last}",
+    "opinionTitle": "What owners say",
+    "signalsTitle": "How the rating is built",
+    "signalsLead": "Each source counts according to its sample size. Marketplace reviews are counted once even when ten sellers list the same chair.",
+    "signal": {
+      "reddit": "r/CharruaDevs",
+      "mercadolibre": "Mercado Libre buyers",
+      "store": "Store reviews",
+      "expert": "International Reddit users"
+    },
+    "confidence": {
+      "low": "Small sample",
+      "medium": "Medium sample",
+      "high": "Solid sample"
+    },
+    "specsTitle": "Specifications",
+    "specsLead": "Declared by the sellers, not measured by us.",
+    "reviewsTitle": "User opinions",
+    "evidenceTitle": "All {count} related Reddit sources",
+    "evidenceLead": "Includes posts, comments, and replies. Every entry links to its original source so you can read it in context.",
+    "relatedTitle": "Other chairs in the same range",
+    "metaTitle": "{name}: prices in Uruguay and real opinions",
+    "metaDescription": "{name} in Uruguay: from {price}, compared across {sellers} sellers, with real owner opinions and specs.",
+    "metaFallbackTitle": "Desk chair in Uruguay",
+    "metaFallbackSubtitle": "Desk chair prices and opinions in Uruguay.",
+    "ogSubtitle": "From {price} · {sellers} sellers"
   }
 }

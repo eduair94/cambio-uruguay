@@ -458,6 +458,23 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        to: '/sillas-escritorio-uruguay',
+        labelKey: 'nav.chairTiers',
+        icon: 'mdi-chair-rolling',
+        priority: 0.7,
+        changefreq: 'weekly',
+        fresh: true,
+        keywords: [
+          'sillas escritorio uruguay',
+          'mejores sillas oficina',
+          'silla ergonomica uruguay',
+          'sillas charruadevs',
+          'sillas reddit uruguay',
+          'tier list sillas',
+          'vigo silla',
+        ],
+      },
+      {
         to: '/por-que-el-bcu-quiere-mas-pesos',
         labelKey: 'nav.desdolarizacion',
         icon: 'mdi-currency-usd-off',
@@ -1072,6 +1089,7 @@ export const DYNAMIC_ROUTE_KEYS: Readonly<Record<string, string>> = Object.freez
   'historico/[origin]/[currency]/[[type]]': 'market',
   'indicadores/[indicador]': 'tools',
   'sucursales/[origin]/[[location]]': 'houses',
+  'sillas-escritorio-uruguay/[slug]': 'news',
   'temas/[slug]': 'learn',
 })
 
