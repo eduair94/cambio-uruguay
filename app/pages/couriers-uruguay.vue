@@ -200,6 +200,9 @@
           la página del Correo para declarar todavía publica un tope viejo de US$ 50 por envío no
           exprés </NuxtLink
         >, derogado desde el 1.º de mayo de 2026.
+        <NuxtLink :to="localePath('/declarar-compra-exterior-uruguay')" class="couriers-link ml-1">
+          Ver cómo declarar el paquete paso a paso.
+        </NuxtLink>
       </p>
     </VCard>
 

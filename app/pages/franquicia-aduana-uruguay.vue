@@ -22,6 +22,13 @@
           Es otro régimen — ver franquicia de equipaje de viajero </NuxtLink
         >.
       </p>
+      <p class="text-caption text-medium-emphasis mt-2 mb-0">
+        <VIcon size="14" class="mr-1">mdi-file-sign</VIcon>
+        ¿No sabés dónde se declara o quién hace el trámite?
+        <NuxtLink :to="localePath('/declarar-compra-exterior-uruguay')">
+          Ver el paso a paso para Correo, courier, Amazon Global y Temu </NuxtLink
+        >.
+      </p>
     </header>
 
     <!-- The semáforo -->

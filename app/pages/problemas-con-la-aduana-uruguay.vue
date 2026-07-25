@@ -599,6 +599,13 @@
       <h2 class="section-heading mb-4">Seguí leyendo</h2>
       <VRow>
         <VCol cols="12" sm="6" md="3">
+          <NuxtLink :to="localePath('/declarar-compra-exterior-uruguay')" class="cross-link">
+            <VIcon color="primary" class="mb-2">mdi-file-sign</VIcon>
+            <span class="cross-title">Cómo declarar la compra</span>
+            <span class="cross-desc">Correo, courier, Amazon Global y Temu.</span>
+          </NuxtLink>
+        </VCol>
+        <VCol cols="12" sm="6" md="3">
           <NuxtLink :to="localePath('/franquicia-aduana-uruguay')" class="cross-link">
             <VIcon color="primary" class="mb-2">mdi-package-variant-closed-check</VIcon>
             <span class="cross-title">Franquicia y aduana</span>

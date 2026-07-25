@@ -116,6 +116,11 @@ export const guideHubs: readonly GuideHub[] = [
     ],
     resources: [
       {
+        label: 'Cómo declarar una compra del exterior',
+        description: 'Correo, courier, Amazon Global, Temu y régimen general.',
+        to: '/declarar-compra-exterior-uruguay',
+      },
+      {
         label: 'Couriers de Uruguay',
         description: 'Comparativa de servicios puerta a puerta.',
         to: '/couriers-uruguay',

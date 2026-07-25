@@ -742,6 +742,25 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
     titleKey: 'search.section.imports',
     entries: [
       {
+        to: '/declarar-compra-exterior-uruguay',
+        labelKey: 'nav.declararCompraExterior',
+        icon: 'mdi-file-sign',
+        priority: 0.9,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'declarar compra exterior uruguay',
+          'compra exterior sin courier',
+          'declarar paquete correo uruguayo',
+          'ahiva aduana',
+          'amazon global uruguay',
+          'temu importacion gestionada',
+          'import fees deposit',
+          'quien declara aduana',
+          'despachante compra exterior',
+        ],
+      },
+      {
         to: '/franquicia-aduana-uruguay',
         labelKey: 'nav.franquiciaAduana',
         icon: 'mdi-package-variant-closed-check',
