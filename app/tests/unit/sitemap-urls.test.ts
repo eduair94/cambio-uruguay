@@ -123,3 +123,29 @@ describe('sitemap coverage', () => {
     }
   })
 })
+
+// A prerendered route that leaves a Mongo pool open keeps `nuxt build`'s event
+// loop alive: the build never exits, holds the deploy flock, and every later
+// deploy is cancelled behind it. That is exactly how deploys stalled for hours
+// once the chair pages started reading Mongo from here.
+describe('sitemap during prerender', () => {
+  it('always releases the Mongo pool, even when the chair query fails', async () => {
+    vi.resetModules()
+    installNitroGlobals()
+    vi.stubGlobal('$fetch', vi.fn(HEALTHY))
+
+    const disconnect = vi.fn(async () => {})
+    vi.doMock('../../server/utils/db', () => ({
+      connectDb: vi.fn(async () => {
+        throw new Error('MONGO_URI is not configured')
+      }),
+      disconnectDbAfterPrerender: disconnect,
+    }))
+
+    const mod = await import('../../server/api/__sitemap__/urls.get')
+    await (mod.default as unknown as (event: unknown) => Promise<SitemapUrl[]>)({})
+
+    expect(disconnect).toHaveBeenCalled()
+    vi.doUnmock('../../server/utils/db')
+  })
+})

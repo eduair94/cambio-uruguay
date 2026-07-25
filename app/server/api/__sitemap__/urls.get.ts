@@ -8,7 +8,7 @@ import { NAV_SECTIONS, UNLISTED_ROUTES } from '../../../utils/siteNav'
 import { toolSlugs } from '../../../utils/tools'
 import { ChairCatalogProductModel } from '../../models/ChairCatalogProduct'
 import { listPosts } from '../../utils/blog'
-import { connectDb } from '../../utils/db'
+import { connectDb, disconnectDbAfterPrerender } from '../../utils/db'
 
 interface SitemapUrl {
   loc: string
@@ -145,6 +145,9 @@ export default defineEventHandler(async _event => {
     })
   } catch (chairError) {
     console.warn('Failed to add chair pages to sitemap:', chairError)
+  } finally {
+    // The sitemap is prerendered: leaving the pool open hangs `nuxt build`.
+    await disconnectDbAfterPrerender()
   }
 
   // --- API-derived routes: best effort --------------------------------------
