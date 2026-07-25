@@ -1074,7 +1074,7 @@ useHead(() => ({
 h1 {
   max-width: 26ch;
   margin: 0;
-  font-size: clamp(1.9rem, 3.6vw, 2.6rem);
+  font-size: clamp(1.55rem, 4.4vw, 2.5rem);
   font-weight: 300;
   line-height: 1.06;
   letter-spacing: -0.03em;
@@ -1442,7 +1442,8 @@ h1 {
 
 .directory-bridge__stats dd {
   margin: 4px 0 0;
-  font-size: clamp(1.5rem, 2.4vw, 2rem);
+  /* Headline, not Display: these are the card's second voice, under its heading. */
+  font-size: clamp(1.35rem, 3vw, 1.75rem);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
@@ -2329,11 +2330,10 @@ h1 {
     border-radius: 0 0 16px 16px;
   }
 
-  /* 9.4vw put 17 characters on a line: the thesis ran four lines and a fifth of the screen before
-     the reader reached anything actionable. */
+  /* No font-size here: the Display clamp already bottoms out at 1.55rem, which is what keeps the
+     thesis to three lines on a phone instead of the four that 9.4vw produced. */
   h1 {
     max-width: none;
-    font-size: clamp(1.75rem, 7.2vw, 2.25rem);
     line-height: 1.08;
   }
 
