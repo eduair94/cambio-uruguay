@@ -66,6 +66,13 @@ if [ -d "$APP_DIR/.output/public/_nuxt" ]; then
   find "$STAGING/public/_nuxt" -type f -mtime +2 -delete
 fi
 
+# Nuxt reserves /_nuxt for generated files, so copy compatibility assets after
+# the build as well. These recover specific clients stranded by older deploys.
+if [ -d "$APP_DIR/public/_nuxt" ]; then
+  mkdir -p "$STAGING/public/_nuxt"
+  cp -a "$APP_DIR/public/_nuxt/." "$STAGING/public/_nuxt/"
+fi
+
 log "Swapping staging build into .output…"
 rm -rf "$PREV"
 [ -d "$APP_DIR/.output" ] && mv "$APP_DIR/.output" "$PREV"
