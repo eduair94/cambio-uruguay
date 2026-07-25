@@ -193,10 +193,10 @@ STORY: Set a budget and a priority, watch the board reorder, open the chair that
           </p>
 
           <ul class="card-platforms">
-            <li v-for="group in offersByPlatform(product)" :key="group.source">
+            <li v-for="group in platformSummary(product)" :key="group.source">
               <VIcon :icon="chairSourceIcon(group.source)" size="14" />
               {{ t(`chairMarket.source.${group.source}`) }}
-              <span>{{ group.offers.length }}</span>
+              <span>{{ group.count }}</span>
             </li>
           </ul>
 
@@ -270,16 +270,16 @@ import {
   emptyChairFilters,
   filterChairProducts,
   formatChairPrice,
-  offersByPlatform,
+  platformSummary,
   starIcons,
   type ChairCatalogMeta,
-  type ChairCatalogProduct,
+  type ChairCatalogCard,
   type ChairCategory,
   type ChairDirectoryFilters,
 } from '~/utils/chairCatalog'
 
 const props = defineProps<{
-  products: ChairCatalogProduct[]
+  products: ChairCatalogCard[]
   meta: ChairCatalogMeta | null
   pending: boolean
   brands: Array<{ value: string; count: number }>
@@ -358,13 +358,13 @@ const formatDate = (value: string): string =>
     year: 'numeric',
   })
 
-function bestPriceLabel(product: ChairCatalogProduct): string {
+function bestPriceLabel(product: ChairCatalogCard): string {
   const offer = bestChairOffer(product)
   if (!offer) return t('chairMarket.noPrice')
   return t('chairMarket.fromPrice', { price: formatChairPrice(offer.priceUyu) })
 }
 
-const ratingAria = (product: ChairCatalogProduct): string =>
+const ratingAria = (product: ChairCatalogCard): string =>
   product.stars === null
     ? t('chairMarket.noRating')
     : t('chairMarket.ratingAria', { stars: product.stars.toFixed(1), count: product.ratingCount })

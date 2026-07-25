@@ -110,6 +110,54 @@ export interface ChairCatalogProduct {
   lastSeen: string
 }
 
+/**
+ * What /api/chairs sends for the directory: everything a card needs and nothing else.
+ *
+ * The heavy halves of a chair — its specs, its evidence, its quoted reviews and its price history —
+ * are an order of magnitude larger than the card and are only ever read on the chair page, so they
+ * are optional here and fetched by /api/chairs/[slug].
+ */
+export type ChairCatalogCard = Omit<
+  ChairCatalogProduct,
+  | 'key'
+  | 'specs'
+  | 'verdict'
+  | 'pros'
+  | 'cons'
+  | 'evidence'
+  | 'reviews'
+  | 'history'
+  | 'ratingSignals'
+  | 'firstSeen'
+> &
+  Partial<
+    Pick<
+      ChairCatalogProduct,
+      | 'key'
+      | 'specs'
+      | 'verdict'
+      | 'pros'
+      | 'cons'
+      | 'evidence'
+      | 'reviews'
+      | 'history'
+      | 'ratingSignals'
+      | 'firstSeen'
+    >
+  > & {
+    /**
+     * How many offers each platform has, precomputed.
+     *
+     * `offers` on a card is truncated to the cheapest few — a chair sold by nine MercadoLibre
+     * sellers would otherwise ship nine rows the card never renders — so the counts cannot be
+     * derived client-side any more.
+     */
+    platforms?: Array<{ source: ChairMarketSource; count: number }>
+    /** Whether a new / used offer exists at all, for the condition filter. */
+    hasNew?: boolean
+    hasUsed?: boolean
+  }
+
 export interface ChairCatalogSourceRun {
   key: string
   label: string
@@ -132,7 +180,7 @@ export interface ChairCatalogMeta {
 
 export interface ChairCatalogResponse {
   meta: ChairCatalogMeta | null
-  products: ChairCatalogProduct[]
+  products: ChairCatalogCard[]
   total: number
   facets: {
     brands: Array<{ value: string; count: number }>
@@ -174,7 +222,7 @@ export const formatChairPrice = (value: number, currency: 'UYU' | 'USD' = 'UYU')
     : `$ ${Math.round(value).toLocaleString('es-UY')}`
 
 /** Cheapest available offer, preferring new over used at equal price. */
-export function bestChairOffer(product: ChairCatalogProduct): ChairCatalogOffer | null {
+export function bestChairOffer(product: ChairCatalogCard): ChairCatalogOffer | null {
   const available = product.offers.filter(offer => offer.available)
   const pool = available.length ? available : product.offers
   return (
@@ -185,8 +233,19 @@ export function bestChairOffer(product: ChairCatalogProduct): ChairCatalogOffer 
   )
 }
 
+/** Platform chips for a card: uses the precomputed counts, falling back to the offers it has. */
+export function platformSummary(
+  product: ChairCatalogCard
+): Array<{ source: ChairMarketSource; count: number }> {
+  if (product.platforms?.length) return product.platforms
+  return offersByPlatform(product).map(group => ({
+    source: group.source,
+    count: group.offers.length,
+  }))
+}
+
 /** One entry per platform, so "dónde comprarla" never repeats the same shop. */
-export function offersByPlatform(product: ChairCatalogProduct): Array<{
+export function offersByPlatform(product: ChairCatalogCard): Array<{
   source: ChairMarketSource
   offers: ChairCatalogOffer[]
 }> {
@@ -207,7 +266,7 @@ export function offersByPlatform(product: ChairCatalogProduct): Array<{
 
 /** Percentage drop between the first and last price point, or null when there is no history. */
 export function priceTrend(product: ChairCatalogProduct): number | null {
-  const points = product.history.filter(point => point.median > 0)
+  const points = (product.history ?? []).filter(point => point.median > 0)
   if (points.length < 2) return null
   const first = points[0]!.median
   const last = points[points.length - 1]!.median
@@ -235,12 +294,13 @@ export const emptyChairFilters = (): ChairDirectoryFilters => ({
   sort: 'relevance',
 })
 
-const matchesText = (product: ChairCatalogProduct, query: string): boolean => {
+const matchesText = (product: ChairCatalogCard, query: string): boolean => {
   const needle = query.trim().toLowerCase()
   if (!needle) return true
-  const haystack = `${product.name} ${product.brand} ${product.model} ${product.specs
-    .map(spec => spec.value)
-    .join(' ')}`.toLowerCase()
+  // The directory endpoint sends card-sized rows, so `specs` is absent there and present on the
+  // chair page. Both have to search.
+  const specs = (product.specs ?? []).map(spec => spec.value).join(' ')
+  const haystack = `${product.name} ${product.brand} ${product.model} ${specs}`.toLowerCase()
   return needle.split(/\s+/).every(token => haystack.includes(token))
 }
 
@@ -251,21 +311,23 @@ const matchesText = (product: ChairCatalogProduct, query: string): boolean => {
  * filter it actually satisfies (the price filter looks at the cheapest offer, not the median).
  */
 export function filterChairProducts(
-  products: readonly ChairCatalogProduct[],
+  products: readonly ChairCatalogCard[],
   filters: ChairDirectoryFilters
-): ChairCatalogProduct[] {
+): ChairCatalogCard[] {
   const filtered = products.filter(product => {
     if (!matchesText(product, filters.query)) return false
     if (filters.category !== 'all' && product.category !== filters.category) return false
     if (filters.brand !== 'all' && product.brand !== filters.brand) return false
     if (filters.minStars > 0 && (product.stars ?? 0) < filters.minStars) return false
     if (filters.condition !== 'all') {
+      // `hasNew`/`hasUsed` come from the API because a card only carries its cheapest offers.
       const wanted =
         filters.condition === 'new'
-          ? product.offers.some(offer => offer.condition === 'new')
-          : product.offers.some(
+          ? (product.hasNew ?? product.offers.some(offer => offer.condition === 'new'))
+          : (product.hasUsed ??
+            product.offers.some(
               offer => offer.condition === 'used' || offer.condition === 'refurbished'
-            )
+            ))
       if (!wanted) return false
     }
     if (filters.maxPrice !== null) {
@@ -275,7 +337,7 @@ export function filterChairProducts(
     return true
   })
 
-  const byPrice = (product: ChairCatalogProduct): number =>
+  const byPrice = (product: ChairCatalogCard): number =>
     bestChairOffer(product)?.priceUyu ?? Number.POSITIVE_INFINITY
 
   return filtered.sort((a, b) => {

@@ -1,7 +1,7 @@
 import { ChairCatalogMetaModel } from '../../models/ChairCatalogMeta'
 import { ChairCatalogProductModel } from '../../models/ChairCatalogProduct'
 import { connectDb } from '../../utils/db'
-import type { ChairCatalogProduct, ChairCatalogResponse } from '../../../utils/chairCatalog'
+import type { ChairCatalogCard, ChairCatalogResponse } from '../../../utils/chairCatalog'
 
 /**
  * The desk-chair directory.
@@ -36,13 +36,68 @@ export default defineEventHandler(async (event): Promise<ChairCatalogResponse> =
       ChairCatalogMetaModel.findOne({ key: 'uy-desk-chairs' })
         .select({ _id: 0, __v: 0, createdAt: 0, updatedAt: 0 })
         .lean(),
+      // Card-sized rows only. The full document (specs, evidence, quotes, price history) is an
+      // order of magnitude larger and belongs to /api/chairs/[slug]; sending it 375 times turned
+      // the directory into a megabyte of HTML nobody reads.
       ChairCatalogProductModel.find({ lastSeen: { $gte: cutoff } })
-        .select({ _id: 0, __v: 0, createdAt: 0, updatedAt: 0, reviewFingerprint: 0, evidence: 0 })
+        .select({
+          _id: 0,
+          slug: 1,
+          name: 1,
+          brand: 1,
+          model: 1,
+          category: 1,
+          stars: 1,
+          ratingCount: 1,
+          confidence: 1,
+          tier: 1,
+          price: 1,
+          sellers: 1,
+          lastSeen: 1,
+          'images.url': 1,
+          'images.alt': 1,
+          'offers.id': 1,
+          'offers.source': 1,
+          'offers.sellerKey': 1,
+          'offers.seller': 1,
+          'offers.url': 1,
+          'offers.priceUyu': 1,
+          'offers.price': 1,
+          'offers.currency': 1,
+          'offers.condition': 1,
+          'offers.available': 1,
+        })
         .lean(),
     ])
 
-    const products = (rows || []) as unknown as ChairCatalogProduct[]
-    if (!products.length) return { ...empty, meta: (meta as any) ?? null }
+    const full = (rows || []) as unknown as ChairCatalogCard[]
+    if (!full.length) return { ...empty, meta: (meta as any) ?? null }
+
+    // A chair sold by nine MercadoLibre sellers shipped nine offer rows the card never rendered.
+    // Summarise the platforms and the condition flags server-side, then keep only the cheapest
+    // offers — enough for the "desde" price and the outbound link. The chair page has the rest.
+    const products: ChairCatalogCard[] = full.map(product => {
+      const offers = [...product.offers].sort((a, b) => a.priceUyu - b.priceUyu)
+      const counts = new Map<string, number>()
+      for (const offer of offers) counts.set(offer.source, (counts.get(offer.source) ?? 0) + 1)
+      return {
+        ...product,
+        // The card renders one photo; a chair carries up to six, and they were the single largest
+        // contributor to the payload.
+        images: product.images.slice(0, 1),
+        platforms: [...counts.entries()].map(([source, count]) => ({
+          source: source as ChairCatalogCard['offers'][number]['source'],
+          count,
+        })),
+        hasNew: offers.some(offer => offer.condition === 'new'),
+        hasUsed: offers.some(
+          offer => offer.condition === 'used' || offer.condition === 'refurbished'
+        ),
+        offers: offers.filter(offer => offer.available).slice(0, 2).length
+          ? offers.filter(offer => offer.available).slice(0, 2)
+          : offers.slice(0, 2),
+      }
+    })
 
     const count = <T extends string>(values: T[]): Array<{ value: T; count: number }> => {
       const tally = new Map<T, number>()
