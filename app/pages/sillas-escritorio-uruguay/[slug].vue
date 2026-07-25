@@ -732,10 +732,13 @@ useHead(() => ({
 }
 
 .detail-summary h1 {
+  max-width: 26ch;
   font-size: clamp(1.5rem, 3vw, 2.125rem);
   font-weight: 400;
-  line-height: 1.18;
+  line-height: 1.14;
+  letter-spacing: -0.02em;
   margin: 0;
+  text-wrap: balance;
 }
 
 .detail-rating {

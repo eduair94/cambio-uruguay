@@ -1072,11 +1072,11 @@ useHead(() => ({
 /* Display scale follows DESIGN.md (display tops out at 3.75rem) so this page reads as a sibling of
    /mejores-bancos-uruguay and /temas-de-dinero-reddit instead of a poster. */
 h1 {
-  max-width: 16ch;
+  max-width: 26ch;
   margin: 0;
-  font-size: clamp(2.05rem, 4.6vw, 3.3rem);
+  font-size: clamp(1.9rem, 3.6vw, 2.6rem);
   font-weight: 300;
-  line-height: 1.02;
+  line-height: 1.06;
   letter-spacing: -0.03em;
   text-wrap: balance;
 }
@@ -1408,10 +1408,11 @@ h1 {
 
 .directory-bridge h2 {
   margin: 5px 0 0;
-  font-size: clamp(1.55rem, 4.4vw, 2.5rem);
+  max-width: 26ch;
+  font-size: clamp(1.5rem, 3vw, 2.125rem);
   font-weight: 300;
-  line-height: 1.12;
-  letter-spacing: -0.025em;
+  line-height: 1.14;
+  letter-spacing: -0.02em;
   text-wrap: balance;
 }
 
@@ -1486,10 +1487,12 @@ h1 {
 
 .budget-tool__intro h2 {
   margin: 5px 0 0;
-  font-size: clamp(1.65rem, 3.2vw, 2.5rem);
+  max-width: 26ch;
+  font-size: clamp(1.5rem, 3vw, 2.125rem);
   font-weight: 300;
-  line-height: 1.12;
-  letter-spacing: -0.025em;
+  line-height: 1.14;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
 }
 
 .budget-tool__intro > p {
@@ -1603,10 +1606,11 @@ h1 {
 .method h2,
 .page-close h2 {
   margin: 5px 0 0;
-  font-size: clamp(1.65rem, 3.2vw, 2.5rem);
+  max-width: 26ch;
+  font-size: clamp(1.5rem, 3vw, 2.125rem);
   font-weight: 300;
-  line-height: 1.12;
-  letter-spacing: -0.025em;
+  line-height: 1.14;
+  letter-spacing: -0.02em;
   text-wrap: balance;
 }
 
@@ -2192,8 +2196,7 @@ h1 {
 }
 
 .page-close h2 {
-  max-width: 18ch;
-  font-size: clamp(1.8rem, 3vw, 2.7rem);
+  max-width: 24ch;
 }
 
 .page-close p {
@@ -2326,10 +2329,12 @@ h1 {
     border-radius: 0 0 16px 16px;
   }
 
+  /* 9.4vw put 17 characters on a line: the thesis ran four lines and a fifth of the screen before
+     the reader reached anything actionable. */
   h1 {
     max-width: none;
-    font-size: clamp(2rem, 9.4vw, 2.5rem);
-    line-height: 1.03;
+    font-size: clamp(1.75rem, 7.2vw, 2.25rem);
+    line-height: 1.08;
   }
 
   .hero-lead {

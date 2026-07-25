@@ -30,6 +30,12 @@ typography:
     fontWeight: 800
     lineHeight: 1.1
     letterSpacing: "-0.02em"
+  content-title:
+    fontFamily: "Open Sans, sans-serif"
+    fontSize: "clamp(1.5rem, 3vw, 2.125rem)"
+    fontWeight: 300
+    lineHeight: 1.14
+    letterSpacing: "-0.02em"
   headline:
     fontFamily: "Open Sans, sans-serif"
     fontSize: "clamp(1.35rem, 3vw, 1.75rem)"
@@ -217,6 +223,11 @@ font switching.
 - **Display** (800, `clamp(1.55rem, 4.4vw, 2.5rem)`, 1.1, -0.02em, `text-wrap: balance`): the page
   thesis. This is the `.hero-title` idiom shared by the landing heroes; the tracking tightens as the
   size grows.
+- **Content Title** (300, `clamp(1.5rem, 3vw, 2.125rem)`, 1.14, -0.02em, `text-wrap: balance`): a
+  heading whose text is *content* rather than a written label — a product name, a full sentence, a
+  question. It is capped below Display because its length is not ours to control: the same rule at
+  Display size turned a 62-character section heading into four lines and a quarter of the viewport.
+  Pair it with a measure of 24–28ch so it breaks at two lines, never four.
 - **Headline** (700, `clamp(1.35rem, 3vw, 1.75rem)`, 1.2): major section openings inside a page.
 - **Title** (500, 1.25rem, 1.6): card, tool, and dialog titles. Matches Vuetify `text-h6`.
 - **Body** (400, 1rem, 1.5): reading text; prose stays within 65–75ch.

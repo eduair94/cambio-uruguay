@@ -146,7 +146,8 @@ useHead(() => ({
 
 .prices-close h2 {
   margin: 5px 0 0;
-  font-size: clamp(1.55rem, 4.4vw, 2.5rem);
+  max-width: 26ch;
+  font-size: clamp(1.5rem, 3vw, 2.125rem);
   font-weight: 300;
   line-height: 1.14;
   letter-spacing: -0.02em;

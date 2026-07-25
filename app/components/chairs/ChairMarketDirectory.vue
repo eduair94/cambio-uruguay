@@ -528,12 +528,12 @@ const ratingAria = (product: ChairCatalogCard): string =>
 }
 
 .market-head :is(h1, h2) {
-  font-size: clamp(1.55rem, 4.4vw, 2.5rem);
+  font-size: clamp(1.5rem, 3vw, 2.125rem);
   font-weight: 700;
   line-height: 1.16;
-  letter-spacing: -0.015em;
+  letter-spacing: -0.02em;
   margin: 0;
-  max-width: 27ch;
+  max-width: 26ch;
   text-wrap: balance;
 }
 
