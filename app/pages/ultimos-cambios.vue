@@ -472,11 +472,11 @@ defineOgImageComponent('Cambio', {
 }
 
 .movement-summary__up {
-  color: #247d4d !important;
+  color: rgb(var(--v-theme-success)) !important;
 }
 
 .movement-summary__down {
-  color: #c43c36 !important;
+  color: rgb(var(--v-theme-error)) !important;
 }
 
 .change-card {
@@ -547,7 +547,7 @@ defineOgImageComponent('Cambio', {
 }
 
 .rate-transition {
-  --movement-color: 36, 125, 77;
+  --movement-color: var(--v-theme-success);
   min-height: 84px;
   padding: 12px 14px;
   border: 1px solid rgba(var(--movement-color), 0.24);
@@ -556,7 +556,7 @@ defineOgImageComponent('Cambio', {
 }
 
 .rate-transition--down {
-  --movement-color: 196, 60, 54;
+  --movement-color: var(--v-theme-error);
 }
 
 .rate-transition__heading,
@@ -614,22 +614,6 @@ defineOgImageComponent('Cambio', {
   color: rgb(var(--v-theme-on-surface));
   opacity: 0.52;
   text-decoration: line-through;
-}
-
-:global(.v-theme--dark) .movement-summary__up {
-  color: #56c596 !important;
-}
-
-:global(.v-theme--dark) .movement-summary__down {
-  color: #f08a78 !important;
-}
-
-:global(.v-theme--dark) .rate-transition {
-  --movement-color: 86, 197, 150;
-}
-
-:global(.v-theme--dark) .rate-transition--down {
-  --movement-color: 240, 138, 120;
 }
 
 @media (max-width: 700px) {
