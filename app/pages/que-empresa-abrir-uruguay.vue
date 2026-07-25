@@ -109,11 +109,87 @@
         <VBtn value="exterior">Exterior</VBtn>
         <VBtn value="mixto">Mixto</VBtn>
       </VBtnToggle>
-      <p class="q-hint">
-        El monotributo exige vender <strong>exclusivamente</strong> a consumidores finales. Una
-        clientela mixta no cumple esa exclusividad, aunque la mayoría de tus ventas sean a
-        consumidores.
-      </p>
+      <!--
+        El hint dependía solo del monotributo, que es el único régimen que `clients` movía. Ahora
+        cada respuesta dice qué cambia de verdad, y la de "Exterior" es la que más cambia.
+      -->
+      <p class="q-hint">{{ clientsHint }}</p>
+
+      <!--
+        3 bis — las dos preguntas que decidían el impuesto y la página no hacía. Solo aparecen si
+        vendés servicios: para bienes, ni el art. 12 lit. B num. 1 ap. ii ni el art. 38 lit. K
+        tienen nada que decir.
+      -->
+      <div v-if="sellsServicios" class="soft-block mt-4 pa-4">
+        <div class="q-title q-title--sub mb-2">
+          <VIcon start size="small" color="primary">mdi-code-braces</VIcon>
+          Sobre tu actividad — puede cambiarte de impuesto, no solo de precio
+        </div>
+
+        <VSwitch
+          v-model="actividadSoftware"
+          color="primary"
+          density="comfortable"
+          hide-details
+          data-testid="actividad-software"
+          label="Produzco software o presto servicios vinculados (desarrollo, mantenimiento, testing, implementación, hosting, soporte)"
+        />
+        <p class="q-hint mt-1">
+          Hay dos exoneraciones distintas para software y no alcanzan a los mismos contribuyentes:
+          la de
+          <a
+            href="https://www.impo.com.uy/bases/todgi2023/101-2024/38_T7"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="norm-link"
+            >IRPF (Título 7 art. 38 lit. K)<VIcon size="12">mdi-open-in-new</VIcon></a
+          >
+          exige que el resultado se aproveche <strong>íntegramente en el exterior</strong>; la de
+          <a
+            href="https://www.impo.com.uy/bases/todgi2023/101-2024/66_T4"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="norm-link"
+            >IRAE (Título 4 art. 66 lit. S)<VIcon size="12">mdi-open-in-new</VIcon></a
+          >
+          no mira al cliente sino a que más del 50% de tus gastos directos se incurran en el país, y
+          deja afuera a la unipersonal por texto expreso.
+        </p>
+
+        <VSelect
+          v-model="equipoDeTrabajo"
+          :items="equipoItems"
+          label="¿Quién pone los equipos con los que trabajás?"
+          variant="outlined"
+          density="comfortable"
+          hide-details
+          class="mt-4"
+          data-testid="equipo-de-trabajo"
+        />
+        <p class="q-hint mt-1">
+          Esto no es un detalle: es lo que decide si tu renta es de trabajo (IRPF) o empresarial
+          (IRAE). El
+          <a
+            href="https://www.impo.com.uy/bases/todgi2023/101-2024/12_T4"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="norm-link"
+            >Título 4 art. 12 lit. B num. 1<VIcon size="12">mdi-open-in-new</VIcon></a
+          >
+          dice que “no existe actividad empresarial” cuando la actividad se desarrolla “utilizando
+          exclusivamente bienes de activo fijo <strong>aportados por el prestatario</strong>” — el
+          cliente, no un empleador: si hubiera empleador habría relación de dependencia, que es otra
+          cosa. Para software, DGI lo lee duro: una notebook propia ya alcanza para que haya
+          combinación de capital y trabajo
+          <a
+            href="https://www.impo.com.uy/bases/consultas-tributarias/6703-2025"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="norm-link"
+            >(Consulta 6.703)<VIcon size="12">mdi-open-in-new</VIcon></a
+          >.
+        </p>
+      </div>
 
       <!-- Cuántos son -->
       <div class="q-title mt-5">4 · ¿Cuántos son?</div>
@@ -464,6 +540,26 @@
         <ul v-if="recommended.cost.notes.length" class="notes mt-4">
           <li v-for="(n, i) in recommended.cost.notes" :key="i">{{ n }}</li>
         </ul>
+
+        <!--
+          Las normas detrás de las notas condicionales. `Regime.sources` es estática y no puede
+          cubrir una nota que solo existe para algunas respuestas: una afirmación que aparece
+          según lo que contestaste necesita una cita que aparezca con ella.
+        -->
+        <div v-if="recommended.cost.noteSources.length" class="note-sources mt-3">
+          <span class="text-caption text-medium-emphasis mr-1">Normas citadas arriba:</span>
+          <a
+            v-for="s in recommended.cost.noteSources"
+            :key="s.url"
+            :href="s.url"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="norm-link"
+          >
+            {{ s.label }}
+            <VIcon size="12">mdi-open-in-new</VIcon>
+          </a>
+        </div>
       </template>
 
       <!-- Warnings — siempre, y cada uno con su norma linkeada. -->
@@ -485,6 +581,19 @@
           </a>
         </VAlert>
       </div>
+
+      <!--
+        El disclaimer vivía ~580 líneas más abajo, después de trece secciones: quien lee el
+        veredicto y se va no lo veía nunca. Una advertencia que solo alcanza a quien ya leyó toda
+        la página no advierte a nadie. La de abajo se queda (cierra la página); esta es la que
+        importa, y va pegada al número.
+      -->
+      <p class="verdict-disclaimer mt-5 mb-0">
+        <VIcon size="16" class="mr-1">mdi-information-outline</VIcon>
+        Esto es información general, no asesoramiento contable. El número de arriba sale de normas y
+        tablas oficiales, pero tu caso puede tener detalles que un formulario no ve — y varios de
+        ellos cambian el resultado. Confirmalo con un contador antes de inscribirte.
+      </p>
     </VCard>
 
     <!-- ══ 4. POR QUÉ DESCARTAMOS LAS OTRAS ══ -->
@@ -648,16 +757,21 @@
               >Título 7 art. 38 lit. C</a
             >, reglamentado por el
             <a
-              href="https://www.impo.com.uy/bases/decretos/148-2007"
+              href="https://www.impo.com.uy/bases/decretos/148-2007/34"
               target="_blank"
               rel="noopener noreferrer"
-              >Dto. 148/007</a
+              >Dto. 148/007 art. 34</a
             >, que exonera las utilidades “distribuidas por las sociedades personales cuyos ingresos
             no hayan superado en el ejercicio que dé origen a la distribución el límite establecido
             para liquidar preceptivamente el IRAE en el régimen de contabilidad suficiente” — y ese
-            límite (art. 20-TER del mismo decreto) es justamente
-            {{ uiLabel(FIGURES.topeIraePreceptivoUi.value) }} UI de ingresos del ejercicio anterior,
-            a valores de cierre. Aplica a la SAS porque la
+            límite lo fija el
+            <a
+              href="https://www.impo.com.uy/bases/decretos/150-2007/168"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Dto. 150/007 art. 168 lit. b</a
+            >: {{ uiLabel(FIGURES.topeDividendosExentosUi.value) }} UI de ingresos del ejercicio
+            anterior, a valores de cierre. Aplica a la SAS porque la
             <a
               href="https://www.impo.com.uy/bases/leyes/19820-2019/42"
               target="_blank"
@@ -1165,6 +1279,22 @@ const sociosCount = ref<number | null>(null)
 const sociosActivos = ref<number | null>(null)
 const sociosFamiliares = ref(false)
 
+/**
+ * Los dos datos que decidían el impuesto y la página no preguntaba.
+ *
+ * `equipoDeTrabajo` arranca en `null` — "no nos lo dijiste" — y NO en 'propio': cuál de los dos
+ * lados del art. 12 lit. B num. 1 ap. ii le toca al visitante es exactamente lo que no sabemos, y
+ * el motor prefiere señalar la bifurcación a resolverla por default. Es la misma disciplina que
+ * `sociosActivos` y `administradoresSas`.
+ */
+const actividadSoftware = ref(false)
+const equipoDeTrabajo = ref<NonNullable<WizardInput['equipoDeTrabajo']> | null>(null)
+const equipoItems = [
+  { title: 'No lo sé todavía', value: null },
+  { title: 'Los pongo yo (notebook, licencias, equipos propios)', value: 'propio' },
+  { title: 'Los pone el cliente, exclusivamente', value: 'del-cliente' },
+]
+
 // Ajustes finos.
 const otherCompanyRole = ref(false)
 const cajaProfesional = ref(false)
@@ -1258,6 +1388,30 @@ const administradoresSasInput = computed<number | undefined>(() => {
  * whatever the fine-adjust says to its con-cónyuge variant — instead of leaving the
  * choice inert until the user also opens Ajustes finos.
  */
+/** Las dos preguntas de 3 bis solo tienen sentido para quien presta servicios. */
+const sellsServicios = computed(() => sells.value === 'servicios' || sells.value === 'ambos')
+
+/**
+ * El hint de la pregunta 3, por respuesta.
+ *
+ * Era un párrafo fijo sobre el monotributo, porque el monotributo era lo único que `clients`
+ * movía. Ahora que mueve el IVA de seis regímenes y la exoneración de IRPF, el texto tiene que
+ * decir qué cambia en cada caso — y el de "Exterior" tiene que advertir lo que la gente concluye
+ * de más: que exportar no toca el impuesto a la renta.
+ */
+const clientsHint = computed(() => {
+  switch (clients.value) {
+    case 'exterior':
+      return 'Exportar cambia el IVA, no el impuesto a la renta. Los servicios exportados solo quedan fuera del IVA si encuadran en algún numeral de la lista taxativa del Dto. 220/998 art. 34 (el software está en el numeral 11); los bienes exportados quedan fuera directamente por ley. Pero el IRAE o el IRPF se pagan igual: el Título 4 art. 16 mira dónde desarrollás la actividad, no dónde vive tu cliente. Abajo, en cada régimen, está lo que le cambia a ese régimen en particular.'
+    case 'mixto':
+      return 'Una clientela mixta descarta el monotributo, que exige vender EXCLUSIVAMENTE a consumidores finales — aunque la mayoría de tus ventas sean a consumidores. Si además parte de esa mezcla va al exterior, mirá las notas de IVA de cada régimen: aplican solo a esa parte.'
+    case 'empresas':
+      return 'Vender a empresas descarta el monotributo: el régimen exige vender exclusivamente a consumidores finales, y una empresa que compra para su giro no lo es.'
+    default:
+      return 'El monotributo exige vender exclusivamente a consumidores finales, y es el único régimen que esta respuesta puede descartar. Si algo de lo que vendés va al exterior, cambiá esta respuesta: el tratamiento de IVA es distinto y te lo mostramos régimen por régimen.'
+  }
+})
+
 const effectiveFamily = computed<NonNullable<WizardInput['family']>>(() => {
   if (people.value !== 'conyuge') return family.value
   return family.value === 'con-hijos' || family.value === 'con-conyuge-e-hijos'
@@ -1290,6 +1444,11 @@ const input = computed<WizardInput>(() => {
     localTooBig: localTooBig.value,
     midesEligible: midesEligible.value,
     assetsUyu: assets.value ?? undefined,
+    // Ambas preguntas solo se muestran para servicios, así que para bienes no viajan: mandar un
+    // `actividadSoftware: true` de una sesión anterior junto a `sells: 'bienes'` sería
+    // contrabandear una respuesta que el visitante ya no ve en pantalla.
+    actividadSoftware: sellsServicios.value ? actividadSoftware.value : undefined,
+    equipoDeTrabajo: sellsServicios.value ? (equipoDeTrabajo.value ?? undefined) : undefined,
   }
 })
 
@@ -1365,7 +1524,9 @@ const warningTitle = (w: Warning) =>
     ? 'Cerrojo de salida'
     : w.kind === 'liability'
       ? 'Respondés con tu patrimonio personal'
-      : 'Hay un camino más barato, y no te lo recomendamos'
+      : w.kind === 'exoneracion'
+        ? 'El más barato acá puede ser el más caro en tu caso'
+        : 'Hay un camino más barato, y no te lo recomendamos'
 
 /**
  * The BPS line's value. `null` is NOT zero — that exact `?? 0` is the bug that once told a CJPPU
@@ -1714,7 +1875,7 @@ const unknowns = [
   },
   {
     q: '¿Cuánto aporta de jubilatorio un servicios-personales que esté en Literal E?',
-    a: 'BPS deja esa celda literalmente vacía en la Categoría 1.ª de su tabla de aportación gradual. Podríamos calcularla, pero no la publica y no la inventamos. Por eso presentamos el camino IRPF Cat. II sin gradualidad, que es lo verificado: el descuento de los primeros 3 años (Ley 19.889) es un beneficio del Literal E y del monotributo, y cesa al entrar al régimen general de IVA.',
+    a: 'BPS deja esa celda literalmente vacía en la Categoría 1.ª de su tabla de aportación gradual. Podríamos calcularla, pero no la publica y no la inventamos. Por eso presentamos el camino IRPF Cat. II sin gradualidad, que es lo verificado: el descuento de los primeros 3 años de la Ley 19.889 es un beneficio del LITERAL E, y cesa al entrar al régimen general de IVA. El monotributo tiene una rebaja propia y distinta, la de la Ley 19.942, de dos tramos: 25% el primer año y 50% el segundo.',
   },
   {
     q: '¿Y el FONASA del socio de una sociedad de hecho?',
@@ -1827,6 +1988,17 @@ const sources = computed<SourceEntry[]>(() => {
   add(IRAE_FICTO.source, 'Escala del IRAE ficto (Dto. 150/007 art. 64)', IRAE_FICTO.verifiedAt)
   for (const reg of REGIMES) {
     for (const s of reg.sources) add(s.url, s.label, verifiedAt)
+  }
+  // Las normas de las notas CONDICIONALES del veredicto. `REGIMES[].sources` es estática y no
+  // las conoce: sin esto, la sección "Fuentes" afirmaría cubrir toda la página mientras deja
+  // fuera precisamente las citas que aparecen según lo que el visitante contestó.
+  // La fecha es la de la auditoría de exportación/IVA/software, no la general: fechar estas
+  // normas con `verifiedAt` diría que se verificaron el 13 de julio, que es cuando se verificaron
+  // las otras. `ivaTasaBasica` nació en esa auditoría y lleva su fecha.
+  for (const r of verdict.value.ranked) {
+    for (const s of r.cost?.noteSources ?? []) {
+      add(s.url, s.label, FIGURES.ivaTasaBasica.verifiedAt)
+    }
   }
 
   return [...map.values()].sort((a, b) => a.org.localeCompare(b.org, 'es'))
@@ -2022,6 +2194,29 @@ useHead(() => ({
   margin-inline: 0;
   padding: 8px 4px 14px;
 }
+/* Bloque 3 bis — mismo lenguaje visual que .socios-block: una rama condicional del wizard. */
+.soft-block {
+  border: 1px dashed rgba(var(--v-theme-primary), 0.4);
+  border-radius: 14px;
+  background: rgba(var(--v-theme-primary), 0.04);
+}
+.q-title--sub {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  text-transform: none;
+  letter-spacing: 0.01em;
+  font-size: 0.85rem;
+}
+/* Las normas de las notas condicionales: links, no viñetas — se leen de un vistazo. */
+.note-sources {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(var(--v-border-color), 0.16);
+}
 .fine-panels {
   border: 1px solid rgba(var(--v-border-color), 0.16);
   border-radius: 14px;
@@ -2030,6 +2225,17 @@ useHead(() => ({
 .est-alert {
   font-size: 0.78rem;
   line-height: 1.5;
+}
+
+.verdict-disclaimer {
+  display: flex;
+  align-items: flex-start;
+  gap: 2px;
+  font-size: 0.8rem;
+  line-height: 1.55;
+  opacity: 0.75;
+  padding-top: 12px;
+  border-top: 1px solid rgba(var(--v-border-color), 0.16);
 }
 
 /* ── Veredicto ── */

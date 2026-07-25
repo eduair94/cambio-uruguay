@@ -2197,6 +2197,16 @@ describe('evaluate', () => {
       { eFactura: true, yearsOperating: 3 },
       { fonasaFromJob: true, family: 'con-conyuge-e-hijos' },
       { administradoresSas: 3, otherCompanyRole: true },
+      // The export/software branch. Adding a field to `WizardInput` breaks NO test on its own —
+      // the "for ANY input" invariants below stay green while quietly not covering the new
+      // branch, which is the worst failure mode this file has. So every reachable combination of
+      // the two new answers enters the sweep, including the `undefined` one (the `{}` row above).
+      { actividadSoftware: true },
+      { actividadSoftware: true, equipoDeTrabajo: 'del-cliente' },
+      { actividadSoftware: true, equipoDeTrabajo: 'propio' },
+      { equipoDeTrabajo: 'del-cliente' },
+      { actividadSoftware: true, needsLimitedLiability: true },
+      { actividadSoftware: true, annualRevenueUyu: 2_400_000 },
     ]
     for (const sells of ['bienes', 'servicios', 'ambos'] as const) {
       for (const clients of ['consumidor-final', 'empresas', 'exterior', 'mixto'] as const) {
@@ -2938,5 +2948,293 @@ describe('ROUND-3 IMPORTANT 3 — the SAS administrador note', () => {
     expect(estimateCost('sas', { ...base, administradoresSas: 2 }).notes.join(' ')).toMatch(
       /2 administradores\b/
     )
+  })
+})
+
+// ---------------------------------------------------------------------------------------
+// EXPORTAR — the answer that used to change nothing.
+//
+// A reader reported that picking "Exterior" produced no visible change. It was true, and worse
+// than reported: `input.clients` was read in exactly three places, all inside the `monotributo`
+// branch of `applyGates`, and `estimateCost` never read it at all. For anyone selling servicios
+// the monotributo was ALREADY `excluido` (art. 72 lit. C) before the export line ran, so the
+// answer could not even move a status. Four buttons, one regime, and one of the four
+// ('consumidor-final') appearing nowhere in the code.
+//
+// These tests pin the fix from both sides: the notes must appear for an exporter, and — the half
+// that is easy to forget — must NOT appear for someone who said their clients are local.
+// ---------------------------------------------------------------------------------------
+describe('exportar (clients: exterior)', () => {
+  const dev: WizardInput = {
+    annualRevenueUyu: 2_400_000,
+    sells: 'servicios',
+    clients: 'exterior',
+    people: 'solo',
+    employees: 0,
+    needsLimitedLiability: false,
+    otherCompanyRole: false,
+    yearsOperating: 3,
+    family: 'solo',
+  }
+  const local: WizardInput = { ...dev, clients: 'consumidor-final' }
+
+  // The regimes that actually liquidate IVA. The monotributo (pago único sustitutivo) and the
+  // Literal E (IVA mínimo, no credit) are deliberately NOT here — they get their own, opposite
+  // notes, checked further down.
+  const IVA_REGIMES: RegimeId[] = [
+    'unipersonal-irae',
+    'irpf-servicios',
+    'sociedad-hecho',
+    'srl',
+    'sas',
+    'sa',
+  ]
+
+  it('tells every IVA-liquidating regime that the art. 34 list is TAXATIVE', () => {
+    for (const id of IVA_REGIMES) {
+      const notes = estimateCost(id, dev).notes.join(' ')
+      expect(notes, `${id} must warn the list is taxative`).toMatch(/TAXATIVA/)
+      expect(notes, `${id} must cite the decreto`).toContain('220/998')
+    }
+  })
+
+  it('never shows an export note to someone whose clients are local', () => {
+    for (const id of IVA_REGIMES) {
+      const notes = estimateCost(id, local).notes.join(' ')
+      expect(notes, `${id} must not lecture a local seller about exports`).not.toMatch(/220\/998/)
+      expect(notes, `${id}`).not.toMatch(/exportación de servicios/i)
+    }
+  })
+
+  // The old note said "el IVA es tasa 0%". There is no 0% alícuota: Título 10 art. 18 publishes
+  // 22% and 10%. The operation is NOT GRAVADA (art. 5) with the credit preserved (art. 14) —
+  // a different legal animal, and the difference decides whether the credit is prorated.
+  it('never ASSERTS a "tasa 0%" — it names the phrase only to refute it', () => {
+    // Not a ban on the string: the corrected note QUOTES it in order to say the alícuota does not
+    // exist. What must never come back is the affirmative sentence the page used to ship —
+    // "el IVA es tasa 0% y conservás el crédito" — so that exact claim is what gets pinned.
+    for (const input of [dev, local, { ...dev, clients: 'mixto' as const }]) {
+      for (const id of IVA_REGIMES) {
+        const notes = estimateCost(id, input).notes.join(' ')
+        expect(notes, `${id} asserts a 0% rate`).not.toContain('el IVA es tasa 0%')
+      }
+    }
+    // And where it does name the phrase, it is denying it and saying what the norm does instead.
+    const notes = estimateCost('sas', dev).notes.join(' ')
+    expect(notes).toContain('no es una "tasa 0%"')
+    expect(notes).toContain('NO ESTÁ GRAVADA')
+  })
+
+  it('warns that exporting does NOT move the income tax (Título 4 art. 16)', () => {
+    expect(estimateCost('sas', dev).notes.join(' ')).toMatch(/fuente uruguaya/i)
+  })
+
+  // B1 — this sentence was unconditional, and told to an exporter it is simply false.
+  it('does not tell an exporter they charge their foreign client 22% IVA', () => {
+    const notes = estimateCost('unipersonal-irae', dev).notes.join(' ')
+    expect(notes).toMatch(/EN PLAZA/)
+    expect(notes).not.toMatch(/que cobrás a tus clientes/)
+    expect(estimateCost('unipersonal-irae', local).notes.join(' ')).toMatch(
+      /que cobrás a tus clientes/
+    )
+  })
+
+  it('tells the Literal E exporter the truth: the cuota is owed and the credit is lost', () => {
+    const notes = estimateCost('unipersonal-literal-e', dev).notes.join(' ')
+    expect(notes).toMatch(/no dará derecho a crédito/)
+    expect(estimateCost('unipersonal-literal-e', local).notes.join(' ')).not.toMatch(
+      /no dará derecho a crédito/
+    )
+  })
+
+  it('tells the monotributista that exporting changes nothing for them', () => {
+    const notes = estimateCost('monotributo', { ...dev, sells: 'bienes' }).notes.join(' ')
+    expect(notes).toMatch(/no te cambia nada/i)
+  })
+
+  // Every conditional claim carries a clickable norm — the rule the module already enforces on
+  // GateReason and Warning, reaching the notes layer.
+  it('sources every conditional note it emits, with a primary-domain URL', () => {
+    for (const id of IVA_REGIMES) {
+      const cost = estimateCost(id, dev)
+      expect(cost.noteSources.length, `${id} emits notes with no citations`).toBeGreaterThan(0)
+      for (const s of cost.noteSources) {
+        expect(s.url).toMatch(/^https:\/\//)
+        expect(s.url, `${id}: ${s.label}`).toMatch(
+          /impo\.com\.uy|dgi\.gub\.uy|bps\.gub\.uy|gub\.uy/
+        )
+        expect(s.label.length).toBeGreaterThan(0)
+      }
+      const urls = cost.noteSources.map(s => s.url)
+      expect(new Set(urls).size, `${id} lists a norm twice`).toBe(urls.length)
+    }
+  })
+
+  it('emits no note sources when there is nothing conditional to source', () => {
+    expect(estimateCost('monotributo', { ...local, sells: 'bienes' }).noteSources).toHaveLength(0)
+  })
+})
+
+// ---------------------------------------------------------------------------------------
+// SOFTWARE — the exoneration the page did not know existed (Título 7 art. 38 lit. K), and the
+// trap it walked people into (Título 4 art. 66 lit. S excludes the unipersonal BY TEXT).
+// ---------------------------------------------------------------------------------------
+describe('exoneración de software', () => {
+  const dev: WizardInput = {
+    annualRevenueUyu: 2_400_000,
+    sells: 'servicios',
+    clients: 'exterior',
+    people: 'solo',
+    employees: 0,
+    needsLimitedLiability: false,
+    otherCompanyRole: false,
+    yearsOperating: 3,
+    family: 'solo',
+    actividadSoftware: true,
+  }
+
+  it('refuses to price the IRPF of a possibly-exempt software exporter', () => {
+    const c = estimateCost('irpf-servicios', dev)
+    expect(c.taxMonthly).toBeNull()
+    expect(c.taxUnknown).toBe(true)
+    expect(c.totalMonthly).toBeNull()
+    expect(c.notes.join(' ')).toMatch(/EXONERADA/)
+    expect(c.notes.join(' ')).toMatch(/ÍNTEGRAMENTE EN EL EXTERIOR/)
+  })
+
+  // The exoneration is an IRPF one and its condition is the FOREIGN destination. Neither half is
+  // optional: software sold locally, or non-software sold abroad, both keep their ordinary IRPF.
+  it('does not fire for local software, nor for non-software exports', () => {
+    expect(
+      estimateCost('irpf-servicios', { ...dev, clients: 'consumidor-final' }).taxMonthly
+    ).not.toBeNull()
+    expect(
+      estimateCost('irpf-servicios', { ...dev, actividadSoftware: false }).taxMonthly
+    ).not.toBeNull()
+  })
+
+  it('never recommends a regime it declined to price', () => {
+    const v = evaluate(dev)
+    expect(v.recommended).not.toBe('irpf-servicios')
+  })
+
+  // B2 — the whole point. The ranker lands on unipersonal-irae because it IS the cheapest legal
+  // fully-costed option, and that is exactly the path DGI says loses the IRPF exoneration
+  // without gaining the IRAE one (Consulta 6.614), locked in for three ejercicios (Dto. 150/007
+  // art. 6). Recommending it silently is the defect; recommending it loudly is the fix.
+  it('warns when the cheapest path is the one that throws the exoneration away', () => {
+    const v = evaluate(dev)
+    if (v.recommended === 'unipersonal-irae') {
+      const w = v.warnings.find(x => x.kind === 'exoneracion')
+      expect(w, 'the exoneration trap must be named').toBeDefined()
+      expect(w!.url).toMatch(/^https:\/\/www\.impo\.com\.uy/)
+      expect(w!.text).toMatch(/tres ejercicios/)
+    }
+  })
+
+  it('tells the unipersonal-IRAE it is outside the art. 66 lit. S alcance subjetivo', () => {
+    expect(estimateCost('unipersonal-irae', dev).notes.join(' ')).toMatch(/NO te alcanza/)
+  })
+
+  it('tells the SAS it IS inside it, without pretending to price the benefit', () => {
+    const c = estimateCost('sas', dev)
+    expect(c.notes.join(' ')).toMatch(/SÍ está en el alcance subjetivo/)
+    expect(c.notes.join(' ')).toMatch(/161 bis/)
+    // The number is NOT discounted: the nexus and substance tests are unaskable in a wizard.
+    expect(c.taxMonthly).toBe(estimateCost('sas', { ...dev, actividadSoftware: false }).taxMonthly)
+  })
+
+  it('never claims a sociedad de hecho can use the IRAE exoneration', () => {
+    expect(
+      estimateCost('sociedad-hecho', {
+        ...dev,
+        people: 'socios',
+        sociosCount: 2,
+        sociosActivos: 2,
+      }).notes.join(' ')
+    ).toMatch(/NO alcanza a la sociedad de hecho/)
+  })
+
+  // A3 — the reader's noun. The norm says PRESTATARIO; "empleador" would mean relación de
+  // dependencia, a different regime the page is not about. Getting this wrong in published prose
+  // would send freelancers to look for an employer.
+  it('says prestatario/cliente, never "empleador", when explaining the capital+trabajo test', () => {
+    for (const equipo of [undefined, 'propio', 'del-cliente'] as const) {
+      const notes = estimateCost('irpf-servicios', {
+        ...dev,
+        actividadSoftware: false,
+        equipoDeTrabajo: equipo,
+      }).notes.join(' ')
+      expect(notes).not.toMatch(/aportados por el empleador/i)
+    }
+  })
+
+  // The half a note could not fix. Both empresarial regimes must STOP being recommendable when
+  // the visitor has said the client supplies the equipment, because the norm says there is no
+  // empresa. `dudoso` and not `excluido`: Título 4 art. 14 lets them opt in anyway.
+  it('stops recommending an empresarial regime to someone the norm says is not an empresa', () => {
+    // Revenue kept UNDER the Literal E ceiling on purpose: above it that regime is already
+    // `excluido` for a reason that has nothing to do with this gate, and the test would pass for
+    // the wrong reason.
+    const delCliente: WizardInput = {
+      ...dev,
+      annualRevenueUyu: 1_200_000,
+      equipoDeTrabajo: 'del-cliente',
+    }
+    const gates = applyGates(delCliente)
+    for (const id of ['unipersonal-irae', 'unipersonal-literal-e'] as const) {
+      const g = gates.find(x => x.regime === id)!
+      expect(g.status, `${id} must not stay plainly elegible`).toBe('dudoso')
+      expect(
+        g.reasons.some(r => r.url.includes('12_T4')),
+        `${id} must cite art. 12`
+      ).toBe(true)
+    }
+    expect(evaluate(delCliente).recommended).not.toBe('unipersonal-irae')
+    expect(evaluate(delCliente).recommended).not.toBe('unipersonal-literal-e')
+  })
+
+  // And the mirror: DGI puts a developer on their OWN equipment in the IRAE (Consulta 6.703), so
+  // IRPF Cat. II stops being the safe answer for them.
+  it('flags IRPF Cat. II as grey when a developer works on their own equipment', () => {
+    const propio: WizardInput = { ...dev, equipoDeTrabajo: 'propio' }
+    const g = applyGates(propio).find(x => x.regime === 'irpf-servicios')!
+    expect(g.status).toBe('dudoso')
+    expect(g.reasons.some(r => r.url.includes('6703'))).toBe(true)
+  })
+
+  // The contradiction this pair could produce: offering the IRPF exoneration in the same verdict
+  // that says own equipment puts you in the IRAE.
+  it('does not offer the IRPF exoneration to someone it just placed in the IRAE', () => {
+    const v = evaluate({ ...dev, equipoDeTrabajo: 'propio' })
+    expect(v.warnings.some(w => w.kind === 'exoneracion')).toBe(false)
+    expect(
+      estimateCost('irpf-servicios', { ...dev, equipoDeTrabajo: 'propio' }).taxMonthly
+    ).not.toBeNull()
+  })
+
+  // An unasked question is not a "no": leaving the fork blank must keep the exoneration visible,
+  // which is the whole reason the field is optional.
+  it('keeps the exoneration in play when the fork was never answered', () => {
+    expect(estimateCost('irpf-servicios', dev).taxMonthly).toBeNull()
+  })
+
+  it('surfaces the capital+trabajo fork, and says which side it was told', () => {
+    const sinDato = estimateCost('irpf-servicios', { ...dev, actividadSoftware: false }).notes.join(
+      ' '
+    )
+    expect(sinDato).toMatch(/Falta un dato/)
+    const propio = estimateCost('irpf-servicios', {
+      ...dev,
+      actividadSoftware: false,
+      equipoDeTrabajo: 'propio',
+    }).notes.join(' ')
+    expect(propio).toMatch(/6\.703/)
+    const delCliente = estimateCost('irpf-servicios', {
+      ...dev,
+      actividadSoftware: false,
+      equipoDeTrabajo: 'del-cliente',
+    }).notes.join(' ')
+    expect(delCliente).toMatch(/no hay actividad empresarial/)
   })
 })

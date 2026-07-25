@@ -34,11 +34,19 @@ export interface Figure {
 }
 
 const V = '2026-07-13'
-const fig = (value: number, label: string, source: string): Figure => ({
+/**
+ * The date of the export/IVA/software audit. A SEPARATE constant on purpose: bumping `V` would
+ * have re-dated all 86 pre-existing figures, silently claiming every one of them was
+ * re-verified on this pass. They were not — only the ones stamped with this constant were. A
+ * verification date that travels with a figure it did not verify is the same class of defect as
+ * a citation that does not support its use, which is what this whole module exists to avoid.
+ */
+const V_EXPORT = '2026-07-25'
+const fig = (value: number, label: string, source: string, verifiedAt: string = V): Figure => ({
   value,
   label,
   source,
-  verifiedAt: V,
+  verifiedAt,
 })
 
 /**
@@ -181,6 +189,76 @@ const LEY18083_70 = 'https://www.impo.com.uy/bases/leyes/18083-2006/70'
 const LEY18874_1 = 'https://www.impo.com.uy/bases/leyes/18874-2011/1'
 const LEY16060_1 = 'https://www.impo.com.uy/bases/leyes/16060-1989/1'
 
+// ── EXPORTACIÓN, IVA Y SOFTWARE ───────────────────────────────────────────────────────
+// Added when the page's `clients: 'exterior'` answer stopped being a no-op. Every URL here is
+// T.O. 2023 (Decreto 101/024), which is the ordenamiento the rest of the file already cites.
+//
+// Título 10 art. 5 ("Territorialidad"), verbatim on the point that matters: "...y no lo estarán
+// las exportaciones de bienes. Tampoco estarán gravadas aquellas exportaciones de servicios QUE
+// DETERMINE EL PODER EJECUTIVO." The law does NOT define exportación de servicios — it delegates.
+// That delegation is why the Dto. 220/998 art. 34 list below is TAXATIVE, and why "my client is
+// abroad" is not, on its own, an IVA answer.
+const TITULO10_5 = 'https://www.impo.com.uy/bases/todgi2023/101-2024/5_T10'
+// Título 10 art. 14 — where the exporter's credit actually comes from. It is NOT a "0% rate":
+// there is no 0% alícuota in art. 18 (basic 22%, minimum 10%). The operation is NOT TAXED and the
+// input VAT is still recoverable. Its last inciso is also the one that trims the credit of a
+// servicios-personales provider who does not pay IRAE (no vehicles, no personal-nature goods).
+const TITULO10_14 = 'https://www.impo.com.uy/bases/todgi2023/101-2024/14_T10'
+const TITULO10_34 = 'https://www.impo.com.uy/bases/todgi2023/101-2024/34_T10'
+// Dto. 220/998 art. 34, verbatim opener: "Las operaciones comprendidas en el concepto de
+// exportación de servicios SON:" — followed by numbered items. DGI, Consulta 6.635 (09/02/2024):
+// "Las operaciones de exportación de servicios se encuentran LISTADAS TAXATIVAMENTE en el
+// artículo 34 del Decreto Nº 220/998". Software lives in numeral 11 lits. b), c) y d).
+const DTO220_34 = 'https://www.impo.com.uy/bases/decretos/220-1998/34'
+// Título 4 art. 12 — the article that decides WHICH TAX you are in, and the one the reader's
+// comment was really about. Lit. B num. 1: "Se considera empresa toda unidad productiva que
+// COMBINA CAPITAL Y TRABAJO ... Se entenderá que no existe actividad empresarial cuando: i) El
+// capital no esté activamente dirigido a la obtención de la renta sino a facilitar la actividad
+// personal del titular de los bienes. ii) En el caso de la prestación de servicios, la actividad
+// personal se desarrolle utilizando EXCLUSIVAMENTE BIENES DE ACTIVO FIJO APORTADOS POR EL
+// PRESTATARIO." Note the word: PRESTATARIO (the client who receives the service), never
+// "empleador" — an empleador would mean relación de dependencia, a different regime entirely.
+// Lit. A num. 2 is the one that names the SAS (text of Ley 20.446 art. 646, in force 2026-01-01).
+const TITULO4_12 = 'https://www.impo.com.uy/bases/todgi2023/101-2024/12_T4'
+// Título 4 art. 16 — source of income. Uruguay taxes by TERRITORIALITY, and exporting does not
+// move the needle: "las rentas provenientes de actividades desarrolladas ... en la República,
+// CON INDEPENDENCIA DE LA NACIONALIDAD, DOMICILIO O RESIDENCIA de quienes intervengan en las
+// operaciones y del lugar de celebración de los negocios jurídicos". The IVA may go to zero; the
+// income tax does not.
+const TITULO4_16 = 'https://www.impo.com.uy/bases/todgi2023/101-2024/16_T4'
+// Título 4 art. 66 lit. S — the IRAE software exoneration. Its alcance subjetivo is CLOSED:
+// "Estarán incluidas en el alcance subjetivo de la exoneración a que refiere el presente
+// literal, EXCLUSIVAMENTE LAS ENTIDADES COMPRENDIDAS EN EL LITERAL A) DEL ARTÍCULO 12º de este
+// Título, con excepción de las sociedades de hecho y civiles". A unipersonal is not one of them.
+const TITULO4_66S = 'https://www.impo.com.uy/bases/todgi2023/101-2024/66_T4'
+// Título 7 art. 38 lit. K — the IRPF software exoneration, which this page did not know existed.
+// Verbatim: "Las rentas derivadas de investigación y desarrollo en las áreas de biotecnología y
+// bioinformática, y las obtenidas por la actividad de producción de soportes lógicos y de los
+// servicios vinculados a los mismos, que determine el Poder Ejecutivo, SIEMPRE QUE LOS BIENES Y
+// SERVICIOS ORIGINADOS EN LAS ANTEDICHAS ACTIVIDADES SEAN APROVECHADOS ÍNTEGRAMENTE EN EL
+// EXTERIOR."
+const TITULO7_38K = 'https://www.impo.com.uy/bases/todgi2023/101-2024/38_T7'
+// Dto. 148/007 art. 34 lit. K — the IRPF reglamento that lists which software tasks qualify.
+const DTO148_34 = 'https://www.impo.com.uy/bases/decretos/148-2007/34'
+// Dto. 150/007 arts. 161 bis / ter — the IRAE nexus and the formalities. 161 bis ap. ii requires
+// the entity to "emplee a tiempo completo recursos humanos en número acorde a los servicios
+// prestados, calificados y remunerados adecuadamente" AND that gastos y costos directos incurred
+// in the country exceed 50%. 161 ter lit. c) makes the missing constancia fatal for the whole
+// ejercicio. Neither is a thing a wizard can ask about honestly — see `softwareExoneracionNotes`.
+const DTO150_161BIS = 'https://www.impo.com.uy/bases/decretos/150-2007/161_BIS'
+const DTO150_161TER = 'https://www.impo.com.uy/bases/decretos/150-2007/161_TER'
+// Dto. 150/007 art. 6 — the OPTION to liquidate IRAE, and its 3-ejercicio lock-in: "Una vez
+// ejercida la opción, deberá continuarse liquidando este impuesto por al menos tres ejercicios".
+const DTO150_6 = 'https://www.impo.com.uy/bases/decretos/150-2007/6'
+// DGI consultas. NOT norms — Código Tributario art. 74 binds the Administración "con respecto al
+// consultante" only, and the criterio may change going forward. They are cited here the same way
+// the file already cites Consulta 4.761 for the Literal E: as administrative criterion, never as
+// a rule of general application.
+const CONSULTA6614 = 'https://www.impo.com.uy/bases/consultas-tributarias/6614-2023'
+const CONSULTA6703 = 'https://www.impo.com.uy/bases/consultas-tributarias/6703-2025'
+const CONSULTA6356 = 'https://www.impo.com.uy/bases/consultas-tributarias/6356-2021'
+const LEY19942 = 'https://www.impo.com.uy/bases/leyes/19942-2021'
+
 /** Verified 2026 constants. Nothing numeric may live outside this object. */
 export const FIGURES = {
   // --- Índices ---
@@ -217,6 +295,18 @@ export const FIGURES = {
     4_000_000,
     'Rentas anuales por servicios personales por encima de las cuales el IRAE es preceptivo desde el primer mes del ejercicio siguiente (UI, rentas del ejercicio, cotización de cierre)',
     DEC150_7
+  ),
+  // THE THIRD one. Same digits, third unrelated norm — and until this pass the SAS note reused
+  // `topeIraePreceptivoUi` (contabilidad suficiente, Dto. 150/007 art. 168) to talk about the
+  // IRPF EXEMPTION ON DIVIDENDS, which is Título 7 / Dto. 148/007 art. 34. The file had already
+  // split this constant in two for exactly this reason (see the comment above); it just missed
+  // the third use. A number is not a source, and three norms that agree on 4.000.000 UI in 2026
+  // are still three norms.
+  topeDividendosExentosUi: fig(
+    4_000_000,
+    'Ingresos por debajo de los cuales las utilidades distribuidas por sociedades personales y SAS quedan exentas de IRPF (UI)',
+    DTO148_34,
+    V_EXPORT
   ),
   topeLocalM2: fig(
     15,
@@ -454,6 +544,13 @@ export const FIGURES = {
     'Tope: 3,3% de los ingresos del mes con e-factura',
     DGI_EFACTURA_BENEF
   ),
+
+  // --- IVA: las dos tasas que existen ---
+  // Título 10 art. 18 publishes exactly two alícuotas. Neither is zero — which is why the page
+  // must not say "IVA tasa 0%" about an export: the operation is NOT TAXED (art. 5), and that is
+  // a different legal animal from a zero rate (and from an exención, whose credit is prorated).
+  ivaTasaBasica: fig(0.22, 'Tasa básica de IVA', TITULO10_34, V_EXPORT),
+  ivaTasaMinima: fig(0.1, 'Tasa mínima de IVA', TITULO10_34, V_EXPORT),
 
   // --- Sociedades ---
   irae: fig(0.25, 'Tasa de IRAE', 'https://www.impo.com.uy/bases/todgi-2023/4-2024'),
@@ -706,6 +803,234 @@ function nadieEnLaEmpresa(input: WizardInput): boolean {
   return input.people === 'socios' && input.sociosActivos === 0 && input.employees === 0
 }
 
+// =======================================================================================
+// EXPORTAR — the answer that used to change nothing
+// =======================================================================================
+
+/**
+ * Does any part of this visitor's turnover go abroad?
+ *
+ * `'mixto'` counts: it is "part consumidores finales, part empresas", and either part can be
+ * foreign. The notes this gates are all conditional in their own text ("si el servicio encuadra
+ * en…"), so including `'mixto'` shows a true statement to someone it may apply to, whereas
+ * excluding it would hide a true statement from someone it does apply to.
+ */
+function exporta(input: WizardInput): boolean {
+  return input.clients === 'exterior' || input.clients === 'mixto'
+}
+
+/**
+ * A block of notes together with the norms that back them. Every helper below returns one, so a
+ * conditional claim and its citation are produced by the same expression and cannot drift apart —
+ * you cannot add a sentence here without deciding what sources it.
+ */
+interface NoteBlock {
+  notes: string[]
+  sources: Source[]
+}
+
+const EMPTY_NOTES: NoteBlock = { notes: [], sources: [] }
+
+/** `L` entries are `{norm, url}`; a `Source` is `{label, url}`. Same fact, two shapes. */
+const src = (l: { norm: string; url: string }): Source => ({ label: l.norm, url: l.url })
+
+/** Sells services (pure or mixed) — the side of `sells` the export rules mostly turn on. */
+function vendeServicios(input: WizardInput): boolean {
+  return input.sells === 'servicios' || input.sells === 'ambos'
+}
+
+/**
+ * A solo software exporter whose IRPF may be exonerated by Título 7 art. 38 lit. K.
+ *
+ * `people === 'solo'` is deliberate and not a simplification: the lit. K exoneration is an IRPF
+ * one, and IRPF Cat. II is the tax of a PERSONA FÍSICA prestando servicios personales. A
+ * sociedad is not in that tax at all.
+ */
+function exoneracionIrpfSoftwareEnJuego(input: WizardInput): boolean {
+  return (
+    input.actividadSoftware === true &&
+    input.clients === 'exterior' &&
+    vendeServicios(input) &&
+    input.people === 'solo' &&
+    // `'propio'` closes this door, and not out of caution: DGI's reading of the capital+trabajo
+    // test for THIS rubro (Consulta 6.703) puts a developer working on their own equipment in the
+    // IRAE, and the lit. K exoneration is an IRPF one. Offering it to them would contradict, in
+    // the same verdict, the gate `applyGates` puts on `irpf-servicios` for exactly that answer.
+    // `undefined` keeps it open on purpose: an unasked question is not a "no".
+    input.equipoDeTrabajo !== 'propio'
+  )
+}
+
+/**
+ * THE IVA NOTE, told once and told CONDITIONALLY — the defect this replaces had all three
+ * failure modes at once. The old note (a) lived only in `irpf-servicios`, the one regime among
+ * six; (b) fired unconditionally, so someone who answered "Consumidor final" read about their
+ * exports; and (c) said "el IVA es tasa 0%", which is not what the norm does.
+ *
+ * The three legal points it now makes, none of which the page made before:
+ *   1. The list is TAXATIVE. Título 10 art. 5 does not define exportación de servicios — it
+ *      delegates ("aquellas exportaciones de servicios QUE DETERMINE EL PODER EJECUTIVO"), and
+ *      Dto. 220/998 art. 34 opens "Las operaciones comprendidas en el concepto de exportación de
+ *      servicios SON:". DGI, Consulta 6.635: "listadas taxativamente". Outside the list you pay
+ *      IVA even with a foreign client. "Mi cliente está afuera" is not an IVA answer.
+ *   2. It is NOT a 0% rate. Art. 18 publishes two alícuotas, 22% and 10%; neither is zero. The
+ *      operation is NOT TAXED (art. 5) and the input credit survives (art. 14) — which is also
+ *      why it is not an EXENCIÓN, whose credit art. 14 makes you prorate.
+ *   3. Exporting does not move the income tax. Título 4 art. 16 fixes fuente uruguaya by where
+ *      the activity is performed, "con independencia de la nacionalidad, domicilio o residencia
+ *      de quienes intervengan". A reader who learns their IVA went to zero must not conclude
+ *      their IRAE/IRPF did too.
+ *
+ * `bienes` gets its own sentence because the norm does: exports of GOODS are excluded by art. 5
+ * itself, with no Poder Ejecutivo list in between.
+ */
+function ivaExportacionNotes(input: WizardInput): NoteBlock {
+  if (!exporta(input)) return EMPTY_NOTES
+  const out: string[] = []
+  const srcs: Source[] = []
+  const mixto = input.clients === 'mixto'
+  const prefijo = mixto ? 'Por la parte que vendas al exterior: ' : ''
+
+  if (input.sells === 'bienes' || input.sells === 'ambos') {
+    srcs.push(src(L.titulo10_5))
+    out.push(
+      `${prefijo}la exportación de BIENES no está gravada por IVA directamente por la ley (Título 10 art. 5: "no lo estarán las exportaciones de bienes"), sin necesidad de que ningún decreto la habilite, y conservás el crédito del IVA de tus compras.`
+    )
+  }
+  if (vendeServicios(input)) {
+    srcs.push(src(L.titulo10_5), src(L.dto220_34), src(L.titulo10_14))
+    out.push(
+      `${prefijo}con los SERVICIOS no alcanza con que el cliente esté afuera. La ley no define "exportación de servicios": delega en el Poder Ejecutivo (Título 10 art. 5, "aquellas exportaciones de servicios que determine el Poder Ejecutivo"), y el Dto. 220/998 art. 34 abre con "Las operaciones comprendidas en el concepto de exportación de servicios SON:" — una lista TAXATIVA (así la llama DGI en la Consulta 6.635). El software está en su numeral 11. Si tu servicio no encuadra en ningún numeral, pagás IVA aunque factures al exterior.`
+    )
+    out.push(
+      `Y no es una "tasa 0%": esa alícuota no existe (el Título 10 publica dos, ${pct(FIGURES.ivaTasaBasica.value)} y ${pct(FIGURES.ivaTasaMinima.value)}). La operación NO ESTÁ GRAVADA por territorialidad (art. 5) y aun así conservás el crédito del IVA de tus compras, que se devuelve o se imputa a otros impuestos y aportes (art. 14). No es lo mismo que una exención, donde el crédito hay que prorratearlo.`
+    )
+  }
+  srcs.push(src(L.titulo4_16))
+  out.push(
+    'Ojo con la conclusión de más: exportar puede llevarte el IVA a cero, pero NO mueve el impuesto a la renta. El Título 4 art. 16 considera de fuente uruguaya las rentas por actividades desarrolladas en la República "con independencia de la nacionalidad, domicilio o residencia de quienes intervengan en las operaciones". Si el trabajo lo hacés desde acá, el IRAE o el IRPF se pagan igual.'
+  )
+  return { notes: out, sources: srcs }
+}
+
+/**
+ * THE IRAE SOFTWARE EXONERATION (Título 4 art. 66 lit. S), told per regime — because the norm
+ * itself is told per regime. Its alcance subjetivo is a closed list, and which side of that list
+ * a visitor is on is decided by the legal form they are asking us about.
+ *
+ * What this deliberately does NOT do is put a number on it. Modelling the exoneration as a
+ * discount would make the SAS flat-cheap and win every comparison above ~USD 95k/año — off three
+ * facts a wizard cannot honestly ask about:
+ *   1. >50% de los gastos y costos directos incurridos en el país (art. 66 lit. S num. 2);
+ *   2. "emplee A TIEMPO COMPLETO recursos humanos en número acorde a los servicios prestados,
+ *      calificados y REMUNERADOS ADECUADAMENTE" (Dto. 150/007 art. 161 bis ap. ii) — which the
+ *      one-administrator-drawing-no-sueldo SAS this page models by default probably fails;
+ *   3. DJ anual y constancia del monto exonerado en TODA la documentación del ejercicio, cuya
+ *      ausencia cuesta la exoneración del ejercicio entero (art. 161 ter lit. c).
+ * So: a note that names the door and its lock, never a total that assumes it is open.
+ */
+function softwareIraeNotes(input: WizardInput, regime: RegimeId): NoteBlock {
+  if (input.actividadSoftware !== true) return EMPTY_NOTES
+
+  // The unipersonal is excluded BY TEXT, and this is the trap the reader's comment walks into:
+  // it is the regime the page recommends to a software exporter from ~USD 40k/año upward.
+  if (regime === 'unipersonal-irae') {
+    return {
+      notes: [
+        'La exoneración de IRAE por software NO te alcanza en esta figura. El Título 4 art. 66 lit. S cierra su alcance subjetivo: quedan incluidas "exclusivamente las entidades comprendidas en el literal A) del artículo 12º de este Título, con excepción de las sociedades de hecho y civiles". Una empresa unipersonal no es ninguna de ellas — DGI lo resolvió en las Consultas 6.082, 6.356 y 6.614. Si tu actividad es software y exportás, mirá lo que dice la ficha del IRPF y la de la SAS antes de elegir esta.',
+      ],
+      sources: [src(L.titulo4_66S), src(L.titulo4_12), src(L.consulta6614), src(L.consulta6356)],
+    }
+  }
+  if (regime === 'sociedad-hecho') {
+    return {
+      notes: [
+        'La exoneración de IRAE por software NO alcanza a la sociedad de hecho: el Título 4 art. 66 lit. S incluye "exclusivamente las entidades comprendidas en el literal A) del artículo 12º de este Título, CON EXCEPCIÓN DE LAS SOCIEDADES DE HECHO Y CIVILES". La excepción es expresa.',
+      ],
+      sources: [src(L.titulo4_66S), src(L.titulo4_12)],
+    }
+  }
+  if (regime === 'sas' || regime === 'srl' || regime === 'sa') {
+    return {
+      notes: [
+        'Esta figura SÍ está en el alcance subjetivo de la exoneración de IRAE por software (Título 4 art. 66 lit. S: "exclusivamente las entidades comprendidas en el literal A) del artículo 12º"; el numeral 2 de ese literal nombra a la SAS desde la Ley 20.446). No la descontamos del número que ves, y no es un olvido: la exoneración depende de tres cosas que no te podemos preguntar sin inventar la respuesta.',
+        'Primera: desde la Ley 19.637 el test ya NO es "aprovechado en el exterior" sino de NEXO — que los gastos y costos directos incurridos en el país superen el 50% del total (art. 66 lit. S num. 2). Es un beneficio a producir en Uruguay, no a vender afuera: un desarrollador con clientes 100% uruguayos puede calificar, y uno que exporta todo pero subcontrata el grueso afuera, no.',
+        'Segunda: el Dto. 150/007 art. 161 bis exige que la entidad "emplee a tiempo completo recursos humanos en número acorde a los servicios prestados, calificados y remunerados adecuadamente". Una sociedad de un solo administrador que no cobra sueldo —que es exactamente el caso que estamos costeando— difícilmente lo cumpla.',
+        'Tercera: hay formalidades con sanción. Declaración jurada ante DGI y constancia del monto exonerado en toda la documentación del ejercicio; sin esa constancia, el art. 161 ter lit. c) dispone que "la totalidad de las rentas generadas en el ejercicio estarán imposibilitadas de acceder a la misma, no pudiendo revertirse dicha situación hasta el ejercicio siguiente". Se pierde el año entero.',
+        'Si las tres se cumplen, el IRAE que ves acá puede caer mucho o a cero, y esta figura pasa a ser la más conveniente por lejos. Es la conversación que hay que tener con un contador, y la única de toda esta página donde el número que mostramos puede estar MUY por encima del real.',
+      ],
+      sources: [
+        src(L.titulo4_66S),
+        src(L.titulo4_12A),
+        src(L.dto150_161bis),
+        src(L.dto150_161ter),
+        src(L.consulta6356),
+      ],
+    }
+  }
+  return EMPTY_NOTES
+}
+
+/**
+ * THE IRPF SOFTWARE EXONERATION (Título 7 art. 38 lit. K) — the one the page did not know
+ * existed, and the one a solo exporting developer is most likely to actually have.
+ *
+ * Returned as notes; the CALLER is what matters: `estimateCost` sets `taxMonthly = null` in this
+ * branch, so the regime becomes `taxUnknown` → not `comparable` → never recommended by price.
+ * That is deliberate and it is the module's existing discipline, not a new one: the exoneration
+ * turns on facts we cannot verify (aprovechamiento ÍNTEGRO en el exterior, encuadre en la lista
+ * del Dto. 148/007 art. 34 lit. K), so the honest output is "we will not price this", exactly as
+ * with `bpsUnknown`. Printing full IRPF Cat. II would keep overcharging a possibly-exempt
+ * taxpayer; printing zero would be inventing the answer in the other direction.
+ */
+function softwareIrpfNotes(input: WizardInput): NoteBlock {
+  if (!exoneracionIrpfSoftwareEnJuego(input)) return EMPTY_NOTES
+  return {
+    sources: [src(L.titulo7_38K), src(L.dto148_34K), src(L.consulta6614)],
+    notes: [
+      'No te ponemos un IRPF acá, y esta vez la razón es buena: tu renta puede estar EXONERADA. El Título 7 art. 38 lit. K exonera "las rentas obtenidas por la actividad de producción de soportes lógicos y de los servicios vinculados a los mismos, que determine el Poder Ejecutivo, siempre que los bienes y servicios originados en las antedichas actividades sean APROVECHADOS ÍNTEGRAMENTE EN EL EXTERIOR". DGI la aplicó a este caso exacto —un desarrollador solo, facturando a una empresa del exterior— en la Consulta 6.614.',
+      'Las tareas cubiertas las lista el Dto. 148/007 art. 34 lit. K: desarrollo, implementación en el cliente, actualización y corrección de versiones, personalización (GAPs), prueba y certificación de calidad, mantenimiento, capacitación y asesoramiento; más servicios vinculados como hosting, call center y BPO. Lo que queda AFUERA es la consultoría genérica no vinculada al software del contratante (Consulta 6.509): si parte de lo que facturás es eso, esa parte paga IRPF.',
+      '"Íntegramente" se lee literal: si el aprovechamiento es parcial en Uruguay, la exoneración no aplica a esa renta. Y la exoneración es del IMPUESTO, no de los aportes: el BPS que ves arriba lo pagás igual.',
+      'Por eso no le ponemos precio ni lo comparamos con los demás regímenes. No es que no sepamos calcular el IRPF: es que puede ser cero y puede ser el total, y la diferencia depende de hechos tuyos que un formulario no puede verificar. Con un contador, este suele ser el camino más barato de toda esta página para un exportador de software.',
+    ],
+  }
+}
+
+/**
+ * The fork the whole reader comment was about, surfaced as a note whenever we know which side of
+ * it the visitor is on — or that we do NOT know, which is the more common and more useful case.
+ *
+ * Título 4 art. 12 lit. B num. 1 ap. ii decides IRPF vs IRAE by an objective fact: who supplies
+ * the bienes de activo fijo. For this rubro DGI reads it hard (Consulta 6.703: los equipos de
+ * computación son "un aspecto determinante"), so an own notebook lands you in the IRAE and the
+ * IRPF exoneration above becomes unreachable.
+ */
+function capitalTrabajoNotes(input: WizardInput): NoteBlock {
+  if (!vendeServicios(input)) return EMPTY_NOTES
+  if (input.equipoDeTrabajo === undefined) {
+    return {
+      sources: [src(L.titulo4_12)],
+      notes: [
+        'Falta un dato que puede cambiarte de impuesto, y no lo adivinamos: quién pone los bienes de activo fijo con los que trabajás. El Título 4 art. 12 lit. B num. 1 dice que "no existe actividad empresarial" cuando "la actividad personal se desarrolle utilizando exclusivamente bienes de activo fijo APORTADOS POR EL PRESTATARIO" (el cliente, no un empleador: si hubiera empleador habría relación de dependencia, que es otra cosa). Sin combinación de capital y trabajo no hay empresa, y sin empresa el impuesto es IRPF, no IRAE.',
+      ],
+    }
+  }
+  if (input.equipoDeTrabajo === 'del-cliente') {
+    return {
+      sources: [src(L.titulo4_12)],
+      notes: [
+        'Nos dijiste que los equipos los pone tu cliente. Eso es exactamente el supuesto del Título 4 art. 12 lit. B num. 1 ap. ii —"utilizando exclusivamente bienes de activo fijo aportados por el prestatario"—, así que no hay combinación de capital y trabajo, no hay actividad empresarial, y tu renta es de TRABAJO: IRPF Cat. II. "Exclusivamente" se lee literal; un equipo propio que uses en serio para el trabajo alcanza para romperlo.',
+      ],
+    }
+  }
+  return {
+    sources: [src(L.titulo4_12), src(L.consulta6703), src(L.consulta6356)],
+    notes: [
+      'Nos dijiste que trabajás con equipos propios. Para el rubro informático eso te empuja al IRAE, no al IRPF: DGI sostiene en la Consulta 6.703 que "para el desarrollo de programas informáticos, la utilización de equipos de computación constituye un aspecto determinante para concluir que existe utilización de capital y trabajo en forma conjunta", salvo que se usen exclusivamente bienes aportados por el prestatario. Mismo criterio en las Consultas 6.082 y 6.356. Una notebook propia alcanza.',
+    ],
+  }
+}
+
 export type RegimeId =
   | 'monotributo-social'
   | 'monotributo'
@@ -824,6 +1149,23 @@ const L = {
     norm: 'DGI/BPS — Inscripción de empresa unipersonal',
     url: UNIP_TRAMITE,
   },
+  // ── Exportación, IVA y software. See the URL block near the top for the verbatim texts. ──
+  titulo10_5: { norm: 'Título 10 art. 5', url: TITULO10_5 },
+  titulo10_14: { norm: 'Título 10 art. 14', url: TITULO10_14 },
+  dto220_34: { norm: 'Dto. 220/998 art. 34', url: DTO220_34 },
+  titulo4_12: { norm: 'Título 4 art. 12 lit. B num. 1', url: TITULO4_12 },
+  titulo4_12A: { norm: 'Título 4 art. 12 lit. A num. 2', url: TITULO4_12 },
+  titulo4_16: { norm: 'Título 4 art. 16', url: TITULO4_16 },
+  titulo4_66S: { norm: 'Título 4 art. 66 lit. S', url: TITULO4_66S },
+  titulo7_38K: { norm: 'Título 7 art. 38 lit. K', url: TITULO7_38K },
+  dto148_34K: { norm: 'Dto. 148/007 art. 34 lit. K', url: DTO148_34 },
+  dto150_161bis: { norm: 'Dto. 150/007 art. 161 bis', url: DTO150_161BIS },
+  dto150_161ter: { norm: 'Dto. 150/007 art. 161 ter', url: DTO150_161TER },
+  dto150_6: { norm: 'Dto. 150/007 art. 6', url: DTO150_6 },
+  consulta6614: { norm: 'Consulta DGI 6.614', url: CONSULTA6614 },
+  consulta6703: { norm: 'Consulta DGI 6.703', url: CONSULTA6703 },
+  consulta6356: { norm: 'Consulta DGI 6.356', url: CONSULTA6356 },
+  ley19942: { norm: 'Ley 19.942', url: LEY19942 },
 } as const
 
 /** What the visitor told the wizard. */
@@ -919,6 +1261,46 @@ export interface WizardInput {
   /** Already covered by FONASA through a salaried job. */
   fonasaFromJob?: boolean
   /**
+   * The activity is producción de soportes lógicos or a servicio vinculado to one — the trigger
+   * of BOTH software exonerations, which live in different taxes and do NOT reach the same
+   * taxpayers:
+   *
+   *   - IRPF (Título 7 art. 38 lit. K): reaches a PERSONA FÍSICA, conditioned on the output
+   *     being "aprovechado ÍNTEGRAMENTE en el exterior". This is the one the page was missing
+   *     entirely, and the one a solo exporting developer most likely qualifies for.
+   *   - IRAE (Título 4 art. 66 lit. S): reaches ONLY "las entidades comprendidas en el literal
+   *     A) del artículo 12º ... con excepción de las sociedades de hecho y civiles" — so a SAS
+   *     yes, a unipersonal NEVER (DGI Consultas 6.082, 6.356, 6.614). Since Ley 19.637 its test
+   *     is no longer "aprovechado en el exterior" at all but a NEXUS one (>50% of gastos y
+   *     costos directos incurred in the country), so it must never be hung off `clients`.
+   *
+   * Which is why this is its own field and not an inference from `clients`: the two exonerations
+   * ask different questions, and only one of them is about where the customer is.
+   */
+  actividadSoftware?: boolean
+  /**
+   * Who supplies the bienes de activo fijo used to perform the service. This is the fact Título 4
+   * art. 12 lit. B num. 1 ap. ii turns on, verbatim: "Se entenderá que no existe actividad
+   * empresarial cuando ... ii) En el caso de la prestación de servicios, la actividad personal se
+   * desarrolle utilizando EXCLUSIVAMENTE BIENES DE ACTIVO FIJO APORTADOS POR EL PRESTATARIO."
+   *
+   * It decides WHICH TAX applies — IRPF Cat. II (no empresa) vs IRAE (empresa) — by an objective
+   * fact rather than by preference, and for this rubro DGI reads it hard: Consulta 6.703
+   * (16/06/2025) holds that "para el desarrollo de programas informáticos, la utilización de
+   * equipos de computación constituye UN ASPECTO DETERMINANTE para concluir que existe
+   * utilización de capital y trabajo en forma conjunta", so an own notebook is enough to land in
+   * the IRAE. Same conclusion in Consultas 6.082 and 6.356.
+   *
+   * `undefined` = never asked, and it stays unasked: the engine surfaces the fork instead of
+   * guessing which side of it the visitor is on. NOT derivable from `assetsUyu`, which measures
+   * an AMOUNT of assets against the monotributo ceiling — the norm's test is TITULARIDAD.
+   *
+   * The word in the norm is PRESTATARIO, the client who receives the service. Never "empleador":
+   * an empleador would mean relación de dependencia (Título 7 art. 42), which is not this page's
+   * subject at all. The reader who reported this had the article right and the noun wrong.
+   */
+  equipoDeTrabajo?: 'propio' | 'del-cliente'
+  /**
    * Holds a university title covered by the CJPPU (contador, abogado, arquitecto,
    * ingeniero, médico…) and exercises it. Their JUBILATORIO goes to the CJPPU, not
    * to BPS, on a scale the CJPPU does not publish openly — so we must NOT show them
@@ -937,6 +1319,18 @@ export interface GateOutcome {
 }
 
 const uyu = (n: number) => `$${Math.round(n).toLocaleString('es-UY')}`
+
+/**
+ * A rate, rendered from its Figure rather than typed into the prose.
+ *
+ * B11 — "22%", "7%" and "30,25%" used to be typed straight into template literals. The AST guard
+ * walks `ts.NumericLiteral` nodes and cannot see a number living inside a string (the file
+ * already documents this blind spot where the 11-BFC claim was removed), so those three were
+ * unsourced figures hiding in plain sight, and one of them (`irpfDividendos`) even had a Figure
+ * sitting unused a few hundred lines away.
+ */
+const pct = (rate: number) =>
+  rate.toLocaleString('es-UY', { style: 'percent', maximumFractionDigits: 1 })
 
 /**
  * The revenue ceiling shared by the monotributo (Ley 18.083 art. 71) and the monotributo
@@ -1194,6 +1588,26 @@ export function applyGates(input: WizardInput): GateOutcome[] {
             )
           }
         }
+        // THE CAPITAL+TRABAJO GATE — the half of the reader's report that a note alone could not
+        // fix. Both of these regimes are EMPRESARIALES: the Literal E is a carve-out of the IRAE
+        // (Título 4 art. 66 lit. E) and `unipersonal-irae` is the IRAE itself. If the visitor has
+        // told us the bienes de activo fijo are supplied exclusively by the client, the norm says
+        // there is no empresa to tax — Título 4 art. 12 lit. B num. 1 ap. ii, verbatim: "Se
+        // entenderá que NO EXISTE ACTIVIDAD EMPRESARIAL cuando ... la actividad personal se
+        // desarrolle utilizando exclusivamente bienes de activo fijo aportados por el
+        // prestatario". Recommending an empresarial regime to someone the norm says is not an
+        // empresa is the same defect as the export note, one layer down.
+        //
+        // `dudoso`, not `excluido`, and the reason is a real norm rather than caution: art. 14 of
+        // Título 4 lets a servicios-personales taxpayer OPT into the IRAE anyway. So the door is
+        // open — it is just not the door we may quietly walk them through. And `dudoso` is never
+        // recommended, which is the outcome the norm deserves.
+        if (servicios && input.equipoDeTrabajo === 'del-cliente') {
+          doubt(
+            'Nos dijiste que los bienes con los que trabajás los aporta exclusivamente tu cliente. El Título 4 art. 12 lit. B num. 1 dice que en ese caso "no existe actividad empresarial" — y este es un régimen empresarial. Podés igual optar por tributar IRAE (Título 4 art. 14), pero es una opción tuya, no tu régimen natural, y te ata por al menos tres ejercicios (Dto. 150/007 art. 6). Tu camino por defecto es el IRPF Cat. II.',
+            L.titulo4_12
+          )
+        }
         break
       }
 
@@ -1219,6 +1633,32 @@ export function applyGates(input: WizardInput): GateOutcome[] {
           doubt(
             `Con esa facturación el IRAE deja de ser opcional. El Dto. 150/007 art. 7 manda comparar las rentas del EJERCICIO por servicios personales con ${tope.toLocaleString('es-UY')} UI (≈ ${uyu(uiToUyuCierre(tope))} a la cotización de cierre), y por encima de ese límite "deberá liquidarse obligatoriamente el impuesto [IRAE] a partir del primer mes del ejercicio siguiente". Este ejercicio todavía liquidás IRPF Cat. II; el siguiente, no — y ahí el IRAE es real (contabilidad suficiente preceptiva), que depende de tus gastos y no podemos estimarte. No te recomendamos un régimen del que la ley te saca en menos de un año: mirá directamente el IRAE.`,
             L.dto150_7
+          )
+        }
+        // The MIRROR of the gate on the two empresarial regimes above. DGI reads the capital+
+        // trabajo test hard for this rubro specifically — Consulta 6.703 (16/06/2025), on a
+        // programming unipersonal: "para el desarrollo de programas informáticos, la utilización
+        // de equipos de computación constituye UN ASPECTO DETERMINANTE para concluir que existe
+        // utilización de capital y trabajo en forma conjunta ... salvo que la actividad se
+        // desarrolle utilizando exclusivamente bienes de activo fijo aportados por el
+        // prestatario", and concludes that with own equipment "las rentas derivadas de su
+        // actividad serán de naturaleza empresarial, quedando comprendidas en el ámbito del
+        // IRAE". So a software developer with their own notebook is in the IRAE by operation of
+        // the norm, not by choice — and telling them "your regime is IRPF Cat. II" would be the
+        // symmetric error to the one above.
+        //
+        // Scoped to software ON PURPOSE. For other services the criterion is softer (ap. i of the
+        // same numeral asks whether the capital merely "facilita la actividad personal"), and DGI
+        // has applied it the other way with own equipment (Consulta 6.396). We only claim the
+        // hard reading where DGI actually made it.
+        if (
+          anyServicios &&
+          input.actividadSoftware === true &&
+          input.equipoDeTrabajo === 'propio'
+        ) {
+          doubt(
+            'Nos dijiste que hacés software con equipos propios, y DGI lee ese caso de forma dura: en la Consulta 6.703 sostiene que "para el desarrollo de programas informáticos, la utilización de equipos de computación constituye un aspecto determinante para concluir que existe utilización de capital y trabajo en forma conjunta", salvo que los bienes los aporte el prestatario — y concluye que entonces las rentas "serán de naturaleza empresarial, quedando comprendidas en el ámbito del IRAE". Con equipos propios, este camino está en tensión con ese criterio: mirá los regímenes empresariales y consultá un contador.',
+            L.consulta6703
           )
         }
         break
@@ -1296,8 +1736,12 @@ export const REGIMES: readonly Regime[] = Object.freeze([
   {
     id: 'monotributo',
     name: 'Monotributo',
+    // B10 — el `short` decía "que venden a consumidor final" como si el gate excluyera al
+    // exportador. No lo hace, y a propósito: el art. 71 lit. D no dice nada sobre dónde vive el
+    // comprador, así que ahí emitimos `dudoso`, no `out()`. Un `short` que afirma lo que el gate
+    // deliberadamente no afirma le enseña al lector una regla que la página no aplica.
     short:
-      'Un pago único que sustituye impuestos y aportes. Solo unipersonales y sociedades de hecho que venden a consumidor final.',
+      'Un pago único que sustituye impuestos y aportes. Solo unipersonales y sociedades de hecho, y solo si vendés exclusivamente a consumidores finales.',
     liability: 'ilimitada',
     lockout: {
       years: 3,
@@ -1330,8 +1774,13 @@ export const REGIMES: readonly Regime[] = Object.freeze([
   {
     id: 'irpf-servicios',
     name: 'Servicios personales — IRPF Cat. II',
+    // B3 — el `short` cerraba con "e IVA con exportación a tasa 0%": una afirmación condicional
+    // (solo vale si exportás) y además incorrecta (no existe la alícuota 0%; la operación no está
+    // gravada, Título 10 art. 5). Un `short` se muestra SIEMPRE, así que no puede llevar una
+    // cláusula que solo vale para algunos. Lo que le corresponde a cada quien lo dicen ahora las
+    // notas, condicionadas por `clients`.
     short:
-      'El camino del profesional independiente: IRPF progresivo con mínimo no imponible, 30% de gastos fictos, e IVA con exportación a tasa 0%.',
+      'El camino del profesional independiente: IRPF progresivo, con mínimo no imponible y un ficto de gastos del 30%, más IVA en régimen general.',
     liability: 'ilimitada',
     sources: [
       { label: 'BPS — Escalas de IRPF 2026', url: IRPF_ESCALA },
@@ -1341,10 +1790,18 @@ export const REGIMES: readonly Regime[] = Object.freeze([
   {
     id: 'unipersonal-irae',
     name: 'Unipersonal — IRAE',
+    // B10 — decía "Cuando superás el tope de Literal E", que describe el caso típico y no el
+    // gate: este régimen no tiene piso ninguno, y un visitante de $300.000 al año lo recibe como
+    // `elegible`. El `short` lo daba por excluido y el motor no.
     short:
-      'Cuando superás el tope de Literal E: IRAE al 25% (ficto o real) más IVA en régimen general.',
+      'La unipersonal en el régimen general: IRAE (ficto o real) más IVA. No tiene piso — podés estar acá facturando poco —, pero es a donde caés sí o sí al pasar el tope del Literal E.',
     liability: 'ilimitada',
-    sources: [{ label: 'Título 4 (IRAE)', url: 'https://www.impo.com.uy/bases/todgi-2023/4-2024' }],
+    sources: [
+      { label: 'Título 4 (IRAE)', url: 'https://www.impo.com.uy/bases/todgi-2023/4-2024' },
+      // La puerta que este régimen cierra para un exportador de software, y la que lo ata.
+      { label: 'Título 4 art. 66 lit. S', url: TITULO4_66S },
+      { label: 'Dto. 150/007 art. 6', url: DTO150_6 },
+    ],
   },
   {
     id: 'sociedad-hecho',
@@ -1448,6 +1905,18 @@ export interface CostBreakdown {
   setupCost: number
   /** Plain-language caveats shown under the number. */
   notes: string[]
+  /**
+   * The norms behind the notes above, as clickable sources — deduplicated by URL, in the order
+   * they were cited.
+   *
+   * `Regime.sources` already lists what a regime rests on in general, but it is STATIC: it cannot
+   * cover a note that only exists for some answers, and the export/IVA/software notes are exactly
+   * that. A claim that appears conditionally needs a citation that appears conditionally with it,
+   * or the reader is asked to take the conditional half on trust while the unconditional half is
+   * sourced. Same rule the module already enforces on `GateReason` and `Warning`, where `norm` and
+   * `url` are REQUIRED fields — this is that rule reaching the last layer that lacked it.
+   */
+  noteSources: readonly Source[]
 }
 
 /** Monthly IRPF Cat. II on an already-net taxable amount, applying the brackets marginally. */
@@ -1938,6 +2407,13 @@ export function estimateCost(
 ): CostBreakdown {
   const monthlyRevenue = input.annualRevenueUyu / 12
   const notes: string[] = []
+  /** Deduped by URL in the return, so a norm cited by two blocks is listed once. */
+  const noteSources: Source[] = []
+  /** Push a `NoteBlock`'s prose and its citations together — they are never separated. */
+  const block = (b: NoteBlock) => {
+    notes.push(...b.notes)
+    noteSources.push(...b.sources)
+  }
   let bpsMonthly: number | null = 0
   let taxMonthly: number | null = 0
   let otherTaxesMonthly = 0
@@ -1997,6 +2473,18 @@ export function estimateCost(
       if (rampPick([true, true], false, input.yearsOperating)) {
         notes.push('Estás en la gradualidad de la Ley 19.942 (25% el primer año, 50% el segundo).')
       }
+      // Exporting changes NOTHING here, and saying so is the point: the pago único sustituye
+      // "todos los impuestos nacionales" (Dto. 199/007 art. 1), así que no hay IVA que llevar a
+      // cero ni crédito que recuperar. A visitor who just learned exports are IVA-free elsewhere
+      // must not carry that conclusion into this card.
+      if (exporta(input)) {
+        block({
+          sources: [src(L.dto199)],
+          notes: [
+            'Exportar no te cambia nada en este régimen, ni para bien ni para mal: el pago único sustituye todos los impuestos nacionales, así que no hay IVA que se te vaya a cero ni crédito de IVA de compras que puedas recuperar. Lo que sí importa es si un comprador del exterior cuenta como consumidor final — mirá los motivos de arriba.',
+          ],
+        })
+      }
       break
     }
 
@@ -2037,6 +2525,36 @@ export function estimateCost(
         `Este es el único régimen con la rebaja de aportes patronales de la Ley 19.889 para empresas nuevas: pagás 25% menos el primer año, 50% menos el segundo y 75% menos el tercero, y desde el CUARTO año pagás el aporte completo (${uyu(FIGURES.bpsUnipersonalPleno.value)}). La rebaja cesa antes si entrás al régimen general de IVA.`
       )
       unipersonalBpsNotes(true)
+      // D8 of the audit — the Literal E is the one regime where exporting makes things WORSE than
+      // the page implies, so the note has to run in the opposite direction to all the others. The
+      // IVA mínimo is owed regardless (Título 10 art. 21 attaches no condition about there being
+      // gravadas operations and carves out no exception for exports), and the input VAT is not
+      // recoverable: Dto. 220/998 art. 106 inc. 2 says these taxpayers "no deberán facturar ni
+      // liquidar" IVA, and art. 21 closes it — "De surgir un excedente... no dará derecho a
+      // crédito". The exporter who picks Literal E pays the cuota and eats the IVA of their
+      // purchases.
+      if (exporta(input)) {
+        block({
+          sources: [
+            {
+              label: 'Dto. 220/998 art. 106',
+              url: 'https://www.impo.com.uy/bases/decretos/220-1998/106',
+            },
+            {
+              label: 'Título 10 art. 21',
+              url: 'https://www.impo.com.uy/bases/todgi2023/101-2024/21_T10',
+            },
+            {
+              label: 'Dto. 150/007 art. 122',
+              url: 'https://www.impo.com.uy/bases/decretos/150-2007/122',
+            },
+          ],
+          notes: [
+            'Para un exportador, este régimen es peor de lo que parece. La cuota de IVA mínimo la pagás igual —no hay excepción por exportar— y, a diferencia de cualquier otro régimen, acá NO recuperás el IVA de tus compras: el Dto. 220/998 art. 106 dice que no liquidás IVA, y el Título 10 art. 21 remata que si surge un excedente "no dará derecho a crédito". Si comprás equipos, servicios o software con IVA, ese IVA es costo tuyo y no vuelve.',
+            `Y exportar tampoco te da aire con el tope: el Dto. 150/007 art. 122 compara contra las ventas brutas del ejercicio sin excluir las exportaciones, y el ${pct(FIGURES.ivaMinimoTopeEfactura.value)} con e-factura se calcula sobre los ingresos del mes, no sobre los ingresos gravados.`,
+          ],
+        })
+      }
       notes.push('Respondés con tu patrimonio personal: la unipersonal no es una persona jurídica.')
       break
     }
@@ -2051,7 +2569,16 @@ export function estimateCost(
       notes.push(...irae.notes)
       if (bpsMonthly === null) cjppuNote(unipersonalCjppuCaveat)
       unipersonalBpsNotes(false)
-      notes.push('Además liquidás IVA en régimen general (22%), que cobrás a tus clientes.')
+      // B1 — this used to be one unconditional sentence: "Además liquidás IVA en régimen general
+      // (22%), que cobrás a tus clientes." Told to an exporter, it is simply false — and it was
+      // told to every exporter, because `estimateCost` never read `input.clients` at all.
+      notes.push(
+        exporta(input)
+          ? `Liquidás IVA en régimen general (${pct(FIGURES.ivaTasaBasica.value)}, o la tasa mínima del ${pct(FIGURES.ivaTasaMinima.value)} según el bien o servicio) sobre lo que vendas EN PLAZA — no sobre lo que exportes.`
+          : `Además liquidás IVA en régimen general (${pct(FIGURES.ivaTasaBasica.value)}, o la tasa mínima del ${pct(FIGURES.ivaTasaMinima.value)} según el bien o servicio), que cobrás a tus clientes.`
+      )
+      block(ivaExportacionNotes(input))
+      block(softwareIraeNotes(input, 'unipersonal-irae'))
       notes.push(
         'La rebaja de aportes patronales para empresas nuevas NO aplica acá: es un beneficio del Literal E y cesa al entrar al régimen general de IVA.'
       )
@@ -2080,6 +2607,14 @@ export function estimateCost(
         notes.push(
           `Ese límite lo mira la norma sobre las rentas del EJERCICIO (no del anterior, a diferencia del tope del art. 168) y lo convierte con la UI de CIERRE de ejercicio (${FIGURES.uiCierre2025.value.toLocaleString('es-UY')}), no con la de hoy. Si estás cerca del límite, tomá la frontera como aproximada: un poco más abajo, este régimen sí tiene un costo estimable.`
         )
+      } else if (exoneracionIrpfSoftwareEnJuego(input)) {
+        // B4 — the exoneration of Título 7 art. 38 lit. K. `null`, not a discount and not a zero:
+        // see `softwareIrpfNotes` for why the module refuses to price this branch rather than
+        // guessing which way it resolves. The effect is the one the norm deserves — the regime
+        // stops being `comparable`, so the page neither overcharges a possibly-exempt taxpayer
+        // nor recommends by a price it cannot stand behind.
+        taxMonthly = null
+        block(softwareIrpfNotes(input))
       } else {
         const taxable = monthlyRevenue * (1 - FIGURES.irpfFictoGastos.value)
         taxMonthly = irpfCat2Monthly(taxable)
@@ -2107,11 +2642,21 @@ export function estimateCost(
         `Se deduce un ficto de gastos del 30% y hay un mínimo no imponible de ${uyu(FIGURES.irpfMinimoNoImponibleMensual.value)} al mes: por eso al principio suele ganarle al IRAE.`
       )
       notes.push(
-        'La rebaja de aportes para empresas nuevas NO existe en este camino: es un beneficio del Literal E. Pagás el total desde el primer mes.'
+        'La rebaja de aportes para empresas nuevas NO existe en este camino: es un beneficio del Literal E; el monotributo tiene la suya propia (Ley 19.942). Pagás el total desde el primer mes.'
       )
-      notes.push(
-        'Si exportás el servicio y se aprovecha exclusivamente en el exterior, el IVA es tasa 0% y conservás el crédito de IVA de tus compras.'
-      )
+      // B3 — the old note lived HERE and only here, fired unconditionally (a "Consumidor final"
+      // visitor read about their exports), and called it a "tasa 0%". Now it is conditional, it
+      // is in every regime that liquidates IVA, and it says what the norm says.
+      block(ivaExportacionNotes(input))
+      if (exporta(input) && vendeServicios(input)) {
+        block({
+          sources: [src(L.titulo10_14)],
+          notes: [
+            'Un detalle propio de este camino: como tributás IRPF y no IRAE, del crédito de IVA que recuperás quedan afuera el de vehículos y el de mobiliario y gastos de naturaleza personal (Título 10 art. 14, inciso final). El resto lo recuperás igual.',
+          ],
+        })
+      }
+      block(capitalTrabajoNotes(input))
       notes.push(
         `Si facturás menos de ${FIGURES.spFacturacionMinimaAnualBpc.value} BPC al año (${uyu(FIGURES.spFacturacionMinimaAnualBpc.value * FIGURES.bpc.value)}), perdés la cobertura FONASA para el año siguiente.`
       )
@@ -2155,6 +2700,8 @@ export function estimateCost(
         )
       }
       notes.push(...irae.notes)
+      block(ivaExportacionNotes(input))
+      block(softwareIraeNotes(input, 'sociedad-hecho'))
       notes.push(
         'Responsabilidad SOLIDARIA e ILIMITADA: un acreedor puede ir por el 100% de la deuda contra el socio que tenga bienes, sin importar el % pactado.'
       )
@@ -2196,6 +2743,8 @@ export function estimateCost(
       notes.push(
         'No incluye las publicaciones en el Diario Oficial y en otro diario (a cotización).'
       )
+      block(ivaExportacionNotes(input))
+      block(softwareIraeNotes(input, 'srl'))
       break
     }
 
@@ -2230,9 +2779,20 @@ export function estimateCost(
       notes.push(
         'Un accionista que no administra ni representa NO aporta a BPS por ser accionista: el art. 172 de la Ley 16.713 no alcanza a las sociedades por acciones, y la Ley 19.820 solo llama al administrador.'
       )
+      // B7 — this used to read `FIGURES.topeIraePreceptivoUi`, a Figure labelled and sourced to
+      // Dto. 150/007 art. 168 (contabilidad suficiente preceptiva). The exemption on DIVIDENDS is
+      // a different norm on a different tax (Título 7 / Dto. 148/007 art. 34). Same digits, third
+      // use — and the file had already split this constant once for exactly this reason.
+      // B11 — and the "25%"/"30,25%" were typed into the string, invisible to the AST guard.
+      // The combined load used to be printed as a single derived percentage ("30,25%"). Stating
+      // the two taxes instead says the same thing, is easier to check against the norms, and
+      // needs no two-decimal formatter — which would have meant widening the AST guard's
+      // allowlist by an integer, for prose. The guard is worth more than the sentence.
       notes.push(
-        `Por debajo de ${FIGURES.topeIraePreceptivoUi.value.toLocaleString('es-UY')} UI de ingresos, los dividendos que retirás están EXENTOS de IRPF: la carga total es 25%, no 30,25%.`
+        `Por debajo de ${FIGURES.topeDividendosExentosUi.value.toLocaleString('es-UY')} UI de ingresos, los dividendos que retirás están EXENTOS de IRPF: pagás el ${pct(FIGURES.irae.value)} de IRAE y nada más. Por encima de ese límite, a ese ${pct(FIGURES.irae.value)} se le suma el ${pct(FIGURES.irpfDividendos.value)} de IRPF sobre lo que distribuyas.`
       )
+      block(ivaExportacionNotes(input))
+      block(softwareIraeNotes(input, 'sas'))
       break
     }
 
@@ -2260,13 +2820,20 @@ export function estimateCost(
       notes.push(
         `Pagás ICOSA: ${uyu(FIGURES.icosaConstitucion.value)} al constituirla y ${uyu(FIGURES.icosaAnual.value)} todos los años, para siempre. La SAS y la SRL no lo pagan.`
       )
+      // B8 — "es la única figura donde eso pasa" was contradicted twice inside this same file: the
+      // purely capitalist SRL socio (art. 172 charges only those "que desarrollen actividad") and
+      // the SAS accionista who does not administer both contribute nothing either. What IS
+      // distinctive about the SA is structural: art. 172 does not reach sociedades por acciones,
+      // and unlike the SAS there is no Ley 19.820 art. 43 sending its administrators back to it.
       notes.push(
-        'Un director que no cobra sueldo NO aporta a BPS: es la única figura donde eso pasa.'
+        'Un director que no cobra sueldo NO aporta a BPS: el art. 172 de la Ley 16.713 no alcanza a las sociedades por acciones, y a diferencia de la SAS no hay ninguna norma que mande al director a ese artículo (a los administradores de SAS los manda la Ley 19.820 art. 43).'
       )
       notes.push(
-        'Los dividendos pagan 7% de IRPF siempre, sin importar el tamaño. La SAS y la SRL chicas no.'
+        `Los dividendos pagan ${pct(FIGURES.irpfDividendos.value)} de IRPF siempre, sin importar el tamaño. La SAS y la SRL chicas no.`
       )
       notes.push('No incluye escribano ni publicaciones (a cotización).')
+      block(ivaExportacionNotes(input))
+      block(softwareIraeNotes(input, 'sa'))
       break
     }
   }
@@ -2290,6 +2857,11 @@ export function estimateCost(
     knownPartialMonthly,
     setupCost,
     notes,
+    // Deduped by URL, first citation wins — a norm named by two different notes is one link, not
+    // two, and the order is the order the reader met it in.
+    noteSources: Object.freeze(
+      noteSources.filter((s, i) => noteSources.findIndex(o => o.url === s.url) === i)
+    ),
   }
 }
 
@@ -2303,7 +2875,14 @@ export function estimateCost(
  * questions, and the gap between them is made of exactly these three things.
  */
 export interface Warning {
-  kind: 'lockout' | 'liability' | 'grey-zone'
+  /**
+   * `'exoneracion'` is the fourth kind, added with the export work: the recommendation is legal,
+   * completely costed and genuinely the cheapest — and taking it would still throw away a tax
+   * exemption worth more than the difference. None of the other three kinds says that. A
+   * `lockout` is about leaving a regime, a `liability` about what you risk, a `grey-zone` about a
+   * regime we declined to recommend. This one is about the one we DID recommend being a trap.
+   */
+  kind: 'lockout' | 'liability' | 'grey-zone' | 'exoneracion'
   text: string
   /** NIT — required, like `GateReason.norm`/`Lockout.norm`: every construction site below
    * already supplies one, and nothing renders a warning without citing what it is about. */
@@ -2551,7 +3130,15 @@ export function evaluate(
     if (price === undefined || price === null) continue
     priced.push({ r, price })
   }
-  priced.sort((a, b) => a.price - b.price)
+  // B15 — the sort used to be `a.price - b.price` and nothing else, so an exact tie was broken by
+  // whatever order `REGIMES` happened to be declared in: an invisible, arbitrary editorial choice
+  // presented as a recommendation. When two regimes cost the same to the peso, the one that does
+  // NOT put the visitor's house behind the business is the better answer, and it is the only
+  // tie-break this page can defend. `Array.prototype.sort` is stable in every engine we target,
+  // so equal-on-both-keys pairs still keep declaration order — which is fine, because at that
+  // point the two really are interchangeable on everything we model.
+  const limitada = (r: RankedRegime) => (byId.get(r.regime)?.liability === 'limitada' ? 0 : 1)
+  priced.sort((a, b) => a.price - b.price || limitada(a.r) - limitada(b.r))
 
   // RULE 3 — the recommendation is drawn from `elegible` priced regimes ONLY. A `dudoso`
   // regime never enters this pool, however cheap: `priced` is sorted ascending, so the first
@@ -2606,6 +3193,30 @@ export function evaluate(
         text: `Cuidado: estás dentro del ${margen} del tope de este régimen (${uyu(ceiling)} al año). ${regime.lockout.text} El cerrojo es de ${regime.lockout.years} años, y se dispara aunque te vayas por tu propia voluntad. Si esperás crecer, entrar acá para salir en un año puede costarte más caro que arrancar directamente en el régimen siguiente.`,
         norm: regime.lockout.norm,
         url: regime.lockout.url,
+      })
+    }
+
+    // THE EXONERATION TRAP — B2, and the substantive half of the reader's report.
+    //
+    // For a solo software exporter the ranker lands on `unipersonal-irae` from roughly USD
+    // 40k/año upward, because it is genuinely the cheapest fully-costed regime the visitor may
+    // legally use. It is also the ONE path that loses the IRPF exoneration of Título 7 art. 38
+    // lit. K WITHOUT gaining the IRAE one of art. 66 lit. S — DGI, Consulta 6.614, on this exact
+    // question: "En caso de optar por el IRAE, el contribuyente no estará incluido en la
+    // exoneración establecida en el literal S) ... debido a que el beneficio excluye a las
+    // entidades unipersonales". And it is not a cheap mistake to undo: Dto. 150/007 art. 6 —
+    // "Una vez ejercida la opción, deberá continuarse liquidando este impuesto por al menos tres
+    // ejercicios".
+    //
+    // A `Warning`, not an `out()`: the regime is perfectly legal and someone may still want it.
+    // What is not acceptable is recommending it silently.
+    if (regime.id === 'unipersonal-irae' && exoneracionIrpfSoftwareEnJuego(input)) {
+      warnings.push({
+        kind: 'exoneracion',
+        text: 'Este es el régimen más barato de los que podemos costear, y para tu caso es probablemente el peor de todos. Exportás software siendo persona física: tu renta puede estar exonerada de IRPF (Título 7 art. 38 lit. K). Si en cambio te inscribís como unipersonal en el IRAE, perdés esa exoneración y NO ganás la de IRAE por software, porque el art. 66 lit. S incluye "exclusivamente las entidades comprendidas en el literal A) del artículo 12º" y una unipersonal no es una de ellas. DGI lo resolvió en el caso exacto (Consulta 6.614): "En caso de optar por el IRAE, el contribuyente no estará incluido en la exoneración establecida en el literal S)". Y la opción no se deshace al año: el Dto. 150/007 art. 6 obliga a "continuar liquidando este impuesto por al menos tres ejercicios". Antes de elegir esto, mirá la ficha del IRPF y la de la SAS, y consultá a un contador.',
+        norm: L.consulta6614.norm,
+        url: L.consulta6614.url,
+        regime: 'unipersonal-irae',
       })
     }
 
