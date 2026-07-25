@@ -894,6 +894,11 @@ useHead(() => ({
   gap: 6px;
   font-size: 0.85rem;
 }
+@media (min-width: 601px) {
+  .tl-row {
+    align-items: center;
+  }
+}
 @media (max-width: 600px) {
   .tl-row {
     grid-template-columns: 1fr;
