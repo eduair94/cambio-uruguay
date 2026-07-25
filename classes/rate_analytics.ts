@@ -62,6 +62,10 @@ type AnalyticsEvent = AnalyticsState & {
 };
 
 const MONTEVIDEO_TZ = "America/Montevideo";
+// The ledger intentionally stores only real changes. Daily snapshots still
+// verify that a scraper is reporting; bridge one normal snapshot cycle, then
+// return null so an absent provider is shown as a gap instead of a stale line.
+const MAX_VERIFIED_AGE_MS = 36 * 60 * 60 * 1000;
 
 function quoteKey(row: Pick<CambioObj, "code" | "type"> & { origin?: string }): string {
   return `${row.origin}|${row.code.toUpperCase()}|${row.type || ""}`;
@@ -124,25 +128,33 @@ function buildPoints(
   from: Date,
   to: Date,
   interval: RateAnalyticsInterval,
-  initial: AnalyticsState | null,
+  initial: AnalyticsEvent | null,
   events: AnalyticsEvent[]
 ): RateAnalyticsPoint[] {
   const points: RateAnalyticsPoint[] = [];
   let cursor = new Date(from);
   let eventIndex = 0;
-  let state = initial;
+  let state: AnalyticsState | null = initial
+    ? { buy: initial.buy, sell: initial.sell }
+    : null;
+  let lastVerifiedAt = initial?.at ?? null;
 
   while (cursor < to) {
     const end = bucketEnd(cursor, interval, to);
     while (eventIndex < events.length && events[eventIndex]!.at <= end.getTime()) {
       const event = events[eventIndex]!;
       state = { buy: event.buy, sell: event.sell };
+      lastVerifiedAt = event.at;
       eventIndex++;
     }
+    const isVerified =
+      state !== null &&
+      lastVerifiedAt !== null &&
+      end.getTime() - lastVerifiedAt <= MAX_VERIFIED_AGE_MS;
     points.push({
       at: end.toISOString(),
-      buy: state?.buy ?? null,
-      sell: state?.sell ?? null,
+      buy: isVerified ? state!.buy : null,
+      sell: isVerified ? state!.sell : null,
     });
     cursor = end;
   }
@@ -169,12 +181,6 @@ export function buildRateAnalyticsSeries(
           new Date(a.observedAt).getTime() - new Date(b.observedAt).getTime()
       );
 
-    const firstLedgerAt = quoteChanges.length
-      ? new Date(quoteChanges[0]!.observedAt)
-      : null;
-    const firstLedgerDay = firstLedgerAt
-      ? moment.tz(firstLedgerAt, MONTEVIDEO_TZ).startOf("day").valueOf()
-      : Number.POSITIVE_INFINITY;
     const fromMs = query.from.getTime();
     const toMs = query.to.getTime();
     const beforeChange = [...quoteChanges]
@@ -187,27 +193,47 @@ export function buildRateAnalyticsSeries(
       .reverse()
       .find(row => new Date(row.date).getTime() <= fromMs);
 
-    let initial: AnalyticsState | null = null;
+    const priorEvents: AnalyticsEvent[] = [];
     if (beforeChange) {
-      initial = { buy: beforeChange.buy, sell: beforeChange.sell };
-    } else if (firstChangeAfter) {
+      priorEvents.push({
+        at: new Date(beforeChange.observedAt).getTime(),
+        buy: beforeChange.buy,
+        sell: beforeChange.sell,
+      });
+    }
+    if (beforeDaily) {
+      priorEvents.push({
+        at: new Date(beforeDaily.date).getTime(),
+        buy: beforeDaily.buy,
+        sell: beforeDaily.sell,
+      });
+    }
+    if (validRate(current) && new Date(current.date).getTime() <= fromMs) {
+      priorEvents.push({
+        at: new Date(current.date).getTime(),
+        buy: current.buy,
+        sell: current.sell,
+      });
+    }
+
+    const latestPrior = priorEvents.sort((a, b) => b.at - a.at)[0];
+    let initial: AnalyticsEvent | null =
+      latestPrior && fromMs - latestPrior.at <= MAX_VERIFIED_AGE_MS ? latestPrior : null;
+    const firstChangeAfterAt = firstChangeAfter
+      ? new Date(firstChangeAfter.observedAt).getTime()
+      : Number.POSITIVE_INFINITY;
+    if (!initial && firstChangeAfter && firstChangeAfterAt - fromMs <= MAX_VERIFIED_AGE_MS) {
       initial = {
+        at: fromMs,
         buy: firstChangeAfter.previousBuy,
         sell: firstChangeAfter.previousSell,
       };
-    } else if (beforeDaily) {
-      initial = { buy: beforeDaily.buy, sell: beforeDaily.sell };
-    } else if (
-      validRate(current) &&
-      new Date(current.date).getTime() <= fromMs
-    ) {
-      initial = { buy: current.buy, sell: current.sell };
     }
 
     const dailyEvents: AnalyticsEvent[] = quoteDaily
       .filter(row => {
         const at = new Date(row.date).getTime();
-        return at > fromMs && at <= toMs && at < firstLedgerDay;
+        return at > fromMs && at <= toMs;
       })
       .map(row => ({
         at: new Date(row.date).getTime(),

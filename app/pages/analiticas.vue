@@ -278,12 +278,175 @@
             </template>
           </ClientOnly>
         </div>
-        <p
-          v-if="chartMode === 'houses' && analytics.series.length > 12"
-          class="text-caption text-medium-emphasis mt-3 mb-0"
+        <section
+          v-if="chartMode === 'houses'"
+          class="series-reference mt-5"
+          aria-labelledby="series-reference-title"
         >
-          {{ t('rateAnalytics.legendHint') }}
-        </p>
+          <div class="series-reference__heading">
+            <div>
+              <h3 id="series-reference-title" class="text-subtitle-1 font-weight-bold mb-1">
+                {{ t('rateAnalytics.seriesReference') }}
+              </h3>
+              <p class="text-body-2 text-medium-emphasis mb-0">
+                {{ t('rateAnalytics.seriesReferenceHint') }}
+              </p>
+            </div>
+            <div class="series-reference__controls">
+              <VSwitch
+                v-model="hideAnomalies"
+                color="warning"
+                density="compact"
+                hide-details
+                :label="t('rateAnalytics.hideAnomalies')"
+              />
+              <VBtn
+                variant="text"
+                size="small"
+                prepend-icon="mdi-eye-multiple-outline"
+                @click="showAllHouseSeries"
+              >
+                {{ t('rateAnalytics.showAll') }}
+              </VBtn>
+            </div>
+          </div>
+
+          <div
+            v-if="preparedHouseChart.anomalies.length"
+            class="anomaly-report"
+            role="status"
+            aria-live="polite"
+          >
+            <div class="anomaly-report__icon" aria-hidden="true">
+              <VIcon size="20">mdi-chart-bell-curve-cumulative</VIcon>
+            </div>
+            <div>
+              <strong>
+                {{
+                  t('rateAnalytics.anomaliesDetected', {
+                    count: preparedHouseChart.anomalies.length,
+                  })
+                }}
+              </strong>
+              <p class="mb-2">{{ t('rateAnalytics.anomaliesMethod') }}</p>
+              <ul>
+                <li v-for="anomaly in anomalySummary" :key="`${anomaly.origin}-${anomaly.at}`">
+                  <span
+                    class="series-swatch"
+                    :style="{ backgroundColor: houseColor(anomaly.origin) }"
+                    aria-hidden="true"
+                  />
+                  <strong>{{ anomaly.houseName }}</strong>
+                  · {{ formatDateTime(anomaly.at) }} · {{ formatUYU(anomaly.value) }}
+                  →
+                  {{ formatUYU(anomaly.baseline) }}
+                  <span class="text-medium-emphasis">
+                    ({{ formatPct(anomaly.deviationPct) }})
+                  </span>
+                </li>
+                <li v-if="remainingAnomalies">
+                  {{ t('rateAnalytics.moreAnomalies', { count: remainingAnomalies }) }}
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="series-reference__table-wrap">
+            <table class="series-reference__table">
+              <thead>
+                <tr>
+                  <th :aria-label="t('rateAnalytics.color')" />
+                  <th>{{ t('rateAnalytics.house') }}</th>
+                  <th class="text-end series-reference__optional">
+                    {{ t('rateAnalytics.currentValue') }}
+                  </th>
+                  <th class="text-end series-reference__optional">
+                    {{ t('rateAnalytics.dataPoints') }}
+                  </th>
+                  <th class="text-end series-reference__optional">
+                    {{ t('rateAnalytics.missingPoints') }}
+                  </th>
+                  <th class="text-end">{{ t('rateAnalytics.anomalies') }}</th>
+                  <th class="text-end">{{ t('rateAnalytics.seriesActions') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="row in seriesReferenceRows"
+                  :key="row.origin"
+                  :class="{ 'series-reference__row--hidden': !row.visible }"
+                >
+                  <td>
+                    <span
+                      class="series-swatch"
+                      :style="{ backgroundColor: row.color }"
+                      aria-hidden="true"
+                    />
+                  </td>
+                  <td>
+                    <span class="series-reference__house">{{ row.houseName }}</span>
+                    <span v-if="row.type" class="text-caption text-medium-emphasis">
+                      · {{ row.type }}
+                    </span>
+                  </td>
+                  <td class="text-end series-reference__optional">
+                    {{ formatUYU(row.current) }}
+                  </td>
+                  <td class="text-end series-reference__optional">
+                    {{ row.availableCount }}
+                  </td>
+                  <td class="text-end series-reference__optional">
+                    {{ row.gapCount }}
+                  </td>
+                  <td class="text-end">
+                    <VChip
+                      v-if="row.anomalies.length"
+                      color="warning"
+                      variant="tonal"
+                      size="x-small"
+                    >
+                      {{ row.anomalies.length }}
+                    </VChip>
+                    <span v-else>—</span>
+                  </td>
+                  <td class="text-end">
+                    <div class="series-reference__actions">
+                      <VBtn
+                        icon
+                        variant="text"
+                        size="x-small"
+                        :color="row.visible ? 'primary' : undefined"
+                        :aria-label="
+                          t(
+                            row.visible
+                              ? 'rateAnalytics.hideHouseSeries'
+                              : 'rateAnalytics.showHouseSeries',
+                            { house: row.houseName }
+                          )
+                        "
+                        @click="toggleHouseSeries(row.origin)"
+                      >
+                        <VIcon size="18">
+                          {{ row.visible ? 'mdi-eye-outline' : 'mdi-eye-off-outline' }}
+                        </VIcon>
+                      </VBtn>
+                      <VBtn
+                        variant="text"
+                        size="x-small"
+                        :aria-label="
+                          t('rateAnalytics.isolateHouseSeries', { house: row.houseName })
+                        "
+                        @click="isolateHouseSeries(row.origin)"
+                      >
+                        {{ t('rateAnalytics.only') }}
+                      </VBtn>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
       </VCard>
 
       <VCard class="analytics-panel pa-4 pa-md-6 mb-5" variant="flat">
@@ -387,7 +550,12 @@ import { useTheme } from 'vuetify'
 import LineChart from '~/components/charts/LineChart.vue'
 import type { RateAnalyticsInterval, RateAnalyticsResponse } from '~/types/api'
 import { CASAS_REPUTATION } from '~/utils/casasDirectory'
-import { aggregateRateSeries, summarizeAnalyticsHouses } from '~/utils/rateAnalytics'
+import {
+  aggregateRateSeries,
+  cleanRateAnalyticsSeries,
+  prepareRateChartSeries,
+  summarizeAnalyticsHouses,
+} from '~/utils/rateAnalytics'
 
 type InstitutionCategory = 'all' | 'casa' | 'banco' | 'fintech'
 
@@ -446,6 +614,8 @@ const selectedOrigins = ref<string[]>([])
 const uyuBudget = ref(10_000)
 const chartMode = ref<'average' | 'houses'>('average')
 const houseSide = ref<'buy' | 'sell'>('sell')
+const hideAnomalies = ref(true)
+const hiddenHouseOrigins = ref<string[]>([])
 
 const makeQuery = (
   code = 'USD',
@@ -536,6 +706,12 @@ watch([selectedCurrency, selectedCategory, selectedDepartment], () => {
 watch(selectedPeriod, days => {
   if (days > 31) selectedInterval.value = 'day'
 })
+watch(
+  () => (analytics.value?.series ?? []).map(item => item.origin).join('|'),
+  () => {
+    hiddenHouseOrigins.value = []
+  }
+)
 
 const applyFilters = () => {
   const days = selectedPeriod.value
@@ -553,14 +729,21 @@ const resetFilters = () => {
   uyuBudget.value = 10_000
   chartMode.value = 'average'
   houseSide.value = 'sell'
+  hideAnomalies.value = true
+  hiddenHouseOrigins.value = []
   nextTick(() => {
     selectAllForCurrentFilters()
     nextTick(applyFilters)
   })
 }
 
+const effectiveSeries = computed(() =>
+  hideAnomalies.value
+    ? cleanRateAnalyticsSeries(analytics.value?.series ?? [])
+    : (analytics.value?.series ?? [])
+)
 const aggregatePoints = computed(() =>
-  aggregateRateSeries(analytics.value?.series ?? [], Number(uyuBudget.value) || 0)
+  aggregateRateSeries(effectiveSeries.value, Number(uyuBudget.value) || 0)
 )
 const currentAggregate = computed(() => aggregatePoints.value.at(-1))
 const firstSell = computed(
@@ -572,7 +755,7 @@ const periodChange = computed(() => {
   return first && current ? ((current - first) / first) * 100 : 0
 })
 const houseRows = computed(() =>
-  summarizeAnalyticsHouses(analytics.value?.series ?? [], Number(uyuBudget.value) || 0)
+  summarizeAnalyticsHouses(effectiveSeries.value, Number(uyuBudget.value) || 0)
 )
 const displayCurrency = computed(() => analytics.value?.code || selectedCurrency.value)
 
@@ -592,10 +775,48 @@ const labels = computed(() => aggregatePoints.value.map(point => formatLabel(poi
 const dark = computed(() => theme.current.value.dark)
 const axisColor = computed(() => (dark.value ? '#b8c1cc' : '#536170'))
 const gridColor = computed(() => (dark.value ? 'rgba(255,255,255,0.08)' : 'rgba(20,45,70,0.10)'))
-const houseColor = (index: number) => {
-  const hue = (index * 47 + 205) % 360
+const houseColor = (origin: string) => {
+  const hash = [...origin].reduce((value, character) => {
+    return (value * 31 + character.charCodeAt(0)) >>> 0
+  }, 17)
+  const hue = hash % 360
   return `hsl(${hue} 68% ${dark.value ? 62 : 42}%)`
 }
+const preparedHouseChart = computed(() =>
+  prepareRateChartSeries(analytics.value?.series ?? [], houseSide.value, hideAnomalies.value)
+)
+const hiddenHouseSet = computed(() => new Set(hiddenHouseOrigins.value))
+const showAllHouseSeries = () => {
+  hiddenHouseOrigins.value = []
+}
+const toggleHouseSeries = (origin: string) => {
+  hiddenHouseOrigins.value = hiddenHouseSet.value.has(origin)
+    ? hiddenHouseOrigins.value.filter(item => item !== origin)
+    : [...hiddenHouseOrigins.value, origin]
+}
+const isolateHouseSeries = (origin: string) => {
+  hiddenHouseOrigins.value = (analytics.value?.series ?? [])
+    .map(item => item.origin)
+    .filter(item => item !== origin)
+}
+const seriesReferenceRows = computed(() => {
+  const currentByOrigin = new Map(
+    (analytics.value?.series ?? []).map(item => [
+      item.origin,
+      houseSide.value === 'buy' ? item.currentBuy : item.currentSell,
+    ])
+  )
+  return preparedHouseChart.value.series.map(item => ({
+    ...item,
+    color: houseColor(item.origin),
+    current: currentByOrigin.get(item.origin) ?? null,
+    visible: !hiddenHouseSet.value.has(item.origin),
+  }))
+})
+const anomalySummary = computed(() => preparedHouseChart.value.anomalies.slice(0, 4))
+const remainingAnomalies = computed(() =>
+  Math.max(0, preparedHouseChart.value.anomalies.length - anomalySummary.value.length)
+)
 
 const ratesChartData = computed(() => {
   if (chartMode.value === 'average') {
@@ -610,7 +831,7 @@ const ratesChartData = computed(() => {
           tension: 0.2,
           pointRadius: aggregatePoints.value.length > 60 ? 0 : 2,
           pointHoverRadius: 5,
-          spanGaps: true,
+          spanGaps: false,
         },
         {
           label: t('rateAnalytics.avgSell'),
@@ -620,24 +841,41 @@ const ratesChartData = computed(() => {
           tension: 0.2,
           pointRadius: aggregatePoints.value.length > 60 ? 0 : 2,
           pointHoverRadius: 5,
-          spanGaps: true,
+          spanGaps: false,
         },
       ],
     }
   }
   return {
-    labels: labels.value,
-    datasets: (analytics.value?.series ?? []).map((series, index) => ({
-      label: series.houseName,
-      data: series.points.map(point => point[houseSide.value]),
-      borderColor: houseColor(index),
-      backgroundColor: houseColor(index),
-      borderWidth: 1.5,
-      tension: 0.15,
-      pointRadius: 0,
-      pointHoverRadius: 4,
-      spanGaps: true,
-    })),
+    labels: preparedHouseChart.value.labels.map(formatLabel),
+    datasets: preparedHouseChart.value.series.map(series => {
+      const anomalyDates = new Set(series.anomalies.map(anomaly => anomaly.at))
+      const color = houseColor(series.origin)
+      return {
+        origin: series.origin,
+        label: series.houseName,
+        data: series.data,
+        borderColor: color,
+        backgroundColor: color,
+        borderWidth: 1.6,
+        tension: 0.12,
+        pointRadius: preparedHouseChart.value.labels.map(at =>
+          !hideAnomalies.value && anomalyDates.has(at) ? 5 : 0
+        ),
+        pointHoverRadius: 5,
+        pointBackgroundColor: preparedHouseChart.value.labels.map(at =>
+          anomalyDates.has(at) ? '#d64545' : color
+        ),
+        pointBorderColor: preparedHouseChart.value.labels.map(at =>
+          anomalyDates.has(at) ? '#ffffff' : color
+        ),
+        pointBorderWidth: preparedHouseChart.value.labels.map(at =>
+          anomalyDates.has(at) ? 1.5 : 0
+        ),
+        spanGaps: false,
+        hidden: hiddenHouseSet.value.has(series.origin),
+      }
+    }),
   }
 })
 
@@ -645,14 +883,20 @@ const commonChartOptions = computed(() => ({
   responsive: true,
   maintainAspectRatio: false,
   animation: false as const,
-  interaction: { mode: 'index' as const, intersect: false },
+  interaction: {
+    mode: (chartMode.value === 'houses' ? 'nearest' : 'index') as 'nearest' | 'index',
+    intersect: false,
+  },
   plugins: {
     legend: {
-      display: chartMode.value === 'average' || (analytics.value?.series.length ?? 0) <= 12,
+      display: chartMode.value === 'average',
       position: 'top' as const,
       labels: { color: axisColor.value, usePointStyle: true, padding: 14 },
     },
-    tooltip: { mode: 'index' as const, intersect: false },
+    tooltip: {
+      mode: (chartMode.value === 'houses' ? 'nearest' : 'index') as 'nearest' | 'index',
+      intersect: false,
+    },
   },
   scales: {
     x: {
@@ -683,7 +927,7 @@ const powerChartData = computed(() => ({
       tension: 0.2,
       pointRadius: aggregatePoints.value.length > 60 ? 0 : 2,
       pointHoverRadius: 5,
-      spanGaps: true,
+      spanGaps: false,
     },
   ],
 }))
@@ -708,10 +952,15 @@ const powerChartOptions = computed(() => ({
 
 const ratesChartKey = computed(
   () =>
-    `${analytics.value?.asOf}-${chartMode.value}-${houseSide.value}-${dark.value ? 'dark' : 'light'}`
+    `${analytics.value?.asOf}-${chartMode.value}-${houseSide.value}-${
+      hideAnomalies.value ? 'clean' : 'raw'
+    }-${hiddenHouseOrigins.value.slice().sort().join('.')}-${dark.value ? 'dark' : 'light'}`
 )
 const powerChartKey = computed(
-  () => `${analytics.value?.asOf}-${uyuBudget.value}-${dark.value ? 'dark' : 'light'}`
+  () =>
+    `${analytics.value?.asOf}-${uyuBudget.value}-${hideAnomalies.value ? 'clean' : 'raw'}-${
+      dark.value ? 'dark' : 'light'
+    }`
 )
 const chartRangeLabel = computed(() => {
   if (!analytics.value) return ''
@@ -953,6 +1202,143 @@ defineOgImageComponent('Cambio', {
   height: 320px;
 }
 
+.series-reference {
+  padding-top: 20px;
+  border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+.series-reference__heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.series-reference__controls {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.anomaly-report {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  margin-top: 16px;
+  padding: 14px 16px;
+  border: 1px solid rgba(var(--v-theme-warning), 0.36);
+  border-radius: 12px;
+  background: rgba(var(--v-theme-warning), 0.08);
+  color: rgb(var(--v-theme-on-surface));
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.anomaly-report__icon {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 9px;
+  background: rgba(var(--v-theme-warning), 0.16);
+  color: rgb(var(--v-theme-warning));
+}
+
+.anomaly-report p {
+  color: rgba(var(--v-theme-on-surface), 0.68);
+}
+
+.anomaly-report ul {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  padding-inline-start: 18px;
+}
+
+.anomaly-report li {
+  padding-inline-start: 2px;
+}
+
+.series-reference__table-wrap {
+  overflow: auto;
+  max-height: 390px;
+  margin-top: 16px;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-radius: 12px;
+}
+
+.series-reference__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.series-reference__table th,
+.series-reference__table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  text-align: start;
+  white-space: nowrap;
+}
+
+.series-reference__table th {
+  position: sticky;
+  z-index: 1;
+  top: 0;
+  background: rgb(var(--v-theme-surface));
+  color: rgba(var(--v-theme-on-surface), 0.64);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+}
+
+.series-reference__table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.series-reference__table tbody tr {
+  transition:
+    background-color 140ms ease,
+    opacity 140ms ease;
+}
+
+.series-reference__table tbody tr:hover {
+  background: rgba(var(--v-theme-primary), 0.045);
+}
+
+.series-reference__row--hidden {
+  opacity: 0.46;
+}
+
+.series-reference__house {
+  color: rgb(var(--v-theme-on-surface));
+  font-weight: 650;
+}
+
+.series-swatch {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(var(--v-theme-on-surface), 0.24);
+  border-radius: 3px;
+  vertical-align: -1px;
+}
+
+.anomaly-report .series-swatch {
+  margin-inline-end: 6px;
+}
+
+.series-reference__actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+}
+
 .house-link {
   color: rgb(var(--v-theme-primary));
   font-weight: 600;
@@ -1064,6 +1450,34 @@ defineOgImageComponent('Cambio', {
 
   .analytics-chart--power {
     height: 290px;
+  }
+
+  .series-reference__heading {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .series-reference__controls {
+    justify-content: space-between;
+  }
+
+  .series-reference__controls .v-switch {
+    min-width: 0;
+  }
+
+  .anomaly-report {
+    grid-template-columns: 1fr;
+    padding: 13px;
+  }
+
+  .series-reference__table th,
+  .series-reference__table td {
+    padding: 8px 7px;
+  }
+
+  .series-reference__optional {
+    display: none;
   }
 }
 

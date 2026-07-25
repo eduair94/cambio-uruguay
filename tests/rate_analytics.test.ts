@@ -108,4 +108,58 @@ describe("hourly rate analytics", () => {
     expect(result[0]!.points).toHaveLength(3);
     expect(result[0]!.points.every(point => point.sell === 41.1)).toBe(true);
   });
+
+  it("breaks the series when a quote has not been verified for more than 36 hours", () => {
+    const longQuery: RateAnalyticsQuery = {
+      ...query,
+      to: new Date("2026-07-26T00:00:00.000Z"),
+    };
+    const result = buildRateAnalyticsSeries(
+      current,
+      [
+        {
+          ...current[0],
+          date: new Date("2026-07-23T23:00:00.000Z"),
+          buy: 38.9,
+          sell: 41.1,
+        },
+      ],
+      [],
+      longQuery,
+      { brou: "BROU" }
+    );
+
+    expect(result[0]!.points[0]).toMatchObject({ buy: 38.9, sell: 41.1 });
+    expect(result[0]!.points.at(-1)).toMatchObject({ buy: null, sell: null });
+  });
+
+  it("resumes a broken series after a new daily verification", () => {
+    const longQuery: RateAnalyticsQuery = {
+      ...query,
+      to: new Date("2026-07-26T03:00:00.000Z"),
+    };
+    const result = buildRateAnalyticsSeries(
+      current,
+      [
+        {
+          ...current[0],
+          date: new Date("2026-07-23T23:00:00.000Z"),
+          buy: 38.9,
+          sell: 41.1,
+        },
+        {
+          ...current[0],
+          date: new Date("2026-07-26T02:00:00.000Z"),
+          buy: 39.1,
+          sell: 41.2,
+        },
+      ],
+      [],
+      longQuery,
+      { brou: "BROU" }
+    );
+
+    expect(result[0]!.points.some(point => point.sell === null)).toBe(true);
+    expect(result[0]!.points.at(-1)).toMatchObject({ buy: 39.1, sell: 41.2 });
+  });
 });
