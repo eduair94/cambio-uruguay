@@ -391,6 +391,11 @@
                     />
                   </td>
                   <td>
+                    <span
+                      class="series-swatch series-swatch--mobile"
+                      :style="{ backgroundColor: row.color }"
+                      aria-hidden="true"
+                    />
                     <span class="series-reference__house">{{ row.houseName }}</span>
                     <span v-if="row.type" class="text-caption text-medium-emphasis">
                       · {{ row.type }}
@@ -1343,6 +1348,10 @@ defineOgImageComponent('Cambio', {
   margin-inline-end: 6px;
 }
 
+.series-swatch--mobile {
+  display: none;
+}
+
 .series-reference__actions {
   display: inline-flex;
   align-items: center;
@@ -1492,7 +1501,17 @@ defineOgImageComponent('Cambio', {
 
   .series-reference__table th,
   .series-reference__table td {
-    padding: 8px 7px;
+    padding: 8px 5px;
+  }
+
+  .series-reference__table th:first-child,
+  .series-reference__table td:first-child {
+    display: none;
+  }
+
+  .series-swatch--mobile {
+    display: inline-block;
+    margin-inline-end: 7px;
   }
 
   .series-reference__optional {
