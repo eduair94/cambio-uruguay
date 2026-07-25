@@ -1,4 +1,8 @@
 export default defineNuxtConfig({
+  // Keep opt-in validation/CI builds isolated from a running dev server or another staging build.
+  // Normal builds retain Nuxt's default cache directory.
+  ...(process.env.NUXT_BUILD_DIR ? { buildDir: process.env.NUXT_BUILD_DIR } : {}),
+
   // A cached HTML/JS generation otherwise depends on one build-specific JSON
   // file. Replacing that file during a rolling deploy makes Nuxt abort
   // hydration in already-open or CDN-cached pages. Client-side route-rule
