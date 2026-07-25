@@ -1,10 +1,19 @@
 import axios from "axios";
 import fs from "fs";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { resetDolarAhoraCache } from "../classes/cambios/dolarahora";
 import CambioScotiabank, {
   parseScotiabankLoginResponse,
   parseScotiabankRates,
 } from "../classes/cambios/scotiabank";
+
+const DOLAR_AHORA_HTML = `
+  <div class="card">
+    <a href="https://www.scotiabank.com.uy">ScotiaBank</a>
+    <span>Compra</span><span>$</span><span>39,07</span>
+    <span>Venta</span><span>$</span><span>41,27</span>
+  </div>
+`;
 
 const QUOTATION_HTML = `
   <div class="widget-rates">
@@ -45,6 +54,10 @@ const QUOTATION_HTML = `
 
 const originalUser = process.env.SCOTIABANK_LOGIN_USER;
 const originalPassword = process.env.SCOTIABANK_LOGIN_PASSWORD;
+
+beforeEach(() => {
+  resetDolarAhoraCache();
+});
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -219,5 +232,94 @@ describe("CambioScotiabank.get_data", () => {
 
     expect(data).toHaveLength(4);
     expect(postSpy).not.toHaveBeenCalled();
+  });
+
+  it("records the rejection so the next syncs do not lock the account", async () => {
+    vi.spyOn(fs, "existsSync").mockReturnValue(false);
+    const writeSpy = vi
+      .spyOn(fs, "writeFileSync")
+      .mockImplementation(() => undefined);
+    vi.spyOn(axios, "get").mockResolvedValue({
+      status: 200,
+      data: DOLAR_AHORA_HTML,
+      headers: {},
+    } as any);
+    vi.spyOn(axios, "post").mockResolvedValue({
+      status: 400,
+      data: `({"returnCode": "RUB0220", "critical": true})`,
+      headers: {},
+    } as any);
+    process.env.SCOTIABANK_LOGIN_USER = "12345678";
+    process.env.SCOTIABANK_LOGIN_PASSWORD = "wrong-password";
+
+    const data = await new CambioScotiabank("scotiabank").get_data();
+
+    expect(data).toEqual([
+      {
+        code: "USD",
+        type: "TRANSFERENCIA",
+        name: "Dólar online",
+        buy: 39.07,
+        sell: 41.27,
+      },
+    ]);
+    const cached = JSON.parse(String(writeSpy.mock.calls[0][1]));
+    expect(cached.loginRejectionCode).toBe("RUB0220");
+    expect(Date.parse(cached.loginRejectedAt)).toBeLessThanOrEqual(Date.now());
+  });
+
+  it("skips the login while the rejection cooldown is running", async () => {
+    vi.spyOn(fs, "existsSync").mockReturnValue(true);
+    vi.spyOn(fs, "readFileSync").mockReturnValue(
+      JSON.stringify({
+        cookies: {},
+        loginRejectedAt: new Date(Date.now() - 60_000).toISOString(),
+        loginRejectionCode: "RUB0221",
+      })
+    );
+    vi.spyOn(fs, "writeFileSync").mockImplementation(() => undefined);
+    vi.spyOn(axios, "get").mockResolvedValue({
+      status: 200,
+      data: DOLAR_AHORA_HTML,
+      headers: {},
+    } as any);
+    const postSpy = vi.spyOn(axios, "post");
+    process.env.SCOTIABANK_LOGIN_USER = "12345678";
+    process.env.SCOTIABANK_LOGIN_PASSWORD = "wrong-password";
+
+    const data = await new CambioScotiabank("scotiabank").get_data();
+
+    expect(postSpy).not.toHaveBeenCalled();
+    expect(data).toHaveLength(1);
+    expect(data[0]).toMatchObject({ type: "TRANSFERENCIA", buy: 39.07 });
+  });
+
+  it("retries the login once the cooldown window has elapsed", async () => {
+    vi.spyOn(fs, "existsSync").mockReturnValue(true);
+    vi.spyOn(fs, "readFileSync").mockReturnValue(
+      JSON.stringify({
+        cookies: {},
+        loginRejectedAt: new Date(Date.now() - 7 * 60 * 60 * 1000).toISOString(),
+        loginRejectionCode: "RUB0220",
+      })
+    );
+    vi.spyOn(fs, "writeFileSync").mockImplementation(() => undefined);
+    vi.spyOn(axios, "get").mockResolvedValue({
+      status: 200,
+      data: QUOTATION_HTML,
+      headers: {},
+    } as any);
+    const postSpy = vi.spyOn(axios, "post").mockResolvedValue({
+      status: 200,
+      data: `({"returnCode": "NAZ0000", "critical": false})`,
+      headers: { "set-cookie": ["JSESSIONID=fresh; Path=/"] },
+    } as any);
+    process.env.SCOTIABANK_LOGIN_USER = "12345678";
+    process.env.SCOTIABANK_LOGIN_PASSWORD = "test-password";
+
+    const data = await new CambioScotiabank("scotiabank").get_data();
+
+    expect(postSpy).toHaveBeenCalledTimes(1);
+    expect(data).toHaveLength(4);
   });
 });
