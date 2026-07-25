@@ -367,7 +367,14 @@
                     {{ t('rateAnalytics.missingPoints') }}
                   </th>
                   <th class="text-end">{{ t('rateAnalytics.anomalies') }}</th>
-                  <th class="text-end">{{ t('rateAnalytics.seriesActions') }}</th>
+                  <th class="text-end">
+                    <span class="series-reference__actions-label">
+                      {{ t('rateAnalytics.seriesActions') }}
+                    </span>
+                    <VIcon class="series-reference__actions-icon" size="16" aria-hidden="true">
+                      mdi-eye-settings-outline
+                    </VIcon>
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -431,6 +438,7 @@
                         </VIcon>
                       </VBtn>
                       <VBtn
+                        class="series-reference__only"
                         variant="text"
                         size="x-small"
                         :aria-label="
@@ -438,7 +446,10 @@
                         "
                         @click="isolateHouseSeries(row.origin)"
                       >
-                        {{ t('rateAnalytics.only') }}
+                        <VIcon size="17">mdi-crosshairs-gps</VIcon>
+                        <span class="series-reference__only-label">
+                          {{ t('rateAnalytics.only') }}
+                        </span>
                       </VBtn>
                     </div>
                   </td>
@@ -1339,6 +1350,14 @@ defineOgImageComponent('Cambio', {
   gap: 2px;
 }
 
+.series-reference__actions-icon {
+  display: none;
+}
+
+.series-reference__only {
+  gap: 4px;
+}
+
 .house-link {
   color: rgb(var(--v-theme-primary));
   font-weight: 600;
@@ -1478,6 +1497,20 @@ defineOgImageComponent('Cambio', {
 
   .series-reference__optional {
     display: none;
+  }
+
+  .series-reference__actions-label,
+  .series-reference__only-label {
+    display: none;
+  }
+
+  .series-reference__actions-icon {
+    display: inline-flex;
+  }
+
+  .series-reference__only {
+    min-width: 28px !important;
+    padding-inline: 4px !important;
   }
 }
 
