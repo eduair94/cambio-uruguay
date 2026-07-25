@@ -21,7 +21,14 @@ const safely = async (task: () => Promise<ChairSourceResult>): Promise<ChairSour
   }
 };
 
-export async function harvestChairMarket(): Promise<ChairHarvest> {
+/**
+ * fast is the hourly pass: MercadoLibre and the Shopify JSON catalogues only.
+ *
+ * The Fenicio stores are read by opening one product page per chair — around 900 requests
+ * across five small Uruguayan shops. Fine once a day, abusive every hour, so the hourly
+ * refresh leaves them to the daily run and keeps yesterday's store offers until then.
+ */
+export async function harvestChairMarket(fast = false): Promise<ChairHarvest> {
   const listings: ChairListing[] = [];
   const runs: ChairSourceRun[] = [];
 
@@ -42,6 +49,18 @@ export async function harvestChairMarket(): Promise<ChairHarvest> {
   record("facebook", "Facebook Marketplace", "facebook", await safely(harvestFacebookMarketplace));
 
   for (const store of enabledChairStores()) {
+    if (fast && store.adapter !== "shopify") {
+      runs.push({
+        key: store.key,
+        label: store.name,
+        adapter: store.adapter,
+        listings: 0,
+        chairs: 0,
+        ok: true,
+        note: "omitida en el refresco horario; se actualiza en la corrida diaria",
+      });
+      continue;
+    }
     const result = await safely(() =>
       store.adapter === "shopify" ? harvestShopifyStore(store) : harvestFenicioStore(store)
     );

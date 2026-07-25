@@ -3,13 +3,62 @@ import { load } from "cheerio";
 import { CambioObj } from "../../interfaces/Cambio";
 
 const DOLAR_AHORA_CARDS_URL = "https://dolarahora.uy/cards";
+const CACHE_TTL_MS = 60_000;
 
-export type DolarAhoraInstitution = "scotia" | "bbva";
+export type DolarAhoraInstitution =
+  | "brou"
+  | "scotia"
+  | "itau"
+  | "santander"
+  | "bbva"
+  | "prex"
+  | "oca";
 
-const INSTITUTION_HOSTS: Record<DolarAhoraInstitution, string> = {
-  scotia: "scotiabank.com.uy",
-  bbva: "bbva.com.uy",
+type InstitutionProfile = {
+  /** Hostname of the link DólarAhora renders inside the institution card. */
+  host: string;
+  /**
+   * Row shape the fallback publishes. DólarAhora tracks the *online* rate for
+   * the banks (verified against BROU: its card mirrors "Dólar eBROU", not the
+   * pizarra), while OCA and Prex quote a single rate for every channel.
+   */
+  row: Pick<CambioObj, "code" | "type" | "name">;
 };
+
+const INSTITUTIONS: Record<DolarAhoraInstitution, InstitutionProfile> = {
+  brou: {
+    host: "brou.com.uy",
+    row: { code: "USD", type: "EBROU", name: "Dólar eBROU" },
+  },
+  scotia: {
+    host: "scotiabank.com.uy",
+    row: { code: "USD", type: "TRANSFERENCIA", name: "Dólar online" },
+  },
+  itau: {
+    host: "itau.com.uy",
+    row: { code: "USD", type: "TRANSFERENCIA", name: "Dólar online" },
+  },
+  santander: {
+    host: "santander.com.uy",
+    row: { code: "USD", type: "TRANSFERENCIA", name: "Dólar online" },
+  },
+  bbva: {
+    host: "bbva.com.uy",
+    row: { code: "USD", type: "TRANSFERENCIA", name: "Dólar online" },
+  },
+  prex: {
+    host: "prexcard.com",
+    row: { code: "USD", type: "", name: "Dólar" },
+  },
+  oca: {
+    host: "oca.com.uy",
+    row: { code: "USD", type: "", name: "Dólar" },
+  },
+};
+
+export const DOLAR_AHORA_INSTITUTIONS = Object.keys(
+  INSTITUTIONS
+) as DolarAhoraInstitution[];
 
 function parseMoney(value: string): number {
   const compact = value.replace(/[^\d,.-]/g, "");
@@ -34,11 +83,13 @@ export function parseDolarAhoraUsdRate(
   if (!html) return null;
 
   const $ = load(html);
-  const host = INSTITUTION_HOSTS[institution];
+  const profile = INSTITUTIONS[institution];
+  if (!profile) return null;
+
   const anchor = $("a[href]").filter((_, element) => {
     const href = $(element).attr("href") || "";
     try {
-      return new URL(href).hostname.endsWith(host);
+      return new URL(href).hostname.endsWith(profile.host);
     } catch {
       return false;
     }
@@ -60,22 +111,24 @@ export function parseDolarAhoraUsdRate(
     return null;
   }
 
-  return {
-    code: "USD",
-    type: "TRANSFERENCIA",
-    name: "Dólar online",
-    buy,
-    sell,
-  };
+  return { ...profile.row, buy, sell };
 }
 
-export async function fetchDolarAhoraUsdRate(
-  institution: DolarAhoraInstitution
-): Promise<CambioObj | null> {
+type CardsSnapshot = {
+  at: number;
+  rates: Partial<Record<DolarAhoraInstitution, CambioObj>>;
+};
+
+let snapshot: CardsSnapshot | null = null;
+let inFlight: Promise<CardsSnapshot> | null = null;
+
+async function loadCards(): Promise<CardsSnapshot> {
+  const rates: CardsSnapshot["rates"] = {};
+
   try {
     const response = await axios.get(DOLAR_AHORA_CARDS_URL, {
       params: {
-        institutions: institution,
+        institutions: DOLAR_AHORA_INSTITUTIONS.join(","),
         order_field: "buy",
         order_direction: "desc",
       },
@@ -90,14 +143,85 @@ export async function fetchDolarAhoraUsdRate(
       },
       timeout: 20000,
     });
-    return typeof response.data === "string"
-      ? parseDolarAhoraUsdRate(response.data, institution)
-      : null;
+
+    if (typeof response.data === "string") {
+      for (const institution of DOLAR_AHORA_INSTITUTIONS) {
+        const rate = parseDolarAhoraUsdRate(response.data, institution);
+        if (rate) rates[institution] = rate;
+      }
+    }
   } catch (error) {
     console.warn(
-      `DólarAhora: could not fetch ${institution} USD rate`,
+      "DólarAhora: could not fetch the quotation cards",
       (error as Error).message
     );
-    return null;
   }
+
+  // A failed fetch is cached too: several scrapers can fail inside the same
+  // sync run and none of them should re-hammer DólarAhora while it is down.
+  return { at: Date.now(), rates };
+}
+
+async function cards(): Promise<CardsSnapshot> {
+  if (snapshot && Date.now() - snapshot.at < CACHE_TTL_MS) return snapshot;
+  if (inFlight) return inFlight;
+
+  inFlight = loadCards()
+    .then((fresh) => {
+      snapshot = fresh;
+      return fresh;
+    })
+    .finally(() => {
+      inFlight = null;
+    });
+
+  return inFlight;
+}
+
+export function resetDolarAhoraCache(): void {
+  snapshot = null;
+  inFlight = null;
+}
+
+export async function fetchDolarAhoraUsdRate(
+  institution: DolarAhoraInstitution
+): Promise<CambioObj | null> {
+  const { rates } = await cards();
+  return rates[institution] || null;
+}
+
+/**
+ * Runs a casa's own scraper and, when it fails or comes back without a USD
+ * quote, publishes the DólarAhora reading for that institution instead of
+ * leaving the casa without a dollar for the day. Rows the scraper did return
+ * are always kept — the fallback only fills the missing USD slot.
+ */
+export async function withDolarAhoraFallback(
+  institution: DolarAhoraInstitution,
+  label: string,
+  produce: () => Promise<CambioObj[]>
+): Promise<CambioObj[]> {
+  let rows: CambioObj[] = [];
+
+  try {
+    rows = (await produce()) || [];
+  } catch (error) {
+    console.warn(
+      `${label}: own quotation failed; trying DólarAhora`,
+      (error as Error).message
+    );
+  }
+
+  if (rows.some((row) => row.code === "USD")) return rows;
+
+  const fallback = await fetchDolarAhoraUsdRate(institution);
+  if (!fallback) {
+    console.warn(`${label}: DólarAhora has no valid USD quote either`);
+    return rows;
+  }
+
+  console.log(
+    `${label} DólarAhora USD fallback: buy=${fallback.buy}, sell=${fallback.sell}`
+  );
+  return [...rows, fallback];
 }

@@ -8,6 +8,7 @@ import {
   locationSlug,
   reconcileLocationIds,
 } from "../location_sync";
+import { withDolarAhoraFallback } from "./dolarahora";
 
 const OCA_BASE_URL = "https://micuentanuevo.oca.com.uy/trx";
 const OCA_BRANCHES_URL =
@@ -435,35 +436,37 @@ class CambioOca extends Cambio {
   }
 
   async get_data(): Promise<CambioObj[]> {
-    let rate: OcaUsdRate | null = null;
+    return withDolarAhoraFallback("oca", "OCA", async () => {
+      let rate: OcaUsdRate | null = null;
 
-    if (this.loadCachedSession()) {
-      rate = await this.fetchRates();
-      if (rate) this.storeSession();
-    }
+      if (this.loadCachedSession()) {
+        rate = await this.fetchRates();
+        if (rate) this.storeSession();
+      }
 
-    if (!rate) {
-      console.log(
-        "OCA: session missing or expired; authenticating with OCA_LOGIN_*"
-      );
-      rate = await this.loginAndFetchRates();
-    }
+      if (!rate) {
+        console.log(
+          "OCA: session missing or expired; authenticating with OCA_LOGIN_*"
+        );
+        rate = await this.loginAndFetchRates();
+      }
 
-    if (!rate) {
-      console.warn("OCA: skipping USD because no valid quotation was found");
-      return [];
-    }
+      if (!rate) {
+        console.warn("OCA: no valid quotation was found");
+        return [];
+      }
 
-    console.log(`OCA USD rates: buy=${rate.buy}, sell=${rate.sell}`);
-    return [
-      {
-        code: "USD",
-        type: "",
-        name: "Dólar",
-        buy: rate.buy,
-        sell: rate.sell,
-      },
-    ];
+      console.log(`OCA USD rates: buy=${rate.buy}, sell=${rate.sell}`);
+      return [
+        {
+          code: "USD",
+          type: "",
+          name: "Dólar",
+          buy: rate.buy,
+          sell: rate.sell,
+        },
+      ];
+    });
   }
 }
 

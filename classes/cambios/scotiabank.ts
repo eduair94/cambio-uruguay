@@ -4,7 +4,7 @@ import fs from "fs";
 import "dotenv/config";
 import { CambioObj } from "../../interfaces/Cambio";
 import { Cambio } from "../cambio";
-import { fetchDolarAhoraUsdRate } from "./dolarahora";
+import { withDolarAhoraFallback } from "./dolarahora";
 
 const SCOTIABANK_BASE_URL =
   "https://www1.scotiabank.com.uy/scotiaenlinea";
@@ -15,7 +15,17 @@ const SCOTIABANK_RATES_URL =
 
 type ScotiabankSessionCache = {
   cookies: Record<string, string>;
+  /**
+   * When Scotiabank rejected the credentials. The sync runs every 5 minutes
+   * and Scotiabank counts failed logins, so retrying on every run walks the
+   * user's own home-banking account into a lockout. After a rejection the
+   * scraper waits this long before spending another attempt.
+   */
+  loginRejectedAt?: string;
+  loginRejectionCode?: string;
 };
+
+const DEFAULT_LOGIN_RETRY_HOURS = 6;
 
 type ScotiabankLoginResponse = {
   returnCode?: string;
@@ -144,6 +154,8 @@ class CambioScotiabank extends Cambio {
     process.env.SCOTIABANK_SESSION_CACHE_PATH ||
     "scotiabank_session.json";
   private cookies: Record<string, string> = {};
+  private loginRejectedAt: Date | null = null;
+  private loginRejectionCode: string | undefined;
 
   private readonly browserHeaders = {
     Accept:
@@ -184,6 +196,13 @@ class CambioScotiabank extends Cambio {
         return false;
       }
 
+      const rejectedAt = parsed.loginRejectedAt
+        ? new Date(parsed.loginRejectedAt)
+        : null;
+      this.loginRejectedAt =
+        rejectedAt && !Number.isNaN(rejectedAt.getTime()) ? rejectedAt : null;
+      this.loginRejectionCode = parsed.loginRejectionCode;
+
       this.cookies = {};
       for (const [name, value] of Object.entries(parsed.cookies)) {
         if (isScotiabankSessionCookie(name) && typeof value === "string") {
@@ -203,7 +222,15 @@ class CambioScotiabank extends Cambio {
 
   private storeSession() {
     try {
-      const cache: ScotiabankSessionCache = { cookies: this.cookies };
+      const cache: ScotiabankSessionCache = {
+        cookies: this.cookies,
+        ...(this.loginRejectedAt
+          ? {
+              loginRejectedAt: this.loginRejectedAt.toISOString(),
+              loginRejectionCode: this.loginRejectionCode,
+            }
+          : {}),
+      };
       fs.writeFileSync(this.sessionCachePath, JSON.stringify(cache), {
         encoding: "utf8",
         mode: 0o600,
@@ -214,6 +241,38 @@ class CambioScotiabank extends Cambio {
         (error as Error).message
       );
     }
+  }
+
+  private loginRetryDelayMs(): number {
+    const configured = Number(process.env.SCOTIABANK_LOGIN_RETRY_HOURS);
+    const hours =
+      Number.isFinite(configured) && configured > 0
+        ? configured
+        : DEFAULT_LOGIN_RETRY_HOURS;
+    return hours * 60 * 60 * 1000;
+  }
+
+  private loginAttemptIsOnCooldown(): boolean {
+    if (!this.loginRejectedAt) return false;
+
+    const elapsed = Date.now() - this.loginRejectedAt.getTime();
+    if (elapsed >= this.loginRetryDelayMs()) return false;
+
+    const minutesLeft = Math.ceil(
+      (this.loginRetryDelayMs() - elapsed) / 60000
+    );
+    console.warn(
+      `Scotiabank: skipping login for ${minutesLeft} more minutes; the last ` +
+        `attempt was rejected (${this.loginRejectionCode || "unknown"}) and ` +
+        "retrying every sync would lock the account"
+    );
+    return true;
+  }
+
+  private recordLoginRejection(returnCode: string) {
+    this.loginRejectedAt = new Date();
+    this.loginRejectionCode = returnCode;
+    this.storeSession();
   }
 
   private async fetchRates(): Promise<CambioObj[] | null> {
@@ -314,11 +373,16 @@ class CambioScotiabank extends Cambio {
         console.warn(
           `Scotiabank: login failed with HTTP ${login.status} (${returnCode})`
         );
+        this.recordLoginRejection(returnCode);
         return null;
       }
 
       const rates = await this.fetchRates();
-      if (rates) this.storeSession();
+      if (rates) {
+        this.loginRejectedAt = null;
+        this.loginRejectionCode = undefined;
+        this.storeSession();
+      }
       return rates;
     } catch (error) {
       console.warn(
@@ -330,41 +394,35 @@ class CambioScotiabank extends Cambio {
   }
 
   async get_data(): Promise<CambioObj[]> {
-    let rates: CambioObj[] | null = null;
+    return withDolarAhoraFallback("scotia", "Scotiabank", async () => {
+      let rates: CambioObj[] | null = null;
 
-    if (this.loadCachedSession()) {
-      rates = await this.fetchRates();
-      if (rates) this.storeSession();
-    }
-
-    if (!rates) {
-      console.log(
-        "Scotiabank: session missing or expired; authenticating with " +
-          "SCOTIABANK_LOGIN_*"
-      );
-      rates = await this.loginAndFetchRates();
-    }
-
-    if (!rates) {
-      console.warn("Scotiabank: authenticated quote unavailable; trying DólarAhora");
-      const fallback = await fetchDolarAhoraUsdRate("scotia");
-      if (fallback) {
-        console.log(
-          `Scotiabank online USD fallback: buy=${fallback.buy}, sell=${fallback.sell}`
-        );
-        return [fallback];
+      if (this.loadCachedSession()) {
+        rates = await this.fetchRates();
+        if (rates) this.storeSession();
       }
-      console.warn("Scotiabank: skipping rates because no valid quotation was found");
-      return [];
-    }
 
-    const retailUsd = rates.find(
-      (rate) => rate.code === "USD" && rate.type === ""
-    );
-    console.log(
-      `Scotiabank USD rates: buy=${retailUsd?.buy}, sell=${retailUsd?.sell}`
-    );
-    return rates;
+      if (!rates && !this.loginAttemptIsOnCooldown()) {
+        console.log(
+          "Scotiabank: session missing or expired; authenticating with " +
+            "SCOTIABANK_LOGIN_*"
+        );
+        rates = await this.loginAndFetchRates();
+      }
+
+      if (!rates) {
+        console.warn("Scotiabank: authenticated quote unavailable");
+        return [];
+      }
+
+      const retailUsd = rates.find(
+        (rate) => rate.code === "USD" && rate.type === ""
+      );
+      console.log(
+        `Scotiabank USD rates: buy=${retailUsd?.buy}, sell=${retailUsd?.sell}`
+      );
+      return rates;
+    });
   }
 }
 

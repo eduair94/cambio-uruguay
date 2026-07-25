@@ -196,3 +196,29 @@ export async function synthesizeChairReviews(
 }
 
 export const chairReviewFingerprint = fingerprintOf;
+
+/**
+ * Copies the verdict, pros and cons a previous run already wrote.
+ *
+ * Used by the hourly price refresh: nothing about the evidence changed, so paying a model to
+ * write the same paragraph again would be pure waste. A chair with no stored review falls back
+ * to the factual line, never to an empty page.
+ */
+export function reuseStoredChairReviews(
+  products: ChairCatalogProduct[],
+  previous: Map<string, { verdict: string; pros: ChairReviewPoint[]; cons: ChairReviewPoint[] }>
+): number {
+  let reused = 0;
+  for (const product of products) {
+    const stored = previous.get(product.slug);
+    if (stored?.verdict) {
+      product.verdict = stored.verdict;
+      product.pros = stored.pros ?? [];
+      product.cons = stored.cons ?? [];
+      reused++;
+    } else {
+      product.verdict = factualVerdict(product);
+    }
+  }
+  return reused;
+}

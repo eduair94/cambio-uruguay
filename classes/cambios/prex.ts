@@ -6,6 +6,7 @@ import { HttpProxyAgent } from "http-proxy-agent";
 import { HttpsProxyAgent } from "https-proxy-agent";
 import { CambioObj } from "../../interfaces/Cambio";
 import { Cambio } from "../cambio";
+import { withDolarAhoraFallback } from "./dolarahora";
 dotenv.config();
 const e = process.env;
 
@@ -365,6 +366,10 @@ class CambioPrex extends Cambio {
     return { buy: res.compra, sell: res.venta };
   }
   async get_data(): Promise<CambioObj[]> {
+    return withDolarAhoraFallback("prex", "Prex", () => this.scrape_data());
+  }
+
+  private async scrape_data(): Promise<CambioObj[]> {
     const ar = await this.prex_ar("");
 
     // 1. Try the cached/env PHPSESSID (fast path, no login/OTP).

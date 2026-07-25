@@ -5,6 +5,7 @@ import path from "path";
 import { gunzipSync, gzipSync } from "zlib";
 import { CambioObj } from "../../interfaces/Cambio";
 import { Cambio } from "../cambio";
+import { withDolarAhoraFallback } from "./dolarahora";
 import {
   applySantanderPreferentialRates,
   normalizeSantanderPreferentialRates,
@@ -948,8 +949,10 @@ class CambioSantander extends Cambio {
   favicon = "https://www.santander.com.uy/";
 
   async get_data(): Promise<CambioObj[]> {
-    const response = await this.client.getPublicQuotation();
-    return [parseSantanderPublicQuotation(response)];
+    return withDolarAhoraFallback("santander", "Santander", async () => {
+      const response = await this.client.getPublicQuotation();
+      return [parseSantanderPublicQuotation(response)];
+    });
   }
 
   async sync_data(): Promise<void> {

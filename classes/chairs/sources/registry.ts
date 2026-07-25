@@ -78,6 +78,18 @@ export const CHAIR_STORES: ChairStore[] = [
     enabled: true,
   },
   {
+    // Same Fenicio platform as the chains above. Its /sitemap/catalogo-articulos.xml times out
+    // where the others answer, so the adapter falls back to the sitemap index; if that also
+    // fails the run reports the gap instead of quietly dropping the store.
+    key: "soysantander",
+    name: "Tienda Santander",
+    baseUrl: "https://tienda.soysantander.com.uy",
+    adapter: "fenicio",
+    channel: "local-store",
+    expectCurrency: "UYU",
+    enabled: true,
+  },
+  {
     key: "armo",
     name: "Armo",
     baseUrl: "https://armo.uy",

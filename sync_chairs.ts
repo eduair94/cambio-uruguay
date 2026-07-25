@@ -18,7 +18,7 @@ import { appDbConfigured } from "./classes/appdb";
 import { buildChairCatalog, fetchUsdUyuRate } from "./classes/chairs/catalog";
 import { harvestGlobalChairOpinions } from "./classes/chairs/sources/reddit_global";
 import { harvestChairMarket } from "./classes/chairs/sources";
-import { chairReviewFingerprint, synthesizeChairReviews } from "./classes/chairs/reviews";
+import { chairReviewFingerprint, reuseStoredChairReviews, synthesizeChairReviews } from "./classes/chairs/reviews";
 import { identityForListing } from "./classes/chairs/normalize";
 import { identifyChairsFromImages } from "./classes/chairs/vision";
 import {
@@ -38,9 +38,13 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
+  // Hourly price refresh vs the full daily run. Fast mode touches no LLM and no Reddit: prices
+  // move hourly, reviews and photo identification do not, and both cost quota per call.
+  const fast = process.argv.includes("--fast") || process.env.CHAIR_FAST === "1";
+
   const startedAt = Date.now();
   const [harvest, usdUyu, snapshot, stored] = await Promise.all([
-    harvestChairMarket(),
+    harvestChairMarket(fast),
     fetchUsdUyuRate(),
     loadChairTierSnapshot(),
     loadPreviousChairCatalog(),
@@ -62,7 +66,9 @@ async function main(): Promise<void> {
   // Listings nothing could name — Marketplace titles are routinely just "silla de escritorio" —
   // get one last chance: read the brand off the product photo. Guessed brands are restricted to
   // makers that actually sell here, so this can add a chair but never invent one.
-  const vision = await identifyChairsFromImages(
+  const vision = fast
+    ? { attempted: 0, cached: 0, identified: 0, rejected: 0, failed: 0 }
+    : await identifyChairsFromImages(
     harvest.listings,
     (listing) => !identityForListing(listing).identified
   );
@@ -86,7 +92,7 @@ async function main(): Promise<void> {
     .filter((product) => product.brand && product.model)
     .sort((a, b) => b.sellers - a.sellers || (b.price?.median ?? 0) - (a.price?.median ?? 0))
     .map((product) => ({ slug: product.slug, brand: product.brand, model: product.model, name: product.name }));
-  const global = await harvestGlobalChairOpinions(globalTargets);
+  const global = fast ? new Map() : await harvestGlobalChairOpinions(globalTargets);
 
   const products = buildChairCatalog({
     listings: harvest.listings,
@@ -100,7 +106,11 @@ async function main(): Promise<void> {
     process.exit(0);
   }
 
-  const written = await synthesizeChairReviews(products, snapshot?.tiers ?? [], stored.reviews);
+  // Fast mode reuses the stored verdict/pros/cons verbatim: the evidence behind them did not
+  // change in an hour, and regenerating them is the most expensive step of the run.
+  const written = fast
+    ? reuseStoredChairReviews(products, stored.reviews)
+    : await synthesizeChairReviews(products, snapshot?.tiers ?? [], stored.reviews);
   for (const product of products) product.reviewFingerprint = chairReviewFingerprint(product);
 
   const meta: ChairCatalogMeta = {

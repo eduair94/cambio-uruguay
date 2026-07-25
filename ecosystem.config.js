@@ -138,6 +138,20 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Hourly price refresh for the chair directory: MercadoLibre + the Shopify catalogues,
+      // no LLM and no Reddit. Prices move during the day; reviews and photo identification do
+      // not, and both cost provider quota per call. The Fenicio storefronts are deliberately
+      // left to the daily run above — reading them means one request per product page, which is
+      // fine once a day and abusive every hour. Minute 23: off the top of the hour.
+      name: "currency-chairs-hourly",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_chairs.js",
+      args: "--fast",
+      cron_restart: "23 * * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // BCU usury caps (topes de usura) for /saldar-deudas-uruguay. Monthly on the 1st, 10:13 UTC
       // ≈ 07:13 America/Montevideo. Minute 13: not a multiple of 5.
       name: "currency-debt-relief",
