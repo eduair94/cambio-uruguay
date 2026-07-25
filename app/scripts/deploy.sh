@@ -55,6 +55,17 @@ if [ ! -f "$STAGING/server/index.mjs" ]; then
   exit 1
 fi
 
+# Cached HTML and already-open tabs can reference the previous generation's
+# hashed chunks for up to an hour. Carry those immutable files into the fresh
+# output before the swap so a rolling reload never strands an old client.
+if [ -d "$APP_DIR/.output/public/_nuxt" ]; then
+  log "Carrying previous Nuxt assets into the fresh build..."
+  mkdir -p "$STAGING/public/_nuxt"
+  cp -a -n "$APP_DIR/.output/public/_nuxt/." "$STAGING/public/_nuxt/"
+  # Bound retained generations while leaving a wide margin over the 1h CDN TTL.
+  find "$STAGING/public/_nuxt" -type f -mtime +2 -delete
+fi
+
 log "Swapping staging build into .output…"
 rm -rf "$PREV"
 [ -d "$APP_DIR/.output" ] && mv "$APP_DIR/.output" "$PREV"

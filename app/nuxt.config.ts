@@ -1,4 +1,12 @@
 export default defineNuxtConfig({
+  // A cached HTML/JS generation otherwise depends on one build-specific JSON
+  // file. Replacing that file during a rolling deploy makes Nuxt abort
+  // hydration in already-open or CDN-cached pages. Client-side route-rule
+  // matching is not needed here, so keep route rules on the server.
+  experimental: {
+    appManifest: false,
+  },
+
   // Enable Nuxt 4 features
   future: {
     compatibilityVersion: 4,
