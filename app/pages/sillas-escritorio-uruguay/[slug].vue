@@ -1095,16 +1095,14 @@ useHead(() => ({
   color: rgb(var(--v-theme-on-surface));
   text-decoration: none;
   transition:
-    transform 180ms ease,
     border-color 180ms ease,
     box-shadow 180ms ease;
 }
 
 .related-card a:hover,
 .related-card a:focus-visible {
-  transform: translateY(-3px);
   border-color: rgba(var(--v-theme-primary), 0.55);
-  box-shadow: 0 10px 22px rgba(5, 10, 22, 0.16);
+  box-shadow: 0 8px 20px rgba(5, 10, 22, 0.16);
 }
 
 .related-card__media {

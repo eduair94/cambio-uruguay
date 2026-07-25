@@ -261,7 +261,12 @@ Breakpoints are pinned to the Vuetify 3 thresholds in **both** `useDisplay()` an
 CSS reflow happen at the same width. Vuetify 4's narrower defaults (md 840, lg 1145) are explicitly
 overridden; keep the two lists in sync.
 
-Spacing runs on a 4/8/16/24/40px rhythm. Desktop can support side rails, sticky markers, wide
+Spacing runs on a 4/8/16/24/40px rhythm, and a control group reads by the **contrast** between its
+intervals, not by their size: **8px inside a group, 24px between groups**, roughly three to one. A
+panel that uses one value for both — the filter rail shipped 20px everywhere — flattens into a
+single evenly-spaced list no matter how correct each label is.
+
+Desktop can support side rails, sticky markers, wide
 comparison regions, and dense controls; mobile reorders the same evidence into one readable column
 with 44px-or-larger interactive targets. Wide tables either use Vuetify's native `:mobile` mode or
 the `cu-mobile-cards` contract: put the class on the table, give every `<td>` a `data-label`, and
@@ -272,6 +277,19 @@ below 600px each row stacks into a labelled card.
 **The Min-Width Zero Rule.** Any grid or flex item that can contain an image, a long thread title,
 or a URL carries `min-width: 0`. Without it the item's min-content floor silently widens the whole
 row past the viewport — the single most common responsive defect in this codebase.
+
+**The Legend Is Not A Flex Item Rule.** A rendered `<legend>` is the fieldset's legend box, so a
+`display: flex` or `display: grid` fieldset never applies its `gap` to it. The label sits flush on
+its own controls at 0px and the CSS looks correct while the spacing is absent. Give the legend an
+explicit `margin-bottom`; never let a fieldset's `gap` be the only thing separating a label from
+what it labels. The same holds for any element excluded from its parent's layout box — check the
+computed gap, not the declared one.
+
+**The Two Intervals Rule.** Anything that stacks labelled groups — a facet rail, a settings list, a
+form — declares exactly two vertical intervals and keeps them at least three times apart: the tight
+one inside a group, the generous one between groups. If a spacing value has to serve both roles,
+the grouping is being carried by labels alone, and the reader has to do the work the layout was
+supposed to.
 
 ## Elevation & Depth
 

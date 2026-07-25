@@ -1394,16 +1394,15 @@ h1 {
   color: rgb(var(--v-theme-on-surface));
   text-decoration: none;
   transition:
-    transform 200ms ease,
     box-shadow 200ms ease,
-    border-color 200ms ease;
+    border-color 200ms ease,
+    background-color 200ms ease;
 }
 
 .directory-bridge:hover,
 .directory-bridge:focus-visible {
-  transform: translateY(-3px);
   border-color: rgba(var(--v-theme-primary), 0.5);
-  box-shadow: 0 14px 30px rgba(5, 10, 22, 0.18);
+  box-shadow: 0 10px 24px rgba(5, 10, 22, 0.18);
 }
 
 .directory-bridge h2 {
@@ -1701,13 +1700,13 @@ h1 {
   border-radius: 16px;
   background: rgb(var(--v-theme-surface));
   transition:
-    transform 200ms ease,
-    box-shadow 200ms ease;
+    box-shadow 200ms ease,
+    border-color 200ms ease;
 }
 
 .chair-result:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 26px rgba(5, 10, 22, 0.18);
+  border-color: rgba(var(--v-theme-primary), 0.42);
+  box-shadow: 0 10px 24px rgba(5, 10, 22, 0.18);
 }
 
 .chair-result__top {
@@ -2587,12 +2586,13 @@ h1 {
     transition: none;
   }
 
-  .chair-result:hover {
+  /* `.chair-photo` never existed — the class is `.photo-frame`, so the photo zoom was the one
+     motion this block failed to reach. */
+  .photo-frame img,
+  .photo-frame:hover img,
+  .photo-frame:focus-visible img {
     transform: none;
-  }
-
-  .chair-photo:hover img {
-    transform: none;
+    transition: none;
   }
 }
 </style>

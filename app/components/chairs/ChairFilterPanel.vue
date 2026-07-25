@@ -101,9 +101,11 @@ Same component both times so the two can never drift apart.
       @update:model-value="patch('brand', $event)"
     />
 
-    <VBtn variant="text" size="small" rounded="lg" class="align-self-start" @click="emit('clear')">
-      {{ t('chairMarket.clearAll') }}
-    </VBtn>
+    <div class="facet-actions">
+      <VBtn variant="text" size="small" rounded="lg" @click="emit('clear')">
+        {{ t('chairMarket.clearAll') }}
+      </VBtn>
+    </div>
   </div>
 </template>
 
@@ -153,10 +155,13 @@ const onBudget = (value: number): void => {
 </script>
 
 <style scoped>
+/* One facet to the next: the generous interval. 20px was both off the 4/8/16/24/40 rhythm and
+   identical to the gaps inside a facet, so the whole rail read as one evenly-spaced list instead
+   of five labelled groups. */
 .facet-panel {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
 }
 
 .facet {
@@ -175,6 +180,20 @@ const onBudget = (value: number): void => {
   text-transform: uppercase;
   opacity: 0.75;
   padding: 0;
+  /* A rendered <legend> is the fieldset's legend box, NOT a flex item, so the fieldset's `gap`
+     never applied to it and every label sat flush on its own controls at 0px. The label owns its
+     spacing explicitly. */
+  margin-bottom: 8px;
+}
+
+/* Acts on the whole panel rather than on the facet above it, so the rule spans the rail while the
+   button keeps its own width — a hairline the width of the label reads as an underline, not a
+   separator. */
+.facet-actions {
+  display: flex;
+  margin-top: 4px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
 
 .facet-value {
