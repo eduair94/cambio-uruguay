@@ -32,3 +32,13 @@ describe("parts sold on their own are not chairs", () => {
     expect(isDeskChair("Silla de oficina económica para estudio")).toBe(true);
   });
 });
+
+describe("WooCommerce titles", () => {
+  it("decodes the HTML entities WooCommerce returns", async () => {
+    const { wooPrice } = await import("../../classes/chairs/sources/woocommerce");
+    // "399000" in minor units of 2 is 3 990, not 399 000: reading it raw inflates prices 100x.
+    expect(wooPrice({ price: "399000", currency_code: "UYU", currency_minor_unit: 2 })).toBe(3990);
+    expect(wooPrice({ price: "0", currency_code: "UYU", currency_minor_unit: 2 })).toBeNull();
+    expect(wooPrice(undefined)).toBeNull();
+  });
+});

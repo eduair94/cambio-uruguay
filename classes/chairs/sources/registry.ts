@@ -10,7 +10,7 @@ import type { ChairChannel } from "../types";
  * Adding a store is therefore a few lines here, and a redesign of a storefront does not break us:
  * both adapters read contracts (sitemap, microdata, products.json) rather than markup.
  */
-export type ChairStoreAdapter = "fenicio" | "shopify";
+export type ChairStoreAdapter = "fenicio" | "shopify" | "woocommerce";
 
 export interface ChairStore {
   key: string;
@@ -98,7 +98,7 @@ export const CHAIR_STORES: ChairStore[] = [
     baseUrl: "https://dimm.com.uy",
     adapter: "fenicio",
     channel: "local-store",
-    expectCurrency: "UYU",
+    expectCurrency: "USD",
     enabled: true,
   },
   {
@@ -126,6 +126,53 @@ export const CHAIR_STORES: ChairStore[] = [
     name: "Cover Company",
     baseUrl: "https://covercompany.com.uy",
     adapter: "shopify",
+    channel: "local-store",
+    expectCurrency: "UYU",
+    enabled: true,
+  },
+  // WooCommerce: five sellers that already appear behind our MercadoLibre listings and run
+  // the same platform, so one adapter reads all of them through the public Store API.
+  {
+    key: "americanmesh",
+    name: "American Mesh",
+    baseUrl: "https://americanmesh.com.uy",
+    adapter: "woocommerce",
+    channel: "local-store",
+    expectCurrency: "UYU",
+    enabled: true,
+  },
+  {
+    key: "prontometal",
+    name: "Prontometal",
+    baseUrl: "https://prontometal.com.uy",
+    adapter: "woocommerce",
+    channel: "local-store",
+    expectCurrency: "UYU",
+    enabled: true,
+  },
+  {
+    key: "puntounion",
+    name: "Punto Unión",
+    baseUrl: "https://puntounion.com.uy",
+    adapter: "woocommerce",
+    channel: "local-store",
+    expectCurrency: "UYU",
+    enabled: true,
+  },
+  {
+    key: "tyt",
+    name: "TYT",
+    baseUrl: "https://tyt.com.uy",
+    adapter: "woocommerce",
+    channel: "local-store",
+    expectCurrency: "UYU",
+    enabled: true,
+  },
+  {
+    key: "ufficio",
+    name: "Ufficio Equipamientos",
+    baseUrl: "https://ufficio.com.uy",
+    adapter: "woocommerce",
     channel: "local-store",
     expectCurrency: "UYU",
     enabled: true,

@@ -7,6 +7,7 @@ import { harvestFenicioStore } from "./fenicio";
 import { harvestMercadoLibre, type ChairSourceResult } from "./mercadolibre";
 import { enabledChairStores } from "./registry";
 import { harvestShopifyStore } from "./shopify";
+import { harvestWooStore } from "./woocommerce";
 
 export interface ChairHarvest {
   listings: ChairListing[];
@@ -49,7 +50,9 @@ export async function harvestChairMarket(fast = false): Promise<ChairHarvest> {
   record("facebook", "Facebook Marketplace", "facebook", await safely(harvestFacebookMarketplace));
 
   for (const store of enabledChairStores()) {
-    if (fast && store.adapter !== "shopify") {
+    // Shopify and WooCommerce are one JSON request per page; only the Fenicio page-by-page sweep
+    // is too heavy to repeat hourly.
+    if (fast && store.adapter === "fenicio") {
       runs.push({
         key: store.key,
         label: store.name,
@@ -62,7 +65,11 @@ export async function harvestChairMarket(fast = false): Promise<ChairHarvest> {
       continue;
     }
     const result = await safely(() =>
-      store.adapter === "shopify" ? harvestShopifyStore(store) : harvestFenicioStore(store)
+      store.adapter === "shopify"
+        ? harvestShopifyStore(store)
+        : store.adapter === "woocommerce"
+          ? harvestWooStore(store)
+          : harvestFenicioStore(store)
     );
     record(store.key, store.name, store.adapter, result);
   }
