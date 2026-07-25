@@ -5,8 +5,8 @@ OWN-WORLD: Navy evidence surfaces, semantic price chips, sourced pros and cons.
 STORY: See what it costs where, why it scores what it scores, then read the people who own one.
 -->
 <template>
-  <VContainer class="chair-detail pb-12">
-    <VBreadcrumbs :items="breadcrumbs" density="compact" class="px-0" />
+  <VContainer class="chair-detail pt-1 pt-sm-4 pb-12">
+    <VBreadcrumbs :items="breadcrumbs" density="compact" class="px-0 py-1" />
 
     <template v-if="pending">
       <VSkeletonLoader type="heading, image, paragraph, table" color="transparent" />
@@ -68,7 +68,7 @@ STORY: See what it costs where, why it scores what it scores, then read the peop
           <h1>{{ product.name }}</h1>
 
           <div class="detail-rating">
-            <span class="stars" :aria-label="ratingAria">
+            <span class="stars" role="img" :aria-label="ratingAria">
               <VIcon
                 v-for="(icon, index) in starIcons(product.stars)"
                 :key="index"
@@ -91,24 +91,26 @@ STORY: See what it costs where, why it scores what it scores, then read the peop
 
           <p v-if="product.verdict" class="detail-verdict">{{ product.verdict }}</p>
 
-          <dl v-if="product.price" class="price-panel">
-            <div>
-              <dt>{{ t('chairDetail.bestPrice') }}</dt>
-              <dd class="price-panel__lead">{{ formatChairPrice(product.price.min) }}</dd>
-            </div>
-            <div v-if="product.price.bestNew !== null">
-              <dt>{{ t('chairDetail.bestNew') }}</dt>
-              <dd>{{ formatChairPrice(product.price.bestNew) }}</dd>
-            </div>
-            <div v-if="product.price.bestUsed !== null">
-              <dt>{{ t('chairDetail.bestUsed') }}</dt>
-              <dd>{{ formatChairPrice(product.price.bestUsed) }}</dd>
-            </div>
-            <div>
-              <dt>{{ t('chairDetail.sellers') }}</dt>
-              <dd>{{ product.sellers }}</dd>
-            </div>
-          </dl>
+          <VSheet v-if="product.price" border rounded="lg" class="price-panel pa-4">
+            <dl class="price-panel__grid">
+              <div>
+                <dt>{{ t('chairDetail.bestPrice') }}</dt>
+                <dd class="price-panel__lead">{{ formatChairPrice(product.price.min) }}</dd>
+              </div>
+              <div v-if="product.price.bestNew !== null">
+                <dt>{{ t('chairDetail.bestNew') }}</dt>
+                <dd>{{ formatChairPrice(product.price.bestNew) }}</dd>
+              </div>
+              <div v-if="product.price.bestUsed !== null">
+                <dt>{{ t('chairDetail.bestUsed') }}</dt>
+                <dd>{{ formatChairPrice(product.price.bestUsed) }}</dd>
+              </div>
+              <div>
+                <dt>{{ t('chairDetail.sellers') }}</dt>
+                <dd>{{ product.sellers }}</dd>
+              </div>
+            </dl>
+          </VSheet>
 
           <VBtn
             v-if="best"
@@ -266,14 +268,21 @@ STORY: See what it costs where, why it scores what it scores, then read the peop
         <h2 id="signals-title">{{ t('chairDetail.signalsTitle') }}</h2>
         <p class="block-lead">{{ t('chairDetail.signalsLead') }}</p>
         <ul class="signal-list">
-          <li v-for="signal in product.ratingSignals" :key="signal.source">
+          <VCard
+            v-for="signal in product.ratingSignals"
+            :key="signal.source"
+            tag="li"
+            variant="outlined"
+            rounded="lg"
+            class="pa-4"
+          >
             <div class="signal-head">
               <strong>{{ t(`chairDetail.signal.${signal.source}`) }}</strong>
               <span>{{ signal.stars.toFixed(1) }} ★</span>
               <span class="signal-weight">{{ Math.round(signal.weight * 100) }}%</span>
             </div>
             <p>{{ signal.detail }}</p>
-          </li>
+          </VCard>
         </ul>
       </section>
 
@@ -337,7 +346,14 @@ STORY: See what it costs where, why it scores what it scores, then read the peop
       <section v-if="product.reviews.length" class="detail-block" aria-labelledby="reviews-title">
         <h2 id="reviews-title">{{ t('chairDetail.reviewsTitle') }}</h2>
         <ul class="review-list">
-          <li v-for="review in product.reviews" :key="review.sourceUrl">
+          <VCard
+            v-for="review in product.reviews"
+            :key="review.sourceUrl"
+            tag="li"
+            variant="tonal"
+            rounded="lg"
+            class="pa-4"
+          >
             <p>{{ review.text }}</p>
             <footer>
               <a :href="review.sourceUrl" target="_blank" rel="nofollow noopener">{{
@@ -345,7 +361,7 @@ STORY: See what it costs where, why it scores what it scores, then read the peop
               }}</a>
               <time v-if="review.date" :datetime="review.date">{{ review.date }}</time>
             </footer>
-          </li>
+          </VCard>
         </ul>
       </section>
 
@@ -446,11 +462,24 @@ const evidenceDate = (value: string): string =>
     year: 'numeric',
   })
 
-const breadcrumbs = computed(() => [
-  { title: t('inicio'), to: localePath('/'), disabled: false },
-  { title: t('chairTiers.h1'), to: localePath('/sillas-escritorio-uruguay'), disabled: false },
-  { title: product.value?.name ?? slug.value, disabled: true },
-])
+const { smAndDown } = useDisplay()
+
+/**
+ * The parent crumb used to be the hero headline ("La silla que aguanta tu jornada, según quienes ya
+ * la probaron"), which wrapped to three lines on a phone and pushed the chair below the fold. It is
+ * a nav label now, and on small screens the home crumb drops out too.
+ */
+const breadcrumbs = computed(() => {
+  const parent = {
+    title: t('nav.chairTiers'),
+    to: localePath('/sillas-escritorio-uruguay'),
+    disabled: false,
+  }
+  const current = { title: product.value?.name ?? slug.value, disabled: true }
+  return smAndDown.value
+    ? [parent, current]
+    : [{ title: t('inicio'), to: localePath('/'), disabled: false }, parent, current]
+})
 
 // A hand-drawn sparkline keeps the page free of a charting dependency for four data points.
 const sparkWidth = 600
@@ -680,13 +709,14 @@ useHead(() => ({
 }
 
 .price-panel {
+  margin-top: 8px;
+}
+
+.price-panel__grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: 12px;
-  margin: 8px 0 0;
-  padding: 16px;
-  border-radius: 10px;
-  background: rgba(var(--v-theme-on-surface), 0.05);
+  margin: 0;
 }
 
 .price-panel dt {
@@ -845,10 +875,8 @@ useHead(() => ({
   gap: 14px;
 }
 
-.signal-list li {
-  padding: 14px 16px;
-  border-radius: 10px;
-  border: 1px solid rgba(var(--v-border-color), 0.16);
+.signal-list > * {
+  list-style: none;
 }
 
 .signal-head {
@@ -936,11 +964,8 @@ useHead(() => ({
   gap: 14px;
 }
 
-.review-list li {
-  padding: 14px 16px;
-  border-left: 3px solid rgba(var(--v-theme-primary), 0.5);
-  background: rgba(var(--v-theme-on-surface), 0.04);
-  border-radius: 8px;
+.review-list > * {
+  list-style: none;
 }
 
 .review-list p {
@@ -963,19 +988,11 @@ useHead(() => ({
   gap: 12px;
 }
 
-.related-grid a {
+.related-grid > * {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 12px 14px;
-  border-radius: 10px;
-  border: 1px solid rgba(var(--v-border-color), 0.16);
-  color: inherit;
-  text-decoration: none;
-}
-
-.related-grid a:hover {
-  border-color: rgb(var(--v-theme-primary));
+  list-style: none;
 }
 
 .related-stars {

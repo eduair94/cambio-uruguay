@@ -19,6 +19,8 @@ import { buildChairCatalog, fetchUsdUyuRate } from "./classes/chairs/catalog";
 import { harvestGlobalChairOpinions } from "./classes/chairs/sources/reddit_global";
 import { harvestChairMarket } from "./classes/chairs/sources";
 import { chairReviewFingerprint, synthesizeChairReviews } from "./classes/chairs/reviews";
+import { identityForListing } from "./classes/chairs/normalize";
+import { identifyChairsFromImages } from "./classes/chairs/vision";
 import {
   loadChairTierSnapshot,
   loadPreviousChairCatalog,
@@ -55,6 +57,20 @@ async function main(): Promise<void> {
   if (!harvest.listings.length) {
     console.error("[chairs] every source came back empty — keeping the stored catalogue");
     process.exit(0);
+  }
+
+  // Listings nothing could name — Marketplace titles are routinely just "silla de escritorio" —
+  // get one last chance: read the brand off the product photo. Guessed brands are restricted to
+  // makers that actually sell here, so this can add a chair but never invent one.
+  const vision = await identifyChairsFromImages(
+    harvest.listings,
+    (listing) => !identityForListing(listing).identified
+  );
+  if (vision.attempted || vision.cached) {
+    console.log(
+      `[chairs] visión: ${vision.identified} identificadas (${vision.attempted} consultas, ` +
+        `${vision.cached} en caché, ${vision.rejected} descartadas)`
+    );
   }
 
   // Rate premium models with international owner reviews too: r/CharruaDevs will never have a

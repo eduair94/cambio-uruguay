@@ -133,3 +133,20 @@ export async function readSitemap(url: string, depth = 0, seen = new Set<string>
   for (const child of locs) nested.push(...(await readSitemap(child, depth + 1, seen)));
   return nested;
 }
+
+/** Downloads an image for the vision fallback. Refuses anything too big to be worth base64-ing. */
+export async function fetchImage(
+  url: string,
+  maxBytes: number
+): Promise<{ data: Buffer; mimeType: string } | null> {
+  const run = async (): Promise<{ data: Buffer; mimeType: string } | null> => {
+    const response = await rawFetch(url, { timeoutMs: 20_000 });
+    if (!response?.ok) return null;
+    const mimeType = (response.headers.get("content-type") || "image/jpeg").split(";")[0]!.trim();
+    if (!mimeType.startsWith("image/")) return null;
+    const buffer = Buffer.from(await response.arrayBuffer());
+    if (!buffer.length || buffer.length > maxBytes) return null;
+    return { data: buffer, mimeType };
+  };
+  return throttled(hostOf(url), run);
+}

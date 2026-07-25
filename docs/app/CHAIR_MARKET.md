@@ -74,6 +74,25 @@ saturating weight. Every signal and its share stay visible on the chair page.
 
 No evidence at all → `stars: null` and the page says "sin reseñas suficientes". It never invents 3.5.
 
+## Identifying a chair from its photo
+
+A listing nothing can name is a listing the directory has to drop, and Marketplace titles are
+routinely just "silla de escritorio". `classes/chairs/vision.ts` gives those one last chance: the
+product photo goes to the cheapest Gemini model, which is asked to report only what is legible —
+a logo, a tag, an unmistakable silhouette.
+
+Three rules stop it inventing chairs:
+
+1. Only listings text identification already failed on are sent, Marketplace first.
+2. A guess is accepted only above `CHAIR_VISION_MIN_CONFIDENCE` **and** only when the brand is one
+   the Uruguayan market actually has (`KNOWN_CHAIR_BRANDS`). A confident "ErgoMax Pro 3000" is
+   discarded, because that chair does not exist here.
+3. Every guess — accepted or not — is stored in `chairvisionguesses` keyed by the image, so the
+   same photo is never paid for twice and any chair named this way can be traced to its source.
+
+`npm run chair_vision_probe` prints what the model reads off real listings without writing the
+catalogue, which is how to check it is still worth its cost.
+
 ## What it refuses to do
 
 - Publish a price outside 900–900 000 UYU (typos, deposits, spare parts).
@@ -107,6 +126,9 @@ carries on without Marketplace offers.
 | `CHAIR_REVIEW_LIMIT` | `40` | chairs sent to Gemini for pros/cons per run |
 | `CHAIR_ANALYSIS_LOCAL_ONLY` | — | `1` disables Gemini entirely |
 | `CHAIR_USD_UYU` | — | pins the reference rate instead of reading the public API |
+| `CHAIR_VISION_ENABLED` | `1` | `0` skips image identification |
+| `CHAIR_VISION_LIMIT` | `40` | photos sent to the model per run |
+| `CHAIR_VISION_MIN_CONFIDENCE` | `0.7` | floor for accepting a reading |
 
 ## Debugging
 
@@ -114,5 +136,7 @@ carries on without Marketplace offers.
 npm run chair_probe                 # every source, no DB writes
 npm run chair_probe -- bertoni      # one registry key ("mercadolibre" / "facebook" too)
 npm run sync_chairs                 # full run (writes the app DB)
+npm run chair_vision_probe          # what the model reads off real photos, no writes
+npm run chair_prune                 # delete stored rows today's rules would reject
 npx ts-node scripts/oneoff/chair_inspect.ts   # what is stored, multi-platform chairs first
 ```

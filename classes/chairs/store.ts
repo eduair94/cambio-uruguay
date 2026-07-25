@@ -110,7 +110,7 @@ export async function pruneRejectedChairs(activeSlugs: ReadonlySet<string>): Pro
       // the word "silla") would reject every healthy chair. Only the two checks that a bare name
       // can actually answer apply here.
       const identity = identifyChair({ title: row.name, brand: row.brand, model: row.model });
-      return looksLikeChairAccessory(row.name) || !identity.identified;
+      return looksLikeChairAccessory(row.name, row.model) || !identity.identified;
     })
     .map((row) => row.slug);
 

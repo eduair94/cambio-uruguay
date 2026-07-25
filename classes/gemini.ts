@@ -297,6 +297,47 @@ const hostOf = (u: string): string => {
   }
 };
 
+/**
+ * One NON-grounded question about an IMAGE we already downloaded.
+ *
+ * Same client, same pacing and retries as {@link askPlain}; the only difference is the extra
+ * inline part. Used to read a brand off a product photo when the seller's title says nothing —
+ * Marketplace titles in particular are often just "silla de escritorio". Keep the images small:
+ * the payload is base64, so a 2 MB photo becomes a ~2.7 MB request.
+ */
+export async function askWithImage(
+  prompt: string,
+  image: { data: Buffer; mimeType: string },
+  timeoutMs = TIMEOUT_MS
+): Promise<string | null> {
+  const apiKey = process.env.GEMINI_API_KEY || process.env.NUXT_GEMINI_API_KEY;
+  if (!apiKey) return null;
+  try {
+    const res = await postGemini(
+      {
+        contents: [
+          {
+            parts: [
+              { text: prompt },
+              { inline_data: { mime_type: image.mimeType, data: image.data.toString("base64") } },
+            ],
+          },
+        ],
+      },
+      timeoutMs,
+      apiKey
+    );
+    const text = (res.data?.candidates?.[0]?.content?.parts ?? [])
+      .map((p) => p.text ?? "")
+      .join("")
+      .trim();
+    return text || null;
+  } catch (error: any) {
+    console.warn("[gemini] image call failed:", error?.message || error);
+    return null;
+  }
+}
+
 /** One NON-grounded question (no google_search). For synthesis passes over text we already have. */
 export async function askPlain(prompt: string, timeoutMs = TIMEOUT_MS): Promise<string | null> {
   const apiKey = process.env.GEMINI_API_KEY || process.env.NUXT_GEMINI_API_KEY;

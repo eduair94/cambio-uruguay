@@ -199,9 +199,12 @@ describe("buildChairCatalog", () => {
 describe("looksLikeChairAccessory", () => {
   it("recognises a stored row that is not a chair, from its name alone", () => {
     // The prune rule runs over "Brand Model" strings, which never contain the word "silla".
-    expect(looksLikeChairAccessory("Tcweb Rueda silla")).toBe(true);
+    // The part noun sits in the model, which is what the prune rule passes in.
+    expect(looksLikeChairAccessory("Tcweb Rueda silla", "Rueda silla")).toBe(true);
     expect(looksLikeChairAccessory("Punto Union Apilable Auditorio")).toBe(true);
     expect(looksLikeChairAccessory("Herman Miller Aeron")).toBe(false);
     expect(looksLikeChairAccessory("Lumax ROM-SA")).toBe(false);
+    // A chair that merely comes with casters must survive the prune.
+    expect(looksLikeChairAccessory("Lumax Eames con ruedas", "Eames con ruedas")).toBe(false);
   });
 });

@@ -16,14 +16,25 @@ const DESK_CONTEXT =
   /\b(escritorio|oficina|ergon[oó]mic[ao]s?|gamer|gaming|computador|computadora|pc|estudio|ejecutiv[ao]|gerencial|operativ[ao]|secretarial|task\s*chair|office)\b/i;
 
 /**
- * Things that carry the word "silla" but are not a desk chair, or are not a chair at all.
+ * Things that are never a desk chair, whatever else the title says.
  *
- * Every noun here is written plural-tolerant (`ruedas?`, `apilables?`). A trailing `\b` after a
- * singular stem does not match its plural — "rueda" never matches "Ruedas silla escritorio" — and
- * that is exactly how a set of casters and a stack of auditorium chairs reached the directory.
+ * Every noun is plural-tolerant: a trailing \b after a singular stem does not match its plural
+ * ("apilable" never matches "apilables"), which is how a stack of auditorium chairs reached the
+ * directory.
  */
 const NOT_A_DESK_CHAIR =
-  /\b(comedor|cocina|bebe|beb[eé]s?|infantil|ni[nñ]os?|auto|autos|coche|bicicleta|playa|playeras?|jard[ií]n|exterior|camping|plegable\s+de\s+playa|bar\b|banquetas?|taburetes?|ruedas?|rueditas?|repuestos?|fundas?|cubre|almohad[oó]n|cojines?|coj[ií]n|apoyapi[eé]s|apoya\s*pies|alfombras?|escritorio\s+solo|masajes?|masajeadora|dentista|odontol[oó]gic[ao]s?|peluquer[ií]a|barber[ií]a|est[eé]tica|pist[oó]n|pistones|cilindros?|brazo\s+de\s+repuesto|tapizado\s+de\s+repuesto|silla\s+de\s+ruedas|inodoro|ba[nñ]o|sanitarias?|nauticas?|n[aá]uticas?|pesca|beb[eé]\s+comer|combos?|kits?|packs?|set\s+de|x\s*2\s+unidades|2\s+unidades|juego\s+de|auditorios?|apilables?|sala\s+de\s+espera|escolares?|aulas?|iglesias?|tribunas?|estadios?|call\s*center\s+banco)\b/i;
+  /\b(comedor|cocina|bebe|beb[eé]s?|infantil|ni[nñ]os?|auto|autos|coche|bicicleta|playa|playeras?|jard[ií]n|exterior|camping|bar|banquetas?|taburetes?|alfombras?|masajes?|masajeadora|dentista|odontol[oó]gic[ao]s?|peluquer[ií]a|barber[ií]a|est[eé]tica|inodoro|ba[nñ]o|sanitarias?|n[aá]uticas?|pesca|combos?|kits?|packs?|auditorios?|apilables?|escolares?|aulas?|iglesias?|tribunas?|estadios?)\b|\b(silla\s+de\s+ruedas|beb[eé]\s+comer|set\s+de|juego\s+de|sala\s+de\s+espera|escritorio\s+solo|plegable\s+de\s+playa|call\s*center\s+banco|\d+\s+unidades)\b/i;
+
+/**
+ * Chair PARTS sold on their own.
+ *
+ * These same words describe features of a perfectly ordinary desk chair — "silla con ruedas",
+ * "silla con apoyapiés" — and blanket-banning them deleted real chairs from the catalogue. A part
+ * only disqualifies a listing when the part IS what is being sold: at the head of the title,
+ * counted ("set de 5 ruedas"), or explicitly a spare.
+ */
+const ACCESSORY_PRODUCT =
+  /^\s*(?:set|juego|kit|pack|combo)?\s*(?:de\s+)?(?:x\s*)?\d*\s*(?:ruedas?|rueditas?|apoyapi[eé]s|apoya\s*pies|fundas?|cubre[a-z]*|almohad[oó]n|cojines?|coj[ií]n|pist[oó]n|pistones|cilindros?|tapizados?)\b|\bde\s+repuestos?\b|\b(?:ruedas?|rueditas?|pistones?|cilindros?)\s+(?:para|de)\s+sillas?\b/i;
 
 /** Brands that actually appear in the Uruguayan market, longest match first. */
 const BRANDS: Array<{ brand: string; pattern: RegExp }> = [
@@ -59,6 +70,9 @@ const BRANDS: Array<{ brand: string; pattern: RegExp }> = [
   { brand: "Bertoni", pattern: /\bbertoni\b/i },
   { brand: "Sillas Uruguay", pattern: /\bsillas\s+uruguay\b/i },
 ];
+
+/** The brands the vision fallback is allowed to return: anything else would be invented. */
+export const KNOWN_CHAIR_BRANDS: readonly string[] = BRANDS.map((entry) => entry.brand);
 
 /**
  * Model names that identify the manufacturer on their own.
@@ -187,7 +201,7 @@ export function isDeskChair(title: string, context = ""): boolean {
   const titleText = ` ${stripAccents(title)} `;
   const allText = ` ${stripAccents(`${title} ${context}`)} `;
   if (!CHAIR_WORD.test(titleText) && !CHAIR_WORD.test(allText)) return false;
-  if (NOT_A_DESK_CHAIR.test(allText)) return false;
+  if (NOT_A_DESK_CHAIR.test(allText) || ACCESSORY_PRODUCT.test(title.trim())) return false;
   if (DESK_CONTEXT.test(allText)) return true;
   // A store that lists "Silla Sayl" says nothing about desks — but the model name already does.
   return KNOWN_MODELS.some((entry) => entry.authoritative && entry.pattern.test(titleText));
@@ -200,8 +214,9 @@ export const isDeskChairTitle = (title: string): boolean => isDeskChair(title);
  * auditorium seating). Unlike {@link isDeskChair} it does not require the word "silla", so it can
  * be run over a stored product NAME ("Tcweb Rueda silla") rather than a listing title.
  */
-export const looksLikeChairAccessory = (text: string): boolean =>
-  NOT_A_DESK_CHAIR.test(` ${stripAccents(text)} `);
+export const looksLikeChairAccessory = (text: string, model = ""): boolean =>
+  NOT_A_DESK_CHAIR.test(` ${stripAccents(text)} `) ||
+  ACCESSORY_PRODUCT.test(stripAccents(model || text).trim());
 
 export function chairCategory(title: string, attributes: Record<string, string> = {}): ChairCategory {
   const text = stripAccents(`${title} ${Object.values(attributes).join(" ")}`).toLowerCase();

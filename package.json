@@ -29,6 +29,8 @@
     "sync_chair_tiers": "ts-node sync_chair_tiers.ts",
     "sync_chairs": "ts-node sync_chairs.ts",
     "chair_probe": "ts-node scripts/oneoff/chair_probe.ts",
+    "chair_vision_probe": "ts-node scripts/oneoff/chair_vision_probe.ts",
+    "chair_prune": "ts-node scripts/oneoff/chair_prune.ts",
     "sync_favicon": "ts-node scripts/oneoff/sync_favicon.ts",
     "build": "tsc -p tsconfig.production.json",
     "get_locations": "ts-node scripts/oneoff/get_locations.ts",
