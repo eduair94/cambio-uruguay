@@ -1,0 +1,14 @@
+{
+  "id": "3be52e7c-69d0-4765-b63a-bdfa76f3eace",
+  "timestamp": 1784937471034,
+  "matcher": {
+    "static": {
+      "/sitemap.xml": {
+        "redirect": "/sitemap_index.xml"
+      }
+    },
+    "wildcard": {},
+    "dynamic": {}
+  },
+  "prerendered": []
+}
