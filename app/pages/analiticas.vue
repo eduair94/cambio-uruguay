@@ -498,7 +498,9 @@
       </VAlert>
 
       <VCard class="analytics-panel pa-4 pa-md-6" variant="flat">
-        <div class="d-flex align-center justify-space-between ga-3 flex-wrap mb-4">
+        <div
+          class="analytics-table-heading d-flex align-center justify-space-between ga-3 flex-wrap mb-4"
+        >
           <div>
             <h2 class="text-h6 font-weight-bold mb-1">
               {{ t('rateAnalytics.tableTitle') }}
@@ -512,7 +514,7 @@
           </VChip>
         </div>
 
-        <VTable class="cu-mobile-cards analytics-table" hover>
+        <VTable class="cu-mobile-cards analytics-table">
           <thead>
             <tr>
               <th>{{ t('rateAnalytics.house') }}</th>
@@ -526,14 +528,18 @@
           <tbody>
             <tr v-for="row in houseRows" :key="row.origin">
               <td :data-label="t('rateAnalytics.house')">
-                <NuxtLink :to="localePath(`/casa/${row.origin}`)" class="house-link">
-                  {{ row.houseName }}
-                </NuxtLink>
-                <span v-if="row.type" class="text-caption text-medium-emphasis ms-1">
-                  · {{ row.type }}
-                </span>
-                <span class="analytics-category ms-2">
-                  {{ categoryLabel(row.origin) }}
+                <span class="analytics-house-identity">
+                  <span>
+                    <NuxtLink :to="localePath(`/casa/${row.origin}`)" class="house-link">
+                      {{ row.houseName }}
+                    </NuxtLink>
+                    <span v-if="row.type" class="text-caption text-medium-emphasis ms-1">
+                      · {{ row.type }}
+                    </span>
+                  </span>
+                  <span class="analytics-category">
+                    {{ categoryLabel(row.origin) }}
+                  </span>
                 </span>
               </td>
               <td :data-label="t('rateAnalytics.branchesShort')">
@@ -1394,6 +1400,12 @@ defineOgImageComponent('Cambio', {
   white-space: nowrap;
 }
 
+.analytics-house-identity {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .analytics-category {
   display: inline-block;
   padding: 2px 6px;
@@ -1465,6 +1477,78 @@ defineOgImageComponent('Cambio', {
 
   .analytics-actions .v-btn {
     width: 100%;
+  }
+
+  .analytics-table-heading {
+    align-items: flex-start !important;
+    flex-direction: column;
+  }
+
+  .analytics-table-heading .v-chip {
+    max-width: 100%;
+  }
+
+  .analytics-table.v-table :deep(.v-table__wrapper) {
+    width: 100%;
+    max-width: 100%;
+    overflow: visible !important;
+  }
+
+  .analytics-table :deep(.v-table__wrapper > table) {
+    display: block;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .analytics-table tbody {
+    display: grid;
+    width: 100%;
+    gap: 12px;
+  }
+
+  .analytics-table tbody tr {
+    display: grid;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .analytics-table tbody tr:hover {
+    background: rgb(var(--v-theme-surface));
+  }
+
+  .analytics-table tbody td {
+    display: grid;
+    grid-template-columns: minmax(88px, 0.85fr) minmax(0, 1.15fr);
+    align-items: center;
+    gap: 12px;
+    width: 100% !important;
+    min-width: 0;
+    padding: 11px 12px !important;
+  }
+
+  .analytics-table tbody td::before {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .analytics-house-identity {
+    min-width: 0;
+    align-items: flex-end;
+    flex-direction: column;
+    gap: 5px;
+    text-align: end;
+  }
+
+  .analytics-house-identity > span {
+    box-sizing: border-box;
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
   }
 
   .analytics-controls {
@@ -1562,6 +1646,28 @@ defineOgImageComponent('Cambio', {
     color: rgb(var(--v-theme-warning));
     font-size: 0.65rem;
     font-weight: 800;
+  }
+}
+
+@media (max-width: 360px) {
+  .analytics-table tbody td:first-child {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .analytics-house-identity {
+    align-items: flex-start;
+    text-align: start;
+  }
+}
+
+@media (hover: hover) and (min-width: 600px) {
+  .analytics-table tbody tr {
+    transition: background-color 140ms ease;
+  }
+
+  .analytics-table tbody tr:hover {
+    background: rgba(var(--v-theme-primary), 0.045);
   }
 }
 
