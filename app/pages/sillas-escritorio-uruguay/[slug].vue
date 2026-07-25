@@ -1025,7 +1025,7 @@ useHead(() => ({
 
 .reddit-evidence h3 {
   margin: 10px 0 6px;
-  font-size: 0.92rem;
+  font-size: 0.875rem;
   font-weight: 600;
   overflow-wrap: anywhere;
 }
