@@ -1,6 +1,6 @@
 <template>
   <VContainer class="py-6 analytics-page">
-    <VCard class="overflow-hidden mb-5" elevation="8">
+    <VCard class="overflow-hidden mb-5 analytics-hero-card" elevation="4">
       <div class="analytics-hero on-dark pa-6 pa-md-8">
         <div class="analytics-hero__grid">
           <div>
@@ -33,7 +33,7 @@
       </div>
     </VCard>
 
-    <VCard class="pa-4 pa-md-6 mb-5" elevation="3">
+    <VCard class="analytics-panel analytics-filter-panel pa-4 pa-md-6 mb-5" variant="flat">
       <div class="d-flex align-center justify-space-between ga-3 flex-wrap mb-4">
         <div>
           <h2 class="text-h6 font-weight-bold mb-1">{{ t('rateAnalytics.filtersTitle') }}</h2>
@@ -46,7 +46,7 @@
         </VBtn>
       </div>
 
-      <VRow dense>
+      <VRow density="comfortable">
         <VCol cols="12" sm="6" md="3">
           <VSelect
             v-model="selectedCurrency"
@@ -93,6 +93,16 @@
         </VCol>
         <VCol cols="12" md="4">
           <VSelect
+            v-model="selectedCategory"
+            :items="categoryOptions"
+            :label="t('rateAnalytics.category')"
+            variant="outlined"
+            density="comfortable"
+            hide-details
+          />
+        </VCol>
+        <VCol cols="12" md="4">
+          <VSelect
             v-model="selectedDepartment"
             :items="departmentOptions"
             :label="t('rateAnalytics.department')"
@@ -102,7 +112,7 @@
             hide-details
           />
         </VCol>
-        <VCol cols="12" md="8">
+        <VCol cols="12" md="4">
           <VAutocomplete
             v-model="selectedOrigins"
             :items="originOptions"
@@ -116,17 +126,12 @@
             density="comfortable"
             hide-details
           >
-            <template #selection="{ item, index }">
-              <VChip
-                v-if="index < 2"
-                size="small"
-                closable
-                @click:close="removeOrigin(String(item.value))"
-              >
+            <template #chip="{ item, index, props }">
+              <VChip v-if="index === 0" v-bind="props" size="small" closable>
                 {{ item.title }}
               </VChip>
-              <span v-else-if="index === 2" class="text-caption text-medium-emphasis">
-                +{{ selectedOrigins.length - 2 }}
+              <span v-else-if="index === 1" class="text-caption text-medium-emphasis ms-1">
+                +{{ selectedOrigins.length - 1 }}
               </span>
             </template>
           </VAutocomplete>
@@ -162,53 +167,70 @@
     </VAlert>
 
     <template v-if="analytics?.series.length">
-      <VRow dense class="mb-5">
-        <VCol cols="12" sm="6" lg="3">
-          <VCard class="metric-card pa-4 h-100" variant="flat">
-            <div class="text-overline text-medium-emphasis">
+      <section class="market-summary mb-5" :aria-label="t('rateAnalytics.marketSummary')">
+        <div class="market-summary__item">
+          <div class="market-summary__icon market-summary__icon--buy">
+            <VIcon size="19">mdi-arrow-bottom-left</VIcon>
+          </div>
+          <div>
+            <div class="market-summary__label">
               {{ t('rateAnalytics.avgBuy') }}
             </div>
-            <div class="text-h5 font-weight-bold text-primary">
+            <div class="market-summary__value text-primary">
               {{ formatUYU(currentAggregate?.buy) }}
             </div>
-          </VCard>
-        </VCol>
-        <VCol cols="12" sm="6" lg="3">
-          <VCard class="metric-card pa-4 h-100" variant="flat">
-            <div class="text-overline text-medium-emphasis">
+          </div>
+        </div>
+        <div class="market-summary__item">
+          <div class="market-summary__icon market-summary__icon--sell">
+            <VIcon size="19">mdi-arrow-top-right</VIcon>
+          </div>
+          <div>
+            <div class="market-summary__label">
               {{ t('rateAnalytics.avgSell') }}
             </div>
-            <div class="text-h5 font-weight-bold text-success">
+            <div class="market-summary__value text-success">
               {{ formatUYU(currentAggregate?.sell) }}
             </div>
-          </VCard>
-        </VCol>
-        <VCol cols="12" sm="6" lg="3">
-          <VCard class="metric-card pa-4 h-100" variant="flat">
-            <div class="text-overline text-medium-emphasis">
+          </div>
+        </div>
+        <div class="market-summary__item">
+          <div
+            class="market-summary__icon"
+            :class="periodChange >= 0 ? 'market-summary__icon--up' : 'market-summary__icon--down'"
+          >
+            <VIcon size="19">
+              {{ periodChange >= 0 ? 'mdi-trending-up' : 'mdi-trending-down' }}
+            </VIcon>
+          </div>
+          <div>
+            <div class="market-summary__label">
               {{ t('rateAnalytics.periodChange') }}
             </div>
             <div
-              class="text-h5 font-weight-bold"
+              class="market-summary__value"
               :class="periodChange >= 0 ? 'text-success' : 'text-error'"
             >
               {{ formatPct(periodChange) }}
             </div>
-          </VCard>
-        </VCol>
-        <VCol cols="12" sm="6" lg="3">
-          <VCard class="metric-card pa-4 h-100" variant="flat">
-            <div class="text-overline text-medium-emphasis">
+          </div>
+        </div>
+        <div class="market-summary__item">
+          <div class="market-summary__icon market-summary__icon--power">
+            <VIcon size="19">mdi-wallet-outline</VIcon>
+          </div>
+          <div>
+            <div class="market-summary__label">
               {{ t('rateAnalytics.buyingPower') }}
             </div>
-            <div class="text-h5 font-weight-bold">
+            <div class="market-summary__value">
               {{ formatForeign(currentAggregate?.purchasingPower) }}
             </div>
-          </VCard>
-        </VCol>
-      </VRow>
+          </div>
+        </div>
+      </section>
 
-      <VCard class="pa-4 pa-md-6 mb-5" elevation="3">
+      <VCard class="analytics-panel pa-4 pa-md-6 mb-5" variant="flat">
         <div class="d-flex align-center justify-space-between ga-3 flex-wrap mb-4">
           <div>
             <h2 class="text-h6 font-weight-bold mb-1">
@@ -264,7 +286,7 @@
         </p>
       </VCard>
 
-      <VCard class="pa-4 pa-md-6 mb-5" elevation="3">
+      <VCard class="analytics-panel pa-4 pa-md-6 mb-5" variant="flat">
         <h2 class="text-h6 font-weight-bold mb-1">
           {{ t('rateAnalytics.powerChart') }}
         </h2>
@@ -287,7 +309,7 @@
         {{ coverageNotice }}
       </VAlert>
 
-      <VCard class="pa-4 pa-md-6" elevation="3">
+      <VCard class="analytics-panel pa-4 pa-md-6" variant="flat">
         <div class="d-flex align-center justify-space-between ga-3 flex-wrap mb-4">
           <div>
             <h2 class="text-h6 font-weight-bold mb-1">
@@ -321,6 +343,9 @@
                 </NuxtLink>
                 <span v-if="row.type" class="text-caption text-medium-emphasis ms-1">
                   · {{ row.type }}
+                </span>
+                <span class="analytics-category ms-2">
+                  {{ categoryLabel(row.origin) }}
                 </span>
               </td>
               <td :data-label="t('rateAnalytics.branchesShort')">
@@ -361,7 +386,10 @@
 import { useTheme } from 'vuetify'
 import LineChart from '~/components/charts/LineChart.vue'
 import type { RateAnalyticsInterval, RateAnalyticsResponse } from '~/types/api'
+import { CASAS_REPUTATION } from '~/utils/casasDirectory'
 import { aggregateRateSeries, summarizeAnalyticsHouses } from '~/utils/rateAnalytics'
+
+type InstitutionCategory = 'all' | 'casa' | 'banco' | 'fintech'
 
 interface MapBranch {
   key: string
@@ -396,6 +424,12 @@ const intervalOptions = computed(() => [
   { title: t('rateAnalytics.hourly'), value: 'hour' },
   { title: t('rateAnalytics.daily'), value: 'day' },
 ])
+const categoryOptions = computed(() => [
+  { title: t('rateAnalytics.categoryAll'), value: 'all' },
+  { title: t('rateAnalytics.categoryCasa'), value: 'casa' },
+  { title: t('rateAnalytics.categoryBanco'), value: 'banco' },
+  { title: t('rateAnalytics.categoryFintech'), value: 'fintech' },
+])
 const heroPeriodLabel = computed(
   () => periodOptions.value.find(option => option.value === selectedPeriod.value)?.title || ''
 )
@@ -406,6 +440,7 @@ const heroIntervalLabel = computed(
 const selectedCurrency = ref('USD')
 const selectedPeriod = ref(1)
 const selectedInterval = ref<RateAnalyticsInterval>('hour')
+const selectedCategory = ref<InstitutionCategory>('all')
 const selectedDepartment = ref<string | null>(null)
 const selectedOrigins = ref<string[]>([])
 const uyuBudget = ref(10_000)
@@ -450,6 +485,15 @@ const allCurrencyOrigins = computed(() =>
     origin.currencies.includes(selectedCurrency.value)
   )
 )
+const institutionCategories = new Map(
+  CASAS_REPUTATION.map(institution => [institution.code, institution.category])
+)
+const institutionCategory = (origin: string) => institutionCategories.get(origin) ?? 'casa'
+const categoryLabel = (origin: string) => {
+  const category = institutionCategory(origin)
+  const suffix = `${category.charAt(0).toUpperCase()}${category.slice(1)}`
+  return t(`rateAnalytics.category${suffix}`)
+}
 const departmentOptions = computed(() =>
   [...new Set((locations.value ?? []).map(branch => branch.dept).filter(Boolean))].sort((a, b) =>
     a.localeCompare(b, locale.value)
@@ -465,6 +509,11 @@ const departmentOriginSet = computed(() => {
 })
 const originOptions = computed(() =>
   allCurrencyOrigins.value
+    .filter(
+      origin =>
+        selectedCategory.value === 'all' ||
+        institutionCategory(origin.origin) === selectedCategory.value
+    )
     .filter(origin => !departmentOriginSet.value || departmentOriginSet.value.has(origin.origin))
     .map(origin => ({ title: origin.houseName, value: origin.origin }))
 )
@@ -478,12 +527,9 @@ const eligibleBranches = computed(() =>
 const selectAllForCurrentFilters = () => {
   selectedOrigins.value = originOptions.value.map(option => option.value)
 }
-const removeOrigin = (origin: string) => {
-  selectedOrigins.value = selectedOrigins.value.filter(value => value !== origin)
-}
 if (analytics.value) selectAllForCurrentFilters()
 
-watch([selectedCurrency, selectedDepartment], () => {
+watch([selectedCurrency, selectedCategory, selectedDepartment], () => {
   if (selectedPeriod.value > 31) selectedInterval.value = 'day'
   selectAllForCurrentFilters()
 })
@@ -502,6 +548,7 @@ const resetFilters = () => {
   selectedCurrency.value = 'USD'
   selectedPeriod.value = 1
   selectedInterval.value = 'hour'
+  selectedCategory.value = 'all'
   selectedDepartment.value = null
   uyuBudget.value = 10_000
   chartMode.value = 'average'
@@ -729,19 +776,20 @@ defineOgImageComponent('Cambio', {
 </script>
 
 <style scoped>
+.analytics-page {
+  max-width: 1320px;
+}
+
+.analytics-hero-card {
+  border: 1px solid rgba(184, 243, 230, 0.16);
+}
+
 .analytics-hero {
   position: relative;
   isolation: isolate;
   background:
-    linear-gradient(rgba(73, 173, 215, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(73, 173, 215, 0.08) 1px, transparent 1px),
     radial-gradient(circle at 78% 18%, rgba(30, 194, 160, 0.2), transparent 32%),
     linear-gradient(135deg, #102a43 0%, #144e68 58%, #11695d 100%);
-  background-size:
-    28px 28px,
-    28px 28px,
-    auto,
-    auto;
 }
 
 .analytics-hero__grid {
@@ -810,20 +858,90 @@ defineOgImageComponent('Cambio', {
   overflow: hidden;
   margin-top: 4px;
   color: #fff;
-  font-family: 'Roboto Mono', 'SFMono-Regular', Consolas, monospace;
+  font-family: ui-monospace, 'Cascadia Mono', 'SFMono-Regular', Consolas, monospace;
   font-size: 0.88rem;
   font-variant-numeric: tabular-nums;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.metric-card {
+.analytics-panel {
   border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-  background: linear-gradient(
-    145deg,
-    rgba(var(--v-theme-surface), 1),
-    rgba(var(--v-theme-surface-variant), 0.32)
-  );
+  background: rgb(var(--v-theme-surface));
+}
+
+.analytics-filter-panel {
+  border-top: 3px solid rgba(var(--v-theme-primary), 0.72);
+}
+
+.market-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  overflow: hidden;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-radius: 12px;
+  background: rgb(var(--v-theme-surface));
+}
+
+.market-summary__item {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 12px;
+  padding: 17px 18px;
+}
+
+.market-summary__item + .market-summary__item {
+  border-inline-start: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+.market-summary__icon {
+  display: grid;
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: 9px;
+  background: rgba(var(--v-theme-primary), 0.11);
+  color: rgb(var(--v-theme-primary));
+}
+
+.market-summary__icon--sell,
+.market-summary__icon--up {
+  background: rgba(var(--v-theme-success), 0.11);
+  color: rgb(var(--v-theme-success));
+}
+
+.market-summary__icon--down {
+  background: rgba(var(--v-theme-error), 0.1);
+  color: rgb(var(--v-theme-error));
+}
+
+.market-summary__icon--power {
+  background: rgba(155, 89, 182, 0.12);
+  color: #b57bd3;
+}
+
+.market-summary__label {
+  overflow: hidden;
+  color: rgba(var(--v-theme-on-surface), 0.6);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.market-summary__value {
+  overflow: hidden;
+  margin-top: 3px;
+  font-family: ui-monospace, 'Cascadia Mono', 'SFMono-Regular', Consolas, monospace;
+  font-size: clamp(1rem, 1.8vw, 1.32rem);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .analytics-chart {
@@ -849,10 +967,33 @@ defineOgImageComponent('Cambio', {
   white-space: nowrap;
 }
 
+.analytics-category {
+  display: inline-block;
+  padding: 2px 6px;
+  border: 1px solid rgba(var(--v-theme-primary), 0.24);
+  border-radius: 5px;
+  color: rgb(var(--v-theme-primary));
+  font-size: 0.62rem;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
 @media (max-width: 960px) {
   .analytics-hero__grid {
     grid-template-columns: 1fr;
     gap: 24px;
+  }
+
+  .market-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .market-summary__item:nth-child(3) {
+    border-inline-start: 0;
+  }
+
+  .market-summary__item:nth-child(n + 3) {
+    border-block-start: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
   }
 }
 
@@ -874,19 +1015,47 @@ defineOgImageComponent('Cambio', {
     font-size: 0.75rem;
   }
 
+  .market-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .market-summary__item {
+    padding: 14px;
+  }
+
+  .market-summary__item + .market-summary__item {
+    border-block-start: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+    border-inline-start: 0;
+  }
+
+  .market-summary__item:nth-child(3) {
+    border-block-start: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  }
+
+  .market-summary__value {
+    font-size: 1.08rem;
+  }
+
   .analytics-actions .v-btn {
     width: 100%;
   }
 
   .analytics-controls {
     width: 100%;
-    overflow-x: auto;
-    padding-bottom: 4px;
-    scrollbar-width: thin;
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .analytics-controls .v-btn-toggle {
-    flex: 0 0 auto;
+    display: flex;
+    width: 100%;
+  }
+
+  .analytics-controls .v-btn {
+    flex: 1 1 0;
+    min-width: 0;
+    padding-inline: 8px;
+    font-size: 0.72rem;
   }
 
   .analytics-chart {
