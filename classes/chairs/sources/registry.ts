@@ -90,6 +90,18 @@ export const CHAIR_STORES: ChairStore[] = [
     enabled: true,
   },
   {
+    // Found by ranking the MercadoLibre sellers behind the chairs already in the catalogue:
+    // DIMM sells 10 of them there and runs the same Fenicio platform, so it costs a registry
+    // entry and no new code.
+    key: "dimm",
+    name: "DIMM",
+    baseUrl: "https://dimm.com.uy",
+    adapter: "fenicio",
+    channel: "local-store",
+    expectCurrency: "UYU",
+    enabled: true,
+  },
+  {
     key: "armo",
     name: "Armo",
     baseUrl: "https://armo.uy",
