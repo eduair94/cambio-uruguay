@@ -366,7 +366,9 @@
                   <th class="text-end series-reference__optional">
                     {{ t('rateAnalytics.missingPoints') }}
                   </th>
-                  <th class="text-end">{{ t('rateAnalytics.anomalies') }}</th>
+                  <th class="text-end series-reference__anomalies-column">
+                    {{ t('rateAnalytics.anomalies') }}
+                  </th>
                   <th class="text-end">
                     <span class="series-reference__actions-label">
                       {{ t('rateAnalytics.seriesActions') }}
@@ -400,6 +402,13 @@
                     <span v-if="row.type" class="text-caption text-medium-emphasis">
                       · {{ row.type }}
                     </span>
+                    <span
+                      v-if="row.anomalies.length"
+                      class="series-reference__mobile-anomaly"
+                      :aria-label="t('rateAnalytics.anomalies')"
+                    >
+                      {{ row.anomalies.length }}
+                    </span>
                   </td>
                   <td class="text-end series-reference__optional">
                     {{ formatUYU(row.current) }}
@@ -410,7 +419,7 @@
                   <td class="text-end series-reference__optional">
                     {{ row.gapCount }}
                   </td>
-                  <td class="text-end">
+                  <td class="text-end series-reference__anomalies-column">
                     <VChip
                       v-if="row.anomalies.length"
                       color="warning"
@@ -1352,6 +1361,10 @@ defineOgImageComponent('Cambio', {
   display: none;
 }
 
+.series-reference__mobile-anomaly {
+  display: none;
+}
+
 .series-reference__actions {
   display: inline-flex;
   align-items: center;
@@ -1518,6 +1531,10 @@ defineOgImageComponent('Cambio', {
     display: none;
   }
 
+  .series-reference__anomalies-column {
+    display: none;
+  }
+
   .series-reference__actions-label,
   .series-reference__only-label {
     display: none;
@@ -1530,6 +1547,21 @@ defineOgImageComponent('Cambio', {
   .series-reference__only {
     min-width: 28px !important;
     padding-inline: 4px !important;
+  }
+
+  .series-reference__mobile-anomaly {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    margin-inline-start: 6px;
+    padding-inline: 5px;
+    border-radius: 9px;
+    background: rgba(var(--v-theme-warning), 0.16);
+    color: rgb(var(--v-theme-warning));
+    font-size: 0.65rem;
+    font-weight: 800;
   }
 }
 
