@@ -909,6 +909,179 @@
     "ctaText": "Compare a cotação do dólar em mais de 40 casas de câmbio e decida com dados, não com palpites.",
     "ctaButton": "Ver cotações"
   },
+  "platformComparison": {
+    "nav": "Comparar plataformas",
+    "metaTitle": "Cambio Uruguay vs DólarAhora vs Dólar Uruguay (2026)",
+    "metaDescription": "Comparação verificada de plataformas de câmbio no Uruguai: cobertura, atualização, moedas, análises, alertas, ferramentas e acesso para desenvolvedores.",
+    "eyebrow": "COMPARAÇÃO VERIFICADA · URUGUAI",
+    "title": "Qual plataforma de cotações é melhor para você?",
+    "subtitle": "Comparamos Cambio Uruguay, DólarAhora.uy, Dólar Uruguay e cotizacion.uy usando informações públicas. A conclusão é clara, mas também mostramos onde outra opção é melhor.",
+    "reviewed": "Revisado em {date}",
+    "disclosure": "Divulgação: esta página pertence ao Cambio Uruguay. Os concorrentes não participaram nem pagaram por esta comparação.",
+    "verdictKicker": "Conclusão",
+    "verdictTitle": "Cambio Uruguay oferece a cobertura mais completa",
+    "verdictBody": "É a opção mais sólida para decidir onde comprar ou vender moedas porque combina mais instituições, moedas, atualizações frequentes, agências, análises e ferramentas abertas. DólarAhora lidera em flexibilidade de alertas.",
+    "wins": "Lidera ou empata em {count} de {total} critérios",
+    "proofInstitutions": "Mais de 40 instituições",
+    "proofCurrencies": "15 moedas com páginas próprias",
+    "proofFreshness": "Atualização aproximada a cada 10 min",
+    "primaryCta": "Comparar cotações",
+    "secondaryCta": "Explorar análises",
+    "share": "Compartilhar comparação",
+    "scoreTitle": "Resultado por plataforma",
+    "scoreLabel": "critérios liderados ou empatados",
+    "matrixTitle": "Comparação ponto a ponto",
+    "matrixIntro": "“Não documentado” significa que não encontramos uma função pública verificável; não afirma que ela seja impossível ou ausente de uma área privada.",
+    "filterLabel": "Filtrar por necessidade",
+    "filters": {
+      "all": "Tudo",
+      "market": "Mercado",
+      "analysis": "Análise",
+      "access": "Acesso",
+      "ecosystem": "Ferramentas e API"
+    },
+    "criterion": "Critério",
+    "sources": "{count} fontes",
+    "openSource": "Abrir fonte",
+    "statuses": {
+      "leader": "Lidera",
+      "available": "Disponível",
+      "limited": "Limitado",
+      "notDocumented": "Não documentado"
+    },
+    "platforms": {
+      "cambioUruguay": {
+        "name": "Cambio Uruguay",
+        "summary": "Maior cobertura e integrações"
+      },
+      "dolarAhora": {
+        "name": "DólarAhora.uy",
+        "summary": "Alertas avançados e boas análises"
+      },
+      "dolarUruguay": {
+        "name": "Dólar Uruguay",
+        "summary": "Resumo simples de sete bancos"
+      },
+      "cotizacionUy": {
+        "name": "cotizacion.uy",
+        "summary": "Referência básica de quatro moedas"
+      }
+    },
+    "criteria": {
+      "coverage": {
+        "title": "Instituições comparadas",
+        "note": "Cambio Uruguay acompanha mais de 40 casas, bancos e fintechs. DólarAhora publica sete instituições mais o BCU; a comparação principal do Dólar Uruguay usa sete; cotizacion.uy lista quatro referências."
+      },
+      "freshness": {
+        "title": "Frequência publicada",
+        "note": "Cambio Uruguay informa atualização aproximada a cada 10 minutos. DólarAhora e Dólar Uruguay declaram frequência horária. cotizacion.uy não publica uma cadência verificável na página inicial."
+      },
+      "currencies": {
+        "title": "Cobertura de moedas",
+        "note": "Cambio Uruguay oferece páginas comparáveis para 15 moedas e ouro. DólarAhora foca em USD; Dólar Uruguay compara USD e mostra referências BCU de EUR, BRL e ARS; cotizacion.uy lista quatro moedas."
+      },
+      "institutionTypes": {
+        "title": "Casas, bancos e fintechs",
+        "note": "Cambio Uruguay classifica e filtra os três tipos. Os outros comparadores concentram a experiência principal em bancos e fintechs ou mostram poucas casas de câmbio."
+      },
+      "locations": {
+        "title": "Departamentos e agências",
+        "note": "Cambio Uruguay permite explorar departamentos, mapas, horários e agências. Dólar Uruguay aceita cadastros de casas e cotizacion.uy menciona departamentos, mas não oferecem um diretório público equivalente."
+      },
+      "preferentialRates": {
+        "title": "Cotações por valor",
+        "note": "Cambio Uruguay pode mostrar faixas preferenciais quando a instituição as publica. Os concorrentes revisados avisam que podem existir preços melhores, mas não documentam uma comparação pública por valor."
+      },
+      "analytics": {
+        "title": "Análise histórica",
+        "note": "Cambio Uruguay e DólarAhora oferecem análises por hora, período e poder de compra frente à UI. Dólar Uruguay resume janelas de 7, 15 e 30 dias; não encontramos análise pública equivalente em cotizacion.uy."
+      },
+      "changeLog": {
+        "title": "Registro de mudanças reais",
+        "note": "Cambio Uruguay mostra variação percentual, valores anterior e novo e filtros por tipo de instituição. Dólar Uruguay mantém um feed com diferenças absolutas; DólarAhora mostra a última mudança em cada ficha."
+      },
+      "alerts": {
+        "title": "Flexibilidade de alertas",
+        "note": "DólarAhora lidera: qualquer mudança, alta, baixa, limite, mínimo e canais push, Telegram, e-mail e webhook. Cambio Uruguay oferece limites por push, e-mail e Telegram; Dólar Uruguay tem alertas locais do navegador."
+      },
+      "news": {
+        "title": "Notícias do dólar",
+        "note": "Cambio Uruguay, DólarAhora e Dólar Uruguay publicam uma seção ou bloco de notícias. Não encontramos um produto de notícias documentado em cotizacion.uy."
+      },
+      "freeCore": {
+        "title": "Comparação básica gratuita",
+        "note": "As quatro opções permitem consultar informações básicas sem pagar. DólarAhora reserva parte do histórico detalhado para contas; Dólar Uruguay monetiza o cadastro permanente de casas, não o acesso do usuário."
+      },
+      "languages": {
+        "title": "Idiomas",
+        "note": "Cambio Uruguay está disponível em espanhol, inglês e português. DólarAhora oferece espanhol e inglês. As experiências públicas revisadas de Dólar Uruguay e cotizacion.uy estão em espanhol."
+      },
+      "installable": {
+        "title": "Uso como aplicativo",
+        "note": "Cambio Uruguay e DólarAhora podem ser instalados como aplicativos web. Não encontramos instruções públicas equivalentes no Dólar Uruguay ou cotizacion.uy durante a revisão."
+      },
+      "tools": {
+        "title": "Ferramentas de decisão",
+        "note": "Cambio Uruguay soma conversores e calculadoras de spread, viagem, inflação, impostos, salário, empréstimos e mais. Dólar Uruguay tem conversor e comparador; DólarAhora oferece guias e análises."
+      },
+      "developerAccess": {
+        "title": "API e integrações",
+        "note": "Cambio Uruguay publica API REST, widget incorporável e servidor MCP aberto. DólarAhora oferece webhooks como canal de alerta; não encontramos API ou widget públicos equivalentes nas outras opções."
+      }
+    },
+    "profilesTitle": "A melhor opção depende da tarefa",
+    "profilesIntro": "Estas são as forças que conseguimos verificar, inclusive quando pertencem a um concorrente.",
+    "profiles": {
+      "cambioUruguay": {
+        "bestFor": "Melhor para decidir com contexto completo",
+        "strength": "Cobertura nacional, várias moedas, locais, reputação, análises, ferramentas e acesso aberto para desenvolvedores.",
+        "tradeoff": "Os alertas atuais usam limites e ainda não oferecem webhook público."
+      },
+      "dolarAhora": {
+        "bestFor": "Melhor para automatizar alertas",
+        "strength": "Regras de alerta muito flexíveis, quatro canais de entrega e análises históricas claras.",
+        "tradeoff": "A lista pública atual é muito menor e focada em USD; parte do histórico detalhado exige conta."
+      },
+      "dolarUruguay": {
+        "bestFor": "Melhor para uma leitura bancária rápida",
+        "strength": "Página inicial simples, comparação de até seis bancos, resumo semanal e compartilhamento por WhatsApp.",
+        "tradeoff": "A comparação principal cobre sete instituições e o site declara que quatro fontes vêm temporariamente do DólarAhora."
+      },
+      "cotizacionUy": {
+        "bestFor": "Referência leve",
+        "strength": "Apresenta quatro moedas e referências por instituição e departamento em uma única página.",
+        "tradeoff": "Durante a revisão o domínio estava anunciado à venda e não encontramos histórico, alertas ou cadência pública verificável."
+      }
+    },
+    "honestTitle": "Onde ainda não ganhamos",
+    "honestBody": "DólarAhora tem o sistema de alertas mais configurável: qualquer mudança, direção, mínimo e webhooks. Cambio Uruguay já cobre push, e-mail e Telegram por limite, mas essa diferença é real e permanece explícita no nosso roteiro.",
+    "alertsCta": "Configurar alertas atuais",
+    "methodTitle": "Metodologia e limites",
+    "methodBody": "Revisamos as páginas públicas e a documentação de cada produto em 24 de julho de 2026. Comparamos apenas funções observáveis e vinculamos as fontes usadas.",
+    "methodPoints": {
+      "p1": "Incluímos produtos cuja função principal é reunir cotações de várias instituições uruguaias.",
+      "p2": "“Lidera” pode ser compartilhado quando dois produtos oferecem capacidade equivalente.",
+      "p3": "Não transformamos “não encontrado” em “não existe”: usamos “Não documentado”.",
+      "p4": "Não pontuamos design, popularidade ou precisão histórica sem dados independentes comparáveis."
+    },
+    "sourcesTitle": "Fontes verificadas",
+    "sourcesIntro": "Links diretos para as páginas usadas. Funções e cobertura podem mudar; esta comparação é revisada periodicamente.",
+    "faqTitle": "Perguntas frequentes",
+    "faq": {
+      "q1": "Cambio Uruguay é dono desta comparação?",
+      "a1": "Sim. Por isso declaramos isso de forma visível, publicamos a metodologia e vinculamos cada fonte concorrente.",
+      "q2": "Qual plataforma é melhor para descobrir onde trocar?",
+      "a2": "Cambio Uruguay oferece a cobertura mais ampla e adiciona agências, departamentos e reputação. Se você só precisa de poucos bancos com regras de alerta muito avançadas, DólarAhora pode ser melhor.",
+      "q3": "Os preços mostrados garantem a operação?",
+      "a3": "Não. Todas as plataformas publicam informações indicativas. O preço executável pode variar por valor, canal, horário ou negociação e deve ser confirmado com a instituição.",
+      "q4": "Como esta página será atualizada?",
+      "a4": "Revisaremos as fontes quando funções relevantes mudarem e sempre mostraremos a data da última auditoria."
+    },
+    "ctaTitle": "Teste a diferença com dados reais",
+    "ctaText": "Compare mais de 40 instituições ou abra a análise completa sem cadastro.",
+    "ctaPrimary": "Ver melhores cotações",
+    "ctaSecondary": "Abrir análises"
+  },
   "acerca": {
     "nav": "Sobre",
     "tag": "SOBRE",

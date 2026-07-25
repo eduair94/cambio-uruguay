@@ -122,6 +122,20 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         keywords: ['comparar', 'comparacion', 'versus', 'superponer'],
       },
       {
+        to: '/comparar-plataformas-dolar-uruguay',
+        labelKey: 'platformComparison.nav',
+        icon: 'mdi-scale-balance',
+        priority: 0.7,
+        changefreq: 'monthly',
+        keywords: [
+          'Cambio Uruguay vs DolarAhora',
+          'comparar plataformas dolar',
+          'Dolar Uruguay comparacion',
+          'mejor app cotizacion',
+          'competidores',
+        ],
+      },
+      {
         to: '/analiticas',
         labelKey: 'rateAnalytics.nav',
         icon: 'mdi-chart-timeline-variant-shimmer',
