@@ -84,6 +84,8 @@ export interface VisionStats {
   cached: number;
   identified: number;
   rejected: number;
+  /** Calls that never came back (quota, timeout). Not cached, so they are retried next run. */
+  failed: number;
 }
 
 /**
@@ -95,7 +97,7 @@ export async function identifyChairsFromImages(
   listings: ChairListing[],
   needsHelp: (listing: ChairListing) => boolean
 ): Promise<VisionStats> {
-  const stats: VisionStats = { attempted: 0, cached: 0, identified: 0, rejected: 0 };
+  const stats: VisionStats = { attempted: 0, cached: 0, identified: 0, rejected: 0, failed: 0 };
   if (process.env.CHAIR_VISION_ENABLED === "0" || !geminiConfigured()) return stats;
 
   const candidates = listings
@@ -123,7 +125,16 @@ export async function identifyChairsFromImages(
     stats.attempted++;
 
     const reply = await askWithImage(`${PROMPT}\n\nTítulo de la publicación: ${listing.title}`, image, 60_000);
-    const guess = reply ? parseGuess(reply) : null;
+    // A quota error (429) or a timeout is NOT an answer. Caching it would mark the photo as
+    // "unidentifiable" for good and the chair would never get another chance.
+    if (!reply) {
+      stats.failed++;
+      // Five straight failures with nothing to show means the provider is refusing us (quota),
+      // not that the photos are unreadable. Stop rather than spend the rest of the budget on 429s.
+      if (stats.failed >= 5 && stats.identified === 0 && stats.rejected === 0) break;
+      continue;
+    }
+    const guess = parseGuess(reply);
     const accepted = acceptableGuess(guess);
 
     await ChairVisionGuessModel.updateOne(
@@ -138,6 +149,7 @@ export async function identifyChairsFromImages(
           model: guess?.model ?? "",
           kind: guess?.kind ?? "",
           confidence: guess?.confidence ?? 0,
+          raw: reply.slice(0, 500),
           accepted,
           guessedAt: new Date(),
         },

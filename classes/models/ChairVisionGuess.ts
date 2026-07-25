@@ -16,6 +16,7 @@ const ChairVisionGuessSchema = new Schema(
     model: { type: String, default: "" },
     kind: { type: String, default: "" },
     confidence: { type: Number, default: 0 },
+    raw: { type: String, default: "" },
     accepted: { type: Boolean, default: false },
     guessedAt: { type: Date, default: null },
   },
@@ -33,6 +34,7 @@ export const ChairVisionGuessModel = appModel<{
   model: string;
   kind: string;
   confidence: number;
+  raw: string;
   accepted: boolean;
   guessedAt: Date | null;
 }>("ChairVisionGuess", ChairVisionGuessSchema, "chairvisionguesses");
