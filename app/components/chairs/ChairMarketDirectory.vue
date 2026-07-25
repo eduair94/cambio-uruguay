@@ -808,9 +808,19 @@ const ratingAria = (product: ChairCatalogCard): string =>
   }
 }
 
+/* The page wrapper carries no horizontal padding and goes margin-inline: -12px on phones so the
+   hero slab can bleed edge to edge. Every non-slab section has to put that space back itself, or
+   the cards sit flush against the screen. */
+@media (max-width: 959px) {
+  .chair-market {
+    padding-inline: 16px;
+  }
+}
+
 @media (max-width: 599px) {
   .chair-market {
     margin-top: 32px;
+    padding-inline: 24px;
   }
 
   .market-stats {
