@@ -1448,7 +1448,8 @@
     "linkedin": "Sobre o autor",
     "mejorCasa": "Melhor casa de câmbio",
     "liveDataHint": "Dados ao vivo",
-    "viewFullSitemap": "Ver todo o site"
+    "viewFullSitemap": "Ver todo o site",
+    "chairPrices": "Preços de cadeiras de escritório"
   },
   "sitemapPage": {
     "h1": "Mapa do site Cambio Uruguay",
@@ -1667,7 +1668,15 @@
     "rating": {
       "any": "Qualquer",
       "from": "A partir de {stars} ★"
-    }
+    },
+    "metaTitle": "Preços de cadeiras de escritório no Uruguai: comparador diário",
+    "metaDescription": "Todas as cadeiras de escritório à venda no Uruguai em uma só tabela: Mercado Livre, lojas uruguaias e Marketplace, com o preço de cada plataforma ao lado e uma linha por cadeira.",
+    "breadcrumb": "Preços",
+    "ogSubtitle": "{products} cadeiras e {offers} ofertas, relidas todos os dias",
+    "shareText": "Comparador de preços de cadeiras de escritório no Uruguai",
+    "backToTiers": "Ver a tier list do r/CharruaDevs",
+    "backToTiersLead": "O diretório ordena por preço. A tier list ordena por consenso: quais cadeiras quem já trabalhou nelas realmente recomenda.",
+    "noRatingShort": "Sem avaliações"
   },
   "chairDetail": {
     "notFound": "Não encontramos essa cadeira no levantamento atual.",
@@ -1722,7 +1731,10 @@
     "metaDescription": "{name} no Uruguai: a partir de {price}, comparada em {sellers} vendedores, com opiniões reais e ficha técnica.",
     "metaFallbackTitle": "Cadeira de escritório no Uruguai",
     "metaFallbackSubtitle": "Preços e opiniões de cadeiras de escritório no Uruguai.",
-    "ogSubtitle": "A partir de {price} · {sellers} vendedores"
+    "ogSubtitle": "A partir de {price} · {sellers} vendedores",
+    "relatedLead": "Mesma categoria e preço na mesma faixa, ordenadas por avaliação.",
+    "historyLow": "Mínimo",
+    "historyHigh": "Máximo"
   },
   "chairTiers": {
     "realComments": "comentários reais",
@@ -1905,6 +1917,13 @@
     "ogTitle": "Cadeiras de escritório segundo r/CharruaDevs",
     "ogSubtitle": "Tier list com comentários reais, amostra e método aberto",
     "metaTitle": "Melhores cadeiras de escritório no Uruguai segundo r/CharruaDevs",
-    "metaDescription": "Melhores cadeiras de escritório no Uruguai segundo posts, comentários e respostas do r/CharruaDevs, com prós, contras, preços locais e calculadora."
+    "metaDescription": "Melhores cadeiras de escritório no Uruguai segundo posts, comentários e respostas do r/CharruaDevs, com prós, contras, preços locais e calculadora.",
+    "directory": {
+      "kicker": "Diretório de preços",
+      "title": "E se você já sabe qual cadeira quer, veja quanto custa hoje",
+      "text": "Esta página mede consenso. O diretório mede preço: {products} cadeiras de {sellers} vendedores, relidas todos os dias no Mercado Livre, lojas uruguaias e Marketplace, uma linha por cadeira em vez da mesma cadeira repetida.",
+      "textPlain": "Esta página mede consenso. O diretório mede preço: todas as cadeiras à venda no Uruguai, relidas todos os dias no Mercado Livre, lojas uruguaias e Marketplace, uma linha por cadeira em vez da mesma cadeira repetida.",
+      "cta": "Abrir o diretório de preços"
+    }
   }
 }

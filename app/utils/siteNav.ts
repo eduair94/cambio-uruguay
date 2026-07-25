@@ -475,6 +475,23 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        to: '/sillas-escritorio-uruguay/precios',
+        labelKey: 'nav.chairPrices',
+        icon: 'mdi-tag-multiple-outline',
+        priority: 0.7,
+        changefreq: 'daily',
+        fresh: true,
+        keywords: [
+          'precios sillas escritorio uruguay',
+          'comparar precios sillas',
+          'sillas baratas uruguay',
+          'silla escritorio mercado libre',
+          'cuanto sale una silla de escritorio',
+          'directorio de sillas',
+          'sillas gamer precio uruguay',
+        ],
+      },
+      {
         to: '/por-que-el-bcu-quiere-mas-pesos',
         labelKey: 'nav.desdolarizacion',
         icon: 'mdi-currency-usd-off',

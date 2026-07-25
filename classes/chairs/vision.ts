@@ -43,7 +43,37 @@ export interface ChairVisionGuess {
   confidence: number;
 }
 
-const imageKey = (url: string): string => createHash("sha1").update(url).digest("hex");
+const sha1 = (value: string | Buffer): string => createHash("sha1").update(value).digest("hex");
+const imageKey = (url: string): string => sha1(url);
+
+/**
+ * A cached guess for this listing, found without spending anything.
+ *
+ * Two keys, because neither alone is enough: the URL is stable for MercadoLibre and the
+ * storefronts but rotates per scrape on Facebook's CDN, while the listing id is stable everywhere
+ * but only exists once we have seen that exact listing before.
+ */
+async function findCachedGuess(listing: ChairListing): Promise<CachedGuess | null> {
+  const or: Array<Record<string, string>> = [{ imageKey: imageKey(listing.image!) }];
+  if (listing.listingId) or.push({ listingId: listing.listingId });
+  return (await ChairVisionGuessModel.findOne({ $or: or }).lean()) as CachedGuess | null;
+}
+
+interface CachedGuess {
+  brand: string;
+  model: string;
+  kind?: string;
+  confidence?: number;
+  contentHash?: string;
+  accepted: boolean;
+}
+
+/** Copies a known verdict onto the listing. */
+function applyGuess(listing: ChairListing, guess: { brand: string; model: string }): void {
+  listing.brand = guess.brand;
+  listing.model = guess.model;
+  listing.attributes = { ...listing.attributes, IDENTIFIED_BY: "image" };
+}
 
 function parseGuess(text: string): ChairVisionGuess | null {
   const match = text.match(/\{[\s\S]*\}/);
@@ -108,13 +138,11 @@ export async function identifyChairsFromImages(
     if (stats.attempted >= MAX_CALLS) break;
     const key = imageKey(listing.image!);
 
-    const cached = await ChairVisionGuessModel.findOne({ imageKey: key }).lean();
+    const cached = await findCachedGuess(listing);
     if (cached) {
       stats.cached++;
       if (cached.accepted) {
-        listing.brand = cached.brand;
-        listing.model = cached.model;
-        listing.attributes = { ...listing.attributes, IDENTIFIED_BY: "image" };
+        applyGuess(listing, cached);
         stats.identified++;
       }
       continue;
@@ -122,6 +150,42 @@ export async function identifyChairsFromImages(
 
     const image = await fetchImage(listing.image!, MAX_IMAGE_BYTES);
     if (!image) continue;
+
+    // Downloading is free; the model call is not. A photo we have already read under a different
+    // URL — a re-signed Facebook link, or the manufacturer shot four storefronts share — is
+    // recognised here by its bytes and answered from the cache.
+    const contentHash = sha1(image.data);
+    const seen = (await ChairVisionGuessModel.findOne({ contentHash }).lean()) as CachedGuess | null;
+    if (seen) {
+      stats.cached++;
+      if (seen.accepted) {
+        applyGuess(listing, seen);
+        stats.identified++;
+      }
+      // Record this URL and listing as the same photo, so the next run answers before downloading.
+      await ChairVisionGuessModel.updateOne(
+        { imageKey: key },
+        {
+          $set: {
+            imageKey: key,
+            contentHash,
+            imageUrl: listing.image,
+            listingId: listing.listingId,
+            title: listing.title,
+            brand: seen.brand,
+            model: seen.model,
+            kind: seen.kind ?? "",
+            confidence: seen.confidence ?? 0,
+            raw: "alias",
+            accepted: seen.accepted,
+            guessedAt: new Date(),
+          },
+        },
+        { upsert: true }
+      );
+      continue;
+    }
+
     stats.attempted++;
 
     const reply = await askWithImage(`${PROMPT}\n\nTítulo de la publicación: ${listing.title}`, image, 60_000);
@@ -142,6 +206,7 @@ export async function identifyChairsFromImages(
       {
         $set: {
           imageKey: key,
+          contentHash,
           imageUrl: listing.image,
           listingId: listing.listingId,
           title: listing.title,
@@ -158,9 +223,7 @@ export async function identifyChairsFromImages(
     );
 
     if (accepted && guess) {
-      listing.brand = guess.brand;
-      listing.model = guess.model;
-      listing.attributes = { ...listing.attributes, IDENTIFIED_BY: "image" };
+      applyGuess(listing, guess);
       stats.identified++;
     } else {
       stats.rejected++;

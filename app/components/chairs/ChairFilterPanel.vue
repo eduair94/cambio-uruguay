@@ -28,6 +28,7 @@ Same component both times so the two can never drift apart.
           :aria-pressed="filters.category === option.value"
           role="button"
           @click="patch('category', option.value)"
+          @keydown.space.prevent="patch('category', option.value)"
         >
           {{ option.title }}
         </VChip>
@@ -63,6 +64,7 @@ Same component both times so the two can never drift apart.
           :aria-pressed="filters.condition === option.value"
           role="button"
           @click="patch('condition', option.value)"
+          @keydown.space.prevent="patch('condition', option.value)"
         >
           {{ option.title }}
         </VChip>
@@ -81,6 +83,7 @@ Same component both times so the two can never drift apart.
           :aria-pressed="filters.minStars === option.value"
           role="button"
           @click="patch('minStars', option.value)"
+          @keydown.space.prevent="patch('minStars', option.value)"
         >
           {{ option.title }}
         </VChip>
@@ -188,7 +191,19 @@ const onBudget = (value: number): void => {
 .facet-chips .v-chip {
   cursor: pointer;
   /* Comfortable tap target: the chips are how the catalogue is filtered on a phone. */
-  min-height: 36px;
+  min-height: 40px;
   padding-inline: 14px;
+}
+
+/* Touch and stylus get the full 44px; a mouse does not need it and the rail stays compact. */
+@media (pointer: coarse) {
+  .facet-chips {
+    gap: 10px;
+  }
+
+  .facet-chips .v-chip {
+    min-height: 44px;
+    padding-inline: 16px;
+  }
 }
 </style>

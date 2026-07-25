@@ -40,15 +40,19 @@ export default defineEventHandler(async (event): Promise<ChairDetailResponse> =>
           category: typed.category,
           'price.median': { $gte: Math.round(median * 0.5), $lte: Math.round(median * 1.8) },
         })
+          // Card fields only. The related strip renders a photo, a name, a rating and a price;
+          // shipping six whole chair documents to draw six cards was most of this response.
           .select({
             _id: 0,
-            __v: 0,
-            createdAt: 0,
-            updatedAt: 0,
-            reviewFingerprint: 0,
-            evidence: 0,
-            history: 0,
-            reviews: 0,
+            slug: 1,
+            name: 1,
+            category: 1,
+            stars: 1,
+            ratingCount: 1,
+            price: 1,
+            sellers: 1,
+            'images.url': 1,
+            'images.alt': 1,
           })
           .sort({ stars: -1, sellers: -1 })
           .limit(6)

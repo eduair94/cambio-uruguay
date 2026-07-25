@@ -152,13 +152,45 @@ FORM: Grounded structure 5, diagnosis-before-doctrine staging, surface seed aa73
       </div>
     </VAlert>
 
-    <ChairsChairMarketDirectory
-      :products="catalog?.products ?? []"
-      :meta="catalog?.meta ?? null"
-      :pending="catalogPending"
-      :brands="catalog?.facets.brands ?? []"
-      :price-max="catalog?.facets.priceMax ?? 0"
-    />
+    <!-- The directory used to render inline here. It is a shopping tool with its own facets and a
+         few hundred rows, and dropping it mid-argument cut this page in half; it lives at
+         /sillas-escritorio-uruguay/precios now and this is the doorway to it. -->
+    <NuxtLink :to="localePath('/sillas-escritorio-uruguay/precios')" class="directory-bridge">
+      <div class="directory-bridge__copy">
+        <p class="board-kicker">{{ t('chairTiers.directory.kicker') }}</p>
+        <h2>{{ t('chairTiers.directory.title') }}</h2>
+        <p class="directory-bridge__text">
+          {{
+            catalogMeta
+              ? t('chairTiers.directory.text', {
+                  products: catalogMeta.products,
+                  sellers: catalogMeta.sellers,
+                })
+              : t('chairTiers.directory.textPlain')
+          }}
+        </p>
+      </div>
+
+      <dl v-if="catalogMeta" class="directory-bridge__stats">
+        <div>
+          <dt>{{ t('chairMarket.statChairs') }}</dt>
+          <dd>{{ catalogMeta.products.toLocaleString(locale) }}</dd>
+        </div>
+        <div>
+          <dt>{{ t('chairMarket.statOffers') }}</dt>
+          <dd>{{ catalogMeta.offers.toLocaleString(locale) }}</dd>
+        </div>
+        <div>
+          <dt>{{ t('chairMarket.statSellers') }}</dt>
+          <dd>{{ catalogMeta.sellers.toLocaleString(locale) }}</dd>
+        </div>
+      </dl>
+
+      <span class="directory-bridge__cta">
+        {{ t('chairTiers.directory.cta') }}
+        <VIcon icon="mdi-arrow-right" size="20" />
+      </span>
+    </NuxtLink>
 
     <section v-if="snapshot?.tiers.length" class="budget-tool" aria-labelledby="budget-title">
       <header class="budget-tool__intro">
@@ -735,13 +767,16 @@ const {
   $fetch('/api/chair-tiers')
 )
 
-// The live market catalogue (every chair on sale in Uruguay, one row per chair across platforms).
-// Separate from the Reddit tier snapshot on purpose: the tier list is weekly evidence, this is a
-// daily price harvest, and a failure in one must not blank the other.
-const { data: catalog, pending: catalogPending } = await useAsyncData<ChairCatalogResponse | null>(
-  'chair-catalog',
-  () => $fetch('/api/chairs')
+// Only the headline counts, for the doorway to /sillas-escritorio-uruguay/precios. The catalogue
+// itself lives on that page; this page used to download all of it to render three numbers.
+// Separate from the Reddit tier snapshot on purpose: the tier list is weekly evidence, the market
+// is a daily price harvest, and a failure in one must not blank the other.
+const { data: catalogSummary } = await useAsyncData<ChairCatalogResponse | null>(
+  'chair-catalog-summary',
+  () => $fetch('/api/chairs', { query: { summary: '1' } })
 )
+
+const catalogMeta = computed(() => catalogSummary.value?.meta ?? null)
 
 const groupedTiers = computed(() =>
   groupChairTiers(snapshot.value?.tiers ?? []).map(group => ({
@@ -1340,6 +1375,96 @@ h1 {
 
 .trust-strip div + div {
   border-left: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+/* The doorway to the price directory. One surface, one destination — the whole slab is the link,
+   so the counts and the verb cannot be tapped apart from each other. */
+.directory-bridge {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 28px clamp(28px, 5vw, 64px);
+  align-items: center;
+  margin-top: clamp(56px, 8vw, 96px);
+  padding: clamp(26px, 4vw, 44px);
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-radius: 16px;
+  background:
+    linear-gradient(135deg, rgba(var(--v-theme-primary), 0.1), transparent 52%),
+    rgb(var(--v-theme-surface));
+  color: rgb(var(--v-theme-on-surface));
+  text-decoration: none;
+  transition:
+    transform 200ms ease,
+    box-shadow 200ms ease,
+    border-color 200ms ease;
+}
+
+.directory-bridge:hover,
+.directory-bridge:focus-visible {
+  transform: translateY(-3px);
+  border-color: rgba(var(--v-theme-primary), 0.5);
+  box-shadow: 0 14px 30px rgba(5, 10, 22, 0.18);
+}
+
+.directory-bridge h2 {
+  margin: 5px 0 0;
+  font-size: clamp(1.55rem, 4.4vw, 2.5rem);
+  font-weight: 300;
+  line-height: 1.12;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+
+.directory-bridge__text {
+  max-width: 62ch;
+  margin: 14px 0 0;
+  line-height: 1.65;
+  opacity: 0.76;
+}
+
+.directory-bridge__stats {
+  display: grid;
+  grid-auto-flow: column;
+  gap: clamp(20px, 3vw, 40px);
+  margin: 0;
+  padding-left: clamp(20px, 3vw, 40px);
+  border-left: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+.directory-bridge__stats dt {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.0333em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.directory-bridge__stats dd {
+  margin: 4px 0 0;
+  font-size: clamp(1.5rem, 2.4vw, 2rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.directory-bridge__cta {
+  display: inline-flex;
+  grid-column: 1 / -1;
+  gap: 8px;
+  align-items: center;
+  color: rgb(var(--v-theme-link));
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.0333em;
+  text-transform: uppercase;
+}
+
+.directory-bridge .v-icon {
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.directory-bridge:hover .v-icon,
+.directory-bridge:focus-visible .v-icon {
+  transform: translateX(5px);
 }
 
 .budget-tool {
@@ -2151,6 +2276,18 @@ h1 {
     grid-template-columns: 1fr;
   }
 
+  .directory-bridge {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .directory-bridge__stats {
+    justify-content: start;
+    padding-left: 0;
+    padding-top: 22px;
+    border-left: 0;
+    border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  }
+
   .tier-row {
     grid-template-columns: 130px minmax(0, 1fr);
   }
@@ -2283,12 +2420,27 @@ h1 {
 
   .tier-board,
   .budget-tool,
+  .directory-bridge,
   .watchlist,
   .method,
   .page-close,
   .tier-loading,
   .empty-state {
     margin-inline: 18px;
+  }
+
+  .directory-bridge {
+    padding: 24px 18px;
+    gap: 22px;
+  }
+
+  .directory-bridge__stats {
+    /* Three counters do not fit a phone row without shrinking the numbers below the headline
+       weight they are there to carry. */
+    grid-auto-flow: row;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    padding-top: 18px;
   }
 
   .board-intro {

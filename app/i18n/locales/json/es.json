@@ -1466,7 +1466,8 @@
     "linkedin": "Acerca del autor",
     "mejorCasa": "Mejor casa de cambio",
     "liveDataHint": "Datos en vivo",
-    "viewFullSitemap": "Ver todo el sitio"
+    "viewFullSitemap": "Ver todo el sitio",
+    "chairPrices": "Precios de sillas de escritorio"
   },
   "sitemapPage": {
     "h1": "Mapa del sitio de Cambio Uruguay",
@@ -1685,7 +1686,15 @@
     "rating": {
       "any": "Cualquiera",
       "from": "Desde {stars} ★"
-    }
+    },
+    "metaTitle": "Precios de sillas de escritorio en Uruguay: comparador diario",
+    "metaDescription": "Todas las sillas de escritorio a la venta en Uruguay en una sola tabla: Mercado Libre, tiendas uruguayas y Marketplace, con el precio de cada plataforma al lado y una fila por silla.",
+    "breadcrumb": "Precios",
+    "ogSubtitle": "{products} sillas y {offers} ofertas, releídas todos los días",
+    "shareText": "Comparador de precios de sillas de escritorio en Uruguay",
+    "backToTiers": "Ver la tier list de r/CharruaDevs",
+    "backToTiersLead": "El directorio ordena por precio. La tier list ordena por consenso: qué sillas recomienda de verdad la gente que ya trabajó en ellas.",
+    "noRatingShort": "Sin reseñas"
   },
   "chairDetail": {
     "notFound": "No encontramos esa silla en el relevamiento actual.",
@@ -1740,7 +1749,10 @@
     "metaDescription": "{name} en Uruguay: desde {price}, comparada en {sellers} vendedores, con opiniones reales y ficha técnica.",
     "metaFallbackTitle": "Silla de escritorio en Uruguay",
     "metaFallbackSubtitle": "Precios y opiniones de sillas de escritorio en Uruguay.",
-    "ogSubtitle": "Desde {price} · {sellers} vendedores"
+    "ogSubtitle": "Desde {price} · {sellers} vendedores",
+    "relatedLead": "Misma categoría y un precio en el mismo rango, ordenadas por calificación.",
+    "historyLow": "Mínimo",
+    "historyHigh": "Máximo"
   },
   "chairTiers": {
     "realComments": "comentarios reales",
@@ -1923,6 +1935,13 @@
     "ogTitle": "Sillas de escritorio según r/CharruaDevs",
     "ogSubtitle": "Tier list con comentarios reales, muestra y método abierto",
     "metaTitle": "Mejores sillas de escritorio en Uruguay según r/CharruaDevs",
-    "metaDescription": "Mejores sillas de escritorio en Uruguay según posts, comentarios y respuestas de r/CharruaDevs, con pros, contras, precios locales y calculadora de presupuesto."
+    "metaDescription": "Mejores sillas de escritorio en Uruguay según posts, comentarios y respuestas de r/CharruaDevs, con pros, contras, precios locales y calculadora de presupuesto.",
+    "directory": {
+      "kicker": "Directorio de precios",
+      "title": "Y si ya sabés qué silla querés, mirá cuánto sale hoy",
+      "text": "Esta página mide consenso. El directorio mide precio: {products} sillas de {sellers} vendedores, releídas todos los días en Mercado Libre, tiendas uruguayas y Marketplace, con una fila por silla en lugar de la misma silla repetida.",
+      "textPlain": "Esta página mide consenso. El directorio mide precio: todas las sillas a la venta en Uruguay, releídas todos los días en Mercado Libre, tiendas uruguayas y Marketplace, con una fila por silla en lugar de la misma silla repetida.",
+      "cta": "Abrir el directorio de precios"
+    }
   }
 }

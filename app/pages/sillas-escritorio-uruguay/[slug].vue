@@ -16,7 +16,7 @@ STORY: See what it costs where, why it scores what it scores, then read the peop
       <VAlert type="info" variant="tonal" rounded="lg" class="mt-4">
         {{ t('chairDetail.notFound') }}
         <template #append>
-          <VBtn :to="localePath('/sillas-escritorio-uruguay')" variant="text" size="small">
+          <VBtn :to="localePath('/sillas-escritorio-uruguay/precios')" variant="text" size="small">
             {{ t('chairDetail.backToDirectory') }}
           </VBtn>
         </template>
@@ -208,20 +208,39 @@ STORY: See what it costs where, why it scores what it scores, then read the peop
             {{ trend > 0 ? '+' : '' }}{{ trend }}%
           </strong>
         </p>
-        <svg
-          class="sparkline"
-          :viewBox="`0 0 ${sparkWidth} ${sparkHeight}`"
-          preserveAspectRatio="none"
-          role="img"
-          :aria-label="
-            t('chairDetail.historyAria', {
-              first: formatChairPrice(historyRange.first),
-              last: formatChairPrice(historyRange.last),
-            })
-          "
-        >
-          <polyline :points="sparkPoints" fill="none" stroke="currentColor" stroke-width="2" />
-        </svg>
+        <!-- A price chart with no price axis asks the reader to trust a shape. The high and low
+             sit on the plot, so the line is readable as money rather than as a direction. -->
+        <div class="sparkline-plot">
+          <svg
+            class="sparkline"
+            :viewBox="`0 0 ${sparkWidth} ${sparkHeight}`"
+            preserveAspectRatio="none"
+            role="img"
+            :aria-label="
+              t('chairDetail.historyAria', {
+                first: formatChairPrice(historyRange.first),
+                last: formatChairPrice(historyRange.last),
+              })
+            "
+          >
+            <polyline :points="sparkArea" fill="currentColor" fill-opacity="0.09" stroke="none" />
+            <polyline
+              :points="sparkPoints"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              vector-effect="non-scaling-stroke"
+            />
+          </svg>
+          <span class="sparkline-bound is-high">
+            {{ t('chairDetail.historyHigh') }} {{ formatChairPrice(historyRange.high) }}
+          </span>
+          <span class="sparkline-bound is-low">
+            {{ t('chairDetail.historyLow') }} {{ formatChairPrice(historyRange.low) }}
+          </span>
+        </div>
         <p class="sparkline-legend">
           <span>{{ product.history[0]?.date }}</span>
           <span>{{ product.history[product.history.length - 1]?.date }}</span>
@@ -365,15 +384,39 @@ STORY: See what it costs where, why it scores what it scores, then read the peop
         </ul>
       </section>
 
+      <!-- Same card grammar as the directory: photo plate, name, rating, price. A row of bare
+           underlined links was the one place on the site where a chair had no face. -->
       <section v-if="related.length" class="detail-block" aria-labelledby="related-title">
         <h2 id="related-title">{{ t('chairDetail.relatedTitle') }}</h2>
+        <p class="block-lead">{{ t('chairDetail.relatedLead') }}</p>
         <ul class="related-grid">
-          <li v-for="item in related" :key="item.slug">
+          <li v-for="item in related" :key="item.slug" class="related-card">
             <NuxtLink :to="localePath(`/sillas-escritorio-uruguay/${item.slug}`)">
-              <strong>{{ item.name }}</strong>
-              <span v-if="item.price">{{ formatChairPrice(item.price.min) }}</span>
-              <span v-if="item.stars !== null" class="related-stars">
-                {{ item.stars.toFixed(1) }} ★
+              <span class="related-card__media" aria-hidden="true">
+                <img
+                  v-if="item.images[0]"
+                  :src="item.images[0].url"
+                  :alt="item.images[0].alt"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <VIcon v-else icon="mdi-chair-rolling" size="34" />
+              </span>
+              <span class="related-card__body">
+                <strong>{{ item.name }}</strong>
+                <span v-if="item.stars !== null" class="related-card__rating">
+                  <VIcon icon="mdi-star" size="14" />
+                  {{ item.stars.toFixed(1) }}
+                  <span v-if="item.ratingCount">
+                    {{ t('chairMarket.ratingCount', { count: item.ratingCount }) }}
+                  </span>
+                </span>
+                <span v-if="item.price" class="related-card__price">
+                  {{ t('chairMarket.fromPrice', { price: formatChairPrice(item.price.min) }) }}
+                </span>
+                <span v-else class="related-card__price is-muted">
+                  {{ t('chairMarket.noPrice') }}
+                </span>
               </span>
             </NuxtLink>
           </li>
@@ -381,7 +424,8 @@ STORY: See what it costs where, why it scores what it scores, then read the peop
       </section>
 
       <p class="detail-foot">
-        <NuxtLink :to="localePath('/sillas-escritorio-uruguay')">
+        <NuxtLink :to="localePath('/sillas-escritorio-uruguay/precios')">
+          <VIcon icon="mdi-arrow-left" size="18" />
           {{ t('chairDetail.backToDirectory') }}
         </NuxtLink>
       </p>
@@ -390,6 +434,7 @@ STORY: See what it costs where, why it scores what it scores, then read the peop
 </template>
 
 <script setup lang="ts">
+import { useDisplay } from 'vuetify'
 import {
   bestChairOffer,
   chairSourceIcon,
@@ -470,15 +515,20 @@ const { smAndDown } = useDisplay()
  * a nav label now, and on small screens the home crumb drops out too.
  */
 const breadcrumbs = computed(() => {
-  const parent = {
+  const tiers = {
     title: t('nav.chairTiers'),
     to: localePath('/sillas-escritorio-uruguay'),
     disabled: false,
   }
+  const directory = {
+    title: t('chairMarket.breadcrumb'),
+    to: localePath('/sillas-escritorio-uruguay/precios'),
+    disabled: false,
+  }
   const current = { title: product.value?.name ?? slug.value, disabled: true }
   return smAndDown.value
-    ? [parent, current]
-    : [{ title: t('inicio'), to: localePath('/'), disabled: false }, parent, current]
+    ? [directory, current]
+    : [{ title: t('inicio'), to: localePath('/'), disabled: false }, tiers, directory, current]
 })
 
 // A hand-drawn sparkline keeps the page free of a charting dependency for four data points.
@@ -486,9 +536,12 @@ const sparkWidth = 600
 const sparkHeight = 120
 const historyRange = computed(() => {
   const points = product.value?.history ?? []
+  const values = points.map(point => point.median)
   return {
     first: points[0]?.median ?? 0,
     last: points[points.length - 1]?.median ?? 0,
+    low: values.length ? Math.min(...values) : 0,
+    high: values.length ? Math.max(...values) : 0,
   }
 })
 const sparkPoints = computed(() => {
@@ -506,6 +559,11 @@ const sparkPoints = computed(() => {
     })
     .join(' ')
 })
+
+/** The same line closed along the baseline, so the plot reads as a filled trend rather than a wire. */
+const sparkArea = computed(() =>
+  sparkPoints.value ? `0,${sparkHeight} ${sparkPoints.value} ${sparkWidth},${sparkHeight}` : ''
+)
 
 const canonicalUrl = computed(
   () => `https://cambio-uruguay.com${localePath(`/sillas-escritorio-uruguay/${slug.value}`)}`
@@ -610,7 +668,7 @@ useHead(() => ({
   width: 100%;
   aspect-ratio: 4 / 3;
   object-fit: contain;
-  border-radius: 14px;
+  border-radius: 12px;
   background: rgba(var(--v-theme-on-surface), 0.04);
   padding: 12px;
 }
@@ -813,10 +871,35 @@ useHead(() => ({
   opacity: 0.7;
 }
 
+.sparkline-plot {
+  position: relative;
+  margin-bottom: 6px;
+}
+
 .sparkline {
+  display: block;
   width: 100%;
   height: 120px;
   color: rgb(var(--v-theme-primary));
+}
+
+.sparkline-bound {
+  position: absolute;
+  right: 0;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgb(var(--v-theme-surface));
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.78;
+}
+
+.sparkline-bound.is-high {
+  top: 0;
+}
+
+.sparkline-bound.is-low {
+  bottom: 0;
 }
 
 .sparkline-legend {
@@ -899,18 +982,21 @@ useHead(() => ({
 
 .reddit-evidence {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 12px;
   padding: 0;
   margin: 20px 0 0;
   list-style: none;
 }
 
+/* Depth is carried by the indent and by the labelled type in the header, never by a thick colored
+   edge: DESIGN.md's no-side-tab rule, which the tier page already follows and this list did not. */
 .reddit-evidence li {
+  min-width: 0;
   padding: 18px;
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.14);
-  border-left: 3px solid rgb(var(--v-theme-primary));
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
   border-radius: 12px;
-  background: rgba(var(--v-theme-surface), 0.62);
+  background: color-mix(in srgb, rgb(var(--v-theme-primary)) 7%, rgb(var(--v-theme-surface)));
 }
 
 .reddit-evidence li.is-reply {
@@ -941,12 +1027,14 @@ useHead(() => ({
   margin: 10px 0 6px;
   font-size: 0.92rem;
   font-weight: 600;
+  overflow-wrap: anywhere;
 }
 
 .reddit-evidence p {
   margin: 0 0 14px;
   white-space: pre-line;
   line-height: 1.62;
+  overflow-wrap: anywhere;
 }
 
 .reddit-evidence footer a {
@@ -984,24 +1072,119 @@ useHead(() => ({
   padding: 0;
   margin: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 14px;
 }
 
-.related-grid > * {
+.related-card {
+  list-style: none;
+  min-width: 0;
+}
+
+.related-card a {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  list-style: none;
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-radius: 12px;
+  background: rgb(var(--v-theme-surface));
+  color: rgb(var(--v-theme-on-surface));
+  text-decoration: none;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
 }
 
-.related-stars {
+.related-card a:hover,
+.related-card a:focus-visible {
+  transform: translateY(-3px);
+  border-color: rgba(var(--v-theme-primary), 0.55);
+  box-shadow: 0 10px 22px rgba(5, 10, 22, 0.16);
+}
+
+.related-card__media {
+  display: flex;
+  aspect-ratio: 4 / 3;
+  align-items: center;
+  justify-content: center;
+  background: rgba(var(--v-theme-on-surface), 0.04);
+}
+
+.related-card__media img {
+  width: 100%;
+  height: 100%;
+  padding: 10px;
+  object-fit: contain;
+}
+
+.related-card__body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 5px;
+  padding: 12px 14px 14px;
+}
+
+.related-card__body strong {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.35;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.related-card__rating {
+  display: flex;
+  gap: 4px;
+  align-items: center;
   font-size: 0.75rem;
-  opacity: 0.75;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.related-card__rating .v-icon {
+  color: rgb(var(--v-theme-warning));
+}
+
+.related-card__rating span {
+  font-weight: 400;
+  opacity: 0.72;
+}
+
+.related-card__price {
+  margin-top: auto;
+  padding-top: 4px;
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.related-card__price.is-muted {
+  font-weight: 400;
+  opacity: 0.68;
 }
 
 .detail-foot {
   margin-top: 32px;
+}
+
+.detail-foot a {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  color: rgb(var(--v-theme-link));
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.detail-foot a:hover,
+.detail-foot a:focus-visible {
+  text-decoration: underline;
 }
 
 @media (max-width: 960px) {

@@ -28,9 +28,41 @@ export default defineEventHandler(async (event): Promise<ChairCatalogResponse> =
     facets: { brands: [], categories: [], sellers: [], priceMax: 0 },
   }
 
+  // The tier-list page only needs the headline counts to advertise the directory. Loading a few
+  // hundred cards to render three numbers is what pushed that page over its weight budget, so
+  // `?summary=1` reads the two fields the counters actually use.
+  const summaryOnly = String(getQuery(event).summary ?? '') === '1'
+
   try {
     await connectDb()
     const cutoff = new Date(Date.now() - STALE_DAYS * 86_400_000).toISOString().slice(0, 10)
+
+    if (summaryOnly) {
+      const [meta, rows] = await Promise.all([
+        ChairCatalogMetaModel.findOne({ key: 'uy-desk-chairs' })
+          .select({ _id: 0, __v: 0, createdAt: 0, updatedAt: 0 })
+          .lean(),
+        ChairCatalogProductModel.find({ lastSeen: { $gte: cutoff } })
+          .select({ _id: 0, slug: 1, 'offers.sellerKey': 1 })
+          .lean(),
+      ])
+
+      const counted = (rows || []) as unknown as Array<{ offers: Array<{ sellerKey: string }> }>
+      return {
+        ...empty,
+        meta: (meta
+          ? {
+              ...meta,
+              products: counted.length,
+              offers: counted.reduce((sum, product) => sum + product.offers.length, 0),
+              sellers: new Set(
+                counted.flatMap(product => product.offers.map(offer => offer.sellerKey))
+              ).size,
+            }
+          : null) as any,
+        total: counted.length,
+      }
+    }
 
     const [meta, rows] = await Promise.all([
       ChairCatalogMetaModel.findOne({ key: 'uy-desk-chairs' })
@@ -107,8 +139,21 @@ export default defineEventHandler(async (event): Promise<ChairCatalogResponse> =
         .sort((a, b) => b.count - a.count || String(a.value).localeCompare(String(b.value)))
     }
 
+    // `meta` describes the latest harvest, while the public query deliberately retains healthy
+    // rows seen during the seven-day grace window. Keep its source diagnostics and timestamp, but
+    // make the headline totals describe the exact rows this response publishes.
+    const publishedMeta = meta
+      ? {
+          ...meta,
+          products: products.length,
+          offers: full.reduce((sum, product) => sum + product.offers.length, 0),
+          sellers: new Set(full.flatMap(product => product.offers.map(offer => offer.sellerKey)))
+            .size,
+        }
+      : null
+
     return {
-      meta: (meta as any) ?? null,
+      meta: (publishedMeta as any) ?? null,
       products,
       total: products.length,
       facets: {

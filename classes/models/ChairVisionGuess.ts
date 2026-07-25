@@ -9,6 +9,11 @@ import { appModel } from "../appdb";
 const ChairVisionGuessSchema = new Schema(
   {
     imageKey: { type: String, required: true },
+    // Hash of the image BYTES. Facebook re-signs its CDN URLs on every scrape (`oh`, `oe`,
+    // `_nc_ohc` all rotate), so the URL is a different string every night for the same photo and a
+    // URL-keyed cache would pay for that photo again every run. The bytes do not move, and this
+    // also collapses the one manufacturer photo that four storefronts each republish.
+    contentHash: { type: String, default: "" },
     imageUrl: { type: String, default: "" },
     listingId: { type: String, default: "" },
     title: { type: String, default: "" },
@@ -24,9 +29,14 @@ const ChairVisionGuessSchema = new Schema(
 );
 
 ChairVisionGuessSchema.index({ imageKey: 1 }, { unique: true });
+// Not unique: the same photo legitimately appears under several URLs and listings, and each of
+// those gets its own row so the next run can short-circuit before downloading anything.
+ChairVisionGuessSchema.index({ contentHash: 1 });
+ChairVisionGuessSchema.index({ listingId: 1 });
 
 export const ChairVisionGuessModel = appModel<{
   imageKey: string;
+  contentHash: string;
   imageUrl: string;
   listingId: string;
   title: string;

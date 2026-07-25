@@ -1455,7 +1455,8 @@
     "linkedin": "About the author",
     "mejorCasa": "Best exchange house",
     "liveDataHint": "Live data",
-    "viewFullSitemap": "View the whole site"
+    "viewFullSitemap": "View the whole site",
+    "chairPrices": "Desk chair prices"
   },
   "sitemapPage": {
     "h1": "Cambio Uruguay sitemap",
@@ -1674,7 +1675,15 @@
     "rating": {
       "any": "Any",
       "from": "From {stars} ★"
-    }
+    },
+    "metaTitle": "Desk chair prices in Uruguay: a daily price comparison",
+    "metaDescription": "Every desk chair on sale in Uruguay in one table: Mercado Libre, Uruguayan stores and Marketplace, with each platform priced beside the others and one row per chair.",
+    "breadcrumb": "Prices",
+    "ogSubtitle": "{products} chairs and {offers} offers, re-read every day",
+    "shareText": "Desk chair price comparison for Uruguay",
+    "backToTiers": "See the r/CharruaDevs tier list",
+    "backToTiersLead": "The directory ranks by price. The tier list ranks by consensus: which chairs the people who already work in them actually recommend.",
+    "noRatingShort": "No reviews"
   },
   "chairDetail": {
     "notFound": "We could not find that chair in the current harvest.",
@@ -1729,7 +1738,10 @@
     "metaDescription": "{name} in Uruguay: from {price}, compared across {sellers} sellers, with real owner opinions and specs.",
     "metaFallbackTitle": "Desk chair in Uruguay",
     "metaFallbackSubtitle": "Desk chair prices and opinions in Uruguay.",
-    "ogSubtitle": "From {price} · {sellers} sellers"
+    "ogSubtitle": "From {price} · {sellers} sellers",
+    "relatedLead": "Same category and a price in the same range, ordered by rating.",
+    "historyLow": "Low",
+    "historyHigh": "High"
   },
   "chairTiers": {
     "realComments": "real comments",
@@ -1912,6 +1924,13 @@
     "ogTitle": "Desktop chairs according to r/CharruaDevs",
     "ogSubtitle": "Tier list with real comments, sample size, and an open method",
     "metaTitle": "Best desktop chairs in Uruguay according to r/CharruaDevs",
-    "metaDescription": "Best desktop chairs in Uruguay from r/CharruaDevs posts, comments, and replies, with pros, cons, local prices, and a budget calculator."
+    "metaDescription": "Best desktop chairs in Uruguay from r/CharruaDevs posts, comments, and replies, with pros, cons, local prices, and a budget calculator.",
+    "directory": {
+      "kicker": "Price directory",
+      "title": "And if you already know the chair, see what it costs today",
+      "text": "This page measures consensus. The directory measures price: {products} chairs from {sellers} sellers, re-read every day across Mercado Libre, Uruguayan stores and Marketplace, one row per chair instead of the same chair repeated.",
+      "textPlain": "This page measures consensus. The directory measures price: every chair on sale in Uruguay, re-read every day across Mercado Libre, Uruguayan stores and Marketplace, one row per chair instead of the same chair repeated.",
+      "cta": "Open the price directory"
+    }
   }
 }

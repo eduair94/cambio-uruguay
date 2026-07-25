@@ -10,7 +10,7 @@ STORY: Set a budget and a type, watch the count fall, open the chair that fits.
     <header class="market-head">
       <div>
         <p class="market-kicker">{{ t('chairMarket.kicker') }}</p>
-        <h2 id="chair-market-title">{{ t('chairMarket.title') }}</h2>
+        <component :is="headingTag" id="chair-market-title">{{ t('chairMarket.title') }}</component>
         <p class="market-lead">{{ t('chairMarket.lead') }}</p>
       </div>
 
@@ -155,16 +155,19 @@ STORY: Set a budget and a type, watch the count fall, open the chair that fits.
               <span v-else class="card-media__fallback">
                 <VIcon icon="mdi-chair-rolling" size="42" />
               </span>
-              <VChip
-                v-if="product.tier"
-                class="card-tier"
-                size="x-small"
-                variant="flat"
-                color="amber"
-              >
-                Tier {{ product.tier }}
-              </VChip>
             </NuxtLink>
+
+            <!-- Outside the aria-hidden media link: the tier is the strongest signal on the card
+                 and a screen reader would never have heard it from inside a decorative link. -->
+            <VChip
+              v-if="product.tier"
+              class="card-tier"
+              size="x-small"
+              variant="flat"
+              color="amber"
+            >
+              Tier {{ product.tier }}
+            </VChip>
 
             <div class="card-body">
               <h3 class="card-title">
@@ -185,11 +188,13 @@ STORY: Set a budget and a type, watch the count fall, open the chair that fits.
                 <span v-if="product.stars !== null" class="stars-value">
                   {{ product.stars.toFixed(1) }}
                 </span>
+                <!-- The full sentence lives in the row's aria-label. A 153px card shows the count
+                     the way every product grid does, because "26457 opiniones" clipped mid-word. -->
                 <span class="stars-count">
                   {{
                     product.ratingCount
-                      ? t('chairMarket.ratingCount', { count: product.ratingCount })
-                      : t('chairMarket.noRating')
+                      ? `(${product.ratingCount.toLocaleString(locale)})`
+                      : t('chairMarket.noRatingShort')
                   }}
                 </span>
               </p>
@@ -207,8 +212,12 @@ STORY: Set a budget and a type, watch the count fall, open the chair that fits.
               <ul class="card-platforms">
                 <li v-for="group in platformSummary(product)" :key="group.source">
                   <VIcon :icon="chairSourceIcon(group.source)" size="14" />
-                  {{ t(`chairMarket.source.${group.source}`) }}
-                  <span>{{ group.count }}</span>
+                  <!-- Clipped on phones, never removed: the icon carries the platform there and
+                       the name stays in the accessibility tree. -->
+                  <span class="card-platforms__label">
+                    {{ t(`chairMarket.source.${group.source}`) }}
+                  </span>
+                  <span class="card-platforms__count">{{ group.count }}</span>
                 </li>
               </ul>
 
@@ -266,10 +275,18 @@ STORY: Set a budget and a type, watch the count fall, open the chair that fits.
                 <td :data-label="t('chairMarket.sourceName')">{{ source.label }}</td>
                 <td :data-label="t('chairMarket.sourceListings')">{{ source.listings }}</td>
                 <td :data-label="t('chairMarket.sourceStatus')">
-                  <VChip :color="source.ok ? 'success' : 'warning'" size="x-small" variant="tonal">
-                    {{ source.ok ? t('chairMarket.sourceOk') : t('chairMarket.sourceFail') }}
-                  </VChip>
-                  <span class="market-sources__detail">{{ source.note }}</span>
+                  <!-- The mobile-card layout makes this cell a flex row, and the chip was the item
+                       that gave way: "Leída" arrived clipped mid-word. It never shrinks now. -->
+                  <span class="market-sources__status">
+                    <VChip
+                      :color="source.ok ? 'success' : 'warning'"
+                      size="x-small"
+                      variant="tonal"
+                    >
+                      {{ source.ok ? t('chairMarket.sourceOk') : t('chairMarket.sourceFail') }}
+                    </VChip>
+                    <span class="market-sources__detail">{{ source.note }}</span>
+                  </span>
                 </td>
               </tr>
             </tbody>
@@ -327,13 +344,18 @@ import {
   type ChairDirectoryFilters,
 } from '~/utils/chairCatalog'
 
-const props = defineProps<{
-  products: ChairCatalogCard[]
-  meta: ChairCatalogMeta | null
-  pending: boolean
-  brands: Array<{ value: string; count: number }>
-  priceMax: number
-}>()
+const props = withDefaults(
+  defineProps<{
+    products: ChairCatalogCard[]
+    meta: ChairCatalogMeta | null
+    pending: boolean
+    brands: Array<{ value: string; count: number }>
+    priceMax: number
+    /** `h1` when the directory is the whole page, `h2` when it sits inside a longer one. */
+    headingTag?: 'h1' | 'h2'
+  }>(),
+  { headingTag: 'h2' }
+)
 
 const { t, locale } = useI18n()
 const localePath = useLocalePath()
@@ -474,10 +496,12 @@ const ratingAria = (product: ChairCatalogCard): string =>
 
 <style scoped>
 .chair-market {
+  /* One offset for everything that pins under the app bar, so the toolbar and the facet rail can
+     never disagree about where the fixed header ends. */
+  --app-bar: 64px;
   display: flex;
   flex-direction: column;
   gap: 24px;
-  margin-top: 48px;
 }
 
 .market-head {
@@ -503,12 +527,14 @@ const ratingAria = (product: ChairCatalogCard): string =>
   color: #1565c0;
 }
 
-.market-head h2 {
-  font-size: clamp(1.35rem, 3vw, 1.75rem);
+.market-head :is(h1, h2) {
+  font-size: clamp(1.55rem, 4.4vw, 2.5rem);
   font-weight: 700;
-  line-height: 1.2;
-  letter-spacing: -0.01em;
+  line-height: 1.16;
+  letter-spacing: -0.015em;
   margin: 0;
+  max-width: 27ch;
+  text-wrap: balance;
 }
 
 .market-lead {
@@ -551,10 +577,14 @@ const ratingAria = (product: ChairCatalogCard): string =>
 .facet-rail__inner {
   position: sticky;
   /* Clears the app bar; the rail scrolls on its own when the facets are taller than the viewport. */
-  top: 88px;
-  max-height: calc(100vh - 108px);
+  top: calc(var(--app-bar) + 24px);
+  max-height: calc(100vh - var(--app-bar) - 44px);
   overflow-y: auto;
-  padding-right: 4px;
+  /* `overflow-y: auto` alone makes overflow-x compute to `auto` too, and the slider thumb's few
+     stray pixels were enough to hang a horizontal scrollbar under the facets. */
+  overflow-x: hidden;
+  padding-right: 8px;
+  scrollbar-width: thin;
 }
 
 .market-results {
@@ -566,7 +596,7 @@ const ratingAria = (product: ChairCatalogCard): string =>
 
 .results-bar {
   position: sticky;
-  top: 64px;
+  top: var(--app-bar);
   z-index: 3;
   display: flex;
   align-items: center;
@@ -577,16 +607,22 @@ const ratingAria = (product: ChairCatalogCard): string =>
 }
 
 .results-bar__count {
+  /* Shrinks before the sort control does, and truncates rather than pushing the row wider. */
+  min-width: 0;
   margin: 0;
+  overflow: hidden;
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.0333em;
   opacity: 0.85;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .results-bar__sort {
+  flex: 0 0 auto;
   margin-left: auto;
-  max-width: 220px;
+  width: 220px;
 }
 
 .active-filters {
@@ -598,7 +634,9 @@ const ratingAria = (product: ChairCatalogCard): string =>
 
 .market-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  /* 212px lands on four columns at desktop and three on a tablet. At 240 the same widths gave
+     three and two, and a directory that shows one row per screen is a list, not a directory. */
+  grid-template-columns: repeat(auto-fill, minmax(212px, 1fr));
   gap: 16px;
   list-style: none;
   padding: 0;
@@ -722,12 +760,20 @@ const ratingAria = (product: ChairCatalogCard): string =>
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  max-width: 100%;
   padding: 2px 8px;
   border-radius: 999px;
   background: rgba(var(--v-theme-on-surface), 0.07);
+  white-space: nowrap;
 }
 
-.card-platforms span {
+.card-platforms__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-platforms__count {
   font-variant-numeric: tabular-nums;
   opacity: 0.8;
 }
@@ -787,14 +833,39 @@ const ratingAria = (product: ChairCatalogCard): string =>
   vertical-align: top;
 }
 
-.market-sources__detail {
-  display: block;
-  opacity: 0.85;
-  font-size: 0.75rem;
-  margin-top: 2px;
+.market-sources__status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  align-items: baseline;
+  justify-content: flex-end;
+  min-width: 0;
 }
 
-@media (max-width: 1279px) {
+.market-sources__status .v-chip {
+  /* The label is short and fixed; it is the note that should wrap. */
+  flex: 0 0 auto;
+}
+
+.market-sources__detail {
+  min-width: 0;
+  opacity: 0.85;
+  font-size: 0.75rem;
+}
+
+@media (min-width: 600px) {
+  .market-sources__status {
+    justify-content: flex-start;
+  }
+
+  .market-sources__detail {
+    flex: 1 0 100%;
+    margin-top: 2px;
+  }
+}
+
+/* A landscape tablet has room for the rail; below that the facets move into the sheet. */
+@media (max-width: 1023px) {
   .market-layout {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -802,33 +873,41 @@ const ratingAria = (product: ChairCatalogCard): string =>
   .facet-rail {
     display: none;
   }
-
-  .results-bar__sort {
-    max-width: 170px;
-  }
-}
-
-/* The page wrapper carries no horizontal padding and goes margin-inline: -12px on phones so the
-   hero slab can bleed edge to edge. Every non-slab section has to put that space back itself, or
-   the cards sit flush against the screen. */
-@media (max-width: 959px) {
-  .chair-market {
-    padding-inline: 16px;
-  }
 }
 
 @media (max-width: 599px) {
-  .chair-market {
-    margin-top: 32px;
-    padding-inline: 24px;
+  .market-head {
+    gap: 18px;
   }
 
   .market-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 16px;
+  }
+
+  /* The count is the least useful thing to read mid-scroll, so on a phone the row keeps the two
+     controls at full size and drops the count under them. */
+  .results-bar {
+    flex-wrap: wrap;
+    row-gap: 6px;
+  }
+
+  .results-bar__count {
+    order: 3;
+    flex: 1 0 100%;
+  }
+
+  .results-bar__sort {
+    width: auto;
+    min-width: 0;
+    flex: 1 1 auto;
   }
 
   .market-grid {
-    grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+    /* A 390px phone leaves 319px of grid. At a 155px floor two cards needed 322px and the row
+       collapsed to one full-width card — one and a half chairs per screen for a 377-row
+       directory. 148px keeps the pair, and a 320px phone still drops to one card. */
+    grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
     gap: 12px;
   }
 
@@ -839,6 +918,48 @@ const ratingAria = (product: ChairCatalogCard): string =>
 
   .card-price strong {
     font-size: 1rem;
+  }
+
+  /* Two 148px cards leave no room for "Ir a Mercado Libre" beside a padded icon. */
+  .card-actions .v-btn {
+    padding-inline: 8px;
+    font-size: 0.75rem;
+    letter-spacing: 0;
+  }
+
+  /* Five 15px glyphs eat 75px of a 129px content box, which pushed the review count out of the
+     card. One star marks the metric and the number carries it; the full "4.6 of 5 from N reviews"
+     sentence is already the row's aria-label. */
+  .card-rating {
+    gap: 4px;
+    flex-wrap: nowrap;
+  }
+
+  .card-rating .stars .v-icon:not(:first-child) {
+    display: none;
+  }
+
+  .stars-count {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* The platform name is clipped, not dropped: it stays readable to a screen reader while the
+     icon does the identifying in a 148px card. */
+  .card-platforms__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .card-platforms li {
+    gap: 5px;
+    padding-inline: 7px;
   }
 }
 </style>

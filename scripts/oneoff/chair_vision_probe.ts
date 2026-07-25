@@ -1,10 +1,14 @@
 // Feasibility probe for the image-based identification: takes real listings that TEXT could not
 // identify and prints what the model reads off each photo, accepted or not.
-//   npm run chair_vision_probe
+//   npm run chair_vision_probe -- [limit] [ml|fb]
+//
+// Facebook Marketplace is the source this exists for: its titles are routinely just "silla de
+// escritorio", so every listing arrives unidentified and the photo is the only evidence there is.
 import dotenv from "dotenv";
 dotenv.config();
 dotenv.config({ path: "app/.env" });
 
+import { harvestFacebookMarketplace } from "../../classes/chairs/sources/facebook";
 import { harvestMercadoLibre } from "../../classes/chairs/sources/mercadolibre";
 import { identityForListing } from "../../classes/chairs/normalize";
 import { identifyChairsFromImages } from "../../classes/chairs/vision";
@@ -12,11 +16,16 @@ import { identifyChairsFromImages } from "../../classes/chairs/vision";
 async function main(): Promise<void> {
   process.env.APP_MONGO_URI = process.env.APP_MONGO_URI || process.env.MONGO_URI;
   const limit = Number(process.argv[2] || 8);
+  const source = (process.argv[3] || "ml").toLowerCase();
   process.env.CHAIR_VISION_LIMIT = String(limit);
 
-  const harvest = await harvestMercadoLibre();
+  const harvest = source.startsWith("fb")
+    ? await harvestFacebookMarketplace()
+    : await harvestMercadoLibre();
   const unnamed = harvest.listings.filter((listing) => !identityForListing(listing).identified);
-  console.log(`${harvest.listings.length} listings, ${unnamed.length} sin identificar por texto`);
+  console.log(
+    `[${source}] ok=${harvest.ok} :: ${harvest.note}\n${harvest.listings.length} listings, ${unnamed.length} sin identificar por texto`
+  );
 
   const before = unnamed.slice(0, limit).map((listing) => ({ id: listing.listingId, title: listing.title }));
   const stats = await identifyChairsFromImages(unnamed, () => true);
