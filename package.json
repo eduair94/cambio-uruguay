@@ -6,6 +6,7 @@
   "scripts": {
     "bcu_single": "ts-node scripts/oneoff/sync_bcu_single.ts",
     "bcu_backfill": "ts-node scripts/oneoff/bcu_backfill.ts",
+    "dolarahora_backfill": "ts-node scripts/oneoff/dolarahora_backfill.ts",
     "oca": "ts-node scripts/oneoff/oca.ts",
     "prex": "ts-node scripts/oneoff/prex.ts",
     "bbva": "ts-node scripts/oneoff/bbva.ts",

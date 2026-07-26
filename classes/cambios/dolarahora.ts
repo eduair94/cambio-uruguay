@@ -15,6 +15,8 @@ export type DolarAhoraInstitution =
   | "oca";
 
 type InstitutionProfile = {
+  /** Origin key used by cambio-uruguay's Mongo/API rows. */
+  origin: string;
   /** Hostname of the link DólarAhora renders inside the institution card. */
   host: string;
   /**
@@ -27,30 +29,37 @@ type InstitutionProfile = {
 
 const INSTITUTIONS: Record<DolarAhoraInstitution, InstitutionProfile> = {
   brou: {
+    origin: "brou",
     host: "brou.com.uy",
     row: { code: "USD", type: "EBROU", name: "Dólar eBROU" },
   },
   scotia: {
+    origin: "scotiabank",
     host: "scotiabank.com.uy",
     row: { code: "USD", type: "TRANSFERENCIA", name: "Dólar online" },
   },
   itau: {
+    origin: "itau",
     host: "itau.com.uy",
     row: { code: "USD", type: "TRANSFERENCIA", name: "Dólar online" },
   },
   santander: {
+    origin: "santander",
     host: "santander.com.uy",
     row: { code: "USD", type: "TRANSFERENCIA", name: "Dólar online" },
   },
   bbva: {
+    origin: "bbva",
     host: "bbva.com.uy",
     row: { code: "USD", type: "TRANSFERENCIA", name: "Dólar online" },
   },
   prex: {
+    origin: "prex",
     host: "prexcard.com",
     row: { code: "USD", type: "", name: "Dólar" },
   },
   oca: {
+    origin: "oca",
     host: "oca.com.uy",
     row: { code: "USD", type: "", name: "Dólar" },
   },
@@ -59,6 +68,13 @@ const INSTITUTIONS: Record<DolarAhoraInstitution, InstitutionProfile> = {
 export const DOLAR_AHORA_INSTITUTIONS = Object.keys(
   INSTITUTIONS
 ) as DolarAhoraInstitution[];
+
+export function getDolarAhoraRateIdentity(
+  institution: DolarAhoraInstitution
+): { origin: string } & Pick<CambioObj, "code" | "type" | "name"> {
+  const profile = INSTITUTIONS[institution];
+  return { origin: profile.origin, ...profile.row };
+}
 
 function parseMoney(value: string): number {
   const compact = value.replace(/[^\d,.-]/g, "");

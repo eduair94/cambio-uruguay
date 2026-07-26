@@ -347,6 +347,60 @@ describe('ratesForOrigin', () => {
     expect(usd?.buy).toBe(39.5) // not the buy:1 duplicate
   })
 
+  it('uses an online customer quote when no plain/cash quote exists', () => {
+    const rates = ratesForOrigin(
+      [
+        {
+          origin: 'scotiabank',
+          date: '2026-07-26',
+          type: 'TRANSFERENCIA',
+          code: 'USD',
+          name: 'Dólar online',
+          buy: 39.07,
+          sell: 41.27,
+        },
+      ],
+      'scotiabank'
+    )
+
+    expect(rates).toEqual([
+      {
+        code: 'USD',
+        name: 'Dólar online',
+        buy: 39.07,
+        sell: 41.27,
+      },
+    ])
+  })
+
+  it('prefers a plain quote even when an online quote appears first', () => {
+    const rates = ratesForOrigin(
+      [
+        {
+          origin: 'scotiabank',
+          date: '2026-07-26',
+          type: 'TRANSFERENCIA',
+          code: 'USD',
+          name: 'Dólar online',
+          buy: 39.07,
+          sell: 41.27,
+        },
+        {
+          origin: 'scotiabank',
+          date: '2026-07-26',
+          type: '',
+          code: 'USD',
+          name: 'Dólar',
+          buy: 38.5,
+          sell: 42,
+        },
+      ],
+      'scotiabank'
+    )
+
+    expect(rates[0]).toMatchObject({ name: 'Dólar', buy: 38.5, sell: 42 })
+  })
+
   it('orders major currencies (USD, EUR, BRL, ARS) first', () => {
     const rates = ratesForOrigin(rows, 'itau')
     expect(rates[0]?.code).toBe('USD')

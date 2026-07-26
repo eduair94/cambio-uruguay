@@ -171,6 +171,10 @@ export function goldGramPrices(pricePerTroyOunce: number): GoldGramPrice[] {
 
 /** Exchange `type` values that represent a plain/cash quote shown on these pages. */
 const PLAIN_OR_CASH_TYPES: ReadonlySet<ExchangeType> = new Set<ExchangeType>(['', 'BILLETE'])
+const CONDITIONAL_CASA_TYPES: ReadonlySet<ExchangeType> = new Set<ExchangeType>([
+  'EBROU',
+  'TRANSFERENCIA',
+])
 
 /**
  * Resolve a URL slug to its ISO currency code.
@@ -299,7 +303,7 @@ export function quotesForCurrency(
   return quotes
 }
 
-/** One currency's plain/cash quote for a single casa, used by the casa page. */
+/** One currency's preferred quote for a single casa, used by the casa page. */
 export interface CasaRate {
   /** ISO currency code (e.g. `'USD'`). */
   code: string
@@ -312,29 +316,46 @@ export interface CasaRate {
 }
 
 /**
- * Collect the plain/cash quotes for a single casa (`origin`), one row per
- * currency code (first plain/cash row per code wins), sorted with the major
- * currencies (USD, EUR, BRL, ARS) first and the rest alphabetically.
+ * Collect the preferred quotes for a single casa (`origin`), one row per
+ * currency code, sorted with the major currencies (USD, EUR, BRL, ARS) first
+ * and the rest alphabetically.
+ *
+ * A plain/cash quote always wins. When a casa only publishes a customer-channel
+ * quote (e.g. Scotiabank's DolarAhora-backed `TRANSFERENCIA` row), use that row
+ * instead of rendering an empty page. Reference-market rows remain excluded.
  *
  * @returns a strictly-typed list of {@link CasaRate}; empty when the casa has no
- * plain/cash quotes.
+ * public customer quote.
  */
 export function ratesForOrigin(rows: readonly ExchangeRate[], origin: string): CasaRate[] {
   const target = origin.trim()
   if (!target) return []
+  if (target === BCU_ORIGIN) return []
 
   const byCode = new Map<string, CasaRate>()
-  for (const row of rows) {
-    if (row.origin !== target) continue
-    if (!PLAIN_OR_CASH_TYPES.has(row.type)) continue
-    if (byCode.has(row.code)) continue // first plain/cash row per currency wins
 
+  const addFirstRate = (row: ExchangeRate) => {
+    if (byCode.has(row.code)) return
     byCode.set(row.code, {
       code: row.code,
       name: row.name && row.name.trim() ? row.name : row.code,
       buy: typeof row.buy === 'number' ? row.buy : null,
       sell: typeof row.sell === 'number' ? row.sell : null,
     })
+  }
+
+  // First pass: the walk-in quote is always the preferred public rate.
+  for (const row of rows) {
+    if (row.origin !== target) continue
+    if (!PLAIN_OR_CASH_TYPES.has(row.type)) continue
+    addFirstRate(row)
+  }
+
+  // Second pass: fill only currencies that have no walk-in quote.
+  for (const row of rows) {
+    if (row.origin !== target) continue
+    if (!CONDITIONAL_CASA_TYPES.has(row.type)) continue
+    addFirstRate(row)
   }
 
   // Major currencies first (in slug order), then the rest alphabetically by code.
