@@ -19,6 +19,7 @@
     "remove_date": "ts-node scripts/oneoff/remove_date.ts",
     "sync": "ts-node sync.ts",
     "sync_aduana": "ts-node sync_aduana.ts",
+    "harvest_aduana_reddit": "ts-node scripts/oneoff/harvest_aduana_reddit.ts",
     "sync_banks_news": "ts-node sync_banks_news.ts",
     "sync_figures": "ts-node sync_figures.ts",
     "sync_costs": "ts-node sync_costs.ts",

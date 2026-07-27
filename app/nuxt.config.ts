@@ -191,16 +191,6 @@ export default defineNuxtConfig({
       cssCodeSplit: false, // Disable CSS code splitting to avoid dependency issues
       minify: 'esbuild', // Switch to esbuild for more reliable minification
       chunkSizeWarningLimit: 1000,
-      // Remove manual chunking that's causing issues
-      rollupOptions: {
-        external: (id: string) => {
-          // Don't externalize these in the browser build
-          if (id.includes('node:') && typeof window !== 'undefined') {
-            return false
-          }
-          return false
-        },
-      },
     },
   },
 
@@ -256,7 +246,9 @@ export default defineNuxtConfig({
     // normal/dev builds -> Nitro keeps its default `.output`.
     ...(process.env.NITRO_OUTPUT_DIR ? { output: { dir: process.env.NITRO_OUTPUT_DIR } } : {}),
     prerender: {
-      routes: ['/sitemap.xml', '/robots.txt'],
+      // SEO endpoints are generated at runtime. Initializing the whole SSR app
+      // to prerender these files made every build depend on catalogue growth.
+      routes: [],
       ignore: ['/manifest.json'],
       crawlLinks: false,
     },
@@ -264,7 +256,18 @@ export default defineNuxtConfig({
       gzip: true,
       brotli: true,
     },
-    minify: true,
+    // Client assets stay minified by Vite. Minifying the private Node server
+    // bundle adds substantial CPU/RAM cost without reducing browser payloads.
+    minify: false,
+    // Deploys run from app/ after `npm install`; the output is never shipped as
+    // a standalone artifact. Avoid the expensive dependency trace/copy pass and
+    // let Node resolve production packages from app/node_modules at runtime.
+    externals: {
+      trace: false,
+    },
+    experimental: {
+      bundleRuntimeDependencies: false,
+    },
     storage: {
       redis: {
         driver: 'memory', // Use memory storage for development
@@ -605,6 +608,10 @@ export default defineNuxtConfig({
   // Sitemap Configuration
   sitemap: {
     sources: ['/api/__sitemap__/urls'],
+    // Serve the large sitemap on demand and reuse it for one hour. This keeps
+    // production builds independent from catalogue growth while preserving the
+    // same public /sitemap.xml URL for crawlers.
+    cacheMaxAgeSeconds: 60 * 60,
     // Keep non-search pages out of the sitemap so they don't waste crawl budget
     // or show as "not indexed" in Search Console. These are auto-discovered from
     // pages/; the custom source above no longer emits them either. They're also

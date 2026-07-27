@@ -546,10 +546,12 @@
               Ejército.
             </li>
             <li>
-              <strong>Prohibidos por courier:</strong> vaporizadores y cigarrillos electrónicos,
-              pirotecnia, inflamables, baterías sueltas y power banks, dinero en efectivo y
-              sustancias controladas. Bebidas alcohólicas, tabaco, perfumería y vehículos pagan
-              IMESI y solo ingresan por importación formal (régimen general).
+              <strong>No admitidos o sujetos a otra vía:</strong> vaporizadores y cigarrillos
+              electrónicos, pirotecnia, inflamables, dinero en efectivo y sustancias controladas no
+              se admiten por encomienda postal. Las baterías sueltas y power banks tienen
+              restricciones de transporte aéreo que dependen del operador. Bebidas alcohólicas,
+              tabaco, perfumería y vehículos pagan IMESI y no entran en la franquicia ni en la
+              prestación única.
             </li>
           </ul>
           <p>
@@ -566,11 +568,11 @@
       año, en 3 envíos— exime de aranceles pero <strong>igual paga IVA (tasa básica 22%)</strong>,
       salvo las compras de EE.UU. de hasta US$ 200, exoneradas por el acuerdo TIFA. Si el envío no
       entra en la franquicia, paga la <strong>prestación única: 60%, mínimo US$ 20</strong> — el
-      envío entero, porque los dos regímenes son excluyentes. Los topes de US$ 200 y US$ 800 se
-      miden sobre el <strong>total de la factura del vendedor</strong> (precio + sales tax + su
-      envío); el flete que te cobra el courier va aparte y no paga IVA. Verificá las condiciones
-      vigentes con la Dirección Nacional de Aduanas antes de comprar. No es asesoramiento
-      profesional.
+      envío entero en esta estimación: las fuentes oficiales no publican un mecanismo para aplicar
+      franquicia a una parte y 60% al saldo del mismo envío. Los topes de US$ 200 y US$ 800 se miden
+      sobre el <strong>total de la factura del vendedor</strong> (precio + sales tax + su envío); el
+      flete que te cobra el courier va aparte y no paga IVA. Verificá las condiciones vigentes con
+      la Dirección Nacional de Aduanas antes de comprar. No es asesoramiento profesional.
     </template>
   </ToolShell>
 </template>
@@ -797,7 +799,7 @@ const faq = [
   },
   {
     q: 'Tengo franquicia disponible y el Correo igual me cobra. ¿Por qué?',
-    a: 'Hasta el 30 de abril de 2026 pasaba por la modalidad: la franquicia se cortaba en US$ 50 si el envío llegaba por correo no exprés (PP o SIMPLE — el "envío gratis" de AliExpress, Shein o Temu) y en US$ 200 si llegaba exprés. Eran los arts. 3 y 4 del Decreto 356/014, derogados por el art. 19 del Decreto 50/026: hoy hay un solo régimen para el Correo y para los couriers, con tope anual de US$ 800 en 3 envíos y sin límite por envío. Ojo, igual: la página del Correo para declarar todavía publica los topes viejos en su paso 3 (y se contradice en el paso 4, que te deja gestionar hasta US$ 800). Si el formulario te niega la franquicia por eso, reclamalo citando el Decreto 50/026 ante la DNA (info@aduanas.gub.uy) y el Correo (0800 2108). Otros motivos posibles: ya usaste los 3 envíos del año, el saldo no cubre el envío entero (la franquicia no se parte), el titular del pago no coincide con el destinatario, o el producto está gravado por IMESI.',
+    a: 'Hasta el 30 de abril de 2026 pasaba por la modalidad: la franquicia se cortaba en US$ 50 si el envío llegaba por correo no exprés (PP o SIMPLE — el "envío gratis" de AliExpress, Shein o Temu) y en US$ 200 si llegaba exprés. Eran los arts. 3 y 4 del Decreto 356/014, derogados por el art. 19 del Decreto 50/026: hoy hay un solo régimen para el Correo y para los couriers, con tope anual de US$ 800 en 3 envíos y sin límite por envío. Ojo, igual: la página del Correo para declarar todavía publica los topes viejos en su paso 3 (y se contradice en el paso 4, que te deja gestionar hasta US$ 800). Si el formulario te niega la franquicia por eso, reclamalo citando el Decreto 50/026 ante la DNA (info@aduanas.gub.uy) y el Correo (0800 2108). Otros motivos posibles: ya usaste los 3 envíos del año, el saldo disponible es menor que el valor del envío y el operador no admite aplicarlo parcialmente, el titular del pago no coincide con el destinatario o el producto está gravado por IMESI.',
   },
   {
     q: '¿El flete y el seguro cuentan para el tope de la franquicia?',
@@ -805,7 +807,7 @@ const faq = [
   },
   {
     q: '¿Cuánto se paga si el envío no entra en la franquicia?',
-    a: 'Paga la prestación única: 60% del valor del envío, con un mínimo de US$ 20. Ojo: es sobre el envío ENTERO, no sobre "el excedente" — los dos regímenes son excluyentes y un envío no se parte entre los dos (Decreto 50/026, art. 15). Si te quedan US$ 100 de franquicia y comprás por US$ 500, no pagás IVA por 100 y 60% por 400: pagás 60% de los 500. Y por encima de US$ 800 el envío no entra en ninguno de los dos regímenes.',
+    a: 'La prestación única es 60% del valor del envío, con un mínimo de US$ 20, y solo alcanza envíos de hasta US$ 800 y 20 kg. Las fuentes oficiales consultadas no publican un mecanismo para dividir un mismo envío entre franquicia y prestación única. Por eso la calculadora aplica un solo régimen al valor completo; si tu operador ofrece otra liquidación, pedile la norma o el procedimiento escrito antes de pagar.',
   },
   {
     q: '¿Cómo se calculan los impuestos en el régimen general?',
@@ -821,7 +823,7 @@ const faq = [
   },
   {
     q: '¿Qué productos no pagan IVA al importar?',
-    a: 'Los libros, diarios y revistas están exentos de IVA. Los medicamentos pagan la tasa mínima del 10% (y requieren autorización del MSP). El resto de los bienes paga el IVA general del 22%. En el régimen courier, además, los envíos desde EE.UU. de hasta US$ 200 quedan exonerados de IVA por el acuerdo TIFA, cualquiera sea el producto.',
+    a: 'Los libros, diarios y revistas están exentos de IVA. Los medicamentos pagan la tasa mínima del 10% y requieren el trámite sanitario que corresponda. El resto de los bienes paga el IVA general del 22%. En el régimen postal, los envíos originados en Estados Unidos de hasta US$ 200 conservan la exoneración del acuerdo TIFA si cumplen las demás condiciones y el producto no está excluido o restringido.',
   },
   {
     q: '¿Qué productos requieren trámites adicionales para importar?',
@@ -829,7 +831,7 @@ const faq = [
   },
   {
     q: '¿Qué productos están prohibidos por courier?',
-    a: 'No pueden importarse por encomiendas postales: vaporizadores y cigarrillos electrónicos, pirotecnia y explosivos, líquidos inflamables, baterías sueltas y power banks (restricción aérea), dinero en efectivo, sustancias controladas y pornografía. Bebidas alcohólicas, tabaco, perfumería y vehículos pagan IMESI y solo ingresan por importación formal (régimen general), no como envío personal.',
+    a: 'No se admiten por encomienda postal vaporizadores y cigarrillos electrónicos, pirotecnia y explosivos, líquidos inflamables, dinero en efectivo, sustancias controladas y pornografía. Las baterías de litio sueltas y power banks tienen restricciones de transporte aéreo: no son una prohibición aduanera universal, así que hay que confirmarlo con el operador. Los bienes gravados por IMESI —como alcohol, tabaco, perfumería y vehículos— no entran en la franquicia ni en la prestación única. La lista oficial no es taxativa.',
   },
   {
     q: '¿Las tarifas de courier por peso son oficiales?',

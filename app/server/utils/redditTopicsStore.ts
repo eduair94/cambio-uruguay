@@ -14,44 +14,30 @@ import { RedditPostModel } from '../models/RedditPost'
 import { RedditTopicModel } from '../models/RedditTopics'
 import { redditConfigured, searchSubreddit } from './reddit'
 import { matchEntities } from '../../utils/redditSentiment'
-import { aggregateTopics, type TopicPost } from '../../utils/redditTopics'
+import {
+  aggregateTopics,
+  LEGAL_URUGUAY_HARVEST_QUERIES,
+  topicHarvestQueries,
+  type TopicPost,
+} from '../../utils/redditTopics'
 
-/** Where Uruguayans talk about money. LegalUruguay added for the legal/financial
- * questions (deuda, clearing, alquiler, herencia, despido) that the money topics classify. */
-const SUBS = ['uruguay', 'UruguayFinanzas', 'Burises', 'Montevideo', 'LegalUruguay'] as const
-
-/** Broad, curated money/economy queries. Kept representative (not exhaustive) so a run
- * stays under a couple of minutes; classification then works over the whole corpus. */
-const HARVEST_QUERIES = [
-  'dolar',
-  'ahorro',
-  'invertir',
-  'plazo fijo',
-  'alquiler',
-  'garantia alquiler',
-  'clearing',
-  'deuda',
-  'prestamo',
-  'cuotas',
-  'tarjeta de credito',
-  'banco',
-  'prex',
-  'mercado pago',
-  'irpf',
-  'impuesto',
-  'sueldo liquido',
-  'jubilacion',
-  'afap',
-  'cripto',
-  'inflacion',
-  'costo de vida',
-  'importar',
-  'courier',
-  'monotributo',
-  'finanzas personales',
+/** Where Uruguayans discuss questions covered by the site. LegalUruguay is explicit so
+ * consumer, collection and labour cases can be refreshed independently and audited. */
+export const LEGAL_URUGUAY_SUBREDDIT = 'LegalUruguay' as const
+const SUBS = [
+  'uruguay',
+  'UruguayFinanzas',
+  'Burises',
+  'Montevideo',
+  LEGAL_URUGUAY_SUBREDDIT,
 ] as const
 
-const MAX_PAGES = 2
+/** Search every query declared by the public topic taxonomy. This prevents a topic from
+ * appearing in navigation/FAQ while being absent from the Reddit refresh. One page still
+ * yields up to 100 newest matches per query and subreddit, while keeping a full backfill
+ * within Reddit's polite API budget. */
+const HARVEST_QUERIES = topicHarvestQueries()
+const MAX_PAGES = 1
 const CORPUS_AGE_DAYS = 365
 
 const iso = (utc: number) => new Date(utc * 1000).toISOString().slice(0, 10)
@@ -63,19 +49,23 @@ export interface TopicsRefreshResult {
   corpusPosts: number
   topics: number
   asOf: string
+  harvestScope: 'all' | 'legal' | 'none'
 }
 
 /** Search-only harvest into the shared RedditPost ledger. No comment downloads. */
 async function harvestTopics(
-  window: 'year' | 'all'
+  window: 'year' | 'all',
+  scope: 'all' | 'legal'
 ): Promise<{ searched: number; seen: number; upserted: number }> {
+  const queries = scope === 'legal' ? LEGAL_URUGUAY_HARVEST_QUERIES : HARVEST_QUERIES
+  const subs = scope === 'legal' ? [LEGAL_URUGUAY_SUBREDDIT] : SUBS
   const found = new Map<
     string,
     { post: Awaited<ReturnType<typeof searchSubreddit>>[number]; queries: Set<string> }
   >()
   let searched = 0
-  for (const q of HARVEST_QUERIES) {
-    for (const sub of SUBS) {
+  for (const q of queries) {
+    for (const sub of subs) {
       searched++
       const posts = await searchSubreddit(sub, q, { t: window, sort: 'new', maxPages: MAX_PAGES })
       for (const p of posts) {
@@ -127,11 +117,15 @@ async function harvestTopics(
  * corpus already holds) — the page then keeps serving the last snapshot.
  */
 export async function refreshRedditTopics(
-  opts: { window?: 'year' | 'all' } = {}
+  opts: { window?: 'year' | 'all'; harvest?: boolean; scope?: 'all' | 'legal' } = {}
 ): Promise<TopicsRefreshResult> {
   await connectDb()
   const window = opts.window ?? 'year'
-  const h = redditConfigured() ? await harvestTopics(window) : { searched: 0, seen: 0, upserted: 0 }
+  const scope = opts.scope ?? 'all'
+  const h =
+    opts.harvest !== false && redditConfigured()
+      ? await harvestTopics(window, scope)
+      : { searched: 0, seen: 0, upserted: 0 }
 
   const cutoff = Math.floor(Date.now() / 1000 - CORPUS_AGE_DAYS * 86_400)
   const docs = await RedditPostModel.find({ createdUtc: { $gte: cutoff } })
@@ -189,6 +183,7 @@ export async function refreshRedditTopics(
     corpusPosts: posts.length,
     topics: topics.length,
     asOf: now.toISOString(),
+    harvestScope: opts.harvest === false || !redditConfigured() ? 'none' : scope,
   }
 }
 

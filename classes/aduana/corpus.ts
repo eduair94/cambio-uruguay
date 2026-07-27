@@ -1,6 +1,6 @@
-// The harvest ledger. `redditId` / `commentId` are unique — that index IS the dedupe: a thread we
-// already hold is never downloaded again, and the ids we already have are fed back to Reddit's
-// paginator (via `knownCommentIds`) so it does not even send them.
+// The harvest ledger. `redditId` / `commentId` are unique — that index IS the durable dedupe.
+// Known comment ids are fed back to the Reddit client: it filters ids repeated in the visible tree
+// and does not request already-held collapsed branches through `morechildren`.
 //
 // Own collections (`aduana_reddit_posts` / `aduana_reddit_comments`) — a concurrent session owns
 // the courier corpus on another branch and must not collide with this one.
@@ -111,7 +111,7 @@ export async function upsertComments(postId: string, rows: RedditCommentRaw[]): 
   return rows.length;
 }
 
-/** Comment ids already stored for one post — fed back into `fetchComments` so it skips them. */
+/** Comment ids already stored for one post — fed back into `fetchComments` so it skips rewrites. */
 export async function knownCommentIds(postId: string): Promise<Set<string>> {
   const rows = await comments().allEntries({ postId });
   return new Set(rows.map((r: { commentId: string }) => r.commentId));

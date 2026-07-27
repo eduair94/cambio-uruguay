@@ -1,5 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { __resetRedditForTests, MIN_GAP_MS, redditConfigured, searchPosts } from "../../classes/reddit";
+import {
+  __resetRedditForTests,
+  fetchComments,
+  MIN_GAP_MS,
+  redditConfigured,
+  searchPosts,
+} from "../../classes/reddit";
 
 describe("reddit client", () => {
   beforeEach(() => {
@@ -121,4 +127,55 @@ describe("reddit client", () => {
     await expect(searchPosts("uruguay", "courier")).resolves.toEqual([]);
     expect(fetchMock).not.toHaveBeenCalled();
   });
+
+  it("does not return comments already stored when Reddit repeats the visible tree", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) => {
+        if (String(url).includes("access_token")) {
+          return new Response(JSON.stringify({ access_token: "tk", expires_in: 3600 }), { status: 200 });
+        }
+        return new Response(
+          JSON.stringify([
+            { data: { children: [] } },
+            {
+              data: {
+                children: [
+                  {
+                    kind: "t1",
+                    data: {
+                      id: "known",
+                      author: "old",
+                      body: "already stored",
+                      score: 1,
+                      created_utc: 1750000000,
+                      permalink: "/r/uruguay/comments/abc/_/known/",
+                      replies: "",
+                    },
+                  },
+                  {
+                    kind: "t1",
+                    data: {
+                      id: "fresh",
+                      author: "new",
+                      body: "new reply",
+                      score: 2,
+                      created_utc: 1750000001,
+                      permalink: "/r/uruguay/comments/abc/_/fresh/",
+                      replies: "",
+                    },
+                  },
+                ],
+              },
+            },
+          ]),
+          { status: 200 }
+        );
+      })
+    );
+
+    await expect(fetchComments("uruguay", "abc", new Set(["known"]))).resolves.toMatchObject([
+      { id: "fresh", body: "new reply" },
+    ]);
+  }, 20_000);
 });

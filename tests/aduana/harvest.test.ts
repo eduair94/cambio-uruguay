@@ -67,6 +67,21 @@ describe("harvestAduana", () => {
     expect(fetchComments).toHaveBeenCalledWith("uruguay", "abc", expect.any(Set));
   });
 
+  it("accepts a bounded supplemental query set for historical audits", async () => {
+    searchPosts.mockResolvedValue([]);
+    await harvestAduana({ window: "all", queries: ["semillas aduana", "equipaje aduana"] });
+
+    expect(searchPosts).toHaveBeenCalledTimes(2);
+    expect(searchPosts).toHaveBeenNthCalledWith(1, "uruguay", "semillas aduana", {
+      t: "all",
+      sort: "new",
+    });
+    expect(searchPosts).toHaveBeenNthCalledWith(2, "uruguay", "equipaje aduana", {
+      t: "all",
+      sort: "new",
+    });
+  });
+
   // It is a no-op without credentials — but NOT a silent one (same contract as
   // gemini.ts#geminiConfigured): before this fix, `threads=0` in the weekly sync summary read
   // identically for "ran the search and genuinely found nothing new" and "never even tried

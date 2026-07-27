@@ -134,17 +134,12 @@ describe('franchiseStatus', () => {
     expect(out.nextPurchaseWarning).toBeTruthy()
   })
 
-  it('warns that the two regimes do not mix', () => {
-    // 700 used, 100 left, buying 500: it is NOT "IVA on 100 + 60% on 400" — the whole 500 goes to
-    // the prestación única. The costliest misunderstanding of the regime.
-    // NOTE: do NOT cite "Decreto 50/026 art. 15" for this — art. 15 is the *incumplimiento* rule
-    // (art. 632). No article states the no-split rule; it follows from the regime's design
-    // (art. 3: a franchise "de hasta USD 800", no partial-application mechanism anywhere; art. 2:
-    // the 60% applies to the whole invoice value). Research doc §7.8. The warning copy must not
-    // attribute it to an article.
+  it('warns that no source explains how to split an insufficient balance', () => {
+    // Art. 15 is the incumplimiento rule, not authority for ordinary quota exhaustion. The
+    // calculator may offer a conservative full-shipment estimate, but must label the gap.
     const out = franchiseStatus({ purchases: [{ valueUsd: 700 }], facts: [...facts] })
     expect(out.remainingUsd).toBe(100)
-    expect(out.nextPurchaseWarning).toMatch(/entero|no se parte|prestación única/i)
+    expect(out.nextPurchaseWarning).toMatch(/no hay una regla publicada|envío entero/i)
   })
 
   it('is exhausted when the money is gone even with shipments left', () => {

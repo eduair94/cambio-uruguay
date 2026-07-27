@@ -355,8 +355,16 @@ export async function fetchComments(
   const out: RedditCommentRaw[] = [];
   const seen = new Set<string>(known);
   const pending: string[] = [];
-  walkComments(res[1], out, pending);
-  for (const c of out) seen.add(c.id);
+  const listed: RedditCommentRaw[] = [];
+  walkComments(res[1], listed, pending);
+  // Reddit always returns the visible/top part of the tree, even when every one of those comments
+  // is already in Mongo. Filter that listing against `known` before returning it to the caller;
+  // otherwise every supplemental query rewrites hundreds of unchanged comments per old thread.
+  for (const c of listed) {
+    if (seen.has(c.id)) continue;
+    seen.add(c.id);
+    out.push(c);
+  }
 
   for (let round = 0; round < MAX_MORE_ROUNDS; round++) {
     // Never ask Reddit for a comment we already have.

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  LEGAL_URUGUAY_HARVEST_QUERIES,
   TOPIC_DEFS,
   aggregateTopics,
   classifyPost,
@@ -31,6 +32,48 @@ describe('redditTopics - classifyPost', () => {
     expect(classifyPost({ title: '¿Dónde invertir mis pesos? plazo fijo o FCI' })).toContain(
       'ahorro-inversion'
     )
+  })
+
+  it('classifies only the in-scope legal cases found in r/LegalUruguay', () => {
+    expect(
+      classifyPost({
+        title: 'Pagué un servicio y no fue prestado, ¿reclamo en Defensa del Consumidor?',
+      })
+    ).toContain('derechos-reclamos')
+    expect(
+      classifyPost({
+        title: 'Empresa de cobranza no explica intereses ni cómo imputó mis pagos',
+      })
+    ).toContain('derechos-reclamos')
+    expect(classifyPost({ title: 'Consulta laboral por sueldo impago y despido' })).toContain(
+      'derechos-reclamos'
+    )
+
+    expect(classifyPost({ title: '¿Cómo se inicia una sucesión intestada?' })).not.toContain(
+      'derechos-reclamos'
+    )
+    expect(classifyPost({ title: 'Dudas sobre una denuncia penal por lesiones' })).not.toContain(
+      'derechos-reclamos'
+    )
+  })
+
+  it('does not confuse amounts, cards or generic financial news with exchange and loans', () => {
+    expect(classifyPost({ title: 'Importé una consola de 800 dólares' })).not.toContain(
+      'dolar-cambio'
+    )
+    expect(classifyPost({ title: '¿Se consigue casa por 60 mil dólares?' })).not.toContain(
+      'dolar-cambio'
+    )
+    expect(
+      classifyPost({ title: 'Gravamen sobre renta financiera extranjera para residentes' })
+    ).not.toContain('credito-prestamo')
+    const cardTopics = classifyPost({ title: '¿Qué tarjeta de crédito OCA recomiendan?' })
+    expect(cardTopics).toContain('tarjetas')
+    expect(cardTopics).not.toContain('credito-prestamo')
+    expect(
+      classifyPost({ title: 'Pokémon cumple 30 años, ¿qué recuerdan de la franquicia?' })
+    ).not.toContain('compras-import')
+    expect(classifyPost({ title: '¿OCA funciona con Apple Wallet?' })).not.toContain('cripto')
   })
 
   it('drops obvious off-topic noise even if it has a stray money word', () => {
@@ -86,6 +129,48 @@ describe('redditTopics - aggregateTopics', () => {
     const clearing = agg.find(t => t.id === 'deuda-clearing')!
     expect(clearing.sample[0]!.title).toMatch(/clearing/i)
   })
+
+  it('does not publish a body-only incidental match ahead of a relevant title', () => {
+    const agg = aggregateTopics(
+      [
+        post({
+          title: 'Discusión política de la semana',
+          selftext: 'Al final alguien mencionó un préstamo.',
+          numComments: 900,
+          createdUtc: now - 86400,
+        }),
+        post({
+          title: '¿Qué préstamo conviene para una compra chica?',
+          numComments: 2,
+          createdUtc: now - 2 * 86400,
+        }),
+      ],
+      now,
+      90
+    )
+    const credit = agg.find(topic => topic.id === 'credito-prestamo')!
+
+    expect(credit.total).toBe(2)
+    expect(credit.sample[0]!.title).toMatch(/préstamo conviene/i)
+    expect(credit.sample.some(thread => /política/i.test(thread.title))).toBe(false)
+  })
+
+  it('publishes question-shaped titles without filling the sample with news', () => {
+    const agg = aggregateTopics(
+      [
+        post({
+          title: 'Dudas por las AFAP: cierre del diálogo generó movimientos en bonos uruguayos',
+          numComments: 100,
+        }),
+        post({ title: '¿Cómo me cambio de AFAP?', numComments: 1 }),
+      ],
+      now,
+      90
+    )
+    const retirement = agg.find(topic => topic.id === 'jubilacion-afap')!
+
+    expect(retirement.sample.map(thread => thread.title)).toEqual(['¿Cómo me cambio de AFAP?'])
+  })
 })
 
 describe('redditTopics - catalogue integrity', () => {
@@ -100,5 +185,8 @@ describe('redditTopics - catalogue integrity', () => {
     const qs = topicHarvestQueries()
     expect(new Set(qs).size).toBe(qs.length)
     expect(qs.length).toBeGreaterThan(10)
+    expect(qs).toEqual(expect.arrayContaining([...LEGAL_URUGUAY_HARVEST_QUERIES]))
+    expect(LEGAL_URUGUAY_HARVEST_QUERIES).toContain('defensa consumidor')
+    expect(LEGAL_URUGUAY_HARVEST_QUERIES).toContain('reclamo laboral')
   })
 })

@@ -12,8 +12,9 @@
       </p>
       <VAlert type="info" variant="tonal" density="comfortable" icon="mdi-scale-balance">
         Todo lo de esta página sale de la <strong>Ley 20.446 art. 627</strong>, el
-        <strong>Decreto 50/026</strong> y las <strong>Resoluciones Generales 09 y 21/2026</strong>
-        de la Aduana. Si algo no está en una norma, lo decimos.
+        <strong>Decreto 50/026</strong> y las
+        <strong>Resoluciones Generales 09, 10 y 21/2026</strong> de la Aduana. Si algo no está en
+        una norma, lo decimos.
       </VAlert>
       <p class="text-caption text-medium-emphasis mt-3 mb-0">
         <VIcon size="14" class="mr-1">mdi-bag-suitcase-outline</VIcon>
@@ -397,6 +398,15 @@
           </VExpansionPanel>
         </VExpansionPanels>
       </VCard>
+      <VBtn
+        :to="localePath('/preguntas-frecuentes-aduana-uruguay')"
+        variant="text"
+        color="primary"
+        class="mt-3 px-1"
+      >
+        Ver todas las preguntas de aduana, productos, retenciones y viajeros
+        <VIcon end>mdi-arrow-right</VIcon>
+      </VBtn>
     </section>
 
     <!-- What changes on Oct 1 -->
@@ -430,17 +440,22 @@
       </VAlert>
 
       <VAlert
-        type="warning"
+        type="success"
         variant="tonal"
         density="comfortable"
         class="mt-3"
-        icon="mdi-help-circle-outline"
+        icon="mdi-list-status"
       >
-        <strong>Lo que todavía no sabemos:</strong> la resolución dice que el listado de vendedores
-        registrados "será de carácter público", pero la Aduana
-        <strong>todavía no lo publicó</strong>. Hasta que exista, nadie —nosotros tampoco— puede
-        decirte con certeza si tu vendedor va a calificar en octubre. Preferimos decirte esto antes
-        que inventarte una lista.
+        <strong>La lista ya es pública.</strong> Al 26/07/2026 la Aduana publica: Xipron Inc
+        (Tiendamía), United States Xpress Inc, Grinbox Corp, Netbox Corp, Miami box latinoamérica
+        LLC y Eshop Miami INC.
+        <a
+          href="https://www.aduanas.gub.uy/innovaportal/v/28221/1/innova.front/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Revisá la lista oficial antes de comprar</a
+        >, porque puede cambiar.
       </VAlert>
     </section>
 
@@ -544,14 +559,18 @@ const legacyCap = computed(() => decision.value.legacyChannelCap)
 
 const verdictTone = computed(() => {
   if (decision.value.regime === 'general') return 'warning'
+  if (decision.value.partialFranchiseUnverified) return 'warning'
   return decision.value.ivaExempt ? 'success' : 'info'
 })
 const verdictIcon = computed(() => {
   if (decision.value.regime === 'general') return 'mdi-alert-outline'
+  if (decision.value.partialFranchiseUnverified) return 'mdi-help-circle-outline'
   return decision.value.ivaExempt ? 'mdi-check-circle-outline' : 'mdi-cash'
 })
 const verdictTitle = computed(() => {
   if (decision.value.regime === 'general') return 'Este envío no entra en el régimen simplificado'
+  if (decision.value.partialFranchiseUnverified)
+    return 'No hay una regla publicada para repartir el saldo'
   if (decision.value.ivaExempt) return 'No pagás IVA'
   if (decision.value.regime === 'franquicia') return 'Usás la franquicia, pero pagás IVA'
   return `Pagás la prestación única (${rules.value.simplifiedRatePct}%)`
@@ -567,7 +586,9 @@ const taxLine = computed(() => {
       (v * rules.value.simplifiedRatePct) / 100,
       v > 0 ? rules.value.simplifiedMinUsd : 0
     )
-    return `Impuesto estimado: US$ ${tax.toFixed(2)}`
+    return d.partialFranchiseUnverified
+      ? `Estimación prudente sobre el envío entero: US$ ${tax.toFixed(2)}`
+      : `Impuesto estimado: US$ ${tax.toFixed(2)}`
   }
   if (d.ivaExempt) return 'Impuesto estimado: US$ 0,00'
   const iva = (v * URUGUAY.iva.basica) / 100
@@ -640,6 +661,20 @@ const sources = [
   {
     label: 'Resolución General 21/2026 (Aduana) — prórroga al 1.º de octubre de 2026',
     url: 'https://www.aduanas.gub.uy/innovaportal/file/28613/1/rg-21-2026.pdf',
+  },
+  {
+    label: 'DNA — régimen vigente y lista pública de empresas extranjeras registradas',
+    url: 'https://www.aduanas.gub.uy/innovaportal/v/28221/1/innova.front/',
+  },
+  {
+    label:
+      'Comunicado 11/2026 — campos del registro: banco/plataforma, sello, últimos cuatro dígitos, tipo y vencimiento',
+    url: 'https://www.impo.com.uy/bases/comunicados-comercio-exterior-aduanas/11-2026',
+  },
+  {
+    label:
+      'MEF/DNA — respuesta oficial sobre los datos que Aduanas recibe, conserva y no consulta de la tarjeta',
+    url: 'https://www.gub.uy/ministerio-economia-finanzas/sites/ministerio-economia-finanzas/files/2026-07/Expediente-2026-5-1-0006449%20PI%20Salle%20Lorier%20referente%20a%20nuevo%20r%C3%A9gimen%20de%20env%C3%ADos%20postales%20internacionales.pdf',
   },
   {
     label: 'Ley 18.761 — acuerdo TIFA con EE.UU. (art. 7, lit. g): envíos de hasta US$ 200',
@@ -715,9 +750,9 @@ const faqs = [
   },
   {
     q: '¿Qué no puedo traer nunca por este régimen?',
-    a: 'Todo lo <strong>gravado por IMESI</strong> queda fuera de la franquicia y del régimen simplificado: bebidas alcohólicas y bebidas sin alcohol concentradas (incluidos suplementos nutricionales concentrados), tabaco y cigarrillos, aceites y grasas lubricantes, y <strong>perfumería y cosméticos</strong> —el que más sorprende—. Tampoco entran los productos de origen animal y vegetal no autorizados (listado del MGAP) ni lo prohibido por seguridad: inflamables, gases comprimidos, explosivos, corrosivos, armas, baterías de litio sueltas y líquidos. Los <strong>lentes de sol</strong> se pueden traer hasta <strong>dos unidades, una sola vez</strong>, y requieren certificado del Sector Óptico del MSP por VUCE antes de liberarse.',
+    a: 'Todo lo <strong>gravado por IMESI</strong> queda fuera de la franquicia y de la prestación única: bebidas alcohólicas y bebidas sin alcohol concentradas (incluidos suplementos nutricionales concentrados), tabaco y cigarrillos, aceites y grasas lubricantes, y <strong>perfumería y cosméticos</strong> —el que más sorprende—. Tampoco entran los productos de origen animal y vegetal no autorizados por el MGAP ni los bienes prohibidos por seguridad, como inflamables, gases comprimidos, explosivos, corrosivos y armas. Las baterías de litio sueltas y ciertos líquidos pueden ser rechazados por las reglas de transporte del operador, aunque eso no equivale por sí solo a una prohibición aduanera universal. Los <strong>lentes de sol</strong> se pueden traer hasta <strong>dos unidades, una sola vez</strong>, y requieren certificado del Sector Óptico del MSP por VUCE antes de liberarse. La lista oficial no es taxativa.',
     aText:
-      'Todo lo gravado por IMESI queda fuera: bebidas alcohólicas, bebidas sin alcohol concentradas y suplementos concentrados, tabaco y cigarrillos, aceites y grasas lubricantes, y perfumería y cosméticos. Tampoco entran productos de origen animal y vegetal no autorizados (listado del MGAP) ni lo prohibido por seguridad: inflamables, gases comprimidos, explosivos, corrosivos, armas, baterías de litio sueltas y líquidos. Los lentes de sol se pueden traer hasta dos unidades, una sola vez, con certificado del Sector Óptico del MSP tramitado por VUCE.',
+      'Todo lo gravado por IMESI queda fuera: bebidas alcohólicas, bebidas sin alcohol concentradas y suplementos concentrados, tabaco y cigarrillos, aceites y grasas lubricantes, y perfumería y cosméticos. Tampoco entran productos de origen animal y vegetal no autorizados ni bienes prohibidos por seguridad. Las baterías de litio sueltas y ciertos líquidos pueden estar restringidos por el transporte sin ser una prohibición aduanera universal. Los lentes de sol se pueden traer hasta dos unidades, una sola vez, con certificado del Sector Óptico del MSP tramitado por VUCE. La lista oficial no es taxativa.',
   },
   {
     q: 'El vendedor me mandó la compra en varios paquetes. ¿Qué hago?',
@@ -727,15 +762,15 @@ const faqs = [
   },
   {
     q: '¿Qué datos de la tarjeta tengo que dar al declarar?',
-    a: 'Los <strong>últimos cuatro números</strong> de la tarjeta de crédito o débito internacional, el <strong>nombre completo del titular tal como figura en el plástico</strong> y el <strong>emisor</strong> (Visa, Mastercard, Diners…). No hace falta el banco. Podés usar una <strong>extensión</strong> de la tarjeta de otra persona siempre que tu nombre completo figure en el plástico. Lo que no se puede es que el titular del pago, el de la compra y el destinatario sean personas distintas: ahí perdés la franquicia (Decreto 50/026, art. 4 lit. e). Y los datos personales tienen que coincidir <strong>letra por letra con la cédula</strong>: la DNA los cruza con Identificación Civil.',
+    a: 'El registro oficial pide <strong>banco o plataforma de pago</strong>, <strong>sello</strong> (marca), <strong>últimos cuatro dígitos</strong>, <strong>tipo de tarjeta o medio</strong> y <strong>vencimiento</strong> cuando es tarjeta (<a href="https://www.impo.com.uy/bases/comunicados-comercio-exterior-aduanas/11-2026" target="_blank" rel="noopener noreferrer">Comunicado 11/2026</a>). Podés cargar más de un medio, pero todos deben estar <strong>a tu nombre</strong>: titular del pago, comprador y destinatario tienen que coincidir (Decreto 50/026, art. 4 lit. e). Aduanas informó además que <strong>no recibe el historial de compras, montos, fechas ni comercios</strong> de la tarjeta; para validar remite titular y últimos cuatro dígitos al emisor.',
     aText:
-      'Los últimos cuatro números de la tarjeta, el nombre completo del titular tal como figura en el plástico y el emisor (Visa, Mastercard, Diners). No hace falta el banco. Se puede usar una extensión de la tarjeta de otra persona si tu nombre completo figura en el plástico. El titular del pago, el de la compra y el destinatario deben ser la misma persona (Decreto 50/026 art. 4 lit. e), y los datos deben coincidir exactamente con la cédula porque la DNA los cruza con Identificación Civil.',
+      'El registro pide banco o plataforma de pago, sello o marca, últimos cuatro dígitos, tipo de tarjeta o medio y vencimiento cuando es tarjeta. Se puede cargar más de un medio, pero todos deben estar a nombre del usuario: titular del pago, comprador y destinatario deben coincidir. Aduanas informó que no recibe historial de compras, montos, fechas ni comercios de la tarjeta.',
   },
   {
     q: '¿Puedo traer mercadería para revender?',
-    a: 'Con la <strong>franquicia no</strong>: es solo para uso o consumo personal, y el propio Correo pone el ejemplo —dos camisas se presumen personales; diez o veinte, comerciales—. Pero con el <strong>régimen de prestación única (60%) sí</strong>: el Correo confirma que se puede ingresar mercadería para vender en plaza pagando el 60% del valor, hasta US$ 800 y 20 kg, sin despachante. Tampoco podés recibir un envío <strong>a nombre de una empresa</strong> ni siendo <strong>menor de edad</strong>: el régimen es de personas físicas mayores de edad.',
+    a: 'Con la <strong>franquicia no</strong>: exige uso personal y sin fines comerciales. No existe una cantidad legal fija que separe lo personal de lo comercial; la Aduana evalúa cantidad, naturaleza, variedad y finalidad. Un envío de hasta US$ 800 y 20 kg tratado como comercial puede ir por <strong>prestación única (60%, mínimo US$ 20)</strong>, pero eso no reemplaza las obligaciones fiscales o permisos de una actividad de reventa habitual. Si importás para un negocio, confirmá la estructura con un despachante, DGI y VUCE antes de comprar.',
     aText:
-      'Con la franquicia no: es solo para uso o consumo personal (el Correo ejemplifica que dos camisas se presumen personales y diez o veinte, comerciales). Con el régimen de prestación única del 60% sí se puede ingresar mercadería para vender en plaza, hasta US$ 800 y 20 kg, sin despachante. No se puede recibir un envío a nombre de una empresa ni siendo menor de edad: el régimen es para personas físicas mayores de edad.',
+      'Con la franquicia no: exige uso personal y sin fines comerciales. No hay una cantidad legal fija; Aduanas evalúa cantidad, naturaleza, variedad y finalidad. Un envío de hasta 800 dólares y 20 kg tratado como comercial puede ir por prestación única del 60%, pero eso no reemplaza las obligaciones fiscales o permisos de una reventa habitual.',
   },
   {
     q: '¿Y si no declaro o no voy a pagar?',

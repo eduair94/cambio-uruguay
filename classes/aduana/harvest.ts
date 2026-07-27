@@ -1,9 +1,9 @@
 // Search r/uruguay for everything customs-shaped, store it, and never download it twice.
 //
-// The query list is not intuition: it is what actually surfaces the corpus (1161 threads on the
-// first sweep). Broad queries like `importar` also drag in political rants — that is fine and
-// expected; the classifier is allowed to return null, and it is what filters them out. Better a
-// noisy net and a strict filter than a narrow net that misses "me robaron el paquete".
+// The query list is not intuition: it is what actually surfaces the corpus. Broad queries like
+// `importar` also drag in political rants — that is fine and expected. The classifier may return
+// null, and that is what filters them out. Better a noisy net and a strict filter than a narrow
+// net that misses "me robaron el paquete".
 //
 // classes/reddit.ts's real exports are `searchPosts(sub, query, opts)` and
 // `fetchComments(sub, postId, known)` — confirmed against tests/couriers/reddit.test.ts, the
@@ -24,10 +24,45 @@ export const ADUANA_QUERIES = [
   "traer del exterior",
 ];
 
+/**
+ * Long-tail searches used by the manual historical audit.
+ *
+ * The scheduled job keeps the compact query set above: it runs frequently and broad searches
+ * already catch most new threads. The audit command adds product-, platform- and procedure-shaped
+ * wording seen in actual r/uruguay titles so a fresh/backfilled corpus does not depend on authors
+ * having written the word "aduana" in exactly the same way.
+ */
+export const ADUANA_AUDIT_QUERIES = [
+  "compras exterior",
+  "impuestos compra exterior",
+  "60% aduana",
+  "franquicia 800",
+  "franquicia tarjeta",
+  "vendedor registrado aduana",
+  "identidad digital franquicia",
+  "Amazon aduana",
+  "AliExpress aduana",
+  "Temu aduana",
+  "TiendaMia aduana",
+  "regalo exterior aduana",
+  "productos prohibidos aduana",
+  "semillas aduana",
+  "suplementos aduana",
+  "medicamentos aduana",
+  "baterias aduana",
+  "juguetes sexuales aduana",
+  "mudanza aduana",
+  "equipaje aduana",
+  "aduana extranjero",
+  "importacion comercial",
+  "retenido courier",
+  "envio exterior perdido",
+];
+
 const SUB = "uruguay";
 
 export async function harvestAduana(
-  opts: { window?: "year" | "all" } = {}
+  opts: { window?: "year" | "all"; queries?: readonly string[] } = {}
 ): Promise<{ posts: number; comments: number }> {
   // No-op without credentials — but NOT a silent one, same contract as gemini.ts#geminiConfigured:
   // a skipped safety/data check must say so out loud. Before this, `threads=0` in the sync
@@ -41,7 +76,7 @@ export async function harvestAduana(
   // One search per query, deduped by thread id: a post surfaced by two different queries is
   // downloaded once and keeps both queries in its `queries` set (see corpus.ts's $addToSet).
   const byId = new Map<string, { post: RedditPostRaw; queries: string[] }>();
-  for (const q of ADUANA_QUERIES) {
+  for (const q of opts.queries ?? ADUANA_QUERIES) {
     for (const post of await searchPosts(SUB, q, { t: opts.window ?? "year", sort: "new" })) {
       const hit = byId.get(post.id);
       if (hit) hit.queries.push(q);
@@ -52,8 +87,9 @@ export async function harvestAduana(
   const rows = [...byId.values()].map(({ post, queries }) => ({ ...post, queries }));
   const posts = await upsertPosts(rows);
 
-  // The comment ids we already hold are fed back into fetchComments so Reddit does not even send
-  // them again — that is what keeps the weekly re-crawl of an old thread cheap.
+  // The comment ids we already hold are fed back into fetchComments so the visible tree is filtered
+  // before writing and known collapsed branches are not requested again. That keeps a re-crawl of
+  // an old thread cheap.
   let comments = 0;
   for (const { post } of byId.values()) {
     const known = await knownCommentIds(post.id);

@@ -178,6 +178,15 @@
           </VExpansionPanelText>
         </VExpansionPanel>
       </VExpansionPanels>
+      <VBtn
+        :to="localePath('/preguntas-frecuentes-aduana-uruguay')"
+        variant="text"
+        color="primary"
+        class="mt-3 px-1"
+      >
+        Ver también preguntas de compras, productos y envíos retenidos
+        <VIcon end>mdi-arrow-right</VIcon>
+      </VBtn>
     </section>
 
     <!-- Sources -->

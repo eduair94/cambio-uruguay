@@ -613,6 +613,13 @@
           </NuxtLink>
         </VCol>
         <VCol cols="12" sm="6" md="3">
+          <NuxtLink :to="localePath('/preguntas-frecuentes-aduana-uruguay')" class="cross-link">
+            <VIcon color="primary" class="mb-2">mdi-comment-question-outline</VIcon>
+            <span class="cross-title">Preguntas de aduana</span>
+            <span class="cross-desc">Respuestas por tema, con fuente oficial en cada caso.</span>
+          </NuxtLink>
+        </VCol>
+        <VCol cols="12" sm="6" md="3">
           <NuxtLink :to="localePath('/couriers-uruguay')" class="cross-link">
             <VIcon color="primary" class="mb-2">mdi-truck-fast-outline</VIcon>
             <span class="cross-title">Couriers en Uruguay</span>
@@ -949,15 +956,15 @@ const claimSendActions = computed<SendAction[]>(() => {
           subject: `Envío postal internacional — guía ${t}`,
           icon: 'mdi-email-outline',
           color: 'primary',
-          note: 'Respaldo escrito. Un paquete retenido se destraba en persona con cita, no por correo.',
+          note: 'Dejá respaldo escrito. Para liberar, consultá primero si tu operador puede usar el despacho simplificado de la RG 14/2026; si no, corresponde declaración previa o agenda presencial.',
         },
         {
           channel: 'link',
-          label: 'Ver «Envíos retenidos» y pedir cita',
+          label: 'Ver las vías oficiales para envíos retenidos',
           openUrl: DNA_RETENIDOS_PORTAL,
           icon: 'mdi-calendar-clock',
           color: 'blue-darken-1',
-          note: 'Página oficial con los datos para agendar la cita presencial.',
+          note: 'Página oficial de Aduanas. El despacho simplificado, cuando aplica, lo tramita el operador postal privado.',
         },
       ]
     case 'courier':

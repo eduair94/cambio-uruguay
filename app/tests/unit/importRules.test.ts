@@ -97,18 +97,20 @@ describe('the US IVA exoneration is all-or-nothing', () => {
   })
 })
 
-describe('a shipment is never split between regimes', () => {
-  it('sends the whole shipment to the simplified regime when the franchise does not cover it', () => {
-    // Decreto 50/026 art. 15. The old model franchised USD 100 and charged 60% on the other
-    // USD 400 — a regime that does not exist.
+describe('a shipment with insufficient franchise balance', () => {
+  it('uses a conservative full-shipment estimate and exposes the missing rule', () => {
+    // No article defines a partial allocation. Art. 15 is about incumplimiento, not ordinary
+    // balance exhaustion, so the result must remain visibly provisional.
     const d = resolveRegime({ ...base, valueUsd: 500, franchiseAvailableUsd: 100 })
     expect(d.regime).toBe('simplificado')
-    expect(d.reasons.join(' ')).toMatch(/no se puede partir/i)
+    expect(d.partialFranchiseUnverified).toBe(true)
+    expect(d.reasons.join(' ')).toMatch(/no publican un mecanismo/i)
   })
 
   it('sends it to the simplified regime once the 3 franchise shipments are used up', () => {
     const d = resolveRegime({ ...base, valueUsd: 100, shipmentsUsed: 3 })
     expect(d.regime).toBe('simplificado')
+    expect(d.partialFranchiseUnverified).toBeUndefined()
     expect(d.reasons.join(' ')).toMatch(/3 envíos/i)
   })
 

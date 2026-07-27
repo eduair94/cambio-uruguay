@@ -9,7 +9,7 @@
 // so the calculator silently keeps applying a rule after it stops being true. It
 // was doing exactly that.
 //
-// EVERY NUMBER HERE IS SOURCED. Verified against primary sources on 2026-07-11:
+// EVERY NUMBER HERE IS SOURCED. Re-verified against primary sources on 2026-07-26:
 //   - Ley 20.446 art. 627        https://www.impo.com.uy/bases/leyes/20446-2025/627
 //   - Decreto 50/026 (19/03/2026) https://www.impo.com.uy/bases/decretos/50-2026
 //   - RG DNA 09/2026 (20/04/2026) https://www.aduanas.gub.uy/innovaportal/file/28428/1/resolucion-9_2026.pdf
@@ -22,7 +22,7 @@
 // USD 200 per shipment) and will "confirm" the very bugs this module removes.
 
 /** Date the facts below were last verified against primary sources. */
-export const LAST_RESEARCHED = '2026-07-11'
+export const LAST_RESEARCHED = '2026-07-26'
 
 /**
  * From this date the IVA exoneration for US shipments additionally requires the INVOICE
@@ -184,6 +184,12 @@ export interface RegimeDecision {
   /** Whether the seller-registration condition is being enforced on `today`. */
   registryEnforced: boolean
   /**
+   * True when the estimate chose prestación única only because the remaining annual balance is
+   * smaller than this shipment. No published rule explains whether one shipment may consume the
+   * balance and pay 60% on the rest, so the UI must show this as a conservative estimate.
+   */
+  partialFranchiseUnverified?: boolean
+  /**
    * Present when the parcel arrives by post and would have BLOWN the repealed modality cap
    * (see {@link LEGACY_CHANNEL_FRANCHISE_CAP_USD}). The regime above is what the norm says; this
    * flag lets the page warn that Correo's declaration page still publishes the old ceiling, so
@@ -209,13 +215,11 @@ export function isSellerRegistryEnforced(
  * Decide which regime a shipment falls under, and whether it pays IVA.
  *
  * The three rules that the old code got wrong:
- *  - a shipment is NEVER split between franchise and the 60% rate (a shipment that cannot use
- *    the franchise goes ENTIRELY to the simplified regime). This is NOT sourced to Decreto
- *    50/026 art. 15 — that article is the incumplimiento/sanción rule, keyed to Ley 20.446
- *    art. 632, and has nothing to do with running out of franchise. No article says this
- *    outright; it follows from the regime's design (the franchise is granted "adicionalmente
- *    al régimen de prestación única", art. 3, and prestación única applies to the invoice
- *    value as a whole, art. 2). Verified 2026-07-12 — do not re-attach art. 15 to this rule;
+ *  - no published article says what happens when the remaining annual franchise balance is less
+ *    than one shipment. The estimate applies prestación única to the full invoice because the
+ *    sources provide no partial-allocation mechanism, but marks the result unverified. Decreto
+ *    50/026 art. 15 is NOT authority for this case: it governs an incumplimiento tied to Ley
+ *    20.446 art. 632. Never present the estimate as an explicit statutory "no split" rule;
  *  - the franchise ceiling is USD 800 ACCUMULATED PER YEAR across at most 3 shipments (Decreto
  *    50/026 art. 3 y art. 4 lit. c) — the NORM sets no per-shipment cap;
  *  - above USD 800 a shipment fits neither regime and goes to the general one (Decreto 50/026
@@ -255,13 +259,15 @@ export function resolveRegime(
   const franchiseFits = input.franchiseAvailableUsd >= value
   const shipmentsLeft = input.shipmentsUsed < FRANCHISE_MAX_SHIPMENTS
   const useFranchise = input.useFranchise && franchiseFits && shipmentsLeft
+  const partialFranchiseUnverified =
+    input.useFranchise && shipmentsLeft && !franchiseFits && input.franchiseAvailableUsd > 0
 
   if (input.useFranchise && !shipmentsLeft) {
     reasons.push(`Ya usaste los ${FRANCHISE_MAX_SHIPMENTS} envíos con franquicia del año.`)
   }
   if (input.useFranchise && shipmentsLeft && !franchiseFits) {
     reasons.push(
-      `Te quedan US$ ${input.franchiseAvailableUsd} de franquicia y el envío vale US$ ${value}: no alcanza, y la franquicia no se puede partir.`
+      `Te quedan US$ ${input.franchiseAvailableUsd} de franquicia y el envío vale US$ ${value}. Las fuentes oficiales no publican un mecanismo para dividir el mismo envío entre ese saldo y la prestación única; esta estimación aplica un solo régimen al valor completo.`
     )
   }
 
@@ -269,7 +275,14 @@ export function resolveRegime(
     reasons.push(
       `Paga la prestación única: ${rules.simplifiedRatePct}% del valor, mínimo US$ ${rules.simplifiedMinUsd}.`
     )
-    return { regime: 'simplificado', ivaExempt: false, reasons, registryEnforced, legacyChannelCap }
+    return {
+      regime: 'simplificado',
+      ivaExempt: false,
+      reasons,
+      registryEnforced,
+      partialFranchiseUnverified: partialFranchiseUnverified || undefined,
+      legacyChannelCap,
+    }
   }
 
   // Franchise: exempt from aranceles, but IVA still applies — except the TIFA carve-out.

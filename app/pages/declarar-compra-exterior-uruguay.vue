@@ -445,6 +445,12 @@ const sources = [
 
 const relatedLinks = [
   {
+    title: 'Preguntas de aduana',
+    text: 'Buscá tu caso y abrí la fuente oficial de cada respuesta.',
+    to: '/preguntas-frecuentes-aduana-uruguay',
+    icon: 'mdi-comment-question-outline',
+  },
+  {
     title: 'Franquicia e IVA',
     text: 'Qué régimen te corresponde y cuánto paga.',
     to: '/franquicia-aduana-uruguay',

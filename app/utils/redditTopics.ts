@@ -30,6 +30,23 @@ export interface TopicDef {
   related: readonly RelatedLink[]
 }
 
+/** Queries that intentionally look for in-scope cases in r/LegalUruguay.
+ *
+ * Reddit only discovers demand here. The answers linked from this topic must still
+ * be grounded in legislation or official procedures.
+ */
+export const LEGAL_URUGUAY_HARVEST_QUERIES = Object.freeze([
+  'defensa consumidor',
+  'servicio no prestado',
+  'clausula abusiva',
+  'reclamo laboral',
+  'salario impago',
+  'despido liquidacion',
+  'estudio cobranza',
+  'abogado gratis',
+  'defensor publico',
+] as const)
+
 // Threads that carry a stray money word but are not money questions. Kept small and
 // specific so it never swallows a real topic.
 export const TOPIC_NOISE =
@@ -42,7 +59,7 @@ export const TOPIC_DEFS: readonly TopicDef[] = Object.freeze([
     icon: 'mdi-currency-usd',
     blurb: 'Cuándo comprar dólares, dónde conviene cambiar y a cuánto está.',
     match:
-      /\bd[oó]lar(?:es)?\b|comprar d[oó]lares|casa de cambio|cotizaci[oó]n del d[oó]lar|tipo de cambio/i,
+      /casa de cambio|cotizaci[oó]n (?:del )?d[oó]lar|tipo de cambio|comprar(?: ahora| hoy| para ahorrar| m[aá]s| unos?)? d[oó]lares|(?:vender|cambiar|convertir|ahorrar).{1,35}\bd[oó]lar(?:es)?\b|\bd[oó]lar(?:es)?\b.{1,35}(?:a pesos|en pesos|vender|cambiar|ahorrar|hoy|brou|cotiza|sube|baja)|precios? en d[oó]lares/i,
     queries: ['dolar', 'comprar dolares', 'casa de cambio', 'cotizacion dolar'],
     related: [
       { label: 'Dólar hoy', to: '/dolar-hoy' },
@@ -102,7 +119,7 @@ export const TOPIC_DEFS: readonly TopicDef[] = Object.freeze([
     icon: 'mdi-hand-coin-outline',
     blurb: 'Qué tasa te cobran de verdad, cuotas y dónde pedir sin que te fundan.',
     match:
-      /\bpr[eé]stamo\b|\bcr[eé]dito\b|financiar|\bcuotas\b|tasa de inter[eé]s|\btea\b|financiera|creditel|pronto|oca\b/i,
+      /\bpr[eé]stamo\b|(?<!tarjeta de )(?<!tarjetas de )\bcr[eé]dito\b|financiar|\bcuotas\b|tasa de inter[eé]s|\btea\b|creditel|pronto/i,
     queries: ['prestamo', 'credito', 'cuotas', 'tasa de interes', 'financiera'],
     related: [
       { label: 'Préstamos en Uruguay', to: '/prestamos-uruguay' },
@@ -115,7 +132,7 @@ export const TOPIC_DEFS: readonly TopicDef[] = Object.freeze([
     icon: 'mdi-credit-card-outline',
     blurb: 'Qué tarjeta da mejores beneficios y cómo pagar cuentas juntando puntos.',
     match:
-      /tarjeta de (?:cr[eé]dito|d[eé]bito)|cashback|\bmillas\b|beneficios? (?:de|con) tarjeta|puntos? (?:de|con) tarjeta|\bvisa\b|mastercard|\bamex\b/i,
+      /tarjetas? de (?:cr[eé]dito|d[eé]bito)|cashback|\bmillas\b|beneficios? (?:de|con) tarjeta|puntos? (?:de|con) tarjeta|\bvisa\b|mastercard|\bamex\b|\boca\b/i,
     queries: ['tarjeta de credito', 'cashback', 'millas', 'beneficios tarjeta'],
     related: [
       { label: 'Mejores tarjetas de crédito', to: '/tarjetas-de-credito-uruguay' },
@@ -133,6 +150,23 @@ export const TOPIC_DEFS: readonly TopicDef[] = Object.freeze([
     related: [
       { label: 'Mejores bancos de Uruguay', to: '/mejores-bancos-uruguay' },
       { label: 'Apps de dinero', to: '/apps-economia-uruguay' },
+    ],
+  },
+  {
+    id: 'derechos-reclamos',
+    label: 'Derechos y reclamos',
+    icon: 'mdi-scale-balance',
+    blurb: 'Reclamos de consumo, cobranzas, orientación laboral y dónde pedir ayuda jurídica.',
+    match:
+      /defensa (?:del )?consumidor|relaci[oó]n de consumo|cl[aá]usula abusiva|servicio(?: pagado)? no (?:prestado|brindado)|incumplimiento (?:del )?(?:proveedor|servicio|contrato)|reclamo (?:laboral|salarial|de consumo)|salario (?:impago|adeudado)|sueldo (?:impago|adeudado)|despido|liquidaci[oó]n laboral|estudio (?:de )?cobranza|empresa de cobranza|cobranza (?:de deuda|extrajudicial)|abogad[oa] gratis|defensor(?:a|ía)? p[uú]blic[oa]|asesoramiento jur[ií]dico|consulta laboral/i,
+    queries: LEGAL_URUGUAY_HARVEST_QUERIES,
+    related: [
+      {
+        label: 'Derechos en compras y servicios',
+        to: '/derechos-consumidor-compras-online',
+      },
+      { label: 'Cómo actuar ante una estafa', to: '/estafas-uruguay' },
+      { label: 'Preguntas verificadas', to: '/preguntas-economia-personal' },
     ],
   },
   {
@@ -167,7 +201,7 @@ export const TOPIC_DEFS: readonly TopicDef[] = Object.freeze([
     icon: 'mdi-truck-fast-outline',
     blurb: 'Courier, franquicia, aduana y comprar en Amazon, AliExpress o Shein.',
     match:
-      /\bimportar\b|\bcourier\b|aliexpress|\bamazon\b|\bebay\b|\bshein\b|\baduana\b|franquicia|tiendamia|traer del exterior|compra internacional/i,
+      /\bimportar\b|\bcourier\b|aliexpress|\bamazon\b|\bebay\b|\bshein\b|\baduana\b|(?:traer|compr\w*|env[ií]\w*|aduana|courier).{0,50}franquicia|franquicia.{0,50}(?:traer|compr\w*|env[ií]\w*|aduana|courier)|tiendamia|traer del exterior|compra internacional/i,
     queries: ['importar', 'courier', 'aliexpress', 'amazon', 'aduana', 'franquicia'],
     related: [
       { label: 'Couriers en Uruguay', to: '/couriers-uruguay' },
@@ -213,7 +247,7 @@ export const TOPIC_DEFS: readonly TopicDef[] = Object.freeze([
     icon: 'mdi-bitcoin',
     blurb: 'Comprar cripto en Uruguay, cómo tributa y dónde tener la wallet.',
     match:
-      /\bcripto\b|criptomoneda|bitcoin|ethereum|\busdt\b|stablecoin|\bbinance\b|\bwallet\b|blockchain/i,
+      /\bcripto\b|criptomoneda|bitcoin|ethereum|\busdt\b|stablecoin|\bbinance\b|blockchain|wallet (?:fr[ií]a|de cripto|hardware)|hardware wallet|metamask/i,
     queries: ['cripto', 'bitcoin', 'usdt', 'invertir cripto'],
     related: [
       { label: 'Invertir en Uruguay', to: '/inversiones-uruguay' },
@@ -269,9 +303,10 @@ export interface TopicAggregate {
   sample: TopicThread[]
 }
 
-const isQuestion = (t: string) =>
-  /[?¿]|consulta|duda|ayuda|alguien sabe|c[oó]mo|conviene|vale la pena|me pueden|qu[eé] opinan|recomiendan/i.test(
-    t
+const isQuestion = (title: string) =>
+  !/^\s*dudas? por .+:/i.test(title) &&
+  /\?\s*$|^\s*¿|^\s*(?:consulta|dudas?|ayuda)\b|alguien sabe|conviene|vale la pena|me pueden|qu[eé] opinan|recomiendan/i.test(
+    title
   )
 
 /**
@@ -300,10 +335,21 @@ export function aggregateTopics(
     const list = buckets.get(def.id) ?? []
     if (!list.length) continue
     const recent = list.filter(p => p.createdUtc >= recentCut).length
-    const sample = [...list]
+    // A body can mention a topic incidentally while the thread itself is about something
+    // else. Prefer titles that match the topic so the published examples remain useful and
+    // auditable. When those titles contain questions, publish only that question-shaped subset;
+    // only fall back to body-only matches when the corpus has no title match.
+    const titleMatches = list.filter(p => def.match.test(p.title))
+    const titleQuestions = titleMatches.filter(p => isQuestion(p.title))
+    const samplePool = titleQuestions.length
+      ? titleQuestions
+      : titleMatches.length
+        ? titleMatches
+        : list
+    const sample = [...samplePool]
       .sort((a, b) => {
-        const qa = isQuestion(`${a.title} ${a.selftext ?? ''}`) ? 1 : 0
-        const qb = isQuestion(`${b.title} ${b.selftext ?? ''}`) ? 1 : 0
+        const qa = isQuestion(a.title) ? 1 : 0
+        const qb = isQuestion(b.title) ? 1 : 0
         if (qa !== qb) return qb - qa
         return b.numComments - a.numComments || b.createdUtc - a.createdUtc
       })

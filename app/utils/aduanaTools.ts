@@ -208,9 +208,9 @@ function buildNextPurchaseWarning(params: {
   const minimoPart =
     params.minimoPrestacion != null ? ` (mínimo USD ${params.minimoPrestacion} por envío)` : ''
   return (
-    `La franquicia no se parte: si la próxima compra supera lo que te queda (USD ${params.remainingUsd}), ` +
-    `no pagás solo por el excedente — el envío entero pasa a la prestación única${minimoPart}, no una parte de él. ` +
-    'Esto no lo dice ningún artículo puntual: se desprende del diseño del régimen (una franquicia "de hasta" un tope, sin un mecanismo de aplicación parcial en ninguna norma).'
+    `No hay una regla publicada para repartir el saldo: si la próxima compra supera lo que te queda (USD ${params.remainingUsd}), ` +
+    `las fuentes oficiales no explican cómo combinar franquicia y prestación única en el mismo envío. ` +
+    `Presupuestá por prudencia la prestación única sobre el envío entero${minimoPart} y pedile a tu operador el fundamento escrito si ofrece una liquidación parcial.`
   )
 }
 
