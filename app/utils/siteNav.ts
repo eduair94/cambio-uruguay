@@ -526,26 +526,9 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
     ],
   },
   {
-    id: 'credit',
-    titleKey: 'search.section.credit',
+    id: 'banking',
+    titleKey: 'search.section.banking',
     entries: [
-      {
-        to: '/prestamos-uruguay',
-        labelKey: 'nav.prestamos',
-        icon: 'mdi-hand-coin-outline',
-        priority: 0.7,
-        changefreq: 'weekly',
-        keywords: [
-          'prestamo',
-          'prestamos',
-          'credito',
-          'creditos',
-          'financiamiento',
-          'cuota',
-          'loan',
-          'plata prestada',
-        ],
-      },
       {
         to: '/mejores-bancos-uruguay',
         labelKey: 'nav.mejoresBancos',
@@ -604,6 +587,29 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
           'pagar en dolares con tarjeta',
           'tarjeta prepaga dolares',
           'astropay comision',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'credit',
+    titleKey: 'search.section.credit',
+    entries: [
+      {
+        to: '/prestamos-uruguay',
+        labelKey: 'nav.prestamos',
+        icon: 'mdi-hand-coin-outline',
+        priority: 0.7,
+        changefreq: 'weekly',
+        keywords: [
+          'prestamo',
+          'prestamos',
+          'credito',
+          'creditos',
+          'financiamiento',
+          'cuota',
+          'loan',
+          'plata prestada',
         ],
       },
       {

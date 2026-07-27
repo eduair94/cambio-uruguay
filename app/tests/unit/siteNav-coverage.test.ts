@@ -149,6 +149,16 @@ describe('the navigation model has no dead links', () => {
       }
     }
   })
+
+  it('groups the bank and card tier lists under dedicated navigation', () => {
+    const banking = NAV_SECTIONS.find(section => section.id === 'banking')
+    expect(banking?.titleKey).toBe('search.section.banking')
+    expect(banking?.entries.map(entry => entry.to)).toEqual([
+      '/mejores-bancos-uruguay',
+      '/tarjetas-de-credito-uruguay',
+      '/tarjetas-de-debito-uruguay',
+    ])
+  })
 })
 
 describe('the tools catalogue matches the filesystem', () => {
