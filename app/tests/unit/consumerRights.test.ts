@@ -68,6 +68,7 @@ describe('consumer scenario integrity', () => {
       'renovacion-cobro-recurrente',
       'servicio-digital-no-prestado',
       'producto-servicio-no-solicitado',
+      'precio-erroneo-cancelado',
     ]) {
       expect(scenarioById(id), id).toBeTruthy()
     }
@@ -114,6 +115,16 @@ describe('the verified legal facts must not regress', () => {
     const s = scenarioById('cobraron-no-entregan')!
     expect(s.articles.join(' ')).toMatch(/art\. 33/)
     expect(s.answer).toMatch(/elecci[óo]n es TUYA|eleg[íi]s vos/i)
+  })
+
+  it('treats an online price error as contextual instead of promising automatic enforcement', () => {
+    const s = scenarioById('precio-erroneo-cancelado')!
+
+    expect(s.answer).toMatch(/fácilmente advertible/i)
+    expect(s.answer).toMatch(/buena fe/i)
+    expect(s.answer).toMatch(/factura.*no.*por sí solas/i)
+    expect(s.articles.join(' ')).toMatch(/art\. 12/)
+    expect(s.articles.join(' ')).toMatch(/art\. 1291/)
   })
 
   it('is honest that a card chargeback is not a Ley 17.250 right', () => {

@@ -11,6 +11,10 @@ import {
   CREDIT_REBUILD_STEPS,
   VERDICT_CASES,
   DEBT_RELIEF_BASELINE,
+  SALARY_DEBT_FACTS,
+  SALARY_DEBT_DOCUMENTS,
+  SALARY_DEBT_CASE_CHECKLIST,
+  SALARY_DEBT_FAQ,
 } from '../../utils/debtRelief'
 
 describe('PRESCRIPTION_TYPES', () => {
@@ -120,6 +124,31 @@ describe('structured content', () => {
     expect(CREDIT_REBUILD_STEPS.length).toBeGreaterThanOrEqual(3)
     expect(VERDICT_CASES.length).toBeGreaterThanOrEqual(4)
     for (const v of VERDICT_CASES) expect(['good', 'neutral', 'warn']).toContain(v.tone)
+  })
+
+  it('explains that salary protection has exceptions and direct-retention rules', () => {
+    const salaryMyth = DEBT_MYTHS.find(m => /embargar el sueldo/i.test(m.myth))!
+    expect(salaryMyth.truth).toMatch(/leyes especiales/i)
+    expect(salaryMyth.truth).toMatch(/retención directa/i)
+
+    const legalCopy = SALARY_DEBT_FACTS.map(f => `${f.title} ${f.detail}`).join(' ')
+    expect(legalCopy).toContain('35%')
+    expect(legalCopy).toContain('30%')
+    expect(legalCopy).toContain('180 días')
+    expect(legalCopy).toMatch(/no es absoluta/i)
+
+    for (const fact of SALARY_DEBT_FACTS) {
+      expect(fact.sources.length).toBeGreaterThan(0)
+      for (const source of fact.sources) expect(source.url).toMatch(/^https?:\/\//)
+    }
+  })
+
+  it('includes the documents and case facts needed before changing payment arrangements', () => {
+    expect(SALARY_DEBT_DOCUMENTS.length).toBeGreaterThanOrEqual(5)
+    expect(SALARY_DEBT_DOCUMENTS.join(' ')).toMatch(/contrato de refinanciación/i)
+    expect(SALARY_DEBT_DOCUMENTS.join(' ')).toMatch(/retención de haberes/i)
+    expect(SALARY_DEBT_CASE_CHECKLIST.join(' ')).toMatch(/notificación judicial/i)
+    expect(SALARY_DEBT_FAQ.answer).toMatch(/naturaleza del acreedor|acreedor/i)
   })
 })
 

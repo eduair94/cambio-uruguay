@@ -48,6 +48,20 @@
       mensual estimada.
     </VAlert>
 
+    <VAlert type="warning" variant="tonal" density="comfortable" class="mb-5" icon="mdi-file-sign">
+      <strong>Antes de firmar: verificá si autorizás retención de haberes.</strong>
+      Algunos préstamos se cobran por descuento directo del sueldo; eso no es lo mismo que un
+      embargo judicial y depende de quién presta y de la autorización aplicable. Pedí por escrito
+      quién retiene, cuánto, hasta cuándo y qué ocurre si el descuento no cubre toda la cuota.
+      <NuxtLink
+        :to="`${localePath('/saldar-deudas-uruguay')}#sueldo-y-deudas`"
+        class="prestamos-link"
+      >
+        Ver la guía sobre préstamos, retención y embargo del sueldo
+      </NuxtLink>
+      .
+    </VAlert>
+
     <!-- Updated label -->
     <p v-if="updatedLabel" class="text-caption text-grey-lighten-1 mb-3">
       <VIcon size="14" class="mr-1">mdi-refresh</VIcon>
@@ -470,6 +484,18 @@ const officialSources = [
     url: 'https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/Registro-de-Instituciones-Financieras.aspx',
   },
   {
+    label: 'IMPO — Ley 17.829 art. 3: límites a las retenciones sobre el sueldo',
+    url: 'https://www.impo.com.uy/bases/leyes/17829-2004/3',
+  },
+  {
+    label: 'IMPO — Código General del Proceso art. 381: bienes inembargables',
+    url: 'https://www.impo.com.uy/bases/codigo-general-proceso/15982-1988/381',
+  },
+  {
+    label: 'Defensa del Consumidor — cuándo un préstamo admite retención de haberes',
+    url: 'https://www.gub.uy/ministerio-economia-finanzas/politicas-y-gestion/preguntas-frecuentes-unidad-defensa-del-consumidor',
+  },
+  {
     label: 'MEF — Crédito de la Casa: tasas vigentes 2026',
     url: 'https://www.gub.uy/ministerio-economia-finanzas/politicas-y-gestion/tasas-empresas-credito-casa-ano-2026',
   },
@@ -657,6 +683,14 @@ useHead(() => ({
                 acceptedAnswer: {
                   '@type': 'Answer',
                   text: 'El BCU publica tasas medias del sistema financiero y un tope de usura que las entidades no pueden superar. En préstamos al consumo de montos pequeños (operaciones en pesos por menos de 10.000 UI), las financieras pueden cobrar más del 100% TEA, dentro del límite legal. Consultá los topes vigentes en el sitio del BCU antes de firmar cualquier contrato.',
+                },
+              },
+              {
+                '@type': 'Question',
+                name: '¿Un préstamo puede cobrarse por retención del sueldo?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'Sí, algunos préstamos pueden cobrarse por retención directa de haberes si la entidad tiene autorización legal o si diste una autorización válida al contratar. No es lo mismo que un embargo judicial. Antes de firmar, revisá la cláusula de retención, quién es el acreedor y qué porcentaje de tu sueldo puede quedar afectado.',
                 },
               },
               {

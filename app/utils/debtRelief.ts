@@ -391,10 +391,95 @@ export const DEBT_MYTHS: readonly Myth[] = Object.freeze([
   {
     myth: '"Me pueden embargar el sueldo / meter preso."',
     truth:
-      'El sueldo es inembargable salvo por tributos o pensión alimenticia (hasta 1/3, o 1/2 alimentos a menores), y siempre debés conservar como mínimo el 35% líquido. Y no hay cárcel por deudas civiles o comerciales.',
+      'El sueldo es inembargable como regla, pero hay excepciones por tributos, alimentos y leyes especiales. Además, algunos créditos permiten retención directa si la entidad está autorizada o si diste una autorización válida. No hay cárcel por deudas civiles o comerciales.',
     norma: 'CGP art. 381; Ley 17.829 art. 3; Constitución art. 52',
   },
 ])
+
+export interface SalaryDebtSource {
+  label: string
+  url: string
+}
+
+export interface SalaryDebtFact {
+  title: string
+  detail: string
+  sources: readonly SalaryDebtSource[]
+}
+
+export const SALARY_DEBT_FACTS: readonly SalaryDebtFact[] = Object.freeze([
+  {
+    title: 'Embargo judicial: la regla general',
+    detail:
+      'Las remuneraciones son, como regla, inembargables. El Código General del Proceso admite excepciones por tributos, pensiones alimenticias y cuando una ley especial habilita la afectación por orden judicial. Por eso la protección no es absoluta.',
+    sources: [
+      {
+        label: 'Código General del Proceso, art. 381',
+        url: 'https://www.impo.com.uy/bases/codigo-general-proceso/15982-1988/381',
+      },
+    ],
+  },
+  {
+    title: 'Retención directa de haberes',
+    detail:
+      'Algunos créditos pueden cobrarse por descuento directo si la entidad tiene autorización legal para retener o si diste una autorización válida al contratar. La Ley 17.829 exige que percibas al menos el 35% del monto nominal, una vez deducidos impuestos y aportes; el mínimo es 30% únicamente para las categorías específicas que enumera la ley.',
+    sources: [
+      {
+        label: 'Ley 17.829, art. 3',
+        url: 'https://www.impo.com.uy/bases/leyes/17829-2004/3',
+      },
+      {
+        label: 'Defensa del Consumidor: preguntas frecuentes',
+        url: 'https://www.gub.uy/ministerio-economia-finanzas/politicas-y-gestion/preguntas-frecuentes-unidad-defensa-del-consumidor',
+      },
+    ],
+  },
+  {
+    title: 'Sueldo depositado en una cuenta',
+    detail:
+      'Las sumas salariales acreditadas en una cuenta conservan la inembargabilidad durante 180 días corridos desde la acreditación. La protección alcanza al saldo identificado como salarial, no convierte en inembargable cualquier otro dinero de la cuenta.',
+    sources: [
+      {
+        label: 'Ley 19.210, art. 20',
+        url: 'https://www.impo.com.uy/bases/leyes/19210-2014/20',
+      },
+    ],
+  },
+  {
+    title: 'Lo que sí puede ocurrir si no pagás',
+    detail:
+      'Dejar de pagar no borra la deuda. El acreedor puede reclamar judicialmente e intentar embargar otros bienes o fondos que sí sean embargables. Lo que no existe para una deuda civil o comercial es la cárcel por deber dinero.',
+    sources: [
+      {
+        label: 'Constitución de la República, art. 52',
+        url: 'https://www.impo.com.uy/bases/constitucion/1967-1967/52',
+      },
+    ],
+  },
+])
+
+export const SALARY_DEBT_DOCUMENTS: readonly string[] = Object.freeze([
+  'El contrato original y, si existe, el contrato de refinanciación.',
+  'El saldo desglosado entre capital, intereses, mora, seguros y gastos.',
+  'Una copia de cualquier vale o pagaré que hayas firmado.',
+  'La confirmación de si existe retención de haberes, débito automático, garante o fiador.',
+  'Una propuesta con una cuota que realmente puedas sostener y, si hay quita, el acuerdo y la constancia de cancelación por escrito.',
+])
+
+export const SALARY_DEBT_CASE_CHECKLIST: readonly string[] = Object.freeze([
+  'Quién es el acreedor actual.',
+  'Qué tipo de préstamo es.',
+  'Si ya firmaste una refinanciación.',
+  'Si autorizaste la retención del sueldo.',
+  'Cuándo hiciste el último pago.',
+  'Si recibiste una intimación o notificación judicial.',
+])
+
+export const SALARY_DEBT_FAQ = Object.freeze({
+  question: '¿Me pueden embargar el sueldo por una deuda de préstamo en Uruguay?',
+  answer:
+    'Como regla general, el salario es inembargable, pero existen excepciones por tributos, alimentos y leyes especiales. Algunos créditos también permiten retención directa si el acreedor está legalmente habilitado o si existe una autorización válida. Hay que revisar el contrato y la naturaleza del acreedor: dejar de pagar no borra la deuda.',
+})
 
 export interface Step {
   title: string

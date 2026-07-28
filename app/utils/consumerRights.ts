@@ -383,6 +383,66 @@ export const CONSUMER_SCENARIOS: readonly ConsumerScenario[] = Object.freeze([
     ],
   },
   {
+    id: 'precio-erroneo-cancelado',
+    group: 'oferta-servicio',
+    label: 'La tienda canceló por un error de precio',
+    short: 'Aceptaron la compra o facturaron, y después anularon y reembolsaron.',
+    icon: 'mdi-tag-remove-outline',
+    lever: 'MEF: depende de si el error era evidente',
+    answer:
+      'El MEF distingue dos situaciones. Si el precio podía parecer una oferta real, la aceptación ' +
+      'vuelve obligatorio el cumplimiento y el error es, en principio, negligencia del vendedor. Si ' +
+      'el error era fácilmente advertible —por ejemplo, un cero faltante o una confusión entre dólares ' +
+      'y pesos— puede operar la buena fe contra el reclamo. La confirmación posterior a la validación y ' +
+      'la factura son pruebas importantes de la relación de consumo, pero no convierten por sí solas un ' +
+      'error obvio en un descuento exigible. Si la diferencia no era evidente, podés pedir entrega, una ' +
+      'solución equivalente o mediación bajo el art. 33; el resultado depende de la prueba concreta.',
+    articles: [
+      'Ley 17.250 art. 12 — la oferta precisa vincula a quien la emite',
+      'Ley 17.250 art. 14 — la información publicada integra el contrato',
+      'Ley 17.250 art. 33 — cumplimiento si es posible, equivalente o resolución',
+      'Código Civil art. 1291 — los contratos se ejecutan de buena fe',
+      'Decreto 244/000 art. 1 — la factura puede probar la relación de consumo perfeccionada',
+    ],
+    deadlines: [
+      'No hay un plazo especial para este caso: reclamá cuanto antes y antes de que desaparezcan la publicación o los correos.',
+      'Si el reintegro a la tarjeta no aparece, consultá de inmediato al emisor y documentá el estado.',
+    ],
+    evidence: [
+      'Captura de la publicación con producto, precio, fecha y URL.',
+      'Orden de compra y correo posterior que confirme la validación.',
+      'Factura o e-ticket, comprobante del cargo y correo de cancelación.',
+      'Precio habitual del producto y contexto de la promoción para mostrar si el descuento parecía plausible.',
+      'Cantidad comprada: la guía oficial menciona varias unidades como posible indicio de que se advirtió el error.',
+    ],
+    complaintFacts: [
+      'Producto, cantidad y precio publicado: [___].',
+      'Orden, factura y fecha de confirmación: [___].',
+      'Texto y fecha de la cancelación unilateral: [___].',
+      'Por qué el precio podía parecer una oferta real —o qué duda existe sobre ello—: [___].',
+    ],
+    remedies: [
+      {
+        id: 'cumplimiento-precio',
+        label: 'Que entreguen al precio aceptado',
+        request:
+          'Solicito el cumplimiento de la compra y la entrega del producto al precio aceptado, siempre que ello sea posible y que el precio no constituya un error fácilmente advertible.',
+      },
+      {
+        id: 'equivalente-precio',
+        label: 'Una solución equivalente',
+        request:
+          'Solicito una propuesta equivalente, concreta y sin costo adicional que resuelva la cancelación de la compra.',
+      },
+      {
+        id: 'investigar-precio',
+        label: 'Que investiguen la conducta',
+        request:
+          'Solicito que la Unidad Defensa del Consumidor investigue los hechos y adopte las medidas que correspondan si constata una infracción.',
+      },
+    ],
+  },
+  {
     id: 'publicidad-enganosa',
     group: 'oferta-servicio',
     label: 'La publicidad era engañosa',
@@ -1078,6 +1138,21 @@ export const CONSUMER_SOURCES: readonly SourceLink[] = Object.freeze([
   {
     label: 'Ley N.º 17.250 de Relaciones de Consumo — texto oficial completo',
     url: 'https://www.impo.com.uy/bases/leyes/17250-2000',
+    publisher: 'IMPO — Centro de Información Oficial',
+  },
+  {
+    label: 'Error de precio en una tienda online — criterio oficial y excepción de buena fe',
+    url: 'https://www.gub.uy/ministerio-economia-finanzas/comunicacion/publicaciones/me-equivoque-precio-informe-mailing-mi-portal-ventas-estoy-obligado',
+    publisher: 'MEF — Unidad Defensa del Consumidor',
+  },
+  {
+    label: 'Código Civil art. 1291 — fuerza del contrato y ejecución de buena fe',
+    url: 'https://www.impo.com.uy/bases/codigo-civil/16603-1994/1291',
+    publisher: 'IMPO — Centro de Información Oficial',
+  },
+  {
+    label: 'Decreto 244/000 art. 1 — factura como prueba de la relación de consumo',
+    url: 'https://www.impo.com.uy/bases/decretos/244-2000/1',
     publisher: 'IMPO — Centro de Información Oficial',
   },
   {

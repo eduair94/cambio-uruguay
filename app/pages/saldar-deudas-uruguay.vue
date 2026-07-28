@@ -36,6 +36,81 @@
       </p>
     </VCard>
 
+    <section id="sueldo-y-deudas" aria-labelledby="sueldo-y-deudas-title">
+      <h2 id="sueldo-y-deudas-title" class="section-heading">
+        Si dejás de pagar, ¿pueden embargarte el sueldo?
+      </h2>
+
+      <p class="debt-reading-measure">
+        <strong>Primero: no te castigues.</strong> Si la deuda nació por una necesidad y la cuota ya
+        no te permite cubrir comida, vivienda o medicamentos, la refinanciación evidentemente no
+        quedó adaptada a tu capacidad real de pago.
+      </p>
+
+      <VAlert type="info" variant="tonal" density="comfortable" class="my-4">
+        <strong>La respuesta corta:</strong> dejar de pagar no borra la deuda, pero tampoco
+        significa que cualquier acreedor pueda llamar a tu empleador y quedarse automáticamente con
+        tu sueldo. Hay que distinguir un embargo judicial de una retención de haberes autorizada.
+      </VAlert>
+
+      <div class="salary-facts">
+        <article v-for="fact in SALARY_DEBT_FACTS" :key="fact.title" class="salary-fact">
+          <h3 class="text-subtitle-1 font-weight-bold mb-2">{{ fact.title }}</h3>
+          <p class="mb-2">{{ fact.detail }}</p>
+          <p class="salary-fact-sources mb-0">
+            <span v-for="(source, index) in fact.sources" :key="source.url">
+              <span v-if="index" aria-hidden="true"> · </span>
+              <a :href="source.url" target="_blank" rel="noopener">{{ source.label }}</a>
+            </span>
+          </p>
+        </article>
+      </div>
+
+      <VRow class="mt-2">
+        <VCol cols="12" md="7">
+          <h3 class="text-h6 font-weight-bold mb-2">
+            Antes de dejar de pagar o firmar otra refinanciación
+          </h3>
+          <p class="mb-3">Pedí por escrito:</p>
+          <ul class="debt-action-list">
+            <li v-for="item in SALARY_DEBT_DOCUMENTS" :key="item">{{ item }}</li>
+          </ul>
+          <p class="mb-0 mt-4">
+            No saques otro préstamo caro para tapar este: normalmente solo agranda el problema.
+            Primero verificá
+            <!-- eslint-disable-next-line vue/max-attributes-per-line -->
+            <a href="https://consultadeuda.bcu.gub.uy/consultadeuda/" target="_blank" rel="noopener"
+              >quién tiene actualmente la deuda en la Central de Riesgos</a
+            >
+            y negociá directamente.
+          </p>
+        </VCol>
+
+        <VCol cols="12" md="5">
+          <h3 class="text-h6 font-weight-bold mb-2">Datos que necesitás para revisar tu caso</h3>
+          <p class="mb-3">Sin publicar información personal, anotá:</p>
+          <ul class="debt-action-list">
+            <li v-for="item in SALARY_DEBT_CASE_CHECKLIST" :key="item">{{ item }}</li>
+          </ul>
+        </VCol>
+      </VRow>
+
+      <VAlert type="warning" variant="tonal" density="comfortable" class="mt-5">
+        Si la cuota te deja sin lo básico, podés iniciar sin costo una
+        <a
+          href="https://www.gub.uy/tramites/consulta-reclamo-yo-denuncia-materia-defensa-consumidor"
+          target="_blank"
+          rel="noopener"
+          >consulta o mediación en Defensa del Consumidor</a
+        >. Si recibís una intimación o demanda judicial, no la ignores: consultá de inmediato a un
+        abogado o buscá la
+        <!-- eslint-disable-next-line vue/max-attributes-per-line -->
+        <a href="https://www.poderjudicial.gub.uy/oficinas" target="_blank" rel="noopener"
+          >Defensoría Pública Civil de tu departamento</a
+        >.
+      </VAlert>
+    </section>
+
     <!-- 4 verdades / myths -->
     <h2 class="section-heading">Antes de pagar un peso: 4 verdades que te ahorran plata</h2>
     <VRow>
@@ -238,8 +313,10 @@
         <VCard class="pa-4 h-100" variant="outlined" rounded="lg">
           <div class="font-weight-bold mb-1">Cobranza abusiva</div>
           <p class="mb-0 text-body-2">
-            No pueden contarle tu deuda a tu empleador ni a tu familia (Ley 18.331 art. 11), ni
-            amenazarte con cárcel. Denunciá en Defensa del Consumidor: 0800 7005.
+            Una empresa de cobranza no puede divulgar tu deuda a familiares o a tu empleador para
+            presionarte. Eso es distinto de tramitar una retención válida por el canal legal
+            correspondiente. Tampoco puede amenazarte con cárcel. Denunciá en Defensa del
+            Consumidor: 0800 7005.
           </p>
         </VCard>
       </VCol>
@@ -309,6 +386,10 @@ import {
   checkPrescription,
   RELIEF_RUBRIC,
   rankedServices,
+  SALARY_DEBT_FACTS,
+  SALARY_DEBT_DOCUMENTS,
+  SALARY_DEBT_CASE_CHECKLIST,
+  SALARY_DEBT_FAQ,
   type LiveDebtRelief,
 } from '~/utils/debtRelief'
 import { formatNumber } from '~/utils/format'
@@ -367,6 +448,26 @@ const sources = [
     url: 'https://www.impo.com.uy/bases/leyes/17829-2004/3',
   },
   {
+    label: 'Código General del Proceso art. 381 (bienes inembargables) — IMPO',
+    url: 'https://www.impo.com.uy/bases/codigo-general-proceso/15982-1988/381',
+  },
+  {
+    label: 'Ley 19.210 art. 20 (salario acreditado en cuenta, 180 días) — IMPO',
+    url: 'https://www.impo.com.uy/bases/leyes/19210-2014/20',
+  },
+  {
+    label: 'Constitución art. 52 (no hay prisión por deudas) — IMPO',
+    url: 'https://www.impo.com.uy/bases/constitucion/1967-1967/52',
+  },
+  {
+    label: 'Defensa del Consumidor — préstamos y retención de haberes',
+    url: 'https://www.gub.uy/ministerio-economia-finanzas/politicas-y-gestion/preguntas-frecuentes-unidad-defensa-del-consumidor',
+  },
+  {
+    label: 'Poder Judicial — oficinas de Defensoría Pública',
+    url: 'https://www.poderjudicial.gub.uy/oficinas',
+  },
+  {
     label: 'Defensa del Consumidor (MEF) — 0800 7005',
     url: 'https://www.gub.uy/tramites/consulta-reclamo-yo-denuncia-materia-defensa-consumidor',
   },
@@ -378,7 +479,7 @@ const sources = [
 
 const title = 'Saldar deudas en Uruguay: cómo negociar y si conviene ChauDeudas o MiDeuda'
 const description =
-  'Guía para saldar deudas viejas en Uruguay: verificá prescripción, negociá una quita vos mismo, comparativa honesta de ChauDeudas, MiDeuda y otras, y cómo reconstruir tu historial crediticio.'
+  'Guía para saldar deudas en Uruguay: verificá prescripción, negociá una quita, entendé cuándo pueden retener o embargar el sueldo y reconstruí tu historial.'
 const canonicalUrl = 'https://cambio-uruguay.com/saldar-deudas-uruguay'
 
 defineOgImageComponent('Cambio', {
@@ -405,7 +506,7 @@ useHead(() => ({
     {
       name: 'keywords',
       content:
-        'saldar deudas uruguay, chaudeudas opiniones, mideuda vale la pena, negociar deuda uruguay, quita de deuda, salir de deudas uruguay, prescripción deuda, clearing',
+        'saldar deudas uruguay, embargo sueldo uruguay, retención de haberes, deuda préstamo uruguay, chaudeudas opiniones, mideuda vale la pena, negociar deuda uruguay, quita de deuda, prescripción deuda, clearing',
     },
   ],
   script: [
@@ -439,6 +540,11 @@ useHead(() => ({
                 name: v.situation,
                 acceptedAnswer: { '@type': 'Answer', text: v.advice },
               })),
+              {
+                '@type': 'Question',
+                name: SALARY_DEBT_FAQ.question,
+                acceptedAnswer: { '@type': 'Answer', text: SALARY_DEBT_FAQ.answer },
+              },
             ],
           },
         ],
@@ -474,6 +580,40 @@ useHead(() => ({
   opacity: 0.9;
   max-width: 60ch;
 }
+.debt-reading-measure {
+  max-width: 70ch;
+  line-height: 1.65;
+}
+.salary-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: 1px solid rgba(var(--v-border-color), 0.18);
+  border-bottom: 1px solid rgba(var(--v-border-color), 0.18);
+}
+.salary-fact {
+  min-width: 0;
+  padding: 1.25rem 1.5rem 1.25rem 0;
+}
+.salary-fact:nth-child(even) {
+  padding-right: 0;
+  padding-left: 1.5rem;
+  border-left: 1px solid rgba(var(--v-border-color), 0.18);
+}
+.salary-fact:nth-child(n + 3) {
+  border-top: 1px solid rgba(var(--v-border-color), 0.18);
+}
+.salary-fact p {
+  line-height: 1.6;
+}
+.salary-fact-sources {
+  font-size: 0.8rem;
+}
+.debt-action-list {
+  padding-left: 1.25rem;
+}
+.debt-action-list li + li {
+  margin-top: 0.5rem;
+}
 .section-heading {
   font-size: 1.35rem;
   font-weight: 750;
@@ -492,5 +632,18 @@ useHead(() => ({
 .cross-link:hover {
   transform: translateY(-2px);
   border-color: rgb(var(--v-theme-primary));
+}
+@media (max-width: 599px) {
+  .salary-facts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .salary-fact,
+  .salary-fact:nth-child(even) {
+    padding: 1rem 0;
+    border-left: 0;
+  }
+  .salary-fact:nth-child(n + 2) {
+    border-top: 1px solid rgba(var(--v-border-color), 0.18);
+  }
 }
 </style>

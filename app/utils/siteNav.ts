@@ -1139,11 +1139,15 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
 export const EXCLUDED_ROUTES: readonly string[] = Object.freeze(['/offline', '/widget', '/cuenta'])
 
 /**
- * Indexable pages that belong in the XML sitemap but not in any menu: the search
- * landing is reached through the magnifier and the SearchAction, not a nav link.
+ * Indexable pages that belong in the XML sitemap but not in any menu. The search landing is
+ * reached through the magnifier; incident-specific campaign/case pages are reached from their
+ * related guide or a direct link.
  */
 export const UNLISTED_ROUTES: ReadonlyArray<{ to: string; priority: number; changefreq: string }> =
-  Object.freeze([{ to: '/buscar', priority: 0.5, changefreq: 'monthly' }])
+  Object.freeze([
+    { to: '/buscar', priority: 0.5, changefreq: 'monthly' },
+    { to: '/reclamo-sodimac-compra-cancelada', priority: 0.7, changefreq: 'weekly' },
+  ])
 
 /**
  * Directory keys of dynamic (bracketed) page files, mapped to the hub whose

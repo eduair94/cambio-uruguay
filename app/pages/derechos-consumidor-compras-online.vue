@@ -95,6 +95,31 @@
         <ul class="articles">
           <li v-for="(a, i) in active.articles" :key="i">{{ a }}</li>
         </ul>
+
+        <VAlert
+          v-if="active.id === 'precio-erroneo-cancelado'"
+          type="info"
+          variant="tonal"
+          density="comfortable"
+          icon="mdi-file-document-edit-outline"
+          class="mt-4"
+        >
+          <div class="d-flex flex-wrap align-center justify-space-between ga-3">
+            <span>
+              <strong>¿Es el caso de las compras anuladas por Sodimac?</strong> Hay una guía
+              específica con el criterio oficial sobre errores de precio y una plantilla editable.
+            </span>
+            <VBtn
+              :to="localePath('/reclamo-sodimac-compra-cancelada')"
+              color="primary"
+              variant="tonal"
+              size="small"
+              append-icon="mdi-arrow-right"
+            >
+              Abrir el caso
+            </VBtn>
+          </div>
+        </VAlert>
       </VCard>
     </section>
 
