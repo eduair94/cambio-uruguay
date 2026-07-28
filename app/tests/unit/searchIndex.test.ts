@@ -69,6 +69,11 @@ describe('searching the real index', () => {
     expect(top?.doc.to).toBe('/inversiones-uruguay')
   })
 
+  it('finds the Gletir analysis on the investments page', () => {
+    const [top] = scoreDocs('gletir', docs)
+    expect(top?.doc.to).toBe('/inversiones-uruguay')
+  })
+
   // The pages the user called out as unreachable must be the FIRST hit for the
   // word a person would actually type, and must render first, not just score first.
   it.each([

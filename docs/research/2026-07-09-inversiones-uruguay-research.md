@@ -1,8 +1,9 @@
 # Research: inversiones-uruguay page
 
-Consolidated findings from 8 parallel research agents + 3 manual spot-checks, 2026-07-09. Feeds
-`app/utils/investments.ts` (Task 2). Every fact below carries its source URL; anything the
-agents could not verify is marked "no publicado"/"no verificado" rather than guessed.
+Consolidated findings from 8 parallel research agents + 3 manual spot-checks, 2026-07-09; Gletir
+research updated 2026-07-28. Feeds `app/utils/investments.ts` (Task 2). Every fact below carries
+its source URL; anything the agents could not verify is marked "no publicado"/"no verificado"
+rather than guessed.
 
 ## Marco regulatorio general (aplica a todas las categorías de brokers/bancos)
 
@@ -86,6 +87,44 @@ registered securities brokers.
 
 ## Brokers internacionales
 
+- **Gletir Global — Gletir Corredor de Bolsa S.A.** — Confirmed active in the BCU registry
+  (institution code 2317:
+  https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2317)
+  and listed as a corredor member by BVM
+  (https://www.bvm.com.uy/operadores/corredores-de-bolsa). The account has no opening or
+  maintenance fee. Gletir's tariff effective 2026-01-22 charges US shares/ETFs priced above
+  USD 5 at 0.75% per operation, minimum USD 10; below USD 5, USD 0.05/share, minimum USD 10.
+  European shares/ETFs have a USD 12 minimum, and options cost 0.75%, minimum USD 12 per
+  contract. Other currency-conversion, market, intermediary or custodian costs may apply:
+  https://api.gletir.com/Content/Attach/3590.pdf.
+
+  Gletir Global uses **GTN** as platform/provider and an **omnibus account** structure. Gletir
+  says GTN chooses custodians by jurisdiction; its examples for US shares are Velocity Clearing,
+  Vision Financial Markets, or Clear Street:
+  https://www.gletir.com/FAQ. The client contract permits Gletir to subcontract custody locally
+  or abroad and generally places custody responsibility on the selected third party:
+  https://www.gletir.com/OpenGletirAccount/FormClientGletirGlobal. This is a brokerage account,
+  not a bank deposit; BCU supervision does not guarantee principal or market performance.
+
+  **Compliance history:** BCU resolution RR-SSF-2025-303 imposed a UI 150,000 fine after a 2024
+  focused review. Findings included failure to inform clients that a linked private issuer had
+  negative equity, returns shown above the real rate for three clients, private placements to a
+  person without a contract or investor profile, missing/incorrect order and operation records,
+  custody at linked entities despite an earlier instruction, weaknesses in investor profiles and
+  strategies, AML controls, personal WhatsApp usage, and operational-risk controls. Gletir told
+  BCU it had corrected or was correcting many items; the BCU said remediation did not erase the
+  violations and described the breach as material:
+  https://www.bcu.gub.uy/Servicios-Financieros-SSF/Resoluciones_SSF/RR-SSF-2025-303.pdf. The BCU
+  sanctions register also records earlier reporting delays and failures to maintain the required
+  guarantee:
+  https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/SancionesDeLaSSF.aspx.
+
+  **Objective safety conclusion:** legal/regulatory footing is stronger than an unregistered
+  platform, but the intermediary/custody risk is **medium**, not low. The exact investment risk
+  remains variable and can be high (options, equities, private securities). Before investing a
+  material amount, obtain the exact custodian and account structure in writing, confirm all
+  costs, reconcile the first statement, and test a small withdrawal.
+
 - **eToro** — Uruguay is a supported country
   (https://tradersunion.com/brokers/fond/view/etoro/etoro-available-countries/), no UY-specific
   restriction found. Standard KYC. Fees: USD 5 withdrawal fee (min withdrawal USD 30) on USD
@@ -138,7 +177,7 @@ registered securities brokers.
   broker. **Do not publish either name as a real regulated Uruguayan broker — use Balanz as the
   confirmed local BEVSA/BCU-regulated example instead.**
 
-**Conclusion**: only Balanz is confirmed as a BCU/BEVSA-regulated local entity among the
+**Conclusion**: Gletir and Balanz are confirmed as BCU-regulated local entities among the
 international-access options; eToro, XTB, and (if accepted) IBKR are foreign entities with no
 BCU oversight or protection.
 

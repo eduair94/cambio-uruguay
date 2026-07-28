@@ -131,6 +131,121 @@
       </VCard>
     </div>
 
+    <!-- Gletir deep dive -->
+    <VCard
+      id="gletir"
+      variant="flat"
+      class="inversiones-section gletir-assessment mb-6 pa-5 pa-sm-6"
+    >
+      <div class="d-flex align-start justify-space-between flex-wrap ga-3 mb-3">
+        <div>
+          <p class="text-overline text-primary font-weight-bold mb-1">Análisis del intermediario</p>
+          <h2 class="text-h6 font-weight-bold mb-1 inversiones-group-title">
+            ¿Qué tan seguro es invertir mediante Gletir?
+          </h2>
+          <p class="text-caption text-medium-emphasis mb-0">
+            Evidencia revisada al {{ GLETIR_SAFETY_ANALYSIS.updatedAt }}
+          </p>
+        </div>
+        <VChip color="warning" variant="tonal" prepend-icon="mdi-shield-half-full">
+          {{ GLETIR_SAFETY_ANALYSIS.verdict }}
+        </VChip>
+      </div>
+
+      <p class="text-body-2 mb-4">{{ GLETIR_SAFETY_ANALYSIS.summary }}</p>
+
+      <VRow dense class="mb-4">
+        <VCol
+          v-for="dimension in GLETIR_SAFETY_ANALYSIS.dimensions"
+          :key="dimension.label"
+          cols="12"
+          sm="6"
+          lg="3"
+        >
+          <div class="gletir-score-card h-100">
+            <div class="d-flex align-center justify-space-between ga-2 mb-2">
+              <strong class="text-body-2">{{ dimension.label }}</strong>
+              <VChip :color="dimension.color" variant="tonal" size="x-small">
+                {{ dimension.assessment }}
+              </VChip>
+            </div>
+            <p class="text-caption mb-0 gletir-detail">{{ dimension.detail }}</p>
+          </div>
+        </VCol>
+      </VRow>
+
+      <VAlert type="warning" variant="tonal" density="comfortable" class="mb-4" icon="mdi-gavel">
+        <strong>La sanción relevante:</strong> en junio de 2025 el BCU multó a Gletir con UI 150.000
+        por incumplimientos detectados en una revisión de 2024. No fue una declaración de
+        insolvencia ni una baja de licencia: Gletir continúa activa y la resolución recoge medidas
+        correctivas. Sí es una señal que debe pesar en la evaluación, porque las fallas incluyeron
+        información al inversor, perfiles de riesgo, registros, custodias y controles.
+      </VAlert>
+
+      <VRow>
+        <VCol cols="12" md="6">
+          <h3 class="text-subtitle-2 font-weight-bold mb-2">
+            <VIcon start size="small" color="success">mdi-check-circle-outline</VIcon>
+            Qué juega a favor
+          </h3>
+          <ul class="gletir-list">
+            <li v-for="item in GLETIR_SAFETY_ANALYSIS.positives" :key="item">{{ item }}</li>
+          </ul>
+        </VCol>
+        <VCol cols="12" md="6">
+          <h3 class="text-subtitle-2 font-weight-bold mb-2">
+            <VIcon start size="small" color="warning">mdi-alert-circle-outline</VIcon>
+            Qué obliga a ser cauteloso
+          </h3>
+          <ul class="gletir-list">
+            <li v-for="item in GLETIR_SAFETY_ANALYSIS.cautions" :key="item">{{ item }}</li>
+          </ul>
+        </VCol>
+      </VRow>
+
+      <div class="gletir-costs mt-2 mb-4 pa-4">
+        <h3 class="text-subtitle-2 font-weight-bold mb-1">
+          Costos: competitivos en servicio local, caros para órdenes pequeñas
+        </h3>
+        <p class="text-caption text-medium-emphasis mb-3">
+          Para acciones o ETFs de EE.UU. con precio superior a USD 5, la cartilla cobra 0,75% con
+          mínimo de USD 10 <strong>en cada operación</strong>. Ejemplos antes de otros cargos:
+        </p>
+        <div class="d-flex flex-wrap ga-2">
+          <VChip
+            v-for="example in GLETIR_SAFETY_ANALYSIS.costExamples"
+            :key="example.orderAmount"
+            variant="outlined"
+            size="small"
+          >
+            Orden {{ formatUsd(example.orderAmount) }} → comisión
+            {{ formatUsd(example.commission) }} ({{ example.effectiveRate }})
+          </VChip>
+        </div>
+        <p class="text-caption text-medium-emphasis mt-3 mb-0">
+          Comprar y luego vender duplica esos porcentajes: una orden de USD 500 enfrenta 4% de ida y
+          vuelta solo por comisión; una de USD 10.000, 1,5%. Pueden sumarse conversión de moneda,
+          aranceles de mercado, custodio e impuestos.
+        </p>
+      </div>
+
+      <h3 class="text-subtitle-2 font-weight-bold mb-2">Antes de transferir un monto importante</h3>
+      <ol class="gletir-list mb-4">
+        <li v-for="item in GLETIR_SAFETY_ANALYSIS.checklist" :key="item">{{ item }}</li>
+      </ol>
+
+      <details class="gletir-sources">
+        <summary class="text-body-2 font-weight-bold">
+          Ver fuentes primarias de este análisis
+        </summary>
+        <ul class="inversiones-sources mt-2">
+          <li v-for="source in GLETIR_SAFETY_ANALYSIS.sources" :key="source.url">
+            <a :href="source.url" target="_blank" rel="noopener noreferrer">{{ source.label }}</a>
+          </li>
+        </ul>
+      </details>
+    </VCard>
+
     <!-- AFAP editorial section -->
     <VCard variant="flat" class="inversiones-section mb-6 pa-5 pa-sm-6">
       <h2 class="text-h6 font-weight-bold mb-3 inversiones-group-title">
@@ -382,6 +497,7 @@
 
 <script setup lang="ts">
 import {
+  GLETIR_SAFETY_ANALYSIS,
   INVESTMENTS,
   investmentsByCategory,
   riskLabel,
@@ -391,6 +507,10 @@ import {
 
 const localePath = useLocalePath()
 const groups = computed(() => investmentsByCategory())
+
+function formatUsd(amount: number): string {
+  return `US$ ${new Intl.NumberFormat('es-UY').format(amount)}`
+}
 
 /** Bare host (without scheme / www) for compact source links. */
 function hostOf(url: string): string {
@@ -476,7 +596,7 @@ const canonicalUrl = 'https://cambio-uruguay.com/inversiones-uruguay'
 const title =
   'Dónde invertir en Uruguay: guía completa de bancos, brokers, renta fija y cripto (2026)'
 const description =
-  'Guía completa para invertir en Uruguay: cuentas de inversión en bancos, Prex, brokers internacionales como eToro, renta fija local (plazo fijo, letras BCU, bonos), fondos de inversión, cripto, AFAP e inmobiliario. Riesgos, mínimos, comisiones e impuestos.'
+  'Guía completa para invertir en Uruguay: análisis de seguridad, custodia y costos de Gletir, bancos, Prex, brokers internacionales, renta fija local, fondos, cripto, AFAP e inmobiliario.'
 
 defineOgImageComponent('Cambio', {
   title: 'Invertir en Uruguay',
@@ -502,7 +622,7 @@ useHead(() => ({
     {
       name: 'keywords',
       content:
-        'invertir en uruguay, inversiones uruguay, donde invertir uruguay, etoro uruguay, prex inversiones, itau inversiones, plazo fijo uruguay, letras de regulacion monetaria, afap uruguay, cripto uruguay',
+        'invertir en uruguay, inversiones uruguay, gletir uruguay, gletir seguro, gletir global, broker uruguay, etoro uruguay, prex inversiones, itau inversiones, plazo fijo uruguay, letras de regulacion monetaria, afap uruguay, cripto uruguay',
     },
   ],
   script: [
@@ -555,6 +675,14 @@ useHead(() => ({
                 acceptedAnswer: {
                   '@type': 'Answer',
                   text: 'El plazo fijo bancario y las Letras de Regulación Monetaria del BCU son las opciones de menor riesgo, ya que devuelven capital e interés pactado sin exposición a variaciones de mercado, y ambas están supervisadas por el BCU. Los fondos de inversión y las carteras de bonos/acciones tienen riesgo variable según el instrumento, mientras que acciones, ETFs y criptomonedas tienen riesgo alto, ya que su valor puede subir o bajar significativamente según el mercado.',
+                },
+              },
+              {
+                '@type': 'Question',
+                name: '¿Es seguro invertir mediante Gletir en Uruguay?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'Gletir es un corredor de bolsa activo, supervisado por el BCU y miembro de la Bolsa de Valores de Montevideo, lo que ofrece un marco local más sólido que una plataforma no habilitada. No es una inversión garantizada: Gletir Global opera mediante GTN, custodios extranjeros y cuentas ómnibus, y el riesgo del capital depende del instrumento. Además, el BCU impuso en 2025 una multa de UI 150.000 por incumplimientos materiales detectados en 2024 sobre información al inversor, perfiles, registros, custodias y controles. La resolución también recoge medidas correctivas de Gletir. La evaluación objetiva es seguridad media del intermediario y riesgo variable o alto según el activo.',
                 },
               },
               {
@@ -659,6 +787,52 @@ useHead(() => ({
 .inversiones-ext-link:hover,
 .inversiones-sources a:hover {
   text-decoration: underline;
+}
+
+.gletir-assessment {
+  scroll-margin-top: 88px;
+}
+
+.gletir-score-card,
+.gletir-costs {
+  background: rgba(15, 118, 110, 0.06);
+  border: 1px solid rgba(15, 118, 110, 0.2);
+  border-radius: 10px;
+}
+
+.gletir-score-card {
+  padding: 14px;
+}
+
+.gletir-detail,
+.gletir-list {
+  color: rgba(255, 255, 255, 0.78);
+  line-height: 1.55;
+}
+
+.gletir-list {
+  margin: 0;
+  padding-left: 1.2rem;
+  font-size: 0.86rem;
+}
+
+.gletir-list li + li {
+  margin-top: 0.55rem;
+}
+
+.gletir-sources summary {
+  color: rgb(var(--v-theme-link));
+  cursor: pointer;
+}
+
+.v-theme--light .gletir-detail,
+.v-theme--light .gletir-list {
+  color: rgba(0, 0, 0, 0.78);
+}
+
+.v-theme--light .gletir-score-card,
+.v-theme--light .gletir-costs {
+  background: rgba(15, 118, 110, 0.04);
 }
 
 .cta-inversiones {

@@ -1,6 +1,7 @@
 // app/tests/unit/investments.test.ts
 import { describe, expect, it } from 'vitest'
 import {
+  GLETIR_SAFETY_ANALYSIS,
   INVESTMENTS,
   INVESTMENT_CATEGORIES,
   getInvestment,
@@ -47,6 +48,36 @@ describe('investments catalog', () => {
   it('minInvestment is null or has a positive amount', () => {
     for (const i of INVESTMENTS) {
       if (i.minInvestment != null) expect(i.minInvestment.amount).toBeGreaterThan(0)
+    }
+  })
+  it('covers Gletir as an active locally regulated broker', () => {
+    const gletir = getInvestment('gletir-global')
+    expect(gletir?.regulation).toBe('bcu')
+    expect(gletir?.regulationNote).toContain('2317')
+    expect(gletir?.feesNote).toContain('0,75%')
+    expect(gletir?.feesNote).toContain('USD 10')
+  })
+})
+
+describe('Gletir safety analysis', () => {
+  it('separates regulation, custody, compliance, and investment risk', () => {
+    expect(GLETIR_SAFETY_ANALYSIS.dimensions.map(item => item.label)).toEqual([
+      'Regulación local',
+      'Custodia',
+      'Cumplimiento',
+      'Riesgo de inversión',
+    ])
+  })
+
+  it('discloses the material BCU sanction without presenting insolvency as a fact', () => {
+    expect(GLETIR_SAFETY_ANALYSIS.cautions.join(' ')).toContain('RR-SSF-2025-303')
+    expect(GLETIR_SAFETY_ANALYSIS.cautions.join(' ')).toContain('No prueban insolvencia')
+  })
+
+  it('backs the assessment with primary sources', () => {
+    expect(GLETIR_SAFETY_ANALYSIS.sources.length).toBeGreaterThanOrEqual(6)
+    for (const source of GLETIR_SAFETY_ANALYSIS.sources) {
+      expect(source.url).toMatch(/^https?:\/\//)
     }
   })
 })

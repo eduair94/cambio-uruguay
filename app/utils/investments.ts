@@ -50,6 +50,19 @@ export interface InvestmentOption {
   reviewSources: ReviewSource[]
 }
 
+export interface InvestmentSafetyDimension {
+  label: string
+  assessment: string
+  color: 'success' | 'warning' | 'error' | 'info'
+  detail: string
+}
+
+export interface InvestmentCostExample {
+  orderAmount: number
+  commission: number
+  effectiveRate: string
+}
+
 export const INVESTMENT_CATEGORIES: Readonly<Record<InvestmentCategory, string>> = Object.freeze({
   banco_broker: 'Bancos / brokers bancarios',
   fintech: 'Fintech',
@@ -201,6 +214,27 @@ export const INVESTMENTS: InvestmentOption[] = [
     reviewSources: [],
   },
   // ── Brokers internacionales ─────────────────────────────────────────────────
+  {
+    id: 'gletir-global',
+    name: 'Gletir Global — Gletir Corredor de Bolsa S.A.',
+    category: 'broker_internacional',
+    riskLevel: 'variable',
+    minInvestment: null,
+    feesNote:
+      'Acciones/ETFs de EE.UU. a precio > USD 5: 0,75% por operación (mín. USD 10); a precio < USD 5: USD 0,05 por acción (mín. USD 10). Europa: mínimo USD 12. Sin apertura ni mantenimiento. Pueden sumarse cambio de moneda, mercado y custodio',
+    regulation: 'bcu',
+    regulationNote:
+      'Corredor activo en el registro del BCU (cód. 2317) y miembro de la BVM. Gletir Global opera mediante GTN y cuentas ómnibus; el custodio extranjero depende del activo y mercado. La supervisión local no garantiza el capital ni el rendimiento',
+    taxNote:
+      'Gletir informa que GTN retiene el impuesto extranjero al acreditar dividendos o intereses y que, para residentes uruguayos, Gletir complementa la retención hasta el 12% cuando la aplicada por GTN es menor. Desde 2026 las ganancias de capital del exterior también tributan IRPF al 12%, pero la FAQ pública no aclara si Gletir retiene sobre ventas: confirmalo con el corredor y un contador. Para activos que coticen en bolsas de reconocido prestigio adquiridos antes del 31/12/2025, el costo fiscal es su cotización al 31/12/2025',
+    online: true,
+    website: 'https://www.gletir.com/GletirGlobal',
+    source:
+      'https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2317',
+    note: 'La cuenta no tiene costo de apertura ni mantenimiento. La cartilla vigente desde el 22/01/2026 está en https://api.gletir.com/Content/Attach/3590.pdf. El BCU sancionó a la entidad en junio de 2025 por incumplimientos materiales detectados en una actuación de 2024: https://www.bcu.gub.uy/Servicios-Financieros-SSF/Resoluciones_SSF/RR-SSF-2025-303.pdf',
+    rating: null,
+    reviewSources: [],
+  },
   {
     id: 'balanz',
     name: 'Balanz Uruguay Corredor de Bolsa S.A.',
@@ -408,6 +442,108 @@ export const INVESTMENTS: InvestmentOption[] = [
     reviewSources: [],
   },
 ]
+
+export const GLETIR_SAFETY_ANALYSIS: Readonly<{
+  updatedAt: string
+  verdict: string
+  summary: string
+  dimensions: readonly InvestmentSafetyDimension[]
+  positives: readonly string[]
+  cautions: readonly string[]
+  costExamples: readonly InvestmentCostExample[]
+  checklist: readonly string[]
+  sources: readonly { label: string; url: string }[]
+}> = Object.freeze({
+  updatedAt: '28 de julio de 2026',
+  verdict: 'Seguridad del intermediario: media',
+  summary:
+    'Gletir es una entidad real, activa y supervisada en Uruguay; eso reduce el riesgo jurídico y de contraparte frente a una plataforma no habilitada. No alcanza, sin embargo, para calificarla como “sin riesgo”: usa una cadena de plataforma y custodios extranjeros, opera cuentas ómnibus y registra observaciones regulatorias materiales. El activo que compres puede ser mucho más riesgoso que el corredor.',
+  dimensions: [
+    {
+      label: 'Regulación local',
+      assessment: 'A favor',
+      color: 'success',
+      detail:
+        'Figura activa en el BCU con código 2317 y como corredor miembro de la Bolsa de Valores de Montevideo. Hay reglas locales, información periódica, auditor externo y canal de reclamo ante el BCU.',
+    },
+    {
+      label: 'Custodia',
+      assessment: 'Intermedia',
+      color: 'warning',
+      detail:
+        'Gletir Global usa GTN y cuentas ómnibus. GTN selecciona custodios según mercado; para acciones de EE.UU. Gletir menciona Velocity Clearing, Vision Financial Markets o Clear Street. Pedí por escrito cuál corresponde a tu cuenta y activo.',
+    },
+    {
+      label: 'Cumplimiento',
+      assessment: 'A vigilar',
+      color: 'warning',
+      detail:
+        'El BCU impuso en 2025 una multa de UI 150.000 por fallas detectadas en 2024 sobre información al inversor, perfiles, registros, custodias, prevención de lavado y controles. La resolución recoge medidas correctivas de Gletir, pero también califica el quebrantamiento como relevante.',
+    },
+    {
+      label: 'Riesgo de inversión',
+      assessment: 'Variable',
+      color: 'info',
+      detail:
+        'Un ETF diversificado, un bono, una opción y un valor privado no tienen el mismo riesgo. La regulación de Gletir no evita pérdidas de mercado, incumplimientos del emisor ni falta de liquidez.',
+    },
+  ],
+  positives: [
+    'Intermediario uruguayo activo, regulado por la Superintendencia de Servicios Financieros y miembro de la BVM.',
+    'Cuenta sin costo de apertura ni mantenimiento, con fondeo y soporte local.',
+    'Cartilla pública de costos y FAQ que identifica a GTN y ejemplos de custodios extranjeros.',
+    'Gletir informa retenciones complementarias de IRPF sobre dividendos e intereses para residentes uruguayos, lo que puede simplificar parte de la operativa tributaria.',
+  ],
+  cautions: [
+    'No es un depósito bancario: no tiene la garantía de depósitos de COPAB y el BCU no garantiza el capital ni el rendimiento.',
+    'La cuenta internacional es ómnibus. Tus activos se registran dentro de una cuenta global y la restitución depende también de los registros internos y de la cadena Gletir–GTN–custodio.',
+    'La resolución RR-SSF-2025-303 documentó problemas materiales: información omitida sobre un emisor vinculado con patrimonio negativo, rentabilidades informadas por encima de las reales, colocaciones privadas sin contrato/perfil, debilidades de perfiles y estrategias, custodias en entidades vinculadas y fallas de control.',
+    'El registro de sanciones del BCU también muestra incumplimientos administrativos anteriores, entre ellos mantenimiento de la garantía exigida y reportes fuera de plazo. No prueban insolvencia actual, pero impiden tratar el historial de cumplimiento como impecable.',
+    'El contrato permite subcontratar la custodia y limita ampliamente la responsabilidad de Gletir; para valores privados o productos complejos la diligencia del cliente es especialmente importante.',
+  ],
+  costExamples: [
+    { orderAmount: 500, commission: 10, effectiveRate: '2,00%' },
+    { orderAmount: 1000, commission: 10, effectiveRate: '1,00%' },
+    { orderAmount: 10000, commission: 75, effectiveRate: '0,75%' },
+  ],
+  checklist: [
+    'Pedí el nombre legal del custodio, la jurisdicción y cómo probarías tu titularidad beneficiaria si Gletir o GTN dejaran de operar.',
+    'Confirmá por escrito todos los costos: compra, venta, transferencia, cambio de moneda, datos en tiempo real, mercado y custodia.',
+    'Empezá con una transferencia pequeña, verificá que el estado de cuenta concilie efectivo, títulos y comisiones, y probá un retiro.',
+    'Si te ofrecen deuda privada, productos vinculados u opciones, exigí prospecto, emisor, garantías, conflictos de interés, liquidez y escenario de pérdida total.',
+    'Para montos relevantes, compará con al menos otro corredor local y con una cuenta directa en un broker extranjero regulado.',
+  ],
+  sources: [
+    {
+      label: 'BCU — registro activo de Gletir (cód. 2317)',
+      url: 'https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2317',
+    },
+    {
+      label: 'BCU — resolución sancionatoria RR-SSF-2025-303',
+      url: 'https://www.bcu.gub.uy/Servicios-Financieros-SSF/Resoluciones_SSF/RR-SSF-2025-303.pdf',
+    },
+    {
+      label: 'BCU — registro público de sanciones de la SSF',
+      url: 'https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/SancionesDeLaSSF.aspx',
+    },
+    {
+      label: 'BVM — corredores de bolsa miembros',
+      url: 'https://www.bvm.com.uy/operadores/corredores-de-bolsa',
+    },
+    {
+      label: 'Gletir — FAQ de plataforma, custodia e impuestos',
+      url: 'https://www.gletir.com/FAQ',
+    },
+    {
+      label: 'Gletir — cartilla de costos vigente desde 22/01/2026',
+      url: 'https://api.gletir.com/Content/Attach/3590.pdf',
+    },
+    {
+      label: 'Gletir — contrato de apertura y custodia',
+      url: 'https://www.gletir.com/OpenGletirAccount/FormClientGletirGlobal',
+    },
+  ],
+})
 
 export function riskLabel(risk: RiskLevel): string {
   const labels: Record<RiskLevel, string> = {

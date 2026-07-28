@@ -709,6 +709,8 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
           'plazo fijo',
           'afap',
           'broker',
+          'gletir',
+          'gletir global',
         ],
       },
       {
