@@ -206,6 +206,39 @@ export async function fetchDolarAhoraUsdRate(
   return rates[institution] || null;
 }
 
+export async function withDolarAhoraOnlineRate(
+  institution: DolarAhoraInstitution,
+  label: string,
+  produce: () => Promise<CambioObj[]>
+): Promise<CambioObj[]> {
+  let rows: CambioObj[] = [];
+
+  try {
+    rows = (await produce()) || [];
+  } catch (error) {
+    console.warn(
+      `${label}: own quotation failed; keeping the DólarAhora online rate`,
+      (error as Error).message
+    );
+  }
+
+  const online = await fetchDolarAhoraUsdRate(institution);
+  if (!online) {
+    console.warn(`${label}: DólarAhora has no valid online USD quote`);
+    return rows;
+  }
+
+  const alreadyPresent = rows.some(
+    (row) => row.code === online.code && row.type === online.type
+  );
+  if (alreadyPresent) return rows;
+
+  console.log(
+    `${label} DólarAhora USD online: buy=${online.buy}, sell=${online.sell}`
+  );
+  return [...rows, online];
+}
+
 /**
  * Runs a casa's own scraper and, when it fails or comes back without a USD
  * quote, publishes the DólarAhora reading for that institution instead of

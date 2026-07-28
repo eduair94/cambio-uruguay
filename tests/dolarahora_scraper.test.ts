@@ -2,7 +2,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const get = vi.fn();
 vi.mock("axios", () => ({
-  default: { get: (...a: unknown[]) => get(...a) },
+  default: {
+    defaults: {},
+    get: (...a: unknown[]) => get(...a),
+  },
 }));
 
 import {
@@ -11,7 +14,10 @@ import {
   parseDolarAhoraUsdRate,
   resetDolarAhoraCache,
   withDolarAhoraFallback,
+  withDolarAhoraOnlineRate,
 } from "../classes/cambios/dolarahora";
+import CambioBbva from "../classes/cambios/bbva";
+import Itau from "../classes/cambios/itau";
 
 const card = (host: string, buy: string, sell: string) => `
   <div class="card">
@@ -51,6 +57,16 @@ describe("DolarAhora card parser", () => {
       name: "Dólar online",
       buy: 38,
       sell: 42,
+    });
+  });
+
+  it("labels Itaú's DólarAhora quote as its online rate", () => {
+    expect(parseDolarAhoraUsdRate(CARDS_HTML, "itau")).toEqual({
+      code: "USD",
+      type: "TRANSFERENCIA",
+      name: "Dólar online",
+      buy: 39.15,
+      sell: 41.15,
     });
   });
 
@@ -156,5 +172,81 @@ describe("withDolarAhoraFallback", () => {
     );
 
     expect(get).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("bank scrapers using DólarAhora", () => {
+  beforeEach(() => {
+    get.mockReset();
+    resetDolarAhoraCache();
+  });
+
+  it("publishes BBVA from its DólarAhora card", async () => {
+    get.mockResolvedValue({ data: CARDS_HTML });
+
+    await expect(new CambioBbva("bbva").get_data()).resolves.toEqual([
+      {
+        code: "USD",
+        type: "TRANSFERENCIA",
+        name: "Dólar online",
+        buy: 38,
+        sell: 42,
+      },
+    ]);
+  });
+
+  it("keeps Itaú pizarra and appends the internet quote", async () => {
+    const xml = `
+      <cotizaciones>
+        <cotizacion>
+          <moneda>US.D</moneda>
+          <compra>38,90</compra>
+          <venta>41,50</venta>
+        </cotizacion>
+      </cotizaciones>
+    `;
+    get.mockImplementation(async (url: string) => {
+      if (url === "https://www.itau.com.uy/inst/aci/cotiz.xml") {
+        return { data: xml };
+      }
+      if (url === "https://dolarahora.uy/cards") {
+        return { data: CARDS_HTML };
+      }
+      throw new Error(`Unexpected URL: ${url}`);
+    });
+
+    await expect(new Itau("itau").get_data()).resolves.toEqual([
+      {
+        code: "USD",
+        type: "",
+        name: "US.D",
+        buy: 38.9,
+        sell: 41.5,
+      },
+      {
+        code: "USD",
+        type: "TRANSFERENCIA",
+        name: "Dólar online",
+        buy: 39.15,
+        sell: 41.15,
+      },
+    ]);
+  });
+
+  it("does not duplicate an online rate already returned by a scraper", async () => {
+    get.mockResolvedValue({ data: CARDS_HTML });
+    const own = [
+      {
+        code: "USD",
+        type: "TRANSFERENCIA",
+        name: "Dólar Internet",
+        buy: 39.1,
+        sell: 41.1,
+      },
+    ];
+
+    await expect(
+      withDolarAhoraOnlineRate("itau", "Itau", async () => own)
+    ).resolves.toEqual(own);
   });
 });

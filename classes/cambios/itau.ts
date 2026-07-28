@@ -2,7 +2,7 @@ import axios from "axios";
 import { CambioObj } from "../../interfaces/Cambio";
 import { Cambio } from "../cambio";
 import { load } from "cheerio";
-import { withDolarAhoraFallback } from "./dolarahora";
+import { withDolarAhoraOnlineRate } from "./dolarahora";
 
 class Itau extends Cambio {
   name = "Itau";
@@ -33,7 +33,7 @@ class Itau extends Cambio {
   website = "https://www.itau.com.uy/";
   favicon = "https://www.itau.com.uy/";
   async get_data(): Promise<CambioObj[]> {
-    return withDolarAhoraFallback("itau", "Itau", async () => {
+    return withDolarAhoraOnlineRate("itau", "Itau", async () => {
       const web_data = await axios
         .get("https://www.itau.com.uy/inst/aci/cotiz.xml")
         .then((res) => res.data);
