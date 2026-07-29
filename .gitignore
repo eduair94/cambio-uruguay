@@ -81,3 +81,7 @@ regul-snapshot.yml
 .superpowers/
 # SEO analysis private data + service-account keys (never commit)
 docs/seo/data/
+.agents
+.claude
+.serena
+.github

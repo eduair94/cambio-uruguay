@@ -4,10 +4,11 @@
 // documented Store API — `/wp-json/wc/store/v1/products` — so this is one adapter for all of them
 // and no HTML parsing, exactly like the Shopify one.
 //
-// The one trap is the price format: the Store API returns prices as an INTEGER STRING in minor
-// units with the divisor in `currency_minor_unit`. "399000" with minor unit 2 is 3 990, not
-// 399 000. Reading it naively inflates every price by 100x.
-import { fetchJson } from "../net";
+// Two traps. The price format: the Store API returns prices as an INTEGER STRING in minor units
+// with the divisor in `currency_minor_unit`. "399000" with minor unit 2 is 3 990, not 399 000.
+// Reading it naively inflates every price by 100x. And the body is not always clean JSON, which is
+// why nothing here goes through `fetchJson` — see {@link parseWooProducts}.
+import { fetchText } from "../net";
 import { isDeskChair } from "../normalize";
 import type { ChairListing } from "../types";
 import type { ChairSourceResult } from "./mercadolibre";
@@ -51,6 +52,25 @@ interface WooProduct {
   categories?: Array<{ name?: string }>;
 }
 
+/**
+ * The Store API answers 200 `application/json`, but a theme on one of these stores echoes ~2 KB of
+ * its own cart-icon markup BEFORE the array, so `JSON.parse` on the raw body throws and the store
+ * looks unreachable while its catalogue is perfectly readable. The payload is everything between
+ * the first `[` and the last `]`.
+ */
+export function parseWooProducts(body: string | null): WooProduct[] | null {
+  if (!body) return null;
+  const start = body.indexOf("[");
+  const end = body.lastIndexOf("]");
+  if (start < 0 || end < start) return null;
+  try {
+    const parsed: unknown = JSON.parse(body.slice(start, end + 1));
+    return Array.isArray(parsed) ? (parsed as WooProduct[]) : null;
+  } catch {
+    return null;
+  }
+}
+
 /** "399000" + minor unit 2 -> 3990. Returns null when the store publishes no usable price. */
 export function wooPrice(prices: WooProduct["prices"]): number | null {
   const raw = Number(prices?.price);
@@ -71,8 +91,13 @@ export async function harvestWooStore(store: ChairStore): Promise<ChairSourceRes
   for (const query of QUERIES) {
     for (let page = 1; page <= MAX_PAGES; page++) {
       const url = `${store.baseUrl}/wp-json/wc/store/v1/products?per_page=${PAGE_SIZE}&page=${page}&search=${encodeURIComponent(query)}`;
-      const products = await fetchJson<WooProduct[]>(url, { retries: 2, timeoutMs: 30_000 });
-      if (!Array.isArray(products)) break;
+      const body = await fetchText(url, {
+        retries: 2,
+        timeoutMs: 30_000,
+        headers: { accept: "application/json" },
+      });
+      const products = parseWooProducts(body);
+      if (!products) break;
       reachable = true;
       scanned += products.length;
 

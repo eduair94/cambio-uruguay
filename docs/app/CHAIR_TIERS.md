@@ -66,8 +66,8 @@ the PM2 job to keep the batch analysis below provider rate limits. Set
 - Commerce separation: purchase offers never affect sentiment, score, confidence, or tier.
 - Price honesty: each offer carries a fixed `verifiedAt`; the page asks the user to confirm current
   stock, size, warranty, and final price.
-- Catalog coverage: the current materialized view exposes 375 normalized chairs, 450 offers, and
-  127 sellers; these counts are runtime data and change on each healthy daily refresh.
+- Catalog coverage: headline chair, offer, and seller totals are computed from the exact rows
+  published by the seven-day healthy-source window; they change on each daily refresh.
 
 ## Known limits
 

@@ -1,0 +1,347 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-25T16:00:00-03:00",
+  "title": "Design System: Cambio Uruguay",
+  "extensions": {
+    "colorMeta": {
+      "midnight-canvas": {
+        "role": "neutral",
+        "displayName": "Midnight Canvas",
+        "canonical": "#0a0e1a",
+        "tonalRamp": ["#080b14", "#10182b", "#1d2b49", "#314468", "#526486", "#7f8da5", "#b3bdcc", "#edf0f5"]
+      },
+      "navy-surface": {
+        "role": "neutral",
+        "displayName": "Navy Surface",
+        "canonical": "#121a2e",
+        "tonalRamp": ["#090d17", "#121a2e", "#202c49", "#354363", "#566581", "#818da0", "#b5bdc9", "#eef0f4"]
+      },
+      "paper-canvas": {
+        "role": "neutral",
+        "displayName": "Paper Canvas",
+        "canonical": "#f6f7f9",
+        "tonalRamp": ["#202226", "#3a3c42", "#5b5e65", "#81858d", "#a9adb4", "#cdd0d5", "#e7e9ec", "#f6f7f9"]
+      },
+      "paper-surface": {
+        "role": "neutral",
+        "displayName": "Paper Surface",
+        "canonical": "#ffffff",
+        "tonalRamp": ["#1f1f1f", "#383838", "#545454", "#737373", "#949494", "#b3b3b3", "#d1d1d1", "#f0f0f0"]
+      },
+      "white": {
+        "role": "neutral",
+        "displayName": "White",
+        "canonical": "#ffffff",
+        "tonalRamp": ["#1f1f1f", "#383838", "#545454", "#737373", "#949494", "#b3b3b3", "#d1d1d1", "#f0f0f0"]
+      },
+      "action-blue": {
+        "role": "primary",
+        "displayName": "Action Blue",
+        "canonical": "#1976d2",
+        "tonalRamp": ["#051f38", "#0a3863", "#0f538f", "#1976d2", "#4794df", "#78b3e9", "#b4d4f3", "#edf7fd"]
+      },
+      "link-sky": {
+        "role": "primary",
+        "displayName": "Link Sky",
+        "canonical": "#64b5f6",
+        "tonalRamp": ["#03223a", "#063e6a", "#095c9f", "#0d7ed9", "#359ef3", "#6ebaf7", "#a8d6fa", "#e2f1fd"]
+      },
+      "ink-blue": {
+        "role": "primary",
+        "displayName": "Ink Blue",
+        "canonical": "#1565c0",
+        "tonalRamp": ["#061d37", "#0b3565", "#115098", "#176dcf", "#3e8eea", "#75aff0", "#accff6", "#e3effc"]
+      },
+      "accent-blue": {
+        "role": "primary",
+        "displayName": "Accent Blue",
+        "canonical": "#448aff",
+        "tonalRamp": ["#00173d", "#002a70", "#003fa8", "#0056e6", "#2979ff", "#669fff", "#a3c6ff", "#e0ecff"]
+      },
+      "amber-signal": {
+        "role": "secondary",
+        "displayName": "Amber Signal",
+        "canonical": "#ff8f00",
+        "tonalRamp": ["#452500", "#784100", "#ad5e00", "#ff8f00", "#ffa62f", "#ffc06d", "#ffdaac", "#fff5e7"]
+      },
+      "amber-deep": {
+        "role": "secondary",
+        "displayName": "Amber Deep",
+        "canonical": "#ff6f00",
+        "tonalRamp": ["#3d1b00", "#703100", "#a84900", "#e66400", "#ff8629", "#ffa966", "#ffcba3", "#ffeee0"]
+      },
+      "teal-context": {
+        "role": "tertiary",
+        "displayName": "Teal Context",
+        "canonical": "#26a69a",
+        "tonalRamp": ["#07302d", "#0d514b", "#157269", "#26a69a", "#55bbb2", "#83d0c9", "#b8e5e0", "#edfaf8"]
+      },
+      "teal-deep": {
+        "role": "tertiary",
+        "displayName": "Teal Deep",
+        "canonical": "#00897b",
+        "tonalRamp": ["#003d37", "#007065", "#00a897", "#00c9b4", "#29ded0", "#66e8de", "#a3f1eb", "#e0fbf9"]
+      },
+      "success-green": {
+        "role": "tertiary",
+        "displayName": "Success Green",
+        "canonical": "#00e676",
+        "tonalRamp": ["#003d1f", "#00703a", "#00a856", "#00e676", "#29ff97", "#66ffb4", "#a3ffd2", "#e0fff0"]
+      },
+      "light-success": {
+        "role": "tertiary",
+        "displayName": "Light Success",
+        "canonical": "#2e7d32",
+        "tonalRamp": ["#102d12", "#1e5221", "#2d7b31", "#3ea843", "#62c567", "#8fd693", "#bce6be", "#e9f7e9"]
+      },
+      "warning-amber": {
+        "role": "tertiary",
+        "displayName": "Warning Amber",
+        "canonical": "#ffc107",
+        "tonalRamp": ["#3d2e00", "#705400", "#a87e00", "#e6ac00", "#ffc929", "#ffd966", "#ffe8a3", "#fff7e0"]
+      },
+      "error-orange": {
+        "role": "tertiary",
+        "displayName": "Error Orange",
+        "canonical": "#dd2c00",
+        "tonalRamp": ["#3d0c00", "#701600", "#a82200", "#dd2c00", "#ff5329", "#ff8466", "#ffb5a3", "#ffe6e0"]
+      },
+      "light-error": {
+        "role": "tertiary",
+        "displayName": "Light Error",
+        "canonical": "#bf360c",
+        "tonalRamp": ["#3a1004", "#6a1e07", "#9e2d0a", "#bf360c", "#f26235", "#f68f6f", "#fabca9", "#fde9e2"]
+      },
+      "sentiment-positive": {
+        "role": "tertiary",
+        "displayName": "Sentiment Positive",
+        "canonical": "#35d07f",
+        "tonalRamp": ["#0c321e", "#155b37", "#208952", "#2bba70", "#35d07f", "#83e2b0", "#b5eed0", "#e6f9ef"]
+      },
+      "sentiment-neutral": {
+        "role": "neutral",
+        "displayName": "Sentiment Neutral",
+        "canonical": "#7d8aa3",
+        "tonalRamp": ["#191d24", "#2e3542", "#465063", "#5f6d86", "#7d8aa3", "#a5aec0", "#c9cfd9", "#edeff2"]
+      },
+      "sentiment-negative": {
+        "role": "tertiary",
+        "displayName": "Sentiment Negative",
+        "canonical": "#ff655d",
+        "tonalRamp": ["#3d0300", "#700600", "#a80800", "#e60b00", "#ff655d", "#ff8e88", "#ffb8b4", "#ffe2e0"]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "The page thesis. Weight 800, clamp(1.55rem, 4.4vw, 2.5rem), balanced wrap — the shared .hero-title idiom."
+      },
+      "headline": { "displayName": "Headline", "purpose": "Major section openings inside a page." },
+      "title": { "displayName": "Title", "purpose": "Card, tool, and dialog titles. Matches Vuetify text-h6." },
+      "body": { "displayName": "Body", "purpose": "Primary reading copy, held to 65-75ch." },
+      "label": { "displayName": "Label", "purpose": "Metadata, compact controls, status, and table meta. Never below 0.75rem." },
+      "eyebrow": {
+        "displayName": "Eyebrow",
+        "purpose": "Small colored kicker above a display heading or section title. One per section at most."
+      }
+    },
+    "shadows": [
+      {
+        "name": "quiet-lift",
+        "value": "0 6px 16px rgba(0, 0, 0, 0.35)",
+        "purpose": "Interactive cards and compact menus on dark surfaces; light mode uses 0 6px 16px rgba(0, 0, 0, 0.15). Paired with a -3px translateY on hover."
+      },
+      {
+        "name": "overlay-depth",
+        "value": "0 16px 40px rgba(0, 0, 0, 0.32)",
+        "purpose": "Dialogs, mega menus, and temporary overlay surfaces; light mode softens to rgba(20, 25, 40, 0.14)."
+      },
+      {
+        "name": "feature-cast",
+        "value": "16px 24px 48px rgba(0, 0, 0, 0.28)",
+        "purpose": "Offset cast under an authored feature panel sitting on a permanently dark slab."
+      },
+      {
+        "name": "material-elevation",
+        "value": ".elevation-0 … .elevation-24 (three-layer umbra/penumbra/ambient)",
+        "purpose": "The Material 2 scale restored in legacy-vuetify.css so stock Vuetify components keep their MD2 depth."
+      }
+    ],
+    "motion": [
+      { "name": "state-fast", "value": "150ms ease", "purpose": "Hover, focus, and compact selection changes." },
+      { "name": "surface-standard", "value": "200ms ease", "purpose": "Surface lift, menu state, and card hover." },
+      {
+        "name": "ease-exponential",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "The authored ease-out for reordering, evidence expansion, and zoom — arrives fast, settles quietly."
+      },
+      { "name": "reveal", "value": "600ms ease", "purpose": "One-time scroll reveal (.reveal / .is-revealed) for authored sections." },
+      {
+        "name": "theme-crossfade",
+        "value": "300ms ease",
+        "purpose": "Background and color transition on .v-application when the theme flips."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "0.001ms (global override)",
+        "purpose": "prefers-reduced-motion flattens every animation and transition in critical.css; never re-enable motion above it."
+      }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "600px" },
+      { "name": "md", "value": "960px" },
+      { "name": "lg", "value": "1280px" },
+      { "name": "xl", "value": "1920px" },
+      { "name": "xxl", "value": "2560px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The principal action on a surface.",
+      "html": "<button class=\"ds-btn-primary\">VER RESULTADOS</button>",
+      "css": ".ds-btn-primary { background:#1976d2; color:#fff; min-height:40px; padding:0 20px; border:0; border-radius:4px; font:600 .875rem/1 'Open Sans',sans-serif; letter-spacing:.09em; text-transform:uppercase; transition:background-color .2s ease,transform .2s ease; } .ds-btn-primary:hover { background:#1565c0; transform:translateY(-2px); } .ds-btn-primary:focus-visible { outline:2px solid #1976d2; outline-offset:2px; } .ds-btn-primary:active { transform:translateY(0); }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "A quiet secondary action on a dark surface.",
+      "html": "<button class=\"ds-btn-ghost\">VER MÉTODO</button>",
+      "css": ".ds-btn-ghost { background:transparent; color:#64b5f6; min-height:40px; padding:0 16px; border:1px solid rgba(100,181,246,.35); border-radius:4px; font:600 .875rem/1 'Open Sans',sans-serif; letter-spacing:.09em; text-transform:uppercase; transition:background-color .15s ease,border-color .15s ease; } .ds-btn-ghost:hover { background:rgba(100,181,246,.1); border-color:#64b5f6; } .ds-btn-ghost:focus-visible { outline:2px solid #1976d2; outline-offset:2px; }"
+    },
+    {
+      "name": "Selected Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "A selected filter or compact tier state. Hue never carries the meaning alone.",
+      "html": "<button class=\"ds-chip\" aria-pressed=\"true\">8+ HORAS</button>",
+      "css": ".ds-chip { min-height:32px; padding:0 12px; border:0; border-radius:999px; background:#1976d2; color:#fff; font:600 .75rem/1 'Open Sans',sans-serif; letter-spacing:.04em; transition:filter .15s ease,transform .15s ease; } .ds-chip:hover { filter:brightness(1.12); } .ds-chip:focus-visible { outline:2px solid #64b5f6; outline-offset:2px; } .ds-chip:active { transform:scale(.98); }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "A labeled, theme-aware query or filter field.",
+      "html": "<label class=\"ds-field\"><span>Buscar casa de cambio</span><input placeholder=\"Nombre o barrio\"></label>",
+      "css": ".ds-field { display:grid; gap:7px; color:#fff; font:700 .75rem/1.4 'Open Sans',sans-serif; } .ds-field input { min-height:48px; padding:0 16px; border:1px solid rgba(255,255,255,.16); border-radius:4px; background:#121a2e; color:#fff; font:400 1rem/1 'Open Sans',sans-serif; } .ds-field input::placeholder { color:rgba(255,255,255,.55); } .ds-field input:focus-visible { border-color:#64b5f6; outline:2px solid #1976d2; outline-offset:2px; }"
+    },
+    {
+      "name": "Navigation Item",
+      "kind": "nav",
+      "description": "A rounded desktop navigation action. Every route here is generated from utils/siteNav.ts.",
+      "html": "<a class=\"ds-nav\" href=\"#\">Herramientas</a>",
+      "css": ".ds-nav { display:inline-flex; align-items:center; min-height:40px; padding:0 14px; border-radius:8px; color:#fff; text-decoration:none; font:600 .875rem/1 'Open Sans',sans-serif; transition:background-color .2s ease,transform .2s ease; } .ds-nav:hover { background:rgba(255,255,255,.08); transform:translateY(-1px); } .ds-nav:focus-visible { outline:2px solid #1976d2; outline-offset:2px; }"
+    },
+    {
+      "name": "Section Opener",
+      "kind": "custom",
+      "refersTo": "eyebrow",
+      "description": "The eyebrow + display heading pair that opens an authored section.",
+      "html": "<header class=\"ds-opener\"><p class=\"ds-eyebrow\">Banco de evidencia</p><h2>El consenso, con sus matices a la vista</h2></header>",
+      "css": ".ds-opener { font-family:'Open Sans',sans-serif; color:#fff; } .ds-eyebrow { margin:0 0 6px; color:#64b5f6; font-size:.75rem; font-weight:700; letter-spacing:.18em; text-transform:uppercase; } .ds-opener h2 { margin:0; max-width:22ch; font-size:clamp(1.55rem,4.4vw,2.5rem); font-weight:800; line-height:1.1; letter-spacing:-.02em; text-wrap:balance; }"
+    },
+    {
+      "name": "Evidence Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "A result bound to sample size, freshness, and a direct source link. Sentiment is a labelled tag, never hue alone.",
+      "html": "<article class=\"ds-evidence\"><div class=\"ds-evidence__head\"><strong>Tier A</strong><span class=\"ds-tone\">Positiva</span></div><p>Consenso mayormente favorable, concentrado en durabilidad.</p><span class=\"ds-evidence__meta\">12 fuentes · 11 autores · actualizado hoy</span><a href=\"#\">Abrir fuentes</a></article>",
+      "css": ".ds-evidence { display:grid; gap:8px; padding:24px; border:1px solid rgba(255,255,255,.08); border-radius:16px; background:#121a2e; color:#fff; font-family:'Open Sans',sans-serif; box-shadow:0 6px 16px rgba(0,0,0,.35); } .ds-evidence__head { display:flex; align-items:center; gap:10px; } .ds-evidence strong { font-size:1.25rem; } .ds-tone { display:inline-flex; align-items:center; gap:5px; padding:2px 8px; border:1px solid rgba(53,208,127,.55); border-radius:999px; color:#8fe3b6; font-size:.75rem; font-weight:700; } .ds-tone::before { content:''; width:6px; height:6px; border-radius:50%; background:#35d07f; } .ds-evidence p { margin:0; font-size:.95rem; line-height:1.55; color:#b5bdc9; } .ds-evidence__meta { color:#818da0; font-size:.8rem; } .ds-evidence a { color:#64b5f6; font-weight:700; text-decoration:none; }"
+    },
+    {
+      "name": "Permanently Dark Slab",
+      "kind": "custom",
+      "description": "A hero or feature slab whose dark background does not flip with the theme. Tag the root .on-dark so the light-theme text remaps skip its subtree.",
+      "html": "<section class=\"ds-slab on-dark\"><p class=\"ds-eyebrow\">r/CharruaDevs</p><h1>La silla que aguanta tu jornada</h1><p class=\"ds-slab__lead\">Analizamos conversaciones reales y medimos consenso, muestra y temas repetidos.</p></section>",
+      "css": ".ds-slab { padding:clamp(28px,6vw,56px); border-radius:16px; background:linear-gradient(rgba(100,181,246,.045) 1px,transparent 1px) 0 0/100% 48px,#0a0e1a; color:#fff; font-family:'Open Sans',sans-serif; } .ds-slab h1 { margin:0; max-width:16ch; font-size:clamp(1.55rem,4.4vw,2.5rem); font-weight:800; line-height:1.1; letter-spacing:-.02em; text-wrap:balance; } .ds-slab__lead { max-width:65ch; margin:16px 0 0; color:#b3bdcc; line-height:1.68; } .ds-eyebrow { margin:0 0 8px; color:#64b5f6; font-size:.75rem; font-weight:700; letter-spacing:.18em; text-transform:uppercase; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "La Mesa de Mercado",
+    "overview": "Cambio Uruguay feels like a well-run market desk after dark: many live signals, one calm frame, and no ambiguity about what is actionable. Deep navy surfaces establish continuity while blue, amber, teal, green, and orange communicate roles rather than decorate.\n\nThe system is information-dense but never cramped. Familiar Material controls, generous container spacing, short transitions, and visible provenance make complex financial content easy to scan on a phone moments before a decision.\n\nThe implementation is Vuetify 4 running a restored Material 2 look: the v3 type ramp, elevation scale, and uppercase button/overline casing are pinned back in app/assets/variables.scss and app/assets/css/legacy-vuetify.css. Theme tokens come from a two-theme Vuetify definition (app/plugins/vuetify.ts); dark is the SSR default and useThemeMode swaps to the persisted or system preference after hydration.",
+    "keyCharacteristics": [
+      "Dark-first, with a fully usable light counterpart rather than an inverted afterthought.",
+      "Evidence and freshness stay close to every comparison or recommendation.",
+      "Color carries meaning; hierarchy comes from type, spacing, and tonal layering.",
+      "Responsive layouts recompose instead of merely shrinking.",
+      "Motion acknowledges state changes without delaying access to content.",
+      "Every token has a light-theme counterpart chosen for contrast, not for symmetry."
+    ],
+    "rules": [
+      {
+        "name": "The Signal Has a Job Rule",
+        "body": "Saturated colors must communicate action, selection, tier, or status; large decorative color fields are reserved for authored feature surfaces.",
+        "section": "colors"
+      },
+      {
+        "name": "The Paired Contrast Rule",
+        "body": "Every colored surface must be checked in both themes; permanent dark slabs use the shared .on-dark treatment.",
+        "section": "colors"
+      },
+      {
+        "name": "The Link Token Rule",
+        "body": "Blue text below 16px uses rgb(var(--v-theme-link)). --v-theme-primary is for fills, strokes, and focus rings — as small text on a tinted panel it fails AA.",
+        "section": "colors"
+      },
+      {
+        "name": "The Ramp Not Grey Rule",
+        "body": "Secondary text on a colored surface is tinted from that surface's own hue ramp. A grey on either canvas fails AA and is remapped away globally in critical.css.",
+        "section": "colors"
+      },
+      {
+        "name": "The Number Breathes Rule",
+        "body": "Important rates and scores get surrounding quiet and tabular alignment; they are not crowded with competing labels.",
+        "section": "typography"
+      },
+      {
+        "name": "The Four Steps Rule",
+        "body": "Dense data surfaces get four micro sizes and no more: 0.75rem, 0.8rem, 0.875rem, 0.95rem. Nothing renders below 0.75rem. A page that grows a fifth step is drifting, not designing.",
+        "section": "typography"
+      },
+      {
+        "name": "The One Eyebrow Rule",
+        "body": "A kicker marks a section that earns one. An eyebrow above every block is grammar nobody chose.",
+        "section": "typography"
+      },
+      {
+        "name": "The Min-Width Zero Rule",
+        "body": "Any grid or flex item that can contain an image, a long thread title, or a URL carries min-width: 0. Without it the item's min-content floor silently widens the whole row past the viewport.",
+        "section": "layout"
+      },
+      {
+        "name": "The Flat Until Needed Rule",
+        "body": "Content cards are tonal at rest. Depth arrives when a surface can be opened, moved, selected, or hovered.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Offset And Blur Rule",
+        "body": "Every shadow carries both an offset and a blur. A zero-offset colored halo is decoration, not depth.",
+        "section": "elevation"
+      },
+      {
+        "name": "The No Side Tab Rule",
+        "body": "A card, list item, or callout never carries a colored border above 1px on one side. State goes in a labelled chip, not in a stripe.",
+        "section": "shapes"
+      }
+    ],
+    "dos": [
+      "Do keep source, freshness, and uncertainty adjacent to consequential rankings.",
+      "Do compose a distinct mobile reading order rather than scale down a desktop grid.",
+      "Do use shared Vuetify semantics and the existing theme tokens for controls and states.",
+      "Do preserve readable content and meaning when reduced motion is requested — the global prefers-reduced-motion block already flattens durations; do not fight it.",
+      "Do put min-width: 0 on grid and flex items that can hold media or long unbroken strings.",
+      "Do register every new route in utils/siteNav.ts so nav, sitemap, search, and the command palette stay in agreement."
+    ],
+    "donts": [
+      "Don't add a second generic stylesheet or import vuetify/styles.",
+      "Don't use glass, glow, gradients, or icon tiles as substitutes for authored information.",
+      "Don't make permanently dark sections depend on dark-theme inheritance.",
+      "Don't hide a ranking's sample size or present AI prose as the underlying measurement.",
+      "Don't use --v-theme-primary for small blue text, or a raw sentiment hue for any text.",
+      "Don't invent a sixth radius step or a fifth micro type size for one surface."
+    ]
+  }
+}

@@ -1,16 +1,19 @@
 import type { ChairChannel } from "../types";
 
 /**
- * Adapters, not scrapers-per-store. Almost every Uruguayan retailer runs one of two platforms:
+ * Adapters, not scrapers-per-store. Every Uruguayan retailer we can read runs one of four
+ * platforms:
  *
- *  - `fenicio`  — the Montevideo-built SaaS behind most local chains (assets on f.fcdn.app). It
- *                 publishes `/sitemap/catalogo-articulos.xml` and schema.org microdata on each PDP.
- *  - `shopify`  — `/products.json` gives the whole catalogue as JSON.
+ *  - `fenicio`     — the Montevideo-built SaaS behind most local chains (assets on f.fcdn.app). It
+ *                    publishes `/sitemap/catalogo-articulos.xml` and schema.org microdata per PDP.
+ *  - `shopify`     — `/products.json` gives the whole catalogue as JSON.
+ *  - `woocommerce` — the public Store API, `/wp-json/wc/store/v1/products`.
+ *  - `vtex`        — the legacy catalogue API, `/api/catalog_system/pub/products/search`.
  *
  * Adding a store is therefore a few lines here, and a redesign of a storefront does not break us:
- * both adapters read contracts (sitemap, microdata, products.json) rather than markup.
+ * every adapter reads a published contract rather than markup.
  */
-export type ChairStoreAdapter = "fenicio" | "shopify" | "woocommerce";
+export type ChairStoreAdapter = "fenicio" | "shopify" | "woocommerce" | "vtex";
 
 export interface ChairStore {
   key: string;
@@ -147,8 +150,11 @@ export const CHAIR_STORES: ChairStore[] = [
     baseUrl: "https://prontometal.com.uy",
     adapter: "woocommerce",
     channel: "local-store",
-    expectCurrency: "UYU",
+    // Its Store API publishes `currency_code: "USD"` with `currency_minor_unit: 0`, so the integer
+    // IS the price: "229" is USD 229.
+    expectCurrency: "USD",
     enabled: true,
+    note: "Fabricante local de sillas ergonómicas (línea Di Trevi).",
   },
   {
     key: "puntounion",
@@ -173,6 +179,18 @@ export const CHAIR_STORES: ChairStore[] = [
     name: "Ufficio Equipamientos",
     baseUrl: "https://ufficio.com.uy",
     adapter: "woocommerce",
+    channel: "local-store",
+    expectCurrency: "UYU",
+    enabled: true,
+  },
+  {
+    // A supermarket, and the only VTEX storefront in the directory. Its two gaming chairs sit in
+    // the computer-peripherals aisle next to the mice; everything else it calls a "silla" is a
+    // garden, beach or camping chair the desk-chair filter drops.
+    key: "eldorado",
+    name: "El Dorado",
+    baseUrl: "https://www.eldorado.com.uy",
+    adapter: "vtex",
     channel: "local-store",
     expectCurrency: "UYU",
     enabled: true,

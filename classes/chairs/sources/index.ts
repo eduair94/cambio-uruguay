@@ -5,14 +5,23 @@ import type { ChairListing, ChairSourceRun } from "../types";
 import { harvestFacebookMarketplace } from "./facebook";
 import { harvestFenicioStore } from "./fenicio";
 import { harvestMercadoLibre, type ChairSourceResult } from "./mercadolibre";
-import { enabledChairStores } from "./registry";
+import { enabledChairStores, type ChairStore, type ChairStoreAdapter } from "./registry";
 import { harvestShopifyStore } from "./shopify";
+import { harvestVtexStore } from "./vtex";
 import { harvestWooStore } from "./woocommerce";
 
 export interface ChairHarvest {
   listings: ChairListing[];
   runs: ChairSourceRun[];
 }
+
+/** A store's `adapter` is the only thing that decides how it is read. */
+const HARVESTERS: Record<ChairStoreAdapter, (store: ChairStore) => Promise<ChairSourceResult>> = {
+  fenicio: harvestFenicioStore,
+  shopify: harvestShopifyStore,
+  woocommerce: harvestWooStore,
+  vtex: harvestVtexStore,
+};
 
 const safely = async (task: () => Promise<ChairSourceResult>): Promise<ChairSourceResult> => {
   try {
@@ -23,7 +32,7 @@ const safely = async (task: () => Promise<ChairSourceResult>): Promise<ChairSour
 };
 
 /**
- * fast is the hourly pass: MercadoLibre and the Shopify JSON catalogues only.
+ * fast is the hourly pass: MercadoLibre and the JSON catalogues only.
  *
  * The Fenicio stores are read by opening one product page per chair — around 900 requests
  * across five small Uruguayan shops. Fine once a day, abusive every hour, so the hourly
@@ -50,8 +59,8 @@ export async function harvestChairMarket(fast = false): Promise<ChairHarvest> {
   record("facebook", "Facebook Marketplace", "facebook", await safely(harvestFacebookMarketplace));
 
   for (const store of enabledChairStores()) {
-    // Shopify and WooCommerce are one JSON request per page; only the Fenicio page-by-page sweep
-    // is too heavy to repeat hourly.
+    // Shopify, WooCommerce and VTEX are one JSON request per page; only the Fenicio page-by-page
+    // sweep is too heavy to repeat hourly.
     if (fast && store.adapter === "fenicio") {
       runs.push({
         key: store.key,
@@ -64,13 +73,7 @@ export async function harvestChairMarket(fast = false): Promise<ChairHarvest> {
       });
       continue;
     }
-    const result = await safely(() =>
-      store.adapter === "shopify"
-        ? harvestShopifyStore(store)
-        : store.adapter === "woocommerce"
-          ? harvestWooStore(store)
-          : harvestFenicioStore(store)
-    );
+    const result = await safely(() => HARVESTERS[store.adapter](store));
     record(store.key, store.name, store.adapter, result);
   }
 

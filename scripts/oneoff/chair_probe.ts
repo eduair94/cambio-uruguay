@@ -9,11 +9,24 @@ dotenv.config();
 import { harvestFacebookMarketplace } from "../../classes/chairs/sources/facebook";
 import { harvestFenicioStore } from "../../classes/chairs/sources/fenicio";
 import { harvestMercadoLibre } from "../../classes/chairs/sources/mercadolibre";
-import { CHAIR_STORES } from "../../classes/chairs/sources/registry";
+import type { ChairSourceResult } from "../../classes/chairs/sources/mercadolibre";
+import {
+  CHAIR_STORES,
+  type ChairStore,
+  type ChairStoreAdapter,
+} from "../../classes/chairs/sources/registry";
 import { harvestShopifyStore } from "../../classes/chairs/sources/shopify";
+import { harvestVtexStore } from "../../classes/chairs/sources/vtex";
 import { harvestWooStore } from "../../classes/chairs/sources/woocommerce";
 import { groupListings, identityForListing } from "../../classes/chairs/normalize";
 import type { ChairListing } from "../../classes/chairs/types";
+
+const HARVESTERS: Record<ChairStoreAdapter, (store: ChairStore) => Promise<ChairSourceResult>> = {
+  fenicio: harvestFenicioStore,
+  shopify: harvestShopifyStore,
+  woocommerce: harvestWooStore,
+  vtex: harvestVtexStore,
+};
 
 async function run(): Promise<void> {
   const only = process.argv.slice(2).filter((argument) => !argument.startsWith("-"));
@@ -32,11 +45,7 @@ async function run(): Promise<void> {
   }
   for (const store of CHAIR_STORES) {
     if (!wanted(store.key)) continue;
-    const result = await (store.adapter === "shopify"
-      ? harvestShopifyStore(store)
-      : store.adapter === "woocommerce"
-        ? harvestWooStore(store)
-        : harvestFenicioStore(store));
+    const result = await HARVESTERS[store.adapter](store);
     console.log(`\n[${store.key}] ok=${result.ok} listings=${result.listings.length} :: ${result.note}`);
     for (const listing of result.listings.slice(0, 6)) {
       const identity = identityForListing(listing);

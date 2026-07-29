@@ -11,9 +11,17 @@ import type { ChairCategory, ChairListing } from "./types";
 /** A listing must look like a chair… */
 const CHAIR_WORD = /\b(sillas?|sillones?|butacas?|chairs?)\b/i;
 
-/** …and be aimed at a desk. */
+/**
+ * …and be aimed at a desk.
+ *
+ * The computer-retail words earn their place: a supermarket sells two real gaming chairs whose
+ * title, description and specifications say nothing but "Silla Cougar Armor Elite", and the only
+ * evidence they belong at a desk is that they are filed under Electrónica e Informática /
+ * Periféricos. A chair sold in the peripherals aisle is a desk chair. The exclusion list below is
+ * consulted first, so this can never rescue a garden, beach or camping chair.
+ */
 const DESK_CONTEXT =
-  /\b(escritorio|oficina|ergon[oó]mic[ao]s?|gamer|gaming|computador|computadora|pc|estudio|ejecutiv[ao]|gerencial|operativ[ao]|secretarial|task\s*chair|office)\b/i;
+  /\b(escritorio|oficina|ergon[oó]mic[ao]s?|gamer|gaming|computador|computadora|pc|estudio|ejecutiv[ao]|gerencial|operativ[ao]|secretarial|task\s*chair|office|perif[eé]ric[oa]s?|inform[aá]tica|computaci[oó]n)\b/i;
 
 /**
  * Things that are never a desk chair, whatever else the title says.

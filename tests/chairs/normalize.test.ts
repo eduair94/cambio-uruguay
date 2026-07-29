@@ -53,6 +53,15 @@ describe("isDeskChair", () => {
     expect(isDeskChair("Silla Michigan", "Silla operativa giratoria para oficina")).toBe(true);
   });
 
+  it("reads the computer-peripherals aisle as desk context", () => {
+    // A supermarket says nothing else about the only two desk chairs it sells.
+    expect(isDeskChair("Silla Cougar Armor Elite")).toBe(false);
+    expect(
+      isDeskChair("Silla Cougar Armor Elite", "/Electro Audio Y Tv/Electrónica e Informática/Periféricos/")
+    ).toBe(true);
+    expect(isDeskChair("Silla Ms147 Blanca Plegable De Camping", "/Electrónica e Informática/")).toBe(false);
+  });
+
   it("accepts a trademarked task-chair model with no other clue", () => {
     expect(isDeskChair("Silla Sayl")).toBe(true);
     expect(isDeskChair("Silla Embody - Grafito")).toBe(true);
