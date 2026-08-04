@@ -1,5 +1,6 @@
 import { convertSlugs } from '../../../utils/convert'
 import { listCurrencySlugs } from '../../../utils/currencyPages'
+import { listFronteraSlugs } from '../../../utils/frontera'
 import { glossarySlugs } from '../../../utils/glossary'
 import { hubSlugs } from '../../../utils/guideHubs'
 import { guideSlugs } from '../../../utils/guides'
@@ -88,6 +89,12 @@ export default defineEventHandler(async _event => {
   toolSlugs().forEach(slug => addUrlsForAllLocales(`/herramientas/${slug}`, 0.7, 'weekly'))
   glossarySlugs().forEach(slug => addUrlsForAllLocales(`/glosario/${slug}`, 0.6, 'monthly'))
   convertSlugs().forEach(slug => addUrlsForAllLocales(`/convertir/${slug}`, 0.6, 'weekly'))
+  // Curated border-department pages (real/peso argentino at the frontier). A
+  // hand-picked allowlist, so — unlike the per-casa history — it is emitted from
+  // pure data and survives an upstream outage. Frontier rates move daily.
+  listFronteraSlugs().forEach(slug =>
+    addUrlsForAllLocales(`/frontera/${slug}`, 0.7, 'daily', today)
+  )
   listIndicatorSlugs().forEach(slug =>
     addUrlsForAllLocales(`/indicadores/${slug}`, 0.7, 'daily', today)
   )

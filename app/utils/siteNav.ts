@@ -1162,6 +1162,7 @@ export const DYNAMIC_ROUTE_KEYS: Readonly<Record<string, string>> = Object.freez
   'convertir/[slug]': 'tools',
   'cotizacion/[moneda]': 'tools',
   'dolar/[departamento]': 'market',
+  'frontera/[ruta]': 'houses',
   'glosario/[termino]': 'learn',
   'guias/[slug]': 'learn',
   'historico/[origin]/index': 'market',

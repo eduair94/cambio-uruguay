@@ -259,6 +259,32 @@
         </v-col>
       </v-row>
 
+      <!-- Internal linking: border departments where this currency is traded -->
+      <v-row v-if="fronteraLinks.length" class="mt-2">
+        <v-col cols="12">
+          <v-card>
+            <v-card-title class="d-flex align-center py-3">
+              <v-icon start>mdi-bridge</v-icon>
+              {{ $t('frontera.currencyLinksTitle', { currency: currencyName }) }}
+            </v-card-title>
+            <v-card-text class="d-flex flex-wrap ga-2">
+              <v-chip
+                v-for="fr in fronteraLinks"
+                :key="fr.slug"
+                :to="localePath(`/frontera/${fr.slug}`)"
+                color="teal"
+                variant="tonal"
+                size="small"
+                link
+              >
+                <v-icon start size="small">mdi-map-marker</v-icon>
+                {{ fr.departmentName }}
+              </v-chip>
+            </v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
+
       <!-- Internal linking: other currencies -->
       <v-row v-if="relatedCurrencies.length" class="mt-2">
         <v-col cols="12">
@@ -307,6 +333,7 @@ import {
   type CurrencyQuote,
 } from '~/utils/currencyPages'
 import { currencyFaqIds, type FaqItem } from '~/utils/faqAnswers'
+import { fronteraRoutesForCode, type FronteraCode } from '~/utils/frontera'
 
 // Validate the slug against the supported currency list BEFORE rendering. Running
 // in the route guard yields a real 404 status (on SSR and client navigation) and,
@@ -376,6 +403,14 @@ const { data: faqData } = await useFetch<{ items: FaqItem[] }>('/api/faq', {
   },
 })
 const currencyFaqs = computed<FaqItem[]>(() => faqData.value?.items ?? [])
+
+// Curated border-department pages for this currency (real / peso argentino only).
+// Empty for every other currency, so the linking block hides itself.
+const fronteraLinks = computed(() =>
+  code.value === 'BRL' || code.value === 'ARS'
+    ? fronteraRoutesForCode(code.value as FronteraCode)
+    : []
+)
 
 const relatedCurrencies = computed(() =>
   listCurrencySlugs()
