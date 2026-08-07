@@ -1474,8 +1474,10 @@ useHead(() => ({
   flex-wrap: wrap;
 }
 
+/* Dashed rather than solid so an empty result reads as a placeholder, not as
+   another card. Same 0.1 border alpha as .casas-pick — no new step. */
 .casas-empty {
-  border: 1px dashed rgba(255, 255, 255, 0.14);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
   border-radius: 12px;
 }
 
@@ -1503,9 +1505,5 @@ useHead(() => ({
 
 .v-theme--light .casa-specs dd {
   color: rgba(0, 0, 0, 0.85);
-}
-
-.v-theme--light .casas-empty {
-  border-color: rgba(0, 0, 0, 0.14);
 }
 </style>
