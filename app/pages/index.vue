@@ -344,10 +344,60 @@
                     </VCol>
                   </VRow>
 
+                  <!-- Online / presencial channel filter: lets someone who only
+                       changes money online hide the walk-in casas (and vice
+                       versa). Governs the best-rates grid, the top houses list,
+                       the house selector and the converter's best rate. -->
+                  <div class="channel-filter d-flex flex-column align-center mt-6 mb-2">
+                    <VBtnToggle
+                      :model-value="channelFilter"
+                      mandatory
+                      density="comfortable"
+                      color="primary"
+                      variant="outlined"
+                      rounded="pill"
+                      :aria-label="t('channelFilter.label')"
+                      @update:model-value="onChannelChange"
+                    >
+                      <VBtn value="all" size="small">
+                        <VIcon start size="18">mdi-view-grid-outline</VIcon>
+                        {{ t('channelFilter.all') }}
+                      </VBtn>
+                      <VBtn value="online" size="small">
+                        <VIcon start size="18">mdi-laptop</VIcon>
+                        {{ t('channelFilter.online') }}
+                      </VBtn>
+                      <VBtn value="presencial" size="small">
+                        <VIcon start size="18">mdi-storefront-outline</VIcon>
+                        {{ t('channelFilter.presencial') }}
+                      </VBtn>
+                    </VBtnToggle>
+                    <p class="channel-filter__hint text-caption text-grey-lighten-1 mt-2 mb-0">
+                      {{ t('channelFilter.hint') }}
+                    </p>
+                  </div>
+
                   <!-- Best rates, full width below the converter: two columns
                        (sell | buy) only where the multi-column layout applies
                        (lg+); stacks on smaller screens. -->
                   <template v-if="subjectCode">
+                    <VAlert
+                      v-if="
+                        channelFilter !== 'all' &&
+                        !primaryRatesForSubject.length &&
+                        !secondaryRatesForSubject.length
+                      "
+                      type="info"
+                      variant="tonal"
+                      density="comfortable"
+                      class="mb-4"
+                    >
+                      {{
+                        channelFilter === 'online'
+                          ? t('channelFilter.emptyOnline')
+                          : t('channelFilter.emptyPresencial')
+                      }}
+                    </VAlert>
                     <VRow class="best-rates-grid">
                     <VCol v-if="primaryRatesForSubject.length" cols="12" lg="6">
                     <!-- First card: current intent (sell or buy) -->
@@ -978,6 +1028,11 @@ import {
   type RateRow,
 } from '@/utils/conversion'
 import { publicRates } from '@/utils/rateSource'
+import {
+  matchesChannel,
+  normalizeChannelFilter,
+  type ExchangeChannelFilter,
+} from '@/utils/exchangeChannel'
 
 const { mobile } = useDisplay()
 
@@ -1293,6 +1348,38 @@ const initialLoading = ref<boolean>(true)
 const realExchangeData = ref<any[]>([])
 const availableCurrencies = ref<string[]>(['USD', 'ARS', 'BRL', 'EUR', 'UYU'])
 
+// Online / presencial market view. `online` = banks & fintech that need an
+// account (BROU, Itaú, ..., PREX); `presencial` = walk-in casas de cambio.
+// Initialised from the `canal` query param so the choice is shareable.
+const channelFilter = ref<ExchangeChannelFilter>(normalizeChannelFilter(route.query.canal))
+
+// Every interactive list on the page (best-rates grid, top houses, house
+// selector, converter) reads from this so the whole page reflects the active
+// channel consistently. The SSR headline/SEO rows use `sharedRealRows` instead
+// and are intentionally left unfiltered — they must state the true market best.
+const filteredExchangeData = computed(() =>
+  realExchangeData.value.filter(item => matchesChannel(item.origin, channelFilter.value))
+)
+
+const trackChannel = useTrack()
+// React to a channel change: drop a specific house that no longer belongs to
+// the active channel (falling back to "best"), re-run the converter against the
+// filtered rows and reflect the choice in the URL.
+const onChannelChange = (value: ExchangeChannelFilter | null) => {
+  // VBtnToggle emits null when the active button is re-clicked; keep the value.
+  channelFilter.value = normalizeChannelFilter(value)
+  if (
+    selectedExchangeHouse.value !== 'best' &&
+    !matchesChannel(selectedExchangeHouse.value, channelFilter.value)
+  ) {
+    selectedExchangeHouse.value = 'best'
+    selectedExchangeHouseInput.value = 'best'
+  }
+  trackChannel('channel_filter', { channel: channelFilter.value })
+  setConversionRate()
+  updateQueryParams()
+}
+
 // Popular currencies without flags - for autocomplete
 const currencyOptions = computed(() => {
   return availableCurrencies.value.map(code => ({
@@ -1306,7 +1393,7 @@ const exchangeHouseOptions = computed(() => {
   // Get unique exchange houses from the data
   const houses = new Map<string, { origin: string; name: string }>()
 
-  realExchangeData.value.forEach(item => {
+  filteredExchangeData.value.forEach(item => {
     if (item.localData?.name && !houses.has(item.origin)) {
       houses.set(item.origin, {
         origin: item.origin,
@@ -1340,9 +1427,9 @@ const selectedExchangeHouseName = computed(() => {
 })
 
 const topExchanges = computed(() => {
-  if (!realExchangeData.value.length || !selectedCurrency.value) return []
+  if (!filteredExchangeData.value.length || !selectedCurrency.value) return []
 
-  const currencyData = realExchangeData.value.filter(
+  const currencyData = filteredExchangeData.value.filter(
     item =>
       (item.code === selectedCurrency.value || item.code === selectedTargetCurrency.value) &&
       item.localData?.name &&
@@ -1488,7 +1575,7 @@ const features = computed<Feature[]>(() => [
 
 // `ExchangeItem` is structurally a superset of `RateRow` (origin/code/buy/sell),
 // so the pure conversion module consumes the live data directly.
-const rateRows = computed<RateRow[]>(() => realExchangeData.value as RateRow[])
+const rateRows = computed<RateRow[]>(() => filteredExchangeData.value as RateRow[])
 
 const conversionResult = ref({
   rate: 0,
@@ -1656,8 +1743,8 @@ const copyResult = async (): Promise<void> => {
 
 // Build top 4 lists for subject currency: sell (houses buy) and buy (houses sell)
 const top4SellRatesForSubject = computed(() => {
-  if (!realExchangeData.value.length || !subjectCode.value) return []
-  const items = realExchangeData.value
+  if (!filteredExchangeData.value.length || !subjectCode.value) return []
+  const items = filteredExchangeData.value
     .filter(item => item.code === subjectCode.value && item.buy > 0 && item.localData?.name)
     .map(item => ({
       origin: item.origin,
@@ -1669,8 +1756,8 @@ const top4SellRatesForSubject = computed(() => {
 })
 
 const top4BuyRatesForSubject = computed(() => {
-  if (!realExchangeData.value.length || !subjectCode.value) return []
-  const items = realExchangeData.value
+  if (!filteredExchangeData.value.length || !subjectCode.value) return []
+  const items = filteredExchangeData.value
     .filter(item => item.code === subjectCode.value && item.sell > 0 && item.localData?.name)
     .map(item => ({
       origin: item.origin,
@@ -1757,6 +1844,7 @@ const updateQueryParams = () => {
     amount: amount.value.toString(),
     dir: isForward.value ? undefined : 'r',
     house: selectedExchangeHouse.value === 'best' ? undefined : selectedExchangeHouse.value,
+    canal: channelFilter.value === 'all' ? undefined : channelFilter.value,
   }
 
   // Only update if parameters have actually changed
@@ -1765,7 +1853,8 @@ const updateQueryParams = () => {
     route.query.to !== query.to ||
     route.query.amount !== query.amount ||
     route.query.dir !== query.dir ||
-    route.query.house !== query.house
+    route.query.house !== query.house ||
+    route.query.canal !== query.canal
   ) {
     try {
       router.push({ query })
@@ -2330,6 +2419,12 @@ useSeoMeta({
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+}
+
+.channel-filter__hint {
+  max-width: 560px;
+  text-align: center;
+  line-height: 1.5;
 }
 
 .hero-answer {

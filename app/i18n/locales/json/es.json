@@ -398,6 +398,15 @@
   "bestRateFrom": "Mejor tasa de",
   "viewAdvanced": "Ver opciones avanzadas",
   "topExchangeHouses": "Mejores Casas de Cambio",
+  "channelFilter": {
+    "label": "Tipo de cambio",
+    "all": "Todos",
+    "online": "Online",
+    "presencial": "Presencial",
+    "hint": "Online: bancos y fintech que requieren una cuenta (BROU, Itaú, BBVA, Santander, Scotiabank, OCA, PREX). Presencial: casas de cambio a las que vas en persona.",
+    "emptyOnline": "No hay cotizaciones online disponibles en este momento.",
+    "emptyPresencial": "No hay cotizaciones presenciales disponibles en este momento."
+  },
   "promo": {
     "heading": "No pagues de más al cambiar",
     "subtitle": "Compará +40 casas de cambio y quedate con la mejor cotización del día.",
