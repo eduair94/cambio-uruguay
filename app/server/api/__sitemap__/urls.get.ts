@@ -1,3 +1,4 @@
+import { casaTypePaths } from '../../../utils/casasDirectory'
 import { convertSlugs } from '../../../utils/convert'
 import { listCurrencySlugs } from '../../../utils/currencyPages'
 import { listFronteraSlugs } from '../../../utils/frontera'
@@ -98,6 +99,9 @@ export default defineEventHandler(async _event => {
   listIndicatorSlugs().forEach(slug =>
     addUrlsForAllLocales(`/indicadores/${slug}`, 0.7, 'daily', today)
   )
+  // The directory sliced by institution kind (casas / bancos / fintech). A
+  // three-entry allowlist from pure data, so it survives an upstream outage.
+  casaTypePaths().forEach(path => addUrlsForAllLocales(path, 0.7, 'daily', today))
 
   // /cotizacion/:moneda — the four majors trade heavily (hourly); the rest (gold,
   // thin regional currencies) move daily at most, so don't over-promise freshness.

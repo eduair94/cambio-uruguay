@@ -1,4 +1,5 @@
 import { saveSnapshot, loadSnapshot, resolveExchangeResult } from '~/utils/ratesSnapshot'
+import { dedupeDepartmentNames } from '~/utils/departments'
 import type { PreferentialRatesCatalog } from '~/types/api'
 
 // Define interfaces for API responses
@@ -185,21 +186,17 @@ export const useApiService = () => {
   }
 
   const getLocations = (localData: any) => {
-    const locations = ['TODOS', 'MONTEVIDEO']
-
-    // Extract departments from localData
+    // Collect every raw department string, then collapse accent variants: the
+    // houses spell four departments both ways (PAYSANDU/PAYSANDÚ,
+    // RIO NEGRO/RÍO NEGRO, SAN JOSE/SAN JOSÉ, TACUAREMBO/TACUAREMBÓ), so a
+    // dedupe by exact string leaves 23 options for 19 departments and each
+    // duplicate matches only half the houses.
+    const raw: string[] = []
     for (const key in localData) {
-      const val = localData[key]
-      const departments = val.departments
-      if (departments?.length) {
-        for (const dep of departments) {
-          if (!locations.includes(dep)) {
-            locations.push(dep)
-          }
-        }
-      }
+      const departments = localData[key]?.departments
+      if (departments?.length) raw.push(...departments)
     }
-    return locations
+    return ['TODOS', ...dedupeDepartmentNames(raw)]
   }
 
   /**

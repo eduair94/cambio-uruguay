@@ -1,6 +1,8 @@
 // Data + helpers for the /casas-de-cambio directory/comparison page.
 // PURE (no Vue/Nuxt imports) so unit tests and server code can import freely.
 
+import { operationForRate, requiresAccount, type OperationKind } from './exchangeChannel'
+
 /** Date the reputation snapshot (ratings, press, strengths) was researched. */
 export const CASAS_LAST_RESEARCHED = '2026-07-24'
 
@@ -26,6 +28,12 @@ export interface UsdComparisonEntry {
   gapSellPct: number
   /** How much less this house pays on buy vs the best buy (%; 0 = best). */
   gapBuyPct: number
+  /** How the quote is taken: cash over a counter, bank transfer, or app. */
+  operation: OperationKind
+  /** True when you must be a client of the institution to get this price. */
+  requiresAccount: boolean
+  /** True when the quote sits implausibly far from the market — see below. */
+  offMarket: boolean
 }
 
 /**
@@ -36,8 +44,28 @@ export interface UsdComparisonEntry {
 const typeRank = (t: string): number => (t === '' ? 0 : t === 'BILLETE' ? 1 : 2)
 
 /**
+ * How far from the market median a quote may sit before we stop treating it as
+ * a price and start treating it as a suspect scrape.
+ *
+ * Calibrated against a live 45-house snapshot: at 2% eight houses trip (normal
+ * competition), at 3% exactly one does — a board whose buy AND sell are both
+ * ~4.7% below the median, the signature of a stale or misparsed pizarra rather
+ * than an aggressive price. Flagged quotes are still shown; they just cannot
+ * win a "best of" pick.
+ */
+export const OFF_MARKET_PCT = 3
+
+/** Median of a non-empty numeric list. */
+function median(values: number[]): number {
+  const sorted = [...values].sort((a, b) => a - b)
+  const mid = sorted.length >> 1
+  return sorted.length % 2 ? sorted[mid]! : (sorted[mid - 1]! + sorted[mid]!) / 2
+}
+
+/**
  * Reduce processed exchange rows to one USD cash quote per origin, with
- * spread and gap-to-best metrics for the comparison table.
+ * spread, gap-to-best, operation kind and an off-market flag for the
+ * comparison table.
  */
 export function buildUsdComparison(rows: UsdRateRow[]): UsdComparisonEntry[] {
   const byOrigin = new Map<string, UsdRateRow & { type: string }>()
@@ -57,6 +85,12 @@ export function buildUsdComparison(rows: UsdRateRow[]): UsdComparisonEntry[] {
   if (picked.length === 0) return []
   const bestSell = Math.min(...picked.map(r => r.sell))
   const bestBuy = Math.max(...picked.map(r => r.buy))
+  // Median, not mean: one badly-parsed board must not drag the reference it is
+  // being judged against. Needs a real market to compare to — with a handful of
+  // quotes the median is meaningless, so nothing is flagged.
+  const medianSell = median(picked.map(r => r.sell))
+  const medianBuy = median(picked.map(r => r.buy))
+  const canFlag = picked.length >= 10
   return picked.map(r => ({
     origin: r.origin,
     buy: r.buy,
@@ -65,7 +99,44 @@ export function buildUsdComparison(rows: UsdRateRow[]): UsdComparisonEntry[] {
     spreadPct: ((r.sell - r.buy) / ((r.sell + r.buy) / 2)) * 100,
     gapSellPct: ((r.sell - bestSell) / bestSell) * 100,
     gapBuyPct: ((bestBuy - r.buy) / bestBuy) * 100,
+    operation: operationForRate(r.origin, r.type),
+    requiresAccount: requiresAccount(r.origin, r.type),
+    offMarket:
+      canFlag &&
+      ((Math.abs(r.sell - medianSell) / medianSell) * 100 > OFF_MARKET_PCT ||
+        (Math.abs(r.buy - medianBuy) / medianBuy) * 100 > OFF_MARKET_PCT),
   }))
+}
+
+/** The three house types the directory can be sliced by, as URL slugs. */
+export const CASA_TYPE_SLUGS = {
+  'casas-de-cambio': 'casa',
+  bancos: 'banco',
+  fintech: 'fintech',
+} as const satisfies Record<string, CasaCategory>
+
+export type CasaTypeSlug = keyof typeof CASA_TYPE_SLUGS
+
+/** Institution kind of a house. Mirrors `ORIGIN_CATEGORY` in exchangeChannel. */
+export type CasaCategory = 'casa' | 'banco' | 'fintech'
+
+/** Resolve a `/casas-de-cambio/<slug>` segment to its category, or null. */
+export function categoryFromTypeSlug(slug: string): CasaCategory | null {
+  return (CASA_TYPE_SLUGS as Record<string, CasaCategory>)[slug] ?? null
+}
+
+/** The URL slug for a category (inverse of {@link categoryFromTypeSlug}). */
+export function typeSlugForCategory(category: CasaCategory): CasaTypeSlug {
+  const found = (Object.keys(CASA_TYPE_SLUGS) as CasaTypeSlug[]).find(
+    slug => CASA_TYPE_SLUGS[slug] === category
+  )
+  // Every category has a slug by construction; the fallback keeps TS happy.
+  return found ?? 'casas-de-cambio'
+}
+
+/** Every per-type route path, for the sitemap and internal linking. */
+export function casaTypePaths(): string[] {
+  return (Object.keys(CASA_TYPE_SLUGS) as CasaTypeSlug[]).map(slug => `${CASAS_PATH}/${slug}`)
 }
 
 // --- Reputation snapshot ------------------------------------------------------
@@ -80,7 +151,7 @@ export interface CasaReputation {
   code: string
   /** Display name (fallback when the live localData payload is unavailable). */
   name: string
-  category: 'casa' | 'banco' | 'fintech'
+  category: CasaCategory
   /** Google Maps stars (1-5) of the flagship listing; null = no verifiable data. */
   googleRating: number | null
   googleReviewCount: number | null
@@ -2497,6 +2568,40 @@ export interface CasasContent {
   departmentsSuffixOne: string
   ratesDisclaimer: string
   bcuBadge: string
+  /** "Operación" column: how each quote is actually taken. */
+  colOperation: string
+  opCash: string
+  opTransfer: string
+  opApp: string
+  requiresAccount: string
+  requiresAccountHint: string
+  /** Off-market quote badge (see OFF_MARKET_PCT). */
+  offMarket: string
+  offMarketHint: string
+  /** Empty state when the active filters match no house. */
+  emptyTitle: string
+  emptyText: string
+  clearFilters: string
+  resultCount: string
+  resultCountOne: string
+  /** Cross-link to the per-department dollar page. */
+  deptPageLink: string
+  /** Per-type slices of the directory. */
+  typeNavTitle: string
+  typeAllLabel: string
+  typeCasaTitle: string
+  typeCasaMetaTitle: string
+  typeCasaDescription: string
+  typeCasaIntro: string
+  typeBancoTitle: string
+  typeBancoMetaTitle: string
+  typeBancoDescription: string
+  typeBancoIntro: string
+  typeFintechTitle: string
+  typeFintechMetaTitle: string
+  typeFintechDescription: string
+  typeFintechIntro: string
+  backToAll: string
 }
 
 const CONTENT: Record<'es' | 'en' | 'pt', CasasContent> = {
@@ -2625,6 +2730,43 @@ const CONTENT: Record<'es' | 'en' | 'pt', CasasContent> = {
     ratesDisclaimer:
       'Cotizaciones de dólar billete relevadas de los sitios oficiales; «—» significa que la casa no publica cotización online en este momento.',
     bcuBadge: 'Habilitada por el BCU',
+    colOperation: 'Operación',
+    opCash: 'Efectivo',
+    opTransfer: 'Transferencia',
+    opApp: 'App',
+    requiresAccount: 'requiere cuenta',
+    requiresAccountHint:
+      'Este precio solo se consigue siendo cliente de la institución (eBROU, transferencia bancaria, Prex, OCA). No es comparable con el mostrador de una casa de cambio, donde no hace falta ser cliente.',
+    offMarket: 'verificar',
+    offMarketHint:
+      'Esta cotización se aparta más de 3% de la mediana del mercado. Puede ser una pizarra desactualizada en el sitio de la casa: confirmá antes de viajar.',
+    emptyTitle: 'Ninguna casa coincide con estos filtros',
+    emptyText: 'Probá con otro departamento o quitá el filtro de tipo.',
+    clearFilters: 'Limpiar filtros',
+    resultCount: '{count} casas',
+    resultCountOne: '1 casa',
+    deptPageLink: 'Ver el dólar en {department}',
+    typeNavTitle: 'Ver por tipo',
+    typeAllLabel: 'Todas',
+    typeCasaTitle: 'Casas de cambio en Uruguay: todas comparadas',
+    typeCasaMetaTitle: 'Casas de Cambio en Uruguay: Lista Completa y Cotizaciones',
+    typeCasaDescription:
+      'Todas las casas de cambio habilitadas por el BCU en Uruguay, con cotización del dólar en vivo, reseñas de Google y cobertura por departamento. Sin necesidad de ser cliente.',
+    typeCasaIntro:
+      'Las casas de cambio son ventanillas: entrás con efectivo y salís con la otra moneda, sin ser cliente de nada. Compiten cuadra a cuadra, así que suelen ganarle al mostrador de un banco en billetes.',
+    typeBancoTitle: 'Bancos que venden dólares en Uruguay',
+    typeBancoMetaTitle: 'Bancos que Venden Dólares en Uruguay: Cotización y Comparativa',
+    typeBancoDescription:
+      'Cotización del dólar de BROU, Itaú, Santander, Scotiabank y BBVA: precio de pizarra en sucursal y precio por canal electrónico para clientes. Actualizado a diario.',
+    typeBancoIntro:
+      'Los bancos publican dos precios distintos: la pizarra de sucursal, que puede usar cualquiera, y el precio por canal electrónico (eBROU, transferencia), reservado a clientes y en general mejor. Abajo se distinguen en la columna «Operación».',
+    typeFintechTitle: 'Fintech para comprar dólares en Uruguay',
+    typeFintechMetaTitle: 'Fintech para Comprar Dólares en Uruguay: Prex y OCA Comparadas',
+    typeFintechDescription:
+      'Prex y OCA: cotización del dólar desde la app, spread y condiciones. Comparadas contra las casas de cambio y los bancos del mercado uruguayo.',
+    typeFintechIntro:
+      'Las fintech operan desde su propia app y cotizan solo para sus usuarios: hay que abrir la cuenta antes de poder cambiar. A cambio suelen mostrar el spread más fino del mercado, pero mueven saldo, no billetes.',
+    backToAll: 'Ver todas las casas',
   },
   en: {
     lang: 'en',
@@ -2751,6 +2893,43 @@ const CONTENT: Record<'es' | 'en' | 'pt', CasasContent> = {
     ratesDisclaimer:
       'Cash-dollar rates scraped from official sites; “—” means the house isn’t publishing an online rate right now.',
     bcuBadge: 'BCU-licensed',
+    colOperation: 'Operation',
+    opCash: 'Cash',
+    opTransfer: 'Transfer',
+    opApp: 'App',
+    requiresAccount: 'account required',
+    requiresAccountHint:
+      'This price is only available to clients of the institution (eBROU, bank transfer, Prex, OCA). It is not comparable to an exchange house counter, where you need no account at all.',
+    offMarket: 'check first',
+    offMarketHint:
+      'This quote sits more than 3% away from the market median. It may be a stale board on the house’s own site — confirm before travelling.',
+    emptyTitle: 'No house matches these filters',
+    emptyText: 'Try another department, or drop the type filter.',
+    clearFilters: 'Clear filters',
+    resultCount: '{count} houses',
+    resultCountOne: '1 house',
+    deptPageLink: 'See the dollar in {department}',
+    typeNavTitle: 'Browse by type',
+    typeAllLabel: 'All',
+    typeCasaTitle: 'Exchange houses in Uruguay: all compared',
+    typeCasaMetaTitle: 'Exchange Houses in Uruguay: Full List and Rates',
+    typeCasaDescription:
+      'Every BCU-licensed exchange house in Uruguay, with live dollar rates, Google reviews and department coverage. No account needed.',
+    typeCasaIntro:
+      'Exchange houses are counters: you walk in with cash and walk out with the other currency, no account anywhere. They compete block by block, so they usually beat a bank counter on banknotes.',
+    typeBancoTitle: 'Banks that sell dollars in Uruguay',
+    typeBancoMetaTitle: 'Banks That Sell Dollars in Uruguay: Rates and Comparison',
+    typeBancoDescription:
+      'Dollar rates from BROU, Itaú, Santander, Scotiabank and BBVA: the branch board price and the electronic-channel price for account holders. Updated daily.',
+    typeBancoIntro:
+      'Banks publish two different prices: the branch board, which anyone can use, and the electronic-channel price (eBROU, transfer) reserved for clients and usually better. The "Operation" column below tells them apart.',
+    typeFintechTitle: 'Fintechs to buy dollars in Uruguay',
+    typeFintechMetaTitle: 'Fintechs to Buy Dollars in Uruguay: Prex and OCA Compared',
+    typeFintechDescription:
+      'Prex and OCA: in-app dollar rates, spread and conditions, compared against Uruguay’s exchange houses and banks.',
+    typeFintechIntro:
+      'Fintechs operate from their own app and only quote for their users: you have to open the account before you can exchange. In return they often show the tightest spread on the market — but they move balances, not banknotes.',
+    backToAll: 'See every house',
   },
   pt: {
     lang: 'pt-BR',
@@ -2877,6 +3056,43 @@ const CONTENT: Record<'es' | 'en' | 'pt', CasasContent> = {
     ratesDisclaimer:
       'Cotações do dólar em espécie coletadas dos sites oficiais; “—” significa que a casa não publica cotação online neste momento.',
     bcuBadge: 'Habilitada pelo BCU',
+    colOperation: 'Operação',
+    opCash: 'Espécie',
+    opTransfer: 'Transferência',
+    opApp: 'App',
+    requiresAccount: 'exige conta',
+    requiresAccountHint:
+      'Este preço só está disponível para clientes da instituição (eBROU, transferência bancária, Prex, OCA). Não é comparável com o balcão de uma casa de câmbio, onde não é preciso ser cliente.',
+    offMarket: 'verificar',
+    offMarketHint:
+      'Esta cotação está a mais de 3% da mediana do mercado. Pode ser um quadro desatualizado no site da casa — confirme antes de viajar.',
+    emptyTitle: 'Nenhuma casa corresponde a estes filtros',
+    emptyText: 'Tente outro departamento ou remova o filtro de tipo.',
+    clearFilters: 'Limpar filtros',
+    resultCount: '{count} casas',
+    resultCountOne: '1 casa',
+    deptPageLink: 'Ver o dólar em {department}',
+    typeNavTitle: 'Ver por tipo',
+    typeAllLabel: 'Todas',
+    typeCasaTitle: 'Casas de câmbio no Uruguai: todas comparadas',
+    typeCasaMetaTitle: 'Casas de Câmbio no Uruguai: Lista Completa e Cotações',
+    typeCasaDescription:
+      'Todas as casas de câmbio autorizadas pelo BCU no Uruguai, com cotação do dólar ao vivo, avaliações do Google e cobertura por departamento. Sem precisar ser cliente.',
+    typeCasaIntro:
+      'As casas de câmbio são balcões: você entra com dinheiro e sai com a outra moeda, sem ser cliente de nada. Competem quarteirão a quarteirão, então costumam superar o balcão de um banco em espécie.',
+    typeBancoTitle: 'Bancos que vendem dólares no Uruguai',
+    typeBancoMetaTitle: 'Bancos que Vendem Dólares no Uruguai: Cotação e Comparativo',
+    typeBancoDescription:
+      'Cotação do dólar do BROU, Itaú, Santander, Scotiabank e BBVA: preço de agência e preço por canal eletrônico para clientes. Atualizado diariamente.',
+    typeBancoIntro:
+      'Os bancos publicam dois preços diferentes: o da agência, que qualquer um pode usar, e o do canal eletrônico (eBROU, transferência), reservado a clientes e em geral melhor. A coluna «Operação» abaixo os distingue.',
+    typeFintechTitle: 'Fintechs para comprar dólares no Uruguai',
+    typeFintechMetaTitle: 'Fintechs para Comprar Dólares no Uruguai: Prex e OCA Comparadas',
+    typeFintechDescription:
+      'Prex e OCA: cotação do dólar pelo app, spread e condições, comparadas com as casas de câmbio e os bancos do mercado uruguaio.',
+    typeFintechIntro:
+      'As fintechs operam pelo próprio app e cotam apenas para seus usuários: é preciso abrir a conta antes de poder trocar. Em troca costumam mostrar o spread mais baixo do mercado, mas movimentam saldo, não cédulas.',
+    backToAll: 'Ver todas as casas',
   },
 }
 

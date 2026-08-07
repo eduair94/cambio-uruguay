@@ -1,0 +1,54 @@
+name: E2E
+
+# `npm run test:e2e` existed but nothing ever ran it, so assertions rotted
+# silently (the casas-directory spec asserted 4 banks long after BBVA made it
+# 5). This workflow runs the Playwright suite on every PR that touches the app
+# and once a night on main, so that can't happen again.
+#
+# Deliberately NOT in the `deploy` job's `needs`: the suite drives a real dev
+# server against the live public API, so a network hiccup upstream must not be
+# able to block a production deploy. It reports red and gets fixed; it does not
+# gate the release train.
+
+on:
+  pull_request:
+    paths:
+      - 'app/**'
+      - '.github/workflows/e2e.yml'
+  schedule:
+    # 09:40 UTC — after the morning scrape cron has refreshed the rates.
+    - cron: '40 9 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    name: Playwright
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # No lockfile is committed (package-lock.json is gitignored), so install
+      # like the server's deploy.sh does — `npm install`, not `npm ci`.
+      - run: npm install --no-audit --no-fund
+      # playwright.config.ts uses `channel: 'chrome'`; the runner image ships
+      # Google Chrome stable, so only the driver needs fetching.
+      - run: npx playwright install-deps chromium
+      - name: Run e2e suite
+        run: npm run test:e2e
+      - name: Upload report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: app/test-results
+          retention-days: 7

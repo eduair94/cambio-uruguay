@@ -1,11 +1,17 @@
 <template>
   <div class="casas-page pb-8">
     <!-- Breadcrumb -->
-    <div class="mb-3">
+    <div class="mb-3 d-flex align-center flex-wrap ga-1">
       <VBtn :to="localePath('/')" variant="text" size="small" class="px-1">
         <VIcon start size="small">mdi-arrow-left</VIcon>
         Cambio Uruguay
       </VBtn>
+      <template v-if="lockedCategory">
+        <VIcon size="small" color="grey">mdi-chevron-right</VIcon>
+        <VBtn :to="localePath(CASAS_PATH)" variant="text" size="small" class="px-1">
+          {{ c.backToAll }}
+        </VBtn>
+      </template>
     </div>
 
     <!-- Header -->
@@ -13,21 +19,53 @@
       <div class="bg-gradient-casas pa-6 on-dark">
         <div class="d-flex align-center ga-4 flex-wrap">
           <VAvatar size="56" class="d-none d-md-flex bg-white">
-            <VIcon size="32" color="primary">mdi-bank</VIcon>
+            <VIcon size="32" color="primary">{{ headerIcon }}</VIcon>
           </VAvatar>
           <div>
-            <h1 class="text-h5 text-md-h4 font-weight-bold text-white mb-1">{{ c.title }}</h1>
-            <p class="text-body-1 text-grey-lighten-2 mb-0 casas-intro">{{ c.intro }}</p>
+            <h1 class="text-h5 text-md-h4 font-weight-bold text-white mb-1">{{ pageTitle }}</h1>
+            <p class="text-body-1 text-grey-lighten-2 mb-0 casas-intro">{{ pageIntro }}</p>
             <p class="text-caption text-grey-lighten-2 mb-0 mt-1">{{ withDate(c.updated) }}</p>
           </div>
         </div>
         <div class="d-flex justify-start justify-md-end mt-3">
-          <ShareButtons :text="c.title" />
+          <ShareButtons :text="pageTitle" />
         </div>
       </div>
     </VCard>
 
-    <!-- Best-for picks -->
+    <!-- Type navigation: the directory sliced by institution kind. Real links,
+         so each slice is its own indexable page rather than a client-only
+         toggle state. -->
+    <nav class="casas-typenav d-flex flex-wrap align-center ga-2 mb-4" :aria-label="c.typeNavTitle">
+      <span class="text-caption text-uppercase pick-label me-1">{{ c.typeNavTitle }}:</span>
+      <VChip
+        :to="localePath(CASAS_PATH)"
+        :variant="lockedCategory ? 'outlined' : 'flat'"
+        :color="lockedCategory ? undefined : 'primary'"
+        size="small"
+        link
+        data-testid="casas-type-all"
+      >
+        {{ c.typeAllLabel }} ({{ rows.length }})
+      </VChip>
+      <VChip
+        v-for="nav in typeNav"
+        :key="nav.slug"
+        :to="localePath(`${CASAS_PATH}/${nav.slug}`)"
+        :variant="lockedCategory === nav.category ? 'flat' : 'outlined'"
+        :color="lockedCategory === nav.category ? 'primary' : undefined"
+        size="small"
+        link
+        :data-testid="`casas-type-${nav.slug}`"
+      >
+        <VIcon start size="small">{{ nav.icon }}</VIcon>
+        {{ nav.label }} ({{ nav.count }})
+      </VChip>
+    </nav>
+
+    <!-- Best-for picks. Computed over whatever slice is on screen, so after
+         filtering by department the picks answer "best here", not "best in the
+         country". Off-market quotes are never crowned. -->
     <h2 class="text-h6 font-weight-bold mb-2">{{ c.bestForTitle }}</h2>
     <VRow dense class="mb-2">
       <VCol v-for="pick in bestPicks" :key="pick.label" cols="12" sm="6" md="3">
@@ -69,18 +107,19 @@
       <VRow dense align="center" class="mb-2">
         <VCol cols="12" sm="4" md="3">
           <VSelect
-            v-model="sortBy"
+            :model-value="sortBy"
             :items="sortOptions"
             :label="c.sortLabel"
             density="compact"
             variant="outlined"
             hide-details
             data-testid="casas-sort"
+            @update:model-value="onSortChange"
           />
         </VCol>
         <VCol cols="12" sm="4" md="3">
           <VSelect
-            v-model="selectedDept"
+            :model-value="selectedDept"
             :items="deptOptions"
             :label="c.deptFilterLabel"
             density="compact"
@@ -88,17 +127,23 @@
             hide-details
             clearable
             data-testid="casas-dept"
+            @update:model-value="onDeptChange"
           />
         </VCol>
-        <VCol cols="12" sm="4" md="6">
+        <VCol v-if="!lockedCategory" cols="12" sm="4" md="6">
+          <!-- `mandatory` is load-bearing: without it, re-clicking the active
+               button emits undefined and every row filters out, leaving a
+               blank table with no explanation. -->
           <VBtnToggle
-            v-model="category"
+            :model-value="category"
+            mandatory
             density="compact"
             color="primary"
             variant="outlined"
             divided
             class="casas-cat-toggle"
             :aria-label="c.colCasa"
+            @update:model-value="onCategoryChange"
           >
             <VBtn value="all" size="small">{{ c.categoryAll }}</VBtn>
             <VBtn value="casa" size="small">{{ c.categoryCasa }}</VBtn>
@@ -109,12 +154,52 @@
           </VBtnToggle>
         </VCol>
       </VRow>
-      <p class="text-caption text-grey-lighten-1 mb-3">
-        {{ withDate(c.reviewsCaption) }} · {{ c.ratesDisclaimer }}
-      </p>
+      <div class="d-flex flex-wrap align-center ga-2 mb-3">
+        <span class="text-caption text-grey-lighten-1">
+          {{ withDate(c.reviewsCaption) }} · {{ c.ratesDisclaimer }}
+        </span>
+      </div>
+      <div class="d-flex flex-wrap align-center ga-3 mb-3">
+        <span class="text-caption font-weight-medium" data-testid="casas-count">
+          {{ visibleRows.length === 1 ? c.resultCountOne : fmtCount(visibleRows.length) }}
+        </span>
+        <NuxtLink
+          v-if="selectedDeptPath"
+          :to="selectedDeptPath"
+          class="casas-link text-caption"
+          data-testid="casas-dept-link"
+        >
+          {{ c.deptPageLink.replace('{department}', titleCase(selectedDept!)) }}
+        </NuxtLink>
+        <VBtn
+          v-if="hasFilters"
+          size="x-small"
+          variant="text"
+          color="primary"
+          data-testid="casas-clear"
+          @click="clearFilters"
+        >
+          {{ c.clearFilters }}
+        </VBtn>
+      </div>
+
+      <!-- Empty state: filters can legitimately match nothing (a department
+           with no bank branch), and a bare table reads as a broken page. -->
+      <div
+        v-if="!visibleRows.length"
+        class="casas-empty text-center pa-8"
+        data-testid="casas-empty"
+      >
+        <VIcon size="56" color="grey-lighten-1" class="mb-3">mdi-store-search-outline</VIcon>
+        <h3 class="text-subtitle-1 font-weight-bold mb-1">{{ c.emptyTitle }}</h3>
+        <p class="text-body-2 text-grey mb-3">{{ c.emptyText }}</p>
+        <VBtn size="small" color="primary" variant="tonal" @click="clearFilters">
+          {{ c.clearFilters }}
+        </VBtn>
+      </div>
 
       <!-- Desktop table -->
-      <div class="d-none d-md-block table-wrap">
+      <div v-else class="d-none d-md-block table-wrap">
         <VTable density="comfortable" class="casas-table cu-mobile-cards">
           <thead>
             <tr>
@@ -123,6 +208,7 @@
               <th class="text-right">{{ c.colBuy }}</th>
               <th class="text-right">{{ c.colSell }}</th>
               <th class="text-right">{{ c.colSpread }}</th>
+              <th>{{ c.colOperation }}</th>
               <th>{{ c.colCoverage }}</th>
               <th>{{ c.colLinks }}</th>
             </tr>
@@ -186,22 +272,45 @@
                 </template>
                 <span v-else class="text-caption text-grey">{{ c.noData }}</span>
               </td>
-              <td
-                class="text-right"
-                :class="{ 'best-cell': r.usd && r.usd.gapBuyPct === 0 }"
-                :data-label="c.colBuy"
-              >
+              <td class="text-right" :class="{ 'best-cell': isBestBuy(r) }" :data-label="c.colBuy">
                 {{ rateLabel(r.usd?.buy) }}
               </td>
               <td
                 class="text-right"
-                :class="{ 'best-cell': r.usd && r.usd.gapSellPct === 0 }"
+                :class="{ 'best-cell': isBestSell(r) }"
                 :data-label="c.colSell"
               >
                 {{ rateLabel(r.usd?.sell) }}
               </td>
               <td class="text-right" :data-label="c.colSpread">
                 {{ r.usd ? `${fmt(r.usd.spreadPct)}%` : '—' }}
+              </td>
+              <td :data-label="c.colOperation">
+                <template v-if="r.usd">
+                  <span class="text-caption">{{ operationLabel(r.usd.operation) }}</span>
+                  <VChip
+                    v-if="r.usd.requiresAccount"
+                    size="x-small"
+                    variant="tonal"
+                    color="info"
+                    class="ms-1"
+                    :title="c.requiresAccountHint"
+                  >
+                    {{ c.requiresAccount }}
+                  </VChip>
+                  <VChip
+                    v-if="r.usd.offMarket"
+                    size="x-small"
+                    variant="tonal"
+                    color="warning"
+                    class="ms-1"
+                    :title="c.offMarketHint"
+                    data-testid="casas-offmarket"
+                  >
+                    {{ c.offMarket }}
+                  </VChip>
+                </template>
+                <span v-else class="text-caption text-grey">—</span>
               </td>
               <td :data-label="c.colCoverage">
                 {{ r.deptCount ? coverageLabel(r.deptCount) : '—' }}
@@ -228,7 +337,7 @@
       </div>
 
       <!-- Mobile cards -->
-      <div class="d-md-none">
+      <div v-if="visibleRows.length" class="d-md-none">
         <div v-for="r in visibleRows" :key="r.code" class="casa-mcard" data-testid="casas-row">
           <div class="d-flex align-center justify-space-between ga-2 mb-1">
             <NuxtLink
@@ -283,13 +392,13 @@
           <dl class="casa-specs">
             <div>
               <dt>{{ c.colBuy }}</dt>
-              <dd :class="{ 'best-cell': r.usd && r.usd.gapBuyPct === 0 }">
+              <dd :class="{ 'best-cell': isBestBuy(r) }">
                 {{ rateLabel(r.usd?.buy) }}
               </dd>
             </div>
             <div>
               <dt>{{ c.colSell }}</dt>
-              <dd :class="{ 'best-cell': r.usd && r.usd.gapSellPct === 0 }">
+              <dd :class="{ 'best-cell': isBestSell(r) }">
                 {{ rateLabel(r.usd?.sell) }}
               </dd>
             </div>
@@ -302,6 +411,21 @@
               <dd>{{ r.deptCount ? coverageLabel(r.deptCount) : '—' }}</dd>
             </div>
           </dl>
+          <div v-if="r.usd" class="d-flex flex-wrap ga-1 mb-2">
+            <VChip size="x-small" variant="tonal">{{ operationLabel(r.usd.operation) }}</VChip>
+            <VChip v-if="r.usd.requiresAccount" size="x-small" variant="tonal" color="info">
+              {{ c.requiresAccount }}
+            </VChip>
+            <VChip
+              v-if="r.usd.offMarket"
+              size="x-small"
+              variant="tonal"
+              color="warning"
+              data-testid="casas-offmarket"
+            >
+              {{ c.offMarket }}
+            </VChip>
+          </div>
           <div class="d-flex flex-wrap ga-3">
             <a
               v-if="r.website"
@@ -448,6 +572,24 @@
       <p v-for="(p, i) in c.safety" :key="i" class="casas-prose">{{ p }}</p>
     </VCard>
 
+    <!-- Department index: one link per department, so every /dolar/<dept> page
+         is reachable from here instead of only from the sitemap. -->
+    <VCard v-if="departmentLinks.length" variant="flat" class="casas-section mt-4 pa-5">
+      <h2 class="text-h6 font-weight-bold mb-2">{{ c.deptFilterLabel }}</h2>
+      <div class="d-flex flex-wrap ga-2">
+        <VChip
+          v-for="d in departmentLinks"
+          :key="d.slug"
+          :to="localePath(`/dolar/${d.slug}`)"
+          size="small"
+          variant="outlined"
+          link
+        >
+          {{ titleCase(d.name) }}
+        </VChip>
+      </div>
+    </VCard>
+
     <!-- FAQ -->
     <VCard variant="flat" class="casas-section mt-4 pa-5" data-testid="casas-faq">
       <h2 class="text-h6 font-weight-bold mb-3">{{ c.faqTitle }}</h2>
@@ -492,7 +634,7 @@
       <h2 class="text-h6 font-weight-bold mb-2 text-white">{{ c.ctaTitle }}</h2>
       <p class="text-body-2 text-grey-lighten-1 mb-4">{{ c.ctaBody }}</p>
       <div class="d-flex justify-center flex-wrap ga-2">
-        <VBtn :to="localePath('/')" color="primary" variant="elevated" class="cta-btn">
+        <VBtn :to="localePath(ratesCtaPath)" color="primary" variant="elevated" class="cta-btn">
           <VIcon start>mdi-cash-multiple</VIcon>
           {{ c.ctaRates }}
         </VBtn>
@@ -517,14 +659,27 @@ import {
   digitalScore,
   getCasasContent,
   CASAS_LAST_RESEARCHED,
+  typeSlugForCategory,
+  type CasaCategory,
   type CasaReputation,
   type UsdComparisonEntry,
 } from '~/utils/casasDirectory'
 import type { StoredTrustpilot } from '~/utils/casasReviews'
+import { dedupeDepartmentNames, slugifyDepartment } from '~/utils/departments'
+import { servesDepartment } from '~/utils/exchangeChannel'
 import { starParts } from '~/utils/reviews'
+
+/**
+ * The comparison table, shared by `/casas-de-cambio` and its per-type slices.
+ * `lockedCategory` pins the page to one institution kind: the category toggle
+ * disappears and every count, pick and JSON-LD entry is scoped to that slice.
+ */
+const props = defineProps<{ lockedCategory?: CasaCategory | null }>()
 
 const { locale } = useI18n()
 const localePath = useLocalePath()
+const route = useRoute()
+const router = useRouter()
 const { getProcessedExchangeData } = useApiService()
 
 // Localized content tree (falls back to es).
@@ -590,7 +745,7 @@ interface CasaRow extends CasaReputation {
   usd: UsdComparisonEntry | null
 }
 
-const rows = computed<CasaRow[]>(() => {
+const allRows = computed<CasaRow[]>(() => {
   const localData = live.value?.localData ?? {}
   return CASAS_REPUTATION.map(rep => {
     const ld = localData[rep.code]
@@ -612,10 +767,36 @@ const rows = computed<CasaRow[]>(() => {
   })
 })
 
-// --- Filters + sorting --------------------------------------------------------
-const sortBy = ref<'reviews' | 'rating' | 'bestSell' | 'bestBuy' | 'spread' | 'name'>('reviews')
+/** The slice this page is about: everything, or one institution kind. */
+const rows = computed<CasaRow[]>(() =>
+  props.lockedCategory
+    ? allRows.value.filter(r => r.category === props.lockedCategory)
+    : allRows.value
+)
+
+// --- Filters + sorting, synced to the URL so a filtered view is shareable ----
+type SortKey = 'reviews' | 'rating' | 'bestSell' | 'bestBuy' | 'spread' | 'name'
+const SORT_KEYS: SortKey[] = ['reviews', 'rating', 'bestSell', 'bestBuy', 'spread', 'name']
+const CATEGORY_KEYS: Array<'all' | CasaCategory> = ['all', 'casa', 'banco', 'fintech']
+
+const queryString = (key: string): string => {
+  const v = route.query[key]
+  return typeof v === 'string' ? v : ''
+}
+
+const sortBy = ref<SortKey>(
+  (SORT_KEYS as string[]).includes(queryString('orden'))
+    ? (queryString('orden') as SortKey)
+    : 'reviews'
+)
+const category = ref<'all' | CasaCategory>(
+  (CATEGORY_KEYS as string[]).includes(queryString('tipo'))
+    ? (queryString('tipo') as 'all' | CasaCategory)
+    : 'all'
+)
+// Resolved against the real department list so `?dep=paysandu` works whichever
+// way the houses spell it.
 const selectedDept = ref<string | null>(null)
-const category = ref<'all' | 'casa' | 'banco' | 'fintech'>('all')
 
 const sortOptions = computed(() => [
   { title: c.value.sortReviews, value: 'reviews' },
@@ -626,11 +807,69 @@ const sortOptions = computed(() => [
   { title: c.value.sortName, value: 'name' },
 ])
 
-const deptOptions = computed(() => {
-  const set = new Set<string>()
-  for (const r of rows.value) for (const d of r.departments) set.add(d)
-  return [...set].sort()
+// One option per department. Without the dedupe the list shows 23 entries for
+// 19 departments and each duplicate returns only half the houses.
+// One option per department. Two things matter here:
+// - the dedupe: without it the list shows 23 entries for Uruguay's 19
+//   departments, and each duplicate returns only the houses that happened to
+//   pick that spelling;
+// - the source is EVERY house, not the current slice: departments are a
+//   property of the country, not of the slice. Building it from the slice
+//   would silently ignore `?dep=artigas` on /fintech (no fintech has a branch
+//   there) instead of honouring it and saying so.
+const deptOptions = computed(() => dedupeDepartmentNames(allRows.value.flatMap(r => r.departments)))
+
+// Resolve `?dep=` once the live department list exists (it arrives with the
+// API payload, after setup on a client-side navigation).
+watchEffect(() => {
+  const wanted = queryString('dep')
+  if (!wanted) {
+    selectedDept.value = null
+    return
+  }
+  const match = deptOptions.value.find(d => slugifyDepartment(d) === slugifyDepartment(wanted))
+  selectedDept.value = match ?? null
 })
+
+const hasFilters = computed(
+  () => sortBy.value !== 'reviews' || category.value !== 'all' || selectedDept.value !== null
+)
+
+/** Push the current filter state into the URL (replace: filters aren't history). */
+const syncQuery = () => {
+  const next: Record<string, unknown> = {
+    ...route.query,
+    orden: sortBy.value === 'reviews' ? undefined : sortBy.value,
+    // On a per-type page the slice is already in the path; a `tipo` param on
+    // top of it would be a second, conflicting source of truth.
+    tipo: props.lockedCategory || category.value === 'all' ? undefined : category.value,
+    dep: selectedDept.value ? slugifyDepartment(selectedDept.value) : undefined,
+  }
+  // Defaults leave the URL clean instead of trailing `?orden=reviews&tipo=all`.
+  const query = Object.fromEntries(Object.entries(next).filter(([, v]) => v !== undefined))
+  router.replace({ query })
+}
+
+const onSortChange = (value: SortKey) => {
+  sortBy.value = value
+  syncQuery()
+}
+const onCategoryChange = (value: 'all' | CasaCategory | null) => {
+  // VBtnToggle is `mandatory`, so null should never arrive; coerce anyway
+  // rather than let an undefined category empty the whole table.
+  category.value = value ?? 'all'
+  syncQuery()
+}
+const onDeptChange = (value: string | null) => {
+  selectedDept.value = value || null
+  syncQuery()
+}
+const clearFilters = () => {
+  sortBy.value = 'reviews'
+  category.value = 'all'
+  selectedDept.value = null
+  syncQuery()
+}
 
 // Nulls always sink to the bottom, whatever the direction of the sort.
 const byNullable = (
@@ -644,11 +883,24 @@ const byNullable = (
   return (a - b) * dir
 }
 
-const visibleRows = computed<CasaRow[]>(() => {
+/** Rows surviving the active filters, before sorting. */
+const filteredRows = computed<CasaRow[]>(() => {
   let list = rows.value
-  if (category.value !== 'all') list = list.filter(r => r.category === category.value)
-  if (selectedDept.value) list = list.filter(r => r.departments.includes(selectedDept.value!))
-  const sorted = [...list]
+  if (!props.lockedCategory && category.value !== 'all') {
+    list = list.filter(r => r.category === category.value)
+  }
+  if (selectedDept.value) {
+    const dept = selectedDept.value
+    // Reach follows the channel: an account-based provider (eBROU, a bank
+    // transfer, the Prex app) works from any department, so filtering purely
+    // on the branch list would hide options that are genuinely available.
+    list = list.filter(r => servesDepartment(r.code, r.usd?.type, r.departments, dept))
+  }
+  return list
+})
+
+const visibleRows = computed<CasaRow[]>(() => {
+  const sorted = [...filteredRows.value]
   switch (sortBy.value) {
     case 'reviews':
       sorted.sort(
@@ -685,7 +937,7 @@ const visibleRows = computed<CasaRow[]>(() => {
 
 // Rows worth an expandable detail panel (some researched substance to show).
 const detailRows = computed<CasaRow[]>(() =>
-  rows.value
+  filteredRows.value
     .filter(r => r.strengths.length || r.weaknesses.length || r.press.length)
     .sort(
       (a, b) =>
@@ -693,14 +945,32 @@ const detailRows = computed<CasaRow[]>(() =>
     )
 )
 
+// --- Type navigation -----------------------------------------------------------
+const typeNav = computed(() =>
+  (
+    [
+      { category: 'casa' as const, icon: 'mdi-store-outline', label: c.value.categoryCasa },
+      { category: 'banco' as const, icon: 'mdi-bank-outline', label: c.value.categoryBanco },
+      { category: 'fintech' as const, icon: 'mdi-cellphone', label: c.value.categoryFintech },
+    ] as const
+  ).map(entry => ({
+    ...entry,
+    slug: typeSlugForCategory(entry.category),
+    count: allRows.value.filter(r => r.category === entry.category).length,
+  }))
+)
+
 // --- "Best for" picks (objective, data-driven) --------------------------------
 const LOW_SAMPLE = 30
 const isLowSample = (r: CasaRow): boolean =>
   r.googleReviewCount != null && r.googleReviewCount < LOW_SAMPLE
 
+// Picks describe the slice on screen, so filtering by department answers "best
+// here". Quotes flagged as off-market are excluded: an unverified board must
+// not be crowned the best price in the country.
 const bestPicks = computed(() => {
-  const list = rows.value
-  const withUsd = list.filter(r => r.usd)
+  const list = filteredRows.value
+  const withUsd = list.filter(r => r.usd && !r.usd.offMarket)
   const bestRate = withUsd.length
     ? withUsd.reduce((min, r) => (r.usd!.sell < min.usd!.sell ? r : min))
     : null
@@ -732,7 +1002,12 @@ const bestPicks = computed(() => {
       label: c.value.bestForRate,
       code: bestRate?.code ?? null,
       name: bestRate?.name ?? '',
-      detail: bestRate?.usd ? `${c.value.colSell}: ${rateLabel(bestRate.usd.sell)}` : '—',
+      // Say so when the winning price is account-only: the cheapest number on
+      // the page is not an option for someone who isn't already a client.
+      detail: bestRate?.usd
+        ? `${c.value.colSell}: ${rateLabel(bestRate.usd.sell)}` +
+          (bestRate.usd.requiresAccount ? ` · ${c.value.requiresAccount}` : '')
+        : '—',
     },
     {
       id: 'rated',
@@ -763,11 +1038,34 @@ const bestPicks = computed(() => {
   ]
 })
 
-// --- Sources: dedup of every cited ref across the dataset ----------------------
+// Highlight the best price WITHIN the slice on screen, not against houses the
+// reader has filtered out — a green cell has to mean "best of what you see".
+const bestVisibleSell = computed(() => {
+  const values = visibleRows.value.filter(r => r.usd && !r.usd.offMarket).map(r => r.usd!.sell)
+  return values.length ? Math.min(...values) : null
+})
+const bestVisibleBuy = computed(() => {
+  const values = visibleRows.value.filter(r => r.usd && !r.usd.offMarket).map(r => r.usd!.buy)
+  return values.length ? Math.max(...values) : null
+})
+const isBestSell = (r: CasaRow): boolean =>
+  !!r.usd && !r.usd.offMarket && r.usd.sell === bestVisibleSell.value
+const isBestBuy = (r: CasaRow): boolean =>
+  !!r.usd && !r.usd.offMarket && r.usd.buy === bestVisibleBuy.value
+
+// --- Department cross-links ----------------------------------------------------
+const departmentLinks = computed(() =>
+  deptOptions.value.map(name => ({ name, slug: slugifyDepartment(name) }))
+)
+const selectedDeptPath = computed(() =>
+  selectedDept.value ? localePath(`/dolar/${slugifyDepartment(selectedDept.value)}`) : null
+)
+
+// --- Sources: dedup of every cited ref across the visible slice ----------------
 const allSources = computed(() => {
   const seen = new Set<string>()
   const out: Array<{ label: string; url: string }> = []
-  for (const r of CASAS_REPUTATION) {
+  for (const r of rows.value) {
     for (const ref of [...r.sources, ...r.press]) {
       if (!seen.has(ref.url)) {
         seen.add(ref.url)
@@ -788,41 +1086,119 @@ function rateLabel(n: number | null | undefined): string {
 function coverageLabel(n: number): string {
   return `${n} ${n === 1 ? c.value.departmentsSuffixOne : c.value.departmentsSuffix}`
 }
-const categoryLabel = (cat: CasaRow['category']): string =>
+function fmtCount(n: number): string {
+  return c.value.resultCount.replace('{count}', String(n))
+}
+/** `SAN JOSÉ` -> `San José`; departments are stored uppercase. */
+function titleCase(name: string): string {
+  return name
+    .toLocaleLowerCase('es')
+    .replace(/(^|[\s-])(\p{L})/gu, (_, sep: string, ch: string) => sep + ch.toLocaleUpperCase('es'))
+}
+const categoryLabel = (cat: CasaCategory): string =>
   cat === 'banco'
     ? c.value.categoryBanco
     : cat === 'fintech'
       ? c.value.categoryFintech
       : c.value.categoryCasa
-const categoryColor = (cat: CasaRow['category']): string =>
+const categoryColor = (cat: CasaCategory): string =>
   cat === 'banco' ? 'secondary' : cat === 'fintech' ? 'purple' : 'primary'
+const operationLabel = (op: UsdComparisonEntry['operation']): string =>
+  op === 'transfer' ? c.value.opTransfer : op === 'app' ? c.value.opApp : c.value.opCash
+
+// --- Per-slice copy ------------------------------------------------------------
+const slicePath = computed(() =>
+  props.lockedCategory ? `${CASAS_PATH}/${typeSlugForCategory(props.lockedCategory)}` : CASAS_PATH
+)
+const pageTitle = computed(() => {
+  switch (props.lockedCategory) {
+    case 'casa':
+      return c.value.typeCasaTitle
+    case 'banco':
+      return c.value.typeBancoTitle
+    case 'fintech':
+      return c.value.typeFintechTitle
+    default:
+      return c.value.title
+  }
+})
+const pageMetaTitle = computed(() => {
+  switch (props.lockedCategory) {
+    case 'casa':
+      return c.value.typeCasaMetaTitle
+    case 'banco':
+      return c.value.typeBancoMetaTitle
+    case 'fintech':
+      return c.value.typeFintechMetaTitle
+    default:
+      return c.value.metaTitle
+  }
+})
+const pageDescription = computed(() => {
+  switch (props.lockedCategory) {
+    case 'casa':
+      return c.value.typeCasaDescription
+    case 'banco':
+      return c.value.typeBancoDescription
+    case 'fintech':
+      return c.value.typeFintechDescription
+    default:
+      return c.value.description
+  }
+})
+const pageIntro = computed(() => {
+  switch (props.lockedCategory) {
+    case 'casa':
+      return c.value.typeCasaIntro
+    case 'banco':
+      return c.value.typeBancoIntro
+    case 'fintech':
+      return c.value.typeFintechIntro
+    default:
+      return c.value.intro
+  }
+})
+const headerIcon = computed(() =>
+  props.lockedCategory === 'fintech'
+    ? 'mdi-cellphone'
+    : props.lockedCategory === 'casa'
+      ? 'mdi-store-outline'
+      : 'mdi-bank'
+)
+const ratesCtaPath = computed(() => {
+  // Send the reader back to the home comparator already narrowed to the
+  // channel this slice is about, instead of the unfiltered market.
+  if (props.lockedCategory === 'fintech') return '/?canal=online'
+  if (props.lockedCategory === 'casa') return '/?canal=presencial'
+  return '/'
+})
 
 // --- SEO -----------------------------------------------------------------------
-const canonicalUrl = computed(() => `https://cambio-uruguay.com${localePath(CASAS_PATH)}`)
+const canonicalUrl = computed(() => `https://cambio-uruguay.com${localePath(slicePath.value)}`)
 const ogImageUrl = computed(
-  () => `https://cambio-uruguay.com/__og-image__/image${localePath(CASAS_PATH)}/og.png`
+  () => `https://cambio-uruguay.com/__og-image__/image${localePath(slicePath.value)}/og.png`
 )
 const ogTag = computed(
   () => ({ es: 'COMPARATIVA', en: 'COMPARISON', pt: 'COMPARATIVO' })[locale.value] ?? 'COMPARATIVA'
 )
 
 defineOgImageComponent('Cambio', {
-  title: () => c.value.title,
-  subtitle: () => c.value.description,
+  title: () => pageTitle.value,
+  subtitle: () => pageDescription.value,
   tag: () => ogTag.value,
 })
 
 useSeoMeta({
   // Global titleTemplate appends "| Cambio Uruguay - Cotización del Dólar".
-  title: () => c.value.metaTitle,
-  description: () => c.value.description,
-  ogTitle: () => c.value.title,
-  ogDescription: () => c.value.description,
+  title: () => pageMetaTitle.value,
+  description: () => pageDescription.value,
+  ogTitle: () => pageTitle.value,
+  ogDescription: () => pageDescription.value,
   ogType: 'article',
   ogUrl: () => canonicalUrl.value,
   twitterCard: 'summary_large_image',
-  twitterTitle: () => c.value.title,
-  twitterDescription: () => c.value.description,
+  twitterTitle: () => pageTitle.value,
+  twitterDescription: () => pageDescription.value,
 })
 
 // Canonical + keywords + structured data. No aggregateRating on purpose:
@@ -838,11 +1214,12 @@ useHead(() => ({
         '@graph': [
           {
             '@type': 'Article',
-            headline: c.value.title,
-            description: c.value.description,
+            headline: pageTitle.value,
+            description: pageDescription.value,
             image: ogImageUrl.value,
             datePublished: CASAS_LAST_RESEARCHED,
-            dateModified: CASAS_LAST_RESEARCHED,
+            // Follows the weekly review refresh, not the original research run.
+            dateModified: effectiveReviewDate.value,
             inLanguage: c.value.lang,
             mainEntityOfPage: { '@type': 'WebPage', '@id': canonicalUrl.value },
             speakable: {
@@ -862,7 +1239,7 @@ useHead(() => ({
           },
           {
             '@type': 'ItemList',
-            name: c.value.title,
+            name: pageTitle.value,
             numberOfItems: rows.value.length,
             itemListElement: [...rows.value]
               .sort((a, b) => a.name.localeCompare(b.name))
@@ -894,7 +1271,29 @@ useHead(() => ({
                 name: 'Cambio Uruguay',
                 item: 'https://cambio-uruguay.com',
               },
-              { '@type': 'ListItem', position: 2, name: c.value.title, item: canonicalUrl.value },
+              ...(props.lockedCategory
+                ? [
+                    {
+                      '@type': 'ListItem',
+                      position: 2,
+                      name: c.value.title,
+                      item: `https://cambio-uruguay.com${localePath(CASAS_PATH)}`,
+                    },
+                    {
+                      '@type': 'ListItem',
+                      position: 3,
+                      name: pageTitle.value,
+                      item: canonicalUrl.value,
+                    },
+                  ]
+                : [
+                    {
+                      '@type': 'ListItem',
+                      position: 2,
+                      name: pageTitle.value,
+                      item: canonicalUrl.value,
+                    },
+                  ]),
             ],
           },
         ],
@@ -1075,6 +1474,11 @@ useHead(() => ({
   flex-wrap: wrap;
 }
 
+.casas-empty {
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+}
+
 /* Light-mode text-contrast overrides (dark-first whites → black at same alpha). */
 .v-theme--light .pick-label {
   color: rgba(0, 0, 0, 0.6);
@@ -1099,5 +1503,9 @@ useHead(() => ({
 
 .v-theme--light .casa-specs dd {
   color: rgba(0, 0, 0, 0.85);
+}
+
+.v-theme--light .casas-empty {
+  border-color: rgba(0, 0, 0, 0.14);
 }
 </style>

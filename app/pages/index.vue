@@ -63,317 +63,348 @@
                        narrow centred column. Stacks on smaller screens. -->
                   <VRow class="converter-grid" align="start">
                     <VCol cols="12" lg="6" class="converter-col converter-col--form">
-                  <!-- Amount Input -->
-                  <VRow class="mb-0 mb-md-4">
-                    <VCol cols="12" md="6">
-                      <VTextField
-                        :model-value="amountDisplay"
-                        hide-details
-                        :label="t('enterAmount')"
-                        variant="outlined"
-                        density="comfortable"
-                        type="text"
-                        inputmode="decimal"
-                        class="amount-input"
-                        data-testid="amount-input"
-                        prepend-inner-icon="mdi-cash"
-                        @update:model-value="onAmountTyped"
-                      />
-                      <!-- Quick preset amount chips -->
-                      <div class="preset-chips d-flex flex-wrap ga-2 mt-3">
+                      <!-- Amount Input -->
+                      <VRow class="mb-0 mb-md-4">
+                        <VCol cols="12" md="6">
+                          <VTextField
+                            :model-value="amountDisplay"
+                            hide-details
+                            :label="t('enterAmount')"
+                            variant="outlined"
+                            density="comfortable"
+                            type="text"
+                            inputmode="decimal"
+                            class="amount-input"
+                            data-testid="amount-input"
+                            prepend-inner-icon="mdi-cash"
+                            @update:model-value="onAmountTyped"
+                          />
+                          <!-- Quick preset amount chips -->
+                          <div class="preset-chips d-flex flex-wrap ga-2 mt-3">
+                            <VChip
+                              v-for="preset in presetAmounts"
+                              :key="`preset-${preset}`"
+                              size="small"
+                              variant="outlined"
+                              color="primary"
+                              class="preset-chip"
+                              :data-testid="`preset-${preset}`"
+                              @click="setPresetAmount(preset)"
+                            >
+                              {{ formatAmount(preset, 0) }}
+                            </VChip>
+                          </div>
+                        </VCol>
+                        <VCol cols="12" md="6">
+                          <VAutocomplete
+                            v-model="selectedExchangeHouseInput"
+                            hide-details
+                            :items="exchangeHouseOptions"
+                            :label="t('selectExchangeHouse')"
+                            variant="outlined"
+                            density="comfortable"
+                            item-title="title"
+                            item-value="value"
+                            class="exchange-house-select"
+                            prepend-inner-icon="mdi-bank"
+                          />
+                        </VCol>
+                      </VRow>
+
+                      <!-- Currency Selection Row -->
+                      <VRow class="currency-row" align="center">
+                        <VCol cols="12" md="5">
+                          <div class="currency-section">
+                            <VAutocomplete
+                              v-model="selectedCurrencyInput"
+                              hide-details
+                              :items="currencyOptions"
+                              :label="t('from')"
+                              variant="outlined"
+                              density="comfortable"
+                              item-title="title"
+                              item-value="value"
+                              class="currency-select"
+                              clearable
+                            />
+                          </div>
+                        </VCol>
+
+                        <VCol cols="12" md="2" class="text-center pa-0 pa-md-3">
+                          <div class="swap-btn_container">
+                            <VBtn
+                              icon
+                              variant="outlined"
+                              :size="mobile ? 'small' : 'large'"
+                              color="primary"
+                              class="swap-btn"
+                              data-testid="swap-btn"
+                              :aria-label="t('a11y.swap')"
+                              @click="swapCurrencies"
+                            >
+                              <VIcon>mdi-swap-horizontal</VIcon>
+                            </VBtn>
+                          </div>
+                        </VCol>
+
+                        <VCol cols="12" md="5">
+                          <div class="currency-section">
+                            <VAutocomplete
+                              v-model="selectedTargetCurrencyInput"
+                              hide-details
+                              :items="currencyOptions"
+                              :label="t('to')"
+                              variant="outlined"
+                              density="comfortable"
+                              item-title="title"
+                              item-value="value"
+                              class="currency-select"
+                              clearable
+                            />
+                          </div>
+                        </VCol>
+                      </VRow>
+
+                      <!-- Quick currency-pair shortcuts -->
+                      <div class="shortcut-chips d-flex flex-wrap justify-center ga-2 my-4">
+                        <span class="text-caption text-grey-lighten-1 align-self-center mr-1">
+                          {{ t('quickExchangeShortcuts') }}:
+                        </span>
                         <VChip
-                          v-for="preset in presetAmounts"
-                          :key="`preset-${preset}`"
+                          v-for="pair in currencyShortcuts"
+                          :key="`pair-${pair.from}-${pair.to}`"
                           size="small"
-                          variant="outlined"
-                          color="primary"
-                          class="preset-chip"
-                          :data-testid="`preset-${preset}`"
-                          @click="setPresetAmount(preset)"
+                          :variant="isActiveShortcut(pair) ? 'elevated' : 'outlined'"
+                          :color="isActiveShortcut(pair) ? 'success' : 'primary'"
+                          class="shortcut-chip"
+                          @click="applyCurrencyShortcut(pair)"
                         >
-                          {{ formatAmount(preset, 0) }}
+                          {{ pair.from }}
+                          <VIcon size="14" class="mx-1">mdi-arrow-right</VIcon>
+                          {{ pair.to }}
                         </VChip>
                       </div>
-                    </VCol>
-                    <VCol cols="12" md="6">
-                      <VAutocomplete
-                        v-model="selectedExchangeHouseInput"
-                        hide-details
-                        :items="exchangeHouseOptions"
-                        :label="t('selectExchangeHouse')"
-                        variant="outlined"
-                        density="comfortable"
-                        item-title="title"
-                        item-value="value"
-                        class="exchange-house-select"
-                        prepend-inner-icon="mdi-bank"
-                      />
-                    </VCol>
-                  </VRow>
 
-                  <!-- Currency Selection Row -->
-                  <VRow class="currency-row" align="center">
-                    <VCol cols="12" md="5">
-                      <div class="currency-section">
-                        <VAutocomplete
-                          v-model="selectedCurrencyInput"
-                          hide-details
-                          :items="currencyOptions"
-                          :label="t('from')"
-                          variant="outlined"
-                          density="comfortable"
-                          item-title="title"
-                          item-value="value"
-                          class="currency-select"
-                          clearable
-                        />
-                      </div>
-                    </VCol>
-
-                    <VCol cols="12" md="2" class="text-center pa-0 pa-md-3">
-                      <div class="swap-btn_container">
+                      <VCardActions class="d-flex justify-end pa-0 pt-md-3 pb-3">
                         <VBtn
-                          icon
-                          variant="outlined"
-                          :size="mobile ? 'small' : 'large'"
                           color="primary"
-                          class="swap-btn"
-                          data-testid="swap-btn"
-                          :aria-label="t('a11y.swap')"
-                          @click="swapCurrencies"
+                          variant="elevated"
+                          size="large"
+                          :loading="loading"
+                          class="w-100 w-md-auto my-5 my-md-0 px-5 convert-btn"
+                          data-testid="convert-btn"
+                          @click.prevent="updateExchange"
                         >
-                          <VIcon>mdi-swap-horizontal</VIcon>
+                          <VIcon start>mdi-calculator</VIcon>
+                          {{ t('findBestRate') }}
                         </VBtn>
-                      </div>
-                    </VCol>
-
-                    <VCol cols="12" md="5">
-                      <div class="currency-section">
-                        <VAutocomplete
-                          v-model="selectedTargetCurrencyInput"
-                          hide-details
-                          :items="currencyOptions"
-                          :label="t('to')"
-                          variant="outlined"
-                          density="comfortable"
-                          item-title="title"
-                          item-value="value"
-                          class="currency-select"
-                          clearable
-                        />
-                      </div>
-                    </VCol>
-                  </VRow>
-
-                  <!-- Quick currency-pair shortcuts -->
-                  <div class="shortcut-chips d-flex flex-wrap justify-center ga-2 my-4">
-                    <span class="text-caption text-grey-lighten-1 align-self-center mr-1">
-                      {{ t('quickExchangeShortcuts') }}:
-                    </span>
-                    <VChip
-                      v-for="pair in currencyShortcuts"
-                      :key="`pair-${pair.from}-${pair.to}`"
-                      size="small"
-                      :variant="isActiveShortcut(pair) ? 'elevated' : 'outlined'"
-                      :color="isActiveShortcut(pair) ? 'success' : 'primary'"
-                      class="shortcut-chip"
-                      @click="applyCurrencyShortcut(pair)"
-                    >
-                      {{ pair.from }}
-                      <VIcon size="14" class="mx-1">mdi-arrow-right</VIcon>
-                      {{ pair.to }}
-                    </VChip>
-                  </div>
-
-                  <VCardActions class="d-flex justify-end pa-0 pt-md-3 pb-3">
-                    <VBtn
-                      color="primary"
-                      variant="elevated"
-                      size="large"
-                      :loading="loading"
-                      class="w-100 w-md-auto my-5 my-md-0 px-5 convert-btn"
-                      data-testid="convert-btn"
-                      @click.prevent="updateExchange"
-                    >
-                      <VIcon start>mdi-calculator</VIcon>
-                      {{ t('findBestRate') }}
-                    </VBtn>
-                  </VCardActions>
+                      </VCardActions>
                     </VCol>
 
                     <VCol cols="12" lg="6" class="converter-col converter-col--result">
-                  <!-- Conversion Result -->
-                  <VCard
-                    class="conversion-result pa-4 mb-md-4"
-                    color="rgba(76, 175, 80, 0.1)"
-                    variant="outlined"
-                    data-testid="conversion-result"
-                  >
-                    <!-- Show selected exchange house name if not 'best' -->
-                    <div v-if="selectedExchangeHouse !== 'best'" class="text-center mb-3">
-                      <VChip
-                        color="primary"
+                      <!-- Conversion Result -->
+                      <VCard
+                        class="conversion-result pa-4 mb-md-4"
+                        color="rgba(76, 175, 80, 0.1)"
                         variant="outlined"
-                        size="small"
-                        prepend-icon="mdi-bank"
+                        data-testid="conversion-result"
                       >
-                        {{ selectedExchangeHouseName }}
-                      </VChip>
-                    </div>
-                    <VRow align="center" justify="center" class="conversion-display-row">
-                      <VCol cols="5" sm="4" class="text-center align-self-start">
-                        <div class="conversion-display">
-                          <span class="amount-text">
-                            {{ formatCurrency(isForward ? amount : leftForReverse) }}
-                          </span>
-                          <span
-                            v-if="selectedCurrency"
-                            class="currency-name"
-                            data-testid="from-currency"
+                        <!-- Show selected exchange house name if not 'best' -->
+                        <div v-if="selectedExchangeHouse !== 'best'" class="text-center mb-3">
+                          <VChip
+                            color="primary"
+                            variant="outlined"
+                            size="small"
+                            prepend-icon="mdi-bank"
                           >
-                            {{ t('codes.' + selectedCurrency) }}
+                            {{ selectedExchangeHouseName }}
+                          </VChip>
+                        </div>
+                        <VRow align="center" justify="center" class="conversion-display-row">
+                          <VCol cols="5" sm="4" class="text-center align-self-start">
+                            <div class="conversion-display">
+                              <span class="amount-text">
+                                {{ formatCurrency(isForward ? amount : leftForReverse) }}
+                              </span>
+                              <span
+                                v-if="selectedCurrency"
+                                class="currency-name"
+                                data-testid="from-currency"
+                              >
+                                {{ t('codes.' + selectedCurrency) }}
+                              </span>
+                            </div>
+                          </VCol>
+
+                          <VCol cols="2" sm="4" class="text-center">
+                            <DirectionToggle
+                              :is-forward="isForward"
+                              size="32"
+                              color="success"
+                              @toggle="toggleDirection"
+                            />
+                          </VCol>
+
+                          <VCol cols="5" sm="4" class="text-center align-self-start">
+                            <div class="conversion-display">
+                              <span class="amount-text converted" data-testid="result-amount">
+                                {{ formatCurrency(desiredRightAmount) }}
+                              </span>
+                              <span
+                                v-if="selectedTargetCurrency"
+                                class="currency-name"
+                                data-testid="to-currency"
+                              >
+                                {{ t('codes.' + selectedTargetCurrency) }}
+                              </span>
+                            </div>
+                          </VCol>
+                        </VRow>
+
+                        <VDivider class="my-3" />
+
+                        <div class="rate-info text-center">
+                          <span v-if="isForward" class="rate-text">
+                            1 {{ selectedCurrency }} =
+                            {{ formatCurrency(conversionResult.rate) }}
+                            {{ selectedTargetCurrency }}
+                          </span>
+                          <span v-else class="rate-text">
+                            1 {{ selectedTargetCurrency }} =
+                            {{ formatCurrency(conversionResult.reverseRate) }}
+                            {{ selectedCurrency }}
                           </span>
                         </div>
-                      </VCol>
-
-                      <VCol cols="2" sm="4" class="text-center">
-                        <DirectionToggle
-                          :is-forward="isForward"
-                          size="32"
-                          color="success"
-                          @toggle="toggleDirection"
-                        />
-                      </VCol>
-
-                      <VCol cols="5" sm="4" class="text-center align-self-start">
-                        <div class="conversion-display">
-                          <span class="amount-text converted" data-testid="result-amount">
-                            {{ formatCurrency(desiredRightAmount) }}
+                        <div class="rate-info text-center">
+                          <span v-if="isForward" class="rate-text">
+                            {{ formatCurrency(conversionResult.invertedRate) }}
+                            {{ selectedCurrency }} = 1 {{ selectedTargetCurrency }}
                           </span>
-                          <span
-                            v-if="selectedTargetCurrency"
-                            class="currency-name"
-                            data-testid="to-currency"
+                          <span v-else class="rate-text">
+                            {{ formatCurrency(reverseInvertedRate) }}
+                            {{ selectedTargetCurrency }} = 1 {{ selectedCurrency }}
+                          </span>
+                        </div>
+                        <VDivider class="my-3" />
+                        <!-- Dual conversion summary -->
+                        <VRow class="text-center" align="center" justify="center">
+                          <VCol cols="12" md="6">
+                            <div class="text-subtitle-2 text-grey-lighten-1 mb-1">
+                              {{ t('quickExchangeForward') }}
+                            </div>
+                            <div class="text-h6 font-weight-bold text-white">
+                              {{ formatCurrency(dualConversion.forwardToAmount) }}
+                              <span class="text-caption">{{ selectedTargetCurrency }}</span>
+                            </div>
+                          </VCol>
+                          <VCol cols="12" md="6">
+                            <div class="text-subtitle-2 text-grey-lighten-1 mb-1">
+                              {{ t('quickExchangeReverse') }}
+                            </div>
+                            <div class="text-h6 font-weight-bold text-white">
+                              {{ formatCurrency(dualConversion.reverseNeededAmount) }}
+                              <span class="text-caption">{{ selectedTargetCurrency }}</span>
+                            </div>
+                            <div class="text-caption text-grey-lighten-1 mt-1">
+                              {{ reverseHintText }}
+                            </div>
+                          </VCol>
+                        </VRow>
+
+                        <!-- Savings vs market average hint -->
+                        <div
+                          v-if="showSavings"
+                          class="savings-hint d-flex align-center justify-center mt-3"
+                        >
+                          <VChip
+                            color="success"
+                            variant="tonal"
+                            size="small"
+                            prepend-icon="mdi-piggy-bank"
                           >
-                            {{ t('codes.' + selectedTargetCurrency) }}
-                          </span>
+                            {{ savingsText }}
+                          </VChip>
                         </div>
-                      </VCol>
-                    </VRow>
 
-                    <VDivider class="my-3" />
-
-                    <div class="rate-info text-center">
-                      <span v-if="isForward" class="rate-text">
-                        1 {{ selectedCurrency }} =
-                        {{ formatCurrency(conversionResult.rate) }}
-                        {{ selectedTargetCurrency }}
-                      </span>
-                      <span v-else class="rate-text">
-                        1 {{ selectedTargetCurrency }} =
-                        {{ formatCurrency(conversionResult.reverseRate) }}
-                        {{ selectedCurrency }}
-                      </span>
-                    </div>
-                    <div class="rate-info text-center">
-                      <span v-if="isForward" class="rate-text">
-                        {{ formatCurrency(conversionResult.invertedRate) }}
-                        {{ selectedCurrency }} = 1 {{ selectedTargetCurrency }}
-                      </span>
-                      <span v-else class="rate-text">
-                        {{ formatCurrency(reverseInvertedRate) }}
-                        {{ selectedTargetCurrency }} = 1 {{ selectedCurrency }}
-                      </span>
-                    </div>
-                    <VDivider class="my-3" />
-                    <!-- Dual conversion summary -->
-                    <VRow class="text-center" align="center" justify="center">
-                      <VCol cols="12" md="6">
-                        <div class="text-subtitle-2 text-grey-lighten-1 mb-1">
-                          {{ t('quickExchangeForward') }}
+                        <!-- Copy result to clipboard -->
+                        <div class="d-flex justify-center mt-3">
+                          <VBtn
+                            variant="tonal"
+                            color="success"
+                            size="small"
+                            class="copy-result-btn"
+                            :aria-label="t('quickExchangeCopy')"
+                            @click="copyResult"
+                          >
+                            <VIcon start>mdi-content-copy</VIcon>
+                            {{ t('quickExchangeCopy') }}
+                          </VBtn>
                         </div>
-                        <div class="text-h6 font-weight-bold text-white">
-                          {{ formatCurrency(dualConversion.forwardToAmount) }}
-                          <span class="text-caption">{{ selectedTargetCurrency }}</span>
-                        </div>
-                      </VCol>
-                      <VCol cols="12" md="6">
-                        <div class="text-subtitle-2 text-grey-lighten-1 mb-1">
-                          {{ t('quickExchangeReverse') }}
-                        </div>
-                        <div class="text-h6 font-weight-bold text-white">
-                          {{ formatCurrency(dualConversion.reverseNeededAmount) }}
-                          <span class="text-caption">{{ selectedTargetCurrency }}</span>
-                        </div>
-                        <div class="text-caption text-grey-lighten-1 mt-1">
-                          {{ reverseHintText }}
-                        </div>
-                      </VCol>
-                    </VRow>
-
-                    <!-- Savings vs market average hint -->
-                    <div
-                      v-if="showSavings"
-                      class="savings-hint d-flex align-center justify-center mt-3"
-                    >
-                      <VChip
-                        color="success"
-                        variant="tonal"
-                        size="small"
-                        prepend-icon="mdi-piggy-bank"
-                      >
-                        {{ savingsText }}
-                      </VChip>
-                    </div>
-
-                    <!-- Copy result to clipboard -->
-                    <div class="d-flex justify-center mt-3">
-                      <VBtn
-                        variant="tonal"
-                        color="success"
-                        size="small"
-                        class="copy-result-btn"
-                        :aria-label="t('quickExchangeCopy')"
-                        @click="copyResult"
-                      >
-                        <VIcon start>mdi-content-copy</VIcon>
-                        {{ t('quickExchangeCopy') }}
-                      </VBtn>
-                    </div>
-                  </VCard>
+                      </VCard>
                     </VCol>
                   </VRow>
 
-                  <!-- Online / presencial channel filter: lets someone who only
-                       changes money online hide the walk-in casas (and vice
-                       versa). Governs the best-rates grid, the top houses list,
-                       the house selector and the converter's best rate. -->
+                  <!-- Market view: WHERE you can operate (channel) and WHERE
+                       you are (department). Both narrow the same
+                       `filteredExchangeData`, which governs the best-rates
+                       grid, the top houses list, the house selector and the
+                       converter's best rate — a price in a department you
+                       cannot reach is noise, not an option. -->
                   <div class="channel-filter d-flex flex-column align-center mt-6 mb-2">
-                    <VBtnToggle
-                      :model-value="channelFilter"
-                      mandatory
-                      density="comfortable"
-                      color="primary"
-                      variant="outlined"
-                      rounded="pill"
-                      :aria-label="t('channelFilter.label')"
-                      @update:model-value="onChannelChange"
-                    >
-                      <VBtn value="all" size="small">
-                        <VIcon start size="18">mdi-view-grid-outline</VIcon>
-                        {{ t('channelFilter.all') }}
-                      </VBtn>
-                      <VBtn value="online" size="small">
-                        <VIcon start size="18">mdi-laptop</VIcon>
-                        {{ t('channelFilter.online') }}
-                      </VBtn>
-                      <VBtn value="presencial" size="small">
-                        <VIcon start size="18">mdi-storefront-outline</VIcon>
-                        {{ t('channelFilter.presencial') }}
-                      </VBtn>
-                    </VBtnToggle>
+                    <div class="channel-filter__controls d-flex flex-wrap align-center ga-3">
+                      <VBtnToggle
+                        :model-value="channelFilter"
+                        mandatory
+                        density="comfortable"
+                        color="primary"
+                        variant="outlined"
+                        rounded="pill"
+                        :aria-label="t('channelFilter.label')"
+                        data-testid="home-channel"
+                        @update:model-value="onChannelChange"
+                      >
+                        <VBtn value="all" size="small">
+                          <VIcon start size="18">mdi-view-grid-outline</VIcon>
+                          {{ t('channelFilter.all') }}
+                        </VBtn>
+                        <VBtn value="online" size="small" data-testid="home-channel-online">
+                          <VIcon start size="18">mdi-laptop</VIcon>
+                          {{ t('channelFilter.online') }}
+                        </VBtn>
+                        <VBtn value="presencial" size="small">
+                          <VIcon start size="18">mdi-storefront-outline</VIcon>
+                          {{ t('channelFilter.presencial') }}
+                        </VBtn>
+                      </VBtnToggle>
+                      <VSelect
+                        :model-value="departmentFilter"
+                        :items="departmentOptions"
+                        :label="t('departmentFilter.label')"
+                        density="compact"
+                        variant="outlined"
+                        rounded="pill"
+                        hide-details
+                        class="channel-filter__dept"
+                        prepend-inner-icon="mdi-map-marker-outline"
+                        data-testid="home-department"
+                        @update:model-value="onDepartmentChange"
+                      />
+                    </div>
                     <p class="channel-filter__hint text-caption text-grey-lighten-1 mt-2 mb-0">
                       {{ t('channelFilter.hint') }}
+                    </p>
+                    <p
+                      v-if="hasMarketFilter"
+                      class="channel-filter__hint text-caption text-grey-lighten-1 mt-1 mb-0"
+                      data-testid="home-filter-notice"
+                    >
+                      {{ t('marketFilter.notice', { count: filteredExchangeData.length }) }}
+                      <a
+                        href="#"
+                        class="channel-filter__reset"
+                        @click.prevent="resetMarketFilters"
+                        >{{ t('marketFilter.reset') }}</a
+                      >
                     </p>
                   </div>
 
@@ -383,7 +414,7 @@
                   <template v-if="subjectCode">
                     <VAlert
                       v-if="
-                        channelFilter !== 'all' &&
+                        hasMarketFilter &&
                         !primaryRatesForSubject.length &&
                         !secondaryRatesForSubject.length
                       "
@@ -391,111 +422,118 @@
                       variant="tonal"
                       density="comfortable"
                       class="mb-4"
+                      data-testid="home-filter-empty"
                     >
-                      {{
-                        channelFilter === 'online'
-                          ? t('channelFilter.emptyOnline')
-                          : t('channelFilter.emptyPresencial')
-                      }}
+                      {{ marketFilterEmptyText }}
+                      <template #append>
+                        <VBtn
+                          size="small"
+                          variant="text"
+                          color="primary"
+                          @click="resetMarketFilters"
+                        >
+                          {{ t('marketFilter.reset') }}
+                        </VBtn>
+                      </template>
                     </VAlert>
                     <VRow class="best-rates-grid">
-                    <VCol v-if="primaryRatesForSubject.length" cols="12" lg="6">
-                    <!-- First card: current intent (sell or buy) -->
-                    <VCard
-                      class="best-rates-card pa-4 mb-4 h-100"
-                      color="rgba(33, 150, 243, 0.1)"
-                      variant="outlined"
-                    >
-                      <h3 class="text-h6 font-weight-bold mb-3 mb-md-6 text-center text-white">
-                        {{ primaryTitle }}
-                      </h3>
-                      <VRow>
-                        <VCol
-                          v-for="(rate, index) in primaryRatesForSubject"
-                          :key="`${rate.origin}-${index}-primary`"
-                          class="pa-2 pa-sm-3"
-                          cols="6"
-                          sm="6"
-                          md="3"
-                          lg="6"
+                      <VCol v-if="primaryRatesForSubject.length" cols="12" lg="6">
+                        <!-- First card: current intent (sell or buy) -->
+                        <VCard
+                          class="best-rates-card pa-4 mb-4 h-100"
+                          color="rgba(33, 150, 243, 0.1)"
+                          variant="outlined"
                         >
-                          <nuxt-link
-                            class="d-flex w-100 h-100 text-decoration-none"
-                            :to="localePath(`/historico/${rate.origin}/${subjectCode}`)"
-                          >
-                            <VCard
-                              class="rate-item pa-3 text-center flex-grow-1"
-                              :color="getRateCardColor(index)"
-                              variant="tonal"
+                          <h3 class="text-h6 font-weight-bold mb-3 mb-md-6 text-center text-white">
+                            {{ primaryTitle }}
+                          </h3>
+                          <VRow>
+                            <VCol
+                              v-for="(rate, index) in primaryRatesForSubject"
+                              :key="`${rate.origin}-${index}-primary`"
+                              class="pa-2 pa-sm-3"
+                              cols="6"
+                              sm="6"
+                              md="3"
+                              lg="6"
                             >
-                              <div class="rate-position text-h6 font-weight-bold mb-2">
-                                #{{ index + 1 }}
-                              </div>
-                              <div class="rate-name text-body-2 font-weight-medium mb-1">
-                                {{ rate.source }}
-                              </div>
-                              <div class="rate-value text-h6 font-weight-bold mb-1">
-                                ${{ rate.rate.toFixed(2) }}
-                              </div>
-                              <div class="rate-type text-caption">
-                                {{ intentIsSellingSubject ? t('buy') : t('sell') }}
-                                {{ t('codes.' + subjectCode) }}
-                              </div>
-                            </VCard>
-                          </nuxt-link>
-                        </VCol>
-                      </VRow>
-                    </VCard>
-                    </VCol>
+                              <nuxt-link
+                                class="d-flex w-100 h-100 text-decoration-none"
+                                :to="localePath(`/historico/${rate.origin}/${subjectCode}`)"
+                              >
+                                <VCard
+                                  class="rate-item pa-3 text-center flex-grow-1"
+                                  :color="getRateCardColor(index)"
+                                  variant="tonal"
+                                >
+                                  <div class="rate-position text-h6 font-weight-bold mb-2">
+                                    #{{ index + 1 }}
+                                  </div>
+                                  <div class="rate-name text-body-2 font-weight-medium mb-1">
+                                    {{ rate.source }}
+                                  </div>
+                                  <div class="rate-value text-h6 font-weight-bold mb-1">
+                                    ${{ rate.rate.toFixed(2) }}
+                                  </div>
+                                  <div class="rate-type text-caption">
+                                    {{ intentIsSellingSubject ? t('buy') : t('sell') }}
+                                    {{ t('codes.' + subjectCode) }}
+                                  </div>
+                                </VCard>
+                              </nuxt-link>
+                            </VCol>
+                          </VRow>
+                        </VCard>
+                      </VCol>
 
-                    <!-- Second card: the other intent -->
-                    <VCol v-if="secondaryRatesForSubject.length" cols="12" lg="6">
-                    <VCard
-                      class="best-rates-card pa-4 mb-4 h-100"
-                      color="rgba(33, 150, 243, 0.1)"
-                      variant="outlined"
-                    >
-                      <h3 class="text-h6 font-weight-bold mb-3 mb-md-6 text-center text-white">
-                        {{ secondaryTitle }}
-                      </h3>
-                      <VRow>
-                        <VCol
-                          v-for="(rate, index) in secondaryRatesForSubject"
-                          :key="`${rate.origin}-${index}-secondary`"
-                          class="pa-2 pa-sm-3"
-                          cols="6"
-                          sm="6"
-                          md="3"
-                          lg="6"
+                      <!-- Second card: the other intent -->
+                      <VCol v-if="secondaryRatesForSubject.length" cols="12" lg="6">
+                        <VCard
+                          class="best-rates-card pa-4 mb-4 h-100"
+                          color="rgba(33, 150, 243, 0.1)"
+                          variant="outlined"
                         >
-                          <nuxt-link
-                            class="d-flex w-100 h-100 text-decoration-none"
-                            :to="localePath(`/historico/${rate.origin}/${subjectCode}`)"
-                          >
-                            <VCard
-                              class="rate-item pa-3 text-center flex-grow-1"
-                              :color="getRateCardColor(index)"
-                              variant="tonal"
+                          <h3 class="text-h6 font-weight-bold mb-3 mb-md-6 text-center text-white">
+                            {{ secondaryTitle }}
+                          </h3>
+                          <VRow>
+                            <VCol
+                              v-for="(rate, index) in secondaryRatesForSubject"
+                              :key="`${rate.origin}-${index}-secondary`"
+                              class="pa-2 pa-sm-3"
+                              cols="6"
+                              sm="6"
+                              md="3"
+                              lg="6"
                             >
-                              <div class="rate-position text-h6 font-weight-bold mb-2">
-                                #{{ index + 1 }}
-                              </div>
-                              <div class="rate-name text-body-2 font-weight-medium mb-1">
-                                {{ rate.source }}
-                              </div>
-                              <div class="rate-value text-h6 font-weight-bold mb-1">
-                                ${{ rate.rate.toFixed(2) }}
-                              </div>
-                              <div class="rate-type text-caption">
-                                {{ intentIsSellingSubject ? t('sell') : t('buy') }}
-                                {{ t('codes.' + subjectCode) }}
-                              </div>
-                            </VCard>
-                          </nuxt-link>
-                        </VCol>
-                      </VRow>
-                    </VCard>
-                    </VCol>
+                              <nuxt-link
+                                class="d-flex w-100 h-100 text-decoration-none"
+                                :to="localePath(`/historico/${rate.origin}/${subjectCode}`)"
+                              >
+                                <VCard
+                                  class="rate-item pa-3 text-center flex-grow-1"
+                                  :color="getRateCardColor(index)"
+                                  variant="tonal"
+                                >
+                                  <div class="rate-position text-h6 font-weight-bold mb-2">
+                                    #{{ index + 1 }}
+                                  </div>
+                                  <div class="rate-name text-body-2 font-weight-medium mb-1">
+                                    {{ rate.source }}
+                                  </div>
+                                  <div class="rate-value text-h6 font-weight-bold mb-1">
+                                    ${{ rate.rate.toFixed(2) }}
+                                  </div>
+                                  <div class="rate-type text-caption">
+                                    {{ intentIsSellingSubject ? t('sell') : t('buy') }}
+                                    {{ t('codes.' + subjectCode) }}
+                                  </div>
+                                </VCard>
+                              </nuxt-link>
+                            </VCol>
+                          </VRow>
+                        </VCard>
+                      </VCol>
                     </VRow>
                   </template>
                 </template>
@@ -1031,8 +1069,10 @@ import { publicRates } from '@/utils/rateSource'
 import {
   matchesChannel,
   normalizeChannelFilter,
+  servesDepartment,
   type ExchangeChannelFilter,
 } from '@/utils/exchangeChannel'
+import { dedupeDepartmentNames, sameDepartment } from '@/utils/departments'
 
 const { mobile } = useDisplay()
 
@@ -1348,34 +1388,150 @@ const initialLoading = ref<boolean>(true)
 const realExchangeData = ref<any[]>([])
 const availableCurrencies = ref<string[]>(['USD', 'ARS', 'BRL', 'EUR', 'UYU'])
 
-// Online / presencial market view. `online` = banks & fintech that need an
-// account (BROU, Itaú, ..., PREX); `presencial` = walk-in casas de cambio.
+// Online / presencial market view. `online` = you must hold an account at the
+// institution (eBROU, bank TRANSFERENCIA, Prex, OCA); `presencial` = a counter
+// anyone can walk up to, which INCLUDES the branch board of a bank.
 // Initialised from the `canal` query param so the choice is shareable.
 const channelFilter = ref<ExchangeChannelFilter>(normalizeChannelFilter(route.query.canal))
 
+// Department view. A rate two departments away is noise for someone deciding
+// where to walk today, so the whole market view can be narrowed to the houses
+// that actually operate where the person is. `TODOS` = the whole country.
+const ALL_DEPARTMENTS = 'TODOS'
+const departmentFilter = ref<string>(normalizeDepartmentFilter(route.query.dep))
+
+function normalizeDepartmentFilter(value: unknown): string {
+  return typeof value === 'string' && value.trim() ? value.trim() : ALL_DEPARTMENTS
+}
+
+// Departments the live payload knows about, collapsed to one entry each: the
+// houses spell four of them both with and without accents.
+const departmentOptions = computed(() => {
+  const raw: string[] = []
+  for (const item of realExchangeData.value) {
+    const depts = item.localData?.departments
+    if (depts?.length) raw.push(...depts)
+  }
+  return [
+    { title: t('departmentFilter.all'), value: ALL_DEPARTMENTS },
+    ...dedupeDepartmentNames(raw).map(name => ({ title: titleCaseDepartment(name), value: name })),
+  ]
+})
+
+// A `?dep=` that names no real department would otherwise pin the page to an
+// empty market forever, with an empty state blaming a place that does not
+// exist. Resolve it against the live list (slug-based, so `?dep=paysandu` and
+// `?dep=PAYSANDÚ` both land), and fall back to the whole country if it is junk.
+watch(departmentOptions, options => {
+  if (options.length <= 1 || departmentFilter.value === ALL_DEPARTMENTS) return
+  const match = options.find(
+    o => o.value !== ALL_DEPARTMENTS && sameDepartment(o.value, departmentFilter.value)
+  )
+  departmentFilter.value = match ? match.value : ALL_DEPARTMENTS
+})
+
+/** `SAN JOSÉ` -> `San José`; the API stores departments uppercased. */
+function titleCaseDepartment(name: string): string {
+  return name
+    .toLocaleLowerCase('es')
+    .replace(/(^|[\s-])(\p{L})/gu, (_, sep: string, ch: string) => sep + ch.toLocaleUpperCase('es'))
+}
+
 // Every interactive list on the page (best-rates grid, top houses, house
 // selector, converter) reads from this so the whole page reflects the active
-// channel consistently. The SSR headline/SEO rows use `sharedRealRows` instead
-// and are intentionally left unfiltered — they must state the true market best.
+// channel AND department consistently. The SSR headline/SEO rows use
+// `sharedRealRows` instead and are intentionally left unfiltered — they must
+// state the true market best for the country.
+//
+// Channel is matched per ROW (origin + type), not per origin: BROU quotes both
+// a walk-in board (type '') and an account-only eBROU price, and they belong to
+// different channels.
 const filteredExchangeData = computed(() =>
-  realExchangeData.value.filter(item => matchesChannel(item.origin, channelFilter.value))
+  realExchangeData.value.filter(
+    item =>
+      matchesChannel(item.origin, item.type, channelFilter.value) &&
+      (departmentFilter.value === ALL_DEPARTMENTS ||
+        servesDepartment(
+          item.origin,
+          item.type,
+          item.localData?.departments,
+          departmentFilter.value
+        ))
+  )
 )
 
-const trackChannel = useTrack()
-// React to a channel change: drop a specific house that no longer belongs to
-// the active channel (falling back to "best"), re-run the converter against the
-// filtered rows and reflect the choice in the URL.
-const onChannelChange = (value: ExchangeChannelFilter | null) => {
-  // VBtnToggle emits null when the active button is re-clicked; keep the value.
-  channelFilter.value = normalizeChannelFilter(value)
-  if (
-    selectedExchangeHouse.value !== 'best' &&
-    !matchesChannel(selectedExchangeHouse.value, channelFilter.value)
-  ) {
+/** True when the active filters left the selected house with nothing to show. */
+const selectedHouseSurvivesFilters = () =>
+  selectedExchangeHouse.value === 'best' ||
+  filteredExchangeData.value.some(item => item.origin === selectedExchangeHouse.value)
+
+/** Fall back to "best" when a specific house drops out of the active view. */
+const dropSelectedHouseIfFilteredOut = () => {
+  if (!selectedHouseSurvivesFilters()) {
     selectedExchangeHouse.value = 'best'
     selectedExchangeHouseInput.value = 'best'
   }
+}
+
+// Reconcile on data arrival too, not only on a filter click: a shared or
+// hand-edited URL can carry an impossible combination (`?canal=presencial
+// &house=prex` — a fintech has no counter quote), and the selector would sit
+// on a house that contributes no rate to the page.
+watch(filteredExchangeData, rows => {
+  // An empty list means "not loaded yet", not "filtered to nothing"; dropping
+  // the house then would clobber a perfectly good deep link on first paint.
+  if (rows.length) dropSelectedHouseIfFilteredOut()
+})
+
+const trackChannel = useTrack()
+// React to a channel change: drop a specific house that no longer has a quote
+// in the active channel (falling back to "best"), re-run the converter against
+// the filtered rows and reflect the choice in the URL.
+const onChannelChange = (value: ExchangeChannelFilter | null) => {
+  // VBtnToggle emits null when the active button is re-clicked; keep the value.
+  channelFilter.value = normalizeChannelFilter(value)
+  dropSelectedHouseIfFilteredOut()
   trackChannel('channel_filter', { channel: channelFilter.value })
+  setConversionRate()
+  updateQueryParams()
+}
+
+const onDepartmentChange = (value: string | null) => {
+  departmentFilter.value = normalizeDepartmentFilter(value)
+  dropSelectedHouseIfFilteredOut()
+  trackChannel('department_filter', { department: departmentFilter.value })
+  setConversionRate()
+  updateQueryParams()
+}
+
+/** Any narrowing active? Drives the "showing a slice of the market" notice. */
+const hasMarketFilter = computed(
+  () => channelFilter.value !== 'all' || departmentFilter.value !== ALL_DEPARTMENTS
+)
+
+// Empty state: name whichever filter emptied the view, so "no results" is
+// actionable instead of looking like the site is broken.
+const marketFilterEmptyText = computed(() => {
+  const dept = departmentFilter.value !== ALL_DEPARTMENTS
+  if (dept && channelFilter.value !== 'all') {
+    return t('marketFilter.emptyBoth', {
+      department: titleCaseDepartment(departmentFilter.value),
+      channel: t(`channelFilter.${channelFilter.value}`),
+    })
+  }
+  if (dept) {
+    return t('marketFilter.emptyDepartment', {
+      department: titleCaseDepartment(departmentFilter.value),
+    })
+  }
+  return channelFilter.value === 'online'
+    ? t('channelFilter.emptyOnline')
+    : t('channelFilter.emptyPresencial')
+})
+
+const resetMarketFilters = () => {
+  channelFilter.value = 'all'
+  departmentFilter.value = ALL_DEPARTMENTS
   setConversionRate()
   updateQueryParams()
 }
@@ -1845,6 +2001,7 @@ const updateQueryParams = () => {
     dir: isForward.value ? undefined : 'r',
     house: selectedExchangeHouse.value === 'best' ? undefined : selectedExchangeHouse.value,
     canal: channelFilter.value === 'all' ? undefined : channelFilter.value,
+    dep: departmentFilter.value === ALL_DEPARTMENTS ? undefined : departmentFilter.value,
   }
 
   // Only update if parameters have actually changed
@@ -1854,7 +2011,8 @@ const updateQueryParams = () => {
     route.query.amount !== query.amount ||
     route.query.dir !== query.dir ||
     route.query.house !== query.house ||
-    route.query.canal !== query.canal
+    route.query.canal !== query.canal ||
+    route.query.dep !== query.dep
   ) {
     try {
       router.push({ query })
@@ -2425,6 +2583,23 @@ useSeoMeta({
   max-width: 560px;
   text-align: center;
   line-height: 1.5;
+}
+
+.channel-filter__controls {
+  justify-content: center;
+}
+
+/* Wide enough for "TREINTA Y TRES" without truncating, capped so the pair
+   stays on one row from sm up and wraps cleanly below it. */
+.channel-filter__dept {
+  min-width: 208px;
+  max-width: 260px;
+}
+
+.channel-filter__reset {
+  color: rgb(var(--v-theme-link));
+  font-weight: 600;
+  text-decoration: underline;
 }
 
 .hero-answer {

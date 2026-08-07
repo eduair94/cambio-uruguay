@@ -247,6 +247,8 @@
 </template>
 
 <script setup lang="ts">
+import { dedupeDepartmentNames, departmentsInclude } from '~/utils/departments'
+
 // Composables
 const { t, locale } = useI18n()
 const router = useRouter()
@@ -353,15 +355,15 @@ const totalLocations = computed(() => {
 
 const departmentOptions = computed(() => {
   try {
-    const departments = new Set<string>()
+    const raw: string[] = []
 
     exchangeInfo.value.exchangeData.forEach((origin: any) => {
-      if (origin.localData?.departments) {
-        origin.localData.departments.forEach((dept: string) => departments.add(dept))
-      }
+      if (origin.localData?.departments) raw.push(...origin.localData.departments)
     })
 
-    return Array.from(departments).sort()
+    // Collapse accent variants (PAYSANDU/PAYSANDÚ, ...) so the selector lists
+    // 19 departments instead of 23 with four duplicates.
+    return dedupeDepartmentNames(raw)
   } catch (error) {
     console.error('Error computing department options:', error)
     return []
@@ -384,9 +386,11 @@ const filteredOrigins = computed(() => {
         if (!name.includes(search)) return false
       }
 
-      // Apply department filter
+      // Apply department filter. Matched on the slug, so `?location=paysandu`
+      // and `?location=PAYSANDÚ` both return every house in the department,
+      // whichever spelling that house publishes.
       if (department) {
-        if (!origin.localData?.departments?.includes(department.toUpperCase().trim())) {
+        if (!departmentsInclude(origin.localData?.departments, department)) {
           return false
         }
       }

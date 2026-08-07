@@ -257,6 +257,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import type { PreferentialRatesCatalog } from '~/types/api'
+import { departmentsInclude } from '~/utils/departments'
 import { applyPreferentialRates, type AppliedPreferentialRate } from '~/utils/preferentialRates'
 
 // Initialize API service
@@ -674,15 +675,21 @@ const updateTable = () => {
     codeWith.value
   )
 
+  // Department membership is matched on the slug, never on the raw string: the
+  // houses spell PAYSANDU/PAYSANDÚ (and 3 more) both ways, and an exact match
+  // drops every house that chose the other spelling.
+  const inSelectedDepartment = (el: ExchangeItem) =>
+    location.value === 'TODOS' ||
+    !el?.localData?.departments.length ||
+    departmentsInclude(el.localData.departments, location.value)
+
   if (code.value === 'UYU') {
     items.value = sourceItems.filter(
       el =>
         (!code.value || el.code === codeWith.value) &&
         (!notInterBank.value || !el.isInterBank || onlyInterBank.value.includes(code.value)) &&
         (!notConditional.value || !el.condition) &&
-        (location.value === 'TODOS' ||
-          !el?.localData?.departments.length ||
-          el.localData.departments.includes(location.value))
+        inSelectedDepartment(el)
     )
   } else {
     items.value = sourceItems.filter(
@@ -690,9 +697,7 @@ const updateTable = () => {
         (!code.value || el.code === code.value) &&
         (!notInterBank.value || !el.isInterBank || onlyInterBank.value.includes(code.value)) &&
         (!notConditional.value || !el.condition) &&
-        (location.value === 'TODOS' ||
-          !el?.localData?.departments.length ||
-          el.localData.departments.includes(location.value))
+        inSelectedDepartment(el)
     )
   }
 

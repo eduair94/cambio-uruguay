@@ -1,9 +1,16 @@
 import { describe, expect, it } from 'vitest'
 import {
   buildUsdComparison,
+  CASA_TYPE_SLUGS,
+  CASAS_PATH,
   CASAS_REPUTATION,
+  casaTypePaths,
+  categoryFromTypeSlug,
   getCasasContent,
   CASAS_LAST_RESEARCHED,
+  OFF_MARKET_PCT,
+  typeSlugForCategory,
+  type CasaCategory,
   type UsdRateRow,
 } from '../../utils/casasDirectory'
 
@@ -59,6 +66,82 @@ describe('buildUsdComparison', () => {
     expect(b?.gapBuyPct).toBeCloseTo(0, 5)
     expect(a?.gapSellPct).toBeCloseTo(((41 - 40.5) / 40.5) * 100, 5)
     expect(a?.gapBuyPct).toBeCloseTo(((39.5 - 39) / 39.5) * 100, 5)
+  })
+
+  it('labels the operation behind each quote', () => {
+    const out = buildUsdComparison([
+      row('gales', 39, 41),
+      row('brou', 39.5, 41, 'EBROU'),
+      row('itau', 39.2, 41.25, 'TRANSFERENCIA'),
+      row('prex', 40.05, 40.45),
+    ])
+    const by = new Map(out.map(e => [e.origin, e]))
+    expect(by.get('gales')).toMatchObject({ operation: 'cash', requiresAccount: false })
+    expect(by.get('brou')).toMatchObject({ operation: 'app', requiresAccount: true })
+    expect(by.get('itau')).toMatchObject({ operation: 'transfer', requiresAccount: true })
+    expect(by.get('prex')).toMatchObject({ operation: 'app', requiresAccount: true })
+  })
+
+  it('never flags an off-market quote without a real market to compare against', () => {
+    // Nine quotes, one absurd: too few for a median to mean anything.
+    const rows = Array.from({ length: 8 }, (_, i) => row(`casa${i}`, 39, 41))
+    rows.push(row('broken', 4, 6))
+    expect(buildUsdComparison(rows).every(e => !e.offMarket)).toBe(true)
+  })
+
+  it('flags a quote further than the threshold from the median, and only that one', () => {
+    // A 20-house market clustered at 39/41, plus one board shifted ~5% down —
+    // the shape of the real Baluma Cambio quote that used to win "best price".
+    const rows = Array.from({ length: 20 }, (_, i) => row(`casa${i}`, 39 + i * 0.01, 41 + i * 0.01))
+    rows.push(row('stale_board', 37.15, 39.55))
+    const out = buildUsdComparison(rows)
+    expect(out.filter(e => e.offMarket).map(e => e.origin)).toEqual(['stale_board'])
+  })
+
+  it('leaves a merely competitive quote alone', () => {
+    const rows = Array.from({ length: 20 }, (_, i) => row(`casa${i}`, 39 + i * 0.01, 41 + i * 0.01))
+    // 1.5% better on the sell side: aggressive pricing, not a broken scrape.
+    rows.push(row('sharp', 39.5, 40.4))
+    const out = buildUsdComparison(rows)
+    expect(out.find(e => e.origin === 'sharp')?.offMarket).toBe(false)
+  })
+
+  it('uses a documented threshold', () => {
+    expect(OFF_MARKET_PCT).toBe(3)
+  })
+})
+
+describe('house-type slugs', () => {
+  it('round-trips every category through its slug', () => {
+    for (const category of ['casa', 'banco', 'fintech'] as CasaCategory[]) {
+      expect(categoryFromTypeSlug(typeSlugForCategory(category))).toBe(category)
+    }
+  })
+
+  it('resolves the three public slugs', () => {
+    expect(categoryFromTypeSlug('casas-de-cambio')).toBe('casa')
+    expect(categoryFromTypeSlug('bancos')).toBe('banco')
+    expect(categoryFromTypeSlug('fintech')).toBe('fintech')
+  })
+
+  it('rejects anything else, so an invented slug 404s', () => {
+    for (const slug of ['', 'banco', 'BANCOS', 'cripto', '../casa']) {
+      expect(categoryFromTypeSlug(slug)).toBeNull()
+    }
+  })
+
+  it('emits one sitemap path per type, all under the directory', () => {
+    const paths = casaTypePaths()
+    expect(paths.length).toBe(Object.keys(CASA_TYPE_SLUGS).length)
+    expect(new Set(paths).size).toBe(paths.length)
+    for (const p of paths) expect(p.startsWith(`${CASAS_PATH}/`)).toBe(true)
+  })
+
+  it('every type slice has at least one house, so no page renders empty', () => {
+    for (const slug of Object.keys(CASA_TYPE_SLUGS)) {
+      const category = categoryFromTypeSlug(slug)
+      expect(CASAS_REPUTATION.filter(c => c.category === category).length).toBeGreaterThan(0)
+    }
   })
 })
 

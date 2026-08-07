@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import type { LocalDataMap } from '../../utils/departments'
 import {
+  dedupeDepartmentNames,
   departmentFromSlug,
+  departmentsInclude,
   housesInDepartment,
   listDepartments,
+  sameDepartment,
   slugifyDepartment,
 } from '../../utils/departments'
 
@@ -194,5 +197,88 @@ describe('departments spelled inconsistently across houses', () => {
     expect(names).toContain('PAYSANDÚ')
     expect(names).toContain('RÍO NEGRO')
     expect(names).not.toContain('PAYSANDU')
+  })
+})
+
+describe('sameDepartment', () => {
+  it('ignores accents, case and surrounding space', () => {
+    expect(sameDepartment('PAYSANDÚ', 'paysandu')).toBe(true)
+    expect(sameDepartment('  Río Negro ', 'RIO NEGRO')).toBe(true)
+    expect(sameDepartment('SAN JOSÉ', 'san-jose')).toBe(true)
+  })
+
+  it('separates genuinely different departments', () => {
+    expect(sameDepartment('SALTO', 'ROCHA')).toBe(false)
+    expect(sameDepartment('SAN JOSÉ', 'SORIANO')).toBe(false)
+  })
+
+  it('never matches on an empty or punctuation-only name', () => {
+    expect(sameDepartment('', '')).toBe(false)
+    expect(sameDepartment('---', '---')).toBe(false)
+  })
+})
+
+describe('departmentsInclude', () => {
+  it('finds the department whichever spelling the house published', () => {
+    expect(departmentsInclude(['PAYSANDU', 'SALTO'], 'PAYSANDÚ')).toBe(true)
+    expect(departmentsInclude(['PAYSANDÚ'], 'PAYSANDU')).toBe(true)
+    expect(departmentsInclude(['RÍO NEGRO'], 'rio negro')).toBe(true)
+  })
+
+  it('is false for a house that does not operate there', () => {
+    expect(departmentsInclude(['SALTO'], 'ROCHA')).toBe(false)
+  })
+
+  it('treats missing branch data as no match', () => {
+    expect(departmentsInclude(undefined, 'SALTO')).toBe(false)
+    expect(departmentsInclude(null, 'SALTO')).toBe(false)
+    expect(departmentsInclude([], 'SALTO')).toBe(false)
+  })
+
+  it('never matches an empty target', () => {
+    expect(departmentsInclude(['SALTO'], '')).toBe(false)
+  })
+})
+
+describe('dedupeDepartmentNames', () => {
+  // The four real collisions in the live GET /localData payload.
+  const live = [
+    'MONTEVIDEO',
+    'PAYSANDU',
+    'PAYSANDÚ',
+    'RIO NEGRO',
+    'RÍO NEGRO',
+    'SAN JOSE',
+    'SAN JOSÉ',
+    'TACUAREMBO',
+    'TACUAREMBÓ',
+    'SALTO',
+  ]
+
+  it('collapses accent variants to one entry per department', () => {
+    expect(dedupeDepartmentNames(live)).toEqual([
+      'MONTEVIDEO',
+      'PAYSANDÚ',
+      'RÍO NEGRO',
+      'SALTO',
+      'SAN JOSÉ',
+      'TACUAREMBÓ',
+    ])
+  })
+
+  it('keeps the accented spelling regardless of input order', () => {
+    expect(dedupeDepartmentNames(['PAYSANDU', 'PAYSANDÚ'])).toEqual(['PAYSANDÚ'])
+    expect(dedupeDepartmentNames(['PAYSANDÚ', 'PAYSANDU'])).toEqual(['PAYSANDÚ'])
+  })
+
+  it('drops blanks and sorts for display', () => {
+    expect(dedupeDepartmentNames(['ROCHA', '', '   ', 'ARTIGAS'])).toEqual(['ARTIGAS', 'ROCHA'])
+    expect(dedupeDepartmentNames([])).toEqual([])
+  })
+
+  it('every survivor is still reachable from the dropped spelling', () => {
+    for (const raw of live) {
+      expect(dedupeDepartmentNames(live).some(kept => sameDepartment(kept, raw))).toBe(true)
+    }
   })
 })

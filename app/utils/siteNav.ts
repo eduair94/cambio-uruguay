@@ -1178,6 +1178,7 @@ export const UNLISTED_ROUTES: ReadonlyArray<{ to: string; priority: number; chan
 export const DYNAMIC_ROUTE_KEYS: Readonly<Record<string, string>> = Object.freeze({
   'blog/[slug]': 'news',
   'casa/[origin]': 'houses',
+  'casas-de-cambio/[tipo]': 'houses',
   'convertir/[slug]': 'tools',
   'cotizacion/[moneda]': 'tools',
   'dolar/[departamento]': 'market',

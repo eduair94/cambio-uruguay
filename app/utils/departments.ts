@@ -57,6 +57,57 @@ export function slugifyDepartment(name: string): string {
 }
 
 /**
+ * True when two department names refer to the same department, comparing on
+ * the slug so the match is case- and accent-insensitive.
+ *
+ * The live `localData` payload spells four departments both ways — houses
+ * disagree on diacritics (`PAYSANDU`/`PAYSANDÚ`, `RIO NEGRO`/`RÍO NEGRO`,
+ * `SAN JOSE`/`SAN JOSÉ`, `TACUAREMBO`/`TACUAREMBÓ`) — so an exact string
+ * comparison silently drops every house that chose the other spelling.
+ */
+export function sameDepartment(a: string, b: string): boolean {
+  const sa = slugifyDepartment(a)
+  return sa !== '' && sa === slugifyDepartment(b)
+}
+
+/**
+ * True when `departments` (as published by one house) contains `target`,
+ * matching accent- and case-insensitively. The empty/undefined case is false —
+ * callers that want "houses without branch data pass the filter" must say so.
+ */
+export function departmentsInclude(
+  departments: readonly string[] | undefined | null,
+  target: string
+): boolean {
+  const slug = slugifyDepartment(target)
+  if (!slug) return false
+  return (departments ?? []).some(d => slugifyDepartment(d) === slug)
+}
+
+/**
+ * Collapse a list of raw department names to one canonical entry per real
+ * department, sorted for display.
+ *
+ * Without this the UI selectors list 23 options for Uruguay's 19 departments,
+ * with four visible duplicates, and each duplicate returns only the subset of
+ * houses that picked that spelling.
+ */
+export function dedupeDepartmentNames(names: readonly string[]): string[] {
+  const bySlug = new Map<string, string>()
+  for (const raw of names) {
+    const trimmed = (raw ?? '').trim()
+    if (!trimmed) continue
+    const slug = slugifyDepartment(trimmed)
+    if (!slug) continue
+    const current = bySlug.get(slug)
+    if (!current || preferredSpelling(current, trimmed) === trimmed) {
+      bySlug.set(slug, trimmed)
+    }
+  }
+  return [...bySlug.values()].sort((a, b) => a.localeCompare(b, 'es'))
+}
+
+/**
  * Humanise an `origin` id into a display name (e.g. `'cambio-minas'` ->
  * `'Cambio Minas'`). Used only as a fallback when `localData[origin].name` is
  * missing.

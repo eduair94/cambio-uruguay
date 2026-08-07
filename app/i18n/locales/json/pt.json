@@ -394,13 +394,23 @@
   "viewAdvanced": "Ver opções avançadas",
   "topExchangeHouses": "Melhores Casas de Câmbio",
   "channelFilter": {
-    "label": "Tipo de câmbio",
+    "label": "Onde você troca?",
     "all": "Todos",
     "online": "Online",
     "presencial": "Presencial",
-    "hint": "Online: bancos e fintechs que exigem uma conta (BROU, Itaú, BBVA, Santander, Scotiabank, OCA, PREX). Presencial: casas de câmbio que você visita no balcão.",
+    "hint": "Online: você precisa ter conta no banco ou fintech para acessar esse preço (eBROU, transferência bancária, Prex, OCA). Presencial: no balcão, sem ser cliente — inclui a cotação de agência dos bancos.",
     "emptyOnline": "Nenhuma cotação online disponível no momento.",
     "emptyPresencial": "Nenhuma cotação presencial disponível no momento."
+  },
+  "departmentFilter": {
+    "label": "Departamento",
+    "all": "Todo o país"
+  },
+  "marketFilter": {
+    "notice": "Mostrando {count} cotações que correspondem aos seus filtros.",
+    "reset": "Ver todo o mercado",
+    "emptyDepartment": "Nenhuma das casas que acompanhamos publica cotação em {department} neste momento.",
+    "emptyBoth": "Nenhuma cotação {channel} em {department} neste momento."
   },
   "promo": {
     "heading": "Não pague a mais ao trocar",
