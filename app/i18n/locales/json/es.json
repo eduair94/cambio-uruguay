@@ -377,7 +377,14 @@
     "current": "Actual",
     "min": "Mínimo",
     "max": "Máximo",
-    "avg": "Promedio"
+    "avg": "Promedio",
+    "rangeLabel": "Período",
+    "range7d": "7D",
+    "range1m": "1M",
+    "range3m": "3M",
+    "range6m": "6M",
+    "range1y": "1A",
+    "rangeAll": "Todo"
   },
   "quickExchange": "Cambio Rápido",
   "quickExchangeForward": "Recibirías",
