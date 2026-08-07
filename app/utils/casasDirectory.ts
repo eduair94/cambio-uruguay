@@ -108,6 +108,27 @@ export function buildUsdComparison(rows: UsdRateRow[]): UsdComparisonEntry[] {
   }))
 }
 
+/**
+ * Date to present (and put in `dateModified`) for the review snapshot: the
+ * NEWER of the weekly refresh store and the hand-researched dataset.
+ *
+ * Not simply "the store when it exists". The store currently carries
+ * 2026-07-05 while {@link CASAS_LAST_RESEARCHED} is 2026-07-24, so preferring
+ * it unconditionally dates the page backwards and tells readers (and Google)
+ * the reviews are older than they are.
+ *
+ * @param storeUpdatedAt ISO timestamp from `/api/casas-reviews`, or null.
+ * @param researchedDate `YYYY-MM-DD` of the shipped snapshot.
+ */
+export function resolveReviewDate(
+  storeUpdatedAt: string | null | undefined,
+  researchedDate: string = CASAS_LAST_RESEARCHED
+): string {
+  const stored = storeUpdatedAt?.slice(0, 10)
+  // Plain string compare is safe and total for zero-padded ISO dates.
+  return stored && stored > researchedDate ? stored : researchedDate
+}
+
 /** The three house types the directory can be sliced by, as URL slugs. */
 export const CASA_TYPE_SLUGS = {
   'casas-de-cambio': 'casa',

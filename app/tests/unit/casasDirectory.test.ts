@@ -9,6 +9,7 @@ import {
   getCasasContent,
   CASAS_LAST_RESEARCHED,
   OFF_MARKET_PCT,
+  resolveReviewDate,
   typeSlugForCategory,
   type CasaCategory,
   type UsdRateRow,
@@ -108,6 +109,33 @@ describe('buildUsdComparison', () => {
 
   it('uses a documented threshold', () => {
     expect(OFF_MARKET_PCT).toBe(3)
+  })
+})
+
+describe('resolveReviewDate', () => {
+  // The store is currently stamped 2026-07-05 while the shipped snapshot is
+  // 2026-07-24, so "prefer the store" dated the page — and its JSON-LD
+  // dateModified — backwards in production.
+  it('never goes backwards from the researched snapshot', () => {
+    expect(resolveReviewDate('2026-07-05T07:30:00.000Z', '2026-07-24')).toBe('2026-07-24')
+  })
+
+  it('follows the refresh once it overtakes the snapshot', () => {
+    expect(resolveReviewDate('2026-08-04T07:30:00.000Z', '2026-07-24')).toBe('2026-08-04')
+  })
+
+  it('falls back to the snapshot when the store is empty', () => {
+    expect(resolveReviewDate(null, '2026-07-24')).toBe('2026-07-24')
+    expect(resolveReviewDate(undefined, '2026-07-24')).toBe('2026-07-24')
+    expect(resolveReviewDate('', '2026-07-24')).toBe('2026-07-24')
+  })
+
+  it('treats the same day as no change', () => {
+    expect(resolveReviewDate('2026-07-24T23:59:00.000Z', '2026-07-24')).toBe('2026-07-24')
+  })
+
+  it('defaults to the shipped constant', () => {
+    expect(resolveReviewDate(null)).toBe(CASAS_LAST_RESEARCHED)
   })
 })
 

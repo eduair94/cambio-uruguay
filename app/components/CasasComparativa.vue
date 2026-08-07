@@ -659,6 +659,7 @@ import {
   digitalScore,
   getCasasContent,
   CASAS_LAST_RESEARCHED,
+  resolveReviewDate,
   typeSlugForCategory,
   type CasaCategory,
   type CasaReputation,
@@ -685,12 +686,9 @@ const { getProcessedExchangeData } = useApiService()
 // Localized content tree (falls back to es).
 const c = computed(() => getCasasContent(locale.value))
 
-// Review-snapshot date: the weekly refresh store when it has run, else the
-// original research date.
-const effectiveReviewDate = computed(() => {
-  const ts = refreshed.value?.updatedAt
-  return ts ? ts.slice(0, 10) : CASAS_LAST_RESEARCHED
-})
+// Review-snapshot date: the newer of the weekly refresh store and the shipped
+// research snapshot. See `resolveReviewDate` for why it is not just the store.
+const effectiveReviewDate = computed(() => resolveReviewDate(refreshed.value?.updatedAt))
 const fmtResearchDate = computed(() =>
   new Date(`${effectiveReviewDate.value}T00:00:00Z`).toLocaleDateString(c.value.lang, {
     year: 'numeric',
