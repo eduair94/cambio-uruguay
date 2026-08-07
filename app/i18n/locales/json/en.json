@@ -395,6 +395,15 @@
   "bestRateFrom": "Best rate from",
   "viewAdvanced": "View advanced options",
   "topExchangeHouses": "Top Exchange Houses",
+  "channelFilter": {
+    "label": "Exchange type",
+    "all": "All",
+    "online": "Online",
+    "presencial": "In person",
+    "hint": "Online: banks and fintechs that require an account (BROU, Itaú, BBVA, Santander, Scotiabank, OCA, PREX). In person: exchange houses you visit at a counter.",
+    "emptyOnline": "No online rates available right now.",
+    "emptyPresencial": "No in-person rates available right now."
+  },
   "promo": {
     "heading": "Don't overpay when you exchange",
     "subtitle": "Compare 40+ exchange houses and get the best rate of the day.",
