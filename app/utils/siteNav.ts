@@ -102,6 +102,23 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         keywords: ['dolar hoy', 'subio', 'bajo', 'variacion', 'usd', 'precio dolar'],
       },
       {
+        to: '/pizarra',
+        labelKey: 'nav.pizarra',
+        icon: 'mdi-view-headline',
+        priority: 0.9,
+        changefreq: 'hourly',
+        fresh: true,
+        keywords: [
+          'pizarra',
+          'pizarra dolar',
+          'tablero',
+          'cotizacion en vivo',
+          'sin registro',
+          'rapido',
+          'simple',
+        ],
+      },
+      {
         to: '/historico',
         labelKey: 'historico',
         icon: 'mdi-chart-line',

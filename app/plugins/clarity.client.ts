@@ -2,8 +2,13 @@
 // Complements GA4 (aggregate metrics) with qualitative UX insight for UI optimization.
 // No-op until a project id is provided via runtimeConfig.public.clarityId
 // (env: NUXT_PUBLIC_CLARITY_ID). Get the id at https://clarity.microsoft.com.
+import { isBareRoute } from '~/utils/bareRoutes'
+
 export default defineNuxtPlugin(() => {
   if (!import.meta.client) return
+  // Chrome-free routes stay script-free: an embeddable widget must not record
+  // sessions on the host page, and /pizarra loads no third party at all.
+  if (isBareRoute(window.location.pathname)) return
 
   const clarityId = useRuntimeConfig().public.clarityId as string
   if (!clarityId) return // not configured yet -> do nothing

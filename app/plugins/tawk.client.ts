@@ -2,8 +2,14 @@
 // when the browser is idle), never on the critical path. This keeps the widget
 // out of FCP/LCP/TBT for the (many) visitors who never open chat, while still
 // loading it the moment someone engages.
+import { isBareRoute } from '~/utils/bareRoutes'
+
 export default defineNuxtPlugin(() => {
   if (!import.meta.client) return
+  // Never on the chrome-free routes: /widget renders inside somebody else's
+  // page (a chat bubble there is not ours to add) and /pizarra promises a
+  // third-party-free board.
+  if (isBareRoute(window.location.pathname)) return
 
   let loaded = false
   const load = () => {

@@ -2,6 +2,7 @@
 // PURE (no Vue/Nuxt imports) so unit tests and server code can import freely.
 
 import { operationForRate, requiresAccount, type OperationKind } from './exchangeChannel'
+import { offMarketDetector } from './marketOutlier'
 
 /** Date the reputation snapshot (ratings, press, strengths) was researched. */
 export const CASAS_LAST_RESEARCHED = '2026-07-24'
@@ -43,24 +44,10 @@ export interface UsdComparisonEntry {
  */
 const typeRank = (t: string): number => (t === '' ? 0 : t === 'BILLETE' ? 1 : 2)
 
-/**
- * How far from the market median a quote may sit before we stop treating it as
- * a price and start treating it as a suspect scrape.
- *
- * Calibrated against a live 45-house snapshot: at 2% eight houses trip (normal
- * competition), at 3% exactly one does — a board whose buy AND sell are both
- * ~4.7% below the median, the signature of a stale or misparsed pizarra rather
- * than an aggressive price. Flagged quotes are still shown; they just cannot
- * win a "best of" pick.
- */
-export const OFF_MARKET_PCT = 3
-
-/** Median of a non-empty numeric list. */
-function median(values: number[]): number {
-  const sorted = [...values].sort((a, b) => a - b)
-  const mid = sorted.length >> 1
-  return sorted.length % 2 ? sorted[mid]! : (sorted[mid - 1]! + sorted[mid]!) / 2
-}
+// The off-market threshold lives in `marketOutlier` so this page and /pizarra
+// judge a suspect quote by exactly the same rule. Re-exported because callers
+// and tests already import it from here.
+export { OFF_MARKET_PCT } from './marketOutlier'
 
 /**
  * Reduce processed exchange rows to one USD cash quote per origin, with
@@ -85,12 +72,8 @@ export function buildUsdComparison(rows: UsdRateRow[]): UsdComparisonEntry[] {
   if (picked.length === 0) return []
   const bestSell = Math.min(...picked.map(r => r.sell))
   const bestBuy = Math.max(...picked.map(r => r.buy))
-  // Median, not mean: one badly-parsed board must not drag the reference it is
-  // being judged against. Needs a real market to compare to — with a handful of
-  // quotes the median is meaningless, so nothing is flagged.
-  const medianSell = median(picked.map(r => r.sell))
-  const medianBuy = median(picked.map(r => r.buy))
-  const canFlag = picked.length >= 10
+  // Shared with /pizarra: median-based, and it stands down on a thin market.
+  const isOffMarket = offMarketDetector(picked)
   return picked.map(r => ({
     origin: r.origin,
     buy: r.buy,
@@ -101,10 +84,7 @@ export function buildUsdComparison(rows: UsdRateRow[]): UsdComparisonEntry[] {
     gapBuyPct: ((bestBuy - r.buy) / bestBuy) * 100,
     operation: operationForRate(r.origin, r.type),
     requiresAccount: requiresAccount(r.origin, r.type),
-    offMarket:
-      canFlag &&
-      ((Math.abs(r.sell - medianSell) / medianSell) * 100 > OFF_MARKET_PCT ||
-        (Math.abs(r.buy - medianBuy) / medianBuy) * 100 > OFF_MARKET_PCT),
+    offMarket: isOffMarket(r),
   }))
 }
 

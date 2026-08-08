@@ -1511,7 +1511,8 @@
     "mejorCasa": "Best exchange house",
     "liveDataHint": "Live data",
     "viewFullSitemap": "View the whole site",
-    "chairPrices": "Desk chair prices"
+    "chairPrices": "Desk chair prices",
+    "pizarra": "Live board"
   },
   "sitemapPage": {
     "h1": "Cambio Uruguay sitemap",
@@ -1987,5 +1988,33 @@
       "textPlain": "This page measures consensus. The directory measures price: every chair on sale in Uruguay, re-read every day across Mercado Libre, Uruguayan stores and Marketplace, one row per chair instead of the same chair repeated.",
       "cta": "Open the price directory"
     }
+  },
+  "pizarra": {
+    "h1": "Uruguay dollar board — today",
+    "metaTitle": "Uruguay Dollar Board Today — Live Buy and Sell Rates",
+    "metaDescription": "Live board for the dollar, euro, real and Argentine peso in Uruguay: buy and sell from every exchange house, no signup, no cookies, no waiting.",
+    "keywords": "uruguay dollar board, dollar today uruguay, live exchange rate uruguay, buy sell dollar uruguay",
+    "boardLabel": "Today’s rates",
+    "buy": "Buy",
+    "sell": "Sell",
+    "boardHint": "Buy = what a house pays you for your foreign currency. Sell = what it charges to sell it to you. We show the best price on the market and who offers it.",
+    "amountLabel": "Amount",
+    "calc": "Calculate",
+    "reset": "Back to 1",
+    "allTitle": "Every quote, unfiltered",
+    "allHint": "The whole market exactly as we scrape it: including the BCU reference and the wholesale/interbank quotes, which no individual can transact at, and the ones with conditions attached. Each row says which is which.",
+    "house": "House",
+    "kind": "Type",
+    "kindCash": "Counter",
+    "kindConditional": "Conditional",
+    "kindWholesale": "Wholesale",
+    "kindOfficial": "BCU reference",
+    "unavailable": "No rates available right now.",
+    "disclaimer": "Rates move during the day and can differ from a branch’s own board. Check before you transact.",
+    "moreLabel": "More on Cambio Uruguay",
+    "linkHome": "Full comparator",
+    "linkCasas": "House comparison",
+    "linkHistory": "History",
+    "linkApi": "Free API"
   }
 }

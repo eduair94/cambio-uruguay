@@ -1504,7 +1504,8 @@
     "mejorCasa": "Melhor casa de câmbio",
     "liveDataHint": "Dados ao vivo",
     "viewFullSitemap": "Ver todo o site",
-    "chairPrices": "Preços de cadeiras de escritório"
+    "chairPrices": "Preços de cadeiras de escritório",
+    "pizarra": "Cotação ao vivo"
   },
   "sitemapPage": {
     "h1": "Mapa do site Cambio Uruguay",
@@ -1980,5 +1981,33 @@
       "textPlain": "Esta página mede consenso. O diretório mede preço: todas as cadeiras à venda no Uruguai, relidas todos os dias no Mercado Livre, lojas uruguaias e Marketplace, uma linha por cadeira em vez da mesma cadeira repetida.",
       "cta": "Abrir o diretório de preços"
     }
+  },
+  "pizarra": {
+    "h1": "Cotação do dólar no Uruguai hoje",
+    "metaTitle": "Cotação do Dólar no Uruguai Hoje — Compra e Venda ao Vivo",
+    "metaDescription": "Painel ao vivo do dólar, euro, real e peso argentino no Uruguai: compra e venda de todas as casas de câmbio, sem cadastro, sem cookies e sem espera.",
+    "keywords": "cotacao dolar uruguai, dolar hoje uruguai, cambio ao vivo uruguai, compra venda dolar uruguai",
+    "boardLabel": "Cotações do dia",
+    "buy": "Compra",
+    "sell": "Venda",
+    "boardHint": "Compra = o que pagam pela sua moeda estrangeira. Venda = o que cobram para vendê-la a você. Mostramos o melhor preço do mercado e qual casa o oferece.",
+    "amountLabel": "Quantidade",
+    "calc": "Calcular",
+    "reset": "Voltar a 1",
+    "allTitle": "Todas as cotações, sem filtro",
+    "allHint": "O mercado inteiro como o coletamos: inclui a referência do BCU e as cotações de atacado/interbancárias, que nenhuma pessoa física pode operar, e as que exigem uma condição. Cada linha diz qual é qual.",
+    "house": "Casa",
+    "kind": "Tipo",
+    "kindCash": "Balcão",
+    "kindConditional": "Com condição",
+    "kindWholesale": "Atacado",
+    "kindOfficial": "Referência BCU",
+    "unavailable": "Nenhuma cotação disponível no momento.",
+    "disclaimer": "As cotações mudam durante o dia e podem diferir do painel de cada agência. Verifique antes de operar.",
+    "moreLabel": "Mais no Cambio Uruguay",
+    "linkHome": "Comparador completo",
+    "linkCasas": "Comparativo de casas",
+    "linkHistory": "Histórico",
+    "linkApi": "API gratuita"
   }
 }

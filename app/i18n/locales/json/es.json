@@ -1522,7 +1522,8 @@
     "mejorCasa": "Mejor casa de cambio",
     "liveDataHint": "Datos en vivo",
     "viewFullSitemap": "Ver todo el sitio",
-    "chairPrices": "Precios de sillas de escritorio"
+    "chairPrices": "Precios de sillas de escritorio",
+    "pizarra": "Pizarra"
   },
   "sitemapPage": {
     "h1": "Mapa del sitio de Cambio Uruguay",
@@ -1998,5 +1999,33 @@
       "textPlain": "Esta página mide consenso. El directorio mide precio: todas las sillas a la venta en Uruguay, releídas todos los días en Mercado Libre, tiendas uruguayas y Marketplace, con una fila por silla en lugar de la misma silla repetida.",
       "cta": "Abrir el directorio de precios"
     }
+  },
+  "pizarra": {
+    "h1": "Pizarra del dólar en Uruguay hoy",
+    "metaTitle": "Pizarra del Dólar Hoy en Uruguay — Compra y Venta al Instante",
+    "metaDescription": "Pizarra en vivo del dólar, euro, real y peso argentino en Uruguay: compra y venta de todas las casas de cambio, sin registro, sin cookies y sin esperas.",
+    "keywords": "pizarra dolar uruguay, dolar hoy uruguay, cotizacion dolar en vivo, compra venta dolar, pizarra casas de cambio",
+    "boardLabel": "Cotizaciones del día",
+    "buy": "Compra",
+    "sell": "Venta",
+    "boardHint": "Compra = lo que te pagan por tu moneda extranjera. Venta = lo que te cobran por vendértela. Mostramos el mejor precio del mercado y qué casa lo ofrece.",
+    "amountLabel": "Cantidad",
+    "calc": "Calcular",
+    "reset": "Volver a 1",
+    "allTitle": "Todas las cotizaciones, sin filtrar",
+    "allHint": "Todo el mercado tal cual lo relevamos: incluye la referencia del BCU y las cotizaciones mayoristas e interbancarias, que ninguna persona puede operar, y las que exigen una condición. Cada fila dice cuál es cuál.",
+    "house": "Casa",
+    "kind": "Tipo",
+    "kindCash": "Mostrador",
+    "kindConditional": "Con condición",
+    "kindWholesale": "Mayorista",
+    "kindOfficial": "Referencia BCU",
+    "unavailable": "No hay cotizaciones disponibles en este momento.",
+    "disclaimer": "Las cotizaciones cambian durante el día y pueden diferir de la pizarra de cada sucursal. Verificá antes de operar.",
+    "moreLabel": "Más en Cambio Uruguay",
+    "linkHome": "Comparador completo",
+    "linkCasas": "Comparativa de casas",
+    "linkHistory": "Histórico",
+    "linkApi": "API gratuita"
   }
 }
