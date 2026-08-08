@@ -388,6 +388,16 @@ export default defineNuxtConfig({
       {
         id: 'G-F97PNVRMRF',
         loadingStrategy: 'defer', // Defer loading for better performance
+        // `plugins/gtag-init.client.ts` starts GA on every page EXCEPT the
+        // chrome-free ones (`utils/bareRoutes.ts`): /widget is an iframe inside
+        // somebody else's page and /pizarra promises no third-party request at
+        // all, and auto-init was loading gtag on both.
+        //
+        // `initMode`, NOT `enabled: false` — the latter disables the whole
+        // module (composable included), which silently killed analytics
+        // site-wide. `initCommands` above still applies: initialize() runs them
+        // before the tag id, so the Consent Mode v2 defaults are unchanged.
+        initMode: 'manual',
         // Google Consent Mode v2: deny all storage by default until the user
         // accepts via the cookie banner (useConsent flips these to granted).
         // wait_for_update gives the banner a moment before tags fire.
