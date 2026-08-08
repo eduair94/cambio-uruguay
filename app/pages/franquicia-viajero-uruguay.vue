@@ -157,11 +157,13 @@
           </li>
           <li>
             <strong>Podés entrar como "importador esporádico"</strong> con tu cédula, sin RUT — pero
-            con un tope de <strong>2 DUA por año civil</strong>; pasado eso, tenés que registrarte
-            con RUT ante la DGI como importador. Esta cifra la repiten varios despachantes
-            profesionales con el mismo texto, pero no pudimos verificarla contra un documento
-            primario legible de Aduana (el PDF del procedimiento es un escaneo sin capa de texto) —
-            tratala como orientativa, no como norma citada.
+            con un tope de <strong>2 DUA por año</strong>; pasado eso, tenés que registrarte con RUT
+            ante la DGI como importador. Lo publica la propia Aduana: "las personas físicas podrán
+            realizar únicamente hasta dos Documento Único Aduanero (DUA) por año". Es práctica
+            oficial vigente, no un artículo de ley que hayamos podido identificar.
+            <NuxtLink :to="localePath('/importar-para-revender-uruguay')">
+              Si es para revender, mirá la guía de importación comercial </NuxtLink
+            >.
           </li>
         </ul>
       </VCard>
@@ -309,6 +311,11 @@ const sources = [
   {
     label: 'gub.uy — trámite "Equipaje de viajeros: gestión de la franquicia de equipaje"',
     url: 'https://www.gub.uy/tramites/equipaje-viajeros-gestion-franquicia-equipaje',
+  },
+  {
+    label:
+      'DNA — "Importación Régimen General – DUA Importación": despachante preceptivo y tope de dos DUA por año para personas físicas',
+    url: 'https://www.aduanas.gub.uy/innovaportal/v/28223/1/innova.front/',
   },
 ]
 

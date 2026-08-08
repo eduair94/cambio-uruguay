@@ -128,6 +128,40 @@ export const ADUANA_FAQ_SOURCES: Readonly<Record<string, AduanaFaqSource>> = Obj
     url: 'https://www.impo.com.uy/bases/decretos/50-2026',
     kind: 'norma',
   },
+  'dna-prestacion-unica': {
+    label:
+      'DNA — Régimen tributario con prestación única (60%): personas jurídicas o físicas, pago a través del operador postal (art. 8 Dec. 50/026)',
+    authority: 'Dirección Nacional de Aduanas',
+    url: 'https://www.aduanas.gub.uy/innovaportal/v/28222/1/innova.front/',
+    kind: 'fuente-oficial',
+  },
+  'decreto-220-998': {
+    label:
+      'Decreto 220/998 — reglamentación del IVA: art. 132 (monotributo paga como no contribuyente al importar) y art. 116 lit. c (sin anticipo)',
+    authority: 'IMPO',
+    url: 'https://www.impo.com.uy/bases/decretos/220-1998',
+    kind: 'norma',
+  },
+  'ursec-importacion': {
+    label:
+      'gub.uy / URSEC — certificado para ingresar equipos radioeléctricos: excepción para dispositivos que operen únicamente con Wifi4/5/6 y/o Bluetooth',
+    authority: 'URSEC',
+    url: 'https://www.gub.uy/tramites/certificado-habilitar-ingreso-pais-equipos-radioelectricos-bajo-regimen-importacion-empresa',
+    kind: 'fuente-oficial',
+  },
+  'ursea-productos': {
+    label:
+      'URSEA — Reglamento de Seguridad de Productos Eléctricos de Baja Tensión: alcance y listado de los Anexos II, V y VI que requieren autorización previa',
+    authority: 'URSEA',
+    url: 'https://www.gub.uy/unidad-reguladora-servicios-energia-agua/productos-electricos',
+    kind: 'fuente-oficial',
+  },
+  'gripper-baterias': {
+    label: 'Gripper — no se transportan baterías de litio sueltas, sin el dispositivo',
+    authority: 'Gripper',
+    url: 'https://soporte.gripper.com.uy/articulos/envios-con-restricciones/64/puedo-enviar-baterias',
+    kind: 'operador',
+  },
   tifa: {
     label: 'Ley 18.761, art. 7 — acuerdo TIFA con Estados Unidos',
     authority: 'IMPO',
@@ -1381,6 +1415,10 @@ export const ADUANA_FAQS: readonly AduanaFaq[] = Object.freeze([
     sourceIds: ['decreto-50-026', 'ley-20446-632'],
     basis: 'norma',
     tags: ['reventa', 'negocio', 'inventario', 'comercial', 'emprendimiento'],
+    related: {
+      label: 'Ver cómo se importa legalmente para revender',
+      to: '/importar-para-revender-uruguay',
+    },
   },
   {
     id: 'empresa-rut',
@@ -1467,6 +1505,89 @@ export const ADUANA_FAQS: readonly AduanaFaq[] = Object.freeze([
     sourceIds: ['decreto-50-026', 'dna-regimen-general'],
     basis: 'procedimiento',
     tags: ['sin empresa', 'sin rut', 'persona fisica', 'importar', 'negocio'],
+  },
+  {
+    id: 'prestacion-unica-para-revender',
+    question: '¿Puedo usar el régimen del 60% para traer mercadería que voy a revender?',
+    shortAnswer: 'Sí: la prestación única admite personas jurídicas y no exige uso personal.',
+    answer:
+      'El Decreto 50/026 art. 2 abre la prestación única a "los titulares, sean personas físicas o jurídicas" y no le pone la condición de uso personal; la propia DNA publica que "se pueden amparar personas jurídicas o personas físicas de cualquier edad". La exigencia de uso personal y sin fines comerciales está en los arts. 3 y 4, que regulan la franquicia. Cumpliendo US$ 800 de factura, 20 kg y las exclusiones del art. 7, un envío para revender entra por esta vía sin DUA y sin despachante. Lo que no cambia es la obligación fiscal de vender formalmente.',
+    category: 'importacion-comercial',
+    sourceIds: ['decreto-50-026', 'dna-prestacion-unica', 'dna-franquicia'],
+    basis: 'norma',
+    tags: ['revender', 'reventa', 'ecommerce', '60 por ciento', 'persona juridica', 'emprender'],
+    related: {
+      label: 'Ver la guía completa de importar para revender',
+      to: '/importar-para-revender-uruguay',
+    },
+  },
+  {
+    id: 'donde-se-paga-el-60',
+    question: '¿Dónde y cómo se paga el 60%?',
+    shortAnswer: 'Se lo pagás al operador postal; no hay trámite ante DGI ni ante la Aduana.',
+    answer:
+      'El Decreto 50/026 art. 8 designa a los operadores postales como responsables por el pago de obligaciones tributarias de terceros: el courier o el Correo liquida el 60% (mínimo US$ 20 por envío) sobre el total de la factura original y le paga a la Aduana. Ojo con un detalle que confunde: la página de la DNA llama "monotributo" a ese pago único, y no tiene ninguna relación con el monotributo de DGI/BPS.',
+    category: 'importacion-comercial',
+    sourceIds: ['decreto-50-026', 'dna-prestacion-unica', 'ley-20446-627'],
+    basis: 'norma',
+    tags: ['pagar 60', 'donde se paga', 'operador postal', 'courier cobra', 'monotributo aduana'],
+    related: {
+      label: 'Ver el paso a paso del pago',
+      to: '/importar-para-revender-uruguay',
+    },
+  },
+  {
+    id: 'empresa-antes-de-importar',
+    question: '¿Tengo que abrir la unipersonal antes de importar o después?',
+    shortAnswer: 'Para importar por el 60% no hace falta; para vender de forma habitual sí.',
+    answer:
+      'Aduana no pide RUT para liberar un envío bajo la prestación única: el régimen admite titulares personas físicas o jurídicas. Lo que exige empresa es vender de forma habitual, y eso se resuelve ante DGI y BPS, no ante la Aduana. El segundo motivo aparece al escalar: la DNA publica que una persona física puede realizar hasta dos DUA por año, así que importar seguido por Régimen General se hace con empresa. Si elegís monotributo, tené presente que el Decreto 220/998 art. 132 te hace pagar el IVA de la importación como no contribuyente: queda como costo, no como crédito.',
+    category: 'importacion-comercial',
+    sourceIds: ['decreto-50-026', 'dna-prestacion-unica', 'dna-regimen-general', 'decreto-220-998'],
+    basis: 'norma',
+    tags: ['unipersonal', 'empresa', 'rut', 'monotributo', 'antes de importar', 'formalizar'],
+    related: {
+      label: 'Elegir qué empresa abrir',
+      to: '/que-empresa-abrir-uruguay',
+    },
+  },
+  {
+    id: 'ursec-bluetooth-excepcion',
+    question: '¿Unos auriculares Bluetooth necesitan homologación de URSEC?',
+    shortAnswer: 'No: URSEC exceptúa a los dispositivos que sólo usan Wi-Fi 4/5/6 y/o Bluetooth.',
+    answer:
+      'URSEC interviene sobre el equipamiento emisor de radiofrecuencia, pero su propio trámite publica la excepción: "no es necesaria la intervención de URSEC para el ingreso al país de dispositivos que operen únicamente con las tecnologías Wifi4, Wifi5 y Wifi6 y/o Bluetooth". Un celular no queda amparado, porque además usa redes móviles: URSEC lista expresamente las terminales de telecomunicaciones móviles. Si el equipo suma otra tecnología, la excepción no lo cubre.',
+    category: 'productos-permisos',
+    sourceIds: ['ursec-importacion'],
+    basis: 'procedimiento',
+    tags: ['ursec', 'bluetooth', 'wifi', 'auriculares', 'homologacion', 'radiofrecuencia'],
+  },
+  {
+    id: 'ursea-cargadores-adaptadores',
+    question: '¿Un cargador de celular necesita autorización de URSEA?',
+    shortAnswer:
+      'No hay autorización previa para cargadores; los adaptadores de enchufe y zapatillas sí la requieren.',
+    answer:
+      'El Reglamento de Seguridad de Productos Eléctricos de Baja Tensión alcanza a los productos por encima de 50 V en corriente alterna, así que un cargador de pared queda dentro de su ámbito y URSEA puede exigirle al importador que demuestre el cumplimiento. Pero la lista de productos que necesitan autorización antes de comercializar (Anexos II, V y VI) es cerrada y no incluye cargadores ni fuentes de alimentación: sí incluye adaptadores, prolongadores, fichas y tomacorrientes, cables de instalación y otros. Guardá igual la ficha técnica y el certificado del fabricante.',
+    category: 'productos-permisos',
+    sourceIds: ['ursea-productos'],
+    basis: 'procedimiento',
+    tags: ['ursea', 'cargador', 'adaptador', 'zapatilla', 'productos electricos', 'baja tension'],
+  },
+  {
+    id: 'power-bank-courier-comercial',
+    question: '¿Puedo importar power banks por courier para revender?',
+    shortAnswer: 'En la práctica no: los operadores no transportan baterías de litio sueltas.',
+    answer:
+      'No es un permiso que se saque, es una restricción de transporte. Un power bank es una batería de litio sin dispositivo asociado, y los operadores postales publican que no las transportan. Aunque el envío cumpla US$ 800 y 20 kg, la vía puerta a puerta se cae: quedan la carga con documentación de mercancía peligrosa (DUA y despachante) o comprar a un importador local. Confirmá la política de tu operador antes de pagarle al proveedor.',
+    category: 'productos-permisos',
+    sourceIds: ['gripper-baterias', 'dna-productos', 'decreto-50-026'],
+    basis: 'procedimiento',
+    tags: ['power bank', 'bateria litio', 'courier', 'revender', 'transporte', 'iata'],
+    related: {
+      label: 'Ver los trámites por tipo de accesorio',
+      to: '/importar-para-revender-uruguay',
+    },
   },
   {
     id: 'muestras-equipamiento-negocio',

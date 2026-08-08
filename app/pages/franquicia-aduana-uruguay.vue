@@ -432,6 +432,25 @@
         </div>
       </VCard>
 
+      <VAlert
+        type="success"
+        variant="tonal"
+        density="comfortable"
+        class="mt-4"
+        icon="mdi-format-list-checks"
+      >
+        <strong>Ya hay lista.</strong> La Aduana publica las empresas registradas: Xipron Inc
+        (Tiendamía), United States Xpress Inc, Grinbox Corp, Netbox Corp, Miami box latinoamérica
+        LLC y Eshop Miami INC. Si el emisor de tu factura no está entre ellas, desde el 1/10/2026 el
+        envío paga IVA.
+        <a
+          href="https://www.aduanas.gub.uy/innovaportal/v/28221/1/innova.front/"
+          target="_blank"
+          rel="noopener noreferrer"
+          >Ver la lista en la DNA</a
+        >.
+      </VAlert>
+
       <VAlert type="info" variant="tonal" density="comfortable" class="mt-4" icon="mdi-history">
         <strong>Puede volver a moverse.</strong> Esta fecha ya se corrió dos veces (primero al
         1/7/2026, después al 1/10/2026), y la propia resolución que la corrió admite que "resta aún
