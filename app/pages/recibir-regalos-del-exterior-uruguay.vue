@@ -259,7 +259,15 @@
             />
           </div>
         </div>
-        <pre class="instructions-text">{{ senderInstructions }}</pre>
+        <!-- En escritorio el bloque scrollea: una región scrolleable tiene que ser
+             alcanzable por teclado (WCAG 2.1.1). -->
+        <pre
+          class="instructions-text"
+          tabindex="0"
+          role="region"
+          aria-label="Instrucciones para quien despacha el regalo"
+          >{{ senderInstructions }}</pre
+        >
       </VCard>
     </section>
 
