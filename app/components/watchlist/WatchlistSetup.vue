@@ -231,17 +231,13 @@
 <script setup lang="ts">
 import { DEBIT_CARDS, KIND_LABELS, type CardKind } from '~/utils/debitCards'
 import { dedupeDepartmentNames } from '~/utils/departments'
-import { localitiesForDepartment, localityCenter, type WatchBranch } from '~/utils/watchlistBoard'
+import {
+  localitiesForDepartment,
+  localityCenter,
+  type OriginOption,
+  type WatchBranch,
+} from '~/utils/watchlistBoard'
 import { useWatchlistStore } from '~/stores/watchlist'
-
-/** One selectable house, already resolved against the user's zone by the page. */
-export interface OriginOption {
-  origin: string
-  name: string
-  /** Reachable from anywhere in the country (app / transfer), so distance is moot. */
-  national: boolean
-  distanceKm: number | null
-}
 
 const props = defineProps<{
   branches: WatchBranch[]

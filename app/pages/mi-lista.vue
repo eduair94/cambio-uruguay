@@ -195,7 +195,6 @@
 </template>
 
 <script setup lang="ts">
-import type { OriginOption } from '~/components/watchlist/WatchlistSetup.vue'
 import { useWatchlistStore } from '~/stores/watchlist'
 import { useAuthStore } from '~/stores/auth'
 import { decodeWatchlist, encodeWatchlist, type Watchlist } from '~/utils/watchlist'
@@ -204,6 +203,7 @@ import {
   buildWatchlistBoard,
   rankCardCosts,
   type BoardRow,
+  type OriginOption,
   type WatchBranch,
   type WatchRateRow,
 } from '~/utils/watchlistBoard'
@@ -215,7 +215,7 @@ const localePath = useLocalePath()
 const { locale } = useI18n()
 const { authFetch } = useAuthFetch()
 const { getAllLocations, getProcessedExchangeData } = useApiService()
-const { track } = useTrack()
+const track = useTrack()
 
 const editing = ref(false)
 const copied = ref(false)

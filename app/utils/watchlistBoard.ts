@@ -53,6 +53,15 @@ export interface LocalityOption {
   count: number
 }
 
+/** One selectable house in the picker, already resolved against the user's zone. */
+export interface OriginOption {
+  origin: string
+  name: string
+  /** Reachable from anywhere in the country (app / transfer), so distance is moot. */
+  national: boolean
+  distanceKm: number | null
+}
+
 /** One quote on the user's board. */
 export interface BoardRow {
   /** Stable identity of the quote: origin + type + currency. */
