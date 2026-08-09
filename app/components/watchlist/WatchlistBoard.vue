@@ -42,9 +42,10 @@
             <td data-label="Precio" class="wl-num wl-price">{{ formatRate(row.price) }}</td>
             <td data-label="Desde tu última visita" class="wl-num">
               <span v-if="row.deltaPct == null" class="wl-muted">—</span>
+              <span v-else-if="unchanged(row.deltaPct)" class="wl-muted">sin cambios</span>
               <span v-else :class="driftClass(row.deltaPct)">
                 <VIcon size="14">{{ driftIcon(row.deltaPct) }}</VIcon>
-                {{ row.deltaPct >= 0 ? '+' : '' }}{{ row.deltaPct.toFixed(2) }}%
+                {{ row.deltaPct > 0 ? '+' : '' }}{{ row.deltaPct.toFixed(2) }}%
               </span>
             </td>
             <td data-label="Dónde">
@@ -163,18 +164,21 @@ function formatKm(km: number): string {
   return km < 1 ? `a ${Math.round(km * 1000)} m` : `a ${km.toFixed(km < 10 ? 1 : 0)} km`
 }
 
+/** Below this the price did not really move; "+0,00 %" is noise, not information. */
+function unchanged(pct: number): boolean {
+  return Math.abs(pct) < 0.01
+}
+
 /**
  * A move is good or bad depending on the side you are on: a lower selling price
  * is good news when you are buying currency, and the opposite when selling.
  */
 function driftClass(pct: number): string {
-  if (Math.abs(pct) < 0.01) return 'wl-drift wl-muted'
   const favourable = props.direction === 'sell' ? pct < 0 : pct > 0
   return favourable ? 'wl-drift wl-drift-good' : 'wl-drift wl-drift-bad'
 }
 
 function driftIcon(pct: number): string {
-  if (Math.abs(pct) < 0.01) return 'mdi-minus'
   return pct > 0 ? 'mdi-arrow-top-right' : 'mdi-arrow-bottom-right'
 }
 </script>
