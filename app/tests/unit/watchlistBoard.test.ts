@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   applyDrift,
-  buildBoard,
+  buildWatchlistBoard,
   localitiesForDepartment,
   localityCenter,
   rankCardCosts,
@@ -100,14 +100,14 @@ describe('zoneCenter', () => {
   })
 })
 
-describe('buildBoard reach', () => {
+describe('buildWatchlistBoard reach', () => {
   // Rivera is ~500 km from Montevideo: nothing in the capital is "near" it.
   const RIVERA = { lat: -30.9, lng: -55.55 }
 
   it('keeps an online quote for a user in the interior even with no branch nearby', () => {
     // The whole point of the feature: Prex/eBROU/transfer prices are national.
     // Filtering them by distance would hide exactly what serves the interior.
-    const rows = buildBoard({
+    const rows = buildWatchlistBoard({
       branches: [branch({ origin: 'gales' })],
       rates: [rate({ origin: 'prex' }), rate({ origin: 'brou', type: 'EBROU' })],
       watchlist: list({
@@ -120,7 +120,7 @@ describe('buildBoard reach', () => {
   })
 
   it('drops a counter quote whose nearest branch is outside the radius', () => {
-    const rows = buildBoard({
+    const rows = buildWatchlistBoard({
       branches: [branch({ origin: 'gales' })],
       rates: [rate({ origin: 'gales' })],
       watchlist: list({
@@ -131,7 +131,7 @@ describe('buildBoard reach', () => {
   })
 
   it('keeps a counter quote inside the radius and measures its nearest branch', () => {
-    const rows = buildBoard({
+    const rows = buildWatchlistBoard({
       branches: [
         branch({ origin: 'gales', lat: -34.95, lng: -56.2 }),
         branch({ origin: 'gales', lat: -34.9015, lng: -56.165 }), // a few hundred metres away
@@ -145,7 +145,7 @@ describe('buildBoard reach', () => {
   })
 
   it('in department mode keeps the houses with a branch in that department, accents aside', () => {
-    const rows = buildBoard({
+    const rows = buildWatchlistBoard({
       branches: [
         branch({ origin: 'gales', dept: 'PAYSANDÚ' }),
         branch({ origin: 'cambilex', dept: 'MONTEVIDEO' }),
@@ -157,7 +157,7 @@ describe('buildBoard reach', () => {
   })
 
   it('falls back to the published department list for a house with no mapped branches', () => {
-    const rows = buildBoard({
+    const rows = buildWatchlistBoard({
       branches: [],
       rates: [rate({ origin: 'cambio_minas' })],
       watchlist: list({ zone: { mode: 'department', department: 'LAVALLEJA' } }),
@@ -167,7 +167,7 @@ describe('buildBoard reach', () => {
   })
 
   it('shows every reachable house when no zone is set yet', () => {
-    const rows = buildBoard({
+    const rows = buildWatchlistBoard({
       branches: [],
       rates: [rate({ origin: 'gales' }), rate({ origin: 'prex' })],
       watchlist: list(),
@@ -176,9 +176,9 @@ describe('buildBoard reach', () => {
   })
 })
 
-describe('buildBoard selection', () => {
+describe('buildWatchlistBoard selection', () => {
   it('honours the followed origins and ignores the rest', () => {
-    const rows = buildBoard({
+    const rows = buildWatchlistBoard({
       branches: [],
       rates: [rate({ origin: 'gales' }), rate({ origin: 'cambilex' })],
       watchlist: list({ origins: ['cambilex'] }),
@@ -187,7 +187,7 @@ describe('buildBoard selection', () => {
   })
 
   it('keeps only the followed currencies', () => {
-    const rows = buildBoard({
+    const rows = buildWatchlistBoard({
       branches: [],
       rates: [rate({ origin: 'gales' }), rate({ origin: 'gales', code: 'BRL', sell: 8 })],
       watchlist: list({ currencies: ['BRL'] }),
@@ -196,7 +196,7 @@ describe('buildBoard selection', () => {
   })
 
   it('drops the BCU reference and the interbank quotes nobody can transact at', () => {
-    const rows = buildBoard({
+    const rows = buildWatchlistBoard({
       branches: [],
       rates: [
         rate({ origin: 'bcu' }),
@@ -209,7 +209,7 @@ describe('buildBoard selection', () => {
   })
 
   it('drops a quote with no usable price in the chosen direction', () => {
-    const rows = buildBoard({
+    const rows = buildWatchlistBoard({
       branches: [],
       rates: [rate({ origin: 'gales', sell: 0 }), rate({ origin: 'cambilex', sell: 41 })],
       watchlist: list({ direction: 'sell' }),
@@ -218,7 +218,7 @@ describe('buildBoard selection', () => {
   })
 
   it('marks the cheapest sell as best when the user is buying foreign currency', () => {
-    const rows = buildBoard({
+    const rows = buildWatchlistBoard({
       branches: [],
       rates: [rate({ origin: 'caro', sell: 42 }), rate({ origin: 'barato', sell: 40.5 })],
       watchlist: list({ direction: 'sell' }),
@@ -229,7 +229,7 @@ describe('buildBoard selection', () => {
   })
 
   it('marks the highest buy as best when the user is selling foreign currency', () => {
-    const rows = buildBoard({
+    const rows = buildWatchlistBoard({
       branches: [],
       rates: [rate({ origin: 'poco', buy: 38 }), rate({ origin: 'mucho', buy: 39.5 })],
       watchlist: list({ direction: 'buy' }),
@@ -239,7 +239,7 @@ describe('buildBoard selection', () => {
   })
 
   it('marks one best per currency, not one for the whole board', () => {
-    const rows = buildBoard({
+    const rows = buildWatchlistBoard({
       branches: [],
       rates: [
         rate({ origin: 'a', code: 'USD', sell: 41 }),
@@ -251,7 +251,7 @@ describe('buildBoard selection', () => {
   })
 
   it('keeps the operation and account-required flags so a transfer is never sold as cash', () => {
-    const rows = buildBoard({
+    const rows = buildWatchlistBoard({
       branches: [],
       rates: [rate({ origin: 'itau', type: 'TRANSFERENCIA' })],
       watchlist: list(),
@@ -262,7 +262,7 @@ describe('buildBoard selection', () => {
 })
 
 describe('drift since the last visit', () => {
-  const rows = buildBoard({
+  const rows = buildWatchlistBoard({
     branches: [],
     rates: [rate({ origin: 'gales', sell: 41 })],
     watchlist: list({ direction: 'sell' }),
@@ -282,7 +282,7 @@ describe('drift since the last visit', () => {
 
   it('snapshots by origin, type and currency so two quotes of one house never collide', () => {
     const snap = takeSnapshot(
-      buildBoard({
+      buildWatchlistBoard({
         branches: [],
         rates: [
           rate({ origin: 'brou', type: '', sell: 41 }),

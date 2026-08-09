@@ -21,7 +21,12 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="row in group.rows" :key="row.key" :class="{ 'wl-row-best': row.best }">
+          <tr
+            v-for="row in group.rows"
+            :key="row.key"
+            :class="{ 'wl-row-best': row.best }"
+            data-testid="wl-board-row"
+          >
             <td data-label="Casa">
               <div class="wl-casa">
                 <span class="wl-casa-name">{{ nameFor(row.origin) }}</span>

@@ -191,7 +191,7 @@ function nearestBranch(
  * Build the board: today's quotes the user can actually take, in their zone,
  * limited to what they follow, sorted best-first per currency.
  */
-export function buildBoard(input: BoardInput): BoardRow[] {
+export function buildWatchlistBoard(input: BoardInput): BoardRow[] {
   const { branches, rates, watchlist } = input
   const followed = new Set(watchlist.origins)
   const currencies = new Set(watchlist.currencies)

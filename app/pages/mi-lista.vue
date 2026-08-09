@@ -33,7 +33,7 @@
 
     <!-- Configured: the board leads -->
     <template v-if="store.configured">
-      <section class="wl-summary" aria-label="Tu configuración">
+      <section class="wl-summary" aria-label="Tu configuración" data-testid="wl-summary">
         <div class="wl-summary-chips">
           <VChip size="small" variant="tonal" color="primary" label>
             <VIcon start size="14">{{ zoneIcon }}</VIcon
@@ -201,7 +201,7 @@ import { useAuthStore } from '~/stores/auth'
 import { decodeWatchlist, encodeWatchlist, type Watchlist } from '~/utils/watchlist'
 import {
   applyDrift,
-  buildBoard,
+  buildWatchlistBoard,
   rankCardCosts,
   type BoardRow,
   type WatchBranch,
@@ -260,7 +260,7 @@ const availableCurrencies = computed(() => {
 /** The board as configured — what the user came for. */
 const boardRows = computed<BoardRow[]>(() =>
   applyDrift(
-    buildBoard({
+    buildWatchlistBoard({
       branches: branches.value,
       rates: rates.value,
       watchlist: store.list,
@@ -275,7 +275,7 @@ const boardRows = computed<BoardRow[]>(() =>
  * picker has to offer houses the user has not chosen yet.
  */
 const originOptions = computed<OriginOption[]>(() => {
-  const rows = buildBoard({
+  const rows = buildWatchlistBoard({
     branches: branches.value,
     rates: rates.value,
     watchlist: { ...store.list, origins: [] },

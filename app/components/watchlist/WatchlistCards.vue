@@ -19,7 +19,12 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(item, i) in ranked" :key="item.card.id" :class="{ 'wl-row-best': i === 0 }">
+        <tr
+          v-for="(item, i) in ranked"
+          :key="item.card.id"
+          :class="{ 'wl-row-best': i === 0 }"
+          data-testid="wl-card-row"
+        >
           <td data-label="Tarjeta">
             <div class="wl-card-cell">
               <span class="wl-card-name">{{ item.card.name }}</span>

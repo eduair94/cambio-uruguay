@@ -53,6 +53,7 @@
             variant="outlined"
             hide-details
             clearable
+            data-testid="wl-dept-select"
           />
           <VSelect
             v-model="locality"
@@ -64,7 +65,13 @@
             hide-details
             clearable
           />
-          <VBtn :disabled="!dept" variant="tonal" color="primary" @click="applyAdminZone">
+          <VBtn
+            :disabled="!dept"
+            variant="tonal"
+            color="primary"
+            data-testid="wl-apply-zone"
+            @click="applyAdminZone"
+          >
             Usar esta zona
           </VBtn>
         </div>
@@ -156,6 +163,7 @@
               :variant="store.list.cards.includes(card.id) ? 'flat' : 'outlined'"
               size="small"
               :aria-pressed="store.list.cards.includes(card.id)"
+              data-testid="wl-card-chip"
               @click="store.toggleCard(card.id)"
             >
               <VIcon v-if="store.list.cards.includes(card.id)" start size="14">mdi-check</VIcon>
