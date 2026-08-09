@@ -128,11 +128,24 @@ export function localitiesForDepartment(
     .sort((a, b) => b.count - a.count || a.locality.localeCompare(b.locality, 'es'))
 }
 
+function median(values: readonly number[]): number {
+  const sorted = [...values].sort((a, b) => a - b)
+  const mid = sorted.length >> 1
+  return sorted.length % 2 ? sorted[mid]! : (sorted[mid - 1]! + sorted[mid]!) / 2
+}
+
+/**
+ * Middle of a set of branches, per-axis MEDIAN rather than mean.
+ *
+ * The published branch data contains rows with the signs flipped (one OCA
+ * branch labelled MONTEVIDEO sits at +34.88/+56.08, i.e. in China). A single
+ * such row pulls the mean of Montevideo's 244 branches ~45 km east, which then
+ * ranks every "nearby" house against a point in the middle of Canelones. The
+ * median ignores it without us having to decide which coordinates are "valid".
+ */
 function centroid(points: readonly LatLng[]): LatLng | null {
   if (!points.length) return null
-  const lat = points.reduce((s, p) => s + p.lat, 0) / points.length
-  const lng = points.reduce((s, p) => s + p.lng, 0) / points.length
-  return { lat, lng }
+  return { lat: median(points.map(p => p.lat)), lng: median(points.map(p => p.lng)) }
 }
 
 /**
@@ -229,16 +242,19 @@ export function buildWatchlistBoard(input: BoardInput): BoardRow[] {
     let branch: WatchBranch | null = null
     if (channel === 'presencial' && zone) {
       if (zone.mode === 'department') {
-        const hasBranchHere = branchesOf(branches, r.origin).some(b =>
+        // Only the branches inside the zone count: someone who picked SALTO is
+        // asking where to go IN SALTO, so a closer branch across the border is
+        // the wrong answer to show them.
+        const here = branchesOf(branches, r.origin).filter(b =>
           sameDepartment(b.dept ?? '', zone.department ?? '')
         )
         const publishesHere = departmentsInclude(
           input.departmentsByOrigin?.[r.origin],
           zone.department ?? ''
         )
-        if (!hasBranchHere && !publishesHere) continue
-        if (center) {
-          const near = nearestBranch(branches, r.origin, center)
+        if (!here.length && !publishesHere) continue
+        if (center && here.length) {
+          const near = nearestBranch(here, r.origin, center)
           if (near) {
             distanceKm = near.distanceKm
             branch = near.branch
@@ -283,9 +299,11 @@ export function buildWatchlistBoard(input: BoardInput): BoardRow[] {
     if (winner) winner.best = true
   }
 
+  // USD leads, as everywhere else on the site; the rest alphabetically.
+  const codeRank = (code: string) => (code === 'USD' ? '' : code)
   return rows.sort(
     (a, b) =>
-      a.code.localeCompare(b.code) ||
+      codeRank(a.code).localeCompare(codeRank(b.code)) ||
       (direction === 'buy' ? b.price - a.price : a.price - b.price) ||
       (a.distanceKm ?? Infinity) - (b.distanceKm ?? Infinity)
   )

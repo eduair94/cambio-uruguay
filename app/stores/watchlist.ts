@@ -68,7 +68,11 @@ export const useWatchlistStore = defineStore('watchlist', () => {
   }
 
   function persistLocal() {
-    if (!import.meta.client) return
+    // Never write before the stored list has been read. Vuetify controls emit
+    // `update:model-value` while they mount — which is BEFORE the page's
+    // `onMounted` calls `loadLocal()` — so an unguarded write saved the empty
+    // defaults over the user's real list on every visit.
+    if (!import.meta.client || !localLoaded) return
     try {
       window.localStorage.setItem(WATCHLIST_STORAGE_KEY, JSON.stringify(list.value))
     } catch {
@@ -107,6 +111,10 @@ export const useWatchlistStore = defineStore('watchlist', () => {
 
   function setOrigins(origins: string[]) {
     list.value = sanitizeWatchlist({ ...list.value, origins })
+  }
+
+  function setCards(cards: string[]) {
+    list.value = sanitizeWatchlist({ ...list.value, cards })
   }
 
   function toggleCard(id: string) {
@@ -195,6 +203,7 @@ export const useWatchlistStore = defineStore('watchlist', () => {
     setZone,
     toggleOrigin,
     setOrigins,
+    setCards,
     toggleCard,
     setCurrencies,
     setDirection,

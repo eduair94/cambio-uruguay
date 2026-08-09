@@ -22,7 +22,7 @@
         </thead>
         <tbody>
           <tr
-            v-for="row in group.rows"
+            v-for="row in visibleRows(group)"
             :key="row.key"
             :class="{ 'wl-row-best': row.best }"
             data-testid="wl-board-row"
@@ -72,6 +72,22 @@
           </tr>
         </tbody>
       </table>
+
+      <div v-if="group.rows.length > PREVIEW_ROWS" class="wl-more">
+        <VBtn
+          size="small"
+          variant="text"
+          color="primary"
+          :prepend-icon="expanded.has(group.code) ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+          @click="toggleGroup(group.code)"
+        >
+          {{
+            expanded.has(group.code)
+              ? 'Mostrar solo las primeras'
+              : `Ver las otras ${group.rows.length - PREVIEW_ROWS}`
+          }}
+        </VBtn>
+      </div>
     </div>
   </div>
 </template>
@@ -112,6 +128,25 @@ const groups = computed(() => {
   }
   return [...byCode.entries()].map(([code, rows]) => ({ code, rows }))
 })
+
+/**
+ * How many quotes a currency shows before asking. The board sorts best-first,
+ * so the top of the list is the answer; the rest is there when someone wants to
+ * check it. Without this a Montevideo list runs 60 rows — on a phone, where
+ * every row becomes a card, that is a page nobody scrolls to the end of.
+ */
+const PREVIEW_ROWS = 8
+
+const expanded = reactive(new Set<string>())
+
+function toggleGroup(code: string) {
+  if (expanded.has(code)) expanded.delete(code)
+  else expanded.add(code)
+}
+
+function visibleRows(group: { code: string; rows: BoardRow[] }): BoardRow[] {
+  return expanded.has(group.code) ? group.rows : group.rows.slice(0, PREVIEW_ROWS)
+}
 
 function nameFor(origin: string): string {
   return props.names[origin] || origin
@@ -268,6 +303,10 @@ function driftIcon(pct: number): string {
 .wl-actions {
   text-align: right;
   white-space: nowrap;
+}
+
+.wl-more {
+  margin-top: 8px;
 }
 
 .sr-only {

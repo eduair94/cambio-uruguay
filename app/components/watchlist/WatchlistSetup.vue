@@ -119,7 +119,8 @@
               density="compact"
               hide-details
               color="primary"
-              @update:model-value="store.toggleOrigin(o.origin)"
+              data-testid="wl-origin-check"
+              @update:model-value="v => setOriginFollowed(o.origin, v === true)"
             />
             <span class="wl-origin-meta">
               <VChip v-if="o.national" size="x-small" variant="tonal" color="info" label>
@@ -154,22 +155,29 @@
 
       <div class="wl-step-body">
         <div v-for="group in cardGroups" :key="group.kind" class="wl-card-group">
-          <p class="wl-group-label">{{ group.label }}</p>
-          <div class="wl-chips">
+          <p :id="`wl-cards-${group.kind}`" class="wl-group-label">{{ group.label }}</p>
+          <!-- VChipGroup, not bare chips with @click: a standalone VChip does not
+               emit the click through in Vuetify 4, so the selection never moved. -->
+          <VChipGroup
+            :model-value="selectionFor(group.kind)"
+            multiple
+            column
+            selected-class="wl-chip-on"
+            :aria-labelledby="`wl-cards-${group.kind}`"
+            @update:model-value="v => applyGroupSelection(group.kind, v as string[])"
+          >
             <VChip
               v-for="card in group.cards"
               :key="card.id"
-              :color="store.list.cards.includes(card.id) ? 'primary' : undefined"
-              :variant="store.list.cards.includes(card.id) ? 'flat' : 'outlined'"
+              :value="card.id"
               size="small"
-              :aria-pressed="store.list.cards.includes(card.id)"
+              variant="outlined"
+              filter
               data-testid="wl-card-chip"
-              @click="store.toggleCard(card.id)"
             >
-              <VIcon v-if="store.list.cards.includes(card.id)" start size="14">mdi-check</VIcon>
               {{ card.name }}
             </VChip>
-          </div>
+          </VChipGroup>
         </div>
       </div>
     </section>
@@ -303,6 +311,32 @@ const cardGroups = computed(() =>
 watch(dept, () => {
   locality.value = null
 })
+
+/**
+ * Follow or unfollow one house. Driven by the checkbox's own next value rather
+ * than by "something changed": a control that re-emits on mount would otherwise
+ * silently flip the selection.
+ */
+function setOriginFollowed(origin: string, followed: boolean) {
+  const isFollowed = store.list.origins.includes(origin)
+  if (followed !== isFollowed) store.toggleOrigin(origin)
+}
+
+/** The ids of one card group that are currently followed. */
+function selectionFor(kind: CardKind): string[] {
+  const ids = new Set(DEBIT_CARDS.filter(c => c.kind === kind).map(c => c.id))
+  return store.list.cards.filter(id => ids.has(id))
+}
+
+/**
+ * Replace the selection of one group while leaving the other groups alone —
+ * each VChipGroup only knows about its own chips.
+ */
+function applyGroupSelection(kind: CardKind, selected: string[]) {
+  const ids = new Set(DEBIT_CARDS.filter(c => c.kind === kind).map(c => c.id))
+  const others = store.list.cards.filter(id => !ids.has(id))
+  store.setCards([...others, ...selected])
+}
 
 function formatKm(km: number): string {
   return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(km < 10 ? 1 : 0)} km`
@@ -514,10 +548,11 @@ function applyAdminZone() {
   color: rgba(var(--v-theme-on-surface), 0.72);
 }
 
-.wl-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+/* The selected card reads as filled, not merely tinted. */
+.wl-setup :deep(.wl-chip-on) {
+  background: rgb(var(--v-theme-primary));
+  color: rgb(var(--v-theme-on-primary));
+  border-color: rgb(var(--v-theme-primary));
 }
 
 .wl-prefs {

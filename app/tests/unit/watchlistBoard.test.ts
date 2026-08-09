@@ -64,7 +64,7 @@ describe('localitiesForDepartment', () => {
 })
 
 describe('localityCenter', () => {
-  it('averages the real branches of that locality instead of inventing a coordinate', () => {
+  it('uses the real branches of that locality instead of inventing a coordinate', () => {
     const branches = [
       branch({ origin: 'a', dept: 'SALTO', locality: 'SALTO', lat: -31.4, lng: -57.9 }),
       branch({ origin: 'b', dept: 'SALTO', locality: 'SALTO', lat: -31.2, lng: -58.1 }),
@@ -73,6 +73,19 @@ describe('localityCenter', () => {
     const center = localityCenter(branches, 'SALTO', 'SALTO')!
     expect(center.lat).toBeCloseTo(-31.3, 5)
     expect(center.lng).toBeCloseTo(-58.0, 5)
+  })
+
+  it('ignores a branch whose coordinates are plainly wrong', () => {
+    // A real row in `/api/locations` carries Montevideo with the signs flipped,
+    // which lands it in China and drags an average 45 km off the city.
+    const branches = [
+      branch({ origin: 'a', dept: 'MONTEVIDEO', locality: 'MONTEVIDEO', lat: -34.9, lng: -56.17 }),
+      branch({ origin: 'b', dept: 'MONTEVIDEO', locality: 'MONTEVIDEO', lat: -34.89, lng: -56.16 }),
+      branch({ origin: 'c', dept: 'MONTEVIDEO', locality: 'MONTEVIDEO', lat: 34.88, lng: 56.08 }),
+    ]
+    const center = localityCenter(branches, 'MONTEVIDEO', 'MONTEVIDEO')!
+    expect(center.lat).toBeLessThan(-34)
+    expect(center.lng).toBeLessThan(-56)
   })
 
   it('is null when that locality has no branches', () => {
@@ -156,6 +169,22 @@ describe('buildWatchlistBoard reach', () => {
     expect(rows.map(r => r.origin)).toEqual(['gales'])
   })
 
+  it('in department mode measures the nearest branch inside that department', () => {
+    const rows = buildWatchlistBoard({
+      branches: [
+        // Same house: two branches in the zone, and one in another department
+        // sitting exactly on the zone centre. The reader is asking "where do I
+        // go in MY department", so the out-of-zone branch must not win.
+        branch({ origin: 'gales', dept: 'SALTO', locality: 'SALTO', lat: -31.4, lng: -57.96 }),
+        branch({ origin: 'gales', dept: 'SALTO', locality: 'SALTO', lat: -31.44, lng: -57.96 }),
+        branch({ origin: 'gales', dept: 'CANELONES', locality: 'PANDO', lat: -31.42, lng: -57.96 }),
+      ],
+      rates: [rate({ origin: 'gales' })],
+      watchlist: list({ zone: { mode: 'department', department: 'SALTO' } }),
+    })
+    expect(rows[0]!.branch?.locality).toBe('SALTO')
+  })
+
   it('falls back to the published department list for a house with no mapped branches', () => {
     const rows = buildWatchlistBoard({
       branches: [],
@@ -236,6 +265,19 @@ describe('buildWatchlistBoard selection', () => {
     })
     expect(rows[0]!.origin).toBe('mucho')
     expect(rows[0]!.best).toBe(true)
+  })
+
+  it('puts the dollar first, the way the rest of the site orders currencies', () => {
+    const rows = buildWatchlistBoard({
+      branches: [],
+      rates: [
+        rate({ origin: 'a', code: 'BRL', sell: 8 }),
+        rate({ origin: 'b', code: 'USD', sell: 41 }),
+        rate({ origin: 'c', code: 'ARS', sell: 0.04 }),
+      ],
+      watchlist: list({ currencies: ['USD', 'BRL', 'ARS'] }),
+    })
+    expect(rows.map(r => r.code)).toEqual(['USD', 'ARS', 'BRL'])
   })
 
   it('marks one best per currency, not one for the whole board', () => {
