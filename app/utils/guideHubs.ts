@@ -131,6 +131,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/franquicia-aduana-uruguay',
       },
       {
+        label: 'Recibir regalos del exterior',
+        description: 'Obsequios sin pagar IVA y la carta adentro del paquete.',
+        to: '/recibir-regalos-del-exterior-uruguay',
+      },
+      {
         label: 'Franquicia del viajero',
         description: 'Qué traer del exterior sin impuestos.',
         to: '/franquicia-viajero-uruguay',
