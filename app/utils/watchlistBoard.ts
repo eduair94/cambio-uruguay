@@ -168,7 +168,9 @@ export function zoneCenter(
 // ─────────────────────────────────────────────────────────────────────────────
 
 function branchesOf(branches: readonly WatchBranch[], origin: string): WatchBranch[] {
-  return branches.filter(b => b.origin === origin && Number.isFinite(b.lat) && Number.isFinite(b.lng))
+  return branches.filter(
+    b => b.origin === origin && Number.isFinite(b.lat) && Number.isFinite(b.lng)
+  )
 }
 
 /** Nearest branch of an origin to a point, or null when it has none mapped. */

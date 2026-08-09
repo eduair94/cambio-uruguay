@@ -161,7 +161,7 @@ describe('encodeWatchlist / decodeWatchlist', () => {
 
   it('produces a URL-safe token', () => {
     const token = encodeWatchlist(list({ origins: ['gales'] }))
-    expect(token).toMatch(/^[A-Za-z0-9_-]+$/)
+    expect(token).toMatch(/^[\w-]+$/)
   })
 
   it('returns null instead of throwing on junk', () => {

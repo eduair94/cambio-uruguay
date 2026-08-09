@@ -167,9 +167,12 @@ export function sanitizeWatchlist(raw: unknown): Watchlist {
     origins: idList(o.origins, MAX_ORIGINS),
     cards: idList(o.cards, MAX_CARDS),
     currencies: uniqueCurrencies.length ? uniqueCurrencies : [...DEFAULT_WATCHLIST.currencies],
-    direction: o.direction === 'buy' || o.direction === 'sell' ? o.direction : DEFAULT_WATCHLIST.direction,
+    direction:
+      o.direction === 'buy' || o.direction === 'sell' ? o.direction : DEFAULT_WATCHLIST.direction,
     amountUsd:
-      amount === null || amount <= 0 ? DEFAULT_WATCHLIST.amountUsd : clamp(amount, 1, MAX_AMOUNT_USD),
+      amount === null || amount <= 0
+        ? DEFAULT_WATCHLIST.amountUsd
+        : clamp(amount, 1, MAX_AMOUNT_USD),
   }
 }
 

@@ -220,10 +220,7 @@ describe('buildBoard selection', () => {
   it('marks the cheapest sell as best when the user is buying foreign currency', () => {
     const rows = buildBoard({
       branches: [],
-      rates: [
-        rate({ origin: 'caro', sell: 42 }),
-        rate({ origin: 'barato', sell: 40.5 }),
-      ],
+      rates: [rate({ origin: 'caro', sell: 42 }), rate({ origin: 'barato', sell: 40.5 })],
       watchlist: list({ direction: 'sell' }),
     })
     expect(rows[0]!.origin).toBe('barato')
