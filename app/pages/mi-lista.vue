@@ -197,6 +197,7 @@
 <script setup lang="ts">
 import { useWatchlistStore } from '~/stores/watchlist'
 import { useAuthStore } from '~/stores/auth'
+import { publicRates } from '~/utils/rateSource'
 import { decodeWatchlist, encodeWatchlist, type Watchlist } from '~/utils/watchlist'
 import {
   applyDrift,
@@ -306,7 +307,9 @@ const originOptions = computed<OriginOption[]>(() => {
 const fxVenta = computed<number | null>(() => {
   const usdSells = boardRows.value.filter(r => r.code === 'USD' && r.sell != null).map(r => r.sell!)
   if (usdSells.length) return Math.min(...usdSells)
-  const marketSells = rates.value
+  // Public quotes only: an interbank USD price is lower than anything a person
+  // can buy at, and using it here would understate what the card costs.
+  const marketSells = publicRates(rates.value)
     .filter(r => r.code === 'USD' && typeof r.sell === 'number' && r.sell > 0)
     .map(r => r.sell as number)
   return marketSells.length ? Math.min(...marketSells) : null
