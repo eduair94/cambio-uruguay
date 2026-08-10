@@ -66,7 +66,7 @@
               v-for="(height, i) in sparkHeights"
               :key="i"
               class="live-spark__bar"
-              :style="{ height: `${Math.max(4, height * 100)}%` }"
+              :style="{ '--bar-scale': Math.max(0.04, height) }"
             />
           </div>
           <div class="live-spark__axis text-caption text-medium-emphasis">
@@ -721,16 +721,22 @@ useHead(() => ({
   gap: 2px;
   height: 64px;
 }
+/* Full-height bars scaled from their base, NOT animated by height: a refresh moves all 30 at once,
+   and 30 simultaneous height changes are 30 layout passes. `scaleY` stays on the compositor.
+   (The gradient and the 2px cap ride along with the scale; at this width neither is visible.) */
 .live-spark__bar {
   flex: 1 1 0;
   min-width: 2px;
+  height: 100%;
   border-radius: 2px 2px 0 0;
   background: linear-gradient(
     180deg,
     rgb(var(--v-theme-primary)) 0%,
     rgba(var(--v-theme-primary), 0.35) 100%
   );
-  transition: height 0.4s ease;
+  transform: scaleY(var(--bar-scale, 0));
+  transform-origin: bottom;
+  transition: transform 0.4s ease;
 }
 @media (prefers-reduced-motion: reduce) {
   .live-spark__bar {
