@@ -34,6 +34,8 @@ import {
 } from "./classes/preferential-rates/catalog";
 import { origins } from "./classes/origins";
 import { redisCache } from "./classes/redis_cache";
+import { ga4Configured } from "./classes/site-analytics/ga4";
+import { emptyRealtime, fetchRealtime } from "./classes/site-analytics/realtime";
 import sentryInit from "./sentry";
 
 moment.tz.setDefault("America/Montevideo");
@@ -1760,6 +1762,71 @@ const main = async () => {
    */
   server.getJson("uy-figures", async (req: Request): Promise<any> => {
     return await redisCache.getOrSet("uy-figures", async () => (await loadFigures()) ?? BASELINE_FIGURES, 1800);
+  });
+
+  /**
+   * @openapi
+   * /site-analytics-realtime:
+   *   get:
+   *     tags:
+   *       - Indicators
+   *     summary: Actividad en vivo del sitio (últimos 30 minutos, GA4 Realtime)
+   *     description: |
+   *       Lo único de /estadisticas-del-sitio que no puede salir de la foto diaria: cuánta gente hay
+   *       ahora, cómo se movió minuto a minuto en la última media hora y qué páginas están abiertas.
+   *       Fuente: Google Analytics 4 Realtime API.
+   *
+   *       Sólo agregados: un conteo, una forma por minuto y TÍTULOS de página (la API en tiempo real
+   *       no expone rutas, así que ni siquiera existe la posibilidad de filtrar un query string).
+   *       `activeUsers` son usuarios ÚNICOS de los últimos 30 minutos: no es la suma de `perMinute`,
+   *       donde la misma persona aparece en cada minuto en que estuvo activa.
+   *
+   *       Cacheado 45 s en Redis (compartido por las dos instancias del cluster). Si el servidor no
+   *       tiene GA4 configurado responde todo en cero — nunca un 500.
+   *     responses:
+   *       200:
+   *         description: Actividad de los últimos 30 minutos
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 asOf: { type: string, format: date-time }
+   *                 activeUsers: { type: number, description: "Usuarios únicos, últimos 30 min" }
+   *                 activeUsersLast5: { type: number, description: "Pico por minuto en los últimos 5 min" }
+   *                 perMinute:
+   *                   type: array
+   *                   description: 30 entradas, de la más vieja a la más nueva.
+   *                   items:
+   *                     type: object
+   *                     properties:
+   *                       minutesAgo: { type: number }
+   *                       activeUsers: { type: number }
+   *                 pages:
+   *                   type: array
+   *                   items:
+   *                     type: object
+   *                     properties:
+   *                       title: { type: string }
+   *                       activeUsers: { type: number }
+   *                       views: { type: number }
+   */
+  server.getJson("site-analytics-realtime", async (): Promise<any> => {
+    // No GA4 credentials on this box → an honest empty answer. The page hides the live panel on a
+    // zero count rather than showing a broken card, and a 500 here would look like an outage.
+    if (!ga4Configured()) return emptyRealtime();
+    return await redisCache.getOrSet(
+      "site-analytics-realtime",
+      async () => {
+        try {
+          return await fetchRealtime();
+        } catch (e: any) {
+          console.error("[site-analytics] realtime failed:", e?.response?.data || e?.message || e);
+          return emptyRealtime();
+        }
+      },
+      45
+    );
   });
 
   /**

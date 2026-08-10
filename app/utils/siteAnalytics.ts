@@ -70,6 +70,56 @@ export interface SiteAnalyticsSnapshot {
   events: AnalyticsEventRow[]
 }
 
+// --- "Ahora mismo" (GA4 Realtime, served on demand by the API, not by the daily job) ---
+
+export interface RealtimeMinute {
+  /** 0 = the minute happening now, 29 = half an hour ago. */
+  minutesAgo: number
+  activeUsers: number
+}
+
+export interface RealtimePage {
+  /** Realtime has no path dimension — only the page title. */
+  title: string
+  activeUsers: number
+  views: number
+}
+
+export interface RealtimeSnapshot {
+  asOf: string
+  /** Unique users in the last 30 minutes. NOT the sum of `perMinute`. */
+  activeUsers: number
+  activeUsersLast5: number
+  /** Oldest first, 30 entries when GA4 answered. */
+  perMinute: RealtimeMinute[]
+  pages: RealtimePage[]
+}
+
+/** Bar heights (0..1) for the live sparkline, scaled to the busiest minute in view. */
+export function sparklineHeights(perMinute: RealtimeMinute[]): number[] {
+  const values = (perMinute || []).map(m => m.activeUsers)
+  const peak = Math.max(0, ...values)
+  // A flat zero row would draw nothing at all; a flat non-zero row should read as flat, not as a
+  // full-height wall, so an all-equal series lands at half height.
+  if (peak <= 0) return values.map(() => 0)
+  const min = Math.min(...values)
+  if (min === peak) return values.map(() => 0.5)
+  return values.map(v => v / peak)
+}
+
+/** Whether there is anything live worth showing. Zero users for half an hour = hide the panel. */
+export function hasLiveActivity(realtime: RealtimeSnapshot | null | undefined): boolean {
+  if (!realtime) return false
+  return realtime.activeUsers > 0 || (realtime.perMinute || []).some(m => m.activeUsers > 0)
+}
+
+/** Seconds since the realtime snapshot was computed, floored at 0 (clock skew must not go negative). */
+export function realtimeAgeSeconds(asOf: string, now: Date = new Date()): number {
+  const at = Date.parse(asOf || '')
+  if (!Number.isFinite(at)) return 0
+  return Math.max(0, Math.round((now.getTime() - at) / 1000))
+}
+
 /**
  * The five events marked as key events (conversions) in the GA4 UI. Pinned here because GA4 matches
  * them by literal string: renaming one silently zeroes a conversion report weeks later.

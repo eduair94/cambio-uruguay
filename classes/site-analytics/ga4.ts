@@ -180,6 +180,30 @@ export async function runReports(requests: Ga4ReportRequest[], propertyId?: stri
   return out;
 }
 
+export interface Ga4RealtimeRequest {
+  dimensions?: { name: string }[];
+  metrics: { name: string }[];
+  limit?: number;
+  orderBys?: any[];
+}
+
+/**
+ * The Realtime report: activity in the last 30 minutes. Separate endpoint from runReport, with its
+ * own (much smaller) set of dimensions — `minutesAgo`, `unifiedScreenName`, `country`,
+ * `deviceCategory` — and NO date ranges, because "now" is the only range there is. It also has no
+ * batch form, so each report is its own round trip; the caller is expected to cache.
+ */
+export async function runRealtimeReport(request: Ga4RealtimeRequest, propertyId?: string): Promise<Ga4Report> {
+  const property = propertyId || ga4PropertyId();
+  if (!property) throw new Error("GA4: GA4_PROPERTY_ID is not set");
+  const token = await ga4AccessToken();
+  const { data } = await axios.post(`${API_ROOT}/properties/${property}:runRealtimeReport`, request, {
+    headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
+    timeout: 20000,
+  });
+  return data as Ga4Report;
+}
+
 /**
  * Flattens a report into plain rows: dimensions as strings, metrics as numbers, both keyed by the
  * GA4 API name. Missing headers/rows degrade to `[]` rather than throwing — a quiet day is a real

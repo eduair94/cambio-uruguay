@@ -10,27 +10,40 @@ desde el código. Esta integración agrega el camino de vuelta.
 
 ## 1. Cómo funciona
 
+La página tiene **dos velocidades**: la foto diaria (28 días) y el bloque "Ahora mismo" (últimos 30
+minutos), que se refresca solo cada minuto mientras la pestaña está a la vista.
+
 ```
-GA4 (propiedad G-F97PNVRMRF)
-   │  Data API v1beta · batchRunReports · service account con rol "Lector"
-   ▼
-sync_site_analytics.ts            ← pm2 `currency-site-analytics`, 10:51 UTC todos los días
-   │  classes/site-analytics/{ga4,refresh,store}.ts
-   ▼
-Mongo de la APP · colección `siteanalyticssnapshots`   ← un solo documento, upsert
+GA4 (propiedad G-F97PNVRMRF) · service account con rol "Lector"
    │
-   ▼
-app/server/api/site-analytics.get.ts   ← cacheado 1 h
+   ├── Data API v1beta · batchRunReports          ── LA FOTO DIARIA ──
+   │      ▼
+   │   sync_site_analytics.ts        ← pm2 `currency-site-analytics`, 10:51 UTC todos los días
+   │      │  classes/site-analytics/{ga4,refresh,store}.ts
+   │      ▼
+   │   Mongo de la APP · `siteanalyticssnapshots`   ← un solo documento, upsert
+   │      ▼
+   │   app/server/api/site-analytics.get.ts         ← cacheado 1 h
    │
-   ▼
-app/pages/estadisticas-del-sitio.vue   ← KPIs, tendencia, top de páginas, canales, eventos
+   └── Data API v1beta · runRealtimeReport         ── EN VIVO ──
+          ▼
+       GET /site-analytics-realtime (currency-server) ← Redis 45 s, compartido por el cluster
+          │  classes/site-analytics/realtime.ts
+          ▼
+       app/server/api/site-analytics-realtime.get.ts  ← cacheado 30 s
+          ▼
+app/pages/estadisticas-del-sitio.vue  ← "Ahora mismo" + KPIs, tendencia, páginas, canales, eventos
 ```
 
 Decisiones que ya están tomadas y conviene no revisar sin motivo:
 
 - **El job vive en el backend, no en Nuxt.** `currency-server` corre como cluster pm2 ×2: cualquier
-  tarea programada ahí se ejecutaría dos veces. Además las credenciales de Google quedan en un solo
-  proceso.
+  tarea programada ahí se ejecutaría dos veces. Además las credenciales de Google quedan del lado
+  del backend; la app Nuxt nunca ve una clave de Google.
+- **Lo único en vivo es "Ahora mismo".** Va por un endpoint bajo demanda (no un cron, que en un
+  cluster ×2 correría dos veces) con caché Redis de 45 s: da igual cuánta gente tenga la página
+  abierta, GA4 ve un par de llamadas por minuto. La API en tiempo real **no expone rutas**, sólo
+  títulos de página, así que ahí ni siquiera existe el riesgo del query string.
 - **La ventana termina ayer, nunca hoy.** El día en curso está incompleto y, al lado de 27 días
   enteros, se ve como un derrumbe.
 - **Se guarda un solo documento, sin historial.** GA4 *es* el archivo: cualquier ventana se puede
@@ -198,10 +211,22 @@ pm2 logs currency-site-analytics --lines 50
 pm2 start ecosystem.config.js --only currency-site-analytics   # primera vez, si hiciera falta
 ```
 
+**El endpoint en vivo lo sirve `currency-server`, no el cron**, y pm2 sólo relee el `.env` cuando el
+proceso se reinicia. Después de agregar las variables:
+
+```bash
+pm2 reload currency-server --update-env
+curl -s https://api.cambio-uruguay.com/site-analytics-realtime | head -c 200
+```
+
+Si eso devuelve `"activeUsers": 0` con gente navegando el sitio, es que el proceso de la API todavía
+no tiene las variables (el cron puede estar andando perfecto: son procesos distintos).
+
 Verificación de punta a punta:
 
 ```bash
 curl -s https://cambio-uruguay.com/api/site-analytics | head -c 400
+curl -s https://cambio-uruguay.com/api/site-analytics-realtime | head -c 200
 # y después, la página:
 # https://cambio-uruguay.com/estadisticas-del-sitio
 ```
@@ -257,7 +282,13 @@ Ojo: no toda combinación es legal; si GA4 devuelve `400` con "incompatible", la
 La Data API es gratis. Las propiedades estándar tienen un tope diario de *tokens* por propiedad
 (orden de 200.000) y por hora; cada reporte simple cuesta unos pocos. Este job pide **8 reportes una
 vez por día** en dos llamadas `batchRunReports` (el batch admite 5 pedidos), así que consume una
-fracción despreciable. Detalle:
+fracción despreciable.
+
+El bloque en vivo tiene su propia cuota (*realtime tokens per property per hour*) y **no** usa la del
+core. Como el caché es de 45 s y no existe endpoint batch para tiempo real, el techo es de 3 llamadas
+cada 45 segundos — unas 240 por hora — con cualquier cantidad de visitantes en la página. Si algún
+día hiciera falta bajarlo, subí el TTL en `index.ts` (`redisCache.getOrSet("site-analytics-realtime",
+…, 45)`). Detalle:
 [Data API Quotas](https://developers.google.com/analytics/devguides/reporting/data/v1/quotas).
 
 ---
@@ -266,8 +297,11 @@ fracción despreciable. Detalle:
 
 | Archivo | Rol |
 |---|---|
-| `classes/site-analytics/ga4.ts` | JWT + token + `batchRunReports`, y el aplanado de filas |
+| `classes/site-analytics/ga4.ts` | JWT + token + `batchRunReports` + `runRealtimeReport`, y el aplanado de filas |
 | `classes/site-analytics/refresh.ts` | ventanas de fechas, pedidos, y el armado **puro** del snapshot |
+| `classes/site-analytics/realtime.ts` | los 3 reportes en vivo y el relleno de minutos vacíos (puro) |
+| `index.ts` → `GET /site-analytics-realtime` | endpoint en vivo del API, Redis 45 s |
+| `app/server/api/site-analytics-realtime.get.ts` | proxy Nitro, caché 30 s |
 | `classes/site-analytics/store.ts` | upsert del único documento |
 | `classes/site-analytics/types.ts` | forma del snapshot |
 | `classes/models/SiteAnalyticsSnapshot.ts` | modelo mongoose contra la base de la app |
@@ -275,6 +309,7 @@ fracción despreciable. Detalle:
 | `ecosystem.config.js` | app `currency-site-analytics`, cron 10:51 UTC |
 | `scripts/deploy-backend.sh` | la registra en el primer deploy (`OTHER_APPS`) |
 | `tests/site_analytics/refresh.test.ts` | ventanas, querystring, merges, shares |
+| `tests/site_analytics/realtime.test.ts` | minutos faltantes, únicos vs suma por minuto |
 | `app/server/models/SiteAnalyticsSnapshot.ts` | espejo del esquema |
 | `app/server/api/site-analytics.get.ts` | endpoint público cacheado |
 | `app/utils/siteAnalytics.ts` | tipos + deltas, media móvil, formateo (puro, testeado) |

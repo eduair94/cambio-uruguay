@@ -42,6 +42,51 @@
       </div>
     </VCard>
 
+    <!-- Ahora mismo: the only live part of the page. Hidden entirely when nobody is on the site
+         (or GA4 is not wired up), because "0 personas ahora" is a worse answer than no card. -->
+    <VCard v-if="live" variant="outlined" class="pa-4 pa-md-5 mb-5 live-card">
+      <div class="live-grid">
+        <div class="live-headline">
+          <div class="site-stats__eyebrow live-eyebrow mb-2">
+            <span class="site-stats__pulse" aria-hidden="true" />
+            {{ t('siteStats.liveNow') }}
+          </div>
+          <div class="d-flex align-baseline ga-2">
+            <span class="text-h4 font-weight-bold">{{
+              formatCount(live.activeUsers, locale)
+            }}</span>
+            <span class="text-body-2 text-medium-emphasis">{{ t('siteStats.liveUsers') }}</span>
+          </div>
+          <div class="text-caption text-medium-emphasis mt-1">{{ liveAgeLabel }}</div>
+        </div>
+
+        <div class="live-spark" role="img" :aria-label="t('siteStats.liveSparkAria')">
+          <div class="live-spark__bars">
+            <span
+              v-for="(height, i) in sparkHeights"
+              :key="i"
+              class="live-spark__bar"
+              :style="{ height: `${Math.max(4, height * 100)}%` }"
+            />
+          </div>
+          <div class="live-spark__axis text-caption text-medium-emphasis">
+            <span>{{ t('siteStats.liveMinutesAgo', { n: 30 }) }}</span>
+            <span>{{ t('siteStats.liveNowShort') }}</span>
+          </div>
+        </div>
+
+        <div v-if="live.pages.length" class="live-pages">
+          <div class="text-caption text-medium-emphasis mb-2">{{ t('siteStats.liveReading') }}</div>
+          <div v-for="page in live.pages.slice(0, 5)" :key="page.title" class="live-page-row">
+            <span class="live-page-row__title text-body-2">{{ page.title }}</span>
+            <span class="live-page-row__count text-body-2 font-weight-bold">
+              {{ formatCount(page.activeUsers, locale) }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </VCard>
+
     <div v-if="pending" class="text-center py-12">
       <VProgressCircular indeterminate color="primary" size="48" />
     </div>
@@ -315,7 +360,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useTheme } from 'vuetify'
 // Explicit: components/charts/ is not auto-imported flat, so `<LineChart>` would render as an
 // unknown element (silently — no console error, just an empty box where the chart should be).
@@ -335,7 +380,11 @@ import {
   summaryMetrics,
   busiestDay,
   isStale,
+  hasLiveActivity,
+  realtimeAgeSeconds,
+  sparklineHeights,
   type TrendDirection,
+  type RealtimeSnapshot,
   type SiteAnalyticsSnapshot,
   type SummaryMetric,
 } from '~/utils/siteAnalytics'
@@ -348,6 +397,54 @@ const theme = useTheme()
 // cached for an hour and the document is a few KB.
 const { data, pending } = await useFetch<SiteAnalyticsSnapshot | null>('/api/site-analytics')
 const snapshot = computed(() => data.value || null)
+
+// The live half. Also resolved on the server so the panel is in the first paint (the backend caches
+// it 45 s, this route 30 s, so an SSR hit is cheap), then refreshed on a timer from the client.
+const { data: realtimeData, refresh: refreshRealtime } = await useFetch<RealtimeSnapshot | null>(
+  '/api/site-analytics-realtime'
+)
+const live = computed(() => (hasLiveActivity(realtimeData.value) ? realtimeData.value : null))
+const sparkHeights = computed(() => sparklineHeights(live.value?.perMinute || []))
+
+// Ticks the "hace X s" label without re-fetching. Kept in a ref (not Date.now() inside a computed)
+// so the value is deterministic during SSR and only starts moving once mounted.
+const clock = ref<Date | null>(null)
+const liveAge = computed(() =>
+  live.value && clock.value ? realtimeAgeSeconds(live.value.asOf, clock.value) : 0
+)
+// Past a minute and a half, seconds stop being information ("hace 36.797 s" is just noise).
+const liveAgeLabel = computed(() =>
+  liveAge.value < 90
+    ? t('siteStats.liveAgeSeconds', { n: liveAge.value })
+    : t('siteStats.liveAgeMinutes', { n: Math.round(liveAge.value / 60) })
+)
+
+const REFRESH_MS = 60_000
+let refreshTimer: ReturnType<typeof setInterval> | undefined
+let clockTimer: ReturnType<typeof setInterval> | undefined
+
+function onVisibilityChange() {
+  // A background tab must not keep polling; coming back should show something current immediately
+  // rather than up-to-a-minute-old numbers under a "live" badge.
+  if (document.visibilityState === 'visible') void refreshRealtime()
+}
+
+onMounted(() => {
+  clock.value = new Date()
+  clockTimer = setInterval(() => {
+    clock.value = new Date()
+  }, 5_000)
+  refreshTimer = setInterval(() => {
+    if (document.visibilityState === 'visible') void refreshRealtime()
+  }, REFRESH_MS)
+  document.addEventListener('visibilitychange', onVisibilityChange)
+})
+
+onBeforeUnmount(() => {
+  if (refreshTimer) clearInterval(refreshTimer)
+  if (clockTimer) clearInterval(clockTimer)
+  document.removeEventListener('visibilitychange', onVisibilityChange)
+})
 
 const chartMetric = ref<'activeUsers' | 'sessions' | 'screenPageViews'>('activeUsers')
 const chartDays = ref(30)
@@ -490,6 +587,7 @@ const breakdowns = computed(() => [
 
 const methodItems = computed(() => [
   t('siteStats.method.source'),
+  t('siteStats.method.live'),
   t('siteStats.method.window'),
   t('siteStats.method.aggregate'),
   t('siteStats.method.consent'),
@@ -535,8 +633,14 @@ useHead(() => ({
 </script>
 
 <style scoped>
+/* Same gradient family and accents as /analiticas' hero: the two dashboards are siblings (rates
+   analytics vs site analytics) and should read as one product, not two. */
 .site-stats__hero {
-  background: linear-gradient(135deg, #0f2027 0%, #203a43 55%, #2c5364 100%);
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 78% 18%, rgba(30, 194, 160, 0.2), transparent 32%),
+    linear-gradient(135deg, #102a43 0%, #144e68 58%, #11695d 100%);
 }
 .site-stats__hero-grid {
   display: flex;
@@ -552,7 +656,7 @@ useHead(() => ({
   padding: 4px 12px;
   border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 999px;
-  color: #b2ebf2;
+  color: #b8f3e6;
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -562,16 +666,16 @@ useHead(() => ({
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #26c6da;
-  box-shadow: 0 0 0 0 rgba(38, 198, 218, 0.7);
+  background: #f5b942;
+  box-shadow: 0 0 0 0 rgba(245, 185, 66, 0.7);
   animation: site-stats-pulse 2.2s infinite;
 }
 @keyframes site-stats-pulse {
   70% {
-    box-shadow: 0 0 0 10px rgba(38, 198, 218, 0);
+    box-shadow: 0 0 0 10px rgba(245, 185, 66, 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(38, 198, 218, 0);
+    box-shadow: 0 0 0 0 rgba(245, 185, 66, 0);
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -598,9 +702,71 @@ useHead(() => ({
 .kpi-card {
   min-height: 104px;
 }
+/* Live panel: headline, sparkline and "what they're reading" side by side on desktop, stacked on a
+   phone. `minmax(0, …)` on every track — a long page title in the third column would otherwise
+   push the grid wider than the card and give the whole page a horizontal scrollbar. */
+.live-grid {
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr) minmax(0, 260px);
+  align-items: center;
+  gap: 20px 28px;
+}
+.live-eyebrow {
+  border-color: rgba(var(--v-theme-primary), 0.35);
+  color: rgb(var(--v-theme-primary));
+}
+.live-spark__bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 64px;
+}
+.live-spark__bar {
+  flex: 1 1 0;
+  min-width: 2px;
+  border-radius: 2px 2px 0 0;
+  background: linear-gradient(
+    180deg,
+    rgb(var(--v-theme-primary)) 0%,
+    rgba(var(--v-theme-primary), 0.35) 100%
+  );
+  transition: height 0.4s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .live-spark__bar {
+    transition: none;
+  }
+}
+.live-spark__axis {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+.live-page-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 3px 0;
+}
+.live-page-row__title {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+@media (max-width: 959px) {
+  .live-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .live-spark__bars {
+    height: 48px;
+  }
+}
 .site-stats__chart {
   position: relative;
-  height: 340px;
+  /* Fixed 340px left a phone with a chart taller than the text around it; clamp keeps the aspect
+     sane from 360px up without letting it collapse on a short viewport. */
+  height: clamp(220px, 42vw, 340px);
 }
 .stats-table :deep(th) {
   font-weight: 700;

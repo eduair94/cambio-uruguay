@@ -2110,7 +2110,8 @@
       "window": "La ventana termina ayer y no hoy, porque el día en curso está a medias y al lado de 27 días enteros parece un derrumbe.",
       "aggregate": "Todo lo publicado es agregado: totales, días enteros y los primeros de cada lista. No hay nada por visitante, ni IP, ni recorrido individual.",
       "consent": "Analytics respeta el Modo de Consentimiento: hasta que aceptás cookies no se guarda nada en tu navegador, así que estos números son un piso, no un techo.",
-      "bare": "/pizarra y /widget no cargan Analytics: ese tráfico no está contado acá."
+      "bare": "/pizarra y /widget no cargan Analytics: ese tráfico no está contado acá.",
+      "live": "El bloque «Ahora mismo» sale de la API en tiempo real de GA4, cacheada 45 segundos; el resto de la página es la foto diaria. En tiempo real Google no da rutas, sólo títulos."
     },
     "privacyLink": "Política de privacidad",
     "estadoLink": "Estado de los scrapers",
@@ -2118,6 +2119,14 @@
     "unit": {
       "min": "min",
       "sec": "s"
-    }
+    },
+    "liveNow": "Ahora mismo",
+    "liveUsers": "personas en el sitio (últimos 30 min)",
+    "liveSparkAria": "Actividad minuto a minuto de la última media hora",
+    "liveMinutesAgo": "hace {n} min",
+    "liveNowShort": "ahora",
+    "liveReading": "Qué están mirando",
+    "liveAgeSeconds": "actualizado hace {n} s · se refresca solo cada minuto",
+    "liveAgeMinutes": "actualizado hace {n} min · se refresca solo cada minuto"
   }
 }

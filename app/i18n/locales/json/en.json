@@ -2099,7 +2099,8 @@
       "window": "The window ends yesterday, not today, because the current day is partial and next to 27 whole ones it reads as a collapse.",
       "aggregate": "Everything published is aggregate: totals, whole days and the top of each list. Nothing per visitor, no IPs, no individual journeys.",
       "consent": "Analytics honours Consent Mode: until you accept cookies nothing is stored in your browser, so these numbers are a floor, not a ceiling.",
-      "bare": "/pizarra and /widget do not load Analytics at all: that traffic is not counted here."
+      "bare": "/pizarra and /widget do not load Analytics at all: that traffic is not counted here.",
+      "live": "The “Right now” block comes from the GA4 Realtime API, cached for 45 seconds; the rest of the page is the daily snapshot. Realtime gives no paths, only titles."
     },
     "privacyLink": "Privacy policy",
     "estadoLink": "Scraper status",
@@ -2107,6 +2108,14 @@
     "unit": {
       "min": "min",
       "sec": "s"
-    }
+    },
+    "liveNow": "Right now",
+    "liveUsers": "people on the site (last 30 min)",
+    "liveSparkAria": "Minute-by-minute activity over the last half hour",
+    "liveMinutesAgo": "{n} min ago",
+    "liveNowShort": "now",
+    "liveReading": "What they are reading",
+    "liveAgeSeconds": "updated {n} s ago · refreshes itself every minute",
+    "liveAgeMinutes": "updated {n} min ago · refreshes itself every minute"
   }
 }

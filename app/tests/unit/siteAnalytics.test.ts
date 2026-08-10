@@ -12,6 +12,10 @@ import {
   pageShare,
   seriesSlice,
   summaryMetrics,
+  hasLiveActivity,
+  realtimeAgeSeconds,
+  sparklineHeights,
+  type RealtimeSnapshot,
   type SiteAnalyticsSnapshot,
 } from '../../utils/siteAnalytics'
 
@@ -160,6 +164,46 @@ describe('staleness', () => {
   it('treats a missing or unparseable timestamp as stale', () => {
     expect(isStale('')).toBe(true)
     expect(isStale('nunca')).toBe(true)
+  })
+})
+
+describe('live panel', () => {
+  const minutes = (values: number[]) =>
+    values.map((activeUsers, i) => ({ minutesAgo: values.length - 1 - i, activeUsers }))
+
+  it('scales the sparkline to the busiest minute in view', () => {
+    expect(sparklineHeights(minutes([0, 5, 10]))).toEqual([0, 0.5, 1])
+  })
+
+  it('draws a flat series flat, not as a full-height wall', () => {
+    expect(sparklineHeights(minutes([4, 4, 4]))).toEqual([0.5, 0.5, 0.5])
+  })
+
+  it('draws nothing when nobody was around', () => {
+    expect(sparklineHeights(minutes([0, 0, 0]))).toEqual([0, 0, 0])
+    expect(sparklineHeights([])).toEqual([])
+  })
+
+  it('shows the panel only when there is something live to show', () => {
+    const base: RealtimeSnapshot = {
+      asOf: '2026-08-10T13:00:00.000Z',
+      activeUsers: 0,
+      activeUsersLast5: 0,
+      perMinute: minutes([0, 0]),
+      pages: [],
+    }
+    expect(hasLiveActivity(null)).toBe(false)
+    expect(hasLiveActivity(base)).toBe(false)
+    expect(hasLiveActivity({ ...base, activeUsers: 3 })).toBe(true)
+    // Users can drop to zero in the last minute while the half hour still had traffic.
+    expect(hasLiveActivity({ ...base, perMinute: minutes([2, 0]) })).toBe(true)
+  })
+
+  it('never reports a negative age when the client clock runs behind the server', () => {
+    const asOf = '2026-08-10T13:00:00.000Z'
+    expect(realtimeAgeSeconds(asOf, new Date('2026-08-10T13:00:42Z'))).toBe(42)
+    expect(realtimeAgeSeconds(asOf, new Date('2026-08-10T12:59:30Z'))).toBe(0)
+    expect(realtimeAgeSeconds('', new Date())).toBe(0)
   })
 })
 
