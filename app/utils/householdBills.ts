@@ -38,7 +38,7 @@ export const BILLS_VERIFIED_AT = '2026-08-09'
 export const TARIFFS_EFFECTIVE_FROM = '2026-01-01'
 
 /** IVA tasa básica. Se aplica a energía y potencia; NO al cargo fijo residencial. */
-export const IVA_RATE = 0.22
+export const UTE_IVA_RATE = 0.22
 
 export interface TariffSource {
   label: string
@@ -316,7 +316,7 @@ export function estimateUteBill(tariffId: UteTariffId, input: UteBillInput): Ute
 
   const untaxed = round2(lines.filter(l => !l.taxed).reduce((n, l) => n + l.amount, 0))
   const taxedBase = round2(lines.filter(l => l.taxed).reduce((n, l) => n + l.amount, 0))
-  const iva = round2(taxedBase * IVA_RATE)
+  const iva = round2(taxedBase * UTE_IVA_RATE)
   const total = round2(untaxed + taxedBase + iva)
 
   return {

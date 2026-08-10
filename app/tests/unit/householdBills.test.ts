@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   BILLS_FAQ,
-  IVA_RATE,
+  UTE_IVA_RATE,
   OSE_BLOCKS,
   OSE_FIXED_CHARGES,
   TARIFF_SOURCES,
@@ -67,13 +67,13 @@ describe('IVA', () => {
     expect(potencia.taxed).toBe(true)
     expect(bill.lines.filter(l => l.label.startsWith('Energía')).every(l => l.taxed)).toBe(true)
     expect(bill.untaxed).toBeCloseTo(uteTariff('simple').cargoFijo, 2)
-    expect(bill.iva).toBeCloseTo(bill.taxedBase * IVA_RATE, 2)
+    expect(bill.iva).toBeCloseTo(bill.taxedBase * UTE_IVA_RATE, 2)
     expect(bill.total).toBeCloseTo(bill.untaxed + bill.taxedBase + bill.iva, 2)
   })
 
   it('el total NO es el subtotal por 1,22', () => {
     const bill = estimateUteBill('simple', input())
-    const naive = (bill.untaxed + bill.taxedBase) * (1 + IVA_RATE)
+    const naive = (bill.untaxed + bill.taxedBase) * (1 + UTE_IVA_RATE)
     expect(bill.total).toBeLessThan(naive)
   })
 })
