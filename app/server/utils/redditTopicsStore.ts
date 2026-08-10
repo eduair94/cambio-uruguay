@@ -24,11 +24,12 @@ import {
 /** Where Uruguayans discuss questions covered by the site. LegalUruguay is explicit so
  * consumer, collection and labour cases can be refreshed independently and audited. */
 export const LEGAL_URUGUAY_SUBREDDIT = 'LegalUruguay' as const
+/** r/Montevideo salió de la lista: pasó a privado y la API responde 403. Ver la nota larga en
+ * `redditSentimentStore.ts`. */
 const SUBS = [
   'uruguay',
   'UruguayFinanzas',
   'Burises',
-  'Montevideo',
   'AskUruguayan',
   LEGAL_URUGUAY_SUBREDDIT,
 ] as const

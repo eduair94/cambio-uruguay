@@ -31,18 +31,20 @@ import {
   type RedditMention,
 } from '../../utils/redditSentiment'
 
-/** Where Uruguayans actually argue about banks. AskUruguayan is the question-shaped sub:
- * lower volume than r/uruguay but almost every thread is someone asking rather than venting,
- * which is exactly the corpus this site answers. */
-const SUBS = [
-  'uruguay',
-  'Burises',
-  'UruguayFinanzas',
-  'Montevideo',
-  'uruguayNOfiltro',
-  'LegalUruguay',
-  'AskUruguayan',
-] as const
+/**
+ * Where Uruguayans actually argue about banks. AskUruguayan is the question-shaped sub: lower
+ * volume than r/uruguay but almost every thread is someone asking rather than venting, which is
+ * exactly the corpus this site answers.
+ *
+ * NO AGREGAR r/Montevideo NI r/uruguayNOfiltro. Estuvieron en esta lista y no devolvían nada:
+ *   - r/Montevideo pasó a privado. La API responde 403 `{"reason":"private"}` tanto en /about
+ *     como en /search, y `searchSubreddit` devuelve [] ante cualquier error, así que el fallo
+ *     era invisible: una query por sub que nunca podía traer un hilo.
+ *   - r/uruguayNOfiltro responde 200 pero con `children: []` siempre.
+ * Verificado contra la API el 2026-08-10. Entre los dos se iba cerca de un tercio de las
+ * llamadas de cada corrida.
+ */
+const SUBS = ['uruguay', 'Burises', 'UruguayFinanzas', 'LegalUruguay', 'AskUruguayan'] as const
 
 /** Comment downloads per run. The daily budget; anything left over waits for tomorrow. */
 const MAX_COMMENT_FETCHES = 120
@@ -97,11 +99,18 @@ export async function harvest(
   // One pass over (query × sub); a thread found by several queries just accumulates provenance.
   const found = new Map<string, { post: RedditPostRaw; queries: Set<string> }>()
 
+  // Per-sub tally. `searchSubreddit` returns [] on ANY failure by design, so a sub that went
+  // private (403) or got banned looks exactly like a sub with nothing new — and keeps burning one
+  // call per query, forever, in silence. That is how r/Montevideo and r/uruguayNOfiltro survived
+  // in this list. If a sub contributes nothing across EVERY query, say so out loud.
+  const perSub = new Map<string, number>(SUBS.map(s => [s, 0]))
+
   for (const entity of REDDIT_ENTITIES) {
     for (const q of entity.queries) {
       for (const sub of SUBS) {
         stats.searched++
         const posts = await searchSubreddit(sub, q, { t: window, sort: 'new' })
+        perSub.set(sub, (perSub.get(sub) ?? 0) + posts.length)
         for (const p of posts) {
           const hit = found.get(p.id)
           if (hit) hit.queries.add(q)
@@ -110,6 +119,16 @@ export async function harvest(
       }
     }
   }
+
+  const dead = [...perSub.entries()].filter(([, n]) => n === 0).map(([s]) => s)
+  if (dead.length) {
+    console.warn(
+      `[reddit:sentiment] estos subs no devolvieron NADA en ninguna query: ${dead.join(', ')}. ` +
+        'Revisá si pasaron a privados o dejaron de existir, y sacalos de SUBS: cada uno cuesta ' +
+        'una llamada por query y no puede aportar un solo hilo.'
+    )
+  }
+
   stats.seen = found.size
   if (!found.size) return stats
 
