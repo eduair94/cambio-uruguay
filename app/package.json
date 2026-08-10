@@ -14,6 +14,7 @@
     "lint": "eslint",
     "lintfix": "eslint --fix",
     "check:og-images": "node scripts/check-og-images.mjs",
+    "audit:margins": "node scripts/ua-margin-audit.mjs",
     "typecheck": "nuxt typecheck",
     "test": "vitest run",
     "test:unit": "vitest run",

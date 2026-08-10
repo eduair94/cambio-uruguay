@@ -101,6 +101,27 @@ html[data-theme='light'] body {
   }
 }
 
+/* ------------------------------------------------------------------ */
+/* Text-block margins: no spacing from the browser's default sheet      */
+/* ------------------------------------------------------------------ */
+
+/* Vuetify 4's reset does not zero the margins of text blocks, so <p>, <h1>-<h6>,
+   lists, <blockquote>, <pre> and <figure> still carry the UA `margin-block: 1em`.
+   Between stacked siblings it collapses and nobody notices. It does NOT collapse
+   when the element opens a padded box or a flex/grid item — which is how every
+   callout, alert head and icon+title row on the site is built — so the first line
+   of text lands ~14px BELOW the icon it belongs to and the box grows a gap nobody
+   authored. That defect was live on 20 pages (194 elements).
+   Killing the margin only in that position leaves sibling rhythm untouched, so no
+   page that leans on the collapsed margin between paragraphs is affected.
+   `:where()` keeps the specificity at 0: this beats the UA sheet and loses to
+   every rule we write, including a `mt-*` utility.
+   Verify with `node scripts/ua-margin-audit.mjs` (see DESIGN.md, "The Text Block
+   Owns Its Top Margin Rule"). */
+:where(p, h1, h2, h3, h4, h5, h6, ul, ol, dl, blockquote, pre, figure):first-child {
+  margin-block-start: 0;
+}
+
 /* Performance optimizations */
 * {
   box-sizing: border-box;
@@ -304,3 +325,4 @@ button:focus-visible,
     transform: none !important;
   }
 }
+

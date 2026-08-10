@@ -291,6 +291,20 @@ one inside a group, the generous one between groups. If a spacing value has to s
 the grouping is being carried by labels alone, and the reader has to do the work the layout was
 supposed to.
 
+**The Text Block Owns Its Top Margin Rule.** Vuetify 4's reset does not zero the margins of `<p>`,
+`<h1>`–`<h6>`, lists, `<blockquote>` or `<pre>`, so every text block still carries the browser's
+`margin-block: 1em`. Between stacked siblings it collapses and looks deliberate; inside a padded box
+or a flex/grid item it cannot collapse, and against a smaller declared gap it simply wins. Both
+failures read as *our* spacing, which is why they survived on 20 pages: a callout title rendered
+16px below the icon it belongs beside, and an intro asking for 2px rendered at 14px.
+`critical.css` neutralises the `:first-child` case with a zero-specificity `:where()` rule, so any
+authored margin — including an `mt-*` utility — still wins. Everything else is on the author: a text
+block whose vertical position matters declares its own `margin-top`, and a page that wants the whole
+question closed resets `:is(p, h1, h2, h3, ul, ol, pre) { margin-top: 0 }` in its scoped block and
+declares each gap (see `pages/recibir-regalos-del-exterior-uruguay.vue`). Never read a gap off the
+screen and assume the CSS asked for it — `npm run audit:margins` reports every element still spaced
+by the browser rather than by us.
+
 ## Elevation & Depth
 
 Depth is a hybrid of tonal layering and restrained Material 2 elevation. Most surfaces separate

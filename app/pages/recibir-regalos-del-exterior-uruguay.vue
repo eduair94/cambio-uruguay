@@ -54,7 +54,7 @@
 
     <!-- What counts as an obsequio familiar -->
     <section id="obsequio" class="mb-10">
-      <h2 class="section-heading mb-1">Qué cuenta como “obsequio familiar”</h2>
+      <h2 class="section-heading mb-3">Qué cuenta como “obsequio familiar”</h2>
       <p class="text-body-2 text-medium-emphasis mb-4">
         No alcanza con decir “es un regalo”. Para que la exención del art. 3 se aplique, el envío
         tiene que cumplir estas condiciones. Si las cumple, no paga <em>ningún</em> tributo.
@@ -106,7 +106,7 @@
 
     <!-- Accessories: are they a problem? -->
     <section class="mb-10">
-      <h2 class="section-heading mb-1">Accesorios, llaveros, caravanas: ¿algún problema?</h2>
+      <h2 class="section-heading mb-3">Accesorios, llaveros, caravanas: ¿algún problema?</h2>
       <p class="text-body-2 text-medium-emphasis mb-4">
         En general, no. Bijouterie, accesorios de ropa, llaveros y caravanas de fantasía son
         exactamente el tipo de “cositas livianas” que entran sin drama como obsequio. Livianos, de
@@ -149,7 +149,7 @@
 
     <!-- What blocks a parcel -->
     <section id="que-no-mandar" class="mb-10">
-      <h2 class="section-heading mb-1">Lo que traba un paquete</h2>
+      <h2 class="section-heading mb-3">Lo que traba un paquete</h2>
       <p class="text-body-2 text-medium-emphasis mb-5">
         Esta es la parte que conviene leer <strong>antes</strong> de que lo despachen: casi todo lo
         que retiene un regalo se decide en el mostrador del correo del otro país. Están ordenados
@@ -193,7 +193,7 @@
 
     <!-- How the customs form must be filled -->
     <section id="declaracion" class="mb-10">
-      <h2 class="section-heading mb-1">Cómo tiene que venir declarado el paquete</h2>
+      <h2 class="section-heading mb-3">Cómo tiene que venir declarado el paquete</h2>
       <p class="text-body-2 text-medium-emphasis mb-4">
         El formulario CN22 (o CN23 para paquetes grandes) lo llena quien despacha, en origen, y es
         una <strong>declaración jurada</strong>. Es el documento que mira la Aduana antes de decidir
@@ -204,7 +204,7 @@
           <VCard variant="flat" class="panel field-card pa-4 h-100">
             <p class="field-name">{{ f.field }}</p>
             <p class="text-body-2 mb-2">{{ f.how }}</p>
-            <p v-if="f.bad" class="ex ex--bad mb-1">
+            <p v-if="f.bad" class="ex ex--bad mb-2">
               <VIcon size="15" color="error">mdi-close-circle-outline</VIcon>
               <span class="io-body">{{ f.bad }}</span>
             </p>
@@ -219,7 +219,7 @@
 
     <!-- Sender instructions, ready to send -->
     <section id="remitente" class="mb-10">
-      <h2 class="section-heading mb-1">Pasale esto a quien te lo manda</h2>
+      <h2 class="section-heading mb-3">Pasale esto a quien te lo manda</h2>
       <p class="text-body-2 text-medium-emphasis mb-4">
         Todo lo anterior, en diez líneas y en el idioma de quien va al correo del otro país. Copialo
         y mandáselo antes de que lo despache: después de despachado ya no se corrige.
@@ -273,7 +273,7 @@
 
     <!-- The letter -->
     <section id="carta" class="mb-10">
-      <h2 class="section-heading mb-1">La carta adentro del paquete: ¿es permitido?</h2>
+      <h2 class="section-heading mb-3">La carta adentro del paquete: ¿es permitido?</h2>
       <p class="text-body-2 text-medium-emphasis mb-4">
         Sí. Meter una <strong>carta o tarjeta personal</strong> dentro del paquete, junto con los
         regalos, es lo más común del mundo y no genera ningún problema aduanero.
@@ -292,7 +292,7 @@
 
     <!-- How to declare a gift -->
     <section id="tramite" class="mb-10">
-      <h2 class="section-heading mb-1">Cómo se declara un obsequio (paso a paso)</h2>
+      <h2 class="section-heading mb-3">Cómo se declara un obsequio (paso a paso)</h2>
       <p class="text-body-2 text-medium-emphasis mb-4">
         El regalo lo recibís vos, y el trámite de declaración —cuando llega por Correo Uruguayo— lo
         hacés vos como destinatario. La diferencia con una compra es que
@@ -303,7 +303,7 @@
           <li v-for="(s, i) in steps" :key="s.title">
             <span class="step-num">{{ i + 1 }}</span>
             <div class="step-body">
-              <p class="font-weight-bold mb-1">{{ s.title }}</p>
+              <p class="font-weight-bold mb-2">{{ s.title }}</p>
               <p class="text-body-2 text-medium-emphasis mb-0">
                 {{ s.text }}
                 <a
@@ -332,7 +332,7 @@
 
     <!-- If it gets held -->
     <section id="retenido" class="mb-10">
-      <h2 class="section-heading mb-1">Si igual te lo retienen</h2>
+      <h2 class="section-heading mb-3">Si igual te lo retienen</h2>
       <p class="text-body-2 text-medium-emphasis mb-4">
         Retención no es decomiso: la mayoría se destraba presentando lo que falta. Lo que sí corre
         es el reloj, y los costos de depósito los pagás vos.
@@ -859,13 +859,23 @@ useHead(() => ({
   --t-body: 1rem;
   --t-title: 1.25rem;
 }
+
+/* Todo el espaciado vertical de esta página está declarado acá o en una utilidad
+   `mb-*`; ninguno viene del margen por defecto del navegador. Vuetify 4 no resetea
+   los bloques de texto, así que su `margin-block: 1em` gana por colapso a cualquier
+   gap más chico que pidamos: el cabezal de cada bloque terminaba con el título 16px
+   por debajo de su icono y el intro a 14px cuando pedía 2. Ver DESIGN.md,
+   “The Text Block Owns Its Top Margin Rule”. */
+.page :is(p, h1, h2, h3, ul, ol, pre) {
+  margin-top: 0;
+}
 .eyebrow {
   font-size: var(--t-label);
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: rgb(var(--v-theme-primary));
-  margin-bottom: 6px;
+  margin-bottom: 10px;
 }
 .page-title {
   font-size: clamp(1.55rem, 4.4vw, 2.5rem);
