@@ -29,6 +29,7 @@
     "sync_predictions": "ts-node sync_predictions.ts",
     "sync_explain": "ts-node sync_explain.ts",
     "sync_site_analytics": "ts-node sync_site_analytics.ts",
+    "ga4_probe": "ts-node scripts/oneoff/ga4_probe.ts",
     "sync_chair_tiers": "ts-node sync_chair_tiers.ts",
     "sync_chairs": "ts-node sync_chairs.ts",
     "chair_probe": "ts-node scripts/oneoff/chair_probe.ts",

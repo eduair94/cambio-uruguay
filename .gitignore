@@ -53,6 +53,12 @@ package-lock.json
 dist
 sheet_key.json
 serviceAccount.json
+# GA4 Data API service-account key (docs/analytics/GA4_DATA_API.md). The second pattern catches a
+# key downloaded straight from Google Cloud, which arrives named `<project>-<keyid>.json` — one of
+# those landed in this directory untracked, one `git add -A` away from a live private key in a
+# public repo.
+ga4_key.json
+*-[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f].json
 .env
 
 proxy.txt

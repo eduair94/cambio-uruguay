@@ -167,7 +167,23 @@ Si preferís el archivo JSON: subilo al VPS (`/root/cambio-uruguay/ga4_key.json`
 
 ## 8. Paso 6 — Probar
 
-En el servidor (o local, si tenés el `.env` completo):
+Primero el diagnóstico, que separa los tres errores que Google devuelve todos como 403:
+
+```bash
+npm run ga4_probe
+# o, apuntando a una clave que todavía no está en el .env:
+GA4_KEY_FILE=./ga4_key.json npm run ga4_probe
+```
+
+Contesta, en orden: si la cuenta se autentica, **a qué propiedades la dejaron entrar y con qué ID
+numérico** (así no hace falta ir a buscarlo a mano), y si la Data API responde. El paso 2 usa la
+*Admin* API, que se habilita aparte; si no la habilitaste, pasale el ID a mano:
+
+```bash
+GA4_PROPERTY_ID=123456789 npm run ga4_probe
+```
+
+Después, el job de verdad:
 
 ```bash
 npm run sync_site_analytics
@@ -187,6 +203,7 @@ Salida esperada:
 | `no GA4 service account` | ni env, ni `GA4_KEY_FILE`, ni `sheet_key.json` legible | paso 5 |
 | `403` con `PERMISSION_DENIED` + "User does not have sufficient permissions for this property" | la cuenta de servicio no está en la propiedad | paso 4 |
 | `403` con `SERVICE_DISABLED` | la Data API no está habilitada en ese proyecto | paso 3 |
+| `403` "Google Analytics **Admin** API has not been used in project N" | sólo afecta al descubrimiento de propiedades de `ga4_probe`, no a los datos | habilitá también la Admin API, o pasá `GA4_PROPERTY_ID` a mano |
 | `400` con "Invalid property ID" | pusiste el `G-XXXXXXX` en vez del número | paso 1 |
 | `invalid_grant` al pedir el token | reloj del servidor desfasado (el JWT dura 1 hora) o clave privada mal pegada | `timedatectl` / repegar la clave |
 | Corre bien pero avisa "zero traffic for the whole window" | casi siempre es propiedad equivocada o permiso recién dado que aún no propagó | esperá 5 min y reintentá; si la propiedad es nueva de verdad, `npm run sync_site_analytics -- --allow-empty` |
@@ -306,6 +323,7 @@ día hiciera falta bajarlo, subí el TTL en `index.ts` (`redisCache.getOrSet("si
 | `classes/site-analytics/types.ts` | forma del snapshot |
 | `classes/models/SiteAnalyticsSnapshot.ts` | modelo mongoose contra la base de la app |
 | `sync_site_analytics.ts` | entrypoint pm2 |
+| `scripts/oneoff/ga4_probe.ts` | `npm run ga4_probe`: autenticación → propiedades visibles (con su ID) → datos |
 | `ecosystem.config.js` | app `currency-site-analytics`, cron 10:51 UTC |
 | `scripts/deploy-backend.sh` | la registra en el primer deploy (`OTHER_APPS`) |
 | `tests/site_analytics/refresh.test.ts` | ventanas, querystring, merges, shares |
