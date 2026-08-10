@@ -144,6 +144,38 @@
           </VCard>
         </VCol>
       </VRow>
+      <VCard variant="flat" class="req-card pa-5 mb-4">
+        <h3 class="text-subtitle-1 font-weight-bold mb-2">Cómo sale el tope</h3>
+        <p class="mb-3">
+          El <strong>Costo Promedio Equivalente</strong> es lo que el sistema considera que cuesta
+          en promedio cubrir a una persona. El tope anual de tu aporte se arma así:
+        </p>
+        <p class="formula mb-3">
+          $ {{ formatUYU(CPE_MENSUAL) }} × personas que cubrís × 12 meses + 25 % =
+          <strong>{{ formatUYU(topeAnualAporte(1)) }}</strong> para una persona sola
+        </p>
+        <p class="mb-0 text-medium-emphasis">
+          Todo lo que aportaste por encima de eso es lo que se devuelve.
+        </p>
+      </VCard>
+
+      <VAlert type="warning" variant="tonal" density="comfortable" class="mb-4">
+        <p class="mb-2">
+          <strong>Ojo, esto cambió:</strong> a fines de 2025 se modificó por decreto la forma de
+          calcular el CPE, que pasó de {{ formatUYU(CPE_MENSUAL_ANTERIOR) }} a
+          {{ formatUYU(CPE_MENSUAL) }}. Como el tope se calcula sobre el CPE, el tope sube y hay que
+          haber aportado bastante más para que sobre algo. La estimación oficial es que se pasaría
+          de unas {{ formatInt(REFUND_REACH_BEFORE) }} personas alcanzadas a unas
+          {{ formatInt(REFUND_REACH_AFTER) }}.
+        </p>
+        <ul class="mb-0 pl-4">
+          <li v-for="t in REFUND_TIMELINE" :key="t.contributionYear">
+            <strong>Aportes {{ t.contributionYear }}</strong> (se cobran en {{ t.paidIn }}): régimen
+            {{ t.regime }}. {{ t.note }}
+          </li>
+        </ul>
+      </VAlert>
+
       <VAlert type="info" variant="tonal" density="comfortable">
         <p class="mb-1">
           <strong>Último ejercicio publicado por BPS ({{ LAST_PUBLISHED_REFUND.year }}):</strong>
@@ -196,7 +228,13 @@ import { computed, ref } from 'vue'
 import { formatUYU } from '~/utils/format'
 import {
   CHANGE_EFFECTIVE_RULE,
+  CPE_MENSUAL,
+  CPE_MENSUAL_ANTERIOR,
   DIGIT_MONTH,
+  REFUND_REACH_AFTER,
+  REFUND_REACH_BEFORE,
+  REFUND_TIMELINE,
+  topeAnualAporte,
   HEALTH_FAQ,
   HEALTH_SOURCES,
   HEALTH_VERIFIED_AT,
@@ -208,6 +246,8 @@ import {
   REFUND_FACTS,
   checkMobility,
 } from '~/utils/healthProvider'
+
+const formatInt = (n: number) => n.toLocaleString('es-UY')
 
 const digit = ref(3)
 const permanence = ref(24)
@@ -345,6 +385,13 @@ useHead(() => ({
 
 .results-card :deep(tr.is-you) {
   background: rgba(var(--v-theme-primary), 0.09);
+}
+
+.formula {
+  font-size: 1.05rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.5;
 }
 
 .sources-list {

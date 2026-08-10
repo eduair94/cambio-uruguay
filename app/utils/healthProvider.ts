@@ -41,6 +41,10 @@ export const HEALTH_SOURCES: readonly HealthSource[] = Object.freeze([
     label: 'Decreto 359/007 — tiempos de espera en la atención',
     url: 'https://www.impo.com.uy/bases/decretos/359-2007',
   },
+  {
+    label: 'Decreto 317/025 art. 18 — valor del CPE desde el 1/1/2026',
+    url: 'https://www.impo.com.uy/bases/decretos/317-2025',
+  },
 ])
 
 // ---------------------------------------------------------------------------
@@ -239,6 +243,76 @@ export const LAST_PUBLISHED_REFUND: RefundExercise = Object.freeze({
   availableFrom: '2025-09-22',
 })
 
+// ---------------------------------------------------------------------------
+// El cambio de 2026: cómo se calcula el tope y por qué va a devolver a menos gente
+// ---------------------------------------------------------------------------
+
+/**
+ * En la primera versión de esta página no publicamos la fórmula del tope porque el mecanismo del
+ * CPE sólo aparecía en fuentes secundarias. Al revisar los hilos de Reddit apareció un dato que
+ * obliga a corregir eso: en diciembre de 2025 se firmó un decreto que cambió el cálculo, y el
+ * Decreto 317/025 art. 18 fija el CPE con todas las letras. Con ese valor la aritmética cierra
+ * exacta ($ 6.693 × 12 × 1,25 = $ 100.395), así que ahora sí es publicable.
+ *
+ * Decirle a la gente «consultá en BPS» y callar que la regla cambió sería técnicamente correcto
+ * y sustancialmente engañoso.
+ */
+
+/** Costo Promedio Equivalente mensual del SNS. Decreto 317/025 art. 18. */
+export const CPE_MENSUAL = 6693
+
+/** El CPE anterior, para que se vea el salto. */
+export const CPE_MENSUAL_ANTERIOR = 4828
+
+/** Desde cuándo rige el CPE nuevo. */
+export const CPE_VIGENTE_DESDE = '2026-01-01'
+
+/** El tope se calcula sobre el CPE incrementado en este porcentaje. */
+export const TOPE_UPLIFT_PCT = 25
+
+/**
+ * Tope anual de aporte personal: el CPE mensual, por la cantidad de personas que cubrís con tu
+ * aporte, por doce meses, incrementado un 25 %. Si aportaste por encima de esto, la diferencia
+ * es lo que se devuelve.
+ */
+export function topeAnualAporte(beneficiarios = 1, cpe = CPE_MENSUAL): number {
+  const n = Math.max(1, Math.floor(beneficiarios || 1))
+  return Math.round(cpe * n * 12 * (1 + TOPE_UPLIFT_PCT / 100))
+}
+
+/** A quién le pega el cambio y cuándo. Es lo que la gente necesita saber para no llevarse sorpresas. */
+export interface RefundTimeline {
+  /** Aportes de este año. */
+  contributionYear: number
+  /** Se cobran en este año. */
+  paidIn: number
+  /** Qué régimen los liquida. */
+  regime: 'anterior' | 'nuevo'
+  note: string
+}
+
+export const REFUND_TIMELINE: readonly RefundTimeline[] = Object.freeze([
+  {
+    contributionYear: 2025,
+    paidIn: 2026,
+    regime: 'anterior',
+    note: 'La devolución por los aportes de 2025 se mantiene con el régimen anterior. Este cambio no la afecta.',
+  },
+  {
+    contributionYear: 2026,
+    paidIn: 2027,
+    regime: 'nuevo',
+    note: 'Acá pega el cambio por primera vez: el tope se calcula con el CPE nuevo, más alto, así que hay que haber aportado más para que sobre algo.',
+  },
+])
+
+/**
+ * El impacto que estimó el propio gobierno. Se publica como estimación oficial y etiquetada como
+ * tal, no como certeza: es una proyección, no una liquidación.
+ */
+export const REFUND_REACH_BEFORE = 155_000
+export const REFUND_REACH_AFTER = 81_000
+
 export interface RefundFact {
   title: string
   detail: string
@@ -261,8 +335,14 @@ export const REFUND_FACTS: readonly RefundFact[] = Object.freeze([
   {
     title: 'El tope sube si cubrís a otros',
     detail:
-      'Cuantas más personas cubrís con tu aporte (cónyuge o concubino, hijos menores o con discapacidad), más alto es el tope anual y por lo tanto menos devolución hay: pagás más cobertura.',
+      'El tope anual es el CPE mensual por la cantidad de personas que cubrís, por doce meses, más un 25 %. Cuantas más personas cubrís (cónyuge o concubino, hijos menores o con discapacidad), más alto el tope y por lo tanto menos devolución: estás comprando más cobertura.',
     icon: 'mdi-human-male-female-child',
+  },
+  {
+    title: 'Desde 2026 el cálculo cambió y devuelve a menos gente',
+    detail:
+      'Un decreto de fines de 2025 subió el CPE de $ 4.828 a $ 6.693, lo que sube el tope y deja a menos aportantes por encima de él. Los aportes de 2025 se devuelven con el régimen anterior; el cambio pega recién en la devolución de 2027.',
+    icon: 'mdi-trending-down',
   },
   {
     title: 'Se consulta en BPS',
@@ -315,5 +395,17 @@ export const HEALTH_FAQ: readonly HealthFaq[] = Object.freeze([
     short: 'Consultá en BPS si estás comprendido; el pago se habilita una vez al año.',
     answer:
       'BPS publica un consultor «¿Estoy comprendido?» y atiende al 0800 2016. Los umbrales de ingreso cambian todos los años, así que no sirve guiarse por el número del año pasado: hay que consultar el del ejercicio que se está liquidando.',
+  },
+  {
+    question: '¿Cómo se calcula el tope por encima del cual hay devolución?',
+    short: 'CPE mensual × personas que cubrís × 12 meses, más un 25 %.',
+    answer:
+      'El Costo Promedio Equivalente (CPE) es lo que el sistema considera que cuesta en promedio la cobertura de una persona. El tope anual de aporte personal se arma multiplicando ese CPE por la cantidad de personas que cubrís con tu aporte y por los doce meses, y agregándole un 25 %. Con el CPE de $ 6.693 que fija el Decreto 317/025, para una persona sola el tope anual da $ 100.395. Todo lo que aportaste por encima de eso es lo que se devuelve.',
+  },
+  {
+    question: '¿Es cierto que desde 2026 devuelven a menos gente?',
+    short: 'Sí: subió el CPE, sube el tope, y por lo tanto menos aportantes lo superan.',
+    answer:
+      'A fines de 2025 se cambió por decreto la forma de calcular el CPE, que pasó de $ 4.828 a $ 6.693 desde el 1° de enero de 2026. Como el tope se calcula sobre el CPE, el tope sube y hay que haber aportado bastante más para que sobre algo. Dos aclaraciones importantes de plazos: la devolución por los aportes de 2025, que se cobra en 2026, se mantiene con el régimen anterior; el cambio recién impacta en la devolución de 2027, por los aportes de 2026. La estimación oficial es que se pasaría de unas 155.000 personas alcanzadas a unas 81.000.',
   },
 ])
