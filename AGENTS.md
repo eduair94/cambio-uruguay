@@ -24,6 +24,7 @@ Root map of a multi-package monorepo behind [cambio-uruguay.com](https://cambio-
 | currency-explain | dist/sync_explain.js | 7 10 * * * | writes APP DB `moveexplanations` |
 | currency-debt-relief | dist/sync_debt_relief.js | 13 10 1 * * | monthly; BCU usury caps |
 | currency-temas-analysis | dist/sync_temas_analysis.js | 17 11 * * * | reads app DB, writes backend `temas_analysis_data`; self-gates 90d; needs `APP_MONGO_URI` |
+| currency-site-analytics | dist/sync_site_analytics.js | 51 10 * * * | GA4 Data API → APP DB `siteanalyticssnapshots` for /estadisticas-del-sitio; needs `GA4_PROPERTY_ID` + SA (docs/analytics/GA4_DATA_API.md) |
 | currency-chair-tiers | dist/sync_chair_tiers.js | 31 12 * * 0 | weekly r/CharruaDevs chair tier list → APP DB `chairtiersnapshots` |
 | currency-chairs-hourly | dist/sync_chairs.js --fast | 23 * * * * | hourly price-only refresh (ML + Shopify; no LLM, no Reddit, no Fenicio sweep) |
 | currency-chairs | dist/sync_chairs.js | 41 11 * * * | daily desk-chair market: ML (:9656) + UY storefronts + FB Marketplace (:9657) → APP DB `chaircatalogproducts` |
@@ -32,7 +33,7 @@ Root map of a multi-package monorepo behind [cambio-uruguay.com](https://cambio-
 | currency-daily | bots/dist/entries/daily_report.js | 0 12 * * * | |
 | currency-alerts | bots/dist/entries/alert_check.js | */15 11-21 * * * | intraday move alerts |
 
-Root pm2 entrypoints live at repo root: `index.ts`, `sync.ts`, `sync_aduana*.ts`, `sync_banks_news.ts`, `sync_figures.ts`, `sync_costs.ts`, `sync_debt_relief.ts`, `sync_loans.ts`, `sync_predictions.ts`, `sync_explain.ts`, `sync_sheet.ts`, `sync_temas_analysis.ts`. Shared: `config.ts`, `global.ts`, `sentry.ts`.
+Root pm2 entrypoints live at repo root: `index.ts`, `sync.ts`, `sync_aduana*.ts`, `sync_banks_news.ts`, `sync_figures.ts`, `sync_costs.ts`, `sync_debt_relief.ts`, `sync_loans.ts`, `sync_predictions.ts`, `sync_explain.ts`, `sync_sheet.ts`, `sync_site_analytics.ts`, `sync_temas_analysis.ts`. Shared: `config.ts`, `global.ts`, `sentry.ts`.
 
 ## Top-level dirs
 | dir | role |
@@ -43,14 +44,14 @@ Root pm2 entrypoints live at repo root: `index.ts`, `sync.ts`, `sync_aduana*.ts`
 | `bots/` | Telegram/Discord/Twitter bots — see `bots/AGENTS.md` + `bots/README.md` |
 | `mcp/` | open-source MCP server — see `mcp/AGENTS.md`, `mcp/README.md`, `mcp/DEPLOY.md` |
 | `tests/` | root vitest backend suite — see `tests/AGENTS.md` |
-| `docs/` | `api/ app/ backlinks/ lighthouse/ medium-articles/ research/ seo/ superpowers/` (plans, SEO data, articles) |
+| `docs/` | `analytics/ api/ app/ backlinks/ lighthouse/ medium-articles/ research/ seo/ superpowers/` (plans, SEO data, articles; `analytics/GA4_DATA_API.md` = GA4 read-path setup) |
 | `scripts/` | `deploy-backend.sh` + `oneoff/` (dev one-offs, run via `npm run <name>`) |
 | `swagger/` | OpenAPI config (`config.ts`, README) served by the API |
 | `interfaces/` | `Cambio.ts` shared TS interface |
 | `config/` | `config.ts` |
 | `dist/` | root build output (gitignored) |
 
-`classes/` key files: `database.ts` (Mongo connect), `gemini.ts` + `ai_service.ts` (LLM), `appdb.ts` (app-DB bridge), `reddit.ts`, `redis_cache.ts`, `notify.ts`, `cluster.ts` (`isPrimaryInstance()`), `Express/` (server setup), `models/` (mongoose), and per-feature dirs `aduana banks costs debt explain figures loans predictions temas-analysis` (each `refresh.ts`/`store.ts`).
+`classes/` key files: `database.ts` (Mongo connect), `gemini.ts` + `ai_service.ts` (LLM), `appdb.ts` (app-DB bridge), `reddit.ts`, `redis_cache.ts`, `notify.ts`, `cluster.ts` (`isPrimaryInstance()`), `Express/` (server setup), `models/` (mongoose), and per-feature dirs `aduana banks costs debt explain figures loans predictions site-analytics temas-analysis` (each `refresh.ts`/`store.ts`).
 
 ## Build / run / test / lint
 - Root: `npm run dev` (API), `npm run build`, `npm test` (`vitest run`, `tests/**/*.test.ts`). One-offs: `npm run prex`, `bcu_backfill`, `get_locations`, etc. (ts-node, in `scripts/oneoff/`, NOT compiled).

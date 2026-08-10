@@ -6,6 +6,7 @@ import { MoveExplanationModel } from "../../classes/models/MoveExplanation";
 import { ChairTierSnapshotModel } from "../../classes/models/ChairTierSnapshot";
 import { ChairCatalogProductModel } from "../../classes/models/ChairCatalogProduct";
 import { ChairCatalogMetaModel } from "../../classes/models/ChairCatalogMeta";
+import { SiteAnalyticsSnapshotModel } from "../../classes/models/SiteAnalyticsSnapshot";
 
 const appModel = (name: string): string =>
   fs.readFileSync(path.join(__dirname, "..", "..", "app", "server", "models", `${name}.ts`), "utf8");
@@ -45,11 +46,18 @@ describe("app-Mongo schema parity", () => {
     );
   });
 
+  it("SiteAnalyticsSnapshot declares exactly the app's top-level fields", () => {
+    expect(Object.keys(SiteAnalyticsSnapshotModel.schema.obj).sort()).toEqual(
+      appFields(appModel("SiteAnalyticsSnapshot")).sort()
+    );
+  });
+
   it("writes the collections the app already reads — not mongoose's guess", () => {
     expect(PricePredictionModel.collection.name).toBe("pricepredictions");
     expect(MoveExplanationModel.collection.name).toBe("moveexplanations");
     expect(ChairTierSnapshotModel.collection.name).toBe("chairtiersnapshots");
     expect(ChairCatalogProductModel.collection.name).toBe("chaircatalogproducts");
     expect(ChairCatalogMetaModel.collection.name).toBe("chaircatalogmeta");
+    expect(SiteAnalyticsSnapshotModel.collection.name).toBe("siteanalyticssnapshots");
   });
 });

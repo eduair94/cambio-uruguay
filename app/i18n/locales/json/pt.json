@@ -2027,5 +2027,79 @@
     "linkCasas": "Comparativo de casas",
     "linkHistory": "Histórico",
     "linkApi": "API gratuita"
+  },
+  "siteStats": {
+    "nav": "Estatísticas do site",
+    "eyebrow": "Transparência",
+    "title": "Estatísticas do site",
+    "subtitle": "Quanta gente usa o cambio-uruguay.com, o que lê e de onde chega. Os mesmos números que nós olhamos, atualizados todos os dias.",
+    "window": "Janela",
+    "updated": "Atualizado",
+    "source": "Fonte",
+    "empty": {
+      "title": "Ainda não há dados publicados",
+      "body": "O retrato diário do Google Analytics ainda não foi gerado. Volte amanhã: a tarefa que o monta roda uma vez por dia."
+    },
+    "staleWarning": "Estes números são de {date} e deveriam ser atualizados todos os dias. Se o aviso continuar amanhã, algo quebrou na coleta.",
+    "metric": {
+      "activeUsers": "Usuários",
+      "sessions": "Sessões",
+      "screenPageViews": "Páginas vistas",
+      "newUsers": "Usuários novos",
+      "engagementRate": "Taxa de engajamento",
+      "averageSessionDuration": "Duração média"
+    },
+    "comparedTo": "Comparado com os 28 dias anteriores ({start} – {end}).",
+    "trendTitle": "Evolução diária",
+    "trendHint": "A linha pontilhada é a média de 7 dias: no fim de semana sempre cai, e isso não é tendência.",
+    "chartAria": "Gráfico da evolução diária do tráfego do site",
+    "average7": "Média de 7 dias",
+    "peak": "Dia mais alto do período: {date}, com {users} usuários.",
+    "pagesTitle": "Páginas mais lidas",
+    "pagesHint": "Os endereços são publicados sem nada depois do ponto de interrogação, então nada digitado na busca aparece aqui.",
+    "table": {
+      "page": "Página",
+      "views": "Visualizações",
+      "users": "Usuários",
+      "time": "Tempo médio",
+      "share": "Do total",
+      "event": "Evento",
+      "count": "Vezes"
+    },
+    "breakdown": {
+      "channels": "Como chegam",
+      "countries": "De onde",
+      "devices": "Com o quê"
+    },
+    "breakdownHint": {
+      "channels": "Canal da sessão, como o Google Analytics agrupa.",
+      "countries": "País do usuário, por quantidade de usuários.",
+      "devices": "Tipo de dispositivo, por sessões."
+    },
+    "device": {
+      "mobile": "Celular",
+      "desktop": "Computador",
+      "tablet": "Tablet"
+    },
+    "noData": "Sem dados neste período.",
+    "eventsTitle": "O que é usado",
+    "eventsHint": "Os eventos marcados como chave são os que medimos de propósito: converter, ir a uma casa de câmbio, criar um alerta. O resto o Google conta sozinho.",
+    "keyEvent": "Chave",
+    "autoEvent": "Automático",
+    "methodTitle": "Como isto é medido",
+    "method": {
+      "source": "Os dados vêm do Google Analytics 4 (Data API), não de um contador próprio: é a mesma fonte que usamos para decidir o que escrever.",
+      "window": "A janela termina ontem e não hoje, porque o dia em curso está pela metade e ao lado de 27 dias inteiros parece um desabamento.",
+      "aggregate": "Tudo o que é publicado é agregado: totais, dias inteiros e o topo de cada lista. Nada por visitante, sem IP, sem percurso individual.",
+      "consent": "O Analytics respeita o Modo de Consentimento: até você aceitar cookies nada é guardado no seu navegador, então estes números são um piso, não um teto.",
+      "bare": "/pizarra e /widget não carregam o Analytics: esse tráfego não está contado aqui."
+    },
+    "privacyLink": "Política de privacidade",
+    "estadoLink": "Estado dos scrapers",
+    "devLink": "API pública",
+    "unit": {
+      "min": "min",
+      "sec": "s"
+    }
   }
 }

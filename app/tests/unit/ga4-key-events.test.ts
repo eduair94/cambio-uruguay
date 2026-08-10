@@ -8,17 +8,11 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
+// The list itself lives in utils/siteAnalytics.ts, because /estadisticas-del-sitio also needs it
+// (it marks which of the reported GA4 events are ours). One list, two readers.
+import { KEY_EVENTS } from '../../utils/siteAnalytics'
 
 const read = (p: string) => readFileSync(resolve(__dirname, '../../', p), 'utf8')
-
-/** The five events marked as key events in GA4. Renaming one is a breaking change. */
-const KEY_EVENTS = [
-  'outbound_click', // proxy for "went to a casa to change money"
-  'alert_created',
-  'newsletter_signup',
-  'where_to_change',
-  'convert',
-] as const
 
 describe('GA4 key events', () => {
   const sources: Record<(typeof KEY_EVENTS)[number], string> = {

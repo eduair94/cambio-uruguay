@@ -194,6 +194,23 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Public site-analytics snapshot for /estadisticas-del-sitio: GA4 Data API → the NUXT APP's
+      // database (`siteanalyticssnapshots`). Aggregate only — totals, day buckets, top-N
+      // breakdowns, page paths without their query string. Daily 10:51 UTC ≈ 07:51
+      // America/Montevideo. Minute 51: not a multiple of 5, and clear of currency-explain (10:07)
+      // and currency-banks-news (10:37) so the box is never running two API jobs at once.
+      //
+      // The window ends YESTERDAY (GA4's today is partial), so running later in the day buys
+      // nothing; running before ~04:00 property time risks GA4 still processing the last day.
+      // Needs GA4_PROPERTY_ID + a service account — see docs/analytics/GA4_DATA_API.md.
+      name: "currency-site-analytics",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_site_analytics.js",
+      cron_restart: "51 10 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Lender TEA refresh (bancos/financieras/cooperativas/fintech) for /prestamos-uruguay.
       // Fallback chain: regex parser first (oca/pronto/cash), Gemini-grounded lookup for the rest
       // (host-gated to the lender's own resolved domain). Daily 08:47 UTC ≈ 05:47

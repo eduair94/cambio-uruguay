@@ -2034,5 +2034,79 @@
     "linkCasas": "House comparison",
     "linkHistory": "History",
     "linkApi": "Free API"
+  },
+  "siteStats": {
+    "nav": "Site statistics",
+    "eyebrow": "Transparency",
+    "title": "Site statistics",
+    "subtitle": "How many people use cambio-uruguay.com, what they read and where they come from. The same numbers we look at, refreshed daily.",
+    "window": "Window",
+    "updated": "Updated",
+    "source": "Source",
+    "empty": {
+      "title": "No published data yet",
+      "body": "The daily Google Analytics snapshot has not been generated yet. Check back tomorrow — the job that builds it runs once a day."
+    },
+    "staleWarning": "These numbers are from {date} and should refresh daily. If this warning is still here tomorrow, the collection broke.",
+    "metric": {
+      "activeUsers": "Users",
+      "sessions": "Sessions",
+      "screenPageViews": "Page views",
+      "newUsers": "New users",
+      "engagementRate": "Engagement rate",
+      "averageSessionDuration": "Avg. duration"
+    },
+    "comparedTo": "Compared with the previous 28 days ({start} – {end}).",
+    "trendTitle": "Daily trend",
+    "trendHint": "The dashed line is the 7-day average: weekends always dip, and that is not a trend.",
+    "chartAria": "Chart of the daily site traffic trend",
+    "average7": "7-day average",
+    "peak": "Busiest day of the period: {date}, with {users} users.",
+    "pagesTitle": "Most-read pages",
+    "pagesHint": "Paths are published without anything after the question mark, so nothing typed into the search box can show up here.",
+    "table": {
+      "page": "Page",
+      "views": "Views",
+      "users": "Users",
+      "time": "Avg. time",
+      "share": "Of total",
+      "event": "Event",
+      "count": "Count"
+    },
+    "breakdown": {
+      "channels": "How they arrive",
+      "countries": "Where from",
+      "devices": "On what"
+    },
+    "breakdownHint": {
+      "channels": "Session channel, as Google Analytics groups it.",
+      "countries": "User country, by number of users.",
+      "devices": "Device category, by sessions."
+    },
+    "device": {
+      "mobile": "Phone",
+      "desktop": "Desktop",
+      "tablet": "Tablet"
+    },
+    "noData": "No data in this period.",
+    "eventsTitle": "What gets used",
+    "eventsHint": "Events flagged as key are the ones we measure on purpose: converting, heading to an exchange house, creating an alert. Google counts the rest by itself.",
+    "keyEvent": "Key",
+    "autoEvent": "Automatic",
+    "methodTitle": "How this is measured",
+    "method": {
+      "source": "The data comes from Google Analytics 4 (Data API), not from a counter of our own: it is the same source we use to decide what to write.",
+      "window": "The window ends yesterday, not today, because the current day is partial and next to 27 whole ones it reads as a collapse.",
+      "aggregate": "Everything published is aggregate: totals, whole days and the top of each list. Nothing per visitor, no IPs, no individual journeys.",
+      "consent": "Analytics honours Consent Mode: until you accept cookies nothing is stored in your browser, so these numbers are a floor, not a ceiling.",
+      "bare": "/pizarra and /widget do not load Analytics at all: that traffic is not counted here."
+    },
+    "privacyLink": "Privacy policy",
+    "estadoLink": "Scraper status",
+    "devLink": "Public API",
+    "unit": {
+      "min": "min",
+      "sec": "s"
+    }
   }
 }

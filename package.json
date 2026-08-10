@@ -28,6 +28,7 @@
     "import_loan_history": "ts-node scripts/oneoff/import_loan_history.ts",
     "sync_predictions": "ts-node sync_predictions.ts",
     "sync_explain": "ts-node sync_explain.ts",
+    "sync_site_analytics": "ts-node sync_site_analytics.ts",
     "sync_chair_tiers": "ts-node sync_chair_tiers.ts",
     "sync_chairs": "ts-node sync_chairs.ts",
     "chair_probe": "ts-node scripts/oneoff/chair_probe.ts",
