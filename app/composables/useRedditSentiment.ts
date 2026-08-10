@@ -77,7 +77,9 @@ export function useRedditSentiment() {
   const entities = computed(() => data.value?.entities ?? [])
   const minSample = computed(() => data.value?.minSample ?? 5)
   const subs = computed(() =>
-    (data.value?.subs ?? ['uruguay', 'Burises', 'UruguayFinanzas']).map(s => `r/${s}`).join(', ')
+    (data.value?.subs ?? ['uruguay', 'Burises', 'UruguayFinanzas', 'AskUruguayan'])
+      .map(s => `r/${s}`)
+      .join(', ')
   )
   const asOf = computed(() => {
     const iso = data.value?.asOf

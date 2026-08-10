@@ -31,7 +31,9 @@ import {
   type RedditMention,
 } from '../../utils/redditSentiment'
 
-/** Where Uruguayans actually argue about banks. */
+/** Where Uruguayans actually argue about banks. AskUruguayan is the question-shaped sub:
+ * lower volume than r/uruguay but almost every thread is someone asking rather than venting,
+ * which is exactly the corpus this site answers. */
 const SUBS = [
   'uruguay',
   'Burises',
@@ -39,6 +41,7 @@ const SUBS = [
   'Montevideo',
   'uruguayNOfiltro',
   'LegalUruguay',
+  'AskUruguayan',
 ] as const
 
 /** Comment downloads per run. The daily budget; anything left over waits for tomorrow. */

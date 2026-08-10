@@ -64,7 +64,7 @@ function isOutcome(x: unknown): x is AduanaLabel["outcome"] {
   return typeof x === "string" && (OUTCOMES as readonly string[]).includes(x);
 }
 
-const PROMPT = `Sos un clasificador. Te paso UN texto de r/uruguay.
+const PROMPT = `Sos un clasificador. Te paso UN texto de un subreddit uruguayo.
 Si NO habla de un problema real con la aduana uruguaya o con una compra importada, devolvé exactamente: null
 Si habla, devolvé SOLO este JSON, sin markdown, sin explicación:
 {"bucket":"<uno de: ${BUCKET_IDS.join("|")}>","outcome":"resuelto|pago|perdio|sin-resolver","lesson":"<=140 caracteres, qué aprender","confident":true|false}

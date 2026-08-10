@@ -24,7 +24,7 @@ vi.mock("../../classes/aduana/corpus", () => ({
   knownCommentIds: () => Promise.resolve(new Set<string>()),
 }));
 
-import { ADUANA_QUERIES, harvestAduana } from "../../classes/aduana/harvest";
+import { ADUANA_QUERIES, ADUANA_SUBS, harvestAduana } from "../../classes/aduana/harvest";
 
 const warnedWith = (needle: string): boolean =>
   vi.mocked(console.warn).mock.calls.some((args) =>
@@ -39,7 +39,7 @@ describe("harvestAduana", () => {
     vi.spyOn(console, "warn").mockImplementation(() => {});
   });
 
-  it("searches every query and dedupes a thread surfaced by two of them", async () => {
+  it("searches every query in every sub and dedupes a thread surfaced more than once", async () => {
     const post = {
       id: "abc",
       sub: "uruguay",
@@ -57,8 +57,8 @@ describe("harvestAduana", () => {
 
     const out = await harvestAduana();
 
-    expect(searchPosts).toHaveBeenCalledTimes(ADUANA_QUERIES.length);
-    expect(out.posts).toBe(1); // surfaced by N queries, stored once
+    expect(searchPosts).toHaveBeenCalledTimes(ADUANA_QUERIES.length * ADUANA_SUBS.length);
+    expect(out.posts).toBe(1); // surfaced by N queries × M subs, stored once
     expect(upserted).toHaveLength(1);
     // Pin the argument order. The plan this was written from had the client's signature wrong
     // (`searchSubreddit`, and a 2-arg fetchComments) — a mock that agrees with the plan instead of
@@ -67,19 +67,49 @@ describe("harvestAduana", () => {
     expect(fetchComments).toHaveBeenCalledWith("uruguay", "abc", expect.any(Set));
   });
 
+  // The comment tree must be requested from the thread's OWN sub. Reddit answers /comments for any
+  // sub name, so a hardcoded "uruguay" here would look green and silently store r/AskUruguayan
+  // permalinks pointing at r/uruguay.
+  it("fetches each thread's comments from the sub the thread actually lives in", async () => {
+    const post = {
+      id: "zzz",
+      sub: "AskUruguayan",
+      title: "¿me van a retener el paquete?",
+      selftext: "",
+      author: "u2",
+      score: 3,
+      numComments: 4,
+      permalink: "https://reddit.com/y",
+      createdUtc: 1700000000,
+      url: "",
+    };
+    searchPosts.mockResolvedValue([post]);
+    fetchComments.mockResolvedValue([]);
+
+    await harvestAduana();
+
+    expect(fetchComments).toHaveBeenCalledWith("AskUruguayan", "zzz", expect.any(Set));
+  });
+
   it("accepts a bounded supplemental query set for historical audits", async () => {
     searchPosts.mockResolvedValue([]);
     await harvestAduana({ window: "all", queries: ["semillas aduana", "equipaje aduana"] });
 
-    expect(searchPosts).toHaveBeenCalledTimes(2);
-    expect(searchPosts).toHaveBeenNthCalledWith(1, "uruguay", "semillas aduana", {
+    // One call per (query × sub), queries in the outer loop.
+    expect(searchPosts).toHaveBeenCalledTimes(2 * ADUANA_SUBS.length);
+    expect(searchPosts).toHaveBeenNthCalledWith(1, ADUANA_SUBS[0], "semillas aduana", {
       t: "all",
       sort: "new",
     });
-    expect(searchPosts).toHaveBeenNthCalledWith(2, "uruguay", "equipaje aduana", {
+    expect(searchPosts).toHaveBeenNthCalledWith(2, ADUANA_SUBS[1], "semillas aduana", {
       t: "all",
       sort: "new",
     });
+    expect(searchPosts).toHaveBeenLastCalledWith(
+      ADUANA_SUBS[ADUANA_SUBS.length - 1],
+      "equipaje aduana",
+      { t: "all", sort: "new" }
+    );
   });
 
   // It is a no-op without credentials — but NOT a silent one (same contract as

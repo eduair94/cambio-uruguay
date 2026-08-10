@@ -1,4 +1,4 @@
-// Search r/uruguay for everything customs-shaped, store it, and never download it twice.
+// Search the Uruguayan subs for everything customs-shaped, store it, and never download it twice.
 //
 // The query list is not intuition: it is what actually surfaces the corpus. Broad queries like
 // `importar` also drag in political rants — that is fine and expected. The classifier may return
@@ -59,7 +59,14 @@ export const ADUANA_AUDIT_QUERIES = [
   "envio exterior perdido",
 ];
 
-const SUB = "uruguay";
+/**
+ * r/uruguay carries the bulk of the customs corpus, but the question-shaped threads ("¿cuánto voy
+ * a pagar por…?", "¿me lo van a retener?") skew to r/AskUruguayan, which the general sub's
+ * "no preguntes, buscá" culture pushes away. Both are searched; dedupe is by thread id, and each
+ * thread's comments are fetched from ITS OWN sub — passing a hardcoded sub to /comments returns
+ * the thread anyway, but the permalinks we store would then point at the wrong subreddit.
+ */
+export const ADUANA_SUBS = ["uruguay", "AskUruguayan"] as const;
 
 export async function harvestAduana(
   opts: { window?: "year" | "all"; queries?: readonly string[] } = {}
@@ -69,18 +76,20 @@ export async function harvestAduana(
   // summary read identically for "ran the search and found nothing new" and "never even tried",
   // and only the second one is something a human needs to go fix.
   if (!redditConfigured()) {
-    console.warn("[aduana] harvest: no Reddit credentials — se omite la cosecha de r/uruguay");
+    console.warn("[aduana] harvest: no Reddit credentials — se omite la cosecha de Reddit");
     return { posts: 0, comments: 0 };
   }
 
-  // One search per query, deduped by thread id: a post surfaced by two different queries is
+  // One search per (query × sub), deduped by thread id: a post surfaced by two different queries is
   // downloaded once and keeps both queries in its `queries` set (see corpus.ts's $addToSet).
   const byId = new Map<string, { post: RedditPostRaw; queries: string[] }>();
   for (const q of opts.queries ?? ADUANA_QUERIES) {
-    for (const post of await searchPosts(SUB, q, { t: opts.window ?? "year", sort: "new" })) {
-      const hit = byId.get(post.id);
-      if (hit) hit.queries.push(q);
-      else byId.set(post.id, { post, queries: [q] });
+    for (const sub of ADUANA_SUBS) {
+      for (const post of await searchPosts(sub, q, { t: opts.window ?? "year", sort: "new" })) {
+        const hit = byId.get(post.id);
+        if (hit) hit.queries.push(q);
+        else byId.set(post.id, { post, queries: [q] });
+      }
     }
   }
 
@@ -93,7 +102,7 @@ export async function harvestAduana(
   let comments = 0;
   for (const { post } of byId.values()) {
     const known = await knownCommentIds(post.id);
-    const fresh = await fetchComments(SUB, post.id, known);
+    const fresh = await fetchComments(post.sub || ADUANA_SUBS[0], post.id, known);
     comments += await upsertComments(post.id, fresh);
   }
   return { posts, comments };

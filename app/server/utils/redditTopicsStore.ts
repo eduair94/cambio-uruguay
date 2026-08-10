@@ -29,6 +29,7 @@ const SUBS = [
   'UruguayFinanzas',
   'Burises',
   'Montevideo',
+  'AskUruguayan',
   LEGAL_URUGUAY_SUBREDDIT,
 ] as const
 

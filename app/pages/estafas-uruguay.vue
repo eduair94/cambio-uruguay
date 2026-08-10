@@ -122,10 +122,10 @@
     <section class="mb-8" aria-label="Estafas que se están reportando">
       <h2 class="section-heading mb-1">Qué están reportando ahora</h2>
       <p class="text-body-2 text-medium-emphasis mb-4">
-        Leemos todos los días los hilos de r/uruguay, r/Burises y r/UruguayFinanzas y agrupamos lo
-        que la gente cuenta por <strong>modus operandi</strong>. No publicamos acusaciones contra
-        empresas con nombre y apellido: publicamos <em>cómo funciona la estafa</em>, para que la
-        reconozcas antes de caer.
+        Leemos todos los días los hilos de r/uruguay, r/Burises, r/UruguayFinanzas y r/AskUruguayan
+        y agrupamos lo que la gente cuenta por <strong>modus operandi</strong>. No publicamos
+        acusaciones contra empresas con nombre y apellido: publicamos
+        <em>cómo funciona la estafa</em>, para que la reconozcas antes de caer.
       </p>
 
       <ClientOnly>

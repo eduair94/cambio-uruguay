@@ -417,7 +417,7 @@
       </p>
       <p v-if="demand?.asOf" class="text-caption text-grey-lighten-1 mb-0">
         Datos de demanda actualizados el {{ fmtDate(demand.asOf) }}. Fuente: r/uruguay,
-        r/UruguayFinanzas, r/Burises, r/Montevideo.
+        r/UruguayFinanzas, r/Burises, r/Montevideo, r/AskUruguayan y r/LegalUruguay.
       </p>
     </VCard>
   </div>
