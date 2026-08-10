@@ -78,7 +78,7 @@
         <div v-if="live.pages.length" class="live-pages">
           <div class="text-caption text-medium-emphasis mb-2">{{ t('siteStats.liveReading') }}</div>
           <div v-for="page in live.pages.slice(0, 5)" :key="page.title" class="live-page-row">
-            <span class="live-page-row__title text-body-2">{{ page.title }}</span>
+            <span class="live-page-row__title text-body-2">{{ liveTitle(page.title) }}</span>
             <span class="live-page-row__count text-body-2 font-weight-bold">
               {{ formatCount(page.activeUsers, locale) }}
             </span>
@@ -373,6 +373,7 @@ import {
   formatPercent,
   isAutomaticEvent,
   isKeyEvent,
+  liveTitle,
   movingAverage,
   pageLabel,
   pageShare,

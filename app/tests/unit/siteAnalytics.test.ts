@@ -6,6 +6,7 @@ import {
   isAutomaticEvent,
   isKeyEvent,
   isStale,
+  liveTitle,
   metricDelta,
   movingAverage,
   pageLabel,
@@ -137,6 +138,13 @@ describe('page rows', () => {
   it('falls back to the path when the title is only the site name or missing', () => {
     expect(pageLabel({ path: '/pizarra', title: 'Cambio Uruguay' })).toBe('/pizarra')
     expect(pageLabel({ path: '/pizarra', title: '' })).toBe('/pizarra')
+  })
+
+  it('strips the same suffix for live rows, which have no path to fall back to', () => {
+    expect(liveTitle('Estadísticas del sitio | Cambio Uruguay')).toBe('Estadísticas del sitio')
+    // Nothing left after stripping: better the boilerplate than an empty row.
+    expect(liveTitle('Cambio Uruguay')).toBe('Cambio Uruguay')
+    expect(liveTitle('')).toBe('—')
   })
 
   it('shares a page against the window views', () => {

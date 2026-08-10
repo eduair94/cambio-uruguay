@@ -254,11 +254,27 @@ export function busiestDay(daily: AnalyticsDailyPoint[]): AnalyticsDailyPoint | 
 
 const TITLE_SUFFIX = /\s*[|·—-]\s*cambio\s*uruguay.*$/i
 
+/**
+ * Drops the site-name tail every `<title>` carries. Empty when the title was ONLY the site name, so
+ * callers can fall back to something else.
+ *
+ * Both halves of the page need this: the daily table can fall back to the path, but the live panel
+ * has no path (GA4 Realtime reports titles only) — without stripping, every row there reads
+ * "… | Cambio Uruguay" and the column is mostly boilerplate.
+ */
+export function stripSiteSuffix(title: string): string {
+  const clean = (title || '').replace(TITLE_SUFFIX, '').trim()
+  return clean.toLowerCase() === 'cambio uruguay' ? '' : clean
+}
+
 /** Page title as it reads in a table: the site name suffix dropped, the path as fallback. */
 export function pageLabel(row: Pick<AnalyticsPageRow, 'path' | 'title'>): string {
-  const title = (row.title || '').replace(TITLE_SUFFIX, '').trim()
-  if (title && title.toLowerCase() !== 'cambio uruguay') return title
-  return row.path
+  return stripSiteSuffix(row.title) || row.path
+}
+
+/** Live rows have no path, so an all-boilerplate title keeps whatever GA4 sent. */
+export function liveTitle(title: string): string {
+  return stripSiteSuffix(title) || title || '—'
 }
 
 /** Share of the window's page views that a page row accounts for. */
