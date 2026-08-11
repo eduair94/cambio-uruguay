@@ -485,6 +485,21 @@
         <strong>tope en el IRPF de esas mismas rentas</strong> (no genera devolución). El propio
         agente de retención puede computarlo con los estados de cuenta del exterior.
       </p>
+      <!-- El «respecto de la misma renta» es literal y se paga caro al ignorarlo: el exceso de
+           crédito de una renta no puede tapar el impuesto de otra. -->
+      <p class="text-body-2 mb-4">
+        Ese tope es <strong>renta por renta</strong>, y ahí está la trampa. Si tenés un ETF
+        estadounidense, EE.UU. te retiene <strong>30% sobre los dividendos</strong> (no hay tratado
+        de doble imposición entre Uruguay y Estados Unidos, así que esa alícuota no se puede bajar)
+        y Uruguay cobra {{ pct(FOREIGN_GENERAL_PCT) }} sobre esos mismos dividendos: el IRPF de los
+        dividendos queda en cero, pero los <strong>18 puntos de exceso se pierden</strong>. No bajan
+        el {{ pct(FOREIGN_GENERAL_PCT) }} de la ganancia por vender ni se arrastran al año
+        siguiente. Por eso las dos rentas se liquidan por separado.
+        <NuxtLink :to="localePath('/herramientas/costo-real-de-invertir-afuera')">
+          La calculadora del costo real de invertir afuera</NuxtLink
+        >
+        hace esa cuenta línea por línea, con los giros y las comisiones incluidos.
+      </p>
 
       <h3 class="text-subtitle-1 font-weight-bold mb-2">El calendario real</h3>
       <p class="text-body-2 mb-0">
@@ -867,7 +882,7 @@
 
     <!-- Related -->
     <VRow class="my-6">
-      <VCol cols="12" md="4">
+      <VCol cols="12" md="3">
         <VCard
           :to="localePath('/herramientas/calculadora-impuestos-inversiones')"
           class="cross-link pa-4 h-100"
@@ -885,7 +900,26 @@
           </p>
         </VCard>
       </VCol>
-      <VCol cols="12" md="4">
+      <!-- El IRPF no es el único costo de invertir afuera: el giro, los corresponsales y la
+           retención estadounidense sobre los dividendos pesan tanto o más. -->
+      <VCol cols="12" md="3">
+        <VCard
+          :to="localePath('/herramientas/costo-real-de-invertir-afuera')"
+          class="cross-link pa-4 h-100"
+          hover
+          variant="flat"
+        >
+          <VIcon color="primary" class="mb-2">mdi-swap-vertical-circle-outline</VIcon>
+          <h2 class="text-subtitle-1 font-weight-bold mb-1">Costo real de invertir afuera</h2>
+          <p class="text-body-2 imp-muted mb-0">
+            El IRPF es un eslabón, no la cuenta entera. Ponés dólares en un ETF y los traés de
+            vuelta: giros, corresponsales, comisiones, el <strong>30% que retiene EE.UU.</strong>
+            sobre los dividendos y el estate tax de USD 60.000, con el
+            <strong>rendimiento efectivo</strong> contra el nominal.
+          </p>
+        </VCard>
+      </VCol>
+      <VCol cols="12" md="3">
         <VCard
           :to="localePath('/inversiones-uruguay')"
           class="cross-link pa-4 h-100"
@@ -900,7 +934,7 @@
           </p>
         </VCard>
       </VCol>
-      <VCol cols="12" md="4">
+      <VCol cols="12" md="3">
         <VCard
           :to="localePath('/herramientas/calculadora-irpf')"
           class="cross-link pa-4 h-100"

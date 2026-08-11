@@ -171,6 +171,23 @@ export const tools: readonly Tool[] = [
     ],
   },
   {
+    slug: 'costo-real-de-invertir-afuera',
+    title: 'Costo real de invertir afuera: cuánto te llega de vuelta',
+    description:
+      'Ponés dólares en un ETF del exterior y al tiempo los traés: el desglose completo de giros, corresponsales, comisiones del bróker, retención de EE.UU. e IRPF uruguayo — y el rendimiento efectivo contra el nominal.',
+    icon: 'mdi-swap-vertical-circle-outline',
+    category: 'impuestos',
+    keywords: [
+      'costo de invertir en el exterior desde uruguay',
+      'cuánto me llega si traigo la plata del exterior',
+      'comisiones broker exterior uruguay',
+      'retención dividendos estados unidos uruguay',
+      'estate tax uruguayo etf',
+      'costo giro internacional uruguay',
+      'rendimiento real spy uruguay',
+    ],
+  },
+  {
     slug: 'costo-de-vida',
     title: 'Calculadora de costo de vida y presupuesto en Uruguay',
     description:

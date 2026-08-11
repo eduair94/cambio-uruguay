@@ -469,6 +469,33 @@
         <VIcon start size="small">mdi-file-percent-outline</VIcon>
         Ver la guía completa: impuestos sobre inversiones en Uruguay
       </VBtn>
+
+      <!-- El IRPF es sólo un eslabón: entre el giro, los corresponsales, la comisión del bróker
+           y la retención estadounidense sobre los dividendos, el rendimiento que llega a tu
+           cuenta no es el que publica el fondo. -->
+      <VAlert
+        type="info"
+        variant="tonal"
+        density="comfortable"
+        class="mt-4"
+        icon="mdi-swap-vertical-circle-outline"
+      >
+        <p class="mb-2">
+          <strong>El impuesto uruguayo es sólo un eslabón.</strong> Si invertís afuera, entre el
+          giro de ida, la cadena de bancos corresponsales, la comisión del bróker, la retención
+          estadounidense sobre los dividendos y el giro de vuelta, lo que te llega a la cuenta no es
+          el rendimiento que publica el fondo.
+        </p>
+        <VBtn
+          :to="localePath('/herramientas/costo-real-de-invertir-afuera')"
+          variant="text"
+          color="primary"
+          class="px-0"
+        >
+          <VIcon start size="small">mdi-calculator-variant-outline</VIcon>
+          Calcular el costo real de invertir afuera, ida y vuelta
+        </VBtn>
+      </VAlert>
     </VCard>
 
     <!-- Disclaimer -->
