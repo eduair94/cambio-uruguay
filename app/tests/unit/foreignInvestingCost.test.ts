@@ -13,6 +13,7 @@ import {
   dividendWithholdingPct,
   estateTaxExposure,
   feeFor,
+  feeLookup,
   foreignInvestingRoundTrip,
   factById,
   IRISH_UCITS_US_WITHHOLDING_PCT,
@@ -95,6 +96,108 @@ describe('feeFor — tramos del arancel', () => {
     // BROU directamente no publica la tabla de corresponsales.
     expect(feeFor(20_000, brou.correspondentOut)).toBeNull()
     expect(feeFor(20_000, null)).toBeNull()
+  })
+})
+
+// ── Los tramos que el tarifario SÍ publica ──────────────────────────────────────────────────
+//
+// «No publicado» es una afirmación fuerte y estos tres bloques la fijan contra la fuente: el
+// módulo llegó a marcar como no publicados cinco tramos que los tarifarios traen impresos, y el
+// efecto era SUBESTIMAR el costo (un tramo faltante se dibuja como «no publicado» pero suma 0).
+
+describe('Santander publica los TRES tramos de corresponsalía, no sólo el del medio', () => {
+  const mostrador = bankPresetById('santander-mostrador')!
+
+  it('ítem 2.4: hasta USD 10.000 el Manual publica un MÍNIMO de USD 33', () => {
+    expect(feeFor(5_000, santander.correspondentOut)).toBe(33)
+    expect(feeFor(10_000, santander.correspondentOut)).toBe(33)
+    // Es un mínimo, no un precio cerrado: la calculadora lo marca como piso.
+    expect(feeLookup(5_000, santander.correspondentOut).isFloor).toBe(true)
+  })
+
+  it('ítem 2.5: de USD 10.001 a USD 100.000 son USD 44 y NO es un piso', () => {
+    expect(feeFor(20_000, santander.correspondentOut)).toBe(44)
+    expect(feeFor(100_000, santander.correspondentOut)).toBe(44)
+    expect(feeLookup(20_000, santander.correspondentOut).isFloor).toBe(false)
+  })
+
+  it('ítem 2.6: por encima de USD 100.000 son USD 55, no «no publicado»', () => {
+    expect(feeFor(100_001, santander.correspondentOut)).toBe(55)
+    expect(feeFor(1_000_000, santander.correspondentOut)).toBe(55)
+  })
+
+  it('la misma tabla rige para los dos canales de Santander', () => {
+    for (const amount of [5_000, 20_000, 500_000]) {
+      expect(feeFor(amount, mostrador.correspondentOut)).toBe(
+        feeFor(amount, santander.correspondentOut)
+      )
+    }
+  })
+
+  it('un giro de USD 5.000 por Santander ya NO deja la cuenta incompleta', () => {
+    const r = foreignInvestingRoundTrip(build({ amountSentUsd: 5_000, bank: santander }))
+    expect(r.lines.find(l => l.id === 'salida-corresponsal')!.unpublished).toBeFalsy()
+    expect(r.lines.find(l => l.id === 'salida-corresponsal')!.amountUsd).toBe(33)
+    // La vuelta sigue sin publicarse: el Manual sólo trae corresponsalía en las EMITIDAS.
+    expect(r.lines.find(l => l.id === 'entrada-corresponsal')!.unpublished).toBe(true)
+  })
+})
+
+describe('Itaú publica la tabla ENTERA de corresponsal de entrada (sección 8.1)', () => {
+  it('los cuatro escalones salen del tarifario, no sólo los dos de arriba', () => {
+    expect(feeFor(101, itau.correspondentIn)).toBe(10)
+    expect(feeFor(500, itau.correspondentIn)).toBe(10)
+    expect(feeFor(501, itau.correspondentIn)).toBe(15)
+    expect(feeFor(2_000, itau.correspondentIn)).toBe(15)
+    expect(feeFor(2_001, itau.correspondentIn)).toBe(25)
+    expect(feeFor(20_000, itau.correspondentIn)).toBe(25)
+    expect(feeFor(20_001, itau.correspondentIn)).toBe(35)
+  })
+
+  it('sólo por debajo de USD 101 falta el precio, igual que en la tabla de salida', () => {
+    expect(feeFor(100, itau.correspondentIn)).toBeNull()
+    expect(feeFor(100, itau.correspondentOut)).toBeNull()
+  })
+
+  it('es la misma tabla para el canal digital y para mostrador', () => {
+    const mostrador = bankPresetById('itau-mostrador')!
+    for (const amount of [150, 1_000, 10_000, 50_000]) {
+      expect(feeFor(amount, mostrador.correspondentIn)).toBe(feeFor(amount, itau.correspondentIn))
+    }
+  })
+
+  it('traer USD 1.500 de vuelta cuesta USD 15, y ya no queda «no publicado»', () => {
+    const r = foreignInvestingRoundTrip(
+      build({ amountSentUsd: 1_500, totalReturnPct: 0, correspondentBearer: 'ordenante' })
+    )
+    const vuelta = r.lines.find(l => l.id === 'entrada-corresponsal')!
+    expect(vuelta.unpublished).toBeFalsy()
+    expect(vuelta.amountUsd).toBe(15)
+  })
+})
+
+describe('el canal Itaú/Link tiene tope, y su tabla de corresponsal termina ahí', () => {
+  it('hasta USD 100.000 el corresponsal de salida son USD 40', () => {
+    expect(feeFor(100_000, itau.correspondentOut)).toBe(40)
+  })
+
+  it('por encima del tope no extrapola: devuelve null', () => {
+    expect(feeFor(100_001, itau.correspondentOut)).toBeNull()
+    // Mostrador sí tiene tramo abierto («Más de U$S 20.000 → U$S 40»).
+    expect(feeFor(500_000, bankPresetById('itau-mostrador')!.correspondentOut)).toBe(40)
+  })
+
+  it('avisa que el monto no entra por el canal, igual que hace con el tope de Prex', () => {
+    const r = foreignInvestingRoundTrip(build({ amountSentUsd: 250_000 }))
+    expect(r.warnings.some(w => w.includes('tope de USD 100.000'))).toBe(true)
+    expect(r.incomplete).toBe(true)
+  })
+
+  it('el tope es del canal digital, no del banco: mostrador no avisa', () => {
+    const r = foreignInvestingRoundTrip(
+      build({ amountSentUsd: 250_000, bank: bankPresetById('itau-mostrador')! })
+    )
+    expect(r.warnings.some(w => w.includes('tope de USD'))).toBe(false)
   })
 })
 
@@ -400,6 +503,85 @@ describe('la invariante: el rendimiento efectivo nunca supera al nominal', () =>
   })
 })
 
+describe('Inviu por la ruta a IBKR: la comisión por operación es la de IBKR', () => {
+  // El tarifario dice que la comisión sobre AuM «se suma a los costos por operación de
+  // Interactive Brokers», y su nota (4) manda al esquema IBKR PRO. Cobrar acá un 1,50% por punta
+  // daba USD 300 sobre USD 20.000 donde la fuente dice USD 1.
+  it('cobra POR ACCIÓN, no un porcentaje del monto', () => {
+    expect(inviu.buy.kind).toBe('por-accion')
+    expect(inviu.sell.kind).toBe('por-accion')
+  })
+
+  it('sobre USD 20.000 la punta cuesta lo mismo que en IBKR Pro, no USD 300', () => {
+    expect(brokerCommission(20_000, inviu.buy, 600).amountUsd).toBe(
+      brokerCommission(20_000, ibkr.buy, 600).amountUsd
+    )
+    expect(brokerCommission(20_000, inviu.buy, 600).amountUsd).toBe(1)
+  })
+
+  it('lo único propio de Inviu en esta ruta es el 1,50% anual sobre el AuM (Silver)', () => {
+    expect(inviu.annualAumFeePct).toBe(1.5)
+  })
+
+  it('no publica como precio los «Hasta X%» del bloque de cuenta custodia', () => {
+    const r = foreignInvestingRoundTrip(build({ broker: inviu, route: 'local' }))
+    // 1,50% de USD 20.000 serían USD 300 por punta: ese número no puede aparecer.
+    expect(r.totals.brokerCommissionsUsd).toBeLessThan(10)
+    expect(inviu.note).toMatch(/Hasta 1,50%/)
+    expect(inviu.note).toMatch(/TECHOS|techos/)
+  })
+
+  it('linkea también el tarifario de IBKR, que es donde está la comisión por operación', () => {
+    expect(inviu.extraSources?.some(s => s.url.includes('interactivebrokers.com'))).toBe(true)
+  })
+})
+
+describe('cada afirmación linkea donde realmente está', () => {
+  it('IBKR: los retiros gratis se publican en «Other Fees», no en la página de acciones', () => {
+    for (const id of ['ibkr-pro-fixed', 'ibkr-pro-tiered']) {
+      const b = brokerPresetById(id)!
+      expect(b.extraSources?.some(s => s.url.includes('other-fees.php'))).toBe(true)
+    }
+  })
+
+  it('Prex: el cargo de USD 0,20 es del Exchange y sólo en la VENTA, no un cargo cambiario', () => {
+    expect(prex.note).toMatch(/VENTA/)
+    expect(prex.note).toMatch(/Exchange/)
+    expect(prex.note).not.toMatch(/cambiario/)
+  })
+
+  it('BROU: la ausencia que es única es la de la IDA, no la de toda la cadena', () => {
+    expect(brou.note).toMatch(/IDA/)
+    // Contradecía a los datos del propio módulo: en la vuelta tampoco publican estos dos.
+    expect(bankPresetById('bbva-net')!.correspondentIn).toBeNull()
+    expect(santander.correspondentIn).toBeNull()
+  })
+
+  it('el costo fiscal en moneda extranjera es del Título 7 art. 32, no del Decreto 148/007', () => {
+    const irpf = foreignInvestingRoundTrip(postCase).lines.find(l => l.stage === 'impuesto-uy')!
+    expect(irpf.sourceUrl).toContain('todgi-2023/7-2024')
+  })
+})
+
+describe('la ruta sugerida por el preset se usa, no queda de adorno', () => {
+  it('avisa si mandás un giro internacional a una plataforma que se fondea local', () => {
+    const r = foreignInvestingRoundTrip(build({ broker: gletir, route: 'internacional' }))
+    expect(r.warnings.some(w => w.includes('transferencia LOCAL'))).toBe(true)
+  })
+
+  it('avisa al revés: ruta local con un bróker que se fondea por giro', () => {
+    const r = foreignInvestingRoundTrip(
+      build({ broker: ibkr, route: 'local', bank: null, localTransferOutUsd: 5 })
+    )
+    expect(r.warnings.some(w => w.includes('giro INTERNACIONAL'))).toBe(true)
+  })
+
+  it('con la ruta que el preset sugiere no molesta', () => {
+    const r = foreignInvestingRoundTrip(postCase)
+    expect(r.warnings.some(w => w.includes('se fondea'))).toBe(false)
+  })
+})
+
 describe('la comisión anual sobre el saldo (AuM)', () => {
   it('en un buy-and-hold pesa más que todo el round trip de giros', () => {
     const conAum = foreignInvestingRoundTrip(build({ broker: inviu, holdingYears: 5 }))
@@ -490,6 +672,23 @@ describe('estate tax: el techo que aparece al repetir el aporte', () => {
     expect(e.topRatePct).toBe(40)
   })
 
+  it('cuántos aportes faltan se CALCULA: no es «tres» para cualquier monto', () => {
+    // Con USD 1.000 la nota afirmaba igual que con tres aportes ya estabas arriba (3.000).
+    const chico = estateTaxExposure({ portfolioValueUsd: 1_000, domicile: 'eeuu' })
+    expect(chico.contributionsToCrossThreshold).toBe(60)
+    expect(chico.note).toContain('60 carteras')
+    expect(chico.note).not.toContain('tres aportes')
+
+    const veinte = estateTaxExposure({ portfolioValueUsd: 20_000, domicile: 'eeuu' })
+    expect(veinte.contributionsToCrossThreshold).toBe(3)
+    expect(veinte.note).toContain('3 carteras')
+  })
+
+  it('con la cartera ya por encima del umbral no promete ninguna cuenta de aportes', () => {
+    const e = estateTaxExposure({ portfolioValueUsd: 200_000, domicile: 'eeuu' })
+    expect(e.note).not.toMatch(/carteras iguales/)
+  })
+
   it('un fondo irlandés queda fuera del hecho imponible, cualquiera sea el monto', () => {
     const e = estateTaxExposure({ portfolioValueUsd: 5_000_000, domicile: 'irlanda' })
     expect(e.inScope).toBe(false)
@@ -516,6 +715,19 @@ describe('los hechos publicados llevan norma, fuente y fecha', () => {
     for (const id of ['situs-spy', 'efectivo-en-broker', 'limitation-on-benefits']) {
       expect(factById(id)?.confidence).toBe('no-resuelto')
     }
+  })
+
+  it('las citas textuales coinciden con la norma a la que se atribuyen', () => {
+    // T7 art. 25 dice «las mismas rentas», en plural, y es el eje de toda la corrección central.
+    const irpf = foreignInvestingRoundTrip(build({ grossDividendYieldPct: 1.5 })).taxRows
+    expect(irpf.some(r => r.creditLostUsd > 0)).toBe(true)
+    // IRC 2104(a) sí dice «only if issued by a domestic corporation»: la exclusividad está ahí.
+    expect(factById('situs')!.law).toContain('only if issued by a domestic corporation')
+    // La exención de los 183 días tiene la salvedad de la Pub. 519.
+    expect(factById('ganancia-capital-exenta')!.title).toMatch(/efectivamente conectada/)
+    expect(factById('ganancia-capital-excepciones')!.title).toMatch(/OID/)
+    // El exit tax irlandés: el camino incondicional es el del sistema de compensación.
+    expect(factById('irlanda-sin-exit-tax')!.title).toMatch(/declaración de no residencia/)
   })
 
   it('publica explícitamente que Uruguay NO tiene tratado con EE.UU.', () => {

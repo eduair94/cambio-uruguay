@@ -241,6 +241,30 @@
           >ver el tarifario</a
         >
       </p>
+      <!-- Un link por afirmación: los retiros de IBKR no están en la página de comisiones de
+           acciones, así que mandar ahí a comprobarlos es mandar a donde no está. -->
+      <p
+        v-for="s in broker.extraSources ?? []"
+        :key="s.url"
+        class="text-caption tool-muted mt-1 mb-0"
+        data-testid="broker-fuente-extra"
+      >
+        Además:
+        <a :href="s.url" target="_blank" rel="noopener noreferrer" class="tool-link">{{
+          s.label
+        }}</a
+        >.
+      </p>
+      <p class="text-caption tool-muted mt-1 mb-0" data-testid="broker-ruta">
+        Se fondea, según la propia plataforma, por
+        <strong>{{
+          broker.suggestedRoute === 'local'
+            ? 'transferencia local desde tu banco uruguayo'
+            : 'giro internacional'
+        }}</strong
+        >. Podés cambiarlo arriba: no lo damos por verificado, pero si elegís otra ruta la cuenta te
+        avisa.
+      </p>
       <p v-if="broker.note" class="text-caption tool-muted mt-1 mb-0">{{ broker.note }}</p>
 
       <!-- Los aranceles son PRECIO COMERCIAL: el preset es un default fechado, no un dato. -->
@@ -528,8 +552,9 @@
         </h3>
         <p class="text-body-2 tool-muted mb-3">
           Los dividendos y la ganancia por vender son <strong>dos rentas distintas</strong>, y el
-          crédito por el impuesto pagado afuera se imputa «respecto de la misma renta»: lo que sobra
-          de una <strong>no baja</strong> el impuesto de la otra ni se arrastra al año que viene.
+          impuesto pagado afuera se acredita contra el IRPF que se genere «respecto de las mismas
+          rentas» (Título 7, art. 25): lo que sobra de una <strong>no baja</strong> el impuesto de
+          la otra ni se arrastra al año que viene.
         </p>
         <VTable density="comfortable" class="breakdown-table cu-mobile-cards">
           <thead>
@@ -564,10 +589,19 @@
           </tbody>
         </VTable>
         <p class="text-caption tool-muted mt-3 mb-0">
-          Todo el cálculo va en dólares, y no es una simplificación: el costo fiscal se toma «en la
-          moneda en que se realizó la inversión, valuada a la cotización del día anterior al de la
-          enajenación» (Decreto 148/007), así que costo y precio se convierten con el mismo tipo de
-          cambio y <strong>la devaluación del peso no genera renta gravada</strong>.
+          Todo el cálculo va en dólares, y no es una simplificación: lo dice la ley, no el decreto.
+          «Para los bienes situados en el exterior, el costo fiscal se determinará considerando el
+          valor en la moneda en que se realizó la referida inversión, valuada a la cotización del
+          día anterior al de la enajenación» —
+          <a
+            href="https://www.impo.com.uy/bases/todgi-2023/7-2024"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="tool-link"
+            >Título 7, art. 32</a
+          >, inciso agregado por la Ley 20.446 (art. 651 num. 2). Costo y precio se convierten con
+          el mismo tipo de cambio, así que
+          <strong>la devaluación del peso no genera renta gravada</strong>.
         </p>
       </VCard>
 
@@ -664,13 +698,22 @@
         <li>
           <strong>La ganancia de capital.</strong> Un no residente que estuvo
           <strong>menos de {{ US_PRESENCE_DAYS_THRESHOLD }} días</strong> en EE.UU. durante el año
-          fiscal no paga impuesto estadounidense por vender acciones o ETFs. Y lo importante para un
-          uruguayo: la exención <strong>no viene de un tratado</strong>, viene del propio estatuto,
-          así que la tenés igual aunque Uruguay no tenga convenio. La regla se da vuelta si
-          estuviste 183 días o más: ahí tu ganancia neta paga {{ US_CAPITAL_GAIN_PCT_IF_PRESENT }}%,
-          y aplica aun por operaciones hechas estando fuera del país. Es una regla de
-          <strong>presencia física</strong>, no de residencia fiscal ni de monto: no hay mínimo no
-          imponible ni escalones.
+          fiscal no paga impuesto estadounidense por vender acciones o ETFs,
+          <strong
+            >salvo que la ganancia esté efectivamente conectada con un negocio en EE.UU.</strong
+          >
+          Y lo importante para un uruguayo: la exención <strong>no viene de un tratado</strong>,
+          viene del propio estatuto, así que la tenés igual aunque Uruguay no tenga convenio. La
+          regla se da vuelta si estuviste 183 días o más: ahí tu ganancia neta paga
+          {{ US_CAPITAL_GAIN_PCT_IF_PRESENT }}%, y aplica aun por operaciones hechas estando fuera
+          del país. Es una regla de <strong>presencia física</strong>, no de residencia fiscal ni de
+          monto: no hay mínimo no imponible ni escalones.
+          <br />
+          La misma Pub. 519 lista además <strong>cuatro clases de ganancia</strong> que pagan sin
+          importar los 183 días: madera, carbón o mineral de hierro con interés económico retenido,
+          pagos contingentes por patentes y derechos de autor, ciertas transferencias de patentes y
+          las <strong>obligaciones con descuento de emisión (OID)</strong>. Para un ETF de acciones
+          no cambia nada; para uno de bonos OID, puede.
         </li>
         <li>
           <strong>Ningún impuesto por sacar la plata.</strong> El capital que vuelve no es renta.
@@ -736,9 +779,14 @@
         tratado sucesorio con EE.UU., así que ese umbral <strong>no se puede ampliar</strong>.
       </p>
       <p>
-        Con USD 20.000 estás debajo. Pero el umbral se mide sobre el valor
-        <strong>a la fecha de fallecimiento</strong>, no sobre lo aportado: lo cruzás a las tres
-        veces que repitas el aporte, y la sola revalorización puede cruzarlo sola.
+        Con la cartera de arriba ({{ usd(result.totals.finalPortfolioValueUsd) }}) estás
+        {{ result.estateTax.crossesThreshold ? 'por encima' : 'debajo' }}. Pero el umbral se mide
+        sobre el valor <strong>a la fecha de fallecimiento</strong>, no sobre lo aportado: la sola
+        revalorización puede cruzarlo.
+        <template v-if="contributionsToCross"
+          >Con <strong>{{ contributionsToCross }}</strong> carteras iguales a ésta ya estarías
+          arriba.</template
+        >
       </p>
 
       <h2>La vía irlandesa: por qué el domicilio del fondo cambia las dos cosas</h2>
@@ -752,13 +800,26 @@
       </p>
       <p>
         Y no muda el problema a Dublín. Irlanda no le retiene nada al inversor no residente, ni
-        sobre las distribuciones ni al vender, por dos caminos independientes: las cuotapartes
-        mantenidas en un sistema de compensación reconocido (el caso de un ETF que se compra y vende
-        en bolsa) no requieren deducción de <em>exit tax</em>, y tampoco se deduce respecto de
-        inversores no residentes de un fondo constituido a partir del 1 de abril de 2000. Tampoco
-        cobra impuesto a la herencia sobre esas cuotapartes cuando ni el causante ni el beneficiario
-        son residentes irlandeses. Sumado a que Uruguay no tiene impuesto sucesorio, una herencia
-        así no paga impuesto sucesorio en ninguna de las tres jurisdicciones.
+        sobre las distribuciones ni al vender. El camino que aplica a un ETF cotizado es el primero
+        y <strong>no lleva condición</strong>: las cuotapartes mantenidas en un
+        <strong>sistema de compensación reconocido</strong> —el caso de un ETF que se compra y vende
+        en bolsa— no requieren deducción de <em>exit tax</em> (párr. 4.2.3 del manual de Revenue).
+        Hay un segundo camino, el de los inversores no residentes de un fondo constituido a partir
+        del 1 de abril de 2000, pero ése <strong>sí tiene condición</strong>: la norma lo concede
+        <em
+          >siempre que el fondo tenga la declaración de no residencia antes del hecho imponible</em
+        >
+        (párr. 4.2.8). Irlanda tampoco cobra impuesto a la herencia sobre esas cuotapartes cuando ni
+        el causante ni el beneficiario son residentes irlandeses.
+      </p>
+      <p>
+        Del lado uruguayo, la herencia de cuotapartes de un fondo del exterior no paga:
+        <strong>el ITP grava las trasmisiones patrimoniales de bienes ubicados en el país</strong>,
+        y dentro de ellas la transmisión de <em>inmuebles</em> por causa de muerte (Título 19, art.
+        1º lit. E). No alcanza a estos activos. Con lo cual, para este activo concreto, la herencia
+        no paga impuesto sucesorio en ninguna de las tres jurisdicciones — pero eso es una
+        conclusión sobre cuotapartes de un fondo del exterior, no una regla general sobre cualquier
+        herencia.
       </p>
       <p>
         Sobre el estate tax, el mecanismo es el mismo artículo que hace todo el trabajo: las
@@ -766,6 +827,22 @@
         doméstica, y la ley no habilita mirar a través hacia lo que el fondo tiene adentro. El mismo
         S&amp;P 500 comprado vía Dublín no cuenta contra los USD 60.000.
       </p>
+
+      <!-- Cada cifra de arriba tiene su norma y su link en el módulo. Antes sólo se renderizaban
+           los tres «no resuelto», así que 14 hechos verificados quedaban invisibles y el 24% de
+           backup withholding no tenía NINGÚN link en la página. -->
+      <h2>De dónde sale cada número</h2>
+      <p>
+        Cada afirmación legal de esta página tiene su norma y su fuente primaria. Están todas acá,
+        con la fecha en que se re-chequearon ({{ readOnLabel }}):
+      </p>
+      <ul>
+        <li v-for="f in confirmedFacts" :key="f.id" data-testid="hecho-confirmado">
+          <strong v-if="f.pct !== null">{{ f.pct }}% — </strong>{{ f.title }}.
+          <em>{{ f.law }}</em> —
+          <a :href="f.sourceUrl" target="_blank" rel="noopener noreferrer">ver la fuente</a>.
+        </li>
+      </ul>
 
       <h2>Lo que no publicamos, y por qué</h2>
       <ul>
@@ -838,7 +915,7 @@ import {
   BROKER_PRESETS,
   bankPresetById,
   brokerPresetById,
-  feeFor,
+  feeLookup,
   FOREIGN_INVESTING_VERIFIED_ON,
   foreignInvestingRoundTrip,
   IRISH_UCITS_US_WITHHOLDING_PCT,
@@ -977,15 +1054,34 @@ const defaults = computed(() => {
   const amount = safe(amountSent.value)
   const back = result.value.totals.wiredHomeUsd
   return {
-    outbound: feeFor(amount, bank.value.outbound),
-    corrOut: feeFor(amount, bank.value.correspondentOut),
-    corrIn: feeFor(back, bank.value.correspondentIn),
-    inbound: feeFor(back, bank.value.inbound),
+    outbound: feeLookup(amount, bank.value.outbound),
+    corrOut: feeLookup(amount, bank.value.correspondentOut),
+    corrIn: feeLookup(back, bank.value.correspondentIn),
+    inbound: feeLookup(back, bank.value.inbound),
   }
 })
-const defaultLabel = (v: number | null) => (v === null ? 'no publicado' : usd(v))
+/** El placeholder dice si el tarifario publica un precio, un MÍNIMO, o directamente nada. */
+const defaultLabel = (v: { amountUsd: number | null; isFloor: boolean }) =>
+  v.amountUsd === null
+    ? 'no publicado'
+    : v.isFloor
+      ? `mínimo ${usd(v.amountUsd)}`
+      : usd(v.amountUsd)
 
 const unresolvedFacts = US_FACTS.filter(f => f.confidence === 'no-resuelto')
+/**
+ * Los hechos VERIFICADOS. Cada uno trae `law` + `sourceUrl` + `verifiedOn` y hasta ahora no se
+ * renderizaba ninguno: la página sólo mostraba los tres «no resuelto», así que cifras como el 24%
+ * de backup withholding se reescribían en prosa sin ningún link que las respaldara.
+ */
+const confirmedFacts = US_FACTS.filter(f => f.confidence === 'confirmado')
+
+/** Cuántas carteras como la de esta simulación hacen falta para cruzar el umbral sucesorio. */
+const contributionsToCross = computed(() =>
+  result.value.estateTax.crossesThreshold
+    ? null
+    : result.value.estateTax.contributionsToCrossThreshold
+)
 
 // ── ToolShell ────────────────────────────────────────────────────────────────
 const sources = [
@@ -1014,6 +1110,22 @@ const sources = [
     url: 'https://www.law.cornell.edu/uscode/text/26/2104',
   },
   {
+    label: 'IRC 2001(c) — escala unificada del estate tax (hasta 40%)',
+    url: 'https://www.law.cornell.edu/uscode/text/26/2001',
+  },
+  {
+    label: 'IRS — Estate & Gift Tax Treaties (15 países, sin Uruguay)',
+    url: 'https://www.irs.gov/businesses/small-businesses-self-employed/estate-gift-tax-treaties-international',
+  },
+  {
+    label: 'IRS — Tax Topic 307, Backup Withholding (IRC 3406)',
+    url: 'https://www.irs.gov/taxtopics/tc307',
+  },
+  {
+    label: 'Revenue (Irlanda) — Capital Acquisitions Tax, sec. 75 (fondos y no residentes)',
+    url: 'https://www.revenue.ie/en/tax-professionals/documents/notes-for-guidance/cat/2024/part09.pdf',
+  },
+  {
     label: 'IRC 4475 — impuesto a las remesas (limitado a efectivo)',
     url: 'https://www.law.cornell.edu/uscode/text/26/4475',
   },
@@ -1026,11 +1138,18 @@ const sources = [
     url: 'https://www.revenue.ie/en/tax-professionals/tdm/income-tax-capital-gains-tax-corporation-tax/part-27/27-01a-02.pdf',
   },
   {
-    label: 'IMPO — Texto Ordenado, Título 7 (IRPF)',
+    // El costo fiscal en moneda de la inversión, el ficto del 20% y el crédito por impuesto del
+    // exterior son LEY (arts. 32 y 25), no decreto. El decreto reglamenta las retenciones.
+    label: 'IMPO — Texto Ordenado, Título 7 (IRPF): art. 32 costo fiscal y ficto, art. 25 crédito',
     url: 'https://www.impo.com.uy/bases/todgi-2023/7-2024',
   },
   {
-    label: 'IMPO — Decreto 148/007 (costo fiscal, ficto, crédito por impuesto del exterior)',
+    label: 'IMPO — Texto Ordenado, Título 19 (ITP: trasmisiones de bienes ubicados en el país)',
+    url: 'https://www.impo.com.uy/bases/todgi-2023/19-2024',
+  },
+  {
+    label:
+      'IMPO — Decreto 148/007 (reglamentación del IRPF: retenciones, arts. 44 quater y quinquies)',
     url: 'https://www.impo.com.uy/bases/decretos/148-2007',
   },
   {
@@ -1046,7 +1165,7 @@ const sources = [
 const faq = [
   {
     q: 'Si invierto en el SPY desde Uruguay, ¿Estados Unidos me cobra por la ganancia?',
-    a: 'No, si estuviste menos de 183 días en Estados Unidos durante el año fiscal. Un no residente no paga impuesto estadounidense a la ganancia de capital por vender acciones o ETFs, y la exención no viene de un tratado sino del propio estatuto, así que un uruguayo la tiene igual pese a no tener convenio con EE.UU. Es una regla de presencia física, no de residencia fiscal ni de monto: no hay mínimo no imponible ni escalones. Si estuviste 183 días o más, en cambio, tu ganancia neta paga 30% y se declara en el Schedule NEC del Form 1040-NR, aun por operaciones hechas estando fuera del país.',
+    a: 'No, si estuviste menos de 183 días en Estados Unidos durante el año fiscal y la ganancia no está efectivamente conectada con un negocio en EE.UU. Un no residente no paga impuesto estadounidense a la ganancia de capital por vender acciones o ETFs, y la exención no viene de un tratado sino del propio estatuto, así que un uruguayo la tiene igual pese a no tener convenio con EE.UU. Es una regla de presencia física, no de residencia fiscal ni de monto: no hay mínimo no imponible ni escalones. La Pub. 519 lista cuatro clases de ganancia que pagan sin importar los 183 días —madera, carbón o mineral de hierro con interés económico retenido, pagos contingentes por patentes y derechos de autor, ciertas transferencias de patentes y las obligaciones con descuento de emisión (OID)—: para un ETF de acciones no cambia nada, para uno de bonos OID puede. Si estuviste 183 días o más, en cambio, tu ganancia neta paga 30% y se declara en el Schedule NEC del Form 1040-NR, aun por operaciones hechas estando fuera del país.',
   },
   {
     q: '¿Cuánto me retienen por los dividendos y se puede bajar?',
@@ -1054,7 +1173,7 @@ const faq = [
   },
   {
     q: 'Si traigo la plata de vuelta a Uruguay, ¿qué me cobran?',
-    a: 'Ningún impuesto por traerla: el capital que vuelve no es renta y el impuesto uruguayo ya se devengó antes (los dividendos por lo devengado, la ganancia al momento de la enajenación). Lo que sí te cobran son precios comerciales: el cargo del bróker por retirar, la cadena de bancos corresponsales —que por defecto se descuenta del monto girado y la paga el beneficiario— y la comisión del banco uruguayo por acreditar. Con los tarifarios publicados, ese viaje de ida y vuelta ronda entre USD 95 y USD 215 según el banco y el canal, contra unos pocos dólares de comisión del bróker. El impuesto uruguayo se paga aparte: no te lo descuentan del giro.',
+    a: `Ningún impuesto por traerla: el capital que vuelve no es renta y el impuesto uruguayo ya se devengó antes (los dividendos por lo devengado, la ganancia al momento de la enajenación). Lo que sí te cobran son precios comerciales: el cargo del bróker por retirar, la cadena de bancos corresponsales —que por defecto se descuenta del monto girado y la paga el beneficiario— y la comisión del banco uruguayo por acreditar. Cuánto suma depende del banco, del canal y del monto, así que no hay un rango estable que valga para todos: usá la calculadora de esta página con tu caso. Como referencia de UN caso concreto, con Itaú Link y USD 20.000 leído el ${readOnLabel}, el ida y vuelta da unos USD 95 (20 de salida + 30 de corresponsal de ida + 35 de corresponsal de vuelta + 10 de acreditación); y con los bancos que no publican algún tramo de la corresponsalía, cualquier total es un PISO, porque el tramo que falta no es cero, es desconocido. El impuesto uruguayo se paga aparte: no te lo descuentan del giro.`,
   },
   {
     q: '¿La comisión es por el monto o por la transacción?',
@@ -1074,7 +1193,7 @@ const faq = [
   },
   {
     q: '¿El 30% que me retuvieron en Estados Unidos me lo descuentan del IRPF uruguayo?',
-    a: 'Sí, pero sólo contra el impuesto de esa misma renta y sin devolución ni arrastre. El crédito por impuesto pagado en el exterior existe como norma expresa y no exige tratado. El detalle que cambia la cuenta: se imputa "respecto de la misma renta" y topea en el IRPF de esa renta. Si EE.UU. te retiene 30% sobre los dividendos y Uruguay cobra 12% sobre esos mismos dividendos, el IRPF de los dividendos queda en cero pero los 18 puntos de exceso se pierden: no bajan el 12% de la ganancia de capital ni se arrastran al año siguiente. Por eso esta calculadora liquida las dos rentas en filas separadas.',
+    a: 'Sí, pero sólo contra el impuesto de esa misma renta y sin devolución ni arrastre. El crédito por impuesto pagado en el exterior existe como norma expresa (Título 7, art. 25) y no exige tratado. El detalle que cambia la cuenta: el impuesto pagado afuera se acredita contra el IRPF que se genere "respecto de las mismas rentas" y topea en el IRPF de esa renta. Si EE.UU. te retiene 30% sobre los dividendos y Uruguay cobra 12% sobre esos mismos dividendos, el IRPF de los dividendos queda en cero pero los 18 puntos de exceso se pierden: no bajan el 12% de la ganancia de capital ni se arrastran al año siguiente. Por eso esta calculadora liquida las dos rentas en filas separadas.',
   },
 ]
 </script>

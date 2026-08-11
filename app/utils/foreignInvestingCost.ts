@@ -3,9 +3,10 @@
 // La pregunta que este módulo contesta es la de un post de Reddit: «pongo USD 20.000 en un ETF,
 // rinde 10%, al año lo traigo de vuelta — ¿cuánto me llega al banco y cuál es el rendimiento
 // real?». La queja de fondo («te dicen que rindió X% y no incluyen los costos») es correcta como
-// intuición y está MAL ATRIBUIDA: el costo recurrente no está en repatriar, está en la retención
-// anual sobre los dividendos. Por eso el desglose sale línea por línea: el punto es ver DÓNDE se
-// va la plata, no un único número.
+// intuición y está MAL ATRIBUIDA: repatriar es un costo de UNA VEZ. Los que se repiten todos los
+// años son otros dos —la retención sobre los dividendos, que cae aunque tu plataforma no te cobre
+// nada, y la comisión anual sobre el saldo, que con 1,5% de AuM pesa varias veces más—. Por eso el
+// desglose sale línea por línea: el punto es ver DÓNDE se va la plata, no un único número.
 //
 // PURO (sin Vue/Nuxt, sin red) para que la página, la calculadora y los tests compartan una sola
 // fuente de verdad.
@@ -117,8 +118,15 @@ export const US_FACTS: readonly ForeignInvestingFact[] = Object.freeze([
   fact(
     'ganancia-capital-exenta',
     0,
-    'EE.UU. NO te grava la ganancia por vender el ETF si estuviste menos de 183 días en el país',
-    'IRC 871(a)(2) — IRS Pub. 519',
+    'EE.UU. NO te grava la ganancia por vender el ETF si estuviste menos de 183 días en el país, salvo que esté efectivamente conectada con un negocio en EE.UU.',
+    'IRC 871(a)(2) — IRS Pub. 519: «capital gains (other than gains listed earlier) are tax exempt unless they are effectively connected with a trade or business in the United States»',
+    P519
+  ),
+  fact(
+    'ganancia-capital-excepciones',
+    null,
+    'La Pub. 519 lista cuatro clases de ganancia que pagan SIN importar los 183 días: madera/carbón/mineral de hierro con interés económico retenido, pagos contingentes por patentes y derechos de autor, ciertas transferencias de patentes, y las obligaciones con descuento de emisión (OID). Para un ETF de acciones no cambia nada; para uno de bonos OID puede cambiar',
+    'IRS Pub. 519, cap. 4, «Sales or Exchanges of Capital Assets»',
     P519
   ),
   fact(
@@ -167,7 +175,7 @@ export const US_FACTS: readonly ForeignInvestingFact[] = Object.freeze([
     'situs',
     null,
     'Las acciones son bien situado en EE.UU. ÚNICAMENTE si las emitió una sociedad doméstica: no hay mirada a través al activo subyacente',
-    'IRC 2104(a)',
+    'IRC 2104(a), literal: «shares of stock owned and held by a nonresident not a citizen of the United States shall be deemed property within the United States only if issued by a domestic corporation»',
     IRC('2104')
   ),
   fact(
@@ -217,8 +225,8 @@ export const US_FACTS: readonly ForeignInvestingFact[] = Object.freeze([
   fact(
     'irlanda-sin-exit-tax',
     0,
-    'Irlanda no le retiene nada al inversor no residente: ni al cobrar ni al vender (cuotapartes en sistema de compensación reconocido, y exención por no residencia)',
-    'Revenue TDM Part 27-01a-02 (sec. 739B(1))',
+    'Irlanda no le retiene nada al inversor no residente: ni al cobrar ni al vender. El camino que aplica a un ETF cotizado es el de las cuotapartes en un sistema de compensación reconocido (párr. 4.2.3), que no lleva condición; la exención por no residencia (párr. 4.2.8) sí exige que el fondo tenga la declaración de no residencia ANTES del hecho imponible',
+    'Revenue TDM Part 27-01a-02, párrs. 4.2.3 y 4.2.8 (sec. 739B(1))',
     'https://www.revenue.ie/en/tax-professionals/tdm/income-tax-capital-gains-tax-corporation-tax/part-27/27-01a-02.pdf'
   ),
   fact(
@@ -259,6 +267,11 @@ export interface EstateTaxExposure {
   excessUsd: number
   crossesThreshold: boolean
   topRatePct: number
+  /**
+   * Cuántas carteras iguales a ésta hacen falta para cruzar el umbral. `null` con un fondo
+   * irlandés (no hay umbral que cruzar) o con valor 0. Se calcula, no se afirma de memoria.
+   */
+  contributionsToCrossThreshold: number | null
   note: string
 }
 
@@ -284,20 +297,32 @@ export function estateTaxExposure(input: {
       excessUsd: 0,
       crossesThreshold: false,
       topRatePct: US_ESTATE_TAX_TOP_RATE_PCT,
+      contributionsToCrossThreshold: null,
       note: 'Un UCITS irlandés no es una sociedad doméstica estadounidense, así que sus cuotapartes quedan fuera del hecho imponible (IRC 2104(a)) y la ley no habilita mirar a través hacia las acciones que el fondo tiene adentro. El mismo S&P 500 comprado vía Dublín no cuenta contra el mínimo no imponible de USD 60.000.',
     }
   }
   const excess = Math.max(value - US_ESTATE_TAX_THRESHOLD_USD, 0)
+  // Cuántas carteras como ésta hacen falta para cruzar el umbral. Se CALCULA: la frase fija
+  // «con tres aportes iguales a éste ya estarías arriba» sólo era cierta por encima de
+  // USD 20.000, y se publicaba igual con una cartera de USD 1.000.
+  const contributionsToCross = value > 0 ? Math.ceil(US_ESTATE_TAX_THRESHOLD_USD / value) : null
+  const repeatSentence =
+    contributionsToCross === null
+      ? ''
+      : contributionsToCross <= 1
+        ? ''
+        : ` Con ${contributionsToCross} carteras iguales a ésta ya estarías arriba.`
   return {
     inScope: true,
     thresholdUsd: US_ESTATE_TAX_THRESHOLD_USD,
     excessUsd: excess,
     crossesThreshold: excess > 0,
     topRatePct: US_ESTATE_TAX_TOP_RATE_PCT,
+    contributionsToCrossThreshold: contributionsToCross,
     note:
       excess > 0
         ? 'Con este valor ya se supera el mínimo no imponible de USD 60.000: el albacea debe presentar el Form 706-NA y el bróker congela la cuenta hasta el transfer certificate. Uruguay no tiene tratado sucesorio con EE.UU., así que el umbral no se puede ampliar.'
-        : 'Todavía por debajo del mínimo no imponible de USD 60.000, pero el umbral se mide sobre el valor a la fecha de fallecimiento: la sola revalorización puede cruzarlo, y con tres aportes iguales a éste ya estarías arriba.',
+        : `Todavía por debajo del mínimo no imponible de USD 60.000, pero el umbral se mide sobre el valor a la fecha de fallecimiento: la sola revalorización puede cruzarlo.${repeatSentence}`,
   }
 }
 
@@ -434,6 +459,28 @@ export interface BankWirePreset {
  * tramos SÍ están publicados; el primero como MÍNIMO, no como fijo. Es la misma tabla para los
  * dos canales, así que se construye una vez.
  */
+/**
+ * Costos de corresponsal de la ENTRADA, sección 8.1 del tarifario de Itaú («Órdenes de pago
+ * recibidas del exterior»). La tabla es una sola para los dos canales.
+ *
+ * Los cuatro escalones están publicados: sólo por debajo de USD 101 falta el precio. El módulo
+ * llegó a marcar como «no publicado» todo lo que iba hasta USD 2.000, perdiendo los tramos de
+ * USD 10 y USD 15 que el tarifario sí trae.
+ */
+const ITAU_CORRESPONDENT_IN = (): FeeSchedule =>
+  sched(
+    'Costo de corresponsal, recepción',
+    [
+      { upToUsd: 100, pctOfAmount: 0, minUsd: null, maxUsd: null, flatUsd: 0, unpublished: true },
+      { upToUsd: 500, pctOfAmount: 0, minUsd: null, maxUsd: null, flatUsd: 10 },
+      { upToUsd: 2_000, pctOfAmount: 0, minUsd: null, maxUsd: null, flatUsd: 15 },
+      { upToUsd: 20_000, pctOfAmount: 0, minUsd: null, maxUsd: null, flatUsd: 25 },
+      { upToUsd: null, pctOfAmount: 0, minUsd: null, maxUsd: null, flatUsd: 35 },
+    ],
+    'https://www.itau.com.uy/inst/aci/docs/tarifario.pdf',
+    { publishedVersion: 'Versión agosto 01, 2026' }
+  )
+
 const SANTANDER_CORRESPONDENT_OUT = (): FeeSchedule =>
   sched(
     'Gastos de corresponsalía para pagos en USD (campo SWIFT 71A «OUR»)',
@@ -491,6 +538,7 @@ export const BANK_WIRE_PRESETS: readonly BankWirePreset[] = Object.freeze([
     ),
     // No lo damos por 0: la cartilla simplemente no lo resuelve para la entrada.
     correspondentIn: null,
+    maxAmountUsd: null,
   },
   {
     id: 'brou-sucursal',
@@ -511,11 +559,14 @@ export const BANK_WIRE_PRESETS: readonly BankWirePreset[] = Object.freeze([
       { note: 'Las transferencias recibidas por menos de USD 100 se devuelven al emisor.' }
     ),
     // EL HALLAZGO POR AUSENCIA: BROU es el único de los cuatro que no publica la tabla de
-    // corresponsales; sólo advierte que su comisión no los incluye. Con BROU el usuario NO
-    // puede computar el costo total antes de ordenar el giro.
+    // corresponsales de la IDA; sólo advierte que su comisión no los incluye. Con BROU el
+    // usuario NO puede computar el costo total antes de ordenar el giro.
+    // En la VUELTA la ausencia es más común: BBVA y Santander tampoco la publican (sólo Itaú
+    // trae la tabla de la sección 8.1), así que la frase tiene que decir de qué tramo habla.
     correspondentOut: null,
     correspondentIn: null,
-    note: 'BROU no publica cuánto cobra la cadena de corresponsales: sólo avisa que su comisión no los incluye. Es el único de los cuatro que no lo publica.',
+    maxAmountUsd: null,
+    note: 'BROU no publica cuánto cobra la cadena de corresponsales: sólo avisa que su comisión no los incluye. Es el único de los cuatro que no publica la tabla de la IDA; en la VUELTA tampoco la publican BBVA ni Santander, así que ahí sólo Itaú te deja calcular el total.',
   },
   {
     id: 'itau-link',
@@ -537,7 +588,7 @@ export const BANK_WIRE_PRESETS: readonly BankWirePreset[] = Object.freeze([
       { publishedVersion: 'Versión agosto 01, 2026' }
     ),
     correspondentOut: sched(
-      'Costo de corresponsal, envío',
+      'Costo de corresponsal, envío (canal Itaú/Link)',
       [
         // El tarifario arranca en USD 101: por debajo de eso no publica tramo, y `feeFor`
         // devuelve `null` en vez de inventar un 0.
@@ -545,28 +596,23 @@ export const BANK_WIRE_PRESETS: readonly BankWirePreset[] = Object.freeze([
         { upToUsd: 500, pctOfAmount: 0, minUsd: null, maxUsd: null, flatUsd: 15 },
         { upToUsd: 2_000, pctOfAmount: 0, minUsd: null, maxUsd: null, flatUsd: 20 },
         { upToUsd: 20_000, pctOfAmount: 0, minUsd: null, maxUsd: null, flatUsd: 30 },
-        { upToUsd: null, pctOfAmount: 0, minUsd: null, maxUsd: null, flatUsd: 40 },
-      ],
-      'https://www.itau.com.uy/inst/aci/docs/tarifario.pdf',
-      { publishedVersion: 'Versión agosto 01, 2026' }
-    ),
-    correspondentIn: sched(
-      'Costo de corresponsal, recepción',
-      [
+        // 8.2.1: la tabla de este canal termina en «U$S 20.001 – 100.000 → U$S 40», que es
+        // además el tope del canal. Por encima no hay tramo publicado: no lo extrapolamos.
+        { upToUsd: 100_000, pctOfAmount: 0, minUsd: null, maxUsd: null, flatUsd: 40 },
         {
-          upToUsd: 2_000,
+          upToUsd: null,
           pctOfAmount: 0,
           minUsd: null,
           maxUsd: null,
           flatUsd: 0,
           unpublished: true,
         },
-        { upToUsd: 20_000, pctOfAmount: 0, minUsd: null, maxUsd: null, flatUsd: 25 },
-        { upToUsd: null, pctOfAmount: 0, minUsd: null, maxUsd: null, flatUsd: 35 },
       ],
       'https://www.itau.com.uy/inst/aci/docs/tarifario.pdf',
       { publishedVersion: 'Versión agosto 01, 2026' }
     ),
+    correspondentIn: ITAU_CORRESPONDENT_IN(),
+    maxAmountUsd: 100_000,
   },
   {
     id: 'itau-mostrador',
@@ -585,34 +631,21 @@ export const BANK_WIRE_PRESETS: readonly BankWirePreset[] = Object.freeze([
       { publishedVersion: 'Versión agosto 01, 2026' }
     ),
     correspondentOut: sched(
-      'Costo de corresponsal, envío',
+      'Costo de corresponsal, envío (instruidas por otros medios)',
       [
         { upToUsd: 100, pctOfAmount: 0, minUsd: null, maxUsd: null, flatUsd: 0, unpublished: true },
         { upToUsd: 500, pctOfAmount: 0, minUsd: null, maxUsd: null, flatUsd: 15 },
         { upToUsd: 2_000, pctOfAmount: 0, minUsd: null, maxUsd: null, flatUsd: 20 },
         { upToUsd: 20_000, pctOfAmount: 0, minUsd: null, maxUsd: null, flatUsd: 30 },
+        // 8.2.2 cierra con «Más de U$S 20.000 → U$S 40», sin tope: acá sí corresponde el
+        // tramo abierto (a diferencia del canal Link, cuya tabla termina en USD 100.000).
         { upToUsd: null, pctOfAmount: 0, minUsd: null, maxUsd: null, flatUsd: 40 },
       ],
       'https://www.itau.com.uy/inst/aci/docs/tarifario.pdf',
       { publishedVersion: 'Versión agosto 01, 2026' }
     ),
-    correspondentIn: sched(
-      'Costo de corresponsal, recepción',
-      [
-        {
-          upToUsd: 2_000,
-          pctOfAmount: 0,
-          minUsd: null,
-          maxUsd: null,
-          flatUsd: 0,
-          unpublished: true,
-        },
-        { upToUsd: 20_000, pctOfAmount: 0, minUsd: null, maxUsd: null, flatUsd: 25 },
-        { upToUsd: null, pctOfAmount: 0, minUsd: null, maxUsd: null, flatUsd: 35 },
-      ],
-      'https://www.itau.com.uy/inst/aci/docs/tarifario.pdf',
-      { publishedVersion: 'Versión agosto 01, 2026' }
-    ),
+    correspondentIn: ITAU_CORRESPONDENT_IN(),
+    maxAmountUsd: null,
   },
   {
     id: 'santander-supernet',
@@ -638,6 +671,7 @@ export const BANK_WIRE_PRESETS: readonly BankWirePreset[] = Object.freeze([
     // Órdenes de pago recibidas del exterior» sólo está la comisión propia (1,65 por mil): la
     // corresponsalía de la vuelta no aparece.
     correspondentIn: null,
+    maxAmountUsd: null,
   },
   {
     id: 'santander-mostrador',
@@ -657,6 +691,7 @@ export const BANK_WIRE_PRESETS: readonly BankWirePreset[] = Object.freeze([
     ),
     correspondentOut: SANTANDER_CORRESPONDENT_OUT(),
     correspondentIn: null,
+    maxAmountUsd: null,
   },
 ])
 
@@ -670,8 +705,8 @@ export const bankPresetById = (id: string): BankWirePreset | undefined =>
  * - `por-accion`: IBKR cobra por ACCIÓN con un MÍNIMO por orden y un tope del 1% del valor
  *   operado. No cobra un porcentaje del monto: comprar USD 20.000 o USD 200.000 de SPY puede
  *   costar lo mismo.
- * - `porcentaje`: Gletir, Prex e Inviu cobran un % del monto operado (con mínimo). Ahí sí el
- *   costo escala con la plata.
+ * - `porcentaje`: Gletir y Prex cobran un % del monto operado (con mínimo). Ahí sí el costo
+ *   escala con la plata.
  */
 export type BrokerCommission =
   | {
@@ -702,15 +737,31 @@ export interface BrokerPreset {
   annualAumFeePct: number
   /** Tope de compra que la plataforma impone (Prex). `null` = sin tope publicado. */
   maxMonthlyPurchaseUsd: number | null
-  /** Ruta sugerida para fondear. El usuario la puede cambiar: no la damos por verificada. */
+  /**
+   * Ruta sugerida para fondear. El usuario la puede cambiar: no la damos por verificada, pero
+   * si elige otra la calculadora lo AVISA, porque con la ruta equivocada modela una cadena de
+   * giro SWIFT y corresponsales que en ese caso no existe (o al revés, se la saltea).
+   */
   suggestedRoute: TransferRoute
   sourceUrl: string
+  /**
+   * Links adicionales cuando una afirmación del preset NO está en `sourceUrl`. Caso concreto:
+   * los retiros gratis de IBKR están en other-fees.php, no en la página de comisiones de
+   * acciones; mandar al usuario a comprobarlo donde no está es peor que no linkear.
+   */
+  extraSources?: readonly { label: string; url: string }[]
   readOn: string
   publishedVersion?: string
   note?: string
 }
 
 export type TransferRoute = 'internacional' | 'local'
+
+/** Los retiros de IBKR se publican acá, no en la página de comisiones de acciones. */
+const IBKR_WITHDRAWALS_SOURCE = Object.freeze({
+  label: 'los dos retiros gratis por mes y el cargo por wire, en «Other Fees»',
+  url: 'https://www.interactivebrokers.com/en/pricing/other-fees.php',
+})
 
 export const BROKER_PRESETS: readonly BrokerPreset[] = Object.freeze([
   {
@@ -752,8 +803,9 @@ export const BROKER_PRESETS: readonly BrokerPreset[] = Object.freeze([
     maxMonthlyPurchaseUsd: null,
     suggestedRoute: 'internacional',
     sourceUrl: 'https://www.interactivebrokers.com/en/pricing/commissions-stocks.php',
+    extraSources: [IBKR_WITHDRAWALS_SOURCE],
     readOn: FOREIGN_INVESTING_VERIFIED_ON,
-    note: 'IBKR Lite (USD 0) es «US Residents Only»: un uruguayo va a Pro. Dos retiros gratis por mes calendario; del tercero en adelante, USD 10 por wire en dólares.',
+    note: 'IBKR Lite (USD 0) es «US Residents Only»: un uruguayo va a Pro. Dos retiros gratis por mes calendario; del tercero en adelante, USD 10 por wire en dólares (eso está en «Other Fees», no en la página de comisiones de acciones).',
   },
   {
     id: 'ibkr-pro-tiered',
@@ -766,6 +818,7 @@ export const BROKER_PRESETS: readonly BrokerPreset[] = Object.freeze([
     maxMonthlyPurchaseUsd: null,
     suggestedRoute: 'internacional',
     sourceUrl: 'https://www.interactivebrokers.com/en/pricing/commissions-stocks.php',
+    extraSources: [IBKR_WITHDRAWALS_SOURCE],
     readOn: FOREIGN_INVESTING_VERIFIED_ON,
     note: 'La tarifa Tiered no incluye las tasas regulatorias y de bolsa que se cobran aparte; el mínimo por orden manda igual en una compra chica.',
   },
@@ -773,30 +826,28 @@ export const BROKER_PRESETS: readonly BrokerPreset[] = Object.freeze([
     id: 'inviu-ibkr',
     name: 'Inviu Uruguay (ruta a Interactive Brokers)',
     plan: 'Inversor Silver (AuM menor a USD 50.000)',
-    buy: {
-      kind: 'porcentaje',
-      pctOfAmount: 1.5,
-      minPerOrderUsd: 15,
-      maxPerOrderUsd: null,
-      flatUsd: 0,
-    },
-    sell: {
-      kind: 'porcentaje',
-      pctOfAmount: 1.5,
-      minPerOrderUsd: 15,
-      maxPerOrderUsd: null,
-      flatUsd: 0,
-    },
+    // La comisión POR OPERACIÓN de esta ruta es la de IBKR, no una de Inviu: el propio tarifario
+    // dice que el cliente paga la comisión sobre AuM «que se suma a los costos por operación de
+    // Interactive Brokers», y su nota (4) manda al esquema IBKR PRO. Modelar acá un 1,50% por
+    // punta cobraba USD 300 sobre USD 20.000 donde la fuente dice USD 1.
+    buy: { kind: 'por-accion', perShareUsd: 0.005, minPerOrderUsd: 1, maxPctOfTrade: 1 },
+    sell: { kind: 'por-accion', perShareUsd: 0.005, minPerOrderUsd: 1, maxPctOfTrade: 1 },
     withdrawalUsd: 0,
     // LA RESPUESTA A «¿costo mensual/trimestral/anual?»: existe, y en un buy-and-hold es la que
-    // más pesa. Se cobra mensualmente sobre el AuM promedio del mes y se SUMA a los costos por
-    // operación de IBKR.
+    // más pesa. Es lo único inequívoco y propio de Inviu en esta ruta: se cobra mensualmente
+    // sobre el AuM promedio del mes (año de 252 días) y se SUMA a los costos por operación.
     annualAumFeePct: 1.5,
     maxMonthlyPurchaseUsd: null,
     suggestedRoute: 'local',
     sourceUrl: 'https://files.inviu.com.uy/uy/ARANCELES_UY.pdf',
+    extraSources: [
+      {
+        label: 'los costos por operación de IBKR Pro, que es a lo que remite la nota (4)',
+        url: 'https://www.interactivebrokers.com/es/pricing/commissions-home.php',
+      },
+    ],
     readOn: FOREIGN_INVESTING_VERIFIED_ON,
-    note: 'Agente de Valores inscripto en el BCU (nroinst 4213). No publicamos su bloque de custodia y mantenimiento: la capa de texto del PDF tiene 5 etiquetas y 4 valores y no se pudo reconstruir con certeza a qué fila corresponde cada número.',
+    note: 'Agente de Valores inscripto en el BCU (nroinst 4213). En esta ruta la comisión por operación es la de IBKR Pro: el tarifario dice que la comisión sobre AuM «se suma a los costos por operación de Interactive Brokers». El bloque «Cuenta custodia» del mismo PDF es OTRA ruta y publica TECHOS, no precios: para «Acciones, ETFs» dice «Hasta 1,50% por transacción; mínimo USD 15», y un «hasta» no se puede cobrar como si fuera la tarifa. Si vas por esa vía, cargá a mano lo que te cobren.',
   },
   {
     id: 'prex',
@@ -823,7 +874,7 @@ export const BROKER_PRESETS: readonly BrokerPreset[] = Object.freeze([
     suggestedRoute: 'local',
     sourceUrl: 'https://www.prexcard.com/ayuda/11',
     readOn: FOREIGN_INVESTING_VERIFIED_ON,
-    note: 'IVA incluido. Hay además un cargo cambiario del orden de USD 0,20 que no modelamos por separado.',
+    note: 'IVA incluido. En la VENTA hay además una comisión mínima que cobra el Exchange (la bolsa), del orden de USD 0,20, que Prex informa como «Otros cargos» en la confirmación y que no modelamos por separado. Mínimos: USD 10 para comprar, USD 2 para vender.',
   },
 ])
 
@@ -912,8 +963,9 @@ export interface TaxRow {
   foreignTaxUsd: number
   creditAppliedUsd: number
   /**
-   * Crédito que se PIERDE. El art. 25 lo imputa «respecto de la misma renta» y topea en el IRPF
-   * de esa renta: si EE.UU. te retiene 30% sobre el dividendo y Uruguay cobra 12%, el IRPF del
+   * Crédito que se PIERDE. El Título 7 art. 25 lo acredita contra el IRPF «que se genere
+   * respecto de las mismas rentas» y topea en el IRPF de esa renta: si EE.UU. te retiene 30%
+   * sobre el dividendo y Uruguay cobra 12%, el IRPF del
    * dividendo queda en 0 pero los 18 puntos de exceso NO bajan el 12% de la ganancia de capital
    * ni se arrastran al año siguiente. Por eso las dos rentas se liquidan en FILAS SEPARADAS.
    */
@@ -1097,11 +1149,13 @@ function taxRow(input: {
  * La cadena completa: giro de salida → compra → tenencia → venta → retiro → giro de entrada →
  * IRPF uruguayo, y el número que el post pide.
  *
- * TODO EL CÁLCULO VA EN DÓLARES, y no es una simplificación: el Decreto 148/007 toma el costo
- * fiscal «en la moneda en que se realizó la inversión, valuada a la cotización del día anterior
- * al de la enajenación», así que costo y precio se convierten a pesos con el MISMO tipo de
- * cambio y la devaluación del peso entre compra y venta no genera renta gravada. El 12% cae
- * sobre la ganancia en dólares.
+ * TODO EL CÁLCULO VA EN DÓLARES, y no es una simplificación: es LA LEY, no el decreto. El
+ * Título 7 art. 32 dice, en el inciso agregado por la Ley 20.446 (art. 651 num. 2), que «para
+ * los bienes situados en el exterior, el costo fiscal se determinará considerando el valor en
+ * la moneda en que se realizó la referida inversión, valuada a la cotización del día anterior
+ * al de la enajenación». Costo y precio se convierten a pesos con el MISMO tipo de cambio, así
+ * que la devaluación del peso entre compra y venta no genera renta gravada, y el 12% cae sobre
+ * la ganancia en dólares. El Decreto 148/007 reglamenta otra cosa (las retenciones).
  */
 export function foreignInvestingRoundTrip(input: RoundTripInput): RoundTripResult {
   const lines: CostLine[] = []
@@ -1124,16 +1178,21 @@ export function foreignInvestingRoundTrip(input: RoundTripInput): RoundTripResul
    * la cuenta ya no está incompleta.
    */
   const resolveFee = (
-    scheduleValue: number | null,
+    lookup: { amountUsd: number | null; isFloor: boolean },
     override: number | null | undefined
-  ): { amount: number; unpublished: boolean; overridden: boolean } =>
+  ): { amount: number; unpublished: boolean; overridden: boolean; isFloor: boolean } =>
     typeof override === 'number' && Number.isFinite(override)
-      ? { amount: nonNegative(override), unpublished: false, overridden: true }
+      ? { amount: nonNegative(override), unpublished: false, overridden: true, isFloor: false }
       : {
-          amount: nonNegative(scheduleValue),
-          unpublished: scheduleValue === null,
+          amount: nonNegative(lookup.amountUsd),
+          unpublished: lookup.amountUsd === null,
           overridden: false,
+          // Un tramo publicado como MÍNIMO (Santander hasta USD 10.000) es un piso: la línea
+          // lo dice en vez de hacer pasar el mínimo por el precio exacto.
+          isFloor: lookup.amountUsd !== null && lookup.isFloor,
         }
+
+  const noSchedule = { amountUsd: null, isFloor: false }
 
   // ── 1. Salida ────────────────────────────────────────────────────────────────────────────
   let outboundBankFee = 0
@@ -1159,7 +1218,7 @@ export function foreignInvestingRoundTrip(input: RoundTripInput): RoundTripResul
   } else {
     const bank = input.bank
     const outFee = resolveFee(
-      bank ? feeFor(amountSentUsd, bank.outbound) : null,
+      bank ? feeLookup(amountSentUsd, bank.outbound) : noSchedule,
       input.outboundBankFeeOverrideUsd
     )
     outboundBankFee = outFee.amount
@@ -1173,13 +1232,14 @@ export function foreignInvestingRoundTrip(input: RoundTripInput): RoundTripResul
       nature: 'precio-comercial',
       unpublished: outFee.unpublished,
       overridden: outFee.overridden,
+      isFloor: outFee.isFloor,
       sourceUrl: bank?.outbound.sourceUrl,
       readOn: bank?.outbound.readOn,
       detail: bank?.outbound.note,
     })
 
     const corr = resolveFee(
-      bank ? feeFor(amountSentUsd, bank.correspondentOut) : null,
+      bank ? feeLookup(amountSentUsd, bank.correspondentOut) : noSchedule,
       input.correspondentOutOverrideUsd
     )
     correspondentOut = corr.amount
@@ -1191,6 +1251,7 @@ export function foreignInvestingRoundTrip(input: RoundTripInput): RoundTripResul
       nature: 'precio-comercial',
       unpublished: corr.unpublished,
       overridden: corr.overridden,
+      isFloor: corr.isFloor,
       sourceUrl: bank?.correspondentOut?.sourceUrl ?? bank?.outbound.sourceUrl,
       readOn: bank?.correspondentOut?.readOn ?? bank?.outbound.readOn,
       detail: corr.unpublished
@@ -1202,6 +1263,14 @@ export function foreignInvestingRoundTrip(input: RoundTripInput): RoundTripResul
     if (corr.unpublished && bank) {
       warnings.push(
         `${bank.bank} no publica cuánto cobra la cadena de corresponsales, así que el costo total de esta cuenta está incompleto: te va a llegar menos de lo que dice el resultado.`
+      )
+    }
+
+    // El tope del canal se verifica igual que el de Prex. Itaú/Link lo publica en el título de
+    // la sección 8.2.1 («Monto máximo U$S 100.000») y su tabla de corresponsal termina ahí.
+    if (bank && bank.maxAmountUsd !== null && amountSentUsd > bank.maxAmountUsd) {
+      warnings.push(
+        `${bank.bank} — ${bank.channel}: el canal tiene un tope de USD ${bank.maxAmountUsd.toLocaleString('es-UY')} por giro, así que este monto no se puede ordenar por acá. El tarifario tampoco publica el costo de corresponsal por encima de ese tope.`
       )
     }
   }
@@ -1236,6 +1305,16 @@ export function foreignInvestingRoundTrip(input: RoundTripInput): RoundTripResul
   ) {
     warnings.push(
       `${input.broker.name} tiene un tope de compra de USD ${input.broker.maxMonthlyPurchaseUsd.toLocaleString('es-UY')} por mes: este monto NO entra de una sola vez.`
+    )
+  }
+
+  // La ruta sugerida por el preset SIRVE PARA ALGO: si elegís otra, la cuenta modela una cadena
+  // que en tu caso no existe (Gletir y Prex se fondean por transferencia local, IBKR no).
+  if (input.route !== input.broker.suggestedRoute) {
+    warnings.push(
+      input.broker.suggestedRoute === 'local'
+        ? `${input.broker.name} se fondea por transferencia LOCAL, pero elegiste giro internacional: esta cuenta te está cobrando un giro SWIFT y una cadena de corresponsales que en ese caso no existirían. Cambiá la ruta o confirmá con la plataforma cómo entra la plata.`
+        : `${input.broker.name} se fondea por giro INTERNACIONAL, pero elegiste transferencia local: esta cuenta se saltea el giro y los corresponsales, así que el costo de mover la plata te va a quedar corto.`
     )
   }
 
@@ -1342,7 +1421,7 @@ export function foreignInvestingRoundTrip(input: RoundTripInput): RoundTripResul
   } else {
     const bank = input.bank
     const corr = resolveFee(
-      bank ? feeFor(wiredHomeUsd, bank.correspondentIn) : null,
+      bank ? feeLookup(wiredHomeUsd, bank.correspondentIn) : noSchedule,
       input.correspondentInOverrideUsd
     )
     correspondentIn = corr.amount
@@ -1354,6 +1433,7 @@ export function foreignInvestingRoundTrip(input: RoundTripInput): RoundTripResul
       nature: 'precio-comercial',
       unpublished: corr.unpublished,
       overridden: corr.overridden,
+      isFloor: corr.isFloor,
       sourceUrl: bank?.correspondentIn?.sourceUrl ?? bank?.inbound.sourceUrl,
       readOn: bank?.correspondentIn?.readOn ?? bank?.inbound.readOn,
       detail: corr.unpublished
@@ -1363,7 +1443,7 @@ export function foreignInvestingRoundTrip(input: RoundTripInput): RoundTripResul
 
     const arrivedHome = Math.max(wiredHomeUsd - correspondentIn, 0)
     const inFee = resolveFee(
-      bank ? feeFor(arrivedHome, bank.inbound) : null,
+      bank ? feeLookup(arrivedHome, bank.inbound) : noSchedule,
       input.inboundBankFeeOverrideUsd
     )
     inboundBankFee = inFee.amount
@@ -1377,6 +1457,7 @@ export function foreignInvestingRoundTrip(input: RoundTripInput): RoundTripResul
       nature: 'precio-comercial',
       unpublished: inFee.unpublished,
       overridden: inFee.overridden,
+      isFloor: inFee.isFloor,
       sourceUrl: bank?.inbound.sourceUrl,
       readOn: bank?.inbound.readOn,
       detail: bank?.inbound.note,
@@ -1390,9 +1471,9 @@ export function foreignInvestingRoundTrip(input: RoundTripInput): RoundTripResul
   // Dividendos y ganancia de venta son DOS rentas distintas: los primeros son rendimientos de
   // capital mobiliario (T7 art. 6 num. 2 apartado I, devengados aunque no los traigas), la
   // segunda es un incremento patrimonial (apartado II, imputado a la enajenación). El crédito
-  // por impuesto extranjero se imputa «respecto de la misma renta» y topea en el IRPF de esa
-  // renta: sumarlas en una sola fila haría que los 18 puntos de exceso del dividendo taparan
-  // indebidamente el 12% de la ganancia.
+  // por impuesto extranjero se acredita contra el IRPF «que se genere respecto de las mismas
+  // rentas» (T7 art. 25, literal) y topea en el IRPF de esa renta: sumarlas en una sola fila
+  // haría que los 18 puntos de exceso del dividendo taparan indebidamente el 12% de la ganancia.
   const definitive = Boolean(input.definitiveWithholding)
 
   // Base del dividendo: el BRUTO cuando la retención la sufre el inversor (fondo de EE.UU.),
@@ -1495,8 +1576,11 @@ export function foreignInvestingRoundTrip(input: RoundTripInput): RoundTripResul
     grossGainUsd > 0 ? ((totalCostsUsd + totalTaxesUsd) / grossGainUsd) * 100 : null
 
   if (nonNegative(input.grossDividendYieldPct) === 0) {
+    // «La única fuga que se repite» era falso y este mismo módulo lo desmentía: la comisión
+    // anual sobre el saldo también se repite, y con 1,5% de AuM pesa varias veces más. Lo que
+    // la retención tiene de único es que se repite AUNQUE tu plataforma no te cobre nada.
     warnings.push(
-      'No cargaste rendimiento por dividendos, así que la retención anual del exterior no aparece en esta cuenta — y es la única fuga que se repite todos los años. El dato lo publica el emisor del fondo; nosotros no lo inventamos.'
+      'No cargaste rendimiento por dividendos, así que la retención anual del exterior no aparece en esta cuenta — y es la fuga fiscal que se repite todos los años, aunque tu plataforma no te cobre nada por tener el fondo. El dato lo publica el emisor del fondo; nosotros no lo inventamos.'
     )
   }
   if (input.domicile === 'irlanda') {
