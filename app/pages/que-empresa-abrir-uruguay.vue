@@ -1107,7 +1107,7 @@
           <tbody>
             <tr v-for="a in apoyos" :key="a.name">
               <td class="font-weight-bold" data-label="">{{ a.name }}</td>
-              <td data-label="Qué da">{{ a.gives }}</td>
+              <td class="cu-cell-prose" data-label="Qué da">{{ a.gives }}</td>
               <td data-label="Estado">
                 <VChip size="x-small" variant="tonal" :color="a.color">{{ a.status }}</VChip>
               </td>

@@ -189,7 +189,9 @@
             <td class="font-weight-medium" data-label="Riesgo">
               <VIcon :icon="risk.icon" color="warning" size="18" class="mr-1" />{{ risk.name }}
             </td>
-            <td class="text-body-2" data-label="Qué exigir para mitigarlo">{{ risk.guardrail }}</td>
+            <td class="text-body-2 cu-cell-prose" data-label="Qué exigir para mitigarlo">
+              {{ risk.guardrail }}
+            </td>
           </tr>
         </tbody>
       </VTable>

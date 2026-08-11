@@ -11,6 +11,16 @@
  *   - Give every <td> a `data-label="<column header>"`.
  *   - A <td> with `data-label=""` (or none) renders full-width with no label —
  *     use it for the row's title/name cell.
+ *   - A cell whose value is PROSE (a sentence, a quote, an explanation — not a
+ *     number or a short tag) also gets `class="cu-cell-prose"`. The label then
+ *     sits on its own line above and the text runs full width, left-aligned.
+ *
+ * Why the prose modifier exists: the default puts the label left and the value
+ * right on one line, which is right for numbers and wrong for sentences — a
+ * 200-character explanation gets squeezed into whatever the label leaves over
+ * (about 180px of a 390px phone) and renders as a tall ragged ribbon. That is
+ * not a styling nicety: on the job-ads table it made the column that carries
+ * the actual argument the hardest one to read.
  *
  * Desktop is untouched: the rules live entirely inside the phone media query,
  * so >= 600px keeps the normal table (with its usual overflow-x scroll intact
@@ -53,16 +63,32 @@
 
   .cu-mobile-cards tbody td {
     display: flex;
+    flex-wrap: wrap;
     align-items: baseline;
     justify-content: space-between;
-    gap: 1rem;
+    gap: 0.15rem 1rem;
     width: auto !important;
     height: auto !important;
     min-height: 0 !important;
+    min-width: 0;
     padding: 0.4rem 0 !important;
     text-align: right;
     white-space: normal !important;
+    /* A URL, a tracking code or a long unbroken token would otherwise push the
+       card past the viewport (see DESIGN.md, The Min-Width Zero Rule). */
+    overflow-wrap: anywhere;
     border: none !important;
+  }
+
+  /* A cell that carries a value AND a small caption ("$ 13.788" + "servicios $ 8.500 ·
+     boletos $ 2.288 …") is three flex items on one line, and the caption wins the space:
+     the amount gets squeezed into a two-character column and breaks as "$ / 13. / 788".
+     Dropping the caption to its own full-width line gives the number the row back.
+     No alignment is set: it inherits the cell's, which is right in a label/value row and
+     left in the title cell or a prose one. */
+  .cu-mobile-cards tbody td > .text-caption,
+  .cu-mobile-cards tbody td > .cu-cell-note {
+    flex: 1 0 100%;
   }
 
   /* Separator between cells within a card, except the last. */
@@ -78,6 +104,20 @@
     text-align: left;
     color: rgb(var(--v-theme-on-surface));
     opacity: 0.65;
+  }
+
+  /* Prose cell: the label becomes a line of its own and the sentence gets the
+     full width of the card, reading left to right like the paragraph it is. */
+  .cu-mobile-cards tbody td.cu-cell-prose {
+    display: block;
+    text-align: left;
+  }
+  .cu-mobile-cards tbody td.cu-cell-prose::before {
+    display: block;
+    margin: 0 0 0.15rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
   }
 
   /* Title/name cell: no label, full width, a touch larger. */

@@ -339,7 +339,9 @@
               </td>
               <td data-label="Quién lo cobra">{{ a.operator }}</td>
               <td data-label="Cómo llega">{{ a.billing }}</td>
-              <td data-label="Cómo se forma el cargo variable">{{ a.variableCharge }}</td>
+              <td class="cu-cell-prose" data-label="Cómo se forma el cargo variable">
+                {{ a.variableCharge }}
+              </td>
             </tr>
           </tbody>
         </VTable>

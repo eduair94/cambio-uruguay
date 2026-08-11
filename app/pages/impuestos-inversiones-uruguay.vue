@@ -414,7 +414,7 @@
             <td class="font-weight-bold imp-rate-cell" data-label="Qué te retiene">
               {{ pct(FOREIGN_CUSTODIAN_WITHHOLDING_PCT) }} (retención reducida)
             </td>
-            <td data-label="Sobre qué">
+            <td class="cu-cell-prose" data-label="Sobre qué">
               Las rentas que administra. Es definitiva <strong>solo si vos optás</strong> por
               tomarla como tal (y así te liberás de la declaración jurada).
             </td>
@@ -427,7 +427,7 @@
             <td class="font-weight-bold imp-rate-cell" data-label="Qué te retiene">
               {{ pct(FOREIGN_GENERAL_PCT) }}
             </td>
-            <td data-label="Sobre qué">
+            <td class="cu-cell-prose" data-label="Sobre qué">
               <strong>Solo los incrementos patrimoniales</strong> — no es una retención sobre todas
               tus rentas del exterior.
             </td>
@@ -439,7 +439,7 @@
             <td class="font-weight-bold imp-rate-cell" data-label="Qué te retiene">
               Nadie retiene
             </td>
-            <td data-label="Sobre qué">
+            <td class="cu-cell-prose" data-label="Sobre qué">
               <strong>Anticipos semestrales obligatorios al {{ pct(FOREIGN_GENERAL_PCT) }}</strong>
               (Dec. 95/026 arts. 44 duodecies y terdecies). Pueden hacerse definitivos y liberarte
               de la declaración jurada.
@@ -832,10 +832,10 @@
         </thead>
         <tbody>
           <tr v-for="(m, i) in myths" :key="'m' + i">
-            <td class="imp-myth-claim" data-label="Lo que se dice">«{{ m.myth }}»</td>
+            <td class="imp-myth-claim cu-cell-prose" data-label="Lo que se dice">«{{ m.myth }}»</td>
             <!-- Static, authored-in-code copy (no user input): the markup is the emphasis. -->
             <!-- eslint-disable-next-line vue/no-v-html -->
-            <td data-label="Lo que dice la norma" v-html="m.truth" />
+            <td class="cu-cell-prose" data-label="Lo que dice la norma" v-html="m.truth" />
           </tr>
         </tbody>
       </VTable>

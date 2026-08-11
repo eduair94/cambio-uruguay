@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import { computePayroll } from '../../utils/payroll'
 import {
+  ARREGLOS,
   BOARD_CENSUS,
   BOARD_EXAMPLES,
   BOARD_HOURS,
+  BOLETO_STM,
   DESCANSO_INTERMEDIO,
   HORA_EXTRA,
   JORNADA_LIMITES,
@@ -11,12 +13,18 @@ import {
   LOWWAGE_SOURCES,
   MECANISMOS,
   QUE_HACER,
+  ROOM_MARKET,
   SEMANAS_POR_MES,
   SMN_2026,
   SMN_HORA,
   SMN_VIGENTE,
+  TRANSPORTE_MES,
   alquilerNuevoRegion,
+  compararArreglos,
+  costoArreglo,
+  declaraJornadaCompleta,
   diasLicenciaEstudio,
+  equivalenciasOcio,
   esJornadaCompleta,
   jornadaBreakdown,
   smnCheck,
@@ -321,6 +329,185 @@ describe('el relevamiento se publica con sus límites', () => {
 
   it('el ejemplo anclado al SMN de enero está en la lista', () => {
     expect(BOARD_EXAMPLES.some(e => e.nominal === SMN_2026.enero)).toBe(true)
+  })
+})
+
+describe('la medición propia del mercado de piezas', () => {
+  it('publica el método completo: leídos, únicos, muestra y exclusiones', () => {
+    expect(ROOM_MARKET.avisosLeidos).toBeGreaterThan(ROOM_MARKET.avisosUnicos)
+    expect(ROOM_MARKET.avisosUnicos).toBeGreaterThan(ROOM_MARKET.muestra)
+    const excluidos =
+      ROOM_MARKET.excluidos.enDolares +
+      ROOM_MARKET.excluidos.porDiaOSemana +
+      ROOM_MARKET.excluidos.fueraDeRango
+    expect(ROOM_MARKET.avisosUnicos - excluidos).toBe(ROOM_MARKET.muestra)
+    expect(ROOM_MARKET.fecha).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+  })
+
+  it('los cuartiles están ordenados y los dos subconjuntos entran en el rango general', () => {
+    expect(ROOM_MARKET.minimo).toBeLessThan(ROOM_MARKET.p25)
+    expect(ROOM_MARKET.p25).toBeLessThan(ROOM_MARKET.mediana)
+    expect(ROOM_MARKET.mediana).toBeLessThan(ROOM_MARKET.p75)
+    expect(ROOM_MARKET.p75).toBeLessThan(ROOM_MARKET.maximo)
+    for (const sub of [ROOM_MARKET.pension, ROOM_MARKET.habitacion]) {
+      expect(sub.p25).toBeLessThanOrEqual(sub.mediana)
+      expect(sub.mediana).toBeLessThanOrEqual(sub.p75)
+      expect(sub.mediana).toBeGreaterThanOrEqual(ROOM_MARKET.minimo)
+      expect(sub.mediana).toBeLessThanOrEqual(ROOM_MARKET.maximo)
+    }
+    expect(ROOM_MARKET.pension.n + ROOM_MARKET.habitacion.n).toBe(ROOM_MARKET.muestra)
+  })
+
+  it('una pensión es más barata que una habitación, que es de lo que va la sección', () => {
+    expect(ROOM_MARKET.pension.mediana).toBeLessThan(ROOM_MARKET.habitacion.mediana)
+  })
+
+  it('el sesgo de la muestra se publica, no se esconde', () => {
+    expect(ROOM_MARKET.residenciaEstudiantil).toBeGreaterThan(ROOM_MARKET.avisosEnPesos / 2)
+    expect(ROOM_MARKET.aclaranServicios).toBeLessThan(10)
+    expect(ROOM_MARKET.barriosMasFrecuentes.length).toBeGreaterThanOrEqual(3)
+  })
+})
+
+describe('los seis arreglos', () => {
+  const liquidoSmn = computePayroll({ nominal: SMN_VIGENTE }).liquido
+
+  it('el transporte sale del boleto publicado, no de un número redondo', () => {
+    expect(TRANSPORTE_MES).toBe(BOLETO_STM.conTarjeta * BOLETO_STM.viajesPorDia * BOLETO_STM.diasPorMes)
+    expect(BOLETO_STM.enEfectivo).toBeGreaterThan(BOLETO_STM.conTarjeta)
+  })
+
+  it('cada arreglo declara de dónde sale su vivienda y su fracción de servicios', () => {
+    expect(ARREGLOS.length).toBe(6)
+    ARREGLOS.forEach(a => {
+      expect(a.viviendaFuente.length).toBeGreaterThan(20)
+      expect(a.serviciosNota.length).toBeGreaterThan(20)
+      expect(a.quienes.length).toBeGreaterThan(20)
+      expect(a.serviciosFactor).toBeGreaterThan(0)
+      expect(a.serviciosFactor).toBeLessThanOrEqual(1)
+    })
+  })
+
+  it('el total es la suma de sus líneas y lo que sobra es el líquido menos el total', () => {
+    for (const a of compararArreglos(liquidoSmn)) {
+      expect(a.total).toBe(a.vivienda + a.comida + a.servicios + a.transporte + a.salud + a.varios)
+      expect(a.sobra).toBeCloseTo(a.liquido - a.total, 2)
+      expect(a.cierra).toBe(a.liquido >= a.total)
+    }
+  })
+
+  it('alquilar solo es el arreglo más caro y vivir en casa el más barato', () => {
+    const orden = compararArreglos(liquidoSmn).map(a => a.arreglo.id)
+    expect(orden[0]).toBe('solo-alquilando')
+    expect(orden[orden.length - 1]).toBe('en-casa')
+  })
+
+  it('con el mínimo nacional, ni la pensión ni la habitación cierran solas', () => {
+    const r = compararArreglos(liquidoSmn)
+    const pension = r.find(a => a.arreglo.id === 'pension')!
+    const compartiendo = r.find(a => a.arreglo.id === 'compartiendo')!
+    expect(pension.cierra).toBe(false)
+    expect(compartiendo.cierra).toBe(false)
+    // Y aun así compartir es mucho mejor que alquilar solo: la diferencia es casi toda vivienda.
+    const solo = r.find(a => a.arreglo.id === 'solo-alquilando')!
+    expect(pension.total).toBeLessThan(solo.total * 0.75)
+  })
+
+  it('el único arreglo sin alquiler no paga vivienda y se mide contra la línea de no inquilinos', () => {
+    const enCasa = compararArreglos(liquidoSmn).find(a => a.arreglo.id === 'en-casa')!
+    expect(enCasa.vivienda).toBe(0)
+    expect(enCasa.arreglo.inquilino).toBe(false)
+    // La línea del INE para el hogar no inquilino es más baja que la del inquilino del mismo tamaño.
+    const solo = compararArreglos(liquidoSmn).find(a => a.arreglo.id === 'solo-alquilando')!
+    expect(enCasa.lineaPobrezaHogar).toBeLessThan(solo.lineaPobrezaHogar)
+  })
+
+  it('la pareja suma dos sueldos al hogar y se compara con la línea de dos personas', () => {
+    const pareja = compararArreglos(liquidoSmn).find(a => a.arreglo.id === 'pareja')!
+    expect(pareja.ingresoHogar).toBeCloseTo(liquidoSmn * 2, 2)
+    expect(pareja.arreglo.personas).toBe(2)
+  })
+
+  it('el interior come y viaja más barato que Montevideo', () => {
+    const r = compararArreglos(liquidoSmn)
+    const interior = r.find(a => a.arreglo.id === 'interior')!
+    const solo = r.find(a => a.arreglo.id === 'solo-alquilando')!
+    expect(interior.comida).toBeLessThan(solo.comida)
+    expect(interior.transporte).toBeLessThan(solo.transporte)
+    expect(interior.vivienda).toBeLessThan(solo.vivienda)
+  })
+
+  it('un sueldo alto hace cerrar todos los arreglos, y uno de cero no cierra ninguno', () => {
+    expect(compararArreglos(200000).every(a => a.cierra)).toBe(true)
+    expect(compararArreglos(0).some(a => a.cierra)).toBe(false)
+  })
+
+  it('no divide por cero cuando el líquido es cero', () => {
+    const a = costoArreglo(ARREGLOS[0]!, 0)
+    expect(a.viviendaPctIngreso).toBe(0)
+    expect(Number.isFinite(a.sobra)).toBe(true)
+  })
+
+  it('las equivalencias usan precios publicados y toman el valor absoluto', () => {
+    const eq = equivalenciasOcio(-1040)
+    expect(eq.boletos).toBe(Math.floor(1040 / BOLETO_STM.conTarjeta))
+    expect(eq.diasDeComida).toBeGreaterThan(0)
+    expect(equivalenciasOcio(0).boletos).toBe(0)
+  })
+})
+
+describe('declaraJornadaCompleta — no acusar a un aviso que no declara horas', () => {
+  it('es cierto con «tiempo completo» o con una ventana de ocho horas o más', () => {
+    expect(
+      declaraJornadaCompleta({
+        puesto: 'x',
+        nominal: 1,
+        jornada: null,
+        ventana: null,
+        contrato: 'Tiempo completo',
+        lectura: '',
+      })
+    ).toBe(true)
+    expect(
+      declaraJornadaCompleta({
+        puesto: 'x',
+        nominal: 1,
+        jornada: 'de 9 a 18',
+        ventana: 9,
+        contrato: null,
+        lectura: '',
+      })
+    ).toBe(true)
+  })
+
+  it('es falso cuando el aviso no dice ni las horas ni el tipo de contrato', () => {
+    expect(
+      declaraJornadaCompleta({
+        puesto: 'Vendedor/a de calle',
+        nominal: 24349,
+        jornada: null,
+        ventana: null,
+        contrato: null,
+        lectura: '',
+      })
+    ).toBe(false)
+    expect(
+      declaraJornadaCompleta({
+        puesto: 'guardias',
+        nominal: 30000,
+        jornada: 'guardias de 7 h',
+        ventana: 7,
+        contrato: null,
+        lectura: '',
+      })
+    ).toBe(false)
+  })
+
+  it('todo ejemplo por debajo del mínimo que NO declara jornada queda en condicional', () => {
+    const bajos = BOARD_EXAMPLES.filter(e => e.nominal < SMN_VIGENTE)
+    expect(bajos.length).toBeGreaterThan(0)
+    // El de $24.349 es el caso que existe hoy: sin horario y sin contrato declarado.
+    expect(bajos.some(e => !declaraJornadaCompleta(e))).toBe(true)
   })
 })
 

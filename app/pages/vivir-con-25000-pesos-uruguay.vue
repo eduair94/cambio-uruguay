@@ -269,7 +269,9 @@
           </thead>
           <tbody>
             <tr v-for="e in BOARD_EXAMPLES" :key="e.puesto">
-              <td data-label="Puesto">
+              <!-- data-label="" makes this the card's heading on a phone: the puesto is the
+                   row's name, not one more «campo: valor». -->
+              <td data-label="">
                 <div class="font-weight-medium">{{ e.puesto }}</div>
                 <div v-if="e.contrato" class="text-caption text-medium-emphasis">
                   {{ e.contrato }}
@@ -280,6 +282,8 @@
                 <div v-if="e.comisiones" class="text-caption text-medium-emphasis">
                   + comisiones
                 </div>
+                <!-- El aviso que no declara jornada no se puede acusar de nada: 25.000 por media
+                     jornada no incumple el mínimo. El chip lo dice en condicional. -->
                 <VChip
                   v-if="e.nominal < SMN_VIGENTE"
                   size="x-small"
@@ -287,17 +291,21 @@
                   variant="tonal"
                   class="mt-1"
                 >
-                  bajo el mínimo
+                  {{
+                    declaraJornadaCompleta(e) ? 'bajo el mínimo' : 'bajo el mínimo si es completa'
+                  }}
                 </VChip>
               </td>
-              <td data-label="Jornada declarada">
+              <td data-label="Jornada declarada" class="cu-cell-prose">
                 <span v-if="e.jornada" class="quote">«{{ e.jornada }}»</span>
                 <span v-else class="text-medium-emphasis">El aviso no declara horario.</span>
                 <div v-if="e.ventana" class="text-caption text-medium-emphasis mt-1">
                   Ventana: {{ formatHoras(e.ventana) }}
                 </div>
               </td>
-              <td data-label="Qué enseña" class="text-medium-emphasis">{{ e.lectura }}</td>
+              <td data-label="Qué enseña" class="cu-cell-prose text-medium-emphasis">
+                {{ e.lectura }}
+              </td>
             </tr>
           </tbody>
         </VTable>
@@ -335,6 +343,157 @@
           </VCard>
         </VCol>
       </VRow>
+    </section>
+
+    <!-- ── 6. Los arreglos ───────────────────────────────────────────────── -->
+    <section id="arreglos" class="mb-12">
+      <h2 class="text-h5 font-weight-bold mb-2">Con quién vivís cambia más que cuánto ganás</h2>
+      <p class="section-intro text-medium-emphasis mb-5">
+        «Solo y alquilando» es el peor de los arreglos y, justamente por eso, es el que menos gente
+        de esta banda vive. Acá están los seis que aparecen de verdad —pensión, habitación
+        compartida, pareja, casa de la familia, interior— con la misma cuenta completa: vivienda,
+        comida, servicios, boletos, salud y lo que queda para vivir. Se mueve con lo que pongas en
+        la calculadora de arriba: hoy estás mirando
+        <strong>{{ uyu(vida.liquido) }}</strong> líquidos por persona.
+      </p>
+
+      <VCard variant="flat" class="results-card pa-0 mb-4">
+        <VTable class="cu-mobile-cards arreglos-table" density="comfortable">
+          <thead>
+            <tr>
+              <th>Arreglo</th>
+              <th class="text-right">Vivienda</th>
+              <th class="text-right">Comida</th>
+              <th class="text-right">Resto</th>
+              <th class="text-right">Total del mes</th>
+              <th class="text-right">Te queda</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="a in arreglos" :key="a.arreglo.id">
+              <td data-label="">
+                <div class="font-weight-medium">{{ a.arreglo.titulo }}</div>
+                <div class="text-caption text-medium-emphasis">{{ a.arreglo.quienes }}</div>
+              </td>
+              <td data-label="Vivienda" class="text-right num">
+                {{ uyu(a.vivienda) }}
+                <div class="text-caption text-medium-emphasis">
+                  {{
+                    a.vivienda
+                      ? `${Math.round(a.viviendaPctIngreso)} % del líquido`
+                      : 'sin alquiler'
+                  }}
+                </div>
+              </td>
+              <td data-label="Comida" class="text-right num">
+                {{ uyu(a.comida) }}
+                <div class="text-caption text-medium-emphasis">
+                  piso INE {{ uyu(a.comidaPisoINE) }}
+                </div>
+              </td>
+              <td data-label="Resto" class="text-right num">
+                {{ uyu(a.servicios + a.transporte + a.salud + a.varios) }}
+                <div class="text-caption text-medium-emphasis">
+                  servicios {{ uyu(a.servicios) }} · boletos {{ uyu(a.transporte) }} · salud
+                  {{ uyu(a.salud) }} · limpieza {{ uyu(a.varios) }}
+                </div>
+              </td>
+              <td data-label="Total del mes" class="text-right num font-weight-bold">
+                {{ uyu(a.total) }}
+              </td>
+              <td data-label="Te queda" class="text-right num">
+                <span class="font-weight-bold" :class="a.cierra ? 'text-success' : 'money-neg'">
+                  {{ a.cierra ? uyu(a.sobra) : `− ${uyu(Math.abs(a.sobra))}` }}
+                </span>
+                <div class="text-caption text-medium-emphasis">{{ sobraEnCosas(a) }}</div>
+              </td>
+            </tr>
+          </tbody>
+        </VTable>
+      </VCard>
+
+      <VRow class="mb-2">
+        <VCol cols="12" md="6">
+          <VCard variant="flat" class="mech-card pa-5 h-100">
+            <div class="text-overline mb-2">Lo que la tabla contesta</div>
+            <p class="mb-3">{{ lecturaArreglos }}</p>
+            <p class="mb-0 text-medium-emphasis">
+              La segunda vara es del INE y mide otra cosa: el ingreso del hogar contra su línea de
+              pobreza. Pasarla no quiere decir que alcance —es el umbral para no ser contado como
+              pobre en una estadística—, y por eso las dos van juntas y separadas.
+            </p>
+          </VCard>
+        </VCol>
+        <VCol cols="12" md="6">
+          <VCard variant="flat" class="mech-card pa-5 h-100">
+            <div class="text-overline mb-2">La línea del INE, arreglo por arreglo</div>
+            <ul class="linea-list mb-0">
+              <li v-for="a in arreglos" :key="a.arreglo.id">
+                <span class="linea-label">{{ a.arreglo.titulo }}</span>
+                <span class="linea-value" :class="a.sobreLaLinea ? 'text-success' : 'money-neg'">
+                  {{ uyu(a.ingresoHogar) }} / {{ uyu(a.lineaPobrezaHogar) }}
+                </span>
+              </li>
+            </ul>
+          </VCard>
+        </VCol>
+      </VRow>
+
+      <VCard variant="flat" class="sentinel-card pa-5 pa-md-6 mb-4">
+        <div class="text-overline mb-2">Cuánto sale una pieza: lo medimos</div>
+        <p class="mb-3">
+          El alquiler de una vivienda entera lo publica el INE; el de una pieza no lo publica nadie,
+          y es la vivienda real de esta banda. Así que leímos los avisos:
+          {{ ROOM_MARKET.avisosUnicos }} avisos únicos de pensiones y habitaciones en alquiler en
+          Montevideo, en
+          <a :href="ROOM_MARKET.url" target="_blank" rel="noopener noreferrer">
+            {{ ROOM_MARKET.fuente.split('—')[0].trim() }} </a
+          >, el {{ roomMarketDate }}. Quedaron {{ ROOM_MARKET.muestra }} con un precio mensual
+          legible en pesos.
+        </p>
+        <VRow class="mb-1">
+          <VCol v-for="s in roomStats" :key="s.label" cols="6" md="3">
+            <VCard variant="flat" class="stat-card pa-4 h-100">
+              <div class="stat-value">{{ s.value }}</div>
+              <div class="stat-label">{{ s.label }}</div>
+            </VCard>
+          </VCol>
+        </VRow>
+        <p class="mb-0 text-medium-emphasis">
+          Los límites, como siempre al lado del número: son precios <em>pedidos</em>, no cerrados;
+          es un portal, un día y una ciudad; y {{ ROOM_MARKET.residenciaEstudiantil }} de los
+          {{ ROOM_MARKET.avisosEnPesos }} avisos en pesos se anuncian como residencia o pensión
+          estudiantil, concentrados en {{ ROOM_MARKET.barriosMasFrecuentes.join(', ') }}. Sólo
+          {{ ROOM_MARKET.aclaranServicios }} aclaran en el título si los servicios van incluidos:
+          preguntá qué entra en el precio antes de firmar, que entre «todo incluido» y «más gastos»
+          hay miles de pesos.
+        </p>
+      </VCard>
+
+      <VExpansionPanels variant="accordion" class="supuestos-panel">
+        <VExpansionPanel>
+          <VExpansionPanelTitle>
+            <div>
+              <div class="font-weight-medium">De dónde sale cada número de la tabla</div>
+              <div class="text-caption text-medium-emphasis">
+                Tres orígenes distintos, sin mezclarlos: datos publicados, medición propia y el
+                modelo de referencia del sitio.
+              </div>
+            </div>
+          </VExpansionPanelTitle>
+          <VExpansionPanelText>
+            <ul class="supuestos-list">
+              <li v-for="s in supuestos" :key="s.label">
+                <strong>{{ s.label }}:</strong> {{ s.detalle }}
+              </li>
+            </ul>
+            <p class="text-caption text-medium-emphasis mt-3 mb-0">
+              Usamos el perfil <strong>austero</strong> del modelo a propósito: es el escenario más
+              favorable a la respuesta «sí se puede». Si la cuenta no cierra ahí, no cierra.
+            </p>
+          </VExpansionPanelText>
+        </VExpansionPanel>
+      </VExpansionPanels>
 
       <p class="text-caption text-medium-emphasis mt-4 mb-0">
         Líneas de pobreza del hogar: INE, valores de {{ SURVIVAL_PERIODS.lineas }}. Alquiler
@@ -420,6 +579,7 @@ import {
   BOARD_CENSUS,
   BOARD_EXAMPLES,
   BOARD_HOURS,
+  BOLETO_STM,
   DESCANSO_INTERMEDIO,
   HORA_EXTRA,
   INGRESO_PERCAPITA_MEDIANA,
@@ -427,14 +587,21 @@ import {
   LOWWAGE_SOURCES,
   LOWWAGE_VERIFIED_AT,
   MECANISMOS,
+  PRESUPUESTO_SUPUESTOS,
   QUE_HACER,
+  ROOM_MARKET,
   SMN_HORA,
   SMN_VIGENTE,
   SURVIVAL_PERIODS,
+  TRANSPORTE_MES,
+  compararArreglos,
+  declaraJornadaCompleta,
+  equivalenciasOcio,
   esJornadaCompleta,
   jornadaBreakdown,
   smnCheck,
   survivalCheck,
+  type ArregloCosto,
   type Rama,
 } from '~/utils/lowWage'
 
@@ -607,6 +774,14 @@ const veredictos = computed(() => {
   return out
 })
 
+const fmtDate = (iso: string) =>
+  new Date(iso).toLocaleDateString('es-UY', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  })
+
 // ── Bloques estáticos derivados de los datos.
 // El caso de referencia de toda la página: el mínimo nacional completo, una persona sola,
 // inquilina, en Montevideo. Es el escenario donde la resta da negativa.
@@ -657,6 +832,70 @@ const cuentaMinima = [
   },
 ]
 
+// ── Los seis arreglos, resueltos con el líquido que sale de la calculadora de arriba.
+const arreglos = computed(() => compararArreglos(vida.value.liquido))
+
+/** Lo que sobra (o falta) dicho en cosas que tienen precio publicado. */
+function sobraEnCosas(a: ArregloCosto): string {
+  const eq = equivalenciasOcio(a.sobra, a.arreglo.region)
+  if (a.cierra) {
+    return eq.boletos > 0
+      ? `${eq.boletos} boletos, o ${eq.diasDeComida} días de comida`
+      : 'no queda nada'
+  }
+  return `faltan ${eq.diasDeComida} días de comida`
+}
+
+const lecturaArreglos = computed(() => {
+  const cierran = arreglos.value.filter(a => a.cierra)
+  const masBarato = arreglos.value[arreglos.value.length - 1]
+  if (!cierran.length) {
+    return `Con ${uyu(vida.value.liquido)} en la mano no cierra ninguno de los seis, ni el más barato (${masBarato?.arreglo.titulo.toLowerCase()}, ${uyu(masBarato?.total ?? 0)} por mes). Eso es la resta, no una opinión: para que cierre tiene que entrar otro ingreso al hogar, desaparecer el alquiler, o subir el sueldo.`
+  }
+  const nombres = cierran.map(a => a.arreglo.titulo.toLowerCase()).join(' y ')
+  return `Con ${uyu(vida.value.liquido)} en la mano cierra ${cierran.length === 1 ? 'un solo arreglo' : `${cierran.length} de los seis`}: ${nombres}. En los demás la resta da negativa, y la diferencia entre uno y otro es casi toda vivienda: es el gasto que se puede partir con alguien, y el único que se puede llevar a cero.`
+})
+
+const roomMarketDate = fmtDate(ROOM_MARKET.fecha)
+
+const roomStats = [
+  { value: uyu(ROOM_MARKET.pension.mediana), label: 'mediana de una pensión' },
+  { value: uyu(ROOM_MARKET.habitacion.mediana), label: 'mediana de una habitación' },
+  {
+    value: `${uyu(ROOM_MARKET.p25)} – ${uyu(ROOM_MARKET.p75)}`,
+    label: 'mitad del mercado (p25 a p75)',
+  },
+  { value: String(ROOM_MARKET.muestra), label: 'avisos con precio legible' },
+]
+
+const supuestos = [
+  {
+    label: 'Vivienda',
+    detalle: `Cada arreglo trae el suyo y dice de dónde sale: el promedio de contratos nuevos del INE (${SURVIVAL_PERIODS.alquiler}) para una vivienda entera, y nuestra medición de avisos del ${roomMarketDate} para la pieza y la pensión.`,
+  },
+  {
+    label: 'Comida',
+    detalle: `${uyu(Math.round(PRESUPUESTO_SUPUESTOS.comidaPorAdulto * PRESUPUESTO_SUPUESTOS.factorComida))} por persona, que es el perfil austero del modelo de referencia del sitio. El piso publicado es otra cosa: la Canasta Básica Alimentaria del INE, ${uyu(PRESUPUESTO_SUPUESTOS.comidaPisoINE)} per cápita en Montevideo (${PRESUPUESTO_SUPUESTOS.periodoCanastas}), que es la línea de indigencia, no un presupuesto.`,
+  },
+  {
+    label: 'Servicios',
+    detalle: `Luz, agua, internet, celular y parte de gastos comunes: ${uyu(PRESUPUESTO_SUPUESTOS.serviciosBase)} por vivienda. Qué fracción te toca depende del arreglo y es un supuesto nuestro, escrito en cada fila.`,
+  },
+  {
+    label: 'Transporte',
+    detalle: `${uyu(TRANSPORTE_MES)}: ${BOLETO_STM.viajesPorDia} boletos por día, ${BOLETO_STM.diasPorMes} días, a ${uyu(BOLETO_STM.conTarjeta)} el boleto de una hora con tarjeta STM (Intendencia de Montevideo, vigente desde el 5 de enero de 2026). Sin tarjeta son ${uyu(BOLETO_STM.enEfectivo)} y el mes sale ${uyu(BOLETO_STM.enEfectivo * BOLETO_STM.viajesPorDia * BOLETO_STM.diasPorMes)}.`,
+  },
+  {
+    label: 'Salud y limpieza',
+    detalle: `${uyu(PRESUPUESTO_SUPUESTOS.saludPorPersona)} de copagos —el FONASA ya te descuenta la cuota del sueldo— y ${uyu(Math.round(PRESUPUESTO_SUPUESTOS.variosPorPersona * PRESUPUESTO_SUPUESTOS.factorVarios))} de higiene, limpieza y ropa básica.`,
+  },
+  {
+    label: 'Lo que NO está',
+    detalle:
+      'Deudas, hijos, mascotas, mudanza, depósito y garantía de alquiler, ropa de trabajo, estudio, y cualquier gasto de salir. Es un presupuesto de sobrevivir, no de vivir: por eso la última columna se llama «te queda» y no «ahorro».',
+  },
+]
+
 const censusStats = [
   { value: String(BOARD_CENSUS.avisos), label: 'avisos relevados' },
   {
@@ -669,14 +908,6 @@ const censusStats = [
     label: 'piden 9 h o más',
   },
 ]
-
-const fmtDate = (iso: string) =>
-  new Date(iso).toLocaleDateString('es-UY', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-    timeZone: 'UTC',
-  })
 
 const verifiedAt = fmtDate(LOWWAGE_VERIFIED_AT)
 const censusDate = fmtDate(BOARD_CENSUS.fecha)
@@ -834,8 +1065,17 @@ useHead(() => ({
   font-variant-numeric: tabular-nums;
   margin-top: 0.25rem;
 }
-.metric-value.bad {
+/* El ámbar de `warning` es un color de RELLENO: como texto sobre blanco mide 2,3:1 y no llega a
+   AA. Sobre las superficies normales, en tema claro, se usa el rojo del tema (#bf360c, ~6,4:1);
+   en oscuro el ámbar sí pasa y se queda. La cifra del math-card queda afuera a propósito: ese
+   bloque es `.on-dark`, o sea que su fondo NO se aclara con el tema. */
+.metric-value.bad,
+.money-neg {
   color: rgb(var(--v-theme-warning));
+}
+.v-theme--light .metric-value.bad,
+.v-theme--light .money-neg {
+  color: rgb(var(--v-theme-error));
 }
 .metric-value.good {
   color: rgb(var(--v-theme-success));
@@ -911,6 +1151,59 @@ useHead(() => ({
 .num {
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+/* El desglose de una celda numérica sí envuelve: es texto, no un número. */
+.num .text-caption {
+  white-space: normal;
+  line-height: 1.35;
+}
+/* Seis columnas es mucho para una tabla que igual se lee de corrido en el desktop:
+   la primera manda y el resto se aprieta. Abajo de 600px las filas ya son tarjetas
+   (cu-mobile-cards), así que un ancho mínimo ahí sólo podría desbordar un teléfono chico. */
+@media (min-width: 600px) {
+  .arreglos-table :deep(th:first-child),
+  .arreglos-table :deep(td:first-child) {
+    min-width: 210px;
+  }
+}
+
+.linea-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.linea-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.14);
+}
+.v-theme--light .linea-list li {
+  border-bottom-color: rgba(0, 0, 0, 0.12);
+}
+.linea-list li:last-child {
+  border-bottom: none;
+}
+.linea-label {
+  min-width: 0;
+  opacity: 0.85;
+  line-height: 1.35;
+}
+.linea-value {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.supuestos-list {
+  padding-left: 1.1rem;
+  margin: 0;
+  line-height: 1.6;
+}
+.supuestos-list li + li {
+  margin-top: 0.6rem;
 }
 .quote {
   font-style: italic;

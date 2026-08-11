@@ -71,11 +71,15 @@
 
 import { computePayroll } from './payroll'
 import {
+  COST_MODEL,
   INE_HOUSEHOLD_LINES,
   INE_HOUSEHOLD_LINES_PERIOD,
   INE_HOUSEHOLD_INCOME,
+  INE_PER_CAPITA_LINES,
+  INE_LINES_PERIOD,
   INE_RENT_BY_DEPARTMENT,
   INE_RENT_PERIOD,
+  INTERIOR_FOOD_FACTOR,
 } from './costOfLiving'
 
 /** Fecha en que las normas, el SMN y el relevamiento se contrastaron. */
@@ -625,8 +629,353 @@ export const BOARD_EXAMPLES: readonly BoardExample[] = Object.freeze([
   }),
 ])
 
+/**
+ * ¿El aviso declara una jornada que obligue a medirlo contra el Salario Mínimo ENTERO?
+ *
+ * Importa, y mucho, porque la página no puede acusar a un aviso de pagar por debajo del mínimo
+ * cuando el propio aviso no dice cuántas horas son: 25.000 por veinte horas semanales no incumple
+ * nada. Sólo se afirma el incumplimiento cuando el aviso declara «tiempo completo» o una ventana
+ * de ocho horas o más, que es cuando el piso aplicable es el SMN mensual completo (ver `smnCheck`).
+ * En los demás casos el texto tiene que quedarse en el condicional.
+ */
+export function declaraJornadaCompleta(e: BoardExample): boolean {
+  if (e.contrato && /tiempo completo/i.test(e.contrato)) return true
+  return e.ventana != null && e.ventana >= JORNADA_LIMITES.diario
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
-// 6. LA RESPUESTA A «¿CÓMO HACEN?»
+// 6. ¿CON QUIÉN VIVÍS? EL MISMO SUELDO EN SEIS ARREGLOS
+//
+// La primera versión de esta página contestaba «¿alcanza?» con un solo caso: una persona sola,
+// inquilina, en Montevideo, contra el alquiler promedio de un contrato nuevo. Ese caso es el peor
+// de todos y, justamente por eso, es el que menos gente vive: en la banda de 25.000 la respuesta
+// real casi nunca es «alquilo solo», es pensión, es habitación en un apartamento compartido, es en
+// pareja o es en casa de la familia. Contestar con un único arreglo dejaba la pregunta a medias.
+//
+// Acá se comparan seis, con la misma aritmética, y con el gasto completo: vivienda, comida,
+// servicios, transporte, salud y lo que queda para vivir. La regla de la casa sigue en pie —cada
+// número dice de dónde sale— y hay tres orígenes distintos que NO se mezclan:
+//   1. Datos publicados (INE, Intendencia de Montevideo): canastas, líneas de pobreza, alquiler
+//      promedio, boleto.
+//   2. Una medición propia y fechada de los avisos de pensiones y habitaciones (ROOM_MARKET).
+//   3. El modelo de referencia del propio sitio (`costOfLiving.COST_MODEL`), que es lo que ya
+//      alimenta /herramientas/costo-de-vida, usado en su PERFIL AUSTERO. Se elige el austero a
+//      propósito: si la cuenta no cierra en el escenario más barato, no cierra.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Medición propia del mercado de piezas: qué cuesta hoy una pensión o una habitación en
+ * Montevideo, que es la vivienda real de esta banda salarial y el número que NINGÚN organismo
+ * publica —el INE abre el alquiler por departamento, pero de viviendas completas—.
+ *
+ * MÉTODO, para que se pueda repetir: se leyeron los avisos de Mercado Libre Uruguay (inmuebles en
+ * alquiler, Montevideo) para las búsquedas «pensión» y «habitación», tres páginas de cada una, el
+ * 11 de agosto de 2026. De 174 filas quedaron 148 avisos únicos. Se excluyeron: 1 publicado en
+ * dólares, 3 que cotizan por día o por semana, y 4 fuera del rango de $ 3.000 a $ 40.000 —uno
+ * publicado en $ 1 y tres que no son piezas (un apartamento, un local comercial y una oficina)—.
+ *
+ * LÍMITES, escritos al lado del número como siempre: son precios PEDIDOS, no cerrados; un portal,
+ * un día, una ciudad; y 92 de los 144 avisos en pesos se anuncian como residencia o pensión
+ * estudiantil, así que la muestra está inclinada hacia el centro y hacia el público que estudia.
+ * Sólo 3 avisos aclaran en el título si los servicios están incluidos: preguntarlo es parte del
+ * trato, no un detalle.
+ */
+export const ROOM_MARKET = Object.freeze({
+  fuente: 'Mercado Libre Uruguay — inmuebles en alquiler, Montevideo',
+  url: 'https://listado.mercadolibre.com.uy/inmuebles/alquiler/montevideo/pension',
+  fecha: '2026-08-11',
+  consultas: Object.freeze(['pensión', 'habitación']),
+  avisosLeidos: 174,
+  avisosUnicos: 148,
+  /** Los que quedan con un precio mensual legible en pesos. */
+  muestra: 140,
+  excluidos: Object.freeze({ enDolares: 1, porDiaOSemana: 3, fueraDeRango: 4 }),
+  minimo: 4900,
+  p25: 8900,
+  mediana: 10900,
+  p75: 15000,
+  maximo: 39000,
+  /** El subconjunto que se busca como «pensión» (habitación en residencia o pensión). */
+  pension: Object.freeze({ n: 29, p25: 8500, mediana: 9000, p75: 12000 }),
+  /** El subconjunto que se busca como «habitación» (pieza en apartamento o casa compartida). */
+  habitacion: Object.freeze({ n: 111, p25: 9000, mediana: 11500, p75: 15500 }),
+  /** De los 144 avisos en pesos, los que se anuncian como residencia o pensión estudiantil. */
+  residenciaEstudiantil: 92,
+  avisosEnPesos: 144,
+  /** Los que aclaran en el título si los servicios van incluidos. */
+  aclaranServicios: 3,
+  barriosMasFrecuentes: Object.freeze(['Centro', 'Cordón', 'Aguada', 'Tres Cruces']),
+})
+
+/**
+ * Boleto urbano de Montevideo (Intendencia de Montevideo, tarifas vigentes desde el 5 de enero de
+ * 2026). Está acá porque el transporte es el gasto que más se subestima al contestar «¿alcanza?»:
+ * dos boletos por día, veintidós días, son más de dos mil pesos por mes, y con la tarjeta STM
+ * cuesta un 19 % menos que en efectivo.
+ */
+export const BOLETO_STM = Object.freeze({
+  conTarjeta: 52,
+  enEfectivo: 64,
+  vigenteDesde: '2026-01-05',
+  /** Supuesto declarado del cálculo: ida y vuelta, cinco días por semana. */
+  viajesPorDia: 2,
+  diasPorMes: 22,
+})
+
+/** Lo que cuesta ir y volver al trabajo un mes en Montevideo, con tarjeta. */
+export const TRANSPORTE_MES =
+  BOLETO_STM.conTarjeta * BOLETO_STM.viajesPorDia * BOLETO_STM.diasPorMes
+
+/**
+ * Los supuestos del presupuesto, todos juntos y a la vista. Salen del modelo de referencia del
+ * sitio (`COST_MODEL`, el mismo de /herramientas/costo-de-vida) en su perfil AUSTERO, que es el
+ * más favorable a la respuesta «sí se puede».
+ */
+export const PRESUPUESTO_SUPUESTOS = Object.freeze({
+  perfil: 'austero',
+  factorComida: COST_MODEL.lifestyleFood.austero,
+  factorVarios: COST_MODEL.lifestyleMisc.austero,
+  serviciosBase: COST_MODEL.utilitiesBase,
+  saludPorPersona: COST_MODEL.healthPerPerson,
+  variosPorPersona: COST_MODEL.miscPerPerson,
+  comidaPorAdulto: COST_MODEL.foodPerAdult,
+  /** El piso alimentario publicado: la CBA per cápita del INE es la línea de INDIGENCIA. */
+  comidaPisoINE: INE_PER_CAPITA_LINES.montevideo.cba,
+  comidaPisoINEInterior: INE_PER_CAPITA_LINES.interior.cba,
+  periodoCanastas: INE_LINES_PERIOD,
+})
+
+export type ArregloId =
+  | 'solo-alquilando'
+  | 'pension'
+  | 'compartiendo'
+  | 'pareja'
+  | 'en-casa'
+  | 'interior'
+
+export interface Arreglo {
+  id: ArregloId
+  titulo: string
+  /** Quién vive así, en una línea. */
+  quienes: string
+  region: Region
+  /** Integrantes del hogar, para la línea de pobreza del INE. */
+  personas: 1 | 2 | 3
+  /** Cuántos sueldos como el evaluado entran a ese hogar. */
+  ingresos: number
+  inquilino: boolean
+  /** Lo que paga POR PERSONA de vivienda. Se resuelve en `costoArreglo`. */
+  vivienda: (region: Region) => number
+  /** De dónde sale ese número de vivienda. Va impreso al lado. */
+  viviendaFuente: string
+  /**
+   * Qué fracción de los servicios de una vivienda paga esta persona. Es un supuesto NUESTRO y por
+   * eso viaja con su explicación, no escondido en una constante.
+   */
+  serviciosFactor: number
+  serviciosNota: string
+}
+
+const rentNuevosMontevideo = (): number =>
+  INE_RENT_BY_DEPARTMENT.find(d => d.departamento === 'Montevideo')?.nuevos ?? 0
+
+/**
+ * Los seis arreglos. No es una lista de estilos de vida: es la lista de respuestas que aparecen
+ * cuando se pregunta «¿y cómo hacés?» en esta banda salarial.
+ */
+export const ARREGLOS: readonly Arreglo[] = Object.freeze([
+  Object.freeze({
+    id: 'solo-alquilando' as const,
+    titulo: 'Solo, alquilando',
+    quienes: 'Un monoambiente o un apartamento chico a tu nombre, en Montevideo.',
+    region: 'montevideo' as const,
+    personas: 1 as const,
+    ingresos: 1,
+    inquilino: true,
+    vivienda: () => rentNuevosMontevideo(),
+    viviendaFuente: `Promedio de los contratos NUEVOS de Montevideo (INE, ${INE_RENT_PERIOD})`,
+    serviciosFactor: 1,
+    serviciosNota:
+      'Pagás la cuenta entera: luz, agua, internet, celular y parte de gastos comunes.',
+  }),
+  Object.freeze({
+    id: 'pension' as const,
+    titulo: 'En una pensión o residencia',
+    quienes: 'Una pieza en una pensión o residencia estudiantil, casi siempre en el centro.',
+    region: 'montevideo' as const,
+    personas: 1 as const,
+    ingresos: 1,
+    inquilino: true,
+    vivienda: () => ROOM_MARKET.pension.mediana,
+    viviendaFuente: `Mediana de ${ROOM_MARKET.pension.n} avisos de pensión (medición propia, ${ROOM_MARKET.fecha})`,
+    serviciosFactor: 0.25,
+    serviciosNota:
+      'Supuesto nuestro: en una pensión luz, agua y wifi suelen ir incluidos y te queda tu celular y tus datos. Ojo, sólo 3 de los 144 avisos lo aclaran en el título: preguntá qué incluye antes de firmar.',
+  }),
+  Object.freeze({
+    id: 'compartiendo' as const,
+    titulo: 'Compartiendo con otros',
+    quienes: 'Tu habitación en un apartamento compartido, con cocina y baño en común.',
+    region: 'montevideo' as const,
+    personas: 1 as const,
+    ingresos: 1,
+    inquilino: true,
+    vivienda: () => ROOM_MARKET.habitacion.mediana,
+    viviendaFuente: `Mediana de ${ROOM_MARKET.habitacion.n} avisos de habitación (medición propia, ${ROOM_MARKET.fecha})`,
+    serviciosFactor: 0.45,
+    serviciosNota:
+      'Tu parte de los servicios de la casa, según el modelo de /herramientas/costo-de-vida para el hogar compartido.',
+  }),
+  Object.freeze({
+    id: 'pareja' as const,
+    titulo: 'En pareja, los dos trabajando',
+    quienes: 'Un dormitorio para dos, con dos sueldos iguales entrando al mismo hogar.',
+    region: 'montevideo' as const,
+    personas: 2 as const,
+    ingresos: 2,
+    inquilino: true,
+    vivienda: () => COST_MODEL.rentMontevideo['1_dormitorio'] / 2,
+    viviendaFuente:
+      'Alquiler típico de un dormitorio en Montevideo (modelo de referencia del sitio), dividido entre dos',
+    serviciosFactor: 1.15 / 2,
+    serviciosNota:
+      'Dos personas gastan un 15 % más que una en servicios, y se divide entre dos: te toca poco más de la mitad.',
+  }),
+  Object.freeze({
+    id: 'en-casa' as const,
+    titulo: 'En casa de la familia',
+    quienes: 'Sin alquiler: la explicación más frecuente y la menos épica de todas.',
+    region: 'montevideo' as const,
+    personas: 1 as const,
+    ingresos: 1,
+    inquilino: false,
+    vivienda: () => 0,
+    viviendaFuente: 'Sin alquiler. El INE publica una línea de pobreza distinta para este hogar',
+    serviciosFactor: 0.25,
+    serviciosNota:
+      'Supuesto nuestro: aportás una parte de los servicios de la casa —o al menos tu celular—, no la cuenta entera.',
+  }),
+  Object.freeze({
+    id: 'interior' as const,
+    titulo: 'Solo, alquilando en el interior',
+    quienes: 'El mismo sueldo fuera de Montevideo: no se gana más, se gasta menos.',
+    region: 'interior' as const,
+    personas: 1 as const,
+    ingresos: 1,
+    inquilino: true,
+    vivienda: (region: Region) => alquilerNuevoRegion(region),
+    viviendaFuente: `Promedio simple de los contratos nuevos de los 18 departamentos del interior (INE, ${INE_RENT_PERIOD})`,
+    serviciosFactor: 1,
+    serviciosNota: 'Pagás la cuenta entera; los servicios son tarifas nacionales, no bajan.',
+  }),
+])
+
+export interface ArregloCosto {
+  arreglo: Arreglo
+  /** Lo que paga esta persona, línea por línea. */
+  vivienda: number
+  comida: number
+  servicios: number
+  transporte: number
+  salud: number
+  varios: number
+  /** Suma de todo lo anterior: lo que cuesta un mes de esta vida, por persona. */
+  total: number
+  /** Líquido de UNA persona con el nominal evaluado. */
+  liquido: number
+  /** Líquido menos el total: lo que queda para ocio, ahorro e imprevistos. Puede ser negativo. */
+  sobra: number
+  cierra: boolean
+  /** Cuánto del líquido se lleva la vivienda (%). */
+  viviendaPctIngreso: number
+  /** El contraste sourceado: ingreso del hogar contra la línea de pobreza del INE de ese hogar. */
+  ingresoHogar: number
+  lineaPobrezaHogar: number
+  sobreLaLinea: boolean
+  /** Comer al piso del INE (CBA per cápita de la región) en lugar del presupuesto austero. */
+  comidaPisoINE: number
+}
+
+/**
+ * Cuánto cuesta un mes de vida en un arreglo, para una persona con ese líquido.
+ *
+ * Las dos varas se calculan y se muestran juntas a propósito, porque miden cosas distintas y
+ * confundirlas es el error clásico: el TOTAL es un presupuesto austero del modelo del sitio —lo
+ * que cuesta vivir—, y la LÍNEA DE POBREZA del INE es el umbral por debajo del cual un hogar se
+ * cuenta como pobre. Un hogar puede estar por encima de la línea y aun así no llegar a fin de mes;
+ * son dos preguntas, no dos versiones de la misma.
+ */
+export function costoArreglo(arreglo: Arreglo, liquido: number): ArregloCosto {
+  const neto = Math.max(0, liquido || 0)
+  const esInterior = arreglo.region === 'interior'
+  const factorComidaRegion = esInterior ? INTERIOR_FOOD_FACTOR : 1
+
+  const vivienda = Math.round(arreglo.vivienda(arreglo.region))
+  const comida = Math.round(
+    COST_MODEL.foodPerAdult * COST_MODEL.lifestyleFood.austero * factorComidaRegion
+  )
+  const servicios = Math.round(COST_MODEL.utilitiesBase * arreglo.serviciosFactor)
+  const transporte = Math.round(
+    TRANSPORTE_MES * (esInterior ? COST_MODEL.interiorTransportFactor : 1)
+  )
+  const salud = COST_MODEL.healthPerPerson
+  const varios = Math.round(COST_MODEL.miscPerPerson * COST_MODEL.lifestyleMisc.austero)
+
+  const total = vivienda + comida + servicios + transporte + salud + varios
+  const tabla = INE_HOUSEHOLD_LINES[arreglo.region]
+  const lineaPobrezaHogar = (arreglo.inquilino ? tabla.inquilinos : tabla.noInquilinos)[
+    arreglo.personas - 1
+  ]!
+  const ingresoHogar = round2(neto * arreglo.ingresos)
+
+  return {
+    arreglo,
+    vivienda,
+    comida,
+    servicios,
+    transporte,
+    salud,
+    varios,
+    total,
+    liquido: neto,
+    sobra: round2(neto - total),
+    cierra: neto >= total,
+    viviendaPctIngreso: neto > 0 ? round2((vivienda / neto) * 100) : 0,
+    ingresoHogar,
+    lineaPobrezaHogar,
+    sobreLaLinea: ingresoHogar >= lineaPobrezaHogar,
+    comidaPisoINE: Math.round(
+      (esInterior ? INE_PER_CAPITA_LINES.interior : INE_PER_CAPITA_LINES.montevideo).cba
+    ),
+  }
+}
+
+/** Los seis arreglos, resueltos para un mismo líquido. Ordenados de más caro a más barato. */
+export function compararArreglos(liquido: number): ArregloCosto[] {
+  return ARREGLOS.map(a => costoArreglo(a, liquido)).sort((x, y) => y.total - x.total)
+}
+
+/**
+ * Qué significa, en cosas concretas, lo que sobra (o lo que falta) a fin de mes. Las dos varas son
+ * datos publicados: el boleto de la Intendencia y la canasta alimentaria del INE. Nada de «podés
+ * darte tres gustos»: eso sería una opinión con forma de número.
+ */
+export function equivalenciasOcio(
+  monto: number,
+  region: Region = 'montevideo'
+): { boletos: number; diasDeComida: number } {
+  const m = Math.abs(monto || 0)
+  const cbaDia =
+    (region === 'interior' ? INE_PER_CAPITA_LINES.interior : INE_PER_CAPITA_LINES.montevideo).cba /
+    30
+  return {
+    boletos: Math.floor(m / BOLETO_STM.conTarjeta),
+    diasDeComida: Math.floor(m / cbaDia),
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 7. LA RESPUESTA A «¿CÓMO HACEN?»
 // ─────────────────────────────────────────────────────────────────────────────
 
 export interface Mecanismo {
@@ -733,6 +1082,25 @@ export const LOWWAGE_FAQ: readonly LowWageFaq[] = Object.freeze([
       'Hay que decirlo con los números y sin épica. El alquiler promedio de los contratos NUEVOS en Montevideo, según el INE, ronda los $ 23.800 por mes. El líquido del Salario Mínimo Nacional completo es $ 20.408. La cuenta no cierra: el sueldo entero no paga el alquiler promedio, y todavía falta comer. El INE publica además la línea de pobreza por hogar, y para un hogar de una persona inquilina en Montevideo está por encima de ese líquido. O sea que la respuesta a la pregunta no es un truco de administración doméstica: con ese sueldo, solo y alquilando en Montevideo, no se vive. Lo que sí ocurre, y es lo que se ve todos los días, es alguna de estas tres: el hogar tiene un segundo ingreso; la persona no paga alquiler, casi siempre porque sigue en casa de la familia —y ahí la línea de pobreza aplicable es mucho más baja y el sueldo sí la supera—; o vive en el interior, donde tanto el alquiler como la línea son menores. Vale como referencia que la mediana del ingreso per cápita del país está bastante por encima de ese líquido: no es que el país entero gane esto, es que esta banda existe y es visible.',
   },
   {
+    question: '¿Cuánto sale una pensión o una habitación en Montevideo?',
+    short:
+      'Medimos 148 avisos: la mediana de una pensión es $ 9.000 y la de una habitación $ 11.500.',
+    answer:
+      'Es el precio que ningún organismo publica —el INE abre el alquiler por departamento, pero de viviendas completas—, así que lo medimos: 148 avisos únicos de pensiones y habitaciones en alquiler en Montevideo, en Mercado Libre, el 11 de agosto de 2026. Quedaron 140 con un precio mensual legible en pesos, y el reparto es este: la mediana general es $ 10.900, el primer cuartil $ 8.900 y el tercero $ 15.000, con un mínimo de $ 4.900 y un máximo de $ 39.000. Separando por tipo, la pensión o residencia tiene una mediana de $ 9.000 y la habitación en un apartamento compartido, $ 11.500. Tres advertencias que van con el número. Son precios PEDIDOS, no cerrados. Es un portal, un día y una ciudad. Y 92 de los 144 avisos en pesos se anuncian como residencia o pensión estudiantil, concentrados en Centro, Cordón, Aguada y Tres Cruces, así que la muestra está inclinada hacia ese público y esa zona. Además, sólo 3 avisos aclaran en el título si los servicios están incluidos: preguntá siempre qué entra en el precio, porque entre "con todo incluido" y "más gastos" hay varios miles de pesos de diferencia.',
+  },
+  {
+    question: '¿Y si comparto, o me voy a vivir en pareja? ¿Ahí sí cierra?',
+    short: 'Mejora muchísimo, pero con el mínimo nacional sigue sin cerrar salvo sin alquiler.',
+    answer:
+      'Compartir es lo que más mueve la aguja, porque el alquiler es el gasto grande: pasar de un monoambiente propio (promedio de contratos nuevos en Montevideo, $ 23.814 según el INE de junio de 2026) a una habitación ($ 11.500 de mediana medida) o a una pensión ($ 9.000) recorta más de la mitad de la vivienda. Aun así, con el líquido del Salario Mínimo Nacional y un presupuesto austero —comida, servicios, dos boletos por día, copagos y limpieza—, ninguno de esos dos arreglos llega a fin de mes por su cuenta. En pareja con dos sueldos iguales el hogar entra apenas por encima de la línea de pobreza que el INE publica para dos personas inquilinas en Montevideo, pero el presupuesto sigue por encima de lo que entra: alcanza para no ser contado como pobre, no para que sobre. El único arreglo donde la cuenta cierra sin acrobacias es sin alquiler, y por eso "me voy a vivir solo" es el momento exacto en que el mismo sueldo deja de alcanzar.',
+  },
+  {
+    question: '¿Cuánto se va en comida y cuánto queda para salir?',
+    short: 'Comer al piso del INE son $ 6.628 al mes; salir es lo primero que se recorta.',
+    answer:
+      'El INE publica la Canasta Básica Alimentaria per cápita, que es la línea de indigencia: $ 6.628 por persona y por mes en Montevideo y $ 5.685 en el interior, a diciembre de 2025. Eso es el piso alimentario, no lo que gasta comiendo una persona real; el presupuesto austero que usa esta página para comparar arreglos toma $ 9.750, que es tres cuartos del gasto típico del modelo del sitio. Sumando servicios, transporte y limpieza, en la banda de 25.000 a 30.000 lo que queda para ocio, ahorro e imprevistos es cero o negativo en todos los arreglos con alquiler. Dicho en cosas: el boleto urbano con tarjeta STM cuesta $ 52 desde el 5 de enero de 2026, así que ir y volver al trabajo veintidós días son $ 2.288, más que un mes de teléfono. Cuando el margen es negativo, lo primero que se recorta no es el ocio: ya estaba recortado.',
+  },
+  {
     question: 'Si el sueldo no alcanza, ¿puedo tener otro trabajo?',
     short: 'Sí, pero el límite práctico no es la ley: es el descanso semanal.',
     answer:
@@ -821,6 +1189,11 @@ export const LOWWAGE_SOURCES: readonly LowWageSource[] = Object.freeze([
   {
     label: 'INE — Indicadores de Actividad Inmobiliaria: mercado de alquileres',
     url: 'https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-indicadores-actividad-inmobiliaria-iai-alquileres',
+  },
+  {
+    label:
+      'Intendencia de Montevideo — Tarifas del transporte colectivo urbano (boleto de 1 hora con tarjeta STM $ 52, vigente desde el 5 de enero de 2026)',
+    url: 'https://montevideo.gub.uy/areas-tematicas/sistema-de-transporte-metropolitano/tarifas-del-transporte-colectivo-urbano',
   },
 ])
 

@@ -282,7 +282,7 @@
           <tbody>
             <tr>
               <td>Correo no exprés (PP, SIMPLE)</td>
-              <td data-label="Cómo lo reconocés">
+              <td class="cu-cell-prose" data-label="Cómo lo reconocés">
                 Dos letras + nueve números + dos letras: RJ284204981CN. Es el "envío gratis" de
                 AliExpress, Shein o Temu y el estándar de Etsy o eBay
               </td>
@@ -293,7 +293,7 @@
             </tr>
             <tr>
               <td>Correo exprés (EMS)</td>
-              <td data-label="Cómo lo reconocés">
+              <td class="cu-cell-prose" data-label="Cómo lo reconocés">
                 Tracking que empieza con E: EC123456789US. Solo EMS y Casilla Mía
               </td>
               <td data-label="Hasta 30/4/2026">Franquicia solo hasta US$ 200 por envío</td>
@@ -301,7 +301,7 @@
             </tr>
             <tr>
               <td>Courier privado</td>
-              <td data-label="Cómo lo reconocés">
+              <td class="cu-cell-prose" data-label="Cómo lo reconocés">
                 Lo contratás vos: Tiendamia, Exur, USX, Gripper, Punto Mío, Aeropost, DHL, UPS,
                 FedEx
               </td>

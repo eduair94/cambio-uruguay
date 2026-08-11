@@ -76,10 +76,10 @@
                 <td class="font-weight-medium" data-label="">{{ i.name }}</td>
                 <td data-label="Riesgo">{{ riskLabel(i.riskLevel) }}</td>
                 <td class="text-right" data-label="Mín. inversión">{{ minInvestmentLabel(i) }}</td>
-                <td data-label="Regulación">
+                <td class="cu-cell-prose" data-label="Regulación">
                   <span class="inversiones-note">{{ i.regulationNote }}</span>
                 </td>
-                <td data-label="Comisiones">
+                <td class="cu-cell-prose" data-label="Comisiones">
                   <span class="inversiones-note">{{ i.feesNote }}</span>
                 </td>
                 <td data-label="Sitio">

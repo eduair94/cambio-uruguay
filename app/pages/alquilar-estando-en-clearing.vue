@@ -199,7 +199,7 @@
                   {{ checkLabel[route.checksClearing] }}
                 </VChip>
               </td>
-              <td class="evaluates-cell text-body-2" data-label="Qué evalúa">
+              <td class="evaluates-cell cu-cell-prose text-body-2" data-label="Qué evalúa">
                 {{ route.evaluates }}
               </td>
             </tr>

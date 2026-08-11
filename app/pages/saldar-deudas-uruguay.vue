@@ -291,7 +291,7 @@
           <td class="font-weight-medium" data-label="">{{ r.institucion }}</td>
           <td data-label="Producto">{{ r.producto }}</td>
           <td data-label="Tasa">{{ r.tasa }}</td>
-          <td class="text-caption" data-label="Nota">{{ r.nota }}</td>
+          <td class="text-caption cu-cell-prose" data-label="Nota">{{ r.nota }}</td>
         </tr>
       </tbody>
     </VTable>

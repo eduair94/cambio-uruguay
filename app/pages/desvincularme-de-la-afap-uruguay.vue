@@ -236,35 +236,35 @@
                 Tope A (arts. 7 y 8, Ley 16.713)
               </td>
               <td data-label="Monto">{{ money(AFAP_TOPE_A) }}</td>
-              <td data-label="A quién" class="text-medium-emphasis">
+              <td data-label="A quién" class="cu-cell-prose text-medium-emphasis">
                 Quien ya estaba afiliado al BPS antes del {{ spcDate }}
               </td>
             </tr>
             <tr>
               <td data-label="Corte" class="font-weight-medium">Tope B</td>
               <td data-label="Monto">{{ money(AFAP_TOPE_B) }}</td>
-              <td data-label="A quién" class="text-medium-emphasis">
+              <td data-label="A quién" class="cu-cell-prose text-medium-emphasis">
                 Sólo importa si tenés hecha la opción del artículo 8
               </td>
             </tr>
             <tr>
               <td data-label="Corte" class="font-weight-medium">Tope C</td>
               <td data-label="Monto">{{ money(AFAP_TOPE_C) }}</td>
-              <td data-label="A quién" class="text-medium-emphasis">
+              <td data-label="A quién" class="cu-cell-prose text-medium-emphasis">
                 Por encima, el aporte es voluntario
               </td>
             </tr>
             <tr>
               <td data-label="Corte" class="font-weight-medium">Nivel 1 (art. 22, Ley 20.130)</td>
               <td data-label="Monto">{{ money(SPC_NIVEL_1) }}</td>
-              <td data-label="A quién" class="text-medium-emphasis">
+              <td data-label="A quién" class="cu-cell-prose text-medium-emphasis">
                 Primer ingreso al mercado de trabajo desde el {{ spcDate }}
               </td>
             </tr>
             <tr>
               <td data-label="Corte" class="font-weight-medium">Nivel 2 (art. 22, Ley 20.130)</td>
               <td data-label="Monto">{{ money(SPC_NIVEL_2) }}</td>
-              <td data-label="A quién" class="text-medium-emphasis">
+              <td data-label="A quién" class="cu-cell-prose text-medium-emphasis">
                 Hasta acá corre el aporte al ahorro individual; por encima el artículo ya no asigna
                 aporte obligatorio. El BPS publica el corte como «Niveles Art. 22 - B»
               </td>

@@ -53,7 +53,7 @@
               <td data-label="Viviendas vacías" class="text-right">
                 <strong>{{ d.vacancyPct }} %</strong>
               </td>
-              <td data-label="Por qué" class="text-medium-emphasis">{{ d.note }}</td>
+              <td data-label="Por qué" class="cu-cell-prose text-medium-emphasis">{{ d.note }}</td>
             </tr>
           </tbody>
         </VTable>
@@ -89,7 +89,9 @@
               <td data-label="Motivo" class="font-weight-medium">{{ r.label }}</td>
               <td data-label="Montevideo" class="text-right">{{ r.montevideoPct }} %</td>
               <td data-label="Maldonado" class="text-right">{{ r.maldonadoPct }} %</td>
-              <td data-label="Qué significa" class="text-medium-emphasis">{{ r.detail }}</td>
+              <td data-label="Qué significa" class="cu-cell-prose text-medium-emphasis">
+                {{ r.detail }}
+              </td>
             </tr>
           </tbody>
         </VTable>
