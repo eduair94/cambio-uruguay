@@ -750,6 +750,7 @@ export type ArregloId =
   | 'pension'
   | 'compartiendo'
   | 'pareja'
+  | 'un-solo-ingreso'
   | 'en-casa'
   | 'interior'
 
@@ -774,6 +775,21 @@ export interface Arreglo {
    */
   serviciosFactor: number
   serviciosNota: string
+  /**
+   * Cuántas personas come, se atiende y se viste con ESE sueldo. Es `personas / ingresos`, y no se
+   * deriva sola porque hace falta poder explicarla al lado del número.
+   *
+   * Existe porque el modelo por persona se rompe justo en los arreglos que más importan: una
+   * pareja donde trabaja uno y un hogar monoparental tienen dos integrantes y un solo ingreso, así
+   * que el mismo líquido paga comida, salud y varios por dos. Sin esto, la tabla les daba el costo
+   * de una persona sola y los dejaba mejor parados que a un inquilino solo, que es exactamente al
+   * revés de lo que pasa.
+   *
+   * NO escala el transporte: el boleto lo gasta quien va a trabajar, y en estos hogares va uno.
+   */
+  cargas?: number
+  /** Por qué este arreglo mantiene a más de una persona con un sueldo. */
+  cargasNota?: string
 }
 
 const rentNuevosMontevideo = (): number =>
@@ -841,6 +857,30 @@ export const ARREGLOS: readonly Arreglo[] = Object.freeze([
     serviciosNota:
       'Dos personas gastan un 15 % más que una en servicios, y se divide entre dos: te toca poco más de la mitad.',
   }),
+  // El hogar de DOS con UN solo ingreso: la parte de la pregunta que la tabla no contestaba, y con
+  // diferencia el peor escenario —la misma vivienda que la pareja de dos sueldos, pagada y comida
+  // por uno—. Va en UNA fila y no en dos, aunque cubra dos situaciones de vida distintas: con los
+  // datos que usamos, la pareja con un solo sueldo y el hogar monoparental dan exactamente el mismo
+  // número, porque el INE publica una única línea de pobreza para el hogar de dos y no tenemos una
+  // equivalencia publicada que distinga a un chico de un adulto. Partirlas en dos filas idénticas
+  // aparentaría una precisión que el modelo no tiene.
+  Object.freeze({
+    id: 'un-solo-ingreso' as const,
+    titulo: 'En pareja o con un hijo, trabajando uno solo',
+    quienes: 'Dos personas en la casa y un solo sueldo entrando. El arreglo más caro de todos.',
+    region: 'montevideo' as const,
+    personas: 2 as const,
+    ingresos: 1,
+    inquilino: true,
+    vivienda: () => COST_MODEL.rentMontevideo['1_dormitorio'],
+    viviendaFuente:
+      'Alquiler típico de un dormitorio en Montevideo (modelo de referencia del sitio), entero: no hay con quién dividirlo, y un monoambiente no es una opción real con un chico',
+    serviciosFactor: 1.15,
+    serviciosNota: 'Dos personas gastan un 15 % más que una en servicios, y los paga una sola.',
+    cargas: 2,
+    cargasNota:
+      'Ese sueldo come, se atiende y se viste por dos. La simplificación conviene decirla y también para qué lado falla: si el segundo integrante es un chico come menos que un adulto, pero agrega gastos que este modelo no tiene —cuidados, útiles, ropa que se queda chica—, y las asignaciones familiares del BPS, que sí ayudan, tampoco están sumadas.',
+  }),
   Object.freeze({
     id: 'en-casa' as const,
     titulo: 'En casa de la familia',
@@ -881,6 +921,8 @@ export interface ArregloCosto {
   varios: number
   /** Suma de todo lo anterior: lo que cuesta un mes de esta vida, por persona. */
   total: number
+  /** Cuántas personas mantiene ese sueldo en este arreglo. */
+  cargas: number
   /** Líquido de UNA persona con el nominal evaluado. */
   liquido: number
   /** Líquido menos el total: lo que queda para ocio, ahorro e imprevistos. Puede ser negativo. */
@@ -910,16 +952,20 @@ export function costoArreglo(arreglo: Arreglo, liquido: number): ArregloCosto {
   const esInterior = arreglo.region === 'interior'
   const factorComidaRegion = esInterior ? INTERIOR_FOOD_FACTOR : 1
 
+  // Cuántas bocas mantiene este sueldo. 1 salvo en los hogares de dos con un solo ingreso.
+  const cargas = Math.max(1, arreglo.cargas || 1)
+
   const vivienda = Math.round(arreglo.vivienda(arreglo.region))
   const comida = Math.round(
-    COST_MODEL.foodPerAdult * COST_MODEL.lifestyleFood.austero * factorComidaRegion
+    COST_MODEL.foodPerAdult * COST_MODEL.lifestyleFood.austero * factorComidaRegion * cargas
   )
   const servicios = Math.round(COST_MODEL.utilitiesBase * arreglo.serviciosFactor)
+  // El transporte NO escala con las cargas: el boleto lo gasta quien va a trabajar.
   const transporte = Math.round(
     TRANSPORTE_MES * (esInterior ? COST_MODEL.interiorTransportFactor : 1)
   )
-  const salud = COST_MODEL.healthPerPerson
-  const varios = Math.round(COST_MODEL.miscPerPerson * COST_MODEL.lifestyleMisc.austero)
+  const salud = COST_MODEL.healthPerPerson * cargas
+  const varios = Math.round(COST_MODEL.miscPerPerson * COST_MODEL.lifestyleMisc.austero * cargas)
 
   const total = vivienda + comida + servicios + transporte + salud + varios
   const tabla = INE_HOUSEHOLD_LINES[arreglo.region]
@@ -941,6 +987,7 @@ export function costoArreglo(arreglo: Arreglo, liquido: number): ArregloCosto {
     sobra: round2(neto - total),
     cierra: neto >= total,
     viviendaPctIngreso: neto > 0 ? round2((vivienda / neto) * 100) : 0,
+    cargas,
     ingresoHogar,
     lineaPobrezaHogar,
     sobreLaLinea: ingresoHogar >= lineaPobrezaHogar,
@@ -951,6 +998,29 @@ export function costoArreglo(arreglo: Arreglo, liquido: number): ArregloCosto {
 }
 
 /** Los seis arreglos, resueltos para un mismo líquido. Ordenados de más caro a más barato. */
+/**
+ * Lo que NO varía de un arreglo a otro, para poder sacarlo de la tabla.
+ *
+ * Es un cambio de diseño con motivo de dato: salud y varios son idénticos en las ocho filas, y el
+ * boleto sólo toma dos valores en toda la tabla (Montevideo e interior). Repetirlos ocho veces
+ * dentro de las celdas numéricas no informaba nada y era la mitad del apretujón — la columna más
+ * ancha de la tabla la ocupaba texto que decía siempre lo mismo. Van una sola vez debajo.
+ *
+ * Los importes son POR PERSONA a cargo: en los hogares de dos con un solo ingreso, la tabla los
+ * cuenta dos veces (ver `cargas`).
+ */
+export function fijosDelMes(region: Region) {
+  const esInterior = region === 'interior'
+  return Object.freeze({
+    transporte: Math.round(TRANSPORTE_MES * (esInterior ? COST_MODEL.interiorTransportFactor : 1)),
+    salud: COST_MODEL.healthPerPerson,
+    varios: Math.round(COST_MODEL.miscPerPerson * COST_MODEL.lifestyleMisc.austero),
+    comidaPisoINE: Math.round(
+      (esInterior ? INE_PER_CAPITA_LINES.interior : INE_PER_CAPITA_LINES.montevideo).cba
+    ),
+  })
+}
+
 export function compararArreglos(liquido: number): ArregloCosto[] {
   return ARREGLOS.map(a => costoArreglo(a, liquido)).sort((x, y) => y.total - x.total)
 }

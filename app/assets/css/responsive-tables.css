@@ -27,6 +27,80 @@
  * as a fallback for genuinely huge tables). Colors use Vuetify theme tokens so
  * the cards track light/dark automatically.
  */
+/* ───────────────────────────────────────────────────────────────────────────
+ * `cu-roomy` — vertical rhythm for a DESKTOP table whose cells are more than
+ * one line.
+ *
+ * Why this exists as a shared rule instead of a page fix: `cu-mobile-cards`
+ * solved the phone and left the wide viewport on Vuetify's stock density,
+ * which is calibrated for one-line cells. The moment a cell carries a value
+ * PLUS a caption — the idiom every comparison table here uses — rows run
+ * together into a grey slab: 8px of padding separating three lines of text
+ * reads as no separation at all. The comparativa of arrangements shipped that
+ * way and the whole table looked compressed.
+ *
+ * The rhythm follows DESIGN.md, The Two Intervals Rule: the interval INSIDE a
+ * cell (value to its caption, 4px) and the interval BETWEEN rows (20px) stay
+ * about five times apart, so grouping is carried by space rather than by the
+ * row divider alone.
+ *
+ * Contract:
+ *   - Add `cu-roomy` next to `cu-mobile-cards` on any table with multi-line
+ *     cells. Everything below 600px is untouched — the card mode already owns
+ *     that width.
+ *   - A caption inside a cell gets `.text-caption` or `.cu-cell-note`; it drops
+ *     to its own line with its own leading and a 4px lead-in. Alignment is
+ *     INHERITED on purpose: a two-word caption under a right-aligned number
+ *     belongs flush right with it, and forcing prose alignment there would
+ *     leave the pair visibly unhooked.
+ *   - A cell whose text genuinely wraps as prose keeps using `cu-cell-prose`,
+ *     which is what turns the alignment left — right-aligned wrapped text is
+ *     ragged exactly where the eye returns for the next line.
+ *   - `th` gets the same treatment so the header stops sitting flush on row 1.
+ * ─────────────────────────────────────────────────────────────────────────── */
+@media (min-width: 600px) {
+  .cu-roomy tbody td,
+  .cu-roomy thead th {
+    padding-top: 0.9rem !important;
+    padding-bottom: 0.9rem !important;
+    /* `!important` is load-bearing, not lazy: Vuetify's own rule is
+       `.v-table > .v-table__wrapper > table > tbody > tr > td`, four classes and
+       four elements deep, so a two-token selector here loses in silence. Without
+       it the tall cells top-align and the short ones stay centred, and a row
+       whose name wraps to three lines shows its amount floating at the middle
+       with no baseline shared by anything. */
+    vertical-align: top !important;
+  }
+
+  .cu-roomy thead th {
+    padding-bottom: 0.75rem !important;
+    line-height: 1.35;
+  }
+
+  /* Numbers and their captions are one group; the gap inside it is tight. */
+  .cu-roomy tbody td > .text-caption,
+  .cu-roomy tbody td > .cu-cell-note {
+    display: block;
+    margin-top: 0.25rem;
+    line-height: 1.45;
+    text-wrap: pretty;
+  }
+
+  /* Prose reads from a straight left edge, so a cell that wraps as a sentence
+     drops the right alignment for itself and for its caption. */
+  .cu-roomy tbody td.cu-cell-prose,
+  .cu-roomy tbody td.cu-cell-prose > .text-caption,
+  .cu-roomy tbody td.cu-cell-prose > .cu-cell-note {
+    text-align: left;
+  }
+
+  /* The row's first cell is its name: it leads, so it keeps a clear channel
+     between itself and the first number. */
+  .cu-roomy tbody td:first-child {
+    padding-right: 1.5rem !important;
+  }
+}
+
 @media (max-width: 599.98px) {
   /* Kill the horizontal scroll: once rows stack, there is nothing to scroll. */
   .cu-mobile-cards.v-table > .v-table__wrapper,

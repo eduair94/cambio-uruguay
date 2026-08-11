@@ -21,6 +21,7 @@ import {
   TRANSPORTE_MES,
   alquilerNuevoRegion,
   compararArreglos,
+  fijosDelMes,
   costoArreglo,
   declaraJornadaCompleta,
   diasLicenciaEstudio,
@@ -369,22 +370,36 @@ describe('la medición propia del mercado de piezas', () => {
   })
 })
 
-describe('los seis arreglos', () => {
+describe('los arreglos de convivencia', () => {
   const liquidoSmn = computePayroll({ nominal: SMN_VIGENTE }).liquido
 
   it('el transporte sale del boleto publicado, no de un número redondo', () => {
-    expect(TRANSPORTE_MES).toBe(BOLETO_STM.conTarjeta * BOLETO_STM.viajesPorDia * BOLETO_STM.diasPorMes)
+    expect(TRANSPORTE_MES).toBe(
+      BOLETO_STM.conTarjeta * BOLETO_STM.viajesPorDia * BOLETO_STM.diasPorMes
+    )
     expect(BOLETO_STM.enEfectivo).toBeGreaterThan(BOLETO_STM.conTarjeta)
   })
 
   it('cada arreglo declara de dónde sale su vivienda y su fracción de servicios', () => {
-    expect(ARREGLOS.length).toBe(6)
+    expect(ARREGLOS.length).toBe(7)
+    expect(new Set(ARREGLOS.map(a => a.id)).size).toBe(ARREGLOS.length)
     ARREGLOS.forEach(a => {
       expect(a.viviendaFuente.length).toBeGreaterThan(20)
       expect(a.serviciosNota.length).toBeGreaterThan(20)
       expect(a.quienes.length).toBeGreaterThan(20)
       expect(a.serviciosFactor).toBeGreaterThan(0)
-      expect(a.serviciosFactor).toBeLessThanOrEqual(1)
+      // Sólo el hogar que mantiene a dos con un sueldo puede pagar más servicios que una vivienda
+      // entera; cualquier otro pagando de más sería un error de datos.
+      if (a.serviciosFactor > 1) expect(a.cargas).toBeGreaterThan(1)
+      expect(a.serviciosFactor).toBeLessThanOrEqual(1.5)
+      // Un arreglo que mantiene a más de una persona tiene que explicar por qué.
+      if (a.cargas && a.cargas > 1) expect((a.cargasNota ?? '').length).toBeGreaterThan(40)
+    })
+  })
+
+  it('las cargas son las personas por ingreso, y la tabla no las inventa', () => {
+    ARREGLOS.forEach(a => {
+      expect(a.cargas ?? 1).toBe(a.personas / a.ingresos)
     })
   })
 
@@ -396,10 +411,45 @@ describe('los seis arreglos', () => {
     }
   })
 
-  it('alquilar solo es el arreglo más caro y vivir en casa el más barato', () => {
+  it('mantener a dos con un sueldo es el arreglo más caro y vivir en casa el más barato', () => {
     const orden = compararArreglos(liquidoSmn).map(a => a.arreglo.id)
-    expect(orden[0]).toBe('solo-alquilando')
+    expect(orden[0]).toBe('un-solo-ingreso')
     expect(orden[orden.length - 1]).toBe('en-casa')
+    // Y alquilar solo sigue siendo el peor de los hogares de una persona.
+    const unaPersona = compararArreglos(liquidoSmn).filter(a => a.arreglo.personas === 1)
+    expect(unaPersona[0]!.arreglo.id).toBe('solo-alquilando')
+  })
+
+  it('el hogar de dos con un solo ingreso paga la vivienda entera y come por dos', () => {
+    const r = compararArreglos(liquidoSmn)
+    const uno = r.find(a => a.arreglo.id === 'un-solo-ingreso')!
+    const dos = r.find(a => a.arreglo.id === 'pareja')!
+    expect(uno.cargas).toBe(2)
+    expect(dos.cargas).toBe(1)
+    // Misma vivienda de un dormitorio: uno la divide y el otro no.
+    expect(uno.vivienda).toBeCloseTo(dos.vivienda * 2, 0)
+    expect(uno.comida).toBeCloseTo(dos.comida * 2, 0)
+    expect(uno.salud).toBe(dos.salud * 2)
+    // El boleto NO se duplica: lo gasta quien va a trabajar, y va uno.
+    expect(uno.transporte).toBe(dos.transporte)
+    // Los dos se miden contra la misma línea del INE; lo que cambia es el ingreso del hogar.
+    expect(uno.lineaPobrezaHogar).toBe(dos.lineaPobrezaHogar)
+    expect(uno.ingresoHogar).toBeCloseTo(dos.ingresoHogar / 2, 2)
+    expect(uno.total).toBeGreaterThan(dos.total)
+  })
+
+  it('fijosDelMes devuelve lo que no varía de fila a fila, y el interior viaja más barato', () => {
+    const mvd = fijosDelMes('montevideo')
+    const int = fijosDelMes('interior')
+    expect(int.transporte).toBeLessThan(mvd.transporte)
+    expect(int.comidaPisoINE).toBeLessThan(mvd.comidaPisoINE)
+    expect(mvd.salud).toBe(int.salud)
+    expect(mvd.varios).toBe(int.varios)
+    // Es exactamente lo que la tabla suma en una fila de una sola carga.
+    const solo = compararArreglos(liquidoSmn).find(a => a.arreglo.id === 'solo-alquilando')!
+    expect(solo.transporte).toBe(mvd.transporte)
+    expect(solo.salud).toBe(mvd.salud)
+    expect(solo.varios).toBe(mvd.varios)
   })
 
   it('con el mínimo nacional, ni la pensión ni la habitación cierran solas', () => {

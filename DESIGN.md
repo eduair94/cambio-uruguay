@@ -270,13 +270,32 @@ Desktop can support side rails, sticky markers, wide
 comparison regions, and dense controls; mobile reorders the same evidence into one readable column
 with 44px-or-larger interactive targets. Wide tables either use Vuetify's native `:mobile` mode or
 the `cu-mobile-cards` contract: put the class on the table, give every `<td>` a `data-label`, and
-below 600px each row stacks into a labelled card.
+below 600px each row stacks into a labelled card. A table whose cells run past one line adds
+`cu-roomy` alongside it, which owns the ≥600px rhythm the card mode never covered.
 
 ### Named Rules
 
 **The Min-Width Zero Rule.** Any grid or flex item that can contain an image, a long thread title,
 or a URL carries `min-width: 0`. Without it the item's min-content floor silently widens the whole
 row past the viewport — the single most common responsive defect in this codebase.
+
+**The Table Row Is Not One Line Rule.** Vuetify's table densities are calibrated for a cell holding
+one line, and every comparison surface here holds two or three: a value plus its caption. At
+`comfortable` the 8px of vertical padding that separates two one-line rows has to separate two
+three-line rows, and the table renders as a grey slab — the arrangements comparativa shipped that
+way and read as compressed even though every individual value was right. `cu-roomy` (in
+`assets/css/responsive-tables.css`) is the shared fix: 14px above and below each cell, a 4px lead-in
+between a value and its caption, and `vertical-align: top` so rows of unequal height still start on
+one baseline. Two things it deliberately does not do — flip a short caption's alignment away from
+the number it belongs to (that stays inherited; `cu-cell-prose` is the opt-in for text that actually
+wraps), and touch anything below 600px, where the card mode already owns the width.
+
+**The Repeated Constant Is Not A Column Rule.** Before styling a dense table, check what actually
+varies down each column. The same comparativa carried `salud $ 900` and `limpieza $ 2.100` identical
+in every row and the boleto in all but one, inside the widest caption on the page: roughly half the
+ink was spent restating constants, which no amount of padding fixes because the problem is the
+content, not the rhythm. A value that does not change from row to row leaves the table and is stated
+once beneath it. Decompression is usually a data edit before it is a CSS edit.
 
 **The Legend Is Not A Flex Item Rule.** A rendered `<legend>` is the fieldset's legend box, so a
 `display: flex` or `display: grid` fieldset never applies its `gap` to it. The label sits flush on

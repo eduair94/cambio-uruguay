@@ -258,7 +258,7 @@
       </p>
 
       <VCard variant="flat" class="results-card pa-0">
-        <VTable class="cu-mobile-cards" density="comfortable">
+        <VTable class="cu-mobile-cards cu-roomy" density="comfortable">
           <thead>
             <tr>
               <th>Puesto</th>
@@ -283,18 +283,17 @@
                   + comisiones
                 </div>
                 <!-- El aviso que no declara jornada no se puede acusar de nada: 25.000 por media
-                     jornada no incumple el mínimo. El chip lo dice en condicional. -->
-                <VChip
-                  v-if="e.nominal < SMN_VIGENTE"
-                  size="x-small"
-                  color="warning"
-                  variant="tonal"
-                  class="mt-1"
-                >
-                  {{
-                    declaraJornadaCompleta(e) ? 'bajo el mínimo' : 'bajo el mínimo si es completa'
-                  }}
-                </VChip>
+                     jornada no incumple el mínimo. El chip lo dice en condicional.
+                     Va envuelto porque «bajo el mínimo si es completa» es más ancho que cualquier
+                     importe de la columna: suelto, es el chip el que decide el ancho de la columna
+                     y el número deja de mandar. -->
+                <div v-if="e.nominal < SMN_VIGENTE" class="chip-line">
+                  <VChip size="x-small" color="warning" variant="tonal">
+                    {{
+                      declaraJornadaCompleta(e) ? 'bajo el mínimo' : 'bajo el mínimo si es completa'
+                    }}
+                  </VChip>
+                </div>
               </td>
               <td data-label="Jornada declarada" class="cu-cell-prose">
                 <span v-if="e.jornada" class="quote">«{{ e.jornada }}»</span>
@@ -349,22 +348,23 @@
     <section id="arreglos" class="mb-12">
       <h2 class="text-h5 font-weight-bold mb-2">Con quién vivís cambia más que cuánto ganás</h2>
       <p class="section-intro text-medium-emphasis mb-5">
-        «Solo y alquilando» es el peor de los arreglos y, justamente por eso, es el que menos gente
-        de esta banda vive. Acá están los seis que aparecen de verdad —pensión, habitación
-        compartida, pareja, casa de la familia, interior— con la misma cuenta completa: vivienda,
+        Vivir solo y alquilando es lo más caro que se puede hacer con este sueldo y, justamente por
+        eso, es lo que menos gente de esta banda hace. Acá están los {{ cuantosArreglos }} arreglos
+        que aparecen de verdad —pensión, habitación compartida, pareja con dos sueldos, pareja o
+        hijo con uno solo, casa de la familia, interior— con la misma cuenta completa: vivienda,
         comida, servicios, boletos, salud y lo que queda para vivir. Se mueve con lo que pongas en
         la calculadora de arriba: hoy estás mirando
-        <strong>{{ uyu(vida.liquido) }}</strong> líquidos por persona.
+        <strong>{{ uyu(vida.liquido) }}</strong> líquidos por sueldo.
       </p>
 
       <VCard variant="flat" class="results-card pa-0 mb-4">
-        <VTable class="cu-mobile-cards arreglos-table" density="comfortable">
+        <VTable class="cu-mobile-cards cu-roomy arreglos-table" density="comfortable">
           <thead>
             <tr>
               <th>Arreglo</th>
               <th class="text-right">Vivienda</th>
               <th class="text-right">Comida</th>
-              <th class="text-right">Resto</th>
+              <th class="text-right">Servicios</th>
               <th class="text-right">Total del mes</th>
               <th class="text-right">Te queda</th>
             </tr>
@@ -372,12 +372,12 @@
           <tbody>
             <tr v-for="a in arreglos" :key="a.arreglo.id">
               <td data-label="">
-                <div class="font-weight-medium">{{ a.arreglo.titulo }}</div>
-                <div class="text-caption text-medium-emphasis">{{ a.arreglo.quienes }}</div>
+                <div class="arreglo-title">{{ a.arreglo.titulo }}</div>
+                <div class="cu-cell-note text-medium-emphasis">{{ a.arreglo.quienes }}</div>
               </td>
               <td data-label="Vivienda" class="text-right num">
                 {{ uyu(a.vivienda) }}
-                <div class="text-caption text-medium-emphasis">
+                <div class="cu-cell-note text-medium-emphasis">
                   {{
                     a.vivienda
                       ? `${Math.round(a.viviendaPctIngreso)} % del líquido`
@@ -385,31 +385,40 @@
                   }}
                 </div>
               </td>
-              <td data-label="Comida" class="text-right num">
-                {{ uyu(a.comida) }}
-                <div class="text-caption text-medium-emphasis">
-                  piso INE {{ uyu(a.comidaPisoINE) }}
-                </div>
-              </td>
-              <td data-label="Resto" class="text-right num">
-                {{ uyu(a.servicios + a.transporte + a.salud + a.varios) }}
-                <div class="text-caption text-medium-emphasis">
-                  servicios {{ uyu(a.servicios) }} · boletos {{ uyu(a.transporte) }} · salud
-                  {{ uyu(a.salud) }} · limpieza {{ uyu(a.varios) }}
-                </div>
-              </td>
-              <td data-label="Total del mes" class="text-right num font-weight-bold">
+              <td data-label="Comida" class="text-right num">{{ uyu(a.comida) }}</td>
+              <td data-label="Servicios" class="text-right num">{{ uyu(a.servicios) }}</td>
+              <td data-label="Total del mes" class="text-right num">
                 {{ uyu(a.total) }}
+                <div v-if="a.cargas > 1" class="cu-cell-note text-medium-emphasis">
+                  para {{ a.cargas }} personas
+                </div>
               </td>
               <td data-label="Te queda" class="text-right num">
-                <span class="font-weight-bold" :class="a.cierra ? 'text-success' : 'money-neg'">
+                <div class="queda" :class="a.cierra ? 'text-success' : 'money-neg'">
                   {{ a.cierra ? uyu(a.sobra) : `− ${uyu(Math.abs(a.sobra))}` }}
-                </span>
-                <div class="text-caption text-medium-emphasis">{{ sobraEnCosas(a) }}</div>
+                </div>
+                <div class="cu-cell-note text-medium-emphasis">{{ sobraEnCosas(a) }}</div>
               </td>
             </tr>
           </tbody>
         </VTable>
+      </VCard>
+
+      <!-- Lo que era idéntico en las ocho filas sale de la tabla y se dice una vez. -->
+      <VCard variant="flat" class="fijos-card pa-5 pa-md-6 mb-4">
+        <div class="text-overline mb-3">Lo mismo en todas las filas</div>
+        <ul class="fijos-list mb-3">
+          <li v-for="f in fijosComunes" :key="f.label">
+            <span class="fijos-label">{{ f.label }}</span>
+            <span class="fijos-value">{{ f.value }}</span>
+          </li>
+        </ul>
+        <p class="fijos-note mb-0 text-medium-emphasis">
+          Están sumados dentro de cada «total del mes», y en los hogares de dos con un solo ingreso
+          la comida, la salud y los varios se cuentan dos veces; el boleto no, porque lo gasta quien
+          va a trabajar. Salían de la tabla porque no cambiaban de fila en fila: repetirlos ocho
+          veces ocupaba la columna más ancha para no decir nada.
+        </p>
       </VCard>
 
       <VRow class="mb-2">
@@ -598,6 +607,7 @@ import {
   declaraJornadaCompleta,
   equivalenciasOcio,
   esJornadaCompleta,
+  fijosDelMes,
   jornadaBreakdown,
   smnCheck,
   survivalCheck,
@@ -832,8 +842,37 @@ const cuentaMinima = [
   },
 ]
 
-// ── Los seis arreglos, resueltos con el líquido que sale de la calculadora de arriba.
+// ── Los arreglos, resueltos con el líquido que sale de la calculadora de arriba.
 const arreglos = computed(() => compararArreglos(vida.value.liquido))
+
+/** Cuántos son, dicho en letras. Se deriva del catálogo para que no vuelva a desfasarse. */
+const cuantosArreglos = computed(() => {
+  const n = arreglos.value.length
+  const letras = ['cero', 'uno', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve']
+  return letras[n] ?? String(n)
+})
+
+/**
+ * Los importes que no cambian de una fila a otra. Salieron de la tabla porque repetirlos ocho veces
+ * ocupaba la columna más ancha sin informar nada: el boleto toma dos valores en todo el cuadro y
+ * salud y varios toman uno solo.
+ */
+const fijosComunes = computed(() => {
+  const mvd = fijosDelMes('montevideo')
+  const int = fijosDelMes('interior')
+  return [
+    {
+      label: 'Boletos',
+      value: `${uyu(mvd.transporte)} · en el interior ${uyu(int.transporte)}`,
+    },
+    { label: 'Salud (copagos)', value: uyu(mvd.salud) },
+    { label: 'Higiene, limpieza y ropa básica', value: uyu(mvd.varios) },
+    {
+      label: 'Comer al piso del INE, en vez del presupuesto austero',
+      value: `${uyu(mvd.comidaPisoINE)} · en el interior ${uyu(int.comidaPisoINE)}`,
+    },
+  ]
+})
 
 /** Lo que sobra (o falta) dicho en cosas que tienen precio publicado. */
 function sobraEnCosas(a: ArregloCosto): string {
@@ -850,10 +889,10 @@ const lecturaArreglos = computed(() => {
   const cierran = arreglos.value.filter(a => a.cierra)
   const masBarato = arreglos.value[arreglos.value.length - 1]
   if (!cierran.length) {
-    return `Con ${uyu(vida.value.liquido)} en la mano no cierra ninguno de los seis, ni el más barato (${masBarato?.arreglo.titulo.toLowerCase()}, ${uyu(masBarato?.total ?? 0)} por mes). Eso es la resta, no una opinión: para que cierre tiene que entrar otro ingreso al hogar, desaparecer el alquiler, o subir el sueldo.`
+    return `Con ${uyu(vida.value.liquido)} en la mano no cierra ninguno de los ${cuantosArreglos.value}, ni el más barato (${masBarato?.arreglo.titulo.toLowerCase()}, ${uyu(masBarato?.total ?? 0)} por mes). Eso es la resta, no una opinión: para que cierre tiene que entrar otro ingreso al hogar, desaparecer el alquiler, o subir el sueldo.`
   }
   const nombres = cierran.map(a => a.arreglo.titulo.toLowerCase()).join(' y ')
-  return `Con ${uyu(vida.value.liquido)} en la mano cierra ${cierran.length === 1 ? 'un solo arreglo' : `${cierran.length} de los seis`}: ${nombres}. En los demás la resta da negativa, y la diferencia entre uno y otro es casi toda vivienda: es el gasto que se puede partir con alguien, y el único que se puede llevar a cero.`
+  return `Con ${uyu(vida.value.liquido)} en la mano cierra ${cierran.length === 1 ? 'un solo arreglo' : `${cierran.length} de los ${cuantosArreglos.value}`}: ${nombres}. En los demás la resta da negativa, y la diferencia entre uno y otro es casi toda vivienda: es el gasto que se puede partir con alguien, y el único que se puede llevar a cero.`
 })
 
 const roomMarketDate = fmtDate(ROOM_MARKET.fecha)
@@ -892,7 +931,7 @@ const supuestos = [
   {
     label: 'Lo que NO está',
     detalle:
-      'Deudas, hijos, mascotas, mudanza, depósito y garantía de alquiler, ropa de trabajo, estudio, y cualquier gasto de salir. Es un presupuesto de sobrevivir, no de vivir: por eso la última columna se llama «te queda» y no «ahorro».',
+      'Deudas, mascotas, mudanza, depósito y garantía de alquiler, ropa de trabajo, estudio, y cualquier gasto de salir. El hogar de dos con un solo ingreso sí está, pero contando al segundo integrante como un adulto más: no tenemos una equivalencia publicada que distinga a un chico, y las asignaciones familiares del BPS tampoco están sumadas. Es un presupuesto de sobrevivir, no de vivir: por eso la última columna se llama «te queda» y no «ahorro».',
   },
 ]
 
@@ -1152,19 +1191,99 @@ useHead(() => ({
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
-/* El desglose de una celda numérica sí envuelve: es texto, no un número. */
-.num .text-caption {
+/* El desglose de una celda numérica sí envuelve: es texto, no un número. El ritmo vertical y la
+   alineación de estas notas los pone `cu-roomy` en assets/css/responsive-tables.css, que es una
+   regla compartida: cualquier tabla densa la hereda agregando la clase. */
+.num .text-caption,
+.num .cu-cell-note {
   white-space: normal;
-  line-height: 1.35;
 }
-/* Seis columnas es mucho para una tabla que igual se lee de corrido en el desktop:
-   la primera manda y el resto se aprieta. Abajo de 600px las filas ya son tarjetas
-   (cu-mobile-cards), así que un ancho mínimo ahí sólo podría desbordar un teléfono chico. */
+.cu-cell-note {
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+/* El chip cuelga del número en su propia línea y con su propio ancho, para que la etiqueta larga
+   no estire la columna. `white-space: normal` porque .num la fija en nowrap. */
+.chip-line {
+  margin-top: 0.35rem;
+  white-space: normal;
+}
+.chip-line :deep(.v-chip) {
+  height: auto;
+  min-height: 20px;
+  padding-block: 2px;
+}
+
+/* La primera columna es el nombre de la fila: manda, y necesita medida propia para no partir
+   «En pareja o con un hijo, trabajando uno solo» en cinco líneas. Abajo de 600px las filas ya son
+   tarjetas (cu-mobile-cards), así que un ancho mínimo ahí sólo podría desbordar un teléfono. */
 @media (min-width: 600px) {
   .arreglos-table :deep(th:first-child),
   .arreglos-table :deep(td:first-child) {
-    min-width: 210px;
+    min-width: 250px;
+    max-width: 34ch;
   }
+}
+.arreglo-title {
+  font-weight: 600;
+  line-height: 1.35;
+  text-wrap: pretty;
+}
+/* El final de la lectura de cada fila. Respira y se lee sin buscarlo:
+   DESIGN.md, The Number Breathes Rule. */
+.queda {
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.fijos-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 14px;
+}
+.v-theme--light .fijos-card {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+/* Dos columnas y no tres: con `minmax(280px, …)` entraban tres y el cuarto ítem —el de etiqueta
+   más larga— quedaba huérfano en una fila para él solo. A 400px la grilla se resuelve en 2×2 en
+   desktop y en una sola columna abajo de ~880px. */
+.fijos-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.15rem 2.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+}
+.fijos-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  min-width: 0;
+  padding: 0.55rem 0;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.14);
+}
+.v-theme--light .fijos-list li {
+  border-bottom-color: rgba(0, 0, 0, 0.12);
+}
+.fijos-label {
+  min-width: 0;
+  opacity: 0.85;
+  line-height: 1.35;
+}
+.fijos-value {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.fijos-note {
+  margin-top: 1rem;
+  max-width: 72ch;
+  font-size: 0.9rem;
+  line-height: 1.6;
 }
 
 .linea-list {
