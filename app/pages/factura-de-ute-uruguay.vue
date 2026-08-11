@@ -647,17 +647,18 @@ useHead(() => ({
   border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
 
-.band-card {
-  border-left-width: 3px;
-}
+/* El color codifica la banda horaria (punta cara, valle barata), así que se conserva — pero va en
+   el borde COMPLETO: estas sí son tarjetas, con su fondo y su borde, y una barra gruesa de un lado
+   encima de eso las despega del resto del sitio. Distinto de `.bracket-item`, que es un ítem de
+   grilla sin chrome donde la barra izquierda es el marcador de lista. */
 .band-card.is-punta {
-  border-left-color: rgb(var(--v-theme-error));
+  border-color: rgba(var(--v-theme-error), 0.5);
 }
 .band-card.is-llano {
-  border-left-color: rgb(var(--v-theme-warning));
+  border-color: rgba(var(--v-theme-warning), 0.5);
 }
 .band-card.is-valle {
-  border-left-color: rgb(var(--v-theme-success));
+  border-color: rgba(var(--v-theme-success), 0.5);
 }
 .band-h {
   font-size: 0.78rem;
