@@ -1051,7 +1051,7 @@ useHead(() => ({
 .math-card {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 14px;
+  border-radius: 12px;
 }
 .v-theme--light .answer-card,
 .v-theme--light .calc-card,
@@ -1099,7 +1099,7 @@ useHead(() => ({
   line-height: 1.3;
 }
 .metric-value {
-  font-size: 1.35rem;
+  font-size: 1.25rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   margin-top: 0.25rem;
@@ -1154,10 +1154,7 @@ useHead(() => ({
   justify-content: space-between;
   gap: 1.5rem;
   padding: 0.55rem 0;
-  border-bottom: 1px dashed rgba(255, 255, 255, 0.14);
-}
-.v-theme--light .math-list li {
-  border-bottom-color: rgba(0, 0, 0, 0.12);
+  border-bottom: 1px dashed rgba(var(--v-border-color), var(--v-border-opacity, 0.14));
 }
 .math-list li:last-child {
   border-bottom: none;
@@ -1232,7 +1229,7 @@ useHead(() => ({
 /* El final de la lectura de cada fila. Respira y se lee sin buscarlo:
    DESIGN.md, The Number Breathes Rule. */
 .queda {
-  font-size: 1.15rem;
+  font-size: 1.25rem;
   font-weight: 700;
   line-height: 1.25;
 }
@@ -1240,7 +1237,7 @@ useHead(() => ({
 .fijos-card {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 14px;
+  border-radius: 12px;
 }
 .v-theme--light .fijos-card {
   background: rgba(0, 0, 0, 0.02);
@@ -1264,10 +1261,7 @@ useHead(() => ({
   gap: 1rem;
   min-width: 0;
   padding: 0.55rem 0;
-  border-bottom: 1px dashed rgba(255, 255, 255, 0.14);
-}
-.v-theme--light .fijos-list li {
-  border-bottom-color: rgba(0, 0, 0, 0.12);
+  border-bottom: 1px dashed rgba(var(--v-border-color), var(--v-border-opacity, 0.14));
 }
 .fijos-label {
   min-width: 0;
@@ -1282,7 +1276,7 @@ useHead(() => ({
 .fijos-note {
   margin-top: 1rem;
   max-width: 72ch;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   line-height: 1.6;
 }
 
@@ -1297,10 +1291,7 @@ useHead(() => ({
   align-items: baseline;
   gap: 1rem;
   padding: 0.4rem 0;
-  border-bottom: 1px dashed rgba(255, 255, 255, 0.14);
-}
-.v-theme--light .linea-list li {
-  border-bottom-color: rgba(0, 0, 0, 0.12);
+  border-bottom: 1px dashed rgba(var(--v-border-color), var(--v-border-opacity, 0.14));
 }
 .linea-list li:last-child {
   border-bottom: none;
@@ -1331,7 +1322,7 @@ useHead(() => ({
 
 .sources-list {
   padding-left: 1.1rem;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   line-height: 1.8;
 }
 </style>
