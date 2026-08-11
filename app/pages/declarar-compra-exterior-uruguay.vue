@@ -573,14 +573,14 @@ useHead(() => ({
 .eyebrow,
 .section-kicker {
   color: rgb(var(--v-theme-link));
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .section-heading {
-  font-size: 1.35rem;
+  font-size: 1.25rem;
   font-weight: 800;
   line-height: 1.3;
 }
@@ -588,7 +588,7 @@ useHead(() => ({
 .table-scroll {
   overflow-x: auto;
   border: 1px solid rgba(var(--v-border-color), 0.16);
-  border-radius: 14px;
+  border-radius: 12px;
 }
 
 .route-table {
@@ -608,7 +608,7 @@ useHead(() => ({
 
 .route-table th {
   background: rgba(var(--v-theme-primary), 0.08);
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   letter-spacing: 0.03em;
   text-transform: uppercase;
 }
@@ -702,7 +702,7 @@ useHead(() => ({
   gap: 8px;
   margin: 0;
   padding-left: 20px;
-  font-size: 0.84rem;
+  font-size: 0.875rem;
 }
 
 .related-card {
@@ -711,7 +711,7 @@ useHead(() => ({
   height: 100%;
   padding: 16px;
   border: 1px solid rgba(var(--v-border-color), 0.14);
-  border-radius: 14px;
+  border-radius: 12px;
   color: inherit;
   text-decoration: none;
   transition:

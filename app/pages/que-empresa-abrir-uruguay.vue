@@ -2162,7 +2162,7 @@ useHead(() => ({
     linear-gradient(135deg, #10233a 0%, #123044 55%, #0b3b2e 100%);
 }
 .hero-eyebrow {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   font-weight: 700;
@@ -2231,7 +2231,7 @@ useHead(() => ({
 }
 .socios-block {
   border: 1px dashed rgba(var(--v-theme-primary), 0.4);
-  border-radius: 14px;
+  border-radius: 12px;
   background: rgba(var(--v-theme-primary), 0.04);
   margin-inline: 0;
   padding: 8px 4px 14px;
@@ -2239,7 +2239,7 @@ useHead(() => ({
 /* Bloque 3 bis — mismo lenguaje visual que .socios-block: una rama condicional del wizard. */
 .soft-block {
   border: 1px dashed rgba(var(--v-theme-primary), 0.4);
-  border-radius: 14px;
+  border-radius: 12px;
   background: rgba(var(--v-theme-primary), 0.04);
 }
 .q-title--sub {
@@ -2261,7 +2261,7 @@ useHead(() => ({
 }
 .fine-panels {
   border: 1px solid rgba(var(--v-border-color), 0.16);
-  border-radius: 14px;
+  border-radius: 12px;
   overflow: hidden;
 }
 .est-alert {
@@ -2283,7 +2283,7 @@ useHead(() => ({
 /* ── Veredicto ── */
 .verdict-card {
   border: 1px solid rgba(var(--v-theme-primary), 0.35);
-  border-radius: 18px;
+  border-radius: 16px;
   background: rgba(var(--v-theme-primary), 0.05);
 }
 .cost-grid {
@@ -2298,7 +2298,7 @@ useHead(() => ({
 }
 .cost-box {
   border: 1px solid rgba(var(--v-border-color), 0.18);
-  border-radius: 14px;
+  border-radius: 12px;
   padding: 12px 14px;
   text-align: center;
   background: rgb(var(--v-theme-surface));
@@ -2333,7 +2333,7 @@ useHead(() => ({
   margin: 0;
 }
 .notes li {
-  font-size: 0.84rem;
+  font-size: 0.875rem;
   line-height: 1.6;
   margin-bottom: 7px;
   opacity: 0.9;
@@ -2391,7 +2391,7 @@ useHead(() => ({
   min-width: 1050px;
 }
 .cmp-table th {
-  font-size: 0.72rem !important;
+  font-size: 0.75rem !important;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-weight: 800 !important;
@@ -2501,7 +2501,7 @@ useHead(() => ({
 /* ── Lo que no podemos afirmar ── */
 .honest-card {
   border: 2px dashed rgba(var(--v-theme-primary), 0.45);
-  border-radius: 18px;
+  border-radius: 16px;
   background: rgba(var(--v-theme-primary), 0.04);
 }
 .unknown {
@@ -2540,7 +2540,7 @@ useHead(() => ({
 
 /* ── FAQ / fuentes / cross-links ── */
 .faq-panels {
-  border-radius: 14px;
+  border-radius: 12px;
   overflow: hidden;
 }
 .sources-list {

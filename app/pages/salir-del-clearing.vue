@@ -630,7 +630,7 @@ useHead(() => ({
     linear-gradient(135deg, #3a1220 0%, #10233a 60%, #0b3b2e 100%);
 }
 .hero-eyebrow {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   font-weight: 700;
@@ -720,7 +720,7 @@ useHead(() => ({
 }
 .plan-box {
   border: 1px solid rgba(var(--v-border-color), 0.16);
-  border-radius: 14px;
+  border-radius: 12px;
   padding: 14px 16px;
   text-align: center;
 }
@@ -787,7 +787,7 @@ useHead(() => ({
   margin: 0;
 }
 .sources-list li {
-  font-size: 0.84rem;
+  font-size: 0.875rem;
   margin-bottom: 5px;
 }
 .sources-list a {
@@ -799,7 +799,7 @@ useHead(() => ({
 
 .cross-link {
   border: 1px solid rgba(var(--v-border-color), 0.16);
-  border-radius: 14px;
+  border-radius: 12px;
   transition:
     transform 0.16s ease,
     border-color 0.16s ease;

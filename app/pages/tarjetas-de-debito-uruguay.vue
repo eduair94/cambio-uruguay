@@ -785,7 +785,7 @@ function fmtPesos(n: number): string {
 
 /* Hero */
 .hero-card {
-  border-radius: 18px;
+  border-radius: 16px;
 }
 .hero {
   position: relative;
@@ -795,7 +795,7 @@ function fmtPesos(n: number): string {
     linear-gradient(135deg, #0b3b2e 0%, #10233a 55%, #0b1f3a 100%);
 }
 .hero-eyebrow {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   font-weight: 700;
@@ -899,7 +899,7 @@ function fmtPesos(n: number): string {
   line-height: 1;
 }
 .calc-pill-lbl {
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: rgba(var(--v-theme-on-surface), 0.6);
@@ -919,13 +919,13 @@ function fmtPesos(n: number): string {
 }
 .cost-box {
   border: 1px solid rgba(var(--v-border-color), 0.16);
-  border-radius: 14px;
+  border-radius: 12px;
   padding: 16px;
   position: relative;
 }
 .cost-tag {
   display: inline-block;
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -984,7 +984,7 @@ function fmtPesos(n: number): string {
   line-height: 1;
 }
 .podium-score {
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   font-weight: 800;
   color: rgb(var(--v-theme-primary));
 }
@@ -1018,7 +1018,7 @@ function fmtPesos(n: number): string {
   flex: 0 0 auto;
   min-width: 42px;
   height: 42px;
-  border-radius: 10px;
+  border-radius: 12px;
   background: rgba(var(--v-theme-primary), 0.1);
   display: flex;
   align-items: center;
@@ -1076,7 +1076,7 @@ function fmtPesos(n: number): string {
   display: flex;
   align-items: flex-start;
   gap: 6px;
-  font-size: 0.84rem;
+  font-size: 0.875rem;
   margin-bottom: 3px;
 }
 .src-link {

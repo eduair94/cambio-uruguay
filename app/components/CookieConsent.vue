@@ -48,7 +48,7 @@ const visible = computed(() => !hasDecided.value || bannerOpen.value)
   max-width: 920px;
   width: 100%;
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 14px;
+  border-radius: 12px;
 }
 .cookie-consent__text {
   line-height: 1.6;

@@ -456,7 +456,7 @@ useHead(() => ({
 .plain-card {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 14px;
+  border-radius: 12px;
 }
 .v-theme--light .honest-card,
 .v-theme--light .form-card,

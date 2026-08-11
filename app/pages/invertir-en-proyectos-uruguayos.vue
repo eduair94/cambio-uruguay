@@ -475,7 +475,7 @@ useHead(() => ({
   font-weight: 700;
   white-space: nowrap;
   padding: 2px 10px;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 0.82rem;
 }
 .risk-bajo {
@@ -507,7 +507,7 @@ useHead(() => ({
   }
 }
 .proyecto-specs dt {
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: rgba(255, 255, 255, 0.5);

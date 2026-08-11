@@ -660,7 +660,7 @@ useHead(() => ({
 }
 
 .v-avatar img {
-  border-radius: 2px;
+  border-radius: 4px;
 }
 
 .v-breadcrumbs {

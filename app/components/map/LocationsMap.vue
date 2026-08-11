@@ -152,7 +152,7 @@ async function init() {
 function cashIcon() {
   return L.divIcon({
     className: 'cash-pin',
-    html: `<span style="display:flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:3px;background:#00897b;border:2px solid #fff;box-shadow:0 0 3px rgba(0,0,0,.5);color:#fff;font-size:10px;font-weight:700;line-height:1">$</span>`,
+    html: `<span style="display:flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:4px;background:#00897b;border:2px solid #fff;box-shadow:0 0 3px rgba(0,0,0,.5);color:#fff;font-size:10px;font-weight:700;line-height:1">$</span>`,
     iconSize: [16, 16],
     iconAnchor: [8, 8],
   })

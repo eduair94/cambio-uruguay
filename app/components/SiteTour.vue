@@ -113,7 +113,7 @@ defineExpose({ start })
      theme container, so key on the <html data-theme> the theme composable sets). -->
 <style>
 .driver-popover.cu-tour {
-  border-radius: 14px;
+  border-radius: 12px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
 }
 .driver-popover.cu-tour .driver-popover-title {

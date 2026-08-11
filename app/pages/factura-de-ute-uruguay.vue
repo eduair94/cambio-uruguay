@@ -598,7 +598,7 @@ useHead(() => ({
 .band-card {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 14px;
+  border-radius: 12px;
 }
 .v-theme--light .mechanism-card,
 .v-theme--light .form-card,
@@ -669,7 +669,7 @@ useHead(() => ({
   opacity: 0.65;
 }
 .band-n {
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
 }
@@ -680,7 +680,7 @@ useHead(() => ({
 }
 
 .caveat {
-  font-size: 0.84rem;
+  font-size: 0.875rem;
   opacity: 0.8;
 }
 

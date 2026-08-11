@@ -230,7 +230,7 @@ useHead({
 .ai-pulse {
   background: linear-gradient(135deg, rgba(33, 150, 243, 0.1), rgba(124, 77, 255, 0.07));
   border: 1px solid rgba(33, 150, 243, 0.25);
-  border-radius: 14px;
+  border-radius: 12px;
 }
 
 .ai-pulse-content :deep(h1),

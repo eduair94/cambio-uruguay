@@ -1073,7 +1073,7 @@ useHead(() => ({
 .faq-panels {
   overflow: hidden;
   border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-  border-radius: 14px;
+  border-radius: 12px;
 }
 
 .faq-answer {

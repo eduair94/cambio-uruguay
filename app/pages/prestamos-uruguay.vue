@@ -801,7 +801,7 @@ useHead(() => ({
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 4px;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   padding: 1px 5px;
   margin: 1px 2px;
   color: rgba(255, 255, 255, 0.75);
@@ -831,7 +831,7 @@ useHead(() => ({
   white-space: nowrap;
   background: rgba(124, 58, 237, 0.12);
   padding: 2px 8px;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 0.9rem;
 }
 
@@ -843,7 +843,7 @@ useHead(() => ({
 }
 
 .lender-specs dt {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: rgba(255, 255, 255, 0.5);
@@ -886,7 +886,7 @@ useHead(() => ({
   padding: 12px 14px;
   background: rgba(124, 58, 237, 0.08);
   border: 1px solid rgba(124, 58, 237, 0.2);
-  border-radius: 10px;
+  border-radius: 12px;
 }
 .gremial-sector-chip {
   flex: none;
@@ -894,8 +894,8 @@ useHead(() => ({
   background: rgba(124, 58, 237, 0.14);
   color: #a78bfa;
   border: 1px solid rgba(124, 58, 237, 0.3);
-  border-radius: 6px;
-  font-size: 0.72rem;
+  border-radius: 8px;
+  font-size: 0.75rem;
   font-weight: 700;
   padding: 2px 8px;
   white-space: nowrap;

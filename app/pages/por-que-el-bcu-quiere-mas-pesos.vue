@@ -595,7 +595,7 @@ defineOgImageComponent('Cambio', {
   max-width: 65ch;
 }
 .section-heading {
-  font-size: 1.35rem;
+  font-size: 1.25rem;
   font-weight: 750;
   border-left: 4px solid rgb(var(--v-theme-primary));
   padding-left: 0.6rem;
@@ -625,7 +625,7 @@ defineOgImageComponent('Cambio', {
 .cross-link {
   display: block;
   border: 1px solid rgba(var(--v-border-color), 0.18);
-  border-radius: 14px;
+  border-radius: 12px;
   transition:
     transform 0.15s ease,
     border-color 0.15s ease;

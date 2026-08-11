@@ -2900,7 +2900,7 @@ useSeoMeta({
   justify-content: center;
   width: 30px;
   height: 30px;
-  border-radius: 9px;
+  border-radius: 8px;
   font-weight: 800;
   font-size: 0.95rem;
   color: #0a0e1a;
@@ -2978,7 +2978,7 @@ useSeoMeta({
   margin: 0 auto 1rem;
   display: grid;
   place-items: center;
-  border-radius: 18px;
+  border-radius: 16px;
   background: linear-gradient(180deg, rgba(59, 130, 246, 0.28), rgba(99, 102, 241, 0.18));
   border: 1px solid rgba(120, 160, 255, 0.35);
   box-shadow: 0 14px 32px -14px rgba(59, 130, 246, 0.7);
@@ -3115,7 +3115,7 @@ useSeoMeta({
   }
 
   .house-rate {
-    font-size: 1.35rem;
+    font-size: 1.25rem;
   }
 
   /* No hover on touch: keep the "ver histórico" hint visible. */
@@ -3126,7 +3126,7 @@ useSeoMeta({
 
   .cta-section {
     margin-inline: 8px;
-    border-radius: 20px;
+    border-radius: 16px;
   }
 
   .best-rates-card {

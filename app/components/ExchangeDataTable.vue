@@ -277,7 +277,7 @@ const formatDistance = (distance: number) => {
 }
 .published-rate {
   color: rgba(255, 255, 255, 0.62);
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   text-decoration: line-through;
   white-space: nowrap;
 }

@@ -1035,7 +1035,7 @@ useHead(() => ({
 .verdict-card {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 14px;
+  border-radius: 12px;
 }
 .v-theme--light .verdict-card {
   background: rgba(0, 0, 0, 0.02);
@@ -1067,7 +1067,7 @@ useHead(() => ({
   margin-bottom: 0.15rem;
 }
 .verdict-n {
-  font-size: 1.35rem;
+  font-size: 1.25rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
 }
@@ -1165,7 +1165,7 @@ useHead(() => ({
   justify-content: space-between;
   padding: 0.55rem 0.75rem;
   background: rgba(255, 255, 255, 0.04);
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 0.9rem;
 }
 .v-theme--light .mc-stat {
@@ -1183,7 +1183,7 @@ useHead(() => ({
 .myth {
   padding: 1.25rem 1.4rem;
   background: rgba(255, 255, 255, 0.03);
-  border-radius: 10px;
+  border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.07);
 }
 .v-theme--light .myth {
@@ -1242,7 +1242,7 @@ useHead(() => ({
 .plan-table th,
 .inv-table th {
   text-align: left;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   opacity: 0.6;

@@ -855,7 +855,7 @@ useHead(() => ({
 .eyebrow,
 .step-kicker {
   color: rgb(var(--v-theme-primary));
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.09em;
   margin-bottom: 5px;
@@ -904,7 +904,7 @@ useHead(() => ({
 .route-step span {
   color: rgb(var(--v-theme-primary));
   display: block;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 800;
   text-transform: uppercase;
 }
@@ -973,7 +973,7 @@ useHead(() => ({
 }
 .budget-formula span {
   color: rgb(var(--v-theme-primary));
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 800;
 }
 .budget-formula .budget-total {
@@ -1019,7 +1019,7 @@ useHead(() => ({
 }
 .guarantee-grid dt {
   color: rgba(var(--v-theme-on-surface), 0.58);
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -1073,7 +1073,7 @@ useHead(() => ({
   padding-left: 18px;
 }
 .rights-card li {
-  font-size: 0.84rem;
+  font-size: 0.875rem;
   line-height: 1.55;
   margin-bottom: 8px;
 }
@@ -1108,7 +1108,7 @@ useHead(() => ({
 .sources-list li {
   display: flex;
   flex-direction: column;
-  font-size: 0.84rem;
+  font-size: 0.875rem;
   line-height: 1.45;
 }
 .sources-list a {
@@ -1133,14 +1133,14 @@ useHead(() => ({
   align-items: center;
   background: rgba(var(--v-theme-on-surface), 0.03);
   border: 1px solid rgba(var(--v-border-color), 0.15);
-  border-radius: 14px;
+  border-radius: 12px;
   display: flex;
   flex-wrap: wrap;
   gap: 8px 18px;
   padding: 12px 16px;
 }
 .risk-legend-title {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -1173,7 +1173,7 @@ useHead(() => ({
 }
 .channel-card {
   border: 1px solid rgba(var(--v-border-color), 0.15);
-  border-radius: 14px;
+  border-radius: 12px;
   color: inherit;
   text-decoration: none;
   transition: border-color 0.15s ease;

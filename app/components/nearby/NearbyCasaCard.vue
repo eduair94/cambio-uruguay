@@ -196,7 +196,7 @@ const wazeHref = computed(() => wazeUrl(props.lat, props.lng))
     min-width: 0;
     min-height: 40px;
     padding-inline: 8px;
-    font-size: 0.72rem;
+    font-size: 0.75rem;
   }
 }
 

@@ -85,7 +85,7 @@ function toggleMute() {
   width: 100%;
   max-width: 820px;
   margin: 0 auto;
-  border-radius: 20px;
+  border-radius: 16px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: 0 30px 80px -34px rgba(0, 0, 0, 0.75);

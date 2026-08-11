@@ -627,7 +627,7 @@ useHead({
   margin: 0 4px;
   min-width: 0;
   padding-inline: 14px;
-  border-radius: 10px;
+  border-radius: 12px;
   font-weight: 600;
   letter-spacing: 0.01em;
   transition:
@@ -663,7 +663,7 @@ useHead({
   max-height: 88vh;
   overflow-y: auto;
   padding: 18px 22px 12px;
-  border-radius: 14px;
+  border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background-color: rgb(var(--v-theme-surface));
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.32);
@@ -691,7 +691,7 @@ useHead({
   margin: 0 0 6px;
   padding-bottom: 6px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.07em;
   text-transform: uppercase;
@@ -787,7 +787,7 @@ useHead({
   align-items: center;
   gap: 4px;
   padding: 4px 6px;
-  border-radius: 6px;
+  border-radius: 8px;
   color: rgb(var(--v-theme-info));
   text-decoration: none;
   font-size: 0.82rem;
@@ -828,7 +828,7 @@ useHead({
   height: 36px;
   padding: 0 8px 0 12px;
   border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 10px;
+  border-radius: 12px;
   background-color: rgba(255, 255, 255, 0.05);
   color: inherit;
   text-decoration: none;
@@ -863,9 +863,9 @@ useHead({
 .search-trigger__kbd {
   padding: 2px 6px;
   border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 5px;
+  border-radius: 4px;
   font-family: inherit;
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   opacity: 0.7;
 }
 

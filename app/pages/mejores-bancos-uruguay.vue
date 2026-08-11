@@ -939,7 +939,7 @@ useHead(() => ({
 
 /* ---------- Hero ---------- */
 .hero-card {
-  border-radius: 18px;
+  border-radius: 16px;
 }
 .hero {
   position: relative;
@@ -949,7 +949,7 @@ useHead(() => ({
     linear-gradient(135deg, #0b3b2e 0%, #10233a 55%, #3a1220 100%);
 }
 .hero-eyebrow {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   font-weight: 700;
@@ -1061,11 +1061,11 @@ useHead(() => ({
 }
 .crit-chip .crit-weight {
   margin-left: auto;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 700;
   opacity: 0.85;
   background: rgba(var(--v-border-color), 0.16);
-  border-radius: 6px;
+  border-radius: 8px;
   padding: 1px 6px;
 }
 .crit-chip:not(.crit-chip--off) {
@@ -1104,7 +1104,7 @@ useHead(() => ({
   grid-template-columns: 84px 1fr;
   gap: 12px;
   align-items: stretch;
-  border-radius: 14px;
+  border-radius: 12px;
   overflow: hidden;
   background: color-mix(in srgb, var(--row-hue, #64748b) 9%, transparent);
   border: 1px solid color-mix(in srgb, var(--row-hue, #64748b) 26%, transparent);
@@ -1147,7 +1147,7 @@ useHead(() => ({
   min-width: 0;
 }
 .tier-blurb {
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.01em;
   color: rgb(var(--v-theme-on-surface));
@@ -1187,7 +1187,7 @@ useHead(() => ({
 .tile-mono {
   width: 34px;
   height: 34px;
-  border-radius: 9px;
+  border-radius: 8px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1208,7 +1208,7 @@ useHead(() => ({
   font-size: 0.92rem;
 }
 .tile-kind {
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   opacity: 0.82;
   font-weight: 600;
   text-transform: uppercase;
@@ -1268,7 +1268,7 @@ useHead(() => ({
 .ficha-mono {
   width: 40px;
   height: 40px;
-  border-radius: 10px;
+  border-radius: 12px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1285,7 +1285,7 @@ useHead(() => ({
   justify-content: center;
   width: 22px;
   height: 22px;
-  border-radius: 6px;
+  border-radius: 8px;
   font-weight: 900;
   font-size: 0.8rem;
   background: var(--gem);
@@ -1381,7 +1381,7 @@ useHead(() => ({
 
 /* Pros / cons */
 .plabel {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -1414,14 +1414,14 @@ useHead(() => ({
 /* ---------- Sources + cross-links ---------- */
 .sources-card {
   border: 1px solid rgba(var(--v-border-color), 0.14);
-  border-radius: 14px;
+  border-radius: 12px;
 }
 .sources-list {
   padding-left: 18px;
   margin: 0;
 }
 .sources-list li {
-  font-size: 0.84rem;
+  font-size: 0.875rem;
   margin-bottom: 5px;
 }
 .sources-list a {
@@ -1429,7 +1429,7 @@ useHead(() => ({
 }
 .cross-link {
   border: 1px solid rgba(var(--v-border-color), 0.14);
-  border-radius: 14px;
+  border-radius: 12px;
   transition:
     transform 0.16s ease,
     border-color 0.16s ease;
@@ -1442,7 +1442,7 @@ useHead(() => ({
 /* ---------- News + AI analysis ---------- */
 .news-placeholder {
   border: 1px dashed rgba(var(--v-border-color), 0.3);
-  border-radius: 14px;
+  border-radius: 12px;
 }
 .ai-analysis {
   border: 1px solid rgba(var(--v-theme-primary), 0.28);
@@ -1477,7 +1477,7 @@ useHead(() => ({
 }
 .news-card {
   border: 1px solid rgba(var(--v-border-color), 0.14);
-  border-radius: 14px;
+  border-radius: 12px;
 }
 .news-insight {
   font-size: 0.85rem;
@@ -1497,7 +1497,7 @@ useHead(() => ({
   display: inline-flex;
   align-items: center;
   font: inherit;
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.02em;
   color: rgb(var(--v-theme-primary));
@@ -1514,10 +1514,10 @@ useHead(() => ({
 .corrections-card {
   border: 1px solid rgba(var(--v-border-color), 0.14);
   border-left: 3px solid rgb(var(--v-theme-primary));
-  border-radius: 14px;
+  border-radius: 12px;
 }
 .corr-date {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -1558,7 +1558,7 @@ useHead(() => ({
   margin-bottom: 0;
 }
 .news-dialog-srclabel {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -1576,7 +1576,7 @@ useHead(() => ({
 .news-links a {
   display: inline-flex;
   align-items: center;
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   color: rgb(var(--v-theme-primary));
   background: rgba(var(--v-theme-primary), 0.1);
   border-radius: 999px;

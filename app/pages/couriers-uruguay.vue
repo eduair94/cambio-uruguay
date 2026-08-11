@@ -658,7 +658,7 @@ useHead(() => ({
 }
 
 .courier-specs dt {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: rgba(255, 255, 255, 0.5);

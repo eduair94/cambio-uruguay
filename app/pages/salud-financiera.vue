@@ -553,17 +553,17 @@ useHead(() => ({
   flex-direction: column;
   gap: 2px;
   padding: 10px 12px;
-  border-radius: 10px;
+  border-radius: 12px;
   background: rgba(var(--v-theme-on-surface), 0.04);
 }
 .fig-label {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;
   color: rgba(var(--v-theme-on-surface), 0.55);
 }
 .fig-value {
-  font-size: 1.15rem;
+  font-size: 1.25rem;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
   color: rgb(var(--v-theme-primary));
@@ -672,7 +672,7 @@ useHead(() => ({
 }
 
 .idea-note {
-  font-size: 0.84rem;
+  font-size: 0.875rem;
   line-height: 1.5;
   color: rgba(255, 255, 255, 0.8);
 }

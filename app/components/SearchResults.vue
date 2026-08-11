@@ -105,7 +105,7 @@ function onPointerMove(event: MouseEvent, idx: number) {
 .search-results__group,
 .search-results__heading {
   padding: 10px 16px 4px;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;

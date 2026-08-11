@@ -250,7 +250,7 @@ useHead(() => ({
     linear-gradient(135deg, #10233a 0%, #1a2a3a 55%, #3a2412 100%);
 }
 .hero-eyebrow {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   font-weight: 700;
@@ -344,7 +344,7 @@ useHead(() => ({
 }
 .thread-meta {
   display: block;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: rgba(var(--v-theme-on-surface), 0.5);
 }
 .related {
@@ -353,7 +353,7 @@ useHead(() => ({
 }
 .related-label {
   display: block;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -362,7 +362,7 @@ useHead(() => ({
 }
 .cross-link {
   border: 1px solid rgba(var(--v-border-color), 0.16);
-  border-radius: 14px;
+  border-radius: 12px;
   transition:
     transform 0.16s ease,
     border-color 0.16s ease;

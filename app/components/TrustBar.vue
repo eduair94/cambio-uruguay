@@ -109,7 +109,7 @@ const bcuUrl = 'https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/casas_c
 
   .trust-pill__link,
   .trust-pill--static {
-    font-size: 0.74rem;
+    font-size: 0.75rem;
     padding: 0.35rem 0.7rem;
   }
 }

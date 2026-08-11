@@ -692,7 +692,7 @@ useHead(() => ({
 .site-stats__board span {
   display: block;
   color: rgba(255, 255, 255, 0.65);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }

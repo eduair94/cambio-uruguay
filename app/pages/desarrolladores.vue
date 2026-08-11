@@ -261,7 +261,7 @@ useSeoMeta({
   max-width: 100%;
   overflow-x: auto;
   padding: 8px 10px;
-  border-radius: 6px;
+  border-radius: 8px;
   background: rgba(127, 127, 127, 0.12);
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 0.78rem;

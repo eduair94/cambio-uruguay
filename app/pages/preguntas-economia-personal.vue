@@ -508,7 +508,7 @@ useHead(() => ({
 
 .evidence-key__list small {
   color: rgba(var(--v-theme-on-surface), 0.64);
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   line-height: 1.35;
 }
 
@@ -569,7 +569,7 @@ useHead(() => ({
   border: 1px solid rgba(var(--v-theme-primary), 0.35);
   border-radius: 999px;
   color: rgb(var(--v-theme-primary));
-  font-size: 0.76rem;
+  font-size: 0.75rem;
   font-weight: 800;
   white-space: nowrap;
 }
@@ -670,7 +670,7 @@ useHead(() => ({
 
 .source-links__label {
   color: rgba(var(--v-theme-on-surface), 0.6);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -743,7 +743,7 @@ useHead(() => ({
 
 .source-index__list small {
   color: rgba(var(--v-theme-on-surface), 0.58);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
 }
 
 @media (max-width: 900px) {

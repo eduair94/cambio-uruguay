@@ -968,7 +968,7 @@ useHead(() => ({
 .custodia-card {
   background: rgba(15, 118, 110, 0.06);
   border: 1px solid rgba(15, 118, 110, 0.2);
-  border-radius: 10px;
+  border-radius: 12px;
 }
 
 .gletir-score-card,
@@ -1041,7 +1041,7 @@ useHead(() => ({
   white-space: nowrap;
   background: rgba(15, 118, 110, 0.14);
   padding: 2px 8px;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 0.9rem;
 }
 
@@ -1053,7 +1053,7 @@ useHead(() => ({
 }
 
 .investment-specs dt {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: rgba(255, 255, 255, 0.5);

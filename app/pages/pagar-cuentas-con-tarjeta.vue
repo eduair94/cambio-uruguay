@@ -531,7 +531,7 @@ useHead(() => ({
   color: rgb(var(--v-theme-primary));
 }
 .calc-result {
-  border-radius: 14px;
+  border-radius: 12px;
   border: 2px solid transparent;
 }
 .calc-result.is-good {

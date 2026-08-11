@@ -1181,7 +1181,7 @@ defineOgImageComponent('Cambio', {
   width: 36px;
   height: 36px;
   place-items: center;
-  border-radius: 9px;
+  border-radius: 8px;
   background: rgba(var(--v-theme-primary), 0.11);
   color: rgb(var(--v-theme-primary));
 }
@@ -1205,7 +1205,7 @@ defineOgImageComponent('Cambio', {
 .market-summary__label {
   overflow: hidden;
   color: rgba(var(--v-theme-on-surface), 0.6);
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-overflow: ellipsis;
@@ -1271,7 +1271,7 @@ defineOgImageComponent('Cambio', {
   width: 34px;
   height: 34px;
   place-items: center;
-  border-radius: 9px;
+  border-radius: 8px;
   background: rgba(var(--v-theme-warning), 0.16);
   color: rgb(var(--v-theme-warning));
 }
@@ -1320,7 +1320,7 @@ defineOgImageComponent('Cambio', {
   top: 0;
   background: rgb(var(--v-theme-surface));
   color: rgba(var(--v-theme-on-surface), 0.64);
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.045em;
   text-transform: uppercase;
@@ -1355,7 +1355,7 @@ defineOgImageComponent('Cambio', {
   width: 12px;
   height: 12px;
   border: 2px solid rgba(var(--v-theme-on-surface), 0.24);
-  border-radius: 3px;
+  border-radius: 4px;
   vertical-align: -1px;
 }
 
@@ -1410,7 +1410,7 @@ defineOgImageComponent('Cambio', {
   display: inline-block;
   padding: 2px 6px;
   border: 1px solid rgba(var(--v-theme-primary), 0.24);
-  border-radius: 5px;
+  border-radius: 4px;
   color: rgb(var(--v-theme-primary));
   font-size: 0.62rem;
   font-weight: 700;
@@ -1566,7 +1566,7 @@ defineOgImageComponent('Cambio', {
     flex: 1 1 0;
     min-width: 0;
     padding-inline: 8px;
-    font-size: 0.72rem;
+    font-size: 0.75rem;
   }
 
   .analytics-chart {
@@ -1641,7 +1641,7 @@ defineOgImageComponent('Cambio', {
     height: 18px;
     margin-inline-start: 6px;
     padding-inline: 5px;
-    border-radius: 9px;
+    border-radius: 8px;
     background: rgba(var(--v-theme-warning), 0.16);
     color: rgb(var(--v-theme-warning));
     font-size: 0.65rem;

@@ -391,7 +391,7 @@ useHead(() => ({
 
 <style scoped>
 .eyebrow {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -406,7 +406,7 @@ useHead(() => ({
 .practica,
 .sources-card {
   border: 1px solid rgba(var(--v-border-color), 0.14);
-  border-radius: 14px;
+  border-radius: 12px;
 }
 .practica-list {
   margin: 0;
@@ -419,7 +419,7 @@ useHead(() => ({
 }
 .faq-panels {
   border: 1px solid rgba(var(--v-border-color), 0.14);
-  border-radius: 14px;
+  border-radius: 12px;
   overflow: hidden;
 }
 .sources-list {

@@ -746,7 +746,7 @@ useHead(() => ({
 .kpi {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
+  border-radius: 12px;
 }
 .v-theme--light .kpi {
   background: rgba(0, 0, 0, 0.02);
@@ -791,7 +791,7 @@ useHead(() => ({
   display: inline-block;
   width: 90px;
   height: 9px;
-  border-radius: 6px;
+  border-radius: 8px;
   background: linear-gradient(90deg, #4fd1c5, #7f93b3, #ffb454, #ff7a45);
 }
 .detail-badge {
@@ -800,7 +800,7 @@ useHead(() => ({
 .detail-stat {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 11px;
+  border-radius: 12px;
   padding: 10px 11px;
 }
 .v-theme--light .detail-stat {
@@ -869,7 +869,7 @@ useHead(() => ({
 .cov-sq {
   width: 11px;
   height: 11px;
-  border-radius: 3px;
+  border-radius: 4px;
   flex: none;
 }
 .cov-demand {
@@ -929,7 +929,7 @@ useHead(() => ({
 .opp {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 93, 108, 0.5);
-  border-radius: 11px;
+  border-radius: 12px;
   padding: 13px 14px;
   cursor: pointer;
 }
@@ -945,7 +945,7 @@ useHead(() => ({
   color: rgba(var(--v-theme-on-surface), 0.65);
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(52, 211, 153, 0.35);
-  border-radius: 11px;
+  border-radius: 12px;
   padding: 13px 14px;
 }
 .v-theme--light .opp-clear {
@@ -999,7 +999,7 @@ useHead(() => ({
 .topic-card {
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
+  border-radius: 12px;
   transition:
     border-color 0.15s ease,
     transform 0.15s ease;

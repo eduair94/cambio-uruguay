@@ -388,7 +388,7 @@ defineExpose({ isAvailable })
 }
 
 .insight-content :deep(h1) {
-  font-size: 1.4rem;
+  font-size: 1.5rem;
 }
 .insight-content :deep(h2) {
   font-size: 1.25rem;

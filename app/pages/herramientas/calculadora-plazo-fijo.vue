@@ -686,7 +686,7 @@ const faq = [
 .ref-box {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 16px;
 }
 

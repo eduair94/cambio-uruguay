@@ -94,7 +94,7 @@ function tierStyle(tier: RankingTierId): Record<string, string> {
 .ranking-tier-blurb {
   margin: 0 0 9px;
   color: rgb(var(--v-theme-on-surface));
-  font-size: 0.76rem;
+  font-size: 0.75rem;
   opacity: 0.66;
 }
 
@@ -112,7 +112,7 @@ function tierStyle(tier: RankingTierId): Record<string, string> {
   gap: 8px;
   padding: 7px 9px;
   border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-  border-radius: 10px;
+  border-radius: 12px;
   background: rgb(var(--v-theme-surface));
   color: inherit;
   text-decoration: none;
@@ -138,8 +138,8 @@ function tierStyle(tier: RankingTierId): Record<string, string> {
   height: 32px;
   flex: 0 0 32px;
   place-items: center;
-  border-radius: 9px;
-  font-size: 0.68rem;
+  border-radius: 8px;
+  font-size: 0.75rem;
   font-weight: 900;
 }
 
@@ -162,7 +162,7 @@ function tierStyle(tier: RankingTierId): Record<string, string> {
 .ranking-tier-empty {
   padding: 8px 2px;
   color: rgb(var(--v-theme-on-surface));
-  font-size: 0.76rem;
+  font-size: 0.75rem;
   opacity: 0.42;
 }
 

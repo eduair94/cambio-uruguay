@@ -7,6 +7,7 @@ colors:
   paper-canvas: "#f6f7f9"
   paper-surface: "#ffffff"
   white: "#ffffff"
+  ink-black: "#000000"
   action-blue: "#1976d2"
   link-sky: "#64b5f6"
   ink-blue: "#1565c0"
@@ -48,12 +49,38 @@ typography:
     fontWeight: 500
     lineHeight: 1.6
     letterSpacing: "0.0125em"
+  lead:
+    fontFamily: "Open Sans, sans-serif"
+    fontSize: "1.075rem"
+    fontWeight: 400
+    lineHeight: 1.65
+    letterSpacing: "0.03125em"
   body:
     fontFamily: "Open Sans, sans-serif"
     fontSize: "1rem"
     fontWeight: 400
     lineHeight: 1.5
     letterSpacing: "0.03125em"
+  secondary-body:
+    fontFamily: "Open Sans, sans-serif"
+    fontSize: "0.95rem"
+    fontWeight: 400
+    lineHeight: 1.5
+  list-text:
+    fontFamily: "Open Sans, sans-serif"
+    fontSize: "0.875rem"
+    fontWeight: 400
+    lineHeight: 1.45
+  meta:
+    fontFamily: "Open Sans, sans-serif"
+    fontSize: "0.8rem"
+    fontWeight: 400
+    lineHeight: 1.35
+  stat:
+    fontFamily: "Open Sans, sans-serif"
+    fontSize: "1.5rem"
+    fontWeight: 700
+    lineHeight: 1.2
   label:
     fontFamily: "Open Sans, sans-serif"
     fontSize: "0.75rem"
@@ -192,6 +219,11 @@ reusing the dark one, because the same swatch cannot clear 4.5:1 on both `#0a0e1
 - **Paper Canvas** (`#f6f7f9`) and **Paper Surface** (`#ffffff`): The light theme's background and
   content surfaces.
 - **White** (`#ffffff`): Primary dark-theme text and text on strong filled actions.
+- **Ink Black** (`#000000`): **never solid.** It exists only as the light theme's ink at reduced
+  alpha, mirroring Vuetify's emphasis levels: `0.76` for a lead paragraph, `0.6` for hints and
+  field labels, `0.12`–`0.1` for hairlines, `0.02` for a card's tonal fill. The dark theme's
+  counterpart is White at `0.82` / `0.14` / `0.03`. Both are surface ink, not palette colors: a
+  solid black or a solid white fill is drift.
 - Muted dark text is drawn from the canvas ramps (`#b3bdcc`, `#b5bdc9`, `#818da0`), not from grey.
 
 ### Named Rules
@@ -230,6 +262,11 @@ font switching.
   Pair it with a measure of 24–28ch so it breaks at two lines, never four.
 - **Headline** (700, `clamp(1.35rem, 3vw, 1.75rem)`, 1.2): major section openings inside a page.
 - **Title** (500, 1.25rem, 1.6): card, tool, and dialog titles. Matches Vuetify `text-h6`.
+- **Lead** (400, 1.075rem, 1.65, measure 72ch): the paragraph that answers the page's question
+  before any section does — the `.lead` under an `h1`. It is a *documented role, not drift*: the
+  same declaration appears verbatim on 18 pages, and it is deliberately the smallest step that
+  still separates the opening paragraph from body copy. Flattening it to Body would erase that
+  separation on all 18 at once, which is why the ramp records it instead. One per page.
 - **Body** (400, 1rem, 1.5): reading text; prose stays within 65–75ch.
 - **Label** (700, 0.75rem, 0.0333em): metadata, compact controls, status labels, table meta.
 - **Eyebrow** (700, 0.75rem, 0.18em, uppercase): the small colored kicker above a display heading or
@@ -245,7 +282,19 @@ alignment (`font-variant-numeric: tabular-nums`); they are not crowded with comp
 
 **The Four Steps Rule.** Dense data surfaces get four micro sizes and no more: 0.75rem (label),
 0.8rem (meta), 0.875rem (list text), 0.95rem (secondary body). Nothing renders below 0.75rem. A
-page that grows a fifth step is drifting, not designing.
+page that grows a fifth step is drifting, not designing. The four are now in the front-matter ramp
+as `label` / `meta` / `list-text` / `secondary-body`, so the detector can tell a documented step
+from a page-local invention — before, the rule lived in this prose only, and every one of the four
+read as drift.
+
+**The Stat Step.** A headline figure in a stat or metric card is `stat` (700, 1.5rem, tabular
+nums) — the one size above Title that is not a heading. It exists because The Number Breathes Rule
+needs a size to breathe at, and because 14 files had already converged on it.
+
+**A Glyph Is Not Type.** A single decorative glyph — an emoji, a medal, a tier letter — is sized
+like an icon, not off the ramp; `2rem` on `.cv-emoji`, `.podium-medal` and `.tier-letter` is
+deliberate and stays. The distinction is whether the character is *read as text*: a number in a
+card is, a 🥇 is not. Anything that is read as text uses a documented step.
 
 **The One Eyebrow Rule.** A kicker marks a section that earns one. An eyebrow above every block is
 grammar nobody chose.
@@ -355,9 +404,13 @@ for compact records and list rows, **12px** for cards and inner panels (the most
 codebase), **16px** for feature surfaces, hero slabs, and dialogs. Pills (`999px`) are reserved for
 chips, filters, tier badges, and status dots; circles (`50%`) for icon-only actions and dots.
 
-Earlier surfaces also use 10px and 14px; those are the legacy midpoints. Round new work to the
-nearest scale step rather than adding a sixth. Borders are one-pixel, quiet, and theme-aware
-(`rgba(var(--v-border-color), var(--v-border-opacity))`), never a thick colored edge.
+The scale is now literal: on 2026-08-11 the 111 declarations that still sat on the old midpoints
+were snapped to it — 10px and 14px (both card and panel surfaces) to **12px**, 18px and 20px to
+**16px**. Before that sweep 14px alone accounted for 80 declarations across 49 files, which made
+"legacy midpoint" a description of the documentation rather than of the code. A new radius outside
+these four steps is drift; round to the nearest one instead of adding a fifth. Borders are
+one-pixel, quiet, and theme-aware (`rgba(var(--v-border-color), var(--v-border-opacity))`), never a
+thick colored edge.
 
 ### Named Rules
 

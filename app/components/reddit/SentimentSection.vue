@@ -174,7 +174,7 @@ function displayName(e: RedditEntitySentiment): string {
 }
 .reddit-card {
   border: 1px solid rgba(var(--v-border-color), 0.14);
-  border-radius: 14px;
+  border-radius: 12px;
   min-width: 0;
 }
 .reddit-card.rd-neg {
@@ -198,7 +198,7 @@ function displayName(e: RedditEntitySentiment): string {
   width: 28px;
   height: 28px;
   border-radius: 8px;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.02em;
 }
@@ -225,7 +225,7 @@ function displayName(e: RedditEntitySentiment): string {
   border-radius: 999px;
 }
 .rd-counts {
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   opacity: 0.75;
   margin-top: 6px;
   margin-bottom: 0;
@@ -238,6 +238,6 @@ function displayName(e: RedditEntitySentiment): string {
 }
 .reddit-placeholder {
   border: 1px dashed rgba(var(--v-border-color), 0.25);
-  border-radius: 14px;
+  border-radius: 12px;
 }
 </style>

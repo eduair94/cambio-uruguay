@@ -995,7 +995,7 @@ useHead(() => ({
 }
 
 .evidence-status span {
-  font-size: 0.84rem;
+  font-size: 0.875rem;
   line-height: 1.55;
   opacity: 0.75;
 }
@@ -1073,7 +1073,7 @@ useHead(() => ({
 
 .action-option small {
   margin-top: 2px;
-  font-size: 0.76rem;
+  font-size: 0.75rem;
   line-height: 1.45;
   opacity: 0.7;
 }
@@ -1121,7 +1121,7 @@ useHead(() => ({
 
 .preview-hint {
   margin: 4px 0 0;
-  font-size: 0.76rem;
+  font-size: 0.75rem;
   line-height: 1.45;
   opacity: 0.66;
 }
@@ -1191,7 +1191,7 @@ useHead(() => ({
 
 .route-table span,
 .route-table a {
-  font-size: 0.84rem;
+  font-size: 0.875rem;
   line-height: 1.5;
 }
 
@@ -1248,7 +1248,7 @@ useHead(() => ({
 
 .sources-list div > span {
   margin-top: 3px;
-  font-size: 0.76rem;
+  font-size: 0.75rem;
   opacity: 0.66;
 }
 
@@ -1256,7 +1256,7 @@ useHead(() => ({
   width: fit-content;
   padding: 4px 9px;
   border-radius: 999px;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;

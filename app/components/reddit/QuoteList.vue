@@ -77,7 +77,7 @@ const shown = computed(() => (props.quotes ?? []).slice(0, Math.max(0, props.max
 }
 .q-meta {
   display: block;
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   opacity: 0.6;
   margin-top: 3px;
 }

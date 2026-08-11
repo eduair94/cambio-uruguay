@@ -177,7 +177,7 @@ useHead({
 .example-box {
   background: rgba(33, 150, 243, 0.08);
   border: 1px solid rgba(33, 150, 243, 0.24);
-  border-radius: 10px;
+  border-radius: 12px;
 }
 /* The primary "Ejemplo" overline sits on the pale-blue example card; in light
    mode #1976d2 on that tint is only 3.95:1. Darken it to clear AA. */

@@ -1555,7 +1555,7 @@ h1 {
 
 .budget-result h3 {
   margin: 0;
-  font-size: 1.4rem;
+  font-size: 1.5rem;
 }
 
 .budget-result > div > p:not(.budget-result__eyebrow) {
@@ -2400,7 +2400,7 @@ h1 {
   }
 
   .rig-ledger dd {
-    font-size: 1.15rem;
+    font-size: 1.25rem;
   }
 
   .rig-date {

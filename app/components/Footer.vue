@@ -283,7 +283,7 @@ $teal: #4dd0e1;
 .cu-footer__heading {
   margin: 0 0 10px;
   color: $faint;
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   font-weight: 700;
   line-height: 1.2;
   letter-spacing: 0.07em;
@@ -314,7 +314,7 @@ $teal: #4dd0e1;
   &:focus-visible {
     outline: 2px solid $teal;
     outline-offset: 2px;
-    border-radius: 3px;
+    border-radius: 4px;
     color: $ink;
   }
 }
@@ -359,7 +359,7 @@ $teal: #4dd0e1;
   &:focus-visible {
     outline: 2px solid $teal;
     outline-offset: 2px;
-    border-radius: 3px;
+    border-radius: 4px;
     color: $ink;
   }
 }

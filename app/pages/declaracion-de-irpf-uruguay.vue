@@ -323,7 +323,7 @@ useHead(() => ({
 .highlight-card {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 14px;
+  border-radius: 12px;
 }
 .v-theme--light .dates-card,
 .v-theme--light .results-card,
@@ -352,7 +352,7 @@ useHead(() => ({
   opacity: 0.65;
 }
 .date-n {
-  font-size: 1.15rem;
+  font-size: 1.25rem;
   font-weight: 700;
   line-height: 1.3;
   margin-bottom: 0.25rem;

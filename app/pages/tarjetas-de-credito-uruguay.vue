@@ -565,7 +565,7 @@ useHead(() => ({
 /* Rank card */
 .rank-card {
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
+  border-radius: 12px;
   overflow: hidden;
   background: rgba(255, 255, 255, 0.02);
 }
@@ -576,7 +576,7 @@ useHead(() => ({
 .rank-badge {
   width: 40px;
   height: 40px;
-  border-radius: 10px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -585,7 +585,7 @@ useHead(() => ({
   font-size: 1.1rem;
 }
 .rank-medal {
-  font-size: 1.4rem;
+  font-size: 1.5rem;
 }
 .tone-gold {
   background: rgba(245, 158, 11, 0.18);
@@ -624,7 +624,7 @@ useHead(() => ({
   }
 }
 .score-dim {
-  font-size: 0.76rem;
+  font-size: 0.75rem;
   color: rgba(255, 255, 255, 0.7);
   text-align: right;
 }
@@ -633,7 +633,7 @@ useHead(() => ({
 }
 .score-track {
   height: 8px;
-  border-radius: 6px;
+  border-radius: 8px;
   background: rgba(255, 255, 255, 0.08);
   overflow: hidden;
 }
@@ -642,7 +642,7 @@ useHead(() => ({
 }
 .score-fill {
   height: 100%;
-  border-radius: 6px;
+  border-radius: 8px;
   transition: width 0.4s ease;
 }
 .score-val {
@@ -667,7 +667,7 @@ useHead(() => ({
 .rank-rationale {
   background: rgba(124, 58, 237, 0.08);
   border-left: 3px solid rgba(124, 58, 237, 0.5);
-  border-radius: 6px;
+  border-radius: 8px;
   padding: 10px 12px;
   line-height: 1.55;
 }
@@ -683,7 +683,7 @@ useHead(() => ({
   border-bottom-color: rgba(0, 0, 0, 0.06);
 }
 .rank-facts dt {
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: rgba(255, 255, 255, 0.5);
@@ -703,7 +703,7 @@ useHead(() => ({
 }
 
 .rank-plabel {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   font-weight: 700;
@@ -720,7 +720,7 @@ useHead(() => ({
   padding-left: 1.1rem;
 }
 .rank-list li {
-  font-size: 0.84rem;
+  font-size: 0.875rem;
   line-height: 1.45;
   margin-bottom: 0.4rem;
 }

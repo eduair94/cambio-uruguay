@@ -524,7 +524,7 @@ useHead(() => ({
 }
 
 .audit-ledger__stamp span {
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -599,7 +599,7 @@ useHead(() => ({
   margin-top: 20px;
   overflow: hidden;
   border: 1px solid var(--comparison-line);
-  border-radius: 14px;
+  border-radius: 12px;
   background: rgb(var(--v-theme-surface));
 }
 
@@ -640,7 +640,7 @@ useHead(() => ({
 
 .platform-score > span {
   color: var(--comparison-muted);
-  font-size: 0.74rem;
+  font-size: 0.75rem;
 }
 
 .platform-score p {
@@ -667,14 +667,14 @@ useHead(() => ({
   display: block;
   margin-bottom: 8px;
   color: var(--comparison-muted);
-  font-size: 0.76rem;
+  font-size: 0.75rem;
   font-weight: 700;
 }
 
 .comparison-grid {
   overflow: hidden;
   border: 1px solid var(--comparison-line);
-  border-radius: 14px;
+  border-radius: 12px;
   background: rgb(var(--v-theme-surface));
 }
 
@@ -731,7 +731,7 @@ useHead(() => ({
   align-items: center;
   color: rgb(var(--v-theme-primary));
   cursor: pointer;
-  font-size: 0.76rem;
+  font-size: 0.75rem;
   font-weight: 700;
 }
 
@@ -746,7 +746,7 @@ useHead(() => ({
   gap: 6px;
   align-items: center;
   color: var(--comparison-muted);
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   text-decoration: none;
 }
 
@@ -838,7 +838,7 @@ useHead(() => ({
   align-items: flex-start;
   max-width: 74ch;
   margin-top: 12px;
-  font-size: 0.84rem;
+  font-size: 0.875rem;
   line-height: 1.55;
 }
 
@@ -849,7 +849,7 @@ useHead(() => ({
   align-items: center;
   padding: clamp(22px, 4vw, 34px);
   border: 1px solid rgba(var(--v-theme-warning), 0.38);
-  border-radius: 14px;
+  border-radius: 12px;
   background: rgba(var(--v-theme-warning), 0.07);
 }
 
@@ -865,7 +865,7 @@ useHead(() => ({
 
 .honest-gap h2 {
   margin: 0 0 7px;
-  font-size: 1.35rem;
+  font-size: 1.25rem;
 }
 
 .honest-gap p {
@@ -897,7 +897,7 @@ useHead(() => ({
 
 .source-register {
   padding: 26px;
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--comparison-soft);
 }
 
@@ -909,7 +909,7 @@ useHead(() => ({
 .source-register > p {
   margin: 8px 0 20px;
   color: var(--comparison-muted);
-  font-size: 0.84rem;
+  font-size: 0.875rem;
   line-height: 1.55;
 }
 
@@ -1049,7 +1049,7 @@ useHead(() => ({
   .status-cell__platform {
     display: block;
     color: var(--comparison-muted);
-    font-size: 0.68rem;
+    font-size: 0.75rem;
     font-weight: 700;
   }
 }

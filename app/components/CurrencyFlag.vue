@@ -79,7 +79,7 @@ const isHttpUrl = (url: string): boolean => {
   width: 20px;
   height: 15px;
   object-fit: cover;
-  border-radius: 2px;
+  border-radius: 4px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 

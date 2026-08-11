@@ -1135,7 +1135,7 @@ useHead(() => ({
 
 <style scoped>
 .eyebrow {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1151,7 +1151,7 @@ useHead(() => ({
   font-weight: 800;
 }
 .block-label {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -1209,7 +1209,7 @@ useHead(() => ({
 .problem-card,
 .footer-card {
   border: 1px solid rgba(var(--v-border-color), 0.14);
-  border-radius: 14px;
+  border-radius: 12px;
 }
 
 /* Verificador de cobro */
@@ -1221,7 +1221,7 @@ useHead(() => ({
 .verdict-row {
   border: 1px solid rgba(var(--v-border-color), 0.14);
   border-left: 3px solid rgba(var(--v-border-color), 0.4);
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 12px 14px;
 }
 .verdict-row.v-success {
@@ -1296,13 +1296,13 @@ useHead(() => ({
   gap: 2px;
 }
 .stat-label {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   opacity: 0.6;
 }
 .stat-value {
-  font-size: 1.15rem;
+  font-size: 1.25rem;
   font-weight: 800;
 }
 
@@ -1320,7 +1320,7 @@ useHead(() => ({
 }
 .norm-panels {
   border: 1px solid rgba(var(--v-border-color), 0.14);
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
 }
 .norm-block {
@@ -1339,7 +1339,7 @@ useHead(() => ({
   margin-top: 8px;
 }
 .source-chip {
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   display: inline-flex;
   align-items: center;
   padding: 3px 9px;
@@ -1359,7 +1359,7 @@ useHead(() => ({
   padding-top: 14px;
   margin-top: 4px;
   background: rgba(var(--v-border-color), 0.04);
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 14px;
 }
 .quotes-list {
@@ -1387,7 +1387,7 @@ useHead(() => ({
 }
 .q-meta {
   display: block;
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   font-style: normal;
   opacity: 0.65;
   margin-top: 3px;
@@ -1403,7 +1403,7 @@ useHead(() => ({
 /* Facts appendix */
 .facts-panels {
   border: 1px solid rgba(var(--v-border-color), 0.14);
-  border-radius: 14px;
+  border-radius: 12px;
   overflow: hidden;
 }
 .facts-list {
@@ -1439,7 +1439,7 @@ useHead(() => ({
   display: flex;
   flex-wrap: wrap;
   gap: 4px 12px;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   opacity: 0.65;
   margin-top: 2px;
 }
@@ -1470,7 +1470,7 @@ useHead(() => ({
   padding: 16px;
   height: 100%;
   border: 1px solid rgba(var(--v-border-color), 0.14);
-  border-radius: 14px;
+  border-radius: 12px;
   text-decoration: none;
   color: inherit;
   transition: border-color 0.15s ease;

@@ -405,7 +405,7 @@ useHead(() => ({
 .reading-key {
   padding: 22px;
   border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-  border-radius: 14px;
+  border-radius: 12px;
   background: rgb(var(--v-theme-surface));
 }
 
@@ -506,7 +506,7 @@ useHead(() => ({
   min-height: 22px;
   padding: 2px 8px;
   border-radius: 999px;
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.015em;
 }
@@ -569,7 +569,7 @@ useHead(() => ({
   color: rgba(var(--v-theme-on-surface), 0.76);
   border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
   border-radius: 8px;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
 }
 
 .related-link:hover,

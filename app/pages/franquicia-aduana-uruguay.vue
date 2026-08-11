@@ -849,7 +849,7 @@ useHead(() => ({
 
 <style scoped>
 .eyebrow {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -866,7 +866,7 @@ useHead(() => ({
 .timeline,
 .sources-card {
   border: 1px solid rgba(var(--v-border-color), 0.14);
-  border-radius: 14px;
+  border-radius: 12px;
 }
 .verdict-reasons {
   margin: 0;
@@ -895,7 +895,7 @@ useHead(() => ({
 }
 .channel-table thead th {
   font-weight: 700;
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: rgba(var(--v-theme-on-surface), 0.6);
@@ -935,7 +935,7 @@ useHead(() => ({
   line-height: 1.6;
 }
 .tl-src {
-  font-size: 0.76rem;
+  font-size: 0.75rem;
   display: inline-flex;
   align-items: center;
 }
@@ -961,7 +961,7 @@ useHead(() => ({
 }
 .faq {
   border: 1px solid rgba(var(--v-border-color), 0.14);
-  border-radius: 14px;
+  border-radius: 12px;
 }
 .faq-q {
   font-weight: 700;

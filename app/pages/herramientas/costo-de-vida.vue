@@ -798,7 +798,7 @@ const faq = computed(() => [
 }
 
 .cv-verdict {
-  border-radius: 14px;
+  border-radius: 12px;
   border: 2px solid transparent;
 }
 .cv-verdict-eyebrow {
@@ -835,7 +835,7 @@ const faq = computed(() => [
 
 /* Savings highlight */
 .cv-savings {
-  border-radius: 14px;
+  border-radius: 12px;
   border: 1px solid transparent;
 }
 .cv-savings-good {
@@ -847,14 +847,14 @@ const faq = computed(() => [
   border-color: rgba(148, 163, 184, 0.3);
 }
 .cv-savings-eyebrow {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   opacity: 0.7;
   margin-bottom: 2px;
 }
 .cv-savings-amount {
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 800;
   line-height: 1.05;
   font-variant-numeric: tabular-nums;
@@ -905,7 +905,7 @@ const faq = computed(() => [
 .cv-dot {
   width: 11px;
   height: 11px;
-  border-radius: 3px;
+  border-radius: 4px;
   display: inline-block;
   margin-right: 6px;
 }
@@ -937,13 +937,13 @@ const faq = computed(() => [
 }
 .cv-line-track {
   height: 10px;
-  border-radius: 6px;
+  border-radius: 8px;
   background: rgba(var(--v-theme-on-surface), 0.06);
   overflow: hidden;
 }
 .cv-line-fill {
   height: 100%;
-  border-radius: 6px;
+  border-radius: 8px;
   background: #6366f1;
   transition: width 0.35s ease;
 }
@@ -967,7 +967,7 @@ const faq = computed(() => [
 .cv-region,
 .cv-basket,
 .cv-income {
-  border-radius: 14px;
+  border-radius: 12px;
   border: 1px solid rgba(var(--v-theme-on-surface), 0.14);
   background: rgba(var(--v-theme-on-surface), 0.04);
 }
@@ -995,13 +995,13 @@ const faq = computed(() => [
   gap: 12px;
 }
 .cv-basket-item {
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 12px;
   background: rgba(var(--v-theme-surface), 0.7);
   border: 1px solid rgba(var(--v-theme-on-surface), 0.1);
 }
 .cv-basket-value {
-  font-size: 1.35rem;
+  font-size: 1.25rem;
   font-weight: 800;
   line-height: 1.1;
   font-variant-numeric: tabular-nums;
@@ -1023,13 +1023,13 @@ const faq = computed(() => [
   gap: 12px;
 }
 .cv-income-eyebrow {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   opacity: 0.7;
 }
 .cv-income-value {
-  font-size: 1.15rem;
+  font-size: 1.25rem;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }

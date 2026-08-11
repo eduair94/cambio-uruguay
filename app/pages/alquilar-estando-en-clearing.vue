@@ -594,7 +594,7 @@ useHead(() => ({
     linear-gradient(135deg, #10233a 0%, #14342b 55%, #3a1220 100%);
 }
 .hero-eyebrow {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   font-weight: 700;
@@ -656,7 +656,7 @@ useHead(() => ({
   gap: 12px;
   align-items: start;
   border: 1px solid rgba(var(--v-border-color), 0.16);
-  border-radius: 14px;
+  border-radius: 12px;
   padding: 12px 14px;
   background: rgba(var(--v-theme-on-surface), 0.02);
 }
@@ -707,7 +707,7 @@ useHead(() => ({
   gap: 12px;
   align-items: start;
   border: 1px solid rgba(var(--v-border-color), 0.16);
-  border-radius: 14px;
+  border-radius: 12px;
   padding: 14px 16px;
 }
 .pattern .v-icon {
@@ -761,7 +761,7 @@ useHead(() => ({
 .sources-list li {
   display: flex;
   flex-direction: column;
-  font-size: 0.84rem;
+  font-size: 0.875rem;
   line-height: 1.45;
 }
 .sources-list a {
@@ -777,7 +777,7 @@ useHead(() => ({
 
 .cross-link {
   border: 1px solid rgba(var(--v-border-color), 0.16);
-  border-radius: 14px;
+  border-radius: 12px;
   transition:
     transform 0.16s ease,
     border-color 0.16s ease;

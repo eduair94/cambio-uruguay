@@ -569,7 +569,7 @@ useHead(() => ({
 
 <style scoped>
 .eyebrow {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -603,7 +603,7 @@ useHead(() => ({
   color: rgb(var(--v-theme-primary));
 }
 .figure-label {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   opacity: 0.7;
   line-height: 1.35;
 }
@@ -672,7 +672,7 @@ useHead(() => ({
   line-height: 1.35;
 }
 .scenario-short {
-  font-size: 0.76rem;
+  font-size: 0.75rem;
   opacity: 0.7;
   line-height: 1.4;
 }
@@ -685,7 +685,7 @@ useHead(() => ({
 .share-card,
 .sources-card {
   border: 1px solid rgba(var(--v-border-color), 0.14);
-  border-radius: 14px;
+  border-radius: 12px;
 }
 
 /* Share */
@@ -709,7 +709,7 @@ useHead(() => ({
   line-height: 1.7;
 }
 .block-label {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -778,7 +778,7 @@ useHead(() => ({
 /* Retract exceptions */
 .exceptions-card {
   border: 1px solid rgba(var(--v-theme-warning), 0.28);
-  border-radius: 14px;
+  border-radius: 12px;
   background: rgba(var(--v-theme-warning), 0.035);
 }
 .exceptions-list {
@@ -787,7 +787,7 @@ useHead(() => ({
   gap: 10px 28px;
   margin: 0;
   padding-left: 22px;
-  font-size: 0.84rem;
+  font-size: 0.875rem;
   line-height: 1.55;
 }
 
@@ -803,7 +803,7 @@ useHead(() => ({
   border-bottom: none;
 }
 .step-when {
-  font-size: 0.84rem;
+  font-size: 0.875rem;
   font-weight: 800;
   color: rgb(var(--v-theme-primary));
   line-height: 1.4;
@@ -835,7 +835,7 @@ useHead(() => ({
   font-weight: 700;
 }
 .xlink-text {
-  font-size: 0.84rem;
+  font-size: 0.875rem;
   line-height: 1.6;
   opacity: 0.85;
 }

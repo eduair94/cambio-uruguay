@@ -119,7 +119,7 @@ const changeLabel = computed(() => {
 }
 .dm-skel {
   background: rgba(var(--v-theme-on-surface), 0.09);
-  border-radius: 6px;
+  border-radius: 8px;
   animation: dm-pulse 1.4s ease-in-out infinite;
 }
 .dm-skel-caption {

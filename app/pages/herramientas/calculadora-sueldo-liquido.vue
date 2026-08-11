@@ -407,7 +407,7 @@ const faq = [
 <style scoped>
 .mode-toggle {
   border: 1px solid rgba(var(--v-border-color), 0.25);
-  border-radius: 10px;
+  border-radius: 12px;
 }
 
 .headline-grid {
@@ -423,7 +423,7 @@ const faq = [
 }
 .head-box {
   border: 1px solid rgba(var(--v-border-color), 0.16);
-  border-radius: 14px;
+  border-radius: 12px;
   padding: 14px 16px;
   text-align: center;
 }
@@ -439,7 +439,7 @@ const faq = [
 /* Payslip */
 .payslip {
   border: 1px solid rgba(var(--v-border-color), 0.16);
-  border-radius: 14px;
+  border-radius: 12px;
   overflow: hidden;
 }
 .slip-row {
@@ -455,7 +455,7 @@ const faq = [
   border-bottom: none;
 }
 .slip-row--head {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   font-weight: 700;
@@ -511,7 +511,7 @@ const faq = [
 
 .check-box {
   border: 1px solid rgba(var(--v-border-color), 0.16);
-  border-radius: 14px;
+  border-radius: 12px;
   background: rgba(var(--v-theme-primary), 0.04);
 }
 .adv-panels :deep(.v-expansion-panel) {

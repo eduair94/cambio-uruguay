@@ -275,7 +275,7 @@ useHead(() => ({
 
 <style scoped>
 .eyebrow {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -292,7 +292,7 @@ useHead(() => ({
 .cross,
 .aka {
   border: 1px solid rgba(var(--v-border-color), 0.14);
-  border-radius: 14px;
+  border-radius: 12px;
 }
 .aka {
   border-left: 3px solid rgba(202, 138, 4, 0.7);
@@ -312,7 +312,7 @@ useHead(() => ({
   border-left: 3px solid rgba(202, 138, 4, 0.7);
 }
 .warn-date {
-  font-size: 0.76rem;
+  font-size: 0.75rem;
   opacity: 0.65;
 }
 .warn-entities {
@@ -332,7 +332,7 @@ useHead(() => ({
   white-space: nowrap;
 }
 .warn-flag {
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   opacity: 0.7;
   line-height: 1.4;
 }

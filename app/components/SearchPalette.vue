@@ -401,7 +401,7 @@ onUnmounted(() => clearTimeout(noResultTimer))
 .search-palette {
   display: flex;
   flex-direction: column;
-  border-radius: 14px;
+  border-radius: 12px;
   // The dialog teleports out of `.v-application`, where it does not reliably
   // pick up the card surface — without this the panel renders see-through and
   // the page shows through the results.
@@ -450,7 +450,7 @@ onUnmounted(() => clearTimeout(noResultTimer))
 .search-palette__group {
   display: block;
   padding: 10px 16px 4px;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;

@@ -398,7 +398,7 @@ useHead(() => ({
 .tool-article :deep(h2) {
   position: relative;
   padding-left: 0.85rem;
-  font-size: 1.15rem;
+  font-size: 1.25rem;
   font-weight: 700;
   margin: 1.75rem 0 0.85rem;
 }
@@ -414,7 +414,7 @@ useHead(() => ({
   top: 0.2em;
   bottom: 0.1em;
   width: 3px;
-  border-radius: 2px;
+  border-radius: 4px;
   background: linear-gradient(180deg, #2f81f7 0%, #16c784 100%);
 }
 
@@ -511,7 +511,7 @@ useHead(() => ({
 .tool-page .result-box {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 18px 18px;
 }
 
@@ -524,7 +524,7 @@ useHead(() => ({
 .tool-page .tool-info-row {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
+  border-radius: 12px;
 }
 
 /* Breakdown / detail tables — a touch more row height so multi-line labels

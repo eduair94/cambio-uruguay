@@ -592,7 +592,7 @@ useHead(() => ({
 
 <style scoped>
 .eyebrow {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -623,7 +623,7 @@ useHead(() => ({
   color: #fff;
 }
 .answer-label {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -640,7 +640,7 @@ useHead(() => ({
 .cost-card,
 .sources-card {
   border: 1px solid rgba(var(--v-border-color), 0.14);
-  border-radius: 14px;
+  border-radius: 12px;
 }
 .reason-list {
   margin: 0;
@@ -687,7 +687,7 @@ useHead(() => ({
   gap: 16px;
 }
 .step-when {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -711,7 +711,7 @@ useHead(() => ({
 }
 .faq-panels {
   border: 1px solid rgba(var(--v-border-color), 0.14);
-  border-radius: 14px;
+  border-radius: 12px;
   overflow: hidden;
 }
 .sources-list {

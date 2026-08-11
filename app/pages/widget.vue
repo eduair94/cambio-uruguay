@@ -177,7 +177,7 @@ useSeoMeta({
   display: flex;
   align-items: stretch;
   background: rgba(255, 255, 255, 0.03);
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 10px 4px;
 }
 
@@ -223,7 +223,7 @@ useSeoMeta({
 }
 
 .widget-link {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.7);
   text-decoration: none;

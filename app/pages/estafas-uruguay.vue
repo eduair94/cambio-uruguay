@@ -502,7 +502,7 @@ useHead(() => ({
 
 <style scoped>
 .eyebrow {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -546,7 +546,7 @@ useHead(() => ({
   line-height: 1.35;
 }
 .scenario-short {
-  font-size: 0.76rem;
+  font-size: 0.75rem;
   opacity: 0.7;
   line-height: 1.4;
 }
@@ -556,7 +556,7 @@ useHead(() => ({
 .gap-card,
 .sources-card {
   border: 1px solid rgba(var(--v-border-color), 0.14);
-  border-radius: 14px;
+  border-radius: 12px;
 }
 .verdict.v-success {
   border-left: 3px solid #16a34a;
@@ -572,7 +572,7 @@ useHead(() => ({
   line-height: 1.7;
 }
 .block-label {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -630,7 +630,7 @@ useHead(() => ({
   border-bottom: none;
 }
 .step-when {
-  font-size: 0.76rem;
+  font-size: 0.75rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -646,7 +646,7 @@ useHead(() => ({
   opacity: 0.9;
 }
 .step-src {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   opacity: 0.6;
 }
 .sources-list {
@@ -668,7 +668,7 @@ useHead(() => ({
 .pattern {
   border: 1px solid rgba(var(--v-border-color), 0.14);
   border-left: 3px solid rgba(202, 138, 4, 0.75);
-  border-radius: 14px;
+  border-radius: 12px;
 }
 .pattern-how {
   font-size: 0.9rem;
@@ -699,12 +699,12 @@ useHead(() => ({
 }
 .q-meta {
   display: block;
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   opacity: 0.6;
   margin-top: 3px;
 }
 .thread-link {
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   padding: 2px 8px;
   border-radius: 999px;
   background: rgba(var(--v-theme-primary), 0.1);
