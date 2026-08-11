@@ -42,7 +42,14 @@ export const FRANCHISE_ANNUAL_USD = 800
 /** Franchise shipments: at most 3 per calendar year (Decreto 50/026 art. 4 lit. c). */
 export const FRANCHISE_MAX_SHIPMENTS = 3
 
-/** Per-shipment weight ceiling, in kg (Decreto 50/026). */
+/**
+ * Per-shipment weight ceiling of BOTH postal regimes, in kg (Decreto 50/026 arts. 1 y 2).
+ *
+ * It is a ceiling on the REGIME, not on the franquicia: a 25 kg parcel does not "pay the 60%
+ * instead", it leaves the postal regimes altogether and needs DUA + despachante, exactly like a
+ * shipment over USD 800. The DNA's operative page says the same. Splitting the parcel after it
+ * arrived is not a right the norm provides.
+ */
 export const MAX_WEIGHT_KG = 20
 
 /** Simplified single rate, % of the invoice value (Ley 20.446 art. 627). */
@@ -157,6 +164,11 @@ export interface RegimeInput {
    * misma"). The courier's own separately-billed freight is not part of the seller's invoice.
    */
   valueUsd: number
+  /**
+   * Shipment weight in kg. Over {@link MAX_WEIGHT_KG} neither postal regime applies, whatever the
+   * invoice says. Omitted (or 0) means "not declared" and the weight rule is not applied.
+   */
+  weightKg?: number
   origin: ImportOrigin
   /** Franchise USD still unused this calendar year. */
   franchiseAvailableUsd: number
@@ -179,6 +191,11 @@ export interface RegimeDecision {
   regime: CourierRegime
   /** True when this shipment pays no IVA (US-origin, within the TIFA threshold). */
   ivaExempt: boolean
+  /**
+   * Set when the shipment left the postal regimes because it weighs more than
+   * {@link MAX_WEIGHT_KG}, so the caller can say WHY instead of only "supera US$ 800".
+   */
+  overWeight?: boolean
   /** Machine-readable reasons, in the order they were decided. */
   reasons: string[]
   /** Whether the seller-registration condition is being enforced on `today`. */
@@ -223,7 +240,9 @@ export function isSellerRegistryEnforced(
  *  - the franchise ceiling is USD 800 ACCUMULATED PER YEAR across at most 3 shipments (Decreto
  *    50/026 art. 3 y art. 4 lit. c) — the NORM sets no per-shipment cap;
  *  - above USD 800 a shipment fits neither regime and goes to the general one (Decreto 50/026
- *    arts. 2 y 3), which this calculator does not attempt to price.
+ *    arts. 2 y 3), which this calculator does not attempt to price. The SAME is true above
+ *    {@link MAX_WEIGHT_KG} kg: the two ceilings are independent, and blowing either one is
+ *    enough — a 25 kg parcel of USD 60 is a formal import.
  *
  * The modality (express vs non-express) has NO fiscal consequence since 1/5/2026 — Decreto 50/026
  * art. 1 covers "operadores postales, públicos o privados" alike, one regime and one franquicia
@@ -248,12 +267,30 @@ export function resolveRegime(
       ? { channel, capUsd: legacyCap }
       : undefined
 
-  // Neither regime reaches past USD 800 (Decreto arts. 2 y 3): it is a formal import.
-  if (value > rules.franchiseAnnualUsd) {
-    reasons.push(
-      `El envío supera US$ ${rules.franchiseAnnualUsd}: no entra en franquicia ni en el régimen simplificado.`
-    )
-    return { regime: 'general', ivaExempt: false, reasons, registryEnforced }
+  // Neither regime reaches past USD 800 nor past 20 kg (Decreto arts. 1, 2 y 3): formal import.
+  // The two ceilings are independent — either one on its own throws the shipment out.
+  const weight = Math.max(input.weightKg || 0, 0)
+  const overWeight = weight > MAX_WEIGHT_KG
+  const overValue = value > rules.franchiseAnnualUsd
+
+  if (overValue || overWeight) {
+    if (overValue) {
+      reasons.push(
+        `El envío supera US$ ${rules.franchiseAnnualUsd}: no entra en franquicia ni en el régimen simplificado.`
+      )
+    }
+    if (overWeight) {
+      reasons.push(
+        `El envío pesa ${weight} kg y el tope de los regímenes postales es ${MAX_WEIGHT_KG} kg por envío: va por el régimen general, con DUA y despachante.`
+      )
+    }
+    return {
+      regime: 'general',
+      ivaExempt: false,
+      reasons,
+      registryEnforced,
+      overWeight: overWeight || undefined,
+    }
   }
 
   const franchiseFits = input.franchiseAvailableUsd >= value

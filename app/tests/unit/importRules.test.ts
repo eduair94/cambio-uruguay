@@ -10,6 +10,7 @@ import {
   LEGACY_CHANNEL_CAPS_UNTIL,
   LEGACY_CHANNEL_FRANCHISE_CAP_USD,
   FRANCHISE_MAX_SHIPMENTS,
+  MAX_WEIGHT_KG,
   type RegimeRules,
   SELLER_REGISTRY_ENFORCED_FROM,
   SIMPLIFIED_MIN_USD,
@@ -187,6 +188,50 @@ describe('above USD 800 neither regime applies', () => {
     expect(d.regime).toBe('general')
     expect(d.ivaExempt).toBe(false)
     expect(d.reasons.join(' ')).toMatch(/supera/i)
+  })
+})
+
+// The weight ceiling is the OTHER exit from the postal regimes, and the calculator ignored it
+// entirely: a 25 kg parcel was priced at 60% as if it could enter by courier.
+describe('the 20 kg ceiling (Decreto 50/026 arts. 1 y 2)', () => {
+  it('is 20 kg', () => {
+    expect(MAX_WEIGHT_KG).toBe(20)
+  })
+
+  it('throws a cheap but heavy parcel out of BOTH postal regimes', () => {
+    const d = resolveRegime({ ...base, valueUsd: 60, weightKg: 25, origin: 'other' })
+    expect(d.regime).toBe('general')
+    expect(d.overWeight).toBe(true)
+    expect(d.reasons.join(' ')).toMatch(/20 kg/)
+  })
+
+  it('applies to the prestación única too, not only to the franquicia', () => {
+    const d = resolveRegime({ ...base, valueUsd: 300, weightKg: 30, useFranchise: false })
+    expect(d.regime).toBe('general')
+    expect(d.overWeight).toBe(true)
+  })
+
+  it('lets a shipment at exactly 20 kg through', () => {
+    const d = resolveRegime({ ...base, valueUsd: 150, weightKg: 20 })
+    expect(d.regime).toBe('franquicia')
+    expect(d.overWeight).toBeUndefined()
+  })
+
+  it('does not apply the rule when the weight is unknown (0 / omitted)', () => {
+    expect(resolveRegime({ ...base, valueUsd: 150 }).regime).toBe('franquicia')
+    expect(resolveRegime({ ...base, valueUsd: 150, weightKg: 0 }).regime).toBe('franquicia')
+  })
+
+  it('reports BOTH reasons when the shipment blows the value and the weight ceilings', () => {
+    const d = resolveRegime({ ...base, valueUsd: 900, weightKg: 25 })
+    expect(d.regime).toBe('general')
+    expect(d.overWeight).toBe(true)
+    expect(d.reasons.join(' ')).toMatch(/US\$ 800/)
+    expect(d.reasons.join(' ')).toMatch(/20 kg/)
+  })
+
+  it('does not set overWeight when only the value ceiling was blown', () => {
+    expect(resolveRegime({ ...base, valueUsd: 900, weightKg: 2 }).overWeight).toBeUndefined()
   })
 })
 

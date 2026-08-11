@@ -21,6 +21,7 @@
 import { round, URUGUAY } from './calculators'
 import {
   DEFAULT_REGIME_RULES,
+  MAX_WEIGHT_KG,
   USA_IVA_EXEMPTION_USD,
   resolveRegime,
   type ArrivalChannel,
@@ -55,6 +56,8 @@ export interface ImportTaxResult {
   regime?: CourierRegime
   /** Courier only: whether the shipment escaped IVA (US invoice within the TIFA threshold). */
   ivaExempt?: boolean
+  /** Courier only: the shipment left the postal regimes because it weighs over 20 kg. */
+  overWeight?: boolean
   /** Courier only: why, in the reader's language. */
   reasons?: string[]
   /**
@@ -80,6 +83,12 @@ export interface CourierInput {
   salesTax?: number
   /** Insurance cost (optional); part of the invoice value. */
   insurance?: number
+  /**
+   * Shipment weight in kg. Over 20 kg neither postal regime applies (Decreto 50/026 arts. 1 y 2):
+   * the shipment becomes a formal import, exactly as if it were over USD 800. Omit (or 0) when the
+   * weight is unknown — the rule is then not applied.
+   */
+  weightKg?: number
   /** Where the invoice was issued; `'usa'` enables the TIFA IVA exoneration ≤ USD 200. */
   origin?: ImportOrigin
   /**
@@ -155,6 +164,7 @@ export function courierImport(
   const decision = resolveRegime(
     {
       valueUsd: invoiceValue,
+      weightKg: input.weightKg,
       origin,
       franchiseAvailableUsd: input.franchiseAvailable ?? rules.franchiseAnnualUsd,
       shipmentsUsed: input.shipmentsUsed ?? 0,
@@ -193,8 +203,13 @@ export function courierImport(
       amount: simplified,
     })
   } else {
-    // Over USD 800: neither regime reaches it. We refuse to invent a number.
-    breakdown.push({ label: 'Supera US$ 800: régimen general (no lo calculamos)', amount: 0 })
+    // Over USD 800 or over 20 kg: neither regime reaches it. We refuse to invent a number.
+    breakdown.push({
+      label: decision.overWeight
+        ? `Supera ${MAX_WEIGHT_KG} kg: régimen general (no lo calculamos)`
+        : `Supera US$ ${rules.franchiseAnnualUsd}: régimen general (no lo calculamos)`,
+      amount: 0,
+    })
   }
 
   const totalTax = round(iva + simplified)
@@ -213,6 +228,7 @@ export function courierImport(
     breakdown,
     regime: decision.regime,
     ivaExempt: decision.ivaExempt,
+    overWeight: decision.overWeight,
     reasons: decision.reasons,
     legacyChannelCap: decision.legacyChannelCap,
   }

@@ -476,6 +476,31 @@ useHead(() => ({
   font-weight: 600;
   padding-inline: 16px;
 }
+/* Vuetify keeps .v-btn__content on `white-space: nowrap` with `overflow: visible`, so a label
+   wider than its (flex: 1 1 0) share does not wrap or clip: it SPILLS over the neighbouring
+   button and lands on top of its icon. With three options on a 390px screen that is guaranteed
+   ("Correo no exprés" needs 138px inside 106px). On narrow screens the label wraps and the icon
+   moves above it — same control, no overlap. */
+@media (max-width: 599.98px) {
+  .tool-page .seg-toggle .seg-btn {
+    padding-inline: 6px;
+    min-height: 60px;
+    font-size: 0.75rem;
+  }
+  .tool-page .seg-toggle .seg-btn .v-btn__content {
+    flex-direction: column;
+    row-gap: 2px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    line-height: 1.15;
+    text-align: center;
+  }
+  /* The `start` icon's negative inline margins only make sense beside the text. */
+  .tool-page .seg-toggle .seg-btn .v-btn__content > .v-icon--start,
+  .tool-page .seg-toggle .seg-btn .v-btn__content > .v-icon--end {
+    margin-inline: 0;
+  }
+}
 
 /* Result summary cards */
 .tool-page .result-grid {

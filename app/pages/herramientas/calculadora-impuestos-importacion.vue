@@ -200,6 +200,21 @@
 
         <!-- Courier-specific -->
         <template v-if="regime === 'courier'">
+          <VCol cols="12" sm="6">
+            <VTextField
+              v-model.number="weightKg"
+              type="number"
+              min="0"
+              step="0.1"
+              label="Peso del envío"
+              suffix="kg"
+              variant="outlined"
+              density="comfortable"
+              :error="overWeight"
+              :hint="`Tope postal: ${MAX_WEIGHT_KG} kg por envío`"
+              persistent-hint
+            />
+          </VCol>
           <VCol cols="12" sm="6" class="d-flex align-center">
             <VSwitch
               v-model="useFranchise"
@@ -303,8 +318,9 @@
             <VSwitch v-model="shipByWeight" color="primary" hide-details density="compact" inset />
           </div>
           <p class="text-caption text-grey-lighten-1 mb-1">
-            Tarifa de referencia por courier (Miami → Uruguay). Ajustá el valor por kg al de tu
-            courier; el resultado completa el flete de arriba.
+            Tarifa de referencia por courier (Miami → Uruguay) sobre los
+            <strong>{{ weightKg || 0 }} kg</strong> que declaraste arriba. Ajustá el valor por kg al
+            de tu courier; el resultado completa el flete.
           </p>
           <p class="text-caption text-grey-lighten-1 mb-3">
             El flete es un costo aparte: <strong>no paga IVA</strong> y se suma al total.
@@ -314,7 +330,7 @@
           </p>
           <VExpandTransition>
             <VRow v-if="shipByWeight" class="g-input">
-              <VCol cols="12" sm="5">
+              <VCol cols="12" sm="7">
                 <VSelect
                   v-model="courierId"
                   :items="courierItems"
@@ -326,20 +342,7 @@
                   hide-details
                 />
               </VCol>
-              <VCol cols="6" sm="4">
-                <VTextField
-                  v-model.number="weightKg"
-                  type="number"
-                  min="0"
-                  step="0.1"
-                  label="Peso"
-                  suffix="kg"
-                  variant="outlined"
-                  density="comfortable"
-                  hide-details
-                />
-              </VCol>
-              <VCol cols="6" sm="3">
+              <VCol cols="12" sm="5">
                 <VTextField
                   v-model.number="perKgUsd"
                   type="number"
@@ -363,6 +366,34 @@
           </VExpandTransition>
         </div>
       </template>
+
+      <!-- Out of the postal regimes: over USD 800 or over 20 kg. Neither franquicia nor
+           prestación única reaches it, so we say why and point at the other tab instead of
+           quietly returning a 0. -->
+      <VAlert
+        v-if="outOfPostalRegime"
+        type="warning"
+        variant="tonal"
+        density="comfortable"
+        class="mt-5"
+        icon="mdi-scale-balance"
+      >
+        <div class="font-weight-bold mb-1">
+          {{
+            result.overWeight
+              ? `Supera los ${MAX_WEIGHT_KG} kg: no entra en los regímenes postales`
+              : 'Supera US$ 800: no entra en los regímenes postales'
+          }}
+        </div>
+        <p v-for="(reason, i) in result.reasons" :key="i" class="text-body-2 mb-1">{{ reason }}</p>
+        <p class="text-body-2 mb-0">
+          Cambiá arriba a «Régimen general» para estimarlo, o mirá
+          <NuxtLink :to="localePath('/declarar-compra-exterior-uruguay')" class="tool-link">
+            cómo se declara una compra del exterior
+          </NuxtLink>
+          para importarlo por régimen general.
+        </p>
+      </VAlert>
 
       <VDivider class="my-6" />
 
@@ -443,6 +474,13 @@
           el total, nunca sobre "el excedente".
         </li>
         <li>
+          <strong>El peso también te saca del régimen:</strong> el tope es
+          <strong>{{ MAX_WEIGHT_KG }} kg por envío</strong> y corre para los dos regímenes. Un
+          paquete de 25 kg no "paga el 60%": necesita régimen general, DUA y despachante, aunque
+          valga US$ 60. Partirlo después de que llegó no es una opción prevista — resolvelo con el
+          vendedor antes del embarque.
+        </li>
+        <li>
           <strong>Guardá la factura:</strong> el envío debe ir acompañado de la documentación que
           acredite el valor (art. 5).
         </li>
@@ -495,6 +533,14 @@
             <strong>flete y el seguro cuentan si figuran en el comprobante de compra</strong>. Y por
             encima de <strong>US$ 800</strong> el envío no entra en ninguno de los dos regímenes:
             pasa al régimen general y no lo calculamos acá.
+          </p>
+          <p>
+            <strong>El otro tope es el peso:</strong> {{ MAX_WEIGHT_KG }} kg por envío, y vale igual
+            para la franquicia y para la prestación única (Decreto 50/026, arts. 1 y 2). Son
+            <strong>dos límites independientes</strong>: alcanza con pasarse de uno. Un paquete de
+            25 kg que factura US$ 60 igual sale del régimen postal y necesita
+            <strong>DUA y despachante</strong>. Por eso la calculadora te pide el peso: si lo
+            superás, deja de estimar el 60% y te avisa.
           </p>
           <p>
             <strong>Desde el 1.º de octubre de 2026</strong> la exoneración de IVA de EE.UU. va a
@@ -567,12 +613,13 @@
       Cálculo de referencia (Ley 20.446 art. 627 y Decreto 50/026). La franquicia —hasta US$ 800 al
       año, en 3 envíos— exime de aranceles pero <strong>igual paga IVA (tasa básica 22%)</strong>,
       salvo las compras de EE.UU. de hasta US$ 200, exoneradas por el acuerdo TIFA. Si el envío no
-      entra en la franquicia, paga la <strong>prestación única: 60%, mínimo US$ 20</strong> — el
-      envío entero en esta estimación: las fuentes oficiales no publican un mecanismo para aplicar
-      franquicia a una parte y 60% al saldo del mismo envío. Los topes de US$ 200 y US$ 800 se miden
-      sobre el <strong>total de la factura del vendedor</strong> (precio + sales tax + su envío); el
-      flete que te cobra el courier va aparte y no paga IVA. Verificá las condiciones vigentes con
-      la Dirección Nacional de Aduanas antes de comprar. No es asesoramiento profesional.
+      entra en la franquicia, paga la <strong>prestación única: 60%, mínimo US$ 20</strong>, y los
+      dos regímenes se cortan en <strong>{{ MAX_WEIGHT_KG }} kg por envío</strong> — el envío entero
+      en esta estimación: las fuentes oficiales no publican un mecanismo para aplicar franquicia a
+      una parte y 60% al saldo del mismo envío. Los topes de US$ 200 y US$ 800 se miden sobre el
+      <strong>total de la factura del vendedor</strong> (precio + sales tax + su envío); el flete
+      que te cobra el courier va aparte y no paga IVA. Verificá las condiciones vigentes con la
+      Dirección Nacional de Aduanas antes de comprar. No es asesoramiento profesional.
     </template>
   </ToolShell>
 </template>
@@ -580,7 +627,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { courierImport, generalImport } from '~/utils/importTax'
-import { CHANNEL_LABEL, type ArrivalChannel } from '~/utils/importRules'
+import { CHANNEL_LABEL, MAX_WEIGHT_KG, type ArrivalChannel } from '~/utils/importRules'
 import { regimeRulesFromPayload } from '~/utils/regimeOverlay'
 import {
   IMPORT_PRODUCT_TYPES,
@@ -705,6 +752,19 @@ const channelHint = computed(() => {
  */
 const legacyCap = computed(() => result.value.legacyChannelCap)
 
+/** Over the 20 kg ceiling: flags the weight field itself (Decreto 50/026 arts. 1 y 2). */
+const overWeight = computed(
+  () => regime.value === 'courier' && (weightKg.value || 0) > MAX_WEIGHT_KG
+)
+
+/**
+ * The shipment left BOTH postal regimes — over US$ 800, over 20 kg, or both. The estimate is 0
+ * taxes in that case, which alone would read as "no pagás nada": the alert says why instead.
+ */
+const outOfPostalRegime = computed(
+  () => regime.value === 'courier' && result.value.regime === 'general'
+)
+
 const sources = [
   {
     label:
@@ -762,6 +822,7 @@ const result = computed(() =>
         {
           value: value.value || 0,
           shipping: shipping.value || 0,
+          weightKg: weightKg.value || 0,
           origin: origin.value,
           channel: channel.value,
           useFranchise: useFranchise.value,
@@ -808,6 +869,10 @@ const faq = [
   {
     q: '¿Cuánto se paga si el envío no entra en la franquicia?',
     a: 'La prestación única es 60% del valor del envío, con un mínimo de US$ 20, y solo alcanza envíos de hasta US$ 800 y 20 kg. Las fuentes oficiales consultadas no publican un mecanismo para dividir un mismo envío entre franquicia y prestación única. Por eso la calculadora aplica un solo régimen al valor completo; si tu operador ofrece otra liquidación, pedile la norma o el procedimiento escrito antes de pagar.',
+  },
+  {
+    q: '¿Qué pasa si el paquete pesa más de 20 kg?',
+    a: 'El tope de peso de los regímenes postales es 20 kg por envío y corre para los dos: ni la franquicia ni la prestación única del 60% alcanzan a un paquete más pesado. Los dos límites —US$ 800 de factura y 20 kg— son independientes: alcanza con pasarse de uno para quedar afuera, así que un envío de 25 kg que factura US$ 60 igual sale del régimen postal. La vía es el régimen general, con DUA y despachante de aduana. Dividir el paquete después de que llegó no es un derecho previsto en la norma: si sabés que vas cerca del tope, arreglalo con el vendedor o el operador antes del embarque.',
   },
   {
     q: '¿Cómo se calculan los impuestos en el régimen general?',

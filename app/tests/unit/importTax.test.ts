@@ -100,6 +100,40 @@ describe('courierImport', () => {
     expect(r.reasons?.join(' ')).toMatch(/supera/i)
   })
 
+  it('refuses to price a parcel over 20 kg even when the invoice is tiny', () => {
+    // The bug this fixes: the calculator charged 60% (US$ 36) on a 25 kg parcel that cannot enter
+    // by courier at all — it needs DUA and despachante.
+    const r = courierImport({
+      value: 60,
+      weightKg: 25,
+      origin: 'other',
+      useFranchise: false,
+      today: TODAY,
+    })
+    expect(r.regime).toBe('general')
+    expect(r.overWeight).toBe(true)
+    expect(r.totalTax).toBe(0)
+    expect(r.breakdown.some(l => /20 kg/.test(l.label))).toBe(true)
+  })
+
+  it('still prices a 20 kg parcel — the ceiling is inclusive', () => {
+    const r = courierImport({
+      value: 100,
+      weightKg: 20,
+      origin: 'other',
+      useFranchise: false,
+      today: TODAY,
+    })
+    expect(r.regime).toBe('simplificado')
+    expect(r.totalTax).toBe(60)
+  })
+
+  it('keeps pricing normally when no weight is declared', () => {
+    const r = courierImport({ value: 100, origin: 'other', useFranchise: false, today: TODAY })
+    expect(r.regime).toBe('simplificado')
+    expect(r.overWeight).toBeUndefined()
+  })
+
   it('sends the 4th shipment of the year to the simplified regime', () => {
     const r = courierImport({
       value: 100,

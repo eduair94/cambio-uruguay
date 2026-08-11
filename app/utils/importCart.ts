@@ -16,6 +16,7 @@ import { round } from './calculators'
 import { generalImport, type ImportTaxResult, type TaxLine } from './importTax'
 import {
   FRANCHISE_ANNUAL_USD,
+  MAX_WEIGHT_KG,
   SIMPLIFIED_MIN_USD,
   SIMPLIFIED_RATE_PCT,
   USA_IVA_EXEMPTION_USD,
@@ -172,6 +173,10 @@ export function computeCart(items: CartItem[], settings: CartSettings): CartResu
     settings.regime === 'courier'
       ? resolveRegime({
           valueUsd: taxableSubtotalUsd,
+          // The basket is ONE shipment, so its weights add up against the same 20 kg ceiling as
+          // its values do against the USD 800 one. Items without a weight contribute 0, so a
+          // basket nobody weighed is priced exactly as before.
+          weightKg: totalWeightKg,
           origin: settings.origin ?? 'other',
           franchiseAvailableUsd: settings.franchiseAvailableUsd ?? FRANCHISE_ANNUAL_USD,
           shipmentsUsed: settings.shipmentsUsed ?? 0,
@@ -184,7 +189,9 @@ export function computeCart(items: CartItem[], settings: CartSettings): CartResu
 
   if (decision?.regime === 'general') {
     warnings.push(
-      'El envío supera US$ 800: no entra en la franquicia ni en el régimen simplificado. Pasa al régimen general y hay que despacharlo aparte — no lo calculamos.'
+      decision.overWeight
+        ? `El envío pesa ${totalWeightKg} kg y el tope de los regímenes postales es ${MAX_WEIGHT_KG} kg: no entra en la franquicia ni en el régimen simplificado. Pasa al régimen general, con DUA y despachante — no lo calculamos.`
+        : 'El envío supera US$ 800: no entra en la franquicia ni en el régimen simplificado. Pasa al régimen general y hay que despacharlo aparte — no lo calculamos.'
     )
   }
 

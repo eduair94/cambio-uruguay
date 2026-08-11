@@ -68,6 +68,24 @@ describe('computeCart — courier regime', () => {
     expect(r.warnings.join(' ')).toMatch(/US\$ 800/)
   })
 
+  it('sends a basket over 20 kg to the general regime, however cheap it is', () => {
+    // The basket is ONE shipment: its weights add up against the same 20 kg ceiling
+    // (Decreto 50/026 arts. 1 y 2), so 3 × 8 kg leaves the postal regimes at USD 90.
+    const items = [item({ id: 'a', priceUsd: 30, qty: 3, weightKg: 8, categoryId: 'general' })]
+    const r = computeCart(items, { regime: 'courier', useFranchise: false })
+    expect(r.totalWeightKg).toBe(24)
+    expect(r.lines[0]!.tax?.regime).toBe('general')
+    expect(r.totalTaxUsd).toBe(0)
+    expect(r.warnings.join(' ')).toMatch(/20 kg/)
+  })
+
+  it('prices a basket at exactly 20 kg normally', () => {
+    const items = [item({ id: 'a', priceUsd: 100, qty: 2, weightKg: 10, categoryId: 'general' })]
+    const r = computeCart(items, { regime: 'courier', useFranchise: false })
+    expect(r.totalWeightKg).toBe(20)
+    expect(r.totalTaxUsd).toBe(120)
+  })
+
   it('charges 60% of the whole basket when the remaining franchise is too small', () => {
     // USD 500 basket, only USD 100 of franchise left -> the entire shipment pays 60%.
     const items = [item({ id: 'a', priceUsd: 500, categoryId: 'general' })]
