@@ -1552,6 +1552,11 @@
     "streakUp": "Vem subindo {days} dias seguidos.",
     "streakDown": "Vem caindo {days} dias seguidos."
   },
+  "mirror": {
+    "title": "Esta casa publica a cotação do {source}",
+    "body": "A {casa} não define cotação própria: replica a do {source}, então o preço é sempre o mesmo. Por isso aqui não há máximas, mínimas nem sequências próprias — seriam as do {source}.",
+    "cta": "Ver {source}"
+  },
   "mejorCasa": {
     "h1": "Onde trocar dólares no Uruguai hoje?",
     "subtitle": "Comparamos as casas de câmbio e bancos do país para dizer qual paga melhor hoje.",

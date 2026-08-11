@@ -564,9 +564,11 @@ useHead(() => ({
   grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
   gap: 1.25rem;
 }
+/* Marcador de lista, no tab de tarjeta: estos ítems no tienen fondo ni borde propio. Y como el
+   color es el mismo en las tres causales, no codifica nada — así que va fino y atenuado. */
 .causal-item {
   padding-left: 0.9rem;
-  border-left: 3px solid rgb(var(--v-theme-primary));
+  border-left: 2px solid rgba(var(--v-theme-primary), 0.45);
 }
 .causal-h {
   font-size: 0.78rem;

@@ -170,3 +170,79 @@ function norm(s: string): string {
 export function sourceLink(w: BcuWarning): string {
   return w.sharedSource ? BCU_WARNINGS_URL : w.url
 }
+
+// ─────────────────────────────────────────────────────────────────────────────────────────
+// THE MISSING HALF: THE NAMES PEOPLE ACTUALLY TYPE.
+//
+// Somebody who just got invited to a "telar de la abundancia" over WhatsApp does not search
+// "esquema piramidal", and cannot search a company name because there is no company — the
+// invitation comes from a friend. Before this block, "telar", "célula de la abundancia" and
+// "flor / mesa / rueda de la abundancia" had ZERO occurrences in the entire repo, so that reader
+// never landed here at all. Meanwhile the ANSWER has been published for a year in
+// /guias/errores-y-estafas-al-invertir-uruguay: stop sending money, gather the evidence, file the
+// police report, tell the BCU if a financial entity is involved. Only discoverability was broken.
+//
+// WHAT WE DELIBERATELY DO NOT PUBLISH HERE: a legal verdict. We did not locate a Uruguayan norm
+// banning the chain-contribution scheme AS SUCH, and this page's founding rule (see the file
+// header) is that we reproduce the BCU and never rule on anyone's legal or regulatory status.
+// Writing "es ilegal por la ley X" without a primary source would be inventing law — which is a
+// worse failure than saying nothing. So this block does exactly two things: it makes the popular
+// names findable, and it points at what the site already verified and published.
+//
+// Checked against the BCU listing on 2026-08-10: its "Recomendaciones" section has four entries
+// (Prevención de intentos de estafa · Mejora en la toma de decisiones en el acceso al crédito ·
+// Operaciones financieras seguras · Seguro te conectás) and none of them is about these schemes,
+// and no advertencia headline uses these popular names. Hence the note below: searching "telar"
+// here returns nothing, and that nothing means nothing.
+// ─────────────────────────────────────────────────────────────────────────────────────────
+
+/** The names the invitation actually arrives under. Rendered verbatim so the page is findable. */
+export const CHAIN_SCHEME_ALIASES: readonly string[] = Object.freeze([
+  'telar de la abundancia',
+  'célula de la abundancia',
+  'flor de la abundancia',
+  'mesa de la abundancia',
+  'rueda de la abundancia',
+  'mandala de la abundancia',
+  'telar de los sueños',
+  'cadena de la abundancia',
+])
+
+/** Where the answer already lives. We point, we do not re-litigate it. */
+export const CHAIN_SCHEME_GUIDE = Object.freeze({
+  to: '/guias/errores-y-estafas-al-invertir-uruguay',
+  label: 'Qué hacer si ya pusiste plata',
+})
+
+/**
+ * Published copy. Note what it does NOT say: it does not call the scheme legal or illegal, and it
+ * does not name a norm. It explains why the search came up empty, and hands over the part of the
+ * answer that is actually verified.
+ */
+export const CHAIN_SCHEME_NOTE =
+  'Si llegaste buscando «telar», «célula de la abundancia», «flor», «mesa», «rueda» o «mandala de la abundancia», no lo vas a encontrar en esta lista — y esa ausencia no dice nada. El BCU publica advertencias sobre empresas identificadas con su nombre; el nombre popular con el que una invitación circula entre conocidos no es el nombre de ninguna empresa. Acá tampoco vamos a dictaminar si eso es legal o no: esta página reproduce al Banco Central, no emite veredictos. Lo que sí está verificado y publicado es qué hacer si ya pusiste plata: dejá de enviar más —el pedido de «un pago más para liberar el retiro» es parte del libreto—, juntá las pruebas (mensajes, comprobantes, quién te invitó), hacé la denuncia policial y, si hay una entidad financiera involucrada, informá al BCU.'
+
+/**
+ * Substrings that mean "this person is asking about a chain scheme, not about a company".
+ * Compared against the accent-stripped query, so «pirámide» and «piramide» both land.
+ */
+const CHAIN_SCHEME_TRIGGERS: readonly string[] = [
+  'telar',
+  'abundancia',
+  'mandala',
+  'piramide',
+  'piramidal',
+  'ponzi',
+  'cadena de dinero',
+]
+
+/**
+ * True when the search box is being used to ask about the scheme rather than about an entity.
+ * Prefixes count (`pira` → `piramide`) so the hint appears while the reader is still typing, but
+ * we require 4 characters: shorter than that matches half the alphabet.
+ */
+export function isChainSchemeQuery(query: string): boolean {
+  const q = norm(query.trim())
+  if (q.length < 4) return false
+  return CHAIN_SCHEME_TRIGGERS.some(t => q.includes(t) || t.startsWith(q))
+}

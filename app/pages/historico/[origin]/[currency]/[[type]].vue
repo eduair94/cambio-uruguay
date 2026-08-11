@@ -139,6 +139,32 @@
             <p v-if="streakSentence" class="text-body-2 text-medium-emphasis mt-2 mb-0">
               {{ streakSentence }}
             </p>
+
+            <!-- Espejo de otra pizarra: en vez de repetir los récords de la fuente, se publica
+                 por qué no los hay. Texto único de esta URL, y el dato que el lector vino a
+                 buscar cuando compara cuatro casas con el mismo precio. -->
+            <VAlert
+              v-if="mirror"
+              type="info"
+              variant="tonal"
+              density="comfortable"
+              class="mt-4 mb-0"
+            >
+              <div class="font-weight-medium mb-1">
+                {{ $t('mirror.title', { source: mirror.sourceName }) }}
+              </div>
+              <p class="mb-2 text-body-2">
+                {{ $t('mirror.body', { casa: exchangeHouseName, source: mirror.sourceName }) }}
+              </p>
+              <VBtn
+                :to="localePath(`/casa/${mirror.source}`)"
+                size="small"
+                variant="tonal"
+                density="comfortable"
+              >
+                {{ $t('mirror.cta', { source: mirror.sourceName }) }}
+              </VBtn>
+            </VAlert>
           </v-card-text>
 
           <!-- Additional Info Bar -->
@@ -472,6 +498,7 @@ import { useDisplay } from 'vuetify'
 import { markPoints } from '~/utils/chartMoveMarkers'
 import { attributeMove } from '~/utils/attribution'
 import { historyDetailCanonicalPath } from '~/utils/historyCanonical'
+import { mirrorOf } from '~/utils/rateMirrors'
 import {
   biggestMove,
   computeRecords,
@@ -823,7 +850,14 @@ const sellSeries = computed(() => {
   )
 })
 
+// Las tres casas que replican la pizarra de BROU no tienen récords propios: los suyos SON los de
+// BROU, y publicarlos deja cuatro URLs con las mismas cifras — la señal de duplicado que hizo que
+// Google dejara páginas de este template en «Rastreada: actualmente sin indexar». En su lugar se
+// publica el hecho, que es único de esta URL y además es lo que el lector necesita saber.
+const mirror = computed(() => mirrorOf(route.params.origin as string))
+
 const periodRecords = computed(() => {
+  if (mirror.value) return null
   const series = sellSeries.value
   // Two points cannot establish a record worth publishing.
   if (series.length < 3) return null

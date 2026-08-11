@@ -63,6 +63,16 @@ export interface Instrumento {
   bruto: number
   /** IRPF withheld on the interest. Public debt is exempt; peso deposits of 1–3 years pay 2,5%. */
   irpf: number
+  /**
+   * Net rate. For a plain deposit it is `bruto × (1 − irpf/100)` — the SAME arithmetic
+   * `neto()` in server/utils/financingMerge.ts applies as soon as the backend refreshes the gross
+   * rate, so any hand-typed value that disagrees flips the moment a refresh lands. `brou-pf-ebrou`
+   * shipped 5,37 (that is 5,50 / 1,025: dividing instead of multiplying) while
+   * /herramientas/calculadora-plazo-fijo published 5,36 for the same BROU deposit; fixed
+   * 2026-08-10 and cross-checked in tests/unit/investments.test.ts.
+   * Rows where the net is NOT that formula carry the reason in `nota` (the UI deposit publishes a
+   * nominal-equivalent net; the fund nets a fee, not a tax).
+   */
   neto: number
   minimo: number
   liquidez: string
@@ -78,7 +88,8 @@ export const INSTRUMENTOS: readonly Instrumento[] = Object.freeze([
     nombre: 'Plazo fijo BROU en pesos (e-BROU, 732–1096 días)',
     bruto: 5.5,
     irpf: 2.5,
-    neto: 5.37,
+    // 5,50 × (1 − 0,025) = 5,3625. NO es 5,50 / 1,025: el IRPF se cobra sobre el interés ganado.
+    neto: 5.36,
     minimo: 5000,
     liquidez: 'Inmovilizado 24 meses',
     riesgo: 'muy bajo',

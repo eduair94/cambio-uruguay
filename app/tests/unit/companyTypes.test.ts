@@ -2,10 +2,13 @@ import { readFileSync } from 'node:fs'
 import * as ts from 'typescript'
 import { describe, expect, it } from 'vitest'
 import {
+  CICLO_DE_VIDA,
+  EXPLAINERS,
   FIGURES,
   FIGURES as F,
   IRAE_FICTO,
   IRPF_CAT2,
+  IVA_CREDITO_COMPRAS,
   MARKET_ESTIMATES,
   PRODUCT_THRESHOLDS,
   REGIMES,
@@ -14,6 +17,8 @@ import {
   evaluate,
   iraeFictoRentaNetaAnual,
   irpfCat2Monthly,
+  laterIsoDate,
+  type Explainer,
   type Figure,
   type RegimeId,
   type Verdict,
@@ -50,9 +55,10 @@ describe('FIGURES', () => {
   it('exposes every numeric constant as a sourced Figure', () => {
     const entries = Object.entries(FIGURES)
     // 67 verified figures as of the 2026-07-13 audit (the BPS año-1/año-2 family columns
-    // and the sociedad-de-hecho socio columns were added then). This must be a floor, not
-    // just "some" — a regression that silently drops figures should fail loudly.
-    expect(entries.length).toBeGreaterThanOrEqual(67)
+    // and the sociedad-de-hecho socio columns were added then); 94 after the 2026-08-10
+    // lifecycle audit added the five clausura/inactividad plazos y pruebas. This must be a
+    // floor, not just "some" — a regression that silently drops figures should fail loudly.
+    expect(entries.length).toBeGreaterThanOrEqual(94)
     for (const [key, value] of entries) {
       expect(isFigure(value), `FIGURES.${key} is not a Figure`).toBe(true)
     }
@@ -559,6 +565,372 @@ const base: WizardInput = {
 
 const statusOf = (input: WizardInput, id: string) =>
   applyGates(input).find(g => g.regime === id)!.status
+
+describe('EXPLAINERS (ciclo de vida e IVA de las compras)', () => {
+  const PRIMARY = ['bps.gub.uy', 'dgi.gub.uy', 'gub.uy', 'impo.com.uy']
+  const allText = (e: Explainer) =>
+    [e.heading, e.intro, ...e.notes.flatMap(n => [n.title, ...n.body])].join('\n')
+
+  it('registers every explainer exactly once, with unique note ids', () => {
+    expect(EXPLAINERS).toContain(CICLO_DE_VIDA)
+    expect(EXPLAINERS).toContain(IVA_CREDITO_COMPRAS)
+    expect(EXPLAINERS.length).toBe(new Set(EXPLAINERS.map(e => e.id)).size)
+    for (const e of EXPLAINERS) {
+      const ids = e.notes.map(n => n.id)
+      expect(ids.length, `${e.id} has duplicate note ids`).toBe(new Set(ids).size)
+      expect(e.notes.length).toBeGreaterThan(0)
+    }
+  })
+
+  // Same discipline as `V_EXPORT`: a block that carries the module-wide date would claim the 89
+  // pre-existing figures were re-verified on the day these notes were written. They were not.
+  it('carries its own ISO verification date, not the module-wide one', () => {
+    for (const e of EXPLAINERS) {
+      expect(e.verifiedAt, `${e.id} has a bad date`).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+      expect(e.verifiedAt).not.toBe(FIGURES.bpc.verifiedAt)
+    }
+  })
+
+  // The whole reason `ExplainerNote` bundles prose with sources: you cannot add a paragraph
+  // without deciding what backs it.
+  it('leaves no note uncited, and cites only primary domains', () => {
+    for (const e of EXPLAINERS) {
+      for (const n of e.notes) {
+        expect(n.sources.length, `${e.id}/${n.id} has no source`).toBeGreaterThan(0)
+        expect(n.body.length, `${e.id}/${n.id} has no body`).toBeGreaterThan(0)
+        for (const s of n.sources) {
+          expect(s.url, `${e.id}/${n.id} source has no URL`).toMatch(/^https:\/\//)
+          expect(
+            PRIMARY.some(d => s.url.includes(d)),
+            `${e.id}/${n.id} cites a non-primary domain: ${s.url}`
+          ).toBe(true)
+          expect(s.label.length).toBeGreaterThan(0)
+        }
+      }
+    }
+  })
+
+  // THE POINT OF THE BLOCK. Answering only the DGI half teaches the expensive error: "un mes sin
+  // facturar no pago nada" is true of the IVA mínimo ONLY with e-factura, and never of BPS.
+  it('answers "si no facturo, ¿pago igual?" on BOTH sides — DGI and BPS', () => {
+    const dgi = CICLO_DE_VIDA.notes.find(n => n.id === 'mes-sin-facturar')!
+    const bps = CICLO_DE_VIDA.notes.find(n => n.id === 'bps-no-para')!
+    const dgiText = [dgi.title, ...dgi.body].join('\n')
+    // the default answer (no e-factura): the cuota runs to the end of the ejercicio
+    expect(dgiText).toContain('hasta el último mes del ejercicio')
+    // and the one exception, tied to the 3,3% cap the module already models
+    expect(dgiText).toContain('no estará obligado a abonar la cuota de IVA mínimo por dicho mes')
+    expect(dgi.sources.some(s => s.url.includes('gub.uy'))).toBe(true)
+    // the BPS side is a FICTO — it does not move with billing, which is where the money is
+    expect([bps.title, ...bps.body].join('\n')).toMatch(/FICTO/)
+    expect(bps.sources.some(s => s.url.includes('16713-1995/171'))).toBe(true)
+  })
+
+  // The lever the page already pulls twice as an exception, finally stated as a rule.
+  it('explains Ley 16.713 art. 171 as the rule it is: SA only, and provable', () => {
+    const bps = CICLO_DE_VIDA.notes.find(n => n.id === 'bps-no-para')!
+    const text = bps.body.join('\n')
+    expect(text).toContain('Directores, Administradores y Síndicos de sociedades anónimas')
+    expect(text).toContain('certificado notarial o contable')
+    expect(text).toContain('en ningún caso regirá la exoneración')
+    expect(bps.sources.some(s => s.url.includes('19820-2019/43'))).toBe(true)
+  })
+
+  // REGRESSION — `estimateCost('sas', …)` used to assert the SAS administrator "no puede
+  // declararse inactivo", conflating two different doors: the art. 171 exoneración (which Ley
+  // 19.820 art. 43 does close) and inactivating the COMPANY at BPS (which BPS publishes a trámite
+  // for, SAS included). The old wording denied the reader the only exit short of closing.
+  it('never says a SAS cannot be declared inactive — BPS publishes that trámite', () => {
+    const sas = estimateCost('sas', { ...base, people: 'solo', needsLimitedLiability: true })
+    const notes = sas.notes.join('\n')
+    expect(notes).not.toMatch(/no puede declararse (inactivo|sin actividad)/)
+    expect(notes).toContain('inactivar la SOCIEDAD ante BPS')
+    expect(sas.noteSources.some(s => s.url.includes('bps.gub.uy'))).toBe(true)
+    const pausa = CICLO_DE_VIDA.notes.find(n => n.id === 'pausa-inactividad')!
+    expect(pausa.body.join('\n')).toContain('Y una SAS SÍ puede inactivarse')
+  })
+
+  // ─────────────────────────────────────────────────────────────────────────────────────────
+  // ROUND-4 MEDIO — `estimateCost('sas', …)` charges N × ficto for N administradores and cited
+  // Ley 19.820 art. 43 as the authority for the "aunque no cobre sueldo" part. That article has
+  // three supuestos and the note flattened them, in the one case where the article says the
+  // opposite of the engine. Inciso 2, verbatim: "Cuando el órgano de administración sea un
+  // Directorio con remuneración será aplicable lo dispuesto en el artículo 170 de la Ley N°
+  // 16.713. CUANDO DICHOS MIEMBROS NO PERCIBAN REMUNERACIÓN, EFECTUARÁN SU APORTACIÓN FICTA
+  // PATRONAL POR AL MENOS UNO DE SUS INTEGRANTES, sobre la base del máximo salario abonado por
+  // la empresa..." — one ficto, not one per head, in exactly the scenario the sentence
+  // describes. Per-head is inciso 1 ("y no adopten la forma de Directorio"). The wizard never
+  // asks which form the órgano takes, so the estimate must publish per-head as a CEILING.
+  // ─────────────────────────────────────────────────────────────────────────────────────────
+  it('publishes the art. 43 Directorio limit instead of asserting one ficto per administrador', () => {
+    const sas = estimateCost('sas', {
+      ...base,
+      people: 'solo',
+      needsLimitedLiability: true,
+      administradoresSas: 3,
+    })
+    const notes = sas.notes.join('\n')
+    // the norm's own words for the case the engine does NOT model
+    expect(notes).toContain('por al menos uno de sus integrantes')
+    // the qualification that makes the per-head charge true where it is true
+    expect(notes).toMatch(/no adopta(n)? (la )?forma de Directorio/i)
+    // and the honest label for a number produced without asking
+    expect(notes).toMatch(/TECHO/)
+    // the flattened claim must not come back
+    expect(notes).not.toMatch(/manda a cada uno al mismo art\. 172/)
+    expect(sas.noteSources.some(s => s.url.includes('19820-2019/43'))).toBe(true)
+  })
+
+  // Every plazo/prueba in the prose is rendered FROM a Figure, so it cannot drift from its source
+  // (the file's B11 rule: a number typed into a string is an unsourced figure hiding in plain
+  // sight, invisible to the AST guard).
+  it('renders its plazos from FIGURES, so the prose and the source cannot drift', () => {
+    const text = allText(CICLO_DE_VIDA)
+    expect(text).toContain(`${FIGURES.plazoClausuraDias.value} días corridos`)
+    expect(text).toContain(`${FIGURES.plazoInactividadDias.value} días corridos`)
+    expect(text).toContain(`más de ${FIGURES.inactividadRetroactivaDias.value} días`)
+    expect(text).toContain(`${FIGURES.actaNotarialTestigos.value} testigos`)
+    expect(text).toContain(`${FIGURES.inactivacionDeOficioMeses.value} meses consecutivos`)
+    expect(text).toContain(
+      `dentro de los ${FIGURES.plazoNoEjercicioCjppuDias.value} (noventa) días del egreso`
+    )
+    for (const key of [
+      'plazoClausuraDias',
+      'plazoInactividadDias',
+      'inactividadRetroactivaDias',
+      'actaNotarialTestigos',
+      'inactivacionDeOficioMeses',
+      'plazoNoEjercicioCjppuDias',
+    ] as const) {
+      expect(FIGURES[key].verifiedAt).toBe(CICLO_DE_VIDA.verifiedAt)
+    }
+  })
+
+  // ─────────────────────────────────────────────────────────────────────────────────────────
+  // ROUND-4 MEDIO — "no ejercicio" is a DEFINED TERM on this site, and it is not this trámite.
+  // `personalFinanceFaq.ts` publishes it as the CJPPU's declaración jurada (Ley 17.738 arts. 64
+  // y 65, 90 días). The BPS inactividad is another organismo, another object (the EMPRESA) and
+  // another plazo — and this module explicitly models the CJPPU professional (`cjppuEnJuego`),
+  // so the reader most likely to be misled is the one with BOTH obligations.
+  // ─────────────────────────────────────────────────────────────────────────────────────────
+  it('does not sell the BPS inactividad as the CJPPU "no ejercicio" — they are two trámites', () => {
+    const pausa = CICLO_DE_VIDA.notes.find(n => n.id === 'pausa-inactividad')!
+    const text = pausa.body.join('\n')
+    // the equivalence that used to be published, verbatim
+    expect(text).not.toMatch(/Es la figura de "no ejercicio"/)
+    // and, in its place, the disambiguation plus the norm that owns the term
+    expect(text).toMatch(/no es el "no ejercicio"/i)
+    expect(text).toContain('Ley 17.738 arts. 64 y 65')
+    expect(pausa.sources.some(s => s.url.includes('17738-2004/65'))).toBe(true)
+    // BPS itself routes professionals to the other caja — the requisito the note used to omit
+    expect(text).toContain(
+      'constancia de inactividad de Caja Notarial o de Caja de Profesionales Universitarios (CJPPU)'
+    )
+    // and the two pages are linked, so the reader can find the half that is not here
+    expect(text).toContain('/preguntas-economia-personal')
+  })
+
+  // ROUND-4 LEVE — the list is the evidence for the ABSENCE asserted in the next sentence
+  // ("para la unipersonal de industria y comercio ... no publica un trámite equivalente"), so a
+  // truncated list is a broken argument. BPS 10193 publishes eight trámites; the seventh is
+  // "Inactiviad de cantinas en centros educativos y becarios de posgrado".
+  it('lists BPS 10193 complete, because that list is what proves the absence it claims', () => {
+    const pausa = CICLO_DE_VIDA.notes.find(n => n.id === 'pausa-inactividad')!
+    const text = pausa.body.join('\n')
+    expect(text).toContain('cantinas en centros educativos y becarios de posgrado')
+    expect(text).toContain('no publica un trámite equivalente')
+  })
+
+  // ROUND-4 LEVE — in a file whose discipline is verbatim citation, an entrecomillado paraphrase
+  // is the exact drift the rest of the module avoids. Neither "se incluirá" nor "de la empresa"
+  // next to "factura de obligaciones" exists in either source.
+  it('quotes the clausura timbre verbatim from gub.uy and BPS, not a reworded blend', () => {
+    const cierre = CICLO_DE_VIDA.notes.find(n => n.id === 'cierre-clausura')!
+    const text = cierre.body.join('\n')
+    expect(text).toContain(
+      'no debe adjuntar timbre profesional ya que su costo será incluido en la próxima factura de obligaciones de BPS'
+    )
+    expect(text).toContain(
+      'Este trámite genera el costo de un timbre profesional que será incluido en la cuenta de la empresa'
+    )
+    expect(text).not.toMatch(/"se incluirá en la próxima factura de obligaciones"/)
+  })
+
+  // ROUND-4 LEVE — the note names four payers and used to cite three norms that cover two of
+  // them. Art. 172 reaches the non-dependent worker who OCUPA PERSONAL and the socios of the
+  // sociedades it lists — not the titular of a unipersonal without dependientes, whose 11-BFC
+  // ficto is priced off the BPS Industria y Comercio table. And the monotributo is in neither
+  // art. 171, 172 nor Ley 19.820 art. 43: its sueldo ficto is Ley 18.083 art. 75.
+  it('cites a source for every BPS payer it names, including the unipersonal and the monotributo', () => {
+    const bps = CICLO_DE_VIDA.notes.find(n => n.id === 'bps-no-para')!
+    const urls = bps.sources.map(s => s.url)
+    expect(urls.some(u => u.includes('18083-2006/75'))).toBe(true)
+    expect(urls.some(u => u.includes('bps.gub.uy/6665'))).toBe(true)
+    const text = bps.body.join('\n')
+    expect(text).toContain('Ley 18.083 art. 75')
+    expect(text).toMatch(/Industria y Comercio/)
+  })
+
+  // Rule 5 of this file's own discipline: where the source is silent, publish the silence.
+  it('publishes the accrual cut-off as an ABSENCE instead of inventing it', () => {
+    const gap = CICLO_DE_VIDA.notes.find(n => n.id === 'ciclo-lo-que-no-sabemos')!
+    const text = gap.body.join('\n')
+    expect(text).toMatch(/Ninguno de los dos publica/)
+    expect(text).toMatch(/se anulan, se reliquidan o quedan firmes/)
+    // and it must not sneak a number in as a consolation prize
+    expect(text).not.toMatch(/timbre profesional de \$/)
+  })
+
+  // What was missing was the AFFIRMATIVE rule — the file already had the exclusions.
+  it('states the affirmative IVA-credit rule (art. 14 vinculación), not only the exclusions', () => {
+    const regla = IVA_CREDITO_COMPRAS.notes.find(n => n.id === 'regla-vinculacion')!
+    const text = regla.body.join('\n')
+    expect(text).toContain('integran directa o indirectamente el costo')
+    expect(text).toContain('destinados a las operaciones gravadas')
+    expect(regla.sources.some(s => s.url.includes('14_T10'))).toBe(true)
+
+    const prorrateo = IVA_CREDITO_COMPRAS.notes.find(n => n.id === 'exentas-y-prorrateo')!
+    expect(prorrateo.body.join('\n')).toContain('en la proporción correspondiente al monto')
+  })
+
+  // The asymmetry the page only told one way round: the vehículos/mobiliario cut is SUBJECTIVE.
+  it('scopes the vehículos/mobiliario cut to who the norm names, and no wider', () => {
+    const recorte = IVA_CREDITO_COMPRAS.notes.find(n => n.id === 'recorte-por-sujeto')!
+    const text = recorte.body.join('\n')
+    expect(text).toContain('no tributen el Impuesto a las Rentas de las Actividades Económicas')
+    expect(text).toMatch(/Una SAS, una SRL o una unipersonal en IRAE no/)
+  })
+
+  // ─────────────────────────────────────────────────────────────────────────────────────────
+  // ROUND-4 GRAVE. The page used to answer the single most expensive question on it ("¿pongo la
+  // camioneta a la empresa?") backwards: it told an SRL/SAS that, since the vehículos/mobiliario
+  // blacklist is subjective, "para ellas la norma no pone ninguna lista por rubro, y el único
+  // filtro que queda es el de la vinculación". Título 10 art. 14 says the opposite, INSIDE the
+  // very inciso that states the vinculación test and without naming any sujeto:
+  //
+  //   "En los casos previstos en los apartados precedentes se requerirá que dichos impuestos
+  //    provengan de bienes y servicios que integran directa o indirectamente el costo de bienes y
+  //    servicios destinados a las operaciones gravadas. Cuando se trate del impuesto incluido en
+  //    la adquisición de vehículos, sólo se permitirá deducir, EN LAS CONDICIONES DE ESTE INCISO,
+  //    el correspondiente a vehículos utilitarios (camiones y camionetas) y el de los restantes
+  //    vehículos que en base a la reglamentación que dicte el Poder Ejecutivo, sean necesarios
+  //    para la gestión del contribuyente, debiéndose comunicar a la Dirección General Impositiva
+  //    (DGI), en cada caso, el precio de compra, marca, tipo, modelo de vehículo y finalidad de su
+  //    uso."
+  //
+  // These three tests hold that line from both ends: the general rule must be PUBLISHED, and the
+  // two sentences that denied it must never come back.
+  // ─────────────────────────────────────────────────────────────────────────────────────────
+  it('publishes the art. 14 vehicle cut as GENERAL, not as a rule only the profesional suffers', () => {
+    const n = IVA_CREDITO_COMPRAS.notes.find(n => n.id === 'vehiculo-recorte-general')!
+    const text = [n.title, ...n.body].join('\n')
+    // the norm's own words, both puertas
+    expect(text).toContain('vehículos utilitarios (camiones y camionetas)')
+    expect(text).toContain('sean necesarios para la gestión del contribuyente')
+    expect(text).toContain('finalidad de su uso')
+    // …and the fact that makes it general: it binds every sujeto pasivo, companies included
+    expect(text).toMatch(/en las condiciones de este inciso/)
+    expect(text).toMatch(/SAS, SRL y unipersonal en IRAE|también a la SAS y a la SRL/)
+    expect(n.sources.some(s => s.url.includes('14_T10'))).toBe(true)
+  })
+
+  // Rule 3 of this round's audit: a reglamentación that exists must not be published as an
+  // absence. Art. 14 delegates the "restantes vehículos" to the Poder Ejecutivo, and that
+  // delegation IS exercised — Dto. 220/998 art. 124, vigente, whose scope ("por los sujetos
+  // pasivos EXCEPTO los del literal C) del artículo 6º") is itself the proof that the art. 14
+  // inciso is general: the procedure is written for the companies.
+  it('cites the vehicle reglamentación that exists (Dto. 220/998 art. 124), not an absence', () => {
+    const n = IVA_CREDITO_COMPRAS.notes.find(n => n.id === 'vehiculo-recorte-general')!
+    const text = n.body.join('\n')
+    expect(n.sources.some(s => s.url.includes('220-1998/124'))).toBe(true)
+    expect(text).toMatch(/excepto los del literal C\) del artículo 6/i)
+    expect(text).not.toMatch(/no (existe|la dictó|hay) (ninguna )?reglamentación/i)
+  })
+
+  it('never again says the vinculación is the ONLY filter, nor the credit a single condition', () => {
+    const text = [IVA_CREDITO_COMPRAS.heading, IVA_CREDITO_COMPRAS.intro]
+      .concat(IVA_CREDITO_COMPRAS.notes.flatMap(n => [n.title, ...n.body]))
+      .join('\n')
+    // the three sentences the audit removed, each of which taught the wrong answer
+    expect(text).not.toMatch(/la norma no pone ninguna lista por rubro/)
+    expect(text).not.toMatch(/el único filtro que queda/)
+    expect(text).not.toMatch(/sin que haga falta ninguna lista que lo nombre/)
+    expect(text).not.toMatch(/el crédito tiene UNA condición/)
+    expect(text).not.toMatch(/El único recorte por rubro/)
+    // …and the other conditions of lit. A, which "UNA condición" wrote out of existence
+    const regla = IVA_CREDITO_COMPRAS.notes.find(n => n.id === 'regla-vinculacion')!
+    const reglaText = regla.body.join('\n')
+    expect(reglaText).toContain('literales B) y C) del artículo 6')
+    expect(reglaText).toContain('el proveedor está al día')
+  })
+
+  // ROUND-4 LEVE — the Literal E conclusion was right but built by inference (art. 13 + Dto.
+  // 220/998 art. 106) while the express rule sat in the last inciso of the art. 14 the block
+  // already cited, stated from the BUYER's side. `El art. 14 cierra con` was also false: two
+  // incisos follow the vehículos/mobiliario list.
+  it('grounds the Literal E credit ban on art. 14 last inciso, not only on inference', () => {
+    const n = IVA_CREDITO_COMPRAS.notes.find(n => n.id === 'sin-iva-discriminado')!
+    const text = n.body.join('\n')
+    expect(text).toContain('no podrá ser deducido por los adquirentes')
+    expect(text).toContain('literal E) del artículo 66')
+    const all = IVA_CREDITO_COMPRAS.notes.flatMap(n => [n.title, ...n.body]).join('\n')
+    expect(all).not.toMatch(/El art\. 14 cierra con/)
+  })
+
+  it('says a Literal E or monotributo comprobante carries no deductible IVA', () => {
+    const n = IVA_CREDITO_COMPRAS.notes.find(n => n.id === 'sin-iva-discriminado')!
+    const text = n.body.join('\n')
+    expect(text).toContain('en forma separada en la factura o documento equivalente')
+    expect(text).toContain('no deberán facturar ni liquidar el Impuesto al Valor Agregado')
+    expect(text).toContain('en sustitución de las contribuciones especiales de seguridad social')
+    const urls = n.sources.map(s => s.url)
+    expect(urls.some(u => u.includes('13_T10'))).toBe(true)
+    expect(urls.some(u => u.includes('220-1998/106'))).toBe(true)
+    expect(urls.some(u => u.includes('18083-2006/70'))).toBe(true)
+  })
+})
+
+// ───────────────────────────────────────────────────────────────────────────────────────────
+// ROUND-4 LEVE — the page's "Fuentes primarias" builder deduped by URL and KEPT THE FIRST date
+// it saw, while both its own comment and the changelog claimed each source carried "la fecha del
+// PROPIO bloque". Since the `REGIMES` loop runs before the `EXPLAINERS` one, the norms that
+// appear in both — Ley 16.713 art. 172 (sociedad de hecho, SRL) and Ley 19.820 art. 43 (SAS) —
+// were published with the module-wide date even though the lifecycle audit re-verified them
+// later. The per-block discipline only ever applied to URLs nobody had registered yet.
+//
+// The merge rule now lives here, in the module, so it is testable and order-independent.
+// ───────────────────────────────────────────────────────────────────────────────────────────
+describe('laterIsoDate — la fecha de las Fuentes primarias', () => {
+  it('returns the later of two ISO dates, whichever order they arrive in', () => {
+    expect(laterIsoDate('2026-07-13', '2026-08-10')).toBe('2026-08-10')
+    expect(laterIsoDate('2026-08-10', '2026-07-13')).toBe('2026-08-10')
+    expect(laterIsoDate('2026-08-10', '2026-08-10')).toBe('2026-08-10')
+  })
+
+  // The regression itself, replayed on the REAL data in the page's own merge order.
+  it('dates a norm re-verified by an explainer with the LATER date, not the first one seen', () => {
+    const GENERAL = FIGURES.bpc.verifiedAt // what the page stamps REGIMES[].sources with
+    const dates = new Map<string, string>()
+    const add = (url: string, when: string) => {
+      const prev = dates.get(url)
+      dates.set(url, prev === undefined ? when : laterIsoDate(prev, when))
+    }
+    for (const reg of REGIMES) for (const s of reg.sources) add(s.url, GENERAL)
+    for (const e of EXPLAINERS)
+      for (const n of e.notes) for (const s of n.sources) add(s.url, e.verifiedAt)
+
+    // The dates must actually differ, or this test proves nothing.
+    expect(CICLO_DE_VIDA.verifiedAt).not.toBe(GENERAL)
+    // The two URLs that live in BOTH collections and used to be published stale.
+    for (const fragment of ['16713-1995/172', '19820-2019/43']) {
+      const url = [...dates.keys()].find(u => u.includes(fragment))
+      expect(url, `${fragment} should appear in both REGIMES and EXPLAINERS sources`).toBeDefined()
+      expect(dates.get(url!), `${fragment} is dated with the stale general date`).toBe(
+        CICLO_DE_VIDA.verifiedAt
+      )
+    }
+  })
+})
 
 describe('applyGates', () => {
   it('lets a small shop selling to consumers keep monotributo', () => {

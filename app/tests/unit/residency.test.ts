@@ -108,6 +108,93 @@ describe('costo y lugar', () => {
   })
 })
 
+describe('la cédula, que era el agujero', () => {
+  const cedulaFaqs = RESIDENCY_FAQ.filter(f => /c[eé]dula/i.test(f.question))
+
+  it('el FAQ ahora habla de la cédula (antes aparecía una sola vez, de pasada)', () => {
+    expect(cedulaFaqs.length).toBeGreaterThanOrEqual(2)
+  })
+
+  // El dato que desarma la secuencia mental de los hilos: no hay que esperar a la residencia.
+  it('dice que el certificado de residencia EN TRÁMITE alcanza', () => {
+    const f = RESIDENCY_FAQ.find(f => /esperar a que salga la residencia/i.test(f.question))!
+    expect(f.short).toMatch(/tr[aá]mite/i)
+    expect(f.answer).toMatch(/Certificado de Residencia en trámite/i)
+    expect(f.answer).toMatch(/Dirección Nacional de Migración/i)
+    // No se puede leer como «necesitás la definitiva».
+    expect(f.answer).toMatch(/no necesit[aá]s tener resuelta/i)
+  })
+
+  it('la vía legal deja claro que la cédula no espera al final del trámite', () => {
+    const legal = RESIDENCY_KINDS.find(k => k.id === 'legal')!
+    expect(legal.effect).toMatch(/c[eé]dula no espera/i)
+  })
+
+  // ACÁ ESTÁ LA CORRECCIÓN, Y ES UNA AUSENCIA FALSA QUE ESTUVO PUBLICADA: el plazo SÍ existe y SÍ
+  // rige. gub.uy no lo pone en la ficha del trámite, pero la cadena normativa sí: el Decreto-Ley
+  // 14.193 fue derogado por el DL 14.762 (art. 48), y su reglamento 583/975 quedó sustituido por
+  // el Decreto 501/978, reglamentario del 14.762 y vigente en IMPO («Documento Actualizado», sin
+  // nota de derogación). Su art. 15 crea la cédula provisoria, y el Decreto 208/013 art. 1 elevó
+  // la vigencia inicial a DOS años, «pudiendo renovarse hasta en dos oportunidades, por el plazo
+  // de un año cada una». La versión anterior de esta página se quedó en el eslabón derogado y
+  // publicó «no está publicado»: quedarse en la norma derogada de una cadena no es una ausencia,
+  // es un error de lectura. Este test la fija.
+  it('publica el plazo vigente de la cédula provisoria, no la ausencia falsa', () => {
+    const f = RESIDENCY_FAQ.find(f => /cu[aá]nto dura la c[eé]dula/i.test(f.question))!
+    expect(f.short).toMatch(/dos años/i)
+    expect(f.answer).toMatch(/501\/978/)
+    expect(f.answer).toMatch(/208\/013/)
+    expect(f.answer).toMatch(/dos años/i)
+    expect(f.answer).toMatch(/hasta en dos oportunidades/i)
+    // Y no vuelve a decir que el plazo no está publicado, ni cuelga la respuesta del eslabón muerto.
+    expect(f.short).not.toMatch(/no publica un plazo/i)
+    expect(f.answer).not.toMatch(/no est[aá] publicado/i)
+    expect(f.answer).not.toMatch(/583\/975|14\.193/)
+  })
+
+  // La regla práctica que la página inventaba: «la cédula sigue a tu expediente». La fuente sólo
+  // dice qué papel hay que presentar AL renovar; el plazo del 208/013 es fijo y corre solo.
+  it('no ata la vigencia de la cédula al expediente de Migración', () => {
+    const f = RESIDENCY_FAQ.find(f => /cu[aá]nto dura la c[eé]dula/i.test(f.question))!
+    expect(f.short).not.toMatch(/sigue a tu expediente/i)
+    expect(f.answer).not.toMatch(/sigue a(l| tu) expediente/i)
+    expect(f.answer).toMatch(/no depende de cu[aá]ndo|con independencia/i)
+  })
+
+  // Ninguna de las dos fichas de gub.uy dice qué paso demora más. Lo que SÍ publican son los
+  // plazos de retiro, así que la respuesta se apoya en eso y no en una impresión de foro.
+  it('no publica una impresión sobre qué paso del trámite demora más', () => {
+    const f = RESIDENCY_FAQ.find(f => /esperar a que salga la residencia/i.test(f.question))!
+    expect(f.answer).not.toMatch(/suele ser el paso que demora/i)
+    expect(f.answer).toMatch(/5 d[ií]as h[aá]biles/)
+    expect(f.answer).toMatch(/90 d[ií]as/)
+  })
+
+  // La parte bancaria es política comercial de cada banco, no norma: no la contestamos.
+  it('no promete qué banco abre cuenta con qué papel', () => {
+    for (const f of RESIDENCY_FAQ) {
+      expect(f.answer).not.toMatch(
+        /con la c[eé]dula (ya )?(pod[eé]s|vas a poder) abrir (una )?cuenta/i
+      )
+    }
+  })
+
+  it('la fuente del trámite de cédula está citada', () => {
+    const urls = RESIDENCY_SOURCES.map(s => s.url).join(' ')
+    expect(urls).toMatch(/documento-nacional-identidad-primera-vez/)
+    expect(urls).toMatch(/documento-nacional-identidad-renovacion/)
+  })
+
+  // Y las dos normas del plazo, por su texto VIGENTE. La trampa de IMPO: `/bases/decretos/` es el
+  // actualizado y `/bases/…-originales/` es el original, que puede decir lo contrario.
+  it('cita las dos normas del plazo, por el texto vigente de IMPO', () => {
+    const urls = RESIDENCY_SOURCES.map(s => s.url).join(' ')
+    expect(urls).toContain('impo.com.uy/bases/decretos/501-1978/15')
+    expect(urls).toContain('impo.com.uy/bases/decretos/208-2013')
+    expect(urls).not.toMatch(/-originales\//)
+  })
+})
+
 describe('integridad', () => {
   it('cada pregunta tiene respuesta corta y desarrollo', () => {
     expect(RESIDENCY_FAQ.length).toBeGreaterThanOrEqual(6)
@@ -120,7 +207,8 @@ describe('integridad', () => {
   it('toda fuente es oficial', () => {
     expect(RESIDENCY_SOURCES.length).toBeGreaterThanOrEqual(4)
     for (const s of RESIDENCY_SOURCES) {
-      expect(s.url).toMatch(/^https:\/\/([\w.]+\.)?(gub\.uy|minterior\.gub\.uy)/)
+      // gub.uy para los trámites, impo.com.uy (IMPO, el diario oficial) para las normas.
+      expect(s.url).toMatch(/^https:\/\/([\w.]+\.)?(gub\.uy|minterior\.gub\.uy|impo\.com\.uy)/)
     }
   })
 })

@@ -48,6 +48,41 @@
       </p>
     </VAlert>
 
+    <!--
+      Los nombres populares del esquema de aporte en cadena. Va FUERA del ClientOnly a propósito:
+      este bloque es la descubribilidad, y tiene que estar en el HTML que se sirve. Quien recibe la
+      invitación busca «telar», nunca el nombre de una empresa — porque no hay empresa.
+    -->
+    <VCard variant="flat" class="aka pa-4 mb-6" :class="{ 'aka-hit': schemeHit }">
+      <h2 class="text-subtitle-1 font-weight-bold mb-1">
+        <VIcon size="18" class="mr-1" color="warning">mdi-account-group-outline</VIcon>
+        ¿Te invitaron a un «telar» o a una «célula de la abundancia»?
+      </h2>
+      <!-- La región viva tiene que existir SIEMPRE: si apareciera junto con el texto, el lector
+           de pantalla no anunciaría nada. Por eso el v-if va adentro, no sobre el contenedor. -->
+      <div aria-live="polite">
+        <p v-if="schemeHit" class="aka-hit-line mb-2">
+          Buscaste “{{ query }}”. Esto es lo que estabas buscando.
+        </p>
+      </div>
+      <div class="d-flex flex-wrap ga-1 mb-3">
+        <VChip v-for="a in CHAIN_SCHEME_ALIASES" :key="a" size="x-small" variant="tonal" label>
+          {{ a }}
+        </VChip>
+      </div>
+      <p class="text-body-2 mb-3">{{ CHAIN_SCHEME_NOTE }}</p>
+      <VBtn
+        :to="localePath(CHAIN_SCHEME_GUIDE.to)"
+        size="small"
+        variant="tonal"
+        color="primary"
+        class="text-none"
+      >
+        <VIcon start size="16">mdi-book-open-variant</VIcon>
+        {{ CHAIN_SCHEME_GUIDE.label }}
+      </VBtn>
+    </VCard>
+
     <!-- List -->
     <section aria-label="Advertencias publicadas por el BCU">
       <ClientOnly>
@@ -147,6 +182,10 @@
 import {
   BCU_REGISTRY_URL,
   BCU_WARNINGS_URL,
+  CHAIN_SCHEME_ALIASES,
+  CHAIN_SCHEME_GUIDE,
+  CHAIN_SCHEME_NOTE,
+  isChainSchemeQuery,
   searchWarnings,
   sourceLink,
   type BcuWarning,
@@ -154,6 +193,9 @@ import {
 
 const localePath = useLocalePath()
 const query = ref('')
+
+/** Quien escribe «telar» o «pirámide» no está buscando una empresa: se lo decimos de entrada. */
+const schemeHit = computed(() => isChainSchemeQuery(query.value ?? ''))
 
 interface WarningsPayload {
   warnings: BcuWarning[]
@@ -225,7 +267,7 @@ useHead(() => ({
     {
       name: 'keywords',
       content:
-        'advertencias bcu, empresas no autorizadas uruguay, estafa financiera uruguay, banco central advertencia, es confiable esta empresa, ponzi uruguay, conexion ganadera, registro bcu entidades',
+        'advertencias bcu, empresas no autorizadas uruguay, estafa financiera uruguay, banco central advertencia, es confiable esta empresa, ponzi uruguay, conexion ganadera, registro bcu entidades, telar de la abundancia, celula de la abundancia, flor de la abundancia, mesa de la abundancia, rueda de la abundancia, mandala de la abundancia, telar de los suenos, esquema piramidal uruguay',
     },
   ],
 }))
@@ -247,9 +289,24 @@ useHead(() => ({
 }
 .warn,
 .placeholder,
-.cross {
+.cross,
+.aka {
   border: 1px solid rgba(var(--v-border-color), 0.14);
   border-radius: 14px;
+}
+.aka {
+  border-left: 3px solid rgba(202, 138, 4, 0.7);
+}
+/* Cuando la búsqueda ES el esquema, el bloque deja de ser contexto y pasa a ser la respuesta. */
+.aka-hit {
+  border-color: rgba(var(--v-theme-primary), 0.5);
+  border-left-color: rgb(var(--v-theme-primary));
+  background: rgba(var(--v-theme-primary), 0.06);
+}
+.aka-hit-line {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: rgb(var(--v-theme-primary));
 }
 .warn {
   border-left: 3px solid rgba(202, 138, 4, 0.7);

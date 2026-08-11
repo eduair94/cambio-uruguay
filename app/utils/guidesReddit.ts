@@ -87,6 +87,145 @@
 //     alguno de avisarle. El art. 5 no se agota en la comunicación al INT: sigue con "La
 //     reglamentación fijará […] y todo lo relativo a la notificación a los trabajadores y la
 //     documentación que acredite el cumplimiento de la ley". El deber existe; está delegado.
+//
+// GUÍA NUEVA (2026-08-10): `me-certifique-subsidio-por-enfermedad-uruguay`.
+// El sitio tenía 350 líneas sobre el subsidio por DESEMPLEO (`utils/unemploymentBenefit.ts` +
+// `/seguro-de-paro-uruguay`) y ni una sobre el subsidio por ENFERMEDAD, que es la otra mitad de
+// la misma pregunta. Todo lo publicado se leyó en fuente primaria: BPS 4774 y el texto VIGENTE
+// («Documento Actualizado», no `/bases/decretos-ley-originales/`) del Decreto-Ley 14.407 y su
+// reglamento, el Decreto 7/976.
+//
+// DOS COSAS QUE LA GUÍA NO PUBLICA, a propósito:
+//
+//  a. «Excepción por intervención quirúrgica». Se buscó y NO EXISTE como causal autónoma. El
+//     art. 14 habla de hospitalización ("En los casos que el beneficiario haya sido hospitalizado
+//     no habrá período de pérdida del subsidio, a partir de la internación") y BPS lo extiende al
+//     domicilio ("En caso de internación, en la mutualista o en el domicilio, se abonará a partir
+//     del primer día"). El Decreto 7/976 no la menciona: la palabra "quirúrgica" aparece ahí sólo
+//     en "asistencia médica, quirúrgica y medicación", que es la prestación de salud, no el
+//     disparador del pago. Se publica LA REGLA (internación) y LA AUSENCIA, no la tranquilidad
+//     inventada de que una cirugía ambulatoria cobra desde el día uno.
+//
+//  b. «Quién paga los tres primeros días». Ni el decreto-ley ni el Decreto 7/976 los ponen a
+//     cargo del empleador. La guía dice eso —que ninguna de las dos normas los cubre— y manda a
+//     mirar el convenio; no inventa una obligación patronal que no está escrita.
+//
+// LA TRAMPA DEL TOPE, la misma que ya mordió a `unemploymentBenefit.ts` (ver ahí `BENEFIT_FLOOR`):
+// el art. 27 escribe el máximo como "el triple del monto del salario mínimo nacional en su valor
+// nominal" y ESA UNIDAD YA NO GOBIERNA. La cadena tiene TRES eslabones y el del medio es el que se
+// saltea: art. 27 (triple del SMN, 1975) → LEY 18.725 art. 1, que "fija el monto máximo del
+// subsidio por enfermedad a que refiere el artículo 27 del Decreto-Ley Nº 14.407" EN BPC (4 BPC
+// desde el 1/1/2011, +1 por año hasta 8 BPC desde el 1/1/2015) → Ley 19.003, que sólo INDEXA un
+// tope ya expresado en BPC: su art. 2 lit. A nombra "los montos máximos del subsidio por enfermedad
+// previsto por el Decreto-Ley Nº 14.407 […] con las modificaciones de la Ley Nº 18.725" —esa
+// coletilla es el eslabón— y su art. 1 EN LA REDACCIÓN VIGENTE —la del art. 739 de la Ley 19.924—
+// los ajusta desde el 1/1/2021 por la variación de la BPC, convirtiendo a BPC los topes vigentes al
+// 31/12/2020. (El texto ORIGINAL de 2012 decía U.R.; caso de manual de por qué se lee el
+// actualizado.) Conclusión operativa: el tope no se calcula, se copia de BPS, con su fecha al lado.
+//
+// LA MISMA LEY 18.725 ZANJA LA BASE (corrección 2026-08-10). La guía publicaba como divergencia sin
+// resolver que el art. 13 num. 2 describe una base angosta ("sueldo o jornal básico o habitual",
+// sin locomoción, viáticos, horas extras…) mientras el BPS liquida sobre materia gravada, y mandaba
+// al lector a pedir liquidaciones para dirimirlo. No hay nada que dirimir: el art. 2 de la Ley
+// 18.725 dice que "a partir del 1º de enero de 2011, serán remuneraciones computables […] todas las
+// que constituyan materia gravada". El 13.2 es la base ORIGINAL de 1975; el BPS no aplica criterio
+// propio, aplica la ley vigente. Lección: si una fuente que citás nombra otra norma de refilón
+// (acá, DOS veces: la lista del MTSS y la coletilla del art. 2 lit. A de la 19.003), abrila.
+//
+// EL RANGO DEL RÉGIMEN PÚBLICO (misma corrección). Decía "arts. 13 a 19 de la Ley 20.075" y la
+// Sección II va del 13 al 29. Lo que quedaba afuera era justo la respuesta a la pregunta del
+// título: el art. 20 ("Responsable de la cobertura del subsidio por enfermedad") pone el pago "a
+// cargo del organismo al que pertenece el funcionario" —o sea que en el Estado NO paga el BPS,
+// exactamente al revés de la premisa de la primera sección—, el 21 da la supervisión a la ONSC y el
+// 22 le da potestades de control al organismo empleador.
+//
+// TRES RECORTES MÁS, corregidos el mismo día:
+//  · BPS 4774 escribe el plazo DE DOS FORMAS y la guía citaba sólo la ambigua ("hasta 4 años
+//    interrumpidos por la misma dolencia"), que leída suelta duplica el techo. El párrafo de
+//    apertura de la MISMA página lo acota: "2 años alternados dentro de los últimos 4 años". Los
+//    cuatro años son la VENTANA DE ACUMULACIÓN del art. 15, no el máximo a cobrar.
+//  · Los requisitos de cotización van separados como los separa BPS: al jornalero/destajista, 75
+//    jornales "en el año anterior a la fecha del último día trabajado"; al mensual, 3 meses "en el
+//    año inmediato anterior a la enfermedad, en una o más empresas, ya sea consecutivos o
+//    interrumpidamente". La coletilla de las varias empresas es SÓLO del mensual.
+//  · Dos elisiones sin marcar dentro de comillas del art. 23: "dado de alta POR ASSE" (se caía el
+//    sujeto, en una guía que dedica un párrafo a explicar cuál ASSE es cuál) y la admisión temporaria
+//    se comunica a la IGTSS "Y AL SERVICIO NACIONAL DE EMPLEO (SENADEMP)".
+//
+// TRES AMPLIACIONES A GUÍAS EXISTENTES (2026-08-10), todas huecos medidos contra el barrido de
+// Reddit y todas con el mismo problema de fondo: la respuesta no estaba donde la persona la busca.
+//
+//  A. DESPIDO INDIRECTO, en `despido-y-liquidacion-uruguay`. El término existía en el repo dos
+//     veces, las dos de pasada y las dos dentro de la guía de llegadas tarde; en la guía que
+//     alguien abre cuando le está pasando, no figuraba. Se publica con la salvedad de construcción
+//     jurisprudencial, como el sitio ya hace con el ius variandi, porque LA AUSENCIA DE NORMA ES EL
+//     DATO: el MTSS no lo lista entre los temas de su Derecho Laboral Uruguayo y su ficha de
+//     "Despido (régimen común)" no lo menciona. La definición, la gravedad exigida, el "agotar los
+//     medios antes" y la carga de la prueba salen de sentencias de los Tribunales de Apelaciones
+//     del Trabajo leídas en la Base de Jurisprudencia Nacional Pública del Poder Judicial — no de
+//     la Suprema Corte, que en materia laboral sólo ve casación, así que la atribución va al
+//     tribunal que efectivamente lo dijo.
+//     LOS NÚMEROS DE SENTENCIA NO SE PUBLICAN, y esto se corrigió el 2026-08-10. La primera
+//     versión citaba "116/2011 del 2.º Turno" y "174/2025 del 4.º" contra una sola URL: la de la
+//     BJN. Esa URL es el FORMULARIO de búsqueda —una app JSF con jsessionid que sin sesión ni JS no
+//     devuelve un solo resultado—, o sea que ninguna de las frases citadas estaba en la página que
+//     las respaldaba, y la BJN no da enlace permanente por sentencia. Peor: las dos frases de la
+//     definición aparecen atribuidas públicamente por los estudios uruguayos que las citan a
+//     T.A.T. 2.º T. Nº 389/2002 y T.A.T. 3.º T. Nº 380/2011 — otra sentencia, otro año y otro
+//     turno—, y ni 116/2011 ni 174/2025 aparecen en la web abierta ni en vLex. No pudiendo
+//     confirmar cuál es el número correcto, se publica la ausencia: el criterio va atribuido al
+//     tribunal y al canal donde se busca, y el cuerpo dice por qué no hay número. Sí hay dos normas
+//     que escriben la figura para casos puntuales, y ahí los números están: Ley 18.561 arts. 11 y
+//     12 (acoso sexual: seis mensualidades acumulables + presunción de represalia a 180 días) y
+//     Decreto-Ley 15.180 art. 9 en su redacción vigente (Ley 18.399).
+//     El paso previo al juicio va con su norma: Ley 18.572 art. 3 ("Antes de iniciarse juicio en
+//     materia laboral, deberá tentarse la conciliación previa") y Ley 18.091 art. 3, que es el que
+//     manda la interrupción de la prescripción. Ojo con la cadena: la 18.091 remite al art. 10 del
+//     Decreto-Ley 14.188, que es el que la Ley 18.572 sustituyó; la remisión vieja no vuelve
+//     inexistente al efecto interruptivo, sólo hay que leerlo contra el régimen que hoy rige.
+//     El contraste probatorio es el corazón de la sección: en el despido común la Ley 12.597 art.
+//     10 pone la prueba en el EMPLEADOR ("deberá probar los hechos constitutivos de la notoria mala
+//     conducta"); en el indirecto se invierte y es el trabajador quien prueba (CGP art. 139.1). Si
+//     eso no queda escrito, el lector se va de la empresa creyendo que cobra seguro.
+//
+//  B. TRABAJO DOMÉSTICO, en la misma guía. Es la única familia del corpus donde quien pregunta es
+//     el EMPLEADOR. OJO CON EL MAPA DEL CORPUS: la primera versión de este encabezado decía que la
+//     única mención del sitio vivía en un JSDoc de `wageCouncils.ts` que no se renderiza, y es
+//     falso. El sitio ya trataba el doméstico en tres lugares que SÍ se renderizan —
+//     `unemploymentBenefit.ts` (requisitos propios del seguro de paro doméstico: 180 días / 150
+//     jornales / 6 BPC, y otra vez en COVERAGE_RULES), `pages/cuanto-me-tienen-que-pagar-uruguay.vue`
+//     (el doméstico como ámbito de negociación aparte) y `moneyApps.ts` (la app BPS Trabajo
+//     Doméstico)—. Lo que faltaba no era el sector: era el ángulo despido/registro/aportes escrito
+//     para quien contrata. Va todo con la Ley 18.065 y el Decreto 224/007 al lado (jornada,
+//     descansos propios con y sin retiro, indemnización DESDE LOS 90 DÍAS CORRIDOS, inspección
+//     domiciliaria sólo con orden judicial) más BPS para el registro y los aportes.
+//     EL TOPE DE SEIS MENSUALIDADES ES DEL MENSUAL, NO DEL JORNALERO. El art. 7 de la 18.065
+//     nombra a los dos ("tanto mensuales como jornaleros") y remite "en lo demás" al régimen
+//     general — y el régimen general son DOS regímenes, no uno. La ficha del MTSS que esta guía ya
+//     citaba lo dice: el jornalero cobra 25 jornales por año si completó 240 jornadas (2 jornales
+//     cada 25 trabajados si no las completó), con 150 jornales de tope y SIN derecho por debajo de
+//     100 jornales. En el doméstico eso no es un detalle: la jornalera de dos o tres días por
+//     semana es justo quien puede quedar por debajo de las 100 jornadas.
+//     EL MÍNIMO EN PESOS NO SE PUBLICA: lo fija el laudo del Grupo 21 del Consejo de Salarios y
+//     caduca por ronda —desde el 1/7/2026 hay tres categorías, cuidados/general/cocina, cada una
+//     con el suyo—, así que se publica el canal (BPS/MTSS) y no la cifra.
+//
+//  C. DEEL / PAYONEER Y EL BPS, en `trabajar-para-el-exterior-desde-uruguay`. El mito a desarmar
+//     era "sólo una entidad local puede inscribirse como empleador": el BPS tiene un trámite
+//     específico para empresas extranjeras SIN establecimiento permanente (formulario REC. 211,
+//     dentro del mes en curso de inicio de actividades) y el timbre "será incluido en la cuenta de
+//     la empresa", o sea que la firma del exterior queda con cuenta propia. Lo verificable después
+//     es la historia laboral nominada (Consultar mis aportes, constancia con QR). NO se comparan
+//     plataformas —eso cambia por producto y por país— y se dice explícitamente por qué. Del lado
+//     de DGI va la obligación de documentar y el calendario del CFE (Resolución 2548/2023: desde el
+//     1/1/2025 todo contribuyente de IVA, incluso IVA mínimo).
+//     LA LISTA DE EXCEPTUADOS VA COMPLETA O NO VA: son SIETE en la página de efactura y la primera
+//     versión publicaba cinco, presentadas como si fueran todas. Faltaban los que realizan
+//     exclusivamente actos de agregación de valor en la construcción sobre inmuebles y los
+//     exonerados de todos los impuestos de DGI por todas sus operaciones (salvo usuarios de zona
+//     franca) — o sea, alguien que agrega valor en construcción leía que le tocaba emitir CFE
+//     cuando la resolución lo exceptúa. Corregido el 2026-08-10 en el cuerpo, en la FAQ y en la
+//     etiqueta de la fuente, que es donde el lector la ve presentada como cita.
 import type { Guide } from './guides'
 
 export const redditGuides: readonly Guide[] = [
@@ -1749,13 +1888,13 @@ export const redditGuides: readonly Guide[] = [
     slug: 'despido-y-liquidacion-uruguay',
     title: 'Despido y liquidación en Uruguay: qué te corresponde',
     description:
-      'Qué te corresponde al ser despedido en Uruguay: indemnización por despido, tope, preaviso y qué incluye la liquidación final (licencia, aguinaldo, salario vacacional).',
+      'Qué te corresponde al ser despedido en Uruguay: indemnización por despido, tope, preaviso, qué incluye la liquidación final, cuándo el que renuncia cobra igual (despido indirecto) y qué cambia si el trabajo es en casa de familia.',
     tag: 'DESPIDO',
-    updatedAt: '2026-07-18',
+    updatedAt: '2026-08-10',
     sections: [
       {
         heading: 'La indemnización por despido',
-        body: 'Cuando te despiden sin que haya una causa grave, tenés derecho a una indemnización por despido. Para los trabajadores mensuales, la regla general es de un mes de sueldo por cada año trabajado, computándose también la fracción de año: cualquier fracción, por chica que sea, suele generar derecho a una mensualidad completa aunque no llegues a completar otro año entero. Esa indemnización tiene un tope: no puede superar el equivalente a seis mensualidades, por más años que lleves en la empresa. Para los jornaleros existe un régimen propio, calculado en jornales según los días trabajados, con su propio tope. La indemnización compensa la pérdida del empleo y es distinta del resto de partidas que se te adeudan por el trabajo ya realizado, que se pagan igual.',
+        body: 'Cuando te despiden sin que haya una causa grave, tenés derecho a una indemnización por despido. Para los trabajadores mensuales, la regla general es de un mes de sueldo por cada año trabajado, computándose también la fracción de año: cualquier fracción, por chica que sea, suele generar derecho a una mensualidad completa aunque no llegues a completar otro año entero. Esa indemnización tiene un tope: no puede superar el equivalente a seis mensualidades, por más años que lleves en la empresa. Para los jornaleros no rige ese tope: va el régimen en jornales, que se calcula según los días trabajados, tiene su propio máximo y además un mínimo de jornadas por debajo del cual no nace el derecho. Los números están en la sección siguiente, y no son los del mensual. La indemnización compensa la pérdida del empleo y es distinta del resto de partidas que se te adeudan por el trabajo ya realizado, que se pagan igual.',
       },
       {
         heading: 'Qué entra en el "mes de sueldo" que se usa de base',
@@ -1763,7 +1902,7 @@ export const redditGuides: readonly Guide[] = [
       },
       {
         heading: 'Mensuales, jornaleros y el tope',
-        body: 'La distinción entre mensual y jornalero cambia el cálculo. El mensual cobra por mes y su indemnización se mide en mensualidades, con tope de seis. El jornalero cobra por día trabajado y su indemnización se mide en jornales, en función de cuántas jornadas acumuló, también con un tope máximo de jornales. En ambos casos la lógica es la misma: proteger al trabajador frente a la pérdida del empleo, pero con un límite para no volver el despido impagable. Si tu forma de contratación no es clara, o combinás modalidades, conviene revisar tus recibos, porque de ahí depende bajo qué régimen te corresponde calcular la indemnización.',
+        body: 'La distinción entre mensual y jornalero cambia el cálculo. El mensual cobra por mes y su indemnización se mide en mensualidades, con tope de seis. El jornalero cobra por día trabajado y su indemnización se mide en jornales, y ahí los números son otros: el MTSS publica «25 jornales por año de trabajo, si en el año han completado 240 jornadas», y si no las completó «se calculan 2 jornales cada 25 trabajados». El tope también es propio —«150 jornales como máximo»— y hay un piso que conviene saber antes de reclamar: «si no ha llegado a trabajar 100 jornales, no nace el derecho a la indemnización». En ambos casos la lógica es la misma: proteger al trabajador frente a la pérdida del empleo, pero con un límite para no volver el despido impagable. Si tu forma de contratación no es clara, o combinás modalidades, conviene revisar tus recibos, porque de ahí depende bajo qué régimen te corresponde calcular la indemnización.',
       },
       {
         heading: 'El preaviso',
@@ -1778,6 +1917,34 @@ export const redditGuides: readonly Guide[] = [
         body: 'Si el despido se funda en notoria mala conducta del trabajador, el empleador puede sostener que no corresponde indemnización; pero debe poder probar esa causa grave, no alcanza con afirmarla. Además existen situaciones de protección especial, como el despido de una trabajadora embarazada o casos que la jurisprudencia considera abusivos, donde puede corresponder una indemnización mayor a la común. Estos escenarios son terreno de análisis jurídico fino y muchas veces se dirimen ante la Justicia laboral. Si te despiden alegando una causa que considerás injusta, o sospechás un despido especial, es el momento de asesorarte antes de firmar conformidad con la liquidación.',
       },
       {
+        heading: 'Despido indirecto: te vas vos y la empresa paga igual',
+        body: 'Hay una situación que no está en ninguna ley general y es la que trae a mucha gente acá: la empresa no te echa, te hace insoportable quedarte. Eso tiene nombre —despido indirecto— y funciona al revés de lo que parece: el vínculo lo cortás vos, pero la ruptura se le imputa al empleador y cobrás lo mismo que si te hubiera echado sin causa. Conviene decir de entrada de dónde sale, porque cambia cómo se usa: no hay una ley general que lo regule. El MTSS no lo lista entre los temas de su Derecho Laboral Uruguayo, y su propia ficha de despido de régimen común —la que sí trae la indemnización, el tope y la notoria mala conducta— no lo menciona. Es construcción de doctrina y jurisprudencia, igual que el ius variandi: se decide sentencia a sentencia, y por eso toda respuesta honesta a «¿me corresponde?» empieza por «depende de lo que puedas probar». Los Tribunales de Apelaciones del Trabajo lo definen así: «En el despido indirecto el empleado se ve constreñido a rescindir el contrato de trabajo en virtud del comportamiento del empleador que ha hecho imposible la continuación de la relación de empleo, aclarando que la resolución ocurre por culpa del empleador, tal como si fuera él quien disolviese el contrato». De ahí sale la consecuencia en plata, en el mismo párrafo: «el derecho del trabajo atribuye al empleado el derecho a reclamar la misma indemnización a la que tendría derecho si fuera despedido injustamente». Una aclaración sobre cómo citamos esto, porque hace a que puedas comprobarlo vos: estas fórmulas se repiten en fallos de los Tribunales de Apelaciones del Trabajo y se leen buscando «despido indirecto» en la Base de Jurisprudencia Nacional Pública del Poder Judicial, pero la BJN no da un enlace permanente por sentencia —su dirección es la del buscador y hay que ingresar el término—, así que no publicamos número de sentencia: preferimos que llegues al texto por el buscador antes que darte un número que no podrías verificar acá. La atribución que sí sostenemos es el tribunal: son los Tribunales de Apelaciones del Trabajo, no la Suprema Corte, que en materia laboral sólo interviene por casación. Que no haya ley general no quiere decir que no aparezca en ninguna norma: hay dos que lo escriben para casos puntuales, y las vemos más abajo.',
+      },
+      {
+        heading: 'Qué incumplimientos lo configuran (y cuáles no alcanzan)',
+        body: 'Acá está el filtro que voltea la mayoría de los reclamos. La buena noticia primero: no hay que probar que la empresa quiso echarte. Doctrina y jurisprudencia coinciden en que «para que se pueda dar por configurada una situación de despido indirecto no es necesario demostrar una intencionalidad del empleador de forzar al trabajador a dejar su trabajo». Lo que sí hace falta es gravedad. El incumplimiento «puede derivar de un solo acto o consistir en varios actos u omisiones», pero tiene que ser «grave» o «de entidad» e «imposibilite» o «haga intolerable» la continuación de la relación laboral. Y la contracara está escrita con todas las letras: «no todo incumplimiento causa mecánicamente el aludido despido sino que debe tener cierta entidad y generar un perjuicio relevante, debe reservarse para las situaciones más graves en que un acto patronal torna imposible la continuación de la relación laboral». Hay un detalle más, incómodo pero importante antes de tomar la decisión: tanto el daño como la insoportabilidad «han de ser objetivamente valuables» y «no deben confundirse con estados síquicos». Que el ambiente te esté haciendo mal, por real que sea, no configura por sí solo el despido indirecto; lo que se mide es el incumplimiento del empleador. ¿Qué llegó a configurarlo en casos reales? Plata adeudada, sostenida y documentable. En los fallos de los Tribunales de Apelaciones del Trabajo que se leen buscando «despido indirecto» en la BJN, lo que aparece una y otra vez es eso: el no pago del salario de acuerdo al laudo vigente, el incumplimiento de una sentencia anterior que ya había condenado a pagar rubros como antigüedad y presentismo, salarios adeudados al cese, recibos que no estaban firmados por el trabajador y falta de constancia de pago de la licencia y el salario vacacional del año anterior. No damos número de sentencia por lo dicho más arriba —la BJN no publica enlace permanente por fallo—, así que tomalos como el tipo de incumplimiento que prospera, no como una lista cerrada: si tu caso se parece, lo que corresponde es buscarlo ahí y llevárselo a un abogado laboralista.',
+      },
+      {
+        heading: '¿Hay que intimar antes? Y quién tiene que probar',
+        body: 'Dos preguntas que definen si el reclamo sobrevive. La primera: ninguna norma te exige mandar un telegrama antes de considerarte despedido. Pero la jurisprudencia laboral pide «una razonable proporcionalidad entre el incumplimiento y la reacción del trabajador», y de ahí sale la regla práctica: cuando el incumplimiento no es de gravedad y la situación, apreciada objetivamente, no es insostenible, «el trabajador debe recurrir agotar los medios a su alcance para solucionar el diferendo con el empleador recurriendo a las vías del caso para aclarar la situación, antes de que pueda considerarse despedido» (Tribunales de Apelaciones del Trabajo; se lee buscando «despido indirecto» en la BJN, que no publica enlace permanente por sentencia). En criollo: cuanto menos flagrante es el incumplimiento, más necesario es haber reclamado por escrito antes y haber guardado la respuesta. La segunda pregunta es la que más caro sale ignorar, porque acá la carga de la prueba se da vuelta respecto del despido común. En el despido común la ley pone la prueba del lado de la empresa: la Ley 12.597, art. 10, dice que quien fue despedido por notoria mala conducta no cobra indemnización, y agrega que «el empleador deberá probar los hechos constitutivos de la notoria mala conducta». En el indirecto el que afirma sos vos, y los tribunales lo repiten: «es el trabajador quien debe probar los graves incumplimientos patronales que den lugar al instituto invocado», anclándolo en la regla general del art. 139.1 del Código General del Proceso, «corresponde probar, a quien pretende algo, los hechos constitutivos de su pretensión». La consecuencia hay que decirla sin adornos: si te vas y después no lográs probarlo, no cobrás indemnización, porque a los ojos del expediente renunciaste. Antes de dar el portazo, juntá recibos, telegramas, mensajes y testigos, y pedí la audiencia de conciliación en el MTSS. Esas dos cosas tienen norma y conviene nombrarlas: es el paso previo obligatorio al juicio por la Ley 18.572, art. 3 —«Antes de iniciarse juicio en materia laboral, deberá tentarse la conciliación previa»—, y además frena el reloj, porque la Ley 18.091, art. 3, dispone que «la sola presentación del trabajador o su representante ante el Ministerio de Trabajo y Seguridad Social, solicitando audiencia de conciliación […] interrumpe la prescripción».',
+      },
+      {
+        heading: 'Qué se cobra, y los dos casos donde la ley sí lo escribió',
+        body: 'Lo primero, y es la regla: se cobra la misma indemnización común que si te hubieran despedido —un mes de sueldo por año o fracción con tope de seis mensualidades para el mensual, el régimen en jornales para el jornalero—, calculada sobre la misma base amplia que explicamos más arriba, más toda la liquidación final ya generada. No hay un plus automático por ser indirecto. Ahora, hay dos lugares donde la ley uruguaya sí escribió la figura, y ahí los números están puestos. Uno es el acoso sexual: la Ley 18.561, art. 11, le da a la víctima el derecho a reclamar «una indemnización por daño moral mínima equivalente a seis mensualidades» y, como alternativa, la opción de «considerarse indirectamente despedido/a, en cuyo caso el despido revestirá el carácter de abusivo y dará derecho a una indemnización especial tarifada de seis mensualidades, de acuerdo con la última remuneración del trabajador/a, la que será acumulable a la indemnización común». Su art. 12 agrega una protección que casi nadie conoce: el trabajador afectado y quienes declararon como testigos no pueden ser despedidos ni sancionados, y «se presume —salvo prueba en contrario— que el despido o las sanciones obedecen a motivos de represalia cuando tengan lugar dentro del plazo de ciento ochenta días de interpuesta la denuncia de acoso en sede administrativa o judicial»; ese despido se califica de abusivo y paga la misma indemnización especial, «con la salvaguarda de la notoria mala conducta». El otro caso es el seguro de paro: el Decreto-Ley 15.180, art. 9, en la redacción vigente que le dio la Ley 18.399, considera producido el despido del suspendido en forma total si al terminar el período máximo de la prestación no lo reintegran, y le da a quien viene cobrando el subsidio «por más de tres meses en situación de trabajo reducido para un empleador» la opción de «considerarse despedido y reclamar la indemnización a que tuviere derecho». Un apunte final, porque es plata: la DGI recordó en la Consulta 6.481 que «por despido cabe entender la ruptura del vínculo laboral», y que una partida pagada por una rebaja salarial sin que el vínculo se rompa no es indemnización por despido y queda gravada por IRPF. Si lo que te ofrecen es un arreglo que no corta el vínculo, no esperes que tenga el tratamiento fiscal del despido. Y una advertencia que vale para todo lo de esta sección: los montos son los que se cobran si el despido indirecto queda configurado, y quien tiene que probar el incumplimiento sos vos.',
+      },
+      {
+        heading: 'Si el trabajo es en casa de familia: el trabajo doméstico va por su propia ley',
+        body: 'Esta parte es para el otro lado del mostrador, que en este tema casi siempre es una familia y no una empresa. El trabajo doméstico no se lee con las reglas de industria y comercio: tiene su propia ley, la 18.065, reglamentada por el Decreto 224/007. La jornada está limitada «en un máximo legal de ocho horas diarias, y de cuarenta y cuatro horas semanales» (art. 2), y lo que pase de ahí son horas extra, que el decreto paga con «el 100% de recargo del valor hora común» en días hábiles y «del 150% de recargo del valor hora común» en feriados o días de descanso semanal (art. 7), igual que en el régimen general. Los descansos, en cambio, son propios y conviene leerlos con cuidado. El intermedio es de media hora paga como trabajo efectivo si la persona trabaja «con retiro», y de un mínimo de dos horas si es «sin retiro» (art. 3). El semanal es de «treinta y seis horas ininterrumpidas, que comprenderá todo el día domingo, pudiendo acordar las partes el día de la semana en que se gozará el descanso restante» (art. 4), y el Decreto 224/007 aclara cómo se arma: «a partir del mediodía del día sábado y durante todo el día domingo, o en su defecto, a partir del día domingo y hasta el mediodía del lunes siguiente» (art. 9). Quien trabaja sin retiro suma además un «descanso mínimo nocturno de nueve horas continuas» que el empleador no puede interrumpir (art. 5). La edad mínima para desempeñarse es de dieciocho años, y el INAU puede autorizar desde los quince «cuando medien razones fundadas» (art. 11). Al resto del paquete lo publica el MTSS: licencia anual de 20 días continuos por año completo, o 1,67 días por mes cada 25 días trabajados; aguinaldo en dos fracciones, junio y diciembre; y el plazo de pago del sueldo, que depende de la modalidad y no es uno solo: el mensual «dentro de los primeros 5 días hábiles», el quincenal «dentro de los 5 días hábiles al vencimiento de la quincena» y el semanal «al finalizar la respectiva semana». Sumá la provisión de vestimenta adecuada y herramientas de trabajo sin costo. Un dato que suele cambiarle la cabeza a quien contrata: para controlar, el MTSS puede hacer inspecciones domiciliarias sólo «cuando exista presunción de incumplimiento», con orden judicial expedida por un Juzgado Letrado de Primera Instancia del Trabajo o del Interior, y debe presentarle al juzgado testimonio de lo actuado dentro de las cuarenta y ocho horas (art. 13).',
+      },
+      {
+        heading: 'Despido, registro y aportes de la trabajadora doméstica',
+        body: 'Tres cosas que se preguntan siempre. Primero el despido, que es la única diferencia grande con el régimen común: la Ley 18.065, art. 7, establece que «las/os trabajadoras/es domésticas/os, tanto mensuales como jornaleros, tendrán derecho a indemnización por despido desde los noventa días corridos de iniciada la relación laboral, rigiéndose en lo demás por las normas generales sobre despido». O sea: antes de esos noventa días corridos no se genera indemnización, y a partir de ahí se calcula con todo lo que dice esta guía más arriba. Pero ojo con cuál de los dos regímenes te toca, porque «las normas generales» son dos y no una, y el artículo nombra a los dos colectivos. Si la persona cobra por mes, es un mes de sueldo por año o fracción con tope de seis mensualidades. Si cobra por jornal —y en casa de familia la de dos o tres días por semana es de lo más común—, rige el régimen en jornales que publica el MTSS: «25 jornales por año de trabajo, si en el año han completado 240 jornadas», «2 jornales cada 25 trabajados» si no las completó, «150 jornales como máximo» de tope, y «si no ha llegado a trabajar 100 jornales, no nace el derecho a la indemnización». Aplicarle a una jornalera el tope del mensual es liquidar mal, y el error puede caer para cualquiera de los dos lados. Hay además una protección especial: la trabajadora despedida encontrándose en estado de gravidez, y hasta que hayan transcurrido por lo menos ciento ochenta días desde su reintegro efectivo de la licencia, tiene derecho a la indemnización especial del art. 17 de la Ley 11.577 (art. 8). Segundo, el registro, que es donde se cometen las multas evitables. El empleador «debe tener un registro en BPS como titular de Servicio Doméstico» y, si no lo tiene, «ambas inscripciones se realizan en forma simultánea»; el trámite se hace «desde 10 días antes y hasta la fecha de ingreso del trabajador» —el MTSS lo resume como «antes de su ingreso o el mismo día»— y llegar tarde cuesta: el BPS avisa que «por la realización fuera de plazo de cada uno de los trámites, se generan multas de 1 UR» por la inscripción tardía del empleador y por el alta tardía del trabajador. Desde el alta corre además la cobertura del seguro de Accidentes del Trabajo y Enfermedades Profesionales del Banco de Seguros del Estado. Tercero, los aportes: se calculan «sobre la remuneración nominal real del trabajador, no pudiendo ser inferior a los mínimos establecidos por el laudo del grupo 21 Trabajo Doméstico», y esa remuneración incluye «el sueldo, jornal, horas extras, antigüedad, presentismo, nocturnidad, etc.». Y sí, hay que dar recibo: la ley obliga a extender recibo de sueldo (art. 12) y el Decreto 224/007 lo remite a los artículos 38 y siguientes del Decreto 108/007.',
+      },
+      {
+        heading: 'Cuánto es el mínimo de la doméstica: dónde mirarlo, y por qué no lo publicamos',
+        body: 'Es la pregunta que trae a la mayoría, y la respuesta honesta es un canal y no una cifra. El piso del sector no lo marca el Salario Mínimo Nacional: la Ley 18.065, art. 6, incorporó al servicio doméstico «en el sistema de fijación de salarios y categorías dispuesto por la Ley Nº 10.449», que es el de los Consejos de Salarios, y el BPS lo dice sin vueltas: los beneficios salariales «son establecidos mediante negociación colectiva del Grupo 21 del Consejo de Salarios». Ese laudo se renegocia por rondas y se ajusta más de una vez al año, así que cualquier número que memorices caduca; por eso no lo publicamos acá. Lo que sí conviene saber es que el mínimo dejó de ser uno solo: el BPS publicó que «a partir del 1.° de julio de 2026 entrarán en vigencia tres categorías laborales para el sector doméstico: cuidados, general y cocina», y que «se determinan según las tareas principales que desarrollan los trabajadores domésticos». Cada una tiene su propio mínimo, y el BPS asignó por defecto «la categoría general a todos los trabajadores activos»: si a tu caso le corresponde otra, sos vos como empleador quien «deberá modificarla» desde el servicio de trabajo doméstico para inscribir trabajadores y modificar datos. El valor vigente de cada categoría se mira en el BPS o en el MTSS el día que liquidás, no en una guía.',
+      },
+      {
         heading: 'Dónde reclamar y una aclaración',
         body: 'Esta guía es información general y no constituye asesoramiento legal para tu caso. Los montos, topes y plazos de pago están fijados por la normativa laboral vigente y pueden variar según tu sector y convenio. El Ministerio de Trabajo y Seguridad Social es la vía para consultas y para instancias de conciliación, y un abogado laboralista puede evaluar si la liquidación que te ofrecen es correcta o si tenés derecho a reclamar más. No firmes conforme apurado: una vez cobrada y firmada la liquidación, reabrir el reclamo es más difícil. Ante la duda, pedí el detalle por escrito y hacelo revisar antes.',
       },
@@ -1789,6 +1956,11 @@ export const redditGuides: readonly Guide[] = [
       },
       { label: 'Entender tu recibo de sueldo', to: '/guias/entender-tu-recibo-de-sueldo-uruguay' },
       { label: 'Cómo se calcula el aguinaldo', to: '/guias/como-se-calcula-el-aguinaldo-uruguay' },
+      { label: 'Horas extra en Uruguay', to: '/guias/horas-extra-en-uruguay' },
+      {
+        label: 'Llegar tarde, tolerancia y sanciones',
+        to: '/guias/llegar-tarde-tolerancia-y-sanciones-uruguay',
+      },
     ],
     faqs: [
       {
@@ -1814,6 +1986,197 @@ export const redditGuides: readonly Guide[] = [
       {
         q: '¿El aguinaldo y el salario vacacional integran la base del despido?',
         a: 'No se suman como un mes extra aparte, pero sí integran la base a través de su incidencia o alícuota, que eleva el valor mensual de cómputo: aguinaldo alrededor de 1/12 (~8,33%), más las incidencias de licencia y salario vacacional, sumando en conjunto cerca del 19-20%. El aguinaldo es indiscutido. El salario vacacional es un punto contestado: una tesis minoritaria le niega naturaleza salarial y lo excluiría, aunque la posición mayoritaria lo incluye.',
+      },
+      {
+        q: 'Me voy yo, harto de la situación. ¿Puedo cobrar la indemnización igual?',
+        a: 'Puede corresponderte, y la figura se llama despido indirecto: el vínculo lo cortás vos, pero la ruptura se le imputa al empleador y se cobra la misma indemnización que un despido injustificado. No está en ninguna ley general —el MTSS no lo lista entre sus temas de derecho laboral ni lo menciona en su ficha de despido de régimen común—, así que lo construyen los tribunales del trabajo caso por caso. Lo que exigen es un incumplimiento del empleador «grave» o «de entidad», que «imposibilite» o «haga intolerable» la continuación de la relación, y que lo pruebes vos.',
+      },
+      {
+        q: '¿Tengo que intimar a la empresa antes de considerarme despedido?',
+        a: 'Ninguna norma lo exige. Pero la jurisprudencia laboral pide «una razonable proporcionalidad entre el incumplimiento y la reacción del trabajador», y cuando el incumplimiento no es grave y la situación no es objetivamente insostenible, sostiene que el trabajador debe «agotar los medios a su alcance para solucionar el diferendo con el empleador» antes de darse por despedido. Traducido: cuanto menos flagrante es el incumplimiento, más te conviene haber reclamado por escrito primero y guardar la respuesta.',
+      },
+      {
+        q: 'En el despido indirecto, ¿quién tiene que probar?',
+        a: 'Vos, y es al revés que en el despido común. Si te despiden alegando notoria mala conducta, la Ley 12.597 art. 10 pone la prueba del lado de la empresa: «el empleador deberá probar los hechos constitutivos de la notoria mala conducta». En el indirecto el que afirma sos vos, y los tribunales lo dicen así: «es el trabajador quien debe probar los graves incumplimientos patronales que den lugar al instituto invocado», por la regla general del art. 139.1 del Código General del Proceso. Si te vas y no lográs probarlo, no cobrás: para el expediente renunciaste.',
+      },
+      {
+        q: '¿El despido indirecto se cobra más caro que el común?',
+        a: 'Por regla, no: es la misma indemnización que un despido injustificado, calculada con el régimen que te corresponda —tope de seis mensualidades si sos mensual; el régimen en jornales si cobrás por jornal, con 25 jornales por año si completaste 240 jornadas, 150 de tope y nada por debajo de 100 jornales—. Hay dos casos donde la ley agrega algo. En acoso sexual, la Ley 18.561 art. 11 da una «indemnización especial tarifada de seis mensualidades» que «será acumulable a la indemnización común», y su art. 12 presume represalia —salvo prueba en contrario— si el despido o la sanción caen dentro de los 180 días de la denuncia. Y el Decreto-Ley 15.180 art. 9 habilita a considerarse despedido a quien lleva más de tres meses de subsidio en régimen de trabajo reducido. En todos los casos, el incumplimiento lo tenés que probar vos.',
+      },
+      {
+        q: 'Tengo una empleada doméstica: ¿desde cuándo le corresponde despido?',
+        a: 'Desde los noventa días corridos de iniciada la relación laboral. Lo dice la Ley 18.065 art. 7 para mensuales y jornaleros, «rigiéndose en lo demás por las normas generales sobre despido». Pero esas normas generales son dos regímenes distintos, así que el número depende de cómo cobra: si es mensual, un mes de sueldo por año o fracción con tope de seis mensualidades; si cobra por jornal, el régimen en jornales que publica el MTSS, o sea 25 jornales por año si en el año completó 240 jornadas (2 jornales cada 25 trabajados si no las completó), 150 jornales de tope y ninguna indemnización si no llegó a trabajar 100 jornales. Aparte, si el despido ocurre estando embarazada —o hasta 180 días después de su reintegro de la licencia—, corresponde la indemnización especial del art. 17 de la Ley 11.577.',
+      },
+      {
+        q: '¿Cuál es el sueldo mínimo de una empleada doméstica?',
+        a: 'No lo publicamos porque caduca: lo fija el laudo del Grupo 21 del Consejo de Salarios, que se renegocia por rondas. La Ley 18.065 art. 6 incorporó al sector al sistema de la Ley 10.449 (Consejos de Salarios) y el BPS aclara que los aportes se hacen sobre la remuneración real, «no pudiendo ser inferior a los mínimos establecidos por el laudo del grupo 21 Trabajo Doméstico». Desde el 1.º de julio de 2026 hay tres categorías —cuidados, general y cocina—, cada una con su mínimo. Mirá el valor vigente en el BPS o el MTSS antes de liquidar.',
+      },
+      {
+        q: '¿Cuándo tengo que inscribir en el BPS a quien trabaja en mi casa?',
+        a: 'Antes de que empiece. El BPS admite el trámite «desde 10 días antes y hasta la fecha de ingreso del trabajador» y el MTSS lo resume como «antes de su ingreso o el mismo día». Si no estás registrado como titular de Servicio Doméstico, las dos inscripciones se hacen juntas. Hacerlo tarde tiene costo: «se generan multas de 1 UR» por la inscripción tardía del empleador y otra por el alta tardía del trabajador. Y desde el alta corre la cobertura del Banco de Seguros del Estado por accidentes de trabajo.',
+      },
+    ],
+    sources: [
+      {
+        label:
+          'MTSS, Despido (régimen común) — SON DOS REGÍMENES: la indemnización del mensual es «la remuneración total correspondiente a un mes de sueldo por cada año o fracción de actividad, con un límite de seis mensualidades como máximo»; la del jornalero son «25 jornales por año de trabajo, si en el año han completado 240 jornadas», o «2 jornales cada 25 trabajados» si no las completó, con «150 jornales como máximo» y con un piso: «si no ha llegado a trabajar 100 jornales, no nace el derecho a la indemnización». Ninguno de los dos cobra si el despido fue por notoria mala conducta. La ficha NO menciona el despido indirecto',
+        url: 'https://www.gub.uy/ministerio-trabajo-seguridad-social/institucional/derecho-laboral-uruguayo/despido-regimen-comun',
+        publisher: 'MTSS',
+      },
+      {
+        label:
+          'MTSS, Derecho Laboral Uruguayo — el índice de temas del ministerio (despidos, licencia, horas extra, seguro de paro, trabajo doméstico…): el despido indirecto no figura entre ellos',
+        url: 'https://www.gub.uy/ministerio-trabajo-seguridad-social/politicas-y-gestion/derecho-laboral-uruguayo',
+        publisher: 'MTSS',
+      },
+      {
+        label:
+          'Base de Jurisprudencia Nacional Pública — ES EL BUSCADOR, no una sentencia: hay que entrar y escribir «despido indirecto» en «Texto a buscar» para que aparezcan los fallos de los Tribunales de Apelaciones del Trabajo de donde sale lo que publicamos acá (definición, misma indemnización que el despido injusto, no se exige intencionalidad, el incumplimiento debe ser «grave» o «de entidad», daño e insoportabilidad «objetivamente valuables», agotar los medios antes de darse por despedido, carga de la prueba por el art. 139 del CGP). La BJN no da URL permanente por sentencia, y por eso esta guía no publica número de sentencia',
+        url: 'https://bjn.poderjudicial.gub.uy/BJNPUBLICA/busquedaSimple.seam',
+        publisher: 'Poder Judicial',
+      },
+      {
+        label:
+          'Ley 18.572 art. 3 (texto vigente, con la modificación de la Ley 18.847) — «Antes de iniciarse juicio en materia laboral, deberá tentarse la conciliación previa»: es el paso previo obligatorio',
+        url: 'https://www.impo.com.uy/bases/leyes/18572-2009/3',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 18.091 art. 3 — «La sola presentación del trabajador o su representante ante el Ministerio de Trabajo y Seguridad Social, solicitando audiencia de conciliación […] interrumpe la prescripción». El artículo remite al art. 10 del Decreto-Ley 14.188, que es el que la Ley 18.572 sustituyó: cambió el régimen de la conciliación previa, no el efecto interruptivo',
+        url: 'https://www.impo.com.uy/bases/leyes/18091-2007/3',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 12.597 art. 10 — «Todo trabajador que fuera despedido por notoria mala conducta, no tendrá derecho a indemnización por despido. El empleador deberá probar los hechos constitutivos de la notoria mala conducta»',
+        url: 'https://www.impo.com.uy/bases/leyes/12597-1958/10',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Código General del Proceso art. 139.1 — «Corresponde probar, a quien pretende algo, los hechos constitutivos de su pretensión»',
+        url: 'https://www.impo.com.uy/bases/codigo-general-proceso/15982-1988/139',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 18.561 art. 11 — la víctima de acoso sexual puede «considerarse indirectamente despedido/a, en cuyo caso el despido revestirá el carácter de abusivo y dará derecho a una indemnización especial tarifada de seis mensualidades […] acumulable a la indemnización común»',
+        url: 'https://www.impo.com.uy/bases/leyes/18561-2009/11',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 18.561 art. 12 — se presume, salvo prueba en contrario, que el despido o las sanciones son represalia «cuando tengan lugar dentro del plazo de ciento ochenta días de interpuesta la denuncia de acoso en sede administrativa o judicial»',
+        url: 'https://www.impo.com.uy/bases/leyes/18561-2009/12',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Decreto-Ley 15.180 art. 9 (texto vigente, redacción dada por la Ley 18.399) — quien percibe el subsidio «por más de tres meses en situación de trabajo reducido para un empleador, podrá optar por considerarse despedido y reclamar la indemnización a que tuviere derecho»',
+        url: 'https://www.impo.com.uy/bases/decretos-ley/15180-1981/9',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'DGI, Consulta 6.481 — «por despido cabe entender la ruptura del vínculo laboral»: una partida por rebaja salarial sin ruptura del vínculo no es indemnización por despido y queda gravada por IRPF',
+        url: 'https://www.impo.com.uy/bases/consultas-tributarias/6481-2022',
+        publisher: 'DGI',
+      },
+      {
+        label:
+          'Ley 18.065 art. 7 — «Las/os trabajadoras/es domésticas/os, tanto mensuales como jornaleros, tendrán derecho a indemnización por despido desde los noventa días corridos de iniciada la relación laboral, rigiéndose en lo demás por las normas generales sobre despido»',
+        url: 'https://www.impo.com.uy/bases/leyes/18065-2006/7',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 18.065 art. 2 — jornada del trabajo doméstico: «un máximo legal de ocho horas diarias, y de cuarenta y cuatro horas semanales»',
+        url: 'https://www.impo.com.uy/bases/leyes/18065-2006/2',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 18.065 art. 3 — descanso intermedio: media hora paga como trabajo efectivo «con retiro», mínimo de dos horas «sin retiro»',
+        url: 'https://www.impo.com.uy/bases/leyes/18065-2006/3',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 18.065 art. 4 — descanso semanal de «treinta y seis horas ininterrumpidas, que comprenderá todo el día domingo»',
+        url: 'https://www.impo.com.uy/bases/leyes/18065-2006/4',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 18.065 art. 5 — quien trabaja «sin retiro» tiene «un descanso mínimo nocturno de nueve horas continuas»',
+        url: 'https://www.impo.com.uy/bases/leyes/18065-2006/5',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 18.065 art. 6 — incorpora al servicio doméstico «en el sistema de fijación de salarios y categorías dispuesto por la Ley Nº 10.449» (Consejos de Salarios)',
+        url: 'https://www.impo.com.uy/bases/leyes/18065-2006/6',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 18.065 art. 8 — indemnización especial del art. 17 de la Ley 11.577 para la trabajadora despedida en estado de gravidez y hasta 180 días desde su reintegro',
+        url: 'https://www.impo.com.uy/bases/leyes/18065-2006/8',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 18.065 art. 11 — edad mínima de dieciocho años, con autorización del INAU desde los quince «cuando medien razones fundadas»',
+        url: 'https://www.impo.com.uy/bases/leyes/18065-2006/11',
+        publisher: 'IMPO',
+      },
+      {
+        label: 'Ley 18.065 art. 12 — obligación de extender recibo de sueldo al personal doméstico',
+        url: 'https://www.impo.com.uy/bases/leyes/18065-2006/12',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 18.065 art. 13 — las inspecciones domiciliarias requieren «orden judicial expedida con conocimiento de causa por Juzgado Letrado de Primera Instancia del Trabajo o Juzgado Letrado de Primera Instancia del Interior», con testimonio al juzgado dentro de las cuarenta y ocho horas',
+        url: 'https://www.impo.com.uy/bases/leyes/18065-2006/13',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Decreto 224/007 — reglamenta la Ley 18.065: horas extra con 100% de recargo en días hábiles y 150% en feriados o descanso semanal (art. 7), cómo se arma el descanso semanal (art. 9) y el recibo de haberes por los arts. 38 y siguientes del Decreto 108/007 (art. 12)',
+        url: 'https://www.impo.com.uy/bases/decretos/224-2007',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'MTSS, Trabajo doméstico — licencia anual de 20 días continuos por año completo (o 1,67 días por mes cada 25 días trabajados), aguinaldo en dos fracciones (junio y diciembre), pago del mensual «dentro de los primeros 5 días hábiles» —el quincenal, «dentro de los 5 días hábiles al vencimiento de la quincena»; el semanal, «al finalizar la respectiva semana»—, vestimenta y herramientas de trabajo sin costo, e inscripción en BPS «antes de su ingreso o el mismo día»',
+        url: 'https://www.gub.uy/ministerio-trabajo-seguridad-social/politicas-y-gestion/trabajo-domestico',
+        publisher: 'MTSS',
+      },
+      {
+        label:
+          'BPS, Ingreso de trabajador doméstico — la inscripción del empleador y el alta «se deben realizar desde 10 días antes y hasta la fecha de ingreso del trabajador»; fuera de plazo «se generan multas de 1 UR» por cada trámite; desde el alta corre la cobertura del Banco de Seguros del Estado',
+        url: 'https://www.bps.gub.uy/10805/ingreso-de-trabajador-domestico.html',
+        publisher: 'BPS',
+      },
+      {
+        label:
+          'BPS, Guía de aportación — «Los aportes se realizan sobre la remuneración nominal real del trabajador, no pudiendo ser inferior a los mínimos establecidos por el laudo del grupo 21 Trabajo Doméstico»',
+        url: 'https://www.bps.gub.uy/10809/guia-de-aportacion.html',
+        publisher: 'BPS',
+      },
+      {
+        label:
+          'BPS, Remuneraciones — los beneficios salariales del sector «son establecidos mediante negociación colectiva del Grupo 21 del Consejo de Salarios»',
+        url: 'https://www.bps.gub.uy/4789/remuneraciones.html',
+        publisher: 'BPS',
+      },
+      {
+        label:
+          'BPS, Nuevas categorías laborales para trabajo doméstico — «a partir del 1.° de julio de 2026 entrarán en vigencia tres categorías laborales para el sector doméstico: cuidados, general y cocina»; BPS asigna por defecto la general y el empleador «deberá modificarla» si corresponde otra',
+        url: 'https://www.bps.gub.uy/24308/nuevas-categorias-laborales-para-trabajo-domestico.html',
+        publisher: 'BPS',
       },
     ],
   },
@@ -1860,7 +2223,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'trabajar-para-el-exterior-desde-uruguay',
     title: 'Trabajar para el exterior desde Uruguay: cómo facturar y tributar',
     description:
-      'Cómo facturar y tributar si trabajás freelance para clientes del exterior desde Uruguay: unipersonal, por qué la exportación de servicios no está gravada por IVA (y no es una "tasa cero"), IRAE y aportes BPS.',
+      'Cómo facturar y tributar si trabajás freelance para clientes del exterior desde Uruguay: unipersonal, por qué la exportación de servicios no está gravada por IVA (y no es una "tasa cero"), IRAE, aportes BPS, si tu cliente del exterior puede inscribirse como empleador y cómo verificar tu historia laboral.',
     tag: 'EXTERIOR',
     updatedAt: '2026-08-10',
     sections: [
@@ -1911,6 +2274,18 @@ export const redditGuides: readonly Guide[] = [
         body: 'Formalizarte implica aportar al BPS como titular de empresa, y esto tiene una cara buena y una a tener en cuenta. La buena: generás historia laboral, jubilación y podés acceder a cobertura de salud. La otra: los aportes patronales y personales de un titular de unipersonal muchas veces se calculan sobre bases fictas y son un costo fijo mensual que existe aunque un mes factures poco. Por eso conviene proyectar ese costo antes de dejar un empleo en relación de dependencia. Si venís de un trabajo dependiente y sumás la actividad por tu cuenta, hay que ver cómo se combinan los aportes. El BPS es la fuente para conocer las bases y montos vigentes.',
       },
       {
+        heading: '¿Tu cliente del exterior puede aportar por vos al BPS?',
+        body: 'La pregunta llega siempre con nombre de plataforma —Deel, Payoneer, la de turno— pero el nudo es el mismo: cobrás de afuera por una app y querés saber si eso te está dejando algo en la historia laboral. Empecemos por el mito que hay que desarmar, porque circula mucho: no es cierto que sólo una entidad uruguaya pueda inscribirse como empleador. El BPS tiene un trámite específico para lo contrario, «Inscribir dependientes de empresas extranjeras sin establecimiento en el país», que existe «para inscribir ante BPS a quienes trabajen en Uruguay como dependientes para empresas extranjeras sin establecimiento permanente en nuestro país». Se hace en línea, por el servicio «Solicitar trámite registral», tema «Registro de Contribuyentes Exclusivo», con el formulario «Solicitud de inscripción y modificación de contribuyentes REC. 211» cargado con los datos de la empresa; y el propio BPS aclara que el timbre profesional del trámite «será incluido en la cuenta de la empresa», o sea que la firma del exterior termina con cuenta propia ante el organismo. El plazo es corto y conviene mirarlo antes de arrancar: «la inscripción se debe realizar dentro del mes en curso de inicio de actividades del trabajador». Hacia atrás no alcanza con pedirlo: para fechas retroactivas hay que presentar una petición en Mesa de Entrada con «elementos probatorios que sustenten el reconocimiento de la actividad desarrollada». Lo que no vamos a hacer acá es comparar plataformas: qué producto contrata tu cliente, en qué país y bajo qué figura cambia de una a otra y de un mes a otro, y cualquier tabla nuestra envejecería mal. La pregunta útil no es «¿Deel o Payoneer?», es «¿alguien me está inscribiendo como dependiente ante el BPS, sí o no?».',
+      },
+      {
+        heading: 'Cómo verificás que efectivamente te están aportando',
+        body: 'No lo tomes por dicho ni por lo que muestre el panel de la plataforma: se chequea del lado del BPS y lleva dos minutos. Lo que queda registrado es tu historia laboral nominada, que el BPS define como «un detalle de los servicios y remuneraciones registradas en BPS a partir del 1/4/1996». La mirás entrando con tu Usuario personal BPS al servicio «Consultar mis aportes», o desde la app BPS Personas, y podés bajarte la constancia: «esta constancia está autenticada con código QR por lo que no es necesario que concurra a BPS para sellarla», así que sirve para presentarla en un banco o en un trámite sin pasar por ventanilla. Si tu actividad no aparece ahí, no hay dependiente, no importa cómo se llame el contrato ni qué prometa el sitio de la plataforma; y sin dependiente tu vía formal es la otra que ya vimos: empresa propia, RUT y factura. Con una consecuencia práctica que conviene saber antes y no después: los meses que cobraste sin que nadie te inscribiera no generan historia laboral por sí solos, y reconocerlos más adelante exige justamente esa petición con elementos probatorios.',
+      },
+      {
+        heading: 'Del lado de la DGI: documentar con CFE no es opcional',
+        body: 'Si el camino que te toca es facturar, hay una obligación que conviene tener clara desde el primer cobro y no cuando llega la consulta. La DGI recuerda que «todas las operaciones vinculadas con los impuestos administrados por la DGI deberán estar debidamente documentadas», y que hoy documentar tiene dos formas: la electrónica, regulada por el Decreto 36/012 y la Resolución DGI 798/2012, y la tradicional en papel. La segunda se está cerrando: «a partir del 1/1/2025 todos los contribuyentes de IVA (incluso los de IVA Mínimo) deberán documentar en forma electrónica». La Resolución 2548/2023 fijó el 31 de diciembre de 2024 como límite para que se incorporaran los que faltaban, y estableció que desde el 01/01/2025 «los contribuyentes del IVA deberán adquirir la calidad de emisor electrónico desde que se inscriban, reinicien actividades, o se constituyan»: el que abre hoy no tiene plazo de adaptación. Hay excepciones puntuales, y una te importa si estás eligiendo régimen. La DGI publica siete: los contribuyentes de Monotributo, los de Monotributo Social Mides, los del Aporte Social Único, los del Impuesto a las Rentas de los No Residentes, quienes desarrollan exclusivamente actividades agropecuarias con ingresos inferiores a 4 millones de UI en el ejercicio, quienes realizan exclusivamente actos de agregación de valor en la construcción sobre inmuebles, y los exonerados de los impuestos administrados por la DGI por todas sus operaciones —con la salvedad de los usuarios de zona franca, que no quedan comprendidos en esa excepción—. Si tu caso es alguno de esos, chequealo en la página de la DGI antes de contratar un proveedor de facturación electrónica. Para el exterior, además, el comprobante que corresponde es la e-factura de exportación, que está en los pasos de más abajo.',
+      },
+      {
         heading: 'Dónde asesorarte y una aclaración',
         body: 'Esta es una guía general con fines informativos y no reemplaza el asesoramiento de un contador, que en este tema es prácticamente indispensable. La exportación de servicios tiene particularidades reales: facturas de exportación, recuperación del IVA de compras, tipos de cambio para las declaraciones y la elección del régimen de IRAE, que un freelance promedio no maneja y donde un error puede costar caro. La DGI regula la facturación y los impuestos, y el BPS los aportes; ambas son las fuentes oficiales y conviene verificar en ellas los valores y requisitos vigentes. Para orientarte sobre qué figura te conviene abrir según cuánto facturás, podés revisar la guía de qué empresa abrir del sitio antes de sentarte con tu contador.',
       },
@@ -1958,6 +2333,18 @@ export const redditGuides: readonly Guide[] = [
         q: '¿Por qué el gerente me sugirió abrir la cuenta en Paraguay o Estados Unidos en vez de ayudarme?',
         a: 'Porque para un banco, sobre todo uno estatal grande como BROU, es más simple decir que no a una cuenta personal con ingresos recurrentes sin factura que asumir el análisis que exige la normativa antilavado. No es una política exclusiva contra vos: un banco privado suele puntuar mejor en operativa con el exterior, o podés formalizarte primero y volver a golpear la puerta con la documentación en regla.',
       },
+      {
+        q: '¿Una empresa del exterior puede inscribirse como empleador en el BPS o necesita una entidad local?',
+        a: 'Puede. El BPS tiene un trámite propio para eso, «Inscribir dependientes de empresas extranjeras sin establecimiento en el país», pensado «para inscribir ante BPS a quienes trabajen en Uruguay como dependientes para empresas extranjeras sin establecimiento permanente en nuestro país». Se gestiona en línea con el formulario REC. 211, dentro del mes en curso de inicio de actividades del trabajador, y la empresa queda con cuenta propia en el BPS (el timbre del trámite «será incluido en la cuenta de la empresa»). No comparamos plataformas: lo que hay que confirmar es si alguien efectivamente hizo ese trámite por vos.',
+      },
+      {
+        q: '¿Cómo compruebo que me están aportando de verdad?',
+        a: 'Mirando tu historia laboral nominada en el BPS, que es «un detalle de los servicios y remuneraciones registradas en BPS a partir del 1/4/1996». Entrás con tu Usuario personal BPS al servicio «Consultar mis aportes» (o por la app BPS Personas) y bajás la constancia, que viene autenticada con código QR y no necesita sello. Si tu actividad no figura ahí, no estás registrado como dependiente, diga lo que diga el contrato o el panel de la plataforma.',
+      },
+      {
+        q: 'Si cobro del exterior y facturo, ¿tengo que emitir factura electrónica?',
+        a: 'Sí, si sos contribuyente de IVA. La DGI exige que las operaciones estén debidamente documentadas y, «a partir del 1/1/2025 todos los contribuyentes de IVA (incluso los de IVA Mínimo) deberán documentar en forma electrónica»; desde esa fecha el que se inscribe adquiere la calidad de emisor electrónico desde el arranque, sin plazo de adaptación (Resolución DGI 2548/2023). La DGI publica siete exceptuados: monotributo, Monotributo Social Mides, Aporte Social Único, IRNR, agropecuarias con ingresos inferiores a 4 millones de UI, quienes sólo realizan actos de agregación de valor en la construcción sobre inmuebles, y los exonerados de todos los impuestos de DGI por todas sus operaciones (salvo los usuarios de zona franca).',
+      },
     ],
     sources: [
       {
@@ -1982,6 +2369,30 @@ export const redditGuides: readonly Guide[] = [
         label: 'Título 10 art. 34 — las dos alícuotas de IVA que existen: básica 22% y mínima 10%',
         url: 'https://www.impo.com.uy/bases/todgi2023/101-2024/34_T10',
         publisher: 'IMPO',
+      },
+      {
+        label:
+          'BPS, Inscribir dependientes de empresas extranjeras sin establecimiento en el país — el trámite existe «para inscribir ante BPS a quienes trabajen en Uruguay como dependientes para empresas extranjeras sin establecimiento permanente en nuestro país», con el formulario REC. 211, dentro del mes en curso de inicio de actividades del trabajador, y el timbre «será incluido en la cuenta de la empresa»',
+        url: 'https://www.bps.gub.uy/20844/inscribir-dependientes-de-empresas-extranjeras-sin-establecimiento-en-el-pais.html',
+        publisher: 'BPS',
+      },
+      {
+        label:
+          'BPS, Constancia de historia laboral nominada — «es un detalle de los servicios y remuneraciones registradas en BPS a partir del 1/4/1996»; se obtiene por «Consultar mis aportes» con Usuario personal BPS y «está autenticada con código QR por lo que no es necesario que concurra a BPS para sellarla»',
+        url: 'https://www.bps.gub.uy/11438/constancia-de-historia-laboral-nominada.html',
+        publisher: 'BPS',
+      },
+      {
+        label:
+          'DGI, Documentación de las operaciones por parte de los contribuyentes — «todas las operaciones vinculadas con los impuestos administrados por la DGI deberán estar debidamente documentadas»; documentación electrónica por Decreto 36/012 y Resolución DGI 798/2012, y «a partir del 1/1/2025 todos los contribuyentes de IVA (incluso los de IVA Mínimo) deberán documentar en forma electrónica»',
+        url: 'https://www.gub.uy/direccion-general-impositiva/comunicacion/publicaciones/documentacion-operaciones-parte-contribuyentes',
+        publisher: 'DGI',
+      },
+      {
+        label:
+          'DGI, Universalización de facturación electrónica — la Resolución 2548/2023 puso el 31/12/2024 como plazo para los contribuyentes de IVA restantes y, desde el 01/01/2025, «los contribuyentes del IVA deberán adquirir la calidad de emisor electrónico desde que se inscriban, reinicien actividades, o se constituyan»; la página enumera SIETE exceptuados y la guía los publica todos: monotributo, Monotributo Social Mides, Aporte Social Único, IRNR, agropecuarias con ingresos inferiores a 4 millones de UI, «quienes realicen exclusivamente actos de agregación de valor en la construcción sobre inmuebles» y los exonerados de los impuestos administrados por DGI por todas sus operaciones, «excepto los usuarios de zona franca»',
+        url: 'https://www.efactura.dgi.gub.uy/principal/ampliacion_de_contenido/universalizacion-de-facturacion-electronica-plazo-para-restantes-contribuyentes-de-iva',
+        publisher: 'DGI',
       },
     ],
   },
@@ -3809,6 +4220,303 @@ export const redditGuides: readonly Guide[] = [
       {
         q: 'Reclamé horas extra y ahora me aprietan con la puntualidad. ¿Es legal?',
         a: 'No, y es un terreno peligroso para la empresa. Los dos temas son independientes: reclamar horas extra impagas es ejercer un derecho, y responder con sanciones, descuentos o un endurecimiento selectivo de la disciplina puede configurar una represalia. Un despido motivado por el reclamo es un despido abusivo, con indemnización agravada por encima de la común (Código Civil, arts. 1319 y 1321; Suprema Corte, Sentencia 1402/2019). Si te pasa, documentá la secuencia (reclamo primero, «apriete» después) y asesorate.',
+      },
+    ],
+  },
+  {
+    slug: 'me-certifique-subsidio-por-enfermedad-uruguay',
+    title: 'Me certifiqué: cuánto cobro, desde qué día, quién paga, y si me pueden despedir',
+    description:
+      'El subsidio por enfermedad en Uruguay: el 70 % que paga el BPS con tope de $ 67.754 (01/2026), por qué se cobra recién desde el cuarto día y qué cambia con la internación, cuánto puede durar, y el artículo 23 que prohíbe despedirte estando certificado y tarifa la violación en el doble de la indemnización.',
+    tag: 'ENFERMEDAD',
+    updatedAt: '2026-08-10',
+    sections: [
+      {
+        heading: 'Quién paga: no es tu empresa, es el BPS (y el trámite lo hace tu mutualista)',
+        body: 'En la actividad privada, los días que faltás certificado no te los paga la empresa: te los paga el BPS, con una prestación que se llama subsidio por enfermedad y que nació con el Decreto-Ley 14.407, del 22 de julio de 1975. Una aclaración que conviene tener antes de abrir la norma, porque desconcierta a cualquiera: ese decreto-ley creó un organismo al que llamó ASSE, «Administración de los Seguros Sociales por Enfermedad» (art. 1), y por eso todos sus artículos siguen diciendo «ASSE»; no es la ASSE de hoy, que es la Administración de los Servicios de Salud del Estado y la creó otra ley, la 18.161 de 2007. Para tener derecho hay un mínimo de cotización, y el BPS lo escribe distinto según cómo cobres, así que conviene no mezclarlos. Si sos jornalero o destajista: «75 jornales efectivos, trabajados en el año anterior a la fecha del último día trabajado». Si sos mensual: «3 meses de actividad efectiva en el año inmediato anterior a la enfermedad, en una o más empresas, ya sea consecutivos o interrumpidamente». Las dos diferencias importan: al jornalero el año se le cuenta hacia atrás desde su último día trabajado, no desde la enfermedad, y la coletilla de sumar varias empresas y períodos cortados el BPS la escribe para el mensual. El decreto-ley lo dice más corto, con su propia unidad de tiempo: «setenta y cinco jornales o tres meses en su caso como mínimo dentro de los doce meses inmediatos anteriores a la fecha de la denuncia de la enfermedad» (art. 9). Las embarazadas tienen derecho aunque no lleguen a ese mínimo de jornales. Si tenés más de un empleo, ojo con esto: el BPS exige que estés certificado en todos al mismo tiempo. Y un detalle que aparece cuando ya es tarde: si te enfermás estando de licencia anual, hay que suspender la licencia para poder ampararte al subsidio. El trámite, en cambio, no lo hacés vos. El BPS es explícito: «Es deber del trabajador beneficiario del subsidio informar a la empresa que se ha certificado por enfermedad. No deberá presentarse en BPS», porque el prestador de salud ingresa los datos por sistema y eso genera automáticamente la solicitud; las certificaciones se cargan dentro de las 48 horas siguientes a la consulta médica. Tu parte son dos avisos: el de tu empleador —que después tiene que informarle al BPS tu último día trabajado, un dato que el BPS le pide expresamente «para la liquidación del subsidio»— y, si el dinero no aparece, el de tu prestador de salud, para confirmar que la certificación se cargó.',
+      },
+      {
+        heading: 'Cuánto cobrás: el 70 %, sobre qué base, y el tope que no conviene calcular',
+        body: 'El subsidio es el 70 %, y las dos preguntas que siguen son el 70 % de qué y hasta cuánto. La base que aplica hoy el BPS es «el equivalente al 70 % de todos sus ingresos que constituyan materia gravada», sin contar el aguinaldo, calculado «en base al promedio del total de lo percibido en los 180 días anteriores al último día del mes anterior al de la enfermedad o accidente». O sea que no es tu último sueldo: es un promedio semestral, y por eso un mes flojo o un mes cargado de horas extra te corre el número. Si abrís el decreto-ley vas a encontrar otra cosa, y conviene saber por qué antes de sospechar del organismo: el texto de 1975 describe una base más angosta —el 70 % «de su sueldo o jornal básico o habitual», excluidas las partidas por locomoción, viáticos, habilitación, quebrantos de caja, horas extras y retribuciones especiales (art. 13, numeral 2)—, pero esa es la base original y hace más de una década que quedó sustituida. Lo hizo la Ley 18.725 en su artículo 2: «A partir del 1º de enero de 2011, serán remuneraciones computables para el cálculo del subsidio por enfermedad previsto por el Decreto-Ley Nº 14.407 […] todas las que constituyan materia gravada a los efectos de las contribuciones especiales de seguridad social». O sea que no hay divergencia entre la norma y la práctica: el BPS liquida sobre materia gravada porque es lo que manda la ley vigente. El numeral 2 del art. 13 sirve para entender de dónde viene el 70 %, no para calcular tu base. El aguinaldo no se pierde: se cobra aparte como cuota parte, porque el propio decreto-ley se lo reconoce al beneficiario (art. 28) y su reglamento manda pagar «la doceava parte» junto con el subsidio (Decreto 7/976, art. 12). El tope vigente que publica el BPS es de $ 67.754 con vigencia 01/2026. Para los patrones con derecho, el BPS liquida sobre el ficto patronal o la categoría por la que aportan, con el mismo tope de $ 67.754, y para los rurales lo publica así, en sus palabras: «El tope mensual de los patrones rurales a partir del 01/2026 asciende al 70 % del ficto patronal ($ 40.655)». Ese tope no lo calcules, y este es el motivo: son tres normas encadenadas y la primera ya no manda. El artículo 27 del decreto-ley escribe el máximo como «el triple del monto del salario mínimo nacional en su valor nominal», y esa unidad murió en 2011: la Ley 18.725, artículo 1, «fija el monto máximo del subsidio por enfermedad a que refiere el artículo 27 del Decreto-Ley Nº 14.407» en Bases de Prestaciones y Contribuciones, con una escala que arranca en 4 BPC el 1º de enero de 2011 y sube una por año hasta las 8 BPC del 1º de enero de 2015. Recién después entra la Ley 19.003, que no cambia la unidad sino que la indexa: nombra expresamente «los montos máximos del subsidio por enfermedad previsto por el Decreto-Ley Nº 14.407, de 22 de julio de 1975, con las modificaciones de la Ley Nº 18.725» entre las prestaciones que ajusta (art. 2, literal A), y su artículo 1 —en la redacción vigente, la que le dio el artículo 739 de la Ley 19.924— los mueve desde el 1º de enero de 2021 por la variación de la Base de Prestaciones y Contribuciones, convirtiendo a BPC los topes vigentes al 31 de diciembre de 2020. Multiplicar el salario mínimo por tres te va a dar otro número; el que se paga es el que el BPS publica cada enero. Caso aparte: si es accidente de trabajo, la indemnización la sirve el Banco de Seguros del Estado, que cubre 2/3 del jornal habitual (66,67 %), y el BPS abona el 3,33 % restante para completar el 70 %.',
+      },
+      {
+        heading: 'Desde qué día se paga: el cuarto, salvo internación',
+        body: 'Esta es la pregunta que más plata mueve y la que peor circula. El artículo 14 dice que el beneficiario percibe el subsidio «a partir del cuarto día de ausencia provocada por enfermedad o accidente», y el BPS lo repite en sus mismos términos: «El subsidio se abonará a partir del cuarto día de certificación». Es decir que los tres primeros días no los cubre el subsidio. Y acá hay que ser honesto con lo que la norma no dice: ni el decreto-ley ni su reglamentación, el Decreto 7/976, ponen esos tres días a cargo del empleador. Simplemente quedan fuera de la prestación. Si en tu empresa te los pagan igual, eso sale del convenio colectivo de tu rama o de una política interna, no de esta ley, así que preguntá de dónde salen antes de darlo por hecho. La excepción sí existe, y es una sola: la internación. El artículo 14 la escribe así: «En los casos que el beneficiario haya sido hospitalizado no habrá período de pérdida del subsidio, a partir de la internación», y el BPS la aplica también a la internación domiciliaria: «En caso de internación, en la mutualista o en el domicilio, se abonará a partir del primer día». Una aclaración más, porque la vas a escuchar mal contada: ninguna de las tres fuentes —el artículo 14, el Decreto 7/976 y la página del BPS— nombra la intervención quirúrgica como una causal aparte. Lo que abre el pago desde el primer día es la internación. Una cirugía que te deja internado entra por esa puerta; una cirugía ambulatoria, sin internación, no aparece amparada por esa excepción en ninguna de las tres, así que no cuentes con ella sin preguntar antes en el BPS.',
+      },
+      {
+        heading: 'Cuánto puede durar: un año, la prórroga, y el día en que se termina',
+        body: 'El plazo máximo es de un año, «que podrá ser extendido hasta en un año más por votación unánime y fundada de los integrantes del Directorio» (art. 14). El BPS lo publica igual y le agrega la otra forma de contarlo, aunque la escribe de dos maneras en la misma página y una de las dos se malinterpreta sola. En el bloque «Derecho a percibir» dice: «hasta un año, con un año más de prórroga si la certificación es consecutiva o hasta 4 años interrumpidos por la misma dolencia», y leída suelta esa frase deja creer que se pueden cobrar cuatro años. No es así, y la aclaración está en la misma página, en su párrafo de apertura: «El BPS puede cubrir al trabajador hasta un año por motivo de enfermedad, con otro año de prórroga como máximo, o 2 años alternados dentro de los últimos 4 años, por la misma dolencia». El máximo a cobrar son dos años; los cuatro son la ventana dentro de la cual se acumulan los tramos. Eso se apoya en el artículo 15: los períodos separados dentro de un lapso de cuatro años, cuando responden a «una unidad de dolencia», se acumulan «a los efectos de computar los plazos máximos». En criollo, la misma enfermedad cortada en tramos no reinicia el reloj, pero tampoco estira el techo. Y hay que decir qué pasa cuando el reloj se agota, porque es lo más duro de esta guía: el artículo 16 establece que si al término de esos plazos la enfermedad no te permite volver a ejercer tus actividades laborales, cesan tus derechos a los beneficios del organismo, «pudiendo ser dado de baja por la empresa, sin indemnización», sin perjuicio de la cobertura que te corresponda por invalidez o desocupación forzosa. Antes de llegar ahí hay dos controles. Uno: quien lleva más de tres meses de licencia médica debe ser sometido cada noventa días a un Tribunal Médico del Servicio de Certificaciones Médicas (art. 14). Dos: si una junta médica te declara física o intelectualmente imposibilitado para el desempeño de tu empleo, el subsidio se sigue pagando por hasta ciento ochenta días con carácter prejubilatorio mientras se define tu jubilación por incapacidad (art. 17, y el BPS lo publica en los mismos términos). Ese adelanto no es regalado: después se descuenta de la primera liquidación jubilatoria.',
+      },
+      {
+        heading: '¿Me pueden despedir estando certificado? El artículo 23',
+        body: 'La respuesta corta es no, y la larga es la que sirve. El artículo 23 del Decreto-Ley 14.407 dice: «Las empresas no podrán despedir ni suspender al trabajador que esté ausente por razones de enfermedad si ha cumplido los requisitos que establece esta ley y su reglamentación, quedando obligadas a reincorporarlo a sus tareas habituales toda vez que haya sido dado de alta por ASSE» —ese «ASSE» es el organismo de 1975, el del seguro, no tu prestador de hoy—. Y la protección no se corta el día del alta: «El trabajador dado de alta no podrá ser despedido antes de que transcurran treinta días de su reincorporación a la empresa». Esos treinta días tienen un disparador concreto, y está en el reglamento: el trabajador dado de alta debe presentarse a la empresa dentro de las veinticuatro horas hábiles siguientes al otorgamiento del alta, «momento en que comenzará a regir el término de treinta días» (Decreto 7/976, art. 10). Ahora, el punto que conviene entender bien, porque es donde se generan las falsas expectativas: la norma prohíbe, pero lo que hace en concreto es ponerle precio. «La violación de esta obligación traerá aparejado que el pago de la indemnización por despido sea el doble de la normal», con dos defensas para el empleador: que demuestre la notoria mala conducta del trabajador, o que el despido «no esté directa o indirectamente vinculado con la enfermedad o accidente de trabajo». No dice que el despido sea nulo ni que te tengan que reinstalar: dice que se paga el doble. Por eso, si te despiden certificado o dentro de esos treinta días, lo que hay que documentar es la secuencia con fechas —el certificado, el alta, el día que te presentaste, el día del despido—, porque es la prueba de que corresponde el doble y no la indemnización común. Un último detalle del mismo artículo, que explica algo que suele sorprender: al suplente que entró en tu lugar la empresa no le debe indemnización si lo despide justamente por tu reingreso, siempre que le haya notificado esas condiciones de admisión y haya comunicado la admisión temporaria «a la Inspección General del Trabajo y la Seguridad Social y al Servicio Nacional de Empleo (SENADEMP)».',
+      },
+      {
+        heading: 'Lo que la certificación no te congela (y con qué no se acumula)',
+        body: 'Tres reglas que evitan casi todas las discusiones de liquidación. La primera: el tiempo certificado cuenta. El artículo 21 dice que ese tiempo «será computado como si realmente hubiera trabajado para la aplicación de las normas del derecho del trabajo de que sea titular», así que tu antigüedad sigue corriendo mientras estás de licencia médica. La segunda es la excepción que el mismo artículo se reserva: la licencia y las sumas para su mejor goce —o sea el salario vacacional— quedan afuera de esa ficción y «se obtendrán y percibirán, respectivamente, en forma proporcional al período trabajado». Traducido: certificarte no te hace perder antigüedad, pero sí te genera menos días de licencia y menos salario vacacional, en proporción. La tercera: el subsidio no se suma con otras cosas. Desde la redacción que le dio la Ley 17.786, el artículo 25 establece que el subsidio por enfermedad común «no es acumulable a la percepción del subsidio por desempleo, ni a retribuciones de actividad, ni al adelanto prejubilatorio, ni a las indemnizaciones temporarias por accidente de trabajo». Por eso no existe estar en seguro de paro y certificado cobrando los dos. Dos datos más para tener a mano: durante el subsidio seguís aportando, y el aporte del trabajador se descuenta del propio subsidio en el momento del pago (arts. 10 y 22); y el subsidio es inembargable, con las mismas excepciones que rigen para los sueldos (art. 24). Si renunciaste estando amparado, el BPS avisa que para las renuncias a partir del 27/08/2019 el subsidio se percibe «hasta la fecha de baja inclusive».',
+      },
+      {
+        heading: 'Si trabajás para el Estado, este no es tu régimen (y cambió en 2026)',
+        body: 'Todo lo anterior es el régimen del trabajador privado. Los funcionarios presupuestados o contratados de la Administración Central y de los organismos de los artículos 220 y 221 de la Constitución —con excepción de los Entes Autónomos— tienen su propio subsidio, en los artículos 13 a 29 de la Ley 20.075, y le acaban de cambiar los números. Antes de los números va la diferencia de fondo, que da vuelta la primera sección de esta guía: acá no paga el BPS. El artículo 20 se titula «Responsable de la cobertura del subsidio por enfermedad» y dice que «El monto a abonar al funcionario por concepto de subsidio por enfermedad regulado en la presente ley, estará a cargo del organismo al que pertenece el funcionario», financiado dentro del mismo organismo con cargo a las economías del grupo 0 «Servicios Personales». Quien supervisa el régimen es la Oficina Nacional del Servicio Civil (art. 21), y los controles sobre tus certificaciones —inspección domiciliaria, auditoría médica— los puede disponer tanto el BPS como tu propio organismo empleador (art. 22). Con la redacción que les dio la Ley 20.446, que rige desde el 1º de enero de 2026 por su artículo 3, el funcionario dispone de doce días de licencia al año, no acumulables, para cubrir inasistencias por enfermedad o accidente debidamente justificadas; recién «a partir del decimotercer día de inasistencia en el año, de forma alternada o consecutiva», empieza a cobrar el subsidio, que es del 75 % de su salario por todo concepto, excluidos los beneficios sociales, la antigüedad, las partidas por locomoción, viáticos y horas extras. Los requisitos se parecen a los del privado: setenta y cinco jornales o tres meses registrados como mínimo, computados desde el ingreso, en el mismo u otro organismo público, y quien no los alcance cobra en forma proporcional al tiempo trabajado (art. 15). Las excepciones, en cambio, son mucho más amplias: el artículo 18 manda pagar «desde el primer día el subsidio correspondiente al 100 %» de la remuneración en accidentes laborales, enfermedades profesionales, enfermedades enmarcadas en alertas sanitarias del Ministerio de Salud Pública, enfermedades padecidas durante el embarazo o que pongan en riesgo a la madre o al feto, enfermedades de salud mental y enfermedades invalidantes que conlleven tratamientos prolongados. La internación también paga el 100 % desde el primer día y mientras dure, con un agregado que el régimen privado no tiene: si fue internación hospitalaria, puede prolongarse hasta siete días de convalecencia en domicilio por indicación del médico tratante. Los Gobiernos Departamentales y los Entes Autónomos pueden adoptar este régimen comunicándoselo a la ONSC y al BPS (art. 14). Y ojo con el borde: hay vínculos del sector público que el BPS sí ampara con el subsidio del privado y los enumera uno por uno en su página, así que verificá el tuyo antes de asumir en qué régimen estás.',
+      },
+      {
+        heading: 'Dónde verificar y una aclaración',
+        body: 'Los importes de esta guía tienen fecha: el tope de $ 67.754 y el de $ 40.655 para los patrones rurales son los que el BPS publica con vigencia 01/2026, y el BPS los actualiza. Los porcentajes, los plazos y el artículo 23 salen del texto vigente del Decreto-Ley 14.407 y de su reglamentación; los del sector público, de la Ley 20.075 con la redacción de la Ley 20.446. Esto es información general y no asesoramiento para tu caso. Si el subsidio no aparece, empezá por confirmar dos cosas que no dependen de vos: que el prestador cargó la certificación y que la empresa informó tu último día trabajado. Si te lo liquidaron por debajo, pedí el detalle por escrito antes de discutir. Y si te despidieron estando certificado o dentro de los treinta días del reintegro, armá la línea de tiempo con fechas y consultá: la audiencia de conciliación en el Ministerio de Trabajo es paso previo a cualquier juicio laboral y además interrumpe la prescripción, y eso último está escrito: la Ley 18.091, en su artículo 3, dice que «La sola presentación del trabajador o su representante ante el Ministerio de Trabajo y Seguridad Social, solicitando audiencia de conciliación prevista en el artículo 10 del decreto-ley Nº 14.188 […] interrumpe la prescripción». Para el reclamo por el doble tenés abogados laboralistas, el Consultorio Jurídico gratuito de la Facultad de Derecho de la UdelaR y tu sindicato.',
+      },
+    ],
+    related: [
+      { label: 'Seguro de paro en Uruguay', to: '/seguro-de-paro-uruguay' },
+      { label: 'Despido y liquidación', to: '/guias/despido-y-liquidacion-uruguay' },
+      {
+        label: 'Licencia y salario vacacional',
+        to: '/guias/licencia-y-salario-vacacional-uruguay',
+      },
+      { label: 'Entender tu recibo de sueldo', to: '/guias/entender-tu-recibo-de-sueldo-uruguay' },
+    ],
+    steps: [
+      {
+        name: 'Avisale a tu empleador el mismo día',
+        text: 'Es lo único que tenés que hacer al certificarte: el BPS dice que el trabajador debe informar a la empresa que se certificó y que no debe presentarse en el BPS. Dejá constancia escrita del aviso. La otra obligación formal viene después, al alta (paso 4).',
+      },
+      {
+        name: 'Confirmá que tu prestador cargó la certificación',
+        text: 'Las certificaciones las ingresan únicamente los prestadores de salud, dentro de las 48 horas siguientes a la consulta. Si no la cargaron, no se genera la solicitud y el subsidio no sale.',
+      },
+      {
+        name: 'Chequeá que la empresa informó tu último día trabajado',
+        text: 'Sin ese dato el BPS no liquida. Es una gestión de la empresa, no tuya, pero es el motivo más común de un subsidio que se demora sin explicación.',
+      },
+      {
+        name: 'Al alta, presentate dentro de las 24 horas hábiles',
+        text: 'El Decreto 7/976 art. 10 lo exige y ahí arranca el plazo de treinta días en que no te pueden despedir. Presentarte tarde te deja sin ese punto de partida documentado.',
+      },
+      {
+        name: 'Si te despidieron, armá la línea de tiempo',
+        text: 'Certificado, alta, día en que te presentaste y día del despido. Con esas fechas se sostiene el reclamo por el doble de la indemnización del artículo 23; sin ellas, se discute sobre recuerdos.',
+      },
+    ],
+    faqs: [
+      {
+        q: '¿Cuánto se cobra de subsidio por enfermedad y desde qué día?',
+        a: 'El BPS paga el 70 % de todos tus ingresos que constituyan materia gravada, sin contar el aguinaldo (que se cobra aparte como cuota parte), calculado sobre el promedio de los 180 días anteriores al último día del mes anterior a la enfermedad, con un tope de $ 67.754 con vigencia 01/2026. Se abona a partir del cuarto día de certificación, salvo internación, en cuyo caso se paga desde el primer día. El tope lo actualiza el BPS, así que verificá el vigente antes de hacer cuentas.',
+      },
+      {
+        q: '¿Quién me paga los tres primeros días de la certificación?',
+        a: 'El subsidio no los cubre: se abona desde el cuarto día. Y hay que decirlo derecho: ni el Decreto-Ley 14.407 ni su reglamentación, el Decreto 7/976, ponen esos tres días a cargo del empleador. Si tu empresa te los paga, eso viene del convenio colectivo de tu rama o de una política interna, no de esta ley. Antes de contar con esa plata, preguntá cuál de las dos cosas es.',
+      },
+      {
+        q: 'Me operan. ¿Cobro desde el primer día?',
+        a: 'Depende de si hay internación, no de si hay cirugía. La excepción que adelanta el pago al primer día está escrita sobre la hospitalización: el artículo 14 dice que si el beneficiario fue hospitalizado no hay período de pérdida del subsidio a partir de la internación, y el BPS la extiende a la internación domiciliaria. La intervención quirúrgica no figura como causal aparte en el artículo 14, ni en el Decreto 7/976, ni en la página del BPS. Si tu cirugía es ambulatoria y no hay internación, no des por hecho el primer día: consultalo en el BPS.',
+      },
+      {
+        q: '¿Me pueden despedir estando certificado?',
+        a: 'No pueden, y si igual lo hacen la ley le pone precio. El artículo 23 del Decreto-Ley 14.407 prohíbe despedir o suspender al trabajador ausente por enfermedad que cumplió los requisitos, obliga a reincorporarlo cuando se le da el alta y extiende la protección treinta días más desde el reintegro. Violar esa obligación hace que la indemnización por despido sea el doble de la normal, salvo que el empleador pruebe notoria mala conducta o que el despido no está directa ni indirectamente vinculado con la enfermedad. Lo que la norma no dice es que el despido sea nulo: no manda reinstalarte, manda pagar el doble.',
+      },
+      {
+        q: 'Estar certificado, ¿me hace perder antigüedad, licencia o salario vacacional?',
+        a: 'Antigüedad no: el artículo 21 computa el tiempo de enfermedad «como si realmente hubiera trabajado» para las normas laborales de las que seas titular. Licencia y salario vacacional sí, y está en el mismo artículo: son la excepción expresa y se obtienen y se cobran en forma proporcional al período efectivamente trabajado. O sea que una certificación larga no te toca la antigüedad, pero te recorta los días de licencia y el complemento que va con ellos.',
+      },
+      {
+        q: '¿Puedo estar en seguro de paro y certificado a la vez?',
+        a: 'No. El artículo 25, en la redacción que le dio la Ley 17.786, dice que el subsidio por enfermedad común no es acumulable con el subsidio por desempleo, ni con retribuciones de actividad, ni con el adelanto prejubilatorio, ni con las indemnizaciones temporarias por accidente de trabajo. Se cobra uno u otro, no los dos. Si estás en seguro de paro y te enfermás, consultá en el BPS cuál corresponde en tu situación antes de asumir cualquiera de los dos.',
+      },
+      {
+        q: 'Soy funcionario público. ¿Me rige lo mismo?',
+        a: 'Probablemente no. Los funcionarios presupuestados o contratados de la Administración Central y de los organismos de los artículos 220 y 221 de la Constitución, salvo los Entes Autónomos, se rigen por los artículos 13 a 29 de la Ley 20.075, con la redacción de la Ley 20.446 vigente desde el 1º de enero de 2026: doce días de licencia por enfermedad al año no acumulables, subsidio del 75 % recién a partir del decimotercer día de inasistencia en el año, y 100 % desde el primer día en las excepciones del artículo 18 (accidente laboral, enfermedad profesional, alertas sanitarias del MSP, embarazo, salud mental, enfermedades invalidantes) y en caso de internación. Y una diferencia que no es de detalle: ese subsidio no lo paga el BPS, lo paga tu propio organismo, porque el artículo 20 lo pone «a cargo del organismo al que pertenece el funcionario». Igual verificá tu vínculo: el BPS ampara con el régimen privado a varios vínculos del sector público y los enumera en su página.',
+      },
+    ],
+    sources: [
+      {
+        label:
+          'BPS — Subsidio por enfermedad: 70 % de la materia gravada sin aguinaldo, promedio de los 180 días anteriores, tope $ 67.754 (01/2026) y $ 40.655 para patrones rurales, «El subsidio se abonará a partir del cuarto día de certificación», «En caso de internación, en la mutualista o en el domicilio, se abonará a partir del primer día», «hasta un año […] con un año más de prórroga si la certificación es consecutiva o hasta 4 años interrumpidos por la misma dolencia» acotado por el párrafo de apertura de la misma página («hasta un año […] con otro año de prórroga como máximo, o 2 años alternados dentro de los últimos 4 años, por la misma dolencia»), requisitos separados de «75 jornales efectivos, trabajados en el año anterior a la fecha del último día trabajado» (jornaleros y destajistas) y «3 meses de actividad efectiva en el año inmediato anterior a la enfermedad, en una o más empresas, ya sea consecutivos o interrumpidamente» (mensuales), certificaciones cargadas por el prestador dentro de las 48 horas, complemento del BSE y renuncias desde el 27/08/2019',
+        url: 'https://www.bps.gub.uy/4774/subsidio-por-enfermedad.html',
+        publisher: 'BPS',
+      },
+      {
+        label:
+          'MTSS — Seguro por enfermedad: la prestación se rige por el Decreto-Ley 14.407 y las leyes 17.786, 18.725 y 19.003; 70 % de los ingresos que constituyan materia gravada y pago a partir del cuarto día de certificación, salvo internación',
+        url: 'https://www.gub.uy/ministerio-trabajo-seguridad-social/politicas-y-gestion/derecho-reglamentacion-laboral/derecho-laboral-uruguayo/seguro-enfermedad',
+        publisher: 'MTSS',
+      },
+      {
+        label:
+          'Decreto-Ley 14.407 art. 9 (texto vigente) — para cobrar el subsidio hay que haber cotizado «setenta y cinco jornales o tres meses en su caso como mínimo dentro de los doce meses inmediatos anteriores a la fecha de la denuncia de la enfermedad»',
+        url: 'https://www.impo.com.uy/bases/decretos-ley/14407-1975/9',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Decreto-Ley 14.407 art. 13, numeral 2 (texto vigente) — subsidio «equivalente al 70% (setenta por ciento) de su sueldo o jornal básico o habitual», excluidas locomoción, viáticos, habilitación, quebrantos de caja, horas extras y retribuciones especiales. Es la base ORIGINAL de 1975: las remuneraciones computables las sustituyó la Ley 18.725 art. 2 desde el 1/1/2011',
+        url: 'https://www.impo.com.uy/bases/decretos-ley/14407-1975/13',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Decreto-Ley 14.407 art. 14 (texto vigente) — «a partir del cuarto día de ausencia provocada por enfermedad o accidente», plazo máximo de un año extensible «hasta en un año más por votación unánime y fundada» del Directorio, «En los casos que el beneficiario haya sido hospitalizado no habrá período de pérdida del subsidio, a partir de la internación», y Tribunal Médico cada noventa días pasados los tres meses',
+        url: 'https://www.impo.com.uy/bases/decretos-ley/14407-1975/14',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Decreto-Ley 14.407 art. 15 (texto vigente) — los períodos dentro de un lapso de cuatro años, «como consecuencia de una unidad de dolencia», se acumulan para computar los plazos máximos del subsidio',
+        url: 'https://www.impo.com.uy/bases/decretos-ley/14407-1975/15',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Decreto-Ley 14.407 art. 16 (texto vigente) — agotados los plazos, si la enfermedad no permite volver a trabajar cesan los derechos y el trabajador puede «ser dado de baja por la empresa, sin indemnización»',
+        url: 'https://www.impo.com.uy/bases/decretos-ley/14407-1975/16',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Decreto-Ley 14.407 art. 17 (texto vigente) — declarada la imposibilidad para el desempeño del empleo, el subsidio se sirve «por un término de hasta ciento ochenta días» con carácter prejubilatorio y se descuenta de la primera liquidación jubilatoria',
+        url: 'https://www.impo.com.uy/bases/decretos-ley/14407-1975/17',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Decreto-Ley 14.407 art. 10 (texto vigente) — durante el subsidio el asegurado «continuará obligado al pago del aporte al seguro como si estuviera trabajando, el que será descontado […] en el momento del pago»',
+        url: 'https://www.impo.com.uy/bases/decretos-ley/14407-1975/10',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Decreto-Ley 14.407 art. 21 (texto vigente) — el tiempo de enfermedad «será computado como si realmente hubiera trabajado», salvo el derecho de licencia y las sumas para su mejor goce, que se obtienen y perciben «en forma proporcional al período trabajado»',
+        url: 'https://www.impo.com.uy/bases/decretos-ley/14407-1975/21',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Decreto-Ley 14.407 art. 22 (texto vigente) — los aportes patronales del período de enfermedad son de cargo del organismo y «El aporte del trabajador le será descontado del subsidio en el momento del pago»',
+        url: 'https://www.impo.com.uy/bases/decretos-ley/14407-1975/22',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Decreto-Ley 14.407 art. 24 (texto vigente) — los subsidios «serán inembargables, aplicándose como excepciones las mismas normas referentes a la inembargabilidad de los sueldos»',
+        url: 'https://www.impo.com.uy/bases/decretos-ley/14407-1975/24',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Decreto-Ley 14.407 art. 23 (texto vigente) — «Las empresas no podrán despedir ni suspender al trabajador que esté ausente por razones de enfermedad», obligación de reincorporarlo «toda vez que haya sido dado de alta por ASSE», treinta días de protección posteriores al reintegro e indemnización «el doble de la normal» si se viola, salvo notoria mala conducta o despido no vinculado a la enfermedad; al suplente no se le debe indemnización si se le notificaron las condiciones de admisión y la admisión temporaria se comunicó «a la Inspección General del Trabajo y la Seguridad Social y al Servicio Nacional de Empleo (SENADEMP)»',
+        url: 'https://www.impo.com.uy/bases/decretos-ley/14407-1975/23',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Decreto-Ley 14.407 art. 25 (texto vigente, redacción de la Ley 17.786) — el subsidio por enfermedad común «no es acumulable a la percepción del subsidio por desempleo, ni a retribuciones de actividad, ni al adelanto prejubilatorio, ni a las indemnizaciones temporarias por accidente de trabajo»',
+        url: 'https://www.impo.com.uy/bases/decretos-ley/14407-1975/25',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Decreto-Ley 14.407 art. 27 (texto vigente) — el máximo escrito como «el triple del monto del salario mínimo nacional en su valor nominal», con la nota de IMPO que remite a la Ley 19.003 para la conversión de los montos mínimos y máximos de las prestaciones',
+        url: 'https://www.impo.com.uy/bases/decretos-ley/14407-1975/27',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Decreto-Ley 14.407 art. 28 (texto vigente) — el beneficiario percibe «una parte proporcional del aguinaldo por el tiempo que esté cobrando subsidio»',
+        url: 'https://www.impo.com.uy/bases/decretos-ley/14407-1975/28',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Decreto 7/976 art. 10 (reglamentario del Decreto-Ley 14.407) — el trabajador dado de alta «deberá presentarse a la empresa a que pertenece dentro de las veinticuatro horas hábiles siguientes a su otorgamiento, momento en que comenzará a regir el término de treinta días a que se refiere el artículo 23º»',
+        url: 'https://www.impo.com.uy/bases/decretos/7-1976/10',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Decreto 7/976 art. 12 — «Conjuntamente con el pago del subsidio el trabajador percibirá la doceava parte del mismo en concepto de aguinaldo»',
+        url: 'https://www.impo.com.uy/bases/decretos/7-1976/12',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 18.725 art. 1 (texto vigente) — «Fíjase el monto máximo del subsidio por enfermedad a que refiere el artículo 27 del Decreto-Ley Nº 14.407» en BPC: 4 BPC desde el 1º de enero de 2011 y una BPC más por año hasta 8 BPC desde el 1º de enero de 2015. Es el eslabón que reemplazó la unidad del art. 27, antes de que la Ley 19.003 la indexara',
+        url: 'https://www.impo.com.uy/bases/leyes/18725-2010/1',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 18.725 art. 2 (texto vigente) — «A partir del 1º de enero de 2011, serán remuneraciones computables para el cálculo del subsidio por enfermedad previsto por el Decreto-Ley Nº 14.407 […] todas las que constituyan materia gravada a los efectos de las contribuciones especiales de seguridad social». Es la norma que sustituyó la base angosta del art. 13, numeral 2, así que el BPS no liquida distinto de la ley: liquida la ley vigente',
+        url: 'https://www.impo.com.uy/bases/leyes/18725-2010/2',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 19.003 art. 1 (texto vigente, redacción del art. 739 de la Ley 19.924) — los montos mínimos y máximos de las prestaciones de seguridad social «se ajustarán a partir del 1º de enero de 2021 por la variación en la Base de Prestaciones y Contribuciones», convirtiendo a BPC los topes vigentes al 31 de diciembre de 2020',
+        url: 'https://www.impo.com.uy/bases/leyes/19003-2012/1',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 19.003 art. 2, literal A — la indexación alcanza expresamente a «los montos máximos del subsidio por enfermedad previsto por el Decreto-Ley Nº 14.407, de 22 de julio de 1975, con las modificaciones de la Ley Nº 18.725»',
+        url: 'https://www.impo.com.uy/bases/leyes/19003-2012/2',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 20.075 art. 13 (texto vigente, redacción del art. 16 de la Ley 20.446) — los funcionarios de la Administración Central y de los organismos de los arts. 220 y 221, salvo los Entes Autónomos, disponen desde el 1º de enero de 2026 de «doce días de licencia al año no acumulables» por enfermedad o accidente',
+        url: 'https://www.impo.com.uy/bases/leyes/20075-2022/13',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 20.075 art. 14 (texto vigente, redacción del art. 17 de la Ley 20.446) — el subsidio del sector público corre «a partir del decimotercer día de inasistencia en el año» y equivale al «75 % (setenta y cinco por ciento) de su salario por todo concepto», excluidos beneficios sociales, antigüedad, locomoción, viáticos y horas extras; los Gobiernos Departamentales y Entes Autónomos pueden adoptarlo comunicándolo a la ONSC y al BPS',
+        url: 'https://www.impo.com.uy/bases/leyes/20075-2022/14',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 20.075 art. 15 (texto vigente) — requisitos del subsidio del sector público: «setenta y cinco jornales o tres meses registrados como mínimo, computados desde la fecha de su ingreso, en el mismo u otro organismo público», y cobro proporcional para quien no los alcance',
+        url: 'https://www.impo.com.uy/bases/leyes/20075-2022/15',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 20.075 art. 18 (texto vigente) — excepciones que se pagan «desde el primer día el subsidio correspondiente al 100 %» de la remuneración, y la internación hospitalaria o domiciliaria al 100 % desde el primer día, prolongable «hasta siete días de convalecencia en domicilio»',
+        url: 'https://www.impo.com.uy/bases/leyes/20075-2022/18',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 20.075 art. 20 (texto vigente), «Responsable de la cobertura del subsidio por enfermedad» — «El monto a abonar al funcionario por concepto de subsidio por enfermedad regulado en la presente ley, estará a cargo del organismo al que pertenece el funcionario», financiado en el mismo organismo con cargo a las economías del grupo 0 «Servicios Personales»: en el sector público el subsidio no lo paga el BPS',
+        url: 'https://www.impo.com.uy/bases/leyes/20075-2022/20',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 20.075 art. 21 (texto vigente), «Supervisión y control» — «La supervisión y el control del presente régimen de subsidio por enfermedad, será competencia de la Oficina Nacional del Servicio Civil (ONSC)», en coordinación con los organismos y con el BPS',
+        url: 'https://www.impo.com.uy/bases/leyes/20075-2022/21',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 20.075 art. 22 (texto vigente), «Potestades de control del organismo empleador» — los organismos a los que pertenecen los funcionarios «así como el Banco de Previsión Social (BPS), podrán disponer los controles que estimen pertinentes respecto a las certificaciones realizadas por el prestador del Sistema Nacional Integrado de Salud»',
+        url: 'https://www.impo.com.uy/bases/leyes/20075-2022/22',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 20.446 art. 3 — «Esta ley regirá a partir del 1º de enero de 2026, excepto en aquellas disposiciones para las cuales, en forma expresa, se establezca otra fecha de vigencia»',
+        url: 'https://www.impo.com.uy/bases/leyes/20446-2025/3',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 18.161 art. 1 — la ASSE de hoy es la «Administración de los Servicios de Salud del Estado», creada en 2007; no es la ASSE del art. 1 del Decreto-Ley 14.407, que era la «Administración de los Seguros Sociales por Enfermedad»',
+        url: 'https://www.impo.com.uy/bases/leyes/18161-2007/1',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 18.091 art. 3 — «La sola presentación del trabajador o su representante ante el Ministerio de Trabajo y Seguridad Social, solicitando audiencia de conciliación prevista en el artículo 10 del decreto-ley Nº 14.188, de 5 de abril de 1974, interrumpe la prescripción». Ojo con la remisión al Decreto-Ley 14.188: la conciliación previa laboral hoy se tramita por el art. 3 de la Ley 18.572, vigente («Antes de iniciarse juicio en materia laboral, deberá tentarse la conciliación previa ante el Centro de Negociación de Conflictos Individuales de Trabajo […] o ante la Oficina de Trabajo»)',
+        url: 'https://www.impo.com.uy/bases/leyes/18091-2007/3',
+        publisher: 'IMPO',
       },
     ],
   },

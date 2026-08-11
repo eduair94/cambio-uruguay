@@ -173,6 +173,30 @@
         </v-col>
       </v-row>
 
+      <!-- Espejo de otra pizarra. Este hub es la página canónica de la marca, así que el hecho va
+           acá y no sólo en el leaf de moneda: alguien que compara y ve cuatro casas con el mismo
+           precio no está viendo un empate de mercado, está viendo una pizarra repetida. -->
+      <v-row v-if="mirror" class="mt-2">
+        <v-col cols="12">
+          <VAlert type="info" variant="tonal" density="comfortable">
+            <div class="font-weight-medium mb-1">
+              {{ $t('mirror.title', { source: mirror.sourceName }) }}
+            </div>
+            <p class="mb-2 text-body-2">
+              {{ $t('mirror.body', { casa: casaName, source: mirror.sourceName }) }}
+            </p>
+            <VBtn
+              :to="localePath(`/casa/${mirror.source}`)"
+              size="small"
+              variant="tonal"
+              density="comfortable"
+            >
+              {{ $t('mirror.cta', { source: mirror.sourceName }) }}
+            </VBtn>
+          </VAlert>
+        </v-col>
+      </v-row>
+
       <!-- SEO copy + comparator CTA -->
       <v-row class="mt-2">
         <v-col cols="12">
@@ -213,6 +237,7 @@ import type { ExchangeRate } from '~/types/api'
 import { slugifyDepartment, type LocalDataMap } from '~/utils/departments'
 import { ratesForOrigin, type CasaRate } from '~/utils/currencyPages'
 import { pickOriginRate } from '~/utils/rateSource'
+import { mirrorOf } from '~/utils/rateMirrors'
 // Aliased: this page already has a local `formatRate` that renders a full
 // currency string ("$ 39,00"). The meta description wants the bare number, the
 // "$" being part of the sentence.
@@ -246,6 +271,9 @@ const { smAndDown } = useDisplay()
 const { getProcessedExchangeData } = useApiService()
 
 const origin = computed(() => String(route.params.origin ?? ''))
+
+/** Las casas que replican la pizarra de otra: ver `utils/rateMirrors.ts`. */
+const mirror = computed(() => mirrorOf(origin.value))
 
 // A department where this casa has branches, with slug + display title.
 interface CasaDepartment {

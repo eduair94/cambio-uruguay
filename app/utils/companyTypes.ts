@@ -144,6 +144,25 @@ const LEY19820_29 = 'https://www.impo.com.uy/bases/leyes/19820-2019/29'
 const LEY19820_43 = 'https://www.impo.com.uy/bases/leyes/19820-2019/43'
 // Ley 17.738 art. 43 — the CJPPU's own ámbito. See `cjppuEnJuego`.
 const LEY17738_43 = 'https://www.impo.com.uy/bases/leyes/17738-2004/43'
+/**
+ * Ley 17.738 arts. 64 y 65 — "no ejercicio" is a DEFINED TERM, and it belongs to the CJPPU, not to
+ * BPS. Art. 64: "(Declaración jurada de no ejercicio).- Los profesionales universitarios incluidos
+ * en la Caja podrán declarar etapas de no ejercicio libre en su profesión". Art. 65: "Los
+ * profesionales deberán formular la declaración jurada de no ejercicio dentro de los 90 (noventa)
+ * días del egreso o habilitación profesional si correspondiere, o de haber cesado en la
+ * actividad", con multa si llega fuera de plazo. `/preguntas-economia-personal` ya lo publica así.
+ * The lifecycle block used to call the BPS inactividad "la figura de no ejercicio" — another
+ * organismo, another trámite, another plazo. See `pausa-inactividad`.
+ */
+const LEY17738_64 = 'https://www.impo.com.uy/bases/leyes/17738-2004/64'
+const LEY17738_65 = 'https://www.impo.com.uy/bases/leyes/17738-2004/65'
+/**
+ * Ley 18.083 art. 75 ("Determinación del Monotributo") — the norm behind the monotributo's own
+ * ficto, which `bps-no-para` asserted without citing: "El monto mensual del Monotributo resultará
+ * de aplicar la suma de las alícuotas correspondientes a los tributos recaudados por el Banco de
+ * Previsión Social vigentes ... SOBRE UN SUELDO FICTO".
+ */
+const LEY18083_75 = 'https://www.impo.com.uy/bases/leyes/18083-2006/75'
 const DGI_LITERAL_E =
   'https://www.gub.uy/direccion-general-impositiva/comunicacion/publicaciones/tope-ingresos-anuales-para-pequenas-empresas-iva-minimo'
 const DGI_IVA_MINIMO =
@@ -199,11 +218,59 @@ const LEY16060_1 = 'https://www.impo.com.uy/bases/leyes/16060-1989/1'
 // That delegation is why the Dto. 220/998 art. 34 list below is TAXATIVE, and why "my client is
 // abroad" is not, on its own, an IVA answer.
 const TITULO10_5 = 'https://www.impo.com.uy/bases/todgi2023/101-2024/5_T10'
-// Título 10 art. 14 — where the exporter's credit actually comes from. It is NOT a "0% rate":
-// there is no 0% alícuota in art. 18 (basic 22%, minimum 10%). The operation is NOT TAXED and the
-// input VAT is still recoverable. Its last inciso is also the one that trims the credit of a
-// servicios-personales provider who does not pay IRAE (no vehicles, no personal-nature goods).
+/**
+ * Título 10 art. 14 — where the exporter's credit actually comes from. It is NOT a "0% rate":
+ * there is no 0% alícuota in art. 18 (basic 22%, minimum 10%). The operation is NOT TAXED and the
+ * input VAT is still recoverable.
+ *
+ * ROUND-4 GRAVE — this comment used to say the vehículos/mobiliario trim lived in the article's
+ * "last inciso" and belonged to the servicios-personales provider who does not pay IRAE. Reading
+ * the article end to end, that is wrong twice, and the module's prose inherited both errors:
+ *
+ *   1. There are TWO vehicle rules, not one, and the first is GENERAL. It sits in the very inciso
+ *      that states the vinculación test, verbatim: "En los casos previstos en los apartados
+ *      precedentes se requerirá que dichos impuestos provengan de bienes y servicios que integran
+ *      directa o indirectamente el costo de bienes y servicios destinados a las operaciones
+ *      gravadas. CUANDO SE TRATE DEL IMPUESTO INCLUIDO EN LA ADQUISICIÓN DE VEHÍCULOS, SÓLO SE
+ *      PERMITIRÁ DEDUCIR, EN LAS CONDICIONES DE ESTE INCISO, el correspondiente a vehículos
+ *      utilitarios (camiones y camionetas) y el de los restantes vehículos que en base a la
+ *      reglamentación que dicte el Poder Ejecutivo, SEAN NECESARIOS PARA LA GESTIÓN DEL
+ *      CONTRIBUYENTE, debiéndose comunicar a la Dirección General Impositiva (DGI), en cada caso,
+ *      el precio de compra, marca, tipo, modelo de vehículo y finalidad de su uso." No sujeto is
+ *      named: it binds every sujeto pasivo, SAS/SRL/unipersonal en IRAE included.
+ *   2. The subjective trim ("Los sujetos pasivos que perciban retribuciones por servicios
+ *      personales prestados fuera de la relación de dependencia y no tributen el IRAE, no podrán
+ *      deducir el impuesto incluido en sus adquisiciones de: A) Vehículos. B) Mobiliario y gastos
+ *      de naturaleza personal") is NOT the last inciso. Two more follow it, and the last one is
+ *      the express rule for buying from a Literal E — see `sinIvaDiscriminado`.
+ */
 const TITULO10_14 = 'https://www.impo.com.uy/bases/todgi2023/101-2024/14_T10'
+/**
+ * Título 10 art. 6 ("Sujetos pasivos. Contribuyentes"), needed to read the reglamentación of the
+ * vehicle rule: its lit. C is "Quienes perciban retribuciones por servicios personales prestados
+ * fuera de la relación de dependencia, no comprendidos en los literales anteriores" — exactly the
+ * taxpayer of art. 14's subjective blacklist, and exactly the one Dto. 220/998 art. 124 EXCLUDES
+ * from its vehicle procedure (because that taxpayer may not deduct a vehicle at all).
+ */
+const TITULO10_6 = 'https://www.impo.com.uy/bases/todgi2023/101-2024/6_T10'
+/**
+ * Dto. 220/998 art. 124 — the "reglamentación que dicte el Poder Ejecutivo" that art. 14 delegates
+ * the vehicle rule to. It EXISTS and it is vigente (redacción dada por Dto. 207/007 art. 21, con
+ * incisos posteriores), so the module must not publish this as an absence. Verbatim: "A los
+ * efectos de la deducción del Impuesto al Valor Agregado correspondiente a la adquisición de
+ * vehículos por los sujetos pasivos EXCEPTO LOS DEL LITERAL C) DEL ARTÍCULO 6º del Título que se
+ * reglamenta: a) Se considerarán utilitarios, aquellos vehículos incluidos en las Categorías 'A' y
+ * 'B' del artículo 35° del Decreto N° 96/990 de 21 de febrero de 1990. b) Para los restantes
+ * vehículos, deberán detallarse en anexo a la declaración jurada del período en que corresponda la
+ * deducción, los siguientes datos por cada unidad: marca, tipo, modelo de vehículo, fecha de
+ * compra, precio, Nº de motor, padrón, matrícula u otro indicador que permita su individualización
+ * y actividad o actividades específicas en que será utilizado."
+ *
+ * The "excepto los del literal C)" is the proof that the art. 14 vehicle inciso is GENERAL: the
+ * reglamentación is written FOR the companies (lits. A and B), and skips the profesional only
+ * because his own inciso already bans the deduction outright.
+ */
+const DTO220_124 = 'https://www.impo.com.uy/bases/decretos/220-1998/124'
 const TITULO10_34 = 'https://www.impo.com.uy/bases/todgi2023/101-2024/34_T10'
 // Dto. 220/998 art. 34, verbatim opener: "Las operaciones comprendidas en el concepto de
 // exportación de servicios SON:" — followed by numbered items. DGI, Consulta 6.635 (09/02/2024):
@@ -258,6 +325,69 @@ const CONSULTA6614 = 'https://www.impo.com.uy/bases/consultas-tributarias/6614-2
 const CONSULTA6703 = 'https://www.impo.com.uy/bases/consultas-tributarias/6703-2025'
 const CONSULTA6356 = 'https://www.impo.com.uy/bases/consultas-tributarias/6356-2021'
 const LEY19942 = 'https://www.impo.com.uy/bases/leyes/19942-2021'
+
+// ── CICLO DE VIDA (pausar y cerrar) E IVA DE LAS COMPRAS ──────────────────────────────
+/**
+ * The date of the lifecycle + IVA-compras audit. A THIRD verification constant, for exactly the
+ * reason `V_EXPORT` was a second one: bumping `V` would have re-dated the 89 figures already in
+ * this file, silently claiming every one of them was re-checked on this pass. Only the figures
+ * stamped with THIS constant were.
+ */
+const V_CICLO = '2026-08-10'
+
+/**
+ * Título 10 art. 13 ("Impuesto a facturar"). The reason a comprobante that does not show the IVA
+ * gives no credit: "El importe resultante se incluirá en forma separada en la factura o documento
+ * equivalente". Art. 14's credit is "el impuesto correspondiente a las compras" — if the seller
+ * never facturó one, there is nothing to deduct.
+ */
+const TITULO10_13 = 'https://www.impo.com.uy/bases/todgi2023/101-2024/13_T10'
+/**
+ * Título 10 art. 21 ("Pagos mensuales") — the IVA mínimo of the Literal E, and the article that
+ * closes the credit for it: "De surgir un excedente en la liquidación de este último impuesto, el
+ * mismo no dará derecho a crédito." Was inlined at its one call site; now it has a name because a
+ * second block cites it.
+ */
+const TITULO10_21 = 'https://www.impo.com.uy/bases/todgi2023/101-2024/21_T10'
+/**
+ * Dto. 220/998 art. 106, verbatim on the point that matters here: "Los citados contribuyentes no
+ * deberán facturar ni liquidar el Impuesto al Valor Agregado correspondiente a sus operaciones".
+ */
+const DTO220_106 = 'https://www.impo.com.uy/bases/decretos/220-1998/106'
+/**
+ * Ley 16.713 art. 171. The page invokes it TWICE as an exception ("en ningún caso regirá la
+ * exoneración del art. 171") and never as the rule it is. Its own epígrafe fixes the scope:
+ * "(Exención Directores, Administradores y Síndicos de sociedades anónimas)", and lit. A exempts
+ * those who "no perciben remuneración de clase alguna, debiéndose probar dicho extremo, mediante
+ * certificado notarial o contable". So: only the SA, and only if PROVEN. Everyone else's BPS is a
+ * ficto that does not switch itself off when the invoicing stops — which is the whole point of
+ * `CICLO_DE_VIDA`.
+ */
+const LEY16713_171 = 'https://www.impo.com.uy/bases/leyes/16713-1995/171'
+// gub.uy / BPS trámites. The lifecycle block is a procedure, so its sources are the trámites
+// themselves, not norms — the same way `UNIP_TRAMITE` and `SAS_TRAMITE` source the alta.
+const TRAMITE_CLAUSURA = 'https://www.gub.uy/tramites/clausura-empresa-unipersonal'
+const BPS_CLAUSURA_UNIP = 'https://www.bps.gub.uy/20137/clausura-empresa-unipersonal.html'
+const BPS_CLAUSURA_SITUACIONES =
+  'https://www.bps.gub.uy/23260/situaciones-particulares-para-la-clausura-de-empresa-unipersonal.html'
+const BPS_INACTIVAR = 'https://www.bps.gub.uy/10193/inactivar-empresas.html'
+const BPS_INACTIVIDAD_UNIP =
+  'https://www.bps.gub.uy/11316/inactividad-de-unipersonal-de-servicios-personales.html'
+const BPS_INACTIVIDAD_SAS = 'https://www.bps.gub.uy/22379/'
+const BPS_INACTIVIDAD_SOCIO = 'https://www.bps.gub.uy/11317/inactividad-de-socio.html'
+const BPS_INACTIVO_DE_OFICIO =
+  'https://www.bps.gub.uy/23261/clausura-de-unipersonal-monotributo-o-monotributo-social-mides-inactivo-de-oficio.html'
+/**
+ * DGI answers the exact question the reader asks ("dejo de facturar unos meses, ¿pago igual?"),
+ * and answers it BOTH WAYS depending on e-factura. Verbatim: "La cuota de IVA mínimo se comienza a
+ * abonar a partir del mes en que el contribuyente genere el primer ingreso y debe continuar
+ * abonándola hasta el último mes del ejercicio, más allá de que en el correr del mismo haya dejado
+ * de tener ingresos" — and, for those who document with facturación electrónica, "si en un
+ * determinado mes no obtuvo ventas, no estará obligado a abonar la cuota de IVA mínimo por dicho
+ * mes". The 3,3% cap of `FIGURES.ivaMinimoTopeEfactura` applied to zero income is zero.
+ */
+const DGI_IVA_MINIMO_SIN_VENTAS =
+  'https://www.gub.uy/direccion-general-impositiva/comunicacion/publicaciones/vez-se-comienza-abonar-cuota-iva-minimo-contribuyente-tiene-ventas-puede'
 
 /** Verified 2026 constants. Nothing numeric may live outside this object. */
 export const FIGURES = {
@@ -623,6 +753,53 @@ export const FIGURES = {
     5,
     'BFC del ficto jubilatorio del monotributo (a diferencia de las 11 BFC de la unipersonal)',
     'https://www.bps.gub.uy/10444/aportacion-de-monotributo.html'
+  ),
+
+  // --- Ciclo de vida: plazos y pruebas de la pausa y del cierre ---
+  // Two DIFFERENT trámites publish the SAME 30 días corridos, and they get two Figures for the
+  // same reason `topeIraePreceptivoUi` / `topeIrpfIraePreceptivoUi` / `topeDividendosExentosUi`
+  // are three: one number, three norms, three uses. Sharing one constant between the clausura and
+  // the inactividad would source whichever page happened to win to a trámite it does not describe.
+  plazoClausuraDias: fig(
+    30,
+    'Plazo para comunicar la clausura ante DGI y BPS (días corridos desde la fecha de clausura)',
+    TRAMITE_CLAUSURA,
+    V_CICLO
+  ),
+  plazoInactividadDias: fig(
+    30,
+    'Plazo para declarar la inactividad ante BPS (días corridos desde la fecha de inactividad)',
+    BPS_INACTIVIDAD_UNIP,
+    V_CICLO
+  ),
+  inactividadRetroactivaDias: fig(
+    90,
+    'Antigüedad de la inactividad a partir de la cual BPS exige documentación adicional (días)',
+    BPS_INACTIVIDAD_UNIP,
+    V_CICLO
+  ),
+  actaNotarialTestigos: fig(
+    3,
+    'Testigos del acta notarial de declaración que BPS admite cuando no hay certificado',
+    BPS_INACTIVIDAD_UNIP,
+    V_CICLO
+  ),
+  inactivacionDeOficioMeses: fig(
+    2,
+    'Meses consecutivos sin pago tras los cuales BPS inactiva de oficio al monotributista',
+    BPS_INACTIVO_DE_OFICIO,
+    V_CICLO
+  ),
+  // ROUND-4 — same "one number, two norms, two uses" discipline as the two 30-day plazos above:
+  // this is NOT BPS's inactividad plazo, it is the CJPPU's "no ejercicio" plazo (Ley 17.738
+  // art. 65, "dentro de los 90 (noventa) días"). It gets its own Figure so the page can name the
+  // difference between the two trámites instead of collapsing them, and so the number in the
+  // prose cannot drift from the article it comes from.
+  plazoNoEjercicioCjppuDias: fig(
+    90,
+    'Plazo para formular la declaración jurada de no ejercicio ante la CJPPU (días)',
+    LEY17738_65,
+    V_CICLO
   ),
 
   // NOTE — `gradualidadAnio2Umbral` / `gradualidadAnio3Umbral` USED to live here and were
@@ -1151,7 +1328,9 @@ const L = {
   },
   // ── Exportación, IVA y software. See the URL block near the top for the verbatim texts. ──
   titulo10_5: { norm: 'Título 10 art. 5', url: TITULO10_5 },
+  titulo10_6: { norm: 'Título 10 art. 6 lit. C', url: TITULO10_6 },
   titulo10_14: { norm: 'Título 10 art. 14', url: TITULO10_14 },
+  dto220_124: { norm: 'Dto. 220/998 art. 124', url: DTO220_124 },
   dto220_34: { norm: 'Dto. 220/998 art. 34', url: DTO220_34 },
   titulo4_12: { norm: 'Título 4 art. 12 lit. B num. 1', url: TITULO4_12 },
   titulo4_12A: { norm: 'Título 4 art. 12 lit. A num. 2', url: TITULO4_12 },
@@ -1166,6 +1345,51 @@ const L = {
   consulta6703: { norm: 'Consulta DGI 6.703', url: CONSULTA6703 },
   consulta6356: { norm: 'Consulta DGI 6.356', url: CONSULTA6356 },
   ley19942: { norm: 'Ley 19.942', url: LEY19942 },
+  // ── Ciclo de vida (pausar / cerrar) e IVA de las compras. Ver los comentarios de cada URL. ──
+  ley16713_171: { norm: 'Ley 16.713 art. 171', url: LEY16713_171 },
+  ley16713_172: { norm: 'Ley 16.713 art. 172', url: LEY16713_172 },
+  ley19820_43: { norm: 'Ley 19.820 art. 43', url: LEY19820_43 },
+  ley18083_75: { norm: 'Ley 18.083 art. 75', url: LEY18083_75 },
+  ley17738_64: { norm: 'Ley 17.738 art. 64', url: LEY17738_64 },
+  ley17738_65: { norm: 'Ley 17.738 art. 65', url: LEY17738_65 },
+  // The unipersonal titular's 11-BFC ficto is NOT in art. 172 (that article reaches the
+  // non-dependent worker who OCUPA PERSONAL and the socios of the sociedades it lists). Its
+  // source is the BPS Industria y Comercio table that `FIGURES.bpsUnipersonalPleno` is priced
+  // from, so `bps-no-para` has to cite it rather than borrow art. 172's authority.
+  bpsIndustriaComercio: {
+    norm: 'BPS — Industria y Comercio (aportes de empresarios)',
+    url: BPS_IC,
+  },
+  titulo10_13: { norm: 'Título 10 art. 13', url: TITULO10_13 },
+  titulo10_21: { norm: 'Título 10 art. 21', url: TITULO10_21 },
+  dto220_106: { norm: 'Dto. 220/998 art. 106', url: DTO220_106 },
+  tramiteClausura: {
+    norm: 'gub.uy — Clausura de empresa unipersonal (DGI y BPS)',
+    url: TRAMITE_CLAUSURA,
+  },
+  bpsClausuraUnip: { norm: 'BPS — Clausura de empresa unipersonal', url: BPS_CLAUSURA_UNIP },
+  bpsClausuraSituaciones: {
+    norm: 'BPS — Situaciones particulares para la clausura de empresa unipersonal',
+    url: BPS_CLAUSURA_SITUACIONES,
+  },
+  bpsInactivar: { norm: 'BPS — Inactivar empresas', url: BPS_INACTIVAR },
+  bpsInactividadUnip: {
+    norm: 'BPS — Inactividad de unipersonal de servicios personales',
+    url: BPS_INACTIVIDAD_UNIP,
+  },
+  bpsInactividadSas: {
+    norm: 'BPS — Inactividad de sociedad por acciones simplificadas (SAS)',
+    url: BPS_INACTIVIDAD_SAS,
+  },
+  bpsInactividadSocio: { norm: 'BPS — Inactividad de socio', url: BPS_INACTIVIDAD_SOCIO },
+  bpsInactivoDeOficio: {
+    norm: 'BPS — Clausura de unipersonal monotributo inactivo de oficio',
+    url: BPS_INACTIVO_DE_OFICIO,
+  },
+  dgiIvaMinimoSinVentas: {
+    norm: 'DGI — Si el contribuyente no tiene ventas, ¿puede dejar de abonar la cuota de IVA mínimo?',
+    url: DGI_IVA_MINIMO_SIN_VENTAS,
+  },
 } as const
 
 /** What the visitor told the wizard. */
@@ -1859,6 +2083,292 @@ export const REGIMES: readonly Regime[] = Object.freeze([
   },
 ])
 
+// =======================================================================================
+// CICLO DE VIDA E IVA DE LAS COMPRAS — prosa con fuentes, nunca con cuentas
+// =======================================================================================
+
+/**
+ * One claim (or a short run of claims about one thing) plus the sources that back it.
+ *
+ * Same contract as `NoteBlock`, one layer up and EXPORTED: the prose and its citations are
+ * produced by the same expression, so you cannot add a sentence without deciding what sources it.
+ * The difference is that a `NoteBlock` is conditional on the wizard's answers and this is not —
+ * these two blocks are true for every visitor, so they are data the page renders directly rather
+ * than something `estimateCost` assembles.
+ */
+export interface ExplainerNote {
+  id: string
+  title: string
+  body: readonly string[]
+  sources: readonly Source[]
+}
+
+/** A titled run of `ExplainerNote`s with its own verification date, like `IRPF_CAT2` has. */
+export interface Explainer {
+  id: string
+  heading: string
+  intro: string
+  /** ISO date these notes were last checked against their sources. Its own, never `V`. */
+  verifiedAt: string
+  notes: readonly ExplainerNote[]
+}
+
+/**
+ * CÓMO TERMINA CADA FIGURA — el tramo que este módulo no modelaba.
+ *
+ * Todo lo demás en este archivo cotiza el ALTA. Nada decía qué pasa cuando la cosa se apaga, y las
+ * dos preguntas que la gente hace son en realidad la misma: "dejo de facturar unos meses, ¿pago
+ * igual?" y "¿cómo cierro la unipersonal?". Contestar sólo la primera con el lado DGI —donde con
+ * e-factura un mes sin ventas efectivamente no paga cuota— y callar el lado BPS enseña el error
+ * caro: el aporte del titular, del socio y del administrador se calcula sobre un FICTO, no sobre
+ * lo facturado, y no se apaga solo. Por eso van juntas y en este orden.
+ *
+ * Es PROSA CON FUENTES, no un cálculo: no le ponemos número a la deuda que se acumula mientras el
+ * trámite no se hace, porque ni BPS ni DGI publican hasta qué mes se devenga cuando se hace tarde.
+ * La última nota publica esa ausencia en vez de rellenarla.
+ *
+ * Los "0351" / "0355" / "0453" que aparecen en el texto son NÚMEROS DE FORMULARIO, no cifras: son
+ * identificadores, del mismo tipo que "art. 70". No son magnitudes y no van a FIGURES.
+ */
+export const CICLO_DE_VIDA: Explainer = {
+  id: 'ciclo-de-vida',
+  heading: 'Pausar y cerrar: lo que no se apaga solo',
+  intro:
+    'Abrir es un trámite y cerrar es otro. Entre medio no hay nada automático: dejar de facturar no da de baja nada, y la deuda que se junta mientras tanto es de las pocas cosas de esta página que crecen sin que hagas nada.',
+  verifiedAt: V_CICLO,
+  notes: [
+    {
+      id: 'mes-sin-facturar',
+      title: 'Un mes sin facturar: qué se apaga (poco) y qué no (casi todo)',
+      body: [
+        'DGI contestó exactamente esta pregunta, y la respuesta por defecto es que NO se apaga: "La cuota de IVA mínimo se comienza a abonar a partir del mes en que el contribuyente genere el primer ingreso y debe continuar abonándola hasta el último mes del ejercicio, más allá de que en el correr del mismo haya dejado de tener ingresos". Si arrancaste el año facturando, la cuota te acompaña hasta el cierre aunque en el medio no vendas nada.',
+        `La excepción es la e-factura, y es pura aritmética: quien documenta con facturación electrónica paga el MENOR entre el importe que le toca y el ${pct(FIGURES.ivaMinimoTopeEfactura.value)} de los ingresos del mes, y el ${pct(FIGURES.ivaMinimoTopeEfactura.value)} de cero es cero. DGI lo dice con todas las letras: "en estos casos si en un determinado mes no obtuvo ventas, no estará obligado a abonar la cuota de IVA mínimo por dicho mes". Es la única puerta que existe, y es sólo del lado de DGI.`,
+        'Al cambiar de ejercicio el reloj se reinicia: la cuota vuelve a arrancar "a partir del mes en que se efectúe la primera venta y hasta el fin de ese ejercicio". Un año entero sin vender no genera cuota; medio año sí, y hasta el cierre.',
+      ],
+      sources: [src(L.dgiIvaMinimoSinVentas), src(L.dto220_106), src(L.titulo10_21)],
+    },
+    {
+      id: 'bps-no-para',
+      title: 'El BPS no se apaga con la facturación, y ahí es donde duele',
+      body: [
+        // B11 — los "11 BFC" / "15 BFC" NO se escriben acá: un número tipeado dentro de un string
+        // es una cifra sin fuente invisible para el guard de AST, y los importes ya son Figures.
+        `Todo lo que este módulo te cobra de BPS —el titular de la unipersonal (${uyu(FIGURES.bpsUnipersonalPleno.value)}), el socio de SRL (${uyu(FIGURES.bpsSocioSrl.value)}), el administrador de SAS (${uyu(FIGURES.bpsAdminSas.value)}), el monotributista— se calcula sobre una base ficta de contribución: es un FICTO, y no mira lo que facturaste. El mes sin ventas lo pagás entero.`,
+        // ROUND-4 LEVE — la nota sostenía los cuatro sujetos con tres normas que sólo cubren dos.
+        // El art. 172 alcanza a quien "ejerza una actividad lucrativa no dependiente Y OCUPE
+        // PERSONAL" y a los socios de las sociedades que enumera: no al titular de una unipersonal
+        // sin dependientes. Y el monotributo no está en ninguna de las tres.
+        'No es una sola norma, y conviene saber cuál te toca: el socio de SRL y el no dependiente que ocupa personal aportan por el art. 172 de la Ley 16.713; el administrador de SAS, por la Ley 19.820 art. 43, que lo manda a ese mismo art. 172; el monotributista, por la Ley 18.083 art. 75, que calcula el tributo "sobre un sueldo ficto"; y el titular de la unipersonal, por la tabla de aportes de empresarios de Industria y Comercio que publica BPS. Cuatro caminos distintos con el mismo final: un ficto.',
+        'La única exoneración que la ley da por "no cobrar" es la del art. 171 de la Ley 16.713, y su propio epígrafe dice hasta dónde llega: "(Exención Directores, Administradores y Síndicos de sociedades anónimas)". El lit. A exime a los que "no perciben remuneración de clase alguna, debiéndose probar dicho extremo, mediante certificado notarial o contable". O sea: es de la SA, y hay que PROBARLA — no alcanza con dejar de cobrar.',
+        'A la SAS se la cierran expresamente. La Ley 19.820 art. 43 manda al administrador al régimen general del art. 172 de la Ley 16.713 y agrega que "en ningún caso regirá la exoneración prevista por el artículo 171 de la Ley N° 16.713". Esta página usa esa frase dos veces como excepción; la regla que confirma es esta: fuera del director de SA que no cobra y lo prueba, a nadie se le apaga el aporte por no facturar.',
+        'Para todos los demás la salida no es dejar de facturar: es un trámite. Y hay dos distintos, con efectos distintos.',
+      ],
+      sources: [
+        src(L.ley16713_171),
+        src(L.ley16713_172),
+        src(L.ley19820_43),
+        src(L.ley18083_75),
+        src(L.bpsIndustriaComercio),
+      ],
+    },
+    {
+      id: 'pausa-inactividad',
+      title: 'La pausa: la inactividad ante BPS',
+      body: [
+        'BPS publica un trámite aparte de la clausura, "para declarar el cese temporal de actividad", y existe de verdad: se llama inactivar la empresa.',
+        // ROUND-4 MEDIO — esto decía "es la figura de «no ejercicio» que este tema suele buscar".
+        // "No ejercicio" ya es un término definido en este sitio, y es OTRA COSA: otro organismo
+        // (CJPPU, no BPS), otra norma (Ley 17.738 arts. 64-65) y otro plazo. Este módulo modela
+        // explícitamente al profesional amparado por la CJPPU (`cjppuEnJuego`), así que la
+        // confusión caía justo sobre el lector que tiene las dos obligaciones a la vez.
+        `Y no es el "no ejercicio". Ojo con esto, porque son dos trámites de dos organismos y apagar uno no apaga el otro: la INACTIVIDAD es de la empresa y es ante BPS; la declaración jurada de NO EJERCICIO es del profesional y es ante la Caja de Profesionales, que la manda formular "dentro de los ${String(FIGURES.plazoNoEjercicioCjppuDias.value)} (noventa) días del egreso o habilitación profesional si correspondiere, o de haber cesado en la actividad" (Ley 17.738 arts. 64 y 65), con multa si llega tarde. La contamos entera en /preguntas-economia-personal.`,
+        'De hecho BPS te pide la del otro organismo: para el titular PROFESIONAL, el requisito no es el certificado contable o notarial de más abajo sino "constancia de inactividad de Caja Notarial o de Caja de Profesionales Universitarios (CJPPU)" —que "podrá ser sustituida por certificado contable o notarial que contenga la misma información que para no profesionales"—. O sea: si sos escribano o profesional universitario, primero la Caja y después BPS.',
+        `Tiene el mismo plazo corto que todo lo demás acá: hasta ${String(FIGURES.plazoInactividadDias.value)} días corridos a partir de la fecha de inactividad, y el trámite "genera sanciones si se presenta fuera de plazo".`,
+        `Admite mirar hacia atrás, pero con prueba. Para el titular NO profesional hace falta certificado notarial o contable que establezca "que no se desarrolló actividad gravada", la fecha de comienzo de la inactividad y el detalle de la última factura emitida — y BPS lo exige expresamente "cuando la inactividad comenzó hace más de ${String(FIGURES.inactividadRetroactivaDias.value)} días o se realizaron pagos posteriores al cese". Si no podés conseguirlo, la alternativa que BPS acepta es un acta notarial de declaración (art. 203 del Reglamento Notarial) protocolizada "en la que ${String(FIGURES.actaNotarialTestigos.value)} testigos declaren el período de inactividad y que no se realizó actividad gravada".`,
+        'Hay una versión por persona además de la versión por empresa: la "inactividad de socio", que sirve "para declarar el cese de actividad de un socio que permanece en la empresa". Es el correlato exacto del dato que este módulo te pide y sin el cual se niega a cotizar una sociedad: el art. 172 cobra por cada socio QUE DESARROLLE ACTIVIDAD, y este es el trámite con el que un socio deja de desarrollarla sin salirse de la sociedad.',
+        'Y una SAS SÍ puede inactivarse: BPS publica el trámite para la sociedad por acciones simplificada como para las demás. Lo que la Ley 19.820 art. 43 le niega al administrador es otra cosa —la exoneración del art. 171 por no cobrar sueldo—, y son dos puertas distintas que conviene no confundir.',
+        // ROUND-4 LEVE — el listado se publicaba recortado ("cantinas en centros educativos" a
+        // secas) y a renglón seguido se lo usaba como prueba de una AUSENCIA. Una lista que
+        // sostiene un "esto no está" tiene que estar completa: son los ocho trámites que BPS
+        // publica en 10193, y el séptimo se llama "Inactiviad de cantinas en centros educativos y
+        // becarios de posgrado".
+        'Ojo con quién puede. BPS publica la inactividad para la unipersonal de SERVICIOS PERSONALES, el monotributo social MIDES, la SAS, las sociedades de hecho, las sociedades personales con contrato, la cooperativa de trabajo o social, las cantinas en centros educativos y becarios de posgrado, y los consorcios: ocho trámites, y esos ocho son todos. Para la unipersonal de industria y comercio y para el monotributo común no publica un trámite equivalente: publica la clausura. No afirmamos que la ley lo prohíba —eso no lo verificamos—; afirmamos qué publica BPS.',
+      ],
+      sources: [
+        src(L.bpsInactivar),
+        src(L.bpsInactividadUnip),
+        src(L.bpsInactividadSas),
+        src(L.bpsInactividadSocio),
+        src(L.ley16713_172),
+        src(L.ley17738_64),
+        src(L.ley17738_65),
+      ],
+    },
+    {
+      id: 'cierre-clausura',
+      title: 'El cierre: la clausura, un solo trámite ante DGI y BPS',
+      body: [
+        'Se cierra como se abre, en conjunto. El alta es el formulario 0351 de DGI y BPS; la baja es el 0355, "Cancelación", que se presenta indicando el último día de actividad.',
+        'Arranca por la web: primero la solicitud de clausura en los Servicios en Línea de DGI (Registro Único Tributario → Solicitud de clausura) y después el trámite. Si el titular tiene usuario de BPS autenticado, "la información necesaria para la clausura se completa en línea, por lo que no se requiere presentar documentación".',
+        `El plazo es de ${String(FIGURES.plazoClausuraDias.value)} días corridos "a partir de la fecha de clausura", y la página del trámite avisa que "el no cumplimiento de los plazos genera sanciones": entre los requisitos figura el comprobante de la multa, para el que lo hace fuera de plazo.`,
+        'La fecha que vale es la que declarás como último día de actividad, no la del día que hacés el trámite; por eso el cierre puede mirar hacia atrás. Lo que cambia con el atraso es la PRUEBA: si quedaron declaraciones o pagos posteriores a esa fecha, BPS pide certificado contable o notarial que acredite que no hubo actividad posterior.',
+        'Antes hay que ordenar la papelería: formulario 0453 si emitiste comprobantes no electrónicos, reporte previo de todos los comprobantes fiscales electrónicos si estás en e-factura, y constancia de clausura ante el MTSS si tuviste dependientes.',
+        // ROUND-4 LEVE — la cita estaba reescrita: ni "se incluirá" ni "de la empresa" junto a
+        // "factura de obligaciones" existen en ninguna de las dos fuentes. En un archivo cuya
+        // disciplina es citar verbatim, entrecomillar una paráfrasis es la deriva que el resto del
+        // módulo evita. Las dos frases reales, cada una de su fuente, dicen lo mismo y son cortas.
+        'Cerrar también cuesta: lleva timbre profesional. Hecho por internet con usuario de BPS no lo adjuntás — gub.uy avisa que "no debe adjuntar timbre profesional ya que su costo será incluido en la próxima factura de obligaciones de BPS", y BPS lo dice del otro lado: "Este trámite genera el costo de un timbre profesional que será incluido en la cuenta de la empresa". No publicamos el importe: el que figura en el trámite viene con período de vigencia acotado y ya venció.',
+      ],
+      sources: [
+        src(L.tramiteClausura),
+        src(L.bpsClausuraUnip),
+        src(L.bpsClausuraSituaciones),
+        src(L.unipersonal),
+      ],
+    },
+    {
+      id: 'de-oficio',
+      title: 'Si simplemente dejás de pagar',
+      body: [
+        `BPS te marca inactivo DE OFICIO, y no es un favor. Alcanza al monotributista y al monotributo social MIDES "por no realizar el pago de los aportes durante ${String(FIGURES.inactivacionDeOficioMeses.value)} meses consecutivos". Es un estado administrativo, no un cierre.`,
+        `Quien queda ahí igual tiene que hacer la clausura —BPS publica un trámite específico para ese caso— y con el mismo plazo de ${String(FIGURES.plazoClausuraDias.value)} días. El silencio no borra la deuda: la deja creciendo mientras vos creés que cerraste.`,
+      ],
+      sources: [src(L.bpsInactivoDeOficio), src(L.bpsClausuraUnip)],
+    },
+    {
+      id: 'ciclo-lo-que-no-sabemos',
+      title: 'Lo que no pudimos verificar',
+      body: [
+        `Hasta qué mes se devengan el aporte del titular y la cuota de IVA mínimo cuando el trámite se hace tarde. BPS y DGI publican el plazo (${String(FIGURES.plazoClausuraDias.value)} días), que fuera de plazo hay sanción, y la prueba que exigen para aceptar una fecha anterior. Ninguno de los dos publica si los aportes y las cuotas generados entre el cese real y el trámite se anulan, se reliquidan o quedan firmes. Es la pregunta más cara de este bloque y no la vamos a contestar de memoria.`,
+        'Lo único publicado en esa dirección es la regla del contribuyente que SIGUE inscripto: el IVA mínimo se paga "hasta el último mes del ejercicio" aunque dejes de tener ingresos. No es la regla del que clausura, y no la extendemos a él.',
+        'Tampoco publicamos el importe del timbre profesional de la clausura: el trámite lo publica con vigencia acotada a un semestre, y el que está en línea ya venció. Preferimos decir que se paga a decirte cuánto y equivocarnos.',
+      ],
+      sources: [src(L.dgiIvaMinimoSinVentas), src(L.tramiteClausura)],
+    },
+  ],
+}
+
+/**
+ * QUÉ COMPRAS DAN DERECHO A DESCONTAR EL IVA, en régimen general.
+ *
+ * La cobertura previa era mayor de lo que parecía, y este bloque la REUSA en vez de repetirla:
+ *   - la exportación y por qué conserva el crédito ya la cuenta `ivaExportacionNotes`;
+ *   - que en el Literal E el IVA de las compras es costo ya lo dice la ficha de ese régimen, con
+ *     el Dto. 220/998 art. 106 y el Título 10 art. 21;
+ *   - el recorte de vehículos, mobiliario y gastos de naturaleza personal ya estaba citado, pero
+ *     SÓLO como límite del profesional que no tributa IRAE (y encima como si fuera el "inciso
+ *     final" del art. 14, que no lo es: después vienen dos incisos más).
+ *
+ * Lo que faltaba era la REGLA AFIRMATIVA, la que vale para la SAS, la SRL y la unipersonal en
+ * IRAE: qué te habilita a descontar. Está en el mismo art. 14 que el archivo ya citaba de un solo
+ * lado, y no es "si es un gasto de la empresa" — es un test de VINCULACIÓN con las operaciones
+ * gravadas. Y el corolario que hace la mitad del daño en la práctica: un comprobante que no
+ * discrimina IVA no da crédito, y hay dos regímenes que por norma no lo discriminan.
+ */
+export const IVA_CREDITO_COMPRAS: Explainer = {
+  id: 'iva-compras',
+  heading: 'Qué compras te dejan descontar el IVA',
+  intro:
+    'En régimen general el IVA que pagás en tus compras se resta del que cobrás en tus ventas. La pregunta que casi todo el mundo hace —"¿esto lo puedo poner a la empresa?"— no es la que hace la norma: la norma pregunta a qué operación va destinada la compra, y para el vehículo agrega una regla propia que no depende de quién seas.',
+  verifiedAt: V_CICLO,
+  notes: [
+    {
+      id: 'regla-vinculacion',
+      title:
+        'La regla no es si es un gasto de la empresa: es a qué operación va destinada la compra',
+      body: [
+        'El Título 10 art. 14 se llama "Liquidación del impuesto" y funciona en dos pasos. Primero el débito: "El tributo a pagar se liquidará partiendo del total de los impuestos facturados" a tus clientes. Después el crédito: de ahí se deduce "el impuesto correspondiente a las compras de bienes y servicios adquiridos por el sujeto pasivo, documentado en la forma establecida en el apartado A) del artículo anterior".',
+        'La condición central —la que hay que aprender— es la vinculación: el crédito procede en tanto "dichos impuestos provengan de bienes y servicios que integran directa o indirectamente el costo de bienes y servicios destinados a las operaciones gravadas".',
+        // ROUND-4 GRAVE — esto decía "el crédito tiene UNA condición" y "no hay lista de compras
+        // permitidas". Las dos afirmaciones son del propio artículo hacia abajo: el lit. A pide
+        // documentación, faculta al PE a exigir proveedor al día y a limitar la deducción de los
+        // literales B) y C) del art. 6, y el mismo inciso de la vinculación recorta los vehículos
+        // PARA TODOS. Decir "una condición" era convertir un filtro en ninguno.
+        'No es la única. El propio lit. A exige además que la compra esté DOCUMENTADA como manda el art. 13, faculta al Poder Ejecutivo a establecer que la deducción sólo proceda cuando "surja que el proveedor está al día con el Impuesto al Valor Agregado (IVA)" y lo habilita a "limitar la deducción del impuesto incluido en las adquisiciones de los sujetos pasivos establecidos en los literales B) y C) del artículo 6°" cuando se afecten sólo en parte a la actividad gravada. Y hay un recorte por rubro que alcanza a cualquiera: el del vehículo, dos notas más abajo.',
+        'Con esas salvedades, no hay una lista general de compras permitidas: hay un test de vinculación, y el mismo bien da crédito o no según a qué esté destinado. "Directa o indirectamente" es amplio a propósito: el alquiler del local, la energía o el software con el que facturás integran indirectamente el costo de lo que vendés, aunque no se toquen con el producto.',
+      ],
+      sources: [src(L.titulo10_14), src(L.titulo10_13), src(L.titulo10_6)],
+    },
+    {
+      id: 'exentas-y-prorrateo',
+      title: 'Operaciones exentas y no gravadas: el prorrateo',
+      body: [
+        'Si todo lo que vendés está gravado, el crédito es entero. Si parte no lo está, el art. 14 no te hace elegir: "Cuando se realicen a la vez operaciones gravadas y exentas, la deducción del impuesto a los bienes y servicios no destinados exclusivamente a unas o a otras se efectuará en la proporción correspondiente al monto de las operaciones gravadas". Lo que se pueda imputar a una u otra se imputa; lo común se prorratea.',
+        'La exportación es el caso que rompe la intuición, y esta página ya lo trata en la ficha de cada régimen: no está gravada y AUN ASÍ conserva el crédito, porque el mismo art. 14 admite deducir "el impuesto correspondiente a los bienes y servicios que integren directa o indirectamente el costo del producto exportado". Por eso una exención y una exportación no son lo mismo para tu bolsillo, aunque las dos terminen en "no cobrás IVA".',
+      ],
+      sources: [src(L.titulo10_14), src(L.titulo10_5)],
+    },
+    // ROUND-4 GRAVE — esta nota NO existía, y su ausencia era el error más caro de la página: el
+    // módulo le decía a una SRL o a una SAS que para el vehículo "el único filtro que queda es el
+    // de la vinculación". El art. 14 dice lo contrario, y lo dice en el mismo inciso donde fija la
+    // vinculación. Va ANTES del recorte subjetivo porque es el que alcanza al lector típico de
+    // esta página (que es, precisamente, quien está por abrir una empresa).
+    {
+      id: 'vehiculo-recorte-general',
+      title: 'El vehículo tiene su propia regla, y alcanza a TODOS — también a la SAS y a la SRL',
+      body: [
+        'Esta es la pregunta cara del tema —"¿pongo la camioneta a la empresa?"— y no se contesta sólo con la vinculación. El art. 14 le pone al vehículo un recorte POR RUBRO, y ese recorte no nombra a ningún sujeto: está dentro del mismo inciso que acaba de fijar la vinculación ("en las condiciones de este inciso"), así que alcanza a todo sujeto pasivo del IVA. SAS, SRL y unipersonal en IRAE incluidas.',
+        'Textual: "Cuando se trate del impuesto incluido en la adquisición de vehículos, sólo se permitirá deducir, en las condiciones de este inciso, el correspondiente a vehículos utilitarios (camiones y camionetas) y el de los restantes vehículos que en base a la reglamentación que dicte el Poder Ejecutivo, sean necesarios para la gestión del contribuyente, debiéndose comunicar a la Dirección General Impositiva (DGI), en cada caso, el precio de compra, marca, tipo, modelo de vehículo y finalidad de su uso".',
+        'Son dos puertas, no una. Si es utilitario —camión o camioneta— entra. Si no lo es, entra sólo si la reglamentación lo admite como necesario para la gestión del contribuyente, y encima hay que comunicarle a DGI el precio de compra, la marca, el tipo, el modelo y la finalidad de uso. Que la factura vaya a nombre de la empresa no abre ninguna de las dos.',
+        'La reglamentación no es una promesa: existe, es el Dto. 220/998 art. 124 y está vigente. Y confirma para quién está escrita la regla, porque rige la deducción "correspondiente a la adquisición de vehículos por los sujetos pasivos EXCEPTO los del literal C) del artículo 6º" —o sea, para las empresas; deja afuera al profesional sólo porque a él ya se lo prohíbe de plano el inciso de la nota siguiente—. Ahí se define utilitario por remisión a "las Categorías «A» y «B» del artículo 35° del Decreto N° 96/990", y para los demás vehículos se manda detallar en anexo a la declaración jurada, por unidad, "marca, tipo, modelo de vehículo, fecha de compra, precio, Nº de motor, padrón, matrícula u otro indicador que permita su individualización y actividad o actividades específicas en que será utilizado".',
+        'Lo que no publicamos: qué modelos concretos caen en cada categoría del Decreto 96/990. Es otra norma y no la verificamos. Lo que sí afirmamos es lo que decide la pregunta: para el vehículo hay lista y hay trámite, y no dependen de qué figura elegiste.',
+      ],
+      sources: [src(L.titulo10_14), src(L.dto220_124), src(L.titulo10_6)],
+    },
+    {
+      id: 'recorte-por-sujeto',
+      title: 'El otro recorte, el que sí es por sujeto: vehículos Y mobiliario del profesional',
+      body: [
+        'Más abajo el art. 14 trae una segunda lista negra, de dos ítems, y esta sí tiene dueño: "Los sujetos pasivos que perciban retribuciones por servicios personales prestados fuera de la relación de dependencia y no tributen el Impuesto a las Rentas de las Actividades Económicas (IRAE), no podrán deducir el impuesto incluido en sus adquisiciones de: A) Vehículos. B) Mobiliario y gastos de naturaleza personal".',
+        'Las dos condiciones son acumulativas y son SUBJETIVAS: prestar servicios personales fuera de la relación de dependencia Y no tributar IRAE. El profesional independiente de IRPF Cat. II está adentro, y para él el vehículo no tiene siquiera las dos puertas de la nota anterior: no lo puede deducir, y el mobiliario y los gastos de naturaleza personal tampoco. Una SAS, una SRL o una unipersonal en IRAE no caen en ESTA lista.',
+        'Pero no caer en esta lista no las deja sin ninguna. Sobre ellas siguen corriendo, encimados, el test de vinculación y el recorte general del vehículo: un vehículo que no integra ni directa ni indirectamente el costo de operaciones gravadas no da crédito, y uno que sí lo integra tampoco lo da si no es utilitario ni entra por la reglamentación con comunicación a DGI. Lo único que la empresa se saca de encima respecto del profesional es el ítem B), el mobiliario y los gastos de naturaleza personal.',
+      ],
+      sources: [src(L.titulo10_14), src(L.dto220_124)],
+    },
+    {
+      id: 'sin-iva-discriminado',
+      title: 'Un comprobante sin IVA discriminado no da crédito',
+      body: [
+        'El crédito del art. 14 es "el impuesto correspondiente a las compras", y el impuesto tiene que estar ahí: el art. 13 manda que "el importe resultante se incluirá en forma separada en la factura o documento equivalente". Sin IVA discriminado no hay nada que deducir. No es un tecnicismo de formato: es que el crédito no existe.',
+        'Dos regímenes no facturan IVA por diseño. El Literal E, porque el Dto. 220/998 art. 106 dice que "los citados contribuyentes no deberán facturar ni liquidar el Impuesto al Valor Agregado correspondiente a sus operaciones". Y el monotributo, que la Ley 18.083 art. 70 define como un pago "en sustitución de las contribuciones especiales de seguridad social generadas por su propia actividad, y de todos los impuestos nacionales vigentes, excluidos los que gravan la importación".',
+        // ROUND-4 LEVE — el crédito nulo de la compra al Literal E se deducía por inferencia
+        // (art. 13 + Dto. 220/998 art. 106) teniendo la regla EXPRESA en el mismo art. 14 que la
+        // nota anterior ya cita. Es su último inciso, y no hace falta razonarlo desde el
+        // comprobante: lo dice de frente y desde el lado del comprador.
+        'Para el Literal E ni siquiera hay que razonarlo desde el comprobante: el último inciso del art. 14 lo resuelve de frente y desde el lado del comprador. "El impuesto incluido en las circulaciones de bienes o prestaciones de servicios realizadas por los contribuyentes incluidos en el literal E) del artículo 66° del Título 4 de este Texto Ordenado, no podrá ser deducido por los adquirentes".',
+        'Corre para los dos lados, y conviene tenerlo claro ANTES de elegir régimen. Si les comprás a ellos, esa compra no te deja crédito. Y si el del régimen chico sos vos, tus clientes empresa tampoco lo tienen —al mismo precio de lista les salís más caro que un competidor en régimen general— y encima el IVA de tus propias compras te queda de costo: el Título 10 art. 21 remata que si surge un excedente "no dará derecho a crédito".',
+      ],
+      sources: [
+        src(L.titulo10_13),
+        src(L.titulo10_14),
+        src(L.dto220_106),
+        src(L.ley18083_70),
+        src(L.titulo10_21),
+      ],
+    },
+  ],
+}
+
+/**
+ * The two blocks, in reading order, so a page renders them (and lists their sources) with one
+ * loop and cannot ship a block it forgot to register.
+ */
+export const EXPLAINERS: readonly Explainer[] = Object.freeze([CICLO_DE_VIDA, IVA_CREDITO_COMPRAS])
+
+/**
+ * The later of two ISO `YYYY-MM-DD` dates. Lexicographic order IS chronological order for that
+ * format, which is the whole reason the module stores dates that way.
+ *
+ * ROUND-4 LEVE — the page's "Fuentes primarias" builder deduped by URL and kept the date of the
+ * FIRST registration, while its own comment claimed each source "lleva la fecha del PROPIO
+ * bloque". Because the `REGIMES` loop runs before the `EXPLAINERS` one, every norm that already
+ * appeared in `REGIMES[].sources` — Ley 16.713 art. 172 (sociedad de hecho, SRL) and Ley 19.820
+ * art. 43 (SAS) — was published with the module-wide date even though the lifecycle audit
+ * re-verified it later. Order-independence is the fix, not loop order: a URL re-verified in a
+ * later audit carries the later date, whoever registers it first.
+ */
+export const laterIsoDate = (a: string, b: string): string => (a > b ? a : b)
+
 /**
  * What a regime costs — or, where we cannot know, an explicit admission that we cannot.
  *
@@ -2191,10 +2701,19 @@ function sasAdminFamilyColumn(input: WizardInput): number {
 /**
  * BPS of a SAS: the administrador/representante legal's 15-BFC ficto, per head.
  *
- * Ley 19.820 art. 43: "El administrador o quienes integren el órgano de administración o, en su
- * caso, el representante legal ... tributarán contribuciones especiales de seguridad social
- * conforme el régimen general previsto en el ARTÍCULO 172 DE LA LEY N° 16.713" — the very same
- * article as the SRL socio, so it is per-head on the same activity logic.
+ * Ley 19.820 art. 43, inciso 1: "El administrador o quienes integren el órgano de administración
+ * o, en su caso, el representante legal ... Y NO ADOPTEN LA FORMA DE DIRECTORIO, tributarán
+ * contribuciones especiales de seguridad social conforme el régimen general previsto en el
+ * ARTÍCULO 172 DE LA LEY N° 16.713" — the very same article as the SRL socio, so it is per-head on
+ * the same activity logic.
+ *
+ * ROUND-4 MEDIO — that "no adopten la forma de Directorio" is load-bearing and used to be dropped
+ * from the quote. Inciso 2 governs the Directorio: with remuneración it goes to art. 170, and
+ * "cuando dichos miembros no perciban remuneración, efectuarán su aportación ficta patronal POR AL
+ * MENOS UNO DE SUS INTEGRANTES". The wizard does not ask which form the órgano takes, so per-head
+ * is the CEILING, not a certainty: the estimate keeps multiplying (the un-asked default for a SAS
+ * is a representante legal, not a Directorio — art. 29), but `estimateCost` now publishes the
+ * limit next to the number instead of asserting art. 43 says something it does not.
  *
  * Defaulting to ONE is not a guess here, and that is what separates it from the SRL: Ley 19.820
  * art. 29 supplies the default itself — "Salvo que otra cosa se dispusiera en los estatutos, la
@@ -2536,14 +3055,8 @@ export function estimateCost(
       if (exporta(input)) {
         block({
           sources: [
-            {
-              label: 'Dto. 220/998 art. 106',
-              url: 'https://www.impo.com.uy/bases/decretos/220-1998/106',
-            },
-            {
-              label: 'Título 10 art. 21',
-              url: 'https://www.impo.com.uy/bases/todgi2023/101-2024/21_T10',
-            },
+            src(L.dto220_106),
+            src(L.titulo10_21),
             {
               label: 'Dto. 150/007 art. 122',
               url: 'https://www.impo.com.uy/bases/decretos/150-2007/122',
@@ -2759,9 +3272,28 @@ export function estimateCost(
         cjppuNote(sociedadCjppuCaveat)
       } else {
         const admins = input.administradoresSas ?? 1
-        notes.push(
-          `Cada administrador paga ${uyu(sasAdminFamilyColumn(input))} de BPS al mes AUNQUE NO COBRE SUELDO NI FACTURE UN PESO, y no puede declararse inactivo. Es el costo real de la SAS.`
-        )
+        // La coletilla decía "y no puede declararse inactivo", y mezclaba dos puertas distintas.
+        // La que la Ley 19.820 art. 43 cierra es la EXONERACIÓN del art. 171 de la Ley 16.713 (el
+        // director de SA que no cobra remuneración y lo prueba). La otra —inactivar la SOCIEDAD
+        // ante BPS— sí existe para la SAS: BPS publica el trámite "Inactividad de sociedad por
+        // acciones simplificadas (SAS)" junto con los de las demás figuras. Decir que no puede
+        // declararse inactiva le negaba al lector la única salida que sí tiene sin cerrar.
+        block({
+          sources: [src(L.ley19820_43), src(L.ley16713_171), src(L.bpsInactividadSas)],
+          notes: [
+            `Cada administrador paga ${uyu(sasAdminFamilyColumn(input))} de BPS al mes AUNQUE NO COBRE SUELDO NI FACTURE UN PESO: la Ley 19.820 art. 43 le cierra expresamente la exoneración del director de SA que no cobra ("en ningún caso regirá la exoneración prevista por el artículo 171 de la Ley N° 16.713"). Es el costo real de la SAS.`,
+            // ROUND-4 MEDIO — el art. 43 tiene TRES supuestos y la frase de arriba los aplanaba,
+            // justo citando como autoridad el artículo que la desmiente en uno de ellos. Inciso 1:
+            // administrador/representante que NO adopta forma de Directorio → art. 172, y ahí sí
+            // aporta cada uno. Inciso 2, primera oración: Directorio CON remuneración → art. 170.
+            // Inciso 2, segunda oración, textual: "Cuando dichos miembros no perciban
+            // remuneración, efectuarán su aportación ficta patronal POR AL MENOS UNO DE SUS
+            // INTEGRANTES". El wizard no pregunta la forma del órgano, así que el número que
+            // cotizamos es el techo y hay que decirlo, no multiplicar por N en silencio.
+            'Ese "cada uno" es del órgano de administración que NO adopta forma de Directorio, que es el que el art. 43 manda al régimen general del art. 172. No te preguntamos la forma del órgano, así que este número es el TECHO: si la SAS se administra por un Directorio sin remuneración, el mismo art. 43 pide la aportación ficta "por al menos uno de sus integrantes", y entonces se paga un ficto, no uno por cabeza.',
+            'Lo que sí existe es inactivar la SOCIEDAD ante BPS —hay un trámite propio para la SAS, con plazo y con prueba—, pero es un trámite: no pasa solo por dejar de facturar.',
+          ],
+        })
         // ROUND-3 IMPORTANT 3 — the `undefined` branch was DEAD CODE: the page initialised the
         // field to `1` and clamped it with `Math.max(1, …)`, so the engine was never handed
         // `undefined` and always took the second branch — which told every visitor "Nombraste 1
@@ -2771,8 +3303,8 @@ export function estimateCost(
         // measurement. The page now passes `undefined`; this branch is live again.
         notes.push(
           input.administradoresSas === undefined
-            ? 'Contamos UN solo administrador, que es lo que la propia Ley 19.820 (art. 29) supone si el estatuto no dice otra cosa: "la totalidad de las funciones de administración y representación legal le corresponderán al representante legal". Si nombrás más de uno, cada uno aporta lo suyo y el costo se multiplica — no hay tope legal de administradores (art. 30: "una o más personas").'
-            : `Nos dijiste que la SAS tiene ${String(admins)} ${admins === 1 ? 'administrador' : 'administradores'}, y la Ley 19.820 (art. 43) manda a cada uno al mismo art. 172 de la Ley 16.713 que al socio de SRL: cada uno aporta lo suyo.`
+            ? 'Contamos UN solo administrador, que es lo que la propia Ley 19.820 (art. 29) supone si el estatuto no dice otra cosa: "la totalidad de las funciones de administración y representación legal le corresponderán al representante legal". Si nombrás más de uno, y salvo que se organicen como Directorio, cada uno aporta lo suyo y el costo se multiplica — no hay tope legal de administradores (art. 30: "una o más personas").'
+            : `Nos dijiste que la SAS tiene ${String(admins)} ${admins === 1 ? 'administrador' : 'administradores'}, y la Ley 19.820 (art. 43) manda al mismo art. 172 de la Ley 16.713 que al socio de SRL a los que no adoptan forma de Directorio: en ese supuesto aporta cada uno, y es el que cotizamos.`
         )
       }
       notes.push('A cambio, sí tenés cobertura FONASA.')

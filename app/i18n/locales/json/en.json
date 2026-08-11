@@ -1559,6 +1559,11 @@
     "streakUp": "Up {days} days in a row.",
     "streakDown": "Down {days} days in a row."
   },
+  "mirror": {
+    "title": "This exchange publishes {source}'s board",
+    "body": "{casa} does not set its own rate: it mirrors {source}, so the price is always identical. That is why you will not find its own highs, lows or streaks here — they would be {source}'s.",
+    "cta": "See {source}"
+  },
   "mejorCasa": {
     "h1": "Where should you change dollars in Uruguay today?",
     "subtitle": "We compare every exchange house and bank in the country to name the best rate today.",

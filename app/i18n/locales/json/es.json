@@ -1570,6 +1570,11 @@
     "streakUp": "Viene subiendo {days} días seguidos.",
     "streakDown": "Viene bajando {days} días seguidos."
   },
+  "mirror": {
+    "title": "Esta casa publica la pizarra de {source}",
+    "body": "{casa} no arma cotización propia: replica la de {source}, así que su precio es siempre el mismo. Por eso acá no verás máximos, mínimos ni rachas propias — serían los de {source}.",
+    "cta": "Ver {source}"
+  },
   "mejorCasa": {
     "h1": "¿Dónde conviene cambiar dólares hoy en Uruguay?",
     "subtitle": "Comparamos las casas de cambio y bancos del país para decirte cuál paga mejor hoy.",

@@ -459,13 +459,14 @@ export const guideHubs: readonly GuideHub[] = [
     tag: 'TRABAJO',
     icon: 'mdi-briefcase-outline',
     intro:
-      '¿Por qué tu líquido es tanto menor que el nominal? ¿Cómo se calcula el aguinaldo, la licencia o lo que te corresponde si te despiden? Estas guías explican, sin jerga, cómo se arma tu sueldo en Uruguay, qué te descuentan y por qué, cómo funciona el IRPF por franjas y qué tener en cuenta si trabajás para clientes del exterior. Saber leer tu recibo y entender estos derechos es el primer paso para reclamar lo que corresponde y planificar mejor.',
+      '¿Por qué tu líquido es tanto menor que el nominal? ¿Cómo se calcula el aguinaldo, la licencia o lo que te corresponde si te despiden? ¿Y qué cobrás si te certificás? Estas guías explican, sin jerga, cómo se arma tu sueldo en Uruguay, qué te descuentan y por qué, cómo funciona el IRPF por franjas y qué tener en cuenta si trabajás para clientes del exterior. Saber leer tu recibo y entender estos derechos es el primer paso para reclamar lo que corresponde y planificar mejor.',
     guideSlugs: [
       'entender-tu-recibo-de-sueldo-uruguay',
       'horas-extra-en-uruguay',
       'llegar-tarde-tolerancia-y-sanciones-uruguay',
       'como-se-calcula-el-aguinaldo-uruguay',
       'licencia-y-salario-vacacional-uruguay',
+      'me-certifique-subsidio-por-enfermedad-uruguay',
       'despido-y-liquidacion-uruguay',
       'como-funciona-el-irpf-uruguay',
       'trabajar-para-el-exterior-desde-uruguay',
@@ -486,6 +487,11 @@ export const guideHubs: readonly GuideHub[] = [
         label: 'Calculadora de aguinaldo',
         description: 'Tu SAC según lo ganado.',
         to: '/herramientas/calculadora-aguinaldo',
+      },
+      {
+        label: 'Seguro de paro',
+        description: 'Cuánto cobrás, por cuántos meses y por qué baja.',
+        to: '/seguro-de-paro-uruguay',
       },
       {
         label: 'Qué empresa abrir',

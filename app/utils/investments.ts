@@ -14,6 +14,12 @@
 // also holds custody may apply it, and only definitively if the taxpayer opts for it) — the rate is
 // 12%; and crypto carries NO percentage, because no tax norm settles it.
 // Not affiliated; informational, not investment advice.
+import {
+  depositRule,
+  termFromMonths,
+  type Currency as TaxCurrency,
+  type DepositTerm,
+} from './capitalTax'
 import type { ReviewSource } from './reviews'
 
 export type InvestmentCategory =
@@ -847,6 +853,826 @@ export const CUSTODY_INSOLVENCY: Readonly<{
     },
   ],
 })
+
+// ---------------------------------------------------------------------------
+// Cuánto paga hoy un plazo fijo: valores de referencia
+// ---------------------------------------------------------------------------
+// POR QUÉ EXISTE: /herramientas/calculadora-plazo-fijo pedía "Tasa anual" con un default de 8% y
+// cero referencia de qué número es normal en Uruguay. En pesos no hay nada en plaza que pague 8%,
+// así que el lector que llegaba de Google se iba con una cuenta hecha sobre un número que le
+// inventó el formulario. La fila `plazo-fijo-bancario` de arriba ya nombraba la fuente correcta
+// —"el BCU publica Tasas Medias de Interés mensuales por moneda/plazo", con el link a la serie—
+// y nunca la leía. Esto la lee.
+//
+// DOS COSAS DISTINTAS QUE NO SE MEZCLAN:
+//   1. LA MEDIA DE MERCADO (BCU). Promedio mensual ponderado de lo que efectivamente se pactó.
+//      Sirve para saber si lo que te ofrecen está por encima o por debajo de plaza. NO es una tasa
+//      que puedas contratar: nadie te vende el promedio.
+//   2. UNA PIZARRA CONCRETA (BROU). Precio comercial de un banco, publicado por el banco, con su
+//      fecha de vigencia. Sirve para poner un número real y contratable en la calculadora. Caduca
+//      sin aviso: por eso va con `vigencia` y con el PDF al lado.
+// Se publica una sola pizarra, no un ranking de bancos. Comparar precios comerciales de todas las
+// instituciones es otra página y otra responsabilidad.
+//
+// LO QUE EL BCU **NO** PUBLICA, y se dice en vez de rellenarlo:
+//   - NO separa banca pública de banca privada. Los tres cuadros de tasas pasivas se publican como
+//     "TOTAL SISTEMA BANCARIO" y la nota (2) de la propia planilla enumera lo que entra en ese
+//     total: BROU, BHU, bancos privados, cooperativas de intermediación financiera y casas
+//     financieras en actividad en cada fecha. Las únicas aperturas son moneda, plazo y Persona
+//     Física / Persona Jurídica. Buscamos una serie de pasivas separada por tipo de banca en
+//     "Series estadísticas → Tasas de interés" y en "Tasas medias de interés" y no la encontramos.
+//   - NO publica tasas PASIVAS por institución. La única publicación del BCU con tasas banco por
+//     banco es "Tasas informativas SSF" (eras09dmn.pdf), y es del lado activo: tasa de tarjeta de
+//     crédito sobre saldos. El otro archivo con nombre parecido, "Tasas Medias de Empresas de
+//     Intermediación Financiera" (eras40d_v51.xls, el de los topes de usura de la Ley 18.212),
+//     sólo cubre préstamos en efectivo.
+//   - En pesos y en dólares NO abre un tramo de "367 días o más": el último tramo del cuadro es
+//     "≥181 y <367 días". Para plazos de más de un año lo único que hay es el PROMEDIO, que por la
+//     nota (3) mezcla todos los plazos. Por eso `marketBucketFor` devuelve null ahí en vez de
+//     estirar el tramo de 181–366 y hacerlo pasar por una referencia a 2 años.
+//   - En UI, junio de 2026 dice textualmente "sin operaciones" en los tres tramos de menos de 91
+//     días. No es un cero ni un dato faltante: es que no se pactó nada. Va como null.
+//
+// LA TRAMPA DE LA TEA: todas las tasas de esta sección son EFECTIVAS ANUALES —lo dice la nota (1)
+// del BCU ("tasas de interés efectivas anuales") y la nota i. de la pizarra de BROU ("Todas las
+// Tasas son efectivas anuales")—. La calculadora, en cambio, trata la tasa que le tipeás como
+// NOMINAL anual capitalizable m veces al año. Meter una TEA con capitalización mensual da de más.
+// Por eso la página fija capitalización anual cuando aplicás una de estas referencias, y los
+// tramos de BROU distinguen el pago "al vencimiento" (sin capitalización intermedia: es el caso
+// que la fórmula reproduce exacto) del pago periódico de intereses, que es un producto distinto,
+// con otra tasa y otro mínimo.
+//
+// EL NETO DE IRPF NO SE HARDCODEA: sale de `utils/capitalTax.ts`, que ya tiene la matriz del
+// Título 7 art. 37 lit. A por moneda y plazo. Un 5,50% bruto a 24 meses en pesos no reajustables
+// paga 2,5% de IRPF sobre el interés, así que el neto es 5,50 × (1 − 0,025) = 5,3625 → 5,36%.
+// Ese mismo depósito salía con OTRO neto en otra página: /conviene-comprar-en-cuotas publicaba
+// "5,50% bruto, 5,37% neto", que es dividir (5,50 / 1,025 = 5,3659) en vez de multiplicar — el
+// impuesto se cobra sobre el interés ganado, no sobre una base a la que haya que "sacarle" el
+// impuesto. Corregido el 2026-08-10: `utils/financingData.ts` publica 5,36 (el mismo número que
+// devuelve `neto()` de `server/utils/financingMerge.ts` en cuanto el backend refresca la tasa, o
+// sea que la tabla se contradecía con su propia aritmética) y el FAQ de esa página interpola el
+// dato en vez de repetirlo a mano. `tests/unit/investments.test.ts` cruza las dos publicaciones.
+//
+// LA MATRIZ DE IRPF TAMPOCO SE REESCRIBE A MANO: la prosa y el FAQ de la calculadora enumeraban
+// las nueve alícuotas como texto literal, tres copias fuera del único módulo que el repo declara
+// fuente de verdad tributaria. Ahora salen de `irpfMatrixText()` / `irpfDepositMatrix()`, que las
+// leen de DEPOSIT_RULES: si el legislador toca la escala, el texto se mueve con el cálculo.
+//
+// FUENTES, descargadas y leídas el 2026-08-10:
+//   - BCU — Series estadísticas / Tasas de interés: la planilla `tasas.xls`, hojas "Pasivas $",
+//     "Pasivas UI" y "Pasivas U$S" (último mes publicado: junio de 2026), con sus notas (1), (2)
+//     y (3). La página del BCU linkea sólo las pasivas en moneda nacional y en dólares; la hoja de
+//     UI está en el mismo libro aunque no tenga link propio.
+//   - BCU — Tasas medias de interés (listado completo de la biblioteca: 11 archivos, sin
+//     paginación pendiente) y su Metodología (`nuevametodologia.pdf`), que confirman que esa
+//     publicación es del lado activo (Ley 18.212 art. 12).
+//   - BROU — "PIZARRAS DE PLAZO FIJO E-BROU Y SUCURSALES", tasas de personas con vigencia 01 de
+//     julio de 2026. Su nota iv. abre las vigencias POR MONEDA y no coinciden con la del
+//     documento: pesos y dólares rigen desde el 26/03/2026 y lo que se movió el 01/07/2026 fue la
+//     pizarra de unidades indexadas. Por eso cada serie lleva su `vigenciaMoneda` y la página la
+//     muestra: decir "vigente al 01/07/2026" en pesos sugiere un cambio de precio que no hubo.
+//   - BROU — el mismo PDF, bajo el mismo título, publica un producto en pesos que NO es un plazo
+//     fijo: "AHORRO EN SUELDO" (5,50% el 1er año del contrato, 6,33% el 2do, 6,88% el 3ro). Va en
+//     `ahorroEnSueldo` con sus condiciones, leídas de la ficha del producto
+//     (brou.com.uy/personas/inversiones/ahorro-en-sueldo): depósitos mensuales de $500 a $50.000
+//     debitados de una cuenta vista, contrato de un año renovable hasta dos veces, contratación
+//     sólo por e-BROU/AppBROU. El BROU NO publica que exija cobrar el sueldo ahí.
+//   - DGI — IRPF, rendimientos de capital mobiliario: la matriz por moneda y plazo (5,5 / 2,5 /
+//     0,5 en pesos sin reajuste; 10 / 7 / 5 en UI; 12 / 12 / 7 en moneda extranjera), vigente
+//     desde el 1/1/2023.
+// Es información de referencia, no asesoramiento financiero. Las tasas comerciales cambian.
+
+/** Fecha en que se descargaron y contrastaron las tasas de referencia de esta sección. */
+export const DEPOSIT_REFERENCE_VERIFIED_AT = '2026-08-10'
+
+/** Las tres monedas en las que hay serie del BCU y pizarra de BROU. El euro va aparte. */
+export type DepositCurrency = 'UYU' | 'UI' | 'USD'
+
+export interface MarketRateBucket {
+  /** El tramo tal cual lo titula la planilla. Nunca redondeado a "30/90/180/360". */
+  label: string
+  minDays: number
+  /** Extremo superior EXCLUIDO. `null` sólo en un tramo abierto (UI, ≥367 días). */
+  maxDays: number | null
+  /** Persona Física. `null` cuando la planilla dice "sin operaciones". */
+  personaFisica: number | null
+  /** Total del cuadro: personas físicas y jurídicas juntas. `null` = "sin operaciones". */
+  totalSistema: number | null
+}
+
+export interface MarketRateSeries {
+  currency: DepositCurrency
+  /** Título exacto del cuadro. */
+  cuadro: string
+  /** Hoja de `tasas.xls` de donde sale. */
+  hoja: string
+  buckets: MarketRateBucket[]
+  /** Promedio de TODOS los plazos, incluidos los ≥367 días (nota (3) de la planilla). */
+  promedioPersonaFisica: number
+  promedioTotalSistema: number
+}
+
+/**
+ * Tasas medias PASIVAS del BCU: lo que el sistema bancario pagó de verdad por depósitos a plazo
+ * fijo en el último mes publicado. Redondeadas a dos decimales desde la planilla.
+ */
+export const BCU_DEPOSIT_RATES: Readonly<{
+  period: string
+  periodIso: string
+  scope: string
+  weighting: string
+  pageUrl: string
+  seriesUrl: string
+  series: Readonly<Record<DepositCurrency, MarketRateSeries>>
+}> = Object.freeze({
+  period: 'junio de 2026',
+  periodIso: '2026-06',
+  scope:
+    'Total sistema bancario: BROU, BHU, bancos privados, cooperativas de intermediación financiera y casas financieras en actividad en cada fecha. No hay apertura por banca pública / privada ni por institución.',
+  weighting:
+    'Tasas efectivas anuales, promedio mensual ponderado de las operaciones de depósito a plazo fijo del mes (nota (1) de la planilla).',
+  pageUrl:
+    'https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/Series-Estadisticas-Tasas.aspx',
+  seriesUrl: 'https://www.bcu.gub.uy/Servicios-Financieros-SSF/Series%20IF/tasas.xls',
+  series: Object.freeze({
+    UYU: Object.freeze({
+      currency: 'UYU',
+      cuadro:
+        'Tasas de interés pasivas por depósitos a plazo en moneda nacional (SNF) — Total sistema bancario',
+      hoja: 'Pasivas $',
+      buckets: [
+        {
+          label: 'Menos de 30 días',
+          minDays: 0,
+          maxDays: 30,
+          personaFisica: 3.63,
+          totalSistema: 4.63,
+        },
+        {
+          label: '30 a 60 días',
+          minDays: 30,
+          maxDays: 61,
+          personaFisica: 4.45,
+          totalSistema: 5.01,
+        },
+        {
+          label: '61 a 90 días',
+          minDays: 61,
+          maxDays: 91,
+          personaFisica: 4.94,
+          totalSistema: 5.58,
+        },
+        {
+          label: '91 a 180 días',
+          minDays: 91,
+          maxDays: 181,
+          personaFisica: 4.92,
+          totalSistema: 5.17,
+        },
+        {
+          label: '181 a 366 días',
+          minDays: 181,
+          maxDays: 367,
+          personaFisica: 5.22,
+          totalSistema: 5.25,
+        },
+      ],
+      promedioPersonaFisica: 4.79,
+      promedioTotalSistema: 4.96,
+    }),
+    UI: Object.freeze({
+      currency: 'UI',
+      cuadro:
+        'Tasas de interés pasivas por depósitos a plazo en unidades indexadas (SNF) — Total sistema bancario',
+      hoja: 'Pasivas UI',
+      buckets: [
+        {
+          label: 'Menos de 30 días',
+          minDays: 0,
+          maxDays: 30,
+          personaFisica: null,
+          totalSistema: null,
+        },
+        {
+          label: '30 a 60 días',
+          minDays: 30,
+          maxDays: 61,
+          personaFisica: null,
+          totalSistema: null,
+        },
+        {
+          label: '61 a 90 días',
+          minDays: 61,
+          maxDays: 91,
+          personaFisica: null,
+          totalSistema: null,
+        },
+        {
+          label: '91 a 180 días',
+          minDays: 91,
+          maxDays: 181,
+          personaFisica: 1.94,
+          totalSistema: 2.36,
+        },
+        {
+          label: '181 a 366 días',
+          minDays: 181,
+          maxDays: 367,
+          personaFisica: 1.65,
+          totalSistema: 1.68,
+        },
+        {
+          label: '367 días o más',
+          minDays: 367,
+          maxDays: null,
+          personaFisica: 1.73,
+          totalSistema: 1.73,
+        },
+      ],
+      promedioPersonaFisica: 1.67,
+      promedioTotalSistema: 1.69,
+    }),
+    USD: Object.freeze({
+      currency: 'USD',
+      cuadro:
+        'Tasas de interés pasivas por depósitos a plazo en dólares (SNF) — Total sistema bancario',
+      hoja: 'Pasivas U$S',
+      buckets: [
+        {
+          label: 'Menos de 30 días',
+          minDays: 0,
+          maxDays: 30,
+          personaFisica: 2.53,
+          totalSistema: 2.67,
+        },
+        {
+          label: '30 a 60 días',
+          minDays: 30,
+          maxDays: 61,
+          personaFisica: 2.07,
+          totalSistema: 2.34,
+        },
+        {
+          label: '61 a 90 días',
+          minDays: 61,
+          maxDays: 91,
+          personaFisica: 2.66,
+          totalSistema: 2.76,
+        },
+        {
+          label: '91 a 180 días',
+          minDays: 91,
+          maxDays: 181,
+          personaFisica: 2.49,
+          totalSistema: 2.54,
+        },
+        {
+          label: '181 a 366 días',
+          minDays: 181,
+          maxDays: 367,
+          personaFisica: 2.66,
+          totalSistema: 2.75,
+        },
+      ],
+      promedioPersonaFisica: 2.38,
+      promedioTotalSistema: 2.54,
+    }),
+  }),
+})
+
+export interface BankBoardTranche {
+  /** Tramo tal cual figura en la pizarra ("732 – 1096"), en días. */
+  label: string
+  minDays: number
+  maxDays: number
+  /** Pizarra e-BROU / AppBROU, intereses al vencimiento. */
+  online: number
+  /** Pizarra de sucursales, intereses al vencimiento. */
+  branch: number
+  /** Intereses pagados periódicamente. `null` donde la pizarra dice "No corresponde". */
+  onlinePeriodic: number | null
+  branchPeriodic: number | null
+}
+
+export interface BankBoardSeries {
+  currency: DepositCurrency
+  /** Mínimo con intereses al vencimiento, tal cual lo imprime la pizarra. */
+  minimum: string
+  /** Mínimo del producto con pago periódico de intereses, cuando existe. */
+  minimumPeriodic: string | null
+  /** Cada cuánto se pagan los intereses en la variante periódica. */
+  periodicity: string | null
+  /** Fecha de vigencia de la pizarra de esa moneda, según la tabla de vigencias del PDF. */
+  vigenciaMoneda: string
+  tranches: BankBoardTranche[]
+}
+
+/**
+ * "Ahorro en Sueldo": el otro producto en pesos de la misma pizarra. NO es un plazo fijo —no
+ * colocás un monto único ni queda inmovilizado—, sino un plan de depósitos mensuales, y es la
+ * única tasa en pesos del documento que supera el 5,50%. Se publica porque omitirlo hacía que la
+ * página dijera "el máximo contratable en pesos es 5,50%" citando un PDF que muestra 6,88%.
+ */
+export interface SalarySavingsPlan {
+  name: string
+  /** Qué es, en los términos de la ficha del producto. */
+  what: string
+  currency: 'UYU'
+  minMonthly: number
+  maxMonthly: number
+  /** Tasa de pizarra del producto, 1er año del contrato. */
+  year1: number
+  /** 2º y 3er año: la de pizarra MÁS la prima por permanencia. */
+  year2: number
+  year3: number
+  /** La prima es un % SOBRE la tasa, no puntos: 5,50 × 1,15 = 6,33 y 5,50 × 1,25 = 6,88. */
+  primaPct2: number
+  primaPct3: number
+  term: string
+  channel: string
+  /**
+   * Condición de acceso tal como el BROU la publica. El nombre sugiere domiciliar el sueldo y la
+   * ficha NO lo pide: el débito sale de una cuenta vista del cliente. No se completa el hueco.
+   */
+  requirement: string
+  vigencia: string
+  productUrl: string
+}
+
+/**
+ * Pizarra de plazo fijo del BROU para personas. Es un precio comercial de UN banco, no un
+ * promedio de plaza: sirve para poner en la calculadora un número que se puede contratar hoy.
+ *
+ * El dato que más mueve la aguja no es el nivel sino el canal: en pesos, a 732–1096 días, la
+ * pizarra e-BROU paga 5,50% y la de sucursales 4,13% por el mismo depósito. Y la nota ii. del
+ * PDF aclara que la pizarra e-brou sólo aplica a personas físicas.
+ *
+ * `vigencia` es la del DOCUMENTO; la vigencia real es por moneda y vive en `vigenciaMoneda`
+ * (nota iv.). No son lo mismo y la página muestra las dos.
+ */
+export const BROU_DEPOSIT_BOARD: Readonly<{
+  bank: string
+  documentTitle: string
+  vigencia: string
+  pageUrl: string
+  pdfUrl: string
+  notes: readonly string[]
+  series: Readonly<Record<DepositCurrency, BankBoardSeries>>
+  ahorroEnSueldo: Readonly<SalarySavingsPlan>
+  eur: Readonly<{ rate: number; minimum: string; vigencia: string; note: string }>
+}> = Object.freeze({
+  bank: 'BROU',
+  documentTitle: 'Pizarras de plazo fijo e-BROU y sucursales (personas)',
+  vigencia: '01 de julio de 2026',
+  pageUrl: 'https://www.brou.com.uy/personas/inversiones/plazo-fijo',
+  pdfUrl: 'https://www.brou.com.uy/documents/20182/112235/tasas-pf-personas.pdf',
+  notes: [
+    'Todas las tasas de la pizarra son efectivas anuales.',
+    'La pizarra e-BROU sólo aplica a personas físicas.',
+    'Las tasas aplican tanto para las constituciones como para las renovaciones de contratos que se realicen durante el período de vigencia.',
+    'El último ajuste de montos mínimos se realizó con vigencia 1/4/2018.',
+  ],
+  series: Object.freeze({
+    UYU: Object.freeze({
+      currency: 'UYU',
+      minimum: '$ 5.000',
+      minimumPeriodic: '$ 10.000',
+      periodicity: 'mensual',
+      vigenciaMoneda: '26/03/2026',
+      tranches: [
+        {
+          label: '30 – 59',
+          minDays: 30,
+          maxDays: 59,
+          online: 4.5,
+          branch: 3.38,
+          onlinePeriodic: null,
+          branchPeriodic: null,
+        },
+        {
+          label: '60 – 90',
+          minDays: 60,
+          maxDays: 90,
+          online: 5.0,
+          branch: 3.75,
+          onlinePeriodic: null,
+          branchPeriodic: null,
+        },
+        {
+          label: '91 – 180',
+          minDays: 91,
+          maxDays: 180,
+          online: 5.2,
+          branch: 3.9,
+          onlinePeriodic: 4.68,
+          branchPeriodic: 3.51,
+        },
+        {
+          label: '181 – 366',
+          minDays: 181,
+          maxDays: 366,
+          online: 5.4,
+          branch: 4.05,
+          onlinePeriodic: 4.86,
+          branchPeriodic: 3.65,
+        },
+        {
+          label: '367 – 546',
+          minDays: 367,
+          maxDays: 546,
+          online: 5.5,
+          branch: 4.13,
+          onlinePeriodic: 4.95,
+          branchPeriodic: 3.71,
+        },
+        {
+          label: '547 – 731',
+          minDays: 547,
+          maxDays: 731,
+          online: 5.5,
+          branch: 4.13,
+          onlinePeriodic: 4.95,
+          branchPeriodic: 3.71,
+        },
+        {
+          label: '732 – 1096',
+          minDays: 732,
+          maxDays: 1096,
+          online: 5.5,
+          branch: 4.13,
+          onlinePeriodic: 4.95,
+          branchPeriodic: 3.71,
+        },
+      ],
+    }),
+    UI: Object.freeze({
+      currency: 'UI',
+      minimum: 'UI 1.500',
+      minimumPeriodic: 'UI 1.500',
+      periodicity: 'trimestral',
+      vigenciaMoneda: '01/07/2026',
+      tranches: [
+        {
+          label: '181 – 366',
+          minDays: 181,
+          maxDays: 366,
+          online: 1.6,
+          branch: 1.2,
+          onlinePeriodic: 1.44,
+          branchPeriodic: 1.08,
+        },
+        {
+          label: '367 – 546',
+          minDays: 367,
+          maxDays: 546,
+          online: 1.7,
+          branch: 1.28,
+          onlinePeriodic: 1.53,
+          branchPeriodic: 1.15,
+        },
+        {
+          label: '547 – 731',
+          minDays: 547,
+          maxDays: 731,
+          online: 1.7,
+          branch: 1.28,
+          onlinePeriodic: 1.53,
+          branchPeriodic: 1.15,
+        },
+        {
+          label: '732 – 1096',
+          minDays: 732,
+          maxDays: 1096,
+          online: 1.7,
+          branch: 1.28,
+          onlinePeriodic: 1.53,
+          branchPeriodic: 1.15,
+        },
+      ],
+    }),
+    USD: Object.freeze({
+      currency: 'USD',
+      minimum: 'U$S 500',
+      minimumPeriodic: 'U$S 500',
+      periodicity: 'mensual',
+      vigenciaMoneda: '26/03/2026',
+      tranches: [
+        {
+          label: '30 – 59',
+          minDays: 30,
+          maxDays: 59,
+          online: 1.5,
+          branch: 1.13,
+          onlinePeriodic: null,
+          branchPeriodic: null,
+        },
+        {
+          label: '60 – 90',
+          minDays: 60,
+          maxDays: 90,
+          online: 2.0,
+          branch: 1.5,
+          onlinePeriodic: null,
+          branchPeriodic: null,
+        },
+        {
+          label: '91 – 180',
+          minDays: 91,
+          maxDays: 180,
+          online: 2.5,
+          branch: 1.88,
+          onlinePeriodic: 2.25,
+          branchPeriodic: 1.69,
+        },
+        {
+          label: '181 – 366',
+          minDays: 181,
+          maxDays: 366,
+          online: 2.6,
+          branch: 1.95,
+          onlinePeriodic: 2.34,
+          branchPeriodic: 1.76,
+        },
+        {
+          label: '367 – 546',
+          minDays: 367,
+          maxDays: 546,
+          online: 2.8,
+          branch: 2.1,
+          onlinePeriodic: 2.52,
+          branchPeriodic: 1.89,
+        },
+        {
+          label: '547 – 731',
+          minDays: 547,
+          maxDays: 731,
+          online: 2.8,
+          branch: 2.1,
+          onlinePeriodic: 2.52,
+          branchPeriodic: 1.89,
+        },
+        {
+          label: '732 – 1096',
+          minDays: 732,
+          maxDays: 1096,
+          online: 2.8,
+          branch: 2.1,
+          onlinePeriodic: 2.52,
+          branchPeriodic: 1.89,
+        },
+      ],
+    }),
+  }),
+  ahorroEnSueldo: Object.freeze({
+    name: 'Ahorro en Sueldo',
+    what: 'una cuenta que recibe créditos automáticos mensuales por el monto pactado, debitados de una caja de ahorros o cuenta corriente del propio cliente',
+    currency: 'UYU',
+    minMonthly: 500,
+    maxMonthly: 50_000,
+    year1: 5.5,
+    year2: 6.33,
+    year3: 6.88,
+    primaPct2: 15,
+    primaPct3: 25,
+    term: 'contrato de un año, renovable hasta por otros dos períodos de un año',
+    channel: 'contratación exclusiva por e-BROU y AppBROU',
+    requirement:
+      'El BROU no publica que haya que cobrar el sueldo en el banco: la ficha del producto sólo pide una cuenta vista propia de donde debitar el depósito mensual.',
+    vigencia: '26/03/2026',
+    productUrl: 'https://www.brou.com.uy/personas/inversiones/ahorro-en-sueldo',
+  }),
+  eur: Object.freeze({
+    rate: 0,
+    minimum: '€ 2.500',
+    vigencia: '01/11/2016',
+    // El 0% no se repite acá: la página lo lee de `rate`. Esta nota es la lectura, no el dato.
+    note: 'No se toca desde noviembre de 2016: un plazo fijo en euros en el BROU no rinde nada, sólo guarda.',
+  }),
+})
+
+export interface DepositAbsence {
+  /** Lo que el lector busca y la fuente oficial no publica. */
+  missing: string
+  /** Qué hay en su lugar. */
+  instead: string
+  source: string
+}
+
+/** Lo que ninguna fuente oficial publica. Se dice; no se rellena. */
+export const DEPOSIT_REFERENCE_ABSENCES: readonly DepositAbsence[] = Object.freeze([
+  {
+    missing: 'La tasa media separada entre banca pública y banca privada',
+    instead:
+      'No existe en la serie. Los tres cuadros de tasas pasivas se publican como "Total sistema bancario", y la nota (2) de la planilla enumera qué entra: BROU, BHU, bancos privados, cooperativas de intermediación financiera y casas financieras en actividad en cada fecha. Las únicas aperturas son moneda, plazo y Persona Física / Persona Jurídica.',
+    source: 'BCU — tasas.xls, hojas "Pasivas $", "Pasivas UI" y "Pasivas U$S", nota (2)',
+  },
+  {
+    missing: 'La tasa de plazo fijo de cada banco, en un cuadro oficial comparativo',
+    instead:
+      'El BCU no publica tasas pasivas por institución. La única publicación suya con tasas banco por banco es "Tasas informativas SSF", y es del lado activo: tasa de tarjeta de crédito sobre saldos. Para comparar plazos fijos hay que ir a la pizarra de cada banco, que cada uno publica por su cuenta.',
+    source: 'BCU — Tasas informativas SSF (eras09dmn.pdf, junio 2026)',
+  },
+  {
+    missing: 'La media de mercado de un plazo fijo a más de un año en pesos o en dólares',
+    instead:
+      'El cuadro corta en "181 a 366 días": no hay tramo de 367 días o más en pesos ni en dólares. Lo único disponible para plazos largos es el promedio de todos los plazos, que por la nota (3) mezcla los tramos cortos con los de más de un año, así que no es la tasa de un depósito a 2 años. En UI sí hay tramo de 367 días o más.',
+    source: 'BCU — tasas.xls, hojas "Pasivas $" y "Pasivas U$S", encabezados y nota (3)',
+  },
+  {
+    missing: 'Una media de mercado en UI a menos de 91 días',
+    instead:
+      'En junio de 2026 la planilla dice "sin operaciones" en los tres tramos de menos de 91 días en unidades indexadas. No es un cero: es que no se pactó ningún depósito en ese plazo. La pizarra del BROU coincide, porque su plazo fijo en UI arranca recién en 181 días.',
+    source: 'BCU — tasas.xls, hoja "Pasivas UI", junio 2026',
+  },
+])
+
+export const DEPOSIT_REFERENCE_SOURCES: readonly { label: string; url: string }[] = Object.freeze([
+  {
+    label: 'BCU — Series estadísticas: tasas de interés pasivas (planilla tasas.xls)',
+    url: 'https://www.bcu.gub.uy/Servicios-Financieros-SSF/Series%20IF/tasas.xls',
+  },
+  {
+    label: 'BCU — Series estadísticas / Tasas de interés (página de la serie)',
+    url: 'https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/Series-Estadisticas-Tasas.aspx',
+  },
+  {
+    label: 'BCU — Tasas medias de interés (publicación del lado activo, Ley 18.212)',
+    url: 'https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/Tasas-Medias.aspx',
+  },
+  {
+    label: 'BROU — Pizarras de plazo fijo e-BROU y sucursales, vigencia 01/07/2026 (PDF)',
+    url: 'https://www.brou.com.uy/documents/20182/112235/tasas-pf-personas.pdf',
+  },
+  {
+    label: 'BROU — Depósito a plazo fijo (producto)',
+    url: 'https://www.brou.com.uy/personas/inversiones/plazo-fijo',
+  },
+  {
+    label: 'BROU — Ahorro en Sueldo (condiciones del producto)',
+    url: 'https://www.brou.com.uy/personas/inversiones/ahorro-en-sueldo',
+  },
+  {
+    label: 'DGI — IRPF: rendimientos de capital mobiliario (tasas por moneda y plazo)',
+    url: 'https://www.gub.uy/direccion-general-impositiva/comunicacion/publicaciones/irpf-rendimientos-capital-mobiliario',
+  },
+])
+
+/**
+ * Meses → días, para poder cruzar un plazo tipeado en meses contra tramos que las dos fuentes
+ * definen en DÍAS. 30,4375 = 365,25/12, así que 12 meses caen en 365 días (tramo 181–366, no en
+ * el de más de un año) y 24 meses en 731 (tramo 547–731). Redondear a 30 días por mes metería un
+ * depósito a 12 meses en el tramo equivocado.
+ */
+export function daysForMonths(months: number): number {
+  if (!Number.isFinite(months) || months <= 0) return 0
+  return Math.round(months * 30.4375)
+}
+
+/** Mapea la moneda del depósito a la que usa la matriz de IRPF del Título 7 art. 37 lit. A. */
+function taxCurrency(currency: DepositCurrency): TaxCurrency {
+  return currency === 'UI' ? 'UYU_UI' : currency
+}
+
+/** El tramo del BCU que corresponde a un plazo, o `null` si la serie no abre ese tramo. */
+export function marketBucketFor(
+  currency: DepositCurrency,
+  months: number
+): MarketRateBucket | null {
+  const days = daysForMonths(months)
+  if (days <= 0) return null
+  return (
+    BCU_DEPOSIT_RATES.series[currency].buckets.find(
+      b => days >= b.minDays && (b.maxDays == null || days < b.maxDays)
+    ) ?? null
+  )
+}
+
+/** El tramo de la pizarra del BROU que corresponde a un plazo, o `null` si no ofrece ese plazo. */
+export function brouTrancheFor(currency: DepositCurrency, months: number): BankBoardTranche | null {
+  const days = daysForMonths(months)
+  if (days <= 0) return null
+  return (
+    BROU_DEPOSIT_BOARD.series[currency].tranches.find(
+      t => days >= t.minDays && days <= t.maxDays
+    ) ?? null
+  )
+}
+
+export interface NetOfIrpf {
+  grossPct: number
+  /** Alícuota del Título 7 art. 37 lit. A que corresponde a esa moneda y ese plazo. */
+  taxPct: number
+  netPct: number
+  law: string
+  label: string
+}
+
+/**
+ * Tasa neta de IRPF. El impuesto se cobra sobre el interés ganado, así que el neto es
+ * bruto × (1 − alícuota) — no bruto / (1 + alícuota).
+ */
+export function netOfIrpf(grossPct: number, currency: DepositCurrency, months: number): NetOfIrpf {
+  const rule = depositRule(taxCurrency(currency), termFromMonths(months))
+  const taxPct = rule.rate ?? 0
+  return {
+    grossPct,
+    taxPct,
+    netPct: grossPct * (1 - taxPct / 100),
+    law: rule.law,
+    label: rule.label,
+  }
+}
+
+/**
+ * Los tramos donde la media de personas físicas NO queda por debajo del total del sistema, mirando
+ * los DOS DECIMALES QUE SE PUBLICAN y no la planilla cruda.
+ *
+ * Existe porque la prosa afirmaba "en todos los tramos" y la tabla de la propia página la
+ * desmentía: en unidades indexadas, a 367 días o más, junio de 2026 muestra 1,73% en las dos
+ * columnas. En `tasas.xls` son 1,727685 y 1,734339 —la persona física sí está abajo—, pero el
+ * lector sólo ve el redondeo, y una afirmación universal contra una tabla que empata es un error
+ * a la vista. La página deriva de acá el alcance de la frase en vez de escribirlo a mano.
+ */
+export function pfNotBelowTotal(currency: DepositCurrency): MarketRateBucket[] {
+  return BCU_DEPOSIT_RATES.series[currency].buckets.filter(
+    b => b.personaFisica != null && b.totalSistema != null && b.personaFisica >= b.totalSistema
+  )
+}
+
+/** Una fila de la matriz de IRPF de depósitos, leída de DEPOSIT_RULES (nunca escrita a mano). */
+export interface IrpfDepositRow {
+  currency: DepositCurrency
+  /** Cómo la nombra la ley, para poder decirlo en prosa. */
+  label: string
+  hasta1a: number
+  de1a3a: number
+  mas3a: number
+}
+
+/** El artículo del que salen las nueve alícuotas, tomado de la propia regla. */
+export const DEPOSIT_IRPF_LAW = depositRule('UYU', 'hasta_1a').law
+
+const IRPF_ROW_LABELS: Record<DepositCurrency, string> = {
+  UYU: 'pesos sin reajuste',
+  UI: 'unidades indexadas',
+  USD: 'moneda extranjera',
+}
+
+/**
+ * Una alícuota de la matriz. `rate: null` significa "la ley no lo resuelve", y en esta matriz no
+ * pasa en ninguna de las nueve celdas: si algún día pasa, hay que publicar la ausencia, no un 0%.
+ * Un `?? 0` acá imprimiría "0% de IRPF", que es exactamente la mentira que capitalTax.ts existe
+ * para impedir, así que se rompe fuerte y el test lo caza antes que el lector.
+ */
+function irpfRate(currency: TaxCurrency, term: DepositTerm): number {
+  const r = depositRule(currency, term)
+  if (r.rate == null) {
+    throw new TypeError(
+      `irpfDepositMatrix: ${currency}/${term} no tiene alícuota resuelta (${r.label}). Publicá la ausencia, no un 0%.`
+    )
+  }
+  return r.rate
+}
+
+/**
+ * La matriz completa del Título 7 art. 37 lit. A por moneda y plazo, resuelta desde
+ * `capitalTax.ts`. Las alícuotas nunca se declaran acá: si la escala cambia, esto cambia.
+ */
+export function irpfDepositMatrix(): IrpfDepositRow[] {
+  return (['UYU', 'UI', 'USD'] as DepositCurrency[]).map(currency => {
+    const c = taxCurrency(currency)
+    return {
+      currency,
+      label: IRPF_ROW_LABELS[currency],
+      hasta1a: irpfRate(c, 'hasta_1a'),
+      de1a3a: irpfRate(c, 'de_1a_3a'),
+      mas3a: irpfRate(c, 'mas_3a'),
+    }
+  })
+}
+
+/** "5,5%" con la coma decimal uruguaya, sin arrastrar `utils/format` a un módulo puro. */
+function irpfPct(value: number): string {
+  return `${value.toLocaleString('es-UY', { maximumFractionDigits: 2 })}%`
+}
+
+/**
+ * La matriz en prosa, para el texto y el FAQ de la calculadora. Colapsa los dos primeros tramos
+ * cuando la alícuota es la misma —hoy pasa en moneda extranjera, 12% hasta un año y 12% de uno a
+ * tres—, así que se lee "12% hasta tres años y 7% después" sin decir nada que la ley no diga.
+ */
+export function irpfRowText(row: IrpfDepositRow): string {
+  return row.hasta1a === row.de1a3a
+    ? `${irpfPct(row.hasta1a)} hasta tres años y ${irpfPct(row.mas3a)} después`
+    : `${irpfPct(row.hasta1a)} hasta un año, ${irpfPct(row.de1a3a)} de uno a tres años y ${irpfPct(row.mas3a)} de más de tres`
+}
+
+/** La matriz entera en una frase: la que se publicaba a mano en tres lugares distintos. */
+export function irpfMatrixText(): string {
+  return irpfDepositMatrix()
+    .map(row => `${row.label}, ${irpfRowText(row)}`)
+    .join('; ')
+}
 
 export function riskLabel(risk: RiskLevel): string {
   const labels: Record<RiskLevel, string> = {

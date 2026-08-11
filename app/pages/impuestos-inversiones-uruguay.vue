@@ -1171,6 +1171,19 @@ const myths = [
     truth:
       'Ya no. El art. 21 imputa esas rentas <strong>directamente al beneficiario final con participación ≥ 5%</strong>, se distribuyan o no, y el art. 22 (que lo limitaba a jurisdicciones de baja tributación) <strong>fue derogado</strong>.',
   },
+  // Los dos mitos que empujan a conductas OPUESTAS y las dos equivocadas: no traer la plata por
+  // miedo al impuesto, o declarar cero porque «nunca giré nada». Sin cifras nuevas: el punto es
+  // cuál es el hecho generador, y eso ya está en los artículos que la página cita más arriba.
+  {
+    myth: 'El impuesto se dispara cuando traigo la plata a Uruguay',
+    truth:
+      'No. El hecho generador es <strong>obtener la renta</strong>, no transferirla: el impuesto «gravará las rentas <em>obtenidas</em> por las personas físicas» (Título 7, art. 1). Los rendimientos de capital se imputan <strong>por lo devengado</strong> (art. 13) y los incrementos patrimoniales <strong>al momento de la enajenación</strong> (art. 28). Nada de eso está condicionado a que el dinero entre al país, y el régimen de rentas del exterior tampoco lo condiciona. Dejar la plata afuera <strong>no difiere ni evita el impuesto</strong>, y traerla no crea uno nuevo. Lo que sí dispara traerla es una <em>pregunta del banco</em>: la Ley 19.574 le exige seguir la operativa «incluyendo el origen de los fondos cuando sea necesario» (art. 15). Eso es una obligación de justificar el origen, no un tributo.',
+  },
+  {
+    myth: 'Fondear la cuenta del bróker ya paga impuesto',
+    truth:
+      'No. Mover plata tuya de una cuenta tuya a otra cuenta tuya no es una renta: no hay rendimiento devengado (art. 13) ni enajenación (art. 28). El IRPF aparece <strong>después</strong>, cuando esos fondos rinden intereses o dividendos, o cuando vendés con ganancia. Y vale el reverso, que es el error caro: <strong>«nunca giré nada a Uruguay» no habilita a declarar cero</strong>. Si la cuenta del exterior generó renta, la renta existe aunque el dinero siga allá, y sin agente de retención uruguayo lo que corresponde son los anticipos o la declaración jurada. En <strong>criptomonedas</strong> la tasa sigue sin estar fijada por ley —lo explicamos más arriba y no publicamos ningún porcentaje—, pero eso es una duda sobre <em>cuánto</em>, no un permiso para no declarar.',
+  },
 ]
 
 const officialSources = [
@@ -1193,6 +1206,16 @@ const officialSources = [
   {
     label: 'IMPO — Ley 20.345 (activos virtuales)',
     url: 'https://www.impo.com.uy/bases/leyes-originales/20345-2024',
+  },
+  {
+    // `/bases/leyes/` es el texto VIGENTE (el art. 15 está en su redacción actual);
+    // `/bases/leyes-originales/` sería el texto como se publicó en 2017. No confundirlos.
+    label: 'IMPO — Ley 19.574, art. 15 (debida diligencia: «el origen de los fondos»)',
+    url: 'https://www.impo.com.uy/bases/leyes/19574-2017/15',
+  },
+  {
+    label: 'DGI — IRPF: nuevas categorías de rentas obtenidas en el exterior (desde 1/1/2026)',
+    url: 'https://www.gub.uy/direccion-general-impositiva/comunicacion/noticias/irpf-nuevas-categorias-rentas-obtenidas-exterior-personas-fisicas-residentes',
   },
 ]
 
@@ -1226,7 +1249,7 @@ useHead(() => ({
     {
       name: 'keywords',
       content:
-        'impuesto a las ganancias uruguay, irpf inversiones, irpf categoria 1, rentas de capital, impuestos cripto uruguay, impuestos broker exterior, residencia fiscal uruguay, tax holiday uruguay, impuesto al patrimonio, iass, irnr, declaracion jurada irpf',
+        'impuesto a las ganancias uruguay, irpf inversiones, irpf categoria 1, rentas de capital, impuestos cripto uruguay, impuestos broker exterior, residencia fiscal uruguay, tax holiday uruguay, impuesto al patrimonio, iass, irnr, declaracion jurada irpf, traer plata del exterior a uruguay impuesto, repatriar dinero uruguay irpf, fondear cuenta de broker impuesto, justificar origen de fondos banco uruguay',
     },
   ],
   script: [
@@ -1293,6 +1316,14 @@ useHead(() => ({
                 acceptedAnswer: {
                   '@type': 'Answer',
                   text: 'No. La diferencia de cambio por la tenencia de moneda extranjera está exenta de IRPF (Título 7, art. 38, literales G y H). Tener dólares y que suba la cotización no genera impuesto.',
+                },
+              },
+              {
+                '@type': 'Question',
+                name: '¿Pago IRPF cuando traigo la plata del exterior a Uruguay?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'No: el impuesto no se dispara por transferir. El hecho generador es obtener la renta — el IRPF grava las rentas obtenidas por las personas físicas (Título 7, art. 1), los rendimientos de capital se imputan por lo devengado (art. 13) y los incrementos patrimoniales al momento de la enajenación (art. 28). Ninguna de esas normas condiciona el gravamen a que el dinero ingrese al país. Por eso dejar la plata afuera no difiere ni evita el impuesto, y traerla no genera uno nuevo. Lo que sí cambia al traerla es que el banco, como sujeto obligado, debe examinar la operación incluyendo el origen de los fondos cuando sea necesario (Ley 19.574, art. 15): es una obligación de justificar el origen, no un impuesto. Tampoco paga impuesto fondear una cuenta de bróker con plata propia: eso no es un rendimiento devengado ni una enajenación.',
                 },
               },
               {

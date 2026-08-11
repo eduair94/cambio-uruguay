@@ -809,8 +809,10 @@
             <li>
               <strong>Administrador de SAS:</strong>
               <strong>{{ money(FIGURES.bpsAdminSas.value) }} por mes</strong> aunque no cobre sueldo
-              ni facture un peso, y no puede declararse sin actividad — “en ningún caso regirá la
-              exoneración del art. 171”. A cambio, sí obtiene FONASA.
+              ni facture un peso: la exención del art. 171 no le corre — “en ningún caso regirá la
+              exoneración del art. 171”. A cambio, sí obtiene FONASA. (Inactivar la
+              <em>sociedad</em>
+              ante BPS sí se puede, pero es un trámite: ver más abajo.)
             </li>
             <li>
               El <strong>mero accionista</strong> de una SAS, que no administra ni representa,
@@ -1062,6 +1064,29 @@
       </div>
     </VCard>
 
+    <!-- ══ 8b. CICLO DE VIDA E IVA DE LAS COMPRAS ══ -->
+    <section v-for="ex in EXPLAINERS" :id="ex.id" :key="ex.id" class="mb-6">
+      <h2 class="section-heading mb-1">{{ ex.heading }}</h2>
+      <p class="text-body-2 text-medium-emphasis mb-4">{{ ex.intro }}</p>
+
+      <VCard variant="flat" class="section-card pa-5 pa-sm-6">
+        <div v-for="n in ex.notes" :key="n.id" class="explainer">
+          <h3 class="text-subtitle-1 font-weight-bold mb-2">{{ n.title }}</h3>
+          <p v-for="(p, j) in n.body" :key="j" class="text-body-2 mb-2">{{ p }}</p>
+          <ul class="sources-list mb-0">
+            <li v-for="s in n.sources" :key="s.url">
+              <a :href="s.url" target="_blank" rel="noopener noreferrer">{{ s.label }}</a>
+            </li>
+          </ul>
+        </div>
+        <p class="text-caption text-medium-emphasis mt-5 mb-0">
+          Verificado contra la norma y el trámite el <strong>{{ ex.verifiedAt }}</strong
+          >. Los plazos de trámite y los importes de timbre cambian por resolución: confirmalos en
+          el enlace antes de presentar nada.
+        </p>
+      </VCard>
+    </section>
+
     <!-- ══ 9. APOYOS ══ -->
     <h2 class="section-heading mb-1">Apoyos que existen de verdad</h2>
     <p class="text-body-2 text-medium-emphasis mb-4">
@@ -1232,12 +1257,14 @@
 
 <script setup lang="ts">
 import {
+  EXPLAINERS,
   FIGURES,
   IRAE_FICTO,
   IRPF_CAT2,
   MARKET_ESTIMATES,
   REGIMES,
   evaluate,
+  laterIsoDate,
   type CostBreakdown,
   type Eligibility,
   type RankedRegime,
@@ -1978,6 +2005,11 @@ const sources = computed<SourceEntry[]>(() => {
     const e = map.get(url)
     if (e) {
       if (!e.items.includes(item)) e.items.push(item)
+      // ROUND-4 LEVE — this used to KEEP the first date it saw and drop `when` on the floor,
+      // which quietly falsified the comment below: `REGIMES` runs first, so Ley 16.713 art. 172
+      // and Ley 19.820 art. 43 were published with the module-wide date even though the ciclo
+      // audit re-verified them later. A URL verified twice is as fresh as its latest check.
+      e.verifiedAt = laterIsoDate(e.verifiedAt, when)
       return
     }
     map.set(url, { url, org: sourceOrg(url), items: [item], verifiedAt: when })
@@ -1988,6 +2020,16 @@ const sources = computed<SourceEntry[]>(() => {
   add(IRAE_FICTO.source, 'Escala del IRAE ficto (Dto. 150/007 art. 64)', IRAE_FICTO.verifiedAt)
   for (const reg of REGIMES) {
     for (const s of reg.sources) add(s.url, s.label, verifiedAt)
+  }
+  // Los trámites y las normas del ciclo de vida (pausar/cerrar) y del IVA de las compras. Llevan
+  // la fecha del PROPIO bloque, no la general: fecharlos con `verifiedAt` diría que se verificaron
+  // el día en que se verificaron los topes de BPS, que es otro día y otra fuente. Y como `add()`
+  // se queda con la fecha MÁS RECIENTE (no con la primera que vio), esto vale también para las
+  // normas que ya venían de `REGIMES[].sources` — que es donde el comentario mentía antes.
+  for (const ex of EXPLAINERS) {
+    for (const n of ex.notes) {
+      for (const s of n.sources) add(s.url, s.label, ex.verifiedAt)
+    }
   }
   // Las normas de las notas CONDICIONALES del veredicto. `REGIMES[].sources` es estática y no
   // las conoce: sin esto, la sección "Fuentes" afirmaría cubrir toda la página mientras deja
@@ -2479,6 +2521,21 @@ useHead(() => ({
   font-size: 0.85rem;
   line-height: 1.65;
   opacity: 0.9;
+}
+
+/* ── Ciclo de vida / IVA de las compras ── */
+.explainer {
+  padding-top: 20px;
+  margin-top: 20px;
+  border-top: 1px dashed rgba(var(--v-border-color), 0.2);
+}
+.explainer:first-child {
+  padding-top: 0;
+  margin-top: 0;
+  border-top: none;
+}
+.explainer p {
+  line-height: 1.7;
 }
 
 /* ── FAQ / fuentes / cross-links ── */

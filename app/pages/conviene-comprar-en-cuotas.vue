@@ -710,7 +710,7 @@ import {
   RENDIMIENTO_DEFAULT,
   type CasoMercado,
 } from '~/utils/financingData'
-import { formatUYU } from '~/utils/format'
+import { formatNumber, formatUYU } from '~/utils/format'
 
 const localePath = useLocalePath()
 
@@ -915,6 +915,12 @@ const enlaces = [
   { to: '/salir-del-clearing', label: 'Salir del clearing', icon: 'mdi-account-alert-outline' },
 ]
 
+// El plazo fijo del BROU sale de la tabla, no de un número tipeado acá: este FAQ publicaba el neto
+// de DIVIDIR por 1,025 (5,3659) mientras /herramientas/calculadora-plazo-fijo publicaba el de
+// multiplicar por 0,975 (5,3625) para el mismo depósito del mismo banco. El IRPF se cobra SOBRE el
+// interés ganado, así que el neto es bruto × (1 − alícuota) y hay uno solo.
+const pfBrou = INSTRUMENTOS.find(i => i.id === 'brou-pf-ebrou')!
+
 const faq = [
   {
     q: '¿Conviene comprar en cuotas si las cuotas son sin interés?',
@@ -926,7 +932,7 @@ const faq = [
   },
   {
     q: '¿Qué rendimiento puedo conseguir en pesos uruguayos hoy?',
-    a: 'Con la Tasa de Política Monetaria del BCU en 5,75%, lo mejor seguro y verificable es un plazo fijo del BROU por e-BROU a 24 meses: 5,50% bruto, 5,37% neto de IRPF. Un fondo de dinero en pesos rinde 4,2%–4,5% neto y está exento de IRPF, pero es el único que te deja sacar plata todos los meses para pagar la cuota. Si leés que algo en pesos paga 15% o 20%, es de Argentina.',
+    a: `Con la Tasa de Política Monetaria del BCU en ${formatNumber(MACRO.tpm.value)}%, lo mejor seguro y verificable es un plazo fijo del BROU por e-BROU a 24 meses: ${formatNumber(pfBrou.bruto)}% bruto, ${formatNumber(pfBrou.neto)}% neto de IRPF. Un fondo de dinero en pesos rinde 4,2%–4,5% neto y está exento de IRPF, pero es el único que te deja sacar plata todos los meses para pagar la cuota. Si leés que algo en pesos paga 15% o 20%, es de Argentina.`,
   },
   {
     q: '¿La devolución del 1% de BROU Recompensa cambia la cuenta?',

@@ -21,11 +21,24 @@
 //
 // EL ERROR QUE SOBREVIVIÓ AL PRIMER ARREGLO, corregido el 2026-08-10 en una segunda pasada: el
 // mínimo del artículo 7.7 se leyó como «1 × la BPC del año» y el módulo publicó un piso de $ 6.864
-// que ninguna fuente publica, un 19 % por debajo del que corresponde. La Ley 19.003 pasó los
-// mínimos y máximos de las prestaciones a U.R. en 2012: los importes de los artículos 7.7 y 7.8
-// están ESCRITOS en BPC pero no se liquidan con la BPC. Ver `BENEFIT_FLOOR`. Moraleja para la
-// próxima: cuando un módulo publica DOS importes distintos para UNA regla legal, lo que hay no es
-// un matiz para explicar en un comentario, es un error.
+// que ninguna fuente publica, un 19 % por debajo del que corresponde. El importe que corresponde es
+// el que publica BPS, $ 8.467, y por eso va copiado con su fecha. Moraleja para la próxima: cuando
+// un módulo publica DOS importes distintos para UNA regla legal, lo que hay no es un matiz para
+// explicar en un comentario, es un error.
+//
+// Y EL ERROR QUE SOBREVIVIÓ AL SEGUNDO, corregido el 2026-08-10 en una tercera pasada: el importe
+// quedó bien y la EXPLICACIÓN quedó derogada. Este módulo afirmaba que «la Ley 19.003 pasó los
+// mínimos y máximos de las prestaciones a U.R. en 2012» y que la «BPC» de los artículos 7.7 y 7.8
+// era por eso una unidad de cuenta CONGELADA que ya no seguía a la BPC. Eso es el TEXTO ORIGINAL de
+// la Ley 19.003, que gobernó entre 2012 y 2020 y hoy no rige. El artículo 1 VIGENTE —redacción que
+// le dio el artículo 739 de la Ley 19.924, en vigor desde el 1/1/2021 por el artículo 3 de esa
+// misma ley— ajusta esos montos «a partir del 1º de enero de 2021 por la variación en la Base de
+// Prestaciones y Contribuciones», convirtiendo a BPC los topes vigentes al 31/12/2020. Es decir: la
+// unidad SÍ sigue a la BPC, año a año y exactamente; lo que no vale 1 es la CANTIDAD de BPC. Y el
+// artículo 2 de esa ley abarca en su literal A al subsidio por ENFERMEDAD y en el literal B al de
+// DESEMPLEO: es un solo mecanismo para los dos, así que la guía de enfermedad de este mismo sitio y
+// este archivo tienen que contar la misma historia. Ver `BENEFIT_FLOOR`, donde ahora está la
+// demostración con los importes que BPS publicó en 2024, 2025 y 2026.
 //
 // LA OTRA MITAD, agregada el 2026-08-10: la palabra «renuncia» no aparecía una sola vez, y el
 // hueco más votado en Reddit no era el cálculo sino «¿si renuncio lo pierdo?», «¿arreglo con la
@@ -52,11 +65,19 @@
 //     https://www.bps.gub.uy/3904/18-16-2005-subsidio-por-desemepleo---retiro-incentivado-en-el-sector-privado-no-es-despido.html
 //   - BPS, «Reclamos de subsidio por desempleo» (qué prueba se exige para discutir la causal)
 //     https://www.bps.gub.uy/18258/reclamos-de-subsidio-por-desempleo.html
+//   - IMPO, Ley 19.003, artículo 1, TEXTO VIGENTE (redacción del art. 739 de la Ley 19.924): cómo
+//     se ajustan los mínimos y máximos de las prestaciones de seguridad social
+//     https://www.impo.com.uy/bases/leyes/19003-2012/1
+//   - IMPO, Ley 19.003, artículo 2, literal B: la indexación alcanza expresamente a los mínimos y
+//     máximos del subsidio por desempleo del Decreto-Ley 15.180
+//     https://www.impo.com.uy/bases/leyes/19003-2012/2
 //
 // LA BPC NO SE DUPLICA ACÁ: sale de `URUGUAY.bpc` en `calculators.ts`, que ya está auditada. PERO
-// NO TODA «BPC» DE ESTE RÉGIMEN ES LA BPC: los topes del artículo 7.8 y el mínimo del 7.7 están
-// escritos en BPC y sin embargo NO se liquidan con la BPC del año, porque la Ley 19.003 los pasó a
-// U.R. en 2012. Ver `BENEFIT_FLOOR`, que es donde está la demostración con los números de BPS.
+// NO TODA «BPC» DE ESTE RÉGIMEN SE MULTIPLICA POR ELLA: los topes del artículo 7.8 y el mínimo del
+// 7.7 están escritos en BPC y aun así no valen esa cantidad de BPC, porque la Ley 19.003 los re-basó
+// al convertir a BPC los topes vigentes al 31/12/2020. Se siguen moviendo con la BPC —de hecho
+// exactamente con ella— pero desde otra cantidad. Ver `BENEFIT_FLOOR`, que es donde está la
+// demostración con los números que BPS publicó en tres años distintos.
 
 import { URUGUAY } from './calculators'
 
@@ -95,6 +116,16 @@ export const UNEMPLOYMENT_SOURCES: readonly BenefitSource[] = Object.freeze([
   {
     label: 'BPS — Reclamos de subsidio por desempleo (discrepancia con la causal)',
     url: 'https://www.bps.gub.uy/18258/reclamos-de-subsidio-por-desempleo.html',
+  },
+  {
+    label:
+      'IMPO — Ley 19.003, art. 1, texto vigente (redacción del art. 739 de la Ley 19.924): los mínimos y máximos de las prestaciones se ajustan desde el 1/1/2021 por la variación de la BPC',
+    url: 'https://www.impo.com.uy/bases/leyes/19003-2012/1',
+  },
+  {
+    label:
+      'IMPO — Ley 19.003, art. 2, literal B: la indexación alcanza a los montos mínimos y máximos del subsidio por desempleo del Decreto-Ley 15.180',
+    url: 'https://www.impo.com.uy/bases/leyes/19003-2012/2',
   },
 ])
 
@@ -166,13 +197,18 @@ export const DESPIDO_PERCENTAGES: readonly number[] = Object.freeze([66, 57, 50,
  * Topes 2026 publicados por BPS, uno por cada mes de subsidio por despido.
  *
  * EL ARTÍCULO 7.8 NUMERAL 1 LOS ESCRIBE EN BPC —11, 9,5, 8, 7, 6,5 y 6 BPC—, PERO ESOS PESOS NO
- * SON MÚLTIPLOS DE LA BPC VIGENTE, y confundirlo es el error del que salió el piso inventado que
- * este módulo publicó hasta el 2026-08-10. Al pie de los artículos 7.x, IMPO anota la Ley 19.003
- * de 16/11/2012: «a partir del 01/01/2012 los montos mínimos y máximos de las prestaciones de
- * seguridad social, se convertirán a U.R.». Desde entonces la unidad de estos topes dejó de seguir
- * a la BPC. Se comprueba con la propia tabla de BPS: 93.155/11 = 80.445/9,5 = 67.754/8 =
- * 59.287/7 = 55.044/6,5 = 50.802/6 ≈ $ 8.468, mientras que la BPC 2026 es $ 6.864. Con la BPC el
- * primer tope daría $ 75.504, que no es lo que BPS paga. Ver {@link BENEFIT_FLOOR}.
+ * SON ESAS CANTIDADES DE BPC, y confundirlo es el error del que salió el piso inventado que este
+ * módulo publicó hasta el 2026-08-10. Se comprueba con la propia tabla de BPS: 93.155/11 =
+ * 80.445/9,5 = 67.754/8 = 59.287/7 = 55.044/6,5 = 50.802/6 ≈ $ 8.468, mientras que la BPC 2026 es
+ * $ 6.864. Con la BPC el primer tope daría $ 75.504, que no es lo que BPS paga.
+ *
+ * OJO CON EL MOTIVO, que es donde este archivo se equivocó una segunda vez: NO es que estos topes
+ * hayan dejado de seguir a la BPC. La siguen, y con precisión de peso — ver
+ * {@link BPS_PUBLISHED_HISTORY}, donde los seis topes de 2025 multiplicados por la variación de la
+ * BPC dan los seis de acá. Lo que cambió es la CANTIDAD de BPC: el artículo 1 vigente de la Ley
+ * 19.003 convirtió a BPC los topes vigentes al 31/12/2020 y desde ahí los ajusta por la variación
+ * de esa unidad. La explicación anterior —«la Ley 19.003 los pasó a U.R. en 2012»— citaba el texto
+ * original de esa ley, sustituido por el artículo 739 de la Ley 19.924. Ver {@link BENEFIT_FLOOR}.
  *
  * NO SON UN PORCENTAJE DE UN TOPE ÚNICO NI SE RECALCULAN ACÁ: es la tabla que BPS publica mes a
  * mes y que no se deriva de una sola base salarial (93.155/0,66 = 141.144 pero 67.754/0,50 =
@@ -220,20 +256,64 @@ export const SUSPENSION_CAP = 67754
  * vamos a poner nosotros.
  *
  * POR QUÉ NO ES `1 × URUGUAY.bpc` ($ 6.864), que es lo que este módulo publicó hasta el
- * 2026-08-10 y que ninguna fuente publica: porque la Ley 19.003 de 16/11/2012, anotada al pie de
- * los artículos 7.x en IMPO, dispuso que «a partir del 01/01/2012 los montos mínimos y máximos de
- * las prestaciones de seguridad social, se convertirán a U.R.». Desde entonces la «BPC» de los
- * artículos 7.7 y 7.8 es una unidad de cuenta congelada, no la BPC del año. La prueba está en la
- * tabla de topes que BPS publica EN LA PROPIA PÁGINA DE DESPIDO: los seis topes son los 11, 9,5,
- * 8, 7, 6,5 y 6 «BPC» del artículo 7.8 a razón de ≈ $ 8.468 cada uno (93.155/11, 80.445/9,5,
- * 67.754/8, 59.287/7, 55.044/6,5, 50.802/6), y $ 8.467 es exactamente una de esas unidades: el
- * «1 BPC» del artículo 7.7. Publicar $ 6.864 dejaba el piso de despido un 19 % por debajo del
- * legal — con un promedio de $ 20.000, el sexto mes salía $ 8.000 cuando no puede bajar de
- * $ 8.467.
+ * 2026-08-10 y que ninguna fuente publica. Y ojo con el motivo, porque acá hubo DOS errores
+ * encadenados: el importe equivocado, y después una explicación equivocada del importe correcto.
+ * No es que la «BPC» de los artículos 7.7 y 7.8 haya dejado de ser la BPC. Es que dejó de ser UNA.
  *
- * LO QUE NO SE PUBLICA, porque no se pudo verificar: a cuántas U.R. equivale. Al valor de la U.R.
- * de enero 2026 que publica DGI ($ 1.851,83) el importe no da un número redondo, así que el
- * mecanismo exacto de la conversión queda sin afirmar. Lo verificado es la unidad en pesos.
+ * EL MECANISMO VIGENTE, con las dos piezas de la Ley 19.003:
+ *   - Artículo 2, literal B: la indexación comprende «los montos mínimos y máximos del subsidio por
+ *     desempleo regulado por el Decreto-Ley Nº 15.180, de 20 de agosto de 1981, con las
+ *     modificaciones de la Ley Nº 18.399». Nombra los MÍNIMOS y los MÁXIMOS: el 7.7 y el 7.8, los
+ *     dos. (El literal A hace lo mismo con el subsidio por enfermedad: un solo mecanismo para los
+ *     dos regímenes, y por eso la guía de enfermedad de este sitio lo cuenta igual que este
+ *     archivo. Si alguna vez vuelven a discrepar, una de las dos está leyendo el texto derogado.)
+ *   - Artículo 1, EN LA REDACCIÓN VIGENTE que le dio el artículo 739 de la Ley 19.924, en vigor
+ *     desde el 1/1/2021 por el artículo 3 de esa ley: esos montos «se ajustarán a partir del 1º de
+ *     enero de 2021 por la variación en la Base de Prestaciones y Contribuciones [...] A dichos
+ *     efectos, se convertirán a base de prestaciones y contribuciones los topes vigentes al 31 de
+ *     diciembre de 2020, considerando el valor de dicha unidad a esa fecha».
+ * O sea que lo que quedó fijo el 31/12/2020 no es un importe en pesos sino una CANTIDAD de BPC —el
+ * resultado acumulado de todos los ajustes anteriores, que entre 2012 y 2020 iban por la unidad
+ * reajustable, según la redacción original de este mismo artículo—, y desde 2021 esa cantidad se
+ * mueve con la BPC. La cantidad es ≈ 1,2336 BPC, no la «1 BPC» que el artículo 7.7 escribió en
+ * 1981. De ahí que $ 8.467 sea un 23 % más que la BPC del año y no la «1 BPC» pelada del texto.
+ *
+ * LA DEMOSTRACIÓN, con importes publicados y no con inferencias — ver {@link BPS_PUBLISHED_HISTORY}
+ * y el test que la recorre:
+ *   - BPS publicó $ 7.620 de tope mínimo con vigencia enero 2024, cuando la BPC era $ 6.177.
+ *     7.620 × 6.864/6.177 = 8.467: exactamente el importe de 2026. Sigue a la BPC.
+ *   - Los seis topes por despido de 2025 × 6.864/6.576 dan los seis de 2026 al peso: 89.246→93.155,
+ *     77.070→80.445, 64.911→67.754, 56.799→59.287, 52.735→55.044, 48.670→50.802.
+ *   - Y la proporción contra la BPC del año no se mueve: 7.620/6.177 = 1,2336 y 8.467/6.864 =
+ *     1,2335. Por eso «congelada» era la palabra equivocada: está fija en BPC, no en pesos.
+ *
+ * LA OTRA ARITMÉTICA —la que este módulo ya traía— SIGUE SIENDO VÁLIDA, PERO PRUEBA OTRA COSA: que
+ * los seis topes del 7.8 y el mínimo del 7.7 comparten UNA unidad, porque 93.155/11 = 80.445/9,5 =
+ * 67.754/8 = 59.287/7 = 55.044/6,5 = 50.802/6 ≈ $ 8.468 y el piso publicado es $ 8.467, esa misma
+ * unidad × 1. Eso confirma que el piso del despido es el importe que BPS rotula en la página de
+ * suspensión, y que las proporciones del artículo sobrevivieron la conversión. No dice NADA sobre
+ * en qué unidad se ajusta: para eso hacen falta importes de años distintos, que es lo que agrega
+ * {@link BPS_PUBLISHED_HISTORY}. Usar esa cuenta de un solo año como prueba del mecanismo fue,
+ * justamente, el paso en falso.
+ *
+ * DE DÓNDE SALIÓ EL ERROR, para que nadie lo reponga: al pie del artículo 7 del Decreto-Ley 15.180,
+ * IMPO anota «Ver: Ley Nº 19.003 de 16/11/2012 (a partir del 01/01/2012 los montos mínimos y
+ * máximos de las prestaciones de seguridad social, se convertirán a U.R.)». Esa nota resume el
+ * texto de 2012 y quedó vieja, porque el artículo 1 de la Ley 19.003 fue sustituido en 2020. Antes
+ * de repetirla hay que abrir https://www.impo.com.uy/bases/leyes/19003-2012/1 —el VIGENTE, no
+ * `/bases/leyes-originales/`, que sirve la versión derogada y dice lo contrario—.
+ *
+ * Y OJO CON EL ARTÍCULO 7.9, que empuja al mismo error desde el otro lado: su primer inciso manda
+ * usar «el valor de la BPC [...] que tuviere dicha unidad a la fecha de la causal». Leído solo,
+ * invita a multiplicar 1 × $ 6.864. Lo que hay que leer además es la ley posterior que re-basó la
+ * cantidad; el número que se paga es el que BPS publica.
+ *
+ * LO QUE NO SE PUBLICA, porque BPS no lo publica: el coeficiente. BPS publica pesos con su fecha,
+ * no «1,2336 BPC». Ese 1,2336 está acá como corroboración derivada de sus propias tablas, y manda
+ * el peso publicado: cuando salgan los topes de 2027 se copian, no se multiplican.
+ *
+ * Publicar $ 6.864 dejaba el piso de despido un 19 % por debajo del legal — con un promedio de
+ * $ 20.000, el sexto mes salía $ 8.000 cuando no puede bajar de $ 8.467.
  *
  * OJO CON LA OTRA BPC: los aportes previos de {@link REQUIREMENTS} (6 BPC = $ 41.184, 9 BPC =
  * $ 61.776, 12 BPC = $ 82.368) SÍ van con la BPC vigente de `URUGUAY.bpc` — BPS los publica con
@@ -251,6 +331,54 @@ export const SUSPENSION_FLOOR = BENEFIT_FLOOR
 /** El «1 BPC» con el que está ESCRITO el artículo 7.7. Es la cifra del texto, no un importe. */
 export const LEGAL_FLOOR_ARTICLE_BPC = 1
 
+export interface BpsPublishedSnapshot {
+  /** Año de los importes, tal como BPS los rotula. */
+  year: number
+  /** La BPC de ESE año. Esta sí es la BPC de verdad. */
+  bpc: number
+  /** Topes por mes de la causal despido, si la captura los trae. */
+  despidoCaps?: readonly number[]
+  /** «Tope máximo por suspensión». */
+  suspensionCap?: number
+  /** «Tope mínimo por suspensión», que es el mínimo del art. 7.7. */
+  floor?: number
+  /** Dónde se leyó, con fecha de captura. */
+  url: string
+}
+
+/**
+ * IMPORTES QUE BPS PUBLICÓ EN AÑOS ANTERIORES. Están acá para UNA sola cosa, y no es calcular.
+ *
+ * Sirven para dejar COMPROBABLE EN UN TEST el mecanismo del artículo 1 vigente de la Ley 19.003:
+ * si los mínimos y máximos «se ajustarán a partir del 1º de enero de 2021 por la variación en la
+ * Base de Prestaciones y Contribuciones», entonces el importe de un año por la variación de la BPC
+ * tiene que dar el del otro. Da, al peso. Eso es lo que descarta la explicación que este módulo
+ * publicó hasta el 2026-08-10 —que la unidad era una U.R. congelada, ajena a la BPC— sin necesidad
+ * de creerle a nadie.
+ *
+ * NO SE USAN PARA LIQUIDAR NI PARA PROYECTAR. Los importes vigentes son {@link BENEFIT_FLOOR},
+ * {@link DESPIDO_MONTHLY_CAPS} y {@link SUSPENSION_CAP}, copiados de BPS. Cuando BPS publique los
+ * de 2027 se copian igual y este historial gana una fila; multiplicar la BPC por un coeficiente
+ * para adelantarse es inventar plata, que es exactamente el modo de falla del que este archivo
+ * viene saliendo.
+ */
+export const BPS_PUBLISHED_HISTORY: readonly BpsPublishedSnapshot[] = Object.freeze([
+  {
+    year: 2024,
+    bpc: 6177,
+    suspensionCap: 60973,
+    floor: 7620,
+    // Captura del 24/01/2025: la página de suspensión todavía servía los valores de enero 2024.
+    url: 'https://web.archive.org/web/20250124153854/https://www.bps.gub.uy/18239/subsidio-por-desempleo-por-suspension.html',
+  },
+  {
+    year: 2025,
+    bpc: 6576,
+    despidoCaps: Object.freeze([89246, 77070, 64911, 56799, 52735, 48670]),
+    url: 'https://web.archive.org/web/20250617205436/https://www.bps.gub.uy/4802/subsidio-por-desempleo-por-despido.html',
+  },
+])
+
 /**
  * El piso del art. 7.7 en pesos, para jornada completa.
  *
@@ -266,9 +394,11 @@ export const FAMILY_COMPLEMENT_PCT = 20
  * El ingreso de la persona a cargo no puede superar 1 BPC para habilitar el complemento.
  * Se toma de `URUGUAY.bpc` para no duplicar el valor.
  *
- * ESTE SÍ ES BPC, a diferencia del piso del artículo 7.7: lo que la Ley 19.003 pasó a U.R. son
- * «los montos mínimos y máximos de las prestaciones», y esto no es un mínimo ni un máximo de la
- * prestación sino un requisito de ingreso del familiar. Ninguna fuente lo publica en otra unidad.
+ * ESTE SÍ SE MULTIPLICA POR LA BPC, a diferencia del piso del artículo 7.7: lo que la Ley 19.003
+ * re-basó son «los montos mínimos y máximos de las prestaciones», y esto no es un mínimo ni un
+ * máximo de la prestación sino un requisito de ingreso del familiar. BPS lo confirma publicándolo
+ * con el peso de la BPC del año: «Si los familiares a cargo perciben ingresos mayores a 1 BPC
+ * ($ 6.576,00)» en 2025, y $ 6.864 en 2026.
  */
 export const dependantIncomeCap = (): number => URUGUAY.bpc
 
@@ -448,7 +578,7 @@ export function estimateUnemploymentBenefit(input: BenefitInput): BenefitResult 
   }
   if (months.some(m => m.raisedToFloor)) {
     notes.push(
-      `El porcentaje da por debajo del mínimo del artículo 7.7, así que la cuenta lo levanta hasta ahí. Ese mínimo es uno solo para despido, suspensión total y períodos suplementarios —el artículo nombra a los tres—, y en pesos es el mismo importe de $ 8.467 que BPS publica como tope mínimo. Ojo con una confusión cara: el artículo lo escribe como «${LEGAL_FLOOR_ARTICLE_BPC} BPC», pero no se liquida con la BPC del año, porque la Ley 19.003 pasó los mínimos y máximos de las prestaciones a U.R. en 2012. Es para jornada completa (25 jornadas de 8 horas) y «debe adecuarse proporcionalmente» si trabajabas menos.`
+      `El porcentaje da por debajo del mínimo del artículo 7.7, así que la cuenta lo levanta hasta ahí. Ese mínimo es uno solo para despido, suspensión total y períodos suplementarios —el artículo nombra a los tres—, y en pesos es el mismo importe de $ 8.467 que BPS publica como tope mínimo. Ojo con una confusión cara: el artículo lo escribe como «${LEGAL_FLOOR_ARTICLE_BPC} BPC», pero multiplicar 1 × la BPC del año da menos de lo que se paga. El artículo 1 de la Ley 19.003, en su redacción vigente, convirtió a BPC los topes vigentes al 31 de diciembre de 2020 y desde el 1º de enero de 2021 los ajusta por la variación de esa unidad: la cantidad de BPC que quedó fija no es 1. Es para jornada completa (25 jornadas de 8 horas) y «debe adecuarse proporcionalmente» si trabajabas menos.`
     )
   }
 
@@ -488,9 +618,10 @@ export interface Requirement {
  * un solo requisito, 225 jornales, sin exigencia de días en planilla. La acumulación es de
  * industria y comercio y del doméstico, no de todo el régimen.
  *
- * LAS BPC DE ACÁ SÍ SON BPC: 6 BPC = $ 41.184, 9 BPC = $ 61.776 y 12 BPC = $ 82.368 son los pesos
- * que publica BPS con la BPC 2026 de `URUGUAY.bpc`. No confundir con la «BPC» de los topes y del
- * mínimo de los artículos 7.7 y 7.8, que la Ley 19.003 pasó a U.R. (ver {@link BENEFIT_FLOOR}).
+ * LAS BPC DE ACÁ SÍ SE MULTIPLICAN POR LA BPC: 6 BPC = $ 41.184, 9 BPC = $ 61.776 y 12 BPC =
+ * $ 82.368 son los pesos que publica BPS con la BPC 2026 de `URUGUAY.bpc`. No confundir con la
+ * «BPC» de los topes y del mínimo de los artículos 7.7 y 7.8, cuya cantidad la Ley 19.003 re-basó
+ * al 31/12/2020 y por eso no vale 1 ni 11 (ver {@link BENEFIT_FLOOR}).
  */
 export const REQUIREMENTS: readonly Requirement[] = Object.freeze([
   {
@@ -796,7 +927,7 @@ export const UNEMPLOYMENT_FAQ: readonly UnemploymentFaq[] = Object.freeze([
     short:
       'Sí: $ 8.467. Es el mismo para despido y para suspensión, aunque BPS sólo lo rotule en una.',
     answer:
-      'El artículo 7.7 fija un solo mínimo y lo fija para tres artículos a la vez: el monto «resultante de la aplicación de los artículos 7.1, 7.2 y 7.5, no podrá ser inferior a 1 BPC, para relaciones de trabajo de veinticinco jornadas mensuales y ocho horas diarias de labor, debiendo adecuarse proporcionalmente en los casos de menos o menores jornadas». El 7.1 es el despido, el 7.2 la suspensión total y el 7.5 los períodos suplementarios: no son tres mínimos distintos, es uno. En pesos, BPS lo publica como «tope mínimo por suspensión: $ 8.467» (enero 2026), y ese mismo importe es el piso del despido. Cuidado con la cuenta que parece obvia y da mal: ese «1 BPC» del artículo NO se liquida con la BPC del año ($ 6.864). La Ley 19.003, anotada al pie del artículo, dispuso que desde el 01/01/2012 «los montos mínimos y máximos de las prestaciones de seguridad social, se convertirán a U.R.», y la propia tabla de topes de BPS lo confirma: los seis topes por despido son los 11, 9,5, 8, 7, 6,5 y 6 BPC del artículo 7.8 a razón de unos $ 8.468 cada uno, no de $ 6.864. Por eso, si tu promedio es bajo, la calculadora levanta el importe hasta $ 8.467 en vez de mostrarte una cifra por debajo. La excepción: el artículo 7.7 no nombra al 7.3, que es el trabajo reducido — ahí no hay mínimo previsto y acá no se le inventa uno.',
+      'El artículo 7.7 fija un solo mínimo y lo fija para tres artículos a la vez: el monto «resultante de la aplicación de los artículos 7.1, 7.2 y 7.5, no podrá ser inferior a 1 BPC, para relaciones de trabajo de veinticinco jornadas mensuales y ocho horas diarias de labor, debiendo adecuarse proporcionalmente en los casos de menos o menores jornadas». El 7.1 es el despido, el 7.2 la suspensión total y el 7.5 los períodos suplementarios: no son tres mínimos distintos, es uno. En pesos, BPS lo publica como «tope mínimo por suspensión: $ 8.467» (enero 2026), y ese mismo importe es el piso del despido. Cuidado con la cuenta que parece obvia y da mal: multiplicar 1 × la BPC del año ($ 6.864) da menos de lo que BPS paga. El motivo es la Ley 19.003, que en su artículo 2 alcanza expresamente a los mínimos y máximos del subsidio por desempleo, y cuyo artículo 1 —en la redacción vigente, la que le dio el artículo 739 de la Ley 19.924— los ajusta desde el 1º de enero de 2021 «por la variación en la Base de Prestaciones y Contribuciones», convirtiendo a BPC los topes vigentes al 31 de diciembre de 2020. O sea que el importe sí se mueve con la BPC todos los años, pero desde una cantidad que ya no es 1: es cerca de 1,23 BPC. Ese 1,23 sale de dividir los importes de BPS por la BPC, no de una norma ni de una publicación oficial, así que sirve para entender de dónde viene el número y no para calcularlo: el que vale es el peso que BPS publica cada enero. La propia tabla de BPS lo confirma dos veces. Una, dentro del mismo año: los seis topes por despido son los 11, 9,5, 8, 7, 6,5 y 6 BPC del artículo 7.8 a razón de unos $ 8.468 cada uno, no de $ 6.864. Y otra, entre años: el tope mínimo era $ 7.620 en enero de 2024, cuando la BPC valía $ 6.177, y $ 7.620 por la suba de la BPC hasta 2026 da justamente $ 8.467. Por eso, si tu promedio es bajo, la calculadora levanta el importe hasta $ 8.467 en vez de mostrarte una cifra por debajo. La excepción: el artículo 7.7 no nombra al 7.3, que es el trabajo reducido — ahí no hay mínimo previsto y acá no se le inventa uno.',
   },
   {
     question: '¿Sigo teniendo mutualista mientras estoy en el seguro de paro?',

@@ -9,6 +9,10 @@ import { dirname, join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
   BCU_WARNINGS_URL,
+  CHAIN_SCHEME_ALIASES,
+  CHAIN_SCHEME_GUIDE,
+  CHAIN_SCHEME_NOTE,
+  isChainSchemeQuery,
   parseBcuWarnings,
   searchWarnings,
   sourceLink,
@@ -92,5 +96,66 @@ describe('searchWarnings', () => {
     // The absence of a company from this list means NOTHING — it is not a clean bill of health.
     // The page must say so; the function just returns no rows.
     expect(searchWarnings(rows, 'banco itau')).toHaveLength(0)
+  })
+})
+
+describe('el esquema que no tiene razón social', () => {
+  // Quien recibe la invitación busca «telar», nunca el nombre de una empresa. La búsqueda sobre
+  // el listado del BCU le devuelve cero, y ese cero es exactamente lo que hay que explicar.
+  it('la lista del BCU no contiene ninguno de estos nombres, que es el punto', () => {
+    for (const alias of CHAIN_SCHEME_ALIASES) {
+      expect(searchWarnings(rows, alias)).toHaveLength(0)
+    }
+    expect(searchWarnings(rows, 'telar')).toHaveLength(0)
+  })
+
+  it('reconoce los nombres populares, con y sin acento, y también los prefijos', () => {
+    for (const alias of CHAIN_SCHEME_ALIASES) {
+      expect(isChainSchemeQuery(alias)).toBe(true)
+    }
+    expect(isChainSchemeQuery('telar')).toBe(true)
+    expect(isChainSchemeQuery('CÉLULA DE LA ABUNDANCIA')).toBe(true)
+    expect(isChainSchemeQuery('celula de la abundancia')).toBe(true)
+    expect(isChainSchemeQuery('pirámide')).toBe(true)
+    expect(isChainSchemeQuery('piramidal')).toBe(true)
+    expect(isChainSchemeQuery('ponzi')).toBe(true)
+    expect(isChainSchemeQuery('pira')).toBe(true) // todavía escribiendo
+  })
+
+  it('no se dispara con una búsqueda de empresa ni con dos letras sueltas', () => {
+    expect(isChainSchemeQuery('urucash')).toBe(false)
+    expect(isChainSchemeQuery('mercados invest')).toBe(false)
+    expect(isChainSchemeQuery('banco itau')).toBe(false)
+    expect(isChainSchemeQuery('')).toBe(false)
+    expect(isChainSchemeQuery('te')).toBe(false)
+  })
+
+  // ESTA ES LA REGLA QUE PROTEGE LA PÁGINA. No localizamos norma uruguaya que prohíba el esquema
+  // como tal, y esta página se autoimpone no dictaminar legalidad. Publicar «es ilegal por la ley
+  // X» sin fuente primaria sería inventar derecho, así que el texto no puede citar una norma ni
+  // emitir un veredicto.
+  it('el texto publicado NO dictamina legalidad ni cita una norma inventada', () => {
+    expect(CHAIN_SCHEME_NOTE).not.toMatch(/\bilegal\b|\bdelito\b|\bprohibid[ao]s?\b/i)
+    expect(CHAIN_SCHEME_NOTE).not.toMatch(/\bley\s+[\dn]|\bart[íi]culo\s+\d|\bdecreto\s+\d/i)
+    expect(CHAIN_SCHEME_NOTE).toMatch(/no emite veredictos|no vamos a dictaminar/i)
+  })
+
+  it('explica que el cero de la búsqueda no significa nada', () => {
+    expect(CHAIN_SCHEME_NOTE).toMatch(/esa ausencia no dice nada/i)
+  })
+
+  // La respuesta ya estaba publicada; lo único que faltaba era el puntero.
+  it('deriva a la guía que ya publica qué hacer', () => {
+    expect(CHAIN_SCHEME_GUIDE.to).toBe('/guias/errores-y-estafas-al-invertir-uruguay')
+    expect(CHAIN_SCHEME_NOTE).toMatch(/dejá de enviar/i)
+    expect(CHAIN_SCHEME_NOTE).toMatch(/denuncia policial/i)
+    expect(CHAIN_SCHEME_NOTE).toMatch(/informá al BCU/i)
+  })
+
+  it('cubre las variantes con las que circula el nombre', () => {
+    const all = CHAIN_SCHEME_ALIASES.join(' | ')
+    for (const w of ['telar', 'célula', 'flor', 'mesa', 'rueda', 'mandala']) {
+      expect(all).toContain(w)
+    }
   })
 })

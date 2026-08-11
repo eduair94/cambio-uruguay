@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest'
 import { URUGUAY } from '../../utils/calculators'
 import {
   BENEFIT_FLOOR,
+  BPS_PUBLISHED_HISTORY,
   CAUSAL_DISPUTE_PROOF,
   CAUSALES,
   COVERAGE_RULES,
@@ -26,6 +27,7 @@ import {
   SUSPENSION_FLOOR,
   SUSPENSION_PERCENTAGE,
   TERMINATION_CAUSES,
+  UNEMPLOYMENT_CAPS_YEAR,
   UNEMPLOYMENT_FAQ,
   UNEMPLOYMENT_SOURCES,
   UNEMPLOYMENT_VERIFIED_AT,
@@ -87,11 +89,18 @@ describe('subsidio por despido', () => {
 // $ 3.300 con un promedio de $ 5.000: por debajo del piso legal y sin ninguna fuente que lo avale.
 //
 // SEGUNDA CORRECCIÓN (2026-08-10): el arreglo de aquella vez leyó ese «1 BPC» como 1 × la BPC del
-// año ($ 6.864) y publicó un piso que no publica NADIE, un 19 % por debajo del que corresponde. La
-// Ley 19.003, anotada al pie de los artículos 7.x en IMPO, pasó los mínimos y máximos de las
-// prestaciones de seguridad social a U.R. desde el 01/01/2012, y desde entonces esa «BPC» es una
-// unidad de cuenta que ya no sigue a la BPC. Los tests de acá abajo lo demuestran con la propia
-// tabla de topes de BPS y fijan el piso en el importe publicado, $ 8.467.
+// año ($ 6.864) y publicó un piso que no publica NADIE, un 19 % por debajo del que corresponde. El
+// importe que corresponde es el que publica BPS: $ 8.467.
+//
+// TERCERA CORRECCIÓN (2026-08-10): el importe quedó bien y la EXPLICACIÓN quedó derogada. Este
+// bloque de tests decía que la Ley 19.003 «pasó los mínimos y máximos a U.R. desde el 01/01/2012» y
+// que esa «BPC» era una unidad congelada que ya no seguía a la BPC — y llegaba a EXIGIRLE al FAQ
+// que dijera «U.R.». Eso es el texto ORIGINAL de la Ley 19.003, que rigió entre 2012 y 2020. El
+// artículo 1 VIGENTE, redacción del artículo 739 de la Ley 19.924, ajusta esos montos «a partir del
+// 1º de enero de 2021 por la variación en la Base de Prestaciones y Contribuciones», convirtiendo a
+// BPC los topes vigentes al 31/12/2020: la unidad SÍ sigue a la BPC, lo que no vale 1 es la
+// cantidad. Ver el describe «el mecanismo del artículo 1 vigente», que lo demuestra con importes
+// que BPS publicó en tres años distintos, y el que fija la explicación publicada.
 describe('piso del artículo 7.7: uno solo, y NO es la BPC del año', () => {
   it('el piso es el importe publicado ($ 8.467), no 1 × la BPC vigente', () => {
     // ESTE ES EL TEST QUE FIJA LA CORRECCIÓN: la versión equivocada devolvía 6864.
@@ -111,8 +120,11 @@ describe('piso del artículo 7.7: uno solo, y NO es la BPC del año', () => {
     expect(despido.months[0].amount).toBe(suspension.months[0].amount)
   })
 
-  // La prueba está en la tabla que BPS publica EN LA PÁGINA DE DESPIDO: los seis topes son los
-  // 11, 9,5, 8, 7, 6,5 y 6 «BPC» del art. 7.8 valuados a la misma unidad que el mínimo del 7.7.
+  // Lo que esta cuenta prueba, y lo que NO. Los seis topes que BPS publica en la página de despido
+  // son los 11, 9,5, 8, 7, 6,5 y 6 «BPC» del art. 7.8 valuados a la misma unidad que el mínimo del
+  // 7.7, y por eso confirma que el piso es $ 8.467 y que las proporciones del artículo sobrevivieron
+  // la conversión de la Ley 19.003. NO prueba en qué unidad se ajusta: para eso hacen falta
+  // importes de años distintos, y creer que sí fue el paso en falso de la segunda corrección.
   it('los topes de BPS confirman la unidad: cada «BPC» del art. 7.8 vale ≈ el piso', () => {
     const bpcDelArticulo = [11, 9.5, 8, 7, 6.5, 6]
     for (let i = 0; i < DESPIDO_MONTHLY_CAPS.length; i++) {
@@ -144,13 +156,16 @@ describe('piso del artículo 7.7: uno solo, y NO es la BPC del año', () => {
     expect(r.months[0].raisedToFloor).toBe(false)
   })
 
-  it('avisa que el piso es de jornada completa y por qué no es la BPC', () => {
+  it('avisa que el piso es de jornada completa y por qué 1 × la BPC da menos', () => {
     const r = estimateUnemploymentBenefit(input({ averageNominal: 5000 }))
     const nota = r.notes.find(n => n.includes('7.7'))
     expect(nota).toBeTruthy()
     expect(nota).toMatch(/proporcional/i)
     expect(nota).toMatch(/8\.467/)
     expect(nota).toMatch(/19\.003/)
+    // El mecanismo VIGENTE, no el original: conversión al 31/12/2020 y ajuste por la BPC.
+    expect(nota).toMatch(/31 de diciembre de 2020/)
+    expect(nota).toMatch(/1º de enero de 2021/)
     // La racionalización inventada que justificaba dos pisos distintos no vuelve.
     expect(nota).not.toMatch(/BPS no publica/)
   })
@@ -168,6 +183,132 @@ describe('piso del artículo 7.7: uno solo, y NO es la BPC del año', () => {
     )
     expect(r.months.every(m => m.floor === null)).toBe(true)
     expect(r.months[0].amount).toBe(Math.round(10000 * 0.5 - 4000))
+  })
+})
+
+// EL BLOQUE QUE FIJA LA TERCERA CORRECCIÓN. La explicación anterior afirmaba que la «BPC» de los
+// artículos 7.7 y 7.8 era una unidad CONGELADA que ya no seguía a la BPC porque la Ley 19.003 la
+// había pasado a U.R. en 2012. Si eso fuera cierto, los importes que BPS publica NO tendrían por
+// qué moverse con la BPC. Se mueven, y se mueven exactamente con ella: el artículo 1 vigente —
+// redacción del art. 739 de la Ley 19.924, vigente desde el 1/1/2021 por su art. 3— los ajusta «por
+// la variación en la Base de Prestaciones y Contribuciones», tras convertir a BPC los topes
+// vigentes al 31/12/2020. Lo que quedó fijo es la CANTIDAD de BPC, y no es 1.
+//
+// Tolerancia: BPS publica pesos redondeados, así que arrastrar dos años acumula menos de $ 2 de
+// diferencia. Con el mecanismo equivocado la diferencia sería de cientos o miles.
+describe('el mecanismo del artículo 1 vigente: los importes siguen a la BPC', () => {
+  const TOLERANCIA = 2
+
+  it('el historial trae importes de años anteriores con su BPC y su captura', () => {
+    expect(BPS_PUBLISHED_HISTORY.length).toBeGreaterThanOrEqual(2)
+    for (const s of BPS_PUBLISHED_HISTORY) {
+      expect(s.year).toBeLessThan(UNEMPLOYMENT_CAPS_YEAR)
+      expect(s.bpc).toBeGreaterThan(0)
+      // Capturas del propio BPS: nada de terceros interpretando la tabla.
+      expect(s.url).toMatch(
+        /^https:\/\/web\.archive\.org\/web\/\d{14}\/https:\/\/www\.bps\.gub\.uy\//
+      )
+    }
+  })
+
+  // $ 7.620 (enero 2024, BPC $ 6.177) × 6.864/6.177 = $ 8.467. Al peso.
+  it('el tope mínimo de un año anterior, ajustado por la BPC, da el piso vigente', () => {
+    const conPiso = BPS_PUBLISHED_HISTORY.filter(s => typeof s.floor === 'number')
+    expect(conPiso.length).toBeGreaterThanOrEqual(1)
+    for (const s of conPiso) {
+      const proyectado = (s.floor as number) * (URUGUAY.bpc / s.bpc)
+      expect(Math.abs(proyectado - BENEFIT_FLOOR)).toBeLessThan(TOLERANCIA)
+    }
+  })
+
+  // Los seis topes de 2025 × 6.864/6.576 dan los seis de 2026, uno por uno.
+  it('los seis topes por despido de un año anterior, ajustados por la BPC, dan los vigentes', () => {
+    const conTopes = BPS_PUBLISHED_HISTORY.filter(s => s.despidoCaps)
+    expect(conTopes.length).toBeGreaterThanOrEqual(1)
+    for (const s of conTopes) {
+      const caps = s.despidoCaps as readonly number[]
+      expect(caps).toHaveLength(DESPIDO_MONTHLY_CAPS.length)
+      for (let i = 0; i < caps.length; i++) {
+        const proyectado = caps[i] * (URUGUAY.bpc / s.bpc)
+        expect(Math.abs(proyectado - DESPIDO_MONTHLY_CAPS[i])).toBeLessThan(TOLERANCIA)
+      }
+    }
+  })
+
+  it('el tope máximo por suspensión sigue la misma variación', () => {
+    const conCap = BPS_PUBLISHED_HISTORY.filter(s => typeof s.suspensionCap === 'number')
+    expect(conCap.length).toBeGreaterThanOrEqual(1)
+    for (const s of conCap) {
+      const proyectado = (s.suspensionCap as number) * (URUGUAY.bpc / s.bpc)
+      expect(Math.abs(proyectado - SUSPENSION_CAP)).toBeLessThan(TOLERANCIA)
+    }
+  })
+
+  // La consecuencia de que sigan a la BPC: la proporción contra la BPC del año NO se mueve. Ahí
+  // está la cantidad que la Ley 19.003 dejó fija el 31/12/2020, y no es 1.
+  it('la cantidad de BPC quedó fija en ≈ 1,2336 y no en la «1 BPC» del artículo', () => {
+    const vigente = BENEFIT_FLOOR / URUGUAY.bpc
+    expect(vigente).toBeGreaterThan(1.2)
+    expect(vigente).toBeLessThan(1.27)
+    // Si fuera la «1 BPC» del art. 7.7 literal, esto sería 1. No lo es, por un 23 %.
+    expect(Math.abs(vigente - LEGAL_FLOOR_ARTICLE_BPC)).toBeGreaterThan(0.2)
+    for (const s of BPS_PUBLISHED_HISTORY) {
+      if (typeof s.floor !== 'number') continue
+      expect(Math.abs(s.floor / s.bpc - vigente)).toBeLessThan(0.001)
+    }
+  })
+
+  // El corazón del asunto: NO están congelados en pesos. Subieron, y subieron lo que subió la BPC.
+  it('los importes no están congelados: subieron con la BPC, no se quedaron quietos', () => {
+    const s2024 = BPS_PUBLISHED_HISTORY.find(x => x.year === 2024)
+    expect(s2024?.floor).toBe(7620)
+    expect(BENEFIT_FLOOR).toBeGreaterThan(s2024?.floor as number)
+    const subidaImporte = BENEFIT_FLOOR / (s2024?.floor as number)
+    const subidaBpc = URUGUAY.bpc / (s2024?.bpc as number)
+    expect(Math.abs(subidaImporte - subidaBpc)).toBeLessThan(0.001)
+  })
+})
+
+// Lo que la página y la calculadora le DICEN al usuario tiene que ser la regla vigente. Este bloque
+// existe porque la versión anterior de este archivo llegaba a EXIGIR la explicación derogada
+// (`expect(f?.answer).toMatch(/U\.R\./)`): un test puede fijar un error igual de bien que un acierto.
+describe('la explicación publicada es la de la ley VIGENTE, no la derogada', () => {
+  const publicado = [
+    ...UNEMPLOYMENT_FAQ.map(f => `${f.short} ${f.answer}`),
+    ...estimateUnemploymentBenefit(input({ averageNominal: 5000 })).notes,
+  ].join(' \n ')
+
+  it('cita el mecanismo vigente del artículo 1 de la Ley 19.003', () => {
+    expect(publicado).toMatch(/19\.003/)
+    expect(publicado).toMatch(/1º de enero de 2021/)
+    expect(publicado).toMatch(/variación en la Base de Prestaciones y Contribuciones/)
+    expect(publicado).toMatch(/31 de diciembre de 2020/)
+  })
+
+  it('nombra la ley que dio la redacción vigente, para que se pueda verificar', () => {
+    expect(publicado).toMatch(/19\.924/)
+  })
+
+  // ESTE ES EL TEST QUE FIJA LA CORRECCIÓN: la versión equivocada publicaba justamente esto.
+  it('NO publica el texto ORIGINAL de la Ley 19.003, que hablaba de U.R.', () => {
+    expect(publicado).not.toMatch(/U\.R\./)
+    expect(publicado).not.toMatch(/unidad reajustable/i)
+    expect(publicado).not.toMatch(/01\/01\/2012/)
+  })
+
+  // «Congelada» era la palabra equivocada: está fija en BPC, no en pesos.
+  it('no describe la unidad como congelada ni ajena a la BPC', () => {
+    expect(publicado).not.toMatch(/congelad/i)
+    expect(publicado).not.toMatch(/dejó de seguir a la BPC/i)
+    expect(publicado).not.toMatch(/ya no sigue a la BPC/i)
+  })
+
+  // Art. 2 lit. A (enfermedad) y lit. B (desempleo) son el mismo mecanismo. Si este archivo y la
+  // guía de subsidio por enfermedad vuelven a contar cosas distintas, una lee el texto derogado.
+  it('publica las dos piezas de la Ley 19.003 como fuente, en su versión vigente', () => {
+    const urls = UNEMPLOYMENT_SOURCES.map(s => s.url)
+    expect(urls).toContain('https://www.impo.com.uy/bases/leyes/19003-2012/1')
+    expect(urls).toContain('https://www.impo.com.uy/bases/leyes/19003-2012/2')
   })
 })
 
@@ -412,10 +553,12 @@ describe('integridad de los datos publicados', () => {
 
   // impo.com.uy sirve dos versiones: /bases/... es el texto vigente y /bases/...-originales/ es el
   // original ya derogado. Citar el original como si fuera vigente ya costó un error grave.
-  it('la fuente de IMPO apunta al texto vigente, no al original', () => {
-    const impo = UNEMPLOYMENT_SOURCES.find(s => s.url.includes('impo.com.uy'))
-    expect(impo?.url).toBeTruthy()
-    expect(impo?.url).not.toMatch(/originales/)
+  it('TODAS las fuentes de IMPO apuntan al texto vigente, no al original', () => {
+    const impo = UNEMPLOYMENT_SOURCES.filter(s => s.url.includes('impo.com.uy'))
+    expect(impo.length).toBeGreaterThanOrEqual(3)
+    // `/bases/leyes-originales/` y `/bases/decretos-ley-originales/` sirven la versión derogada, que
+    // en el caso de la Ley 19.003 dice literalmente lo contrario que la vigente.
+    for (const s of impo) expect(s.url).not.toMatch(/originales/)
   })
 
   it('la fecha de verificación es una fecha real', () => {
@@ -752,7 +895,14 @@ describe('el FAQ cubre los huecos medidos en Reddit', () => {
     expect(f?.answer).toMatch(/7\.7/)
     expect(f?.answer).toMatch(/1 BPC/)
     expect(f?.answer).toMatch(/19\.003/)
-    expect(f?.answer).toMatch(/U\.R\./)
+    // El mecanismo VIGENTE: ajuste por la variación de la BPC desde 2021 sobre los topes
+    // convertidos al 31/12/2020. Antes acá se exigía «U.R.», que es el texto derogado.
+    expect(f?.answer).toMatch(/19\.924/)
+    expect(f?.answer).toMatch(/1º de enero de 2021/)
+    expect(f?.answer).not.toMatch(/U\.R\./)
+    // La comprobación entre años, que es la que prueba el mecanismo, también se le cuenta al lector.
+    expect(f?.answer).toMatch(/7\.620/)
+    expect(f?.answer).toMatch(/6\.177/)
     // Ya no se publica que en despido no haya mínimo publicado ni que sean dos importes distintos.
     expect(f?.short).not.toMatch(/En despido el mínimo está en la ley/)
     expect(f?.answer).not.toMatch(/Para el despido no publica ninguno/)
