@@ -494,6 +494,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/seguro-de-paro-uruguay',
       },
       {
+        label: 'Trabajo en negro',
+        description: 'Las tres puertas: MTSS, BPS y conciliación.',
+        to: '/denunciar-trabajo-en-negro-uruguay',
+      },
+      {
         label: 'Qué empresa abrir',
         description: 'Para facturar como unipersonal o empresa.',
         to: '/que-empresa-abrir-uruguay',
