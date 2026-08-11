@@ -1474,3 +1474,153 @@ describe('corrección › el encabezado no miente sobre dónde ya vivía el trab
     expect(apps).toMatch(/BPS Trabajo Doméstico/i)
   })
 })
+
+// ---------------------------------------------------------------------------
+// Contenido nuevo (2026-08-11) — las cinco guías que cerraron los dos temas flojos del
+// /mapa-de-temas: «Derechos y reclamos» (tenía una sola guía y ningún hub) y «Sueldo y trabajo».
+// Cada aserción de acá abajo cuida una cifra o un límite que se verificó contra fuente primaria,
+// no la redacción. Ver `utils/guidesReddit.ts` y `utils/guideHubs.ts`.
+// ---------------------------------------------------------------------------
+
+const GUIAS_NUEVAS = [
+  'me-deben-el-sueldo-uruguay',
+  'abogado-gratis-uruguay',
+  'estudio-de-cobranza-uruguay',
+  'feriados-en-uruguay-como-se-pagan',
+  'trabajo-en-negro-uruguay',
+]
+
+describe('contenido nuevo › las cinco guías existen y citan fuente', () => {
+  it('están en el catálogo', () => {
+    for (const slug of GUIAS_NUEVAS) expect(getGuide(slug), `falta ${slug}`).toBeDefined()
+  })
+
+  it('cada una publica sus fuentes primarias', () => {
+    for (const slug of GUIAS_NUEVAS) {
+      const fuentes = getGuide(slug)!.sources ?? []
+      expect(fuentes.length, `${slug} sin fuentes`).toBeGreaterThanOrEqual(3)
+      for (const f of fuentes) expect(f.url).toMatch(/^https:\/\//)
+    }
+  })
+})
+
+describe('contenido nuevo › sueldo impago: los números que hacen el reclamo', () => {
+  const texto = () => guideText('me-deben-el-sueldo-uruguay')
+
+  it('publica el plazo legal de pago con sus dos topes', () => {
+    expect(texto()).toMatch(/cinco primeros días hábiles/i)
+    expect(texto()).toMatch(/diez primeros días corridos/i)
+    expect(texto()).toMatch(/10\.449/)
+  })
+
+  it('publica el recargo automático del 10 % con su artículo', () => {
+    const bloques = guideBlocks('me-deben-el-sueldo-uruguay').filter(b => /10\s?%/.test(b.texto))
+    expect(bloques.length).toBeGreaterThan(0)
+    for (const b of bloques) expect(b.texto).toMatch(/18\.572|art[íi]culo 29|art\. 29/i)
+  })
+
+  it('nombra la constancia con valor de título ejecutivo', () => {
+    expect(texto()).toMatch(/t[íi]tulo ejecutivo/i)
+  })
+
+  it('separa el año de la acción de los cinco años de los créditos, y la interrupción', () => {
+    expect(texto()).toMatch(/18\.091/)
+    expect(texto()).toMatch(/un año.*cese|cese.*un año/is)
+    expect(texto()).toMatch(/cinco años/i)
+    expect(texto()).toMatch(/interrump/i)
+  })
+
+  it('dice que la Inspección atiende a quien sigue en actividad', () => {
+    expect(texto()).toMatch(/en actividad/i)
+  })
+})
+
+describe('contenido nuevo › feriados: cinco pagos, y Semana de Turismo no es uno', () => {
+  const texto = () => guideText('feriados-en-uruguay-como-se-pagan')
+
+  it('lista los cinco feriados pagos del art. 18 de la Ley 12.590', () => {
+    for (const dia of [
+      /1º de enero/,
+      /1º de mayo/,
+      /18 de julio/,
+      /25 de agosto/,
+      /25 de diciembre/,
+    ]) {
+      expect(texto()).toMatch(dia)
+    }
+    expect(texto()).toMatch(/12\.590/)
+  })
+
+  it('nunca deja «Semana de Turismo» y «doble» juntos sin decir que es feriado común', () => {
+    const bloques = guideBlocks('feriados-en-uruguay-como-se-pagan').filter(
+      b => /semana de turismo/i.test(b.texto) && /doble/i.test(b.texto)
+    )
+    expect(bloques.length).toBeGreaterThan(0)
+    for (const b of bloques) {
+      expect(b.texto, `«${b.donde}» sugiere doble paga sin aclararlo`).toMatch(
+        /feriados? com[uú]n(?:es)?/i
+      )
+    }
+  })
+
+  it('distingue el mensual del jornalero', () => {
+    expect(texto()).toMatch(/entre 30/i)
+    expect(texto()).toMatch(/doble jornal/i)
+  })
+})
+
+describe('contenido nuevo › cobranza: el piso del sueldo y la norma que no existe', () => {
+  const texto = () => guideText('estudio-de-cobranza-uruguay')
+
+  it('publica el piso de retención con la ley que lo fija', () => {
+    const bloques = guideBlocks('estudio-de-cobranza-uruguay').filter(b => /35\s?%/.test(b.texto))
+    expect(bloques.length).toBeGreaterThan(0)
+    for (const b of bloques) expect(b.texto).toMatch(/17\.829/)
+  })
+
+  it('atribuye el plazo del Clearing a Defensa del Consumidor y no al BCU', () => {
+    const bloques = guideBlocks('estudio-de-cobranza-uruguay').filter(b =>
+      /(?:diez|10) años/i.test(b.texto)
+    )
+    expect(bloques.length).toBeGreaterThan(0)
+    // El plazo lo publica la Unidad Defensa del Consumidor; el Clearing es una base privada de la
+    // Ley 18.331, así que el bloque tiene que nombrar a quién se le atribuye el dato.
+    for (const b of bloques) expect(b.texto).toMatch(/defensa del consumidor/i)
+  })
+
+  it('publica la ausencia de una norma antiacoso en vez de inventarla', () => {
+    expect(texto()).toMatch(/no (?:la )?encontramos/i)
+    expect(texto()).not.toMatch(/no pueden? llamarte más de/i)
+  })
+})
+
+describe('contenido nuevo › abogado gratis: ninguna cifra sin su año', () => {
+  it('el tope del Consultorio Jurídico viaja con el año en el mismo bloque', () => {
+    const bloques = guideBlocks('abogado-gratis-uruguay').filter(b => /55\.000/.test(b.texto))
+    expect(bloques.length).toBeGreaterThan(0)
+    for (const b of bloques) expect(b.texto, `«${b.donde}» sin año`).toMatch(/2026/)
+  })
+
+  it('no le inventa un umbral de ingresos a la Defensoría Pública', () => {
+    expect(guideText('abogado-gratis-uruguay')).toMatch(/no publicamos/i)
+  })
+})
+
+describe('contenido nuevo › trabajo en negro: alcance real y sin promesas', () => {
+  const texto = () => guideText('trabajo-en-negro-uruguay')
+
+  it('publica desde cuándo alcanza la historia laboral nominada', () => {
+    expect(texto()).toMatch(/1º de abril de 1996/)
+  })
+
+  it('no promete plazos de resolución y deriva la escala de sanciones a la página dedicada', () => {
+    expect(texto()).toMatch(/No prometemos en cuánto tiempo/i)
+    const enlaces = getGuide('trabajo-en-negro-uruguay')!.sections.flatMap(s => s.links ?? [])
+    expect(enlaces.map(l => l.to)).toContain('/denunciar-trabajo-en-negro-uruguay')
+  })
+
+  it('aclara que la denuncia de aportes no cobra lo adeudado', () => {
+    expect(texto()).toMatch(/18\.091/)
+    expect(texto()).toMatch(/conciliaci[oó]n/i)
+  })
+})

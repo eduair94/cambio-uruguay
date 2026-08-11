@@ -1,9 +1,38 @@
-// Reddit-mined educational guides: 50 answers to the economy/finance/legal
-// questions Uruguayans actually ask (alquiler, herencias, crédito, sueldo,
-// inversión, jubilación...). Same `Guide` shape as the core catalogue in
-// `guides.ts`, spread into it there. Bodies are plain Spanish prose (rioplatense),
-// mechanism-first and conservative on volatile figures, adversarially fact-checked
-// against DGI / BPS / BCU / escribanos before publishing.
+// Reddit-mined educational guides: respuestas a las preguntas de economía, finanzas y derecho que
+// los uruguayos hacen de verdad (alquiler, herencias, crédito, sueldo, inversión, jubilación,
+// reclamos...). Same `Guide` shape as the core catalogue in `guides.ts`, spread into it there.
+// Bodies are plain Spanish prose (rioplatense), mechanism-first and conservative on volatile
+// figures, adversarially fact-checked against DGI / BPS / BCU / MTSS / escribanos before publishing.
+//
+// TANDA DEL 2026-08-11 — cinco guías nuevas para los dos temas que /mapa-de-temas publicaba como
+// flojos («Derechos y reclamos», con UNA guía y sin hub mapeado; «Sueldo y trabajo», con tres).
+// No se escribió sobre lo que el sitio ya cubre: la Ley 17.250 (retracto, vicios, remedios, cláusulas
+// abusivas y la renovación automática del art. 31 lit. I) ya vive en `consumerRights.ts` y
+// `consumerDefense.ts`, así que estas guías van a lo que faltaba, con fuente primaria al lado:
+//   - `me-deben-el-sueldo-uruguay`: plazo legal de pago y constancia con valor de TÍTULO EJECUTIVO
+//     (Ley 10.449 art. 31), recargo automático del 10 % (Ley 18.572 art. 29), conciliación previa
+//     con la regla de las 20 UR (Ley 18.572 art. 3) y los DOS plazos que todo el mundo mezcla
+//     (Ley 18.091: un año para la acción desde el cese, cinco años para los créditos; y la sola
+//     solicitud de audiencia INTERRUMPE). Dato que ordena el ruteo: la denuncia en la IGTSS es para
+//     quien sigue EN ACTIVIDAD, así que a quien ya cesó no le sirve esa puerta.
+//   - `abogado-gratis-uruguay`: las cuatro puertas reales. El tope del Consultorio Jurídico va con
+//     su año ($ 55.000 nominales, 2026) porque se actualiza, y NO se publica umbral de ingresos para
+//     la Defensoría Pública: lo resuelve la oficina, e inventarlo haría desistir a quien sí entra.
+//   - `estudio-de-cobranza-uruguay`: la trampa acá era copiar las listas de "lo que un cobrador no
+//     puede hacer", que son ARGENTINAS. Se buscó la norma uruguaya que limite frecuencia de llamados
+//     o contacto con terceros y NO EXISTE: se publica la ausencia. Lo que sí está escrito es el piso
+//     de la Ley 17.829 (arts. 1 y 3: nómina cerrada de retenciones y no dejar al trabajador con menos
+//     del 35 % del nominal, 30 % en garantía de alquiler y cooperativas) y el plazo del Clearing, que
+//     lo publica la Unidad Defensa del Consumidor (10 años, y la base NO actualiza saldos) — el
+//     Clearing es privado y de la Ley 18.331, nunca atribuirlo al BCU.
+//   - `feriados-en-uruguay-como-se-pagan`: los CINCO feriados pagos son los del art. 18 de la Ley
+//     12.590 y nada más. Carnaval y Semana de Turismo NO están: son feriados comunes y no se pagan
+//     doble. El traslado al lunes es de la Ley 16.805 (ampliada por la 17.414) y los cinco pagos
+//     están todos en la lista de excepciones, así que nunca se mueven.
+//   - `trabajo-en-negro-uruguay`: la historia laboral nominada arranca el 1/4/1996 y ese es el
+//     alcance del servicio de denuncia del BPS. No se publican montos de multas ni plazos de
+//     resolución, y se dice explícitamente que la denuncia de aportes NO cobra lo adeudado.
+// Guardadas por `tests/unit/guides.test.ts` › «contenido nuevo» y por `tests/unit/topicMap.test.ts`.
 //
 // CUATRO CORRECCIONES DEL 2026-08-10 (y una segunda pasada de auditoría sobre tres de ellas,
 // marcada `.bis`), cada una porque el texto anterior decía algo falso
@@ -4516,6 +4545,556 @@ export const redditGuides: readonly Guide[] = [
         label:
           'Ley 18.091 art. 3 — «La sola presentación del trabajador o su representante ante el Ministerio de Trabajo y Seguridad Social, solicitando audiencia de conciliación prevista en el artículo 10 del decreto-ley Nº 14.188, de 5 de abril de 1974, interrumpe la prescripción». Ojo con la remisión al Decreto-Ley 14.188: la conciliación previa laboral hoy se tramita por el art. 3 de la Ley 18.572, vigente («Antes de iniciarse juicio en materia laboral, deberá tentarse la conciliación previa ante el Centro de Negociación de Conflictos Individuales de Trabajo […] o ante la Oficina de Trabajo»)',
         url: 'https://www.impo.com.uy/bases/leyes/18091-2007/3',
+        publisher: 'IMPO',
+      },
+    ],
+  },
+  {
+    slug: 'me-deben-el-sueldo-uruguay',
+    title: 'Me deben el sueldo: cómo reclamar en Uruguay',
+    description:
+      'Qué hacer ante un sueldo impago en Uruguay: desde qué día hay incumplimiento, el recargo del 10 % que corre solo, la constancia de la Inspección que vale como título ejecutivo, la conciliación previa del MTSS y el plazo para que el reclamo laboral no prescriba.',
+    tag: 'RECLAMO',
+    updatedAt: '2026-08-11',
+    sections: [
+      {
+        heading: 'Desde qué día el atraso deja de ser "demora"',
+        body: 'El plazo no lo fija la costumbre de la empresa: está escrito. El artículo 31 de la Ley 10.449 dice que si el pago es mensual debe hacerse "dentro de los cinco primeros días hábiles y nunca después de los diez primeros días corridos del mes siguiente" al que corresponde; si es quincenal, dentro de los cinco días hábiles siguientes al vencimiento de la quincena; y si es semanal, al finalizar la semana. O sea que hay dos topes en el caso mensual y alcanza con pasar el segundo: el día 11 corrido ya no es una demora, es un incumplimiento. Esto importa porque casi todo lo que viene después —el recargo, la constancia, la conciliación— arranca cuando el crédito se volvió exigible, y esa fecha ahora la podés señalar con precisión.',
+      },
+      {
+        heading: 'El 10 % que empieza a correr solo',
+        body: 'El artículo 29 de la Ley 18.572 es de una sola línea y casi nadie lo nombra: "La omisión de pago de los créditos laborales generará automáticamente, desde su exigibilidad, un recargo del 10 % (diez por ciento) sobre el monto del crédito adeudado". Automáticamente y desde la exigibilidad: no hay que pedirlo, no hay que intimar, no depende de que un juez lo conceda. Se aplica sobre créditos laborales en general —sueldo, aguinaldo, licencia, salario vacacional, indemnización—, así que en una liquidación final impaga la diferencia no es simbólica. Cuando negocies, el número que tenés que poner sobre la mesa no es lo que figura en el recibo: es eso más el recargo.',
+      },
+      {
+        heading:
+          'Si todavía trabajás ahí: la Inspección, y la constancia que vale como título ejecutivo',
+        body: 'La Inspección General del Trabajo y de la Seguridad Social (IGTSS) recibe denuncias por incumplimientos de la normativa laboral —recibos, licencias, salario vacacional, aguinaldos— y también por condiciones ambientales. Dos detalles que cambian la estrategia: el servicio de denuncias del MTSS está pensado para personas trabajadoras en actividad, es decir con el vínculo vigente, y en condiciones generales y ambientales la denuncia es anónima. Si ya te fuiste de la empresa, ese no es tu canal y te van a derivar al centro de asesoramiento. Y acá está la parte que casi nadie usa: el mismo artículo 31 de la Ley 10.449 establece que, vencidos los plazos y comprobada la mora, la Inspección "expedirá la constancia respectiva, que tendrá valor de título ejecutivo en beneficio del trabajador". Un título ejecutivo no es una carta: es el papel con el que se entra directamente a la vía ejecutiva, sin discutir primero si la deuda existe.',
+        links: [
+          { label: 'A quién le reclamo según el problema', to: '/a-quien-le-reclamo-uruguay' },
+        ],
+      },
+      {
+        heading: 'Si ya no trabajás ahí: la conciliación previa es la puerta obligatoria',
+        body: 'Antes de iniciar un juicio laboral hay que tentar la conciliación previa: lo manda el artículo 3 de la Ley 18.572, ante el Centro de Negociación de Conflictos Individuales de Trabajo en Montevideo o ante la Oficina de Trabajo del interior. No es un trámite opcional que se pueda saltear para "ir directo al juzgado". La audiencia es gratuita y presencial, se pide con cédula y con la solicitud firmada, y la asistencia de abogado es obligatoria cuando el reclamo supera las 20 UR; por debajo de ese monto es optativa y se acompaña una planilla de cálculo firmada por un profesional del propio Ministerio. La solicitud tiene que decir los hechos y el detalle y monto de cada rubro reclamado, así que conviene llegar con la cuenta hecha y no con una idea aproximada.',
+      },
+      {
+        heading: 'El reloj: un año para la acción, cinco para los créditos',
+        body: 'Son dos plazos distintos y confundirlos es el error más caro. El artículo 1 de la Ley 18.091 dice que las acciones laborales prescriben al año, contado desde el día siguiente al cese de la relación de trabajo: ese es el tiempo que tenés para mover el reclamo una vez que te fuiste. El artículo 2 dice que los créditos laborales prescriben a los cinco años contados desde que pudieron ser exigibles: ese es el alcance hacia atrás de lo que podés reclamar. Y el artículo 3 agrega la pieza práctica: "La sola presentación del trabajador o su representante ante el Ministerio de Trabajo y Seguridad Social, solicitando audiencia de conciliación […] interrumpe la prescripción". Pedir la audiencia, entonces, no es solo el paso previo al juicio: es lo que frena el reloj mientras negociás.',
+      },
+      {
+        heading: 'Qué llevar, y por qué el recibo no es el único papel',
+        body: 'Llevá lo que fije fechas y montos: recibos de sueldo firmados, transferencias o comprobantes de pago parciales, el contrato si existe, mensajes donde la empresa reconozca la deuda o prometa una fecha, y tu propia planilla mes por mes con lo cobrado y lo adeudado. Si sospechás que además no te declararon, mirá tu historia laboral en el BPS antes de la audiencia: los períodos que faltan son un dato duro y se denuncian por un carril distinto. Nada de esto exige tener todo: el trabajador que perdió los recibos igual reclama, pero cada papel que aportás es un tramo menos que discutir.',
+        links: [
+          { label: 'Trabajo en negro: cómo comprobarlo', to: '/guias/trabajo-en-negro-uruguay' },
+        ],
+      },
+      {
+        heading: 'Lo que este camino no hace',
+        body: 'No hay ninguna oficina que llame a tu empleador y te haga cobrar el mismo día. La denuncia en la Inspección persigue la infracción y puede terminar en sanción a la empresa, pero la sanción no es plata para vos; la conciliación abre la negociación y frena la prescripción, pero si la empresa no comparece o no acuerda, lo que sigue es un juicio. Tampoco te vamos a dar acá el monto de las multas ni una estimación de cuánto demora: la primera cambia por norma y la segunda depende de la oficina y del caso. Lo que sí es fijo, y es lo que conviene saber antes de sentarse, es el plazo legal de pago, el recargo automático, el valor de la constancia y el reloj de la prescripción.',
+      },
+    ],
+    steps: [
+      {
+        name: 'Fijá la fecha del incumplimiento',
+        text: 'Con el artículo 31 de la Ley 10.449 en la mano, marcá el día en que el pago venció según seas mensual, quincenal o semanal.',
+      },
+      {
+        name: 'Reclamá por escrito a la empresa',
+        text: 'Un mensaje o nota fechada donde pedís el pago deja rastro de la intimación y de la fecha, y muchas veces destraba el caso sin más.',
+      },
+      {
+        name: 'Elegí el canal según tu situación',
+        text: 'Si seguís trabajando ahí, denuncia ante la Inspección General del Trabajo; si ya cesaste, solicitud de audiencia de conciliación ante el MTSS.',
+      },
+      {
+        name: 'Pedí la audiencia antes del año',
+        text: 'La sola presentación ante el MTSS interrumpe la prescripción del artículo 1 de la Ley 18.091, que corre desde el día siguiente al cese.',
+      },
+      {
+        name: 'Llevá la cuenta hecha, con el recargo incluido',
+        text: 'Detallá cada rubro y su monto, y sumá el recargo automático del 10 % del artículo 29 de la Ley 18.572 desde que cada crédito fue exigible.',
+      },
+    ],
+    faqs: [
+      {
+        q: '¿Desde qué día puedo decir que me deben el sueldo?',
+        a: 'Si cobrás por mes, desde que pasaron los cinco primeros días hábiles y, como tope infranqueable, los diez primeros días corridos del mes siguiente (art. 31 de la Ley 10.449). Si cobrás por quincena, a los cinco días hábiles de vencida; si es semanal, al finalizar la semana.',
+      },
+      {
+        q: '¿Tengo que pedir el recargo del 10 %?',
+        a: 'No. El artículo 29 de la Ley 18.572 dice que la omisión de pago de créditos laborales lo genera "automáticamente, desde su exigibilidad". Lo que sí tenés que hacer es incluirlo en el monto que reclamás, porque nadie lo va a agregar por vos.',
+      },
+      {
+        q: 'Ya no trabajo más ahí, ¿puedo denunciar en la Inspección?',
+        a: 'El servicio de denuncias del MTSS está previsto para personas trabajadoras en actividad. Si el vínculo ya terminó, el camino es la solicitud de audiencia de conciliación previa, que además interrumpe la prescripción.',
+      },
+      {
+        q: '¿Necesito abogado para la conciliación?',
+        a: 'Es obligatorio cuando el reclamo supera las 20 UR. Por debajo de ese monto la asistencia letrada es optativa y se presenta una planilla de cálculo firmada por un profesional del Ministerio. Si necesitás abogado y no podés pagarlo, hay defensorías y consultorios gratuitos.',
+      },
+      {
+        q: '¿Cuánto tiempo tengo para reclamar?',
+        a: 'Un año desde el día siguiente al cese para la acción (art. 1 de la Ley 18.091) y cinco años hacia atrás para los créditos desde que pudieron exigirse (art. 2). Pedir audiencia de conciliación ante el MTSS interrumpe ese plazo (art. 3).',
+      },
+    ],
+    related: [
+      { label: 'Abogado gratis en Uruguay', to: '/guias/abogado-gratis-uruguay' },
+      { label: 'Despido y liquidación', to: '/guias/despido-y-liquidacion-uruguay' },
+      { label: 'Cuánto me tienen que pagar', to: '/cuanto-me-tienen-que-pagar-uruguay' },
+    ],
+    sources: [
+      {
+        label:
+          'Ley 10.449 art. 31 — el pago mensual va "dentro de los cinco primeros días hábiles y nunca después de los diez primeros días corridos del mes siguiente", y comprobada la mora la Inspección "expedirá la constancia respectiva, que tendrá valor de título ejecutivo en beneficio del trabajador"',
+        url: 'https://www.impo.com.uy/bases/leyes/10449-1943',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 18.572 art. 29 — "La omisión de pago de los créditos laborales generará automáticamente, desde su exigibilidad, un recargo del 10 % (diez por ciento) sobre el monto del crédito adeudado"',
+        url: 'https://www.impo.com.uy/bases/leyes/18572-2009/29',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 18.572 art. 3 — antes de iniciar juicio laboral "deberá tentarse la conciliación previa"; la solicitud escrita con asistencia letrada se exige salvo que el reclamo sea inferior a 20 UR',
+        url: 'https://www.impo.com.uy/bases/leyes/18572-2009/3',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 18.091 arts. 1 a 3 — un año desde el día siguiente al cese para la acción, cinco años para los créditos desde que pudieron exigirse, y la sola presentación ante el MTSS pidiendo conciliación interrumpe la prescripción',
+        url: 'https://www.impo.com.uy/bases/leyes/18091-2007/1',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Audiencias de conciliación — trámite gratuito y presencial, con los requisitos de representación y la regla de las 20 UR',
+        url: 'https://www.gub.uy/tramites/audiencias-conciliacion',
+        publisher: 'MTSS / gub.uy',
+      },
+      {
+        label:
+          'Denuncias y asesoramiento en la Inspección General del Trabajo — el servicio es para personas trabajadoras en actividad y las denuncias por condiciones generales y ambientales son anónimas',
+        url: 'https://www.gub.uy/ministerio-trabajo-seguridad-social/politicas-y-gestion/denuncias-laborales',
+        publisher: 'MTSS',
+      },
+    ],
+  },
+  {
+    slug: 'abogado-gratis-uruguay',
+    title: 'Abogado gratis en Uruguay: qué puerta te corresponde',
+    description:
+      'Dónde conseguir asesoramiento jurídico gratuito en Uruguay: Defensoría Pública, el Consultorio Jurídico de la Facultad de Derecho, la consulta laboral del MTSS y Defensa del Consumidor, con los requisitos de cada uno y los temas que ninguno toma.',
+    tag: 'ACCESO',
+    updatedAt: '2026-08-11',
+    sections: [
+      {
+        heading:
+          'No existe "el abogado gratis": existen puertas distintas para problemas distintos',
+        body: 'La búsqueda típica —"abogado gratis Montevideo"— devuelve estudios privados con primera consulta bonificada, que no es lo mismo. Lo que sí hay es un conjunto de servicios públicos y universitarios, cada uno con su materia, su requisito de ingresos y su límite territorial. Elegir mal cuesta semanas: te atienden, escuchan y te derivan. La regla corta es esta: si el problema es laboral y todavía no hay juicio, el MTSS te asesora gratis; si es de consumo, es Defensa del Consumidor; si necesitás que alguien te represente en un juicio y no podés pagarlo, es la Defensoría Pública; y si necesitás una consulta jurídica general y vivís en Montevideo, es el Consultorio Jurídico de la Facultad de Derecho.',
+        links: [
+          { label: 'A quién le reclamo según el problema', to: '/a-quien-le-reclamo-uruguay' },
+        ],
+      },
+      {
+        heading: 'Defensoría Pública: cuando hace falta representación en un juicio',
+        body: 'La Defensoría Pública depende del Poder Judicial y actúa en juicio por quien cumple los requisitos socioeconómicos, con defensorías especializadas por materia —civil, familia, laboral, penal— y por departamento. Dos cosas conviene tener claras antes de ir. La primera es que los juzgados no responden consultas jurídicas por internet: hay que ubicar en el directorio oficial la defensoría de tu materia y de tu departamento, y consultar allí requisitos y horarios de atención. La segunda es que no publicamos acá un umbral de ingresos: la admisión la resuelve la oficina mirando tu situación concreta, y una cifra copiada de un blog te haría desistir de un servicio al que quizás sí entrás.',
+      },
+      {
+        heading:
+          'Consultorio Jurídico de la Facultad de Derecho: la puerta más ancha, pero solo en Montevideo',
+        body: 'El Consultorio Jurídico de la Facultad de Derecho de la Udelar atiende gratis a toda persona que viva en Montevideo, con agenda previa y de forma presencial, en el edificio Anexo de Colonia 1801 esquina Tristán Narvaja, y también en consultorios barriales repartidos por la ciudad. Tiene un tope de ingresos: para 2026 el máximo es de $ 55.000 nominales mensuales, según la resolución que lo rige, y se acredita con cédula y comprobantes. Hay materias que expresamente no toma: penal y violencia doméstica quedan afuera, y los amparos por medicación o cirugía de alto costo van por una vía propia. Fuera de Montevideo existen servicios equivalentes en las sedes del interior de la Udelar, con su propia cobertura.',
+      },
+      {
+        heading: 'MTSS: la consulta laboral y salarial es gratuita y no hace falta abogado',
+        body: 'Para trabajadores y empleadores de la actividad privada, el Ministerio de Trabajo ofrece una consulta laboral y salarial gratuita sobre una situación concreta, que puede hacerse en línea o presencial, y que en los casos previstos incluye la liquidación adjuntando los recibos de sueldo. Es el mejor primer paso cuando la pregunta es "¿cuánto me corresponde?" y todavía no hay conflicto abierto. Su límite es igual de importante: el resultado no es vinculante. Si hay juicio, plazo procesal o hace falta que alguien te represente, esa consulta no reemplaza a un abogado ni a la Defensoría del Trabajo.',
+        links: [
+          { label: 'Me deben el sueldo: cómo reclamar', to: '/guias/me-deben-el-sueldo-uruguay' },
+        ],
+      },
+      {
+        heading: 'Consumo y servicios regulados: el reclamo no necesita abogado',
+        body: 'Si el problema es con un producto o un servicio, el reclamo ante Defensa del Consumidor no exige patrocinio letrado y es gratuito; el organismo convoca a una audiencia para tentar el acuerdo. Y si el servicio es de los regulados, hay ventanilla propia: banco, financiera o aseguradora van al Banco Central; luz y agua a URSEA; telefonía, internet y correo a URSEC. Presentar el caso en el lugar equivocado no lo redirige solo, así que verificar el organismo antes ahorra el trámite entero.',
+        links: [
+          {
+            label: 'Defensa del Consumidor: qué puede y qué no',
+            to: '/defensa-al-consumidor-uruguay',
+          },
+        ],
+      },
+      {
+        heading: 'Cuándo la ley te exige abogado igual',
+        body: 'Hay un caso concreto donde la asistencia letrada no es opcional: la conciliación previa laboral. El artículo 3 de la Ley 18.572 pide la solicitud escrita con asistencia de abogado, salvo que el reclamo sea inferior a 20 UR, y en ese tramo menor se presenta una planilla de cálculo firmada por un profesional del propio Ministerio. Por eso la secuencia razonable cuando el reclamo es grande y no tenés con qué pagar es al revés de lo que suele hacerse: primero conseguís la defensa —Defensoría Pública o Consultorio Jurídico— y recién después pedís la audiencia, no al revés.',
+      },
+      {
+        heading: 'Qué no hace ninguna de estas puertas',
+        body: 'Ninguna te consigue plata en el acto ni ordena a nadie devolvértela: asesoran, patrocinan o median. Ninguna atiende consultas jurídicas por correo electrónico como si fueran un chat; casi todas piden agenda previa y presencialidad. Y ninguna cubre todas las materias: penal y violencia doméstica tienen circuitos propios, con la Defensoría Pública como referencia. Antes de ir, llevá el problema escrito en tres líneas, las fechas y los papeles: la mitad del valor de una consulta gratuita se pierde reconstruyendo la historia en el mostrador.',
+      },
+    ],
+    faqs: [
+      {
+        q: '¿El Consultorio Jurídico atiende a alguien del interior?',
+        a: 'El de Montevideo atiende a personas que viven en Montevideo. En el interior funcionan los servicios de las sedes de la Udelar, con su propia cobertura y horarios; conviene consultarlos directamente antes de viajar.',
+      },
+      {
+        q: '¿Cuál es el tope de ingresos para el Consultorio Jurídico?',
+        a: 'Para 2026 el máximo publicado es de $ 55.000 nominales mensuales, y se acredita con cédula y comprobantes de ingreso. Es un valor que se actualiza, así que conviene confirmarlo en la propia oficina antes de agendar.',
+      },
+      {
+        q: '¿La Defensoría Pública tiene un límite de ingresos?',
+        a: 'La admisión depende de requisitos socioeconómicos que evalúa la propia defensoría. No publicamos una cifra porque la resuelve la oficina con tu situación concreta: el paso correcto es ubicar en el directorio oficial la defensoría de tu materia y departamento y preguntar allí.',
+      },
+      {
+        q: 'Tengo un problema laboral, ¿por dónde empiezo si no tengo plata?',
+        a: 'Por la consulta laboral y salarial gratuita del MTSS, que analiza tu caso concreto y no requiere abogado. Si el reclamo supera las 20 UR y hay que ir a conciliación, buscá antes la Defensoría del Trabajo o el Consultorio Jurídico, porque ahí la asistencia letrada es obligatoria.',
+      },
+    ],
+    related: [
+      { label: 'Me deben el sueldo', to: '/guias/me-deben-el-sueldo-uruguay' },
+      { label: 'Preguntas verificadas de economía personal', to: '/preguntas-economia-personal' },
+    ],
+    sources: [
+      {
+        label: 'Asesoramiento jurídico y acceso a defensor público',
+        url: 'https://www.poderjudicial.gub.uy/node/999991663',
+        publisher: 'Poder Judicial',
+      },
+      {
+        label: 'Directorio nacional de Defensorías Públicas, por materia y departamento',
+        url: 'https://www.poderjudicial.gub.uy/institucional/defensorias-publicas',
+        publisher: 'Poder Judicial',
+      },
+      {
+        label:
+          'Consultorio Jurídico — consultante: atiende a toda persona que viva en Montevideo, tope de $ 55.000 nominales para 2026, sede en Colonia 1801 esq. Tristán Narvaja, y no toma penal ni violencia doméstica',
+        url: 'https://www.fder.edu.uy/consultorio-juridico/consultante',
+        publisher: 'Facultad de Derecho, Udelar',
+      },
+      {
+        label:
+          'Consulta laboral y salarial gratuita, en línea o presencial, para la actividad privada',
+        url: 'https://www.gub.uy/tramites/consulta-laboral-salarial?min=true',
+        publisher: 'MTSS',
+      },
+      {
+        label:
+          'Ley 18.572 art. 3 — la solicitud de conciliación previa va con asistencia letrada salvo que el reclamo sea inferior a 20 UR',
+        url: 'https://www.impo.com.uy/bases/leyes/18572-2009/3',
+        publisher: 'IMPO',
+      },
+      {
+        label: 'Consulta, reclamo y/o denuncia en materia de defensa del consumidor',
+        url: 'https://www.gub.uy/tramites/consulta-reclamo-yo-denuncia-materia-defensa-consumidor',
+        publisher: 'MEF / gub.uy',
+      },
+    ],
+  },
+  {
+    slug: 'estudio-de-cobranza-uruguay',
+    title: 'Te llama un estudio de cobranza: qué puede y qué no',
+    description:
+      'Qué puede hacer legalmente una empresa de cobranza en Uruguay y qué no: gestión o cartera cedida, el detalle de la deuda por escrito, por qué no pueden retenerte el sueldo, el plazo del Clearing y dónde reclamar si el trato se pasa de la raya.',
+    tag: 'COBRANZA',
+    updatedAt: '2026-08-11',
+    sections: [
+      {
+        heading: 'Primero: quién te está llamando en realidad',
+        body: 'Hay dos figuras distintas detrás del mismo llamado. La Unidad Defensa del Consumidor lo explica así: el acreedor original puede encargarle la cobranza a otra empresa —que gestiona en su nombre— o puede vender la deuda a otro acreedor, la llamada cartera cedida. La diferencia no es teórica: define a quién le pagás, quién puede firmarte un finiquito válido y ante quién reclamás si algo sale mal. Preguntá siempre lo mismo antes de cualquier otra cosa: si están gestionando o si compraron el crédito, y quién es hoy el acreedor. Un gestor que no puede responder eso por escrito tampoco puede cerrarte la deuda.',
+      },
+      {
+        heading: 'Pedí el detalle por escrito antes de acordar nada',
+        body: 'Antes de aceptar un monto, pedí por escrito el origen de la deuda, el capital, los intereses, los cargos, las fechas, la imputación de los pagos que ya hiciste y el importe exacto de cancelación. Si el crédito nació en una institución supervisada por el Banco Central, el reclamo formal va primero allí: el BCU reconoce el derecho a comprobantes, estados de cuenta y carta de pago al cancelar. Guardá cada recibo. Y no pagues contra una cifra dicha por teléfono: sin detalle no hay forma de saber si el número incluye conceptos que ya pagaste o intereses calculados sobre intereses.',
+        links: [{ label: 'Saldar deudas: cómo negociar', to: '/saldar-deudas-uruguay' }],
+      },
+      {
+        heading: 'Por qué no pueden retenerte el sueldo',
+        body: 'Es la amenaza más repetida y la que menos se sostiene. Las retenciones sobre sueldos y pasividades están tasadas por la Ley 17.829: su artículo 1 enumera cuáles se admiten —pensiones alimenticias dispuestas judicialmente, garantías de alquiler, cuotas sindicales, créditos sociales, hipotecarios, seguros de vida, afiliaciones a servicios de salud, créditos de nómina y operaciones cooperativas, entre otras— y su artículo 3 fija un piso: no se puede retener al punto de que la persona perciba menos del 35 % de su retribución nominal una vez deducidos impuestos y aportes, porcentaje que baja a 30 % en los casos de garantía de alquiler y operaciones cooperativas. Además, solo pueden ordenar retenciones las entidades habilitadas expresamente por ley y, fuera de las judiciales, media el consentimiento escrito del trabajador. Una empresa de cobranza que te llama no está en esa lista: para llegar a tu sueldo hay que pasar por un juicio.',
+      },
+      {
+        heading: 'El Clearing: diez años de tope y saldos que no se actualizan solos',
+        body: 'El Clearing de Informes es una base de datos privada regulada por la Ley 18.331, no un registro del Banco Central. Dos datos que la Unidad Defensa del Consumidor publica y que conviene tener presentes al negociar: diez años es el plazo máximo que un registro permanece allí, y esa base no actualiza la información, por lo que los saldos figuran por el importe con el que fueron ingresados. Traducido: pagar no borra el dato por arte de magia, y el importe que se ve puede no ser el que debés hoy. Si vas a cancelar, exigí la constancia y verificá después cómo quedó informado.',
+        links: [{ label: 'Cómo salir del Clearing', to: '/salir-del-clearing' }],
+      },
+      {
+        heading: 'Los intereses que crecen sobre sí mismos',
+        body: 'La misma fuente oficial aclara algo que explica por qué una deuda chica se vuelve impagable: los intereses moratorios son capitalizables, es decir que el interés genera interés. También aclara que no es obligación del acreedor avisarte del atraso, salvo que la operación tenga garante o fiador, en cuyo caso a estos hay que avisarles antes de aplicar la mora. Por eso el primer pedido siempre es el detalle: sin ver cómo se compone el saldo no hay manera de discutirlo, ni de detectar si la tasa se fue por encima de los topes de usura.',
+      },
+      {
+        heading: 'La norma antiacoso que buscamos y no encontramos',
+        body: 'Acá hay que ser honestos, porque en internet abundan listas de "lo que un cobrador tiene prohibido" que en realidad son argentinas. Buscamos en la normativa uruguaya una norma específica que regule la frecuencia de los llamados de cobranza, prohíba contactar a familiares o al empleador o tipifique el hostigamiento del cobrador, y no la encontramos. Publicamos la ausencia en vez de inventarla. Lo que sí existe es el marco general: si hay relación de consumo, el trato y la información quedan bajo la Ley 17.250 y su organismo de aplicación; si el crédito es de una institución supervisada, el Banco Central recibe la denuncia; y si hay amenazas o difusión de datos personales, eso ya se juzga por normas propias, penales o de protección de datos. Que no haya una regla de "no más de X llamadas" no significa que cualquier cosa esté permitida.',
+        links: [
+          { label: 'A quién le reclamo según el problema', to: '/a-quien-le-reclamo-uruguay' },
+        ],
+      },
+      {
+        heading: 'Qué hacer, en orden',
+        body: 'Identificá al acreedor actual y pedí todo por escrito, incluida la propuesta de acuerdo. No pagues sin el detalle ni firmes reconocimientos de deuda sin leerlos: reconocer una deuda prescripta puede reabrir lo que el tiempo ya había cerrado. Si vas a arreglar, acordá el finiquito y la constancia antes de transferir. Y si el trato se pasa de la raya, dejá rastro: guardá mensajes, anotá fechas y horas, y llevá eso a la ventanilla que corresponda según quién sea el acreedor. Una carpeta ordenada vale más que una discusión telefónica.',
+      },
+    ],
+    faqs: [
+      {
+        q: '¿Un estudio de cobranza puede embargarme el sueldo?',
+        a: 'Por sí mismo, no. Las retenciones sobre el sueldo están tasadas por la Ley 17.829 y solo las pueden ordenar entidades habilitadas por ley, además de las dispuestas judicialmente. Y hay un piso: no se puede dejar a la persona con menos del 35 % de su retribución nominal luego de impuestos y aportes.',
+      },
+      {
+        q: '¿Cuánto tiempo queda registrada una deuda en el Clearing?',
+        a: 'La Unidad Defensa del Consumidor publica que diez años es el plazo máximo que un registro permanece en el Clearing de Informes, que es una base privada regulada por la Ley 18.331. Además, esa base no actualiza los saldos: figuran por el importe con el que se ingresaron.',
+      },
+      {
+        q: 'Me llaman por una deuda que no reconozco, ¿qué pido?',
+        a: 'El origen del crédito, el capital, los intereses, los cargos, las fechas, la imputación de tus pagos y el monto de cancelación, todo por escrito, junto con la identificación del acreedor actual. Si el crédito venía de una institución supervisada, reclamá formalmente allí.',
+      },
+      {
+        q: '¿Existe una ley uruguaya que limite los llamados de cobranza?',
+        a: 'No encontramos una norma específica que fije un máximo de llamados ni que prohíba expresamente contactar a terceros. Las listas que circulan suelen ser de la legislación argentina. Lo aplicable en Uruguay es el marco general de consumo, el del Banco Central si el acreedor es supervisado y las normas penales o de protección de datos si hay amenazas o difusión indebida.',
+      },
+    ],
+    related: [
+      { label: 'Saldar deudas en Uruguay', to: '/saldar-deudas-uruguay' },
+      { label: 'Salir del Clearing', to: '/salir-del-clearing' },
+      { label: 'Defensa del Consumidor', to: '/defensa-al-consumidor-uruguay' },
+    ],
+    sources: [
+      {
+        label:
+          'Preguntas frecuentes de la Unidad Defensa del Consumidor — gestión de cobranza y cartera cedida, "10 años es el plazo máximo que un registro permanece en el Clearing de Informes", la base "no actualiza la información" y los intereses moratorios capitalizables',
+        url: 'https://www.gub.uy/ministerio-economia-finanzas/politicas-y-gestion/preguntas-frecuentes-unidad-defensa-del-consumidor',
+        publisher: 'Unidad Defensa del Consumidor / MEF',
+      },
+      {
+        label:
+          'Ley 17.829 arts. 1 y 3 — nómina de retenciones admitidas sobre sueldos y pasividades y el piso del 35 % (30 % en garantía de alquiler y operaciones cooperativas)',
+        url: 'https://www.impo.com.uy/bases/leyes/17829-2004',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Derechos y obligaciones de quien toma un crédito: comprobantes, estados de cuenta y carta de pago',
+        url: 'https://usuariofinanciero.bcu.gub.uy/creditos-y-prestamos/derechos-y-obligaciones/',
+        publisher: 'Banco Central del Uruguay',
+      },
+      {
+        label: 'Reclamo ante la institución y denuncia ante el BCU',
+        url: 'https://usuariofinanciero.bcu.gub.uy/reclamos-y-denuncias/',
+        publisher: 'Banco Central del Uruguay',
+      },
+      {
+        label: 'Ley 18.331, art. 22 — datos de carácter comercial y crediticio',
+        url: 'https://www.impo.com.uy/bases/leyes/18331-2008/22',
+        publisher: 'IMPO',
+      },
+    ],
+  },
+  {
+    slug: 'feriados-en-uruguay-como-se-pagan',
+    title: 'Feriados en Uruguay: cuáles se pagan doble y cuáles no',
+    description:
+      'Cómo se paga un feriado en Uruguay: cuáles son los cinco feriados pagos, cuánto se cobra si trabajás o no, qué cambia entre mensual y jornalero, y por qué Carnaval y Semana de Turismo no se pagan doble.',
+    tag: 'FERIADOS',
+    updatedAt: '2026-08-11',
+    sections: [
+      {
+        heading: 'Hay dos clases de feriado y solo una se paga doble',
+        body: 'El error más común del año es tratar a todos los feriados igual. En Uruguay conviven los feriados pagos —también llamados no laborables— y los feriados comunes o laborables. En los pagos se cobra el día se trabaje o no, y trabajarlo se remunera doble. En los comunes no hay pago extra por el solo hecho de ser feriado: el mensual cobra su sueldo como cualquier día y el jornalero cobra únicamente si trabaja. Que el comercio cierre o que el día "sea feriado" en el calendario no cambia esa clasificación.',
+      },
+      {
+        heading: 'Los cinco feriados pagos',
+        body: 'La lista está en el artículo 18 de la Ley 12.590 y son cinco: 1º de enero, 1º de mayo, 18 de julio, 25 de agosto y 25 de diciembre. La norma dice que en esos días todo trabajador percibirá remuneración como si trabajara y que, en caso de trabajar, recibirá doble paga. Todo el resto del calendario —6 de enero, Carnaval, Semana de Turismo, 19 de abril, 18 de mayo, 19 de junio, 12 de octubre, 2 de noviembre y los asuetos que se dispongan— entra en la categoría de feriado común, por más que sean días de descanso efectivo en buena parte del país.',
+      },
+      {
+        heading: 'Si sos mensual',
+        body: 'En un feriado pago que no trabajás, cobrás tu sueldo normal: ya está incluido, no hay descuento ni agregado. Si lo trabajás, corresponde el sueldo habitual más un día adicional, que se calcula dividiendo el sueldo mensual entre 30. En un feriado común, en cambio, cobrás tu sueldo tanto si la empresa cierra como si trabajás: no hay adicional por ese día. Esa es la asimetría que sorprende a mucha gente cuando compara el recibo de julio con el de Semana de Turismo.',
+        links: [
+          {
+            label: 'Calculadora de sueldo líquido',
+            to: '/herramientas/calculadora-sueldo-liquido',
+          },
+        ],
+      },
+      {
+        heading: 'Si sos jornalero',
+        body: 'Acá la diferencia es mucho más grande, porque el jornalero cobra por día trabajado. En un feriado pago que no trabaja, igual cobra el jornal; si lo trabaja, cobra doble jornal. En un feriado común que no trabaja no cobra nada por ese día, y si lo trabaja cobra su jornal simple. Por eso, para un jornalero, la diferencia entre que el 25 de agosto caiga en su día de trabajo o no es plata concreta, mientras que para un mensual el sueldo del mes no se mueve.',
+      },
+      {
+        heading: 'Destajistas y remuneraciones variables',
+        body: 'Cuando la retribución no es fija, el criterio del Ministerio de Trabajo es tomar el promedio de lo percibido en las últimas doce jornadas trabajadas antes del feriado: eso es lo que se paga si el trabajador descansa, y el doble si trabaja el feriado pago. Para trabajadores rurales rige además el Decreto 216/012, con su propio régimen. Si tu remuneración mezcla fijo y variable, el promedio se calcula sobre la parte variable y no sobre el total del recibo.',
+      },
+      {
+        heading: 'Por qué algunos feriados se corren al lunes y otros no',
+        body: 'La Ley 16.805 estableció que los feriados que caen martes o miércoles se trasladan al lunes anterior, y los que caen jueves o viernes al lunes siguiente; los que caen sábado, domingo o lunes se mantienen. Pero hay una lista de excepciones que se observan siempre en su fecha, sin importar el día de la semana: Carnaval y Semana de Turismo, 1º y 6 de enero, 1º de mayo, 19 de junio, 18 de julio, 25 de agosto, 2 de noviembre y 25 de diciembre —lista que la Ley 17.414 amplió—. Notá que los cinco feriados pagos están todos dentro de las excepciones: nunca se mueven. La ley aclara además que el traslado no afecta el derecho del trabajador a su descanso semanal.',
+      },
+      {
+        heading: 'El error caro: creer que Carnaval o Semana de Turismo se pagan doble',
+        body: 'Son los dos casos que más discusiones generan en febrero y en abril. Ninguno de los dos está en el artículo 18 de la Ley 12.590, así que ninguno es feriado pago: son feriados comunes. Si trabajás esos días siendo mensual, no corresponde adicional; si sos jornalero, cobrás el jornal simple por haber trabajado. Puede ocurrir que el convenio de tu grupo de actividad mejore ese piso —los consejos de salarios pueden acordar condiciones más favorables—, y ahí manda el convenio. Pero el piso legal es el que dice la ley, y confundirlo lleva a reclamar un doble jornal que no existe o, peor, a no reclamar el que sí corresponde en los cinco días pagos.',
+      },
+    ],
+    faqs: [
+      {
+        q: '¿Cuáles son los feriados pagos en Uruguay?',
+        a: 'Cinco: 1º de enero, 1º de mayo, 18 de julio, 25 de agosto y 25 de diciembre, según el artículo 18 de la Ley 12.590. En esos días se cobra como si se trabajara y, si se trabaja, se paga doble.',
+      },
+      {
+        q: 'Soy mensual y trabajé un feriado pago, ¿cuánto me corresponde?',
+        a: 'Tu sueldo habitual más un día adicional, calculado dividiendo el sueldo mensual entre 30. Si no lo trabajás, cobrás tu sueldo normal sin descuento.',
+      },
+      {
+        q: '¿Semana de Turismo se paga doble?',
+        a: 'No. No está entre los cinco feriados pagos del artículo 18 de la Ley 12.590: es feriado común. El mensual cobra su sueldo sin adicional y el jornalero cobra jornal simple si trabaja. Un convenio colectivo puede mejorar ese piso.',
+      },
+      {
+        q: '¿Por qué algunos feriados se pasan al lunes?',
+        a: 'Por la Ley 16.805: los que caen martes o miércoles se trasladan al lunes anterior y los que caen jueves o viernes al lunes siguiente. Pero hay excepciones que se observan siempre en su fecha, y entre ellas están los cinco feriados pagos.',
+      },
+    ],
+    related: [
+      { label: 'Entender tu recibo de sueldo', to: '/guias/entender-tu-recibo-de-sueldo-uruguay' },
+      { label: 'Horas extra en Uruguay', to: '/guias/horas-extra-en-uruguay' },
+      {
+        label: 'Licencia y salario vacacional',
+        to: '/guias/licencia-y-salario-vacacional-uruguay',
+      },
+    ],
+    sources: [
+      {
+        label:
+          'Ley 12.590 art. 18 — el 1º de enero, 1º de mayo, 18 de julio, 25 de agosto y 25 de diciembre todo trabajador percibe remuneración como si trabajara y, si trabaja, doble paga',
+        url: 'https://www.impo.com.uy/bases/leyes/12590-1958/18',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 16.805 — régimen de traslado de feriados al lunes y lista de fechas expresamente excluidas del traslado',
+        url: 'https://www.impo.com.uy/bases/leyes/16805-1996',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Feriados — clasificación en pagos y comunes y forma de pago para mensuales, jornaleros y destajistas',
+        url: 'https://www.gub.uy/ministerio-trabajo-seguridad-social/institucional/derecho-laboral-uruguayo/feriados',
+        publisher: 'MTSS',
+      },
+    ],
+  },
+  {
+    slug: 'trabajo-en-negro-uruguay',
+    title: 'Trabajo en negro en Uruguay: cómo comprobarlo y qué hacer',
+    description:
+      'Cómo verificar en el BPS si tu empleador te declara, cómo denunciar actividades no declaradas o salarios declarados de menos, qué perdés mientras no figurás y por qué los créditos laborales se reclaman igual.',
+    tag: 'INFORMALIDAD',
+    updatedAt: '2026-08-11',
+    sections: [
+      {
+        heading: 'Antes de discutir, comprobá',
+        body: 'La conversación sobre trabajo no registrado casi siempre empieza con una sospecha —"me paga por fuera", "nunca vi un recibo"— y se resuelve con un dato que podés mirar vos mismo. El BPS publica tu historia laboral nominada: en los servicios en línea para trabajadores, con usuario personal, se consultan los aportes y su distribución, y se obtiene la constancia de historia laboral. Ahí ves mes a mes qué empresa te declaró, con qué salario y con cuántos días o jornales. Cobrar en efectivo no es lo mismo que no estar declarado: hay empleadores que pagan en mano y declaran igual. El único modo de saberlo es mirar la historia.',
+      },
+      {
+        heading: 'Qué se puede denunciar en el BPS y con qué respaldo',
+        body: 'El BPS habilita a los trabajadores dependientes a denunciar diferencias en su historia laboral nominada: actividades no declaradas, remuneraciones declaradas por un importe menor al percibido, y diferencias en jornales, días trabajados o en las fechas de inicio y fin del vínculo. El servicio en línea se llama "Denunciar diferencias de salarios y actividades no declaradas" y también puede presentarse presencialmente en las oficinas. Alcanza a actividades desde el 1º de abril de 1996, que es desde cuándo corre la historia laboral nominada, y pide documentación que respalde el reclamo: recibos de sueldo, sentencias o documentos públicos o privados que acrediten el incumplimiento.',
+      },
+      {
+        heading: 'La Inspección del Trabajo atiende, pero solo si seguís trabajando ahí',
+        body: 'La otra ventanilla es la Inspección General del Trabajo, que recibe denuncias por incumplimientos de la normativa laboral y donde, en condiciones generales y ambientales, la denuncia es anónima. El límite que conviene conocer antes de ir: ese servicio está previsto para personas trabajadoras en actividad, con el vínculo vigente. Si ya te fuiste de la empresa, el camino no es la denuncia sino el reclamo de los créditos, con la conciliación previa del Ministerio como paso obligatorio antes de un juicio. Las tres puertas —Inspección, BPS y conciliación— resuelven cosas distintas y no se reemplazan entre sí; el detalle de cada una, con la escala de sanciones y los requisitos, está en nuestra página dedicada.',
+        links: [
+          {
+            label: 'Denunciar trabajo en negro: las tres puertas',
+            to: '/denunciar-trabajo-en-negro-uruguay',
+          },
+          { label: 'Me deben el sueldo: cómo reclamar', to: '/guias/me-deben-el-sueldo-uruguay' },
+        ],
+      },
+      {
+        heading: 'Qué perdés mientras no figurás',
+        body: 'No es solo la jubilación futura, aunque sea lo primero que se nombra. La historia laboral es la que acredita los períodos y los sueldos con los que después se calculan las prestaciones: sin registro no hay período computado ni sueldo de referencia. Y los amparos que dependen de estar en actividad declarada —seguro de desempleo, subsidio por enfermedad, asignaciones— se tramitan sobre esa misma base. Por eso el costo del "arreglo" de cobrar un poco más en mano rara vez está del lado del trabajador cuando se lo mira en el largo plazo: lo que se ahorra en aportes se paga después, en prestaciones que no se pueden pedir.',
+      },
+      {
+        heading: 'Que no te declaren no borra lo que te deben',
+        body: 'Es la confusión más frecuente y la más costosa: creer que sin recibos no hay nada que reclamar. Los créditos laborales —sueldo, aguinaldo, licencia, salario vacacional, indemnización cuando corresponde— se reclaman por el mismo camino que cualquier otro trabajador, y los plazos son los mismos: un año desde el día siguiente al cese para la acción y cinco años hacia atrás para los créditos, según la Ley 18.091, con la solicitud de audiencia de conciliación ante el MTSS interrumpiendo la prescripción. Lo que cambia sin registro es la prueba, no el derecho: por eso vale la pena juntar desde ya mensajes, planillas, testigos, transferencias y cualquier constancia que ubique fechas y montos.',
+      },
+      {
+        heading: 'Lo que no vas a encontrar acá',
+        body: 'No prometemos en cuánto tiempo se resuelve un expediente: depende del caso y de la oficina, y cualquier número sería inventado. Tampoco repetimos que el trabajador "no tiene ninguna responsabilidad", porque es una frase de titular que no ayuda a decidir nada. Lo verificable y útil es esto: podés ver tu historia laboral, podés denunciar las diferencias con documentación desde 1996, la Inspección te atiende mientras estés en actividad y, hayan declarado o no, los créditos se reclaman con los plazos de la Ley 18.091. La escala de sanciones al empleador y el detalle de cada trámite están en la página de denuncia, con la norma citada.',
+        links: [
+          {
+            label: 'Denunciar trabajo en negro',
+            to: '/denunciar-trabajo-en-negro-uruguay',
+          },
+        ],
+      },
+    ],
+    steps: [
+      {
+        name: 'Mirá tu historia laboral',
+        text: 'Entrá con tu usuario personal a los servicios en línea del BPS y consultá tus aportes y la constancia de historia laboral nominada.',
+      },
+      {
+        name: 'Identificá la diferencia exacta',
+        text: 'Anotá qué meses faltan, qué salario se declaró de menos o qué fechas de inicio y fin no coinciden con la realidad.',
+      },
+      {
+        name: 'Juntá el respaldo',
+        text: 'Recibos, transferencias, mensajes, planillas o cualquier documento que acredite la actividad o el monto realmente percibido.',
+      },
+      {
+        name: 'Presentá la denuncia en el BPS',
+        text: 'Usá el servicio en línea "Denunciar diferencias de salarios y actividades no declaradas" o presentate en una oficina.',
+      },
+      {
+        name: 'Separá el reclamo de los créditos',
+        text: 'La denuncia de aportes no cobra lo que te deben: para eso va el reclamo laboral, con la conciliación previa y dentro del plazo del año desde el cese.',
+      },
+    ],
+    faqs: [
+      {
+        q: '¿Cómo sé si mi empleador me está declarando?',
+        a: 'Consultando tu historia laboral nominada en los servicios en línea del BPS con usuario personal. Ahí figura qué empresa te declaró, con qué remuneración y con cuántos días o jornales, mes a mes.',
+      },
+      {
+        q: '¿Desde cuándo puedo denunciar diferencias?',
+        a: 'La historia laboral nominada cubre actividades desde el 1º de abril de 1996, y ese es el alcance del servicio de denuncia de diferencias de salarios y actividades no declaradas.',
+      },
+      {
+        q: 'Trabajé en negro y me fui, ¿puedo reclamar igual?',
+        a: 'Sí. Los créditos laborales no dependen de que te hayan registrado; lo que cambia es la prueba. Rigen los mismos plazos de la Ley 18.091: un año desde el día siguiente al cese para la acción y cinco años hacia atrás para los créditos.',
+      },
+      {
+        q: '¿La denuncia en el BPS me hace cobrar lo que me deben?',
+        a: 'No. Esa denuncia apunta a regularizar aportes e historia laboral. Cobrar sueldos o rubros impagos es otro camino: reclamo a la empresa, conciliación previa ante el MTSS y, si no hay acuerdo, juicio laboral.',
+      },
+    ],
+    related: [
+      { label: 'Me deben el sueldo', to: '/guias/me-deben-el-sueldo-uruguay' },
+      { label: 'Entender tu recibo de sueldo', to: '/guias/entender-tu-recibo-de-sueldo-uruguay' },
+      { label: 'Jubilación y AFAP', to: '/guias/jubilacion-y-afap-como-funciona-uruguay' },
+    ],
+    sources: [
+      {
+        label:
+          'Denuncias de trabajadores — qué se puede denunciar, el alcance desde el 1º de abril de 1996 y la documentación de respaldo',
+        url: 'https://www.bps.gub.uy/11439/denuncias-de-trabajadores.html',
+        publisher: 'BPS',
+      },
+      {
+        label:
+          'Servicios en línea para trabajadores — consultar mis aportes e historia laboral nominada',
+        url: 'https://www.bps.gub.uy/10397/servicios-en-linea-para-trabajadores.html',
+        publisher: 'BPS',
+      },
+      {
+        label: 'Constancia de historia laboral nominada',
+        url: 'https://www.bps.gub.uy/11438/constancia-de-historia-laboral-nominada.html',
+        publisher: 'BPS',
+      },
+      {
+        label:
+          'Denuncias y asesoramiento en la Inspección General del Trabajo — servicio para personas trabajadoras en actividad, con anonimato en condiciones generales y ambientales',
+        url: 'https://www.gub.uy/ministerio-trabajo-seguridad-social/politicas-y-gestion/denuncias-laborales',
+        publisher: 'MTSS',
+      },
+      {
+        label:
+          'Ley 18.091 arts. 1 a 3 — prescripción de las acciones al año del cese, de los créditos a los cinco años, e interrupción por la solicitud de conciliación',
+        url: 'https://www.impo.com.uy/bases/leyes/18091-2007/1',
         publisher: 'IMPO',
       },
     ],

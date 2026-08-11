@@ -10,7 +10,7 @@
 // pages render this content verbatim regardless of the active UI locale, while
 // the surrounding chrome (nav labels, CTA, "última actualización") is i18n'd.
 
-// The 50 Reddit-mined economy/finance/legal guides live in their own module and
+// The Reddit-mined economy/finance/legal guides live in their own module and
 // are appended to the catalogue below (keeps this file focused on the core set).
 import { parejaGuides } from './guidesPareja'
 import { redditGuides } from './guidesReddit'
@@ -1448,7 +1448,7 @@ export const guides: readonly Guide[] = [
       { label: 'Cómo afecta la Fed al dólar', to: '/guias/como-afecta-la-fed-al-dolar' },
     ],
   },
-  // 50 Reddit-mined educational guides (alquiler, herencias, crédito, sueldo,
+  // Reddit-mined educational guides (alquiler, herencias, crédito, sueldo, reclamos,
   // inversión, jubilación...). Defined in `guidesReddit.ts`, appended here so
   // `getGuide`/`guideSlugs`/the sitemap/the search index pick them up for free.
   ...redditGuides,

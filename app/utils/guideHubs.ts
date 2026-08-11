@@ -463,11 +463,13 @@ export const guideHubs: readonly GuideHub[] = [
     guideSlugs: [
       'entender-tu-recibo-de-sueldo-uruguay',
       'horas-extra-en-uruguay',
+      'feriados-en-uruguay-como-se-pagan',
       'llegar-tarde-tolerancia-y-sanciones-uruguay',
       'como-se-calcula-el-aguinaldo-uruguay',
       'licencia-y-salario-vacacional-uruguay',
       'me-certifique-subsidio-por-enfermedad-uruguay',
       'despido-y-liquidacion-uruguay',
+      'trabajo-en-negro-uruguay',
       'como-funciona-el-irpf-uruguay',
       'trabajar-para-el-exterior-desde-uruguay',
       'salario-minimo-uruguay-cuanto-es',
@@ -494,6 +496,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/seguro-de-paro-uruguay',
       },
       {
+        label: 'Denunciar trabajo en negro',
+        description: 'Las tres puertas: Inspección, BPS y conciliación.',
+        to: '/denunciar-trabajo-en-negro-uruguay',
+      },
+      {
         label: 'Trabajo en negro',
         description: 'Las tres puertas: MTSS, BPS y conciliación.',
         to: '/denunciar-trabajo-en-negro-uruguay',
@@ -508,7 +515,52 @@ export const guideHubs: readonly GuideHub[] = [
       'deudas-y-credito-uruguay',
       'ahorrar-e-invertir-uruguay',
       'emprender-y-empresa-uruguay',
+      'derechos-y-reclamos-uruguay',
     ],
+  },
+  {
+    slug: 'derechos-y-reclamos-uruguay',
+    title: 'Derechos y reclamos en Uruguay',
+    seoTitle: 'Derechos y reclamos en Uruguay: sueldo impago, cobranzas y abogado gratis',
+    description:
+      'Cómo reclamar en Uruguay: sueldo impago y conciliación ante el MTSS, qué puede y qué no una empresa de cobranza, dónde conseguir asesoramiento jurídico gratuito y a qué organismo va cada problema.',
+    tag: 'DERECHOS',
+    icon: 'mdi-scale-balance',
+    intro:
+      'Reclamar en Uruguay no es una sola cosa: cada problema tiene su ventanilla, su plazo y su límite. Acá está el mapa. Qué hacer cuando te deben el sueldo y por qué la conciliación ante el Ministerio de Trabajo frena el reloj de la prescripción; qué puede exigir de verdad una empresa de cobranza y por qué no puede tocarte el sueldo; dónde conseguir un abogado sin plata y qué materia toma cada puerta; y a qué organismo va tu caso cuando el proveedor es un banco, una empresa de luz o una tienda. Está escrito con la norma al lado y con los límites dichos: qué te resuelve cada camino y qué no.',
+    guideSlugs: [
+      'me-deben-el-sueldo-uruguay',
+      'abogado-gratis-uruguay',
+      'estudio-de-cobranza-uruguay',
+    ],
+    resources: [
+      {
+        label: 'A quién le reclamo',
+        description: 'El organismo que corresponde a cada problema.',
+        to: '/a-quien-le-reclamo-uruguay',
+      },
+      {
+        label: 'Defensa del Consumidor',
+        description: 'Qué puede hacer por vos y qué no.',
+        to: '/defensa-al-consumidor-uruguay',
+      },
+      {
+        label: 'Derechos en compras online',
+        description: 'Retracto, vicios y remedios de la Ley 17.250.',
+        to: '/derechos-consumidor-compras-online',
+      },
+      {
+        label: 'Estafas en Uruguay',
+        description: 'Cómo actuar y dónde denunciar.',
+        to: '/estafas-uruguay',
+      },
+      {
+        label: 'Preguntas verificadas',
+        description: 'Respuestas con la fuente oficial al lado.',
+        to: '/preguntas-economia-personal',
+      },
+    ],
+    relatedHubs: ['sueldo-trabajo-e-impuestos-uruguay', 'deudas-y-credito-uruguay'],
   },
   {
     slug: 'ahorrar-e-invertir-uruguay',

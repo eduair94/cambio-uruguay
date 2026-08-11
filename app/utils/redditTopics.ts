@@ -161,12 +161,13 @@ export const TOPIC_DEFS: readonly TopicDef[] = Object.freeze([
       /defensa (?:del )?consumidor|relaci[oó]n de consumo|cl[aá]usula abusiva|servicio(?: pagado)? no (?:prestado|brindado)|incumplimiento (?:del )?(?:proveedor|servicio|contrato)|reclamo (?:laboral|salarial|de consumo)|salario (?:impago|adeudado)|sueldo (?:impago|adeudado)|despido|liquidaci[oó]n laboral|estudio (?:de )?cobranza|empresa de cobranza|cobranza (?:de deuda|extrajudicial)|abogad[oa] gratis|defensor(?:a|ía)? p[uú]blic[oa]|asesoramiento jur[ií]dico|consulta laboral/i,
     queries: LEGAL_URUGUAY_HARVEST_QUERIES,
     related: [
+      { label: 'Derechos y reclamos', to: '/temas/derechos-y-reclamos-uruguay' },
       {
         label: 'Derechos en compras y servicios',
         to: '/derechos-consumidor-compras-online',
       },
+      { label: 'A quién le reclamo', to: '/a-quien-le-reclamo-uruguay' },
       { label: 'Cómo actuar ante una estafa', to: '/estafas-uruguay' },
-      { label: 'Preguntas verificadas', to: '/preguntas-economia-personal' },
     ],
   },
   {
@@ -186,12 +187,29 @@ export const TOPIC_DEFS: readonly TopicDef[] = Object.freeze([
     id: 'sueldo-trabajo',
     label: 'Sueldo y trabajo',
     icon: 'mdi-cash-multiple',
-    blurb: 'Sueldo líquido, aguinaldo, cobrar en dólares y organizar la plata.',
+    blurb: 'Sueldo líquido, horas extra, feriados, aguinaldo y cobrar en dólares.',
+    // El vocabulario de este tema es el de un recibo de sueldo entero, no sólo el del líquido: las
+    // horas extra, el salario vacacional, el feriado trabajado, el jornal y el ajuste por consejo de
+    // salarios son la misma pregunta ("¿cuánto me tienen que pagar?"). La versión anterior sólo
+    // reconocía siete expresiones y por eso leía como oportunidad un tema que el sitio ya responde:
+    // el mismo matcher mide demanda en Reddit y cobertura propia, así que angostarlo subestimaba las
+    // dos puntas a la vez. Se agrega sólo léxico retributivo (nada de "licencia" a secas, que además
+    // está en TOPIC_NOISE por la licencia de conducir).
     match:
-      /sueldo l[ií]quido|\bnominal\b|aguinaldo|cu[aá]nto (?:gan\w+|se cobra)|me pagan en d[oó]lares|salario m[ií]nimo|liquidaci[oó]n de sueldo/i,
-    queries: ['sueldo liquido', 'aguinaldo', 'cuanto gana', 'salario', 'cobrar en dolares'],
+      /sueldo l[ií]quido|\bnominal\b|aguinaldo|cu[aá]nto (?:gan\w+|se cobra)|me pagan en d[oó]lares|salario m[ií]nimo|liquidaci[oó]n de sueldo|recibo de sueldo|horas? extras?|salario vacacional|feriados? (?:pago|trabajad|laborable)|(?:se |me |nos )?pagan (?:el |los )?feriado|\bjornal(?:es|ero|eros)?\b|consejos? de salarios|trabaj\w* en negro|trabajo no registrado|no me (?:aportan|declaran)/i,
+    queries: [
+      'sueldo liquido',
+      'aguinaldo',
+      'cuanto gana',
+      'salario',
+      'cobrar en dolares',
+      'horas extra',
+      'feriado trabajado',
+      'trabajo en negro',
+    ],
     related: [
       { label: 'Calculadora de sueldo líquido', to: '/herramientas/calculadora-sueldo-liquido' },
+      { label: 'Cuánto me tienen que pagar', to: '/cuanto-me-tienen-que-pagar-uruguay' },
       { label: 'Salud financiera', to: '/salud-financiera' },
     ],
   },

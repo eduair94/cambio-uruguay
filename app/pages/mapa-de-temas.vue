@@ -352,6 +352,16 @@
             </div>
           </div>
         </div>
+        <!-- Sin gaps: lo decimos, en vez de esconder la sección y dejar la lectura a medias. -->
+        <div v-else-if="thinnest" class="opp-clear mt-5">
+          <VIcon size="18" class="mr-1" :style="{ color: STATUS_COLOR.cubierto }">
+            mdi-check-circle-outline
+          </VIcon>
+          Sin gaps abiertos: los {{ TOPIC_DEFS.length }} temas monitoreados tienen guías propias y
+          su hub. El más fino hoy es «{{ thinnest.label }}», con {{ thinnest.cov }}
+          {{ thinnest.cov === 1 ? 'guía' : 'guías' }}; si la demanda lo empuja por encima de nuestra
+          cobertura, vuelve a aparecer acá como oportunidad.
+        </div>
 
         <div v-if="analysis && analysis.sources.length" class="ai-sources mt-5 pt-4">
           <div class="src-k mb-2">FUENTES CITADAS POR LA IA</div>
@@ -563,6 +573,11 @@ const gridTopics = computed(() =>
 const maxRecent = computed(() => Math.max(0, ...view.value.map(v => v.recent)))
 const totalRecent = computed(() => view.value.reduce((s, v) => s + v.recent, 0))
 const gapCount = computed(() => view.value.filter(v => v.status === 'gap').length)
+
+/** El tema con menos guías propias: lo que se muestra cuando no queda ningún gap abierto. */
+const thinnest = computed(() =>
+  view.value.length ? [...view.value].sort((a, b) => a.cov - b.cov || b.recent - a.recent)[0] : null
+)
 
 const opportunities = computed(() =>
   [...view.value]
@@ -909,20 +924,32 @@ useHead(() => ({
   grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
   gap: 12px;
 }
+/* El acento va en el borde COMPLETO, no en un tab lateral: la tarjeta ya trae borde propio y
+   superponerle una barra de color de un lado la despega del resto del sitio. */
 .opp {
   background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-left: 3px solid #ff5d6c;
+  border: 1px solid rgba(255, 93, 108, 0.5);
   border-radius: 11px;
   padding: 13px 14px;
   cursor: pointer;
 }
 .opp.medium {
-  border-left-color: #f5a524;
+  border-color: rgba(245, 165, 36, 0.5);
 }
 .v-theme--light .opp {
   background: rgba(0, 0, 0, 0.02);
-  border-color: rgba(0, 0, 0, 0.08);
+}
+.opp-clear {
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: rgba(var(--v-theme-on-surface), 0.65);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  border-radius: 11px;
+  padding: 13px 14px;
+}
+.v-theme--light .opp-clear {
+  background: rgba(0, 0, 0, 0.02);
 }
 .opp-h {
   font-size: 13.5px;

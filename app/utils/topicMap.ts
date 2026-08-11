@@ -1,4 +1,4 @@
-// Maps the 14 Reddit money-topics (utils/redditTopics.ts) to our content hubs (utils/guideHubs.ts)
+// Maps the Reddit money-topics (utils/redditTopics.ts) to our content hubs (utils/guideHubs.ts)
 // and measures how well our OWN guides cover each topic — using the SAME classifier that measures
 // Reddit demand, so demand and coverage are read with one ruler. Pure module (no Vue/Nuxt runtime)
 // so it is unit-testable and shared by the page.
@@ -16,6 +16,7 @@ export const TOPIC_HUB: Readonly<Record<string, string>> = Object.freeze({
   'credito-prestamo': 'deudas-y-credito-uruguay',
   tarjetas: 'deudas-y-credito-uruguay',
   'bancos-fintech': 'finanzas-personales-y-jubilacion-uruguay',
+  'derechos-reclamos': 'derechos-y-reclamos-uruguay',
   impuestos: 'sueldo-trabajo-e-impuestos-uruguay',
   'sueldo-trabajo': 'sueldo-trabajo-e-impuestos-uruguay',
   'compras-import': 'importaciones-y-aduana-uruguay',
