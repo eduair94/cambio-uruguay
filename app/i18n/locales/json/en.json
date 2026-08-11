@@ -860,7 +860,9 @@
     "metaDescription": "Dollar and other currency rates at {casa} today. Compare the buy and sell prices, updated automatically on Cambio Uruguay.",
     "ogSubtitle": "Dollar exchange rate today",
     "metaDescriptionLive": "Dollar at {casa} today: buy ${buy}, sell ${sell}. Branches, hours, reviews and every currency rate.",
-    "fromHistorico": "Branches, reviews and every currency at {casa}"
+    "fromHistorico": "Branches, reviews and every currency at {casa}",
+    "recordsTitle": "USD records at {casa}",
+    "recordsSubtitle": "Over the last 12 months, from the rates this exchange published."
   },
   "consultCurrentQuotes": "Check the current exchange rates from all exchange houses in Uruguay. Compare prices and find the best option.",
   "donar": "Donate",

@@ -175,6 +175,48 @@ export function daysSinceHigh(series: SeriesPoint[], now: Date = new Date()): nu
   return Math.max(0, Math.floor(ms / 86_400_000))
 }
 
+/** El paquete de hechos que se publica junto: máximo, mínimo, racha, mayor salto, días desde el pico. */
+export interface PageRecords {
+  max: { value: number; date: string }
+  min: { value: number; date: string }
+  streak: Streak
+  biggest: BiggestMove | null
+  daysSinceHigh: number | null
+}
+
+/**
+ * Los récords tal como los publica una página, con los dos guardas juntos en un solo lugar.
+ *
+ * POR QUÉ EXISTE: este bundle se calculaba inline en el leaf de `/historico/[casa]/[moneda]` y
+ * hacía falta el mismo en el hub `/casa/[casa]`. Duplicar el cálculo es duplicar los guardas, y
+ * los guardas son justamente lo que impide que un glitch del scraper salga publicado como «el
+ * máximo del período» en una página de finanzas.
+ *
+ * LOS DOS GUARDAS, y ninguno es opcional:
+ *   1. `sanitizeSeries` descarta los saltos imposibles (corrimientos de coma, espejos viejos).
+ *      Se aplica acá adentro para que ningún llamador se lo pueda saltear por olvido.
+ *   2. Menos de tres puntos no establece un récord que valga publicar: devuelve `null` y la
+ *      página no renderiza el bloque.
+ */
+export function computePageRecords(
+  series: SeriesPoint[],
+  now: Date = new Date()
+): PageRecords | null {
+  const clean = sanitizeSeries(series)
+  if (clean.length < 3) return null
+
+  const records = computeRecords(clean, now)
+  if (!records.max || !records.min) return null
+
+  return {
+    max: records.max,
+    min: records.min,
+    streak: computeStreak(clean),
+    biggest: biggestMove(clean),
+    daysSinceHigh: daysSinceHigh(clean, now),
+  }
+}
+
 /** Pesos saved buying `amount` (USD-equivalent) at `best` vs `avg` sell price. */
 export function computeSavings(
   amount: number,

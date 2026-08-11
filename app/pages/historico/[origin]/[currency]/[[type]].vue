@@ -499,13 +499,7 @@ import { markPoints } from '~/utils/chartMoveMarkers'
 import { attributeMove } from '~/utils/attribution'
 import { historyDetailCanonicalPath } from '~/utils/historyCanonical'
 import { mirrorOf } from '~/utils/rateMirrors'
-import {
-  biggestMove,
-  computeRecords,
-  computeStreak,
-  daysSinceHigh,
-  sanitizeSeries,
-} from '~/utils/rateStats'
+import { computePageRecords, sanitizeSeries } from '~/utils/rateStats'
 import { currencyDisplayName, currencyFromSlug, type CurrencyLang } from '~/utils/currencyPages'
 import {
   factsFromRows,
@@ -856,21 +850,9 @@ const sellSeries = computed(() => {
 // publica el hecho, que es único de esta URL y además es lo que el lector necesita saber.
 const mirror = computed(() => mirrorOf(route.params.origin as string))
 
-const periodRecords = computed(() => {
-  if (mirror.value) return null
-  const series = sellSeries.value
-  // Two points cannot establish a record worth publishing.
-  if (series.length < 3) return null
-  const records = computeRecords(series)
-  if (!records.max || !records.min) return null
-  return {
-    max: records.max,
-    min: records.min,
-    streak: computeStreak(series),
-    biggest: biggestMove(series),
-    daysSinceHigh: daysSinceHigh(series),
-  }
-})
+// `computePageRecords` trae los dos guardas adentro (saneamiento + mínimo de tres puntos) y es el
+// mismo bundle que publica el hub `/casa/[casa]`: un solo lugar donde puede haber un bug.
+const periodRecords = computed(() => (mirror.value ? null : computePageRecords(sellSeries.value)))
 
 /** "subió 3 días seguidos" / "bajó 2 días seguidos" / "" when flat. */
 const streakSentence = computed(() => {

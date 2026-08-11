@@ -855,7 +855,9 @@
     "metaDescription": "Cotação do dólar e de outras moedas na {casa} hoje. Compare o preço de compra e venda, atualizado automaticamente na Cambio Uruguay.",
     "ogSubtitle": "Cotação do dólar hoje",
     "metaDescriptionLive": "Dólar na {casa} hoje: compra ${buy}, venda ${sell}. Filiais, horários, avaliações e cotação de todas as moedas.",
-    "fromHistorico": "Filiais, avaliações e todas as moedas da {casa}"
+    "fromHistorico": "Filiais, avaliações e todas as moedas da {casa}",
+    "recordsTitle": "Recordes do dólar na {casa}",
+    "recordsSubtitle": "Nos últimos 12 meses, com as cotações que esta casa publicou."
   },
   "loading": "Carregando...",
   "bestToSell": "Melhor para vender",

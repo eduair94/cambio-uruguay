@@ -173,6 +173,51 @@
         </v-col>
       </v-row>
 
+      <!-- Récords del dólar de esta casa: hechos que ningún competidor de una sola cotización
+           publica, y contenido distinto en cada URL. -->
+      <v-row v-if="records" class="mt-2">
+        <v-col cols="12">
+          <v-card variant="flat" class="records-card pa-5 pa-md-6">
+            <h2 class="text-h6 font-weight-bold mb-1">
+              {{ $t('casaPage.recordsTitle', { casa: casaName }) }}
+            </h2>
+            <p class="text-body-2 text-medium-emphasis mb-4">
+              {{ $t('casaPage.recordsSubtitle') }}
+            </p>
+            <dl class="cu-records mb-0">
+              <div class="cu-record">
+                <dt>{{ $t('records.max') }}</dt>
+                <dd>
+                  {{ formatRate(records.max.value) }}
+                  <span class="text-medium-emphasis">· {{ formatDay(records.max.date) }}</span>
+                </dd>
+              </div>
+              <div class="cu-record">
+                <dt>{{ $t('records.min') }}</dt>
+                <dd>
+                  {{ formatRate(records.min.value) }}
+                  <span class="text-medium-emphasis">· {{ formatDay(records.min.date) }}</span>
+                </dd>
+              </div>
+              <div v-if="records.biggest" class="cu-record">
+                <dt>{{ $t('records.biggestMove') }}</dt>
+                <dd>
+                  {{ records.biggest.pct.toFixed(2) }} %
+                  <span class="text-medium-emphasis">· {{ formatDay(records.biggest.date) }}</span>
+                </dd>
+              </div>
+              <div v-if="records.daysSinceHigh !== null" class="cu-record">
+                <dt>{{ $t('records.daysSinceHigh') }}</dt>
+                <dd>{{ $t('records.days', { days: records.daysSinceHigh }) }}</dd>
+              </div>
+            </dl>
+            <p v-if="streakSentence" class="text-body-2 text-medium-emphasis mt-3 mb-0">
+              {{ streakSentence }}
+            </p>
+          </v-card>
+        </v-col>
+      </v-row>
+
       <!-- Espejo de otra pizarra. Este hub es la página canónica de la marca, así que el hecho va
            acá y no sólo en el leaf de moneda: alguien que compara y ve cuatro casas con el mismo
            precio no está viendo un empate de mercado, está viendo una pizarra repetida. -->
@@ -238,10 +283,11 @@ import { slugifyDepartment, type LocalDataMap } from '~/utils/departments'
 import { ratesForOrigin, type CasaRate } from '~/utils/currencyPages'
 import { pickOriginRate } from '~/utils/rateSource'
 import { mirrorOf } from '~/utils/rateMirrors'
-// Aliased: this page already has a local `formatRate` that renders a full
-// currency string ("$ 39,00"). The meta description wants the bare number, the
-// "$" being part of the sentence.
-import { formatRate as formatBareRate } from '~/utils/rateAnswer'
+import { computePageRecords } from '~/utils/rateStats'
+// `formatBareRate` va aliaseado: esta página ya tiene un `formatRate` local que arma la moneda
+// entera ("$ 39,00"), y la meta description quiere el número pelado porque el "$" es parte de
+// la oración.
+import { formatRate as formatBareRate, selectTypeRows } from '~/utils/rateAnswer'
 
 const MAX_DEPARTMENTS = 8
 
@@ -338,6 +384,61 @@ const { data, pending } = await useAsyncData<CasaPageData | null>(
 if (!data.value) {
   throw createError({ statusCode: 404, statusMessage: 'Casa de cambio no encontrada' })
 }
+
+// Récords del dólar de ESTA casa, sobre 12 meses. Es el bloque que el plan de crecimiento
+// orgánico llama «el patrón del moat»: hechos que ningún competidor de una sola cotización puede
+// publicar, y texto distinto en cada URL, que es lo que les faltaba a las plantillas casi
+// idénticas que Google dejó sin indexar.
+//
+// Tres decisiones deliberadas:
+//   - `lazy: true`: el hub ya renderiza nombre, sucursales y tabla de cotizaciones con su propio
+//     fetch bloqueante. Los récords son enriquecimiento: no valen retrasar el TTFB de la página.
+//   - Se salta en los espejos de BROU: sus récords SON los de BROU y publicarlos duplica cuatro
+//     URLs. Ver `utils/rateMirrors.ts`.
+//   - Si el endpoint falla, `records` queda en null y el bloque no se renderiza. Una casa sin
+//     serie es un caso normal (recién agregada, scraper caído), no un error de la página.
+const { getEvolutionData } = useApiService()
+
+const { data: evolution } = await useAsyncData(
+  () => `casa-records-${origin.value}`,
+  async () => {
+    if (mirror.value) return null
+    const res = await getEvolutionData(origin.value, 'USD', undefined, 12)
+    return res.error ? null : res.data
+  },
+  { lazy: true, watch: [origin] }
+)
+
+const records = computed(() => {
+  const rows = (
+    evolution.value as { evolution?: { date: string; sell: number; type?: string }[] } | null
+  )?.evolution
+  if (!rows?.length) return null
+  // Sin filtrar por tipo, la serie mezcla billete, cable e interbancario del mismo día y el
+  // "máximo" sale de comparar cosas distintas. `selectTypeRows` se queda con un solo tipo.
+  const typed = selectTypeRows(rows, undefined)
+  return computePageRecords(
+    typed
+      .map(r => ({ date: r.date, value: r.sell }))
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+  )
+})
+
+const formatDay = (iso: string) =>
+  new Date(iso).toLocaleDateString('es-UY', {
+    timeZone: 'America/Montevideo',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  })
+
+const streakSentence = computed(() => {
+  const r = records.value
+  if (!r || r.streak.direction === 'flat' || r.streak.days < 1) return ''
+  return t(r.streak.direction === 'up' ? 'records.streakUp' : 'records.streakDown', {
+    days: r.streak.days,
+  })
+})
 
 const casaName = computed(() => data.value?.name ?? '')
 const website = computed(() => data.value?.website ?? '')
@@ -464,5 +565,34 @@ useHead({
   background: rgba(33, 150, 243, 0.1);
   border: 1px solid rgba(33, 150, 243, 0.28);
   border-radius: 12px;
+}
+
+.records-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 12px;
+}
+.v-theme--light .records-card {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.cu-records {
+  display: grid;
+  gap: 0.75rem 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  margin: 0;
+}
+.cu-record dt {
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+  opacity: 0.75;
+  text-transform: uppercase;
+}
+.cu-record dd {
+  font-size: 1.05rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  margin: 0;
 }
 </style>
