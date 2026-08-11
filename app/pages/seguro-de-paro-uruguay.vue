@@ -521,8 +521,10 @@ useHead(() => ({
   background: rgba(0, 0, 0, 0.02);
   border-color: rgba(0, 0, 0, 0.1);
 }
+/* El acento va en el borde COMPLETO, no en un tab lateral: estas tarjetas ya traen borde propio
+   y superponerle una barra de color gruesa de un lado las despega del resto del sitio. */
 .warn-card {
-  border-left: 3px solid rgb(var(--v-theme-warning));
+  border-color: rgba(var(--v-theme-warning), 0.45);
 }
 
 .rule-list,
@@ -531,13 +533,13 @@ useHead(() => ({
   gap: 0.85rem;
 }
 .rule-card.is-yes {
-  border-left: 3px solid rgb(var(--v-theme-success));
+  border-color: rgba(var(--v-theme-success), 0.4);
 }
 .rule-card.is-no {
-  border-left: 3px solid rgb(var(--v-theme-error));
+  border-color: rgba(var(--v-theme-error), 0.4);
 }
 .step-card {
-  border-left: 3px solid rgb(var(--v-theme-primary));
+  border-color: rgba(var(--v-theme-primary), 0.3);
 }
 .rule-head {
   display: flex;
