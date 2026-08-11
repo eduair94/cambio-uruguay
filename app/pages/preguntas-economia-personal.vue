@@ -262,7 +262,7 @@
 import {
   FAQ_CATEGORIES,
   PERSONAL_FAQS,
-  PERSONAL_FAQ_LAST_REVIEWED,
+  PERSONAL_FAQ_CONTENT_UPDATED_AT,
   PERSONAL_FAQ_SOURCES,
   faqHaystack,
   faqsByCategory,
@@ -340,7 +340,9 @@ function formatDate(iso: string): string {
   })
 }
 
-const lastReviewedLabel = formatDate(PERSONAL_FAQ_LAST_REVIEWED)
+// La fecha que ve el lector tiene que cubrir las respuestas MÁS NUEVAS, no la última revisión
+// completa del catálogo: si no, la página se fecha antes de contenido que ya publicó.
+const lastReviewedLabel = formatDate(PERSONAL_FAQ_CONTENT_UPDATED_AT)
 const canonicalUrl = 'https://cambio-uruguay.com/preguntas-economia-personal'
 const title = 'Preguntas frecuentes sobre dinero y economía personal en Uruguay'
 const description = `${PERSONAL_FAQS.length} respuestas verificadas sobre dólar, ahorro, alquiler, deudas, créditos, bancos, derechos del consumidor, reclamos, trabajo, impuestos, empresas, AFAP y cripto en Uruguay.`
@@ -397,7 +399,7 @@ useHead(() => ({
           },
           {
             '@type': 'FAQPage',
-            dateModified: PERSONAL_FAQ_LAST_REVIEWED,
+            dateModified: PERSONAL_FAQ_CONTENT_UPDATED_AT,
             mainEntity: PERSONAL_FAQS.map(faq => ({
               '@type': 'Question',
               name: faq.question,

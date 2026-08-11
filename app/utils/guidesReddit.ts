@@ -4,6 +4,89 @@
 // `guides.ts`, spread into it there. Bodies are plain Spanish prose (rioplatense),
 // mechanism-first and conservative on volatile figures, adversarially fact-checked
 // against DGI / BPS / BCU / escribanos before publishing.
+//
+// CUATRO CORRECCIONES DEL 2026-08-10 (y una segunda pasada de auditoría sobre tres de ellas,
+// marcada `.bis`), cada una porque el texto anterior decía algo falso
+// (guardadas por `tests/unit/guides.test.ts` › «correcciones verificadas»):
+//
+//  1. IVA y exportación de SERVICIOS (`trabajar-para-el-exterior-desde-uruguay`, 5 lugares).
+//     Decía "IVA a tasa cero". Esa alícuota no existe: el Título 10 art. 34 publica dos, 22% y
+//     10%. La operación NO ESTÁ GRAVADA por territorialidad (art. 5), que delega la definición
+//     en el Poder Ejecutivo, y el Dto. 220/998 art. 34 la resuelve con una LISTA CERRADA — o sea
+//     que "el cliente está afuera" no alcanza. El criterio ya estaba sourceado en
+//     `companyTypes.ts` (`ivaExportacionNotes`) y esta guía lo contradecía de frente. La
+//     diferencia importa en plata: al no estar gravado conservás el crédito del IVA de compras
+//     entero (art. 14); si fuera una exención habría que prorratearlo.
+//
+//  2. El 15% jubilatorio (`entender-tu-recibo-de-sueldo-uruguay` y `salario-minimo-uruguay-cuanto-es`).
+//     Decía que los tres aportes personales "van al BPS". El sistema es mixto: el 15% se PARTE
+//     por tramos entre reparto y cuenta AFAP. Los cortes en pesos los mueve el BPS, así que van
+//     con fecha de consulta al lado y nunca sin ella.
+//     2.bis (misma fecha, segunda pasada): la corrección de arriba se pasó de largo LA PUERTA DE
+//     ENTRADA del art. 22 y presentó el reparto 10+5 como el régimen de todos, con la 16.713
+//     marcada como "todavía". Es al revés. El art. 22 arranca: "Los aportes personales de las
+//     personas cuyo PRIMER INGRESO AL MERCADO DE TRABAJO ocurra a partir de la vigencia prevista
+//     en el numeral 4) del artículo 6º…" — vigencia que el BPS ubica el 1/12/2023. O sea que el
+//     10+5 alcanza sólo a quien empezó a trabajar después de esa fecha; a casi todo el que hoy
+//     mira un recibo le rige la Ley 16.713, donde SIN la opción del art. 8 el aporte va entero
+//     al BPS hasta el tope A y nada a la AFAP. Cada juego de cortes va con su cohorte al lado.
+//
+//  3. Patente (`costos-de-tener-auto-uruguay`). Decía en la MISMA oración que la patente es
+//     pareja entre departamentos y que cada intendencia aplica sus propias bonificaciones. Lo
+//     segundo es falso además de autocontradictorio: el Texto Ordenado del SUCIVE fija
+//     bonificaciones "únicas" a nivel nacional y el contrato de fideicomiso les prohíbe a los
+//     gobiernos departamentales romper la homogeneidad del monto por su cuenta.
+//     3.bis: esa corrección pegó "aprobado el 14 de noviembre de 2025" AL ARTÍCULO 31, y no es
+//     de ahí. El art. 31 cierra con "FUENTE: CI Sesión 41 (30/11/12)": la regla del 20/10% es de
+//     2012. Del 14/11/2025 es la aprobación del Texto Ordenado 2026 completo (6.ª Sesión
+//     Plenaria). La fecha va pegada al documento, no a la regla.
+//
+//  4. Licencia (`licencia-y-salario-vacacional-uruguay`). La escala por antigüedad estaba
+//     escrita SIN UN SOLO NÚMERO ("cierta cantidad de años", "cierto tramo"), que es la pregunta
+//     que la gente viene a hacer. Está en la Ley 12.590 art. 2 y el MTSS la ejemplifica.
+//     4.bis, dos afirmaciones sin norma que quedaron dentro de "la escala completa":
+//       · "no se computan los domingos": NINGUNA de las fuentes citadas lo dice para el régimen
+//         general. El MTSS excluye los domingos sólo para el trabajador RURAL. Sí están
+//         sourceados los feriados (art. 1: "dentro del que no se computarán los feriados") y los
+//         sábados (MTSS: "deben ser computados por no ser feriados", Dec. 497/78). Se publica la
+//         ausencia, no un dato inventado.
+//       · "comunicar las fechas" sin destinatario se leía como un aviso al trabajador. El art. 5
+//         dice a quién: "al Instituto Nacional del Trabajo y Servicios Anexados". Y hoy se
+//         instrumenta por Decretos 648/990 y 658/991 (listados firmados en el Libro Único), no
+//         ante la Inspección General del Trabajo.
+//
+// TERCERA PASADA (2026-08-10). Las dos correcciones `.bis` de arriba arreglaron la guía donde
+// se encontró el error y dejaron la MISMA afirmación falsa publicada en otras, con el sitio
+// contradiciéndose de frente:
+//
+//  5. La AFAP no es obligatoria para todos (`jubilacion-y-afap-como-funciona-uruguay`,
+//     `reforma-jubilatoria-uruguay-que-cambia`, `elegir-o-cambiar-de-afap-uruguay` y, de refilón,
+//     `planificar-tu-retiro-uruguay`). Decían "el aporte a la AFAP es obligatorio", "el régimen
+//     mixto pasa a ser obligatorio" y "parte de tu aporte va sí o sí a una AFAP" mientras la guía
+//     del recibo —que la de la reforma linkea— ya decía lo contrario ("hoy no está entrando nada
+//     a tu cuenta AFAP"), y `utils/afapRevocation.ts` también ("aportás a la AFAP sólo por la
+//     parte del sueldo que supera el tope"). Verificado en el art. 22 de la Ley 20.130 (IMPO,
+//     texto vigente): el reparto 10+5 alcanza a quien tuvo su "primer ingreso al mercado de
+//     trabajo" desde el 1/12/2023, y su inciso final deja los arts. 7 y 8 de la Ley 16.713
+//     "aplicables exclusivamente a los afiliados al Banco de Previsión Social que, antes de la
+//     fecha indicada en el numeral 4) del artículo 6°, estuvieren comprendidos en los Títulos I a
+//     IV". O sea: viejo + por debajo del tope A + sin la opción del art. 8 = NADA a la AFAP.
+//     El guard es ahora de CATÁLOGO, no de dos slugs: ningún bloque puede llamar obligatorio al
+//     aporte a la AFAP (ni dar el reparto por universal) sin nombrar la cohorte al lado.
+//
+//  6. El corte por cohorte estaba escrito en absoluto (`entender-tu-recibo-de-sueldo-uruguay`,
+//     `salario-minimo-uruguay-cuanto-es`): "el artículo 22 no te aplica". Tiene excepción en la
+//     propia norma — "Las personas afiliadas antes de la fecha de vigencia […] a cualquier
+//     entidad previsional que, con posterioridad a dicha fecha, ingresen por primera vez en
+//     actividades comprendidas en el ámbito de afiliación de otra, se regirán por lo dispuesto en
+//     el presente artículo en la nueva actividad" —, así que el "no te aplica" va acotado a
+//     mientras sigas en el BPS.
+//
+//  7. Sobrecorrección del 4.bis en `licencia-y-salario-vacacional-uruguay`: "está obligado a
+//     comunicar esas fechas, pero no a vos" le hacía leer al trabajador que no existe deber
+//     alguno de avisarle. El art. 5 no se agota en la comunicación al INT: sigue con "La
+//     reglamentación fijará […] y todo lo relativo a la notificación a los trabajadores y la
+//     documentación que acredite el cumplimiento de la ley". El deber existe; está delegado.
 import type { Guide } from './guides'
 
 export const redditGuides: readonly Guide[] = [
@@ -1048,7 +1131,7 @@ export const redditGuides: readonly Guide[] = [
     description:
       'Cuánto cuesta tener un auto en Uruguay: patente, SOA, seguro, combustible, service, cubiertas y la depreciación real.',
     tag: 'COSTOS',
-    updatedAt: '2026-07-18',
+    updatedAt: '2026-08-10',
     sections: [
       {
         heading: 'El costo total va mucho más allá del precio',
@@ -1056,7 +1139,7 @@ export const redditGuides: readonly Guide[] = [
       },
       {
         heading: 'Patente y SOA: lo que sí o sí pagás',
-        body: 'La patente de rodados es un tributo anual que depende del valor de aforo del vehículo, es decir de su modelo y año. En Uruguay el cobro está unificado a través del SUCIVE, con una escala de aforo común, así que para un mismo vehículo la patente es pareja entre departamentos y la deuda te sigue aunque cambies de intendencia; de todos modos, cada intendencia puede aplicar sus propias bonificaciones o convenios de pago. Aparte, todo auto debe tener el Seguro Obligatorio de Automóviles, el SOA, que cubre lesiones a personas en un accidente pero no los daños materiales. Son dos costos ineludibles: sin patente al día y sin SOA vigente no podés circular en regla ni transferir el vehículo.',
+        body: 'La patente de rodados es un tributo anual que depende del valor de aforo del vehículo, es decir de su modelo y año. Sigue siendo un tributo departamental, pero desde la Ley 18.860 el número dejó de decidirse departamento por departamento: una comisión con delegados de los intendentes, de la OPP y del Ministerio de Economía eleva antes del 31 de octubre de cada año la propuesta de valores de aforo y de alícuotas, y el Congreso de Intendentes la resuelve antes del 15 de noviembre (art. 4). Por eso, para un mismo vehículo, la patente es la misma en cualquier departamento, y la deuda te sigue aunque cambies de intendencia. Las bonificaciones tampoco las inventa cada intendencia: el Texto Ordenado del SUCIVE las fija de una sola forma para todo el país y dice que "serán únicas" —20% si pagás de una vez el monto anualizado dentro del plazo de la primera cuota que te vence, 10% si pagás cada cuota en fecha, y no son acumulables (art. 31 del Texto Ordenado del SUCIVE 2026, que el Congreso de Intendentes aprobó en su 6.ª Sesión Plenaria del 14 de noviembre de 2025; la regla en sí no es nueva: el propio artículo la remite a la sesión del Congreso del 30 de noviembre de 2012)—, y el contrato de fideicomiso les prohíbe a los gobiernos departamentales dar por su cuenta facilidades de pago o amnistías, o cualquier cosa que atente contra "la homogeneidad del monto del tributo de patente de rodados a nivel nacional", salvo que lo acuerde el Congreso de Intendentes. Lo que sí puede ser departamental es una exoneración nueva, y con condiciones: tiene que ser por el 100% del tributo, estar orientada a un público cautivo del departamento y presentarse igual al SUCIVE (art. 16). Aparte, todo auto debe tener el Seguro Obligatorio de Automóviles, el SOA, que cubre lesiones a personas en un accidente pero no los daños materiales. Son dos costos ineludibles: sin patente al día y sin SOA vigente no podés circular en regla ni transferir el vehículo.',
       },
       {
         heading: 'Seguro voluntario: no es obligatorio pero conviene',
@@ -1079,6 +1162,26 @@ export const redditGuides: readonly Guide[] = [
       { label: 'Comprar auto 0km o usado', to: '/guias/comprar-auto-0km-o-usado-uruguay' },
       { label: 'Qué seguros conviene tener', to: '/guias/que-seguros-conviene-tener-uruguay' },
       { label: 'Armar un presupuesto', to: '/guias/armar-un-presupuesto-personal-uruguay' },
+    ],
+    sources: [
+      {
+        label:
+          'Ley 18.860 art. 4 — la Comisión eleva aforos y alícuotas antes del 31 de octubre y el Congreso de Intendentes resuelve antes del 15 de noviembre',
+        url: 'https://www.impo.com.uy/bases/leyes/18860-2011/4',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 18.860 art. 1 — creación del SUCIVE para el cobro del impuesto a los vehículos de transporte',
+        url: 'https://www.impo.com.uy/bases/leyes/18860-2011',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Texto Ordenado del SUCIVE 2026, aprobado en la 6.ª Sesión Plenaria del Congreso de Intendentes del 14 de noviembre de 2025 — art. 31 (bonificaciones únicas de 20% y 10%, no acumulables; "FUENTE: CI Sesión 41 (30/11/12)"), art. 16 (exoneraciones nuevas) y la cláusula de homogeneidad del contrato de fideicomiso',
+        url: 'https://www.gub.uy/congreso-intendentes/comunicacion/publicaciones/texto-ordenado-del-sucive-2026',
+        publisher: 'Congreso de Intendentes',
+      },
     ],
   },
   {
@@ -1431,17 +1534,17 @@ export const redditGuides: readonly Guide[] = [
     slug: 'entender-tu-recibo-de-sueldo-uruguay',
     title: 'Cómo entender tu recibo de sueldo en Uruguay',
     description:
-      'Qué es el nominal y el líquido, qué te descuentan (BPS, FONASA, FRL, IRPF) y por qué, para que entiendas tu recibo de sueldo en Uruguay.',
+      'Qué es el nominal y el líquido, qué te descuentan (jubilatorio entre BPS y AFAP, FONASA, FRL, IRPF) y por qué, para que entiendas tu recibo de sueldo en Uruguay.',
     tag: 'SUELDO',
-    updatedAt: '2026-07-18',
+    updatedAt: '2026-08-10',
     sections: [
       {
         heading: 'Nominal, líquido y por qué no coinciden',
         body: 'El nominal es el sueldo bruto acordado, la cifra que suele figurar en el contrato o en el aviso de trabajo. El líquido es lo que efectivamente te cae en la cuenta después de los descuentos obligatorios. La diferencia no es un invento del empleador: son aportes a la seguridad social y, si corresponde, retención de IRPF, que la empresa está obligada a descontarte y volcar al BPS y a la DGI en tu nombre. Por eso una parte de tu sueldo nunca la ves como efectivo, pero igual es tuya en el sentido de que financia tu jubilación y tu cobertura de salud. Entender esta distinción es el primer paso para leer cualquier recibo.',
       },
       {
-        heading: 'Los aportes personales al BPS',
-        body: 'Sobre tu nominal se descuentan tres aportes personales que van al BPS. El aporte jubilatorio (en general un 15% del nominal) financia tu futura pasividad y define la historia laboral que después mira el BPS. El aporte al FONASA financia tu mutualista o ASSE: su porcentaje varía según cuánto ganás y si tenés cónyuge o hijos a cargo, moviéndose aproximadamente entre un 3% y un 8%. El aporte al Fondo de Reconversión Laboral (FRL) es chico, del orden del 0,1%, y financia programas de capacitación y reconversión laboral que administra el INEFOP. Estos aportes se calculan sobre el nominal, no sobre el líquido, y aparecen desglosados en tu recibo.',
+        heading: 'Los aportes personales (y por qué el jubilatorio no queda todo en el BPS)',
+        body: 'Sobre tu nominal se descuentan tres aportes personales que el empleador retiene y vuelca al BPS. El más grande es el aporte jubilatorio, de tasa 15%, y acá está lo que ningún recibo te explica: el sistema es mixto, así que la tasa es una sola pero el destino se parte por tramos de sueldo entre el régimen de reparto (solidaridad intergeneracional) y tu cuenta individual en una AFAP. Antes de mirar los tramos hay que saber cuál de los dos regímenes te toca, porque casi todas las explicaciones que circulan mezclan uno con otro. El reparto por tramos de la Ley 20.130 no rige para todo el mundo: su artículo 22 arranca limitándose a "las personas cuyo primer ingreso al mercado de trabajo ocurra a partir de la vigencia prevista en el numeral 4) del artículo 6º", vigencia que el propio BPS ubica el 1.º de diciembre de 2023. Si empezaste a trabajar antes de esa fecha —el caso de la enorme mayoría de quienes hoy miran un recibo—, el artículo 22 no te aplica mientras sigas en el BPS y seguís bajo el esquema de la Ley 16.713. El corte no es de por vida, ojo: el propio artículo 22 agrega que quien estaba afiliado antes de esa fecha y después "ingrese por primera vez en actividades comprendidas en el ámbito de afiliación de otra" entidad previsional —Caja Bancaria, Notarial, de Profesionales Universitarios, retiro policial o militar— se rige por el artículo 22 en esa nueva actividad. Ahí, si no tenés hecha la opción del artículo 8, el aporte jubilatorio va entero al BPS hasta el tope A y lo que pase de ese tope va entero a la AFAP; si la tenés hecha, se reparte mitad y mitad hasta el tope A, va todo al BPS entre el tope A y el tope B, todo a la AFAP a partir del tope B, y lo que excede el tope C es aporte voluntario. Dicho crudo: si ganás por debajo del tope A y nunca hiciste la opción, hoy no está entrando nada a tu cuenta AFAP por el aporte obligatorio. En cambio, si tu primer trabajo fue de diciembre de 2023 en adelante estás en el Sistema Previsional Común: sobre la materia gravada hasta el primer nivel van 10 puntos a solidaridad intergeneracional y 5 puntos a tu ahorro individual; sobre lo que excede ese nivel y hasta el segundo, los 15 puntos van al ahorro individual; y por encima del segundo nivel el aporte del trabajador dependiente pasa a ser voluntario. La tasa es fija, los cortes no, y cada régimen tiene los suyos: consultados en el BPS el 10 de agosto de 2026, los topes A, B y C de la Ley 16.713 estaban en $96.279, $144.418 y $288.836, y los dos niveles del artículo 22 en $144.418 y $288.836. Confirmalos antes de hacer una cuenta. El aporte al FONASA financia tu mutualista o ASSE: su porcentaje varía según cuánto ganás y si tenés cónyuge o hijos a cargo, moviéndose aproximadamente entre un 3% y un 8%. El aporte al Fondo de Reconversión Laboral (FRL) es chico, del orden del 0,1%, y financia programas de capacitación y reconversión laboral que administra el INEFOP. Estos aportes se calculan sobre el nominal, no sobre el líquido, y aparecen desglosados en tu recibo.',
       },
       {
         heading: 'El IRPF retenido',
@@ -1472,7 +1575,7 @@ export const redditGuides: readonly Guide[] = [
       },
       {
         name: 'Revisá los aportes personales',
-        text: 'Chequeá las líneas de aporte jubilatorio (aprox. 15%), FONASA (variable según ingreso y familia) y FRL (aprox. 0,1%). Deben calcularse sobre el nominal.',
+        text: 'Chequeá las líneas de aporte jubilatorio (tasa 15%, cuyo destino se reparte entre el BPS y tu cuenta AFAP según el régimen que te toque y el tramo de sueldo), FONASA (variable según ingreso y familia) y FRL (aprox. 0,1%). Deben calcularse sobre el nominal.',
       },
       {
         name: 'Mirá la retención de IRPF',
@@ -1485,6 +1588,43 @@ export const redditGuides: readonly Guide[] = [
       {
         name: 'Cruzá con las fuentes oficiales',
         text: 'Entrá a tu cuenta del BPS para ver tus aportes e historia laboral, y a la DGI para tu situación de IRPF. Ante dudas, consultá a la empresa o a un contador.',
+      },
+    ],
+    sources: [
+      {
+        label:
+          'Ley 20.130 art. 22 — el reparto sólo alcanza a "las personas cuyo primer ingreso al mercado de trabajo ocurra a partir de la vigencia prevista en el numeral 4) del artículo 6º": 10% a solidaridad intergeneracional y 5% a ahorro individual en el primer nivel, 15% a ahorro individual en el segundo, voluntario por encima',
+        url: 'https://www.impo.com.uy/bases/leyes/20130-2023/22',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 20.130 art. 6 num. 4 — el Sistema Previsional Común entra en vigor el primer día del mes siguiente a los 180 días de la publicación de la ley',
+        url: 'https://www.impo.com.uy/bases/leyes/20130-2023/6',
+        publisher: 'IMPO',
+      },
+      {
+        label: 'Ley 16.713 art. 7 — los tres niveles de asignaciones computables',
+        url: 'https://www.impo.com.uy/bases/leyes/16713-1995/7',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 16.713 art. 8 — la opción que manda el 50% del primer tramo al ahorro individual',
+        url: 'https://www.impo.com.uy/bases/leyes/16713-1995/8',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'BPS — cómo se distribuyen los aportes del Régimen Mixto (Ley 16.713) con y sin artículo 8: sin la opción, todo al BPS hasta el tope A y el resto todo a la AFAP; con la opción, 50/50 hasta el tope A, todo al BPS entre A y B, todo a la AFAP desde B, y voluntario por encima del tope C',
+        url: 'https://www.bps.gub.uy/22615/como-se-distribuyen-mis-aportes-con-y-sin-articulo-8.html',
+        publisher: 'BPS',
+      },
+      {
+        label:
+          'BPS — topes de asignaciones computables (consultados el 10 de agosto de 2026: Ley 16.713 A $96.279, B $144.418, C $288.836; Ley 20.130 niveles $144.418 y $288.836, "vigencia desde 1/12/2023")',
+        url: 'https://www.bps.gub.uy/5478/',
+        publisher: 'BPS',
       },
     ],
   },
@@ -1534,17 +1674,21 @@ export const redditGuides: readonly Guide[] = [
     slug: 'licencia-y-salario-vacacional-uruguay',
     title: 'Licencia y salario vacacional en Uruguay',
     description:
-      'Cuántos días de licencia te corresponden según antigüedad, qué es el salario vacacional, cómo se calcula y cuándo se paga en Uruguay.',
+      'Cuántos días de licencia te corresponden según antigüedad (20 días más uno cada cuatro años desde el quinto), quién fija la fecha, hasta cuándo podés dejarla, cuándo se puede fraccionar y cómo se calcula el salario vacacional.',
     tag: 'LICENCIA',
-    updatedAt: '2026-07-18',
+    updatedAt: '2026-08-10',
     sections: [
       {
-        heading: 'Cuántos días de licencia te corresponden',
-        body: 'Todo trabajador de la actividad privada tiene derecho a licencia anual paga. La base es de veinte días de descanso al año una vez cumplido el primer año de trabajo. A eso se le suma antigüedad: a partir de cierta cantidad de años en la misma empresa, se genera un día adicional de licencia cada cierto tramo de años trabajados, de modo que quien lleva mucho tiempo en un lugar acumula más días. Al contarlos, ojo con un detalle: no se computan los domingos ni los feriados pagos, pero los sábados sí se cuentan, así que en días corridos el descanso te dura un poco más que la cifra de días de licencia. Es un derecho irrenunciable: no se puede canjear por dinero para seguir trabajando, salvo situaciones especiales previstas por la normativa.',
+        heading: 'Cuántos días de licencia te corresponden (la escala completa)',
+        body: 'Todo trabajador de la actividad privada tiene derecho a licencia anual paga. La base son veinte días como mínimo (Ley 12.590 art. 1), y para tenerla hay que haber computado doce meses, o veinticuatro quincenas, o cincuenta y dos semanas de trabajo (art. 4). A eso se le suma la antigüedad, y esta es la escala que casi nunca aparece con números: la ley le reconoce "un día complementario de licencia por cada cuatro años de antigüedad" a los trabajadores con más de cinco años de servicios en la misma empresa, aunque la empresa haya cambiado de dueño (art. 2). Traducido al calendario, como lo explica el MTSS: al quinto año generás el primer día extra, y el segundo recién a los ocho años, o sea que a partir de ahí sumás uno cada cuatro años trabajados. Alguien con ocho años en la misma empresa tiene 22 días, y no hay tope: los días por antigüedad se siguen acumulando sin límite. Ojo con el desfasaje: el día que generás un año se goza al siguiente. Al contarlos, ojo con un detalle: dentro del período de licencia no se computan los feriados —lo dice el artículo 1 con todas las letras, salvo que un convenio colectivo aprobado habilite computarlos—, pero los sábados sí se cuentan, justamente por no ser feriados (así lo aclara el MTSS, citando el Decreto 497/978). De los domingos, en cambio, el régimen general no dice nada: el MTSS los excluye expresamente sólo para el trabajador rural, así que no des por hecho que se descuentan. Lo que sí está establecido es que la licencia no puede empezar en tu día de descanso semanal. Es un derecho irrenunciable: no se puede canjear por dinero para seguir trabajando, salvo situaciones especiales previstas por la normativa.',
       },
       {
         heading: 'Cómo se genera la licencia',
         body: 'La licencia no aparece de golpe: se va generando a lo largo del año en proporción al tiempo trabajado. Un año completo de trabajo genera el paquete completo de días; medio año, aproximadamente la mitad. Por eso, si entraste hace pocos meses, ya venís acumulando licencia aunque todavía no llegues al total. Esta lógica de generación proporcional es la que después permite calcular la licencia no gozada cuando alguien deja la empresa antes de tomarse todos sus días. La licencia se genera trabajando, y ciertos períodos, como algunas licencias especiales, pueden computar o no según lo que establezca la normativa vigente.',
+      },
+      {
+        heading: 'Quién elige la fecha, hasta cuándo podés dejarla y si podés partirla en dos',
+        body: 'Tres preguntas que en la práctica generan más roce que el cálculo de días, y las tres las contesta la misma ley. La fecha no la elegís vos: la fija el empleador, ajustándose a las normas que dicte el Poder Ejecutivo según las características de cada rama de actividad, y está obligado a comunicar esas fechas, aunque el destinatario de esa comunicación no sos vos: el artículo 5 dice textualmente que "todo patrono está obligado a comunicar al Instituto Nacional del Trabajo y Servicios Anexados, las fechas en que sus trabajadores gozarán de la licencia anual". Que la comunicación vaya a la autoridad laboral no quiere decir que a vos no haya que avisarte: el mismo artículo 5 cierra encomendándole a la reglamentación "todo lo relativo a la notificación a los trabajadores y la documentación que acredite el cumplimiento de la ley". O sea que el deber de notificarte existe; lo que la ley no hace es escribir ella misma cómo, y lo delega en el decreto reglamentario. Hoy eso se instrumenta así: el MTSS aclara que por el Decreto 648/990 la licencia anual ya no se comunica a la Inspección General del Trabajo y de la Seguridad Social, y que por el Decreto 658/991 los listados anuales de licencia —con la fecha de inicio y de fin de cada trabajador, firmados por ellos— se incorporan al Libro Único de Trabajo. Ese listado firmado es, en los hechos, donde tus fechas quedan documentadas y donde se materializa la notificación que el artículo 5 delegó. Segundo, eso no queda abierto en el tiempo: el MTSS es explícito en que la licencia debe gozarse dentro del año inmediato siguiente al que generó el derecho, y agrega un detalle chico que evita discusiones —la licencia no puede empezar en un día de descanso semanal del trabajador—. Y tercero, el fraccionamiento: la regla del artículo 1 es que la licencia se toma en un solo período continuado. Partirla se puede, pero no es un arreglo de pasillo con tu jefe: la ley lo habilita cuando lo autoriza un convenio colectivo debidamente aprobado, en dos períodos continuos y con el menor de los dos nunca por debajo de diez días. Si en tu empresa fraccionan la licencia, lo que corresponde preguntar es qué convenio lo respalda.',
       },
       {
         heading: 'Qué es el salario vacacional',
@@ -1560,13 +1704,45 @@ export const redditGuides: readonly Guide[] = [
       },
       {
         heading: 'Dónde verificar y una aclaración',
-        body: 'Esta es información general y no sustituye una consulta profesional para tu situación concreta. Los días exactos por antigüedad, el cómputo de ciertos períodos y las particularidades de cada sector están regulados por la normativa laboral y pueden tener matices por convenio colectivo. El Ministerio de Trabajo y Seguridad Social publica los criterios oficiales y es la referencia ante diferencias con tu empleador. Si dudás de cómo te liquidaron la licencia o el salario vacacional, podés consultar en el Ministerio de Trabajo o con un asesor laboral. Un contador o el propio recibo detallado te ayudan a chequear que los días y montos estén bien.',
+        body: 'Esta es información general y no sustituye una consulta profesional para tu situación concreta. Los días de la Ley 12.590 son un mínimo: el cómputo de ciertos períodos y las particularidades de cada sector pueden tener matices por convenio colectivo, y un convenio puede mejorar el piso legal, nunca empeorarlo. El Ministerio de Trabajo y Seguridad Social publica los criterios oficiales y es la referencia ante diferencias con tu empleador. Si dudás de cómo te liquidaron la licencia o el salario vacacional, podés consultar en el Ministerio de Trabajo o con un asesor laboral. Un contador o el propio recibo detallado te ayudan a chequear que los días y montos estén bien.',
       },
     ],
     related: [
       { label: 'Cómo se calcula el aguinaldo', to: '/guias/como-se-calcula-el-aguinaldo-uruguay' },
       { label: 'Despido y liquidación', to: '/guias/despido-y-liquidacion-uruguay' },
       { label: 'Entender tu recibo de sueldo', to: '/guias/entender-tu-recibo-de-sueldo-uruguay' },
+    ],
+    sources: [
+      {
+        label:
+          'Ley 12.590 art. 1 — licencia anual remunerada de veinte días como mínimo, en un solo período, y el fraccionamiento por convenio colectivo en dos períodos continuos (el menor, no menos de diez días)',
+        url: 'https://www.impo.com.uy/bases/leyes/12590-1958/1',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 12.590 art. 2 — "un día complementario de licencia por cada cuatro años de antigüedad" para quienes tengan más de cinco años en la misma empresa',
+        url: 'https://www.impo.com.uy/bases/leyes/12590-1958/2',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 12.590 art. 4 — para tener derecho hay que haber computado 12 meses, 24 quincenas o 52 semanas de trabajo',
+        url: 'https://www.impo.com.uy/bases/leyes/12590-1958/4',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 12.590 art. 5 — "Todo patrono está obligado a comunicar al Instituto Nacional del Trabajo y Servicios Anexados, las fechas en que sus trabajadores gozarán de la licencia anual"; el mismo artículo remite a la reglamentación "todo lo relativo a la notificación a los trabajadores y la documentación que acredite el cumplimiento de la ley"',
+        url: 'https://www.impo.com.uy/bases/leyes/12590-1958/5',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'MTSS, Régimen de licencia — la escala por antigüedad con el ejemplo (5 años, primer día; 8 años, segundo; 22 días en total), "debe gozarse dentro del año inmediato siguiente", que no puede empezar en un día de descanso semanal, que "los días sábados deben ser computados por no ser feriados (Dec. 497/78)", que los domingos se excluyen sólo en el régimen del trabajador rural, y que por los Decretos 648/990 y 658/991 la licencia ya no se comunica a la Inspección General del Trabajo sino que se vuelca en listados dentro del Libro Único',
+        url: 'https://www.gub.uy/ministerio-trabajo-seguridad-social/institucional/derecho-laboral-uruguayo/regimen-licencia',
+        publisher: 'MTSS',
+      },
     ],
   },
   {
@@ -1684,9 +1860,9 @@ export const redditGuides: readonly Guide[] = [
     slug: 'trabajar-para-el-exterior-desde-uruguay',
     title: 'Trabajar para el exterior desde Uruguay: cómo facturar y tributar',
     description:
-      'Cómo facturar y tributar si trabajás freelance para clientes del exterior desde Uruguay: unipersonal, IVA tasa cero por exportación de servicios, IRAE y aportes BPS.',
+      'Cómo facturar y tributar si trabajás freelance para clientes del exterior desde Uruguay: unipersonal, por qué la exportación de servicios no está gravada por IVA (y no es una "tasa cero"), IRAE y aportes BPS.',
     tag: 'EXTERIOR',
-    updatedAt: '2026-07-19',
+    updatedAt: '2026-08-10',
     sections: [
       {
         heading: 'Formalizarte: por qué necesitás una empresa',
@@ -1720,11 +1896,11 @@ export const redditGuides: readonly Guide[] = [
       },
       {
         heading: 'Unipersonal, Literal E y monotributo',
-        body: 'No todos los regímenes sirven para lo mismo. El monotributo es un régimen pensado para actividades de muy pequeña escala y venta a consumidores finales, y en general no es el camino para exportar servicios al exterior. La empresa unipersonal sí te permite emitir facturas de exportación con IVA a tasa cero. Dentro de las unipersonales, quienes facturan montos bajos pueden quedar comprendidos como pequeña empresa (el llamado Literal E), que paga un IVA mínimo fijo y está exonerada de IRAE. Un punto a tener en cuenta: en Literal E no recuperás el IVA de tus compras como sí ocurre en el régimen general, así que si ese recupero te importa, conviene analizar la unipersonal por el régimen común. Si facturás montos altos y de forma sostenida, o querés separar tu patrimonio personal del de la actividad, algunos evalúan una SRL, más cara de constituir y mantener. La elección correcta depende de cuánto facturás y de tu situación.',
+        body: 'No todos los regímenes sirven para lo mismo. El monotributo es un régimen pensado para actividades de muy pequeña escala y venta a consumidores finales, y en general no es el camino para exportar servicios al exterior. La empresa unipersonal sí te permite emitir facturas de exportación, que salen sin IVA cuando el servicio encuadra en la lista del Poder Ejecutivo (ver la sección siguiente: no es una "tasa cero", es que la operación no está gravada). Dentro de las unipersonales, quienes facturan montos bajos pueden quedar comprendidos como pequeña empresa (el llamado Literal E), que paga un IVA mínimo fijo y está exonerada de IRAE. Un punto a tener en cuenta: en Literal E no recuperás el IVA de tus compras como sí ocurre en el régimen general, así que si ese recupero te importa, conviene analizar la unipersonal por el régimen común. Si facturás montos altos y de forma sostenida, o querés separar tu patrimonio personal del de la actividad, algunos evalúan una SRL, más cara de constituir y mantener. La elección correcta depende de cuánto facturás y de tu situación.',
       },
       {
-        heading: 'El IVA y la exportación de servicios',
-        body: 'Acá está la mejor noticia para el freelance uruguayo: la exportación de servicios tributa IVA a tasa cero. Es decir, cuando facturás a un cliente del exterior, no le agregás el IVA de la tasa básica (hoy 22%, confirmá el valor vigente ante la DGI); tu factura de exportación sale sin ese recargo. Además, esa tasa cero no es lo mismo que estar exento: al estar gravado a tasa cero, si liquidás IVA por el régimen general podés recuperar el IVA de tus compras vinculadas a la actividad, siempre que tengas las facturas a nombre de tu empresa. Ojo: en el régimen de pequeña empresa (Literal E) pagás un IVA mínimo fijo y no recuperás ese IVA. Por eso, si estás en el régimen general, conviene pedir factura cada vez que comprás algo para trabajar. Que una prestación califique como exportación de servicios tiene requisitos, así que vale confirmarlo para tu caso concreto.',
+        heading: 'El IVA: "no gravado" no es lo mismo que "tasa cero"',
+        body: 'Acá hay una buena noticia y una trampa de vocabulario que se repite en todos lados. La buena: facturada al exterior, la prestación puede salir sin IVA. La trampa: eso no es una "tasa cero". Esa alícuota no existe en Uruguay; el Título 10 publica dos, la básica de 22% y la mínima de 10%. Lo que pasa es otra cosa: la operación NO ESTÁ GRAVADA, por territorialidad. Y no alcanza con que el cliente esté afuera. El Título 10 art. 5 no define qué es exportar un servicio: delega en el Poder Ejecutivo ("Tampoco estarán gravadas aquellas exportaciones de servicios que determine el Poder Ejecutivo"), y el Decreto 220/998 art. 34 abre con "Las operaciones comprendidas en el concepto de exportación de servicios son:" seguido de una lista cerrada, numeral por numeral; el software está en el numeral 11. Si tu servicio no encuadra en ninguno, pagás IVA aunque factures a Estados Unidos. Que no esté gravado, en vez de exento, es justamente lo que te deja el crédito: el Título 10 art. 14 dice que si de las compras que integran el costo de lo exportado resulta un crédito a tu favor, "será devuelto o imputado al pago de otros impuestos o aportes previsionales". En una exención, en cambio, ese crédito hay que prorratearlo. Ojo: en el régimen de pequeña empresa (Literal E) pagás un IVA mínimo fijo y no recuperás nada, así que el recupero recién importa si liquidás por el régimen general; ahí sí, pedí factura a nombre de tu empresa cada vez que comprás algo para trabajar. Y una conclusión de más que conviene no sacar: que el IVA quede en cero no mueve el impuesto a la renta, porque el trabajo lo hacés desde acá.',
       },
       {
         heading: 'El impuesto a la renta: IRAE',
@@ -1762,11 +1938,11 @@ export const redditGuides: readonly Guide[] = [
       },
       {
         name: 'Habilitá la facturación de exportación',
-        text: 'Sumate al régimen de facturación electrónica y adoptá los comprobantes de e-factura de exportación, que salen con IVA a tasa cero para el cliente del exterior.',
+        text: 'Sumate al régimen de facturación electrónica y adoptá los comprobantes de e-factura de exportación. Antes, chequeá con tu contador que tu servicio encuadre en algún numeral del Decreto 220/998 art. 34: si encuadra, la operación no está gravada y la factura sale sin IVA para el cliente del exterior.',
       },
       {
         name: 'Guardá las facturas de tus compras',
-        text: 'Pedí factura a nombre de tu empresa por todo gasto de la actividad: en el régimen general, al exportar a tasa cero podés recuperar ese IVA y deducir gastos en el IRAE (en Literal E, en cambio, pagás IVA mínimo y no corresponde ese recupero).',
+        text: 'Pedí factura a nombre de tu empresa por todo gasto de la actividad: en el régimen general, aunque la exportación no esté gravada conservás el crédito del IVA de esas compras (Título 10 art. 14) y deducís el gasto en el IRAE (en Literal E, en cambio, pagás IVA mínimo y no corresponde ese recupero).',
       },
       {
         name: 'Cumplí las obligaciones periódicas',
@@ -1781,6 +1957,31 @@ export const redditGuides: readonly Guide[] = [
       {
         q: '¿Por qué el gerente me sugirió abrir la cuenta en Paraguay o Estados Unidos en vez de ayudarme?',
         a: 'Porque para un banco, sobre todo uno estatal grande como BROU, es más simple decir que no a una cuenta personal con ingresos recurrentes sin factura que asumir el análisis que exige la normativa antilavado. No es una política exclusiva contra vos: un banco privado suele puntuar mejor en operativa con el exterior, o podés formalizarte primero y volver a golpear la puerta con la documentación en regla.',
+      },
+    ],
+    sources: [
+      {
+        label:
+          'Título 10 art. 5 (IVA, territorialidad) — "Tampoco estarán gravadas aquellas exportaciones de servicios que determine el Poder Ejecutivo"',
+        url: 'https://www.impo.com.uy/bases/todgi2023/101-2024/5_T10',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Decreto 220/998 art. 34 — "Las operaciones comprendidas en el concepto de exportación de servicios son:" y la lista cerrada de numerales (software en el 11)',
+        url: 'https://www.impo.com.uy/bases/decretos/220-1998/34',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Título 10 art. 14 — el crédito del IVA de compras del exportador "será devuelto o imputado al pago de otros impuestos o aportes previsionales"',
+        url: 'https://www.impo.com.uy/bases/todgi2023/101-2024/14_T10',
+        publisher: 'IMPO',
+      },
+      {
+        label: 'Título 10 art. 34 — las dos alícuotas de IVA que existen: básica 22% y mínima 10%',
+        url: 'https://www.impo.com.uy/bases/todgi2023/101-2024/34_T10',
+        publisher: 'IMPO',
       },
     ],
   },
@@ -2287,13 +2488,13 @@ export const redditGuides: readonly Guide[] = [
     slug: 'jubilacion-y-afap-como-funciona-uruguay',
     title: 'Jubilación y AFAP en Uruguay: cómo funciona',
     description:
-      'Cómo funciona la jubilación en Uruguay: el sistema mixto BPS más AFAP, qué es una AFAP y qué cambió con la reforma de 2023.',
+      'Cómo funciona la jubilación en Uruguay: el sistema mixto BPS más AFAP, a quién le entra plata a la AFAP según cuándo empezó a trabajar, qué es una AFAP y qué cambió con la reforma de 2023.',
     tag: 'JUBILACIÓN',
-    updatedAt: '2026-07-18',
+    updatedAt: '2026-08-10',
     sections: [
       {
-        heading: 'Un sistema mixto: BPS y AFAP a la vez',
-        body: 'En Uruguay el sistema jubilatorio es mixto: una parte de tu aporte va al BPS y otra a una AFAP. El BPS funciona por solidaridad intergeneracional, es decir, los que trabajan hoy financian a los que ya están jubilados; tu jubilación de esa parte depende de tus años aportados y de tu sueldo, no de una cuenta a tu nombre. La parte de la AFAP es distinta: es ahorro individual, plata que se acumula en una cuenta tuya y se invierte para pagarte una renta al retirarte. Las dos partes conviven y suman en tu jubilación final.',
+        heading: 'Un sistema mixto, pero no le entra a todo el mundo por igual',
+        body: 'Uruguay tiene un sistema jubilatorio mixto: conviven un pilar de reparto y un pilar de ahorro individual. El pilar de reparto es el BPS y funciona por solidaridad intergeneracional, es decir, los que trabajan hoy financian a los que ya están jubilados; tu jubilación por esa parte depende de tus años aportados y de tu sueldo, no de una cuenta a tu nombre. El pilar de ahorro individual es la AFAP: plata que se acumula en una cuenta tuya y se invierte para pagarte una renta al retirarte. Hasta ahí la explicación que circula en todos lados. Lo que casi nunca se aclara —y es la confusión más cara de este tema— es que el sistema sea mixto no significa que a todo el mundo le esté entrando plata a una AFAP. Cuánto va a cada pilar depende de cuándo entraste al mercado de trabajo. El artículo 22 de la Ley 20.130 arranca acotándose a "las personas cuyo primer ingreso al mercado de trabajo ocurra a partir de la vigencia prevista en el numeral 4) del artículo 6º", vigencia que el BPS ubica el 1.º de diciembre de 2023: a esa cohorte le van 10 puntos del aporte a la solidaridad intergeneracional y 5 a su cuenta individual desde el primer peso. A quien ya estaba afiliado al BPS antes de esa fecha le siguen rigiendo los artículos 7 y 8 de la Ley 16.713 —lo dice el inciso final del propio artículo 22, que los declara "aplicables exclusivamente" a esos afiliados—, y ahí el aporte va entero al BPS hasta el tope A y sólo lo que supera ese tope entra a la AFAP, salvo que hayas hecho la opción del artículo 8, que reparte mitad y mitad hasta el tope A. Consultado en el BPS el 10 de agosto de 2026, el tope A estaba en $96.279. Dicho crudo: si empezaste a trabajar antes de diciembre de 2023, ganás por debajo del tope A y nunca hiciste la opción del artículo 8 —el caso de la enorme mayoría—, hoy no te está entrando nada a una AFAP.',
       },
       {
         heading: 'Qué es una AFAP',
@@ -2305,7 +2506,7 @@ export const redditGuides: readonly Guide[] = [
       },
       {
         heading: 'Qué mirar de tu AFAP',
-        body: 'Aunque el aporte es obligatorio, no todas las AFAP rinden ni cobran igual. Mirá tres cosas. La comisión de administración, que es lo que te descuentan y erosiona tu ahorro año a año. La rentabilidad histórica del fondo, entendiendo que rendimientos pasados no garantizan futuros. Y el subfondo en el que estás: el sistema suele mover tu dinero de un fondo con inversiones algo más expuestas al riesgo cuando sos joven a uno más conservador cerca del retiro, para proteger lo acumulado. Tené en cuenta que, en Uruguay, buena parte de lo que administran las AFAP está colocado en títulos del Estado, incluso en el subfondo más agresivo. Revisá tus estados de cuenta y no asumas que la AFAP que te asignaron por defecto es la que más te conviene.',
+        body: 'Esto te toca si efectivamente tenés aportes entrando a una cuenta individual: porque tu primer ingreso al mercado de trabajo fue desde diciembre de 2023, porque ganás por encima del tope A o porque hiciste la opción del artículo 8 de la Ley 16.713. Si estás en ese caso, no todas las AFAP rinden ni cobran igual. Mirá tres cosas. La comisión de administración, que es lo que te descuentan y erosiona tu ahorro año a año. La rentabilidad histórica del fondo, entendiendo que rendimientos pasados no garantizan futuros. Y el subfondo en el que estás: el sistema suele mover tu dinero de un fondo con inversiones algo más expuestas al riesgo cuando sos joven a uno más conservador cerca del retiro, para proteger lo acumulado. Tené en cuenta que, en Uruguay, buena parte de lo que administran las AFAP está colocado en títulos del Estado, incluso en el subfondo más agresivo. Revisá tus estados de cuenta y no asumas que la AFAP que te asignaron por defecto es la que más te conviene.',
       },
       {
         heading: 'Información general, dónde confirmar tu caso',
@@ -2316,6 +2517,45 @@ export const redditGuides: readonly Guide[] = [
       { label: 'Planificar tu retiro', to: '/guias/planificar-tu-retiro-uruguay' },
       { label: 'Entender tu recibo de sueldo', to: '/guias/entender-tu-recibo-de-sueldo-uruguay' },
       { label: 'Cómo empezar a invertir', to: '/guias/como-empezar-a-invertir-uruguay' },
+      { label: 'Elegir o cambiarte de AFAP', to: '/guias/elegir-o-cambiar-de-afap-uruguay' },
+    ],
+    faqs: [
+      {
+        q: '¿Me está entrando plata a una AFAP?',
+        a: 'Depende de cuándo entraste al mercado de trabajo. Si tu primer ingreso al mercado de trabajo fue a partir del 1.º de diciembre de 2023, sí: el artículo 22 de la Ley 20.130 manda 5 de los 15 puntos del aporte a tu cuenta individual desde el primer peso. Si ya estabas afiliado al BPS antes de esa fecha, te rigen los artículos 7 y 8 de la Ley 16.713: el aporte va entero al BPS hasta el tope A ($96.279 según el BPS al 10 de agosto de 2026) y a la AFAP sólo lo que lo supere, salvo que hayas hecho la opción del artículo 8. Por debajo del tope A y sin esa opción, no entra nada a una AFAP. Para tu caso concreto, mirá tu historia laboral en el BPS.',
+      },
+    ],
+    sources: [
+      {
+        label:
+          'Ley 20.130 art. 22 — el reparto 10 + 5 alcanza a "las personas cuyo primer ingreso al mercado de trabajo ocurra a partir de la vigencia prevista en el numeral 4) del artículo 6º", y su inciso final deja los artículos 7 y 8 de la Ley 16.713 "aplicables exclusivamente" a los afiliados al BPS anteriores a esa fecha',
+        url: 'https://www.impo.com.uy/bases/leyes/20130-2023/22',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 20.130 art. 6 num. 4 — el Sistema Previsional Común entra en vigor el primer día del mes siguiente a los 180 días de la publicación de la ley',
+        url: 'https://www.impo.com.uy/bases/leyes/20130-2023/6',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 16.713 art. 8 — la opción que manda el 50% del primer tramo al ahorro individual',
+        url: 'https://www.impo.com.uy/bases/leyes/16713-1995/8',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'BPS — cómo se distribuyen los aportes del Régimen Mixto con y sin artículo 8: sin la opción, todo al BPS hasta el tope A y el resto todo a la AFAP',
+        url: 'https://www.bps.gub.uy/22615/como-se-distribuyen-mis-aportes-con-y-sin-articulo-8.html',
+        publisher: 'BPS',
+      },
+      {
+        label:
+          'BPS — topes de asignaciones computables (consultados el 10 de agosto de 2026: tope A $96.279, B $144.418, C $288.836)',
+        url: 'https://www.bps.gub.uy/5478/',
+        publisher: 'BPS',
+      },
     ],
   },
   {
@@ -2332,7 +2572,7 @@ export const redditGuides: readonly Guide[] = [
       },
       {
         heading: 'Ahorro voluntario complementario',
-        body: 'Tu aporte obligatorio a BPS y AFAP es un piso, no un techo. Podés sumar ahorro voluntario para el retiro por varios caminos: aportes adicionales dentro del régimen previsional cuando corresponda, y sobre todo tu propio ahorro e inversión por fuera. La lógica es armar una segunda fuente de ingresos para cuando dejes de trabajar: instrumentos de renta fija, fondos, o inversiones acordes a tu tolerancia al riesgo. Lo importante es que sea dinero destinado específicamente al largo plazo, separado del ahorro de emergencia y de los gastos corrientes, para no tentarte a usarlo antes.',
+        body: 'Tu aporte jubilatorio obligatorio es un piso, no un techo. Va al BPS siempre, y a una cuenta individual en una AFAP sólo si tu caso lo activa: primer ingreso al mercado de trabajo desde diciembre de 2023, sueldo por encima del tope A o la opción del artículo 8 de la Ley 16.713. Podés sumar ahorro voluntario para el retiro por varios caminos: aportes adicionales dentro del régimen previsional cuando corresponda, y sobre todo tu propio ahorro e inversión por fuera. La lógica es armar una segunda fuente de ingresos para cuando dejes de trabajar: instrumentos de renta fija, fondos, o inversiones acordes a tu tolerancia al riesgo. Lo importante es que sea dinero destinado específicamente al largo plazo, separado del ahorro de emergencia y de los gastos corrientes, para no tentarte a usarlo antes.',
       },
       {
         heading: 'El interés compuesto premia al que empieza temprano',
@@ -2924,7 +3164,7 @@ export const redditGuides: readonly Guide[] = [
     description:
       'Qué cambia con la reforma jubilatoria (Ley 20.130) en Uruguay: el nuevo Sistema Previsional Común, cómo sube la edad de retiro según el año en que naciste y cómo afecta tu jubilación.',
     tag: 'REFORMA',
-    updatedAt: '2026-07-18',
+    updatedAt: '2026-08-10',
     sections: [
       {
         heading: 'Qué es la reforma y por qué se hizo',
@@ -2935,8 +3175,8 @@ export const redditGuides: readonly Guide[] = [
         body: 'El cambio más comentado es la edad mínima para jubilarse, que se mueve hacia los 65 años, pero no aplica igual a todos. Quienes nacieron antes de 1973 mantienen el régimen anterior: 60 años de edad y 30 de servicios. Para los nacidos entre 1973 y 1976 la edad mínima sube de a un año por año de nacimiento: 61 años para los de 1973, 62 para los de 1974, 63 para los de 1975 y 64 para los de 1976. Y desde los nacidos en 1977 en adelante rige la nueva edad de 65 años. Hay excepciones para carreras largas y para tareas de alto desgaste físico, que pueden permitir retirarse antes.',
       },
       {
-        heading: 'Un sistema mixto y obligatorio: BPS más AFAP',
-        body: 'Con la reforma, el régimen mixto pasa a ser obligatorio: una parte de tu aporte va al pilar de reparto o solidaridad (el BPS, donde los que trabajan financian a los jubilados de hoy) y otra parte a un pilar de ahorro individual en una AFAP (una cuenta a tu nombre que se invierte). Antes, esa combinación dependía del nivel de ingreso; ahora los dos pilares conviven de forma obligatoria. Tu jubilación final suma lo que te paga el BPS por el pilar de reparto y la renta que financia tu ahorro acumulado en la AFAP.',
+        heading: 'El régimen mixto: para quién pasó a ser obligatorio de verdad',
+        body: 'Acá está el titular que más se repite mal. Sí, la reforma vuelve el régimen mixto obligatorio desde el primer peso —una parte del aporte al pilar de reparto o solidaridad (el BPS, donde los que trabajan financian a los jubilados de hoy) y otra a un pilar de ahorro individual en una AFAP, una cuenta a tu nombre que se invierte—, pero sólo para una cohorte. El artículo 22 de la Ley 20.130 empieza acotándose a "las personas cuyo primer ingreso al mercado de trabajo ocurra a partir de la vigencia prevista en el numeral 4) del artículo 6º", vigencia que el BPS ubica el 1.º de diciembre de 2023. A esa gente le van 10 puntos a solidaridad intergeneracional y 5 a la cuenta individual, gane lo que gane. Para el resto no cambió nada: el inciso final de ese mismo artículo 22 deja los artículos 7 y 8 de la Ley 16.713 "aplicables exclusivamente a los afiliados al Banco de Previsión Social" que ya estaban comprendidos en sus Títulos I a IV antes de esa fecha. Ahí la combinación sigue dependiendo del nivel de ingreso: sin la opción del artículo 8, el aporte va entero al BPS hasta el tope A ($96.279 según el BPS al 10 de agosto de 2026) y a la AFAP sólo lo que lo supere, así que a quien gana por debajo del tope A no le entra nada a una AFAP. Un matiz que sí alcanza a los afiliados viejos: si después del 1.º de diciembre de 2023 ingresás por primera vez a una actividad amparada por otra caja, el artículo 22 te rige en esa nueva actividad. Tu jubilación final suma lo que te pague el BPS por el pilar de reparto y, si tenés ahorro acumulado, la renta que ese ahorro financie.',
       },
       {
         heading: 'Cómo se calcula la jubilación ahora',
@@ -2967,7 +3207,33 @@ export const redditGuides: readonly Guide[] = [
       },
       {
         q: '¿Ahora es obligatorio aportar a una AFAP?',
-        a: 'Sí. Con el régimen mixto obligatorio, parte de tu aporte va al BPS (pilar de reparto) y parte a una AFAP (pilar de ahorro individual). Lo que elegís es cuál AFAP administra tu ahorro, y podés cambiarte según las reglas vigentes.',
+        a: 'Depende de cuándo empezaste a trabajar. Si tu primer ingreso al mercado de trabajo fue a partir del 1.º de diciembre de 2023, sí: el artículo 22 de la Ley 20.130 manda 5 de los 15 puntos del aporte a una cuenta individual desde el primer peso, y lo único que elegís es qué AFAP la administra. Si ya estabas afiliado al BPS antes de esa fecha, no: el inciso final de ese artículo deja vigentes para vos los artículos 7 y 8 de la Ley 16.713, con lo cual el aporte va entero al BPS hasta el tope A y a la AFAP sólo el excedente, salvo que hayas hecho la opción del artículo 8. Ganando por debajo del tope A y sin esa opción, hoy no te entra nada a una AFAP.',
+      },
+    ],
+    sources: [
+      {
+        label:
+          'Ley 20.130 art. 22 — el reparto 10 + 5 alcanza a "las personas cuyo primer ingreso al mercado de trabajo ocurra a partir de la vigencia prevista en el numeral 4) del artículo 6º", y su inciso final deja los artículos 7 y 8 de la Ley 16.713 "aplicables exclusivamente" a los afiliados al BPS anteriores a esa fecha; el inciso siguiente somete al art. 22 a quien después ingrese por primera vez al ámbito de otra entidad previsional',
+        url: 'https://www.impo.com.uy/bases/leyes/20130-2023/22',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 20.130 art. 6 num. 4 — el Sistema Previsional Común entra en vigor el primer día del mes siguiente a los 180 días de la publicación de la ley',
+        url: 'https://www.impo.com.uy/bases/leyes/20130-2023/6',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'BPS — cómo se distribuyen los aportes del Régimen Mixto con y sin artículo 8: sin la opción, todo al BPS hasta el tope A y el resto todo a la AFAP',
+        url: 'https://www.bps.gub.uy/22615/como-se-distribuyen-mis-aportes-con-y-sin-articulo-8.html',
+        publisher: 'BPS',
+      },
+      {
+        label:
+          'BPS — topes de asignaciones computables (consultados el 10 de agosto de 2026: tope A $96.279, B $144.418, C $288.836)',
+        url: 'https://www.bps.gub.uy/5478/',
+        publisher: 'BPS',
       },
     ],
   },
@@ -2975,13 +3241,13 @@ export const redditGuides: readonly Guide[] = [
     slug: 'elegir-o-cambiar-de-afap-uruguay',
     title: 'Cómo elegir o cambiarte de AFAP en Uruguay',
     description:
-      'Cómo elegir la AFAP que más te conviene para tu jubilación en Uruguay y cuándo podés cambiarte: comisión de administración, rentabilidad, subfondos y qué mirar antes de decidir.',
+      'Cómo elegir la AFAP que más te conviene para tu jubilación en Uruguay y cuándo podés cambiarte: a quién le entran aportes a la cuenta individual, comisión de administración, rentabilidad, subfondos y qué mirar antes de decidir.',
     tag: 'AFAP',
-    updatedAt: '2026-07-18',
+    updatedAt: '2026-08-10',
     sections: [
       {
-        heading: 'Por qué importa cuál AFAP tenés',
-        body: 'El aporte a la AFAP es obligatorio, pero cuál AFAP administra tu ahorro no es un detalle: de eso dependen la comisión que te descuentan y cómo se invierte tu plata durante décadas. Muchos quedan en la AFAP que les asignaron por defecto al empezar a trabajar y nunca la revisan. Como es ahorro individual —una cuenta a tu nombre que se transforma en una renta cuando te retirás—, pequeñas diferencias de comisión o de rendimiento, sostenidas por treinta o cuarenta años, terminan pesando bastante en cuánto vas a cobrar.',
+        heading: 'Primero: fijate si te está entrando plata a una AFAP',
+        body: 'Antes de comparar comisiones conviene descartar la pregunta previa, porque el aporte a una AFAP no es obligatorio para todos. El reparto que manda 5 de los 15 puntos a la cuenta individual desde el primer peso es el del artículo 22 de la Ley 20.130, y ese artículo se acota a quienes tuvieron su primer ingreso al mercado de trabajo a partir del 1.º de diciembre de 2023. A quien ya estaba afiliado al BPS antes de esa fecha le rigen los artículos 7 y 8 de la Ley 16.713: el aporte va entero al BPS hasta el tope A ($96.279 según el BPS al 10 de agosto de 2026) y a la AFAP sólo lo que lo supere, salvo que haya hecho la opción del artículo 8, que reparte mitad y mitad hasta el tope A. Si ganás por debajo del tope A, empezaste antes de diciembre de 2023 y nunca hiciste esa opción, no entra nada a una AFAP y esta comparación no te mueve la aguja todavía. Ahora bien, si sí tenés cuenta individual, cuál AFAP la administra no es un detalle: de eso dependen la comisión que te descuentan y cómo se invierte tu plata durante décadas. Muchos quedan en la AFAP que les asignaron por defecto al empezar a trabajar y nunca la revisan, y pequeñas diferencias de comisión o de rendimiento sostenidas treinta o cuarenta años terminan pesando bastante en cuánto vas a cobrar.',
       },
       {
         heading: 'Qué AFAP hay y quién las controla',
@@ -2997,7 +3263,7 @@ export const redditGuides: readonly Guide[] = [
       },
       {
         heading: 'Información general y próximos pasos',
-        body: 'Esta es una guía informativa, no asesoramiento previsional. Revisá tus estados de cuenta, compará las comisiones y rentabilidades publicadas y, si tenés dudas sobre qué subfondo te conviene según tu edad, consultá en tu AFAP o con un asesor. Lo esencial: no dejes tu ahorro jubilatorio en piloto automático solo porque el aporte es obligatorio, porque la AFAP que te asignaron por defecto no es necesariamente la que más te conviene.',
+        body: 'Esta es una guía informativa, no asesoramiento previsional. Revisá tus estados de cuenta, compará las comisiones y rentabilidades publicadas y, si tenés dudas sobre qué subfondo te conviene según tu edad, consultá en tu AFAP o con un asesor. Lo esencial: si tenés aportes entrando, no dejes ese ahorro en piloto automático sólo porque no elegiste vos que se hiciera, porque la AFAP que te asignaron por defecto no es necesariamente la que más te conviene.',
       },
     ],
     related: [
@@ -3023,7 +3289,33 @@ export const redditGuides: readonly Guide[] = [
       },
       {
         q: '¿Puedo no tener AFAP?',
-        a: 'No: con el régimen mixto obligatorio, parte de tu aporte va sí o sí a una AFAP. Lo que elegís es cuál. Si nunca la elegiste, es probable que te hayan asignado una por defecto, y conviene revisar si es la que más te conviene.',
+        a: 'Depende de tu cohorte. Si tu primer ingreso al mercado de trabajo fue a partir del 1.º de diciembre de 2023, el artículo 22 de la Ley 20.130 manda parte de tu aporte a una cuenta individual desde el primer peso: lo único que elegís es cuál AFAP la administra, y si nunca la elegiste es probable que te hayan asignado una por defecto. Si ya estabas afiliado al BPS antes de esa fecha, te rigen los artículos 7 y 8 de la Ley 16.713: por debajo del tope A y sin la opción del artículo 8 no entra nada a una AFAP, porque el aporte jubilatorio va entero al BPS hasta el tope A.',
+      },
+    ],
+    sources: [
+      {
+        label:
+          'Ley 20.130 art. 22 — el reparto 10 + 5 alcanza a "las personas cuyo primer ingreso al mercado de trabajo ocurra a partir de la vigencia prevista en el numeral 4) del artículo 6º", y su inciso final deja los artículos 7 y 8 de la Ley 16.713 "aplicables exclusivamente" a los afiliados al BPS anteriores a esa fecha',
+        url: 'https://www.impo.com.uy/bases/leyes/20130-2023/22',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 16.713 art. 8 — la opción que manda el 50% del primer tramo al ahorro individual',
+        url: 'https://www.impo.com.uy/bases/leyes/16713-1995/8',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'BPS — cómo se distribuyen los aportes del Régimen Mixto con y sin artículo 8: sin la opción, todo al BPS hasta el tope A y el resto todo a la AFAP',
+        url: 'https://www.bps.gub.uy/22615/como-se-distribuyen-mis-aportes-con-y-sin-articulo-8.html',
+        publisher: 'BPS',
+      },
+      {
+        label:
+          'BPS — topes de asignaciones computables (consultados el 10 de agosto de 2026: tope A $96.279, B $144.418, C $288.836)',
+        url: 'https://www.bps.gub.uy/5478/',
+        publisher: 'BPS',
       },
     ],
   },
@@ -3098,7 +3390,7 @@ export const redditGuides: readonly Guide[] = [
     description:
       'Cuánto es el salario mínimo nacional en Uruguay en 2026, cómo y cuándo se ajusta, y por qué no es lo mismo que el mínimo de tu categoría por consejo de salarios.',
     tag: 'SALARIO',
-    updatedAt: '2026-07-18',
+    updatedAt: '2026-08-10',
     sections: [
       {
         heading: 'Cuánto es el salario mínimo hoy',
@@ -3114,7 +3406,7 @@ export const redditGuides: readonly Guide[] = [
       },
       {
         heading: 'Qué te descuentan a nivel del mínimo',
-        body: 'Un sueldo al nivel del SMN igual tiene descuentos: aportás a la seguridad social (BPS, en el orden del 15% del nominal) y al FONASA para la cobertura de salud, más el pequeño aporte al Fondo de Reconversión Laboral. Lo que no pagás es IRPF, porque a ese nivel tu ingreso queda por debajo del mínimo no imponible, que arranca en 7 BPC mensuales (con la BPC de 2026 en $6.864, son unos $48.048). Para ver cómo queda tu líquido según tu nominal, podés usar nuestra calculadora de sueldo líquido.',
+        body: 'Un sueldo al nivel del SMN igual tiene descuentos: el aporte jubilatorio personal, de tasa 15% sobre el nominal, más el FONASA para la cobertura de salud y el pequeño aporte al Fondo de Reconversión Laboral. Dónde termina ese aporte jubilatorio depende de cuándo empezaste a trabajar, y conviene tenerlo claro porque la respuesta más difundida es la que le toca a menos gente. Si tu primer ingreso al mercado de trabajo fue anterior al 1.º de diciembre de 2023 —o sea, casi todo el mundo— y seguís en el BPS, estás bajo la Ley 16.713: a un sueldo de este tamaño, muy por debajo del tope A, el aporte jubilatorio va entero al BPS y no entra nada a una AFAP, salvo que tengas hecha la opción del artículo 8, que manda la mitad a la cuenta individual. El reparto de 10 puntos a la solidaridad intergeneracional y 5 al ahorro individual es el del Sistema Previsional Común de la Ley 20.130 (art. 22), y ese artículo se aplica sólo a quienes tuvieron su primer ingreso al mercado de trabajo desde la vigencia del régimen, que el BPS ubica en diciembre de 2023. La excepción está en el mismo artículo: si después de esa fecha ingresás por primera vez a una actividad de otra caja, en esa nueva actividad sí te rige el art. 22. Lo que no pagás es IRPF, porque a ese nivel tu ingreso queda por debajo del mínimo no imponible, que arranca en 7 BPC mensuales (con la BPC de 2026 en $6.864, son unos $48.048). Para ver cómo queda tu líquido según tu nominal, podés usar nuestra calculadora de sueldo líquido.',
       },
       {
         heading: 'Dónde confirmar el valor vigente',
@@ -3138,7 +3430,39 @@ export const redditGuides: readonly Guide[] = [
       },
       {
         q: '¿Se paga IRPF sobre el salario mínimo?',
-        a: 'No: a ese nivel el ingreso está por debajo del mínimo no imponible de 7 BPC, así que no genera IRPF. Sí se aporta a la seguridad social (BPS) y al FONASA.',
+        a: 'No: a ese nivel el ingreso está por debajo del mínimo no imponible de 7 BPC, así que no genera IRPF. Sí se aporta a la seguridad social y al FONASA. Ojo con un detalle: a dónde va el aporte jubilatorio personal, de tasa 15%, depende de cuándo entraste a trabajar. Si tu primer ingreso al mercado de trabajo fue antes de diciembre de 2023 y seguís en el BPS, te rige la Ley 16.713 y a este nivel de sueldo —muy por debajo del tope A— el aporte va entero al BPS, salvo que tengas hecha la opción del artículo 8, que manda la mitad a la AFAP. El reparto de 10 puntos a solidaridad intergeneracional y 5 a tu cuenta individual es el del Sistema Previsional Común de la Ley 20.130 (art. 22), y alcanza sólo a quienes entraron al mercado de trabajo por primera vez desde la vigencia de ese régimen, más a quienes, viniendo de antes, ingresen después por primera vez a una actividad de otra caja.',
+      },
+    ],
+    sources: [
+      {
+        label:
+          'Ley 20.130 art. 22 — el reparto 10 + 5 rige para "las personas cuyo primer ingreso al mercado de trabajo ocurra a partir de la vigencia prevista en el numeral 4) del artículo 6º"',
+        url: 'https://www.impo.com.uy/bases/leyes/20130-2023/22',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 20.130 art. 6 num. 4 — el Sistema Previsional Común entra en vigor el primer día del mes siguiente a los 180 días de la publicación de la ley',
+        url: 'https://www.impo.com.uy/bases/leyes/20130-2023/6',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 16.713 art. 8 — la opción que manda el 50% del aporte del primer tramo al ahorro individual',
+        url: 'https://www.impo.com.uy/bases/leyes/16713-1995/8',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'BPS — Régimen Mixto (Ley 16.713): sin la opción del artículo 8 el aporte va todo al BPS hasta el tope A y el resto todo a la AFAP',
+        url: 'https://www.bps.gub.uy/22615/como-se-distribuyen-mis-aportes-con-y-sin-articulo-8.html',
+        publisher: 'BPS',
+      },
+      {
+        label:
+          'BPS — topes de asignaciones computables: los niveles de la Ley 20.130 rigen con "vigencia desde 1/12/2023" (consultado el 10 de agosto de 2026)',
+        url: 'https://www.bps.gub.uy/5478/',
+        publisher: 'BPS',
       },
     ],
   },

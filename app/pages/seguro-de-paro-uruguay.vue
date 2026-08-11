@@ -7,10 +7,11 @@
       </h1>
       <p class="lead mb-6">
         La pregunta que más se repite no es cuánto cobro: es
-        <strong>por qué cada mes me pagan menos</strong>. La respuesta es que el régimen es
+        <strong>por qué cada mes me pagan menos</strong>. La respuesta es que la causal despido es
         decreciente por diseño —del 66 % al 40 % del promedio— y que además
-        <strong>cada mes tiene su propio tope</strong>, que también baja. Acá está la cuenta con los
-        porcentajes y los topes {{ capsYear }} que publica BPS.
+        <strong>cada mes tiene su propio tope</strong>, que también baja. Las otras dos causales no
+        funcionan así: suspensión total y trabajo reducido van al 50 % fijo. Acá está la cuenta con
+        los porcentajes y los topes {{ capsYear }} que publica BPS.
       </p>
 
       <VCard class="mechanism-card pa-5 pa-md-6" variant="flat">
@@ -65,7 +66,7 @@
               min="0"
               density="comfortable"
               variant="outlined"
-              hint="En trabajo reducido el subsidio cubre la diferencia."
+              hint="Se cobra la diferencia contra el 50 % del promedio, no contra el 66 %."
               persistent-hint
               class="mb-4"
             />
@@ -77,7 +78,7 @@
               max="99"
               density="comfortable"
               variant="outlined"
-              hint="Con 50 o más se extiende 6 meses."
+              hint="Con 50 o más se extiende 6 meses, pero sólo en la causal despido (art. 6.3)."
               persistent-hint
               class="mb-4"
             />
@@ -140,6 +141,9 @@
                   </td>
                   <td data-label="Cobrás" class="text-right">
                     <strong>{{ formatUYU(m.amount) }}</strong>
+                    <div v-if="m.raisedToFloor" class="text-caption text-medium-emphasis">
+                      levantado hasta el mínimo de {{ formatUYU(m.floor ?? 0) }}
+                    </div>
                     <div v-if="m.complement > 0" class="text-caption text-medium-emphasis">
                       incluye {{ formatUYU(m.complement) }} de complemento
                     </div>
@@ -167,10 +171,16 @@
     <section class="mb-12">
       <h2 class="text-h5 font-weight-bold mb-2">Qué tenés que tener aportado</h2>
       <p class="text-medium-emphasis mb-5" style="max-width: 72ch">
-        En los <strong>12 meses anteriores</strong> a que se configure la causal.
+        En industria y comercio se miran los <strong>12 meses anteriores</strong> a que se configure
+        la causal, y ahí la palabra clave es que
+        <strong>los requisitos son acumulativos, no alternativas</strong>: tener los 150 jornales
+        sin los 180 días en planilla no alcanza. En el rural y en el servicio doméstico no traslades
+        esos números: <strong>cambia el período y cambian también las cantidades</strong> —al rural
+        mensual BPS le pide 270 días, no 180—, y el jornalero rural tiene un solo requisito, los 225
+        jornales.
       </p>
       <VRow>
-        <VCol v-for="r in REQUIREMENTS" :key="r.label" cols="12" md="4">
+        <VCol v-for="r in REQUIREMENTS" :key="r.label" cols="12" md="6" lg="4">
           <VCard variant="flat" class="req-card pa-5 h-100">
             <h3 class="text-subtitle-1 font-weight-bold mb-2">{{ r.label }}</h3>
             <p class="mb-0 text-medium-emphasis">{{ r.detail }}</p>
@@ -179,17 +189,146 @@
       </VRow>
     </section>
 
+    <!-- Exit rules -->
+    <section id="como-terminaste" class="mb-12">
+      <h2 class="text-h5 font-weight-bold mb-2">Cómo terminó el vínculo</h2>
+      <p class="text-medium-emphasis mb-5" style="max-width: 72ch">
+        Es lo primero que mira BPS y lo último que pregunta el trabajador. Lo que decide no es si te
+        pagaron la indemnización: es si la desocupación fue
+        <strong>forzosa y no imputable a tu voluntad</strong>, como pide el artículo 2 del
+        Decreto-Ley 15.180.
+      </p>
+
+      <div class="rule-list">
+        <VCard
+          v-for="r in EXIT_RULES"
+          :key="r.situation"
+          variant="flat"
+          class="rule-card pa-5"
+          :class="r.gives ? 'is-yes' : 'is-no'"
+        >
+          <div class="rule-head mb-2">
+            <VChip :color="r.gives ? 'success' : 'error'" size="small" variant="tonal" label>
+              {{ r.gives ? 'Da derecho' : 'No da derecho' }}
+            </VChip>
+            <h3 class="text-subtitle-1 font-weight-bold mb-0">{{ r.situation }}</h3>
+          </div>
+          <p class="mb-0 text-medium-emphasis">{{ r.detail }}</p>
+        </VCard>
+      </div>
+
+      <VCard variant="flat" class="req-card pa-5 mt-4">
+        <h3 class="text-subtitle-1 font-weight-bold mb-2">
+          Si la causal que declararon no es la real
+        </h3>
+        <p class="text-medium-emphasis mb-3">
+          BPS no discute el fondo en la ventanilla. Para pelear la causal pide uno de estos dos
+          papeles, y nada más:
+        </p>
+        <ul class="mb-3 pl-4">
+          <li v-for="(p, i) in CAUSAL_DISPUTE_PROOF" :key="i" class="mb-1">{{ p }}</li>
+        </ul>
+        <p class="mb-0 text-medium-emphasis">
+          Conseguirlos lleva meses, así que reservá el derecho en plazo mientras tanto: son trámites
+          separados.
+        </p>
+      </VCard>
+    </section>
+
+    <!-- Coverage -->
+    <section id="a-quien-ampara" class="mb-12">
+      <h2 class="text-h5 font-weight-bold mb-2">A quién ampara</h2>
+      <p class="text-medium-emphasis mb-5" style="max-width: 72ch">
+        El caso base son los empleados de la actividad privada. Todo lo demás entra porque una norma
+        lo incorporó y BPS lo enumera por su nombre o por su vínculo funcional. Esto reproduce esa
+        enumeración: es un mapa para buscar tu caso, no una lista clausurada.
+        <strong>Si no encontrás el tuyo, preguntalo por escrito en BPS</strong> en vez de deducir
+        que estás afuera.
+      </p>
+
+      <div class="rule-list">
+        <VCard
+          v-for="c in COVERAGE_RULES"
+          :key="c.label"
+          variant="flat"
+          class="rule-card pa-5"
+          :class="c.covered ? 'is-yes' : 'is-no'"
+        >
+          <div class="rule-head mb-2">
+            <VChip :color="c.covered ? 'success' : 'error'" size="small" variant="tonal" label>
+              {{ c.covered ? 'En la lista' : 'Restricción' }}
+            </VChip>
+            <h3 class="text-subtitle-1 font-weight-bold mb-0">{{ c.label }}</h3>
+          </div>
+          <p class="mb-0 text-medium-emphasis">{{ c.detail }}</p>
+        </VCard>
+      </div>
+    </section>
+
     <!-- Termination -->
     <section class="mb-12">
       <h2 class="text-h5 font-weight-bold mb-2">Qué te corta el subsidio</h2>
       <p class="text-medium-emphasis mb-4" style="max-width: 72ch">
         Es la parte que más sorpresas da, y la causa más común de que después BPS reclame que
-        devuelvas lo cobrado.
+        devuelvas lo cobrado. Cada corte va con las condiciones que le pone la norma: sin ellas,
+        asusta a gente que no está en esa situación.
       </p>
       <VCard variant="flat" class="warn-card pa-5">
         <ul class="mb-0 pl-4">
           <li v-for="(c, i) in TERMINATION_CAUSES" :key="i" class="mb-2">{{ c }}</li>
         </ul>
+      </VCard>
+    </section>
+
+    <!-- Unipersonal -->
+    <section id="unipersonal" class="mb-12">
+      <h2 class="text-h5 font-weight-bold mb-2">¿Y si abro una unipersonal mientras cobro?</h2>
+      <p class="text-medium-emphasis mb-4" style="max-width: 72ch">
+        Acá no vas a encontrar la respuesta que querés escuchar, porque
+        <strong>no existe fuente oficial que la diga</strong>. Lo que sí se puede publicar es la
+        tensión real entre lo que dice la norma y lo que dice la restricción de BPS.
+      </p>
+      <VCard variant="flat" class="warn-card pa-5">
+        <ul class="mb-0 pl-4">
+          <li v-for="(u, i) in UNIPERSONAL_WHILE_ON_BENEFIT" :key="i" class="mb-2">{{ u }}</li>
+        </ul>
+      </VCard>
+    </section>
+
+    <!-- Procedure -->
+    <section id="tramite" class="mb-12">
+      <h2 class="text-h5 font-weight-bold mb-2">El trámite</h2>
+      <p class="text-medium-emphasis mb-5" style="max-width: 72ch">
+        Lo arranca la empresa, así que el trabajador se entera de que no se ingresó cuando ya pasó
+        el plazo. Por eso el paso que importa no es «solicitar» sino
+        <strong>«reservar el derecho»</strong>: es lo único que se puede hacer sin que la empresa
+        colabore.
+      </p>
+
+      <div class="step-list">
+        <VCard
+          v-for="s in PROCEDURE_STEPS"
+          :key="s.n"
+          variant="flat"
+          class="rule-card step-card pa-5"
+        >
+          <div class="rule-head mb-2">
+            <span class="step-n" aria-hidden="true">{{ s.n }}</span>
+            <h3 class="text-subtitle-1 font-weight-bold mb-0">{{ s.title }}</h3>
+          </div>
+          <p class="mb-0 text-medium-emphasis">{{ s.detail }}</p>
+        </VCard>
+      </div>
+
+      <VCard variant="flat" class="req-card pa-5 mt-4">
+        <h3 class="text-subtitle-1 font-weight-bold mb-2">Cuando se te agota</h3>
+        <p class="mb-0 text-medium-emphasis">
+          El artículo 6.4 pide dos cosas, y la segunda es la que se suele omitir: que hayan pasado
+          <strong>{{ repeatAfterMonths }} meses</strong> desde la última prestación,
+          <strong>{{ repeatContributionMonths }} de ellos de aportación efectiva</strong>, y que
+          vuelvas a reunir «las restantes condiciones requeridas». No alcanza con dejar correr el
+          año: hay que haber vuelto a aportar medio.
+        </p>
       </VCard>
     </section>
 
@@ -230,14 +369,21 @@ import { computed, reactive } from 'vue'
 import { URUGUAY } from '~/utils/calculators'
 import { formatUYU } from '~/utils/format'
 import {
+  CAUSAL_DISPUTE_PROOF,
   CAUSALES,
+  COVERAGE_RULES,
+  EXIT_RULES,
   FAMILY_COMPLEMENT_PCT,
+  PROCEDURE_STEPS,
+  REPEAT_AFTER_MONTHS,
+  REPEAT_CONTRIBUTION_MONTHS,
   REQUIREMENTS,
   TERMINATION_CAUSES,
   UNEMPLOYMENT_CAPS_YEAR,
   UNEMPLOYMENT_FAQ,
   UNEMPLOYMENT_SOURCES,
   UNEMPLOYMENT_VERIFIED_AT,
+  UNIPERSONAL_WHILE_ON_BENEFIT,
   estimateUnemploymentBenefit,
   type BenefitInput,
 } from '~/utils/unemploymentBenefit'
@@ -265,6 +411,8 @@ const result = computed(() => estimateUnemploymentBenefit(sane.value))
 const causalItems = CAUSALES.map(c => ({ id: c.id, label: c.label }))
 const bpc = URUGUAY.bpc
 const capsYear = UNEMPLOYMENT_CAPS_YEAR
+const repeatAfterMonths = REPEAT_AFTER_MONTHS
+const repeatContributionMonths = REPEAT_CONTRIBUTION_MONTHS
 
 const verifiedAt = new Date(UNEMPLOYMENT_VERIFIED_AT).toLocaleDateString('es-UY', {
   day: 'numeric',
@@ -276,7 +424,7 @@ const verifiedAt = new Date(UNEMPLOYMENT_VERIFIED_AT).toLocaleDateString('es-UY'
 const canonicalUrl = 'https://cambio-uruguay.com/seguro-de-paro-uruguay'
 const title = 'Seguro de paro en Uruguay: cuánto cobrás y por qué baja cada mes'
 const description =
-  'Cuánto se cobra de seguro de paro con los porcentajes y topes 2026 de BPS: 66 %, 57 %, 50 %, 45 %, 42 % y 40 % del promedio nominal de los últimos seis meses, con un tope distinto para cada mes. Calculadora por causal (despido, suspensión, trabajo reducido), extensión para 50 o más, complemento del 20 % por cargas familiares, requisitos de aportes y qué corta el subsidio.'
+  'Cuánto se cobra de seguro de paro con los porcentajes y topes 2026 de BPS. Por despido: 66 %, 57 %, 50 %, 45 %, 42 % y 40 % del promedio nominal de los últimos seis meses, con un tope distinto para cada mes. Por suspensión total y trabajo reducido: 50 % fijo. Calculadora por causal, extensión de seis meses para 50 o más (sólo en despido), complemento del 20 % por cargas familiares, aportes previos, quién queda amparado, qué corta el subsidio y cómo es el trámite.'
 
 defineOgImageComponent('Cambio', {
   title: 'Seguro de paro: cuánto cobrás',
@@ -357,7 +505,8 @@ useHead(() => ({
 .verdict-card,
 .results-card,
 .req-card,
-.warn-card {
+.warn-card,
+.rule-card {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.09);
   border-radius: 14px;
@@ -367,12 +516,45 @@ useHead(() => ({
 .v-theme--light .verdict-card,
 .v-theme--light .results-card,
 .v-theme--light .req-card,
-.v-theme--light .warn-card {
+.v-theme--light .warn-card,
+.v-theme--light .rule-card {
   background: rgba(0, 0, 0, 0.02);
   border-color: rgba(0, 0, 0, 0.1);
 }
 .warn-card {
   border-left: 3px solid rgb(var(--v-theme-warning));
+}
+
+.rule-list,
+.step-list {
+  display: grid;
+  gap: 0.85rem;
+}
+.rule-card.is-yes {
+  border-left: 3px solid rgb(var(--v-theme-success));
+}
+.rule-card.is-no {
+  border-left: 3px solid rgb(var(--v-theme-error));
+}
+.step-card {
+  border-left: 3px solid rgb(var(--v-theme-primary));
+}
+.rule-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+.step-n {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 999px;
+  font-weight: 700;
+  background: rgba(var(--v-theme-primary), 0.16);
+  color: rgb(var(--v-theme-primary));
 }
 
 .causal-grid {

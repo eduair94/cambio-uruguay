@@ -301,13 +301,52 @@
 
     <!-- Water -->
     <section class="mb-12">
-      <h2 class="text-h5 font-weight-bold mb-2">Y el agua: por qué pagás el consumo dos veces</h2>
+      <h2 class="text-h5 font-weight-bold mb-2">
+        Y el agua: el mismo metro cúbico se paga dos veces, pero no en todos lados igual
+      </h2>
       <p class="mb-4" style="max-width: 72ch">
-        El dato que casi nadie tiene presente: el
-        <strong>cargo variable del saneamiento es el 100 % del cargo variable del agua</strong>. En
-        una casa conectada a la red, cada metro cúbico se factura dos veces — una como agua y otra
-        como saneamiento. Además hay dos cargos fijos, el de agua (según el diámetro de la conexión)
-        y el de saneamiento, de {{ formatUYU(OSE_SANEAMIENTO_FIXED) }} por unidad y por mes.
+        El dato que casi nadie tiene presente:
+        <strong
+          >en los 18 departamentos donde OSE presta el saneamiento —todos menos Montevideo— el cargo
+          variable del saneamiento es el 100 % del cargo variable del agua</strong
+        >. Ahí cada metro cúbico se factura dos veces en la misma boleta, una como agua y otra como
+        saneamiento, y hay dos cargos fijos: el de agua (según el diámetro de la conexión) y el del
+        saneamiento de OSE, de {{ formatUYU(OSE_SANEAMIENTO_FIXED) }} por unidad y por mes.
+      </p>
+      <VAlert type="info" variant="tonal" density="comfortable" class="mb-5">
+        <strong>Si vivís en Montevideo, ese renglón no está en tu factura de OSE.</strong> La Ley
+        11.907 le encarga a OSE el alcantarillado «en todo el territorio de la República, excepto en
+        el Departamento de Montevideo» (art. 2, lit. B): acá el saneamiento lo cobra la Intendencia,
+        en una factura propia y con otra fórmula. Ni la regla del 100 % ni el cargo fijo de arriba
+        se te aplican.
+      </VAlert>
+      <VCard variant="flat" class="results-card pa-0 mb-5">
+        <div class="pa-4 pb-0 text-overline">Quién te cobra el saneamiento</div>
+        <VTable class="cu-mobile-cards" density="comfortable">
+          <thead>
+            <tr>
+              <th>Dónde</th>
+              <th>Quién lo cobra</th>
+              <th>Cómo llega</th>
+              <th>Cómo se forma el cargo variable</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="a in SANEAMIENTO_AUTHORITIES" :key="a.scope">
+              <td data-label="Dónde">
+                <div class="font-weight-medium">{{ a.scope }}</div>
+                <div class="text-caption text-medium-emphasis">{{ a.rule }}</div>
+              </td>
+              <td data-label="Quién lo cobra">{{ a.operator }}</td>
+              <td data-label="Cómo llega">{{ a.billing }}</td>
+              <td data-label="Cómo se forma el cargo variable">{{ a.variableCharge }}</td>
+            </tr>
+          </tbody>
+        </VTable>
+      </VCard>
+      <p class="text-body-2 text-medium-emphasis mb-5" style="max-width: 72ch">
+        Los cuadros que siguen son los de <strong>OSE</strong>: el agua es de OSE en todo el país,
+        Montevideo incluido. Lo que cambia de un lado al otro es el saneamiento.
       </p>
       <VRow>
         <VCol cols="12" md="6">
@@ -370,8 +409,10 @@
     <section>
       <h2 class="text-h6 font-weight-bold mb-3">Fuentes</h2>
       <p class="text-body-2 text-medium-emphasis mb-3">
-        Precios vigentes desde el {{ effectiveFrom }}. Cifras contrastadas el {{ verifiedAt }}. Esta
-        página es informativa: la factura que manda UTE u OSE es la que vale.
+        Precios vigentes desde el {{ effectiveFrom }}. Los precios y tramos de UTE y OSE se
+        contrastaron el {{ verifiedAt }}; el bloque de preguntas y el alcance del saneamiento, el
+        {{ faqVerifiedAt }}. Esta página es informativa: la factura que manda UTE u OSE es la que
+        vale.
       </p>
       <ul class="sources-list">
         <li v-for="s in TARIFF_SOURCES" :key="s.url">
@@ -386,11 +427,13 @@
 import { computed, reactive } from 'vue'
 import {
   BILLS_FAQ,
+  BILLS_FAQ_VERIFIED_AT,
   BILLS_VERIFIED_AT,
   OSE_BLOCKS,
   OSE_EXTRA_FIXED_OVER_15M3,
   OSE_FIXED_CHARGES,
   OSE_SANEAMIENTO_FIXED,
+  SANEAMIENTO_AUTHORITIES,
   TARIFFS_EFFECTIVE_FROM,
   TARIFF_SOURCES,
   UTE_BANDS,
@@ -441,17 +484,30 @@ const effectiveFrom = new Date(TARIFFS_EFFECTIVE_FROM).toLocaleDateString('es-UY
   year: 'numeric',
   timeZone: 'UTC',
 })
-const verifiedAt = new Date(BILLS_VERIFIED_AT).toLocaleDateString('es-UY', {
-  day: 'numeric',
-  month: 'long',
-  year: 'numeric',
-  timeZone: 'UTC',
-})
+const longDate = (iso: string): string =>
+  new Date(iso).toLocaleDateString('es-UY', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  })
+
+const verifiedAt = longDate(BILLS_VERIFIED_AT)
+/**
+ * Va aparte a propósito: el bloque de FAQ y el alcance del saneamiento se contrastaron un día
+ * después que los tramos de UTE y OSE. Mostrar una sola fecha diría que se verificó todo junto.
+ */
+const faqVerifiedAt = longDate(BILLS_FAQ_VERIFIED_AT)
 
 const canonicalUrl = 'https://cambio-uruguay.com/factura-de-ute-uruguay'
 const title = 'Factura de UTE alta: por qué sube y qué tarifa te conviene'
+/**
+ * Ojo con el cierre: esta frase es lo que se ve en Google y al compartir, y una parte grande de la
+ * audiencia está en Montevideo, donde el saneamiento no viene en la factura de OSE. Prometer ahí
+ * «el saneamiento te cobra el agua dos veces» es exactamente el error que se corrigió en el h2.
+ */
 const description =
-  'La factura de luz desarmada con los precios del Decreto 339/025: por qué el invierno la dispara (los escalones de la Tarifa Residencial Simple), qué renglón lleva IVA y cuál no, comparador de Simple vs Doble vs Triple Horario con tu consumo real, la bonificación del 40 % y por qué el saneamiento te cobra el agua dos veces.'
+  'La factura de luz desarmada con los precios del Decreto 339/025: por qué el invierno la dispara (los escalones de la Tarifa Residencial Simple), qué renglón lleva IVA y cuál no, comparador de Simple vs Doble vs Triple Horario con tu consumo real, la bonificación del 40 % y quién te cobra el saneamiento (OSE en el interior; en Montevideo, la Intendencia).'
 
 defineOgImageComponent('Cambio', {
   title: '¿Por qué te vino cara la factura de UTE?',
@@ -477,7 +533,7 @@ useHead(() => ({
     {
       name: 'keywords',
       content:
-        'factura ute alta, por que sube la factura de ute, tarifa residencial simple, doble horario ute, triple horario ute, escalones ute kwh, potencia contratada ute bajar, bonificacion 40 ute jubilados, ute estudiantes fondo de solidaridad, cargo fijo ute iva, ose saneamiento cargo variable, tarifa ose 2026',
+        'factura ute alta, por que sube la factura de ute, tarifa residencial simple, doble horario ute, triple horario ute, escalones ute kwh, potencia contratada ute bajar, bonificacion 40 ute jubilados, ute estudiantes fondo de solidaridad, cargo fijo ute iva, ose saneamiento cargo variable, quien cobra el saneamiento en montevideo, tarifa ose 2026',
     },
   ],
   script: [

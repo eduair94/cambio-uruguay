@@ -246,6 +246,113 @@
       </details>
     </VCard>
 
+    <!-- Custodia e insolvencia del intermediario -->
+    <VCard
+      id="custodia"
+      variant="flat"
+      class="inversiones-section custodia-section mb-6 pa-5 pa-sm-6"
+    >
+      <div class="d-flex align-start justify-space-between flex-wrap ga-3 mb-3">
+        <div>
+          <p class="text-overline text-primary font-weight-bold mb-1">Custodia e insolvencia</p>
+          <h2 class="text-h6 font-weight-bold mb-1 inversiones-group-title">
+            Si el corredor quiebra, ¿qué pasa con mis títulos?
+          </h2>
+          <p class="text-caption text-medium-emphasis mb-0">
+            Normas contrastadas al {{ custodyVerifiedAt }}
+          </p>
+        </div>
+        <VChip color="info" variant="tonal" prepend-icon="mdi-scale-balance">
+          Separación patrimonial, no seguro
+        </VChip>
+      </div>
+
+      <p class="text-body-2 mb-4">{{ CUSTODY_INSOLVENCY.thesis }}</p>
+
+      <VAlert
+        type="error"
+        variant="tonal"
+        density="comfortable"
+        class="mb-4"
+        icon="mdi-shield-off-outline"
+      >
+        <strong>No existe un COPAB para inversiones.</strong> El Fondo de Garantía de Depósitos
+        Bancarios cubre depósitos en bancos y cooperativas de intermediación financiera, hasta el
+        equivalente a USD 10.000 en moneda extranjera y UI 250.000 en moneda nacional por persona y
+        por institución. Ni valores, ni cuotapartes de fondos, ni el efectivo que tenés en un
+        corredor de bolsa. Y en Uruguay <strong>no consta</strong> que exista un fondo de
+        compensación al inversor equivalente al SIPC de Estados Unidos.
+      </VAlert>
+
+      <h3 class="text-subtitle-2 font-weight-bold mb-2">
+        <VIcon start size="small" color="success">mdi-lock-check-outline</VIcon>
+        Lo que sí te protege
+      </h3>
+      <VRow dense class="mb-4">
+        <VCol v-for="rule in CUSTODY_INSOLVENCY.protections" :key="rule.title" cols="12" md="6">
+          <div class="custodia-card h-100">
+            <strong class="text-body-2 d-block mb-1">{{ rule.title }}</strong>
+            <p class="text-caption mb-2 gletir-detail">{{ rule.detail }}</p>
+            <span class="text-caption text-medium-emphasis font-weight-bold">{{
+              rule.source
+            }}</span>
+          </div>
+        </VCol>
+      </VRow>
+
+      <h3 class="text-subtitle-2 font-weight-bold mb-2">
+        <VIcon start size="small" color="warning">mdi-ruler</VIcon>
+        Hasta dónde llega
+      </h3>
+      <VRow dense class="mb-4">
+        <VCol v-for="rule in CUSTODY_INSOLVENCY.limits" :key="rule.title" cols="12" md="6">
+          <div class="custodia-card h-100">
+            <strong class="text-body-2 d-block mb-1">{{ rule.title }}</strong>
+            <p class="text-caption mb-2 gletir-detail">{{ rule.detail }}</p>
+            <span class="text-caption text-medium-emphasis font-weight-bold">{{
+              rule.source
+            }}</span>
+          </div>
+        </VCol>
+      </VRow>
+
+      <h3 class="text-subtitle-2 font-weight-bold mb-2">
+        <VIcon start size="small" color="error">mdi-close-circle-outline</VIcon>
+        Lo que la gente busca y no existe
+      </h3>
+      <div class="mb-4">
+        <div
+          v-for="absence in CUSTODY_INSOLVENCY.absences"
+          :key="absence.missing"
+          class="custodia-absence"
+        >
+          <p class="text-body-2 font-weight-bold mb-1">{{ absence.missing }}</p>
+          <p class="text-body-2 mb-1 gletir-detail">{{ absence.instead }}</p>
+          <span class="text-caption text-medium-emphasis font-weight-bold">{{
+            absence.source
+          }}</span>
+        </div>
+      </div>
+
+      <h3 class="text-subtitle-2 font-weight-bold mb-2">
+        Cómo probarías que esos títulos son tuyos
+      </h3>
+      <ol class="gletir-list mb-4">
+        <li v-for="item in CUSTODY_INSOLVENCY.checklist" :key="item">{{ item }}</li>
+      </ol>
+
+      <details class="gletir-sources">
+        <summary class="text-body-2 font-weight-bold">
+          Ver fuentes primarias de esta sección
+        </summary>
+        <ul class="inversiones-sources mt-2">
+          <li v-for="source in CUSTODY_INSOLVENCY.sources" :key="source.url">
+            <a :href="source.url" target="_blank" rel="noopener noreferrer">{{ source.label }}</a>
+          </li>
+        </ul>
+      </details>
+    </VCard>
+
     <!-- AFAP editorial section -->
     <VCard variant="flat" class="inversiones-section mb-6 pa-5 pa-sm-6">
       <h2 class="text-h6 font-weight-bold mb-3 inversiones-group-title">
@@ -259,9 +366,12 @@
         AFAP Itaú (antes "Unión Capital AFAP") e Integración AFAP.
       </p>
       <p class="text-body-2 mb-3">
-        Bajo el régimen vigente desde la reforma de la Ley 20.130 (2023), quienes ingresan al
-        mercado laboral aportan de forma obligatoria a BPS y a una AFAP desde el primer peso, sin la
-        antigua opción de exoneración para ingresos bajos. Podés elegir libremente tu AFAP dentro de
+        Ojo con el corte por generación, que casi siempre se cuenta mal: el reparto obligatorio
+        entre BPS y AFAP desde el primer peso rige para quienes
+        <strong>ingresaron por primera vez al mercado de trabajo</strong> a partir de la vigencia
+        del Sistema Previsional Común de la Ley 20.130 (2023). A quien ya estaba afiliado antes le
+        siguen rigiendo los artículos 7 y 8 de la Ley 16.713, con sus topes por franja y la opción
+        de aportar a una AFAP por debajo del primer tope. Podés elegir libremente tu AFAP dentro de
         los primeros 3 meses de aportación; si no elegís, BPS te asigna una de oficio. Para
         cambiarte de AFAP (traspaso) se requiere un mínimo de 6 meses de permanencia en la
         administradora actual antes de poder transferirte de nuevo.
@@ -497,6 +607,8 @@
 
 <script setup lang="ts">
 import {
+  CUSTODY_INSOLVENCY,
+  CUSTODY_VERIFIED_AT,
   GLETIR_SAFETY_ANALYSIS,
   INVESTMENTS,
   investmentsByCategory,
@@ -507,6 +619,14 @@ import {
 
 const localePath = useLocalePath()
 const groups = computed(() => investmentsByCategory())
+
+// CUSTODY_VERIFIED_AT es ISO para poder ordenarlo/testearlo; acá se muestra en es-UY.
+const custodyVerifiedAt = new Date(CUSTODY_VERIFIED_AT).toLocaleDateString('es-UY', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+  timeZone: 'UTC',
+})
 
 function formatUsd(amount: number): string {
   return `US$ ${new Intl.NumberFormat('es-UY').format(amount)}`
@@ -577,6 +697,18 @@ const officialSources = [
     label: 'IMPO — Ley 20.345 (activos virtuales)',
     url: 'https://www.impo.com.uy/bases/leyes-originales/20345-2024',
   },
+  {
+    label: 'IMPO — Ley 18.627 (Mercado de Valores)',
+    url: 'https://www.impo.com.uy/bases/leyes/18627-2009',
+  },
+  {
+    label: 'BCU — Recopilación de Normas del Mercado de Valores',
+    url: 'https://www.bcu.gub.uy/Acerca-de-BCU/Normativa/Documents/Reordenamiento%20de%20la%20Recopilaci%C3%B3n/Mercado%20de%20Valores/RNMV.pdf',
+  },
+  {
+    label: 'COPAB — Seguro de depósitos: cobertura y exclusiones',
+    url: 'https://www.copab.org.uy/innovaportal/v/308/1/web/cobertura.html',
+  },
 ]
 
 // Educational guides that teach the fundamentals before choosing an instrument.
@@ -596,7 +728,7 @@ const canonicalUrl = 'https://cambio-uruguay.com/inversiones-uruguay'
 const title =
   'Dónde invertir en Uruguay: guía completa de bancos, brokers, renta fija y cripto (2026)'
 const description =
-  'Guía completa para invertir en Uruguay: análisis de seguridad, custodia y costos de Gletir, bancos, Prex, brokers internacionales, renta fija local, fondos, cripto, AFAP e inmobiliario.'
+  'Guía completa para invertir en Uruguay: qué pasa con tus títulos si el corredor quiebra (y por qué no hay un COPAB para inversiones), análisis de Gletir, bancos, Prex, brokers internacionales, renta fija local, fondos, cripto, AFAP e inmobiliario.'
 
 defineOgImageComponent('Cambio', {
   title: 'Invertir en Uruguay',
@@ -622,7 +754,7 @@ useHead(() => ({
     {
       name: 'keywords',
       content:
-        'invertir en uruguay, inversiones uruguay, gletir uruguay, gletir seguro, gletir global, broker uruguay, etoro uruguay, prex inversiones, itau inversiones, plazo fijo uruguay, letras de regulacion monetaria, afap uruguay, cripto uruguay',
+        'invertir en uruguay, inversiones uruguay, gletir uruguay, gletir seguro, gletir global, broker uruguay, etoro uruguay, prex inversiones, itau inversiones, plazo fijo uruguay, letras de regulacion monetaria, afap uruguay, cripto uruguay, si quiebra el corredor de bolsa que pasa con mis titulos, copab inversiones, ley 18627 custodia, fondo de compensacion al inversor uruguay',
     },
   ],
   script: [
@@ -683,6 +815,14 @@ useHead(() => ({
                 acceptedAnswer: {
                   '@type': 'Answer',
                   text: 'Gletir es un corredor de bolsa activo, supervisado por el BCU y miembro de la Bolsa de Valores de Montevideo, lo que ofrece un marco local más sólido que una plataforma no habilitada. No es una inversión garantizada: Gletir Global opera mediante GTN, custodios extranjeros y cuentas ómnibus, y el riesgo del capital depende del instrumento. Además, el BCU impuso en 2025 una multa de UI 150.000 por incumplimientos materiales detectados en 2024 sobre información al inversor, perfiles, registros, custodias y controles. La resolución también recoge medidas correctivas de Gletir. La evaluación objetiva es seguridad media del intermediario y riesgo variable o alto según el activo.',
+                },
+              },
+              {
+                '@type': 'Question',
+                name: 'Si el corredor de bolsa quiebra, ¿qué pasa con mis títulos? ¿Hay algo tipo COPAB para inversiones?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'No hay un COPAB para inversiones. El Fondo de Garantía de Depósitos Bancarios que administra la COPAB tiene por objeto garantizar los depósitos en bancos y cooperativas de intermediación financiera, hasta el equivalente a USD 10.000 para el total de los depósitos en moneda extranjera y UI 250.000 en moneda nacional, por persona y por institución: no alcanza a los valores, ni a las cuotapartes de fondos de inversión, ni al efectivo que tenés en un corredor de bolsa. En Uruguay tampoco consta que exista un fondo de compensación al inversor equivalente al SIPC de Estados Unidos. Lo que sí hay es separación patrimonial: la Ley 18.627 establece en su artículo 109 que el dinero y los valores que un intermediario de valores adquiera o mantenga en custodia por cuenta de sus clientes no pueden ser embargados por deudas del intermediario y, en caso de liquidación por insolvencia, no integran la masa activa de la liquidación. Es una regla de propiedad, no un seguro: te saca de la fila de acreedores, pero no repone lo que el intermediario no compró o no tiene. Por eso importa el registro: si custodia valores a nombre propio debe anotarlos separadamente en su contabilidad y en un registro especial con la individualización de cada cliente (art. 103), debe llevar registro de los titulares reales de los valores escriturales (art. 28) y responde civilmente por omisiones, inexactitudes y retrasos de registro (art. 30). El liquidador es el Banco Central del Uruguay, en sede administrativa (art. 108). Además, el intermediario debe mantener una garantía a favor del BCU no inferior a UI 2.000.000, que es un piso por entidad y no una cobertura por inversor.',
                 },
               },
               {
@@ -789,18 +929,23 @@ useHead(() => ({
   text-decoration: underline;
 }
 
-.gletir-assessment {
+.gletir-assessment,
+.custodia-section {
   scroll-margin-top: 88px;
 }
 
+/* La sección de custodia reusa la paleta del bloque de Gletir a propósito: son el mismo tema
+   (qué te protege del intermediario) y no queremos un segundo sistema de tarjetas. */
 .gletir-score-card,
-.gletir-costs {
+.gletir-costs,
+.custodia-card {
   background: rgba(15, 118, 110, 0.06);
   border: 1px solid rgba(15, 118, 110, 0.2);
   border-radius: 10px;
 }
 
-.gletir-score-card {
+.gletir-score-card,
+.custodia-card {
   padding: 14px;
 }
 
@@ -831,7 +976,8 @@ useHead(() => ({
 }
 
 .v-theme--light .gletir-score-card,
-.v-theme--light .gletir-costs {
+.v-theme--light .gletir-costs,
+.v-theme--light .custodia-card {
   background: rgba(15, 118, 110, 0.04);
 }
 
@@ -841,16 +987,25 @@ useHead(() => ({
   border-radius: 12px;
 }
 
-/* Mobile card layout for the investment comparison (replaces the table < md). */
-.investment-card {
+/* Mobile card layout for the investment comparison (replaces the table < md).
+   `.custodia-absence` comparte el bloque: es la misma tarjeta neutra, y así los "no existe"
+   se leen distinto de las tarjetas verdes de protecciones sin inventar otra paleta. */
+.investment-card,
+.custodia-absence {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   padding: 14px 16px;
 }
 
-.investment-card + .investment-card {
+.investment-card + .investment-card,
+.custodia-absence + .custodia-absence {
   margin-top: 12px;
+}
+
+.v-theme--light .custodia-absence {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.08);
 }
 
 .investment-risk {

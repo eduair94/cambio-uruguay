@@ -69,15 +69,18 @@
     <section class="mb-12">
       <h2 class="text-h5 font-weight-bold mb-2">Los grupos de industria y comercio</h2>
       <p class="text-medium-emphasis mb-4" style="max-width: 72ch">
-        Los que publica el MTSS bajo «Industria, Comercio y actividades en general». No son todos
-        los Consejos de Salarios del país: hay otros ámbitos con su propia negociación.
+        Los 20 que publica el MTSS bajo «Industria, Comercio y actividades en general». En el sitio
+        del MTSS el listado va paginado de a 10, así que si buscás ahí y no encontrás tu rama,
+        fijate en la segunda página antes de descartar: hoteles, transporte, salud, enseñanza y
+        servicios profesionales están del 11 en adelante. No son todos los Consejos de Salarios del
+        país: hay otros ámbitos —rural, doméstico, sector público— con su propia negociación.
       </p>
       <VCard variant="flat" class="results-card pa-0">
         <VTable class="cu-mobile-cards" density="comfortable">
           <tbody>
-            <tr v-for="(g, i) in WAGE_INDUSTRY_GROUPS" :key="g">
-              <td data-label="N.º" class="group-n">{{ i + 1 }}</td>
-              <td data-label="Grupo">{{ g }}</td>
+            <tr v-for="g in WAGE_INDUSTRY_GROUPS" :key="g.n">
+              <td data-label="N.º" class="group-n">{{ g.n }}</td>
+              <td data-label="Grupo">{{ g.name }}</td>
             </tr>
           </tbody>
         </VTable>

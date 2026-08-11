@@ -6,6 +6,35 @@
 
 export const PERSONAL_FAQ_LAST_REVIEWED = '2026-07-27'
 
+/**
+ * Fecha en que se releyeron contra la fuente primaria los artículos, plazos y umbrales del bloque
+ * agregado en agosto de 2026 (Ley 19.210 arts. 10, 11 y 35; Decreto 263/015 arts. 11 y 14;
+ * Ley 17.738 arts. 43, 50, 55, 64 y 65; Ley 16.524 arts. 1 y 3; Ley 16.906 art. 5; Código Civil
+ * cesión de créditos; Ley 17.250 art. 31 lit. I).
+ *
+ * Va aparte de PERSONAL_FAQ_LAST_REVIEWED a propósito: mover esa fecha diría que se re-auditaron
+ * las 94 respuestas anteriores, y no se hizo. Varias de estas normas ya cambiaron bajo nuestros
+ * pies —el art. 35 de la Ley 19.210 lo reescribió la Ley 20.469 en 2026, la Ley 20.410 derogó el
+ * art. 63 de la Ley 17.738 en 2025 y reescribió el 55, y los arts. 10 y 11 de la Ley 19.210 los
+ * sustituyó la Ley 19.889 en 2020—, así que la fecha de verificación es parte del dato.
+ *
+ * REGLA, y ya nos costó un error grave: impo.com.uy sirve /bases/leyes/<ley>/<art> (VIGENTE) y
+ * /bases/leyes-originales/<ley>/<art> (ORIGINAL, puede estar derogado). Citar siempre el primero.
+ */
+export const PERSONAL_FAQ_NORMS_VERIFIED_AT = '2026-08-10'
+
+/**
+ * Fecha a mostrarle al lector y a declarar como `dateModified` del FAQPage: la más reciente de las
+ * dos. PERSONAL_FAQ_LAST_REVIEWED sola fecharía la página ANTES de respuestas que se escribieron
+ * después, y le declararía a los buscadores una última modificación falsa por defecto.
+ *
+ * Ambas son ISO `YYYY-MM-DD`, así que comparar como string ordena bien.
+ */
+export const PERSONAL_FAQ_CONTENT_UPDATED_AT =
+  PERSONAL_FAQ_NORMS_VERIFIED_AT > PERSONAL_FAQ_LAST_REVIEWED
+    ? PERSONAL_FAQ_NORMS_VERIFIED_AT
+    : PERSONAL_FAQ_LAST_REVIEWED
+
 export type FaqCategory =
   | 'fundamentos'
   | 'dolar-cambio'
@@ -426,7 +455,7 @@ export const PERSONAL_FAQ_SOURCES: Readonly<Record<string, PersonalFaqSource>> =
     kind: 'fuente-oficial',
   },
   'ley-alquiler-sin-garantia': {
-    label: 'Ley 19.889, régimen de arrendamiento sin garantía',
+    label: 'Ley 19.889, art. 421: ámbito de aplicación del arrendamiento de inmuebles sin garantía',
     authority: 'IMPO',
     url: 'https://www.impo.com.uy/bases/leyes/19889-2020/421',
     kind: 'norma',
@@ -478,6 +507,156 @@ export const PERSONAL_FAQ_SOURCES: Readonly<Record<string, PersonalFaqSource>> =
     authority: 'Banco Central del Uruguay',
     url: 'https://www.bcu.gub.uy/Comunicaciones/Paginas/Detalle-Noticia.aspx?noticia=72&title=Comunicado-del-BCU-sobre-activos-virtuales',
     kind: 'fuente-oficial',
+  },
+  'ley-inclusion-nomina': {
+    label: 'Ley 19.210, art. 10: medios que la ley habilita para pagar remuneraciones',
+    authority: 'IMPO',
+    url: 'https://www.impo.com.uy/bases/leyes/19210-2014/10',
+    kind: 'norma',
+  },
+  'ley-inclusion-eleccion': {
+    label: 'Ley 19.210, art. 11: libre elección de la institución por el trabajador',
+    authority: 'IMPO',
+    url: 'https://www.impo.com.uy/bases/leyes/19210-2014/11',
+    kind: 'norma',
+  },
+  'ley-convenios-oit-95': {
+    label:
+      'Ley 12.030, art. 1: Uruguay aprueba el Convenio 95 de la OIT sobre protección del salario',
+    authority: 'IMPO',
+    url: 'https://www.impo.com.uy/bases/leyes/12030-1953/1',
+    kind: 'norma',
+  },
+  'oit-convenio-95': {
+    label:
+      'Convenio 95 sobre la protección del salario: art. 3 (moneda de curso legal) y art. 4 (pago parcial en especie)',
+    authority: 'Organización Internacional del Trabajo (NORMLEX)',
+    url: 'https://normlex.ilo.org/dyn/normlex/es/f?p=NORMLEXPUB:12100:0::NO::P12100_ILO_CODE:C095',
+    kind: 'norma',
+  },
+  'oit-convenio-95-ratificacion': {
+    label: 'Ratificaciones del Convenio 95: Uruguay, 18 de marzo de 1954, en vigor',
+    authority: 'Organización Internacional del Trabajo (NORMLEX)',
+    url: 'https://normlex.ilo.org/dyn/normlex/es/f?p=NORMLEXPUB:11300:0::NO:11300:P11300_INSTRUMENT_ID:312240',
+    kind: 'fuente-oficial',
+  },
+  'decreto-263-015': {
+    label: 'Decreto 263/015, art. 14: notificación al empleador y copia firmada',
+    authority: 'IMPO',
+    url: 'https://www.impo.com.uy/bases/decretos/263-2015/14',
+    kind: 'norma',
+  },
+  'decreto-263-015-cambio': {
+    label:
+      'Decreto 263/015, art. 11: cambio de institución al año de abrir la cuenta, salvo que el cambio se asocie al inicio de una nueva relación laboral',
+    authority: 'IMPO',
+    url: 'https://www.impo.com.uy/bases/decretos/263-2015/11',
+    kind: 'norma',
+  },
+  'mtss-denuncias-igtss': {
+    label: 'Denuncias y asesoramiento ante la Inspección General del Trabajo',
+    authority: 'Ministerio de Trabajo y Seguridad Social',
+    url: 'https://www.gub.uy/ministerio-trabajo-seguridad-social/politicas-y-gestion/denuncias-laborales',
+    kind: 'fuente-oficial',
+  },
+  'ley-cjppu-ejercicio': {
+    label: 'Ley 17.738, art. 43: quiénes quedan sujetos al régimen de la Caja',
+    authority: 'IMPO',
+    url: 'https://www.impo.com.uy/bases/leyes/17738-2004/43',
+    kind: 'norma',
+  },
+  'ley-cjppu-afiliacion': {
+    label: 'Ley 17.738, art. 50: afiliación obligatoria y permanente',
+    authority: 'IMPO',
+    url: 'https://www.impo.com.uy/bases/leyes/17738-2004/50',
+    kind: 'norma',
+  },
+  'ley-cjppu-no-ejercicio': {
+    label: 'Ley 17.738, art. 64: declaración jurada de etapas de no ejercicio libre',
+    authority: 'IMPO',
+    url: 'https://www.impo.com.uy/bases/leyes/17738-2004/64',
+    kind: 'norma',
+  },
+  'ley-cjppu-no-ejercicio-plazo': {
+    label: 'Ley 17.738, art. 65: plazo de 90 días para formularla y multa por presentarla tarde',
+    authority: 'IMPO',
+    url: 'https://www.impo.com.uy/bases/leyes/17738-2004/65',
+    kind: 'norma',
+  },
+  'ley-cjppu-atraso': {
+    label:
+      'Ley 17.738, art. 55 en la redacción de la Ley 20.410: el atraso mayor a un año congela la categoría, y sólo a partir de una categoría mínima',
+    authority: 'IMPO',
+    url: 'https://www.impo.com.uy/bases/leyes/17738-2004/55',
+    kind: 'norma',
+  },
+  'ley-20410-informacion': {
+    label: 'Ley 20.410, art. 13: intercambio de información sobre quien declara no ejercicio',
+    authority: 'IMPO',
+    url: 'https://www.impo.com.uy/bases/leyes/20410-2025/13',
+    kind: 'norma',
+  },
+  'cjppu-declaraciones': {
+    label: 'Declaraciones de ejercicio y no ejercicio: plazos y efectos',
+    authority: 'Caja de Jubilaciones y Pensiones de Profesionales Universitarios',
+    url: 'https://www.cjppu.org.uy/activos.php',
+    kind: 'fuente-oficial',
+  },
+  'ley-fondo-solidaridad': {
+    label: 'Ley 16.524, art. 1: creación del Fondo de Solidaridad',
+    authority: 'IMPO',
+    url: 'https://www.impo.com.uy/bases/leyes/16524-1994/1',
+    kind: 'norma',
+  },
+  'ley-fondo-solidaridad-contribuyentes': {
+    label:
+      'Ley 16.524, art. 3: quiénes contribuyen, umbral de 8 BPC, quinto año del egreso y causales de cese',
+    authority: 'IMPO',
+    url: 'https://www.impo.com.uy/bases/leyes/16524-1994/3',
+    kind: 'norma',
+  },
+  'ley-inversiones-transferencia': {
+    label:
+      'Ley 16.906 (Ley de Inversiones), art. 5: libre transferencia al exterior de capitales, utilidades y otras sumas vinculadas con la inversión',
+    authority: 'IMPO',
+    url: 'https://www.impo.com.uy/bases/leyes/16906-1998/5',
+    kind: 'norma',
+  },
+  'brou-giros-exterior': {
+    label: 'Giros y transferencias al exterior: comisión propia y gastos de otros bancos',
+    authority: 'Banco de la República Oriental del Uruguay',
+    url: 'https://www.brou.com.uy/personas/servicios/giros-transferencias/exterior',
+    kind: 'fuente-oficial',
+  },
+  'ley-inclusion-efectivo': {
+    label: 'Ley 19.210, art. 35 en la redacción de la Ley 20.469: tope al pago en efectivo',
+    authority: 'IMPO',
+    url: 'https://www.impo.com.uy/bases/leyes/19210-2014/35',
+    kind: 'norma',
+  },
+  'cc-cesion-notificacion': {
+    label: 'Código Civil, art. 1757: el cesionario no es dueño del crédito hasta notificar',
+    authority: 'IMPO',
+    url: 'https://www.impo.com.uy/bases/codigo-civil/16603-1994/1757',
+    kind: 'norma',
+  },
+  'cc-cesion-eficacia': {
+    label: 'Código Civil, art. 1758: la cesión es ineficaz frente al deudor sin notificación',
+    authority: 'IMPO',
+    url: 'https://www.impo.com.uy/bases/codigo-civil/16603-1994/1758',
+    kind: 'norma',
+  },
+  'cc-cesion-excepciones': {
+    label: 'Código Civil, art. 1759: tres días para hacer conocer la negativa de aceptación',
+    authority: 'IMPO',
+    url: 'https://www.impo.com.uy/bases/codigo-civil/16603-1994/1759',
+    kind: 'norma',
+  },
+  'ley-consumo-31': {
+    label: 'Ley 17.250, art. 31 lit. I: rescisión tras la renovación automática y plazo de baja',
+    authority: 'IMPO',
+    url: 'https://www.impo.com.uy/bases/leyes/17250-2000/31',
+    kind: 'norma',
   },
 })
 
@@ -880,6 +1059,25 @@ export const PERSONAL_FAQS: readonly PersonalFaq[] = Object.freeze([
     related: [{ label: 'Preparar una negociación', to: '/saldar-deudas-uruguay' }],
   }),
   faq({
+    id: 'compraron-mi-deuda-cesion',
+    question: 'Un estudio jurídico dice que le compró mi deuda: ¿le pago a ellos?',
+    shortAnswer:
+      'No necesitan tu consentimiento para comprarla, pero hasta que te notifiquen la cesión no te es oponible; y si vas a oponer una excepción ajena al crédito, tenés tres días.',
+    answer:
+      'El artículo 1757 del Código Civil dice que “el cesionario no se considera dueño del crédito con respecto a terceras personas, mientras no denuncie o notifique la cesión al deudor”, y el 1758 que “la cesión de un crédito es ineficaz en cuanto al deudor, mientras no se le notifique y la consienta o renueve su obligación en favor del cesionario”: recién la notificación o tu aceptación te ligan al nuevo acreedor y te impiden pagarle lícitamente a otro. El artículo 1759 agrega un plazo corto que casi nadie mira: si no querés reconocer al cesionario y vas a deducir una excepción que no resulte de la misma naturaleza del crédito, tenés que hacer conocer tu negativa dentro de los tres días de notificada la cesión, y pasados esos tres días se supone que consentiste. Antes de pagar, pedí la constancia de la cesión, quién es el cedente y el saldo desglosado.',
+    category: 'deuda-clearing',
+    sourceIds: [
+      'cc-cesion-notificacion',
+      'cc-cesion-eficacia',
+      'cc-cesion-excepciones',
+      'mef-consumidor-financiero',
+    ],
+    basis: 'norma',
+    tags: ['cesión de crédito', 'compraron mi deuda', 'estudio jurídico', 'notificación', '1757'],
+    howCommon: 'muy_comun',
+    related: [{ label: 'Cómo negociar y saldar deudas', to: '/saldar-deudas-uruguay' }],
+  }),
+  faq({
     id: 'prestamo-usurero',
     question: '¿Cómo sé si un préstamo tiene intereses usurarios?',
     shortAnswer:
@@ -1066,6 +1264,25 @@ export const PERSONAL_FAQS: readonly PersonalFaq[] = Object.freeze([
     basis: 'norma',
     tags: ['mínimo', 'débito', 'comercio', 'denuncia'],
   }),
+  faq({
+    id: 'dar-de-baja-tarjeta-o-cuenta',
+    question: '¿Puedo dar de baja la tarjeta o cerrar la cuenta cuando quiera?',
+    shortAnswer:
+      'La desvinculación la puede pedir cualquiera de las dos partes; el requisito que marca Defensa del Consumidor es no quedar con deuda en la institución.',
+    answer:
+      'La Unidad Defensa del Consumidor responde que contractualmente ambas partes de la relación de consumo pueden solicitar la desvinculación, y que el titular no debe mantener deuda con la institución financiera. Al cancelar, pedí la devolución de la documentación original firmada y quedate con una constancia fechada: eso es lo que después prueba desde cuándo no correspondía cobrarte. Si lo que se te renovó sola fue una suscripción o afiliación, el artículo 31 literal I de la Ley 17.250 te deja rescindir o resolver dentro de los sesenta días corridos contados desde la renovación automática, y le da al proveedor un máximo de quince días corridos para procesar la baja. No publicamos un plazo general para cerrar una cuenta bancaria porque no encontramos norma del BCU que lo fije: esos quince días son los de la baja de un servicio bajo la ley de consumo, no los del cierre de una cuenta.',
+    category: 'tarjetas',
+    sourceIds: ['mef-consumidor-financiero', 'ley-consumo-31', 'bcu-deudor-derechos'],
+    basis: 'procedimiento',
+    tags: ['baja', 'cerrar cuenta', 'anular tarjeta', 'renovación automática', 'constancia'],
+    howCommon: 'muy_comun',
+    related: [
+      {
+        label: 'Armar el reclamo con la norma exacta',
+        to: '/derechos-consumidor-compras-online',
+      },
+    ],
+  }),
 
   // ── Bancos y fintech ────────────────────────────────────────────────────────
   faq({
@@ -1160,6 +1377,20 @@ export const PERSONAL_FAQS: readonly PersonalFaq[] = Object.freeze([
     basis: 'procedimiento',
     tags: ['cobrar exterior', 'SWIFT', 'freelance', 'banco'],
     howCommon: 'muy_comun',
+  }),
+  faq({
+    id: 'mandar-plata-al-exterior',
+    question: 'Mandar plata al exterior: ¿hace falta autorización, hay tope, por qué llega menos?',
+    shortAnswer:
+      'No encontramos norma que exija autorización previa ni fije un tope general; lo que sí está escrito es que la institución debe informarte el costo antes de ordenar la transferencia.',
+    answer:
+      'Buscamos la norma que exigiera un permiso o pusiera un tope a una remesa personal y no la encontramos, y preferimos publicar esa ausencia antes que afirmar que no existe. La garantía expresa que sí está escrita es más acotada de lo que suele citarse: el artículo 5 de la Ley 16.906 —la Ley de Inversiones, en su capítulo “Principios y Garantías”— dice que el Estado “garantiza la libre transferencia al exterior de capitales y de utilidades, así como de otras sumas vinculadas con la inversión”, en moneda de libre convertibilidad. Habla de sumas vinculadas con una inversión, no de mandarle plata a un familiar, así que no lo usamos como fundamento de tu giro personal. Del lado de tu institución la obligación es concreta: el BCU establece que en forma previa a ordenar la transferencia debe informarte su costo. El “llegó menos” rara vez es esa comisión sola: el propio BROU aclara en su web que la comisión que informa no incluye eventuales gastos y tarifas que cobren los bancos receptores, intermediarios o corresponsales. Así que pedí el costo por escrito y preguntá expresamente si cubre toda la cadena. El precio de cada banco no lo publicamos: cambia sin aviso y una tabla desactualizada haría exactamente el daño que esta respuesta quiere evitar.',
+    category: 'bancos-fintech',
+    sourceIds: ['ley-inversiones-transferencia', 'bcu-medios-pago', 'brou-giros-exterior'],
+    basis: 'norma',
+    tags: ['transferencia al exterior', 'giro', 'corresponsal', 'comisión', 'SWIFT'],
+    howCommon: 'muy_comun',
+    related: [{ label: 'Comparar bancos y costos', to: '/mejores-bancos-uruguay' }],
   }),
 
   // ── Derechos y reclamos ────────────────────────────────────────────────────
@@ -1455,6 +1686,26 @@ export const PERSONAL_FAQS: readonly PersonalFaq[] = Object.freeze([
     tags: ['despido', 'renuncia', 'liquidación', 'licencia no gozada'],
     howCommon: 'comun',
   }),
+  faq({
+    id: 'sueldo-banco-que-elige-la-empresa',
+    question: '¿Puede la empresa obligarme a cobrar el sueldo en el banco que eligió ella?',
+    shortAnswer:
+      'No: el artículo 11 de la Ley 19.210 te da el derecho a elegir libremente la institución, y la elección que hizo la empresa por vos rige sólo hasta que ejerzas ese derecho.',
+    answer:
+      'El texto es explícito: “el trabajador tendrá derecho a elegir libremente la institución de intermediación financiera o la institución emisora de dinero electrónico en la cual cobrar su remuneración y toda otra partida en dinero que tenga derecho a percibir”. Si no indicás ninguna, el empleador queda facultado a elegir por vos, pero esa elección es aplicable “hasta tanto el trabajador haga uso de su facultad de elegir la institución”: para pisarla no tenés que esperar ningún plazo. Recién cuando la elección la hacés vos, el artículo le da vigencia “por el término de un año”. El plazo de permanencia lo pone el artículo 11 del Decreto 263/015 y lo cuenta desde otro hecho: podés cambiar de institución “una vez transcurrido un año de concretada la apertura de la cuenta o instrumento de dinero electrónico”. Ojo con la excepción, porque suele ser justo este caso: ese mínimo “no será exigible (…) cuando el cambio de institución esté asociado al inicio de una nueva relación laboral”, así que si entrás a una empresa que te impone su banco, podés cambiar sin esperar nada. El trámite lo pone de tu lado el mismo decreto: notificás al empleador la institución elegida con la documentación que ella te entregó, y el empleador debe darte una copia firmada como constancia de recepción. Guardala. Si igual te condicionan el pago, la consulta laboral del MTSS es gratuita y la Inspección General del Trabajo recibe denuncias por irregularidades en salario y recibos.',
+    category: 'sueldo-trabajo',
+    sourceIds: [
+      'ley-inclusion-eleccion',
+      'decreto-263-015-cambio',
+      'decreto-263-015',
+      'mtss-denuncias-igtss',
+      'mtss-consulta-laboral',
+    ],
+    basis: 'norma',
+    tags: ['cuenta sueldo', 'banco impuesto', 'Ley 19.210', 'libre elección', 'IGTSS'],
+    howCommon: 'muy_comun',
+    related: [{ label: 'Comparar bancos', to: '/mejores-bancos-uruguay' }],
+  }),
 
   // ── Precios e inflación ─────────────────────────────────────────────────────
   faq({
@@ -1705,6 +1956,36 @@ export const PERSONAL_FAQS: readonly PersonalFaq[] = Object.freeze([
     basis: 'procedimiento',
     tags: ['historia laboral', 'años faltantes', 'aportes', 'BPS'],
   }),
+  faq({
+    id: 'caja-profesionales-dejar-de-aportar',
+    question: '¿Qué pasa si dejo de aportar a la Caja de Profesionales? ¿Se puede dejar?',
+    shortAnswer:
+      'No existe la baja: existe la declaración jurada de no ejercicio, con 90 días de plazo y multa si la presentás tarde.',
+    answer:
+      'Lo que te afilia no es el título sino ejercer. El artículo 43 de la Ley 17.738 sujeta “personal y obligatoriamente” a los profesionales universitarios que ejerzan en el país en forma libre, en nombre propio y para terceros; el artículo 50 agrega que la afiliación es obligatoria y permanente, te mantengas o no en actividad. Por eso no hay darse de baja: hay la declaración jurada de no ejercicio del artículo 64, que el artículo 65 manda formular dentro de los 90 días del egreso, la habilitación profesional o el cese de la actividad, con multa reglamentada por el Directorio si llega fuera de plazo. Dejar de pagar sin declarar es otra cosa distinta: la deuda queda y el artículo 55, en la redacción de la Ley 20.410, congela el ascenso, pero sólo por encima de un piso. Si estás en la escala de diez categorías y ya alcanzaste “la segunda categoría como mínimo”, un atraso mayor a un año al vencimiento del trienio te hace permanecer un nuevo trienio en la misma categoría; en la escala de quince el umbral es “la cuarta categoría como mínimo” y lo que se repite es el bienio. Por debajo de esas categorías el artículo no te alcanza. Desde la Ley 20.410 la Caja además puede acordar con la DGI y otros organismos para preguntar si quien declara no ejercicio tuvo actividad como profesional independiente. No publicamos la escala de aportes. Y el Fondo de Solidaridad es otro tributo y otro organismo: lo crea el artículo 1 de la Ley 16.524 y su artículo 3 pone la contribución sobre los egresados de la UdelaR, del nivel terciario de UTU y de UTEC, pero no sobre todos: sólo los que tengan ingresos mensuales superiores a 8 BPC y recién “a partir de cumplido el quinto año del egreso”. La contribución cesa cuando se verifica alguna de cuatro condiciones, y conviene leerlas literales: jubilarte por la Caja de Profesionales, la Notarial, la Bancaria o el BPS, pero “siempre que” además ceses “en toda actividad profesional remunerada” que tenga directa relación con tu formación; “que transcurran veinticinco años desde el comienzo de la aportación” —desde el comienzo, no veinticinco años pagos—; una enfermedad física o psíquica irreversible que te inhabilite para cualquier actividad remunerada; o cumplir setenta años. El hecho que dispara la contribución es el egreso, no el ejercicio de la profesión, así que declarar no ejercicio en la Caja no te da de baja allí.',
+    category: 'jubilacion-afap',
+    sourceIds: [
+      'ley-cjppu-ejercicio',
+      'ley-cjppu-afiliacion',
+      'ley-cjppu-no-ejercicio',
+      'ley-cjppu-no-ejercicio-plazo',
+      'ley-cjppu-atraso',
+      'ley-20410-informacion',
+      'cjppu-declaraciones',
+      'ley-fondo-solidaridad',
+      'ley-fondo-solidaridad-contribuyentes',
+    ],
+    basis: 'norma',
+    tags: [
+      'Caja de Profesionales',
+      'CJPPU',
+      'no ejercicio',
+      'dejar de aportar',
+      'Fondo de Solidaridad',
+    ],
+    howCommon: 'muy_comun',
+    related: [{ label: 'Elegir régimen de empresa', to: '/que-empresa-abrir-uruguay' }],
+  }),
 
   // ── Criptoactivos ───────────────────────────────────────────────────────────
   faq({
@@ -1784,6 +2065,49 @@ export const PERSONAL_FAQS: readonly PersonalFaq[] = Object.freeze([
     basis: 'procedimiento',
     tags: ['wallet', 'custodia', 'seed phrase', 'claves', 'exchange'],
     howCommon: 'muy_comun',
+  }),
+  faq({
+    id: 'cobrar-sueldo-en-cripto',
+    question: '¿Puedo cobrar el sueldo en cripto?',
+    shortAnswer:
+      'No es un vacío legal: el Convenio 95 de la OIT —aprobado por el artículo 1 de la Ley 12.030 y ratificado por Uruguay en 1954— manda que los salarios que deban pagarse en efectivo se paguen “exclusivamente en moneda de curso legal”, y un criptoactivo no lo es.',
+    answer:
+      'El artículo 10 de la Ley 19.210, en la redacción que le dio la Ley 19.889, dice que “sin perjuicio de la modalidad de pago en efectivo”, el pago de las remuneraciones y de toda otra partida en dinero “podrá efectuarse a través de acreditación en cuenta en instituciones de intermediación financiera o en instrumento de dinero electrónico”. Ese artículo está redactado en términos habilitantes: enumera medios y no declara que sean los únicos admitidos ni prohíbe expresamente ningún otro. Pero no es la única norma en juego. El Convenio 95 de la Organización Internacional del Trabajo, sobre protección del salario, lo aprobó el artículo 1 de la Ley 12.030 junto con otros convenios, Uruguay lo ratificó el 18 de marzo de 1954 y figura en vigor. Su artículo 3 dice que “los salarios que deban pagarse en efectivo se pagarán exclusivamente en moneda de curso legal, y deberá prohibirse el pago con pagarés, vales, cupones o en cualquier otra forma que se considere representativa de la moneda de curso legal”, y sólo habilita a la autoridad competente a permitir o prescribir el cheque o el giro postal. Su artículo 4 abre la única otra puerta, y la abre angosta: pago parcial “con prestaciones en especie”, y nada más que en las industrias u ocupaciones donde esa forma de pago sea de uso corriente o conveniente por la naturaleza de la actividad, con valor “justo y razonable” y apropiadas al uso personal del trabajador y su familia. O sea que acá no hay un vacío normativo: el peso uruguayo es el medio de pago de curso legal y un activo virtual no lo es. Lo que queda abierto es la calificación —si un criptoactivo es una de esas otras formas “representativas de la moneda de curso legal” que el Convenio manda prohibir, o si podría colarse como prestación en especie del artículo 4—, y esa calificación jurídica no la hacemos nosotros. (El sueldo pactado en dólares es otra pregunta y no la contestamos acá.) Lo que sí está escrito es que la modalidad no la elige el empleador solo: el artículo 11 dice que “será acordada entre el trabajador y el empleador al momento del inicio de la relación laboral”, y el propio artículo 10 aclara que el sistema de pago no implica aceptación de la liquidación por parte del dependiente ni “enerva la obligación del empleador de extender los recibos de haberes”. Si aun así aceptás cobrar en cripto, además del trabajo estás asumiendo el riesgo de precio entre la liquidación y el día que lo convertís. Pedí que la remuneración quede fijada y liquidada en dinero, y consultá gratis en el MTSS antes de firmar cualquier acuerdo distinto.',
+    category: 'cripto',
+    sourceIds: [
+      'ley-inclusion-nomina',
+      'ley-convenios-oit-95',
+      'oit-convenio-95',
+      'oit-convenio-95-ratificacion',
+      'ley-inclusion-eleccion',
+      'bcu-cripto-riesgos',
+      'ley-activos-virtuales',
+      'mtss-consulta-laboral',
+    ],
+    basis: 'zona-gris',
+    tags: [
+      'sueldo en cripto',
+      'USDT',
+      'remuneración',
+      'recibo de haberes',
+      'Ley 19.210',
+      'Convenio 95 OIT',
+    ],
+    howCommon: 'comun',
+    related: [{ label: 'Calcular sueldo líquido', to: '/herramientas/calculadora-sueldo-liquido' }],
+  }),
+  faq({
+    id: 'pagar-inmueble-en-cripto',
+    question: '¿Puedo pagar un apartamento en cripto?',
+    shortAnswer:
+      'Lo que la norma tasa es el efectivo: hasta 200.000 UI, o el 5% del total si ese 5% no supera las 450.000 UI. Si una cripto cuenta como “medio distinto del efectivo” no está resuelto.',
+    answer:
+      'El artículo 35 de la Ley 19.210, en la redacción que le dio la Ley 20.469 (promulgada el 19 de marzo de 2026), alcanza “toda operación o negocio jurídico” y sólo pone tope al efectivo: se puede pagar en efectivo hasta 200.000 Unidades Indexadas, o hasta el 5% del valor total de la operación siempre que ese monto no supere las 450.000 Unidades Indexadas, y “el saldo de la operación, en caso de existir, deberá realizarse por los demás medios de pago distintos del efectivo”. No convertimos esos umbrales a pesos: la propia ley manda tomar la cotización de la UI al primer día de cada mes, así que cualquier cifra fija que publicáramos vencería sola. Lo que la norma no dice es si transferir un criptoactivo entra en esos “demás medios de pago”, y no lo vamos a suponer; además la contraparte puede negarse, porque el activo virtual no tiene curso legal. Preguntale al escribano que va a autorizar la escritura antes de estructurar la compra así.',
+    category: 'cripto',
+    sourceIds: ['ley-inclusion-efectivo', 'bcu-cripto-riesgos', 'ley-activos-virtuales'],
+    basis: 'zona-gris',
+    tags: ['comprar apartamento', 'cripto', 'efectivo', 'unidades indexadas', 'escribano'],
+    howCommon: 'ocasional',
   }),
 ])
 

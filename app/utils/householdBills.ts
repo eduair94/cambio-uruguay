@@ -30,9 +30,79 @@
 //     https://www.bps.gub.uy/24306/bonificacion-de-ute-para-jubilados-del-bps-beneficiarios-de-la-prima-por-edad.html
 //   - Decreto 340/025 y su Anexo — tarifas de OSE vigentes desde el 01/01/2026 (ajuste 8,5 %)
 //     https://www.impo.com.uy/bases/decretos-originales/340-2025
+//
+// FUENTES PRIMARIAS AGREGADAS EL 2026-08-10, para el bloque de FAQ sobre saneamiento, facturación
+// estimada, daños eléctricos, mora y carga de vehículos eléctricos:
+//   - UTE, Pliego Tarifario vigente desde el 01/01/2026 (tasas, reconexión, multa por mora, UBT)
+//     https://www.ute.com.uy/sites/default/files/docs/Pliego%20Tarifario%20Enero%202026.pdf
+//   - URSEA, Reglamento de Calidad del Servicio de Distribución (Res. 29/2003 y modificativas)
+//     https://www.impo.com.uy/bases/resoluciones-ursea-reglamento/29-2003
+//   - URSEA, Texto Ordenado de Resoluciones de Energía Eléctrica (enero 2019)
+//     https://www.gub.uy/unidad-reguladora-servicios-energia-agua/sites/unidad-reguladora-servicios-energia-agua/files/2019-07/Revisado_TOR2_Energia_Electrica_2019_01_0.pdf
+//
+//     OJO CON LA NUMERACIÓN DEL REGLAMENTO DE CALIDAD: hay tres numeraciones distintas dando
+//     vueltas y citar la equivocada manda al lector a una tabla que no es. El texto que sirve
+//     IMPO es la Res. 29/2003 con modificativas hasta 2006: ahí el art. 45 remite a las Tablas 3
+//     y 4 (transitorio y permanente), y la «Tabla 2» es la de metas de continuidad, otra cosa.
+//     La Res. URSEA 297/018 (25/09/2018) reescribió ese capítulo y lo dejó en una sola tabla: el
+//     texto ordenado de URSEA numera art. 45 el indicador, art. 46 la Tabla 2 («Niveles de
+//     tensión: desviaciones admitidas») y art. 47 las compensaciones. Los artículos de
+//     facturación estimada y reclamos (74, 76, 86, 88) NO se movieron: valen en las dos.
+//     Este módulo cita la numeración del texto ordenado, que es la última publicada.
+//   - Ley 17.250, art. 34 — responde el proveedor por el daño del vicio de la prestación
+//     https://www.impo.com.uy/bases/leyes/17250-2000/34
+//   - Ley 17.250, art. 3 — «proveedor» incluye a las personas jurídicas públicas estatales
+//     https://www.impo.com.uy/bases/leyes/17250-2000/3
+//   - Ley 17.250, art. 42 lit. F — qué puede el Área de Defensa del Consumidor (verificado
+//     2026-08-10): «citar a los proveedores […] a una audiencia administrativa que tendrá por
+//     finalidad tentar el acuerdo entre las partes» y «la incomparecencia del citado a una
+//     audiencia administrativa se tendrá como presunción simple en su contra». NO hay en todo el
+//     artículo una facultad de ordenar devoluciones ni de resolver indemnizaciones: decir que el
+//     Área «resuelve si corresponde» es falso y contradice /defensa-al-consumidor-uruguay.
+//     https://www.impo.com.uy/bases/leyes/17250-2000/42
+//   - Ley 17.250, art. 47 — sanciones (multa de 20 a 4.000 UR, decomiso, clausura hasta 90 días,
+//     suspensión hasta un año en los registros de proveedores del Estado). Es un castigo al
+//     proveedor, no una reparación al consumidor.
+//     https://www.impo.com.uy/bases/leyes/17250-2000/47
+//   - Reglamento de Distribución de Energía Eléctrica (Decreto 277/002), art. 22 — corte por impago
+//     https://www.impo.com.uy/bases/decretos-reglamento/277-2002/22
+//   - UTE, «Qué encuentro en mi factura» — tipo de lectura, estimada o real
+//     https://www.ute.com.uy/articulos/que-encuentro-en-mi-factura-0
+//   - UTE, aporte de lectura del medidor (hasta cinco días antes de la toma de consumo)
+//     https://www.gub.uy/tramites/aporte-lectura-medidor-ute
+//   - UTE, reclamo por daños eléctricos (20 días hábiles para el presupuesto)
+//     https://www.ute.com.uy/reclamos/reclamo-por-danos-electricos
+//   - UTE, financiación de facturas impagas
+//     https://www.gub.uy/tramites/financiaciones-ute
+//   - Ley 11.907, art. 2 lit. B — OSE presta alcantarillado salvo en el Departamento de Montevideo
+//     https://www.impo.com.uy/bases/leyes/11907-1952
+//   - Intendencia de Montevideo, tarifa de saneamiento
+//     https://montevideo.gub.uy/tipo/area-tematica/ambiente/agua-y-saneamiento/tarifa-de-saneamiento
+//   - Normativa departamental A.310.1 (Decreto JDM 29.434, arts. 89 a 95)
+//     https://normativa.montevideo.gub.uy/content/a3101
+//   - OSE, convenio de pago y reconexión por impago
+//     https://www.gub.uy/tramites/solicitud-convenio-pago-financiacion-ose
+//     https://www.gub.uy/tramites/solicitud-reconexion-servicio-agua-yo-saneamiento-corte-voluntario-impago-ose
+//   - Ley 18.331, art. 22 — cuánto tiempo puede figurar una deuda en una base de datos
+//     https://www.impo.com.uy/bases/leyes/18331-2008/22
+//   - INE, series históricas de la Unidad Reajustable (los cargos de OSE se fijan en UR).
+//     Es donde están los valores; la página temática del INE sólo dice que la UR «se ajusta
+//     periódicamente en función del Índice Medio de Salarios» y no habla de periodicidad, así
+//     que este módulo no le atribuye una.
+//     https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ur-ura-coeficiente-alquileres
 
 /** Fecha en que cada cifra de este módulo se contrastó con las fuentes de arriba. */
 export const BILLS_VERIFIED_AT = '2026-08-09'
+
+/**
+ * Fecha del contraste del bloque de FAQ y del alcance del saneamiento contra sus normas.
+ *
+ * Va aparte de `BILLS_VERIFIED_AT` a propósito: ese día se revisaron el pliego de UTE, el
+ * reglamento de URSEA, el Reglamento de Distribución, las dos leyes y las páginas de trámites,
+ * pero NO se volvieron a contrastar los tramos ni los cargos fijos de OSE. Fusionar las dos
+ * constantes diría que se verificó algo que no se verificó.
+ */
+export const BILLS_FAQ_VERIFIED_AT = '2026-08-10'
 
 /** Desde cuándo rigen los precios de UTE y OSE que usa este módulo. */
 export const TARIFFS_EFFECTIVE_FROM = '2026-01-01'
@@ -77,6 +147,87 @@ export const TARIFF_SOURCES: readonly TariffSource[] = Object.freeze([
   {
     label: 'Decreto 340/025 (Anexo) — tarifas de OSE vigentes desde el 01/01/2026',
     url: 'https://www.impo.com.uy/bases/decretos-originales/340-2025',
+  },
+  {
+    label: 'UTE — Pliego Tarifario vigente desde el 01/01/2026 (tasas, reconexión, mora)',
+    url: 'https://www.ute.com.uy/sites/default/files/docs/Pliego%20Tarifario%20Enero%202026.pdf',
+  },
+  {
+    label:
+      'URSEA — Reglamento de Calidad del Servicio de Distribución (Res. 29/2003, texto de IMPO: llega hasta las modificativas de 2006)',
+    url: 'https://www.impo.com.uy/bases/resoluciones-ursea-reglamento/29-2003',
+  },
+  {
+    label:
+      'URSEA — Texto Ordenado de Energía Eléctrica (enero 2019): art. 46 y Tabla 2 (niveles de tensión) y art. 47 (compensaciones)',
+    url: 'https://www.gub.uy/unidad-reguladora-servicios-energia-agua/sites/unidad-reguladora-servicios-energia-agua/files/2019-07/Revisado_TOR2_Energia_Electrica_2019_01_0.pdf',
+  },
+  {
+    label: 'Ley 17.250, art. 34 — por el daño del vicio de la prestación responde el proveedor',
+    url: 'https://www.impo.com.uy/bases/leyes/17250-2000/34',
+  },
+  {
+    label:
+      'Ley 17.250, art. 3 — «proveedor» incluye a las personas jurídicas públicas, estatales o no',
+    url: 'https://www.impo.com.uy/bases/leyes/17250-2000/3',
+  },
+  {
+    label:
+      'Ley 17.250, art. 42 lit. F — la audiencia del Área de Defensa del Consumidor es para «tentar el acuerdo», no para condenar',
+    url: 'https://www.impo.com.uy/bases/leyes/17250-2000/42',
+  },
+  {
+    label: 'Ley 17.250, art. 47 — sanciones: apercibimiento, multa de 20 a 4.000 UR, clausura',
+    url: 'https://www.impo.com.uy/bases/leyes/17250-2000/47',
+  },
+  {
+    label: 'Reglamento de Distribución (Decreto 277/002), art. 22 — corte por impago',
+    url: 'https://www.impo.com.uy/bases/decretos-reglamento/277-2002/22',
+  },
+  {
+    label: 'UTE — Qué encuentro en mi factura (tipo de lectura: estimada o real)',
+    url: 'https://www.ute.com.uy/articulos/que-encuentro-en-mi-factura-0',
+  },
+  {
+    label: 'UTE — Aporte de lectura del medidor (hasta cinco días antes de la toma)',
+    url: 'https://www.gub.uy/tramites/aporte-lectura-medidor-ute',
+  },
+  {
+    label: 'UTE — Reclamo por daños eléctricos (20 días hábiles para el presupuesto)',
+    url: 'https://www.ute.com.uy/reclamos/reclamo-por-danos-electricos',
+  },
+  {
+    label: 'UTE — Financiación de facturas impagas',
+    url: 'https://www.gub.uy/tramites/financiaciones-ute',
+  },
+  {
+    label: 'Ley 11.907, art. 2 — OSE presta alcantarillado salvo en el Departamento de Montevideo',
+    url: 'https://www.impo.com.uy/bases/leyes/11907-1952',
+  },
+  {
+    label: 'Intendencia de Montevideo — Tarifa de saneamiento',
+    url: 'https://montevideo.gub.uy/tipo/area-tematica/ambiente/agua-y-saneamiento/tarifa-de-saneamiento',
+  },
+  {
+    label: 'Normativa departamental A.310.1 — Decreto JDM 29.434, arts. 89 a 95',
+    url: 'https://normativa.montevideo.gub.uy/content/a3101',
+  },
+  {
+    label: 'OSE — Convenio de pago (hasta 6 cuotas en tarifa residencial)',
+    url: 'https://www.gub.uy/tramites/solicitud-convenio-pago-financiacion-ose',
+  },
+  {
+    label: 'OSE — Reconexión del servicio de agua y/o saneamiento por impago',
+    url: 'https://www.gub.uy/tramites/solicitud-reconexion-servicio-agua-yo-saneamiento-corte-voluntario-impago-ose',
+  },
+  {
+    label: 'Ley 18.331, art. 22 — cuánto tiempo puede figurar una deuda registrada',
+    url: 'https://www.impo.com.uy/bases/leyes/18331-2008/22',
+  },
+  {
+    label:
+      'INE — Series históricas de la Unidad Reajustable (los cargos de corte y reconexión de OSE se fijan en UR)',
+    url: 'https://www.gub.uy/instituto-nacional-estadistica/datos-y-estadisticas/estadisticas/series-historicas-ur-ura-coeficiente-alquileres',
   },
 ])
 
@@ -470,13 +621,50 @@ export function checkUteDiscount(input: { kwh: number; potenciaKw: number }): Di
 // OSE — agua y saneamiento (Decreto 340/025, Anexo)
 // ---------------------------------------------------------------------------
 
+// EL 100 % DEL SANEAMIENTO NO SE PUBLICA COMO ESCALAR. Textual del Decreto 340/025: «El cargo
+// variable del servicio de saneamiento convencional […] será el 100 % del importe facturado por
+// cargo variable de agua». Pero eso sale del decreto que fija las tarifas de OSE, así que sólo
+// vale donde OSE presta el saneamiento — y no lo presta en Montevideo. Un `SANEAMIENTO_MULTIPLIER
+// = 1` suelto se lee como regla nacional y le cobra al montevideano un renglón que su factura de
+// OSE no tiene; existió acá, no lo consumía nadie, y se borró. El dato vive con su alcance pegado
+// en `SANEAMIENTO_AUTHORITIES`, que la página sí renderiza fila por fila.
+
+export interface SaneamientoAuthority {
+  /** Dónde vale lo de abajo. */
+  scope: string
+  /** Quién factura el saneamiento ahí. */
+  operator: string
+  /** En qué factura aparece y cada cuánto. */
+  billing: string
+  /** Cómo se forma el cargo variable. */
+  variableCharge: string
+  /** La norma que lo dice, para que no haya que creernos. */
+  rule: string
+}
+
 /**
- * El dato que casi nadie tiene presente: el cargo variable de saneamiento es el 100 % del cargo
- * variable de agua. Es decir, en una casa con saneamiento conectado, cada metro cúbico se paga
- * dos veces. Textual del decreto: «El cargo variable del servicio de saneamiento convencional
- * […] será el 100 % del importe facturado por cargo variable de agua».
+ * Quién cobra el saneamiento y con qué regla. Existe porque el corpus de Reddit repite la misma
+ * escena: alguien de Montevideo busca el renglón de saneamiento en la factura de OSE, no lo
+ * encuentra y concluye que no paga saneamiento. Lo paga: le llega de la Intendencia, aparte, cada
+ * dos meses, y con una fórmula distinta a la del decreto de OSE.
  */
-export const SANEAMIENTO_MULTIPLIER = 1
+export const SANEAMIENTO_AUTHORITIES: readonly SaneamientoAuthority[] = Object.freeze([
+  {
+    scope: 'Los 18 departamentos que no son Montevideo',
+    operator: 'OSE',
+    billing: 'En la misma factura de OSE, junto al agua.',
+    variableCharge: 'El 100 % del cargo variable de agua del mismo período.',
+    rule: 'Ley 11.907, art. 2 lit. B, y Decreto 340/025 (Anexo).',
+  },
+  {
+    scope: 'Montevideo',
+    operator: 'Intendencia de Montevideo',
+    billing: 'En una factura propia de la Intendencia, cada dos meses.',
+    variableCharge:
+      'Un cargo fijo por unidad ocupacional más un cargo variable por metro cúbico de agua consumida, sobre el consumo que OSE le pasa por convenio y suponiendo que se vuelca a la red el 85 % del agua que entra.',
+    rule: 'Ley 11.907, art. 2 lit. B (excluye a Montevideo de OSE), y Decreto JDM 29.434, arts. 89 a 95.',
+  },
+])
 
 export interface OseFixedCharge {
   /** Diámetro de la conexión. */
@@ -492,7 +680,13 @@ export const OSE_FIXED_CHARGES: readonly OseFixedCharge[] = Object.freeze([
   { connection: 'más de 25 mm', amount: 3297.81 },
 ])
 
-/** Cargo fijo mensual del saneamiento convencional, por unidad. */
+/**
+ * Cargo fijo mensual del saneamiento convencional DE OSE, por unidad.
+ *
+ * Sale del Decreto 340/025, así que vale donde OSE presta el saneamiento. En Montevideo no lo
+ * presta (Ley 11.907, art. 2 lit. B): allí el cargo fijo es el de la Intendencia y es otro
+ * número. Renderizar esta cifra sin decir de quién es le inventa un renglón a un montevideano.
+ */
 export const OSE_SANEAMIENTO_FIXED = 137.05
 
 /** Cargo fijo adicional cuando el consumo anualizado supera los 15 m³. */
@@ -566,14 +760,60 @@ export const BILLS_FAQ: readonly BillFaq[] = Object.freeze([
   },
   {
     question: '¿Por qué la factura del agua tiene dos partes parecidas?',
-    short: 'Porque el saneamiento cobra otra vez el mismo consumo de agua.',
+    short:
+      'Porque el saneamiento cobra otra vez el mismo consumo. Ojo: eso es la factura de OSE, y en Montevideo el saneamiento no lo cobra OSE.',
     answer:
-      'El cargo variable del saneamiento convencional es el 100 % del importe facturado por cargo variable de agua. En una casa conectada a la red, cada metro cúbico se paga dos veces: una como agua y otra como saneamiento. Además hay dos cargos fijos: el de agua, que depende del diámetro de la conexión, y el de saneamiento, de $ 137,05 por unidad y por mes.',
+      'En los 18 departamentos donde OSE presta el saneamiento —todos menos Montevideo— el cargo variable del saneamiento convencional es el 100 % del importe facturado por cargo variable de agua. Ahí cada metro cúbico se paga dos veces en la misma factura: una como agua y otra como saneamiento. Y hay dos cargos fijos: el de agua, que depende del diámetro de la conexión, y el del saneamiento de OSE, de $ 137,05 por unidad y por mes. En Montevideo esa factura tiene una sola de las dos partes: el saneamiento lo cobra la Intendencia, aparte y con otra fórmula (ver la pregunta sobre a quién le pagás el saneamiento).',
   },
   {
     question: '¿Quién tiene el 40 % de descuento de UTE?',
     short: 'Jubilados del BPS con prima por edad y becarios del Fondo de Solidaridad.',
     answer:
       'Requiere consumir menos de 230 kWh por mes y tener potencia contratada de hasta 3,5 kW. Se puede pasar el tope hasta dos veces en doce meses; a la tercera se pierde el beneficio. Para los jubilados es automático si el servicio está a su nombre; los estudiantes tienen que presentar el formulario. No se acumula con el Bono Social ni con la bonificación por electrodependencia de ASSE o BPS.',
+  },
+  {
+    question:
+      '¿A quién le pago el saneamiento y por qué en Montevideo no viene en la factura de OSE?',
+    short:
+      'Porque OSE no presta saneamiento en Montevideo: ahí lo cobra la Intendencia, en una factura aparte.',
+    answer:
+      'La Ley 11.907 le encarga a OSE «la prestación del servicio de alcantarillado en todo el territorio de la República, excepto en el Departamento de Montevideo» (art. 2, lit. B). Por eso en los otros 18 departamentos el saneamiento viene en la misma factura de OSE y sigue la regla del Decreto 340/025: el cargo variable es el 100 % del de agua. En Montevideo lo cobra la Intendencia, con una tarifa propia creada por los artículos 89 a 95 del Decreto 29.434 de la Junta Departamental, que se factura cada dos meses y se forma con un cargo fijo por unidad ocupacional más un cargo variable por metro cúbico de agua consumida; el consumo se lo pasa OSE por convenio y la tarifa está calculada suponiendo que se vuelca a la red el 85 % del agua que entra. Los importes los publica la Intendencia por período: los últimos que figuraban en su portal el 10 de agosto de 2026 seguían siendo los de junio a setiembre de 2025 ($ 80,76 de cargo fijo por unidad ocupacional y por mes, y $ 45,30 por metro cúbico). En los dos casos se paga por usar la red: la norma departamental alcanza a «los ocupantes de inmuebles a cualquier título en el Departamento de Montevideo que hagan uso de las redes de saneamiento».',
+    // Fuentes: Ley 11.907 art. 2; Decreto 340/025; Intendencia de Montevideo; normativa A.310.1.
+  },
+  {
+    question: '¿Me facturaron un consumo que no hice: cuándo estima UTE y cómo se corrige?',
+    short:
+      'Estimada quiere decir que no se accedió al medidor. Aportá vos la lectura y, si ya salió mal, reclamá el importe.',
+    answer:
+      'La propia factura lo dice: después de la lectura anterior y la actual figura «el tipo de lectura, si fue estimada (no se accedió al medidor) o real (si se accedió)». No es una excepción, es el diseño del sistema. El reglamento de calidad de URSEA arranca por ahí: «El Distribuidor realizará las lecturas de consumos con periodicidad bimestral, aunque la facturación será mensual, por lo que el consumo correspondiente a cada mes intermedio sin lectura será estimado» (art. 74). Lo que el reglamento acota son los límites: el plazo máximo sin lectura no puede pasar de 4 meses en el período de control semestral, y «los consumos informados por los Consumidores no se computarán como estimados» (art. 76). Ahí está la palanca real: aportar la lectura corta la cadena de estimaciones. Se hace por la app de UTE, por Servicios en Línea, por WhatsApp al 098 1930 00, por SMS al 1930 o por Telegestiones (0800 1930 desde fijo, *1930 desde celular), hasta cinco días antes de la fecha habitual en que pasan a tomar el consumo. Si la factura ya salió mal, reclamá el importe: mientras UTE responde y eventualmente refactura, el vencimiento de esa factura se prorroga al día hábil inmediato siguiente al de la respuesta (art. 86); y si ya la habías pagado, la devolución va con la factura del mes siguiente (art. 88).',
+    // Fuentes: UTE «Qué encuentro en mi factura»; trámite de aporte de lectura; URSEA Res. 29/2003.
+  },
+  {
+    question: '¿Se me quemó un electrodoméstico por una variación de tensión: UTE lo paga?',
+    short:
+      'Hay un trámite con plazo de 20 días hábiles. El reglamento de URSEA no prevé resarcimiento por el artefacto; la vía por el daño es la Ley 17.250.',
+    answer:
+      'El trámite existe y se llama reclamo por daños eléctricos: cubre «daños causados por descargas eléctricas sobre electrodomésticos, animales u otros objetos» y se inicia por Telegestiones (0800 1930 desde fijo, *1930 desde celular), por correo a comercial@ute.com.uy o en una oficina comercial con agenda previa. Desde la fecha de inicio corren 20 días hábiles para presentar la descripción del elemento afectado y un presupuesto en papel membretado a nombre de la empresa que evaluó el daño, con el importe de reparación cuando corresponda. Hasta ahí llega lo escrito, y conviene saber dónde deja de haber norma: el reglamento de calidad del servicio de distribución de URSEA no tiene un solo artículo de daños, resarcimiento ni indemnización. Lo que sí regula es el nivel de tensión (en baja tensión, 230 V y 400 V, la desviación admitida va de -10 % a +6 %, y de -12 % a +6 % en las zonas ADT 4 y 5: Tabla 2, «Niveles de tensión: desviaciones admitidas», art. 46 del texto ordenado de URSEA) y, cuando más del 3 % de las mediciones del período quedan fuera de rango, obliga a compensar a los usuarios afectados con un monto calculado sobre su factura promedio (art. 47). Por esa vía vuelve plata de la factura, no la heladera. Que el reglamento no lo prevea no quiere decir que no exista ninguna vía por el artefacto: la Ley 17.250 dice que «si el vicio o riesgo de la cosa o de la prestación del servicio resulta un daño al consumidor, será responsable el proveedor de conformidad con el régimen dispuesto en el Código Civil» (art. 34), y su art. 3 define proveedor incluyendo a las personas jurídicas públicas, «estatal o no estatal». Esa vía empieza con el reclamo ante el Área de Defensa del Consumidor y sigue, si no hay acuerdo, en sede judicial; y no es automática: hay que probar el daño y que lo causó la prestación del servicio. Ojo con hasta dónde llega el organismo, porque es el malentendido más caro: la ley le da citar al proveedor a «una audiencia administrativa que tendrá por finalidad tentar el acuerdo entre las partes», donde «la incomparecencia del citado a una audiencia administrativa se tendrá como presunción simple en su contra» (art. 42, lit. F), y sancionarlo con multa de 20 a 4.000 UR (art. 47 de esa misma ley, que no es el art. 47 de URSEA de más arriba), que es un castigo del Estado al proveedor y no una reparación para vos. Ordenar que te paguen el artefacto sólo lo puede hacer un juez. Anotá la fecha y la hora del corte o la variación, sacale fotos al artefacto y pedí el presupuesto el mismo día: el plazo corre desde que iniciás el trámite, no desde que conseguís el presupuesto.',
+    // Fuentes: UTE, reclamo por daños eléctricos; URSEA, texto ordenado (arts. 45 a 47);
+    // Ley 17.250, arts. 3, 34, 42 lit. F y 47. Lo que puede y lo que no puede el Área está
+    // desarrollado en /defensa-al-consumidor-uruguay (DEFENSE_POWERS): las dos páginas tienen
+    // que decir lo mismo sobre el mismo organismo.
+  },
+  {
+    question: '¿Me atrasé con UTE o con OSE: qué pasa y cómo salgo?',
+    short:
+      'Multa por mora, corte a los 30 días del vencimiento y convenio para volver. Lo del Clearing no lo dice ninguna norma de UTE.',
+    answer:
+      'UTE: el pliego tarifario cobra una multa por mora del 5 % del importe facturado si pagás dentro de los 5 días hábiles siguientes al vencimiento, y del 10 % si pagás después. El Reglamento de Distribución habilita el corte «cuando hubiere transcurrido un plazo de 30 (treinta) días corridos desde la configuración del vencimiento de una factura» (Decreto 277/002, art. 22, lit. a), con notificación escrita 10 días hábiles antes salvo que haya limitador instalado. La deuda se financia: el trámite de financiación de facturas impagas no tiene costo, aunque se le aplican intereses de financiación. Antes de asustarte con la reconexión, mirá qué dice el pliego, que separa dos cosas: la reconexión del servicio (numeral 1.4) sale $ 2.375 y sólo figura «en servicios de medida indirecta»; la rehabilitación va aparte (numeral 1.5) y son $ 2.220 «en servicios de medida directa que no requieran DAR, habiendo transcurrido más de 30 días desde la baja del servicio» y $ 3.128 «en servicios de medida indirecta». O sea que la rehabilitación no es un asunto exclusivo de la medida directa, y la de $ 2.220 pide esa condición: que no requiera DAR. OSE: el Decreto 340/025 cobra UR 1 por el primer corte de agua por impago y UR 1 por el de saneamiento, más UR 1 por reconectar cada uno (el valor de la UR lo publica el INE); el convenio de pago no tiene cargo y admite hasta 6 cuotas en tarifa residencial y hasta 4 en el resto. Sobre el Clearing: ni el pliego, ni el Reglamento de Distribución, ni las páginas de trámites de UTE y OSE dicen que la deuda se informe a un buró de crédito. Lo único escrito es cuánto puede durar el registro si llega a informarse: cinco años desde su incorporación, renovables por otros cinco por única vez y sólo si el acreedor lo pide dentro de los treinta días previos al vencimiento (Ley 18.331, art. 22).',
+    // Fuentes: Pliego Tarifario 01/01/2026; Decreto 277/002 art. 22; Decreto 340/025; Ley 18.331.
+  },
+  {
+    question:
+      '¿Cargar el auto eléctrico en casa exige otra tarifa, otro medidor o me pasan a comercial?',
+    short:
+      'En el pliego no existe ninguna tarifa de movilidad: cargás con tu tarifa residencial. Lo que se mueve es la potencia.',
+    answer:
+      'El pliego tarifario vigente desde el 01/01/2026 no tiene ninguna tarifa de movilidad eléctrica ni una sola mención a vehículos o cargadores. Las tres residenciales se definen «para los servicios conectados en los niveles de tensión 230 V y 400 V con modalidad de consumo Residencial»: por tensión y potencia contratada, no por el uso que le des a la energía. La General Simple, en cambio, es la de «modalidad de consumo no Residencial ni Alumbrado Público». Tampoco figura en el pliego ningún requisito de medidor aparte para cargar en casa. Lo que sí se mueve es la potencia: el cargador suma kW simultáneos y cada kW contratado cuesta $ 83,2 más IVA todos los meses, lo uses o no. Antes de subirla, leé la letra chica del propio pliego: con instalación monofásica y potencia contratada de hasta 11,5 kW no se puede renunciar parcialmente a la potencia contratada antes de los 12 meses contados desde la última contratación. Y si vas a cargar de madrugada, la Triple Horario es donde eso paga: el valle de 00:00 a 07:00 está a $ 2,443 el kWh contra $ 8,452 del tramo medio de la Simple.',
+    // Fuente: Pliego Tarifario vigente desde el 01/01/2026 (tarifas residenciales y tasas).
   },
 ])

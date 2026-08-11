@@ -6,6 +6,14 @@
 
 export const ADUANA_FAQ_LAST_REVIEWED = '2026-07-26'
 
+/**
+ * Postal-operator block (TFSPU + the URSEC registry) checked against the norm on its own date.
+ * Deliberately NOT folded into ADUANA_FAQ_LAST_REVIEWED: that constant claims the whole catalogue
+ * was re-read, and bumping it for a partial pass would silently backdate every other answer's
+ * review to a day nobody looked at it.
+ */
+export const ADUANA_FAQ_POSTAL_VERIFIED_AT = '2026-08-10'
+
 export type AduanaFaqCategoryId =
   | 'antes-de-comprar'
   | 'franquicia-impuestos'
@@ -299,6 +307,46 @@ export const ADUANA_FAQ_SOURCES: Readonly<Record<string, AduanaFaqSource>> = Obj
     authority: 'IMPO',
     url: 'https://www.impo.com.uy/bases/leyes/19009-2012',
     kind: 'norma',
+  },
+  'ley-19009-5': {
+    label:
+      'Ley 19.009, art. 5 — el operador privado (modalidad courier) requiere permiso del regulador e inscripción en el Registro',
+    authority: 'IMPO',
+    url: 'https://www.impo.com.uy/bases/leyes/19009-2012/5',
+    kind: 'norma',
+  },
+  'ley-19009-15': {
+    label:
+      'Ley 19.009, art. 15 (redacción de la Ley 19.594) — Tasa de Financiamiento del Servicio Postal Universal: 10% del precio excluido el IVA, agentes de percepción y envíos entrantes abonados en destino',
+    authority: 'IMPO',
+    url: 'https://www.impo.com.uy/bases/leyes/19009-2012/15',
+    kind: 'norma',
+  },
+  'ley-19009-23': {
+    label:
+      'Ley 19.009, art. 23 — Registro General de Prestadores del Servicio Postal a cargo de URSEC',
+    authority: 'IMPO',
+    url: 'https://www.impo.com.uy/bases/leyes/19009-2012/23',
+    kind: 'norma',
+  },
+  'ursec-tfspu': {
+    label: 'URSEC — qué es la Tasa de Financiamiento del Servicio Postal Universal y cómo se cobra',
+    authority: 'URSEC',
+    url: 'https://www.gub.uy/unidad-reguladora-servicios-comunicaciones/comunicacion/campanas/tasa-financiamiento-del-servicio-postal-universal',
+    kind: 'fuente-oficial',
+  },
+  'ursec-obligaciones-operadores': {
+    label:
+      'URSEC — obligaciones de los operadores postales: exhibir el certificado de inscripción (Res. 315/024 art. 13) y discriminar la TFSPU en la factura (art. 17 lit. i)',
+    authority: 'URSEC',
+    url: 'https://www.gub.uy/unidad-reguladora-servicios-comunicaciones/comunicacion/publicaciones/obligaciones-operadores-postales',
+    kind: 'fuente-oficial',
+  },
+  'ursec-listado-operadores': {
+    label: 'URSEC — listados de operadores de servicios postales y de telecomunicaciones',
+    authority: 'URSEC',
+    url: 'https://www.gub.uy/unidad-reguladora-servicios-comunicaciones/listados-operadores-servicios-postales-telecomunicaciones',
+    kind: 'fuente-oficial',
   },
   'ley-17250': {
     label: 'Ley 17.250 — relaciones de consumo',
@@ -832,15 +880,78 @@ export const ADUANA_FAQS: readonly AduanaFaq[] = Object.freeze([
     shortAnswer:
       'No necesariamente: pedí un desglose que separe tributos oficiales de servicios del operador.',
     answer:
-      'El IVA o la prestación única son tributos liquidados para Aduanas. Desconsolidación, documentación, almacenaje, manejo, PARS o entrega pueden ser precios del operador. La sola mención de “aduana” no los convierte en impuestos. Exigí concepto, base, tarifa y comprobante por escrito; no localizamos una tarifa máxima general para esos servicios privados.',
+      'La línea del envío se parte en tres, no en dos. El IVA y la prestación única del 60% son tributos liquidados para Aduanas. El 10% de TSPU también es un tributo, aunque no sea aduanero: es la Tasa de Financiamiento del Servicio Postal Universal del art. 15 de la Ley 19.009, y el operador tiene que incluirla en la factura “de forma discriminada, clara y legible”. Todo lo demás —desconsolidación, documentación, almacenaje, manejo, PARS o entrega— es precio del operador. La sola mención de “aduana” no convierte un precio en impuesto. Exigí concepto, base, tarifa y comprobante por escrito: no localizamos una tarifa máxima general para esos servicios privados.',
     category: 'correo-courier-plataformas',
-    sourceIds: ['decreto-50-026', 'ley-17250', 'dna-retenidos'],
+    sourceIds: [
+      'decreto-50-026',
+      'ley-19009-15',
+      'ursec-obligaciones-operadores',
+      'ley-17250',
+      'dna-retenidos',
+    ],
     basis: 'zona-gris',
-    tags: ['dhl', 'pars', 'cargo 40 dolares', 'correo cinco dolares', 'tarifa courier', 'impuesto'],
+    tags: [
+      'dhl',
+      'pars',
+      'cargo 40 dolares',
+      'correo cinco dolares',
+      'tarifa courier',
+      'impuesto',
+      'tspu',
+      'tfspu',
+      'desglose factura',
+    ],
     related: {
       label: 'Ver cómo reclamar un cobro del operador',
       to: '/problemas-con-la-aduana-uruguay#problema-cobro-abusivo',
     },
+  },
+  {
+    id: 'que-es-la-tspu',
+    question: '¿Qué es el 10% de TSPU que me suma el courier?',
+    shortAnswer:
+      'La Tasa de Financiamiento del Servicio Postal Universal: 10% sobre el precio del envío, excluido el IVA.',
+    answer:
+      'Su nombre completo es Tasa de Financiamiento del Servicio Postal Universal y la crea el art. 15 de la Ley 19.009, en la redacción que le dio la Ley 19.594. Cada courier la escribe distinto —TSPU, “postal”, “URSEC”— pero es una sola cosa, no tres recargos. La alícuota para usuarios es 10% del precio del envío o servicio postal excluido el IVA: la base es lo que te cobra el courier por traerlo, no el valor de lo que compraste ni los tributos de Aduana. En un envío entrante del exterior se abona en destino. El courier no se la queda: actúa como agente de percepción y la vierte a URSEC, que la transfiere al operador designado —el Correo— descontando hasta un 10% por administrar el cobro. Los servicios del Servicio Postal Universal de los arts. 9 a 11 están exceptuados. Tenés cómo controlarla en el papel: el operador está obligado a incluirla en la factura “de forma discriminada, clara y legible” (Res. URSEC 315/2024, art. 17 lit. i), o sea con su nombre y su monto propio, aparte del flete y de los servicios que te cobra el courier. Ojo con leer esa alícuota legal como un techo del resto: no dice nada sobre lo que el operador puede cobrarte por manejo, desconsolidación o almacenaje, que son precio libre.',
+    category: 'correo-courier-plataformas',
+    sourceIds: ['ley-19009-15', 'ursec-tfspu', 'ursec-obligaciones-operadores'],
+    basis: 'norma',
+    tags: [
+      'tspu',
+      'tfspu',
+      'diez por ciento',
+      'recargo postal',
+      'ursec',
+      'servicio postal universal',
+      'que es tspu',
+    ],
+    related: { label: 'Comparar couriers', to: '/couriers-uruguay' },
+  },
+  {
+    id: 'courier-habilitado-operador-postal',
+    question: '¿Cómo sé si el courier está habilitado como operador postal?',
+    shortAnswer:
+      'Buscándolo en el Registro General de Prestadores del Servicio Postal, que lleva URSEC y es público.',
+    answer:
+      'La ley no habilita a los couriers en bloque. El art. 5 de la Ley 19.009 define al operador privado como el que presta el servicio “previo permiso del regulador e inscripción en el Registro General de Prestadores del Servicio Postal”, y el art. 23 pone ese registro a cargo de URSEC: “courier” es una modalidad comercial, no un permiso. La habilitación se comprueba uno por uno en el listado de operadores que publica URSEC. En el local hay una segunda señal: el operador está obligado a exhibir a la vista del público su Certificado de Inscripción vigente. No publicamos acá una lista propia de couriers habilitados a propósito: una lista congelada envejece sin avisar, y quien la lee cree estar verificando cuando ya no verifica nada. Miralo en el registro antes de contratar, sobre todo si vas a reclamar: el reglamento de reclamaciones e indemnizaciones postales se apoya en esa condición.',
+    category: 'correo-courier-plataformas',
+    sourceIds: [
+      'ley-19009-5',
+      'ley-19009-23',
+      'ursec-listado-operadores',
+      'ursec-obligaciones-operadores',
+      'ursec-185-016',
+    ],
+    basis: 'norma',
+    tags: [
+      'courier habilitado',
+      'operador postal',
+      'registro ursec',
+      'licencia postal',
+      'courier trucho',
+      'esta registrado',
+    ],
+    related: { label: 'Comparar couriers', to: '/couriers-uruguay' },
   },
   {
     id: 'amazon-global',
@@ -1618,6 +1729,23 @@ export function aduanaFaqSources(faq: AduanaFaq): AduanaFaqSource[] {
   return faq.sourceIds
     .map(id => ADUANA_FAQ_SOURCES[id])
     .filter((source): source is AduanaFaqSource => Boolean(source))
+}
+
+/**
+ * The date to publish as the catalogue's last MODIFICATION — the visible "última actualización"
+ * label and, above all, the `dateModified` of the FAQPage schema that Google reads.
+ *
+ * It is the latest of every review stamp, not ADUANA_FAQ_LAST_REVIEWED alone. Splitting the postal
+ * pass into its own constant was right (a partial re-read must not backdate the other 90+ answers),
+ * but rendering only ADUANA_FAQ_LAST_REVIEWED then published "nothing changed since 2026-07-26"
+ * while two answers had been rewritten on 2026-08-10. Reviewed-in-full and modified are different
+ * dates: keep ADUANA_FAQ_LAST_REVIEWED for the first, use this for the second, and never hardcode
+ * either in a page. Any new partial stamp must be added to the list below.
+ */
+export function aduanaFaqLastModified(): string {
+  const stamps = [ADUANA_FAQ_LAST_REVIEWED, ADUANA_FAQ_POSTAL_VERIFIED_AT]
+  // ISO-8601 dates sort lexicographically, so the last one is the most recent.
+  return [...stamps].sort().at(-1)!
 }
 
 export function aduanaFaqGroups(faqs: readonly AduanaFaq[] = ADUANA_FAQS) {

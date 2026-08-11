@@ -21,7 +21,8 @@
             </h1>
             <p class="text-body-1 text-grey-lighten-2 mb-0 couriers-intro">
               Comparativa de los principales couriers puerta a puerta (Miami → Uruguay): tarifa de
-              referencia por kilo, cargo de manejo y demora. Valores verificados en junio de 2026.
+              referencia por kilo, cargo de manejo y demora. Valores verificados el
+              {{ ratesVerifiedLabel }}.
             </p>
           </div>
         </div>
@@ -180,6 +181,32 @@
       </div>
     </VCard>
 
+    <!-- What the "+10% ..." in the notes above actually is. The notes named it and nothing
+         expanded it, so a reader met an acronym and no tax. -->
+    <VAlert
+      type="info"
+      variant="tonal"
+      density="comfortable"
+      class="mt-4"
+      icon="mdi-receipt-text-outline"
+    >
+      <p class="mb-1">
+        <strong>
+          El «+{{ POSTAL_SURCHARGE.ratePct }}% {{ POSTAL_SURCHARGE.label }}» de las notas es un solo
+          tributo.
+        </strong>
+        Es la {{ POSTAL_SURCHARGE.name }}: {{ POSTAL_SURCHARGE.ratePct }}% sobre
+        {{ POSTAL_SURCHARGE.base }}. {{ POSTAL_SURCHARGE.summary }}
+      </p>
+      <p class="mb-0">
+        En la factura cada courier la escribe distinto —{{ surchargeAliases }}—, pero es el mismo
+        cargo, no varios.
+        <NuxtLink :to="localePath(POSTAL_SURCHARGE.faqPath)" class="couriers-link">
+          Cómo se calcula y cómo controlarla en la factura </NuxtLink
+        >. Fuente: {{ POSTAL_SURCHARGE.source }}.
+      </p>
+    </VAlert>
+
     <!-- Correo Uruguayo: the postal channel most guides forget -->
     <VCard variant="flat" class="couriers-section mt-6 pa-5">
       <h2 class="text-subtitle-1 font-weight-bold mb-2">¿Y si llega por el Correo Uruguayo?</h2>
@@ -246,10 +273,12 @@
       class="mt-4"
       icon="mdi-alert-outline"
     >
-      Las tarifas son <strong>de referencia</strong>, verificadas el 18/06/2026 a partir de los
-      sitios oficiales de cada courier, y cambian con frecuencia (no incluyen recargos como la TSPU
-      ni el costo de despacho aduanero). Confirmá el precio exacto con tu courier antes de comprar.
-      No es asesoramiento profesional. No tenemos afiliación con los couriers listados.
+      Las tarifas son <strong>de referencia</strong>, verificadas el {{ ratesVerifiedLabel }} a
+      partir de los sitios oficiales de cada courier, y cambian con frecuencia. El precio por kilo
+      no incluye el costo de despacho aduanero ni el {{ POSTAL_SURCHARGE.ratePct }}% de
+      {{ POSTAL_SURCHARGE.label }}, que varios couriers suman aparte (mirá las notas de cada uno).
+      Confirmá el precio exacto con tu courier antes de comprar. No es asesoramiento profesional. No
+      tenemos afiliación con los couriers listados.
     </VAlert>
 
     <!-- Sources -->
@@ -289,10 +318,31 @@
 </template>
 
 <script setup lang="ts">
-import { COURIERS, type Courier } from '~/utils/courierShipping'
+import {
+  COURIER_RATES_VERIFIED_AT,
+  COURIERS,
+  POSTAL_SURCHARGE,
+  type Courier,
+} from '~/utils/courierShipping'
 import { starParts } from '~/utils/reviews'
 
 const localePath = useLocalePath()
+
+// POSTAL_SURCHARGE is rendered straight into the template on purpose: the page must not own a
+// second name for the 10%. Its disclaimer said "TSPU" while all seven notes said "TFSPU", so one
+// tax read as two — and there is no sigla worth hardcoding here, only the module's.
+/** «TSPU», «postal» o «URSEC» — the words the reader's own invoice uses, in one readable list. */
+const surchargeAliases = computed(() => {
+  const quoted = POSTAL_SURCHARGE.aliases.map(alias => `«${alias}»`)
+  if (quoted.length < 2) return quoted.join('')
+  return `${quoted.slice(0, -1).join(', ')} o ${quoted.at(-1)}`
+})
+
+/** dd/mm/yyyy for the seed-rate verification date, rendered from the constant, never retyped. */
+const ratesVerifiedLabel = (() => {
+  const [yyyy, mm, dd] = COURIER_RATES_VERIFIED_AT.split('-')
+  return `${dd}/${mm}/${yyyy}`
+})()
 
 // Live data: the catalogue with daily-scraped rates layered on top. Falls back to the static
 // seed (and SSRs from it) so the page renders even before the first scrape.

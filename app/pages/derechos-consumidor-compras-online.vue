@@ -125,18 +125,29 @@
 
     <!-- Reclamo template -->
     <section v-if="active" class="mb-8">
-      <h2 class="section-heading mb-1">El reclamo, listo para copiar</h2>
-      <p class="text-body-2 text-medium-emphasis mb-4">
-        Mandáselo al comercio por un medio que deje constancia y
-        <strong>guardá la fecha</strong>. Si no responde, este mismo texto te sirve de base para el
-        reclamo ante Defensa del Consumidor.
+      <h2 class="section-heading mb-1">{{ delivery.heading }}</h2>
+      <!-- La bajada dice a dónde va lo generado, y no siempre es al comercio: si el remedio elegido
+           es concursal, el documento se presenta en el Juzgado (Ley 18.387 art. 95) y ahí la bajada
+           pasa a ser una advertencia, no una instrucción de envío. -->
+      <p v-if="delivery.sendable" class="text-body-2 text-medium-emphasis mb-4">
+        {{ delivery.intro }}
       </p>
+      <VAlert
+        v-else
+        type="warning"
+        variant="tonal"
+        density="comfortable"
+        icon="mdi-gavel"
+        class="mb-4"
+      >
+        {{ delivery.intro }}
+      </VAlert>
       <VCard variant="flat" class="letter pa-4 pa-sm-5">
         <div class="complaint-builder mb-4">
           <div class="d-flex align-center ga-2 mb-3">
             <VIcon color="primary">mdi-tune-variant</VIcon>
             <div>
-              <p class="builder-title mb-0">Personalizá el reclamo</p>
+              <p class="builder-title mb-0">{{ delivery.builderTitle }}</p>
               <p class="builder-caption mb-0">El texto cambia al instante con tus selecciones.</p>
             </div>
           </div>
@@ -156,7 +167,7 @@
               <VAutocomplete
                 v-model="selectedRemedyId"
                 :items="remedyOptions"
-                label="Qué querés que haga el comercio"
+                :label="delivery.remedyLabel"
                 variant="outlined"
                 density="comfortable"
                 hide-details
@@ -174,9 +185,14 @@
             :prepend-icon="copied ? 'mdi-check' : 'mdi-content-copy'"
             @click="copyLetter"
           >
-            {{ copied ? 'Copiado' : 'Copiar el reclamo' }}
+            {{ copied ? delivery.copiedLabel : delivery.copyLabel }}
           </VBtn>
+          <!-- Sólo hay a dónde enviarlo cuando el documento es una carta de consumo. El escrito
+               concursal se presenta en el Juzgado (art. 95): ofrecer acá "mandalo al comercio" o
+               "reclamá en Defensa del Consumidor" sería mandarlo al lugar equivocado mientras se
+               van los 60 días del art. 94. -->
           <SendMessage
+            v-if="delivery.sendable"
             :text="letter"
             :actions="letterSendActions"
             trigger-label="Enviar el reclamo"
@@ -387,6 +403,7 @@
 import {
   buildConsumerComplaint,
   COMPLAINT_STEPS,
+  complaintDelivery,
   CONSUMER_FAQS,
   CONSUMER_RIGHTS,
   CONSUMER_SCENARIO_GROUPS,
@@ -422,6 +439,13 @@ watch(active, scenario => {
 /** Un reclamo que el lector puede mandar, citando el artículo que respalda su caso. */
 const letter = computed(() => buildConsumerComplaint(activeId.value, selectedRemedyId.value))
 
+/**
+ * Y el envoltorio que le corresponde a ESE documento. No todo lo que sale de acá es una carta de
+ * consumo: si el remedio elegido es concursal, lo generado se presenta en el Juzgado (Ley 18.387
+ * art. 95) y la sección no puede seguir diciendo "mandáselo al comercio" ni ofrecer el enviador.
+ */
+const delivery = computed(() => complaintDelivery(activeId.value, selectedRemedyId.value))
+
 async function copyLetter() {
   try {
     await navigator.clipboard.writeText(letter.value)
@@ -435,33 +459,40 @@ async function copyLetter() {
 // Where the reclamo goes. The letter is addressed to the SELLER (user fills the address in their
 // mail client). Defensa del Consumidor only takes reclamos through a login-gated web form or by
 // phone — never email — so those are open-the-form / call, with the text on the clipboard to paste.
-const letterSendActions = computed<SendAction[]>(() => [
-  {
-    channel: 'email',
-    label: 'Enviar por correo al comercio',
-    subject: 'Reclamo en materia de relación de consumo',
-    icon: 'mdi-email-outline',
-    color: 'primary',
-    note: 'Se abre tu correo; agregá la dirección del comercio.',
-  },
-  {
-    channel: 'link',
-    label: 'Reclamar en Defensa del Consumidor',
-    openUrl: DEFENSA_CONSUMIDOR_FORM,
-    icon: 'mdi-gavel',
-    color: 'deep-purple',
-    copyFirst: true,
-    note: 'Trámite gratuito (requiere usuario gub.uy). Pegá el reclamo en el formulario.',
-  },
-  {
-    channel: 'link',
-    label: `Llamar a Defensa del Consumidor (${DEFENSA_CONSUMIDOR_PHONE})`,
-    openUrl: `tel:${DEFENSA_CONSUMIDOR_PHONE.replace(/\s/g, '')}`,
-    icon: 'mdi-phone',
-    color: 'green-darken-1',
-    note: 'Línea gratuita, lunes a viernes de 9:30 a 16 h.',
-  },
-])
+//
+// None of those three destinations is right for the concursal escrito, which is filed at the
+// Juzgado (Ley 18.387 art. 95). The template already hides the sender there; this guard makes the
+// routing impossible to reach even if that `v-if` is ever dropped.
+const letterSendActions = computed<SendAction[]>(() => {
+  if (!delivery.value.sendable) return []
+  return [
+    {
+      channel: 'email',
+      label: 'Enviar por correo al comercio',
+      subject: 'Reclamo en materia de relación de consumo',
+      icon: 'mdi-email-outline',
+      color: 'primary',
+      note: 'Se abre tu correo; agregá la dirección del comercio.',
+    },
+    {
+      channel: 'link',
+      label: 'Reclamar en Defensa del Consumidor',
+      openUrl: DEFENSA_CONSUMIDOR_FORM,
+      icon: 'mdi-gavel',
+      color: 'deep-purple',
+      copyFirst: true,
+      note: 'Trámite gratuito (requiere usuario gub.uy). Pegá el reclamo en el formulario.',
+    },
+    {
+      channel: 'link',
+      label: `Llamar a Defensa del Consumidor (${DEFENSA_CONSUMIDOR_PHONE})`,
+      openUrl: `tel:${DEFENSA_CONSUMIDOR_PHONE.replace(/\s/g, '')}`,
+      icon: 'mdi-phone',
+      color: 'green-darken-1',
+      note: 'Línea gratuita, lunes a viernes de 9:30 a 16 h.',
+    },
+  ]
+})
 
 const canonicalUrl = 'https://cambio-uruguay.com/derechos-consumidor-compras-online'
 

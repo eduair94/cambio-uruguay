@@ -22,6 +22,9 @@
           </VChip>
           <span class="text-body-2 text-medium-emphasis">
             Fuentes revisadas el {{ lastReviewedLabel }}
+            <template v-if="hasPartialUpdate">
+              · última actualización el {{ lastModifiedLabel }}
+            </template>
           </span>
         </div>
       </div>
@@ -234,6 +237,7 @@ import {
   ADUANA_FAQS,
   aduanaFaqGroups,
   aduanaFaqHaystack,
+  aduanaFaqLastModified,
   aduanaFaqSources,
   normalizeAduanaFaqText,
   type AduanaFaq,
@@ -284,7 +288,14 @@ function formatDate(iso: string): string {
   })
 }
 
+// Two different facts, and the page needs both. ADUANA_FAQ_LAST_REVIEWED is the last time the WHOLE
+// catalogue was re-read; `lastModified` is the last time anything in it changed, which a partial
+// pass moves forward on its own. Publishing only the first told Google (and the reader) that nothing
+// had changed since 2026-07-26 while two answers had been rewritten later.
 const lastReviewedLabel = formatDate(ADUANA_FAQ_LAST_REVIEWED)
+const lastModified = aduanaFaqLastModified()
+const lastModifiedLabel = formatDate(lastModified)
+const hasPartialUpdate = lastModified !== ADUANA_FAQ_LAST_REVIEWED
 const canonicalUrl = 'https://cambio-uruguay.com/preguntas-frecuentes-aduana-uruguay'
 const title = 'Preguntas frecuentes de aduana e importaciones en Uruguay'
 const description = `${ADUANA_FAQS.length} respuestas verificadas sobre franquicia, IVA, courier, Correo, paquetes retenidos, productos, equipaje y DUA en Uruguay, con fuentes oficiales.`
@@ -339,7 +350,7 @@ useHead(() => ({
           },
           {
             '@type': 'FAQPage',
-            dateModified: ADUANA_FAQ_LAST_REVIEWED,
+            dateModified: lastModified,
             mainEntity: ADUANA_FAQS.map(faq => ({
               '@type': 'Question',
               name: faq.question,

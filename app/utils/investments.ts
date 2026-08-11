@@ -507,7 +507,7 @@ export const GLETIR_SAFETY_ANALYSIS: Readonly<{
     { orderAmount: 10000, commission: 75, effectiveRate: '0,75%' },
   ],
   checklist: [
-    'Pedí el nombre legal del custodio, la jurisdicción y cómo probarías tu titularidad beneficiaria si Gletir o GTN dejaran de operar.',
+    'Pedí el nombre legal del custodio, la jurisdicción, sus reguladores y su calificación de riesgo: sobre las cuentas globales abiertas a su nombre, la norma obliga al intermediario a darte esos datos (RNMV art. 210 lit. g, redacción de la Circular 2504, vigente desde el 24/06/2026 con 180 días de adecuación todavía corriendo). Y mirá abajo qué pasa con tus títulos si el intermediario deja de operar.',
     'Confirmá por escrito todos los costos: compra, venta, transferencia, cambio de moneda, datos en tiempo real, mercado y custodia.',
     'Empezá con una transferencia pequeña, verificá que el estado de cuenta concilie efectivo, títulos y comisiones, y probá un retiro.',
     'Si te ofrecen deuda privada, productos vinculados u opciones, exigí prospecto, emisor, garantías, conflictos de interés, liquidez y escenario de pérdida total.',
@@ -541,6 +541,309 @@ export const GLETIR_SAFETY_ANALYSIS: Readonly<{
     {
       label: 'Gletir — contrato de apertura y custodia',
       url: 'https://www.gletir.com/OpenGletirAccount/FormClientGletirGlobal',
+    },
+  ],
+})
+
+// ---------------------------------------------------------------------------
+// Qué pasa con tus títulos si el intermediario quiebra
+// ---------------------------------------------------------------------------
+// POR QUÉ EXISTE: el checklist de GLETIR_SAFETY_ANALYSIS le pedía al lector que averiguara "cómo
+// probarías tu titularidad beneficiaria si Gletir o GTN dejaran de operar" y la guía nunca
+// contestaba esa pregunta. Acá se contesta con la norma en la mano.
+//
+// LAS DOS COSAS QUE NO HAY QUE MEZCLAR:
+//   1. SEPARACIÓN PATRIMONIAL (Ley 18.627 art. 109). Tu dinero y tus valores en custodia no se
+//      embargan por deudas del intermediario y NO integran la masa activa de su liquidación. Es
+//      una regla de propiedad: te saca de la fila de acreedores. No es un seguro y no repone nada.
+//   2. FONDO DE COMPENSACIÓN AL INVERSOR. No existe en Uruguay. El único fondo de garantía del
+//      sistema financiero es el FGDB de la COPAB, y su objeto —dicho por la propia COPAB— es
+//      garantizar los depósitos en bancos y cooperativas de intermediación financiera. Publicar
+//      esa ausencia es el punto de la sección: el lector viene buscando "algo tipo COPAB" y hay
+//      que decirle que no lo hay, no inventarle un sustituto.
+//
+// DOS HOMÓNIMOS DEL REPO QUE NO SON ESTO: "SIPC" aparece en INVESTMENTS (fila prex-us-stocks-etfs)
+// como regulador estadounidense de DriveWealth, y en utils/moneyApps.ts como "Sistema de
+// Información de Precios al Consumidor" del MEF (Área de Defensa del Consumidor). Acá SIPC se
+// nombra sólo para decir que Uruguay no tiene un equivalente.
+//
+// PLAZOS DE ADECUACIÓN QUE NO SE PUEDEN OMITIR — Y EL ERROR ESPEJO: la Circular 2504 (vigencia
+// Diario Oficial 24/06/2026) sustituyó los arts. 209.2, 209.3, 209.4, 210 y 212 de la RNMV y cada
+// uno cierra con una disposición transitoria de 180 días. Pero la transitoria dice "para adecuarse
+// a las disposiciones contenidas en la presente resolución": alcanza a lo que la resolución trae
+// de nuevo, no a lo que se limita a retranscribir al sustituir el artículo entero.
+//   - EN PLAZO (sí llevan el hedge): todo el 209.2 / 209.3 / 209.4, que la 2504 creó (no existían
+//     en la RNMV anterior); el literal g. del art. 210 (cuentas globales: nombre del custodio,
+//     jurisdicción, reguladores, calificación), que tampoco existía; y el art. 212, cuya redacción
+//     anterior decía "periodicidad ... que deberá ser al menos anual" — el mensual y los 7 días
+//     corridos son nuevos.
+//   - YA VIGENTES (NO llevan el hedge, aunque el artículo lleve pie de Circular 2504): el párrafo
+//     segundo del art. 210 (poner a disposición del cliente el certificado de la Bolsa y la
+//     Comunicación de inscripción en el Registro del Mercado de Valores) y el literal f. (lo que
+//     hay que informar de la institución financiera del exterior a la que te referencian). Ambos
+//     figuran palabra por palabra en la redacción anterior del artículo —Circular 2320, vigencia
+//     Diario Oficial 22/01/2019— y ya estaban idénticos en la RNMV de enero de 2015 (Circular
+//     2172). Prueba concluyente: el art. 211 le impone hoy a los asesores de inversión el mismo
+//     deber de la Comunicación de inscripción y cierra con Circular 2320, sin plazo alguno.
+// El art. 149 tiene su propia transitoria: hasta el 31/03/2027 para lo comunicado por la Circular
+// 2477, salvo la garantía adicional por personas vinculadas en cuentas globales, exigible antes
+// del 30/09/2026. Publicar un deber en plazo como accionable hoy es un error; publicar como
+// "todavía en plazo" un deber exigible desde 2015/2019 es el mismo error al revés, y le dice al
+// lector que no reclame algo que puede reclamar hoy.
+//
+// LA INSCRIPCIÓN NO ES UN JUICIO DE VALOR, PERO TAMPOCO ES LA FUENTE DE LA PROTECCIÓN: el art. 94
+// define al intermediario por lo que hace y el art. 109 le da la separación patrimonial a la
+// categoría. No hay norma que diga que no estar inscripto la haga caer, así que no se afirma.
+//
+// FUENTES, leídas y contrastadas el 2026-08-10:
+//   - IMPO — Ley 18.627 (Mercado de Valores), arts. 25, 28, 30, 60, 94, 95, 96, 97, 101, 103, 106,
+//     108, 109 y 110
+//   - BCU — Recopilación de Normas del Mercado de Valores (texto vigente, última circular Nº 2507
+//     del 16/07/2026), arts. 13, 82, 149, 151, 209.2, 209.3, 209.4, 210, 211 y 212
+//   - BCU — RNMV, redacciones anteriores a la Circular 2504, para separar lo nuevo de lo que sólo
+//     se retranscribió: snapshots de web.archive.org del mismo PDF con "última circular Nº 2398
+//     del 7 de enero de 2022" (arts. 210 y 212 bajo Circulares 2320 y 2172) y "Nº 2216 del 26 de
+//     enero de 2015" (art. 210 ya con el párrafo de la Comunicación de inscripción y el literal f.)
+//   - COPAB — Sobre el Seguro de Depósitos, Cobertura, Depósitos cubiertos, Depósitos excluidos
+//   - IMPO — Ley 16.774 (Fondos de Inversión), art. 1
+//   - BROU — Instrumentos Financieros (la advertencia del propio banco)
+// Es información de referencia, no asesoramiento legal ni financiero.
+
+/** Fecha en que artículos, montos y textos de esta sección se contrastaron con las fuentes. */
+export const CUSTODY_VERIFIED_AT = '2026-08-10'
+
+export interface CustodyRule {
+  title: string
+  detail: string
+  /** La norma exacta que lo sostiene. Nunca vacío: sin norma, la regla no se publica. */
+  source: string
+}
+
+export interface CustodyAbsence {
+  /** Lo que el lector viene a buscar y no existe. */
+  missing: string
+  /** Qué hay en su lugar, o por qué no consta. */
+  instead: string
+  source: string
+}
+
+export const CUSTODY_INSOLVENCY: Readonly<{
+  thesis: string
+  protections: readonly CustodyRule[]
+  limits: readonly CustodyRule[]
+  absences: readonly CustodyAbsence[]
+  checklist: readonly string[]
+  sources: readonly { label: string; url: string }[]
+}> = Object.freeze({
+  thesis:
+    'Si tu corredor de bolsa quiebra, tus títulos no entran en la quiebra. La Ley 18.627 dice que el dinero y los valores que el intermediario mantiene en custodia por cuenta de sus clientes no integran la masa activa de la liquidación y no pueden embargarse por deudas suyas. Eso no es un seguro: no hay en Uruguay ningún fondo que te reponga lo que el corredor perdió, mezcló o nunca compró. Lo que la ley te da es que tus títulos no sirvan para pagarle a los acreedores del corredor, y eso vale exactamente lo que valga el registro donde figura que son tuyos. Por eso la pregunta útil no es "¿está garantizado?" sino "¿dónde está anotado que es mío y quién lo custodia?".',
+  protections: [
+    {
+      title: 'Tus valores no integran la masa de la liquidación',
+      detail:
+        'En caso de liquidación por insolvencia del intermediario, el dinero y los valores que hubiese adquirido o tuviese en custodia por cuenta de sus clientes no integran la masa activa de la liquidación. No sos un acreedor más haciendo fila: eso ya no es del corredor.',
+      source: 'Ley 18.627, art. 109',
+    },
+    {
+      title: 'Tampoco se los pueden embargar por deudas del corredor',
+      detail:
+        'El mismo artículo prohíbe embargar ese dinero y esos valores por deudas del intermediario, y prohíbe cualquier otra medida preventiva o de ejecución para cobrarlas. La protección no espera a la quiebra: rige desde antes.',
+      source: 'Ley 18.627, art. 109',
+    },
+    {
+      title: 'La regla se extiende a la bolsa que custodia por cuenta del intermediario',
+      detail:
+        'El dinero y los valores de clientes que una bolsa u otra institución que constituya un mercado de oferta pública mantenga en custodia por cuenta de los intermediarios tampoco se ven afectados por medidas por deudas de esa institución custodiante, ni forman parte de su masa activa si se la liquida.',
+      source: 'Ley 18.627, art. 109, inciso segundo',
+    },
+    {
+      title: 'Si custodia a nombre propio, tiene que anotarlo por separado',
+      detail:
+        'El intermediario que custodia valores por cuenta de terceros pero a nombre propio debe anotarlos separadamente en su contabilidad e inscribirlos en un registro especial, con la individualización completa de las personas por cuenta de quien los mantiene.',
+      source: 'Ley 18.627, art. 103',
+    },
+    {
+      title: 'En valores escriturales, hay un registro de titulares reales',
+      detail:
+        'Los intermediarios deben llevar un registro completo, claro y preciso de los valores que inscribieron ante las entidades registrantes por cuenta y orden de los titulares reales, mediante códigos que permitan individualizarlos plenamente a ellos y a sus sucesores. Los actos sobre valores escriturales son oponibles a terceros desde su inscripción.',
+      source: 'Ley 18.627, arts. 25 y 28',
+    },
+    {
+      title: 'El error de registro se responde civilmente',
+      detail:
+        'Las entidades registrantes y los intermediarios responden frente a quienes resulten perjudicados por omitir inscripciones o por inexactitudes, errores y retrasos, salvo que el perjuicio lo haya causado el propio perjudicado. Es responsabilidad civil, sin perjuicio de las sanciones penales o administrativas.',
+      source: 'Ley 18.627, art. 30',
+    },
+    {
+      title: 'El liquidador es el BCU, en sede administrativa',
+      detail:
+        'El Banco Central del Uruguay puede intervenir o suspender de inmediato las actividades del intermediario cuando entienda que están en riesgo los intereses de terceros, y es liquidador en sede administrativa de los que estén en situación de insolvencia, pudiendo facultar a un tercero para practicarla. En todos los casos debe adoptar las medidas necesarias para asegurar que los activos de terceros queden debidamente cautelados.',
+      source: 'Ley 18.627, arts. 106 y 108',
+    },
+    {
+      title: 'Antes de operar dejó una garantía en el BCU',
+      detail:
+        'Los intermediarios deben constituir y mantener de forma permanente una garantía a favor del BCU por un monto no inferior a UI 2.000.000 (dos millones de unidades indexadas), por las eventuales obligaciones que pudieran asumir con el propio Banco o con terceros. Ese piso es el permanente. Aparte, la norma agrega dos garantías adicionales que todavía están en plazo de adecuación: si hacen gestión de portafolios y los activos bajo manejo superan UI 1.000.000.000 (un mil millones), deben constituir "por el exceso a este monto, una garantía adicional equivalente al 0,05% (cinco por diez mil) del portafolio gestionado" —lo transcribimos tal cual porque la norma usa las dos expresiones y no aclara sobre qué base se calcula—; y si mantienen en una cuenta global fondos o valores de personas vinculadas junto con los de otros clientes, otra adicional de UI 500.000. La disposición transitoria del art. 149 da hasta el 31/03/2027 para adecuarse a lo que comunicó la Circular 2477, salvo la adicional por personas vinculadas en cuentas globales, que debe cumplirse antes del 30/09/2026.',
+      source:
+        'Ley 18.627, art. 101 y RNMV, art. 149 (disposición transitoria: 30/09/2026 y 31/03/2027)',
+    },
+    {
+      title: 'En cuenta ómnibus, tu plata no puede respaldar operaciones ajenas',
+      detail:
+        'En las cuentas globales no se admite en ningún caso que los fondos o valores de los clientes se usen, directa o indirectamente, para respaldar obligaciones de operaciones propias del intermediario ni de otros clientes, ni pueden mantenerse saldos negativos de clientes. El intermediario debe tener conciliación diaria que asegure la correcta atribución a cada cliente, y necesita tu consentimiento expreso y previo, dejado en el contrato de forma clara y destacada. Ojo con la fecha: esta redacción entró con la Circular 2504 y la propia resolución le da a las instituciones 180 días para adecuarse, así que a agosto de 2026 el plazo todavía corre.',
+      source:
+        'RNMV, arts. 209.2 y 209.4 (redacción de la Circular 2504, vigente desde el 24/06/2026, con 180 días de adecuación)',
+    },
+    {
+      title: 'Te tienen que decir por norma quién es el custodio',
+      detail:
+        'Sobre las cuentas globales abiertas a nombre del intermediario, tiene que informarte el nombre de las instituciones financieras donde quedan depositados los fondos o custodiados los valores, la jurisdicción a la que pertenecen, los organismos reguladores de su país de origen si son del exterior, y la calificación de riesgo de la entidad de custodia o la indicación expresa de que no tiene. No es un favor que pedís: es información mínima obligatoria. Pero pedila sabiendo el calendario: el literal g. entró con la Circular 2504, vigente desde el 24/06/2026, y la misma resolución da 180 días de adecuación, que a agosto de 2026 no vencieron.',
+      source:
+        'RNMV, art. 210 lit. g (redacción de la Circular 2504, vigente desde el 24/06/2026, con 180 días de adecuación)',
+    },
+    {
+      title: 'El estado de cuenta mensual es tu prueba',
+      detail:
+        'El intermediario debe mandarte estados de cuenta con todas las operaciones, todos los costos asociados —incluidos los diferenciales de precios—, las posiciones en efectivo y en valores y la rentabilidad anual, con periodicidad al menos mensual y dentro de los 7 días corridos del cierre del período. Si operás por cuenta global, debe discriminar las transacciones y reflejar tu posición consolidada. Además, una caja de valores puede extender las certificaciones que le soliciten. La redacción vigente del art. 212 es la de la Circular 2504 (24/06/2026), con 180 días de adecuación que a agosto de 2026 siguen corriendo.',
+      source:
+        'RNMV, art. 212 (redacción de la Circular 2504, vigente desde el 24/06/2026, con 180 días de adecuación) y Ley 18.627, art. 60 num. 4',
+    },
+  ],
+  limits: [
+    {
+      title: 'La garantía del BCU no es una cobertura por inversor',
+      detail:
+        'Es un piso fijo por entidad, no un monto por cliente ni proporcional a tu cartera, y se constituye a favor del Banco Central para responder por las obligaciones del intermediario con el Banco o con terceros. La ley la define en beneficio de los acreedores que el intermediario tenga o llegue a tener por su actividad, no como un reintegro a cada inversor. La garantía total además tiene tope: la Responsabilidad Patrimonial Básica exigida para bancos.',
+      source: 'Ley 18.627, art. 101 y RNMV, art. 149',
+    },
+    {
+      title: 'Protege lo que efectivamente compró o custodia por tu cuenta',
+      detail:
+        'El artículo 109 saca de la masa "el dinero y los valores que el intermediario hubiese adquirido o tuviese en custodia por cuenta de sus clientes". Lo que no encaje en esa descripción —un activo que nunca se compró, un faltante, una promesa de rendimiento— no está cubierto por la regla de separación: ahí sí quedás como acreedor, con un crédito que reclamar.',
+      source: 'Ley 18.627, art. 109 (lectura del texto)',
+    },
+    {
+      title: 'Del custodio del exterior para allá manda otro derecho',
+      detail:
+        'La separación del art. 109 rige sobre el intermediario uruguayo. La norma exige que las instituciones donde se depositen los fondos o valores de clientes —locales o del exterior— y la propia actividad de custodia por cuenta de terceros estén sujetas a regulación y supervisión en su país de origen, y que al referenciarte a una institución del exterior te digan que está regida y controlada por autoridades de ese país y no por el BCU, cuál es la jurisdicción para resolver diferencias y que tu relación con ella se rige por normas del exterior. Qué pasa allá en una insolvencia lo define ese régimen, que no verificamos acá. Distinguí qué es nuevo y qué no: que el custodio tenga que estar regulado y supervisado en su país llegó con la Circular 2504 y todavía corre su plazo de adecuación; lo que te tienen que decir de la institución del exterior a la que te referencian es exigible hoy, viene sin cambios de la redacción anterior del art. 210.',
+      source:
+        'RNMV, art. 210 lit. f (texto sin cambios desde la Circular 2320, vigente desde el 22/01/2019: no es disposición nueva de la Circular 2504) y art. 209.2 (creado por la Circular 2504, vigente desde el 24/06/2026, con 180 días de adecuación)',
+    },
+    {
+      title: 'No hay plazo legal para que te devuelvan los títulos',
+      detail:
+        'Buscamos en la Ley 18.627 y en la Recopilación de Normas del Mercado de Valores un plazo para restituir los valores de clientes en una liquidación y no lo encontramos. Sí hay plazos para otras cosas: un déficit de garantía debe subsanarse dentro de los 8 días hábiles de ocurrido, y la garantía se mantiene hasta el año posterior a la pérdida de la calidad de intermediario —o mientras mantenga a su nombre custodias de fondos o valores de clientes— y hasta que se resuelvan por sentencia ejecutoriada las acciones judiciales entabladas en su contra.',
+      source: 'Ley 18.627, art. 101 y RNMV, arts. 149 y 151',
+    },
+    {
+      title: 'La caja de valores y los sistemas de compensación cobran igual',
+      detail:
+        'El artículo siguiente al de la separación patrimonial pone un recorte explícito: la suspensión de actividades o la liquidación por insolvencia del intermediario no impide el estricto cumplimiento de las obligaciones que asumió en el ámbito de una caja de valores o en los sistemas de compensación y liquidación de valores. Esas obligaciones se liquidan como prevea la reglamentación y, para eso, pueden realizarse los bienes que el intermediario hubiese afectado en garantía, sin necesidad de procedimiento judicial alguno. Recién si sobra algo, ese remanente integra la masa activa de la liquidación.',
+      source: 'Ley 18.627, art. 110',
+    },
+  ],
+  absences: [
+    {
+      missing: 'Un fondo de compensación al inversor tipo SIPC',
+      instead:
+        'No consta que exista en Uruguay. El único fondo de garantía del sistema financiero es el Fondo de Garantía de Depósitos Bancarios, y la COPAB describe su objeto como garantizar los depósitos en bancos y cooperativas de intermediación financiera. Ni la Ley 18.627 ni la Recopilación de Normas del Mercado de Valores crean un fondo que reponga valores a los clientes de un intermediario. Lo que hay es separación patrimonial, que es otra cosa: evita que tus títulos paguen deudas ajenas, no cubre pérdidas.',
+      source: 'COPAB — Sobre el Seguro de Depósitos; Ley 18.627; RNMV',
+    },
+    {
+      missing: 'La COPAB cubriendo tu cuenta de inversión',
+      instead:
+        'El FGDB opera hasta el equivalente a USD 10.000 para el total de tus depósitos en moneda extranjera y hasta UI 250.000 para el total en moneda nacional, por persona y por institución, y sólo sobre depósitos en bancos y cooperativas de intermediación financiera. Un corredor de bolsa no es una institución de intermediación financiera y el efectivo que tenés ahí no es un depósito bancario. La COPAB tampoco es quien lo liquida: su rol de resolución alcanza a las instituciones de intermediación financiera; al corredor lo liquida el BCU.',
+      source: 'COPAB — Cobertura y ¿Quiénes somos?; Ley 18.627, art. 108',
+    },
+    {
+      missing: 'Los títulos comprados en tu banco, cubiertos por el seguro de depósitos',
+      instead:
+        'El propio BROU lo advierte en su página de instrumentos financieros: cuando adquirís títulos por intermedio de un banco, los mismos NO constituyen un depósito en el banco, por lo que NO se encuentran alcanzados por la cobertura provista al ahorro bancario. Comprar el bono en la ventanilla de un banco garantizado no le pasa la garantía al bono.',
+      source: 'BROU — Instrumentos Financieros',
+    },
+    {
+      missing: 'Cuotapartes de un fondo de inversión cubiertas por el FGDB',
+      instead:
+        'Tampoco. La normativa de protección del ahorro bancario excluye expresamente de la garantía "toda otra colocación que se realice contra la emisión de un valor negociable en los mercados bursátiles". Lo que protege a un fondo de inversión es otro mecanismo: la Ley 16.774 lo define como un patrimonio de afectación independiente y establece que el patrimonio del Fondo no responderá por las deudas de los aportantes ni de las sociedades administradoras o depositarias. De nuevo: separación, no seguro.',
+      source: 'COPAB — Depósitos excluidos, lit. c; Ley 16.774, art. 1',
+    },
+    {
+      missing: 'Que estar en el registro del BCU signifique que el BCU te respalda',
+      instead:
+        'La Ley 18.627 dice que los intermediarios están sujetos a la fiscalización de la Superintendencia de Servicios Financieros, que necesitan su autorización para actuar y qué requisitos hay que acreditar para quedar inscripto. De respaldo, nada. La fórmula famosa —"esta inscripción sólo acredita que se ha cumplido con los requisitos establecidos legal y reglamentariamente, no significando que el Banco Central del Uruguay exprese un juicio de valor"— existe, pero la Recopilación se la impone a los prospectos de los emisores y al reglamento y prospecto de los fondos de inversión, no al registro de tu corredor. Buscamos una fórmula equivalente referida a la inscripción de un intermediario de valores y no la encontramos. Que esté autorizado e inscripto es necesario y no es suficiente.',
+      source: 'Ley 18.627, arts. 95 a 97; RNMV, arts. 13 y 82 (textos de inserción obligatoria)',
+    },
+  ],
+  checklist: [
+    'Guardá los estados de cuenta y leelos. Te los deben mandar al menos una vez por mes, dentro de los 7 días corridos del cierre, con operaciones, costos, posiciones en efectivo y en valores y rentabilidad anual (RNMV art. 212, redacción de la Circular 2504, vigente desde el 24/06/2026 con 180 días de adecuación). Es la prueba de qué tenés y cuánto.',
+    'Pedí por escrito el nombre de la institución donde quedan depositados tus fondos y custodiados tus valores, su jurisdicción, sus reguladores y su calificación de riesgo. No es un favor: es información mínima obligatoria (RNMV art. 210 lit. g, redacción de la Circular 2504, vigente desde el 24/06/2026 con 180 días de adecuación: si te dicen que lo están implementando, están en plazo).',
+    'Si operás por cuenta global, revisá que el contrato tenga tu consentimiento expreso y previo, de forma clara y destacada, y que el estado de cuenta discrimine tus transacciones y muestre tu posición consolidada (RNMV arts. 209.4 y 212, ambos con la misma adecuación de 180 días desde el 24/06/2026).',
+    'Antes de transferir, verificá que el intermediario esté autorizado e inscripto ante la Superintendencia de Servicios Financieros: necesita esa autorización para actuar y está sujeto a la fiscalización de la SSF (Ley 18.627, arts. 95 y 96), y la norma le exige poner a tu disposición el certificado de la Bolsa de Valores que lo habilita, cuando corresponda, y la Comunicación de inscripción en el Registro del Mercado de Valores (RNMV art. 210, párrafo segundo). Eso pedilo hoy y no aceptes que te lo pateen: el deber ya estaba idéntico en la redacción anterior del artículo (Circular 2320, vigente desde el 22/01/2019) y palabra por palabra en la RNMV de enero de 2015; al asesor de inversión el art. 211 le impone el mismo deber y sigue bajo la Circular 2320, sin plazo. Estar inscripto significa que acreditó los requisitos del art. 97, no que el BCU respalde a la entidad; operar con alguien no autorizado te deja fuera de esa supervisión. Lo que no encontramos es norma que diga que la falta de registro haga caer la separación patrimonial: la ley define al intermediario por lo que hace —quien opera de forma profesional y habitual entre oferentes y demandantes de valores (art. 94)— y el art. 109 le da esa separación a la categoría, no al inscripto.',
+    'Si tenés valores escriturales, preguntá cuál es la entidad registrante y pedí la certificación de tu posición. La titularidad se prueba en el registro, no en el resumen de la app.',
+    'Dejá de buscar un fondo que te reponga: no existe. Lo que sí existe es el rastro documental de que esos títulos son tuyos, y ese rastro lo tenés que juntar vos mientras todo funciona bien.',
+  ],
+  sources: [
+    {
+      label: 'IMPO — Ley 18.627, art. 109 (de los valores y fondos de terceros)',
+      url: 'https://www.impo.com.uy/bases/leyes/18627-2009/109',
+    },
+    {
+      label:
+        'IMPO — Ley 18.627, art. 110 (la caja de valores y los sistemas de compensación cobran igual)',
+      url: 'https://www.impo.com.uy/bases/leyes/18627-2009/110',
+    },
+    {
+      label: 'IMPO — Ley 18.627, art. 94 (quién es intermediario: definición por la actividad)',
+      url: 'https://www.impo.com.uy/bases/leyes/18627-2009/94',
+    },
+    {
+      label: 'IMPO — Ley 18.627, art. 101 (garantía previa a la autorización)',
+      url: 'https://www.impo.com.uy/bases/leyes/18627-2009/101',
+    },
+    {
+      label: 'IMPO — Ley 18.627, art. 103 (valores de terceros en custodia)',
+      url: 'https://www.impo.com.uy/bases/leyes/18627-2009/103',
+    },
+    {
+      label: 'IMPO — Ley 18.627, texto completo (Mercado de Valores)',
+      url: 'https://www.impo.com.uy/bases/leyes/18627-2009',
+    },
+    {
+      label:
+        'BCU — Recopilación de Normas del Mercado de Valores (vigente, última circular Nº 2507 del 16/07/2026)',
+      url: 'https://www.bcu.gub.uy/Acerca-de-BCU/Normativa/Documents/Reordenamiento%20de%20la%20Recopilaci%C3%B3n/Mercado%20de%20Valores/RNMV.pdf',
+    },
+    {
+      label: 'COPAB — Sobre el Seguro de Depósitos (objeto del FGDB)',
+      url: 'https://www.copab.org.uy/innovaportal/v/962/1/web/sobre-el-seguro-de-depositos.html',
+    },
+    {
+      label: 'COPAB — Cobertura (USD 10.000 / UI 250.000 por persona y por institución)',
+      url: 'https://www.copab.org.uy/innovaportal/v/308/1/web/cobertura.html',
+    },
+    {
+      label: 'COPAB — Depósitos excluidos de la garantía',
+      url: 'https://www.copab.org.uy/innovaportal/v/312/1/web/depositos-excluidos.html',
+    },
+    {
+      label: 'COPAB — Depósitos cubiertos',
+      url: 'https://www.copab.org.uy/innovaportal/v/311/1/web/depositos-cubiertos.html',
+    },
+    {
+      label: 'COPAB — ¿Quiénes somos? (alcance de la resolución bancaria)',
+      url: 'https://www.copab.org.uy/innovaportal/v/39/1/web/quienes-somos.html',
+    },
+    {
+      label: 'IMPO — Ley 16.774 (fondos de inversión, patrimonio de afectación independiente)',
+      url: 'https://www.impo.com.uy/bases/leyes/16774-1996',
+    },
+    {
+      label: 'BROU — Instrumentos Financieros (los títulos no son un depósito en el banco)',
+      url: 'https://www.brou.com.uy/personas/inversiones/instrumentos-financieros',
+    },
+    {
+      label: 'BCU — Registro de Intermediarios de Valores',
+      url: 'https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/int_Valores.aspx',
     },
   ],
 })

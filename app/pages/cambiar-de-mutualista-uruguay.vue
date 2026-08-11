@@ -6,11 +6,12 @@
         Cambiar de mutualista: cuándo te toca y la devolución de FONASA
       </h1>
       <p class="lead mb-6">
-        No se puede cambiar cuando uno quiere: hay un mes fijo por año según el
-        <strong>último dígito de tu cédula</strong>, y hay que llevar
-        <strong>{{ MIN_PERMANENCE_MONTHS }} meses</strong> en el prestador actual. Acá está el
-        calendario de BPS, las cuatro excepciones que te dejan cambiar fuera de fecha, y la
-        devolución de FONASA que mucha gente aporta y no cobra.
+        Para pasarte a otra mutualista no se puede cambiar cuando uno quiere: hay un mes fijo por
+        año según el <strong>último dígito de tu cédula</strong>, y hay que llevar
+        <strong>{{ MIN_PERMANENCE_MONTHS }} meses</strong> en el prestador actual. Pero si a donde
+        vas es <strong>ASSE o un seguro integral</strong>, ese calendario no te aplica: ese cambio
+        se hace en cualquier momento. Acá está el calendario de BPS, las cinco salidas que te dejan
+        cambiar fuera de fecha y la devolución de FONASA que mucha gente aporta y no cobra.
       </p>
     </header>
 
@@ -58,6 +59,11 @@
         </VCol>
       </VRow>
 
+      <VAlert type="success" variant="tonal" density="comfortable" class="mt-5">
+        <p class="mb-2"><strong>Antes de anotar tu mes:</strong> {{ ASSE_ANYTIME_RULE }}</p>
+        <p class="mb-0">{{ POST_CHANGE_LOCK_RULE }}</p>
+      </VAlert>
+
       <VCard variant="flat" class="results-card pa-0 mt-5">
         <div class="pa-4 pb-0 text-overline">Calendario completo</div>
         <VTable class="cu-mobile-cards" density="comfortable">
@@ -103,7 +109,7 @@
 
     <!-- Exceptions -->
     <section class="mb-12">
-      <h2 class="text-h5 font-weight-bold mb-2">Las cuatro salidas fuera de fecha</h2>
+      <h2 class="text-h5 font-weight-bold mb-2">Las cinco salidas fuera de fecha</h2>
       <p class="text-medium-emphasis mb-5" style="max-width: 72ch">
         Si estás en alguna de estas, no tenés que esperar a tu mes.
       </p>
@@ -191,6 +197,92 @@
       </VAlert>
     </section>
 
+    <!-- Cuando se corta el trabajo -->
+    <section id="si-se-cae-el-amparo" class="mb-12">
+      <h2 class="text-h5 font-weight-bold mb-2">
+        Si se te cae el amparo: renuncia, despido, fin del paro
+      </h2>
+      <p class="text-medium-emphasis mb-5" style="max-width: 72ch">
+        Mientras cobrás el seguro de paro seguís cubierto y el aporte sale del propio subsidio. El
+        problema empieza el día después: para el generante no hay período de continuidad publicado.
+      </p>
+      <VRow>
+        <VCol v-for="f in COVERAGE_FALLBACKS" :key="f.title" cols="12" md="6">
+          <VCard variant="flat" class="req-card pa-5 h-100">
+            <div class="d-flex align-start">
+              <VIcon :icon="f.icon" color="primary" class="mr-3 mt-1" />
+              <div>
+                <h3 class="text-subtitle-1 font-weight-bold mb-1">{{ f.title }}</h3>
+                <p class="mb-0 text-medium-emphasis">{{ f.detail }}</p>
+              </div>
+            </div>
+          </VCard>
+        </VCol>
+      </VRow>
+
+      <VAlert type="warning" variant="tonal" density="comfortable" class="mt-4">
+        <p class="mb-2">
+          <strong>Ojo con lo que aparece primero en Google:</strong> la extensión de
+          {{ EXTENSION_TRES_MESES_2020.months }} meses del FONASA para despedidos
+          <strong>no es un derecho vigente</strong>. Es de {{ EXTENSION_TRES_MESES_2020.year }},
+          alcanzaba únicamente a {{ EXTENSION_TRES_MESES_2020.window }} y la financió el
+          {{ EXTENSION_TRES_MESES_2020.funding }}.
+        </p>
+        <p class="mb-0">
+          Lo que sí rige es la continuidad de los menores de 18 años y de los mayores con
+          discapacidad: {{ MINOR_CONTINUITY_MONTHS }} meses contados desde el mes siguiente al del
+          cese (Ley 18.731 art. 30), que BPS computa exigiendo
+          {{ MINOR_CONTINUITY_MIN_CONTRIB_MONTHS }} meses de aportes dentro de los
+          {{ MINOR_CONTINUITY_WINDOW_MONTHS }} anteriores al cese o al fin del subsidio.
+        </p>
+      </VAlert>
+    </section>
+
+    <!-- Urgencia y emergencia -->
+    <section id="urgencia-y-emergencia" class="mb-12">
+      <h2 class="text-h5 font-weight-bold mb-2">
+        Urgencia y emergencia en un prestador que no es el tuyo
+      </h2>
+      <p class="text-medium-emphasis mb-5" style="max-width: 72ch">
+        No son la misma regla, y la diferencia decide adónde tenés que ir. Ley 19.535 arts. 145 a
+        148 y su Decreto reglamentario 211/018.
+      </p>
+      <VRow>
+        <VCol v-for="r in URGENCY_RULES" :key="r.title" cols="12" md="6">
+          <VCard variant="flat" class="req-card pa-5 h-100">
+            <div class="d-flex align-start">
+              <VIcon :icon="r.icon" color="primary" class="mr-3 mt-1" />
+              <div>
+                <h3 class="text-subtitle-1 font-weight-bold mb-1">{{ r.title }}</h3>
+                <p class="mb-0 text-medium-emphasis">{{ r.detail }}</p>
+              </div>
+            </div>
+          </VCard>
+        </VCol>
+      </VRow>
+    </section>
+
+    <!-- Obligatoriedad -->
+    <section id="es-obligatorio" class="mb-12">
+      <h2 class="text-h5 font-weight-bold mb-2">¿Es obligatorio el FONASA?</h2>
+      <VAlert type="info" variant="tonal" density="comfortable" class="mb-5">
+        <p class="mb-2">{{ FONASA_MANDATORY_RULE }}</p>
+        <p class="mb-0">{{ FONASA_RATE_RULE }}</p>
+      </VAlert>
+      <p class="text-medium-emphasis mb-4" style="max-width: 72ch">
+        Esto es entre lo que podés elegir sin salir del Seguro Nacional de Salud:
+      </p>
+      <VRow>
+        <VCol v-for="p in SNIS_PROVIDER_KINDS" :key="p.label" cols="12" md="4">
+          <VCard variant="flat" class="req-card pa-5 h-100">
+            <VIcon :icon="p.icon" color="primary" class="mb-2" />
+            <h3 class="text-subtitle-1 font-weight-bold mb-1">{{ p.label }}</h3>
+            <p class="mb-0 text-medium-emphasis">{{ p.detail }}</p>
+          </VCard>
+        </VCol>
+      </VRow>
+    </section>
+
     <!-- FAQ -->
     <section class="mb-12">
       <h2 class="text-h5 font-weight-bold mb-4">Preguntas frecuentes</h2>
@@ -211,8 +303,9 @@
     <section>
       <h2 class="text-h6 font-weight-bold mb-3">Fuentes</h2>
       <p class="text-body-2 text-medium-emphasis mb-3">
-        Reglas contrastadas el {{ verifiedAt }}. Esta página es informativa: lo que resuelve BPS o
-        la JUNASA es lo que vale.
+        Movilidad regulada y devolución de FONASA, contrastadas el {{ verifiedAt }}. El bloque de
+        cese laboral, urgencias y obligatoriedad se contrastó el {{ coverageVerifiedAt }}. Esta
+        página es informativa: lo que resuelve BPS o la JUNASA es lo que vale.
       </p>
       <ul class="sources-list">
         <li v-for="s in HEALTH_SOURCES" :key="s.url">
@@ -227,13 +320,25 @@
 import { computed, ref } from 'vue'
 import { formatUYU } from '~/utils/format'
 import {
+  ASSE_ANYTIME_RULE,
   CHANGE_EFFECTIVE_RULE,
+  COVERAGE_FALLBACKS,
+  POST_CHANGE_LOCK_RULE,
   CPE_MENSUAL,
   CPE_MENSUAL_ANTERIOR,
   DIGIT_MONTH,
+  EXTENSION_TRES_MESES_2020,
+  FONASA_MANDATORY_RULE,
+  FONASA_RATE_RULE,
+  HEALTH_COVERAGE_VERIFIED_AT,
+  MINOR_CONTINUITY_MIN_CONTRIB_MONTHS,
+  MINOR_CONTINUITY_MONTHS,
+  MINOR_CONTINUITY_WINDOW_MONTHS,
   REFUND_REACH_AFTER,
   REFUND_REACH_BEFORE,
   REFUND_TIMELINE,
+  SNIS_PROVIDER_KINDS,
+  URGENCY_RULES,
   topeAnualAporte,
   HEALTH_FAQ,
   HEALTH_SOURCES,
@@ -276,12 +381,13 @@ const fmtDate = (iso: string) =>
     timeZone: 'UTC',
   })
 const verifiedAt = fmtDate(HEALTH_VERIFIED_AT)
+const coverageVerifiedAt = fmtDate(HEALTH_COVERAGE_VERIFIED_AT)
 const refundDate = fmtDate(LAST_PUBLISHED_REFUND.availableFrom)
 
 const canonicalUrl = 'https://cambio-uruguay.com/cambiar-de-mutualista-uruguay'
 const title = 'Cambiar de mutualista en Uruguay: cuándo te toca según tu cédula'
 const description =
-  'El calendario de movilidad regulada de BPS mes a mes según el último dígito de la cédula, los 23 meses de permanencia que piden, las cuatro excepciones para cambiar fuera de fecha (afiliación de oficio, mudanza, problemas asistenciales y tiempos de espera del Decreto 359/007), y cómo funciona la devolución de FONASA.'
+  'El calendario de movilidad regulada de BPS mes a mes según el último dígito de la cédula, los 23 meses de permanencia que piden, y las cinco salidas para cambiar fuera de fecha: el cambio hacia ASSE o un seguro integral se puede hacer en cualquier momento (Decreto 344/020 art. 17), y además están la afiliación de oficio, la mudanza a otro departamento, los problemas asistenciales y los tiempos de espera del Decreto 359/007. Más cómo funciona la devolución de FONASA.'
 
 defineOgImageComponent('Cambio', {
   title: 'Cambiar de mutualista',
@@ -307,7 +413,7 @@ useHead(() => ({
     {
       name: 'keywords',
       content:
-        'cambiar de mutualista uruguay, corralito mutual, movilidad regulada bps, cambio de prestador de salud, calendario digito cedula mutualista, 23 meses permanencia mutualista, devolucion fonasa, estoy comprendido fonasa, junasa cambio de prestador, decreto 359/007 tiempos de espera',
+        'cambiar de mutualista uruguay, corralito mutual, movilidad regulada bps, cambio de prestador de salud, calendario digito cedula mutualista, 23 meses permanencia mutualista, cambiar a asse en cualquier momento, pasarse a asse sin esperar, decreto 344/020 articulo 17, cambio a seguro integral, devolucion fonasa, estoy comprendido fonasa, junasa cambio de prestador, decreto 359/007 tiempos de espera',
     },
   ],
   script: [

@@ -10,7 +10,7 @@
 // Every fiscal/legal figure carries a source; provider terms are volatile, so
 // re-check the links each review. Last reviewed: RENT_FAQ_LAST_REVIEWED.
 
-export const RENT_FAQ_LAST_REVIEWED = '2026-07-18'
+export const RENT_FAQ_LAST_REVIEWED = '2026-08-10'
 
 export type RentFaqCategoryId =
   | 'garantias'
@@ -108,6 +108,22 @@ export const RENT_FAQ: readonly RentFaqEntry[] = Object.freeze([
     a: 'Solo sobre el alquiler. La comisión de intermediación equivale a un mes de alquiler más IVA, en un único pago al firmar, y se calcula sobre el precio del alquiler, no sobre los gastos comunes. Por ejemplo, con un alquiler de $1.000 y gastos comunes de $500, la comisión se calcula sobre $1.000. Pedí siempre factura con el IVA discriminado.',
     sourceUrl: 'https://adiu.uy/articulo.aspx?id=271',
   },
+  // La entrada de arriba responde la BASE DE CÁLCULO y se apoya en ADIU, que es
+  // la gremial de las inmobiliarias: sirve para describir el uso de plaza, no
+  // para decir a quién le toca pagar. Lo que la gente pregunta en los hilos es
+  // otra cosa —"¿qué artículo me obliga?"— y la respuesta es que no hay ninguno.
+  // Dato con fecha de caducidad: el estado de la reglamentación de la Ley 20.380
+  // va ATRIBUIDO Y FECHADO ("al 9 de abril de 2026 el MEC informaba…"), no
+  // concluido. La nota del MEC dice que sigue el diálogo para redactar el texto;
+  // NO dice que el Registro esté inoperativo, así que eso no se publica. Lo que
+  // no caduca es el art. 15 de la 20.380 (90 días para reglamentar), y ese es el
+  // ancla normativa. Verificado el 2026-08-10 contra IMPO, DGI y MEC.
+  {
+    cat: 'costos',
+    q: '¿Alguna norma obliga al inquilino a pagar la comisión inmobiliaria?',
+    a: 'No. Ninguna norma pone la comisión a cargo del inquilino. El Decreto-Ley 14.219 no dice nada sobre comisiones de intermediación, y la Ley 20.380, que regula a los operadores inmobiliarios, les reconoce el derecho "al cobro de sus honorarios" (art. 5, literal C) sin decir quién los paga. La regla que queda es la del corretaje: el art. 112 del Código de Comercio establece que todo derecho de corretaje, no mediando estipulación en contrario, será pagado proporcionalmente por las partes. Es decir que, si no se pacta otra cosa, se reparte entre las dos partes; que caiga entera sobre vos sale del contrato y del uso de plaza, no de la ley, y por eso es negociable. El porcentaje tampoco es un arancel del Estado: el único arancel que la ley previó lo tenía que fijar un tribunal del Código de Comercio de 1865 y no hay uno oficial vigente, así que el "mes de alquiler más IVA" es lo que publican las gremiales del sector. Sobre el IVA, la DGI aplica en principio la tasa básica del 22% (art. 34, Título 10 del Texto Ordenado 2023) a todo servicio que no esté exonerado ni gravado al 10%. La Ley 20.380 sí exige estar inscripto en el Registro Nacional de Operadores Inmobiliarios para ejercer (arts. 4 y 8), pero su art. 15 le dio al Poder Ejecutivo 90 días desde la entrada en vigencia para reglamentarla y ese plazo está largamente vencido: al 9 de abril de 2026 el MEC informaba que seguía en diálogo con el sector para redactar el texto de la reglamentación.',
+    sourceUrl: 'https://www.impo.com.uy/bases/codigo-comercio/817-1865/112',
+  },
 
   // --- Gastos comunes ---
   {
@@ -133,6 +149,25 @@ export const RENT_FAQ: readonly RentFaqEntry[] = Object.freeze([
     a: 'Las reparaciones que hacen a la habitabilidad de la vivienda (humedades, roturas de cañerías) son de cargo del propietario. Las reparaciones locativas que surgen del uso corriente corren por cuenta del inquilino. Documentá el problema con fotos y notificalo por un canal que deje constancia; si no se resuelve, consultá en Defensa del Consumidor.',
     sourceUrl:
       'https://www.gub.uy/ministerio-economia-finanzas/garantia-de-alquileres/derechos-obligaciones-del-inquilino',
+  },
+  // La regla abstracta de arriba (habitabilidad = propietario, locativas =
+  // inquilino) no le sirve a nadie parado frente a la cisterna rota, y la
+  // enumeración concreta no está donde todos la buscan: la ley de alquileres no
+  // enumera reparaciones, el Código Civil sí. DOS TRAMPAS, las dos de redacción:
+  // (1) en el art. 1820 num. 1º la cañería está del lado de CONSERVAR, no de
+  // reponer —"reponiendo" rige solo paredes, revoques, baldosas y ladrillos—,
+  // así que parafrasearlo al revés contradice la entrada de habitabilidad de acá
+  // arriba y la de depósito, que ponen la cañería en el propietario. (2) La
+  // pintura: el art. 76 del Decreto-Ley 14.219 tiene lista cerrada (A a E) y
+  // "entregar pintado" no está, pero de ahí NO se sigue que la cláusula valga —
+  // la nulidad puede venir de otro lado y el propio literal A anula la renuncia
+  // anticipada a los derechos de la ley. Se publica la ausencia, no la validez.
+  // Verificado el 2026-08-10 contra el texto vigente en IMPO.
+  {
+    cat: 'reparaciones',
+    q: '¿Quién paga cada reparación: la cisterna, la instalación eléctrica, los vidrios, la pintura?',
+    a: 'La ley de alquileres no enumera reparaciones: el art. 1 del Decreto-Ley 14.219 remite al Código Civil y la lista está ahí. Del propietario son todas las reparaciones necesarias salvo las locativas, e incluso las locativas cuando el deterioro vino de fuerza mayor, caso fortuito o mala calidad de la cosa arrendada (art. 1798). Tuyas son las locativas, que el art. 1820 enumera para casas: conservar la integridad interior de las paredes, azoteas, pavimentos y cañerías, reponiendo las paredes, revoques, baldosas o ladrillos que durante el arrendamiento se destruyan o se desencajen; reponer los cristales (vidrios) quebrados en ventanas, puertas y tabiques; mantener en estado de servicio puertas, ventanas y cerraduras; y conservar medianamente aseadas las paredes y pavimentos interiores. Leelo con cuidado, porque acá se confunde todo el mundo: la cañería está del lado de conservar, no del de reponer —"reponiendo" rige solo paredes, revoques, baldosas y ladrillos—, y por eso una cañería que revienta por vetustez, defecto de construcción o caso fortuito vuelve a ser del propietario por los arts. 1798 y 1819, igual que la humedad. El art. 1819 pone el techo: se reducen a mantener el edificio en el estado en que lo recibiste, y no respondés por los deterioros que vengan del tiempo y uso legítimo, de fuerza mayor o caso fortuito, ni de la mala calidad del edificio, su vetustez, la naturaleza del suelo o defectos de construcción. Por eso una cisterna o una instalación eléctrica que fallan por antigüedad o por cómo se construyeron son del dueño; un vidrio que rompiste o una cerradura que dejaste de mantener son tuyos, y también respondés por la culpa de tu familia, dependientes, huéspedes y subarrendatarios (art. 1822). La pintura es el caso a mirar aparte: el desgaste por uso no es tuyo, pero "entregar pintado" no figura entre las cláusulas nulas del art. 76 del Decreto-Ley 14.219, que trae una lista cerrada de cinco literales (A a E). O sea que no es nula por esa vía: no cuentes con que la cláusula se caiga sola. Que no esté en esa lista tampoco significa que sea válida sí o sí —la nulidad podría venir de otro lado, y el propio literal A anula la renuncia anticipada a los plazos y derechos de la ley—, pero eso ya es una discusión para dar con abogado y el contrato en la mano. Lo práctico: negociá esa cláusula antes de firmar, no el día que entregás las llaves.',
+    sourceUrl: 'https://www.impo.com.uy/bases/codigo-civil/16603-1994/1820',
   },
 
   // --- Plazo, renovación y rescisión ---

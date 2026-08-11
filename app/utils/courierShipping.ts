@@ -36,12 +36,63 @@ export interface Courier {
   reviewSources?: import('./reviews').ReviewSource[]
 }
 
+/** Date the surcharge below was last checked against the norm. Bump it when you re-read art. 15. */
+export const POSTAL_SURCHARGE_VERIFIED_AT = '2026-08-10'
+
+/**
+ * The 10% surcharge every courier tacks onto its tariff, under the ONE name it actually has.
+ *
+ * Each `note` used to copy whatever the courier's own price list called it — "TSPU" on Gripper,
+ * "postal" on UruguayCargo, "URSEC" on Aerobox — so one surcharge read like three stacking up, and
+ * nothing in the file said what it was. It is a single tax: Ley 19.009 art. 15 (text given by Ley
+ * 19.594) creates the Tasa de Financiamiento del Servicio Postal Universal at 10% of the postal
+ * price net of VAT, and the courier only collects it. Label it here and nowhere else: use
+ * `POSTAL_SURCHARGE.label` in every `note`, and never mint a fourth alias.
+ */
+export const POSTAL_SURCHARGE = Object.freeze({
+  /** Sigla oficial: la que usa URSEC en las obligaciones de los operadores postales. */
+  label: 'TFSPU',
+  name: 'Tasa de Financiamiento del Servicio Postal Universal',
+  /**
+   * Cómo la escriben los couriers en su lista de precios y en la factura. Renderizalos junto al
+   * nombre completo: el usuario llega buscando la sigla de SU factura, no la de URSEC, y una página
+   * que sólo dice "TFSPU" lo deja creyendo que es un cargo distinto del que le cobraron.
+   */
+  aliases: Object.freeze(['TSPU', 'postal', 'URSEC']),
+  /**
+   * Explicación larga, para linkear desde cualquier página que muestre el recargo.
+   *
+   * El hash es el id que el DOM realmente tiene, no el de la respuesta: la página renderiza cada
+   * pregunta como `pregunta-${faq.id}` (pages/preguntas-frecuentes-aduana-uruguay.vue) y no
+   * normaliza el hash. Apuntar a `#que-es-la-tspu` a secas dejaba al lector en el tope de una
+   * página con 90+ preguntas, que es justo lo contrario de para qué existe este campo.
+   */
+  faqPath: '/preguntas-frecuentes-aduana-uruguay#pregunta-que-es-la-tspu',
+  ratePct: 10,
+  /** Sobre qué corre el 10%: el precio del servicio postal, no el valor de lo que compraste. */
+  base: 'el precio del envío o servicio postal, excluido el IVA',
+  summary:
+    'No es una tarifa del courier ni un tributo de Aduana: es un tributo que el operador percibe y le vierte a URSEC. Corre sobre lo que te cobra el courier, no sobre el valor de la mercadería, y en un envío entrante se abona en destino.',
+  source: 'Ley 19.009, art. 15 (redacción dada por la Ley 19.594)',
+  sourceUrl: 'https://www.impo.com.uy/bases/leyes/19009-2012/15',
+  verifiedAt: POSTAL_SURCHARGE_VERIFIED_AT,
+})
+
+/**
+ * Date the per-kg rates below were checked against each courier's published tariff. Exported so the
+ * comparison page reads it instead of repeating a literal: the module doc said 2026-06-19 while
+ * `/couriers-uruguay` printed 18/06/2026, and two hand-kept copies of the same fact always drift.
+ * The two records disagreed by a day and nothing settles which is right, so this keeps the EARLIER
+ * one — a verification date may be pessimistic, never fresher than the data actually is.
+ */
+export const COURIER_RATES_VERIFIED_AT = '2026-06-18'
+
 /**
  * Couriers that ship door-to-door (mostly Miami → Uruguay) for online purchases. Per-kg rates
- * (USD) were **verified 2026-06-19** from each courier's published tariffs. Couriers price by
- * weight tiers; the `perKgUsd` here is the small-parcel tier used by the estimator's flat
- * `base + perKg·kg` model — heavier-parcel tiers and surcharges (e.g. the 10% postal/URSEC
- * surcharge) are described in `note`. Couriers without a public flat rate carry `null` and are
+ * (USD) were verified on {@link COURIER_RATES_VERIFIED_AT} from each courier's published tariffs.
+ * Couriers price by weight tiers; the `perKgUsd` here is the small-parcel tier used by the flat
+ * `base + perKg·kg` model — heavier-parcel tiers and surcharges (see {@link POSTAL_SURCHARGE})
+ * are described in `note`. Couriers without a public flat rate carry `null` and are
  * shown as "Consultar". Override in the UI with your actual quote. Not affiliated; informational.
  * See `/couriers-uruguay` for the full comparison.
  */
@@ -55,7 +106,7 @@ export const COURIERS: Courier[] = [
     transit: '3–7 días hábiles',
     website: 'https://www.gripper.com.uy',
     source: 'https://www.gripper.com.uy/tarifas',
-    note: '5–20 kg US$16,5/kg; <900 g US$19,80 fijo; +10% TSPU; manejo US$5',
+    note: '5–20 kg US$16,5/kg; <900 g US$19,80 fijo; +10% TFSPU; manejo US$5',
     rating: 4.9,
     reviewsNote:
       'El mejor calificado del segmento: rápido (3–7 días), buena atención telefónica; alguna crítica por precio algo alto.',
@@ -93,7 +144,7 @@ export const COURIERS: Courier[] = [
     modality: 'Casillero en Miami',
     website: 'https://www.uruguaycargo.com.uy',
     source: 'https://www.uruguaycargo.com.uy/tarifas.html',
-    note: 'Mín. US$14,99 (≤500 g); 5–10 kg US$18,99/kg; 10–20 kg US$18,20/kg; +10% postal; manejo US$4',
+    note: 'Mín. US$14,99 (≤500 g); 5–10 kg US$18,99/kg; 10–20 kg US$18,20/kg; +10% TFSPU; manejo US$4',
     rating: null,
     reviewsNote: 'Sin reseñas de usuarios localizables en plataformas públicas.',
     reviewSources: [],
@@ -120,7 +171,7 @@ export const COURIERS: Courier[] = [
     modality: 'Casillero en Miami',
     website: 'https://aerobox.com.uy',
     source: 'https://aerobox.com.uy/tarifas/',
-    note: '1–500 g US$11,99 fijo; 5–10 kg US$20,5/kg; 10–20 kg US$17,5/kg; +10% URSEC; manejo US$5+IVA',
+    note: '1–500 g US$11,99 fijo; 5–10 kg US$20,5/kg; 10–20 kg US$17,5/kg; +10% TFSPU; manejo US$5+IVA',
     rating: 4.2,
     reviewsNote:
       'Buena atención por WhatsApp y dos vuelos semanales; algunas críticas por precio y cobertura fuera de Montevideo.',
@@ -205,7 +256,7 @@ export const COURIERS: Courier[] = [
     transit: '3–5 días',
     website: 'https://www.urubox.com.uy',
     source: 'https://www.urubox.com.uy/tarifas-envios.html',
-    note: '1–4,99 kg US$19,90/kg; 5–9,99 kg US$17,90; 10–19,99 kg US$16,50; <1 kg por tramos (desde US$10,90); libros US$11,90/kg; +10% TSPU; manejo US$5',
+    note: '1–4,99 kg US$19,90/kg; 5–9,99 kg US$17,90; 10–19,99 kg US$16,50; <1 kg por tramos (desde US$10,90); libros US$11,90/kg; +10% TFSPU; manejo US$5',
     rating: 4.0,
     reviewsNote:
       'Opiniones polarizadas: leales destacan profesionalismo sin cargo de consolidación; críticos reportan demoras y cargos extra en Tres Cruces.',
@@ -228,7 +279,7 @@ export const COURIERS: Courier[] = [
     modality: 'Casillero en Miami',
     website: 'https://www.starboxuruguay.com',
     source: 'https://www.starboxuruguay.com/',
-    note: '0–500 g US$17 fijo; 501–999 g US$21; 1–4,99 kg US$21/kg; 5–10 kg US$20/kg; +10% TSPU; manejo US$5+IVA; interior +US$10',
+    note: '0–500 g US$17 fijo; 501–999 g US$21; 1–4,99 kg US$21/kg; 5–10 kg US$20/kg; +10% TFSPU; manejo US$5+IVA; interior +US$10',
     rating: null,
     reviewsNote: 'Operador menor; sin reseñas independientes verificables a la fecha.',
     reviewSources: [],
@@ -241,7 +292,7 @@ export const COURIERS: Courier[] = [
     modality: 'Casillero en Miami, Europa y Argentina',
     website: 'https://www.buybox.com.uy',
     source: 'https://www.buybox.com.uy/tarifas.html',
-    note: '1,01–3 kg US$18,90/kg; 0,5–1 kg US$21; 3–5 kg US$16,90; 5–10 kg US$15,90; 10–20 kg US$13,90; libros US$9,99/kg; +10% TSPU; manejo US$5',
+    note: '1,01–3 kg US$18,90/kg; 0,5–1 kg US$21; 3–5 kg US$16,90; 5–10 kg US$15,90; 10–20 kg US$13,90; libros US$9,99/kg; +10% TFSPU; manejo US$5',
     rating: null,
     reviewsNote: 'Sin rating numérico independiente verificable.',
     reviewSources: [],
@@ -255,7 +306,7 @@ export const COURIERS: Courier[] = [
     transit: '~7 días',
     website: 'https://www.grinbox.uy',
     source: 'https://www.grinbox.uy/servicios/comprar-en-usa-desde-uruguay',
-    note: 'US$2,20/100 g (=US$22/kg); libros/CD/DVD US$1,20/100 g (=US$12/kg); +10% TSPU; vuelo semanal Miami→MVD; sin cargo de afiliación',
+    note: 'US$2,20/100 g (=US$22/kg); libros/CD/DVD US$1,20/100 g (=US$12/kg); +10% TFSPU; vuelo semanal Miami→MVD; sin cargo de afiliación',
     rating: null,
     reviewsNote: 'Sin rating numérico independiente verificable.',
     reviewSources: [],

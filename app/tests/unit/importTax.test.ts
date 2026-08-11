@@ -1,6 +1,15 @@
+import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
+import { ADUANA_FAQS } from '../../utils/aduanaFaq'
 import { courierImport, generalImport } from '../../utils/importTax'
-import { shippingCostUsd, getCourier } from '../../utils/courierShipping'
+import {
+  COURIER_RATES_VERIFIED_AT,
+  COURIERS,
+  POSTAL_SURCHARGE,
+  shippingCostUsd,
+  getCourier,
+} from '../../utils/courierShipping'
 
 // The courier regime as Ley 20.446 art. 627 + Decreto 50/026 actually define it. Several of
 // these replace tests that encoded a regime which does not exist — see `importRules.ts`.
@@ -170,6 +179,106 @@ describe('courierShipping', () => {
 
   it('falls back to the first courier for an unknown id', () => {
     expect(getCourier('nope').id).toBe('gripper')
+  })
+
+  it('names the 10% surcharge one way across every note', () => {
+    // It used to appear as "+10% TSPU", "+10% postal" and "+10% URSEC" in the same file, which
+    // read like three separate charges piling onto the freight. One surcharge, one label.
+    const notes = COURIERS.map(courier => courier.note ?? '')
+    const surcharged = notes.filter(note => note.includes('10%'))
+
+    expect(surcharged.length).toBeGreaterThan(0)
+    for (const note of surcharged) {
+      expect(note).toContain(`10% ${POSTAL_SURCHARGE.label}`)
+    }
+    for (const alias of ['10% TSPU', '10% postal', '10% URSEC']) {
+      expect(notes.filter(note => note.includes(alias))).toEqual([])
+    }
+  })
+
+  it('explains the surcharge once, against the statute that sets it', () => {
+    expect(POSTAL_SURCHARGE.name).toBe('Tasa de Financiamiento del Servicio Postal Universal')
+    expect(POSTAL_SURCHARGE.ratePct).toBe(10)
+    expect(POSTAL_SURCHARGE.base).toContain('excluido el IVA')
+    expect(POSTAL_SURCHARGE.sourceUrl).toBe('https://www.impo.com.uy/bases/leyes/19009-2012/15')
+    expect(POSTAL_SURCHARGE.verifiedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+  })
+
+  it('carries the acronyms the user reads on the invoice, so a page can show both', () => {
+    // Standardising the notes on URSEC's own acronym left the reader worse off on its own: the
+    // courier's price list says "TSPU", nothing on the page expanded "TFSPU", and one tax looked
+    // like two. The aliases travel with the surcharge so whatever renders it can print the full
+    // name plus the words the invoice actually uses.
+    expect(POSTAL_SURCHARGE.aliases).toContain('TSPU')
+    expect(POSTAL_SURCHARGE.aliases).toContain('URSEC')
+    expect(POSTAL_SURCHARGE.aliases).not.toContain(POSTAL_SURCHARGE.label)
+  })
+
+  it('points faqPath at an anchor the FAQ page actually renders', () => {
+    // The hash was the FAQ's data id (`#que-es-la-tspu`), but the DOM id is `pregunta-${faq.id}`
+    // and nothing on that page normalises the hash — so the "read the long explanation" link
+    // dropped the reader at the top of a 90+ question page, which is the opposite of the point.
+    const [path, hash] = POSTAL_SURCHARGE.faqPath.split('#')
+    expect(path).toBe('/preguntas-frecuentes-aduana-uruguay')
+    expect(hash).toBeTruthy()
+
+    const faqPage = readFileSync(
+      fileURLToPath(
+        new URL('../../pages/preguntas-frecuentes-aduana-uruguay.vue', import.meta.url)
+      ),
+      'utf8'
+    )
+    // Read the prefix off the page itself, so renaming the id template breaks this test loudly
+    // instead of silently breaking the link again.
+    const prefix = faqPage.match(/:id="`([a-z-]+)-\$\{faq\.id\}`"/)?.[1]
+    expect(prefix).toBe('pregunta')
+
+    expect(hash).toMatch(new RegExp(`^${prefix}-`))
+    const faqId = hash!.slice(prefix!.length + 1)
+    expect(ADUANA_FAQS.map(faq => faq.id)).toContain(faqId)
+  })
+
+  it('keeps one verification date for the rates instead of two that disagree', () => {
+    // courierShipping.ts documented "verified 2026-06-19" while /couriers-uruguay printed
+    // 18/06/2026 for the same check. One constant now owns the fact, and it is the earlier of the
+    // two: a verification date may lag the data, never lead it.
+    expect(COURIER_RATES_VERIFIED_AT).toBe('2026-06-18')
+
+    const page = readFileSync(
+      fileURLToPath(new URL('../../pages/couriers-uruguay.vue', import.meta.url)),
+      'utf8'
+    )
+    // The page must READ the constant, not retype the date — the "either/or" version of this
+    // check let a second hand-kept copy live on as long as it happened to agree today.
+    expect(page).toContain('COURIER_RATES_VERIFIED_AT')
+    const [yyyy, mm, dd] = COURIER_RATES_VERIFIED_AT.split('-')
+    const printed = page.match(/\b\d{2}\/\d{2}\/\d{4}\b/g) ?? []
+    for (const date of printed) expect(date).toBe(`${dd}/${mm}/${yyyy}`)
+  })
+
+  it('renders the surcharge from the module instead of hardcoding any acronym', () => {
+    // The previous guard accepted every known alias, so it BLESSED the bug it was written for:
+    // the disclaimer said "TSPU" while all seven notes said "TFSPU", one 10% reading as two
+    // charges. There is no correct hardcoded sigla here — the page must print POSTAL_SURCHARGE,
+    // which carries the official label, the full name and the words the invoice uses.
+    const page = readFileSync(
+      fileURLToPath(new URL('../../pages/couriers-uruguay.vue', import.meta.url)),
+      'utf8'
+    )
+
+    // Comments may name the sigla — that is how the bug gets explained. Code and markup may not.
+    const code = page
+      .replace(/<!--[\s\S]*?-->/g, '')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/^\s*\/\/.*$/gm, '')
+    expect(code.match(/\bT?F?SPU\b/g) ?? []).toEqual([])
+    // And it must expand the acronym, carry the invoice's own words and link to the explanation —
+    // "TFSPU" alone leaves the reader with four bare letters and no way to reach the long answer.
+    for (const field of ['label', 'name', 'aliases', 'faqPath'] as const) {
+      expect(page, `the page never reads POSTAL_SURCHARGE.${field}`).toContain(
+        `POSTAL_SURCHARGE.${field}`
+      )
+    }
   })
 })
 

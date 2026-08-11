@@ -13,6 +13,79 @@
 // dejaron marca: la carga de la prueba de la publicidad es del anunciante por el art. 26 (no el 24);
 // la contrapublicidad la ordena el organismo por el art. 51; el régimen sancionatorio está en el
 // Cap. XVI (arts. 46-52) con las multas en el art. 47. Es información de referencia, no asesoramiento.
+//
+// AMPLIACIÓN 2026-08-10 — dos casos que el sitio no contestaba, y las dos trampas que casi nos comemos:
+//
+//   1. "Inflan el precio antes del Black Friday y después lo descuentan". La trampa es la regla de
+//      los 30 días del precio anterior: eso es la directiva Omnibus EUROPEA, y todo buscador la
+//      devuelve como si fuera universal. Se leyó la Ley 17.250 completa y el Decreto 244/000 (que
+//      sólo obliga a exhibir el precio de contado con impuestos, arts. 2 a 4) y NO HAY norma
+//      uruguaya de precio de referencia. Así que acá se publica la AUSENCIA y se encuadra por donde
+//      la ley sí muerde: art. 24 (engaña sobre el PRECIO) + art. 26 (probarlo es del ANUNCIANTE).
+//      NUNCA agregar a este archivo un plazo tipo "el precio anterior tuvo que estar vigente N días".
+//
+//   2. "El comercio cerró / era un intermediario: ¿a quién le reclamo?". La trampa acá es inventar
+//      una solidaridad del importador que suena razonable y no existe. El único artículo que sube
+//      por la cadena es el 34, y es SÓLO para los daños que causa el vicio (y encima al revés de lo
+//      que se cree: el comerciante responde recién si no se identifica al importador y al
+//      fabricante). Para la garantía, lo que hay es el art. 23: si el certificado lo entrega el
+//      comerciante e identifica al fabricante o importador que la ofrece, "son estos últimos quienes
+//      resultan obligados por el contrato accesorio de garantía". Textual. Nada más.
+//
+// FUENTES DE ESTA AMPLIACIÓN, leídas el 2026-08-10:
+//   - IMPO — Ley 17.250 arts. 3, 12, 14, 23, 24, 25, 26, 33, 34, 35, 36, 37 y 51
+//   - IMPO — Decreto 244/000 (arts. 2 a 4: exhibición de precios; sin regla de precio anterior)
+//   - IMPO — Ley 18.387 arts. 21, 94, 95 y 99 (concursos: publicación y verificación de créditos)
+//   - MEF — campaña "Black Friday - Consumo responsable"
+//   - MEF — nómina de empresas sancionadas por la Unidad Defensa del Consumidor
+//
+// CORRECCIONES DE LA AUDITORÍA DE HECHOS (2026-08-10), cada una releída en IMPO antes de tocar nada:
+//
+//   a. Se cayó "los precios son libres". Era una generalidad más ancha que lo verificado y no la
+//      sostenía ninguno de los artículos citados. Lo comprobado es la AUSENCIA, y es lo único que
+//      se publica: ni la Ley 17.250 ni el Decreto 244/000 (arts. 2 y 3, leídos literales) le ponen
+//      tope ni condición a subir un precio. Lo que la ley ataca es el AVISO, no el número.
+//
+//   b. El art. 3 NO dice "proveedor es quien emitió la factura". Literal: "toda persona física o
+//      jurídica... que desarrolle de manera profesional actividades de producción, creación,
+//      construcción, transformación, montaje, importación, distribución y comercialización de
+//      productos o servicios en una relación de consumo". Es una definición AMPLIA y por ACTIVIDAD:
+//      un marketplace que comercializa profesionalmente entra. La factura es medio de prueba de la
+//      relación de consumo (Decreto 244/000 art. 1), no el criterio para elegir al obligado. Se
+//      corrigió el texto para no hacerle descartar al lector un reclamo viable contra la plataforma.
+//
+//   c. La verificación de crédito NO es una carta de consumo. El art. 95 exige presentarla EN EL
+//      JUZGADO, en escrito dirigido al síndico o al interventor, indicando fecha, causa, cuantía,
+//      vencimiento y calificación solicitada. Salía por buildConsumerComplaint dirigida al comercio
+//      y fundada en la Ley 17.250, con plazo de 48/72 h y amenaza de Defensa del Consumidor: mal
+//      ruteada, y perder los 60 días del art. 94 cuesta caro (art. 99). Ahora el generador emite un
+//      documento distinto cuando el remedio es concursal (ConsumerRemedy.forum === 'concursal').
+//
+//   d. El art. 21 publica el EXTRACTO de la sentencia, no la sentencia (los 3 días sí eran correctos).
+//
+//   e. La interrupción de la caducidad del art. 37 vive en el numeral 1 (vicios APARENTES), al final
+//      del literal B. El numeral 2 (ocultos: 6 meses para evidenciarse, 3 de caducidad) NO tiene
+//      cláusula de interrupción. NUNCA extenderla al vicio oculto.
+//
+//   f. (2ª vuelta) Arreglar el TEXTO del escrito concursal no alcanzaba: la página lo seguía
+//      envolviendo en el andamiaje de consumo. El documento decía "esto no se envía al comercio ni a
+//      Defensa del Consumidor" y al lado tenía un botón "Enviar el reclamo" con tres destinos: mail
+//      al comercio, formulario de la UDC y teléfono de la UDC. O sea, el daño del art. 94 seguía a un
+//      clic y encima la página se contradecía a sí misma. Por eso el ruteo dejó de vivir en el
+//      template: complaintDelivery() decide título, bajada, rótulos y —lo que importa— si hay algo
+//      que ENVIAR. En el concurso no lo hay: art. 95 textual, "Los acreedores deberán presentarse en
+//      el Juzgado en escrito dirigido al síndico o al interventor". No existe canal de envío que
+//      ofrecer, así que se publica esa ausencia en vez de inventarle uno.
+
+/**
+ * Último contraste con fuente primaria (IMPO / gub.uy) de lo que se agregó o corrigió ese día.
+ * NO significa que todo el módulo se haya recorrido de nuevo: el núcleo de la Ley 17.250
+ * (retracto, garantía, cláusulas abusivas, sanciones) se verificó en la fecha de abajo.
+ */
+export const CONSUMER_RIGHTS_VERIFIED_AT = '2026-08-10'
+
+/** Fecha en que se contrastó artículo por artículo el núcleo de la Ley 17.250. */
+export const CONSUMER_RIGHTS_CORE_VERIFIED_AT = '2026-07-19'
 
 /** Cuál es la palanca legal más fuerte de cada caso — texto corto para el chip. */
 export interface ConsumerScenario {
@@ -53,6 +126,13 @@ export interface ConsumerRemedy {
   id: string
   label: string
   request: string
+  /**
+   * Dónde se presenta lo que este remedio pide. Por defecto 'consumo': una carta al proveedor que
+   * después sirve ante Defensa del Consumidor. 'concursal' es otra cosa por completo — se presenta
+   * en el Juzgado del concurso, en escrito dirigido al síndico o al interventor (Ley 18.387 art. 95)
+   * — y por eso buildConsumerComplaint le arma un documento distinto en vez de la carta de consumo.
+   */
+  forum?: 'consumo' | 'concursal'
 }
 
 /** Un derecho de fondo del consumidor online. */
@@ -491,6 +571,76 @@ export const CONSUMER_SCENARIOS: readonly ConsumerScenario[] = Object.freeze([
     ],
   },
   {
+    id: 'precio-inflado-antes-de-la-oferta',
+    group: 'oferta-servicio',
+    label: 'Inflaron el precio antes de la oferta y después lo "descontaron"',
+    short: 'El precio tachado del Black Friday nunca existió.',
+    icon: 'mdi-percent-outline',
+    lever: 'Art. 26: el precio tachado lo prueba el comercio',
+    answer:
+      'Primero lo que NO hay, porque es lo que te van a decir mal: en Uruguay no existe norma de precio ' +
+      'de referencia. Ni la Ley 17.250 ni el Decreto 244/000 dicen cuántos días tuvo que estar vigente el ' +
+      'precio anterior; el decreto sólo obliga a exhibir el precio de contado con impuestos. La regla de ' +
+      '"los 30 días" que aparece en cualquier búsqueda es europea, no rige acá. Y lo único que esa ausencia ' +
+      'te habilita a decir es esto, ni una palabra más: ni la Ley 17.250 ni el Decreto 244/000 le ponen ' +
+      'tope ni condición a subir un precio. Lo que la ley ataca es el AVISO, no el número. El art. 24 ' +
+      'prohíbe la publicidad total o parcialmente falsa, o que aun por omisión de datos esenciales ' +
+      'induzca a error sobre el PRECIO, y ' +
+      'un "antes $X" al que nunca se vendió es exactamente eso. Y este es el artículo que se pide en los ' +
+      'hilos: el art. 26 pone la carga de probar la veracidad y exactitud material de los datos de hecho ' +
+      'publicitarios sobre el ANUNCIANTE. No sos vos el que tiene que demostrar que el precio estaba ' +
+      'inflado; es el comercio el que tiene que poder acreditar que ese precio anterior existió. Sé ' +
+      'realista con el resultado: lo exigible es el precio final que anunciaron, que integra el contrato ' +
+      '(art. 14), no el precio viejo ni una indemnización automática. Contra el aviso, el organismo puede ' +
+      'pedir judicialmente que lo suspendan y disponer contrapublicidad a la misma frecuencia y a costa ' +
+      'del infractor (art. 51).',
+    articles: [
+      'Ley 17.250 art. 24 — es engañosa la publicidad falsa, o que aun por omisión de datos esenciales induzca a error sobre el precio',
+      'Ley 17.250 art. 26 — probar la veracidad y exactitud material de los datos publicitarios es carga del ANUNCIANTE',
+      'Ley 17.250 art. 14 — el precio anunciado obliga a quien lo difundió e integra el contrato',
+      'Ley 17.250 art. 51 — suspensión judicial del aviso y contrapublicidad a igual frecuencia, a costa del infractor',
+      'Decreto 244/000 art. 2 y art. 3 — sólo obligan a exhibir el precio y a informarlo de contado con impuestos: no regulan el precio tachado',
+    ],
+    deadlines: [
+      'No hay plazo especial: el reclamo es por el aviso, no por un defecto del producto. Capturá la publicidad el mismo día, porque las campañas se bajan apenas terminan.',
+      'Si ya compraste online, corren igual los 5 días hábiles del retracto (art. 16) desde el contrato o la entrega, a tu opción.',
+      'No existe plazo legal de vigencia del precio anterior: no reclames "los 30 días", que son de la norma europea y no rigen en Uruguay.',
+    ],
+    evidence: [
+      'Captura del aviso con el precio tachado y el precio con descuento, mostrando fecha y URL.',
+      'Captura del mismo producto en el mismo comercio ANTES de la campaña: la propia campaña del MEF te recomienda seguir la evolución del precio previa al Black Friday.',
+      'Mails de newsletter, historial del carrito o resultados de buscador con el precio viejo fechado.',
+      'Factura o boleta con el precio efectivamente cobrado, si llegaste a comprar.',
+      'Antecedentes de la razón social en la nómina de empresas sancionadas que publica el MEF, si figura.',
+    ],
+    complaintFacts: [
+      'Producto y comercio: [___].',
+      'Aviso publicado el [fecha]: precio anterior exhibido [___] y precio con descuento [___].',
+      'Precio al que ese mismo comercio ofrecía el producto antes de la campaña: [___] (adjunto captura del [fecha]).',
+      'Diferencia entre el descuento anunciado y el descuento real: [___].',
+    ],
+    remedies: [
+      {
+        id: 'precio-anunciado',
+        label: 'Que respeten el precio anunciado',
+        request:
+          'Exijo que se me venda el producto al precio final anunciado en la campaña, que obliga al anunciante e integra el contrato.',
+      },
+      {
+        id: 'acreditar-precio-anterior',
+        label: 'Que prueben el precio anterior',
+        request:
+          'Intimo al anunciante a acreditar que el precio anterior exhibido estuvo efectivamente vigente, carga que le corresponde por el art. 26, y a rectificar el aviso si no puede hacerlo.',
+      },
+      {
+        id: 'denunciar-aviso',
+        label: 'Que investiguen el aviso',
+        request:
+          'Solicito que la Unidad Defensa del Consumidor investigue el aviso por publicidad engañosa sobre el precio y adopte las medidas de suspensión y contrapublicidad que correspondan.',
+      },
+    ],
+  },
+  {
     id: 'pedido-incompleto-equivocado-danado',
     group: 'entrega',
     label: 'Llegó incompleto, equivocado o dañado en el envío',
@@ -590,6 +740,80 @@ export const CONSUMER_SCENARIOS: readonly ConsumerScenario[] = Object.freeze([
         label: 'Devolución del dinero',
         request:
           'Ante el incumplimiento de la garantía, resuelvo el contrato y exijo la devolución de lo pagado, monetariamente actualizada.',
+      },
+    ],
+  },
+  {
+    id: 'comercio-cerro-o-intermediario',
+    group: 'producto',
+    label: 'El comercio cerró o era un intermediario: ¿a quién le reclamo la garantía?',
+    short: 'Bajó la persiana, quebró, o sólo "te lo traía" de otro lado.',
+    icon: 'mdi-store-alert-outline',
+    lever: 'Art. 23: obliga quien figura como otorgante',
+    answer:
+      'La respuesta honesta es acotada, y conviene saberlo antes de gastar semanas. Si hay garantía ESCRITA, ' +
+      'leé quién figura como otorgante: cuando el certificado lo entrega el comerciante y en él se identifica ' +
+      'al fabricante o importador que ofrece la garantía, son estos últimos quienes resultan obligados por el ' +
+      'contrato accesorio de garantía (art. 23). Ahí la persiana bajó pero el obligado sigue existiendo, y le ' +
+      'reclamás directo a él. Si el certificado no identifica a nadie más, o nunca hubo garantía escrita, tu ' +
+      'deudor es quien te vendió: mirá la razón social y el RUT de la factura, no el cartel del local ni la ' +
+      'marca del producto. Si compraste por un intermediario o un marketplace, ese emisor de la factura es tu ' +
+      'deudor SEGURO, pero no es el único posible: no hay norma que diga "proveedor es quien facturó". El ' +
+      'art. 3 define al proveedor por la ACTIVIDAD —quien de manera profesional produce, importa, distribuye ' +
+      'o comercializa en una relación de consumo—, así que una plataforma que comercializa profesionalmente ' +
+      'entra en la definición; si además responde por tu caso se discute caso a caso, según cuánto haya ' +
+      'intervenido en la oferta, el cobro y la entrega. O sea: reclamale al que facturó, y no descartes a la ' +
+      'plataforma. Y si ese vendedor entró en concurso, tu reclamo pasa a ser un crédito: hay que presentarse a ' +
+      'verificarlo, no alcanza con reclamar. Lo que NO existe, aunque suene lógico: ninguna norma uruguaya ' +
+      'hace responder al importador por la garantía legal de una venta que él no hizo. El único artículo que ' +
+      'sube por la cadena es el 34, y es sólo para los DAÑOS que causa el vicio; encima funciona al revés de ' +
+      'lo que se cree, porque ahí el comerciante o distribuidor responde recién cuando no se puede identificar ' +
+      'al importador y al fabricante. Para el cambio, la reparación o la devolución, no hay atajo.',
+    articles: [
+      'Ley 17.250 art. 23 — si el certificado lo entrega el comerciante e identifica al fabricante o importador que ofrece la garantía, son estos últimos quienes resultan obligados por el contrato accesorio de garantía',
+      'Ley 17.250 art. 3 — definición amplia y por actividad: proveedor es quien de manera profesional produce, importa, distribuye o comercializa en una relación de consumo (no dice "quien emitió la factura")',
+      'Ley 17.250 art. 34 — por los DAÑOS del vicio responde el proveedor; el comerciante o distribuidor sólo responde cuando el importador y el fabricante no pudieran ser identificados',
+      'Ley 17.250 art. 37 — la caducidad por vicios corre igual con el local cerrado; en los vicios APARENTES el reclamo comprobado ante el proveedor interrumpe el plazo hasta que lo deniegue en forma inequívoca (numeral 1)',
+      'Ley 18.387 art. 94 y art. 95 — 60 días para verificar el crédito, en el Juzgado y en escrito dirigido al síndico o interventor, sin honorario, tributo ni costo alguno',
+    ],
+    deadlines: [
+      'Concurso: 60 días desde la declaración judicial del concurso para presentarte a verificar tu crédito (Ley 18.387 art. 94).',
+      'Si dejás pasar ese plazo tenés que verificar judicialmente y a tu costa, y perdés la parte de los pagos ya repartidos (art. 99).',
+      'El EXTRACTO de la sentencia que declara el concurso se publica en el Diario Oficial por 3 días (art. 21): así te enterás, el comercio no te avisa.',
+      'Los plazos por vicios siguen corriendo con el local cerrado: 30 o 90 días para los aparentes, 6 meses para que aparezca el oculto y 3 para reclamarlo.',
+    ],
+    evidence: [
+      'Certificado de garantía completo: quién figura como otorgante y si identifica al fabricante o importador.',
+      'Factura o boleta: razón social y RUT de quien vendió, que es tu proveedor aunque el local ya no exista.',
+      'Publicación del concurso en el Diario Oficial y datos del síndico o interventor designado.',
+      'Si compraste por un intermediario o marketplace: pedido, comprobante de pago y qué empresa emitió la factura.',
+      'Constancia fechada de tu reclamo por escrito: en el vicio aparente es lo que interrumpe la caducidad (art. 37 num. 1), hasta que el proveedor lo deniegue en forma inequívoca. Para el vicio oculto el texto no prevé interrupción, así que ahí el plazo no se detiene.',
+    ],
+    complaintFacts: [
+      'Producto, marca, modelo y fecha de compra: [___].',
+      'Razón social y RUT que figuran en la factura: [___].',
+      'Quién figura en el certificado de garantía como otorgante: [comerciante / fabricante / importador / no hay certificado].',
+      'Situación del vendedor: [cerrado / concurso declarado el (fecha) / era intermediario de (___)].',
+    ],
+    remedies: [
+      {
+        id: 'garantia-al-otorgante',
+        label: 'Reclamar a quien otorgó la garantía',
+        request:
+          'Reclamo el cumplimiento de la garantía a quien figura identificado en el certificado como su otorgante, por resultar obligado por el contrato accesorio de garantía.',
+      },
+      {
+        id: 'identificar-proveedor',
+        label: 'Identificar al proveedor real',
+        request:
+          'Solicito que se identifique a la persona física o jurídica que emitió la factura de esta compra y que el reclamo se le curse a ella, sin perjuicio de que también responda como proveedor quien haya intervenido de manera profesional en la comercialización de este producto, conforme al art. 3 de la Ley 17.250.',
+      },
+      {
+        id: 'verificar-credito',
+        label: 'Verificar el crédito en el concurso (se presenta en el Juzgado)',
+        forum: 'concursal',
+        request:
+          'Solicito la verificación de mi crédito, indicando su fecha, causa, cuantía, vencimiento y calificación solicitada según el detalle que antecede, y acompaño los documentos que acreditan su existencia. Dejo constancia de que esta solicitud no está sujeta a honorario, tributo ni costo de especie alguna para el acreedor.',
       },
     ],
   },
@@ -1220,6 +1444,78 @@ export const CONSUMER_SOURCES: readonly SourceLink[] = Object.freeze([
     url: 'https://www.impo.com.uy/bases/decretos/244-2000',
     publisher: 'IMPO — Centro de Información Oficial',
   },
+  {
+    label:
+      'Ley 17.250 art. 24 — publicidad engañosa, incluida la que induce a error sobre el precio',
+    url: 'https://www.impo.com.uy/bases/leyes/17250-2000/24',
+    publisher: 'IMPO — Centro de Información Oficial',
+  },
+  {
+    label: 'Ley 17.250 art. 26 — la carga de probar los datos publicitarios es del anunciante',
+    url: 'https://www.impo.com.uy/bases/leyes/17250-2000/26',
+    publisher: 'IMPO — Centro de Información Oficial',
+  },
+  {
+    label: 'Ley 17.250 art. 14 — la información publicitaria obliga e integra el contrato',
+    url: 'https://www.impo.com.uy/bases/leyes/17250-2000/14',
+    publisher: 'IMPO — Centro de Información Oficial',
+  },
+  {
+    label: 'Ley 17.250 art. 51 — suspensión del aviso y contrapublicidad a costa del infractor',
+    url: 'https://www.impo.com.uy/bases/leyes/17250-2000/51',
+    publisher: 'IMPO — Centro de Información Oficial',
+  },
+  {
+    label:
+      'Black Friday - Consumo responsable — comparar la evolución del precio previa a la campaña',
+    url: 'https://www.gub.uy/ministerio-economia-finanzas/comunicacion/campanas/black-friday-consumo-responsable',
+    publisher: 'MEF — Unidad Defensa del Consumidor',
+  },
+  {
+    label: 'Ley 17.250 art. 23 — quién resulta obligado por el contrato accesorio de garantía',
+    url: 'https://www.impo.com.uy/bases/leyes/17250-2000/23',
+    publisher: 'IMPO — Centro de Información Oficial',
+  },
+  {
+    label: 'Ley 17.250 art. 3 — definición de proveedor (incluye importador y distribuidor)',
+    url: 'https://www.impo.com.uy/bases/leyes/17250-2000/3',
+    publisher: 'IMPO — Centro de Información Oficial',
+  },
+  {
+    label:
+      'Ley 17.250 art. 34 — daños por el vicio: el comerciante responde si no se identifica al importador y al fabricante',
+    url: 'https://www.impo.com.uy/bases/leyes/17250-2000/34',
+    publisher: 'IMPO — Centro de Información Oficial',
+  },
+  {
+    label:
+      'Ley 18.387 art. 94 — 60 días para verificar el crédito desde la declaración del concurso',
+    url: 'https://www.impo.com.uy/bases/leyes/18387-2008/94',
+    publisher: 'IMPO — Centro de Información Oficial',
+  },
+  {
+    label:
+      'Ley 18.387 art. 95 — la solicitud de verificación no paga honorario, tributo ni costo alguno',
+    url: 'https://www.impo.com.uy/bases/leyes/18387-2008/95',
+    publisher: 'IMPO — Centro de Información Oficial',
+  },
+  {
+    label:
+      'Ley 18.387 art. 99 — sin solicitud en plazo: verificás judicialmente y a tu costa, y perdés la participación en los pagos ya realizados',
+    url: 'https://www.impo.com.uy/bases/leyes/18387-2008/99',
+    publisher: 'IMPO — Centro de Información Oficial',
+  },
+  {
+    label:
+      'Ley 18.387 art. 21 — el extracto de la sentencia de concurso se publica 3 días en el Diario Oficial',
+    url: 'https://www.impo.com.uy/bases/leyes/18387-2008/21',
+    publisher: 'IMPO — Centro de Información Oficial',
+  },
+  {
+    label: 'Empresas sancionadas por la Unidad Defensa del Consumidor — multas y apercibimientos',
+    url: 'https://www.gub.uy/ministerio-economia-finanzas/tematica/empresas-sancionadas',
+    publisher: 'MEF',
+  },
 ])
 
 export const KEY_FIGURES: readonly KeyFigure[] = Object.freeze([
@@ -1241,7 +1537,15 @@ export function scenarioById(id: string): ConsumerScenario | undefined {
   return CONSUMER_SCENARIOS.find(s => s.id === id)
 }
 
-/** Genera el texto final sin depender de Vue, para poder probar cada incidente y solución. */
+/**
+ * Genera el texto final sin depender de Vue, para poder probar cada incidente y solución.
+ *
+ * Ojo con el ruteo: no todo lo que se pide desde esta página es un reclamo de consumo. Si el
+ * remedio elegido es concursal, lo que corresponde no es una carta al comercio fundada en la
+ * Ley 17.250 sino un escrito que se presenta EN EL JUZGADO, dirigido al síndico o al interventor
+ * (Ley 18.387 art. 95). Mandarlo al lugar equivocado se paga con el plazo del art. 94, y perderlo
+ * cuesta lo del art. 99, así que el generador emite otro documento en ese caso.
+ */
 export function buildConsumerComplaint(scenarioId: string, remedyId?: string): string {
   const scenario = scenarioById(scenarioId)
   if (!scenario) return ''
@@ -1249,11 +1553,14 @@ export function buildConsumerComplaint(scenarioId: string, remedyId?: string): s
   const remedy = scenario.remedies.find(item => item.id === remedyId) ?? scenario.remedies[0]
   if (!remedy) return ''
 
+  const facts = scenario.complaintFacts.map(fact => `- ${fact}`).join('\n')
+
+  if (remedy.forum === 'concursal') return buildCreditVerification(facts, remedy)
+
   const articles = scenario.articles
     .map(article => article.split(' — ')[0])
     .slice(0, 4)
     .join('; ')
-  const facts = scenario.complaintFacts.map(fact => `- ${fact}`).join('\n')
 
   return `[localidad], [fecha]
 
@@ -1279,6 +1586,120 @@ Consumidor del Ministerio de Economía y Finanzas, sin perjuicio de las demás a
 correspondan.
 
 Adjuntos: [factura o comprobante], [capturas], [fotos o video], [reclamos previos].
+
+Saluda atentamente,
+[firma]
+[nombre] — C.I. [cédula]
+[teléfono] — [correo]`
+}
+
+/**
+ * Cómo se ENTREGA el documento que buildConsumerComplaint acaba de generar: qué dice la sección que
+ * lo rodea y —sobre todo— si hay a dónde enviarlo.
+ *
+ * Existe porque el ruteo no termina en el texto. La página envolvía TODO lo generado en el
+ * andamiaje de consumo ("mandáselo al comercio", "Enviar el reclamo", "Reclamar en Defensa del
+ * Consumidor"), también cuando lo generado era el escrito concursal, que no va a ninguno de esos
+ * lados: el art. 95 dice, textual, que "los acreedores deberán presentarse en el Juzgado en escrito
+ * dirigido al síndico o al interventor". Mandarlo al comercio o a la UDC no interrumpe nada y los
+ * 60 días del art. 94 se siguen yendo; perderlos cuesta lo del art. 99 (verificar judicialmente y a
+ * tu costa, y perder la participación en los pagos ya realizados).
+ *
+ * Por eso `sendable: false` en el caso concursal: NO hay canal que ofrecer. No se le inventa uno
+ * (no hay presentación electrónica verificada para un acreedor consumidor); se publica la ausencia
+ * y la página esconde el enviador en vez de contradecir al propio documento que muestra.
+ */
+export interface ComplaintDelivery {
+  /** Qué documento se generó, y por lo tanto a qué mundo pertenece la sección entera. */
+  forum: 'consumo' | 'concursal'
+  /** Título de la sección. */
+  heading: string
+  /** La bajada: a dónde va el documento. En el concurso, además, con qué plazo. */
+  intro: string
+  /** Rótulo del panel que personaliza el documento. */
+  builderTitle: string
+  /** Rótulo del selector de soluciones. */
+  remedyLabel: string
+  /** Rótulo del botón de copiar, y su confirmación. */
+  copyLabel: string
+  copiedLabel: string
+  /** ¿Hay a dónde enviarlo desde acá? El escrito concursal se presenta en el Juzgado: no. */
+  sendable: boolean
+}
+
+/** Decide el envoltorio del documento a partir del incidente y la solución elegidos. */
+export function complaintDelivery(scenarioId: string, remedyId?: string): ComplaintDelivery {
+  const scenario = scenarioById(scenarioId)
+  const remedy = scenario?.remedies.find(item => item.id === remedyId) ?? scenario?.remedies[0]
+
+  if (remedy?.forum === 'concursal') {
+    return {
+      forum: 'concursal',
+      heading: 'El escrito de verificación, listo para copiar',
+      intro:
+        'Esto NO se envía al comercio ni a Defensa del Consumidor, y no hay a dónde mandarlo desde ' +
+        'acá: los acreedores deben presentarse en el Juzgado en escrito dirigido al síndico o al ' +
+        'interventor (Ley 18.387 art. 95). El plazo es de 60 días desde la declaración judicial del ' +
+        'concurso (art. 94); si los dejás pasar, tenés que verificar judicialmente y a tu costa, y ' +
+        'perdés la participación en los pagos ya realizados (art. 99). Copiá el escrito, presentalo ' +
+        'ahí, y si el monto es importante consultá a un abogado antes.',
+      builderTitle: 'Personalizá el escrito',
+      remedyLabel: 'Qué pedís en el concurso',
+      copyLabel: 'Copiar el escrito',
+      copiedLabel: 'Escrito copiado',
+      sendable: false,
+    }
+  }
+
+  return {
+    forum: 'consumo',
+    heading: 'El reclamo, listo para copiar',
+    intro:
+      'Mandáselo al comercio por un medio que deje constancia y guardá la fecha. Si no responde, ' +
+      'este mismo texto te sirve de base para el reclamo ante Defensa del Consumidor.',
+    builderTitle: 'Personalizá el reclamo',
+    remedyLabel: 'Qué querés que haga el comercio',
+    copyLabel: 'Copiar el reclamo',
+    copiedLabel: 'Copiado',
+    sendable: true,
+  }
+}
+
+/**
+ * El escrito de verificación de crédito. Nada que ver con la carta de consumo: no se le manda al
+ * comercio ni a Defensa del Consumidor. Los datos que pide (fecha, causa, cuantía, vencimiento y
+ * calificación solicitada) y la gratuidad son textuales del art. 95.
+ */
+function buildCreditVerification(facts: string, remedy: ConsumerRemedy): string {
+  return `ATENCIÓN — ESTO NO SE ENVÍA AL COMERCIO NI A DEFENSA DEL CONSUMIDOR.
+Se presenta en el Juzgado del concurso, en escrito dirigido al síndico o al interventor
+(Ley 18.387 art. 95), dentro de los 60 días de la declaración judicial (art. 94).
+
+[localidad], [fecha]
+
+A: [síndico o interventor designado en el concurso]
+Se presenta en: [Juzgado del concurso] — Autos: [carátula e IUE]
+Concursado: [razón social y RUT del deudor]
+De: [tu nombre completo], C.I. [tu cédula], con domicilio en [domicilio]
+(si residís fuera del país, constituí domicilio en la sede del Juzgado)
+
+SOLICITUD DE VERIFICACIÓN DE CRÉDITO — Ley 18.387, arts. 94 y 95
+
+Origen y datos del crédito:
+${facts}
+
+Detalle exigido por el art. 95:
+- Fecha del crédito: [___].
+- Causa: [compra de consumo no entregada / garantía incumplida / devolución impaga].
+- Cuantía: [___].
+- Vencimiento: [___].
+- Calificación solicitada: [quirografario, salvo que corresponda otra].
+
+Solicitud:
+${remedy.request}
+
+Acompaño los documentos originales o medios de prueba que acreditan la existencia del crédito:
+[factura o boleta], [orden de compra o contrato], [comprobante de pago], [reclamos previos].
 
 Saluda atentamente,
 [firma]
