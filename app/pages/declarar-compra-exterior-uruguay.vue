@@ -78,9 +78,9 @@
         Lo que cobra el Correo además del impuesto
       </h3>
       <p class="text-body-2 text-medium-emphasis mb-3">
-        El cargo administrativo es el precio del servicio de “transferencia de los montos
-        recaudados e información a DNA”. No es un tributo, y por eso no aparece en ninguna
-        calculadora de impuestos: se suma al final, en la pantalla de pago.
+        El cargo administrativo es el precio del servicio de “transferencia de los montos recaudados
+        e información a DNA”. No es un tributo, y por eso no aparece en ninguna calculadora de
+        impuestos: se suma al final, en la pantalla de pago.
       </p>
 
       <div class="table-scroll">
@@ -119,12 +119,29 @@
         </p>
       </VAlert>
 
+      <VCard variant="flat" class="outlined-card pa-5 pa-md-6 mt-4">
+        <div class="section-kicker mb-1">SI TE PASÓ</div>
+        <h3 class="text-subtitle-1 font-weight-bold mb-2">
+          Cómo pasarlo a franquicia antes de pagar
+        </h3>
+        <ol class="steps">
+          <li v-for="step in fixToFranchise" :key="step.title">
+            <div>
+              <strong>{{ step.title }}</strong>
+              <!-- Content is a static, source-controlled catalog; it never contains user input. -->
+              <!-- eslint-disable-next-line vue/no-v-html -->
+              <p v-html="step.text" />
+            </div>
+          </li>
+        </ol>
+      </VCard>
+
       <VAlert type="warning" variant="tonal" density="comfortable" class="mt-3">
-        <strong>No dejes vencer la notificación.</strong> Correo publica el cargo para dos
-        momentos: antes del arribo y dentro de los 10 días de la notificación de retención. Qué se
-        cobra entre el día 11 y el 30 no está publicado, y a los 30 días el envío se declara en
-        «abandono no infraccional». Si se te pasó el plazo, consultá al 0800 2108 antes de que
-        corran los 30 días.
+        <strong>No dejes vencer la notificación.</strong> Correo publica el cargo para dos momentos:
+        antes del arribo y dentro de los 10 días de la notificación de retención. Qué se cobra entre
+        el día 11 y el 30 no está publicado, y a los 30 días el envío se declara en «abandono no
+        infraccional». Si se te pasó el plazo, consultá al 0800 2108 antes de que corran los 30
+        días.
       </VAlert>
 
       <div class="actions mt-4">
@@ -251,8 +268,8 @@
       <p class="text-body-2 text-medium-emphasis mb-3">
         Normativa y procedimientos revisados el 12 de agosto de 2026; los cargos administrativos,
         contra la página de tarifas del Correo actualizada el 1.º de abril de 2026. Las condiciones
-        de checkout y
-        disponibilidad de las plataformas pueden cambiar por producto, vendedor y destino.
+        de checkout y disponibilidad de las plataformas pueden cambiar por producto, vendedor y
+        destino.
       </p>
       <ul class="sources">
         <li v-for="source in sources" :key="source.url">
@@ -332,6 +349,32 @@ const postalSteps = [
   {
     title: 'Pagá a través de Correo y conservá el comprobante.',
     text: 'Desde mayo de 2026 no se paga el tributo directamente en VUCE: lo cobra el operador postal y lo vierte a la DNA. La declaración finaliza cuando se completan los pagos que correspondan.',
+  },
+]
+
+// Qué hacer con una declaración ya enviada sin franquicia. El paso 1 es una capacidad OBSERVADA
+// en Ahíva (la fila ofrece Editar/Borrar mientras el pago está pendiente), no un derecho que la
+// norma publique: por eso el paso 4 dice qué queda si ya pagaste, sin prometer devolución.
+const fixToFranchise = [
+  {
+    title: 'Mientras el pago figure pendiente, editá la declaración.',
+    text: 'En el listado de Ahíva la fila del envío ofrece <strong>Editar</strong> y <strong>Borrar</strong> junto a “Pagar impuestos y gestiones”. Al marcar franquicia el sistema te va a pedir el <strong>medio de pago</strong>, que en las compras es obligatorio.',
+  },
+  {
+    title: 'Verificá que cumplís los requisitos.',
+    text: 'Persona física mayor de edad, uso personal sin fines comerciales, y comprador, titular del medio de pago y destinatario la <strong>misma persona</strong> (Decreto 50/026, art. 4). Además: hasta 20 kg, saldo disponible en los US$ 800 del año y alguno de los 3 envíos sin usar.',
+  },
+  {
+    title: 'Mirá en cuánto queda.',
+    text: 'La franquicia exime de <em>aranceles</em>, no del IVA, salvo compras de EE.UU. de hasta US$ 200. Sobre el paquete de US$ 19,15 desde China: 22% = <strong>US$ 4,21</strong> más el cargo base sin el 5% → <strong>US$ 9,21</strong> con el envío retenido, o US$ 5,71 declarando antes del arribo. Contra US$ 26 por prestación única.',
+  },
+  {
+    title: 'Si te la niegan o si ya pagaste.',
+    text: 'Si el formulario dice que el correo no exprés llega hasta US$ 50, ese tope está <strong>derogado</strong> desde el 1.º de mayo de 2026: reclamá citando el Decreto 50/026. Y si ya pagaste, ninguna fuente oficial publica un mecanismo de recálculo o devolución; queda el reclamo ante el Correo (0800 2108, declaracionenvios@correo.com.uy) y la Aduana (info@aduanas.gub.uy), sin garantía.',
+  },
+  {
+    title: 'Pensá si te conviene gastar la ficha.',
+    text: 'Son <strong>3 envíos por año</strong>. En un paquete de US$ 19 la franquicia ahorra unos US$ 17; esa misma ficha en una compra de US$ 800 ahorra cientos. Si tenés algo caro pendiente, puede convenirte pagar el mínimo y guardarla.',
   },
 ]
 
@@ -453,6 +496,12 @@ const faqs = [
     a: 'Sí, cierra al centavo. Sin franquicia el envío paga la prestación única: 60% de 19,15 son 11,49, menos que el mínimo, así que el tributo es <strong>US$ 20</strong>. Encima va la gestión del Correo: <strong>US$ 5</strong> por declarar con el paquete ya arribado más <strong>US$ 1</strong> del 5% sobre el impuesto. El mínimo de US$ 20 es por envío y no baja porque el producto valga menos, así que en compras chicas el impuesto puede superar a la mercadería.',
     aText:
       'Sí. Sin franquicia el tributo es el mínimo de US$ 20 (60% de 19,15 da 11,49), más US$ 5 de gestión por declarar con el paquete arribado y US$ 1 del 5% sobre el impuesto. El mínimo es por envío, no por compra.',
+  },
+  {
+    q: 'Declaré sin franquicia y me arrepentí. ¿Puedo cambiarlo?',
+    a: 'Si todavía no pagaste, sí: mientras el pago figura pendiente, la fila del envío en Ahíva ofrece <strong>Editar</strong> y <strong>Borrar</strong>, y al marcar franquicia el sistema te pide el medio de pago. Tenés que cumplir el art. 4 del Decreto 50/026 y tener saldo y envíos disponibles. Si ya pagaste, ninguna fuente oficial publica un mecanismo de recálculo o devolución: queda el reclamo ante Correo (0800 2108) y Aduana (info@aduanas.gub.uy), sin garantía de resultado.',
+    aText:
+      'Si todavía no pagaste, sí: mientras el pago figura pendiente la fila del envío en Ahíva ofrece Editar y Borrar, y al marcar franquicia el sistema pide el medio de pago. Hay que cumplir el art. 4 del Decreto 50/026 y tener saldo y envíos disponibles. Si ya pagaste, ninguna fuente oficial publica un mecanismo de recálculo o devolución: queda el reclamo ante Correo y Aduana, sin garantía.',
   },
   {
     q: '¿Por qué mi envío figura “retenido” si ya lo declaré?',

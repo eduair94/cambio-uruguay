@@ -477,6 +477,50 @@
           </tr>
         </tbody>
       </VTable>
+
+      <!-- The other regime, priced. Same parcel, one decision flipped: it is the difference
+           between US$ 26 and US$ 9,21 on a US$ 19 parcel, and it used to be invisible. -->
+      <div v-if="alternative" class="tool-info-box mt-5 pa-4">
+        <div class="d-flex align-center ga-2 mb-2">
+          <VIcon color="primary" size="small">mdi-swap-horizontal</VIcon>
+          <span class="text-subtitle-2 font-weight-bold">
+            {{ useFranchise ? 'Si NO usaras la franquicia' : 'Si usaras la franquicia' }}
+          </span>
+        </div>
+        <div class="alt-grid mb-2">
+          <div class="d-flex align-center justify-space-between ga-2 tool-info-row px-3 py-2">
+            <span class="text-body-2 text-grey-lighten-1">
+              {{ useFranchise ? 'Con franquicia (lo elegido)' : 'Sin franquicia (lo elegido)' }}
+            </span>
+            <span class="text-subtitle-1 font-weight-bold">{{ formatUSD(alternative.now) }}</span>
+          </div>
+          <div class="d-flex align-center justify-space-between ga-2 tool-info-row px-3 py-2">
+            <span class="text-body-2 text-grey-lighten-1">
+              {{ useFranchise ? 'Prestación única' : 'Con franquicia' }}
+            </span>
+            <span
+              class="text-subtitle-1 font-weight-bold"
+              :class="alternative.cheaper ? 'text-success' : ''"
+            >
+              {{ formatUSD(alternative.then) }}
+            </span>
+          </div>
+        </div>
+        <p class="text-caption text-grey-lighten-1 mb-0">
+          <template v-if="alternative.cheaper">
+            Pagarías <strong>{{ formatUSD(Math.abs(alternative.diff)) }} menos</strong> por
+            franquicia (impuesto + gestión), pero consumís <strong>uno de los 3 envíos</strong> del
+            año y parte de los US$ {{ regimeOverlay.rules.franchiseAnnualUsd }}. En un envío chico
+            ese ahorro es de pocos dólares y la ficha rinde mucho más en una compra grande: guardala
+            si tenés algo caro pendiente.
+          </template>
+          <template v-else>
+            La franquicia no te ahorra nada acá y encima gastaría uno de los 3 envíos del año:
+            conviene la prestación única.
+          </template>
+          Los dos regímenes son excluyentes: elegís uno por envío, nunca los dos.
+        </p>
+      </div>
     </VCard>
 
     <template #tips>
@@ -512,15 +556,16 @@
         </li>
         <li>
           <strong>El impuesto no es todo lo que pagás:</strong> si lo trae el Correo, sumale su
-          gestión — <strong>US$ 1,50</strong> declarando antes del arribo o <strong>US$ 5</strong>
-          con el paquete ya retenido, más <strong>5% del impuesto</strong> (sin ese 5% si vas por
-          franquicia). Por eso un paquete de US$ 19,15 declarado tarde termina debiendo
-          <strong>US$ 26</strong>: 20 de prestación única + 5 + 1.
+          gestión — <strong>US$ 1,50</strong> declarando antes del arribo o
+          <strong>US$ 5</strong> con el paquete ya retenido, más
+          <strong>5% del impuesto</strong> (sin ese 5% si vas por franquicia). Por eso un paquete de
+          US$ 19,15 declarado tarde termina debiendo <strong>US$ 26</strong>: 20 de prestación única
+          + 5 + 1.
         </li>
         <li>
-          <strong>Un tracking, una declaración:</strong> el mínimo de US$ 20 es
-          <em>por envío</em>, no por compra. Si AliExpress parte tu pedido en tres paquetes, son
-          tres declaraciones, tres mínimos y hasta tres usos de franquicia.
+          <strong>Un tracking, una declaración:</strong> el mínimo de US$ 20 es <em>por envío</em>,
+          no por compra. Si AliExpress parte tu pedido en tres paquetes, son tres declaraciones,
+          tres mínimos y hasta tres usos de franquicia.
         </li>
         <li>
           <strong>Guardá la factura:</strong> el envío debe ir acompañado de la documentación que
@@ -663,8 +708,7 @@
       que te cobra el courier va aparte y no paga IVA. Si lo trae el Correo, su
       <strong>gestión administrativa</strong> se suma al impuesto (US$ 1,50 o US$ 5, más 5% del
       tributo salvo franquicia) y la mostramos en línea aparte. Verificá las condiciones vigentes
-      con la
-      Dirección Nacional de Aduanas antes de comprar. No es asesoramiento profesional.
+      con la Dirección Nacional de Aduanas antes de comprar. No es asesoramiento profesional.
     </template>
   </ToolShell>
 </template>
@@ -873,22 +917,26 @@ const sources = [
   { label: 'DGI — IVA e impuestos', url: 'https://www.dgi.gub.uy' },
 ]
 
+/** Everything `courierImport` needs, minus the one decision we want to flip below. */
+function courierInputs(withFranchise: boolean) {
+  return {
+    value: value.value || 0,
+    shipping: shipping.value || 0,
+    weightKg: weightKg.value || 0,
+    origin: origin.value,
+    channel: channel.value,
+    useFranchise: withFranchise,
+    franchiseAvailable: withFranchise
+      ? franchiseAvailable.value || regimeOverlay.value.rules.franchiseAnnualUsd
+      : franchiseAvailable.value || 0,
+    ivaPct: productTax.value.ivaPct,
+    declarationTiming: isPostalChannel.value ? declarationTiming.value : undefined,
+  }
+}
+
 const result = computed(() =>
   regime.value === 'courier'
-    ? courierImport(
-        {
-          value: value.value || 0,
-          shipping: shipping.value || 0,
-          weightKg: weightKg.value || 0,
-          origin: origin.value,
-          channel: channel.value,
-          useFranchise: useFranchise.value,
-          franchiseAvailable: franchiseAvailable.value || 0,
-          ivaPct: productTax.value.ivaPct,
-          declarationTiming: isPostalChannel.value ? declarationTiming.value : undefined,
-        },
-        regimeOverlay.value.rules
-      )
+    ? courierImport(courierInputs(useFranchise.value), regimeOverlay.value.rules)
     : generalImport({
         value: value.value || 0,
         shipping: shipping.value || 0,
@@ -899,6 +947,32 @@ const result = computed(() =>
         imesiPct: imesiPct.value || 0,
       })
 )
+
+/** Tributo + gestión: lo que realmente hay que pagar para liberar el envío. */
+function payable(r: { totalTax: number; handlingFee?: number }): number {
+  return Math.round((r.totalTax + (r.handlingFee ?? 0)) * 100) / 100
+}
+
+/**
+ * The OTHER path for the same parcel. The regime choice is the single most expensive decision in
+ * this form and it was hidden behind a switch: a US$ 19 parcel pays US$ 26 sin franquicia and
+ * US$ 9,21 con franquicia, and nothing on screen said so unless you thought to toggle. Null when
+ * flipping the switch changes nothing (same regime, or the shipment left both regimes).
+ */
+const alternative = computed(() => {
+  if (regime.value !== 'courier') return null
+  const other = courierImport(courierInputs(!useFranchise.value), regimeOverlay.value.rules)
+  if (other.regime === result.value.regime || other.regime === 'general') return null
+  const now = payable(result.value)
+  const then = payable(other)
+  return {
+    other,
+    now,
+    then,
+    diff: Math.round((now - then) * 100) / 100,
+    cheaper: then < now,
+  }
+})
 
 // Make explicit what the total already includes: the courier's freight, and Correo's handling
 // charge — the line readers discover as "Pendiente" in Ahíva after the tax is already computed.
@@ -988,5 +1062,18 @@ const faq = [
 .result-blocked {
   opacity: 0.55;
   filter: grayscale(0.4);
+}
+
+/* The two regimes side by side on desktop, stacked on a phone. */
+.alt-grid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 600px) {
+  .alt-grid {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 </style>

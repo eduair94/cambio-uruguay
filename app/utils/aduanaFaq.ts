@@ -258,6 +258,13 @@ export const ADUANA_FAQ_SOURCES: Readonly<Record<string, AduanaFaqSource>> = Obj
     url: 'https://www.correo.com.uy/gestiones-administrativas-envios-exterior',
     kind: 'operador',
   },
+  'correo-varios-paquetes': {
+    label:
+      '¿Qué debo hacer si mi proveedor envía mi compra en más de un paquete? — «una declaración independiente por cada envío o paquete, incluso si comparten la misma factura»',
+    authority: 'Correo Uruguayo',
+    url: 'https://www.correo.com.uy/sobre-encomiendas-internacionales/-/asset_publisher/aA3CAHonsnAs/content/que-debo-hacer-si-mi-proveedor-envia-mi-compra-en-mas-de-un-paquete',
+    kind: 'operador',
+  },
   'dna-productos': {
     label: 'Productos que requieren permisos o no pueden ingresar',
     authority: 'Dirección Nacional de Aduanas',
@@ -806,12 +813,28 @@ export const ADUANA_FAQS: readonly AduanaFaq[] = Object.freeze([
     answer:
       'Aduana y Correo trabajan por envío físico: se declara por número de seguimiento y cada tracking es un envío con su propio mínimo de US$ 20 y, si lo amparás, su propio uso de franquicia. Una orden de US$ 40 dividida en tres paquetes puede pagar US$ 60 de tributo más tres gestiones del Correo, o consumir los tres envíos anuales de una vez. Si un paquete mezcla productos de dos órdenes, se declara el valor de lo que viene en ese envío, con las facturas que lo respalden.',
     category: 'correo-courier-plataformas',
-    sourceIds: ['correo-declarar', 'ley-20446-627', 'decreto-50-026'],
+    sourceIds: ['correo-varios-paquetes', 'correo-declarar', 'ley-20446-627', 'decreto-50-026'],
     basis: 'procedimiento',
     tags: ['aliexpress', 'varios paquetes', 'tracking', 'minimo 20', 'fraccionar'],
     related: {
       label: 'Guía de AliExpress',
       to: '/guias/importar-de-aliexpress-a-uruguay',
+    },
+  },
+  {
+    id: 'pasar-declaracion-a-franquicia',
+    question: 'Declaré sin franquicia por error: ¿puedo cambiarlo y en cuánto queda?',
+    shortAnswer:
+      'Mientras el pago siga pendiente, Ahíva deja editar la declaración; pagada, no hay recálculo publicado.',
+    answer:
+      'Mientras el pago figura pendiente la fila del envío en Ahíva ofrece Editar y Borrar, y al marcar franquicia el sistema pide el medio de pago. Para que la acepten hay que cumplir el art. 4 del Decreto 50/026 —persona física mayor de edad, uso personal, y comprador, titular del pago y destinatario la misma persona— y tener saldo en los US$ 800 y envíos libres de los 3 anuales. La franquicia exime de aranceles pero no del IVA salvo compras de EE.UU. de hasta US$ 200: un paquete chino de US$ 19,15 pasaría de US$ 26 a unos US$ 9,21 (IVA 4,21 + el cargo base sin el 5%). Una vez pagado, ninguna fuente oficial publica recálculo ni devolución: sólo queda el reclamo ante Correo y la DNA, sin garantía. Y consume uno de los tres envíos del año, que rinde mucho más en una compra grande.',
+    category: 'franquicia-impuestos',
+    sourceIds: ['decreto-50-026', 'correo-gestiones', 'correo-declarar'],
+    basis: 'zona-gris',
+    tags: ['cambiar declaracion', 'editar', 'ahiva', 'franquicia', 'me equivoque'],
+    related: {
+      label: 'Paso a paso para corregirlo',
+      to: '/declarar-compra-exterior-uruguay',
     },
   },
   {

@@ -91,6 +91,23 @@ describe('courierImport with Correo handling', () => {
     expect(r.handlingFee).toBe(1.5)
   })
 
+  // The fix we publish: editing the same retained declaration into franquicia. 26,00 → 9,21.
+  it('prices the franquicia fix on the already-retained parcel at US$ 9,21', () => {
+    const fixed = courierImport({
+      value: 19.15,
+      origin: 'other',
+      channel: 'postal-simple',
+      useFranchise: true,
+      declarationTiming: 'after-arrival',
+      today: TODAY,
+    })
+    expect(fixed.regime).toBe('franquicia')
+    expect(fixed.ivaExempt).toBe(false) // China: la exoneración TIFA es sólo para EE.UU.
+    expect(fixed.totalTax).toBe(4.21)
+    expect(fixed.handlingFee).toBe(HANDLING_AFTER_ARRIVAL_USD) // sin el 5% por franquicia
+    expect(round2(fixed.totalTax + (fixed.handlingFee ?? 0))).toBe(9.21)
+  })
+
   it('leaves the fee out for private couriers and when the timing is unknown', () => {
     const courier = courierImport({
       value: 19.15,

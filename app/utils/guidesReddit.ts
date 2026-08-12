@@ -3286,6 +3286,20 @@ export const redditGuides: readonly Guide[] = [
         ],
       },
       {
+        heading: 'Cómo pasarlo a franquicia antes de pagar (y en cuánto queda)',
+        body: 'Mientras el pago figure pendiente la declaración no está cerrada: en el listado de Ahíva, la fila del envío ofrece "Editar" y "Borrar" junto a "Pagar impuestos y gestiones". Editar y marcar franquicia es el camino para corregir un envío que se declaró sin ella, y al elegirla el sistema te va a pedir el medio de pago, que en las compras es obligatorio. Para que te la acepten tenés que cumplir el artículo 4 del Decreto 50/026: persona física mayor de edad, uso personal sin fines comerciales, y comprador, titular del medio de pago y destinatario la misma persona; más el envío dentro de los 20 kg, saldo disponible en los USD 800 del año y alguno de los 3 envíos sin usar. Sobre el paquete de USD 19,15 la cuenta queda así: la franquicia exime de aranceles pero no del IVA porque el origen es China, así que 22% sobre 19,15 son USD 4,21, y la gestión del Correo pasa a ser el cargo base sin el 5% (USD 5 si el paquete ya está retenido, USD 1,50 si llegaste antes): USD 9,21 en lugar de USD 26. Dos avisos: si el formulario te niega la franquicia diciendo que el correo no exprés llega hasta USD 50, ese tope está derogado desde el 1.º de mayo de 2026 y corresponde reclamar; y si ya pagaste, ninguna fuente oficial publica un mecanismo para recalcular o devolver, así que el único camino es el reclamo ante el Correo (0800 2108, declaracionenvios@correo.com.uy) y la Aduana (info@aduanas.gub.uy), sin garantía. Antes de hacerlo pensá si te conviene: en este caso la franquicia ahorra unos USD 17 y te quema uno de los tres envíos del año, mientras que esa misma ficha en una compra de USD 800 ahorra cientos.',
+        links: [
+          {
+            label: 'Requisitos y topes de la franquicia',
+            to: '/franquicia-aduana-uruguay',
+          },
+          {
+            label: 'Si te lo retienen y no destraba',
+            to: '/problemas-con-la-aduana-uruguay',
+          },
+        ],
+      },
+      {
         heading: 'Qué valor cuenta para los topes (y qué no)',
         body: 'El valor que se mira para la franquicia y para los umbrales es el total de la factura de compra: el precio del producto más cualquier concepto que el vendedor agregue en esa misma factura (por ejemplo, el envío que cobra AliExpress). El Correo aclara que el flete y el seguro cuentan si figuran en el comprobante de compra; el flete que te cobra un courier por separado, no. Si el envío supera los USD 800 o los 20 kg, ya no entra en franquicia ni en el régimen simplificado: pasa al régimen general y ahí sí necesitás despachante. Una advertencia útil: hay páginas oficiales que todavía hablan de un mínimo de USD 10 o de un tope de USD 200 por envío; eso era el Decreto 356/014, derogado. El único USD 200 que sigue vigente es otra cosa: el techo de la exoneración de IVA para compras de origen estadounidense.',
       },
@@ -3336,6 +3350,10 @@ export const redditGuides: readonly Guide[] = [
       {
         q: 'AliExpress mandó mi pedido en tres paquetes distintos. ¿Cómo lo declaro?',
         a: 'Uno por uno: se declara por número de seguimiento, y cada tracking es un envío para todos los efectos. Eso significa una declaración, un mínimo de USD 20 y, si usás franquicia, un uso de franquicia por cada paquete. AliExpress no consolida paquetes —cada tienda y cada depósito despacha por su cuenta— y puede incluso mezclar en un mismo paquete productos de dos órdenes distintas. En ese caso declarás el valor de lo que efectivamente viene en ese envío, respaldado con las facturas de ambas órdenes; no declares el total de las compras, porque estarías pagando de más. Guardá capturas del detalle de cada pedido: son lo que te sirve si el Correo o la Aduana te piden respaldo.',
+      },
+      {
+        q: 'Declaré sin franquicia por error. ¿Puedo cambiarlo y cuánto pagaría?',
+        a: 'Si todavía no pagaste, sí: mientras el pago figura pendiente, el listado de Ahíva ofrece "Editar" y "Borrar" en la fila del envío, y al marcar franquicia el sistema te pide el medio de pago. Tenés que cumplir los requisitos del artículo 4 del Decreto 50/026 —persona física mayor de edad, uso personal, y comprador, titular del pago y destinatario la misma persona—, tener saldo en los USD 800 del año y alguno de los 3 envíos libre. Sobre un paquete de USD 19,15 desde China la franquicia no exime del IVA (esa exoneración es solo para EE.UU. hasta USD 200): pagarías 22% de 19,15, unos USD 4,21, más la gestión sin el 5% adicional, o sea USD 9,21 con el paquete retenido y USD 5,71 si hubieras declarado antes del arribo. Si ya pagaste, ninguna fuente oficial publica un mecanismo de recálculo o devolución: queda el reclamo ante el Correo (0800 2108) y la Aduana (info@aduanas.gub.uy), sin garantía. Y pensalo dos veces: cambiarlo te ahorra unos USD 17 pero gasta uno de los tres envíos del año.',
       },
       {
         q: '¿Cuánto cobra el Correo Uruguayo además del impuesto?',
