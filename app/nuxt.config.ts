@@ -800,8 +800,17 @@ export default defineNuxtConfig({
       // Set via env NUXT_PUBLIC_CLARITY_ID. See plugins/clarity.client.ts.
       clarityId: process.env.NUXT_PUBLIC_CLARITY_ID || '',
       // Google AdSense publisher id (ca-pub-XXXXXXXXXXXXXXXX). Empty until the
-      // AdSense account is created; when set, app.vue injects the loader script.
+      // AdSense account is created; when set, app.vue injects the loader script
+      // on the routes `utils/ads.ts` allows.
       adsensePubId: process.env.NUXT_PUBLIC_ADSENSE_PUB_ID || '',
+      // Manual ad-unit ids (AdSense → Ads → By ad unit → the 10-digit slot id).
+      // Empty by default ON PURPOSE: fill these in only after auto ads' in-page
+      // format is turned down in the console, otherwise the manual units stack
+      // on top of the automatic ones and the page gets denser, not calmer.
+      adsenseSlots: {
+        contentEnd: process.env.NUXT_PUBLIC_ADSENSE_SLOT_CONTENT_END || '',
+        inArticle: process.env.NUXT_PUBLIC_ADSENSE_SLOT_IN_ARTICLE || '',
+      },
       // Firebase Web SDK config (public by design)
       firebase: {
         apiKey: process.env.NUXT_PUBLIC_FIREBASE_API_KEY || '',

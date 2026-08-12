@@ -47,18 +47,28 @@ useSeoMeta({
 // until the AdSense account exists — applying later is a config change, not a
 // code change. Personalized-ads behaviour follows the Consent Mode v2 signals
 // set by the cookie banner.
-const adsensePubId = useRuntimeConfig().public.adsensePubId as string
+//
+// The route gate matters as much as the id: once this script is on the page,
+// where the ads go is Google's decision, not ours. Keeping it off the routes
+// that must not carry ads (`utils/ads.ts`) is the only code-side control over
+// auto placement — /widget renders inside somebody else's site, /pizarra
+// promises zero third-party requests, and the account and contact flows are
+// worth more finished than monetised. The account meta stays unconditional so
+// site verification still works from any URL.
+const { pubId: adsensePubId, scriptAllowed } = useAds()
 if (adsensePubId) {
-  useHead({
-    meta: [{ name: 'google-adsense-account', content: adsensePubId }],
-    script: [
-      {
-        src: `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsensePubId}`,
-        async: true,
-        crossorigin: 'anonymous',
-      },
-    ],
-  })
+  useHead({ meta: [{ name: 'google-adsense-account', content: adsensePubId }] })
+  useHead(() => ({
+    script: scriptAllowed.value
+      ? [
+          {
+            src: `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsensePubId}`,
+            async: true,
+            crossorigin: 'anonymous',
+          },
+        ]
+      : [],
+  }))
 }
 
 // Handle hydration and errors

@@ -1,4 +1,7 @@
 {
+  "ads": {
+    "label": "Publicidade"
+  },
   "estado": {
     "nav": "Status",
     "title": "Status dos scrapers",

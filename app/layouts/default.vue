@@ -250,6 +250,11 @@
     <VMain id="main" tabindex="-1" :class="formatNameRoute()">
       <div class="container_custom">
         <slot />
+        <!-- The one ad every allowed route carries: after the content, before
+             the footer, never in the middle of a tool. Routes opt out through
+             `utils/ads.ts` or `definePageMeta({ ads: false })`; long articles
+             may add a single <AdSlot placement="in-article" /> of their own. -->
+        <ClientOnly><AdSlot placement="content-end" /></ClientOnly>
       </div>
     </VMain>
 

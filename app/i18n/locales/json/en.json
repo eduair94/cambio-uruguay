@@ -1,4 +1,7 @@
 {
+  "ads": {
+    "label": "Advertisement"
+  },
   "estado": {
     "nav": "Status",
     "title": "Scraper status",
