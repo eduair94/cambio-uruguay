@@ -3227,9 +3227,9 @@ export const redditGuides: readonly Guide[] = [
     slug: 'importar-de-aliexpress-a-uruguay',
     title: 'Cómo importar de AliExpress a Uruguay: courier, franquicia e impuestos',
     description:
-      'Cómo importar de AliExpress a Uruguay por courier: la franquicia anual de USD 800, el régimen simplificado del 60%, por qué la exoneración de IVA de USD 200 NO aplica a China y cómo estimar el costo real de tu compra internacional.',
+      'Cómo importar de AliExpress a Uruguay: la franquicia anual de USD 800, el 60% con mínimo de USD 20 por envío, por qué AliExpress parte tu pedido en varios trackings y qué cobra el Correo aparte del impuesto.',
     tag: 'IMPORTACIÓN',
-    updatedAt: '2026-07-20',
+    updatedAt: '2026-08-12',
     sections: [
       {
         heading: 'AliExpress entra por el régimen de envíos postales',
@@ -3259,7 +3259,31 @@ export const redditGuides: readonly Guide[] = [
       },
       {
         heading: 'Si no usás la franquicia: 60% del valor, mínimo USD 20',
-        body: 'El envío que no entra por franquicia paga el régimen simplificado: una tasa única del 60% sobre el valor de la compra, con un pago mínimo de USD 20 por envío (Ley 20.446 art. 627). Es un cálculo directo: valor × 0,60, y si eso da menos de USD 20, pagás USD 20. A ese impuesto sumale siempre el flete y los cargos que te cobra el courier, que se facturan aparte. Para compras chicas de AliExpress, ese mínimo de USD 20 muchas veces pesa más que el producto, así que conviene juntar la compra en un solo envío antes que fraccionarla.',
+        body: 'El envío que no entra por franquicia paga el régimen simplificado: una tasa única del 60% sobre el valor de la compra, con un pago mínimo de USD 20 por envío (Ley 20.446 art. 627). Es un cálculo directo: valor × 0,60, y si eso da menos de USD 20, pagás USD 20. Ese mínimo es por envío, no por compra, y no baja porque el producto sea barato: en un paquete de USD 15 el impuesto es más caro que la mercadería. Sumale además el flete y los cargos del transportista, que se facturan aparte.',
+      },
+      {
+        heading: 'AliExpress parte tu pedido: un tracking, una declaración, un mínimo',
+        body: 'Esta es la trampa que más plata cuesta y no aparece en ninguna guía oficial. AliExpress no consolida: cada tienda y cada depósito despacha por su cuenta, así que un carrito con tres productos puede salir en tres paquetes con tres números de seguimiento, e incluso mezclar en un mismo paquete productos de dos órdenes distintas. Del lado uruguayo, Aduana y Correo trabajan por envío físico: una declaración por tracking, un mínimo de USD 20 por tracking y, si los amparás en franquicia, un uso de franquicia por tracking. Una compra de USD 40 partida en tres paquetes puede terminar pagando USD 60 de impuesto más tres gestiones del Correo, o consumir de una sola vez los tres envíos de franquicia del año. Antes de pagar el carrito fijate en cuántos envíos se divide; si un paquete te llega mezclando productos de dos órdenes, declarás el valor de lo que viene en ESE envío, con las facturas que lo respalden.',
+        links: [
+          {
+            label: 'Cómo se declara cada paquete',
+            to: '/declarar-compra-exterior-uruguay',
+          },
+        ],
+      },
+      {
+        heading: 'El impuesto no es lo único: la gestión del Correo',
+        body: 'Cuando el paquete lo trae el Correo Uruguayo, arriba del tributo hay un cargo administrativo publicado por el propio Correo (el precio de "transferencia de los montos recaudados e información a DNA"): USD 1,50 más el 5% del impuesto si declarás antes de que el envío llegue al país, y USD 5 más el 5% si lo registrás cuando ya arribó, siempre dentro de los 10 días de emitida la notificación de retención. Si elegís franquicia, ese 5% no se aplica. Qué se cobra entre el día 11 y el día 30 no está publicado, y pasados los 30 días el envío se declara en "abandono no infraccional", así que no dejes correr el plazo: consultá al 0800 2108. Declarar antes del arribo es la diferencia entre USD 1,50 y USD 5 de base, y no cuesta nada más que hacerlo a tiempo.',
+      },
+      {
+        heading: 'La cuenta real de un paquete de USD 19,15',
+        body: 'Un caso concreto de agosto de 2026: dos compras de AliExpress llegaron partidas en tres paquetes, uno de ellos mezclando un producto de cada orden. El comprador sumó los valores de lo que venía en ese paquete —USD 19,15—, lo declaró con el envío ya retenido y Ahíva le mostró "Pendiente USD 26,00", más que el propio producto. No era un error del sistema: 19,15 × 60% da 11,49, menos que el mínimo, así que la prestación única es USD 20; el Correo suma USD 5 por declarar con el paquete ya arribado y USD 1 más, que es el 5% del impuesto. Veinte más cinco más uno: USD 26,00 exactos. Declarándolo antes de que llegara habrían sido USD 22,50, y amparándolo en franquicia el impuesto habría sido el IVA de 22% sobre 19,15 —unos USD 4,21— más USD 1,50 de gestión, aunque a costa de quemar uno de los tres envíos del año en un paquete de USD 19. Una advertencia sobre esa última cuenta: hay compradores que reportan que les cobraron igual el piso de USD 20 estando en franquicia. La ley pone ese mínimo en la prestación única (Ley 20.446 art. 627), no en el IVA de la franquicia, así que si te pasa pedí el detalle de la liquidación antes de pagar.',
+        links: [
+          {
+            label: 'Calculá tu caso con la gestión incluida',
+            to: '/herramientas/calculadora-impuestos-importacion',
+          },
+        ],
       },
       {
         heading: 'Qué valor cuenta para los topes (y qué no)',
@@ -3306,6 +3330,22 @@ export const redditGuides: readonly Guide[] = [
         a: 'Casi nunca. El régimen simplificado tiene un mínimo de USD 20 por envío, así que fraccionar multiplica ese piso y, además, gastás más envíos de franquicia (solo tenés 3 al año). Y si el vendedor te manda una misma compra en varios paquetes, la Aduana exige una declaración por cada uno aunque compartan factura. Salvo que te acerques al tope de 20 kg o de USD 800, suele convenir juntar todo en un mismo envío. Hacé la cuenta con la calculadora antes de decidir.',
       },
       {
+        q: 'Declaré USD 19,15 y el Correo me reclama USD 26. ¿Está bien?',
+        a: 'Sí, y la cuenta cierra al centavo. Sin franquicia el envío paga la prestación única: 60% de 19,15 son 11,49, por debajo del mínimo, así que el tributo es USD 20. Encima va el cargo administrativo del Correo: USD 5 por declarar con el paquete ya arribado (dentro de los 10 días de la notificación de retención) más el 5% del impuesto, que sobre 20 es USD 1. Total USD 26. Si lo hubieras declarado antes del arribo serían USD 22,50. El mínimo de USD 20 es por envío y no baja porque el producto valga menos: en compras chicas el impuesto puede superar a la mercadería, y esa es la razón por la que a mucha gente "no le cierra" el número.',
+      },
+      {
+        q: 'AliExpress mandó mi pedido en tres paquetes distintos. ¿Cómo lo declaro?',
+        a: 'Uno por uno: se declara por número de seguimiento, y cada tracking es un envío para todos los efectos. Eso significa una declaración, un mínimo de USD 20 y, si usás franquicia, un uso de franquicia por cada paquete. AliExpress no consolida paquetes —cada tienda y cada depósito despacha por su cuenta— y puede incluso mezclar en un mismo paquete productos de dos órdenes distintas. En ese caso declarás el valor de lo que efectivamente viene en ese envío, respaldado con las facturas de ambas órdenes; no declares el total de las compras, porque estarías pagando de más. Guardá capturas del detalle de cada pedido: son lo que te sirve si el Correo o la Aduana te piden respaldo.',
+      },
+      {
+        q: '¿Cuánto cobra el Correo Uruguayo además del impuesto?',
+        a: 'El Correo publica su cargo administrativo: USD 1,50 más el 5% del impuesto abonado si declarás antes de que el envío llegue a Uruguay, y USD 5 más el 5% si registrás el paquete cuando ya arribó, siempre dentro de los 10 días de emitida la notificación de retención. Si elegiste franquicia, no se aplica ese 5%. Qué se cobra entre el día 11 y el día 30 no está publicado y a los 30 días el envío pasa a "abandono no infraccional": si se te venció el plazo, llamá al 0800 2108 antes de que corran. No es un impuesto sino el precio del servicio del operador, así que un courier privado cobra en su lugar su propia gestión, según su tarifario.',
+      },
+      {
+        q: '¿Por qué mi paquete figura "RETENIDO" si ya lo declaré?',
+        a: 'Porque no usaste la franquicia. El instructivo del Correo lo dice en su paso 4: si no la elegís, igual tenés que cargar toda la información de la compra y el envío queda retenido hasta que pagues; cuando el paquete se asigna al depósito de retención te llega la notificación por correo electrónico para abonar los tributos y liberarlo. O sea que "retenido" no significa que hiciste algo mal ni que la Aduana te marcó: es el recorrido normal de todo envío que paga la prestación única. Distinto es que te lo retengan por documentación, valor o contenido, que es otro problema.',
+      },
+      {
         q: 'Me llegó por el Correo y no me deja usar la franquicia porque supera USD 50. ¿Es correcto?',
         a: 'No, ya no. Ese tope de USD 50 para el correo no exprés era el artículo 3 del Decreto 356/014, derogado por el artículo 19 del Decreto 50/026 con efecto desde el 1.º de mayo de 2026. Hoy la modalidad no cambia nada: el decreto regula por igual a los operadores postales "públicos o privados", y la guía del MEF dice textualmente que el tope de USD 800 "no es un tope por compra". El problema es que la página del Correo donde declarás todavía publica el límite viejo. Si el formulario te lo niega, reclamá ante la Aduana (info@aduanas.gub.uy, 2915 0007) y ante el Correo (0800 2108) citando el Decreto 50/026 y la guía del MEF del 24 de abril de 2026. Guardá capturas: si el envío queda retenido, el reclamo se hace con la documentación en mano.',
       },
@@ -3343,6 +3383,12 @@ export const redditGuides: readonly Guide[] = [
         label: 'Ley 20.446 art. 627 — prestación única del 60%, mínimo USD 20, sin despachante',
         url: 'https://www.impo.com.uy/bases/leyes/20446-2025/627',
         publisher: 'IMPO',
+      },
+      {
+        label:
+          'Gestiones administrativas para envíos del exterior — USD 1,50 + 5% antes del arribo, USD 5 + 5% con el envío retenido, sin el 5% en franquicia, abandono a los 30 días',
+        url: 'https://www.correo.com.uy/gestiones-administrativas-envios-exterior',
+        publisher: 'Correo Uruguayo',
       },
     ],
   },

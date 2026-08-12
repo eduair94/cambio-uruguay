@@ -662,6 +662,11 @@ const sources = [
   },
   {
     label:
+      'Correo Uruguayo — gestiones administrativas: US$ 1,50 + 5% antes del arribo, US$ 5 + 5% con el envío retenido, sin el 5% en franquicia',
+    url: 'https://www.correo.com.uy/gestiones-administrativas-envios-exterior',
+  },
+  {
+    label:
       'Decreto 50/026 — franquicia y valor de la factura (art. 5); los dos regímenes son alternativos (arts. 2 y 3); el art. 15 regula el incumplimiento',
     url: 'https://www.impo.com.uy/bases/decretos/50-2026',
   },
@@ -775,9 +780,15 @@ const faqs = [
   },
   {
     q: 'El vendedor me mandó la compra en varios paquetes. ¿Qué hago?',
-    a: 'Una <strong>declaración por cada paquete</strong>, aunque compartan la misma factura: así lo exige la Aduana y lo confirma el Correo. Y cada paquete se cuenta como un envío, así que una compra partida en tres te puede consumir <strong>los tres usos de franquicia del año</strong>. Si podés, pedile al vendedor que lo mande junto. Ojo también con el peso: por encima de <strong>20 kg</strong> el envío sale del régimen y necesita despachante.',
+    a: 'Una <strong>declaración por cada paquete</strong>, aunque compartan la misma factura: así lo exige la Aduana y lo confirma el Correo. Y cada paquete se cuenta como un envío, así que una compra partida en tres te puede consumir <strong>los tres usos de franquicia del año</strong> —o, si no usás franquicia, pagar <strong>tres veces el mínimo de US$ 20</strong>—. Si podés, pedile al vendedor que lo mande junto; <strong>AliExpress no consolida</strong>, cada tienda y cada depósito despacha por su cuenta y hasta puede mezclar en un paquete productos de dos órdenes distintas. Cuando eso pasa, declarás el valor de lo que viene en <em>ese</em> envío con las facturas de las dos órdenes. Ojo también con el peso: por encima de <strong>20 kg</strong> el envío sale del régimen y necesita despachante.',
     aText:
-      'Una declaración por cada paquete, aunque compartan la misma factura. Cada paquete cuenta como un envío, así que una compra partida en tres puede consumirte los tres usos de franquicia del año; conviene pedirle al vendedor que lo mande junto. Por encima de 20 kg el envío sale del régimen y necesita despachante.',
+      'Una declaración por cada paquete, aunque compartan la misma factura. Cada paquete cuenta como un envío, así que una compra partida en tres puede consumirte los tres usos de franquicia del año, o pagar tres veces el mínimo de US$ 20 si no usás franquicia. AliExpress no consolida: cada tienda y cada depósito despacha por su cuenta y puede mezclar en un paquete productos de dos órdenes; en ese caso se declara el valor de lo que viene en ese envío, con las facturas de ambas órdenes. Por encima de 20 kg el envío sale del régimen y necesita despachante.',
+  },
+  {
+    q: 'Declaré US$ 19,15 y el Correo me pide US$ 26. ¿Cómo puede costar más que el producto?',
+    a: 'Porque son dos cosas sumadas y ninguna es un error. Sin franquicia, el envío paga la <strong>prestación única</strong>: 60% de 19,15 son 11,49, por debajo del piso, así que el tributo es el <strong>mínimo de US$ 20</strong>, que corre <em>por envío</em> y no baja porque el producto sea barato. Encima va el <strong>cargo administrativo del Correo</strong>, que publica en su página de <a href="https://www.correo.com.uy/gestiones-administrativas-envios-exterior" target="_blank" rel="noopener noreferrer">gestiones administrativas</a>: <strong>US$ 1,50 + 5% del impuesto</strong> si declarás antes de que el envío llegue, o <strong>US$ 5 + 5%</strong> si lo registrás cuando ya arribó (dentro de los 10 días de la notificación de retención). Con franquicia, ese 5% no se aplica. Veinte, más cinco, más uno: <strong>US$ 26</strong>. Declarándolo antes del arribo habrían sido US$ 22,50. Qué se cobra entre el día 11 y el 30 no está publicado, y a los 30 días el envío cae en abandono.',
+    aText:
+      'Son dos cosas sumadas. Sin franquicia el envío paga la prestación única: 60% de 19,15 da 11,49, por debajo del piso, así que el tributo es el mínimo de US$ 20, que corre por envío. Encima va el cargo administrativo del Correo: US$ 1,50 más 5% del impuesto si declarás antes del arribo, o US$ 5 más 5% si lo registrás con el paquete ya llegado, dentro de los 10 días de la notificación de retención; con franquicia el 5% no se aplica. Veinte más cinco más uno son US$ 26; declarando antes habrían sido US$ 22,50. El tramo entre el día 11 y el 30 no está publicado y a los 30 días el envío cae en abandono.',
   },
   {
     q: '¿Qué datos de la tarjeta tengo que dar al declarar?',

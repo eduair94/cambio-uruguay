@@ -71,6 +71,36 @@
           (Decreto 356/014 arts. 3 y 4 → Decreto 50/026 art. 19). Si te lo niegan, reclamalo.
         </VAlert>
 
+        <!-- Correo's administrative charge depends on WHEN you declare, and it is the reason a
+             US$ 19 parcel can owe US$ 26. Only Correo publishes a tariff, so we only ask on the
+             postal channels. -->
+        <template v-if="isPostalChannel">
+          <div class="text-overline text-grey mb-2">¿Cuándo declarás en Ahíva?</div>
+          <VBtnToggle
+            v-model="declarationTiming"
+            color="primary"
+            mandatory
+            divided
+            variant="outlined"
+            class="seg-toggle mb-2"
+          >
+            <VBtn value="before-arrival" class="seg-btn">
+              <VIcon start>mdi-clock-check-outline</VIcon>
+              Antes de que llegue
+            </VBtn>
+            <VBtn value="after-arrival" class="seg-btn">
+              <VIcon start>mdi-package-variant-closed-remove</VIcon>
+              Ya llegó / está retenido
+            </VBtn>
+          </VBtnToggle>
+          <p class="text-caption text-grey-lighten-1 mb-6">
+            El Correo cobra aparte la gestión: <strong>US$ 1,50</strong> si declarás antes del
+            arribo y <strong>US$ 5</strong> si el paquete ya llegó (dentro de los 10 días de la
+            notificación de retención), más <strong>5% del impuesto</strong> — ese 5% no se aplica
+            si elegís franquicia. {{ POSTAL_HANDLING_UNPUBLISHED }}
+          </p>
+        </template>
+
         <div class="text-overline text-grey mb-2">Origen del envío</div>
         <VBtnToggle
           v-model="origin"
@@ -481,6 +511,18 @@
           vendedor antes del embarque.
         </li>
         <li>
+          <strong>El impuesto no es todo lo que pagás:</strong> si lo trae el Correo, sumale su
+          gestión — <strong>US$ 1,50</strong> declarando antes del arribo o <strong>US$ 5</strong>
+          con el paquete ya retenido, más <strong>5% del impuesto</strong> (sin ese 5% si vas por
+          franquicia). Por eso un paquete de US$ 19,15 declarado tarde termina debiendo
+          <strong>US$ 26</strong>: 20 de prestación única + 5 + 1.
+        </li>
+        <li>
+          <strong>Un tracking, una declaración:</strong> el mínimo de US$ 20 es
+          <em>por envío</em>, no por compra. Si AliExpress parte tu pedido en tres paquetes, son
+          tres declaraciones, tres mínimos y hasta tres usos de franquicia.
+        </li>
+        <li>
           <strong>Guardá la factura:</strong> el envío debe ir acompañado de la documentación que
           acredite el valor (art. 5).
         </li>
@@ -618,7 +660,10 @@
       en esta estimación: las fuentes oficiales no publican un mecanismo para aplicar franquicia a
       una parte y 60% al saldo del mismo envío. Los topes de US$ 200 y US$ 800 se miden sobre el
       <strong>total de la factura del vendedor</strong> (precio + sales tax + su envío); el flete
-      que te cobra el courier va aparte y no paga IVA. Verificá las condiciones vigentes con la
+      que te cobra el courier va aparte y no paga IVA. Si lo trae el Correo, su
+      <strong>gestión administrativa</strong> se suma al impuesto (US$ 1,50 o US$ 5, más 5% del
+      tributo salvo franquicia) y la mostramos en línea aparte. Verificá las condiciones vigentes
+      con la
       Dirección Nacional de Aduanas antes de comprar. No es asesoramiento profesional.
     </template>
   </ToolShell>
@@ -628,6 +673,7 @@
 import { computed, ref, watch } from 'vue'
 import { courierImport, generalImport } from '~/utils/importTax'
 import { CHANNEL_LABEL, MAX_WEIGHT_KG, type ArrivalChannel } from '~/utils/importRules'
+import { POSTAL_HANDLING_UNPUBLISHED, type DeclarationTiming } from '~/utils/postalHandling'
 import { regimeRulesFromPayload } from '~/utils/regimeOverlay'
 import {
   IMPORT_PRODUCT_TYPES,
@@ -641,6 +687,7 @@ import { formatUSD } from '~/utils/format'
 const regime = ref<'courier' | 'general'>('courier')
 const origin = ref<'usa' | 'other'>('usa')
 const channel = ref<ArrivalChannel>('courier')
+const declarationTiming = ref<DeclarationTiming>('before-arrival')
 const value = ref(150)
 const shipping = ref(0)
 const insurance = ref(0)
@@ -752,6 +799,11 @@ const channelHint = computed(() => {
  */
 const legacyCap = computed(() => result.value.legacyChannelCap)
 
+/** Correo Uruguayo brings the parcel → its published handling charge applies on top of the tax. */
+const isPostalChannel = computed(
+  () => channel.value === 'postal-ems' || channel.value === 'postal-simple'
+)
+
 /** Over the 20 kg ceiling: flags the weight field itself (Decreto 50/026 arts. 1 y 2). */
 const overWeight = computed(
   () => regime.value === 'courier' && (weightKg.value || 0) > MAX_WEIGHT_KG
@@ -788,6 +840,11 @@ const sources = [
     label:
       'Correo Uruguayo — preguntas frecuentes: el flete y el seguro cuentan si figuran en la factura',
     url: 'https://www.correo.com.uy/sobre-encomiendas-internacionales',
+  },
+  {
+    label:
+      'Correo Uruguayo — «Gestiones administrativas para envíos del exterior»: US$ 1,50 + 5% antes del arribo, US$ 5 + 5% con el envío retenido, sin el 5% en franquicia',
+    url: 'https://www.correo.com.uy/gestiones-administrativas-envios-exterior',
   },
   {
     label: 'Aduanas — Mercaderías controladas por otros organismos',
@@ -828,6 +885,7 @@ const result = computed(() =>
           useFranchise: useFranchise.value,
           franchiseAvailable: franchiseAvailable.value || 0,
           ivaPct: productTax.value.ivaPct,
+          declarationTiming: isPostalChannel.value ? declarationTiming.value : undefined,
         },
         regimeOverlay.value.rules
       )
@@ -842,12 +900,16 @@ const result = computed(() =>
       })
 )
 
-// Make explicit that, for courier shipments with freight, the total already includes it.
-const totalRowLabel = computed(() =>
-  regime.value === 'courier' && (shipping.value || 0) > 0
-    ? 'Total a pagar (mercadería + flete + impuestos)'
-    : 'Total a pagar (con mercadería)'
-)
+// Make explicit what the total already includes: the courier's freight, and Correo's handling
+// charge — the line readers discover as "Pendiente" in Ahíva after the tax is already computed.
+const totalRowLabel = computed(() => {
+  if (regime.value !== 'courier') return 'Total a pagar (con mercadería)'
+  const parts = ['mercadería']
+  if ((shipping.value || 0) > 0) parts.push('flete')
+  parts.push('impuestos')
+  if (result.value.handlingFee) parts.push('gestión')
+  return `Total a pagar (${parts.join(' + ')})`
+})
 
 const faq = [
   {
@@ -869,6 +931,18 @@ const faq = [
   {
     q: '¿Cuánto se paga si el envío no entra en la franquicia?',
     a: 'La prestación única es 60% del valor del envío, con un mínimo de US$ 20, y solo alcanza envíos de hasta US$ 800 y 20 kg. Las fuentes oficiales consultadas no publican un mecanismo para dividir un mismo envío entre franquicia y prestación única. Por eso la calculadora aplica un solo régimen al valor completo; si tu operador ofrece otra liquidación, pedile la norma o el procedimiento escrito antes de pagar.',
+  },
+  {
+    q: 'Declaré US$ 19,15 y el Correo me pide US$ 26. ¿Está mal?',
+    a: 'No, y la cuenta cierra al centavo. Sin franquicia, el envío paga la prestación única: 60% de 19,15 son 11,49, menos que el mínimo, así que pagás US$ 20. A eso el Correo le suma su cargo administrativo por "transferencia de los montos recaudados e información a DNA": US$ 5 porque declaraste con el paquete ya arribado (dentro de los 10 días de la notificación de retención) más el 5% del impuesto, que sobre 20 es US$ 1. Total: US$ 26. Declarando antes de que llegara habrían sido US$ 22,50 (20 + 1,50 + 1). El mínimo de US$ 20 es por envío y no baja porque el producto valga menos: en compras chicas el impuesto puede superar a la mercadería.',
+  },
+  {
+    q: '¿Cuánto cobra el Correo Uruguayo aparte del impuesto?',
+    a: 'Correo publica su cargo administrativo en "Gestiones administrativas para envíos del exterior": US$ 1,50 más el 5% del impuesto abonado si declarás antes de que el envío llegue a Uruguay, y US$ 5 más el 5% si lo registrás cuando ya arribó, siempre que lo hagas antes de los 10 días de emitida la notificación de retención. Si elegiste franquicia, el 5% no se aplica. Qué se cobra entre el día 11 y el 30 no está publicado, y a los 30 días el envío pasa a "abandono no infraccional". No es un tributo: es el precio del servicio del operador, así que la calculadora lo muestra en una línea aparte y solo cuando el paquete lo trae el Correo — un courier privado cobra su propia gestión según su tarifario.',
+  },
+  {
+    q: 'AliExpress me partió el pedido en varios paquetes. ¿Pago un mínimo por cada uno?',
+    a: 'Sí. Aduana y Correo trabajan por envío físico: una declaración por número de seguimiento, y el mínimo de US$ 20 de la prestación única corre por envío, no por compra. Una orden de US$ 40 partida en tres paquetes puede pagar US$ 60 de impuesto más tres gestiones del Correo. Y si los amparás en franquicia, consumís tres de los tres usos anuales. AliExpress no consolida paquetes: cada tienda y cada depósito despacha por separado, y también puede mezclar en un mismo paquete productos de dos órdenes distintas. En ese caso se declara el valor de lo que viene en ESE envío, con las facturas que lo respalden. Antes de pagar el carrito, fijate en cuántos envíos se divide.',
   },
   {
     q: '¿Qué pasa si el paquete pesa más de 20 kg?',

@@ -29,6 +29,7 @@ import {
   type ImportOrigin,
   type RegimeRules,
 } from './importRules'
+import { postalHandling, type DeclarationTiming } from './postalHandling'
 
 export type { ArrivalChannel, ImportOrigin }
 
@@ -60,6 +61,12 @@ export interface ImportTaxResult {
   overWeight?: boolean
   /** Courier only: why, in the reader's language. */
   reasons?: string[]
+  /**
+   * Postal channels only: what Correo Uruguayo charges for handling the declaration, on top of
+   * the tax (see `./postalHandling`). It is a fee, not a tribute, so it stays OUT of `totalTax`
+   * and `effectiveRatePct` and only lands in `landedCost`.
+   */
+  handlingFee?: number
   /**
    * Courier only: set when the parcel arrives by post over the REPEALED per-modality ceiling, so
    * the page can warn that Correo's declaration form may still refuse the franquicia.
@@ -103,6 +110,12 @@ export interface CourierInput {
   franchiseAvailable?: number
   /** Franchise shipments already used this calendar year (max 3). */
   shipmentsUsed?: number
+  /**
+   * When the reader files the declaration, for Correo Uruguayo's administrative charge. Only
+   * priced on the POSTAL channels — a private courier bills its own handling on its own tariff.
+   * Omit to leave the fee out of the estimate entirely (the previous behaviour).
+   */
+  declarationTiming?: DeclarationTiming
   /** Is the invoice issuer registered with the DNA? Only consulted from 2026-10-01. */
   sellerRegistered?: boolean
   /** Simplified single rate (%); default 60. */
@@ -213,6 +226,21 @@ export function courierImport(
   }
 
   const totalTax = round(iva + simplified)
+
+  // Correo's administrative charge for handling the declaration. Postal channels only, and only
+  // once the caller says WHEN it declares: the fee doubles-and-then-some for a parcel that is
+  // already retained, which is exactly how a US$ 19 AliExpress parcel ends up owing US$ 26.
+  const isPostal = input.channel === 'postal-ems' || input.channel === 'postal-simple'
+  const handling =
+    isPostal && input.declarationTiming && decision.regime !== 'general'
+      ? postalHandling({
+          taxUsd: totalTax,
+          timing: input.declarationTiming,
+          useFranchise: decision.regime === 'franquicia',
+        })
+      : null
+  if (handling) breakdown.push({ label: handling.label, amount: handling.totalUsd })
+
   if (courierFreight > 0) {
     breakdown.push({
       label: 'Flete del courier (aparte, sin impuestos)',
@@ -220,10 +248,12 @@ export function courierImport(
     })
   }
 
+  const handlingFee = handling?.totalUsd ?? 0
+
   return {
     taxableBase: decision.regime === 'general' ? 0 : decision.ivaExempt ? 0 : invoiceValue,
     totalTax,
-    landedCost: round(invoiceValue + totalTax + courierFreight),
+    landedCost: round(invoiceValue + totalTax + handlingFee + courierFreight),
     effectiveRatePct: value > 0 ? round((totalTax / value) * 100, 2) : null,
     breakdown,
     regime: decision.regime,
@@ -231,6 +261,7 @@ export function courierImport(
     overWeight: decision.overWeight,
     reasons: decision.reasons,
     legacyChannelCap: decision.legacyChannelCap,
+    handlingFee: handling ? handlingFee : undefined,
   }
 }
 

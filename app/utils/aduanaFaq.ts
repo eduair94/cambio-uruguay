@@ -22,6 +22,14 @@ export const ADUANA_FAQ_POSTAL_VERIFIED_AT = '2026-08-10'
  */
 export const ADUANA_FAQ_IDENTIDAD_Y_TRIBUTOS_VERIFIED_AT = '2026-08-10'
 
+/**
+ * Same rule again, for the 2026-08-12 pass on what the OPERATOR charges on top of the tribute:
+ * `cargo-gestion-correo`, `minimo-por-envio-paquetes-partidos` and `declare-y-quedo-retenido`,
+ * read off Correo's own tariff page (actualizada 01/04/2026). It answers the recurring "declaré
+ * US$ 19 y me piden US$ 26": el mínimo de US$ 20 + US$ 5 de gestión tardía + 5% del tributo.
+ */
+export const ADUANA_FAQ_CARGOS_OPERADOR_VERIFIED_AT = '2026-08-12'
+
 export type AduanaFaqCategoryId =
   | 'antes-de-comprar'
   | 'franquicia-impuestos'
@@ -242,6 +250,12 @@ export const ADUANA_FAQ_SOURCES: Readonly<Record<string, AduanaFaqSource>> = Obj
     label: 'Preguntas frecuentes sobre encomiendas internacionales',
     authority: 'Correo Uruguayo',
     url: 'https://www.correo.com.uy/sobre-encomiendas-internacionales',
+    kind: 'operador',
+  },
+  'correo-gestiones': {
+    label: 'Gestiones administrativas para envíos del exterior — cargos y plazos',
+    authority: 'Correo Uruguayo',
+    url: 'https://www.correo.com.uy/gestiones-administrativas-envios-exterior',
     kind: 'operador',
   },
   'dna-productos': {
@@ -767,6 +781,49 @@ export const ADUANA_FAQS: readonly AduanaFaq[] = Object.freeze([
     sourceIds: ['ley-20446-627', 'decreto-50-026', 'mef-faq'],
     basis: 'norma',
     tags: ['60', 'prestacion unica', 'minimo 20', 'sin franquicia'],
+  },
+  {
+    id: 'cargo-gestion-correo',
+    question: '¿Qué cobra el Correo aparte del impuesto?',
+    shortAnswer:
+      'US$ 1,50 + 5% del tributo si declarás antes del arribo; US$ 5 + 5% si el envío ya llegó.',
+    answer:
+      'Correo publica un cargo administrativo por transferir lo recaudado e informar a la DNA: US$ 1,50 más el 5% del impuesto abonado si declarás antes de que el envío llegue al país, y US$ 5 más el 5% si lo registrás ya arribado, dentro de los 10 días de la notificación de retención. Con franquicia no se aplica el 5%. Qué se cobra entre el día 11 y el 30 no está publicado, y a los 30 días el envío pasa a abandono no infraccional. No es un tributo: un courier privado cobra en su lugar su propia gestión.',
+    category: 'correo-courier-plataformas',
+    sourceIds: ['correo-gestiones', 'correo-declarar'],
+    basis: 'procedimiento',
+    tags: ['gestion', 'cargo administrativo', 'correo', '1,5', '5 dolares', 'ahiva'],
+    related: {
+      label: 'Cómo se declara paso a paso',
+      to: '/declarar-compra-exterior-uruguay',
+    },
+  },
+  {
+    id: 'minimo-por-envio-paquetes-partidos',
+    question: 'AliExpress partió mi pedido en varios paquetes: ¿pago el mínimo por cada uno?',
+    shortAnswer:
+      'Sí: una declaración por tracking, y el mínimo de US$ 20 corre por envío, no por compra.',
+    answer:
+      'Aduana y Correo trabajan por envío físico: se declara por número de seguimiento y cada tracking es un envío con su propio mínimo de US$ 20 y, si lo amparás, su propio uso de franquicia. Una orden de US$ 40 dividida en tres paquetes puede pagar US$ 60 de tributo más tres gestiones del Correo, o consumir los tres envíos anuales de una vez. Si un paquete mezcla productos de dos órdenes, se declara el valor de lo que viene en ese envío, con las facturas que lo respalden.',
+    category: 'correo-courier-plataformas',
+    sourceIds: ['correo-declarar', 'ley-20446-627', 'decreto-50-026'],
+    basis: 'procedimiento',
+    tags: ['aliexpress', 'varios paquetes', 'tracking', 'minimo 20', 'fraccionar'],
+    related: {
+      label: 'Guía de AliExpress',
+      to: '/guias/importar-de-aliexpress-a-uruguay',
+    },
+  },
+  {
+    id: 'declare-y-quedo-retenido',
+    question: '¿Por qué mi envío figura retenido si ya lo declaré?',
+    shortAnswer: 'Sin franquicia, Correo retiene el envío hasta que pagues: es el flujo normal.',
+    answer:
+      'El instructivo de Correo lo dice en su paso 4: si no usás franquicia, igual cargás toda la información y el envío queda retenido; cuando se asigna al depósito de retención te notifican por correo electrónico para abonar los tributos y liberarlo. Es el recorrido previsto para todo envío que paga la prestación única, no una marca por sospecha. Distinto es que lo retengan por documentación, valor declarado o contenido.',
+    category: 'retenidos-reclamos',
+    sourceIds: ['correo-declarar', 'correo-gestiones'],
+    basis: 'procedimiento',
+    tags: ['retenido', 'declarado', 'prestacion unica', 'deposito de retencion'],
   },
   {
     id: 'valor-factura',
@@ -1987,6 +2044,7 @@ export function aduanaFaqLastModified(): string {
     ADUANA_FAQ_LAST_REVIEWED,
     ADUANA_FAQ_POSTAL_VERIFIED_AT,
     ADUANA_FAQ_IDENTIDAD_Y_TRIBUTOS_VERIFIED_AT,
+    ADUANA_FAQ_CARGOS_OPERADOR_VERIFIED_AT,
   ]
   // ISO-8601 dates sort lexicographically, so the last one is the most recent.
   return [...stamps].sort().at(-1)!

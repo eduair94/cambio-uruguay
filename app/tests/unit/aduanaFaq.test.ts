@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
 import {
+  ADUANA_FAQ_CARGOS_OPERADOR_VERIFIED_AT,
   ADUANA_FAQ_CATEGORIES,
   ADUANA_FAQ_IDENTIDAD_Y_TRIBUTOS_VERIFIED_AT,
   ADUANA_FAQ_LAST_REVIEWED,
@@ -119,11 +120,13 @@ describe('aduana FAQ catalogue', () => {
     // Every partial stamp has to be in the max, or the day it was written is the day the page
     // stops telling the truth. A new constant that nobody folds in here is the original bug.
     expect(modified >= ADUANA_FAQ_IDENTIDAD_Y_TRIBUTOS_VERIFIED_AT).toBe(true)
+    expect(modified >= ADUANA_FAQ_CARGOS_OPERADOR_VERIFIED_AT).toBe(true)
     expect(modified).toBe(
       [
         ADUANA_FAQ_LAST_REVIEWED,
         ADUANA_FAQ_POSTAL_VERIFIED_AT,
         ADUANA_FAQ_IDENTIDAD_Y_TRIBUTOS_VERIFIED_AT,
+        ADUANA_FAQ_CARGOS_OPERADOR_VERIFIED_AT,
       ]
         .sort()
         .at(-1)

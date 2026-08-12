@@ -1,7 +1,7 @@
 <template>
   <VContainer class="page py-6 py-md-10">
     <header class="hero mb-8">
-      <p class="eyebrow">Compras en el exterior · Verificado en julio de 2026</p>
+      <p class="eyebrow">Compras en el exterior · Verificado en agosto de 2026</p>
       <h1 class="text-h4 text-md-h3 font-weight-bold mb-3">
         Cómo declarar una compra del exterior en Uruguay
       </h1>
@@ -74,28 +74,58 @@
         </ol>
       </VCard>
 
-      <VRow class="mt-3">
-        <VCol cols="12" md="6">
-          <VCard variant="tonal" color="success" class="pa-4 h-100">
-            <div class="text-subtitle-2 font-weight-bold mb-1">
-              Conviene declarar antes de que llegue
-            </div>
-            <p class="text-body-2 mb-0">
-              Correo publica un cargo administrativo de US$ 1,50 más 5% del impuesto si registrás
-              antes del arribo. Si lo hacés después de la retención, el cargo base sube a US$ 5.
-            </p>
-          </VCard>
-        </VCol>
-        <VCol cols="12" md="6">
-          <VCard variant="tonal" color="warning" class="pa-4 h-100">
-            <div class="text-subtitle-2 font-weight-bold mb-1">No dejes vencer la notificación</div>
-            <p class="text-body-2 mb-0">
-              Sin declaración el paquete queda retenido, genera costos y puede terminar en abandono.
-              Correo advierte un plazo de 30 días.
-            </p>
-          </VCard>
-        </VCol>
-      </VRow>
+      <h3 class="text-subtitle-1 font-weight-bold mt-6 mb-2">
+        Lo que cobra el Correo además del impuesto
+      </h3>
+      <p class="text-body-2 text-medium-emphasis mb-3">
+        El cargo administrativo es el precio del servicio de “transferencia de los montos
+        recaudados e información a DNA”. No es un tributo, y por eso no aparece en ninguna
+        calculadora de impuestos: se suma al final, en la pantalla de pago.
+      </p>
+
+      <div class="table-scroll">
+        <table class="route-table cu-mobile-cards">
+          <thead>
+            <tr>
+              <th>Cuándo declarás</th>
+              <th>Cargo base</th>
+              <th>Adicional</th>
+              <th>Ejemplo sobre US$ 20 de impuesto</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="fee in handlingFees" :key="fee.when">
+              <td data-label="Cuándo declarás">
+                <strong>{{ fee.when }}</strong>
+              </td>
+              <td data-label="Cargo base">{{ fee.base }}</td>
+              <td data-label="Adicional">{{ fee.extra }}</td>
+              <td data-label="Ejemplo sobre US$ 20 de impuesto">{{ fee.example }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <VAlert type="info" variant="tonal" density="comfortable" class="mt-4">
+        <div class="font-weight-bold mb-1">Por qué un paquete de US$ 19,15 termina en US$ 26</div>
+        <p class="text-body-2 mb-0">
+          Caso real de agosto de 2026, con el paquete ya retenido: 19,15 × 60% da 11,49, menos que
+          el mínimo, así que la prestación única es <strong>US$ 20</strong>; el Correo suma
+          <strong>US$ 5</strong> por declarar después del arribo y <strong>US$ 1</strong> del 5%
+          sobre el impuesto. Declarándolo antes de que llegara habrían sido US$ 22,50.
+          <NuxtLink :to="localePath('/herramientas/calculadora-impuestos-importacion')">
+            Calculá tu caso con la gestión incluida </NuxtLink
+          >.
+        </p>
+      </VAlert>
+
+      <VAlert type="warning" variant="tonal" density="comfortable" class="mt-3">
+        <strong>No dejes vencer la notificación.</strong> Correo publica el cargo para dos
+        momentos: antes del arribo y dentro de los 10 días de la notificación de retención. Qué se
+        cobra entre el día 11 y el 30 no está publicado, y a los 30 días el envío se declara en
+        «abandono no infraccional». Si se te pasó el plazo, consultá al 0800 2108 antes de que
+        corran los 30 días.
+      </VAlert>
 
       <div class="actions mt-4">
         <VBtn
@@ -219,7 +249,9 @@
     <section class="mb-9" aria-labelledby="fuentes">
       <h2 id="fuentes" class="section-heading mb-2">Fuentes y alcance</h2>
       <p class="text-body-2 text-medium-emphasis mb-3">
-        Normativa y procedimientos revisados el 25 de julio de 2026. Las condiciones de checkout y
+        Normativa y procedimientos revisados el 12 de agosto de 2026; los cargos administrativos,
+        contra la página de tarifas del Correo actualizada el 1.º de abril de 2026. Las condiciones
+        de checkout y
         disponibilidad de las plataformas pueden cambiar por producto, vendedor y destino.
       </p>
       <ul class="sources">
@@ -291,7 +323,7 @@ const postalSteps = [
   },
   {
     title: 'Registrá cada paquete por separado.',
-    text: 'Ingresá tracking, si es compra u obsequio, descripción, valor, origen y factura. Si una misma orden llega en tres paquetes, son tres declaraciones y pueden consumir tres usos de franquicia.',
+    text: 'Ingresá tracking, si es compra u obsequio, descripción, valor, origen y factura. Si una misma orden llega en tres paquetes, son tres declaraciones, tres mínimos de US$ 20 y pueden consumir tres usos de franquicia. Si un paquete mezcla productos de dos órdenes —AliExpress lo hace seguido, porque no consolida—, declarás el valor de lo que viene en <strong>ese</strong> envío y respaldás con las facturas de ambas órdenes: no el total de las compras.',
   },
   {
     title: 'Elegí franquicia o prestación única.',
@@ -300,6 +332,29 @@ const postalSteps = [
   {
     title: 'Pagá a través de Correo y conservá el comprobante.',
     text: 'Desde mayo de 2026 no se paga el tributo directamente en VUCE: lo cobra el operador postal y lo vierte a la DNA. La declaración finaliza cuando se completan los pagos que correspondan.',
+  },
+]
+
+// Correo Uruguayo, «Gestiones administrativas para envíos del exterior» (actualizada 01/04/2026).
+// El tramo entre el día 11 y el 30 NO está publicado: no lo inventamos, lo decimos.
+const handlingFees = [
+  {
+    when: 'Antes de que el envío llegue a Uruguay',
+    base: 'US$ 1,50',
+    extra: '5% del impuesto abonado',
+    example: 'US$ 2,50',
+  },
+  {
+    when: 'Ya arribó, dentro de los 10 días de la notificación de retención',
+    base: 'US$ 5',
+    extra: '5% del impuesto abonado',
+    example: 'US$ 6',
+  },
+  {
+    when: 'Con franquicia, en cualquiera de los dos momentos',
+    base: 'US$ 1,50 o US$ 5',
+    extra: 'sin el 5% adicional',
+    example: 'US$ 1,50 o US$ 5',
   },
 ]
 
@@ -360,7 +415,8 @@ const checklist = [
   'El nombre del comprador, pagador y destinatario coincide con la cédula.',
   'El checkout dice quién transporta y si incluye cargos de importación.',
   'Guardaste factura final, comprobante de pago y captura del total.',
-  'Sabés cuántos paquetes puede generar la orden.',
+  'Sabés cuántos paquetes puede generar la orden: cada uno es una declaración.',
+  'Vas a declarar antes del arribo: US$ 1,50 de gestión en vez de US$ 5.',
   'El valor y el peso entran en el régimen que querés usar.',
   'El producto no está prohibido ni requiere un permiso pendiente.',
   'Revisaste tu saldo de franquicia y la cantidad de envíos usados.',
@@ -388,9 +444,21 @@ const faqs = [
   },
   {
     q: '¿Puedo declarar después de que el paquete llegue?',
-    a: 'Sí, pero el paquete queda retenido y Correo publica un cargo administrativo mayor. Declarar antes reduce costos y riesgo de que corran los plazos de abandono.',
+    a: 'Sí, pero el cargo base del Correo pasa de <strong>US$ 1,50 a US$ 5</strong> y siguen corriendo los plazos: el tramo publicado cubre hasta los 10 días de la notificación de retención y a los 30 días el envío cae en abandono. Declarar antes del arribo es la opción barata y no cuesta nada más que hacerlo a tiempo.',
     aText:
-      'Sí, pero el paquete queda retenido y Correo cobra un cargo administrativo mayor. Declarar antes reduce costos y el riesgo de abandono.',
+      'Sí, pero el cargo base del Correo pasa de US$ 1,50 a US$ 5 y siguen corriendo los plazos: el tramo publicado llega a los 10 días de la notificación de retención y a los 30 días el envío cae en abandono.',
+  },
+  {
+    q: 'Declaré US$ 19,15 y me piden US$ 26. ¿Está bien la cuenta?',
+    a: 'Sí, cierra al centavo. Sin franquicia el envío paga la prestación única: 60% de 19,15 son 11,49, menos que el mínimo, así que el tributo es <strong>US$ 20</strong>. Encima va la gestión del Correo: <strong>US$ 5</strong> por declarar con el paquete ya arribado más <strong>US$ 1</strong> del 5% sobre el impuesto. El mínimo de US$ 20 es por envío y no baja porque el producto valga menos, así que en compras chicas el impuesto puede superar a la mercadería.',
+    aText:
+      'Sí. Sin franquicia el tributo es el mínimo de US$ 20 (60% de 19,15 da 11,49), más US$ 5 de gestión por declarar con el paquete arribado y US$ 1 del 5% sobre el impuesto. El mínimo es por envío, no por compra.',
+  },
+  {
+    q: '¿Por qué mi envío figura “retenido” si ya lo declaré?',
+    a: 'Porque no usaste franquicia. El instructivo de Correo lo dice en su paso 4: si no la elegís, igual cargás toda la información y el envío queda retenido hasta que pagues; cuando se asigna al depósito de retención te llega la notificación por correo electrónico para abonar y liberarlo. Es el recorrido normal de todo envío que paga la prestación única, no una marca en tu contra.',
+    aText:
+      'Porque no usaste franquicia: en ese caso Correo retiene el envío hasta que pagues, y te notifica por correo electrónico cuando se asigna al depósito de retención. Es el recorrido normal, no una marca en tu contra.',
   },
   {
     q: '¿Tengo que usar un despachante para una compra común?',
