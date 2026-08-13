@@ -15,7 +15,17 @@ class CambioPrex extends Cambio {
   bcu = "https://www.bcu.gub.uy/Sistema-de-Pagos/Paginas/prex.aspx";
   website = `https://www.prexcard.com`;
   favicon = "https://www.prexcard.com";
+  /**
+   * Every prexcard.com call below goes through the shared proxy in `proxy.txt`,
+   * so the timeout is folded in here rather than repeated per call site. Without
+   * it a dead proxy blocks each request ~127s on the kernel's TCP connect
+   * retries; `scrape_data()` chains three, which is longer than the whole
+   * five-minute sync cron gets — see tests/prex_request_bounds.test.ts.
+   */
+  private readonly REQUEST_TIMEOUT_MS = 12_000;
+
   private getProxyConfig() {
+    const base = { timeout: this.REQUEST_TIMEOUT_MS };
     try {
       const proxyPath = "proxy.txt";
       if (fs.existsSync(proxyPath)) {
@@ -24,6 +34,7 @@ class CambioPrex extends Cambio {
           const httpAgent = new HttpProxyAgent(`http://${proxyUrl}`);
           const httpsAgent = new HttpsProxyAgent(`http://${proxyUrl}`);
           return {
+            ...base,
             httpAgent: httpAgent,
             httpsAgent: httpsAgent,
           };
@@ -32,7 +43,7 @@ class CambioPrex extends Cambio {
     } catch (error) {
       console.log("No proxy configuration found or error reading proxy.txt");
     }
-    return {};
+    return base;
   }
 
   // --- Web session (PHPSESSID) auto-refresh -------------------------------
@@ -44,6 +55,37 @@ class CambioPrex extends Cambio {
   private readonly SESSION_CACHE = "prex_session.txt";
   private readonly OTP_URL_DEFAULT = "https://spotify-mail.checkleaked.cc/code?to=prex@checkleaked.cc&want=code";
   private readonly WEB_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36";
+
+  /**
+   * The login below polls a mailbox for an emailed OTP, which realistically
+   * takes ~2 minutes — far more than one origin's slice of a five-minute sync
+   * run. Retrying it on every run therefore cannot ever succeed; it just burns
+   * the slot and re-triggers the OTP email. One attempt per cooldown window is
+   * enough: a healthy mint lasts hours, and a broken one stays broken.
+   */
+  private readonly LOGIN_COOLDOWN_MS = 30 * 60 * 1000;
+  private readonly LOGIN_ATTEMPT_CACHE = "prex_login_attempt.txt";
+
+  /** ms since the last login attempt, or null if there is no usable record. */
+  private msSinceLoginAttempt(): number | null {
+    try {
+      if (!fs.existsSync(this.LOGIN_ATTEMPT_CACHE)) return null;
+      const ts = Number(fs.readFileSync(this.LOGIN_ATTEMPT_CACHE, "utf8").trim());
+      if (!Number.isFinite(ts) || ts <= 0) return null;
+      return Date.now() - ts;
+    } catch (e) {
+      console.warn("Prex: could not read login attempt cache", (e as Error).message);
+      return null;
+    }
+  }
+
+  private markLoginAttempt() {
+    try {
+      fs.writeFileSync(this.LOGIN_ATTEMPT_CACHE, String(Date.now()), "utf8");
+    } catch (e) {
+      console.warn("Prex: could not record login attempt", (e as Error).message);
+    }
+  }
 
   private getStoredSession(): string | null {
     try {
@@ -118,6 +160,14 @@ class CambioPrex extends Cambio {
       console.log("Prex web login: credentials not configured (PREX_LOGIN_USER, PREX_LOGIN_PASSWORD)");
       return null;
     }
+
+    const sinceLastAttempt = this.msSinceLoginAttempt();
+    if (sinceLastAttempt !== null && sinceLastAttempt < this.LOGIN_COOLDOWN_MS) {
+      const waitMin = Math.ceil((this.LOGIN_COOLDOWN_MS - sinceLastAttempt) / 60000);
+      console.log(`Prex web login: skipped, last attempt ${Math.round(sinceLastAttempt / 60000)}min ago (retry in ~${waitMin}min)`);
+      return null;
+    }
+    this.markLoginAttempt();
 
     const BASE = "https://www.prexcard.com";
     let sid = "";

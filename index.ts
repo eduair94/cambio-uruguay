@@ -35,6 +35,7 @@ import {
 import { origins } from "./classes/origins";
 import { redisCache } from "./classes/redis_cache";
 import { ga4Configured } from "./classes/site-analytics/ga4";
+import { isPartialSyncRun } from "./classes/sync_health";
 import { emptyRealtime, fetchRealtime } from "./classes/site-analytics/realtime";
 import sentryInit from "./sentry";
 
@@ -623,7 +624,16 @@ const main = async () => {
       }
 
       if (diffMinutes <= 15) {
-        healthResponse.message = "Sync is recent";
+        // sync_cambio.ts writes the timestamp even when it ran out of budget and
+        // skipped origins, so freshness alone no longer proves the run covered
+        // the board. Don't let a half-dead sync report as ok.
+        const summary = healthResponse.sync.originResults?.summary;
+        if (isPartialSyncRun(summary)) {
+          healthResponse.status = "degraded";
+          healthResponse.message = `Sync is recent but only ${summary.success}/${summary.total} origins succeeded`;
+        } else {
+          healthResponse.message = "Sync is recent";
+        }
         return res.status(200).json(healthResponse);
       } else if (diffMinutes <= 30) {
         healthResponse.status = "degraded";
