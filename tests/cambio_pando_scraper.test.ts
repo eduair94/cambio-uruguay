@@ -37,6 +37,25 @@ const BOARD_HTML = `
   </tbody>
 </table>`;
 
+/**
+ * Stub for the instance the scraper builds with `axios.create()`.
+ *
+ * The fallback path must never touch the network from a test: an earlier version
+ * of these two cases let the real request through, which passed locally only
+ * because cambiopando.com.uy 403s instantly, then timed out on CI where the same
+ * request was slower. axios-retry wires itself onto the interceptors, so the stub
+ * has to carry those too.
+ */
+function stubAxiosInstance(html: string) {
+  const instance: any = {
+    defaults: {},
+    interceptors: { request: { use: vi.fn() }, response: { use: vi.fn() } },
+    get: vi.fn().mockResolvedValue({ data: html }),
+  };
+  vi.spyOn(axios, "create").mockReturnValue(instance);
+  return instance;
+}
+
 beforeEach(() => {
   vi.spyOn(console, "log").mockImplementation(() => undefined);
   vi.spyOn(console, "warn").mockImplementation(() => undefined);
@@ -74,11 +93,12 @@ describe("Cambio Pando", () => {
     // still behave exactly as it did before.
     vi.spyOn(flaresolverr, "flaresolverrGet").mockResolvedValue(null);
     vi.spyOn(ProxyFileService.prototype, "getRandomProxy").mockResolvedValue("");
-    const create = vi.spyOn(axios, "create");
+    const instance = stubAxiosInstance(BOARD_HTML);
 
-    await new CambioPando("cambio_pando").get_data().catch(() => undefined);
+    const rows = await new CambioPando("cambio_pando").get_data();
 
-    expect(create).toHaveBeenCalled();
+    expect(instance.get).toHaveBeenCalledWith("https://www.cambiopando.com.uy/", expect.anything());
+    expect(rows.map((r) => r.code)).toEqual(["USD", "ARS", "BRL"]);
   });
 
   it("picks its fallback proxy at random, since each sync run is a new process", async () => {
@@ -88,8 +108,9 @@ describe("Cambio Pando", () => {
     vi.spyOn(flaresolverr, "flaresolverrGet").mockResolvedValue(null);
     const random = vi.spyOn(ProxyFileService.prototype, "getRandomProxy").mockResolvedValue("");
     const next = vi.spyOn(ProxyFileService.prototype, "getNextProxy");
+    stubAxiosInstance(BOARD_HTML);
 
-    await new CambioPando("cambio_pando").get_data().catch(() => undefined);
+    await new CambioPando("cambio_pando").get_data();
 
     expect(random).toHaveBeenCalled();
     expect(next).not.toHaveBeenCalled();
