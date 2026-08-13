@@ -37,7 +37,10 @@ class CambioAguerrebere extends Cambio {
   async get_data(): Promise<CambioObj[]> {
     // Get proxy from ProxyFileService
     const proxyService = ProxyFileService.getInstance();
-    const proxyUrl = await proxyService.getNextProxy();
+    // Random, not next: getNextProxy()'s index lives on a singleton and every sync
+    // run is a fresh process, so it kept handing out the same few proxies at the
+    // head of a 2500-entry pool no matter how large that pool got.
+    const proxyUrl = await proxyService.getRandomProxy();
     
     // Create axios instance with proxy agent
     const axiosInstance = axios.create();
@@ -63,7 +66,7 @@ class CambioAguerrebere extends Cambio {
       onRetry: async (retryCount, error, requestConfig) => {
         console.log(`Retry attempt ${retryCount} for ${requestConfig.url}`);
         // Get a new proxy on retry
-        const newProxyUrl = await proxyService.getNextProxy();
+        const newProxyUrl = await proxyService.getRandomProxy();
         if (newProxyUrl) {
           const newAgent = new SocksProxyAgent(newProxyUrl);
           requestConfig.httpAgent = newAgent;

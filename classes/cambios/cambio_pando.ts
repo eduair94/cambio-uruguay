@@ -4,12 +4,16 @@ import { load } from "cheerio";
 import { SocksProxyAgent } from "socks-proxy-agent";
 import { CambioObj } from "../../interfaces/Cambio";
 import { Cambio } from "../cambio";
+import { flaresolverrGet } from "../flaresolverr";
 import { ProxyFileService } from "../ProxyFileService";
 
-// Cambio Pando (Astro site, Cloudflare-fronted). Two problems were fixed here:
-//   1. HTTP 403 — Cloudflare bot-fight intermittently blocks the scraper host's
-//      IP. We mirror the Aguerrebere approach (rotating SOCKS proxy + retry +
-//      realistic browser headers), the proven 403-beating pattern in this repo.
+// Cambio Pando (Astro site, Cloudflare-fronted). Three problems were fixed here:
+//   1. HTTP 403 — Cloudflare bot-fight. The rotating-proxy approach borrowed from
+//      Aguerrebere was not enough: measured 2026-08-13, the scraper host AND all
+//      eight rotating SOCKS5 proxies got 403, connections fine. The block keys on
+//      the client fingerprint (axios has no browser TLS handshake), so no address
+//      rotates around it. FlareSolverr drives a real browser and returns solved
+//      HTML; the proxy path stays as the fallback when no solver is configured.
 //   2. Stale parse — the site was redesigned to an "exchange-board" table whose
 //      currency cell now reads "🇺🇸 USD Dólar Americano" and whose prices carry a
 //      "$ " prefix. The old conversions map keyed on "Dólar" never matched and
@@ -27,8 +31,19 @@ class CambioPando extends Cambio {
   }
 
   async get_data(): Promise<CambioObj[]> {
+    const solved = await flaresolverrGet(this.website);
+    if (solved) return this.parse_board(solved);
+
+    return this.parse_board(await this.fetch_via_proxy());
+  }
+
+  /** Pre-FlareSolverr path, kept for when no solver node is configured. */
+  private async fetch_via_proxy(): Promise<string> {
     const proxyService = ProxyFileService.getInstance();
-    const proxyUrl = await proxyService.getNextProxy();
+    // Random, not next: getNextProxy()'s index lives on a singleton and every
+    // sync run is a fresh process, so it kept handing out the same head of the
+    // pool — a few flagged addresses there pinned this origin at 403.
+    const proxyUrl = await proxyService.getRandomProxy();
 
     const axiosInstance = axios.create();
     if (proxyUrl) {
@@ -45,7 +60,7 @@ class CambioPando extends Cambio {
         error.response?.status === 403 ||
         (error.response?.status >= 500 && error.response?.status <= 599),
       onRetry: async (retryCount, _error, requestConfig) => {
-        const newProxyUrl = await proxyService.getNextProxy();
+        const newProxyUrl = await proxyService.getRandomProxy();
         if (newProxyUrl) {
           const newAgent = new SocksProxyAgent(newProxyUrl);
           requestConfig.httpAgent = newAgent;
@@ -68,6 +83,10 @@ class CambioPando extends Cambio {
       })
       .then((res) => res.data);
 
+    return web_data;
+  }
+
+  private parse_board(web_data: string): CambioObj[] {
     const $ = load(web_data);
     const result = $("table tbody tr")
       .map((i: number, element) => ({
