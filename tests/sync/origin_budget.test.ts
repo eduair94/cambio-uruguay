@@ -50,7 +50,10 @@ const byOrigin = (origin: string) => results().origins.find((o: any) => o.origin
 beforeEach(() => {
   for (const k of Object.keys(writes)) delete writes[k];
   for (const k of Object.keys(originsMock)) delete originsMock[k];
-  process.env.SYNC_ORIGIN_TIMEOUT_MS = "80";
+  // Generous relative to the work these fake origins do (they resolve at once).
+  // A tight margin here flakes on a loaded CI runner, where an already-resolved
+  // promise can still take tens of ms to be observed.
+  process.env.SYNC_ORIGIN_TIMEOUT_MS = "500";
   process.env.SYNC_BUDGET_MS = "10000";
   vi.spyOn(console, "error").mockImplementation(() => undefined);
   vi.spyOn(console, "log").mockImplementation(() => undefined);
@@ -65,7 +68,7 @@ describe("sync_cambios origin timeout", () => {
     await sync_cambios();
 
     expect(byOrigin("stalls").status).toBe("error");
-    expect(byOrigin("stalls").error).toMatch(/timed out after 80ms/);
+    expect(byOrigin("stalls").error).toMatch(/timed out after 500ms/);
     // The whole point: the origins queued behind the stalled one still run.
     expect(byOrigin("before").status).toBe("success");
     expect(byOrigin("after").status).toBe("success");
@@ -85,8 +88,8 @@ describe("sync_cambios origin timeout", () => {
 
 describe("sync_cambios global budget", () => {
   it("records the origins it could not reach rather than dying mid-loop", async () => {
-    process.env.SYNC_BUDGET_MS = "40";
-    originsMock.slow = originClass(() => new Promise<void>((r) => setTimeout(r, 60)));
+    process.env.SYNC_BUDGET_MS = "50";
+    originsMock.slow = originClass(() => new Promise<void>((r) => setTimeout(r, 300)));
     originsMock.unreached_a = originClass(async () => undefined);
     originsMock.unreached_b = originClass(async () => undefined);
 
