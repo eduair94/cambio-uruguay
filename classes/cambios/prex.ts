@@ -19,13 +19,17 @@ const e = process.env;
  * up to PREX_MAX_CHAINED_REQUESTS of these, and that chain has to finish inside
  * the per-origin slice with room to spare for `withDolarAhoraFallback` — which
  * only runs after the chain settles, and is the very thing meant to cover a dead
- * Prex. A healthy Prex origin completes in ~2.4s end to end, so this is ~3x the
- * whole origin's normal cost. See tests/prex_request_bounds.test.ts.
+ * Prex. A healthy Prex origin completes in ~2.4s end to end, so this is still
+ * ~2.5x the whole origin's normal cost. See tests/prex_request_bounds.test.ts.
  */
-export const PREX_REQUEST_TIMEOUT_MS = 8_000;
+export const PREX_REQUEST_TIMEOUT_MS = 6_000;
 
-/** prex_ar -> get_usd_from_web -> prexWebLogin -> login/get_usd. */
-export const PREX_MAX_CHAINED_REQUESTS = 4;
+/**
+ * Worst case through scrape_data() with no usable session and the login cooldown
+ * clear: prex_ar -> get_usd_from_web -> prexWebLogin's GET /login -> login ->
+ * get_usd. Later runs are one shorter, since the cooldown short-circuits the login.
+ */
+export const PREX_MAX_CHAINED_REQUESTS = 5;
 
 class CambioPrex extends Cambio {
   name = "Prex";
@@ -35,8 +39,25 @@ class CambioPrex extends Cambio {
   /** Folded in here because every call below shares the proxy config. */
   private readonly REQUEST_TIMEOUT_MS = PREX_REQUEST_TIMEOUT_MS;
 
+  /**
+   * `timeout` alone does not bound these calls. axios arms it with
+   * `req.setTimeout()`, which Node only starts once a socket is assigned — and a
+   * proxy agent stuck on its CONNECT never gets one, so the timer never arms and
+   * the call runs until the kernel gives up on the connect (~127s). That is why
+   * a deployed 8s `timeout` still produced `connect ETIMEDOUT` rather than
+   * `timeout of 8000ms exceeded`. The AbortSignal destroys the ClientRequest
+   * whatever state it is in, so it is the bound that actually holds; `timeout`
+   * stays for stalls after the response starts.
+   *
+   * Each call site invokes this fresh, so no two requests share a signal — a
+   * signal is a countdown that starts at construction, and a shared one would
+   * abort every later request in the chain the moment the first budget expired.
+   */
   private getProxyConfig() {
-    const base = { timeout: this.REQUEST_TIMEOUT_MS };
+    const base = {
+      timeout: this.REQUEST_TIMEOUT_MS,
+      signal: AbortSignal.timeout(this.REQUEST_TIMEOUT_MS),
+    };
     try {
       const proxyPath = "proxy.txt";
       if (fs.existsSync(proxyPath)) {

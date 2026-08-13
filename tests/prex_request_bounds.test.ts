@@ -30,6 +30,18 @@ afterEach(() => {
   }
 });
 
+// axios's own `timeout` is armed with `req.setTimeout()`, which Node only starts
+// once a socket is assigned to the request. When the proxy agent hangs on its
+// CONNECT no socket is ever assigned, so the timer never arms and the call sits
+// there until the kernel gives up (~127s) — exactly what the 2026-08-13 deploy
+// showed: `PREX_REQUEST_TIMEOUT_MS = 8000` was live and the error still came back
+// as `connect ETIMEDOUT`, never `timeout of 8000ms exceeded`. An AbortSignal
+// destroys the ClientRequest regardless of socket state, so both are required.
+const bothBounds = (config: any) => {
+  expect(config?.timeout).toBeGreaterThan(0);
+  expect(config?.signal).toBeInstanceOf(AbortSignal);
+};
+
 describe("Prex request bounds", () => {
   it("bounds the cambiomoneda request so a dead proxy cannot stall the sync", async () => {
     process.env.PREX_USER_ID = "585737";
@@ -38,7 +50,7 @@ describe("Prex request bounds", () => {
     await new CambioPrex("prex").get_usd_from_web("session-id");
 
     expect(get).toHaveBeenCalled();
-    expect(get.mock.calls[0][1]?.timeout).toBeGreaterThan(0);
+    bothBounds(get.mock.calls[0][1]);
   });
 
   it("bounds the hacelabien request", async () => {
@@ -46,7 +58,7 @@ describe("Prex request bounds", () => {
 
     await new CambioPrex("prex").prex_ar("");
 
-    expect(get.mock.calls[0][1]?.timeout).toBeGreaterThan(0);
+    bothBounds(get.mock.calls[0][1]);
   });
 
   it("bounds the mobile-API login", async () => {
@@ -54,7 +66,18 @@ describe("Prex request bounds", () => {
 
     await new CambioPrex("prex").login();
 
-    expect(post.mock.calls[0][2]?.timeout).toBeGreaterThan(0);
+    bothBounds(post.mock.calls[0][2]);
+  });
+
+  it("gives each request its own signal so one abort cannot cancel the next", async () => {
+    process.env.PREX_USER_ID = "585737";
+    const get = vi.spyOn(axios, "get").mockResolvedValue({ data: "<html></html>" } as any);
+    const prex = new CambioPrex("prex");
+
+    await prex.prex_ar("");
+    await prex.get_usd_from_web("session-id");
+
+    expect(get.mock.calls[0][1]?.signal).not.toBe(get.mock.calls[1][1]?.signal);
   });
 });
 
