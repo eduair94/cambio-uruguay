@@ -88,7 +88,10 @@ export class ProxyFileService {
       format: 'normal',
       status: 'all',
     }
-    const res = await axios.get(url, { params }).then((res) => {
+    // Bounded because this runs inside a scraper's slice of the sync loop: an
+    // unbounded refresh stalls that origin, and the whole point of the cached-file
+    // fallback in getProxies() is that it can be reached when this call fails.
+    const res = await axios.get(url, { params, timeout: 10_000 }).then((res) => {
       const data = res.data
       return data.split('\n').map((el: string) => el.trim())
     })

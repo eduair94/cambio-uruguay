@@ -4,8 +4,10 @@ import dotenv from "dotenv";
 import fs from "fs";
 import { HttpProxyAgent } from "http-proxy-agent";
 import { HttpsProxyAgent } from "https-proxy-agent";
+import { SocksProxyAgent } from "socks-proxy-agent";
 import { CambioObj } from "../../interfaces/Cambio";
 import { Cambio } from "../cambio";
+import { ProxyFileService } from "../ProxyFileService";
 import { withDolarAhoraFallback } from "./dolarahora";
 dotenv.config();
 const e = process.env;
@@ -22,14 +24,26 @@ const e = process.env;
  * Prex. A healthy Prex origin completes in ~2.4s end to end, so this is still
  * ~2.5x the whole origin's normal cost. See tests/prex_request_bounds.test.ts.
  */
-export const PREX_REQUEST_TIMEOUT_MS = 6_000;
+export const PREX_REQUEST_TIMEOUT_MS = 5_000;
+
+/** The single requests scrape_data() chains: prex_ar, get_usd_from_web, login, get_usd. */
+export const PREX_MAX_CHAINED_REQUESTS = 4;
 
 /**
- * Worst case through scrape_data() with no usable session and the login cooldown
- * clear: prex_ar -> get_usd_from_web -> prexWebLogin's GET /login -> login ->
- * get_usd. Later runs are one shorter, since the cooldown short-circuits the login.
+ * Ceiling for the whole `prexWebLogin` flow, which is ~7 requests around a poll
+ * loop rather than one call — so it needs its own bound, not a per-request one.
+ *
+ * It is deliberately smaller than the flow really wants: the OTP round trip takes
+ * ~2 minutes and simply does not fit in one origin's slice of a five-minute sync
+ * (see the note on the cooldown below). Within this budget the login only wins
+ * when a still-valid code is already sitting in the mailbox, which `fetchOtp`
+ * handles; otherwise it gives up cleanly and leaves room for the DólarAhora
+ * fallback instead of hanging the origin. Minting reliably needs its own job.
  */
-export const PREX_MAX_CHAINED_REQUESTS = 5;
+export const PREX_LOGIN_BUDGET_MS = 10_000;
+
+/** What scrape_data() can cost with no usable session and the cooldown clear. */
+export const PREX_WORST_CASE_MS = PREX_MAX_CHAINED_REQUESTS * PREX_REQUEST_TIMEOUT_MS + PREX_LOGIN_BUDGET_MS;
 
 class CambioPrex extends Cambio {
   name = "Prex";
@@ -53,11 +67,47 @@ class CambioPrex extends Cambio {
    * signal is a countdown that starts at construction, and a shared one would
    * abort every later request in the chain the moment the first budget expired.
    */
+  /** SOCKS agent for this run, shared by every request in the chain. */
+  private socksAgent: SocksProxyAgent | null = null;
+
+  /**
+   * Pick this run's proxy. prexcard.com answers 403 to the VPS's own IP, so Prex
+   * simply cannot be scraped unproxied — which makes the proxy source part of the
+   * scraper's correctness, not a nicety.
+   *
+   * Resolved once per scrape rather than per request: the login chain mints a
+   * PHPSESSID and should not hop IPs midway through.
+   *
+   * `getRandomProxy` and not `getNextProxy`: the latter advances an index kept on
+   * a singleton, and every sync run is a fresh process, so it would hand out
+   * proxies[0] on every single run — one dead entry at the head of the pool would
+   * wedge Prex indefinitely. Random means a bad draw fixes itself on the next run,
+   * five minutes later.
+   */
+  private async resolveProxy(): Promise<void> {
+    try {
+      const proxyUrl = await ProxyFileService.getInstance().getRandomProxy();
+      this.socksAgent = proxyUrl ? new SocksProxyAgent(proxyUrl) : null;
+    } catch (e) {
+      console.warn("Prex: could not resolve a pool proxy", (e as Error).message);
+      this.socksAgent = null;
+    }
+  }
+
   private getProxyConfig() {
     const base = {
       timeout: this.REQUEST_TIMEOUT_MS,
       signal: AbortSignal.timeout(this.REQUEST_TIMEOUT_MS),
     };
+
+    // The proxyscrape pool refreshes itself every 10 minutes and is what the
+    // other proxied scrapers here already use, so it wins over the static file.
+    // `proxy.txt` is an unmonitored single host: it rotted silently and nothing
+    // noticed until the whole sync fell over behind it.
+    if (this.socksAgent) {
+      return { ...base, httpAgent: this.socksAgent, httpsAgent: this.socksAgent };
+    }
+
     try {
       const proxyPath = "proxy.txt";
       if (fs.existsSync(proxyPath)) {
@@ -164,13 +214,15 @@ class CambioPrex extends Cambio {
    * Prefers a code newer than `baselineTs` (the just-sent one); falls back to
    * a still-valid active code if Prex reused an existing one.
    */
-  private async fetchOtp(url: string, baselineTs: number): Promise<string | null> {
+  private async fetchOtp(url: string, baselineTs: number, deadline: number): Promise<string | null> {
     const FRESH_MS = 15 * 60 * 1000;
-    const TRIES = 24;
-    for (let i = 0; i < TRIES; i++) {
+    const POLL_MS = 2000;
+    // Polls until the login's budget runs out rather than a fixed 24 x 5s = 120s,
+    // which is longer than the origin's whole slice of the sync run.
+    while (Date.now() + POLL_MS < deadline) {
       const r = await this.otpFetch(url);
       if (r && r.receivedAt > baselineTs) return r.code; // brand-new code arrived
-      await new Promise((res) => setTimeout(res, 5000));
+      await new Promise((res) => setTimeout(res, POLL_MS));
     }
     // No newer code arrived — Prex may have reused an active code still valid.
     const last = await this.otpFetch(url);
@@ -200,6 +252,7 @@ class CambioPrex extends Cambio {
       return null;
     }
     this.markLoginAttempt();
+    const loginDeadline = Date.now() + PREX_LOGIN_BUDGET_MS;
 
     const BASE = "https://www.prexcard.com";
     let sid = "";
@@ -262,9 +315,9 @@ class CambioPrex extends Cambio {
       }
 
       // 4. Read the OTP from the mailbox endpoint.
-      const code = await this.fetchOtp(otpUrl, baselineTs);
+      const code = await this.fetchOtp(otpUrl, baselineTs, loginDeadline);
       if (!code || !/^\d{6}$/.test(code)) {
-        console.warn("Prex web login: OTP not received in time");
+        console.warn("Prex web login: OTP not received within the login budget");
         return null;
       }
 
@@ -452,6 +505,8 @@ class CambioPrex extends Cambio {
   }
 
   private async scrape_data(): Promise<CambioObj[]> {
+    await this.resolveProxy();
+
     const ar = await this.prex_ar("");
 
     // 1. Try the cached/env PHPSESSID (fast path, no login/OTP).
