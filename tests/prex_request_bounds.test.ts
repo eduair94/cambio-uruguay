@@ -9,7 +9,8 @@
 import axios from "axios";
 import fs from "fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import CambioPrex from "../classes/cambios/prex";
+import CambioPrex, { PREX_MAX_CHAINED_REQUESTS, PREX_REQUEST_TIMEOUT_MS } from "../classes/cambios/prex";
+import { DEFAULT_ORIGIN_TIMEOUT_MS } from "../classes/sync_health";
 
 const ENV_KEYS = ["PREX_USER_ID", "PREX_LOGIN_USER", "PREX_LOGIN_PASSWORD"] as const;
 const original: Record<string, string | undefined> = {};
@@ -54,6 +55,20 @@ describe("Prex request bounds", () => {
     await new CambioPrex("prex").login();
 
     expect(post.mock.calls[0][2]?.timeout).toBeGreaterThan(0);
+  });
+});
+
+describe("Prex worst-case budget", () => {
+  it("leaves room for the DólarAhora fallback inside the origin timeout", () => {
+    // `withDolarAhoraFallback` only runs once `scrape_data()` has settled, so if
+    // the chained proxy calls can burn the whole per-origin slice, the fallback
+    // that exists precisely for a dead Prex never gets to publish. Observed on
+    // 2026-08-13: 4 chained calls × 12s = 48s > the 45s cap, so the origin was
+    // killed mid-chain and Prex published nothing at all.
+    const worstCase = PREX_MAX_CHAINED_REQUESTS * PREX_REQUEST_TIMEOUT_MS;
+    const fallbackHeadroom = 10_000;
+
+    expect(worstCase + fallbackHeadroom).toBeLessThanOrEqual(DEFAULT_ORIGIN_TIMEOUT_MS);
   });
 });
 

@@ -2,6 +2,7 @@ import fs from "fs";
 import { Cambio } from "./cambio";
 import { origins } from "./origins";
 import { publishPendingRateChanges } from "./rate_changes";
+import { DEFAULT_ORIGIN_TIMEOUT_MS, DEFAULT_SYNC_BUDGET_MS } from "./sync_health";
 
 interface SyncOriginResult {
   origin: string;
@@ -16,13 +17,9 @@ const ORIGIN_DELAY_MS = 500;
 // This job is a pm2 app on a `*/5 * * * *` cron RESTART, so the loop below runs
 // under a hard 5-minute guillotine: whatever has not finished by then is killed
 // mid-iteration, and the bookkeeping at the bottom (last_sync.txt) never runs.
-// A healthy full pass over the 47 origins takes ~135s, so both bounds have wide
-// headroom — they only ever bite when a scraper stalls. Without them a single
-// hung origin starves every origin queued behind it AND makes /health report the
-// whole API down, because /health infers liveness from last_sync.txt's mtime.
-const DEFAULT_ORIGIN_TIMEOUT_MS = 45_000;
-const DEFAULT_SYNC_BUDGET_MS = 240_000;
-
+// Without the bounds below a single hung origin starves every origin queued
+// behind it AND makes /health report the whole API down, because /health infers
+// liveness from last_sync.txt's mtime.
 const msFromEnv = (name: string, fallback: number) => {
   const raw = Number(process.env[name]);
   return Number.isFinite(raw) && raw > 0 ? raw : fallback;

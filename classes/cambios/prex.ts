@@ -10,19 +10,30 @@ import { withDolarAhoraFallback } from "./dolarahora";
 dotenv.config();
 const e = process.env;
 
+/**
+ * Per-request ceiling for prexcard.com. Everything here goes through the shared
+ * proxy in `proxy.txt`; when that proxy dies an unbounded call blocks ~127s on
+ * the kernel's TCP connect retries.
+ *
+ * The value is set by the worst case, not the happy path: `scrape_data()` chains
+ * up to PREX_MAX_CHAINED_REQUESTS of these, and that chain has to finish inside
+ * the per-origin slice with room to spare for `withDolarAhoraFallback` — which
+ * only runs after the chain settles, and is the very thing meant to cover a dead
+ * Prex. A healthy Prex origin completes in ~2.4s end to end, so this is ~3x the
+ * whole origin's normal cost. See tests/prex_request_bounds.test.ts.
+ */
+export const PREX_REQUEST_TIMEOUT_MS = 8_000;
+
+/** prex_ar -> get_usd_from_web -> prexWebLogin -> login/get_usd. */
+export const PREX_MAX_CHAINED_REQUESTS = 4;
+
 class CambioPrex extends Cambio {
   name = "Prex";
   bcu = "https://www.bcu.gub.uy/Sistema-de-Pagos/Paginas/prex.aspx";
   website = `https://www.prexcard.com`;
   favicon = "https://www.prexcard.com";
-  /**
-   * Every prexcard.com call below goes through the shared proxy in `proxy.txt`,
-   * so the timeout is folded in here rather than repeated per call site. Without
-   * it a dead proxy blocks each request ~127s on the kernel's TCP connect
-   * retries; `scrape_data()` chains three, which is longer than the whole
-   * five-minute sync cron gets — see tests/prex_request_bounds.test.ts.
-   */
-  private readonly REQUEST_TIMEOUT_MS = 12_000;
+  /** Folded in here because every call below shares the proxy config. */
+  private readonly REQUEST_TIMEOUT_MS = PREX_REQUEST_TIMEOUT_MS;
 
   private getProxyConfig() {
     const base = { timeout: this.REQUEST_TIMEOUT_MS };
