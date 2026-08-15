@@ -60,6 +60,25 @@
     "metaTitle": "Newsletter do dólar no Uruguai | Cambio Uruguay",
     "metaDescription": "Inscreva-se grátis e receba todos os dias o resumo do dólar no Uruguai: melhores cotações, tendência e notícias."
   },
+  "newsletterArchive": {
+    "nav": "Edições diárias",
+    "navTitle": "Edições",
+    "title": "Edições diárias do dólar no Uruguai",
+    "subtitle": "Uma edição por dia: quanto custava o dólar, quanto se moveu, qual casa de câmbio pagava melhor e as notícias que explicavam isso.",
+    "metaTitle": "Edições diárias do dólar no Uruguai | Cambio Uruguay",
+    "metaDescription": "Arquivo dia a dia da cotação do dólar no Uruguai: melhor venda, variação, melhor casa de câmbio e as notícias de cada jornada.",
+    "empty": "Ainda não há edições arquivadas. A primeira é publicada com o resumo de hoje.",
+    "older": "Edições mais antigas",
+    "newer": "Edições mais recentes",
+    "recentTitle": "Últimas edições",
+    "recentSubtitle": "Isto é exatamente o que você vai receber, sem deixar seu e-mail.",
+    "seeAll": "Ver todas",
+    "subscribeTitle": "Receba a próxima edição no seu e-mail",
+    "subscribeSubtitle": "Uma vez por dia, grátis, e você cancela quando quiser.",
+    "ctaTitle": "Quer a edição de amanhã?",
+    "ctaSubtitle": "Chega toda manhã por e-mail ou Telegram, grátis.",
+    "ctaButton": "Inscrever-me grátis"
+  },
   "map": {
     "nav": "Mapa",
     "title": "Mapa de casas de câmbio no Uruguai",

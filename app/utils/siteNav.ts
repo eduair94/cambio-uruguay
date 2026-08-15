@@ -1488,6 +1488,25 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         changefreq: 'monthly',
         keywords: ['newsletter', 'boletin', 'correo', 'suscribirse', 'email'],
       },
+      {
+        to: '/newsletter/archivo',
+        labelKey: 'newsletterArchive.nav',
+        icon: 'mdi-archive-outline',
+        // Daily, and the highest-priority entry in this section: it is the hub
+        // that every day's new issue hangs off, so it is the one URL a crawler
+        // should be re-reading rather than the signup form beside it.
+        priority: 0.7,
+        changefreq: 'daily',
+        keywords: [
+          'archivo',
+          'ediciones',
+          'newsletter',
+          'boletin',
+          'historico',
+          'dolar hoy',
+          'resumen diario',
+        ],
+      },
     ],
   },
   {
@@ -1610,6 +1629,7 @@ export const DYNAMIC_ROUTE_KEYS: Readonly<Record<string, string>> = Object.freez
   'historico/[origin]/index': 'market',
   'historico/[origin]/[currency]/[[type]]': 'market',
   'indicadores/[indicador]': 'tools',
+  'newsletter/[fecha]': 'news',
   'sucursales/[origin]/[[location]]': 'houses',
   'sillas-escritorio-uruguay/[slug]': 'news',
   'temas/[slug]': 'learn',

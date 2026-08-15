@@ -3,6 +3,7 @@
 import { randomBytes } from 'node:crypto'
 import { fetchNews } from './news'
 import { sanitizeAi } from './ai'
+import { aiMarkdownToEmailHtml, cleanAiCommentary } from '../../utils/newsletterIssue'
 
 export type NewsletterLang = 'es' | 'en' | 'pt'
 
@@ -147,9 +148,18 @@ export async function buildDigestData(lang: NewsletterLang): Promise<DigestData>
     const r = await $fetch<{ insight?: string }>('/ai/insights', {
       baseURL: apiBase,
       method: 'POST',
-      body: { type: 'market_summary', lang },
+      // `language`, not `lang`: the backend destructures `language` from the
+      // body (index.ts, POST /ai/insights) and falls back to Spanish for
+      // anything it does not recognise. Sending `lang` meant the field was
+      // always undefined, so every English and Portuguese subscriber has been
+      // getting a Spanish AI paragraph inside an otherwise translated email.
+      body: { type: 'market_summary', language: lang },
     })
-    ai = sanitizeAi(r?.insight ?? '')
+    // `sanitizeAi` removes provider leakage and LaTeX; `cleanAiCommentary`
+    // removes the "¡Claro! Aquí tienes…:" opener the model addresses to the
+    // prompt. Applied once here so the email, the Telegram digest and the
+    // archived issue all carry the same cleaned text.
+    ai = cleanAiCommentary(sanitizeAi(r?.insight ?? ''))
   } catch {
     ai = ''
   }
@@ -258,10 +268,16 @@ export function buildDailyEmail(
     })
     .join('\n')
 
+  // The commentary comes back as Markdown (`## Sección`, `**dato**`, `- ítem`).
+  // Escaping it wholesale and only turning newlines into <br> shipped those
+  // markers to subscribers as literal punctuation; `aiMarkdownToEmailHtml`
+  // renders the handful of constructs the commentary actually uses, and still
+  // escapes every character of model output before it reaches the markup.
   const aiHtml = data.ai
-    ? `<div style="margin:18px 0;font-size:15px;line-height:1.6;color:#333;">${esc(data.ai)
-        .replace(/\n{2,}/g, '</p><p style="margin:0 0 10px;">')
-        .replace(/\n/g, '<br>')}</div>`
+    ? `<div style="margin:18px 0;font-size:15px;line-height:1.6;color:#333;">${aiMarkdownToEmailHtml(
+        data.ai,
+        esc
+      )}</div>`
     : ''
 
   const newsHtml = data.news.length

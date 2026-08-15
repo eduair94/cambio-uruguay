@@ -30,7 +30,20 @@ const LOCALE_PREFIXES = ['/en', '/pt'] as const
  * The chrome-free routes (/widget, /pizarra) are excluded separately via
  * `isBareRoute`, which is also what keeps the loader script off them.
  */
-const NO_ADS = ['/cuenta', '/conectar', '/contacto', '/newsletter', '/offline', '/estado'] as const
+const NO_ADS = ['/cuenta', '/conectar', '/contacto', '/offline', '/estado'] as const
+
+/**
+ * Routes that carry no ads **themselves**, but whose children may.
+ *
+ * `/newsletter` is the signup form — the conversion, so no ads. Everything
+ * below it is the opposite kind of page: `/newsletter/archivo` and each
+ * `/newsletter/<fecha>` issue are long reads a visitor arrives at from search,
+ * with no form to protect. Prefix-matching them into NO_ADS would silently
+ * de-monetise the fastest-growing content surface on the site — one new page a
+ * day, every day — which is why the distinction is exact-vs-prefix rather than
+ * one more entry in the list above.
+ */
+const NO_ADS_EXACT = ['/newsletter'] as const
 
 /**
  * Tool and rate surfaces: one slot, after the content, never inside it.
@@ -91,6 +104,7 @@ function matches(path: string, list: readonly string[]): boolean {
 export function adDensityForPath(path: string): AdDensity {
   if (isBareRoute(path)) return 'none'
   const clean = normalizeAdPath(path)
+  if (NO_ADS_EXACT.includes(clean as (typeof NO_ADS_EXACT)[number])) return 'none'
   if (matches(clean, NO_ADS)) return 'none'
   if (clean === '/' || matches(clean, LIGHT)) return 'light'
   return 'normal'

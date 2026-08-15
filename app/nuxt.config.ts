@@ -278,6 +278,13 @@ export default defineNuxtConfig({
         driver: 'fs',
         base: './.data/blog',
       },
+      // Durable store for the public newsletter archive (one issue per day).
+      // Same reasoning as `blog`: `.data` sits beside the build and deploy.sh
+      // only swaps `.output`, so the back catalogue survives every release.
+      newsletter: {
+        driver: 'fs',
+        base: './.data/newsletter',
+      },
       // Durable store for daily-scraped courier per-kg rates (keeps last good value).
       couriers: {
         driver: 'fs',

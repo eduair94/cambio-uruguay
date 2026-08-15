@@ -27,6 +27,30 @@ describe('adDensityForPath', () => {
     }
   })
 
+  it('monetises the newsletter ARCHIVE even though the signup page is ad-free', () => {
+    // `/newsletter` is a form to protect; everything under it is a long read
+    // arrived at from search. Prefix-matching the archive into the no-ads list
+    // would silently de-monetise a surface that grows by one page every day —
+    // so the signup page is matched exactly, not by prefix.
+    expect(adDensityForPath('/newsletter')).toBe('none')
+    expect(adDensityForPath('/newsletter/')).toBe('none')
+    expect(adDensityForPath('/en/newsletter')).toBe('none')
+    for (const p of [
+      '/newsletter/archivo',
+      '/newsletter/2026-08-15',
+      '/en/newsletter/2026-08-15',
+      '/newsletter/archivo?p=3',
+    ]) {
+      expect(adDensityForPath(p), p).toBe('normal')
+      expect(maxAdSlots(adDensityForPath(p)), p).toBe(2)
+    }
+  })
+
+  it('still prefix-matches the account area, which is why the split exists', () => {
+    // The exact-match escape hatch must not leak: /cuenta keeps its children.
+    expect(adDensityForPath('/cuenta/favoritos')).toBe('none')
+  })
+
   it('carries no ads on plumbing pages', () => {
     expect(adDensityForPath('/offline')).toBe('none')
     expect(adDensityForPath('/estado')).toBe('none')

@@ -60,6 +60,25 @@
     "metaTitle": "Uruguay dollar newsletter | Cambio Uruguay",
     "metaDescription": "Subscribe free and get the daily Uruguay dollar summary: best rates, trend and news."
   },
+  "newsletterArchive": {
+    "nav": "Daily issues",
+    "navTitle": "Issues",
+    "title": "Daily issues: the dollar in Uruguay",
+    "subtitle": "One issue a day: what the dollar cost, how much it moved, which exchange house paid best, and the news behind it.",
+    "metaTitle": "Daily issues: the dollar in Uruguay | Cambio Uruguay",
+    "metaDescription": "A day-by-day archive of the dollar rate in Uruguay: best selling price, daily change, best exchange house and that day's news.",
+    "empty": "No issues archived yet. The first one publishes with today's summary.",
+    "older": "Older issues",
+    "newer": "Newer issues",
+    "recentTitle": "Latest issues",
+    "recentSubtitle": "This is exactly what you'll get, without leaving your email.",
+    "seeAll": "See all",
+    "subscribeTitle": "Get the next issue in your inbox",
+    "subscribeSubtitle": "Once a day, free, and you can unsubscribe whenever you want.",
+    "ctaTitle": "Want tomorrow's issue?",
+    "ctaSubtitle": "It arrives every morning by email or Telegram, free.",
+    "ctaButton": "Subscribe for free"
+  },
   "map": {
     "nav": "Map",
     "title": "Map of exchange houses in Uruguay",

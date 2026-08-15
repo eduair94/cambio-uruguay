@@ -10,6 +10,7 @@ import { NAV_SECTIONS, UNLISTED_ROUTES } from '../../../utils/siteNav'
 import { toolSlugs } from '../../../utils/tools'
 import { ChairCatalogProductModel } from '../../models/ChairCatalogProduct'
 import { listPosts } from '../../utils/blog'
+import { listIssueDates } from '../../utils/newsletterArchive'
 import { connectDb, disconnectDbAfterPrerender } from '../../utils/db'
 
 interface SitemapUrl {
@@ -134,6 +135,28 @@ export default defineEventHandler(async _event => {
     })
   } catch (blogError) {
     console.warn('Failed to add blog posts to sitemap:', blogError)
+  }
+
+  // --- Newsletter issues: server filesystem, independently fallible ---------
+  // One archived issue per day. Spanish-only, same reasoning as the blog above.
+  //
+  // `listIssueDates()` reads storage KEYS, not issue bodies, so a year of
+  // issues costs one directory listing rather than 365 JSON parses on every
+  // sitemap rebuild. `lastmod` is the issue's own date: an archived day is a
+  // permanent record and never changes after it is written, and claiming
+  // otherwise would ask crawlers to re-fetch a static page forever.
+  try {
+    const dates = await listIssueDates()
+    dates.forEach(date => {
+      urls.push({
+        loc: `/newsletter/${date}`,
+        lastmod: `${date}T12:00:00-03:00`,
+        changefreq: 'yearly',
+        priority: 0.6,
+      })
+    })
+  } catch (issueError) {
+    console.warn('Failed to add newsletter issues to sitemap:', issueError)
   }
 
   // --- Desk-chair pages: Mongo-derived, independently fallible --------------
