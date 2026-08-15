@@ -141,6 +141,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/franquicia-viajero-uruguay',
       },
       {
+        label: 'Enviar regalos a Uruguay',
+        description: 'Cómo mandar un obsequio desde el exterior.',
+        to: '/enviar-regalos-a-uruguay',
+      },
+      {
         label: 'Problemas con la aduana',
         description: 'Qué hacer si tu paquete queda trabado.',
         to: '/problemas-con-la-aduana-uruguay',
