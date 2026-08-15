@@ -2,7 +2,7 @@
   <VContainer class="page py-6 py-md-10">
     <!-- Hero -->
     <header class="hero mb-6">
-      <p class="eyebrow">Compras y envíos del exterior · Verificado el 9 de agosto de 2026</p>
+      <p class="eyebrow">Compras y envíos del exterior · Verificado el 15 de agosto de 2026</p>
       <h1 class="page-title mb-3">Recibir regalos del exterior en Uruguay (y una carta adentro)</h1>
       <p class="lede text-medium-emphasis mb-4">
         Tu pareja, un amigo o un familiar te quiere mandar un regalo desde afuera —accesorios,
@@ -93,9 +93,13 @@
             icon="mdi-swap-horizontal"
           >
             Si el obsequio <strong>no califica</strong> —se pasó de los topes, trae algo excluido o
-            el remitente es una tienda—, no se parte en dos: el envío entero cae en el
-            <strong>régimen simplificado</strong>, {{ SIMPLIFIED_RATE_PCT }}% del valor con un
-            mínimo de US$ {{ SIMPLIFIED_MIN_USD }}.
+            el remitente es una tienda—, no se parte en dos: el envío <strong>entero</strong> deja
+            de estar exento. Si lo mandó una tienda pero entra en tu cupo, sigue siendo franquicia y
+            paga <strong>IVA</strong>, con un piso de US$ {{ POSTAL_IVA_MIN_USD }} por envío que ni
+            el MEF ni la Aduana mencionan al explicar la franquicia. Y la
+            <strong>prestación única</strong> —{{ SIMPLIFIED_RATE_PCT }}% del valor, mínimo US$
+            {{ SIMPLIFIED_MIN_USD }}— es una <em>opción</em> que podés tomar, no un destino
+            automático.
             <NuxtLink :to="localePath('/herramientas/calculadora-impuestos-importacion')"
               >Calculá cuánto quedaría</NuxtLink
             >.
@@ -118,13 +122,16 @@
           <VCard variant="flat" class="panel warn-card pa-5 h-100">
             <div class="card-head">
               <VIcon color="warning">mdi-spray</VIcon>
-              <span class="card-head-title">Cuidado con perfumería y cosmética</span>
+              <span class="card-head-title">Cuidado con la perfumería</span>
             </div>
             <p class="text-body-2 mb-0">
-              Es la trampa menos intuitiva: <strong>perfumes y cosméticos</strong> están gravados
-              por <strong>IMESI</strong> y quedan <strong>fuera</strong> del régimen de obsequios y
-              franquicia. Y el perfume, además, es un <strong>inflamable</strong> que el correo no
-              transporta. Sumar un perfumito a una caja de accesorios puede complicar todo el envío.
+              Es la trampa menos intuitiva: el <strong>perfume y el maquillaje</strong> están
+              gravados por <strong>IMESI</strong> y quedan <strong>fuera</strong> del régimen de
+              obsequios y franquicia. Ojo, no toda la cosmética: el jabón de tocador, el dentífrico,
+              el desodorante, el champú, el agua colonia y el protector solar registrado ante el MSP
+              <strong>no</strong> pagan IMESI (Decreto 96/990, art. 27), así que no sacan al envío
+              del régimen. Y el perfume, además, es un <strong>inflamable</strong> que el correo no
+              transporta.
             </p>
           </VCard>
         </VCol>
@@ -476,6 +483,7 @@ import {
   FRANCHISE_ANNUAL_USD,
   FRANCHISE_MAX_SHIPMENTS,
   MAX_WEIGHT_KG,
+  POSTAL_IVA_MIN_USD,
   SIMPLIFIED_MIN_USD,
   SIMPLIFIED_RATE_PCT,
 } from '~/utils/importRules'
@@ -519,7 +527,7 @@ const answerCards = [
     color: 'success',
     q: '¿Me hacen problema por accesorios y caravanas?',
     lead: 'En general, no.',
-    body: 'Bijouterie, accesorios y llaveros son livianos, de bajo valor y de uso personal: entran como obsequio familiar, exentos de IVA y de todo tributo. La excepción a esquivar es la perfumería y cosmética (IMESI).',
+    body: 'Bijouterie, accesorios y llaveros son livianos, de bajo valor y de uso personal: entran como obsequio familiar, exentos de IVA y de todo tributo. La excepción a esquivar es el perfume y el maquillaje, gravados por IMESI.',
   },
   {
     icon: 'mdi-email-heart-outline',
@@ -564,7 +572,7 @@ const conditions = [
   },
   {
     lead: 'Sin bienes gravados por IMESI',
-    text: '(perfumes, cosméticos, alcohol, tabaco, suplementos) ni mercadería prohibida o controlada.',
+    text: '(perfume, maquillaje, alcohol, tabaco, lubricantes) ni mercadería prohibida o controlada. La higiene común —jabón, dentífrico, desodorante, champú— no está gravada y no molesta.',
   },
 ]
 
@@ -589,7 +597,7 @@ const letterPoints = [
 const steps = [
   {
     title: 'Registrate una vez en la Aduana (y mirá tu saldo)',
-    text: 'El registro de identidad digital para envíos postales se hace una sola vez, con tu identidad digital de nivel intermedio o avanzado. Hoy está en período de adaptación, pero va a ser obligatorio para usar la franquicia. En los obsequios no te piden datos del medio de pago, porque no hubo compra. En el mismo sitio consultás cuántos envíos y cuántos dólares te quedan.',
+    text: 'El registro de identidad digital para envíos postales se hace una sola vez, con tu identidad digital de nivel intermedio o avanzado. Al día de hoy es voluntario. En los obsequios no te piden datos del medio de pago, porque no hubo compra. En el mismo sitio consultás cuántos envíos y cuántos dólares te quedan.',
     link: {
       label: 'Registro y consulta de franquicias en aduanas.gub.uy',
       url: 'https://www.aduanas.gub.uy/innovaportal/v/28224/1/innova.front/',
@@ -623,16 +631,16 @@ const retainedDocs = [
   'La guía del operador postal o el número de seguimiento.',
   'Declaración de valor del contenido, que en un obsequio reemplaza a la factura.',
   'Fotos del contenido o del envío, si las tenés: ayudan a describirlo.',
-  'Certificados de otros organismos (MSP, MGAP, URSEC) cuando la mercadería los exige.',
+  'Certificados de otros organismos —el de la URSEC, o la autorización del MSP— cuando la mercadería los exige. Van en papel.',
 ]
 
 const retainedDeadlines = [
   {
-    lead: '30 días desde la notificación de llegada:',
-    text: 'sin regularizar el envío, la mercadería puede caer en abandono.',
+    lead: '30 días desde el ingreso del envío al país:',
+    text: 'sin pagar los tributos que correspondan, la mercadería cae en abandono no infraccional.',
   },
   {
-    lead: '90 días sin retirarlo:',
+    lead: '90 días sin retirarlo del depósito:',
     text: 'también se considera abandonado, aun con el trámite hecho.',
   },
   {
@@ -660,15 +668,15 @@ const faqs = [
   },
   {
     q: '¿Son un problema los accesorios, llaveros o caravanas?',
-    a: 'No: son livianos, de bajo valor y de uso personal, el perfil ideal para un obsequio. La excepción que sorprende es la <strong>perfumería y cosmética</strong>, gravada por IMESI y fuera del régimen. Si en el mismo paquete metés accesorios y un perfume, podés complicar todo el envío; mejor dejá la cosmética afuera. La bijouterie de fantasía no da problema; la joyería de oro o plata entra igual, pero se inspecciona más y conviene declararla con su valor real.',
+    a: 'No: son livianos, de bajo valor y de uso personal, el perfil ideal para un obsequio. La excepción que sorprende es el <strong>perfume y el maquillaje</strong>, gravados por IMESI y fuera del régimen. No toda la cosmética, ojo: el jabón de tocador, el dentífrico, el desodorante, el champú, el agua colonia y el protector solar registrado ante el MSP <strong>no</strong> pagan IMESI (Decreto 96/990, art. 27) y no sacan al envío del régimen. La bijouterie de fantasía no da problema; la joyería de oro o plata entra igual, pero se inspecciona más y conviene declararla con su valor real.',
     aText:
-      'No: son livianos, de bajo valor y de uso personal, el perfil ideal para un obsequio. La excepción que sorprende es la perfumería y cosmética, gravada por IMESI y fuera del régimen. La bijouterie de fantasía no da problema; la joyería de oro o plata entra igual pero se inspecciona más y conviene declararla con su valor real.',
+      'No: son livianos, de bajo valor y de uso personal, el perfil ideal para un obsequio. La excepción que sorprende es el perfume y el maquillaje, gravados por IMESI y fuera del régimen. No toda la cosmética: el jabón de tocador, el dentífrico, el desodorante, el champú, el agua colonia y el protector solar registrado ante el MSP no pagan IMESI, según el artículo 27 del Decreto 96/990, y no sacan al envío del régimen. La bijouterie de fantasía no da problema; la joyería de oro o plata entra igual pero se inspecciona más y conviene declararla con su valor real.',
   },
   {
     q: '¿Puede venir un regalo con batería, como auriculares o un smartwatch?',
-    a: 'Por <strong>correo postal, no</strong>: el Correo Uruguayo prohíbe expresamente las baterías de litio en envíos internacionales, y ahí entran auriculares, parlantes, relojes, celulares y power banks. Por <strong>courier privado sí</strong>, porque transportan mercancías peligrosas con su propio protocolo. Y ojo con otro filtro: los equipos con radio —celulares, GPS, monitores de bebé, repetidores WiFi— pueden requerir certificado de aptitud técnica de la URSEC para liberarse.',
+    a: 'Por <strong>correo postal, no</strong>: el Correo Uruguayo no admite baterías de litio en envíos internacionales, y ahí entran auriculares, parlantes, relojes, celulares y power banks. No es una prohibición aduanera —es restricción de transporte aéreo y política del operador—, así que por <strong>courier privado sí</strong>, con su propio protocolo de mercancías peligrosas. El otro filtro es la <strong>URSEC</strong>, y muerde menos de lo que se cree: <strong>no interviene</strong> en los dispositivos que funcionan únicamente con Wi-Fi o Bluetooth en 2,4 y 5,8 GHz (Resoluciones 275/021 y 297/021), así que un auricular, un mouse o un smartwatch no necesitan certificado. Sí lo necesitan el celular, el router con módem celular, el GPS, el handy y la cámara con conexión celular.',
     aText:
-      'Por correo postal no: el Correo Uruguayo prohíbe las baterías de litio en envíos internacionales, lo que incluye auriculares, parlantes, relojes, celulares y power banks. Por courier privado sí, con su protocolo de mercancías peligrosas. Además, los equipos con radio como celulares, GPS, monitores de bebé o repetidores WiFi pueden requerir certificado de aptitud técnica de la URSEC.',
+      'Por correo postal no: el Correo Uruguayo no admite baterías de litio en envíos internacionales, lo que incluye auriculares, parlantes, relojes, celulares y power banks. No es prohibición aduanera sino restricción de transporte aéreo y política del operador, así que por courier privado sí. Con la URSEC, la regla es que no interviene en dispositivos que funcionan únicamente con Wi-Fi o Bluetooth en 2,4 y 5,8 GHz, según las Resoluciones 275/021 y 297/021: un auricular, un mouse o un smartwatch no necesitan certificado. Sí lo necesitan el celular, el router con módem celular, el GPS, el handy y la cámara con conexión celular.',
   },
   {
     q: 'Si es un regalo, ¿por qué igual tengo que declararlo?',
@@ -678,8 +686,8 @@ const faqs = [
   },
   {
     q: '¿Cuántos regalos me pueden mandar por año?',
-    a: `El régimen postal permite hasta <strong>${FRANCHISE_MAX_SHIPMENTS} envíos</strong> con franquicia por año civil, con hasta <strong>US$ ${FRANCHISE_ANNUAL_USD}</strong> acumulados y <strong>${MAX_WEIGHT_KG} kg</strong> por envío. Cada obsequio consume uno de esos usos, así que para regalos livianos el límite real es la cantidad de envíos, no el valor. Si son varias cosas, conviene <strong>un solo paquete</strong>: dos paquetes son dos envíos.`,
-    aText: `El régimen postal permite hasta ${FRANCHISE_MAX_SHIPMENTS} envíos con franquicia por año civil, con hasta US$ ${FRANCHISE_ANNUAL_USD} acumulados y ${MAX_WEIGHT_KG} kg por envío. Cada obsequio consume uno de esos usos. Si son varias cosas conviene un solo paquete, porque dos paquetes son dos envíos.`,
+    a: `El régimen postal permite hasta <strong>${FRANCHISE_MAX_SHIPMENTS} envíos</strong> con franquicia por año civil, con hasta <strong>US$ ${FRANCHISE_ANNUAL_USD}</strong> acumulados y <strong>${MAX_WEIGHT_KG} kg</strong> por envío. Cada obsequio consume uno de esos usos, así que para regalos livianos el límite real es la cantidad de envíos, no el valor. Si son varias cosas, conviene <strong>un solo paquete</strong>: dos paquetes son dos envíos. <strong>Los libros son la excepción</strong>: el Decreto 50/026, art. 4, los deja fuera del tope en dólares —sobre los 3 envíos su texto no dice nada—, y la RG DNA 11/2026, num. 26, los exceptúa de los dos límites a la vez, igual que a los medicamentos de uso personal cuando tienen autorización del MSP. Conviene saber que vas a tener que pelearla: una noticia posterior de la propia Aduana dice, sin mencionar la excepción, que todos los envíos consumen cupo.`,
+    aText: `El régimen postal permite hasta ${FRANCHISE_MAX_SHIPMENTS} envíos con franquicia por año civil, con hasta US$ ${FRANCHISE_ANNUAL_USD} acumulados y ${MAX_WEIGHT_KG} kg por envío. Cada obsequio consume uno de esos usos. Si son varias cosas conviene un solo paquete, porque dos paquetes son dos envíos. Los libros son la excepción: el artículo 4 del Decreto 50/026 los deja fuera del tope en dólares, sin decir nada sobre los 3 envíos, y el numeral 26 de la RG DNA 11/2026 los exceptúa de los dos límites a la vez, igual que a los medicamentos de uso personal con autorización del MSP. Hay que saber que una noticia posterior de la propia Aduana dice, sin mencionar la excepción, que todos los envíos consumen cupo.`,
   },
   {
     q: '¿Le puedo pedir que declare menos valor para que no me cobren?',
@@ -695,14 +703,14 @@ const faqs = [
   },
   {
     q: '¿Y si el envío supera los topes o trae algo prohibido?',
-    a: `Si se pasa de US$ ${FRANCHISE_ANNUAL_USD} acumulados, de ${MAX_WEIGHT_KG} kg o de los ${FRANCHISE_MAX_SHIPMENTS} envíos, deja de tener franquicia y el envío <strong>entero</strong> pasa al régimen simplificado: ${SIMPLIFIED_RATE_PCT}% del valor con un mínimo de US$ ${SIMPLIFIED_MIN_USD}. Si trae bienes con IMESI o controlados, queda fuera del régimen y puede requerir certificados o despachante. Si te lo retienen, hay un plan de acción: <a href="/problemas-con-la-aduana-uruguay">qué hacer si tenés problemas con la Aduana</a>.`,
-    aText: `Si se pasa de los topes deja de tener franquicia y el envío entero pasa al régimen simplificado: ${SIMPLIFIED_RATE_PCT}% del valor con un mínimo de US$ ${SIMPLIFIED_MIN_USD}. Si trae bienes con IMESI o controlados queda fuera del régimen y puede requerir certificados o despachante. Si te lo retienen, hay una guía de problemas con la Aduana.`,
+    a: `Si se pasa de US$ ${FRANCHISE_ANNUAL_USD} acumulados, de ${MAX_WEIGHT_KG} kg o de los ${FRANCHISE_MAX_SHIPMENTS} envíos, deja de tener franquicia y el envío <strong>entero</strong> queda sin exención. Ahí podés <em>optar</em> por la prestación única —${SIMPLIFIED_RATE_PCT}% del valor con un mínimo de US$ ${SIMPLIFIED_MIN_USD} por envío—, que la ley plantea como una opción y no como un destino automático; la alternativa es liquidar por el régimen general. Si trae bienes gravados por IMESI queda fuera del régimen postal en cualquier caso, y si trae mercadería controlada sin su certificado, también. Si te lo retienen, hay un plan de acción: <a href="/problemas-con-la-aduana-uruguay">qué hacer si tenés problemas con la Aduana</a>.`,
+    aText: `Si se pasa de los topes deja de tener franquicia y el envío entero queda sin exención. Ahí podés optar por la prestación única, ${SIMPLIFIED_RATE_PCT}% del valor con un mínimo de US$ ${SIMPLIFIED_MIN_USD} por envío, que la ley plantea como una opción y no como un destino automático; la alternativa es liquidar por el régimen general. Si trae bienes gravados por IMESI queda fuera del régimen postal, y lo mismo si trae mercadería controlada sin su certificado. Si te lo retienen, hay una guía de problemas con la Aduana.`,
   },
   {
     q: '¿Cuánto puede demorar si queda retenido?',
-    a: 'Depende de qué falte. La verificación de envíos retenidos se atiende con <strong>agenda previa</strong>, y la gestoría del Correo —que hace la verificación ocular y presenta la documentación por vos— maneja plazos de entre <strong>tres y seis días hábiles</strong> desde que el legajo está completo. Lo que no espera son los plazos de abandono: <strong>30 días</strong> desde la notificación sin regularizar, o <strong>90 días</strong> sin retirar.',
+    a: 'Depende de qué falte. La verificación de envíos retenidos se atiende con <strong>agenda previa</strong>, y la gestoría del Correo —que hace la verificación ocular y presenta la documentación por vos— maneja plazos de entre <strong>tres y seis días hábiles</strong> desde que el legajo está completo. Lo que no espera son los plazos de abandono: <strong>30 días</strong> desde que el envío ingresó al país sin pagar los tributos, o <strong>90 días</strong> sin retirarlo del depósito.',
     aText:
-      'Depende de qué falte. La verificación de envíos retenidos se atiende con agenda previa y la gestoría del Correo maneja plazos de entre tres y seis días hábiles desde que el legajo está completo. Los plazos de abandono son 30 días desde la notificación sin regularizar, o 90 días sin retirar.',
+      'Depende de qué falte. La verificación de envíos retenidos se atiende con agenda previa y la gestoría del Correo maneja plazos de entre tres y seis días hábiles desde que el legajo está completo. Los plazos de abandono son 30 días desde que el envío ingresó al país sin pagar los tributos, o 90 días sin retirarlo del depósito.',
   },
 ]
 

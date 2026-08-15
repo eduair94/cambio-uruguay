@@ -25,8 +25,9 @@ FORM: Mesa de decisión editorial, extensión Read/Operate de “La Mesa de Merc
             <p class="answer-label mb-1">La respuesta corta</p>
             <p class="answer-copy mb-0">
               <strong>Solo con documento de tu país:</strong> dirección local + operador postal +
-              tributos; normalmente 60% hasta US$ 800. <strong>Con cédula uruguaya:</strong> podés
-              usar la franquicia anual; Mercosur y China pagan IVA, mientras que EE.UU. puede quedar
+              tributos; normalmente 60% hasta US$ 800, con mínimo de US$ 20 por envío.
+              <strong>Con cédula uruguaya:</strong> podés usar la franquicia anual; Mercosur y China
+              pagan IVA —que tampoco baja de US$ 20 por envío—, mientras que EE.UU. puede quedar
               exonerado hasta US$ 200.
             </p>
           </div>
@@ -187,7 +188,11 @@ FORM: Mesa de decisión editorial, extensión Read/Operate de “La Mesa de Merc
               <p>
                 Hasta <strong>3 envíos</strong> y <strong>US$ 800 acumulados</strong> por año civil.
                 Exonera aranceles, no siempre impuestos: compras de Mercosur, China y otros orígenes
-                pagan IVA; las de EE.UU. pueden quedar sin IVA hasta US$ 200.
+                pagan IVA; las de EE.UU. pueden quedar sin IVA hasta US$ 200. Ese IVA también tiene
+                un <strong>piso de US$ 20 por envío</strong> (Título 10 del T.O. 2023, art. 13 lit.
+                B, inciso agregado por la Ley 20.446 art. 660), salvo que el envío esté integrado
+                exclusivamente por bienes cuya importación está exonerada. Ni el MEF ni la Aduana lo
+                mencionan al explicar la franquicia: lo citan sólo para el 60%.
               </p>
             </div>
           </article>
@@ -250,7 +255,9 @@ FORM: Mesa de decisión editorial, extensión Read/Operate de “La Mesa de Merc
             <VIcon size="24">mdi-home-map-marker</VIcon>
             <span>Dirección<br />en Uruguay</span>
           </div>
-          <p class="route-caption">Con franquicia: sin aranceles, con IVA del 22%.</p>
+          <p class="route-caption">
+            Con franquicia: sin aranceles, con IVA del 22% y mínimo de US$ 20 por envío.
+          </p>
         </div>
       </section>
 
@@ -305,7 +312,7 @@ FORM: Mesa de decisión editorial, extensión Read/Operate de “La Mesa de Merc
               <p>
                 El envío estándar suele terminar en Correo Uruguayo. Guardá factura y tracking y
                 declaralo cuando corresponda. Si usás franquicia, el origen China u “otro país” paga
-                IVA del 22%.
+                IVA del 22%, con un mínimo de US$ 20 por envío.
               </p>
               <NuxtLink :to="localePath('/guias/importar-de-aliexpress-a-uruguay')">
                 Ver la guía para AliExpress
@@ -490,7 +497,10 @@ const estimatedTax = computed<number | null>(() => {
     )
   }
   if (decision.value.ivaExempt) return 0
-  return (value * URUGUAY.iva.basica) / 100
+  // El IVA del régimen postal no puede quedar por debajo de US$ 20 por envío (Título 10 del
+  // T.O. 2023, art. 13 lit. B, inciso agregado por la Ley 20.446 art. 660; RG DNA 11/2026,
+  // Anexo I num. 27), salvo envío integrado exclusivamente por bienes exonerados.
+  return Math.max((value * URUGUAY.iva.basica) / 100, value > 0 ? rules.value.postalIvaMinUsd : 0)
 })
 
 const verdictTone = computed(() => {
@@ -511,7 +521,7 @@ const verdictTitle = computed(() => {
   }
   if (documentStatus.value === 'foreign') return 'Podés recibirlo, pero sin franquicia'
   if (decision.value.ivaExempt) return 'Con franquicia: sin IVA'
-  return `Con franquicia: paga IVA del ${URUGUAY.iva.basica}%`
+  return `Con franquicia: paga IVA del ${URUGUAY.iva.basica}%, mínimo US$ ${rules.value.postalIvaMinUsd}`
 })
 
 const verdictExplanation = computed(() => {
@@ -525,9 +535,9 @@ const verdictExplanation = computed(() => {
     return `Compra originada en EE.UU. dentro del límite vigente y con cupo disponible.`
   }
   if (purchaseOrigin.value === 'mercosur') {
-    return 'El origen Mercosur no exonera el IVA de una encomienda personal. La franquicia sí exonera aranceles.'
+    return `El origen Mercosur no exonera el IVA de una encomienda personal. La franquicia sí exonera aranceles, pero el IVA nunca baja de US$ ${rules.value.postalIvaMinUsd} por envío.`
   }
-  return 'La franquicia exonera aranceles, pero este origen no tiene exoneración de IVA.'
+  return `La franquicia exonera aranceles, pero este origen no tiene exoneración de IVA, y ese IVA nunca baja de US$ ${rules.value.postalIvaMinUsd} por envío.`
 })
 
 const sellerRegistryLabel = computed(() => formatDate(rules.value.sellerRegistryEnforcedFrom))
@@ -549,7 +559,7 @@ const faqs = [
   },
   {
     q: '¿Ser ciudadano de un país del Mercosur cambia el impuesto?',
-    a: 'No en el régimen postal personal. La nacionalidad Mercosur puede facilitar el trámite de residencia temporaria y, luego, la obtención de documento uruguayo. El paquete enviado desde otro país del bloque sigue siendo una importación y, bajo franquicia, paga IVA del 22%.',
+    a: 'No en el régimen postal personal. La nacionalidad Mercosur puede facilitar el trámite de residencia temporaria y, luego, la obtención de documento uruguayo. El paquete enviado desde otro país del bloque sigue siendo una importación y, bajo franquicia, paga IVA del 22%, con un mínimo de US$ 20 por envío (Título 10 del T.O. 2023, art. 13 lit. B, inciso agregado por la Ley 20.446 art. 660), salvo que el envío esté integrado exclusivamente por bienes exonerados. Ese piso no aparece en las preguntas frecuentes del MEF ni de la Aduana, que lo citan sólo para la prestación única del 60%.',
   },
   {
     q: '¿Puedo usar la cédula y la franquicia de un amigo uruguayo?',
@@ -565,7 +575,7 @@ const faqs = [
   },
   {
     q: '¿Y si mando desde mi país ropa, libros o una computadora que ya son míos?',
-    a: 'Si llegan por correo, siguen necesitando una declaración y un valor. Un obsequio familiar genuino puede estar exento de tributos, pero consume cupo y debe ser realmente persona a persona. Si te mudás para establecer residencia, existe un régimen separado para menaje; una estadía de seis meses no lo activa automáticamente. Si los traés con vos, consultá la guía de equipaje de viajero.',
+    a: 'Si llegan por correo, siguen necesitando una declaración y un valor. Con los libros el tratamiento es distinto: su importación está exonerada de todo tributo nacional, gravámenes aduaneros y tasas consulares (Título 10 del T.O. 2023, art. 41; Ley 15.913 art. 8 lit. C), no les corre el mínimo de US$ 20 de IVA y no consumen ni los US$ 800 ni los 3 envíos (Decreto 50/026 art. 4; RG DNA 11/2026 num. 26). Un obsequio familiar genuino puede estar exento de tributos, pero consume cupo y debe ser realmente persona a persona. Si te mudás para establecer residencia, existe un régimen separado para menaje; una estadía de seis meses no lo activa automáticamente. Si los traés con vos, consultá la guía de equipaje de viajero.',
   },
 ]
 

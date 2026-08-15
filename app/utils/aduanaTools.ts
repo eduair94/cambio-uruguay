@@ -46,10 +46,11 @@ export interface ChargeVerdict {
   ivaExemptionHintUsd?: number
 }
 
-// Which fact backs each tax-like charge. Both facts happen to be established by the same article
-// that creates the regime the charge belongs to (Decreto 50/026 art. 3 for IVA within the
-// franchise; Ley 20.446 art. 627 for the prestación única) — so the fact that already carries the
-// franchise's tope, or the prestación única's mínimo, is the fact we cite as the charge's backing.
+// Which fact backs each tax-like charge — we cite the fact that already carries the franchise's
+// tope, or the prestación única's mínimo, as the charge's backing. Careful with the IVA one: the
+// franchise exempts ARANCELES, not IVA (Ley 20.446 art. 627 inc. 2 remite al Título 10), and the
+// IVA of a postal shipment carries its own floor of USD 20 (art. 13 lit. B, inciso agregado por la
+// Ley 20.446 art. 660) — that floor is NOT exclusive to the prestación única.
 const NORMA_BACKED_CHARGE_FACT: Partial<Record<ChargeId, string>> = {
   iva: 'franquicia.tope_anual_usd',
   prestacion_unica: 'prestacion_unica.minimo_usd',
@@ -66,11 +67,12 @@ function findFact(facts: AduanaFact[], id: string): AduanaFact | undefined {
 }
 
 /**
- * Classifies each charge by what backs it — it never recomputes an amount. The IVA taxable base
- * is one of the things the underlying legal research could NOT verify (Decreto 50/026 art. 3
- * defers to a TO 2023 article IMPO serves as an empty shell), so this function does not attempt to
- * check whether an amount is *correct* — only whether it is a tax the norm imposes, a price the
- * courier's contract sets, or neither.
+ * Classifies each charge by what backs it — it never recomputes an amount. The IVA of a postal
+ * shipment is charged over the invoice value or declaración de valor, with a floor of USD 20 per
+ * shipment (Título 10 T.O. 2023 art. 13 lit. B, inciso agregado por la Ley 20.446 art. 660; RG DNA
+ * 11/2026 Anexo I num. 27), but which rate applies depends on the goods and no fact here carries
+ * that: this function does not attempt to check whether an amount is *correct* — only whether it
+ * is a tax the norm imposes, a price the courier's contract sets, or neither.
  */
 export function verifyCharges(input: { charges: Charge[]; facts: AduanaFact[] }): ChargeVerdict[] {
   return input.charges.map(charge => {
@@ -81,7 +83,11 @@ export function verifyCharges(input: { charges: Charge[]; facts: AduanaFact[] })
       let ivaExemptionHintUsd: number | undefined
       if (charge.id === 'iva') {
         label =
-          'El IVA sobre un envío en franquicia es un tributo (lo fija la norma, no el courier).'
+          'El IVA sobre un envío en franquicia es un tributo (lo fija la norma, no el courier). ' +
+          'Ojo con una cosa que casi no se publica: ese IVA tiene un piso de USD 20 por envío, salvo ' +
+          'que el envío lleve únicamente bienes exonerados. No es un cargo del courier ni un mínimo ' +
+          'exclusivo del 60%: sale del art. 13 lit. B del Título 10, en la redacción de la Ley 20.446, ' +
+          'y ni el MEF ni la Aduana lo mencionan al explicar la franquicia.'
         const tifaFact = findFact(input.facts, 'tifa.exoneracion_usd')
         ivaExemptionHintUsd = tifaFact ? Number(tifaFact.value) : undefined
       } else {

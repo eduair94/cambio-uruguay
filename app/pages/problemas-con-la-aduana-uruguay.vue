@@ -177,6 +177,17 @@
               si te correspondía la
               <NuxtLink :to="localePath('/franquicia-aduana-uruguay')">exoneración</NuxtLink>.
             </p>
+            <p v-if="v.id === 'iva'" class="verdict-hint mb-0 mt-1">
+              <VIcon size="13" class="mr-1">mdi-information-outline</VIcon>
+              Y ojo con las compras chicas: en el régimen postal el IVA tiene un piso de US$ 20 por
+              envío, tanto con franquicia como con la prestación única (Título 10 del T.O. 2023,
+              art. 13 literal B, inciso agregado por la Ley 20.446 art. 660; la DNA lo repite en la
+              RG 11/2026, Anexo I num. 27). La única salida es que el envío lleve exclusivamente
+              bienes exonerados: un libro no lo paga, pero si viaja con algo gravado, el envío
+              pierde la excepción. Ni el MEF ni la DNA mencionan este mínimo al explicar la
+              franquicia, así que un IVA que te parece desproporcionado en una compra barata puede
+              estar bien liquidado igual.
+            </p>
           </div>
         </div>
         <p v-else class="text-caption text-medium-emphasis mb-0">
@@ -190,7 +201,9 @@
       <h2 class="section-heading mb-1">¿Cuánto cupo de franquicia me queda?</h2>
       <p class="text-body-2 text-medium-emphasis mb-4">
         Cargá tus compras del año, una por una. Te mostramos cuánto usaste, cuánto te queda y qué
-        pasa con la próxima.
+        pasa con la próxima. No cargues acá los libros: no consumen ni el tope anual ni los tres
+        envíos (Decreto 50/026 art. 4 y RG DNA 11/2026 num. 26). Los medicamentos de uso personal
+        tampoco, pero sólo si vienen con la autorización del Ministerio de Salud Pública.
       </p>
       <VCard variant="flat" class="tool-card pa-4 pa-sm-6">
         <div class="d-flex ga-2 align-center mb-4 flex-wrap">

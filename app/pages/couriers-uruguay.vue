@@ -40,15 +40,29 @@
       class="mb-4"
       icon="mdi-information-outline"
     >
-      El flete del courier es un <strong>costo aparte que no paga IVA</strong>: en el régimen de
-      compras online el IVA solo grava el costo del producto, y el envío se suma al total.
-      <NuxtLink
-        :to="localePath('/herramientas/calculadora-impuestos-importacion')"
-        class="couriers-link"
-      >
-        Estimá los impuestos de tu compra
-      </NuxtLink>
-      antes de comprar.
+      <p class="mb-1">
+        El flete que te cobra el courier <strong>no integra la factura de compra</strong>: en el
+        régimen postal el impuesto se calcula sobre el total de la factura original, con todos los
+        conceptos que figuren adicionados en ella —el envío que te cobra el vendedor, incluido—.
+        Fuera del régimen postal es al revés: ahí la base del IVA es el valor en aduana (el CIF, que
+        sí incluye flete y seguro) más el arancel, y si el que importa es un particular esa suma se
+        incrementa un 50% (Título 10 del T.O. 2023, art. 13 lit. B).
+      </p>
+      <p class="mb-0">
+        Y ojo con los paquetes chicos: aun usando la franquicia, el IVA de un envío postal
+        <strong>no puede ser inferior a US$ 20 por envío</strong> (Título 10 del T.O. 2023, art. 13
+        lit. B, inciso agregado por la Ley 20.446 art. 660), salvo que el envío esté integrado
+        exclusivamente por bienes exonerados. En la práctica ese piso muerde en toda compra de menos
+        de US$ 90,91 a la tasa del 22%. Ni el MEF ni la DNA lo mencionan en sus preguntas frecuentes
+        de franquicia: solo lo citan para el 60%.
+        <NuxtLink
+          :to="localePath('/herramientas/calculadora-impuestos-importacion')"
+          class="couriers-link"
+        >
+          Estimá los impuestos de tu compra
+        </NuxtLink>
+        antes de comprar.
+      </p>
     </VAlert>
 
     <!-- Comparison -->
@@ -301,8 +315,8 @@
     <VCard class="cta-couriers mt-6 pa-6 text-center" variant="flat">
       <h2 class="text-h6 font-weight-bold mb-2 text-white">¿Cuánto vas a pagar de impuestos?</h2>
       <p class="text-body-2 text-grey-lighten-1 mb-4">
-        Usá la calculadora de impuestos de importación: franquicia anual de US$ 800, IVA sobre la
-        mercadería y el flete del courier por separado.
+        Usá la calculadora de impuestos de importación: franquicia anual de US$ 800, el IVA con su
+        mínimo de US$ 20 por envío y el flete del courier por separado.
       </p>
       <VBtn
         :to="localePath('/herramientas/calculadora-impuestos-importacion')"

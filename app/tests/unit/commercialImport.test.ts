@@ -126,7 +126,10 @@ describe('estimatePrestacionUnica', () => {
 })
 
 describe('estimateRegimenGeneral', () => {
-  it('puts the arancel and the tasa consular INSIDE the IVA base', () => {
+  // El Título 10 del T.O. 2023, art. 13 lit. B) nombra la base con precisión: "las tasas se
+  // aplicarán sobre el valor normal de aduana más el arancel". La tasa consular NO está ahí. Este
+  // test afirmaba lo contrario y le sumaba la consular a la base, inflando el IVA.
+  it('puts the arancel INSIDE the IVA base and leaves the tasa consular OUT', () => {
     const r = estimateRegimenGeneral({
       invoiceUsd: 1000,
       freightUsd: 0,
@@ -135,11 +138,12 @@ describe('estimateRegimenGeneral', () => {
       ivaPct: 22,
       tasaConsularPct: 5,
     })
-    // arancel 100 + consular 50 → IVA base 1150 → IVA 253 → charges 403
+    // arancel 100 → base del IVA 1100 → IVA 242; la consular (50) se cobra pero fuera de la base.
+    // Total: 100 + 50 + 242 = 392.
     const iva = r.lines.find(l => l.label.startsWith('IVA'))
-    expect(iva?.amountUsd).toBe(253)
-    expect(r.chargesUsd).toBe(403)
-    expect(r.effectivePct).toBe(40.3)
+    expect(iva?.amountUsd).toBe(242)
+    expect(r.chargesUsd).toBe(392)
+    expect(r.effectivePct).toBe(39.2)
   })
 
   it('includes freight and insurance in the customs value', () => {

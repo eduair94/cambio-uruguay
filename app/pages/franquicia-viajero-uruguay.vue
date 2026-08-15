@@ -143,8 +143,10 @@
             porcentaje único.
           </li>
           <li>
-            <strong>Se suma IVA</strong> (22% tasa básica, 10% para algunos rubros) sobre el arancel
-            — no lo reemplaza.
+            <strong>Se suma IVA</strong> (22% tasa básica, 10% para algunos rubros) y no reemplaza
+            al arancel: la base es el <strong>valor en aduana más el arancel</strong>, y cuando
+            importa alguien que no es contribuyente —una persona física— esa suma se
+            <strong>incrementa un 50%</strong> (Título 10 del T.O. 2023, art. 13 lit. B).
           </li>
           <li>
             <strong>Acá sí hace falta despachante de aduana.</strong> La exención de despachante

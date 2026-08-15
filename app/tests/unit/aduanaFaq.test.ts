@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest'
 import {
   ADUANA_FAQ_CARGOS_OPERADOR_VERIFIED_AT,
   ADUANA_FAQ_CATEGORIES,
+  ADUANA_FAQ_HECHOS_IMPORTACION_VERIFIED_AT,
   ADUANA_FAQ_IDENTIDAD_Y_TRIBUTOS_VERIFIED_AT,
   ADUANA_FAQ_LAST_REVIEWED,
   ADUANA_FAQ_POSTAL_VERIFIED_AT,
@@ -121,12 +122,14 @@ describe('aduana FAQ catalogue', () => {
     // stops telling the truth. A new constant that nobody folds in here is the original bug.
     expect(modified >= ADUANA_FAQ_IDENTIDAD_Y_TRIBUTOS_VERIFIED_AT).toBe(true)
     expect(modified >= ADUANA_FAQ_CARGOS_OPERADOR_VERIFIED_AT).toBe(true)
+    expect(modified >= ADUANA_FAQ_HECHOS_IMPORTACION_VERIFIED_AT).toBe(true)
     expect(modified).toBe(
       [
         ADUANA_FAQ_LAST_REVIEWED,
         ADUANA_FAQ_POSTAL_VERIFIED_AT,
         ADUANA_FAQ_IDENTIDAD_Y_TRIBUTOS_VERIFIED_AT,
         ADUANA_FAQ_CARGOS_OPERADOR_VERIFIED_AT,
+        ADUANA_FAQ_HECHOS_IMPORTACION_VERIFIED_AT,
       ]
         .sort()
         .at(-1)
@@ -273,7 +276,14 @@ describe('aduana FAQ catalogue', () => {
     expect(libros.answer).toContain('Obras de carácter musical y cinematográfico')
     expect(libros.answer).toContain('no son obra musical ni cinematográfica')
     // The US$ 800 carve-out reaches the amount only, and names books — not discs.
-    expect(libros.answer).toContain('Exceptúa del MONTO, no de la cuenta de tres envíos')
+    // El Decreto 50/026 art. 4 exceptúa "el límite establecido en el literal c) de US$ 800", y el
+    // literal c) carga los dos topes. Lo desempata la RG DNA 11/2026 num. 26, que exceptúa a los
+    // libros del num. 25 lit. b) V — el requisito donde viven los US$ 800 Y los 3 envíos — así que
+    // la lectura vieja ("exceptúa el monto, no la cuenta de envíos") quedó corta. Lo que hay que
+    // publicar es el canal propio: el libro no se declara como franquicia.
+    expect(libros.answer).toContain('RG DNA 11/2026')
+    expect(libros.answer).toContain('J/01')
+    expect(libros.answer).toContain('no toca el cupo')
     // The courier line item that reads like a tax break and is not one.
     expect(libros.answer).toContain('TARIFA DE FLETE')
     expect(libros.answer).toContain('no una exoneración de Aduana ni un beneficio fiscal')
@@ -306,7 +316,6 @@ describe('aduana FAQ catalogue', () => {
     // table and the statute disagree, the statute wins. But "cero" was published flat, with basis
     // `norma` and no warning, while every administrative source the reader can reach says 22% —
     // leaving them with nothing to say when the postal operator liquidates it anyway.
-    expect(libros.answer).toContain('es la diferencia entre cero y 60%')
     expect(libros.answer).toContain('ninguna fuente administrativa publica esta exoneración')
     expect(libros.answer).toContain(
       'Se tributa IVA por estas compras salvo, las siguientes situaciones que están exoneradas'

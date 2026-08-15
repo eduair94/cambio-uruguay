@@ -30,6 +30,18 @@ export const ADUANA_FAQ_IDENTIDAD_Y_TRIBUTOS_VERIFIED_AT = '2026-08-10'
  */
 export const ADUANA_FAQ_CARGOS_OPERADOR_VERIFIED_AT = '2026-08-12'
 
+/**
+ * Same rule again, for the 2026-08-15 pass that realigned this catalogue with the primary-source
+ * fact sheet behind the import calculator. Five claims were wrong and are corrected here: the
+ * US$ 20 floor presented as exclusive to the 60% (it is also the IVA floor of a postal shipment,
+ * Título 10 art. 13 lit. B + Ley 20.446 art. 660), exonerated merchandise treated as taxed (books
+ * are exonerated from EVERY national tribute, Título 10 art. 41 + Ley 15.913 art. 8 lit. C), books
+ * counted against the 3-shipment quota (RG DNA 11/2026 num. 26 exempts BOTH limits), and two
+ * procedure descriptions that sent a persona física to trámites that do not exist for her (MGAP
+ * prohibits, it does not certify; the MSP does not authorise health products for particulares).
+ */
+export const ADUANA_FAQ_HECHOS_IMPORTACION_VERIFIED_AT = '2026-08-15'
+
 export type AduanaFaqCategoryId =
   | 'antes-de-comprar'
   | 'franquicia-impuestos'
@@ -168,9 +180,9 @@ export const ADUANA_FAQ_SOURCES: Readonly<Record<string, AduanaFaqSource>> = Obj
   },
   'ursec-importacion': {
     label:
-      'gub.uy / URSEC — certificado para ingresar equipos radioeléctricos: excepción para dispositivos que operen únicamente con Wifi4/5/6 y/o Bluetooth',
+      'gub.uy / URSEC — certificado para habilitar el ingreso al país de equipos radioeléctricos bajo el régimen de franquicia (Persona Física): excepción para dispositivos que operen únicamente con Wifi4/5/6 y/o Bluetooth',
     authority: 'URSEC',
-    url: 'https://www.gub.uy/tramites/certificado-habilitar-ingreso-pais-equipos-radioelectricos-bajo-regimen-importacion-empresa',
+    url: 'https://www.gub.uy/tramites/certificado-para-habilitar-ingreso-al-pais-equipos-radioelectricos-bajo-regimen-franquicia-persona-fisica',
     kind: 'fuente-oficial',
   },
   'ursea-productos': {
@@ -457,6 +469,62 @@ export const ADUANA_FAQ_SOURCES: Readonly<Record<string, AduanaFaqSource>> = Obj
       'Texto Ordenado 2023, Título 10 (IVA), art. 13 lit. B — base imponible de los envíos postales internacionales y mínimo de US$ 20, salvo envío integrado exclusivamente por bienes exonerados',
     authority: 'DGI / IMPO',
     url: 'https://www.impo.com.uy/bases/todgi2023/101-2024/13_T10',
+    kind: 'norma',
+  },
+  'todgi-t10-41': {
+    label:
+      'Texto Ordenado 2023, Título 10 (IVA), art. 41 — la importación de obras literarias, artísticas, científicas, docentes y material educativo está exonerada de todo tributo nacional, en cualquier soporte',
+    authority: 'DGI / IMPO',
+    url: 'https://www.impo.com.uy/bases/todgi2023/101-2024/41_T10',
+    kind: 'norma',
+  },
+  'ley-15913': {
+    label:
+      'Ley 15.913 (Ley del Libro), art. 8 lit. C — exoneración de todo tributo nacional, incluidos gravámenes aduaneros y tasas consulares; inciso 2: despachante no preceptivo hasta US$ 1.000 por correo internacional',
+    authority: 'IMPO',
+    url: 'https://www.impo.com.uy/bases/leyes/15913-1987',
+    kind: 'norma',
+  },
+  'dna-exoneraciones-especiales': {
+    label:
+      'Mercaderías con exoneraciones especiales — los libros amparados en la Ley 15.913 ingresan «sin restricción de frecuencia en el año civil» con factura de hasta USD 1.000',
+    authority: 'Dirección Nacional de Aduanas',
+    url: 'https://www.aduanas.gub.uy/innovaportal/v/28228/1/innova.front/',
+    kind: 'fuente-oficial',
+  },
+  'mgap-1720-021': {
+    label:
+      'Resolución MGAP 1.720/021 — nómina de productos que no pueden ingresar por correo o encomienda: semillas, plantas, frutas y verduras frescas, animales vivos, alimentos de origen animal, fertilizantes y plaguicidas',
+    authority: 'Ministerio de Ganadería, Agricultura y Pesca',
+    url: 'https://www.gub.uy/ministerio-ganaderia-agricultura-pesca/comunicacion/publicaciones/nomina-productos-autorizados-ingresar-pais',
+    kind: 'fuente-oficial',
+  },
+  'msp-productos-salud': {
+    label:
+      'MSP — «el MSP no autoriza el ingreso al país de productos de salud del exterior por particulares»; excepción de producto no registrado (Decreto 18/020, art. 19)',
+    authority: 'Ministerio de Salud Pública',
+    url: 'https://www.gub.uy/ministerio-salud-publica/',
+    kind: 'fuente-oficial',
+  },
+  'msp-medicamentos-no-registrados': {
+    label:
+      'Ingreso de medicamentos no registrados — trámite gratuito, con prescripción médica específica, consentimiento informado y firma del médico tratante y del Director Técnico',
+    authority: 'gub.uy / Ministerio de Salud Pública',
+    url: 'https://www.gub.uy/tramites/ingreso-medicamentos-no-registrados-ciudadanos-uruguayos',
+    kind: 'fuente-oficial',
+  },
+  'decreto-96-990': {
+    label:
+      'Decreto 96/990 (reglamento del IMESI), art. 27 — jabones de tocador, jabones y cremas de afeitar, dentífricos, cepillos de dientes, aguas colonias, desodorantes, talco, champúes y protectores solares registrados NO están gravados por IMESI',
+    authority: 'IMPO',
+    url: 'https://www.impo.com.uy/bases/decretos/96-1990',
+    kind: 'norma',
+  },
+  'decreto-345-020': {
+    label:
+      'Decreto 345/020, art. 1 — material controlado por el Servicio de Material y Armamento; miras térmicas y de visión nocturna sólo a través de empresas registradas',
+    authority: 'IMPO',
+    url: 'https://www.impo.com.uy/bases/decretos/345-2020',
     kind: 'norma',
   },
   'carou-152': {
@@ -771,9 +839,9 @@ export const ADUANA_FAQS: readonly AduanaFaq[] = Object.freeze([
     question: '¿Usar franquicia significa que no pago ningún impuesto?',
     shortAnswer: 'No siempre: exonera aranceles, pero normalmente mantiene el IVA.',
     answer:
-      'El régimen 2026 separa aranceles e IVA. La franquicia exonera aranceles; el IVA se mantiene salvo las excepciones oficiales, principalmente envíos de EE.UU. de hasta US$ 200 y obsequios familiares genuinos. La fuente oficial no permite reducir todos los casos a una única base de cálculo, así que el importe final del IVA debe confirmarse con el operador.',
+      'El régimen 2026 separa aranceles e IVA. La franquicia exonera aranceles; el IVA se mantiene salvo las excepciones oficiales, principalmente envíos de EE.UU. de hasta US$ 200 y obsequios familiares genuinos. Y ese IVA tiene piso propio: el art. 13 lit. B del Título 10 del Texto Ordenado 2023, en el inciso que le agregó el art. 660 de la Ley 20.446, dispone que el monto a pagar no puede ser inferior al equivalente a US$ 20 por envío, salvo que el envío esté integrado exclusivamente por bienes cuya importación esté exonerada. O sea que el mínimo de US$ 20 no es exclusivo del 60%: en franquicia muerde en toda compra de menos de US$ 90,91 a la tasa básica. Decilo con la advertencia que corresponde: ni la guía del MEF ni las preguntas frecuentes de la DNA mencionan ese mínimo al explicar la franquicia —sólo lo citan para la prestación única—, así que el importe final del IVA debe confirmarse con el operador.',
     category: 'franquicia-impuestos',
-    sourceIds: ['decreto-50-026', 'ley-20446-628', 'dna-franquicia'],
+    sourceIds: ['decreto-50-026', 'ley-20446-628', 'todgi-t10-13', 'dna-franquicia', 'mef-faq'],
     basis: 'norma',
     tags: ['franquicia', 'iva', 'impuestos', 'aranceles'],
   },
@@ -783,9 +851,9 @@ export const ADUANA_FAQS: readonly AduanaFaq[] = Object.freeze([
     shortAnswer:
       'En el régimen de prestación única: 60% del valor, con mínimo de US$ 20 por envío.',
     answer:
-      'Es el régimen alternativo para envíos que no usan franquicia y que siguen dentro de los límites postales de valor y peso. El pago mínimo es US$ 20, por lo que en compras de poco valor puede ser superior al 60% matemático.',
+      'Es el régimen alternativo para envíos que no usan franquicia y que siguen dentro de los límites postales de valor y peso. El pago mínimo es US$ 20, por lo que en compras de poco valor puede ser superior al 60% matemático. No lo leas como una desventaja exclusiva de esta vía: el IVA de los envíos postales tiene su propio piso de US$ 20 por envío (art. 13 lit. B del Título 10 del Texto Ordenado 2023, inciso agregado por el art. 660 de la Ley 20.446), salvo envío integrado exclusivamente por bienes exonerados, así que en una compra chica la franquicia tampoco baja de ahí.',
     category: 'franquicia-impuestos',
-    sourceIds: ['ley-20446-627', 'decreto-50-026', 'mef-faq'],
+    sourceIds: ['ley-20446-627', 'todgi-t10-13', 'decreto-50-026', 'mef-faq'],
     basis: 'norma',
     tags: ['60', 'prestacion unica', 'minimo 20', 'sin franquicia'],
   },
@@ -811,9 +879,15 @@ export const ADUANA_FAQS: readonly AduanaFaq[] = Object.freeze([
     shortAnswer:
       'Sí: una declaración por tracking, y el mínimo de US$ 20 corre por envío, no por compra.',
     answer:
-      'Aduana y Correo trabajan por envío físico: se declara por número de seguimiento y cada tracking es un envío con su propio mínimo de US$ 20 y, si lo amparás, su propio uso de franquicia. Una orden de US$ 40 dividida en tres paquetes puede pagar US$ 60 de tributo más tres gestiones del Correo, o consumir los tres envíos anuales de una vez. Si un paquete mezcla productos de dos órdenes, se declara el valor de lo que viene en ese envío, con las facturas que lo respalden.',
+      'Aduana y Correo trabajan por envío físico: se declara por número de seguimiento y cada tracking es un envío con su propio mínimo de US$ 20 y, si lo amparás, su propio uso de franquicia. Una orden de US$ 40 dividida en tres paquetes puede pagar US$ 60 de tributo más tres gestiones del Correo, o consumir los tres envíos anuales de una vez. Y ampararlos en franquicia no esquiva el piso: el IVA de los envíos postales tiene su propio mínimo de US$ 20 por envío (art. 13 lit. B del Título 10 del Texto Ordenado 2023, inciso agregado por el art. 660 de la Ley 20.446), salvo que el envío esté integrado exclusivamente por bienes exonerados. Ni el MEF ni la DNA lo mencionan al explicar la franquicia, pero está en la norma. Si un paquete mezcla productos de dos órdenes, se declara el valor de lo que viene en ese envío, con las facturas que lo respalden.',
     category: 'correo-courier-plataformas',
-    sourceIds: ['correo-varios-paquetes', 'correo-declarar', 'ley-20446-627', 'decreto-50-026'],
+    sourceIds: [
+      'correo-varios-paquetes',
+      'correo-declarar',
+      'ley-20446-627',
+      'todgi-t10-13',
+      'decreto-50-026',
+    ],
     basis: 'procedimiento',
     tags: ['aliexpress', 'varios paquetes', 'tracking', 'minimo 20', 'fraccionar'],
     related: {
@@ -827,9 +901,9 @@ export const ADUANA_FAQS: readonly AduanaFaq[] = Object.freeze([
     shortAnswer:
       'Mientras el pago siga pendiente, Ahíva deja editar la declaración; pagada, no hay recálculo publicado.',
     answer:
-      'Mientras el pago figura pendiente la fila del envío en Ahíva ofrece Editar y Borrar, y al marcar franquicia el sistema pide el medio de pago. Para que la acepten hay que cumplir el art. 4 del Decreto 50/026 —persona física mayor de edad, uso personal, y comprador, titular del pago y destinatario la misma persona— y tener saldo en los US$ 800 y envíos libres de los 3 anuales. La franquicia exime de aranceles pero no del IVA salvo compras de EE.UU. de hasta US$ 200: un paquete chino de US$ 19,15 pasaría de US$ 26 a unos US$ 9,21 (IVA 4,21 + el cargo base sin el 5%). Una vez pagado, ninguna fuente oficial publica recálculo ni devolución: sólo queda el reclamo ante Correo y la DNA, sin garantía. Y consume uno de los tres envíos del año, que rinde mucho más en una compra grande.',
+      'Mientras el pago figura pendiente la fila del envío en Ahíva ofrece Editar y Borrar, y al marcar franquicia el sistema pide el medio de pago. Para que la acepten hay que cumplir el art. 4 del Decreto 50/026 —persona física mayor de edad, uso personal, y comprador, titular del pago y destinatario la misma persona— y tener saldo en los US$ 800 y envíos libres de los 3 anuales. Ahora, la cuenta: la franquicia exime de aranceles pero no del IVA salvo compras de EE.UU. de hasta US$ 200, y ese IVA tiene su propio piso de US$ 20 por envío (art. 13 lit. B del Título 10 del Texto Ordenado 2023, inciso agregado por el art. 660 de la Ley 20.446), salvo envío integrado exclusivamente por bienes exonerados. En un paquete chino de US$ 19,15 el 22% da US$ 4,21, pero se paga el mínimo: US$ 20 de IVA más el cargo base sin el 5%, o sea unos US$ 25 contra los US$ 26 del 60%. En compras chicas cambiar a franquicia casi no te ahorra nada y te quema un envío del año, que rinde mucho más en una compra grande. Aclaración obligada: ni la guía del MEF ni las preguntas frecuentes de la DNA mencionan ese mínimo al explicar la franquicia —sólo lo citan para el 60%— y no hay ningún ejemplo numérico oficial de una compra con franquicia que pague IVA, así que pedile al operador la liquidación discriminada. Una vez pagado, ninguna fuente oficial publica recálculo ni devolución: sólo queda el reclamo ante Correo y la DNA, sin garantía.',
     category: 'franquicia-impuestos',
-    sourceIds: ['decreto-50-026', 'correo-gestiones', 'correo-declarar'],
+    sourceIds: ['decreto-50-026', 'todgi-t10-13', 'correo-gestiones', 'correo-declarar', 'mef-faq'],
     basis: 'zona-gris',
     tags: ['cambiar declaracion', 'editar', 'ahiva', 'franquicia', 'me equivoque'],
     related: {
@@ -967,13 +1041,20 @@ export const ADUANA_FAQS: readonly AduanaFaq[] = Object.freeze([
     id: 'libros-medicamentos-cupo',
     question: '¿Libros y medicamentos consumen los US$ 800?',
     shortAnswer:
-      'No consumen el tope monetario; los medicamentos de uso personal requieren autorización del MSP.',
+      'No: la excepción alcanza los dos límites, monto y frecuencia; el medicamento necesita autorización del MSP.',
     answer:
-      'El Decreto 50/026 exceptúa del tope de US$ 800 a libros y medicamentos de uso personal. Esa excepción no elimina controles sanitarios: el medicamento necesita la autorización correspondiente del MSP.',
+      'El inciso final del art. 4 del Decreto 50/026 exceptúa a libros y medicamentos de uso personal del tope de US$ 800. La RG DNA 11/2026 va más lejos: su num. 26 los exceptúa del num. 25 lit. b) V, que es el requisito donde viven los DOS límites —«Hasta 3 envíos por año civil por cada persona física, no debiendo la sumatoria de los valores de factura… exceder los US$ 800»—, y la página de mercaderías con exoneraciones especiales de la DNA lo dice en prosa: los libros amparados en la Ley 15.913 ingresan «sin restricción de frecuencia en el año civil» siempre que la factura no supere USD 1.000. Contra-evidencia que conviene tener a mano: la noticia oficial de la DNA del 28 de abril de 2026 afirma, sin mencionar la excepción, que todos los envíos amparados en franquicia consumen tanto el cupo en dólares como el de los tres envíos, y la excepción no aparece en la FAQ del MEF, en la de la DNA, en la página del régimen de franquicia ni en la de Correo. Vas a tener que pelearla con la resolución en la mano. Y para el libro hay un dato operativo mejor todavía: no se declara como franquicia. La RG DNA 11/2026 (num. 28 lit. c) define un campo «Tipo de envío» donde G es franquicia, H es la prestación única del 60% y J son los envíos exceptuados del pago de tributos, con la subcategoría J/01, «Material al amparo de la Ley N.º 15.913/87». El default del operador es G: el J/01 hay que pedirlo expresamente. El medicamento, en cambio, sólo queda exceptuado «con la debida autorización del Ministerio de Salud Pública», y el MSP no autoriza el ingreso de productos de salud por particulares salvo la excepción de producto no registrado.',
     category: 'franquicia-impuestos',
-    sourceIds: ['decreto-50-026', 'dna-productos'],
+    sourceIds: [
+      'decreto-50-026',
+      'rg-dna-11-2026',
+      'ley-15913',
+      'dna-exoneraciones-especiales',
+      'msp-productos-salud',
+      'dna-productos',
+    ],
     basis: 'norma',
-    tags: ['libros', 'medicamentos', 'cupo', 'msp'],
+    tags: ['libros', 'medicamentos', 'cupo', 'msp', 'j01', 'tres envios'],
   },
   {
     id: 'mas-de-tres-envios',
@@ -1244,49 +1325,75 @@ export const ADUANA_FAQS: readonly AduanaFaq[] = Object.freeze([
   {
     id: 'celular-router-drone',
     question: '¿Puedo traer celular, router, GPS, walkie-talkie o dron?',
-    shortAnswer: 'Son equipos controlados por URSEC y puede corresponder certificado por VUCE.',
+    shortAnswer:
+      'Depende del equipo: URSEC no interviene si sólo usa Wi‑Fi o Bluetooth; celular, router celular, GPS y handy sí llevan certificado.',
     answer:
-      'Aduanas enumera teléfonos celulares, repetidores Wi‑Fi, GPS, equipos con control remoto, tablets con conexión celular y transmisores entre los productos controlados por URSEC. Verificá el modelo y obtené el certificado antes de pedir agenda si quedó retenido.',
+      'La regla no es «todo lo que transmite necesita URSEC». Las Resoluciones URSEC 275/021 y 297/021 dejan afuera a los dispositivos que operen únicamente con Wi‑Fi (802.11, en 2,4 y 5,8 GHz) y/o Bluetooth: auriculares, mouse, smartwatch, joystick, cámaras y similares no requieren su intervención. Sí lo requieren, según la propia FAQ de la DNA, el celular —que transmite en espectro licenciado—, el router con módem celular, el GPS, el handy y la cámara con conexión celular. El certificado lo inicia la propia persona física en VUCE: el trámite publica un costo de $239, y $852 si además el equipo requiere homologación, con un plazo máximo de URSEC de 2 días hábiles; la homologación, cuando corresponde, puede demorar hasta 120 días. Una vez aprobado, el certificado se envía automáticamente al sistema de la DNA. Con los drones va igual: si se comunican por Wi‑Fi o Bluetooth en 2,4/5,8 GHz no necesitan URSEC, y si usan un protocolo propietario de radioenlace, sí. DINACIA no tiene trámite de permiso de importación de drones ni figura entre los organismos controladores de la Aduana: lleva un Registro de Drones gratuito. Y la bisagra del art. 7 del Decreto 50/026 es esta: con el certificado la mercadería sigue dentro del régimen postal; sin él queda fuera de los dos regímenes.',
     category: 'productos-permisos',
-    sourceIds: ['dna-productos', 'ley-20446-633'],
+    sourceIds: ['ursec-importacion', 'dna-productos', 'decreto-50-026'],
     basis: 'procedimiento',
-    tags: ['celular', 'router', 'gps', 'walkie talkie', 'drone', 'ursec', 'vuce'],
+    tags: ['celular', 'router', 'gps', 'walkie talkie', 'drone', 'ursec', 'vuce', 'dinacia'],
   },
   {
     id: 'medicamentos-suplementos',
     question: '¿Puedo importar medicamentos, vitaminas o suplementos?',
     shortAnswer:
-      'Son mercaderías controladas por el MSP y requieren verificar autorización antes de comprar.',
+      'Casi nunca: el MSP no autoriza el ingreso de productos de salud por particulares, salvo la excepción de producto no registrado.',
     answer:
-      'Aduanas incluye medicamentos, suplementos y vitaminas entre los productos sujetos a intervención del MSP. Que sean para uso personal o un regalo no elimina ese control; sin el certificado correspondiente el envío puede quedar retenido.',
+      'Acá no hay un trámite que uno saque y listo. El propio MSP publica que «no autoriza el ingreso al país de productos de salud del exterior por particulares», y el art. 19 del reglamento anexo al Decreto 18/020 es la base: no existe una franja general de «uso personal» que dispense del control. La única puerta es la excepción: un producto NO registrado en el país, con prescripción médica específica, consentimiento informado del paciente y sin equivalente registrado acá. Se tramita ante el MSP-DGS, es gratuito y exige dos formularios firmados por el usuario, el médico tratante y el Director Técnico de su prestador de salud; el canal es el correo de la Unidad de Farmacovigilancia, no VUCE. No hay cantidad máxima publicada: el médico declara la cantidad a ingresar y la duración del tratamiento. Suplementos y vitaminas caen bajo el mismo control del MSP y, salvo que estén inscriptos como medicamento, especialidad farmacéutica o alimento de uso medicinal, pagan IVA 22%. Y ojo con la consecuencia: sin la autorización previa, el art. 7 del Decreto 50/026 deja el envío fuera del régimen entero —ni franquicia ni 60%— y sólo queda devolverlo a origen a tu costo dentro de los 30 días.',
     category: 'productos-permisos',
-    sourceIds: ['dna-productos', 'decreto-50-026'],
+    sourceIds: [
+      'msp-productos-salud',
+      'msp-medicamentos-no-registrados',
+      'decreto-50-026',
+      'dna-productos',
+    ],
     basis: 'procedimiento',
-    tags: ['medicamentos', 'vitaminas', 'suplementos', 'msp'],
+    tags: ['medicamentos', 'vitaminas', 'suplementos', 'msp', 'no registrado', 'farmacovigilancia'],
   },
   {
     id: 'cosmeticos-perfume',
     question: '¿Puedo traer cosméticos o perfume por courier?',
     shortAnswer:
-      'Los cosméticos están controlados por MSP y la perfumería puede estar gravada por IMESI.',
+      'La cosmética común no paga IMESI y no queda fuera por eso; la perfumería sí, y por eso queda excluida del régimen postal.',
     answer:
-      'Aduanas remite cosméticos, higiene, cuidado personal y belleza al MSP. Su página de mercadería excluida también lista perfumería y artículos de tocador entre los gravados por IMESI, que quedan fuera del régimen postal simplificado. Consultá el producto exacto, no la categoría comercial genérica.',
+      'Hay que separar dos cosas que se mezclan todo el tiempo. Primero el IMESI: el art. 27 del Decreto 96/990, en la redacción del Decreto 396/012, deja expresamente NO gravados los jabones de tocador, los jabones, cremas y brochas de afeitar, las pastas dentífricas, los cepillos de dientes, las aguas colonias, los desodorantes y antisudorales, el talco y el polvo para el cuerpo, los champúes y los protectores solares registrados ante el MSP; y pone en tasa 0% a acondicionadores y cremas de enjuague, decolorantes, tintes y fijadores de cabello y lociones para después de afeitar. Nada de eso queda fuera del régimen postal por IMESI: la exclusión absoluta del art. 633 de la Ley 20.446 alcanza a la mercadería gravada, y eso sí abarca a la perfumería, que por ese motivo no entra ni por franquicia ni por el 60%. Todos pagan IVA 22%. Segundo, el control sanitario: el MSP controla cosméticos y rige su regla general de que no autoriza el ingreso de productos de salud por particulares. Consultá el producto exacto, no la categoría comercial genérica.',
     category: 'productos-permisos',
-    sourceIds: ['dna-productos', 'dna-prohibidos', 'ley-20446-633'],
-    basis: 'procedimiento',
-    tags: ['cosmeticos', 'perfume', 'belleza', 'msp', 'imesi'],
+    sourceIds: [
+      'decreto-96-990',
+      'ley-20446-633',
+      'msp-productos-salud',
+      'dna-productos',
+      'dna-prohibidos',
+    ],
+    basis: 'norma',
+    tags: ['cosmeticos', 'perfume', 'belleza', 'msp', 'imesi', 'champu', 'protector solar'],
   },
   {
     id: 'lentes-afeitadoras-higiene',
     question: '¿Puedo traer lentes, armazones, afeitadoras o artículos de higiene?',
     shortAnswer:
-      'Hay controles sanitarios y algunos artículos de cosmetología o tocador pueden estar gravados por IMESI.',
+      'Los anteojos graduados y armazones no pueden ingresar a nombre de una persona física; los artículos de tocador no pagan IMESI.',
     answer:
-      'Aduanas incluye productos oftalmológicos, de higiene, cuidado personal y belleza entre los controlados por el MSP. Además, su listado de IMESI menciona cosméticos, perfumería, máquinas de afeitar y artículos de tocador para cosmetología. La clasificación depende del producto exacto: verificá modelo, composición y certificado con MSP/VUCE antes de comprar.',
+      'Lo óptico es el caso duro. Según el comunicado del MSP del 26 de agosto de 2024, que invoca los Decretos 474/968 y 03/008, los anteojos graduados, lentes de contacto, cristales y armazones no pueden ingresar a nombre de una persona física: sólo por empresas habilitadas ante el MSP. La única excepción cuantificada es la de los lentes de sol: un particular puede pedir, por única vez, la liberación de hasta 2 unidades para uso personal, con trámite pago en VUCE y declaración jurada de un técnico óptico habilitado. Sobre el IMESI, cuidado con lo que publica el listado orientativo de Aduanas: el art. 27 del Decreto 96/990 deja expresamente NO gravados a los jabones de tocador, jabones, cremas y brochas de afeitar, dentífricos, cepillos de dientes, aguas colonias, desodorantes, talco y champúes, así que la higiene común no queda fuera del régimen postal por ese motivo. La norma no nombra a la máquina de afeitar eléctrica: ahí no lo resolvemos. Todo esto paga IVA 22%.',
     category: 'productos-permisos',
-    sourceIds: ['dna-productos', 'dna-prohibidos', 'ley-20446-633'],
+    sourceIds: [
+      'decreto-96-990',
+      'msp-productos-salud',
+      'ley-20446-633',
+      'dna-productos',
+      'dna-prohibidos',
+    ],
     basis: 'procedimiento',
-    tags: ['lentes', 'armazones', 'afeitadora', 'cepillo electrico', 'higiene', 'oftalmologico'],
+    tags: [
+      'lentes',
+      'armazones',
+      'lentes de sol',
+      'afeitadora',
+      'cepillo electrico',
+      'higiene',
+      'oftalmologico',
+    ],
   },
   {
     id: 'neumaticos-repuestos-silla-infantil',
@@ -1324,13 +1431,13 @@ export const ADUANA_FAQS: readonly AduanaFaq[] = Object.freeze([
     id: 'alimentos-semillas-plantas',
     question: '¿Puedo traer alimentos, semillas, plantas o fertilizantes?',
     shortAnswer:
-      'Requieren control del MGAP y, según el producto, también puede intervenir el MSP.',
+      'Buena parte está directamente prohibida por correo: no es un trámite que se saque, es una prohibición.',
     answer:
-      'Aduanas indica obtener antes el certificado del organismo competente. El listado es no taxativo: verificá especie, origen, presentación y cantidad directamente con MGAP; no asumas que una semilla pequeña o un alimento envasado queda libre.',
+      'Acá el freno no es tributario, es sanitario, y no se resuelve con un certificado. El Anexo de la Resolución MGAP 1.720/021, del 17 de diciembre de 2021, prohíbe ingresar por encomienda o correo semillas, plantas, frutas y verduras frescas, animales vivos, alimentos de origen animal, fertilizantes y plaguicidas. No hay franja de uso personal ni cantidad mínima que lo habilite, y no localizamos ningún trámite en VUCE dirigido a persona física para traerlos: no es «hacé el trámite», es que por esta vía no entran. Hay un umbral de cantidad que sí figura: los productos vegetales acondicionados al detalle —té, especias, orégano— están prohibidos sólo en envases de más de 500 gramos. La nómina tampoco es taxativa: cualquier otro producto puede quedar prohibido si le falta el certificado oficial. Para el alimento envasado que no cae en la prohibición, el IVA es 22% salvo que esté en la lista de tasa mínima del 10%.',
     category: 'productos-permisos',
-    sourceIds: ['dna-productos', 'ley-20446-633'],
-    basis: 'procedimiento',
-    tags: ['alimentos', 'semillas', 'plantas', 'fertilizantes', 'mgap'],
+    sourceIds: ['mgap-1720-021', 'dna-productos', 'decreto-50-026'],
+    basis: 'norma',
+    tags: ['alimentos', 'semillas', 'plantas', 'fertilizantes', 'plaguicidas', 'mgap', 'prohibido'],
   },
   {
     id: 'baterias-power-bank',
@@ -1348,13 +1455,22 @@ export const ADUANA_FAQS: readonly AduanaFaq[] = Object.freeze([
     id: 'armas-replicas-cuchillos',
     question: '¿Puedo traer armas, réplicas, miras o cuchillos?',
     shortAnswer:
-      'Armas, municiones, miras y partes están controladas; para cuchillos no hay una regla única publicada.',
+      'Las armas están prohibidas en el canal postal y para las miras no hay vía de persona física; con cuchillos y airsoft no hay norma.',
     answer:
-      'Aduanas remite armas de fuego, municiones, miras, armas de aire comprimido, cargadores, partes y repuestos al Servicio de Material y Armamento. Su lista es orientativa, no taxativa. Para una espada, cuchillo o réplica concreta consultá por escrito al organismo y al operador antes de comprar.',
+      'Empecemos por lo que no es un trámite. Según la DNA, las armas están directamente prohibidas en el régimen de encomiendas postales internacionales: no es cuestión de conseguir el permiso, no entran por ese canal. Las miras térmicas y de visión nocturna sólo pueden importarse a través de empresas registradas ante el Servicio de Material y Armamento, con certificado previo (Decreto 345/020 art. 1 lit. g e inciso 3, en la redacción del Decreto 229/021), y el permiso del SMA se tramita en VUCE como empresa o despachante, con un costo de 2 UR: no existe modalidad para persona física. Una mira telescópica común, ni térmica ni nocturna, no figura entre los materiales controlados del decreto, aunque la Aduana la liste como controlada por el SMA. Para airsoft, réplicas y aire comprimido no hay norma vigente: el proyecto de ley de armas de aire comprimido no fue sancionado y ni la Ley 19.247 ni los Decretos 377/016 y 345/020 mencionan «aire comprimido», «réplica» ni «airsoft»; la única base es que la DNA lista «pistolas de aire comprimido» entre la mercadería controlada por el SMA, que es criterio administrativo, no norma. Con cuchillos y sprays de defensa no encontramos ninguna norma uruguaya que los prohíba o restrinja por encomienda; lo único adyacente es que el Correo prohíbe gases comprimidos y aerosoles como mercancía peligrosa, por el envase y no por la función. La lista de Aduanas es orientativa y no taxativa.',
     category: 'productos-permisos',
-    sourceIds: ['dna-productos'],
+    sourceIds: ['decreto-345-020', 'dna-productos', 'dna-prohibidos'],
     basis: 'zona-gris',
-    tags: ['armas', 'replicas', 'miras', 'cuchillos', 'espadas', 'airsoft'],
+    tags: [
+      'armas',
+      'replicas',
+      'miras',
+      'cuchillos',
+      'espadas',
+      'airsoft',
+      'sma',
+      'aire comprimido',
+    ],
   },
   {
     id: 'juguetes-sexuales',
@@ -1374,11 +1490,11 @@ export const ADUANA_FAQS: readonly AduanaFaq[] = Object.freeze([
     shortAnswer:
       'No están excluidos por ser electrónica; importan valor, cantidad, radiofrecuencia y batería.',
     answer:
-      'Una unidad para uso personal puede entrar por el régimen postal si cumple valor, peso y demás condiciones. Si el equipo transmite radiofrecuencia puede requerir URSEC; si contiene batería, el operador aplica sus reglas de transporte; varias unidades iguales pueden parecer comerciales.',
+      'Una unidad para uso personal puede entrar por el régimen postal si cumple valor, peso y demás condiciones. Si el equipo transmite radiofrecuencia puede requerir certificado de URSEC, salvo que opere únicamente con Wi‑Fi (802.11, en 2,4 y 5,8 GHz) y/o Bluetooth, caso en el que las Resoluciones URSEC 275/021 y 297/021 dejan afuera su intervención: una laptop, una consola o una GPU sin módem celular no la necesitan. Si contiene batería, el operador aplica sus reglas de transporte; varias unidades iguales pueden parecer comerciales.',
     category: 'productos-permisos',
-    sourceIds: ['decreto-50-026', 'dna-productos'],
+    sourceIds: ['decreto-50-026', 'ursec-importacion', 'dna-productos'],
     basis: 'procedimiento',
-    tags: ['laptop', 'gpu', 'consola', 'pc', 'electronica'],
+    tags: ['laptop', 'gpu', 'consola', 'pc', 'electronica', 'ursec'],
   },
   {
     id: 'alcohol-tabaco-vape',
@@ -1963,13 +2079,14 @@ export const ADUANA_FAQS: readonly AduanaFaq[] = Object.freeze([
     shortAnswer:
       'Lo pagado no vuelve; el reemplazo por garantía sí puede entrar sin tributar de nuevo, pero consume franquicia.',
     answer:
-      'Son tres preguntas distintas y sólo una tiene buena respuesta. Devolver porque no te sirve o no te gustó: no localizamos ningún régimen que te reintegre los tributos pagados por un envío postal que después reexportás. Los regímenes uruguayos de devolución de tributos miran para el otro lado: el Régimen de Devolución de Tributos a la Exportación que administra la DNA devuelve tributos al exportador, y el régimen devolutivo ("draw back") del art. 1 lit. C de la Ley 18.184 restituye lo pagado por importar insumos que después se exportan transformados, pero su art. 1 lo abre sólo a "los titulares de actividades industriales". Ninguno de los dos alcanza al consumidor que devuelve una compra. Y el "retorno de mercadería" del CAROU art. 152 tampoco es esto: es para mercadería que tenía libre circulación antes de su exportación definitiva y vuelve al territorio aduanero, no para el consumidor que le devuelve una compra al vendedor del exterior. Lo que sí tenés es contra el vendedor, no contra la Aduana: la Ley 17.250 art. 16 te da cinco días hábiles para rescindir una compra a distancia. Eso puede devolverte el precio; no te devuelve el IVA ni el 60%. Reemplazo por garantía: acá sí hay norma, y es buena. El CAROU art. 159 permite que la DNA autorice que la mercadería importada "que resulte defectuosa o inadecuada para el fin al que está destinada, sea sustituida, sin el pago de tributos, por otra de la misma clasificación arancelaria, calidad comercial, valor y características técnicas, que sea enviada gratuitamente, en razón de una obligación contractual o legal de garantía"; y la defectuosa "deberá ser devuelta a origen exenta del pago de los tributos a la exportación, cuando corresponda, o podrá ser sometida a los destinos aduaneros de abandono o destrucción". Leelo bien: es no volver a pagar, no recuperar lo pagado. Y no es el trámite del carrito: el Decreto 98/015 da un año desde el libramiento de la mercadería importada, prorrogable un año más por resolución fundada (art. 7), y exige ajustarse a las condiciones de la declaración de importación definitiva más informe técnico que pruebe que la mercadería es defectuosa o inadecuada y documento que compruebe la obligación legal o contractual de garantía vigente que implique sustituirla gratuitamente (art. 8). Tercera pregunta, la que nadie contesta en los hilos: el envío de reposición, ¿consume uno de los tres? Si entra por el régimen postal amparado en franquicia, sí. El Decreto 50/026 art. 4 lit. c cuenta hasta tres veces por año civil "independientemente de sus respectivos montos y características", y no hay excepción para garantías, reposiciones ni reenvíos; la única excepción del artículo es la de su inciso final, que alcanza a libros y medicamentos y sólo contra el tope de US$ 800. Antes de mandar nada al exterior, pedí por escrito a la DNA o a un despachante cuál de las dos vías corresponde a tu caso: el art. 159 no se activa porque el vendedor escriba "warranty replacement" en la guía.',
+      'Son tres preguntas distintas y sólo una tiene buena respuesta. Devolver porque no te sirve o no te gustó: no localizamos ningún régimen que te reintegre los tributos pagados por un envío postal que después reexportás. Los regímenes uruguayos de devolución de tributos miran para el otro lado: el Régimen de Devolución de Tributos a la Exportación que administra la DNA devuelve tributos al exportador, y el régimen devolutivo ("draw back") del art. 1 lit. C de la Ley 18.184 restituye lo pagado por importar insumos que después se exportan transformados, pero su art. 1 lo abre sólo a "los titulares de actividades industriales". Ninguno de los dos alcanza al consumidor que devuelve una compra. Y el "retorno de mercadería" del CAROU art. 152 tampoco es esto: es para mercadería que tenía libre circulación antes de su exportación definitiva y vuelve al territorio aduanero, no para el consumidor que le devuelve una compra al vendedor del exterior. Lo que sí tenés es contra el vendedor, no contra la Aduana: la Ley 17.250 art. 16 te da cinco días hábiles para rescindir una compra a distancia. Eso puede devolverte el precio; no te devuelve el IVA ni el 60%. Reemplazo por garantía: acá sí hay norma, y es buena. El CAROU art. 159 permite que la DNA autorice que la mercadería importada "que resulte defectuosa o inadecuada para el fin al que está destinada, sea sustituida, sin el pago de tributos, por otra de la misma clasificación arancelaria, calidad comercial, valor y características técnicas, que sea enviada gratuitamente, en razón de una obligación contractual o legal de garantía"; y la defectuosa "deberá ser devuelta a origen exenta del pago de los tributos a la exportación, cuando corresponda, o podrá ser sometida a los destinos aduaneros de abandono o destrucción". Leelo bien: es no volver a pagar, no recuperar lo pagado. Y no es el trámite del carrito: el Decreto 98/015 da un año desde el libramiento de la mercadería importada, prorrogable un año más por resolución fundada (art. 7), y exige ajustarse a las condiciones de la declaración de importación definitiva más informe técnico que pruebe que la mercadería es defectuosa o inadecuada y documento que compruebe la obligación legal o contractual de garantía vigente que implique sustituirla gratuitamente (art. 8). Tercera pregunta, la que nadie contesta en los hilos: el envío de reposición, ¿consume uno de los tres? Si entra por el régimen postal amparado en franquicia, sí. El Decreto 50/026 art. 4 lit. c cuenta hasta tres veces por año civil "independientemente de sus respectivos montos y características", y no hay excepción para garantías, reposiciones ni reenvíos; la única excepción del artículo es la de su inciso final, que alcanza a libros y medicamentos de uso personal —y que la RG DNA 11/2026, en su num. 26, extiende también a la cuenta de los tres envíos—. Antes de mandar nada al exterior, pedí por escrito a la DNA o a un despachante cuál de las dos vías corresponde a tu caso: el art. 159 no se activa porque el vendedor escriba "warranty replacement" en la guía.',
     category: 'franquicia-impuestos',
     sourceIds: [
       'carou-159',
       'carou-152',
       'decreto-98-015',
       'decreto-50-026',
+      'rg-dna-11-2026',
       'ley-17250',
       // The only NEGATIVE half of this answer ("no hay régimen que te reintegre") used to hang on
       // nothing: the two regimes it points at as the exporter's had no link, and dna-regimen-general
@@ -1999,15 +2116,19 @@ export const ADUANA_FAQS: readonly AduanaFaq[] = Object.freeze([
     id: 'libros-cd-dvd-iva',
     question: '¿Los libros y los CD, DVD o Blu-ray pagan IVA al importarlos? ¿Y con el 60%?',
     shortAnswer:
-      'Con franquicia no pagan IVA; con el 60% pagan igual, porque esa prestación sustituye todo tributo.',
+      'El libro está exonerado de todo tributo y tiene canal propio; el CD o DVD de obra musical o cinematográfica, sólo del IVA.',
     answer:
-      'La respuesta cambia entera según el régimen que uses, y esa es la parte que casi nadie separa. Con FRANQUICIA la exoneración existe y sí llega a la importación. El art. 38 del Título 10 del Texto Ordenado 2023 exonera las enajenaciones de "Diarios, periódicos, revistas, libros y folletos de cualquier naturaleza, con excepción de los pornográficos" (lit. H) y también las de "Obras de carácter musical y cinematográfico, en formato de disco compacto (CD), disco de video digital (DVD) u otros soportes digitales y en celuloide" (lit. P); y su numeral 3 lit. B exonera además las importaciones de "Bienes cuya enajenación se exonera por este artículo". Ese literal B es el puente: un CD de música o un DVD o Blu-ray de una película entran por la misma puerta que el libro. Pero la exoneración es por la OBRA, no por el disco: un videojuego o un software en disco no son obra musical ni cinematográfica, así que no los cubre. Hay un detalle fino que conviene conocer: el mínimo de US$ 20 de IVA por envío postal, que fija el art. 13 lit. B del mismo Título, trae su propia salvedad: no se aplica cuando el envío está "integrado exclusivamente por bienes cuya importación se encuentra exonerada de este impuesto". Es decir que el mínimo corre siempre, salvo en ese caso. Un paquete de puros libros no paga ni ese mínimo; el mismo libro metido en la caja junto con unas zapatillas, sí. Con el 60% pagás igual, y no hay vuelta. El art. 627 de la Ley 20.446 define esa alícuota "en sustitución a toda tributación relativa a la importación definitiva o aplicable en ocasión de la misma, ya sea por concepto arancelario o tributo interno". Si la prestación única sustituye al IVA, exonerar el IVA no te descuenta nada: el 60% se aplica plano, sin mirar qué hay dentro del paquete. Para libros, entonces, elegir franquicia no es una preferencia de comodidad: es la diferencia entre cero y 60%. Ahora la advertencia honesta, porque es plata tuya y esto lo cobra otro: la cadena normativa es la de arriba, pero ninguna fuente administrativa publica esta exoneración y hay tres que le dicen otra cosa al lector. La página del Régimen de Franquicia de la DNA dice "Se tributa IVA por estas compras salvo, las siguientes situaciones que están exoneradas" y lista sólo dos —los envíos desde países con acuerdo comercial (hoy Estados Unidos) hasta US$ 200 con el vendedor registrado, y los obsequios familiares—: no nombra libros ni CD ni DVD. La guía de preguntas frecuentes del MEF tampoco menciona libros en ningún punto; su única exoneración de IVA es la de los US$ 200 por el TIFA. Y Mercado Libre publica que con franquicia se paga IVA 22%, sin excepción por categoría. No localizamos ningún pronunciamiento de la DNA sobre libros en el régimen postal. Sumale que quien liquida y cobra no sos vos: el art. 8 del Decreto 50/026 pone la liquidación y el pago en cabeza del operador postal que desconsolida y le prohíbe entregarte la mercadería "hasta haber acreditado dicho pago". O sea que lo más probable es que te liquiden el 22% igual. Si pasa, tenés con qué discutirlo: pedí la liquidación discriminada, guardá la factura del envío donde se vea que adentro va sólo un libro o un disco, e invocá por escrito el art. 38 num. 1 lit. H (o lit. P) y num. 3 lit. B del Título 10 ante el operador postal y, si no lo corrige, ante la DNA. Es un reclamo con norma detrás, no un capricho — pero contá con tener que hacerlo. Sobre el cupo: el inciso final del art. 4 del Decreto 50/026 exceptúa "del límite establecido en el literal c) de US$ 800 (dólares de Estados Unidos de América ochocientos) a los libros y medicamentos de uso personal". Exceptúa del MONTO, no de la cuenta de tres envíos, y no nombra CD ni DVD: un disco te consume dólares del cupo, un libro no. Y una última aclaración, porque induce a error todo el tiempo: cuando un courier publica "libros US$ 11,90/kg" o "libros/CD/DVD US$ 1,20/100 g", eso es TARIFA DE FLETE. Es un precio por kilo más barato que el operador decide cobrar para esa categoría, no una exoneración de Aduana ni un beneficio fiscal. Son dos líneas distintas de la misma factura y ninguna depende de la otra.',
+      'La respuesta cambia entera según el régimen que uses, y esa es la parte que casi nadie separa. Con FRANQUICIA la exoneración existe y sí llega a la importación. El art. 38 del Título 10 del Texto Ordenado 2023 exonera las enajenaciones de "Diarios, periódicos, revistas, libros y folletos de cualquier naturaleza, con excepción de los pornográficos" (lit. H) y también las de "Obras de carácter musical y cinematográfico, en formato de disco compacto (CD), disco de video digital (DVD) u otros soportes digitales y en celuloide" (lit. P); y su numeral 3 lit. B exonera además las importaciones de "Bienes cuya enajenación se exonera por este artículo". Ese literal B es el puente: un CD de música o un DVD o Blu-ray de una película entran por la misma puerta que el libro. Pero la exoneración es por la OBRA, no por el disco: un videojuego o un software en disco no son obra musical ni cinematográfica, así que no los cubre. Con el libro, además, la exoneración va bastante más lejos que el IVA: el art. 41 del mismo Título 10 exonera la importación de obras literarias, artísticas, científicas, docentes y material educativo de TODO tributo nacional, en cualquier soporte, y el art. 8 lit. C de la Ley 15.913 lo repite agregando expresamente "los proventos, precios portuarios, recargos, tasa de movilización de bultos y demás gravámenes aduaneros y tasas consulares". O sea que el libro no paga IVA, ni arancel, ni tasa consular. El CD y el DVD no llegan tan lejos: lo suyo es la exoneración del IVA. Hay un detalle fino que conviene conocer: el mínimo de US$ 20 de IVA por envío postal, que fija el art. 13 lit. B del mismo Título, trae su propia salvedad: no se aplica cuando el envío está "integrado exclusivamente por bienes cuya importación se encuentra exonerada de este impuesto". Es decir que el mínimo corre siempre, salvo en ese caso. Un paquete de puros libros no paga ni ese mínimo; el mismo libro metido en la caja junto con unas zapatillas, sí. Y leelo también al revés, porque es la parte que casi nadie publica: ese piso de US$ 20 no es exclusivo del 60%, corre igual cuando usás franquicia, así que una compra chica de mercadería gravada puede terminar pagando US$ 20 de IVA aunque el 22% dé mucho menos. Si optás por el 60%, en cambio, pagás igual. El art. 627 de la Ley 20.446 define esa alícuota "en sustitución a toda tributación relativa a la importación definitiva o aplicable en ocasión de la misma, ya sea por concepto arancelario o tributo interno". Si la prestación única sustituye al IVA, exonerar el IVA no te descuenta nada: el 60% se aplica plano, sin mirar qué hay dentro del paquete. Pero cuidado con dar vuelta la frase: ninguna norma, resolución ni FAQ dice que un libro tenga que pagar el 60% si no usás franquicia, y la ley dice que el titular "podrá optar" por esa prestación. Es una opción, no un destino. Y para el libro hay un tercer canal que casi nadie nombra: la RG DNA 11/2026, en su num. 28 lit. c, define un campo "Tipo de envío" donde G es franquicia, H es la prestación única y J son los envíos que "por su contenido, características, o por aplicación de la normativa vigente se encuentren exceptuados del pago de tributos", con la subcategoría J/01, "Material al amparo de la Ley N.º 15.913/87". Ahí va el libro: no es franquicia, no es 60% y no toca el cupo. El default del operador es G, así que el J/01 hay que pedirlo expresamente. Ahora la advertencia honesta, porque es plata tuya y esto lo cobra otro: la cadena normativa es la de arriba, pero ninguna fuente administrativa publica esta exoneración y hay tres que le dicen otra cosa al lector. La página del Régimen de Franquicia de la DNA dice "Se tributa IVA por estas compras salvo, las siguientes situaciones que están exoneradas" y lista sólo dos —los envíos desde países con acuerdo comercial (hoy Estados Unidos) hasta US$ 200 con el vendedor registrado, y los obsequios familiares—: no nombra libros ni CD ni DVD. La guía de preguntas frecuentes del MEF tampoco menciona libros en ningún punto; su única exoneración de IVA es la de los US$ 200 por el TIFA. Y Mercado Libre publica que con franquicia se paga IVA 22%, sin excepción por categoría. No localizamos ningún pronunciamiento de la DNA sobre libros en el régimen postal. Sumale que quien liquida y cobra no sos vos: el art. 8 del Decreto 50/026 pone la liquidación y el pago en cabeza del operador postal que desconsolida y le prohíbe entregarte la mercadería "hasta haber acreditado dicho pago". O sea que lo más probable es que te liquiden el 22% igual. Si pasa, tenés con qué discutirlo: pedí la liquidación discriminada, guardá la factura del envío donde se vea que adentro va sólo un libro o un disco, e invocá por escrito el art. 38 num. 1 lit. H (o lit. P) y num. 3 lit. B del Título 10 ante el operador postal y, si no lo corrige, ante la DNA. Es un reclamo con norma detrás, no un capricho — pero contá con tener que hacerlo. Sobre el cupo: el inciso final del art. 4 del Decreto 50/026 exceptúa "del límite establecido en el literal c) de US$ 800 (dólares de Estados Unidos de América ochocientos) a los libros y medicamentos de uso personal". Y la RG DNA 11/2026 va más lejos: su num. 26 los exceptúa del num. 25 lit. b) V, que es el requisito donde viven los DOS límites —"Hasta 3 envíos por año civil por cada persona física, no debiendo la sumatoria de los valores de factura o declaraciones de valor de los EPI exceder los US$ 800… anuales"—, y la página de mercaderías con exoneraciones especiales de la DNA lo dice en prosa: los libros amparados en la Ley 15.913 ingresan "sin restricción de frecuencia en el año civil" siempre que el valor de factura no supere los USD 1.000. Contá con tener que pelearla: la noticia oficial de la DNA del 28 de abril de 2026 afirma, sin mencionar la excepción, que todos los envíos amparados en franquicia consumen tanto el cupo en dólares como el de los tres envíos, y la excepción no aparece en la FAQ del MEF, en la de la DNA, en la página del régimen de franquicia ni en la de Correo: vive en una resolución escaneada y en una página secundaria. Nada de esto alcanza al CD ni al DVD, que no están nombrados: un disco te consume cupo, un libro no. Aparte, ese umbral de USD 1.000 no es un tope de exoneración: sale del inciso 2 del art. 8 de la Ley 15.913 y es la condición para que no sea preceptivo el despachante en el correo internacional, aunque la DNA lo publique como techo del canal postal. Y una última aclaración, porque induce a error todo el tiempo: cuando un courier publica "libros US$ 11,90/kg" o "libros/CD/DVD US$ 1,20/100 g", eso es TARIFA DE FLETE. Es un precio por kilo más barato que el operador decide cobrar para esa categoría, no una exoneración de Aduana ni un beneficio fiscal. Son dos líneas distintas de la misma factura y ninguna depende de la otra.',
     category: 'franquicia-impuestos',
     sourceIds: [
       'todgi-t10-38',
+      'todgi-t10-41',
       'todgi-t10-13',
+      'ley-15913',
       'ley-20446-627',
       'decreto-50-026',
+      'rg-dna-11-2026',
+      'dna-exoneraciones-especiales',
       // The counterpoint has to be as clickable as the conclusion: neither the DNA's franquicia
       // page nor the MEF guide lists books among the IVA exonerations, and ML publishes a flat 22%.
       'dna-franquicia',
@@ -2068,6 +2189,7 @@ export function aduanaFaqLastModified(): string {
     ADUANA_FAQ_POSTAL_VERIFIED_AT,
     ADUANA_FAQ_IDENTIDAD_Y_TRIBUTOS_VERIFIED_AT,
     ADUANA_FAQ_CARGOS_OPERADOR_VERIFIED_AT,
+    ADUANA_FAQ_HECHOS_IMPORTACION_VERIFIED_AT,
   ]
   // ISO-8601 dates sort lexicographically, so the last one is the most recent.
   return [...stamps].sort().at(-1)!

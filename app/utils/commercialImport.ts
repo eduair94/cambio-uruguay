@@ -57,7 +57,7 @@ export const COMMERCIAL_IMPORT_SOURCES: Readonly<Record<string, CommercialImport
       label:
         'Decreto 50/026 — art. 2 (prestación única, "personas físicas o jurídicas"), art. 3 y 4 (franquicia, uso personal), art. 5 (valor de factura), art. 7 (exclusiones), art. 8 (operadores postales responsables por obligaciones de terceros), art. 14 (abandono)',
       authority: 'IMPO',
-      url: 'https://www.impo.com.uy/bases/decretos-originales/50-2026',
+      url: 'https://www.impo.com.uy/bases/decretos/50-2026',
       kind: 'norma',
     },
     'ley-20446-627': {
@@ -94,7 +94,7 @@ export const COMMERCIAL_IMPORT_SOURCES: Readonly<Record<string, CommercialImport
     'ley-19535-265': {
       id: 'ley-19535-265',
       label:
-        'Ley 19.535 art. 265 — tasa consular: 5% extrazona y 3% Mercosur sobre el valor en aduana, con facultad de reducirla 0,5 puntos por año desde 2020',
+        'Ley 19.535 art. 265 — tasa consular: 5% sobre el valor en aduana, 3% cuando la mercadería viene amparada en el ACE N.º 18 (Mercosur). El Poder Ejecutivo está facultado a reducirla y no lo hizo: las tasas legales son las vigentes',
       authority: 'IMPO',
       url: 'https://www.impo.com.uy/bases/leyes/19535-2017/265',
       kind: 'norma',
@@ -198,13 +198,15 @@ export const PERSONA_FISICA_MAX_DUA_PER_YEAR = 2
 export const IVA_BASICA_PCT = 22
 
 /**
- * Tasa consular, % of the valor en aduana (Ley 19.535 art. 265).
+ * Tasa consular, % of the valor en aduana (Ley 19.535 art. 265): 5% extrazona, 3% cuando la
+ * mercadería viene amparada en el ACE N.º 18 (Mercosur).
  *
- * The same article empowered the Executive to cut it 0,5 points a year from 2020 down to
- * 2% (extrazona) and 0% (Mercosur). We could NOT find a public decree confirming how far
- * that reduction has actually been applied as of {@link LAST_RESEARCHED}, so the estimator
- * uses the statutory rates and the page tells the reader to confirm the live figure. Never
- * present these as "the rate you will pay".
+ * The same article empowered the Executive to cut it, and the Executive has NOT done so: the
+ * statutory rates are the live ones. The page still tells the reader to confirm the figure with
+ * a despachante before budgeting on it.
+ *
+ * It is a cost of the general regime, but it does NOT integrate the IVA base (Título 10 T.O.
+ * 2023 art. 13 lit. B) — see {@link estimateRegimenGeneral}.
  */
 export const TASA_CONSULAR_EXTRAZONA_PCT = 5
 export const TASA_CONSULAR_MERCOSUR_PCT = 3
@@ -227,7 +229,12 @@ export interface ResaleRouteInput {
   invoiceUsd: number
   /** Weight of the shipment in kg. */
   weightKg: number
-  /** Goods taxed by IMESI (alcohol, tobacco, cosmetics…) — excluded from the postal regimes. */
+  /**
+   * Goods taxed by IMESI (alcohol, tobacco, perfumería…) — excluded from the postal regimes.
+   * OJO con la cosmética común: el Decreto 96/990 art. 27 deja FUERA del IMESI a jabones de
+   * tocador, dentífricos, desodorantes, talco, champúes, aguas colonias y protectores solares
+   * registrados ante el MSP, así que esos no quedan excluidos por este motivo.
+   */
   imesi?: boolean
   /**
    * The goods need an authorisation from another agency (URSEC, URSEA, MSP, MGAP…) and it has
@@ -295,7 +302,7 @@ export function resolveResaleRoute(input: ResaleRouteInput): ResaleRouteDecision
   }
   if (input.imesi) {
     reasons.push(
-      'La mercadería está gravada por IMESI, y el Decreto 50/026 art. 7 la excluye de los regímenes postales.'
+      'La mercadería está gravada por IMESI, y la Ley 20.446 art. 633 dice que el régimen postal "no se aplicará en ningún caso" a ese tipo de mercadería; el Decreto 50/026 art. 7 lo reglamenta.'
     )
   }
 
@@ -390,12 +397,18 @@ export function estimatePrestacionUnica(invoiceUsd: number): LandedCostResult {
 }
 
 /**
- * Régimen general, estimated. Structure only — the arancel depends on the NCM code and the
- * tasa consular on a reduction we could not confirm, so both are INPUTS, never guesses.
+ * Régimen general, estimated. Structure only — the arancel depends on the NCM code, so it is an
+ * INPUT, never a guess.
  *
  * Base: valor en aduana ≈ CIF (mercadería + flete + seguro). IVA is charged over the valor en
- * aduana plus the arancel, i.e. the duties go into the IVA base — that is why the effective
- * percentage is higher than "arancel + IVA".
+ * aduana plus the arancel (Título 10 T.O. 2023 art. 13 lit. B), i.e. the duty goes into the IVA
+ * base — that is why the effective percentage is higher than "arancel + IVA". The tasa consular
+ * does NOT: it is paid, but it does not enlarge the IVA base.
+ *
+ * NOT modelled either: art. 13 lit. B adds that when the importer is a NO CONTRIBUYENTE (a
+ * persona física without RUT), valor en aduana + arancel is increased by 50% before applying the
+ * rate. This estimator assumes an importer that is a contribuyente — the case this page is about —
+ * and the page says so.
  *
  * NOT modelled, deliberately: the anticipo de IVA a la importación (DGI código 551). It exists
  * and it is real cash at the border, but it is an ADVANCE — a literal E discounts it from its
@@ -415,7 +428,9 @@ export function estimateRegimenGeneral(input: LandedCostInput): LandedCostResult
   const customsValue = invoice + freight + insurance
   const arancel = (customsValue * arancelPct) / 100
   const consular = (customsValue * consularPct) / 100
-  const ivaBase = customsValue + arancel + consular
+  // Título 10 T.O. 2023 art. 13 lit. B: la base es el valor en aduana MÁS el arancel. La tasa
+  // consular no la integra.
+  const ivaBase = customsValue + arancel
   const iva = (ivaBase * ivaPct) / 100
   const charges = arancel + consular + iva + clearing
 
@@ -433,12 +448,12 @@ export function estimateRegimenGeneral(input: LandedCostInput): LandedCostResult
     {
       label: `Tasa consular (${round2(consularPct)}%)`,
       amountUsd: round2(consular),
-      note: 'Ley 19.535 art. 265. Confirmá la alícuota vigente: la ley habilitó reducciones graduales.',
+      note: 'Ley 19.535 art. 265: 5% extrazona, 3% con ACE 18 del Mercosur. Se paga, pero no integra la base del IVA.',
     },
     {
       label: `IVA (${round2(ivaPct)}%)`,
       amountUsd: round2(iva),
-      note: 'Se calcula sobre el valor en aduana MÁS el arancel y la tasa, no sobre la mercadería sola.',
+      note: 'Se calcula sobre el valor en aduana MÁS el arancel, no sobre la mercadería sola (Título 10 art. 13 lit. B). Si el que importa es un no contribuyente, esa suma se incrementa un 50%: el simulador no lo aplica.',
     },
   ]
   if (clearing > 0) {
@@ -513,10 +528,9 @@ export function breakEvenInvoiceUsd(input: Omit<LandedCostInput, 'invoiceUsd'>):
   const clearing = Math.max(input.clearingCostsUsd || 0, 0)
 
   // charges(v) = k * (v + F) + clearing, with k the combined ad-valorem load on the customs value.
-  const k =
-    arancelPct / 100 +
-    consularPct / 100 +
-    (ivaPct / 100) * (1 + arancelPct / 100 + consularPct / 100)
+  // The IVA factor multiplies (1 + arancel) only: the tasa consular does not integrate its base
+  // (Título 10 art. 13 lit. B), exactly as in `estimateRegimenGeneral`.
+  const k = arancelPct / 100 + consularPct / 100 + (ivaPct / 100) * (1 + arancelPct / 100)
   const flat = SIMPLIFIED_RATE_PCT / 100
   const fixed = freight + insurance
 
@@ -617,7 +631,7 @@ export const PRODUCT_CHECKS: readonly ProductCheck[] = Object.freeze([
     verdict: 'consultar',
     organisms: ['URSEC'],
     detail:
-      'La carga inductiva no es Wi-Fi ni Bluetooth, así que la excepción publicada no lo alcanza automáticamente, y tampoco figura en la lista de equipos que URSEC enumera. Antes de comprar, consultá a URSEC si tu modelo requiere homologación — el propio trámite prevé esa consulta previa y responde por escrito.',
+      'La carga inductiva no es Wi-Fi ni Bluetooth, así que la excepción publicada no lo alcanza automáticamente, y tampoco figura entre los equipos que la Aduana lista como controlados por URSEC. La norma no resuelve el caso: antes de comprar, consultale a URSEC si tu modelo necesita certificado.',
     sourceIds: ['ursec-tramite', 'vuce-ursec'],
   },
   {
@@ -627,7 +641,7 @@ export const PRODUCT_CHECKS: readonly ProductCheck[] = Object.freeze([
     verdict: 'requiere',
     organisms: ['URSEC'],
     detail:
-      'URSEC lista expresamente las "terminales de telecomunicaciones móviles (entre ellos, teléfonos celulares)" y no las alcanza la excepción de Wi-Fi/Bluetooth. El equipo debe estar homologado; si no lo está, hay que gestionar la homologación y después el certificado de ingreso por VUCE. El trámite ronda los $ 204 a $ 239 según la vía, más hasta $ 252 adicionales en ciertos equipos, y el plazo máximo de intervención favorable es de 2 días hábiles.',
+      'Un celular transmite en espectro licenciado, así que no lo alcanza la excepción de Wi-Fi/Bluetooth: la DNA lo lista entre los equipos que necesitan certificado de URSEC, junto con el router con módem celular, el GPS, el handy y la cámara con conexión celular. El certificado se pide por VUCE y cuesta entre $ 204 y $ 239, y $ 852 cuando el equipo además requiere homologación; el plazo máximo de intervención de URSEC es de 2 días hábiles, pero la homologación en sí puede demorar hasta 120 días.',
     sourceIds: ['ursec-tramite', 'vuce-ursec'],
   },
   {

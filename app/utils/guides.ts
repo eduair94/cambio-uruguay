@@ -292,7 +292,7 @@ export const guides: readonly Guide[] = [
     description:
       'Cómo funciona la franquicia courier de USD 800, cuándo pagás el 60% del régimen simplificado y cómo estimar el costo total de una compra online del exterior en Uruguay.',
     tag: 'IMPORTACIÓN',
-    updatedAt: '2026-07-20',
+    updatedAt: '2026-08-15',
     sections: [
       {
         heading: 'El régimen de envíos postales: la vía habitual para compras online',
@@ -312,11 +312,11 @@ export const guides: readonly Guide[] = [
       },
       {
         heading: 'La franquicia anual de USD 800',
-        body: 'Desde mayo de 2026 rige una franquicia anual de hasta USD 800 por persona, que se puede usar hasta 3 veces al año, con un máximo de 20 kg por envío. Lo que entra dentro de la franquicia queda exento de aranceles, pero igual paga IVA del 22%, salvo dos excepciones: las compras de origen estadounidense de hasta USD 200 (acuerdo TIFA) y los obsequios familiares, que quedan exentos de todo tributo. La franquicia exige además ser mayor de edad, con documento uruguayo, para uso personal y pagando con una tarjeta internacional o dinero electrónico cuyo titular seas vos y que además seas el destinatario. La clave es que es anual: conviene administrarla y no agotarla en una compra chica si pensás traer más cosas.',
+        body: 'Desde mayo de 2026 rige una franquicia anual de hasta USD 800 por persona, que se puede usar hasta 3 veces al año, con un máximo de 20 kg por envío. Lo que entra dentro de la franquicia queda exento de aranceles, pero igual paga IVA: 22% para la mayoría de los productos, 10% para los que están en la tasa mínima (los medicamentos, por ejemplo) y nada para los que están exonerados, como los libros y el material educativo, que por el artículo 41 del Título 10 y el artículo 8 literal C de la Ley 15.913 están libres de todo tributo nacional, gravámenes aduaneros y tasas consulares. A eso se suman dos casos exentos de todo tributo: las compras de origen estadounidense de hasta USD 200 (acuerdo TIFA) y los obsequios familiares. Ojo con el piso, porque cambia la cuenta: el IVA de un envío postal no puede ser inferior a USD 20 por envío (Título 10 del T.O. 2023, art. 13 literal B, inciso agregado por el art. 660 de la Ley 20.446, y RG DNA 11/2026), salvo que el envío esté integrado exclusivamente por bienes exonerados. O sea que con franquicia una compra chica no paga "22% y listo": por debajo de USD 90,91 a la tasa básica —o de USD 200 a la mínima— pagás igual los USD 20. Hay que decirlo con todas las letras porque ni el MEF ni la Aduana lo mencionan al explicar la franquicia en sus preguntas frecuentes: ahí el mínimo aparece sólo asociado al 60%. La franquicia exige además ser mayor de edad, con documento uruguayo, para uso personal y pagando con una tarjeta internacional o dinero electrónico cuyo titular seas vos y que además seas el destinatario. Y no todo consume cupo: los libros y los medicamentos de uso personal —estos últimos, con la debida autorización del Ministerio de Salud Pública— quedan fuera del tope de USD 800 y de los 3 envíos (Decreto 50/026 art. 4 y RG DNA 11/2026 num. 26). Eso no sale solo: la declaración lleva un campo de tipo de envío y los libros van por el código J/01, "Material al amparo de la Ley N.º 15.913/87" (RG DNA 11/2026 num. 28 lit. c), mientras que lo que marca el operador por defecto es la franquicia. Y preparate para pelearla, porque la excepción no aparece en las preguntas frecuentes del MEF ni en las de la Aduana, y una noticia oficial de la propia Aduana de abril de 2026 dice, sin mencionarla, que todos los envíos de franquicia consumen tanto el cupo en dólares como el de los 3 envíos. La clave es que es anual: conviene administrarla y no agotarla en una compra chica si pensás traer más cosas.',
       },
       {
         heading: 'El régimen simplificado: 60% sobre el valor',
-        body: 'Los envíos que no califican para la franquicia tributan bajo el régimen simplificado o prestación única, que aplica una tasa única del 60% sobre el valor de la compra, con un mínimo de USD 20 por envío. Es un cálculo sencillo: si traés algo por fuera de la franquicia, multiplicá el valor por 0,60 para estimar el impuesto, y si da menos de USD 20, pagás USD 20. Se aplica al envío entero, nunca al excedente, y no se le suma IVA aparte. A diferencia de la franquicia, no tiene límite de veces al año y sí admite mercadería para revender. A ese costo hay que sumarle el flete y los cargos del courier.',
+        body: 'Para los envíos que no van por la franquicia está el régimen simplificado o prestación única, que aplica una tasa única del 60% sobre el valor de la compra, con un mínimo de USD 20 por envío. No es un castigo automático: la Ley 20.446 (art. 627) dice que el titular "podrá optar" por pagarla, y lo que está exonerado por ley —los libros y el material educativo— no pasa a pagar 60% por no usar la franquicia. Es un cálculo sencillo: si traés algo por fuera de la franquicia, multiplicá el valor por 0,60 para estimar el impuesto, y si da menos de USD 20, pagás USD 20. Ese piso de USD 20 no es exclusivo de este régimen: desde 2026 el IVA de un envío postal tiene un mínimo del mismo monto, así que en compras chicas el "ahorro" de usar la franquicia es menor de lo que parece. Se aplica al envío entero, nunca al excedente, y no se le suma IVA aparte. A diferencia de la franquicia, no tiene límite de veces al año y sí admite mercadería para revender. A ese costo hay que sumarle el flete y los cargos del courier.',
       },
       {
         heading: 'Cómo estimar el costo total antes de comprar',
@@ -355,7 +355,7 @@ export const guides: readonly Guide[] = [
       },
       {
         q: '¿Qué no puedo traer por este régimen?',
-        a: 'Nada gravado por IMESI: bebidas alcohólicas, bebidas concentradas sin alcohol y suplementos concentrados, tabaco y cigarrillos, aceites y grasas lubricantes, y perfumería y cosméticos. Tampoco productos de origen animal o vegetal no autorizados por el MGAP, ni lo prohibido por seguridad (inflamables, gases comprimidos, explosivos, corrosivos, armas, baterías de litio sueltas). Y hay casos con trámite previo: los lentes de sol se limitan a dos unidades por única vez y requieren certificado del Sector Óptico del MSP por VUCE. Por encima de 20 kg o de USD 800 el envío sale del régimen y necesita despachante de aduana.',
+        a: 'Nada gravado por IMESI: bebidas alcohólicas, bebidas concentradas sin alcohol y suplementos concentrados, tabaco y cigarrillos, aceites y grasas lubricantes, vehículos y perfumería. Cuidado con meter toda la cosmética en la misma bolsa: el Decreto 96/990 (art. 27) deja expresamente fuera del IMESI al jabón de tocador, la pasta dentífrica, el desodorante, el talco, el champú, el agua colonia y el protector solar registrado ante el MSP, así que esos productos no quedan afuera del régimen postal por ese motivo. Tampoco podés traer por correo semillas, plantas, frutas y verduras frescas, animales vivos, alimentos de origen animal, fertilizantes ni plaguicidas: la Resolución MGAP 1.720/021 los prohíbe en encomienda o correo, sin franja de uso personal y sin ningún trámite que una persona física pueda hacer para habilitarlos. Sumá lo prohibido por seguridad (inflamables, gases comprimidos, explosivos, corrosivos) y las armas, que según la Aduana no entran por este canal. Las baterías de litio sueltas son otra cosa: no hay prohibición aduanera uruguaya, es una restricción del transporte aéreo (IATA/OACI) y una política propia del Correo Uruguayo, que no las admite en envíos internacionales. Y hay casos con trámite previo: los lentes de sol se limitan a dos unidades por única vez, con trámite pago en VUCE y declaración jurada de un técnico óptico habilitado. Por encima de 20 kg o de USD 800 el envío sale del régimen y necesita despachante de aduana.',
       },
       {
         q: '¿Qué pasa si no declaro o no pago?',
@@ -373,6 +373,35 @@ export const guides: readonly Guide[] = [
         label: 'Ley 20.446 art. 627 — prestación única del 60%, mínimo USD 20, sin despachante',
         url: 'https://www.impo.com.uy/bases/leyes/20446-2025/627',
         publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 20.446 art. 660 — agrega al art. 13 del Título 10 el mínimo de USD 20 de IVA por envío postal, salvo envío integrado exclusivamente por bienes exonerados',
+        url: 'https://www.impo.com.uy/bases/leyes/20446-2025/660',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Título 10 del T.O. 2023 art. 41 — importación de material educativo y obras, exonerada de todo tributo nacional',
+        url: 'https://www.impo.com.uy/bases/todgi2023/101-2024/41_T10',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'RG DNA 11/2026 — num. 26 (libros y medicamentos fuera del cupo), num. 27 (mínimo de USD 20 de IVA) y num. 28 lit. c (códigos de tipo de envío: G franquicia, H prestación única, J exceptuados)',
+        url: 'https://www.aduanas.gub.uy/innovaportal/file/28447/1/rg-11_2026.pdf',
+        publisher: 'Dirección Nacional de Aduanas',
+      },
+      {
+        label: 'Decreto 96/990 art. 27 — cosmética de uso corriente no gravada por IMESI',
+        url: 'https://www.impo.com.uy/bases/decretos/96-1990',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Resolución MGAP 1.720/021 — nómina de productos que no pueden ingresar por encomienda o correo',
+        url: 'https://www.gub.uy/ministerio-ganaderia-agricultura-pesca/comunicacion/publicaciones/nomina-productos-autorizados-ingresar-pais',
+        publisher: 'MGAP',
       },
       {
         label: 'Guía de preguntas frecuentes del régimen de envíos postales y franquicias',

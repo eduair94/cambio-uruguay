@@ -9,13 +9,18 @@
 // LAS CIFRAS DEL RÉGIMEN NO SE DUPLICAN ACÁ: salen de `~/utils/importRules` (efectivo-fechadas y
 // alimentadas por `/api/aduana`). Este módulo describe conductas y trámites, no montos.
 //
-// FUENTES PRIMARIAS re-verificadas el 2026-08-09:
+// FUENTES PRIMARIAS re-verificadas el 2026-08-15:
 //   - Decreto 50/026 art. 3 (obsequios familiares) https://www.impo.com.uy/bases/decretos/50-2026/3
 //   - Decreto 50/026 art. 4 (condiciones de la franquicia) https://www.impo.com.uy/bases/decretos/50-2026/4
 //   - Ley 20.446 art. 627 https://www.impo.com.uy/bases/leyes/20446-2025/627
+//   - Decreto 96/990 art. 27 (qué cosmética NO está gravada por IMESI)
+//     https://www.impo.com.uy/bases/decretos/96-1990
+//   - Resolución MGAP 1.720/021 (nómina de lo que no puede ingresar por correo)
+//   - Decreto 18/020 art. 19 (el MSP no autoriza el ingreso por particulares)
+//   - Resoluciones URSEC 275/021 y 297/021 (Wi-Fi y Bluetooth no requieren intervención)
 //   - DNA, preguntas frecuentes EPI https://www.aduanas.gub.uy/innovaportal/v/28231/1/innova.front/
-//   - DNA, mercadería que no puede venir por encomienda
-//     https://www.aduanas.gub.uy/innovaportal/v/25107/3/innova.front/que-mercaderia-no-puedo-traer-bajo-el-regimen-de-encomiendas-postales-internacionales.html
+//   - DNA, productos que requieren permisos o no pueden ingresar
+//     https://www.aduanas.gub.uy/innovaportal/v/28229/1/innova.front/
 //   - DNA, documentación para un envío retenido
 //     https://www.aduanas.gub.uy/innovaportal/v/25088/15/innova.front/que-documentacion-debo-presentar-ante-aduana-para-tramitar-un-envio-retenido.html
 //   - DNA, registro de identidad digital (RG DNA 10/026) https://www.aduanas.gub.uy/innovaportal/v/28449/1/innova.front/
@@ -26,7 +31,7 @@
 //     es la excepción admitida) https://www.upu.int/UPU/media/upu/files/aboutUpu/acts/03-actsConventionAndFinalProtocol/conventionAndFinalProtocolAdoptedAtAbidjanEn.pdf
 
 /** Fecha en que las conductas y trámites de este módulo se contrastaron con las fuentes de arriba. */
-export const GIFT_RULES_VERIFIED_AT = '2026-08-09'
+export const GIFT_RULES_VERIFIED_AT = '2026-08-15'
 
 /**
  * Por qué se traba un paquete. `tier` no es cosmético: ordena la respuesta del lector.
@@ -78,7 +83,7 @@ export const GIFT_BLOCKER_GROUPS: GiftBlockerGroup[] = [
         title: 'Baterías de litio',
         tier: 'prohibido',
         effect:
-          'El Correo Uruguayo las prohíbe expresamente en envíos internacionales: celulares, notebooks, parlantes inalámbricos, relojes, auriculares, power banks. Es la trampa más común de un regalo tecnológico.',
+          'El Correo Uruguayo no las admite en envíos internacionales: celulares, notebooks, parlantes inalámbricos, relojes, auriculares, power banks. Es la trampa más común de un regalo tecnológico. No es una prohibición aduanera: es restricción de transporte aéreo y política del operador postal, así que no hay cifra oficial uruguaya de Wh.',
         fix: 'Si el regalo tiene batería, que vaya por un courier privado, que las transporta con su propio protocolo de mercancías peligrosas — no por correo postal.',
         icon: 'mdi-battery-alert-variant-outline',
       },
@@ -94,7 +99,7 @@ export const GIFT_BLOCKER_GROUPS: GiftBlockerGroup[] = [
         title: 'Vaporizadores y cigarrillos electrónicos',
         tier: 'prohibido',
         effect:
-          'Figuran en la lista de mercadería prohibida de la Aduana para encomiendas postales, junto con sus repuestos y líquidos.',
+          'Su importación está prohibida por el Decreto 534/009 en la redacción del Decreto 125/025, que alcanza también a los productos de tabaco calentado y a cualquier accesorio o repuesto.',
         fix: 'No hay vía postal para esto. Ni como regalo.',
         icon: 'mdi-smoking-off',
       },
@@ -102,15 +107,15 @@ export const GIFT_BLOCKER_GROUPS: GiftBlockerGroup[] = [
         title: 'Armas, municiones, explosivos y pirotecnia',
         tier: 'prohibido',
         effect:
-          'Prohibidos, incluidas réplicas y bengalas. Un cuchillo de colección o una navaja también pueden ser rechazados por el operador de origen.',
-        fix: 'Descartalo del envío.',
+          'La Aduana no admite armas en el régimen de encomiendas postales internacionales: no es cuestión de conseguir permiso, no entran por ese canal. La pirotecnia de estruendo está prohibida por la Ley 20.246. Con las réplicas y el airsoft no hay norma vigente que los regule: lo único que hay es que la Aduana lista las pistolas de aire comprimido como mercadería controlada por el Servicio de Material y Armamento, que es criterio administrativo, no norma. De cuchillos y navajas no se encontró norma uruguaya que los prohíba por encomienda, pero el operador de origen igual puede rechazarlos.',
+        fix: 'Descartá del envío cualquier arma o pirotecnia. Con una réplica no hay trámite que la habilite para una persona física: el riesgo es que quede retenida sin salida.',
         icon: 'mdi-pistol',
       },
       {
         title: 'Dinero en efectivo, drogas y pornografía',
         tier: 'prohibido',
         effect:
-          'Están en la lista de prohibiciones de la Aduana. El efectivo, además, se pierde: no hay reclamo postal que lo cubra.',
+          'Están en la lista de prohibiciones que publica la Aduana. Con el efectivo, la aclaración honesta es que la DNA lo lista y el Correo no lo admite, pero no se encontró norma que lo prohíba expresamente en envíos postales.',
         fix: 'Para plata, una transferencia o remesa. Nunca billetes dentro de un paquete.',
         icon: 'mdi-cash-remove',
       },
@@ -123,11 +128,11 @@ export const GIFT_BLOCKER_GROUPS: GiftBlockerGroup[] = [
         icon: 'mdi-shield-alert-outline',
       },
       {
-        title: 'Semillas, plantas, flores y alimentos frescos',
+        title: 'Semillas, plantas, alimentos frescos y de origen animal',
         tier: 'prohibido',
         effect:
-          'Prohibidos por medidas fitosanitarias. Es el clásico “te mando semillas de la huerta de la abuela” que termina destruido.',
-        fix: 'Nada vivo, nada fresco. Los alimentos secos o envasados también pueden requerir permiso del MGAP.',
+          'La Resolución MGAP 1.720/021 prohíbe ingresar por correo o encomienda semillas, plantas, frutas y verduras frescas, animales vivos, alimentos de origen animal (quesos, embutidos, miel), fertilizantes y plaguicidas. No hay franja de uso personal: es el clásico “te mando semillas de la huerta de la abuela” que termina destruido.',
+        fix: 'Nada vivo, nada fresco, nada de origen animal. No existe un trámite dirigido a una persona física que destrabe esto, así que la única salida es dejarlo afuera del paquete. Los productos vegetales acondicionados al detalle —té, especias, orégano— sólo están prohibidos en envases de más de 500 gramos, y la nómina del MGAP no es taxativa: a cualquier otro producto le pueden exigir certificado oficial.',
         icon: 'mdi-sprout-outline',
       },
     ],
@@ -141,20 +146,12 @@ export const GIFT_BLOCKER_GROUPS: GiftBlockerGroup[] = [
     icon: 'mdi-alert-outline',
     items: [
       {
-        title: 'Perfumería y cosmética',
+        title: 'Perfumería y maquillaje',
         tier: 'fuera-regimen',
         effect:
-          'Perfumes, maquillaje, cremas: gravados por IMESI y expresamente fuera del régimen. Es la excepción menos intuitiva y la que más regalos traba.',
-        fix: 'Si querés que el paquete pase liso, que no lleve cosmética. Ni de muestra.',
+          'La perfumería y la cosmética gravadas por IMESI quedan fuera del régimen postal, y ahí caen el perfume y el maquillaje. Pero no toda la cosmética paga IMESI: el Decreto 96/990, art. 27, deja expresamente afuera del impuesto los jabones de tocador, la crema y la brocha de afeitar, el dentífrico, el cepillo de dientes, el agua colonia, el desodorante, el talco, el champú y el protector solar registrado ante el MSP; y los acondicionadores, tintes de pelo y lociones para después de afeitar están a tasa 0%. Eso no saca al envío del régimen.',
+        fix: 'Si querés que el paquete pase liso, que no lleve perfume ni maquillaje. Y tené presente el otro filtro: el MSP controla los cosméticos y, como regla, no autoriza el ingreso de productos de salud por particulares.',
         icon: 'mdi-bottle-tonic-outline',
-      },
-      {
-        title: 'Suplementos, vitaminas y bebidas concentradas',
-        tier: 'fuera-regimen',
-        effect:
-          'La Aduana los trata como “bebidas concentradas sin alcohol” gravadas por IMESI: proteína, colágeno, multivitamínicos. Además pueden requerir certificado sanitario.',
-        fix: 'Comprarlos acá sale más barato que destrabar el paquete.',
-        icon: 'mdi-pill-multiple',
       },
       {
         title: 'Bebidas alcohólicas y tabaco',
@@ -176,33 +173,33 @@ export const GIFT_BLOCKER_GROUPS: GiftBlockerGroup[] = [
     tier: 'permiso',
     label: 'Entra, pero con permiso de otro organismo',
     intro:
-      'La Aduana no libera estas cosas sin el certificado del organismo que las controla. El trámite se hace en la VUCE y lo tenés que iniciar vos, como destinatario.',
+      'La Aduana no libera estas cosas sin el certificado del organismo que las controla, y cada organismo tiene su propia puerta: la de la URSEC la abrís vos en la VUCE, la del MSP es por excepción y por correo electrónico, y para lo que controla el MGAP directamente no hay trámite de persona física.',
     color: 'info',
     icon: 'mdi-file-certificate-outline',
     items: [
       {
-        title: 'Equipos con radio: celular, GPS, monitor de bebé, repetidor WiFi',
+        title: 'Equipos con radio: celular, GPS, handy, cámara con conexión celular',
         tier: 'permiso',
         effect:
-          'La URSEC exige certificado de aptitud técnica para equipos de telecomunicaciones: celulares, terminales satelitales, navegadores GPS, teléfonos inalámbricos, equipos de control remoto y monitores de bebés están en su lista.',
-        fix: 'Consultá antes en la URSEC. Un regalo tecnológico es el caso donde más conviene preguntar primero.',
+          'La URSEC pide certificado previo para los equipos que transmiten en espectro licenciado: celular, router con módem celular, GPS, handy y cámara con conexión celular. En cambio NO interviene —Resoluciones URSEC 275/021 y 297/021— en los dispositivos que funcionan únicamente con Wi-Fi o Bluetooth en 2,4 y 5,8 GHz: auriculares, mouse, smartwatch, joystick, cámaras y similares no necesitan nada.',
+        fix: 'Si el equipo transmite en espectro licenciado, el trámite lo iniciás vos como persona física en la VUCE: el costo publicado es de $239 y la URSEC tiene un plazo máximo de dos días hábiles. Si el regalo sólo usa Wi-Fi o Bluetooth, no hay nada que pedir.',
         icon: 'mdi-router-wireless',
       },
       {
         title: 'Medicamentos',
         tier: 'permiso',
         effect:
-          'Necesitan autorización del MSP para ingresar al país. Sin ese certificado, la encomienda no se libera aunque sea para uso personal.',
-        fix: 'Pedí el certificado antes de hacer cualquier trámite en la Aduana; si es un tratamiento, que venga con receta y prospecto.',
+          'El MSP no autoriza el ingreso de productos de salud del exterior por particulares: no existe una franja general de “uso personal”. La única puerta es la excepción del Decreto 18/020, art. 19 — un producto no registrado en el país, con prescripción médica específica, consentimiento informado del paciente y sin equivalente registrado acá. Sin esa autorización el envío queda fuera del régimen entero: ni franquicia ni prestación única (Decreto 50/026, art. 7).',
+        fix: 'La autorización se pide antes, por correo a farmacovigilancia@msp.gub.uy —no es VUCE y es gratis—, con los formularios firmados por vos, tu médico tratante y la dirección técnica de tu prestador. Si el medicamento sí está registrado en Uruguay, no hay trámite publicado para traerlo: conseguilo acá.',
         icon: 'mdi-medical-bag',
       },
       {
-        title: 'Productos de origen animal o vegetal',
+        title: 'Suplementos, vitaminas y productos de salud',
         tier: 'permiso',
         effect:
-          'Miel, quesos, embutidos, madera, cuero sin curtir, alimentos: los controla el MGAP y sólo entran los autorizados.',
-        fix: 'Mirá la lista del MGAP de qué se puede y qué no se puede traer antes de que lo despachen.',
-        icon: 'mdi-leaf',
+          'No están gravados por IMESI ni quedan fuera del régimen por eso: pagan IVA al 22%, porque para la DGI la tasa la define la inscripción en el registro del MSP y un suplemento no inscripto como medicamento, especialidad farmacéutica o alimento de uso medicinal no accede a la tasa mínima. Lo que sí los frena es el control del MSP, con la misma regla dura de los medicamentos.',
+        fix: 'Comprarlos acá evita el problema de raíz: no hay una vía de ingreso por particular para lo que controla el MSP, salvo la excepción del producto no registrado.',
+        icon: 'mdi-pill-multiple',
       },
       {
         title: 'Joyería de oro, plata o piedras',
@@ -282,8 +279,8 @@ export const GIFT_BLOCKER_GROUPS: GiftBlockerGroup[] = [
         title: 'Pasarte de los topes',
         tier: 'tramite',
         effect:
-          'Más de 20 kg, más del tope anual acumulado o un cuarto envío en el año: el obsequio deja de tener franquicia y el envío entero pasa al régimen simplificado.',
-        fix: 'Un solo paquete por ocasión y valor declarado dentro del cupo. Consultá tu saldo de franquicias antes.',
+          'Más de 20 kg, más del tope anual acumulado o un cuarto envío en el año: el obsequio deja de tener franquicia y el envío entero queda sin exención.',
+        fix: 'Un solo paquete por ocasión y valor declarado dentro del cupo. Consultá tu saldo de franquicias antes. Si igual se pasó, la prestación única del 60% (mínimo US$ 20 por envío) es una opción —la ley dice que el titular “podrá optar”—, no un destino automático: la alternativa es liquidar por el régimen general.',
         icon: 'mdi-counter',
       },
     ],
@@ -377,7 +374,7 @@ export function buildSenderInstructions(input: SenderInstructionsInput): string 
       '3. Describe every item in detail, one line each, with material, quantity and value in US dollars. Example: "2 pairs of costume-jewellery earrings (steel) — USD 12", "1 metal keyring — USD 5". Never write only "gift", "accessories" or "no commercial value".',
       `4. Declare a realistic value. Under-declaring is the single most common reason a parcel gets held — and a genuine gift pays no tax anyway, so there is nothing to save.`,
       `5. Keep the parcel under USD ${franchiseAnnualUsd} and under ${maxWeightKg} kg. Send everything in ONE parcel: each parcel uses one of my ${maxShipments} duty-free shipments per calendar year.`,
-      '6. Do NOT include: perfume, make-up or any cosmetics; alcohol, tobacco, vitamins or food supplements; food, seeds or plants; anything with a lithium battery (headphones, smartwatch, speakers, power banks); aerosols, lighters or flammable liquids; replicas of branded goods; cash.',
+      '6. Do NOT include: perfume or make-up; alcohol or tobacco; vitamins or food supplements; food, seeds or plants — animal-origin food (cheese, cured meat, honey) is flatly banned from the post; anything with a lithium battery (headphones, smartwatch, speakers, power banks); aerosols, lighters or flammable liquids; replicas of branded goods; cash.',
       '7. A handwritten letter or a birthday card inside the parcel is perfectly fine. A commercial invoice or a shop receipt inside is not — it contradicts the gift declaration.',
       '8. Write my details exactly as they appear on my ID document: full name, street address, city, postcode, phone and e-mail.',
       '9. If the gift is for a child, still address it to an adult — a minor cannot clear it.',
@@ -393,7 +390,7 @@ export function buildSenderInstructions(input: SenderInstructionsInput): string 
     '3. Describí cada cosa en detalle, un renglón por ítem, con material, cantidad y valor en dólares. Ejemplo: “2 pares de caravanas de bijouterie (acero) — USD 12”, “1 llavero de metal — USD 5”. Nunca pongas sólo “regalo”, “accesorios” o “sin valor comercial”.',
     '4. Declará un valor realista. Subdeclarar es el motivo más común de retención — y un obsequio genuino no paga tributos, así que no hay nada que ahorrar.',
     `5. Que el paquete quede por debajo de USD ${franchiseAnnualUsd} y de ${maxWeightKg} kg. Mandá todo en UN solo paquete: cada paquete consume uno de mis ${maxShipments} envíos con franquicia del año.`,
-    '6. NO incluyas: perfume, maquillaje ni cosmética; alcohol, tabaco, vitaminas ni suplementos; alimentos, semillas ni plantas; nada con batería de litio (auriculares, smartwatch, parlantes, power banks); aerosoles, encendedores ni líquidos inflamables; réplicas de marcas; dinero en efectivo.',
+    '6. NO incluyas: perfume ni maquillaje; alcohol ni tabaco; vitaminas ni suplementos; alimentos, semillas ni plantas —los alimentos de origen animal (quesos, embutidos, miel) están directamente prohibidos por correo—; nada con batería de litio (auriculares, smartwatch, parlantes, power banks); aerosoles, encendedores ni líquidos inflamables; réplicas de marcas; dinero en efectivo.',
     '7. Una carta manuscrita o una tarjeta adentro del paquete no es problema. Una factura o un ticket de compra adentro sí lo es: contradice la declaración de obsequio.',
     '8. Poné mis datos exactamente como figuran en mi cédula: nombre completo, dirección, ciudad, código postal, teléfono y correo.',
     '9. Si el regalo es para un niño, mandalo igual a nombre de un adulto — un menor no puede hacer el trámite.',
@@ -424,8 +421,20 @@ export const GIFT_SOURCES: GiftSource[] = [
   {
     org: 'IMPO',
     label:
-      'Ley 20.446, art. 627 — régimen simplificado: 60% del valor con un mínimo de USD 20 por envío',
+      'Ley 20.446, art. 627 — prestación única: el titular “podrá optar” por pagar el 60% del valor, con un mínimo de USD 20 por envío',
     url: 'https://www.impo.com.uy/bases/leyes/20446-2025/627',
+  },
+  {
+    org: 'IMPO',
+    label:
+      'Ley 20.446, art. 660 — el IVA de un envío postal no puede ser inferior a USD 20, salvo que el envío esté integrado exclusivamente por bienes exonerados',
+    url: 'https://www.impo.com.uy/bases/leyes/20446-2025/660',
+  },
+  {
+    org: 'IMPO',
+    label:
+      'Decreto 96/990, art. 27 — la cosmética de higiene común (jabón, dentífrico, desodorante, champú, agua colonia, protector solar registrado) no está gravada por IMESI',
+    url: 'https://www.impo.com.uy/bases/decretos/96-1990',
   },
   {
     org: 'Aduana (DNA)',
@@ -436,8 +445,8 @@ export const GIFT_SOURCES: GiftSource[] = [
   {
     org: 'Aduana (DNA)',
     label:
-      'Qué mercadería no puede venir por encomienda postal — IMESI y mercadería prohibida (lista no taxativa)',
-    url: 'https://www.aduanas.gub.uy/innovaportal/v/25107/3/innova.front/que-mercaderia-no-puedo-traer-bajo-el-regimen-de-encomiendas-postales-internacionales.html',
+      'Productos que requieren permisos o no pueden ingresar — organismos controladores, en un listado que la propia Aduana declara orientativo y no taxativo',
+    url: 'https://www.aduanas.gub.uy/innovaportal/v/28229/1/innova.front/',
   },
   {
     org: 'Aduana (DNA)',
@@ -487,14 +496,26 @@ export const GIFT_SOURCES: GiftSource[] = [
   {
     org: 'MGAP',
     label:
-      'Qué se puede y qué no se puede traer a Uruguay — control de productos de origen animal y vegetal',
-    url: 'https://www.gub.uy/ministerio-ganaderia-agricultura-pesca/politicas-y-gestion/se-puede-no-se-puede-traer-uruguay',
+      'Resolución 1.720/021 — nómina de productos que no pueden ingresar por encomienda o correo: semillas, plantas, frutas y verduras frescas, animales vivos, alimentos de origen animal, fertilizantes y plaguicidas',
+    url: 'https://www.gub.uy/ministerio-ganaderia-agricultura-pesca/comunicacion/publicaciones/nomina-productos-autorizados-ingresar-pais',
+  },
+  {
+    org: 'MSP',
+    label:
+      'Ingreso de medicamentos no registrados — la única excepción por la que un particular puede traer un producto de salud, por correo a farmacovigilancia y sin costo',
+    url: 'https://www.gub.uy/tramites/ingreso-medicamentos-no-registrados-ciudadanos-uruguayos',
+  },
+  {
+    org: 'URSEC',
+    label:
+      'Certificado para ingresar equipos radioeléctricos (persona física) — con la excepción de los dispositivos que sólo usan Wi-Fi o Bluetooth',
+    url: 'https://www.gub.uy/tramites/certificado-para-habilitar-ingreso-al-pais-equipos-radioelectricos-bajo-regimen-franquicia-persona-fisica',
   },
   {
     org: 'VUCE',
     label:
-      'Ventanilla Única de Comercio Exterior — donde se piden los certificados de MSP, MGAP y URSEC',
-    url: 'https://vuce.gub.uy/',
+      'Ventanilla Única de Comercio Exterior — donde se piden los certificados que sí admiten trámite de persona física',
+    url: 'https://www.vuce.gub.uy/',
   },
   {
     org: 'UPU',

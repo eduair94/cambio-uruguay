@@ -496,7 +496,7 @@ const faqs = [
   },
   {
     q: '¿Por qué el 60% suele salir más barato que el DUA si el arancel es mucho menor?',
-    a: 'Porque el DUA tiene <strong>costos fijos</strong> por envío — honorarios del despachante, terminal, depósito — que no dependen del valor, y porque el IVA se calcula sobre el valor en aduana <em>más</em> el arancel y la tasa consular, no sobre la mercadería sola. Con un arancel del 10% y tasa consular, la carga combinada ronda el 40%; recién por encima de cierto valor de factura los costos fijos se diluyen y el DUA gana. El simulador de arriba te da ese punto de cruce con tus números.',
+    a: 'Porque el DUA tiene <strong>costos fijos</strong> por envío — honorarios del despachante, terminal, depósito — que no dependen del valor, y porque el IVA se calcula sobre el valor en aduana <em>más</em> el arancel, no sobre la mercadería sola (Título 10 art. 13 lit. B). La <strong>tasa consular</strong> se paga aparte pero <strong>no</strong> integra esa base. Con un arancel del 10% más la tasa consular, la carga combinada ronda el 39%; recién por encima de cierto valor de factura los costos fijos se diluyen y el DUA gana. Un detalle que el simulador no aplica: si el que importa es un <strong>no contribuyente</strong> (una persona física sin RUT), el mismo artículo incrementa un 50% la base del IVA, y ahí el DUA sale bastante más caro de lo que muestra el cuadro. El simulador de arriba te da el punto de cruce asumiendo que importás como contribuyente.',
   },
   {
     q: '¿Y si el envío llega con el 60% pero yo no lo pago?',

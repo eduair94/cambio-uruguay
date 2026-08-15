@@ -422,8 +422,11 @@
         Hoy, para no pagar IVA en una compra de EE.UU. de hasta US$ 200, alcanza con que la compra
         sea de EE.UU. Desde el 1/10/2026 va a hacer falta, además, que el
         <strong>vendedor</strong> —el que emite la factura, no el courier— esté
-        <strong>registrado ante la Aduana</strong>, y el sistema LUCIA lo valida solo: si no figura,
-        no hay exoneración.
+        <strong>registrado ante la Aduana</strong>: si no figura, no hay exoneración. La
+        <em>validación automática</em> de LUCIA, en cambio, arranca el
+        <strong>3/11/2026</strong> (RG 26/2026 num. 10), así que hay 33 días en los que el requisito
+        rige sin que el sistema lo bloquee solo. Buena noticia del 5/10: el courier puede registrar
+        al vendedor por vos y la Aduana tiene que publicar la lista.
       </p>
 
       <VCard variant="flat" class="timeline pa-5">
@@ -661,9 +664,21 @@ const timeline = [
   },
   {
     date: '1.º de octubre de 2026',
-    text: 'Empieza a exigirse. El sistema LUCIA valida automáticamente que el emisor de la factura esté registrado; si no figura, el envío pierde la exoneración y paga IVA.',
-    norm: 'RG 09/2026, num. 13',
+    text: 'Empieza a exigirse el requisito de fondo: el emisor de cada factura del envío tiene que estar registrado. Si el envío trae facturas de varios vendedores y uno solo no figura, no hay exoneración para nada.',
+    norm: 'RG 09/2026, Anexo I num. 10 lit. a y num. 12 (exigible por RG 21/2026)',
     url: 'https://www.aduanas.gub.uy/innovaportal/file/28428/1/resolucion-9_2026.pdf',
+  },
+  {
+    date: '5 de octubre de 2026',
+    text: 'Entra en vigencia la RG 26/2026: los couriers pueden registrar ellos al vendedor (altas por LUCIA, 48 horas hábiles), la Aduana puede incorporarlo de oficio y tiene que publicar la lista en su web. Además deroga la leyenda sobre residencia fiscal que la factura tenía que traer.',
+    norm: 'RG 26/2026, nums. 1, 2, 4, 7 y 9',
+    url: 'https://www.aduanas.gub.uy/innovaportal/file/28724/1/rg-26-2026-exoneracion-iva-encomiendas-postales.pdf',
+  },
+  {
+    date: '3 de noviembre de 2026',
+    text: 'Recién acá LUCIA empieza a validar sola los identificadores que declara el operador. O sea: entre el 1.º de octubre y esta fecha el requisito rige pero el bloqueo automático todavía no corre.',
+    norm: 'RG 26/2026, num. 10 (prorroga el num. 13 del Anexo I de la RG 09/2026)',
+    url: 'https://www.aduanas.gub.uy/innovaportal/file/28724/1/rg-26-2026-exoneracion-iva-encomiendas-postales.pdf',
   },
 ]
 
