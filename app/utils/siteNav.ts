@@ -214,6 +214,27 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         keywords: ['por que sube', 'por que baja', 'causas', 'correlacion', 'real', 'tasas'],
       },
       {
+        to: '/dolar-blue-hoy',
+        labelKey: 'nav.dolarBlue',
+        icon: 'mdi-swap-horizontal-bold',
+        // Daily: both Argentine rates are re-ingested every morning and the
+        // Uruguayan ARS board moves with the market, so the page re-prices
+        // itself without anyone editing it.
+        priority: 0.8,
+        changefreq: 'daily',
+        fresh: true,
+        keywords: [
+          'dolar blue',
+          'dolar blue hoy',
+          'blue argentina',
+          'dolar paralelo',
+          'brecha cambiaria',
+          'peso argentino',
+          'cambiar pesos argentinos',
+          'cruzar a argentina',
+        ],
+      },
+      {
         to: '/dolar/records',
         labelKey: 'nav.records',
         icon: 'mdi-trophy-outline',
