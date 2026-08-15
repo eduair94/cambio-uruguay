@@ -366,7 +366,7 @@ const fixToFranchise = [
   },
   {
     title: 'Mirá en cuánto queda.',
-    text: 'La franquicia exime de <em>aranceles</em>, no del IVA, salvo compras de EE.UU. de hasta US$ 200. Sobre el paquete de US$ 19,15 desde China: 22% = <strong>US$ 4,21</strong> más el cargo base sin el 5% → <strong>US$ 9,21</strong> con el envío retenido, o US$ 5,71 declarando antes del arribo. Contra US$ 26 por prestación única.',
+    text: 'La franquicia exime de <em>aranceles</em>, no del IVA, salvo compras de EE.UU. de hasta US$ 200. Y el IVA del envío postal tiene <strong>piso de US$ 20</strong> (Título 10, art. 13 lit. B, inciso agregado por la Ley 20.446 art. 660): sobre el paquete de US$ 19,15 desde China, el 22% da 4,21 pero se paga el mínimo de <strong>US$ 20</strong>, más el cargo base sin el 5% → <strong>US$ 25</strong> con el envío retenido, o US$ 21,50 declarando antes del arribo. Contra US$ 26 por prestación única: el ahorro es <strong>un dólar</strong> y te consume uno de los 3 envíos del año. En compras chicas la franquicia casi no sirve; guardala para una compra grande.',
   },
   {
     title: 'Si te la niegan o si ya pagaste.',
@@ -590,6 +590,12 @@ const relatedLinks = [
     text: 'Diagnóstico y pasos para destrabarlo.',
     to: '/problemas-con-la-aduana-uruguay',
     icon: 'mdi-clipboard-alert-outline',
+  },
+  {
+    title: 'Qué paga cada mercadería',
+    text: 'Exenciones, trámites y cómo declarar por categoría.',
+    to: '/importar',
+    icon: 'mdi-package-variant-closed',
   },
 ]
 

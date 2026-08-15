@@ -31,6 +31,7 @@ import {
 import { glossary } from './glossary'
 import { guideHubs } from './guideHubs'
 import { guides } from './guides'
+import { IMPORT_CATEGORY_INDEX } from './importCategoryIndex'
 import { indicators } from './indicators'
 import { fold, makeDoc, navToDocs, type SearchDoc } from './siteNav'
 import { tools } from './tools'
@@ -147,6 +148,24 @@ export function buildSearchIndex(ctx: SearchIndexContext): SearchDoc[] {
         icon: 'mdi-book-open-variant',
         to: `/guias/${guide.slug}`,
         keywords: [guide.tag],
+      })
+    )
+  }
+
+  // Una ficha por tipo de mercadería (/importar/<categoria>). Buscar "libros" o "celular" tiene
+  // que llevar a la ficha que dice qué paga esa cosa, no sólo al calculador genérico. Se lee del
+  // índice liviano: el catálogo completo son ~300 kB de texto legal que el buscador no necesita.
+  for (const category of IMPORT_CATEGORY_INDEX) {
+    docs.push(
+      makeDoc({
+        id: `import:${category.slug}`,
+        type: 'guide',
+        section: 'imports',
+        title: category.title,
+        description: category.description,
+        icon: category.icon,
+        to: `/importar/${category.slug}`,
+        keywords: [...category.keywords, `importar ${category.navLabel}`],
       })
     )
   }
