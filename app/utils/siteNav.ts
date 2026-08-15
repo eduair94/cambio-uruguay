@@ -1081,6 +1081,23 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        to: '/donde-te-entregan-el-paquete-uruguay',
+        labelKey: 'nav.dondeEntreganPaquete',
+        icon: 'mdi-mailbox-open-outline',
+        priority: 0.8,
+        changefreq: 'monthly',
+        keywords: [
+          'donde me entregan el paquete',
+          'retirar paquete en sucursal correo uruguayo',
+          'no estaba en casa paquete',
+          'aviso de visita correo',
+          'entrega en agencia aliexpress',
+          'cambiar direccion de entrega paquete',
+          'recibir paquete sin domicilio fijo',
+          'cuantos dias guardan el paquete',
+        ],
+      },
+      {
         to: '/importar',
         labelKey: 'nav.importarCategorias',
         icon: 'mdi-package-variant-closed',
