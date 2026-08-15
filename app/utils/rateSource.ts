@@ -91,3 +91,38 @@ export function pickOriginRate<T extends OriginRateRow>(
     typeRank(r.type ?? '') < typeRank(best.type ?? '') ? r : best
   )
 }
+
+/**
+ * Currency order for describing an origin that does not quote dollars: the
+ * majors first, then the Uruguayan indexed units, which is the order a reader
+ * scanning a board expects.
+ */
+const HEADLINE_CODE_ORDER = ['USD', 'EUR', 'BRL', 'ARS', 'UI', 'UR', 'UP'] as const
+
+/**
+ * The one or two quotes that best describe what an origin publishes today.
+ *
+ * `pickOriginRate` answers "what is this casa's dollar?" and correctly returns
+ * null for an origin that has none. That left the highest-impression page of
+ * this kind describing itself with no numbers at all: BCU publishes UI, UR and
+ * UP but no USD, so `/historico/bcu` fell back to generic prose while every
+ * sibling page led its snippet with a price — 15.496 impressions at 0,08% CTR.
+ *
+ * So: dollars when the origin has them, otherwise whatever it actually
+ * publishes, in {@link HEADLINE_CODE_ORDER}. Still never another origin's rate,
+ * and still never an invented one — an origin publishing nothing returns `[]`
+ * and the caller keeps its prose fallback.
+ */
+export function originHeadlineRates<T extends OriginRateRow>(
+  rows: readonly T[],
+  origin: string,
+  limit = 2
+): T[] {
+  const out: T[] = []
+  for (const code of HEADLINE_CODE_ORDER) {
+    const row = pickOriginRate(rows, origin, code)
+    if (row) out.push(row)
+    if (out.length >= limit) break
+  }
+  return out
+}

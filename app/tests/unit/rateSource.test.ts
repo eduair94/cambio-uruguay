@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import type { ExchangeRate } from '../../types/api'
 import { quotesForCurrency } from '../../utils/currencyPages'
-import { isPublicRate, pickOriginRate, publicRates } from '../../utils/rateSource'
+import {
+  isPublicRate,
+  originHeadlineRates,
+  pickOriginRate,
+  publicRates,
+} from '../../utils/rateSource'
 
 // Helper to build a minimal valid quote row.
 const row = (over: Partial<ExchangeRate>): ExchangeRate => ({
@@ -120,5 +125,62 @@ describe('best public rate (integration with quotesForCurrency)', () => {
     const best = quotes.find(q => q.bestSell)
     expect(best?.origin).toBe('brou')
     expect(quotes.some(q => q.origin === 'bcu')).toBe(false)
+  })
+})
+
+describe('originHeadlineRates', () => {
+  // What an origin's SERP snippet may lead with. The rule that matters: it must
+  // describe THAT origin with real numbers, or return nothing at all.
+  it('leads with the dollar when the origin quotes one', () => {
+    const rows = [
+      row({ origin: 'brou', code: 'USD', buy: 39.1, sell: 41.6 }),
+      row({ origin: 'brou', code: 'EUR', buy: 44, sell: 48 }),
+    ]
+    const out = originHeadlineRates(rows, 'brou')
+    expect(out[0]).toMatchObject({ code: 'USD' })
+  })
+
+  it('falls back to what the origin DOES publish (BCU: UI/UR, no USD)', () => {
+    // The whole point: /historico/bcu had no number in its description because
+    // BCU quotes no dollar, and it is the biggest page of its kind on the site.
+    const rows = [
+      row({ origin: 'bcu', code: 'UI', buy: 6.6347, sell: 6.6347 }),
+      row({ origin: 'bcu', code: 'UR', buy: 1923.44, sell: 1923.44 }),
+      row({ origin: 'bcu', code: 'UP', buy: 1.79349, sell: 1.79349 }),
+    ]
+    const out = originHeadlineRates(rows, 'bcu')
+    expect(out).toHaveLength(2)
+    expect(out.map(r => r.code)).toEqual(['UI', 'UR'])
+  })
+
+  it("never quotes another origin's rate", () => {
+    const rows = [
+      row({ origin: 'brou', code: 'USD', buy: 39.1, sell: 41.6 }),
+      row({ origin: 'bcu', code: 'UI', buy: 6.6347, sell: 6.6347 }),
+    ]
+    expect(originHeadlineRates(rows, 'bcu').every(r => r.origin === 'bcu')).toBe(true)
+  })
+
+  it('returns nothing when the origin publishes nothing usable, so prose stays', () => {
+    expect(originHeadlineRates([], 'bcu')).toEqual([])
+    expect(originHeadlineRates([row({ origin: 'x', code: 'USD', buy: 0, sell: 0 })], 'x')).toEqual(
+      []
+    )
+  })
+
+  it('honours the limit', () => {
+    const rows = [
+      row({ origin: 'bcu', code: 'UI', buy: 6.6, sell: 6.6 }),
+      row({ origin: 'bcu', code: 'UR', buy: 1923, sell: 1923 }),
+    ]
+    expect(originHeadlineRates(rows, 'bcu', 1)).toHaveLength(1)
+  })
+
+  it('skips wholesale types nobody can transact at', () => {
+    const rows = [
+      row({ origin: 'itau', code: 'USD', type: 'INTERBANCARIO', buy: 40, sell: 40.1 }),
+      row({ origin: 'itau', code: 'EUR', buy: 44, sell: 48 }),
+    ]
+    expect(originHeadlineRates(rows, 'itau').map(r => r.code)).toEqual(['EUR'])
   })
 })

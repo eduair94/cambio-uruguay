@@ -185,7 +185,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useDisplay } from 'vuetify'
-import { pickOriginRate } from '@/utils/rateSource'
+import { originHeadlineRates, pickOriginRate } from '@/utils/rateSource'
 
 interface CambioItem {
   origin: string
@@ -568,12 +568,32 @@ const usdToday = computed(() => {
   const r = pickOriginRate(items.value, route.params.origin as string)
   return r ? { buy: r.buy, sell: r.sell } : null
 })
+// Origins with no dollar are described with what they DO publish rather than
+// with prose. BCU quotes UI/UR/UP and no USD, and it is the biggest page of this
+// kind on the site (15.496 impressions, 0,08% CTR) precisely because its snippet
+// carried no number while every sibling's did — and "precio ur hoy" / "valor de
+// la ur hoy" are themselves live queries this page already ranks for.
+const headlineRates = computed(() =>
+  originHeadlineRates(items.value ?? [], route.params.origin as string, 2)
+)
 const seoDescription = computed(() => {
   const base = t('seo.historicalOriginDescription', { origin: originName.value })
   const u = usdToday.value
-  return u
-    ? `Dólar en ${originName.value} hoy: compra $${formatNumber(u.buy)}, venta $${formatNumber(u.sell)}. ${base}`
-    : base
+  if (u) {
+    return `Dólar en ${originName.value} hoy: compra $${formatNumber(u.buy)}, venta $${formatNumber(u.sell)}. ${base}`
+  }
+  const others = headlineRates.value
+  if (others.length) {
+    // A unit like UI/UR has a single published value (buy === sell), so quoting
+    // "compra/venta" on it would invent a spread that does not exist.
+    const parts = others.map(r =>
+      r.buy === r.sell
+        ? `${r.code} $${formatNumber(r.sell)}`
+        : `${r.code} compra $${formatNumber(r.buy)}, venta $${formatNumber(r.sell)}`
+    )
+    return `${originName.value} hoy: ${parts.join(' · ')}. ${base}`
+  }
+  return base
 })
 
 useSeoMeta({
