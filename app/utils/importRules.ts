@@ -73,6 +73,39 @@ export const SIMPLIFIED_MIN_USD = 20
 export const USA_IVA_EXEMPTION_USD = 200
 
 /**
+ * Floor on the IVA payable by a postal shipment, per shipment.
+ *
+ * Título 10 del T.O. 2023, art. 13 lit. B), inciso 3.º — added by **Ley 20.446 art. 660**, in
+ * force since 1/1/2026 (Ley 20.446 art. 3): "Para las importaciones correspondientes al régimen de
+ * envíos postales internacionales, las tasas se aplicarán sobre el valor de factura o declaración
+ * de valor de mercadería. En ningún caso el monto a pagar por concepto de este impuesto podrá ser
+ * inferior al equivalente a US$ 20 …, salvo que el envío postal esté integrado exclusivamente por
+ * bienes cuya importación se encuentra exonerada de este impuesto."
+ *
+ * It bites in the FRANQUICIA branch — the only branch where IVA is liquidated on its own (LUCIA
+ * even issues separate talones for the prestación única and the IVA). The prestación única has
+ * its OWN US$ 20 minimum in art. 627 inciso 1, so reading art. 660 as belonging to that regime
+ * would make it inoperative. The DNA restates it for the whole régimen de EPI in **RG DNA 11/2026,
+ * Anexo I numeral 27** ("Para las importaciones correspondientes al régimen de EPI …").
+ *
+ * CAVEAT WE OWE THE READER: no consumer-facing official page mentions this floor when explaining
+ * the franquicia — the MEF and DNA FAQs quote the US$ 20 only for the 60% regime, and there is no
+ * official worked example of a taxed franquicia shipment. The norm is unambiguous; the
+ * communication is not. The page says so instead of pretending certainty about the counter.
+ *
+ * The carve-out is what saves a books-only shipment. "Exclusivamente" is strict: one taxed item in
+ * the box and the whole shipment loses it (RG 11/2026 num. 24 states the same rule for
+ * consolidated shipments). Medicines do NOT qualify — they are taxed at the 10% tasa mínima, so a
+ * medicines-only parcel pays the floor.
+ *
+ * Sources:
+ *  - Ley 20.446 art. 660  https://www.impo.com.uy/bases/leyes/20446-2025/660
+ *  - Título 10 art. 13    https://www.impo.com.uy/bases/todgi2023/101-2024/13_T10
+ *  - RG DNA 11/2026       https://www.aduanas.gub.uy/innovaportal/file/28447/1/rg-11_2026.pdf
+ */
+export const POSTAL_IVA_MIN_USD = 20
+
+/**
  * The subset of regime figures that can move — the amounts the backend tracks as facts, plus the
  * October enforcement date. Passing a `rules` overlay to `resolveRegime` / `isSellerRegistryEnforced`
  * lets the live `/api/aduana` values drive the calculator and the semáforo; the constants above are
@@ -86,6 +119,8 @@ export interface RegimeRules {
   simplifiedRatePct: number
   simplifiedMinUsd: number
   usaIvaExemptionUsd: number
+  /** Floor on the IVA of a postal shipment (see {@link POSTAL_IVA_MIN_USD}). */
+  postalIvaMinUsd: number
   /** YYYY-MM-DD */
   sellerRegistryEnforcedFrom: string
 }
@@ -95,6 +130,7 @@ export const DEFAULT_REGIME_RULES: RegimeRules = {
   simplifiedRatePct: SIMPLIFIED_RATE_PCT,
   simplifiedMinUsd: SIMPLIFIED_MIN_USD,
   usaIvaExemptionUsd: USA_IVA_EXEMPTION_USD,
+  postalIvaMinUsd: POSTAL_IVA_MIN_USD,
   sellerRegistryEnforcedFrom: SELLER_REGISTRY_ENFORCED_FROM,
 }
 
@@ -150,8 +186,14 @@ export const CHANNEL_LABEL: Record<ArrivalChannel, string> = {
   'postal-simple': 'correo no exprés (PP, SIMPLE)',
 }
 
-/** Which regime a shipment falls under. They are ALTERNATIVE, never combined. */
-export type CourierRegime = 'franquicia' | 'simplificado' | 'general'
+/**
+ * Which regime a shipment falls under. They are ALTERNATIVE, never combined.
+ *
+ * `exonerado` is not a fourth regime of the decree: it is the case where the MERCHANDISE carries
+ * its own exoneration from every tax the import could trigger (books — Título 10 art. 41, Ley
+ * 15.913 art. 8), so no regime has anything left to charge. It short-circuits the other three.
+ */
+export type CourierRegime = 'franquicia' | 'simplificado' | 'general' | 'exonerado'
 
 /** Where the invoice was issued — drives the TIFA exoneration. */
 export type ImportOrigin = 'usa' | 'other'
@@ -176,6 +218,17 @@ export interface RegimeInput {
   shipmentsUsed: number
   /** Whether the reader asked to use their franchise on this shipment. */
   useFranchise: boolean
+  /**
+   * How far the merchandise's own import exoneration reaches. `'todo-tributo'` (books and
+   * educational material) short-circuits every regime: there is no tax to charge.
+   */
+  exemption?: 'none' | 'iva' | 'todo-tributo'
+  /**
+   * The goods are excepted from the USD 800 annual cap (Decreto 50/026 art. 4, inciso final:
+   * libros y medicamentos de uso personal con autorización del MSP), so a shipment of them does
+   * not eat the reader's balance.
+   */
+  franchiseCapExempt?: boolean
   /**
    * How the parcel arrives. Defaults to `'courier'` — the historical behaviour of this module,
    * so every existing caller keeps its result until it opts in.
@@ -273,6 +326,27 @@ export function resolveRegime(
   const overWeight = weight > MAX_WEIGHT_KG
   const overValue = value > rules.franchiseAnnualUsd
 
+  // The merchandise carries its own exoneration of EVERY tax the import can trigger. This is
+  // decided BEFORE the regimes, because it survives all of them: the prestación única is an
+  // option the taxpayer "podrá optar por pagar" (Ley 20.446 art. 627), not a tax that displaces
+  // an exoneration granted by law. The 20 kg ceiling still applies — it is a ceiling on the
+  // postal REGIME, not on the exoneration, so an over-weight parcel of books is exonerated but
+  // needs a formal despacho.
+  if (input.exemption === 'todo-tributo' && !overWeight) {
+    reasons.push(
+      'La importación de libros y material educativo está exonerada de todo tributo nacional, incluidos los gravámenes aduaneros y las tasas consulares (Título 10 del T.O. 2023, art. 41; Ley 15.913 art. 8).'
+    )
+    reasons.push(
+      `Tampoco corre el mínimo de US$ ${rules.postalIvaMinUsd} de IVA: no se aplica cuando el envío está integrado exclusivamente por bienes cuya importación está exonerada (Título 10, art. 13 lit. B).`
+    )
+    if (overValue) {
+      reasons.push(
+        `El envío supera los US$ ${rules.franchiseAnnualUsd} del régimen postal. La exoneración del libro no depende de ese tope, pero las normas no están armonizadas: la Ley 15.913 art. 8 dispensa del despachante hasta US$ 1.000 de factura por envíos postales, y el régimen postal se corta en US$ ${rules.franchiseAnnualUsd}. Consultá a la Aduana antes de comprar.`
+      )
+    }
+    return { regime: 'exonerado', ivaExempt: true, reasons, registryEnforced }
+  }
+
   if (overValue || overWeight) {
     if (overValue) {
       reasons.push(
@@ -293,14 +367,30 @@ export function resolveRegime(
     }
   }
 
-  const franchiseFits = input.franchiseAvailableUsd >= value
-  const shipmentsLeft = input.shipmentsUsed < FRANCHISE_MAX_SHIPMENTS
+  // Books and MSP-authorised personal medicines are excepted from the USD 800 cap (Decreto 50/026
+  // art. 4, inciso final) AND from the 3-shipment count: RG DNA 11/2026 num. 26 excepts them from
+  // num. 25 lit. b) V, the requirement that carries BOTH limits ("Hasta 3 envíos por año civil …
+  // no debiendo la sumatoria … exceder los US$ 800 … anuales"), and from lit. b) VI (the duty to
+  // document the value). The DNA says the same in prose: books enter "sin restricción de
+  // frecuencia en el año civil siempre y cuando el valor de factura no supere los USD 1.000".
+  const capExempt = input.franchiseCapExempt === true
+  const franchiseFits = capExempt || input.franchiseAvailableUsd >= value
+  const shipmentsLeft = capExempt || input.shipmentsUsed < FRANCHISE_MAX_SHIPMENTS
   const useFranchise = input.useFranchise && franchiseFits && shipmentsLeft
   const partialFranchiseUnverified =
-    input.useFranchise && shipmentsLeft && !franchiseFits && input.franchiseAvailableUsd > 0
+    input.useFranchise &&
+    shipmentsLeft &&
+    !franchiseFits &&
+    !capExempt &&
+    input.franchiseAvailableUsd > 0
 
   if (input.useFranchise && !shipmentsLeft) {
     reasons.push(`Ya usaste los ${FRANCHISE_MAX_SHIPMENTS} envíos con franquicia del año.`)
+  }
+  if (input.useFranchise && capExempt) {
+    reasons.push(
+      `No consume el cupo: ni los US$ ${rules.franchiseAnnualUsd} del año ni los ${FRANCHISE_MAX_SHIPMENTS} envíos. El Decreto 50/026 art. 4 exceptúa del tope a los libros y a los medicamentos de uso personal autorizados por el MSP, y la RG DNA 11/2026 (num. 26) los exceptúa del requisito que contiene los dos límites.`
+    )
   }
   if (input.useFranchise && shipmentsLeft && !franchiseFits) {
     reasons.push(

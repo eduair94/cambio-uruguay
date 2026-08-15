@@ -191,6 +191,8 @@ describe('computeCart — basket-level shipment rules', () => {
 
 describe('computeCart — general regime', () => {
   it('applies CIF + tasa consular + IVA per the general import math', () => {
+    // Título 10 art. 13 lit. B: la tasa consular NO integra la base del IVA, y un particular
+    // liquida sobre (valor en aduana + arancel) incrementado un 50%.
     const items = [item({ id: 'a', priceUsd: 1000, categoryId: 'general' })]
     const settings: CartSettings = {
       regime: 'general',
@@ -198,8 +200,8 @@ describe('computeCart — general regime', () => {
       tasaConsularPct: 5,
     }
     const r = computeCart(items, settings)
-    expect(r.totalTaxUsd).toBe(281) // 50 tasa consular + 231 IVA
-    expect(r.landedCostUsd).toBe(1281)
+    expect(r.totalTaxUsd).toBe(380) // 50 tasa consular + 330 IVA (22% sobre 1500)
+    expect(r.landedCostUsd).toBe(1380)
   })
 })
 

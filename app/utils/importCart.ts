@@ -17,6 +17,7 @@ import { generalImport, type ImportTaxResult, type TaxLine } from './importTax'
 import {
   FRANCHISE_ANNUAL_USD,
   MAX_WEIGHT_KG,
+  POSTAL_IVA_MIN_USD,
   SIMPLIFIED_MIN_USD,
   SIMPLIFIED_RATE_PCT,
   USA_IVA_EXEMPTION_USD,
@@ -168,11 +169,25 @@ export function computeCart(items: CartItem[], settings: CartSettings): CartResu
     }
   }
 
+  // Exoneraciones de la MERCADERÍA, decididas para el envío entero porque así las decide la norma:
+  // el mínimo de IVA no corre "cuando el envío esté integrado EXCLUSIVAMENTE por bienes cuya
+  // importación se encuentra exonerada" (Título 10 art. 13 lit. B), y el tope de US$ 800 se
+  // exceptúa por mercadería (Decreto 50/026 art. 4). Un carrito mixto no califica: alcanza con un
+  // producto gravado para que el envío deje de ser "exclusivamente" exonerado.
+  const exemptLines = taxable.filter(
+    l => resolveProductTax(l.productType).exemption === 'todo-tributo'
+  )
+  const allExempt = taxable.length > 0 && exemptLines.length === taxable.length
+  const allCapExempt =
+    taxable.length > 0 && taxable.every(l => resolveProductTax(l.productType).franchiseCapExempt)
+
   // ONE regime decision for the whole shipment.
   const decision =
     settings.regime === 'courier'
       ? resolveRegime({
           valueUsd: taxableSubtotalUsd,
+          exemption: allExempt ? 'todo-tributo' : 'none',
+          franchiseCapExempt: allCapExempt,
           // The basket is ONE shipment, so its weights add up against the same 20 kg ceiling as
           // its values do against the USD 800 one. Items without a weight contribute 0, so a
           // basket nobody weighed is priced exactly as before.
@@ -205,6 +220,19 @@ export function computeCart(items: CartItem[], settings: CartSettings): CartResu
     if (basketSimplified > 0 && basketSimplified < minTax) basketSimplified = minTax
   }
 
+  // Un carrito mixto con libros adentro pierde plata: bajo prestación única el 60% se calcula
+  // sobre el valor del envío y ninguna fuente publica un mecanismo para descontar de esa base la
+  // mercadería exonerada. Separar el envío sí es una decisión del comprador.
+  if (decision?.regime === 'simplificado' && exemptLines.length > 0 && !allExempt) {
+    warnings.push(
+      `El envío incluye mercadería exonerada de todo tributo (${exemptLines
+        .map(l => l.item.name)
+        .join(
+          ', '
+        )}) mezclada con mercadería gravada: la prestación única del ${ratePct}% se calcula sobre el valor del envío. Enviarla por separado la deja en cero.`
+    )
+  }
+
   for (const line of taxable) {
     const { ivaPct, imesiApplies } = resolveProductTax(line.productType)
     if (settings.regime === 'courier') {
@@ -212,7 +240,9 @@ export function computeCart(items: CartItem[], settings: CartSettings): CartResu
       let lineTax = 0
       const breakdown: TaxLine[] = [{ label: 'Mercadería', amount: line.lineValueUsd }]
 
-      if (decision?.regime === 'franquicia') {
+      if (decision?.regime === 'exonerado') {
+        breakdown.push({ label: 'Exonerada de todo tributo a la importación', amount: 0 })
+      } else if (decision?.regime === 'franquicia') {
         lineTax = decision.ivaExempt ? 0 : round((line.lineValueUsd * ivaPct) / 100)
         breakdown.push({
           label: decision.ivaExempt
@@ -250,7 +280,17 @@ export function computeCart(items: CartItem[], settings: CartSettings): CartResu
   // Rounding each line's share can drift a cent or two off the shipment's single tax; the
   // shipment figure is the legal one, so it wins.
   const lineSum = round(taxable.reduce((s, l) => s + (l.tax?.totalTax ?? 0), 0))
-  const totalTaxUsd = decision?.regime === 'simplificado' ? basketSimplified : lineSum
+  let totalTaxUsd = decision?.regime === 'simplificado' ? basketSimplified : lineSum
+
+  // El piso de IVA del régimen postal es POR ENVÍO, no por línea: se aplica al total del carrito
+  // (Título 10 art. 13 lit. B). No corre si el envío es exclusivamente de bienes exonerados —
+  // ese caso ya salió por `exonerado` más arriba.
+  if (decision?.regime === 'franquicia' && totalTaxUsd > 0 && totalTaxUsd < POSTAL_IVA_MIN_USD) {
+    warnings.push(
+      `El IVA del envío da US$ ${totalTaxUsd}, pero el mínimo legal por envío postal es US$ ${POSTAL_IVA_MIN_USD} (Título 10 del T.O. 2023, art. 13 lit. B): se cobra el mínimo.`
+    )
+    totalTaxUsd = POSTAL_IVA_MIN_USD
+  }
   const shippingUsd = round(Math.max(settings.shippingUsd ?? 0, 0))
   const landedCostUsd = round(taxableSubtotalUsd + totalTaxUsd + shippingUsd)
   const rate = settings.usdToUyu

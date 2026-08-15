@@ -317,15 +317,32 @@ describe('courierShipping', () => {
 })
 
 describe('generalImport', () => {
-  it('computes CIF, arancel, tasa consular and IVA over the right base', () => {
-    // CIF = 1000; arancel 0; tasa consular 5% = 50; IVA base = 1050; IVA 22% = 231
+  // Título 10 del T.O. 2023, art. 13 lit. B): la base del IVA en la importación es "el valor
+  // normal de aduana más el arancel" — la tasa consular NO entra — y "si la importación se
+  // efectuara … por no contribuyentes, la referida suma será incrementada en un 50%".
+  it('leaves the tasa consular OUT of the IVA base and upgrades the base 50% for a private importer', () => {
+    // CIF 1000; arancel 0; tasa consular 5% = 50 (fuera de la base);
+    // base IVA = 1000 × 1,5 = 1500; IVA 22% = 330; total = 380.
     const r = generalImport({ value: 1000, arancelPct: 0, tasaConsularPct: 5, ivaPct: 22 })
-    expect(r.taxableBase).toBe(1050)
-    expect(r.totalTax).toBe(281) // 50 + 231
-    expect(r.landedCost).toBe(1281)
+    expect(r.taxableBase).toBe(1500)
+    expect(r.totalTax).toBe(380)
+    expect(r.landedCost).toBe(1380)
   })
 
-  it('adds arancel and IMESI into the IVA base', () => {
+  it('drops the 50% uplift when the importer is an IVA taxpayer', () => {
+    // Misma operación con RUT: base 1000, IVA 220, total 270.
+    const r = generalImport({
+      value: 1000,
+      arancelPct: 0,
+      tasaConsularPct: 5,
+      ivaPct: 22,
+      contribuyente: true,
+    })
+    expect(r.taxableBase).toBe(1000)
+    expect(r.totalTax).toBe(270)
+  })
+
+  it('adds the arancel into the IVA base before the uplift', () => {
     const r = generalImport({
       value: 1000,
       arancelPct: 10,
@@ -333,13 +350,42 @@ describe('generalImport', () => {
       imesiPct: 0,
       ivaPct: 22,
     })
-    // arancel 100, IVA base 1100, IVA 242, total 342
-    expect(r.taxableBase).toBe(1100)
-    expect(r.totalTax).toBe(342)
+    // arancel 100; base (1000 + 100) × 1,5 = 1650; IVA 363; total 463.
+    expect(r.taxableBase).toBe(1650)
+    expect(r.totalTax).toBe(463)
+  })
+
+  it('keeps IMESI out of the IVA base and prices it on the same uplifted base', () => {
+    // Decreto 96/990 art. 11 num. I: cosméticos/vehículos/lubricantes importados por un no
+    // contribuyente liquidan IMESI sobre (valor en aduana + arancel) +50%. El IMESI no integra
+    // la base del IVA: el art. 13 lit. B) sólo nombra el valor en aduana y el arancel.
+    const r = generalImport({
+      value: 1000,
+      arancelPct: 0,
+      tasaConsularPct: 0,
+      imesiPct: 10,
+      ivaPct: 22,
+    })
+    // base 1500; IMESI 150; IVA 330; total 480.
+    expect(r.totalTax).toBe(480)
+  })
+
+  it('returns zero for merchandise exonerated of every national tax (books)', () => {
+    // Título 10 art. 41 y Ley 15.913 art. 8: la importación de obras literarias y material
+    // educativo está exonerada de todo tributo nacional, aranceles y tasas consulares.
+    const r = generalImport({
+      value: 500,
+      arancelPct: 10,
+      tasaConsularPct: 5,
+      ivaPct: 0,
+      exemptAllTaxes: true,
+    })
+    expect(r.totalTax).toBe(0)
+    expect(r.landedCost).toBe(500)
   })
 
   it('reports an effective rate over the goods value', () => {
     const r = generalImport({ value: 1000, tasaConsularPct: 5, ivaPct: 22 })
-    expect(r.effectiveRatePct).toBeCloseTo(28.1, 1)
+    expect(r.effectiveRatePct).toBeCloseTo(38, 1)
   })
 })

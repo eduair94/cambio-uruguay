@@ -77,7 +77,11 @@ describe('courierImport with Correo handling', () => {
     expect(round2(r.totalTax + (r.handlingFee ?? 0))).toBe(22.5)
   })
 
-  it('prices the franquicia alternative for the same parcel: IVA 22% + 1,50 flat', () => {
+  // OJO con la tentación de creer que la franquicia lo arregla: el IVA de un envío postal tiene
+  // piso legal de US$ 20 (Título 10 art. 13 lit. B, inciso agregado por la Ley 20.446 art. 660),
+  // así que 22% de 19,15 = 4,21 sube igual a 20. Antes de esa corrección esta prueba fijaba 4,21
+  // y publicaba un ahorro que no existía.
+  it('applies the statutory IVA floor to the franquicia alternative for the same parcel', () => {
     const r = courierImport({
       value: 19.15,
       origin: 'other',
@@ -87,12 +91,14 @@ describe('courierImport with Correo handling', () => {
       today: TODAY,
     })
     expect(r.regime).toBe('franquicia')
-    expect(r.totalTax).toBe(4.21)
+    expect(r.totalTax).toBe(20)
     expect(r.handlingFee).toBe(1.5)
+    expect(round2(r.totalTax + (r.handlingFee ?? 0))).toBe(21.5)
   })
 
-  // The fix we publish: editing the same retained declaration into franquicia. 26,00 → 9,21.
-  it('prices the franquicia fix on the already-retained parcel at US$ 9,21', () => {
+  // El arreglo que seguíamos publicando —declarar la franquicia sobre el envío ya retenido—
+  // ahorra un dólar, no dieciséis: 25 contra 26.
+  it('prices the franquicia fix on the already-retained parcel at US$ 25', () => {
     const fixed = courierImport({
       value: 19.15,
       origin: 'other',
@@ -103,9 +109,27 @@ describe('courierImport with Correo handling', () => {
     })
     expect(fixed.regime).toBe('franquicia')
     expect(fixed.ivaExempt).toBe(false) // China: la exoneración TIFA es sólo para EE.UU.
-    expect(fixed.totalTax).toBe(4.21)
+    expect(fixed.totalTax).toBe(20) // piso legal del IVA, no 22% de 19,15
     expect(fixed.handlingFee).toBe(HANDLING_AFTER_ARRIVAL_USD) // sin el 5% por franquicia
-    expect(round2(fixed.totalTax + (fixed.handlingFee ?? 0))).toBe(9.21)
+    expect(round2(fixed.totalTax + (fixed.handlingFee ?? 0))).toBe(25)
+  })
+
+  // Y un envío de puros libros sí queda en cero: el piso no corre "cuando el envío esté
+  // integrado exclusivamente por bienes cuya importación se encuentra exonerada".
+  it('leaves a books-only parcel at zero tax, floor included', () => {
+    const books = courierImport({
+      value: 19.15,
+      origin: 'other',
+      channel: 'postal-simple',
+      useFranchise: true,
+      exemption: 'todo-tributo',
+      franchiseCapExempt: true,
+      ivaPct: 0,
+      declarationTiming: 'after-arrival',
+      today: TODAY,
+    })
+    expect(books.regime).toBe('exonerado')
+    expect(books.totalTax).toBe(0)
   })
 
   it('leaves the fee out for private couriers and when the timing is unknown', () => {

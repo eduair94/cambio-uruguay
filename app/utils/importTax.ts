@@ -124,6 +124,13 @@ export interface CourierInput {
   minTax?: number
   /** IVA rate (%); defaults to the 22% basic rate (some goods pay the 10% minimum rate). */
   ivaPct?: number
+  /**
+   * How far the merchandise's own import exoneration reaches (see `importProductTypes`).
+   * `'todo-tributo'` (libros, material educativo) zeroes the shipment under every regime.
+   */
+  exemption?: 'none' | 'iva' | 'todo-tributo'
+  /** Goods excepted from the USD 800 annual cap (Decreto 50/026 art. 4): libros y medicamentos. */
+  franchiseCapExempt?: boolean
   /** Resolution date — injectable so the dated rules are testable. */
   today?: Date
 }
@@ -184,6 +191,8 @@ export function courierImport(
       useFranchise: input.useFranchise ?? false,
       sellerRegistered: input.sellerRegistered,
       channel: input.channel,
+      exemption: input.exemption,
+      franchiseCapExempt: input.franchiseCapExempt,
       today: input.today,
     },
     rules
@@ -199,7 +208,14 @@ export function courierImport(
   let iva = 0
   let simplified = 0
 
-  if (decision.regime === 'franquicia') {
+  if (decision.regime === 'exonerado') {
+    // La mercadería trae su propia exoneración de todo tributo: no hay base que gravar. No es
+    // "franquicia con IVA 0" — no consume cupo ni depende del régimen elegido.
+    breakdown.push({
+      label: 'Importación exonerada de todo tributo (Título 10 art. 41; Ley 15.913 art. 8)',
+      amount: 0,
+    })
+  } else if (decision.regime === 'franquicia') {
     iva = decision.ivaExempt ? 0 : round((invoiceValue * ivaPct) / 100)
     breakdown.push({ label: 'Franquicia anual (exenta de aranceles)', amount: -invoiceValue })
     breakdown.push({
@@ -208,6 +224,16 @@ export function courierImport(
         : `IVA (${ivaPct}%) sobre el valor de la factura`,
       amount: iva,
     })
+    // Piso legal del IVA en el régimen postal: Título 10 art. 13 lit. B, inciso 3.º. No corre
+    // cuando el envío está integrado exclusivamente por bienes exonerados — de ahí el `iva > 0`.
+    if (iva > 0 && iva < rules.postalIvaMinUsd) {
+      const topUp = round(rules.postalIvaMinUsd - iva)
+      breakdown.push({
+        label: `Mínimo legal de IVA por envío (US$ ${rules.postalIvaMinUsd}, Título 10 art. 13 lit. B)`,
+        amount: topUp,
+      })
+      iva = round(rules.postalIvaMinUsd)
+    }
   } else if (decision.regime === 'simplificado') {
     simplified = round((invoiceValue * ratePct) / 100)
     if (simplified > 0 && simplified < minTax) simplified = minTax
@@ -265,28 +291,58 @@ export function courierImport(
   }
 }
 
+/**
+ * Uplift applied to the IVA base when the importer is NOT an IVA taxpayer — i.e. every private
+ * person using this calculator. Título 10 del T.O. 2023, art. 13 lit. B): "Si la importación se
+ * efectuara a nombre propio y por cuenta ajena, o por no contribuyentes, la referida suma será
+ * incrementada en un 50% (cincuenta por ciento) a los efectos de la liquidación del tributo."
+ * (Decreto 220/998 art. 134 reglamenta lo mismo.)
+ */
+export const NON_TAXPAYER_BASE_UPLIFT = 0.5
+
 /** Inputs for the general import regime (importación formal). */
 export interface GeneralImportInput {
   /** FOB / merchandise value. */
   value: number
-  /** Freight to Uruguay. */
+  /** Freight to Uruguay — part of the customs value (CIF). */
   shipping?: number
-  /** Insurance. */
+  /** Insurance — part of the customs value (CIF). */
   insurance?: number
   /** Arancel / Tasa Global Arancelaria (%); 0 for many Mercosur-origin goods. */
   arancelPct?: number
-  /** Tasa consular (%) on CIF; commonly ~5% extrazona. */
+  /** Tasa consular (%) on the customs value; 5% general, 3% for Mercosur/ACE 18. */
   tasaConsularPct?: number
   /** IVA rate (%); defaults to the 22% general rate. */
   ivaPct?: number
-  /** Optional IMESI (%) for specific goods (vehicles, alcohol, tobacco, etc.). */
+  /** Optional IMESI (%) for specific goods (cosmetics, vehicles, lubricants). */
   imesiPct?: number
+  /**
+   * Is the importer an IVA taxpayer (a company with RUT)? Defaults to `false` — a private person,
+   * which is who uses this calculator — and that is what triggers the 50% base uplift above.
+   */
+  contribuyente?: boolean
+  /** The merchandise is exonerated of every national tax on import (books). */
+  exemptAllTaxes?: boolean
 }
 
 /**
- * General-regime calculation: CIF = value + freight + insurance; arancel and
- * tasa consular apply over CIF; IVA applies over (CIF + arancel + tasa consular);
- * optional IMESI applies over the same pre-IVA base.
+ * General-regime (importación formal) calculation.
+ *
+ * Valor en aduana = CIF (Norma de aplicación Mercosur sobre valoración, Decreto 538/008 art. 5:
+ * includes freight to the place of import, handling and insurance). On top of it:
+ *
+ *  - ARANCEL (TGA) over the customs value.
+ *  - TASA CONSULAR over the customs value — Ley 19.535 art. 265: 5%, or 3% under ACE 18
+ *    (Mercosur). It is NOT part of the IVA base.
+ *  - IVA over (customs value + arancel), and that sum is increased 50% for a non-taxpayer
+ *    importer (Título 10 art. 13 lit. B). The tasa consular and the IMESI do NOT belong in this
+ *    base — the article names only "el valor normal de aduana más el arancel". The previous
+ *    version of this function added both, and understated the base for every private importer.
+ *  - IMESI, when it applies. For cosmetics/perfumery, vehicles and lubricants imported by a
+ *    non-taxpayer the base is the same uplifted (customs value + arancel) sum (Decreto 96/990
+ *    art. 11 num. I). Alcohol and tobacco are assessed on ADMINISTRATIVE FICTO PRICES
+ *    (Título 11 art. 15), which no percentage of the invoice can reproduce — the caller must not
+ *    pass an `imesiPct` for those, and the page says so.
  */
 export function generalImport(input: GeneralImportInput): ImportTaxResult {
   const value = Math.max(input.value || 0, 0)
@@ -298,12 +354,33 @@ export function generalImport(input: GeneralImportInput): ImportTaxResult {
   const tasaConsularPct = Math.max(input.tasaConsularPct ?? 5, 0)
   const ivaPct = input.ivaPct ?? URUGUAY.iva.basica
   const imesiPct = Math.max(input.imesiPct ?? 0, 0)
+  const uplift = input.contribuyente ? 1 : 1 + NON_TAXPAYER_BASE_UPLIFT
+
+  // Libros y material educativo: exonerados de todo tributo nacional, gravámenes aduaneros y
+  // tasas consulares (Título 10 art. 41; Ley 15.913 art. 8). No hay nada que liquidar.
+  if (input.exemptAllTaxes) {
+    return {
+      taxableBase: 0,
+      totalTax: 0,
+      landedCost: round(cif),
+      effectiveRatePct: value > 0 ? 0 : null,
+      breakdown: [
+        { label: 'Valor CIF (mercadería + flete + seguro)', amount: round(cif) },
+        {
+          label: 'Importación exonerada de todo tributo (Título 10 art. 41; Ley 15.913 art. 8)',
+          amount: 0,
+        },
+      ],
+    }
+  }
 
   const arancel = round((cif * arancelPct) / 100)
   const tasaConsular = round((cif * tasaConsularPct) / 100)
-  const imesi = round((cif * imesiPct) / 100)
-  const ivaBase = cif + arancel + tasaConsular + imesi
-  const iva = round((ivaBase * ivaPct) / 100)
+  // Base común del IVA y del IMESI de importación por no contribuyente: (valor en aduana +
+  // arancel), incrementada un 50%.
+  const upliftedBase = round((cif + arancel) * uplift)
+  const imesi = round((upliftedBase * imesiPct) / 100)
+  const iva = round((upliftedBase * ivaPct) / 100)
 
   const totalTax = round(arancel + tasaConsular + imesi + iva)
 
@@ -312,12 +389,21 @@ export function generalImport(input: GeneralImportInput): ImportTaxResult {
   ]
   if (arancelPct > 0) breakdown.push({ label: `Arancel (${arancelPct}%)`, amount: arancel })
   if (tasaConsularPct > 0)
-    breakdown.push({ label: `Tasa consular (${tasaConsularPct}%)`, amount: tasaConsular })
-  if (imesiPct > 0) breakdown.push({ label: `IMESI (${imesiPct}%)`, amount: imesi })
-  breakdown.push({ label: `IVA (${ivaPct}%)`, amount: iva })
+    breakdown.push({
+      label: `Tasa consular (${tasaConsularPct}% del valor en aduana)`,
+      amount: tasaConsular,
+    })
+  // La base va en la ETIQUETA, no en una línea propia: una línea con el monto de la base se lee
+  // como un cargo más y el total dejaría de cerrar a ojo.
+  const baseLabel = input.contribuyente
+    ? 'valor en aduana + arancel'
+    : 'valor en aduana + arancel, +50% por importar como particular'
+  if (imesiPct > 0)
+    breakdown.push({ label: `IMESI (${imesiPct}% sobre ${baseLabel})`, amount: imesi })
+  breakdown.push({ label: `IVA (${ivaPct}% sobre ${baseLabel})`, amount: iva })
 
   return {
-    taxableBase: round(ivaBase),
+    taxableBase: round(upliftedBase),
     totalTax,
     landedCost: round(cif + totalTax),
     effectiveRatePct: value > 0 ? round((totalTax / value) * 100, 2) : null,

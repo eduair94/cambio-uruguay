@@ -177,6 +177,12 @@
             carrito de importación </NuxtLink
           >.
         </p>
+        <p class="text-caption text-medium-emphasis mt-2 mb-0">
+          <VIcon size="14" class="mr-1">mdi-package-variant-closed</VIcon>
+          Lo que pagás también depende de <em>qué</em> comprás: hay mercadería exonerada de todo
+          tributo y otra que directamente no entra por este régimen.
+          <NuxtLink :to="localePath('/importar')">Ver el detalle por categoría</NuxtLink>.
+        </p>
       </VCard>
     </section>
 
@@ -610,7 +616,13 @@ const taxLine = computed(() => {
       : `Impuesto estimado: US$ ${tax.toFixed(2)}`
   }
   if (d.ivaExempt) return 'Impuesto estimado: US$ 0,00'
+  // El IVA de un envío postal tiene piso legal por envío (Título 10 art. 13 lit. B, inciso
+  // agregado por la Ley 20.446 art. 660; RG DNA 11/2026 Anexo I num. 27). En compras chicas el
+  // piso ES el impuesto, y decir "IVA 22% = US$ 4,21" era prometer un número que no se cobra.
   const iva = (v * URUGUAY.iva.basica) / 100
+  if (v > 0 && iva < rules.value.postalIvaMinUsd) {
+    return `IVA estimado: US$ ${rules.value.postalIvaMinUsd.toFixed(2)} — el ${URUGUAY.iva.basica}% da US$ ${iva.toFixed(2)}, por debajo del mínimo legal por envío`
+  }
   return `IVA estimado (${URUGUAY.iva.basica}%): US$ ${iva.toFixed(2)}`
 })
 
@@ -786,9 +798,9 @@ const faqs = [
   },
   {
     q: 'Declaré US$ 19,15 y el Correo me pide US$ 26. ¿Cómo puede costar más que el producto?',
-    a: 'Porque son dos cosas sumadas y ninguna es un error. Sin franquicia, el envío paga la <strong>prestación única</strong>: 60% de 19,15 son 11,49, por debajo del piso, así que el tributo es el <strong>mínimo de US$ 20</strong>, que corre <em>por envío</em> y no baja porque el producto sea barato. Encima va el <strong>cargo administrativo del Correo</strong>, que publica en su página de <a href="https://www.correo.com.uy/gestiones-administrativas-envios-exterior" target="_blank" rel="noopener noreferrer">gestiones administrativas</a>: <strong>US$ 1,50 + 5% del impuesto</strong> si declarás antes de que el envío llegue, o <strong>US$ 5 + 5%</strong> si lo registrás cuando ya arribó (dentro de los 10 días de la notificación de retención). Con franquicia, ese 5% no se aplica. Veinte, más cinco, más uno: <strong>US$ 26</strong>. Declarándolo antes del arribo habrían sido US$ 22,50. Qué se cobra entre el día 11 y el 30 no está publicado, y a los 30 días el envío cae en abandono. <strong>¿Se puede arreglar?</strong> Si todavía no pagaste, sí: mientras el pago figura pendiente la fila del envío en Ahíva ofrece <strong>Editar</strong> y <strong>Borrar</strong>; al marcar franquicia te pide el medio de pago y tenés que cumplir el art. 4 (persona física, uso personal, comprador = titular del pago = destinatario). Sobre ese mismo paquete desde China la franquicia no exime del IVA, así que quedaría en 22% de 19,15 = <strong>US$ 4,21</strong> más el cargo base sin el 5%: <strong>US$ 9,21</strong> con el envío retenido. Si ya pagaste, ninguna fuente oficial publica recálculo ni devolución: sólo queda reclamar (0800 2108, info@aduanas.gub.uy). Y pensalo: te ahorra unos US$ 17 pero quema uno de los 3 envíos del año.',
+    a: 'Porque son dos cosas sumadas y ninguna es un error. Sin franquicia, el envío paga la <strong>prestación única</strong>: 60% de 19,15 son 11,49, por debajo del piso, así que el tributo es el <strong>mínimo de US$ 20</strong>, que corre <em>por envío</em> y no baja porque el producto sea barato. Encima va el <strong>cargo administrativo del Correo</strong>, que publica en su página de <a href="https://www.correo.com.uy/gestiones-administrativas-envios-exterior" target="_blank" rel="noopener noreferrer">gestiones administrativas</a>: <strong>US$ 1,50 + 5% del impuesto</strong> si declarás antes de que el envío llegue, o <strong>US$ 5 + 5%</strong> si lo registrás cuando ya arribó (dentro de los 10 días de la notificación de retención). Con franquicia, ese 5% no se aplica. Veinte, más cinco, más uno: <strong>US$ 26</strong>. Declarándolo antes del arribo habrían sido US$ 22,50. Qué se cobra entre el día 11 y el 30 no está publicado, y a los 30 días el envío cae en abandono. <strong>¿Se puede arreglar?</strong> Si todavía no pagaste, sí: mientras el pago figura pendiente la fila del envío en Ahíva ofrece <strong>Editar</strong> y <strong>Borrar</strong>; al marcar franquicia te pide el medio de pago y tenés que cumplir el art. 4 (persona física, uso personal, comprador = titular del pago = destinatario). Sobre ese mismo paquete desde China la franquicia no exime del IVA, y ojo con la cuenta: el 22% de 19,15 da 4,21, pero el IVA de un envío postal <strong>no puede ser menor a US$ 20</strong> (Título 10, art. 13 lit. B, inciso agregado por el art. 660 de la Ley 20.446, y Resolución General 11/2026 de Aduanas, Anexo I num. 27). O sea: <strong>US$ 20</strong> más el cargo base sin el 5% = <strong>US$ 25</strong> con el envío retenido, contra US$ 26 por prestación única. Te ahorra <strong>un dólar</strong> y quema uno de los 3 envíos del año: no vale la pena. Si ya pagaste, ninguna fuente oficial publica recálculo ni devolución: sólo queda reclamar (0800 2108, info@aduanas.gub.uy).',
     aText:
-      'Son dos cosas sumadas. Sin franquicia el envío paga la prestación única: 60% de 19,15 da 11,49, por debajo del piso, así que el tributo es el mínimo de US$ 20, que corre por envío. Encima va el cargo administrativo del Correo: US$ 1,50 más 5% del impuesto si declarás antes del arribo, o US$ 5 más 5% si lo registrás con el paquete ya llegado, dentro de los 10 días de la notificación de retención; con franquicia el 5% no se aplica. Veinte más cinco más uno son US$ 26; declarando antes habrían sido US$ 22,50. El tramo entre el día 11 y el 30 no está publicado y a los 30 días el envío cae en abandono. Se puede arreglar mientras no hayas pagado: la fila del envío en Ahíva ofrece Editar y Borrar, y al marcar franquicia te pide el medio de pago y hay que cumplir el art. 4. Sobre ese paquete desde China la franquicia no exime del IVA: quedaría en 22% de 19,15, unos US$ 4,21, más el cargo base sin el 5%, o sea US$ 9,21 con el envío retenido. Si ya pagaste, ninguna fuente oficial publica recálculo ni devolución y sólo queda reclamar. Ahorra unos US$ 17 pero consume uno de los 3 envíos del año.',
+      'Son dos cosas sumadas. Sin franquicia el envío paga la prestación única: 60% de 19,15 da 11,49, por debajo del piso, así que el tributo es el mínimo de US$ 20, que corre por envío. Encima va el cargo administrativo del Correo: US$ 1,50 más 5% del impuesto si declarás antes del arribo, o US$ 5 más 5% si lo registrás con el paquete ya llegado, dentro de los 10 días de la notificación de retención; con franquicia el 5% no se aplica. Veinte más cinco más uno son US$ 26; declarando antes habrían sido US$ 22,50. El tramo entre el día 11 y el 30 no está publicado y a los 30 días el envío cae en abandono. Se puede arreglar mientras no hayas pagado: la fila del envío en Ahíva ofrece Editar y Borrar, y al marcar franquicia te pide el medio de pago y hay que cumplir el art. 4. Sobre ese paquete desde China la franquicia no exime del IVA, y el IVA de un envío postal no puede ser menor a US$ 20 (Título 10 art. 13 lit. B, inciso agregado por el art. 660 de la Ley 20.446, y RG 11/2026 de Aduanas, Anexo I num. 27): serían US$ 20 más el cargo base sin el 5%, o sea US$ 25 con el envío retenido, contra US$ 26 por prestación única. Ahorra un dólar y consume uno de los 3 envíos del año, así que no vale la pena. Si ya pagaste, ninguna fuente oficial publica recálculo ni devolución y sólo queda reclamar.',
   },
   {
     q: '¿Qué datos de la tarjeta tengo que dar al declarar?',

@@ -171,7 +171,44 @@
         >
           Trámite: {{ ORGANISM_LABEL[proc.organism] }}
         </VChip>
+        <VChip
+          v-if="productType.categorySlug"
+          size="small"
+          variant="tonal"
+          color="primary"
+          prepend-icon="mdi-information-outline"
+          :to="localePath(`/importar/${productType.categorySlug}`)"
+          link
+        >
+          Ficha completa de esta categoría
+        </VChip>
       </div>
+
+      <!-- La mercadería trae su propia exoneración: el resultado es 0 y hay que decir POR QUÉ, o
+           el lector cree que la calculadora se rompió. Es el caso del libro. -->
+      <VAlert
+        v-if="result.regime === 'exonerado'"
+        type="success"
+        variant="tonal"
+        density="comfortable"
+        class="mb-3"
+        icon="mdi-check-decagram-outline"
+      >
+        <p class="text-subtitle-2 font-weight-bold mb-2">
+          Esta mercadería no paga impuestos de importación
+        </p>
+        <p v-for="(reason, i) in result.reasons" :key="i" class="text-body-2 mb-2">{{ reason }}</p>
+        <p class="text-body-2 mb-0">
+          Para que te lo apliquen, el envío tiene que venir declarado como tal.
+          <NuxtLink
+            v-if="productType.categorySlug"
+            :to="localePath(`/importar/${productType.categorySlug}`)"
+            class="tool-link"
+          >
+            Cómo declararlo y qué hacer si igual te lo cobran</NuxtLink
+          >.
+        </p>
+      </VAlert>
 
       <VAlert
         v-if="regimeStatus.blocked"
@@ -327,12 +364,28 @@
               min="0"
               label="IMESI"
               suffix="%"
-              placeholder="ej. 20"
+              placeholder="ej. 10"
               variant="outlined"
               density="comfortable"
               hint="Varía mucho según el producto: ingresá la tasa de tu caso."
               persistent-hint
             />
+          </VCol>
+          <VCol cols="12">
+            <VSwitch
+              v-model="contribuyente"
+              color="primary"
+              hide-details
+              density="comfortable"
+              label="Importo como empresa contribuyente de IVA (con RUT)"
+            />
+            <p class="text-caption text-grey-lighten-1 mb-0">
+              {{
+                contribuyente
+                  ? 'El IVA se liquida sobre valor en aduana + arancel.'
+                  : 'Como particular, la base del IVA es (valor en aduana + arancel) incrementada un 50% (Título 10 del T.O. 2023, art. 13 lit. B). Es la regla que casi ninguna calculadora aplica.'
+              }}
+            </p>
           </VCol>
         </template>
       </VRow>
@@ -479,7 +532,7 @@
       </VTable>
 
       <!-- The other regime, priced. Same parcel, one decision flipped: it is the difference
-           between US$ 26 and US$ 9,21 on a US$ 19 parcel, and it used to be invisible. -->
+           between US$ 26 and US$ 25 on a US$ 19 parcel — chico por el piso de IVA, pero invisible. -->
       <div v-if="alternative" class="tool-info-box mt-5 pa-4">
         <div class="d-flex align-center ga-2 mb-2">
           <VIcon color="primary" size="small">mdi-swap-horizontal</VIcon>
@@ -546,6 +599,25 @@
         <li>
           <strong>Es todo o nada:</strong> un dólar por encima de US$ 200 (EE.UU.) y pagás IVA sobre
           el total, nunca sobre "el excedente".
+        </li>
+        <li>
+          <strong>El IVA del envío postal tiene piso:</strong> US$ {{ POSTAL_IVA_MIN_USD }} por
+          envío. Si vas con franquicia y el IVA calculado da menos, igual pagás ese mínimo (Título
+          10 del T.O. 2023, art. 13 lit. B). La excepción está en la misma norma: no corre
+          <em
+            >"cuando el envío esté integrado exclusivamente por bienes cuya importación se encuentra
+            exonerada"</em
+          >
+          — por eso un envío de puros libros paga cero.
+        </li>
+        <li>
+          <strong>Hay mercadería que no paga nada, entre por donde entre:</strong> la importación de
+          libros y material educativo está exonerada de todo tributo nacional, gravámenes aduaneros
+          y tasas consulares (Título 10, art. 41; Ley 15.913 art. 8). Y los libros
+          <strong>no consumen el cupo de US$ 800</strong> (Decreto 50/026 art. 4).
+          <NuxtLink :to="localePath('/importar')" class="tool-link">
+            Qué paga cada tipo de artículo</NuxtLink
+          >.
         </li>
         <li>
           <strong>El peso también te saca del régimen:</strong> el tope es
@@ -644,14 +716,33 @@
             >.
           </p>
           <p>
-            <strong>Régimen general:</strong> aplica para importaciones formales. Se calcula el
-            valor CIF (mercadería + flete + seguro), se suman el arancel y la tasa consular, y sobre
-            esa base se aplica el <strong>IVA del 22%</strong>. Algunos productos pagan además
-            IMESI.
+            <strong>Régimen general:</strong> aplica para importaciones formales. Se parte del
+            <strong>valor en aduana</strong>, que es CIF —mercadería + flete + seguro— y sobre él se
+            calculan el arancel (TGA) y la <strong>tasa consular</strong>: 5%, o 3% si la mercadería
+            viene amparada en el ACE N.º 18 del Mercosur (Ley 19.535 art. 265).
           </p>
           <p>
-            Los aranceles dependen del producto y el origen: muchos bienes del Mercosur pagan 0%.
-            Ajustá los porcentajes según tu caso o consultá a tu despachante.
+            El <strong>IVA</strong> no se aplica sobre todo eso: la base es
+            <em>valor en aduana + arancel</em>, y nada más — la tasa consular y el IMESI quedan
+            afuera. Pero hay un detalle que cambia la cuenta y casi nadie aplica: si importás como
+            <strong>particular</strong> (no contribuyente de IVA), esa suma
+            <strong>se incrementa un 50%</strong> antes de aplicar la tasa (Título 10 del T.O. 2023,
+            art. 13 lit. B). En un producto de US$ 1.000 con arancel 0, el IVA no es 220 sino
+            <strong>330</strong>.
+          </p>
+          <p>
+            El <strong>IMESI</strong> tampoco es un porcentaje del CIF: se liquida sobre valores
+            reales o sobre <strong>precios fictos</strong> que fija el Poder Ejecutivo (Título 11,
+            art. 15). En cosméticos, vehículos y lubricantes importados por un particular sí se
+            calcula sobre la misma base incrementada (Decreto 96/990, art. 11); en alcohol y tabaco,
+            en cambio, el ficto no se deduce de la factura y esta calculadora no lo estima.
+          </p>
+          <p>
+            Los aranceles dependen del producto y el origen: muchos bienes del Mercosur pagan 0%, y
+            Uruguay puede aplicar 0% a bienes de informática y telecomunicaciones hasta 2029
+            (Decreto 167/022). Ajustá los porcentajes según tu caso o consultá a tu despachante — y
+            recordá que <strong>en el régimen postal no se necesita despachante</strong> (Ley 20.446
+            art. 627; Decreto 50/026 art. 17).
           </p>
         </section>
 
@@ -716,7 +807,12 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { courierImport, generalImport } from '~/utils/importTax'
-import { CHANNEL_LABEL, MAX_WEIGHT_KG, type ArrivalChannel } from '~/utils/importRules'
+import {
+  CHANNEL_LABEL,
+  MAX_WEIGHT_KG,
+  POSTAL_IVA_MIN_USD,
+  type ArrivalChannel,
+} from '~/utils/importRules'
 import { POSTAL_HANDLING_UNPUBLISHED, type DeclarationTiming } from '~/utils/postalHandling'
 import { regimeRulesFromPayload } from '~/utils/regimeOverlay'
 import {
@@ -741,10 +837,18 @@ const arancelPct = ref(0)
 const tasaConsularPct = ref(5)
 const ivaPct = ref(22)
 const imesiPct = ref(0)
+// Quién importa cambia la BASE del IVA, no la tasa: un particular liquida sobre (valor en aduana
+// + arancel) incrementado un 50% (Título 10 art. 13 lit. B). Por defecto, particular.
+const contribuyente = ref(false)
 
 // Product type drives the IVA rate, IMESI applicability and which agencies must
 // authorize the shipment. `general` (the default) reproduces the prior behaviour.
-const productTypeId = ref('general')
+// `?tipo=libros` precarga la categoría: es el link que traen las fichas /importar/<categoria>.
+const route = useRoute()
+const initialTypeId = String(route.query.tipo ?? '')
+const productTypeId = ref(
+  IMPORT_PRODUCT_TYPES.some(t => t.id === initialTypeId) ? initialTypeId : 'general'
+)
 const productType = computed(() => productTypeById(productTypeId.value))
 const productTax = computed(() => resolveProductTax(productType.value))
 const regimeStatus = computed(() => productRegimeStatus(productType.value, regime.value))
@@ -891,6 +995,30 @@ const sources = [
     url: 'https://www.correo.com.uy/gestiones-administrativas-envios-exterior',
   },
   {
+    label:
+      'Ley 20.446 art. 660 — agrega el mínimo de US$ 20 de IVA por envío postal (y su excepción para envíos exclusivamente exonerados)',
+    url: 'https://www.impo.com.uy/bases/leyes/20446-2025/660',
+  },
+  {
+    label:
+      'Título 10 del T.O. 2023, art. 13 lit. B — base del IVA en la importación: valor en aduana + arancel, +50% para no contribuyentes',
+    url: 'https://www.impo.com.uy/bases/todgi2023/101-2024/13_T10',
+  },
+  {
+    label:
+      'Título 10 del T.O. 2023, art. 38 — exoneraciones (num. 1 lit. H libros; num. 3 lit. B las importaciones de bienes exonerados)',
+    url: 'https://www.impo.com.uy/bases/todgi2023/101-2024/38_T10',
+  },
+  {
+    label:
+      'RG DNA 11/2026 — control operativo del régimen de encomiendas postales (Anexo I num. 27: mínimo de IVA; num. 26: libros y medicamentos fuera del cupo)',
+    url: 'https://www.aduanas.gub.uy/innovaportal/file/28447/1/rg-11_2026.pdf',
+  },
+  {
+    label: 'Ley 19.535 art. 265 — tasa consular: 5%, 3% para Mercosur (ACE 18), exoneraciones',
+    url: 'https://www.impo.com.uy/bases/leyes/19535-2017/265',
+  },
+  {
     label: 'Aduanas — Mercaderías controladas por otros organismos',
     url: 'https://www.aduanas.gub.uy/innovaportal/v/25358/15/innova.front/',
   },
@@ -930,6 +1058,8 @@ function courierInputs(withFranchise: boolean) {
       ? franchiseAvailable.value || regimeOverlay.value.rules.franchiseAnnualUsd
       : franchiseAvailable.value || 0,
     ivaPct: productTax.value.ivaPct,
+    exemption: productTax.value.exemption,
+    franchiseCapExempt: productTax.value.franchiseCapExempt,
     declarationTiming: isPostalChannel.value ? declarationTiming.value : undefined,
   }
 }
@@ -945,6 +1075,8 @@ const result = computed(() =>
         tasaConsularPct: tasaConsularPct.value || 0,
         ivaPct: ivaPct.value || 0,
         imesiPct: imesiPct.value || 0,
+        contribuyente: contribuyente.value,
+        exemptAllTaxes: productTax.value.exemption === 'todo-tributo',
       })
 )
 
@@ -956,7 +1088,7 @@ function payable(r: { totalTax: number; handlingFee?: number }): number {
 /**
  * The OTHER path for the same parcel. The regime choice is the single most expensive decision in
  * this form and it was hidden behind a switch: a US$ 19 parcel pays US$ 26 sin franquicia and
- * US$ 9,21 con franquicia, and nothing on screen said so unless you thought to toggle. Null when
+ * US$ 25 con franquicia, and nothing on screen said so unless you thought to toggle. Null when
  * flipping the switch changes nothing (same regime, or the shipment left both regimes).
  */
 const alternative = computed(() => {
@@ -1001,6 +1133,14 @@ const faq = [
   {
     q: '¿El flete y el seguro cuentan para el tope de la franquicia?',
     a: 'Cuentan si figuran en el comprobante de compra. El Correo Uruguayo lo dice expresamente: si el flete aparece descrito en la factura comercial, se cuenta dentro del monto considerado para el uso de la franquicia, y lo mismo con el seguro. Lo que el courier te factura por separado, en cambio, no forma parte del valor de la factura del vendedor: se suma al costo total pero no a la base imponible.',
+  },
+  {
+    q: 'Tengo franquicia y el IVA me da menos de US$ 20. ¿Igual pago 20?',
+    a: 'Sí. El artículo 660 de la Ley 20.446 agregó al literal B) del artículo 13 del Título 10 un inciso que dice que, en el régimen de envíos postales, "en ningún caso el monto a pagar por concepto de este impuesto podrá ser inferior al equivalente a US$ 20, salvo que el envío postal esté integrado exclusivamente por bienes cuya importación se encuentra exonerada de este impuesto". La Resolución General 11/2026 de Aduanas lo repite en su Anexo I, numeral 27, para el régimen de encomiendas postales. En la práctica el piso muerde en toda compra chica: a la tasa básica del 22% recién superás los US$ 20 de IVA cuando el envío vale más de US$ 90,91, y a la tasa mínima del 10%, más de US$ 200. Ojo con esto: ni las preguntas frecuentes de Aduanas ni las del MEF mencionan el mínimo cuando explican la franquicia — sólo lo citan para el régimen del 60% — y no existe ningún ejemplo numérico oficial de una compra con franquicia que pague IVA. Si tu operador te cobra menos, no es un error de esta calculadora.',
+  },
+  {
+    q: 'Compro un libro. ¿Por qué me da cero y qué pasa si igual me lo cobran?',
+    a: 'Porque la importación de libros no tiene tributo que pagar. Los diarios, periódicos, revistas, libros y folletos de cualquier naturaleza están exonerados de IVA (Título 10 del T.O. 2023, art. 38 num. 1 lit. H), la exoneración se extiende a la importación (art. 38 num. 3 lit. B) y, además, el art. 41 del mismo Título exonera la importación de obras literarias, artísticas, científicas y docentes de todo tributo nacional, incluidos los gravámenes aduaneros y las tasas consulares — lo mismo que dice la Ley del Libro (15.913, art. 8). Encima, el mínimo de US$ 20 de IVA no corre cuando el envío está integrado exclusivamente por bienes exonerados, y el Decreto 50/026 art. 4 exceptúa a los libros del tope de US$ 800. Dos condiciones para que funcione: que el envío sea SÓLO de libros —alcanza un producto gravado adentro para perder la exoneración del envío— y que venga declarado como material editorial. Si te lo cobran igual, reclamá ante la Aduana (info@aduanas.gub.uy) citando el art. 41 del Título 10 y el art. 8 de la Ley 15.913.',
   },
   {
     q: '¿Cuánto se paga si el envío no entra en la franquicia?',

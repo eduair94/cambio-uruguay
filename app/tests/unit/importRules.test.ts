@@ -13,6 +13,7 @@ import {
   MAX_WEIGHT_KG,
   type RegimeRules,
   SELLER_REGISTRY_ENFORCED_FROM,
+  POSTAL_IVA_MIN_USD,
   SIMPLIFIED_MIN_USD,
   SIMPLIFIED_RATE_PCT,
   USA_IVA_EXEMPTION_USD,
@@ -250,6 +251,7 @@ describe('injectable RegimeRules overlay', () => {
       simplifiedRatePct: SIMPLIFIED_RATE_PCT,
       simplifiedMinUsd: SIMPLIFIED_MIN_USD,
       usaIvaExemptionUsd: USA_IVA_EXEMPTION_USD,
+      postalIvaMinUsd: POSTAL_IVA_MIN_USD,
       sellerRegistryEnforcedFrom: SELLER_REGISTRY_ENFORCED_FROM,
     })
   })
