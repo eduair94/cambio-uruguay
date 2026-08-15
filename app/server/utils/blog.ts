@@ -38,9 +38,11 @@ const SOURCES: Record<BlogCategory, CategorySource> = {
     instructions: `Escribí un artículo de blog en español (público de Uruguay) que resuma lo más importante de estos titulares del mundo y explique cómo pueden afectar al dólar estadounidense y, por extensión, a quienes en Uruguay tienen, compran o venden dólares.
 Estructura en Markdown:
 - Una introducción de 2-3 frases.
-- 2 o 3 secciones con subtítulo "## ".
-- Una sección final "## Qué mirar" con 2-3 puntos.
-No inventes cifras ni cotizaciones: basate solo en los titulares y en los datos de mercado provistos. Sé claro y conciso.`,
+- 4 o 5 secciones con subtítulo "## ", cada una de 2 o 3 párrafos.
+- Una sección "## Qué significa para tu bolsillo" que baje el tema a decisiones concretas (ahorrar, comprar, viajar, cobrar en dólares).
+- Una sección final "## Qué mirar" con 3-4 puntos.
+Extensión: entre 700 y 900 palabras. Desarrollá cada punto en lugar de enumerarlo: explicá el mecanismo (por qué una cosa lleva a la otra), no solo el titular.
+No inventes cifras ni cotizaciones: basate solo en los titulares y en los datos de mercado provistos. Si un dato no está en los titulares ni en los datos de mercado, decí que no se conoce en vez de estimarlo. Escribí claro y sin relleno: más desarrollo, no más adjetivos.`,
   },
   'dolar-uruguay': {
     feeds: [
@@ -50,11 +52,23 @@ No inventes cifras ni cotizaciones: basate solo en los titulares y en los datos 
     instructions: `Escribí un artículo de blog en español (público de Uruguay) que resuma lo más importante de estos titulares locales y explique cómo pueden afectar al peso uruguayo y a la cotización del dólar en Uruguay.
 Estructura en Markdown:
 - Una introducción de 2-3 frases.
-- 2 o 3 secciones con subtítulo "## ".
-- Una sección final "## Qué mirar" con 2-3 puntos.
-No inventes cifras ni cotizaciones: basate solo en los titulares y en los datos de mercado provistos. Sé claro y conciso.`,
+- 4 o 5 secciones con subtítulo "## ", cada una de 2 o 3 párrafos.
+- Una sección "## Qué significa para tu bolsillo" que baje el tema a decisiones concretas (ahorrar, comprar, viajar, cobrar en dólares).
+- Una sección final "## Qué mirar" con 3-4 puntos.
+Extensión: entre 700 y 900 palabras. Desarrollá cada punto en lugar de enumerarlo: explicá el mecanismo (por qué una cosa lleva a la otra), no solo el titular.
+No inventes cifras ni cotizaciones: basate solo en los titulares y en los datos de mercado provistos. Si un dato no está en los titulares ni en los datos de mercado, decí que no se conoce en vez de estimarlo. Escribí claro y sin relleno: más desarrollo, no más adjetivos.`,
   },
 }
+
+/**
+ * Minimum article length, in characters, for a post to be published at all.
+ *
+ * ~1.200 characters is roughly 200 words — deliberately well under the 700–900
+ * the prompt asks for, so this rejects a truncated or failed generation rather
+ * than second-guessing a short-but-complete one. A rejected category simply has
+ * no post that day; `ensureTodayPosts` will retry it on the next run.
+ */
+const MIN_BODY_CHARS = 1200
 
 const STORAGE = 'blog'
 const INDEX_KEY = 'index'
@@ -77,18 +91,33 @@ function clean(text: string): string {
 }
 
 /** Build a one-line USD market grounding string from live rates. */
-function rateContext(rates: Rate[]): string {
+/** Exported for unit testing — this string is what the article is grounded on. */
+export function rateContext(rates: Rate[]): string {
   const bcu = rates.find(r => r.origin === 'bcu' && r.code === 'USD' && r.buy > 0)
   const usd = rates.filter(
     r => r.code === 'USD' && (!r.type || r.type === '') && r.origin !== 'bcu' && r.sell > 0
   )
-  const bestSell = usd.length ? Math.min(...usd.map(r => r.sell)) : 0
-  const bestBuy = usd.length ? Math.max(...usd.map(r => r.buy)) : 0
+
+  // The best sell and the best buy are almost never the same casa: the cheapest
+  // seller today is Baluma at 39,55 while the best payer is Fénix at 40,25.
+  // Both numbers are true, and stating them side by side without saying WHOSE
+  // they are reads as one market quoting a negative spread — a free 0,70 a
+  // dollar. The model believed it and reasoned from it, so the pairing is now
+  // explicit and the line says out loud that these are two different houses.
+  const bestSellRow = usd.length ? usd.reduce((a, b) => (b.sell < a.sell ? b : a)) : null
+  const withBuy = usd.filter(r => r.buy > 0)
+  const bestBuyRow = withBuy.length ? withBuy.reduce((a, b) => (b.buy > a.buy ? b : a)) : null
+
+  const marketLine =
+    bestSellRow && bestBuyRow
+      ? `Mercado de casas de cambio (USD) hoy: la venta más barata es ${bestSellRow.sell.toFixed(2)} (casa "${bestSellRow.origin}") y la compra mejor pagada es ${bestBuyRow.buy.toFixed(2)} (casa "${bestBuyRow.origin}"). OJO: son DOS casas distintas, cada una con su propio spread; NO es un único mercado donde se pueda comprar barato y vender caro a la vez, y no hay ninguna ganancia asegurada en esa diferencia. No la presentes como arbitraje ni como spread negativo.`
+      : bestSellRow
+        ? `Mercado de casas de cambio (USD) hoy: la venta más barata es ${bestSellRow.sell.toFixed(2)} (casa "${bestSellRow.origin}").`
+        : ''
+
   return [
     bcu ? `Cotización oficial BCU (USD billete): compra ${bcu.buy}, venta ${bcu.sell}.` : '',
-    usd.length
-      ? `Mercado de casas de cambio (USD) hoy: mejor venta ${bestSell.toFixed(2)}, mejor compra ${bestBuy.toFixed(2)}.`
-      : '',
+    marketLine,
   ]
     .filter(Boolean)
     .join('\n')
@@ -239,7 +268,13 @@ Cerrá el cuerpo con una línea en cursiva aclarando que es un análisis informa
     if (!raw || raw.trim().length < 60) return null
 
     const { title, summary, body } = parseArticle(raw, category, date)
-    if (body.length < 60) return null
+    // 60 CHARACTERS was the old floor — roughly one sentence, which no truncated
+    // reply could fail. It let through a 160-word post, and the store's median
+    // sat at 380 words with every single post under 500. Two thin dated pages a
+    // day is how a domain teaches a search engine to discount the whole site,
+    // so the floor is now a real one: a day publishes a post worth reading or
+    // it publishes nothing for that category.
+    if (body.length < MIN_BODY_CHARS) return null
 
     const post: BlogPost = {
       slug,
