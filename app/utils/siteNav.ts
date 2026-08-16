@@ -258,6 +258,23 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         keywords: ['sucursales', 'locales', 'direcciones', 'horarios'],
       },
       {
+        to: '/sucursal',
+        labelKey: 'nav.branchDirectory',
+        icon: 'mdi-store-marker-outline',
+        priority: 0.8,
+        changefreq: 'weekly',
+        keywords: [
+          'sucursal',
+          'sucursales',
+          'direccion',
+          'telefono',
+          'horario',
+          'donde queda',
+          'local',
+          'mostrador',
+        ],
+      },
+      {
         to: '/mapa',
         labelKey: 'map.nav',
         icon: 'mdi-map-marker-radius',
@@ -1693,7 +1710,8 @@ export const UNLISTED_ROUTES: ReadonlyArray<{ to: string; priority: number; chan
  */
 export const DYNAMIC_ROUTE_KEYS: Readonly<Record<string, string>> = Object.freeze({
   'blog/[slug]': 'news',
-  'casa/[origin]': 'houses',
+  'casa/[origin]/index': 'houses',
+  'casa/[origin]/[intent]': 'houses',
   'casas-de-cambio/[tipo]': 'houses',
   'convertir/[slug]': 'tools',
   'cotizacion/[moneda]': 'tools',
@@ -1706,6 +1724,7 @@ export const DYNAMIC_ROUTE_KEYS: Readonly<Record<string, string>> = Object.freez
   'historico/[origin]/[currency]/[[type]]': 'market',
   'indicadores/[indicador]': 'tools',
   'newsletter/[fecha]': 'news',
+  'sucursal/[slug]': 'houses',
   'sucursales/[origin]/[[location]]': 'houses',
   'sillas-escritorio-uruguay/[slug]': 'news',
   'temas/[slug]': 'learn',

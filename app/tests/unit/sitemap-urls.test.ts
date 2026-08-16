@@ -29,6 +29,9 @@ const HEALTHY = async (url: string) => {
   if (url.endsWith('/localData')) {
     return { brou: { departments: ['MONTEVIDEO', 'TREINTA Y TRES'] } }
   }
+  if (url === '/api/branches') {
+    return { branches: [{ slug: 'brou-av-italia-4200' }], casas: {} }
+  }
   return [{ origin: 'brou', code: 'USD', type: 'BILLETE' }]
 }
 
@@ -56,6 +59,18 @@ describe('sitemap with a healthy API', () => {
     expect(locs.has('/casa/brou')).toBe(true)
     expect(locs.has('/dolar/montevideo')).toBe(true)
     expect(locs.has('/dolar/treinta-y-tres')).toBe(true)
+  })
+
+  // The per-branch family is only worth submitting if the slugs come from the
+  // same cached route the pages resolve against — otherwise the sitemap
+  // advertises URLs that 404. Spanish-only, like the blog: the body is prose
+  // about a Uruguayan street.
+  it('emits one Spanish URL per branch, from the shared directory route', async () => {
+    const urls = await runHandler(HEALTHY)
+    const locs = new Set(urls.map(u => u.loc))
+    expect(locs.has('/sucursal/brou-av-italia-4200')).toBe(true)
+    expect(locs.has('/en/sucursal/brou-av-italia-4200')).toBe(false)
+    expect(locs.has('/sucursal')).toBe(true)
   })
 
   it('keeps the priority and changefreq the hand-written list used to emit', async () => {

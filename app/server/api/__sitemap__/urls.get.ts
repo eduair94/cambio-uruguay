@@ -1,3 +1,5 @@
+import type { BranchPage } from '../../../utils/branches'
+import { intentsFor } from '../../../utils/casaIntents'
 import { casaTypePaths } from '../../../utils/casasDirectory'
 import { convertSlugs } from '../../../utils/convert'
 import { listCurrencySlugs } from '../../../utils/currencyPages'
@@ -186,6 +188,60 @@ export default defineEventHandler(async _event => {
   } finally {
     // The sitemap is prerendered: leaving the pool open hangs `nuxt build`.
     await disconnectDbAfterPrerender()
+  }
+
+  // --- Per-branch pages: BCU feed, independently fallible -------------------
+  // One URL per physical counter. Default locale only: the body (address, hours,
+  // "cómo llegar") is Spanish prose about a Uruguayan street, so three locales
+  // would be three URLs of the same content, same reasoning as the blog above.
+  //
+  // The slugs come from the SAME cached `/api/branches` route the pages and the
+  // directory read, so the sitemap can never advertise a slug the page 404s.
+  try {
+    const directory = await $fetch<{
+      branches: BranchPage[]
+      casas: Record<string, { bcu?: string }>
+      quotesUsd?: string[]
+    }>('/api/branches')
+    const branches = directory?.branches ?? []
+    branches.forEach(branch => {
+      urls.push({
+        loc: `/sucursal/${branch.slug}`,
+        changefreq: 'weekly',
+        priority: 0.6,
+        lastmod: today,
+      })
+    })
+    if (branches.length) console.log(`- Branch pages: ${branches.length} routes`)
+
+    // Per-casa intent pages, gated by the SAME availability rule the route guard
+    // uses. Submitting `/casa/x/telefono` for a casa with no published phone
+    // would be submitting a guaranteed 404.
+    const quotesUsd = new Set(directory?.quotesUsd ?? [])
+    let intentCount = 0
+    for (const [origin, casa] of Object.entries(directory?.casas ?? {})) {
+      const own = branches.filter(branch => branch.origin === origin)
+      const intents = intentsFor({
+        branches: own,
+        quotesUsd: quotesUsd.has(origin),
+        hasBcu: Boolean(casa?.bcu),
+        // The sitemap has no review store; `hasBcu`/branches already cover the
+        // opiniones gate, and a rating can only widen it.
+        hasRating: false,
+      })
+      for (const intent of intents) {
+        urls.push({
+          loc: `/casa/${origin}/${intent}`,
+          changefreq: 'daily',
+          priority: 0.7,
+          lastmod: today,
+        })
+        intentCount++
+      }
+    }
+    if (intentCount) console.log(`- Casa intent pages: ${intentCount} routes`)
+  } catch (branchError) {
+    console.warn('Failed to add branch pages to sitemap:', branchError)
   }
 
   // --- API-derived routes: best effort --------------------------------------
