@@ -13,67 +13,69 @@
         legal, pero suma costos que en tu caso nadie subsidia.
       </p>
 
-      <VCard class="idea-card pa-5 pa-md-6" variant="flat">
-        <div class="text-overline mb-2">La respuesta corta</div>
+      <SurfaceCard accent>
+        <div class="eyebrow">La respuesta corta</div>
         <p class="mb-0">{{ CORE_ANSWER }}</p>
-      </VCard>
+      </SurfaceCard>
     </header>
 
     <!-- Los dos caminos -->
     <section id="caminos" class="mb-12">
-      <h2 class="text-h5 font-weight-bold mb-2">Los dos caminos, con sus costos reales</h2>
-      <p class="text-medium-emphasis mb-5" style="max-width: 72ch">
+      <h2 class="section-title">Los dos caminos, con sus costos reales</h2>
+      <p class="section-intro">
         No compiten en igualdad de condiciones: uno es un gasto de imprenta que se repite cuando se
         te acaba el talonario, y el otro son dos gastos que no paran mientras seas emisor.
       </p>
 
       <VRow>
         <VCol v-for="r in ROUTES" :key="r.id" cols="12" md="6">
-          <VCard :id="r.id" variant="flat" class="route-card pa-5 pa-md-6 h-100 d-flex flex-column">
-            <div class="text-overline text-medium-emphasis">{{ r.status }}</div>
-            <h3 class="text-h6 font-weight-bold mb-3">{{ r.title }}</h3>
-            <p class="mb-4">{{ r.detail }}</p>
+          <SurfaceCard :id="r.id" stretch>
+            <div class="eyebrow eyebrow--muted">{{ r.status }}</div>
+            <h3 class="card-title">{{ r.title }}</h3>
+            <p class="card-lead">{{ r.detail }}</p>
 
-            <div class="text-subtitle-2 font-weight-bold mb-2">Qué se paga</div>
-            <ul class="tight-list mb-4">
-              <li v-for="(c, i) in r.costs" :key="i">{{ c }}</li>
-            </ul>
+            <div class="block">
+              <div class="block-label">Qué se paga</div>
+              <ul class="tight-list">
+                <li v-for="(c, i) in r.costs" :key="i">{{ c }}</li>
+              </ul>
+            </div>
 
-            <VRow class="mb-2">
+            <VRow class="block" dense>
               <VCol cols="12" sm="6">
-                <div class="text-subtitle-2 font-weight-bold mb-2">A favor</div>
-                <ul class="tight-list mb-0">
+                <div class="block-label">A favor</div>
+                <ul class="tight-list">
                   <li v-for="(p, i) in r.pros" :key="i">{{ p }}</li>
                 </ul>
               </VCol>
               <VCol cols="12" sm="6">
-                <div class="text-subtitle-2 font-weight-bold mb-2">En contra</div>
-                <ul class="tight-list mb-0">
+                <div class="block-label">En contra</div>
+                <ul class="tight-list">
                   <li v-for="(c, i) in r.cons" :key="i">{{ c }}</li>
                 </ul>
               </VCol>
             </VRow>
 
-            <VAlert type="info" variant="tonal" density="comfortable" class="mt-auto mb-0">
-              {{ r.verdict }}
-            </VAlert>
-          </VCard>
+            <template #footer>
+              <VAlert type="info" variant="tonal" density="comfortable">{{ r.verdict }}</VAlert>
+            </template>
+          </SurfaceCard>
         </VCol>
       </VRow>
     </section>
 
     <!-- Calculadora -->
     <section id="calculadora" class="mb-12">
-      <h2 class="text-h5 font-weight-bold mb-2">Cuánto te sale cada uno, con tus números</h2>
-      <p class="text-medium-emphasis mb-5" style="max-width: 72ch">
+      <h2 class="section-title">Cuánto te sale cada uno, con tus números</h2>
+      <p class="section-intro">
         Ni las imprentas ni los facturadores publican tarifas: se cotiza caso por caso. Por eso acá
         no hay precios inventados de fondo — poné lo que te coticen a vos y la cuenta se hace sola.
       </p>
 
-      <VCard variant="flat" class="calc-card pa-5 pa-md-6">
+      <SurfaceCard accent padding="feature">
         <VRow>
           <VCol cols="12" md="6">
-            <div class="text-subtitle-1 font-weight-bold mb-3">Talonario</div>
+            <div class="block-label block-label--lg">Talonario</div>
             <VRow>
               <VCol cols="12" sm="6">
                 <VTextField
@@ -116,7 +118,7 @@
           </VCol>
 
           <VCol cols="12" md="6">
-            <div class="text-subtitle-1 font-weight-bold mb-3">Factura electrónica</div>
+            <div class="block-label block-label--lg">Factura electrónica</div>
             <VRow>
               <VCol cols="12" sm="6">
                 <VTextField
@@ -165,42 +167,52 @@
 
         <VRow>
           <VCol cols="12" sm="6" md="3">
-            <div class="metric-label">Talonario, por mes</div>
-            <div class="metric-value" data-testid="out-talonario">
-              {{ formatUYU(result.talonarioMensual, 0) }}
-            </div>
-            <div class="metric-note">
-              {{ formatUYU(result.talonarioPorComprobante, 0) }} por comprobante
-            </div>
+            <StatTile
+              label="Talonario, por mes"
+              :value="formatUYU(result.talonarioMensual, 0)"
+              :note="`${formatUYU(result.talonarioPorComprobante, 0)} por comprobante`"
+            >
+              <template #value>
+                <span data-testid="out-talonario">{{ formatUYU(result.talonarioMensual, 0) }}</span>
+              </template>
+            </StatTile>
           </VCol>
           <VCol cols="12" sm="6" md="3">
-            <div class="metric-label">Electrónico, por mes</div>
-            <div class="metric-value" data-testid="out-cfe">
-              {{ formatUYU(result.cfeMensual, 0) }}
-            </div>
-            <div class="metric-note">
-              {{
+            <StatTile
+              label="Electrónico, por mes"
+              :value="formatUYU(result.cfeMensual, 0)"
+              :note="
                 result.cfePorComprobante === null
                   ? 'sin comprobantes declarados'
                   : `${formatUYU(result.cfePorComprobante, 0)} por comprobante`
-              }}
-            </div>
+              "
+            >
+              <template #value>
+                <span data-testid="out-cfe">{{ formatUYU(result.cfeMensual, 0) }}</span>
+              </template>
+            </StatTile>
           </VCol>
           <VCol cols="12" sm="6" md="3">
-            <div class="metric-label">El talonario te dura</div>
-            <div class="metric-value">
-              {{
+            <StatTile
+              label="El talonario te dura"
+              :value="
                 result.mesesQueDura === null ? '—' : `${formatNumber(result.mesesQueDura, 1)} meses`
-              }}
-            </div>
-            <div class="metric-note">al ritmo que declaraste</div>
+              "
+              note="al ritmo que declaraste"
+            />
           </VCol>
           <VCol cols="12" sm="6" md="3">
-            <div class="metric-label">Diferencia en un año</div>
-            <div class="metric-value" data-testid="out-gap">
-              {{ formatUYU(result.diferenciaAnual, 0) }}
-            </div>
-            <div class="metric-note">a favor del más barato</div>
+            <StatTile
+              label="Diferencia en un año"
+              :value="gapValue"
+              :note="
+                hasCfeQuote ? 'a favor del más barato' : 'faltan los precios del camino electrónico'
+              "
+            >
+              <template #value>
+                <span data-testid="out-gap">{{ gapValue }}</span>
+              </template>
+            </StatTile>
           </VCol>
         </VRow>
 
@@ -214,13 +226,13 @@
           "
           variant="tonal"
           density="comfortable"
-          class="mt-5 mb-0"
+          class="mt-6"
           data-testid="out-verdict"
         >
           {{ verdictText }}
         </VAlert>
 
-        <p class="text-caption text-medium-emphasis mb-0 mt-4">
+        <p class="footnote">
           La ruta electrónica no lleva descuento: el crédito de hasta
           {{ FIGURES.creditoFacturaElectronicaUi.value }} UI mensuales ({{
             formatUYU(FIGURES.creditoFacturaElectronicaUyu.value, 0)
@@ -228,59 +240,54 @@
           en 2026) que abarata el abono a otras empresas chicas excluye expresamente al Monotributo
           y al Monotributo Social MIDES.
         </p>
-      </VCard>
+      </SurfaceCard>
     </section>
 
     <!-- Mitos -->
     <section class="mb-12">
-      <h2 class="text-h5 font-weight-bold mb-2">Lo que se dice y lo que dice DGI</h2>
-      <p class="text-medium-emphasis mb-5" style="max-width: 72ch">
+      <h2 class="section-title">Lo que se dice y lo que dice DGI</h2>
+      <p class="section-intro">
         Media internet uruguaya afirma que desde 2025 el talonario murió para todos. Esa frase, para
         un monotributista, es falsa — y es la que hace gastar de más.
       </p>
       <VRow>
         <VCol v-for="m in MYTHS" :key="m.claim" cols="12">
-          <VCard variant="flat" class="myth-card pa-5">
-            <p class="myth-claim mb-2">{{ m.claim }}</p>
-            <p class="mb-3">{{ m.reality }}</p>
-            <a
-              :href="m.source"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="text-caption source-link"
-            >
+          <SurfaceCard>
+            <p class="myth-claim">{{ m.claim }}</p>
+            <p>{{ m.reality }}</p>
+            <a :href="m.source" target="_blank" rel="noopener noreferrer" class="source-link">
               {{ m.sourceLabel }}
             </a>
-          </VCard>
+          </SurfaceCard>
         </VCol>
       </VRow>
     </section>
 
     <!-- Paso a paso -->
     <section class="mb-12">
-      <h2 class="text-h5 font-weight-bold mb-2">El trámite del talonario, en orden</h2>
-      <p class="text-medium-emphasis mb-5" style="max-width: 72ch">
+      <h2 class="section-title">El trámite del talonario, en orden</h2>
+      <p class="section-intro">
         El orden importa por un detalle chico: la constancia que DGI emite para imprimir vale
         {{ FIGURES.constanciaVigenciaDias.value }} días. Comparar precios después de pedirla es la
         forma más común de tener que pedirla dos veces.
       </p>
       <VRow>
         <VCol v-for="s in TALONARIO_STEPS" :key="s.n" cols="12" md="6">
-          <VCard variant="flat" class="step-card pa-5 h-100">
+          <SurfaceCard stretch>
             <div class="d-flex align-start ga-4">
               <div class="step-n">{{ s.n }}</div>
-              <div>
-                <h3 class="text-subtitle-1 font-weight-bold mb-1">{{ s.title }}</h3>
+              <div class="flex-grow-1" style="min-width: 0">
+                <h3 class="card-title card-title--sm">{{ s.title }}</h3>
                 <p class="mb-0 text-medium-emphasis">{{ s.detail }}</p>
               </div>
             </div>
-          </VCard>
+          </SurfaceCard>
         </VCol>
       </VRow>
 
-      <VCard variant="flat" class="legend-card pa-5 mt-4">
-        <div class="text-subtitle-2 font-weight-bold mb-2">El recuadro que no puede faltar</div>
-        <p class="mb-3">
+      <SurfaceCard class="mt-6">
+        <div class="block-label block-label--lg">El recuadro que no puede faltar</div>
+        <p>
           Tus comprobantes llevan la leyenda de tu régimen en un recuadro de al menos
           {{ FIGURES.leyendaRecuadroLargoCm.value }} cm de largo por
           {{ FIGURES.leyendaRecuadroAnchoCm.value }} cm de ancho, con caracteres de al menos
@@ -289,141 +296,109 @@
         </p>
         <div class="d-flex flex-wrap ga-3">
           <div v-for="l in LEYENDAS" :key="l.regime" class="legend-box">
-            <div class="text-caption text-medium-emphasis mb-1">{{ l.regime }}</div>
+            <div class="legend-regime">{{ l.regime }}</div>
             <div class="legend-text">{{ l.text }}</div>
           </div>
         </div>
-      </VCard>
+      </SurfaceCard>
     </section>
 
     <!-- Palancas de costo -->
     <section class="mb-12">
-      <h2 class="text-h5 font-weight-bold mb-2">Cómo bajar el precio de verdad</h2>
-      <p class="text-medium-emphasis mb-5" style="max-width: 72ch">
+      <h2 class="section-title">Cómo bajar el precio de verdad</h2>
+      <p class="section-intro">
         Como el trámite ante DGI no cuesta nada, todo lo que pagás es precio de imprenta. Eso es una
         buena noticia: un precio se negocia, una tasa no.
       </p>
       <VRow>
         <VCol v-for="l in COST_LEVERS" :key="l.title" cols="12" md="6">
-          <VCard variant="flat" class="lever-card pa-5 h-100">
-            <h3 class="text-subtitle-1 font-weight-bold mb-2">{{ l.title }}</h3>
-            <p class="mb-3 text-medium-emphasis">{{ l.detail }}</p>
-            <div class="text-caption saving-tag">{{ l.saving }}</div>
-          </VCard>
+          <SurfaceCard stretch>
+            <h3 class="card-title card-title--sm">{{ l.title }}</h3>
+            <p class="text-medium-emphasis">{{ l.detail }}</p>
+            <template #footer>
+              <div class="saving-tag">{{ l.saving }}</div>
+            </template>
+          </SurfaceCard>
         </VCol>
       </VRow>
 
-      <VCard variant="flat" class="quotes-card pa-5 pa-md-6 mt-6">
-        <div class="text-overline mb-2">Dónde pedir presupuesto</div>
-        <h3 class="text-h6 font-weight-bold mb-2">
+      <SurfaceCard padding="feature" class="mt-6">
+        <div class="eyebrow">Dónde pedir presupuesto</div>
+        <h3 class="card-title">
           Qué imprenta es la más barata: nadie puede decírtelo, pero se averigua en un rato
         </h3>
-        <p class="mb-4 text-medium-emphasis" style="max-width: 72ch">
+        <p class="card-lead">
           Ninguna imprenta uruguaya publica lista de precios, y el mismo trabajo se cotiza distinto
           según la ciudad, la tirada y la semana. Cualquiera que te tire un nombre como «la barata»
           está adivinando. Esto es lo que sí sirve.
         </p>
         <VRow>
           <VCol v-for="q in QUOTE_CHANNELS" :key="q.title" cols="12" md="6">
-            <div class="quote-item h-100">
-              <h4 class="text-subtitle-2 font-weight-bold mb-1">{{ q.title }}</h4>
-              <p class="mb-2 text-medium-emphasis">{{ q.detail }}</p>
+            <div class="quote-item">
+              <h4 class="quote-title">{{ q.title }}</h4>
+              <p class="text-medium-emphasis">{{ q.detail }}</p>
               <a
                 v-if="q.url"
                 :href="q.url"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="text-caption source-link"
+                class="source-link"
               >
                 {{ q.linkLabel }}
               </a>
             </div>
           </VCol>
         </VRow>
-      </VCard>
+      </SurfaceCard>
 
-      <VAlert type="warning" variant="tonal" density="comfortable" class="mt-4">
+      <VAlert type="warning" variant="tonal" density="comfortable" class="mt-6">
         <span class="font-weight-bold">No hay subsidio del talonario.</span> No existe un programa
         que reintegre lo que te cobra la imprenta. Lo que existe son apoyos al emprendimiento, con
         sus propias bases y cupos.
       </VAlert>
 
-      <VRow class="mt-1">
+      <VRow class="mt-2">
         <VCol v-for="p in SUPPORT_PROGRAMS" :key="p.name" cols="12" md="6">
-          <VCard variant="flat" class="support-card pa-5 h-100">
-            <h3 class="text-subtitle-2 font-weight-bold mb-2">{{ p.name }}</h3>
-            <p class="mb-2 text-medium-emphasis">{{ p.what }}</p>
-            <p class="text-caption text-medium-emphasis mb-3">{{ p.caveat }}</p>
-            <a
-              :href="p.url"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="text-caption source-link"
-            >
-              Ver el programa
-            </a>
-          </VCard>
+          <SurfaceCard stretch>
+            <h3 class="card-title card-title--sm">{{ p.name }}</h3>
+            <p class="text-medium-emphasis">{{ p.what }}</p>
+            <p class="caveat">{{ p.caveat }}</p>
+            <template #footer>
+              <a :href="p.url" target="_blank" rel="noopener noreferrer" class="source-link">
+                Ver el programa
+              </a>
+            </template>
+          </SurfaceCard>
         </VCol>
       </VRow>
     </section>
 
     <!-- Contexto del régimen -->
     <section class="mb-12">
-      <h2 class="text-h5 font-weight-bold mb-2">Para dimensionar el gasto</h2>
-      <p class="text-medium-emphasis mb-5" style="max-width: 72ch">
+      <h2 class="section-title">Para dimensionar el gasto</h2>
+      <p class="section-intro">
         El talonario es un gasto de una vez; el aporte es todos los meses. En el Monotributo Social
         MIDES el aporte arranca al 25% y sube por tramos hasta el 100% recién a los
         {{ FIGURES.gradualidadMeses.value }} meses.
       </p>
       <VRow>
-        <VCol cols="12" sm="6" md="3">
-          <VCard variant="flat" class="ctx-card pa-4 h-100">
-            <div class="metric-label">Aporte del año 1 (25%)</div>
-            <div class="metric-value">
-              {{ formatUYU(FIGURES.aporteMidesAnio1SinFonasa.value, 0) }}
-            </div>
-            <div class="metric-note">por mes, sin FONASA — enero 2026</div>
-          </VCard>
-        </VCol>
-        <VCol cols="12" sm="6" md="3">
-          <VCard variant="flat" class="ctx-card pa-4 h-100">
-            <div class="metric-label">Aporte pleno (100%)</div>
-            <div class="metric-value">
-              {{ formatUYU(FIGURES.aporteMidesPlenoSinFonasa.value, 0) }}
-            </div>
-            <div class="metric-note">desde el mes 37, sin FONASA</div>
-          </VCard>
-        </VCol>
-        <VCol cols="12" sm="6" md="3">
-          <VCard variant="flat" class="ctx-card pa-4 h-100">
-            <div class="metric-label">Tope anual, unipersonal</div>
-            <div class="metric-value">
-              {{ formatUYU(FIGURES.topeAnualUnipersonal.value, 0) }}
-            </div>
-            <div class="metric-note">ingresos 2026</div>
-          </VCard>
-        </VCol>
-        <VCol cols="12" sm="6" md="3">
-          <VCard variant="flat" class="ctx-card pa-4 h-100">
-            <div class="metric-label">Tope anual, sociedad de hecho</div>
-            <div class="metric-value">
-              {{ formatUYU(FIGURES.topeAnualSociedad.value, 0) }}
-            </div>
-            <div class="metric-note">ingresos 2026</div>
-          </VCard>
+        <VCol v-for="c in CONTEXT_TILES" :key="c.label" cols="12" sm="6" md="3">
+          <SurfaceCard padding="compact" stretch>
+            <StatTile :label="c.label" :value="c.value" :note="c.note" />
+          </SurfaceCard>
         </VCol>
       </VRow>
     </section>
 
     <!-- FAQ -->
     <section class="mb-12">
-      <h2 class="text-h5 font-weight-bold mb-4">Preguntas frecuentes</h2>
+      <h2 class="section-title section-title--tight">Preguntas frecuentes</h2>
       <VExpansionPanels variant="accordion">
         <VExpansionPanel v-for="f in FAQ" :key="f.question">
           <VExpansionPanelTitle>
             <div>
               <div class="font-weight-medium">{{ f.question }}</div>
-              <div class="text-caption text-medium-emphasis">{{ f.short }}</div>
+              <div class="faq-short">{{ f.short }}</div>
             </div>
           </VExpansionPanelTitle>
           <VExpansionPanelText>{{ f.answer }}</VExpansionPanelText>
@@ -501,6 +476,36 @@ const form = reactive({
 })
 
 const result = computed(() => compareInvoicingCost(form))
+
+const CONTEXT_TILES = [
+  {
+    label: 'Aporte del año 1 (25%)',
+    value: formatUYU(FIGURES.aporteMidesAnio1SinFonasa.value, 0),
+    note: 'por mes, sin FONASA — enero 2026',
+  },
+  {
+    label: 'Aporte pleno (100%)',
+    value: formatUYU(FIGURES.aporteMidesPlenoSinFonasa.value, 0),
+    note: 'desde el mes 37, sin FONASA',
+  },
+  {
+    label: 'Tope anual, unipersonal',
+    value: formatUYU(FIGURES.topeAnualUnipersonal.value, 0),
+    note: 'ingresos 2026',
+  },
+  {
+    label: 'Tope anual, sociedad de hecho',
+    value: formatUYU(FIGURES.topeAnualSociedad.value, 0),
+    note: 'ingresos 2026',
+  },
+]
+
+/* Sin cotización del lado electrónico no hay diferencia que mostrar: publicar «$ 3.600 a favor del
+   más barato» contra un abono de $0 sería contar como ahorro un precio que todavía no existe. */
+const hasCfeQuote = computed(() => result.value.cfeMensual > 0)
+const gapValue = computed(() =>
+  hasCfeQuote.value ? formatUYU(result.value.diferenciaAnual, 0) : '—'
+)
 
 const verdictText = computed(() => {
   const r = result.value
@@ -592,9 +597,17 @@ useHead(() => ({
 </script>
 
 <style scoped>
+/* El ritmo vertical lo declara la página, no la hoja del navegador: Vuetify 4 no resetea los
+   bloques de texto y su `margin-block: 1em` gana por colapso a cualquier gap más chico.
+   Ver DESIGN.md, "The Text Block Owns Its Top Margin Rule". */
+.mono-invoicing-page :is(p, h1, h2, h3, h4, ul, ol) {
+  margin-top: 0;
+}
+
 .mono-invoicing-page {
   max-width: 1180px;
 }
+
 .lead {
   font-size: 1.075rem;
   line-height: 1.65;
@@ -605,96 +618,154 @@ useHead(() => ({
   color: rgba(0, 0, 0, 0.76);
 }
 
-.idea-card,
-.route-card,
-.calc-card,
-.myth-card,
-.step-card,
-.legend-card,
-.lever-card,
-.support-card,
-.quotes-card,
-.ctx-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 12px;
+/* Dos intervalos y nada más: 8px adentro de un grupo, 24px entre grupos. */
+.section-title {
+  font-size: clamp(1.35rem, 3vw, 1.75rem);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  margin-bottom: 8px;
 }
-.v-theme--light .idea-card,
-.v-theme--light .route-card,
-.v-theme--light .calc-card,
-.v-theme--light .myth-card,
-.v-theme--light .step-card,
-.v-theme--light .legend-card,
-.v-theme--light .lever-card,
-.v-theme--light .support-card,
-.v-theme--light .quotes-card,
-.v-theme--light .ctx-card {
-  background: rgba(0, 0, 0, 0.02);
-  border-color: rgba(0, 0, 0, 0.1);
+.section-intro {
+  max-width: 72ch;
+  margin-bottom: 24px;
+  opacity: 0.78;
 }
-.idea-card,
-.calc-card {
-  border-color: rgba(var(--v-theme-primary), 0.5);
+.section-title--tight {
+  margin-bottom: 16px;
+}
+
+.eyebrow {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgb(var(--v-theme-link));
+  margin-bottom: 8px;
+}
+.eyebrow--muted {
+  color: inherit;
+  opacity: 0.65;
+  letter-spacing: 0.12em;
+}
+
+.card-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.3;
+  margin-bottom: 8px;
+}
+.card-title--sm {
+  font-size: 1.05rem;
+}
+.card-lead {
+  margin-bottom: 24px;
+  opacity: 0.82;
+}
+
+/* Un grupo etiquetado dentro de la tarjeta: 8px del rótulo a su lista, 24px al grupo siguiente. */
+.block {
+  margin-bottom: 24px;
+}
+.block:last-child {
+  margin-bottom: 0;
+}
+.block-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.0333em;
+  text-transform: uppercase;
+  opacity: 0.72;
+  margin-bottom: 8px;
+}
+.block-label--lg {
+  font-size: 0.875rem;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  opacity: 1;
+  margin-bottom: 12px;
 }
 
 .tight-list {
   padding-left: 1.1rem;
-  line-height: 1.55;
+  line-height: 1.5;
+  margin-bottom: 0;
+  font-size: 0.95rem;
 }
-.tight-list li {
-  margin-bottom: 0.4rem;
+.tight-list li + li {
+  margin-top: 8px;
 }
 
 .step-n {
   font-size: 1.35rem;
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1.3;
   color: rgb(var(--v-theme-primary));
   font-variant-numeric: tabular-nums;
-}
-
-.metric-label {
-  font-size: 0.78rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  opacity: 0.7;
-  margin-bottom: 0.25rem;
-}
-.metric-value {
-  font-size: 1.35rem;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  line-height: 1.25;
-}
-.metric-note {
-  font-size: 0.78rem;
-  opacity: 0.7;
 }
 
 .myth-claim {
   font-weight: 600;
-  color: rgb(var(--v-theme-primary));
+  color: rgb(var(--v-theme-link));
+  margin-bottom: 8px;
 }
 
 .legend-box {
   border: 1px dashed rgba(255, 255, 255, 0.35);
   border-radius: 8px;
-  padding: 0.5rem 0.9rem;
+  padding: 8px 16px;
 }
 .v-theme--light .legend-box {
   border-color: rgba(0, 0, 0, 0.35);
+}
+.legend-regime {
+  font-size: 0.8rem;
+  opacity: 0.7;
+  margin-bottom: 4px;
 }
 .legend-text {
   font-weight: 700;
   letter-spacing: 0.04em;
 }
 
+.quote-item {
+  height: 100%;
+  min-width: 0;
+}
+.quote-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
 .saving-tag {
-  color: rgb(var(--v-theme-primary));
+  font-size: 0.8rem;
+  color: rgb(var(--v-theme-link));
   font-weight: 600;
 }
 
+.caveat {
+  font-size: 0.8rem;
+  line-height: 1.35;
+  opacity: 0.7;
+}
+
+.footnote {
+  font-size: 0.8rem;
+  line-height: 1.4;
+  opacity: 0.7;
+  margin-top: 16px;
+  margin-bottom: 0;
+}
+
+.faq-short {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
 .source-link {
+  font-size: 0.8rem;
   text-decoration: underline;
 }
 

@@ -122,6 +122,23 @@ html[data-theme='light'] body {
   margin-block-start: 0;
 }
 
+/* ------------------------------------------------------------------ */
+/* An alert is content, not a spacer                                    */
+/* ------------------------------------------------------------------ */
+
+/* Vuetify's `.v-alert` ships `flex: 1 1 auto`. Harmless in a row, wrong in the
+   `d-flex flex-column` card that half the authored pages use to pin a closing
+   note with `mt-auto`: as a column flex item that shorthand makes the alert
+   GROW into the leftover height of the tallest sibling card, and SHRINK below
+   its own text when the column runs out of room. Both failures shipped side by
+   side on /facturar-en-monotributo-uruguay — the same verdict note rendered
+   140px tall around 52px of text in one card, and 62px tall around 76px of text
+   in the other, where the copy spilled past the tinted box.
+   The note keeps its natural height; `mt-auto` still pins it to the bottom. */
+.v-card.d-flex.flex-column > .v-alert {
+  flex: 0 0 auto;
+}
+
 /* Performance optimizations */
 * {
   box-sizing: border-box;
