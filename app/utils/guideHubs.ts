@@ -686,6 +686,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/que-empresa-abrir-uruguay',
       },
       {
+        label: 'Facturar en monotributo',
+        description: 'Talonario o e-factura: cuál te obliga la DGI y cuál te sale menos.',
+        to: '/facturar-en-monotributo-uruguay',
+      },
+      {
         label: 'Trabajar para el exterior',
         description: 'Facturar y cobrar a clientes de afuera.',
         to: '/guias/trabajar-para-el-exterior-desde-uruguay',
