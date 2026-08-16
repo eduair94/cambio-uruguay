@@ -109,8 +109,58 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
+// CollectionPage + ItemList over every pair of this family, so a crawler gets
+// the whole set of head-to-head URLs from the index instead of having to walk
+// the chips. Capped at 50 entries: the list is a hint, not the sitemap.
 useHead({
   link: [{ rel: 'canonical', href: canonicalUrl }],
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: computed(() =>
+        JSON.stringify({
+          '@context': 'https://schema.org',
+          '@graph': [
+            {
+              '@type': 'CollectionPage',
+              name: heading.value,
+              description: description.value,
+              url: canonicalUrl.value,
+              inLanguage: 'es-UY',
+              mainEntity: {
+                '@type': 'ItemList',
+                numberOfItems: pairs.value.length,
+                itemListElement: pairs.value.slice(0, 50).map((pair, index) => ({
+                  '@type': 'ListItem',
+                  position: index + 1,
+                  name: `${pair.a.shortName} vs ${pair.b.shortName}`,
+                  url: `https://cambio-uruguay.com/comparativas/${pair.family}/${pair.slug}`,
+                })),
+              },
+            },
+            {
+              '@type': 'BreadcrumbList',
+              itemListElement: [
+                {
+                  '@type': 'ListItem',
+                  position: 1,
+                  name: 'Cambio Uruguay',
+                  item: 'https://cambio-uruguay.com',
+                },
+                {
+                  '@type': 'ListItem',
+                  position: 2,
+                  name: 'Comparativas',
+                  item: 'https://cambio-uruguay.com/comparativas',
+                },
+                { '@type': 'ListItem', position: 3, name: heading.value, item: canonicalUrl.value },
+              ],
+            },
+          ],
+        })
+      ),
+    },
+  ],
 })
 </script>
 

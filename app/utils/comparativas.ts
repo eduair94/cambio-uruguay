@@ -540,7 +540,7 @@ export function relatedPairs(pair: ComparativaPair, limit = 8): ComparativaPair[
 // ---------------------------------------------------------------------------
 
 /** One scored axis, resolved for both sides. */
-export interface ComparisonRow {
+export interface ComparisonAxisRow {
   dimension: ComparableDimension
   a: number
   b: number
@@ -559,7 +559,7 @@ export const TIE_MARGIN = 5
 
 /** Per-dimension results plus the overall verdict. */
 export interface Comparison {
-  rows: ComparisonRow[]
+  rows: ComparisonAxisRow[]
   /** Overall winner, or `'tie'`; `null` when the family has no rubric. */
   overallWinner: 'a' | 'b' | 'tie' | null
   /** Dimensions where each side is clearly ahead. */
@@ -573,7 +573,7 @@ export function compareEntities(pair: ComparativaPair): Comparison {
   const family = getComparativaFamily(pair.family)
   const dimensions = family?.dimensions ?? []
 
-  const rows: ComparisonRow[] = dimensions.map(dimension => {
+  const rows: ComparisonAxisRow[] = dimensions.map(dimension => {
     const a = pair.a.scores[dimension.id] ?? 0
     const b = pair.b.scores[dimension.id] ?? 0
     const gap = a - b

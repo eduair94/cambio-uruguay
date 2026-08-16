@@ -210,6 +210,7 @@ export default defineEventHandler(async _event => {
       branches: BranchPage[]
       casas: Record<string, { bcu?: string }>
       quotesUsd?: string[]
+      quotes?: Record<string, string[]>
     }>('/api/branches')
     const branches = directory?.branches ?? []
     branches.forEach(branch => {
@@ -236,6 +237,7 @@ export default defineEventHandler(async _event => {
         // The sitemap has no review store; `hasBcu`/branches already cover the
         // opiniones gate, and a rating can only widen it.
         hasRating: false,
+        quotedCurrencies: directory?.quotes?.[origin] ?? [],
       })
       for (const intent of intents) {
         urls.push({

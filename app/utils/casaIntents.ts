@@ -16,9 +16,16 @@
 // and cannot is the definition of thin.
 
 import { deptLabel, displayableHours, tidy, type BranchPage } from './branches'
+import {
+  CURRENCY_SLUG_TO_CODE,
+  currencyDisplayName,
+  type CurrencyCode,
+  type CurrencySlug,
+} from './currencyPages'
+import { offMarketDetector } from './marketOutlier'
 
-/** The intents a casa page can be sliced into. */
-export const CASA_INTENTS = [
+/** The fixed, non-currency intents a casa page can be sliced into. */
+export const CASA_FIXED_INTENTS = [
   'horarios',
   'telefono',
   'opiniones',
@@ -26,11 +33,43 @@ export const CASA_INTENTS = [
   'vender-dolares',
 ] as const
 
-export type CasaIntent = (typeof CASA_INTENTS)[number]
+export type CasaFixedIntent = (typeof CASA_FIXED_INTENTS)[number]
+
+/**
+ * Currency slices, one per currency the casa actually quotes.
+ *
+ * The dollar is deliberately absent: `comprar-dolares` and `vender-dolares`
+ * already answer it from both sides, and a third `/casa/x/dolar` would compete
+ * with them for the same query. Everything else has real, unanswered demand —
+ * "euro brou" (153 impressions, no clicks), "cotizacion euro brou" (73),
+ * "real cotizacion brou" (47), "precio del oro en uruguay brou" (153) — and 148
+ * casa×currency quotes exist in the live feed to answer it with.
+ */
+export const CASA_CURRENCY_INTENTS = Object.freeze(
+  (Object.keys(CURRENCY_SLUG_TO_CODE) as CurrencySlug[]).filter(slug => slug !== 'dolar')
+)
+
+/** Every intent slug: the fixed ones first, then one per non-dollar currency. */
+export const CASA_INTENTS = Object.freeze([
+  ...CASA_FIXED_INTENTS,
+  ...CASA_CURRENCY_INTENTS,
+]) as readonly (CasaFixedIntent | CurrencySlug)[]
+
+export type CasaIntent = CasaFixedIntent | CurrencySlug
 
 /** Narrow an arbitrary route param to a known intent. */
 export function isCasaIntent(value: string): value is CasaIntent {
   return (CASA_INTENTS as readonly string[]).includes(value)
+}
+
+/** True when the intent is a currency slice rather than a fixed section. */
+export function isCurrencyIntent(intent: string): intent is CurrencySlug {
+  return (CASA_CURRENCY_INTENTS as readonly string[]).includes(intent)
+}
+
+/** ISO code behind a currency intent, or `null` for the fixed ones. */
+export function intentCurrencyCode(intent: string): CurrencyCode | null {
+  return isCurrencyIntent(intent) ? CURRENCY_SLUG_TO_CODE[intent] : null
 }
 
 /** Static presentation metadata for an intent. */
@@ -44,7 +83,32 @@ export interface CasaIntentMeta {
   icon: string
 }
 
+/** Icon per currency slice; anything unlisted falls back to a generic bill. */
+const CURRENCY_ICONS: Readonly<Partial<Record<CurrencySlug, string>>> = Object.freeze({
+  euro: 'mdi-currency-eur',
+  real: 'mdi-cash',
+  'peso-argentino': 'mdi-cash-multiple',
+  oro: 'mdi-gold',
+  yen: 'mdi-currency-jpy',
+  'libra-esterlina': 'mdi-currency-gbp',
+  'franco-suizo': 'mdi-cash-100',
+})
+
+/** Metadata for one currency slice, derived from the shared currency catalogue. */
+function currencyIntentMeta(slug: CurrencySlug): CasaIntentMeta {
+  const name = currencyDisplayName(CURRENCY_SLUG_TO_CODE[slug], 'es')
+  return {
+    slug,
+    tag: name.toLocaleUpperCase('es'),
+    label: name,
+    icon: CURRENCY_ICONS[slug] ?? 'mdi-cash',
+  }
+}
+
 export const CASA_INTENT_META: Readonly<Record<CasaIntent, CasaIntentMeta>> = Object.freeze({
+  ...(Object.fromEntries(
+    CASA_CURRENCY_INTENTS.map(slug => [slug, currencyIntentMeta(slug)])
+  ) as Record<CurrencySlug, CasaIntentMeta>),
   horarios: {
     slug: 'horarios',
     tag: 'HORARIOS',
@@ -102,6 +166,176 @@ export interface CasaFacts {
   /** BCU institution page for the casa, when `localData` carries it. */
   bcuUrl: string
   website: string
+  /** ISO codes this casa quotes publicly today (drives the currency slices). */
+  quotedCurrencies: string[]
+  /** The currency slice being rendered, when the intent is one. */
+  currency: CurrencyQuoteFacts | null
+}
+
+/**
+ * What one unit of a currency is called, for prose like "por cada ___".
+ *
+ * Gold is the reason this exists: the catalogue calls XAU "Oro", and the
+ * templated sentence came out as "ninguna otra casa te cobra menos por cada
+ * oro". It is quoted per troy ounce, and it is a metal, not a currency — so the
+ * surrounding copy has to change nouns with it.
+ */
+export function currencyUnitNoun(code: CurrencyCode): string {
+  if (code === 'XAU') return 'onza'
+  return currencyDisplayName(code, 'es').toLocaleLowerCase('es')
+}
+
+/** `'este metal'` for gold, `'esta moneda'` for everything else. */
+export function currencyKindNoun(code: CurrencyCode): string {
+  return code === 'XAU' ? 'este metal' : 'esta moneda'
+}
+
+/** What a casa would have in stock: bars for gold, notes for a currency. */
+export function currencyStockNoun(code: CurrencyCode): string {
+  return code === 'XAU' ? 'disponibilidad' : 'billetes'
+}
+
+/** One casa's position in a single currency's market today. */
+export interface CurrencyQuoteFacts {
+  code: CurrencyCode
+  slug: CurrencySlug
+  /** Display name in Spanish, e.g. `'Euro'`. */
+  name: string
+  buy: number
+  sell: number
+  /** Quote type as published (`''` for the plain cash board). */
+  type: string
+  /** Buy/sell spread as a percentage of the midpoint. */
+  spreadPct: number
+  /** Cheapest sell in the market for this currency, outliers excluded. */
+  bestSell: number | null
+  /** Highest buy in the market for this currency, outliers excluded. */
+  bestBuy: number | null
+  /** How many casas quote it — the denominator of "puesto N de M". */
+  marketSize: number
+  sellRank: number | null
+  buyRank: number | null
+}
+
+/** A quote row as the market feed publishes it. */
+export interface MarketQuoteRow {
+  origin: string
+  code: string
+  type?: string | null
+  buy: number
+  sell: number
+  isInterBank?: boolean
+}
+
+/** One casa's chosen quote for a currency, before ranking. */
+interface PickedQuote {
+  origin: string
+  type: string
+  buy: number
+  sell: number
+}
+
+/**
+ * Type preference when a casa quotes the same currency several ways: the plain
+ * cash board (`''`) is the walk-in price, `BILLETE` its bank equivalent, and
+ * anything else (EBROU, wallet promos) only applies under conditions.
+ *
+ * Same ordering `casasDirectory.buildUsdComparison` uses for the dollar, so the
+ * currency slices and the USD comparison never disagree about which board of a
+ * casa is "the" price.
+ */
+const quoteRank = (type: string): number => (type === '' ? 0 : type === 'BILLETE' ? 1 : 2)
+
+/**
+ * Reduce the market feed to one quote per casa for `code`, ranked.
+ *
+ * INTERBANCARIO rows are dropped by NAME as well as by the `isInterBank` flag:
+ * the feed publishes Cambio La Favorita's interbank reference with the flag
+ * unset, and a wholesale price no member of the public can take must never be
+ * crowned "the best of the day".
+ *
+ * Off-market boards are excluded from the ranking (not from the casa's own
+ * quote) through the shared detector, which stands down below ten quotes — so a
+ * thin market like the Swiss franc never has one of its five prices dismissed.
+ */
+export function buildCurrencyMarket(
+  rows: readonly MarketQuoteRow[],
+  code: string
+): { picked: Map<string, PickedQuote>; bySell: PickedQuote[]; byBuy: PickedQuote[] } {
+  const byOrigin = new Map<string, PickedQuote>()
+  for (const row of rows) {
+    if (!row?.origin || row.code !== code || row.isInterBank) continue
+    if (String(row.type ?? '').toUpperCase() === 'INTERBANCARIO') continue
+    if (!(Number(row.buy) > 0) || !(Number(row.sell) > 0)) continue
+    const type = String(row.type ?? '')
+    const previous = byOrigin.get(row.origin)
+    if (
+      !previous ||
+      quoteRank(type) < quoteRank(previous.type) ||
+      (quoteRank(type) === quoteRank(previous.type) && row.sell < previous.sell)
+    ) {
+      byOrigin.set(row.origin, { origin: row.origin, type, buy: row.buy, sell: row.sell })
+    }
+  }
+
+  const picked = [...byOrigin.values()]
+  const isOffMarket = offMarketDetector(picked)
+  const ranked = picked.filter(quote => !isOffMarket(quote))
+
+  return {
+    picked: byOrigin,
+    bySell: [...ranked].sort((a, b) => a.sell - b.sell),
+    byBuy: [...ranked].sort((a, b) => b.buy - a.buy),
+  }
+}
+
+/** Every currency a casa quotes publicly today, in catalogue order. */
+export function quotedCurrenciesFor(
+  rows: readonly MarketQuoteRow[],
+  origin: string
+): CurrencyCode[] {
+  const codes = new Set<string>()
+  for (const row of rows) {
+    if (row?.origin !== origin || row.isInterBank) continue
+    if (String(row.type ?? '').toUpperCase() === 'INTERBANCARIO') continue
+    if (!(Number(row.buy) > 0) || !(Number(row.sell) > 0)) continue
+    codes.add(row.code)
+  }
+  return CASA_CURRENCY_INTENTS.map(slug => CURRENCY_SLUG_TO_CODE[slug]).filter(code =>
+    codes.has(code)
+  )
+}
+
+/** Resolve one casa's standing in one currency, or `null` when it does not quote it. */
+export function currencyFactsFor(
+  rows: readonly MarketQuoteRow[],
+  origin: string,
+  slug: CurrencySlug
+): CurrencyQuoteFacts | null {
+  const code = CURRENCY_SLUG_TO_CODE[slug]
+  const market = buildCurrencyMarket(rows, code)
+  const mine = market.picked.get(origin)
+  if (!mine) return null
+
+  const rankOf = (list: PickedQuote[]): number | null => {
+    const index = list.findIndex(quote => quote.origin === origin)
+    return index === -1 ? null : index + 1
+  }
+
+  return {
+    code,
+    slug,
+    name: currencyDisplayName(code, 'es'),
+    buy: mine.buy,
+    sell: mine.sell,
+    type: mine.type,
+    spreadPct: ((mine.sell - mine.buy) / ((mine.sell + mine.buy) / 2)) * 100,
+    bestSell: market.bySell[0]?.sell ?? null,
+    bestBuy: market.byBuy[0]?.buy ?? null,
+    marketSize: market.bySell.length,
+    sellRank: rankOf(market.bySell),
+    buyRank: rankOf(market.byBuy),
+  }
 }
 
 /** Branches whose opening-hours field holds something worth printing. */
@@ -123,6 +357,8 @@ export interface IntentAvailabilityInput {
   hasBcu: boolean
   /** True when a Google rating is known for the casa. */
   hasRating: boolean
+  /** ISO codes the casa quotes publicly today; gates the currency slices. */
+  quotedCurrencies?: readonly string[]
 }
 
 /**
@@ -147,8 +383,14 @@ export function intentAvailable(intent: CasaIntent, input: IntentAvailabilityInp
     case 'comprar-dolares':
     case 'vender-dolares':
       return input.quotesUsd
-    default:
-      return false
+    default: {
+      // A currency slice exists only where that casa actually quotes that
+      // currency: 44 casas quote the dollar but only five quote the guaraní,
+      // and a "Guaraní en X" page with no price is the thin page this gate
+      // exists to prevent.
+      const code = intentCurrencyCode(intent)
+      return code ? (input.quotedCurrencies ?? []).includes(code) : false
+    }
   }
 }
 
@@ -173,6 +415,7 @@ function factsToAvailability(facts: CasaFacts): IntentAvailabilityInput {
     quotesUsd: Boolean(facts.usd),
     hasBcu: Boolean(facts.bcuUrl),
     hasRating: Boolean(facts.rating),
+    quotedCurrencies: facts.quotedCurrencies,
   }
 }
 
@@ -196,7 +439,23 @@ export function joinEs(items: readonly string[]): string {
 
 /** Format a rate the way the site does elsewhere: `'42,35'`. */
 export function formatRateEs(value: number): string {
-  return value.toLocaleString('es-UY', { minimumFractionDigits: 2, maximumFractionDigits: 3 })
+  // Decimals scale with magnitude. A fixed 2–3 printed the ounce of gold as
+  // "$ 182.907,296" (three decimals on a six-figure number, which reads like a
+  // typo) and would have rounded the Chilean peso's "$ 0,053" down to "$ 0,05",
+  // losing the only digits that carry information.
+  const magnitude = Math.abs(value)
+  if (magnitude >= 1000) {
+    return value.toLocaleString('es-UY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  }
+  if (magnitude >= 1) {
+    return value.toLocaleString('es-UY', { minimumFractionDigits: 2, maximumFractionDigits: 3 })
+  }
+  return value.toLocaleString('es-UY', { minimumFractionDigits: 2, maximumFractionDigits: 4 })
+}
+
+/** Format a percentage the way Uruguay writes it: `'10,7%'` — comma, not dot. */
+export function formatPctEs(value: number): string {
+  return `${value.toLocaleString('es-UY', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`
 }
 
 /** Format a peso amount with no decimals: `'1.250'`. */
@@ -206,6 +465,10 @@ export function formatPesosEs(value: number): string {
 
 /** H1 for an intent page. Shaped like the query it answers. */
 export function intentHeading(intent: CasaIntent, facts: CasaFacts): string {
+  if (isCurrencyIntent(intent)) {
+    const name = facts.currency?.name ?? CASA_INTENT_META[intent].label
+    return `${name} en ${facts.name}: cotización de hoy`
+  }
   switch (intent) {
     case 'horarios':
       return `Horarios de ${facts.name}`
@@ -223,6 +486,10 @@ export function intentHeading(intent: CasaIntent, facts: CasaFacts): string {
 /** Document `<title>`, with the geographic qualifier the query usually carries. */
 export function intentTitle(intent: CasaIntent, facts: CasaFacts): string {
   const where = facts.departments.length === 1 ? ` en ${facts.departments[0]}` : ' en Uruguay'
+  if (isCurrencyIntent(intent)) {
+    const name = facts.currency?.name ?? CASA_INTENT_META[intent].label
+    return `${name} en ${facts.name}: compra y venta de hoy${where}`
+  }
   switch (intent) {
     case 'horarios':
       return `Horarios de ${facts.name}${where}: a qué hora abre cada sucursal`
@@ -249,6 +516,24 @@ export function intentDescription(intent: CasaIntent, facts: CasaFacts): string 
   const withHours = branchesWithHours(facts.branches).length
   const withPhone = branchesWithPhone(facts.branches).length
   const where = facts.departments.length ? ` en ${joinEs(facts.departments.slice(0, 4))}` : ''
+
+  if (isCurrencyIntent(intent)) {
+    const currency = facts.currency
+    const name = currency?.name ?? CASA_INTENT_META[intent].label
+    if (!currency) {
+      return `Cotización del ${name.toLocaleLowerCase('es')} en ${facts.name}: compra, venta y comparación con el resto del mercado uruguayo.`
+    }
+    const rank =
+      currency.sellRank && currency.marketSize > 1
+        ? ` Está ${currency.sellRank}º de ${currency.marketSize} casas que lo cotizan.`
+        : ''
+    return `${facts.name} compra el ${name.toLocaleLowerCase('es')} a $ ${formatRateEs(
+      currency.buy
+    )} y lo vende a $ ${formatRateEs(currency.sell)}.${rank} Comparado con el resto del mercado, y dónde operar${where}.`.slice(
+      0,
+      300
+    )
+  }
 
   switch (intent) {
     case 'horarios':
@@ -319,4 +604,70 @@ export function marketPositionSentence(
   )}: son $ ${formatRateEs(gap)} menos por dólar, unos $ ${formatPesosEs(
     gap * 1000
   )} de diferencia si vendés 1.000 dólares.${rank}`
+}
+
+/**
+ * The body paragraph for a currency slice, built from that currency's own market.
+ *
+ * Deliberately not the dollar's copy with a noun swapped: the numbers, the
+ * denominator ("de 39 casas que lo cotizan") and the spread all come from the
+ * market for THAT currency, which is a different and much thinner market — 39
+ * casas quote the euro, five the guaraní, four the ounce of gold.
+ */
+export function currencyPositionSentence(facts: CasaFacts): string {
+  const currency = facts.currency
+  if (!currency) return ''
+
+  const name = currency.name.toLocaleLowerCase('es')
+  const unit = currencyUnitNoun(currency.code)
+  const kind = currencyKindNoun(currency.code)
+  const stock = currencyStockNoun(currency.code)
+  const parts: string[] = [
+    `Hoy ${facts.name} compra el ${name} a $ ${formatRateEs(currency.buy)} y lo vende a $ ${formatRateEs(
+      currency.sell
+    )}. La diferencia entre las dos puntas —el spread— es de ${formatPctEs(
+      currency.spreadPct
+    )}: es lo que te cuesta comprar y vender en el mismo lugar.`,
+  ]
+
+  if (currency.marketSize > 1 && currency.bestSell !== null) {
+    const gap = currency.sell - currency.bestSell
+    if (gap <= 0.0001) {
+      parts.push(
+        `Es la venta más barata del mercado: ninguna otra casa te cobra menos por cada ${unit}.`
+      )
+    } else {
+      const rank = currency.sellRank ? ` Está ${currency.sellRank}º de ${currency.marketSize}.` : ''
+      parts.push(
+        `La casa más barata lo vende a $ ${formatRateEs(currency.bestSell)}, así que acá pagás $ ${formatRateEs(
+          gap
+        )} más por ${unit}.${rank}`
+      )
+    }
+  }
+
+  if (currency.marketSize > 1 && currency.bestBuy !== null) {
+    const gap = currency.bestBuy - currency.buy
+    if (gap <= 0.0001) {
+      parts.push(`Y es quien mejor lo paga: nadie te da más si venís a vender.`)
+    } else {
+      parts.push(
+        `Del otro lado, quien mejor paga da $ ${formatRateEs(currency.bestBuy)} por ${unit}, $ ${formatRateEs(
+          gap
+        )} más que acá.`
+      )
+    }
+  }
+
+  if (currency.marketSize <= 1) {
+    parts.push(
+      `Es de las pocas casas que publican ${kind}, así que no hay contra qué comparar el precio: conviene llamar antes de ir, porque en lo que casi nadie pide el valor se pacta en el mostrador y no siempre hay ${stock} en caja.`
+    )
+  } else if (currency.marketSize < 10) {
+    parts.push(
+      `Solo ${currency.marketSize} casas del mercado publican ${kind}. Con tan pocas pizarras conviene confirmar por teléfono que haya ${stock} antes de ir hasta el local.`
+    )
+  }
+
+  return parts.join(' ')
 }

@@ -3,24 +3,33 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { buildBranchPages, type Branch } from '../../utils/branches'
 import {
+  CASA_CURRENCY_INTENTS,
+  CASA_FIXED_INTENTS,
   CASA_INTENTS,
   CASA_INTENT_META,
   availableIntents,
   branchesWithHours,
   branchesWithPhone,
+  buildCurrencyMarket,
+  currencyFactsFor,
+  currencyPositionSentence,
   departmentLabels,
   formatPesosEs,
   formatRateEs,
   intentAvailable,
+  intentCurrencyCode,
   intentDescription,
   intentHeading,
   intentTitle,
   intentsFor,
   isCasaIntent,
+  isCurrencyIntent,
   joinEs,
   marketPositionSentence,
+  quotedCurrenciesFor,
   type CasaFacts,
   type CasaIntent,
+  type MarketQuoteRow,
 } from '../../utils/casaIntents'
 
 function branch(overrides: Partial<Branch> = {}): Branch {
@@ -56,8 +65,29 @@ function facts(overrides: Partial<CasaFacts> = {}): CasaFacts {
     rating: { score: 4.2, count: 180 },
     bcuUrl: 'https://www.bcu.gub.uy/x',
     website: 'https://gales.com.uy',
+    quotedCurrencies: ['EUR', 'BRL', 'ARS'],
+    currency: null,
     ...overrides,
   }
+}
+
+/** A market feed fixture: `count` casas quoting `code`, plus one interbank row. */
+function marketRows(
+  code: string,
+  quotes: Array<{ origin: string; buy: number; sell: number; type?: string }>
+): MarketQuoteRow[] {
+  return [
+    ...quotes.map(quote => ({
+      origin: quote.origin,
+      code,
+      type: quote.type ?? '',
+      buy: quote.buy,
+      sell: quote.sell,
+    })),
+    // The trap the dollar path already hit: an interbank reference published
+    // WITHOUT the `isInterBank` flag, only `type: 'INTERBANCARIO'`.
+    { origin: 'la_favorita', code, type: 'INTERBANCARIO', buy: 45, sell: 45 },
+  ]
 }
 
 describe('the intent set', () => {
@@ -82,18 +112,49 @@ describe('the intent set', () => {
   // close over an import, so the page repeats the list as a literal. If someone
   // adds a sixth intent here and forgets the page, every URL for it would 404
   // while the sitemap advertised it — this is the tripwire.
-  it('matches the literal the route guard inlines', () => {
+  it('matches the literals the route guard inlines', () => {
     const page = readFileSync(
       join(__dirname, '..', '..', 'pages', 'casa', '[origin]', '[intent].vue'),
       'utf8'
     )
-    const match = page.match(/const known = \[([^\]]+)\]/)
-    expect(match).toBeTruthy()
-    const inlined = (match?.[1] ?? '')
+
+    const fixed = page.match(/const known = \[([^\]]+)\]/)
+    expect(fixed).toBeTruthy()
+    const inlinedFixed = (fixed?.[1] ?? '')
       .split(',')
       .map(part => part.trim().replace(/^'|'$/g, ''))
       .filter(Boolean)
-    expect(inlined).toEqual([...CASA_INTENTS])
+    expect(inlinedFixed).toEqual([...CASA_FIXED_INTENTS])
+
+    // The currency map in the guard must agree with the shared catalogue in BOTH
+    // directions: a slug the guard does not know 404s while the sitemap lists it,
+    // and a code typed wrong sends the reader a page about another currency.
+    const currencies = page.match(/const currencies: Record<string, string> = \{([\s\S]*?)\n {4}\}/)
+    expect(currencies).toBeTruthy()
+    const inlinedPairs = [
+      ...(currencies?.[1] ?? '').matchAll(/'?([a-z-]+)'?:\s*'([A-Z]{3})'/g),
+    ].map(match => [match[1], match[2]] as const)
+    expect(Object.fromEntries(inlinedPairs)).toEqual(
+      Object.fromEntries(CASA_CURRENCY_INTENTS.map(slug => [slug, intentCurrencyCode(slug)]))
+    )
+  })
+
+  it('separates currency slices from fixed sections', () => {
+    for (const slug of CASA_CURRENCY_INTENTS) {
+      expect(isCurrencyIntent(slug)).toBe(true)
+      expect(intentCurrencyCode(slug)).toMatch(/^[A-Z]{3}$/)
+    }
+    for (const slug of CASA_FIXED_INTENTS) {
+      expect(isCurrencyIntent(slug)).toBe(false)
+      expect(intentCurrencyCode(slug)).toBeNull()
+    }
+  })
+
+  // The dollar already has two pages answering it from both sides; a third
+  // would compete with them for the same query.
+  it('has no dollar slice', () => {
+    expect(CASA_CURRENCY_INTENTS).not.toContain('dolar')
+    expect(isCasaIntent('dolar')).toBe(false)
   })
 })
 
@@ -133,19 +194,163 @@ describe('availability gating', () => {
     expect(intentAvailable('sucursales' as CasaIntent, base)).toBe(false)
   })
 
+  it('opens a currency slice only where the casa quotes that currency', () => {
+    expect(intentAvailable('euro', { ...base, quotedCurrencies: ['EUR'] })).toBe(true)
+    expect(intentAvailable('euro', { ...base, quotedCurrencies: ['BRL'] })).toBe(false)
+    expect(intentAvailable('guarani', base)).toBe(false)
+  })
+
   it('lists available intents in catalogue order', () => {
     const branches = buildBranchPages([branch()])
-    expect(intentsFor({ branches, quotesUsd: true, hasBcu: true, hasRating: true })).toEqual([
-      ...CASA_INTENTS,
-    ])
+    expect(
+      intentsFor({
+        branches,
+        quotesUsd: true,
+        hasBcu: true,
+        hasRating: true,
+        quotedCurrencies: ['EUR', 'BRL'],
+      })
+    ).toEqual([...CASA_FIXED_INTENTS, 'euro', 'real'])
     expect(intentsFor({ ...base, quotesUsd: true })).toEqual(['comprar-dolares', 'vender-dolares'])
   })
 
   it('agrees with itself when called through the resolved facts', () => {
-    expect(availableIntents(facts())).toEqual([...CASA_INTENTS])
-    expect(availableIntents(facts({ usd: null, branches: [], bcuUrl: '', rating: null }))).toEqual(
-      []
-    )
+    expect(availableIntents(facts())).toEqual([
+      ...CASA_FIXED_INTENTS,
+      'euro',
+      'real',
+      'peso-argentino',
+    ])
+    expect(
+      availableIntents(
+        facts({ usd: null, branches: [], bcuUrl: '', rating: null, quotedCurrencies: [] })
+      )
+    ).toEqual([])
+  })
+})
+
+describe('currency markets', () => {
+  const rows = marketRows('EUR', [
+    { origin: 'gales', buy: 44, sell: 50 },
+    { origin: 'brou', buy: 45, sell: 49 },
+    { origin: 'itau', buy: 43, sell: 51 },
+  ])
+
+  it('drops the interbank reference even when the flag is unset', () => {
+    const market = buildCurrencyMarket(rows, 'EUR')
+    expect(market.picked.has('la_favorita')).toBe(false)
+    expect(market.bySell).toHaveLength(3)
+  })
+
+  it('prefers the plain cash board when a casa publishes several', () => {
+    const multi = [
+      { origin: 'brou', code: 'EUR', type: 'EBROU', buy: 46, sell: 48 },
+      { origin: 'brou', code: 'EUR', type: '', buy: 45, sell: 49 },
+    ]
+    expect(buildCurrencyMarket(multi, 'EUR').picked.get('brou')?.sell).toBe(49)
+  })
+
+  it('ignores a quote missing either side', () => {
+    const broken = [
+      { origin: 'x', code: 'EUR', type: '', buy: 0, sell: 50 },
+      { origin: 'y', code: 'EUR', type: '', buy: 45, sell: 0 },
+    ]
+    expect(buildCurrencyMarket(broken, 'EUR').picked.size).toBe(0)
+  })
+
+  it('resolves a casa’s position, spread and ranks', () => {
+    const currency = currencyFactsFor(rows, 'gales', 'euro')
+    expect(currency).toBeTruthy()
+    expect(currency?.code).toBe('EUR')
+    expect(currency?.bestSell).toBe(49)
+    expect(currency?.bestBuy).toBe(45)
+    expect(currency?.marketSize).toBe(3)
+    expect(currency?.sellRank).toBe(2)
+    expect(currency?.buyRank).toBe(2)
+    expect(currency?.spreadPct).toBeCloseTo(((50 - 44) / 47) * 100, 6)
+  })
+
+  it('returns null for a casa that does not quote the currency', () => {
+    expect(currencyFactsFor(rows, 'santander', 'euro')).toBeNull()
+  })
+
+  it('lists a casa’s quoted currencies without the dollar slice', () => {
+    const mixed = [
+      { origin: 'gales', code: 'USD', type: '', buy: 39, sell: 41 },
+      { origin: 'gales', code: 'EUR', type: '', buy: 44, sell: 50 },
+      { origin: 'gales', code: 'BRL', type: '', buy: 7, sell: 8 },
+      { origin: 'gales', code: 'ZZZ', type: '', buy: 1, sell: 2 },
+    ]
+    // USD is absent because no `/casa/x/dolar` slice exists, and ZZZ because it
+    // is not in the currency catalogue.
+    expect(quotedCurrenciesFor(mixed, 'gales')).toEqual(['EUR', 'BRL'])
+  })
+
+  // Thin markets are the whole reason `offMarketDetector` stands down below ten
+  // quotes: with five boards, one of them being 4% off the median is normal.
+  it('crowns a winner even in a market too thin to judge outliers', () => {
+    const thin = marketRows('PYG', [
+      { origin: 'a', buy: 0.004, sell: 0.007 },
+      { origin: 'b', buy: 0.005, sell: 0.0068 },
+    ])
+    const currency = currencyFactsFor(thin, 'b', 'guarani')
+    expect(currency?.marketSize).toBe(2)
+    expect(currency?.sellRank).toBe(1)
+  })
+})
+
+describe('currency copy', () => {
+  const rows = marketRows('EUR', [
+    { origin: 'gales', buy: 44, sell: 50 },
+    { origin: 'brou', buy: 45, sell: 49 },
+  ])
+  const withEuro = facts({ currency: currencyFactsFor(rows, 'gales', 'euro') })
+
+  it('titles and headings name the currency and the casa', () => {
+    expect(intentHeading('euro', withEuro)).toContain('Euro')
+    expect(intentHeading('euro', withEuro)).toContain('Cambio Gales')
+    expect(intentTitle('euro', withEuro)).toContain('Euro')
+  })
+
+  it('puts this casa’s own numbers in the description', () => {
+    const description = intentDescription('euro', withEuro)
+    expect(description).toContain('44,00')
+    expect(description).toContain('50,00')
+    expect(description.length).toBeLessThanOrEqual(300)
+  })
+
+  it('quantifies the gap, the spread and the size of the market', () => {
+    const sentence = currencyPositionSentence(withEuro)
+    expect(sentence).toContain('44,00')
+    expect(sentence).toContain('50,00')
+    expect(sentence).toContain('49,00')
+    expect(sentence).toContain('%')
+    expect(sentence).not.toContain('NaN')
+    expect(sentence).not.toContain('undefined')
+  })
+
+  it('warns instead of comparing when almost nobody quotes it', () => {
+    const solo = marketRows('XAU', [{ origin: 'gales', buy: 100000, sell: 120000 }])
+    const alone = facts({ currency: currencyFactsFor(solo, 'gales', 'oro') })
+    expect(currencyPositionSentence(alone)).toContain('pocas casas')
+  })
+
+  it('says nothing at all when there is no quote to talk about', () => {
+    expect(currencyPositionSentence(facts({ currency: null }))).toBe('')
+  })
+
+  it('never leaves a currency page with an empty verdict', () => {
+    for (const slug of CASA_CURRENCY_INTENTS) {
+      const code = intentCurrencyCode(slug) as string
+      const market = marketRows(code, [
+        { origin: 'gales', buy: 10, sell: 12 },
+        { origin: 'brou', buy: 11, sell: 11.5 },
+      ])
+      const data = facts({ currency: currencyFactsFor(market, 'gales', slug) })
+      expect(currencyPositionSentence(data).length).toBeGreaterThan(120)
+      expect(intentHeading(slug, data).length).toBeGreaterThan(10)
+      expect(intentDescription(slug, data).length).toBeGreaterThan(80)
+    }
   })
 })
 

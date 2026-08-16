@@ -24,6 +24,14 @@ export interface BranchDirectory {
    * whole market payload inside `validate` on every navigation.
    */
   quotesUsd: string[]
+  /**
+   * Every currency each origin quotes publicly, by ISO code.
+   *
+   * Same job as {@link quotesUsd} for the currency slices: 44 casas quote the
+   * dollar but only five the guaraní, so the guard needs the per-casa list to
+   * decide whether `/casa/:origin/guarani` exists at all.
+   */
+  quotes: Record<string, string[]>
 }
 
 /**
@@ -84,6 +92,7 @@ export default defineCachedEventHandler(
     // opened a "comprar dólares" page for a price no member of the public can
     // take, which is exactly what `buildUsdComparison` filters out downstream.
     const quotesUsd: string[] = []
+    const quotes: Record<string, string[]> = {}
     try {
       const rows = await $fetch<
         Array<{
@@ -95,14 +104,13 @@ export default defineCachedEventHandler(
           isInterBank?: boolean
         }>
       >('/', { baseURL: base })
-      const seen = new Set<string>()
       for (const row of rows ?? []) {
-        if (!row?.origin || row.code !== 'USD' || row.isInterBank) continue
+        if (!row?.origin || !row.code || row.isInterBank) continue
         if (String(row.type ?? '').toUpperCase() === 'INTERBANCARIO') continue
         if (!(Number(row.buy) > 0) || !(Number(row.sell) > 0)) continue
-        if (seen.has(row.origin)) continue
-        seen.add(row.origin)
-        quotesUsd.push(row.origin)
+        const codes = quotes[row.origin] ?? (quotes[row.origin] = [])
+        if (!codes.includes(row.code)) codes.push(row.code)
+        if (row.code === 'USD' && !quotesUsd.includes(row.origin)) quotesUsd.push(row.origin)
       }
     } catch (err) {
       console.error('[/api/branches] rates fetch failed:', err)
@@ -110,7 +118,7 @@ export default defineCachedEventHandler(
 
     const branches = buildBranchPages(merged as Branch[], casaNames)
 
-    return { branches, casas, quotesUsd }
+    return { branches, casas, quotesUsd, quotes }
   },
   { maxAge: 1800, name: 'branches', getKey: () => 'all' }
 )

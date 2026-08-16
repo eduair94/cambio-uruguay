@@ -228,6 +228,122 @@
             </section>
           </template>
 
+          <!-- UNA MONEDA EN PARTICULAR -->
+          <template v-else-if="isCurrency && facts.currency">
+            <section class="mb-8">
+              <p class="text-body-1 casa-prose mb-3">{{ currencySentence }}</p>
+              <div class="table-scroll">
+                <table class="casa-table cu-mobile-cards">
+                  <thead>
+                    <tr>
+                      <th>Concepto</th>
+                      <th>{{ facts.name }}</th>
+                      <th>Mejor del día</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Te venden a</td>
+                      <td :data-label="facts.name">$ {{ formatRateEs(facts.currency.sell) }}</td>
+                      <td data-label="Mejor del día">
+                        {{
+                          facts.currency.bestSell === null
+                            ? '—'
+                            : `$ ${formatRateEs(facts.currency.bestSell)}`
+                        }}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Te compran a</td>
+                      <td :data-label="facts.name">$ {{ formatRateEs(facts.currency.buy) }}</td>
+                      <td data-label="Mejor del día">
+                        {{
+                          facts.currency.bestBuy === null
+                            ? '—'
+                            : `$ ${formatRateEs(facts.currency.bestBuy)}`
+                        }}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Spread</td>
+                      <td :data-label="facts.name">
+                        {{ formatPctEs(facts.currency.spreadPct) }}
+                      </td>
+                      <td data-label="Mejor del día">—</td>
+                    </tr>
+                    <tr>
+                      <td>Casas que la cotizan</td>
+                      <td :data-label="facts.name">
+                        {{ facts.currency.sellRank ? `${facts.currency.sellRank}º` : '—' }}
+                      </td>
+                      <td data-label="Mejor del día">{{ facts.currency.marketSize }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="text-caption text-medium-emphasis mt-3 mb-0">
+                Cotización publicada hoy{{
+                  facts.currency.type ? ` (tipo ${facts.currency.type})` : ''
+                }}. Fuera del dólar el mercado es mucho más chico y los precios se mueven menos
+                seguido: el número de acá es el de la última actualización de la pizarra, no una
+                cotización pactada.
+              </p>
+            </section>
+
+            <section class="mb-8">
+              <h2 class="text-h5 font-weight-bold mb-3">Cuánto te llevás por montos habituales</h2>
+              <p class="text-body-2 text-medium-emphasis mb-3">
+                Cuentas hechas con la cotización de {{ facts.name }} de hoy, sin comisiones. Sirven
+                para dimensionar: el monto exacto te lo confirma el mostrador.
+              </p>
+              <div class="table-scroll">
+                <table class="casa-table cu-mobile-cards">
+                  <thead>
+                    <tr>
+                      <th>Si traés</th>
+                      <th>Te dan (venden)</th>
+                      <th>Te pagan (compran)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="row in currencyExamples" :key="row.amount">
+                      <td>{{ row.label }}</td>
+                      <td data-label="Te dan">$ {{ formatPesosEs(row.sell) }}</td>
+                      <td data-label="Te pagan">$ {{ formatPesosEs(row.buy) }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <section v-if="facts.branches.length" class="mb-8">
+              <h2 class="text-h5 font-weight-bold mb-3">Dónde cambiarla</h2>
+              <p class="text-body-1 casa-prose mb-3">
+                {{ facts.name }} atiende en {{ facts.branches.length }}
+                {{ facts.branches.length === 1 ? 'local' : 'locales' }}{{ whereSuffix }}. En monedas
+                que no son el dólar conviene llamar antes: que la pizarra publique un precio no
+                garantiza que ese día haya {{ stockNoun }} en caja, sobre todo para montos grandes o
+                denominaciones chicas.
+              </p>
+              <VList density="comfortable" class="casa-list">
+                <VListItem
+                  v-for="branch in topBranches"
+                  :key="branch.slug"
+                  :to="localePath(`/sucursal/${branch.slug}`)"
+                >
+                  <template #prepend>
+                    <VIcon size="small" color="primary">mdi-store-marker-outline</VIcon>
+                  </template>
+                  <VListItemTitle>{{ branch.addressLabel }}</VListItemTitle>
+                  <VListItemSubtitle>
+                    {{ branch.deptLabel
+                    }}<span v-if="branch.phoneLabel"> · {{ branch.phoneLabel }}</span>
+                  </VListItemSubtitle>
+                </VListItem>
+              </VList>
+            </section>
+          </template>
+
           <!-- COMPRAR / VENDER DÓLARES -->
           <template v-else>
             <section class="mb-8">
@@ -383,14 +499,21 @@ import {
   branchesWithHours,
   branchesWithPhone,
   departmentLabels,
+  currencyStockNoun,
+  currencyUnitNoun,
   formatPesosEs,
+  formatPctEs,
   formatRateEs,
   intentDescription,
   intentHeading,
   intentIsAvailable,
   intentTitle,
+  isCurrencyIntent,
   joinEs,
   marketPositionSentence,
+  currencyFactsFor,
+  currencyPositionSentence,
+  quotedCurrenciesFor,
   type CasaFacts,
   type CasaIntent,
 } from '~/utils/casaIntents'
@@ -400,15 +523,31 @@ import {
 // 200. It reads ONE cached Nitro route (`/api/branches`), which also carries the
 // list of origins quoting USD, so the guard needs no market payload.
 //
-// The intent list is inlined rather than imported: `definePageMeta` is a
+// Both slug lists are inlined rather than imported: `definePageMeta` is a
 // compiler macro whose callback is extracted at build time, so it cannot close
-// over module imports. `tests/unit/casaIntents.test.ts` pins this literal
-// against `CASA_INTENTS` so the copy cannot drift.
+// over module imports. `tests/unit/casaIntents.test.ts` pins both literals
+// against `CASA_FIXED_INTENTS` and the currency catalogue so they cannot drift.
 definePageMeta({
   validate: async route => {
     const intent = String(route.params.intent ?? '')
     const known = ['horarios', 'telefono', 'opiniones', 'comprar-dolares', 'vender-dolares']
-    if (!known.includes(intent)) return false
+    const currencies: Record<string, string> = {
+      euro: 'EUR',
+      real: 'BRL',
+      'peso-argentino': 'ARS',
+      oro: 'XAU',
+      yen: 'JPY',
+      'franco-suizo': 'CHF',
+      guarani: 'PYG',
+      'peso-chileno': 'CLP',
+      'sol-peruano': 'PEN',
+      'peso-colombiano': 'COP',
+      'peso-mexicano': 'MXN',
+      'dolar-canadiense': 'CAD',
+      'dolar-australiano': 'AUD',
+      'libra-esterlina': 'GBP',
+    }
+    if (!known.includes(intent) && !(intent in currencies)) return false
 
     const origin = String(route.params.origin ?? '')
     if (!origin) return false
@@ -418,6 +557,7 @@ definePageMeta({
         branches: Array<{ origin: string; phone: string; hours: string }>
         casas: Record<string, unknown>
         quotesUsd: string[]
+        quotes: Record<string, string[]>
       }>('/api/branches')
 
       if (!directory?.casas?.[origin]) return false
@@ -431,6 +571,9 @@ definePageMeta({
       }
       if (intent === 'comprar-dolares' || intent === 'vender-dolares') {
         return (directory.quotesUsd ?? []).includes(origin)
+      }
+      if (intent in currencies) {
+        return (directory.quotes?.[origin] ?? []).includes(currencies[intent] as string)
       }
       return true
     } catch {
@@ -459,8 +602,11 @@ function rankOf(list: ReadonlyArray<{ origin: string }>, origin: string): number
   return index === -1 ? null : index + 1
 }
 
+// Keyed by origin AND intent: the currency slices resolve a different market
+// each, so one cached payload per casa would serve the euro page the guaraní's
+// numbers on client-side navigation between two slices of the same casa.
 const { data: payload } = await useAsyncData(
-  () => `casa-intent-${origin.value}`,
+  () => `casa-intent-${origin.value}-${intent.value}`,
   async (): Promise<CasaFacts | null> => {
     const [directory, market, reviews] = await Promise.all([
       $fetch<BranchDirectory>('/api/branches'),
@@ -515,6 +661,13 @@ const { data: payload } = await useAsyncData(
       rating: score && count ? { score, count } : null,
       bcuUrl: casa?.bcu ?? '',
       website: casa?.website ?? '',
+      quotedCurrencies: quotedCurrenciesFor(rows as never, origin.value),
+      // Only resolved for a currency slice: computing all fifteen markets on
+      // every casa page would be fifteen reductions over the whole feed for a
+      // page that renders one of them.
+      currency: isCurrencyIntent(intent.value)
+        ? currencyFactsFor(rows as never, origin.value, intent.value)
+        : null,
     }
   }
 )
@@ -556,6 +709,45 @@ const hoursTextFor = (branch: BranchPage) => displayableHours(branch.hoursLabel)
 const telFor = (branch: BranchPage) => telHref(branch.phoneLabel)
 
 const isBuying = computed(() => intent.value === 'comprar-dolares')
+const isCurrency = computed(() => isCurrencyIntent(intent.value))
+
+const currencySentence = computed(() => (facts.value ? currencyPositionSentence(facts.value) : ''))
+
+/**
+ * Worked amounts for the currency slice.
+ *
+ * The steps scale with the unit price so the table reads sensibly for both a
+ * euro (~50 pesos) and a Chilean peso (~0,05): a fixed 100/500/1000 ladder
+ * would show four rows of near-identical pesos for the cheap ones.
+ */
+const stockNoun = computed(() =>
+  facts.value?.currency ? currencyStockNoun(facts.value.currency.code) : 'billetes'
+)
+
+const currencyExamples = computed(() => {
+  const currency = facts.value?.currency
+  if (!currency) return []
+  const unitNoun = currencyUnitNoun(currency.code)
+  const unit = (currency.sell + currency.buy) / 2
+  // The ladder has to fit the unit price. A fixed 100/500/1.000 showed four
+  // rows of near-identical pesos for the Chilean peso, and 500 troy ounces of
+  // gold — about a million dollars — as an "habitual" amount.
+  if (unit >= 10000) {
+    return [1, 2, 5, 10].map(amount => ({
+      amount,
+      label: `${amount.toLocaleString('es-UY')} ${amount === 1 ? unitNoun : `${unitNoun}s`}`,
+      sell: amount * currency.sell,
+      buy: amount * currency.buy,
+    }))
+  }
+  const base = unit >= 20 ? 10 : unit >= 1 ? 100 : unit >= 0.02 ? 10000 : 100000
+  return [base, base * 5, base * 10, base * 50].map(amount => ({
+    amount,
+    label: `${amount.toLocaleString('es-UY')} ${currency.name}`,
+    sell: amount * currency.sell,
+    buy: amount * currency.buy,
+  }))
+})
 
 const positionSentence = computed(() =>
   facts.value && (intent.value === 'comprar-dolares' || intent.value === 'vender-dolares')

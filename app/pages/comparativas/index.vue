@@ -105,8 +105,55 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
+// CollectionPage + ItemList: tells a crawler this hub is a directory of the four
+// family indexes rather than a leaf article, and gives it the four entry points
+// explicitly instead of relying on it finding the tiles.
 useHead({
   link: [{ rel: 'canonical', href: 'https://cambio-uruguay.com/comparativas' }],
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@graph': [
+          {
+            '@type': 'CollectionPage',
+            name: title,
+            description,
+            url: 'https://cambio-uruguay.com/comparativas',
+            inLanguage: 'es-UY',
+            mainEntity: {
+              '@type': 'ItemList',
+              numberOfItems: families.length,
+              itemListElement: families.map((family, index) => ({
+                '@type': 'ListItem',
+                position: index + 1,
+                name: `Comparativas de ${family.label}`,
+                url: `https://cambio-uruguay.com/comparativas/${family.slug}`,
+              })),
+            },
+          },
+          {
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Cambio Uruguay',
+                item: 'https://cambio-uruguay.com',
+              },
+              {
+                '@type': 'ListItem',
+                position: 2,
+                name: 'Comparativas',
+                item: 'https://cambio-uruguay.com/comparativas',
+              },
+            ],
+          },
+        ],
+      }),
+    },
+  ],
 })
 </script>
 
