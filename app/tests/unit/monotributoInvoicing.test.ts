@@ -11,6 +11,7 @@ import {
   LEYENDAS,
   MONO_INVOICING_VERIFIED_AT,
   MYTHS,
+  QUOTE_CHANNELS,
   ROUTES,
   SOURCES,
   SUPPORT_PROGRAMS,
@@ -102,6 +103,22 @@ describe('contenido', () => {
       ...FAQ.map(f => f.answer),
     ].join(' ')
     expect(prose).not.toMatch(/te devuelven el (costo|gasto)|reintegra el talonario/i)
+  })
+
+  // La pregunta que cierra todos los hilos es "¿cuál imprenta es la barata?". La respuesta
+  // honesta es un método, no un nombre: nadie publica lista de precios. Si alguien agrega acá
+  // una recomendación nominal, está inventando un precio que no verificó.
+  it('never names a single imprenta as the cheap one', () => {
+    expect(QUOTE_CHANNELS.length).toBeGreaterThanOrEqual(3)
+    const prose = QUOTE_CHANNELS.map(q => `${q.title} ${q.detail}`).join(' ')
+    expect(prose).not.toMatch(
+      /la m[áa]s barata es|te recomiendo la imprenta|imprenta m[áa]s econ[óo]mica:/i
+    )
+    // Al menos un canal tiene que llevar a la nómina oficial de DGI.
+    expect(QUOTE_CHANNELS.some(q => q.url?.includes('registro-imprentas-web'))).toBe(true)
+    for (const q of QUOTE_CHANNELS) {
+      if (q.url) expect(q.linkLabel, `${q.title} tiene URL sin etiqueta`).toBeTruthy()
+    }
   })
 
   it('has an ordered, gapless talonario checklist', () => {

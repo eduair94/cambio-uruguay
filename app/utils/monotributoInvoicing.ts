@@ -395,6 +395,46 @@ export const COST_LEVERS: readonly Lever[] = [
   },
 ] as const
 
+export interface QuoteChannel {
+  title: string
+  detail: string
+  url?: string
+  linkLabel?: string
+}
+
+/**
+ * «¿Conocen alguna imprenta más barata?» es la pregunta que cierra casi todos los hilos, y la
+ * respuesta honesta no es un nombre: ninguna imprenta uruguaya publica lista de precios y el
+ * mismo trabajo se cotiza distinto según ciudad, tirada y semana. Recomendar «X es la barata»
+ * sería inventar. Lo que sí se puede publicar es el camino corto para averiguarlo.
+ */
+export const QUOTE_CHANNELS: readonly QuoteChannel[] = [
+  {
+    title: 'La nómina oficial, para saber a quién podés pedirle',
+    detail:
+      'DGI publica el listado de imprentas incluidas en el registro web: son las habilitadas a recibir por internet la autorización para imprimir tu documentación. Si la imprenta no está ahí, no te puede imprimir el talonario.',
+    url: 'https://www.gub.uy/direccion-general-impositiva/comunicacion/publicaciones/imprentas-incluidas-registro-imprentas-web',
+    linkLabel: 'Ver la nómina de DGI',
+  },
+  {
+    title: 'Una referencia de precio antes de llamar',
+    detail:
+      'Varias imprentas publican el talonario de facturas con precio a la vista en Mercado Libre. No siempre es el precio más bajo del mercado, pero te da un piso contra el cual comparar el presupuesto que te pasen por teléfono o WhatsApp.',
+    url: 'https://listado.mercadolibre.com.uy/talonario-facturas-dgi',
+    linkLabel: 'Buscar talonarios con precio publicado',
+  },
+  {
+    title: 'Pedí el MISMO trabajo a tres, por escrito',
+    detail:
+      'Mandá siempre el mismo pedido: cantidad de juegos, dos vías, tamaño, una sola tinta, y la leyenda de tu régimen. Si cada presupuesto viene con distinta cantidad o distintas vías, no estás comparando precios sino formatos.',
+  },
+  {
+    title: 'Preguntá también fuera de tu barrio',
+    detail:
+      'La autorización se pide por internet y el talonario se puede enviar, así que no estás atado a la imprenta de la esquina. Las de ciudades chicas suelen cotizar más barato el trabajo simple.',
+  },
+] as const
+
 export interface SupportProgram {
   name: string
   what: string

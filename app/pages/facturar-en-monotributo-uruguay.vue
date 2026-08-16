@@ -313,6 +313,35 @@
         </VCol>
       </VRow>
 
+      <VCard variant="flat" class="quotes-card pa-5 pa-md-6 mt-6">
+        <div class="text-overline mb-2">Dónde pedir presupuesto</div>
+        <h3 class="text-h6 font-weight-bold mb-2">
+          Qué imprenta es la más barata: nadie puede decírtelo, pero se averigua en un rato
+        </h3>
+        <p class="mb-4 text-medium-emphasis" style="max-width: 72ch">
+          Ninguna imprenta uruguaya publica lista de precios, y el mismo trabajo se cotiza distinto
+          según la ciudad, la tirada y la semana. Cualquiera que te tire un nombre como «la barata»
+          está adivinando. Esto es lo que sí sirve.
+        </p>
+        <VRow>
+          <VCol v-for="q in QUOTE_CHANNELS" :key="q.title" cols="12" md="6">
+            <div class="quote-item h-100">
+              <h4 class="text-subtitle-2 font-weight-bold mb-1">{{ q.title }}</h4>
+              <p class="mb-2 text-medium-emphasis">{{ q.detail }}</p>
+              <a
+                v-if="q.url"
+                :href="q.url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-caption source-link"
+              >
+                {{ q.linkLabel }}
+              </a>
+            </div>
+          </VCol>
+        </VRow>
+      </VCard>
+
       <VAlert type="warning" variant="tonal" density="comfortable" class="mt-4">
         <span class="font-weight-bold">No hay subsidio del talonario.</span> No existe un programa
         que reintegre lo que te cobra la imprenta. Lo que existe son apoyos al emprendimiento, con
@@ -452,6 +481,7 @@ import {
   LEYENDAS,
   MONO_INVOICING_VERIFIED_AT,
   MYTHS,
+  QUOTE_CHANNELS,
   ROUTES,
   SOURCES,
   SUPPORT_PROGRAMS,
@@ -583,6 +613,7 @@ useHead(() => ({
 .legend-card,
 .lever-card,
 .support-card,
+.quotes-card,
 .ctx-card {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.09);
@@ -596,6 +627,7 @@ useHead(() => ({
 .v-theme--light .legend-card,
 .v-theme--light .lever-card,
 .v-theme--light .support-card,
+.v-theme--light .quotes-card,
 .v-theme--light .ctx-card {
   background: rgba(0, 0, 0, 0.02);
   border-color: rgba(0, 0, 0, 0.1);
