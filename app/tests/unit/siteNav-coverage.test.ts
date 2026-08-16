@@ -157,6 +157,9 @@ describe('the navigation model has no dead links', () => {
       '/mejores-bancos-uruguay',
       '/tarjetas-de-credito-uruguay',
       '/tarjetas-de-debito-uruguay',
+      // The head-to-head hub belongs here: every pair it lists is built from
+      // the three rankings above (plus the couriers one).
+      '/comparativas',
     ])
   })
 })

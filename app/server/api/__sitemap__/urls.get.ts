@@ -1,6 +1,7 @@
 import type { BranchPage } from '../../../utils/branches'
 import { intentsFor } from '../../../utils/casaIntents'
 import { casaTypePaths } from '../../../utils/casasDirectory'
+import { comparativaFamilySlugs, comparativaPaths } from '../../../utils/comparativas'
 import { convertSlugs } from '../../../utils/convert'
 import { listCurrencySlugs } from '../../../utils/currencyPages'
 import { listFronteraSlugs } from '../../../utils/frontera'
@@ -96,6 +97,13 @@ export default defineEventHandler(async _event => {
   hubSlugs().forEach(slug => addUrlsForAllLocales(`/temas/${slug}`, 0.7, 'weekly'))
   toolSlugs().forEach(slug => addUrlsForAllLocales(`/herramientas/${slug}`, 0.7, 'weekly'))
   glossarySlugs().forEach(slug => addUrlsForAllLocales(`/glosario/${slug}`, 0.6, 'monthly'))
+  // Head-to-head pages: pure catalogue data, so they survive an upstream outage
+  // like the rest of this block. Spanish only — the comparison prose is written
+  // in Spanish and generated from Spanish catalogue copy.
+  comparativaFamilySlugs().forEach(slug =>
+    urls.push({ loc: `/comparativas/${slug}`, changefreq: 'monthly', priority: 0.6 })
+  )
+  comparativaPaths().forEach(path => urls.push({ loc: path, changefreq: 'monthly', priority: 0.6 }))
   convertSlugs().forEach(slug => addUrlsForAllLocales(`/convertir/${slug}`, 0.6, 'weekly'))
   // Curated border-department pages (real/peso argentino at the frontier). A
   // hand-picked allowlist, so — unlike the per-casa history — it is emitted from
