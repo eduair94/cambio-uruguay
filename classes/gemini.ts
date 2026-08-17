@@ -30,7 +30,8 @@ dotenv.config();
 // loan-rates' regex fallback kept producing). `gemini-2.5-flash-lite` is the current grounding-
 // capable model verified working on the free-tier key.
 export const GEMINI_MODEL = (process.env.GEMINI_MODEL || "gemini-2.5-flash-lite").trim();
-const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+const MODELS_BASE = "https://generativelanguage.googleapis.com/v1beta/models";
+const ENDPOINT = `${MODELS_BASE}/${GEMINI_MODEL}:generateContent`;
 const TIMEOUT_MS = 30000;
 /** Transient statuses worth retrying: 429 = free-tier per-minute quota, 503 = model overloaded. */
 const RETRY_STATUSES = new Set([429, 503]);
@@ -65,12 +66,17 @@ async function pace(): Promise<void> {
  * the concurrent workers don't retry in lockstep. Any non-transient error (404 dead model, 400 bad
  * request) throws immediately — the caller's try/catch still turns it into the module's `null`.
  */
-async function postGemini(body: unknown, timeoutMs: number, apiKey: string): Promise<{ data: GeminiResponse }> {
+async function postGemini<T = GeminiResponse>(
+  body: unknown,
+  timeoutMs: number,
+  apiKey: string,
+  endpoint: string = ENDPOINT
+): Promise<{ data: T }> {
   let lastErr: any;
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     try {
       await pace();
-      return await axios.post<GeminiResponse>(ENDPOINT, body, {
+      return await axios.post<T>(endpoint, body, {
         params: { key: apiKey },
         timeout: timeoutMs,
         headers: { "Content-Type": "application/json" },
@@ -335,6 +341,58 @@ export async function askWithImage(
   } catch (error: any) {
     console.warn("[gemini] image call failed:", error?.message || error);
     return null;
+  }
+}
+
+/**
+ * Embeddings.
+ *
+ * Here rather than in classes/rag/embed.ts because `tests/gemini_key_ownership.test.ts` requires it
+ * and the requirement is right: one file reads the key, paces the calls and owns the backoff. The
+ * embedding endpoint is a different path on the same host with the same quota, so a second client
+ * would mean a second unpaced burst competing with the grounded jobs for the same per-minute limit
+ * — and, eventually, a second copy of every retry bug fixed once here.
+ *
+ * `taskType` matters: indexing a page and querying with a Reddit question are asymmetric, and the
+ * model embeds them into the same space optimised for that asymmetry. Using one task type for both
+ * measurably costs recall.
+ *
+ * Returns one entry per input, index-aligned, `null` where the API returned nothing usable. Never
+ * throws — same contract as the rest of this module.
+ */
+export async function embedContents(
+  texts: readonly string[],
+  opts: { model: string; dims: number; taskType: "RETRIEVAL_DOCUMENT" | "RETRIEVAL_QUERY"; timeoutMs?: number }
+): Promise<Array<number[] | null>> {
+  const apiKey = process.env.GEMINI_API_KEY || process.env.NUXT_GEMINI_API_KEY;
+  if (!apiKey || !texts.length) return texts.map(() => null);
+
+  try {
+    const res = await postGemini<{ embeddings?: Array<{ values?: number[] }> }>(
+      {
+        requests: texts.map((text) => ({
+          model: `models/${opts.model}`,
+          content: { parts: [{ text }] },
+          taskType: opts.taskType,
+          outputDimensionality: opts.dims,
+        })),
+      },
+      opts.timeoutMs ?? 45000,
+      apiKey,
+      `${MODELS_BASE}/${opts.model}:batchEmbedContents`
+    );
+
+    const out = res.data?.embeddings ?? [];
+    return texts.map((_t, i) => {
+      const values = out[i]?.values;
+      return Array.isArray(values) && values.length === opts.dims ? values : null;
+    });
+  } catch (error: any) {
+    console.warn(
+      `[gemini] embedding batch of ${texts.length} failed:`,
+      error?.response?.status || error?.message || error
+    );
+    return texts.map(() => null);
   }
 }
 

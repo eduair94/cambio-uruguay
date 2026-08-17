@@ -42,6 +42,18 @@ export interface RedditPostRaw {
   permalink: string;
   createdUtc: number;
   url: string;
+  /**
+   * Moderation state. Optional because the harvesting pipelines that predate them neither set nor
+   * read them; the Reddit bot does, and a thread that is locked, pinned or age-gated is one it must
+   * never answer — a comment on a locked thread fails, and a comment on a mod announcement is the
+   * fastest way to get a bot banned from a subreddit.
+   */
+  over18?: boolean;
+  locked?: boolean;
+  stickied?: boolean;
+  /** `true` for a text post, `false` for a link submission. */
+  isSelf?: boolean;
+  linkFlair?: string;
 }
 
 export interface RedditCommentRaw {
@@ -200,6 +212,11 @@ interface RawPost {
   permalink: string;
   created_utc: number;
   url?: string;
+  over_18?: boolean;
+  locked?: boolean;
+  stickied?: boolean;
+  is_self?: boolean;
+  link_flair_text?: string | null;
 }
 
 interface RawComment {
@@ -226,6 +243,11 @@ function toPost(d: RawPost): RedditPostRaw {
     permalink: `https://reddit.com${d.permalink}`,
     createdUtc: d.created_utc,
     url: d.url ?? "",
+    over18: Boolean(d.over_18),
+    locked: Boolean(d.locked),
+    stickied: Boolean(d.stickied),
+    isSelf: Boolean(d.is_self),
+    linkFlair: d.link_flair_text ?? "",
   };
 }
 
@@ -272,6 +294,21 @@ export async function searchPosts(sub: string, query: string, opts: SearchOption
     if (!after || children.length === 0) break;
   }
   return out;
+}
+
+/**
+ * The newest threads of one subreddit.
+ *
+ * `searchPosts` cannot do this job: Reddit's search index lags publication by minutes to hours and
+ * is query-driven, so a bot that wants to answer a question while it is still on the front page has
+ * to read `/new` directly. `limit` is capped at 100 by Reddit; no pagination here on purpose — a
+ * job that polls every twelve minutes and asks for the last 50 threads already overlaps itself
+ * several times over, and reaching further back only re-reads posts the ledger has already judged.
+ */
+export async function fetchNewPosts(sub: string, limit = 50): Promise<RedditPostRaw[]> {
+  if (!redditConfigured()) return [];
+  const res = await api<Listing<RawPost>>(`/r/${sub}/new`, { limit: Math.min(Math.max(limit, 1), 100) });
+  return (res?.data?.children ?? []).filter((c) => c.kind === "t3").map((c) => toPost(c.data));
 }
 
 /** Hard stop per thread, so one 10k-comment megathread can't blow up a run. */

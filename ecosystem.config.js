@@ -309,5 +309,55 @@ module.exports = {
       cron_restart: "0 14 * * 1,3,5",
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
+    {
+      // RAG index of the public site: crawl the sitemap, chunk the readable text, embed what
+      // changed. Writes `ragchunks` to the APP database (the Mongo on this box), so it needs
+      // APP_MONGO_URI. 04:20 UTC ≈ 01:20 America/Montevideo — the quietest hour, and it reads our
+      // own Nitro server at concurrency 4 for about ten minutes.
+      name: "currency-rag-index",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_rag_index.js",
+      cron_restart: "20 4 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
+      // The Reddit answering bot. Every 12 minutes, 11:00–23:59 UTC (08:00–20:59 America/
+      // Montevideo) — the hours when the subs are awake and a comment gets read.
+      //
+      // Answers AT MOST ONE thread per run and is capped again per day / per sub / per page in
+      // classes/redditbot/limits.ts. Posts NOTHING until `REDDIT_BOT_ENABLED=1` AND
+      // `REDDIT_BOT_DRY_RUN=0` are both set alongside the bot's own Reddit credentials: same
+      // two-gate reasoning as currency-content-promo, because deploying the file must not be what
+      // starts talking to strangers.
+      name: "currency-reddit-bot",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_reddit_bot.js",
+      cron_restart: "*/12 11-23 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
+      // Reads back the score of every comment posted in the last 72 h, and pauses the bot for 48 h
+      // if three of them were removed or downvoted inside a day. This is the half that makes
+      // auto-posting safe: without it, a miscalibrated threshold keeps producing six comments a day
+      // until a human notices.
+      name: "currency-reddit-bot-watch",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_reddit_bot_watch.js",
+      cron_restart: "9 * * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
+      // Clusters the questions the bot could not answer and writes a researched DRAFT (never a
+      // page) to docs/reddit-gaps/ when four or more threads ask the same thing. 05:35 UTC.
+      name: "currency-content-gaps",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_content_gaps.js",
+      cron_restart: "35 5 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
   ],
 };

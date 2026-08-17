@@ -1,0 +1,212 @@
+// The cheap gate: is this thread even worth spending an embedding and a judge call on?
+//
+// Everything here is string work over data we already fetched. It runs before the retriever because
+// `/new` across seven subreddits is mostly football, politics and rent-a-flat posts, and paying two
+// model calls to discover that would cost more than the whole rest of the pipeline.
+//
+// The lexicon is deliberately about MONEY, not about the site. A thread that mentions "dólar" is a
+// candidate; whether the site actually answers it is the retriever's decision, not this one's. A
+// filter that tried to be clever here would pre-empt the retriever with worse information.
+
+import type { RedditPostRaw } from "../reddit";
+import type { BotConfig } from "./config";
+
+/** Terms, accent-free and lowercase, that mark a thread as being about money in Uruguay. */
+const TOPIC_TERMS = [
+  // divisas y cambio
+  "dolar", "dolares", "euro", "euros", "peso", "pesos", "real", "reales", "cambio", "cambiar",
+  "casa de cambio", "cotizacion", "arbitraje", "blue", "brou", "bcu", "interbancario",
+  // bancos y medios de pago
+  "banco", "bancos", "itau", "santander", "scotiabank", "hsbc", "bbva", "prex", "mydinero",
+  "oca", "creditel", "pronto", "midinero", "astropay", "paypal", "wise", "binance", "takenos",
+  "tarjeta", "tarjetas", "debito", "credito", "cuenta", "transferencia", "plazo fijo",
+  // aduana e importacion
+  "aduana", "importar", "importacion", "courier", "franquicia", "dua", "despachante", "correo",
+  "aliexpress", "amazon", "ebay", "shein", "temu", "paquete", "encomienda", "arancel", "iva",
+  // impuestos y trabajo
+  "dgi", "bps", "irpf", "monotributo", "factura", "facturar", "empresa unipersonal", "sueldo",
+  "salario", "liquido", "nominal", "aguinaldo", "licencia", "fonasa", "afap", "jubilacion",
+  "trabajo en negro", "recibo",
+  // credito, deuda y vivienda
+  "prestamo", "prestamos", "clearing", "deuda", "deudas", "usura", "tea", "cuotas", "financiacion",
+  "alquiler", "alquilar", "garantia", "anda", "contaduria", "inmobiliaria", "hipoteca",
+  // inversion y consumo
+  "invertir", "inversion", "bonos", "letras", "obligaciones", "fondo", "acciones", "cripto",
+  "criptomoneda", "bitcoin", "rendimiento", "interes", "ahorro", "ahorrar",
+  // derechos y problemas
+  "estafa", "estafaron", "defensa al consumidor", "reclamo", "garantia legal", "devolucion",
+  // costo de vida
+  "costo de vida", "canasta", "supermercado", "boleto", "ute", "ose", "antel", "combustible",
+];
+
+// Question shape. A statement about the dollar is a conversation; a question is an opening.
+//
+// Detected in three ways, in decreasing order of certainty, because the obvious approach — a list
+// of interrogative words matched anywhere in the text — does not survive contact with real Spanish.
+// "¿se puede?" is an ask; "ya no se puede vivir" is a complaint, and a substring match cannot tell
+// them apart. Same for "cuando", "donde", "cual" and "porque", every one of which appears in
+// ordinary declarative sentences several times a paragraph.
+
+/** Phrases that are an ask no matter where they appear. Each one is specific enough to stand alone. */
+const ASK_PHRASES = [
+  "alguien sabe", "alguien tiene", "alguien uso", "alguien probo", "alguien me puede",
+  "alguna idea", "alguna recomendacion", "alguna sugerencia", "algun consejo",
+  "me recomiendan", "que me recomiendan", "me conviene", "conviene mas", "vale la pena",
+  "necesito saber", "quisiera saber", "me gustaria saber", "no entiendo como", "no se como",
+  "es cierto que", "se sabe si", "hay alguna forma", "hay alguna manera", "hay algun lugar",
+];
+
+/**
+ * Interrogatives, but only at the START of a sentence — where Spanish actually puts them when it
+ * is asking. "Cuánto sale traer una notebook" is a question even without the question mark;
+ * "no sé cuánto sale" is not, and the position is what separates them.
+ *
+ * Accent-free forms only: the text reaching this regex has already been through {@link strip}.
+ */
+const SENTENCE_INITIAL_INTERROGATIVE =
+  /^(que|cuanto|cuanta|cuantos|cuantas|como|donde|cuando|cual|cuales|quien|quienes|por que|conviene|sirve|existe|se puede|puedo|hay algun|hay alguna)\b/;
+
+/** A thread whose title or body is literally labelled as a question. */
+const LABELLED_QUESTION = /^(duda|consulta|pregunta|ayuda)\s*[:\-—]/;
+
+/**
+ * Lowercase and accent-free, but line breaks and sentence punctuation preserved.
+ *
+ * {@link strip} collapses every run of whitespace into a single space, which is right for the topic
+ * lexicon and wrong here: the sentence-initial test needs to know where sentences begin, and after
+ * a collapse the only boundary left is the very start of the post.
+ */
+const stripKeepLines = (text: string): string =>
+  text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[ \t]+/g, " ")
+    .trim();
+
+/** Split into the units a reader would read as separate statements. */
+const sentencesOf = (text: string): string[] =>
+  stripKeepLines(text)
+    .split(/[.!?\n]+/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+function looksLikeAQuestion(title: string, body: string): boolean {
+  const whole = `${title} ${body}`;
+  if (whole.includes("?") || whole.includes("¿")) return true;
+
+  const flat = strip(whole);
+  if (ASK_PHRASES.some((phrase) => flat.includes(phrase))) return true;
+
+  for (const sentence of [...sentencesOf(title), ...sentencesOf(body)]) {
+    if (LABELLED_QUESTION.test(sentence)) return true;
+    if (SENTENCE_INITIAL_INTERROGATIVE.test(sentence)) return true;
+  }
+  return false;
+}
+
+/** Flairs that mean "do not reply here" no matter what the text says. */
+const BLOCKED_FLAIRS = ["meme", "humor", "shitpost", "politica", "política", "noticia", "news", "aviso", "anuncio"];
+
+/**
+ * Topics the bot must stay out of even when the site has a page nearby.
+ *
+ * These are not "off topic" — several of them are adjacent to pages the site really does have. They
+ * are threads where a confident automated answer is a liability: someone describing their own legal
+ * case, their health, or an active fraud they are the victim of needs a person, and a bot arriving
+ * with a link reads as (and is) opportunism.
+ */
+const SENSITIVE_TERMS = [
+  "me estafaron ayer", "estoy en juicio", "abogado urgente", "denuncia penal", "violencia",
+  "suicid", "depresion", "cancer", "enfermedad terminal", "divorcio", "custodia", "herencia",
+  "despido injustificado", "acoso", "amenaza",
+];
+
+export const strip = (text: string): string =>
+  text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+export type SkipReason =
+  | "too_new"
+  | "too_old"
+  | "locked"
+  | "stickied"
+  | "nsfw"
+  | "deleted_author"
+  | "blocked_flair"
+  | "too_short"
+  | "already_linked"
+  | "off_topic"
+  | "not_a_question"
+  | "sensitive";
+
+export interface FilterVerdict {
+  ok: boolean;
+  reason?: SkipReason;
+  /** The topic terms that matched, for the ledger and for debugging a miss. */
+  matched: string[];
+}
+
+/** Title + body, normalised once and reused by every check. */
+export const postText = (post: RedditPostRaw): string => strip(`${post.title} ${post.selftext}`);
+
+/**
+ * Everything a thread must clear before it costs an API call.
+ *
+ * `now` is injected so the age window is testable without mocking the clock.
+ */
+export function screenPost(post: RedditPostRaw, cfg: BotConfig, now: number = Date.now()): FilterVerdict {
+  const ageMinutes = (now - post.createdUtc * 1000) / 60000;
+  // Waiting a few minutes is not politeness theatre: it lets the mods remove what they were going to
+  // remove, and lets OP finish editing. Answering at minute two also reads, correctly, as automated.
+  if (ageMinutes < cfg.minAgeMinutes) return { ok: false, reason: "too_new", matched: [] };
+  if (ageMinutes > cfg.maxAgeHours * 60) return { ok: false, reason: "too_old", matched: [] };
+
+  if (post.locked) return { ok: false, reason: "locked", matched: [] };
+  if (post.stickied) return { ok: false, reason: "stickied", matched: [] };
+  if (post.over18) return { ok: false, reason: "nsfw", matched: [] };
+  if (!post.author || post.author === "[deleted]" || post.author === "AutoModerator") {
+    return { ok: false, reason: "deleted_author", matched: [] };
+  }
+
+  const flair = strip(post.linkFlair || "");
+  if (flair && BLOCKED_FLAIRS.some((f) => flair.includes(strip(f)))) {
+    return { ok: false, reason: "blocked_flair", matched: [] };
+  }
+
+  const text = postText(post);
+  // A three-word title carries too little for the retriever to be trusted and too little for an
+  // answer to be useful.
+  if (text.length < 40) return { ok: false, reason: "too_short", matched: [] };
+
+  // Somebody already linked us. A second link from a bot is spam even when the first was organic.
+  if (text.includes("cambio-uruguay") || text.includes("cambio uruguay .com")) {
+    return { ok: false, reason: "already_linked", matched: [] };
+  }
+
+  if (SENSITIVE_TERMS.some((term) => text.includes(term))) {
+    return { ok: false, reason: "sensitive", matched: [] };
+  }
+
+  const matched = TOPIC_TERMS.filter((term) => {
+    // Multi-word terms are substring matches; single words need boundaries so "iva" does not match
+    // "privado" and "tea" does not match "tarea".
+    if (term.includes(" ")) return text.includes(term);
+    return new RegExp(`(^|[^a-z0-9])${term}([^a-z0-9]|$)`).test(text);
+  });
+  if (!matched.length) return { ok: false, reason: "off_topic", matched: [] };
+
+  if (!looksLikeAQuestion(post.title, post.selftext)) return { ok: false, reason: "not_a_question", matched };
+
+  return { ok: true, matched };
+}
+
+/** The query handed to the retriever: title first (it carries the intent), then the body, capped. */
+export function retrievalQuery(post: RedditPostRaw): string {
+  const body = post.selftext.replace(/\s+/g, " ").trim();
+  return `${post.title.trim()}\n${body}`.slice(0, 1200).trim();
+}

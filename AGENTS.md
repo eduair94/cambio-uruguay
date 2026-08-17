@@ -28,13 +28,17 @@ Root map of a multi-package monorepo behind [cambio-uruguay.com](https://cambio-
 | currency-chair-tiers | dist/sync_chair_tiers.js | 31 12 * * 0 | weekly r/CharruaDevs chair tier list → APP DB `chairtiersnapshots` |
 | currency-chairs-hourly | dist/sync_chairs.js --fast | 23 * * * * | hourly price-only refresh (ML + Shopify; no LLM, no Reddit, no Fenicio sweep) |
 | currency-chairs | dist/sync_chairs.js | 41 11 * * * | daily desk-chair market: ML (:9656) + UY storefronts + FB Marketplace (:9657) → APP DB `chaircatalogproducts` |
+| currency-rag-index | dist/sync_rag_index.js | 20 4 * * * | crawls the public sitemap → chunks → Gemini embeddings → APP DB `ragchunks`; incremental by content hash |
+| currency-reddit-bot | dist/sync_reddit_bot.js | */12 11-23 * * * | answers ONE thread per run in 7 UY subs; **inert until `REDDIT_BOT_ENABLED=1` AND `REDDIT_BOT_DRY_RUN=0`** |
+| currency-reddit-bot-watch | dist/sync_reddit_bot_watch.js | 9 * * * * | reads back comment scores; trips a 48 h circuit breaker on 3 negatives/24 h |
+| currency-content-gaps | dist/sync_content_gaps.js | 35 5 * * * | clusters unanswered questions → grounded DRAFT in `docs/reddit-gaps/` (never a page) |
 | currency-mcp | mcp/dist/index.js (cwd ./mcp) | — | HTTP :8788 |
 | currency-bot-telegram / -discord | bots/dist/entries/{telegram,discord}.js | — | read `bots/.env` |
 | currency-daily | bots/dist/entries/daily_report.js | 0 12 * * * | |
 | currency-alerts | bots/dist/entries/alert_check.js | */15 11-21 * * * | intraday move alerts |
 | currency-content-promo | bots/dist/entries/content_promo.js | 0 14 * * 1,3,5 | one evergreen guide to X; **inert until `CONTENT_PROMO_ENABLED=1`** in `bots/.env` |
 
-Root pm2 entrypoints live at repo root: `index.ts`, `sync.ts`, `sync_aduana*.ts`, `sync_banks_news.ts`, `sync_figures.ts`, `sync_costs.ts`, `sync_debt_relief.ts`, `sync_loans.ts`, `sync_predictions.ts`, `sync_explain.ts`, `sync_sheet.ts`, `sync_site_analytics.ts`, `sync_temas_analysis.ts`. Shared: `config.ts`, `global.ts`, `sentry.ts`.
+Root pm2 entrypoints live at repo root: `index.ts`, `sync.ts`, `sync_aduana*.ts`, `sync_banks_news.ts`, `sync_figures.ts`, `sync_costs.ts`, `sync_debt_relief.ts`, `sync_loans.ts`, `sync_predictions.ts`, `sync_explain.ts`, `sync_sheet.ts`, `sync_site_analytics.ts`, `sync_temas_analysis.ts`, `sync_rag_index.ts`, `sync_reddit_bot.ts`, `sync_reddit_bot_watch.ts`, `sync_content_gaps.ts`. Shared: `config.ts`, `global.ts`, `sentry.ts`.
 
 ## Top-level dirs
 | dir | role |
@@ -52,7 +56,7 @@ Root pm2 entrypoints live at repo root: `index.ts`, `sync.ts`, `sync_aduana*.ts`
 | `config/` | `config.ts` |
 | `dist/` | root build output (gitignored) |
 
-`classes/` key files: `database.ts` (Mongo connect), `gemini.ts` + `ai_service.ts` (LLM), `appdb.ts` (app-DB bridge), `reddit.ts`, `redis_cache.ts`, `notify.ts`, `cluster.ts` (`isPrimaryInstance()`), `Express/` (server setup), `models/` (mongoose), and per-feature dirs `aduana banks costs debt explain figures loans predictions site-analytics temas-analysis` (each `refresh.ts`/`store.ts`).
+`classes/` key files: `database.ts` (Mongo connect), `gemini.ts` + `ai_service.ts` (LLM), `appdb.ts` (app-DB bridge), `reddit.ts`, `redis_cache.ts`, `notify.ts`, `cluster.ts` (`isPrimaryInstance()`), `Express/` (server setup), `models/` (mongoose), and per-feature dirs `aduana banks costs debt explain figures gaps loans predictions rag redditbot site-analytics temas-analysis` (each `refresh.ts`/`store.ts`).
 
 ## Build / run / test / lint
 - Root: `npm run dev` (API), `npm run build`, `npm test` (`vitest run`, `tests/**/*.test.ts`). One-offs: `npm run prex`, `bcu_backfill`, `get_locations`, etc. (ts-node, in `scripts/oneoff/`, NOT compiled).
@@ -62,7 +66,7 @@ Root pm2 entrypoints live at repo root: `index.ts`, `sync.ts`, `sync_aduana*.ts`
 ## Deploy (push to `main` → `.github/workflows/deploy.yml`)
 - **App**: `test` job (app vitest) → `deploy` job SSHes and runs `app/scripts/deploy.sh` (flock + staging build + atomic swap + `pm2 reload`, zero-downtime).
 - **Backend**: `changes` path-filter (root `*.ts`, `classes/**`, `ecosystem.config.js`, `tests/**`…) → `backend-test` → `backend-deploy` SSHes and runs `scripts/deploy-backend.sh`. **Builds ON the server** (needs gitignored `sheet_key.json`), stages into `dist_staging`, atomic swap, rolling `pm2 reload currency-server`. Sequenced after app deploy so SSH sessions don't share the git tree.
-- New non-server pm2 app must be added to `OTHER_APPS` in `deploy-backend.sh` or it never starts on the VPS (`currency-temas-analysis` is currently absent from that list).
+- New non-server pm2 app must be added to `OTHER_APPS` in `deploy-backend.sh` or it never starts on the VPS.
 
 ## Non-obvious gotchas
 - **currency-server is pm2 cluster ×2 → NO recurring scheduler may live in the API process** (`setInterval`/cron would run once per instance). Guard with `classes/cluster.ts` `isPrimaryInstance()` or (preferred) a separate single-instance pm2 cron app. Tripwire: `tests/no_scheduler_in_api.test.ts`.

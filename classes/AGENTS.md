@@ -20,7 +20,10 @@ Any entrypoint whose relative-import graph touches `MongooseServer.getInstance(`
 - See **`classes/cambios/AGENTS.md`** for per-scraper detail.
 
 ## Gemini — ALL of it lives here now
-- `gemini.ts` = the ONE grounded client (google_search on, returns text + resolved source URIs; callers reject any citation the model didn't actually fetch). `askGrounded`/`geminiConfigured`. `GEMINI_MODEL` env, default `gemini-2.5-flash-lite` (`gemini-2.5-flash` was retired → 404; one dead id silently took the WHOLE job fleet down). NEVER throws → returns `null` = "no update this cycle". Free-tier pacing via `GEMINI_MIN_INTERVAL_MS`.
+- `gemini.ts` = the ONE grounded client (google_search on, returns text + resolved source URIs; callers reject any citation the model didn't actually fetch). `askGrounded`/`askPlain`/`askWithImage`/`embedContents`/`geminiConfigured`. `GEMINI_MODEL` env, default `gemini-2.5-flash-lite` (`gemini-2.5-flash` was retired → 404; one dead id silently took the WHOLE job fleet down). NEVER throws → returns `null` = "no update this cycle". Free-tier pacing via `GEMINI_MIN_INTERVAL_MS`.
+- **`tests/gemini_key_ownership.test.ts` forbids any other backend file from naming `generativelanguage.googleapis.com`** — one key read, one pacer, one backoff. `classes/rag/embed.ts` owns the embedding *policy* (model, dims, normalisation, batching) but calls `embedContents` here for the HTTP.
+- **Embeddings are metered PER DAY and this project is on the free tier for them**: measured 2026-08-17 against the live API, `EmbedContentRequestsPerDayPerUserPerProjectPerModel-FreeTier` = **1 000/day**, and every item inside a `batchEmbedContents` counts as one request (a `generateContent` key that behaves as billed does NOT imply the embedding endpoint is). Consequences baked into the design: stub-tier chunks are never embedded (lexical-only, ~40 % of the corpus), `sync_rag_index` spends a `RAG_EMBED_DAILY_BUDGET` (700) and converges over several days, and the bot caps queries per run (`REDDIT_BOT_MAX_CANDIDATES`) so it cannot eat the indexer's share. Enable billing for embeddings and the first build finishes in one pass for cents.
+- On a 429, the naive loop loses the whole run — the next batch fires straight into the same closed window. `embedTexts` waits `RAG_EMBED_COOLDOWN_MS` (45 s) after an all-null batch and retries it once.
 - `aduana/gemini.ts` is just a re-export of `../gemini`. `ai_service.ts`'s `classify()` is a PLAIN completion (no web, no grounding) — do not use it to "verify" a live fact.
 - App side forbids Gemini entirely (`noGeminiInApp` test in app); keep new AI calls in the backend.
 
@@ -37,6 +40,9 @@ Any entrypoint whose relative-import graph touches `MongooseServer.getInstance(`
 | `predictions/` | `prompt`,`refresh`(grounded AI lean + external forecasts, legs fail independently),`series` → app-Mongo ledger |
 | `explain/` | `moves`,`news`,`refresh` (Gemini news → falls back to classify()-attribution; idempotent) → app-Mongo |
 | `temas-analysis/` | `appTopics`,`refresh`,`store` |
+| `rag/` | site RAG index → APP DB `ragchunks`. `sources`(tier/exclusion rules over the sitemap),`crawl`(cheerio, strips the layout),`chunk`(~1.1k chars + heading path),`embed`(**always L2-normalises**; `gemini-embedding-001` at 768d returns \|v\|≈0.59),`store`(incremental by contentHash, `pruneMissing` refuses to delete >25%),`retrieve`(dense cosine ⊕ BM25, fused by RRF) |
+| `redditbot/` | answers UY subreddits. `config`(two gates),`filter`(cheap screen + question shape),`judge`(second, independent relevance gate),`compose`,`validate`(**every number must appear in the retrieved context**),`limits`(pure, per day/sub/author/page),`ledger`,`post`(user-auth write client),`run`(one answer per run),`watch`(score readback + circuit breaker) |
+| `gaps/` | questions the site cannot answer → `cluster`(greedy over cosine),`draft`(grounded research → `docs/reddit-gaps/*.md`, **never a page**),`refresh` |
 
 ## Express + misc
 `Express/`: `ExpressSetup.ts` (default `server` export used by index.ts), `Express.ts`, `ExpressCustomSetup.ts`, `Express.interface.ts`. Also here: `ai_service.ts` (AI insights + classify, 44KB), `ai_insight_cache.ts`, `redis_cache.ts` (ioredis), `reddit.ts`, `notify.ts` (Telegram), `rate_source.ts`, `origins.ts`, `ProxyFileService.ts`, `sync_favicon.ts`, `cluster.ts`, `utils.ts`.
