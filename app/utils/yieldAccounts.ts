@@ -26,8 +26,13 @@ export const YIELD_LAST_REVIEWED = '2026-08-17'
 
 /** BCU monetary policy rate, in % per year — the anchor these funds track. */
 export const TPM_PCT = 5.75
-/** Date the COPOM last set the TPM at its current level. */
-export const TPM_SINCE = '2026-05-26'
+/**
+ * Date of a COPOM communiqué we actually read confirming that level — NOT the
+ * date the rate was first set there. The 21/4/2026 statement says the TPM
+ * "continúe en 5,75%", so it was already there beforehand and we have no sourced
+ * start date. Saying "desde" would be inventing one.
+ */
+export const TPM_CONFIRMED = '2026-04-21'
 
 /** INE headline inflation, last 12 months, in %. The bar a yield must clear. */
 export const IPC_INTERANUAL_PCT = 4.27

@@ -5,6 +5,7 @@ import {
   IVA_RATE,
   LEGAL_FACTS,
   RATE_MYTHS,
+  TPM_CONFIRMED,
   TPM_PCT,
   YIELD_LAST_REVIEWED,
   YIELD_PRODUCTS,
@@ -142,6 +143,13 @@ describe('yieldAccounts - macro anchors', () => {
     expect(TPM_PCT).toBeGreaterThan(0)
     expect(IPC_INTERANUAL_PCT).toBeGreaterThan(0)
     expect(IPC_INTERANUAL_PCT).toBeLessThan(TPM_PCT)
+  })
+
+  it('dates the policy rate to a communiqué we read, not to an invented start date', () => {
+    // The 21/4/2026 COPOM statement says the TPM "continúe en 5,75%", so there is
+    // no sourced "since" date. The constant is named for what it actually proves.
+    expect(TPM_CONFIRMED).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+    expect(TPM_CONFIRMED < YIELD_LAST_REVIEWED).toBe(true)
   })
 
   it('carries a review date and general sources', () => {

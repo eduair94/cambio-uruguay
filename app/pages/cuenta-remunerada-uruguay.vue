@@ -367,10 +367,10 @@
       </VAlert>
 
       <p class="text-caption text-disabled mt-3 mb-0">
-        Estimación educativa. La tasa por defecto es la Tasa de Política Monetaria del BCU ({{
-          fmtNum(TPM_PCT)
-        }}% desde el {{ fmtDate(TPM_SINCE) }}), que es la referencia del papel que compran estos
-        fondos, no una tasa que alguien te prometa. No es asesoramiento financiero.
+        Estimación educativa. La tasa por defecto es la Tasa de Política Monetaria del BCU, en
+        {{ fmtNum(TPM_PCT) }}% anual: el COPOM la mantuvo en ese nivel en su comunicado del
+        {{ fmtDate(TPM_CONFIRMED) }}. Es la referencia del papel que compran estos fondos, no una
+        tasa que alguien te prometa. No es asesoramiento financiero.
       </p>
     </VCard>
 
@@ -517,7 +517,7 @@ import {
   LEGAL_FACTS,
   RATE_MYTHS,
   TPM_PCT,
-  TPM_SINCE,
+  TPM_CONFIRMED,
   YIELD_LAST_REVIEWED,
   YIELD_SOURCES,
   estimateYield,
