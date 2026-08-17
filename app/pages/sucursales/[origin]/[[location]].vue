@@ -160,6 +160,13 @@
 
 <script setup lang="ts">
 import LocationsMap from '~/components/map/LocationsMap.vue'
+import { deptKey, deptLabel, humaniseOrigin, type BranchPage } from '~/utils/branches'
+
+interface BranchDirectory {
+  branches: BranchPage[]
+  casas: Record<string, { name: string }>
+  usd: Record<string, { buy: number; sell: number }>
+}
 
 // Define page meta for route validation
 definePageMeta({
@@ -178,10 +185,86 @@ const { getExchangesByOriginLocation } = useApiService()
 const origin = route.params.origin as string
 const location = route.params.location as string | undefined
 
-// Computed properties
+// The cached branch directory: real casa names, real department labels and
+// today's USD quote. Search Console showed this page bleeding clicks —
+// `/sucursales/gales/montevideo` sits at position 5,1 with 0,69% CTR and
+// `/sucursales/brou/montevideo` at 8,9 with 0,36% — because the title was built
+// from the URL slug ("Sucursales y horarios de Brou - MONTEVIDEO": a mangled
+// brand and a shouting department) and the description said nothing specific.
+// BLOCKING on purpose, unlike the table below: the title and description are
+// built from this, and a lazy fetch resolves after the SSR render — Google
+// would receive the fallback ("Brou", zero branches, no rate), which is exactly
+// the snippet being fixed. It reads one Nitro route cached for 30 minutes.
+const { data: directory } = await useAsyncData('branch-directory', () =>
+  $fetch<BranchDirectory>('/api/branches')
+)
+
+/**
+ * Display name of the casa, from `localData` rather than the URL.
+ *
+ * The slug fallback capitalises naively, which turns `brou` into "Brou" and
+ * `itau` into "Itau" — a brand query whose own name is misspelled in the result
+ * title is a click nobody makes.
+ */
 const exchangeHouseName = computed(() => {
-  // You can add logic here to format the exchange house name
-  return origin.charAt(0).toUpperCase() + origin.slice(1).replace(/[-_]/g, ' ')
+  const known = directory.value?.casas?.[origin]?.name
+  if (known && known.trim()) return known.trim()
+  return humaniseOrigin(origin)
+})
+
+/** Branches of this casa, narrowed to the requested department when there is one. */
+const directoryBranches = computed(() => {
+  const all = (directory.value?.branches ?? []).filter(branch => branch.origin === origin)
+  if (!location) return all
+  const wanted = deptKey(location)
+  return all.filter(branch => deptKey(branch.dept) === wanted)
+})
+
+/** The department in title case (`'TREINTA Y TRES'` -> `'Treinta y Tres'`). */
+const locationLabel = computed(() => (location ? deptLabel(location) : ''))
+
+/** How many branches the SEO copy can claim, falling back to the live table. */
+const branchCount = computed(
+  () => directoryBranches.value.length || (branchesData.value?.length ?? 0)
+)
+
+/** Today's USD quote for this casa, for the meta description. */
+const usdToday = computed(() => directory.value?.usd?.[origin] ?? null)
+
+const seoTitle = computed(() => {
+  const name = exchangeHouseName.value
+  const count = branchCount.value
+  if (!count) {
+    return location
+      ? `${t('seo.sucursalesTitle', { origin: name })} - ${locationLabel.value}`
+      : t('seo.sucursalesTitle', { origin: name })
+  }
+  return location
+    ? t('seo.sucursalesInLocation', { origin: name, location: locationLabel.value, count })
+    : t('seo.sucursalesWithCount', { origin: name, count })
+})
+
+const seoDescription = computed(() => {
+  const name = exchangeHouseName.value
+  const count = branchCount.value
+  const base = location
+    ? t('seo.sucursalesLocationDescription', {
+        origin: name,
+        location: locationLabel.value,
+        count,
+      })
+    : t('seo.sucursalesDescription', { origin: name, count })
+
+  // Lead with the number when we have it: the pages whose description carries
+  // today's buy/sell are the only ones on this site clearing 1% CTR.
+  const usd = usdToday.value
+  if (!usd) return base
+  const money = (value: number) =>
+    value.toLocaleString('es-UY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  return `${name} hoy: dólar $${money(usd.buy)} compra / $${money(usd.sell)} venta. ${base}`.slice(
+    0,
+    300
+  )
 })
 
 const mapsUrl = computed(() => {
@@ -262,43 +345,36 @@ const {
 
 // SEO Meta
 useSeoMeta({
-  title: () => {
-    const baseTitle = t('seo.sucursalesTitle', {
-      origin: exchangeHouseName.value,
-    })
-    return location ? `${baseTitle} - ${location}` : baseTitle
-  },
-  description: () => {
-    return location
-      ? t('seo.sucursalesLocationDescription', {
-          origin: exchangeHouseName.value,
-          location,
-        })
-      : t('seo.sucursalesDescription', { origin: exchangeHouseName.value })
-  },
-  ogTitle: () => {
-    const baseTitle = t('seo.sucursalesTitle', {
-      origin: exchangeHouseName.value,
-    })
-    return location ? `${baseTitle} - ${location}` : baseTitle
-  },
-  ogDescription: () => {
-    return location
-      ? t('seo.sucursalesLocationDescription', {
-          origin: exchangeHouseName.value,
-          location,
-        })
-      : t('seo.sucursalesDescription', { origin: exchangeHouseName.value })
-  },
-  ogImageAlt: () => t('seo.sucursalesTitle', { origin: exchangeHouseName.value }),
+  title: () => seoTitle.value,
+  description: () => seoDescription.value,
+  ogTitle: () => seoTitle.value,
+  ogDescription: () => seoDescription.value,
+  ogImageAlt: () => seoTitle.value,
   twitterCard: 'summary_large_image',
-  twitterImageAlt: () => t('seo.sucursalesTitle', { origin: exchangeHouseName.value }),
+  twitterTitle: () => seoTitle.value,
+  twitterDescription: () => seoDescription.value,
+  twitterImageAlt: () => seoTitle.value,
+})
+
+// This family had no canonical at all, so a department reachable under two
+// spellings (PAYSANDU / PAYSANDÚ) could be indexed twice.
+useHead({
+  link: [
+    {
+      rel: 'canonical',
+      href: computed(() =>
+        location
+          ? `https://cambio-uruguay.com/sucursales/${origin}/${encodeURIComponent(location)}`
+          : `https://cambio-uruguay.com/sucursales/${origin}`
+      ),
+    },
+  ],
 })
 
 // Branded, copyright-free OG image generated server-side (page had no image).
 defineOgImageComponent('Cambio', {
   title: () => t('seo.sucursalesTitle', { origin: exchangeHouseName.value }),
-  subtitle: () => (location ? String(location) : ''),
+  subtitle: () => locationLabel.value,
   tag: 'Sucursales',
   locale: locale.value as 'es' | 'en' | 'pt',
 })

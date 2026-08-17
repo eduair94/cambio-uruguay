@@ -1056,7 +1056,7 @@ import DirectionToggle from '@/components/DirectionToggle.vue'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { HOME_FAQ_IDS, type FaqItem } from '~/utils/faqAnswers'
-import { quotesForCurrency } from '~/utils/currencyPages'
+import { quotesForCurrency, rankUsableQuotes } from '~/utils/currencyPages'
 import { useDisplay } from 'vuetify'
 import {
   convert as convertAmount,
@@ -1157,7 +1157,9 @@ const hubCasas = computed(() => {
 // One source of truth for the market's best public USD quotes. The visible
 // headline and the ExchangeRateSpecification JSON-LD are both built from it, so
 // the schema can never advertise a price the page does not show.
-const usdQuotes = computed(() => quotesForCurrency(sharedRealRows.value ?? [], 'USD'))
+const usdQuotes = computed(() =>
+  rankUsableQuotes(quotesForCurrency(sharedRealRows.value ?? [], 'USD'))
+)
 const usdBestSell = computed(() => usdQuotes.value.find(q => q.bestSell)?.sell ?? null)
 const usdBestBuy = computed(() => usdQuotes.value.find(q => q.bestBuy)?.buy ?? null)
 
@@ -2394,12 +2396,34 @@ useHead({
   ],
 })
 
+/**
+ * Meta description carrying today's two numbers.
+ *
+ * The home is the site's biggest surface in Search Console — 127.897
+ * impressions at position 8,8 — and converts 0,41% of them. Every page here
+ * whose description states the actual buy/sell runs 3–4× that CTR from the same
+ * positions, and the home was the last big one still shipping a static sentence.
+ *
+ * Falls back to the translated copy whenever the market payload is missing, so
+ * an upstream outage degrades to the old description rather than to a stub.
+ */
+const homeDescription = computed(() => {
+  if (usdBestSell.value === null || usdBestBuy.value === null) return t('seo.homeDescription')
+  const fmt = (value: number) =>
+    value.toLocaleString('es-UY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  return (
+    `Dólar hoy en Uruguay: se vende desde $${fmt(usdBestSell.value)} y se compra hasta ` +
+    `$${fmt(usdBestBuy.value)} comparando ${usdQuotes.value.length} casas de cambio. ` +
+    `Datos del BCU actualizados cada 10 minutos. También euro, real y peso argentino.`
+  ).slice(0, 300)
+})
+
 useSeoMeta({
   title: () => t('seo.homeTitle'),
-  description: () => t('seo.homeDescription'),
+  description: () => homeDescription.value,
   keywords: () => t('seo.homeKeywords'),
   ogTitle: () => t('seo.homeTitle'),
-  ogDescription: () => t('seo.homeDescription'),
+  ogDescription: () => homeDescription.value,
   ogType: 'website',
   ogUrl: 'https://cambio-uruguay.com',
   ogLocale: 'es_UY',

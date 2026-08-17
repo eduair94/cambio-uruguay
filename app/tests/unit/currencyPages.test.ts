@@ -11,6 +11,7 @@ import {
   goldGramPrices,
   listCurrencySlugs,
   quotesForCurrency,
+  rankUsableQuotes,
   ratesForOrigin,
 } from '../../utils/currencyPages'
 
@@ -415,5 +416,58 @@ describe('ratesForOrigin', () => {
   it('returns an empty list for an unknown or blank origin', () => {
     expect(ratesForOrigin(rows, 'nonexistent')).toEqual([])
     expect(ratesForOrigin(rows, '   ')).toEqual([])
+  })
+})
+
+describe('rankUsableQuotes', () => {
+  const quote = (origin: string, buy: number, sell: number) => ({
+    origin,
+    name: origin,
+    buy,
+    sell,
+    bestBuy: false,
+    bestSell: false,
+  })
+
+  // The bug this closes: the home crowned a board sitting 4,6% under the market
+  // median as "se vende desde", while /casas-de-cambio, /pizarra and the casa
+  // pages all named a different winner — and that number was about to be
+  // published in the meta description and the ExchangeRateSpecification.
+  it('does not crown a board the outlier detector rejects', () => {
+    const quotes = [
+      quote('outlier', 37.15, 39.55),
+      ...Array.from({ length: 12 }, (_, i) => quote(`casa${i}`, 39.2 + i * 0.02, 41.4 + i * 0.02)),
+      quote('cheapest', 40.03, 40.63),
+    ]
+    const ranked = rankUsableQuotes(quotes)
+    expect(ranked.find(q => q.bestSell)?.origin).toBe('cheapest')
+    expect(ranked.find(q => q.origin === 'outlier')?.bestSell).toBe(false)
+  })
+
+  it('keeps the rejected board in the list — it is a real published price', () => {
+    const quotes = [
+      quote('outlier', 37.15, 39.55),
+      ...Array.from({ length: 12 }, (_, i) => quote(`casa${i}`, 39.2 + i * 0.02, 41.4 + i * 0.02)),
+    ]
+    expect(rankUsableQuotes(quotes)).toHaveLength(13)
+  })
+
+  // Below the detector's sample floor nothing is an outlier, so a thin market
+  // still gets a winner rather than none.
+  it('crowns normally in a market too thin to judge', () => {
+    const ranked = rankUsableQuotes([quote('a', 39, 42), quote('b', 40, 41)])
+    expect(ranked.find(q => q.bestSell)?.origin).toBe('b')
+    expect(ranked.find(q => q.bestBuy)?.origin).toBe('b')
+  })
+
+  it('ignores quotes with no usable price', () => {
+    const ranked = rankUsableQuotes([quote('a', 0, 0), quote('b', 40, 41)])
+    expect(ranked.find(q => q.bestSell)?.origin).toBe('b')
+  })
+
+  it('never mutates the quotes it was given', () => {
+    const original = [quote('a', 40, 41)]
+    rankUsableQuotes(original)
+    expect(original[0]!.bestSell).toBe(false)
   })
 })

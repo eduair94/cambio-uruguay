@@ -267,6 +267,32 @@ export function buildBranchPages(
   return pages
 }
 
+/**
+ * Brands the upstream feed spells without their accent.
+ *
+ * `localData` returns "Itau" and "Cambio Fenix"; the institutions are Itaú and
+ * Cambio Fénix. Both spellings are searched (Search Console records "cambio
+ * fenix" 6.984 times and "cambio fénix" 676), and Google matches either way —
+ * but a result whose title misspells the brand it is answering for is a trust
+ * signal thrown away, and this name is the H1 and the `<title>` of every page in
+ * three families.
+ *
+ * Deliberately tiny: overriding the source of truth is only justified where the
+ * source is demonstrably wrong about a proper noun.
+ */
+const CASA_NAME_OVERRIDES: Readonly<Record<string, string>> = Object.freeze({
+  itau: 'Itaú',
+  cambio_fenix: 'Cambio Fénix',
+})
+
+/** The casa's display name: the feed's, with the known misspellings corrected. */
+export function canonicalCasaName(origin: string, feedName?: string | null): string {
+  const override = CASA_NAME_OVERRIDES[origin]
+  if (override) return override
+  const name = tidy(feedName)
+  return name || humaniseOrigin(origin)
+}
+
 /** `'cambio_gales'` -> `'Cambio Gales'`, the fallback when `localData` has no name. */
 export function humaniseOrigin(origin: string): string {
   return tidy(origin)

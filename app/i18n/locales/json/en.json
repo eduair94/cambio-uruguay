@@ -747,7 +747,7 @@
     "historicalTitle": "Exchange rate history in Uruguay",
     "historicalDescription": "Check the complete history of exchange rates from all exchange houses in Uruguay. Real-time updated data.",
     "historicalKeywords": "exchange rate history, currency exchange uruguay, historical prices, exchange houses uruguay",
-    "historicalOriginTitle": "Historical exchange rates for {origin}",
+    "historicalOriginTitle": "{origin}: dollar rate today and full history",
     "historicalOriginDescription": "Check all current and historical exchange rates from {origin}. Buy and sell prices updated in real time.",
     "historicalOriginKeywords": "exchange house rates, currency exchange uruguay, exchange prices uruguay",
     "historicalDetailTitle": "{origin} {currency} today: rate and trend",
@@ -756,9 +756,9 @@
     "offlineTitle": "Offline - Cambio Uruguay",
     "offlineDescription": "No internet connection. Check your connection to access exchange rates.",
     "offlineKeywords": "offline, no connection, cambio uruguay",
-    "sucursalesTitle": "Branches and hours of {origin}",
-    "sucursalesDescription": "Find all {origin} branches in Uruguay. Complete addresses, phone numbers, hours and locations.",
-    "sucursalesLocationDescription": "{origin} branches in {location}. Addresses, phone numbers, hours and locations in {location}, Uruguay.",
+    "sucursalesTitle": "{origin} branches",
+    "sucursalesDescription": "All {count} {origin} branches in Uruguay: address, phone and opening hours of each one, plus the dollar rate the house quotes today.",
+    "sucursalesLocationDescription": "{origin} has {count} branches in {location}. Address, phone and opening hours for each, with today’s dollar rate and directions.",
     "sucursalesKeywords": "{origin} branches, {origin} addresses, {origin} locations, exchange houses uruguay",
     "sucursalesIndexTitle": "Branch Directory - All Exchange Houses in Uruguay",
     "sucursalesIndexDescription": "Complete directory of branches from all exchange houses in Uruguay. Find locations, addresses and contacts by department.",
@@ -770,7 +770,9 @@
     "mapaDescription": "Interactive map of exchange houses in Uruguay. Find the nearest branch and the best US dollar rate around you.",
     "nearbyCasasTitle": "Best Exchange House Near Me in Uruguay | Cambio Uruguay",
     "nearbyCasasDescription": "Find the closest real exchange house with the best rate and reviews. Navigate directly with Google Maps or Waze. No banks or fintechs.",
-    "historicalDetailDescriptionLive": "{currency} at {origin} today: sell ${sell}, buy ${buy}. Trend, chart and records. Compare 40+ exchange houses in Uruguay."
+    "historicalDetailDescriptionLive": "{currency} at {origin} today: sell ${sell}, buy ${buy}. Trend, chart and records. Compare 40+ exchange houses in Uruguay.",
+    "sucursalesWithCount": "{origin} branches: {count} locations with address, phone and hours",
+    "sucursalesInLocation": "{origin} branches in {location}: {count} locations, phones and hours"
   },
   "dolarDepto": {
     "h1": "Dollar in {department} today",

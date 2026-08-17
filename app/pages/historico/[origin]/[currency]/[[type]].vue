@@ -1157,7 +1157,7 @@ const seoDescription = computed(() => {
   if (!f) {
     return t('seo.historicalDetailDescription', {
       origin: exchangeHouseName.value,
-      currency: currencyName.value,
+      currency: currencyLabel.value,
     })
   }
   return t('seo.historicalDetailDescriptionLive', {
@@ -1172,14 +1172,14 @@ useSeoMeta({
   title: () =>
     t('seo.historicalDetailTitle', {
       origin: exchangeHouseName.value,
-      currency: currencyName.value,
+      currency: currencyLabel.value,
     }),
   description: () => seoDescription.value,
   keywords: () => t('seo.historicalDetailKeywords'),
   ogTitle: () =>
     t('seo.historicalDetailTitle', {
       origin: exchangeHouseName.value,
-      currency: currencyName.value,
+      currency: currencyLabel.value,
     }),
   ogDescription: () => seoDescription.value,
   ogType: 'website',
@@ -1189,22 +1189,22 @@ useSeoMeta({
   twitterTitle: () =>
     t('seo.historicalDetailTitle', {
       origin: exchangeHouseName.value,
-      currency: currencyName.value,
+      currency: currencyLabel.value,
     }),
   twitterDescription: () =>
     t('seo.historicalDetailDescription', {
       origin: exchangeHouseName.value,
-      currency: currencyName.value,
+      currency: currencyLabel.value,
     }),
   ogImageAlt: () =>
     t('seo.historicalDetailTitle', {
       origin: exchangeHouseName.value,
-      currency: currencyName.value,
+      currency: currencyLabel.value,
     }),
   twitterImageAlt: () =>
     t('seo.historicalDetailTitle', {
       origin: exchangeHouseName.value,
-      currency: currencyName.value,
+      currency: currencyLabel.value,
     }),
 })
 
@@ -1215,7 +1215,7 @@ defineOgImageComponent('Cambio', {
   title: () =>
     t('seo.historicalDetailTitle', {
       origin: exchangeHouseName.value,
-      currency: currencyName.value,
+      currency: currencyLabel.value,
     }),
   tag: () => currencyName.value,
   locale: locale.value as 'es' | 'en' | 'pt',
@@ -1291,11 +1291,11 @@ useHead(() => ({
         '@type': 'Dataset',
         name: t('seo.historicalDetailTitle', {
           origin: exchangeHouseName.value,
-          currency: currencyName.value,
+          currency: currencyLabel.value,
         }),
         description: t('seo.historicalDetailDescription', {
           origin: exchangeHouseName.value,
-          currency: currencyName.value,
+          currency: currencyLabel.value,
         }),
         url: historicalCanonical.value,
         isAccessibleForFree: true,

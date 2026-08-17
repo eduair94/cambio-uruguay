@@ -5,6 +5,7 @@ import {
   branchSlug,
   branchTitle,
   buildBranchPages,
+  canonicalCasaName,
   departmentCentres,
   deptKey,
   deptLabel,
@@ -112,6 +113,23 @@ describe('slugs', () => {
 
   it('humanises an origin when localData has no display name', () => {
     expect(humaniseOrigin('cambio_la_favorita')).toBe('Cambio La Favorita')
+  })
+
+  // The feed returns "Itau" and "Cambio Fenix"; the brands carry accents, and
+  // this name becomes the H1 and the <title> of three page families.
+  it('restores the accent on the brands the feed misspells', () => {
+    expect(canonicalCasaName('itau', 'Itau')).toBe('Itaú')
+    expect(canonicalCasaName('cambio_fenix', 'Cambio Fenix')).toBe('Cambio Fénix')
+  })
+
+  it('trusts the feed for every other casa', () => {
+    expect(canonicalCasaName('gales', 'Cambio Gales')).toBe('Cambio Gales')
+    expect(canonicalCasaName('brou', '  BROU  ')).toBe('BROU')
+  })
+
+  it('falls back to the humanised origin when the feed has no name', () => {
+    expect(canonicalCasaName('cambio_pando', '')).toBe('Cambio Pando')
+    expect(canonicalCasaName('cambio_pando', null)).toBe('Cambio Pando')
   })
 
   it('prefers the localData name over the humanised origin', () => {

@@ -1,5 +1,10 @@
 import { defineCachedEventHandler } from '#imports'
-import { buildBranchPages, type Branch, type BranchPage } from '../../utils/branches'
+import {
+  buildBranchPages,
+  canonicalCasaName,
+  type Branch,
+  type BranchPage,
+} from '../../utils/branches'
 import { buildLocations, type MapBranch } from '../utils/locations'
 import extra from '../data/extra-locations.json'
 
@@ -32,6 +37,15 @@ export interface BranchDirectory {
    * decide whether `/casa/:origin/guarani` exists at all.
    */
   quotes: Record<string, string[]>
+  /**
+   * Today's public USD cash quote per origin.
+   *
+   * Here so a page that is NOT about the rate can still put the number in its
+   * meta description. Search Console is unambiguous about why that matters: the
+   * pages whose description carries today's buy/sell run at ~1,4% CTR while the
+   * ones with a generic sentence sit at 0,03–0,2% from the same positions.
+   */
+  usd: Record<string, { buy: number; sell: number }>
 }
 
 /**
@@ -73,11 +87,13 @@ export default defineCachedEventHandler(
     const casaNames: Record<string, string> = {}
     const casas: Record<string, BranchCasa> = {}
     for (const [origin, house] of Object.entries(localData)) {
-      const name = String(house?.name ?? '').trim()
+      // `canonicalCasaName` fixes the two brands the feed spells without their
+      // accent, so every family renders "Itaú" rather than "Itau".
+      const name = canonicalCasaName(origin, house?.name)
       if (name) casaNames[origin] = name
       casas[origin] = {
         origin,
-        name: name || origin,
+        name,
         website: String(house?.website ?? ''),
         maps: String(house?.maps ?? ''),
         bcu: String(house?.bcu ?? ''),
@@ -93,6 +109,7 @@ export default defineCachedEventHandler(
     // take, which is exactly what `buildUsdComparison` filters out downstream.
     const quotesUsd: string[] = []
     const quotes: Record<string, string[]> = {}
+    const usd: Record<string, { buy: number; sell: number }> = {}
     try {
       const rows = await $fetch<
         Array<{
@@ -110,7 +127,15 @@ export default defineCachedEventHandler(
         if (!(Number(row.buy) > 0) || !(Number(row.sell) > 0)) continue
         const codes = quotes[row.origin] ?? (quotes[row.origin] = [])
         if (!codes.includes(row.code)) codes.push(row.code)
-        if (row.code === 'USD' && !quotesUsd.includes(row.origin)) quotesUsd.push(row.origin)
+        if (row.code === 'USD') {
+          if (!quotesUsd.includes(row.origin)) quotesUsd.push(row.origin)
+          // Keep the cheapest sell when a casa publishes several USD boards, the
+          // same tie-break `buildUsdComparison` applies.
+          const previous = usd[row.origin]
+          if (!previous || Number(row.sell) < previous.sell) {
+            usd[row.origin] = { buy: Number(row.buy), sell: Number(row.sell) }
+          }
+        }
       }
     } catch (err) {
       console.error('[/api/branches] rates fetch failed:', err)
@@ -118,7 +143,7 @@ export default defineCachedEventHandler(
 
     const branches = buildBranchPages(merged as Branch[], casaNames)
 
-    return { branches, casas, quotesUsd, quotes }
+    return { branches, casas, quotesUsd, quotes, usd }
   },
   { maxAge: 1800, name: 'branches', getKey: () => 'all' }
 )

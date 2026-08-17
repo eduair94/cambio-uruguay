@@ -742,7 +742,7 @@
     "historicalTitle": "Histórico de cotações do dólar no Uruguai",
     "historicalDescription": "Consulte o histórico completo de cotações de todas as casas de câmbio no Uruguai. Dados atualizados em tempo real.",
     "historicalKeywords": "histórico cotações, câmbio uruguai, histórico preços, casas câmbio uruguai",
-    "historicalOriginTitle": "Cotações históricas de {origin}",
+    "historicalOriginTitle": "{origin}: cotação do dólar hoje e histórico",
     "historicalOriginDescription": "Consulte todas as cotações atuais e históricas de {origin}. Preços de compra e venda atualizados em tempo real.",
     "historicalOriginKeywords": "cotações casa câmbio, câmbio divisas uruguai, preços câmbio uruguai",
     "historicalDetailTitle": "{origin} {currency} hoje: cotação e evolução",
@@ -751,9 +751,9 @@
     "offlineTitle": "Offline - Cambio Uruguay",
     "offlineDescription": "Sem conexão com a internet. Verifique sua conexão para acessar as taxas de câmbio.",
     "offlineKeywords": "offline, sem conexão, cambio uruguay",
-    "sucursalesTitle": "Filiais e horários de {origin}",
-    "sucursalesDescription": "Encontre todas as filiais de {origin} no Uruguai. Endereços completos, telefones, horários e localizações.",
-    "sucursalesLocationDescription": "Filiais de {origin} em {location}. Endereços, telefones, horários e localizações em {location}, Uruguai.",
+    "sucursalesTitle": "Agências de {origin}",
+    "sucursalesDescription": "As {count} agências de {origin} no Uruguai, uma a uma: endereço, telefone e horário de atendimento de cada uma, com a cotação do dólar que a casa publica hoje.",
+    "sucursalesLocationDescription": "{origin} tem {count} agências em {location}. Endereço, telefone e horário de cada uma, com a cotação do dólar de hoje e como chegar.",
     "sucursalesKeywords": "filiais {origin}, endereços {origin}, localizações {origin}, casas de câmbio uruguai",
     "sucursalesIndexTitle": "Diretório de Filiais - Todas as Casas de Câmbio no Uruguai",
     "sucursalesIndexDescription": "Diretório completo de filiais de todas as casas de câmbio no Uruguai. Encontre localizações, endereços e contatos por departamento.",
@@ -765,7 +765,9 @@
     "mapaDescription": "Mapa interativo de casas de câmbio no Uruguai. Encontre a agência mais próxima e a melhor cotação do dólar perto de você.",
     "nearbyCasasTitle": "Melhor Casa de Câmbio Perto de Mim no Uruguai | Cambio Uruguay",
     "nearbyCasasDescription": "Encontre a casa de câmbio real mais próxima com a melhor cotação e avaliações. Navegue direto com Google Maps ou Waze. Sem bancos ou fintechs.",
-    "historicalDetailDescriptionLive": "{currency} no {origin} hoje: venda ${sell}, compra ${buy}. Evolução, gráfico e recordes. Compare 40+ casas de câmbio do Uruguai."
+    "historicalDetailDescriptionLive": "{currency} no {origin} hoje: venda ${sell}, compra ${buy}. Evolução, gráfico e recordes. Compare 40+ casas de câmbio do Uruguai.",
+    "sucursalesWithCount": "Agências de {origin}: {count} endereços com telefone e horário",
+    "sucursalesInLocation": "Agências de {origin} em {location}: {count} endereços, telefones e horários"
   },
   "dolarDepto": {
     "h1": "Dólar em {department} hoje",

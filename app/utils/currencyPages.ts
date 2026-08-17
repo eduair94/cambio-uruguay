@@ -8,6 +8,7 @@
 // Types come from the shared API contract; imported relatively so this module
 // stays runtime-agnostic.
 import type { ExchangeRate, ExchangeType } from '../types/api'
+import { offMarketDetector } from './marketOutlier'
 import { BCU_ORIGIN } from './rateSource'
 
 /** Supported display locales for currency names. */
@@ -258,6 +259,44 @@ export interface CurrencyQuote {
  * @returns a strictly-typed list of {@link CurrencyQuote}; empty when no house
  * quotes the currency with a plain/cash row.
  */
+/**
+ * Re-crown `bestBuy`/`bestSell` ignoring boards the outlier detector rejects.
+ *
+ * `/casas-de-cambio`, `/pizarra` and the per-casa pages all refuse to crown a
+ * quote sitting more than {@link OFF_MARKET_PCT} from the market median — the
+ * signature of a stale or misparsed pizarra. The home did not, so it was
+ * advertising "se vende desde $39,55" (a board 4,6% under the median) while
+ * every other surface on the site named a different, reachable winner. That
+ * discrepancy is now in the meta description and the ExchangeRateSpecification
+ * JSON-LD, which is a price claim, so the home has to apply the same rule.
+ *
+ * The rejected quotes stay in the list — they are real published boards and the
+ * table still shows them. Only the crown moves.
+ */
+export function rankUsableQuotes(quotes: readonly CurrencyQuote[]): CurrencyQuote[] {
+  const ranked = quotes.map(quote => ({ ...quote, bestBuy: false, bestSell: false }))
+  const isOffMarket = offMarketDetector(ranked)
+  const usable = ranked.filter(quote => !isOffMarket(quote))
+
+  let bestBuy: CurrencyQuote | null = null
+  let bestSell: CurrencyQuote | null = null
+  for (const quote of usable) {
+    if (quote.buy !== null && quote.buy > 0 && (bestBuy === null || quote.buy > bestBuy.buy!)) {
+      bestBuy = quote
+    }
+    if (
+      quote.sell !== null &&
+      quote.sell > 0 &&
+      (bestSell === null || quote.sell < bestSell.sell!)
+    ) {
+      bestSell = quote
+    }
+  }
+  if (bestBuy) bestBuy.bestBuy = true
+  if (bestSell) bestSell.bestSell = true
+  return ranked
+}
+
 export function quotesForCurrency(
   rows: readonly ExchangeRate[],
   code: CurrencyCode
