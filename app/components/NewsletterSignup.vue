@@ -50,6 +50,11 @@
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+// Emitted once the subscribe request succeeds, so a host (the end-of-article
+// capture card) can stop asking. The form stays the single implementation of
+// subscribing — honeypot, GA4 key event and all.
+const emit = defineEmits<{ subscribed: [] }>()
+
 const { locale } = useI18n()
 const route = useRoute()
 const track = useTrack()
@@ -70,6 +75,7 @@ async function submit(): Promise<void> {
     // organic landing page earned a returning visitor. `source` is the landing
     // path so we can attribute it to the page type in an Exploration.
     track('newsletter_signup', { source: route.path, locale: locale.value })
+    emit('subscribed')
   } catch {
     state.value = 'error'
   }

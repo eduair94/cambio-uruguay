@@ -32,6 +32,7 @@ Root map of a multi-package monorepo behind [cambio-uruguay.com](https://cambio-
 | currency-bot-telegram / -discord | bots/dist/entries/{telegram,discord}.js | — | read `bots/.env` |
 | currency-daily | bots/dist/entries/daily_report.js | 0 12 * * * | |
 | currency-alerts | bots/dist/entries/alert_check.js | */15 11-21 * * * | intraday move alerts |
+| currency-content-promo | bots/dist/entries/content_promo.js | 0 14 * * 1,3,5 | one evergreen guide to X; **inert until `CONTENT_PROMO_ENABLED=1`** in `bots/.env` |
 
 Root pm2 entrypoints live at repo root: `index.ts`, `sync.ts`, `sync_aduana*.ts`, `sync_banks_news.ts`, `sync_figures.ts`, `sync_costs.ts`, `sync_debt_relief.ts`, `sync_loans.ts`, `sync_predictions.ts`, `sync_explain.ts`, `sync_sheet.ts`, `sync_site_analytics.ts`, `sync_temas_analysis.ts`. Shared: `config.ts`, `global.ts`, `sentry.ts`.
 

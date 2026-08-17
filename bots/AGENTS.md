@@ -22,6 +22,7 @@ Dev (tsx, no build): `npm run dev:telegram`, `npm run dev:discord`, `npm run dai
 - **Every channel is feature-gated: with no creds, that channel/process is silently a NO-OP.** A "working" run that sends nothing usually means missing creds, not a bug.
 - `DRY_RUN=1` logs instead of sending — use it to preview daily/alerts against live data + AI.
 - Key creds: Telegram `TELEGRAM_BOT_TOKEN`/`TELEGRAM_CHANNEL_ID`; Discord `DISCORD_BOT_TOKEN`/`DISCORD_APP_ID`/`DISCORD_WEBHOOK_URL`; Twitter OAuth 1.0a `TWITTER_APP_KEY`/`_SECRET`/`TWITTER_ACCESS_TOKEN`/`_SECRET`; subscribers + alert dedup need `MONGO_URI`.
+- **`content_promo` is gated twice on purpose**: Twitter creds *and* `CONTENT_PROMO_ENABLED=1`. The creds are already on the box for the daily report, so a single gate would have meant deploying the file starts posting to a real audience.
 
 ## pm2 (root `ecosystem.config.js`, all `cwd: ./bots`)
 | app | script | schedule |
@@ -30,6 +31,7 @@ Dev (tsx, no build): `npm run dev:telegram`, `npm run dev:discord`, `npm run dai
 | `currency-bot-discord` | `dist/entries/discord.js` | always-on (gateway) |
 | `currency-daily` | `dist/entries/daily_report.js` | cron `0 12 * * *` (09:00 America/Montevideo) |
 | `currency-alerts` | `dist/entries/alert_check.js` | cron `*/15 11-21 * * *` (market hours) |
+| `currency-content-promo` | `dist/entries/content_promo.js` | cron `0 14 * * 1,3,5` (11:00 America/Montevideo) — one evergreen guide to X. **Needs `CONTENT_PROMO_ENABLED=1` on top of the Twitter creds**, or it only logs the tweet. |
 
 After changing Discord slash commands, run `npm run register:discord` once.
 

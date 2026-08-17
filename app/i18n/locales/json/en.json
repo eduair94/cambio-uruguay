@@ -1436,6 +1436,12 @@
       }
     }
   },
+  "capture": {
+    "title": "Useful? Get the daily dollar recap",
+    "lead": "One email a day with the best rates, the trend and what changed. Free, and you can unsubscribe whenever you want.",
+    "dismiss": "Close",
+    "aria": "Subscribe to the newsletter"
+  },
   "related": {
     "title": "Keep reading",
     "lead": "Other pages on the site that answer what usually comes after this one.",

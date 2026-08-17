@@ -1429,6 +1429,12 @@
       }
     }
   },
+  "capture": {
+    "title": "Foi útil? Receba o resumo do dólar todo dia",
+    "lead": "Um e-mail por dia com as melhores cotações, a tendência e o que mudou. Grátis, e você pode cancelar quando quiser.",
+    "dismiss": "Fechar",
+    "aria": "Assinar a newsletter"
+  },
   "related": {
     "title": "Continue lendo",
     "lead": "Outras páginas do site que respondem o que costuma vir depois desta.",

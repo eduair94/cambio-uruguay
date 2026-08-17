@@ -293,5 +293,21 @@ module.exports = {
       cron_restart: "*/15 11-21 * * *",
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
+    {
+      // One evergreen guide to X — Mon/Wed/Fri 11:00 America/Montevideo (14:00
+      // UTC), two hours after the daily report so the two never land together.
+      //
+      // Posts NOTHING until `CONTENT_PROMO_ENABLED=1` is set in bots/.env: the
+      // Twitter credentials are already on the box for the daily report, so
+      // without that second flag this app would start posting to a real audience
+      // the moment pm2 picked it up. Until then it logs the tweet it would send.
+      name: "currency-content-promo",
+      autorestart: false,
+      exec_mode: "fork",
+      cwd: "./bots",
+      script: "dist/entries/content_promo.js",
+      cron_restart: "0 14 * * 1,3,5",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
   ],
 };

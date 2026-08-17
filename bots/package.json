@@ -11,6 +11,7 @@
     "register:discord": "tsx src/bot/register_commands.ts",
     "daily": "tsx src/entries/daily_report.ts",
     "alerts": "tsx src/entries/alert_check.ts",
+    "promo": "tsx src/entries/content_promo.ts",
     "test": "vitest run"
   },
   "dependencies": {
