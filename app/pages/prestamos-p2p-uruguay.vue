@@ -21,10 +21,10 @@
           proyecto que el BCU puso a consulta en 2018, que decía otra cosa en puntos importantes.
         </p>
         <p class="mb-0">
-          Lo relativo a la plataforma que se inscribió va atribuido a la prensa o a su propio sitio:
-          ningún comunicado del Banco Central la nombra, y el registro de estas empresas no está
-          publicado como página web. El verbo exacto tampoco es «autorizar»: la ficha oficial de
-          requisitos del BCU dice que estas empresas
+          Y hay dos hechos que no se funden en uno: el Banco Central publicó una inscripción a
+          nombre de una sociedad, y la prensa publicó el nombre comercial de una plataforma.
+          Vincularlos es lectura de terceros, no del BCU. El verbo exacto tampoco es «autorizar»: la
+          ficha oficial de requisitos dice que estas empresas
           <em
             >«no requieren autorización previa para funcionar, pero sí requieren Inscripción en el
             Registro»</em
@@ -51,11 +51,21 @@
         <VCol cols="12" md="7">
           <VCard class="plain-card pa-5" variant="flat">
             <p class="mb-3">
-              El 5 de agosto de 2026 El Observador informó que <strong>Prestapagos</strong>, fundada
-              por Indro Montanelli, obtuvo el aval para operar como la primera Empresa
-              Administradora de Plataformas de Préstamos entre Personas del país, tras un trámite
-              que le llevó un año y medio cuando esperaba seis meses, y que empezaría a funcionar
-              «en los próximos 10 días».
+              <strong>Lo que dice el Banco Central.</strong> El 29 de junio de 2026 la
+              Superintendencia de Servicios Financieros resolvió inscribir a
+              <strong>{{ EAPPP_REGISTRATION.company }}</strong> en el Registro de Empresas
+              Administradoras de Plataformas para Préstamos entre Personas (resolución
+              {{ EAPPP_REGISTRATION.resolution }}, expediente {{ EAPPP_REGISTRATION.file }}) y lo
+              comunicó al mercado al día siguiente. La resolución deja constancia de que la empresa
+              constituyó el depósito mínimo del artículo 248.1, no dice que sea la primera y no
+              menciona ninguna marca comercial.
+            </p>
+            <p class="mb-3">
+              <strong>Lo que dice la prensa.</strong> El 5 de agosto de 2026 El Observador informó
+              que <strong>Prestapagos</strong>, fundada por Indro Montanelli, obtuvo el aval para
+              operar como la primera Empresa Administradora de Plataformas de Préstamos entre
+              Personas del país, tras un trámite que le llevó un año y medio cuando esperaba seis
+              meses, y que empezaría a funcionar «en los próximos 10 días».
             </p>
             <p class="mb-3">
               Según esa nota: se presta desde $ 1.000, el prestamista elige la tasa dentro de una
@@ -703,6 +713,7 @@
 import {
   BORROWER_ALTERNATIVES,
   BORROWER_CHECKLIST,
+  EAPPP_REGISTRATION,
   INFLATION_PERIOD,
   INFLATION_YOY_PCT,
   KIND_LABELS,

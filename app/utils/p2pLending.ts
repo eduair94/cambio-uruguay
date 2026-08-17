@@ -15,13 +15,16 @@
 //     admitía sólo personas físicas residentes como prestamistas): no citarlo como derecho
 //     vigente, es el error más común en las notas sobre el tema.
 //
-//  2. "LA PRIMERA PLATAFORMA AUTORIZADA" ES UNA ATRIBUCIÓN DE PRENSA, NO UN DATO DEL BCU.
-//     Ningún comunicado del BCU nombra a Prestapagos y el registro de EAPPP no está publicado
-//     como página web (a diferencia del de financiamiento colectivo). Además el verbo correcto
-//     es INSCRIBIR: la ficha oficial de requisitos del BCU dice que estas empresas "no
-//     requieren autorización previa para funcionar, pero sí requieren Inscripción en el
-//     Registro". Todo lo relativo a Prestapagos va atribuido a El Observador (05.08.2026) o a
-//     su propio sitio, nunca afirmado en voz propia.
+//  2. HAY DOS HECHOS Y NO SE PUEDEN FUNDIR EN UNO. (a) El BCU sí publicó una inscripción: la
+//     Comunicación N° 2026/135, del 30 de junio de 2026, informa la resolución SSF N° 2026-420
+//     del 29 de junio que inscribe a FARISOUL S.A. en el Registro de EAPPP (expediente
+//     2025-50-1-00024). Esa resolución NO dice que sea la primera ni menciona marca comercial
+//     alguna. (b) El Observador (05.08.2026) informa que la primera plataforma es Prestapagos.
+//     Vincular una cosa con la otra es lectura de terceros, no del BCU, y así se publica.
+//     Además el verbo correcto es INSCRIBIR: la ficha oficial de requisitos del BCU dice que
+//     estas empresas "no requieren autorización previa para funcionar, pero sí requieren
+//     Inscripción en el Registro". El BCU tampoco publica el registro de EAPPP como página web
+//     (a diferencia del de financiamiento colectivo), así que no se puede afirmar cuántas hay.
 //
 //  3. CIFRAS DE MERCADO CON FECHA. Topes de usura, plazos fijos, licitaciones y la UI cambian.
 //     Cada bloque lleva su fecha de verificación; la UI es la del 17.08.2026 y sirve sólo para
@@ -38,6 +41,20 @@
 
 /** Fecha en que se verificó el contenido de este módulo contra sus fuentes. */
 export const P2P_VERIFIED_AT = '2026-08-17'
+
+/**
+ * La única inscripción de una EAPPP que el BCU publicó, en su propia comunicación al mercado.
+ * Ojo: la resolución no dice "primera" ni nombra ninguna marca comercial.
+ */
+export const EAPPP_REGISTRATION = Object.freeze({
+  company: 'FARISOUL S.A.',
+  resolution: 'SSF N° 2026-420',
+  resolutionDate: '2026-06-29',
+  communication: 'N° 2026/135',
+  communicationDate: '2026-06-30',
+  file: '2025-50-1-00024',
+  url: 'https://www.bcu.gub.uy/Comunicados/seggco26135.pdf',
+})
 
 /** Valor de la Unidad Indexada usado para las referencias en pesos (INE, 17/08/2026). */
 export const UI_VALUE = 6.635
@@ -798,6 +815,14 @@ export const P2P_TIMELINE: readonly TimelineEvent[] = Object.freeze([
     source: 'https://www.bcu.gub.uy/Comunicados/seggco26116.pdf',
   },
   {
+    date: '29 y 30 de junio de 2026',
+    label: 'La primera inscripción publicada',
+    detail:
+      'La Superintendencia resuelve inscribir a FARISOUL S.A. en el Registro de Empresas Administradoras de Plataformas para Préstamos entre Personas (resolución SSF N° 2026-420, expediente 2025-50-1-00024) y lo comunica al mercado al día siguiente. La resolución deja constancia de que la empresa constituyó el depósito mínimo del artículo 248.1, y no dice que sea la primera ni menciona marca comercial alguna.',
+    tone: 'good',
+    source: 'https://www.bcu.gub.uy/Comunicados/seggco26135.pdf',
+  },
+  {
     date: '5 de agosto de 2026',
     label: 'Aparece la primera plataforma',
     detail:
@@ -1188,6 +1213,12 @@ export const P2P_SOURCES: readonly P2PSourceLink[] = Object.freeze([
       'Recopilación de Normas de Regulación y Control del Sistema Financiero (Título XII y arts. 248.1, 338, 371, 473.5–473.7, 484.1, 661.16, 719–720.3)',
     url: 'https://www.bcu.gub.uy/Acerca-de-BCU/Normativa/Documents/Reordenamiento%20de%20la%20Recopilaci%C3%B3n/Sistema%20Financiero/RNRCSF.pdf',
     kind: 'norma',
+  },
+  {
+    label:
+      'BCU — Comunicación N° 2026/135: inscripción de FARISOUL S.A. en el Registro de EAPPP (resolución SSF N° 2026-420 del 29/06/2026)',
+    url: 'https://www.bcu.gub.uy/Comunicados/seggco26135.pdf',
+    kind: 'bcu',
   },
   {
     label:

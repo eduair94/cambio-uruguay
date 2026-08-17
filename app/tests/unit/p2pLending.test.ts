@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   BORROWER_ALTERNATIVES,
   BORROWER_CHECKLIST,
+  EAPPP_REGISTRATION,
   INFLATION_YOY_PCT,
   LENDER_ALTERNATIVES,
   LENDER_CHECKLIST,
@@ -232,6 +233,13 @@ describe('catálogos', () => {
     }
     expect(LENDER_CHECKLIST.length).toBeGreaterThanOrEqual(6)
     expect(BORROWER_CHECKLIST.length).toBeGreaterThanOrEqual(3)
+  })
+
+  it('la inscripción publicada por el BCU va con su resolución y su expediente', () => {
+    expect(EAPPP_REGISTRATION.company).toBe('FARISOUL S.A.')
+    expect(EAPPP_REGISTRATION.resolution).toMatch(/2026-420/)
+    expect(EAPPP_REGISTRATION.resolutionDate).toBe('2026-06-29')
+    expect(EAPPP_REGISTRATION.url).toMatch(/^https:\/\/www\.bcu\.gub\.uy\//)
   })
 
   it('las constantes fiscales y de contexto son las verificadas', () => {

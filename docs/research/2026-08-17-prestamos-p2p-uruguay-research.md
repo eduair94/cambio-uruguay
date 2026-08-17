@@ -119,13 +119,16 @@ al final.
 
 ## 7. Lo que NO se publicó (y por qué)
 
-- **Razón social y fecha exacta de la inscripción de Prestapagos.** "FARISOUL S.A." y "29/6/2026"
-  circulan en un posteo de X que no se pudo abrir (HTTP 402). El BCU **no publica** página de
-  registro de EAPPP (la URL equivalente a la de financiamiento colectivo devuelve 404) y su buscador
-  de registros es un formulario ASP.NET con postback que no responde a consultas por GET —probado
-  también contra la categoría de crowdfunding, que sí tiene entidades, y también dio vacío, así que
-  "registro vacío" no es una conclusión válida.
-- **Número de resolución** de la inscripción.
+- ~~Razón social, número de resolución y fecha de la inscripción.~~ **RESUELTO el 17.08.2026.**
+  La pista estaba en un posteo de X del abogado Juan Diana (10.07.2026) que la investigación no
+  pudo abrir (x.com devuelve HTTP 402); se leyó con `api.fxtwitter.com/JDiana91/status/2075698118755041493`
+  y trae el enlace a la fuente primaria: **Comunicación N° 2026/135 del BCU (30.06.2026)**, que
+  informa la **resolución SSF N° 2026-420 del 29.06.2026** por la que se inscribe a **FARISOUL S.A.**
+  en el Registro de EAPPP (expediente 2025-50-1-00024, firma Juan Pedro Cantera). La resolución
+  además deja constancia de que la empresa constituyó el depósito mínimo del art. 248.1 y cita los
+  arts. 125.16 a 125.23, lo que confirma la numeración vigente usada en la página.
+  **Lo que sigue sin fuente: que FARISOUL S.A. sea Prestapagos y que sea "la primera".** La
+  resolución no dice ninguna de las dos cosas. La página publica los dos hechos por separado.
 - **Que el registro haya estado vacío entre 2018 y 2026**: sólo hay ausencia de noticias, no
   constancia registral. La página dice "no hay noticia pública de ninguna inscripción".
 - **Volúmenes y mora de las plataformas de 2015–2017**: nunca se publicaron. La causa del cierre de
