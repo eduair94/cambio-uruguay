@@ -4,6 +4,7 @@ import {
   ISSUER_TYPE_LABELS,
   NETWORK_LABELS,
   CARD_PROGRAMS,
+  PROGRAM_REDDIT_ENTITY,
   computeOverall,
   rankedPrograms,
   medalFor,
@@ -141,5 +142,23 @@ describe('card programs catalogue invariants', () => {
       expect(getCardProgram(CARD_PROGRAMS[0]!.id)).toBeDefined()
     }
     expect(getCardProgram('definitely-not-real')).toBeUndefined()
+  })
+
+  it('excludes Mercado Pago: it issues no credit card in Uruguay', () => {
+    // Mercado Pago Uruguay offers a "Tarjeta prepaga" and nothing else — its 2026
+    // launch here was rendimientos + prepaid Mastercard + Point Smart + Meli+.
+    // The Mercado Pago CREDIT card is Argentine. Removed 2026-08-17; its prepaid
+    // card is ranked in utils/debitCards.ts instead. A research pass that re-adds
+    // it from Argentine sources turns this red.
+    for (const p of CARD_PROGRAMS) {
+      expect(p.id).not.toBe('mercado-pago-uruguay')
+      expect(`${p.name} ${p.issuer}`.toLowerCase()).not.toContain('mercado pago')
+    }
+    expect(Object.keys(PROGRAM_REDDIT_ENTITY)).not.toContain('mercado-pago-uruguay')
+  })
+
+  it('every Reddit entity mapping points at a programme that still exists', () => {
+    const ids = new Set(CARD_PROGRAMS.map(p => p.id))
+    for (const id of Object.keys(PROGRAM_REDDIT_ENTITY)) expect(ids).toContain(id)
   })
 })

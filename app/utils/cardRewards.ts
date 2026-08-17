@@ -132,6 +132,23 @@ export const NETWORK_LABELS: Readonly<Record<CardNetwork, string>> = Object.free
 })
 
 // Populated after research (see the research + verify + rank workflow output).
+//
+// EXCLUSIONS — a programme belongs here only if a resident of Uruguay can hold
+// the card it rewards:
+//   - **Mercado Pago** was removed on 2026-08-17. Mercado Pago Uruguay does not
+//     issue a credit card: its own site offers a "Tarjeta prepaga" and nothing
+//     else, and the four products it launched here in 2026 were rendimientos
+//     sobre el saldo, the international PREPAID Mastercard, the Point Smart POS
+//     and the Meli+ subscription. The Mercado Pago credit card is an ARGENTINE
+//     product (mercadopago.com.ar/tarjeta-de-credito) — the same country mix-up
+//     that puts Argentine yield rates in Uruguayan coverage. Its prepaid card is
+//     already ranked where it belongs, in `utils/debitCards.ts`.
+//
+// Prex and MiDinero are also prepaid, not credit. They are kept for now because
+// their points/cashback programmes compete head-on with the bank ones, but that
+// is a scope decision worth revisiting: this page is titled "tarjetas de
+// crédito". `tests/unit/cardRewards.test.ts` pins the Mercado Pago exclusion so
+// a future research pass does not silently re-add it.
 export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
   {
     id: 'brou-recompensa',
@@ -176,50 +193,6 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     },
     rationale:
       'Combinacion mas equilibrada del set: acumulacion confirmada de 1 punto por $100 con 1 punto = $1 (~1% liquido tratado como dinero) y la red de descuentos automaticos mejor documentada del pais, con dias, topes y vigencia hasta el 30/4/2027 publicados por el emisor (sube descuentos a 86). Costo tambien confirmado y mas barato de lo que se creia en la gama de entrada. Bajan canje y flexibilidad al verificarse la letra chica: minimo de 400 puntos, compra en los ultimos 7 dias y vencimiento a 24 meses.',
-    verified: true,
-  },
-  {
-    id: 'mercado-pago-uruguay',
-    name: 'Mercado Pago (tarjeta prepaga Mastercard + Meli+ + rendimientos)',
-    issuer: 'Mercado Pago Uruguay',
-    issuerType: 'fintech',
-    networks: ['mastercard'],
-    pointsProgramName:
-      'Sin puntos: cashback en ecosistema + rendimientos diarios sobre saldo + Meli+',
-    earnRateNote:
-      'Dos cosas distintas. Rendimiento del saldo: Mercado Pago publica hoy "rendimientos de hasta 5,59% anual", con el asterisco de que es un rendimiento anual estimado calculado sobre el histórico del fondo. No está atado a la tasa de política monetaria del BCU: es un fondo administrado por BIND UY Administradora de Fondos de Inversión S.A., inscripta ante el BCU, y el dinero rinde desde $U 1 sin quedar inmovilizado. Reintegros: Meli+ devuelve 3% de cada compra en el Marketplace con cualquier medio de pago (tope $U 50 por ítem y $U 250 por mes) más un 2% adicional pagando con Dinero Disponible en Mercado Pago (tope $U 250 por mes). El "hasta 5%" solo se alcanza pagando con saldo, no aplica a productos usados ni a anuncios gratuitos, y el reintegro total topea en $U 500 por mes. Fuera del Marketplace no hay cashback general publicado.',
-    pointValueNote:
-      'Cashback y rendimientos en pesos 1:1 (líquidos). Meli+ 3% + 2% dentro del ecosistema, con tope conjunto de $U 500 por mes; rendimiento del saldo hasta 5,59% anual estimado, variable y sin garantía.',
-    redemptionNote:
-      'Cashback y reintegros en saldo/pesos (líquido). Los rendimientos se acreditan automáticamente sin inmovilizar fondos.',
-    discountNote:
-      'Reintegros de Meli+ dentro del ecosistema Mercado Libre (3% + 2% pagando con saldo, tope total $U 500 por mes). El envío gratis no aplica a toda compra mayor a $U 500: aplica solo a productos del Marketplace identificados con la etiqueta "MELI+" cuyo precio sea igual o superior a $U 500, y quedan excluidas la categoría Supermercado, las compras internacionales y los envíos cuyo costo supere los $U 400 (ahí el suscriptor paga la diferencia). Fuera del ecosistema Meli, la oferta de descuentos locales es más acotada que OCA/Prex.',
-    feeNote:
-      'Tarjeta prepaga gratuita: emisión $U 0, mantenimiento mensual/anual $U 0, retiro en cajeros de plaza (Banred/BROU) $U 0, retiro en ATM del exterior $U 0, comisión por compras internacionales 0% y —dato que la comparación suele omitir— reimpresión por extravío o robo $U 0. Es la única prepaga del set que no cobra el reemplazo del plástico (Prex cobra $U 207, MiDinero $U 246 + IVA). Meli+ cuesta $199/mes y es opcional.',
-    pros: [
-      "Rendimiento diario sobre el saldo: el dinero parado 'trabaja' sin quedar inmovilizado",
-      'Reintegro publicado como tasa fija con topes (3% + 2% con saldo), no como promesa vaga',
-      'Prepaga internacional gratis, sin comisión por compra en el exterior y sin costo de reimpresión del plástico. Ojo: sin comisión no es sin costo — el margen se lo puede llevar el tipo de cambio que te aplican, que no siempre es el mejor de plaza.',
-    ],
-    cons: [
-      'El mejor reintegro (5%) exige suscripción Meli+ paga ($199/mes) y pagar con saldo dentro del ecosistema',
-      'El reintegro de Meli+ topea en $U 500 por mes ($U 250 + $U 250): contra los $199/mes de la suscripción, el beneficio neto máximo es de $U 301 por mes, y el 3% general se agota con unos $U 8.333 de compra mensual',
-      'Menor red de descuentos en comercio físico local vs OCA/Prex',
-      'El rendimiento no es una tasa garantizada: es un fondo, y el porcentaje es estimado sobre su histórico',
-    ],
-    bestFor:
-      'Usuario intensivo de Mercado Libre que quiere rendimientos sobre el saldo y reintegros dentro del ecosistema.',
-    note: 'El rendimiento del saldo no es un depósito bancario ni una tasa garantizada: el dinero se invierte en un fondo administrado por BIND UY Administradora de Fondos de Inversión S.A., inscripta ante el BCU, y el porcentaje que muestra la app es un rendimiento anual estimado sobre el histórico del fondo, revisable sin aviso. La intervención de Mercado Pago se limita a proveer la plataforma como canal entre la administradora y el usuario. Dato para no confundirse: la TPM del BCU también está en 5,75%, así que la cifra vieja del ranking "parecía" seguir bien.',
-    scores: {
-      acumulacion: 70,
-      canje: 90,
-      descuentos: 55,
-      costo: 95,
-      flexibilidad: 92,
-      cobertura: 68,
-    },
-    rationale:
-      'Puntaje alto por liquidez total (reintegros en pesos 1:1, sin catalogo ni vencimiento), costo cero de emision, mantenimiento y hasta de reimpresion del plastico, y rendimiento diario sobre el saldo. Se corrigen dos cosas de la revision anterior: el rendimiento es "hasta 5,59% anual estimado" sobre un fondo de BIND UY AFISA, no 5,75% atado a la TPM del BCU, y el reintegro si esta publicado como tasa fija (3% + 2%) pero con tope de $U500 al mes, que contra los $199 de Meli+ deja un neto maximo de $U301. Ya no es el unico con rendimiento sobre el saldo: Prex lanzo Inversion Violeta el 30/3/2026, antes que Mercado Pago.',
     verified: true,
   },
   {
@@ -1321,7 +1294,6 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
  */
 export const PROGRAM_REDDIT_ENTITY: Readonly<Record<string, string>> = Object.freeze({
   'brou-recompensa': 'brou',
-  'mercado-pago-uruguay': 'mercadopago',
   'club-tienda-inglesa-puntos': 'tiendainglesa',
   'prex-uruguay': 'prex',
   'scotia-puntos': 'scotiabank',
