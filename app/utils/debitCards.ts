@@ -231,7 +231,7 @@ export const DEBIT_CARDS: readonly DebitCard[] = Object.freeze([
   {
     id: 'prex',
     name: 'Prex',
-    issuer: 'Prex (Fortigold S.A.)',
+    issuer: 'Prex (Econstar S.A.)',
     kind: 'fintech',
     networks: ['mastercard'],
     comisionExteriorPct: 2.5,
@@ -246,7 +246,7 @@ export const DEBIT_CARDS: readonly DebitCard[] = Object.freeze([
       productId: 'prex-inversion-violeta',
     },
     fxSpreadNote:
-      'Cuenta bimoneda. El consumo en USD se debita primero del saldo en dólares; si no tenés USD, convierte tus pesos al "cambio preferencial" de Prex (un tipo venta con spread propio, no publicado). Fondeando en dólares evitás esa conversión.',
+      'Cuenta bimoneda. El consumo en USD se debita primero del saldo en dólares; si no tenés USD, convierte tus pesos al "cambio preferencial" de Prex (un tipo venta con spread propio, no publicado). Fondeando en dólares evitás esa conversión. La tarjeta la emite Econstar S.A., institución emisora de dinero electrónico regulada por el BCU; quien realiza la operación de cambio es Fortigold S.A.',
     feeNote:
       'Compra internacional: 2,5% + US$ 0,50 fijo + IVA 22% sobre la comisión (≈ 4,3% en un ítem de US$ 50). El cargo fijo pega más fuerte en compras chicas.',
     estimate: false,

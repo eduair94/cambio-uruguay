@@ -221,6 +221,12 @@
       </VExpansionPanels>
     </div>
 
+    <!-- Where this ranking got used as evidence, and what we answered -->
+    <PressMentions page="/tarjetas-de-credito-uruguay" class="mt-8" />
+
+    <!-- The other half of the saving: knowing where today's discount is -->
+    <DiscountFinders context="credito" />
+
     <!-- What Reddit says about these issuers -->
     <RedditSentimentSection :ids="PROGRAM_REDDIT_IDS" class="mt-8">
       <template #intro>
@@ -264,9 +270,43 @@
       Comparación <strong>informativa</strong>, no asesoramiento financiero; no tenemos afiliación
       con los emisores. Las tasas de acumulación, valores de canje, descuentos y costos
       <strong>cambian seguido</strong> y varían por categoría de tarjeta y campaña vigente. Los
-      puntajes reflejan nuestro mejor criterio con la información pública disponible a julio de
-      2026; verificá siempre la letra chica actual en el sitio del emisor antes de decidir.
+      puntajes reflejan nuestro mejor criterio con la información pública disponible al
+      {{ CARD_REWARDS_LAST_REVIEWED }}; verificá siempre la letra chica actual en el sitio del
+      emisor antes de decidir.
     </VAlert>
+
+    <!-- Dated macro facts that cut across every card, so no single ficha owns them -->
+    <VCard variant="flat" class="tarjetas-section mt-4 pa-5 pa-sm-6">
+      <h2 class="text-subtitle-1 font-weight-bold mb-3 tarjetas-section-title">
+        <VIcon start size="small" color="primary">mdi-calendar-alert</VIcon>
+        Dos beneficios que no dependen del emisor (y uno cambia el 1º de octubre)
+      </h2>
+      <p class="text-body-2 mb-3">
+        Buena parte de lo que se publicita como "beneficio de la tarjeta" en realidad lo da la ley y
+        lo tenés con cualquier medio de pago electrónico:
+      </p>
+      <ul class="tarjetas-macro">
+        <li>
+          <strong>2 puntos menos de IVA</strong> pagando con débito, dinero electrónico o
+          instrumentos análogos (Ley 19.210). No aplica a tarjeta de crédito. En comercios de IVA
+          mínimo o Monotributo el beneficio se expresa como 1,64% o 1,82% del monto.
+        </li>
+        <li>
+          <strong>9 puntos menos de IVA en gastronomía</strong> pagando con tarjeta o dinero
+          electrónico (Ley 17.934) —hoy vigentes por el Decreto 83/026—, pero
+          <strong>desde el 1º de octubre de 2026 la reducción baja a 5 puntos</strong> (4,1% de
+          descuento para contribuyentes de IVA Mínimo, según DGI). Cualquier tarjeta que hoy
+          promocione "9% de IVA en restaurantes" queda desactualizada esa semana.
+        </li>
+        <li>
+          <strong>Devolución de IMESI en combustible</strong>: no es un beneficio de emisor sino un
+          régimen fiscal de frontera. Desde el 1/7/2026 es 22% en pasos con Argentina y 34% en pasos
+          con Brasil, dentro de los 20 km; la mitad entre 20 y 60 km. Tope de 600 UI por persona y
+          por mes, pagando de forma presencial con débito, crédito o dinero electrónico emitido en
+          Uruguay.
+        </li>
+      </ul>
+    </VCard>
 
     <!-- Sources -->
     <VCard variant="flat" class="tarjetas-section mt-4 pa-5">
@@ -317,6 +357,7 @@
 
 <script setup lang="ts">
 import {
+  CARD_REWARDS_LAST_REVIEWED,
   rankedPrograms,
   REWARD_RUBRIC,
   ISSUER_TYPE_LABELS,
@@ -390,14 +431,49 @@ const sources = [
     url: 'https://metraje.oca.com.uy/files/terminos_y_condicionesB.pdf',
   },
   {
-    label: 'Pronto! — Puntos y beneficios',
-    url: 'https://prontopremios.com.uy/PreguntasFrecuentes',
+    label: 'Pronto! — Términos y condiciones de tarjeta (tarifario, vigencia agosto 2026)',
+    url: 'https://www.pronto.com.uy/terminos-y-condiciones-de-tarjeta/',
   },
   {
-    label: 'PassCard — Puntos Pass',
-    url: 'https://www.passcard.com.uy/tarjeta/beneficios/puntos-passcard',
+    label: 'PassCard — Bases y condiciones de la Tienda Passcard',
+    url: 'https://www.passcard.com.uy/descargar/Bases%20y%20condiciones%20Tienda%20Passcard',
   },
-  { label: 'Tienda Inglesa — Programa de Puntos', url: 'https://www.tiendainglesa.com.uy/' },
+  {
+    label: 'Tienda Inglesa — Bases del Programa Puntos (vigentes desde el 1/1/2026)',
+    url: 'https://www.tiendainglesa.com.uy/supermercado/landing/bases-y-condiciones-programa-puntos/349',
+  },
+  {
+    label: 'Scotiabank — Cartilla Tarjetas de Crédito Personas Físicas (F.2540, 20/03/2026)',
+    url: 'https://www.scotiabank.com.uy/Personas/ScotiaPuntos/home',
+  },
+  {
+    label: 'BROU — Costos y exoneraciones de tarjetas de crédito',
+    url: 'https://www.brou.com.uy/personas/tarjetas/costos-y-exoneraciones-visa-y-master/credito',
+  },
+  {
+    label: 'Itaú — Tarifario oficial (versión 1 de agosto de 2026)',
+    url: 'https://www.itau.com.uy/inst/aci/docs/tarifario.pdf',
+  },
+  {
+    label: 'ANDA — Programa de puntos Dale',
+    url: 'https://anda.com.uy/programa-de-puntos-dale/',
+  },
+  {
+    label: 'OCA — Preguntas frecuentes del Metraje (tabla de canje)',
+    url: 'https://metraje.oca.com.uy/site/view-preguntas-frecuentes',
+  },
+  {
+    label: 'BTG Pactual — Tarifas y cartillas (cartilla de tarjetas, julio 2026)',
+    url: 'https://www.btgpactual.uy/tarifas-y-cartillas',
+  },
+  {
+    label: 'INE — Valor de la Unidad Indexada (agosto 2026)',
+    url: 'https://www5.ine.gub.uy/web/guest/unidad-indexada',
+  },
+  {
+    label: 'DGI — Reducción de 9 puntos de IVA en gastronomía (baja a 5 el 1/10/2026)',
+    url: 'https://www.gub.uy/direccion-general-impositiva/comunicacion/publicaciones/reduccion-9-puntos-iva-determinados-servicios-siempre-sean-abonados',
+  },
 ]
 
 const canonicalUrl = 'https://cambio-uruguay.com/tarjetas-de-credito-uruguay'
@@ -488,6 +564,19 @@ useHead(() => ({
 .tarjetas-section-title {
   border-left: 3px solid rgb(var(--v-theme-primary));
   padding-left: 10px;
+}
+
+.tarjetas-macro {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+.tarjetas-macro li {
+  margin-bottom: 10px;
+}
+.tarjetas-macro li:last-child {
+  margin-bottom: 0;
 }
 
 .method-panels {
