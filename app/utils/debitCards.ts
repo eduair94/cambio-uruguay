@@ -273,6 +273,7 @@ export const DEBIT_CARDS: readonly DebitCard[] = Object.freeze([
       'Comisión de exterior alta (2,5% + fijo + IVA)',
       'El cargo fijo de US$ 0,50 castiga las compras chicas',
       'El rendimiento es solo en pesos: tus dólares en Prex siguen quietos',
+      'No tiene programa de cashback propio: el "1% a 5% rotativo" que circula sale de comparadores de terceros, no de Prex',
     ],
     bestFor:
       'Quien ya la usa por comodidad y carga saldo en dólares para bajar el costo; para compras chicas frecuentes conviene comparar.',
@@ -537,6 +538,7 @@ export const DEBIT_CARDS: readonly DebitCard[] = Object.freeze([
     cons: [
       'Comisión de exterior igual a Prex (2,5% + fijo + IVA)',
       'El cargo fijo castiga las compras chicas',
+      'Mantenimiento $297 + IVA al año desde el segundo, y reimprimir el plástico cuesta $246 + IVA: el reemplazo más caro del grupo',
       'Prepaga: alguna tienda puede rechazarla',
     ],
     bestFor:

@@ -144,17 +144,35 @@ describe('card programs catalogue invariants', () => {
     expect(getCardProgram('definitely-not-real')).toBeUndefined()
   })
 
-  it('excludes Mercado Pago: it issues no credit card in Uruguay', () => {
-    // Mercado Pago Uruguay offers a "Tarjeta prepaga" and nothing else — its 2026
-    // launch here was rendimientos + prepaid Mastercard + Point Smart + Meli+.
-    // The Mercado Pago CREDIT card is Argentine. Removed 2026-08-17; its prepaid
-    // card is ranked in utils/debitCards.ts instead. A research pass that re-adds
-    // it from Argentine sources turns this red.
+  it('ranks no prepaid card: those belong to the debit ranking', () => {
+    // This page is titled "Ranking de tarjetas de crédito". Prepaid cards are
+    // ranked in utils/debitCards.ts. A card cannot sit in both, so a product
+    // whose NAME is the prepaid card itself must not appear here. Mentioning a
+    // prepaid sibling in the body is fine — BROU Recompensa, Puntos BBVA, OCA
+    // Metraje and ANDA all do while ranking the credit card.
     for (const p of CARD_PROGRAMS) {
-      expect(p.id).not.toBe('mercado-pago-uruguay')
+      const name = p.name.toLowerCase()
+      // The rule is not "never say prepaid" — ANDA bundles its Prepaga DEANDA
+      // into a name that leads with "Tarjeta de crédito ANDA". The rule is that
+      // a name mentioning a prepaid product must ALSO name a credit card, which
+      // is exactly what "Prex (tarjeta prepaga Mastercard)" failed to do.
+      if (/prepag/.test(name)) expect(name).toMatch(/cr[ée]dito/)
+    }
+  })
+
+  it('keeps out the three issuers removed on 2026-08-17 for having no credit card', () => {
+    // Mercado Pago Uruguay issues no credit card at all (the credit card is
+    // Argentine); Prex and MiDinero are prepaid by their own product name. A
+    // research pass that re-adds any of them turns this red.
+    const gone = ['mercado-pago-uruguay', 'prex-uruguay', 'midinero-uruguay']
+    const ids = CARD_PROGRAMS.map(p => p.id)
+    for (const id of gone) {
+      expect(ids).not.toContain(id)
+      expect(Object.keys(PROGRAM_REDDIT_ENTITY)).not.toContain(id)
+    }
+    for (const p of CARD_PROGRAMS) {
       expect(`${p.name} ${p.issuer}`.toLowerCase()).not.toContain('mercado pago')
     }
-    expect(Object.keys(PROGRAM_REDDIT_ENTITY)).not.toContain('mercado-pago-uruguay')
   })
 
   it('every Reddit entity mapping points at a programme that still exists', () => {

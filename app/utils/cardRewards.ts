@@ -133,22 +133,26 @@ export const NETWORK_LABELS: Readonly<Record<CardNetwork, string>> = Object.free
 
 // Populated after research (see the research + verify + rank workflow output).
 //
-// EXCLUSIONS — a programme belongs here only if a resident of Uruguay can hold
-// the card it rewards:
-//   - **Mercado Pago** was removed on 2026-08-17. Mercado Pago Uruguay does not
-//     issue a credit card: its own site offers a "Tarjeta prepaga" and nothing
-//     else, and the four products it launched here in 2026 were rendimientos
-//     sobre el saldo, the international PREPAID Mastercard, the Point Smart POS
-//     and the Meli+ subscription. The Mercado Pago credit card is an ARGENTINE
-//     product (mercadopago.com.ar/tarjeta-de-credito) — the same country mix-up
-//     that puts Argentine yield rates in Uruguayan coverage. Its prepaid card is
-//     already ranked where it belongs, in `utils/debitCards.ts`.
+// ADMISSION RULE — this page ranks TARJETAS DE CRÉDITO. A programme belongs here
+// only if the card it rewards is a credit card a resident of Uruguay can hold.
+// Prepaid cards are ranked in `utils/debitCards.ts` instead; a card cannot sit in
+// both. Removed on 2026-08-17 for failing this rule:
+//   - **Mercado Pago**. Mercado Pago Uruguay issues no credit card at all: its
+//     own site offers a "Tarjeta prepaga" and nothing else, and the four products
+//     it launched here in 2026 were rendimientos sobre el saldo, the
+//     international PREPAID Mastercard, the Point Smart POS and Meli+. The
+//     Mercado Pago credit card is an ARGENTINE product
+//     (mercadopago.com.ar/tarjeta-de-credito) — the same country mix-up that puts
+//     Argentine yield rates into Uruguayan coverage.
+//   - **Prex** and **MiDinero**. Both are, by their own product name, "tarjeta
+//     prepaga Mastercard". The verified finding that Prex publishes NO cashback
+//     programme of its own moved with them, into their debitCards entries.
 //
-// Prex and MiDinero are also prepaid, not credit. They are kept for now because
-// their points/cashback programmes compete head-on with the bank ones, but that
-// is a scope decision worth revisiting: this page is titled "tarjetas de
-// crédito". `tests/unit/cardRewards.test.ts` pins the Mercado Pago exclusion so
-// a future research pass does not silently re-add it.
+// A card that mentions a prepaid sibling still belongs here as long as the entry
+// itself is the credit programme: BROU Recompensa, Puntos BBVA, OCA Metraje and
+// ANDA all reference a prepaid variant while ranking the credit card.
+// `tests/unit/cardRewards.test.ts` pins these exclusions so a future research
+// pass does not silently re-add them.
 export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
   {
     id: 'brou-recompensa',
@@ -242,51 +246,6 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     verified: true,
   },
   {
-    id: 'prex-uruguay',
-    name: 'Prex (tarjeta prepaga Mastercard)',
-    issuer: 'Prex Uruguay',
-    issuerType: 'fintech',
-    networks: ['mastercard'],
-    pointsProgramName:
-      'Sin programa de puntos ni cashback propio: ahorro de IVA por ley + promos rotativas + Inversión Violeta',
-    earnRateNote:
-      'Prex no publica hoy ningún programa de cashback propio: se barrieron el home, la página de beneficios, las 17 fichas de beneficio vigentes, las 16 secciones del centro de ayuda y la cartilla de uso, sin una sola mención. Lo que devuelve de forma permanente es IVA: 2 puntos en comercios, pagos, recargas, Abitab y STM (Ley 19.210) y 9 puntos en restaurantes (Ley 17.934) hasta el 30/9/2026, porque desde el 1/10/2026 esa reducción baja a 5 puntos. Ese ahorro no es un beneficio del programa: lo tiene cualquier medio de pago electrónico. Lo que sí es propio de Prex es Inversión Violeta, que desde el 30/3/2026 hace rendir el saldo.',
-    pointValueNote:
-      'Reintegros y rendimientos en pesos 1:1 (líquidos). No hay una tasa de cashback publicada por el emisor: el "1%-5% rotativo" que circulaba salía de una comparativa de terceros, no de Prex.',
-    redemptionNote:
-      'Los reintegros se acreditan en saldo de la cuenta Prex (líquido, sin catálogo), utilizables en cualquier compra.',
-    discountNote:
-      'Lo permanente en gastronomía es la devolución de 9 puntos de IVA en restaurantes, todos los días del año y en todos los restaurantes del país, acreditada por Prex en el estado de cuenta (baja a 5 puntos el 1/10/2026). El resto de la cartelera son promos puntuales y topeadas: en agosto de 2026, Cabify 30% con el código PREXAGO30 (tope $U 150, un viaje, del 1/8 al 31/8/2026), 25% de reintegro en la primera recarga de Telepeaje en la app (tope $U 200), 100% de reintegro del primer pago de Estacionamiento Tarifado (tope $U 100), $U 104 de regalo al recargar STM desde $U 1.000 (una sola vez), sorteo de 10 reintegros de hasta $U 4.000 en carga de combustible, Pax Assistance 50% y pop + refresco en Grupocine el mes del cumpleaños. La PrexWeek está entre ediciones; la última fue de 25% en comercios adheridos.',
-    feeNote:
-      'Cartilla de uso oficial: costo de solicitud $U 0, costo anual o de renovación $U 0, mantenimiento $U 0, costo por bajo promedio $U 0 y tarjetas de menores o adicionales $U 0. La tarjeta física no se cobra: lo que se cobra es el envío, $U 89 si la retirás en Abitab o Correo Uruguayo (gratis retirándola en las sucursales Fortex de Montevideo). La reimpresión por extravío cuesta $U 170 + IVA ($U 207 con IVA; Prex Sueldos tiene dos reimpresiones gratis) y la reimpresión de PIN $U 150 + IVA. Los importes en pesos se reajustan semestralmente por IPC.',
-    pros: [
-      'App muy valorada por usuarios (transferencias P2P instantáneas y gratis)',
-      'Inversión Violeta (desde el 30/3/2026): cuenta de inversión en Gletir que abrís desde la app, gratuita, que pone el saldo en el "Fondo Liquidez Inmediata" (money market) administrado por VALO, ambos supervisados por el BCU. Rinde en días hábiles, sin plazo fijo y con disponibilidad inmediata. Primera suscripción desde $U 4.000 y después partidas de $U 100. La tasa es variable y no está publicada: la app muestra una referencia indicativa del promedio de los últimos 30 días',
-      'Ahorro de IVA por ley (2 puntos en comercios, 9 en restaurantes hasta el 30/9/2026)',
-      'Sin costo de solicitud, renovación ni mantenimiento; Mastercard internacional',
-    ],
-    cons: [
-      'No tiene cashback propio: el "1%-5% rotativo" no aparece en ninguna fuente del emisor, y el ahorro de IVA lo da la ley, no Prex',
-      'Los descuentos vigentes son promos puntuales, fechadas y con topes bajos ($U 100-200 en varias)',
-      'El plástico tiene costos que la comparación suele omitir: $U 89 de envío y $U 207 la reimpresión',
-      'La tarjeta es prepaga: no da cuotas ni genera historial crediticio (aunque el ecosistema sí ofrece crédito: el Prextamo, 100% online desde la app, lo otorga Floder S.A., regulada y supervisada por el BCU, sujeto a aprobación crediticia)',
-    ],
-    bestFor:
-      'Usuario digital que quiere una prepaga gratis con buena app, hacer rendir el saldo y aprovechar el ahorro de IVA en el gasto cotidiano.',
-    note: 'Prex es emitida por Econstar S.A., Institución Emisora de Dinero Electrónico regulada y supervisada por el BCU; Fortigold S.A. no emite la tarjeta, es quien realiza la conversión de divisas. Corrección de la revisión anterior: la ficha publicaba un cashback de 1%-5% rotativo y un 20% de gastronomía los lunes y martes que no existen en ninguna fuente oficial de Prex a agosto de 2026 — venían de una comparativa de terceros.',
-    scores: {
-      acumulacion: 45,
-      canje: 90,
-      descuentos: 52,
-      costo: 88,
-      flexibilidad: 92,
-      cobertura: 60,
-    },
-    rationale:
-      'Costo casi nulo, saldo liquido sin catalogo ni vencimiento y una app que los usuarios valoran: eso sostiene canje, costo y flexibilidad. Bajan acumulacion (55 a 45) y descuentos (62 a 52) por un motivo de método, no de gusto: el cashback de 1%-5% y el 20% de gastronomia de lunes y martes que justificaban esas notas no aparecen en ninguna fuente de Prex, solo en una comparativa de terceros. Lo que queda verificado es el ahorro de IVA —que lo da la ley y lo tiene cualquier medio electronico—, una cartelera de promos chicas y fechadas, y el diferencial nuevo: Inversion Violeta, que hace rendir el saldo desde el 30/3/2026, antes incluso que Mercado Pago.',
-    verified: true,
-  },
-  {
     id: 'scotia-puntos',
     name: 'Scotia Puntos',
     issuer: 'Scotiabank Uruguay',
@@ -329,51 +288,6 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     },
     rationale:
       'Correccion grande respecto de la revision anterior. La acumulacion baja de 74 a 58 porque la tasa no es 1 punto cada $U100 de forma general: las Internacionales, que son el grueso de la cartera, acumulan 1 cada $U150 (~0,67%). El canje baja de 95 a 72 porque el eslogan "si lo podes pagar con la tarjeta, lo podes canjear" tiene cuatro condiciones que el ranking no contemplaba (minimo $U700, menos de 90 dias, cubrir el 100% del monto y solo por App) y una clausula de inactividad que borra TODO el saldo a los 6 meses sin comprar. Sube levemente costo al aparecer el tarifario oficial, que ademas confirma que el cargo esta en UI y no en dolares.',
-    verified: true,
-  },
-  {
-    id: 'midinero-uruguay',
-    name: 'MiDinero (tarjeta prepaga Mastercard)',
-    issuer: 'MiDinero Uruguay',
-    issuerType: 'fintech',
-    networks: ['mastercard'],
-    pointsProgramName:
-      'Sin programa de puntos ni cashback permanente: devolución de IMESI en frontera + ahorro de IVA + promos puntuales',
-    earnRateNote:
-      'No hay cashback: el buscador del propio sitio de MiDinero para "cashback" devuelve "No se ha encontrado nada". Lo que publica son dos acciones comerciales acotadas y de una sola vez: la "Escalera de devoluciones en Midinero App" (del 4/8/2026 al 31/10/2026), que paga $U 50 por el primer pago de servicios de $U 500 o más hecho en la app, $U 75 por el segundo y $U 100 por el tercero, con tope de $U 225 por cliente; y "Alta + Carga en el día" (del 11/5/2026 al 30/9/2026), 20% de devolución sobre la primera compra con tope $U 200 para clientes nuevos que recarguen $U 1.000 o más el día del alta. No hay ningún porcentaje permanente sobre todo el gasto. Su diferencial real es la devolución de IMESI en la franja fronteriza.',
-    pointValueNote:
-      'Devoluciones en pesos 1:1 (líquidas). El "~1% de cashback" que figuraba antes no existe en fuente oficial: venía de una comparativa de terceros.',
-    redemptionNote:
-      'Devoluciones acreditadas en saldo de la cuenta MiDinero (líquido). Pago de +2.000 facturas y servicios desde la app.',
-    discountNote:
-      "Devolución de IMESI en combustible, pero solo en la franja fronteriza y con topes duros: 22% en estaciones dentro de un radio de hasta 20 km de determinados pasos de frontera con Argentina y 34% en estaciones dentro de hasta 20 km de pasos con Brasil; entre 20 y 60 km del paso, la devolución es la mitad (11% y 17%). Aplica solo a Nafta Premium 97 SP, Súper 95 SP y Especial 85 SP para consumidores finales, en la lista cerrada de estaciones de Artigas, Cerro Largo, Paysandú, Río Negro, Rivera, Rocha y Salto. No aplica a cargas de más de 50 litros de Súper 95 SP en una sola carga y el tope mensual es de UI 600 por persona (≈ $U 3.981), considerando todas las cuentas y tarjetas MiDinero del titular. Ahorro de 2 puntos de IVA. El 10% en Tata.com.uy fue dado de baja: MiDinero no tiene hoy ningún descuento destacado en supermercados. Los destacados vigentes son Coderhouse 20%, You Print 20%, Cofa's 10% + 2 puntos de IVA, DT Transportes 15% + 2 puntos, Senpai Academy 15% + 2 puntos, Instituto Dickens 30%, Kroser 10%, Restaurante Americano 5% y TADI Libros 5%.",
-    feeNote:
-      'Emisión sin costo; mantenimiento gratis el primer año, luego $297 + IVA anual. Primer plástico gratis, pero las reimpresiones por extravío, reposición o reimpresión de PIN (que implica recambio de plástico) cuestan $U 246 + IVA cada una: el reemplazo más caro del set, contra $U 207 de Prex y $U 0 de Mercado Pago. Mismas tarifas para Midinero y Midinero+, ajustadas anualmente por IPC en enero.',
-    pros: [
-      'Devolución de IMESI en combustible: 22% en frontera con Argentina y 34% con Brasil, fuerte para quien vive o carga cerca del paso',
-      'Devoluciones líquidas en saldo, sin catálogo',
-      'Ahorro de 2 puntos de IVA y pago de +2.000 facturas desde la app',
-    ],
-    cons: [
-      'No tiene cashback: el ~1% que se le atribuía no existe en fuente oficial. Solo hay promos de una sola vez y con tope ($U 225 y $U 200)',
-      'El IMESI sirve solo en la franja fronteriza, con tope de UI 600 al mes (≈ $U 3.981) y de 50 litros por carga: para quien maneja en Montevideo no aplica',
-      'Perdió el descuento de supermercado: el 10% en Tata está dado de baja',
-      'Cobra mantenimiento anual tras el primer año ($297 + IVA) y $U 246 + IVA por reponer el plástico',
-      "App considerada 'correcta pero no al nivel de Prex' por usuarios",
-    ],
-    bestFor:
-      'Quien vive o carga combustible en la franja fronteriza: ahí la devolución de IMESI es un beneficio real. Fuera de esa franja, su propuesta hoy es floja.',
-    note: 'Corrección de la revisión anterior: la ficha publicaba un cashback de ~1% y una devolución de IMESI de "hasta 32%" que no coinciden con ninguna fuente vigente. La devolución de IMESI no es un beneficio del emisor sino un régimen fiscal (Decreto 398/007 y modificativos) abierto a cualquier tarjeta de débito, crédito o dinero electrónico emitida en Uruguay, pagando de forma presencial; los porcentajes los actualiza la DGI por resolución (22% y 34% desde el 1/7/2026).',
-    scores: {
-      acumulacion: 38,
-      canje: 88,
-      descuentos: 48,
-      costo: 82,
-      flexibilidad: 90,
-      cobertura: 58,
-    },
-    rationale:
-      'Devoluciones liquidas en saldo y costo bajo sostienen canje, costo y flexibilidad. Bajan acumulacion (58 a 38) y descuentos (62 a 48) por dos hallazgos concretos: el ~1% de cashback no existe en ninguna fuente de MiDinero —solo hay dos promos de una sola vez, con tope de $U225 y $U200— y el IMESI, su diferencial, no es un 32% general sino 22% en frontera con Argentina y 34% con Brasil, solo dentro de 20 km del paso (la mitad entre 20 y 60 km), con tope de UI 600 al mes y 50 litros por carga. Ademas perdio el 10% de Tata, su unico descuento de supermercado.',
     verified: true,
   },
   {
@@ -1295,9 +1209,7 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
 export const PROGRAM_REDDIT_ENTITY: Readonly<Record<string, string>> = Object.freeze({
   'brou-recompensa': 'brou',
   'club-tienda-inglesa-puntos': 'tiendainglesa',
-  'prex-uruguay': 'prex',
   'scotia-puntos': 'scotiabank',
-  'midinero-uruguay': 'midinero',
   'santander-soy-santander-puntos': 'santander',
   'bbva-puntos-bbva': 'bbva',
   'bbva-comunidad-plus': 'bbva',
