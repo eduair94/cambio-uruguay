@@ -822,11 +822,21 @@ function fmtDate(iso: string): string {
   border-radius: 12px;
   padding: 1rem 1.1rem;
 }
+/* The red/green distinction rides on the tag and a faint tint, not on a slab
+   accent: the two boxes already say "Lo que NO es" / "Lo que SÍ es". */
 .split-box--no {
-  border-left: 4px solid rgb(var(--v-theme-error));
+  background: rgba(var(--v-theme-error), 0.04);
+}
+.split-box--no .split-tag {
+  color: rgb(var(--v-theme-error));
+  opacity: 1;
 }
 .split-box--si {
-  border-left: 4px solid rgb(var(--v-theme-success));
+  background: rgba(var(--v-theme-success), 0.04);
+}
+.split-box--si .split-tag {
+  color: rgb(var(--v-theme-success));
+  opacity: 1;
 }
 .split-tag {
   font-size: 0.7rem;
@@ -1019,7 +1029,9 @@ function fmtDate(iso: string): string {
 .muted {
   opacity: 0.65;
 }
+/* Correction callout — tinted surface + hairline instead of a side accent. */
 .myth {
-  border-left: 4px solid rgb(var(--v-theme-error));
+  background: rgba(var(--v-theme-error), 0.05);
+  border: 1px solid rgba(var(--v-theme-error), 0.22);
 }
 </style>

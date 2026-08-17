@@ -1135,9 +1135,12 @@ function fmtPesos(n: number): string {
   white-space: nowrap;
   font-weight: 600;
 }
-/* The 2026 "the balance pays now" callout, kept visually apart from the cost story. */
+/* The 2026 "the balance pays now" callout. Set apart with a faint tinted surface
+   and a hairline rather than a slab accent — the heading and its icon already
+   carry the signal, and this page uses no side-tabs anywhere else. */
 .news-card {
-  border-left: 4px solid rgb(var(--v-theme-success));
+  background: rgba(var(--v-theme-success), 0.05);
+  border: 1px solid rgba(var(--v-theme-success), 0.22);
 }
 /* Signal chips: allow the label to wrap so a long value never overflows the card. */
 .signal-chip {
