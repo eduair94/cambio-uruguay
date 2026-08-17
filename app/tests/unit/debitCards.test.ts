@@ -15,11 +15,13 @@ import {
   type CardNetwork,
   type DimId,
 } from '../../utils/debitCards'
+import { getYieldProduct } from '../../utils/yieldAccounts'
 
 const DIM_IDS = new Set<DimId>([
   'comisionExterior',
   'spreadCambio',
   'saldoUSD',
+  'rendimientoSaldo',
   'costo',
   'aceptacion',
   'recarga',
@@ -75,7 +77,7 @@ describe('debitCards - catalogue integrity', () => {
     }
   })
 
-  it('every card scores all six dimensions in 0–100', () => {
+  it('every card scores all seven dimensions in 0–100', () => {
     for (const c of DEBIT_CARDS) {
       for (const d of DEBIT_RUBRIC) {
         const v = c.scores[d.id]
@@ -142,22 +144,8 @@ describe('debitCards - general sources', () => {
 })
 
 describe('debitCards - scoring', () => {
-  const zero: Record<DimId, number> = {
-    comisionExterior: 0,
-    spreadCambio: 0,
-    saldoUSD: 0,
-    costo: 0,
-    aceptacion: 0,
-    recarga: 0,
-  }
-  const full: Record<DimId, number> = {
-    comisionExterior: 100,
-    spreadCambio: 100,
-    saldoUSD: 100,
-    costo: 100,
-    aceptacion: 100,
-    recarga: 100,
-  }
+  const zero = Object.fromEntries(DEBIT_RUBRIC.map(d => [d.id, 0])) as Record<DimId, number>
+  const full = Object.fromEntries(DEBIT_RUBRIC.map(d => [d.id, 100])) as Record<DimId, number>
 
   it('computeOverall maps 0→0 and 100→100', () => {
     expect(computeOverall(zero)).toBe(0)
@@ -245,5 +233,62 @@ describe('debitCards - estimateIntlCost reproduces the Prex case', () => {
     expect(r.comisionUsd).toBe(0)
     expect(r.ivaUsd).toBe(0)
     expect(r.totalPesos).toBe(Math.round(50 * 41))
+  })
+})
+
+describe('debitCards - yield on an idle balance (2026 news)', () => {
+  it('every card declares whether the balance earns anything', () => {
+    for (const c of DEBIT_CARDS) {
+      expect(typeof c.yieldOnBalance.available).toBe('boolean')
+      expect(c.yieldOnBalance.label.trim().length).toBeGreaterThan(1)
+      expect(c.yieldOnBalance.detail.trim().length).toBeGreaterThan(30)
+    }
+  })
+
+  it('exactly the two issuers that launched a yield product in 2026 are flagged', () => {
+    const paying = DEBIT_CARDS.filter(c => c.yieldOnBalance.available)
+      .map(c => c.id)
+      .sort()
+    expect(paying).toEqual(['mercado-pago', 'prex'])
+  })
+
+  it('a card that pays points at a documented product, one that does not points at nothing', () => {
+    for (const c of DEBIT_CARDS) {
+      if (c.yieldOnBalance.available) {
+        expect(c.yieldOnBalance.productId).toBeTruthy()
+        expect(getYieldProduct(c.yieldOnBalance.productId!)).toBeDefined()
+      } else {
+        expect(c.yieldOnBalance.productId).toBeNull()
+      }
+    }
+  })
+
+  it('never calls the yield an "interés": Ley 19.210 art. 2 lit. E) forbids it on the balance', () => {
+    // The page may quote the word to correct it, but the card data must not
+    // assert that the balance pays interest.
+    for (const c of DEBIT_CARDS) {
+      expect(c.yieldOnBalance.detail.toLowerCase()).not.toMatch(
+        /\bintereses? sobre (el|tu) saldo\b/
+      )
+    }
+  })
+
+  it('the yield dimension is a tiebreaker, not the ranking: no card wins on it alone', () => {
+    const weight = DEBIT_RUBRIC.find(d => d.id === 'rendimientoSaldo')!.weight
+    expect(weight).toBeGreaterThan(0)
+    expect(weight).toBeLessThanOrEqual(12)
+    // A peso yield must never outweigh what the page actually ranks: the cost of
+    // buying in dollars (commission + FX spread).
+    const cost = DEBIT_RUBRIC.filter(
+      d => d.id === 'comisionExterior' || d.id === 'spreadCambio'
+    ).reduce((s, d) => s + d.weight, 0)
+    expect(cost).toBeGreaterThan(weight * 3)
+  })
+
+  it('Mercado Pago still ranks below the cheap cards despite paying a yield', () => {
+    const ranked = rankedCards()
+    const mp = ranked.find(c => c.id === 'mercado-pago')!
+    const oca = ranked.find(c => c.id === 'oca-blue')!
+    expect(mp.rank).toBeGreaterThan(oca.rank)
   })
 })

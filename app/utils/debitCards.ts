@@ -22,7 +22,7 @@
 // and say so in feeNote. Informational, not financial advice.
 
 /** Date (YYYY-MM-DD) the fees below were last verified against sources. */
-export const DEBIT_CARDS_LAST_REVIEWED = '2026-07-22'
+export const DEBIT_CARDS_LAST_REVIEWED = '2026-08-17'
 
 /** IVA rate applied on the issuer's international-purchase commission in Uruguay. */
 export const IVA_RATE = 0.22
@@ -45,6 +45,7 @@ export type DimId =
   | 'comisionExterior'
   | 'spreadCambio'
   | 'saldoUSD'
+  | 'rendimientoSaldo'
   | 'costo'
   | 'aceptacion'
   | 'recarga'
@@ -53,7 +54,14 @@ export type DimId =
  * Transparent, weighted rubric for the "pagar en dólares / comprar ítems de
  * juegos" use case. The two costs the user actually feels — the international
  * commission and the peso→USD spread — weigh most; then whether you can hold a
- * USD balance to skip the conversion, general cost, acceptance and top-up.
+ * USD balance to skip the conversion, whether the idle balance earns anything,
+ * general cost, acceptance and top-up.
+ *
+ * `rendimientoSaldo` joined the rubric on 2026-08-17, when Prex and Mercado Pago
+ * both started paying a daily yield on money left in the account. It carries a
+ * deliberately modest weight: the yield is in PESOS and does nothing to lower
+ * the cost of a purchase in dollars, which is what this page ranks. It breaks
+ * ties between otherwise similar cards instead of driving the ranking.
  */
 export const DEBIT_RUBRIC: readonly RubricDimension[] = Object.freeze([
   {
@@ -61,7 +69,7 @@ export const DEBIT_RUBRIC: readonly RubricDimension[] = Object.freeze([
     label: 'Comisión en el exterior',
     short: 'Comisión',
     icon: 'mdi-percent-outline',
-    weight: 28,
+    weight: 26,
     what: 'Cuánto cobra el emisor por una compra internacional (% sobre el monto + cargo fijo + IVA sobre la comisión). Menos es mejor.',
   },
   {
@@ -69,7 +77,7 @@ export const DEBIT_RUBRIC: readonly RubricDimension[] = Object.freeze([
     label: 'Spread de cambio',
     short: 'Spread',
     icon: 'mdi-swap-horizontal',
-    weight: 24,
+    weight: 22,
     what: 'El margen que se lleva el emisor al convertir tus pesos a dólares, sobre el tipo mayorista. Menos spread, mejor.',
   },
   {
@@ -77,15 +85,23 @@ export const DEBIT_RUBRIC: readonly RubricDimension[] = Object.freeze([
     label: 'Saldo en dólares',
     short: 'Saldo USD',
     icon: 'mdi-cash-multiple',
-    weight: 18,
+    weight: 16,
     what: '¿Podés tener o cargar saldo directamente en USD y así saltear la conversión pesos→dólar (y su spread)?',
+  },
+  {
+    id: 'rendimientoSaldo',
+    label: 'Rendimiento del saldo',
+    short: 'Rendimiento',
+    icon: 'mdi-chart-line',
+    weight: 10,
+    what: '¿La plata quieta en la cuenta genera algo sin que hagas nada? Pesa poco a propósito: el rendimiento es en pesos y no abarata la compra en dólares.',
   },
   {
     id: 'costo',
     label: 'Costo de la tarjeta',
     short: 'Costo',
     icon: 'mdi-tag-outline',
-    weight: 12,
+    weight: 10,
     what: 'Emisión, mantenimiento y costos fijos frente al beneficio para comprar en dólares.',
   },
   {
@@ -93,7 +109,7 @@ export const DEBIT_RUBRIC: readonly RubricDimension[] = Object.freeze([
     label: 'Aceptación',
     short: 'Aceptación',
     icon: 'mdi-check-decagram-outline',
-    weight: 10,
+    weight: 9,
     what: 'Red (Visa/Mastercard) y que funcione de verdad en tiendas de juegos internacionales (Steam, PSN, Google Play), con 3-D Secure.',
   },
   {
@@ -101,7 +117,7 @@ export const DEBIT_RUBRIC: readonly RubricDimension[] = Object.freeze([
     label: 'Recarga',
     short: 'Recarga',
     icon: 'mdi-plus-circle-outline',
-    weight: 8,
+    weight: 7,
     what: 'Qué tan fácil y barato es cargar fondos (transferencia, red de cobranzas, débito automático).',
   },
 ])
@@ -119,6 +135,27 @@ export interface Signal {
   tone: 'pos' | 'neg' | 'neutral'
 }
 
+/**
+ * Whether money left sitting in the account earns anything today.
+ *
+ * Careful with the word "interés": Ley 19.210 art. 2 lit. E) says an electronic
+ * money instrument "no genera intereses", so no issuer here can pay interest on
+ * the balance. When a yield exists it comes from subscribing the balance into an
+ * investment fund — a different product, with no capital guarantee and outside
+ * the COPAB deposit insurance. `productId` points at the entry in
+ * `utils/yieldAccounts.ts` that documents it in full.
+ */
+export interface BalanceYield {
+  /** true only when the IDLE balance earns something without extra steps. */
+  available: boolean
+  /** Chip-sized summary. */
+  label: string
+  /** One precise sentence: what pays, in what currency, through what vehicle. */
+  detail: string
+  /** Matching id in `YIELD_PRODUCTS`, or null when there is nothing to link. */
+  productId: string | null
+}
+
 export interface DebitCard {
   id: string
   name: string
@@ -133,6 +170,8 @@ export interface DebitCard {
   ivaSobreComision: boolean
   /** Can the user hold/fund a USD balance to skip the peso→USD conversion? */
   fundeaEnUsd: boolean
+  /** Does the idle balance earn a yield today, and through what vehicle? */
+  yieldOnBalance: BalanceYield
   /** How peso→USD conversion works and at what rate when the balance is in pesos. */
   fxSpreadNote: string
   /** Human-readable one-line cost structure for an international USD purchase. */
@@ -176,6 +215,17 @@ export const NETWORK_LABELS: Readonly<Record<CardNetwork, string>> = Object.free
 // source shows that a resident can request it in Uruguay. TakeCard and AstroCard
 // were removed on 2026-07-22 because their issuers document other markets but do
 // not document consumer-card availability for residents of Uruguay.
+//
+// 2026-08-17 revision — the year's real news is that the balance started paying:
+//   - Prex launched Inversión Violeta (30/3/2026) and Mercado Pago its daily
+//     rendimientos (June 2026). Both are PESO-ONLY and both are investment
+//     funds, not interest: Ley 19.210 art. 2 lit. E) forbids an electronic money
+//     instrument from generating interest. See `utils/yieldAccounts.ts`.
+//   - Mercado Pago also launched a free international prepaid Mastercard
+//     (physical + virtual, no issuance/maintenance/foreign-purchase fee, free
+//     Banred ATM withdrawals). It is still peso-funded, so its FX spread — the
+//     reason it ranks badly here — is unchanged.
+//   - No bank, OCA Blue or MiDinero pays anything on an idle balance.
 // ─────────────────────────────────────────────────────────────────────────────
 export const DEBIT_CARDS: readonly DebitCard[] = Object.freeze([
   {
@@ -188,6 +238,13 @@ export const DEBIT_CARDS: readonly DebitCard[] = Object.freeze([
     cargoFijoUsd: 0.5,
     ivaSobreComision: true,
     fundeaEnUsd: true,
+    yieldOnBalance: {
+      available: true,
+      label: 'Sí — Inversión Violeta (pesos)',
+      detail:
+        'Desde el 30/3/2026, el saldo en PESOS puede generar rendimiento diario si activás Inversión Violeta: la plata se suscribe al Fondo de Liquidez Inmediata (VALO AFISA, distribuido por Gletir), que solo compra papel del BCU y del Estado. Pide $4.000 la primera vez y no cobra comisión al usuario. El saldo en DÓLARES no rinde.',
+      productId: 'prex-inversion-violeta',
+    },
     fxSpreadNote:
       'Cuenta bimoneda. El consumo en USD se debita primero del saldo en dólares; si no tenés USD, convierte tus pesos al "cambio preferencial" de Prex (un tipo venta con spread propio, no publicado). Fondeando en dólares evitás esa conversión.',
     feeNote:
@@ -197,6 +254,7 @@ export const DEBIT_CARDS: readonly DebitCard[] = Object.freeze([
       comisionExterior: 55,
       spreadCambio: 65,
       saldoUSD: 90,
+      rendimientoSaldo: 76,
       costo: 90,
       aceptacion: 85,
       recarga: 88,
@@ -204,22 +262,22 @@ export const DEBIT_CARDS: readonly DebitCard[] = Object.freeze([
     signals: [
       { label: 'Comisión exterior', value: '2,5% + US$ 0,50 + IVA', tone: 'neg' },
       { label: 'Saldo en dólares', value: 'Sí (bimoneda)', tone: 'pos' },
-      { label: 'Fuente', value: 'T&C oficial', tone: 'neutral' },
+      { label: 'Rendimiento del saldo', value: 'Sí, en pesos (Inversión Violeta)', tone: 'pos' },
     ],
     pros: [
       'Gratis y muy usada para compras online y juegos',
       'Podés fondear en dólares y saltear el spread',
-      'Recarga fácil por redes de cobranza',
+      'El saldo en pesos puede rendir con Inversión Violeta, sin inmovilizarlo',
     ],
     cons: [
       'Comisión de exterior alta (2,5% + fijo + IVA)',
       'El cargo fijo de US$ 0,50 castiga las compras chicas',
-      'El spread de conversión no está publicado',
+      'El rendimiento es solo en pesos: tus dólares en Prex siguen quietos',
     ],
     bestFor:
       'Quien ya la usa por comodidad y carga saldo en dólares para bajar el costo; para compras chicas frecuentes conviene comparar.',
     verdict:
-      'Cómoda y ubicua, pero no la más barata: la comisión de 2,5% + US$ 0,50 + IVA más el spread de conversión explican el ~6–7% que sentiste. Fondeá en USD para pagar solo la comisión.',
+      'Cómoda y ubicua, pero no la más barata: la comisión de 2,5% + US$ 0,50 + IVA más el spread de conversión explican el ~6–7% que sentiste. Fondeá en USD para pagar solo la comisión. Novedad 2026: el saldo en pesos puede rendir con Inversión Violeta, aunque eso no abarata ni un peso la compra en dólares.',
     verified: true,
     sources: [
       {
@@ -231,6 +289,11 @@ export const DEBIT_CARDS: readonly DebitCard[] = Object.freeze([
         label: 'Prex — Términos y Condiciones',
         url: 'https://www.prexcard.com/html/terminosCondiciones',
         publisher: 'Prex',
+      },
+      {
+        label: 'Prex lanza Inversión Violeta (FLI, VALO AFISA, Gletir; mínimo $4.000)',
+        url: 'https://www.forbesuruguay.com/money/prex-lanza-inversion-violeta-herramienta-permite-invertir-dinero-cuenta-tenerlo-disponible-vez-n88459',
+        publisher: 'Forbes Uruguay',
       },
     ],
   },
@@ -244,6 +307,13 @@ export const DEBIT_CARDS: readonly DebitCard[] = Object.freeze([
     cargoFijoUsd: 0,
     ivaSobreComision: false,
     fundeaEnUsd: true,
+    yieldOnBalance: {
+      available: false,
+      label: 'No',
+      detail:
+        'El saldo no genera rendimiento. Lo único que OCA Blue ofrece como inversión es compra y venta de criptomonedas a través de Ripio, que no es un rendimiento sobre el saldo sino un activo volátil aparte.',
+      productId: null,
+    },
     fxSpreadNote:
       'Cuenta doble pesos/dólares. Con saldo en USD, la compra en dólares se debita directo sin conversión ni spread. Con saldo en pesos, convierte al tipo vendedor de Itaú (o al TC del sello Visa en el exterior); ese spread no se publica.',
     feeNote:
@@ -253,6 +323,7 @@ export const DEBIT_CARDS: readonly DebitCard[] = Object.freeze([
       comisionExterior: 100,
       spreadCambio: 75,
       saldoUSD: 95,
+      rendimientoSaldo: 0,
       costo: 82,
       aceptacion: 80,
       recarga: 80,
@@ -305,6 +376,13 @@ export const DEBIT_CARDS: readonly DebitCard[] = Object.freeze([
     cargoFijoUsd: null,
     ivaSobreComision: false,
     fundeaEnUsd: true,
+    yieldOnBalance: {
+      available: false,
+      label: 'No sobre el saldo',
+      detail:
+        'La caja de ahorro no paga interés. Itaú sí administra su propio fondo de liquidez en pesos a través de Itaú Asset Management, pero hay que contratarlo aparte y con su mínimo: no es tu saldo rindiendo solo.',
+      productId: null,
+    },
     fxSpreadNote:
       'Con débito asociado a cuenta en pesos, Visa convierte al tipo mayorista de Visa Internacional e Itaú suma ~3% sobre ese tipo. Con débito sobre cuenta en dólares y compra en USD, no hay conversión ni ese 3%.',
     feeNote:
@@ -314,6 +392,7 @@ export const DEBIT_CARDS: readonly DebitCard[] = Object.freeze([
       comisionExterior: 100,
       spreadCambio: 65,
       saldoUSD: 90,
+      rendimientoSaldo: 22,
       costo: 62,
       aceptacion: 78,
       recarga: 85,
@@ -361,6 +440,13 @@ export const DEBIT_CARDS: readonly DebitCard[] = Object.freeze([
     cargoFijoUsd: 0,
     ivaSobreComision: false,
     fundeaEnUsd: true,
+    yieldOnBalance: {
+      available: false,
+      label: 'No sobre el saldo',
+      detail:
+        'La caja de ahorro no paga interés. Para que la plata rinda hay que contratar un producto aparte (plazo fijo o fondo), que ya no es saldo disponible.',
+      productId: null,
+    },
     fxSpreadNote:
       'Con caja de ahorro en USD asociada, la compra en dólares se debita por el monto exacto, sin conversión ni spread. Con solo cuenta en pesos, convierte al tipo de venta del día (spread no publicado como %).',
     feeNote:
@@ -370,6 +456,7 @@ export const DEBIT_CARDS: readonly DebitCard[] = Object.freeze([
       comisionExterior: 100,
       spreadCambio: 75,
       saldoUSD: 90,
+      rendimientoSaldo: 15,
       costo: 62,
       aceptacion: 78,
       recarga: 82,
@@ -416,6 +503,13 @@ export const DEBIT_CARDS: readonly DebitCard[] = Object.freeze([
     cargoFijoUsd: 0.5,
     ivaSobreComision: true,
     fundeaEnUsd: true,
+    yieldOnBalance: {
+      available: false,
+      label: 'No',
+      detail:
+        'El saldo no genera rendimiento. MiDinero no anunció un producto equivalente a Inversión Violeta ni a los rendimientos de Mercado Pago; su oferta de inversión se limita a la compra de criptoactivos, con comisión propia.',
+      productId: null,
+    },
     fxSpreadNote:
       'Mantiene saldo en pesos y en dólares por separado. Sin saldo USD, convierte a la pizarra BROU (lado venta) sin cobrar comisión extra por la conversión. Fondeando en dólares evitás ese spread.',
     feeNote:
@@ -425,6 +519,7 @@ export const DEBIT_CARDS: readonly DebitCard[] = Object.freeze([
       comisionExterior: 55,
       spreadCambio: 72,
       saldoUSD: 85,
+      rendimientoSaldo: 0,
       costo: 80,
       aceptacion: 78,
       recarga: 85,
@@ -472,6 +567,13 @@ export const DEBIT_CARDS: readonly DebitCard[] = Object.freeze([
     cargoFijoUsd: null,
     ivaSobreComision: false,
     fundeaEnUsd: true,
+    yieldOnBalance: {
+      available: false,
+      label: 'No sobre el saldo',
+      detail:
+        'La caja de ahorro común en pesos no paga interés. BROU sí paga por inmovilizar: plazo fijo por e-BROU 5,40% anual a 181–366 días, o Ahorro en Sueldo 5,50% el primer año. Ninguno de los dos deja la plata disponible.',
+      productId: null,
+    },
     fxSpreadNote:
       'Desde cuenta en pesos, convierte "al tipo de cambio de pizarra en la transacción" (lado venta), más la comisión de exterior. Asociando una caja de ahorro en dólares, las compras en USD se debitan directo en dólares.',
     feeNote:
@@ -481,6 +583,7 @@ export const DEBIT_CARDS: readonly DebitCard[] = Object.freeze([
       comisionExterior: 52,
       spreadCambio: 70,
       saldoUSD: 85,
+      rendimientoSaldo: 20,
       costo: 70,
       aceptacion: 75,
       recarga: 85,
@@ -527,6 +630,13 @@ export const DEBIT_CARDS: readonly DebitCard[] = Object.freeze([
     cargoFijoUsd: null,
     ivaSobreComision: true,
     fundeaEnUsd: true,
+    yieldOnBalance: {
+      available: false,
+      label: 'No sobre el saldo',
+      detail:
+        'La caja de ahorro no paga interés. Para obtener rendimiento hay que contratar un plazo fijo o un fondo aparte, que dejan de ser saldo disponible.',
+      productId: null,
+    },
     fxSpreadNote:
       'Con débito sobre cuenta en pesos, convierte al tipo vendedor del banco (spread no publicado). Asociando una cuenta de depósito en dólares, la Visa Débito debita directo del saldo en USD y evita la conversión.',
     feeNote:
@@ -536,6 +646,7 @@ export const DEBIT_CARDS: readonly DebitCard[] = Object.freeze([
       comisionExterior: 52,
       spreadCambio: 72,
       saldoUSD: 88,
+      rendimientoSaldo: 15,
       costo: 62,
       aceptacion: 78,
       recarga: 85,
@@ -583,6 +694,13 @@ export const DEBIT_CARDS: readonly DebitCard[] = Object.freeze([
     cargoFijoUsd: null,
     ivaSobreComision: true,
     fundeaEnUsd: true,
+    yieldOnBalance: {
+      available: false,
+      label: 'No sobre el saldo',
+      detail:
+        'La caja de ahorro no paga interés. El rendimiento requiere contratar un plazo fijo o un fondo aparte, con la plata inmovilizada o fuera de la cuenta a la vista.',
+      productId: null,
+    },
     fxSpreadNote:
       'La comisión 3% + IVA se cobra igual, tengas saldo en pesos o en dólares. Con cuenta en dólares evitás el spread; desde pesos, el banco convierte a su tipo vendedor del día (spread no publicado).',
     feeNote:
@@ -592,6 +710,7 @@ export const DEBIT_CARDS: readonly DebitCard[] = Object.freeze([
       comisionExterior: 50,
       spreadCambio: 72,
       saldoUSD: 88,
+      rendimientoSaldo: 15,
       costo: 62,
       aceptacion: 78,
       recarga: 85,
@@ -640,15 +759,23 @@ export const DEBIT_CARDS: readonly DebitCard[] = Object.freeze([
     cargoFijoUsd: null,
     ivaSobreComision: false,
     fundeaEnUsd: false,
+    yieldOnBalance: {
+      available: true,
+      label: 'Sí — rendimientos diarios (pesos)',
+      detail:
+        'Desde junio de 2026 el saldo en PESOS genera rendimiento todos los días hábiles: se acepta una vez los T&C y la plata queda suscripta al fondo BIND Ahorro Pesos (BIND UY AFISA), sin mínimo y sin inmovilizarse. La referencia comunicada es la Tasa de Política Monetaria del BCU, 5,75% anual al lanzamiento. No hay saldo en dólares, así que nada rinde en USD.',
+      productId: 'mercadopago-rendimientos',
+    },
     fxSpreadNote:
       'Cuenta y tarjeta solo en pesos: NO podés tener saldo en dólares, así que toda compra en USD se convierte. La referencia en los T&C es el dólar vendedor BROU; la prensa estima que el tipo efectivo queda ~4% por encima del oficial.',
     feeNote:
-      'Sin comisión del emisor (0%) ni cargo fijo por compra internacional. El costo real está escondido en el spread del "dólar tarjeta" (~4% estimado sobre el oficial).',
+      'Sin comisión del emisor (0%) ni cargo fijo por compra internacional; la prepaga Mastercard internacional (física y virtual) no cobra emisión, mantenimiento ni recargo por compra en el exterior, y el retiro en cajeros Banred es sin comisión. El costo real está escondido en el spread del "dólar tarjeta" (~4% estimado sobre el oficial).',
     estimate: true,
     scores: {
       comisionExterior: 100,
       spreadCambio: 30,
       saldoUSD: 0,
+      rendimientoSaldo: 80,
       costo: 92,
       aceptacion: 80,
       recarga: 90,
@@ -656,22 +783,23 @@ export const DEBIT_CARDS: readonly DebitCard[] = Object.freeze([
     signals: [
       { label: 'Comisión del emisor', value: '0% (oficial)', tone: 'pos' },
       { label: 'Saldo en dólares', value: 'No existe', tone: 'neg' },
+      { label: 'Rendimiento del saldo', value: 'Sí, en pesos, sin mínimo', tone: 'pos' },
       { label: 'Spread "dólar tarjeta"', value: '~4% sobre oficial (prensa)', tone: 'neg' },
     ],
     pros: [
-      'Sin comisión de compra ni cargos fijos',
-      'Recarga instantánea desde tu saldo de Mercado Pago',
-      'Emisión y mantenimiento $0',
+      'Sin comisión de compra ni cargos fijos, y prepaga internacional gratis',
+      'El saldo en pesos rinde solo, sin mínimo y sin inmovilizar nada',
+      'Retiro sin comisión en cajeros Banred',
     ],
     cons: [
       'No hay saldo en dólares: la conversión es inevitable',
       'El "dólar tarjeta" queda ~4% arriba del oficial (estimado)',
-      'El costo real no aparece como línea: está en el tipo de cambio',
+      'El rendimiento es en pesos: no compensa el spread de una compra en USD',
     ],
     bestFor:
-      'Compras internacionales ocasionales por comodidad; para gastar seguido en dólares hay opciones más baratas.',
+      'Tener los pesos del día a día rindiendo mientras se usan; para gastar seguido en dólares hay opciones más baratas.',
     verdict:
-      'Trampa clásica del "0% de comisión": como no podés tener dólares, todo pasa por un tipo de cambio que la prensa estima ~4% sobre el oficial. En la práctica, de las más caras del cuadro para comprar en USD, pese a no cobrar comisión.',
+      'Trampa clásica del "0% de comisión": como no podés tener dólares, todo pasa por un tipo de cambio que la prensa estima ~4% sobre el oficial. Los rendimientos diarios que sumó en 2026 la vuelven muy buena para estacionar pesos, pero no cambian nada al comprar en USD: para eso sigue siendo de las más caras del cuadro.',
     verified: false,
     sources: [
       {
@@ -683,6 +811,12 @@ export const DEBIT_CARDS: readonly DebitCard[] = Object.freeze([
         label: 'Mercado Pago — T&C (conversión: dólar vendedor BROU)',
         url: 'https://www.mercadopago.com.uy/ayuda/terminos-y-condiciones-uy_299',
         publisher: 'Mercado Pago',
+      },
+      {
+        label:
+          'Mercado Pago lanza rendimientos diarios y prepaga internacional en Uruguay (fondo BIND, referencia TPM 5,75%)',
+        url: 'https://www.elobservador.com.uy/cafe-y-negocios/mercado-pago-acelera-su-presencia-financiera-uruguay-entra-al-negocio-las-inversiones-y-lanza-tarjeta-prepaga-internacional-n6045297',
+        publisher: 'El Observador',
       },
       {
         label: 'Cuidado al pagar en dólares con Mercado Pago: aplican un TC más alto (prensa)',

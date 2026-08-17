@@ -11,7 +11,7 @@
     <!-- Hero -->
     <VCard class="overflow-hidden mb-5 hero-card on-dark" elevation="8">
       <div class="hero pa-6 pa-md-8">
-        <p class="hero-eyebrow">Comprar en dólares · Julio 2026</p>
+        <p class="hero-eyebrow">Comprar en dólares · Agosto 2026</p>
         <h1 class="hero-title">
           Tarjetas de débito y prepagas para comprar en dólares
           <span class="hero-title-accent">(y por qué un ítem de USD 49,99 te sale más)</span>
@@ -227,6 +227,40 @@
       </VAlert>
     </VCard>
 
+    <!-- 2026 news: the balance started paying. Kept apart from the cost story on
+         purpose — it is a peso yield and changes nothing about a USD purchase. -->
+    <VCard variant="flat" class="pa-4 pa-sm-5 mb-5 news-card">
+      <div class="d-flex align-center ga-2 mb-2">
+        <VIcon size="20" color="success">mdi-chart-line</VIcon>
+        <h2 class="text-h6 font-weight-bold mb-0">Novedad 2026: ahora el saldo rinde</h2>
+      </div>
+      <p class="text-body-2 mb-3">
+        <strong>Prex</strong> (Inversión Violeta, desde el 30/3/2026) y
+        <strong>Mercado Pago</strong> (rendimientos diarios, desde junio de 2026) empezaron a pagar
+        por la plata que dejás quieta en la cuenta. Ojo con el nombre: no es un interés sobre tu
+        saldo —la <strong>Ley 19.210, art. 2 lit. E)</strong> dice que el dinero electrónico “no
+        genera intereses”—, es un <strong>fondo de inversión</strong> supervisado por el BCU al que
+        tu plata se suscribe.
+      </p>
+      <p class="text-body-2 mb-3">
+        Para esta página el punto es otro, y conviene decirlo sin vueltas:
+        <strong>ese rendimiento es en pesos y no abarata tu compra en dólares</strong>. No baja la
+        comisión internacional ni el spread de conversión. Sirve para que los pesos del mes no estén
+        quietos; no para pagar menos en Steam.
+      </p>
+      <div class="d-flex flex-wrap ga-2">
+        <VBtn
+          :to="localePath('/cuenta-remunerada-uruguay')"
+          color="primary"
+          variant="flat"
+          size="small"
+        >
+          <VIcon start size="small">mdi-arrow-right</VIcon>
+          Cómo funciona, qué comisión tiene y cuánto queda tras la inflación
+        </VBtn>
+      </div>
+    </VCard>
+
     <!-- Ranking methodology -->
     <VExpansionPanels variant="accordion" class="mb-5">
       <VExpansionPanel>
@@ -236,9 +270,15 @@
         </VExpansionPanelTitle>
         <VExpansionPanelText>
           <p class="text-body-2 mb-3">
-            Cada tarjeta se puntúa 0–100 en seis dimensiones y el puntaje final es un
+            Cada tarjeta se puntúa 0–100 en siete dimensiones y el puntaje final es un
             <strong>promedio ponderado calculado en código</strong> (no lo escribimos a mano). Pesa
             más lo que de verdad te cuesta al comprar afuera.
+          </p>
+          <p class="text-body-2 mb-3">
+            En agosto de 2026 sumamos <strong>“Rendimiento del saldo”</strong>, porque Prex y
+            Mercado Pago empezaron a pagar por la plata quieta. Le dimos un peso deliberadamente
+            chico (10 de 100): ese rendimiento es <strong>en pesos</strong> y no baja ni un centavo
+            el costo de comprar en dólares, que es lo que esta página rankea. Desempata, no manda.
           </p>
           <div class="rubric-grid">
             <div v-for="dim in DEBIT_RUBRIC" :key="dim.id" class="rubric-item">
@@ -319,6 +359,15 @@
                 Saldo en USD
               </VChip>
               <VChip
+                v-if="r.yieldOnBalance.available"
+                size="x-small"
+                color="success"
+                variant="tonal"
+                prepend-icon="mdi-chart-line"
+              >
+                El saldo rinde (pesos)
+              </VChip>
+              <VChip
                 v-if="r.estimate"
                 size="x-small"
                 color="warning"
@@ -347,6 +396,23 @@
             <div class="fee-line">
               <VIcon size="15" color="primary">mdi-swap-horizontal</VIcon>
               <span>{{ r.fxSpreadNote }}</span>
+            </div>
+            <div class="fee-line">
+              <VIcon size="15" :color="r.yieldOnBalance.available ? 'success' : 'primary'">
+                mdi-chart-line
+              </VIcon>
+              <span>
+                <strong>Rendimiento del saldo:</strong> {{ r.yieldOnBalance.detail }}
+                <NuxtLink
+                  v-if="r.yieldOnBalance.productId"
+                  :to="
+                    localePath(`/cuenta-remunerada-uruguay#producto-${r.yieldOnBalance.productId}`)
+                  "
+                  class="inline-link"
+                >
+                  Cómo funciona
+                </NuxtLink>
+              </span>
             </div>
 
             <div v-if="r.signals.length" class="d-flex flex-wrap ga-2 mt-2">
@@ -489,6 +555,9 @@
       <div class="d-flex flex-wrap ga-2">
         <VBtn :to="localePath('/mejores-bancos-uruguay')" variant="tonal" size="small">
           <VIcon start size="small">mdi-bank-outline</VIcon>Mejores bancos (tier list)
+        </VBtn>
+        <VBtn :to="localePath('/cuenta-remunerada-uruguay')" variant="tonal" size="small">
+          <VIcon start size="small">mdi-chart-line</VIcon>La plata que rinde sola
         </VBtn>
         <VBtn :to="localePath('/tarjetas-de-credito-uruguay')" variant="tonal" size="small">
           <VIcon start size="small">mdi-credit-card-multiple-outline</VIcon>Tarjetas de crédito
@@ -681,6 +750,14 @@ const faqs = [
   {
     q: '¿Cómo evito pagar de más?',
     a: 'Fondeá en dólares cuando la tarjeta lo permita, evitá tickets muy chicos si hay cargo fijo, elegí bien la moneda de la tienda para no pagar doble conversión, y compará el tipo de cambio que te aplican contra el dólar del día.',
+  },
+  {
+    q: '¿El nuevo “interés” de Prex y Mercado Pago hace que me convenga más comprar en dólares con ellas?',
+    a: 'No. Son dos cosas separadas. El rendimiento es <strong>en pesos</strong> y no toca ninguno de los dos costos de una compra internacional: ni la comisión del emisor ni el spread de conversión. Además, en rigor no es un interés: la <strong>Ley 19.210, art. 2 lit. E)</strong> establece que el dinero electrónico “no genera intereses”, así que lo que rinde es un fondo de inversión al que tu saldo se suscribe, sin garantía de capital. Lo explicamos entero en <a href="/cuenta-remunerada-uruguay">la plata que rinde sola</a>.',
+  },
+  {
+    q: '¿Cambió algo la nueva prepaga internacional de Mercado Pago?',
+    a: 'Suma comodidad, no ahorro en dólares. Es una Mastercard prepaga internacional (física y virtual) sin costo de emisión, sin mantenimiento, sin recargo por compra en el exterior y con retiro sin comisión en cajeros Banred. Pero se sigue fondeando <strong>en pesos</strong>: como Mercado Pago Uruguay no tiene saldo en dólares, toda compra en USD pasa por su tipo de cambio, y ahí sigue el costo escondido que la deja mal parada en este ranking.',
   },
 ]
 
@@ -1053,6 +1130,14 @@ function fmtPesos(n: number): string {
 .fee-line :deep(.v-icon) {
   flex: 0 0 auto;
   margin-top: 2px;
+}
+.inline-link {
+  white-space: nowrap;
+  font-weight: 600;
+}
+/* The 2026 "the balance pays now" callout, kept visually apart from the cost story. */
+.news-card {
+  border-left: 4px solid rgb(var(--v-theme-success));
 }
 /* Signal chips: allow the label to wrap so a long value never overflows the card. */
 .signal-chip {
