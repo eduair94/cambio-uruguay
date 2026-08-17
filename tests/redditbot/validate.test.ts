@@ -124,6 +124,60 @@ describe("redditbot/validate — validateReply", () => {
     expect(validateReply({ reply, expectedUrl: URL, context: CONTEXT }).reason).toBe("banned_phrase");
   });
 
+  it("rejects tuteo — the single most reliable tell that nobody here wrote it", () => {
+    const reply = body(`${filler}Ten en cuenta que el tope es de US$ 800 por envío. ${URL}`);
+    const result = validateReply({ reply, expectedUrl: URL, context: CONTEXT });
+    expect(result.reason).toBe("tuteo");
+    expect(result.detail).toBe("ten en cuenta");
+  });
+
+  it("catches tuteo written with accents", () => {
+    const reply = body(`${filler}Si querés traerlo vos, tú puedes hacerlo hasta US$ 800. ${URL}`);
+    expect(validateReply({ reply, expectedUrl: URL, context: CONTEXT }).reason).toBe("tuteo");
+  });
+
+  it("does not mistake third-person 'puede' or 'tiene' for tuteo", () => {
+    const reply = body(`${filler}El courier puede cobrarte aparte y el envío tiene un tope de US$ 800. ${URL}`);
+    expect(validateReply({ reply, expectedUrl: URL, context: CONTEXT })).toEqual({ ok: true });
+  });
+
+  it("accepts voseo, which is the point", () => {
+    const reply = body(`${filler}Si lo traés por courier tenés hasta US$ 800 por envío, fijate el peso. ${URL}`);
+    expect(validateReply({ reply, expectedUrl: URL, context: CONTEXT })).toEqual({ ok: true });
+  });
+
+  it("rejects a bulleted answer — a comment is a paragraph, not a report", () => {
+    const reply = body(`Te resumo:\n- El tope es de US$ 800\n- El peso es 20 kg\n${filler}${URL}`);
+    expect(validateReply({ reply, expectedUrl: URL, context: CONTEXT }).reason).toBe("bullet_list");
+  });
+
+  it("rejects a numbered list too", () => {
+    const reply = body(`${filler}\n1. Primero esto\n2. Después lo otro\n${URL}`);
+    expect(validateReply({ reply, expectedUrl: URL, context: CONTEXT }).reason).toBe("bullet_list");
+  });
+
+  it("does not mistake a hyphenated word at the start of a line for a bullet", () => {
+    const reply = body(`${filler}El tope es de US$ 800.\ne-commerce incluido. ${URL}`);
+    expect(validateReply({ reply, expectedUrl: URL, context: CONTEXT })).toEqual({ ok: true });
+  });
+
+  it("rejects emojis", () => {
+    const reply = body(`${filler}El tope es de US$ 800 por envío 🚀 ${URL}`);
+    expect(validateReply({ reply, expectedUrl: URL, context: CONTEXT }).reason).toBe("emoji");
+  });
+
+  it("rejects the manual-sounding connectors", () => {
+    for (const phrase of ["Es importante destacar que", "Cabe mencionar que", "En definitiva,"]) {
+      const reply = body(`${filler}${phrase} el tope es de US$ 800. ${URL}`);
+      expect(validateReply({ reply, expectedUrl: URL, context: CONTEXT }).reason).toBe("banned_phrase");
+    }
+  });
+
+  it("rejects the empty referral to a professional", () => {
+    const reply = body(`${filler}El tope es de US$ 800. Te recomiendo consultar con un profesional. ${URL}`);
+    expect(validateReply({ reply, expectedUrl: URL, context: CONTEXT }).reason).toBe("banned_phrase");
+  });
+
   it("rejects markdown headings", () => {
     const reply = body(`## Respuesta\n${filler}El tope es de US$ 800. ${URL}`);
     expect(validateReply({ reply, expectedUrl: URL, context: CONTEXT }).reason).toBe("markdown_heading");
@@ -131,6 +185,24 @@ describe("redditbot/validate — validateReply", () => {
 
   it("rejects an empty reply", () => {
     expect(validateReply({ reply: "   ", expectedUrl: URL, context: CONTEXT }).reason).toBe("empty");
+  });
+
+  it("lets the reply echo a number the person themselves wrote", () => {
+    // The case that made this rule: asked about a US$ 19,15 order billed at 26, the model wrote
+    // "con 19,15 dólares ya estás pagando el mínimo… y ahí te da cerca de los 26 que te piden".
+    // Neither figure is in our pages; both came from the poster. Rejecting that would throw out the
+    // one reply that proved it had read the thread.
+    const reply = body(`${filler}Con esos 19,15 pagás el mínimo de US$ 20 y por eso te dan 26. ${URL}`);
+    const post = "Compré unos auriculares a 19,15 dólares y me piden 26 para retirarlo.";
+    expect(validateReply({ reply, expectedUrl: URL, context: CONTEXT, postText: post })).toEqual({ ok: true });
+  });
+
+  it("still rejects a figure that is in neither the context nor the post", () => {
+    const reply = body(`${filler}Con esos 19,15 pagás un cargo fijo de US$ 47. ${URL}`);
+    const post = "Compré unos auriculares a 19,15 dólares y me piden 26 para retirarlo.";
+    const result = validateReply({ reply, expectedUrl: URL, context: CONTEXT, postText: post });
+    expect(result.reason).toBe("invented_number");
+    expect(result.detail).toContain("47");
   });
 
   it("does not count digits inside the URL as invented figures", () => {

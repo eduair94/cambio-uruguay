@@ -23,7 +23,10 @@ export type RejectReason =
   | "invented_number"
   | "missing_disclosure"
   | "banned_phrase"
-  | "markdown_heading";
+  | "markdown_heading"
+  | "tuteo"
+  | "bullet_list"
+  | "emoji";
 
 export interface ValidationResult {
   ok: boolean;
@@ -35,20 +38,84 @@ export interface ValidationResult {
 const MIN_WORDS = 45;
 const MAX_WORDS = 170;
 
-/** Openers and filler that mark a comment as machine-written on sight. */
+/**
+ * Filler that marks a comment as machine-written on sight.
+ *
+ * Not a style preference. On a subreddit, a comment that opens by praising the question and closes
+ * by wishing you luck reads as copy-paste promotion, and gets removed as such — the moderators are
+ * pattern-matching on exactly these strings, and so is every reader who has seen a marketing bot.
+ */
 const BANNED_PHRASES = [
+  // saludos y cierres de cortesía
   "espero que estes bien",
+  "espero que esto te ayude",
+  "espero que te sirva",
+  "espero haberte ayudado",
+  "saludos cordiales",
+  "mucha suerte con",
+  "estoy aqui para ayudarte",
+  "no dudes en consultar",
+  "no dudes en preguntar",
+  // elogiar la pregunta
   "excelente pregunta",
+  "buena pregunta",
   "gran pregunta",
+  "excelente consulta",
+  // muletillas de manual
+  "es importante destacar",
+  "es importante mencionar",
+  "es importante tener en cuenta",
+  "es fundamental tener en cuenta",
+  "cabe destacar",
+  "cabe mencionar",
+  "cabe senalar",
+  "vale la pena aclarar",
+  "vale aclarar que es importante",
+  "en resumen,",
+  "en definitiva,",
+  "en conclusion,",
+  "por otro lado, es",
+  "en primer lugar,",
+  "dicho esto,",
+  // autodelación
   "como modelo de lenguaje",
   "soy una inteligencia artificial",
-  "en resumen,",
-  "¡espero que esto te ayude!",
-  "espero que esto te ayude",
-  "no dudes en consultar",
-  "estoy aqui para ayudarte",
-  "saludos cordiales",
+  "como asistente",
+  // derivación vacía
+  "te recomiendo consultar con un profesional",
+  "consulta con un especialista",
 ];
+
+/**
+ * Tuteo. The single most reliable tell that the text was not written by someone here.
+ *
+ * Uruguay voseas: *tenés*, *podés*, *fijate*, *mirá*. A model defaulting to neutral Spanish writes
+ * *tienes*, *puedes*, *ten en cuenta* — grammatical, understood everywhere, and instantly foreign
+ * on r/uruguay. It is also the rare style rule that can be checked mechanically rather than judged,
+ * which is why it is a hard gate and not a line in the prompt.
+ *
+ * Anchored on word boundaries, and only on forms with no rioplatense collision: `puede` and `tiene`
+ * (third person) are perfectly normal and are NOT listed.
+ */
+const TUTEO = [
+  "tienes",
+  "puedes",
+  "debes",
+  "quieres",
+  "necesitas",
+  "sabes que",
+  "haces",
+  "vas a poder ver tu",
+  "ten en cuenta",
+  "ten presente",
+  "tu puedes",
+  "si tu",
+  "contigo",
+  "tuyo propio",
+];
+
+/** Emoji, symbol and pictograph ranges. A money answer with a rocket in it is an ad. */
+const EMOJI = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{1F000}-\u{1F02F}]/u;
 
 const strip = (text: string): string =>
   text
@@ -118,9 +185,22 @@ export interface ValidateInput {
   expectedUrl: string;
   /** The retrieved text the reply had to be built from. */
   context: string;
+  /**
+   * The original post's own text.
+   *
+   * Its numbers are allowed in the reply, and this is not a loophole — it is the difference between
+   * a comment and a leaflet. A live test made the point: asked about a US$ 19,15 AliExpress order
+   * billed at 26, the model wrote "con 19,15 dólares ya estás pagando el mínimo… y ahí te da cerca
+   * de los 26 que te piden". Every figure it reasoned WITH came from our pages; 19,15 and 26 came
+   * from the person asking. Refusing those would reject the one reply that proved it had read the
+   * thread, and would push the model toward the generic phrasing this whole gate exists to prevent.
+   *
+   * Echoing someone's own number back invents nothing: they wrote it.
+   */
+  postText?: string;
 }
 
-export function validateReply({ reply, expectedUrl, context }: ValidateInput): ValidationResult {
+export function validateReply({ reply, expectedUrl, context, postText = "" }: ValidateInput): ValidationResult {
   const text = (reply || "").trim();
   if (!text) return { ok: false, reason: "empty" };
 
@@ -134,6 +214,12 @@ export function validateReply({ reply, expectedUrl, context }: ValidateInput): V
   // Markdown headings read as shouting in a comment thread and are a reliable "written by a bot" tell.
   if (/^#{1,6}\s/m.test(text)) return { ok: false, reason: "markdown_heading" };
 
+  // A bulleted answer is a document, not a comment. People write comments in paragraphs.
+  const body = text.replace(DISCLOSURE, "");
+  if (/^\s*([-*•]\s+|\d+[.)]\s+)/m.test(body)) return { ok: false, reason: "bullet_list" };
+
+  if (EMOJI.test(body)) return { ok: false, reason: "emoji" };
+
   const links = extractLinks(text);
   if (!links.length) return { ok: false, reason: "no_link" };
   if (links.length > 1) return { ok: false, reason: "multiple_links", detail: links.join(" ") };
@@ -143,10 +229,13 @@ export function validateReply({ reply, expectedUrl, context }: ValidateInput): V
   const banned = BANNED_PHRASES.find((phrase) => normalised.includes(strip(phrase)));
   if (banned) return { ok: false, reason: "banned_phrase", detail: banned };
 
+  const tuteo = TUTEO.find((form) => new RegExp(`(^|[^a-z0-9])${strip(form)}([^a-z0-9]|$)`).test(normalised));
+  if (tuteo) return { ok: false, reason: "tuteo", detail: tuteo };
+
   // The URL itself is full of digits-free text, but a path like /decreto-50-026 would contribute
   // numbers the context may not have. Check the prose only.
   const prose = text.split(expectedUrl).join(" ");
-  const invented = inventedNumbers(prose, context);
+  const invented = inventedNumbers(prose, `${context}\n${postText}`);
   if (invented.length) return { ok: false, reason: "invented_number", detail: invented.join(", ") };
 
   return { ok: true };
@@ -168,6 +257,12 @@ export function retryHint(result: ValidationResult): string {
       return `Faltó la línea final obligatoria. Terminá exactamente con:\n${DISCLOSURE}`;
     case "banned_phrase":
       return `Sacá la muletilla "${result.detail}" y empezá directamente por la respuesta.`;
+    case "tuteo":
+      return `Escribiste "${result.detail}", que es tuteo. En Uruguay se vosea: tenés, podés, fijate, mirá. Reescribilo entero en voseo.`;
+    case "bullet_list":
+      return "Sacá las viñetas y la numeración. Un comentario de Reddit es texto corrido, no un informe.";
+    case "emoji":
+      return "Sacá los emojis.";
     case "markdown_heading":
       return "Sin títulos ni encabezados. Texto corrido.";
     default:

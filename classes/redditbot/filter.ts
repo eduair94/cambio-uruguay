@@ -23,6 +23,9 @@ const TOPIC_TERMS = [
   // aduana e importacion
   "aduana", "importar", "importacion", "courier", "franquicia", "dua", "despachante", "correo",
   "aliexpress", "amazon", "ebay", "shein", "temu", "paquete", "encomienda", "arancel", "iva",
+  // couriers y pagos por nombre: son lo que dice el título de un post que ES una captura
+  "dhl", "fedex", "ups", "aeropost", "punto mio", "puntomio", "miami express",
+  "mercado libre", "mercadolibre", "mercadopago", "mercado pago", "abitab", "redpagos",
   // impuestos y trabajo
   "dgi", "bps", "irpf", "monotributo", "factura", "facturar", "empresa unipersonal", "sueldo",
   "salario", "liquido", "nominal", "aguinaldo", "licencia", "fonasa", "afap", "jubilacion",
@@ -180,8 +183,12 @@ export function screenPost(post: RedditPostRaw, cfg: BotConfig, now: number = Da
 
   const text = postText(post);
   // A three-word title carries too little for the retriever to be trusted and too little for an
-  // answer to be useful.
-  if (text.length < 40) return { ok: false, reason: "too_short", matched: [] };
+  // answer to be useful — UNLESS the post is a picture. "Me llegó esto de DHL, es normal?" over a
+  // photo of the charge is a real question with a short title, and those are among the threads the
+  // site answers best. The topic and question gates below still apply: the image lowers the length
+  // bar, it does not remove the requirement that this be a money question at all.
+  const minLength = post.imageUrl ? 20 : 40;
+  if (text.length < minLength) return { ok: false, reason: "too_short", matched: [] };
 
   // Somebody already linked us. A second link from a bot is spam even when the first was organic.
   if (text.includes("cambio-uruguay") || text.includes("cambio uruguay .com")) {

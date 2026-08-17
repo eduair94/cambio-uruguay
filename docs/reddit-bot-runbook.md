@@ -8,9 +8,32 @@ que hay que cargarlas.
 | proceso | qué hace | qué necesita |
 |---|---|---|
 | `currency-rag-index` | arma el índice del sitio | `APP_MONGO_URI`, `GEMINI_API_KEY` |
-| `currency-reddit-bot` | responde en Reddit | lo anterior + credenciales del bot + dos flags |
+| `currency-reddit-bot` | responde en Reddit | lo anterior + `CLAUDE_AGENT_API_KEY` + credenciales del bot + dos flags |
 | `currency-reddit-bot-watch` | lee cómo cayeron las respuestas | credenciales del bot |
-| `currency-content-gaps` | borradores de lo que falta | `APP_MONGO_URI`, `GEMINI_API_KEY` |
+| `currency-content-gaps` | borradores de lo que falta | `APP_MONGO_URI` + Claude o Gemini |
+
+## Quién escribe qué
+
+**Claude** (el endpoint privado del 104) redacta los comentarios, hace de juez de
+relevancia y investiga los huecos de contenido. **Gemini** queda de respaldo
+automático para todo eso — y es el único que hace **embeddings**, porque Anthropic
+no publica endpoint de embeddings: el índice del sitio se queda en Gemini para
+siempre. No es una opción de configuración, es una capacidad que no existe.
+
+Tres cosas del endpoint de Claude que condicionan el uso, todas en
+`/root/claude-agent-api/INTEGRACION.md`:
+
+- **La cuota es tuya.** 200 llamadas por día, las mismas que gasta tu Claude Code
+  interactivo. Los jobs se abstienen cuando quedan menos de
+  `CLAUDE_AGENT_MIN_REMAINING` (60): el final del día es para vos.
+- **429/503/504 no se reintentan.** El proceso los toma como "pará" y no vuelve a
+  llamar en esa corrida.
+- **Las respuestas vuelven en modo caveman** por el plugin instalado en la caja.
+  El cliente lo neutraliza con `appendSystemPrompt` (verificado que le gana al
+  hook), así que **no hace falta tocar nada en el servidor**.
+
+Para fijar un proveedor y reproducir una respuesta rara: `AI_TEXT_PROVIDER=claude`
+o `=gemini`.
 
 ---
 
@@ -133,6 +156,34 @@ db.redditbotreplies.find({ status: "dry_run" }).sort({ createdAt: -1 }).limit(10
 db.redditbotreplies.aggregate([{ $group: { _id: "$rejectReason", n: { $sum: 1 } } }])
 ```
 
+### Qué mirar para que no suene a bot
+
+El validador ya rechaza lo mecánico: tuteo (en Uruguay se vosea), viñetas, emojis,
+encabezados, y las muletillas de manual ("es importante destacar", "cabe
+mencionar", "en resumen", elogiar la pregunta, desear suerte). Lo que **no** puede
+verificar una regex es si el comentario enganchó con el caso de la persona, y eso
+es lo que hay que leer en el dry-run: ¿retoma el monto, el país, el banco o el
+plazo que dio? ¿le corrige el supuesto equivocado? Si contesta bien pero en
+abstracto, sirve menos que no contestar.
+
+Los números de la persona **sí** se pueden citar: si preguntó por una compra de
+US$ 19,15 que le cobran 26, la respuesta puede usar esos dos. Lo que no puede es
+inventar cifras que no estén ni en las páginas recuperadas ni en el hilo.
+
+### Las imágenes
+
+Buena parte de estos hilos **son** la captura: la foto de lo que cobró el courier,
+el aviso de Aduanas, la app del banco. Con `REDDIT_BOT_READ_IMAGES=1` (default) el
+bot baja la imagen del post y se la muestra al redactor — con Claude escribiéndola
+en `CLAUDE_AGENT_WORKSPACES` para que la abra con `Read`, con Gemini mandándola
+inline.
+
+Alcance real, sin exagerarlo: la imagen **enriquece** la respuesta de un hilo que
+el texto ya identificó como relevante. No convierte al bot en clasificador de
+fotos: si el título no tiene tema de plata ni forma de pregunta, el hilo se
+descarta antes de bajar nada. Lo que sí cambia es el piso de largo — "¿me llegó
+esto de DHL, es normal?" pasa el filtro cuando trae foto y no pasaría sin ella.
+
 Los motivos que más importan en ese conteo:
 
 - `gap:weak_match` / `gap:no_clear_winner` — no había página. Sanos y esperables.
@@ -204,4 +255,7 @@ verificar antes de convertirlo, está en `docs/reddit-gaps/README.md`.
 | 401 al pedir el token | la app de Reddit no es de tipo `script` |
 | errores de Reddit `RATELIMIT` | la cuenta es demasiado nueva; bajá `MAX_PER_DAY` y esperá |
 | 429 de embeddings todo el tiempo | se agotó el cupo diario de 1.000 (ver arriba). No es transitorio: se repone al día siguiente |
+| los comentarios salen telegráficos | el hook de caveman le ganó al `appendSystemPrompt`; `claude plugin disable caveman@caveman` en la caja |
+| "Claude sin cupo o inalcanzable" | gastaste las 200 del día, o quedan menos que `CLAUDE_AGENT_MIN_REMAINING`. El bot sigue con Gemini |
+| las respuestas ignoran la foto | mirá que exista `CLAUDE_AGENT_WORKSPACES` y sea escribible; si no, degrada a Gemini inline y después a texto solo |
 | el índice no crece hace días | mirá `deferred` en los logs; si es 0 y sigue chico, es que el crawl está fallando, no la cuota |

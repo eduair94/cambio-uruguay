@@ -54,6 +54,14 @@ export interface RedditPostRaw {
   /** `true` for a text post, `false` for a link submission. */
   isSelf?: boolean;
   linkFlair?: string;
+  /**
+   * Direct URL of the post's image, when it has one.
+   *
+   * A large share of the money questions on these subs ARE an image: the screenshot of the courier
+   * charge, the photo of the Aduanas notice, the app showing a rate. The title on those is often
+   * just "que es esto?", so a bot that only reads text is answering a question it cannot see.
+   */
+  imageUrl?: string;
 }
 
 export interface RedditCommentRaw {
@@ -217,6 +225,31 @@ interface RawPost {
   stickied?: boolean;
   is_self?: boolean;
   link_flair_text?: string | null;
+  post_hint?: string;
+  preview?: { images?: Array<{ source?: { url?: string } }> };
+}
+
+/** Image extensions Reddit actually serves for a submission. */
+const IMAGE_EXT = /\.(jpe?g|png|webp|gif)(\?|$)/i;
+
+/**
+ * The post's image, or `undefined`.
+ *
+ * Prefers `preview.images[0].source.url` over the raw `url`: the preview exists for galleries and
+ * for crossposts where `url` points at the other thread, and it is the resolution Reddit itself
+ * serves. Its value arrives HTML-escaped (`&amp;` inside the signed query string) and MUST be
+ * unescaped — the signature is part of the query, so a stray `&amp;` turns a valid link into a 403.
+ */
+export function imageUrlOfRawPost(d: {
+  url?: string;
+  post_hint?: string;
+  preview?: { images?: Array<{ source?: { url?: string } }> };
+}): string | undefined {
+  const preview = d.preview?.images?.[0]?.source?.url;
+  if (preview) return preview.replace(/&amp;/g, "&");
+  if (d.post_hint === "image" && d.url) return d.url;
+  if (d.url && IMAGE_EXT.test(d.url)) return d.url;
+  return undefined;
 }
 
 interface RawComment {
@@ -248,6 +281,7 @@ function toPost(d: RawPost): RedditPostRaw {
     stickied: Boolean(d.stickied),
     isSelf: Boolean(d.is_self),
     linkFlair: d.link_flair_text ?? "",
+    imageUrl: imageUrlOfRawPost(d),
   };
 }
 

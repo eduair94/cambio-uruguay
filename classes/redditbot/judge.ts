@@ -12,7 +12,7 @@
 // the judge's specific failure: it is told that "no" is the expected answer and asked for the
 // question the page would have to answer, not for a rating.
 
-import { askPlain } from "../gemini";
+import { askStructured } from "../ai_text";
 import type { RetrievedPage } from "../rag/types";
 
 export interface JudgeVerdict {
@@ -23,15 +23,24 @@ export interface JudgeVerdict {
   reason: string;
 }
 
-function parseJsonLoose(text: string): Record<string, unknown> | null {
-  const match = text.match(/\{[\s\S]*\}/);
-  if (!match) return null;
-  try {
-    return JSON.parse(match[0]) as Record<string, unknown>;
-  } catch {
-    return null;
-  }
-}
+/**
+ * The shape the judge must answer in.
+ *
+ * Declared as a schema rather than described in the prompt because the Claude endpoint enforces it
+ * server-side: the reply is a valid object or the call fails, which removes the "the model wrapped
+ * its JSON in an explanation" failure entirely. The Gemini fallback still parses loosely — that is
+ * the degraded path, not the intended one.
+ */
+export const JUDGE_SCHEMA = {
+  type: "object",
+  properties: {
+    relevant: { type: "boolean" },
+    path: { type: "string" },
+    confidence: { type: "number" },
+    reason: { type: "string" },
+  },
+  required: ["relevant", "path", "confidence", "reason"],
+} as const;
 
 const clamp01 = (value: unknown): number => {
   const num = Number(value);
@@ -72,8 +81,7 @@ Marcá relevant=false si:
 
 Marcá relevant=true SOLO si alguien que abre esa página encuentra ahí la respuesta a la pregunta.
 
-Respondé SOLO con un objeto JSON válido, sin markdown:
-{"relevant": true|false, "path": "<la ruta elegida o vacío>", "confidence": <0 a 1>, "reason": "<una frase corta en español>"}`;
+Campos: relevant, path (la ruta elegida, o vacío), confidence (0 a 1), reason (una frase corta en español).`;
 }
 
 /**
@@ -88,11 +96,11 @@ export async function judgeRelevance(
   const no = (reason: string): JudgeVerdict => ({ relevant: false, path: "", confidence: 0, reason });
   if (!pages.length) return no("sin candidatas");
 
-  const text = await askPlain(buildJudgePrompt(postTitle, postBody, pages));
-  if (!text) return no("el juez no respondió");
-
-  const parsed = parseJsonLoose(text);
-  if (!parsed) return no("respuesta del juez no parseable");
+  const parsed = await askStructured<Record<string, unknown>>(
+    buildJudgePrompt(postTitle, postBody, pages),
+    JUDGE_SCHEMA as unknown as Record<string, unknown>
+  );
+  if (!parsed) return no("el juez no respondió");
 
   const relevant = parsed.relevant === true;
   const path = typeof parsed.path === "string" ? parsed.path.trim() : "";

@@ -18,9 +18,10 @@ import { loadIndex } from "../rag/store";
 import { fetchNewPosts, redditConfigured, type RedditPostRaw } from "../reddit";
 import { RedditContentGapModel } from "../models/RedditContentGap";
 import { botConfig, canPost, type BotConfig } from "./config";
-import { composeReply, buildComposePrompt, tidy, type ComposeInput } from "./compose";
+import { composeReply, buildComposePrompt, tidy, VOICE, type ComposeInput } from "./compose";
 import { retrievalQuery, screenPost } from "./filter";
 import { retrievalGate } from "./gate";
+import { fetchPostImage } from "./image";
 import { judgeRelevance } from "./judge";
 import { authorAllowed, pageAllowed, runAllowed, subAllowed } from "./limits";
 import {
@@ -32,7 +33,7 @@ import {
 } from "./ledger";
 import { postComment } from "./post";
 import { retryHint, validateReply } from "./validate";
-import { askPlain } from "../gemini";
+import { askText } from "../ai_text";
 import { contextOf } from "../rag/retrieve";
 import type { RetrievedPage } from "../rag/types";
 
@@ -112,16 +113,20 @@ async function composeValidated(
   let reply = await composeReply(input);
   if (!reply) return { reject: "composer_empty" };
 
-  let verdict = validateReply({ reply, expectedUrl: input.url, context });
+  // The poster's own numbers count as sourced — see the note on ValidateInput.postText.
+  const postText = `${input.postTitle}\n${input.postBody}`;
+  let verdict = validateReply({ reply, expectedUrl: input.url, context, postText });
   if (verdict.ok) return { reply };
 
   // One retry, naming the specific violation. Repeating the rules verbatim does not work; telling
   // the model which number it invented does.
-  const second = await askPlain(`${buildComposePrompt(input)}\n\nCORRECCIÓN OBLIGATORIA\n${retryHint(verdict)}`);
+  const second = await askText(`${buildComposePrompt(input)}\n\nCORRECCIÓN OBLIGATORIA\n${retryHint(verdict)}`, {
+    systemHint: VOICE,
+  });
   if (!second) return { reject: `invalid_${verdict.reason}` };
 
   reply = tidy(second);
-  verdict = validateReply({ reply, expectedUrl: input.url, context });
+  verdict = validateReply({ reply, expectedUrl: input.url, context, postText });
   if (verdict.ok) return { reply };
 
   return { reject: `invalid_${verdict.reason}` };
@@ -302,8 +307,25 @@ export async function runOnce(cfg: BotConfig = botConfig()): Promise<RunSummary>
     const url = `${cfg.baseUrl}${chosen.path}`;
     const support = pages.filter((page) => page.path !== chosen.path);
     const context = contextOf([chosen, ...support], 4500);
+
+    // Fetch the attachment only now: one download, for the single thread we are actually answering.
+    // Many of these threads ARE the screenshot — "me llegó esto, es normal?" over a photo of the
+    // courier charge — and answering those without looking is answering a question we never read.
+    const image = cfg.readImages ? await fetchPostImage(post.imageUrl) : null;
+    if (image) console.log(`[redditbot] el post trae imagen (${Math.round(image.bytes / 1024)} KB), se la paso al redactor`);
+
     const composed = await composeValidated(
-      { postTitle: post.title, postBody: post.selftext, page: chosen, support, url },
+      {
+        postTitle: post.title,
+        postBody: post.selftext,
+        page: chosen,
+        support,
+        url,
+        image: image ?? undefined,
+        imageNote: image
+          ? "la persona adjuntó una imagen; miralá y usá lo que se ve en ella (montos, nombres, fechas) para contestar"
+          : undefined,
+      },
       context
     );
     if ("reject" in composed) {

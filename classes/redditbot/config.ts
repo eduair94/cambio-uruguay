@@ -61,6 +61,14 @@ export interface BotConfig {
    * rest simply wait for the next run twelve minutes later.
    */
   maxCandidatesPerRun: number;
+  /**
+   * Download and look at the image a post attached.
+   *
+   * On by default: a large share of these threads ARE the screenshot, and the title on those
+   * ("me llegó esto, es normal?") carries almost nothing. Turn it off to save a vision call per
+   * answer, at the cost of being blind to the actual question.
+   */
+  readImages: boolean;
   minAgeMinutes: number;
   maxAgeHours: number;
   maxPerDay: number;
@@ -107,6 +115,7 @@ export function botConfig(): BotConfig {
     baseUrl: (process.env.SITE_BASE_URL || "https://cambio-uruguay.com").replace(/\/+$/, ""),
     fetchLimit: num("REDDIT_BOT_FETCH_LIMIT", 50),
     maxCandidatesPerRun: num("REDDIT_BOT_MAX_CANDIDATES", 12),
+    readImages: process.env.REDDIT_BOT_READ_IMAGES !== "0",
     minAgeMinutes: num("REDDIT_BOT_MIN_AGE_MIN", 15),
     maxAgeHours: num("REDDIT_BOT_MAX_AGE_HOURS", 8),
     maxPerDay: num("REDDIT_BOT_MAX_PER_DAY", 6),
