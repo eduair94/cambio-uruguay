@@ -318,6 +318,23 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         keywords: ['cerca de mi', 'cercana', 'proxima', 'mas cerca', 'ubicacion'],
       },
       {
+        to: '/casas-de-cambio-abiertas-fin-de-semana',
+        labelKey: 'nav.weekendOpen',
+        icon: 'mdi-calendar-weekend',
+        priority: 0.8,
+        changefreq: 'weekly',
+        keywords: [
+          'abiertas sabado',
+          'abierto domingo',
+          'fin de semana',
+          'horario',
+          'horarios',
+          'sabado',
+          'domingo',
+          'que abre hoy',
+        ],
+      },
+      {
         to: '/estado',
         labelKey: 'estado.nav',
         icon: 'mdi-heart-pulse',
