@@ -1436,6 +1436,11 @@
       }
     }
   },
+  "related": {
+    "title": "Keep reading",
+    "lead": "Other pages on the site that answer what usually comes after this one.",
+    "aria": "Related pages"
+  },
   "search": {
     "triggerLabel": "Search",
     "triggerHint": "Ctrl K",

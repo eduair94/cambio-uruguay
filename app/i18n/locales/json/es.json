@@ -1447,6 +1447,11 @@
       }
     }
   },
+  "related": {
+    "title": "Seguí leyendo",
+    "lead": "Otras páginas del sitio que responden lo que suele venir después de esta.",
+    "aria": "Páginas relacionadas"
+  },
   "search": {
     "triggerLabel": "Buscar",
     "triggerHint": "Ctrl K",

@@ -250,6 +250,10 @@
     <VMain id="main" tabindex="-1" :class="formatNameRoute()">
       <div class="container_custom">
         <slot />
+        <!-- Where to go next, server-rendered so crawlers follow it too. Routes
+             opt out through `utils/relatedPages.ts`; it sits above the ad
+             because the reader's next page is worth more than the impression. -->
+        <RelatedPages />
         <!-- The one ad every allowed route carries: after the content, before
              the footer, never in the middle of a tool. Routes opt out through
              `utils/ads.ts` or `definePageMeta({ ads: false })`; long articles
