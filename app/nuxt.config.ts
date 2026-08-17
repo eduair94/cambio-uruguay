@@ -19,6 +19,20 @@ export default defineNuxtConfig({
   // SSR Configuration
   ssr: true,
 
+  // No sourcemaps in the production build.
+  //
+  // Nuxt defaults to `server: true`, which emitted 955 `.mjs.map` files (11 MB
+  // of the 59 MB output) on every deploy. Measured on the same machine: 195s
+  // with them, 163s without — 16%, and the VPS that runs the real build is
+  // about twice as slow, so it is worth roughly a minute per deploy.
+  //
+  // Nothing a browser or a crawler ever sees changes: these are server chunks,
+  // never served to the client, and `client` was already false by default. The
+  // cost is elsewhere — Sentry server stack traces now point at bundled code.
+  // If reading those traces ever matters more than the deploy minute, flip
+  // `server` back to true.
+  sourcemap: { server: false, client: false },
+
   // Site Configuration (required for @nuxt/sitemap and SEO)
   site: {
     url: 'https://cambio-uruguay.com',
