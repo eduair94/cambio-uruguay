@@ -41,8 +41,36 @@ log "Pulling latest main…"
 git -C "$REPO_DIR" checkout -- app/package-lock.json 2>/dev/null || true
 git -C "$REPO_DIR" pull --ff-only origin main
 
-log "Installing deps (no-audit)…"
-npm install --no-audit --no-fund
+# Reinstall only when the dependency set actually changed.
+#
+# Most deploys are a page or a copy change and touch no dependency, but every
+# one of them paid a full `npm install`. It is also what kept regenerating
+# app/package-lock.json and leaving the server tree dirty — the churn the
+# checkout above exists to undo.
+#
+# The stamp holds the hash of the two files that define the dependency set. The
+# `node_modules` test is the safety catch: a missing or wiped tree reinstalls
+# regardless of what the stamp says. Anything unexpected (no sha256sum, no
+# stamp) falls through to installing, so the failure mode is "slow", never
+# "builds against the wrong dependencies".
+DEPS_STAMP="$APP_DIR/.deps-stamp"
+DEPS_HASH=""
+if command -v sha256sum >/dev/null 2>&1; then
+  DEPS_HASH="$(cat package.json package-lock.json 2>/dev/null | sha256sum | cut -d' ' -f1)"
+fi
+
+if [ -n "$DEPS_HASH" ] && [ -d node_modules ] && [ -f "$DEPS_STAMP" ] &&
+  [ "$(cat "$DEPS_STAMP")" = "$DEPS_HASH" ]; then
+  log "Deps unchanged — skipping npm install."
+else
+  log "Installing deps (no-audit)…"
+  npm install --no-audit --no-fund
+  # An `if`, not `[ … ] && …`: under `set -e` a trailing `&&` that short-circuits
+  # returns 1 and would abort the deploy on the machines with no sha256sum.
+  if [ -n "$DEPS_HASH" ]; then
+    printf '%s' "$DEPS_HASH" >"$DEPS_STAMP"
+  fi
+fi
 
 log "Building into staging dir ($STAGING) — live .output keeps serving…"
 rm -rf "$STAGING" "$APP_DIR/.nuxt"

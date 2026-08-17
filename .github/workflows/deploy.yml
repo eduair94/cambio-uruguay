@@ -30,8 +30,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      # No lockfile is committed (package-lock.json is gitignored), so install
-      # like the server's deploy.sh does — `npm install`, not `npm ci`.
+          # This job gates the deploy, so its install is on the critical path:
+          # a cold `npm install` was 32s of the 60s job. `app/package-lock.json`
+          # IS committed (the root one is not — see .gitignore's `!app/…`
+          # negation), so the npm cache can be keyed on it.
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      # `npm install`, not `npm ci` — same as the server's deploy.sh. The cache
+      # above only warms ~/.npm; it does not change how the tree is resolved.
       - run: npm install --no-audit --no-fund
       - run: npm run test
 

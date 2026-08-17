@@ -47,9 +47,14 @@ Thumbs.db
 *.wmv
 
 package-lock.json
-# CI (deploy.yml) runs `npm ci` in app/ and caches on this lockfile, so it must
-# be committed even though other package-lock.json files stay ignored.
+# CI (deploy.yml) installs app/ with `npm install` — NOT `npm ci` — but keys the
+# npm cache on this lockfile, so it must be committed even though every other
+# package-lock.json stays ignored.
 !app/package-lock.json
+
+# Server-side deploy stamp: the hash of the dependency set the server last
+# installed, so deploy.sh can skip npm install when nothing changed.
+app/.deps-stamp
 dist
 sheet_key.json
 serviceAccount.json
