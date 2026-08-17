@@ -138,16 +138,24 @@ html[data-theme='dark'] .driver-popover.cu-tour .driver-popover-title {
 html[data-theme='dark'] .driver-popover.cu-tour .driver-popover-description {
   color: #aeb9cc;
 }
-html[data-theme='dark'] .driver-popover.cu-tour .driver-popover-arrow-side-top.driver-popover-arrow {
+html[data-theme='dark']
+  .driver-popover.cu-tour
+  .driver-popover-arrow-side-top.driver-popover-arrow {
   border-top-color: #1a2233;
 }
-html[data-theme='dark'] .driver-popover.cu-tour .driver-popover-arrow-side-bottom.driver-popover-arrow {
+html[data-theme='dark']
+  .driver-popover.cu-tour
+  .driver-popover-arrow-side-bottom.driver-popover-arrow {
   border-bottom-color: #1a2233;
 }
-html[data-theme='dark'] .driver-popover.cu-tour .driver-popover-arrow-side-left.driver-popover-arrow {
+html[data-theme='dark']
+  .driver-popover.cu-tour
+  .driver-popover-arrow-side-left.driver-popover-arrow {
   border-left-color: #1a2233;
 }
-html[data-theme='dark'] .driver-popover.cu-tour .driver-popover-arrow-side-right.driver-popover-arrow {
+html[data-theme='dark']
+  .driver-popover.cu-tour
+  .driver-popover-arrow-side-right.driver-popover-arrow {
   border-right-color: #1a2233;
 }
 </style>

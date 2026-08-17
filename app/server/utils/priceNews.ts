@@ -17,10 +17,6 @@ export async function archiveTodayNews(currency = 'USD'): Promise<{ date: string
     link: n.link,
     pubDate: n.pubDate,
   }))
-  await PriceNewsModel.updateOne(
-    { date, currency },
-    { $set: { headlines } },
-    { upsert: true }
-  )
+  await PriceNewsModel.updateOne({ date, currency }, { $set: { headlines } }, { upsert: true })
   return { date, count: headlines.length }
 }

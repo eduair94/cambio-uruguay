@@ -7,7 +7,10 @@ import { checkFiguresDrift } from '../../utils/figuresDrift'
 import type { UyFigures } from '../../utils/uyFiguresFallback'
 
 export default defineTask({
-  meta: { name: 'figures:drift', description: 'Compare live UY figures with the constants baked into the site' },
+  meta: {
+    name: 'figures:drift',
+    description: 'Compare live UY figures with the constants baked into the site',
+  },
   async run() {
     const figures = await $fetch<UyFigures>('/api/uy-figures')
     const { drift, notified } = await checkFiguresDrift(figures)

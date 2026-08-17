@@ -134,7 +134,12 @@
 
             <!-- Celda de Tipo -->
             <template #item.type="{ item }">
-              <v-chip v-if="item.type" size="small" :color="getTypeColor(item.type)" variant="tonal">
+              <v-chip
+                v-if="item.type"
+                size="small"
+                :color="getTypeColor(item.type)"
+                variant="tonal"
+              >
                 {{ item.type }}
               </v-chip>
               <span v-else class="text-grey">-</span>

@@ -5,7 +5,12 @@
 //
 // The `inFlight` background-refresh dance is gone: the backend cron is the only refresher now,
 // and a GET handler must not spend Gemini calls — it no longer even can, it has no key.
-import { applyCostOverrides, baselineCosts, type LiveCosts, type LiveCostsResponse } from '../utils/costsMerge'
+import {
+  applyCostOverrides,
+  baselineCosts,
+  type LiveCosts,
+  type LiveCostsResponse,
+} from '../utils/costsMerge'
 
 export default defineCachedEventHandler(
   async (): Promise<LiveCosts> => {

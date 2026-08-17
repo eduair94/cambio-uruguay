@@ -66,7 +66,9 @@ describe('import-preview endpoint', () => {
     expect(res).toMatchObject({ title: 'ROG Ally', price: 427, currency: 'USD' })
     // hit the proxy with the encoded item URL, not eBay directly
     expect(String(fetchSpy.mock.calls[0]?.[0])).toContain('proxy.test/ebay/item')
-    expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(encodeURIComponent('https://www.ebay.com/itm/167912235793'))
+    expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(
+      encodeURIComponent('https://www.ebay.com/itm/167912235793')
+    )
   })
 
   it('falls back to the HTML scrape when the eBay proxy returns nothing usable', async () => {
@@ -81,9 +83,7 @@ describe('import-preview endpoint', () => {
         json: () => Promise.resolve({ success: false }),
       } as unknown as Response)
       // fallback HTML scrape
-      .mockResolvedValueOnce(
-        htmlResponse('<meta property="og:title" content="Scraped Item">')
-      )
+      .mockResolvedValueOnce(htmlResponse('<meta property="og:title" content="Scraped Item">'))
     vi.stubGlobal('fetch', fetchSpy)
     const res = await handler({} as any)
     expect(res).toMatchObject({ title: 'Scraped Item' })

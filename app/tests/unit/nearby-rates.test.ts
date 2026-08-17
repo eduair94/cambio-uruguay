@@ -4,9 +4,9 @@ import { haversineKm, buildRatesByOrigin, rankNearby } from '../../utils/nearbyR
 const user = { lat: -34.9011, lng: -56.1645 } // central Montevideo
 
 const branches = [
-  { origin: 'itau', lat: -34.9055, lng: -56.1922, id: 'a' },   // ~1.7 km
-  { origin: 'brou', lat: -34.9080, lng: -56.2100, id: 'b' },   // ~4.2 km
-  { origin: 'gales', lat: -34.8350, lng: -55.9500, id: 'c' },  // ~21 km (out of 10km radius)
+  { origin: 'itau', lat: -34.9055, lng: -56.1922, id: 'a' }, // ~1.7 km
+  { origin: 'brou', lat: -34.908, lng: -56.21, id: 'b' }, // ~4.2 km
+  { origin: 'gales', lat: -34.835, lng: -55.95, id: 'c' }, // ~21 km (out of 10km radius)
   { origin: 'norate', lat: -34.9012, lng: -56.1646, id: 'd' }, // ~0 km but no USD rate
 ]
 

@@ -14,7 +14,8 @@ describe('parseStooqCsv', () => {
     ])
   })
   it('skips rows with N/D or non-numeric close', () => {
-    const csv = 'Date,Open,High,Low,Close,Volume\n2026-06-01,N/D,N/D,N/D,N/D,N/D\n2026-06-02,1,1,1,42.5,0'
+    const csv =
+      'Date,Open,High,Low,Close,Volume\n2026-06-01,N/D,N/D,N/D,N/D,N/D\n2026-06-02,1,1,1,42.5,0'
     expect(parseStooqCsv(csv)).toEqual([{ date: '2026-06-02', value: 42.5 }])
   })
   it('tolerates empty / malformed input', () => {

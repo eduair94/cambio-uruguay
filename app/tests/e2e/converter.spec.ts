@@ -84,9 +84,7 @@ test.describe('currency converter', () => {
   // shrink the entered amount by orders of magnitude (a genuine decimal
   // point from the recomputed reverse amount, e.g. "25410.87", is fine and
   // unambiguous - only a *grouping* dot mixed with decimal parsing is not).
-  test('toggling direction after blur does not corrupt a multi-digit amount', async ({
-    page,
-  }) => {
+  test('toggling direction after blur does not corrupt a multi-digit amount', async ({ page }) => {
     await page.goto('/')
 
     const amountInput = page.getByTestId('amount-input').locator('input')

@@ -6,8 +6,20 @@ const S = (pairs: [string, number][]) => pairs.map(([date, value]) => ({ date, v
 describe('attributeMove', () => {
   it('computes each driver day-move vs its previous point, sorted by |move| desc', () => {
     const driverSeries = [
-      { key: 'brl', points: S([['2026-06-01', 5.0], ['2026-06-02', 5.15]]) }, // +3%
-      { key: 'dxy', points: S([['2026-06-01', 100], ['2026-06-02', 101]]) }, // +1%
+      {
+        key: 'brl',
+        points: S([
+          ['2026-06-01', 5.0],
+          ['2026-06-02', 5.15],
+        ]),
+      }, // +3%
+      {
+        key: 'dxy',
+        points: S([
+          ['2026-06-01', 100],
+          ['2026-06-02', 101],
+        ]),
+      }, // +1%
     ]
     const out = attributeMove('2026-06-02', driverSeries)
     expect(out.map(d => d.key)).toEqual(['brl', 'dxy'])
@@ -17,7 +29,13 @@ describe('attributeMove', () => {
   it('skips a driver with no point on the date or no prior point', () => {
     const driverSeries = [
       { key: 'brl', points: S([['2026-06-02', 5.15]]) }, // no prior point
-      { key: 'dxy', points: S([['2026-06-01', 100], ['2026-06-03', 101]]) }, // no 06-02 point
+      {
+        key: 'dxy',
+        points: S([
+          ['2026-06-01', 100],
+          ['2026-06-03', 101],
+        ]),
+      }, // no 06-02 point
     ]
     expect(attributeMove('2026-06-02', driverSeries)).toEqual([])
   })
@@ -25,7 +43,10 @@ describe('attributeMove', () => {
 
 describe('todaySummary', () => {
   it('summarizes the latest base move and picks the strongest live driver', () => {
-    const base = S([['2026-06-01', 40], ['2026-06-02', 40.8]]) // +2%
+    const base = S([
+      ['2026-06-01', 40],
+      ['2026-06-02', 40.8],
+    ]) // +2%
     const corr = [
       { key: 'us10y', r: 0.11, n: 800 },
       { key: 'brl', r: 0.36, n: 800 },

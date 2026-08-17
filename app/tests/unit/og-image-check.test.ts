@@ -56,7 +56,12 @@ describe('evaluateOgImageResponse', () => {
 
   it('fails on non-2xx status', () => {
     expect(
-      evaluateOgImageResponse({ ok: false, status: 500, contentType: 'image/png', byteLength: 5000 })
+      evaluateOgImageResponse({
+        ok: false,
+        status: 500,
+        contentType: 'image/png',
+        byteLength: 5000,
+      })
     ).toEqual({ ok: false, reason: 'HTTP 500' })
   })
 

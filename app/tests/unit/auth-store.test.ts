@@ -16,7 +16,7 @@ const h = vi.hoisted(() => ({
 
 vi.mock('../../stores/firebaseAuthApi', () => ({
   fbAuth: () => ({ currentUser: null }),
-  GoogleAuthProvider: class {},
+  GoogleAuthProvider: vi.fn(),
   signInWithPopup: h.signInWithPopup,
   signInWithEmailAndPassword: h.signInWithEmailAndPassword,
   createUserWithEmailAndPassword: h.createUserWithEmailAndPassword,

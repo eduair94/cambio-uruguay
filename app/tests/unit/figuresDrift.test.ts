@@ -51,7 +51,9 @@ afterEach(() => {
 describe('checkFiguresDrift', () => {
   it('detects a >3% drift on a live-updated field and notifies the admin', async () => {
     const { checkFiguresDrift } = await import('../../server/utils/figuresDrift')
-    const out = await checkFiguresDrift(figures({ salarioMinimo: 27000, updated: ['salarioMinimo'] }))
+    const out = await checkFiguresDrift(
+      figures({ salarioMinimo: 27000, updated: ['salarioMinimo'] })
+    )
     expect(out.drift).toHaveLength(1)
     expect(out.notified).toBe(true)
     expect(sendTelegram).toHaveBeenCalledTimes(1)
@@ -67,10 +69,14 @@ describe('checkFiguresDrift', () => {
 
   it('notifies the same distinct drift only once', async () => {
     const { checkFiguresDrift } = await import('../../server/utils/figuresDrift')
-    const first = await checkFiguresDrift(figures({ salarioMinimo: 27000, updated: ['salarioMinimo'] }))
+    const first = await checkFiguresDrift(
+      figures({ salarioMinimo: 27000, updated: ['salarioMinimo'] })
+    )
     expect(first.notified).toBe(true)
 
-    const second = await checkFiguresDrift(figures({ salarioMinimo: 27000, updated: ['salarioMinimo'] }))
+    const second = await checkFiguresDrift(
+      figures({ salarioMinimo: 27000, updated: ['salarioMinimo'] })
+    )
     expect(second.drift).toHaveLength(1) // still reported...
     expect(second.notified).toBe(false) // ...but not re-notified
     expect(sendTelegram).toHaveBeenCalledTimes(1)
@@ -90,7 +96,9 @@ describe('checkFiguresDrift', () => {
   it('does not notify without an admin chat id, but still reports the drift', async () => {
     cfg.telegram.adminChatId = ''
     const { checkFiguresDrift } = await import('../../server/utils/figuresDrift')
-    const out = await checkFiguresDrift(figures({ salarioMinimo: 27000, updated: ['salarioMinimo'] }))
+    const out = await checkFiguresDrift(
+      figures({ salarioMinimo: 27000, updated: ['salarioMinimo'] })
+    )
     expect(out.drift).toHaveLength(1)
     expect(out.notified).toBe(false)
     expect(sendTelegram).not.toHaveBeenCalled()
@@ -98,7 +106,9 @@ describe('checkFiguresDrift', () => {
 
   it('reports no drift when the live value is within tolerance', async () => {
     const { checkFiguresDrift } = await import('../../server/utils/figuresDrift')
-    const out = await checkFiguresDrift(figures({ salarioMinimo: 25500, updated: ['salarioMinimo'] }))
+    const out = await checkFiguresDrift(
+      figures({ salarioMinimo: 25500, updated: ['salarioMinimo'] })
+    )
     expect(out.drift).toEqual([])
     expect(out.notified).toBe(false)
   })

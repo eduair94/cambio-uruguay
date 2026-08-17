@@ -34,7 +34,11 @@ describe('markPoints', () => {
   })
 
   it('matches by calendar day regardless of the chart date carrying a full ISO timestamp', () => {
-    const out = markPoints(['2026-06-02T03:00:00.000Z'], [{ date: '2026-06-02', direction: 'up' }], '#000')
+    const out = markPoints(
+      ['2026-06-02T03:00:00.000Z'],
+      [{ date: '2026-06-02', direction: 'up' }],
+      '#000'
+    )
     expect(out.pointRadius).toEqual([6])
   })
 

@@ -2,9 +2,17 @@ import { describe, it, expect } from 'vitest'
 import { projectBackendBranch, buildLocations, type MapBranch } from '../../server/utils/locations'
 
 const raw = {
-  origin: 'brou', id: '1001-1', name: 'Sucursal Centro', dept: 'MONTEVIDEO',
-  locality: 'Montevideo', address: '18 de Julio 1000', phone: '1234', hours: 'L-V 13-18',
-  lat: -34.9, lng: -56.18, mapUrl: 'https://maps/x',
+  origin: 'brou',
+  id: '1001-1',
+  name: 'Sucursal Centro',
+  dept: 'MONTEVIDEO',
+  locality: 'Montevideo',
+  address: '18 de Julio 1000',
+  phone: '1234',
+  hours: 'L-V 13-18',
+  lat: -34.9,
+  lng: -56.18,
+  mapUrl: 'https://maps/x',
 }
 
 describe('projectBackendBranch', () => {
@@ -25,12 +33,32 @@ describe('projectBackendBranch', () => {
 
 describe('buildLocations', () => {
   const extraFar: MapBranch = {
-    origin: 'gales', id: 'osm-1', name: 'OSM Gales', dept: '', locality: '', address: '',
-    phone: '', hours: '', lat: -34.0, lng: -55.0, mapUrl: '', source: 'osm',
+    origin: 'gales',
+    id: 'osm-1',
+    name: 'OSM Gales',
+    dept: '',
+    locality: '',
+    address: '',
+    phone: '',
+    hours: '',
+    lat: -34.0,
+    lng: -55.0,
+    mapUrl: '',
+    source: 'osm',
   }
   const extraDup: MapBranch = {
-    origin: 'brou', id: 'osm-2', name: 'OSM dup of Centro', dept: '', locality: '', address: '',
-    phone: '', hours: '', lat: -34.9001, lng: -56.1801, mapUrl: '', source: 'osm',
+    origin: 'brou',
+    id: 'osm-2',
+    name: 'OSM dup of Centro',
+    dept: '',
+    locality: '',
+    address: '',
+    phone: '',
+    hours: '',
+    lat: -34.9001,
+    lng: -56.1801,
+    mapUrl: '',
+    source: 'osm',
   }
 
   it('keeps backend branches plus far-away extras', () => {
@@ -53,8 +81,18 @@ describe('buildLocations', () => {
 
   it('keeps a same-origin extra that is far from the backend branch', () => {
     const extraSameOriginFar: MapBranch = {
-      origin: 'brou', id: 'osm-3', name: 'OSM BROU Far', dept: '', locality: '', address: '',
-      phone: '', hours: '', lat: -34.85, lng: -56.18, mapUrl: '', source: 'osm',
+      origin: 'brou',
+      id: 'osm-3',
+      name: 'OSM BROU Far',
+      dept: '',
+      locality: '',
+      address: '',
+      phone: '',
+      hours: '',
+      lat: -34.85,
+      lng: -56.18,
+      mapUrl: '',
+      source: 'osm',
     }
     const out = buildLocations([raw], [extraSameOriginFar])
     expect(out).toHaveLength(2)

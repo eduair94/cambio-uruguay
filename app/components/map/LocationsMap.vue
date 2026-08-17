@@ -106,16 +106,21 @@ function pinIcon(origin: string, highlighted: boolean) {
 
 function defaultPopup(b: Branch): string {
   const esc = (s: string) =>
-    String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string))
+    String(s).replace(
+      /[&<>"]/g,
+      c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] as string
+    )
   const rawDir =
     b.mapUrl && /^https?:\/\//i.test(b.mapUrl)
       ? b.mapUrl
       : `https://www.google.com/maps/search/${encodeURIComponent(`${b.name} ${b.address} ${b.locality}`)}`
   const dir = esc(rawDir)
-  return `<strong>${esc(b.name || b.origin)}</strong><br>${esc(b.address)}<br>${esc(b.locality)}, ${esc(b.dept)}` +
+  return (
+    `<strong>${esc(b.name || b.origin)}</strong><br>${esc(b.address)}<br>${esc(b.locality)}, ${esc(b.dept)}` +
     (b.hours ? `<br><em>${esc(b.hours)}</em>` : '') +
     (b.phone ? `<br>📞 ${esc(b.phone)}` : '') +
     `<br><a href="${dir}" target="_blank" rel="noopener">${esc(props.directionsLabel)} →</a>`
+  )
 }
 
 async function init() {
@@ -134,7 +139,8 @@ async function init() {
 
   map = L.map(el.value, { scrollWheelZoom: true }).setView(props.center, props.zoom)
   L.tileLayer(tileUrl, {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     maxZoom: 19,
   }).addTo(map)
 
@@ -160,15 +166,20 @@ function cashIcon() {
 
 function cashPopup(p: CashPoint): string {
   const esc = (s: string) =>
-    String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string))
+    String(s).replace(
+      /[&<>"]/g,
+      c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] as string
+    )
   const q = encodeURIComponent(`${p.name} ${p.address} ${p.locality}`)
   const dir = esc(`https://www.google.com/maps/search/${q}`)
-  return `<strong>${esc(p.name || p.label)}</strong><br><span style="color:#00897b;font-weight:600">${esc(p.label)} · ${esc(props.cashLabel)}</span>` +
+  return (
+    `<strong>${esc(p.name || p.label)}</strong><br><span style="color:#00897b;font-weight:600">${esc(p.label)} · ${esc(props.cashLabel)}</span>` +
     (p.address ? `<br>${esc(p.address)}` : '') +
     (p.locality ? `<br>${esc(p.locality)}` : '') +
     (p.hours ? `<br><em>${esc(p.hours)}</em>` : '') +
     (p.phone ? `<br>📞 ${esc(p.phone)}` : '') +
     `<br><a href="${dir}" target="_blank" rel="noopener">${esc(props.directionsLabel)} →</a>`
+  )
 }
 
 function renderCashPoints() {
@@ -230,13 +241,29 @@ function applyHighlight(id: string | null) {
 
 function renderUser() {
   if (!map) return
-  if (userMarker) { map.removeLayer(userMarker); userMarker = null }
-  if (radiusCircle) { map.removeLayer(radiusCircle); radiusCircle = null }
+  if (userMarker) {
+    map.removeLayer(userMarker)
+    userMarker = null
+  }
+  if (radiusCircle) {
+    map.removeLayer(radiusCircle)
+    radiusCircle = null
+  }
   if (!props.userLocation) return
   const ll: [number, number] = [props.userLocation.lat, props.userLocation.lng]
-  userMarker = L.circleMarker(ll, { radius: 7, color: '#1976d2', fillColor: '#1976d2', fillOpacity: 1 }).addTo(map)
+  userMarker = L.circleMarker(ll, {
+    radius: 7,
+    color: '#1976d2',
+    fillColor: '#1976d2',
+    fillOpacity: 1,
+  }).addTo(map)
   if (props.radiusKm && props.radiusKm > 0) {
-    radiusCircle = L.circle(ll, { radius: props.radiusKm * 1000, color: '#1976d2', weight: 1, fillOpacity: 0.05 }).addTo(map)
+    radiusCircle = L.circle(ll, {
+      radius: props.radiusKm * 1000,
+      color: '#1976d2',
+      weight: 1,
+      fillOpacity: 0.05,
+    }).addTo(map)
     map.fitBounds(radiusCircle.getBounds(), { padding: [20, 20] })
   } else {
     map.setView(ll, 13)
@@ -256,9 +283,14 @@ defineExpose({ focusBranch })
 // fires, so el.value can still be null here. Watch the ref and init the moment
 // the div attaches; the initStarted guard keeps it to a single run.
 onMounted(init)
-watch(el, () => { if (el.value) init() })
+watch(el, () => {
+  if (el.value) init()
+})
 onBeforeUnmount(() => {
-  if (map) { map.remove(); map = null }
+  if (map) {
+    map.remove()
+    map = null
+  }
   cluster = null
   cashCluster = null
   userMarker = null
@@ -269,10 +301,25 @@ onBeforeUnmount(() => {
   currentHighlightId = null
 })
 
-watch(() => props.branches, () => renderMarkers(), { deep: false })
-watch(() => props.cashPoints, () => renderCashPoints(), { deep: false })
-watch(() => [props.userLocation, props.radiusKm], () => renderUser(), { deep: true })
-watch(() => props.highlightId, id => applyHighlight(id ?? null))
+watch(
+  () => props.branches,
+  () => renderMarkers(),
+  { deep: false }
+)
+watch(
+  () => props.cashPoints,
+  () => renderCashPoints(),
+  { deep: false }
+)
+watch(
+  () => [props.userLocation, props.radiusKm],
+  () => renderUser(),
+  { deep: true }
+)
+watch(
+  () => props.highlightId,
+  id => applyHighlight(id ?? null)
+)
 </script>
 
 <style scoped>

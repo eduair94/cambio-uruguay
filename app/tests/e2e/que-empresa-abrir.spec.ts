@@ -24,6 +24,9 @@ test('mounts, recommends monotributo to a shop, and never prints a $0 price', as
   await expect(verdict).toContainText(/\$/)
 
   // The forbidden string: no price of zero anywhere on the page.
+  // innerText, not textContent: the claim is about what a reader SEES, and
+  // textContent would also drag in collapsed panels the reader never opens.
+  // eslint-disable-next-line unicorn/prefer-dom-node-text-content
   const body = await page.locator('body').innerText()
   expect(body).not.toMatch(/\$\s*0(?!\d|[.,]\d)/)
 })
@@ -53,6 +56,7 @@ test('renders the auditable core: every regime, the grey zone, and the honesty c
   await expect(bodyLoc).toContainText('Fuentes primarias')
 
   // The invariant holds in this state too: no $0 price anywhere.
+  // eslint-disable-next-line unicorn/prefer-dom-node-text-content
   const body = await bodyLoc.innerText()
   expect(body).not.toMatch(/\$\s*0(?!\d|[.,]\d)/)
 })

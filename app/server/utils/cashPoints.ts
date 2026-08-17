@@ -12,7 +12,12 @@ export interface CashPoint {
   lng: number
 }
 
-const num = (v: string): number => parseFloat(String(v ?? '').trim().replace(',', '.'))
+const num = (v: string): number =>
+  parseFloat(
+    String(v ?? '')
+      .trim()
+      .replace(',', '.')
+  )
 const cell = (v: string): string => String(v ?? '').trim()
 
 // BCU open-data CSV (semicolon-delimited), positionally consistent across institutions:

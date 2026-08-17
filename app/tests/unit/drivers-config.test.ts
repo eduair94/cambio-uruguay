@@ -20,7 +20,13 @@ describe('snapshotsToDriverSeries', () => {
   it('builds one date-sorted series per driver, skipping missing values', () => {
     const defs = [
       { key: 'dxy', label: '', source: 'stooq' as const, symbol: 'dx.f', currencies: ['USD'] },
-      { key: 'arBlue', label: '', source: 'argentinadatos' as const, symbol: 'blue', currencies: ['USD'] },
+      {
+        key: 'arBlue',
+        label: '',
+        source: 'argentinadatos' as const,
+        symbol: 'blue',
+        currencies: ['USD'],
+      },
     ]
     const snapshots = [
       { date: '2026-06-02', values: { dxy: 104.4, arBlue: 1200 } },

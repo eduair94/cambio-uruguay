@@ -27,7 +27,7 @@
 </template>
 
 <script setup lang="ts">
-const props = withDefaults(
+withDefaults(
   defineProps<{
     src?: string
     poster?: string

@@ -35,7 +35,13 @@ const cloneBaseline = (): typeof COST_MODEL => ({
 })
 
 export function baselineCosts(): LiveCosts {
-  return { model: cloneBaseline(), salary: { ...SALARY_REFERENCE }, asOf: null, updated: [], sources: [] }
+  return {
+    model: cloneBaseline(),
+    salary: { ...SALARY_REFERENCE },
+    asOf: null,
+    updated: [],
+    sources: [],
+  }
 }
 
 export function applyCostOverrides(live: LiveCostsResponse | null): LiveCosts {

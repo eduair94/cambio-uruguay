@@ -135,7 +135,7 @@ onMounted(async () => {
   mountWidget()
 })
 onBeforeUnmount(() => {
-  poll && clearInterval(poll)
+  if (poll) clearInterval(poll)
   if (import.meta.client) delete (window as any).onTelegramAuth
 })
 

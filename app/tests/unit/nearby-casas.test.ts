@@ -53,7 +53,7 @@ describe('rankNearbyCasas', () => {
 
   it('dedupes multiple branches of the same casa, keeping the nearest', () => {
     const branches = [
-      { origin: 'casaA', lat: -34.9080, lng: -56.2100, id: 'far' }, // ~4.2 km
+      { origin: 'casaA', lat: -34.908, lng: -56.21, id: 'far' }, // ~4.2 km
       { origin: 'casaA', lat: -34.9055, lng: -56.1922, id: 'near' }, // ~1.7 km
     ]
     const reputations = [makeCasa({ code: 'casaA' })]
@@ -66,7 +66,7 @@ describe('rankNearbyCasas', () => {
   it('weighs rate (45%) above distance (35%): best-rate-but-farther beats closer-but-worse-rate', () => {
     const branches = [
       { origin: 'closeButCheap', lat: -34.9055, lng: -56.1922, id: 'close' }, // ~1.7 km
-      { origin: 'farButBest', lat: -34.9080, lng: -56.2100, id: 'far' }, // ~4.2 km
+      { origin: 'farButBest', lat: -34.908, lng: -56.21, id: 'far' }, // ~4.2 km
     ]
     const reputations = [makeCasa({ code: 'closeButCheap' }), makeCasa({ code: 'farButBest' })]
     const rates = buildRatesByOrigin([
@@ -102,7 +102,7 @@ describe('rankNearbyCasas', () => {
   })
 
   it('excludes branches outside the radius', () => {
-    const branches = [{ origin: 'casaA', lat: -34.8350, lng: -55.9500, id: 'far' }] // ~21 km
+    const branches = [{ origin: 'casaA', lat: -34.835, lng: -55.95, id: 'far' }] // ~21 km
     const reputations = [makeCasa({ code: 'casaA' })]
     const rates = buildRatesByOrigin([{ origin: 'casaA', code: 'USD', buy: 40, sell: 41 }])
     const out = rankNearbyCasas(branches, reputations, rates, user, 10, 'USD', 'buy')

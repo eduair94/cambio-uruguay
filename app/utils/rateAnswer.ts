@@ -71,6 +71,7 @@ const typeRank = (t: string): number => (t === '' ? 0 : t === 'BILLETE' ? 1 : 2)
  * day-over-day streak compares eBROU against plain. Everything downstream must
  * run on a single type.
  *
+ * @param rows the raw /evolution series, every type interleaved.
  * @param type the route's `[[type]]` segment, if any. Case-insensitive.
  * @returns rows of the requested type, or — with no type — of the casa's
  *   best-ranked type. Empty when nothing matches.
@@ -149,6 +150,8 @@ export function rateAnswerFacts(
  * mixed-type series, so on a casa quoting two types (BROU: plain + eBROU) its
  * `current` is whichever type sorts last, and its min/max mix the two.
  *
+ * @param rows the raw /evolution series, every type interleaved.
+ * @param type the rate type to reduce to before computing anything.
  * @param periodMonths the window the caller requested (3/6/12/24) — the API's
  *   `dateRange.periodMonths`. Stated in months because there is no 30-day series.
  */

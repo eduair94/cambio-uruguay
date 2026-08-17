@@ -32,7 +32,9 @@ export function markPoints(
       continue
     }
     pointRadius.push(highlightRadius)
-    pointBackgroundColor.push(direction === 'up' ? UP_COLOR : direction === 'down' ? DOWN_COLOR : defaultColor)
+    pointBackgroundColor.push(
+      direction === 'up' ? UP_COLOR : direction === 'down' ? DOWN_COLOR : defaultColor
+    )
   }
   return { pointRadius, pointBackgroundColor }
 }

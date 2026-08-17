@@ -17,7 +17,9 @@ export default defineNuxtPlugin(() => {
       .forEach(el => el.removeAttribute('role'))
 
     document
-      .querySelectorAll<HTMLElement>('.v-slider-thumb[role="slider"]:not([aria-label]):not([aria-labelledby])')
+      .querySelectorAll<HTMLElement>(
+        '.v-slider-thumb[role="slider"]:not([aria-label]):not([aria-labelledby])'
+      )
       .forEach(thumb => {
         const label = thumb.closest('.v-input, .v-slider')?.getAttribute('aria-label')
         if (label) thumb.setAttribute('aria-label', label)
