@@ -249,11 +249,20 @@ watch(
   { immediate: true }
 )
 
+// "Cerca de mí" is answered from the visitor's coordinates, which arrive as
+// query params — so the page has as many URLs as it has visitors unless every
+// one of them canonicalises back to the single indexable address.
+const localePath = useLocalePath()
+const canonicalUrl = computed(
+  () => `https://cambio-uruguay.com${localePath('/casa-de-cambio-cerca-de-mi')}`
+)
+
 useSeoMeta({
   title: () => t('seo.nearbyCasasTitle'),
   description: () => t('seo.nearbyCasasDescription'),
   ogTitle: () => t('seo.nearbyCasasTitle'),
   ogDescription: () => t('seo.nearbyCasasDescription'),
+  ogUrl: () => canonicalUrl.value,
   twitterCard: 'summary_large_image',
 })
 defineOgImageComponent('Cambio', {
@@ -262,14 +271,36 @@ defineOgImageComponent('Cambio', {
   locale: locale.value as 'es' | 'en' | 'pt',
 })
 useHead(() => ({
+  link: [{ rel: 'canonical', href: canonicalUrl.value }],
   script: [
     {
       type: 'application/ld+json',
       innerHTML: JSON.stringify({
         '@context': 'https://schema.org',
-        '@type': 'ItemList',
-        name: t('seo.nearbyCasasTitle'),
-        numberOfItems: sorted.value.length,
+        '@graph': [
+          {
+            '@type': 'ItemList',
+            name: t('seo.nearbyCasasTitle'),
+            numberOfItems: sorted.value.length,
+          },
+          {
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Cambio Uruguay',
+                item: 'https://cambio-uruguay.com',
+              },
+              {
+                '@type': 'ListItem',
+                position: 2,
+                name: t('nearbyCasas.title'),
+                item: canonicalUrl.value,
+              },
+            ],
+          },
+        ],
       }),
     },
   ],

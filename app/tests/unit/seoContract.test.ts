@@ -126,8 +126,17 @@ describe('the dynamic families the sitemap submits are routable', () => {
  *
  * If you are here because CI failed: you either added a page without its SEO
  * declarations (fix the page), or you fixed a legacy one (lower the number).
+ *
+ * These counts are grep over page files, so they read a page that DELEGATES its
+ * SEO as a page that has none. Two shells declare the full set on their
+ * children's behalf — `ToolShell` (every `herramientas/calculadora-*`, driven by
+ * `utils/tools.ts`) and `CasasComparativa` (both `casas-de-cambio/*`) — and the
+ * `$seo.setupPageSEO` plugin does the same for a handful more. Between them they
+ * account for all 19 of the `seoMeta` count, which is why that number has not
+ * moved: there is nothing left under it to fix. Spend the effort on `canonical`
+ * and `structuredData`, where the remaining entries are real gaps.
  */
-const LEGACY_BUDGET = { seoMeta: 19, canonical: 38, structuredData: 43 }
+const LEGACY_BUDGET = { seoMeta: 19, canonical: 34, structuredData: 42 }
 
 function missing(predicate: (source: string) => boolean): string[] {
   return files.filter(file => predicate(read(file))).sort()

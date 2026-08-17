@@ -467,7 +467,12 @@ defineOgImageComponent('Cambio', {
   locale: locale.value as 'es' | 'en' | 'pt',
 })
 
-// SEO
+// SEO. The comparison state (casas picked, currency, period) lives in the query
+// string, so without a self-canonical every combination a visitor shares is a
+// separate URL competing with this one. Locale-aware: the /en and /pt copies
+// must canonicalise to themselves, not to the Spanish page.
+const canonicalUrl = computed(() => `https://cambio-uruguay.com${localePath('/comparar')}`)
+
 useSeoMeta({
   title: () => t('seo.compareTitle'),
   description: () => t('seo.compareDescription'),
@@ -475,11 +480,38 @@ useSeoMeta({
   ogTitle: () => t('seo.compareTitle'),
   ogDescription: () => t('seo.compareDescription'),
   ogType: 'website',
-  ogUrl: 'https://cambio-uruguay.com/comparar',
+  ogUrl: () => canonicalUrl.value,
   twitterCard: 'summary_large_image',
   twitterTitle: () => t('seo.compareTitle'),
   twitterDescription: () => t('seo.compareDescription'),
 })
+
+useHead(() => ({
+  link: [{ rel: 'canonical', href: canonicalUrl.value }],
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: 'Cambio Uruguay',
+            item: 'https://cambio-uruguay.com',
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: t('seo.compareTitle'),
+            item: canonicalUrl.value,
+          },
+        ],
+      }),
+    },
+  ],
+}))
 </script>
 
 <style scoped>

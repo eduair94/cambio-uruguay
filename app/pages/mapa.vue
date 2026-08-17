@@ -261,11 +261,18 @@ watch(
   { immediate: true }
 )
 
+// The map reads its state (currency, casa, coordinates) from the query string,
+// so a shared link like /mapa?casa=brou is a distinct URL Google will index
+// alongside this one unless the page points every variant back here.
+const localePath = useLocalePath()
+const canonicalUrl = computed(() => `https://cambio-uruguay.com${localePath('/mapa')}`)
+
 useSeoMeta({
   title: () => t('seo.mapaTitle'),
   description: () => t('seo.mapaDescription'),
   ogTitle: () => t('seo.mapaTitle'),
   ogDescription: () => t('seo.mapaDescription'),
+  ogUrl: () => canonicalUrl.value,
   twitterCard: 'summary_large_image',
 })
 defineOgImageComponent('Cambio', {
@@ -274,14 +281,36 @@ defineOgImageComponent('Cambio', {
   locale: locale.value as 'es' | 'en' | 'pt',
 })
 useHead(() => ({
+  link: [{ rel: 'canonical', href: canonicalUrl.value }],
   script: [
     {
       type: 'application/ld+json',
       innerHTML: JSON.stringify({
         '@context': 'https://schema.org',
-        '@type': 'ItemList',
-        name: t('seo.mapaTitle'),
-        numberOfItems: branches.value.length,
+        '@graph': [
+          {
+            '@type': 'ItemList',
+            name: t('seo.mapaTitle'),
+            numberOfItems: branches.value.length,
+          },
+          {
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Cambio Uruguay',
+                item: 'https://cambio-uruguay.com',
+              },
+              {
+                '@type': 'ListItem',
+                position: 2,
+                name: t('map.title'),
+                item: canonicalUrl.value,
+              },
+            ],
+          },
+        ],
       }),
     },
   ],
