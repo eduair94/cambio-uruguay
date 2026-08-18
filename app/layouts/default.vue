@@ -253,6 +253,10 @@
         <!-- Where to go next, server-rendered so crawlers follow it too. Routes
              opt out through `utils/relatedPages.ts`; it sits above the ad
              because the reader's next page is worth more than the impression. -->
+        <!-- Ampliaciones que el bot escribió para esta ruta a partir de lo que Reddit preguntó
+             y la página no contestaba. Vive acá y no en cada página para que un job automático
+             nunca tenga que parchear un .vue escrito a mano. Ver utils/generated/addenda.ts. -->
+        <PageAddenda />
         <RelatedPages />
         <!-- The end-of-article ask. Long reads only (`utils/capture.ts`), and it
              sits after the recirculation block: giving the reader somewhere to go

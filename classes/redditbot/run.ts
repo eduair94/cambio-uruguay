@@ -71,6 +71,17 @@ const emptySummary = (note: string): RunSummary => ({
   note,
 });
 
+/**
+ * How much retrieved text the composer gets.
+ *
+ * Raised from 4 500 after reading the first real comment the bot posted: it was accurate and
+ * usefully corrected the asker, but it named no figure at all, because none of the page's figures
+ * had made it into the context. The number rule is not the problem — the context was.
+ */
+const CONTEXT_CHARS = 9000;
+/** Slices of the chosen page to hand the composer. The whole page, in practice, for most pages. */
+const CONTEXT_CHUNKS = 16;
+
 /** Does the link we are about to publish actually resolve? A 404 in a comment is worse than silence. */
 async function linkResolves(url: string): Promise<boolean> {
   try {
@@ -148,6 +159,17 @@ interface DeliverInput {
   post: RedditPostRaw;
   chosen: RetrievedPage;
   support: readonly RetrievedPage[];
+  /**
+   * The chosen page with MUCH more of its text than the ranking returned.
+   *
+   * The ranking hands back the four best-matching slices, which is right for deciding WHICH page
+   * answers the question and wrong for writing the answer. The composer may only use figures that
+   * appear in what it was given, so a thin context does not produce a cautious reply — it produces
+   * a vague one. Measured on the first real comment: the page stated the exemption, the 80 UI
+   * credit and the 15-day validity, none of the three were in the four slices, and the reply came
+   * out true but generic. Deciding needs precision; writing needs breadth.
+   */
+  contextPage?: RetrievedPage;
   judgeConfidence: number;
   judgeReason: string;
   cfg: BotConfig;
@@ -169,6 +191,7 @@ async function deliverReply({
   post,
   chosen,
   support,
+  contextPage,
   judgeConfidence,
   judgeReason,
   cfg,
@@ -176,7 +199,8 @@ async function deliverReply({
   reject,
 }: DeliverInput): Promise<boolean> {
   const url = `${cfg.baseUrl}${chosen.path}`;
-  const context = contextOf([chosen, ...support], 4500);
+  // Breadth on the page we are quoting, one slice each from the rest.
+  const context = contextOf([contextPage ?? chosen, ...support.map((p) => ({ ...p, chunks: p.chunks.slice(0, 1) }))], CONTEXT_CHARS);
 
   // Fetch the attachment only now: one download, for the single thread we are actually answering.
   // Many of these threads ARE the screenshot — "me llegó esto, es normal?" over a photo of the
@@ -318,6 +342,7 @@ async function answerParkedThread(
   return deliverReply({
     post,
     chosen,
+    contextPage: retriever.pageFor(pagePath, vector, CONTEXT_CHUNKS) ?? undefined,
     support: [],
     judgeConfidence: verdict.confidence,
     judgeReason: verdict.reason,
@@ -397,6 +422,7 @@ export async function answerThreadById(postId: string, cfg: BotConfig = botConfi
   const done = await deliverReply({
     post,
     chosen,
+    contextPage: retriever.pageFor(chosen.path, vector, CONTEXT_CHUNKS) ?? undefined,
     support: pages.filter((page) => page.path !== chosen.path),
     judgeConfidence: judged.confidence,
     judgeReason: judged.reason,
@@ -623,6 +649,7 @@ export async function runOnce(cfg: BotConfig = botConfig()): Promise<RunSummary>
     const done = await deliverReply({
       post,
       chosen,
+      contextPage: retriever.pageFor(chosen.path, vector, CONTEXT_CHUNKS) ?? undefined,
       support: pages.filter((page) => page.path !== chosen.path),
       judgeConfidence: verdict.confidence,
       judgeReason: verdict.reason,

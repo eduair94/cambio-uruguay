@@ -11,6 +11,7 @@ import { botConfig, botCredentialsPresent, type BotConfig } from "./config";
 import { pauseUntil, postedWithin, readSnapshot, recordWatch } from "./ledger";
 import { shouldTrip } from "./limits";
 import { fetchCommentStates } from "./post";
+import { fetchPublicCommentBodies } from "../reddit";
 import { smokeRecentPages } from "../gaps/smoke";
 
 /** How long a comment's score is still worth re-reading. After three days it has settled. */
@@ -24,6 +25,8 @@ export interface WatchSummary {
   negatives: number;
   tripped: boolean;
   /** Recently published pages that answered, and the ones that did not. */
+  /** Comentarios que existen para la cuenta y no para nadie más. */
+  invisible: number;
   pagesChecked: number;
   pagesBroken: number;
   note: string;
@@ -35,6 +38,7 @@ export async function runWatch(cfg: BotConfig = botConfig()): Promise<WatchSumma
     updated: 0,
     negatives: 0,
     tripped: false,
+    invisible: 0,
     pagesChecked: 0,
     pagesBroken: 0,
     note: "",
@@ -57,6 +61,35 @@ export async function runWatch(cfg: BotConfig = botConfig()): Promise<WatchSumma
   const fullnames = rows.map((row) => row.commentFullname).filter(Boolean);
   const states = await fetchCommentStates(fullnames, cfg);
   if (!states.size) return { ...summary, note: "Reddit no devolvió estado (¿token?)" };
+
+  // The same comments as ANYONE ELSE sees them. Not redundant with the line above: a shadowbanned
+  // account sees its own comments perfectly — score, body, everything — so the authored view says
+  // "all good" forever while nobody on Reddit can read a word of it. That is not hypothetical; it
+  // is what happened to the first comment this bot ever posted, and only the anonymous view saw it.
+  const publicBodies = await fetchPublicCommentBodies(fullnames);
+  const invisible = fullnames.filter((name) => {
+    const body = publicBodies.get(name);
+    return body === undefined || body === "[removed]" || body === "[deleted]";
+  });
+  summary.invisible = invisible.length;
+
+  // Every comment invisible is the account itself being filtered, not one bad answer. Posting more
+  // only deepens the spam signal against it, so this pauses the bot rather than counting downvotes.
+  if (invisible.length && invisible.length === fullnames.length) {
+    const until = new Date(Date.now() + cfg.breakerPauseHours * 60 * 60 * 1000);
+    await pauseUntil(until, "todos los comentarios invisibles para terceros (¿shadowban?)");
+    summary.tripped = true;
+    await notifyAdmin(
+      `🛑 *El bot parece shadowbaneado*
+Los ${fullnames.length} comentarios recientes existen para la ` +
+        `cuenta y son \`[removed]\` para cualquier otro. Eso no es un comentario malo: es la cuenta ` +
+        `filtrada por Reddit. Pausado hasta ${until.toISOString()}.
+
+` +
+        `Apelar en reddit.com/appeals, o dejar madurar la cuenta participando sin enlaces.`
+    );
+    return { ...summary, note: "shadowban detectado — pausado" };
+  }
 
   const bad: string[] = [];
   for (const row of rows) {

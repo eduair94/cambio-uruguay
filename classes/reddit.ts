@@ -366,6 +366,36 @@ export async function fetchPostsByIds(ids: readonly string[]): Promise<RedditPos
   return out;
 }
 
+/**
+ * How our own comments look TO EVERYONE ELSE.
+ *
+ * Uses the app-only (anonymous) token on purpose, and that is the entire point. A shadowbanned
+ * account sees its own comments exactly as it posted them: score, body, everything normal. Checking
+ * with the bot's own credentials therefore reports "all good" forever while nobody on Reddit can
+ * see a word of it — which is what happened, on the first comment the bot ever posted.
+ *
+ * A comment that comes back as [removed] here, or does not come back at all, is invisible to the
+ * public no matter what the authored view says.
+ */
+export async function fetchPublicCommentBodies(fullnames: readonly string[]): Promise<Map<string, string>> {
+  const out = new Map<string, string>();
+  if (!redditConfigured() || !fullnames.length) return out;
+  for (let i = 0; i < fullnames.length; i += 100) {
+    const batch = fullnames.slice(i, i + 100);
+    const res = await api<Listing<{ name?: string; body?: string }>>('/api/info', { id: batch.join(',') });
+    const seen = new Set<string>();
+    for (const child of res?.data?.children ?? []) {
+      const d = child.data as { name?: string; body?: string };
+      if (!d?.name) continue;
+      seen.add(d.name);
+      out.set(d.name, d.body ?? '');
+    }
+    // Missing from the listing means gone as far as the public is concerned.
+    for (const name of batch) if (!seen.has(name)) out.set(name, '[removed]');
+  }
+  return out;
+}
+
 /** Hard stop per thread, so one 10k-comment megathread can't blow up a run. */
 const MAX_COMMENTS_PER_POST = 2000;
 /** `/api/morechildren` accepts at most 100 ids per call. */

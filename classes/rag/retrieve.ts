@@ -234,7 +234,7 @@ export class SiteRetriever {
    * already decided and the only open question is which of its passages to quote. Going through the
    * ranking would risk linking a different page than the one the question caused to exist.
    */
-  pageFor(path: string, queryVector: Float32Array | null): RetrievedPage | null {
+  pageFor(path: string, queryVector: Float32Array | null, limit = 4): RetrievedPage | null {
     const chunks = this.chunks
       .map((chunk, i) => ({ chunk, i }))
       .filter((entry) => entry.chunk.path === path);
@@ -254,7 +254,7 @@ export class SiteRetriever {
       tier: scored[0]!.chunk.tier,
       score: scored[0]!.cosine,
       cosine: scored[0]!.cosine,
-      chunks: scored.slice(0, 4),
+      chunks: scored.slice(0, limit),
     };
   }
 
