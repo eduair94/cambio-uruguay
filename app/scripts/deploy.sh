@@ -92,10 +92,24 @@ if [ -d "$APP_DIR/.output/public/_nuxt" ]; then
   cp -a -n "$APP_DIR/.output/public/_nuxt/." "$STAGING/public/_nuxt/"
   # Bound retained generations while leaving a wide margin over the 1h CDN TTL.
   #
-  # Was `+2`, which on a repo that deploys many times a day grew `.output` to
-  # 456 MB across ~16k files for a 17 MB build — and the cost landed on the
-  # `rm -rf` below, not here. `+1` is still 24x the 1h TTL that strands a client.
-  find "$STAGING/public/_nuxt" -type f -mtime +1 -delete
+  # This prune is close to a no-op and that is DELIBERATE — do not "fix" it
+  # without reading this. Two things were measured on the server (2026-08-18):
+  #
+  #   1. `-mtime` counts whole 24h periods, so `+2` means "older than THREE
+  #      days", not two. It matched 4 files out of 14.205. Lowering it to `+1`
+  #      (older than two days) matched the same 4. Age in days is simply the
+  #      wrong unit here.
+  #   2. The tree is big because of deploy FREQUENCY, not age: ~14k files and
+  #      407 MB, of which 13.411 were under a day old. Every deploy adds a
+  #      generation of chunks and `cp -a -n` keeps their original mtimes.
+  #
+  # So bounding this meaningfully needs hours (`-mmin +360` would drop 11.362
+  # files). That was left alone on purpose: `/root` has 130 GB free at 71% use,
+  # so the 407 MB buys nothing, while a shorter window raises the chance of
+  # 404ing a lazy chunk for a tab that was open or a laptop that was suspended.
+  # The `rm -rf` this was blamed for turned out to be I/O contention with the
+  # other pm2 jobs, not tree size, and it is off the critical path now anyway.
+  find "$STAGING/public/_nuxt" -type f -mtime +2 -delete
 fi
 
 # Nuxt reserves /_nuxt for generated files, so copy compatibility assets after
