@@ -50,7 +50,7 @@ const MAX_WORDS = 170;
  * by wishing you luck reads as copy-paste promotion, and gets removed as such — the moderators are
  * pattern-matching on exactly these strings, and so is every reader who has seen a marketing bot.
  */
-const BANNED_PHRASES = [
+export const BANNED_PHRASES = [
   // saludos y cierres de cortesía
   "espero que estes bien",
   "espero que esto te ayude",
@@ -102,7 +102,7 @@ const BANNED_PHRASES = [
  * Anchored on word boundaries, and only on forms with no rioplatense collision: `puede` and `tiene`
  * (third person) are perfectly normal and are NOT listed.
  */
-const TUTEO = [
+export const TUTEO = [
   "tienes",
   "puedes",
   "debes",
@@ -120,9 +120,9 @@ const TUTEO = [
 ];
 
 /** Emoji, symbol and pictograph ranges. A money answer with a rocket in it is an ad. */
-const EMOJI = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{1F000}-\u{1F02F}]/u;
+export const EMOJI = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{1F000}-\u{1F02F}]/u;
 
-const strip = (text: string): string =>
+export const strip = (text: string): string =>
   text
     .toLowerCase()
     .normalize("NFD")

@@ -350,6 +350,25 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Comentarios comunes, sin un solo enlace, para que la cuenta deje de ser una cuenta de ayer.
+      //
+      // Varios subs uruguayos borran por AutoModerator lo que escribe una cuenta sin karma: los dos
+      // primeros comentarios del bot volvieron [removed] en r/uruguay y en r/Burises el mismo día
+      // que uno en r/test se veía perfecto. Mientras eso siga así, currency-reddit-bot publica para
+      // nadie. Este pase escribe como máximo uno por corrida, en hilos que NO son nuestro tema, y
+      // SE APAGA SOLO al llegar a REDDIT_SOCIAL_KARMA_TARGET — comentar de más pasado ese punto es
+      // riesgo sin beneficio. Hereda los dos interruptores de currency-reddit-bot.
+      //
+      // Cada 45 minutos entre 12:00 y 23:59 UTC, desfasado de los :00 y :12 del bot de respuestas
+      // para que las dos apps no golpeen la API de Reddit en el mismo minuto.
+      name: "currency-reddit-social",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_reddit_social.js",
+      cron_restart: "5,50 12-23 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Clusters the questions the bot could not answer and writes a researched DRAFT (never a
       // page) to docs/reddit-gaps/ when four or more threads ask the same thing. 05:35 UTC.
       name: "currency-content-gaps",

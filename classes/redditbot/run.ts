@@ -80,6 +80,9 @@ const emptySummary = (note: string): RunSummary => ({
  * usefully corrected the asker, but it named no figure at all, because none of the page's figures
  * had made it into the context. The number rule is not the problem — the context was.
  */
+/** Franja de edad, en horas, dentro de la cual dos hilos se consideran igual de frescos. */
+const RECENCY_BUCKET_HOURS = 2;
+
 const CONTEXT_CHARS = 9000;
 /** Slices of the chosen page to hand the composer. The whole page, in practice, for most pages. */
 const CONTEXT_CHUNKS = 16;
@@ -587,12 +590,27 @@ export async function runOnce(cfg: BotConfig = botConfig()): Promise<RunSummary>
   //    job runs 65 times a day: an uncapped busy morning would spend the indexer's budget before
   //    lunch and leave the index permanently half-built. Whatever does not fit is not lost — the
   //    next run is twelve minutes away, and the ledger has not written these off.
+  //    El orden dentro del presupuesto es por FRANJA DE EDAD y recién después por afinidad léxica.
+  //    Puro léxico dejaba el hilo de hace veinte minutos esperando detrás de uno de hace seis horas
+  //    que casaba un poco mejor, y para cuando le llegaba el turno el hilo ya estaba muerto: en
+  //    Reddit un comentario que llega tarde no lo lee nadie, por buena que sea la respuesta. Puro
+  //    reloj tampoco sirve —gastaría los embeddings en lo primero que apareció, sea lo que sea—, así
+  //    que la franja de dos horas es el acuerdo: adentro de la franja gana el que más se parece.
+  const now = Date.now();
+  const ageBucket = (post: RedditPostRaw): number =>
+    Math.floor((now - post.createdUtc * 1000) / (RECENCY_BUCKET_HOURS * 3_600_000));
+
   const scored = candidates
     .map((post) => {
       const query = retrievalQuery(post);
-      return { post, query, lexical: retriever.rankWithVector(query, null, 1)[0]?.score ?? 0 };
+      return {
+        post,
+        query,
+        bucket: ageBucket(post),
+        lexical: retriever.rankWithVector(query, null, 1)[0]?.score ?? 0,
+      };
     })
-    .sort((a, b) => b.lexical - a.lexical);
+    .sort((a, b) => a.bucket - b.bucket || b.lexical - a.lexical);
 
   const shortlist = scored.slice(0, Math.max(1, cfg.maxCandidatesPerRun));
   if (scored.length > shortlist.length) {
@@ -614,8 +632,16 @@ export async function runOnce(cfg: BotConfig = botConfig()): Promise<RunSummary>
   }));
   summary.scored = ranked.length;
 
-  // Best first: if the run can only post once, it should post the one it is most sure about.
-  ranked.sort((a, b) => (b.pages[0]?.score ?? 0) - (a.pages[0]?.score ?? 0));
+  // Más nuevo primero, empatando por afinidad dentro de la misma franja.
+  //
+  // "El que mejor puntúa" parece lo correcto y no lo es: TODO lo que sale de acá todavía tiene que
+  // pasar el umbral de coseno, el margen y el juez, así que lo que se publica ya es una respuesta
+  // de la que estamos seguros — el ranking no elige entre buena y mala, elige entre dos buenas. Y
+  // entre dos buenas gana la que todavía tiene lectores.
+  ranked.sort(
+    (a, b) =>
+      ageBucket(a.post) - ageBucket(b.post) || (b.pages[0]?.score ?? 0) - (a.pages[0]?.score ?? 0)
+  );
 
   for (const { post, vector, pages } of ranked) {
     // 5. No query vector means the dense arm never ran, so `cosine` is 0 for everything and the

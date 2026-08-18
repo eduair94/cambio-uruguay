@@ -230,3 +230,29 @@ export async function fetchCommentStates(
   }
   return out;
 }
+
+/**
+ * Karma de la cuenta, o `null` si no se pudo leer.
+ *
+ * Vive acá porque acá vive el token de usuario. Lo usa el pase de comentarios comunes para saber
+ * cuándo parar: la cuenta empieza en cero y varios AutoModerator uruguayos filtran por karma, así
+ * que el número es literalmente la condición de salida de ese trabajo.
+ */
+export async function fetchAccountKarma(cfg: BotConfig = botConfig()): Promise<{ comment: number; link: number } | null> {
+  const token = await userToken(cfg);
+  if (!token) return null;
+  try {
+    const res = await throttled(() =>
+      fetch(`${API}/api/v1/me`, {
+        headers: { Authorization: `Bearer ${token}`, "User-Agent": cfg.userAgent },
+        signal: AbortSignal.timeout(TIMEOUT_MS),
+      })
+    );
+    if (!res.ok) return null;
+    const json = (await res.json()) as { comment_karma?: number; link_karma?: number };
+    return { comment: Number(json?.comment_karma ?? 0), link: Number(json?.link_karma ?? 0) };
+  } catch (error) {
+    console.warn(`[redditbot] no se pudo leer el karma: ${(error as Error).message}`);
+    return null;
+  }
+}

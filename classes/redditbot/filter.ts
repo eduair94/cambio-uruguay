@@ -205,6 +205,36 @@ export interface FilterVerdict {
 export const postText = (post: RedditPostRaw): string => strip(`${post.title} ${post.selftext}`);
 
 /**
+ * Which topic terms the text carries.
+ *
+ * Multi-word terms are substring matches; single words need boundaries so "iva" does not match
+ * "privado" and "tea" does not match "tarea".
+ */
+function topicHits(text: string): { strong: string[]; weak: string[]; matched: string[] } {
+  const hits = (terms: readonly string[]): string[] =>
+    terms.filter((term) =>
+      term.includes(" ") ? text.includes(term) : new RegExp(`(^|[^a-z0-9])${term}([^a-z0-9]|$)`).test(text)
+    );
+  const strong = hits(STRONG_TERMS);
+  const weak = hits(WEAK_TERMS);
+  return { strong, weak, matched: [...strong, ...weak] };
+}
+
+/**
+ * Is this thread about money at all? The topical half of `screenPost`, on its own.
+ *
+ * Returns the matched terms, empty when the thread is not ours. The separation exists because the
+ * karma-farming pass needs the opposite question — "is this NOT our subject" — and cannot ask it of
+ * `screenPost`, whose `off_topic` competes with a dozen other reasons: an aduana thread that is
+ * simply too old comes back `too_old`, and reading that as "not our subject" would put a joke on
+ * the exact thread the answering bot wants.
+ */
+export function moneyTopic(post: RedditPostRaw): string[] {
+  const { strong, weak, matched } = topicHits(postText(post));
+  return !strong.length && weak.length < 2 ? [] : matched;
+}
+
+/**
  * Everything a thread must clear before it costs an API call.
  *
  * `now` is injected so the age window is testable without mocking the clock.
@@ -246,16 +276,7 @@ export function screenPost(post: RedditPostRaw, cfg: BotConfig, now: number = Da
     return { ok: false, reason: "sensitive", matched: [] };
   }
 
-  // Multi-word terms are substring matches; single words need boundaries so "iva" does not match
-  // "privado" and "tea" does not match "tarea".
-  const hits = (terms: readonly string[]): string[] =>
-    terms.filter((term) =>
-      term.includes(" ") ? text.includes(term) : new RegExp(`(^|[^a-z0-9])${term}([^a-z0-9]|$)`).test(text)
-    );
-
-  const strong = hits(STRONG_TERMS);
-  const weak = hits(WEAK_TERMS);
-  const matched = [...strong, ...weak];
+  const { strong, weak, matched } = topicHits(text);
   // One unambiguous term, or two ambiguous ones. See the note on the lexicon.
   if (!strong.length && weak.length < 2) return { ok: false, reason: "off_topic", matched };
 
