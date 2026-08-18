@@ -18,6 +18,7 @@ import { askConfig, type AskConfig } from "./config";
 import { checkNovelty } from "./novelty";
 import { attemptsToday, reapDeadPosts } from "./reap";
 import { currentTopics, readSubPulse } from "./research";
+import { subWritable } from "../subrules";
 import { askRetryHint, validateAsk } from "./validate";
 
 export interface AskSummary {
@@ -106,6 +107,10 @@ export async function runAskPass(cfg: AskConfig = askConfig()): Promise<AskSumma
   if (intentos >= cfg.maxPerDay) {
     return { ...summary, note: `tope del día alcanzado (${intentos}/${cfg.maxPerDay} publicaciones, retiradas incluidas)` };
   }
+
+  // El portón, antes de gastar una llamada a Opus en escribir para un sub donde no se puede hablar.
+  const gate = await subWritable(cfg.sub);
+  if (!gate.allowed) return { ...summary, note: `r/${cfg.sub} queda afuera: ${gate.reason}` };
 
   // 1. El sub: qué se publicó, qué funcionó, qué reglas tiene, qué flairs usa la gente.
   const pulse = await readSubPulse(cfg.sub);

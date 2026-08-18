@@ -32,6 +32,7 @@ import {
 } from "./ledger";
 import { authorAllowed, runAllowed, subAllowed } from "./limits";
 import { newestFirst, screenSocialPost } from "./pick";
+import { subWritable } from "../subrules";
 import { socialRetryHint, validateSocial } from "./validate";
 
 export interface SocialSummary {
@@ -92,13 +93,22 @@ export async function runSocialPass(cfg: SocialConfig = socialConfig()): Promise
   if (!gate.ok) return { ...summary, note: gate.reason ?? "freno" };
 
   const blocked = await blockedSubs(cfg);
-  const subs = cfg.subs.filter((sub) => {
+  const subs: string[] = [];
+  for (const sub of cfg.subs) {
     if (blocked.has(sub.toLowerCase())) {
       reject(`sub_borra:${sub}`);
-      return false;
+      continue;
     }
-    return subAllowed(cfg, snap, sub).ok;
-  });
+    // El portón: baneos y reglas publicadas. Ver classes/redditbot/subrules.ts — un sub que prohíbe
+    // bots por escrito lo venía diciendo desde el principio y nadie lo estaba leyendo.
+    const gate = await subWritable(sub);
+    if (!gate.allowed) {
+      reject(`sub_prohibido:${sub}`);
+      console.log(`[social] r/${sub} queda afuera: ${gate.reason}`);
+      continue;
+    }
+    if (subAllowed(cfg, snap, sub).ok) subs.push(sub);
+  }
   if (!subs.length) return { ...summary, note: "ningún sub disponible (nos borran, o tope diario)" };
 
   const posts: RedditPostRaw[] = [];

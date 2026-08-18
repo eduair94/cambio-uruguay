@@ -11,6 +11,7 @@
 // gets rate-limited first and banned second.
 
 import { botConfig, botCredentialsPresent, type BotConfig } from "./config";
+import { looksLikeBan } from "./subrules";
 
 const TOKEN_URL = "https://www.reddit.com/api/v1/access_token";
 const API = "https://oauth.reddit.com";
@@ -342,6 +343,16 @@ export async function submitPost(
     };
     const errors = json?.json?.errors ?? [];
     if (!res.ok || errors.length) {
+      // Un ban no viene como código HTTP: viene como SUBREDDIT_NOTALLOWED dentro de un 200. Sin
+      // distinguirlo, el pase lo trata como un fallo cualquiera y vuelve a intentar mañana, y
+      // pasado — que es el patrón por el que un ban de sub escala a una suspensión de cuenta.
+      if (looksLikeBan(errors)) {
+        console.error(
+          `[redditbot] r/${sub} BANEÓ a la cuenta. Agregá "${sub.toLowerCase()}" a BANNED_SUBS en ` +
+            `classes/redditbot/subrules.ts antes de que el cron lo vuelva a intentar.`
+        );
+        return null;
+      }
       console.warn(`[redditbot] Reddit rechazó el post (${res.status}): ${JSON.stringify(errors).slice(0, 300)}`);
       return null;
     }
