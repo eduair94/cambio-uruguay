@@ -95,6 +95,17 @@
             </v-chip>
           </div>
         </div>
+        <div class="text-caption text-medium-emphasis mt-2 d-flex align-center flex-wrap ga-1">
+          <v-icon size="x-small">{{
+            isLoggedIn ? 'mdi-cloud-check-outline' : 'mdi-laptop'
+          }}</v-icon>
+          <span v-if="isLoggedIn">Sincronizado con tu cuenta.</span>
+          <span v-else>
+            Guardado en este navegador.
+            <NuxtLink :to="localePath('/conectar')">Iniciá sesión</NuxtLink> para sincronizarlas en
+            tus dispositivos.
+          </span>
+        </div>
       </v-card-text>
     </v-card>
 
@@ -236,7 +247,7 @@
                       <v-chip
                         size="x-small"
                         label
-                        :style="{ background: b.color, color: '#fff' }"
+                        :style="{ background: b.color, color: readableText(b.color) }"
                         >{{ b.bankName }}</v-chip
                       >
                     </span>
@@ -293,6 +304,8 @@ import {
   type BankosDiscountsResponse,
   type BankosItem,
 } from '~/utils/bankos'
+import { useBankosCardsStore } from '~/stores/bankosCards'
+import { useAuthStore } from '~/stores/auth'
 
 const localePath = useLocalePath()
 
@@ -303,41 +316,28 @@ const cardsByBank = computed<Record<string, typeof BANKOS_CARDS>>(() => {
   return m
 })
 
-const STORAGE_KEY = 'bankos_cards_v1'
-const selectedCards = ref<string[]>([])
-const selected = computed(() => new Set(selectedCards.value))
-const selectedBankIds = computed(() => bankIdsForCards(selectedCards.value))
+// Selection lives in a pinia store: localStorage for anonymous users, synced to the account on
+// login (the firebase.client plugin calls hydrateFromAccount, unioning local + saved). The store
+// owns persistence, so the page just reads/mutates it.
+const cardsStore = useBankosCardsStore()
+const auth = useAuthStore()
+const isLoggedIn = computed(() => auth.isLoggedIn)
+
+const selectedCards = computed(() => cardsStore.cards)
+const selected = computed(() => new Set(cardsStore.cards))
+const selectedBankIds = computed(() => bankIdsForCards(cardsStore.cards))
 
 function toggleCard(id: string) {
-  selectedCards.value = selected.value.has(id)
-    ? selectedCards.value.filter(c => c !== id)
-    : [...selectedCards.value, id]
+  cardsStore.toggle(id)
 }
 function selectAll() {
-  selectedCards.value = BANKOS_CARDS.map(c => c.id)
+  cardsStore.selectAll()
 }
 function clearAll() {
-  selectedCards.value = []
+  cardsStore.clear()
 }
 
-onMounted(() => {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw)
-      selectedCards.value = JSON.parse(raw).filter((id: string) =>
-        BANKOS_CARDS.some(c => c.id === id)
-      )
-  } catch {
-    /* ignore */
-  }
-})
-watch(
-  selectedCards,
-  v => {
-    if (import.meta.client) localStorage.setItem(STORAGE_KEY, JSON.stringify(v))
-  },
-  { deep: true }
-)
+onMounted(() => cardsStore.loadLocal())
 
 // --- Data ---
 const banksParam = computed(() => [...selectedBankIds.value].sort().join(','))
@@ -488,6 +488,20 @@ function bestDiscount(it: BankosItem): string {
   return ''
 }
 
+/** Foreground (#fff or near-black) that keeps ≥4.5:1 on an arbitrary brand colour. */
+function readableText(hex: string): string {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex)
+  if (!m) return '#ffffff'
+  const n = m[1]
+  const lin = (v: number) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)
+  const L =
+    0.2126 * lin(parseInt(n.slice(0, 2), 16) / 255) +
+    0.7152 * lin(parseInt(n.slice(2, 4), 16) / 255) +
+    0.0722 * lin(parseInt(n.slice(4, 6), 16) / 255)
+  // contrast vs white = 1.05/(L+0.05); vs near-black = (L+0.05)/0.05
+  return 1.05 / (L + 0.05) >= (L + 0.05) / 0.05 ? '#ffffff' : '#1a2027'
+}
+
 function popupFor(b: any): string {
   const it: BankosItem = b._item
   const esc = (s: string) =>
@@ -501,7 +515,10 @@ function popupFor(b: any): string {
       const parts: string[] = []
       if (bk.creditDescription) parts.push(`Crédito: ${esc(bk.creditDescription)}`)
       if (bk.debitDescription) parts.push(`Débito: ${esc(bk.debitDescription)}`)
-      return `<div style="margin-top:4px"><strong style="color:${esc(bk.color)}">${esc(bk.bankName)}</strong><br>${parts.join('<br>')}</div>`
+      // Colour lives in a swatch, never the label text — a light brand colour as text
+      // fails contrast on the popup's white background (Club El País, Mercado Pago).
+      const swatch = `<span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${esc(bk.color)};margin-right:4px;vertical-align:middle"></span>`
+      return `<div style="margin-top:4px">${swatch}<strong>${esc(bk.bankName)}</strong><br>${parts.join('<br>')}</div>`
     })
     .join('')
   const dir = esc(b.mapUrl)

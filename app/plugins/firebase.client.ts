@@ -5,6 +5,7 @@ import { useAuthFetch } from '~/composables/useAuthFetch'
 import { hydrateFavorites, resetFavoritesState } from '~/composables/useFavoritesState'
 import { useImportCartStore } from '~/stores/importCart'
 import { useWatchlistStore } from '~/stores/watchlist'
+import { useBankosCardsStore } from '~/stores/bankosCards'
 
 export default defineNuxtPlugin(() => {
   const cfg = useRuntimeConfig().public.firebase
@@ -26,6 +27,7 @@ export default defineNuxtPlugin(() => {
 
   const cart = useImportCartStore()
   const watchlist = useWatchlistStore()
+  const bankosCards = useBankosCardsStore()
 
   onAuthStateChanged(auth, async fbUser => {
     store.setUser(fbUser)
@@ -34,10 +36,12 @@ export default defineNuxtPlugin(() => {
       await hydrateFavorites(authFetch)
       await cart.hydrateFromAccount(authFetch)
       await watchlist.hydrateFromAccount(authFetch)
+      await bankosCards.hydrateFromAccount(authFetch)
     } else {
       resetFavoritesState()
       cart.onLogout()
       watchlist.onLogout()
+      bankosCards.onLogout()
     }
   })
 

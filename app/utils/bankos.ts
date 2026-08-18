@@ -96,3 +96,21 @@ export function bankIdsForCards(cardIds: string[]): string[] {
   }
   return [...out]
 }
+
+/** localStorage key for the anonymous card selection. */
+export const BANKOS_CARDS_STORAGE_KEY = 'bankos_cards_v1'
+
+/** Keep only known card ids, deduped, in catalog order — used on read from any source. */
+export function sanitizeCardIds(input: unknown): string[] {
+  const ids = new Set(
+    (Array.isArray(input) ? input : []).filter(
+      (id): id is string => typeof id === 'string' && id in BANKOS_CARD_BY_ID
+    )
+  )
+  return BANKOS_CARDS.filter(c => ids.has(c.id)).map(c => c.id)
+}
+
+/** Union of two card-id lists (both sanitized), so login never loses a selection. */
+export function mergeCardIds(a: unknown, b: unknown): string[] {
+  return sanitizeCardIds([...sanitizeCardIds(a), ...sanitizeCardIds(b)])
+}
