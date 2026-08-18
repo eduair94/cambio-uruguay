@@ -91,7 +91,11 @@ if [ -d "$APP_DIR/.output/public/_nuxt" ]; then
   mkdir -p "$STAGING/public/_nuxt"
   cp -a -n "$APP_DIR/.output/public/_nuxt/." "$STAGING/public/_nuxt/"
   # Bound retained generations while leaving a wide margin over the 1h CDN TTL.
-  find "$STAGING/public/_nuxt" -type f -mtime +2 -delete
+  #
+  # Was `+2`, which on a repo that deploys many times a day grew `.output` to
+  # 456 MB across ~16k files for a 17 MB build — and the cost landed on the
+  # `rm -rf` below, not here. `+1` is still 24x the 1h TTL that strands a client.
+  find "$STAGING/public/_nuxt" -type f -mtime +1 -delete
 fi
 
 # Nuxt reserves /_nuxt for generated files, so copy compatibility assets after
@@ -109,7 +113,30 @@ mv "$STAGING" "$APP_DIR/.output"
 log "Rolling reload (pm2 reload, zero-downtime)…"
 pm2 reload "$PM2_NAME" --update-env
 
-log "Cleaning previous build…"
-rm -rf "$PREV"
+# Delete the old tree DETACHED. By this line the swap and the rolling reload
+# have already happened: the site is live on the new build and nothing below
+# affects it. Measured on run 32086895800, this `rm -rf` was 1m35s of a 7m29s
+# deploy job — CI sat blocked on a directory removal after the deploy was
+# effectively done.
+#
+# Renamed to a unique path FIRST, then removed in the background: `$PREV` is a
+# fixed path, so if the next deploy started while a background rm still held it,
+# that deploy's `mv .output "$PREV"` would land inside a directory being
+# deleted. Renaming frees the name synchronously and makes the race impossible.
+#
+# `setsid` detaches from the SSH session's process group so the removal survives
+# the connection closing; without it the rm dies with the session and leaves the
+# trash behind. The `|| nohup` fallback covers a box with no setsid, and the
+# sweep of older `.output-trash-*` catches anything a reboot interrupted.
+log "Cleaning previous build (detached)…"
+if [ -d "$PREV" ]; then
+  TRASH="$APP_DIR/.output-trash-$$"
+  mv "$PREV" "$TRASH"
+fi
+if ls -d "$APP_DIR"/.output-trash-* >/dev/null 2>&1; then
+  { setsid rm -rf "$APP_DIR"/.output-trash-* >/dev/null 2>&1 </dev/null ||
+    nohup rm -rf "$APP_DIR"/.output-trash-* >/dev/null 2>&1 </dev/null; } &
+  disown 2>/dev/null || true
+fi
 
 log "Deploy complete: $(git -C "$REPO_DIR" rev-parse --short HEAD)"
