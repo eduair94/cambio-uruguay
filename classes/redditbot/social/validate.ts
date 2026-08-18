@@ -20,6 +20,7 @@ export type SocialRejectReason =
   | "markdown"
   | "too_many_sentences"
   | "invented_number"
+  | "fake_experience"
   | "self_disclosure";
 
 export interface SocialValidation {
@@ -43,6 +44,23 @@ const LIMITS: Record<SocialRegister, { chars: number; sentences: number }> = {
 };
 
 const MIN_CHARS = 15;
+
+/**
+ * Primera persona del pasado: cosas que sólo puede decir alguien que estuvo ahí.
+ *
+ * La cuenta no estuvo en ningún lado. Puede decir lo que se sabe —"el trámite del pasaporte es
+ * famoso por las esperas"— pero no puede decir que lo hizo, porque no lo hizo. La diferencia no es
+ * de estilo: una es información y la otra es una mentira chiquita, y la mentira chiquita es
+ * exactamente lo que hace que valga la pena desconfiar de todo lo demás que diga la cuenta.
+ *
+ * Se chequea el texto, no la intención, porque el prompt ya lo pedía y el modelo lo hizo igual.
+ */
+const FIRST_PERSON_STORY = [
+  "me paso", "me pasaron", "yo fui", "fui a", "fui al", "termine esperando", "termine yendo",
+  "tuve que ir", "espere", "tarde como", "me toco", "en mi caso", "cuando hice", "cuando fui",
+  "lo hice yo", "me atendieron", "me cobraron", "me dijeron en", "estuve", "yo tenia", "yo hice",
+  "a mi me", "mi hermano", "mi vieja", "mi viejo", "mi jefe", "mi trabajo", "un amigo mio",
+];
 
 /** Decir "soy un bot" en un chiste no es transparencia, es un comentario raro. La bio de la cuenta es el lugar. */
 const SELF_DISCLOSURE = ["soy un bot", "soy un robot", "como ia", "soy una ia", "inteligencia artificial", "modelo de lenguaje"];
@@ -74,6 +92,11 @@ export function validateSocial(
 
   if (EMOJI.test(text)) return { ok: false, reason: "emoji" };
   if (/^\s*[#>*-]\s|\*\*|^\s*\d+\.\s/m.test(text)) return { ok: false, reason: "markdown" };
+
+  const story = FIRST_PERSON_STORY.find((phrase) =>
+    new RegExp(`(^|[^a-z])${phrase}([^a-z]|$)`).test(flat)
+  );
+  if (story) return { ok: false, reason: "fake_experience", detail: story };
 
   const disclosure = SELF_DISCLOSURE.find((phrase) => flat.includes(phrase));
   if (disclosure) return { ok: false, reason: "self_disclosure", detail: disclosure };
@@ -114,6 +137,8 @@ export function socialRetryHint(result: SocialValidation): string {
       return "Demasiadas oraciones para este hilo. Dejá lo que contesta y borrá el resto.";
     case "invented_number":
       return `Sacá las cifras (${result.detail}): no están en lo que escribió la persona y no las podés verificar.`;
+    case "fake_experience":
+      return `"${result.detail}" cuenta algo que te habría pasado a vos, y no te pasó. Decí lo que se sabe del tema, sin ponerte de protagonista.`;
     case "self_disclosure":
       return "No digas que sos un bot ni una IA.";
     default:

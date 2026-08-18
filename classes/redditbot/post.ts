@@ -353,3 +353,33 @@ export async function submitPost(
     return null;
   }
 }
+
+/**
+ * Borrar algo que publicamos, comentario o post.
+ *
+ * Hace falta de verdad, no por prolijidad: la primera vez que este pase comentó en r/AskUruguayan
+ * escribió una anécdota personal inventada, en un hilo que pedía justamente eso. La regla nueva lo
+ * impide de ahora en más, pero lo ya publicado había que sacarlo, y no hay forma de sacarlo sin esto.
+ */
+export async function deleteThing(fullname: string, cfg: BotConfig = botConfig()): Promise<boolean> {
+  const token = await userToken(cfg);
+  if (!token) return false;
+  try {
+    const res = await throttled(() =>
+      fetch(`${API}/api/del`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/x-www-form-urlencoded",
+          "User-Agent": cfg.userAgent,
+        },
+        body: new URLSearchParams({ id: fullname }).toString(),
+        signal: AbortSignal.timeout(TIMEOUT_MS),
+      })
+    );
+    return res.ok;
+  } catch (error) {
+    console.warn(`[redditbot] no se pudo borrar ${fullname}: ${(error as Error).message}`);
+    return false;
+  }
+}

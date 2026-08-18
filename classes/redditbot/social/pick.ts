@@ -5,7 +5,7 @@
 // leer y testear de una sentada.
 
 import type { RedditPostRaw } from "../../reddit";
-import { moneyTopic, postText } from "../filter";
+import { moneyTopic, postText, strip } from "../filter";
 import type { SocialConfig } from "./config";
 
 /**
@@ -34,6 +34,26 @@ const NO_JOKE_TERMS = [
   "divorcio", "custodia", "separacion", "infidelidad",
 ];
 
+/**
+ * Hilos que piden que cuentes lo que TE pasó a vos.
+ *
+ * Son la mitad de r/AskUruguayan y son, de todos, el único donde esta cuenta no puede participar
+ * honestamente: la respuesta que el hilo pide es una anécdota propia, y no hay ninguna. El primer
+ * comentario que dejó acá fue "sacar pasaporte en el Ministerio del Interior, terminé esperando una
+ * banda" — bien escrito, uruguayo, creíble, y falso. Sonar humano no vale nada si el precio es
+ * inventar una vida.
+ *
+ * No es lo mismo que un hilo que pregunta algo: "¿dónde consigo repuestos de bici?" se contesta con
+ * lo que uno sabe. "¿Cuál fue el peor trámite que hiciste?" sólo se contesta habiendo estado ahí.
+ */
+const WANTS_ANECDOTE = [
+  "que te paso", "que les paso", "te paso alguna vez", "cual fue tu", "cual fue el peor",
+  "cual es tu", "cuentenme", "contame tu", "cuenten sus", "sus historias", "anecdota", "anecdotas",
+  "experiencias", "tu experiencia", "su experiencia", "les toco", "te toco", "hiciste alguna vez",
+  "alguna vez te", "en que trabajaste", "como conociste", "como fue tu", "peor trabajo que",
+  "perdiste mas", "perdiste mas tiempo", "mas te arrepentis", "te arrepentis de",
+];
+
 export type SocialSkipReason =
   | "too_new"
   | "too_old"
@@ -43,6 +63,7 @@ export type SocialSkipReason =
   | "deleted_author"
   | "our_topic"
   | "no_jokes"
+  | "wants_anecdote"
   | "crowded"
   | "downvoted"
   | "too_short"
@@ -78,6 +99,10 @@ export function screenSocialPost(post: RedditPostRaw, cfg: SocialConfig, now: nu
 
   const text = postText(post);
   if (NO_JOKE_TERMS.some((term) => text.includes(term))) return { ok: false, reason: "no_jokes" };
+
+  // Lo que pide el hilo es una anécdota propia, y no tenemos ninguna. Ver WANTS_ANECDOTE.
+  const titulo = strip(post.title);
+  if (WANTS_ANECDOTE.some((term) => titulo.includes(term))) return { ok: false, reason: "wants_anecdote" };
 
   // Un link externo suele ser una nota de prensa, y comentar noticias es el camino corto a opinar de
   // política. Texto propio o foto: ahí hay algo de la persona a lo que responder.

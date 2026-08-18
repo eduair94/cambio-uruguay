@@ -104,6 +104,26 @@ describe("social/pick — dónde se puede comentar", () => {
     expect(screenSocialPost(post({ author: "AutoModerator" }), cfg, NOW).reason).toBe("deleted_author");
   });
 
+  it("no entra donde lo que se pide es una anécdota propia", () => {
+    // El comentario que motivó la regla: en "¿en qué trámite perdiste más tiempo?" escribió
+    // "sacar pasaporte, terminé esperando una banda". Bien escrito, uruguayo, creíble y falso.
+    // Sonar humano no vale nada si el precio es inventar una vida.
+    for (const title of [
+      "¿En qué trámite del Estado uruguayo perdiste más tiempo y paciencia?",
+      "¿Cuál fue el peor trabajo que tuvieron?",
+      "Cuéntenme sus anécdotas de mudanzas",
+      "¿Qué te pasó la primera vez que manejaste?",
+    ]) {
+      expect(screenSocialPost(post({ title }), cfg, NOW).reason, title).toBe("wants_anecdote");
+    }
+  });
+
+  it("sí entra donde se pregunta algo que se puede saber", () => {
+    // La distinción: "¿dónde consigo repuestos de bici?" se contesta con lo que uno sabe;
+    // "¿cuál fue tu peor trámite?" sólo se contesta habiendo estado ahí.
+    expect(screenSocialPost(post({ title: "¿Dónde consigo repuestos de bici en Montevideo?" }), cfg, NOW).ok).toBe(true);
+  });
+
   it("ordena por reloj, más nuevo primero", () => {
     const viejo = post({ id: "viejo", createdUtc: 1000 });
     const nuevo = post({ id: "nuevo", createdUtc: 9000 });
@@ -205,6 +225,17 @@ describe("social/validate — qué texto sale de la cuenta", () => {
     // Un chiste no necesita datos, y una cifra suelta en un comentario casual no la verifica nadie.
     const inventado = validateSocial("Andá al Cerro tipo 19:40 que el sol baja a los 340 metros exactos.", contexto);
     expect(inventado.reason).toBe("invented_number");
+  });
+
+  it("rechaza la anécdota inventada aunque suene perfecta", () => {
+    const inventada = "Sacar pasaporte en el Ministerio del Interior. Número temprano y todo, terminé esperando una banda.";
+    expect(validateSocial(inventada, contexto, "util").reason).toBe("fake_experience");
+    expect(validateSocial("En mi caso el trámite salió rápido, andá temprano nomás.", contexto, "util").reason).toBe("fake_experience");
+  });
+
+  it("deja decir lo que se sabe, sin ponerse de protagonista", () => {
+    const sabido = "Ese trámite tiene fama de esperas largas aunque saques número temprano, así que andá con tiempo.";
+    expect(validateSocial(sabido, contexto, "util").ok).toBe(true);
   });
 
   it("rechaza declararse bot: eso va en la bio, no en cada comentario", () => {
