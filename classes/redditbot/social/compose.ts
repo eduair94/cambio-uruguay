@@ -18,6 +18,7 @@
 //     uruguayo, suena a alguien imitando a un uruguayo, que es literalmente el problema.
 
 import { askStructured } from "../../ai_text";
+import { detectLang, type Lang } from "./language";
 
 /**
  * `util` = alguien preguntó algo y sabemos la respuesta. `liviano` = el hilo es una charla y se
@@ -38,6 +39,8 @@ export interface SocialDraft {
   register: SocialRegister;
   comment: string;
   why: string;
+  /** En qué idioma quedó escrito, que es en el que estaba el hilo. Lo necesita el validador. */
+  lang: Lang;
 }
 
 const SCHEMA = {
@@ -60,7 +63,7 @@ export const SOCIAL_VOICE =
   "a la fuerza: si alguien preguntó algo en serio le contestás en serio, si el hilo es una charla " +
   "entrás como en una charla, y si no tenés nada, no decís nada.";
 
-export function buildSocialPrompt(input: SocialComposeInput): string {
+export function buildSocialPrompt(input: SocialComposeInput & { lang: Lang }): string {
   const existing = input.existing.length
     ? `\nLO QUE YA COMENTARON (no repitas la misma idea)\n${input.existing.map((c) => `- ${c.slice(0, 180)}`).join("\n")}\n`
     : "";
@@ -94,7 +97,9 @@ Tiene que responder a ALGO CONCRETO de lo que escribió esta persona — un deta
 la situación puntual. Si lo que escribís serviría igual en otro hilo cualquiera, no sirve.
 
 CÓMO SUENA
-- Español uruguayo, de vos: "tenés", "fijate", "andá", "capaz que".
+${input.lang === "en"
+      ? "- El hilo está escrito en INGLÉS: contestá en inglés, natural y directo, sin traducir del\n  español. Es gente de afuera preguntando por Uruguay y contestarle en español no la ayuda."
+      : '- Español uruguayo, de vos: "tenés", "fijate", "andá", "capaz que".'}
 - Como máximo UN modismo (bo, ta, de más, salado, ni ahí). Dos ya suena a imitación.
 - Sin saludo y sin despedida. Se entra al comentario por la mitad, como todo el mundo.
 - Sin emojis, sin viñetas, sin negritas, sin títulos.
@@ -137,8 +142,9 @@ export function questionLike(title: string): boolean {
 }
 
 export async function composeSocial(input: SocialComposeInput, extraHint = ""): Promise<SocialDraft | null> {
+  const lang = detectLang(`${input.postTitle} ${input.postBody}`);
   const draft = await askStructured<SocialDraft>(
-    `${buildSocialPrompt(input)}${extraHint ? `\n\nCORRECCIÓN SOBRE EL INTENTO ANTERIOR\n${extraHint}` : ""}`,
+    `${buildSocialPrompt({ ...input, lang })}${extraHint ? `\n\nCORRECCIÓN SOBRE EL INTENTO ANTERIOR\n${extraHint}` : ""}`,
     SCHEMA as unknown as Record<string, unknown>,
     { systemHint: SOCIAL_VOICE, timeoutMs: 90_000 }
   );
@@ -152,5 +158,6 @@ export async function composeSocial(input: SocialComposeInput, extraHint = ""): 
     register: !forced && draft.register === "liviano" ? "liviano" : "util",
     comment: String(draft.comment || "").trim(),
     why: String(draft.why || "").trim(),
+    lang,
   };
 }

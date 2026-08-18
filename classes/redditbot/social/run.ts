@@ -140,12 +140,12 @@ export async function runSocialPass(cfg: SocialConfig = socialConfig()): Promise
     }
 
     const postText = `${post.title}\n${post.selftext}`;
-    let check = validateSocial(draft.comment, postText, draft.register);
+    let check = validateSocial(draft.comment, postText, draft.register, draft.lang);
     if (!check.ok) {
       const retry = await composeSocial(ask, socialRetryHint(check));
       if (retry && !retry.skip && retry.comment) {
         draft = retry;
-        check = validateSocial(retry.comment, postText, retry.register);
+        check = validateSocial(retry.comment, postText, retry.register, retry.lang);
       }
     }
 

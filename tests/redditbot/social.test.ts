@@ -7,6 +7,7 @@ import { describe, expect, it } from "vitest";
 import type { RedditPostRaw } from "../../classes/reddit";
 import { socialConfig } from "../../classes/redditbot/social/config";
 import { questionLike } from "../../classes/redditbot/social/compose";
+import { detectLang } from "../../classes/redditbot/social/language";
 import { newestFirst, screenSocialPost } from "../../classes/redditbot/social/pick";
 import { socialRetryHint, validateSocial } from "../../classes/redditbot/social/validate";
 import { authorAllowed, runAllowed, subAllowed } from "../../classes/redditbot/social/limits";
@@ -245,6 +246,37 @@ describe("social/validate — qué texto sale de la cuenta", () => {
   it("le explica al modelo qué corregir", () => {
     expect(socialRetryHint({ ok: false, reason: "tuteo", detail: "puedes" })).toContain("puedes");
     expect(socialRetryHint({ ok: false, reason: "has_link" })).toContain("enlace");
+  });
+});
+
+describe("social/language — contestar en el idioma del hilo", () => {
+  it("reconoce la pregunta de un extranjero", () => {
+    // El caso real: media r/AskUruguayan la escriben extranjeros, y la primera respuesta útil del
+    // bot contestó en español impecable una pregunta hecha en inglés.
+    expect(detectLang("What is a typical schedule like for primary school in ANEP? I heard it was 4 hours")).toBe("en");
+  });
+
+  it("reconoce el español aunque tenga palabras en inglés", () => {
+    expect(detectLang("¿Alguien sabe si conviene comprar una notebook gaming acá o traerla de afuera?")).toBe("es");
+  });
+
+  it("ante la duda contesta en español, que es el idioma del lugar", () => {
+    expect(detectLang("Help")).toBe("es");
+    expect(detectLang("")).toBe("es");
+  });
+});
+
+describe("social/validate — las reglas del español no se le aplican al inglés", () => {
+  const ctx = "What is a typical schedule for primary school in ANEP?";
+  it("no marca tuteo en un texto en inglés", () => {
+    // "you can" dispararía media lista de voseo si se aplicara igual.
+    expect(validateSocial("Depends on the school: single shift is the common one and runs about four hours.", ctx, "util", "en").ok).toBe(true);
+  });
+
+  it("pero sigue sin poder inventar experiencias ni poner enlaces, en cualquier idioma", () => {
+    expect(validateSocial("I went there last year and it took forever, bring a book with you.", ctx, "util", "en").reason).toBe("fake_experience");
+    expect(validateSocial("Check the schedule here https://anep.edu.uy and you will see it.", ctx, "util", "en").reason).toBe("has_link");
+    expect(validateSocial("Great question, single shift runs about four hours in most schools.", ctx, "util", "en").reason).toBe("banned_phrase");
   });
 });
 

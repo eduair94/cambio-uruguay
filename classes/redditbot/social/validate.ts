@@ -7,6 +7,7 @@
 
 import { BANNED_PHRASES, EMOJI, TUTEO, extractLinks, inventedNumbers, strip } from "../validate";
 import type { SocialRegister } from "./compose";
+import type { Lang } from "./language";
 
 export type SocialRejectReason =
   | "empty"
@@ -55,6 +56,19 @@ const MIN_CHARS = 15;
  *
  * Se chequea el texto, no la intención, porque el prompt ya lo pedía y el modelo lo hizo igual.
  */
+/** Lo mismo en inglés: el hilo puede estar en inglés, la cuenta sigue sin haber estado en ningún lado. */
+const FIRST_PERSON_STORY_EN = [
+  "i went", "i had to", "i waited", "i did", "in my case", "happened to me", "i was there",
+  "my brother", "my sister", "my mom", "my dad", "my boss", "when i moved", "i lived",
+];
+
+/** Muletillas de manual, versión inglesa. Las españolas no aplican a un texto en inglés. */
+const BANNED_EN = [
+  "hope this helps", "hope that helps", "great question", "good question", "feel free to",
+  "as an ai", "i'm an ai", "in conclusion", "it's important to note", "let me know if",
+  "best of luck", "keep in mind that it", "to summarize",
+];
+
 const FIRST_PERSON_STORY = [
   "me paso", "me pasaron", "yo fui", "fui a", "fui al", "termine esperando", "termine yendo",
   "tuve que ir", "espere", "tarde como", "me toco", "en mi caso", "cuando hice", "cuando fui",
@@ -68,7 +82,8 @@ const SELF_DISCLOSURE = ["soy un bot", "soy un robot", "como ia", "soy una ia", 
 export function validateSocial(
   comment: string,
   postText: string,
-  register: SocialRegister = "liviano"
+  register: SocialRegister = "liviano",
+  lang: Lang = "es"
 ): SocialValidation {
   const cap = LIMITS[register] ?? LIMITS.liviano;
   const text = comment.trim();
@@ -84,16 +99,20 @@ export function validateSocial(
   const flat = strip(text);
   if (flat.includes("cambio-uruguay") || flat.includes("cambio uruguay")) return { ok: false, reason: "mentions_site" };
 
-  const banned = BANNED_PHRASES.find((phrase) => flat.includes(phrase));
+  const banned = (lang === "en" ? BANNED_EN : BANNED_PHRASES).find((phrase) => flat.includes(phrase));
   if (banned) return { ok: false, reason: "banned_phrase", detail: banned };
 
-  const tuteo = TUTEO.find((form) => new RegExp(`(^|[^a-z])${form}([^a-z]|$)`).test(flat));
-  if (tuteo) return { ok: false, reason: "tuteo", detail: tuteo };
+  // El voseo es la regla del español rioplatense; aplicársela a un texto en inglés no significa
+  // nada, y "you can" dispararía media lista.
+  if (lang === "es") {
+    const tuteo = TUTEO.find((form) => new RegExp(`(^|[^a-z])${form}([^a-z]|$)`).test(flat));
+    if (tuteo) return { ok: false, reason: "tuteo", detail: tuteo };
+  }
 
   if (EMOJI.test(text)) return { ok: false, reason: "emoji" };
   if (/^\s*[#>*-]\s|\*\*|^\s*\d+\.\s/m.test(text)) return { ok: false, reason: "markdown" };
 
-  const story = FIRST_PERSON_STORY.find((phrase) =>
+  const story = [...FIRST_PERSON_STORY, ...FIRST_PERSON_STORY_EN].find((phrase) =>
     new RegExp(`(^|[^a-z])${phrase}([^a-z]|$)`).test(flat)
   );
   if (story) return { ok: false, reason: "fake_experience", detail: story };
