@@ -99,10 +99,10 @@ pm2 logs currency-rag-index
 La primera corrida crawlea ~2.400 páginas. Las siguientes son casi gratis, porque
 sólo se re-embebe el chunk cuyo `contentHash` cambió.
 
-### El índice tarda unos días en completarse, y está bien
+### Cuánto tarda el índice en completarse
 
-Los embeddings de Gemini se miden **por día**, y este proyecto está en free tier
-para ese endpoint. Verificado contra la API real:
+Los embeddings de Gemini se miden **por día y por proyecto**, y este proyecto está
+en free tier para ese endpoint. Verificado contra la API real:
 
 ```
 quotaId:    EmbedContentRequestsPerDayPerUserPerProjectPerModel-FreeTier
@@ -110,26 +110,29 @@ quotaValue: 1000
 ```
 
 Cada ítem de un batch cuenta como un request. Que `generateContent` se comporte
-como pago no implica que los embeddings lo sean — son cupos distintos.
+como pago no implica que los embeddings lo sean — son cupos distintos, y los 429
+**no son transitorios**: se reponen a las 00:00 UTC.
 
-El corpus tiene ~3.400 chunks embebibles, así que **el primer índice no entra en un
-día**. El diseño lo asume en tres lugares:
+El corpus medido son **2.309 chunks embebibles** (366 páginas de texto completo),
+más 1.966 páginas programáticas que no se embeben nunca. Cuatro cosas hacen que
+eso entre:
 
-- las páginas programáticas (`/sucursal/*`, `/casa/*`, `/comparativas/*`… ~40% del
-  corpus) **no se embeben nunca**: son un título de plantilla, que es justo el caso
-  donde el brazo léxico gana y el denso no aporta
-- el indexador gasta `RAG_EMBED_DAILY_BUDGET` (700) y para; lo que no alcanzó
-  queda para mañana y se toma sin repetir nada
-- el bot tiene su propio tope por corrida (`REDDIT_BOT_MAX_CANDIDATES`), así que no
-  puede comerse la parte del indexador
+- las familias programáticas (`/sucursal/*`, `/casa/*`, `/comparativas/*`…) van
+  **sólo por el brazo léxico**: son un título de plantilla, justo donde el denso no
+  aporta y BM25 gana
+- el chunker **empaqueta secciones hermanas**, lo que bajó el corpus de 3.514 a
+  2.309 sin perder contenido
+- **`GEMINI_EMBED_KEYS` acepta varias claves** y el indexador rota cuando una se
+  queda sin cupo. La cuota es por proyecto, así que dos claves son 2.000/día. En
+  esta caja había dos claves distintas y se usaba una sola
+- el presupuesto se multiplica solo por la cantidad de claves (800 de cada 1.000;
+  el resto son las consultas del bot)
 
-Resultado: el índice converge en unos cinco días y después cuesta casi nada. En los
-logs vas a ver `N chunks quedaron sin embeber` — es el estado normal esos días, no
-un error.
+Con dos claves el índice se completa en **dos corridas**. En los logs vas a ver
+`N chunks quedaron sin embeber` mientras tanto: es el estado normal, no un error.
 
-**Si habilitás facturación para embeddings**, subí `RAG_EMBED_DAILY_BUDGET` a 5000
-y el índice se arma en una sola pasada. El corpus entero son ~1,5 M de tokens una
-única vez, o sea centavos.
+**Con facturación habilitada** poné `RAG_EMBED_DAILY_BUDGET` alto y se arma de una:
+el corpus entero son ~2 M de caracteres, o sea centavos.
 
 Verificar:
 
