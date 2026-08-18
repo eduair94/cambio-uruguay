@@ -12,14 +12,18 @@
 import { notifyAdmin } from "../../notify";
 import { RedditSubmissionModel } from "../../models/RedditSubmission";
 import { botConfig } from "../config";
+import { DISCLOSURE_LINE_POST, withDisclosure } from "../disclosure";
 import { fetchLinkFlairs, submitPost } from "../post";
 import { composeAsk, type AskCandidate } from "./compose";
 import { askConfig, type AskConfig } from "./config";
 import { checkNovelty } from "./novelty";
+import { attemptsToday, reapDeadPosts } from "./reap";
 import { currentTopics, readSubPulse } from "./research";
 import { askRetryHint, validateAsk } from "./validate";
 
 export interface AskSummary {
+  /** Posts viejos retirados en esta corrida por no haber enganchado. */
+  reaped: number;
   researched: number;
   candidates: number;
   chosen: AskCandidate | null;
@@ -50,9 +54,19 @@ async function postedRecently(cfg: AskConfig): Promise<boolean> {
   return !!row;
 }
 
-/** Todo lo que escribimos antes, salga o no: repetirnos a nosotros mismos es peor que repetir al sub. */
+/**
+ * Lo que ya publicamos, para no repetirnos — que es peor que repetir al sub.
+ *
+ * Cuenta lo que EXISTIÓ en Reddit: publicado, y retirado también (alguien lo vio). No cuenta los
+ * ensayos. Un borrador que nunca salió no es una repetición de nada, y contarlo tenía una
+ * consecuencia concreta y absurda: el primer ensayo se bloqueaba a sí mismo, así que la pregunta
+ * que se revisó y se aprobó era exactamente la única que el filtro de novedad no dejaba publicar.
+ */
 async function ourTitles(): Promise<string[]> {
-  const rows = await RedditSubmissionModel.find({ createdAt: { $gte: new Date(Date.now() - 180 * DAY_MS) } })
+  const rows = await RedditSubmissionModel.find({
+    status: { $in: ["posted", "reaped"] },
+    createdAt: { $gte: new Date(Date.now() - 180 * DAY_MS) },
+  })
     .select({ title: 1 })
     .lean<Array<{ title: string }>>();
   return rows.map((row) => row.title).filter(Boolean);
@@ -61,6 +75,7 @@ async function ourTitles(): Promise<string[]> {
 export async function runAskPass(cfg: AskConfig = askConfig()): Promise<AskSummary> {
   const rejected: string[] = [];
   const summary: AskSummary = {
+    reaped: 0,
     researched: 0,
     candidates: 0,
     chosen: null,
@@ -72,7 +87,26 @@ export async function runAskPass(cfg: AskConfig = askConfig()): Promise<AskSumma
   };
 
   if (!cfg.enabled) return { ...summary, note: "apagado (REDDIT_ASK_ENABLED)" };
+
+  // 0. Antes que nada, sacar lo que no enganchó. Va primero por una razón concreta: al retirar un
+  //    post, el hueco que deja es el que habilita a publicar otro en esta misma corrida, y hacerlo
+  //    al final significaría esperar hasta la corrida siguiente para reemplazarlo.
+  if (!cfg.dryRun) {
+    const reaped = await reapDeadPosts(cfg);
+    summary.reaped = reaped.deleted;
+    if (reaped.checked) {
+      console.log(`[ask] revisados ${reaped.checked} posts: ${reaped.alive} con interacción, ${reaped.deleted} retirados`);
+    }
+  }
+
   if (await postedRecently(cfg)) return { ...summary, note: `ya publicamos hace menos de ${cfg.minGapHours} h` };
+
+  // El tope del día cuenta también lo retirado: es lo que impide que un mal día se convierta en una
+  // máquina de publicar y borrar.
+  const intentos = await attemptsToday();
+  if (intentos >= cfg.maxPerDay) {
+    return { ...summary, note: `tope del día alcanzado (${intentos}/${cfg.maxPerDay} publicaciones, retiradas incluidas)` };
+  }
 
   // 1. El sub: qué se publicó, qué funcionó, qué reglas tiene, qué flairs usa la gente.
   const pulse = await readSubPulse(cfg.sub);
@@ -141,10 +175,12 @@ export async function runAskPass(cfg: AskConfig = askConfig()): Promise<AskSumma
       summary.novelty = novelty.score;
       summary.flair = flair?.text ?? "";
 
+      // Firmado después de validar, igual que en el pase de comentarios.
+      const finalBody = withDisclosure(candidate.body, DISCLOSURE_LINE_POST);
       const base = {
         sub: cfg.sub,
         title: candidate.title,
-        body: candidate.body,
+        body: finalBody,
         flair: flair?.text ?? "",
         flairId: flair?.id ?? "",
         noveltyScore: novelty.score,
@@ -159,7 +195,7 @@ export async function runAskPass(cfg: AskConfig = askConfig()): Promise<AskSumma
         return { ...summary, note: "ensayo: no se publicó nada" };
       }
 
-      const submitted = await submitPost(cfg.sub, candidate.title, candidate.body, flair?.id ?? "", botConfig());
+      const submitted = await submitPost(cfg.sub, candidate.title, finalBody, flair?.id ?? "", botConfig());
       if (!submitted) {
         await RedditSubmissionModel.create({ ...base, status: "failed", rejectReason: "Reddit rechazó el post" });
         return { ...summary, note: "Reddit rechazó el post" };

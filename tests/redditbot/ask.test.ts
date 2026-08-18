@@ -7,6 +7,13 @@ import { describe, expect, it } from "vitest";
 import { checkNovelty, contentWords, similarity } from "../../classes/redditbot/ask/novelty";
 import { askRetryHint, validateAsk } from "../../classes/redditbot/ask/validate";
 import { todayInMontevideo } from "../../classes/redditbot/ask/run";
+import { hasEngagement } from "../../classes/redditbot/ask/reap";
+import {
+  DISCLOSURE_LINE_POST,
+  SITE_URL,
+  stripDisclosure,
+  withDisclosure,
+} from "../../classes/redditbot/disclosure";
 
 describe("ask/novelty — ¿esto ya se preguntó?", () => {
   it("ignora las palabras que están en todos los títulos del sub", () => {
@@ -100,5 +107,69 @@ describe("ask/run — el hoy que importa", () => {
     // noticias de un día que todavía no pasó.
     const tarde = new Date("2026-08-18T02:30:00Z"); // 23:30 del 17 en Montevideo
     expect(todayInMontevideo(tarde)).toContain("17");
+  });
+});
+
+describe("ask/disclosure — la firma del post", () => {
+  it("lleva un enlace que se puede tocar, no el dominio suelto", () => {
+    // Reddit no convierte "cambio-uruguay.com" a secas en un enlace en todos sus clientes, y un
+    // enlace que no se puede tocar no es un enlace.
+    expect(DISCLOSURE_LINE_POST).toContain(`(${SITE_URL})`);
+    expect(SITE_URL.startsWith("https://")).toBe(true);
+  });
+
+  it("se agrega al final, en su propio párrafo", () => {
+    const body = "Me quedé pensando en esto ayer.";
+    const firmado = withDisclosure(body);
+    expect(firmado.startsWith(body)).toBe(true);
+    expect(firmado.endsWith(DISCLOSURE_LINE_POST)).toBe(true);
+    expect(firmado).toContain("\n\n");
+  });
+
+  it("no se duplica si el texto ya venía firmado", () => {
+    // El reintento puede pasar el mismo borrador dos veces, y dos firmas seguidas se leen como algo roto.
+    const una = withDisclosure("Texto.");
+    expect(withDisclosure(una)).toBe(una);
+  });
+
+  it("se puede sacar para medir y validar lo que escribió el modelo", () => {
+    expect(stripDisclosure(withDisclosure("Texto del post."))).toBe("Texto del post.");
+  });
+});
+
+describe("ask/validate — la firma no se valida a sí misma", () => {
+  it("el post firmado pasa, aunque la firma tenga un enlace", () => {
+    // El bug que este test previene: la regla es "ningún enlace", la firma ES un enlace, y validar
+    // el cuerpo ya firmado rechazaría todos los posts por su propio pie de página.
+    const body = withDisclosure("Me quedé pensando en esto con el frío que anuncian para el finde.");
+    expect(body).toContain("https://");
+    expect(validateAsk("¿Cuánto aguantás sin prender la estufa?", body).ok).toBe(true);
+  });
+
+  it("pero un enlace puesto por el modelo sigue estando prohibido", () => {
+    const body = withDisclosure("Lo vi en https://otrositio.com y me quedé pensando en esto.");
+    expect(validateAsk("¿Cuánto aguantás sin prender la estufa?", body).reason).toBe("has_link");
+  });
+});
+
+describe("ask/reap — qué cuenta como interacción", () => {
+  it("un post recién nacido no tiene ninguna", () => {
+    // Reddit no da cero: todo post arranca con score 1 (el voto propio) y 0 comentarios.
+    expect(hasEngagement({ score: 1, numComments: 0 })).toBe(false);
+  });
+
+  it("un comentario alcanza, y un voto también", () => {
+    expect(hasEngagement({ score: 1, numComments: 1 })).toBe(true);
+    expect(hasEngagement({ score: 2, numComments: 0 })).toBe(true);
+  });
+
+  it("un voto negativo es interacción: alguien lo leyó y decidió algo", () => {
+    // No se borra un hilo que la gente contestó aunque haya salido mal — eso sería borrar el
+    // trabajo de quien se tomó la molestia de responder.
+    expect(hasEngagement({ score: 0, numComments: 3 })).toBe(true);
+  });
+
+  it("el hundido sin respuestas sí se retira", () => {
+    expect(hasEngagement({ score: 0, numComments: 0 })).toBe(false);
   });
 });

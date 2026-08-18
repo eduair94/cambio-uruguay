@@ -28,7 +28,7 @@ async function main(): Promise<void> {
   try {
     const summary = await runAskPass(cfg);
     console.log(
-      `[ask] ${summary.researched} títulos leídos → ${summary.candidates} candidatas; ${summary.note}` +
+      `[ask] ${summary.reaped} retirados; ${summary.researched} títulos leídos → ${summary.candidates} candidatas; ${summary.note}` +
         (summary.rejected.length ? `\n[ask] descartes:\n  - ${summary.rejected.join("\n  - ")}` : "")
     );
     if (summary.chosen) {

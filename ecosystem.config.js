@@ -382,12 +382,21 @@ module.exports = {
       //
       // Interruptores PROPIOS (REDDIT_ASK_ENABLED=1 + REDDIT_ASK_DRY_RUN=0), no los del bot de
       // comentarios: publicar un hilo se ve mucho más que comentar en uno ajeno, y encender una
-      // cosa no puede encender la otra. 13:40 UTC = 10:40 de Montevideo, cuando el sub está despierto.
+      // cosa no puede encender la otra.
+      //
+      // Cada media hora entre las 12 y las 23 UTC (9 a 20 de Montevideo), y no una vez por día,
+      // porque la corrida hace DOS cosas: publica —como mucho una vez, con 20 h de separación— y
+      // barre. El barrido retira el post que pasó una hora sin un solo comentario ni un solo voto,
+      // porque un perfil lleno de preguntas con cero respuestas es, para cualquiera que lo abra,
+      // exactamente lo que parece. Y como retirar libera el lugar, el reemplazo sale en esa misma
+      // corrida. El tope de REDDIT_ASK_MAX_PER_DAY cuenta las retiradas: sin eso, un día en que
+      // nada engancha serían doce publicadas y borradas, que se lee mucho peor que una ignorada.
+      // Una corrida sin nada que hacer no gasta nada — el freno está antes de la investigación.
       name: "currency-reddit-ask",
       autorestart: false,
       exec_mode: "fork",
       script: "dist/sync_reddit_ask.js",
-      cron_restart: "40 13 * * *",
+      cron_restart: "*/30 12-23 * * *",
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {

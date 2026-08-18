@@ -20,6 +20,15 @@ export interface AskConfig {
   maxAttempts: number;
   /** Parecido máximo con un título que ya existe. Ver novelty.ts. */
   noveltyLimit: number;
+  /** Minutos sin ninguna interacción tras los cuales el post se retira. Ver reap.ts. */
+  deadAfterMinutes: number;
+  /**
+   * Tope de publicaciones por día contando las retiradas.
+   *
+   * Sin esto, "si no engancha borrala y hacé otra" es una máquina de publicar y borrar todo el día:
+   * doce preguntas retiradas se leen mucho peor que una ignorada.
+   */
+  maxPerDay: number;
   model: "sonnet" | "opus";
 }
 
@@ -32,6 +41,8 @@ export function askConfig(): AskConfig {
     minGapHours: num("REDDIT_ASK_MIN_GAP_HOURS", 20),
     maxAttempts: num("REDDIT_ASK_MAX_ATTEMPTS", 2),
     noveltyLimit: num("REDDIT_ASK_NOVELTY_LIMIT", 0.45),
+    deadAfterMinutes: num("REDDIT_ASK_DEAD_AFTER_MIN", 60),
+    maxPerDay: num("REDDIT_ASK_MAX_PER_DAY", 3),
     // Opus por pedido explícito, y acá se justifica: es UNA llamada por día, contra las 200 diarias
     // que comparte el endpoint con el uso interactivo de una persona. El pase de comentarios, que
     // corre veinte veces al día, sigue en el default del servidor.

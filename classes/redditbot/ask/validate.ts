@@ -4,6 +4,7 @@
 // todo, con el nombre al lado, y si lo borra un mod queda registrado contra la cuenta. Así que acá
 // el filtro es más estricto que el de los comentarios, no menos.
 
+import { stripDisclosure } from "../disclosure";
 import { BANNED_PHRASES, EMOJI, TUTEO, extractLinks, strip } from "../validate";
 
 export type AskRejectReason =
@@ -51,7 +52,9 @@ const YES_NO_OPENERS = [
 
 export function validateAsk(title: string, body: string): AskValidation {
   const t = title.trim();
-  const b = body.trim();
+  // Sin la firma, por lo mismo que en los comentarios: la agrega el código, lleva enlace a
+  // propósito, y validarla sería rechazar el post por su propio pie de página.
+  const b = stripDisclosure(body).trim();
   if (!t) return { ok: false, reason: "empty" };
   if (t.length < TITLE_MIN) return { ok: false, reason: "title_too_short", detail: `${t.length} caracteres` };
   if (t.length > TITLE_MAX) return { ok: false, reason: "title_too_long", detail: `${t.length} caracteres` };

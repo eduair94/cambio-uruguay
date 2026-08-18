@@ -18,7 +18,13 @@ export interface RedditSubmissionDoc {
   body: string;
   flair: string;
   flairId: string;
-  status: "posted" | "dry_run" | "rejected" | "failed";
+  /**
+   * `reaped` = se publicó, pasó una hora sin que nadie lo comentara ni lo votara, y se borró.
+   * Es un estado propio y no `rejected` porque la fila sigue siendo memoria útil: el título cuenta
+   * para no repetir la pregunta, y la tasa de reaped es la medida de si el generador está
+   * funcionando o publicando cosas que a nadie le importan.
+   */
+  status: "posted" | "dry_run" | "rejected" | "failed" | "reaped";
   rejectReason: string;
   /** Cuán parecido era al título más parecido que ya existía en el sub, 0 a 1. */
   noveltyScore: number;
