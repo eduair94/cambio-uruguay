@@ -3,6 +3,7 @@
 // without a database.
 
 import { RedditBotReplyModel, type RedditBotReplyDoc } from "../models/RedditBotReply";
+import { RedditSocialCommentModel } from "../models/RedditSocialComment";
 
 export interface LedgerSnapshot {
   /** Comments actually posted in the last 24 h. */
@@ -26,13 +27,16 @@ const DAY_MS = 24 * 60 * 60 * 1000;
  */
 export async function seenPostIds(postIds: readonly string[]): Promise<Set<string>> {
   if (!postIds.length) return new Set();
-  const rows = await RedditBotReplyModel.find({
-    postId: { $in: [...postIds] },
-    status: { $ne: "waiting_page" },
-  })
-    .select({ postId: 1 })
-    .lean<Array<{ postId: string }>>();
-  return new Set(rows.map((r) => r.postId));
+  const [propias, sociales] = await Promise.all([
+    RedditBotReplyModel.find({ postId: { $in: [...postIds] }, status: { $ne: "waiting_page" } })
+      .select({ postId: 1 })
+      .lean<Array<{ postId: string }>>(),
+    // Un hilo donde ya comentamos sin enlace está hablado. Ver hasPostedTo.
+    RedditSocialCommentModel.find({ postId: { $in: [...postIds] }, status: { $in: ["posted", "failed"] } })
+      .select({ postId: 1 })
+      .lean<Array<{ postId: string }>>(),
+  ]);
+  return new Set([...propias, ...sociales].map((r) => r.postId));
 }
 
 /**
@@ -45,8 +49,14 @@ export async function seenPostIds(postIds: readonly string[]): Promise<Set<strin
  * `reddit_answer` refused every thread the cron had ever declined for being too old.
  */
 export async function hasPostedTo(postId: string): Promise<boolean> {
-  const row = await RedditBotReplyModel.findOne({ postId, status: "posted" }).select({ _id: 1 }).lean();
-  return !!row;
+  // Las DOS colecciones. El pase social ya consulta ésta antes de comentar; sin la vuelta simétrica,
+  // el bot de respuestas podía escribir sobre un hilo donde la misma cuenta ya había comentado, y
+  // para quien lee el hilo no hay dos bots: hay una cuenta hablando dos veces.
+  const [propia, social] = await Promise.all([
+    RedditBotReplyModel.findOne({ postId, status: "posted" }).select({ _id: 1 }).lean(),
+    RedditSocialCommentModel.findOne({ postId, status: { $in: ["posted", "failed"] } }).select({ _id: 1 }).lean(),
+  ]);
+  return !!propia || !!social;
 }
 
 /**

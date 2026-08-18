@@ -16,8 +16,12 @@ export interface SocialSnapshot {
   lastPostedAt: Date | null;
 }
 
-export async function socialSnapshot(): Promise<SocialSnapshot> {
-  const since = new Date(Date.now() - DAY_MS);
+export async function socialSnapshot(cfg?: SocialConfig): Promise<SocialSnapshot> {
+  // La ventana tiene que cubrir el freno más largo que se calcula sobre ella. El cooldown por
+  // autor es de 48 h y el snapshot traía 24: la mitad del freno no existía, y nadie lo iba a notar
+  // porque el síntoma es "le comentó dos veces a la misma persona", que se ve como casualidad.
+  const span = Math.max(DAY_MS, (cfg?.authorCooldownHours ?? 0) * 3_600_000);
+  const since = new Date(Date.now() - span);
   const rows = await RedditSocialCommentModel.find({ status: "posted", postedAt: { $gte: since } })
     .select({ sub: 1, author: 1, postedAt: 1 })
     .lean<Array<{ sub: string; author: string; postedAt: Date }>>();
@@ -47,7 +51,9 @@ export async function alreadyEngaged(postIds: readonly string[]): Promise<Set<st
   // contestado. Es el mismo error que ya se arregló una vez del otro lado: "lo miré" y "hablé" son
   // preguntas distintas, y sólo la segunda es la que no puede contestarse dos veces.
   const [social, replies] = await Promise.all([
-    RedditSocialCommentModel.find({ postId: { $in: ids }, status: { $in: ["posted", "dry_run"] } })
+    // "failed" también: un comentario que Reddit no confirmó puede existir igual, y volver a
+    // escribir sobre ese hilo es el único error de este pase que el lector ve como spam evidente.
+    RedditSocialCommentModel.find({ postId: { $in: ids }, status: { $in: ["posted", "dry_run", "failed"] } })
       .select({ postId: 1 })
       .lean<Array<{ postId: string }>>(),
     RedditBotReplyModel.find({ postId: { $in: ids }, status: "posted" })
@@ -113,15 +119,19 @@ export async function blockedSubs(cfg: SocialConfig): Promise<Map<string, number
     (a, b) => (b.postedAt?.getTime() ?? 0) - (a.postedAt?.getTime() ?? 0)
   );
 
+  // Claves en minúscula: r/AskUruguayan y "askuruguayan" son el mismo sub, y la lista de la env
+  // no tiene por qué venir con la grafía exacta de Reddit. Comparar tal cual dejaba activo un sub
+  // que nos estaba borrando sólo por una mayúscula.
   const streak = new Map<string, number>();
   const done = new Set<string>();
   for (const row of rows) {
-    if (done.has(row.sub) || row.visible === null || row.visible === undefined) continue;
+    const key = (row.sub || "").toLowerCase();
+    if (done.has(key) || row.visible === null || row.visible === undefined) continue;
     if (row.visible) {
-      done.add(row.sub);
+      done.add(key);
       continue;
     }
-    streak.set(row.sub, (streak.get(row.sub) ?? 0) + 1);
+    streak.set(key, (streak.get(key) ?? 0) + 1);
   }
   return new Map([...streak].filter(([, n]) => n >= cfg.subBlockStrikes));
 }

@@ -12,7 +12,6 @@
 import { notifyAdmin } from "../../notify";
 import { RedditSubmissionModel } from "../../models/RedditSubmission";
 import { botConfig } from "../config";
-import { DISCLOSURE_LINE_POST, withDisclosure } from "../disclosure";
 import { fetchLinkFlairs, submitPost } from "../post";
 import { composeAsk, type AskCandidate } from "./compose";
 import { askConfig, type AskConfig } from "./config";
@@ -120,6 +119,10 @@ export async function runAskPass(cfg: AskConfig = askConfig()): Promise<AskSumma
   // 3. Los flairs que el sub acepta hoy, por id — el texto no sirve para publicar.
   const flairs = await fetchLinkFlairs(cfg.sub, botConfig());
 
+  // Lo único contra lo que se pueden verificar las cifras de un post: la actualidad que se
+  // investigó, con su fuente. Cualquier número que no esté acá salió de la memoria del modelo.
+  const evidence = topics.map((topic) => `${topic.topic} ${topic.why} ${topic.source}`).join(String.fromCharCode(10));
+
   const known = [...pulse.titles, ...(await ourTitles())];
   const ours = await ourTitles();
 
@@ -145,7 +148,7 @@ export async function runAskPass(cfg: AskConfig = askConfig()): Promise<AskSumma
     }
 
     for (const candidate of candidates) {
-      const check = validateAsk(candidate.title, candidate.body);
+      const check = validateAsk(candidate.title, candidate.body, evidence);
       if (!check.ok) {
         rejected.push(`${check.reason}: ${candidate.title.slice(0, 60)}`);
         correction = askRetryHint(check);
@@ -175,12 +178,10 @@ export async function runAskPass(cfg: AskConfig = askConfig()): Promise<AskSumma
       summary.novelty = novelty.score;
       summary.flair = flair?.text ?? "";
 
-      // Firmado después de validar, igual que en el pase de comentarios.
-      const finalBody = withDisclosure(candidate.body, DISCLOSURE_LINE_POST);
       const base = {
         sub: cfg.sub,
         title: candidate.title,
-        body: finalBody,
+        body: candidate.body,
         flair: flair?.text ?? "",
         flairId: flair?.id ?? "",
         noveltyScore: novelty.score,
@@ -195,7 +196,7 @@ export async function runAskPass(cfg: AskConfig = askConfig()): Promise<AskSumma
         return { ...summary, note: "ensayo: no se publicó nada" };
       }
 
-      const submitted = await submitPost(cfg.sub, candidate.title, finalBody, flair?.id ?? "", botConfig());
+      const submitted = await submitPost(cfg.sub, candidate.title, candidate.body, flair?.id ?? "", botConfig());
       if (!submitted) {
         await RedditSubmissionModel.create({ ...base, status: "failed", rejectReason: "Reddit rechazó el post" });
         return { ...summary, note: "Reddit rechazó el post" };

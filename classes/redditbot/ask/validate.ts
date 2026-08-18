@@ -4,8 +4,17 @@
 // todo, con el nombre al lado, y si lo borra un mod queda registrado contra la cuenta. Así que acá
 // el filtro es más estricto que el de los comentarios, no menos.
 
-import { stripDisclosure } from "../disclosure";
-import { BANNED_PHRASES, EMOJI, TUTEO, extractLinks, strip } from "../validate";
+import {
+  BANNED_PHRASES,
+  BARE_DOMAIN,
+  EMOJI,
+  TUTEO,
+  TUTEO_ACCENT_SAFE,
+  extractLinks,
+  inventedNumbers,
+  softStrip,
+  strip,
+} from "../validate";
 
 export type AskRejectReason =
   | "empty"
@@ -20,6 +29,7 @@ export type AskRejectReason =
   | "emoji"
   | "politics"
   | "yes_no"
+  | "invented_number"
   | "repetitive";
 
 export interface AskValidation {
@@ -50,11 +60,17 @@ const YES_NO_OPENERS = [
   "vale la pena", "deberia", "estoy loco",
 ];
 
-export function validateAsk(title: string, body: string): AskValidation {
+/**
+ * `evidence` es la actualidad que se investigó, con sus fuentes.
+ *
+ * El prompt prohíbe explícitamente cualquier cifra que no venga de ahí, y hasta ahora nadie lo
+ * chequeaba: el pase de comentarios tiene esa regla desde el primer día y el de posts —que se lee
+ * mucho más— no tenía ninguna. Un post que abre con "el boleto sube 40 pesos" y el número está mal
+ * no es un error de estilo: es la cuenta afirmando algo falso en el título de su propio hilo.
+ */
+export function validateAsk(title: string, body: string, evidence = ""): AskValidation {
   const t = title.trim();
-  // Sin la firma, por lo mismo que en los comentarios: la agrega el código, lleva enlace a
-  // propósito, y validarla sería rechazar el post por su propio pie de página.
-  const b = stripDisclosure(body).trim();
+  const b = body.trim();
   if (!t) return { ok: false, reason: "empty" };
   if (t.length < TITLE_MIN) return { ok: false, reason: "title_too_short", detail: `${t.length} caracteres` };
   if (t.length > TITLE_MAX) return { ok: false, reason: "title_too_long", detail: `${t.length} caracteres` };
@@ -76,21 +92,38 @@ export function validateAsk(title: string, body: string): AskValidation {
   if (links.length) return { ok: false, reason: "has_link", detail: links.join(", ") };
   if (flat.includes("cambio-uruguay") || flat.includes("cambio uruguay")) return { ok: false, reason: "mentions_site" };
 
+  // Con sufijo opcional: "candidatos", "sindicatos", "ministros" y "políticos" son la misma cosa
+  // que el singular, y una lista que sólo mira el singular es una lista que se saltea con una ese.
   const politics = POLITICS.find((term) =>
-    term.includes(" ") ? flat.includes(term) : new RegExp(`(^|[^a-z0-9])${term}([^a-z0-9]|$)`).test(flat)
+    term.includes(" ") ? flat.includes(term) : new RegExp(`(^|[^a-z0-9])${term}(es|s|as|os)?([^a-z0-9]|$)`).test(flat)
   );
   if (politics) return { ok: false, reason: "politics", detail: politics };
 
-  const yesNo = YES_NO_OPENERS.find((opener) => flatTitle.startsWith(opener));
+  // En cualquier parte del título, no sólo al principio: "Che, ¿es normal que…?" abría la misma
+  // pregunta de sí o no y pasaba entera por tener dos palabras antes.
+  const yesNo = YES_NO_OPENERS.find((opener) =>
+    new RegExp(`(^|[^a-z0-9])${opener}([^a-z0-9]|$)`).test(flatTitle)
+  );
   if (yesNo) return { ok: false, reason: "yes_no", detail: yesNo };
 
   const banned = BANNED_PHRASES.find((phrase) => flat.includes(phrase));
   if (banned) return { ok: false, reason: "banned_phrase", detail: banned };
 
-  const tuteo = TUTEO.find((form) => new RegExp(`(^|[^a-z])${form}([^a-z]|$)`).test(flat));
+  const tuteo =
+    TUTEO.find((form) => new RegExp(`(^|[^a-z])${form}([^a-z]|$)`).test(flat)) ??
+    TUTEO_ACCENT_SAFE.find((form) =>
+      new RegExp(`(^|[^a-záéíóúñ])${form}([^a-záéíóúñ]|$)`).test(softStrip(`${t} ${b}`))
+    );
   if (tuteo) return { ok: false, reason: "tuteo", detail: tuteo };
 
   if (EMOJI.test(`${t} ${b}`)) return { ok: false, reason: "emoji" };
+
+  const bare = `${t} ${b}`.match(BARE_DOMAIN);
+  if (bare) return { ok: false, reason: "has_link", detail: bare[2] };
+
+  const invented = inventedNumbers(`${t}
+${b}`, evidence);
+  if (invented.length) return { ok: false, reason: "invented_number", detail: invented.join(", ") };
 
   return { ok: true };
 }
@@ -119,6 +152,8 @@ export function askRetryHint(result: AskValidation): string {
       return `Escribiste "${result.detail}" en tuteo. Va de vos.`;
     case "emoji":
       return "Sin emojis.";
+    case "invented_number":
+      return `Sacá las cifras (${result.detail}): no están en lo que se investigó y nadie las puede verificar. Preguntá sin el número.`;
     case "repetitive":
       return `Esa pregunta ya se hizo en el sub (${result.detail}). Cambiá de tema, no de redacción.`;
     default:

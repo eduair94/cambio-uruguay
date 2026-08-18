@@ -14,7 +14,7 @@
 
 import { notifyAdmin } from "../../notify";
 import { RedditSubmissionModel } from "../../models/RedditSubmission";
-import { fetchPostsByIds } from "../../reddit";
+import { fetchPostsByIdsOrNull } from "../../reddit";
 import { botConfig } from "../config";
 import { deleteThing } from "../post";
 import type { AskConfig } from "./config";
@@ -34,6 +34,16 @@ export interface ReapResult {
 const GONE = "desapareció del sub (lo más probable: lo sacó un mod)";
 
 /**
+ * Cuánto tiempo después de publicar se sigue mirando un post.
+ *
+ * Sin esta cota, la consulta levantaba TODOS los posts vivos para siempre, y un post que ya se
+ * había confirmado con interacción volvía a juzgarse cada media hora: bastaba que su score bajara
+ * de 2 a 1 —alguien retira su voto, llega un negativo, o Reddit difumina el conteo— para que se
+ * borrara un post que la gente sí había leído. Pasada la ventana, el post es del sub y no nuestro.
+ */
+const VENTANA_MS = 12 * 60 * 60 * 1000;
+
+/**
  * ¿Alguien reaccionó a esto?
  *
  * Reddit no da cero: todo post nace con score 1 —el voto propio— y 0 comentarios. Así que la
@@ -51,16 +61,33 @@ export async function reapDeadPosts(cfg: AskConfig): Promise<ReapResult> {
   const cutoff = new Date(Date.now() - cfg.deadAfterMinutes * 60_000);
   const rows = await RedditSubmissionModel.find({
     status: "posted",
-    postedAt: { $lte: cutoff },
+    // Lo ya confirmado vivo no se vuelve a juzgar, y sólo se mira dentro de la ventana. Ver VENTANA_MS.
+    visible: { $ne: true },
+    postedAt: { $lte: cutoff, $gte: new Date(cutoff.getTime() - VENTANA_MS) },
     postId: { $ne: "" },
   })
-    .select({ postId: 1, fullname: 1, title: 1, permalink: 1 })
-    .lean<Array<{ _id: unknown; postId: string; fullname: string; title: string; permalink: string }>>();
+    .select({ postId: 1, fullname: 1, title: 1, permalink: 1, score: 1, numComments: 1 })
+    .lean<
+      Array<{
+        _id: unknown;
+        postId: string;
+        fullname: string;
+        title: string;
+        permalink: string;
+        score: number;
+        numComments: number;
+      }>
+    >();
 
   if (!rows.length) return result;
   result.checked = rows.length;
 
-  const live = await fetchPostsByIds(rows.map((row) => row.postId));
+  // null = la API no contestó. Sin esto, un 429 se lee como "los borraron a todos".
+  const live = await fetchPostsByIdsOrNull(rows.map((row) => row.postId));
+  if (!live) {
+    console.warn("[ask] no se pudo leer el estado de los posts; el barrido se saltea esta corrida");
+    return { ...result, checked: 0 };
+  }
   const byId = new Map(live.map((post) => [post.id, post]));
 
   for (const row of rows) {
@@ -76,22 +103,36 @@ export async function reapDeadPosts(cfg: AskConfig): Promise<ReapResult> {
       continue;
     }
 
-    if (hasEngagement(post)) {
+    // Contra el máximo histórico, no contra la foto del momento: la interacción que hubo, hubo.
+    const best = { score: Math.max(post.score, row.score ?? 0), numComments: Math.max(post.numComments, row.numComments ?? 0) };
+    if (hasEngagement(best)) {
       await RedditSubmissionModel.updateOne(
         { _id: row._id },
-        { $set: { checkedAt: new Date(), visible: true, score: post.score, numComments: post.numComments } }
+        { $set: { checkedAt: new Date(), visible: true, score: best.score, numComments: best.numComments } }
       );
       result.alive++;
       continue;
     }
 
     const ok = await deleteThing(row.fullname, botConfig());
+    if (!ok) {
+      // Reddit no aceptó el borrado: el post SIGUE publicado. Marcarlo como retirado sería mentirle
+      // a la contabilidad —el hueco quedaría libre y se publicaría otro encima— además de avisar
+      // que se retiró algo que está ahí. Se deja en "posted" para reintentar en la próxima corrida.
+      await RedditSubmissionModel.updateOne(
+        { _id: row._id },
+        { $set: { checkedAt: new Date(), score: post.score, numComments: post.numComments } }
+      );
+      console.warn(`[ask] Reddit no aceptó borrar ${row.fullname}; se reintenta en la próxima corrida`);
+      continue;
+    }
+
     await RedditSubmissionModel.updateOne(
       { _id: row._id },
       {
         $set: {
           status: "reaped",
-          rejectReason: ok ? "una hora sin interacción" : "sin interacción; Reddit no aceptó el borrado",
+          rejectReason: "una hora sin interacción",
           visible: false,
           checkedAt: new Date(),
           score: post.score,
@@ -120,8 +161,11 @@ export async function reapDeadPosts(cfg: AskConfig): Promise<ReapResult> {
  */
 export async function attemptsToday(): Promise<number> {
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  // Por createdAt y contando los fallidos. Contar sólo lo publicado dejaba la puerta abierta al
+  // peor caso: con la cuenta limitada por Reddit, ningún intento llega a status "posted", el tope
+  // nunca se alcanza, y las 24 corridas del día gastan 24 llamadas a Opus y 24 intentos de publicar.
   return RedditSubmissionModel.countDocuments({
-    status: { $in: ["posted", "reaped"] },
-    postedAt: { $gte: since },
+    status: { $in: ["posted", "reaped", "failed"] },
+    createdAt: { $gte: since },
   });
 }

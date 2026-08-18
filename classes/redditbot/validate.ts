@@ -103,13 +103,6 @@ export const BANNED_PHRASES = [
  * (third person) are perfectly normal and are NOT listed.
  */
 export const TUTEO = [
-  "tienes",
-  "puedes",
-  "debes",
-  "quieres",
-  "necesitas",
-  "sabes que",
-  "haces",
   "vas a poder ver tu",
   "ten en cuenta",
   "ten presente",
@@ -122,6 +115,27 @@ export const TUTEO = [
 /** Emoji, symbol and pictograph ranges. A money answer with a rocket in it is an ad. */
 export const EMOJI = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{1F000}-\u{1F02F}\u{1F1E6}-\u{1F1FF}]/u;
 
+/**
+ * Minúsculas y espacios, PERO con las tildes intactas.
+ *
+ * Es la normalización que necesita el chequeo de tuteo y sólo él: en rioplatense la tilde es la
+ * única diferencia entre la forma de vos y la de tú —hacés/haces, sabés/sabes, necesitás/necesitas,
+ * debés/debes— así que compararlo sobre texto sin tildes rechaza el voseo correcto por tuteo, que
+ * es justo lo contrario de lo que hace falta.
+ */
+export const softStrip = (text: string): string => text.toLowerCase().replace(/\s+/g, " ").trim();
+
+/**
+ * Formas de tú que NO colisionan con nada rioplatense una vez que las tildes están a salvo.
+ *
+ * Se compara contra `softStrip`, no contra `strip`.
+ */
+export const TUTEO_ACCENT_SAFE = [
+  // "sabes" suelto, no "sabes que": la tercera persona es "sabe", así que la ese final sólo puede
+  // ser tú. La forma rioplatense lleva tilde ("sabés") y por eso esta lista se compara con tildes.
+  "tienes", "puedes", "debes", "quieres", "necesitas", "haces", "sabes",
+];
+
 export const strip = (text: string): string =>
   text
     .toLowerCase()
@@ -129,6 +143,16 @@ export const strip = (text: string): string =>
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/\s+/g, " ")
     .trim();
+
+/**
+ * Dominios escritos sin esquema: "cambio-uruguay.com", "www.algo.uy", "r/uruguay".
+ *
+ * `extractLinks` busca URLs, y una URL necesita http:// o www. El problema es que la regla que
+ * importa no es "no pongas URLs" sino "no dirijas a la gente a otro lado", y para eso alcanza con
+ * escribir el dominio: quien lo lee lo copia igual. En un comentario que se publicita como
+ * "sin ningún enlace", el dominio suelto es la forma de romper la promesa sin romper la regla.
+ */
+export const BARE_DOMAIN = /(^|[^a-z0-9@/])((?:www\.)|(?:[a-z0-9][a-z0-9-]{1,}\.(?:com|uy|net|org|io|ar|br|es|app|co|me|ly|dev|gub\.uy|com\.uy)))(?![a-z0-9])/i;
 
 /** Bare URLs and markdown links alike. */
 export function extractLinks(text: string): string[] {
@@ -192,7 +216,11 @@ export function validateReply({ reply, expectedUrl, context, postText = "" }: Va
   const banned = BANNED_PHRASES.find((phrase) => normalised.includes(strip(phrase)));
   if (banned) return { ok: false, reason: "banned_phrase", detail: banned };
 
-  const tuteo = TUTEO.find((form) => new RegExp(`(^|[^a-z0-9])${strip(form)}([^a-z0-9]|$)`).test(normalised));
+  const tuteo =
+    TUTEO.find((form) => new RegExp(`(^|[^a-z0-9])${strip(form)}([^a-z0-9]|$)`).test(normalised)) ??
+    TUTEO_ACCENT_SAFE.find((form) =>
+      new RegExp(`(^|[^a-záéíóúñ])${form}([^a-záéíóúñ]|$)`).test(softStrip(text))
+    );
   if (tuteo) return { ok: false, reason: "tuteo", detail: tuteo };
 
   // The URL itself is full of digits-free text, but a path like /decreto-50-026 would contribute

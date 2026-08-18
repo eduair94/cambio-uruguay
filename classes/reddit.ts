@@ -394,6 +394,27 @@ export async function fetchSubredditRules(sub: string): Promise<string[]> {
  * `/api/info` takes up to 100 fullnames per call. A thread that was deleted simply does not come
  * back, which is the answer we want.
  */
+/**
+ * Igual que `fetchPostsByIds`, pero `null` cuando la API no contestó.
+ *
+ * La diferencia importa exactamente en un lugar y ahí importa mucho: el barrido de posts trata la
+ * ausencia de un id como "lo borró un moderador". Con la convención general —devolver [] ante
+ * cualquier fallo— una ráfaga de 429 o un timeout de 25 s se lee como si el sub hubiera bajado
+ * todos nuestros posts al mismo tiempo, y el barrido marca como muertos posts que están vivos y
+ * con comentarios. Devolver null deja que quien pregunta decida si puede seguir sin la respuesta.
+ */
+export async function fetchPostsByIdsOrNull(ids: readonly string[]): Promise<RedditPostRaw[] | null> {
+  if (!redditConfigured() || !ids.length) return null;
+  const out: RedditPostRaw[] = [];
+  for (let i = 0; i < ids.length; i += 100) {
+    const batch = ids.slice(i, i + 100).map((id) => (id.startsWith("t3_") ? id : `t3_${id}`));
+    const res = await api<Listing<RawPost>>("/api/info", { id: batch.join(",") });
+    if (!res) return null;
+    out.push(...(res.data?.children ?? []).filter((c) => c.kind === "t3").map((c) => toPost(c.data)));
+  }
+  return out;
+}
+
 export async function fetchPostsByIds(ids: readonly string[]): Promise<RedditPostRaw[]> {
   if (!redditConfigured() || !ids.length) return [];
   const out: RedditPostRaw[] = [];

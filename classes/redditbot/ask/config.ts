@@ -6,8 +6,12 @@
 // habla en nombre de un sitio.
 
 const num = (name: string, fallback: number): number => {
-  const raw = Number(process.env[name]);
-  return Number.isFinite(raw) ? raw : fallback;
+  // Un env DECLARADO PERO VACÍO da Number("") = 0, que es finito y por lo tanto ganaba. Con
+  // REDDIT_ASK_NOVELTY_LIMIT= vacío el límite quedaba en 0 y ninguna pregunta volvía a ser "nueva".
+  const raw = (process.env[name] ?? "").trim();
+  if (!raw) return fallback;
+  const value = Number(raw);
+  return Number.isFinite(value) ? value : fallback;
 };
 
 export interface AskConfig {

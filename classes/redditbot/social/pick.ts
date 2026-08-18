@@ -16,7 +16,7 @@ import type { SocialConfig } from "./config";
  * salud mental, y política partidaria — que en r/uruguay no es un tema, es una pelea, y meterse con
  * una cuenta nueva es cómo se gana un ban antes de existir.
  */
-const NO_JOKE_TERMS = [
+export const NO_JOKE_TERMS = [
   "murio", "falleci", "muerte", "velorio", "sepelio", "q.e.p.d", "qepd", "descanse en paz", "luto",
   "cancer", "quimio", "terminal", "internad", "uci", "cti", "hospital", "diagnostic", "tumor",
   "suicid", "depresion", "ansiedad", "psiquiatr", "psicolog", "autolesion", "adiccion",
@@ -27,7 +27,7 @@ const NO_JOKE_TERMS = [
   // sobrio y razonable, que igual era una opinión sobre política de seguridad. Acá no es un tema,
   // es una grieta, y una cuenta nueva opinando en el medio no junta karma.
   "policia", "policial", "jefatura", "delincuen", "inseguridad", "narco", "homicidio",
-  "ministerio del interior", "guardia republicana", "carcel", "preso",
+  "guardia republicana", "carcel", "preso",
   "elecciones", "frente amplio", "partido nacional", "partido colorado", "cabildo", "orsi",
   "lacalle", "mujica", "sendic", "milei", "politica", "politico", "dictadura", "militares",
   "aborto", "religion", "iglesia", "guerra", "israel", "palestina", "ucrania", "racis", "xenofob",

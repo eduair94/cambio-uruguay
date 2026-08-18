@@ -5,9 +5,20 @@
 // con un link es publicidad. Acá es al revés — cualquier enlace convierte el comentario en lo que
 // dijimos que no era, y el largo tiene TECHO, porque el párrafo bien armado es lo que delata.
 
-import { BANNED_PHRASES, EMOJI, TUTEO, extractLinks, inventedNumbers, strip } from "../validate";
+import {
+  BANNED_PHRASES,
+  BARE_DOMAIN,
+  EMOJI,
+  TUTEO,
+  TUTEO_ACCENT_SAFE,
+  extractLinks,
+  inventedNumbers,
+  softStrip,
+  strip,
+} from "../validate";
 import type { SocialRegister } from "./compose";
 import type { Lang } from "./language";
+import { NO_JOKE_TERMS } from "./pick";
 
 export type SocialRejectReason =
   | "empty"
@@ -22,6 +33,7 @@ export type SocialRejectReason =
   | "too_many_sentences"
   | "invented_number"
   | "fake_experience"
+  | "off_limits"
   | "self_disclosure";
 
 export interface SocialValidation {
@@ -95,6 +107,9 @@ export function validateSocial(
   // una promoción con otro nombre, y es lo que hace que el sub mire la cuenta con lupa.
   const links = extractLinks(text);
   if (links.length) return { ok: false, reason: "has_link", detail: links.join(", ") };
+  // Y el dominio escrito a mano, que dirige igual sin ser una URL. Ver BARE_DOMAIN.
+  const bare = text.match(BARE_DOMAIN);
+  if (bare) return { ok: false, reason: "has_link", detail: bare[2] };
 
   const flat = strip(text);
   if (flat.includes("cambio-uruguay") || flat.includes("cambio uruguay")) return { ok: false, reason: "mentions_site" };
@@ -105,17 +120,48 @@ export function validateSocial(
   // El voseo es la regla del español rioplatense; aplicársela a un texto en inglés no significa
   // nada, y "you can" dispararía media lista.
   if (lang === "es") {
-    const tuteo = TUTEO.find((form) => new RegExp(`(^|[^a-z])${form}([^a-z]|$)`).test(flat));
+    // Dos listas y dos normalizaciones: la segunda conserva las tildes porque son lo único que
+    // distingue "hacés" de "haces". Ver TUTEO_ACCENT_SAFE.
+    const tuteo =
+      TUTEO.find((form) => new RegExp(`(^|[^a-z])${form}([^a-z]|$)`).test(flat)) ??
+      TUTEO_ACCENT_SAFE.find((form) =>
+        new RegExp(`(^|[^a-záéíóúñ])${form}([^a-záéíóúñ]|$)`).test(softStrip(text))
+      );
     if (tuteo) return { ok: false, reason: "tuteo", detail: tuteo };
   }
 
   if (EMOJI.test(text)) return { ok: false, reason: "emoji" };
   if (/^\s*[#>*-]\s|\*\*|^\s*\d+\.\s/m.test(text)) return { ok: false, reason: "markdown" };
 
+  // El veto de temas corría sólo sobre el hilo. Un hilo sobre mudanzas es inocente y la respuesta
+  // puede irse igual a la inseguridad del barrio: lo que importa es dónde termina el comentario,
+  // no de dónde salió.
+  const tema = NO_JOKE_TERMS.find((term) => flat.includes(term));
+  if (tema) return { ok: false, reason: "off_limits", detail: tema };
+
   const story = [...FIRST_PERSON_STORY, ...FIRST_PERSON_STORY_EN].find((phrase) =>
     new RegExp(`(^|[^a-z])${phrase}([^a-z]|$)`).test(flat)
   );
   if (story) return { ok: false, reason: "fake_experience", detail: story };
+
+  // Una lista de frases siempre va a tener agujeros —"mi hermana", "pedí", "compré"— porque las
+  // formas de contar algo propio son infinitas. La morfología no: en español, un verbo en primera
+  // persona del pretérito es, por construcción, alguien diciendo que estuvo ahí.
+  //
+  // Se mide sobre el texto CON tildes, que es lo que distingue "pedí" (yo) de "pedi" (nada), y con
+  // una lista de excepciones que no es opcional: "así", "aquí", "ahí" y "café" también terminan en
+  // vocal acentuada y no son verbos. Sin ellas la regla rechazaba comentarios perfectamente
+  // normales, que es peor que el agujero que vino a tapar.
+  if (lang === "es") {
+    const NO_ES_VERBO = /^(asi|aqui|ahi|alli|aji|mani|cafe|bebe|que|porque|colibri|esqui|rubi|puree|frances|ingles|jose|andres|mama|papa)$/;
+    const words = softStrip(comment).split(/[^a-záéíóúñ]+/).filter(Boolean);
+    const preterito = words.find((word) => {
+      if (/^(fui|estuve|tuve|hice|vine|pude|puse|dije|traje|vi|supe|quise|anduve)$/.test(word)) return true;
+      if (word.length < 4 || !/(é|í)$/.test(word)) return false;
+      return !NO_ES_VERBO.test(word.normalize("NFD").replace(/[̀-ͯ]/g, ""));
+    });
+    if (preterito) return { ok: false, reason: "fake_experience", detail: preterito };
+  }
 
   const disclosure = SELF_DISCLOSURE.find((phrase) => flat.includes(phrase));
   if (disclosure) return { ok: false, reason: "self_disclosure", detail: disclosure };
@@ -156,6 +202,8 @@ export function socialRetryHint(result: SocialValidation): string {
       return "Demasiadas oraciones para este hilo. Dejá lo que contesta y borrá el resto.";
     case "invented_number":
       return `Sacá las cifras (${result.detail}): no están en lo que escribió la persona y no las podés verificar.`;
+    case "off_limits":
+      return `Tu comentario se mete en "${result.detail}", que es un tema donde esta cuenta no opina. Contestá sobre lo que preguntaron y nada más.`;
     case "fake_experience":
       return `"${result.detail}" cuenta algo que te habría pasado a vos, y no te pasó. Decí lo que se sabe del tema, sin ponerte de protagonista.`;
     case "self_disclosure":

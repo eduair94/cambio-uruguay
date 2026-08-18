@@ -87,13 +87,13 @@ export async function runSocialPass(cfg: SocialConfig = socialConfig()): Promise
     return { ...summary, note: `objetivo alcanzado (${karma.comment} >= ${cfg.karmaTarget}), nada que farmear` };
   }
 
-  const snap = await socialSnapshot();
+  const snap = await socialSnapshot(cfg);
   const gate = runAllowed(cfg, snap);
   if (!gate.ok) return { ...summary, note: gate.reason ?? "freno" };
 
   const blocked = await blockedSubs(cfg);
   const subs = cfg.subs.filter((sub) => {
-    if (blocked.has(sub)) {
+    if (blocked.has(sub.toLowerCase())) {
       reject(`sub_borra:${sub}`);
       return false;
     }
@@ -144,8 +144,12 @@ export async function runSocialPass(cfg: SocialConfig = socialConfig()): Promise
     if (!check.ok) {
       const retry = await composeSocial(ask, socialRetryHint(check));
       if (retry && !retry.skip && retry.comment) {
-        draft = retry;
-        check = validateSocial(retry.comment, postText, retry.register, retry.lang);
+        // El registro del reintento no puede ser MÁS permisivo que el del primer intento. Si no,
+        // el camino de menor esfuerzo ante "quedó largo" no es acortar: es declararse "util" y
+        // quedarse con el mismo texto, que es exactamente lo que el techo quería impedir.
+        const register = draft.register === "liviano" ? "liviano" : retry.register;
+        draft = { ...retry, register };
+        check = validateSocial(retry.comment, postText, register, retry.lang);
       }
     }
 
