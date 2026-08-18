@@ -44,6 +44,33 @@ describe("rag/embed — Buffer round trip", () => {
     expect(vectorToBuffer(new Float32Array(768)).byteLength).toBe(3072);
   });
 
+  it("decodes a BSON Binary — what mongoose's .lean() actually returns for a Buffer field", () => {
+    // The bug this guards killed the whole dense retrieval arm in production without throwing:
+    // a Binary has no `byteLength`, so `Math.floor(undefined / 4)` was NaN and every chunk loaded
+    // with an empty vector. Every cosine came out 0.000 and the bot just went quiet.
+    const original = normalise(Float32Array.from([1, 2, 3, 4]));
+    const bytes = vectorToBuffer(original);
+    const asBinary = { _bsontype: "Binary", sub_type: 0, buffer: bytes, position: bytes.length };
+
+    const restored = bufferToVector(asBinary);
+    expect(restored.length).toBe(4);
+    for (let i = 0; i < 4; i++) expect(restored[i]).toBeCloseTo(original[i]!, 6);
+  });
+
+  it("decodes a bare Uint8Array too", () => {
+    const original = normalise(Float32Array.from([5, 6]));
+    const bytes = vectorToBuffer(original);
+    const restored = bufferToVector(new Uint8Array(bytes));
+    expect(restored.length).toBe(2);
+    expect(restored[0]).toBeCloseTo(original[0]!, 6);
+  });
+
+  it("returns an empty vector for a missing or unrecognised value, rather than NaN-length", () => {
+    expect(bufferToVector(null).length).toBe(0);
+    expect(bufferToVector(undefined).length).toBe(0);
+    expect(bufferToVector({ nope: true }).length).toBe(0);
+  });
+
   it("decodes correctly from an unaligned Buffer — the crash a Float32Array view would cause", () => {
     // Node hands out small Buffers as slices of a shared pool, so `byteOffset` is arbitrary. A
     // typed-array view over one of those throws RangeError for some documents and not others.

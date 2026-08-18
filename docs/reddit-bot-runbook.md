@@ -60,12 +60,34 @@ Dos cosas que ahorran un día de depuración:
 
 ## 2. Variables en el `.env` del VPS
 
-Copiar el bloque `--- RAG del sitio + bot de Reddit ---` de `.env.sample` y
-completar. **Dejar `REDDIT_BOT_ENABLED=0` y `REDDIT_BOT_DRY_RUN=1` por ahora.**
+Copiar los bloques `--- Claude ---` y `--- RAG del sitio + bot de Reddit ---` de
+`.env.sample` y completar. **Dejar `REDDIT_BOT_ENABLED=0` y
+`REDDIT_BOT_DRY_RUN=1` por ahora.**
 
 Son dos puertas separadas a propósito, igual que `CONTENT_PROMO_ENABLED`: las
 credenciales van a estar en la máquina antes de que los umbrales estén calibrados,
 y desplegar el archivo no puede ser lo que empieza a hablarle a desconocidos.
+
+Qué significa cada una, porque no es obvio:
+
+| | `ENABLED=0` | `ENABLED=1`, `DRY_RUN=1` | `ENABLED=1`, `DRY_RUN=0` |
+|---|---|---|---|
+| el job | sale enseguida, no hace nada | corre el pipeline entero | corre y publica |
+| gasta cuota | no | sí (embeddings + Claude) | sí |
+
+O sea: **el ensayo del paso 5 necesita `ENABLED=1`.** `ENABLED=0` no es "ensayar sin
+publicar", es "no hacer nada".
+
+### El env que falta y no se nota
+
+`classes/reddit.ts` lee `REDDIT_CLIENT_ID` / `REDDIT_CLIENT_SECRET` del `.env`
+**raíz**, y hoy en el 104 esas variables sólo están en `app/.env`. Sin ellas el
+cliente de Reddit es un no-op silencioso: el bot corre, no lee ningún hilo y sale
+diciendo "ningún post nuevo", que se parece demasiado a un sábado tranquilo.
+Copialas al `.env` raíz.
+
+(Lo mismo vale para los otros pipelines del backend que leen Reddit —aduana,
+sillas—: si nunca cosecharon nada en esta máquina, es por esto.)
 
 ## 3. Primer índice
 

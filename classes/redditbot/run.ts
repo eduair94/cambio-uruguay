@@ -239,7 +239,17 @@ export async function runOnce(cfg: BotConfig = botConfig()): Promise<RunSummary>
   ranked.sort((a, b) => (b.pages[0]?.score ?? 0) - (a.pages[0]?.score ?? 0));
 
   for (const { post, vector, pages } of ranked) {
-    // 5. "Does the site answer this?" — cosine plus margin over the runner-up. See gate.ts.
+    // 5. No query vector means the dense arm never ran, so `cosine` is 0 for everything and the
+    //    gate below would read "the site has no page about this". It does not: we simply could not
+    //    measure. Skipping leaves no ledger row and files no content gap, so the thread is
+    //    reconsidered next run instead of becoming evidence that a page is missing — which is how
+    //    an embedding outage would otherwise manufacture a whole bogus draft page.
+    if (!vector) {
+      reject("no_query_vector");
+      continue;
+    }
+
+    // "Does the site answer this?" — cosine plus margin over the runner-up. See gate.ts.
     const gate = retrievalGate(cfg, pages);
     const best = pages[0];
 

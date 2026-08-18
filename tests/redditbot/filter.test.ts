@@ -143,6 +143,42 @@ describe("redditbot/filter — content", () => {
     expect(screenPost(off, cfg, NOW).reason).toBe("off_topic");
   });
 
+  it("does not admit a diet question because it says 'peso'", () => {
+    // Real false positive from a live run over 334 threads: "peso" from "bajar de peso". The
+    // retrieval gate caught it, but only after paying for an embedding.
+    const diet = post({
+      title: "¿Cómo hacen para no comer cosas dulces? Yo no puedo parar",
+      selftext: "Estoy tratando de bajar de peso y no hay forma, cada tarde termino comiendo algo dulce.",
+    });
+    expect(screenPost(diet, cfg, NOW).reason).toBe("off_topic");
+  });
+
+  it("does not admit a broken-wifi thread because it says 'anda'", () => {
+    const wifi = post({
+      title: "Red inestable, ¿a alguien más le pasa?",
+      selftext: "Hace una semana que no anda bien el wifi en casa y no sé qué puede ser.",
+    });
+    expect(screenPost(wifi, cfg, NOW).reason).toBe("off_topic");
+  });
+
+  it("admits an ambiguous word once a second one joins it", () => {
+    // "peso" alone is a diet; "peso" plus "cotizacion" is the exchange rate.
+    const rate = post({
+      title: "¿Conviene cambiar pesos ahora?",
+      selftext: "Tengo unos ahorros y no sé si esperar a que mejore el cambio o hacerlo ya.",
+    });
+    expect(screenPost(rate, cfg, NOW).ok).toBe(true);
+  });
+
+  it("admits a thread on one unambiguous word", () => {
+    const one = post({
+      title: "¿Alguien sabe cómo va el trámite del monotributo?",
+      selftext: "Quiero empezar a facturar por mi cuenta y no sé por dónde arranca el trámite.",
+    });
+    expect(screenPost(one, cfg, NOW).matched).toContain("monotributo");
+    expect(screenPost(one, cfg, NOW).ok).toBe(true);
+  });
+
   it("reports which topic terms matched, for debugging a miss", () => {
     const verdict = screenPost(post(), cfg, NOW);
     expect(verdict.matched).toContain("aduana");

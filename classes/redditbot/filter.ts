@@ -11,36 +11,65 @@
 import type { RedditPostRaw } from "../reddit";
 import type { BotConfig } from "./config";
 
-/** Terms, accent-free and lowercase, that mark a thread as being about money in Uruguay. */
-const TOPIC_TERMS = [
+// The topic lexicon, split by how much a single hit is worth.
+//
+// A flat list over-admits badly, and the cost is not cosmetic: every admitted thread spends an
+// embedding and possibly a Claude call, both metered per day. Measured on a real run over 334
+// threads, the flat version admitted four, and all four were junk — "Cómo hacen para no comer cosas
+// dulces?" (matched *peso*, from "bajar de peso"), "Red inestable" (matched *anda*, from "no anda"),
+// a dating question and a where-should-I-emigrate one. The retrieval gate caught all four, which is
+// what it is for, but they should never have cost anything.
+//
+// So: a STRONG term is one that essentially only appears in a money conversation, and one is
+// enough. A WEAK term is an ordinary Spanish word that happens to also be financial, and two are
+// needed — "peso" alone is a diet, "peso" plus "cotizacion" is the exchange rate.
+
+/** One hit is enough: these words rarely show up in a conversation about anything else. */
+const STRONG_TERMS = [
   // divisas y cambio
-  "dolar", "dolares", "euro", "euros", "peso", "pesos", "real", "reales", "cambio", "cambiar",
-  "casa de cambio", "cotizacion", "arbitraje", "blue", "brou", "bcu", "interbancario",
+  "dolar", "dolares", "cotizacion", "arbitraje", "casa de cambio", "brou", "bcu", "interbancario",
   // bancos y medios de pago
-  "banco", "bancos", "itau", "santander", "scotiabank", "hsbc", "bbva", "prex", "mydinero",
-  "oca", "creditel", "pronto", "midinero", "astropay", "paypal", "wise", "binance", "takenos",
-  "tarjeta", "tarjetas", "debito", "credito", "cuenta", "transferencia", "plazo fijo",
+  "itau", "santander", "scotiabank", "hsbc", "bbva", "prex", "mydinero", "midinero", "creditel",
+  "astropay", "paypal", "binance", "takenos", "plazo fijo", "debito", "tarjeta", "tarjetas",
   // aduana e importacion
-  "aduana", "importar", "importacion", "courier", "franquicia", "dua", "despachante", "correo",
-  "aliexpress", "amazon", "ebay", "shein", "temu", "paquete", "encomienda", "arancel", "iva",
-  // couriers y pagos por nombre: son lo que dice el título de un post que ES una captura
-  "dhl", "fedex", "ups", "aeropost", "punto mio", "puntomio", "miami express",
+  "aduana", "importar", "importacion", "courier", "franquicia", "dua", "despachante",
+  "aliexpress", "shein", "temu", "encomienda", "arancel", "iva",
+  "dhl", "fedex", "aeropost", "punto mio", "puntomio", "miami express",
   "mercado libre", "mercadolibre", "mercadopago", "mercado pago", "abitab", "redpagos",
   // impuestos y trabajo
-  "dgi", "bps", "irpf", "monotributo", "factura", "facturar", "empresa unipersonal", "sueldo",
-  "salario", "liquido", "nominal", "aguinaldo", "licencia", "fonasa", "afap", "jubilacion",
-  "trabajo en negro", "recibo",
+  "dgi", "bps", "irpf", "monotributo", "facturar", "empresa unipersonal", "aguinaldo", "fonasa",
+  "afap", "jubilacion", "trabajo en negro", "sueldo liquido", "salario nominal",
   // credito, deuda y vivienda
-  "prestamo", "prestamos", "clearing", "deuda", "deudas", "usura", "tea", "cuotas", "financiacion",
-  "alquiler", "alquilar", "garantia", "anda", "contaduria", "inmobiliaria", "hipoteca",
-  // inversion y consumo
-  "invertir", "inversion", "bonos", "letras", "obligaciones", "fondo", "acciones", "cripto",
-  "criptomoneda", "bitcoin", "rendimiento", "interes", "ahorro", "ahorrar",
-  // derechos y problemas
-  "estafa", "estafaron", "defensa al consumidor", "reclamo", "garantia legal", "devolucion",
+  "prestamo", "prestamos", "clearing", "usura", "financiacion", "hipoteca", "inmobiliaria",
+  // inversion
+  "invertir", "inversion", "criptomoneda", "obligaciones negociables",
+  // derechos
+  "defensa al consumidor", "garantia legal",
   // costo de vida
-  "costo de vida", "canasta", "supermercado", "boleto", "ute", "ose", "antel", "combustible",
+  "costo de vida", "canasta basica", "combustible",
 ];
+
+/**
+ * Two hits needed: each of these is an ordinary word that is only sometimes about money.
+ *
+ * `peso`, `anda`, `cuenta`, `real`, `fondo` and `letras` are the ones that actually caused the
+ * false positives; the rest are here because they share the same property, not because they have
+ * misfired yet.
+ */
+const WEAK_TERMS = [
+  "peso", "pesos", "euro", "euros", "real", "reales", "cambio", "cambiar", "blue",
+  "banco", "bancos", "oca", "pronto", "wise", "cuenta", "transferencia", "credito",
+  "correo", "amazon", "ebay", "paquete", "ups",
+  "factura", "sueldo", "salario", "liquido", "nominal", "licencia", "recibo",
+  "deuda", "deudas", "tea", "cuotas", "alquiler", "alquilar", "garantia", "anda", "contaduria",
+  "bonos", "letras", "fondo", "acciones", "cripto", "bitcoin", "rendimiento", "interes",
+  "ahorro", "ahorrar", "plata", "guita",
+  "estafa", "estafaron", "reclamo", "devolucion",
+  "canasta", "supermercado", "boleto", "ute", "ose", "antel",
+];
+
+/** Both lists, for the callers that only want to know whether a word is in the vocabulary. */
+const TOPIC_TERMS = [...STRONG_TERMS, ...WEAK_TERMS];
 
 // Question shape. A statement about the dollar is a conversation; a question is an opening.
 //
@@ -199,13 +228,18 @@ export function screenPost(post: RedditPostRaw, cfg: BotConfig, now: number = Da
     return { ok: false, reason: "sensitive", matched: [] };
   }
 
-  const matched = TOPIC_TERMS.filter((term) => {
-    // Multi-word terms are substring matches; single words need boundaries so "iva" does not match
-    // "privado" and "tea" does not match "tarea".
-    if (term.includes(" ")) return text.includes(term);
-    return new RegExp(`(^|[^a-z0-9])${term}([^a-z0-9]|$)`).test(text);
-  });
-  if (!matched.length) return { ok: false, reason: "off_topic", matched: [] };
+  // Multi-word terms are substring matches; single words need boundaries so "iva" does not match
+  // "privado" and "tea" does not match "tarea".
+  const hits = (terms: readonly string[]): string[] =>
+    terms.filter((term) =>
+      term.includes(" ") ? text.includes(term) : new RegExp(`(^|[^a-z0-9])${term}([^a-z0-9]|$)`).test(text)
+    );
+
+  const strong = hits(STRONG_TERMS);
+  const weak = hits(WEAK_TERMS);
+  const matched = [...strong, ...weak];
+  // One unambiguous term, or two ambiguous ones. See the note on the lexicon.
+  if (!strong.length && weak.length < 2) return { ok: false, reason: "off_topic", matched };
 
   if (!looksLikeAQuestion(post.title, post.selftext)) return { ok: false, reason: "not_a_question", matched };
 

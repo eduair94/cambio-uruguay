@@ -147,7 +147,34 @@ export function vectorToBuffer(vector: Float32Array): Buffer {
   return buf;
 }
 
-export function bufferToVector(buf: Buffer): Float32Array {
+/**
+ * Coerce whatever the driver handed us into a real Node Buffer.
+ *
+ * THIS IS NOT DEFENSIVE PADDING — it is the fix for a bug that silently killed the entire dense
+ * retrieval arm in production. A `Buffer` field read back through mongoose's `.lean()` does not
+ * arrive as a Buffer: it is a BSON `Binary`, which holds the bytes on `.buffer` and has no
+ * `byteLength`. `Math.floor(undefined / 4)` is `NaN`, `new Float32Array(NaN)` is a zero-length
+ * array, and every chunk therefore loaded with an empty vector.
+ *
+ * Nothing threw. `loadIndex()` returned the right number of chunks, the collection held the right
+ * 3 072-byte blobs, and the only visible symptom was that every cosine came out 0.000 — so the bot
+ * quietly answered nothing, which looks exactly like a quiet day on the subreddits. It was found by
+ * running the pipeline against a real thread and noticing the zeros, not by any test.
+ */
+function toNodeBuffer(value: unknown): Buffer | null {
+  if (!value) return null;
+  if (Buffer.isBuffer(value)) return value;
+  if (value instanceof Uint8Array) return Buffer.from(value.buffer, value.byteOffset, value.byteLength);
+  // BSON Binary and mongoose's own Buffer wrapper both keep the bytes here.
+  const inner = (value as { buffer?: unknown }).buffer;
+  if (Buffer.isBuffer(inner)) return inner;
+  if (inner instanceof Uint8Array) return Buffer.from(inner.buffer, inner.byteOffset, inner.byteLength);
+  return null;
+}
+
+export function bufferToVector(value: unknown): Float32Array {
+  const buf = toNodeBuffer(value);
+  if (!buf) return new Float32Array(0);
   const out = new Float32Array(Math.floor(buf.byteLength / 4));
   for (let i = 0; i < out.length; i++) out[i] = buf.readFloatLE(i * 4);
   return out;
