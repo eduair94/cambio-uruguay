@@ -63,7 +63,8 @@
     "debug_scraping": "ts-node debug_scraping.ts",
     "debug_fix_money": "ts-node debug_fix_money.ts",
     "test_ai": "ts-node scripts/oneoff/test_ai_service.ts",
-    "test_ai_insights": "ts-node scripts/oneoff/test_ai_insights.ts"
+    "test_ai_insights": "ts-node scripts/oneoff/test_ai_insights.ts",
+    "reddit_answer": "ts-node scripts/oneoff/reddit_answer.ts"
   },
   "author": "",
   "license": "ISC",

@@ -15,7 +15,7 @@ import { notifyAdmin } from "../notify";
 import { embedOne, embedTexts, vectorToBuffer } from "../rag/embed";
 import { SiteRetriever } from "../rag/retrieve";
 import { loadIndex } from "../rag/store";
-import { fetchNewPosts, redditConfigured, type RedditPostRaw } from "../reddit";
+import { fetchNewPosts, fetchPostsByIds, redditConfigured, type RedditPostRaw } from "../reddit";
 import { RedditContentGapModel } from "../models/RedditContentGap";
 import { botConfig, canPost, type BotConfig } from "./config";
 import { composeReply, buildComposePrompt, tidy, VOICE, type ComposeInput } from "./compose";
@@ -324,6 +324,86 @@ async function answerParkedThread(
     summary,
     reject,
   });
+}
+
+/**
+ * Answer one named thread, through the same gates as a scheduled run.
+ *
+ * For validating the whole chain end to end without waiting for `/new` to produce an answerable
+ * question, and for the occasional thread a person wants answered on purpose. Everything that
+ * decides WHETHER to answer still applies — screen, retrieval gate, judge, the reply validator, the
+ * ledger — so a thread the bot would not have picked is still refused here. The only thing relaxed
+ * is the age window, because a thread chosen by hand was chosen knowing how old it is.
+ *
+ * The ledger is written exactly as in a normal run, which is what makes a second invocation on the
+ * same thread a no-op instead of a duplicate comment.
+ */
+export async function answerThreadById(postId: string, cfg: BotConfig = botConfig()): Promise<RunSummary> {
+  const summary = emptySummary("");
+  const reject = (reason: string): void => {
+    summary.rejected[reason] = (summary.rejected[reason] ?? 0) + 1;
+  };
+
+  if (!redditConfigured()) return emptySummary("sin credenciales de lectura de Reddit");
+
+  const [post] = await fetchPostsByIds([postId]);
+  if (!post) return emptySummary(`Reddit no devolvió el hilo ${postId} (¿borrado?)`);
+  summary.fetched = 1;
+
+  // The one guard that must not be bypassed even here: we have answered this before.
+  const seen = await seenPostIds([post.id]);
+  if (seen.size) {
+    summary.alreadyDecided = 1;
+    return { ...summary, note: "ya hay una decisión registrada para este hilo — no se responde dos veces" };
+  }
+
+  const relaxed: BotConfig = { ...cfg, maxAgeHours: 24 * 365 };
+  const verdict = screenPost(post, relaxed);
+  if (!verdict.ok) {
+    reject(`filter:${verdict.reason}`);
+    return { ...summary, note: `el filtro lo descarta: ${verdict.reason}` };
+  }
+  summary.screened = 1;
+
+  const chunks = await loadIndex();
+  const retriever = new SiteRetriever(chunks);
+  if (!retriever.embeddedCount) return { ...summary, note: "el índice no tiene vectores" };
+
+  const query = retrievalQuery(post);
+  const vector = await embedOne(query, "RETRIEVAL_QUERY");
+  if (!vector) return { ...summary, note: "no se pudo embeber la consulta (¿cupo diario?)" };
+
+  const pages = retriever.rankWithVector(query, vector, 3);
+  summary.scored = 1;
+  const gate = retrievalGate(cfg, pages);
+  console.log(
+    `[redditbot] candidatas: ${pages.map((p) => `${p.path} cos=${p.cosine.toFixed(3)}`).join(" | ")}`
+  );
+  if (!gate.ok) {
+    reject(`gap:${gate.reason}`);
+    return { ...summary, note: `sin página específica: ${gate.reason} ${gate.detail ?? ""}` };
+  }
+
+  const judged = await judgeRelevance(post.title, post.selftext, pages);
+  console.log(`[redditbot] juez: relevant=${judged.relevant} conf=${judged.confidence} → ${judged.path}`);
+  if (!judged.relevant || judged.confidence < cfg.minJudge) {
+    reject("judge");
+    return { ...summary, note: `el juez lo rechazó: ${judged.reason}` };
+  }
+
+  const chosen = pages.find((page) => page.path === judged.path) ?? pages[0]!;
+  const done = await deliverReply({
+    post,
+    chosen,
+    support: pages.filter((page) => page.path !== chosen.path),
+    judgeConfidence: judged.confidence,
+    judgeReason: judged.reason,
+    cfg,
+    summary,
+    reject,
+  });
+
+  return { ...summary, note: done ? (canPost(cfg) ? "publicado" : "dry run") : "no se publicó" };
 }
 
 export async function runOnce(cfg: BotConfig = botConfig()): Promise<RunSummary> {
