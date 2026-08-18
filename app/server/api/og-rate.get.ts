@@ -1,21 +1,17 @@
-// Current best USD market rate for the OG image (cached 10 min so it never
-// adds real cost to page SSR). Returns the best market sell (cheapest to buy)
-// and best buy (pays most for your USD), plain/cash quotes only.
+// Current best USD market pair for the OG image and the embeddable widget
+// (cached 10 min so it never adds real cost to page SSR). Selection rules —
+// including the off-market filter that stops one stale board from producing an
+// impossible pair — live in the pure helper so they can be unit-tested.
 import type { ExchangeRate } from '../../types/api'
+import { bestUsdPair, type OgRatePair } from '../../utils/ogRate'
 
 export default defineCachedEventHandler(
-  async (): Promise<{ buy: number | null; sell: number | null }> => {
+  async (): Promise<OgRatePair> => {
     const apiBase = useRuntimeConfig().public.apiBase as string
     const rates = await $fetch<ExchangeRate[]>('/', { baseURL: apiBase }).catch(
       () => [] as ExchangeRate[]
     )
-    const usd = rates.filter(r => r.code === 'USD' && !r.type && r.origin !== 'bcu')
-    const sells = usd.map(r => r.sell ?? 0).filter(v => v > 0)
-    const buys = usd.map(r => r.buy ?? 0).filter(v => v > 0)
-    return {
-      sell: sells.length ? Math.min(...sells) : null,
-      buy: buys.length ? Math.max(...buys) : null,
-    }
+    return bestUsdPair(rates)
   },
   { maxAge: 60 * 10, staleMaxAge: 60 * 60, name: 'og-rate', getKey: () => 'usd' }
 )
