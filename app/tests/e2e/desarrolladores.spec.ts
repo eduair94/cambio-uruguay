@@ -1,7 +1,14 @@
 import { test, expect } from '@playwright/test'
 
 // Developer portal: dev-hub header (SSR) + embedded Scalar API reference.
+//
+// The default 30s per-test budget is not enough here: Scalar is a large
+// client-side app that mounts, fetches /openapi.json and renders the whole
+// document, and on a cold Nuxt dev server that lands around the half-minute
+// mark. The suite already treats slow client mounts this way (where-to-change).
 test.describe('/desarrolladores', () => {
+  test.setTimeout(120_000)
+
   test('renders the dev hub header and serves the OpenAPI spec', async ({ page, request }) => {
     await page.goto('/desarrolladores')
 
@@ -36,17 +43,25 @@ test.describe('/desarrolladores', () => {
     //      renders it and the production build does not, so the assertion was also
     //      testing something the deployed site never shows.
     //
-    // Both go away by asserting on what our spec puts on the page and what Scalar
-    // paints first: `info.title` as the heading, and a real path. Which label
-    // Scalar chooses for an operation is its presentation decision and can change
-    // on any upgrade; the title and the paths are ours and cannot.
+    // The environment half is fixed by asserting on what our spec puts on the
+    // page instead of on a label Scalar chose: `info.title` as the heading, and a
+    // real path. Both are present in the production build, where the summary is
+    // not, and neither can be changed by a Scalar upgrade.
+    //
+    // The timing half needs a bigger budget, and 30s is not it — that was still
+    // the old number and this assertion inherited the same coin flip, failing on
+    // run 32195300036. Scalar does not paint the header early and fill in the
+    // rest; the document appears in one go at around the half-minute mark on this
+    // dev server. So the budget has to clear that comfortably rather than land on
+    // it, which is the same reason where-to-change runs at 120s.
     await expect(
       page.getByRole('heading', { name: 'Cambio Uruguay Public API', level: 1 })
-    ).toBeVisible({ timeout: 30_000 })
+    ).toBeVisible({ timeout: 90_000 })
 
-    // ...and it rendered the operations, not just the document header.
+    // ...and it rendered the operations, not just the document header. Cheap once
+    // the assertion above has already waited out the mount.
     await expect(page.getByText('/exchange/{origin}/{code}').first()).toBeVisible({
-      timeout: 30_000,
+      timeout: 15_000,
     })
   })
 
