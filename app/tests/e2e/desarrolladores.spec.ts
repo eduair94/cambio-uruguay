@@ -18,16 +18,25 @@ test.describe('/desarrolladores', () => {
 
   test('mounts the Scalar API reference', async ({ page }) => {
     await page.goto('/desarrolladores')
-    // Scalar fetches the spec client-side and renders endpoint summaries. Gate on
-    // hydration: retry until a known operation summary from the spec appears.
-    await expect(async () => {
-      const visible = await page
-        .getByText('All current quotes', { exact: false })
-        .first()
-        .isVisible()
-        .catch(() => false)
-      expect(visible).toBe(true)
-    }).toPass({ timeout: 30_000 })
+
+    // What this test is for: Scalar mounted, fetched /openapi.json client-side,
+    // and rendered OUR document — not somebody's placeholder and not an empty
+    // shell. So it asserts on values that come from the spec we publish.
+    //
+    // It used to wait for the operation summary "All current quotes" and timed
+    // out for 30s on every run. Scalar was mounting fine the whole time; it just
+    // lists operations as method + path (`GET /`, `GET /exchange/{origin}/{code}`)
+    // rather than by summary, so that string is nowhere in the document. Which
+    // label Scalar chooses to show is its presentation decision and can change on
+    // any upgrade — the title and the paths are ours and cannot.
+    await expect(
+      page.getByRole('heading', { name: 'Cambio Uruguay Public API', level: 1 })
+    ).toBeVisible({ timeout: 30_000 })
+
+    // ...and it rendered the operations, not just the document header.
+    await expect(page.getByText('/exchange/{origin}/{code}').first()).toBeVisible({
+      timeout: 30_000,
+    })
   })
 
   test('/developers alias resolves to the same page', async ({ page }) => {
