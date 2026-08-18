@@ -43,9 +43,33 @@ jobs:
 
   deploy:
     name: Zero-downtime deploy
-    needs: [secret-scan, test]
-    # Deploy only for pushes to main (and manual dispatch on main); never for PRs.
-    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: [secret-scan, test, changes]
+    # Deploy only for pushes to main (and manual dispatch on main); never for PRs
+    # — AND only when the push actually touched the Nuxt app.
+    #
+    # Why the path gate: this job SSHes in and runs a full `nuxt build` on the
+    # server, ~5 minutes every time. It used to run on every push to main
+    # regardless of what changed. Measured on the 15 commits up to 43f5861, 13
+    # of them touched zero files under `app/` — all 13 rebuilt and redeployed
+    # the frontend to produce a byte-identical result. The backend half of this
+    # workflow has had a path filter since it was written; the app half never
+    # got one.
+    #
+    # `workflow_dispatch` deliberately bypasses the gate: it is the escape hatch
+    # for redeploying the current main by hand (recovering a bad server state,
+    # forcing a rebuild after an out-of-band change), and dorny/paths-filter has
+    # no meaningful base to diff against on a manual run anyway.
+    #
+    # Safe to gate on `app/**` because the Nuxt app is self-contained: no
+    # workspaces, no `file:` deps, no alias in nuxt.config pointing outside
+    # `app/`, and every relative import that climbs out of `app/server/` lands
+    # back in `app/utils/`. If that ever stops being true, widen this filter
+    # BEFORE the coupling lands, because the failure mode here is a change that
+    # silently never reaches production.
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' && needs.changes.outputs.app == 'true'))
     runs-on: ubuntu-latest
     steps:
       - name: Run remote deploy over SSH
@@ -87,12 +111,16 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
+      app: ${{ steps.filter.outputs.app }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
         id: filter
         with:
           filters: |
+            app:
+              - 'app/**'
+              - '.github/workflows/deploy.yml'
             backend:
               - 'index.ts'
               - 'classes/**'
