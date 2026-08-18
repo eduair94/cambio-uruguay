@@ -6,9 +6,11 @@
 // puts the answer first and the link last, and `validate.ts` enforces afterwards what the prompt
 // only asks for.
 //
-// Nothing here is grounded (no google_search): the context is text we already retrieved from our
-// own pages. Letting the model search would let facts from anywhere leak into a comment that reads
-// as if it came from the site.
+// The composer itself never searches. What it may use is text somebody already downloaded and
+// verified: the site page (retrieved) and, for the part that page does not cover, external
+// sources fetched by `augment.ts`. The distinction matters — a model searching mid-composition
+// would fold half-remembered facts into a comment that reads as if it came from the site, and
+// nothing downstream could tell which sentence came from where.
 
 import { askText, askTextWithImage } from "../ai_text";
 import type { RetrievedPage } from "../rag/types";
@@ -44,10 +46,21 @@ export interface ComposeInput {
   image?: { data: Buffer; mimeType: string; ext: string };
   /** Told to the model in the prompt so it knows an attachment exists even on the text-only path. */
   imageNote?: string;
+  /**
+   * Verified text from OUTSIDE the site, for the part of the question the page does not cover.
+   *
+   * Same standing as the site's own text: it was downloaded by us from URLs that answered 200,
+   * and the validator checks figures against it too. What it is NOT is a licence to write from
+   * memory — an unsourced claim is still an unsourced claim, wherever it would have come from.
+   */
+  externalEvidence?: string;
 }
 
 export function buildComposePrompt(input: ComposeInput): string {
-  const context = contextOf([input.page, ...input.support], 4500);
+  // 9 000, not 4 500: the page decides WHICH answer, but writing it needs the page's figures, and
+  // the four best-matching slices routinely leave them out. `input.page` arrives already widened
+  // by the caller — see `contextPage` in run.ts.
+  const context = contextOf([input.page, ...input.support], 9000);
 
   return `Estás por comentar en un hilo de Reddit Uruguay. Escribís en nombre de cambio-uruguay.com,
 pero el comentario tiene que leerse como el de alguien que sabe del tema y se tomó dos minutos para
@@ -57,8 +70,13 @@ LO QUE ESCRIBIÓ LA PERSONA
 título: ${input.postTitle}
 cuerpo: ${(input.postBody || "(sin cuerpo)").slice(0, 1500)}
 ${input.imageNote ? `\nADJUNTO: ${input.imageNote}\n` : ""}
-CONTEXTO — texto extraído de páginas del sitio. Es tu ÚNICA fuente de datos.
+CONTEXTO — texto extraído de la página del sitio que vamos a enlazar.
 ${context}
+${input.externalEvidence ? `
+FUENTES EXTERNAS VERIFICADAS — las descargamos nosotros para la parte que la página no cubre.
+Podés usarlas igual que el contexto de arriba: las cifras que aparezcan acá son válidas.
+${input.externalEvidence}
+` : ""}
 
 CÓMO CONTESTAR
 
@@ -69,7 +87,8 @@ CÓMO CONTESTAR
    específico y lo ignorás, el comentario no sirve.
 3. Si en el contexto hay algo que contradice lo que la persona da por sentado, decíselo. Esa es la
    parte útil.
-4. Si el contexto no alcanza para una parte, decilo en media oración y seguí. No la completes.
+4. Si ni el contexto ni las fuentes externas alcanzan para una parte, decilo en media oración y
+   seguí. No la completes de memoria.
 
 CÓMO NO ESCRIBIR
 
@@ -89,8 +108,8 @@ Frases cortas mezcladas con alguna más larga. Está bien empezar una oración c
 
 REGLAS DURAS (se verifican después; si fallan, el comentario se descarta)
 
-- NINGÚN número que no aparezca literal en el CONTEXTO. Ni cifras, ni porcentajes, ni plazos, ni
-  cantidades para enumerar. Si no está arriba, no se escribe.
+- NINGÚN número que no aparezca literal en el CONTEXTO o en las FUENTES EXTERNAS. Ni cifras, ni
+  porcentajes, ni plazos, ni cantidades para enumerar. Si no está arriba, no se escribe.
 - Un solo enlace, exactamente este, al final del cuerpo: ${input.url}
   Va como "el detalle está acá", no como el motivo del comentario.
 - Última línea, sola en su renglón y textual:

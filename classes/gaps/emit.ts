@@ -24,6 +24,8 @@ export interface EmittedFile {
 
 /** Where the nav array waits for its next entry. */
 export const NAV_MARKER = "  // <<< generated-nav >>>";
+/** Where the addenda array waits for its next entry. */
+export const ADDENDA_MARKER = "  // <<< generated-addenda >>>";
 
 const q = (value: string): string => JSON.stringify(value);
 const list = (values: readonly string[], indent: string): string =>
@@ -194,4 +196,69 @@ export function emitAll(inputs: EmitInputs): EmittedFile[] {
   }
 
   return files;
+}
+
+export interface AddendumPayload {
+  route: string;
+  updatedAt: string;
+  items: Array<{ question: string; answer: string; sources: Array<{ title: string; url: string }> }>;
+}
+
+/**
+ * Añadir o reemplazar la ampliación de una página en `app/utils/generated/addenda.ts`.
+ *
+ * Reemplaza, no acumula: una ampliación es la respuesta actual a lo que la gente venía preguntando
+ * sobre esa página, y dos bloques para la misma ruta se renderizarían dos veces.
+ *
+ * Igual que el resto de este archivo, el contenido sale como STRINGS de datos. La página que se
+ * amplía no se toca: el layout inyecta esto por ruta.
+ */
+export function emitAddendum(current: string, addendum: AddendumPayload): EmittedFile {
+  if (!current.includes(ADDENDA_MARKER)) {
+    throw new Error(`app/utils/generated/addenda.ts perdió el marcador ${ADDENDA_MARKER.trim()}`);
+  }
+
+  const items = addendum.items
+    .map((item) => {
+      const sources = item.sources
+        .map((s) => `          { title: ${q(s.title)}, url: ${q(s.url)} },`)
+        .join("\n");
+      return [
+        "      {",
+        `        question: ${q(item.question)},`,
+        `        answer: ${q(item.answer)},`,
+        "        sources: [",
+        sources,
+        "        ],",
+        "      },",
+      ].join("\n");
+    })
+    .join("\n");
+
+  const block = [
+    "  {",
+    `    route: ${q(addendum.route)},`,
+    `    updatedAt: ${q(addendum.updatedAt)},`,
+    "    items: [",
+    items,
+    "    ],",
+    "  },",
+  ].join("\n");
+
+  // Sacar el bloque anterior de esta ruta, si lo había. Por búsqueda de texto y no por regex:
+  // una ruta lleva barras y guiones, y armar la expresión escapada correctamente a través de
+  // capas de comillas es justo donde este archivo ya se rompió una vez.
+  const head = `  {
+    route: ${q(addendum.route)},`;
+  let cleaned = current;
+  const at = cleaned.indexOf(head);
+  if (at >= 0) {
+    const end = cleaned.indexOf(`
+  },`, at);
+    if (end >= 0) cleaned = cleaned.slice(0, at) + cleaned.slice(end + 5);
+  }
+  return {
+    path: "app/utils/generated/addenda.ts",
+    content: cleaned.replace(ADDENDA_MARKER, `${block}\n${ADDENDA_MARKER}`),
+  };
 }

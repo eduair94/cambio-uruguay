@@ -33,7 +33,8 @@ async function main(): Promise<void> {
     const summary = await refreshContentGaps(today());
     console.log(
       `[gaps] ${summary.gaps} preguntas sin respuesta → ${summary.clusters} clusters; ` +
-        `${summary.drafted.length} borradores nuevos`
+        `${summary.published.length} páginas nuevas, ${summary.enriched.length} ampliadas, ` +
+        `${summary.drafted.length} borradores`
     );
     for (const path of summary.drafted) console.log(`[gaps]   ${path}`);
     for (const pending of summary.pending.slice(0, 8)) {

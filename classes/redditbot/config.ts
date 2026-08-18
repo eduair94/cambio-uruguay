@@ -69,6 +69,14 @@ export interface BotConfig {
    * answer, at the cost of being blind to the actual question.
    */
   readImages: boolean;
+  /**
+   * Investigar afuera lo que la página no cubre, antes de redactar.
+   *
+   * Cuesta una llamada con búsqueda web por respuesta, y con seis respuestas por día eso es nada
+   * frente a lo que compra: el primer comentario real salió cierto pero sin una sola cifra porque
+   * la página no mencionaba el caso puntual que preguntaban. Apagalo sólo para depurar.
+   */
+  researchGaps: boolean;
   minAgeMinutes: number;
   maxAgeHours: number;
   maxPerDay: number;
@@ -124,6 +132,7 @@ export function botConfig(): BotConfig {
     fetchLimit: num("REDDIT_BOT_FETCH_LIMIT", 50),
     maxCandidatesPerRun: num("REDDIT_BOT_MAX_CANDIDATES", 12),
     readImages: process.env.REDDIT_BOT_READ_IMAGES !== "0",
+    researchGaps: process.env.REDDIT_BOT_RESEARCH_GAPS !== "0",
     minAgeMinutes: num("REDDIT_BOT_MIN_AGE_MIN", 15),
     maxAgeHours: num("REDDIT_BOT_MAX_AGE_HOURS", 8),
     maxPerDay: num("REDDIT_BOT_MAX_PER_DAY", 6),

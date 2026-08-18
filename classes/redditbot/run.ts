@@ -17,10 +17,12 @@ import { SiteRetriever } from "../rag/retrieve";
 import { loadIndex } from "../rag/store";
 import { fetchNewPosts, fetchPostsByIds, redditConfigured, type RedditPostRaw } from "../reddit";
 import { RedditContentGapModel } from "../models/RedditContentGap";
+import { RedditPageGapModel } from "../models/RedditPageGap";
 import { botConfig, canPost, type BotConfig } from "./config";
 import { composeReply, buildComposePrompt, tidy, VOICE, type ComposeInput } from "./compose";
 import { retrievalQuery, screenPost } from "./filter";
 import { retrievalGate } from "./gate";
+import { augmentContext, EMPTY_AUGMENTATION, type Augmentation } from "./augment";
 import { fetchPostImage } from "./image";
 import { judgeRelevance } from "./judge";
 import { authorAllowed, pageAllowed, runAllowed, subAllowed } from "./limits";
@@ -128,17 +130,49 @@ async function recordGap(
   );
 }
 
+/**
+ * Anotar que a una página le faltó algo para contestar un hilo.
+ *
+ * Una sola vez por (página, hilo). Cuando varias personas tropiezan con el mismo faltante en la
+ * misma página, eso deja de ser una anécdota y pasa a ser una ampliación que hay que escribir —
+ * que es lo que hace `classes/gaps/enrich.ts`.
+ */
+async function recordPageGap(pagePath: string, augmented: Augmentation, postId: string): Promise<void> {
+  try {
+    await RedditPageGapModel.updateOne(
+      { pagePath, postId },
+      {
+        $set: {
+          pagePath,
+          postId,
+          missing: augmented.missing.slice(0, 500),
+          findingsSources: augmented.sources.map((s) => s.url),
+          hadEvidence: Boolean(augmented.evidence),
+        },
+      },
+      { upsert: true }
+    );
+  } catch (e: any) {
+    // Anotar un faltante nunca puede costar la respuesta que ya está escrita.
+    console.warn("[redditbot] no pude anotar el faltante de página:", e?.message || e);
+  }
+}
+
 /** Compose, validate, and give the model exactly one corrected second chance. */
 async function composeValidated(
   input: ComposeInput,
   context: string
 ): Promise<{ reply: string } | { reject: string }> {
+  // Todo lo que puede respaldar una cifra: la página, lo que investigamos afuera, y lo que la
+  // propia persona escribió.
+  const evidence = `${context}
+${input.externalEvidence ?? ""}`;
   let reply = await composeReply(input);
   if (!reply) return { reject: "composer_empty" };
 
   // The poster's own numbers count as sourced — see the note on ValidateInput.postText.
   const postText = `${input.postTitle}\n${input.postBody}`;
-  let verdict = validateReply({ reply, expectedUrl: input.url, context, postText });
+  let verdict = validateReply({ reply, expectedUrl: input.url, context: evidence, postText });
   if (verdict.ok) return { reply };
 
   // One retry, naming the specific violation. Repeating the rules verbatim does not work; telling
@@ -149,7 +183,7 @@ async function composeValidated(
   if (!second) return { reject: `invalid_${verdict.reason}` };
 
   reply = tidy(second);
-  verdict = validateReply({ reply, expectedUrl: input.url, context, postText });
+  verdict = validateReply({ reply, expectedUrl: input.url, context: evidence, postText });
   if (verdict.ok) return { reply };
 
   return { reject: `invalid_${verdict.reason}` };
@@ -208,6 +242,17 @@ async function deliverReply({
   const image = cfg.readImages ? await fetchPostImage(post.imageUrl) : null;
   if (image) console.log(`[redditbot] el post trae imagen (${Math.round(image.bytes / 1024)} KB), se la paso al redactor`);
 
+  // Lo que la página no cubre, investigado y verificado. Sirve dos veces: mejora ESTA respuesta,
+  // y queda anotado como faltante de la página para ampliarla después.
+  const augmented: Augmentation = cfg.researchGaps
+    ? await augmentContext(`${post.title}
+${post.selftext}`, context)
+    : EMPTY_AUGMENTATION;
+  if (augmented.missing) {
+    console.log(`[redditbot] a ${chosen.path} le falta: ${augmented.missing}`);
+    await recordPageGap(chosen.path, augmented, post.id);
+  }
+
   const base = {
     postId: post.id,
     sub: post.sub,
@@ -227,13 +272,15 @@ async function deliverReply({
     {
       postTitle: post.title,
       postBody: post.selftext,
-      page: chosen,
+      // La ampliada, no la del ranking: el prompt arma su contexto desde acá.
+      page: contextPage ?? chosen,
       support,
       url,
       image: image ?? undefined,
       imageNote: image
         ? "la persona adjuntó una imagen; miralá y usá lo que se ve en ella (montos, nombres, fechas) para contestar"
         : undefined,
+      externalEvidence: augmented.evidence || undefined,
     },
     context
   );

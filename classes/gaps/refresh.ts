@@ -11,6 +11,7 @@ import { RedditContentGapModel, type RedditContentGapDoc } from "../models/Reddi
 import { clusterGaps, draftable, MIN_DEMAND, type GapCluster } from "./cluster";
 import { writeDraft } from "./draft";
 import { publishPageForCluster } from "./publish";
+import { enrichExistingPages } from "./publishAddenda";
 
 /** How far back the pipeline looks. A question asked four months ago is not today's demand. */
 const WINDOW_DAYS = 120;
@@ -26,6 +27,8 @@ export interface GapsSummary {
   gaps: number;
   clusters: number;
   published: string[];
+  /** Páginas que ya existían y crecieron con lo que Reddit preguntó. */
+  enriched: string[];
   drafted: string[];
   skipped: Array<{ label: string; reason: string }>;
   pending: Array<{ label: string; demand: number }>;
@@ -38,7 +41,11 @@ export async function refreshContentGaps(today: string): Promise<GapsSummary> {
     .limit(2000)
     .lean<RedditContentGapDoc[]>();
 
-  const summary: GapsSummary = { gaps: docs.length, clusters: 0, published: [], drafted: [], skipped: [], pending: [] };
+  const summary: GapsSummary = { gaps: docs.length, clusters: 0, published: [], enriched: [], drafted: [], skipped: [], pending: [] };
+  // Ampliar páginas que ya existen corre siempre y primero: es más barato que escribir una página
+  // nueva, y es el caso frecuente — "hay página y no dice esto" pasa mucho más que "no hay página".
+  summary.enriched = await enrichExistingPages(today);
+
   if (!docs.length) return summary;
 
   const clusters = clusterGaps(docs);
