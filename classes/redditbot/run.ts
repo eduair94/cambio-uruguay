@@ -39,6 +39,14 @@ import type { RetrievedPage } from "../rag/types";
 
 export interface RunSummary {
   fetched: number;
+  /**
+   * Threads skipped because the ledger already holds a decision for them.
+   *
+   * Reported rather than silently dropped: on a second run over the same listing this is nearly all
+   * of them, and without the number the log reads "334 posts → 0 filtrados" with no breakdown, which
+   * looks exactly like a filter that rejects everything.
+   */
+  alreadyDecided: number;
   screened: number;
   scored: number;
   gaps: number;
@@ -50,6 +58,7 @@ export interface RunSummary {
 
 const emptySummary = (note: string): RunSummary => ({
   fetched: 0,
+  alreadyDecided: 0,
   screened: 0,
   scored: 0,
   gaps: 0,
@@ -163,7 +172,10 @@ export async function runOnce(cfg: BotConfig = botConfig()): Promise<RunSummary>
   const seen = await seenPostIds(posts.map((p) => p.id));
   const candidates: RedditPostRaw[] = [];
   for (const post of posts) {
-    if (seen.has(post.id)) continue;
+    if (seen.has(post.id)) {
+      summary.alreadyDecided++;
+      continue;
+    }
 
     const subGate = subAllowed(cfg, snapshot, post.sub);
     if (!subGate.ok) {

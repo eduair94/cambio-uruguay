@@ -30,7 +30,7 @@ async function main(): Promise<void> {
       .map(([reason, count]) => `${reason}=${count}`)
       .join(" ");
     console.log(
-      `[redditbot] ${summary.fetched} posts → ${summary.screened} filtrados → ${summary.scored} rankeados; ` +
+      `[redditbot] ${summary.fetched} posts (${summary.alreadyDecided} ya decididos) → ${summary.screened} filtrados → ${summary.scored} rankeados; ` +
         `publicados=${summary.posted} dryRun=${summary.dryRun} huecos=${summary.gaps}; ${summary.note}` +
         (rejected ? `\n[redditbot] descartes: ${rejected}` : "")
     );
