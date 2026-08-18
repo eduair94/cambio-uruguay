@@ -15,6 +15,8 @@
 // the catalogue-backed long tail lives in `searchIndex.ts`, which is only
 // imported by the search surfaces.
 
+import { GENERATED_NAV } from './generatedPages'
+
 /** What kind of thing a search result points at. Drives ranking and the type chip. */
 export type SearchType =
   | 'page'
@@ -1685,6 +1687,9 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
           'registro bcu entidades',
         ],
       },
+      // Páginas que creó el pipeline de huecos de Reddit, en su propio archivo para que un job
+      // automático nunca tenga que parchear ESTE. Ver app/utils/generatedPages.ts.
+      ...GENERATED_NAV,
     ],
   },
   {

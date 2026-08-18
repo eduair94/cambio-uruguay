@@ -222,6 +222,42 @@ export class SiteRetriever {
     return pages.sort((a, b) => b.score - a.score).slice(0, limit);
   }
 
+  /** Every page path in the index. Used to tell "not indexed yet" from "not relevant". */
+  paths(): Set<string> {
+    return new Set(this.chunks.map((chunk) => chunk.path));
+  }
+
+  /**
+   * One specific page, scored against a query — regardless of whether it won the ranking.
+   *
+   * For the revisit pass: a page was written to answer this exact thread, so which page to link is
+   * already decided and the only open question is which of its passages to quote. Going through the
+   * ranking would risk linking a different page than the one the question caused to exist.
+   */
+  pageFor(path: string, queryVector: Float32Array | null): RetrievedPage | null {
+    const chunks = this.chunks
+      .map((chunk, i) => ({ chunk, i }))
+      .filter((entry) => entry.chunk.path === path);
+    if (!chunks.length) return null;
+
+    const scored: ScoredChunk[] = chunks
+      .map(({ chunk }) => ({
+        chunk,
+        score: 0,
+        cosine: queryVector && chunk.vector.length ? cosine(queryVector, chunk.vector) : 0,
+      }))
+      .sort((a, b) => b.cosine - a.cosine);
+
+    return {
+      path,
+      title: scored[0]!.chunk.title,
+      tier: scored[0]!.chunk.tier,
+      score: scored[0]!.cosine,
+      cosine: scored[0]!.cosine,
+      chunks: scored.slice(0, 4),
+    };
+  }
+
   /** Embed the question, then rank. `null` embedding degrades to the lexical arm alone. */
   async search(queryText: string, limit = 5): Promise<RetrievedPage[]> {
     const vector = await embedOne(queryText, "RETRIEVAL_QUERY");

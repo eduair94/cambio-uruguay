@@ -22,7 +22,12 @@ export interface RedditBotReplyDoc {
   postTitle: string;
   postPermalink: string;
   postCreatedUtc: number;
-  status: "posted" | "dry_run" | "rejected" | "failed";
+  /**
+   * `waiting_page` is the one that is not terminal: the site had no answer, the gap pipeline
+   * published a page for it, and this thread is queued to be answered once that page is live and
+   * indexed. Every other status means the decision is made.
+   */
+  status: "posted" | "dry_run" | "rejected" | "failed" | "waiting_page";
   rejectReason: string;
   pagePath: string;
   pageUrl: string;

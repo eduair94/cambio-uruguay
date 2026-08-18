@@ -112,9 +112,17 @@ export function clusterGaps(docs: readonly RedditContentGapDoc[], threshold = CL
   return clusters.sort((a, b) => b.members.length - a.members.length);
 }
 
-/** Clusters big enough to be worth a page, and not already drafted. */
+/**
+ * Clusters big enough to be worth a page, and not already settled.
+ *
+ * Three ways a cluster is settled, and all three must be checked or the pipeline spends a research
+ * call on the same question every night: it already has a page, a draft was already written for it,
+ * or it was judged outside the site's subjects — which is a permanent answer, not a pending one.
+ */
 export function draftable(clusters: readonly GapCluster[], minDemand = MIN_DEMAND): GapCluster[] {
   return clusters.filter(
-    (cluster) => cluster.members.length >= minDemand && !cluster.members.some((member) => member.draftedAt)
+    (cluster) =>
+      cluster.members.length >= minDemand &&
+      !cluster.members.some((member) => member.draftedAt || member.publishedAt || member.outOfScope)
   );
 }

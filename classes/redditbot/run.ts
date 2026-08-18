@@ -12,7 +12,7 @@
 
 import axios from "axios";
 import { notifyAdmin } from "../notify";
-import { embedTexts, vectorToBuffer } from "../rag/embed";
+import { embedOne, embedTexts, vectorToBuffer } from "../rag/embed";
 import { SiteRetriever } from "../rag/retrieve";
 import { loadIndex } from "../rag/store";
 import { fetchNewPosts, redditConfigured, type RedditPostRaw } from "../reddit";
@@ -30,8 +30,10 @@ import {
   readSnapshot,
   recordDecision,
   seenPostIds,
+  waitingForPage,
 } from "./ledger";
 import { postComment } from "./post";
+import { revisitCandidates } from "./revisit";
 import { retryHint, validateReply } from "./validate";
 import { askText } from "../ai_text";
 import { contextOf } from "../rag/retrieve";
@@ -141,6 +143,189 @@ async function composeValidated(
   return { reject: `invalid_${verdict.reason}` };
 }
 
+interface DeliverInput {
+  post: RedditPostRaw;
+  chosen: RetrievedPage;
+  support: readonly RetrievedPage[];
+  judgeConfidence: number;
+  judgeReason: string;
+  cfg: BotConfig;
+  summary: RunSummary;
+  reject: (reason: string) => void;
+}
+
+/**
+ * Everything from "we know which page to link" to "it is posted".
+ *
+ * Shared by the two ways a thread gets here — the normal ranking, and the revisit pass for a thread
+ * whose page was written because it asked — precisely because the differences between them belong
+ * upstream. Which page to link is a decision; how to write and check a comment is not, and having
+ * two copies of the validation would eventually mean one of them missing a rule.
+ *
+ * Returns `true` when the run is over: something was posted, or would have been in a live run.
+ */
+async function deliverReply({
+  post,
+  chosen,
+  support,
+  judgeConfidence,
+  judgeReason,
+  cfg,
+  summary,
+  reject,
+}: DeliverInput): Promise<boolean> {
+  const url = `${cfg.baseUrl}${chosen.path}`;
+  const context = contextOf([chosen, ...support], 4500);
+
+  // Fetch the attachment only now: one download, for the single thread we are actually answering.
+  // Many of these threads ARE the screenshot — "me llegó esto, es normal?" over a photo of the
+  // courier charge — and answering those without looking is answering a question we never read.
+  const image = cfg.readImages ? await fetchPostImage(post.imageUrl) : null;
+  if (image) console.log(`[redditbot] el post trae imagen (${Math.round(image.bytes / 1024)} KB), se la paso al redactor`);
+
+  const base = {
+    postId: post.id,
+    sub: post.sub,
+    author: post.author,
+    postTitle: post.title,
+    postPermalink: post.permalink,
+    postCreatedUtc: post.createdUtc,
+    pagePath: chosen.path,
+    pageUrl: url,
+    retrievalScore: chosen.score,
+    retrievalCosine: chosen.cosine,
+    judgeConfidence,
+    judgeReason,
+  };
+
+  const composed = await composeValidated(
+    {
+      postTitle: post.title,
+      postBody: post.selftext,
+      page: chosen,
+      support,
+      url,
+      image: image ?? undefined,
+      imageNote: image
+        ? "la persona adjuntó una imagen; miralá y usá lo que se ve en ella (montos, nombres, fechas) para contestar"
+        : undefined,
+    },
+    context
+  );
+  if ("reject" in composed) {
+    await recordDecision({ ...base, status: "rejected", rejectReason: composed.reject });
+    reject(composed.reject);
+    return false;
+  }
+
+  if (!(await linkResolves(url))) {
+    console.warn(`[redditbot] ${url} no resolvió 200 — no se publica`);
+    reject("dead_link");
+    return false;
+  }
+
+  if (!canPost(cfg)) {
+    await recordDecision({
+      ...base,
+      status: "dry_run",
+      rejectReason: cfg.enabled ? "dry_run" : "disabled",
+      replyText: composed.reply,
+    });
+    summary.dryRun++;
+    console.log(`[redditbot] DRY RUN r/${post.sub} ${post.permalink}\n→ ${url}\n${composed.reply}\n`);
+    return true;
+  }
+
+  const comment = await postComment(post.id, composed.reply, cfg);
+  if (!comment) {
+    await recordDecision({ ...base, status: "failed", rejectReason: "reddit_refused", replyText: composed.reply });
+    reject("reddit_refused");
+    return false;
+  }
+
+  await recordDecision({
+    ...base,
+    status: "posted",
+    replyText: composed.reply,
+    commentId: comment.id,
+    commentFullname: comment.fullname,
+    postedAt: new Date(),
+  });
+  summary.posted++;
+  await notifyAdmin(
+    `🤖 *Reddit bot* respondió en r/${post.sub}\n${post.title.slice(0, 120)}\n→ ${url}\n${comment.permalink || post.permalink}`
+  );
+  return true;
+}
+
+/**
+ * A thread whose page exists because it asked.
+ *
+ * The retrieval gate is skipped on purpose — "does the site cover this?" was answered by writing
+ * the page — but the judge is not: it is the check that the page actually turned out to answer the
+ * question, which is exactly what could have gone wrong between research and publication.
+ */
+async function answerParkedThread(
+  post: RedditPostRaw,
+  pagePath: string,
+  retriever: SiteRetriever,
+  cfg: BotConfig,
+  snapshot: Awaited<ReturnType<typeof readSnapshot>>,
+  summary: RunSummary,
+  reject: (reason: string) => void
+): Promise<boolean> {
+  const subGate = subAllowed(cfg, snapshot, post.sub);
+  if (!subGate.ok) {
+    reject(`limit:${subGate.reason}`);
+    return false;
+  }
+  const authorGate = authorAllowed(cfg, await lastRepliedToAuthorAt(post.author));
+  if (!authorGate.ok) {
+    reject(`limit:${authorGate.reason}`);
+    return false;
+  }
+
+  const query = retrievalQuery(post);
+  const vector = await embedOne(query, "RETRIEVAL_QUERY");
+  const chosen = retriever.pageFor(pagePath, vector);
+  if (!chosen) {
+    reject("parked_page_missing");
+    return false;
+  }
+
+  const verdict = await judgeRelevance(post.title, post.selftext, [chosen]);
+  if (!verdict.relevant || verdict.confidence < cfg.minJudge) {
+    // The page was written for this thread and still does not answer it. Recording the rejection
+    // takes the thread out of the parked queue rather than retrying it forever.
+    await recordDecision({
+      postId: post.id,
+      sub: post.sub,
+      author: post.author,
+      postTitle: post.title,
+      postPermalink: post.permalink,
+      postCreatedUtc: post.createdUtc,
+      status: "rejected",
+      rejectReason: "judge_after_page",
+      pagePath,
+      judgeConfidence: verdict.confidence,
+      judgeReason: verdict.reason,
+    });
+    reject("judge_after_page");
+    return false;
+  }
+
+  return deliverReply({
+    post,
+    chosen,
+    support: [],
+    judgeConfidence: verdict.confidence,
+    judgeReason: verdict.reason,
+    cfg,
+    summary,
+    reject,
+  });
+}
+
 export async function runOnce(cfg: BotConfig = botConfig()): Promise<RunSummary> {
   if (!redditConfigured()) return emptySummary("sin credenciales de lectura de Reddit (REDDIT_CLIENT_ID)");
 
@@ -205,7 +390,11 @@ export async function runOnce(cfg: BotConfig = botConfig()): Promise<RunSummary>
     candidates.push(post);
   }
   summary.screened = candidates.length;
-  if (!candidates.length) return { ...summary, note: "nada pasó el filtro temático" };
+
+  // Threads whose page was written and may now be answerable. Counted before the early return: a
+  // quiet morning on /new is exactly when the backlog of parked questions should get its turn.
+  const parkedCount = (await waitingForPage()).length;
+  if (!candidates.length && !parkedCount) return { ...summary, note: "nada pasó el filtro temático" };
 
   // 3. Only now load the index. It is ~17 MB of vectors, and on most of the 65 runs a day nothing
   //    clears the screen — reading it before knowing that would be the single most expensive thing
@@ -224,6 +413,18 @@ export async function runOnce(cfg: BotConfig = botConfig()): Promise<RunSummary>
     );
     return { ...summary, note: `índice roto: ${chunks.length} chunks, 0 con vector` };
   }
+
+  // 3b. Threads that are already spoken for: a page exists because THEY asked. They jump the queue,
+  //     because the page was written to answer this exact question and every day it waits is a day
+  //     the twelve people who asked never hear about it.
+  if (parkedCount) {
+    const revisits = await revisitCandidates({ indexedPaths: retriever.paths(), cfg });
+    for (const { post, pagePath } of revisits) {
+      const done = await answerParkedThread(post, pagePath, retriever, cfg, snapshot, summary, reject);
+      if (done) return { ...summary, note: `respondido con la página que se generó para el hilo (${pagePath})` };
+    }
+  }
+  if (!candidates.length) return { ...summary, note: "sólo había hilos esperando página" };
 
   // 4. Pre-rank with the lexical arm alone, which is free, and embed only the best few.
   //
@@ -337,100 +538,18 @@ export async function runOnce(cfg: BotConfig = botConfig()): Promise<RunSummary>
     }
 
     // 8. Write it.
-    const url = `${cfg.baseUrl}${chosen.path}`;
-    const support = pages.filter((page) => page.path !== chosen.path);
-    const context = contextOf([chosen, ...support], 4500);
-
-    // Fetch the attachment only now: one download, for the single thread we are actually answering.
-    // Many of these threads ARE the screenshot — "me llegó esto, es normal?" over a photo of the
-    // courier charge — and answering those without looking is answering a question we never read.
-    const image = cfg.readImages ? await fetchPostImage(post.imageUrl) : null;
-    if (image) console.log(`[redditbot] el post trae imagen (${Math.round(image.bytes / 1024)} KB), se la paso al redactor`);
-
-    const composed = await composeValidated(
-      {
-        postTitle: post.title,
-        postBody: post.selftext,
-        page: chosen,
-        support,
-        url,
-        image: image ?? undefined,
-        imageNote: image
-          ? "la persona adjuntó una imagen; miralá y usá lo que se ve en ella (montos, nombres, fechas) para contestar"
-          : undefined,
-      },
-      context
-    );
-    if ("reject" in composed) {
-      await recordDecision({
-        postId: post.id,
-        sub: post.sub,
-        author: post.author,
-        postTitle: post.title,
-        postPermalink: post.permalink,
-        postCreatedUtc: post.createdUtc,
-        status: "rejected",
-        rejectReason: composed.reject,
-        pagePath: chosen.path,
-        pageUrl: url,
-        retrievalScore: chosen.score,
-        retrievalCosine: chosen.cosine,
-        judgeConfidence: verdict.confidence,
-        judgeReason: verdict.reason,
-      });
-      reject(composed.reject);
-      continue;
-    }
-
-    if (!(await linkResolves(url))) {
-      console.warn(`[redditbot] ${url} no resolvió 200 — no se publica`);
-      reject("dead_link");
-      continue;
-    }
-
-    const base = {
-      postId: post.id,
-      sub: post.sub,
-      author: post.author,
-      postTitle: post.title,
-      postPermalink: post.permalink,
-      postCreatedUtc: post.createdUtc,
-      pagePath: chosen.path,
-      pageUrl: url,
-      retrievalScore: chosen.score,
-      retrievalCosine: chosen.cosine,
+    const done = await deliverReply({
+      post,
+      chosen,
+      support: pages.filter((page) => page.path !== chosen.path),
       judgeConfidence: verdict.confidence,
       judgeReason: verdict.reason,
-      replyText: composed.reply,
-    };
-
-    if (!canPost(cfg)) {
-      await recordDecision({ ...base, status: "dry_run", rejectReason: cfg.enabled ? "dry_run" : "disabled" });
-      summary.dryRun++;
-      console.log(`[redditbot] DRY RUN r/${post.sub} ${post.permalink}\n→ ${url}\n${composed.reply}\n`);
-      return { ...summary, note: "dry run" };
-    }
-
-    const comment = await postComment(post.id, composed.reply, cfg);
-    if (!comment) {
-      await recordDecision({ ...base, status: "failed", rejectReason: "reddit_refused" });
-      reject("reddit_refused");
-      continue;
-    }
-
-    await recordDecision({
-      ...base,
-      status: "posted",
-      commentId: comment.id,
-      commentFullname: comment.fullname,
-      postedAt: new Date(),
+      cfg,
+      summary,
+      reject,
     });
-    summary.posted++;
-    await notifyAdmin(
-      `🤖 *Reddit bot* respondió en r/${post.sub}\n${post.title.slice(0, 120)}\n→ ${url}\n${comment.permalink || post.permalink}`
-    );
     // One per run. See the note at the top.
-    return { ...summary, note: "publicado" };
+    if (done) return { ...summary, note: canPost(cfg) ? "publicado" : "dry run" };
   }
 
   return { ...summary, note: summary.gaps ? "sin página específica para los candidatos" : "nada que responder" };

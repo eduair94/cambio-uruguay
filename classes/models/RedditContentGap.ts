@@ -31,6 +31,19 @@ export interface RedditContentGapDoc {
   /** Set once a draft has been generated for this gap's cluster, so it is never generated twice. */
   draftPath: string;
   draftedAt: Date | null;
+  /**
+   * The page the pipeline published for this cluster, and when.
+   *
+   * Also the memory that lets the loop close: the threads that asked for it are marked
+   * `waiting_page` in the reply ledger, and once this route is live and indexed the bot goes back
+   * and answers them. Without it the question that motivated the page would never get the link.
+   */
+  pagePath: string;
+  publishedAt: Date | null;
+  publishedCommit: string;
+  /** Why this cluster will never get a page: outside the site's subjects. Stops endless retries. */
+  outOfScope: boolean;
+  outOfScopeReason: string;
 }
 
 const RedditContentGapSchema = new Schema<RedditContentGapDoc>(
@@ -49,6 +62,11 @@ const RedditContentGapSchema = new Schema<RedditContentGapDoc>(
     clusterLabel: { type: String, default: "" },
     draftPath: { type: String, default: "" },
     draftedAt: { type: Date, default: null },
+    pagePath: { type: String, default: "" },
+    publishedAt: { type: Date, default: null },
+    publishedCommit: { type: String, default: "" },
+    outOfScope: { type: Boolean, default: false },
+    outOfScopeReason: { type: String, default: "" },
   },
   { timestamps: true }
 );

@@ -345,6 +345,27 @@ export async function fetchNewPosts(sub: string, limit = 50): Promise<RedditPost
   return (res?.data?.children ?? []).filter((c) => c.kind === "t3").map((c) => toPost(c.data));
 }
 
+/**
+ * Specific threads by id, whatever their age.
+ *
+ * `/new` only shows what is new, which is exactly wrong for the one case that needs this: a
+ * question the site could not answer, that a page was then written for. By the time that page is
+ * live the thread has scrolled off every listing, and the only way back to it is to ask for it.
+ *
+ * `/api/info` takes up to 100 fullnames per call. A thread that was deleted simply does not come
+ * back, which is the answer we want.
+ */
+export async function fetchPostsByIds(ids: readonly string[]): Promise<RedditPostRaw[]> {
+  if (!redditConfigured() || !ids.length) return [];
+  const out: RedditPostRaw[] = [];
+  for (let i = 0; i < ids.length; i += 100) {
+    const batch = ids.slice(i, i + 100).map((id) => (id.startsWith("t3_") ? id : `t3_${id}`));
+    const res = await api<Listing<RawPost>>("/api/info", { id: batch.join(",") });
+    out.push(...(res?.data?.children ?? []).filter((c) => c.kind === "t3").map((c) => toPost(c.data)));
+  }
+  return out;
+}
+
 /** Hard stop per thread, so one 10k-comment megathread can't blow up a run. */
 const MAX_COMMENTS_PER_POST = 2000;
 /** `/api/morechildren` accepts at most 100 ids per call. */

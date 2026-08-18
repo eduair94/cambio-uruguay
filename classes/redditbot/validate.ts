@@ -12,6 +12,11 @@
 // has not answered the question, and the correct outcome is to say nothing.
 
 import { DISCLOSURE } from "./compose";
+// The number rule lives in classes/numbers.ts because an auto-published page is now held to the
+// same one; re-exported here so this module stays the single import for reply validation.
+import { inventedNumbers, numericTokens } from "../numbers";
+
+export { inventedNumbers, numericTokens };
 
 export type RejectReason =
   | "empty"
@@ -124,48 +129,6 @@ const strip = (text: string): string =>
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/\s+/g, " ")
     .trim();
-
-/**
- * Every number in a text, normalised so that the same quantity written two ways compares equal.
- *
- * Uruguayan writing uses `.` for thousands and `,` for decimals; a model rendering the same figure
- * as `1.000`, `1000` or `1,000` must not be treated as having invented anything. Percent signs,
- * currency symbols and units are dropped — the token is the quantity.
- */
-export function numericTokens(text: string): string[] {
-  const out: string[] = [];
-  for (const match of text.matchAll(/\d[\d.,]*/g)) {
-    let raw = match[0].replace(/[.,]+$/, ""); // trailing punctuation is sentence, not number
-    if (!raw) continue;
-
-    // Thousands grouping: 1.000 / 1.234.567 / 1,234,567 → strip the separators.
-    if (/^\d{1,3}([.,]\d{3})+$/.test(raw)) raw = raw.replace(/[.,]/g, "");
-    else raw = raw.replace(/,/g, "."); // a lone comma is a decimal point here
-
-    // Drop a trailing ".0" so 20 and 20.0 are the same token.
-    const num = Number(raw);
-    out.push(Number.isFinite(num) ? String(num) : raw);
-  }
-  return out;
-}
-
-/**
- * Numbers present in the reply but not in the context.
- *
- * Exported for the retry prompt, which names them: telling the model *which* number it invented
- * makes the second attempt succeed far more often than repeating the rule louder.
- */
-export function inventedNumbers(reply: string, context: string): string[] {
-  const allowed = new Set(numericTokens(context));
-  const seen = new Set<string>();
-  const bad: string[] = [];
-  for (const token of numericTokens(reply)) {
-    if (allowed.has(token) || seen.has(token)) continue;
-    seen.add(token);
-    bad.push(token);
-  }
-  return bad;
-}
 
 /** Bare URLs and markdown links alike. */
 export function extractLinks(text: string): string[] {

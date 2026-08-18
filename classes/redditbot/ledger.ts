@@ -17,13 +17,44 @@ export interface LedgerSnapshot {
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-/** Post ids already decided on, so a run never re-scores what it already judged. */
+/**
+ * Post ids already decided on, so a run never re-scores what it already judged.
+ *
+ * `waiting_page` is excluded: that thread is not decided, it is parked until the page written for
+ * it goes live. Including it here would mean the pipeline researched, wrote and published a page
+ * and then never went back to answer the question that asked for it.
+ */
 export async function seenPostIds(postIds: readonly string[]): Promise<Set<string>> {
   if (!postIds.length) return new Set();
-  const rows = await RedditBotReplyModel.find({ postId: { $in: [...postIds] } })
+  const rows = await RedditBotReplyModel.find({
+    postId: { $in: [...postIds] },
+    status: { $ne: "waiting_page" },
+  })
     .select({ postId: 1 })
     .lean<Array<{ postId: string }>>();
   return new Set(rows.map((r) => r.postId));
+}
+
+/**
+ * Park the threads a freshly published page was written for.
+ *
+ * They keep the route so the revisit pass knows what to wait for, and they stay out of
+ * `seenPostIds` so the bot picks them up again the moment the page is answerable.
+ */
+export async function markWaitingForPage(postIds: readonly string[], pagePath: string): Promise<number> {
+  if (!postIds.length) return 0;
+  const res = await RedditBotReplyModel.updateMany(
+    { postId: { $in: [...postIds] } },
+    { $set: { status: "waiting_page", pagePath, rejectReason: "esperando la página generada" } }
+  );
+  return res?.modifiedCount ?? 0;
+}
+
+/** Threads parked on a page, oldest first. */
+export async function waitingForPage(): Promise<Array<{ postId: string; pagePath: string; sub: string }>> {
+  return RedditBotReplyModel.find({ status: "waiting_page" })
+    .select({ postId: 1, pagePath: 1, sub: 1 })
+    .lean<Array<{ postId: string; pagePath: string; sub: string }>>();
 }
 
 export async function readSnapshot(now: number = Date.now()): Promise<LedgerSnapshot> {
