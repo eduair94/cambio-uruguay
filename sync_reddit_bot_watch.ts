@@ -19,6 +19,7 @@ async function main(): Promise<void> {
     const summary = await runWatch();
     console.log(
       `[redditbot-watch] ${summary.checked} comentarios revisados, ${summary.updated} actualizados, ` +
+        `${summary.pagesChecked} páginas generadas verificadas (${summary.pagesBroken} caídas), ` +
         `${summary.negatives} nuevos negativos${summary.tripped ? ", BREAKER ACTIVADO" : ""}; ${summary.note}`
     );
   } catch (e) {

@@ -11,6 +11,7 @@ import { botConfig, botCredentialsPresent, type BotConfig } from "./config";
 import { pauseUntil, postedWithin, readSnapshot, recordWatch } from "./ledger";
 import { shouldTrip } from "./limits";
 import { fetchCommentStates } from "./post";
+import { smokeRecentPages } from "../gaps/smoke";
 
 /** How long a comment's score is still worth re-reading. After three days it has settled. */
 const WATCH_WINDOW_HOURS = 72;
@@ -22,11 +23,28 @@ export interface WatchSummary {
   updated: number;
   negatives: number;
   tripped: boolean;
+  /** Recently published pages that answered, and the ones that did not. */
+  pagesChecked: number;
+  pagesBroken: number;
   note: string;
 }
 
 export async function runWatch(cfg: BotConfig = botConfig()): Promise<WatchSummary> {
-  const summary: WatchSummary = { checked: 0, updated: 0, negatives: 0, tripped: false, note: "" };
+  const summary: WatchSummary = {
+    checked: 0,
+    updated: 0,
+    negatives: 0,
+    tripped: false,
+    pagesChecked: 0,
+    pagesBroken: 0,
+    note: "",
+  };
+
+  // Runs before the credential gate on purpose: a page that shipped itself and came up broken is a
+  // problem whether or not the bot is configured to post, and this is the only job that looks.
+  const smoke = await smokeRecentPages(cfg.baseUrl);
+  summary.pagesChecked = smoke.checked;
+  summary.pagesBroken = smoke.broken.length;
 
   if (!botCredentialsPresent(cfg)) {
     return { ...summary, note: "sin credenciales del bot — nada que vigilar" };
