@@ -618,8 +618,16 @@ defineOgImageComponent('Cambio', {
   locale: locale.value as 'es' | 'en' | 'pt',
 })
 
+// This family had no canonical: the page restores its currency/type/search
+// filters from the query string and writes them back, so one casa is reachable
+// under a dozen URLs that all render the same table. They now consolidate.
+const canonicalUrl = computed(
+  () => `https://cambio-uruguay.com${localePath(`/historico/${route.params.origin}`)}`
+)
+
 // BreadcrumbList: Inicio > Histórico > casa.
 useHead(() => ({
+  link: [{ rel: 'canonical', href: canonicalUrl.value }],
   script: [
     {
       type: 'application/ld+json',

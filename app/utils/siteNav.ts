@@ -1382,6 +1382,23 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        to: '/declarar-dinero-en-efectivo-uruguay',
+        labelKey: 'nav.declararEfectivo',
+        icon: 'mdi-cash-multiple',
+        priority: 0.8,
+        changefreq: 'monthly',
+        keywords: [
+          'cuanto dinero puedo sacar de uruguay',
+          'declarar efectivo uruguay',
+          'declarar dolares aeropuerto uruguay',
+          'transporte de valores aduana uruguay',
+          '10000 dolares frontera uruguay',
+          'multa por no declarar dinero uruguay',
+          'sacar dolares del pais uruguay',
+          'llevar plata a argentina desde uruguay',
+        ],
+      },
+      {
         to: '/couriers-uruguay',
         labelKey: 'nav.couriers',
         icon: 'mdi-truck-fast-outline',

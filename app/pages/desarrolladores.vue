@@ -228,14 +228,57 @@ defineOgImageComponent('Cambio', {
   tag: 'API',
 })
 
+// `dev.subtitle` runs to ~250 characters, so Google truncated it mid-sentence
+// and the visible half named no endpoint, no format and no product. The snippet
+// below is written for the SERP: what you get, in what shape, at what price.
+const SEO_TITLE = 'API pública del dólar en Uruguay: REST gratuita, sin API key y OpenAPI 3.1'
+const SEO_DESCRIPTION =
+  'Cotizaciones de las casas de cambio uruguayas por REST, gratis y sin autenticación: base api.cambio-uruguay.com, documento OpenAPI 3.1 para importar a Postman o Insomnia, servidor MCP para agentes y todo el código en GitHub.'
+
+// The page answers at two URLs — `/desarrolladores` and the `/developers` alias
+// declared above — plus one per locale. Without a canonical they were four
+// indexable copies of the same document competing with each other.
+const localePath = useLocalePath()
+const canonicalUrl = computed(() => `https://cambio-uruguay.com${localePath('/desarrolladores')}`)
+
 useSeoMeta({
-  title: () => `${t('dev.title')} | Cambio Uruguay`,
-  description: () => t('dev.subtitle'),
-  ogTitle: () => t('dev.title'),
-  ogDescription: () => t('dev.subtitle'),
+  title: `${SEO_TITLE} | Cambio Uruguay`,
+  description: SEO_DESCRIPTION,
+  ogTitle: SEO_TITLE,
+  ogDescription: SEO_DESCRIPTION,
   ogType: 'website',
+  ogUrl: () => canonicalUrl.value,
   twitterCard: 'summary_large_image',
+  twitterTitle: SEO_TITLE,
+  twitterDescription: SEO_DESCRIPTION,
 })
+
+useHead(() => ({
+  link: [{ rel: 'canonical', href: canonicalUrl.value }],
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: 'Cambio Uruguay',
+            item: 'https://cambio-uruguay.com',
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: t('dev.title'),
+            item: canonicalUrl.value,
+          },
+        ],
+      }),
+    },
+  ],
+}))
 </script>
 
 <style scoped>

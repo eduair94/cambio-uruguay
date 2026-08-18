@@ -247,6 +247,14 @@ const { smAndDown } = useDisplay()
 // Initialize API service
 const apiService = useApiService()
 
+const localePath = useLocalePath()
+
+// The hub restores its filters from the query string (origin, currency, type,
+// search) and writes them back on every change, so each filter combination is a
+// distinct URL serving the same page. Without a canonical they all compete with
+// /historico for the same query instead of consolidating into it.
+const canonicalUrl = computed(() => `https://cambio-uruguay.com${localePath('/historico')}`)
+
 // SEO/Head
 useSeoMeta({
   title: () => t('seo.historicalTitle'),
@@ -272,6 +280,7 @@ defineOgImageComponent('Cambio', {
 
 // BreadcrumbList for Search (Inicio > Histórico).
 useHead(() => ({
+  link: [{ rel: 'canonical', href: canonicalUrl.value }],
   script: [
     {
       type: 'application/ld+json',
@@ -336,7 +345,6 @@ const { data: rawData, pending: loading } = await useAsyncData(
     },
   }
 )
-const localePath = useLocalePath()
 const getLink = (item: CambioItem): string => {
   if (!item.origin || !item.code) return ''
   let url = `/historico/${item.origin}/${item.code}`
