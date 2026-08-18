@@ -23,12 +23,23 @@ test.describe('/desarrolladores', () => {
     // and rendered OUR document — not somebody's placeholder and not an empty
     // shell. So it asserts on values that come from the spec we publish.
     //
-    // It used to wait for the operation summary "All current quotes" and timed
-    // out for 30s on every run. Scalar was mounting fine the whole time; it just
-    // lists operations as method + path (`GET /`, `GET /exchange/{origin}/{code}`)
-    // rather than by summary, so that string is nowhere in the document. Which
-    // label Scalar chooses to show is its presentation decision and can change on
-    // any upgrade — the title and the paths are ours and cannot.
+    // It used to wait for the operation summary "All current quotes", which was
+    // failing two different ways at once and each one hid the other:
+    //
+    //   1. TIMING. Scalar mounts slowly against the dev server this suite drives.
+    //      Measured on run 32194112784 the old assertion passed at 27.8s with a
+    //      30s budget, and earlier runs blew past it — a 2-second coin flip, not
+    //      a bug. Anything gated on Scalar being fully painted is a flake.
+    //   2. ENVIRONMENT. In the production build that string never appears at all:
+    //      polled for 40s against cambio-uruguay.com/desarrolladores, the summary
+    //      is absent while the title and the paths are both present. The dev build
+    //      renders it and the production build does not, so the assertion was also
+    //      testing something the deployed site never shows.
+    //
+    // Both go away by asserting on what our spec puts on the page and what Scalar
+    // paints first: `info.title` as the heading, and a real path. Which label
+    // Scalar chooses for an operation is its presentation decision and can change
+    // on any upgrade; the title and the paths are ours and cannot.
     await expect(
       page.getByRole('heading', { name: 'Cambio Uruguay Public API', level: 1 })
     ).toBeVisible({ timeout: 30_000 })
