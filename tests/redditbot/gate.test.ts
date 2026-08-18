@@ -7,6 +7,7 @@ const cfg = (over: Partial<BotConfig> = {}): BotConfig => ({
   ...botConfig(),
   minCosine: 0.62,
   minMargin: 1.12,
+  strongCosine: 0.72,
   ...over,
 });
 
@@ -30,6 +31,14 @@ describe("redditbot/gate", () => {
   it("rejects a winner that is not actually close to the question", () => {
     const verdict = retrievalGate(cfg(), [page("/a", 0.030, 0.41), page("/b", 0.010, 0.30)]);
     expect(verdict.reason).toBe("weak_match");
+  });
+
+  it("lets a tie through when the match is strong — two good pages is coverage, not a gap", () => {
+    // Measured against the real index: "¿me conviene monotributo o unipersonal?" scores cosine
+    // 0.741 with a 1.04 margin because /que-empresa-abrir-uruguay and /facturar-en-monotributo
+    // legitimately both answer it. Calling that a content gap would be wrong twice over.
+    const verdict = retrievalGate(cfg(), [page("/a", 0.0442, 0.741), page("/b", 0.0425, 0.735)]);
+    expect(verdict.ok).toBe(true);
   });
 
   it("rejects a four-way tie — that is a content gap, not a link", () => {

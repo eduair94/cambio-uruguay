@@ -92,6 +92,14 @@ export interface BotConfig {
    * rather than a question we answer, which is exactly the case for a content gap.
    */
   minMargin: number;
+  /**
+   * Cosine above which the margin check is waived and the judge decides.
+   *
+   * A tie between two pages means "we cover this without answering it" only when the match is
+   * mediocre. Above this, a tie means the site answers the question from two angles — measured:
+   * "¿monotributo o unipersonal?" hits 0.741 with a 1.04 margin because two real pages cover it.
+   */
+  strongCosine: number;
   /** Judge confidence, 0..1. */
   minJudge: number;
   /** Consecutive bad outcomes within 24 h that trip the breaker. */
@@ -125,6 +133,7 @@ export function botConfig(): BotConfig {
     pageCooldownDays: num("REDDIT_BOT_PAGE_COOLDOWN_DAYS", 3),
     minCosine: num("REDDIT_BOT_MIN_COSINE", 0.62),
     minMargin: num("REDDIT_BOT_MIN_MARGIN", 1.12),
+    strongCosine: num("REDDIT_BOT_STRONG_COSINE", 0.72),
     minJudge: num("REDDIT_BOT_MIN_JUDGE", 0.7),
     breakerNegatives: num("REDDIT_BOT_BREAKER_NEGATIVES", 3),
     breakerPauseHours: num("REDDIT_BOT_BREAKER_PAUSE_HOURS", 48),

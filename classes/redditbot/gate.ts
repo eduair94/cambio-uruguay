@@ -47,13 +47,22 @@ export function retrievalGate(cfg: BotConfig, pages: readonly RetrievedPage[]): 
     };
   }
 
-  if (margin < cfg.minMargin) {
+  // A tie only means "we cover the subject without answering the question" when the match is
+  // mediocre. When the best chunk is genuinely close, a tie means the opposite — the site answers
+  // this from two angles — and the judge is a far better instrument than a ratio for picking
+  // between two good candidates.
+  //
+  // Measured against the real index: "¿me conviene monotributo o unipersonal para facturar?" scored
+  // cosine 0.741 with a margin of 1.04, because /que-empresa-abrir-uruguay and
+  // /facturar-en-monotributo-uruguay legitimately tie. Rejecting that as a content gap would have
+  // been wrong twice: no reply, and a false gap filed for a topic the site covers twice over.
+  if (best.cosine < cfg.strongCosine && margin < cfg.minMargin) {
     return {
       ok: false,
       reason: "no_clear_winner",
       page: best,
       margin,
-      detail: `${margin.toFixed(2)}× < ${cfg.minMargin}× (${runnerUp?.path ?? "—"} empata)`,
+      detail: `${margin.toFixed(2)}× < ${cfg.minMargin}× con cos ${best.cosine.toFixed(3)} (${runnerUp?.path ?? "—"} empata)`,
     };
   }
 
