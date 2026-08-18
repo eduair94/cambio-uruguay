@@ -202,6 +202,17 @@ export async function runOnce(cfg: BotConfig = botConfig()): Promise<RunSummary>
   if (!chunks.length) return { ...summary, note: "el índice RAG está vacío — corré sync_rag_index primero" };
   const retriever = new SiteRetriever(chunks);
 
+  // An index with rows but no vectors is BROKEN, not empty, and the difference is invisible further
+  // down: every cosine would be 0, the gate would refuse everything, and the run would look like a
+  // quiet morning. Refuse loudly instead — this exact state shipped once and went unnoticed.
+  if (!retriever.embeddedCount) {
+    await notifyAdmin(
+      `🛑 *Índice RAG sin vectores*: ${chunks.length} chunks cargados y ninguno embebido. ` +
+        `El bot no puede medir relevancia y no va a contestar nada hasta que se arregle.`
+    );
+    return { ...summary, note: `índice roto: ${chunks.length} chunks, 0 con vector` };
+  }
+
   // 4. Pre-rank with the lexical arm alone, which is free, and embed only the best few.
   //
   //    Query embeddings are metered out of the same daily Gemini allowance as the index, and this

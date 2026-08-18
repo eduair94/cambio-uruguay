@@ -33,7 +33,15 @@ async function main(): Promise<void> {
   const retriever = new SiteRetriever(chunks);
   const cfg = botConfig();
 
-  console.log(`índice: ${retriever.size} chunks en ${retriever.pageCount} páginas`);
+  console.log(
+    `índice: ${retriever.size} chunks en ${retriever.pageCount} páginas, ${retriever.embeddedCount} con vector`
+  );
+  if (!retriever.embeddedCount) {
+    console.error(
+      "⚠️  NINGÚN chunk tiene vector: el brazo denso está muerto y todo coseno va a dar 0. " +
+        "El índice está roto, no vacío."
+    );
+  }
   console.log(`umbrales: coseno ≥ ${cfg.minCosine}   margen sobre el 2º ≥ ${cfg.minMargin}×\n`);
 
   if (args[0] === "--stats" || !args.length) {

@@ -142,6 +142,18 @@ export class SiteRetriever {
   }
 
   /**
+   * How many chunks can take part in the dense arm.
+   *
+   * Worth asking out loud, because zero is a state the rest of the pipeline cannot distinguish from
+   * a quiet day: with no vectors every cosine is 0, the gate refuses everything, and the bot goes
+   * silent exactly as if there were nothing to answer. That happened in production — a Buffer
+   * decoded as a BSON Binary, see `bufferToVector` — and nothing anywhere said so.
+   */
+  get embeddedCount(): number {
+    return this.chunks.reduce((n, chunk) => n + (chunk.vector.length ? 1 : 0), 0);
+  }
+
+  /**
    * Dense arm: cosine of every EMBEDDED chunk against an already-embedded query.
    *
    * Stub chunks have no vector on purpose (see sources.ts and the indexer's budget): a templated

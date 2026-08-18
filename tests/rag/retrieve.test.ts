@@ -121,6 +121,18 @@ describe("rag/retrieve — ranking", () => {
     expect(pages.find((p) => p.path === "/sucursales/maldonado")!.cosine).toBe(0);
   });
 
+  it("counts how many chunks can take part in the dense arm", () => {
+    // Zero here is the signature of a broken index, and it is otherwise indistinguishable from a
+    // quiet day — which is how it shipped unnoticed once.
+    const mixed = new SiteRetriever([
+      chunk({ path: "/a", axis: "aduana" }),
+      chunk({ path: "/b", axis: "aduana", tier: "stub", vector: new Float32Array(0) }),
+    ]);
+    expect(mixed.size).toBe(2);
+    expect(mixed.embeddedCount).toBe(1);
+    expect(new SiteRetriever([]).embeddedCount).toBe(0);
+  });
+
   it("does not crash when EVERY chunk is vectorless", () => {
     const lexicalOnly = new SiteRetriever([
       chunk({ path: "/a", axis: "aduana", tier: "stub", vector: new Float32Array(0), text: "aduana courier" }),
