@@ -20,6 +20,18 @@ export interface GeneratedGuideFaq {
   answer: string
 }
 
+/** "La respuesta corta": what the reader believes, and what is actually true. */
+export interface GeneratedGuideVerdict {
+  claim: string
+  answer: string
+}
+
+/** An ordered procedure, when the honest answer is "hacé esto, en este orden". */
+export interface GeneratedGuideStep {
+  title: string
+  detail: string
+}
+
 export interface GeneratedGuideSource {
   title: string
   url: string
@@ -36,8 +48,13 @@ export interface GeneratedGuide {
   icon: string
   description: string
   intro: string
+  /** The first screen: the question, answered before anything else. */
+  verdicts: GeneratedGuideVerdict[]
   sections: GeneratedGuideSection[]
+  steps: GeneratedGuideStep[]
   faqs: GeneratedGuideFaq[]
+  /** Existing routes of this site, validated at generation time. */
+  related: string[]
   keywords: string[]
   /** Published, not hidden — see the note in AutoGuide.vue. */
   notConfirmed: string[]

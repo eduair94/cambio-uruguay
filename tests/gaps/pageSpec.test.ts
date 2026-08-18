@@ -47,6 +47,12 @@ const spec = (over: Partial<PageSpec> = {}): PageSpec => ({
       ],
     },
   ],
+  verdicts: [
+    { claim: "¿Se puede?", answer: "Sí, el régimen lo admite sin trámite extra." },
+    { claim: "¿Cuál es el tope real?", answer: "No es el monto sino la cantidad de envíos por año." },
+  ],
+  steps: [],
+  related: ["/importar-para-revender-uruguay"],
   faqs: [{ question: "¿Puedo revender lo que traigo?", answer: "Sí, el régimen lo admite." }],
   keywords: ["importar para revender", "courier uruguay", "regimen de courier"],
   notConfirmed: ["Si el tope de 3 envíos se cuenta por persona o por domicilio."],
@@ -175,6 +181,71 @@ describe("gaps/pageSpec — shape", () => {
     expect(fields).toContain("slug");
     expect(fields).toContain("icon");
     expect(fields).toContain("navKey");
+  });
+});
+
+describe("gaps/pageSpec — the first screen and the internal links", () => {
+  it("needs at least two committed short answers", () => {
+    // Somebody arriving from a Reddit comment has one thing they want to know. A page that cannot
+    // state two plain answers has not understood the question well enough to publish under the
+    // site's name.
+    expect(validatePageSpec(spec({ verdicts: [] })).some((p) => p.field === "verdicts")).toBe(true);
+  });
+
+  it("rejects a short answer that says nothing", () => {
+    const bad = spec({
+      verdicts: [
+        { claim: "¿Se puede?", answer: "Depende." },
+        { claim: "¿Cuánto?", answer: "No es el monto sino la cantidad de envíos por año." },
+      ],
+    });
+    expect(validatePageSpec(bad).some((p) => p.field === "verdicts[0]")).toBe(true);
+  });
+
+  it("rejects a short answer that is not short", () => {
+    const bad = spec({
+      verdicts: [
+        { claim: "¿Se puede?", answer: "palabra ".repeat(70) },
+        { claim: "¿Cuánto?", answer: "No es el monto sino la cantidad de envíos por año." },
+      ],
+    });
+    expect(validatePageSpec(bad).some((p) => p.field === "verdicts[0]")).toBe(true);
+  });
+
+  it("refuses an internal link to a route that does not exist — that is a 404 published on purpose", () => {
+    const routes = new Set(["/importar-para-revender-uruguay"]);
+    const bad = spec({ related: ["/pagina-que-no-existe"] });
+    expect(validatePageSpec(bad, routes).some((p) => p.field === "related" && p.detail.includes("no existe"))).toBe(true);
+  });
+
+  it("accepts links that do exist", () => {
+    const routes = new Set(["/importar-para-revender-uruguay", "/otra"]);
+    expect(validatePageSpec(spec(), routes).some((p) => p.field === "related")).toBe(false);
+  });
+
+  it("refuses a page that links to itself", () => {
+    const routes = new Set(["/importar-para-revender-guia"]);
+    const bad = spec({ related: ["/importar-para-revender-guia"] });
+    expect(validatePageSpec(bad, routes).some((p) => p.detail.includes("sí misma"))).toBe(true);
+  });
+
+  it("wants at least one internal link, so a new page is not an orphan", () => {
+    const routes = new Set(["/importar-para-revender-uruguay"]);
+    expect(validatePageSpec(spec({ related: [] }), routes).some((p) => p.field === "related")).toBe(true);
+  });
+
+  it("does not demand links when the caller has no route list to check them against", () => {
+    expect(validatePageSpec(spec({ related: [] })).some((p) => p.field === "related")).toBe(false);
+  });
+
+  it("holds the short answers to the number rule too", () => {
+    const bad = spec({
+      verdicts: [
+        { claim: "¿Cuánto se paga?", answer: "Un recargo del 73% sobre el valor declarado del envío." },
+        { claim: "¿Cuál es el tope?", answer: "No es el monto sino la cantidad de envíos por año." },
+      ],
+    });
+    expect(validatePageSpec(bad).some((p) => p.field === "numbers" && p.detail.includes("73"))).toBe(true);
   });
 });
 

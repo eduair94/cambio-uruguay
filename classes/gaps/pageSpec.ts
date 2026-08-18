@@ -22,6 +22,28 @@ export interface PageSection {
   body: string[];
 }
 
+/**
+ * "La respuesta corta": the belief someone arrives with, and what is actually true.
+ *
+ * The first screen decides whether the page was worth the click. Somebody coming from a Reddit
+ * comment has a specific thing they think is true and a specific thing they want to know; a page
+ * that opens with three paragraphs of context loses them, and a page that opens with the verdict
+ * keeps them for the paragraphs. This is also the block that reads least like generated filler,
+ * because it has to commit to an answer.
+ */
+export interface PageVerdict {
+  /** The question or the common belief, in the reader's words. */
+  claim: string;
+  /** The answer. One or two sentences, committed. */
+  answer: string;
+}
+
+/** An ordered procedure, when the honest answer is "hacé esto, en este orden". */
+export interface PageStep {
+  title: string;
+  detail: string;
+}
+
 export interface PageFaq {
   question: string;
   answer: string;
@@ -51,8 +73,21 @@ export interface PageSpec {
   description: string;
   /** Lead paragraph, above the fold. */
   intro: string;
+  /** The first screen. See {@link PageVerdict}. */
+  verdicts: PageVerdict[];
   sections: PageSection[];
+  /** Optional: only when the answer really is a procedure. */
+  steps: PageStep[];
   faqs: PageFaq[];
+  /**
+   * Existing pages of this site to link, validated against the real routes.
+   *
+   * Both halves of the point matter. A reader who got one answer usually has the next question, and
+   * sending them to a page that already exists is worth more than a paragraph; and a new page with
+   * no inbound or outbound links is an orphan that search engines treat accordingly. Validated
+   * because a link to a route that does not exist is a 404 shipped automatically.
+   */
+  related: string[];
   /** Search synonyms for `siteNav`. */
   keywords: string[];
   /**
@@ -71,6 +106,10 @@ const NAV_KEY_RE = /^[a-z][a-zA-Z0-9]*$/;
 const MDI_RE = /^mdi-[a-z0-9-]+$/;
 
 const MIN_SECTIONS = 3;
+const MIN_VERDICTS = 2;
+const MAX_VERDICTS = 4;
+const MIN_RELATED = 1;
+const MAX_RELATED = 4;
 const MIN_VERIFIED_SOURCES = 2;
 const MIN_INTRO_WORDS = 40;
 const MAX_TITLE = 80;
@@ -105,7 +144,9 @@ export function proseOf(spec: PageSpec): string {
     spec.title,
     spec.description,
     spec.intro,
+    ...(spec.verdicts ?? []).flatMap((verdict) => [verdict.claim, verdict.answer]),
     ...spec.sections.flatMap((section) => [section.heading, ...section.body]),
+    ...(spec.steps ?? []).flatMap((step) => [step.title, step.detail]),
     ...spec.faqs.flatMap((faq) => [faq.question, faq.answer]),
     ...spec.notConfirmed,
   ].join("\n");
@@ -130,7 +171,11 @@ export interface SpecProblem {
  * Returns ALL problems rather than the first, so one research call can be retried against a
  * complete list instead of one round trip per defect.
  */
-export function validatePageSpec(spec: PageSpec, existingRoutes: ReadonlySet<string> = new Set()): SpecProblem[] {
+export function validatePageSpec(
+  spec: PageSpec,
+  existingRoutes: ReadonlySet<string> = new Set(),
+  { requireRelated = true }: { requireRelated?: boolean } = {}
+): SpecProblem[] {
   const problems: SpecProblem[] = [];
   const fail = (field: string, detail: string) => problems.push({ field, detail });
 
@@ -148,6 +193,23 @@ export function validatePageSpec(spec: PageSpec, existingRoutes: ReadonlySet<str
   const introWords = (spec.intro || "").split(/\s+/).filter(Boolean).length;
   if (introWords < MIN_INTRO_WORDS) fail("intro", `${introWords} palabras, mínimo ${MIN_INTRO_WORDS}`);
 
+  // The first screen. A page that cannot commit to two plain answers has not understood the
+  // question well enough to be published under the site's name.
+  const verdicts = spec.verdicts ?? [];
+  if (verdicts.length < MIN_VERDICTS || verdicts.length > MAX_VERDICTS) {
+    fail("verdicts", `${verdicts.length} respuestas cortas, tienen que ser entre ${MIN_VERDICTS} y ${MAX_VERDICTS}`);
+  }
+  verdicts.forEach((verdict, i) => {
+    if (!verdict.claim?.trim()) fail(`verdicts[${i}]`, "sin pregunta");
+    const words = (verdict.answer || "").split(/\s+/).filter(Boolean).length;
+    if (words < 6) fail(`verdicts[${i}]`, `la respuesta a "${verdict.claim}" no dice nada (${words} palabras)`);
+    if (words > 60) fail(`verdicts[${i}]`, "la respuesta corta no es corta");
+  });
+
+  (spec.steps ?? []).forEach((step, i) => {
+    if (!step.title?.trim() || !step.detail?.trim()) fail(`steps[${i}]`, "paso vacío");
+  });
+
   if ((spec.sections?.length ?? 0) < MIN_SECTIONS) {
     fail("sections", `${spec.sections?.length ?? 0} secciones, mínimo ${MIN_SECTIONS}`);
   }
@@ -158,6 +220,19 @@ export function validatePageSpec(spec: PageSpec, existingRoutes: ReadonlySet<str
     const words = (section.body || []).join(" ").split(/\s+/).filter(Boolean).length;
     if (words < 25) fail(`sections[${i}]`, `sólo ${words} palabras bajo "${section.heading}"`);
   });
+
+  // Internal links. Checked against the real routes because a generated 404 is a page the site
+  // published pointing at nothing — and `requireRelated` is off only when the caller could not
+  // supply the route list, where demanding links it cannot validate would block every page.
+  const related = spec.related ?? [];
+  if (requireRelated && existingRoutes.size) {
+    if (related.length < MIN_RELATED) fail("related", "hace falta al menos un enlace a una página existente");
+    if (related.length > MAX_RELATED) fail("related", `${related.length} enlaces internos, máximo ${MAX_RELATED}`);
+    for (const route of related) {
+      if (route === `/${spec.slug}`) fail("related", "se enlaza a sí misma");
+      else if (!existingRoutes.has(route)) fail("related", `${route} no existe`);
+    }
+  }
 
   const verified = (spec.sources || []).filter((source) => source.verified);
   if (verified.length < MIN_VERIFIED_SOURCES) {

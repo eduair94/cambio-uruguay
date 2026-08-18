@@ -19,6 +19,12 @@ const spec: PageSpec = {
   description: "Una descripción con comillas \" y un salto\nde línea.",
   intro: "Intro.",
   sections: [{ heading: "Uno", body: ["Párrafo con 'comillas' y \"otras\".", "Segundo párrafo."] }],
+  verdicts: [
+    { claim: "¿Se puede?", answer: "Sí, el régimen lo admite sin trámite extra." },
+    { claim: "¿Cuál es el tope real?", answer: "No es el monto sino la cantidad de envíos por año." },
+  ],
+  steps: [],
+  related: ["/importar-para-revender-uruguay"],
   faqs: [{ question: "¿Sí?", answer: "Sí." }],
   keywords: ["una cosa", "otra"],
   notConfirmed: ["Algo sin confirmar."],

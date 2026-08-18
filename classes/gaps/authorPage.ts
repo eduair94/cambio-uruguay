@@ -26,6 +26,12 @@ const MAX_SOURCES = 8;
 /** Per source, in the write prompt. Enough for the article that holds the figure. */
 const EVIDENCE_CHARS = 12000;
 
+/** The internal-link menu, so the model picks real routes instead of guessing plausible ones. */
+const relatedList = (candidates: ReadonlyArray<{ path: string; title: string }>): string =>
+  candidates.length
+    ? candidates.map((c) => `  ${c.path} — ${c.title}`).join("\n")
+    : "  (no hay candidatas; dejá related vacío)";
+
 // ---------------------------------------------------------------------------- 1. scope
 
 const SCOPE_SCHEMA = {
@@ -159,6 +165,23 @@ const PAGE_SCHEMA = {
     icon: { type: "string" },
     description: { type: "string" },
     intro: { type: "string" },
+    verdicts: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: { claim: { type: "string" }, answer: { type: "string" } },
+        required: ["claim", "answer"],
+      },
+    },
+    steps: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: { title: { type: "string" }, detail: { type: "string" } },
+        required: ["title", "detail"],
+      },
+    },
+    related: { type: "array", items: { type: "string" } },
     sections: {
       type: "array",
       items: {
@@ -186,13 +209,19 @@ const PAGE_SCHEMA = {
       },
     },
   },
-  required: ["slug", "title", "navLabel", "navKey", "icon", "description", "intro", "sections", "faqs", "keywords", "notConfirmed", "sourceTitles"],
+  required: ["slug", "title", "navLabel", "navKey", "icon", "description", "intro", "verdicts", "sections", "steps", "related", "faqs", "keywords", "notConfirmed", "sourceTitles"],
 } as const;
+
+export interface RelatedCandidate {
+  path: string;
+  title: string;
+}
 
 function buildWritePrompt(
   question: string,
   findings: string,
   sources: ReadonlyArray<{ url: string; text: string }>,
+  relatedCandidates: ReadonlyArray<RelatedCandidate>,
   correction?: string
 ): string {
   const evidence = sources
@@ -223,12 +252,22 @@ CÓMO ESCRIBIR
 - "notConfirmed": todo lo que no está respaldado por el texto descargado. Sé explícito, se publica.
 - "faqs": 4 a 6 preguntas que la gente hace de verdad, con respuestas de 2 o 3 oraciones.
 
+- "verdicts": 2 a 4 pares pregunta/respuesta que van ARRIBA DE TODO, antes del cuerpo. Es lo primero
+  que ve alguien que llegó desde un comentario de Reddit con UNA duda concreta. En "claim" va esa
+  duda o la creencia con la que llega, en sus palabras; en "answer", la respuesta, comprometida, en
+  una o dos oraciones. Nada de "depende" a secas.
+- "steps": sólo si la respuesta honesta es un procedimiento en orden. Si no lo es, dejá la lista
+  vacía en vez de inventar pasos.
+
 CAMPOS
 - slug: kebab-case, descriptivo, terminado en "-uruguay" si aplica. Sin acentos ni ñ.
 - navKey: camelCase corto y único.
 - icon: un icono "mdi-…" que exista.
 - description: máximo 165 caracteres.
 - keywords: 6 a 10 formas en que alguien buscaría esto.
+- related: 1 a 4 rutas de ESTA lista, las que de verdad sigan la duda de quien leyó la página.
+  Copialas exactas; una ruta que no esté en la lista es un 404 y tira la página entera.
+${relatedList(relatedCandidates)}
 - sourceTitles: un título legible para cada URL de arriba.${correction ? `\n\nCORRECCIÓN OBLIGATORIA — el intento anterior falló:\n${correction}` : ""}`;
 }
 
@@ -244,6 +283,7 @@ export interface AuthoredPage {
 export async function authorPage(
   cluster: GapCluster,
   scope: ScopeVerdict,
+  relatedCandidates: ReadonlyArray<RelatedCandidate> = [],
   correction?: string
 ): Promise<AuthoredPage | null> {
   if (preferredProvider() !== "claude" || claudeSaturated()) {
@@ -266,7 +306,7 @@ export async function authorPage(
   }
 
   const raw = await askClaudeJson<Record<string, any>>(
-    buildWritePrompt(scope.question, found.findings, usable, correction),
+    buildWritePrompt(scope.question, found.findings, usable, relatedCandidates, correction),
     PAGE_SCHEMA as unknown as Record<string, unknown>,
     { allowedTools: [], timeoutMs: WRITE_TIMEOUT_MS }
   );
@@ -293,6 +333,15 @@ export async function authorPage(
     icon: String(raw.icon ?? "").trim(),
     description: String(raw.description ?? "").trim(),
     intro: String(raw.intro ?? "").trim(),
+    verdicts: (raw.verdicts ?? []).map((v: any) => ({
+      claim: String(v?.claim ?? "").trim(),
+      answer: String(v?.answer ?? "").trim(),
+    })),
+    steps: (raw.steps ?? []).map((s2: any) => ({
+      title: String(s2?.title ?? "").trim(),
+      detail: String(s2?.detail ?? "").trim(),
+    })),
+    related: (raw.related ?? []).map((r: any) => String(r ?? "").trim()).filter(Boolean),
     sections: (raw.sections ?? []).map((s: any) => ({
       heading: String(s?.heading ?? "").trim(),
       body: (s?.body ?? []).map((p: any) => String(p ?? "").trim()).filter(Boolean),

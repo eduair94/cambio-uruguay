@@ -48,6 +48,14 @@ export function emitDataFile({ spec, topicLabel, today, askedIn }: EmitContext):
     )
     .join("\n");
 
+  const verdicts = spec.verdicts
+    .map((verdict) => `    { claim: ${q(verdict.claim)}, answer: ${q(verdict.answer)} },`)
+    .join("\n");
+
+  const steps = spec.steps
+    .map((step) => `    { title: ${q(step.title)}, detail: ${q(step.detail)} },`)
+    .join("\n");
+
   const faqs = spec.faqs
     .map((faq) => `    { question: ${q(faq.question)}, answer: ${q(faq.answer)} },`)
     .join("\n");
@@ -76,12 +84,19 @@ export const guide: GeneratedGuide = {
   icon: ${q(spec.icon)},
   description: ${q(spec.description)},
   intro: ${q(spec.intro)},
+  verdicts: [
+${verdicts}
+  ],
   sections: [
 ${sections}
+  ],
+  steps: [
+${steps}
   ],
   faqs: [
 ${faqs}
   ],
+  related: ${list(spec.related, "  ")},
   keywords: ${list(spec.keywords, "  ")},
   notConfirmed: ${list(spec.notConfirmed, "  ")},
   sources: [

@@ -23,7 +23,9 @@ import path from "path";
 import { notifyAdmin } from "../notify";
 import { RedditContentGapModel } from "../models/RedditContentGap";
 import { markWaitingForPage } from "../redditbot/ledger";
-import { authorPage, classifyScope } from "./authorPage";
+import { authorPage, classifyScope, type RelatedCandidate } from "./authorPage";
+import { SiteRetriever } from "../rag/retrieve";
+import { loadIndex } from "../rag/store";
 import { emitAll } from "./emit";
 import { describeProblems, validatePageSpec } from "./pageSpec";
 import { topicByKey } from "./topics";
@@ -57,6 +59,32 @@ function existingRoutes(): Set<string> {
     );
   } catch {
     return new Set();
+  }
+}
+
+/**
+ * Existing pages worth linking from the new one, ranked by the question itself.
+ *
+ * Reuses the retriever rather than inventing a second notion of "related": it already holds every
+ * page's title and vector, and "what would we have linked if we had a page" is precisely the query.
+ * Stubs are excluded — a branch listing is not a follow-up read.
+ */
+async function relatedCandidatesFor(question: string): Promise<RelatedCandidate[]> {
+  try {
+    const chunks = await loadIndex();
+    if (!chunks.length) return [];
+    const retriever = new SiteRetriever(chunks);
+    return retriever
+      .search(question, 12)
+      .then((pages) =>
+        pages
+          .filter((page) => page.tier === "full")
+          .slice(0, 8)
+          .map((page) => ({ path: page.path, title: page.title }))
+      );
+  } catch (e: any) {
+    console.warn("[gaps] no pude armar la lista de páginas relacionadas:", e?.message || e);
+    return [];
   }
 }
 
@@ -95,13 +123,18 @@ export async function publishPageForCluster(cluster: GapCluster, today: string):
   // 2 + 3. Write it, check it, and give one corrected second chance. The retry names the exact
   // defects: "every number must be in a source" as a rule produces the same failure twice, while
   // "the figure 45 is in no source" gets fixed.
-  let authored = await authorPage(cluster, scope);
+  // Which existing pages this one should link. Taken from the RAG index — the only place that knows
+  // both what the site has and which of it is close to this question — so the model picks from real
+  // routes instead of guessing plausible ones.
+  const related = await relatedCandidatesFor(scope.question);
+
+  let authored = await authorPage(cluster, scope, related);
   if (!authored) return { status: "failed", reason: "la investigación o la redacción no devolvieron nada" };
 
   let problems = validatePageSpec(authored.spec, routes);
   if (problems.length) {
     console.warn(`[gaps] primer intento rechazado — ${describeProblems(problems)}`);
-    authored = await authorPage(cluster, scope, describeProblems(problems));
+    authored = await authorPage(cluster, scope, related, describeProblems(problems));
     if (!authored) return { status: "failed", reason: "el reintento no devolvió nada" };
     problems = validatePageSpec(authored.spec, routes);
   }
