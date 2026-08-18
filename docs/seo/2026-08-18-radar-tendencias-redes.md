@@ -126,3 +126,46 @@ Nada de esto se publicó: las cuentas sociales quedan a criterio del maintainer.
 - **Momento**: el tema tiene fecha de vencimiento el 31/12/2026. Cuanto más cerca de
   diciembre, más valor tiene la ventana de compra; después del 1/1/2027 la intención muta
   a «cuánto IMESI paga este modelo», que es permanente.
+
+---
+
+## 5. Borradores listos (sin publicar)
+
+Escritos para publicarse tal cual si el maintainer da el OK. El ángulo no es «llegó el
+impuesto» —eso ya lo contaron todos— sino que la prensa publicó una columna de cuatro.
+
+### Hilo para X
+
+> 1/ El decreto que le pone IMESI a los autos eléctricos desde enero de 2027 no fija tres
+> tasas. Fija una matriz de 3 tramos × 4 motorizaciones × 6 cilindradas.
+> Todos los medios publicaron una sola columna: la de eléctricos puros.
+>
+> 2/ La razón de que nadie la publicara: las tasas **no están** en el texto del decreto en
+> IMPO. Los literales a), b) y c) aparecen con la celda vacía y una nota que remite a "la
+> imagen electrónica". Están sólo en el PDF del Diario Oficial Nº 31.948, carillas 224-225.
+>
+> 3/ Lo que aparece cuando la leés: "hasta US$ 19.000 no paga" es falso. El 0 % de ese
+> tramo es exclusivo del eléctrico puro. Un híbrido en el mismo tramo paga entre 2 % y
+> 34,5 %.
+>
+> 4/ Y al revés: para los híbridos de valor en aduana bajo **no cambia nada**. Esas tasas
+> son idénticas a las que ya rigen. El cambio arranca en US$ 19.001: ahí un enchufable
+> pasa de 2 % a 7 %, y arriba de US$ 27.000 a 11 %.
+>
+> 5/ Dos cosas más que conviene saber antes de firmar algo:
+> · el umbral es **valor en aduana**, no precio de vidriera (≈ US$ 29-30 mil según el MEF)
+> · el decreto no tiene artículo transitorio: qué pasa con lo importado en 2026 y vendido
+> en 2027 no está resuelto por norma
+>
+> 6/ La matriz completa, las definiciones de cada subcategoría de híbrido (con la aclaración
+> de que start/stop no cuenta) y por qué "9 % de IMESI" no es "el auto sube 9 %":
+> cambio-uruguay.com/impuesto-autos-electricos-uruguay
+
+### Comentario para r/AutosUy (hilo «Cambio en IMESI de autos eléctricos»)
+
+Pendiente de resolver el estado de la cuenta — ver sección 4. El aporte útil ahí es
+concreto: en ese hilo se está calculando el impacto como `tasa × valor en aduana`, y eso
+ignora que la base del IMESI es el precio de venta del importador al distribuidor
+(Decreto 520/007 art. 1) y que el IVA se calcula sobre una base que ya incluye el IMESI
+(Título 10 art. 12). El comentario tiene que aportar eso **sin enlace** si la cuenta sigue
+con problemas de karma.
