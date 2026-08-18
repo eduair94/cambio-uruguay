@@ -68,4 +68,33 @@ describe("rag/sources — selectTargets", () => {
   it("skips entries with no loc rather than indexing the origin root", () => {
     expect(selectTargets([{ loc: "" }, { loc: "/x" }])).toHaveLength(1);
   });
+
+  it("spends the budget on the freshest pages first, so a new guide does not wait behind the alphabet", () => {
+    // The daily embedding budget runs out mid-run until the index converges, and whatever the sort
+    // puts last simply waits for tomorrow. Alphabetical order would park a page published today
+    // behind three hundred older ones.
+    const targets = selectTargets([
+      { loc: "/aaa-guia-vieja", lastmod: "2026-01-01" },
+      { loc: "/zzz-guia-nueva", lastmod: "2026-08-17" },
+      { loc: "/mmm-guia-media", lastmod: "2026-04-01" },
+    ]);
+    expect(targets.map((t) => t.path)).toEqual(["/zzz-guia-nueva", "/mmm-guia-media", "/aaa-guia-vieja"]);
+  });
+
+  it("keeps full-text pages ahead of stubs however fresh the stub is", () => {
+    const targets = selectTargets([
+      { loc: "/sucursal/recien-creada", lastmod: "2026-08-17" },
+      { loc: "/guia-que-nadie-toca", lastmod: "2020-01-01" },
+    ]);
+    expect(targets.map((t) => t.tier)).toEqual(["full", "stub"]);
+  });
+
+  it("falls back to the path when the sitemap cannot date a page, so the order stays stable", () => {
+    expect(selectTargets([{ loc: "/b" }, { loc: "/a" }]).map((t) => t.path)).toEqual(["/a", "/b"]);
+  });
+
+  it("sorts undated pages after dated ones rather than ahead of them", () => {
+    const targets = selectTargets([{ loc: "/sin-fecha" }, { loc: "/con-fecha", lastmod: "2026-08-17" }]);
+    expect(targets.map((t) => t.path)).toEqual(["/con-fecha", "/sin-fecha"]);
+  });
 });

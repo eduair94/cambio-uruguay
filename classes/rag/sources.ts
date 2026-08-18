@@ -80,8 +80,13 @@ export function tierOf(path: string): "full" | "stub" {
 }
 
 /**
- * The sitemap, filtered and classified. Deduplicates by path (the sitemap can list `/x` and `/x/`)
- * and sorts full-text pages first, so a run that dies halfway has still indexed what matters most.
+ * The sitemap, filtered and classified. Deduplicates by path (the sitemap can list `/x` and `/x/`).
+ *
+ * The order is the priority order, because it is also the spending order: the indexer walks this
+ * list and stops embedding when the daily budget runs out, so whatever sorts last waits for
+ * tomorrow's run. Full-text pages first, so a run that dies halfway has still indexed what matters
+ * most — then freshest first, so a page published today is not parked behind three hundred older
+ * ones that have not changed since.
  */
 export function selectTargets(entries: readonly SitemapEntry[]): IndexTarget[] {
   const byPath = new Map<string, IndexTarget>();
@@ -97,6 +102,9 @@ export function selectTargets(entries: readonly SitemapEntry[]): IndexTarget[] {
   }
   return [...byPath.values()].sort((a, b) => {
     if (a.tier !== b.tier) return a.tier === "full" ? -1 : 1;
+    // ISO dates compare correctly as strings, and a missing lastmod is "", which sorts last —
+    // right, because a page the sitemap cannot date is the one we know least about.
+    if (a.lastmod !== b.lastmod) return a.lastmod < b.lastmod ? 1 : -1;
     return a.path.localeCompare(b.path);
   });
 }
