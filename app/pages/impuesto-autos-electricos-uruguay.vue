@@ -551,7 +551,7 @@ function buildBracketRows(bracket: CustomsBracket): MatrixRow[] {
   return [
     {
       label: 'F — el vehículo (sin distinguir cilindrada)',
-      electric: `${m.electric} %`,
+      electric: pct(m.electric),
       a: 'según fila F1-F6',
       b: 'según fila F1-F6',
       c: 'según fila F1-F6',
@@ -559,9 +559,9 @@ function buildBracketRows(bracket: CustomsBracket): MatrixRow[] {
     ...ENGINE_ROWS.map(row => ({
       label: `${row} · ${rangeLabel(row)}`,
       electric: 'No aplica',
-      a: `${m.hybrid.a[row]} %`,
-      b: `${m.hybrid.b[row]} %`,
-      c: `${m.hybrid.c[row]} %`,
+      a: pct(m.hybrid.a[row]),
+      b: pct(m.hybrid.b[row]),
+      c: pct(m.hybrid.c[row]),
     })),
   ]
 }
@@ -575,7 +575,7 @@ const bracketTables = (['a', 'b', 'c'] as CustomsBracket[]).map(bracket => ({
 const todayRows: MatrixRow[] = [
   {
     label: 'F — el vehículo (sin distinguir cilindrada)',
-    electric: '0 %',
+    electric: pct(DECREE_390_2021_CURRENT_RATES.electric),
     a: 'según fila F1-F6',
     b: 'según fila F1-F6',
     c: 'según fila F1-F6',
@@ -583,9 +583,9 @@ const todayRows: MatrixRow[] = [
   ...ENGINE_ROWS.map(row => ({
     label: `${row} · ${rangeLabel(row)}`,
     electric: 'No aplica',
-    a: `${DECREE_390_2021_CURRENT_RATES.hybrid.a[row]} %`,
-    b: `${DECREE_390_2021_CURRENT_RATES.hybrid.b[row]} %`,
-    c: `${DECREE_390_2021_CURRENT_RATES.hybrid.c[row]} %`,
+    a: pct(DECREE_390_2021_CURRENT_RATES.hybrid.a[row]),
+    b: pct(DECREE_390_2021_CURRENT_RATES.hybrid.b[row]),
+    c: pct(DECREE_390_2021_CURRENT_RATES.hybrid.c[row]),
   })),
 ]
 
