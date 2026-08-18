@@ -140,12 +140,12 @@ export async function runSocialPass(cfg: SocialConfig = socialConfig()): Promise
     }
 
     const postText = `${post.title}\n${post.selftext}`;
-    let check = validateSocial(draft.comment, postText);
+    let check = validateSocial(draft.comment, postText, draft.register);
     if (!check.ok) {
       const retry = await composeSocial(ask, socialRetryHint(check));
       if (retry && !retry.skip && retry.comment) {
         draft = retry;
-        check = validateSocial(retry.comment, postText);
+        check = validateSocial(retry.comment, postText, retry.register);
       }
     }
 
@@ -157,6 +157,7 @@ export async function runSocialPass(cfg: SocialConfig = socialConfig()): Promise
       postPermalink: post.permalink,
       postCreatedUtc: post.createdUtc,
       text: draft.comment,
+      register: draft.register,
     };
 
     if (!check.ok) {

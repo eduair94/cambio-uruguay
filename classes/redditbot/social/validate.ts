@@ -6,6 +6,7 @@
 // dijimos que no era, y el largo tiene TECHO, porque el párrafo bien armado es lo que delata.
 
 import { BANNED_PHRASES, EMOJI, TUTEO, extractLinks, inventedNumbers, strip } from "../validate";
+import type { SocialRegister } from "./compose";
 
 export type SocialRejectReason =
   | "empty"
@@ -27,18 +28,35 @@ export interface SocialValidation {
   detail?: string;
 }
 
-const MAX_CHARS = 240;
+/**
+ * Cuánto se puede escribir, según para qué.
+ *
+ * No es una preferencia de estilo. En un hilo de charla el párrafo prolijo es el delator: nadie
+ * contesta una foto del Cerro con tres oraciones bien puntuadas. Pero cuando alguien preguntó algo
+ * en serio —el caso normal en r/AskUruguayan— ese mismo techo convierte la respuesta en un chiste,
+ * y contestar a medias una pregunta honesta es peor que no contestar. Así que el techo lo fija el
+ * registro que el modelo eligió antes de escribir.
+ */
+const LIMITS: Record<SocialRegister, { chars: number; sentences: number }> = {
+  liviano: { chars: 240, sentences: 2 },
+  util: { chars: 460, sentences: 4 },
+};
+
 const MIN_CHARS = 15;
-const MAX_SENTENCES = 2;
 
 /** Decir "soy un bot" en un chiste no es transparencia, es un comentario raro. La bio de la cuenta es el lugar. */
 const SELF_DISCLOSURE = ["soy un bot", "soy un robot", "como ia", "soy una ia", "inteligencia artificial", "modelo de lenguaje"];
 
-export function validateSocial(comment: string, postText: string): SocialValidation {
+export function validateSocial(
+  comment: string,
+  postText: string,
+  register: SocialRegister = "liviano"
+): SocialValidation {
+  const cap = LIMITS[register] ?? LIMITS.liviano;
   const text = comment.trim();
   if (!text) return { ok: false, reason: "empty" };
   if (text.length < MIN_CHARS) return { ok: false, reason: "too_short", detail: `${text.length} caracteres` };
-  if (text.length > MAX_CHARS) return { ok: false, reason: "too_long", detail: `${text.length} caracteres` };
+  if (text.length > cap.chars) return { ok: false, reason: "too_long", detail: `${text.length} caracteres` };
 
   // Cero enlaces. No "un enlace al sitio": cero. El karma que se gana con un link no es karma, es
   // una promoción con otro nombre, y es lo que hace que el sub mire la cuenta con lupa.
@@ -61,7 +79,7 @@ export function validateSocial(comment: string, postText: string): SocialValidat
   if (disclosure) return { ok: false, reason: "self_disclosure", detail: disclosure };
 
   const sentences = text.split(/[.!?…]+\s/).filter((s) => s.trim().length > 1);
-  if (sentences.length > MAX_SENTENCES) {
+  if (sentences.length > cap.sentences) {
     return { ok: false, reason: "too_many_sentences", detail: `${sentences.length} oraciones` };
   }
 
@@ -77,7 +95,7 @@ export function validateSocial(comment: string, postText: string): SocialValidat
 export function socialRetryHint(result: SocialValidation): string {
   switch (result.reason) {
     case "too_long":
-      return "Quedó largo. Una oración, dos como mucho, menos de 220 caracteres.";
+      return "Quedó largo. Cortalo a lo que de verdad hace falta y sacá lo que ya se entendía.";
     case "too_short":
       return "Quedó demasiado corto para decir algo. Una oración completa que responda a algo concreto del hilo.";
     case "has_link":
@@ -93,7 +111,7 @@ export function socialRetryHint(result: SocialValidation): string {
     case "markdown":
       return "Sin viñetas, sin negritas y sin numeración: texto corrido.";
     case "too_many_sentences":
-      return "Demasiadas oraciones. Dejá la idea principal y borrá el resto.";
+      return "Demasiadas oraciones para este hilo. Dejá lo que contesta y borrá el resto.";
     case "invented_number":
       return `Sacá las cifras (${result.detail}): no están en lo que escribió la persona y no las podés verificar.`;
     case "self_disclosure":

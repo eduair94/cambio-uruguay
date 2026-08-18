@@ -129,15 +129,43 @@ describe("social/validate — qué texto sale de la cuenta", () => {
       "Te recomiendo la rambla de Malvín porque a esa hora el sol pega de costado. " +
       "También podés ir al Cerro, que tiene una vista panorámica de toda la bahía. " +
       "Y si preferís algo más tranquilo, la playa Verde suele estar vacía a esa hora.";
-    expect(validateSocial(largo, contexto).reason).toBe("too_many_sentences");
+    expect(validateSocial(largo, contexto, "liviano").reason).toBe("too_many_sentences");
   });
 
   it("rechaza la oración interminable, que delata lo mismo por otro lado", () => {
     const largo =
       "Andá a la rambla de Malvín tipo siete y media que a esa hora el sol pega de costado y queda " +
       "todo dorado, y si te queda lejos el Cerro también sirve porque tenés la bahía entera de " +
-      "frente y encima podés volver caminando por la costa sin apuro.";
-    expect(validateSocial(largo, contexto).reason).toBe("too_long");
+      "frente y encima podés volver caminando por la costa sin apuro y sin gastar un peso en nada.";
+    expect(validateSocial(largo, contexto, "liviano").reason).toBe("too_long");
+  });
+
+  it("deja contestar en serio cuando alguien preguntó en serio", () => {
+    // El pedido que este test fija: en r/AskUruguayan la gente pregunta de verdad, y el techo de
+    // dos oraciones convertía cualquier respuesta honesta en un chiste a medias. Las mismas tres
+    // oraciones que se rechazan como charla se aceptan como respuesta.
+    const respuesta =
+      "Te recomiendo la rambla de Malvín porque a esa hora el sol pega de costado. " +
+      "También podés ir al Cerro, que tiene una vista panorámica de toda la bahía. " +
+      "Y si preferís algo más tranquilo, la playa Verde suele estar vacía a esa hora.";
+    expect(validateSocial(respuesta, contexto, "util").ok).toBe(true);
+    expect(validateSocial(respuesta, contexto, "liviano").ok).toBe(false);
+  });
+
+  it("el registro afloja el largo pero no afloja nada más", () => {
+    // Aflojar el techo no puede ser una puerta lateral: un enlace sigue siendo un enlace, y una
+    // cifra inventada en una respuesta útil es peor que en un chiste, porque se le va a creer.
+    expect(validateSocial("Fijate en la web de la intendencia, tenés todo en https://montevideo.gub.uy ahí.", contexto, "util").reason).toBe("has_link");
+    expect(validateSocial("Andá tipo 19:40 al Cerro, que el sol baja a los 340 metros exactos y queda bárbaro.", contexto, "util").reason).toBe("invented_number");
+    expect(validateSocial("Puedes ir a la rambla de Malvín, que a esa hora queda realmente preciosa la vista.", contexto, "util").reason).toBe("tuteo");
+  });
+
+  it("por defecto usa el techo de charla, que es el más estricto", () => {
+    const tres =
+      "Te recomiendo la rambla de Malvín porque el sol pega de costado. " +
+      "También podés ir al Cerro, que tiene vista a la bahía. " +
+      "Y la playa Verde suele estar vacía a esa hora.";
+    expect(validateSocial(tres, contexto).reason).toBe("too_many_sentences");
   });
 
   it("rechaza emojis y viñetas", () => {

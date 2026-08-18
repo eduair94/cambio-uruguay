@@ -27,6 +27,8 @@ export interface RedditSocialCommentDoc {
   postPermalink: string;
   postCreatedUtc: number;
   status: "posted" | "dry_run" | "rejected" | "failed";
+  /** "util" = alguien preguntó en serio; "liviano" = charla. Fija el largo permitido. */
+  register: "util" | "liviano";
   rejectReason: string;
   text: string;
   commentId: string;
@@ -47,6 +49,7 @@ const RedditSocialCommentSchema = new Schema<RedditSocialCommentDoc>(
     postPermalink: { type: String, default: "" },
     postCreatedUtc: { type: Number, default: 0 },
     status: { type: String, default: "rejected" },
+    register: { type: String, default: "liviano" },
     rejectReason: { type: String, default: "" },
     text: { type: String, default: "" },
     commentId: { type: String, default: "" },
