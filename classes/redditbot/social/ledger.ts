@@ -91,10 +91,27 @@ export async function markVisibility(postId: string, visible: boolean, score: nu
  */
 export async function blockedSubs(cfg: SocialConfig): Promise<Map<string, number>> {
   const since = new Date(Date.now() - cfg.subBlockDays * DAY_MS);
-  const rows = await RedditSocialCommentModel.find({ status: "posted", postedAt: { $gte: since } })
-    .sort({ postedAt: -1 })
-    .select({ sub: 1, visible: 1 })
-    .lean<Array<{ sub: string; visible: boolean | null }>>();
+
+  // La evidencia de los DOS bots, no la de uno.
+  //
+  // Un sub que borra por AutoModerator borra todo lo que escribe la cuenta, no sólo lo de este
+  // pase. r/uruguay ya había borrado la respuesta con fuentes del otro bot cuando este llegó a
+  // gastar un comentario ahí para descubrir lo mismo. El vigilante ya marca `removed` en esas
+  // filas; leerlas cuesta una consulta y ahorra un comentario por sub.
+  const [propios, ajenos] = await Promise.all([
+    RedditSocialCommentModel.find({ status: "posted", postedAt: { $gte: since } })
+      .sort({ postedAt: -1 })
+      .select({ sub: 1, visible: 1, postedAt: 1 })
+      .lean<Array<{ sub: string; visible: boolean | null; postedAt: Date }>>(),
+    RedditBotReplyModel.find({ status: "posted", postedAt: { $gte: since }, checkedAt: { $ne: null } })
+      .sort({ postedAt: -1 })
+      .select({ sub: 1, removed: 1, postedAt: 1 })
+      .lean<Array<{ sub: string; removed: boolean; postedAt: Date }>>(),
+  ]);
+
+  const rows = [...propios, ...ajenos.map((row) => ({ sub: row.sub, visible: !row.removed, postedAt: row.postedAt }))].sort(
+    (a, b) => (b.postedAt?.getTime() ?? 0) - (a.postedAt?.getTime() ?? 0)
+  );
 
   const streak = new Map<string, number>();
   const done = new Set<string>();
