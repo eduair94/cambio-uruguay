@@ -61,16 +61,20 @@ export interface MarkersAndBrandsData {
   brandLocations: Record<string, string[]>; // brandId -> locationId[]
 }
 
+/**
+ * The request signature the app sends as `X-Signature`: HMAC-SHA256(appSecret, nonce + path), hex.
+ * Recovered from the app's createSignature — see memory/bankos-api-reverse.md.
+ */
+export function bankosSignature(nonce: string, path: string): string {
+  return crypto.createHmac("sha256", BANKOS_APP_SECRET).update(nonce + path).digest("hex");
+}
+
 function signHeaders(path: string): Record<string, string> {
   const nonce = crypto.randomUUID();
-  const signature = crypto
-    .createHmac("sha256", BANKOS_APP_SECRET)
-    .update(nonce + path)
-    .digest("hex");
   return {
     "X-API-Key": BANKOS_API_KEY,
     "X-Nonce": nonce,
-    "X-Signature": signature,
+    "X-Signature": bankosSignature(nonce, path),
     "Content-Type": "application/json",
     Accept: "application/json",
   };
