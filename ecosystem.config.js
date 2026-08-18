@@ -194,6 +194,22 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Bankos discount-map snapshot for /descuentos-con-tarjeta-uruguay. Pulls the whole country's
+      // bank/card discounts (brands + GeoJSON locations + per-bank discount text) from the Bankos
+      // backend and upserts ONE row (`bankossnapshots.key:"latest"`) in the NUXT APP's database
+      // (classes/appdb.ts, APP_MONGO_URI) — the outage fallback app/server/api/bankos/discounts.get.ts
+      // serves when the live Bankos API (Render free tier, cold-starts) is down. NOT a ledger: a
+      // single upserted row, and buildSnapshot() throws on a thin pull so a bad day keeps the last
+      // good snapshot. No Gemini, no default-DB access. Daily 08:33 UTC ≈ 05:33 America/Montevideo;
+      // minute 33 (not a multiple of 5), before the 09:xx cluster.
+      name: "currency-bankos",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_bankos.js",
+      cron_restart: "33 8 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Public site-analytics snapshot for /estadisticas-del-sitio: GA4 Data API → the NUXT APP's
       // database (`siteanalyticssnapshots`). Aggregate only — totals, day buckets, top-N
       // breakdowns, page paths without their query string. Daily 10:51 UTC ≈ 07:51

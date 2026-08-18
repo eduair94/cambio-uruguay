@@ -22,6 +22,7 @@ Root map of a multi-package monorepo behind [cambio-uruguay.com](https://cambio-
 | currency-loans | dist/sync_loans.js | 47 8 * * * | lender TEA refresh |
 | currency-predictions | dist/sync_predictions.js | 23 9 * * * | writes APP DB `pricepredictions`; needs `APP_MONGO_URI` |
 | currency-explain | dist/sync_explain.js | 7 10 * * * | writes APP DB `moveexplanations` |
+| currency-bankos | dist/sync_bankos.js | 33 8 * * * | snapshots the whole Bankos discount map (reverse-engineered `com.anonymous.bankos`) into APP DB `bankossnapshots` (one upserted row) — the outage fallback for the app's `/api/bankos/discounts` (live-first) behind `/descuentos-con-tarjeta-uruguay`; needs `APP_MONGO_URI`; refuses to overwrite a good snapshot with a thin pull |
 | currency-debt-relief | dist/sync_debt_relief.js | 13 10 1 * * | monthly; BCU usury caps |
 | currency-temas-analysis | dist/sync_temas_analysis.js | 17 11 * * * | reads app DB, writes backend `temas_analysis_data`; self-gates 90d; needs `APP_MONGO_URI` |
 | currency-site-analytics | dist/sync_site_analytics.js | 51 10 * * * | GA4 Data API → APP DB `siteanalyticssnapshots` for /estadisticas-del-sitio; needs `GA4_PROPERTY_ID` + SA (docs/analytics/GA4_DATA_API.md). The page's LIVE block is separate: on-demand `GET /site-analytics-realtime` on currency-server (Redis 45s), so the API process needs the same GA4 env |

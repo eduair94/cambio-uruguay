@@ -155,6 +155,8 @@ describe('the navigation model has no dead links', () => {
     expect(banking?.titleKey).toBe('search.section.banking')
     expect(banking?.entries.map(entry => entry.to)).toEqual([
       '/mejores-bancos-uruguay',
+      // The Bankos-fed discounts map: which stores each bank/card discounts.
+      '/descuentos-con-tarjeta-uruguay',
       '/tarjetas-de-credito-uruguay',
       '/tarjetas-de-debito-uruguay',
       // What the same account pays you for leaving money in it — the other side
