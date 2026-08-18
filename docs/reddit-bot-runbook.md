@@ -260,14 +260,75 @@ pm2 stop currency-reddit-bot
 
 o `REDDIT_BOT_ENABLED=0` en el `.env`, que además deja constancia de por qué.
 
-## 8. Los huecos de contenido
+## 8. Los huecos de contenido se convierten en páginas solos
 
-`currency-content-gaps` corre a las 05:35 UTC, agrupa las preguntas que quedaron
-sin respuesta y, cuando cuatro o más piden lo mismo, escribe un borrador
-investigado en `docs/reddit-gaps/` y avisa por Telegram.
+`currency-content-gaps` corre a las 05:35 UTC. Agrupa las preguntas que quedaron
+sin respuesta y, cuando cuatro o más piden lo mismo, **investiga, escribe la
+página y la publica**: push a `main`, que dispara el deploy. Después el bot vuelve
+a esos hilos —que quedaron aparcados como `waiting_page`, no descartados— y los
+contesta con la página que existe porque ellos preguntaron.
 
-Un borrador **no es una página** y no se publica solo. Por qué, y qué hay que
-verificar antes de convertirlo, está en `docs/reddit-gaps/README.md`.
+Una página por corrida. No es un límite de volumen sino de radio de daño: si algo
+del generador está mal, la evidencia es una página y un revert.
+
+### Lo que reemplaza a la revisión humana
+
+No hay una persona entre esto y el sitio público. La revisión que haría esa
+persona está automatizada, y **cualquiera de estos pasos en rojo publica NADA**:
+
+1. **Alcance** — la pregunta cae en una temática del sitio
+   (`classes/gaps/topics.ts`). Un cluster fuera de alcance se marca y no se
+   reintenta nunca más.
+2. **Investigación** — búsqueda web real, y después la página se escribe con el
+   **texto descargado de las fuentes delante**, no con la memoria del modelo.
+3. **Fuentes** — cada URL citada se descarga y tiene que devolver 200. Si hay más
+   citas rotas que buenas, se aborta: eso es evidencia de que inventó citas.
+4. **Cifras** — **cada número de la página tiene que aparecer literal en el texto
+   descargado**. Es la misma regla que ya frena los comentarios.
+5. **Forma** — largo, secciones con sustancia, slug libre, sin muletillas.
+6. **Lint y tests de la app**, corridos en un clon aparte **antes** del push.
+
+El paso 6 es el que ocupa el lugar del merge: pushear a `main` *es* desplegar, así
+que la pregunta "¿esto es seguro?" hay que contestarla antes, no en CI después.
+
+Lo que la investigación no pudo confirmar se publica como tal, en su propia
+sección. No se redondea a una afirmación.
+
+Si algo falla, queda el borrador investigado en `docs/reddit-gaps/` y te llega un
+Telegram con el motivo.
+
+### El clon de verificación
+
+Se prepara **una sola vez**, y nunca es el checkout de deploy (los scripts de
+deploy hacen `git pull` ahí; un archivo generado suelto convierte el próximo
+deploy en un conflicto):
+
+```bash
+git clone https://github.com/eduair94/cambio-uruguay.git /root/cambio-uruguay-genpage
+cd /root/cambio-uruguay-genpage/app && npm install --force
+```
+
+Y en el `.env` raíz: `GENPAGE_WORKSPACE=/root/cambio-uruguay-genpage`.
+
+### Ensayar sin publicar
+
+`GENPAGE_DRY_RUN=1` corre todo —alcance, investigación, fuentes, cifras, lint,
+tests— y frena justo antes del push. Sirve para ver qué escribiría contra una
+pregunta real.
+
+### Dónde queda lo generado
+
+- `app/utils/generated/<slug>.ts` — el contenido, como datos
+- `app/pages/<slug>.vue` — 15 líneas que envuelven `components/AutoGuide.vue`
+- `app/utils/generatedPages.ts` — la entrada de nav
+
+**El bot nunca toca `siteNav.ts`.** Son 2.200 líneas que mantienen personas y que
+leen todas las proyecciones del sitio; las entradas generadas viven en su propio
+archivo, que `siteNav.ts` spreadea con una línea.
+
+Para retirar una página: borrá su entrada en `generatedPages.ts` y sus dos
+archivos. Nada más la referencia. A partir de que la editás a mano, es una página
+como cualquier otra.
 
 ## Cuando algo no anda
 
