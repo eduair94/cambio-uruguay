@@ -26,14 +26,19 @@ test.use({ locale: 'es-UY' })
 test('no element claims role="option" outside a listbox', async ({ page }) => {
   await page.goto('/')
 
-  // Hydration gate: the drawer's VListGroup headers are what regressed, and they
-  // are client-rendered. Poll rather than assert once so a slow dev server does
-  // not read as a pass.
-  await expect(async () => {
-    await expect(page.locator('[role="option"], [role="listbox"]').first()).toBeAttached({
-      timeout: 2_000,
-    })
-  }).toPass({ timeout: 60_000 })
+  // Gate on the drawer headers themselves, NOT on `[role="option"]`.
+  //
+  // The first version of this test waited for `[role="option"], [role="listbox"]`
+  // to be attached, and that is unsatisfiable on a healthy page: once the drawer
+  // stops emitting orphan options there are no options left, and the palette's
+  // listbox only exists while the palette is open. It timed out for exactly the
+  // reason the fix worked. Anchor on an element that is always present instead.
+  const headers = page.locator('.v-list-group__header')
+  await expect(headers.first()).toBeAttached({ timeout: 30_000 })
+
+  // Guard the guard: if the drawer ever stops rendering, the orphan check below
+  // would pass vacuously and this test would go green while testing nothing.
+  expect(await headers.count()).toBeGreaterThan(0)
 
   const orphans = await page.evaluate(() =>
     Array.from(document.querySelectorAll('[role="option"]'))

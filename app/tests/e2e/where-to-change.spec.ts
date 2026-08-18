@@ -37,9 +37,19 @@ test.describe('where to change', () => {
     await expect(page.getByTestId('wtc-house-total').first()).toContainText(/\$/)
 
     // Switch the operation to "sell" and assert the ranking still renders.
-    await page.getByTestId('wtc-operation').click()
-    // Vuetify renders the select menu in an overlay; pick the second option.
-    const options = page.locator('.v-overlay-container .v-list-item')
+    //
+    // Click `.v-field`, not the VSelect root. `data-testid` lands on the root
+    // `.v-input`, and in Vuetify 4 a click there does not open the menu — the
+    // activator is the inner field. The menu therefore never opened and the
+    // options assertion below burned its 15s timeout on an empty page. The two
+    // specs that exercise a VSelect and pass (casas-directory, home-market-filters)
+    // both click `.v-field`; this one was the odd one out.
+    await page.getByTestId('wtc-operation').locator('.v-field').click()
+
+    // Addressed by role rather than by internal class: an open select menu is a
+    // listbox and its entries are options, which is the part of a component
+    // library that stays contractually stable across majors.
+    const options = page.locator('[role="listbox"] [role="option"]')
     await expect(options.first()).toBeVisible({ timeout: 15_000 })
     await options.nth(1).click()
 
