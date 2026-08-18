@@ -517,7 +517,7 @@ function popupFor(b: any): string {
       if (bk.debitDescription) parts.push(`Débito: ${esc(bk.debitDescription)}`)
       // Colour lives in a swatch, never the label text — a light brand colour as text
       // fails contrast on the popup's white background (Club El País, Mercado Pago).
-      const swatch = `<span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${esc(bk.color)};margin-right:4px;vertical-align:middle"></span>`
+      const swatch = `<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${esc(bk.color)};margin-right:4px;vertical-align:middle"></span>`
       return `<div style="margin-top:4px">${swatch}<strong>${esc(bk.bankName)}</strong><br>${parts.join('<br>')}</div>`
     })
     .join('')
