@@ -27,6 +27,7 @@ import { authorAllowed, pageAllowed, runAllowed, subAllowed } from "./limits";
 import {
   lastLinkedAt,
   lastRepliedToAuthorAt,
+  hasPostedTo,
   readSnapshot,
   recordDecision,
   seenPostIds,
@@ -350,11 +351,12 @@ export async function answerThreadById(postId: string, cfg: BotConfig = botConfi
   if (!post) return emptySummary(`Reddit no devolvió el hilo ${postId} (¿borrado?)`);
   summary.fetched = 1;
 
-  // The one guard that must not be bypassed even here: we have answered this before.
-  const seen = await seenPostIds([post.id]);
-  if (seen.size) {
+  // The one guard that must not be bypassed even here — and it is narrower than the scheduled run's.
+  // A past rejection ("too old", "off topic") is a decision this command exists to override; only an
+  // actual comment is a duplicate.
+  if (await hasPostedTo(post.id)) {
     summary.alreadyDecided = 1;
-    return { ...summary, note: "ya hay una decisión registrada para este hilo — no se responde dos veces" };
+    return { ...summary, note: "ya comentamos en este hilo — no se responde dos veces" };
   }
 
   const relaxed: BotConfig = { ...cfg, maxAgeHours: 24 * 365 };

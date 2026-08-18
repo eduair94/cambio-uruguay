@@ -36,6 +36,20 @@ export async function seenPostIds(postIds: readonly string[]): Promise<Set<strin
 }
 
 /**
+ * Have we actually left a comment on this thread?
+ *
+ * The narrow question, and the only one that must never be answered twice. Distinct from
+ * `seenPostIds`, which is the broad "did we already decide about this" used by the scheduled run to
+ * avoid re-spending on a thread it already dismissed. A past REJECTION is not a duplicate — it is a
+ * decision that a deliberate manual answer is entitled to override, and conflating the two meant
+ * `reddit_answer` refused every thread the cron had ever declined for being too old.
+ */
+export async function hasPostedTo(postId: string): Promise<boolean> {
+  const row = await RedditBotReplyModel.findOne({ postId, status: "posted" }).select({ _id: 1 }).lean();
+  return !!row;
+}
+
+/**
  * Park the threads a freshly published page was written for.
  *
  * They keep the route so the revisit pass knows what to wait for, and they stay out of
