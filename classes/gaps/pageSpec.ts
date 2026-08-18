@@ -260,3 +260,38 @@ export function validatePageSpec(
 export function describeProblems(problems: readonly SpecProblem[]): string {
   return problems.map((p) => `${p.field}: ${p.detail}`).join(" | ");
 }
+
+/**
+ * The problems, plus what to DO about them, for the retry.
+ *
+ * Naming the defect is not enough on the one that matters. Told only "the figures 15 and 45 are in
+ * no source", a model rewrites the same sentence with different numbers — it treats the claim as
+ * required and the figure as negotiable. The instruction it actually needs is the opposite: the
+ * claim is what goes, and the honest version of the page says so out loud.
+ *
+ * Observed: a page about how long customs holds a package failed twice this way, because no
+ * official source publishes a timeframe. Refusing was right; a third identical retry would not have
+ * been.
+ */
+export function correctionFor(problems: readonly SpecProblem[]): string {
+  const lines = [describeProblems(problems)];
+
+  if (problems.some((p) => p.field === "numbers")) {
+    lines.push(
+      "",
+      "Sobre las cifras: NO las reemplaces por otras. Si el texto descargado no sostiene un número, " +
+        "la afirmación entera se cae. Sacá la oración y poné en \"notConfirmed\" qué no se pudo " +
+        "confirmar, con esas palabras. Una página que dice \"no hay un plazo publicado\" es más útil " +
+        "y más honesta que una que estima uno.",
+      "",
+      "Si al sacar esas afirmaciones la página queda sin sustancia, devolvé menos secciones pero " +
+        "sólidas. Preferimos una página corta y sostenida a una larga y estimada."
+    );
+  }
+
+  if (problems.some((p) => p.field === "related")) {
+    lines.push("", "Los enlaces internos tienen que ser rutas EXACTAS de la lista que te pasé. No inventes ninguna.");
+  }
+
+  return lines.join("\n");
+}

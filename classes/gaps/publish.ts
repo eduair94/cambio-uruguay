@@ -27,7 +27,7 @@ import { authorPage, classifyScope, type RelatedCandidate } from "./authorPage";
 import { SiteRetriever } from "../rag/retrieve";
 import { loadIndex } from "../rag/store";
 import { emitAll } from "./emit";
-import { describeProblems, validatePageSpec } from "./pageSpec";
+import { correctionFor, describeProblems, validatePageSpec } from "./pageSpec";
 import { topicByKey } from "./topics";
 import {
   commitAndPush,
@@ -134,7 +134,7 @@ export async function publishPageForCluster(cluster: GapCluster, today: string):
   let problems = validatePageSpec(authored.spec, routes);
   if (problems.length) {
     console.warn(`[gaps] primer intento rechazado — ${describeProblems(problems)}`);
-    authored = await authorPage(cluster, scope, related, describeProblems(problems));
+    authored = await authorPage(cluster, scope, related, correctionFor(problems));
     if (!authored) return { status: "failed", reason: "el reintento no devolvió nada" };
     problems = validatePageSpec(authored.spec, routes);
   }

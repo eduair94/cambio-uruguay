@@ -5,7 +5,7 @@
 // and the one that matters most is the last: a figure that is not in the downloaded text of a
 // source we fetched does not get published, no matter how right it looks.
 import { describe, expect, it } from "vitest";
-import { evidenceOf, proseOf, validatePageSpec, type PageSpec } from "../../classes/gaps/pageSpec";
+import { correctionFor, evidenceOf, proseOf, validatePageSpec, type PageSpec } from "../../classes/gaps/pageSpec";
 
 const SOURCE_TEXT =
   "El régimen de courier admite envíos de hasta US$ 800 y 20 kg. El recargo único es del 60% " +
@@ -246,6 +246,29 @@ describe("gaps/pageSpec — the first screen and the internal links", () => {
       ],
     });
     expect(validatePageSpec(bad).some((p) => p.field === "numbers" && p.detail.includes("73"))).toBe(true);
+  });
+});
+
+describe("gaps/pageSpec — correctionFor", () => {
+  it("tells the retry to DROP the claim, not to swap the figure", () => {
+    // Observed twice on the same page: told only "15 and 45 are in no source", the model rewrote
+    // the sentence with different numbers. It treats the claim as required and the figure as
+    // negotiable; the instruction it needs is the opposite.
+    const text = correctionFor([{ field: "numbers", detail: "cifras que no están en ninguna fuente: 15, 45" }]);
+    expect(text).toContain("15, 45");
+    expect(text).toContain("NO las reemplaces por otras");
+    expect(text).toContain("notConfirmed");
+  });
+
+  it("does not add the numbers advice when nothing numeric is wrong", () => {
+    const text = correctionFor([{ field: "icon", detail: "no es mdi-*" }]);
+    expect(text).not.toContain("notConfirmed");
+    expect(text).toContain("icon");
+  });
+
+  it("names the internal-link rule when a route was invented", () => {
+    const text = correctionFor([{ field: "related", detail: "/no-existe no existe" }]);
+    expect(text).toContain("rutas EXACTAS");
   });
 });
 
