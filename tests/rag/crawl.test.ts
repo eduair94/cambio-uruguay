@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { crawlAll, crawlPage } from "../../classes/rag/crawl";
+import { crawlAll, crawlPage, pageUrl } from "../../classes/rag/crawl";
 
 const html = (main: string, head = ""): string => `<!doctype html><html><head>
 <title>Importar para revender en Uruguay | Cambio Uruguay</title>
@@ -114,5 +114,56 @@ describe("rag/crawl — crawlAll", () => {
       },
     });
     expect(urls).toEqual(["https://cambio-uruguay.com/guias/aduana"]);
+  });
+});
+
+describe("rag/crawl — pageUrl", () => {
+  it("percent-encodes what the sitemap left raw", () => {
+    // The sitemap endpoint returns bare paths, so a department keeps its accent AND its space.
+    // Requesting that unencoded is why 25 pages failed on the first build.
+    expect(pageUrl("https://cambio-uruguay.com", "/sucursales/cambilex/RÍO NEGRO")).toBe(
+      "https://cambio-uruguay.com/sucursales/cambilex/R%C3%8DO%20NEGRO"
+    );
+    expect(pageUrl("https://cambio-uruguay.com", "/sucursales/cambilex/PAYSANDÚ")).toBe(
+      "https://cambio-uruguay.com/sucursales/cambilex/PAYSAND%C3%9A"
+    );
+  });
+
+  it("does not double-encode a path that already arrived encoded", () => {
+    const encoded = "/sucursales/cambilex/R%C3%8DO%20NEGRO";
+    expect(pageUrl("https://cambio-uruguay.com", encoded)).toBe(`https://cambio-uruguay.com${encoded}`);
+  });
+
+  it("escapes # and ?, which encodeURI leaves alone and a URL would read as fragment or query", () => {
+    expect(pageUrl("https://cambio-uruguay.com", "/a/b#c")).toBe("https://cambio-uruguay.com/a/b%23c");
+    expect(pageUrl("https://cambio-uruguay.com", "/a/b?c")).toBe("https://cambio-uruguay.com/a/b%3Fc");
+    // …and survives the decode/encode round trip when they arrived escaped already.
+    expect(pageUrl("https://cambio-uruguay.com", "/a/b%23c")).toBe("https://cambio-uruguay.com/a/b%23c");
+  });
+
+  it("fixes a partly-encoded path — the case a plain 'already encoded?' guard gets wrong", () => {
+    expect(pageUrl("https://cambio-uruguay.com", "/sucursales/cambilex/R%C3%8DO NEGRO")).toBe(
+      "https://cambio-uruguay.com/sucursales/cambilex/R%C3%8DO%20NEGRO"
+    );
+  });
+
+  it("does not throw on a bare % that is not an escape", () => {
+    expect(pageUrl("https://cambio-uruguay.com", "/descuento-100%-off")).toBe(
+      "https://cambio-uruguay.com/descuento-100%25-off"
+    );
+  });
+
+  it("still strips a trailing slash off the base", () => {
+    expect(pageUrl("https://cambio-uruguay.com/", "/guias")).toBe("https://cambio-uruguay.com/guias");
+  });
+
+  it("crawls an accented path and keeps the path the sitemap gave, so the index does not churn", async () => {
+    // Storing the encoded form instead would orphan every existing row and make pruneMissing
+    // delete and re-add the page on the next run.
+    const page = await crawlPage(
+      "/sucursales/cambilex/RÍO NEGRO",
+      opts({ tier: "stub", fetchImpl: async () => html("<p>x</p>") })
+    );
+    expect(page!.path).toBe("/sucursales/cambilex/RÍO NEGRO");
   });
 });

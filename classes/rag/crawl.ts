@@ -54,6 +54,38 @@ const HEADING_TAGS = new Set(["h1", "h2", "h3", "h4"]);
 export const sha1 = (value: string): string => crypto.createHash("sha1").update(value).digest("hex");
 
 /**
+ * The absolute URL to request for a site-relative path.
+ *
+ * The sitemap endpoint hands back RAW paths, so a department page arrives as
+ * `/sucursales/cambilex/RÍO NEGRO` — accent and space intact. Requesting that unencoded is a
+ * malformed request, and it is why a batch of pages failed on the first index build while every
+ * ASCII path beside them succeeded.
+ *
+ * Decode first, then encode. `encodeURI` alone is NOT idempotent — it escapes `%` too, so a path
+ * that already arrived encoded would come back as `%2520` and 404. Sniffing for `%XX` and skipping
+ * the encode instead fixes that case but breaks the mixed one, where a partly-encoded path still
+ * has a raw space to escape. Normalising through a decode handles raw, encoded and mixed alike.
+ *
+ * `decodeURIComponent` rather than `decodeURI`, because `decodeURI` preserves the reserved
+ * characters — it would leave an intentional `%23` as the literal text `%23` and the re-encode
+ * would turn it into `%2523`. It throws on a malformed escape (a path with a bare `%`), which is
+ * caught: the raw text is then the honest input, and `encodeURI` escapes the `%` correctly.
+ *
+ * `#` and `?` are escaped after encoding because `encodeURI` deliberately leaves both alone, and in
+ * a path segment either one silently truncates the URL into a fragment or a query.
+ */
+export function pageUrl(baseUrl: string, path: string): string {
+  let decoded = path;
+  try {
+    decoded = decodeURIComponent(path);
+  } catch {
+    /* malformed percent escape — encode the raw text as it stands */
+  }
+  const encoded = encodeURI(decoded).replace(/#/g, "%23").replace(/\?/g, "%3F");
+  return `${baseUrl.replace(/\/+$/, "")}${encoded}`;
+}
+
+/**
  * GET one URL, or `null`.
  *
  * Both `timeout` and `signal` are set on purpose. axios's `timeout` covers the response, but a
@@ -120,7 +152,10 @@ export interface CrawlOptions {
 
 /** One page, crawled and reduced. `null` when the fetch failed or the page had no usable content. */
 export async function crawlPage(path: string, opts: CrawlOptions): Promise<CrawledPage | null> {
-  const url = `${opts.baseUrl.replace(/\/+$/, "")}${path}`;
+  // `path` stays exactly as the sitemap gave it in everything we store — only the request is
+  // encoded. Storing the encoded form would orphan every existing row and make pruneMissing delete
+  // and re-add the page on the next run.
+  const url = pageUrl(opts.baseUrl, path);
   const html = await (opts.fetchImpl ?? fetchHtml)(url);
   if (!html) return null;
 
