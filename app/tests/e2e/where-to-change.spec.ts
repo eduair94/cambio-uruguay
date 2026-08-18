@@ -38,19 +38,25 @@ test.describe('where to change', () => {
 
     // Switch the operation to "sell" and assert the ranking still renders.
     //
-    // Click `.v-field`, not the VSelect root. `data-testid` lands on the root
-    // `.v-input`, and in Vuetify 4 a click there does not open the menu — the
-    // activator is the inner field. The menu therefore never opened and the
-    // options assertion below burned its 15s timeout on an empty page. The two
-    // specs that exercise a VSelect and pass (casas-directory, home-market-filters)
-    // both click `.v-field`; this one was the odd one out.
-    await page.getByTestId('wtc-operation').locator('.v-field').click()
+    // The click is RETRIED, and that is the whole fix. A single click followed by
+    // a long wait for the options is what failed here: on this dev server the
+    // first click frequently lands while the section is still settling and the
+    // menu never opens, so the wait then burns its full budget against a page
+    // that has no menu on it. Waiting longer cannot help — nothing is coming.
+    //
+    // Verified against production with a real browser: once the menu IS open the
+    // overlay holds a `role="listbox"` with one `role="option"` per item, so
+    // neither the selector nor the click target was ever wrong. `.v-overlay-container`
+    // still exists in Vuetify 4 (composables/teleport.js) — an earlier guess that
+    // it had been renamed was simply false, and the two specs that drive a VSelect
+    // and pass (casas-directory, home-market-filters) had the answer all along:
+    // both wrap open-and-read in `toPass`. This one was the odd one out.
+    const options = page.locator('.v-overlay-container .v-list-item')
+    await expect(async () => {
+      await page.getByTestId('wtc-operation').locator('.v-field').click()
+      await expect(options.first()).toBeVisible({ timeout: 5_000 })
+    }).toPass({ timeout: 60_000 })
 
-    // Addressed by role rather than by internal class: an open select menu is a
-    // listbox and its entries are options, which is the part of a component
-    // library that stays contractually stable across majors.
-    const options = page.locator('[role="listbox"] [role="option"]')
-    await expect(options.first()).toBeVisible({ timeout: 15_000 })
     await options.nth(1).click()
 
     await expect(page.getByTestId('wtc-house').first()).toBeVisible({ timeout: 30_000 })
