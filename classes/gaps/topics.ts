@@ -25,20 +25,26 @@ export const SITE_TOPICS: readonly SiteTopic[] = [
   { key: "inversion", label: "Inversión y ahorro", scope: "plazos fijos, bonos, letras, fondos, brokers, impuestos a la renta de capital" },
   { key: "consumo", label: "Derechos del consumidor", scope: "compras online, garantías, devoluciones, estafas, reclamos, Defensa al Consumidor" },
   { key: "costos", label: "Costo de vida", scope: "canasta, servicios, combustible, transporte, comparaciones de precios" },
-  { key: "vehiculos", label: "Vehículos y su costo", scope: "patente, multas, transferencia, deuda de un vehículo usado" },
+  { key: "vehiculos", label: "Vehículos y su costo", scope: "patente, multas, SUCIVE, transferencia, deuda de un vehículo usado" },
+  { key: "trabajo", label: "Trabajo y sueldo", scope: "sueldo líquido y nominal, aguinaldo, licencia, seguro de paro, despido e indemnización, BPS, FONASA, AFAP, trabajo no registrado, contratos" },
+  { key: "servicios", label: "Servicios del hogar", scope: "UTE, OSE, ANTEL, mutualistas, gastos comunes, reclamos por facturación" },
+  { key: "tramites", label: "Trámites y residencia", scope: "residencia legal, cédula, prescripción de deudas con el Estado, a quién reclamarle cada cosa" },
 ];
 
 /**
  * Subjects that are adjacent to ours and still off limits.
  *
  * Each of these looks like a money question and is really something else — someone's own legal
- * case, their health, their immigration status. A generated page on any of them would be a
+ * case, their health, a product recommendation. A generated page on any of them would be a
  * confident stranger answering a question that needs a professional who knows the file.
+ *
+ * Residencia is NOT here, and that was a real contradiction while it was: the site has
+ * /mudarme-a-uruguay-residencia. What stays out is somebody's particular immigration file, which
+ * is covered by the first entry anyway.
  */
 export const OUT_OF_SCOPE = [
   "asesoramiento legal sobre un caso concreto",
   "salud, mutualistas y tratamientos",
-  "trámites migratorios y residencia",
   "política partidaria y elecciones",
   "recomendar un profesional, empresa o producto concreto para contratar",
   "criptomonedas como oportunidad de inversión o predicción de precios",

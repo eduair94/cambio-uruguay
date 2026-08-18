@@ -28,25 +28,40 @@ import type { BotConfig } from "./config";
 const STRONG_TERMS = [
   // divisas y cambio
   "dolar", "dolares", "cotizacion", "arbitraje", "casa de cambio", "brou", "bcu", "interbancario",
+  "dolar blue", "cambio chico", "billete de", "pizarra",
   // bancos y medios de pago
   "itau", "santander", "scotiabank", "hsbc", "bbva", "prex", "mydinero", "midinero", "creditel",
   "astropay", "paypal", "binance", "takenos", "plazo fijo", "debito", "tarjeta", "tarjetas",
+  "cuenta remunerada", "caja de ahorro",
   // aduana e importacion
   "aduana", "importar", "importacion", "courier", "franquicia", "dua", "despachante",
   "aliexpress", "shein", "temu", "encomienda", "arancel", "iva",
-  "dhl", "fedex", "aeropost", "punto mio", "puntomio", "miami express",
+  "dhl", "fedex", "aeropost", "punto mio", "puntomio", "miami express", "tiendamia",
   "mercado libre", "mercadolibre", "mercadopago", "mercado pago", "abitab", "redpagos",
-  // impuestos y trabajo
-  "dgi", "bps", "irpf", "monotributo", "facturar", "empresa unipersonal", "aguinaldo", "fonasa",
-  "afap", "jubilacion", "trabajo en negro", "sueldo liquido", "salario nominal",
+  // impuestos
+  "dgi", "irpf", "monotributo", "facturar", "factura electronica", "empresa unipersonal",
+  "declaracion jurada", "credito fiscal",
+  // TRABAJO Y SUELDOS — el sitio cubre esto y el lexico lo ignoraba
+  "bps", "aguinaldo", "fonasa", "afap", "jubilacion", "trabajo en negro", "sueldo liquido",
+  "salario nominal", "seguro de paro", "despido", "indemnizacion", "licencia paga",
+  "horas extras", "nocturnidad", "viaticos", "recibo de sueldo", "aportes", "laudo",
+  "salario minimo", "smn", "trabajo formal", "contrato de trabajo", "periodo de prueba",
   // credito, deuda y vivienda
   "prestamo", "prestamos", "clearing", "usura", "financiacion", "hipoteca", "inmobiliaria",
+  "gastos comunes", "deposito de garantia", "contaduria general", "anda garantia",
   // inversion
-  "invertir", "inversion", "criptomoneda", "obligaciones negociables",
-  // derechos
-  "defensa al consumidor", "garantia legal",
+  "invertir", "inversion", "criptomoneda", "obligaciones negociables", "letras de regulacion",
+  "corredor de bolsa", "afisa",
+  // derechos y reclamos
+  "defensa al consumidor", "garantia legal", "derecho de retracto", "area defensa",
+  // vehiculos
+  "patente", "sucive", "multa de transito", "libreta de conducir", "empadronamiento",
+  // servicios del hogar
+  "ute", "ose", "antel", "mutualista", "fonasa", "ruidos molestos",
+  // tramites y residencia — el sitio SI cubre esto
+  "residencia legal", "cedula uruguaya", "mudarme a uruguay", "prescripcion de deuda",
   // costo de vida
-  "costo de vida", "canasta basica", "combustible",
+  "costo de vida", "canasta basica", "combustible", "boleto stm",
 ];
 
 /**
@@ -60,12 +75,15 @@ const WEAK_TERMS = [
   "peso", "pesos", "euro", "euros", "real", "reales", "cambio", "cambiar", "blue",
   "banco", "bancos", "oca", "pronto", "wise", "cuenta", "transferencia", "credito",
   "correo", "amazon", "ebay", "paquete", "ups",
-  "factura", "sueldo", "salario", "liquido", "nominal", "licencia", "recibo",
+  "factura", "sueldo", "salario", "liquido", "nominal", "licencia", "recibo", "empleador",
+  // "jefe" salió: no es una palabra de plata en ningún contexto, y sumaba el segundo término
+  // que admitía charlas de oficina.
+  "trabajo", "empleo", "renuncia", "vacaciones", "part time", "changa", "freelance",
   "deuda", "deudas", "tea", "cuotas", "alquiler", "alquilar", "garantia", "anda", "contaduria",
   "bonos", "letras", "fondo", "acciones", "cripto", "bitcoin", "rendimiento", "interes",
   "ahorro", "ahorrar", "plata", "guita",
-  "estafa", "estafaron", "reclamo", "devolucion",
-  "canasta", "supermercado", "boleto", "ute", "ose", "antel",
+  "estafa", "estafaron", "reclamo", "devolucion", "multa", "auto", "moto", "vehiculo",
+  "canasta", "supermercado", "boleto", "combustible", "nafta", "alquileres",
 ];
 
 /** Both lists, for the callers that only want to know whether a word is in the vocabulary. */

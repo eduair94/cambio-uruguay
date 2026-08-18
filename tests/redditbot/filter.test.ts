@@ -179,6 +179,43 @@ describe("redditbot/filter — content", () => {
     expect(screenPost(one, cfg, NOW).ok).toBe(true);
   });
 
+  it("admits a salary question — el sitio cubre sueldos y el léxico no los miraba", () => {
+    const sueldo = post({
+      title: "¿Cuánto me tienen que pagar por las horas extras?",
+      selftext: "Trabajo de noche y no sé si el recibo de sueldo está bien liquidado, nadie me explica.",
+    });
+    expect(screenPost(sueldo, cfg, NOW).ok).toBe(true);
+  });
+
+  it("admits seguro de paro, despido e indemnización", () => {
+    for (const [title, body] of [
+      ["¿Cómo se cobra el seguro de paro?", "Me suspendieron y no sé qué me corresponde ni por cuánto tiempo."],
+      ["¿Qué indemnización me toca por despido?", "Llevo cuatro años en la empresa y me quieren desvincular ahora."],
+      ["¿El aguinaldo se cobra sobre el nominal?", "Nunca entendí cómo se calcula el aguinaldo en mi recibo mensual."],
+    ] as const) {
+      expect(screenPost(post({ title, selftext: body }), cfg, NOW).ok, title).toBe(true);
+    }
+  });
+
+  it("admits los servicios del hogar y los trámites que el sitio sí cubre", () => {
+    for (const [title, body] of [
+      ["¿Por qué me vino tan cara la factura de UTE?", "Me llegó el triple que el mes pasado y no cambié nada en casa."],
+      ["¿Cómo hago para cambiar de mutualista?", "Quiero cambiarme y no sé en qué período se puede hacer el trámite."],
+      ["¿Prescribe una deuda con el Estado?", "Tengo una deuda vieja de patente y quiero saber si ya prescribió."],
+    ] as const) {
+      expect(screenPost(post({ title, selftext: body }), cfg, NOW).ok, title).toBe(true);
+    }
+  });
+
+  it("sigue sin admitir una charla de trabajo que no es de plata", () => {
+    // "trabajo" y "jefe" son términos débiles justamente para esto: hace falta un segundo.
+    const charla = post({
+      title: "¿Cómo hacen para llevarse bien con el jefe?",
+      selftext: "En mi trabajo el ambiente está pesado y quería saber cómo lo manejan ustedes.",
+    });
+    expect(screenPost(charla, cfg, NOW).reason).toBe("off_topic");
+  });
+
   it("reports which topic terms matched, for debugging a miss", () => {
     const verdict = screenPost(post(), cfg, NOW);
     expect(verdict.matched).toContain("aduana");
