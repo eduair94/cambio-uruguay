@@ -52,8 +52,22 @@
              step, pushing every sub-item's icon 72px in while the section headers
              sit at 16px. -->
         <VListGroup v-for="section in navSections" :key="section.id" :value="section.id" fluid>
-          <template #activator="{ props: activatorProps }">
-            <VListItem v-bind="activatorProps">
+          <!-- `role="button"` is a correction, not decoration. VListGroup passes its
+               own `value` down to this activator, and Vuetify 4 derives a list item's
+               role as `isSelectable ? 'option' : 'listitem'` with `props.value != null`
+               counting as selectable — so from the 3.9 -> 4.1.5 upgrade these headers
+               shipped as `role="option"` inside a `role="presentation"` list. An option
+               outside a listbox is orphaned ARIA. What this element actually is, is the
+               disclosure toggle for the section: it owns the click handler and Vuetify
+               already points the expanded region's `aria-labelledby` at its id.
+               `no-orphan-listbox-options.spec.ts` fails if this regresses. -->
+          <template #activator="{ props: activatorProps, isOpen }">
+            <VListItem
+              v-bind="activatorProps"
+              role="button"
+              :aria-expanded="isOpen"
+              :aria-selected="undefined"
+            >
               <VListItemTitle class="font-weight-medium">
                 {{ $t(section.titleKey) }}
               </VListItemTitle>

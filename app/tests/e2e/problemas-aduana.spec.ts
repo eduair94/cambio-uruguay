@@ -58,33 +58,48 @@ test('the diagnosis tool answers, and the plan links into the norm and testimoni
   }
 })
 
-test('the guide renders in full from the embedded baseline when the backend has nothing to say', async ({
+test('the guide renders every problem and is honest about the data it is showing', async ({
   page,
 }) => {
   // Proof, not assertion-by-hand: hit the same cached Nitro route the page itself calls
   // (app/server/api/aduana.get.ts) and confirm which link of the cascade actually answered.
-  // As of this writing the production backend (104.234.204.107:3528) 404s on GET /aduana — the
-  // root API build is blocked on a concurrent session's classes/couriers/opinions.ts (see the
-  // Deploy section of docs/superpowers/plans/2026-07-12-problemas-aduana-uruguay.md) — so this run
-  // is, for real, exercising the catch branch -> ADUANA_FALLBACK, not a simulation of it. Once that
-  // backend route ships, `stale` will flip and this assertion is the signal to revisit it.
+  //
+  // THIS TEST USED TO PIN `stale === true`. It was written while the production backend
+  // 404'd on GET /aduana, so the run genuinely exercised the catch branch -> ADUANA_FALLBACK,
+  // and its comment said in as many words that `stale` flipping was the signal to come back
+  // here. The route shipped, `stale` went false, and the signal fired — into a CI job nobody
+  // was reading yet. So it is answered now rather than re-pinned: pinning either value makes
+  // this test a hostage of whatever the backend happens to be doing, which is exactly how it
+  // broke. What is invariant is the CONTRACT — every problem becomes a scenario, the facts
+  // appendix counts them, and the footer states the data's provenance truthfully — so that is
+  // what gets asserted, with the freshness copy checked against the branch actually taken.
   const apiRes = await page.request.get('/api/aduana')
   expect(apiRes.ok()).toBe(true)
   const payload = await apiRes.json()
-  expect(payload.stale).toBe(true)
   expect(payload.problems.length).toBe(12)
   expect(payload.facts.length).toBeGreaterThan(0)
 
   await page.goto('/problemas-con-la-aduana-uruguay')
 
-  // Every problem in the baseline made it onto the page as a clickable scenario, not a subset.
+  // Every problem in the payload made it onto the page as a clickable scenario, not a subset.
   await expect(page.locator('.scenario')).toHaveCount(payload.problems.length)
 
-  // The page is honest about the data's age instead of pretending it is live.
-  await expect(
-    page.getByText('Todavía no tenemos fecha de la última actualización en vivo.')
-  ).toBeVisible()
-  await expect(page.getByText(/no se actualizan hace más de dos semanas/)).toBeVisible()
+  // The footer never claims a freshness it does not have, in either branch.
+  if (payload.updatedAt) {
+    await expect(page.getByText(/Actualizado el /)).toBeVisible()
+  } else {
+    await expect(
+      page.getByText('Todavía no tenemos fecha de la última actualización en vivo.')
+    ).toBeVisible()
+  }
+
+  // The two-week warning is shown when, and only when, the payload is stale.
+  const staleWarning = page.getByText(/no se actualizan hace más de dos semanas/)
+  if (payload.stale) {
+    await expect(staleWarning).toBeVisible()
+  } else {
+    await expect(staleWarning).toHaveCount(0)
+  }
 
   // The facts appendix reflects every cited fact, not an empty shell.
   await expect(page.getByText(/Todos los datos citados en esta guía \(\d+\)/)).toBeVisible()

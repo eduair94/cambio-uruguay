@@ -8,6 +8,24 @@ test.setTimeout(120_000)
 test.use({ locale: 'es-UY' })
 
 /**
+ * The palette's options, and ONLY the palette's options.
+ *
+ * A bare `[role="option"]` used to work and silently stopped when Vuetify 4
+ * landed: `VListGroup` injects its own `value` into the activator `VListItem`,
+ * `VListItem` derives `role` as `isSelectable ? 'option' : 'listitem'`, and
+ * `props.value != null` makes it selectable — so every section header in the
+ * navigation drawer now claims `role="option"`. The drawer is in the DOM even
+ * when closed, so `[role="option"]` resolved to "Cotización y mercado" and the
+ * three assertions below compared the palette's results against a nav header.
+ *
+ * Scoping to the listbox is what these assertions always meant. `#cu-search-listbox`
+ * is SearchResults.vue's own id, so it cannot drift into matching anything else.
+ * (The orphan `role="option"` in the drawer is a real ARIA defect in its own
+ * right — `no-orphan-listbox-options.spec.ts` is the guard for that one.)
+ */
+const paletteOptions = (page: Page) => page.locator('#cu-search-listbox [role="option"]')
+
+/**
  * Open the palette and wait for its lazily-imported index to arrive.
  *
  * Uses the hotkey rather than the trigger on purpose. The trigger is a real
@@ -28,7 +46,7 @@ async function openPalette(page: Page) {
   // The catalogue chunk resolves a tick later; typing before it lands shows a skeleton.
   await expect(async () => {
     await input.fill('dolar')
-    await expect(page.locator('[role="option"]').first()).toBeVisible({ timeout: 2_000 })
+    await expect(paletteOptions(page).first()).toBeVisible({ timeout: 2_000 })
   }).toPass({ timeout: 30_000 })
   await input.fill('')
 
@@ -77,7 +95,7 @@ test('searching a footer-only page finds it and Enter navigates there', async ({
   const input = await openPalette(page)
 
   await input.fill('prestamo')
-  const first = page.locator('[role="option"]').first()
+  const first = paletteOptions(page).first()
   await expect(first).toContainText(/Préstamos en Uruguay/i)
   await expect(first).toHaveAttribute('aria-selected', 'true')
   await expect(input).toHaveAttribute('aria-activedescendant', 'cu-search-opt-0')
@@ -160,7 +178,7 @@ test('the theme action cycles the theme and keeps the palette open', async ({ pa
   // resolves to the same rendered theme.
   const before = await page.evaluate(() => localStorage.getItem('cu_theme'))
   await input.fill('tema')
-  const themeRow = page.locator('[role="option"]').first()
+  const themeRow = paletteOptions(page).first()
   await expect(themeRow).toContainText(/tema/i)
   await themeRow.click()
 
@@ -175,7 +193,7 @@ test('a typo falls back to a did-you-mean suggestion', async ({ page }) => {
 
   await input.fill('histrico')
   await expect(page.locator('.search-palette__did-you-mean')).toBeVisible()
-  await expect(page.locator('[role="option"]').first()).toContainText(/Histórico/i)
+  await expect(paletteOptions(page).first()).toContainText(/Histórico/i)
 })
 
 test.describe('with JavaScript disabled', () => {

@@ -5,9 +5,28 @@ test.describe('FAQ hub page', () => {
     await page.goto('/preguntas-frecuentes')
 
     // Visible FAQ block is present with at least one question.
+    //
+    // Asserted as a definition list, NOT as an accordion. FaqBlock has two modes
+    // and this page passes `expanded`, which renders <dl>/<dt>/<dd> with every
+    // answer always visible — deliberate, so AI Overviews and other extractors
+    // can read the answers without executing a click. The accordion (and its
+    // buttons) is the embedded variant used on the homepage. This test asked for
+    // `getByRole('button')` from the day the hub switched modes four days after
+    // the spec was written, and stayed red until CI started running the suite two
+    // months later.
     const block = page.getByTestId('faq-block')
     await expect(block).toBeVisible()
-    await expect(block.getByRole('button', { name: /dólar/i }).first()).toBeVisible()
+
+    const questions = block.locator('.faq-dl-item')
+    expect(await questions.count()).toBeGreaterThan(0)
+
+    // The answers are in the DOM already — that is the whole point of this mode.
+    const firstAnswer = questions.first().locator('dd')
+    await expect(firstAnswer).toBeVisible()
+    expect(((await firstAnswer.textContent()) ?? '').trim().length).toBeGreaterThan(0)
+
+    // ...and the hub still covers the topic it exists for.
+    await expect(block.locator('dt').filter({ hasText: /dólar/i }).first()).toBeVisible()
 
     // FAQPage structured data is in the document.
     const ldJson = await page.locator('script[type="application/ld+json"]').allTextContents()
