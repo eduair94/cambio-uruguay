@@ -425,5 +425,21 @@ module.exports = {
       cron_restart: "35 5 * * *",
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
+    {
+      // What Uruguay is searching and talking about right now: Google Trends' UY daily RSS +
+      // Google News' UY economy feed + the hot listings of the Uruguayan subs, classified
+      // money / maybe / no, into the APP database (`trendssnapshots`) for /tendencias-uruguay.
+      // Needs APP_MONGO_URI and refuses to run without it.
+      //
+      // Every 3 hours at minute 8: Google's daily list turns over during the day and the Reddit
+      // hot listing moves faster than that, but nothing here changes minute to minute. Minute 8
+      // keeps it off the */5 of currency-sync.
+      name: "currency-trends",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_trends.js",
+      cron_restart: "8 */3 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
   ],
 };
