@@ -120,7 +120,7 @@ export const TUTEO = [
 ];
 
 /** Emoji, symbol and pictograph ranges. A money answer with a rocket in it is an ad. */
-export const EMOJI = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{1F000}-\u{1F02F}]/u;
+export const EMOJI = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{1F000}-\u{1F02F}\u{1F1E6}-\u{1F1FF}]/u;
 
 export const strip = (text: string): string =>
   text

@@ -62,6 +62,13 @@ export interface TextOptions {
   /** Extra voice/style rules appended to the system prompt. Claude only; Gemini folds it in-prompt. */
   systemHint?: string;
   timeoutMs?: number;
+  /**
+   * Modelo de Claude. Sin esto manda el default del servidor (Sonnet 5), que es lo correcto para
+   * casi todo. Se pide explícitamente sólo donde la tarea lo justifica y la cuota lo permite: la
+   * cuota es de 200 llamadas por día COMPARTIDAS con el uso interactivo de una persona, así que
+   * "el mejor modelo por las dudas" se paga con las llamadas de otro. Ignorado por Gemini.
+   */
+  model?: "sonnet" | "opus" | "haiku" | "fable";
 }
 
 /**
@@ -79,6 +86,7 @@ export async function askText(prompt: string, opts: TextOptions = {}): Promise<s
       allowedTools: [],
       appendSystemPrompt: opts.systemHint,
       timeoutMs: opts.timeoutMs,
+      model: opts.model,
     });
     if (text) return text;
     // One fall-through, not a retry loop: if Claude produced nothing, asking it again costs quota
@@ -202,6 +210,7 @@ export async function askStructured<T>(
       allowedTools: [],
       appendSystemPrompt: opts.systemHint,
       timeoutMs: opts.timeoutMs,
+      model: opts.model,
     });
     if (value) return value;
     if (!geminiConfigured()) return null;

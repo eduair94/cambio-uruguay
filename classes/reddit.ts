@@ -346,6 +346,45 @@ export async function fetchNewPosts(sub: string, limit = 50): Promise<RedditPost
 }
 
 /**
+ * Un listado cualquiera del sub: `hot`, `top`, `new`.
+ *
+ * `fetchNewPosts` contesta "qué se publicó recién", que es la pregunta del bot que responde. Para
+ * saber QUÉ FUNCIONA en un sub hace falta la otra: qué llegó arriba y qué se votó en el último mes.
+ * Un tema puede no haberse tocado nunca en /new de hoy y ser el que el sub ya discutió tres veces
+ * este año — y esa es exactamente la repetición que hay que evitar antes de publicar.
+ *
+ * `t` sólo lo mira Reddit cuando el sort es `top`.
+ */
+export async function fetchListing(
+  sub: string,
+  sort: "hot" | "top" | "new" = "hot",
+  opts: { limit?: number; t?: "day" | "week" | "month" | "year" | "all" } = {}
+): Promise<RedditPostRaw[]> {
+  if (!redditConfigured()) return [];
+  const query: Record<string, string | number | boolean> = { limit: Math.min(Math.max(opts.limit ?? 100, 1), 100) };
+  if (sort === "top") query.t = opts.t ?? "month";
+  const res = await api<Listing<RawPost>>(`/r/${sub}/${sort}`, query);
+  return (res?.data?.children ?? []).filter((c) => c.kind === "t3").map((c) => toPost(c.data));
+}
+
+/**
+ * Las reglas escritas del sub, tal como las publicaron sus moderadores.
+ *
+ * Se leen y se le pasan al modelo antes de escribir nada. Adivinar las reglas de un sub por su
+ * nombre es cómo se consigue que el primer post de una cuenta nueva lo borre AutoModerator.
+ */
+export async function fetchSubredditRules(sub: string): Promise<string[]> {
+  if (!redditConfigured()) return [];
+  const res = await api<{ rules?: Array<{ short_name?: string; description?: string }> }>(
+    `/r/${sub}/about/rules`,
+    {}
+  );
+  return (res?.rules ?? [])
+    .map((rule) => [rule.short_name, rule.description].filter(Boolean).join(": ").replace(/\s+/g, " ").trim())
+    .filter(Boolean);
+}
+
+/**
  * Specific threads by id, whatever their age.
  *
  * `/new` only shows what is new, which is exactly wrong for the one case that needs this: a

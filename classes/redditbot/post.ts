@@ -256,3 +256,100 @@ export async function fetchAccountKarma(cfg: BotConfig = botConfig()): Promise<{
     return null;
   }
 }
+
+export interface LinkFlair {
+  id: string;
+  text: string;
+}
+
+/**
+ * Los flairs que el sub ofrece para un post nuevo.
+ *
+ * Muchos subs los tienen en obligatorio, y un post sin flair lo saca AutoModerator antes de que lo
+ * lea nadie. La lista no se puede adivinar ni hardcodear: los mods la cambian, y el id —no el
+ * texto— es lo que acepta /api/submit.
+ */
+export async function fetchLinkFlairs(sub: string, cfg: BotConfig = botConfig()): Promise<LinkFlair[]> {
+  const token = await userToken(cfg);
+  if (!token) return [];
+  try {
+    const res = await throttled(() =>
+      fetch(`${API}/r/${sub}/api/link_flair_v2`, {
+        headers: { Authorization: `Bearer ${token}`, "User-Agent": cfg.userAgent },
+        signal: AbortSignal.timeout(TIMEOUT_MS),
+      })
+    );
+    if (!res.ok) return [];
+    const json = (await res.json()) as Array<{ id?: string; text?: string }>;
+    return (Array.isArray(json) ? json : [])
+      .map((flair) => ({ id: String(flair.id ?? ""), text: String(flair.text ?? "") }))
+      .filter((flair) => flair.id && flair.text);
+  } catch (error) {
+    console.warn(`[redditbot] no se pudieron leer los flairs de r/${sub}: ${(error as Error).message}`);
+    return [];
+  }
+}
+
+export interface SubmittedPost {
+  id: string;
+  fullname: string;
+  permalink: string;
+}
+
+/**
+ * Publicar un hilo de texto.
+ *
+ * Un post no es un comentario más grande: es la cara de la cuenta en el sub, lo ve muchísima más
+ * gente y borrarlo deja rastro. Por eso esto no reintenta: si Reddit dijo que no, la decisión de
+ * volver a intentar la toma el próximo día, no un loop.
+ */
+export async function submitPost(
+  sub: string,
+  title: string,
+  body: string,
+  flairId = "",
+  cfg: BotConfig = botConfig()
+): Promise<SubmittedPost | null> {
+  const token = await userToken(cfg);
+  if (!token) return null;
+
+  const form: Record<string, string> = {
+    api_type: "json",
+    sr: sub,
+    kind: "self",
+    title,
+    text: body,
+    // Reddit manda el aviso de "tu post está arriba" al inbox; sin esto la cuenta se llena de nada.
+    sendreplies: "true",
+  };
+  if (flairId) form.flair_id = flairId;
+
+  try {
+    const res = await throttled(() =>
+      fetch(`${API}/api/submit`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/x-www-form-urlencoded",
+          "User-Agent": cfg.userAgent,
+        },
+        body: new URLSearchParams(form).toString(),
+        signal: AbortSignal.timeout(TIMEOUT_MS),
+      })
+    );
+    const json = (await res.json()) as {
+      json?: { errors?: unknown[][]; data?: { id?: string; name?: string; url?: string } };
+    };
+    const errors = json?.json?.errors ?? [];
+    if (!res.ok || errors.length) {
+      console.warn(`[redditbot] Reddit rechazó el post (${res.status}): ${JSON.stringify(errors).slice(0, 300)}`);
+      return null;
+    }
+    const data = json?.json?.data;
+    if (!data?.id) return null;
+    return { id: data.id, fullname: data.name ?? `t3_${data.id}`, permalink: data.url ?? "" };
+  } catch (error) {
+    console.warn(`[redditbot] falló el envío del post: ${(error as Error).message}`);
+    return null;
+  }
+}

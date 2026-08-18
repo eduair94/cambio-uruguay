@@ -369,6 +369,28 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Una pregunta por día en r/AskUruguayan. No enlaza nada.
+      //
+      // Investiga ANTES de escribir: lee nuevos + calientes + top del mes + top del año del sub,
+      // busca en la web de qué se habla en Uruguay esta semana, y recién ahí pide tres candidatas.
+      // Cada una se mide contra los títulos que ya existen (classes/redditbot/ask/novelty.ts) —
+      // pedirle originalidad a un modelo sin mostrarle lo publicado devuelve la pregunta obvia, que
+      // es obvia porque el sub ya la contestó tres veces.
+      //
+      // Es la ÚNICA llamada a Opus del fleet, y se justifica: una por día contra las 200 diarias
+      // que el endpoint comparte con el uso interactivo de una persona.
+      //
+      // Interruptores PROPIOS (REDDIT_ASK_ENABLED=1 + REDDIT_ASK_DRY_RUN=0), no los del bot de
+      // comentarios: publicar un hilo se ve mucho más que comentar en uno ajeno, y encender una
+      // cosa no puede encender la otra. 13:40 UTC = 10:40 de Montevideo, cuando el sub está despierto.
+      name: "currency-reddit-ask",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_reddit_ask.js",
+      cron_restart: "40 13 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Clusters the questions the bot could not answer and writes a researched DRAFT (never a
       // page) to docs/reddit-gaps/ when four or more threads ask the same thing. 05:35 UTC.
       name: "currency-content-gaps",

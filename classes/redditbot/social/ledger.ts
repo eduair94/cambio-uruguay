@@ -39,9 +39,18 @@ export async function socialSnapshot(): Promise<SocialSnapshot> {
 export async function alreadyEngaged(postIds: readonly string[]): Promise<Set<string>> {
   if (!postIds.length) return new Set();
   const ids = [...postIds];
+  // status "posted" en las DOS, y no cualquier fila.
+  //
+  // El ledger de respuestas guarda una fila por cada hilo que ese bot DECIDIÓ, y la enorme mayoría
+  // son rechazos: "no es tema nuestro", "muy viejo", "el sitio no lo cubre". Contarlas como "ya
+  // comentamos" descartó 172 de 175 hilos en el primer ensayo — casi todo Reddit, por no haberle
+  // contestado. Es el mismo error que ya se arregló una vez del otro lado: "lo miré" y "hablé" son
+  // preguntas distintas, y sólo la segunda es la que no puede contestarse dos veces.
   const [social, replies] = await Promise.all([
-    RedditSocialCommentModel.find({ postId: { $in: ids } }).select({ postId: 1 }).lean<Array<{ postId: string }>>(),
-    RedditBotReplyModel.find({ postId: { $in: ids }, status: { $ne: "waiting_page" } })
+    RedditSocialCommentModel.find({ postId: { $in: ids }, status: { $in: ["posted", "dry_run"] } })
+      .select({ postId: 1 })
+      .lean<Array<{ postId: string }>>(),
+    RedditBotReplyModel.find({ postId: { $in: ids }, status: "posted" })
       .select({ postId: 1 })
       .lean<Array<{ postId: string }>>(),
   ]);
