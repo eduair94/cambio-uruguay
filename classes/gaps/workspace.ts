@@ -145,6 +145,12 @@ export async function commitAndPush(
   files: ReadonlyArray<{ path: string }>,
   message: string
 ): Promise<PublishResult> {
+  // Everything up to and including the verification still runs — the point of the rehearsal is to
+  // exercise the checks, and a flag that skipped them would prove nothing.
+  if (process.env.GENPAGE_DRY_RUN === "1") {
+    return { ok: false, detail: `GENPAGE_DRY_RUN=1: verificado y NO publicado (${files.length} archivos listos)` };
+  }
+
   const added = await git(["add", "--", ...files.map((f) => f.path)]);
   if (!added.ok) return added;
 
