@@ -6,6 +6,7 @@
 import { describe, expect, it } from "vitest";
 import type { RedditPostRaw } from "../../classes/reddit";
 import { socialConfig } from "../../classes/redditbot/social/config";
+import { questionLike } from "../../classes/redditbot/social/compose";
 import { newestFirst, screenSocialPost } from "../../classes/redditbot/social/pick";
 import { socialRetryHint, validateSocial } from "../../classes/redditbot/social/validate";
 import { authorAllowed, runAllowed, subAllowed } from "../../classes/redditbot/social/limits";
@@ -107,6 +108,23 @@ describe("social/pick — dónde se puede comentar", () => {
     const viejo = post({ id: "viejo", createdUtc: 1000 });
     const nuevo = post({ id: "nuevo", createdUtc: 9000 });
     expect(newestFirst([viejo, nuevo]).map((p) => p.id)).toEqual(["nuevo", "viejo"]);
+  });
+});
+
+describe("social/compose — el registro lo manda el hilo, no la etiqueta", () => {
+  it("un título que pregunta es siempre util, diga lo que diga el modelo", () => {
+    // El caso medido: en "¿soy yo o la comida sabe peor que antes?" eligió "liviano" porque el
+    // hilo suena a queja, y después escribió 364 caracteres explicando reformulación de productos.
+    // El texto estaba bien; la etiqueta estaba mal, y la etiqueta era la que fijaba el techo.
+    expect(questionLike("Soy yo o basicamente la comida sabe peor antes que ahora?")).toBe(true);
+    expect(questionLike("¿Dónde consigo repuestos de bici?")).toBe(true);
+    expect(questionLike("Alguien sabe si abre el domingo")).toBe(true);
+    expect(questionLike("Qué opinan de esto")).toBe(true);
+  });
+
+  it("una foto o un desahogo no piden respuesta", () => {
+    expect(questionLike("Atardecer en la rambla, hoy")).toBe(false);
+    expect(questionLike("Me pasó lo más ridículo del año en el ómnibus")).toBe(false);
   });
 });
 

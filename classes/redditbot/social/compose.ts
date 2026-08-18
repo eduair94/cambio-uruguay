@@ -78,11 +78,14 @@ PRIMERO DECIDÍ QUÉ CLASE DE HILO ES
   funciona algo acá. Es el caso más común en r/AskUruguayan y no es negociable: a alguien que
   pregunta en serio se le contesta en serio. Una ocurrencia acá es peor que el silencio.
   Podés escribir hasta cuatro oraciones y contestar de verdad: lo que sabés, la parte práctica,
-  la advertencia que le va a ahorrar el viaje.
+  la advertencia que le va a ahorrar el viaje. Techo duro: 460 caracteres.
 
 - "liviano": el hilo es una charla, una foto, una queja, una anécdota. Nadie espera una respuesta.
   Una oración, dos como mucho. Si tenés una ocurrencia buena va, y si no, algo normal y humano.
-  Una ocurrencia mediocre no vale: mejor pasar de largo.
+  Una ocurrencia mediocre no vale: mejor pasar de largo. Techo duro: 240 caracteres.
+
+  Elegí el registro por lo que vas a ESCRIBIR, no por el clima del hilo. Si lo que tenés para decir
+  explica algo, es "util" aunque el hilo sea una queja.
 
 En la duda es "util". La gracia forzada se nota mucho más que una respuesta sobria.
 
@@ -110,6 +113,27 @@ Si el hilo no te da nada honesto para decir —o es más delicado de lo que pare
 y dejá el comentario vacío. Es una respuesta perfectamente válida y la vas a usar seguido.`;
 }
 
+/**
+ * ¿El título está preguntando algo?
+ *
+ * Decide el registro por encima de lo que diga el modelo, y existe por un caso medido: en un hilo
+ * titulado "¿soy yo o la comida sabe peor que antes?" eligió "liviano" —el hilo suena a queja— y
+ * después escribió una explicación de 364 caracteres sobre reformulación de productos. El texto
+ * estaba bien; la etiqueta estaba mal, y la etiqueta era la que fijaba el techo.
+ */
+export function questionLike(title: string): boolean {
+  const flat = title
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/^[^a-z0-9ñ]+/, "")
+    .trim();
+  return (
+    title.includes("?") ||
+    /^(que|cual|cuales|como|cuando|donde|quien|quienes|cuanto|cuanta|cuantos|cuantas|por que|para que|alguien sabe|alguno sabe|conocen|recomiendan|sirve|conviene|soy yo o)\b/.test(flat)
+  );
+}
+
 export async function composeSocial(input: SocialComposeInput, extraHint = ""): Promise<SocialDraft | null> {
   const draft = await askStructured<SocialDraft>(
     `${buildSocialPrompt(input)}${extraHint ? `\n\nCORRECCIÓN SOBRE EL INTENTO ANTERIOR\n${extraHint}` : ""}`,
@@ -117,10 +141,13 @@ export async function composeSocial(input: SocialComposeInput, extraHint = ""): 
     { systemHint: SOCIAL_VOICE, timeoutMs: 90_000 }
   );
   if (!draft) return null;
+  // Un hilo que pregunta se contesta: el techo de charla no puede aplicarse a una respuesta que
+  // alguien pidió. Y ante cualquier cosa rara, "util" — es el registro sobrio, y el sobrio nunca
+  // ofende. El techo es un techo, no una cuota: nada obliga a llenarlo.
+  const forced = questionLike(input.postTitle);
   return {
     skip: !!draft.skip,
-    // Ante cualquier cosa rara, "util": es el registro sobrio, y el sobrio nunca ofende.
-    register: draft.register === "liviano" ? "liviano" : "util",
+    register: !forced && draft.register === "liviano" ? "liviano" : "util",
     comment: String(draft.comment || "").trim(),
     why: String(draft.why || "").trim(),
   };
