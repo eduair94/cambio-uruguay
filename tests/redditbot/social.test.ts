@@ -70,6 +70,16 @@ describe("social/pick — dónde se puede comentar", () => {
     }
   });
 
+  it("tampoco opina de seguridad pública, que acá no es un tema sino una grieta", () => {
+    // Del primer ensayo real: eligió un hilo sobre 100 policías más y escribió algo sobrio que
+    // igual era una opinión sobre política de seguridad. Sobrio no alcanza cuando el tema divide.
+    const seguridad = post({
+      title: "Mandan 100 policías más a la zona",
+      selftext: "Lo anunciaron ayer, veremos si se nota en el barrio o queda en la nada.",
+    });
+    expect(screenSocialPost(seguridad, cfg, NOW).reason).toBe("no_jokes");
+  });
+
   it("respeta la ventana: ni recién publicado ni de anteayer", () => {
     expect(screenSocialPost(post({ createdUtc: (NOW - 60 * 1000) / 1000 }), cfg, NOW).reason).toBe("too_new");
     expect(screenSocialPost(post({ createdUtc: (NOW - 20 * 60 * 60 * 1000) / 1000 }), cfg, NOW).reason).toBe("too_old");

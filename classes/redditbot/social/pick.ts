@@ -23,6 +23,11 @@ const NO_JOKE_TERMS = [
   "violencia", "violaci", "abuso", "acoso", "amenaza", "denuncia", "femicidio", "desaparecid",
   "robo", "asalto", "rapiña", "rapina", "arrebato", "estafaron", "me estafaron", "secuestro",
   "accidente", "atropell", "incendio", "inundacion", "tragedia",
+  // Seguridad pública: el primer ensayo eligió un hilo sobre despliegue policial y escribió algo
+  // sobrio y razonable, que igual era una opinión sobre política de seguridad. Acá no es un tema,
+  // es una grieta, y una cuenta nueva opinando en el medio no junta karma.
+  "policia", "policial", "jefatura", "delincuen", "inseguridad", "narco", "homicidio",
+  "ministerio del interior", "guardia republicana", "carcel", "preso",
   "elecciones", "frente amplio", "partido nacional", "partido colorado", "cabildo", "orsi",
   "lacalle", "mujica", "sendic", "milei", "politica", "politico", "dictadura", "militares",
   "aborto", "religion", "iglesia", "guerra", "israel", "palestina", "ucrania", "racis", "xenofob",
