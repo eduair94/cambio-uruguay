@@ -32,6 +32,8 @@ Root map of a multi-package monorepo behind [cambio-uruguay.com](https://cambio-
 | currency-reddit-bot | dist/sync_reddit_bot.js | */12 11-23 * * * | answers ONE thread per run in 7 UY subs; **inert until `REDDIT_BOT_ENABLED=1` AND `REDDIT_BOT_DRY_RUN=0`** |
 | currency-reddit-bot-watch | dist/sync_reddit_bot_watch.js | 9 * * * * | reads back comment scores; trips a 48 h circuit breaker on 3 negatives/24 h |
 | currency-content-gaps | dist/sync_content_gaps.js | 35 5 * * * | clusters unanswered questions → grounded DRAFT in `docs/reddit-gaps/` (never a page) |
+| currency-reddit-social | dist/sync_reddit_social.js | 5,50 12-23 * * * | comentarios SIN enlace en hilos que NO son de plata, para que la cuenta tenga karma: varios subs uruguayos borran por AutoModerator lo que escribe una cuenta nueva (medido: r/uruguay y r/Burises borran, r/AskUruguayan no). Se apaga solo al llegar a `REDDIT_SOCIAL_KARMA_TARGET` |
+| currency-reddit-ask | dist/sync_reddit_ask.js | 40 13 * * * | una pregunta por día en r/AskUruguayan: lee el sub + busca la actualidad en la web + mide novedad contra lo ya publicado. Única llamada a **Opus** del fleet. Interruptores propios `REDDIT_ASK_ENABLED` / `REDDIT_ASK_DRY_RUN` |
 | currency-mcp | mcp/dist/index.js (cwd ./mcp) | — | HTTP :8788 |
 | currency-bot-telegram / -discord | bots/dist/entries/{telegram,discord}.js | — | read `bots/.env` |
 | currency-daily | bots/dist/entries/daily_report.js | 0 12 * * * | |
