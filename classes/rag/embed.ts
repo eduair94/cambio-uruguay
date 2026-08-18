@@ -16,7 +16,7 @@
 // quietly change what a score means.
 
 import dotenv from "dotenv";
-import { embedContents } from "../gemini";
+import { embedContents, embedKeysAvailable } from "../gemini";
 
 dotenv.config();
 
@@ -62,10 +62,15 @@ const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms
 /** Indexing and querying are asymmetric; see the note on `embedContents`. */
 export type EmbedTask = "RETRIEVAL_DOCUMENT" | "RETRIEVAL_QUERY";
 
+/** How many Gemini keys are available for embedding. Each is its own 1 000/day allowance. */
+export function embeddingKeyCount(): number {
+  return embedKeysAvailable();
+}
+
 export function embeddingsConfigured(): boolean {
-  const ok = !!(process.env.GEMINI_API_KEY || process.env.NUXT_GEMINI_API_KEY);
-  if (!ok) console.warn("[rag/embed] no GEMINI_API_KEY / NUXT_GEMINI_API_KEY — embedding is a no-op");
-  return ok;
+  const keys = embedKeysAvailable();
+  if (!keys) console.warn("[rag/embed] sin claves de Gemini (GEMINI_EMBED_KEYS / GEMINI_API_KEY) — embeber es un no-op");
+  return keys > 0;
 }
 
 /** In place. A zero vector stays zero (its cosine against anything is 0, which is the honest answer). */

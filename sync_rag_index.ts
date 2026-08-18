@@ -13,7 +13,7 @@ import axios from "axios";
 import { appDbConfigured } from "./classes/appdb";
 import { chunkPage } from "./classes/rag/chunk";
 import { crawlAll } from "./classes/rag/crawl";
-import { embeddingsConfigured, EMBED_DIMS, EMBED_MODEL } from "./classes/rag/embed";
+import { embeddingKeyCount, embeddingsConfigured, EMBED_DIMS, EMBED_MODEL } from "./classes/rag/embed";
 import { selectTargets, type SitemapEntry } from "./classes/rag/sources";
 import { loadHashes, pruneMissing, upsertPageChunks, type EmbedBudget } from "./classes/rag/store";
 import { notifyAdmin } from "./classes/notify";
@@ -28,20 +28,26 @@ const MIN_EXPECTED_URLS = 200;
 /**
  * Embeddings this job may spend in one run.
  *
- * The Gemini embedding endpoint is metered PER DAY, and every item inside a batch counts as one
- * request — measured against the live API: `EmbedContentRequestsPerDayPerUserPerProjectPerModel-
- * FreeTier`, limit 1 000. The corpus is ~3 400 embeddable chunks, so a first build cannot finish in
- * one day on the free tier however it is paced; the honest options are to spend a budget and
- * converge over several days, or to hammer the quota and lose the rest of each run to 429s.
+ * The endpoint is metered PER DAY and PER PROJECT — measured against the live API:
+ * `EmbedContentRequestsPerDayPerUserPerProjectPerModel-FreeTier`, limit 1 000, with every item
+ * inside a batch counting as one request. The corpus needs several thousand, so a first build
+ * cannot finish in a day on one key however it is paced.
  *
- * 700 of the 1 000 leaves ~300 for the Reddit bot, which embeds one query per candidate thread out
- * of the same daily allowance. Raise both once the project has billing on for embeddings — the
- * whole corpus is ~1.5 M tokens, which is cents, and then the first build finishes in one pass.
+ * Two consequences, both automatic. 800 of each key's 1 000 goes to the index and the rest is the
+ * Reddit bot's query budget out of the same allowance. And because the quota is per project, a
+ * second key in `GEMINI_EMBED_KEYS` is a second allowance — so the budget multiplies by the number
+ * of keys instead of waiting for someone to notice and raise it by hand.
+ *
+ * `RAG_EMBED_DAILY_BUDGET` overrides the whole calculation; set it high once billing is on, and the
+ * first build finishes in one pass for cents.
  */
-const DAILY_BUDGET = ((): number => {
+const BUDGET_PER_KEY = 800;
+
+function dailyBudget(): number {
   const raw = Number(process.env.RAG_EMBED_DAILY_BUDGET);
-  return Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : 700;
-})();
+  if (Number.isFinite(raw) && raw > 0) return Math.floor(raw);
+  return BUDGET_PER_KEY * Math.max(1, embeddingKeyCount());
+}
 
 async function fetchSitemap(): Promise<SitemapEntry[]> {
   const res = await axios.get(SITEMAP_URLS, {
@@ -88,7 +94,9 @@ async function main(): Promise<void> {
 
   const known = await loadHashes();
   const totals = { pages: 0, embedded: 0, reused: 0, removed: 0, failed: 0, lexicalOnly: 0, deferred: 0 };
-  const budget: EmbedBudget = { remaining: DAILY_BUDGET };
+  const perRun = dailyBudget();
+  const budget: EmbedBudget = { remaining: perRun };
+  console.log(`[rag] presupuesto de embeddings de esta corrida: ${perRun} (${embeddingKeyCount()} clave(s) × 1000/día)`);
   const started = Date.now();
 
   const { crawled, failed } = await crawlAll(targets, {
@@ -130,8 +138,8 @@ async function main(): Promise<void> {
   if (totals.deferred) {
     console.warn(
       `[rag] ${totals.deferred} chunks quedaron sin embeber: se acabó el presupuesto diario ` +
-        `(${DAILY_BUDGET}). El índice se completa en las próximas corridas; subí ` +
-        `RAG_EMBED_DAILY_BUDGET si el proyecto tiene facturación habilitada para embeddings.`
+        `(${perRun}). El índice se completa en las próximas corridas; sumá otra clave a ` +
+        `GEMINI_EMBED_KEYS, o subí RAG_EMBED_DAILY_BUDGET si hay facturación habilitada.`
     );
   }
 

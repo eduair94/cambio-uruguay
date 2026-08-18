@@ -36,6 +36,14 @@ const TIMEOUT_MS = 30000;
 /** Transient statuses worth retrying: 429 = free-tier per-minute quota, 503 = model overloaded. */
 const RETRY_STATUSES = new Set([429, 503]);
 const MAX_RETRIES = 4;
+/**
+ * Base for the exponential backoff, in ms. Env-overridable purely so the test suite can run the
+ * retry path in milliseconds instead of the ~22 s a real four-attempt backoff takes.
+ */
+const RETRY_BASE_MS = ((): number => {
+  const raw = Number(process.env.GEMINI_RETRY_BASE_MS);
+  return Number.isFinite(raw) && raw > 0 ? raw : 1500;
+})();
 
 // Free-tier keys cap *grounded* generateContent at a low requests-per-minute rate. A caller firing
 // at concurrency 4 (banks-news) blows past that in the first second and every call after the first
@@ -89,7 +97,7 @@ async function postGemini<T = GeminiResponse>(
       const waitMs =
         Number.isFinite(retryAfter) && retryAfter > 0
           ? retryAfter * 1000
-          : Math.min(30000, 1500 * 2 ** attempt) + Math.floor(Math.random() * 1000);
+          : Math.min(30000, RETRY_BASE_MS * 2 ** attempt) + Math.floor(Math.random() * RETRY_BASE_MS);
       await new Promise((r) => setTimeout(r, waitMs));
     }
   }
@@ -345,6 +353,50 @@ export async function askWithImage(
 }
 
 /**
+ * Keys the embedding endpoint may use, in order of preference.
+ *
+ * More than one is not redundancy, it is CAPACITY. The embedding quota is
+ * `EmbedContentRequestsPerDayPerUserPerProjectPerModel-FreeTier` = 1 000/day — metered per PROJECT,
+ * and every item inside a batch counts as one request. The site's corpus needs several thousand, so
+ * a single key cannot finish a first index build in a day no matter how it is paced. Two keys from
+ * two projects is two allowances, and the build finishes in half the days.
+ *
+ * `GEMINI_EMBED_KEYS` (comma-separated) is the explicit form. Without it, whatever distinct keys the
+ * environment already has are used — this box has a different key in the backend `.env` than the
+ * app was configured with, which is free capacity nobody was spending.
+ *
+ * Order matters only for the first call: once a key answers 429 after backoff, it is retired for
+ * the rest of the process and the next one takes over.
+ */
+function embedKeys(): string[] {
+  const explicit = (process.env.GEMINI_EMBED_KEYS || "")
+    .split(",")
+    .map((k) => k.trim())
+    .filter(Boolean);
+  if (explicit.length) return [...new Set(explicit)];
+  return [
+    ...new Set(
+      [process.env.GEMINI_EMBED_API_KEY, process.env.GEMINI_API_KEY, process.env.NUXT_GEMINI_API_KEY]
+        .map((k) => (k || "").trim())
+        .filter(Boolean)
+    ),
+  ];
+}
+
+/** Keys that answered 429 after backoff — i.e. out of daily quota. Process-scoped. */
+const exhaustedKeys = new Set<string>();
+
+/** Test seam, and for a long-lived process that outlives a UTC day boundary. */
+export function __resetEmbedKeysForTests(): void {
+  exhaustedKeys.clear();
+}
+
+/** How much embedding capacity this process still believes it has, as a key count. */
+export function embedKeysAvailable(): number {
+  return embedKeys().filter((k) => !exhaustedKeys.has(k)).length;
+}
+
+/**
  * Embeddings.
  *
  * Here rather than in classes/rag/embed.ts because `tests/gemini_key_ownership.test.ts` requires it
@@ -364,36 +416,50 @@ export async function embedContents(
   texts: readonly string[],
   opts: { model: string; dims: number; taskType: "RETRIEVAL_DOCUMENT" | "RETRIEVAL_QUERY"; timeoutMs?: number }
 ): Promise<Array<number[] | null>> {
-  const apiKey = process.env.GEMINI_API_KEY || process.env.NUXT_GEMINI_API_KEY;
-  if (!apiKey || !texts.length) return texts.map(() => null);
+  const keys = embedKeys();
+  if (!keys.length || !texts.length) return texts.map(() => null);
 
-  try {
-    const res = await postGemini<{ embeddings?: Array<{ values?: number[] }> }>(
-      {
-        requests: texts.map((text) => ({
-          model: `models/${opts.model}`,
-          content: { parts: [{ text }] },
-          taskType: opts.taskType,
-          outputDimensionality: opts.dims,
-        })),
-      },
-      opts.timeoutMs ?? 45000,
-      apiKey,
-      `${MODELS_BASE}/${opts.model}:batchEmbedContents`
-    );
+  for (const apiKey of keys) {
+    if (exhaustedKeys.has(apiKey)) continue;
+    try {
+      const res = await postGemini<{ embeddings?: Array<{ values?: number[] }> }>(
+        {
+          requests: texts.map((text) => ({
+            model: `models/${opts.model}`,
+            content: { parts: [{ text }] },
+            taskType: opts.taskType,
+            outputDimensionality: opts.dims,
+          })),
+        },
+        opts.timeoutMs ?? 45000,
+        apiKey,
+        `${MODELS_BASE}/${opts.model}:batchEmbedContents`
+      );
 
-    const out = res.data?.embeddings ?? [];
-    return texts.map((_t, i) => {
-      const values = out[i]?.values;
-      return Array.isArray(values) && values.length === opts.dims ? values : null;
-    });
-  } catch (error: any) {
-    console.warn(
-      `[gemini] embedding batch of ${texts.length} failed:`,
-      error?.response?.status || error?.message || error
-    );
-    return texts.map(() => null);
+      const out = res.data?.embeddings ?? [];
+      return texts.map((_t, i) => {
+        const values = out[i]?.values;
+        return Array.isArray(values) && values.length === opts.dims ? values : null;
+      });
+    } catch (error: any) {
+      const status = error?.response?.status;
+      if (status === 429) {
+        // postGemini already backed off and retried; a 429 that survives that is the DAILY cap,
+        // not a burst. Retiring the key for this process is the only thing left that helps, and it
+        // is what makes a second key worth having.
+        exhaustedKeys.add(apiKey);
+        console.warn(
+          `[gemini] clave …${apiKey.slice(-6)} sin cupo diario de embeddings; ` +
+            `${keys.filter((k) => !exhaustedKeys.has(k)).length} clave(s) todavía disponibles`
+        );
+        continue;
+      }
+      console.warn(`[gemini] embedding batch of ${texts.length} failed:`, status || error?.message || error);
+      return texts.map(() => null);
+    }
   }
+
+  return texts.map(() => null);
 }
 
 /** One NON-grounded question (no google_search). For synthesis passes over text we already have. */
