@@ -53,6 +53,57 @@ describe("rag/chunk — heading path", () => {
   });
 });
 
+describe("rag/chunk — packing sibling sections", () => {
+  /** A FAQ: every question is its own heading with a two-line answer under it. */
+  const faq = (n: number): string =>
+    Array.from(
+      { length: n },
+      (_v, i) => `### ¿Pregunta número ${i} sobre el alquiler?\nUna respuesta breve a la pregunta ${i}.`
+    ).join("\n");
+
+  it("packs short sibling sections instead of embedding each fragment on its own", () => {
+    // Measured on the real corpus: one-section-per-chunk made /alquilar-en-uruguay 72 chunks of
+    // ~256 characters. Each fragment cost an embedding out of a metered daily allowance and carried
+    // too little context to answer with.
+    const chunks = chunkPage(page({ text: `## Preguntas\n${faq(20)}` }));
+    expect(chunks.length).toBeLessThan(8);
+    expect(chunks.every((c) => c.text.length <= CHUNK_CHARS * 1.6)).toBe(true);
+  });
+
+  it("keeps each packed section's heading in the text — on a FAQ the heading IS the question", () => {
+    const chunks = chunkPage(page({ text: `## Preguntas\n${faq(6)}` }));
+    const all = chunks.map((c) => c.text).join("\n");
+    for (let i = 0; i < 6; i++) expect(all).toContain(`¿Pregunta número ${i} sobre el alquiler?`);
+  });
+
+  it("never packs across unrelated parts of a page", () => {
+    const text = [
+      "## Aduana",
+      "### Tope",
+      "Un tope corto.",
+      "## Alquiler",
+      "### Garantía",
+      "Una garantía corta.",
+    ].join("\n");
+    const chunks = chunkPage(page({ text }));
+    const aduana = chunks.find((c) => c.text.includes("tope corto"))!;
+    expect(aduana.text).not.toContain("garantía corta");
+  });
+
+  it("still slices a section that is too big to pack", () => {
+    const long = Array.from({ length: 60 }, (_v, i) => `Oración larga número ${i} con bastante texto.`).join(" ");
+    const chunks = chunkPage(page({ text: `## Sección\n${long}` }));
+    expect(chunks.length).toBeGreaterThan(1);
+  });
+
+  it("keeps a heading that has no body — on a directory page the heading is the entry", () => {
+    const chunks = chunkPage(page({ text: "## Guías\n### Cómo salir del clearing\n### Cómo importar\n### Cómo alquilar" }));
+    const all = chunks.map((c) => c.text).join("\n");
+    expect(all).toContain("Cómo salir del clearing");
+    expect(all).toContain("Cómo alquilar");
+  });
+});
+
 describe("rag/chunk — slicing", () => {
   const long = (sentences: number): string =>
     Array.from({ length: sentences }, (_v, i) => `Esta es la oración número ${i} y dice algo de largo razonable.`).join(" ");

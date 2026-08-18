@@ -125,41 +125,102 @@ export function chunkPage(page: CrawledPage): PageChunk[] {
     return [make(title, text || title, 0)];
   }
 
-  const blocks = toBlocks(page.text);
-  const stack: Array<string | undefined> = [title, undefined, undefined, undefined, undefined];
-  const chunks: PageChunk[] = [];
-  let run: string[] = [];
-  let runHeading = headingPathOf(title, stack);
+  // 1. Split the page into sections: one heading plus the text under it.
+  const sections = toSections(page.text, title);
 
-  const flush = (): void => {
-    const body = run.join("\n").trim();
-    run = [];
-    if (!body) return;
-    for (const slice of sliceRun(body)) {
-      if (!slice) continue;
-      const last = chunks[chunks.length - 1];
-      // Fold a runt into its predecessor rather than embedding a fragment of its own.
-      if (slice.length < MIN_CHUNK_CHARS && last && last.headingPath === runHeading) {
-        const merged = `${last.text}\n${slice}`;
-        chunks[chunks.length - 1] = make(last.headingPath, merged, last.chunkIndex);
-        continue;
-      }
-      chunks.push(make(runHeading, slice, chunks.length));
-    }
+  // 2. Pack them. Measured on the real corpus, one-section-per-chunk produced 3 514 chunks of which
+  //    47 % were under 400 characters — the site is full of FAQ pages and link directories where
+  //    every item is its own heading, so `/alquilar-en-uruguay` alone became 72 chunks averaging 256
+  //    characters and `/guias` became 116. That is bad twice over: each fragment costs one embedding
+  //    out of a metered daily allowance, and a 256-character fragment carries too little context to
+  //    answer anything with.
+  //
+  //    Packing only groups SIBLINGS — sections under the same parent heading — so a chunk never
+  //    spans two unrelated parts of a page. Each packed section keeps its own heading inline, which
+  //    matters most exactly where packing helps most: on a FAQ, the heading IS the question, and
+  //    losing it would strand the answers.
+  const chunks: PageChunk[] = [];
+  let batch: Section[] = [];
+
+  const flushBatch = (): void => {
+    if (!batch.length) return;
+
+    // One section: its own heading is already the tail of `headingPath`, so repeating it in the
+    // text would just duplicate it into the embedding.
+    //
+    // Several: the chunk covers siblings, so its path is the shared PARENT and each section must
+    // carry its own heading inline — otherwise the first one's heading is the one that disappears,
+    // which on a directory page means losing the entry itself.
+    const single = batch.length === 1;
+    const text = batch
+      .map((section) => (single || !section.heading ? section.body : `${section.heading}\n${section.body}`.trim()))
+      .filter(Boolean)
+      .join("\n")
+      .trim();
+
+    const headingPath = single ? batch[0]!.headingPath : parentOf(batch[0]!.headingPath) || title;
+    if (text) chunks.push(make(headingPath, text, chunks.length));
+    batch = [];
   };
 
-  for (const block of blocks) {
-    if (block.level > 0) {
-      flush();
-      stack[block.level] = block.text;
-      for (let deeper = block.level + 1; deeper < stack.length; deeper++) stack[deeper] = undefined;
-      runHeading = headingPathOf(title, stack);
+  for (const section of sections) {
+    // A section too big to pack is sliced on its own, exactly as before.
+    if (section.body.length > CHUNK_CHARS) {
+      flushBatch();
+      for (const slice of sliceRun(section.body)) {
+        if (slice) chunks.push(make(section.headingPath, slice, chunks.length));
+      }
       continue;
     }
-    run.push(block.text);
-  }
-  flush();
 
-  // Re-number: `flush` merges runts, which can leave gaps.
-  return chunks.map((chunk, index) => (chunk.chunkIndex === index ? chunk : { ...chunk, chunkIndex: index }));
+    const sameParent = batch.length === 0 || parentOf(batch[0]!.headingPath) === parentOf(section.headingPath);
+    const packed = batch.reduce((n, s) => n + s.heading.length + s.body.length + 2, 0);
+    if (!sameParent || packed + section.body.length > CHUNK_CHARS) flushBatch();
+    batch.push(section);
+  }
+  flushBatch();
+
+  return chunks;
+}
+
+interface Section {
+  headingPath: string;
+  /** The heading text alone, or "" for the lead paragraphs before the first heading. */
+  heading: string;
+  body: string;
+}
+
+/** Everything above the last `›`. Two sections with the same parent are siblings. */
+const parentOf = (headingPath: string): string => headingPath.split(" › ").slice(0, -1).join(" › ");
+
+/** The page, as heading-plus-body sections in document order. */
+function toSections(text: string, title: string): Section[] {
+  const stack: Array<string | undefined> = [title, undefined, undefined, undefined, undefined];
+  const out: Section[] = [];
+  let heading = "";
+  let headingPath = headingPathOf(title, stack);
+  let body: string[] = [];
+
+  const push = (): void => {
+    const joined = body.join("\n").trim();
+    body = [];
+    // A heading with nothing under it is still content on a directory page, where the heading IS
+    // the entry; dropping it would erase the page.
+    if (joined || heading) out.push({ headingPath, heading, body: joined });
+  };
+
+  for (const block of toBlocks(text)) {
+    if (block.level > 0) {
+      push();
+      stack[block.level] = block.text;
+      for (let deeper = block.level + 1; deeper < stack.length; deeper++) stack[deeper] = undefined;
+      heading = block.text;
+      headingPath = headingPathOf(title, stack);
+      continue;
+    }
+    body.push(block.text);
+  }
+  push();
+
+  return out.filter((section) => section.body || section.heading);
 }
