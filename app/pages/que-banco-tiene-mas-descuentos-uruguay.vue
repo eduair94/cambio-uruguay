@@ -294,6 +294,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useTheme } from 'vuetify'
 import { BANKOS_BANKS } from '~/utils/bankos'
 import type { BankosAnalysis } from '~/utils/bankosAnalysis'
 import type { FaqItem } from '~/utils/faqAnswers'
@@ -308,8 +309,10 @@ const analysis = computed(() => data.value ?? null)
 const generatedAt = computed(() => data.value?.generatedAt ?? null)
 
 // Vuetify's theme drives the chart axis colours; the site defaults to dark.
-const theme = useTheme()
-const isDark = computed(() => theme.global.current.value.dark)
+// `useTheme` is NOT auto-imported (every other page imports it explicitly): relying on the
+// auto-import threw during SSR setup and rendered this whole page empty in production.
+const vTheme = useTheme()
+const isDark = computed(() => vTheme.current.value.dark)
 
 const leader = computed(() => analysis.value?.banks[0] ?? null)
 const exclusiveLeader = computed(() => {
