@@ -162,6 +162,18 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // BCU "Tasas medias de interés" (Ley 18.212). DIARIO a propósito, aunque el BCU publique
+      // una vez por mes: la tabla entra en vigencia el día 1 y el comunicado aparece en un día
+      // impredecible del mes anterior, así que una corrida diaria (una sola llamada) la agarra
+      // el día que sale. Una corrida que no encuentra nada nuevo no escribe nada.
+      name: "currency-bcu-rates",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_bcu_rates.js",
+      cron_restart: "27 9 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Daily AI directional lean + external forecast comparison per live currency, for the
       // PricePredictionCard on /historico. Writes `pricepredictions` in the NUXT APP's database
       // (classes/appdb.ts, APP_MONGO_URI) — the SAME collection

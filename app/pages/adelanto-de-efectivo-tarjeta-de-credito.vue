@@ -460,8 +460,8 @@
         <p class="text-body-2 mt-3 mb-0">
           El mismo emisor, la misma tarjeta, el mismo día: al emisor que cobra “el máximo
           permitido”, el adelanto chico le puede costar <strong>más del doble</strong> de tasa que
-          el grande. Tabla de tasas medias del período {{ BCU_PERIOD }}, vigente desde el
-          {{ fmtDate(BCU_IN_FORCE_SINCE) }}.
+          el grande. Tabla de tasas medias del período {{ capPeriodo }}, vigente desde el
+          {{ fmtDate(capVigenteDesde) }}.
         </p>
       </VCard>
     </section>
@@ -826,6 +826,7 @@
 import {
   ALTERNATIVES,
   BBVA_TNA_ADELANTO_UYU,
+  BCU_CAPS,
   BCU_IN_FORCE_SINCE,
   BCU_PERIOD,
   BRACKET_PESOS,
@@ -844,6 +845,7 @@ import {
   simulateCrypto,
   teaConIva,
   tnaToTea,
+  type BcuCapRow,
 } from '~/utils/cashAdvance'
 import { adDensityForPath } from '~/utils/ads'
 
@@ -852,8 +854,31 @@ const route = useRoute()
 const adsOn = computed(() => adDensityForPath(route.path) !== 'none')
 
 // ── Caps ──
-const capChico = capFor(20_000)
-const capGrande = capFor(BRACKET_PESOS + 1)
+//
+// The BCU republishes this table EVERY MONTH on a rolling three-month window, so a hardcoded
+// snapshot goes stale within weeks. `/api/bcu-rates` serves the daily-refreshed grid (pm2
+// `currency-bcu-rates`), already proven against Ley 18.212 arithmetic on both the backend and the
+// proxy; the built-in table in cashAdvance.ts is the fallback when the fetch fails.
+const { data: liveCaps } = await useFetch<{
+  periodo: string
+  vigenteDesde: string
+  rows: BcuCapRow[]
+  asOf: string | null
+  live: boolean
+}>('/api/bcu-rates', { key: 'bcu-rates', server: true, default: () => null })
+
+const capRows = computed<readonly BcuCapRow[]>(() =>
+  liveCaps.value?.rows?.length ? liveCaps.value.rows : BCU_CAPS
+)
+const capPeriodo = computed(() => liveCaps.value?.periodo || BCU_PERIOD)
+const capVigenteDesde = computed(() => liveCaps.value?.vigenteDesde || BCU_IN_FORCE_SINCE)
+
+function pickCap(bracket: 'menor10kUI' | 'mayor10kUI'): BcuCapRow {
+  const row = capRows.value.find(r => r.bracket === bracket && r.cortoPlazo && r.currency === 'UYU')
+  return row ?? capFor(bracket === 'menor10kUI' ? 20_000 : BRACKET_PESOS + 1)
+}
+const capChico = computed(() => pickCap('menor10kUI'))
+const capGrande = computed(() => pickCap('mayor10kUI'))
 
 // ── Calculator state ──
 const issuerId = ref('oca')
@@ -877,7 +902,12 @@ const teaInfo = computed(() => {
   if (issuer.id === 'brou' && issuer.teaSaldos !== null) {
     return { tea: issuer.teaSaldos, fuente: 'publicada' as const }
   }
-  return resolveTea(issuer, monto.value || 0)
+  const r = resolveTea(issuer, monto.value || 0)
+  if (r.fuente !== 'tope-bcu') return r
+  // Resolve the legal ceiling against the LIVE table: this is the number the page tells a reader
+  // Itaú or Scotiabank will charge them, so it must not be a frozen snapshot.
+  const bracket = (monto.value || 0) < BRACKET_PESOS ? 'menor10kUI' : 'mayor10kUI'
+  return { tea: pickCap(bracket).tope, fuente: 'tope-bcu' as const }
 })
 
 /**

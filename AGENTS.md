@@ -24,6 +24,7 @@ Root map of a multi-package monorepo behind [cambio-uruguay.com](https://cambio-
 | currency-explain | dist/sync_explain.js | 7 10 * * * | writes APP DB `moveexplanations` |
 | currency-bankos | dist/sync_bankos.js | 33 8 * * * | snapshots the whole Bankos discount map (reverse-engineered `com.anonymous.bankos`) into APP DB `bankossnapshots` (one upserted row) — the outage fallback for the app's `/api/bankos/discounts` (live-first) behind `/descuentos-con-tarjeta-uruguay`; needs `APP_MONGO_URI`; refuses to overwrite a good snapshot with a thin pull |
 | currency-debt-relief | dist/sync_debt_relief.js | 13 10 1 * * | monthly; BCU usury caps |
+| currency-bcu-rates | dist/sync_bcu_rates.js | 27 9 * * * | la grilla de tasas medias/topes del BCU (Ley 18.212) para `/adelanto-de-efectivo-tarjeta-de-credito`. **Diario a propósito**: el BCU republica TODOS LOS MESES (ventana trimestral móvil), la tabla rige desde el día 1 y el comunicado sale un día impredecible del mes anterior. Un candidato sólo se almacena si sus seis filas cumplen la aritmética de la ley (tope = media × 1,55, mora × 1,80): eso prueba que se leyó la tabla real y no se inventó. Si falla, se conserva el snapshot anterior |
 | currency-temas-analysis | dist/sync_temas_analysis.js | 17 11 * * * | reads app DB, writes backend `temas_analysis_data`; self-gates 90d; needs `APP_MONGO_URI` |
 | currency-site-analytics | dist/sync_site_analytics.js | 51 10 * * * | GA4 Data API → APP DB `siteanalyticssnapshots` for /estadisticas-del-sitio; needs `GA4_PROPERTY_ID` + SA (docs/analytics/GA4_DATA_API.md). The page's LIVE block is separate: on-demand `GET /site-analytics-realtime` on currency-server (Redis 45s), so the API process needs the same GA4 env |
 | currency-chair-tiers | dist/sync_chair_tiers.js | 31 12 * * 0 | weekly r/CharruaDevs chair tier list → APP DB `chairtiersnapshots` |
@@ -42,7 +43,7 @@ Root map of a multi-package monorepo behind [cambio-uruguay.com](https://cambio-
 | currency-alerts | bots/dist/entries/alert_check.js | */15 11-21 * * * | intraday move alerts |
 | currency-content-promo | bots/dist/entries/content_promo.js | 0 14 * * 1,3,5 | one evergreen guide to X; **inert until `CONTENT_PROMO_ENABLED=1`** in `bots/.env` |
 
-Root pm2 entrypoints live at repo root: `index.ts`, `sync.ts`, `sync_aduana*.ts`, `sync_banks_news.ts`, `sync_figures.ts`, `sync_costs.ts`, `sync_debt_relief.ts`, `sync_loans.ts`, `sync_predictions.ts`, `sync_explain.ts`, `sync_sheet.ts`, `sync_site_analytics.ts`, `sync_temas_analysis.ts`, `sync_rag_index.ts`, `sync_reddit_bot.ts`, `sync_reddit_bot_watch.ts`, `sync_content_gaps.ts`, `sync_videos.ts`. Shared: `config.ts`, `global.ts`, `sentry.ts`.
+Root pm2 entrypoints live at repo root: `index.ts`, `sync.ts`, `sync_aduana*.ts`, `sync_banks_news.ts`, `sync_figures.ts`, `sync_costs.ts`, `sync_debt_relief.ts`, `sync_loans.ts`, `sync_predictions.ts`, `sync_explain.ts`, `sync_sheet.ts`, `sync_site_analytics.ts`, `sync_temas_analysis.ts`, `sync_rag_index.ts`, `sync_reddit_bot.ts`, `sync_reddit_bot_watch.ts`, `sync_content_gaps.ts`, `sync_videos.ts`, `sync_bcu_rates.ts`. Shared: `config.ts`, `global.ts`, `sentry.ts`.
 
 ## Top-level dirs
 | dir | role |
@@ -60,7 +61,7 @@ Root pm2 entrypoints live at repo root: `index.ts`, `sync.ts`, `sync_aduana*.ts`
 | `config/` | `config.ts` |
 | `dist/` | root build output (gitignored) |
 
-`classes/` key files: `database.ts` (Mongo connect), `gemini.ts` + `ai_service.ts` (LLM), `appdb.ts` (app-DB bridge), `reddit.ts`, `redis_cache.ts`, `notify.ts`, `cluster.ts` (`isPrimaryInstance()`), `Express/` (server setup), `models/` (mongoose), and per-feature dirs `aduana banks costs debt explain figures gaps loans predictions rag redditbot site-analytics temas-analysis` (each `refresh.ts`/`store.ts`).
+`classes/` key files: `database.ts` (Mongo connect), `gemini.ts` + `ai_service.ts` (LLM), `appdb.ts` (app-DB bridge), `reddit.ts`, `redis_cache.ts`, `notify.ts`, `cluster.ts` (`isPrimaryInstance()`), `Express/` (server setup), `models/` (mongoose), and per-feature dirs `aduana banks bcurates costs debt explain figures gaps loans predictions rag redditbot site-analytics temas-analysis` (each `refresh.ts`/`store.ts`).
 
 ## Build / run / test / lint
 - Root: `npm run dev` (API), `npm run build`, `npm test` (`vitest run`, `tests/**/*.test.ts`). One-offs: `npm run prex`, `bcu_backfill`, `get_locations`, etc. (ts-node, in `scripts/oneoff/`, NOT compiled).

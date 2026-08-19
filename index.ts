@@ -21,6 +21,8 @@ import { emptyTemasAnalysis } from "./classes/temas-analysis/refresh";
 import { loadTemasAnalysis } from "./classes/temas-analysis/store";
 import { baselineDebtRelief } from "./classes/debt/refresh";
 import { loadDebtRelief } from "./classes/debt/store";
+import { baselineTable as baselineBcuRates } from "./classes/bcurates/table";
+import { loadBcuRates } from "./classes/bcurates/store";
 import { BASELINE_FIGURES } from "./classes/figures/bands";
 import { loadFigures } from "./classes/figures/store";
 import { loadLoanRates } from "./classes/loans/store";
@@ -1968,6 +1970,58 @@ const main = async () => {
    */
   server.getJson("debt-relief", async (req: Request): Promise<any> => {
     return await redisCache.getOrSet("debt-relief", async () => (await loadDebtRelief()) ?? baselineDebtRelief(), 1800);
+  });
+
+  /**
+   * @openapi
+   * /bcu-rates:
+   *   get:
+   *     tags:
+   *       - Indicators
+   *     summary: Tasas medias y topes de usura del BCU (Ley 18.212) para crédito al consumo
+   *     description: |
+   *       La grilla que publica el BCU cada mes (ventana trimestral móvil) para
+   *       Familias > Consumo > SIN autorización de descuento, capital menor a 2:000.000 UI.
+   *       Seis filas: pesos y dólares, por tramo de 10.000 UI y por plazo.
+   *
+   *       Cada fila trae la tasa media publicada y los dos topes. Los topes se validan contra
+   *       la aritmética de la Ley 18.212 (media x 1,55 y x 1,80) antes de almacenarse, así que
+   *       una lectura mal hecha nunca llega a servirse: se conserva la anterior.
+   *
+   *       Se refresca a diario (pm2 `currency-bcu-rates`) porque la tabla entra en vigencia el
+   *       día 1 y el comunicado aparece en un día impredecible del mes anterior.
+   *     responses:
+   *       200:
+   *         description: Tabla vigente
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 periodo: { type: string, example: "abril-junio de 2026" }
+   *                 vigenteDesde: { type: string, example: "2026-08-01" }
+   *                 asOf: { type: string, nullable: true }
+   *                 rows:
+   *                   type: array
+   *                   items:
+   *                     type: object
+   *                     properties:
+   *                       bracket: { type: string, enum: [menor10kUI, mayor10kUI] }
+   *                       cortoPlazo: { type: boolean }
+   *                       currency: { type: string, enum: [UYU, USD] }
+   *                       media: { type: number, example: 84.47 }
+   *                       tope: { type: number, example: 130.9285 }
+   *                       topeMora: { type: number, example: 152.046 }
+   *                 sources:
+   *                   type: array
+   *                   items:
+   *                     type: object
+   *                     properties:
+   *                       label: { type: string }
+   *                       url: { type: string }
+   */
+  server.getJson("bcu-rates", async (req: Request): Promise<any> => {
+    return await redisCache.getOrSet("bcu-rates", async () => (await loadBcuRates()) ?? baselineBcuRates(), 1800);
   });
 
   /**
