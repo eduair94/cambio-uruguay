@@ -110,12 +110,51 @@ const banner = computed(() => {
   return null
 })
 
+// La página existe en las tres locales bajo `prefix_except_default`, así que el
+// canonical se arma con el prefijo: sin él, /en/newsletter y /pt/newsletter se
+// leen como duplicados de la versión en español.
+const canonicalUrl = computed(
+  () => `https://cambio-uruguay.com${locale.value === 'es' ? '' : `/${locale.value}`}/newsletter`
+)
+
 useSeoMeta({
   title: () => t('newsletter.metaTitle'),
   description: () => t('newsletter.metaDescription'),
   ogTitle: () => t('newsletter.metaTitle'),
   ogDescription: () => t('newsletter.metaDescription'),
+  ogType: 'website',
+  ogUrl: () => canonicalUrl.value,
+  twitterCard: 'summary_large_image',
+  twitterTitle: () => t('newsletter.metaTitle'),
+  twitterDescription: () => t('newsletter.metaDescription'),
 })
+
+useHead(() => ({
+  link: [{ rel: 'canonical', href: canonicalUrl.value }],
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: 'Cambio Uruguay',
+            item: 'https://cambio-uruguay.com',
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: t('newsletter.title'),
+            item: canonicalUrl.value,
+          },
+        ],
+      }),
+    },
+  ],
+}))
 
 defineOgImageComponent('Cambio', {
   title: () => t('newsletter.title'),

@@ -1336,9 +1336,29 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
           'cuando puedo cambiar de mutualista',
           'digito de cedula mutualista',
           'permanencia 23 meses mutualista',
-          'devolucion fonasa',
-          'estoy comprendido fonasa',
           'junasa cambio de prestador',
+        ],
+      },
+      {
+        // Las consultas «devolucion fonasa» / «estoy comprendido fonasa» estaban en las keywords de
+        // /cambiar-de-mutualista-uruguay, que las menciona al pasar. Viven acá, que es la página
+        // que las contesta.
+        to: '/devolucion-fonasa-uruguay',
+        labelKey: 'nav.devolucionFonasa',
+        icon: 'mdi-cash-refund',
+        priority: 0.8,
+        changefreq: 'monthly',
+        keywords: [
+          'devolucion fonasa',
+          'devolucion fonasa bps',
+          'cuando cobro la devolucion fonasa',
+          'estoy comprendido fonasa',
+          'excedente de aportes fonasa',
+          'tope anual fonasa',
+          'costo promedio equivalente',
+          'cpe fonasa',
+          'retencion irpf devolucion fonasa',
+          'devolucion fonasa jubilados',
         ],
       },
       {

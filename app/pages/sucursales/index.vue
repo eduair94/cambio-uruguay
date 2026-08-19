@@ -538,8 +538,18 @@ defineOgImageComponent('Cambio', {
   locale: locale.value as 'es' | 'en' | 'pt',
 })
 
+// Canonical. `updateURLParameters` above pushes `?search=` and `?location=` into
+// the URL on every filter change, so the same listing is reachable under dozens
+// of query strings; without this they all crawl as separate thin pages. The
+// canonical drops the query and keeps the locale prefix — the departamento pages
+// that DO deserve their own URL live at /sucursales/[origin]/[location].
+const canonicalUrl = computed(
+  () => `https://cambio-uruguay.com${locale.value === 'es' ? '' : `/${locale.value}`}/sucursales`
+)
+
 // BreadcrumbList for Search (Inicio > Sucursales).
 useHead(() => ({
+  link: [{ rel: 'canonical', href: canonicalUrl.value }],
   script: [
     {
       type: 'application/ld+json',

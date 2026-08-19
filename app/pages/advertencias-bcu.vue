@@ -270,6 +270,29 @@ useHead(() => ({
         'advertencias bcu, empresas no autorizadas uruguay, estafa financiera uruguay, banco central advertencia, es confiable esta empresa, ponzi uruguay, conexion ganadera, registro bcu entidades, telar de la abundancia, celula de la abundancia, flor de la abundancia, mesa de la abundancia, rueda de la abundancia, mandala de la abundancia, telar de los suenos, esquema piramidal uruguay',
     },
   ],
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: 'Cambio Uruguay',
+            item: 'https://cambio-uruguay.com',
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: 'Advertencias del BCU',
+            item: canonicalUrl,
+          },
+        ],
+      }),
+    },
+  ],
 }))
 </script>
 
