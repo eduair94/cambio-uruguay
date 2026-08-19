@@ -46,6 +46,22 @@ const NO_ADS = ['/cuenta', '/conectar', '/contacto', '/offline', '/estado'] as c
 const NO_ADS_EXACT = ['/newsletter'] as const
 
 /**
+ * The calculators, and why they are ad-free rather than merely light.
+ *
+ * `/herramientas` itself is a directory — a list of links, and a fine place
+ * for one unit. Everything below it is an instrument: you type a number in,
+ * read a number out, change the number, read again. Auto ads place by reading
+ * the DOM, so on a page whose DOM *is* a form the placement lands between the
+ * inputs and the result — which is both the worst thing to interrupt and the
+ * easiest thing to mis-tap. `light` would not help: density only changes how
+ * many MANUAL units render, and while the loader is on the page the automatic
+ * ones are Google's call. Only `none` keeps the loader off.
+ */
+function isCalculator(path: string): boolean {
+  return path.startsWith('/herramientas/')
+}
+
+/**
  * Tool and rate surfaces: one slot, after the content, never inside it.
  *
  * These are the pages someone opens to answer a question in ten seconds — a
@@ -106,6 +122,7 @@ export function adDensityForPath(path: string): AdDensity {
   const clean = normalizeAdPath(path)
   if (NO_ADS_EXACT.includes(clean as (typeof NO_ADS_EXACT)[number])) return 'none'
   if (matches(clean, NO_ADS)) return 'none'
+  if (isCalculator(clean)) return 'none'
   if (clean === '/' || matches(clean, LIGHT)) return 'light'
   return 'normal'
 }

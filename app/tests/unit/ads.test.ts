@@ -51,6 +51,24 @@ describe('adDensityForPath', () => {
     expect(adDensityForPath('/cuenta/favoritos')).toBe('none')
   })
 
+  it('keeps the calculators ad-free while their directory page stays light', () => {
+    // A calculator's DOM is a form, so auto ads land between the inputs and
+    // the result. `light` would not prevent that — it only caps the MANUAL
+    // units — so the loader has to stay off the page entirely.
+    for (const p of [
+      '/herramientas/calculadora-sueldo-liquido',
+      '/herramientas/calculadora-irpf',
+      '/herramientas/carrito-importacion',
+      '/en/herramientas/costo-de-vida',
+      '/pt/herramientas/conversor-de-monedas?x=1',
+    ]) {
+      expect(adDensityForPath(p), p).toBe('none')
+      expect(adsAllowed(p), p).toBe(false)
+    }
+    expect(adDensityForPath('/herramientas')).toBe('light')
+    expect(adsAllowed('/herramientas')).toBe(true)
+  })
+
   it('carries no ads on plumbing pages', () => {
     expect(adDensityForPath('/offline')).toBe('none')
     expect(adDensityForPath('/estado')).toBe('none')
@@ -64,7 +82,7 @@ describe('adDensityForPath', () => {
       '/casas-de-cambio',
       '/casas-de-cambio/bancos',
       '/casa/brou',
-      '/herramientas/calculadora-sueldo-liquido',
+      '/herramientas',
       '/mapa',
       '/mi-lista',
       '/buscar',
