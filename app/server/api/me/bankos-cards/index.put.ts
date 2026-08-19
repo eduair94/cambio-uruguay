@@ -10,13 +10,15 @@ export default defineEventHandler(async event => {
   const { uid } = await requireUser(event)
   const body = await readBody(event)
   const cards = sanitizeCardIds(Array.isArray(body) ? body : body?.cards)
+  // `notify` is optional: a client that only syncs cards must not silently turn alerts off.
+  const notify = typeof body?.notify === 'boolean' ? { notify: body.notify } : {}
   await connectDb()
   const doc = await BankosUserCardsModel.findOneAndUpdate(
     { uid },
-    { uid, cards },
+    { uid, cards, ...notify },
     { upsert: true, new: true, setDefaultsOnInsert: true }
   )
     .lean()
     .exec()
-  return { uid, cards: sanitizeCardIds(doc?.cards) }
+  return { uid, cards: sanitizeCardIds(doc?.cards), notify: !!doc?.notify }
 })

@@ -103,6 +103,20 @@
             </v-chip>
           </div>
         </div>
+        <div class="d-flex flex-wrap align-center ga-2 mt-3">
+          <v-btn
+            v-if="isLoggedIn"
+            :color="cardsStore.notify ? 'primary' : undefined"
+            :variant="cardsStore.notify ? 'flat' : 'outlined'"
+            size="small"
+            :loading="alertBusy"
+            :prepend-icon="cardsStore.notify ? 'mdi-bell-check' : 'mdi-bell-outline'"
+            @click="toggleAlerts"
+          >
+            {{ cardsStore.notify ? 'Avisos activados' : 'Avisarme de descuentos nuevos' }}
+          </v-btn>
+          <span v-if="alertMsg" class="text-caption">{{ alertMsg }}</span>
+        </div>
         <div class="text-caption text-medium-emphasis mt-2 d-flex align-center flex-wrap ga-1">
           <v-icon size="x-small">{{
             isLoggedIn ? 'mdi-cloud-check-outline' : 'mdi-laptop'
@@ -472,6 +486,37 @@ function bankBlurb(bank: BankosBank): string {
         : 'débito'
   const qr = bank.id === 'mercadopago' ? ' y pagos con QR' : ''
   return `Descuentos de ${bank.name} con tarjeta de ${t}${qr} en comercios adheridos de todo el país. Elegí tus tarjetas ${bank.name} para verlos en el mapa.`
+}
+
+// Push alerts: the PWA service worker already carries the FCM handler, so enabling them is
+// permission + token + opt-in flag. Account-only, because a push needs a device to send to.
+const { enablePush } = usePushNotifications()
+const alertBusy = ref(false)
+const alertMsg = ref('')
+
+async function toggleAlerts() {
+  alertMsg.value = ''
+  if (cardsStore.notify) {
+    alertBusy.value = true
+    await cardsStore.setNotify(false)
+    alertBusy.value = false
+    alertMsg.value = 'Avisos desactivados.'
+    return
+  }
+  alertBusy.value = true
+  try {
+    const state = await enablePush()
+    if (state === 'granted') {
+      await cardsStore.setNotify(true)
+      alertMsg.value = 'Te avisamos cuando aparezcan descuentos para tus tarjetas.'
+    } else if (state === 'denied') {
+      alertMsg.value = 'El navegador bloqueó las notificaciones. Habilitalas y probá de nuevo.'
+    } else {
+      alertMsg.value = 'Este navegador no soporta notificaciones push.'
+    }
+  } finally {
+    alertBusy.value = false
+  }
 }
 
 onMounted(() => {

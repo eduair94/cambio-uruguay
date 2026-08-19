@@ -5,12 +5,15 @@ import mongoose, { Schema, type Model } from 'mongoose'
 export interface BankosUserCardsDoc {
   uid: string
   cards: string[]
+  /** Opt-in to the daily "new discount" push for the issuers behind these cards. */
+  notify: boolean
 }
 
 const BankosUserCardsSchema = new Schema(
   {
     uid: { type: String, required: true, unique: true, index: true },
     cards: { type: [String], default: [] },
+    notify: { type: Boolean, default: false },
   },
   { timestamps: true }
 )

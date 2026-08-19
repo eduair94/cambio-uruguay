@@ -8,5 +8,5 @@ export default defineEventHandler(async event => {
   const { uid } = await requireUser(event)
   await connectDb()
   const doc = await BankosUserCardsModel.findOne({ uid }).lean().exec()
-  return { uid, cards: sanitizeCardIds(doc?.cards) }
+  return { uid, cards: sanitizeCardIds(doc?.cards), notify: !!doc?.notify }
 })

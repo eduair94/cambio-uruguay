@@ -351,6 +351,10 @@ export default defineNuxtConfig({
       '5 10 * * *': ['figures:drift'],
       // 12:00 UTC = 09:00 Uruguay: send the daily newsletter to confirmed subs.
       '0 12 * * *': ['newsletter:daily'],
+      // 09:20 UTC ≈ 06:20 Uruguay: push the card discounts that appeared since yesterday to the
+      // people who opted in. Runs AFTER the backend's Bankos snapshot (pm2 currency-bankos, 08:33
+      // UTC) so a live outage still has fresh data to diff. Seeds silently on first run.
+      '20 9 * * *': ['bankos:alerts'],
       // Every 10 minutes: evaluate rate alerts and notify (push + email + telegram).
       '*/10 * * * *': ['alerts:check'],
       // 11:00 UTC = 08:00 Uruguay: personalized Telegram summary for linked users.
@@ -486,6 +490,22 @@ export default defineNuxtConfig({
                   maxEntries: 20, // Increased from 10 but still reasonable
                   maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days instead of 365
                 },
+              },
+            },
+            {
+              // The discount map is the one payload worth keeping offline: it is big, it changes
+              // about once a day, and the page is most useful standing in a shop with bad signal.
+              // Must precede the generic /api rule below — Workbox takes the first match.
+              urlPattern: /\/api\/bankos\/discounts/i,
+              handler: 'NetworkFirst',
+              options: {
+                cacheName: 'bankos-discounts-cache',
+                networkTimeoutSeconds: 6,
+                expiration: {
+                  maxEntries: 12,
+                  maxAgeSeconds: 60 * 60 * 24, // a day
+                },
+                cacheableResponse: { statuses: [0, 200] },
               },
             },
             {

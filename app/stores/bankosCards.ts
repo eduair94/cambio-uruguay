@@ -18,6 +18,8 @@ type AuthFetch = <T>(url: string, opts?: any) => Promise<T>
 export const useBankosCardsStore = defineStore('bankosCards', () => {
   const cards = ref<string[]>([])
   const loggedIn = ref(false)
+  /** Opt-in to the daily "new discount" push. Account-only: it needs a device token to notify. */
+  const notify = ref(false)
 
   let pushFn: ((ids: string[]) => Promise<unknown>) | null = null
   let pushTimer: ReturnType<typeof setTimeout> | null = null
@@ -41,6 +43,12 @@ export const useBankosCardsStore = defineStore('bankosCards', () => {
     } catch {
       /* quota / private mode -> ignore */
     }
+  }
+
+  /** Persist the alert opt-in immediately — it is a deliberate click, not a debounced edit. */
+  async function setNotify(value: boolean) {
+    notify.value = value
+    if (pushFn) await pushFn([...cards.value]).catch(() => {})
   }
 
   function schedulePush() {
@@ -81,11 +89,16 @@ export const useBankosCardsStore = defineStore('bankosCards', () => {
   async function hydrateFromAccount(authFetch: AuthFetch) {
     loadLocal()
     loggedIn.value = true
-    pushFn = ids => authFetch('/api/me/bankos-cards', { method: 'PUT', body: { cards: ids } })
+    pushFn = ids =>
+      authFetch('/api/me/bankos-cards', {
+        method: 'PUT',
+        body: { cards: ids, notify: notify.value },
+      })
     try {
-      const remote = await authFetch<{ cards: string[] }>('/api/me/bankos-cards')
+      const remote = await authFetch<{ cards: string[]; notify?: boolean }>('/api/me/bankos-cards')
       const merged = mergeCardIds(cards.value, remote?.cards)
       cards.value = merged
+      notify.value = !!remote?.notify
       await pushFn(merged)
     } catch {
       /* offline / not configured -> keep local selection */
@@ -101,6 +114,8 @@ export const useBankosCardsStore = defineStore('bankosCards', () => {
 
   return {
     cards,
+    notify,
+    setNotify,
     loggedIn,
     loadLocal,
     setCards,
