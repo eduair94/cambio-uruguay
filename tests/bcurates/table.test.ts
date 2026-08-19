@@ -12,7 +12,7 @@ import {
   validateTable,
   type BcuRateTable,
 } from "../../classes/bcurates/table";
-import { candidateFrom, sameAs, shapeRows } from "../../classes/bcurates/refresh";
+import { sameAs } from "../../classes/bcurates/refresh";
 
 const clone = (): BcuRateTable => JSON.parse(JSON.stringify(BASELINE_TABLE));
 
@@ -145,53 +145,6 @@ describe("isStale", () => {
 
   it("treats an unparseable date as stale", () => {
     expect(isStale({ vigenteDesde: "nope" }, new Date("2026-08-19T00:00:00Z"))).toBe(true);
-  });
-});
-
-describe("shapeRows", () => {
-  it("keeps well-formed rows and drops the rest", () => {
-    const rows = shapeRows([
-      { moneda: "UYU", tramo: "menor10kUI", cortoPlazo: true, media: 84.47, tope: 130.9285, topeMora: 152.046 },
-      { moneda: "ARS", tramo: "menor10kUI", cortoPlazo: true, media: 1, tope: 2, topeMora: 3 },
-      { moneda: "UYU", tramo: "otro", cortoPlazo: true, media: 1, tope: 2, topeMora: 3 },
-      { moneda: "UYU", tramo: "menor10kUI", cortoPlazo: "si", media: 1, tope: 2, topeMora: 3 },
-      { moneda: "UYU", tramo: "menor10kUI", cortoPlazo: true, media: "84,47", tope: 2, topeMora: 3 },
-      null,
-    ]);
-    expect(rows).toHaveLength(1);
-    expect(rows[0]!.currency).toBe("UYU");
-  });
-
-  it("returns nothing for junk", () => {
-    expect(shapeRows(null)).toEqual([]);
-    expect(shapeRows("rows")).toEqual([]);
-  });
-});
-
-describe("candidateFrom", () => {
-  const now = "2026-08-19T00:00:00.000Z";
-
-  it("builds a table that passes validation from a good reply", () => {
-    const data = {
-      periodo: "abril-junio de 2026",
-      vigenteDesde: "2026-08-01",
-      filas: BASELINE_TABLE.rows.map((r) => ({
-        moneda: r.currency,
-        tramo: r.bracket,
-        cortoPlazo: r.cortoPlazo,
-        media: r.media,
-        tope: r.tope,
-        topeMora: r.topeMora,
-      })),
-    };
-    const c = candidateFrom(data, now)!;
-    expect(c.asOf).toBe(now);
-    expect(validateTable(c).ok).toBe(true);
-  });
-
-  it("returns null when the model found nothing", () => {
-    expect(candidateFrom({ filas: [] }, now)).toBeNull();
-    expect(candidateFrom(null, now)).toBeNull();
   });
 });
 

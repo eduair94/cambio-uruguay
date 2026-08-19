@@ -1,19 +1,23 @@
 // Monthly self-updating layer for the BCU "Tasas medias de interés" grid used by
 // /adelanto-de-efectivo-tarjeta-de-credito.
 //
-// Same grounded-search + guardrail shape as classes/debt/refresh.ts and classes/costs/refresh.ts,
-// with one difference that matters: the guard here is a PROOF, not a plausibility band.
+// The source is the OFFICIAL PDF, fetched and parsed deterministically — not a grounded search.
+// Grounded search was implemented first and measurably does not work here: asked for the table at
+// its canonical URL it returned the FEBRUARY–APRIL 2022 edition, an archived copy of the same
+// address. The Ley 18.212 check caught it (26,81 × 1,55 = 41,55, not the 38,95 it reported), so
+// nothing wrong was ever stored — but a guard that rejects every answer is a job that never
+// updates. See classes/bcurates/parse.ts.
 //
-// Ley 18.212 derives both caps arithmetically from the published average (× 1,55 and × 1,80), so
-// the prompt asks for the average AND both caps as printed, and `validateTable` then checks that
-// all six rows close to four decimals. A model that read the real table satisfies that trivially;
-// a model that invented numbers does not. Deriving the caps ourselves would make the check
-// vacuous, which is exactly why we ask for them separately and compare.
-//
-// Nothing that fails validation is ever stored: the previous good snapshot (or the verified
-// baseline in table.ts) keeps serving. A stale-but-true table beats a fresh invented one on a
-// page that tells people what they will be charged.
-import { askGrounded, geminiConfigured } from "../gemini";
+// The chain is: fetch → extract text (unpdf) → parse → PROVE against Ley 18.212 → compare with
+// what we already hold. Anything that fails at any step leaves the stored table untouched: a
+// stale-but-true table beats a fresh invented one on a page that tells people what they will
+// be charged.
+import axios from "axios";
+import * as https from "node:https";
+import * as tls from "node:tls";
+
+import { BCU_CERT_CHAIN } from "./certs";
+import { parseBcuText } from "./parse";
 import {
   BASELINE_TABLE,
   BCU_TABLE_URL,
@@ -24,31 +28,49 @@ import {
   type BcuRateTable,
 } from "./table";
 
-const PROMPT = `Buscá con búsqueda web real y citable la tabla vigente de "Tasas medias de interés" que publica el Banco Central del Uruguay (Ley 18.212, artículo 340 de la R.N.R.C.S.F.). El documento oficial está en ${BCU_TABLE_URL} y declara al pie desde qué fecha rigen las tasas.
+/**
+ * bcu.gub.uy serves its leaf certificate WITHOUT the intermediates, so Node rejects it with
+ * "unable to verify the first certificate" (curl succeeds only because it ships its own bundle).
+ * The two missing intermediates are bundled next to this file and ADDED to Node's roots — the
+ * chain still has to reach a trusted root, so this is not `rejectUnauthorized: false`.
+ */
+export function bcuAgent(): https.Agent {
+  return new https.Agent({ ca: [...tls.rootCertificates, BCU_CERT_CHAIN] });
+}
 
-Necesito ÚNICAMENTE la columna: Familias > Consumo > SIN autorización de descuento, y dentro del bloque "RESTO DE PRÉSTAMOS - PARA UN CAPITAL MENOR A 2:000.000 DE UI".
+/** Fetch the PDF and pull its text out. Isolated so the refresh logic can be tested without IO. */
+export async function fetchBcuText(url: string = BCU_TABLE_URL): Promise<string> {
+  const res = await axios.get<ArrayBuffer>(url, {
+    responseType: "arraybuffer",
+    timeout: 30000,
+    httpsAgent: bcuAgent(),
+    headers: { "User-Agent": "cambio-uruguay/1.0 (+https://cambio-uruguay.com)" },
+  });
+  // unpdf ships a CommonJS build, so a plain require works from this CJS backend.
+  const { extractText, getDocumentProxy } = require("unpdf");
+  const pdf = await getDocumentProxy(new Uint8Array(res.data as ArrayBuffer));
+  const { text } = await extractText(pdf, { mergePages: true });
+  return String(text || "");
+}
 
-Para cada una de estas seis filas necesito TRES números tal como están impresos: la tasa media, el tope de tasa y el tope de mora, todos en porcentaje anual efectivo:
-1. Moneda nacional no reajustable, menor a 10.000 UI, hasta 366 días.
-2. Moneda nacional no reajustable, menor a 10.000 UI, 367 días o más.
-3. Moneda nacional no reajustable, 10.000 UI o más, hasta 366 días.
-4. Moneda nacional no reajustable, 10.000 UI o más, 367 días o más.
-5. Dólares USA, menor a 10.000 UI, hasta 366 días.
-6. Dólares USA, menor a 10.000 UI, 367 días o más.
+/**
+ * Rates move by points between months, never by multiples. A candidate that disagrees with the
+ * stored table by more than this on any row is treated as a mis-parse rather than as news.
+ */
+export const MAX_RELATIVE_MOVE = 0.5;
 
-Respondé SOLO con un objeto JSON válido, sin texto ni markdown, con números sin el signo % y con punto decimal:
-{"periodo": "<el trimestre que nombra el documento, por ejemplo 'abril-junio de 2026'>", "vigenteDesde": "<AAAA-MM-DD desde el que rigen>", "filas": [{"moneda": "UYU"|"USD", "tramo": "menor10kUI"|"mayor10kUI", "cortoPlazo": true|false, "media": <num>, "tope": <num>, "topeMora": <num>}]}
-
-No calcules ni completes ningún número: copiá los tres valores tal como figuran en la tabla. Si no encontrás la tabla vigente o alguna fila, devolvé {"filas": []}. No inventes.`;
-
-function parseJsonLoose(text: string): Record<string, unknown> | null {
-  const m = text.match(/\{[\s\S]*\}/);
-  if (!m) return null;
-  try {
-    return JSON.parse(m[0]) as Record<string, unknown>;
-  } catch {
-    return null;
+export function movedTooFar(candidate: BcuRateTable, previous: BcuRateTable): string[] {
+  const prev = new Map(previous.rows.map((r) => [rowKey(r), r]));
+  const problems: string[] = [];
+  for (const row of candidate.rows) {
+    const before = prev.get(rowKey(row));
+    if (!before || before.media <= 0) continue;
+    const move = Math.abs(row.media - before.media) / before.media;
+    if (move > MAX_RELATIVE_MOVE) {
+      problems.push(`${rowKey(row)}: media pasó de ${before.media} a ${row.media} (${Math.round(move * 100)} %)`);
+    }
   }
+  return problems;
 }
 
 export interface RefreshOutcome {
@@ -57,46 +79,6 @@ export interface RefreshOutcome {
   updated: boolean;
   /** Why a candidate was rejected, for the cron log. Empty on success. */
   problems: string[];
-}
-
-/** Shape the model's rows into our own, dropping anything unrecognisable. */
-export function shapeRows(raw: unknown): BcuRateRow[] {
-  if (!Array.isArray(raw)) return [];
-  const out: BcuRateRow[] = [];
-  for (const r of raw as Array<Record<string, unknown>>) {
-    if (!r || typeof r !== "object") continue;
-    const currency = r.moneda === "USD" ? "USD" : r.moneda === "UYU" ? "UYU" : null;
-    const bracket = r.tramo === "menor10kUI" || r.tramo === "mayor10kUI" ? r.tramo : null;
-    if (!currency || !bracket || typeof r.cortoPlazo !== "boolean") continue;
-    const nums = [r.media, r.tope, r.topeMora];
-    if (!nums.every((n) => typeof n === "number" && Number.isFinite(n))) continue;
-    out.push({
-      currency,
-      bracket,
-      cortoPlazo: r.cortoPlazo,
-      media: r.media as number,
-      tope: r.tope as number,
-      topeMora: r.topeMora as number,
-    });
-  }
-  return out;
-}
-
-/**
- * Build a candidate table from a parsed reply. Exported so the whole guard chain is testable
- * without a network call or an API key.
- */
-export function candidateFrom(data: Record<string, unknown> | null, now: string): BcuRateTable | null {
-  if (!data) return null;
-  const rows = shapeRows(data.filas);
-  if (!rows.length) return null;
-  return {
-    periodo: typeof data.periodo === "string" ? data.periodo.trim() : "",
-    vigenteDesde: typeof data.vigenteDesde === "string" ? data.vigenteDesde.trim() : "",
-    rows,
-    asOf: now,
-    sources: [{ label: "BCU — Tasas medias de interés", url: BCU_TABLE_URL }],
-  };
 }
 
 /** True when the candidate says the same thing the table we already hold does. */
@@ -116,32 +98,37 @@ export function sameAs(a: BcuRateTable, b: BcuRateTable): boolean {
  */
 export async function refreshBcuRates(previous: BcuRateTable | null, now: string): Promise<RefreshOutcome> {
   const current = previous ?? baselineTable();
-  if (!geminiConfigured()) {
-    return { table: current, updated: false, problems: ["no GEMINI_API_KEY"] };
+
+  let text: string;
+  try {
+    text = await fetchBcuText();
+  } catch (e: any) {
+    return { table: current, updated: false, problems: [`no se pudo bajar el PDF: ${e?.message || e}`] };
   }
+  if (!text.trim()) return { table: current, updated: false, problems: ["el PDF no devolvió texto"] };
 
-  const reply = await askGrounded(PROMPT);
-  if (!reply) return { table: current, updated: false, problems: ["no reply from grounded search"] };
+  const { table: parsed, problems } = parseBcuText(text, current.rows);
+  if (!parsed) return { table: current, updated: false, problems };
 
-  const candidate = candidateFrom(parseJsonLoose(reply.text), now);
-  if (!candidate) return { table: current, updated: false, problems: ["unparseable or empty reply"] };
+  const candidate: BcuRateTable = { ...parsed, asOf: now };
 
   const check = validateTable(candidate);
   if (!check.ok) return { table: current, updated: false, problems: check.problems };
 
-  // A candidate that merely restates what we hold is not an update — but it IS a confirmation,
-  // so refresh `asOf` to record that the table was checked today.
+  const drift = movedTooFar(candidate, current);
+  if (drift.length) return { table: current, updated: false, problems: drift };
+
+  // Confirmed unchanged — still worth persisting, so `asOf` records that it was checked today.
   if (sameAs(candidate, current)) {
     return { table: { ...current, asOf: now }, updated: false, problems: [] };
   }
 
-  // Never accept a table that claims to take effect BEFORE the one we already hold: the BCU only
-  // moves forward, so an earlier date means the model found an archived page.
+  // The BCU only supersedes forward; an earlier date means an archived document.
   if (candidate.vigenteDesde < current.vigenteDesde) {
     return {
       table: current,
       updated: false,
-      problems: [`candidate vigenteDesde ${candidate.vigenteDesde} predates stored ${current.vigenteDesde}`],
+      problems: [`la vigencia ${candidate.vigenteDesde} es anterior a la almacenada ${current.vigenteDesde}`],
     };
   }
 

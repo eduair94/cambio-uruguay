@@ -1,16 +1,16 @@
 // BCU "Tasas medias de interés" (pm2 app `currency-bcu-rates`).
 //
 // Runs DAILY even though the BCU publishes monthly: the table takes effect on the 1st, the
-// comunicado lands on an unpredictable day of the preceding month, and a daily grounded check is
-// cheap (one call) next to the cost of serving a superseded cap on a page that tells people what
-// they will be charged. A run that finds nothing new is a no-op.
+// comunicado lands on an unpredictable day of the preceding month, and one PDF fetch a day is
+// nothing next to the cost of serving a superseded cap on a page that tells people what they
+// will be charged. A run that finds nothing new writes only the `asOf` stamp.
 //
+// Source is the official BCU PDF, parsed deterministically — no LLM, no API key.
 // Never blanks the stored table on a failure — a failed refresh just means the previous good
 // table (or the verified baseline in classes/bcurates/table.ts) keeps serving.
 import dotenv from "dotenv";
 dotenv.config();
 
-import { geminiConfigured } from "./classes/gemini";
 import { refreshBcuRates } from "./classes/bcurates/refresh";
 import { loadBcuRates, saveBcuRates } from "./classes/bcurates/store";
 import { isStale } from "./classes/bcurates/table";
@@ -25,11 +25,6 @@ async function main(): Promise<void> {
   } catch (e: any) {
     console.error("[bcu-rates] cannot reach MongoDB — refusing to run silently:", e?.message || e);
     process.exit(1);
-  }
-
-  if (!geminiConfigured()) {
-    console.warn("[bcu-rates] no GEMINI_API_KEY — nothing to do, keeping the stored table");
-    process.exit(0);
   }
 
   try {
