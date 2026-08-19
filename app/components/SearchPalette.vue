@@ -84,6 +84,16 @@
           </ul>
         </template>
 
+        <!-- The index chunk failed to load (stale hash after a deploy): never leave the
+             skeleton spinning forever — send the reader to the SSR results page. -->
+        <div v-else-if="indexLoadFailed" class="search-palette__empty">
+          <VIcon size="32">mdi-cloud-off-outline</VIcon>
+          <NuxtLink :to="seeAllTo" @click="open = false">
+            {{ $t('search.seeAll') }}
+            <VIcon size="small">mdi-arrow-right</VIcon>
+          </NuxtLink>
+        </div>
+
         <!-- The index chunk is still loading on this first open. -->
         <div v-else-if="!docs.length" class="search-palette__skeleton">
           <div v-for="n in 3" :key="n" class="search-palette__skeleton-row" />
@@ -165,6 +175,8 @@ const amountHit = ref<AmountHit | null>(null)
 let triggerEl: HTMLElement | null = null
 /** The catalogue chunk, imported lazily on first open and kept for rebuilds. */
 let indexModule: typeof import('~/utils/searchIndex') | null = null
+/** True when the lazy chunk import failed (stale hash after a deploy) — shows the SSR escape hatch. */
+const indexLoadFailed = ref(false)
 
 const results = computed(() => (query.value ? scoreDocs(query.value, docs.value) : []))
 const hasResults = computed(() => results.value.length > 0)
@@ -222,7 +234,18 @@ function rebuildIndex() {
  */
 async function loadIndex() {
   if (indexModule) return
-  indexModule = await import('~/utils/searchIndex')
+  try {
+    indexModule = await import('~/utils/searchIndex')
+  } catch {
+    // The lazy chunk failed to load — almost always a stale hash after a deploy
+    // (this tab's HTML points at a bundle that no longer exists on the server).
+    // Retrying the same import resolves the same dead hash, so instead surface
+    // the SSR results page (/buscar) as the escape hatch and let a reopen retry.
+    indexModule = null
+    indexLoadFailed.value = true
+    return
+  }
+  indexLoadFailed.value = false
   rebuildIndex()
   if (query.value) {
     // Someone typed while the chunk was still in flight, so the query watcher
@@ -243,6 +266,8 @@ watch(
     // Capture the opener NOW, synchronously: by `@after-enter` the dialog has
     // already taken focus, so we would restore focus to the dialog itself.
     triggerEl = import.meta.client ? (document.activeElement as HTMLElement | null) : null
+    // A reopen retries a previously failed chunk load (e.g. transient network blip).
+    indexLoadFailed.value = false
     void loadIndex()
   },
   { immediate: true }

@@ -22,6 +22,14 @@
       <v-chip
         size="small"
         variant="tonal"
+        prepend-icon="mdi-chart-bar"
+        :to="localePath('/que-banco-tiene-mas-descuentos-uruguay')"
+      >
+        ¿Qué banco tiene más descuentos?
+      </v-chip>
+      <v-chip
+        size="small"
+        variant="tonal"
         prepend-icon="mdi-credit-card-multiple-outline"
         :to="localePath('/tarjetas-de-credito-uruguay')"
       >
@@ -303,12 +311,10 @@
       <v-row dense>
         <v-col v-for="bank in banks" :key="bank.id" cols="12" sm="6" md="4">
           <v-card :id="`descuentos-${bank.id}`" variant="outlined" class="d-flex flex-column h-100">
-            <v-card-item class="pb-1">
-              <template #prepend>
-                <span class="bank-dot" :style="{ background: bank.color }" />
-              </template>
-              <h3 class="text-subtitle-1 font-weight-medium">Descuentos {{ bank.name }}</h3>
-            </v-card-item>
+            <h3 class="bank-card__title text-subtitle-1 font-weight-medium">
+              <span class="bank-dot" :style="{ background: bank.color }" />
+              <span>Descuentos {{ bank.name }}</span>
+            </h3>
             <v-card-text class="text-body-2 py-1 flex-grow-1">{{ bankBlurb(bank) }}</v-card-text>
             <v-card-actions>
               <v-btn size="small" variant="text" color="primary" @click="selectBank(bank.id)">
@@ -737,5 +743,14 @@ useHead(() => ({
   height: 12px;
   border-radius: 50%;
   flex: 0 0 auto;
+}
+/* Dot and title on one baseline-centred row — the card-item prepend slot placed the
+   dot against the block's top edge instead of the heading's optical centre. */
+.bank-card__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 16px 0;
+  line-height: 1.4;
 }
 </style>
