@@ -13,7 +13,7 @@ Nuxt 4 (`compatibilityVersion: 4`) + Vuetify 4.1.5 SSR frontend for cambio-urugu
 ## Layout
 - `pages/` — file-routed views (`casa/`, `cotizacion/`, `dolar/`, `convertir/`, `guias/[slug]`, `indicadores/`, `herramientas/`, `sucursales/`, `glosario/`, `blog/`, `cuenta/` subdirs).
 - `utils/` — **typed data catalogs + pure logic** (`~110` files). Content pages are data-driven: a `utils/<topic>.ts` catalog (often with computed rankings + a `*.test.ts`) feeds `pages/<slug>.vue`. New content pages follow this. No Vue/Nuxt imports here — keep pure so vitest-node can load them.
-- `components/` — Vuetify components; subdirs `OgImage/` (`Cambio.vue` OG template), `charts/`, `map/`, `mapa/`, `nearby/`, `reddit/`, `import-cart/`, `account/`, `analysis/`, `Faq/`.
+- `components/` — Vuetify components; subdirs `OgImage/` (`Cambio.vue` OG template), `charts/`, `map/`, `mapa/`, `nearby/`, `reddit/`, `import-cart/`, `account/`, `analysis/`, `Faq/`, `videos/` (`Embed.vue` es una **fachada**: la miniatura reserva el 16/9 y el iframe de YouTube recién se monta al hacer clic — 24 players reales no pasan Core Web Vitals ni el banner de consentimiento).
 - `server/` — Nitro. `api/` (routes, mostly `.get.ts` proxying/merging `api.cambio-uruguay.com`), `tasks/` (scheduled — see below), `models/` (mongoose), `utils/` (e.g. `firebaseAdmin.ts`), `data/`.
 - `composables/` — `useThemeMode`, `useExchangeRates`, `useTrack`, `useConsent`, `useRedditSentiment`, `useAuthFetch`, `useSavedDrift`, etc.
 - `stores/` — Pinia (`auth`, `cambio`, `importCart`, `loading`, `firebaseAuthApi`, `firebaseMessagingApi`).

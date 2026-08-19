@@ -174,11 +174,14 @@ export function normalizeForMatch(value: string): string {
 /**
  * Does `haystack` contain `keyword` as a whole word (or whole phrase)?
  *
+ * Exported because the video topic classifier (classes/videos/topics.ts) matches its own keyword
+ * table the same way, and a second copy of this would drift.
+ *
  * Substring matching is what makes keyword classifiers embarrassing: without the boundary check,
  * "cambio" matches "recambio", "paro" matches "disparo", and "iva" matches "Bolivia". Both sides are
  * normalized before this runs.
  */
-function containsWord(haystack: string, keyword: string): boolean {
+export function containsWord(haystack: string, keyword: string): boolean {
   let from = 0;
   for (;;) {
     const at = haystack.indexOf(keyword, from);

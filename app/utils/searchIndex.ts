@@ -35,6 +35,7 @@ import { IMPORT_CATEGORY_INDEX } from './importCategoryIndex'
 import { indicators } from './indicators'
 import { fold, makeDoc, navToDocs, type SearchDoc } from './siteNav'
 import { tools } from './tools'
+import { VIDEO_TOPIC_PAGES } from './videoTopics'
 
 /** Spanish/English aliases per currency, folded into the search haystack. */
 export const CURRENCY_ALIASES: Readonly<Record<CurrencyCode, readonly string[]>> = Object.freeze({
@@ -184,6 +185,29 @@ export function buildSearchIndex(ctx: SearchIndexContext): SearchDoc[] {
         // "credito" keyword bonus and outrank the canonical /prestamos-uruguay
         // hub. Hubs stay findable through their title + description haystack.
         keywords: ['tema', 'guias'],
+      })
+    )
+  }
+
+  for (const topic of VIDEO_TOPIC_PAGES) {
+    docs.push(
+      makeDoc({
+        id: `videotopic:${topic.slug}`,
+        // 'guide', not 'page': these are content leaves like /guias, and the type boost is what
+        // decides a tie. As 'page' they tie with the canonical answer ("alquileres" scores 68 on
+        // both /alquilar-en-uruguay and the vivienda video list) and win on insertion order; six
+        // points lower, a video list can still rank — just never ahead of the page that answers
+        // the question in prose.
+        type: 'guide',
+        section: 'news',
+        title: topic.h1,
+        description: topic.seoDescription,
+        icon: topic.icon,
+        to: `/videos-de-economia-uruguay/${topic.slug}`,
+        // 'video'/'videos' only. The topic's own words ("dolar", "irpf") live in the title and
+        // description haystack already, and adding them as keywords would let a video LIST outrank
+        // the page that actually answers the question — the trap /guias fell into once.
+        keywords: ['video', 'videos', 'youtube'],
       })
     )
   }

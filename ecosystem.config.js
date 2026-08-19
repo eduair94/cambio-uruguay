@@ -441,5 +441,17 @@ module.exports = {
       cron_restart: "8 */3 * * *",
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
+    {
+      // Videos de economía (/videos-de-economia-uruguay). Reads the public YouTube Atom feed of
+      // every channel in classes/videos/channels.ts — no API key, no quota — so it is cheap enough
+      // to run four times a day. Offset from the other :00 jobs so the box is not doing everything
+      // at once. Needs APP_MONGO_URI: the snapshot lives in the Nuxt app's database.
+      name: "currency-videos",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_videos.js",
+      cron_restart: "26 */6 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
   ],
 };

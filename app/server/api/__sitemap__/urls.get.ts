@@ -12,6 +12,7 @@ import { guideSlugs } from '../../../utils/guides'
 import { listIndicatorSlugs } from '../../../utils/indicators'
 import { NAV_SECTIONS, UNLISTED_ROUTES } from '../../../utils/siteNav'
 import { toolSlugs } from '../../../utils/tools'
+import { videoTopicSlugs } from '../../../utils/videoTopics'
 import { ChairCatalogProductModel } from '../../models/ChairCatalogProduct'
 import { listPosts } from '../../utils/blog'
 import { listIssueDates } from '../../utils/newsletterArchive'
@@ -95,6 +96,13 @@ export default defineEventHandler(async _event => {
     addUrlsForAllLocales(`/importar/${slug}`, 0.7, 'monthly')
   )
   hubSlugs().forEach(slug => addUrlsForAllLocales(`/temas/${slug}`, 0.7, 'weekly'))
+  // Video topic pages. Priority 0.7 and `daily`, like the hub: the list under each one is rebuilt
+  // every six hours. All of them are submitted, including a topic that happens to have no videos
+  // right now — the URL is stable and carries its own editorial copy, and dropping it from the
+  // sitemap on a quiet week is how a page loses the position it took months to earn.
+  videoTopicSlugs().forEach(slug =>
+    addUrlsForAllLocales(`/videos-de-economia-uruguay/${slug}`, 0.7, 'daily')
+  )
   toolSlugs().forEach(slug => addUrlsForAllLocales(`/herramientas/${slug}`, 0.7, 'weekly'))
   glossarySlugs().forEach(slug => addUrlsForAllLocales(`/glosario/${slug}`, 0.6, 'monthly'))
   // Head-to-head pages: pure catalogue data, so they survive an upstream outage

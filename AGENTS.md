@@ -33,6 +33,7 @@ Root map of a multi-package monorepo behind [cambio-uruguay.com](https://cambio-
 | currency-reddit-bot | dist/sync_reddit_bot.js | */12 11-23 * * * | answers ONE thread per run in 7 UY subs; **inert until `REDDIT_BOT_ENABLED=1` AND `REDDIT_BOT_DRY_RUN=0`** |
 | currency-reddit-bot-watch | dist/sync_reddit_bot_watch.js | 9 * * * * | reads back comment scores; trips a 48 h circuit breaker on 3 negatives/24 h |
 | currency-content-gaps | dist/sync_content_gaps.js | 35 5 * * * | clusters unanswered questions → grounded DRAFT in `docs/reddit-gaps/` (never a page) |
+| currency-videos | dist/sync_videos.js | 26 */6 * * * | reads the public YouTube **Atom feed** (no API key, no quota) of the curated channels in `classes/videos/channels.ts` -> APP DB `videossnapshots` for /videos-de-economia-uruguay + its 13 per-topic pages; needs `APP_MONGO_URI`; refuses to overwrite a good snapshot with an empty or half-dead run |
 | currency-reddit-social (APAGADO) | dist/sync_reddit_social.js | 5,50 12-23 * * * | comentarios SIN enlace en hilos que NO son de plata, para que la cuenta tenga karma: varios subs uruguayos borran por AutoModerator lo que escribe una cuenta nueva (medido: r/uruguay y r/Burises borran, r/AskUruguayan no). Se apaga solo al llegar a `REDDIT_SOCIAL_KARMA_TARGET`. **Apagado desde 2026-08-18: r/AskUruguayan baneó la cuenta permanentemente ("los bots tampoco están permitidos") y era el único sub que no la borraba.** Ver `classes/redditbot/subrules.ts` |
 | currency-reddit-ask (APAGADO) | dist/sync_reddit_ask.js | */30 12-23 * * * | una pregunta por día en r/AskUruguayan: lee el sub + busca la actualidad en la web + mide novedad contra lo ya publicado. Cada media hora porque además **retira el post que pasó 1 h sin ningún comentario ni voto** y publica el reemplazo en esa misma corrida, con tope diario contando las retiradas. Única llamada a **Opus** del fleet. Interruptores propios `REDDIT_ASK_ENABLED` / `REDDIT_ASK_DRY_RUN` |
 | currency-mcp | mcp/dist/index.js (cwd ./mcp) | — | HTTP :8788 |
@@ -41,7 +42,7 @@ Root map of a multi-package monorepo behind [cambio-uruguay.com](https://cambio-
 | currency-alerts | bots/dist/entries/alert_check.js | */15 11-21 * * * | intraday move alerts |
 | currency-content-promo | bots/dist/entries/content_promo.js | 0 14 * * 1,3,5 | one evergreen guide to X; **inert until `CONTENT_PROMO_ENABLED=1`** in `bots/.env` |
 
-Root pm2 entrypoints live at repo root: `index.ts`, `sync.ts`, `sync_aduana*.ts`, `sync_banks_news.ts`, `sync_figures.ts`, `sync_costs.ts`, `sync_debt_relief.ts`, `sync_loans.ts`, `sync_predictions.ts`, `sync_explain.ts`, `sync_sheet.ts`, `sync_site_analytics.ts`, `sync_temas_analysis.ts`, `sync_rag_index.ts`, `sync_reddit_bot.ts`, `sync_reddit_bot_watch.ts`, `sync_content_gaps.ts`. Shared: `config.ts`, `global.ts`, `sentry.ts`.
+Root pm2 entrypoints live at repo root: `index.ts`, `sync.ts`, `sync_aduana*.ts`, `sync_banks_news.ts`, `sync_figures.ts`, `sync_costs.ts`, `sync_debt_relief.ts`, `sync_loans.ts`, `sync_predictions.ts`, `sync_explain.ts`, `sync_sheet.ts`, `sync_site_analytics.ts`, `sync_temas_analysis.ts`, `sync_rag_index.ts`, `sync_reddit_bot.ts`, `sync_reddit_bot_watch.ts`, `sync_content_gaps.ts`, `sync_videos.ts`. Shared: `config.ts`, `global.ts`, `sentry.ts`.
 
 ## Top-level dirs
 | dir | role |

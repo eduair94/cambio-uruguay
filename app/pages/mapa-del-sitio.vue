@@ -60,6 +60,7 @@ import { guides } from '~/utils/guides'
 import { indicators } from '~/utils/indicators'
 import { NAV_SECTIONS } from '~/utils/siteNav'
 import { tools } from '~/utils/tools'
+import { VIDEO_TOPIC_PAGES } from '~/utils/videoTopics'
 
 const localePath = useLocalePath()
 const { t, locale } = useI18n()
@@ -112,6 +113,15 @@ const longTail = computed<Record<string, TailGroup[]>>(() => {
       {
         title: t('nav.glosario'),
         links: glossary.map(g => ({ to: `/glosario/${g.slug}`, label: g.term })),
+      },
+    ],
+    news: [
+      {
+        title: t('nav.videosEconomia'),
+        links: VIDEO_TOPIC_PAGES.map(topic => ({
+          to: `/videos-de-economia-uruguay/${topic.slug}`,
+          label: topic.label,
+        })),
       },
     ],
     houses: [
