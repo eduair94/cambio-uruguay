@@ -169,6 +169,42 @@
         </v-col>
       </v-row>
 
+      <!-- Quick filters: what applies TODAY, and your own shortlist -->
+      <v-row dense class="mb-1">
+        <v-col cols="12" class="d-flex flex-wrap align-center ga-2">
+          <v-chip
+            size="small"
+            :variant="onlyToday ? 'flat' : 'outlined'"
+            :color="onlyToday ? 'primary' : undefined"
+            prepend-icon="mdi-calendar-today"
+            @click="onlyToday = !onlyToday"
+          >
+            Hoy ({{ todayLabel }})
+          </v-chip>
+          <v-chip
+            size="small"
+            :variant="onlyFavorites ? 'flat' : 'outlined'"
+            :color="onlyFavorites ? 'amber-darken-2' : undefined"
+            prepend-icon="mdi-star"
+            @click="onlyFavorites = !onlyFavorites"
+          >
+            Mis favoritos ({{ favoritesStore.favorites.length }})
+          </v-chip>
+          <v-chip
+            size="small"
+            :variant="onlyTopRated ? 'flat' : 'outlined'"
+            :color="onlyTopRated ? 'primary' : undefined"
+            prepend-icon="mdi-thumb-up-outline"
+            @click="onlyTopRated = !onlyTopRated"
+          >
+            Mejor puntuados
+          </v-chip>
+          <span class="text-caption text-medium-emphasis">
+            {{ todayCount }} descuentos aplican hoy
+          </span>
+        </v-col>
+      </v-row>
+
       <v-row v-if="userLocation" dense class="mb-1">
         <v-col cols="12" md="6" class="d-flex align-center">
           <span class="text-caption mr-2">Radio: {{ radiusKm }} km</span>
@@ -240,6 +276,20 @@
                   :active="item.locationId === highlightId"
                   @click="focus(item.locationId)"
                 >
+                  <template #append>
+                    <v-btn
+                      :icon="favoritesStore.has(item.locationId) ? 'mdi-star' : 'mdi-star-outline'"
+                      :color="favoritesStore.has(item.locationId) ? 'amber-darken-2' : undefined"
+                      variant="text"
+                      size="small"
+                      :aria-label="
+                        favoritesStore.has(item.locationId)
+                          ? `Quitar ${item.brandName} de favoritos`
+                          : `Guardar ${item.brandName} en favoritos`
+                      "
+                      @click.stop="favoritesStore.toggle(item.locationId)"
+                    />
+                  </template>
                   <v-list-item-title class="d-flex align-center">
                     {{ item.brandName }}
                     <span v-if="item.rating >= 4.5" class="ml-1 text-amber">★</span>
@@ -261,6 +311,25 @@
                     </span>
                   </v-list-item-subtitle>
                   <div class="text-caption text-medium-emphasis mt-1">{{ bestDiscount(item) }}</div>
+                  <div v-if="dayNote(item)" class="text-caption mt-1">
+                    <v-icon size="x-small" class="mr-1">mdi-calendar-clock</v-icon
+                    >{{ dayNote(item) }}
+                  </div>
+                  <div
+                    v-if="item.otherBanks?.length"
+                    class="text-caption mt-1 d-flex flex-wrap align-center ga-1"
+                  >
+                    <span class="text-medium-emphasis">También con:</span>
+                    <v-chip
+                      v-for="ob in item.otherBanks.slice(0, 3)"
+                      :key="ob.bankId"
+                      size="x-small"
+                      variant="outlined"
+                      @click.stop="selectBank(ob.bankId)"
+                    >
+                      + {{ ob.bankName }}
+                    </v-chip>
+                  </div>
                 </v-list-item>
               </v-list>
               <div v-if="filtered.length > visibleList.length" class="text-center pa-2">
@@ -340,12 +409,17 @@ import LocationsMap from '~/components/map/LocationsMap.vue'
 import {
   BANKOS_BANKS,
   BANKOS_CARDS,
+  BANKOS_DAY_LABELS,
+  appliesOnDay,
   bankIdsForCards,
+  dayRestrictionLabel,
+  isoWeekdayToday,
   type BankosBank,
   type BankosDiscountsResponse,
   type BankosItem,
 } from '~/utils/bankos'
 import { useBankosCardsStore } from '~/stores/bankosCards'
+import { useBankosFavoritesStore } from '~/stores/bankosFavorites'
 import { useAuthStore } from '~/stores/auth'
 import type { FaqItem } from '~/utils/faqAnswers'
 
@@ -402,6 +476,7 @@ function bankBlurb(bank: BankosBank): string {
 
 onMounted(() => {
   cardsStore.loadLocal()
+  favoritesStore.loadLocal()
   // Shareable deep link: /descuentos-con-tarjeta-uruguay?banco=itau pre-selects a bank.
   const q = String(route.query.banco || '').toLowerCase()
   if (q && BANKOS_BANKS.some(b => b.id === q)) selectBank(q)
@@ -497,6 +572,30 @@ const sourceIcon = computed(() =>
 )
 
 // --- Filters ---
+const favoritesStore = useBankosFavoritesStore()
+
+// Day-aware filtering: ~200 discounts only run on certain weekdays (verified mapping,
+// utils/bankos + tests/unit/bankosDays.test.ts). "Hoy" is the question people actually ask.
+const today = ref(isoWeekdayToday())
+const todayLabel = computed(() => BANKOS_DAY_LABELS[today.value] ?? '')
+const onlyToday = ref(false)
+const onlyFavorites = ref(false)
+const onlyTopRated = ref(false)
+
+/** Does any of the item's banks apply today? */
+function appliesToday(item: BankosItem): boolean {
+  return item.banks.some(b => appliesOnDay(b, today.value))
+}
+/** "solo miércoles, sábados y domingos" for the banks that restrict days; '' when all are daily. */
+function dayNote(item: BankosItem): string {
+  const notes = new Set<string>()
+  for (const b of item.banks) {
+    const label = dayRestrictionLabel(b.availableDays)
+    if (label) notes.add(item.banks.length > 1 ? `${b.bankName}: ${label}` : label)
+  }
+  return [...notes].join(' · ')
+}
+
 const search = ref('')
 const category = ref('__all__')
 const sortBy = ref<'distance' | 'rating' | 'name'>('rating')
@@ -561,8 +660,19 @@ const filtered = computed<EnrichedItem[]>(() => {
     ...it,
     distanceKm: here ? haversineKm(here, { lat: it.lat, lng: it.lng }) : null,
   }))
-  if (q) list = list.filter(it => it.brandName.toLowerCase().includes(q))
+  // Search covers the source's own keywords too (≈375 brands carry them), so "farmacia" finds
+  // a chain whose brand name never says it.
+  if (q)
+    list = list.filter(
+      it =>
+        it.brandName.toLowerCase().includes(q) ||
+        it.categories.some(c => c.toLowerCase().includes(q)) ||
+        (it.keywords ?? []).some(k => k.toLowerCase().includes(q))
+    )
   if (cat !== '__all__') list = list.filter(it => it.categories.includes(cat))
+  if (onlyToday.value) list = list.filter(appliesToday)
+  if (onlyFavorites.value) list = list.filter(it => favoritesStore.has(it.locationId))
+  if (onlyTopRated.value) list = list.filter(it => (it.rating || 0) >= 4.5)
   if (here) list = list.filter(it => it.distanceKm == null || it.distanceKm <= radiusKm.value)
   list.sort((a, b) => {
     if (sortBy.value === 'distance' && here) return (a.distanceKm ?? 1e9) - (b.distanceKm ?? 1e9)
@@ -572,8 +682,13 @@ const filtered = computed<EnrichedItem[]>(() => {
   return list
 })
 
+/** How many of the loaded stores have a benefit that applies today (before other filters). */
+const todayCount = computed(() => items.value.filter(appliesToday).length)
+
 const listLimit = ref(200)
-watch([search, category, sortBy, banksParam], () => (listLimit.value = 200))
+watch([search, category, sortBy, banksParam, onlyToday, onlyFavorites, onlyTopRated], () => {
+  listLimit.value = 200
+})
 const visibleList = computed(() => filtered.value.slice(0, listLimit.value))
 
 // Map branches (capped so we never hand Leaflet tens of thousands of markers)
@@ -641,6 +756,8 @@ function popupFor(b: any): string {
       const parts: string[] = []
       if (bk.creditDescription) parts.push(`Crédito: ${esc(bk.creditDescription)}`)
       if (bk.debitDescription) parts.push(`Débito: ${esc(bk.debitDescription)}`)
+      const days = dayRestrictionLabel(bk.availableDays)
+      if (days) parts.push(`<em>${esc(days)}</em>`)
       // Colour lives in a swatch, never the label text — a light brand colour as text
       // fails contrast on the popup's white background (Club El País, Mercado Pago).
       const swatch = `<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${esc(bk.color)};margin-right:4px;vertical-align:middle"></span>`
@@ -648,12 +765,20 @@ function popupFor(b: any): string {
     })
     .join('')
   const dir = esc(b.mapUrl)
+  const directions = esc(
+    `https://www.google.com/maps/dir/?api=1&destination=${it.lat},${it.lng}&travelmode=driving`
+  )
+  const others = it.otherBanks?.length
+    ? `<div style="margin-top:6px;opacity:.75">También con: ${esc(it.otherBanks.map(o => o.bankName).join(', '))}</div>`
+    : ''
   return (
     `<strong>${esc(it.brandName)}</strong>` +
     (it.rating ? ` ★${it.rating.toFixed(1)}` : '') +
     cats +
     lines +
-    `<br><a href="${dir}" target="_blank" rel="noopener">Buscar en Google Maps →</a>`
+    others +
+    `<div style="margin-top:6px"><a href="${directions}" target="_blank" rel="noopener">Cómo llegar →</a>` +
+    ` &nbsp;·&nbsp; <a href="${dir}" target="_blank" rel="noopener">Googlear</a></div>`
   )
 }
 

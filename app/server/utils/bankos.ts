@@ -104,6 +104,20 @@ export async function getRawCatalog(): Promise<{
 /** Flatten the raw catalog into per-store items for the given banks (deduped by store). */
 export function flattenForBanks(data: RawData, bankIds: string[]): BankosItem[] {
   const perBrand = new Map<string, BankosItem['banks']>()
+  // Which issuers discount each brand but are NOT among the chosen cards. Bankos answers
+  // "Obtén descuento con:" on a miss; we answer it on every store, so the reader always sees the
+  // card that would have paid off — without having to search the brand first.
+  const selected = new Set(bankIds)
+  const othersByBrand = new Map<string, BankosItem['otherBanks']>()
+  for (const [bankId, brandMap] of Object.entries(data.bankBrands ?? {})) {
+    if (selected.has(bankId)) continue
+    const bank = BANKOS_BANK_BY_ID[bankId]
+    if (!bank) continue
+    for (const brandId of Object.keys(brandMap ?? {})) {
+      if (!othersByBrand.has(brandId)) othersByBrand.set(brandId, [])
+      othersByBrand.get(brandId)!.push({ bankId, bankName: bank.name, color: bank.color })
+    }
+  }
   for (const bankId of bankIds) {
     const brandMap = data.bankBrands?.[bankId]
     if (!brandMap) continue
@@ -119,6 +133,10 @@ export function flattenForBanks(data: RawData, bankIds: string[]): BankosItem[] 
         debitDescription: disc.debitDescription ?? null,
         hasCredit: !!disc.hasCredit,
         hasDebit: !!disc.hasDebit,
+        // ISO weekdays the benefit applies on (1 = lunes .. 7 = domingo); null = every day.
+        availableDays: Array.isArray(disc.availableDays)
+          ? (disc.availableDays as number[]).filter(n => Number.isInteger(n) && n >= 1 && n <= 7)
+          : null,
       })
     }
   }
@@ -128,6 +146,7 @@ export function flattenForBanks(data: RawData, bankIds: string[]): BankosItem[] 
     const brand = data.brands?.[brandId]
     const brandName = brand?.name || brandId
     const categories = brand?.categories || []
+    const keywords = brand?.keywords || []
     for (const locId of data.brandLocations?.[brandId] || []) {
       const loc = data.locations?.[locId]
       const coords = loc?.location?.coordinates
@@ -137,6 +156,8 @@ export function flattenForBanks(data: RawData, bankIds: string[]): BankosItem[] 
         brandId,
         brandName,
         categories,
+        keywords,
+        otherBanks: othersByBrand.get(brandId) ?? [],
         rating: loc?.rating ?? brand?.avgRating ?? 0,
         lng: coords[0],
         lat: coords[1],

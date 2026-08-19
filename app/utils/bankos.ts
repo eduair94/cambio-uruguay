@@ -66,16 +66,67 @@ export interface BankosDiscountBank {
   debitDescription: string | null
   hasCredit: boolean
   hasDebit: boolean
+  /**
+   * Weekdays the benefit applies on, ISO-8601: 1 = lunes … 7 = domingo. `null` = every day.
+   *
+   * The numbering is not documented anywhere — it was verified against the discount text of every
+   * row that names its days: 190/190 agreed ("los miércoles, sábados y domingos" → [3,6,7],
+   * "de lunes a jueves" → [1,2,3,4]), 0 mismatches. See tests/unit/bankosDays.test.ts.
+   */
+  availableDays: number[] | null
 }
 export interface BankosItem {
   locationId: string
   brandId: string
   brandName: string
   categories: string[]
+  /** Extra search terms the source carries for some brands (≈375 of them). */
+  keywords: string[]
   rating: number
   lat: number
   lng: number
   banks: BankosDiscountBank[]
+  /**
+   * Issuers that ALSO discount this brand but whose cards you did not select — i.e. the card you
+   * would have wanted here. Empty when your selection already covers every issuer for the brand.
+   */
+  otherBanks: { bankId: string; bankName: string; color: string }[]
+}
+
+/** ISO weekday (1 = lunes … 7 = domingo) → label. */
+export const BANKOS_DAY_LABELS: Record<number, string> = {
+  1: 'lunes',
+  2: 'martes',
+  3: 'miércoles',
+  4: 'jueves',
+  5: 'viernes',
+  6: 'sábados',
+  7: 'domingos',
+}
+
+/** Today's ISO weekday (1 = lunes … 7 = domingo) in Montevideo. */
+export function isoWeekdayToday(now: Date = new Date()): number {
+  // getDay(): 0 = Sunday … 6 = Saturday → ISO 1 = Monday … 7 = Sunday.
+  const d = now.getDay()
+  return d === 0 ? 7 : d
+}
+
+/** Does this bank's benefit apply on `day`? A null/empty `availableDays` means every day. */
+export function appliesOnDay(
+  bank: Pick<BankosDiscountBank, 'availableDays'>,
+  day: number
+): boolean {
+  const days = bank.availableDays
+  if (!days || !days.length) return true
+  return days.includes(day)
+}
+
+/** "solo miércoles, sábados y domingos" — human label for a day restriction, or '' when daily. */
+export function dayRestrictionLabel(days: number[] | null | undefined): string {
+  if (!days || !days.length || days.length === 7) return ''
+  const names = [...new Set(days)].sort((a, b) => a - b).map(d => BANKOS_DAY_LABELS[d] ?? String(d))
+  if (names.length === 1) return `solo ${names[0]}`
+  return `solo ${names.slice(0, -1).join(', ')} y ${names[names.length - 1]}`
 }
 
 export interface BankosDiscountsResponse {
@@ -113,4 +164,32 @@ export function sanitizeCardIds(input: unknown): string[] {
 /** Union of two card-id lists (both sanitized), so login never loses a selection. */
 export function mergeCardIds(a: unknown, b: unknown): string[] {
   return sanitizeCardIds([...sanitizeCardIds(a), ...sanitizeCardIds(b)])
+}
+
+/** localStorage key for the anonymous favourites. */
+export const BANKOS_FAVORITES_STORAGE_KEY = 'bankos_favorites_v1'
+/** Bound the stored list: favourites are a shortlist, not a second copy of the catalog. */
+export const BANKOS_MAX_FAVORITES = 300
+
+/**
+ * Keep plausible Bankos locationIds only, deduped and capped.
+ *
+ * Unlike cards there is no fixed catalog to validate against (locationIds come from the live
+ * feed), so this validates SHAPE: a non-empty, reasonably short string.
+ */
+export function sanitizeFavoriteIds(input: unknown): string[] {
+  const seen = new Set<string>()
+  for (const id of Array.isArray(input) ? input : []) {
+    if (typeof id !== 'string') continue
+    const trimmed = id.trim()
+    if (!trimmed || trimmed.length > 120) continue
+    seen.add(trimmed)
+    if (seen.size >= BANKOS_MAX_FAVORITES) break
+  }
+  return [...seen]
+}
+
+/** Union of two favourite lists, so logging in never drops what you starred while logged out. */
+export function mergeFavoriteIds(a: unknown, b: unknown): string[] {
+  return sanitizeFavoriteIds([...sanitizeFavoriteIds(a), ...sanitizeFavoriteIds(b)])
 }

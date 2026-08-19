@@ -159,6 +159,8 @@ describe('the navigation model has no dead links', () => {
       '/descuentos-con-tarjeta-uruguay',
       // Its data-driven companion: coverage per issuer, charted.
       '/que-banco-tiene-mas-descuentos-uruguay',
+      // Why-use-this-instead-of-the-app comparison (Bankos is the data source).
+      '/alternativa-a-bankos-uruguay',
       '/tarjetas-de-credito-uruguay',
       '/tarjetas-de-debito-uruguay',
       // What the same account pays you for leaving money in it — the other side

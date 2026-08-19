@@ -10,7 +10,13 @@ export interface BankosSnapshotDoc {
   data: {
     brands: Record<
       string,
-      { brandId: string; name: string; avgRating?: number; categories?: string[] }
+      {
+        brandId: string
+        name: string
+        avgRating?: number
+        categories?: string[]
+        keywords?: string[]
+      }
     >
     locations: Record<
       string,

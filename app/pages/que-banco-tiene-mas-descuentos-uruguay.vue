@@ -303,7 +303,13 @@ const localePath = useLocalePath()
 
 const { data, pending, error } = await useLazyAsyncData<
   BankosAnalysis & { source: string; generatedAt: string | null }
->('bankos-analysis', () => $fetch('/api/bankos/analysis'), { server: false })
+>('bankos-analysis', () => $fetch('/api/bankos/analysis'), {
+  // SSR on purpose: the numbers ARE the page. With `server: false` the tables and figures only
+  // existed after hydration, so Google indexed headings and FAQ but none of the data. The API is
+  // a pure reduction of an in-process cached catalog (and falls back to the stored snapshot), so
+  // rendering it server-side costs one cached call, not an upstream round-trip per visit.
+  server: true,
+})
 
 const analysis = computed(() => data.value ?? null)
 const generatedAt = computed(() => data.value?.generatedAt ?? null)
