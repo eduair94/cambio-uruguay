@@ -80,6 +80,11 @@ proxy_scrape.json
 # Scratch / scraping snapshots dumped at repo root (HTML/PNG/JSON debug artifacts)
 /*.html
 /*.png
+# Lo mismo un nivel adentro: los agentes que investigan contra fuente primaria bajan
+# páginas y PDFs y los dejan en el cwd, que muchas veces es app/. El fixture real vive
+# en app/tests/fixtures/, así que sólo se ignora la raíz de app/.
+/app/*.html
+/app/*.png
 indumex_preview.json
 indumex_reviews.json
 rev.json

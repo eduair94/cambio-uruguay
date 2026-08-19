@@ -9,7 +9,9 @@
 #   2. builds into a STAGING dir (NITRO_OUTPUT_DIR) so the live `.output` keeps
 #      serving untouched during the build,
 #   3. atomically swaps the fresh build into place,
-#   4. `pm2 reload` (rolling, not `restart`) so instances cycle one at a time.
+#   4. `pm2 reload` (rolling, not `restart`) so instances cycle one at a time,
+#   5. verifies the app actually answers before calling the deploy good — the
+#      reload's own exit code lies (see the comment at the reload step).
 #
 # Usage (on the server):  cd /root/cambio-uruguay/app && bash scripts/deploy.sh
 #
@@ -18,6 +20,8 @@ set -euo pipefail
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"   # .../app
 REPO_DIR="$(cd "$APP_DIR/.." && pwd)"
 PM2_NAME="cambio-uruguay"
+# Puerto que sirve la app (app/ecosystem.config.cjs). Lo usa el health check del reload.
+APP_PORT="${APP_PORT:-3311}"
 STAGING="$APP_DIR/.output-next"
 PREV="$APP_DIR/.output-prev"
 LOCK="/tmp/cambio-uruguay-deploy.lock"
@@ -125,7 +129,37 @@ rm -rf "$PREV"
 mv "$STAGING" "$APP_DIR/.output"
 
 log "Rolling reload (pm2 reload, zero-downtime)…"
-pm2 reload "$PM2_NAME" --update-env
+# `pm2 reload` walks the cluster by instance id, and its exit code is NOT a health
+# signal. The app runs with `max_memory_restart: 500M` and the instances carry
+# thousands of restarts, so one of them can be mid-restart exactly when the walk
+# reaches it: pm2 prints "Process N not found" and exits 1 while every instance
+# ends up online and serving.
+#
+# Measured on run 32304404391: instance 21 reloaded fine, 22 was "not found",
+# `set -e` killed the script, CI went red — and the app was serving the new build
+# the whole time (both instances online, 79s uptime). The real damage was the
+# steps BELOW never running, so the previous build's tree was left on disk.
+#
+# So: tolerate the reload's exit code and gate on whether the app answers.
+pm2 reload "$PM2_NAME" --update-env || log "pm2 reload exited non-zero; the health check below decides."
+
+log "Waiting for the app to answer on :$APP_PORT…"
+healthy=0
+for _ in $(seq 1 30); do
+  code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 "http://127.0.0.1:$APP_PORT/" || true)"
+  if [ "$code" = "200" ]; then
+    healthy=1
+    break
+  fi
+  sleep 2
+done
+
+if [ "$healthy" != "1" ]; then
+  echo "[deploy] the app never returned 200 on 127.0.0.1:$APP_PORT after the reload." >&2
+  pm2 list | grep -- "$PM2_NAME" >&2 || true
+  exit 1
+fi
+log "App is answering 200. Reload OK."
 
 # Delete the old tree DETACHED. By this line the swap and the rolling reload
 # have already happened: the site is live on the new build and nothing below
