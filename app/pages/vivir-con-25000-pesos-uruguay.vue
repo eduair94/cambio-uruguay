@@ -694,6 +694,23 @@
         </VExpansionPanels>
       </div>
 
+      <h3 class="text-subtitle-1 font-weight-bold mb-1">El orden en que conviene hacerlo</h3>
+      <p class="text-body-2 text-medium-emphasis mb-3">
+        No es el orden en que aparecen los programas. Primero lo que sube el sueldo, después lo que
+        ya está ganado y sólo hay que pedir, y al final lo que depende de que otro mida tu hogar,
+        que es lo que más demora.
+      </p>
+      <VRow class="mb-5">
+        <VCol v-for="(paso, i) in ORDEN_SUGERIDO" :key="paso.titulo" cols="12" md="6" lg="3">
+          <VCard variant="flat" class="step-card pa-5 h-100">
+            <div class="step-n">{{ i + 1 }}</div>
+            <h4 class="text-subtitle-2 font-weight-bold mb-1">{{ paso.titulo }}</h4>
+            <p class="mb-2 text-medium-emphasis">{{ paso.detalle }}</p>
+            <p class="text-caption mb-0">{{ paso.cuando }}</p>
+          </VCard>
+        </VCol>
+      </VRow>
+
       <h3 class="text-subtitle-1 font-weight-bold mb-3">Dónde se toca el timbre</h3>
       <VRow>
         <VCol v-for="p in PUERTAS" :key="p.organismo" cols="12" md="6">
@@ -777,6 +794,21 @@
         <VBtn :to="localePath('/salud-financiera')" variant="tonal" size="small">
           Salud financiera
         </VBtn>
+        <VBtn :to="localePath('/descuentos-con-tarjeta-uruguay')" variant="tonal" size="small">
+          Descuentos con tarjeta, por banco y por día
+        </VBtn>
+        <VBtn :to="localePath('/apps-de-beneficios-uruguay')" variant="tonal" size="small">
+          Programas de beneficios del comercio
+        </VBtn>
+        <VBtn :to="localePath('/saldar-deudas-uruguay')" variant="tonal" size="small">
+          Si además tenés deudas
+        </VBtn>
+        <VBtn :to="localePath('/salir-del-clearing')" variant="tonal" size="small">
+          Salir del Clearing
+        </VBtn>
+        <VBtn :to="localePath('/alquilar-en-uruguay')" variant="tonal" size="small">
+          Alquilar: garantías y costos
+        </VBtn>
       </div>
     </section>
 
@@ -832,6 +864,7 @@ import {
 } from '~/utils/lowWage'
 import {
   APOYOS_FAQ,
+  ORDEN_SUGERIDO,
   PUERTAS,
   STATE_SUPPORT_SOURCES,
   STATE_SUPPORT_VERIFIED_AT,

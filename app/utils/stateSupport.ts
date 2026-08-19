@@ -1044,8 +1044,48 @@ export function conApoyos(
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 7. LAS PUERTAS, LA LETRA CHICA Y LA FAQ
+// 7. EL ORDEN, LAS PUERTAS, LA LETRA CHICA Y LA FAQ
 // ─────────────────────────────────────────────────────────────────────────────
+
+export interface Paso {
+  titulo: string
+  detalle: string
+  /** Cuánto tarda en convertirse en plata, dicho sin prometer plazos administrativos. */
+  cuando: string
+}
+
+/**
+ * El orden importa y no es el orden en que aparecen los programas. Va primero lo que cambia el
+ * sueldo mismo —el laudo— porque es lo único que sube la base sobre la que se calcula todo lo
+ * demás y no depende de ninguna evaluación; después lo que se pide con un trámite y ya está
+ * ganado; y recién al final lo que depende de que otro mida tu hogar, que es lo que más demora.
+ */
+export const ORDEN_SUGERIDO: readonly Paso[] = Object.freeze([
+  Object.freeze({
+    titulo: 'Primero, el laudo de tu categoría',
+    detalle:
+      'El mínimo nacional casi nunca es tu mínimo: si tu actividad tiene Consejo de Salarios, el piso lo fija el laudo de tu grupo, subgrupo y categoría, y suele estar bastante más arriba. El MTSS te lo informa gratis. Va primero porque es lo único que sube el sueldo, y el sueldo es la base de todo lo demás.',
+    cuando: 'Una consulta. Si estás mal categorizado, el ajuste es retroactivo.',
+  }),
+  Object.freeze({
+    titulo: 'Segundo, la asignación familiar del BPS',
+    detalle:
+      'Si tenés hijos y trabajás en la actividad privada, ya te corresponde: no depende de ninguna evaluación de vulnerabilidad. Pero no llega sola, hay que solicitarla, y se paga hasta con un año de retroactividad desde la fecha de presentación.',
+    cuando: 'Trámite en línea o en oficina. Se cobra cada dos meses.',
+  }),
+  Object.freeze({
+    titulo: 'Tercero, pedí la evaluación del MIDES',
+    detalle:
+      'Es la que más demora y la que más abre: de ella dependen la Tarjeta Uruguay Social, la asignación del Plan de Equidad, el Bono Social de UTE, la tarifa de OSE y el supergás. Se pide en una oficina territorial o al 0800 7263 aunque no tengas certeza de calificar: la medición la hace el organismo, no vos.',
+    cuando: 'Incluye una visita al hogar.',
+  }),
+  Object.freeze({
+    titulo: 'Cuarto, lo que no es plata pero es gasto que se va',
+    detalle:
+      'El carné de salud gratis en ASSE, la cobertura de los hijos por el Fonasa que ya te descuentan, el boleto escolar y estudiantil, los comedores del INDA y los cursos del INEFOP. Ninguno te deposita nada; todos sacan un gasto de la lista.',
+    cuando: 'Cada uno por su ventanilla, sin costo.',
+  }),
+])
 
 export interface Puerta {
   organismo: string

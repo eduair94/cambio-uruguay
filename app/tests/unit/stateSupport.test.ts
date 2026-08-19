@@ -8,6 +8,7 @@ import {
   CARNE_SALUD,
   FGA,
   FGA_INGRESO_MINIMO_PESOS,
+  ORDEN_SUGERIDO,
   PUERTAS,
   STATE_SUPPORT_SOURCES,
   STATE_SUPPORT_VERIFIED_AT,
@@ -381,6 +382,15 @@ describe('el catálogo', () => {
     const supergas = APOYOS.find(a => a.id === 'supergas')
     expect(supergas?.alerta).toBeTruthy()
     expect(supergas?.alerta).toContain('2025')
+  })
+
+  it('el orden sugerido arranca por el laudo y termina en lo que no es plata', () => {
+    expect(ORDEN_SUGERIDO).toHaveLength(4)
+    expect(ORDEN_SUGERIDO[0]!.titulo).toMatch(/laudo/i)
+    for (const paso of ORDEN_SUGERIDO) {
+      expect(paso.detalle.length).toBeGreaterThan(80)
+      expect(paso.cuando.trim()).not.toBe('')
+    }
   })
 
   it('cada puerta y cada fuente tienen enlace', () => {
