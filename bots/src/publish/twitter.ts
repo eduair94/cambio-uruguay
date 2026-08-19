@@ -46,4 +46,42 @@ export class TwitterPublisher {
     }
     await this.client.v2.tweet(text, mediaId ? { media: { media_ids: [mediaId] } } : undefined);
   }
+
+  /**
+   * Post a thread: each item replies to the one before it.
+   *
+   * Sequential on purpose — every tweet needs the id of the previous one, so there is nothing to
+   * parallelise. If a middle tweet fails the ones already posted STAY posted: X has no transaction,
+   * and deleting them would be a second failure mode on top of the first. The error carries the
+   * index so the operator knows where the thread got cut.
+   *
+   * Returns the ids in order, which is also what makes a dry run legible.
+   */
+  async thread(texts: readonly string[]): Promise<string[]> {
+    const parts = texts.map(t => t.trim()).filter(Boolean);
+    if (parts.length === 0) return [];
+
+    if (this.dryRun || !this.client) {
+      parts.forEach((t, i) => console.log(`[DRY_RUN twitter ${i + 1}/${parts.length}] ${t}`));
+      return [];
+    }
+
+    const ids: string[] = [];
+    let replyTo: string | undefined;
+    for (const [i, text] of parts.entries()) {
+      try {
+        const res = await this.client.v2.tweet(
+          text,
+          replyTo ? { reply: { in_reply_to_tweet_id: replyTo } } : undefined
+        );
+        replyTo = res.data.id;
+        ids.push(replyTo);
+      } catch (err) {
+        throw new Error(
+          `thread cut at tweet ${i + 1}/${parts.length} (${ids.length} already posted): ${(err as Error).message}`
+        );
+      }
+    }
+    return ids;
+  }
 }

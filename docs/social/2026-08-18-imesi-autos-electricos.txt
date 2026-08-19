@@ -1,0 +1,24 @@
+1/ El decreto que le pone IMESI a los autos eléctricos desde enero de 2027 no fija tres tasas. Fija una matriz de 3 tramos de valor × 4 motorizaciones × 6 cilindradas.
+
+Todos los medios publicaron una sola columna: la de eléctricos puros.
+---
+2/ Por qué nadie publicó el resto: las tasas no están en el texto del decreto en IMPO. Los literales a), b) y c) aparecen con la celda vacía y una nota que remite a "la imagen electrónica".
+
+Están sólo en el PDF del Diario Oficial Nº 31.948, carillas 224-225.
+---
+3/ Lo que aparece cuando la leés: "hasta US$ 19.000 no paga" es falso.
+
+El 0% de ese tramo es exclusivo del eléctrico puro. Un híbrido en el mismo tramo paga entre 2% y 34,5%.
+---
+4/ Y al revés: para los híbridos de valor en aduana bajo no cambia nada. Esas tasas son idénticas a las que ya rigen hoy.
+
+El cambio arranca en US$ 19.001: ahí un enchufable pasa de 2% a 7%, y por encima de US$ 27.000 a 11%.
+---
+5/ Dos cosas más antes de firmar algo:
+
+· el umbral es valor en aduana, no precio de vidriera (≈US$ 29-30 mil, según el propio MEF)
+· el decreto no tiene artículo transitorio: qué pasa con lo importado en 2026 y vendido en 2027 no está resuelto por norma
+---
+6/ La matriz completa, las definiciones de cada subcategoría de híbrido (el start/stop no cuenta) y por qué "9% de IMESI" no es "el auto sube 9%":
+
+https://cambio-uruguay.com/impuesto-autos-electricos-uruguay
