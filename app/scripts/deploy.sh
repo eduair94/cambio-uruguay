@@ -161,6 +161,41 @@ if [ "$healthy" != "1" ]; then
 fi
 log "App is answering 200. Reload OK."
 
+# Huérfanos: el fallo que el health check de arriba NO ve.
+#
+# Cuando un `pm2 reload` se corta por la mitad (ver el comentario anterior), los workers viejos
+# pueden quedar corriendo SIN que pm2 los conozca, y siguen recibiendo tráfico por el socket
+# compartido del cluster. Traen el `server.mjs` anterior en memoria, que referencia chunks de ruta
+# que el swap ya borró: el resultado es un 500 INTERMITENTE y sólo en las rutas que cambiaron —
+# la home sigue respondiendo 200, así que el chequeo de arriba pasa igual.
+#
+# Medido el 2026-08-19: dos workers huérfanos de 21 minutos sirviendo el build anterior hacían
+# fallar la mitad de los requests a una página nueva, con
+# "Cannot find module .../me-cobran-algo-que-no-autorice-<hash viejo>.mjs" en el log.
+#
+# El patrón de búsqueda va anclado a $APP_DIR a propósito: en este box hay OTRA app Nuxt con el
+# mismo nombre de archivo (/root/Cedulas-Uruguay/app/.output/server/index.mjs) que no hay que tocar.
+# Y sólo se matan procesos de más de 60 s, para no llevarse por delante un worker que pm2 acaba de
+# levantar y todavía no registró.
+log "Looking for orphaned workers from a previous failed reload…"
+pm2_pids="$(pm2 jlist 2>/dev/null | tr ',' '
+' | grep -o '"pid":[0-9]*' | grep -o '[0-9]*' | tr '
+' ' ' || true)"
+if [ -n "${pm2_pids// /}" ]; then
+  for pid in $(pgrep -f "$APP_DIR/.output/server/index.mjs" || true); do
+    case " $pm2_pids " in
+      *" $pid "*) continue ;;
+    esac
+    age="$(ps -o etimes= -p "$pid" 2>/dev/null | tr -d ' ')"
+    [ -n "$age" ] || continue
+    [ "$age" -gt 60 ] || continue
+    log "Killing orphaned worker $pid (${age}s old, unknown to pm2)."
+    kill -TERM "$pid" 2>/dev/null || true
+  done
+else
+  log "Could not read pm2's pid list; skipping the orphan sweep rather than killing blind."
+fi
+
 # Delete the old tree DETACHED. By this line the swap and the rolling reload
 # have already happened: the site is live on the new build and nothing below
 # affects it. Measured on run 32086895800, this `rm -rf` was 1m35s of a 7m29s
