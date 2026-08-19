@@ -1,6 +1,6 @@
 // Builds the Bankos snapshot: one live call for every issuer, sanity-checked so an empty/garbage
 // response can never overwrite a good fallback (sync_bankos.ts only writes when this resolves).
-import { BANKOS_BANKS, fetchMarkersAndBrands, type MarkersAndBrandsData } from "./client";
+import { BANKOS_BANKS, BANKOS_CARDS, fetchMarkersAndBrands, type MarkersAndBrandsData } from "./client";
 
 export interface BankosSnapshot {
   data: MarkersAndBrandsData;
@@ -10,7 +10,9 @@ export interface BankosSnapshot {
 
 export async function buildSnapshot(): Promise<BankosSnapshot> {
   const banks = BANKOS_BANKS.map((b) => b.id);
-  const data = await fetchMarkersAndBrands(banks);
+  // Full card objects — see fetchMarkersAndBrands: bare bankIds return nothing for the
+  // single-card issuers (Club El País, Mercado Pago, Prex).
+  const data = await fetchMarkersAndBrands(BANKOS_CARDS);
 
   const brands = data.brands ?? {};
   const locations = data.locations ?? {};

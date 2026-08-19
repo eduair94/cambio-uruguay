@@ -47,7 +47,13 @@ useFaqSchema(
 </script>
 
 <style scoped>
+/* Browsers indent <dd> by ~40px by default, which reads as a broken hanging indent next to the
+   questions. The answer belongs at the same left edge as its question. */
+.faq-dl {
+  margin: 0;
+}
 .faq-dl-item dd {
+  margin-inline-start: 0;
   color: rgba(var(--v-theme-on-surface), 0.75);
 }
 </style>

@@ -4,12 +4,24 @@
 import crypto from 'node:crypto'
 import { connectDb } from './db'
 import { BankosSnapshotModel, type BankosSnapshotDoc } from '../models/BankosSnapshot'
-import { BANKOS_BANKS, BANKOS_BANK_BY_ID, type BankosItem } from '../../utils/bankos'
+import { BANKOS_BANK_BY_ID, BANKOS_CARDS, type BankosItem } from '../../utils/bankos'
 
 const BASE = process.env.NUXT_BANKOS_API_BASE || 'https://bankos-backend.onrender.com/api'
 const API_KEY = process.env.NUXT_BANKOS_API_KEY || '119524fa7c27f24fc6ac040a319fbe7f'
 const SECRET = process.env.NUXT_BANKOS_APP_SECRET || '2eb73b9633fbd9ef2ae77f2e426c712f'
-const ALL_BANK_IDS = BANKOS_BANKS.map(b => b.id)
+/**
+ * The upstream wants the WHOLE card object, not just its bankId.
+ *
+ * Measured against the live API: `{bankId:'clubelpais'}` returns 0 brands, while the full card
+ * `{id:'clubelpais_debit', name, bankId, type:'debit'}` returns 173 (Mercado Pago 10, Prex 3).
+ * Sending bare ids silently dropped three issuers from the map and reported them as "no discounts".
+ */
+const ALL_CARDS_PAYLOAD = BANKOS_CARDS.map(c => ({
+  id: c.id,
+  name: c.name,
+  bankId: c.bankId,
+  type: c.type,
+}))
 
 type RawData = BankosSnapshotDoc['data']
 
@@ -46,7 +58,7 @@ async function fetchLive(timeoutMs = 12_000): Promise<RawCatalog> {
     const res = await fetch(BASE + path, {
       method: 'POST',
       headers: signHeaders(path),
-      body: JSON.stringify({ cards: ALL_BANK_IDS.map(bankId => ({ bankId })) }),
+      body: JSON.stringify({ cards: ALL_CARDS_PAYLOAD }),
       signal: ac.signal,
     })
     if (!res.ok) throw new Error(`Bankos live HTTP ${res.status}`)

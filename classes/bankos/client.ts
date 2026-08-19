@@ -1,10 +1,12 @@
 // Minimal signed client for the Bankos discounts backend (bankos.uy), reverse-engineered from
 // the app `com.anonymous.bankos` v1.1.8. See memory/bankos-api-reverse.md for the full write-up.
 //
-// The backend keys discounts by BANK, not by card, so one call with every bankId returns the whole
-// country's discount map (brands + GeoJSON locations + per-bank discount text). That single response
-// is what `sync_bankos.ts` snapshots into the app DB as an outage fallback for
-// app/server/api/bankos/discounts.get.ts.
+// The response is keyed by BANK (bankBrands[bankId][brandId]), but the REQUEST must carry the whole
+// card object — `{bankId}` alone returns 0 brands for the single-card issuers (Club El País,
+// Mercado Pago, Prex), which silently dropped them from the map until it was measured. One call
+// with all 16 cards returns the whole country's discount map (brands + GeoJSON locations +
+// per-bank discount text). That single response is what `sync_bankos.ts` snapshots into the app DB
+// as an outage fallback for app/server/api/bankos/discounts.get.ts.
 //
 // Request signing (recovered from the app's createApiHeaders/createSignature): each request carries
 //   X-API-Key, X-Nonce (uuid), X-Signature = HMAC_SHA256(appSecret, nonce + path)  [hex]
@@ -80,18 +82,42 @@ function signHeaders(path: string): Record<string, string> {
   };
 }
 
+/** The 16 selectable cards, exactly as the app stores them. */
+export const BANKOS_CARDS: { id: string; name: string; bankId: string; type: "credit" | "debit" }[] = [
+  { id: "itau_debit", name: "Itaú Débito", bankId: "itau", type: "debit" },
+  { id: "itau_credit", name: "Itaú Crédito", bankId: "itau", type: "credit" },
+  { id: "bbva_debit", name: "BBVA Débito", bankId: "bbva", type: "debit" },
+  { id: "bbva_credit", name: "BBVA Crédito", bankId: "bbva", type: "credit" },
+  { id: "santander_debit", name: "Santander Débito", bankId: "santander", type: "debit" },
+  { id: "santander_credit", name: "Santander Crédito", bankId: "santander", type: "credit" },
+  { id: "scotiabank_debit", name: "Scotiabank Débito", bankId: "scotiabank", type: "debit" },
+  { id: "scotiabank_credit", name: "Scotiabank Crédito", bankId: "scotiabank", type: "credit" },
+  { id: "brou_debit", name: "BROU Débito", bankId: "brou", type: "debit" },
+  { id: "brou_credit", name: "BROU Crédito", bankId: "brou", type: "credit" },
+  { id: "oca_debit", name: "OCA Débito", bankId: "oca", type: "debit" },
+  { id: "oca_credit", name: "OCA Crédito", bankId: "oca", type: "credit" },
+  { id: "clubelpais_debit", name: "Tarjeta Club El País", bankId: "clubelpais", type: "debit" },
+  { id: "mercadopago_debit", name: "Mercado Pago", bankId: "mercadopago", type: "debit" },
+  { id: "prex_debit", name: "Tarjeta Prex", bankId: "prex", type: "debit" },
+  { id: "anda_credit", name: "ANDA Crédito", bankId: "anda", type: "credit" },
+];
+
 /**
- * POST /markers-and-brands for the given bankIds. With every bankId it returns the full catalog plus
- * the discount map for all of them. Render's free tier cold-starts, so the timeout is generous.
+ * POST /markers-and-brands for the given cards. Returns the full catalog plus the discount map.
+ * Render's free tier cold-starts, so the timeout is generous.
+ *
+ * The upstream needs the WHOLE card object, not just its bankId: measured against the live API,
+ * `{bankId:'clubelpais'}` returns 0 brands while the full card returns 173 (Mercado Pago 10,
+ * Prex 3). Passing bare ids silently dropped three issuers from the snapshot.
  */
 export async function fetchMarkersAndBrands(
-  bankIds: string[],
+  cards: { id: string; name: string; bankId: string; type: string }[] = BANKOS_CARDS,
   timeoutMs = 90_000
 ): Promise<MarkersAndBrandsData> {
   const path = "/markers-and-brands";
   const res = await axios.post(
     BANKOS_BASE + path,
-    { cards: bankIds.map((bankId) => ({ bankId })) },
+    { cards },
     { headers: signHeaders(path), timeout: timeoutMs }
   );
   const data = res.data?.data;
