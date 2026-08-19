@@ -166,8 +166,16 @@ export function mergeCardIds(a: unknown, b: unknown): string[] {
   return sanitizeCardIds([...sanitizeCardIds(a), ...sanitizeCardIds(b)])
 }
 
-/** localStorage key for the anonymous favourites. */
-export const BANKOS_FAVORITES_STORAGE_KEY = 'bankos_favorites_v1'
+/**
+ * localStorage key for the anonymous favourites.
+ *
+ * The inline `gitleaks:allow` is a FALSE POSITIVE waiver, not a hidden credential: the secret-scan
+ * gate's `generic-api-key` rule fires on any `*_KEY = '<high-entropy value>'` assignment, and this
+ * is a browser storage key that ships in the client bundle by design. It is waived inline rather
+ * than in `.gitleaksignore` because that file pins findings by line number, and this module changes
+ * often enough that a pinned fingerprint would silently rot.
+ */
+export const BANKOS_FAVORITES_STORAGE_KEY = 'bankos_favorites_v1' // gitleaks:allow
 /** Bound the stored list: favourites are a shortlist, not a second copy of the catalog. */
 export const BANKOS_MAX_FAVORITES = 300
 
