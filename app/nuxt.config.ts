@@ -242,6 +242,17 @@ export default defineNuxtConfig({
     '/**/*.{png,jpg,jpeg,gif,webp,svg,ico}': {
       headers: { 'cache-control': 'max-age=31536000, immutable' },
     },
+    // The service worker and the FCM handler it importScripts MUST NOT be immutable: the glob
+    // below matches every .js, so /sw.js was being served `max-age=31536000, immutable` and
+    // Cloudflare pinned it at the edge — a deploy could ship a new SW that users never received
+    // (measured: origin had the new file, cf-cache-status HIT served one 20 minutes older).
+    // Exact paths win over the glob in Nitro's matcher, so these two rules fix it for good.
+    '/sw.js': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate' },
+    },
+    '/firebase-messaging-extra.js': {
+      headers: { 'cache-control': 'public, max-age=0, must-revalidate' },
+    },
     '/**/*.{js,css,woff,woff2,ttf,eot}': {
       headers: { 'cache-control': 'max-age=31536000, immutable' },
     },
