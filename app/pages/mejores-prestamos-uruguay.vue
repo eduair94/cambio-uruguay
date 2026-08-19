@@ -1616,8 +1616,7 @@ useHead(() => ({
 
 .ficha-verdict {
   padding: 10px 12px;
-  border-left: 3px solid rgb(var(--v-theme-primary));
-  border-radius: 0 12px 12px 0;
+  border-radius: 12px;
   background: rgba(var(--v-theme-primary), 0.06);
 }
 
