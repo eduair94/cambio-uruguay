@@ -7,6 +7,7 @@ import {
   extractLinks,
   inventedNumbers,
   numericTokens,
+  trailingSignature,
   validateReply,
 } from "../../classes/redditbot/validate";
 
@@ -15,7 +16,10 @@ const CONTEXT =
   "[/importar-para-revender-uruguay] El régimen de courier admite hasta US$ 800 y 20 kg por envío, " +
   "con un tope de 3 envíos por año y un mínimo de US$ 20 de IVA. El recargo es del 60%.";
 
-const body = (text: string): string => `${text}\n\n${DISCLOSURE}`;
+// El comentario ya no lleva firma: la aclaración de que es un bot vive en la bio de la cuenta y
+// `identity.ts` la exige antes de publicar. `body` quedó como identidad para que los tests que
+// hablan de otra cosa sigan diciendo lo mismo que decían.
+const body = (text: string): string => text;
 
 /** 50 words of filler so a test about numbers is not also a test about length. */
 const filler =
@@ -100,9 +104,23 @@ describe("redditbot/validate — validateReply", () => {
     expect(validateReply({ reply, expectedUrl: URL, context: CONTEXT }).reason).toBe("no_link");
   });
 
-  it("rejects a reply that dropped the bot disclosure", () => {
+  it("rechaza la firma al pie, que es lo que se sacó", () => {
+    const reply = `${filler}El tope es de US$ 800. ${URL}
+
+${DISCLOSURE}`;
+    expect(validateReply({ reply, expectedUrl: URL, context: CONTEXT }).reason).toBe("trailing_signature");
+  });
+
+  it("rechaza también una firma inventada por el modelo, que es la que de verdad aparece", () => {
+    const reply = `${filler}El tope es de US$ 800. ${URL}
+
+— soy un bot que responde dudas de plata`;
+    expect(validateReply({ reply, expectedUrl: URL, context: CONTEXT }).reason).toBe("trailing_signature");
+  });
+
+  it("acepta el mismo comentario sin la firma", () => {
     const reply = `${filler}El tope es de US$ 800. ${URL}`;
-    expect(validateReply({ reply, expectedUrl: URL, context: CONTEXT }).reason).toBe("missing_disclosure");
+    expect(validateReply({ reply, expectedUrl: URL, context: CONTEXT })).toEqual({ ok: true });
   });
 
   it("rejects a two-line link drop — a comment that gives nothing is spam with extra steps", () => {
@@ -209,5 +227,25 @@ describe("redditbot/validate — validateReply", () => {
     const dated = "https://cambio-uruguay.com/decreto-50-026";
     const reply = body(`${filler}El tope es de US$ 800 por envío. ${dated}`);
     expect(validateReply({ reply, expectedUrl: dated, context: CONTEXT })).toEqual({ ok: true });
+  });
+});
+
+describe("redditbot/validate — trailingSignature", () => {
+  it("no confunde una oración común que nombra el sitio con una firma", () => {
+    // Sin guión inicial no es una firma, es el final de la respuesta. Confundirlos rechazaría los
+    // comentarios que enlazan bien.
+    expect(trailingSignature("El detalle está en cambio-uruguay.com y ahí lo ves.")).toBeNull();
+  });
+
+  it("no marca una raya que no nos nombra", () => {
+    expect(trailingSignature("Contestá si te queda alguna duda.\n\n— igual fijate el vencimiento")).toBeNull();
+  });
+
+  it("no marca nada cuando el comentario es una sola línea", () => {
+    expect(trailingSignature("— bot de cambio-uruguay.com")).toBeNull();
+  });
+
+  it("marca la raya final que nos nombra", () => {
+    expect(trailingSignature("Respuesta larga acá.\n\n— bot de cambio-uruguay.com, corregime")).toContain("bot de");
   });
 });

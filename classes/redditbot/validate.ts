@@ -11,7 +11,6 @@
 // "approximately" — every one. A composer that cannot write the answer without inventing a number
 // has not answered the question, and the correct outcome is to say nothing.
 
-import { DISCLOSURE } from "./compose";
 // The number rule lives in classes/numbers.ts because an auto-published page is now held to the
 // same one; re-exported here so this module stays the single import for reply validation.
 import { inventedNumbers, numericTokens } from "../numbers";
@@ -26,7 +25,7 @@ export type RejectReason =
   | "wrong_link"
   | "multiple_links"
   | "invented_number"
-  | "missing_disclosure"
+  | "trailing_signature"
   | "banned_phrase"
   | "markdown_heading"
   | "tuteo"
@@ -154,6 +153,32 @@ export const strip = (text: string): string =>
  */
 export const BARE_DOMAIN = /(^|[^a-z0-9@/])((?:www\.)|(?:[a-z0-9][a-z0-9-]{1,}\.(?:com|uy|net|org|io|ar|br|es|app|co|me|ly|dev|gub\.uy|com\.uy)))(?![a-z0-9])/i;
 
+/**
+ * La firma al pie, que este bot no escribe.
+ *
+ * Mientras la firma fue obligatoria, esta función habría sido su opuesto exacto; ahora que la
+ * aclaración vive en la bio (ver `identity.ts` y la nota en `compose.ts`), lo que hay que impedir es
+ * que el redactor la reinvente por su cuenta — lo hace, porque el patrón "respuesta + raya + quién
+ * soy" está por todos lados en su entrenamiento. Y una firma auto-inventada es peor que la que se
+ * sacó: cambia de redacción entre comentarios, así que ni siquiera es la misma declaración dos
+ * veces, y sigue siendo la huella que agrupa el historial de la cuenta.
+ *
+ * Se mira SÓLO la última línea, y sólo si es corta y arranca con un guión o un asterisco. Una
+ * oración larga que nombre el sitio en el medio del texto es una respuesta, no una firma.
+ */
+export function trailingSignature(text: string): string | null {
+  const lines = text.trim().split(/\n+/);
+  const last = (lines[lines.length - 1] ?? "").trim();
+  if (!last || lines.length < 2) return null;
+
+  const looksLikeSignature = /^[—–\-*_]/.test(last) && last.split(/\s+/).length <= 18;
+  if (!looksLikeSignature) return null;
+
+  const flat = strip(last);
+  const namesUs = ["cambio-uruguay", "cambio uruguay", "bot", "automat"].some((w) => flat.includes(w));
+  return namesUs ? last.slice(0, 80) : null;
+}
+
 /** Bare URLs and markdown links alike. */
 export function extractLinks(text: string): string[] {
   const links = new Set<string>();
@@ -191,18 +216,18 @@ export function validateReply({ reply, expectedUrl, context, postText = "" }: Va
   const text = (reply || "").trim();
   if (!text) return { ok: false, reason: "empty" };
 
-  const withoutDisclosure = text.replace(DISCLOSURE, "").trim();
-  const words = withoutDisclosure.split(/\s+/).filter(Boolean).length;
+  const words = text.split(/\s+/).filter(Boolean).length;
   if (words < MIN_WORDS) return { ok: false, reason: "too_short", detail: `${words} palabras` };
   if (words > MAX_WORDS) return { ok: false, reason: "too_long", detail: `${words} palabras` };
 
-  if (!text.includes(DISCLOSURE)) return { ok: false, reason: "missing_disclosure" };
+  const signature = trailingSignature(text);
+  if (signature) return { ok: false, reason: "trailing_signature", detail: signature };
 
   // Markdown headings read as shouting in a comment thread and are a reliable "written by a bot" tell.
   if (/^#{1,6}\s/m.test(text)) return { ok: false, reason: "markdown_heading" };
 
   // A bulleted answer is a document, not a comment. People write comments in paragraphs.
-  const body = text.replace(DISCLOSURE, "");
+  const body = text;
   if (/^\s*([-*•]\s+|\d+[.)]\s+)/m.test(body)) return { ok: false, reason: "bullet_list" };
 
   if (EMOJI.test(body)) return { ok: false, reason: "emoji" };
@@ -244,8 +269,8 @@ export function retryHint(result: ValidationResult): string {
       return `El intento anterior fue demasiado largo (${result.detail}). Recortalo.`;
     case "too_short":
       return `El intento anterior fue demasiado corto (${result.detail}). Contestá la pregunta con más sustancia, sin agregar datos nuevos.`;
-    case "missing_disclosure":
-      return `Faltó la línea final obligatoria. Terminá exactamente con:\n${DISCLOSURE}`;
+    case "trailing_signature":
+      return `El intento anterior terminaba con una firma ("${result.detail}"). Sacala entera: el comentario termina cuando termina la respuesta, sin presentarte ni aclarar qué sos.`;
     case "banned_phrase":
       return `Sacá la muletilla "${result.detail}" y empezá directamente por la respuesta.`;
     case "tuteo":

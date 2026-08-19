@@ -346,6 +346,51 @@ export async function fetchNewPosts(sub: string, limit = 50): Promise<RedditPost
 }
 
 /**
+ * Todo `/new` hasta una fecha, siguiendo el cursor `after`.
+ *
+ * `fetchNewPosts` alcanza mientras la ventana sea de horas: una sola página de 100 cubre de sobra
+ * medio día de cualquier sub uruguayo. No alcanza para una ventana de una semana, y el modo en que
+ * no alcanza es silencioso — r/uruguay publica más de 100 hilos por semana, así que una sola página
+ * devuelve los últimos días y el resto simplemente no existe para el bot. Medido: 100 hilos de
+ * r/uruguay no llegan a siete días, y los de r/monte_video tampoco.
+ *
+ * Corta por lo que pase primero: la fecha, el fin del listado, o `maxPages`. El tope de páginas es
+ * el que evita que un sub muy activo se coma la corrida entera — cada página es una llamada a la
+ * API con 1,2 s de separación forzada por el throttle.
+ */
+export async function fetchNewPostsSince(
+  sub: string,
+  sinceUtcSeconds: number,
+  opts: { maxPages?: number } = {}
+): Promise<RedditPostRaw[]> {
+  if (!redditConfigured()) return [];
+
+  const maxPages = Math.max(1, opts.maxPages ?? 4);
+  const out: RedditPostRaw[] = [];
+  let after: string | undefined;
+
+  for (let page = 0; page < maxPages; page++) {
+    const query: Record<string, string | number | boolean> = { limit: 100 };
+    if (after) query.after = after;
+
+    const res = await api<Listing<RawPost>>(`/r/${sub}/new`, query);
+    const children = (res?.data?.children ?? []).filter((c) => c.kind === "t3");
+    if (!children.length) break;
+
+    const posts = children.map((c) => toPost(c.data));
+    out.push(...posts.filter((p) => p.createdUtc >= sinceUtcSeconds));
+
+    // `/new` viene estrictamente de más nuevo a más viejo, así que el primero que queda fuera de la
+    // ventana garantiza que todo lo que sigue también.
+    if (posts.some((p) => p.createdUtc < sinceUtcSeconds)) break;
+
+    after = res?.data?.after ?? undefined;
+    if (!after) break;
+  }
+  return out;
+}
+
+/**
  * Un listado cualquiera del sub: `hot`, `top`, `new`.
  *
  * `fetchNewPosts` contesta "qué se publicó recién", que es la pregunta del bot que responde. Para

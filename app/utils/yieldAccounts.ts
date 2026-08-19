@@ -22,17 +22,21 @@
 // Informational, not financial advice.
 
 /** Date (YYYY-MM-DD) every figure below was last verified against its source. */
-export const YIELD_LAST_REVIEWED = '2026-08-17'
+export const YIELD_LAST_REVIEWED = '2026-08-19'
 
 /** BCU monetary policy rate, in % per year — the anchor these funds track. */
 export const TPM_PCT = 5.75
 /**
  * Date of a COPOM communiqué we actually read confirming that level — NOT the
- * date the rate was first set there. The 21/4/2026 statement says the TPM
+ * date the rate was first set there. The 21/4/2026 statement said the TPM
  * "continúe en 5,75%", so it was already there beforehand and we have no sourced
  * start date. Saying "desde" would be inventing one.
+ *
+ * Updated to the 18/8/2026 meeting, which held it there for the third time in a
+ * row. That date is the whole answer to "¿es verdad que el mes que viene baja?":
+ * the thing that would make it drop met yesterday and did nothing.
  */
-export const TPM_CONFIRMED = '2026-04-21'
+export const TPM_CONFIRMED = '2026-08-18'
 
 /** INE headline inflation, last 12 months, in %. The bar a yield must clear. */
 export const IPC_INTERANUAL_PCT = 4.27
@@ -371,6 +375,147 @@ export const RATE_MYTHS: readonly RateMyth[] = Object.freeze([
     },
   },
 ])
+
+// ─────────────────────────────────────────────────────────────────────────────
+// "¿Es verdad que el mes que viene bajan el rendimiento?"
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// La pregunta más frecuente sobre estos productos no es cuánto pagan: es si van
+// a seguir pagándolo. Y no se puede contestar con una tasa, porque no hay tasa
+// prometida — hay un fondo cuyo rendimiento sigue al papel que compra, que sigue
+// a la Tasa de Política Monetaria. Así que la respuesta honesta tiene dos mitades:
+// qué se anunció (nada) y qué es lo que de verdad lo movería (el COPOM).
+//
+// Se escribe acá y no en la página porque es la mitad que envejece: cada reunión
+// del COPOM la puede cambiar, y hay UNA fecha que actualizar.
+
+/** Reuniones del COPOM ya celebradas en 2026, tal como las lista el BCU. */
+export const COPOM_MEETINGS_2026: readonly string[] = Object.freeze([
+  '2026-01-26',
+  '2026-03-03',
+  '2026-04-21',
+  '2026-05-26',
+  '2026-07-01',
+  '2026-08-18',
+])
+
+export interface PickCriterion {
+  /** En qué se diferencian de verdad. */
+  criterion: string
+  prex: string
+  mercadoPago: string
+  /** Quién gana en ese punto, o null cuando empatan. */
+  winner: 'prex' | 'mercadopago' | null
+}
+
+/**
+ * Dónde se diferencian, punto por punto.
+ *
+ * La pregunta que llega siempre es "¿cuál es la mejor?", y la respuesta honesta
+ * es que en lo que la mayoría cree que se diferencian —la tasa— no se
+ * diferencian: ninguno de los dos publica una, y los dos siguen el mismo papel
+ * del BCU. Lo que sí cambia es todo lo demás, y eso sí se puede comparar sin
+ * inventar un número: quién administra el fondo (no es el mismo), cuánto pide
+ * para empezar, y qué dice cada reglamento sobre la comisión.
+ *
+ * Sin "ganador" global a propósito. Un ranking necesitaría comparar rendimientos
+ * netos, y nadie publica el dato que haría falta.
+ */
+export const PICK_CRITERIA: readonly PickCriterion[] = Object.freeze([
+  {
+    criterion: 'Quién administra el fondo',
+    prex: 'VALO (AFISA), con Gletir Corredor de Bolsa en el medio. Abrís una cuenta de inversión en Gletir desde la app.',
+    mercadoPago:
+      'BIND UY AFISA. No hay corredor en el medio: aceptás los términos una vez y listo.',
+    winner: null,
+  },
+  {
+    criterion: 'Cuánto pedís para empezar',
+    prex: '$4.000 la primera vez.',
+    mercadoPago: 'Sin mínimo: rinde desde el primer peso.',
+    winner: 'mercadopago',
+  },
+  {
+    criterion: 'Qué dice el reglamento sobre la comisión',
+    prex: 'El tope no figura en la ficha web; vive en el reglamento de gestión. Prex y VALO comunican que no hay costo de apertura ni de mantenimiento para el usuario.',
+    mercadoPago:
+      'La prensa que reportó la autorización del fondo cita un tope de 3 % anual + IVA (3,66 % con IVA). Es un máximo, no lo que se cobra.',
+    winner: null,
+  },
+  {
+    criterion: 'Qué pasa con tus dólares',
+    prex: 'No rinden. El producto es sólo en pesos, aunque Prex sí tiene saldo en dólares.',
+    mercadoPago: 'No aplica: en Mercado Pago Uruguay no existe el saldo en dólares.',
+    winner: null,
+  },
+  {
+    criterion: 'Cuándo ves la plata',
+    prex: 'Rendimientos en días hábiles; la acreditación puede demorar hasta 48 horas hábiles.',
+    mercadoPago: 'Se acreditan todos los días hábiles según la valuación diaria del fondo.',
+    winner: 'mercadopago',
+  },
+])
+
+export interface YieldDriver {
+  id: string
+  /** Qué mueve el rendimiento. */
+  what: string
+  /** Qué se sabe hoy, con fecha. */
+  status: string
+  source: SourceLink
+}
+
+/**
+ * Lo que puede hacer subir o bajar lo que cobrás, y el estado de cada cosa.
+ *
+ * Ordenado por cuánto pesa, no por cuánto se habla: el rumor sobre "la fintech
+ * va a bajar el rendimiento" mira al emisor, y el emisor es lo que MENOS decide
+ * el número.
+ */
+export const YIELD_DRIVERS: readonly YieldDriver[] = Object.freeze([
+  {
+    id: 'tpm',
+    what: 'La Tasa de Política Monetaria del BCU. Es lo que rinde el papel que estos fondos compran, así que cuando el COPOM la baja, el rendimiento baja solo, sin que ninguna fintech anuncie nada.',
+    status:
+      'El 18 de agosto de 2026 el COPOM la mantuvo en 5,75 % anual. Es la sexta reunión del año y la tercera seguida sin cambios. Las fechas de las próximas las publica el BCU.',
+    source: {
+      label: 'BCU — el COPOM mantiene la TPM en 5,75 % (18/8/2026)',
+      url: 'https://www.bcu.gub.uy/Politica-Economica-y-Mercados/Paginas/Copom.aspx',
+      publisher: 'Banco Central del Uruguay',
+    },
+  },
+  {
+    id: 'comision',
+    what: 'La comisión de administración del fondo. Se descuenta adentro, así que subirla baja lo que cobrás sin tocar la tasa de nada.',
+    status:
+      'Ninguno de los dos anunció un cambio. En el caso de Prex, el contrato lo obliga a avisar con 30 días de preaviso y te da 10 días corridos para rescindir; si no rescindís, se considera aceptado.',
+    source: {
+      label: 'Prex — cartilla de uso (preaviso de 30 días para modificar comisiones)',
+      url: 'https://www.prexcard.com/html/cartillaUso',
+      publisher: 'Prex Uruguay',
+    },
+  },
+  {
+    id: 'cartera',
+    what: 'Qué compra el fondo. Si cambiara la cartera, cambiarían el riesgo y el tratamiento impositivo, no sólo el número.',
+    status:
+      'Los dos siguen comprando papel del BCU y del Estado uruguayo. El fondo de Mercado Pago mantiene una duración promedio menor o igual a 90 días.',
+    source: {
+      label: 'BCU — registro de Administradoras de Fondos de Inversión',
+      url: 'https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/admin_Fondos_Inv.aspx',
+      publisher: 'Banco Central del Uruguay',
+    },
+  },
+])
+
+/**
+ * Fecha en que se buscó un anuncio de baja y no había ninguno.
+ *
+ * La ausencia de noticia es una afirmación como cualquier otra y envejece igual
+ * de rápido: sin la fecha, "no hay ningún anuncio" pasa a ser una frase que
+ * alguien escribió alguna vez.
+ */
+export const NO_CUT_ANNOUNCED_AS_OF = '2026-08-19'
 
 export const YIELD_SOURCES: readonly SourceLink[] = Object.freeze([
   {

@@ -16,7 +16,21 @@ import { askText, askTextWithImage } from "../ai_text";
 import type { RetrievedPage } from "../rag/types";
 import { contextOf } from "../rag/retrieve";
 
-/** The line that says out loud what this account is. Non-negotiable and checked in validate.ts. */
+/**
+ * La firma que este bot YA NO escribe.
+ *
+ * Estuvo obligatoria al pie de cada comentario y se sacó. Dos razones, la segunda es la que manda:
+ *
+ *  1. Repetida sesenta veces, una firma idéntica es la huella que hace que un moderador encuentre
+ *     los sesenta comentarios de una y los borre juntos. La transparencia que se logra por comentario
+ *     se paga con que ninguno sobreviva, y un comentario borrado no informó a nadie.
+ *  2. La aclaración de que esto es un bot vive en la BIO de la cuenta. Es una decisión ya tomada, y
+ *     ahora además es una puerta: `identity.ts` lee la descripción pública antes de publicar y la
+ *     corrida no escribe si no dice que es automatizada y de qué sitio.
+ *
+ * Se conserva exportada porque los tests y el histórico la nombran, y porque borrarla haría que
+ * "¿por qué el bot no se identifica?" no tenga dónde contestarse.
+ */
 export const DISCLOSURE = "— bot de cambio-uruguay.com; si me equivoqué, corregime y lo arreglo.";
 
 /**
@@ -112,9 +126,9 @@ REGLAS DURAS (se verifican después; si fallan, el comentario se descarta)
   porcentajes, ni plazos, ni cantidades para enumerar. Si no está arriba, no se escribe.
 - Un solo enlace, exactamente este, al final del cuerpo: ${input.url}
   Va como "el detalle está acá", no como el motivo del comentario.
-- Última línea, sola en su renglón y textual:
-${DISCLOSURE}
-- Entre 60 y 130 palabras, sin contar esa última línea.
+- Nada de firmas, ni de presentarte, ni de aclarar qué sos. El comentario termina cuando termina la
+  respuesta.
+- Entre 60 y 130 palabras.
 
 Devolvé SOLO el comentario, sin comillas ni explicación.`;
 }

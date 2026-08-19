@@ -10,7 +10,6 @@ import { hasEngagement } from "../../classes/redditbot/ask/reap";
 import { validateAsk } from "../../classes/redditbot/ask/validate";
 import { validateSocial } from "../../classes/redditbot/social/validate";
 import { BARE_DOMAIN, TUTEO, validateReply } from "../../classes/redditbot/validate";
-import { DISCLOSURE } from "../../classes/redditbot/compose";
 
 describe("el filtro de tuteo rechazaba el voseo, que es lo que protege", () => {
   // strip() borra las tildes antes de comparar, y la tilde es lo ÚNICO que separa "hacés" de
@@ -52,8 +51,7 @@ describe("el filtro de tuteo rechazaba el voseo, que es lo que protege", () => {
       "factura, no sobre lo que declarás vos, así que fijate bien el número que figura ahí antes " +
       "de comprar. Si te pasás, cambia el régimen entero y ahí ya necesitás despachante, que es " +
       "otro costo aparte. En la página está el detalle con los números actuales y una calculadora " +
-      "para ver cuánto te queda: https://cambio-uruguay.com/franquicia-aduana-uruguay\n\n" +
-      DISCLOSURE;
+      "para ver cuánto te queda: https://cambio-uruguay.com/franquicia-aduana-uruguay";
     const check = validateReply({
       reply: respuesta,
       expectedUrl: "https://cambio-uruguay.com/franquicia-aduana-uruguay",

@@ -2,11 +2,16 @@
 // without a database and none of them can be accidentally skipped by a code path that forgot to
 // query something.
 //
-// The limits are low on purpose. Six comments a day across seven subreddits is roughly one a day
-// per community — the rate at which a helpful regular participates, not the rate at which a
-// marketing account operates. The page cooldown matters more than the raw count: three answers in a
-// row that all link the same page is the pattern a moderator recognises as promotion even when each
-// individual answer was good, because from the outside it is indistinguishable from one.
+// The limits are low on purpose. Twelve comments a day sounds like a lot until you notice that the
+// four subs this account can actually write in publish, between them, on the order of three hundred
+// threads a week, of which the topic filter admits a few dozen — so the ceiling is roughly three a
+// day per community, the rate at which a helpful regular participates rather than the rate at which
+// a marketing account operates. The page cooldown matters more than the raw count: three answers in
+// a row that all link the same page is the pattern a moderator recognises as promotion even when
+// each individual answer was good, because from the outside it is indistinguishable from one.
+//
+// The ceiling that binds first is almost never `maxPerDay`. It is the retrieval gate and the judge:
+// most money threads are not questions the site answers, and those cost nothing.
 
 import type { BotConfig } from "./config";
 import type { LedgerSnapshot } from "./ledger";
@@ -14,6 +19,7 @@ import type { LedgerSnapshot } from "./ledger";
 export type LimitReason =
   | "disabled"
   | "paused"
+  | "quiet_hours"
   | "daily_cap"
   | "sub_cap"
   | "too_soon"
@@ -40,6 +46,12 @@ export function runAllowed(cfg: BotConfig, snapshot: LedgerSnapshot, now: number
 
   if (snapshot.pausedUntil && snapshot.pausedUntil.getTime() > now) {
     return { ok: false, reason: "paused", detail: snapshot.pausedUntil.toISOString() };
+  }
+
+  // El horario, antes que los cupos: una corrida de madrugada no tiene que gastar ni una llamada.
+  const hour = new Date(now).getUTCHours();
+  if (cfg.quietHoursUtc.includes(hour)) {
+    return { ok: false, reason: "quiet_hours", detail: `${hour}:00 UTC` };
   }
 
   if (snapshot.postedLast24h.length >= cfg.maxPerDay) {

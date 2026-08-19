@@ -383,7 +383,17 @@ module.exports = {
       autorestart: false,
       exec_mode: "fork",
       script: "dist/sync_reddit_bot.js",
-      cron_restart: "*/12 11-23 * * *",
+      // POR HORA, al minuto 6. Era cada doce minutos, con una ventana de ocho horas y un comentario
+      // por corrida; ahora la ventana es de una semana y la corrida contesta hasta tres hilos
+      // durmiendo entre uno y otro, así que una corrida puede durar media hora y dispararla cinco
+      // veces en ese rato no agregaría nada. El minuto 6 la deja lejos del :00 de todo el mundo y
+      // del :09 de su propio watcher.
+      //
+      // Las horas de silencio NO viven acá sino en `REDDIT_BOT_QUIET_HOURS_UTC` (03–10 UTC por
+      // defecto, o sea 00–07 de Montevideo): el cron las apagaría igual, pero un rango de horas en
+      // la línea del cron es invisible desde el código y ya pasó una vez que alguien mirara los
+      // límites del bot sin encontrar por qué no publicaba de mañana.
+      cron_restart: "6 * * * *",
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
@@ -398,56 +408,22 @@ module.exports = {
       cron_restart: "9 * * * *",
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
-    {
-      // Comentarios comunes, sin un solo enlace, para que la cuenta deje de ser una cuenta de ayer.
-      //
-      // Varios subs uruguayos borran por AutoModerator lo que escribe una cuenta sin karma: los dos
-      // primeros comentarios del bot volvieron [removed] en r/uruguay y en r/Burises el mismo día
-      // que uno en r/test se veía perfecto. Mientras eso siga así, currency-reddit-bot publica para
-      // nadie. Este pase escribe como máximo uno por corrida, en hilos que NO son nuestro tema, y
-      // SE APAGA SOLO al llegar a REDDIT_SOCIAL_KARMA_TARGET — comentar de más pasado ese punto es
-      // riesgo sin beneficio. Hereda los dos interruptores de currency-reddit-bot.
-      //
-      // Cada 45 minutos entre 12:00 y 23:59 UTC, desfasado de los :00 y :12 del bot de respuestas
-      // para que las dos apps no golpeen la API de Reddit en el mismo minuto.
-      name: "currency-reddit-social",
-      autorestart: false,
-      exec_mode: "fork",
-      script: "dist/sync_reddit_social.js",
-      cron_restart: "5,50 12-23 * * *",
-      log_date_format: "YYYY-MM-DD HH:mm Z",
-    },
-    {
-      // Una pregunta por día en r/AskUruguayan. No enlaza nada.
-      //
-      // Investiga ANTES de escribir: lee nuevos + calientes + top del mes + top del año del sub,
-      // busca en la web de qué se habla en Uruguay esta semana, y recién ahí pide tres candidatas.
-      // Cada una se mide contra los títulos que ya existen (classes/redditbot/ask/novelty.ts) —
-      // pedirle originalidad a un modelo sin mostrarle lo publicado devuelve la pregunta obvia, que
-      // es obvia porque el sub ya la contestó tres veces.
-      //
-      // Es la ÚNICA llamada a Opus del fleet, y se justifica: una por día contra las 200 diarias
-      // que el endpoint comparte con el uso interactivo de una persona.
-      //
-      // Interruptores PROPIOS (REDDIT_ASK_ENABLED=1 + REDDIT_ASK_DRY_RUN=0), no los del bot de
-      // comentarios: publicar un hilo se ve mucho más que comentar en uno ajeno, y encender una
-      // cosa no puede encender la otra.
-      //
-      // Cada media hora entre las 12 y las 23 UTC (9 a 20 de Montevideo), y no una vez por día,
-      // porque la corrida hace DOS cosas: publica —como mucho una vez, con 20 h de separación— y
-      // barre. El barrido retira el post que pasó una hora sin un solo comentario ni un solo voto,
-      // porque un perfil lleno de preguntas con cero respuestas es, para cualquiera que lo abra,
-      // exactamente lo que parece. Y como retirar libera el lugar, el reemplazo sale en esa misma
-      // corrida. El tope de REDDIT_ASK_MAX_PER_DAY cuenta las retiradas: sin eso, un día en que
-      // nada engancha serían doce publicadas y borradas, que se lee mucho peor que una ignorada.
-      // Una corrida sin nada que hacer no gasta nada — el freno está antes de la investigación.
-      name: "currency-reddit-ask",
-      autorestart: false,
-      exec_mode: "fork",
-      script: "dist/sync_reddit_ask.js",
-      cron_restart: "*/30 12-23 * * *",
-      log_date_format: "YYYY-MM-DD HH:mm Z",
-    },
+    // LAS DOS APPS QUE ABRÍAN HILOS SE FUERON DE ACÁ (2026-08-19).
+    //
+    // `currency-reddit-social` comentaba sin enlace para juntar karma, y `currency-reddit-ask`
+    // publicaba una pregunta por día en r/AskUruguayan. Las dos estaban apagadas desde que ese sub
+    // baneó a la cuenta, y las dos dejaron de tener sentido el día que la cuenta pasó a ser una con
+    // 1.165 de karma y nueve meses de antigüedad: el karma ya no hay que fabricarlo, y abrir hilos
+    // es justo lo que hizo que un moderador mirara el historial y baneara. La cuenta SOLO COMENTA, y
+    // eso no es una decisión del cron —que se cambia agregando otro cron— sino de `post.ts`, que se
+    // niega a llamar a /api/submit sin REDDIT_BOT_ALLOW_POSTS=1.
+    //
+    // El código de los dos pases sigue en classes/redditbot/{ask,social}/ y sus entrypoints existen:
+    // borrarlo sería perder la investigación de novedad y el medidor de karma, que costaron y que
+    // sirven si algún día vuelve a hacer falta. Lo que no existe más es el cron que los dispara.
+    //
+    // En el VPS hay que sacarlas a mano una vez: `pm2 delete currency-reddit-social currency-reddit-ask`.
+    // El deploy no borra apps, sólo arranca las que están en OTHER_APPS.
     {
       // Clusters the questions the bot could not answer and writes a researched DRAFT (never a
       // page) to docs/reddit-gaps/ when four or more threads ask the same thing. 05:35 UTC.

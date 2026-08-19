@@ -66,7 +66,9 @@
     "debug_fix_money": "ts-node debug_fix_money.ts",
     "test_ai": "ts-node scripts/oneoff/test_ai_service.ts",
     "test_ai_insights": "ts-node scripts/oneoff/test_ai_insights.ts",
-    "reddit_answer": "ts-node scripts/oneoff/reddit_answer.ts"
+    "reddit_answer": "ts-node scripts/oneoff/reddit_answer.ts",
+    "reddit_account": "ts-node scripts/oneoff/reddit_account.ts",
+    "reddit_sweep": "ts-node scripts/oneoff/reddit_sweep.ts"
   },
   "author": "",
   "license": "ISC",

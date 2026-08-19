@@ -229,6 +229,82 @@
       </VCard>
     </section>
 
+    <!-- ¿Cuál conviene? -->
+    <section class="mb-6" aria-labelledby="cual-title">
+      <h2 id="cual-title" class="text-h6 font-weight-bold mb-1">¿Cuál conviene?</h2>
+      <p class="text-body-2 text-medium-emphasis mb-3">
+        En lo que casi todo el mundo compara —la tasa— no se diferencian: ninguno de los dos publica
+        una, y los dos siguen el mismo papel del BCU. Lo que sí cambia es el resto, y eso se puede
+        mirar sin adivinar ningún número.
+      </p>
+
+      <div class="table-scroll">
+        <table class="spec cu-mobile-cards">
+          <thead>
+            <tr>
+              <th scope="col">En qué</th>
+              <th scope="col">Prex · Inversión Violeta</th>
+              <th scope="col">Mercado Pago · Rendimientos</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="c in PICK_CRITERIA" :key="c.criterion">
+              <th scope="row">{{ c.criterion }}</th>
+              <td data-label="Prex" :class="{ 'pick-winner': c.winner === 'prex' }">
+                {{ c.prex }}
+              </td>
+              <td data-label="Mercado Pago" :class="{ 'pick-winner': c.winner === 'mercadopago' }">
+                {{ c.mercadoPago }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <VAlert type="info" variant="tonal" density="comfortable" class="mt-3 text-body-2">
+        No hay un ganador porque falta el dato que decidiría: el rendimiento neto de comisión que
+        cobró cada uno. Ninguno lo publica. Con los dos en pesos, sin plazo y comprando el mismo
+        tipo de papel, la diferencia práctica termina siendo dónde ya tenés la plata.
+      </VAlert>
+    </section>
+
+    <!-- ¿Va a bajar? -->
+    <section class="mb-6" aria-labelledby="baja-title">
+      <h2 id="baja-title" class="text-h6 font-weight-bold mb-1">
+        ¿Es verdad que van a bajar el rendimiento?
+      </h2>
+      <p class="text-body-2 mb-3">
+        Al {{ fmtDate(NO_CUT_ANNOUNCED_AS_OF) }}
+        <strong>ninguno de los dos anunció una baja</strong>. Pero la pregunta tiene una trampa:
+        como no hay una tasa prometida, el rendimiento puede bajar sin que nadie anuncie nada. Esto
+        es lo que lo movería, en orden de cuánto pesa.
+      </p>
+
+      <VCard
+        v-for="d in YIELD_DRIVERS"
+        :key="d.id"
+        variant="outlined"
+        class="mb-3 pa-4 driver-card"
+      >
+        <p class="text-body-2 mb-2">{{ d.what }}</p>
+        <p class="text-body-2 mb-2 driver-status">{{ d.status }}</p>
+        <a
+          class="text-caption d-inline-flex align-center ga-1"
+          :href="d.source.url"
+          target="_blank"
+          rel="noopener nofollow"
+        >
+          <VIcon size="12">mdi-open-in-new</VIcon>{{ d.source.label }} — {{ d.source.publisher }}
+        </a>
+      </VCard>
+
+      <p class="text-caption text-medium-emphasis mb-0">
+        Reuniones del COPOM en 2026:
+        {{ COPOM_MEETINGS_2026.map(fmtDate).join(' · ') }}. Las próximas las publica el BCU en su
+        calendario.
+      </p>
+    </section>
+
     <!-- Calculator -->
     <VCard id="calculadora" variant="flat" class="calc-card pa-4 pa-sm-5 mb-5">
       <div class="d-flex align-center ga-2 mb-1">
@@ -512,12 +588,16 @@
 <script setup lang="ts">
 import {
   BENCHMARKS,
+  COPOM_MEETINGS_2026,
   IPC_INTERANUAL_PCT,
   IPC_PERIOD,
   LEGAL_FACTS,
+  NO_CUT_ANNOUNCED_AS_OF,
+  PICK_CRITERIA,
   RATE_MYTHS,
   TPM_PCT,
   TPM_CONFIRMED,
+  YIELD_DRIVERS,
   YIELD_LAST_REVIEWED,
   YIELD_SOURCES,
   estimateYield,
@@ -851,6 +931,23 @@ function fmtDate(iso: string): string {
   padding-left: 1.1rem;
   font-size: 0.9rem;
   line-height: 1.65;
+}
+
+/* ¿Cuál conviene? — la celda que gana ese punto.
+   Marcada con peso y un fondo del token de éxito, no con color de texto: el criterio "gana" es de
+   grado, y pintar la letra de verde sugiere una recomendación que la sección dice explícitamente que
+   no está haciendo. */
+.pick-winner {
+  font-weight: 600;
+  background: rgb(var(--v-theme-success), 0.08);
+}
+
+/* ¿Va a bajar? — cada tarjeta separa "qué lo mueve" de "qué se sabe hoy". */
+.driver-card {
+  border-radius: 12px;
+}
+.driver-status {
+  font-weight: 600;
 }
 
 /* Product cards */

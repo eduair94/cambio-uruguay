@@ -8,9 +8,35 @@ que hay que cargarlas.
 | proceso | qué hace | qué necesita |
 |---|---|---|
 | `currency-rag-index` | arma el índice del sitio | `APP_MONGO_URI`, `GEMINI_API_KEY` |
-| `currency-reddit-bot` | responde en Reddit | lo anterior + `CLAUDE_AGENT_API_KEY` + credenciales del bot + dos flags |
+| `currency-reddit-bot` | **comenta** en Reddit, cada hora | lo anterior + `CLAUDE_AGENT_API_KEY` + credenciales del bot + dos flags |
 | `currency-reddit-bot-watch` | lee cómo cayeron las respuestas | credenciales del bot |
 | `currency-content-gaps` | borradores de lo que falta | `APP_MONGO_URI` + Claude o Gemini |
+
+## La cuenta SOLO COMENTA
+
+No abre hilos. No es una convención ni un cron apagado: `classes/redditbot/post.ts`
+se niega a llamar a `/api/submit` salvo que exista `REDDIT_BOT_ALLOW_POSTS=1`, y el
+test `tests/redditbot/solo_comenta.test.ts` verifica que la negativa siga estando
+ahí y no en el trabajo que la llama.
+
+La razón es cara y ya se pagó: la cuenta anterior abría una pregunta por día en
+r/AskUruguayan y terminó **baneada permanentemente**, con el moderador nombrando el
+nombre de la cuenta antes que el contenido. Un hilo es la cara de la cuenta en el
+sub; lo ve muchísima más gente que un comentario y es lo que hace que alguien abra
+el historial. Las dos apps que abrían hilos —`currency-reddit-social` y
+`currency-reddit-ask`— ya no están en `ecosystem.config.js`. Su código sigue en
+`classes/redditbot/{ask,social}/`.
+
+En una caja donde ya corrieron, hay que sacarlas una vez a mano:
+
+```bash
+pm2 delete currency-reddit-social currency-reddit-ask
+pm2 save
+```
+
+Y **r/AskUruguayan sigue cerrado aunque la cuenta haya cambiado**. Volver con otra
+cuenta a un sub que te echó es evasión de ban, que Reddit sanciona a nivel de cuenta
+y de dominio — o sea arriesgando el dominio del sitio, no sólo la cuenta.
 
 ## Quién escribe qué
 
@@ -55,8 +81,33 @@ Dos cosas que ahorran un día de depuración:
   `REDDIT_BOT_REFRESH_TOKEN`, que el código prefiere cuando está presente.
 - Reddit trata a las cuentas nuevas y sin karma con mucha menos paciencia:
   rate-limit agresivo, y varios subs tienen un mínimo de karma o de antigüedad
-  para comentar. Si la cuenta es nueva, esperá a que participe un poco como
-  persona antes de prender esto.
+  para comentar. **Medido acá**: r/uruguay y r/Burises borran por AutoModerator lo
+  que escribe una cuenta sin karma, y el autor ve sus propios comentarios borrados
+  como si estuvieran perfectos, para siempre. Si la cuenta es nueva, no hay
+  calibración que lo arregle.
+
+### La bio tiene que decir que es un bot
+
+La aclaración **no** va al pie de cada comentario. Se probó y se sacó: repetida
+sesenta veces es la huella que hace que un moderador encuentre los sesenta
+comentarios de una y los borre juntos, y un comentario borrado no informó a nadie.
+Va en la descripción del perfil, que es donde la encuentra quien la busca.
+
+Para que eso no se convierta en "no está en ningún lado" el día que alguien edita
+el perfil, es una puerta: antes de publicar, el bot lee la descripción pública de la
+cuenta y **si no dice que es automatizada y de qué sitio, no publica** y manda un
+Telegram. Se edita en <https://www.reddit.com/settings/profile>, campo *About*. El
+texto sugerido está en `classes/redditbot/identity.ts`.
+
+### Chequear la cuenta antes de pelearse con el código
+
+```bash
+npm run reddit_account
+```
+
+Contesta de una las cinco causas de "el bot no publica" que no son del código:
+credenciales que no autentican, karma insuficiente, interruptores, bio sin
+declaración, y subs donde no se puede escribir.
 
 ## 2. Variables en el `.env` del VPS
 
@@ -230,9 +281,34 @@ pm2 restart currency-reddit-bot
 pm2 start ecosystem.config.js --only currency-reddit-bot-watch
 ```
 
-Desde ahí: como mucho **una respuesta por corrida**, 6 por día, 2 por subreddit,
-25 minutos entre una y otra, una sola vez por hilo, la misma persona no antes de 7
-días y la misma página no antes de 3.
+Desde ahí: como mucho **3 respuestas por corrida** y 12 por día, 4 por subreddit,
+12 minutos con jitter entre una y otra, una sola vez por hilo, la misma persona no
+antes de 7 días y la misma página no antes de 1.
+
+El cron es **por hora** (minuto 6) y la ventana es de **una semana**: el bot ve todo
+lo que se preguntó en los últimos 7 días y no sólo lo de esta mañana. Entre las
+03:00 y las 10:59 UTC no publica aunque el cron dispare — es medianoche a 8 AM en
+Montevideo, y el horario de publicación es de las señales más baratas de leer en el
+historial de una cuenta.
+
+El límite de 3 por corrida es de **ráfaga**, no de volumen: entre un comentario y el
+siguiente la corrida duerme y vuelve a leer el ledger, así que los cupos diario y por
+sub se evalúan contra lo que ella misma acaba de hacer. Por eso una corrida puede
+durar media hora, y por eso el cron pasó de cada doce minutos a cada una.
+
+### Ponerse al día con el atraso
+
+El primer día en que la ventana pasó a ser semanal hay decenas de hilos sin
+contestar, y a 3 por hora eso son días. Para eso:
+
+```bash
+npm run reddit_sweep                          # ensayo
+REDDIT_BOT_DRY_RUN=0 npm run reddit_sweep     # de verdad
+```
+
+Es la misma corrida repetida hasta que no queda nada o hasta que un tope corta. **No
+relaja ningún límite**: si querés más volumen, la perilla es `REDDIT_BOT_MAX_PER_DAY`
+y subirla es una decisión aparte de correr esto.
 
 ## 7. Vigilancia y freno
 
@@ -340,6 +416,10 @@ como cualquier otra.
 | todo termina en `filter:off_topic` | los subs están tranquilos; comparalo con `--reddit <sub>` |
 | 401 al pedir el token | la app de Reddit no es de tipo `script` |
 | errores de Reddit `RATELIMIT` | la cuenta es demasiado nueva; bajá `MAX_PER_DAY` y esperá |
+| "la bio de la cuenta no declara el bot" | la descripción del perfil está vacía o no nombra el sitio. `npm run reddit_account` dice qué falta |
+| "run bloqueado: quiet_hours" | son entre las 03 y las 10 UTC. Es lo esperado, no un error |
+| "sub_no_escribible" en los descartes | r/AskUruguayan (ban) y r/CharruaDevs (sus reglas prohíben bots). También esperado |
+| el bot contesta hilos de hace días | es a propósito: la ventana es de 168 h. `REDDIT_BOT_MAX_AGE_HOURS` la achica |
 | 429 de embeddings todo el tiempo | se agotó el cupo diario de 1.000 (ver arriba). No es transitorio: se repone al día siguiente |
 | los comentarios salen telegráficos | el hook de caveman le ganó al `appendSystemPrompt`; `claude plugin disable caveman@caveman` en la caja |
 | "Claude sin cupo o inalcanzable" | gastaste las 200 del día, o quedan menos que `CLAUDE_AGENT_MIN_REMAINING`. El bot sigue con Gemini |

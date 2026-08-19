@@ -1,10 +1,16 @@
-// One pass of the bot: read the new threads, decide, and — at most once per run — answer one.
+// One pass of the bot: read the week's threads, decide, and answer up to `maxRepliesPerRun` of them.
 //
-// AT MOST ONE. The cron fires every twelve minutes and the minimum gap between comments is
-// twenty-five, so a run that posted twice would already be violating its own pacing; making that
-// structural rather than arithmetic means no future change to the cron can turn the bot into a
-// burst. It also bounds the blast radius of a bad calibration to one comment per run, which is what
-// gives the watcher time to trip the breaker before the damage is six comments deep.
+// UP TO A FEW, not one, and not unbounded. It used to be exactly one, and that was right when the
+// cron fired every twelve minutes: 65 chances a day meant "one per run" was a burst limit, not a
+// volume limit. With an hourly cron it stopped being either — it became a ceiling of fifteen a day
+// that got thrown away entirely every hour the single candidate failed the judge, while the week-long
+// window meant the backlog never drained. So the burst limit moved to where it actually belongs:
+// between one comment and the next the run SLEEPS `minGapMinutes` with jitter and re-reads the
+// ledger, so the daily cap, the per-sub cap and the "too soon" gate are all evaluated against the
+// state this run just created rather than the photo it took on the way in.
+//
+// What did not change is the blast radius argument: a bad calibration must not produce a day's worth
+// of comments before the watcher can trip the breaker. `maxRepliesPerRun` is what keeps that true.
 //
 // Order matters throughout: every cheap check runs before every expensive one, and every gate that
 // can reject runs before the composer. A rejected thread should cost one string scan, not two model
@@ -15,7 +21,7 @@ import { notifyAdmin } from "../notify";
 import { embedOne, embedTexts, vectorToBuffer } from "../rag/embed";
 import { SiteRetriever } from "../rag/retrieve";
 import { loadIndex } from "../rag/store";
-import { fetchNewPosts, fetchPostsByIds, redditConfigured, type RedditPostRaw } from "../reddit";
+import { fetchNewPostsSince, fetchPostsByIds, redditConfigured, type RedditPostRaw } from "../reddit";
 import { RedditContentGapModel } from "../models/RedditContentGap";
 import { RedditPageGapModel } from "../models/RedditPageGap";
 import { botConfig, canPost, type BotConfig } from "./config";
@@ -25,7 +31,11 @@ import { retrievalGate } from "./gate";
 import { augmentContext, EMPTY_AUGMENTATION, type Augmentation } from "./augment";
 import { fetchPostImage } from "./image";
 import { judgeRelevance } from "./judge";
-import { authorAllowed, pageAllowed, runAllowed, subAllowed } from "./limits";
+import { authorAllowed, jitterMinutes, pageAllowed, runAllowed, subAllowed } from "./limits";
+import type { LedgerSnapshot } from "./ledger";
+import { subWritable } from "./subrules";
+import { bioDeclaresBot } from "./identity";
+import { fetchAccountBio } from "./post";
 import {
   lastLinkedAt,
   lastRepliedToAuthorAt,
@@ -487,7 +497,7 @@ export async function answerThreadById(postId: string, cfg: BotConfig = botConfi
 export async function runOnce(cfg: BotConfig = botConfig()): Promise<RunSummary> {
   if (!redditConfigured()) return emptySummary("sin credenciales de lectura de Reddit (REDDIT_CLIENT_ID)");
 
-  const snapshot = await readSnapshot();
+  let snapshot = await readSnapshot();
   const runGate = runAllowed(cfg, snapshot);
   if (!runGate.ok) return emptySummary(`run bloqueado: ${runGate.reason} ${runGate.detail ?? ""}`.trim());
 
@@ -496,12 +506,80 @@ export async function runOnce(cfg: BotConfig = botConfig()): Promise<RunSummary>
     summary.rejected[reason] = (summary.rejected[reason] ?? 0) + 1;
   };
 
-  // 1. Read every watched sub.
+  /**
+   * Qué pasa después de dejar un comentario: ¿se sigue, y con qué foto del ledger?
+   *
+   * Una corrida contesta VARIOS hilos, y ahí "esperar el gap mínimo" deja de ser algo que garantiza
+   * el cron y pasa a ser algo que hay que hacer a mano. El bucle no puede confiar en la foto que
+   * leyó al empezar —él mismo la invalidó al publicar— así que la relee: el cupo diario, el del sub
+   * y el "muy seguido" se vuelven a evaluar contra el estado real antes de escribir el siguiente.
+   *
+   * En ensayo no se duerme. Un dry run no le habla a nadie y hacerlo esperar doce minutos entre
+   * comentarios que no existen convertiría cada prueba en media hora.
+   */
+  //
+  // Devuelve `stop` con el motivo cuando la corrida se terminó, o la foto nueva del ledger cuando
+  // sigue. Una unión discriminada sería más linda y no narrowea: este `tsconfig` no tiene `strict`,
+  // así que `if (!next.ok)` no le dice nada al compilador sobre la otra rama.
+  const afterPosting = async (): Promise<{ stop: string | null; snapshot: LedgerSnapshot }> => {
+    const answered = summary.posted + summary.dryRun;
+    if (answered >= cfg.maxRepliesPerRun) {
+      return { stop: `${answered} respondidos (tope de la corrida)`, snapshot };
+    }
+
+    if (canPost(cfg)) {
+      const waitMin = jitterMinutes(cfg.minGapMinutes);
+      console.log(`[redditbot] ${answered} publicados; espero ${waitMin} min antes del próximo`);
+      await new Promise((resolve) => setTimeout(resolve, waitMin * 60_000));
+    }
+
+    const fresh = await readSnapshot();
+    const gate = runAllowed(cfg, fresh);
+    if (!gate.ok) {
+      return { stop: `${answered} respondidos; ${gate.reason} ${gate.detail ?? ""}`.trim(), snapshot: fresh };
+    }
+    return { stop: null, snapshot: fresh };
+  };
+
+  // 0. ¿La cuenta dice en su perfil lo que es?
+  //
+  //    Antes de leer un solo hilo, porque si la respuesta es no la corrida no puede terminar en un
+  //    comentario y todo lo demás sería gasto. Sólo cuando de verdad va a publicar: en ensayo no hay
+  //    a quién declararle nada, y exigirlo ahí haría imposible probar el pipeline sin credenciales.
+  if (canPost(cfg) && cfg.requireBioDisclosure) {
+    const bio = await fetchAccountBio(cfg);
+    const verdict = bioDeclaresBot(bio);
+    if (!verdict.ok) {
+      await notifyAdmin(
+        `🛑 *Reddit bot detenido*: ${verdict.reason}. La aclaración de que u/${cfg.username} es un bot ` +
+          `vive en la bio de la cuenta, y sin ella no se publica. Editá la descripción del perfil ` +
+          `(o corré \`npm run reddit_account\` para ver qué falta).`
+      );
+      return emptySummary(`la bio de la cuenta no declara el bot: ${verdict.reason}`);
+    }
+  }
+
+  // 1. Read every watched sub — los que se pueden escribir.
+  //
+  //    La puerta de `subrules.ts` estaba puesta en los pases que ABREN hilos y no en éste, que es el
+  //    que comenta: el bot habría seguido escribiendo en el sub que baneó a la cuenta y en el que
+  //    prohíbe bots por escrito. Va acá arriba, antes del fetch, porque un sub que no se puede
+  //    escribir tampoco hace falta leerlo — y porque insistir sobre un ban es exactamente el camino
+  //    de un ban de sub a una suspensión de cuenta.
+  const since = Math.floor(Date.now() / 1000) - Math.round(cfg.maxAgeHours * 3600);
   const posts: RedditPostRaw[] = [];
+  const skippedSubs: string[] = [];
   for (const sub of cfg.subs) {
-    const batch = await fetchNewPosts(sub, cfg.fetchLimit);
+    const gate = await subWritable(sub);
+    if (!gate.allowed) {
+      skippedSubs.push(`${sub} (${gate.reason})`);
+      reject("sub_no_escribible");
+      continue;
+    }
+    const batch = await fetchNewPostsSince(sub, since, { maxPages: cfg.fetchPages });
     posts.push(...batch);
   }
+  if (skippedSubs.length) console.log(`[redditbot] subs salteados: ${skippedSubs.join(", ")}`);
   summary.fetched = posts.length;
   if (!posts.length) return { ...summary, note: "ningún post nuevo" };
 
@@ -579,10 +657,17 @@ export async function runOnce(cfg: BotConfig = botConfig()): Promise<RunSummary>
     const revisits = await revisitCandidates({ indexedPaths: retriever.paths(), cfg });
     for (const { post, pagePath } of revisits) {
       const done = await answerParkedThread(post, pagePath, retriever, cfg, snapshot, summary, reject);
-      if (done) return { ...summary, note: `respondido con la página que se generó para el hilo (${pagePath})` };
+      if (!done) continue;
+      const next = await afterPosting();
+      snapshot = next.snapshot;
+      if (next.stop) {
+        return { ...summary, note: `respondido con la página generada (${pagePath}); ${next.stop}` };
+      }
     }
   }
-  if (!candidates.length) return { ...summary, note: "sólo había hilos esperando página" };
+  if (!candidates.length) {
+    return { ...summary, note: summary.posted || summary.dryRun ? "hilos que esperaban página" : "sólo había hilos esperando página" };
+  }
 
   // 4. Pre-rank with the lexical arm alone, which is free, and embed only the best few.
   //
@@ -718,6 +803,17 @@ export async function runOnce(cfg: BotConfig = botConfig()): Promise<RunSummary>
       continue;
     }
 
+    // 7b. El cupo del sub, otra vez y con el recuento de AHORA.
+    //
+    //     Ya se chequeó en el barrido de arriba, con la foto del ledger de antes de la corrida. Si
+    //     esta corrida ya contestó dos hilos de r/uruguay, esa foto está vieja justo en el número
+    //     que importa, y sin este segundo chequeo el tope por sub sólo valdría entre corridas.
+    const subGateNow = subAllowed(cfg, snapshot, post.sub);
+    if (!subGateNow.ok) {
+      reject(`limit:${subGateNow.reason}`);
+      continue;
+    }
+
     // 8. Write it.
     const done = await deliverReply({
       post,
@@ -730,9 +826,14 @@ export async function runOnce(cfg: BotConfig = botConfig()): Promise<RunSummary>
       summary,
       reject,
     });
-    // One per run. See the note at the top.
-    if (done) return { ...summary, note: canPost(cfg) ? "publicado" : "dry run" };
+    if (!done) continue;
+
+    const next = await afterPosting();
+    snapshot = next.snapshot;
+    if (next.stop) return { ...summary, note: next.stop };
   }
 
+  const answered = summary.posted + summary.dryRun;
+  if (answered) return { ...summary, note: `${answered} respondidos${canPost(cfg) ? "" : " (ensayo)"}` };
   return { ...summary, note: summary.gaps ? "sin página específica para los candidatos" : "nada que responder" };
 }

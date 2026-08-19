@@ -258,6 +258,37 @@ export async function fetchAccountKarma(cfg: BotConfig = botConfig()): Promise<{
   }
 }
 
+/**
+ * La descripción pública del perfil de la cuenta, tal como la ve un desconocido.
+ *
+ * `/api/v1/me` NO la trae: devuelve el usuario, no su subreddit de perfil. La bio vive en
+ * `/user/<nombre>/about` bajo `subreddit.public_description`, y se lee con el token de usuario
+ * porque es el único que sabemos que existe acá.
+ *
+ * `null` es "no pude leerla", que no es lo mismo que "está vacía" y el llamador los distingue.
+ */
+export async function fetchAccountBio(cfg: BotConfig = botConfig()): Promise<string | null> {
+  const token = await userToken(cfg);
+  if (!token || !cfg.username) return null;
+  try {
+    const res = await throttled(() =>
+      fetch(`${API}/user/${encodeURIComponent(cfg.username)}/about`, {
+        headers: { Authorization: `Bearer ${token}`, "User-Agent": cfg.userAgent },
+        signal: AbortSignal.timeout(TIMEOUT_MS),
+      })
+    );
+    if (!res.ok) return null;
+    const json = (await res.json()) as {
+      data?: { subreddit?: { public_description?: string; description?: string } };
+    };
+    const sub = json?.data?.subreddit ?? {};
+    return `${sub.public_description ?? ""}\n${sub.description ?? ""}`.trim();
+  } catch (error) {
+    console.warn(`[redditbot] no se pudo leer la bio de la cuenta: ${(error as Error).message}`);
+    return null;
+  }
+}
+
 export interface LinkFlair {
   id: string;
   text: string;
@@ -298,11 +329,29 @@ export interface SubmittedPost {
 }
 
 /**
+ * ¿Esta cuenta puede abrir hilos, o solamente comentar?
+ *
+ * SOLAMENTE COMENTAR, salvo que alguien lo habilite a mano. La cuenta que abría hilos —una pregunta
+ * por día en r/AskUruguayan— terminó baneada permanentemente del único sub donde podía escribir, y
+ * el moderador nombró el nombre de la cuenta antes que el contenido: un hilo es la cara de la cuenta
+ * en el sub, lo ve muchísima más gente que cualquier comentario, y es lo que hace que un moderador
+ * mire el historial entero. Un comentario útil en el hilo de otro no dispara nada de eso.
+ *
+ * La puerta vive acá, en la función que habla con `/api/submit`, y no en el trabajo que la llama:
+ * un interruptor en el cron se saltea escribiendo otro cron, y este no.
+ */
+export function postsAllowed(): boolean {
+  return process.env.REDDIT_BOT_ALLOW_POSTS === "1";
+}
+
+/**
  * Publicar un hilo de texto.
  *
  * Un post no es un comentario más grande: es la cara de la cuenta en el sub, lo ve muchísima más
  * gente y borrarlo deja rastro. Por eso esto no reintenta: si Reddit dijo que no, la decisión de
  * volver a intentar la toma el próximo día, no un loop.
+ *
+ * Y por eso, además, está cerrado por defecto: ver {@link postsAllowed}.
  */
 export async function submitPost(
   sub: string,
@@ -311,6 +360,14 @@ export async function submitPost(
   flairId = "",
   cfg: BotConfig = botConfig()
 ): Promise<SubmittedPost | null> {
+  if (!postsAllowed()) {
+    console.warn(
+      `[redditbot] se pidió abrir un hilo en r/${sub} y la cuenta es SOLO COMENTARIOS ` +
+        `(REDDIT_BOT_ALLOW_POSTS no está en 1). No se publica.`
+    );
+    return null;
+  }
+
   const token = await userToken(cfg);
   if (!token) return null;
 

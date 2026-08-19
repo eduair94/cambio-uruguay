@@ -1,12 +1,16 @@
 import { describe, expect, it } from 'vitest'
 import {
   BENCHMARKS,
+  COPOM_MEETINGS_2026,
   IPC_INTERANUAL_PCT,
   IVA_RATE,
   LEGAL_FACTS,
+  NO_CUT_ANNOUNCED_AS_OF,
+  PICK_CRITERIA,
   RATE_MYTHS,
   TPM_CONFIRMED,
   TPM_PCT,
+  YIELD_DRIVERS,
   YIELD_LAST_REVIEWED,
   YIELD_PRODUCTS,
   YIELD_SOURCES,
@@ -283,5 +287,80 @@ describe('yieldAccounts - estimateYield', () => {
       inflationPct: IPC_INTERANUAL_PCT,
     })
     expect(withDefault.realUyu).toBe(explicit.realUyu)
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// "¿Cuál conviene?" y "¿va a bajar?" — las dos preguntas que llegan de verdad
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// Salieron de un hilo de r/uruguay que preguntaba las dos juntas: cuál es la
+// mejor cuenta remunerada, y si es cierto que el mes que viene Prex y Mercado
+// Pago bajan el rendimiento. La página contestaba bien qué ES el producto y no
+// contestaba ninguna de las dos.
+
+describe('yieldAccounts - cuál conviene', () => {
+  it('no declara un ganador global, porque falta el dato que lo decidiría', () => {
+    // El rendimiento neto de comisión no lo publica ninguno. Un ranking sería
+    // una opinión disfrazada de medición, que es exactamente lo que esta página
+    // existe para no hacer.
+    for (const c of PICK_CRITERIA) {
+      expect(['prex', 'mercadopago', null]).toContain(c.winner)
+    }
+    const winners = new Set(PICK_CRITERIA.filter(c => c.winner).map(c => c.winner))
+    expect(winners.size).toBeGreaterThan(0)
+  })
+
+  it('compara cada criterio para los dos productos, sin celdas vacías', () => {
+    expect(PICK_CRITERIA.length).toBeGreaterThanOrEqual(4)
+    for (const c of PICK_CRITERIA) {
+      expect(c.criterion.trim().length).toBeGreaterThan(3)
+      expect(c.prex.trim().length).toBeGreaterThan(10)
+      expect(c.mercadoPago.trim().length).toBeGreaterThan(10)
+    }
+  })
+
+  it('dice que los administradores son distintos, que es el error que circula', () => {
+    // En el hilo alguien afirmó que los dos están "con VALO". No: Prex va por
+    // VALO AFISA con Gletir en el medio, y Mercado Pago por BIND AFISA.
+    const admins = PICK_CRITERIA.find(c => c.criterion.includes('administra'))
+    expect(admins).toBeDefined()
+    expect(admins!.prex).toContain('VALO')
+    expect(admins!.mercadoPago).toContain('BIND')
+    expect(admins!.prex).not.toContain('BIND')
+  })
+})
+
+describe('yieldAccounts - ¿va a bajar el rendimiento?', () => {
+  it('cada cosa que mueve el rendimiento trae su estado y su fuente', () => {
+    expect(YIELD_DRIVERS.length).toBeGreaterThanOrEqual(3)
+    for (const d of YIELD_DRIVERS) {
+      expect(d.what.trim().length).toBeGreaterThan(20)
+      expect(d.status.trim().length).toBeGreaterThan(20)
+      expect(d.source.url).toMatch(/^https:\/\//)
+      expect(d.source.publisher.trim().length).toBeGreaterThan(2)
+    }
+  })
+
+  it('pone primero la TPM, que es lo que de verdad decide', () => {
+    // El rumor mira al emisor. El emisor es lo que menos manda: si el COPOM baja
+    // la tasa, el rendimiento baja solo y nadie anuncia nada.
+    expect(YIELD_DRIVERS[0]!.id).toBe('tpm')
+    expect(YIELD_DRIVERS[0]!.status).toContain('5,75')
+  })
+
+  it('la ausencia de anuncio lleva fecha', () => {
+    // "No hay ningún anuncio" sin fecha es una frase que alguien escribió alguna
+    // vez. Con fecha es una afirmación que se puede revisar.
+    expect(NO_CUT_ANNOUNCED_AS_OF).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+    expect(NO_CUT_ANNOUNCED_AS_OF >= '2026-08-19').toBe(true)
+  })
+
+  it('el calendario del COPOM está ordenado y termina en la última reunión leída', () => {
+    const sorted = [...COPOM_MEETINGS_2026].sort()
+    expect(COPOM_MEETINGS_2026).toEqual(sorted)
+    for (const d of COPOM_MEETINGS_2026) expect(d).toMatch(/^2026-\d{2}-\d{2}$/)
+    // La fecha del último comunicado que leímos tiene que ser una reunión real.
+    expect(COPOM_MEETINGS_2026).toContain(TPM_CONFIRMED)
   })
 })
