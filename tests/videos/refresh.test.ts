@@ -2,64 +2,80 @@
 // replacing a good snapshot. Everything here runs against a synthetic catalogue and a stubbed
 // feed reader: no network, no Mongo.
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  buildVideosSnapshot,
+  MAX_AGE_DAYS,
+  scoreVideo,
+  snapshotIsEmpty,
+  snapshotIsThin,
+} from "../../classes/videos/refresh";
 import type { ChannelFeed, RawVideo } from "../../classes/videos/sources";
 import type { VideoChannel } from "../../classes/videos/types";
 
-const CHANNELS: VideoChannel[] = [
-  {
-    id: "econ-uy",
-    channelId: "UCecon",
-    name: "Economía UY",
-    handle: "@econuy",
-    country: "UY",
-    kind: "creador",
-    needsFilter: false,
-    weight: 3,
-    blurb: "Economía y nada más.",
-  },
-  {
-    id: "tele-uy",
-    channelId: "UCtele",
-    name: "Informativo",
-    handle: "@teleuy",
-    country: "UY",
-    kind: "medio",
-    needsFilter: true,
-    weight: 2,
-    blurb: "Informativo generalista.",
-  },
-  {
-    id: "caido",
-    channelId: "UCcaido",
-    name: "Canal caído",
-    handle: "@caido",
-    country: "AR",
-    kind: "medio",
-    needsFilter: true,
-    weight: 1,
-    blurb: "No responde.",
-  },
-];
+/**
+ * The fixtures both mock factories close over.
+ *
+ * `vi.hoisted` and not a plain top-level const: `vi.mock` is hoisted above every import, so its
+ * factory runs before a normal const is initialised and would read it in its temporal dead zone.
+ * The alternative — `await import()` after the mocks — is top-level await, which the backend's
+ * CommonJS build rejects outright (`tsc -p tsconfig.production.json` compiles `tests/` too, so a
+ * test that only vitest can parse breaks the deploy).
+ */
+const fixtures = vi.hoisted(() => {
+  const channels: VideoChannel[] = [
+    {
+      id: "econ-uy",
+      channelId: "UCecon",
+      name: "Economía UY",
+      handle: "@econuy",
+      country: "UY",
+      kind: "creador",
+      needsFilter: false,
+      weight: 3,
+      blurb: "Economía y nada más.",
+    },
+    {
+      id: "tele-uy",
+      channelId: "UCtele",
+      name: "Informativo",
+      handle: "@teleuy",
+      country: "UY",
+      kind: "medio",
+      needsFilter: true,
+      weight: 2,
+      blurb: "Informativo generalista.",
+    },
+    {
+      id: "caido",
+      channelId: "UCcaido",
+      name: "Canal caído",
+      handle: "@caido",
+      country: "AR",
+      kind: "medio",
+      needsFilter: true,
+      weight: 1,
+      blurb: "No responde.",
+    },
+  ];
+  return { channels, feeds: new Map<string, ChannelFeed | Error>() };
+});
 
-vi.mock("../../classes/videos/channels", () => ({ VIDEO_CHANNELS: CHANNELS }));
+const feeds = fixtures.feeds;
 
-const feeds = new Map<string, ChannelFeed | Error>();
+vi.mock("../../classes/videos/channels", () => ({ VIDEO_CHANNELS: fixtures.channels }));
 
 vi.mock("../../classes/videos/sources", async importOriginal => {
   const actual = await importOriginal<typeof import("../../classes/videos/sources")>();
   return {
     ...actual,
     fetchChannelFeed: vi.fn(async (channelId: string) => {
-      const entry = feeds.get(channelId);
+      const entry = fixtures.feeds.get(channelId);
       if (!entry) throw new Error("sin fixture");
       if (entry instanceof Error) throw entry;
       return entry;
     }),
   };
 });
-
-const { buildVideosSnapshot, scoreVideo, snapshotIsEmpty, snapshotIsThin, MAX_AGE_DAYS } =
-  await import("../../classes/videos/refresh");
 
 const NOW = new Date("2026-08-18T12:00:00Z");
 
