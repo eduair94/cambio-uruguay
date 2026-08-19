@@ -29,12 +29,19 @@ export const LAST_RESEARCHED = '2026-07-26'
  * ISSUER (the seller/platform, NOT the courier) to be registered with the DNA, and LUCIA
  * validates it automatically — no informal grace.
  *
- * Already postponed twice (RG 12/2026 → 2026-07-01; RG 21/2026 → 2026-10-01) and RG 21's
- * own recitals concede that "resta aún cumplir con varias etapas ineludibles", so a third
- * postponement is likely. When it moves, change THIS CONSTANT — nothing else.
- * Source: RG 21/2026 num. 1.
+ * Already postponed THREE times (RG 12/2026 → 2026-07-01; RG 21/2026 → 2026-10-01;
+ * RG 26/2026 → 2026-11-03), so a fourth is likely. When it moves, change THIS CONSTANT
+ * — nothing else.
+ *
+ * Source: RG DNA 26/2026 (13/08/2026) num. 10, "Prorrógase la aplicación de lo dispuesto en el
+ * numeral 13 del Anexo I de la Resolución General N° 09/2026 hasta el 03 de noviembre de 2026",
+ * y la propia DNA lo traduce en su página de franquicia: "A partir del 3 de noviembre de 2026 (…)
+ * para acceder a la exoneración del IVA, será exigible que el emisor de la factura se encuentre
+ * registrado ante la Dirección Nacional de Aduanas".
+ * https://www.aduanas.gub.uy/innovaportal/file/28724/1/rg-26-2026-exoneracion-iva-encomiendas-postales.pdf
+ * https://www.aduanas.gub.uy/innovaportal/v/28221/1/innova.front/
  */
-export const SELLER_REGISTRY_ENFORCED_FROM = '2026-10-01'
+export const SELLER_REGISTRY_ENFORCED_FROM = '2026-11-03'
 
 /** Annual franchise: USD 800 ACCUMULATED per calendar year (Decreto 50/026 art. 3 y 4 lit. c). */
 export const FRANCHISE_ANNUAL_USD = 800
