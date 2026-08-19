@@ -146,8 +146,8 @@ describe('courierImport', () => {
     expect(r.totalTax).toBe(60)
   })
 
-  it('from 2026-11-03 an unregistered US seller loses the IVA exoneration', () => {
-    const after = new Date('2026-11-03T00:00:00Z')
+  it('from 2026-10-01 an unregistered US seller loses the IVA exoneration', () => {
+    const after = new Date('2026-10-01T00:00:00Z')
     const exempt = courierImport({
       value: 150,
       origin: 'usa',
