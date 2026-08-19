@@ -39,10 +39,11 @@
 
     <!-- Videos -->
     <section v-if="topicVideos.length" class="mb-10">
-      <h2 class="section-heading mb-1">Del más nuevo al más viejo</h2>
+      <h2 class="section-heading mb-1">Los que más importan ahora</h2>
       <p class="text-body-2 text-medium-emphasis mb-4">
-        La fecha está en cada tarjeta. Se listan los videos publicados en los últimos
-        {{ MAX_AGE_DAYS }} días; los Shorts quedan afuera.
+        Nuevos primero, y a igual fecha gana la fuente uruguaya. La fecha está en cada tarjeta. Se
+        listan los videos publicados en los últimos {{ MAX_AGE_DAYS }} días; los Shorts quedan
+        afuera.
       </p>
       <div class="video-grid">
         <VideosCard
@@ -161,11 +162,18 @@ const { data: snapshot } = await useFetch<VideosSnapshotDoc | null>('/api/videos
   default: () => null,
 })
 
-/** This topic's videos, newest first — on a topic page recency beats our own ranking. */
+/**
+ * This topic's videos.
+ *
+ * NOT re-sorted by date: `snapshot.value.videos` already arrives in the backend's score order
+ * (recency + how Uruguayan the channel is + is-it-money), and sorting by raw `publishedAt` here
+ * used to throw that away. On a topic like inversiones, several high-volume Spanish/Argentine
+ * channels upload daily; a plain date sort put one of them at #1 on almost every visit, ahead of
+ * a two-day-old Uruguayan video — measured on the live page, not hypothetical. `.filter` alone
+ * keeps the order the backend already computed.
+ */
 const topicVideos = computed(() =>
-  (snapshot.value?.videos ?? [])
-    .filter(v => v.topics.includes(slug.value))
-    .sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt))
+  (snapshot.value?.videos ?? []).filter(v => v.topics.includes(slug.value))
 )
 
 /** Channels that actually contributed to THIS topic, with their count for it. */

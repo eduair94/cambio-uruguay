@@ -449,7 +449,12 @@ export const VIDEO_CHANNELS: readonly VideoChannel[] = Object.freeze([
     handle: "@bloomberg_espanol",
     country: "REGIONAL",
     kind: "medio",
-    needsFilter: false,
+    // Re-checked against the live feed: most of what it uploads is Bloomberg TV's general slate —
+    // "Trump y Irán", "los ingresos de Anthropic", "las familias más ricas del mundo apuestan por
+    // SpaceX" — not the finance-that-touches-a-pocket angle the blurb below describes. Unlike
+    // Bloomberg Línea (Latin America, own newsroom, needsFilter:false below), this is closer to a
+    // generalist feed with a finance section, so it has to clear a topic like every other one.
+    needsFilter: true,
     weight: 1,
     blurb: "La señal en español de Bloomberg: mercados globales y su efecto sobre las economías chicas.",
   },

@@ -174,12 +174,15 @@
                 <th class="text-right">Débito</th>
                 <th class="text-right">Exclusivas</th>
                 <th class="text-right">Cobertura</th>
+                <th class="text-right">Mapa</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="b in analysis.banks" :key="b.bankId">
                 <td data-label="Banco">
-                  <span class="bank-dot mr-2" :style="{ background: b.color }" />{{ b.name }}
+                  <NuxtLink :to="mapForBank(b.bankId)" class="bank-link">
+                    <span class="bank-dot mr-2" :style="{ background: b.color }" />{{ b.name }}
+                  </NuxtLink>
                 </td>
                 <td data-label="Marcas" class="text-right">{{ b.brands }}</td>
                 <td data-label="Locales" class="text-right">{{ b.locations }}</td>
@@ -187,6 +190,11 @@
                 <td data-label="Débito" class="text-right">{{ b.debit }}</td>
                 <td data-label="Exclusivas" class="text-right">{{ b.exclusive }}</td>
                 <td data-label="Cobertura" class="text-right">{{ pct(b.coverage) }}</td>
+                <td data-label="" class="text-right">
+                  <v-btn size="x-small" variant="text" color="primary" :to="mapForBank(b.bankId)">
+                    Ver locales
+                  </v-btn>
+                </td>
               </tr>
             </tbody>
           </v-table>
@@ -221,13 +229,21 @@
             </thead>
             <tbody>
               <tr v-for="c in topCategories" :key="c.category">
-                <td data-label="Rubro">{{ c.category }}</td>
+                <td data-label="Rubro">
+                  <NuxtLink
+                    :to="mapForCategory(c.category, c.ranking[0]?.bankId)"
+                    class="bank-link"
+                  >
+                    {{ c.category }}
+                  </NuxtLink>
+                </td>
                 <td data-label="Marcas" class="text-right">{{ c.brands }}</td>
                 <td data-label="Podio">
                   <span v-for="r in c.ranking.slice(0, 3)" :key="r.bankId" class="mr-1">
                     <v-chip
                       size="x-small"
                       label
+                      :to="mapForCategory(c.category, r.bankId)"
                       :style="{ background: r.color, color: readableText(r.color) }"
                       >{{ r.name }} · {{ r.brands }}</v-chip
                     >
@@ -284,7 +300,7 @@
       </v-card>
     </template>
 
-    <FaqBlock
+    <FaqSection
       :items="ANALYSIS_FAQ"
       heading="Preguntas frecuentes sobre descuentos por banco"
       :expanded="true"
@@ -345,6 +361,15 @@ const exclusiveRows = computed(() =>
     .map(b => ({ label: b.name, value: b.exclusive, color: b.color }))
 )
 const topCategories = computed(() => (analysis.value?.categories ?? []).slice(0, 12))
+
+/** Deep links into the map, pre-filtered — the analysis answers "which bank", the map "where". */
+function mapForBank(bankId: string): string {
+  return `${localePath('/descuentos-con-tarjeta-uruguay')}?banco=${encodeURIComponent(bankId)}`
+}
+function mapForCategory(category: string, bankId?: string): string {
+  const base = `${localePath('/descuentos-con-tarjeta-uruguay')}?categoria=${encodeURIComponent(category)}`
+  return bankId ? `${base}&banco=${encodeURIComponent(bankId)}` : base
+}
 
 function pct(n: number): string {
   return `${Math.round(n * 100)}%`
@@ -474,6 +499,13 @@ useHead(() => ({
 </script>
 
 <style scoped>
+.bank-link {
+  color: inherit;
+  text-decoration: none;
+}
+.bank-link:hover {
+  text-decoration: underline;
+}
 .bank-dot {
   display: inline-block;
   width: 10px;

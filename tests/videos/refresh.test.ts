@@ -215,7 +215,7 @@ describe("buildVideosSnapshot", () => {
     expect(snap.topicCounts["dolar-y-cotizaciones"]).toBe(1);
   });
 
-  it("caps how much of the page one prolific channel can take", async () => {
+  it("caps how much of the page one prolific Uruguayan channel can take", async () => {
     feeds.set(
       "UCecon",
       feed(
@@ -226,6 +226,25 @@ describe("buildVideosSnapshot", () => {
     const snap = await buildVideosSnapshot(NOW);
     expect(snap.videos.length).toBeLessThanOrEqual(8);
     expect(snap.channels.find(c => c.id === "econ-uy")!.count).toBe(snap.videos.length);
+  });
+
+  it("caps a prolific FOREIGN channel much lower than a Uruguayan one", async () => {
+    // Measured on the live feeds: five Spanish/Argentine "economía pura" channels each hit the
+    // 8-video Uruguayan ceiling every run and made up 37% of the published list on a page titled
+    // "en Uruguay". `caido` is AR in the fixture catalogue above.
+    feeds.set(
+      "UCcaido",
+      feed(
+        "Canal AR",
+        Array.from({ length: 30 }, (_, i) =>
+          video({ videoId: `ar${i}`, title: `El dólar en Argentina, parte ${i}`, channelId: "UCcaido" })
+        )
+      )
+    );
+    const snap = await buildVideosSnapshot(NOW);
+    const foreign = snap.videos.filter(v => v.channelKey === "caido");
+    expect(foreign.length).toBeLessThanOrEqual(3);
+    expect(foreign.length).toBeLessThan(8);
   });
 
   it("builds an embeddable player URL, not the /shorts one", async () => {

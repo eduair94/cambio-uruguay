@@ -27,7 +27,7 @@ export const MAX_AGE_DAYS = 120;
 const MAX_VIDEOS = 220;
 
 /**
- * Ceiling per channel.
+ * Ceiling per channel — URUGUAYAN channels.
  *
  * A daily newscast uploads 15 economy clips a week and would otherwise be the entire page. This is
  * applied AFTER scoring, so what survives is that channel's best rows, not its most recent.
@@ -36,6 +36,18 @@ const MAX_VIDEOS = 220;
  * twelve the "Economía uruguaya" page was ten consecutive sessions of the Jornadas Anuales.
  */
 const MAX_PER_CHANNEL = 8;
+
+/**
+ * Ceiling per channel — everyone else.
+ *
+ * Measured on the live feeds: five Spanish/Argentine "economía pura" creators (Rallo, Carrino,
+ * VisualEconomik, Value School, Marull) each hit the 8-video ceiling above every single run, simply
+ * because they upload daily and the site does not. That put 37% of the published list on a page
+ * titled "en Uruguay" — not because any one video was wrong, but because five foreign channels at
+ * full volume outweigh forty Uruguayan ones that post a few times a month. Three keeps each voice
+ * present without letting upload frequency alone decide who gets heard.
+ */
+const MAX_PER_CHANNEL_FOREIGN = 3;
 
 /** How many channel feeds are in flight at once. Polite, and enough to finish in seconds. */
 const CONCURRENCY = 5;
@@ -168,7 +180,8 @@ export async function buildVideosSnapshot(now: Date = new Date()): Promise<Video
   const videos: VideoItem[] = [];
   for (const video of candidates) {
     const used = perChannel.get(video.channelKey) ?? 0;
-    if (used >= MAX_PER_CHANNEL) continue;
+    const cap = video.channelCountry === "UY" ? MAX_PER_CHANNEL : MAX_PER_CHANNEL_FOREIGN;
+    if (used >= cap) continue;
     perChannel.set(video.channelKey, used + 1);
     videos.push(video);
     if (videos.length >= MAX_VIDEOS) break;

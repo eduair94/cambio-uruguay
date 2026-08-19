@@ -40,19 +40,10 @@ const props = withDefaults(
   { heading: '', emitSchema: true, expanded: false }
 )
 
-const { $seo } = useNuxtApp()
-
-useHead(() => {
-  if (!props.emitSchema || !props.items.length) return {}
-  return {
-    script: [
-      {
-        type: 'application/ld+json',
-        innerHTML: JSON.stringify(
-          $seo.generateFAQData(props.items.map(i => ({ question: i.question, answer: i.answer })))
-        ),
-      },
-    ],
-  }
-})
+// Schema lives in useFaqSchema, shared with FaqSection (the full-page-width variant), so the two
+// can never drift apart. This component keeps its own centred container on purpose.
+useFaqSchema(
+  () => props.items,
+  () => props.emitSchema
+)
 </script>

@@ -409,7 +409,7 @@
       </v-row>
     </section>
 
-    <FaqBlock
+    <FaqSection
       :items="BANKOS_FAQ"
       heading="Preguntas frecuentes sobre descuentos con tarjeta"
       :expanded="true"
@@ -525,6 +525,12 @@ onMounted(() => {
   // Shareable deep link: /descuentos-con-tarjeta-uruguay?banco=itau pre-selects a bank.
   const q = String(route.query.banco || '').toLowerCase()
   if (q && BANKOS_BANKS.some(b => b.id === q)) selectBank(q)
+  // ?categoria=Farmacias — the analysis page links straight to a rubro. Applied verbatim: the
+  // select only offers categories the loaded data actually has, so an unknown value would
+  // silently show nothing; `pendingCategory` waits for the data and clears itself if it never
+  // matches.
+  const cat = String(route.query.categoria || '').trim()
+  if (cat) pendingCategory.value = cat
 })
 
 // FAQ — accurate answers, keyword-rich for long-tail queries. FaqBlock emits FAQPage JSON-LD.
@@ -643,6 +649,8 @@ function dayNote(item: BankosItem): string {
 
 const search = ref('')
 const category = ref('__all__')
+/** A `?categoria=` value waiting for the catalog to load (categories come from the data). */
+const pendingCategory = ref('')
 const sortBy = ref<'distance' | 'rating' | 'name'>('rating')
 const sortItems = [
   { title: 'Mejor puntuados', value: 'rating' },
@@ -726,6 +734,20 @@ const filtered = computed<EnrichedItem[]>(() => {
   })
   return list
 })
+
+// Apply a deep-linked ?categoria= as soon as the data offers that category.
+watch(
+  [pendingCategory, categoryItems],
+  ([pending, options]) => {
+    if (!pending) return
+    const match = options.find(o => String(o.value).toLowerCase() === pending.toLowerCase())
+    if (match) {
+      category.value = String(match.value)
+      pendingCategory.value = ''
+    }
+  },
+  { immediate: true }
+)
 
 /** How many of the loaded stores have a benefit that applies today (before other filters). */
 const todayCount = computed(() => items.value.filter(appliesToday).length)

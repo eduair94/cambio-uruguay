@@ -83,8 +83,8 @@
       <section class="mb-10">
         <h2 class="section-heading mb-1">Lo último</h2>
         <p class="text-body-2 text-medium-emphasis mb-4">
-          Los videos más recientes, del más nuevo al más viejo. La fecha está en cada tarjeta: nada
-          acá se presenta como de hoy si no lo es.
+          Lo más nuevo, con los canales uruguayos primero: a igual fecha, gana la fuente de acá. La
+          fecha está en cada tarjeta, nada se presenta como de hoy si no lo es.
         </p>
         <div class="video-grid">
           <VideosCard v-for="video in latest" :key="video.videoId" :video="video" />
@@ -250,11 +250,16 @@ const { data: snapshot } = await useFetch<VideosSnapshotDoc | null>('/api/videos
 
 const videos = computed<VideoItem[]>(() => snapshot.value?.videos ?? [])
 
-const latest = computed(() =>
-  [...videos.value]
-    .sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt))
-    .slice(0, LATEST_COUNT)
-)
+/**
+ * The lead section. NOT a date sort: `snapshot.value.videos` already arrives ordered by the
+ * backend's score (recency + how Uruguayan the channel is + is-it-money), and re-sorting by raw
+ * `publishedAt` here used to throw that away — a same-day upload from any of the five high-volume
+ * Spanish/Argentine "economía pura" channels would sit above a two-day-old BCU video every time,
+ * which is what made the page read as more Argentine than Uruguayan. Slicing the score order keeps
+ * the freshest videos up top (recency is still most of the score) without letting upload frequency
+ * alone decide whose voice is loudest.
+ */
+const latest = computed(() => videos.value.slice(0, LATEST_COUNT))
 
 /**
  * Every topic, the fullest first.

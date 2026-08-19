@@ -110,7 +110,7 @@
       </v-card-text>
     </v-card>
 
-    <FaqBlock :items="COMPARE_FAQ" heading="Preguntas frecuentes" :expanded="true" />
+    <FaqSection :items="COMPARE_FAQ" heading="Preguntas frecuentes" :expanded="true" />
   </v-container>
 </template>
 
