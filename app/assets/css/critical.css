@@ -343,3 +343,112 @@ button:focus-visible,
   }
 }
 
+/* ------------------------------------------------------------------ */
+/* Tonal semantic surfaces: keep the fill, lift the ink                */
+/*                                                                     */
+/* Vuetify paints `variant="tonal"` as the semantic colour at ~12 %    */
+/* over the surface, and then uses that SAME colour for the text on    */
+/* top of it. The fill carries the meaning fine; the text does not     */
+/* clear AA, and it fails differently in each theme. Measured on the   */
+/* built page (body copy inside a tonal card, 71 files use this):      */
+/*                                                                     */
+/*   dark   error 3.79:1   success 9.38   warning 9.56                 */
+/*   light  error 4.37:1   success 4.10   warning 1.94                 */
+/*                                                                     */
+/* Body text needs 4.5:1, so every combination except dark success and */
+/* dark warning was failing — `warning` on light worst at 1.94:1.      */
+/*                                                                     */
+/* The fix is the treatment DESIGN.md already documents for the        */
+/* sentiment tones: mix the hue toward that surface's own ink rather   */
+/* than replacing it with grey, so the colour still reads as the       */
+/* semantic role. `--v-theme-on-surface` is white in dark and near     */
+/* black in light, so ONE expression lightens on dark and deepens on   */
+/* light. The ratios differ per theme because the tonal fill sits at   */
+/* opposite ends of the luminance range.                               */
+/*                                                                     */
+/* Scoped to tonal surfaces only: a bare `.text-error` utility sits on */
+/* the page canvas, not on a tinted panel, and is a different sum.     */
+/* The plain token is declared first so a browser without `color-mix`  */
+/* keeps today's behaviour instead of losing the colour entirely.      */
+/* ------------------------------------------------------------------ */
+.v-card--variant-tonal.text-error,
+.v-alert--variant-tonal.text-error,
+.v-chip--variant-tonal.text-error {
+  color: rgb(var(--v-theme-error));
+}
+.v-card--variant-tonal.text-success,
+.v-alert--variant-tonal.text-success,
+.v-chip--variant-tonal.text-success {
+  color: rgb(var(--v-theme-success));
+}
+.v-card--variant-tonal.text-warning,
+.v-alert--variant-tonal.text-warning,
+.v-chip--variant-tonal.text-warning {
+  color: rgb(var(--v-theme-warning));
+}
+.v-card--variant-tonal.text-info,
+.v-alert--variant-tonal.text-info,
+.v-chip--variant-tonal.text-info {
+  color: rgb(var(--v-theme-info));
+}
+.v-card--variant-tonal.text-primary,
+.v-alert--variant-tonal.text-primary,
+.v-chip--variant-tonal.text-primary {
+  color: rgb(var(--v-theme-primary));
+}
+
+/* Dark: the tonal fill is nearly black, so the hue is lifted toward white. */
+.v-theme--dark .v-card--variant-tonal.text-error,
+.v-theme--dark .v-alert--variant-tonal.text-error,
+.v-theme--dark .v-chip--variant-tonal.text-error {
+  color: color-mix(in srgb, rgb(var(--v-theme-error)) 68%, rgb(var(--v-theme-on-surface)));
+}
+.v-theme--dark .v-card--variant-tonal.text-success,
+.v-theme--dark .v-alert--variant-tonal.text-success,
+.v-theme--dark .v-chip--variant-tonal.text-success {
+  color: color-mix(in srgb, rgb(var(--v-theme-success)) 88%, rgb(var(--v-theme-on-surface)));
+}
+.v-theme--dark .v-card--variant-tonal.text-warning,
+.v-theme--dark .v-alert--variant-tonal.text-warning,
+.v-theme--dark .v-chip--variant-tonal.text-warning {
+  color: color-mix(in srgb, rgb(var(--v-theme-warning)) 88%, rgb(var(--v-theme-on-surface)));
+}
+.v-theme--dark .v-card--variant-tonal.text-info,
+.v-theme--dark .v-alert--variant-tonal.text-info,
+.v-theme--dark .v-chip--variant-tonal.text-info {
+  color: color-mix(in srgb, rgb(var(--v-theme-info)) 80%, rgb(var(--v-theme-on-surface)));
+}
+/* `primary` is Action Blue, which DESIGN.md's Link Token Rule already flags as failing
+   AA at small sizes on a tinted panel — it measured 3.93:1 on light and 3.78:1 on dark. */
+.v-theme--dark .v-card--variant-tonal.text-primary,
+.v-theme--dark .v-alert--variant-tonal.text-primary,
+.v-theme--dark .v-chip--variant-tonal.text-primary {
+  color: color-mix(in srgb, rgb(var(--v-theme-primary)) 62%, rgb(var(--v-theme-on-surface)));
+}
+
+/* Light: the tonal fill is nearly white, so the hue is deepened toward ink. */
+.v-theme--light .v-card--variant-tonal.text-error,
+.v-theme--light .v-alert--variant-tonal.text-error,
+.v-theme--light .v-chip--variant-tonal.text-error {
+  color: color-mix(in srgb, rgb(var(--v-theme-error)) 78%, rgb(var(--v-theme-on-surface)));
+}
+.v-theme--light .v-card--variant-tonal.text-success,
+.v-theme--light .v-alert--variant-tonal.text-success,
+.v-theme--light .v-chip--variant-tonal.text-success {
+  color: color-mix(in srgb, rgb(var(--v-theme-success)) 76%, rgb(var(--v-theme-on-surface)));
+}
+.v-theme--light .v-card--variant-tonal.text-warning,
+.v-theme--light .v-alert--variant-tonal.text-warning,
+.v-theme--light .v-chip--variant-tonal.text-warning {
+  color: color-mix(in srgb, rgb(var(--v-theme-warning)) 52%, rgb(var(--v-theme-on-surface)));
+}
+.v-theme--light .v-card--variant-tonal.text-info,
+.v-theme--light .v-alert--variant-tonal.text-info,
+.v-theme--light .v-chip--variant-tonal.text-info {
+  color: color-mix(in srgb, rgb(var(--v-theme-info)) 70%, rgb(var(--v-theme-on-surface)));
+}
+.v-theme--light .v-card--variant-tonal.text-primary,
+.v-theme--light .v-alert--variant-tonal.text-primary,
+.v-theme--light .v-chip--variant-tonal.text-primary {
+  color: color-mix(in srgb, rgb(var(--v-theme-primary)) 76%, rgb(var(--v-theme-on-surface)));
+}
