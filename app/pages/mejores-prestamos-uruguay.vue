@@ -237,33 +237,35 @@
       </p>
 
       <VCard variant="flat" class="clearing-card pa-4 pa-sm-5 mb-4">
-        <VTable density="comfortable" class="clearing-table cu-mobile-cards">
-          <thead>
-            <tr>
-              <th>Prestamista</th>
-              <th>Política</th>
-              <th>TEA public.</th>
-              <th>Qué te van a pedir</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="l in clearingFriendly" :key="l.id">
-              <td data-label="Prestamista" class="font-weight-medium">
-                <button type="button" class="linkish" @click="openFicha(l.id)">{{ l.name }}</button>
-                <span class="d-block text-caption text-medium-emphasis">
-                  {{ SEGMENT_LABELS[l.segment] }}
-                </span>
-              </td>
-              <td data-label="Política">
-                <span class="clearing-pill" :class="`clearing-pill--${l.clearing}`">
-                  {{ CLEARING_LABELS[l.clearing] }}
-                </span>
-              </td>
-              <td data-label="TEA publicada">{{ teaLabel(l) }}</td>
-              <td data-label="Qué te van a pedir" class="text-body-2">{{ l.clearingNote }}</td>
-            </tr>
-          </tbody>
-        </VTable>
+        <VDataTable
+          :headers="clearingHeaders"
+          :items="clearingRows"
+          :items-per-page="-1"
+          :mobile="smAndDown"
+          hide-default-footer
+          density="comfortable"
+          class="clearing-table"
+        >
+          <template #item.name="{ item }">
+            <button type="button" class="linkish" @click="openFicha(item.id)">
+              {{ item.name }}
+            </button>
+            <span class="d-block text-caption text-medium-emphasis">
+              {{ SEGMENT_LABELS[item.segment] }}
+            </span>
+          </template>
+          <template #item.clearing="{ item }">
+            <span class="clearing-pill" :class="`clearing-pill--${item.clearing}`">
+              {{ CLEARING_LABELS[item.clearing] }}
+            </span>
+          </template>
+          <template #item.teaSort="{ item }">
+            {{ teaLabel(item) }}
+          </template>
+          <template #item.clearingNote="{ item }">
+            <span class="text-body-2">{{ item.clearingNote }}</span>
+          </template>
+        </VDataTable>
       </VCard>
 
       <VAlert type="warning" variant="tonal" density="comfortable" class="mb-4" icon="mdi-alert">
@@ -691,6 +693,7 @@ import {
   matchPreset,
   mergeLenderFacts,
   rankLenders,
+  representativeTea,
   type LenderEntity,
   type LenderSegment,
   type LoanDimId,
@@ -700,8 +703,10 @@ import {
 } from '~/utils/loanTierlist'
 import { monoStyle, monogram, readableOn } from '~/utils/brandColors'
 import type { FaqItem } from '~/utils/faqAnswers'
+import { useDisplay } from 'vuetify'
 
 const localePath = useLocalePath()
+const { smAndDown } = useDisplay()
 
 // --- weekly refreshed facts (SSR, so the board Google sees is the fresh one) ---
 // The route returns null when the snapshot row is missing or Mongo is down; `mergeLenderFacts`
@@ -773,6 +778,24 @@ const clearingFriendly = computed(() =>
 )
 const clearingCount = computed(
   () => lenders.value.filter(l => l.clearing === 'si' || l.clearing === 'parcial').length
+)
+
+// VDataTable headers for the "quién presta en el clearing" table. `teaSort` carries the raw
+// representative rate (weighted toward a published band's ceiling, same as the score) so the
+// column sorts by actual cost — "no la publica" lands at the bottom via +Infinity, never mixed in
+// with real numbers. The visible text still comes from `teaLabel()` via the item slot.
+const clearingHeaders = [
+  { title: 'Prestamista', key: 'name', sortable: true },
+  { title: 'Política', key: 'clearing', sortable: true },
+  { title: 'TEA publicada', key: 'teaSort', sortable: true },
+  { title: 'Qué te van a pedir', key: 'clearingNote', sortable: false },
+] as const
+
+const clearingRows = computed(() =>
+  clearingFriendly.value.map(l => ({
+    ...l,
+    teaSort: representativeTea(l.teaPct, l.teaMaxPct) ?? Number.POSITIVE_INFINITY,
+  }))
 )
 
 const activeHint = computed(() => {
@@ -1715,6 +1738,31 @@ useHead(() => ({
 .cat-table :deep(td),
 .cat-table :deep(th) {
   font-size: 0.875rem;
+}
+
+/* FaqBlock ---------------------------------------------------------------
+ * FaqBlock ships its own <VContainer><VRow><VCol cols="12" md="10" lg="8">, sized against the
+ * viewport rather than against this page's own content column (`.container_custom`, 1280px). On
+ * wide viewports that reads as narrower than everything else; the deep overrides below make it
+ * fill the exact same box every other section on this page uses, instead of computing its own.
+ * `:deep()` only reaches into FaqBlock as rendered by THIS page — every other page that embeds it
+ * keeps FaqBlock's own default width. */
+:deep(.faq-block) {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+:deep(.faq-block > .v-container) {
+  max-width: none;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+:deep(.faq-block .v-col) {
+  max-width: 100%;
+  flex-basis: 100%;
+  padding-left: 0;
+  padding-right: 0;
 }
 
 /* Exclusions ------------------------------------------------------------ */

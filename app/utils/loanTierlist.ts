@@ -1264,6 +1264,7 @@ export const LENDER_TIERLIST: readonly LenderEntity[] = Object.freeze([
       'El rango va de 29% a 87%: la tasa del anuncio le toca a los mejores perfiles, no al promedio.',
       'Suma comisión de concesión, comisión de administración y un seguro obligatorio del 0,25% mensual.',
       'Con una marca en el Clearing te dice que no, igual que un banco, pero cobrando como financiera.',
+      'Según relatos en Reddit, si ya tenés una deuda activa con OCA el acceso a un préstamo nuevo se complica mucho, incluso pagando en fecha — aunque la misma gente describe su cobranza como menos agresiva que la de otras financieras.',
     ],
     verdict:
       'Es la financiera más transparente del grupo grande y, a la vez, la que peor combina exigencia y precio: te pide el legajo limpio de un banco y te cobra la tasa de una financiera. Si calificás para OCA, casi seguro calificás para algo más barato — probá el banco primero.',
@@ -1274,6 +1275,10 @@ export const LENDER_TIERLIST: readonly LenderEntity[] = Object.freeze([
       {
         label: 'OCA — preguntas frecuentes (requisitos del préstamo y Clearing)',
         url: 'https://oca.uy/preguntas-frecuentes.html',
+      },
+      {
+        label: 'r/Burises — "Salir del clearing": acceso complicado con deuda activa (2026)',
+        url: 'https://www.reddit.com/r/Burises/comments/1rxzgqu/',
       },
     ],
     redditId: 'oca',
@@ -1459,6 +1464,7 @@ export const LENDER_TIERLIST: readonly LenderEntity[] = Object.freeze([
       'El tramo chico llega a 129,9% + IVA, prácticamente pegado al tope de usura.',
       'Pedir menos de 10.000 UI duplica la tasa frente a pedir más: el préstamo chico es el caro.',
       'Suma comisión de concesión y un seguro del 0,6% mensual sobre saldo.',
+      'Dos usuarios distintos en el mismo hilo de Reddit afirman que el BCU le prohibió a Cash retener directamente de sueldos y pasividades, y uno menciona un juicio en curso por descuentos no habilitados. No lo pudimos verificar en una fuente judicial u oficial — lo dejamos como denuncia de usuarios, no como hecho probado.',
     ],
     verdict:
       'Es la más honesta de las caras: te dice que te va a evaluar aunque tengas antecedentes y te muestra exactamente cuánto va a costarte. El problema no es la información, es el número — a 129,9% + IVA, un préstamo chico te devuelve más del doble en un año. Mirá ANDA y las cooperativas antes.',
@@ -1474,7 +1480,12 @@ export const LENDER_TIERLIST: readonly LenderEntity[] = Object.freeze([
         label: 'Cash — preguntas frecuentes (bonificación por pago anticipado, seguro SURA)',
         url: 'https://prestamocash.com.uy/preguntas-frecuentes',
       },
+      {
+        label: 'r/uruguay — "Clearing consulta": denuncia de retención no habilitada (2025)',
+        url: 'https://www.reddit.com/r/uruguay/comments/1nakcr0/',
+      },
     ],
+    redditId: 'cash',
   },
   {
     id: 'crediton',
