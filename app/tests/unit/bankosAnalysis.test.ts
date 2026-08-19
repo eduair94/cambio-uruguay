@@ -80,6 +80,22 @@ describe('analyzeBankos', () => {
     expect(cafes.brands).toBe(2) // cafey (itau) + barz (brou)
   })
 
+  it('keeps issuers that currently have NO discount, with zeros', () => {
+    // They are selectable in the app, so the table must say "0", not hide the row.
+    const prex = a.banks.find(b => b.bankId === 'prex')
+    expect(prex).toBeDefined()
+    expect(prex!.brands).toBe(0)
+    expect(prex!.locations).toBe(0)
+    expect(prex!.debit).toBe(0)
+    expect(prex!.debitShare).toBe(0)
+    expect(prex!.exclusive).toBe(0)
+    expect(prex!.coverage).toBe(0)
+    // Every issuer in the catalog is represented, none dropped.
+    expect(a.banks).toHaveLength(10)
+    // ...and a zero-coverage issuer never outranks one with discounts.
+    expect(a.banks[a.banks.length - 1]!.brands).toBe(0)
+  })
+
   it('sorts issuers by breadth, biggest first', () => {
     expect(a.banks[0]!.brands).toBeGreaterThanOrEqual(a.banks[a.banks.length - 1]!.brands)
   })

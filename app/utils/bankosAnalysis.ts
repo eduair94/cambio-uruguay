@@ -81,10 +81,11 @@ export function analyzeBankos(data: AnalysisRawData, topCategories = 5): BankosA
   const catBrands = new Map<string, Set<string>>()
 
   for (const bank of BANKOS_BANKS) {
-    const brandMap = data.bankBrands?.[bank.id]
-    if (!brandMap) continue
+    // Issuers with no benefit in this pull are kept with zeros instead of dropped: the app lets
+    // you select their cards, so "Club El País: 0 marcas" is an answer, and silently omitting the
+    // row reads as a bug. They sort last because the list is ordered by coverage.
+    const brandMap = data.bankBrands?.[bank.id] ?? {}
     const brandIds = Object.keys(brandMap)
-    if (!brandIds.length) continue
 
     let locations = 0
     let credit = 0

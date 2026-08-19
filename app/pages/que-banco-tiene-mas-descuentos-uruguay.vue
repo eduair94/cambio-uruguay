@@ -129,7 +129,7 @@
             <template #fallback><div class="chart-fallback" /></template>
           </ClientOnly>
           <p class="text-caption text-medium-emphasis mt-2 mb-0">
-            <span v-for="b in analysis.banks" :key="b.bankId" class="mr-3">
+            <span v-for="b in chartBanks" :key="b.bankId" class="mr-3">
               {{ b.name }}: {{ pct(b.debitShare) }}
             </span>
           </p>
@@ -164,48 +164,42 @@
           <h2 class="text-subtitle-1 font-weight-medium">Tabla comparativa</h2>
         </v-card-item>
         <v-card-text>
-          <v-table density="comfortable" class="cu-mobile-cards">
-            <thead>
-              <tr>
-                <th>Banco</th>
-                <th class="text-right">Marcas</th>
-                <th class="text-right">Locales</th>
-                <th class="text-right">Crédito</th>
-                <th class="text-right">Débito</th>
-                <th class="text-right">Exclusivas</th>
-                <th class="text-right">Cobertura</th>
-                <th class="text-right">Mapa</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="b in analysis.banks" :key="b.bankId">
-                <td data-label="Banco">
-                  <NuxtLink :to="mapForBank(b.bankId)" class="bank-link">
-                    <span class="bank-dot mr-2" :style="{ background: b.color }" />{{ b.name }}
-                  </NuxtLink>
-                </td>
-                <td data-label="Marcas" class="text-right">{{ b.brands }}</td>
-                <td data-label="Locales" class="text-right">{{ b.locations }}</td>
-                <td data-label="Crédito" class="text-right">{{ b.credit }}</td>
-                <td data-label="Débito" class="text-right">{{ b.debit }}</td>
-                <td data-label="Exclusivas" class="text-right">{{ b.exclusive }}</td>
-                <td data-label="Cobertura" class="text-right">{{ pct(b.coverage) }}</td>
-                <td data-label="" class="text-right">
-                  <v-btn size="x-small" variant="text" color="primary" :to="mapForBank(b.bankId)">
-                    Ver locales
-                  </v-btn>
-                </td>
-              </tr>
-            </tbody>
-          </v-table>
+          <v-data-table
+            :headers="bankHeaders"
+            :items="analysis.banks"
+            :items-per-page="-1"
+            :mobile-breakpoint="960"
+            density="comfortable"
+            hide-default-footer
+            item-value="bankId"
+            :sort-by="[{ key: 'brands', order: 'desc' }]"
+            class="bank-table"
+          >
+            <template #item.name="{ item }">
+              <NuxtLink :to="mapForBank(item.bankId)" class="bank-link">
+                <span class="bank-dot mr-2" :style="{ background: item.color }" />{{ item.name }}
+              </NuxtLink>
+            </template>
+            <template #item.debitShare="{ item }">
+              {{ item.brands ? pct(item.debitShare) : '—' }}
+            </template>
+            <template #item.coverage="{ item }">{{ pct(item.coverage) }}</template>
+            <template #item.map="{ item }">
+              <v-btn size="x-small" variant="text" color="primary" :to="mapForBank(item.bankId)">
+                Ver locales
+              </v-btn>
+            </template>
+          </v-data-table>
           <p class="text-caption text-medium-emphasis mt-2 mb-1">
             Cobertura = porcentaje de todas las marcas con descuento que cubre ese emisor. Una marca
             puede tener descuento con varios bancos, así que la suma supera el 100%.
           </p>
           <p v-if="bankosWithoutDiscounts.length" class="text-caption text-medium-emphasis mb-0">
-            Sin descuentos vigentes en esta fuente al momento de la consulta:
-            {{ bankosWithoutDiscounts.map(b => b.name).join(', ') }}. Aparecen igual en el selector
-            del mapa porque el emisor existe; si vuelven a tener beneficios, se listan solos.
+            {{ bankosWithoutDiscounts.map(b => b.name).join(', ') }}
+            {{ bankosWithoutDiscounts.length === 1 ? 'aparece' : 'aparecen' }} en 0 porque esta
+            fuente no les registra beneficios vigentes hoy, no porque falten: sus tarjetas se pueden
+            elegir igual en el mapa y, si vuelven a tener descuentos, la tabla los toma sola. Tocá
+            cualquier columna para reordenar.
           </p>
         </v-card-text>
       </v-card>
@@ -342,11 +336,14 @@ const exclusiveLeader = computed(() => {
   return [...banks].sort((a, b) => b.exclusive - a.exclusive)[0] ?? null
 })
 
+/** Charts rank; a zero-length bar ranks nothing. The TABLE is where the zeros are visible. */
+const chartBanks = computed(() => (analysis.value?.banks ?? []).filter(b => b.brands > 0))
+
 const brandsRows = computed(() =>
-  (analysis.value?.banks ?? []).map(b => ({ label: b.name, value: b.brands, color: b.color }))
+  chartBanks.value.map(b => ({ label: b.name, value: b.brands, color: b.color }))
 )
 const debitRows = computed(() =>
-  [...(analysis.value?.banks ?? [])]
+  [...chartBanks.value]
     .sort((a, b) => b.debit - a.debit)
     .map(b => ({ label: b.name, value: b.debit, color: b.color }))
 )
@@ -356,11 +353,24 @@ const bankosWithoutDiscounts = computed(() => {
   return BANKOS_BANKS.filter(b => !present.has(b.id))
 })
 const exclusiveRows = computed(() =>
-  [...(analysis.value?.banks ?? [])]
+  [...chartBanks.value]
     .sort((a, b) => b.exclusive - a.exclusive)
     .map(b => ({ label: b.name, value: b.exclusive, color: b.color }))
 )
 const topCategories = computed(() => (analysis.value?.categories ?? []).slice(0, 12))
+
+/** Every column sortable — the ranking changes completely depending on what you care about. */
+const bankHeaders = [
+  { title: 'Banco', key: 'name', sortable: true },
+  { title: 'Marcas', key: 'brands', align: 'end' as const, sortable: true },
+  { title: 'Locales', key: 'locations', align: 'end' as const, sortable: true },
+  { title: 'Crédito', key: 'credit', align: 'end' as const, sortable: true },
+  { title: 'Débito', key: 'debit', align: 'end' as const, sortable: true },
+  { title: '% débito', key: 'debitShare', align: 'end' as const, sortable: true },
+  { title: 'Exclusivas', key: 'exclusive', align: 'end' as const, sortable: true },
+  { title: 'Cobertura', key: 'coverage', align: 'end' as const, sortable: true },
+  { title: 'Mapa', key: 'map', align: 'end' as const, sortable: false },
+]
 
 /** Deep links into the map, pre-filtered — the analysis answers "which bank", the map "where". */
 function mapForBank(bankId: string): string {
