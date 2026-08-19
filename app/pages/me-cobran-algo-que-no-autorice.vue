@@ -369,9 +369,15 @@ useHead({
   color: rgb(var(--v-theme-on-primary));
 }
 
+/*
+ * Filete neutro, no acento de marca: en esta página el color YA significa algo (los chips de
+ * certeza, las píldoras Sí/No de la tabla, los números de paso). Una cita en `primary` compite con
+ * esa señal y encima lee como pestaña decorativa. La bastardilla y la sangría alcanzan para marcar
+ * que es una transcripción textual.
+ */
 .norm-quote {
-  border-left: 3px solid rgb(var(--v-theme-primary));
-  padding: 4px 0 4px 12px;
+  border-left: 2px solid rgba(var(--v-border-color), 0.28);
+  padding: 4px 0 4px 14px;
   margin: 0;
   font-style: italic;
   line-height: 1.7;
