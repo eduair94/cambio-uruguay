@@ -433,6 +433,14 @@ export async function answerThreadById(postId: string, cfg: BotConfig = botConfi
 
   if (!redditConfigured()) return emptySummary("sin credenciales de lectura de Reddit");
 
+  // La bio también acá. Elegir el hilo a mano relaja la ventana de edad —es lo único que relaja—
+  // y no relaja quién es la cuenta: un comentario publicado desde este comando se lee igual que
+  // uno del cron, y si el perfil no declara nada, no lo declara para ninguno de los dos.
+  if (canPost(cfg) && cfg.requireBioDisclosure) {
+    const verdict = bioDeclaresBot(await fetchAccountBio(cfg));
+    if (!verdict.ok) return emptySummary(`la bio de la cuenta no declara el bot: ${verdict.reason}`);
+  }
+
   const [post] = await fetchPostsByIds([postId]);
   if (!post) return emptySummary(`Reddit no devolvió el hilo ${postId} (¿borrado?)`);
   summary.fetched = 1;
