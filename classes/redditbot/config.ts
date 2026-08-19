@@ -205,7 +205,7 @@ export function botConfig(): BotConfig {
     baseUrl: (process.env.SITE_BASE_URL || "https://cambio-uruguay.com").replace(/\/+$/, ""),
     fetchLimit: num("REDDIT_BOT_FETCH_LIMIT", 50),
     fetchPages: num("REDDIT_BOT_FETCH_PAGES", 4),
-    maxRepliesPerRun: Math.max(1, num("REDDIT_BOT_MAX_PER_RUN", 3)),
+    maxRepliesPerRun: Math.max(1, num("REDDIT_BOT_MAX_PER_RUN", 5)),
     quietHoursUtc: hours("REDDIT_BOT_QUIET_HOURS_UTC", [3, 4, 5, 6, 7, 8, 9, 10]),
     // 40, no 12. El tope existe por el cupo diario de embeddings, y ese cupo se reparte entre 65
     // corridas cuando el cron era cada doce minutos y entre 15 ahora que es por hora: el mismo
@@ -220,16 +220,24 @@ export function botConfig(): BotConfig {
     // tres días con dos comentarios sigue recibiendo lectores por búsqueda durante años; el costo de
     // llegar tarde es que vota menos gente, no que no sirva.
     maxAgeHours: num("REDDIT_BOT_MAX_AGE_HOURS", 168),
-    maxPerDay: num("REDDIT_BOT_MAX_PER_DAY", 12),
-    maxPerSubPerDay: num("REDDIT_BOT_MAX_PER_SUB_PER_DAY", 4),
-    minGapMinutes: num("REDDIT_BOT_MIN_GAP_MIN", 12),
+    maxPerDay: num("REDDIT_BOT_MAX_PER_DAY", 25),
+    maxPerSubPerDay: num("REDDIT_BOT_MAX_PER_SUB_PER_DAY", 8),
+    minGapMinutes: num("REDDIT_BOT_MIN_GAP_MIN", 8),
     authorCooldownDays: num("REDDIT_BOT_AUTHOR_COOLDOWN_DAYS", 7),
-    // Un día, no tres. Con una ventana de una semana el freno por página pasa a ser el que más
-    // rechaza: los hilos que el sitio contesta se agrupan por tema, así que ocho preguntas sobre
-    // aduana en la semana son ocho candidatas a la misma página. Tres días dejaba dos de esas ocho
-    // sin respuesta posible. Un día sigue impidiendo el patrón que un moderador reconoce —el mismo
-    // enlace tres veces seguidas en una tarde— sin apagar el tema entero.
-    pageCooldownDays: num("REDDIT_BOT_PAGE_COOLDOWN_DAYS", 1),
+    // CERO: el enfriamiento por página está apagado, por decisión explícita al elegir el volumen.
+    //
+    // Vale la pena escribir qué se apagó. Con una ventana de una semana este freno pasó a ser el
+    // que más rechaza —los hilos que el sitio contesta se agrupan por tema, así que ocho preguntas
+    // de aduana en la semana son ocho candidatas a la misma página— y con tres días la mayoría de
+    // esas ocho quedaban sin respuesta posible. Apagarlo es lo que hace que 25 por día sean
+    // alcanzables de verdad.
+    //
+    // Lo que NO queda apagado es el peor patrón que este freno evitaba: el mismo enlace varias
+    // veces en la misma hora. Eso ahora lo impide `run.ts`, que no repite página dentro de una
+    // corrida. Volumen igual, sin la firma.
+    //
+    // Si algún día un moderador comenta que ve el mismo enlace repetido, ésta es la primera perilla.
+    pageCooldownDays: num("REDDIT_BOT_PAGE_COOLDOWN_DAYS", 0),
     minCosine: num("REDDIT_BOT_MIN_COSINE", 0.62),
     minMargin: num("REDDIT_BOT_MIN_MARGIN", 1.12),
     strongCosine: num("REDDIT_BOT_STRONG_COSINE", 0.72),

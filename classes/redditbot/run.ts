@@ -506,6 +506,9 @@ export async function runOnce(cfg: BotConfig = botConfig()): Promise<RunSummary>
     summary.rejected[reason] = (summary.rejected[reason] ?? 0) + 1;
   };
 
+  /** Páginas ya enlazadas en ESTA corrida. Ver la nota junto a `page_repeat_in_run`. */
+  const pagesThisRun = new Set<string>();
+
   /**
    * Qué pasa después de dejar un comentario: ¿se sigue, y con qué foto del ledger?
    *
@@ -658,6 +661,7 @@ export async function runOnce(cfg: BotConfig = botConfig()): Promise<RunSummary>
     for (const { post, pagePath } of revisits) {
       const done = await answerParkedThread(post, pagePath, retriever, cfg, snapshot, summary, reject);
       if (!done) continue;
+      pagesThisRun.add(pagePath);
       const next = await afterPosting();
       snapshot = next.snapshot;
       if (next.stop) {
@@ -803,6 +807,22 @@ export async function runOnce(cfg: BotConfig = botConfig()): Promise<RunSummary>
       continue;
     }
 
+    // Y nunca la misma página dos veces en la misma corrida.
+    //
+    // Esto NO es el enfriamiento por página de arriba, que puede estar en cero: es el piso que queda
+    // cuando aquél se apaga. La diferencia importa porque los dos frenos protegen de cosas distintas.
+    // El enfriamiento regula cuántas veces por semana aparece un enlace, que es una decisión de
+    // volumen; esto evita la única forma en que el volumen se vuelve una FIRMA — cinco comentarios
+    // en una hora, en subs distintos, todos apuntando al mismo lugar. Eso no se lee como un
+    // habitué que sabe del tema, se lee como lo que es, y se lee de una sola mirada al historial.
+    //
+    // No cuesta volumen: el hilo que se saltea acá vuelve a ser candidato en la próxima corrida, y
+    // el cupo que libera se lo lleva otra respuesta con otra página.
+    if (pagesThisRun.has(chosen.path)) {
+      reject("limit:page_repeat_in_run");
+      continue;
+    }
+
     // 7b. El cupo del sub, otra vez y con el recuento de AHORA.
     //
     //     Ya se chequeó en el barrido de arriba, con la foto del ledger de antes de la corrida. Si
@@ -827,6 +847,7 @@ export async function runOnce(cfg: BotConfig = botConfig()): Promise<RunSummary>
       reject,
     });
     if (!done) continue;
+    pagesThisRun.add(chosen.path);
 
     const next = await afterPosting();
     snapshot = next.snapshot;

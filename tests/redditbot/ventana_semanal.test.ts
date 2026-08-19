@@ -6,7 +6,9 @@
 // bot hace algo razonable con datos incompletos y el log se ve normal.
 import { describe, expect, it } from "vitest";
 import { botConfig, DEFAULT_SUBS } from "../../classes/redditbot/config";
-import { runAllowed, subAllowed } from "../../classes/redditbot/limits";
+import { pageAllowed, runAllowed, subAllowed } from "../../classes/redditbot/limits";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { screenPost } from "../../classes/redditbot/filter";
 import type { LedgerSnapshot } from "../../classes/redditbot/ledger";
 import type { RedditPostRaw } from "../../classes/reddit";
@@ -113,3 +115,29 @@ describe("los subs son los que son", () => {
     ]);
   });
 });
+
+describe('el volumen elegido, y el freno que lo hace posible sin firma', () => {
+  it('los topes son los que se decidieron', () => {
+    const cfg = botConfig()
+    expect(cfg.maxPerDay).toBe(25)
+    expect(cfg.maxPerSubPerDay).toBe(8)
+  })
+
+  it('el enfriamiento por página está apagado a propósito', () => {
+    // Apagarlo es lo que hace que 25 por día sean alcanzables: los hilos que el sitio contesta se
+    // agrupan por tema, así que con enfriamiento la mayoría de las candidatas de un mismo tema
+    // quedaban sin respuesta posible.
+    expect(botConfig().pageCooldownDays).toBe(0)
+    // Y con 0 el freno no rechaza nada, ni siquiera un enlace de hace un minuto.
+    expect(pageAllowed(botConfig(), new Date()).ok).toBe(true)
+  })
+
+  it('pero run.ts sigue prohibiendo repetir la misma página dentro de una corrida', () => {
+    // El peor patrón no es "el mismo enlace ocho veces en la semana", es "el mismo enlace cinco
+    // veces en una hora, en subs distintos". Eso se lee de una sola mirada al historial, y es lo
+    // único que el enfriamiento apagado dejaba pasar.
+    const source = readFileSync(join(__dirname, '..', '..', 'classes', 'redditbot', 'run.ts'), 'utf8')
+    expect(source).toContain('pagesThisRun')
+    expect(source).toContain('page_repeat_in_run')
+  })
+})

@@ -281,9 +281,18 @@ pm2 restart currency-reddit-bot
 pm2 start ecosystem.config.js --only currency-reddit-bot-watch
 ```
 
-Desde ahí: como mucho **3 respuestas por corrida** y 12 por día, 4 por subreddit,
-12 minutos con jitter entre una y otra, una sola vez por hilo, la misma persona no
-antes de 7 días y la misma página no antes de 1.
+Desde ahí: como mucho **5 respuestas por corrida** y 25 por día, 8 por subreddit,
+8 minutos con jitter entre una y otra, una sola vez por hilo y la misma persona no
+antes de 7 días.
+
+El **enfriamiento por página está en cero**, o sea apagado, y es una decisión
+consciente: con una ventana semanal era el freno que más rechazaba, porque los hilos
+que el sitio contesta se agrupan por tema y ocho preguntas de aduana en la semana son
+ocho candidatas a la misma página. Lo que lo reemplaza es más chico y más preciso:
+**no se repite una página dentro de una misma corrida**. El patrón que un moderador
+reconoce no es "el mismo enlace ocho veces en la semana", es "el mismo enlace cinco
+veces en una hora, en subs distintos". Si alguna vez alguien comenta que ve el mismo
+enlace repetido, `REDDIT_BOT_PAGE_COOLDOWN_DAYS=1` es la primera perilla.
 
 El cron es **por hora** (minuto 6) y la ventana es de **una semana**: el bot ve todo
 lo que se preguntó en los últimos 7 días y no sólo lo de esta mañana. Entre las
@@ -299,7 +308,7 @@ durar media hora, y por eso el cron pasó de cada doce minutos a cada una.
 ### Ponerse al día con el atraso
 
 El primer día en que la ventana pasó a ser semanal hay decenas de hilos sin
-contestar, y a 3 por hora eso son días. Para eso:
+contestar, y a 5 por hora eso sigue siendo un día largo. Para eso:
 
 ```bash
 npm run reddit_sweep                          # ensayo
