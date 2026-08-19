@@ -2117,6 +2117,68 @@
     "linkHistory": "Histórico",
     "linkApi": "API gratuita"
   },
+  "redditStats": {
+    "nav": "Dudas de Reddit resueltas",
+    "eyebrow": "Transparencia",
+    "title": "Dudas de Reddit resueltas",
+    "subtitle": "Tenemos una cuenta que contesta preguntas de plata en subreddits uruguayos, citando la página del sitio de donde sale cada dato. Acá está todo lo que hizo: qué contestó, qué no, y cómo cayó cada respuesta.",
+    "account": "Cuenta",
+    "updated": "Actualizado",
+    "since": "Desde",
+    "empty": {
+      "title": "Todavía no hay datos publicados",
+      "body": "La foto se genera cada tres horas a partir del registro del bot. Si acabás de desplegar esto, esperá a la próxima corrida."
+    },
+    "metric": {
+      "answered": "Dudas contestadas",
+      "evaluated": "Hilos leídos",
+      "gaps": "Preguntas que no supimos contestar",
+      "subs": "Subreddits",
+      "pages": "Páginas enlazadas",
+      "alive": "Comentarios vivos",
+      "score": "Votos acumulados",
+      "avgScore": "Voto promedio",
+      "answerRate": "De cada 100 hilos leídos, contesta",
+      "survival": "Siguen publicados"
+    },
+    "chart": {
+      "title": "Actividad día por día",
+      "subtitle": "Contestados, descartados y preguntas sin respuesta. Los días sin nada también se dibujan: la cadencia es parte del dato.",
+      "posted": "Contestados",
+      "rejected": "Descartados",
+      "gaps": "Sin respuesta en el sitio"
+    },
+    "answers": {
+      "title": "Lo que contestó",
+      "subtitle": "El comentario completo, el hilo original y la página que se enlazó. Sin el autor del hilo: eso lo publica Reddit, no hace falta que lo republiquemos agrupado.",
+      "thread": "Hilo",
+      "page": "Página enlazada",
+      "score": "Votos",
+      "removed": "Borrado",
+      "alive": "Publicado",
+      "openThread": "Ver en Reddit",
+      "none": "Todavía no contestó ninguno."
+    },
+    "subs": {
+      "title": "Dónde contesta"
+    },
+    "pages": {
+      "title": "Qué páginas enlaza"
+    },
+    "reasons": {
+      "title": "Por qué descarta la mayoría",
+      "subtitle": "Lee todo lo que se publica en los subs uruguayos y sólo contesta preguntas de plata que el sitio sepa contestar con una fuente. Lo demás se descarta, y estos son los motivos."
+    },
+    "open": {
+      "title": "Lo que todavía no sabemos contestar",
+      "subtitle": "Preguntas reales que quedaron sin respuesta porque ninguna página del sitio las cubre. Es la lista de lo que hay que escribir.",
+      "none": "Por ahora no quedó ninguna sin contestar."
+    },
+    "rules": {
+      "title": "Las reglas que se impone",
+      "subtitle": "Un bot que comenta en comunidades ajenas tiene que poder justificarse. Estas reglas están en el código, no en una promesa."
+    }
+  },
   "siteStats": {
     "nav": "Estadísticas del sitio",
     "eyebrow": "Transparencia",

@@ -425,6 +425,21 @@ module.exports = {
     // En el VPS hay que sacarlas a mano una vez: `pm2 delete currency-reddit-social currency-reddit-ask`.
     // El deploy no borra apps, sólo arranca las que están en OTHER_APPS.
     {
+      // La foto pública de lo que el bot contestó, para /estadisticas-reddit. Agrega el ledger y
+      // escribe UN documento en la Mongo de la APP; no habla con Reddit ni gasta cuota de modelos.
+      //
+      // 39 minutos después del vigilante (que corre al :09 de cada hora): él es quien actualiza los
+      // votos y el estado de cada comentario, así que contar antes de que corra es contar con los
+      // números de ayer. Cada tres horas y no una vez por día porque la página muestra "cuántas
+      // llevamos" y un contador que se mueve una vez al día se ve roto.
+      name: "currency-reddit-stats",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_reddit_stats.js",
+      cron_restart: "48 */3 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Clusters the questions the bot could not answer and writes a researched DRAFT (never a
       // page) to docs/reddit-gaps/ when four or more threads ask the same thing. 05:35 UTC.
       name: "currency-content-gaps",

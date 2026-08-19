@@ -7,6 +7,7 @@ import { ChairTierSnapshotModel } from "../../classes/models/ChairTierSnapshot";
 import { ChairCatalogProductModel } from "../../classes/models/ChairCatalogProduct";
 import { ChairCatalogMetaModel } from "../../classes/models/ChairCatalogMeta";
 import { SiteAnalyticsSnapshotModel } from "../../classes/models/SiteAnalyticsSnapshot";
+import { RedditBotStatsModel } from "../../classes/models/RedditBotStats";
 
 const appModel = (name: string): string =>
   fs.readFileSync(path.join(__dirname, "..", "..", "app", "server", "models", `${name}.ts`), "utf8");
@@ -52,12 +53,22 @@ describe("app-Mongo schema parity", () => {
     );
   });
 
+  it("RedditBotStats declares exactly the app's top-level fields", () => {
+    // La foto pública del bot de Reddit. Un campo que el backend deja de escribir es una sección de
+    // /estadisticas-reddit que se vacía en silencio, y —peor— es histórico que no se puede
+    // recalcular después si el ledger ya se limpió.
+    expect(Object.keys(RedditBotStatsModel.schema.obj).sort()).toEqual(
+      appFields(appModel("RedditBotStats")).sort()
+    );
+  });
+
   it("writes the collections the app already reads — not mongoose's guess", () => {
     expect(PricePredictionModel.collection.name).toBe("pricepredictions");
     expect(MoveExplanationModel.collection.name).toBe("moveexplanations");
     expect(ChairTierSnapshotModel.collection.name).toBe("chairtiersnapshots");
     expect(ChairCatalogProductModel.collection.name).toBe("chaircatalogproducts");
     expect(ChairCatalogMetaModel.collection.name).toBe("chaircatalogmeta");
+    expect(RedditBotStatsModel.collection.name).toBe("redditbotstats");
     expect(SiteAnalyticsSnapshotModel.collection.name).toBe("siteanalyticssnapshots");
   });
 });

@@ -4,6 +4,20 @@
 
 import { RedditBotReplyModel, type RedditBotReplyDoc } from "../models/RedditBotReply";
 import { RedditSocialCommentModel } from "../models/RedditSocialComment";
+import { botConfig } from "./config";
+
+/**
+ * El filtro "esto lo escribió LA CUENTA DE AHORA", para las consultas donde la cuenta importa.
+ *
+ * Importa en dos: los cupos (cuántos comentarios llevo hoy) y el vigilante (cómo cayeron los míos).
+ * No importa en `seenPostIds` ni en `hasPostedTo` — ahí la pregunta es "¿ya hablamos en este hilo?",
+ * y la respuesta es sí aunque haya hablado la cuenta anterior: para quien lee el hilo somos el
+ * mismo sitio, y dos comentarios con el mismo enlace desde dos cuentas es peor, no mejor.
+ *
+ * Las filas viejas no tienen `account`, y por eso la condición es de igualdad estricta: una fila sin
+ * cuenta NO es de la cuenta actual, que es exactamente lo que hay que concluir de ella.
+ */
+const ofCurrentAccount = (): Record<string, unknown> => ({ account: botConfig().username });
 
 export interface LedgerSnapshot {
   /** Comments actually posted in the last 24 h. */
@@ -108,17 +122,18 @@ export async function forgetTooOldWithin(sinceUtcSeconds: number): Promise<numbe
 export async function readSnapshot(now: number = Date.now()): Promise<LedgerSnapshot> {
   const since = new Date(now - DAY_MS);
 
-  const posted = await RedditBotReplyModel.find({ status: "posted", postedAt: { $gte: since } })
+  const posted = await RedditBotReplyModel.find({ ...ofCurrentAccount(), status: "posted", postedAt: { $gte: since } })
     .select({ sub: 1, author: 1, pagePath: 1, postedAt: 1 })
     .lean<Array<{ sub: string; author: string; pagePath: string; postedAt: Date }>>();
 
-  const [latest] = await RedditBotReplyModel.find({ status: "posted" })
+  const [latest] = await RedditBotReplyModel.find({ ...ofCurrentAccount(), status: "posted" })
     .sort({ postedAt: -1 })
     .limit(1)
     .select({ postedAt: 1 })
     .lean<Array<{ postedAt: Date }>>();
 
   const recentNegatives = await RedditBotReplyModel.countDocuments({
+    ...ofCurrentAccount(),
     status: "posted",
     postedAt: { $gte: since },
     $or: [{ removed: true }, { commentScore: { $lte: -2 } }],
@@ -135,7 +150,7 @@ export async function readSnapshot(now: number = Date.now()): Promise<LedgerSnap
 /** How recently we linked a given page, and how recently we replied to a given author. Unbounded
  *  in time on purpose: the cooldowns are measured in days, not within the 24 h window. */
 export async function lastLinkedAt(pagePath: string): Promise<Date | null> {
-  const [row] = await RedditBotReplyModel.find({ status: "posted", pagePath })
+  const [row] = await RedditBotReplyModel.find({ ...ofCurrentAccount(), status: "posted", pagePath })
     .sort({ postedAt: -1 })
     .limit(1)
     .select({ postedAt: 1 })
@@ -145,7 +160,7 @@ export async function lastLinkedAt(pagePath: string): Promise<Date | null> {
 
 export async function lastRepliedToAuthorAt(author: string): Promise<Date | null> {
   if (!author) return null;
-  const [row] = await RedditBotReplyModel.find({ status: "posted", author })
+  const [row] = await RedditBotReplyModel.find({ ...ofCurrentAccount(), status: "posted", author })
     .sort({ postedAt: -1 })
     .limit(1)
     .select({ postedAt: 1 })
@@ -161,13 +176,18 @@ export type LedgerWrite = Partial<RedditBotReplyDoc> & { postId: string };
  * on the next pass instead of producing a duplicate comment (the unique index is the real guard).
  */
 export async function recordDecision(row: LedgerWrite): Promise<void> {
-  await RedditBotReplyModel.updateOne({ postId: row.postId }, { $set: row }, { upsert: true });
+  // La cuenta se estampa acá y no en cada llamador: son diez sitios distintos y bastaría con que uno
+  // se olvide para que su fila quede huérfana y desaparezca de las estadísticas y de los cupos.
+  const account = row.account ?? botConfig().username;
+  await RedditBotReplyModel.updateOne({ postId: row.postId }, { $set: { ...row, account } }, { upsert: true });
 }
 
 /** Rows whose comment is live and young enough that its score can still move. */
 export async function postedWithin(hours: number): Promise<RedditBotReplyDoc[]> {
   const since = new Date(Date.now() - hours * 60 * 60 * 1000);
-  return RedditBotReplyModel.find({ status: "posted", postedAt: { $gte: since }, removed: false })
+  // Sólo los propios. Releer los de otra cuenta con nuestro token los encuentra invisibles —los
+  // borró un AutoModerator que ya no nos aplica— y eso pausaba al bot nuevo por el pasado del viejo.
+  return RedditBotReplyModel.find({ ...ofCurrentAccount(), status: "posted", postedAt: { $gte: since }, removed: false })
     .select({ postId: 1, sub: 1, commentId: 1, commentFullname: 1, postedAt: 1, commentScore: 1, pageUrl: 1 })
     .lean<RedditBotReplyDoc[]>();
 }
@@ -184,10 +204,17 @@ export async function recordWatch(
 
 // The breaker's pause is stored as a row in the same collection rather than in a second one: a
 // sentinel `postId` keeps it in a place the bot already reads and cannot forget to migrate.
-const PAUSE_SENTINEL = "__paused__";
+//
+// POR CUENTA, y no global, por la misma razón que los cupos: una pausa es una afirmación sobre cómo
+// le está yendo a UNA cuenta. La global se ganó su nombre — cuando el bot cambió de cuenta, la pausa
+// que el vigilante había puesto porque a `AskUruguayanBot` le borraban todo por falta de karma
+// silenció cuarenta y ocho horas a la cuenta nueva, que tenía 1.168 de karma y existía justamente
+// para resolver eso. La fila vieja `__paused__` sigue en la base y deja de aplicar sola, que es lo
+// correcto: era sobre otra cuenta.
+const pauseSentinel = (): string => `__paused__:${botConfig().username}`;
 
 export async function readPausedUntil(): Promise<Date | null> {
-  const row = await RedditBotReplyModel.findOne({ postId: PAUSE_SENTINEL })
+  const row = await RedditBotReplyModel.findOne({ postId: pauseSentinel() })
     .select({ postedAt: 1 })
     .lean<{ postedAt: Date | null } | null>();
   return row?.postedAt ?? null;
@@ -195,8 +222,17 @@ export async function readPausedUntil(): Promise<Date | null> {
 
 export async function pauseUntil(until: Date, reason: string): Promise<void> {
   await RedditBotReplyModel.updateOne(
-    { postId: PAUSE_SENTINEL },
-    { $set: { postedAt: until, status: "rejected", rejectReason: reason, sub: "", postTitle: "circuit breaker" } },
+    { postId: pauseSentinel() },
+    {
+      $set: {
+        postedAt: until,
+        account: botConfig().username,
+        status: "rejected",
+        rejectReason: reason,
+        sub: "",
+        postTitle: "circuit breaker",
+      },
+    },
     { upsert: true }
   );
 }

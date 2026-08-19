@@ -48,7 +48,7 @@ PM2_NAME="currency-server"
 # Root-scoped pm2 apps only (no `cwd` override to ./mcp or ./bots in
 # ecosystem.config.js — those are a separate deploy surface, out of scope here).
 # currency-server is handled separately below (reload, not a plain start-if-missing).
-OTHER_APPS=(currency-sync currency-aduana currency-aduana-daily currency-sheet currency-banks-news currency-figures currency-costs currency-financing currency-debt-relief currency-bcu-rates currency-loans currency-loan-tiers currency-predictions currency-explain currency-bankos currency-chair-tiers currency-chairs currency-chairs-hourly currency-site-analytics currency-temas-analysis currency-rag-index currency-reddit-bot currency-reddit-bot-watch currency-content-gaps currency-trends currency-videos)
+OTHER_APPS=(currency-sync currency-aduana currency-aduana-daily currency-sheet currency-banks-news currency-figures currency-costs currency-financing currency-debt-relief currency-bcu-rates currency-loans currency-loan-tiers currency-predictions currency-explain currency-bankos currency-chair-tiers currency-chairs currency-chairs-hourly currency-site-analytics currency-temas-analysis currency-rag-index currency-reddit-bot currency-reddit-bot-watch currency-reddit-stats currency-content-gaps currency-trends currency-videos)
 STAGING="$REPO_DIR/dist_staging"
 PREV="$REPO_DIR/dist_prev"
 LOCK="/tmp/cambio-uruguay-backend-deploy.lock"

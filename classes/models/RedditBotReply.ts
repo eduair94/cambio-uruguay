@@ -18,6 +18,19 @@ import { appModel } from "../appdb";
 export interface RedditBotReplyDoc {
   postId: string;
   sub: string;
+  /**
+   * La cuenta de Reddit que escribió (o habría escrito) esto. Sin `u/`.
+   *
+   * Existe porque el ledger sobrevive al cambio de cuenta y las decisiones no. Cuando el bot pasó de
+   * `AskUruguayanBot` a `SizeSouthern112`, el vigilante volvió a leer los comentarios del primero
+   * con el token del segundo, los encontró invisibles —los había borrado AutoModerator por falta de
+   * karma, que es justamente el problema que el cambio de cuenta resolvía— y pausó al bot nuevo
+   * cuarenta y ocho horas por el pasado de otro. Los cupos tenían el mismo defecto: los comentarios
+   * de una cuenta contaban contra el tope diario de la otra.
+   *
+   * Vacío en las filas viejas, y eso significa exactamente lo correcto: no son de la cuenta actual.
+   */
+  account: string;
   author: string;
   postTitle: string;
   postPermalink: string;
@@ -49,6 +62,7 @@ const RedditBotReplySchema = new Schema<RedditBotReplyDoc>(
   {
     postId: { type: String, required: true },
     sub: { type: String, default: "" },
+    account: { type: String, default: "" },
     author: { type: String, default: "" },
     postTitle: { type: String, default: "" },
     postPermalink: { type: String, default: "" },
@@ -74,6 +88,7 @@ const RedditBotReplySchema = new Schema<RedditBotReplyDoc>(
 
 RedditBotReplySchema.index({ postId: 1 }, { unique: true });
 RedditBotReplySchema.index({ status: 1, postedAt: -1 });
+RedditBotReplySchema.index({ account: 1, status: 1, postedAt: -1 });
 RedditBotReplySchema.index({ author: 1, postedAt: -1 });
 RedditBotReplySchema.index({ pagePath: 1, postedAt: -1 });
 

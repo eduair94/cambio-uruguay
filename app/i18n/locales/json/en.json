@@ -2106,6 +2106,68 @@
     "linkHistory": "History",
     "linkApi": "Free API"
   },
+  "redditStats": {
+    "nav": "Reddit questions answered",
+    "eyebrow": "Transparency",
+    "title": "Reddit questions answered",
+    "subtitle": "We run an account that answers money questions in Uruguayan subreddits, citing the page each figure comes from. Here is everything it did: what it answered, what it did not, and how each reply landed.",
+    "account": "Account",
+    "updated": "Updated",
+    "since": "Since",
+    "empty": {
+      "title": "No data published yet",
+      "body": "The snapshot is built every three hours from the bot's own log. If you just deployed this, wait for the next run."
+    },
+    "metric": {
+      "answered": "Questions answered",
+      "evaluated": "Threads read",
+      "gaps": "Questions we could not answer",
+      "subs": "Subreddits",
+      "pages": "Pages linked",
+      "alive": "Comments still up",
+      "score": "Total votes",
+      "avgScore": "Average votes",
+      "answerRate": "Out of every 100 threads read, it answers",
+      "survival": "Still published"
+    },
+    "chart": {
+      "title": "Day by day",
+      "subtitle": "Answered, skipped, and questions with no answer on the site. Empty days are drawn too: the cadence is part of the data.",
+      "posted": "Answered",
+      "rejected": "Skipped",
+      "gaps": "No answer on the site"
+    },
+    "answers": {
+      "title": "What it answered",
+      "subtitle": "The full comment, the original thread and the page it linked. Without the thread's author: Reddit publishes that already.",
+      "thread": "Thread",
+      "page": "Page linked",
+      "score": "Votes",
+      "removed": "Removed",
+      "alive": "Live",
+      "openThread": "Open on Reddit",
+      "none": "Nothing answered yet."
+    },
+    "subs": {
+      "title": "Where it answers"
+    },
+    "pages": {
+      "title": "Which pages it links"
+    },
+    "reasons": {
+      "title": "Why it skips most threads",
+      "subtitle": "It reads everything posted in the Uruguayan subs and only answers money questions the site can answer with a source. Everything else is skipped, and these are the reasons."
+    },
+    "open": {
+      "title": "What we cannot answer yet",
+      "subtitle": "Real questions left unanswered because no page on the site covers them. This is the list of what to write next.",
+      "none": "Nothing went unanswered so far."
+    },
+    "rules": {
+      "title": "The rules it holds itself to",
+      "subtitle": "A bot commenting in someone else's community has to be able to justify itself. These rules live in the code, not in a promise."
+    }
+  },
   "siteStats": {
     "nav": "Site statistics",
     "eyebrow": "Transparency",

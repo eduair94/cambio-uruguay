@@ -2099,6 +2099,68 @@
     "linkHistory": "Histórico",
     "linkApi": "API gratuita"
   },
+  "redditStats": {
+    "nav": "Dúvidas do Reddit respondidas",
+    "eyebrow": "Transparência",
+    "title": "Dúvidas do Reddit respondidas",
+    "subtitle": "Temos uma conta que responde perguntas sobre dinheiro em subreddits uruguaios, citando a página do site de onde sai cada dado. Aqui está tudo o que ela fez: o que respondeu, o que não, e como cada resposta caiu.",
+    "account": "Conta",
+    "updated": "Atualizado",
+    "since": "Desde",
+    "empty": {
+      "title": "Ainda não há dados publicados",
+      "body": "A foto é gerada a cada três horas a partir do registro do bot. Se você acabou de implantar isto, espere a próxima execução."
+    },
+    "metric": {
+      "answered": "Dúvidas respondidas",
+      "evaluated": "Tópicos lidos",
+      "gaps": "Perguntas que não soubemos responder",
+      "subs": "Subreddits",
+      "pages": "Páginas vinculadas",
+      "alive": "Comentários no ar",
+      "score": "Votos acumulados",
+      "avgScore": "Voto médio",
+      "answerRate": "A cada 100 tópicos lidos, responde",
+      "survival": "Continuam publicados"
+    },
+    "chart": {
+      "title": "Dia a dia",
+      "subtitle": "Respondidos, descartados e perguntas sem resposta. Os dias sem nada também aparecem: a cadência faz parte do dado.",
+      "posted": "Respondidos",
+      "rejected": "Descartados",
+      "gaps": "Sem resposta no site"
+    },
+    "answers": {
+      "title": "O que respondeu",
+      "subtitle": "O comentário completo, o tópico original e a página vinculada. Sem o autor do tópico: isso o Reddit já publica.",
+      "thread": "Tópico",
+      "page": "Página vinculada",
+      "score": "Votos",
+      "removed": "Removido",
+      "alive": "No ar",
+      "openThread": "Ver no Reddit",
+      "none": "Ainda não respondeu nenhum."
+    },
+    "subs": {
+      "title": "Onde responde"
+    },
+    "pages": {
+      "title": "Quais páginas vincula"
+    },
+    "reasons": {
+      "title": "Por que descarta a maioria",
+      "subtitle": "Lê tudo o que é publicado nos subs uruguaios e só responde perguntas sobre dinheiro que o site saiba responder com fonte. O resto é descartado, e estes são os motivos."
+    },
+    "open": {
+      "title": "O que ainda não sabemos responder",
+      "subtitle": "Perguntas reais que ficaram sem resposta porque nenhuma página do site as cobre. É a lista do que escrever.",
+      "none": "Por enquanto nenhuma ficou sem resposta."
+    },
+    "rules": {
+      "title": "As regras que ela segue",
+      "subtitle": "Um bot que comenta em comunidades alheias precisa poder se justificar. Estas regras estão no código, não numa promessa."
+    }
+  },
   "siteStats": {
     "nav": "Estatísticas do site",
     "eyebrow": "Transparência",

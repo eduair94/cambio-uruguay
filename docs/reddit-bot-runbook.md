@@ -11,6 +11,22 @@ que hay que cargarlas.
 | `currency-reddit-bot` | **comenta** en Reddit, cada hora | lo anterior + `CLAUDE_AGENT_API_KEY` + credenciales del bot + dos flags |
 | `currency-reddit-bot-watch` | lee cómo cayeron las respuestas | credenciales del bot |
 | `currency-content-gaps` | borradores de lo que falta | `APP_MONGO_URI` + Claude o Gemini |
+| `currency-reddit-stats` | la foto pública de /estadisticas-reddit | `APP_MONGO_URI` |
+
+## Lo que el bot hace es público
+
+`/estadisticas-reddit` publica el registro entero: cuántas dudas contestó, en qué subs, qué páginas
+enlazó, el texto completo de cada comentario, cuántos terminaron borrados, **y cuántos hilos
+descartó y por qué**. Publicar los descartes no es autoflagelación: sin ellos el número "contestó N
+preguntas" invita a la lectura contraria —que la cuenta comenta en todo lo que se mueve— que es
+justo la que haría un moderador.
+
+Lo que NO se publica es el autor de ningún hilo. Reddit ya lo publica; republicarlo agrupado y
+buscable es otra cosa.
+
+El job corre cada tres horas y **mezcla** los días con lo ya guardado en vez de recalcularlos: el
+ledger es memoria operativa y el día que alguien borre las filas rechazadas viejas, el histórico
+tiene que seguir estando.
 
 ## La cuenta SOLO COMENTA
 

@@ -2091,6 +2091,23 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        to: '/estadisticas-reddit',
+        labelKey: 'redditStats.nav',
+        icon: 'mdi-reddit',
+        priority: 0.4,
+        changefreq: 'daily',
+        fresh: true,
+        keywords: [
+          'reddit',
+          'bot',
+          'dudas resueltas',
+          'preguntas contestadas',
+          'transparencia',
+          'estadisticas del bot',
+          'r/uruguay',
+        ],
+      },
+      {
         to: '/privacidad',
         labelKey: 'legal.privacyNav',
         icon: 'mdi-shield-lock-outline',
