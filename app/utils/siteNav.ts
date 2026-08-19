@@ -756,6 +756,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
           'ancapuntos ducsa',
           'pedidosya plus precio',
           'socio espectacular',
+          'abono cultural bps jubilados',
           'club movistar movis',
           'beneficios antel 2x1 cine',
           'club el pais',

@@ -519,6 +519,12 @@ const FAQ: FaqItem[] = [
       'Se acumulan: son cosas distintas. El descuento del banco se aplica en el momento y suele ser de dos dígitos pero solo un día de la semana; el programa del comercio devuelve un porcentaje bajo pero en todas las compras, incluso pagando en efectivo. Lo eficiente es comprar el día del descuento bancario y dar igual el documento o la tarjeta de puntos del comercio.',
   },
   {
+    id: 'abono-cultural-bps',
+    question: '¿Los jubilados pagan lo mismo por Socio Espectacular?',
+    answer:
+      'No. Quien cobra del BPS una jubilación o pensión de hasta 8 BPC puede acceder a la misma tarjeta por el Abono Cultural, que cubre un año entero en vez de una cuota mensual, con la posibilidad de descontarlo del recibo en 6 o 12 cuotas. Hay un conflicto entre dos fuentes oficiales sobre el importe —Socio Espectacular publica $ 1.580 al contado y el BPS sigue mostrando $ 1.525—, así que conviene confirmar el monto en la ventanilla; el trámite es presencial.',
+  },
+  {
     id: 'app-descuentos-uruguay',
     question: '¿Hay una app que junte todos los descuentos en un solo lugar?',
     answer:

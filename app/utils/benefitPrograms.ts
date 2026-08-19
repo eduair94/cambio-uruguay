@@ -440,12 +440,19 @@ export const BENEFIT_PROGRAMS: readonly BenefitProgram[] = Object.freeze([
         source: 'oficial',
       },
       { label: 'Titularidad', value: 'El uso es personal e intransferible', source: 'oficial' },
+      {
+        label: 'Vía BPS (Abono Cultural)',
+        value:
+          'Jubilados y pensionistas del BPS con haberes de hasta 8 BPC pagan un año entero, no una cuota mensual: $ 1.580 al contado según Socio Espectacular (el BPS todavía publica $ 1.525), o en 6 o 12 cuotas descontadas del recibo',
+        source: 'oficial',
+      },
     ],
     caveats: [
       'La cuota "desde $ 500" es el piso: hay varios tipos de socio y el precio real depende del plan y de si entrás por un convenio.',
       'Los tres meses de permanencia se pagan por adelantado: no es una suscripción que cortás el primer mes.',
       'Las entradas libres van por cupo. Cuando se agota, el beneficio pasa a ser 50 % de descuento, no una entrada gratis.',
       'El 2x1 de cine también lo dan sin costo otros programas (clientes de Antel, medios de pago del BROU): si vas al cine y nada más, la cuota puede sobrar.',
+      'Si cobrás del BPS, no pagues la cuota mensual sin preguntar por el Abono Cultural: es la misma tarjeta por un año a una fracción del precio. Dos fuentes oficiales publican montos distintos ($ 1.580 en Socio Espectacular, $ 1.525 en el BPS), y el trámite es presencial en Montevideo, así que confirmá el importe en la ventanilla.',
     ],
     verified: true,
   },
@@ -638,6 +645,16 @@ export const BENEFIT_SOURCES: readonly BenefitSource[] = Object.freeze([
     label: 'Preguntas frecuentes de Socio Espectacular',
     url: 'https://socioespectacular.com.uy/preguntas-frecuentes/',
     publisher: 'Socio Espectacular',
+  },
+  {
+    label: 'Abono Cultural BPS (convenio con Socio Espectacular)',
+    url: 'https://socioespectacular.com.uy/convenios/abono-cultural-bps/',
+    publisher: 'Socio Espectacular',
+  },
+  {
+    label: 'Abono Cultural — Tarjeta Socio Espectacular',
+    url: 'https://www.bps.gub.uy/21074/abono-cultural---tarjeta-socio-espectacular.html',
+    publisher: 'BPS',
   },
   {
     label: 'Preguntas frecuentes de Club Movistar',
