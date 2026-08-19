@@ -34,6 +34,7 @@ import { judgeRelevance } from "./judge";
 import { authorAllowed, jitterMinutes, pageAllowed, runAllowed, subAllowed } from "./limits";
 import type { LedgerSnapshot } from "./ledger";
 import { subWritable } from "./subrules";
+import { fetchThreadContext, EMPTY_THREAD } from "./thread";
 import { bioDeclaresBot } from "./identity";
 import { fetchAccountBio } from "./post";
 import {
@@ -256,6 +257,12 @@ async function deliverReply({
   const image = cfg.readImages ? await fetchPostImage(post.imageUrl) : null;
   if (image) console.log(`[redditbot] el post trae imagen (${Math.round(image.bytes / 1024)} KB), se la paso al redactor`);
 
+  // Lo que el hilo ya contestó. Una llamada, para el único hilo que vamos a contestar.
+  const thread = cfg.readThreadComments
+    ? await fetchThreadContext(post.sub, post.id, cfg.username)
+    : EMPTY_THREAD;
+  if (thread.count) console.log(`[redditbot] el hilo ya tiene ${thread.count} comentarios, se los paso al redactor`);
+
   // Lo que la página no cubre, investigado y verificado. Sirve dos veces: mejora ESTA respuesta,
   // y queda anotado como faltante de la página para ampliarla después.
   const augmented: Augmentation = cfg.researchGaps
@@ -294,8 +301,13 @@ ${post.selftext}`, context)
       imageNote: image
         ? "la persona adjuntó una imagen; miralá y usá lo que se ve en ella (montos, nombres, fechas) para contestar"
         : undefined,
+      threadComments: thread.text || undefined,
       externalEvidence: augmented.evidence || undefined,
     },
+    // OJO: `context` es lo que el validador acepta como respaldo de una cifra, y los comentarios del
+    // hilo NO van acá a propósito. Son lo único del prompt que puede estar equivocado —es la razón
+    // por la que se leen—, así que dejarlos justificar un número nuestro convertiría el error de un
+    // desconocido en una afirmación del sitio.
     context
   );
   if ("reject" in composed) {

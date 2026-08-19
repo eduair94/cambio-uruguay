@@ -134,6 +134,16 @@ export interface BotConfig {
    */
   readImages: boolean;
   /**
+   * Leer los comentarios que el hilo YA tiene, antes de redactar.
+   *
+   * Cuesta una llamada a la API por comentario publicado y compra las dos cosas que separan a un
+   * habitué de un folleto: no repetir lo que ya está dicho, y corregir lo que está mal. El hilo que
+   * originó todo esto lo muestra — la única respuesta que tenía afirmaba que Prex y Mercado Pago
+   * comparten administradora de fondos, que es falso, y el bot no podía corregirlo porque no la
+   * leía. Apagalo sólo para depurar. Ver `thread.ts` para por qué esos comentarios NO son evidencia.
+   */
+  readThreadComments: boolean;
+  /**
    * Investigar afuera lo que la página no cubre, antes de redactar.
    *
    * Cuesta una llamada con búsqueda web por respuesta, y con seis respuestas por día eso es nada
@@ -213,6 +223,7 @@ export function botConfig(): BotConfig {
     // Además la ventana es de una semana, así que la PRIMERA corrida ve el atraso entero de golpe.
     maxCandidatesPerRun: num("REDDIT_BOT_MAX_CANDIDATES", 40),
     readImages: process.env.REDDIT_BOT_READ_IMAGES !== "0",
+    readThreadComments: process.env.REDDIT_BOT_READ_THREAD !== "0",
     researchGaps: process.env.REDDIT_BOT_RESEARCH_GAPS !== "0",
     minAgeMinutes: num("REDDIT_BOT_MIN_AGE_MIN", 15),
     // Una semana. Era 8 h, que es la ventana de "contestar mientras el hilo está vivo" y deja fuera

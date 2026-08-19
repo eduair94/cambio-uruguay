@@ -165,6 +165,28 @@ interface AgentResponse {
 /** HTTP statuses that mean "the service is saturated" — never retried. See property 2. */
 const SATURATION = new Set([429, 503, 504]);
 
+/**
+ * Fallas que llegan con HTTP 200 y `ok: false`, y que no se arreglan reintentando.
+ *
+ * El endpoint contesta 200 SIEMPRE que llegó a ejecutar el agente, aunque el agente no haya podido
+ * hacer nada. Cuando la suscripción de la caja queda deshabilitada, cada llamada devuelve
+ * "Your organization has disabled Claude subscription access for Claude Code" — 200, `ok:false`, y
+ * el motivo en `result`, no en `error`.
+ *
+ * Sin esta lista, cada llamada del fleet paga la ida y vuelta entera (decenas de segundos) antes de
+ * caer a Gemini, y lo hace para siempre: no es un problema transitorio, es una cuenta apagada. Lo
+ * que se corta acá no es la calidad —Gemini escribe igual— sino el tiempo perdido y, sobre todo, el
+ * silencio: hasta que esto existió, un fleet entero escribiendo con el respaldo se veía en los logs
+ * como `[claude] HTTP 200 :`.
+ */
+const FATAL_RESULT_PATTERNS = [
+  "disabled claude subscription access",
+  "use an anthropic api key instead",
+  "invalid api key",
+  "authentication_error",
+  "credit balance is too low",
+];
+
 async function callAgent(body: Record<string, unknown>, timeoutMs: number): Promise<string | null> {
   const key = apiKey();
   if (!key) return null;
@@ -189,7 +211,22 @@ async function callAgent(body: Record<string, unknown>, timeoutMs: number): Prom
       return null;
     }
     if (res.status !== 200 || res.data?.ok !== true) {
-      console.warn(`[claude] HTTP ${res.status} ${res.data?.error ?? ""}: ${res.data?.message ?? ""}`.trim());
+      // `result` va PRIMERO en el mensaje. Cuando el agente corrió y falló, el motivo viene ahí y
+      // `error`/`message` vienen vacíos — que es cómo "tu suscripción está deshabilitada" se
+      // imprimía durante días como `[claude] HTTP 200 :` y nadie se enteraba de que el fleet entero
+      // estaba escribiendo con el respaldo.
+      const why = [res.data?.error, res.data?.message, res.data?.result]
+        .map((part) => (part ?? "").toString().trim())
+        .filter(Boolean)
+        .join(" · ")
+        .slice(0, 300);
+      console.warn(`[claude] HTTP ${res.status} ok=${res.data?.ok} ${why || "(sin motivo en la respuesta)"}`);
+
+      const flat = why.toLowerCase();
+      if (FATAL_RESULT_PATTERNS.some((pattern) => flat.includes(pattern))) {
+        saturated = true;
+        console.warn("[claude] la cuenta no puede ejecutar el agente; no se hacen más llamadas en este proceso");
+      }
       return null;
     }
 

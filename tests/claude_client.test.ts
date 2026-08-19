@@ -142,3 +142,73 @@ describe("classes/claude", () => {
     expect(config.timeout).toBeGreaterThan(60000);
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// El 200 que no es un 200
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// El endpoint contesta 200 siempre que llegó a ejecutar el agente, aunque el agente no haya podido
+// hacer nada. El 2026-08-19 la suscripción de la caja quedó deshabilitada y durante días TODO el
+// fleet —juez, redactor, investigación de huecos, aduana— escribió con Gemini sin que nadie lo
+// notara, porque el cliente imprimía el motivo desde `error`/`message`, que venían vacíos, y el
+// motivo real vivía en `result`.
+describe("classes/claude — el 200 con ok:false", () => {
+  const savedKey = process.env.CLAUDE_AGENT_API_KEY;
+
+  beforeEach(() => {
+    process.env.CLAUDE_AGENT_API_KEY = "k";
+    __resetClaudeForTests();
+  });
+
+  afterEach(() => {
+    if (savedKey === undefined) delete process.env.CLAUDE_AGENT_API_KEY;
+    else process.env.CLAUDE_AGENT_API_KEY = savedKey;
+    vi.restoreAllMocks();
+    __resetClaudeForTests();
+  });
+
+  const disabled = {
+    status: 200,
+    data: {
+      ok: false,
+      result:
+        "Your organization has disabled Claude subscription access for Claude Code · Use an Anthropic API key instead, or ask your admin to enable access",
+    },
+  };
+
+  it("imprime el motivo aunque venga en result y no en error", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    vi.spyOn(axios, "post").mockResolvedValue(disabled as any);
+
+    await expect(askClaude("hola")).resolves.toBeNull();
+
+    const printed = warn.mock.calls.map(c => c.join(" ")).join("\n");
+    expect(printed).toContain("disabled Claude subscription access");
+    // Lo que NO puede volver a pasar: la línea vacía que hacía invisible el problema.
+    expect(printed).not.toMatch(/HTTP 200\s*:?\s*$/m);
+  });
+
+  it("deja de llamar en ese proceso: una cuenta apagada no se arregla reintentando", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const post = vi.spyOn(axios, "post").mockResolvedValue(disabled as any);
+
+    await askClaude("uno");
+    expect(claudeSaturated()).toBe(true);
+
+    // Cada llamada cuesta la ida y vuelta entera antes de caer a Gemini. Con veinte llamadas por
+    // corrida eso son minutos tirados, todas las horas, para siempre.
+    await askClaude("dos");
+    expect(post).toHaveBeenCalledTimes(1);
+  });
+
+  it("un ok:false común NO apaga el cliente — puede ser este pedido y no la cuenta", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    vi.spyOn(axios, "post").mockResolvedValue({
+      status: 200,
+      data: { ok: false, error: "prompt too long" },
+    } as any);
+
+    await expect(askClaude("hola")).resolves.toBeNull();
+    expect(claudeSaturated()).toBe(false);
+  });
+});

@@ -61,6 +61,14 @@ export interface ComposeInput {
   /** Told to the model in the prompt so it knows an attachment exists even on the text-only path. */
   imageNote?: string;
   /**
+   * Lo que el hilo ya contestó, para no repetirlo y para poder corregirlo.
+   *
+   * NO es evidencia. Es lo único del prompt cuyos números NO valen: un comentario de Reddit es
+   * justamente lo que puede estar equivocado, y dejar que respalde una cifra nuestra convertiría el
+   * error de un desconocido en una afirmación del sitio. Ver `thread.ts`.
+   */
+  threadComments?: string;
+  /**
    * Verified text from OUTSIDE the site, for the part of the question the page does not cover.
    *
    * Same standing as the site's own text: it was downloaded by us from URLs that answered 200,
@@ -90,6 +98,12 @@ ${input.externalEvidence ? `
 FUENTES EXTERNAS VERIFICADAS — las descargamos nosotros para la parte que la página no cubre.
 Podés usarlas igual que el contexto de arriba: las cifras que aparezcan acá son válidas.
 ${input.externalEvidence}
+` : ""}${input.threadComments ? `
+LO QUE YA CONTESTARON EN EL HILO — esto NO es una fuente. Es lo que dijeron otras personas.
+Sirve para dos cosas y sólo dos: no repetir lo que ya está dicho, y corregir lo que esté mal.
+NINGUNA cifra de acá abajo se puede usar en tu respuesta: pueden estar equivocadas, que es
+justamente por lo que las estás leyendo.
+${input.threadComments}
 ` : ""}
 
 CÓMO CONTESTAR
@@ -101,7 +115,12 @@ CÓMO CONTESTAR
    específico y lo ignorás, el comentario no sirve.
 3. Si en el contexto hay algo que contradice lo que la persona da por sentado, decíselo. Esa es la
    parte útil.
-4. Si ni el contexto ni las fuentes externas alcanzan para una parte, decilo en media oración y
+4. Y lo mismo con lo que ya contestaron otros, si te lo pasaron. Si alguien afirmó algo que el
+   CONTEXTO desmiente, corregilo con el dato concreto y sin agrandarlo: "ojo que X e Y no son lo
+   mismo, Y es tal cosa". Es lo más útil que se puede escribir en un hilo que ya tiene respuestas.
+   Si lo que dijeron está bien, no lo repitas: escribí sólo lo que falta. Nunca cites usuarios por
+   su nombre ni digas que alguien se equivocó — hablás del dato, no de la persona.
+5. Si ni el contexto ni las fuentes externas alcanzan para una parte, decilo en media oración y
    seguí. No la completes de memoria.
 
 CÓMO NO ESCRIBIR
