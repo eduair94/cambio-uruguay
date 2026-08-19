@@ -7,8 +7,9 @@
       </h1>
       <p class="lead mb-6">
         La pregunta se hace todo el tiempo y casi siempre se contesta con anécdotas. Acá va con
-        números: qué dice el decreto del mínimo, qué dice la ley de la jornada, y qué encontramos
-        cuando nos pusimos a leer los avisos uno por uno.
+        números: qué dice el decreto del mínimo, qué dice la ley de la jornada, qué encontramos
+        cuando nos pusimos a leer los avisos uno por uno, y —porque quedarse en «no se puede» no le
+        sirve a nadie— qué ingreso le corresponde de verdad a ese hogar y por qué puerta se pide.
       </p>
 
       <VRow class="mb-2">
@@ -20,6 +21,13 @@
           </VCard>
         </VCol>
       </VRow>
+
+      <div class="d-flex flex-wrap ga-2 mt-4">
+        <VBtn color="primary" variant="flat" size="small" href="#apoyos">
+          Qué te corresponde del Estado
+        </VBtn>
+        <VBtn variant="tonal" size="small" href="#arreglos">Con quién vivís cambia la cuenta</VBtn>
+      </div>
     </header>
 
     <!-- ── 1. La calculadora ─────────────────────────────────────────────── -->
@@ -513,6 +521,212 @@
       </p>
     </section>
 
+    <!-- ── 7. Lo que pone el Estado ──────────────────────────────────────── -->
+    <section id="apoyos" class="mb-12">
+      <h2 class="text-h5 font-weight-bold mb-2">Lo que el Estado pone, y casi nadie pide</h2>
+      <p class="section-intro text-medium-emphasis mb-5">
+        Hasta acá la cuenta miró el sueldo solo, y así no cierra. Pero el sueldo no es todo el
+        ingreso al que ese hogar tiene derecho: hay transferencias con ley y monto publicado, y
+        tarifas sociales que bajan la factura sin trámite. Poné cómo es tu hogar y mirá qué te
+        corresponde, cuánto es, y por qué puerta se pide. Todos los montos que siguen están
+        publicados por BPS, MIDES, UTE u OSE, con su fecha de vigencia.
+      </p>
+
+      <VCard variant="flat" class="calc-card pa-5 pa-md-6 mb-6">
+        <VRow dense>
+          <VCol cols="6" md="3">
+            <VSelect
+              v-model.number="menores"
+              :items="rango(0, 6)"
+              label="Menores a cargo"
+              density="comfortable"
+              variant="outlined"
+              hide-details
+            />
+          </VCol>
+          <VCol cols="6" md="3">
+            <VSelect
+              v-model.number="menoresEnMedia"
+              :items="rango(0, menores)"
+              label="De ésos, en liceo o UTU"
+              density="comfortable"
+              variant="outlined"
+              hide-details
+              :disabled="menores === 0"
+            />
+          </VCol>
+          <VCol cols="6" md="3">
+            <VSelect
+              v-model.number="menores03"
+              :items="rango(0, menores)"
+              label="De ésos, de 0 a 3 años"
+              density="comfortable"
+              variant="outlined"
+              hide-details
+              :disabled="menores === 0"
+            />
+          </VCol>
+          <VCol cols="6" md="3">
+            <VSelect
+              v-model.number="personasHogar"
+              :items="rango(1, 8)"
+              label="Personas en el hogar"
+              density="comfortable"
+              variant="outlined"
+              hide-details
+            />
+          </VCol>
+          <VCol cols="6" md="3">
+            <VSelect
+              v-model.number="sueldosEnElHogar"
+              :items="rango(1, 3)"
+              label="Sueldos como ese"
+              density="comfortable"
+              variant="outlined"
+              hide-details
+            />
+          </VCol>
+          <VCol cols="6" md="3">
+            <VTextField
+              v-model.number="facturaLuz"
+              type="number"
+              min="0"
+              label="Luz por mes (opcional)"
+              prefix="$"
+              density="comfortable"
+              variant="outlined"
+              hide-details
+            />
+          </VCol>
+          <VCol cols="12" md="6" class="d-flex flex-column justify-center">
+            <VSwitch
+              v-model="calificaMides"
+              color="primary"
+              density="compact"
+              hide-details
+              label="El MIDES ya evaluó al hogar (cobrás TUS o AFAM del Plan de Equidad)"
+            />
+            <VSwitch
+              v-if="calificaMides"
+              v-model="tusDuplicada"
+              color="primary"
+              density="compact"
+              hide-details
+              label="La TUS es duplicada"
+            />
+          </VCol>
+        </VRow>
+      </VCard>
+
+      <VRow class="mb-2">
+        <VCol cols="12" md="5">
+          <VCard variant="flat" class="math-card pa-5 pa-md-6 h-100 on-dark">
+            <div class="text-overline mb-3">Por mes, además del sueldo</div>
+            <p class="text-h4 font-weight-bold num mb-1">{{ uyu(plan.transferencias) }}</p>
+            <p class="mb-4 text-medium-emphasis">
+              {{
+                plan.transferencias > 0
+                  ? 'de plata en la mano: asignaciones y tarjeta, sin contar descuentos de tarifa.'
+                  : 'no hay transferencias que este hogar pueda cobrar hoy. Abajo está por qué, y qué sí hay.'
+              }}
+            </p>
+            <ul class="math-list mb-0">
+              <li v-for="(l, i) in planLineas" :key="i">
+                <span class="math-label">{{ l.label }}</span>
+                <span class="math-value" :class="l.tone">{{ l.value }}</span>
+              </li>
+            </ul>
+          </VCard>
+        </VCol>
+        <VCol cols="12" md="7">
+          <VCard variant="flat" class="mech-card pa-5 pa-md-6 h-100">
+            <h3 class="text-subtitle-1 font-weight-bold mb-2">La misma resta, con los apoyos</h3>
+            <p class="mb-3 text-medium-emphasis">{{ lecturaApoyos }}</p>
+            <VAlert
+              v-for="(a, i) in avisosApoyos"
+              :key="i"
+              :type="a.type"
+              variant="tonal"
+              density="comfortable"
+              class="mb-2"
+            >
+              {{ a.text }}
+            </VAlert>
+          </VCard>
+        </VCol>
+      </VRow>
+
+      <div v-for="grupo in apoyosAgrupados" :key="grupo.estado" class="mb-5">
+        <h3 class="text-subtitle-1 font-weight-bold mb-1">{{ grupo.titulo }}</h3>
+        <p class="text-body-2 text-medium-emphasis mb-3">{{ grupo.bajada }}</p>
+        <VExpansionPanels variant="accordion">
+          <VExpansionPanel v-for="it in grupo.items" :key="it.apoyo.id">
+            <VExpansionPanelTitle>
+              <div class="w-100">
+                <div class="d-flex flex-wrap align-center ga-2 mb-1">
+                  <span class="font-weight-medium">{{ it.apoyo.nombre }}</span>
+                  <VChip size="x-small" variant="tonal">{{ it.apoyo.organismo }}</VChip>
+                  <VChip v-if="it.apoyo.automatico" size="x-small" color="success" variant="tonal">
+                    sin trámite
+                  </VChip>
+                  <VChip v-if="it.monto > 0" size="x-small" color="primary" variant="flat">
+                    {{ uyu(it.monto) }} / mes
+                  </VChip>
+                  <VChip v-if="it.apoyo.alerta" size="x-small" color="warning" variant="tonal">
+                    con letra chica
+                  </VChip>
+                </div>
+                <div class="text-caption text-medium-emphasis">{{ it.porQue }}</div>
+              </div>
+            </VExpansionPanelTitle>
+            <VExpansionPanelText>
+              <p class="mb-2"><strong>Qué da.</strong> {{ it.apoyo.da }}</p>
+              <p class="mb-2"><strong>Quién califica.</strong> {{ it.apoyo.quien }}</p>
+              <p class="mb-2"><strong>Cómo se pide.</strong> {{ it.apoyo.como }}</p>
+              <p v-if="it.apoyo.alerta" class="mb-2 text-warning">
+                <strong>Ojo.</strong> {{ it.apoyo.alerta }}
+              </p>
+              <a :href="it.apoyo.url" target="_blank" rel="noopener noreferrer">
+                Ver la fuente oficial
+              </a>
+            </VExpansionPanelText>
+          </VExpansionPanel>
+        </VExpansionPanels>
+      </div>
+
+      <h3 class="text-subtitle-1 font-weight-bold mb-3">Dónde se toca el timbre</h3>
+      <VRow>
+        <VCol v-for="p in PUERTAS" :key="p.organismo" cols="12" md="6">
+          <VCard variant="flat" class="mech-card pa-5 h-100">
+            <div class="d-flex align-center ga-2 mb-2">
+              <h4 class="text-subtitle-2 font-weight-bold mb-0">{{ p.organismo }}</h4>
+              <VBtn
+                :href="p.url"
+                target="_blank"
+                rel="noopener noreferrer"
+                variant="text"
+                size="x-small"
+                class="px-1"
+              >
+                sitio oficial
+              </VBtn>
+            </div>
+            <p class="mb-2 text-medium-emphasis">{{ p.para }}</p>
+            <p class="mb-0 text-body-2">{{ p.como }}</p>
+          </VCard>
+        </VCol>
+      </VRow>
+
+      <p class="text-caption text-medium-emphasis mt-4 mb-0">
+        Montos y requisitos contrastados el {{ apoyosVerifiedAt }}. Lo que esta calculadora no puede
+        hacer, y ninguna puede: decirte si el MIDES va a calificar a tu hogar. Eso se resuelve con
+        el Índice de Carencias Críticas, que pondera ingresos, vivienda, entorno, composición del
+        hogar y situación sanitaria (Ley 18.227, artículo 2), y se mide en una visita. Por eso los
+        programas que dependen de esa evaluación aparecen como «hay que pedir la evaluación» y no
+        como un sí o un no.
+      </p>
+    </section>
+
     <!-- ── 6. Qué hacer ──────────────────────────────────────────────────── -->
     <section class="mb-12">
       <h2 class="text-h5 font-weight-bold mb-2">Si te acaban de hacer una oferta así</h2>
@@ -531,7 +745,7 @@
     <section class="mb-12">
       <h2 class="text-h5 font-weight-bold mb-4">Preguntas frecuentes</h2>
       <VExpansionPanels variant="accordion">
-        <VExpansionPanel v-for="f in LOWWAGE_FAQ" :key="f.question">
+        <VExpansionPanel v-for="f in FAQ_COMPLETA" :key="f.question">
           <VExpansionPanelTitle>
             <div>
               <div class="font-weight-medium">{{ f.question }}</div>
@@ -570,12 +784,14 @@
     <section>
       <h2 class="text-h6 font-weight-bold mb-3">Fuentes</h2>
       <p class="text-body-2 text-medium-emphasis mb-3">
-        Normas y montos contrastados el {{ verifiedAt }}. El Salario Mínimo Nacional se ajusta por
-        decreto y los laudos cambian en cada ronda de Consejos de Salarios: si estás leyendo esto
-        mucho después, contrastá el monto antes de usarlo.
+        Normas y montos del sueldo y la jornada, contrastados el {{ verifiedAt }}; los de las
+        prestaciones y tarifas sociales, el {{ apoyosVerifiedAt }}. El Salario Mínimo Nacional se
+        ajusta por decreto, los laudos cambian en cada ronda de Consejos de Salarios y las
+        prestaciones del BPS y del MIDES se actualizan cada enero: si estás leyendo esto mucho
+        después, contrastá el monto antes de usarlo.
       </p>
       <ul class="sources-list">
-        <li v-for="s in LOWWAGE_SOURCES" :key="s.url">
+        <li v-for="s in FUENTES_COMPLETAS" :key="s.url">
           <a :href="s.url" target="_blank" rel="noopener noreferrer">{{ s.label }}</a>
         </li>
       </ul>
@@ -614,6 +830,16 @@ import {
   type ArregloCosto,
   type Rama,
 } from '~/utils/lowWage'
+import {
+  APOYOS_FAQ,
+  PUERTAS,
+  STATE_SUPPORT_SOURCES,
+  STATE_SUPPORT_VERIFIED_AT,
+  conApoyos,
+  planDeApoyos,
+  type ApoyoResuelto,
+  type EstadoApoyo,
+} from '~/utils/stateSupport'
 
 const localePath = useLocalePath()
 
@@ -792,6 +1018,192 @@ const fmtDate = (iso: string) =>
     timeZone: 'UTC',
   })
 
+// ── Estado de la calculadora de apoyos. Arranca en el hogar que más aparece en la pregunta:
+// una persona sola sin hijos, que es justamente el que el sistema casi no ve.
+const menores = ref(0)
+const menoresEnMedia = ref(0)
+const menores03 = ref(0)
+const personasHogar = ref(1)
+const sueldosEnElHogar = ref(1)
+const facturaLuz = ref(0)
+const calificaMides = ref(false)
+const tusDuplicada = ref(false)
+
+const rango = (desde: number, hasta: number) =>
+  Array.from({ length: Math.max(0, hasta - desde + 1) }, (_, i) => desde + i)
+
+// Los subconjuntos no pueden pasarse del total: si baja la cantidad de menores, bajan con ella.
+watch(menores, n => {
+  if (menoresEnMedia.value > n) menoresEnMedia.value = n
+  if (menores03.value > n) menores03.value = n
+  if (personasHogar.value < n + 1) personasHogar.value = n + 1
+})
+
+const plan = computed(() =>
+  planDeApoyos({
+    ingresoSalarialHogar: (nominal.value || 0) * sueldosEnElHogar.value,
+    liquidoHogar: vida.value.liquido * sueldosEnElHogar.value,
+    personasHogar: personasHogar.value,
+    menores: menores.value,
+    menoresEnMedia: menoresEnMedia.value,
+    menores03: menores03.value,
+    menoresConDiscapacidad: 0,
+    embarazos: 0,
+    calificaMides: calificaMides.value,
+    tusDuplicada: tusDuplicada.value,
+    facturaLuz: facturaLuz.value || 0,
+  })
+)
+
+/** La misma cuenta de la sección anterior, pero con el hogar que se declaró acá. */
+const vidaHogar = computed(() =>
+  survivalCheck({
+    nominal: nominal.value || 0,
+    region: 'montevideo',
+    personas: Math.min(Math.max(personasHogar.value, 1), 3) as 1 | 2 | 3,
+    inquilino: true,
+    ingresos: sueldosEnElHogar.value,
+  })
+)
+
+const restaConApoyos = computed(() =>
+  conApoyos(
+    vidaHogar.value.ingresoHogar,
+    vidaHogar.value.lineaPobreza,
+    plan.value.transferencias + plan.value.ahorroTarifas
+  )
+)
+
+const planLineas = computed(() => {
+  const p = plan.value
+  const out: { label: string; value: string; tone: string }[] = []
+  const asignacion = calificaMides.value ? p.asignacion.monto : p.asignacion.contributiva.total
+  out.push({
+    label:
+      p.asignacion.elegido === 'plan-equidad' && calificaMides.value
+        ? 'Asignación familiar del Plan de Equidad'
+        : 'Asignación familiar (la del trabajo)',
+    value: asignacion > 0 ? uyu(asignacion) : '—',
+    tone: asignacion > 0 ? 'strong' : '',
+  })
+  out.push({
+    label: 'Tarjeta Uruguay Social',
+    value: p.tus > 0 ? uyu(p.tus) : calificaMides.value ? '—' : 'hay que pedir la evaluación',
+    tone: p.tus > 0 ? 'strong' : '',
+  })
+  out.push({
+    label: 'Descuento de UTE (Bono Social)',
+    value:
+      p.descuentoUte > 0
+        ? `− ${uyu(p.descuentoUte)}`
+        : calificaMides.value
+          ? 'poné tu factura'
+          : 'no aplica sin MIDES',
+    tone: p.descuentoUte > 0 ? 'strong' : '',
+  })
+  out.push({
+    label: 'Total por mes',
+    value: uyu(p.total),
+    tone: p.total > 0 ? 'strong' : 'bad',
+  })
+  return out
+})
+
+const lecturaApoyos = computed(() => {
+  const p = plan.value
+  const r = restaConApoyos.value
+  const hogar = `${personasHogar.value === 1 ? 'una persona' : `${personasHogar.value} personas`}${menores.value ? ` (${menores.value} ${menores.value === 1 ? 'menor' : 'menores'})` : ''}`
+  const sueldos = sueldosEnElHogar.value === 1 ? 'un sueldo' : `${sueldosEnElHogar.value} sueldos`
+  if (p.total <= 0) {
+    return `Con ${hogar} en el hogar y ${sueldos} como ése, la red de transferencias no suma nada: el ingreso del hogar sigue en ${uyu(r.antes)} contra una línea de pobreza de ${uyu(r.lineaPobreza)} para ese hogar inquilino en Montevideo. No es un error del formulario: casi toda la red se abre por hijos a cargo o por la evaluación del MIDES.`
+  }
+  if (r.cruzaLaLinea) {
+    return `Con ${hogar} en el hogar, los apoyos suman ${uyu(p.total)} por mes y el ingreso pasa de ${uyu(r.antes)} a ${uyu(r.despues)}: cruza la línea de pobreza que el INE publica para ese hogar (${uyu(r.lineaPobreza)}). Es exactamente la diferencia entre pedirlos y no pedirlos.`
+  }
+  if (r.yaEstaba) {
+    return `Con ${hogar} en el hogar, los apoyos suman ${uyu(p.total)} por mes sobre un ingreso que ya estaba por encima de la línea del INE (${uyu(r.lineaPobreza)}): el margen pasa de ${uyu(r.margenAntes)} a ${uyu(r.margenDespues)}.`
+  }
+  return `Con ${hogar} en el hogar, los apoyos suman ${uyu(p.total)} por mes. El ingreso pasa de ${uyu(r.antes)} a ${uyu(r.despues)} y sigue por debajo de la línea de pobreza del INE para ese hogar (${uyu(r.lineaPobreza)}): acorta la distancia, no la cierra.`
+})
+
+const avisosApoyos = computed(() => {
+  const p = plan.value
+  const out: { type: 'error' | 'warning' | 'success' | 'info'; text: string }[] = []
+
+  if (menores.value > 0 && !calificaMides.value) {
+    out.push({
+      type: 'info',
+      text: `Con hijos a cargo, la asignación del BPS ya te corresponde por trabajar en la actividad privada, pero no llega sola: hay que solicitarla. Y si el hogar además califica por el Índice de Carencias Críticas, la del Plan de Equidad pagaría ${uyu(p.asignacion.planEquidad.total)} por mes en vez de ${uyu(p.asignacion.contributiva.total)}: son incompatibles, y el artículo 9 de la Ley 18.227 deja optar por la más alta en cualquier momento.`,
+    })
+  }
+
+  if (menores.value > 0 && sueldosEnElHogar.value > 1 && p.asignacion.contributiva.franja === 2) {
+    out.push({
+      type: 'warning',
+      text: `Ojo con el tope: la asignación contributiva mira la SUMA de los ingresos salariales del hogar. Con ${sueldos(sueldosEnElHogar.value)} de ${uyu(nominal.value || 0)} el hogar pasa los $ 50.502 del primer tramo y cada hijo cobra $ 674 en vez de $ 1.347.`,
+    })
+  }
+
+  if (calificaMides.value && facturaLuz.value <= 0) {
+    out.push({
+      type: 'info',
+      text: 'Poné lo que pagás de luz y la cuenta te dice cuánto es el Bono Social en pesos. No lo estimamos por vos: no hay factura promedio publicada que podamos usar sin inventarla.',
+    })
+  }
+
+  const fga = p.items.find(i => i.apoyo.id === 'fga')
+  if (fga?.estado === 'no-califica') {
+    out.push({ type: 'warning', text: fga.porQue })
+  }
+
+  if (menores.value === 0 && !calificaMides.value) {
+    out.push({
+      type: 'info',
+      text: 'Sin hijos a cargo y sin evaluación del MIDES queda el piso, que no es nada: carné de salud gratis en ASSE, cursos del INEFOP, licencia por estudio, y la consulta gratuita al MTSS por el laudo de tu categoría, que en esta banda es lo que más plata mueve.',
+    })
+  }
+
+  return out
+})
+
+function sueldos(n: number): string {
+  return n === 1 ? 'un sueldo' : `${n} sueldos`
+}
+
+const ESTADOS: { estado: EstadoApoyo; titulo: string; bajada: string }[] = [
+  {
+    estado: 'corresponde',
+    titulo: 'Te corresponde',
+    bajada:
+      'Con lo que declaraste, esto sale de una norma vigente. Algunos se aplican solos; los demás hay que ir a pedirlos.',
+  },
+  {
+    estado: 'evaluar',
+    titulo: 'Hay que pedir la evaluación',
+    bajada:
+      'Depende de una medición que hace el organismo y que no se puede anticipar desde afuera. Lo honesto acá no es un número: es la puerta.',
+  },
+  {
+    estado: 'no-califica',
+    titulo: 'Hoy no',
+    bajada: 'Queda afuera por un requisito concreto. Va con el motivo, que a veces cambia solo.',
+  },
+]
+
+const apoyosAgrupados = computed(() =>
+  ESTADOS.map(e => ({
+    ...e,
+    items: plan.value.items.filter((i: ApoyoResuelto) => i.estado === e.estado),
+  })).filter(g => g.items.length > 0)
+)
+
+const apoyosVerifiedAt = fmtDate(STATE_SUPPORT_VERIFIED_AT)
+
+/** Las preguntas de las dos secciones viajan juntas: una sola lista y un solo bloque de FAQ. */
+const FAQ_COMPLETA = [...LOWWAGE_FAQ, ...APOYOS_FAQ]
+
+const FUENTES_COMPLETAS = [...LOWWAGE_SOURCES, ...STATE_SUPPORT_SOURCES]
+
 // ── Bloques estáticos derivados de los datos.
 // El caso de referencia de toda la página: el mínimo nacional completo, una persona sola,
 // inquilina, en Montevideo. Es el escenario donde la resta da negativa.
@@ -931,7 +1343,7 @@ const supuestos = [
   {
     label: 'Lo que NO está',
     detalle:
-      'Deudas, mascotas, mudanza, depósito y garantía de alquiler, ropa de trabajo, estudio, y cualquier gasto de salir. El hogar de dos con un solo ingreso sí está, pero contando al segundo integrante como un adulto más: no tenemos una equivalencia publicada que distinga a un chico, y las asignaciones familiares del BPS tampoco están sumadas. Es un presupuesto de sobrevivir, no de vivir: por eso la última columna se llama «te queda» y no «ahorro».',
+      'Deudas, mascotas, mudanza, depósito y garantía de alquiler, ropa de trabajo, estudio, y cualquier gasto de salir. El hogar de dos con un solo ingreso sí está, pero contando al segundo integrante como un adulto más: no tenemos una equivalencia publicada que distinga a un chico. Las asignaciones familiares y las tarifas sociales tampoco están sumadas acá: viven en la sección siguiente, porque dependen de cuántos menores hay y de si el MIDES evaluó al hogar, y meterlas en esta tabla sería promediar dos hogares distintos. Es un presupuesto de sobrevivir, no de vivir: por eso la última columna se llama «te queda» y no «ahorro».',
   },
 ]
 
@@ -952,8 +1364,9 @@ const verifiedAt = fmtDate(LOWWAGE_VERIFIED_AT)
 const censusDate = fmtDate(BOARD_CENSUS.fecha)
 
 const canonicalUrl = 'https://cambio-uruguay.com/vivir-con-25000-pesos-uruguay'
-const title = '¿Se puede vivir con 25.000 o 30.000 pesos por 9 horas en Uruguay?'
-const description = `Las ofertas de 25.000 a 30.000 pesos por nueve horas existen y son medibles: en un relevamiento de ${BOARD_CENSUS.avisos} avisos de Montevideo, la ventana de nueve horas resultó la más declarada. Qué dice la ley (tope de 8 horas diarias y 44 o 48 semanales, y la media hora de corte que se computa como trabajo), por qué 25.000 por jornada completa está por debajo del mínimo de ${SMN_VIGENTE} pesos, cuánto queda líquido y por qué no alcanza para alquilar solo en Montevideo.`
+const title =
+  'Cómo vivir con 25.000 o 30.000 pesos en Uruguay: la cuenta y las ayudas que te corresponden'
+const description = `Guía para vivir con un sueldo de 25.000 a 30.000 pesos en Uruguay. Qué dice la ley de la jornada y del mínimo (${SMN_VIGENTE} pesos desde julio de 2026), cuánto queda líquido, cuánto sale una pensión o una habitación, y sobre todo qué ingreso le corresponde a ese hogar además del sueldo: asignación familiar del BPS y del Plan de Equidad, Tarjeta Uruguay Social, el Bono Social de UTE que descuenta hasta el 90 % de la luz, la tarifa social de OSE y los comedores del INDA, con montos oficiales y cómo se piden.`
 
 defineOgImageComponent('Cambio', {
   title: '¿Se puede vivir con 25.000 por 9 horas?',
@@ -979,7 +1392,7 @@ useHead(() => ({
     {
       name: 'keywords',
       content:
-        'se puede vivir con 25000 pesos uruguay, sueldo 25000 uruguay, 30000 pesos por 9 horas, salario minimo nacional 2026, jornada de 9 horas uruguay, tope de 8 horas diarias, horas extra 100 por ciento recargo, descanso intermedio media hora, cuanto queda liquido de 25000, ofertas de trabajo mal pagas uruguay',
+        'se puede vivir con 25000 pesos uruguay, como vivir con el salario minimo uruguay, sueldo 25000 uruguay, 30000 pesos por 9 horas, salario minimo nacional 2026, ayudas del mides para trabajadores, asignaciones familiares bps monto 2026, plan de equidad monto 2026, tarjeta uruguay social requisitos, bono social ute descuento luz, tarifa social ose, comedores inda, jornada de 9 horas uruguay, cuanto queda liquido de 25000',
     },
   ],
   script: [
@@ -1007,7 +1420,7 @@ useHead(() => ({
           },
           {
             '@type': 'FAQPage',
-            mainEntity: LOWWAGE_FAQ.map(f => ({
+            mainEntity: FAQ_COMPLETA.map(f => ({
               '@type': 'Question',
               name: f.question,
               acceptedAnswer: { '@type': 'Answer', text: f.answer },
