@@ -37,6 +37,7 @@ import { subWritable } from "./subrules";
 import { bioDeclaresBot } from "./identity";
 import { fetchAccountBio } from "./post";
 import {
+  forgetTooOldWithin,
   lastLinkedAt,
   lastRepliedToAuthorAt,
   hasPostedTo,
@@ -570,6 +571,13 @@ export async function runOnce(cfg: BotConfig = botConfig()): Promise<RunSummary>
   //    escribir tampoco hace falta leerlo — y porque insistir sobre un ban es exactamente el camino
   //    de un ban de sub a una suspensión de cuenta.
   const since = Math.floor(Date.now() / 1000) - Math.round(cfg.maxAgeHours * 3600);
+
+  // Un "demasiado viejo" sobre un hilo que HOY está dentro de la ventana es una contradicción, no
+  // una decisión: lo escribió una ventana más corta. Borrarlas siempre —y no una sola vez a mano—
+  // hace que agrandar la ventana funcione solo. En régimen no borra nada.
+  const forgotten = await forgetTooOldWithin(since);
+  if (forgotten) console.log(`[redditbot] ${forgotten} hilos volvieron a estar en ventana (eran "too_old" con la ventana vieja)`);
+
   const posts: RedditPostRaw[] = [];
   const skippedSubs: string[] = [];
   for (const sub of cfg.subs) {

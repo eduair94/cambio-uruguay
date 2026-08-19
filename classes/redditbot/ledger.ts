@@ -81,6 +81,30 @@ export async function waitingForPage(): Promise<Array<{ postId: string; pagePath
     .lean<Array<{ postId: string; pagePath: string; sub: string }>>();
 }
 
+/**
+ * Olvidar los "demasiado viejo" que hoy caen DENTRO de la ventana.
+ *
+ * `too_old` se anota como decisión durable, y con razón: un hilo sólo envejece, así que la
+ * respuesta nunca va a cambiar. Con una salvedad que costó encontrar — eso vale mientras la ventana
+ * no cambie. Cuando `maxAgeHours` pasó de 8 h a una semana, cada hilo que el bot había descartado
+ * por tener nueve horas quedó marcado para siempre, y esos hilos son EXACTAMENTE el atraso que la
+ * ventana nueva existe para contestar. El síntoma habría sido perfecto: el bot lee 400 hilos, los
+ * reporta todos como "ya decididos" y contesta cero, con los logs diciendo que todo anda bien.
+ *
+ * Sólo `filter:too_old`, y sólo dentro de la ventana actual. Un `gap:` o un `judge` son decisiones
+ * sobre el contenido y siguen valiendo; un `too_old` de hace un mes también.
+ *
+ * Devuelve cuántas filas borró.
+ */
+export async function forgetTooOldWithin(sinceUtcSeconds: number): Promise<number> {
+  const res = await RedditBotReplyModel.deleteMany({
+    status: "rejected",
+    rejectReason: "filter:too_old",
+    postCreatedUtc: { $gte: sinceUtcSeconds },
+  });
+  return res?.deletedCount ?? 0;
+}
+
 export async function readSnapshot(now: number = Date.now()): Promise<LedgerSnapshot> {
   const since = new Date(now - DAY_MS);
 
