@@ -8,6 +8,22 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { installNitroGlobals } from './helpers/nitro'
 
+// This file needs more than the default 5s per test, and that is a property of
+// what it does rather than something to optimise away. Every scenario calls
+// `runHandler`, which does `vi.resetModules()` and re-imports the sitemap route
+// — and that route pulls in the whole navigation model and the content
+// catalogues behind it. Ten scenarios, ten cold re-imports of a large graph.
+//
+// The isolation is the point: the healthy-API and API-down cases must not share
+// module-level state, or the outage test could pass on values the healthy test
+// left behind. So the cost stays and the budget accommodates it.
+//
+// Measured 2026-08-18: ~1.9s for the whole file run alone, but the slowest single
+// test crossed 5s when the full suite ran its workers in parallel and the CPU was
+// contended — green alone, red in CI, which reads as flakiness and is really just
+// a budget set below the real cost.
+vi.setConfig({ testTimeout: 30_000 })
+
 interface SitemapUrl {
   loc: string
   lastmod?: string
