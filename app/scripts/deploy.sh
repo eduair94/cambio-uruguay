@@ -26,9 +26,48 @@ STAGING="$APP_DIR/.output-next"
 PREV="$APP_DIR/.output-prev"
 LOCK="/tmp/cambio-uruguay-deploy.lock"
 
-log() { printf '\n\033[1;36m[deploy]\033[0m %s\n' "$*"; }
+# Ruta absoluta y huella de ESTE archivo, tomadas antes de que el pull pueda cambiarlo.
+SELF="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
+SELF_SUM="$(sha256sum "$SELF" 2>/dev/null | cut -d' ' -f1 || true)"
+
+# Marca interna del re-exec de mas abajo. No se setea a mano: evita el bucle y evita volver a pedir
+# el flock, que ya esta tomado por el fd 9 que el exec hereda.
+# Segunda pasada del re-exec de mas abajo. Va por ARGV y no por variable de entorno a proposito:
+# una variable heredable que apaga el unico mutex del deploy es una forma silenciosa de correr dos
+# deploys en paralelo si queda exportada en la shell de alguien.
+REEXEC=0
+if [ "${1:-}" = "--reexec" ]; then
+  REEXEC=1
+  shift
+fi
+
+log() { printf '
+[1;36m[deploy][0m %s
+' "$*"; }
+
+# Espera a que la app conteste. Se exige mas de un 200 SEGUIDO porque el socket lo escucha el God
+# daemon de pm2 y reparte round-robin: un solo 200 se contesta con una instancia arriba y la otra en
+# crash-loop, o incluso con un worker huerfano sirviendo el build anterior.
+wait_healthy() {
+  local hits=0
+  for _ in $(seq 1 40); do
+    if [ "$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 "http://127.0.0.1:$APP_PORT/" || true)" = "200" ]; then
+      hits=$((hits + 1))
+      [ "$hits" -ge 3 ] && return 0
+    else
+      hits=0
+    fi
+    sleep 2
+  done
+  return 1
+}
 
 # 1. Serialize deploys — fail fast if one is already running.
+#
+# El lock se toma SIEMPRE, tambien en la segunda pasada. Medido en el box: un segundo `exec 9>`
+# sobre el mismo archivo desde el mismo proceso NO se autobloquea, porque el dup2 cierra el fd 9
+# anterior y suelta el lock antes de reabrirlo. Saltear esta seccion no evitaba ningun deadlock y
+# dejaba el mutex apagable desde afuera.
 exec 9>"$LOCK"
 if ! flock -n 9; then
   echo "[deploy] another deploy holds the lock ($LOCK); aborting." >&2
@@ -37,13 +76,36 @@ fi
 
 cd "$APP_DIR"
 
-log "Pulling latest main…"
-# `npm install` (below, on prior deploys) can regenerate app/package-lock.json,
-# leaving the server tree dirty so the next ff-only pull aborts with "local
-# changes would be overwritten". Discard that tracked churn before pulling —
-# the committed lock is the source of truth.
-git -C "$REPO_DIR" checkout -- app/package-lock.json 2>/dev/null || true
-git -C "$REPO_DIR" pull --ff-only origin main
+if [ "$REEXEC" != "1" ]; then
+  log "Pulling latest main…"
+  # `npm install` (below, on prior deploys) can regenerate app/package-lock.json,
+  # leaving the server tree dirty so the next ff-only pull aborts with "local
+  # changes would be overwritten". Discard that tracked churn before pulling —
+  # the committed lock is the source of truth.
+  git -C "$REPO_DIR" checkout -- app/package-lock.json 2>/dev/null || true
+  git -C "$REPO_DIR" pull --ff-only origin main
+fi
+
+# Este script se actualiza a si mismo, y sin esto el arreglo llega siempre un deploy tarde.
+#
+# Lo que NO pasa, y conviene dejarlo escrito porque es la intuicion equivocada: `git pull` no
+# reescribe deploy.sh en el lugar, lo reemplaza por un inodo nuevo. El bash en ejecucion conserva el
+# fd del inodo viejo (ya desenlazado) y lo lee entero. Verificado en el box: no hay corrupcion ni
+# lineas partidas al medio.
+#
+# Lo que si pasa: esa corrida ejecuta la version ANTERIOR completa. Por eso el health check no
+# corrio en el deploy que lo introdujo, ni el barrido de huerfanos en el suyo.
+#
+# Entonces, si el pull cambio este archivo, se arranca de nuevo con la version nueva. El centinela
+# va en argv, el fd 9 se hereda pero igual se vuelve a tomar el lock, y si no hay sha256sum se sigue
+# de largo en vez de adivinar.
+if [ "$REEXEC" != "1" ] && [ -n "$SELF_SUM" ]; then
+  now_sum="$(sha256sum "$SELF" 2>/dev/null | cut -d' ' -f1 || true)"
+  if [ -n "$now_sum" ] && [ "$now_sum" != "$SELF_SUM" ]; then
+    log "deploy.sh cambio en ese pull; reejecutando la version nueva."
+    exec bash "$SELF" --reexec "$@"
+  fi
+fi
 
 # Reinstall only when the dependency set actually changed.
 #
@@ -141,20 +203,13 @@ log "Rolling reload (pm2 reload, zero-downtime)…"
 # steps BELOW never running, so the previous build's tree was left on disk.
 #
 # So: tolerate the reload's exit code and gate on whether the app answers.
-pm2 reload "$PM2_NAME" --update-env || log "pm2 reload exited non-zero; the health check below decides."
+# `9>&-` cierra el fd del lock para el hijo. Sin eso, si pm2 tiene que levantar su God daemon,
+# el daemon hereda el fd y se queda con el lock del deploy PARA SIEMPRE: todos los deploys
+# siguientes abortarian con "another deploy holds the lock".
+pm2 reload "$PM2_NAME" --update-env 9>&- || log "pm2 reload exited non-zero; the health check below decides."
 
 log "Waiting for the app to answer on :$APP_PORT…"
-healthy=0
-for _ in $(seq 1 30); do
-  code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 "http://127.0.0.1:$APP_PORT/" || true)"
-  if [ "$code" = "200" ]; then
-    healthy=1
-    break
-  fi
-  sleep 2
-done
-
-if [ "$healthy" != "1" ]; then
+if ! wait_healthy; then
   echo "[deploy] the app never returned 200 on 127.0.0.1:$APP_PORT after the reload." >&2
   pm2 list | grep -- "$PM2_NAME" >&2 || true
   exit 1
@@ -178,9 +233,7 @@ log "App is answering 200. Reload OK."
 # Y sólo se matan procesos de más de 60 s, para no llevarse por delante un worker que pm2 acaba de
 # levantar y todavía no registró.
 log "Looking for orphaned workers from a previous failed reload…"
-pm2_pids="$(pm2 jlist 2>/dev/null | tr ',' '
-' | grep -o '"pid":[0-9]*' | grep -o '[0-9]*' | tr '
-' ' ' || true)"
+pm2_pids="$(pm2 jlist 2>/dev/null | grep -o '"pid":[0-9][0-9]*' | grep -o '[0-9][0-9]*' | tr '\n' ' ' || true)"
 if [ -n "${pm2_pids// /}" ]; then
   for pid in $(pgrep -f "$APP_DIR/.output/server/index.mjs" || true); do
     case " $pm2_pids " in
@@ -195,6 +248,19 @@ if [ -n "${pm2_pids// /}" ]; then
 else
   log "Could not read pm2's pid list; skipping the orphan sweep rather than killing blind."
 fi
+
+# Y se vuelve a preguntar, porque el 200 de arriba lo pudo haber contestado un huerfano.
+#
+# Es el escenario que deja CI en verde con el sitio caido: si los workers nuevos crashean y el unico
+# que contestaba era un huerfano, el barrido lo mata y sin esta segunda vuelta el script seguiria,
+# borraria el build anterior y loguearia "Deploy complete" con exit 0.
+log "Re-checking health after the orphan sweep…"
+if ! wait_healthy; then
+  echo "[deploy] the app stopped answering after killing orphans: the earlier 200 came from one." >&2
+  pm2 list | grep -- "$PM2_NAME" >&2 || true
+  exit 1
+fi
+log "Still answering 200 with only pm2's own workers."
 
 # Delete the old tree DETACHED. By this line the swap and the rolling reload
 # have already happened: the site is live on the new build and nothing below
@@ -217,8 +283,12 @@ if [ -d "$PREV" ]; then
   mv "$PREV" "$TRASH"
 fi
 if ls -d "$APP_DIR"/.output-trash-* >/dev/null 2>&1; then
+  # `9>&-` otra vez, y aca es el que rompia deploys de verdad: este rm tarda ~1m35s y el hijo
+  # heredaba el fd 9, asi que el lock seguia tomado despues de que deploy.sh salio. Con
+  # `cancel-in-progress: false` los deploys se ENCOLAN, y el siguiente entraba justo en esa ventana
+  # y abortaba. Reproducido en el box: sin `9>&-` el lock queda tomado por el hijo detached.
   { setsid rm -rf "$APP_DIR"/.output-trash-* >/dev/null 2>&1 </dev/null ||
-    nohup rm -rf "$APP_DIR"/.output-trash-* >/dev/null 2>&1 </dev/null; } &
+    nohup rm -rf "$APP_DIR"/.output-trash-* >/dev/null 2>&1 </dev/null; } 9>&- &
   disown 2>/dev/null || true
 fi
 
