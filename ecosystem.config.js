@@ -240,6 +240,27 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Weekly lender-FACT refresh for the /mejores-prestamos-uruguay tier list. Different job
+      // from currency-loans above and not a duplicate of it: that one chases a single number (the
+      // TEA) daily, this one re-reads the things that decide the RANKING — whether the lender
+      // still lends to people with Clearing marks, whether the insurance is compulsory, whether
+      // you can cancel early — which live in terms-and-conditions pages that a grounded one-shot
+      // lookup cannot reach. Uses the private Claude endpoint (WebSearch + WebFetch), verifies
+      // every citation itself, and writes one snapshot row to the NUXT APP's MongoDB.
+      //
+      // Sundays 07:23 UTC ≈ 04:23 America/Montevideo: weekly because these facts move on the scale
+      // of months and each run spends ~25 calls of a quota shared with a human; 07:23 to sit clear
+      // of currency-content-gaps (05:35) and well before the Reddit jobs wake at 11:00. Minute 23:
+      // not a multiple of 5, so it never races currency-sync. Refuses to run without APP_MONGO_URI
+      // or without CLAUDE_AGENT_API_KEY.
+      name: "currency-loan-tiers",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_loan_tiers.js",
+      cron_restart: "23 7 * * 0",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Cluster mode, 2 instances: `pm2 reload` (scripts/deploy-backend.sh) then
       // rolls instances one at a time, so a deploy never takes the API down.
       // Safe because the API path writes nothing to disk — ProxyFileService is
