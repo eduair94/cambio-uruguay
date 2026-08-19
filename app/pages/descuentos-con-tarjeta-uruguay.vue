@@ -30,6 +30,14 @@
       <v-chip
         size="small"
         variant="tonal"
+        prepend-icon="mdi-card-account-details-outline"
+        :to="localePath('/tarjetas-de-socio-uruguay')"
+      >
+        Tarjetas de socio
+      </v-chip>
+      <v-chip
+        size="small"
+        variant="tonal"
         prepend-icon="mdi-credit-card-multiple-outline"
         :to="localePath('/tarjetas-de-credito-uruguay')"
       >

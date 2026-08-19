@@ -164,6 +164,8 @@ describe('the navigation model has no dead links', () => {
       '/apps-de-beneficios-uruguay',
       // Why-use-this-instead-of-the-app comparison (Bankos is the data source).
       '/alternativa-a-bankos-uruguay',
+      // Credenciales de socio que dan descuentos sin ser tarjeta bancaria.
+      '/tarjetas-de-socio-uruguay',
       '/tarjetas-de-credito-uruguay',
       '/tarjetas-de-debito-uruguay',
       // What the same account pays you for leaving money in it — the other side
