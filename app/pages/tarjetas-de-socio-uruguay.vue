@@ -83,7 +83,11 @@
 
     <!-- Fichas -->
     <v-expansion-panels variant="accordion" class="mb-6">
-      <v-expansion-panel v-for="c in filtered" :id="c.id" :key="c.id">
+      <!-- `eager`: sin esto Vuetify no monta el contenido del panel hasta que se abre, y el
+           costo, los pasos, la letra chica y las FUENTES no llegan al HTML del servidor. En una
+           página cuyo valor es justamente ese detalle, dejarlo perezoso es publicarla vacía para
+           quien la lea sin ejecutar JavaScript. -->
+      <v-expansion-panel v-for="c in filtered" :id="c.id" :key="c.id" eager>
         <v-expansion-panel-title>
           <div class="d-flex flex-wrap align-center ga-2">
             <span class="font-weight-medium">{{ c.name }}</span>
