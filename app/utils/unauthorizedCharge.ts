@@ -30,7 +30,7 @@
 // desconocimiento de cargos es contrato de un emisor presentado como si fuera ley.
 //
 // FUENTES PRIMARIAS verificadas el 2026-08-19:
-//   - Ley 19.678 (Contrato de Seguro) arts. 6, 13, 24 y 104
+//   - Ley 19.678 (Contrato de Seguro) arts. 6, 13, 14, 24, 94 y 104
 //     https://www.impo.com.uy/bases/leyes/19678-2018
 //   - Ley 17.250 (Relaciones de Consumo) arts. 22 lit. D, 31 lits. H e I, 42 y 47
 //     https://www.impo.com.uy/bases/leyes/17250-2000
@@ -56,6 +56,12 @@
 //     uruguaya fija un número: la Ley 19.731 art. 17 lit. B dice "inmediatamente al detectarlo".
 //   - Una póliza de asistencia al viajero con tope de 45 días POR VIAJE puede ser perfectamente
 //     anual: 12 cuotas no contradicen los 45 días. No repetir esa confusión, corregirla.
+//   - El art. 13 NO habla de "devolución proporcional de la prima": fija el TOPE de lo que el
+//     asegurador puede cobrar (el premio por el riesgo corrido). No le pongas a la ley una palabra
+//     que no tiene, ni un plazo de reintegro que no fija.
+//   - Y ese mismo art. 13 EXCEPTÚA los seguros para las personas, que van por el art. 104 (recién
+//     después de la primera anualidad). Cuál rige en una asistencia al viajero depende de cómo esté
+//     calificada la póliza, y una cobertura de 45 días no tiene primera anualidad: es un hueco.
 
 /** De dónde sale lo que afirmamos. Misma taxonomía que `parcelDelivery.ts` y `shippingRoutes.ts`. */
 export type SourceKind = 'norma' | 'operador' | 'practica'
@@ -202,12 +208,26 @@ export const STOP_ACTIONS: StopAction[] = [
     id: 'rescindir',
     title: 'Rescindí el contrato de fondo, por escrito y con constancia',
     detail:
-      'Es lo único que corta el contrato; todo lo demás corta el instrumento de pago. En un seguro, el tomador puede rescindir en cualquier momento sin expresar causa, comunicándolo de forma fehaciente con un mes de antelación (Ley 19.678 art. 13); en los seguros para las personas —donde el BCU ubica la asistencia en viaje— se puede rescindir después de la primera anualidad (art. 104). Quien ya pagó doce cuotas cumplió la primera anualidad, así que puede rescindir por cualquiera de las dos lecturas.',
+      'Es lo único que corta el contrato; todo lo demás corta el instrumento de pago. La regla general es el art. 13 de la Ley 19.678: el tomador rescinde en cualquier tiempo, sin expresar causa, comunicándolo fehacientemente con un mes de antelación, y el asegurador sólo tiene derecho al premio por el riesgo corrido hasta ahí. Cuidado con el atajo: ese mismo artículo EXCEPTÚA los seguros para las personas, que van por el art. 104 y sólo se rescinden después de la primera anualidad, salvo pacto en contrario. Cuál de los dos rige depende de cómo esté calificada TU póliza, y una cobertura de 45 días ni siquiera tiene primera anualidad: no lo asumas, miralo en el papel.',
     certainty: 'alta',
     sources: [
       {
-        label: 'Ley 19.678 arts. 13 y 104',
-        url: 'https://www.impo.com.uy/bases/leyes/19678-2018',
+        label: 'Ley 19.678 arts. 13, 94 y 104',
+        url: 'https://www.impo.com.uy/bases/leyes/19678-2018/13',
+        kind: 'norma',
+      },
+    ],
+  },
+  {
+    id: 'riesgo-inexistente',
+    title: 'Si el riesgo ya no existe, el contrato se rescinde por la propia ley',
+    detail:
+      'Es el argumento más fuerte cuando lo que te cobran es un seguro atado a algo que ya terminó, y casi nadie lo usa. Ley 19.678 art. 14: «El contrato de seguro será nulo si al tiempo de su celebración no existía el riesgo o había ocurrido el siniestro. Si el riesgo desaparece comenzada la cobertura, el contrato se rescinde a partir del momento en que esta circunstancia llegue a conocimiento del asegurador por cualquier medio y el asegurador podrá percibir el premio solo por el período transcurrido hasta ese momento.» Un seguro de viaje cubre un viaje: terminado el viaje, el riesgo desapareció. Avisale al asegurador por escrito — la norma dice «por cualquier medio», así que tu propio aviso hace correr el efecto.',
+    certainty: 'alta',
+    sources: [
+      {
+        label: 'Ley 19.678 art. 14',
+        url: 'https://www.impo.com.uy/bases/leyes/19678-2018/14',
         kind: 'norma',
       },
     ],
@@ -308,6 +328,37 @@ export const NORM_QUOTES: NormQuote[] = [
       {
         label: 'Ley 19.678 art. 6',
         url: 'https://www.impo.com.uy/bases/leyes/19678-2018',
+        kind: 'norma',
+      },
+    ],
+  },
+  {
+    id: 'riesgo-desaparece',
+    topic: 'Si el riesgo desapareció, el contrato se rescinde solo',
+    quote:
+      'El contrato de seguro será nulo si al tiempo de su celebración no existía el riesgo o había ocurrido el siniestro. Si el riesgo desaparece comenzada la cobertura, el contrato se rescinde a partir del momento en que esta circunstancia llegue a conocimiento del asegurador por cualquier medio y el asegurador podrá percibir el premio solo por el período transcurrido hasta ese momento.',
+    article: 'Ley 19.678, art. 14',
+    useFor:
+      'El argumento más fuerte y el menos usado cuando el seguro estaba atado a algo que ya terminó — un viaje, un bien que vendiste, un crédito que cancelaste. No discutís la renovación: decís que el riesgo no existe. Y como la norma dice «por cualquier medio», tu propio aviso escrito hace correr el efecto desde esa fecha.',
+    sources: [
+      {
+        label: 'Ley 19.678 art. 14',
+        url: 'https://www.impo.com.uy/bases/leyes/19678-2018/14',
+        kind: 'norma',
+      },
+    ],
+  },
+  {
+    id: 'pago-acepta-importe',
+    topic: 'Lo que te van a contestar: «pagaste, entonces aceptaste»',
+    quote: 'El pago del premio o de la primera cuota implicará la aceptación de su importe.',
+    article: 'Ley 19.678, art. 6, inciso 4',
+    useFor:
+      'Anticipalo, porque es la defensa estándar. Se contesta con lo que el artículo dice y con lo que no dice: acepta el IMPORTE, no la existencia de una renovación que nunca se pactó. Y en una relación de consumo choca de frente con el art. 31 lit. H de la Ley 17.250, que hace abusiva la cláusula que toma tu silencio por aceptación. Honestidad ante todo: no encontramos pronunciamiento uruguayo publicado que zanje esa tensión, así que es un argumento, no una certeza.',
+    sources: [
+      {
+        label: 'Ley 19.678 art. 6',
+        url: 'https://www.impo.com.uy/bases/leyes/19678-2018/6',
         kind: 'norma',
       },
     ],
@@ -595,6 +646,8 @@ export const CHARGE_GAPS: readonly string[] = Object.freeze([
   'Si un cobro recurrente en tarjeta de CRÉDITO queda comprendido en el régimen de débito automático de la Ley 19.210 —los 5 días hábiles para probar y 1 para devolver—. El art. 68 ya nombra las tarjetas asociadas, pero la definición sigue hablando de cuenta o instrumento de dinero electrónico y exige contrato marco. Se puede invocar; no se puede prometer.',
   'Si el banco responde solidariamente con la aseguradora por un seguro vendido en su sucursal. No hay norma de bancaseguros que lo establezca. Sí está claro que el banco es proveedor a los efectos de la Ley 17.250 y que tiene deber propio de atender tu reclamo.',
   'Si el emisor puede negarse a reintegrar invocando su plazo contractual cuando la norma que ordena el reembolso no fija caducidad para el cliente. Es la pelea central de este tipo de caso y ninguna fuente primaria la resuelve.',
+  'Si el art. 6 inciso 4 de la Ley 19.678 —«el pago del premio o de la primera cuota implicará la aceptación de su importe»— alcanza para convalidar una renovación que nunca se pactó, o si sólo acepta el importe. Choca con el art. 31 lit. H de la Ley 17.250 y no encontramos pronunciamiento uruguayo publicado que lo zanje.',
+  'Cuál de los dos regímenes de rescisión rige en una asistencia al viajero: el art. 13 de la Ley 19.678 (rescisión en cualquier tiempo con un mes de aviso) o el art. 104 (recién después de la primera anualidad), que se aplica a los seguros para las personas. Y una cobertura de 45 días no tiene primera anualidad, así que el texto no resuelve el caso. Depende de cómo esté calificada la póliza.',
   'Si los corredores y agentes de seguros están registrados y supervisados por el BCU. La Recopilación los menciona de refilón y responsabiliza a la aseguradora por ellos, pero no encontramos un registro.',
   'Las reglas de contracargo de las marcas de tarjeta y sus ventanas de tiempo. No son norma uruguaya ni las publica el emisor: cualquier plazo de ese origen es práctica, no derecho.',
 ])
