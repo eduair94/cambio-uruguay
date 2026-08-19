@@ -291,6 +291,40 @@
         </p>
       </v-card-text>
     </v-card>
+
+    <!-- Per-bank section: a real <h3> per issuer for brand-intent queries, an accurate blurb,
+         and a shortcut that selects that bank's cards (also reachable via ?banco=<id>). -->
+    <section class="mt-8">
+      <h2 class="text-h6 mb-1">Descuentos por banco</h2>
+      <p class="text-body-2 text-medium-emphasis mb-3" style="max-width: 75ch">
+        Tocá tu banco para ver en el mapa los comercios con descuento. Podés sumar varios y se
+        combinan.
+      </p>
+      <v-row dense>
+        <v-col v-for="bank in banks" :key="bank.id" cols="12" sm="6" md="4">
+          <v-card :id="`descuentos-${bank.id}`" variant="outlined" class="d-flex flex-column h-100">
+            <v-card-item class="pb-1">
+              <template #prepend>
+                <span class="bank-dot" :style="{ background: bank.color }" />
+              </template>
+              <h3 class="text-subtitle-1 font-weight-medium">Descuentos {{ bank.name }}</h3>
+            </v-card-item>
+            <v-card-text class="text-body-2 py-1 flex-grow-1">{{ bankBlurb(bank) }}</v-card-text>
+            <v-card-actions>
+              <v-btn size="small" variant="text" color="primary" @click="selectBank(bank.id)">
+                Ver descuentos de {{ bank.name }}
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-col>
+      </v-row>
+    </section>
+
+    <FaqBlock
+      :items="BANKOS_FAQ"
+      heading="Preguntas frecuentes sobre descuentos con tarjeta"
+      :expanded="true"
+    />
   </v-container>
 </template>
 
@@ -301,13 +335,16 @@ import {
   BANKOS_BANKS,
   BANKOS_CARDS,
   bankIdsForCards,
+  type BankosBank,
   type BankosDiscountsResponse,
   type BankosItem,
 } from '~/utils/bankos'
 import { useBankosCardsStore } from '~/stores/bankosCards'
 import { useAuthStore } from '~/stores/auth'
+import type { FaqItem } from '~/utils/faqAnswers'
 
 const localePath = useLocalePath()
+const route = useRoute()
 
 const banks = BANKOS_BANKS
 const cardsByBank = computed<Record<string, typeof BANKOS_CARDS>>(() => {
@@ -337,7 +374,90 @@ function clearAll() {
   cardsStore.clear()
 }
 
-onMounted(() => cardsStore.loadLocal())
+/** Add every card of a bank to the selection (used by the per-bank SEO section and `?banco=`). */
+function selectBank(bankId: string) {
+  const ids = BANKOS_CARDS.filter(c => c.bankId === bankId).map(c => c.id)
+  cardsStore.setCards([...cardsStore.cards, ...ids])
+  if (import.meta.client) window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+/** Accurate one-liner per bank — card types read from the catalog, never invented. */
+function bankBlurb(bank: BankosBank): string {
+  const types = new Set(BANKOS_CARDS.filter(c => c.bankId === bank.id).map(c => c.type))
+  const t =
+    types.has('credit') && types.has('debit')
+      ? 'crédito y débito'
+      : types.has('credit')
+        ? 'crédito'
+        : 'débito'
+  const qr = bank.id === 'mercadopago' ? ' y pagos con QR' : ''
+  return `Descuentos de ${bank.name} con tarjeta de ${t}${qr} en comercios adheridos de todo el país. Elegí tus tarjetas ${bank.name} para verlos en el mapa.`
+}
+
+onMounted(() => {
+  cardsStore.loadLocal()
+  // Shareable deep link: /descuentos-con-tarjeta-uruguay?banco=itau pre-selects a bank.
+  const q = String(route.query.banco || '').toLowerCase()
+  if (q && BANKOS_BANKS.some(b => b.id === q)) selectBank(q)
+})
+
+// FAQ — accurate answers, keyword-rich for long-tail queries. FaqBlock emits FAQPage JSON-LD.
+const BANKOS_FAQ: FaqItem[] = [
+  {
+    id: 'que-bancos',
+    question: '¿Qué bancos y tarjetas tienen descuentos en Uruguay?',
+    answer:
+      'El mapa reúne descuentos de Itaú, BROU, Santander, BBVA, Scotiabank, OCA, Prex, Mercado Pago, ANDA y Club El País, con tarjeta de crédito o de débito según el banco. Elegí las tuyas y verás solo los comercios con beneficio.',
+  },
+  {
+    id: 'como-ver',
+    question: '¿Cómo veo qué descuentos tengo con mi tarjeta?',
+    answer:
+      'Seleccioná arriba las tarjetas que tenés. El mapa filtra los comercios adheridos y, al tocar cada uno, muestra el detalle del descuento con crédito y con débito.',
+  },
+  {
+    id: 'credito-debito',
+    question: '¿Los descuentos aplican con crédito y con débito?',
+    answer:
+      'Depende del banco y del comercio. Cada local muestra por separado el beneficio con tarjeta de crédito y con débito, así sabés con cuál conviene pagar.',
+  },
+  {
+    id: 'combinar',
+    question: '¿Puedo combinar tarjetas de varios bancos?',
+    answer:
+      'Sí. Agregá todas las tarjetas que quieras y el mapa combina los beneficios: ves la unión de los descuentos de todos tus bancos en un solo lugar.',
+  },
+  {
+    id: 'mercadopago',
+    question: '¿Mercado Pago tiene descuentos con QR?',
+    answer:
+      'Sí. Seleccioná Mercado Pago para ver los comercios que ofrecen descuento pagando con el QR de Mercado Pago.',
+  },
+  {
+    id: 'cerca',
+    question: '¿Cómo encuentro descuentos cerca mío?',
+    answer:
+      'Tocá "Cerca mío" para usar tu ubicación y ordenar los comercios por distancia. Ajustá el radio en kilómetros para ver solo los beneficios de tu zona.',
+  },
+  {
+    id: 'gratis',
+    question: '¿Es gratis? ¿Necesito registrarme?',
+    answer:
+      'Es gratis y no necesitás registrarte. Si iniciás sesión, tus tarjetas quedan guardadas en tu cuenta y sincronizadas en todos tus dispositivos.',
+  },
+  {
+    id: 'actualizacion',
+    question: '¿Cada cuánto se actualizan los descuentos?',
+    answer:
+      'Los descuentos se leen en vivo y, si la fuente no está disponible, se muestra un respaldo que se actualiza a diario. La fecha de la última actualización aparece junto al mapa.',
+  },
+  {
+    id: 'fuente',
+    question: '¿De dónde salen los datos?',
+    answer:
+      'Los descuentos provienen de la app Bankos (bankos.uy). Este sitio no está afiliado a Bankos ni a los bancos; confirmá siempre las condiciones vigentes antes de pagar.',
+  },
+]
 
 // --- Data ---
 const banksParam = computed(() => [...selectedBankIds.value].sort().join(','))
