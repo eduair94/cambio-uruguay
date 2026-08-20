@@ -407,11 +407,26 @@
               <span>Descuentos {{ bank.name }}</span>
             </h3>
             <v-card-text class="text-body-2 py-1 flex-grow-1">{{ bankBlurb(bank) }}</v-card-text>
-            <v-card-actions>
+            <v-card-actions class="flex-wrap ga-1 pt-0">
               <v-btn size="small" variant="text" color="primary" @click="selectBank(bank.id)">
                 Ver descuentos de {{ bank.name }}
               </v-btn>
             </v-card-actions>
+            <!-- La otra mitad de la decisión: el descuento lo da el mapa, pero cuánto acumula y
+                 cuánto cuesta la tarjeta lo contestan las fichas del ranking. -->
+            <div
+              v-if="creditFichaPath(bank.id) || debitFichaPath(bank.id)"
+              class="bank-card__fichas d-flex flex-wrap ga-2 px-4 pb-3 text-caption"
+            >
+              <NuxtLink v-if="creditFichaPath(bank.id)" :to="creditFichaPath(bank.id)">
+                <v-icon size="x-small" class="mr-1">mdi-credit-card-multiple-outline</v-icon>
+                Tarjeta de crédito {{ bank.name }}
+              </NuxtLink>
+              <NuxtLink v-if="debitFichaPath(bank.id)" :to="debitFichaPath(bank.id)">
+                <v-icon size="x-small" class="mr-1">mdi-credit-card-outline</v-icon>
+                Débito {{ bank.name }}
+              </NuxtLink>
+            </div>
           </v-card>
         </v-col>
       </v-row>
@@ -430,13 +445,16 @@ import { computed, onMounted, ref, watch } from 'vue'
 import LocationsMap from '~/components/map/LocationsMap.vue'
 import {
   BANKOS_BANKS,
+  BANKOS_CARD_PAGE_ANCHORS,
   BANKOS_CARDS,
   BANKOS_DAY_LABELS,
   appliesOnDay,
   bankIdsForCards,
+  bankosTypeFromQuery,
   dayRestrictionLabel,
   isoWeekdayToday,
   type BankosBank,
+  type BankosCard,
   type BankosDiscountsResponse,
   type BankosItem,
 } from '~/utils/bankos'
@@ -476,11 +494,35 @@ function clearAll() {
   cardsStore.clear()
 }
 
-/** Add every card of a bank to the selection (used by the per-bank SEO section and `?banco=`). */
-function selectBank(bankId: string) {
-  const ids = BANKOS_CARDS.filter(c => c.bankId === bankId).map(c => c.id)
+/**
+ * Add a bank's cards to the selection (per-bank SEO section, `?banco=` and the card pages).
+ *
+ * `type` acota a crédito o débito: las páginas de tarjetas entran con `?banco=itau&tipo=credito`
+ * y no tiene sentido que eso prenda también el débito. Si el banco no tiene ese tipo, se cae al
+ * banco entero en vez de dejar el mapa vacío.
+ */
+function selectBank(bankId: string, type?: BankosCard['type']) {
+  const ofBank = BANKOS_CARDS.filter(c => c.bankId === bankId)
+  const narrowed = type ? ofBank.filter(c => c.type === type) : []
+  const ids = (narrowed.length ? narrowed : ofBank).map(c => c.id)
+  if (!ids.length) return
   cardsStore.setCards([...cardsStore.cards, ...ids])
   if (import.meta.client) window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+/**
+ * Ficha del banco en las páginas de tarjetas (vacío si ese emisor no está rankeado).
+ *
+ * El ancla la arma el id del catálogo de la otra página, que `BANKOS_CARD_PAGE_ANCHORS` guarda
+ * como string suelto para no importar acá dos archivos de datos grandes.
+ */
+function creditFichaPath(bankId: string): string {
+  const id = BANKOS_CARD_PAGE_ANCHORS[bankId]?.credit
+  return id ? localePath(`/tarjetas-de-credito-uruguay#programa-${id}`) : ''
+}
+function debitFichaPath(bankId: string): string {
+  const id = BANKOS_CARD_PAGE_ANCHORS[bankId]?.debit
+  return id ? localePath(`/tarjetas-de-debito-uruguay#tarjeta-${id}`) : ''
 }
 
 /** Accurate one-liner per bank — card types read from the catalog, never invented. */
@@ -530,9 +572,11 @@ async function toggleAlerts() {
 onMounted(() => {
   cardsStore.loadLocal()
   favoritesStore.loadLocal()
-  // Shareable deep link: /descuentos-con-tarjeta-uruguay?banco=itau pre-selects a bank.
+  // Shareable deep link: /descuentos-con-tarjeta-uruguay?banco=itau pre-selects a bank, y
+  // `&tipo=credito|debito` lo acota a un tipo de tarjeta (así entran las fichas de
+  // /tarjetas-de-credito-uruguay y /tarjetas-de-debito-uruguay).
   const q = String(route.query.banco || '').toLowerCase()
-  if (q && BANKOS_BANKS.some(b => b.id === q)) selectBank(q)
+  if (q && BANKOS_BANKS.some(b => b.id === q)) selectBank(q, bankosTypeFromQuery(route.query.tipo))
   // ?categoria=Farmacias — the analysis page links straight to a rubro. Applied verbatim: the
   // select only offers categories the loaded data actually has, so an unknown value would
   // silently show nothing; `pendingCategory` waits for the data and clears itself if it never
@@ -952,5 +996,15 @@ useHead(() => ({
   gap: 8px;
   padding: 16px 16px 0;
   line-height: 1.4;
+}
+/* Los links a las fichas son secundarios frente al CTA del mapa: token de link (no `primary`,
+   que en tema oscuro no llega a AA sobre la tarjeta) y subrayado recién en hover. */
+.bank-card__fichas a {
+  color: rgb(var(--v-theme-link));
+  text-decoration: none;
+}
+.bank-card__fichas a:hover,
+.bank-card__fichas a:focus-visible {
+  text-decoration: underline;
 }
 </style>

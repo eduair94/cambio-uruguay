@@ -180,7 +180,20 @@
               </div>
               <div>
                 <dt>Descuentos y beneficios</dt>
-                <dd>{{ p.discountNote }}</dd>
+                <dd>
+                  {{ p.discountNote }}
+                  <!-- El texto describe la promo; el mapa dice DÓNDE cae. El link entra con el
+                       banco y el tipo ya preseleccionados. -->
+                  <NuxtLink
+                    v-if="mapaDescuentos(p.id)"
+                    :to="mapaDescuentos(p.id)"
+                    class="rank-map-link d-inline-block mt-1"
+                  >
+                    <VIcon size="14" class="mr-1">mdi-map-marker-radius-outline</VIcon>
+                    Ver en el mapa los comercios con descuento
+                    {{ mapaDescuentosLabel(p.id) }}
+                  </NuxtLink>
+                </dd>
               </div>
               <div>
                 <dt>Costo</dt>
@@ -323,7 +336,21 @@
 
     <!-- Cross-links -->
     <VRow class="my-6">
-      <VCol cols="12" md="6">
+      <VCol cols="12" md="4">
+        <VCard
+          :to="localePath('/descuentos-con-tarjeta-uruguay')"
+          class="cross-link pa-4 h-100"
+          hover
+          variant="flat"
+        >
+          <VIcon color="primary" class="mb-2">mdi-map-marker-radius-outline</VIcon>
+          <h3 class="text-subtitle-1 font-weight-bold mb-1">Mapa de descuentos por banco</h3>
+          <p class="text-body-2 text-grey-lighten-1 mb-0">
+            Elegí las tarjetas que ya tenés y mirá qué comercios cerca tuyo tienen descuento hoy.
+          </p>
+        </VCard>
+      </VCol>
+      <VCol cols="12" md="4">
         <VCard
           :to="localePath('/pagar-cuentas-con-tarjeta')"
           class="cross-link pa-4 h-100"
@@ -337,7 +364,7 @@
           </p>
         </VCard>
       </VCol>
-      <VCol cols="12" md="6">
+      <VCol cols="12" md="4">
         <VCard
           :to="localePath('/salud-financiera')"
           class="cross-link pa-4 h-100"
@@ -367,8 +394,25 @@ import {
   medalFor,
   type IssuerType,
 } from '~/utils/cardRewards'
+import { BANKOS_BANK_BY_CREDIT_PROGRAM, bankosBankName, bankosMapPath } from '~/utils/bankos'
 
 const localePath = useLocalePath()
+
+/**
+ * Link al mapa de descuentos con las tarjetas de crédito de ese emisor ya elegidas.
+ *
+ * Vacío cuando Bankos no cubre al emisor (Pronto!, Creditel, Passcard, Cabal, Líder, BTG y el
+ * programa de Puntos de Tienda Inglesa, que no es una tarjeta bancaria): mejor sin link que
+ * mandando a un mapa vacío.
+ */
+function mapaDescuentos(programId: string): string {
+  const bankId = BANKOS_BANK_BY_CREDIT_PROGRAM[programId]
+  return bankId ? localePath(bankosMapPath(bankId, 'credit')) : ''
+}
+function mapaDescuentosLabel(programId: string): string {
+  const bankId = BANKOS_BANK_BY_CREDIT_PROGRAM[programId]
+  return bankId ? `de ${bankosBankName(bankId)}` : ''
+}
 
 const rubric = REWARD_RUBRIC
 const ranked = rankedPrograms()
@@ -789,6 +833,17 @@ useHead(() => ({
 }
 .v-theme--light .rank-facts dd {
   color: rgba(0, 0, 0, 0.78);
+}
+/* El link al mapa vive dentro del <dd>, que baja el contraste del texto: se pinta con el token
+   de link (no con `primary`, que en oscuro queda en 4:1 sobre la tarjeta y no llega a AA). */
+.rank-map-link {
+  color: rgb(var(--v-theme-link));
+  font-weight: 600;
+  text-decoration: none;
+}
+.rank-map-link:hover,
+.rank-map-link:focus-visible {
+  text-decoration: underline;
 }
 
 .rank-plabel {

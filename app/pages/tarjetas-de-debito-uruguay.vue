@@ -415,6 +415,17 @@
               </span>
             </div>
 
+            <!-- El ranking mide lo que la tarjeta cuesta afuera; el mapa contesta lo que rinde
+                 acá. Entra con el banco y el débito ya preseleccionados. -->
+            <div v-if="mapaDescuentos(r.id)" class="fee-line">
+              <VIcon size="15" color="primary">mdi-map-marker-radius-outline</VIcon>
+              <span>
+                <strong>Descuentos:</strong> mirá en el mapa qué comercios tienen beneficio
+                {{ mapaDescuentosLabel(r.id) }}.
+                <NuxtLink :to="mapaDescuentos(r.id)" class="inline-link">Abrir el mapa</NuxtLink>
+              </span>
+            </div>
+
             <div v-if="r.signals.length" class="d-flex flex-wrap ga-2 mt-2">
               <VChip
                 v-for="(s, i) in r.signals"
@@ -565,6 +576,9 @@
         <VBtn :to="localePath('/tarjetas-de-credito-uruguay')" variant="tonal" size="small">
           <VIcon start size="small">mdi-credit-card-multiple-outline</VIcon>Tarjetas de crédito
         </VBtn>
+        <VBtn :to="localePath('/descuentos-con-tarjeta-uruguay')" variant="tonal" size="small">
+          <VIcon start size="small">mdi-map-marker-radius-outline</VIcon>Mapa de descuentos
+        </VBtn>
         <VBtn :to="localePath('/herramientas/calculadora-spread')" variant="tonal" size="small">
           <VIcon start size="small">mdi-calculator</VIcon>Calculadora de spread
         </VBtn>
@@ -598,6 +612,7 @@
 </template>
 
 <script setup lang="ts">
+import { BANKOS_BANK_BY_DEBIT_CARD, bankosBankName, bankosMapPath } from '~/utils/bankos'
 import {
   DEBIT_CARDS,
   DEBIT_CARDS_LAST_REVIEWED,
@@ -615,6 +630,20 @@ import {
 } from '~/utils/debitCards'
 
 const localePath = useLocalePath()
+
+/**
+ * Link al mapa de descuentos con el débito de ese emisor ya elegido.
+ *
+ * Vacío cuando Bankos no cubre al emisor (MiDinero): mejor sin link que mandando a un mapa vacío.
+ */
+function mapaDescuentos(cardId: string): string {
+  const bankId = BANKOS_BANK_BY_DEBIT_CARD[cardId]
+  return bankId ? localePath(bankosMapPath(bankId, 'debit')) : ''
+}
+function mapaDescuentosLabel(cardId: string): string {
+  const bankId = BANKOS_BANK_BY_DEBIT_CARD[cardId]
+  return bankId ? `con ${bankosBankName(bankId)}` : ''
+}
 
 // ── Ranking ──
 const ranked = rankedCards()

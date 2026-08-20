@@ -201,3 +201,106 @@ export function sanitizeFavoriteIds(input: unknown): string[] {
 export function mergeFavoriteIds(a: unknown, b: unknown): string[] {
   return sanitizeFavoriteIds([...sanitizeFavoriteIds(a), ...sanitizeFavoriteIds(b)])
 }
+
+// ────────────────────────────────────────────────────────────────────────────
+// Cross-links with the card pages
+//
+// POR QUÉ VIVE ACÁ: /tarjetas-de-credito-uruguay y /tarjetas-de-debito-uruguay rankean el
+// producto (cuánto acumulás, cuánto te cobran); el mapa contesta la otra mitad ("¿dónde tengo
+// descuento con ESTA tarjeta?"). Las tres páginas tienen catálogos propios con ids propios, así
+// que el puente es una tabla explícita y no un match por nombre: "Itaú Visa Débito", "Banco Itaú
+// Uruguay" e `itau` no se parecen lo suficiente como para adivinar sin equivocarse.
+//
+// Regla: sólo se mapea lo que el emisor efectivamente tiene en Bankos. Un programa de fidelidad
+// que no es una tarjeta bancaria (Puntos de Tienda Inglesa) o un emisor que Bankos no cubre
+// (MiDinero, Pronto!, Creditel, Passcard, Cabal, Líder, BTG) queda fuera a propósito: es mejor no
+// mostrar el link que mandar a un mapa vacío.
+// ────────────────────────────────────────────────────────────────────────────
+
+/** id de programa en `utils/cardRewards.ts` → id de banco en Bankos. */
+export const BANKOS_BANK_BY_CREDIT_PROGRAM: Readonly<Record<string, string>> = {
+  'brou-recompensa': 'brou',
+  'scotia-puntos': 'scotiabank',
+  'scotia-puntos-american-express': 'scotiabank',
+  'scotia-connectmiles': 'scotiabank',
+  'scotia-club-card-tienda-inglesa': 'scotiabank',
+  'santander-soy-santander-puntos': 'santander',
+  'bbva-puntos-bbva': 'bbva',
+  'bbva-comunidad-plus': 'bbva',
+  'itau-volar': 'itau',
+  'itau-volar-platinum': 'itau',
+  'itau-volar-black': 'itau',
+  'itau-latam-pass-platinum': 'itau',
+  'itau-latam-pass-internacional': 'itau',
+  'oca-oca-blue': 'oca',
+  'tarjeta-anda': 'anda',
+}
+
+/** id de tarjeta en `utils/debitCards.ts` → id de banco en Bankos. */
+export const BANKOS_BANK_BY_DEBIT_CARD: Readonly<Record<string, string>> = {
+  'itau-debito': 'itau',
+  'bbva-debito': 'bbva',
+  'santander-debito': 'santander',
+  'scotiabank-debito': 'scotiabank',
+  'brou-debito': 'brou',
+  'oca-blue': 'oca',
+  prex: 'prex',
+  'mercado-pago': 'mercadopago',
+}
+
+/**
+ * Vuelta: banco de Bankos → la ficha que lo describe en cada página de tarjetas.
+ *
+ * Los valores son los ids que arman el ancla (`#programa-<id>` en crédito, `#tarjeta-<id>` en
+ * débito). Se guardan como strings sueltos, no importando los catálogos, para no arrastrar dos
+ * archivos de datos pesados al bundle del mapa.
+ */
+export const BANKOS_CARD_PAGE_ANCHORS: Readonly<
+  Record<string, { credit?: string; debit?: string }>
+> = {
+  itau: { credit: 'itau-volar', debit: 'itau-debito' },
+  bbva: { credit: 'bbva-puntos-bbva', debit: 'bbva-debito' },
+  santander: { credit: 'santander-soy-santander-puntos', debit: 'santander-debito' },
+  scotiabank: { credit: 'scotia-puntos', debit: 'scotiabank-debito' },
+  brou: { credit: 'brou-recompensa', debit: 'brou-debito' },
+  oca: { credit: 'oca-oca-blue', debit: 'oca-blue' },
+  prex: { debit: 'prex' },
+  mercadopago: { debit: 'mercado-pago' },
+  anda: { credit: 'tarjeta-anda' },
+  // clubelpais: la Tarjeta Club El País no está rankeada en ninguna de las dos páginas.
+}
+
+/** Nombre visible del banco, o el id si Bankos dejara de cubrirlo. */
+export function bankosBankName(bankId: string): string {
+  return BANKOS_BANKS.find(b => b.id === bankId)?.name ?? bankId
+}
+
+/**
+ * Deep link al mapa con las tarjetas de un banco ya elegidas.
+ *
+ * `type` acota a crédito o débito (la página de crédito no debería preseleccionar el débito del
+ * mismo banco). Si el banco no tiene ese tipo en el catálogo se cae al banco completo, que es lo
+ * que el mapa sabe resolver.
+ */
+export function bankosMapPath(bankId: string, type?: BankosCard['type']): string {
+  const base = '/descuentos-con-tarjeta-uruguay'
+  const hasType = type && BANKOS_CARDS.some(c => c.bankId === bankId && c.type === type)
+  if (!hasType) return `${base}?banco=${bankId}`
+  return `${base}?banco=${bankId}&tipo=${type === 'credit' ? 'credito' : 'debito'}`
+}
+
+/**
+ * `?tipo=credito|debito` → tipo de tarjeta; cualquier otra cosa es "el banco entero".
+ *
+ * Acepta el array que arma vue-router cuando el parámetro viene repetido (`?tipo=a&tipo=b`): se
+ * queda con el primero, igual que hace el resto de la página con `?banco=`.
+ */
+export function bankosTypeFromQuery(value: unknown): BankosCard['type'] | undefined {
+  const raw = Array.isArray(value) ? value[0] : value
+  const v = String(raw ?? '')
+    .trim()
+    .toLowerCase()
+  if (v === 'credito' || v === 'crédito' || v === 'credit') return 'credit'
+  if (v === 'debito' || v === 'débito' || v === 'debit') return 'debit'
+  return undefined
+}

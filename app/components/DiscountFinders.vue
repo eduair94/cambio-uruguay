@@ -20,6 +20,8 @@ import {
   type FinderFact,
 } from '~/utils/discountApps'
 
+const localePath = useLocalePath()
+
 withDefaults(
   defineProps<{
     /** Ajusta la bajada según la página que lo monta. */
@@ -52,9 +54,45 @@ const SOURCE_LABELS: Record<FinderFact['source'], string> = {
         no te enterás.
       </template>
       Los bancos publican sus beneficios, pero nadie entra a la web de cada banco antes de sentarse
-      a comer. Hay herramientas de terceros que juntan todo eso. No tenemos afiliación con ninguna:
+      a comer. Abajo está nuestro mapa —elegís tus tarjetas y ves los comercios con beneficio— y
+      también las herramientas de terceros que juntan lo mismo. No tenemos afiliación con ninguna:
       ni link de referido ni comisión.
     </p>
+
+    <!-- Lo primero es lo nuestro: el mismo dato de Bankos, pero en un mapa, sin instalar nada y
+         sin que la app decida qué te muestra. Va antes que los agregadores de terceros porque es
+         el único de la lista que se abre acá mismo. -->
+    <SurfaceCard accent class="mb-3">
+      <div class="d-flex align-center flex-wrap ga-2 mb-2">
+        <h3 class="text-subtitle-1 font-weight-bold mb-0">Mapa de descuentos de Cambio Uruguay</h3>
+        <VChip size="x-small" color="success" variant="tonal">Gratis</VChip>
+        <VChip size="x-small" variant="outlined">Web, sin instalar</VChip>
+      </div>
+      <p class="text-body-2">
+        Elegís las tarjetas que ya tenés y el mapa muestra únicamente los comercios con beneficio,
+        combinando todos tus bancos en una sola vista y ordenándolos por cercanía. Cubre Itaú, BROU,
+        Santander, BBVA, Scotiabank, OCA, Prex, Mercado Pago, ANDA y Club El País.
+      </p>
+      <p class="text-body-2 text-medium-emphasis">
+        <strong>De dónde sale:</strong> los descuentos son datos de la app Bankos, la misma fuente
+        de la ficha de abajo; no tenemos afiliación con Bankos ni con los bancos. Lo que agregamos
+        es el mapa, el filtro por día y el "cerca mío".
+      </p>
+      <div class="d-flex flex-wrap ga-2 mt-2">
+        <VBtn :to="localePath('/descuentos-con-tarjeta-uruguay')" color="primary" size="small">
+          <VIcon start size="small">mdi-map-marker-radius-outline</VIcon>
+          Abrir el mapa de descuentos
+        </VBtn>
+        <VBtn
+          :to="localePath('/que-banco-tiene-mas-descuentos-uruguay')"
+          variant="text"
+          size="small"
+        >
+          <VIcon start size="small">mdi-chart-bar</VIcon>
+          ¿Qué banco tiene más descuentos?
+        </VBtn>
+      </div>
+    </SurfaceCard>
 
     <SurfaceCard v-if="primary" accent class="mb-3">
       <div class="d-flex align-center flex-wrap ga-2 mb-2">
