@@ -31,6 +31,26 @@ import { fetchSubredditRules } from "../reddit";
 export const BANNED_SUBS = new Set(["askuruguayan"]);
 
 /**
+ * Subs que no banean, pero borran en silencio lo que escribimos.
+ *
+ * Separado de {@link BANNED_SUBS} porque son cosas distintas y confundirlas cuesta información: un
+ * ban es un hecho que Reddit te comunica; esto es una política de AutoModerator que sólo se ve
+ * leyendo el comentario con un token ANÓNIMO, porque el autor ve los suyos borrados como si
+ * estuvieran perfectos, para siempre.
+ *
+ * **r/LegalUruguay, medido el 2026-08-20**: la cuenta escribió un comentario correcto, con fuente y
+ * sin ninguna cifra inventada, y volvió `[removed]` con el autor en `[deleted]`. El mismo día, en
+ * r/Burises, un comentario de la misma cuenta quedó **vivo y con autor visible** — o sea que no es
+ * la cuenta, es el sub. Tiene 2.310 suscriptores, **ninguna regla publicada** y unos 8 hilos por
+ * semana, así que excluirlo no cuesta prácticamente nada y evita el patrón que sí cuesta: insistir
+ * contra un filtro es lo que convierte un borrado en una sanción de cuenta.
+ *
+ * Para sacar uno de acá hace falta la misma evidencia que lo puso: un comentario leído con token
+ * anónimo que siga vivo.
+ */
+export const FILTERED_SUBS = new Set(["legaluruguay"]);
+
+/**
  * Frases que, en las reglas publicadas de un sub, significan "acá no".
  *
  * Deliberadamente conservador: es preferible saltear un sub que sí nos aceptaría antes que escribir
@@ -72,6 +92,9 @@ export interface SubVerdict {
 export async function subWritable(sub: string): Promise<SubVerdict> {
   const key = sub.toLowerCase();
   if (BANNED_SUBS.has(key)) return { allowed: false, reason: "la cuenta está baneada de este sub" };
+  if (FILTERED_SUBS.has(key)) {
+    return { allowed: false, reason: "este sub borra en silencio lo que escribimos (medido con token anónimo)" };
+  }
 
   const rules = await fetchSubredditRules(sub);
   if (!rules.length) return { allowed: true };

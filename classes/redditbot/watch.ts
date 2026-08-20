@@ -91,19 +91,33 @@ Los ${fullnames.length} comentarios recientes existen para la ` +
     return { ...summary, note: "shadowban detectado — pausado" };
   }
 
+  const invisibleSet = new Set(invisible);
+
   const bad: string[] = [];
   for (const row of rows) {
     const state = states.get(row.commentFullname);
     if (!state) continue; // unknown ≠ removed; see fetchCommentStates
-    await recordWatch(row.postId, { commentScore: state.score, removed: state.removed });
+
+    // "Borrado" es lo que ve un TERCERO, no lo que ve el autor.
+    //
+    // `state.removed` sale de la vista autenticada, y ésa dice que todo está bien incluso cuando
+    // AutoModerator ya lo sacó: la cuenta ve sus propios comentarios borrados perfectos, para
+    // siempre. Medido el 2026-08-20 — un comentario en r/LegalUruguay volvía `removed=false` por
+    // este camino y `[removed]` con autor `[deleted]` leído sin token. Sin esta línea, el bot
+    // seguiría contestando ahí para siempre y la página de estadísticas diría que sigue publicado.
+    //
+    // La lista de invisibles ya está calculada arriba para la puerta del shadowban; lo único que
+    // faltaba era usarla también acá, comentario por comentario.
+    const removed = state.removed || invisibleSet.has(row.commentFullname);
+    await recordWatch(row.postId, { commentScore: state.score, removed });
     summary.updated++;
 
-    const wasBad = state.removed || state.score <= NEGATIVE_SCORE;
+    const wasBad = removed || state.score <= NEGATIVE_SCORE;
     const alreadyKnown = row.removed || (row.commentScore ?? 0) <= NEGATIVE_SCORE;
     if (wasBad && !alreadyKnown) {
       summary.negatives++;
       bad.push(
-        `${state.removed ? "🗑 borrado" : `👎 score ${state.score}`} en r/${row.sub} → ${row.pageUrl || row.postId}`
+        `${removed ? "🗑 borrado" : `👎 score ${state.score}`} en r/${row.sub} → ${row.pageUrl || row.postId}`
       );
     }
   }

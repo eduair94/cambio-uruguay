@@ -5,7 +5,7 @@
 // código podía volver a meterse donde no lo quieren: reintentando un sub que ya baneó, y entrando
 // a uno que lo prohíbe por escrito en unas reglas que el propio código ya sabía leer.
 import { describe, expect, it, vi } from "vitest";
-import { BANNED_SUBS, looksLikeBan, subWritable } from "../../classes/redditbot/subrules";
+import { BANNED_SUBS, FILTERED_SUBS, looksLikeBan, subWritable } from "../../classes/redditbot/subrules";
 
 vi.mock("../../classes/reddit", () => ({
   fetchSubredditRules: vi.fn(async (sub: string) => {
@@ -69,5 +69,29 @@ describe("subrules — reconocer un ban cuando Reddit lo dice", () => {
     expect(looksLikeBan([["RATELIMIT", "you are doing that too much", "ratelimit"]])).toBe(false);
     expect(looksLikeBan([])).toBe(false);
     expect(looksLikeBan(undefined)).toBe(false);
+  });
+});
+
+describe("un sub que borra en silencio no es un sub que banea", () => {
+  // r/LegalUruguay, 2026-08-20: comentario correcto y con fuente, devuelto como [removed] con el
+  // autor en [deleted]. El mismo día, en r/Burises, otro de la MISMA cuenta quedó vivo y con autor
+  // visible — así que no es la cuenta, es el sub. Sólo se ve con un token anónimo: el autor ve los
+  // suyos borrados como si estuvieran perfectos, para siempre.
+  it("r/LegalUruguay está excluido, y por su propio motivo", async () => {
+    expect(FILTERED_SUBS.has("legaluruguay")).toBe(true);
+    const verdict = await subWritable("LegalUruguay");
+    expect(verdict.allowed).toBe(false);
+    expect(verdict.reason).toContain("borra en silencio");
+  });
+
+  it("no se confunde con la lista de baneos", () => {
+    // Un ban es un hecho que Reddit comunica; esto es una política de AutoModerator. Meterlos en la
+    // misma lista perdería la diferencia, y con ella el motivo por el que cada uno está.
+    expect(BANNED_SUBS.has("legaluruguay")).toBe(false);
+    expect(FILTERED_SUBS.has("askuruguayan")).toBe(false);
+  });
+
+  it("r/Burises sigue habilitado: ahí el comentario sobrevivió", async () => {
+    expect((await subWritable("Burises")).allowed).toBe(true);
   });
 });
