@@ -1500,6 +1500,8 @@
     }
   },
   "nav": {
+    "alquilarSinRecibo": "Renting without a payslip",
+    "accidenteTrabajo": "Work accidents",
     "herramientas": "Tools",
     "convertir": "Convert",
     "cotizacion": "Exchange rates",

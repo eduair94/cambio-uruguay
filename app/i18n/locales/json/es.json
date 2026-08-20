@@ -1511,6 +1511,8 @@
     }
   },
   "nav": {
+    "alquilarSinRecibo": "Alquilar sin recibo de sueldo",
+    "accidenteTrabajo": "Accidente de trabajo",
     "herramientas": "Herramientas",
     "convertir": "Convertir",
     "cotizacion": "Cotizaciones",

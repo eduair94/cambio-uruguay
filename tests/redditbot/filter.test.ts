@@ -229,3 +229,60 @@ describe("redditbot/filter — retrievalQuery", () => {
     expect(query.length).toBeLessThanOrEqual(1200);
   });
 });
+
+describe("un término fuerte que no significa plata", () => {
+  // "Galletas con grasa", r/uruguay, 2026-08-19: un hilo sobre dónde comprar pan pasó el filtro
+  // entero —y terminó publicado en /estadisticas-reddit como "una pregunta que no supimos
+  // contestar"— por decir "cerca de Antel Arena". Antel está en el léxico como servicio del hogar;
+  // el Antel Arena es un estadio, y aparece en cada hilo sobre recitales y cómo llegar a un lado.
+  const post = (title: string, body: string): any => ({
+    id: "x",
+    sub: "uruguay",
+    author: "alguien",
+    title,
+    selftext: body,
+    permalink: "/x",
+    createdUtc: Math.floor(Date.now() / 1000) - 3600,
+    locked: false,
+    stickied: false,
+    over18: false,
+    linkFlair: "",
+    imageUrl: "",
+  });
+
+  it("el estadio no admite un hilo de panadería", () => {
+    const verdict = screenPost(
+      post(
+        "Galletas con grasa",
+        "Soy de Montevideo cerca de antel arena y por la zona no hay ni un lugar que venda galletas cuadradas como la gente, conocen alguna panaderia?"
+      ),
+      botConfig()
+    );
+    expect(verdict.ok).toBe(false);
+    expect(verdict.reason).toBe("off_topic");
+  });
+
+  it("pero la factura de Antel sigue admitiendo", () => {
+    // La trampa se desarma quitando la frase y volviendo a buscar: si queda otro "antel", es el real.
+    const verdict = screenPost(
+      post(
+        "Factura de Antel carísima",
+        "Me llegó la factura de antel por 4.000 pesos este mes y no entiendo por qué subió tanto, alguien sabe cómo reclamar?"
+      ),
+      botConfig()
+    );
+    expect(verdict.ok).toBe(true);
+    expect(verdict.matched).toContain("antel");
+  });
+
+  it("y el hilo que nombra las dos cosas también", () => {
+    const verdict = screenPost(
+      post(
+        "Antel me cobró de más",
+        "Fui a un recital en el antel arena y después me llegó la factura de antel con un cargo que no reconozco, alguien sabe qué hacer?"
+      ),
+      botConfig()
+    );
+    expect(verdict.ok).toBe(true);
+  });
+});

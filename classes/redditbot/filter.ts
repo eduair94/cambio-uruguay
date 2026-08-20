@@ -205,16 +205,46 @@ export interface FilterVerdict {
 export const postText = (post: RedditPostRaw): string => strip(`${post.title} ${post.selftext}`);
 
 /**
+ * Frases donde un término fuerte NO significa plata.
+ *
+ * Un término fuerte alcanza solo para admitir un hilo, así que una colisión suya cuesta una llamada
+ * de embedding y una del juez, y termina publicada como "una pregunta que no supimos contestar" en
+ * /estadisticas-reddit — que es peor que el gasto, porque es falso: nadie preguntó nada de plata.
+ *
+ * MEDIDO: "Galletas con grasa", r/uruguay, 2026-08-19. Un hilo sobre dónde comprar pan pasó el
+ * filtro entero por decir "cerca de **Antel Arena**". Antel está en el léxico como servicio del
+ * hogar y el Antel Arena es uno de los estadios más grandes de Montevideo, así que aparece en cada
+ * hilo sobre recitales, eventos y cómo llegar a un lado.
+ *
+ * La trampa se desarma quitando la frase del texto y volviendo a buscar el término: si después de
+ * sacar "antel arena" ya no queda ningún "antel", entonces el único "antel" del hilo era el estadio.
+ * Eso preserva el caso real —"me llegó carísima la factura de Antel y fui al Antel Arena"— en vez
+ * de tirar el término entero.
+ */
+const STRONG_TERM_TRAPS: Record<string, readonly string[]> = {
+  antel: ["antel arena"],
+};
+
+/**
  * Which topic terms the text carries.
  *
  * Multi-word terms are substring matches; single words need boundaries so "iva" does not match
  * "privado" and "tea" does not match "tarea".
  */
 function topicHits(text: string): { strong: string[]; weak: string[]; matched: string[] } {
+  const present = (term: string, where: string): boolean =>
+    term.includes(" ") ? where.includes(term) : new RegExp(`(^|[^a-z0-9])${term}([^a-z0-9]|$)`).test(where);
+
   const hits = (terms: readonly string[]): string[] =>
-    terms.filter((term) =>
-      term.includes(" ") ? text.includes(term) : new RegExp(`(^|[^a-z0-9])${term}([^a-z0-9]|$)`).test(text)
-    );
+    terms.filter((term) => {
+      if (!present(term, text)) return false;
+      const traps = STRONG_TERM_TRAPS[term];
+      if (!traps) return true;
+      // Sin las frases trampa, ¿el término sigue estando? Si no, era sólo la trampa.
+      const without = traps.reduce((acc, phrase) => acc.split(phrase).join(" "), text);
+      return present(term, without);
+    });
+
   const strong = hits(STRONG_TERMS);
   const weak = hits(WEAK_TERMS);
   return { strong, weak, matched: [...strong, ...weak] };
