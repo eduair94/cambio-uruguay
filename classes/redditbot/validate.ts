@@ -25,6 +25,7 @@ export type RejectReason =
   | "wrong_link"
   | "multiple_links"
   | "invented_number"
+  | "no_substance"
   | "trailing_signature"
   | "banned_phrase"
   | "markdown_heading"
@@ -41,6 +42,15 @@ export interface ValidationResult {
 
 const MIN_WORDS = 45;
 const MAX_WORDS = 170;
+
+/**
+ * Cuántas cifras tiene que tener la página para exigirle una a la respuesta.
+ *
+ * Tres, no una: una página puede mencionar un año o un número de artículo sin que eso sea un dato
+ * que la respuesta deba usar. Tres es la señal de que la página tiene sustancia cuantitativa, y de
+ * que una respuesta sin ninguna la está usando de adorno.
+ */
+const MIN_CONTEXT_FIGURES = 3;
 
 /**
  * Filler that marks a comment as machine-written on sight.
@@ -254,6 +264,26 @@ export function validateReply({ reply, expectedUrl, context, postText = "" }: Va
   const invented = inventedNumbers(prose, `${context}\n${postText}`);
   if (invented.length) return { ok: false, reason: "invented_number", detail: invented.join(", ") };
 
+  // ¿Contestó, o estuvo de acuerdo?
+  //
+  // Todo lo de arriba mide que la respuesta no diga nada FALSO. Nada medía que dijera algo. Un
+  // comentario que le repite al autor lo que él acaba de escribir, sin un solo dato, pasa cada una
+  // de las puertas anteriores —no inventa cifras porque no tiene cifras— y es exactamente la forma
+  // del spam con enlace. Pasó en vivo el 2026-08-19 y hubo que borrarlo a mano.
+  //
+  // La regla NO es "toda respuesta lleva un número": hay respuestas buenas que son cualitativas
+  // ("el BCU no publica ese registro"). Es más angosta, y por eso se puede sostener: SI la página
+  // que estamos enlazando tiene datos duros y nuestra respuesta no usa ninguno, entonces no
+  // contestamos con la página — la citamos de adorno.
+  const contextFigures = numericTokens(context);
+  if (contextFigures.length >= MIN_CONTEXT_FIGURES && !numericTokens(prose).length) {
+    return {
+      ok: false,
+      reason: "no_substance",
+      detail: `la página trae ${contextFigures.length} cifras y la respuesta no usa ninguna`,
+    };
+  }
+
   return { ok: true };
 }
 
@@ -269,6 +299,8 @@ export function retryHint(result: ValidationResult): string {
       return `El intento anterior fue demasiado largo (${result.detail}). Recortalo.`;
     case "too_short":
       return `El intento anterior fue demasiado corto (${result.detail}). Contestá la pregunta con más sustancia, sin agregar datos nuevos.`;
+    case "no_substance":
+      return `El intento anterior no usó ni un dato de la página (${result.detail}). Reescribilo contestando con al menos una cifra concreta del CONTEXTO: sin eso el comentario sólo le repite a la persona lo que ya escribió.`;
     case "trailing_signature":
       return `El intento anterior terminaba con una firma ("${result.detail}"). Sacala entera: el comentario termina cuando termina la respuesta, sin presentarte ni aclarar qué sos.`;
     case "banned_phrase":

@@ -34,6 +34,7 @@ import { judgeRelevance } from "./judge";
 import { authorAllowed, jitterMinutes, pageAllowed, runAllowed, subAllowed } from "./limits";
 import type { LedgerSnapshot } from "./ledger";
 import { subWritable } from "./subrules";
+import { linkableOnly, linkablePage } from "./linkable";
 import { fetchThreadContext, EMPTY_THREAD } from "./thread";
 import { bioDeclaresBot } from "./identity";
 import { fetchAccountBio } from "./post";
@@ -390,6 +391,11 @@ async function answerParkedThread(
     reject("parked_page_missing");
     return false;
   }
+  // Vale también acá: una página generada para un hilo no puede ser de las que nunca se enlazan.
+  if (!linkablePage(chosen.path)) {
+    reject("page_not_linkable");
+    return false;
+  }
 
   const verdict = await judgeRelevance(post.title, post.selftext, [chosen]);
   if (!verdict.relevant || verdict.confidence < cfg.minJudge) {
@@ -481,7 +487,7 @@ export async function answerThreadById(postId: string, cfg: BotConfig = botConfi
   const vector = await embedOne(query, "RETRIEVAL_QUERY");
   if (!vector) return { ...summary, note: "no se pudo embeber la consulta (¿cupo diario?)" };
 
-  const pages = retriever.rankWithVector(query, vector, 3);
+  const pages = linkableOnly(retriever.rankWithVector(query, vector, 6)).slice(0, 3);
   summary.scored = 1;
   const gate = retrievalGate(cfg, pages);
   console.log(
@@ -745,7 +751,10 @@ export async function runOnce(cfg: BotConfig = botConfig()): Promise<RunSummary>
   const ranked: Ranked[] = shortlist.map((c, i) => ({
     post: c.post,
     vector: vectors[i] ?? null,
-    pages: retriever.rankWithVector(c.query, vectors[i] ?? null, 3),
+    // Seis y no tres: `linkableOnly` saca las páginas que hablan de plata sin contestar nada, y
+    // pedir justo tres dejaría el ranking en dos —o en una— cada vez que una de ellas gane, con lo
+    // que el margen se mediría contra una candidata que ya no está. Ver `linkable.ts`.
+    pages: linkableOnly(retriever.rankWithVector(c.query, vectors[i] ?? null, 6)).slice(0, 3),
   }));
   summary.scored = ranked.length;
 
