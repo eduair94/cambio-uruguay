@@ -172,6 +172,53 @@ const SENSITIVE_TERMS = [
   "despido injustificado", "acoso", "amenaza",
 ];
 
+/**
+ * Hilos que piden ayuda para burlar un control. El bot no contesta ninguno.
+ *
+ * Distinto de {@link SENSITIVE_TERMS}, que son temas donde una respuesta automática es inoportuna.
+ * Acá el problema no es el tono: es que lo que se pide es evadir. Contestar con datos de aduana un
+ * hilo que arranca "sé que está prohibido" y "la declaración va a estar medio trucha" pone a la
+ * cuenta —y al sitio— asistiendo públicamente un intento declarado de fraude aduanero, por más que
+ * cada cifra de la respuesta sea correcta.
+ *
+ * MEDIDO (r/uruguay, 20/8/2026, "Tips encomienda internacional"): alguien pidiendo cómo traer
+ * semillas de cannabis desde Europa "sin que se den cuenta en la aduana". El pipeline lo rechazó,
+ * pero por un empate de coseno de 1,03× — o sea por suerte, no por criterio. Con una página que
+ * ganara limpio, el bot comentaba.
+ *
+ * La lista apunta a la INTENCIÓN de engañar, no al tema. "Me retuvieron el paquete en la aduana" y
+ * "cómo evito que me lo retengan" son preguntas legítimas y frecuentes, y ninguna cae acá.
+ */
+const EVASION_TERMS = [
+  "que no se den cuenta",
+  "sin que se den cuenta",
+  "para que no se den cuenta",
+  "burlar la aduana",
+  "ganarle a la aduana",
+  "esquivar la aduana",
+  "evadir la aduana",
+  "zafar de la aduana",
+  "declaracion trucha",
+  "factura trucha",
+  "declarar de menos",
+  "declarar menos de lo que",
+  "subdeclarar",
+  // La frase se conjuga de mil formas ("que ponga", "poner", "pedirle que ponga"), así que el
+  // término ancla en el complemento y no en el verbo. "valor mas bajo" a secas NO sirve: "la casa
+  // con el valor más bajo del dólar" es la consulta más común del sitio.
+  "valor mas bajo en la factura",
+  "valor menor en la factura",
+  "valor mas bajo en la declaracion",
+  "factura por menos",
+  "se que esta prohibido",
+  "aunque este prohibido",
+  "es ilegal pero",
+  "contrabando",
+  "pasar por aduana sin declarar",
+  "semillas de cannabis",
+  "semillas de marihuana",
+];
+
 export const strip = (text: string): string =>
   text
     .toLowerCase()
@@ -192,7 +239,8 @@ export type SkipReason =
   | "already_linked"
   | "off_topic"
   | "not_a_question"
-  | "sensitive";
+  | "sensitive"
+  | "evasion";
 
 export interface FilterVerdict {
   ok: boolean;
@@ -304,6 +352,11 @@ export function screenPost(post: RedditPostRaw, cfg: BotConfig, now: number = Da
 
   if (SENSITIVE_TERMS.some((term) => text.includes(term))) {
     return { ok: false, reason: "sensitive", matched: [] };
+  }
+
+  // Pedir ayuda para burlar un control no es un tema del sitio, es una respuesta que no se da.
+  if (EVASION_TERMS.some((term) => text.includes(term))) {
+    return { ok: false, reason: "evasion", matched: [] };
   }
 
   const { strong, weak, matched } = topicHits(text);

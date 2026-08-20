@@ -226,8 +226,12 @@ useHead({
   font-size: 0.8rem;
   opacity: 0.7;
 }
+/* 1px, no 3: la regla "No Side Tab" de DESIGN.md prohíbe un borde de color de más de 1px en un
+   costado de una tarjeta, un ítem de lista o un callout, y esto es un callout dentro de un panel.
+   El .law-quote de arriba se queda en 4px porque es un <blockquote> —una cita textual de la ley— y
+   ésa no es ninguna de las tres cosas que la regla nombra. */
 .norm-quote {
-  border-left: 3px solid rgba(var(--v-theme-primary), 0.5);
+  border-left: 1px solid rgba(var(--v-theme-primary), 0.5);
   padding-left: 0.75rem;
   font-style: italic;
   font-size: 0.875rem;
