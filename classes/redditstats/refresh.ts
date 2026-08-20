@@ -80,6 +80,7 @@ export async function refreshRedditStats(): Promise<StatsResult> {
       postedAt: 1,
       commentScore: 1,
       removed: 1,
+      selfDeleted: 1,
       replyText: 1,
       createdAt: 1,
     })
@@ -110,6 +111,11 @@ export async function refreshRedditStats(): Promise<StatsResult> {
     // La fecha del hecho, no la de la fila: un comentario se cuenta el día que se publicó.
     const when = row.postedAt ?? row.createdAt ?? null;
     const date = when ? dayKey(new Date(when)) : "";
+
+    // Un comentario que retiramos nosotros no cuenta como nada: no fue contestado (lo deshicimos) y
+    // no fue borrado por nadie. Contarlo entre los `removed` le atribuiría a un moderador una
+    // decisión nuestra, justo en la página cuyo punto es no mentir sobre esto.
+    if (row.status === "posted" && (row as { selfDeleted?: boolean }).selfDeleted) continue;
 
     if (row.status === "posted") {
       answered++;

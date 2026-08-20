@@ -187,9 +187,30 @@ export async function postedWithin(hours: number): Promise<RedditBotReplyDoc[]> 
   const since = new Date(Date.now() - hours * 60 * 60 * 1000);
   // Sólo los propios. Releer los de otra cuenta con nuestro token los encuentra invisibles —los
   // borró un AutoModerator que ya no nos aplica— y eso pausaba al bot nuevo por el pasado del viejo.
-  return RedditBotReplyModel.find({ ...ofCurrentAccount(), status: "posted", postedAt: { $gte: since }, removed: false })
+  //
+  // Y sin los que retiramos nosotros: un comentario que borramos a propósito no se ve desde afuera,
+  // que es exactamente la señal con la que el vigilante detecta un shadowban. Sin esta línea,
+  // retirar un comentario malo —cosa que hay que poder hacer— pausa el bot 48 h por haber acertado.
+  return RedditBotReplyModel.find({
+    ...ofCurrentAccount(),
+    status: "posted",
+    postedAt: { $gte: since },
+    removed: false,
+    selfDeleted: { $ne: true },
+  })
     .select({ postId: 1, sub: 1, commentId: 1, commentFullname: 1, postedAt: 1, commentScore: 1, pageUrl: 1 })
     .lean<RedditBotReplyDoc[]>();
+}
+
+/**
+ * Anotar que un comentario lo retiramos nosotros.
+ *
+ * Se llama al borrar a mano. Lo saca del vigilante y de las cuentas públicas, sin borrar la fila:
+ * la decisión de haber contestado ese hilo sigue tomada, y `seenPostIds` la necesita para no
+ * volver a evaluarlo.
+ */
+export async function markSelfDeleted(postId: string): Promise<void> {
+  await RedditBotReplyModel.updateOne({ postId }, { $set: { selfDeleted: true, checkedAt: new Date() } });
 }
 
 export async function recordWatch(

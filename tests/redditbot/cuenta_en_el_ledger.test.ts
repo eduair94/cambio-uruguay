@@ -64,3 +64,24 @@ describe("lo que pregunta '¿ya hablamos acá?' NO filtra por cuenta", () => {
     });
   }
 });
+
+describe("un comentario que retiramos nosotros no es una señal de nada", () => {
+  // Segunda pausa falsa de la noche, y de manual: se borró a mano un comentario malo, el vigilante
+  // lo releyó, lo encontró invisible desde afuera —que es su señal de shadowban— y pausó el bot 48 h
+  // por haber hecho lo correcto. `removed` significa "lo sacó Reddit o un moderador"; retirarlo
+  // nosotros es otra cosa y necesitaba su propio campo.
+  it("el modelo distingue borrado por otros de retirado por nosotros", () => {
+    expect(model).toContain("selfDeleted: boolean;");
+    expect(model).toMatch(/selfDeleted:\s*\{\s*type:\s*Boolean/);
+    expect(model).toContain("removed: boolean;");
+  });
+
+  it("el vigilante no lo relee", () => {
+    expect(bodyOf("postedWithin")).toContain("selfDeleted");
+  });
+
+  it("hay una forma de marcarlo sin borrar la fila", () => {
+    // Borrar la fila haría que `seenPostIds` olvide la decisión y el bot vuelva a evaluar el hilo.
+    expect(ledger).toContain("export async function markSelfDeleted");
+  });
+});

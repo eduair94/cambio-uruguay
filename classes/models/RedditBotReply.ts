@@ -56,6 +56,18 @@ export interface RedditBotReplyDoc {
   checkedAt: Date | null;
   commentScore: number;
   removed: boolean;
+  /**
+   * Lo borramos NOSOTROS, y por eso ya no está.
+   *
+   * Distinto de `removed`, que significa "lo sacó Reddit o un moderador". La diferencia no es
+   * cosmética y costó una pausa: el vigilante trata "el comentario no se ve desde afuera" como la
+   * señal de un shadowban, y cuando se retira a mano un comentario malo —cosa que hay que poder
+   * hacer— lo lee como que la cuenta está filtrada y pausa el bot 48 h por haber hecho lo correcto.
+   *
+   * Además importa en /estadisticas-reddit: contar un retiro propio como "borrado" le atribuiría a
+   * un moderador una decisión nuestra, en una página cuyo punto entero es no mentir sobre esto.
+   */
+  selfDeleted: boolean;
 }
 
 const RedditBotReplySchema = new Schema<RedditBotReplyDoc>(
@@ -82,6 +94,7 @@ const RedditBotReplySchema = new Schema<RedditBotReplyDoc>(
     checkedAt: { type: Date, default: null },
     commentScore: { type: Number, default: 0 },
     removed: { type: Boolean, default: false },
+    selfDeleted: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
