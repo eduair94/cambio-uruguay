@@ -22,6 +22,7 @@ const RentalListingSchema = new Schema(
     currency: { type: String, default: 'UYU' },
     offers: { type: [Schema.Types.Mixed], default: [] },
     sources: { type: [String], default: [] },
+    freshAt: { type: String, default: '' },
     firstSeen: { type: String, required: true },
     lastSeen: { type: String, required: true },
   },
@@ -29,6 +30,7 @@ const RentalListingSchema = new Schema(
 )
 
 RentalListingSchema.index({ key: 1 }, { unique: true })
+RentalListingSchema.index({ freshAt: -1, key: 1 })
 RentalListingSchema.index({ lastSeen: -1, priceUyu: 1 })
 RentalListingSchema.index({ department: 1, neighborhood: 1, priceUyu: 1 })
 RentalListingSchema.index({ department: 1, propertyType: 1, bedrooms: 1, priceUyu: 1 })

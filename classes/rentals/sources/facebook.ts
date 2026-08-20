@@ -127,7 +127,7 @@ export async function harvestFacebookMarketplace(mode: "full" | "fast", usdUyu: 
         const listing = toRawRental(item, location);
         if (!listing) continue;
         const priceUyu = listing.currency === "USD" ? listing.price * usdUyu : listing.price;
-        if (!isPlausibleRent(priceUyu)) continue;
+        if (!isPlausibleRent(priceUyu, listing.propertyType)) continue;
         byId.set(listing.listingId, listing);
       }
     }

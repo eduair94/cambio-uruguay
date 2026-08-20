@@ -35,6 +35,7 @@ const context = {
   today: "2026-08-20",
   offerFirstSeen: new Map<string, string>(),
   propertyFirstSeen: new Map<string, string>(),
+  offerToProperty: new Map<string, string>(),
 };
 
 describe("buildRentalProperties", () => {
@@ -153,9 +154,54 @@ describe("buildRentalProperties", () => {
       ...context,
       offerFirstSeen: new Map([["infocasas:1", "2026-07-01"]]),
       propertyFirstSeen: new Map(),
+      offerToProperty: new Map(),
     });
     expect(properties[0]!.offers[0]!.firstSeen).toBe("2026-07-01");
     expect(properties[0]!.lastSeen).toBe("2026-08-20");
+  });
+
+  // Identity, not just grouping: the computed key is derived from the CANONICAL advert, so the day
+  // the richest row disappears the key would change and the same flat would appear twice until the
+  // orphan is pruned three weeks later.
+  it("keeps the stored key when the canonical advert changes", () => {
+    const withGeo = listing({});
+    const thin = listing({
+      source: "mercadolibre",
+      listingId: "mercadolibre:9",
+      area: null,
+      latitude: null,
+      longitude: null,
+      commonExpenses: null,
+      commonExpensesCurrency: null,
+    });
+
+    const before = buildRentalProperties([withGeo, thin], context);
+    const storedKey = before[0]!.key;
+
+    // Next run: the InfoCasas row is gone and only the thin MercadoLibre one is left.
+    const after = buildRentalProperties([thin], {
+      ...context,
+      offerToProperty: new Map([
+        ["infocasas:1", storedKey],
+        ["mercadolibre:9", storedKey],
+      ]),
+    });
+    expect(after[0]!.key).toBe(storedKey);
+  });
+
+  it("never lets two properties claim one key when a merge splits", () => {
+    const a = listing({});
+    const b = listing({ listingId: "infocasas:2", bedrooms: 1, area: 38, price: 24_000 });
+    const properties = buildRentalProperties([a, b], {
+      ...context,
+      // Both adverts used to be the same property; today they no longer merge.
+      offerToProperty: new Map([
+        ["infocasas:1", "shared-key"],
+        ["infocasas:2", "shared-key"],
+      ]),
+    });
+    expect(properties).toHaveLength(2);
+    expect(new Set(properties.map(property => property.key)).size).toBe(2);
   });
 
   it("never merges a shop into a flat", () => {

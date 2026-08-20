@@ -28,6 +28,7 @@ const RentalListingSchema = new Schema(
     currency: { type: String, default: "UYU" },
     offers: { type: [Schema.Types.Mixed], default: [] },
     sources: { type: [String], default: [] },
+    freshAt: { type: String, default: "" },
     firstSeen: { type: String, required: true },
     lastSeen: { type: String, required: true },
   },
@@ -35,7 +36,9 @@ const RentalListingSchema = new Schema(
 );
 
 RentalListingSchema.index({ key: 1 }, { unique: true });
-// The list's default view: fresh rows, cheapest first, filtered by where and what.
+// The list's default view is "más recientes": newest advert first, `key` as the tiebreak so a day
+// with a thousand adverts is not silently ordered by price (which put every garage on page one).
+RentalListingSchema.index({ freshAt: -1, key: 1 });
 RentalListingSchema.index({ lastSeen: -1, priceUyu: 1 });
 RentalListingSchema.index({ department: 1, neighborhood: 1, priceUyu: 1 });
 RentalListingSchema.index({ department: 1, propertyType: 1, bedrooms: 1, priceUyu: 1 });

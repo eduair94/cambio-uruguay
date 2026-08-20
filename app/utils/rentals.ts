@@ -59,6 +59,8 @@ export interface RentalProperty {
   currency: RentalCurrency
   offers: RentalOffer[]
   sources: RentalSource[]
+  /** What "más recientes" sorts by: the portal's publication date, else the day we first saw it. */
+  freshAt: string
   firstSeen: string
   lastSeen: string
 }

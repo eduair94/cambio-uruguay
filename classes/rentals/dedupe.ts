@@ -27,6 +27,15 @@ export interface DedupeContext {
   offerFirstSeen: Map<string, string>;
   /** `property key -> firstSeen`, same idea one level up. */
   propertyFirstSeen: Map<string, string>;
+  /**
+   * `listingId -> property key` from the previous run. This is what keeps a property's identity
+   * stable: the computed key is derived from the CANONICAL advert's fields, so the day the
+   * InfoCasas row (with its m² and its street number) disappears and a thinner MercadoLibre row
+   * becomes canonical, the computed key changes — and the directory would show the same flat twice
+   * for the three weeks until the orphan is pruned. Inheriting the key from any advert the cluster
+   * already had makes that impossible.
+   */
+  offerToProperty: Map<string, string>;
 }
 
 export function priceInPesos(price: number, currency: string, usdUyu: number): number {
@@ -139,6 +148,52 @@ export function propertyKey(canonical: Candidate, cluster: Candidate[]): string 
   return `${slug || "uy"}-${hash(parts.join("|"))}`;
 }
 
+/**
+ * The key this cluster should keep. Inherited from the adverts it already contains when possible —
+ * that is what survives a canonical row disappearing — and only computed from scratch for a
+ * property nobody has seen before.
+ */
+export function resolveKey(
+  canonical: Candidate,
+  cluster: Candidate[],
+  context: DedupeContext,
+  claimed: Set<string>
+): string {
+  // Which stored key do most of these adverts belong to? Counting (rather than taking the first)
+  // matters when two properties merge for the first time: the bigger half keeps its identity.
+  const votes = new Map<string, number>();
+  for (const listing of cluster) {
+    const previous = context.offerToProperty.get(listing.listingId);
+    if (previous) votes.set(previous, (votes.get(previous) ?? 0) + 1);
+  }
+  const inherited = [...votes.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([key]) => key)
+    .find((key) => !claimed.has(key));
+  if (inherited) return inherited;
+
+  const computed = propertyKey(canonical, cluster);
+  if (!claimed.has(computed)) return computed;
+  // Two clusters computing the same key means the identity tuple did not tell them apart. Rather
+  // than let one silently overwrite the other, give the second one its own row.
+  const oldest = [...cluster].map((item) => item.listingId).sort()[0]!;
+  return `${computed}-${hash(oldest)}`;
+}
+
+/**
+ * The date the directory calls "recent". InfoCasas states when an advert was published; MercadoLibre
+ * and Marketplace do not, so for those the honest answer is the day it first appeared to US.
+ */
+export function freshnessOf(offers: RentalOffer[], fallback: string): string {
+  const published = offers
+    .map((offer) => offer.publishedAt)
+    .filter((value): value is string => Boolean(value))
+    .sort();
+  if (published.length) return published[published.length - 1]!;
+  const seen = offers.map((offer) => offer.firstSeen).filter(Boolean).sort();
+  return seen[seen.length - 1] || fallback;
+}
+
 function toOffer(listing: Candidate, context: DedupeContext): RentalOffer {
   return {
     source: listing.source,
@@ -184,6 +239,10 @@ export function buildRentalProperties(raw: RawRental[], context: DedupeContext):
   }
 
   const properties: RentalProperty[] = [];
+  // A key may only be claimed once per run: if a property SPLITS (two adverts that used to merge
+  // no longer do), both halves would otherwise inherit the same key and one would overwrite the
+  // other on upsert.
+  const claimed = new Set<string>();
   for (const clusters of buckets.values()) {
     for (const cluster of clusters) {
       const canonical = [...cluster].sort((a, b) => completeness(b) - completeness(a))[0]!;
@@ -191,7 +250,8 @@ export function buildRentalProperties(raw: RawRental[], context: DedupeContext):
         .map((listing) => toOffer(listing, context))
         .sort((a, b) => a.priceUyu - b.priceUyu);
       const cheapest = offers[0]!;
-      const key = propertyKey(canonical, cluster);
+      const key = resolveKey(canonical, cluster, context, claimed);
+      claimed.add(key);
       const sources = [...new Set(offers.map((offer) => offer.source))];
 
       properties.push({
@@ -212,6 +272,7 @@ export function buildRentalProperties(raw: RawRental[], context: DedupeContext):
         currency: cheapest.currency,
         offers,
         sources,
+        freshAt: freshnessOf(offers, context.propertyFirstSeen.get(key) || context.today),
         firstSeen: context.propertyFirstSeen.get(key) || offers.map((offer) => offer.firstSeen).sort()[0] || context.today,
         lastSeen: context.today,
       });

@@ -81,6 +81,7 @@ async function main(): Promise<void> {
     today,
     offerFirstSeen: history.offerFirstSeen,
     propertyFirstSeen: history.propertyFirstSeen,
+    offerToProperty: history.offerToProperty,
   });
 
   const merged = properties.filter((property) => property.sources.length > 1).length;

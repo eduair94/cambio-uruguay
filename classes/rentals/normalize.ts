@@ -230,12 +230,27 @@ export function parseCurrency(raw: string | null | undefined): RentalCurrency | 
 }
 
 /**
- * Rent that cannot be a monthly rent. Portals mix sale adverts into rental categories (a $180.000
- * USD "alquiler" is a sale) and sellers type "1" to mean "consultar". Both poison every average on
- * the page, so they are dropped rather than shown.
+ * Rent that cannot be a monthly rent for THIS kind of property.
+ *
+ * Portals mix sale adverts into rental categories (a "$180.000 USD alquiler" is a sale) and sellers
+ * type "1" or "90" to mean "consultá el precio". Both poison every median on the page.
+ *
+ * The floor is per type on purpose: a garage or a storage box really does rent for $3.500, and a
+ * two-bedroom flat in Pocitos really does not. One shared floor either lets a US$ 90 apartment
+ * through — it was in the first live run — or throws away the whole garage market.
  */
-export function isPlausibleRent(priceUyu: number): boolean {
-  return priceUyu >= 3_000 && priceUyu <= 900_000;
+const RENT_FLOOR_UYU: Record<RentalPropertyType, number> = {
+  apartamento: 8_000,
+  casa: 8_000,
+  habitacion: 3_000,
+  local: 3_000,
+  oficina: 3_000,
+  terreno: 2_000,
+  otro: 2_000,
+};
+
+export function isPlausibleRent(priceUyu: number, propertyType: RentalPropertyType = "otro"): boolean {
+  return priceUyu >= RENT_FLOOR_UYU[propertyType] && priceUyu <= 900_000;
 }
 
 // --- Attributes ------------------------------------------------------------

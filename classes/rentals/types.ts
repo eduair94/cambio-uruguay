@@ -90,6 +90,12 @@ export interface RentalProperty {
   offers: RentalOffer[];
   /** How many DIFFERENT portals publish it. `>1` is the dedupe payoff the page shows. */
   sources: RentalSource[];
+  /**
+   * The date "más recientes" sorts by: the portal's own publication date when any advert states
+   * one, else the day we first saw it. Stored rather than computed at read time because sorting
+   * tens of thousands of rows by a derived value is the one thing Mongo cannot index.
+   */
+  freshAt: string;
   firstSeen: string;
   lastSeen: string;
 }

@@ -164,7 +164,16 @@ describe("isPlausibleRent", () => {
   it("rejects prices that cannot be a monthly rent", () => {
     expect(isPlausibleRent(180_000 * 40)).toBe(false);
     expect(isPlausibleRent(1)).toBe(false);
-    expect(isPlausibleRent(28_000)).toBe(true);
+    expect(isPlausibleRent(28_000, "apartamento")).toBe(true);
+  });
+
+  // From the first live run: a two-bedroom in Pocitos advertised at "U$S 90" — a seller asking you
+  // to call, not a rent. One shared floor either lets that through or throws away the garage
+  // market, which really does rent at $3.500.
+  it("holds a dwelling to a higher floor than a garage", () => {
+    expect(isPlausibleRent(3_721, "apartamento")).toBe(false);
+    expect(isPlausibleRent(3_721, "otro")).toBe(true);
+    expect(isPlausibleRent(3_500, "habitacion")).toBe(true);
   });
 });
 

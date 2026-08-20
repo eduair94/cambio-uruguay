@@ -230,7 +230,7 @@ export async function harvestInfoCasas(mode: "full" | "fast", usdUyu: number): P
       const listing = toRawRental(row);
       if (!listing) continue;
       const priceUyu = listing.currency === "USD" ? listing.price * usdUyu : listing.price;
-      if (!isPlausibleRent(priceUyu)) continue;
+      if (!isPlausibleRent(priceUyu, listing.propertyType)) continue;
       byId.set(listing.listingId, listing);
     }
 
@@ -238,11 +238,15 @@ export async function harvestInfoCasas(mode: "full" | "fast", usdUyu: number): P
     if (page === maxPages && parsed.hasMorePages) truncated = true;
   }
 
-  const expected = Math.min(total, maxPages * PAGE_SIZE);
   const ok = pages > 0 && byId.size > 0;
+  // Why the unique count is well below `pages * 21`: the list is sorted by "más recientes" and it
+  // is LIVE — adverts published while we walk it push the rest down a page, so we see some of them
+  // twice. That is not a leak, and it is not a reason to stop sorting by newest: coverage
+  // accumulates across runs, because a row nobody re-published is kept (and only pruned after
+  // three weeks) instead of being deleted for missing one sweep.
   const note = ok
-    ? `${pages} páginas, ${byId.size} avisos de ${total || "?"} publicados` +
-      (truncated ? ` — CORTADO en el tope de ${maxPages} páginas (${expected} avisos más nuevos)` : "") +
+    ? `${pages} páginas, ${byId.size} avisos únicos de ${total || "?"} publicados` +
+      (truncated ? ` — CORTADO en el tope de ${maxPages} páginas` : "") +
       (lastError ? ` — con reintentos: ${lastError}` : "")
     : `sin datos utilizables${lastError ? `: ${lastError}` : ""}`;
 

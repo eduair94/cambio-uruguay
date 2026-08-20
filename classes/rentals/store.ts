@@ -8,6 +8,7 @@
 // every other portal's rows off every property it touched.
 import { RentalListingModel } from "../models/RentalListing";
 import { RentalMetaModel } from "../models/RentalMeta";
+import { freshnessOf } from "./dedupe";
 import { RENTAL_META_KEY, type RentalMeta, type RentalOffer, type RentalProperty, type RentalSource } from "./types";
 
 const CHUNK = 400;
@@ -15,6 +16,8 @@ const CHUNK = 400;
 export interface RentalHistory {
   offerFirstSeen: Map<string, string>;
   propertyFirstSeen: Map<string, string>;
+  /** `listingId -> property key`: how a property keeps its identity across runs (see dedupe.ts). */
+  offerToProperty: Map<string, string>;
 }
 
 /**
@@ -32,13 +35,16 @@ export async function loadRentalHistory(): Promise<RentalHistory> {
 
   const offerFirstSeen = new Map<string, string>();
   const propertyFirstSeen = new Map<string, string>();
+  const offerToProperty = new Map<string, string>();
   for (const row of rows) {
     if (row.key && row.firstSeen) propertyFirstSeen.set(row.key, row.firstSeen);
     for (const offer of row.offers || []) {
-      if (offer?.listingId && offer.firstSeen) offerFirstSeen.set(offer.listingId, offer.firstSeen);
+      if (!offer?.listingId) continue;
+      if (offer.firstSeen) offerFirstSeen.set(offer.listingId, offer.firstSeen);
+      if (row.key) offerToProperty.set(offer.listingId, row.key);
     }
   }
-  return { offerFirstSeen, propertyFirstSeen };
+  return { offerFirstSeen, propertyFirstSeen, offerToProperty };
 }
 
 export interface SaveContext {
@@ -79,6 +85,7 @@ export function recomputeFromOffers(property: RentalProperty, offers: RentalOffe
     ...property,
     offers,
     sources: [...new Set(offers.map((offer) => offer.source))],
+    freshAt: freshnessOf(offers, property.firstSeen),
     price: cheapest.price,
     priceUyu: cheapest.priceUyu,
     currency: cheapest.currency,

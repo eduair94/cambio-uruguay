@@ -81,7 +81,9 @@ export default defineEventHandler(async (event): Promise<RentalsResponse> => {
           ? { priceUyu: -1, lastSeen: -1 }
           : query.sort === 'metros'
             ? { area: -1, priceUyu: 1 }
-            : { lastSeen: -1, priceUyu: 1 }
+            : // "Más recientes". The tiebreak is `key`, NOT price: every row shares today's date on
+              // a fresh directory, and a price tiebreak filled page one with $3.500 garages.
+              { freshAt: -1, key: 1 }
 
     const [items, total, meta, departments, dimensions] = await Promise.all([
       RentalListingModel.find(filter)

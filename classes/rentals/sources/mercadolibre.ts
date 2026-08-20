@@ -159,7 +159,7 @@ export async function harvestMercadoLibre(mode: "full" | "fast", usdUyu: number)
           continue;
         }
         const priceUyu = listing.currency === "USD" ? listing.price * usdUyu : listing.price;
-        if (!isPlausibleRent(priceUyu)) {
+        if (!isPlausibleRent(priceUyu, listing.propertyType)) {
           rejected++;
           continue;
         }

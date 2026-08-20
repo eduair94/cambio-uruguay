@@ -20,6 +20,7 @@ async function main(): Promise<void> {
     today: new Date().toISOString().slice(0, 10),
     offerFirstSeen: new Map(),
     propertyFirstSeen: new Map(),
+    offerToProperty: new Map(),
   });
 
   console.log(`\n${harvest.listings.length} avisos -> ${properties.length} propiedades`);
