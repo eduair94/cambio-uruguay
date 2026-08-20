@@ -361,7 +361,17 @@ export const CURATED: Readonly<Record<string, readonly string[]>> = Object.freez
   '/alquilar-estando-en-clearing': [
     '/salir-del-clearing',
     '/alquilar-en-uruguay',
+    '/alquileres-uruguay',
     '/saldar-deudas-uruguay',
+  ],
+  // El directorio es una herramienta, no una nota: sus vecinos son lo que hace falta ANTES de
+  // firmar, no otras listas de precios.
+  '/alquileres-uruguay': [
+    '/alquilar-en-uruguay',
+    '/alquilar-sin-recibo-de-sueldo',
+    '/alquilar-estando-en-clearing',
+    '/comprar-o-alquilar-uruguay',
+    '/por-que-no-baja-el-alquiler-uruguay',
   ],
   // Sin curar, el motor le ofrecía sillas de escritorio y la factura de UTE: la
   // página habla de "estudiante", "beca" y "hogar", tokens que no comparte con
@@ -369,6 +379,7 @@ export const CURATED: Readonly<Record<string, readonly string[]>> = Object.freez
   // —alguien que se muda y busca dónde vivir—.
   '/pensiones-estudiantiles-uruguay': [
     '/alquilar-en-uruguay',
+    '/alquileres-uruguay',
     '/alquilar-sin-recibo-de-sueldo',
     '/alquilar-estando-en-clearing',
     '/vivir-con-25000-pesos-uruguay',

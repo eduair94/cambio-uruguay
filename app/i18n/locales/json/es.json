@@ -1511,6 +1511,7 @@
     }
   },
   "nav": {
+    "alquileres": "Alquileres en Uruguay",
     "alquilarSinRecibo": "Alquilar sin recibo de sueldo",
     "accidenteTrabajo": "Accidente de trabajo",
     "herramientas": "Herramientas",

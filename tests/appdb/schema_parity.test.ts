@@ -8,6 +8,8 @@ import { ChairCatalogProductModel } from "../../classes/models/ChairCatalogProdu
 import { ChairCatalogMetaModel } from "../../classes/models/ChairCatalogMeta";
 import { SiteAnalyticsSnapshotModel } from "../../classes/models/SiteAnalyticsSnapshot";
 import { RedditBotStatsModel } from "../../classes/models/RedditBotStats";
+import { RentalListingModel } from "../../classes/models/RentalListing";
+import { RentalMetaModel } from "../../classes/models/RentalMeta";
 
 const appModel = (name: string): string =>
   fs.readFileSync(path.join(__dirname, "..", "..", "app", "server", "models", `${name}.ts`), "utf8");
@@ -62,6 +64,17 @@ describe("app-Mongo schema parity", () => {
     );
   });
 
+  it("RentalListing declares exactly the app's top-level fields", () => {
+    // El directorio de alquileres: un campo que el backend deja de escribir es una columna que
+    // /alquileres-uruguay deja de filtrar, y el filtro no falla — devuelve cero resultados, que es
+    // indistinguible de "no hay nada en ese barrio".
+    expect(Object.keys(RentalListingModel.schema.obj).sort()).toEqual(appFields(appModel("RentalListing")).sort());
+  });
+
+  it("RentalMeta declares exactly the app's top-level fields", () => {
+    expect(Object.keys(RentalMetaModel.schema.obj).sort()).toEqual(appFields(appModel("RentalMeta")).sort());
+  });
+
   it("writes the collections the app already reads — not mongoose's guess", () => {
     expect(PricePredictionModel.collection.name).toBe("pricepredictions");
     expect(MoveExplanationModel.collection.name).toBe("moveexplanations");
@@ -70,5 +83,7 @@ describe("app-Mongo schema parity", () => {
     expect(ChairCatalogMetaModel.collection.name).toBe("chaircatalogmeta");
     expect(RedditBotStatsModel.collection.name).toBe("redditbotstats");
     expect(SiteAnalyticsSnapshotModel.collection.name).toBe("siteanalyticssnapshots");
+    expect(RentalListingModel.collection.name).toBe("rentallistings");
+    expect(RentalMetaModel.collection.name).toBe("rentalmetas");
   });
 });

@@ -30,6 +30,8 @@ Root map of a multi-package monorepo behind [cambio-uruguay.com](https://cambio-
 | currency-chair-tiers | dist/sync_chair_tiers.js | 31 12 * * 0 | weekly r/CharruaDevs chair tier list → APP DB `chairtiersnapshots` |
 | currency-chairs-hourly | dist/sync_chairs.js --fast | 23 * * * * | hourly price-only refresh (ML + Shopify; no LLM, no Reddit, no Fenicio sweep) |
 | currency-chairs | dist/sync_chairs.js | 41 11 * * * | daily desk-chair market: ML (:9656) + UY storefronts + FB Marketplace (:9657) → APP DB `chaircatalogproducts` |
+| currency-rentals | dist/sync_rentals.js | 52 4 * * * | directorio de alquileres de `/alquileres-uruguay`: ML (:9656, respuesta **cruda** — la recortada no trae dirección ni dormitorios) + InfoCasas (su `__NEXT_DATA__`) + FB Marketplace (:9657) -> APP DB `rentallistings`/`rentalmetas`. Una fila por **propiedad**: unifica el mismo inmueble publicado en varios portales (calle+número+dormitorios+m²±15%+precio±7%; sin dirección hace falta barrio+dormitorios+precio±5%). **La dirección sola nunca alcanza**: un edificio de ocho apartamentos son ocho avisos en el mismo número. Gallito NO está (WebForms con postback del lado del cliente). Ver `docs/app/RENTALS.md` |
+| currency-rentals-hourly | dist/sync_rentals.js --fast | 47 * * * * | repaso de lo recién publicado (`order=3` / `since=today`); **nunca poda** — ve una franja del mercado, y "no está en la franja" no prueba nada |
 | currency-rag-index | dist/sync_rag_index.js | 20 4 * * * | crawls the public sitemap → chunks → Gemini embeddings → APP DB `ragchunks`; incremental by content hash |
 | currency-reddit-bot | dist/sync_reddit_bot.js | 6 * * * * | **SOLO COMENTA** (nunca abre hilos: `post.ts` se niega sin `REDDIT_BOT_ALLOW_POSTS=1`). Por hora, ventana de **168 h**, hasta 5 comentarios por corrida durmiendo entre uno y otro, 25/día y 8 por sub. El enfriamiento por página está apagado a propósito y lo reemplaza "no repetir página dentro de una corrida" en `run.ts`. Calla 03–10 UTC. Los 7 subs de la lista son TODOS los subs uruguayos vivos (28 medidos), y sólo 4 son escribibles: `subrules.ts` frena r/AskUruguayan (ban) y r/CharruaDevs (reglas). La aclaración de bot vive en la BIO y `identity.ts` la exige antes de publicar. **Inerte hasta `REDDIT_BOT_ENABLED=1` AND `REDDIT_BOT_DRY_RUN=0`** |
 | currency-reddit-bot-watch | dist/sync_reddit_bot_watch.js | 9 * * * * | reads back comment scores; trips a 48 h circuit breaker on 3 negatives/24 h |
@@ -42,7 +44,7 @@ Root map of a multi-package monorepo behind [cambio-uruguay.com](https://cambio-
 | currency-alerts | bots/dist/entries/alert_check.js | */15 11-21 * * * | intraday move alerts |
 | currency-content-promo | bots/dist/entries/content_promo.js | 0 14 * * 1,3,5 | one evergreen guide to X; **inert until `CONTENT_PROMO_ENABLED=1`** in `bots/.env` |
 
-Root pm2 entrypoints live at repo root: `index.ts`, `sync.ts`, `sync_aduana*.ts`, `sync_banks_news.ts`, `sync_figures.ts`, `sync_costs.ts`, `sync_debt_relief.ts`, `sync_loans.ts`, `sync_predictions.ts`, `sync_explain.ts`, `sync_sheet.ts`, `sync_site_analytics.ts`, `sync_temas_analysis.ts`, `sync_rag_index.ts`, `sync_reddit_bot.ts`, `sync_reddit_bot_watch.ts`, `sync_content_gaps.ts`, `sync_videos.ts`, `sync_bcu_rates.ts`. Shared: `config.ts`, `global.ts`, `sentry.ts`.
+Root pm2 entrypoints live at repo root: `index.ts`, `sync.ts`, `sync_aduana*.ts`, `sync_banks_news.ts`, `sync_figures.ts`, `sync_costs.ts`, `sync_debt_relief.ts`, `sync_loans.ts`, `sync_predictions.ts`, `sync_explain.ts`, `sync_sheet.ts`, `sync_site_analytics.ts`, `sync_temas_analysis.ts`, `sync_rag_index.ts`, `sync_reddit_bot.ts`, `sync_reddit_bot_watch.ts`, `sync_content_gaps.ts`, `sync_videos.ts`, `sync_bcu_rates.ts`, `sync_rentals.ts`. Shared: `config.ts`, `global.ts`, `sentry.ts`.
 
 ## Top-level dirs
 | dir | role |
@@ -60,7 +62,7 @@ Root pm2 entrypoints live at repo root: `index.ts`, `sync.ts`, `sync_aduana*.ts`
 | `config/` | `config.ts` |
 | `dist/` | root build output (gitignored) |
 
-`classes/` key files: `database.ts` (Mongo connect), `gemini.ts` + `ai_service.ts` (LLM), `appdb.ts` (app-DB bridge), `reddit.ts`, `redis_cache.ts`, `notify.ts`, `cluster.ts` (`isPrimaryInstance()`), `Express/` (server setup), `models/` (mongoose), and per-feature dirs `aduana banks bcurates costs debt explain figures gaps loans predictions rag redditbot site-analytics temas-analysis` (each `refresh.ts`/`store.ts`).
+`classes/` key files: `database.ts` (Mongo connect), `gemini.ts` + `ai_service.ts` (LLM), `appdb.ts` (app-DB bridge), `reddit.ts`, `redis_cache.ts`, `notify.ts`, `cluster.ts` (`isPrimaryInstance()`), `Express/` (server setup), `models/` (mongoose), and per-feature dirs `aduana banks bcurates costs debt explain figures gaps loans predictions rag redditbot rentals site-analytics temas-analysis` (each `refresh.ts`/`store.ts`).
 
 ## Build / run / test / lint
 - Root: `npm run dev` (API), `npm run build`, `npm test` (`vitest run`, `tests/**/*.test.ts`). One-offs: `npm run prex`, `bcu_backfill`, `get_locations`, etc. (ts-node, in `scripts/oneoff/`, NOT compiled).

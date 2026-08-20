@@ -152,6 +152,33 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Daily rental sweep for /alquileres-uruguay. Reads MercadoLibre (scraper service on :9656),
+      // InfoCasas (its own server-rendered payload) and Facebook Marketplace (browser service on
+      // :9657), merges the adverts into one row per PROPERTY and writes them to the NUXT APP's
+      // MongoDB. 04:52 UTC ≈ 01:52 America/Montevideo on purpose: the full InfoCasas walk is ~900
+      // page requests against one host, and it belongs in their quietest hour, not in ours.
+      // Minute 52: not a multiple of 5.
+      name: "currency-rentals",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_rentals.js",
+      cron_restart: "52 4 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
+      // Hourly top-up: only what the portals themselves sort as newest (InfoCasas `order=3`,
+      // MercadoLibre `since=today`). A flat published at 9am is on the site by 10, at a fraction of
+      // the requests. It NEVER prunes — it sees a slice of the market, and "not in this slice" is
+      // not evidence that a flat is gone. Minute 47: clear of the other hourly jobs (6, 9, 23).
+      name: "currency-rentals-hourly",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_rentals.js",
+      args: "--fast",
+      cron_restart: "47 * * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // BCU usury caps (topes de usura) for /saldar-deudas-uruguay. Monthly on the 1st, 10:13 UTC
       // ≈ 07:13 America/Montevideo. Minute 13: not a multiple of 5.
       name: "currency-debt-relief",

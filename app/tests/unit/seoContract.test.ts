@@ -167,6 +167,10 @@ describe('the legacy SEO debt only shrinks', () => {
   it('noindexes only the pages meant to be invisible', () => {
     const noindexed = files.filter(file => /noindex/i.test(read(file)))
     expect(noindexed.sort()).toEqual([
+      // The rental directory is INDEXABLE at its own URL; only its filtered and paginated views
+      // opt out, for the same reason `buscar.vue` does — a facet combination is an infinite set of
+      // thin copies of one page.
+      'alquileres-uruguay.vue',
       'buscar.vue',
       'cuenta/index.vue',
       'estado.vue',

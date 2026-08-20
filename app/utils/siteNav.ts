@@ -1702,6 +1702,27 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        to: '/alquileres-uruguay',
+        labelKey: 'nav.alquileres',
+        icon: 'mdi-home-city-outline',
+        // Updated by a cron and re-indexed often: it is the only page here whose CONTENT changes
+        // every hour, which is what `changefreq` is for.
+        priority: 0.8,
+        changefreq: 'daily',
+        keywords: [
+          'alquileres uruguay',
+          'alquileres montevideo',
+          'buscar alquiler',
+          'apartamentos en alquiler',
+          'casas en alquiler uruguay',
+          'alquiler pocitos',
+          'alquiler cordon',
+          'monoambiente en alquiler',
+          'alquiler barato montevideo',
+          'buscador de alquileres',
+        ],
+      },
+      {
         to: '/por-que-no-baja-el-alquiler-uruguay',
         labelKey: 'nav.porQueNoBajaAlquiler',
         icon: 'mdi-city-variant-outline',

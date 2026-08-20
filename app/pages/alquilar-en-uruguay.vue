@@ -179,6 +179,16 @@
         pensión, buscá también por barrio y combinaciones como “dueño directo”, “habitación” y
         “pensión”. Para una vivienda completa, filtrá primero por costo total y garantía aceptada.
       </p>
+
+      <!-- El directorio propio va ANTES de los portales: es lo que evita abrir los tres y
+           encontrar el mismo apartamento repetido. -->
+      <VAlert type="success" variant="tonal" density="comfortable" class="mb-5" border="start">
+        <strong>Buscá los tres de una sola vez:</strong> en
+        <NuxtLink :to="localePath('/alquileres-uruguay')">alquileres en Uruguay</NuxtLink>
+        reunimos lo publicado en estos portales y unificamos el mismo inmueble cuando aparece en
+        varios, con filtros por barrio, precio y dormitorios. El aviso siempre se abre en el portal
+        que lo publicó.
+      </VAlert>
       <VRow>
         <VCol v-for="portal in portals" :key="portal.name" cols="12" sm="6">
           <VCard
