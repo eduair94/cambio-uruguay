@@ -406,10 +406,8 @@
       </VCol>
     </VRow>
 
-    <!-- FAQ -->
-    <div class="mt-8">
-      <FaqSection :items="faqItems" heading="Preguntas frecuentes" :expanded="true" />
-    </div>
+    <!-- FAQ (la separación superior la trae FaqSection) -->
+    <FaqSection :items="faqItems" heading="Preguntas frecuentes" :expanded="true" />
 
     <!-- Sources -->
     <h2 class="section-heading mb-1 mt-8">Fuentes</h2>

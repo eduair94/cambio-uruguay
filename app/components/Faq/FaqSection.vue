@@ -47,6 +47,21 @@ useFaqSchema(
 </script>
 
 <style scoped>
+/* Separación superior propia. FaqBlock la trae en su `py-8`; esta variante no renderiza container
+   ni columna, así que sin esto el <h2> queda pegado al bloque anterior (era el caso en las 6
+   páginas que la usan, y una de ellas ya lo parchaba con un `mt-8` local).
+   40px = spacing.xl de DESIGN.md, un escalón por encima del `mt-8` (32px) que separa las secciones
+   internas: el FAQ cierra la página, no es una sección más. Es `margin`, no `padding`, para que
+   colapse con el margen inferior del hermano anterior y nunca sume el doble. */
+.faq-section {
+  margin-block-start: 40px;
+}
+@media (max-width: 599.98px) {
+  .faq-section {
+    margin-block-start: 32px;
+  }
+}
+
 /* Browsers indent <dd> by ~40px by default, which reads as a broken hanging indent next to the
    questions. The answer belongs at the same left edge as its question. */
 .faq-dl {
