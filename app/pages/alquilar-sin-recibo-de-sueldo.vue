@@ -183,6 +183,11 @@
           </NuxtLink>
         </li>
         <li>
+          <NuxtLink :to="localePath({ path: '/alquilar-en-uruguay', hash: '#comunidades' })">
+            Dónde publicar tu búsqueda: grupos y comunidades revisados
+          </NuxtLink>
+        </li>
+        <li>
           <NuxtLink :to="localePath('/que-empresa-abrir-uruguay')">
             Qué empresa te conviene abrir
           </NuxtLink>

@@ -363,6 +363,16 @@ export const CURATED: Readonly<Record<string, readonly string[]>> = Object.freez
     '/alquilar-en-uruguay',
     '/saldar-deudas-uruguay',
   ],
+  // Sin curar, el motor le ofrecía sillas de escritorio y la factura de UTE: la
+  // página habla de "estudiante", "beca" y "hogar", tokens que no comparte con
+  // el resto de la familia de alquiler aunque el lector sea exactamente el mismo
+  // —alguien que se muda y busca dónde vivir—.
+  '/pensiones-estudiantiles-uruguay': [
+    '/alquilar-en-uruguay',
+    '/alquilar-sin-recibo-de-sueldo',
+    '/alquilar-estando-en-clearing',
+    '/vivir-con-25000-pesos-uruguay',
+  ],
   '/prestamos-uruguay': [
     '/salir-del-clearing',
     '/saldar-deudas-uruguay',

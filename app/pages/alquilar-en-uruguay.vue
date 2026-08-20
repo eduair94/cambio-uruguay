@@ -203,7 +203,11 @@
         <strong>Si buscás pensión:</strong> pedí nombre y dirección, comprobá que el lugar exista y
         preguntá por habilitación, cerradura propia, baño/cocina, visitas, horarios, recibo y forma
         de salida. En Montevideo, las pensiones deben contar con habilitación y permiso
-        departamental.
+        departamental. Si quien busca estudia,
+        <NuxtLink :to="localePath('/pensiones-estudiantiles-uruguay')">
+          pensiones y residencias estudiantiles
+        </NuxtLink>
+        tiene esos mínimos legales, un relevamiento de precios fechado y las becas de alojamiento.
       </VAlert>
     </section>
 

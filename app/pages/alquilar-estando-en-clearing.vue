@@ -310,7 +310,7 @@
 
     <!-- Cross-links -->
     <VRow class="my-2">
-      <VCol cols="12" md="4">
+      <VCol cols="12" md="3">
         <VCard
           :to="localePath('/alquilar-en-uruguay')"
           class="cross-link pa-4 h-100"
@@ -324,7 +324,7 @@
           </p>
         </VCard>
       </VCol>
-      <VCol cols="12" md="4">
+      <VCol cols="12" md="3">
         <VCard
           :to="localePath('/salir-del-clearing')"
           class="cross-link pa-4 h-100"
@@ -338,7 +338,7 @@
           </p>
         </VCard>
       </VCol>
-      <VCol cols="12" md="4">
+      <VCol cols="12" md="3">
         <VCard
           :to="localePath('/saldar-deudas-uruguay')"
           class="cross-link pa-4 h-100"
@@ -349,6 +349,21 @@
           <h3 class="text-subtitle-1 font-weight-bold mb-1">Saldar deudas</h3>
           <p class="text-body-2 text-medium-emphasis mb-0">
             Negociar una quita, prescripción y reconstruir tu historial.
+          </p>
+        </VCard>
+      </VCol>
+      <VCol cols="12" md="3">
+        <VCard
+          :to="localePath({ path: '/alquilar-en-uruguay', hash: '#comunidades' })"
+          class="cross-link pa-4 h-100"
+          hover
+          variant="flat"
+        >
+          <VIcon color="primary" class="mb-2">mdi-account-group-outline</VIcon>
+          <h3 class="text-subtitle-1 font-weight-bold mb-1">Dónde buscar</h3>
+          <p class="text-body-2 text-medium-emphasis mb-0">
+            Directorio de grupos y comunidades revisado por reputación: ahí vive la oferta de dueño
+            directo, la que negocia la garantía.
           </p>
         </VCard>
       </VCol>

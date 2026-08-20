@@ -330,6 +330,12 @@
       </NuxtLink>
       o
       <NuxtLink :to="localePath('/alquilar-estando-en-clearing')">estando en el clearing</NuxtLink>.
+      Para encontrar la habitación en sí, la oferta de pieza y dueño directo casi no está en los
+      portales: está en el
+      <NuxtLink :to="localePath({ path: '/alquilar-en-uruguay', hash: '#comunidades' })">
+        directorio de grupos y comunidades
+      </NuxtLink>
+      revisado por reputación.
     </VAlert>
 
     <!-- Legal minimums -->
