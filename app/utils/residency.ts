@@ -101,6 +101,18 @@ export const RESIDENCY_SOURCES: readonly ResidencySource[] = Object.freeze([
     url: 'https://www.impo.com.uy/bases/decretos/208-2013',
   },
   { label: 'Dirección Nacional de Migración', url: 'https://migracion.minterior.gub.uy/' },
+  {
+    label: 'gub.uy — Residencia legal temporaria (medios de vida del exterior)',
+    url: 'https://www.gub.uy/tramites/residencia-legal-temporaria',
+  },
+  {
+    label: 'gub.uy — Solicitud de reconocimientos y reválidas de títulos terciarios',
+    url: 'https://www.gub.uy/tramites/solicitud-reconocimientos-revalidas-titulos-terciarios',
+  },
+  {
+    label: 'MEC — Preguntas frecuentes de Educación Superior (reválidas)',
+    url: 'https://www.gub.uy/ministerio-educacion-cultura/comunicacion/publicaciones/preguntas-frecuentes-educacion-superior/preguntas-frecuentes-educacion-0',
+  },
 ])
 
 // ---------------------------------------------------------------------------
@@ -239,6 +251,28 @@ export interface ResidencyFaq {
 }
 
 export const RESIDENCY_FAQ: readonly ResidencyFaq[] = Object.freeze([
+  // Las tres siguientes salieron de un hilo de r/uruguay ("Cómo ven Uruguay para un venezolano
+  // 2027?"): una contadora de 25 años que trabaja remoto para una empresa de Estados Unidos por
+  // US$ 1.200 al mes. Doce comentarios discutiendo si el país "conviene", y ninguno tocó las tres
+  // cosas que de verdad definen su caso.
+  {
+    question: 'Trabajo remoto para una empresa del exterior. ¿Eso sirve como medio de vida?',
+    short: 'Sí, pero hay que poder certificarlo: el trámite pide papel, no monto.',
+    answer:
+      'El ingreso del exterior se acredita con certificado notarial. La ficha del trámite lo dice para el dinero que se recibe de afuera: tiene que constar el monto, el lugar donde se percibe el giro y el parentesco de quien lo envía. Para un sueldo remoto de una empresa extranjera, los escribanos arman el equivalente certificando el vínculo con la empresa, sus datos, el monto, el medio de pago y cómo se desarrolla la actividad desde Uruguay. Vale la misma lógica que en cualquier otro trámite de plata acá: lo que te frena no es que el ingreso sea chico o variable, es que no se pueda documentar. Confirmá la forma exacta con el consulado o con Migración antes de pedir turno.',
+  },
+  {
+    question: 'Soy venezolano. ¿Tengo que demostrar medios de vida?',
+    short: 'Venezuela entra por la vía MERCOSUR, que no lo pide.',
+    answer:
+      'Venezuela está en el grupo que accede por la vía MERCOSUR, y esa base documental es bastante más liviana: no aparece el requisito de acreditar medios de vida ni el carné de salud uruguayo que sí pide la permanente general. Es lo contrario de lo que suele suponerse en los hilos, donde se discute cuánto hay que ganar para que "te dejen entrar". El trámite migratorio no es el cuello de botella; el costo de vida sí.',
+  },
+  {
+    question: 'Tengo título de otro país. ¿Necesito revalidarlo?',
+    short: 'Sólo si vas a ejercer la profesión acá. Para seguir trabajando remoto, no.',
+    answer:
+      'La reválida es lo que habilita a ejercer una profesión regulada en Uruguay —contador lo es— y desde el Decreto 200/022 la competencia pasó de la Universidad de la República al Ministerio de Educación y Cultura, por trámites.gub.uy. Evalúa equivalencia de planes de estudio y acreditación de la universidad de origen, y los documentos van apostillados. Pero es un trámite de EJERCICIO profesional: si tu ingreso viene de un empleo remoto para una empresa del exterior, no estás ejerciendo acá y no te frena. Conviene saberlo porque "revalidar es un quilombo" es cierto y, para quien conserva su trabajo remoto, irrelevante.',
+  },
   {
     question: '¿Cuánto ingreso tengo que demostrar para la residencia?',
     short: 'No hay un monto publicado: se acreditan «medios de vida», no una cifra.',
