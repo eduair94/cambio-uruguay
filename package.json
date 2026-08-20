@@ -35,6 +35,7 @@
     "sync_rag_index": "ts-node sync_rag_index.ts",
     "sync_reddit_bot": "ts-node sync_reddit_bot.ts",
     "sync_reddit_bot_watch": "ts-node sync_reddit_bot_watch.ts",
+    "sync_reddit_stats": "ts-node sync_reddit_stats.ts",
     "sync_content_gaps": "ts-node sync_content_gaps.ts",
     "sync_trends": "ts-node sync_trends.ts",
     "trend_probe": "ts-node scripts/oneoff/trend_probe.ts",
