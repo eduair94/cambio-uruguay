@@ -37,6 +37,7 @@ import { subWritable } from "./subrules";
 import { linkableOnly, linkablePage } from "./linkable";
 import { fetchThreadContext, EMPTY_THREAD } from "./thread";
 import { bioDeclaresBot } from "./identity";
+import { recentCommentsVisible } from "./visibility";
 import { fetchAccountBio } from "./post";
 import {
   forgetTooOldWithin,
@@ -587,6 +588,25 @@ export async function runOnce(cfg: BotConfig = botConfig()): Promise<RunSummary>
       );
       return emptySummary(`la bio de la cuenta no declara el bot: ${verdict.reason}`);
     }
+  }
+
+  // 0b. ¿Lo último que publicamos lo ve alguien?
+  //
+  //     Antes de escribir el siguiente. El vigilante horario ya hace esta pregunta, pero después y
+  //     de a poco: entre que la cuenta empieza a ser filtrada y que junta evidencia para frenar
+  //     pasan varios comentarios, y cada uno es otra señal de spam contra la cuenta. El 2026-08-20
+  //     fueron cinco, y terminaron con TODO lo que la cuenta publicaba retirado por el filtro de
+  //     Reddit, incluidos posts de días antes con 17 y 24 votos.
+  if (canPost(cfg)) {
+    const seen = await recentCommentsVisible(cfg);
+    if (!seen.ok) {
+      await notifyAdmin(
+        `🛑 *Reddit bot detenido*: ${seen.detail}. No es un comentario malo, es la cuenta filtrada. ` +
+          `Publicar más sólo agrega señal de spam. Corré \`npm run reddit_account\` y mirá la apelación.`
+      );
+      return emptySummary(`no se publica: ${seen.detail}`);
+    }
+    console.log(`[redditbot] visibilidad de lo último publicado: ${seen.detail}`);
   }
 
   // 1. Read every watched sub — los que se pueden escribir.

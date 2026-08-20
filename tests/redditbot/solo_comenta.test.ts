@@ -71,3 +71,34 @@ describe("la cuenta solo comenta", () => {
     expect(BANNED_SUBS.has("askuruguayan")).toBe(true);
   });
 });
+
+describe("si lo que publicamos no lo ve nadie, se para en uno", () => {
+  // 2026-08-20: cinco comentarios en unas horas, los cinco [removed] para terceros, y la cuenta
+  // terminó con TODO lo que publica retirado por el filtro de Reddit —`removed_by_category:
+  // "reddit"`, o sea el filtro del sitio, no el AutoModerator de ningún sub— incluidos posts de días
+  // antes con 17 y 24 votos.
+  //
+  // El vigilante ya hacía la pregunta, pero cada hora y sólo con evidencia completa. Entre el primer
+  // borrado y el freno pasaron cuatro comentarios más, y cada uno fue otra señal de spam contra la
+  // cuenta. La pregunta tenía que estar al principio de la corrida, no al final del día.
+  it("la corrida chequea la visibilidad pública antes de escribir", () => {
+    const source = repoFile("classes", "redditbot", "run.ts");
+    expect(source).toContain("recentCommentsVisible");
+    // Y antes de leer los subs: si no se puede publicar, tampoco hace falta gastar en leer.
+    expect(source.indexOf("recentCommentsVisible")).toBeLessThan(source.indexOf("fetchNewPostsSince("));
+  });
+
+  it("lee la vista de un tercero, no la propia", () => {
+    // La cuenta ve sus comentarios borrados como si estuvieran perfectos, para siempre. Mirar el
+    // estado autenticado es exactamente cómo esto pasó desapercibido.
+    const source = repoFile("classes", "redditbot", "visibility.ts");
+    expect(source).toContain("fetchPublicCommentBodies");
+  });
+
+  it("un fallo de red no calla al bot", () => {
+    // La alternativa —callar cada vez que la API tose— apagaría el trabajo por un problema de red, y
+    // el vigilante horario sigue estando para el caso lento.
+    const source = repoFile("classes", "redditbot", "visibility.ts");
+    expect(source).toContain("no se pudo leer la vista pública");
+  });
+});
