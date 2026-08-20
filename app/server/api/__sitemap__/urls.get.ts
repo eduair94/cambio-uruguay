@@ -2,6 +2,7 @@ import type { BranchPage } from '../../../utils/branches'
 import { intentsFor } from '../../../utils/casaIntents'
 import { casaTypePaths } from '../../../utils/casasDirectory'
 import { comparativaFamilySlugs, comparativaPaths } from '../../../utils/comparativas'
+import { bankPageSlugs, categoryPageSlugs } from '../../../utils/bankosPages'
 import { convertSlugs } from '../../../utils/convert'
 import { listCurrencySlugs } from '../../../utils/currencyPages'
 import { listFronteraSlugs } from '../../../utils/frontera'
@@ -102,6 +103,26 @@ export default defineEventHandler(async _event => {
   // sitemap on a quiet week is how a page loses the position it took months to earn.
   videoTopicSlugs().forEach(slug =>
     addUrlsForAllLocales(`/videos-de-economia-uruguay/${slug}`, 0.7, 'daily')
+  )
+  // Descuentos por emisor y por rubro. Español solamente, como las comparativas: el cuerpo es
+  // prosa en español sobre comercios uruguayos, y tres locales serían tres URLs del mismo texto.
+  // Se emiten SIEMPRE, aunque el proveedor esté caído: los slugs son catálogo puro y una página
+  // que se cae del sitemap en una semana floja pierde la posición que tardó meses en ganar.
+  bankPageSlugs().forEach(slug =>
+    urls.push({
+      loc: `/descuentos-con-tarjeta-uruguay/${slug}`,
+      changefreq: 'daily',
+      priority: 0.7,
+      lastmod: today,
+    })
+  )
+  categoryPageSlugs().forEach(slug =>
+    urls.push({
+      loc: `/descuentos-con-tarjeta-uruguay/rubro/${slug}`,
+      changefreq: 'daily',
+      priority: 0.7,
+      lastmod: today,
+    })
   )
   toolSlugs().forEach(slug => addUrlsForAllLocales(`/herramientas/${slug}`, 0.7, 'weekly'))
   glossarySlugs().forEach(slug => addUrlsForAllLocales(`/glosario/${slug}`, 0.6, 'monthly'))

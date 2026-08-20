@@ -2228,6 +2228,10 @@ export const DYNAMIC_ROUTE_KEYS: Readonly<Record<string, string>> = Object.freez
   'comparativas/[familia]/[par]': 'banking',
   'casas-de-cambio/[tipo]': 'houses',
   'convertir/[slug]': 'tools',
+  // Las páginas individuales de descuentos: una por emisor y una por rubro, ambas alimentadas por
+  // el mismo catálogo de Bankos que el mapa de /descuentos-con-tarjeta-uruguay.
+  'descuentos-con-tarjeta-uruguay/[banco]': 'banking',
+  'descuentos-con-tarjeta-uruguay/rubro/[rubro]': 'banking',
   'cotizacion/[moneda]': 'tools',
   'dolar/[departamento]': 'market',
   'frontera/[ruta]': 'houses',

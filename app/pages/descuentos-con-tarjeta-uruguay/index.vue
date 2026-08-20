@@ -404,12 +404,25 @@
           <v-card :id="`descuentos-${bank.id}`" variant="outlined" class="d-flex flex-column h-100">
             <h3 class="bank-card__title text-subtitle-1 font-weight-medium">
               <span class="bank-dot" :style="{ background: bank.color }" />
-              <span>Descuentos {{ bank.name }}</span>
+              <!-- El título es el link a la página del emisor: es el ancla más fuerte que este
+                   hub le puede pasar, y la que un lector busca primero. -->
+              <NuxtLink v-if="bankPagePath(bank.id)" :to="bankPagePath(bank.id)">
+                Descuentos {{ bank.name }}
+              </NuxtLink>
+              <span v-else>Descuentos {{ bank.name }}</span>
             </h3>
             <v-card-text class="text-body-2 py-1 flex-grow-1">{{ bankBlurb(bank) }}</v-card-text>
             <v-card-actions class="flex-wrap ga-1 pt-0">
               <v-btn size="small" variant="text" color="primary" @click="selectBank(bank.id)">
-                Ver descuentos de {{ bank.name }}
+                Ver en el mapa
+              </v-btn>
+              <v-btn
+                v-if="bankPagePath(bank.id)"
+                size="small"
+                variant="text"
+                :to="bankPagePath(bank.id)"
+              >
+                Guía completa
               </v-btn>
             </v-card-actions>
             <!-- La otra mitad de la decisión: el descuento lo da el mapa, pero cuánto acumula y
@@ -430,6 +443,29 @@
           </v-card>
         </v-col>
       </v-row>
+    </section>
+
+    <!-- Rubros: la otra entrada al mismo catálogo. Alguien que busca "descuentos en farmacias" no
+         sabe todavía qué banco quiere; esta sección lo lleva a la comparativa del rubro. -->
+    <section class="mt-8">
+      <h2 class="text-h6 mb-1">Descuentos por rubro</h2>
+      <p class="text-body-2 text-medium-emphasis mb-3" style="max-width: 75ch">
+        Si la pregunta es "¿con qué tarjeta me conviene el supermercado?" y no "¿qué tiene mi
+        banco?", entrá por acá: cada rubro compara a todos los emisores por marcas y locales
+        adheridos.
+      </p>
+      <div class="d-flex flex-wrap ga-2">
+        <v-chip
+          v-for="rubro in BANKOS_CATEGORY_PAGES"
+          :key="rubro.slug"
+          size="small"
+          variant="tonal"
+          :prepend-icon="rubro.icon"
+          :to="localePath(`/descuentos-con-tarjeta-uruguay/rubro/${rubro.slug}`)"
+        >
+          {{ rubro.label }}
+        </v-chip>
+      </div>
     </section>
 
     <FaqSection
@@ -458,6 +494,7 @@ import {
   type BankosDiscountsResponse,
   type BankosItem,
 } from '~/utils/bankos'
+import { BANKOS_CATEGORY_PAGES, bankPageForBankId } from '~/utils/bankosPages'
 import { useBankosCardsStore } from '~/stores/bankosCards'
 import { useBankosFavoritesStore } from '~/stores/bankosFavorites'
 import { useAuthStore } from '~/stores/auth'
@@ -508,6 +545,12 @@ function selectBank(bankId: string, type?: BankosCard['type']) {
   if (!ids.length) return
   cardsStore.setCards([...cardsStore.cards, ...ids])
   if (import.meta.client) window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+/** La página propia de este emisor, o vacío si todavía no tiene una. */
+function bankPagePath(bankId: string): string {
+  const bankPage = bankPageForBankId(bankId)
+  return bankPage ? localePath(`/descuentos-con-tarjeta-uruguay/${bankPage.slug}`) : ''
 }
 
 /**
@@ -987,6 +1030,15 @@ useHead(() => ({
   height: 12px;
   border-radius: 50%;
   flex: 0 0 auto;
+}
+/* El título del rubro es link: mismo token de link que el resto del sitio, subrayado en hover. */
+.bank-card__title a {
+  color: rgb(var(--v-theme-link));
+  text-decoration: none;
+}
+.bank-card__title a:hover,
+.bank-card__title a:focus-visible {
+  text-decoration: underline;
 }
 /* Dot and title on one baseline-centred row — the card-item prepend slot placed the
    dot against the block's top edge instead of the heading's optical centre. */

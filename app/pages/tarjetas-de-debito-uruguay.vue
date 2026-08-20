@@ -423,6 +423,12 @@
                 <strong>Descuentos:</strong> mirá en el mapa qué comercios tienen beneficio
                 {{ mapaDescuentosLabel(r.id) }}.
                 <NuxtLink :to="mapaDescuentos(r.id)" class="inline-link">Abrir el mapa</NuxtLink>
+                <template v-if="guiaDescuentos(r.id)">
+                  ·
+                  <NuxtLink :to="guiaDescuentos(r.id)" class="inline-link">
+                    Ver todos los comercios
+                  </NuxtLink>
+                </template>
               </span>
             </div>
 
@@ -613,6 +619,7 @@
 
 <script setup lang="ts">
 import { BANKOS_BANK_BY_DEBIT_CARD, bankosBankName, bankosMapPath } from '~/utils/bankos'
+import { bankPageForBankId } from '~/utils/bankosPages'
 import {
   DEBIT_CARDS,
   DEBIT_CARDS_LAST_REVIEWED,
@@ -643,6 +650,13 @@ function mapaDescuentos(cardId: string): string {
 function mapaDescuentosLabel(cardId: string): string {
   const bankId = BANKOS_BANK_BY_DEBIT_CARD[cardId]
   return bankId ? `con ${bankosBankName(bankId)}` : ''
+}
+
+/** La guía de descuentos de ese emisor: la lista completa por rubro, indexable. */
+function guiaDescuentos(cardId: string): string {
+  const bankId = BANKOS_BANK_BY_DEBIT_CARD[cardId]
+  const bankPage = bankId ? bankPageForBankId(bankId) : undefined
+  return bankPage ? localePath(`/descuentos-con-tarjeta-uruguay/${bankPage.slug}`) : ''
 }
 
 // ── Ranking ──

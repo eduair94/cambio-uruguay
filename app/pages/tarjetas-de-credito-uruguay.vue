@@ -182,17 +182,20 @@
                 <dt>Descuentos y beneficios</dt>
                 <dd>
                   {{ p.discountNote }}
-                  <!-- El texto describe la promo; el mapa dice DÓNDE cae. El link entra con el
-                       banco y el tipo ya preseleccionados. -->
-                  <NuxtLink
-                    v-if="mapaDescuentos(p.id)"
-                    :to="mapaDescuentos(p.id)"
-                    class="rank-map-link d-inline-block mt-1"
-                  >
-                    <VIcon size="14" class="mr-1">mdi-map-marker-radius-outline</VIcon>
-                    Ver en el mapa los comercios con descuento
-                    {{ mapaDescuentosLabel(p.id) }}
-                  </NuxtLink>
+                  <!-- El texto describe la promo; estas dos salidas dicen DÓNDE cae. El mapa
+                       entra con el banco y el tipo ya preseleccionados; la guía es la lista
+                       completa por rubro, con el texto de cada tramo de descuento. -->
+                  <span v-if="mapaDescuentos(p.id)" class="d-block mt-1">
+                    <NuxtLink :to="mapaDescuentos(p.id)" class="rank-map-link">
+                      <VIcon size="14" class="mr-1">mdi-map-marker-radius-outline</VIcon>
+                      Ver en el mapa
+                    </NuxtLink>
+                    <span class="mx-2 text-disabled">·</span>
+                    <NuxtLink :to="guiaDescuentos(p.id)" class="rank-map-link">
+                      <VIcon size="14" class="mr-1">mdi-tag-multiple-outline</VIcon>
+                      Todos los comercios con descuento {{ mapaDescuentosLabel(p.id) }}
+                    </NuxtLink>
+                  </span>
                 </dd>
               </div>
               <div>
@@ -395,6 +398,7 @@ import {
   type IssuerType,
 } from '~/utils/cardRewards'
 import { BANKOS_BANK_BY_CREDIT_PROGRAM, bankosBankName, bankosMapPath } from '~/utils/bankos'
+import { bankPageForBankId } from '~/utils/bankosPages'
 
 const localePath = useLocalePath()
 
@@ -412,6 +416,13 @@ function mapaDescuentos(programId: string): string {
 function mapaDescuentosLabel(programId: string): string {
   const bankId = BANKOS_BANK_BY_CREDIT_PROGRAM[programId]
   return bankId ? `de ${bankosBankName(bankId)}` : ''
+}
+
+/** La guía de descuentos de ese emisor: la lista completa por rubro, indexable. */
+function guiaDescuentos(programId: string): string {
+  const bankId = BANKOS_BANK_BY_CREDIT_PROGRAM[programId]
+  const bankPage = bankId ? bankPageForBankId(bankId) : undefined
+  return bankPage ? localePath(`/descuentos-con-tarjeta-uruguay/${bankPage.slug}`) : ''
 }
 
 const rubric = REWARD_RUBRIC
