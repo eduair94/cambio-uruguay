@@ -34,6 +34,7 @@ import {
   loadPreferentialRatesCatalog,
   preferentialRateProviderIds,
 } from "./classes/preferential-rates/catalog";
+import { isValidDayString, montevideoDayStart } from "./classes/intraday";
 import { origins } from "./classes/origins";
 import { redisCache } from "./classes/redis_cache";
 import { ga4Configured } from "./classes/site-analytics/ga4";
@@ -281,6 +282,111 @@ const main = async () => {
       `market-change:${hours}`,
       () => cambio_info.get_market_change(hours),
       30
+    );
+  });
+
+  /**
+   * @openapi
+   * /intraday:
+   *   get:
+   *     tags: [Evolution]
+   *     summary: Cotización y variación intradía de un día concreto
+   *     description: |
+   *       Devuelve, para un día calendario de Montevideo, la apertura, el último
+   *       valor, el máximo, el mínimo y la lista de cambios reales de cada
+   *       cotización pública de una moneda.
+   *
+   *       La apertura no se lee de la fila diaria (esa fila se sobrescribe en cada
+   *       sync, así que es el cierre): se reconstruye con el `previousBuy`/`previousSell`
+   *       del primer cambio del día y, si el día no tuvo cambios, con el último
+   *       estado conocido anterior. `openSource` dice cuál de los caminos se usó.
+   *
+   *       Endpoint público, sin autenticación y sin datos personales: sólo precios
+   *       publicados por las casas de cambio.
+   *     parameters:
+   *       - { name: date, in: query, schema: { type: string, format: date, example: "2026-08-20" }, description: "Día en zona America/Montevideo. Por defecto, hoy." }
+   *       - { name: code, in: query, schema: { type: string, default: USD, example: USD } }
+   *       - { name: origins, in: query, schema: { type: string }, description: "Lista de origins separada por comas." }
+   *       - { name: type, in: query, schema: { type: string, example: EBROU }, description: "Tipo exacto de cotización. Vacío = cotización simple; hoy también existen EBROU y TRANSFERENCIA." }
+   *     responses:
+   *       200:
+   *         description: Serie intradía por cotización más el resumen del día
+   *       400:
+   *         $ref: '#/components/responses/ValidationError'
+   */
+  server.getJson("intraday", async (req: Request): Promise<any> => {
+    const code = String(req.query.code || "USD").trim().toUpperCase();
+    if (!/^[A-Z]{2,5}$/.test(code)) {
+      throw new ValidationError(
+        "Invalid code parameter",
+        createValidationError(
+          "code",
+          String(req.query.code),
+          [],
+          "Code must be a 2-5 letter currency code, e.g. USD"
+        )
+      );
+    }
+
+    const rawDate = req.query.date === undefined ? "" : String(req.query.date).trim();
+    if (rawDate && !isValidDayString(rawDate)) {
+      throw new ValidationError(
+        "Invalid date parameter",
+        createValidationError(
+          "date",
+          rawDate,
+          [],
+          "Date must be a calendar day in YYYY-MM-DD format"
+        )
+      );
+    }
+    const dayStart = montevideoDayStart(rawDate || undefined);
+    if (dayStart.getTime() > montevideoDayStart().getTime()) {
+      throw new ValidationError(
+        "Invalid date parameter",
+        createValidationError(
+          "date",
+          rawDate,
+          [],
+          "Date cannot be in the future"
+        )
+      );
+    }
+
+    let originList: string[] | undefined;
+    if (req.query.origins !== undefined) {
+      originList = String(req.query.origins)
+        .split(",")
+        .map(value => value.trim().toLowerCase())
+        .filter(Boolean);
+      for (const origin of originList) {
+        const validation = validateOrigin(origin);
+        if (!validation.isValid) {
+          throw new ValidationError("Invalid origins parameter", validation.error);
+        }
+      }
+    }
+
+    const type =
+      req.query.type === undefined ? undefined : String(req.query.type).trim();
+
+    const dayKey = moment.tz(dayStart, "America/Montevideo").format("YYYY-MM-DD");
+    const isToday = dayKey === moment.tz("America/Montevideo").format("YYYY-MM-DD");
+    const cacheKey = `intraday:${dayKey}:${code}:${originList?.join(",") || "all"}:${
+      type === undefined ? "any" : type || "plain"
+    }`;
+
+    return redisCache.getOrSet(
+      cacheKey,
+      () =>
+        cambio_info.get_intraday({
+          code,
+          dayStart,
+          origins: originList,
+          type,
+        }),
+      // A finished day never changes again; today's window moves every sync.
+      isToday ? 30 : 3600
     );
   });
 

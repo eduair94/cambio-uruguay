@@ -568,6 +568,9 @@
     "cta": "Ler o artigo",
     "profile": "Ver perfil no Medium"
   },
+  "intradayApi": {
+    "nav": "API intradiária"
+  },
   "dev": {
     "nav": "Desenvolvedores",
     "title": "Desenvolvedores",

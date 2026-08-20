@@ -2089,6 +2089,23 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         keywords: ['desarrolladores', 'api', 'developers', 'json', 'endpoint', 'open source'],
       },
       {
+        to: '/api-cotizacion-intradia',
+        labelKey: 'intradayApi.nav',
+        icon: 'mdi-chart-timeline-variant',
+        priority: 0.6,
+        changefreq: 'monthly',
+        keywords: [
+          'intradia',
+          'intradía',
+          'api intradia',
+          'cotizacion intradia',
+          'variacion del dia',
+          'apertura',
+          'endpoint',
+          'utec',
+        ],
+      },
+      {
         to: '/newsletter',
         labelKey: 'newsletter.nav',
         icon: 'mdi-email-newsletter',

@@ -576,6 +576,9 @@
     "cta": "Leer el artículo",
     "profile": "Ver perfil en Medium"
   },
+  "intradayApi": {
+    "nav": "API intradía"
+  },
   "dev": {
     "nav": "Desarrolladores",
     "title": "Desarrolladores",

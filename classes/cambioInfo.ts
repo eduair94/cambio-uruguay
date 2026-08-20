@@ -9,6 +9,11 @@ import {
   RateAnalyticsResponse,
 } from "./rate_analytics";
 import {
+  buildIntraday,
+  IntradayQuery,
+  IntradayResponse,
+} from "./intraday";
+import {
   buildMarketChangeSummary,
   listRateChanges,
   MarketChangeSummary,
@@ -221,14 +226,19 @@ class CambioInfo extends Cambio {
     const obj = await this.db.allEntriesSort({ date }, { code: -1, sell: 1, buy: 1 });
     return obj as any;
   }
-  async get_rate_changes(query: RateChangeQuery = {}): Promise<RateChange[]> {
-    const houseNames = Object.fromEntries(
+  private house_names(): Record<string, string> {
+    return Object.fromEntries(
       Object.keys(origins).map(origin => {
         const exchange: Cambio = new (origins as any)[origin](origin);
         return [origin, exchange.name];
       })
     );
-    return listRateChanges(query, this.db, houseNames);
+  }
+  async get_rate_changes(query: RateChangeQuery = {}): Promise<RateChange[]> {
+    return listRateChanges(query, this.db, this.house_names());
+  }
+  async get_intraday(query: IntradayQuery): Promise<IntradayResponse> {
+    return buildIntraday(this.db, query, this.house_names());
   }
   async get_market_change(hours = 24): Promise<MarketChangeSummary> {
     const current = await this.get_data();
@@ -238,13 +248,7 @@ class CambioInfo extends Cambio {
     query: RateAnalyticsQuery
   ): Promise<RateAnalyticsResponse> {
     const current = await this.get_data();
-    const houseNames = Object.fromEntries(
-      Object.keys(origins).map(origin => {
-        const exchange: Cambio = new (origins as any)[origin](origin);
-        return [origin, exchange.name];
-      })
-    );
-    return buildRateAnalytics(current, this.db, query, houseNames);
+    return buildRateAnalytics(current, this.db, query, this.house_names());
   }
   async get_currency_evolution(origin: string, code: string, periodMonths: number = 6, type?: string): Promise<any> {
     // Calculate date range based on the period requested
