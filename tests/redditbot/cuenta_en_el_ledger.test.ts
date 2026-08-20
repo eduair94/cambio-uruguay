@@ -85,3 +85,21 @@ describe("un comentario que retiramos nosotros no es una señal de nada", () => 
     expect(ledger).toContain("export async function markSelfDeleted");
   });
 });
+
+describe("ensayar no puede gastar la cola", () => {
+  // El runbook manda dejar el bot en dry-run unos días antes de prenderlo. Cada hilo ensayado
+  // quedaba anotado como decidido para siempre, así que al prenderlo las mejores preguntas de la
+  // semana —justo las que uno acababa de leer y aprobar en el ensayo— ya estaban descartadas. El
+  // procedimiento recomendado se comía la cola, y en silencio.
+  it("una fila de ensayo no frena cuando el bot ya publica", () => {
+    const body = bodyOf("seenPostIds")
+    expect(body).toContain('canPost()')
+    expect(body).toContain('"dry_run"')
+  })
+
+  it("pero sí frena mientras se ensaya, para no re-gastar cupo cada hora", () => {
+    // Los dos lados importan y por eso la condición existe: re-evaluar lo mismo cada hora gasta
+    // embeddings y llamadas al juez de un cupo diario.
+    expect(bodyOf("seenPostIds")).toMatch(/canPost\(\)\s*\?\s*\[.*dry_run.*\]\s*:\s*\[.*waiting_page.*\]/s)
+  })
+})

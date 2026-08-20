@@ -4,7 +4,7 @@
 
 import { RedditBotReplyModel, type RedditBotReplyDoc } from "../models/RedditBotReply";
 import { RedditSocialCommentModel } from "../models/RedditSocialComment";
-import { botConfig } from "./config";
+import { botConfig, canPost } from "./config";
 
 /**
  * El filtro "esto lo escribió LA CUENTA DE AHORA", para las consultas donde la cuenta importa.
@@ -41,8 +41,21 @@ const DAY_MS = 24 * 60 * 60 * 1000;
  */
 export async function seenPostIds(postIds: readonly string[]): Promise<Set<string>> {
   if (!postIds.length) return new Set();
+
+  // Un ENSAYO no es una decisión, pero mientras se ensaya conviene que lo parezca.
+  //
+  // El runbook manda dejar el bot en dry-run unos días antes de prenderlo, y cada hilo ensayado
+  // quedaba anotado como decidido para siempre: al prenderlo, las mejores preguntas de la semana
+  // —justo las que uno acababa de leer y aprobar en el ensayo— ya estaban descartadas. El
+  // procedimiento recomendado se comía la cola en silencio.
+  //
+  // Los dos lados importan, así que la respuesta depende de en cuál estamos. Ensayando, una fila
+  // `dry_run` SÍ frena: re-evaluar lo mismo cada hora gasta embeddings y llamadas al juez de un cupo
+  // diario. Publicando, NO frena: nunca se le habló a esa gente.
+  const excluded = canPost() ? ["waiting_page", "dry_run"] : ["waiting_page"];
+
   const [propias, sociales] = await Promise.all([
-    RedditBotReplyModel.find({ postId: { $in: [...postIds] }, status: { $ne: "waiting_page" } })
+    RedditBotReplyModel.find({ postId: { $in: [...postIds] }, status: { $nin: excluded } })
       .select({ postId: 1 })
       .lean<Array<{ postId: string }>>(),
     // Un hilo donde ya comentamos sin enlace está hablado. Ver hasPostedTo.
