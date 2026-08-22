@@ -25,12 +25,40 @@ país obliga a adivinar cuál. Ésta devuelve todos, etiquetados por `kind`.
 |---|---|
 | `GET /regional` | Snapshot completo: `quotes`, `board` (una fila por país), `gaps`, `cross` (matriz), `routes` (comparación de rutas), `sources` (quién respondió), `rejected` (qué se descartó y por qué) |
 | `GET /regional/history` | Serie diaria de un mercado. Filtros: `country`, `market`, `base`, `quote`, `from`, `to`, `limit` (1–20000, default 5000) |
+| `GET /regional/changes` | **Cada movimiento de precio, sin umbral mínimo.** Filtros: `key`, `country`, `market`, `base`, `quote`, `from`, `to`, `limit` (1–5000, default 500) |
 | `GET /regional/series` | Inventario de series: clave, país, mercado, par, días y rango |
 | `GET /regional/compare` | Rutas "comprar acá" vs "llevar dólares". Filtros: `currency`, `amount` |
 | `GET /regional/convert` | Conversión entre monedas de la región pasando por el dólar. `from`, `to`, `amount`, `market` |
-| `GET /regional/sources` | Catálogo de fuentes: id, publicador, URL, tipo de acceso y qué aporta |
+| `GET /regional/sources` | Las fuentes **con el estado de la última corrida**: si respondió, cuánto tardó, qué mercados publica, en cuáles corrobora, qué se le descartó. Más un `summary` con `singleSourceMarkets` |
+| `GET /regional/sources/{id}` | La misma ficha, de una sola fuente |
 
-Caché Redis: 120 s el snapshot, 1800 s las series y el catálogo.
+Caché Redis: 120 s el snapshot y las fuentes, 60 s los movimientos, 1800 s las series y el catálogo.
+
+## El ledger de movimientos
+
+`/regional/history` guarda **un punto por día** y esa fila se sobrescribe en cada corrida: al cerrar
+el día lo que queda es el cierre. Sirve para dibujar cuarenta años y no sirve para nada de lo que
+pasa adentro de un día.
+
+`/regional/changes` es la otra mitad. Cada corrida compara lo que acaba de leer contra el último
+estado conocido de cada mercado y escribe una fila por diferencia. **No hay umbral**: la primera
+corrida registró un movimiento de 0,0002 % en el dólar cripto argentino (tres milésimas de peso) y
+otro de 0,0431 % en el paralelo boliviano. Un umbral parece higiene y es una decisión editorial
+disfrazada — quien consume el ledger puede filtrar por el tamaño que le importe; lo que no puede es
+recuperar lo que nunca se guardó.
+
+La **resolución** es la del trabajo: se ve lo que hay cuando se mira, cada diez minutos. Dos
+movimientos dentro de la misma ventana quedan como uno, del primer valor al último. Por eso cada
+fila trae:
+
+- `observedAt` — cuándo lo vimos;
+- `sourceUpdatedAt` — cuándo dice la fuente que fijó el valor;
+- `sinceMinutes` — cuánto pasó desde la lectura anterior de ese mercado.
+
+Un mercado que aparece por primera vez NO genera fila: sin estado anterior no hay movimiento, y una
+fila con 0 % la contaría alguien como un cambio real. La colección (`regional_changes`) es
+append-only y única por (clave, momento observado), así que un reinicio de pm2 no puede duplicar
+nada.
 
 ## Modelo de datos
 
@@ -70,19 +98,19 @@ sistema podía distinguirlo de un movimiento real.
 | `ar_ambito` | Ámbito Financiero | AR | API | Ocho mercados **con la variación del día** |
 | `ar_dolarhoy` | DolarHoy | AR | scrape | Tercera lectura del blue; la página que mira el público argentino |
 | `ar_criptoya` | CriptoYa | AR | API | Quinta lectura, con los financieros **desglosados por bono** (se usa AL30 24 h) y el cripto por stablecoin |
-| `ar_bcra` | BCRA | AR | API | Toda la región cotizada en pesos argentinos por el banco central |
+| `ar_bcra` | BCRA | AR | API | Toda la región cotizada en pesos argentinos por el banco central, **y su serie del dólar desde 1996** |
 | `ar_argentinadatos` | ArgentinaDatos | AR | API | **Serie diaria desde 2011-01-03** (sólo backfill) |
-| `br_bcb` | Banco Central do Brasil | BR | API | Fixing **PTAX** + serie diaria **desde 1995** |
+| `br_bcb` | Banco Central do Brasil | BR | API | Fixing **PTAX** + serie diaria **desde el Plano Real (julio 1994)** |
 | `br_awesomeapi` | AwesomeAPI | BR | API | **Dólar turismo**, cruce directo ARS/BRL, máximo/mínimo del día |
-| `cl_mindicador` | mindicador.cl (BCCh) | CL | API | Dólar observado + serie por año |
+| `cl_mindicador` | mindicador.cl (BCCh) | CL | API | Dólar observado + serie por año **desde 1984** |
 | `cl_boostr` | Boostr | CL | API | Segunda lectura del observado: cuando coinciden, prueban que **lo leímos bien** |
 | `cl_dolarapi` | DolarAPI Chile | CL | API | Mostrador chileno + peso argentino en pesos chilenos |
-| `py_bcp` | Banco Central del Paraguay | PY | scrape | Referencial del mercado libre + planilla de ~26 monedas |
+| `py_bcp` | Banco Central del Paraguay | PY | scrape | Referencial del mercado libre + planilla de ~26 monedas + **archivo día por día desde 2014** |
 | `py_dolarpy` | DolarPy | PY | API | El referencial **por segundo camino** + once casas de cambio en una respuesta |
 | `py_maxicambios` | Maxicambios | PY | scrape | Mostrador paraguayo (USD, BRL, ARS, UYU, EUR) |
 | `bo_bcb` | Banco Central de Bolivia | BO | scrape | El oficial que fija el banco central. Bolivia era el único país con una sola fuente |
 | `bo_dolarapi` | DolarAPI Bolivia | BO | API | Oficial + paralelo (Binance P2P): la brecha real boliviana |
-| `uy_local` | cambio-uruguay.com | UY | interno | Mejor precio entre ~46 casas + referencia BCU. Dato propio |
+| `uy_local` | cambio-uruguay.com | UY | interno | Mejor precio entre ~46 casas + referencia BCU. Dato propio, **con serie desde 2022-12-28** |
 | `uy_external` | DolarAPI Uruguay | UY | API | Lectura de un tercero sobre nuestro propio mercado: el control externo |
 | `world_currencyapi` | Currency API (jsDelivr) | Global | API | Referencia mid-market |
 | `world_floatrates` | FloatRates | Global | API | Referencia mid-market |
@@ -128,36 +156,47 @@ demás quedan en `corroboratedBy` con la diferencia máxima en `disagreementPct`
 
 ## Historia
 
-Dos caminos, y no son lo mismo:
+Tres caminos, y no son lo mismo:
 
-- **Backfill** (`--backfill`, diario): las series que el propio publicador entrega — siete dólares
-  argentinos desde 2011, PTAX desde 1995, dólar observado chileno año por año.
-- **Snapshot**: todo lo demás (Paraguay, Bolivia, el mostrador uruguayo, los cruces) no tiene
-  historia pública, así que su serie **empieza el día que este trabajo corrió por primera vez** y
-  crece una fila por día.
+- **Series enteras** que el publicador entrega de una: los siete dólares argentinos desde
+  2011-01-03, la **referencia del BCRA desde 1996-01-02** (la convertibilidad y el salto de 2002
+  adentro), el **PTAX brasileño desde el 1 de julio de 1994** y el **dólar observado chileno desde
+  1984-01-02**.
+- **Archivos que sólo contestan de a un día**, recorridos con presupuesto por corrida y salteando lo
+  ya guardado: el del Banco Central del Paraguay (`?fecha=dd/mm/yyyy`, con archivo desde 2014) y
+  **nuestra propia colección diaria uruguaya desde 2022-12-28**, que nunca había sido mirada como
+  serie. El tablero uruguayo histórico se rearma con `buildUyQuotes`, la MISMA función que arma la
+  fila de hoy: si la regla de qué casa entra cambia, el histórico y el presente cambian juntos.
+- **El snapshot**: todo lo demás no tiene historia pública, así que su serie empieza el día que este
+  trabajo corrió por primera vez y crece una fila por día.
+
+Por qué el PTAX no arranca en 1984, que es donde arranca la serie del BCB: porque antes de julio de
+1994 la moneda era el cruzeiro, a 2.828 por dólar. Guardarlo bajo la clave `USDBRL` sería publicar
+otra moneda con esta etiqueta.
 
 La fila diaria guarda el **último valor observado del día** (su cierre), nunca su apertura: se
 sobreescribe en cada corrida. El día se mide en **la zona horaria del país que publicó el precio**.
 
 Trampas cazadas en producción:
 
-- La API SGS del BCB **rechaza ventanas de más de diez años** y lo hace devolviendo vacío, que es
+- La API SGS del BCB **rechaza ventanas de más de diez años** devolviendo vacío, que es
   indistinguible de "no hay serie" — por eso `sgsWindows()` parte el rango.
 - Un publicador que rate-limita devuelve `null`, que el log escribe como FALLÓ y no como "0 días".
 - **Chile publica hacia adelante**: el dólar observado de un día hábil se fija la tarde anterior, así
-  que un sábado la serie ya trae el valor del lunes. Es calendario, no bug — se guarda. Lo que se
-  descarta es cualquier día a más de `MAX_FUTURE_DAYS` (7) de hoy, que sí sería un error de zona
-  horaria o de parseo.
+  que un sábado la serie ya trae el lunes. Es calendario, no bug — se guarda. Lo que se descarta es
+  cualquier día a más de `MAX_FUTURE_DAYS` (7) de hoy.
+- **El BCP contesta cualquier fecha.** Pedirle un domingo devuelve la página con el encabezado del
+  domingo y una sola fila: `(*)Prom. viernes`, el promedio del día hábil anterior. Guardarla
+  copiaría el viernes sobre el domingo, así que el archivo sólo acepta filas **con hora**.
 
-Colecciones reales en Mongo: **`regional_datas`** y **`regional_histories`** — mongoose pluraliza el
-nombre del modelo, igual que `bcu_rates_datas`. Índices: `{key, day}` único, `{country, market, day}`
-y `{day}`. Al 2026-08-22: 40.587 documentos, ~7,8 MB de datos y ~3,5 MB de índices.
+Colecciones reales en Mongo: **`regional_datas`**, **`regional_histories`** y
+**`regional_changes`** — mongoose pluraliza el nombre del modelo, igual que `bcu_rates_datas`.
 
 ## Operación
 
 | pm2 app | script | cron (UTC) |
 |---|---|---|
-| `currency-regional` | `dist/sync_regional.js` | `*/20 * * * *` |
+| `currency-regional` | `dist/sync_regional.js` | `*/10 * * * *` |
 | `currency-regional-history` | `dist/sync_regional.js --backfill` | `9 5 * * *` |
 
 Ambas en `OTHER_APPS` de `scripts/deploy-backend.sh`. Local: `npm run sync_regional` /

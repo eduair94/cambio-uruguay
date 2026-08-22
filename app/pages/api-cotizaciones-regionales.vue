@@ -11,7 +11,10 @@
         uruguaya. Ahora sí — <code>GET /regional</code> devuelve el dólar y los cruces de
         <strong>Argentina, Brasil, Paraguay, Chile, Bolivia y Uruguay</strong> con todos los
         mercados que publica cada país, y <code>GET /regional/history</code> devuelve las series
-        diarias: los dólares argentinos desde 2011 y el fixing brasileño desde 1995.
+        diarias: los dólares argentinos desde 2011, la referencia del BCRA desde 1996, el fixing
+        brasileño desde el Plano Real y el dólar observado chileno desde 1984. Y
+        <code>GET /regional/changes</code> devuelve <strong>cada movimiento de precio</strong>, por
+        chico que sea.
       </p>
       <div class="d-flex flex-wrap ga-2">
         <VBtn
@@ -98,7 +101,7 @@
 
     <!-- 2. Endpoints -->
     <section class="mb-10" aria-labelledby="endpoints">
-      <h2 id="endpoints" class="section-heading mb-1">Los seis endpoints</h2>
+      <h2 id="endpoints" class="section-heading mb-1">Los ocho endpoints</h2>
       <p class="section-lead text-body-2 mb-4">
         Todos son <strong>GET</strong>, públicos, sin autenticación, sobre HTTPS y con CORS abierto.
         Base: <code>{{ API_BASE }}</code>
@@ -475,8 +478,35 @@ const ENDPOINTS = [
   {
     path: '/regional/sources',
     example: '/regional/sources',
-    what: 'Catálogo de fuentes: quién publica cada dato, con qué acceso, en qué URL y qué aporta que no aporte ninguna otra.',
+    what: 'Las fuentes con el estado de la última corrida: si respondió, cuánto tardó, qué mercados publica, en cuáles queda corroborando a otra, qué se le descartó y por qué. El resumen trae `singleSourceMarkets`, que es el número a vigilar: los mercados que todavía dependen de una sola lectura.',
     params: [],
+  },
+  {
+    path: '/regional/sources/{id}',
+    example: '/regional/sources/py_bcp',
+    what: 'La misma ficha, de una sola fuente.',
+    params: [
+      {
+        name: 'id',
+        def: 'obligatorio',
+        what: 'El id de la fuente, como lo lista /regional/sources.',
+      },
+    ],
+  },
+  {
+    path: '/regional/changes',
+    example: '/regional/changes?country=AR&market=blue',
+    what: 'Cada movimiento de precio, sin umbral mínimo: un guaraní o una diezmilésima de peso entran igual. Es la otra mitad de /regional/history, porque la fila diaria se sobrescribe y lo que pasa adentro del día sólo existe acá.',
+    params: [
+      { name: 'key', def: '—', what: 'Clave exacta del mercado, por ejemplo AR:blue:USDARS.' },
+      {
+        name: 'country / market / base / quote',
+        def: '—',
+        what: 'Los mismos filtros que en /regional/history.',
+      },
+      { name: 'from / to', def: '—', what: 'Rango por fecha y hora (ISO 8601).' },
+      { name: 'limit', def: '500', what: 'Máximo de movimientos (1 a 5000).' },
+    ],
   },
 ]
 

@@ -13,6 +13,7 @@
 // upstream, not a region that stopped publishing prices. It refuses rather than
 // overwrite a good snapshot with a thin one.
 import { MongooseServer, Schema } from "../database";
+import type { RegionalChange, RegionalState } from "./changes";
 import type { RegionalHistoryPoint, RegionalSnapshot } from "./types";
 
 const SNAPSHOT_KEY = "regional_snapshot";
@@ -172,4 +173,147 @@ export async function listRegionalSeries(): Promise<
 
 export async function countRegionalHistory(): Promise<number> {
   return historyDb().countEntries({});
+}
+
+/**
+ * Qué días ya están guardados de una serie.
+ *
+ * Es lo que convierte el backfill en incremental: los archivos que se recorren
+ * día por día (el del Banco Central del Paraguay, el nuestro) sólo piden lo que
+ * falta, así que la primera corrida hace el trabajo pesado y las siguientes no
+ * hacen casi nada.
+ */
+export async function loadHistoryDays(key: string): Promise<Set<string>> {
+  const rows = await historyDb().aggregate([
+    { $match: { key } },
+    { $group: { _id: null, days: { $addToSet: "$day" } } },
+  ]);
+  return new Set<string>((rows[0]?.days as string[] | undefined) ?? []);
+}
+
+// --- El ledger de movimientos ------------------------------------------------
+//
+// Append-only. La colección diaria se sobrescribe (guarda el cierre); ésta no se
+// toca nunca: cada fila es un hecho fechado, y un hecho fechado no se corrige,
+// se agrega otro al lado.
+
+const changeSchema = new Schema(
+  {
+    key: { type: String, required: true },
+    country: { type: String, required: true },
+    market: { type: String, required: true },
+    base: { type: String, required: true },
+    quote: { type: String, required: true },
+    source: { type: String, required: true },
+    previousBuy: { type: Number, default: null },
+    previousSell: { type: Number, default: null },
+    previousAvg: { type: Number, required: true },
+    buy: { type: Number, default: null },
+    sell: { type: Number, default: null },
+    avg: { type: Number, required: true },
+    buyChanged: { type: Boolean, required: true },
+    sellChanged: { type: Boolean, required: true },
+    changePct: { type: Number, required: true },
+    observedAt: { type: Date, required: true },
+    sourceUpdatedAt: { type: String, default: null },
+    sinceMinutes: { type: Number, default: null },
+  },
+  { strict: true }
+);
+// Único por (mercado, momento observado): una corrida que se repita —un reinicio
+// de pm2, un reintento— no puede duplicar el movimiento.
+changeSchema.index({ key: 1, observedAt: -1 }, { unique: true });
+changeSchema.index({ observedAt: -1 });
+changeSchema.index({ country: 1, market: 1, observedAt: -1 });
+
+const changeDb = (): MongooseServer => MongooseServer.getInstance("regional_change", changeSchema);
+
+export async function saveRegionalChanges(changes: RegionalChange[]): Promise<number> {
+  if (!changes.length) return 0;
+  await changeDb().bulkUpsert(
+    changes.map((change) => ({
+      filter: { key: change.key, observedAt: change.observedAt },
+      update: change,
+    }))
+  );
+  return changes.length;
+}
+
+/**
+ * El último estado conocido de cada mercado.
+ *
+ * Sale del ledger, no del snapshot: el snapshot dice qué está publicado ahora y
+ * el ledger dice de dónde vino. Si el ledger todavía no tiene ese mercado, el
+ * snapshot guardado es el punto de partida — así la primera corrida después de
+ * un despliegue no reporta el tablero entero como si se hubiera movido.
+ */
+export async function loadRegionalStates(): Promise<RegionalState[]> {
+  const [fromLedger, snapshot] = await Promise.all([
+    changeDb().aggregate([
+      { $sort: { observedAt: -1 } },
+      { $group: { _id: "$key", row: { $first: "$$ROOT" } } },
+      { $replaceRoot: { newRoot: "$row" } },
+    ]),
+    loadRegionalSnapshot(),
+  ]);
+
+  const byKey = new Map<string, RegionalState>();
+  for (const quote of snapshot?.quotes ?? []) {
+    byKey.set(quote.id, {
+      key: quote.id,
+      buy: quote.buy,
+      sell: quote.sell,
+      avg: quote.avg,
+      observedAt: new Date(snapshot!.generatedAt),
+    });
+  }
+  for (const row of fromLedger) {
+    byKey.set(row.key, {
+      key: row.key,
+      buy: row.buy ?? null,
+      sell: row.sell ?? null,
+      avg: row.avg,
+      observedAt: new Date(row.observedAt),
+    });
+  }
+  return [...byKey.values()];
+}
+
+export interface ChangeQuery {
+  country?: string;
+  market?: string;
+  base?: string;
+  quote?: string;
+  key?: string;
+  from?: string;
+  to?: string;
+  limit?: number;
+}
+
+/** Movimientos, del más nuevo al más viejo. */
+export async function loadRegionalChanges(query: ChangeQuery = {}): Promise<RegionalChange[]> {
+  const match: Record<string, any> = {};
+  if (query.key) match.key = query.key;
+  if (query.country) match.country = query.country.toUpperCase();
+  if (query.market) match.market = query.market;
+  if (query.base) match.base = query.base.toUpperCase();
+  if (query.quote) match.quote = query.quote.toUpperCase();
+  if (query.from || query.to) {
+    match.observedAt = {};
+    if (query.from) match.observedAt.$gte = new Date(query.from);
+    if (query.to) match.observedAt.$lte = new Date(query.to);
+  }
+  const limit = Math.min(Math.max(query.limit ?? 500, 1), 5_000);
+
+  const rows = await changeDb().aggregate([
+    { $match: match },
+    { $sort: { observedAt: -1 } },
+    { $limit: limit },
+    { $project: { _id: 0 } },
+  ]);
+  return rows as RegionalChange[];
+}
+
+export async function countRegionalChanges(): Promise<number> {
+  return changeDb().countEntries({});
 }

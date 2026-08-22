@@ -7,7 +7,11 @@
 //
 // Anyone integrating should call the public API directly: this route is the
 // site's own read path, not a second API.
-import type { RegionalSnapshot, RegionalSourceMeta } from '../../utils/regional'
+import type {
+  RegionalSnapshot,
+  RegionalSourceMeta,
+  RegionalSourcesSummary,
+} from '../../utils/regional'
 
 export default defineCachedEventHandler(
   async () => {
@@ -15,9 +19,10 @@ export default defineCachedEventHandler(
 
     const [snapshot, catalogue] = await Promise.all([
       $fetch<RegionalSnapshot>(`${base}/regional`, { timeout: 9000 }).catch(() => null),
-      $fetch<{ sources: RegionalSourceMeta[] }>(`${base}/regional/sources`, {
-        timeout: 9000,
-      }).catch(() => ({ sources: [] as RegionalSourceMeta[] })),
+      $fetch<{ sources: RegionalSourceMeta[]; summary?: RegionalSourcesSummary }>(
+        `${base}/regional/sources`,
+        { timeout: 9000 }
+      ).catch(() => ({ sources: [] as RegionalSourceMeta[], summary: undefined })),
     ])
 
     if (!snapshot) {
@@ -34,13 +39,18 @@ export default defineCachedEventHandler(
         sources: [],
         rejected: [],
         catalogue: catalogue.sources,
+        catalogueSummary: catalogue.summary ?? null,
       }
     }
 
-    return { ...snapshot, catalogue: catalogue.sources }
+    return {
+      ...snapshot,
+      catalogue: catalogue.sources,
+      catalogueSummary: catalogue.summary ?? null,
+    }
   },
   {
-    // The job refreshes every 20 minutes; five is short enough that the page is
+    // The job refreshes every 10 minutes; five is short enough that the page is
     // never more than one cycle behind and long enough to absorb a crawl.
     maxAge: 60 * 5,
     staleMaxAge: 60 * 60 * 3,

@@ -21,7 +21,7 @@
 import * as cheerio from "cheerio";
 import { fetchText } from "../net";
 import { makeQuote, parseLocaleNumber } from "../quote";
-import type { RegionalQuote, RegionalSourceMeta } from "../types";
+import type { RegionalHistoryPoint, RegionalQuote, RegionalSourceMeta } from "../types";
 
 export const meta: RegionalSourceMeta = {
   id: "py_bcp",
@@ -77,8 +77,22 @@ const PLANILLA_CURRENCIES: Record<string, string> = {
   BOB: "Boliviano (planilla BCP)",
 };
 
+export interface BcpParseOptions {
+  /**
+   * Exigir que la fila tenga hora.
+   *
+   * La primera fila de la tabla NO es de la jornada: es `(*)Prom. 20/08`, el
+   * promedio del día hábil anterior. En vivo eso está bien —un lunes a las 7 de
+   * la mañana es lo mejor que hay y es lo que el propio BCP muestra—, pero en el
+   * archivo es veneno: pedir un domingo o un feriado devuelve la página con el
+   * encabezado del día pedido y ESA sola fila, así que guardarla copiaría el
+   * valor del viernes sobre el domingo como si el mercado hubiera operado.
+   */
+  requireHour?: boolean;
+}
+
 /** Pure parser for the intraday reference table. */
-export function parseBcpReferencial(html: string): RegionalQuote[] {
+export function parseBcpReferencial(html: string, options: BcpParseOptions = {}): RegionalQuote[] {
   const $ = cheerio.load(html);
   const day = parseSpanishDate($("table th h4").first().text() || $("table").first().text().slice(0, 200));
 
@@ -90,10 +104,11 @@ export function parseBcpReferencial(html: string): RegionalQuote[] {
       .map((_, cell) => $(cell).text().trim())
       .get();
     if (cells.length < 3) continue;
+    const time = /^\d{1,2}:\d{2}$/.test(cells[0]) ? cells[0] : null;
+    if (options.requireHour && !time) continue;
     const buy = parseLocaleNumber(cells[1], "latam");
     const sell = parseLocaleNumber(cells[2], "latam");
     if (buy === null && sell === null) continue;
-    const time = /^\d{1,2}:\d{2}$/.test(cells[0]) ? cells[0] : null;
     const quote = makeQuote({
       country: "PY",
       market: "referencial",
@@ -148,6 +163,45 @@ export function parseBcpPlanilla(html: string): RegionalQuote[] {
   });
 
   return quotes;
+}
+
+/**
+ * La misma tabla, de un día pasado.
+ *
+ * El BCP acepta `?fecha=dd/mm/yyyy` y devuelve la jornada completa de ese día —
+ * es la única forma de reconstruir la serie paraguaya, porque nadie la publica
+ * como serie. Es un pedido por día, así que quien lo llame tiene que ir de a
+ * poco: `deep_history.ts` lo hace con un presupuesto por corrida y sólo para los
+ * días que faltan.
+ *
+ * Devuelve null si la página no respondió, y `[]` si respondió sin datos — un
+ * feriado paraguayo no tiene cotización y eso es una respuesta, no una falla.
+ */
+export async function fetchBcpReferencialForDay(day: string): Promise<RegionalHistoryPoint[] | null> {
+  const [year, month, date] = day.split("-");
+  const html = await fetchText(`${REFERENCIAL_URL}?fecha=${date}/${month}/${year}`, {
+    headers: { accept: "text/html,*/*;q=0.8" },
+  });
+  if (!html) return null;
+
+  // `requireHour` descarta el promedio del día anterior, que es lo único que la
+  // página muestra cuando el día pedido no operó.
+  const quotes = parseBcpReferencial(html, { requireHour: true });
+  // Y el filtro de fecha descarta una página que conteste con otro día.
+  return quotes
+    .filter((quote) => quote.updatedAt.slice(0, 10) === day)
+    .map((quote) => ({
+      key: quote.id,
+      country: "PY" as const,
+      market: quote.market,
+      base: quote.base,
+      quote: quote.quote,
+      day,
+      buy: quote.buy,
+      sell: quote.sell,
+      avg: quote.avg,
+      source: meta.id,
+    }));
 }
 
 export async function fetchPyBcp(): Promise<RegionalQuote[]> {

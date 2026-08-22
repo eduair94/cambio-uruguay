@@ -93,16 +93,76 @@ export interface RegionalRouteComparison {
   missing: string[]
 }
 
+/**
+ * Una fuente, tal como la sirve `GET /regional/sources`: el catálogo más el
+ * estado de la última corrida.
+ *
+ * `country` viene en `null` para los feeds mundiales — ponerles un país era la
+ * menos mala de seis respuestas equivocadas.
+ */
 export interface RegionalSourceMeta {
   id: string
   name: string
-  country: RegionalCountry
-  /** Feeds que cotizan todas las monedas y no pertenecen a ningún país. */
-  global?: boolean
+  country: RegionalCountry | null
+  scope?: 'national' | 'global'
+  /** `internal` = dato propio; `history` = sólo alimenta el backfill. */
+  role?: 'live' | 'history' | 'internal'
   url: string
   access: 'api' | 'scrape'
   publisher: 'central-bank' | 'market-data' | 'media' | 'exchange-house'
   covers: string
+  status?: { ok: boolean; note: string; ms: number; quotes: number } | null
+  /** Mercados donde su lectura es la publicada. */
+  published?: string[]
+  /** Mercados donde otra fuente ganó y ésta quedó corroborando. */
+  corroborates?: string[]
+  rejected?: Array<{ id: string; reason: string; value: number | null }>
+  maxDisagreementPct?: number | null
+  oldestQuoteAt?: string | null
+  /** Compatibilidad con la forma vieja del catálogo. */
+  global?: boolean
+}
+
+/** El resumen que acompaña al catálogo. */
+export interface RegionalSourcesSummary {
+  total: number
+  live: number
+  responding: number
+  failing: number
+  centralBanks: number
+  scrapes: number
+  global: number
+  /** Mercados con dos o más lecturas independientes. */
+  corroboratedMarkets: number
+  /** Mercados con una sola fuente: los puntos ciegos que quedan. */
+  singleSourceMarkets: number
+}
+
+/** Un movimiento de precio, tal como lo sirve `GET /regional/changes`. */
+export interface RegionalChange {
+  key: string
+  country: RegionalCountry
+  market: string
+  base: string
+  quote: string
+  source: string
+  previousBuy: number | null
+  previousSell: number | null
+  previousAvg: number
+  buy: number | null
+  sell: number | null
+  avg: number
+  buyChanged: boolean
+  sellChanged: boolean
+  changePct: number
+  observedAt: string
+  sourceUpdatedAt: string | null
+  sinceMinutes: number | null
+}
+
+/** True cuando la fuente no pertenece a un país (feed mundial). */
+export function regionalIsGlobalSource(source: RegionalSourceMeta): boolean {
+  return source.scope === 'global' || source.global === true || source.country === null
 }
 
 export interface RegionalSnapshot {
@@ -117,6 +177,8 @@ export interface RegionalSnapshot {
   rejected: Array<{ id: string; source: string; reason: string; value: number | null }>
   /** Joined in by `server/api/regional.get.ts`: who publishes each `source` id. */
   catalogue?: RegionalSourceMeta[]
+  /** El resumen que acompaña al catálogo (cuántas responden, cuántos mercados quedan con una sola lectura). */
+  catalogueSummary?: RegionalSourcesSummary | null
 }
 
 export interface RegionalHistoryPoint {

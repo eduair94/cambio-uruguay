@@ -48,7 +48,7 @@
       icon="mdi-clock-alert-outline"
       class="mb-8"
     >
-      El tablero se actualizó por última vez {{ freshness }}. Se refresca cada 20 minutos, así que
+      El tablero se actualizó por última vez {{ freshness }}. Se refresca cada 10 minutos, así que
       esto no es una pausa del mercado: algo del lado nuestro no está corriendo. Los precios de
       abajo siguen siendo los últimos que se leyeron, no los de este momento.
     </VAlert>
@@ -357,6 +357,15 @@
         que este sitio releva cada cinco minutos. Todo lo demás es de quien lo publica, y el enlace
         va al original para que se pueda contrastar sin pasar por acá.
       </p>
+      <VRow v-if="catalogueSummary" class="mb-4">
+        <VCol v-for="tile in sourceTiles" :key="tile.label" cols="6" md="3">
+          <VCard variant="tonal" class="pa-3 h-100">
+            <p class="text-caption text-medium-emphasis mb-1">{{ tile.label }}</p>
+            <p class="tile-value text-h6 font-weight-bold mb-0">{{ tile.value }}</p>
+          </VCard>
+        </VCol>
+      </VRow>
+
       <VTable density="comfortable" class="cu-mobile-cards">
         <thead>
           <tr>
@@ -364,6 +373,9 @@
             <th>País</th>
             <th>Quién publica</th>
             <th>Acceso</th>
+            <th>Última corrida</th>
+            <th class="text-right">Publica</th>
+            <th class="text-right">Corrobora</th>
             <th>Qué aporta</th>
           </tr>
         </thead>
@@ -375,8 +387,11 @@
               }}</a>
             </td>
             <td data-label="País">
-              <span v-if="source.global">🌐 Global</span>
-              <span v-else>{{ flagOf(source.country) }} {{ countryName(source.country) }}</span>
+              <span v-if="regionalIsGlobalSource(source)">🌐 Global</span>
+              <span v-else-if="source.country"
+                >{{ flagOf(source.country) }} {{ countryName(source.country) }}</span
+              >
+              <span v-else class="text-disabled">—</span>
             </td>
             <td data-label="Quién publica">{{ publisherLabel(source.publisher) }}</td>
             <td data-label="Acceso">
@@ -388,10 +403,49 @@
                 {{ source.access === 'api' ? 'API' : 'Scraping' }}
               </VChip>
             </td>
+            <td data-label="Última corrida">
+              <VChip
+                v-if="source.status"
+                size="x-small"
+                variant="tonal"
+                :color="source.status.ok ? 'success' : 'error'"
+              >
+                {{ source.status.ok ? 'respondió' : 'no respondió' }}
+              </VChip>
+              <span v-else-if="source.role === 'history'" class="text-caption text-medium-emphasis">
+                sólo histórico
+              </span>
+              <span v-else class="text-disabled">—</span>
+              <span
+                v-if="source.status && source.status.ms > 0"
+                class="d-block text-caption text-medium-emphasis"
+              >
+                {{ source.status.ms }} ms
+              </span>
+            </td>
+            <td data-label="Publica" class="text-right">
+              {{ source.published?.length || 0 }}
+            </td>
+            <td data-label="Corrobora" class="text-right">
+              {{ source.corroborates?.length || 0 }}
+              <span
+                v-if="source.maxDisagreementPct !== null && source.maxDisagreementPct !== undefined"
+                class="d-block text-caption text-medium-emphasis"
+              >
+                ±{{ regionalPct(source.maxDisagreementPct, false) }}
+              </span>
+            </td>
             <td data-label="Qué aporta" class="text-body-2">{{ source.covers }}</td>
           </tr>
         </tbody>
       </VTable>
+
+      <p class="text-body-2 mt-3 mb-0">
+        <strong>Publica</strong> es en cuántos mercados su lectura es la que se muestra;
+        <strong>corrobora</strong>, en cuántos otra fuente ganó y ésta quedó confirmándola, con la
+        diferencia máxima al lado. El detalle completo, fuente por fuente, está en
+        <code>GET /regional/sources</code>.
+      </p>
 
       <div v-if="failedSources.length" class="mt-4">
         <p class="text-body-2 mb-2">
@@ -462,6 +516,7 @@ import {
   REGIONAL_KIND_LABELS,
   regionalAge,
   regionalGapTone,
+  regionalIsGlobalSource,
   regionalIsStale,
   regionalPct,
   regionalRate,
@@ -519,6 +574,19 @@ const routes = computed(() => snapshot.value?.routes ?? [])
 const catalogue = computed(() => snapshot.value?.catalogue ?? [])
 // Los dos números del encabezado salen del catálogo que sirve la API: una lista
 // de fuentes crece, y una frase escrita a mano envejece sin que nadie la mire.
+const catalogueSummary = computed(() => snapshot.value?.catalogueSummary ?? null)
+const sourceTiles = computed(() => {
+  const summary = catalogueSummary.value
+  if (!summary) return []
+  return [
+    { label: 'Fuentes', value: String(summary.total) },
+    { label: 'Respondieron', value: `${summary.responding}/${summary.live}` },
+    { label: 'Mercados con 2+ lecturas', value: String(summary.corroboratedMarkets) },
+    // El número a vigilar: un mercado con una sola lectura no tiene forma de
+    // notar que esa lectura se rompió.
+    { label: 'Con una sola fuente', value: String(summary.singleSourceMarkets) },
+  ]
+})
 const sourceCount = computed(() => catalogue.value.length || 21)
 const centralBankCount = computed(
   () => catalogue.value.filter(source => source.publisher === 'central-bank').length || 5
@@ -632,7 +700,7 @@ const FAQ: FaqItem[] = [
     id: 'regional-cada-cuanto',
     question: '¿Cada cuánto se actualiza?',
     answer:
-      'Cada 20 minutos. Eso no quiere decir que cada precio sea de hace 20 minutos: el dólar observado chileno es de la rueda del día hábil anterior por definición, el PTAX se fija una vez al día y la planilla del Banco Central del Paraguay se publica una vez por jornada. Cada fila trae la hora que declara su propia fuente, y arriba se muestra la más vieja del tablero.',
+      'Cada 10 minutos. Eso no quiere decir que cada precio sea de hace 10 minutos: el dólar observado chileno es de la rueda del día hábil anterior por definición, el PTAX se fija una vez al día y la planilla del Banco Central del Paraguay se publica una vez por jornada. Cada fila trae la hora que declara su propia fuente, y arriba se muestra la más vieja del tablero.',
   },
   {
     id: 'regional-de-donde',
@@ -806,6 +874,9 @@ useHead(() => ({
   margin-top: 0;
 }
 .verdict {
+  margin-top: 0;
+}
+.tile-value {
   margin-top: 0;
 }
 .flag {

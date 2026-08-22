@@ -18,7 +18,7 @@
 // `classes/bcurates/certs.ts`, never disabling verification.
 import { fetchJson } from "../net";
 import { makeQuote } from "../quote";
-import type { RegionalQuote, RegionalSourceMeta } from "../types";
+import type { RegionalHistoryPoint, RegionalQuote, RegionalSourceMeta } from "../types";
 
 export const meta: RegionalSourceMeta = {
   id: "ar_bcra",
@@ -86,4 +86,67 @@ export function parseBcra(payload: BcraResponse | null): RegionalQuote[] {
 
 export async function fetchArBcra(): Promise<RegionalQuote[]> {
   return parseBcra(await fetchJson<BcraResponse>(URL));
+}
+
+// --- Historia ----------------------------------------------------------------
+//
+// El BCRA guarda su serie cambiaria **desde el 2 de enero de 1996**, quince años
+// antes de donde arranca el agregador que usábamos: el peso a uno por dólar de
+// la convertibilidad, el salto de 2002 y todo lo que vino después. Se pagina de
+// a 1000 días, y hay que pedirla por moneda.
+
+const HISTORY_URL = "https://api.bcra.gob.ar/estadisticascambiarias/v1.0/Cotizaciones";
+
+/** Primer día que el BCRA publica. Pedir antes devuelve 400, no una lista vacía. */
+export const BCRA_HISTORY_START = "1996-01-02";
+
+interface BcraHistoryPage {
+  status?: number;
+  metadata?: { resultset?: { count?: number; offset?: number; limit?: number } };
+  results?: Array<{ fecha?: string; detalle?: BcraRow[] }>;
+}
+
+/**
+ * Serie diaria del dólar de referencia del BCRA. Devuelve null si la API no
+ * respondió — que no es lo mismo que un tramo sin datos.
+ */
+export async function fetchArBcraHistory(from: string, to: string): Promise<RegionalHistoryPoint[] | null> {
+  const points: RegionalHistoryPoint[] = [];
+  const LIMIT = 1000;
+  let offset = 0;
+  let answered = 0;
+
+  // Hasta 30 páginas: 30 000 días es más de un siglo, así que el tope es un
+  // freno contra un `count` corrupto, no un límite de cobertura.
+  for (let page = 0; page < 30; page++) {
+    const url = `${HISTORY_URL}/USD?fechadesde=${from}&fechahasta=${to}&limit=${LIMIT}&offset=${offset}`;
+    const payload = await fetchJson<BcraHistoryPage>(url, { timeoutMs: 30_000 });
+    if (!payload?.results) break;
+    answered++;
+
+    for (const row of payload.results) {
+      const day = String(row.fecha || "");
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) continue;
+      const value = row.detalle?.find((entry) => entry.codigoMoneda === "USD")?.tipoCotizacion;
+      if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) continue;
+      points.push({
+        key: "AR:referencia:USDARS",
+        country: "AR",
+        market: "referencia",
+        base: "USD",
+        quote: "ARS",
+        day,
+        buy: null,
+        sell: null,
+        avg: value,
+        source: meta.id,
+      });
+    }
+
+    const total = payload.metadata?.resultset?.count ?? points.length;
+    offset += LIMIT;
+    if (offset >= total || !payload.results.length) break;
+  }
+
+  return answered ? points : null;
 }

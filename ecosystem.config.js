@@ -508,16 +508,18 @@ module.exports = {
       // Regional board for /cotizaciones-de-la-region and `GET /regional`: thirteen public
       // sources across Argentina, Brasil, Paraguay, Chile and Bolivia (four of them central
       // banks), joined with this site's own Uruguayan board.
-      // Every 20 minutes because the Argentine blue and the Brazilian spot move through the
-      // trading day; the whole run is ~20 HTTP requests spread over eight hosts, and each
-      // source is throttled per host inside classes/regional/net.ts. Minute 0/20/40 collides
-      // with currency-sync (*/5) by construction — they touch different collections and
-      // different upstreams, so the overlap costs nothing.
+      // Every 10 minutes because the job also writes the CHANGE LEDGER, and a ledger only ever sees
+      // what it is looking at: its resolution IS this interval. The Argentine blue and the Brazilian
+      // spot move through the whole trading day, so ten minutes is the difference between "the blue
+      // moved twice today" and "the blue moved eleven times, and here is when".
+      // One run is ~25 HTTP requests spread over fifteen hosts, each throttled per host inside
+      // classes/regional/net.ts. Overlapping with currency-sync (*/5) costs nothing: different
+      // collections, different upstreams.
       name: "currency-regional",
       autorestart: false,
       exec_mode: "fork",
       script: "dist/sync_regional.js",
-      cron_restart: "*/20 * * * *",
+      cron_restart: "*/10 * * * *",
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {

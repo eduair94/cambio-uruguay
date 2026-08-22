@@ -22,8 +22,18 @@
 // afternoon of one country on the next day.
 import moment from "moment-timezone";
 import { fetchArHistory, AR_HISTORY_MARKETS } from "./sources/ar_argentinadatos";
+import { BCRA_HISTORY_START, fetchArBcraHistory } from "./sources/ar_bcra";
 import { fetchBrPtaxHistory } from "./sources/br_bcb";
 import { fetchClDolarHistory } from "./sources/cl_mindicador";
+
+/**
+ * Julio de 1994: el Plano Real. La serie del Banco Central de Brasil arranca en
+ * 1984, pero en cruzeiros — otra moneda, con otro orden de magnitud.
+ */
+export const BRL_HISTORY_START = "1994-07-01";
+
+/** Chile publica el dólar observado desde 1984. */
+export const CL_HISTORY_FIRST_YEAR = 1984;
 import { REGIONAL_COUNTRY_TZ, type RegionalHistoryPoint, type RegionalQuote, type RegionalSnapshot } from "./types";
 
 /** The calendar day a quote belongs to, in its own country's timezone. */
@@ -114,14 +124,26 @@ export async function backfillHistory(options: BackfillOptions = {}): Promise<Ba
     await push(`AR ${market}`, () => fetchArHistory(market, since));
   }
 
+  // El BCRA guarda su serie cambiaria desde 1996: quince años más que el
+  // agregador argentino, con la convertibilidad y el salto de 2002 adentro.
+  await push("AR referencia BCRA", async () => {
+    const from = since && since > BCRA_HISTORY_START ? since : BCRA_HISTORY_START;
+    const to = moment.tz("America/Argentina/Buenos_Aires").format("YYYY-MM-DD");
+    return fetchArBcraHistory(from, to);
+  });
+
+  // La serie del BCB empieza en 1984, pero en cruzeiros: el real nace el 1 de
+  // julio de 1994 y 2.828 cruzeiros por dólar no es comparable con 5,16 reales.
+  // Guardarlo bajo la clave `USDBRL` sería publicar otra moneda con esta
+  // etiqueta, así que la serie arranca donde arranca la moneda.
   await push("BR ptax", async () => {
-    const from = since || "1995-01-01";
+    const from = since && since > BRL_HISTORY_START ? since : BRL_HISTORY_START;
     const to = moment.tz("America/Sao_Paulo").format("YYYY-MM-DD");
     return fetchBrPtaxHistory(from, to);
   });
 
   const currentYear = Number(moment.tz("America/Santiago").format("YYYY"));
-  const firstYear = options.chileFromYear ?? (since ? Number(since.slice(0, 4)) : currentYear - 15);
+  const firstYear = options.chileFromYear ?? (since ? Number(since.slice(0, 4)) : CL_HISTORY_FIRST_YEAR);
   for (let year = firstYear; year <= currentYear; year++) {
     await push(`CL observado ${year}`, async () => {
       const rows = await fetchClDolarHistory(year);

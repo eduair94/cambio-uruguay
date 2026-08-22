@@ -39,9 +39,11 @@ import { ALL_SOURCE_METAS } from "./classes/regional/catalog";
 import { convert as convertRegional } from "./classes/regional/compare";
 import {
   listRegionalSeries,
+  loadRegionalChanges,
   loadRegionalHistory,
   loadRegionalSnapshot,
 } from "./classes/regional/store";
+import { buildSourcesReport, findSourceReport } from "./classes/regional/sources_report";
 import { REGIONAL_COUNTRY_CURRENCY } from "./classes/regional/types";
 import { origins } from "./classes/origins";
 import { redisCache } from "./classes/redis_cache";
@@ -538,17 +540,152 @@ const main = async () => {
    * /regional/sources:
    *   get:
    *     tags: [Regional]
-   *     summary: Catálogo de las fuentes que alimentan el tablero regional
+   *     summary: Las fuentes del tablero regional, con el estado de cada una
    *     description: |
    *       Quién publica cada número, con qué acceso (API documentada o scraping
-   *       de HTML) y qué aporta que no aporte ninguna otra. Pensado para citar
-   *       la fuente primaria en vez de citarnos a nosotros.
+   *       de HTML), qué aporta que no aporte ninguna otra — y **cómo le fue en la
+   *       última corrida**: si respondió, cuánto tardó, qué mercados terminó
+   *       publicando, en cuáles quedó como corroboración de otra, qué se le
+   *       descartó y con qué motivo.
+   *
+   *       Los feeds mundiales traen `country: null` y `scope: "global"`: no
+   *       describen a un país en particular y ponerles uno era engañoso.
+   *
+   *       `summary.singleSourceMarkets` es el número que importa vigilar: son los
+   *       mercados que hoy dependen de una sola lectura.
    *     responses:
    *       200:
-   *         description: Lista de fuentes
+   *         description: Catálogo y estado de las fuentes
    */
   server.getJson("regional/sources", async (): Promise<any> => {
-    return { count: ALL_SOURCE_METAS.length, sources: ALL_SOURCE_METAS };
+    return redisCache.getOrSet(
+      "regional:sources",
+      async () => buildSourcesReport(ALL_SOURCE_METAS, await loadRegionalSnapshot()),
+      120
+    );
+  });
+
+  /**
+   * @openapi
+   * /regional/sources/{id}:
+   *   get:
+   *     tags: [Regional]
+   *     summary: Una sola fuente, con todo lo que se sabe de ella
+   *     parameters:
+   *       - { name: id, in: path, required: true, schema: { type: string, example: py_bcp } }
+   *     responses:
+   *       200:
+   *         description: Ficha de la fuente
+   *       404:
+   *         description: No existe una fuente con ese id
+   */
+  server.getJson("regional/sources/:id", async (req: Request): Promise<any> => {
+    const id = String(req.params.id || "").trim();
+    const report = await redisCache.getOrSet(
+      "regional:sources",
+      async () => buildSourcesReport(ALL_SOURCE_METAS, await loadRegionalSnapshot()),
+      120
+    );
+    const source = findSourceReport(report, id);
+    if (!source) {
+      throw new ValidationError(
+        "Invalid id parameter",
+        createValidationError(
+          "id",
+          id,
+          report.sources.map((entry: any) => entry.id),
+          "Use /regional/sources to list every source id"
+        ),
+        404
+      );
+    }
+    return { generatedAt: report.generatedAt, source };
+  });
+
+  /**
+   * @openapi
+   * /regional/changes:
+   *   get:
+   *     tags: [Regional]
+   *     summary: Cada movimiento de precio del tablero regional
+   *     description: |
+   *       Una fila por cada vez que un precio cambió, **sin umbral mínimo**: un
+   *       guaraní, un centavo de real o una diezmilésima de peso entran igual.
+   *
+   *       Es la otra mitad de `/regional/history`: la fila diaria guarda el
+   *       cierre y se sobrescribe en cada corrida, así que lo que pasa adentro de
+   *       un día sólo existe acá.
+   *
+   *       La RESOLUCIÓN es la del trabajo que lo alimenta: se ve lo que hay
+   *       cuando se mira, cada diez minutos. Dos movimientos dentro de la misma
+   *       ventana quedan registrados como uno, del primer valor al último; por
+   *       eso cada fila trae `observedAt` (cuándo lo vimos), `sourceUpdatedAt`
+   *       (cuándo dice la fuente que se fijó) y `sinceMinutes` (cuánto pasó desde
+   *       la lectura anterior de ese mercado).
+   *     parameters:
+   *       - { name: key, in: query, schema: { type: string, example: "AR:blue:USDARS" }, description: Clave exacta del mercado }
+   *       - { name: country, in: query, schema: { type: string, enum: [AR, BR, CL, PY, BO, UY] } }
+   *       - { name: market, in: query, schema: { type: string, example: blue } }
+   *       - { name: base, in: query, schema: { type: string, example: USD } }
+   *       - { name: quote, in: query, schema: { type: string, example: ARS } }
+   *       - { name: from, in: query, schema: { type: string, format: date-time } }
+   *       - { name: to, in: query, schema: { type: string, format: date-time } }
+   *       - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 5000, default: 500 } }
+   *     responses:
+   *       200:
+   *         description: Movimientos, del más nuevo al más viejo
+   *       400:
+   *         $ref: '#/components/responses/ValidationError'
+   */
+  server.getJson("regional/changes", async (req: Request): Promise<any> => {
+    const country = regionalCountryParam(req.query.country);
+    const base = regionalCurrencyParam(req.query.base, "base");
+    const quote = regionalCurrencyParam(req.query.quote, "quote");
+    const market = req.query.market === undefined ? undefined : String(req.query.market).trim();
+    const key = req.query.key === undefined ? undefined : String(req.query.key).trim();
+
+    const parseStamp = (raw: unknown, parameter: string): string | undefined => {
+      if (raw === undefined || String(raw).trim() === "") return undefined;
+      const value = String(raw).trim();
+      if (Number.isNaN(Date.parse(value))) {
+        throw new ValidationError(
+          `Invalid ${parameter} parameter`,
+          createValidationError(parameter, value, [], "Use an ISO 8601 date or date-time")
+        );
+      }
+      return value;
+    };
+    const from = parseStamp(req.query.from, "from");
+    const to = parseStamp(req.query.to, "to");
+
+    let limit = 500;
+    if (req.query.limit !== undefined) {
+      limit = Number(req.query.limit);
+      if (!Number.isInteger(limit) || limit < 1 || limit > 5000) {
+        throw new ValidationError(
+          "Invalid limit parameter",
+          createValidationError("limit", String(req.query.limit), [], "Limit must be an integer between 1 and 5000")
+        );
+      }
+    }
+
+    const cacheKey = `regional:changes:${key || "all"}:${country || "all"}:${market || "all"}:${base || "all"}:${
+      quote || "all"
+    }:${from || "-"}:${to || "-"}:${limit}`;
+
+    return redisCache.getOrSet(
+      cacheKey,
+      async () => {
+        const changes = await loadRegionalChanges({ key, country, market, base, quote, from, to, limit });
+        return {
+          count: changes.length,
+          newest: changes.length ? changes[0].observedAt : null,
+          oldest: changes.length ? changes[changes.length - 1].observedAt : null,
+          changes,
+        };
+      },
+      60
+    );
   });
 
   /**
