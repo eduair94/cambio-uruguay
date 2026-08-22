@@ -996,7 +996,7 @@ export const LENDER_TIERLIST: readonly LenderEntity[] = Object.freeze([
     cons: [
       'El plazo máximo de 24 meses duplica la cuota frente a los 48 o 60 de la competencia.',
       'Los requisitos de antecedentes son los más estrictos que publica la banca, incluido el listado de morosos alimentarios.',
-      'La app viene cayendo en reseñas y sigue sin Apple Pay ni Google Pay.',
+      'La app viene cayendo en reseñas y, aunque en agosto de 2026 sumó Google Pay (solo Visa), sigue sin Apple Pay.',
     ],
     verdict:
       'Transparencia ejemplar y una tasa promocional que le gana a todos los privados. El pero es estructural: 24 cuotas de plazo máximo significa que el mismo monto, al mismo precio, sale una cuota del doble. Sirve para sacárselo de encima rápido, no para respirar.',

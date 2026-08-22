@@ -11,7 +11,7 @@
     <!-- Hero -->
     <VCard class="overflow-hidden mb-5 hero-card" elevation="8">
       <div class="hero pa-6 pa-md-8">
-        <p class="hero-eyebrow">Tier list · Julio 2026</p>
+        <p class="hero-eyebrow">Tier list · Actualizada en agosto de 2026</p>
         <h1 class="hero-title">
           Los mejores bancos de Uruguay
           <span class="hero-title-accent">(y las fintech que ya les compiten)</span>
@@ -153,7 +153,8 @@
             <strong>calcula</strong> como promedio ponderado; el tier (S a F) sale del puntaje, no
             lo ponemos “a dedo”. Cuando prendés o apagás criterios, el promedio se recalcula solo
             sobre lo activo. Los puntajes son nuestro mejor criterio con evidencia pública (reseñas,
-            tarifarios, prensa) a julio de 2026.
+            tarifarios, prensa) a julio de 2026, con la revisión de billeteras (Apple Pay / Google
+            Pay) de agosto de 2026.
           </p>
           <p class="text-body-2 mb-4">
             <strong>De dónde sale el puntaje de “App”:</strong> lo anclamos al puntaje real de las
@@ -299,10 +300,32 @@
     <section class="corrections mt-8" aria-label="Correcciones">
       <h2 class="section-heading mb-1">Correcciones</h2>
       <p class="text-body-2 text-medium-emphasis mb-4">
-        Publicamos esta tier list, un uruguayo nos marcó tres errores en Reddit y fuimos a chequear.
-        Tenía razón en casi todo — y buscando lo que nos marcó encontramos dos errores peores, que
-        nadie nos había señalado. Los dejamos acá en vez de corregir en silencio.
+        Cada vez que un dato nuestro queda mal —porque nos lo marcan o porque el banco cambia— lo
+        anotamos acá, con fecha, en vez de corregir en silencio. Lo más nuevo va primero.
       </p>
+      <VCard variant="flat" class="corrections-card pa-4 pa-sm-5 mb-4">
+        <p class="corr-date">21 de agosto de 2026</p>
+        <ul class="corr-list">
+          <li>
+            <strong>BBVA ya tiene Google Pay.</strong> Lo vimos en r/uruguay y lo confirmamos en la
+            página del propio banco: se cargan tarjetas <strong>Visa</strong> de crédito, débito y
+            prepaga, desde la app BBVA o desde la Billetera de Google. Es solo Android.
+            <strong>Apple Pay sigue sin estar</strong>: BBVA no figura en la lista de emisores de
+            Apple para Uruguay y su propio FAQ contesta “estamos trabajando en la solución”. Le
+            devolvemos 4 puntos de app, de 62 a 66.
+          </li>
+          <li>
+            <strong>Y de paso, una que decíamos mal desde julio:</strong> BBVA no era “el único del
+            tablero sin Apple Pay ni Google Pay”. Heritage y BTG Pactual tampoco tienen ninguna de
+            las dos. Era el único <em>banco masivo</em> sin ninguna, que no es lo mismo.
+          </li>
+          <li>
+            <strong>Ojo con la lista de Google:</strong> el día que BBVA lo anunció, la página
+            oficial de Google Wallet para Uruguay todavía no lo incluía. La lista de Google va atrás
+            del emisor; la fuente que manda es la página del banco.
+          </li>
+        </ul>
+      </VCard>
       <VCard variant="flat" class="corrections-card pa-4 pa-sm-5">
         <p class="corr-date">11 de julio de 2026</p>
         <ul class="corr-list">
@@ -835,6 +858,11 @@ const sources = [
   {
     label: 'Google Wallet — bancos compatibles en Uruguay',
     url: 'https://support.google.com/wallet/answer/12059326?hl=es-419&co=GENIE.CountryCode%3DUY',
+  },
+  {
+    label:
+      'BBVA Uruguay — página oficial de Google Pay (solo tarjetas Visa; Apple Pay “en camino”)',
+    url: 'https://www.bbva.com.uy/personas/servicios/google-pay.html',
   },
   {
     label:
