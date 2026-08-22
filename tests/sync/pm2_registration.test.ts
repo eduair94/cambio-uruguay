@@ -63,6 +63,17 @@ describe("pm2 fleet registration", () => {
     expect(registered.has("currency-server")).toBe(false);
   });
 
+  it("keeps the cron-drift check in the deploy script", () => {
+    // pm2 guarda la expresión cron con la que se arrancó el proceso: editar
+    // `cron_restart` y desplegar NO cambia cuándo corre el job en el VPS. El
+    // archivo dice una cosa y la máquina hace otra, y nada lo reporta. El script
+    // compara el cron vivo contra el del archivo y recrea sólo lo que difiere;
+    // si alguien saca esa comparación, esto falla.
+    const script = fs.readFileSync(path.join(ROOT, "scripts", "deploy-backend.sh"), "utf8");
+    expect(script).toContain("cron_restart");
+    expect(script).toMatch(/cron cambió/);
+  });
+
   it("never lets a cron app autorestart", () => {
     // A cron app that autorestarts turns "runs at 05:09" into "runs forever":
     // pm2 restarts it the moment it exits, so the schedule stops meaning

@@ -162,9 +162,36 @@ log "Ensuring other backend pm2 apps are registered…"
 # they don't need a rolling reload — only "start it if pm2 doesn't know about it
 # yet". Apps already running pick up the fresh dist/ on their own next
 # cron/restart cycle, exactly as before this script existed.
+# …with ONE exception: the schedule itself. pm2 keeps the cron expression it was
+# started with, so editing `cron_restart` in ecosystem.config.js and pushing does
+# NOT change when the job runs on the VPS — the file says one thing, the box does
+# another, and nothing anywhere reports the difference. That bit once, moving a
+# job from */20 to */10: the deploy went green and the job kept its old schedule.
+# So each registered app's live cron is compared against the file, and only the
+# ones that drifted are re-created.
 for app in "${OTHER_APPS[@]}"; do
   if pm2 describe "$app" >/dev/null 2>&1; then
-    log "  $app: already registered, leaving as-is."
+    wanted="$(node -e '
+      const apps = require(process.argv[1] + "/ecosystem.config.js").apps;
+      const app = apps.find((entry) => entry.name === process.argv[2]);
+      process.stdout.write(String(app && app.cron_restart ? app.cron_restart : ""));
+    ' "$REPO_DIR" "$app" 2>/dev/null || true)"
+    live="$(pm2 jlist 2>/dev/null | node -e '
+      let raw = "";
+      process.stdin.on("data", (chunk) => (raw += chunk)).on("end", () => {
+        const list = JSON.parse(raw || "[]");
+        const app = list.find((entry) => entry.name === process.argv[1]);
+        process.stdout.write(String((app && app.pm2_env && app.pm2_env.cron_restart) || ""));
+      });
+    ' "$app" 2>/dev/null || true)"
+
+    if [[ -n "$wanted" && "$wanted" != "$live" ]]; then
+      log "  $app: cron cambió ('$live' -> '$wanted') — recreando…"
+      pm2 delete "$app" >/dev/null 2>&1 || true
+      pm2 start ecosystem.config.js --only "$app"
+    else
+      log "  $app: already registered, leaving as-is."
+    fi
   else
     log "  $app: not registered — starting for the first time…"
     pm2 start ecosystem.config.js --only "$app"
