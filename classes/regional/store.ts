@@ -1,9 +1,9 @@
 // Two collections in the BACKEND database (`cambio-uy`, the one the public API
 // reads), never the app one:
 //
-//   * `regional_data` — a single document holding the latest snapshot. Always
+//   * `regional_data` (colección real `regional_datas`) — a single document holding the latest snapshot. Always
 //     read whole, always written whole, so `GET /regional` is one lookup.
-//   * `regional_history` — one row per market per day, unique on (key, day).
+//   * `regional_history` (colección real `regional_histories`) — one row per market per day, unique on (key, day).
 //     This is the collection that makes the endpoint worth integrating against:
 //     the Argentine series alone goes back to 2011, and a comparison of the
 //     region that only knows today can describe a level but never a trend.

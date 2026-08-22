@@ -132,6 +132,48 @@ describe("validateQuotes — coherence", () => {
   });
 });
 
+describe("validateQuotes — the international fallback", () => {
+  it("throws it out when it contradicts the country's own price", () => {
+    // Measured live on 2026-08-22: the free mid-market feed had the Chilean peso
+    // 11% off, the Uruguayan 12% and the boliviano 39%, while being right about
+    // the Argentine peso and the real.
+    const { kept, rejected } = validateQuotes([
+      q({ country: "CL", market: "observado", kind: "official", quote: "CLP", avg: 923.23, source: "cl_mindicador" }),
+      q({ country: "CL", market: "internacional", kind: "reference", quote: "CLP", avg: 818.42, source: "world_erapi" }),
+    ]);
+    expect(kept.map((quote) => quote.source)).toEqual(["cl_mindicador"]);
+    expect(rejected[0].reason).toMatch(/referencia internacional/);
+  });
+
+  it("keeps it when it agrees, so it can still corroborate", () => {
+    const { kept } = validateQuotes([
+      q({ country: "BR", market: "ptax", kind: "official", quote: "BRL", avg: 5.1622, source: "br_bcb" }),
+      q({ country: "BR", market: "internacional", kind: "reference", quote: "BRL", avg: 5.177, source: "world_erapi" }),
+    ]);
+    expect(kept).toHaveLength(2);
+  });
+
+  it("keeps it when the country has nothing else — that is what a fallback is for", () => {
+    const { kept, rejected } = validateQuotes([
+      q({ country: "BO", market: "internacional", kind: "reference", quote: "BOB", avg: 7.01, source: "world_erapi" }),
+    ]);
+    expect(kept).toHaveLength(1);
+    expect(rejected).toHaveLength(0);
+  });
+
+  it("never lets a street price police the fallback", () => {
+    // Argentina's blue can sit far from the official rate for years; only prices
+    // a person can actually reach anchor the check, and the blue is one — but
+    // the official one wins the anchor, so a 2% gap does not evict the feed.
+    const { kept } = validateQuotes([
+      q({ market: "oficial", kind: "official", buy: 1465, sell: 1515 }),
+      q({ market: "blue", kind: "parallel", buy: 1530, sell: 1550 }),
+      q({ market: "internacional", kind: "reference", avg: 1497.45, source: "world_erapi" }),
+    ]);
+    expect(kept.some((quote) => quote.source === "world_erapi")).toBe(true);
+  });
+});
+
 describe("dedupeQuotes", () => {
   it("keeps the central bank's reading over a vendor's and a newspaper's", () => {
     const merged = dedupeQuotes([

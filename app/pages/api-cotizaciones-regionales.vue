@@ -46,6 +46,14 @@
         <VBtn
           variant="text"
           size="small"
+          prepend-icon="mdi-hand-heart-outline"
+          :to="localePath('/hecho-a-pedido')"
+        >
+          Otras cosas hechas a pedido
+        </VBtn>
+        <VBtn
+          variant="text"
+          size="small"
           prepend-icon="mdi-api"
           :to="localePath('/desarrolladores')"
         >

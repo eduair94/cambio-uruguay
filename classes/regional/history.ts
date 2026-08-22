@@ -48,6 +48,25 @@ export function snapshotHistoryPoints(snapshot: RegionalSnapshot): RegionalHisto
   }));
 }
 
+/**
+ * How far ahead of today a stored day may be.
+ *
+ * Not zero, because Chile legitimately publishes forward: the "dólar observado"
+ * for a business day is fixed the evening before, so on a Saturday its series
+ * already carries Monday's value. Four days covers a long weekend. Anything
+ * beyond that is a timezone or parsing bug, never a calendar.
+ */
+export const MAX_FUTURE_DAYS = 7;
+
+/** Drop points dated impossibly far ahead; a future day is a bug, not history. */
+export function withoutFarFutureDays(
+  points: RegionalHistoryPoint[],
+  now: Date = new Date()
+): RegionalHistoryPoint[] {
+  const limit = new Date(now.getTime() + MAX_FUTURE_DAYS * 86_400_000).toISOString().slice(0, 10);
+  return points.filter((point) => point.day <= limit);
+}
+
 export interface BackfillOptions {
   /** Oldest day to keep, `YYYY-MM-DD`. Omit for everything the sources have. */
   since?: string;
@@ -82,8 +101,10 @@ export async function backfillHistory(options: BackfillOptions = {}): Promise<Ba
         notes.push(`${label}: FALLÓ (la fuente no respondió)`);
         return;
       }
-      points.push(...rows);
-      notes.push(`${label}: ${rows.length} días`);
+      const usable = withoutFarFutureDays(rows);
+      points.push(...usable);
+      const dropped = rows.length - usable.length;
+      notes.push(`${label}: ${usable.length} días${dropped ? ` (${dropped} con fecha imposible, descartados)` : ""}`);
     } catch (error) {
       notes.push(`${label}: FALLÓ (${error instanceof Error ? error.message : String(error)})`);
     }

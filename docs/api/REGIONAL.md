@@ -93,6 +93,11 @@ Cuatro filtros, en orden de cuánto saben:
    mediana. Hoy sólo aplica a Argentina.
 4. **Coherencia** — una cotización que no está en dólares tiene que coincidir (±35 %) con lo que
    implican las dos patas en dólares del mismo país. Acá muere un corrimiento de columna.
+5. **La referencia internacional contra el propio país** (±5 %). Medido contra el tablero vivo el
+   2026-08-22, el feed mid-market gratuito estaba **11 % abajo en el peso chileno, 12 % en el
+   uruguayo y 39 % en el boliviano**, mientras acertaba el peso argentino y el real. Sirve como
+   respaldo si un país se queda sin fuentes propias — para eso está — pero no puede sentarse en el
+   tablero **contradiciendo al banco central** del país que dice describir.
 
 Lo descartado se **publica** en `rejected` con el motivo. Un tablero que tira filas en silencio
 convierte una regresión de parser en un misterio de la semana siguiente.
@@ -114,9 +119,19 @@ Dos caminos, y no son lo mismo:
 La fila diaria guarda el **último valor observado del día** (su cierre), nunca su apertura: se
 sobreescribe en cada corrida. El día se mide en **la zona horaria del país que publicó el precio**.
 
-Trampa cazada en producción: la API SGS del BCB **rechaza ventanas de más de diez años** y lo hace
-devolviendo vacío, que es indistinguible de "no hay serie" — por eso `sgsWindows()` parte el rango.
-Y un publicador que rate-limita devuelve `null`, que el log escribe como FALLÓ y no como "0 días".
+Trampas cazadas en producción:
+
+- La API SGS del BCB **rechaza ventanas de más de diez años** y lo hace devolviendo vacío, que es
+  indistinguible de "no hay serie" — por eso `sgsWindows()` parte el rango.
+- Un publicador que rate-limita devuelve `null`, que el log escribe como FALLÓ y no como "0 días".
+- **Chile publica hacia adelante**: el dólar observado de un día hábil se fija la tarde anterior, así
+  que un sábado la serie ya trae el valor del lunes. Es calendario, no bug — se guarda. Lo que se
+  descarta es cualquier día a más de `MAX_FUTURE_DAYS` (7) de hoy, que sí sería un error de zona
+  horaria o de parseo.
+
+Colecciones reales en Mongo: **`regional_datas`** y **`regional_histories`** — mongoose pluraliza el
+nombre del modelo, igual que `bcu_rates_datas`. Índices: `{key, day}` único, `{country, market, day}`
+y `{day}`. Al 2026-08-22: 40.587 documentos, ~7,8 MB de datos y ~3,5 MB de índices.
 
 ## Operación
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildSnapshot } from "../../classes/regional/refresh";
-import { quoteDay, snapshotHistoryPoints } from "../../classes/regional/history";
+import { quoteDay, snapshotHistoryPoints, withoutFarFutureDays } from "../../classes/regional/history";
 import { parseArHistory } from "../../classes/regional/sources/ar_argentinadatos";
 import { sgsWindows } from "../../classes/regional/sources/br_bcb";
 import { makeQuote } from "../../classes/regional/quote";
@@ -125,6 +125,38 @@ describe("history points", () => {
     expect(points).toHaveLength(1);
     expect(points[0]).toMatchObject({ key: "BR:ptax:USDBRL", country: "BR", market: "ptax", base: "USD", quote: "BRL" });
     expect(points[0].day).toBe("2026-08-21");
+  });
+});
+
+describe("withoutFarFutureDays", () => {
+  const now = new Date("2026-08-22T12:00:00.000Z");
+  const point = (day: string) => ({
+    key: "CL:observado:USDCLP",
+    country: "CL" as const,
+    market: "observado",
+    base: "USD",
+    quote: "CLP",
+    day,
+    buy: null,
+    sell: null,
+    avg: 918.17,
+    source: "cl_mindicador",
+  });
+
+  it("keeps the day Chile publishes in advance", () => {
+    // The observed dollar for a business day is fixed the evening before, so on
+    // a Saturday the series already carries Monday's value. That is a calendar,
+    // not a bug.
+    expect(withoutFarFutureDays([point("2026-08-24")], now)).toHaveLength(1);
+  });
+
+  it("drops a day no calendar explains", () => {
+    expect(withoutFarFutureDays([point("2026-09-30")], now)).toEqual([]);
+    expect(withoutFarFutureDays([point("2027-01-02")], now)).toEqual([]);
+  });
+
+  it("never touches the past", () => {
+    expect(withoutFarFutureDays([point("1995-01-02"), point("2026-08-21")], now)).toHaveLength(2);
   });
 });
 

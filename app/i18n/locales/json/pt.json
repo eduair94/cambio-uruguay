@@ -574,6 +574,9 @@
   "regionalApi": {
     "nav": "API regional"
   },
+  "requested": {
+    "nav": "Feito a pedido"
+  },
   "dev": {
     "nav": "Desenvolvedores",
     "title": "Desenvolvedores",

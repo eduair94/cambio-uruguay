@@ -74,6 +74,17 @@ export const MAX_CONSENSUS_DEVIATION_PCT = 20;
 /** How far a cross quote may sit from what the same country's dollar legs imply. */
 export const MAX_COHERENCE_DEVIATION_PCT = 35;
 
+/**
+ * How far the international fallback may sit from the country's own price.
+ *
+ * A mid-market reference and a central bank quoting the same currency on the
+ * same day should differ by rounding, not by a fifth. Five percent leaves room
+ * for a feed that closed a few hours earlier and is still tight enough to catch
+ * the case this exists for: a free feed publishing a rate that stopped tracking
+ * reality months ago.
+ */
+export const MAX_REFERENCE_DEVIATION_PCT = 5;
+
 function median(values: number[]): number | null {
   const sorted = values.filter((value) => Number.isFinite(value) && value > 0).sort((a, b) => a - b);
   if (!sorted.length) return null;
@@ -201,9 +212,37 @@ export function validateQuotes(quotes: RegionalQuote[]): ValidationResult {
     usdByCurrency.set(quote.quote, list);
   }
 
+  // The country's own price for a dollar, from a market a person can reach.
+  // Used to police the international fallback — see below.
+  const nationalUsd = new Map<string, number>();
+  for (const quote of anchorOrder(consensual)) {
+    if (quote.base !== "USD" || quote.kind === "reference") continue;
+    const key = `${quote.country}:${quote.quote}`;
+    if (!nationalUsd.has(key)) nationalUsd.set(key, quote.avg);
+  }
+
   const kept: RegionalQuote[] = [];
   for (const quote of consensual) {
     if (quote.base === "USD") {
+      // 5 — the international fallback has to agree with the country itself.
+      //
+      // Measured against the live board on 2026-08-22, the free mid-market feed
+      // was 11% off for the Chilean peso, 12% for the Uruguayan and 39% for the
+      // boliviano, while being right for the Argentine peso and the real. It is
+      // kept as a fallback for a country whose own sources are all down — that
+      // is what it is for — but it must never sit on the board CONTRADICTING the
+      // central bank of the country it claims to describe.
+      const national = quote.kind === "reference" ? nationalUsd.get(`${quote.country}:${quote.quote}`) : undefined;
+      if (national !== undefined) {
+        const deviation = deviationPct(quote.avg, national);
+        if (deviation > MAX_REFERENCE_DEVIATION_PCT) {
+          reject(
+            quote,
+            `referencia internacional ${deviation.toFixed(1)} % lejos del precio del propio país (${national})`
+          );
+          continue;
+        }
+      }
       kept.push(quote);
       continue;
     }

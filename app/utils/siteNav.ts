@@ -2168,6 +2168,23 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        to: '/hecho-a-pedido',
+        labelKey: 'requested.nav',
+        icon: 'mdi-hand-heart-outline',
+        priority: 0.6,
+        changefreq: 'monthly',
+        keywords: [
+          'hecho a pedido',
+          'pedidos',
+          'sugerencias',
+          'pedir una funcionalidad',
+          'roadmap',
+          'que se construyo',
+          'issues',
+          'contribuir',
+        ],
+      },
+      {
         to: '/newsletter',
         labelKey: 'newsletter.nav',
         icon: 'mdi-email-newsletter',
