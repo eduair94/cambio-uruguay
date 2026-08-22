@@ -57,25 +57,42 @@ Una `RegionalQuote` es **el precio de una unidad de `base` expresado en `quote`*
 `kind` no es decoración: comparar un `official` con un `parallel` sin decirlo es el error clásico de
 las páginas de cotizaciones.
 
-## Las 15 fuentes
+## Las 23 fuentes (21 en vivo + 2 sólo para historia)
 
-| id | Publicador | País | Acceso | Qué aporta que nadie más aporte |
+Redundantes a propósito: un país cubierto por UNA fuente no tiene forma de notar que esa fuente se
+rompió. El 21-08-2026 la única referencia internacional publicó el boliviano 39 % abajo y nada en el
+sistema podía distinguirlo de un movimiento real.
+
+| id | Publicador | País | Acceso | Qué aporta |
 |---|---|---|---|---|
-| `ar_dolarapi` | DolarAPI | AR | API | Los siete dólares argentinos en un solo shape + EUR/BRL/CLP/UYU en pesos |
-| `ar_bluelytics` | Bluelytics | AR | API | Segundo relevamiento del blue + **euro blue** (nadie más lo publica) |
-| `ar_ambito` | Ámbito Financiero | AR | API | Ocho mercados **con la variación del día** (el resto sólo da el nivel) |
-| `ar_dolarhoy` | DolarHoy | AR | scrape | Tercer relevamiento independiente del blue; es la página que mira el público argentino |
+| `ar_dolarapi` | DolarAPI | AR | API | Los siete dólares argentinos en un shape + EUR/BRL/CLP/UYU en pesos |
+| `ar_bluelytics` | Bluelytics | AR | API | Segunda lectura del blue + **euro blue** (nadie más lo publica) |
+| `ar_ambito` | Ámbito Financiero | AR | API | Ocho mercados **con la variación del día** |
+| `ar_dolarhoy` | DolarHoy | AR | scrape | Tercera lectura del blue; la página que mira el público argentino |
+| `ar_criptoya` | CriptoYa | AR | API | Quinta lectura, con los financieros **desglosados por bono** (se usa AL30 24 h) y el cripto por stablecoin |
 | `ar_bcra` | BCRA | AR | API | Toda la región cotizada en pesos argentinos por el banco central |
-| `ar_argentinadatos` | ArgentinaDatos | AR | API | **Serie diaria desde 2011-01-03** de los siete dólares (sólo backfill) |
-| `br_awesomeapi` | AwesomeAPI | BR | API | **Dólar turismo** (lo que cobra un câmbio), cruce directo ARS/BRL, máximo/mínimo del día |
-| `br_bcb` | Banco Central do Brasil | BR | API | Fixing **PTAX** (compra y venta) + serie diaria **desde 1995** |
+| `ar_argentinadatos` | ArgentinaDatos | AR | API | **Serie diaria desde 2011-01-03** (sólo backfill) |
+| `br_bcb` | Banco Central do Brasil | BR | API | Fixing **PTAX** + serie diaria **desde 1995** |
+| `br_awesomeapi` | AwesomeAPI | BR | API | **Dólar turismo**, cruce directo ARS/BRL, máximo/mínimo del día |
 | `cl_mindicador` | mindicador.cl (BCCh) | CL | API | Dólar observado + serie por año |
-| `cl_dolarapi` | DolarAPI Chile | CL | API | Precio de mostrador chileno + peso argentino en pesos chilenos |
-| `py_bcp` | Banco Central del Paraguay | PY | scrape | Referencial del mercado libre (cada media hora) + planilla oficial de ~26 monedas |
-| `py_maxicambios` | Maxicambios | PY | scrape | Precio de mostrador paraguayo (USD, BRL, ARS, UYU, EUR) |
+| `cl_boostr` | Boostr | CL | API | Segunda lectura del observado: cuando coinciden, prueban que **lo leímos bien** |
+| `cl_dolarapi` | DolarAPI Chile | CL | API | Mostrador chileno + peso argentino en pesos chilenos |
+| `py_bcp` | Banco Central del Paraguay | PY | scrape | Referencial del mercado libre + planilla de ~26 monedas |
+| `py_dolarpy` | DolarPy | PY | API | El referencial **por segundo camino** + once casas de cambio en una respuesta |
+| `py_maxicambios` | Maxicambios | PY | scrape | Mostrador paraguayo (USD, BRL, ARS, UYU, EUR) |
+| `bo_bcb` | Banco Central de Bolivia | BO | scrape | El oficial que fija el banco central. Bolivia era el único país con una sola fuente |
 | `bo_dolarapi` | DolarAPI Bolivia | BO | API | Oficial + paralelo (Binance P2P): la brecha real boliviana |
-| `world_erapi` | ExchangeRate-API (open) | — | API | Respaldo diario y control cruzado. **Prioridad más baja siempre** |
 | `uy_local` | cambio-uruguay.com | UY | interno | Mejor precio entre ~46 casas + referencia BCU. Dato propio |
+| `uy_external` | DolarAPI Uruguay | UY | API | Lectura de un tercero sobre nuestro propio mercado: el control externo |
+| `world_currencyapi` | Currency API (jsDelivr) | Global | API | Referencia mid-market |
+| `world_floatrates` | FloatRates | Global | API | Referencia mid-market |
+| `world_coinbase` | Coinbase | Global | API | Referencia mid-market |
+| `world_erapi` | ExchangeRate-API (open) | Global | API | Referencia mid-market. **La que se rompió**: se conserva porque ahora la votan las otras tres |
+
+Cobertura por mercado tras el cambio (medido 2026-08-22): el blue y el oficial argentinos con **5
+lecturas**, el MEP/CCL/cripto/tarjeta con 4, el observado chileno con 2 (0 % de diferencia), el
+referencial paraguayo con 2 (0,0085 %), el oficial boliviano con 2 (0,17 %) y cada referencia
+internacional con 4.
 
 El BCP no tiene API: su servicio REST está detrás de Cloudflare y contesta 403; las dos páginas
 server-rendered sí se leen.
@@ -89,8 +106,11 @@ Cuatro filtros, en orden de cuánto saben:
 2. **Bandas** — precio del dólar fuera de un rango imposible para esa moneda (`USD_BANDS`, un orden
    de magnitud de holgura: existen para cazar un parser que leyó la columna equivocada, no para
    opinar sobre dónde debería estar una moneda).
-3. **Consenso** — con 3+ fuentes sobre el mismo mercado, se descarta la que se aleja > 20 % de la
-   mediana. Hoy sólo aplica a Argentina.
+3. **Consenso** — con 3+ fuentes sobre el mismo mercado, se descarta la que se aleja de la mediana:
+   **> 20 %** entre relevamientos de un mercado (dos encuestas del blue difieren de verdad) y
+   **> 3 %** cuando todas las fuentes del grupo son referencias mid-market (`kind: reference`), que
+   están describiendo el mismo número y no la misma multitud. Con cuatro feeds globales y cinco
+   lecturas argentinas, este filtro dejó de ser teórico.
 4. **Coherencia** — una cotización que no está en dólares tiene que coincidir (±35 %) con lo que
    implican las dos patas en dólares del mismo país. Acá muere un corrimiento de columna.
 5. **La referencia internacional contra el propio país** (±5 %). Medido contra el tablero vivo el

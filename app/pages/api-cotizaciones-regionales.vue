@@ -259,7 +259,7 @@
                 source.name
               }}</a>
             </td>
-            <td data-label="País">{{ source.country }}</td>
+            <td data-label="País">{{ source.global ? 'Global' : source.country }}</td>
             <td data-label="Acceso">{{ source.access === 'api' ? 'API' : 'Scraping' }}</td>
             <td data-label="Qué aporta" class="text-body-2">{{ source.covers }}</td>
           </tr>
@@ -497,7 +497,7 @@ const LIMITS = [
     icon: 'mdi-alert-outline',
     color: 'warning',
     title: 'Una fuente puede faltar',
-    text: 'Trece fuentes en seis países: alguna se cae. El tablero se publica igual y sources dice quién no respondió. Si una corrida trae menos de la mitad de lo guardado, se conserva la anterior antes que publicar un tablero mutilado.',
+    text: 'Veintiuna fuentes en seis países: alguna se cae. El tablero se publica igual y sources dice quién no respondió. Si una corrida trae menos de la mitad de lo guardado, se conserva la anterior antes que publicar un tablero mutilado.',
   },
   {
     icon: 'mdi-scale-balance',

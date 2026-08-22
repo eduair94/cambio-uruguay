@@ -22,6 +22,7 @@ export const meta: RegionalSourceMeta = {
   id: "world_erapi",
   name: "ExchangeRate-API (open)",
   country: "UY",
+  global: true,
   url: "https://www.exchangerate-api.com/docs/free",
   access: "api",
   publisher: "market-data",

@@ -9,7 +9,8 @@
         todos los mercados que cada país publica: los siete dólares argentinos, el fixing PTAX y el
         dólar turismo brasileños, el referencial del Banco Central del Paraguay, el observado
         chileno, el oficial y el paralelo bolivianos, y el mejor precio entre las casas de cambio
-        uruguayas. Trece fuentes públicas, cuatro de ellas bancos centrales.
+        uruguayas. {{ sourceCount }} fuentes públicas, {{ centralBankCount }} de ellas bancos
+        centrales, y cada mercado leído por más de una donde se pudo.
       </p>
       <p class="hero-lead text-body-2 mb-4">
         Cada precio dice de dónde salió y qué tipo de precio es. Un fixing oficial y un precio de
@@ -374,7 +375,8 @@
               }}</a>
             </td>
             <td data-label="País">
-              {{ flagOf(source.country) }} {{ countryName(source.country) }}
+              <span v-if="source.global">🌐 Global</span>
+              <span v-else>{{ flagOf(source.country) }} {{ countryName(source.country) }}</span>
             </td>
             <td data-label="Quién publica">{{ publisherLabel(source.publisher) }}</td>
             <td data-label="Acceso">
@@ -515,6 +517,12 @@ const { data: ptaxHistory } = await useFetch<{ points: RegionalHistoryPoint[] }>
 const board = computed<RegionalBoardRow[]>(() => snapshot.value?.board ?? [])
 const routes = computed(() => snapshot.value?.routes ?? [])
 const catalogue = computed(() => snapshot.value?.catalogue ?? [])
+// Los dos números del encabezado salen del catálogo que sirve la API: una lista
+// de fuentes crece, y una frase escrita a mano envejece sin que nadie la mire.
+const sourceCount = computed(() => catalogue.value.length || 21)
+const centralBankCount = computed(
+  () => catalogue.value.filter(source => source.publisher === 'central-bank').length || 5
+)
 const failedSources = computed(() => (snapshot.value?.sources ?? []).filter(source => !source.ok))
 
 const freshness = computed(() => regionalAge(snapshot.value?.generatedAt ?? null))
@@ -630,7 +638,7 @@ const FAQ: FaqItem[] = [
     id: 'regional-de-donde',
     question: '¿De dónde salen los datos?',
     answer:
-      'De trece fuentes públicas: los bancos centrales de Argentina, Brasil, Paraguay y Chile; proveedores de datos de mercado; dos medios argentinos; una casa de cambio paraguaya; y una referencia internacional que sólo se usa como respaldo y control cruzado. La fila de Uruguay es nuestra: sale de las casas de cambio que este sitio releva cada cinco minutos. La tabla de fuentes de esta página enlaza a cada original.',
+      'De veintiuna fuentes públicas: cinco bancos centrales (Argentina, Brasil, Paraguay, Chile y Bolivia), proveedores de datos de mercado, dos medios argentinos, casas de cambio paraguayas y cuatro referencias internacionales que se contrastan entre sí. La fila de Uruguay es nuestra —sale de las casas que este sitio releva cada cinco minutos— y también se contrasta contra un tercero. La tabla de fuentes de esta página enlaza a cada original.',
   },
   {
     id: 'regional-confiable',

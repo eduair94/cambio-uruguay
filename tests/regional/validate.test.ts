@@ -132,6 +132,57 @@ describe("validateQuotes — coherence", () => {
   });
 });
 
+describe("validateQuotes — four feeds voting", () => {
+  it("throws out the feed the other three contradict", () => {
+    // The real numbers of 2026-08-21: three worldwide feeds within a percent of
+    // each other and of the central bank, one 39% below. No band catches that —
+    // 7 bolivianos per dollar was the official rate for years — but a majority
+    // does.
+    const { kept, rejected } = validateQuotes([
+      q({ country: "BO", market: "internacional", kind: "reference", quote: "BOB", avg: 11.54, source: "world_currencyapi" }),
+      q({ country: "BO", market: "internacional", kind: "reference", quote: "BOB", avg: 11.51, source: "world_floatrates" }),
+      q({ country: "BO", market: "internacional", kind: "reference", quote: "BOB", avg: 11.53, source: "world_coinbase" }),
+      q({ country: "BO", market: "internacional", kind: "reference", quote: "BOB", avg: 7.01, source: "world_erapi" }),
+    ]);
+    expect(kept).toHaveLength(3);
+    expect(rejected[0].source).toBe("world_erapi");
+    expect(rejected[0].reason).toMatch(/lejos de la mediana de 4 fuentes/);
+  });
+
+  it("holds reference feeds to a tighter standard than street surveys", () => {
+    // 11% apart is normal between two surveys of a street market and impossible
+    // between four feeds quoting the same mid-market rate.
+    const references = validateQuotes([
+      q({ country: "CL", market: "internacional", kind: "reference", quote: "CLP", avg: 922.7, source: "world_currencyapi" }),
+      q({ country: "CL", market: "internacional", kind: "reference", quote: "CLP", avg: 921.8, source: "world_floatrates" }),
+      q({ country: "CL", market: "internacional", kind: "reference", quote: "CLP", avg: 915.0, source: "world_coinbase" }),
+      q({ country: "CL", market: "internacional", kind: "reference", quote: "CLP", avg: 818.4, source: "world_erapi" }),
+    ]);
+    expect(references.rejected.map((row) => row.source)).toEqual(["world_erapi"]);
+
+    const surveys = validateQuotes([
+      q({ buy: 1530, sell: 1550, source: "ar_dolarapi" }),
+      q({ buy: 1517, sell: 1550, source: "ar_bluelytics" }),
+      q({ buy: 1500, sell: 1520, source: "ar_ambito" }),
+      q({ buy: 1380, sell: 1400, source: "ar_dolarhoy" }),
+    ]);
+    // 9% below the median: a survey that far out is still a survey.
+    expect(surveys.rejected).toHaveLength(0);
+  });
+
+  it("keeps a feed on the currencies it gets right", () => {
+    // The broken feed was right about the Argentine peso the same day it was 39%
+    // wrong about the boliviano. Sources are judged per reading, not banned.
+    const { kept } = validateQuotes([
+      q({ market: "internacional", kind: "reference", avg: 1497.2, source: "world_currencyapi" }),
+      q({ market: "internacional", kind: "reference", avg: 1497.2, source: "world_floatrates" }),
+      q({ market: "internacional", kind: "reference", avg: 1499.4, source: "world_coinbase" }),
+      q({ market: "internacional", kind: "reference", avg: 1497.4, source: "world_erapi" }),
+    ]);
+    expect(kept.map((quote) => quote.source)).toContain("world_erapi");
+  });
+});
+
 describe("validateQuotes — the international fallback", () => {
   it("throws it out when it contradicts the country's own price", () => {
     // Measured live on 2026-08-22: the free mid-market feed had the Chilean peso

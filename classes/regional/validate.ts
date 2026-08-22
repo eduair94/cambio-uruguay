@@ -71,6 +71,18 @@ export const MIN_SPREAD_PCT = -3;
 /** How far from the median of three-or-more publishers a quote may sit. */
 export const MAX_CONSENSUS_DEVIATION_PCT = 20;
 
+/**
+ * The same rule, tighter, when every publisher of a market is quoting a
+ * mid-market REFERENCE rather than surveying a market.
+ *
+ * Four independent worldwide feeds priced the same six currencies within 1% of
+ * each other and of the national sources (measured 2026-08-22). Twenty percent
+ * of slack is meant for street-price surveys that legitimately disagree; applied
+ * to feeds that should agree to the cent, it would let a broken one through —
+ * which is exactly what happened, at 11% and 12% off, before this existed.
+ */
+export const MAX_REFERENCE_CONSENSUS_PCT = 3;
+
 /** How far a cross quote may sit from what the same country's dollar legs imply. */
 export const MAX_COHERENCE_DEVIATION_PCT = 35;
 
@@ -177,9 +189,15 @@ export function validateQuotes(quotes: RegionalQuote[]): ValidationResult {
       consensual.push(...group);
       continue;
     }
+    // Feeds that all publish a mid-market reference are held to a tighter
+    // standard than publishers surveying a street market: they are describing
+    // the same number, not the same crowd.
+    const allReference = group.every((quote) => quote.kind === "reference");
+    const ceiling = allReference ? MAX_REFERENCE_CONSENSUS_PCT : MAX_CONSENSUS_DEVIATION_PCT;
+
     for (const quote of group) {
       const deviation = deviationPct(quote.avg, reference);
-      if (deviation > MAX_CONSENSUS_DEVIATION_PCT) {
+      if (deviation > ceiling) {
         reject(
           quote,
           `${deviation.toFixed(1)} % lejos de la mediana de ${group.length} fuentes (${reference.toFixed(2)})`

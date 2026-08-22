@@ -92,7 +92,14 @@ export interface RegionalSourceMeta {
   id: string;
   /** Publisher, as it calls itself. */
   name: string;
+  /**
+   * The country whose prices it publishes. For a worldwide feed this is the
+   * least wrong of six answers, so `global` marks it and the tables say "Global"
+   * instead of naming a country the publisher never singled out.
+   */
   country: RegionalCountry;
+  /** True for feeds that quote every currency and belong to no country. */
+  global?: boolean;
   /** Human-facing home of the data. */
   url: string;
   /** `api` = documented JSON endpoint; `scrape` = HTML we parse ourselves. */

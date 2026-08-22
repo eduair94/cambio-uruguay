@@ -97,6 +97,8 @@ export interface RegionalSourceMeta {
   id: string
   name: string
   country: RegionalCountry
+  /** Feeds que cotizan todas las monedas y no pertenecen a ningún país. */
+  global?: boolean
   url: string
   access: 'api' | 'scrape'
   publisher: 'central-bank' | 'market-data' | 'media' | 'exchange-house'

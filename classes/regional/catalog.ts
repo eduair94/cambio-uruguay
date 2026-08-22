@@ -4,21 +4,40 @@
 // Adding a source is adding an entry here and nothing else — `refresh.ts` walks
 // this list, `GET /regional/sources` publishes it, and the dedupe rule below is
 // the only place that decides precedence.
+//
+// The list is deliberately redundant. A country covered by ONE publisher has no
+// way to notice that publisher breaking: the day the only international feed
+// started quoting the boliviano 39% off, nothing in the pipeline could tell
+// "the rate moved" from "the feed broke". Everything here that looks like a
+// duplicate is there so the validator has something to compare against.
 import { fetchArAmbito, meta as arAmbito } from "./sources/ar_ambito";
 import { fetchArBcra, meta as arBcra } from "./sources/ar_bcra";
 import { fetchArBluelytics, meta as arBluelytics } from "./sources/ar_bluelytics";
+import { fetchArCriptoYa, meta as arCriptoYa } from "./sources/ar_criptoya";
 import { fetchArDolarApi, meta as arDolarApi } from "./sources/ar_dolarapi";
 import { fetchArDolarHoy, meta as arDolarHoy } from "./sources/ar_dolarhoy";
 import { meta as arArgentinaDatos } from "./sources/ar_argentinadatos";
+import { fetchBoBcb, meta as boBcb } from "./sources/bo_bcb";
 import { fetchBoDolarApi, meta as boDolarApi } from "./sources/bo_dolarapi";
 import { fetchBrAwesome, meta as brAwesome } from "./sources/br_awesomeapi";
 import { fetchBrBcb, meta as brBcb } from "./sources/br_bcb";
+import { fetchClBoostr, meta as clBoostr } from "./sources/cl_boostr";
 import { fetchClDolarApi, meta as clDolarApi } from "./sources/cl_dolarapi";
 import { fetchClMindicador, meta as clMindicador } from "./sources/cl_mindicador";
 import { fetchPyBcp, meta as pyBcp } from "./sources/py_bcp";
+import { fetchPyDolarPy, meta as pyDolarPy } from "./sources/py_dolarpy";
 import { fetchPyMaxicambios, meta as pyMaxicambios } from "./sources/py_maxicambios";
+import { fetchUyExternal, meta as uyExternal } from "./sources/uy_external";
 import { meta as uyLocal } from "./sources/uy_local";
 import { fetchWorldErApi, meta as worldErApi } from "./sources/world_erapi";
+import {
+  coinbaseMeta,
+  currencyApiMeta,
+  fetchWorldCoinbase,
+  fetchWorldCurrencyApi,
+  fetchWorldFloatRates,
+  floatRatesMeta,
+} from "./sources/world_feeds";
 import type { RegionalQuote, RegionalSourceMeta } from "./types";
 
 /** A source the live snapshot fetches over the network. */
@@ -32,18 +51,33 @@ export interface RegionalSource {
  * parallel and a failure is recorded, never thrown.
  */
 export const LIVE_SOURCES: RegionalSource[] = [
+  // Argentina: cinco lecturas de los mismos siete mercados.
   { meta: arDolarApi, fetch: fetchArDolarApi },
   { meta: arBluelytics, fetch: fetchArBluelytics },
   { meta: arAmbito, fetch: fetchArAmbito },
   { meta: arDolarHoy, fetch: fetchArDolarHoy },
+  { meta: arCriptoYa, fetch: fetchArCriptoYa },
   { meta: arBcra, fetch: fetchArBcra },
-  { meta: brAwesome, fetch: fetchBrAwesome },
+  // Brasil: el fixing oficial y el mercado.
   { meta: brBcb, fetch: fetchBrBcb },
+  { meta: brAwesome, fetch: fetchBrAwesome },
+  // Chile: dos lecturas del observado, más el mostrador.
   { meta: clMindicador, fetch: fetchClMindicador },
+  { meta: clBoostr, fetch: fetchClBoostr },
   { meta: clDolarApi, fetch: fetchClDolarApi },
+  // Paraguay: el banco central por dos caminos, y once casas.
   { meta: pyBcp, fetch: fetchPyBcp },
+  { meta: pyDolarPy, fetch: fetchPyDolarPy },
   { meta: pyMaxicambios, fetch: fetchPyMaxicambios },
+  // Bolivia: el oficial por dos caminos, y el paralelo.
+  { meta: boBcb, fetch: fetchBoBcb },
   { meta: boDolarApi, fetch: fetchBoDolarApi },
+  // Uruguay: el control externo sobre nuestro propio relevamiento.
+  { meta: uyExternal, fetch: fetchUyExternal },
+  // Globales: cuatro, para que ninguno sea la única palabra.
+  { meta: currencyApiMeta, fetch: fetchWorldCurrencyApi },
+  { meta: floatRatesMeta, fetch: fetchWorldFloatRates },
+  { meta: coinbaseMeta, fetch: fetchWorldCoinbase },
   { meta: worldErApi, fetch: fetchWorldErApi },
 ];
 
@@ -62,10 +96,10 @@ export const ALL_SOURCE_METAS: RegionalSourceMeta[] = [
  * Precedence when two sources publish the same market.
  *
  * A central bank's own number outranks a vendor's survey of it; a vendor
- * outranks a newspaper; a single casa speaks only for itself; and the
- * international mid-market reference is last because it updates once a day and
- * nobody trades at it. Within a rank, the row with both sides and the newest
- * stamp wins — see `dedupeQuotes`.
+ * outranks a newspaper; a single casa speaks only for itself; and the worldwide
+ * mid-market feeds are last because they update once a day and nobody trades at
+ * them. Within a rank, the row with both sides and the newest stamp wins — see
+ * `dedupeQuotes`.
  */
 const PUBLISHER_RANK: Record<RegionalSourceMeta["publisher"], number> = {
   "central-bank": 0,
@@ -75,10 +109,8 @@ const PUBLISHER_RANK: Record<RegionalSourceMeta["publisher"], number> = {
 };
 
 const RANK_BY_SOURCE: Record<string, number> = Object.fromEntries(
-  ALL_SOURCE_METAS.map((meta) => [meta.id, PUBLISHER_RANK[meta.publisher]])
+  ALL_SOURCE_METAS.map((meta) => [meta.id, meta.global ? 9 : PUBLISHER_RANK[meta.publisher]])
 );
-// The global fallback always loses to a national source, whatever its publisher.
-RANK_BY_SOURCE[worldErApi.id] = 9;
 
 export function sourceRank(id: string): number {
   return RANK_BY_SOURCE[id] ?? 5;
