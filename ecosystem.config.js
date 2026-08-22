@@ -504,5 +504,36 @@ module.exports = {
       cron_restart: "26 */6 * * *",
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
+    {
+      // Regional board for /cotizaciones-de-la-region and `GET /regional`: thirteen public
+      // sources across Argentina, Brasil, Paraguay, Chile and Bolivia (four of them central
+      // banks), joined with this site's own Uruguayan board.
+      // Every 20 minutes because the Argentine blue and the Brazilian spot move through the
+      // trading day; the whole run is ~20 HTTP requests spread over eight hosts, and each
+      // source is throttled per host inside classes/regional/net.ts. Minute 0/20/40 collides
+      // with currency-sync (*/5) by construction — they touch different collections and
+      // different upstreams, so the overlap costs nothing.
+      name: "currency-regional",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_regional.js",
+      cron_restart: "*/20 * * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
+      // Same entrypoint with --backfill: also pulls the daily series the publishers hand out
+      // themselves (the seven Argentine dollars since 2011, the Brazilian PTAX, Chile's
+      // observed dollar year by year) and upserts them by (key, day). Idempotent, so a
+      // re-run costs time and nothing else.
+      // 05:09 UTC ≈ 02:09 America/Montevideo: after the rental sweep (04:52) and before the
+      // content-gap job (05:35), and nowhere near the *:00/*:20/*:40 live refresh.
+      name: "currency-regional-history",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_regional.js",
+      args: "--backfill",
+      cron_restart: "9 5 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
   ],
 };

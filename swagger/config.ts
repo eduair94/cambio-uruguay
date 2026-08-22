@@ -15,6 +15,7 @@ Esta API proporciona:
 - Cotizaciones preferenciales por proveedor, monto e histórico diario
 - Información de ubicaciones de casas de cambio
 - Datos históricos de evolución de monedas
+- Cotizaciones regionales (Argentina, Brasil, Paraguay, Chile y Bolivia) con series diarias
 - Búsqueda por geolocalización
 - Información del Banco Central del Uruguay (BCU)
 
@@ -79,6 +80,10 @@ Todos los timestamps y fechas están en la zona horaria de Uruguay (America/Mont
     {
       name: 'Parameters',
       description: 'Endpoints para obtener parámetros válidos del sistema'
+    },
+    {
+      name: 'Regional',
+      description: 'Cotizaciones de la región: el dólar y los cruces en Argentina, Brasil, Paraguay, Chile, Bolivia y Uruguay, con series diarias y comparación de rutas'
     },
     {
       name: 'Aduana',

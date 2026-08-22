@@ -579,6 +579,9 @@
   "intradayApi": {
     "nav": "API intradía"
   },
+  "regionalApi": {
+    "nav": "API regional"
+  },
   "dev": {
     "nav": "Desarrolladores",
     "title": "Desarrolladores",
@@ -1545,6 +1548,8 @@
     "comprarOAlquilar": "¿Comprar o alquilar?",
     "defensaConsumidor": "Defensa del Consumidor",
     "dolarBlue": "Dólar blue hoy",
+    "cotizacionesRegion": "Cotizaciones de la región",
+    "brasilRuta": "¿Dólares o reales para Brasil?",
     "porQueSube": "¿Por qué sube el dólar?",
     "desdolarizacion": "¿Por qué más pesos?",
     "records": "Récords del dólar",

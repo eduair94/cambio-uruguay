@@ -576,6 +576,9 @@
   "intradayApi": {
     "nav": "Intraday API"
   },
+  "regionalApi": {
+    "nav": "Regional API"
+  },
   "dev": {
     "nav": "Developers",
     "title": "Developers",
@@ -1534,6 +1537,8 @@
     "comprarOAlquilar": "Buy or rent?",
     "defensaConsumidor": "Consumer protection agency",
     "dolarBlue": "Blue dollar today",
+    "cotizacionesRegion": "Regional exchange rates",
+    "brasilRuta": "Dollars or reais for Brazil?",
     "porQueSube": "Why does the dollar rise?",
     "desdolarizacion": "Why more pesos?",
     "records": "Dollar records",

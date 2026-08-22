@@ -38,6 +38,8 @@
     "sync_reddit_stats": "ts-node sync_reddit_stats.ts",
     "sync_content_gaps": "ts-node sync_content_gaps.ts",
     "sync_trends": "ts-node sync_trends.ts",
+    "sync_regional": "ts-node sync_regional.ts",
+    "sync_regional_backfill": "ts-node sync_regional.ts --backfill",
     "trend_probe": "ts-node scripts/oneoff/trend_probe.ts",
     "rag_probe": "ts-node scripts/oneoff/rag_probe.ts",
     "chair_probe": "ts-node scripts/oneoff/chair_probe.ts",

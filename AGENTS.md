@@ -38,13 +38,15 @@ Root map of a multi-package monorepo behind [cambio-uruguay.com](https://cambio-
 | currency-reddit-stats | dist/sync_reddit_stats.js | 48 */3 * * * | agrega el ledger del bot en APP DB `redditbotstats` para /estadisticas-reddit. Los `days` se **mezclan** con lo guardado, no se recalculan: el ledger es memoria operativa y el histórico no puede depender de que nadie lo limpie. 39 min después del watcher, que es quien actualiza votos y estado |
 | currency-content-gaps | dist/sync_content_gaps.js | 35 5 * * * | clusters unanswered questions → grounded DRAFT in `docs/reddit-gaps/` (never a page) |
 | currency-videos | dist/sync_videos.js | 26 */6 * * * | reads the public YouTube **Atom feed** (no API key, no quota) of the curated channels in `classes/videos/channels.ts` -> APP DB `videossnapshots` for /videos-de-economia-uruguay + its 13 per-topic pages; needs `APP_MONGO_URI`; refuses to overwrite a good snapshot with an empty or half-dead run |
+| currency-regional | dist/sync_regional.js | */20 * * * * | el tablero regional de `/cotizaciones-de-la-region` y `GET /regional`: 13 fuentes públicas en AR/BR/PY/CL/BO (4 bancos centrales) unidas al tablero uruguayo propio. Argentina tiene **siete dólares simultáneos** y Brasil un fixing legal (PTAX) más un precio de mostrador (turismo) que difiere ~6,5 %: por eso cada fila lleva `kind` y nada se promedia entre mercados. `validate.ts` filtra por forma, banda, consenso (3+ fuentes) y coherencia contra las patas en dólares, y **publica lo descartado** en `rejected`. El BCP no tiene API (403 tras Cloudflare) y se lee de sus dos páginas server-rendered. Ver `docs/api/REGIONAL.md` |
+| currency-regional-history | dist/sync_regional.js --backfill | 9 5 * * * | mismo entrypoint: además baja las series que el propio publicador entrega (7 dólares argentinos desde 2011, PTAX desde 1995, dólar observado chileno por año) e inserta por (key, day). **La SGS del BCB rechaza ventanas de más de 10 años devolviendo vacío**, indistinguible de "no hay serie": `sgsWindows()` parte el rango |
 | currency-mcp | mcp/dist/index.js (cwd ./mcp) | — | HTTP :8788 |
 | currency-bot-telegram / -discord | bots/dist/entries/{telegram,discord}.js | — | read `bots/.env` |
 | currency-daily | bots/dist/entries/daily_report.js | 0 12 * * * | |
 | currency-alerts | bots/dist/entries/alert_check.js | */15 11-21 * * * | intraday move alerts |
 | currency-content-promo | bots/dist/entries/content_promo.js | 0 14 * * 1,3,5 | one evergreen guide to X; **inert until `CONTENT_PROMO_ENABLED=1`** in `bots/.env` |
 
-Root pm2 entrypoints live at repo root: `index.ts`, `sync.ts`, `sync_aduana*.ts`, `sync_banks_news.ts`, `sync_figures.ts`, `sync_costs.ts`, `sync_debt_relief.ts`, `sync_loans.ts`, `sync_predictions.ts`, `sync_explain.ts`, `sync_sheet.ts`, `sync_site_analytics.ts`, `sync_temas_analysis.ts`, `sync_rag_index.ts`, `sync_reddit_bot.ts`, `sync_reddit_bot_watch.ts`, `sync_content_gaps.ts`, `sync_videos.ts`, `sync_bcu_rates.ts`, `sync_rentals.ts`. Shared: `config.ts`, `global.ts`, `sentry.ts`.
+Root pm2 entrypoints live at repo root: `index.ts`, `sync.ts`, `sync_aduana*.ts`, `sync_banks_news.ts`, `sync_figures.ts`, `sync_costs.ts`, `sync_debt_relief.ts`, `sync_loans.ts`, `sync_predictions.ts`, `sync_explain.ts`, `sync_sheet.ts`, `sync_site_analytics.ts`, `sync_temas_analysis.ts`, `sync_rag_index.ts`, `sync_reddit_bot.ts`, `sync_reddit_bot_watch.ts`, `sync_content_gaps.ts`, `sync_videos.ts`, `sync_bcu_rates.ts`, `sync_rentals.ts`, `sync_regional.ts`. Shared: `config.ts`, `global.ts`, `sentry.ts`.
 
 ## Top-level dirs
 | dir | role |
@@ -62,7 +64,7 @@ Root pm2 entrypoints live at repo root: `index.ts`, `sync.ts`, `sync_aduana*.ts`
 | `config/` | `config.ts` |
 | `dist/` | root build output (gitignored) |
 
-`classes/` key files: `database.ts` (Mongo connect), `gemini.ts` + `ai_service.ts` (LLM), `appdb.ts` (app-DB bridge), `reddit.ts`, `redis_cache.ts`, `notify.ts`, `cluster.ts` (`isPrimaryInstance()`), `Express/` (server setup), `models/` (mongoose), and per-feature dirs `aduana banks bcurates costs debt explain figures gaps loans predictions rag redditbot rentals site-analytics temas-analysis` (each `refresh.ts`/`store.ts`).
+`classes/` key files: `database.ts` (Mongo connect), `gemini.ts` + `ai_service.ts` (LLM), `appdb.ts` (app-DB bridge), `reddit.ts`, `redis_cache.ts`, `notify.ts`, `cluster.ts` (`isPrimaryInstance()`), `Express/` (server setup), `models/` (mongoose), and per-feature dirs `aduana banks bcurates costs debt explain figures gaps loans predictions rag redditbot regional rentals site-analytics temas-analysis` (each `refresh.ts`/`store.ts`).
 
 ## Build / run / test / lint
 - Root: `npm run dev` (API), `npm run build`, `npm test` (`vitest run`, `tests/**/*.test.ts`). One-offs: `npm run prex`, `bcu_backfill`, `get_locations`, etc. (ts-node, in `scripts/oneoff/`, NOT compiled).

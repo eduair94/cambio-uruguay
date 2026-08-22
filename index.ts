@@ -35,6 +35,14 @@ import {
   preferentialRateProviderIds,
 } from "./classes/preferential-rates/catalog";
 import { isValidDayString, montevideoDayStart } from "./classes/intraday";
+import { ALL_SOURCE_METAS } from "./classes/regional/catalog";
+import { convert as convertRegional } from "./classes/regional/compare";
+import {
+  listRegionalSeries,
+  loadRegionalHistory,
+  loadRegionalSnapshot,
+} from "./classes/regional/store";
+import { REGIONAL_COUNTRY_CURRENCY } from "./classes/regional/types";
 import { origins } from "./classes/origins";
 import { redisCache } from "./classes/redis_cache";
 import { ga4Configured } from "./classes/site-analytics/ga4";
@@ -80,6 +88,67 @@ class ValidationError extends Error {
     this.details = details;
   }
 }
+
+// --- Regional board parameter helpers -------------------------------------
+// The regional endpoints take country/currency/day filters. Every one of them
+// validates the same way the rest of the API does: reject with the list of
+// valid values rather than quietly returning an empty result set, which is the
+// difference between "you typed ARG instead of AR" and "there is no data".
+
+const REGIONAL_COUNTRIES = Object.keys(REGIONAL_COUNTRY_CURRENCY);
+
+const regionalCountryParam = (raw: unknown): string | undefined => {
+  if (raw === undefined || raw === null || String(raw).trim() === "") return undefined;
+  const value = String(raw).trim().toUpperCase();
+  if (!REGIONAL_COUNTRIES.includes(value)) {
+    throw new ValidationError(
+      "Invalid country parameter",
+      createValidationError("country", String(raw), REGIONAL_COUNTRIES, "Country must be one of AR, BR, CL, PY, BO, UY")
+    );
+  }
+  return value;
+};
+
+const regionalCurrencyParam = (raw: unknown, parameter: string): string | undefined => {
+  if (raw === undefined || raw === null || String(raw).trim() === "") return undefined;
+  const value = String(raw).trim().toUpperCase();
+  if (!/^[A-Z]{3}$/.test(value)) {
+    throw new ValidationError(
+      `Invalid ${parameter} parameter`,
+      createValidationError(parameter, String(raw), [], "Currency must be a 3-letter ISO code, e.g. ARS")
+    );
+  }
+  return value;
+};
+
+const regionalDayParam = (raw: unknown, parameter: string): string | undefined => {
+  if (raw === undefined || raw === null || String(raw).trim() === "") return undefined;
+  const value = String(raw).trim();
+  if (!isValidDayString(value)) {
+    throw new ValidationError(
+      `Invalid ${parameter} parameter`,
+      createValidationError(parameter, value, [], "Date must be a calendar day in YYYY-MM-DD format")
+    );
+  }
+  return value;
+};
+
+/**
+ * What `GET /regional` answers before the job has ever run, or if its document
+ * is missing. An empty board with the same shape beats a 500 or a null: a
+ * client that renders it shows "sin datos", not a crash.
+ */
+const emptyRegionalSnapshot = (): any => ({
+  generatedAt: null,
+  oldestQuoteAt: null,
+  quotes: [],
+  board: [],
+  gaps: [],
+  cross: [],
+  routes: [],
+  sources: [],
+  rejected: [],
+});
 
 // Helper function to format bytes into human-readable string
 const formatBytes = (bytes: number): string => {
@@ -388,6 +457,313 @@ const main = async () => {
       // A finished day never changes again; today's window moves every sync.
       isToday ? 30 : 3600
     );
+  });
+
+  /**
+   * @openapi
+   * /regional:
+   *   get:
+   *     tags: [Regional]
+   *     summary: Tablero de cotizaciones de la región (AR, BR, PY, CL, BO, UY)
+   *     description: |
+   *       Una foto del dólar en los seis países, con TODOS los mercados que cada
+   *       uno publica: los siete dólares argentinos (oficial, blue, MEP, CCL,
+   *       mayorista, cripto y tarjeta), el fixing PTAX y el dólar turismo
+   *       brasileños, el referencial y la planilla del Banco Central del
+   *       Paraguay, el dólar observado chileno, el oficial y el paralelo
+   *       bolivianos, y el mejor precio entre las casas de cambio uruguayas.
+   *
+   *       Además de las cotizaciones crudas devuelve lo derivado: la brecha
+   *       entre el precio oficial y el que se consigue en cada país, la matriz
+   *       de cruces regionales implícitos por el dólar, y la comparación de
+   *       rutas ("comprar la moneda acá" contra "llevar dólares y cambiarlos
+   *       allá") para cada vecino.
+   *
+   *       Cada cotización dice de qué fuente salió, cuándo la fijó esa fuente,
+   *       qué tipo de precio es (`official`, `parallel`, `retail`, ...) y qué
+   *       otras fuentes publicaron ese mismo mercado (`corroboratedBy`) con la
+   *       diferencia máxima entre ellas (`disagreementPct`). `rejected` lista lo
+   *       que el validador descartó y por qué.
+   *
+   *       Se actualiza cada 20 minutos. Endpoint público, sin autenticación.
+   *     responses:
+   *       200:
+   *         description: Snapshot regional completo
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 generatedAt: { type: string, format: date-time }
+   *                 oldestQuoteAt: { type: string, format: date-time, nullable: true }
+   *                 quotes:
+   *                   type: array
+   *                   items:
+   *                     type: object
+   *                     properties:
+   *                       id: { type: string, example: "AR:blue:USDARS" }
+   *                       country: { type: string, enum: [AR, BR, CL, PY, BO, UY] }
+   *                       market: { type: string, example: blue }
+   *                       label: { type: string, example: "Dólar blue" }
+   *                       kind: { type: string, enum: [official, wholesale, parallel, financial, card, retail, reference] }
+   *                       base: { type: string, example: USD }
+   *                       quote: { type: string, example: ARS }
+   *                       buy: { type: number, nullable: true }
+   *                       sell: { type: number, nullable: true }
+   *                       avg: { type: number }
+   *                       spreadPct: { type: number, nullable: true }
+   *                       variationPct: { type: number, nullable: true }
+   *                       updatedAt: { type: string, format: date-time }
+   *                       source: { type: string, example: ar_bluelytics }
+   *                       sourceUrl: { type: string }
+   *                       corroboratedBy: { type: array, items: { type: string } }
+   *                       disagreementPct: { type: number, nullable: true }
+   *                 board: { type: array, items: { type: object } }
+   *                 gaps: { type: array, items: { type: object } }
+   *                 cross: { type: array, items: { type: object } }
+   *                 routes: { type: array, items: { type: object } }
+   *                 sources: { type: array, items: { type: object } }
+   *                 rejected: { type: array, items: { type: object } }
+   */
+  server.getJson("regional", async (): Promise<any> => {
+    return redisCache.getOrSet(
+      "regional:snapshot",
+      async () => (await loadRegionalSnapshot()) ?? emptyRegionalSnapshot(),
+      120
+    );
+  });
+
+  /**
+   * @openapi
+   * /regional/sources:
+   *   get:
+   *     tags: [Regional]
+   *     summary: Catálogo de las fuentes que alimentan el tablero regional
+   *     description: |
+   *       Quién publica cada número, con qué acceso (API documentada o scraping
+   *       de HTML) y qué aporta que no aporte ninguna otra. Pensado para citar
+   *       la fuente primaria en vez de citarnos a nosotros.
+   *     responses:
+   *       200:
+   *         description: Lista de fuentes
+   */
+  server.getJson("regional/sources", async (): Promise<any> => {
+    return { count: ALL_SOURCE_METAS.length, sources: ALL_SOURCE_METAS };
+  });
+
+  /**
+   * @openapi
+   * /regional/series:
+   *   get:
+   *     tags: [Regional]
+   *     summary: Qué series históricas existen y desde cuándo
+   *     description: |
+   *       Una fila por serie almacenada, con la cantidad de días y el rango de
+   *       fechas. Las argentinas arrancan en 2011 y la brasileña antes; las que
+   *       ningún tercero publica (Paraguay, Bolivia, el tablero uruguayo)
+   *       arrancan el día que este trabajo corrió por primera vez.
+   *     responses:
+   *       200:
+   *         description: Catálogo de series
+   */
+  server.getJson("regional/series", async (): Promise<any> => {
+    return redisCache.getOrSet(
+      "regional:series",
+      async () => ({ series: await listRegionalSeries() }),
+      1800
+    );
+  });
+
+  /**
+   * @openapi
+   * /regional/history:
+   *   get:
+   *     tags: [Regional]
+   *     summary: Serie diaria de un mercado regional
+   *     description: |
+   *       Devuelve un punto por día (cierre) filtrando por país, mercado y par.
+   *       Las series con historia propia del publicador llegan hasta 2011
+   *       (dólares argentinos) o antes (PTAX brasileño); el resto empieza el día
+   *       que este tablero se publicó.
+   *
+   *       Sin filtros devuelve TODAS las series mezcladas, lo cual casi nunca es
+   *       lo que se quiere: filtrar por `country` + `market` es lo habitual.
+   *     parameters:
+   *       - { name: country, in: query, schema: { type: string, enum: [AR, BR, CL, PY, BO, UY] } }
+   *       - { name: market, in: query, schema: { type: string, example: blue } }
+   *       - { name: base, in: query, schema: { type: string, example: USD } }
+   *       - { name: quote, in: query, schema: { type: string, example: ARS } }
+   *       - { name: from, in: query, schema: { type: string, format: date, example: "2024-01-01" } }
+   *       - { name: to, in: query, schema: { type: string, format: date } }
+   *       - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 20000, default: 5000 } }
+   *     responses:
+   *       200:
+   *         description: Puntos diarios en orden cronológico
+   *       400:
+   *         $ref: '#/components/responses/ValidationError'
+   */
+  server.getJson("regional/history", async (req: Request): Promise<any> => {
+    const country = regionalCountryParam(req.query.country);
+    const base = regionalCurrencyParam(req.query.base, "base");
+    const quote = regionalCurrencyParam(req.query.quote, "quote");
+    const market = req.query.market === undefined ? undefined : String(req.query.market).trim();
+    const from = regionalDayParam(req.query.from, "from");
+    const to = regionalDayParam(req.query.to, "to");
+
+    let limit = 5000;
+    if (req.query.limit !== undefined) {
+      limit = Number(req.query.limit);
+      if (!Number.isInteger(limit) || limit < 1 || limit > 20000) {
+        throw new ValidationError(
+          "Invalid limit parameter",
+          createValidationError("limit", String(req.query.limit), [], "Limit must be an integer between 1 and 20000")
+        );
+      }
+    }
+
+    const cacheKey = `regional:history:${country || "all"}:${market || "all"}:${base || "all"}:${quote || "all"}:${
+      from || "-"
+    }:${to || "-"}:${limit}`;
+
+    return redisCache.getOrSet(
+      cacheKey,
+      async () => {
+        const points = await loadRegionalHistory({ country, market, base, quote, from, to, limit });
+        return {
+          count: points.length,
+          from: points.length ? points[0].day : null,
+          to: points.length ? points[points.length - 1].day : null,
+          points,
+        };
+      },
+      // A closed day never changes; only a query that includes today can move.
+      1800
+    );
+  });
+
+  /**
+   * @openapi
+   * /regional/compare:
+   *   get:
+   *     tags: [Regional]
+   *     summary: "¿Compro la moneda acá o llevo dólares?"
+   *     description: |
+   *       Para cada vecino compara dos rutas con precios reales: comprar la
+   *       moneda en una casa de cambio uruguaya, o comprar dólares acá y
+   *       cambiarlos allá. Devuelve el costo de una unidad por cada ruta, cuál
+   *       gana y por cuánto.
+   *
+   *       Con `amount` devuelve además cuánto sale esa cantidad por cada ruta.
+   *     parameters:
+   *       - { name: currency, in: query, schema: { type: string, example: ARS }, description: "Limitar a una moneda (ARS, BRL, PYG, CLP, BOB)." }
+   *       - { name: amount, in: query, schema: { type: number, example: 10000 }, description: "Cantidad de moneda extranjera a costear." }
+   *     responses:
+   *       200:
+   *         description: Comparación de rutas
+   *       400:
+   *         $ref: '#/components/responses/ValidationError'
+   */
+  server.getJson("regional/compare", async (req: Request): Promise<any> => {
+    const currency = regionalCurrencyParam(req.query.currency, "currency");
+    let amount: number | null = null;
+    if (req.query.amount !== undefined) {
+      amount = Number(req.query.amount);
+      if (!Number.isFinite(amount) || amount < 0) {
+        throw new ValidationError(
+          "Invalid amount parameter",
+          createValidationError("amount", String(req.query.amount), [], "Amount must be a number greater than or equal to 0")
+        );
+      }
+    }
+
+    const snapshot = await redisCache.getOrSet(
+      "regional:snapshot",
+      async () => (await loadRegionalSnapshot()) ?? emptyRegionalSnapshot(),
+      120
+    );
+
+    const comparisons = (snapshot.routes || []).filter(
+      (comparison: any) => !currency || comparison.currency === currency
+    );
+
+    return {
+      generatedAt: snapshot.generatedAt ?? null,
+      amount,
+      comparisons: comparisons.map((comparison: any) => ({
+        ...comparison,
+        routes: comparison.routes.map((route: any) => ({
+          ...route,
+          ...(amount === null ? {} : { total: Math.round(route.costPerUnit * amount * 100) / 100 }),
+        })),
+      })),
+    };
+  });
+
+  /**
+   * @openapi
+   * /regional/convert:
+   *   get:
+   *     tags: [Regional]
+   *     summary: Convertir entre monedas de la región, pasando por el dólar
+   *     description: |
+   *       El dólar es el pivote porque es la única moneda que los seis países
+   *       cotizan directamente. `market` fija el mercado del lado de origen: la
+   *       diferencia entre convertir pesos argentinos al oficial y al blue es
+   *       justamente el sentido del parámetro.
+   *
+   *       La respuesta incluye `legs`, los identificadores de las cotizaciones
+   *       usadas, para que cualquier resultado se pueda rehacer a mano.
+   *     parameters:
+   *       - { name: from, in: query, required: true, schema: { type: string, example: ARS } }
+   *       - { name: to, in: query, required: true, schema: { type: string, example: UYU } }
+   *       - { name: amount, in: query, schema: { type: number, default: 1 } }
+   *       - { name: market, in: query, schema: { type: string, example: blue }, description: "Mercado del lado de origen (blue, oficial, ptax, turismo, ...)." }
+   *     responses:
+   *       200:
+   *         description: Resultado de la conversión con las cotizaciones usadas
+   *       400:
+   *         $ref: '#/components/responses/ValidationError'
+   *       404:
+   *         description: No hay cotizaciones para ese par
+   */
+  server.getJson("regional/convert", async (req: Request): Promise<any> => {
+    const from = regionalCurrencyParam(req.query.from, "from");
+    const to = regionalCurrencyParam(req.query.to, "to");
+    if (!from || !to) {
+      throw new ValidationError(
+        "Missing currency parameter",
+        createValidationError("from", String(req.query.from ?? ""), [], "Both from and to are required, e.g. from=ARS&to=UYU")
+      );
+    }
+    let amount = 1;
+    if (req.query.amount !== undefined) {
+      amount = Number(req.query.amount);
+      if (!Number.isFinite(amount) || amount < 0) {
+        throw new ValidationError(
+          "Invalid amount parameter",
+          createValidationError("amount", String(req.query.amount), [], "Amount must be a number greater than or equal to 0")
+        );
+      }
+    }
+    const market = req.query.market === undefined ? undefined : String(req.query.market).trim();
+
+    const snapshot = await redisCache.getOrSet(
+      "regional:snapshot",
+      async () => (await loadRegionalSnapshot()) ?? emptyRegionalSnapshot(),
+      120
+    );
+
+    const result = convertRegional(snapshot.quotes || [], from, to, amount, market);
+    if (!result) {
+      return {
+        error: "No hay cotizaciones para ese par",
+        from,
+        to,
+        market: market ?? null,
+        available: Object.values(REGIONAL_COUNTRY_CURRENCY),
+      };
+    }
+    return { ...result, market: market ?? null, generatedAt: snapshot.generatedAt ?? null };
   });
 
   /**
