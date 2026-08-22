@@ -30,6 +30,18 @@
 //   3. Scotiabank's app is the WORST in the country (2,45/5), not "funcional".
 //   4. Prex shipped daily yields (mar-2026) TWO MONTHS before Mercado Pago (may-2026).
 //   5. HSBC Uruguay became BTG Pactual on 2026-07-10 — the `hsbc` entity is now `btg`.
+//
+// Wallet update 2026-08-21 (r/uruguay flagged it; BBVA's own page confirms it):
+//   - BBVA shipped Google Pay — Visa cards only (credit, debit, prepaid), Android only.
+//     Its FAQ still answers Apple Pay with "estamos trabajando", so that gap stays open,
+//     and BBVA is NOT in Apple's issuer list. app 62 → 66.
+//   - Careful with "el único sin ninguna de las dos": that was already wrong before this
+//     news — Heritage and BTG have neither either. Now the pair with neither is those two.
+//   - Google's own Wallet page for UY LAGS the issuer: checked 2026-08-21 and it still
+//     lists only BROU, Itaú, Santander, Econstar, Midinero, OCA, Scotiabank. The bank's
+//     own product page is the primary source; don't wait for Google to catch up.
+//   - Apple Pay UY (checked 2026-08-21, support.apple.com/en-us/109524): Itaú, Midinero,
+//     OCA, Prex, Santander, Scotiabank. No BROU, no BBVA.
 
 /** A scoring dimension of the rubric. */
 export type DimId = 'app' | 'comisiones' | 'atencion' | 'usd' | 'productos' | 'cobertura'
@@ -281,27 +293,29 @@ export const BANKS: readonly BankEntity[] = Object.freeze([
     kind: 'banco',
     identity: 'Banco privado (multinacional)',
     tagline: 'Era la referencia digital; hoy la app se le cae.',
-    scores: { app: 62, comisiones: 60, atencion: 60, usd: 74, productos: 70, cobertura: 64 },
+    scores: { app: 66, comisiones: 60, atencion: 60, usd: 74, productos: 70, cobertura: 64 },
     signals: [
       { label: 'Alta 100% online', value: 'solo con cédula', tone: 'pos' },
       { label: 'App (histórico)', value: '4,61/5 Play', tone: 'pos' },
       { label: 'App (últimas 60 reseñas)', value: '3,1/5 · 32% de 1 estrella', tone: 'neg' },
-      { label: 'Apple Pay / Google Pay', value: 'ninguno de los dos', tone: 'neg' },
+      { label: 'Google Pay', value: 'sí, desde ago. 2026 (solo Visa)', tone: 'pos' },
+      { label: 'Apple Pay', value: 'no ("estamos trabajando")', tone: 'neg' },
     ],
     bestFor:
-      'Quien quiere abrir cuenta desde el celular en minutos y operar en pesos y dólares. Si vivís pagando con el celular, no: es el único sin Apple Pay ni Google Pay.',
+      'Quien quiere abrir cuenta desde el celular en minutos y operar en pesos y dólares. Desde agosto de 2026 ya paga con el celular en Android; en iPhone todavía no.',
     pros: [
       'Alta de cuenta 100% online desde la app: alcanza con cédula vigente y conexión a internet.',
       'Opera en pesos y dólares, y el histórico de la app sigue siendo bueno (4,61/5 en Play, 4,76/5 en la App Store).',
+      'Desde agosto de 2026 tiene Google Pay: se cargan tarjetas Visa de crédito, débito y prepaga desde la propia app BBVA o desde la Billetera de Google, y se paga sin conexión (NFC).',
     ],
     cons: [
       'La app viene cayendo hace un año: el promedio mensual de reseñas pasó de 4,45 (jun. 2025) a 2,58 (jul. 2026), y las últimas 60 promedian 3,1/5 con 32% de una estrella. La queja que más se repite: se traba en la pantalla azul de "validando credenciales".',
-      'Es el ÚNICO del tablero sin Apple Pay NI Google Pay: no figura en la lista oficial de emisores de Apple ni en la de Google Wallet para Uruguay.',
+      'Sigue sin Apple Pay: no figura en la lista oficial de emisores de Apple para Uruguay, y su propio FAQ contesta "estamos trabajando en la solución para pagar desde tu iPhone". Google Pay le llegó recién en agosto de 2026, y solo para tarjetas Visa.',
       'No es "pionero en cashback": su programa hoy es Puntos BBVA, puntos canjeables por viajes vía Despegar.',
       'Menor cantidad de sucursales y cajeros que BROU/Itaú/Santander.',
     ],
     verdict:
-      'Nos escribieron diciendo que la app "es una bosta y encima se ve espantosa". Tienen media razón, y nos hicieron mirar mejor. "Una bosta" exagera: en histórico puntúa 4,61/5 en Play y 4,76/5 en la App Store. Pero nuestro "app de referencia" con 84/100 era indefendible: viene en caída desde mediados de 2025 (promedio mensual 4,45 → 2,58), las últimas 60 reseñas dan 3,1/5 con 32% de una estrella, y es el único banco del tablero sin Apple Pay ni Google Pay. Lo que NO encontramos es lo de "espantosa": de las 50 reseñas negativas más recientes, casi ninguna habla del diseño — se quejan de que no anda, no de cómo se ve. Bajamos la app de 84 a 62.',
+      'Nos escribieron diciendo que la app "es una bosta y encima se ve espantosa". Tienen media razón, y nos hicieron mirar mejor. "Una bosta" exagera: en histórico puntúa 4,61/5 en Play y 4,76/5 en la App Store. Pero nuestro "app de referencia" con 84/100 era indefendible: viene en caída desde mediados de 2025 (promedio mensual 4,45 → 2,58), las últimas 60 reseñas dan 3,1/5 con 32% de una estrella. Lo que NO encontramos es lo de "espantosa": de las 50 reseñas negativas más recientes, casi ninguna habla del diseño — se quejan de que no anda, no de cómo se ve. Bajamos la app de 84 a 62. Actualización de agosto de 2026: le llegó Google Pay (solo Visa), así que le devolvemos 4 puntos de app —de 62 a 66— porque uno de los dos huecos de billetera se cerró. El otro sigue abierto: en iPhone no pagás.',
   },
   {
     id: 'heritage',

@@ -220,7 +220,7 @@ export const MONEY_APPS: MoneyApp[] = [
     website: 'https://www.bbva.com.uy/personas.html',
     androidUrl: 'https://play.google.com/store/apps/details?id=com.bbva.glomo.uy',
     iosUrl: 'https://apps.apple.com/uy/app/bbva-uruguay/id1383614279',
-    note: 'Existe además Pagos BBVA Uruguay para cobros/pagos comerciales.',
+    note: 'Desde agosto de 2026 permite cargar tarjetas Visa (crédito, débito o prepaga) en Google Pay desde la propia app; en iPhone todavía no hay Apple Pay. Existe además Pagos BBVA Uruguay para cobros/pagos comerciales.',
     verified: true,
   },
   {
@@ -478,7 +478,7 @@ export const MONEY_APPS: MoneyApp[] = [
     website: 'https://play.google.com/store/apps/details?id=com.google.android.apps.walletnfcrel',
     androidUrl:
       'https://play.google.com/store/apps/details?id=com.google.android.apps.walletnfcrel',
-    note: 'En iPhone el equivalente es Apple Pay, integrado en la app Wallet de Apple (no es app aparte).',
+    note: 'Emisores uruguayos adheridos: BROU, Itaú, Santander, Scotiabank, OCA, Midinero, Econstar (Prex) y —desde agosto de 2026, con sus tarjetas Visa— BBVA. En iPhone el equivalente es Apple Pay, integrado en la app Wallet de Apple (no es app aparte), y ahí BROU y BBVA todavía no están.',
     verified: true,
   },
   {
