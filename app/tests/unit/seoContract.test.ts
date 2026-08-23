@@ -136,7 +136,7 @@ describe('the dynamic families the sitemap submits are routable', () => {
  * moved: there is nothing left under it to fix. Spend the effort on `canonical`
  * and `structuredData`, where the remaining entries are real gaps.
  */
-const LEGACY_BUDGET = { seoMeta: 19, canonical: 29, structuredData: 39 }
+const LEGACY_BUDGET = { seoMeta: 19, canonical: 27, structuredData: 38 }
 
 function missing(predicate: (source: string) => boolean): string[] {
   return files.filter(file => predicate(read(file))).sort()

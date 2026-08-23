@@ -1105,6 +1105,28 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         priority: 0.7,
         changefreq: 'monthly',
       },
+      {
+        // La familia de deuda contestaba qué hacer DESPUÉS de deber (clearing, quita, prescripción)
+        // y nunca la pregunta que llega primero cuando intiman a alguien: si le pueden tocar el
+        // sueldo. La respuesta —inembargable salvo dos excepciones— vive acá, con el artículo.
+        to: '/embargo-de-sueldo-uruguay',
+        labelKey: 'nav.embargoSueldo',
+        icon: 'mdi-cash-lock',
+        keywords: [
+          'embargo de sueldo',
+          'me pueden embargar el sueldo',
+          'retencion de haberes',
+          'cuanto me pueden descontar del sueldo',
+          'bienes inembargables',
+          'articulo 381 cgp',
+          'ley 17829',
+          'embargo por pension alimenticia',
+          'embargo jubilacion',
+          'descuento en el recibo de sueldo',
+        ],
+        priority: 0.7,
+        changefreq: 'monthly',
+      },
     ],
   },
   {

@@ -268,6 +268,16 @@ defineOgImageComponent('Cambio', {
   locale: locale.value as 'es' | 'en' | 'pt',
 })
 
+// The canonical is locale-aware on purpose: the strategy is `prefix_except_default`,
+// so /en/economia-uruguay and /pt/economia-uruguay are their own URLs. Pointing all
+// three at the bare Spanish path (what a hardcoded string would do) tells Google the
+// translated pages are duplicates and drops them from the index.
+const canonical = computed(() =>
+  locale.value === 'es'
+    ? 'https://cambio-uruguay.com/economia-uruguay'
+    : `https://cambio-uruguay.com/${locale.value}/economia-uruguay`
+)
+
 // SEO
 useSeoMeta({
   title: () => t('economia.metaTitle'),
@@ -275,34 +285,56 @@ useSeoMeta({
   ogTitle: () => t('economia.metaTitle'),
   ogDescription: () => t('economia.metaDescription'),
   ogType: 'website',
+  ogUrl: () => canonical.value,
+  twitterCard: 'summary_large_image',
 })
 
+// Both blobs are computed OUTSIDE the useHead callback: `useHead(fn)` re-runs its
+// callback on every reactive change, and a `computed()` created in there would be
+// rebuilt (and leak its effect) on each run.
+const breadcrumbJsonLd = computed(() =>
+  JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Cambio Uruguay',
+        item: 'https://cambio-uruguay.com',
+      },
+      { '@type': 'ListItem', position: 2, name: t('economia.title'), item: canonical.value },
+    ],
+  })
+)
+
 // ItemList JSON-LD of the current headlines (each as NewsArticle)
-useHead({
+const headlinesJsonLd = computed(() =>
+  JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: t('economia.title'),
+    itemListElement: (news.value || []).map((n, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      url: n.link,
+      item: {
+        '@type': 'NewsArticle',
+        headline: n.title,
+        datePublished: n.pubDate ? new Date(n.pubDate).toISOString() : undefined,
+        publisher: { '@type': 'Organization', name: n.source },
+      },
+    })),
+  })
+)
+
+useHead(() => ({
+  link: [{ rel: 'canonical', href: canonical.value }],
   script: [
-    {
-      type: 'application/ld+json',
-      innerHTML: computed(() =>
-        JSON.stringify({
-          '@context': 'https://schema.org',
-          '@type': 'ItemList',
-          name: t('economia.title'),
-          itemListElement: (news.value || []).map((n, i) => ({
-            '@type': 'ListItem',
-            position: i + 1,
-            url: n.link,
-            item: {
-              '@type': 'NewsArticle',
-              headline: n.title,
-              datePublished: n.pubDate ? new Date(n.pubDate).toISOString() : undefined,
-              publisher: { '@type': 'Organization', name: n.source },
-            },
-          })),
-        })
-      ),
-    },
+    { type: 'application/ld+json', innerHTML: breadcrumbJsonLd.value },
+    { type: 'application/ld+json', innerHTML: headlinesJsonLd.value },
   ],
-})
+}))
 </script>
 
 <style scoped>

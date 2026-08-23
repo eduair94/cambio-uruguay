@@ -98,7 +98,9 @@ describe('redditStats - los motivos se explican en castellano', () => {
 
 describe('redditStats - las reglas publicadas', () => {
   it('dice las tres que sostienen todo lo demás', () => {
-    const text = BOT_RULES.map(r => `${r.title} ${r.body}`).join(' ').toLowerCase()
+    const text = BOT_RULES.map(r => `${r.title} ${r.body}`)
+      .join(' ')
+      .toLowerCase()
     expect(text).toContain('nunca abre hilos')
     expect(text).toContain('perfil')
     expect(text).toContain('sin fuente')

@@ -488,6 +488,48 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
+// The page argues from law, so the structured data says so: `citation` carries the
+// same impo.com.uy/gub.uy URLs the reader sees at the bottom, which is what lets a
+// crawler tell a sourced legal explainer apart from an opinion post about scams.
+const structuredData = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Cambio Uruguay',
+        item: 'https://cambio-uruguay.com',
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Me estafaron: qué me tienen que devolver',
+        item: canonicalUrl,
+      },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: title,
+    description,
+    inLanguage: 'es-UY',
+    mainEntityOfPage: { '@type': 'WebPage', '@id': canonicalUrl },
+    publisher: {
+      '@type': 'Organization',
+      name: 'Cambio Uruguay',
+      url: 'https://cambio-uruguay.com',
+    },
+    citation: sources.map(source => ({
+      '@type': 'CreativeWork',
+      name: source.label,
+      url: source.url,
+    })),
+  },
+]
+
 useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl }],
   meta: [
@@ -497,6 +539,10 @@ useHead(() => ({
         'me estafaron uruguay, me clonaron la tarjeta uruguay, phishing banco uruguay, transferencia no autorizada, me vaciaron la cuenta, estafa marketplace uruguay, reclamo banco uruguay, ley 19731, denuncia bcu estafa',
     },
   ],
+  script: structuredData.map(data => ({
+    type: 'application/ld+json',
+    innerHTML: JSON.stringify(data),
+  })),
 }))
 </script>
 
