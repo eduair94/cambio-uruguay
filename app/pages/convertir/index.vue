@@ -100,8 +100,51 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
+// BreadcrumbList so the hub sits in the crawl trail, plus an ItemList of the
+// directed pairs it links to, so the conversion families can earn rich results.
 useHead({
   link: [{ rel: 'canonical', href: canonicalUrl }],
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@graph': [
+          {
+            '@type': 'WebPage',
+            '@id': `${canonicalUrl}#webpage`,
+            url: canonicalUrl,
+            name: 'Conversiones de monedas a pesos uruguayos',
+            inLanguage: 'es',
+            isPartOf: { '@id': 'https://cambio-uruguay.com/#website' },
+            speakable: { '@type': 'SpeakableSpecification', cssSelector: ['.convert-intro'] },
+          },
+          {
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Cambio Uruguay',
+                item: 'https://cambio-uruguay.com',
+              },
+              { '@type': 'ListItem', position: 2, name: 'Conversiones', item: canonicalUrl },
+            ],
+          },
+          {
+            '@type': 'ItemList',
+            name: 'Conversiones frecuentes de monedas',
+            itemListElement: convertEntries.map((entry, i) => ({
+              '@type': 'ListItem',
+              position: i + 1,
+              name: amountLabel(entry.amount, entry.from),
+              url: `https://cambio-uruguay.com/convertir/${entry.slug}`,
+            })),
+          },
+        ],
+      }),
+    },
+  ],
 })
 </script>
 

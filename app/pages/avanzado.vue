@@ -1210,53 +1210,73 @@ onMounted(() => {
   pageMounted.value = true
 })
 
-// Structured Data for SEO
+// Structured Data for SEO. A @graph so the WebApplication ships alongside a
+// BreadcrumbList that places /avanzado in the crawl trail (it previously had
+// neither a breadcrumb nor a self-canonical, so Google could fold it into "/").
+const advancedCanonical = 'https://cambio-uruguay.com/avanzado'
 const structuredData = computed(() => ({
   '@context': 'https://schema.org',
-  '@type': 'WebApplication',
-  name: t('seo.homeTitle'),
-  description: t('seo.homeDescription'),
-  url: 'https://cambio-uruguay.com',
-  applicationCategory: 'FinanceApplication',
-  operatingSystem: 'All',
-  offers: {
-    '@type': 'Offer',
-    description: t('seo.homeDescription'),
-    price: '0',
-    priceCurrency: 'USD',
-  },
-  author: {
-    '@type': 'Person',
-    name: 'Eduardo Airaudo',
-    url: 'https://www.linkedin.com/in/eairaudo/',
-    sameAs: ['https://www.linkedin.com/in/eairaudo/', 'https://github.com/eduair94'],
-  },
-  publisher: {
-    '@type': 'Organization',
-    name: 'Cambio Uruguay',
-    url: 'https://cambio-uruguay.com',
-    logo: {
-      '@type': 'ImageObject',
-      url: 'https://cambio-uruguay.com/img/logo.png',
+  '@graph': [
+    {
+      '@type': 'WebApplication',
+      name: t('seo.advancedTitle'),
+      description: t('seo.advancedDescription'),
+      url: advancedCanonical,
+      applicationCategory: 'FinanceApplication',
+      operatingSystem: 'All',
+      offers: {
+        '@type': 'Offer',
+        description: t('seo.advancedDescription'),
+        price: '0',
+        priceCurrency: 'USD',
+      },
+      author: {
+        '@type': 'Person',
+        name: 'Eduardo Airaudo',
+        url: 'https://www.linkedin.com/in/eairaudo/',
+        sameAs: ['https://www.linkedin.com/in/eairaudo/', 'https://github.com/eduair94'],
+      },
+      publisher: {
+        '@type': 'Organization',
+        name: 'Cambio Uruguay',
+        url: 'https://cambio-uruguay.com',
+        logo: {
+          '@type': 'ImageObject',
+          url: 'https://cambio-uruguay.com/img/logo.png',
+        },
+        sameAs: [
+          'https://twitter.com/cambio_uruguay',
+          'https://www.linkedin.com/company/cambio-uruguay/',
+          'https://github.com/eduair94/cambio-uruguay',
+          'https://medium.com/@cambio-uruguay',
+        ],
+        address: {
+          '@type': 'PostalAddress',
+          streetAddress: 'Montevideo',
+          addressLocality: 'Montevideo',
+          addressRegion: 'Montevideo',
+          postalCode: '11000',
+          addressCountry: 'UY',
+        },
+      },
     },
-    sameAs: [
-      'https://twitter.com/cambio_uruguay',
-      'https://www.linkedin.com/company/cambio-uruguay/',
-      'https://github.com/eduair94/cambio-uruguay',
-      'https://medium.com/@cambio-uruguay',
-    ],
-    address: {
-      '@type': 'PostalAddress',
-      streetAddress: 'Montevideo',
-      addressLocality: 'Montevideo',
-      addressRegion: 'Montevideo',
-      postalCode: '11000',
-      addressCountry: 'UY',
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        {
+          '@type': 'ListItem',
+          position: 1,
+          name: 'Cambio Uruguay',
+          item: 'https://cambio-uruguay.com',
+        },
+        { '@type': 'ListItem', position: 2, name: t('avanzado'), item: advancedCanonical },
+      ],
     },
-  },
+  ],
 }))
 
 useHead({
+  link: [{ rel: 'canonical', href: advancedCanonical }],
   script: [
     {
       type: 'application/ld+json',

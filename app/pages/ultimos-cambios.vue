@@ -361,7 +361,44 @@ useSeoMeta({
   ogUrl: canonical,
   twitterCard: 'summary_large_image',
 })
-useHead({ link: [{ rel: 'canonical', href: canonical }] })
+// BreadcrumbList + WebPage so this live feed sits in the crawl trail and can
+// surface its "última verificación" freshness in Search.
+useHead({
+  link: [{ rel: 'canonical', href: canonical }],
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: computed(() =>
+        JSON.stringify({
+          '@context': 'https://schema.org',
+          '@graph': [
+            {
+              '@type': 'WebPage',
+              '@id': `${canonical}#webpage`,
+              url: canonical,
+              name: t('rateChanges.metaTitle'),
+              description: t('rateChanges.metaDescription'),
+              inLanguage: locale.value,
+              isPartOf: { '@id': 'https://cambio-uruguay.com/#website' },
+            },
+            {
+              '@type': 'BreadcrumbList',
+              itemListElement: [
+                {
+                  '@type': 'ListItem',
+                  position: 1,
+                  name: 'Cambio Uruguay',
+                  item: 'https://cambio-uruguay.com',
+                },
+                { '@type': 'ListItem', position: 2, name: t('rateChanges.title'), item: canonical },
+              ],
+            },
+          ],
+        })
+      ),
+    },
+  ],
+})
 defineOgImageComponent('Cambio', {
   title: () => t('rateChanges.title'),
   subtitle: () => t('rateChanges.subtitle'),
