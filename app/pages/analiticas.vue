@@ -1047,7 +1047,40 @@ useSeoMeta({
   ogUrl: canonical,
   twitterCard: 'summary_large_image',
 })
-useHead({ link: [{ rel: 'canonical', href: canonical }] })
+// Shipped a canonical but no structured data at all: the trail is what tells the
+// crawler this is a tool hanging off the dólar family, not a stray root URL.
+useHead(() => ({
+  link: [{ rel: 'canonical', href: canonical }],
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: 'Cambio Uruguay',
+            item: 'https://cambio-uruguay.com',
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: t('dolarHoy.nav'),
+            item: 'https://cambio-uruguay.com/dolar-hoy',
+          },
+          {
+            '@type': 'ListItem',
+            position: 3,
+            name: t('rateAnalytics.title'),
+            item: canonical,
+          },
+        ],
+      }),
+    },
+  ],
+}))
 defineOgImageComponent('Cambio', {
   title: () => t('rateAnalytics.title'),
   subtitle: () => t('rateAnalytics.subtitle'),

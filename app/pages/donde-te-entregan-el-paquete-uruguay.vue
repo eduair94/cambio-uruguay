@@ -315,8 +315,53 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
+// The page rendered its FAQ accordion and its breadcrumb trail for humans only:
+// no structured data was emitted at all. The FAQPage entries below are the same
+// objects the accordion renders, so the markup can never drift from the answers
+// a reader actually sees.
 useHead({
   link: [{ rel: 'canonical', href: canonicalUrl }],
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: 'Cambio Uruguay',
+            item: 'https://cambio-uruguay.com',
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: 'Compras en el exterior',
+            item: 'https://cambio-uruguay.com/importar',
+          },
+          {
+            '@type': 'ListItem',
+            position: 3,
+            name: '¿Dónde te entregan el paquete?',
+            item: canonicalUrl,
+          },
+        ],
+      }),
+    },
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: PARCEL_DELIVERY_FAQS.map(faq => ({
+          '@type': 'Question',
+          name: faq.q,
+          acceptedAnswer: { '@type': 'Answer', text: faq.a },
+        })),
+      }),
+    },
+  ],
 })
 </script>
 

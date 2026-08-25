@@ -82,7 +82,40 @@ useSeoMeta({
   twitterTitle: () => t('dolarRecords.metaTitle'),
   twitterDescription: () => t('dolarRecords.metaDescription'),
 })
-useHead({ link: [{ rel: 'canonical', href: canonical }] })
+// The page sat two levels deep with no trail, so a crawler had no way to place
+// it under the dólar family — and no structured data at all.
+useHead(() => ({
+  link: [{ rel: 'canonical', href: canonical }],
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: 'Cambio Uruguay',
+            item: 'https://cambio-uruguay.com',
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: t('dolarHoy.nav'),
+            item: 'https://cambio-uruguay.com/dolar-hoy',
+          },
+          {
+            '@type': 'ListItem',
+            position: 3,
+            name: t('dolarRecords.title'),
+            item: canonical,
+          },
+        ],
+      }),
+    },
+  ],
+}))
 </script>
 
 <style scoped>

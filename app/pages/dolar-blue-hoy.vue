@@ -369,9 +369,11 @@ const RELATED = [
     text: 'El precio del ARS en cada casa de cambio uruguaya, con su histórico.',
   },
   {
-    to: '/frontera',
-    title: 'Cruzar la frontera',
-    text: 'Dónde cambiar y qué conviene en cada paso hacia Argentina y Brasil.',
+    // Apuntaba a `/frontera`, que no existe: sólo hay `/frontera/[ruta]`.
+    // Desde una página del blue, el cruce que corresponde es el argentino.
+    to: '/frontera/peso-argentino-en-salto',
+    title: 'Cambiar pesos argentinos en Salto',
+    text: 'Qué pagan por el ARS las casas de Salto, el paso más usado hacia Concordia.',
   },
   {
     to: '/herramientas/calculadora-presupuesto-viaje',

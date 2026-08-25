@@ -157,6 +157,9 @@ describe('the navigation model has no dead links', () => {
       '/mejores-bancos-uruguay',
       // The Bankos-fed discounts map: which stores each bank/card discounts.
       '/descuentos-con-tarjeta-uruguay',
+      // El descuento que no lo pone el emisor sino la ley: dos puntos de IVA con débito, nueve en
+      // gastronomía. Va pegado al mapa porque llega al mismo ticket por otra vía.
+      '/descuento-de-iva-con-tarjeta-uruguay',
       // Its data-driven companion: coverage per issuer, charted.
       '/que-banco-tiene-mas-descuentos-uruguay',
       // The other side of the counter: loyalty programmes run by the shop, not
