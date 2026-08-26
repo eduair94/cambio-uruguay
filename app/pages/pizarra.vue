@@ -265,6 +265,50 @@ useSeoMeta({
 useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl.value }],
   meta: [{ name: 'keywords', content: t('pizarra.keywords') }],
+  script: [
+    {
+      type: 'application/ld+json',
+      // La pizarra corre con `layout: 'widget'`: no hay cabecera ni miga de pan en pantalla, así
+      // que sin este JSON-LD el rastreador no tiene NINGUNA señal de dónde cuelga la página. La
+      // miga estructurada es la única que existe acá, y por eso importa más que en una página con
+      // navegación visible.
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@graph': [
+          {
+            '@type': 'WebPage',
+            '@id': canonicalUrl.value,
+            name: t('pizarra.h1'),
+            description: t('pizarra.metaDescription'),
+            url: canonicalUrl.value,
+            inLanguage: locale.value === 'es' ? 'es-UY' : locale.value,
+            isPartOf: {
+              '@type': 'WebSite',
+              name: 'Cambio Uruguay',
+              url: 'https://cambio-uruguay.com',
+            },
+          },
+          {
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Cambio Uruguay',
+                item: 'https://cambio-uruguay.com',
+              },
+              {
+                '@type': 'ListItem',
+                position: 2,
+                name: t('pizarra.h1'),
+                item: canonicalUrl.value,
+              },
+            ],
+          },
+        ],
+      }),
+    },
+  ],
 }))
 </script>
 

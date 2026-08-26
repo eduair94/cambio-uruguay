@@ -120,7 +120,14 @@
                 </li>
                 <li>
                   La franja publicada es la que declara la casa, no un horario garantizado. Un
-                  feriado o un fin de semana largo la mueve sin que el registro cambie.
+                  feriado o un fin de semana largo la mueve sin que el registro cambie, y
+                  <NuxtLink
+                    :to="localePath('/feriados-que-se-corren-uruguay')"
+                    class="weekend-link"
+                  >
+                    tres feriados se corren al lunes
+                  </NuxtLink>
+                  justamente para armar ese fin de semana largo.
                 </li>
                 <li>
                   El precio no es el mismo en todos:

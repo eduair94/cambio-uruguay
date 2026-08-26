@@ -630,6 +630,59 @@ useSeoMeta({
 
 useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl }],
+  script: [
+    {
+      type: 'application/ld+json',
+      // `Dataset` y no `WebPage`, por la misma razón que en /estadisticas-reddit: lo que esta
+      // página publica ES un conjunto de datos (la foto agregada de 28 días que deja el job
+      // `currency-site-analytics`), y describirlo como tal es lo que permite que se lo cite como
+      // fuente. `temporalCoverage` y `dateModified` salen de la foto y no de la fecha de build:
+      // la página se regenera sola y decir que cambió cuando no cambió es exactamente la clase de
+      // dato que este sitio no publica. Sin foto, ambos quedan fuera del JSON en vez de mentir.
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@graph': [
+          {
+            '@type': 'Dataset',
+            '@id': canonicalUrl,
+            name: title,
+            description,
+            url: canonicalUrl,
+            inLanguage: 'es-UY',
+            isAccessibleForFree: true,
+            license: 'https://cambio-uruguay.com/terminos',
+            creator: {
+              '@type': 'Organization',
+              name: 'Cambio Uruguay',
+              url: 'https://cambio-uruguay.com',
+            },
+            temporalCoverage: snapshot.value
+              ? `${snapshot.value.range.start}/${snapshot.value.range.end}`
+              : undefined,
+            dateModified: snapshot.value?.asOf ?? undefined,
+            variableMeasured: [
+              t('siteStats.metric.activeUsers'),
+              t('siteStats.metric.sessions'),
+              t('siteStats.metric.screenPageViews'),
+              t('siteStats.metric.engagementRate'),
+            ],
+          },
+          {
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Cambio Uruguay',
+                item: 'https://cambio-uruguay.com',
+              },
+              { '@type': 'ListItem', position: 2, name: title, item: canonicalUrl },
+            ],
+          },
+        ],
+      }),
+    },
+  ],
 }))
 </script>
 

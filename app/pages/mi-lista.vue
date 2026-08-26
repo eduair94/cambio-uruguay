@@ -456,6 +456,62 @@ defineOgImageComponent('Cambio', {
   title: 'Mi lista de seguimiento',
   description: 'Tus cambios cerca y tus tarjetas, en un solo tablero',
 })
+
+// La página es indexable y estaba sin canonical: la lista vive entera en el navegador, pero la URL
+// se comparte con querystring de estado (zona, casas, tarjetas) y sin canonical cada combinación
+// que alguien pega en algún lado es una copia fina compitiendo con la original.
+const canonicalUrl = 'https://cambio-uruguay.com/mi-lista'
+
+useHead({
+  link: [{ rel: 'canonical', href: canonicalUrl }],
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@graph': [
+          {
+            '@type': 'WebApplication',
+            '@id': canonicalUrl,
+            name: 'Mi lista de seguimiento',
+            url: canonicalUrl,
+            applicationCategory: 'FinanceApplication',
+            operatingSystem: 'Web',
+            inLanguage: 'es-UY',
+            description:
+              'Tablero personal de casas de cambio y tarjetas: elegís tu zona, tus casas y tus tarjetas y ves solo tus precios. Sin registro.',
+            // Es gratis y sin cuenta, y eso es exactamente lo que la ficha debería decir: la
+            // objeción de quien busca es "¿me va a pedir registrarme?".
+            offers: { '@type': 'Offer', price: '0', priceCurrency: 'UYU' },
+            isAccessibleForFree: true,
+            publisher: {
+              '@type': 'Organization',
+              name: 'Cambio Uruguay',
+              url: 'https://cambio-uruguay.com',
+            },
+          },
+          {
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Cambio Uruguay',
+                item: 'https://cambio-uruguay.com',
+              },
+              {
+                '@type': 'ListItem',
+                position: 2,
+                name: 'Mi lista de seguimiento',
+                item: canonicalUrl,
+              },
+            ],
+          },
+        ],
+      }),
+    },
+  ],
+})
 </script>
 
 <style scoped>
