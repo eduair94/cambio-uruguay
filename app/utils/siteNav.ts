@@ -281,6 +281,26 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        to: '/cotizacion-del-bcu',
+        labelKey: 'nav.cotizacionBcu',
+        icon: 'mdi-bank-outline',
+        // Explica una norma y una metodología, no un precio: no cambia de un día para otro.
+        priority: 0.7,
+        changefreq: 'monthly',
+        keywords: [
+          'cotizacion bcu',
+          'bcu cotizaciones',
+          'cotizaciones bcu',
+          'cotizacion interbancaria',
+          'dolar interbancario',
+          'dolar fondo',
+          'arbitrajes bcu',
+          'banco central cotizacion',
+          'cotizacion dgi',
+          'tipo de cambio dgi',
+        ],
+      },
+      {
         to: '/dolar/records',
         labelKey: 'nav.records',
         icon: 'mdi-trophy-outline',

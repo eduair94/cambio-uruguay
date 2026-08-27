@@ -145,12 +145,47 @@ defineOgImageComponent('Cambio', {
   tag: 'CONECTAR',
 })
 
+// The page existed in three locales with no canonical, so /conectar,
+// /en/conectar and /pt/conectar were three indexable copies of one document.
+// The description also just repeated the on-page subtitle; a snippet that names
+// the eight channels earns a click, a snippet that says "todas las formas" does
+// not.
+const canonicalUrl = computed(() => `https://cambio-uruguay.com${localePath('/conectar')}`)
+
 useSeoMeta({
-  title: () => `${t('conectar.title')} | Cambio Uruguay`,
-  description: () => t('conectar.subtitle'),
+  title: () => t('conectar.metaTitle'),
+  description: () => t('conectar.metaDescription'),
   ogTitle: () => t('conectar.title'),
-  ogDescription: () => t('conectar.subtitle'),
+  ogDescription: () => t('conectar.metaDescription'),
   ogType: 'website',
+  ogUrl: () => canonicalUrl.value,
   twitterCard: 'summary_large_image',
 })
+
+useHead(() => ({
+  link: [{ rel: 'canonical', href: canonicalUrl.value }],
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: 'Cambio Uruguay',
+            item: 'https://cambio-uruguay.com',
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: t('conectar.title'),
+            item: canonicalUrl.value,
+          },
+        ],
+      }),
+    },
+  ],
+}))
 </script>

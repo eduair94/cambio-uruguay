@@ -135,9 +135,44 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
-useHead({
+// Same gap as /privacidad: canonical present, structured data missing. The
+// `dateModified` matters here too — terms without a visible last-changed date
+// read as abandoned.
+useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl }],
-})
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@graph': [
+          {
+            '@type': 'WebPage',
+            '@id': canonicalUrl,
+            url: canonicalUrl,
+            name: t('legal.terms.h1'),
+            description: t('legal.terms.metaDescription'),
+            dateModified: LAST_UPDATED,
+            inLanguage: locale.value,
+            isPartOf: { '@type': 'WebSite', url: 'https://cambio-uruguay.com' },
+          },
+          {
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Cambio Uruguay',
+                item: 'https://cambio-uruguay.com',
+              },
+              { '@type': 'ListItem', position: 2, name: t('legal.terms.h1'), item: canonicalUrl },
+            ],
+          },
+        ],
+      }),
+    },
+  ],
+}))
 </script>
 
 <style scoped>

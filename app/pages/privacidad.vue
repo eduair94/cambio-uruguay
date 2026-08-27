@@ -199,9 +199,44 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
-useHead({
+// The legal pages had a canonical but shipped no structured data at all, so the
+// crawler had no trail back to the home page and no signal of when the policy
+// last changed — the one fact a privacy page is judged on.
+useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl }],
-})
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@graph': [
+          {
+            '@type': 'WebPage',
+            '@id': canonicalUrl,
+            url: canonicalUrl,
+            name: t('legal.privacy.h1'),
+            description: t('legal.privacy.metaDescription'),
+            dateModified: LAST_UPDATED,
+            inLanguage: locale.value,
+            isPartOf: { '@type': 'WebSite', url: 'https://cambio-uruguay.com' },
+          },
+          {
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Cambio Uruguay',
+                item: 'https://cambio-uruguay.com',
+              },
+              { '@type': 'ListItem', position: 2, name: t('legal.privacy.h1'), item: canonicalUrl },
+            ],
+          },
+        ],
+      }),
+    },
+  ],
+}))
 </script>
 
 <style scoped>
