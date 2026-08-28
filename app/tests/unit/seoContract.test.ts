@@ -133,10 +133,16 @@ describe('the dynamic families the sitemap submits are routable', () => {
  * `utils/tools.ts`) and `CasasComparativa` (both `casas-de-cambio/*`) — and the
  * `$seo.setupPageSEO` plugin does the same for a handful more. Between them they
  * account for all 19 of the `seoMeta` count, which is why that number has not
- * moved: there is nothing left under it to fix. Spend the effort on `canonical`
- * and `structuredData`, where the remaining entries are real gaps.
+ * moved: there is nothing left under it to fix.
+ *
+ * `canonical` and `structuredData` are now down to the same delegated set plus
+ * the pages that opt out of indexing on purpose (see the `noindex` list below),
+ * so the next legitimate way to move either number is to stop delegating for a
+ * page — which is what `preguntas-frecuentes.vue` did when its
+ * `$seo.setupPageSEO()`-inside-a-`watchEffect` was found emitting a SECOND
+ * canonical and BreadcrumbList on every locale change.
  */
-const LEGACY_BUDGET = { seoMeta: 19, canonical: 24, structuredData: 27 }
+const LEGACY_BUDGET = { seoMeta: 19, canonical: 23, structuredData: 25 }
 
 function missing(predicate: (source: string) => boolean): string[] {
   return files.filter(file => predicate(read(file))).sort()

@@ -218,7 +218,7 @@ import { ESTIMATOR_COURIERS, getCourier, shippingCostUsd } from '~/utils/courier
 import { useImportCartStore } from '~/stores/importCart'
 import { useAuthStore } from '~/stores/auth'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const localePath = useLocalePath()
 const store = useImportCartStore()
 const auth = useAuthStore()
@@ -288,7 +288,52 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
-useHead({ link: [{ rel: 'canonical', href: canonicalUrl }] })
+// The only tool page outside `ToolShell`, and so the only one that shipped no
+// structured data at all: it sat two levels deep with no breadcrumb trail, so a
+// crawler had no way to place it under /herramientas.
+useHead(() => ({
+  link: [{ rel: 'canonical', href: canonicalUrl }],
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@graph': [
+          {
+            '@type': 'WebApplication',
+            name: t('importCart.h1'),
+            description: t('importCart.metaDescription'),
+            url: canonicalUrl,
+            applicationCategory: 'FinanceApplication',
+            operatingSystem: 'Web',
+            inLanguage: locale.value,
+            isAccessibleForFree: true,
+            offers: { '@type': 'Offer', price: '0', priceCurrency: 'UYU' },
+            publisher: { '@type': 'Organization', name: 'Cambio Uruguay' },
+          },
+          {
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Cambio Uruguay',
+                item: 'https://cambio-uruguay.com',
+              },
+              {
+                '@type': 'ListItem',
+                position: 2,
+                name: t('nav.herramientas'),
+                item: 'https://cambio-uruguay.com/herramientas',
+              },
+              { '@type': 'ListItem', position: 3, name: t('importCart.h1'), item: canonicalUrl },
+            ],
+          },
+        ],
+      }),
+    },
+  ],
+}))
 </script>
 
 <style scoped>
