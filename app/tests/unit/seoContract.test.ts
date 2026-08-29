@@ -122,67 +122,93 @@ describe('the dynamic families the sitemap submits are routable', () => {
 // ---------------------------------------------------------------------------
 
 /**
- * Pages predating this contract, by signal. These numbers may only ever go DOWN.
- *
- * If you are here because CI failed: you either added a page without its SEO
- * declarations (fix the page), or you fixed a legacy one (lower the number).
- *
- * These counts are grep over page files, so they read a page that DELEGATES its
- * SEO as a page that has none. Two shells declare the full set on their
- * children's behalf — `ToolShell` (every `herramientas/calculadora-*`, driven by
- * `utils/tools.ts`) and `CasasComparativa` (both `casas-de-cambio/*`) — and the
- * `$seo.setupPageSEO` plugin does the same for a handful more. Between them they
- * account for all 19 of the `seoMeta` count, which is why that number has not
- * moved: there is nothing left under it to fix.
- *
- * `canonical` and `structuredData` are now down to the same delegated set plus
- * the pages that opt out of indexing on purpose (see the `noindex` list below),
- * so the next legitimate way to move either number is to stop delegating for a
- * page — which is what `preguntas-frecuentes.vue` did when its
- * `$seo.setupPageSEO()`-inside-a-`watchEffect` was found emitting a SECOND
- * canonical and BreadcrumbList on every locale change.
+ * Opting out of indexing is always a deliberate act, and every one of these has
+ * a reason: the PWA fallback and the embeddable widget are not content, the
+ * account area is private, the ops dashboard is not for readers, a search result
+ * page with a query is infinite and thin, and page 2+ of the newsletter archive
+ * would compete with page 1. Anything ELSE carrying `noindex` has silently
+ * removed itself from search — which is the accident the last test catches.
  */
-const LEGACY_BUDGET = { seoMeta: 19, canonical: 23, structuredData: 25 }
+const NOINDEXED = [
+  // The rental directory is INDEXABLE at its own URL; only its filtered and paginated views
+  // opt out, for the same reason `buscar.vue` does — a facet combination is an infinite set of
+  // thin copies of one page.
+  'alquileres-uruguay.vue',
+  'buscar.vue',
+  'cuenta/index.vue',
+  'estado.vue',
+  'newsletter/archivo.vue',
+  'offline.vue',
+  'widget.vue',
+]
+
+/**
+ * The two shells that declare the whole SEO set on their children's behalf:
+ * `ToolShell` (every `herramientas/calculadora-*`, driven by `utils/tools.ts`)
+ * and `CasasComparativa` (both `casas-de-cambio/*`). A page that mounts one of
+ * them has its title, canonical and JSON-LD emitted by the shell, so grepping
+ * the page file finds nothing — and that nothing means nothing.
+ */
+const SEO_SHELLS = ['ToolShell', 'CasasComparativa']
+const SHELL_FILES = SEO_SHELLS.map(name => join(__dirname, '..', '..', 'components', `${name}.vue`))
+const delegates = (source: string) =>
+  SEO_SHELLS.some(name => new RegExp(`<${name}[\\s/>]`).test(source))
+
+/**
+ * The pages that owe their own SEO: not deliberately noindexed, not delegating.
+ * The budget is how many of those are still missing each signal, and it may only
+ * ever go DOWN.
+ *
+ * It is at ZERO on all three, which is the point — this stopped being a ratchet
+ * counting down legacy debt and became a hard contract. Until now the counts were
+ * grep over EVERY page file, so the nineteen shell children and the seven
+ * deliberate `noindex` pages were counted as offenders and `canonical` sat at 23
+ * with nothing underneath it left to fix. Slack in a ratchet is not harmless
+ * headroom: a bound of 23 standing over a real debt of 0 would absorb three new
+ * pages shipping with no canonical at all and stay green, which is the single
+ * accident the whole file exists to catch.
+ *
+ * If you are here because CI failed, you added a page without its SEO
+ * declarations. Fix the page; there is no number left to raise.
+ */
+const OWES_OWN_SEO = files.filter(file => !NOINDEXED.includes(file) && !delegates(read(file)))
+
+const LEGACY_BUDGET = { seoMeta: 0, canonical: 0, structuredData: 0 }
 
 function missing(predicate: (source: string) => boolean): string[] {
-  return files.filter(file => predicate(read(file))).sort()
+  return OWES_OWN_SEO.filter(file => predicate(read(file))).sort()
 }
 
 describe('the legacy SEO debt only shrinks', () => {
   it(`has at most ${LEGACY_BUDGET.seoMeta} pages with no useSeoMeta`, () => {
     const offenders = missing(source => !/useSeoMeta\s*\(/.test(source))
-    expect(offenders.length).toBeLessThanOrEqual(LEGACY_BUDGET.seoMeta)
+    expect(offenders).toHaveLength(LEGACY_BUDGET.seoMeta)
   })
 
   it(`has at most ${LEGACY_BUDGET.canonical} pages with no canonical link`, () => {
     const offenders = missing(source => !/rel:\s*'canonical'/.test(source))
-    expect(offenders.length).toBeLessThanOrEqual(LEGACY_BUDGET.canonical)
+    expect(offenders).toHaveLength(LEGACY_BUDGET.canonical)
   })
 
   it(`has at most ${LEGACY_BUDGET.structuredData} pages with no JSON-LD`, () => {
     const offenders = missing(source => !source.includes('application/ld+json'))
-    expect(offenders.length).toBeLessThanOrEqual(LEGACY_BUDGET.structuredData)
+    expect(offenders).toHaveLength(LEGACY_BUDGET.structuredData)
   })
 
-  // Opting out of indexing is always a deliberate act, and every one of these
-  // has a reason: the PWA fallback and the embeddable widget are not content,
-  // the account area is private, the ops dashboard is not for readers, a search
-  // result page with a query is infinite and thin, and page 2+ of the newsletter
-  // archive would compete with page 1. Anything ELSE carrying `noindex` has
-  // silently removed itself from search — which is the accident this catches.
+  // The loophole guard, and the reason excusing the shell children is safe.
+  // Without it, deleting the `useHead` block from `ToolShell` would silently
+  // un-SEO fifteen pages AND keep the three counts above sitting at zero.
+  it.each(SHELL_FILES)('%s carries the SEO its children delegate to it', shell => {
+    const source = readFileSync(shell, 'utf8')
+    expect(source).toMatch(/useSeoMeta\s*\(/)
+    expect(source).toMatch(/rel:\s*'canonical'/)
+    expect(source).toContain('application/ld+json')
+    expect(source).toContain('BreadcrumbList')
+    expect(source).toContain('https://cambio-uruguay.com')
+  })
+
   it('noindexes only the pages meant to be invisible', () => {
     const noindexed = files.filter(file => /noindex/i.test(read(file)))
-    expect(noindexed.sort()).toEqual([
-      // The rental directory is INDEXABLE at its own URL; only its filtered and paginated views
-      // opt out, for the same reason `buscar.vue` does — a facet combination is an infinite set of
-      // thin copies of one page.
-      'alquileres-uruguay.vue',
-      'buscar.vue',
-      'cuenta/index.vue',
-      'estado.vue',
-      'newsletter/archivo.vue',
-      'offline.vue',
-      'widget.vue',
-    ])
+    expect(noindexed.sort()).toEqual(NOINDEXED)
   })
 })
