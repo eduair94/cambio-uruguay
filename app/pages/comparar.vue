@@ -65,6 +65,7 @@
                   density="compact"
                   color="primary"
                   variant="outlined"
+                  class="price-toggle"
                   data-testid="compare-pricekind"
                 >
                   <v-btn value="buy" size="small">{{ $t('compare.buy') }}</v-btn>
@@ -106,21 +107,50 @@
                 {{ priceKind === 'buy' ? $t('compare.buy') : $t('compare.sell') }}
               </v-chip>
             </v-card-title>
+
+            <!-- Time-range selector. Scrolls horizontally on narrow screens so
+                 every preset stays reachable without wrapping. -->
+            <div class="range-bar d-flex align-center px-4 pb-1">
+              <span class="text-caption text-medium-emphasis me-2 flex-shrink-0">
+                {{ $t('compare.rangeLabel') }}
+              </span>
+              <v-chip-group
+                v-model="selectedRange"
+                mandatory
+                selected-class="bg-primary text-white"
+                class="range-group"
+                data-testid="compare-range"
+              >
+                <v-chip
+                  v-for="opt in rangeOptions"
+                  :key="opt.value"
+                  :value="opt.value"
+                  size="small"
+                  variant="outlined"
+                  :data-testid="`compare-range-${opt.value}`"
+                >
+                  {{ opt.title }}
+                </v-chip>
+              </v-chip-group>
+            </div>
+
             <v-card-text>
-              <div class="chart-wrap">
-                <ClientOnly>
-                  <LineChart
-                    :key="chartKey"
-                    :chart-data="chartData"
-                    :options="chartOptions"
-                    :aria-label="$t('compare.chartTitle', { currency: selectedCurrency })"
-                  />
-                  <template #fallback>
-                    <div class="d-flex align-center justify-center fill-height">
-                      <v-progress-circular indeterminate color="primary" />
-                    </div>
-                  </template>
-                </ClientOnly>
+              <div class="chart-scroll">
+                <div class="chart-wrap">
+                  <ClientOnly>
+                    <LineChart
+                      :key="chartKey"
+                      :chart-data="chartData"
+                      :options="chartOptions"
+                      :aria-label="$t('compare.chartTitle', { currency: selectedCurrency })"
+                    />
+                    <template #fallback>
+                      <div class="d-flex align-center justify-center fill-height">
+                        <v-progress-circular indeterminate color="primary" />
+                      </div>
+                    </template>
+                  </ClientOnly>
+                </div>
               </div>
             </v-card-text>
           </v-card>
@@ -135,41 +165,46 @@
               <v-icon start>mdi-table</v-icon>
               {{ $t('compare.summary') }}
             </v-card-title>
-            <v-data-table
-              :headers="headers"
-              :items="summaryRows"
-              :mobile="smAndDown"
-              hide-default-footer
-              :items-per-page="-1"
-              density="compact"
-              class="elevation-1"
-              data-testid="compare-summary"
-            >
-              <template #item.house="{ item }">
-                <div class="d-flex align-center ga-2">
-                  <span
-                    class="legend-dot"
-                    :style="{ backgroundColor: item.color }"
-                    aria-hidden="true"
-                  />
-                  <span class="font-weight-medium" data-testid="compare-summary-house">
-                    {{ item.house }}
-                  </span>
-                </div>
-              </template>
-              <template #item.current="{ item }">
-                {{ formatCurrency(item.current) }}
-              </template>
-              <template #item.min="{ item }">
-                {{ formatCurrency(item.min) }}
-              </template>
-              <template #item.max="{ item }">
-                {{ formatCurrency(item.max) }}
-              </template>
-              <template #item.avg="{ item }">
-                {{ formatCurrency(item.avg) }}
-              </template>
-            </v-data-table>
+            <!-- Keep the tabular layout on every breakpoint and let it scroll
+                 horizontally on mobile — far more legible than stacked cards
+                 when comparing several houses column-by-column. -->
+            <div class="table-scroll">
+              <v-data-table
+                :headers="headers"
+                :items="summaryRows"
+                :mobile="false"
+                hide-default-footer
+                :items-per-page="-1"
+                density="compact"
+                class="elevation-1 summary-table"
+                data-testid="compare-summary"
+              >
+                <template #item.house="{ item }">
+                  <div class="d-flex align-center ga-2">
+                    <span
+                      class="legend-dot"
+                      :style="{ backgroundColor: item.color }"
+                      aria-hidden="true"
+                    />
+                    <span class="font-weight-medium" data-testid="compare-summary-house">
+                      {{ item.house }}
+                    </span>
+                  </div>
+                </template>
+                <template #item.current="{ item }">
+                  {{ formatCurrency(item.current) }}
+                </template>
+                <template #item.min="{ item }">
+                  {{ formatCurrency(item.min) }}
+                </template>
+                <template #item.max="{ item }">
+                  {{ formatCurrency(item.max) }}
+                </template>
+                <template #item.avg="{ item }">
+                  {{ formatCurrency(item.avg) }}
+                </template>
+              </v-data-table>
+            </div>
           </v-card>
         </v-col>
       </v-row>
@@ -192,14 +227,20 @@ import { useSeoMeta } from '#imports'
 import { format, parseISO } from 'date-fns'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useDisplay } from 'vuetify'
 import LineChart from '~/components/charts/LineChart.vue'
 import type { EvolutionResponse } from '~/types/api'
-import { buildComparisonChartData, type LabelledSeries, type PriceKind } from '~/utils/comparison'
+import {
+  buildComparisonChartData,
+  datasetStats,
+  filterSeriesByRange,
+  parseRangeKey,
+  type LabelledSeries,
+  type PriceKind,
+  type RangeKey,
+} from '~/utils/comparison'
 
 const { t, locale } = useI18n()
 const localePath = useLocalePath()
-const { smAndDown } = useDisplay()
 const { getEvolutionData, getProcessedExchangeData } = useApiService()
 const route = useRoute()
 const router = useRouter()
@@ -243,18 +284,30 @@ const firstQueryValue = (raw: unknown): string =>
 const selectedCurrency = ref(firstQueryValue(route.query.moneda) || 'USD')
 const selectedOrigins = ref<string[]>(parseOriginsParam(route.query.casas))
 const priceKind = ref<PriceKind>(firstQueryValue(route.query.tipo) === 'buy' ? 'buy' : 'sell')
+const selectedRange = ref<RangeKey>(parseRangeKey(firstQueryValue(route.query.rango)))
 
 const tooManyHouses = computed(() => selectedOrigins.value.length > MAX_HOUSES)
 
+// Time-range presets shown in the chart's selector; labels are localised.
+const rangeOptions = computed<{ value: RangeKey; title: string }[]>(() => [
+  { value: '7d', title: t('compare.range7d') },
+  { value: '1m', title: t('compare.range1m') },
+  { value: '3m', title: t('compare.range3m') },
+  { value: '6m', title: t('compare.range6m') },
+  { value: '1y', title: t('compare.range1y') },
+  { value: 'all', title: t('compare.rangeAll') },
+])
+
 // Mirror the current selection into the URL (replace, so it doesn't spam history).
 // Client-only: the watcher is non-immediate, so SSR setup never redirects.
-watch([selectedCurrency, selectedOrigins, priceKind], () => {
+watch([selectedCurrency, selectedOrigins, priceKind, selectedRange], () => {
   router.replace({
     query: {
       ...route.query,
       moneda: selectedCurrency.value,
       casas: selectedOrigins.value.length ? selectedOrigins.value.join(',') : undefined,
       tipo: priceKind.value,
+      rango: selectedRange.value,
     },
   })
 })
@@ -331,7 +384,13 @@ const labelledSeries = computed<LabelledSeries[]>(() =>
   }))
 )
 
-const merged = computed(() => buildComparisonChartData(labelledSeries.value, priceKind.value))
+// Restrict every series to the selected time window before merging, so the
+// chart and the summary table below it both reflect the same period.
+const rangedSeries = computed<LabelledSeries[]>(() =>
+  filterSeriesByRange(labelledSeries.value, selectedRange.value)
+)
+
+const merged = computed(() => buildComparisonChartData(rangedSeries.value, priceKind.value))
 
 const chartData = computed(() => ({
   labels: merged.value.labels.map(date => format(parseISO(date), 'dd/MM/yy')),
@@ -353,7 +412,8 @@ const chartData = computed(() => ({
 
 // Bump the key so chart.js fully recreates when structure changes.
 const chartKey = computed(
-  () => `${selectedCurrency.value}-${priceKind.value}-${selectedOrigins.value.join('|')}`
+  () =>
+    `${selectedCurrency.value}-${priceKind.value}-${selectedRange.value}-${selectedOrigins.value.join('|')}`
 )
 
 const chartOptions = computed(() => ({
@@ -405,17 +465,20 @@ const chartOptions = computed(() => ({
 interface SummaryRow {
   house: string
   color: string
-  current: number
-  min: number
-  max: number
-  avg: number
+  current: number | null
+  min: number | null
+  max: number | null
+  avg: number | null
 }
 
+// Built from the merged datasets (already range-filtered and outlier-cleaned)
+// rather than the API's all-time statistics, so the numbers always agree with
+// the plotted lines for the selected period.
 const summaryRows = computed<SummaryRow[]>(() =>
-  (evolutions.value ?? []).map((evo, i) => {
-    const stat = evo.statistics[priceKind.value]
+  merged.value.datasets.map((ds, i) => {
+    const stat = datasetStats(ds.data)
     return {
-      house: originName(evo.origin),
+      house: ds.label,
       color: colorAt(i),
       current: stat.current,
       min: stat.min,
@@ -434,7 +497,7 @@ const headers = computed(() => [
 ])
 
 // --- Helpers -----------------------------------------------------------------
-const formatCurrency = (value: number): string => {
+const formatCurrency = (value: number | null): string => {
   if (typeof value !== 'number' || Number.isNaN(value)) return '-'
   return value.toLocaleString('es-UY', {
     style: 'currency',
@@ -515,10 +578,52 @@ useHead(() => ({
 </script>
 
 <style scoped>
+/* Horizontal scroll container for the chart: on narrow screens the inner wrap
+   keeps a minimum width so the line and its date ticks stay legible instead of
+   crushing together, and the user swipes sideways to read the rest. */
+.chart-scroll {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
 .chart-wrap {
   position: relative;
   height: 420px;
   width: 100%;
+}
+
+/* Give the price toggle full width on phones for larger tap targets. */
+.price-toggle {
+  width: 100%;
+}
+
+/* Let the range chips scroll horizontally rather than wrap to a second row. */
+.range-bar {
+  min-width: 0;
+}
+
+.range-group :deep(.v-slide-group__content) {
+  padding-block: 4px;
+}
+
+/* Force the summary table to keep its columns and scroll sideways on mobile. */
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.summary-table {
+  min-width: 520px;
+}
+
+@media (max-width: 600px) {
+  .chart-wrap {
+    min-width: 560px;
+    height: 320px;
+  }
 }
 
 .bg-gradient-compare {

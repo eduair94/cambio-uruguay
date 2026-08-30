@@ -396,7 +396,14 @@
     "current": "Current",
     "min": "Minimum",
     "max": "Maximum",
-    "avg": "Average"
+    "avg": "Average",
+    "rangeLabel": "Time range",
+    "range7d": "7D",
+    "range1m": "1M",
+    "range3m": "3M",
+    "range6m": "6M",
+    "range1y": "1Y",
+    "rangeAll": "All"
   },
   "quickExchange": "Quick Exchange",
   "quickExchangeForward": "You would receive",
