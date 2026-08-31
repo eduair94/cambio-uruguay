@@ -259,7 +259,7 @@ export interface RenunciaFaq {
 export const RENUNCIA_FAQ: readonly RenunciaFaq[] = [
   {
     q: 'Si renuncio, ¿cobro algo?',
-    a: 'Sí. El MTSS es explícito sobre lo que la empresa debe abonar cuando el vínculo termina por decisión del trabajador: «la licencia no gozada, el salario vacacional y el aguinaldo generado, y no corresponde la indemnización por despido». O sea que se pierde una partida de las cuatro, no la liquidación entera.',
+    a: 'Sí, y conviene ver de dónde sale. La frase más clara del MTSS está contestando por el abandono del trabajo: dice que «la empresa lo único que debe abonar es la licencia no gozada, el salario vacacional y el aguinaldo generado, y no corresponde la indemnización por despido». Vale igual para la renuncia, porque lo que la indemnización cubre es el despido —una decisión del empleador— y esas tres partidas son las que ya venías generando. El mismo MTSS habla de «liquidación por despido o renuncia» al fijar el plazo de pago. O sea: se pierde una partida de las cuatro, no la liquidación entera.',
   },
   {
     q: '¿En cuánto tiempo me tienen que pagar la liquidación?',
@@ -290,7 +290,7 @@ export const RENUNCIA_FAQ: readonly RenunciaFaq[] = [
 export const RENUNCIA_SOURCES: readonly RenunciaSource[] = [
   {
     label:
-      'MTSS — «En materia laboral» (preguntas frecuentes): qué debe abonar la empresa cuando el vínculo termina por decisión del trabajador (licencia no gozada, salario vacacional y aguinaldo generado, sin indemnización por despido), y el plazo de pago de la liquidación por el art. 1440 del Código Civil',
+      'MTSS — «En materia laboral» (preguntas frecuentes): qué debe abonar la empresa cuando el vínculo termina por decisión del trabajador —la respuesta está bajo la pregunta por el abandono del trabajo: licencia no gozada, salario vacacional y aguinaldo generado, sin indemnización por despido— y el plazo de pago de la «liquidación por despido o renuncia», que remite al art. 1440 del Código Civil',
     url: 'https://www.gub.uy/ministerio-trabajo-seguridad-social/institucional/preguntas-frecuentes/materia-laboral',
   },
   {
