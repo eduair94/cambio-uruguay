@@ -71,6 +71,16 @@ const LINK_PATTERNS = [
   /(?<![A-Za-z])to:\s*'(\/[^']*)'/g,
   /\bto="(\/[^"]*)"/g,
   /:to="'(\/[^']*)'"/g,
+  // The catalog shapes. `utils/*.ts` is where this site's link lists actually live —
+  // a "Seguir por acá" block is usually a `to:` in a frozen array, and the older
+  // catalogs spell the same thing `href:`. Guarded against a preceding letter for
+  // the same reason `to:` is, so `baseHref:` and friends don't match.
+  //
+  // `path:` is deliberately NOT here. It reads like a route but this codebase uses
+  // it for REST endpoints of api.cambio-uruguay.com — `/regional`, `/regional/series`
+  // — documented on the API pages. Those are backend paths that will never resolve
+  // in the Nuxt router, and matching them would make this test fail on correct code.
+  /(?<![A-Za-z])href:\s*'(\/[^']*)'/g,
 ]
 
 function internalLinks(file: string): string[] {
@@ -95,6 +105,12 @@ const scanned = [
   ...sourceFiles(PAGES_DIR, ['.vue']),
   ...sourceFiles(join(APP_DIR, 'components'), ['.vue']),
   ...sourceFiles(join(APP_DIR, 'layouts'), ['.vue']),
+  // `utils/` was the hole. Content pages here are data-driven: the page renders a
+  // `v-for` over a catalog, so the link literal the reader clicks lives in
+  // `utils/<topic>.ts` and never appears in the `.vue` file at all. Scanning only
+  // the templates left ~250 real, rendered links unguarded — the exact links this
+  // test exists to check, in the directory the site keeps them.
+  ...sourceFiles(join(APP_DIR, 'utils'), ['.ts']).filter(file => !file.endsWith('.test.ts')),
 ]
 
 describe('every hard-coded internal link resolves to a page', () => {
@@ -103,6 +119,15 @@ describe('every hard-coded internal link resolves to a page', () => {
     // whole file pass on zero links.
     const total = scanned.reduce((sum, file) => sum + internalLinks(file).length, 0)
     expect(total).toBeGreaterThan(200)
+  })
+
+  it('actually reaches into the catalogs, not just the templates', () => {
+    // The bound above would stay green on templates alone, so the widening needs
+    // its own assertion or it could be reverted without turning anything red.
+    const inUtils = sourceFiles(join(APP_DIR, 'utils'), ['.ts'])
+      .filter(file => !file.endsWith('.test.ts'))
+      .reduce((sum, file) => sum + internalLinks(file).length, 0)
+    expect(inUtils).toBeGreaterThan(100)
   })
 
   it('has no link pointing at a path the router cannot resolve', () => {
