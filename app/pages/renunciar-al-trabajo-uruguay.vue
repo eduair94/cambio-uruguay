@@ -155,12 +155,12 @@
         <VCard class="formula pa-5" variant="flat">
           <p class="formula__label text-overline mb-2">Licencia no gozada</p>
           <p class="formula__math mb-2">
-            sueldo mensual ÷ {{ JORNAL_DIVISOR }} × {{ LICENCIA_DIAS_POR_MES_20 }} × meses
+            sueldo mensual ÷ {{ JORNAL_DIVISOR }} × {{ coma(LICENCIA_DIAS_POR_MES_20) }} × meses
           </p>
           <p class="formula__note text-body-2 mb-0">
-            Ese {{ LICENCIA_DIAS_POR_MES_20 }} es el escalón de 20 días al año. Si por antigüedad ya
-            generás 21, el multiplicador pasa a {{ LICENCIA_DIAS_POR_MES_21 }} y la diferencia no es
-            menor.
+            Ese {{ coma(LICENCIA_DIAS_POR_MES_20) }} es el escalón de 20 días al año. Si por
+            antigüedad ya generás 21, el multiplicador pasa a {{ coma(LICENCIA_DIAS_POR_MES_21) }} y
+            la diferencia no es menor.
           </p>
         </VCard>
 
@@ -273,6 +273,13 @@ import {
 } from '~/utils/renuncia'
 
 const localePath = useLocalePath()
+
+/**
+ * El separador decimal de la prosa es la coma: el MTSS publica «1,66» y «1,75», y un 1.66 con punto
+ * en medio de una frase en español se lee como otro número. Las constantes son `number` porque el
+ * test hace aritmética con ellas; el formato es cosa de la vista.
+ */
+const coma = (n: number) => n.toLocaleString('es-UY')
 
 const verifiedAt = new Date(`${RENUNCIA_VERIFIED_AT}T12:00:00Z`).toLocaleDateString('es-UY', {
   day: 'numeric',
