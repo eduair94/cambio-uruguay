@@ -136,6 +136,9 @@ const NOINDEXED = [
   'alquileres-uruguay.vue',
   'buscar.vue',
   'cuenta/index.vue',
+  // The Search Console dashboard: private, gated server-side, and noindexed so a stray link can
+  // never put the site's own keyword list into the index.
+  'estadisticas-de-busqueda.vue',
   'estado.vue',
   'newsletter/archivo.vue',
   'offline.vue',

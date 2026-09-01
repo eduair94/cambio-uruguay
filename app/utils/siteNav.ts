@@ -2529,7 +2529,14 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
  * XML sitemap: the PWA offline fallback, the embeddable widget and the
  * auth-gated account area.
  */
-export const EXCLUDED_ROUTES: readonly string[] = Object.freeze(['/offline', '/widget', '/cuenta'])
+export const EXCLUDED_ROUTES: readonly string[] = Object.freeze([
+  '/offline',
+  '/widget',
+  '/cuenta',
+  // The owner's Search Console dashboard: not content, not for readers, and its whole point is that
+  // the queries it renders never become a public page.
+  '/estadisticas-de-busqueda',
+])
 
 /**
  * Indexable pages that belong in the XML sitemap but not in any menu. The search landing is

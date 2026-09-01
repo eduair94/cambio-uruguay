@@ -266,6 +266,30 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Search Console pull: the query side of the traffic loop. GA4 says what visitors did once
+      // they arrived; ONLY this says what they typed to get here, which page Google offered, and at
+      // what position — the three numbers every content decision needs.
+      //
+      // Writes the APP database: `searchconsoledays` (one compact document per day, the ARCHIVE —
+      // Search Console deletes everything past 16 months, so this collection is the only long
+      // memory that will exist) and `searchconsolesnapshots` (the computed dashboard read by the
+      // private /estadisticas-de-busqueda).
+      //
+      // 11:20 UTC ≈ 08:20 Montevideo. After currency-site-analytics (10:51) so the two Google jobs
+      // never overlap, and well clear of the 10:37 banks-news Gemini run. The exact hour barely
+      // matters: Search Console finalises a day ~3 days late, so every run reads settled data and
+      // re-fetches the last week to absorb Google's own corrections.
+      //
+      // Needs APP_MONGO_URI and a service account with read access to the property
+      // (docs/analytics/SEARCH_CONSOLE_API.md). Refuses to overwrite a good snapshot with a thin one.
+      name: "currency-gsc",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_gsc.js",
+      cron_restart: "20 11 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Lender TEA refresh (bancos/financieras/cooperativas/fintech) for /prestamos-uruguay.
       // Fallback chain: regex parser first (oca/pronto/cash), Gemini-grounded lookup for the rest
       // (host-gated to the lender's own resolved domain). Daily 08:47 UTC ≈ 05:47

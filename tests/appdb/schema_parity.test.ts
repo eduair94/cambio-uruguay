@@ -10,6 +10,7 @@ import { SiteAnalyticsSnapshotModel } from "../../classes/models/SiteAnalyticsSn
 import { RedditBotStatsModel } from "../../classes/models/RedditBotStats";
 import { RentalListingModel } from "../../classes/models/RentalListing";
 import { RentalMetaModel } from "../../classes/models/RentalMeta";
+import { SearchConsoleSnapshotModel } from "../../classes/models/SearchConsoleSnapshot";
 
 const appModel = (name: string): string =>
   fs.readFileSync(path.join(__dirname, "..", "..", "app", "server", "models", `${name}.ts`), "utf8");
@@ -75,6 +76,15 @@ describe("app-Mongo schema parity", () => {
     expect(Object.keys(RentalMetaModel.schema.obj).sort()).toEqual(appFields(appModel("RentalMeta")).sort());
   });
 
+  it("SearchConsoleSnapshot declares exactly the app's top-level fields", () => {
+    // El panel privado de Search Console: un campo que el backend agregue y el app no declare se
+    // guarda igual pero no llega nunca a la pantalla, y la oportunidad que describe no existe para
+    // quien la tiene que trabajar.
+    expect(Object.keys(SearchConsoleSnapshotModel.schema.obj).sort()).toEqual(
+      appFields(appModel("SearchConsoleSnapshot")).sort()
+    );
+  });
+
   it("writes the collections the app already reads — not mongoose's guess", () => {
     expect(PricePredictionModel.collection.name).toBe("pricepredictions");
     expect(MoveExplanationModel.collection.name).toBe("moveexplanations");
@@ -85,5 +95,6 @@ describe("app-Mongo schema parity", () => {
     expect(SiteAnalyticsSnapshotModel.collection.name).toBe("siteanalyticssnapshots");
     expect(RentalListingModel.collection.name).toBe("rentallistings");
     expect(RentalMetaModel.collection.name).toBe("rentalmetas");
+    expect(SearchConsoleSnapshotModel.collection.name).toBe("searchconsolesnapshots");
   });
 });

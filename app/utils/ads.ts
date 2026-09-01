@@ -30,7 +30,16 @@ const LOCALE_PREFIXES = ['/en', '/pt'] as const
  * The chrome-free routes (/widget, /pizarra) are excluded separately via
  * `isBareRoute`, which is also what keeps the loader script off them.
  */
-const NO_ADS = ['/cuenta', '/conectar', '/contacto', '/offline', '/estado'] as const
+const NO_ADS = [
+  '/cuenta',
+  '/conectar',
+  '/contacto',
+  '/offline',
+  '/estado',
+  // The owner's Search Console dashboard. One reader, logged in, and an ad next to the keyword
+  // table would be an impression sold to nobody.
+  '/estadisticas-de-busqueda',
+] as const
 
 /**
  * Routes that carry no ads **themselves**, but whose children may.

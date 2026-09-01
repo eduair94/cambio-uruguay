@@ -618,7 +618,9 @@ export default defineNuxtConfig({
 
   // Robots Configuration
   robots: {
-    disallow: ['/admin/', '/server/', '/_nuxt/', '/api-reference'],
+    // /estadisticas-de-busqueda is the owner's Search Console dashboard: it renders the queries
+    // visitors typed, so it is disallowed here AND noindexed on the page AND gated server-side.
+    disallow: ['/admin/', '/server/', '/_nuxt/', '/api-reference', '/estadisticas-de-busqueda'],
     allow: [
       '/',
       '/avanzado',
@@ -684,11 +686,13 @@ export default defineNuxtConfig({
       '/cuenta',
       '/estado',
       '/api-reference',
+      '/estadisticas-de-busqueda',
       '/*/offline',
       '/*/widget',
       '/*/cuenta',
       '/*/estado',
       '/*/api-reference',
+      '/*/estadisticas-de-busqueda',
     ],
   },
 
@@ -763,6 +767,11 @@ export default defineNuxtConfig({
     // trigger for the daily driver ingest). Unset -> endpoint is open, mirroring
     // /api/blog/generate's NUXT_BLOG_GENERATE_TOKEN pattern.
     driversIngestToken: process.env.NUXT_DRIVERS_INGEST_TOKEN || '',
+    // Comma-separated emails allowed to read /api/search-console (the private Search Console
+    // dashboard). Baked from .env at build like everything else here — pm2's runtime env is empty,
+    // so a process.env read would be undefined in prod. UNSET MEANS THE ROUTE 503s, on purpose:
+    // the failure mode of an open default is publishing every query the site ranks for.
+    adminEmails: process.env.NUXT_ADMIN_EMAILS || '',
     // NOTE: predictionsIngestToken / POST /api/predictions/ingest is gone — the daily AI
     // price-lean + external-forecast record moved to the backend (classes/predictions/*, pm2
     // currency-predictions). The manual trigger it provided is now, on the VPS:

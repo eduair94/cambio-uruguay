@@ -131,8 +131,15 @@ describe('the navigation model has no dead links', () => {
     expect(dead).toEqual([])
   })
 
-  it('excludes exactly the offline, widget and account routes', () => {
-    expect([...EXCLUDED_ROUTES].sort()).toEqual(['/cuenta', '/offline', '/widget'])
+  // Pinned as a list rather than a count: the exclusion list is how a page removes itself from
+  // the navigation AND from the SEO ratchet, so it must stay small and every addition deliberate.
+  it('excludes exactly the non-content routes', () => {
+    expect([...EXCLUDED_ROUTES].sort()).toEqual([
+      '/cuenta',
+      '/estadisticas-de-busqueda',
+      '/offline',
+      '/widget',
+    ])
   })
 
   it('has no duplicate routes across sections', () => {
