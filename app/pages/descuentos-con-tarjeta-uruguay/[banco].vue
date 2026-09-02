@@ -142,7 +142,14 @@
           </h3>
           <ul class="brand-list">
             <li v-for="brand in group.brands" :key="brand.brandId">
-              <span class="brand-name">{{ brand.name }}</span>
+              <NuxtLink
+                v-if="brand.pageSlug"
+                :to="localePath(`/descuentos-con-tarjeta-uruguay/marca/${brand.pageSlug}`)"
+                class="brand-name brand-link"
+              >
+                {{ brand.name }}
+              </NuxtLink>
+              <span v-else class="brand-name">{{ brand.name }}</span>
               <span class="brand-meta">
                 {{ brand.locations }} local{{ brand.locations === 1 ? '' : 'es' }}
                 <template v-if="brandDayNote(brand)"> · {{ brandDayNote(brand) }}</template>
@@ -290,7 +297,8 @@ const bankId = page.value.bankId
 const bank = computed(() => BANKOS_BANK_BY_ID[bankId])
 
 interface BrandsResponse {
-  brands: BrandRow[]
+  /** Cada marca con el slug de su página, o null si no tiene (el 85 % del catálogo). */
+  brands: Array<BrandRow & { pageSlug: string | null }>
   categories: { category: string; brands: number; locations: number }[]
   tiers: OfferTier[]
   banks: {
@@ -632,5 +640,15 @@ useHead(() => ({
 .related li {
   margin-bottom: 6px;
   font-size: 0.9rem;
+}
+
+/* La marca es un enlace sólo cuando tiene página propia; el resto queda como texto. Token de
+   link y no primary: en tema oscuro primary da 4,01:1 sobre la tarjeta y no llega a AA. */
+.brand-link {
+  color: rgb(var(--v-theme-link));
+  text-decoration: none;
+}
+.brand-link:hover {
+  text-decoration: underline;
 }
 </style>
