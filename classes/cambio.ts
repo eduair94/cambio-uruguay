@@ -23,6 +23,29 @@ axios.defaults.timeout = 15000; // 15 seconds
 // official BCU hostname; never weaken TLS for scraper websites in general.
 const bcuHttpsAgent = new https.Agent({ rejectUnauthorized: false });
 
+/**
+ * La colección de cotizaciones (`cambio-uy`), compartida.
+ *
+ * Existe como función y no como literal dentro del constructor porque la auditoría entre casas
+ * (classes/rate_audit.ts) necesita leer las filas del día SIN construir un scraper. `getInstance`
+ * está memoizado por nombre, así que las dos rutas devuelven exactamente la misma instancia.
+ */
+export function ratesCollection(): MongooseServer {
+  return MongooseServer.getInstance(
+    "cambio-uy",
+    new Schema({
+      bcu: { type: String },
+      origin: { type: String },
+      code: { type: String },
+      type: { type: String },
+      name: { type: String },
+      buy: { type: Number },
+      sell: { type: Number },
+      date: { type: Date },
+    })
+  );
+}
+
 abstract class Cambio {
   protected db_suc: MongooseServer;
   protected origin: string;
@@ -160,19 +183,7 @@ abstract class Cambio {
 
   constructor(origin?: string) {
     this.origin = origin;
-    this.db = MongooseServer.getInstance(
-      "cambio-uy",
-      new Schema({
-        bcu: { type: String },
-        origin: { type: String },
-        code: { type: String },
-        type: { type: String },
-        name: { type: String },
-        buy: { type: Number },
-        sell: { type: Number },
-        date: { type: Date },
-      })
-    );
+    this.db = ratesCollection();
     this.db_suc = MongooseServer.getInstance(
       "bcu_suc",
       new Schema(

@@ -12,7 +12,7 @@ Root map of a multi-package monorepo behind [cambio-uruguay.com](https://cambio-
 | app | script | cron | notes |
 |---|---|---|---|
 | currency-server | dist/index.js | — | **cluster ×2**, the API. NO scheduled work here (see below) |
-| currency-sync | dist/sync.js | */5 * * * * | scrape all casas (`classes/sync_cambio.ts`) |
+| currency-sync | dist/sync.js | */5 * * * * | scrape all casas (`classes/sync_cambio.ts`). Dos guardas de plausibilidad, y son distintas a propósito: `rate_plausibility.ts` rechaza por fila lo que no puede ser un precio (**compra > venta**: una casa compra barato y vende caro) al momento de escribir, y `rate_audit.ts` corre al final del ciclo con TODAS las casas ya escritas, que es lo único que ve el caso espejo — una coma perdida del lado de la VENTA es coherente por fila y absurda al lado de las otras 40 casas. La banda es por percentiles del propio grupo (moneda+tipo) porque un factor fijo o borra el peso argentino (spreads reales de 10×) o deja pasar cualquier cosa en el dólar; fuera de p10/30–p90×30 se borra, fuera de p10/3–p90×3 sólo avisa. Telegram una vez por día por cotización |
 | currency-sheet | dist/sync_sheet.js | — | long-running Google-Sheet sync |
 | currency-aduana | dist/sync_aduana.js | 30 9 * * 1 | Mondays; Reddit+Gemini customs corpus |
 | currency-aduana-daily | dist/sync_aduana_daily.js | 40 9 * * * | self-gates to 2026-09-01..11-01 decree window |

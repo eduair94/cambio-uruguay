@@ -8,7 +8,8 @@ import fs from "fs";
 import os from "os";
 import path from "path";
 import { afterEach, describe, expect, it } from "vitest";
-import { implausibleReason, rateKey, shouldAlert } from "../classes/rate_plausibility";
+import { auditAgainstPeers, bandFor, implausibleReason, rateKey, shouldAlert } from "../classes/rate_plausibility";
+import type { RateLike } from "../classes/rate_plausibility";
 
 describe("implausibleReason", () => {
   it("rejects the quote that actually shipped", () => {
@@ -108,5 +109,90 @@ describe("shouldAlert", () => {
     const f = tmpFile();
     fs.writeFileSync(f, "no soy json");
     expect(shouldAlert("a|USD|", "2026-09-01", f)).toBe(true);
+  });
+});
+
+// La banda entre casas: el caso que la regla por fila no puede ver.
+//
+// Los tres casos vienen del mismo día real (2026-09-01, 201 filas servidas por la API pública):
+// la compra rota de la_favorita, la cotización genuinamente rara de tradelix para el peso
+// argentino, y el resto del mercado como contexto.
+describe("auditAgainstPeers", () => {
+  const row = (origin: string, code: string, buy: number, sell: number, type = ""): RateLike => ({
+    origin,
+    code,
+    type,
+    buy,
+    sell,
+  });
+
+  /** 41 casas cotizando el dólar entre 39 y 41,50, que es lo que había ese día. */
+  const usdMarket = (): RateLike[] =>
+    Array.from({ length: 40 }, (_, i) => row(`casa_${i}`, "USD", 39 + (i % 10) * 0.1, 41 + (i % 5) * 0.1));
+
+  /** 38 casas cotizando el peso argentino con spreads de diez veces, que también es real. */
+  const arsMarket = (): RateLike[] =>
+    Array.from({ length: 38 }, (_, i) => row(`casa_${i}`, "ARS", 0.02, 0.2 + (i % 3) * 0.01));
+
+  it("marca como imposible la compra que se publicó de verdad", () => {
+    const judged = auditAgainstPeers([...usdMarket(), row("la_favorita", "USD", 3905, 41.45)]);
+    const hit = judged.find((r) => r.origin === "la_favorita");
+    expect(hit?.verdict.level).toBe("imposible");
+    expect(hit?.verdict.side).toBe("buy");
+  });
+
+  it("VE EL CASO ESPEJO: la coma perdida del lado de la venta", () => {
+    // Por fila esto es coherente —compra menor que venta— así que la otra guarda lo deja pasar.
+    // Sólo se nota contra las otras 40 casas.
+    const judged = auditAgainstPeers([...usdMarket(), row("cambio_x", "USD", 39.05, 4120)]);
+    const hit = judged.find((r) => r.origin === "cambio_x");
+    expect(hit?.verdict.level).toBe("imposible");
+    expect(hit?.verdict.side).toBe("sell");
+  });
+
+  it("no borra un precio malo de verdad: lo marca sospechoso", () => {
+    // tradelix compra el peso argentino a 0,15 donde el resto paga 0,02. Es carísimo, no es un
+    // error de parseo, y borrarlo sería inventar que la casa no cotiza.
+    const judged = auditAgainstPeers([...arsMarket(), row("tradelix", "ARS", 0.15, 0.55)]);
+    const hit = judged.find((r) => r.origin === "tradelix");
+    expect(hit?.verdict.level).toBe("sospechosa");
+  });
+
+  it("deja en paz al mercado normal", () => {
+    const judged = auditAgainstPeers([...usdMarket(), ...arsMarket()]);
+    expect(judged.filter((r) => r.verdict.level !== "ok")).toEqual([]);
+  });
+
+  it("no juzga un grupo sin muestra suficiente", () => {
+    // Cuatro casas no hacen un mercado; una banda sobre eso marca cualquier cosa.
+    const judged = auditAgainstPeers([
+      row("a", "XAU", 168955, 184912),
+      row("b", "XAU", 170000, 185000),
+      row("c", "XAU", 169500, 184000),
+      row("d", "XAU", 1, 2),
+    ]);
+    expect(judged.every((r) => r.verdict.level === "ok")).toBe(true);
+  });
+
+  it("separa por tipo: el interbancario no se compara contra el mostrador", () => {
+    const judged = auditAgainstPeers([
+      ...usdMarket(),
+      ...Array.from({ length: 6 }, (_, i) => row(`banco_${i}`, "USD", 40.2, 40.2, "INTERBANCARIO")),
+    ]);
+    expect(judged.filter((r) => r.verdict.level !== "ok")).toEqual([]);
+  });
+});
+
+describe("bandFor", () => {
+  it("le da banda ancha sola a una moneda dispersa y angosta a una apretada", () => {
+    const usd = bandFor(Array.from({ length: 40 }, (_, i) => 39 + (i % 10) * 0.1))!;
+    const ars = bandFor([...Array(20).fill(0.02), ...Array(18).fill(0.2)])!;
+    // El cociente alto/bajo de la banda es lo que mide cuánta dispersión tolera cada grupo.
+    expect(ars.softHigh / ars.softLow).toBeGreaterThan(usd.softHigh / usd.softLow);
+  });
+
+  it("no devuelve banda sin muestra", () => {
+    expect(bandFor([1, 2, 3, 4])).toBeNull();
+    expect(bandFor([])).toBeNull();
   });
 });

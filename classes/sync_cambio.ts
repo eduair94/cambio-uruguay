@@ -1,6 +1,7 @@
 import fs from "fs";
 import { Cambio } from "./cambio";
 import { origins } from "./origins";
+import { auditTodaysRates } from "./rate_audit";
 import { publishPendingRateChanges } from "./rate_changes";
 import { DEFAULT_ORIGIN_TIMEOUT_MS, DEFAULT_SYNC_BUDGET_MS } from "./sync_health";
 
@@ -95,6 +96,13 @@ const sync_cambios = async () => {
       await delay(ORIGIN_DELAY_MS);
     }
   }
+
+  // Con todas las casas ya escritas, mirarlas juntas: es lo único que ve una coma perdida del lado
+  // de la VENTA, que por fila es perfectamente coherente (ver classes/rate_audit.ts). Nunca lanza.
+  const audit = await auditTodaysRates();
+  console.log(
+    `Rate audit: ${audit.checked} filas, ${audit.removed} borradas, ${audit.suspicious} sospechosas`
+  );
 
   const telegram = await publishPendingRateChanges().catch((error) => {
     console.error("Could not publish pending rate changes:", error);

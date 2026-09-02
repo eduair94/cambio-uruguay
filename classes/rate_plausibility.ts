@@ -81,3 +81,129 @@ export function shouldAlert(key: string, day: string, memoFile: string = MEMO_FI
   }
   return true;
 }
+
+// ---------------------------------------------------------------------------------------------
+// La banda entre casas: el caso espejo
+//
+// La regla de arriba atrapa la coma perdida del lado de la COMPRA (queda por encima de la venta).
+// Si se pierde del lado de la VENTA, pasa limpia: compra 39,05 / venta 4145 sigue cumpliendo
+// compra < venta. Lo único que la delata es comparar contra lo que cobran las otras casas.
+//
+// Y ahí no sirve una banda fija. Medido sobre las 197 filas con los dos lados que servía la API el
+// 2026-09-01: las casas cotizan el peso argentino a 0,02 / 0,20 —diez veces de spread, y es real,
+// porque no lo quieren— mientras el dólar se mueve entre 39 y 41,50 en 41 casas. Un factor único
+// aplicado a las dos monedas o borra el peso argentino o deja pasar cualquier cosa en el dólar.
+//
+// Por eso la banda se calcula sobre los PERCENTILES del propio grupo (moneda + tipo): una moneda
+// con precios dispersos se gana una banda ancha sola, sin que nadie la configure. Dos franjas:
+//
+//   * SOSPECHOSA  fuera de [p10/3, p90×3]  → avisa, no toca nada. Acá cae, con razón, la cotización
+//     genuinamente rara de tradelix para el peso argentino: es un precio malo, no un error.
+//   * IMPOSIBLE   fuera de [p10/30, p90×30] → es un error de la fuente. La compra de 3905 del
+//     2026-09-01 estaba 32 veces por encima del borde de la banda sospechosa.
+// ---------------------------------------------------------------------------------------------
+
+/** Mínimo de casas en un grupo para que su mediana signifique algo. */
+export const BAND_MIN_SAMPLE = 5;
+export const BAND_SOFT_FACTOR = 3;
+export const BAND_HARD_FACTOR = 30;
+
+export interface BandVerdict {
+  level: "ok" | "sospechosa" | "imposible";
+  side: "buy" | "sell" | null;
+  reason: string | null;
+}
+
+function percentile(values: number[], p: number): number {
+  const sorted = values.filter((v) => v > 0).sort((a, b) => a - b);
+  if (!sorted.length) return 0;
+  const index = Math.min(sorted.length - 1, Math.max(0, Math.round((sorted.length - 1) * p)));
+  return sorted[index];
+}
+
+export interface Band {
+  softLow: number;
+  softHigh: number;
+  hardLow: number;
+  hardHigh: number;
+  sample: number;
+}
+
+/** La banda de un grupo (misma moneda y tipo), o null si no hay muestra suficiente. */
+export function bandFor(values: number[]): Band | null {
+  const usable = values.filter((v) => Number.isFinite(v) && v > 0);
+  if (usable.length < BAND_MIN_SAMPLE) return null;
+  const lo = percentile(usable, 0.1);
+  const hi = percentile(usable, 0.9);
+  if (!lo || !hi) return null;
+  return {
+    softLow: lo / BAND_SOFT_FACTOR,
+    softHigh: hi * BAND_SOFT_FACTOR,
+    hardLow: lo / BAND_HARD_FACTOR,
+    hardHigh: hi * BAND_HARD_FACTOR,
+    sample: usable.length,
+  };
+}
+
+function judge(value: number, band: Band | null, side: "buy" | "sell"): BandVerdict {
+  if (!band || !(value > 0)) return { level: "ok", side: null, reason: null };
+  const label = side === "buy" ? "compra" : "venta";
+  if (value > band.hardHigh || value < band.hardLow) {
+    return {
+      level: "imposible",
+      side,
+      reason: `${label} ${value} contra una banda de [${band.hardLow.toPrecision(3)}, ${band.hardHigh.toPrecision(
+        3
+      )}] entre ${band.sample} casas`,
+    };
+  }
+  if (value > band.softHigh || value < band.softLow) {
+    return {
+      level: "sospechosa",
+      side,
+      reason: `${label} ${value} fuera de [${band.softLow.toPrecision(3)}, ${band.softHigh.toPrecision(
+        3
+      )}] entre ${band.sample} casas`,
+    };
+  }
+  return { level: "ok", side: null, reason: null };
+}
+
+/** El peor de los dos lados. Una fila con la compra imposible no se salva porque la venta esté bien. */
+export function judgeAgainstBand(row: RateLike, buyBand: Band | null, sellBand: Band | null): BandVerdict {
+  const buy = judge(Number(row.buy), buyBand, "buy");
+  if (buy.level === "imposible") return buy;
+  const sell = judge(Number(row.sell), sellBand, "sell");
+  if (sell.level === "imposible") return sell;
+  if (buy.level === "sospechosa") return buy;
+  return sell;
+}
+
+export interface BandedRow extends RateLike {
+  verdict: BandVerdict;
+}
+
+/**
+ * Agrupa por (moneda, tipo), arma la banda de cada grupo y juzga cada fila.
+ *
+ * Pura: el que la llama decide qué hacer con el veredicto. Es lo que permite probar los umbrales
+ * contra un día real sin tocar Mongo.
+ */
+export function auditAgainstPeers(rows: RateLike[]): BandedRow[] {
+  const groups = new Map<string, RateLike[]>();
+  for (const row of rows) {
+    const key = `${row.code || ""}|${row.type || ""}`;
+    const list = groups.get(key) || [];
+    list.push(row);
+    groups.set(key, list);
+  }
+  const out: BandedRow[] = [];
+  for (const list of groups.values()) {
+    const buyBand = bandFor(list.map((r) => Number(r.buy)));
+    const sellBand = bandFor(list.map((r) => Number(r.sell)));
+    for (const row of list) {
+      out.push({ ...row, verdict: judgeAgainstBand(row, buyBand, sellBand) });
+    }
+  }
+  return out;
+}
