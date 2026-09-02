@@ -1,3 +1,5 @@
+import { CONSENT_STRICT_REGIONS } from './utils/consent'
+
 export default defineNuxtConfig({
   // Keep opt-in validation/CI builds isolated from a running dev server or another staging build.
   // Normal builds retain Nuxt's default cache directory.
@@ -434,10 +436,34 @@ export default defineNuxtConfig({
         // site-wide. `initCommands` above still applies: initialize() runs them
         // before the tag id, so the Consent Mode v2 defaults are unchanged.
         initMode: 'manual',
-        // Google Consent Mode v2: deny all storage by default until the user
-        // accepts via the cookie banner (useConsent flips these to granted).
-        // wait_for_update gives the banner a moment before tags fire.
+        // Google Consent Mode v2, scoped by region.
+        //
+        // Two `consent default` calls. The first is the world-wide baseline; the
+        // second overrides it for the EEA, the UK and Switzerland, where Google's
+        // EU user consent policy requires prior consent. Region-scoped values take
+        // precedence over the unscoped ones, so order is documentation, not logic.
+        //
+        // Denying everywhere was costing measurement and revenue for no legal gain:
+        // GA4 was recording 621 organic sessions against Search Console's 2.475
+        // clicks in the same 28 days, because a visitor who ignores the banner is
+        // never counted and this site is far too small for Google's behavioural
+        // modelling to fill the gap. See utils/consent.ts for the full reasoning
+        // and the regions list.
+        //
+        // The opt-out stays real: the banner shows on the first visit either way,
+        // "Rechazar" applies denied immediately, and plugins/consent.client.ts
+        // replays a stored rejection on every boot so it survives the session.
         initCommands: [
+          [
+            'consent',
+            'default',
+            {
+              ad_user_data: 'granted',
+              ad_personalization: 'granted',
+              ad_storage: 'granted',
+              analytics_storage: 'granted',
+            },
+          ],
           [
             'consent',
             'default',
@@ -446,7 +472,10 @@ export default defineNuxtConfig({
               ad_personalization: 'denied',
               ad_storage: 'denied',
               analytics_storage: 'denied',
+              // Gives the banner a moment before tags fire, so an acceptance in the
+              // first half-second is not lost.
               wait_for_update: 500,
+              region: [...CONSENT_STRICT_REGIONS],
             },
           ],
         ],

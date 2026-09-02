@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   CONSENT_COOKIE_NAME,
   CONSENT_MAX_AGE,
+  CONSENT_STRICT_REGIONS,
   parseConsent,
   serializeConsent,
   consentSignals,
@@ -44,5 +45,44 @@ describe('consent core', () => {
       ad_user_data: 'denied',
       ad_personalization: 'denied',
     })
+  })
+})
+
+// The consent defaults are region-scoped (nuxt.config.ts): denied where Google's EU user consent
+// policy requires it, granted elsewhere. Getting this list wrong is not a visible bug — it is
+// either a compliance problem in Europe or three quarters of the traffic going unmeasured at home.
+describe('strict consent regions', () => {
+  it('covers the EEA, the UK and Switzerland', () => {
+    for (const code of [
+      'DE',
+      'FR',
+      'ES',
+      'IT',
+      'NL',
+      'PL',
+      'SE',
+      'IE',
+      'NO',
+      'IS',
+      'LI',
+      'GB',
+      'CH',
+    ]) {
+      expect(CONSENT_STRICT_REGIONS).toContain(code)
+    }
+    // 27 EU + 3 EEA + UK + CH.
+    expect(CONSENT_STRICT_REGIONS).toHaveLength(32)
+  })
+
+  it('does not cover the markets this site actually serves', () => {
+    // 96 % of impressions are Uruguayan; these are the ones the strict default was silently costing.
+    for (const code of ['UY', 'AR', 'BR', 'US', 'CL', 'PY', 'BO', 'MX', 'CO']) {
+      expect(CONSENT_STRICT_REGIONS).not.toContain(code)
+    }
+  })
+
+  it('is uppercase ISO-3166 alpha-2 with no duplicates', () => {
+    for (const code of CONSENT_STRICT_REGIONS) expect(code).toMatch(/^[A-Z]{2}$/)
+    expect(new Set(CONSENT_STRICT_REGIONS).size).toBe(CONSENT_STRICT_REGIONS.length)
   })
 })

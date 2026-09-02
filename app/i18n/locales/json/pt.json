@@ -2251,7 +2251,7 @@
       "source": "Os dados vêm do Google Analytics 4 (Data API), não de um contador próprio: é a mesma fonte que usamos para decidir o que escrever.",
       "window": "A janela termina ontem e não hoje, porque o dia em curso está pela metade e ao lado de 27 dias inteiros parece um desabamento.",
       "aggregate": "Tudo o que é publicado é agregado: totais, dias inteiros e o topo de cada lista. Nada por visitante, sem IP, sem percurso individual.",
-      "consent": "O Analytics respeita o Modo de Consentimento: até você aceitar cookies nada é guardado no seu navegador, então estes números são um piso, não um teto.",
+      "consent": "O Analytics respeita o Modo de Consentimento: quem recusa os cookies não é registrado e, na Europa, nada é guardado até aceitar. Estes números são um piso, não um teto.",
       "bare": "/pizarra e /widget não carregam o Analytics: esse tráfego não está contado aqui.",
       "live": "O bloco «Agora mesmo» vem da API em tempo real do GA4, com cache de 45 segundos; o resto da página é o retrato diário. Em tempo real o Google não dá rotas, só títulos."
     },
