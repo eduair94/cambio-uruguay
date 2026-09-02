@@ -687,12 +687,20 @@ const BANKOS_FAQ: FaqItem[] = [
 ]
 
 // --- Data ---
-const banksParam = computed(() => [...selectedBankIds.value].sort().join(','))
+/**
+ * La consulta viaja con las TARJETAS, no con los emisores.
+ *
+ * Con `banks=brou` el servidor devolvía los 1.224 locales de BROU aunque el visitante sólo tuviera
+ * la de débito, y sólo 193 dan beneficio con débito (medido contra la API viva el 2026-09-02): el
+ * 84 % de lo que veía no le servía, en la única pantalla del sitio cuya pregunta es "¿me sirve mi
+ * tarjeta acá?". `selectedBankIds` sigue existiendo para pintar los chips y la leyenda.
+ */
+const cardsParam = computed(() => [...selectedCards.value].sort().join(','))
 const { data, pending, refresh } = await useLazyAsyncData<BankosDiscountsResponse>(
   'bankos-discounts',
   () =>
-    banksParam.value
-      ? $fetch('/api/bankos/discounts', { query: { banks: banksParam.value } })
+    cardsParam.value
+      ? $fetch('/api/bankos/discounts', { query: { cards: cardsParam.value } })
       : Promise.resolve({
           source: 'cache',
           generatedAt: null,
@@ -701,7 +709,7 @@ const { data, pending, refresh } = await useLazyAsyncData<BankosDiscountsRespons
           locationsCount: 0,
           items: [],
         }),
-  { watch: [banksParam], server: false }
+  { watch: [cardsParam], server: false }
 )
 
 const items = computed(() => data.value?.items ?? [])
@@ -848,7 +856,7 @@ watch(
 const todayCount = computed(() => items.value.filter(appliesToday).length)
 
 const listLimit = ref(200)
-watch([search, category, sortBy, banksParam, onlyToday, onlyFavorites, onlyTopRated], () => {
+watch([search, category, sortBy, cardsParam, onlyToday, onlyFavorites, onlyTopRated], () => {
   listLimit.value = 200
 })
 const visibleList = computed(() => filtered.value.slice(0, listLimit.value))
@@ -959,7 +967,7 @@ function formatDate(iso: string): string {
 
 // Refresh once when the component mounts if cards were restored from storage.
 onMounted(() => {
-  if (banksParam.value) refresh()
+  if (cardsParam.value) refresh()
 })
 
 // --- SEO ---

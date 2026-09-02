@@ -74,6 +74,14 @@ export interface BankosDiscountBank {
    * "de lunes a jueves" → [1,2,3,4]), 0 mismatches. See tests/unit/bankosDays.test.ts.
    */
   availableDays: number[] | null
+  /**
+   * Con cuál de los medios de pago que el visitante EFECTIVAMENTE tiene aplica el beneficio.
+   *
+   * Lo llena `flattenForCards`. Sin esto la ficha le mostraba el texto de crédito a alguien que
+   * sólo eligió la tarjeta de débito — y el mapa le mostraba 1.031 comercios donde su tarjeta no
+   * sirve (medido: BROU devuelve 1.224 locales y sólo 193 dan beneficio con débito).
+   */
+  matchedKinds?: Array<'credit' | 'debit'>
 }
 export interface BankosItem {
   locationId: string

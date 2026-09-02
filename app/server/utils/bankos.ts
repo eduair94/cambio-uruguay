@@ -180,6 +180,52 @@ export function flattenForBanks(data: RawData, bankIds: string[]): BankosItem[] 
   return items
 }
 
+/**
+ * Igual que {@link flattenForBanks}, pero filtrando por la TARJETA y no por el emisor.
+ *
+ * EL BUG QUE ARREGLA. La pantalla deja elegir "BROU Débito", pero la consulta viajaba con el
+ * emisor pelado (`banks=brou`) y el emisor descuenta con las dos. Medido contra la API viva el
+ * 2026-09-02: BROU devuelve 1.224 locales y sólo 193 publican beneficio con débito. Es decir que
+ * quien elegía su tarjeta de débito veía 1.031 comercios donde su tarjeta NO sirve — 84 % de
+ * ruido, y en la única pantalla del sitio cuya pregunta es "¿me sirve mi tarjeta acá?".
+ *
+ * Un local entra sólo si alguna de las tarjetas elegidas tiene beneficio ahí, y cada emisor viaja
+ * con `matchedKinds`, que es con cuál de los medios de pago del visitante aplica: sin eso la ficha
+ * seguiría mostrando el texto de crédito a alguien que sólo tiene la de débito.
+ */
+export function flattenForCards(data: RawData, cardIds: string[]): BankosItem[] {
+  const wanted = new Map<string, Set<'credit' | 'debit'>>()
+  for (const card of BANKOS_CARDS) {
+    if (!cardIds.includes(card.id)) continue
+    const set = wanted.get(card.bankId) ?? new Set<'credit' | 'debit'>()
+    set.add(card.type)
+    wanted.set(card.bankId, set)
+  }
+  if (!wanted.size) return []
+
+  const items = flattenForBanks(data, [...wanted.keys()])
+  const out: BankosItem[] = []
+  for (const item of items) {
+    const banks: BankosItem['banks'] = []
+    for (const bank of item.banks) {
+      const kinds = wanted.get(bank.bankId)
+      if (!kinds) continue
+      const matched: Array<'credit' | 'debit'> = []
+      if (kinds.has('credit') && bank.hasCredit && bank.creditDescription) matched.push('credit')
+      if (kinds.has('debit') && bank.hasDebit && bank.debitDescription) matched.push('debit')
+      if (!matched.length) continue
+      banks.push({ ...bank, matchedKinds: matched })
+    }
+    if (banks.length) out.push({ ...item, banks })
+  }
+  return out
+}
+
+/** Marcas alcanzables con las tarjetas elegidas, contadas sobre el resultado ya filtrado. */
+export function brandCountForCards(data: RawData, cardIds: string[]): number {
+  return new Set(flattenForCards(data, cardIds).map(i => i.brandId)).size
+}
+
 export function brandCountForBanks(data: RawData, bankIds: string[]): number {
   const set = new Set<string>()
   for (const bankId of bankIds) {
