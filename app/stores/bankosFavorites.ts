@@ -34,8 +34,11 @@ export const useBankosFavoritesStore = defineStore('bankosFavorites', () => {
     }
   }
 
+  /** Mismo arreglo que en bankosCards: nunca escribir antes de haber leído. La hidratación de
+   *  pinia asigna el `[]` del SSR, el watcher dispara y sin esta condición el localStorage se
+   *  pisaba con "[]" antes de que loadLocal() lo leyera — los favoritos se perdían en cada visita. */
   function persistLocal() {
-    if (!import.meta.client) return
+    if (!import.meta.client || !localLoaded) return
     try {
       window.localStorage.setItem(BANKOS_FAVORITES_STORAGE_KEY, JSON.stringify(favorites.value))
     } catch {

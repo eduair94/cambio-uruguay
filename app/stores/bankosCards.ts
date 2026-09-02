@@ -36,8 +36,20 @@ export const useBankosCardsStore = defineStore('bankosCards', () => {
     }
   }
 
+  /**
+   * NUNCA escribe antes de haber leído. Esa condición es el arreglo de un bug que borraba la
+   * selección de todo el mundo en cada visita.
+   *
+   * Qué pasaba: la página usa el store durante el SSR, así que pinia serializa `cards: []` en el
+   * payload; al hidratar, el cliente le asigna ese `[]` al ref, el watcher de abajo dispara, y
+   * `persistLocal` pisaba el localStorage con "[]" — todo antes de que `loadLocal()` (que corre en
+   * onMounted) alcanzara a leerlo. Medido en producción con un hook sobre Storage.setItem: la
+   * escritura del "[]" ocurría a los 1.379 ms. Y como sin tarjetas seleccionadas la página no
+   * dibuja el mapa ni llama a /api/bankos/*, el efecto era que cada visitante que volvía se
+   * encontraba el producto vacío y tenía que elegir las tarjetas otra vez.
+   */
   function persistLocal() {
-    if (!import.meta.client) return
+    if (!import.meta.client || !localLoaded) return
     try {
       window.localStorage.setItem(BANKOS_CARDS_STORAGE_KEY, JSON.stringify(cards.value))
     } catch {
