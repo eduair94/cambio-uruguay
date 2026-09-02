@@ -178,6 +178,10 @@ describe('the navigation model has no dead links', () => {
       '/tarjetas-de-socio-uruguay',
       '/tarjetas-de-credito-uruguay',
       '/tarjetas-de-debito-uruguay',
+      // El techo legal del OTRO medio de pago. Va acá y no en trámites porque la pregunta llega
+      // eligiendo cómo pagar («¿lo pago en efectivo o transfiero?»), que es la misma decisión que
+      // resuelven las dos entradas de arriba.
+      '/limite-de-efectivo-uruguay',
       // What the same account pays you for leaving money in it — the other side
       // of the card comparison, and where the debit ranking sends the reader.
       '/cuenta-remunerada-uruguay',
