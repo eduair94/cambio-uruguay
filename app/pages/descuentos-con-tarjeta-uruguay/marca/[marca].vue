@@ -195,6 +195,29 @@ interface BrandDetail {
 // por qué entrar en el primer pintado de una página que se lee.
 const LocationsMap = defineAsyncComponent(() => import('~/components/map/LocationsMap.vue'))
 
+// El 404 se decide ACÁ y no con un createError adentro del setup.
+//
+// Verificado en producción: con `throw createError(...)` después del `await useFetch`, un slug
+// inventado devolvía 200 y 220 KB con el título por defecto del sitio — el layout entero sin
+// página adentro. Es decir, cualquier palabra pegada a /marca/ era una URL indexable, una fábrica
+// de soft-404 justo en la familia que acaba de sumar 304 páginas. `validate` corre ANTES del
+// setup y su `false` sí produce un 404 de verdad, el mismo que ya devuelve cualquier ruta
+// inexistente del sitio.
+//
+// El filtro de forma va primero para no gastar una llamada por cada URL basura que llegue.
+definePageMeta({
+  validate: async route => {
+    const slug = String(route.params.marca ?? '')
+    if (!/^[a-z0-9][a-z0-9-]{0,80}$/.test(slug)) return false
+    try {
+      await $fetch(`/api/bankos/marca/${slug}`)
+      return true
+    } catch {
+      return false
+    }
+  },
+})
+
 const route = useRoute()
 const localePath = useLocalePath()
 const slug = computed(() => String(route.params.marca ?? ''))
@@ -211,6 +234,9 @@ const { data, error } = await useFetch<BrandDetail>(() => `/api/bankos/marca/${s
 // — verificado en producción, /marca/no-existe-esta-marca devolvía 200 y 220 KB con el título por
 // defecto del sitio. Eso es una fábrica de soft-404: un slug cualquiera es una página indexable.
 // También se mira `error`, porque useFetch no lanza: deja el error en su propio ref.
+// Red de seguridad: `validate` ya filtró los slugs que no existen, así que llegar acá sin datos
+// significa que el catálogo se cayó ENTRE la validación y esta lectura. Un 404 es la respuesta
+// honesta igual, pero el caso normal no pasa por acá.
 if (error.value || !data.value) {
   throw createError({
     statusCode: 404,
