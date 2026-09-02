@@ -202,14 +202,21 @@ const slug = computed(() => String(route.params.marca ?? ''))
 // `useFetch` y no `useLazyAsyncData`: el contenido de esta página TIENE que estar en el HTML que
 // recibe el buscador. El hub del mapa hace lo contrario y por eso su HTML servido no contiene el
 // nombre de una sola marca.
-const { data } = await useFetch<BrandDetail>(() => `/api/bankos/marca/${slug.value}`, {
-  key: () => `bankos-marca-${slug.value}`,
+const { data, error } = await useFetch<BrandDetail>(() => `/api/bankos/marca/${slug.value}`, {
+  key: `bankos-marca-${slug.value}`,
 })
 
-// Una marca que se cayó del catálogo deja de existir como URL. 404 de verdad, no una ficha vacía
-// que el buscador siga indexando.
-if (!data.value) {
-  throw createError({ statusCode: 404, statusMessage: 'Marca sin descuentos publicados' })
+// Una marca que no está en el catálogo deja de existir como URL. Tiene que ser un 404 DE VERDAD:
+// sin `fatal`, la primera versión servía 200 con la plantilla vacía para cualquier slug inventado
+// — verificado en producción, /marca/no-existe-esta-marca devolvía 200 y 220 KB con el título por
+// defecto del sitio. Eso es una fábrica de soft-404: un slug cualquiera es una página indexable.
+// También se mira `error`, porque useFetch no lanza: deja el error en su propio ref.
+if (error.value || !data.value) {
+  throw createError({
+    statusCode: 404,
+    statusMessage: 'Marca sin descuentos publicados',
+    fatal: true,
+  })
 }
 const detail = computed(() => data.value as BrandDetail)
 
