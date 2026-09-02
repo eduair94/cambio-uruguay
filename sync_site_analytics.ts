@@ -18,7 +18,8 @@ dotenv.config();
 import { appDbConfigured } from "./classes/appdb";
 import { ga4ConfigProblem } from "./classes/site-analytics/ga4";
 import { refreshSiteAnalytics, snapshotIsEmpty } from "./classes/site-analytics/refresh";
-import { saveSiteAnalytics } from "./classes/site-analytics/store";
+import { fetchRevenue, revenueIsEmpty } from "./classes/site-analytics/revenue";
+import { revenueWouldRegress, saveSiteAnalytics, saveSiteRevenue } from "./classes/site-analytics/store";
 
 async function main(): Promise<void> {
   if (!appDbConfigured()) {
@@ -47,6 +48,34 @@ async function main(): Promise<void> {
       process.exit(0);
     }
     await saveSiteAnalytics(snapshot);
+
+    // El ingreso publicitario va aparte, en su propia colección y detrás de `requireAdmin` (ver
+    // classes/site-analytics/revenue.ts). Va DESPUÉS de guardar el snapshot público y en su propio
+    // try: el enlace AdSense↔GA4 se puede caer, o puede no existir todavía, y ninguna de las dos
+    // cosas es razón para que /estadisticas-del-sitio se quede sin actualizar.
+    try {
+      const revenue = await fetchRevenue(snapshot.range.start, snapshot.range.end, snapshot.asOf);
+      if (await revenueWouldRegress(revenue)) {
+        console.warn(
+          "[site-analytics] el reporte de ingresos vino vacío y el guardado no lo estaba — se " +
+            "conserva el anterior. Suele ser el enlace AdSense↔GA4 caído, no un día sin plata."
+        );
+      } else {
+        await saveSiteRevenue(revenue);
+        console.log(
+          revenueIsEmpty(revenue)
+            ? "[site-analytics] ingresos: todavía en cero. El enlace AdSense↔GA4 tarda hasta 24 h en " +
+              "devolver datos; el documento queda marcado como pendiente."
+            : `[site-analytics] ingresos: ${revenue.totals.adRevenue.toFixed(2)} ${revenue.currency}, ` +
+              `${revenue.totals.adImpressions} impresiones de anuncio, RPM ${revenue.totals.rpm.toFixed(2)}, ` +
+              `${revenue.families.length} familias`
+        );
+      }
+    } catch (e: any) {
+      const detail = e?.response?.data ? JSON.stringify(e.response.data) : e?.message || String(e);
+      console.warn(`[site-analytics] no se pudo leer el ingreso publicitario: ${detail}`);
+    }
+
     console.log(
       `[site-analytics] ${snapshot.range.start}..${snapshot.range.end}: ` +
         `${snapshot.totals.activeUsers} users, ${snapshot.totals.sessions} sessions, ` +

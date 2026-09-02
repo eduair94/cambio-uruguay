@@ -334,3 +334,33 @@ día hiciera falta bajarlo, subí el TTL en `index.ts` (`redisCache.getOrSet("si
 | `app/pages/estadisticas-del-sitio.vue` | la página |
 | `app/utils/siteNav.ts` | la registra en el nav/buscador/sitemap |
 | `app/i18n/locales/json/{es,en,pt}.json` | textos |
+
+---
+
+## 4. Ingreso publicitario por página (enlace AdSense↔GA4)
+
+Creado el 2026-09-02: **Admin de GA4 → Vinculaciones de productos → AdSense** (`pub-7038674901615097`).
+No hace falta ninguna credencial nueva — las métricas aparecen en la misma Data API que el job ya
+lee. Google avisa que **tarda hasta 24 h** en empezar a devolver datos y mientras tanto contesta
+ceros, que es distinto de un día sin ingresos.
+
+Métricas que habilita: `totalAdRevenue`, `publisherAdImpressions`, `publisherAdClicks`.
+
+```
+currency-site-analytics
+   ├── siteanalyticssnapshots   → /api/site-analytics  → /estadisticas-del-sitio   (PÚBLICO)
+   └── siterevenuesnapshots     → /api/site-revenue    → /estadisticas-de-busqueda (requireAdmin)
+```
+
+**Por qué son dos colecciones y no dos campos.** La ruta pública devuelve el documento de analytics
+entero. Un campo de ingreso ahí adentro es un campo que un `.select()` mal escrito publica sin que
+nadie escriba una línea de HTML. `tests/site_analytics/revenue_privacy.test.ts` falla si aparece
+algo que huela a plata en el esquema público, si la ruta pública menciona el modelo de ingresos, o
+si alguna página que no sea la privada consulta `/api/site-revenue`.
+
+**La métrica de gobierno es el RPM por FAMILIA de página, no por URL.** Una URL suelta no dice nada;
+46 páginas de `/convertir` medidas juntas dicen que la familia entera rinde 0,05 % de CTR en
+búsqueda, y el RPM dice si además de no traer clics tampoco paga. La familia se calcula con el mismo
+`bucketOf` que el pipeline de Search Console, así que las dos tablas se cruzan fila a fila — que es
+exactamente lo que muestra el bloque «Demanda y plata, en la misma fila» de
+`/estadisticas-de-busqueda`.

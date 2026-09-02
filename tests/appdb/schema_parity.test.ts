@@ -11,6 +11,7 @@ import { RedditBotStatsModel } from "../../classes/models/RedditBotStats";
 import { RentalListingModel } from "../../classes/models/RentalListing";
 import { RentalMetaModel } from "../../classes/models/RentalMeta";
 import { SearchConsoleSnapshotModel } from "../../classes/models/SearchConsoleSnapshot";
+import { SiteRevenueSnapshotModel } from "../../classes/models/SiteRevenueSnapshot";
 
 const appModel = (name: string): string =>
   fs.readFileSync(path.join(__dirname, "..", "..", "app", "server", "models", `${name}.ts`), "utf8");
@@ -85,6 +86,12 @@ describe("app-Mongo schema parity", () => {
     );
   });
 
+  it("SiteRevenueSnapshot declares exactly the app's top-level fields", () => {
+    expect(Object.keys(SiteRevenueSnapshotModel.schema.obj).sort()).toEqual(
+      appFields(appModel("SiteRevenueSnapshot")).sort()
+    );
+  });
+
   it("writes the collections the app already reads — not mongoose's guess", () => {
     expect(PricePredictionModel.collection.name).toBe("pricepredictions");
     expect(MoveExplanationModel.collection.name).toBe("moveexplanations");
@@ -96,5 +103,6 @@ describe("app-Mongo schema parity", () => {
     expect(RentalListingModel.collection.name).toBe("rentallistings");
     expect(RentalMetaModel.collection.name).toBe("rentalmetas");
     expect(SearchConsoleSnapshotModel.collection.name).toBe("searchconsolesnapshots");
+    expect(SiteRevenueSnapshotModel.collection.name).toBe("siterevenuesnapshots");
   });
 });

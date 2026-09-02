@@ -66,6 +66,59 @@
         </div>
       </VCard>
 
+      <h2 class="text-h6 mb-2">Demanda y plata, en la misma fila</h2>
+      <p class="text-body-2 text-medium-emphasis mb-3">
+        Lo que Search Console mide de demanda y lo que GA4 mide de ingreso, por familia de
+        plantilla. Se pueden cruzar porque las dos usan el mismo criterio de familia. Es la tabla
+        que decide dónde escribir: más clics en una familia que no monetiza no es progreso.
+      </p>
+      <VAlert
+        v-if="!revenue || revenue.pending"
+        type="info"
+        variant="tonal"
+        density="compact"
+        class="mb-3"
+      >
+        <template v-if="!revenue">
+          Todavía no hay lectura de ingresos. Corre con el job diario
+          <code>currency-site-analytics</code>.
+        </template>
+        <template v-else>
+          El enlace AdSense↔GA4 se creó recién y Google tarda hasta 24 h en devolver datos. Las
+          columnas de plata van a estar en cero hasta entonces.
+        </template>
+      </VAlert>
+      <VTable density="compact" class="mb-8 cu-mobile-cards">
+        <thead>
+          <tr>
+            <th>Familia</th>
+            <th class="text-right">Impresiones</th>
+            <th class="text-right">Clics</th>
+            <th class="text-right">CTR</th>
+            <th class="text-right">Vistas</th>
+            <th class="text-right">RPM</th>
+            <th class="text-right">Ingreso</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="row in familyEconomics" :key="row.bucket">
+            <td data-label="Familia">{{ row.bucket }}</td>
+            <td data-label="Impresiones" class="text-right">{{ formatNumber(row.impressions) }}</td>
+            <td data-label="Clics" class="text-right">{{ formatNumber(row.clicks) }}</td>
+            <td data-label="CTR" class="text-right" :class="ctrClass(row.ctr)">
+              {{ scPercent(row.ctr) }}
+            </td>
+            <td data-label="Vistas" class="text-right">{{ formatNumber(row.views) }}</td>
+            <td data-label="RPM" class="text-right">
+              {{ row.views ? formatRevenue(row.rpm, revenueCurrency) : '—' }}
+            </td>
+            <td data-label="Ingreso" class="text-right font-weight-bold">
+              {{ row.adRevenue ? formatRevenue(row.adRevenue, revenueCurrency) : '—' }}
+            </td>
+          </tr>
+        </tbody>
+      </VTable>
+
       <h2 class="text-h6 mb-2">Rendimiento por familia de página</h2>
       <p class="text-body-2 text-medium-emphasis mb-3">
         La tabla que decide dónde escribir: el clic por impresión de cada plantilla, medido, no
@@ -227,6 +280,7 @@ import {
   type ScOpportunity,
   type SearchConsoleSnapshot,
 } from '~/utils/searchConsole'
+import { formatRevenue, type SiteRevenueSnapshot } from '~/utils/siteRevenue'
 
 // Login is required to get a bearer token at all; the server route re-checks the allowlist, which
 // is the check that actually protects the data.
@@ -244,6 +298,7 @@ const hint = ref('')
 const pending = ref(true)
 const forbidden = ref(false)
 const kindFilter = ref<string>('')
+const revenue = ref<SiteRevenueSnapshot | null>(null)
 
 try {
   const res = await authFetch<{ snapshot: SearchConsoleSnapshot | null; hint?: string }>(
@@ -257,6 +312,15 @@ try {
   hint.value = 'La ruta respondió ' + (e?.statusCode || e?.response?.status || 'error') + '.'
 } finally {
   pending.value = false
+}
+
+// El ingreso va en su propia petición y su propio try: es la mitad más nueva del tablero y no
+// tiene por qué llevarse puesta la de búsqueda si el enlace AdSense↔GA4 todavía no devuelve nada.
+try {
+  const res = await authFetch<{ snapshot: SiteRevenueSnapshot | null }>('/api/site-revenue')
+  revenue.value = res.snapshot
+} catch {
+  revenue.value = null
 }
 
 const formatNumber = (n: number) => new Intl.NumberFormat('es-UY').format(Math.round(n || 0))
@@ -288,6 +352,35 @@ const summary = computed(() => {
 })
 
 const topPageTypes = computed(() => (snapshot.value?.pageTypes || []).slice(0, 25))
+
+/**
+ * La tabla que decide dónde escribir: la demanda que mide Search Console y la plata que mide GA4,
+ * en la misma fila. Se pueden cruzar porque las dos usan el MISMO `bucketOf` para armar la familia.
+ *
+ * Ordenada por ingreso mientras haya, y por impresiones el primer día, para que sirva igual antes
+ * de que el enlace con AdSense empiece a devolver datos.
+ */
+const familyEconomics = computed(() => {
+  const search = snapshot.value?.pageTypes || []
+  const money = new Map((revenue.value?.families || []).map(f => [f.bucket, f]))
+  const rows = search.map(row => {
+    const m = money.get(row.bucket)
+    return {
+      bucket: row.bucket,
+      urls: row.urls,
+      impressions: row.impressions,
+      clicks: row.clicks,
+      ctr: row.ctr,
+      views: m?.screenPageViews ?? 0,
+      rpm: m?.rpm ?? 0,
+      adRevenue: m?.adRevenue ?? 0,
+    }
+  })
+  rows.sort((a, b) => b.adRevenue - a.adRevenue || b.impressions - a.impressions)
+  return rows.slice(0, 25)
+})
+
+const revenueCurrency = computed(() => revenue.value?.currency || 'USD')
 
 const visibleOpportunities = computed(() => {
   const all = snapshot.value?.opportunities || []
