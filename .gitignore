@@ -102,3 +102,6 @@ docs/seo/data/
 .claude
 .serena
 .github
+# Bookkeeping for the quote-plausibility guard (classes/rate_plausibility.ts): one line per
+# rejected quote per day, so the Telegram alert fires once instead of every five minutes.
+rate_rejections.json

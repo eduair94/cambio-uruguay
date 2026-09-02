@@ -4,6 +4,8 @@ import getDistance from "geolib/es/getDistance";
 import https from "https";
 import moment from "moment-timezone";
 import { CambioObj } from "../interfaces/Cambio";
+import { implausibleReason, rateKey, shouldAlert } from "./rate_plausibility";
+import { notifyAdmin } from "./notify";
 import { MongooseServer, Schema } from "./database";
 import { reconcileLocationIds } from "./location_sync";
 import {
@@ -306,6 +308,7 @@ abstract class Cambio {
     // Batch all saves into a single bulkWrite operation instead of individual findOneAndUpdate calls
     const date = moment.tz("America/Montevideo").startOf("day").toDate();
     const operations: { filter: Record<string, any>; update: Record<string, any> }[] = [];
+    const rejected: { key: string; line: string }[] = [];
 
     for (let obj of data) {
       const saveObj = {
@@ -320,6 +323,18 @@ abstract class Cambio {
 
       if (saveObj.buy === 0 && saveObj.sell === 0) {
         console.log("Skipping zero buy/sell:", saveObj);
+        continue;
+      }
+
+      // An impossible quote is dropped rather than stored. Serving yesterday's number, or none, is
+      // recoverable; publishing "Compra $ 3.905,00" as the best rate in the country is not.
+      const bad = implausibleReason(saveObj);
+      if (bad) {
+        rejected.push({
+          key: rateKey(saveObj),
+          line: `${saveObj.code}${saveObj.type ? "/" + saveObj.type : ""}: ${bad}`,
+        });
+        console.error(`[plausibility] descartada ${this.origin} ${saveObj.code}: ${bad}`);
         continue;
       }
 
@@ -346,6 +361,15 @@ abstract class Cambio {
       console.log(`Bulk upserted ${operations.length} entries for ${this.origin}`);
     }
 
+    // One message the first time a quote is rejected on a given day. The scrape runs every five
+    // minutes; an alert per run would be 288 copies of the same sentence.
+    if (rejected.length) {
+      const day = moment.tz("America/Montevideo").format("YYYY-MM-DD");
+      const fresh = rejected.filter((r) => shouldAlert(r.key, day)).map((r) => r.line);
+      if (fresh.length) {
+        await notifyAdmin([`*Cotización descartada* (${this.origin})`, ...fresh].join("\n"));
+      }
+    }
   }
 
   abstract get_data(): Promise<CambioObj[]>;
