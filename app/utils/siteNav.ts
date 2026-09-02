@@ -2586,6 +2586,10 @@ export const DYNAMIC_ROUTE_KEYS: Readonly<Record<string, string>> = Object.freez
   // el mismo catálogo de Bankos que el mapa de /descuentos-con-tarjeta-uruguay.
   'descuentos-con-tarjeta-uruguay/[banco]': 'banking',
   'descuentos-con-tarjeta-uruguay/rubro/[rubro]': 'banking',
+  // Una página por MARCA, para las 304 marcas que contestan "dónde" (>= 4 locales) o "con cuál
+  // conviene" (>= 2 emisores). El corte vive en utils/bankosBrandPage.ts, compartido con el
+  // sitemap y con la ruta de la API.
+  'descuentos-con-tarjeta-uruguay/marca/[marca]': 'banking',
   'cotizacion/[moneda]': 'tools',
   'dolar/[departamento]': 'market',
   'frontera/[ruta]': 'houses',

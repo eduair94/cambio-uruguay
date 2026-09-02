@@ -3,6 +3,9 @@ import { intentsFor } from '../../../utils/casaIntents'
 import { casaTypePaths } from '../../../utils/casasDirectory'
 import { comparativaFamilySlugs, comparativaPaths } from '../../../utils/comparativas'
 import { bankPageSlugs, categoryPageSlugs } from '../../../utils/bankosPages'
+import { buildBrandPageIndex } from '../../../utils/bankosBrandPage'
+import { reduceBrands, type BrandsRawData } from '../../../utils/bankosBrands'
+import { getRawCatalog } from '../../utils/bankos'
 import { convertSlugs } from '../../../utils/convert'
 import { listCurrencySlugs } from '../../../utils/currencyPages'
 import { listFronteraSlugs } from '../../../utils/frontera'
@@ -124,6 +127,26 @@ export default defineEventHandler(async _event => {
       lastmod: today,
     })
   )
+  // Descuentos por MARCA. A diferencia de los dos bloques de arriba, estos slugs NO son catálogo
+  // estático: salen del catálogo vivo, así que se piden acá. `getRawCatalog` ya cae al snapshot de
+  // Mongo si el proveedor está caído; si fallan los dos, el sitemap sale sin esta familia en vez
+  // de no salir. El corte de qué marcas tienen página es el MISMO que usa la ruta
+  // /api/bankos/marca/<slug>, importado del mismo módulo: si se separaran, el sitemap declararía
+  // URLs que contestan 404.
+  try {
+    const { catalog } = await getRawCatalog()
+    const brands = reduceBrands(catalog.data as unknown as BrandsRawData, {}).brands
+    buildBrandPageIndex(brands).forEach(entry =>
+      urls.push({
+        loc: `/descuentos-con-tarjeta-uruguay/marca/${entry.slug}`,
+        changefreq: 'weekly',
+        priority: 0.6,
+        lastmod: today,
+      })
+    )
+  } catch (brandsError) {
+    console.warn('Sitemap: no se pudo leer el catálogo de marcas:', brandsError)
+  }
   toolSlugs().forEach(slug => addUrlsForAllLocales(`/herramientas/${slug}`, 0.7, 'weekly'))
   glossarySlugs().forEach(slug => addUrlsForAllLocales(`/glosario/${slug}`, 0.6, 'monthly'))
   // Head-to-head pages: pure catalogue data, so they survive an upstream outage
