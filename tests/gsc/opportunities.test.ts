@@ -20,6 +20,7 @@ import {
   strikingDistance,
   zeroClickPool,
 } from "../../classes/gsc/opportunities";
+import { isQuotaError } from "../../classes/gsc/client";
 import type { GscKeyed, GscPageQuery } from "../../classes/gsc/types";
 
 const q = (key: string, clicks: number, impressions: number, position: number): GscKeyed => ({
@@ -275,5 +276,34 @@ describe("rankOpportunities", () => {
     const a = [1, 2, 3].map(n => ({ kind: "rising" as const, subject: `a${n}`, impressions: 0, clicks: 0, position: 0, potentialClicks: 0, note: "" }));
     const b = [1, 2].map(n => ({ kind: "falling" as const, subject: `b${n}`, impressions: 0, clicks: 0, position: 0, potentialClicks: 0, note: "" }));
     expect(rankOpportunities([a, b]).map(o => o.subject)).toEqual(["a1", "b1", "a2", "b2", "a3"]);
+  });
+});
+
+// The retry classifier. Search Console answers 403 for a quota burst AND for a service account with
+// no access; only the first is worth retrying.
+describe("isQuotaError", () => {
+  const err = (status: number, reason?: string, message?: string) => ({
+    response: { status, data: { error: { message, errors: reason ? [{ reason }] : undefined } } },
+  });
+
+  it("retries a QPS burst — the one that stopped the first production backfill", () => {
+    expect(
+      isQuotaError(err(403, "quotaExceeded", "Search Analytics QPS quota exceeded. Learn about usage limits"))
+    ).toBe(true);
+  });
+
+  it("retries a 429 and a rate-limit reason", () => {
+    expect(isQuotaError(err(429))).toBe(true);
+    expect(isQuotaError(err(403, "rateLimitExceeded"))).toBe(true);
+  });
+
+  it("does NOT retry a permission 403 — that is a configuration error, not a burst", () => {
+    expect(isQuotaError(err(403, "forbidden", "User does not have sufficient permission for site"))).toBe(false);
+  });
+
+  it("does not retry anything else", () => {
+    expect(isQuotaError(err(400, undefined, "Invalid dimension"))).toBe(false);
+    expect(isQuotaError(err(500))).toBe(false);
+    expect(isQuotaError(new Error("socket hang up"))).toBe(false);
   });
 });

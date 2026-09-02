@@ -137,6 +137,69 @@ export async function accessToken(): Promise<string> {
   return cachedToken.token;
 }
 
+// ---------------------------------------------------------------------------------------------
+// Pacing and retry
+//
+// Search Console enforces a QPS ceiling separately from the daily one, and it is the one that
+// actually bites: the first production backfill fired four concurrent calls per archived day with
+// no spacing and got `403 Search Analytics QPS quota exceeded` a few dozen days in. The daily quota
+// (30.000) was nowhere near touched.
+//
+// So every call goes through one serial queue with a minimum gap, and a quota refusal is retried
+// with exponential backoff rather than treated as a failure — it is a "slow down", not a "no".
+// Serialising costs a nightly job some wall-clock and buys it the ability to finish.
+// ---------------------------------------------------------------------------------------------
+
+/** Minimum gap between two Search Console calls. */
+const MIN_INTERVAL_MS = Number(process.env.GSC_MIN_INTERVAL_MS) || 350;
+const MAX_ATTEMPTS = 6;
+
+let queue: Promise<unknown> = Promise.resolve();
+let lastCallAt = 0;
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * True only for "slow down", never for "no".
+ *
+ * Exported because the distinction is the whole point: Search Console answers 403 both for a quota
+ * burst and for a service account that was never given access, and retrying the second one six
+ * times with backoff turns a one-line configuration error into a job that hangs for a minute and
+ * then fails anyway.
+ */
+export function isQuotaError(e: any): boolean {
+  const status = e?.response?.status;
+  if (status === 429) return true;
+  if (status !== 403) return false;
+  const reason = e?.response?.data?.error?.errors?.[0]?.reason || "";
+  const message = String(e?.response?.data?.error?.message || "");
+  return reason === "quotaExceeded" || reason === "rateLimitExceeded" || /quota/i.test(message);
+}
+
+/** Runs `fn` on the shared queue, spaced and retried. */
+function paced<T>(fn: () => Promise<T>): Promise<T> {
+  const run = queue.then(async () => {
+    for (let attempt = 1; ; attempt++) {
+      const wait = MIN_INTERVAL_MS - (Date.now() - lastCallAt);
+      if (wait > 0) await sleep(wait);
+      lastCallAt = Date.now();
+      try {
+        return await fn();
+      } catch (e: any) {
+        if (!isQuotaError(e) || attempt >= MAX_ATTEMPTS) throw e;
+        // 2s, 4s, 8s, 16s, 32s. Google clears a QPS burst in seconds; the long tail is for the
+        // case where several of this repo's jobs happen to overlap.
+        const backoff = 1000 * 2 ** attempt;
+        console.warn(`[gsc] cuota QPS excedida, reintento ${attempt}/${MAX_ATTEMPTS - 1} en ${backoff / 1000}s`);
+        await sleep(backoff);
+      }
+    }
+  });
+  // The queue must keep flowing even when a call ends up throwing.
+  queue = run.catch(() => undefined);
+  return run as Promise<T>;
+}
+
 export interface SearchAnalyticsQuery {
   startDate: string;
   endDate: string;
@@ -176,10 +239,12 @@ export async function searchAnalytics(q: SearchAnalyticsQuery): Promise<GscRow[]
     if (q.dimensionFilterGroups) body.dimensionFilterGroups = q.dimensionFilterGroups;
     if (q.type) body.type = q.type;
 
-    const res = await axios.post(url, body, {
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-      timeout: 120000,
-    });
+    const res = await paced(() =>
+      axios.post(url, body, {
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        timeout: 120000,
+      })
+    );
     const rows: any[] = res.data?.rows || [];
     for (const r of rows) {
       out.push({
@@ -248,10 +313,12 @@ export interface UrlInspection {
 export async function inspectUrl(inspectionUrl: string, siteOverride?: string): Promise<UrlInspection | null> {
   const token = await accessToken();
   try {
-    const res = await axios.post(
-      "https://searchconsole.googleapis.com/v1/urlInspection/index:inspect",
-      { inspectionUrl, siteUrl: siteOverride || siteUrl() },
-      { headers: { Authorization: `Bearer ${token}` }, timeout: 60000 }
+    const res = await paced(() =>
+      axios.post(
+        "https://searchconsole.googleapis.com/v1/urlInspection/index:inspect",
+        { inspectionUrl, siteUrl: siteOverride || siteUrl() },
+        { headers: { Authorization: `Bearer ${token}` }, timeout: 60000 }
+      )
     );
     const r = res.data?.inspectionResult?.indexStatusResult || {};
     return {

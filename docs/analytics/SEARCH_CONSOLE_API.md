@@ -144,8 +144,14 @@ barato e idempotente.
 
 ## 5. Cuotas y límites reales
 
-- `searchAnalytics.query`: 25.000 filas por request (se pagina con `startRow`), 1.200 requests por
-  minuto y 30.000 por día por propiedad. Una corrida normal usa ~50.
+- `searchAnalytics.query`: 25.000 filas por request (se pagina con `startRow`) y 30.000 requests por
+  día por propiedad. Una corrida normal usa ~50, así que la cuota DIARIA nunca es el problema.
+- **La que sí muerde es la de QPS**, y no está documentada como un número: el primer backfill en
+  producción disparaba cuatro llamadas concurrentes por día archivado y a las pocas decenas de días
+  recibió `403 Search Analytics QPS quota exceeded`. Por eso `client.ts` pone TODAS las llamadas en
+  una cola serial con un intervalo mínimo (`GSC_MIN_INTERVAL_MS`, 350 ms por defecto) y reintenta
+  las respuestas de cuota con backoff exponencial. Un 403 de permisos NO se reintenta: es un error
+  de configuración, no una ráfaga, y `isQuotaError()` distingue los dos.
 - `urlInspection`: **2.000 por día** por propiedad, 600 por minuto. Por eso la muestra rota en vez de
   barrer las ~1.900 URLs del sitio.
 - Search Console **oculta las consultas raras** por privacidad. Los desgloses por consulta nunca van
