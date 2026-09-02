@@ -21,10 +21,15 @@
         <v-card>
           <v-card-title class="d-flex align-center flex-wrap ga-3 py-4">
             <v-icon class="mr-2" color="primary">mdi-bank</v-icon>
-            <span class="text-h5 text-md-h4">
+            <!-- Encabezado real, no un span: esta plantilla servía 72.951 impresiones sin
+                 ningún encabezado de nivel 1 en el HTML (medido 2026-09-02 sobre
+                 /historico/itau y /historico/prex). La variante de tres segmentos
+                 (/historico/brou/usd) sí lo tenía; ésta se había quedado atrás. `ma-0` mantiene
+                 el layout exacto: el margen por defecto rompería el flex del v-card-title. -->
+            <h1 class="text-h5 text-md-h4 ma-0">
               Cotizaciones de
               {{ formatOriginName(route.params.origin as string) }}
-            </span>
+            </h1>
             <v-spacer />
             <ClientOnly>
               <Updated />

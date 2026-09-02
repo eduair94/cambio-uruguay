@@ -6,9 +6,11 @@
         <v-card>
           <v-card-title class="d-flex align-center flex-wrap ga-3 py-4">
             <v-icon class="mr-2" color="primary">mdi-bank</v-icon>
-            <span class="text-h5 text-md-h4">
+            <!-- Mismo caso que /historico/<casa>: la plantilla no emitía ningún encabezado de
+                 nivel 1. /sucursales/brou/montevideo son 11.303 impresiones. -->
+            <h1 class="text-h5 text-md-h4 ma-0">
               {{ $t('sucursalesMenu') }} - {{ exchangeHouseName }}
-            </span>
+            </h1>
             <v-spacer />
             <v-chip color="success" size="small">
               <v-icon start size="small">mdi-map-marker</v-icon>
