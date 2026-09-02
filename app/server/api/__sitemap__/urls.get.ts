@@ -303,11 +303,16 @@ export default defineEventHandler(async _event => {
     data.forEach(item => {
       if (!item.origin) return
       origins.add(item.origin)
+      // La moneda y el tipo llegan en MAYÚSCULA desde la base ("USD", "EBROU") y la ruta resuelve
+      // con cualquier grafía, así que el sitemap venía declarando `/historico/brou/USD` mientras el
+      // tráfico medido está en `/historico/brou/usd` (8.592 impresiones). Un sitemap que señala la
+      // grafía que no rankea invita a Google a indexar las dos. La canónica es la minúscula, y
+      // server/middleware/lowercase-routes.ts redirige la otra.
       if (item.code && SITEMAP_CURRENCIES.has(item.code.toUpperCase())) {
-        originCurrencyPairs.add(`${item.origin}/${item.code}`)
+        originCurrencyPairs.add(`${item.origin}/${item.code.toLocaleLowerCase('es')}`)
       }
       if (item.type && item.type.trim() !== '') {
-        originTypePairs.add(`${item.origin}/${item.type}`)
+        originTypePairs.add(`${item.origin}/${item.type.toLocaleLowerCase('es')}`)
       }
     })
 
@@ -333,7 +338,9 @@ export default defineEventHandler(async _event => {
         // Pass the raw department — the sitemap serializer URL-encodes the loc
         // once. Pre-encoding here produced double-encoded URLs in the sitemap
         // (e.g. "TREINTA%2520Y%2520TRES"), which Google never indexed.
-        sucursalesLocationPairs.add(`${origin}/${department}`)
+        // En minúscula por lo mismo que las monedas: el departamento llega en mayúscula
+        // ("MONTEVIDEO") y las dos grafías respondían 200 autocanonizándose.
+        sucursalesLocationPairs.add(`${origin}/${department.toLocaleLowerCase('es')}`)
         const deptSlug = slugifyDepartment(department)
         if (deptSlug) departmentSlugs.add(deptSlug)
       })
