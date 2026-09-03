@@ -47,6 +47,36 @@ describe("coverageOf", () => {
     expect(c).toBeLessThan(1);
   });
 
+  // Los dos casos que agregaron el tope por título: coincidencias REALES, en el armazón de la
+  // pregunta y no en el tema. Medidos contra el índice del sitio el 2026-09-03.
+  it("no da cobertura alta cuando lo que coincide es el enunciado, no el tema", () => {
+    const c = coverageOf("que pasa si no pago antel", {
+      path: "/guias/no-pagar-prestamo-e-irse-del-pais-uruguay",
+      title: "¿Qué pasa si no pago un préstamo en Uruguay (y me voy del país)?",
+    });
+    // "pasa" y "pago" están en el título; "antel", que es el tema, no está en ninguna parte.
+    expect(c).toBeLessThanOrEqual(0.5);
+    expect(c).toBeGreaterThan(0);
+  });
+
+  it("no da cobertura total por una mención de paso en el título", () => {
+    const c = coverageOf("cédula uruguaya", {
+      path: "/cambiar-de-mutualista-uruguay",
+      title: "Cambiar de mutualista en Uruguay: cuándo te toca según tu cédula",
+    });
+    expect(c).toBeLessThanOrEqual(0.5);
+  });
+
+  it("una página que se llama como el tema sí llega a 1", () => {
+    // El contrapeso: la regla no puede dejar de reconocer lo que el sitio SÍ cubre.
+    expect(
+      coverageOf("horas extras uruguay", {
+        path: "/guias/horas-extra-en-uruguay",
+        title: "Horas extra en Uruguay",
+      })
+    ).toBe(1);
+  });
+
   it("sin página, la cobertura es cero y no explota", () => {
     expect(coverageOf("cualquier cosa", null)).toBe(0);
   });

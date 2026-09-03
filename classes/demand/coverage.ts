@@ -89,6 +89,24 @@ export interface CoverageTarget {
 }
 
 /**
+ * Tope para una página que sólo coincide por el TÍTULO, no por su dirección.
+ *
+ * La primera versión contaba título y ruta juntos, y la corrida real mostró por qué no alcanza:
+ *
+ *   "que pasa si no pago antel" → 0,67 en /guias/no-pagar-prestamo-e-irse-del-pais-uruguay,
+ *      cuyo título es "¿Qué pasa si no pago un préstamo en Uruguay (y me voy del país)?".
+ *   "cédula uruguaya"           → 1,00 en /cambiar-de-mutualista-uruguay,
+ *      cuyo título es "Cambiar de mutualista en Uruguay: cuándo te toca según tu cédula".
+ *
+ * Las dos coincidencias son reales: las palabras están. Lo que pasa es que las que coinciden son
+ * el ARMAZÓN de la pregunta ("qué pasa si", "pago") o una mención de paso, y la palabra que
+ * distingue el tema —"antel", "cédula"— no está en ninguna de las dos rutas. Una página se llama
+ * como aquello de lo que trata: si la dirección no nombra nada de lo que se preguntó, la
+ * coincidencia es del enunciado y no del tema, y no puede valer una cobertura alta.
+ */
+const TITLE_ONLY_CAP = 0.5;
+
+/**
  * 0..1 — qué parte de la consulta ya está en el título y la ruta de la mejor página del sitio.
  *
  * 1 significa "esta consulta ya tiene página"; 0, "no hay nada parecido". Los valores del medio son
@@ -97,8 +115,15 @@ export interface CoverageTarget {
 export function coverageOf(query: string, page: CoverageTarget | null): number {
   const asked = words(query);
   if (!asked.length || !page) return 0;
-  const have = words(`${page.title} ${page.path.replace(/[-_/]+/g, " ")}`);
+
+  const inPath = words(page.path.replace(/[-_/]+/g, " "));
+  const have = [...words(page.title), ...inPath];
   if (!have.length) return 0;
-  const hit = asked.filter((a) => have.some((h) => same(a, h))).length;
-  return Number((hit / asked.length).toFixed(4));
+
+  const matched = asked.filter((a) => have.some((h) => same(a, h)));
+  if (!matched.length) return 0;
+
+  const raw = matched.length / asked.length;
+  const namedInPath = matched.some((a) => inPath.some((h) => same(a, h)));
+  return Number(Math.min(raw, namedInPath ? 1 : TITLE_ONLY_CAP).toFixed(4));
 }
