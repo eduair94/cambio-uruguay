@@ -53,8 +53,11 @@ export default defineNuxtConfig({
       type: 'Organization',
       name: 'Cambio Uruguay',
       url: 'https://cambio-uruguay.com',
-      // Medidas reales del archivo, leídas del IHDR del PNG: 498 × 72.
-      logo: 'https://cambio-uruguay.com/img/logo.png',
+      // SIN `logo` acá: declararlo en esta clave es lo que hace aparecer el nodo `#organization`
+      // aparte, y el logo se queda en ÉL en vez de ir al `#identity` que el WebPage referencia.
+      // Probado en producción con el logo como ImageObject y como cadena en el layout: en los dos
+      // casos `#identity` salía sin logo mientras `#organization` lo tenía. El logo lo declara el
+      // `defineOrganization` del layout, que es quien escribe en `#identity`.
       sameAs: [
         'https://twitter.com/cambio_uruguay',
         'https://www.linkedin.com/company/cambio-uruguay/',
