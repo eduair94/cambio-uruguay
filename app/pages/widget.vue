@@ -39,8 +39,12 @@
 <script setup lang="ts">
 // Embeddable, iframe-friendly widget that shows the live best USD compra/venta.
 // Uses the bare `widget` layout (no site nav/footer) and the same cached
-// `/api/og-rate` endpoint as the OG image. The backlink to cambio-uruguay.com
-// is the whole point of the widget (drives referral traffic + backlinks).
+// `/api/og-rate` endpoint as the OG image.
+//
+// El enlace de acá NO es un backlink: esta página se sirve desde cambio-uruguay.com dentro de un
+// iframe y responde `noindex`, así que el enlace es interno y hacia algo que no se indexa. Lo que
+// aporta es tráfico de referencia cuando alguien lo toca. Ver el encabezado de
+// utils/widgetEmbed.ts, incluida la advertencia de no convertir el snippet en un enlace de texto.
 definePageMeta({ layout: 'widget' })
 
 interface OgRate {

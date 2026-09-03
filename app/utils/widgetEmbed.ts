@@ -1,9 +1,19 @@
 // Pure helpers for the embeddable rate-widget generator (`/herramientas/widget-dolar`).
 //
 // No Vue/Nuxt runtime so the generator page, the sitemap and unit tests share
-// one source of truth for the iframe URL + snippet. The whole point of the
-// widget is the backlink to cambio-uruguay.com it carries, so third-party sites
-// that embed it link back (referral traffic + SEO).
+// one source of truth for the iframe URL + snippet.
+//
+// EL WIDGET NO DA BACKLINKS, y este comentario decía lo contrario. Verificado: el snippet es un
+// <iframe> puro, así que el sitio que lo incrusta no publica ningún <a> hacia acá; el enlace vive
+// DENTRO de /widget, que se sirve desde cambio-uruguay.com y responde `noindex`. La arista del
+// grafo es interna y apunta a una página que no se indexa: valor de enlace, cero.
+//
+// Lo que sí da es tráfico de referencia cuando alguien toca adentro del iframe — hoy medido en 7
+// sesiones en 28 días, o sea casi nada, pero es real y es la única razón por la que existe.
+//
+// NO "ARREGLAR" ESTO agregando un <a> con texto rico al snippet. Eso es exactamente lo que Google
+// prohibió en su comunicado de 2016 sobre enlaces en widgets: un enlace que el que incrusta no
+// eligió poner es un enlace no editorial, y la sanción cae sobre quien lo distribuye.
 
 export type WidgetTheme = 'dark' | 'light'
 
