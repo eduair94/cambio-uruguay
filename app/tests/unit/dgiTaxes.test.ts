@@ -8,6 +8,7 @@ import {
   EXTENSION_CAUSES,
   GOOD_HISTORY_RELIEF,
   INTERRUPTION_CAUSES,
+  INTERRUPTION_WARNING,
   IRPF_CAMPAIGN,
   IRPF_FORMS,
   MORA_FACILIDADES_PCT,
@@ -114,8 +115,18 @@ describe('prescripción tributaria', () => {
   })
 
   it('documenta qué interrumpe el plazo', () => {
-    expect(INTERRUPTION_CAUSES.length).toBeGreaterThanOrEqual(2)
-    expect(INTERRUPTION_CAUSES.join(' ')).toMatch(/acta final de inspecci[oó]n/i)
+    // El art. 39 enumera SEIS causales y la pagina publicaba dos como si fueran la lista entera.
+    // Las que faltaban son las que dependen del propio deudor —reconocer la deuda, pagar una
+    // parte— o sea las unicas que alguien puede disparar sin querer leyendo esta pagina.
+    expect(INTERRUPTION_CAUSES).toHaveLength(6)
+    const todas = INTERRUPTION_CAUSES.join(' ')
+    expect(todas).toMatch(/acta final de inspecci[oó]n/i)
+    expect(todas).toMatch(/reconocimiento expreso o t[aá]cito/i)
+    expect(todas).toMatch(/pago o consignaci[oó]n total o parcial/i)
+    expect(todas).toMatch(/emplazamiento judicial/i)
+    expect(todas).toMatch(/dem[aá]s medios del derecho com[uú]n/i)
+    // Y la advertencia tiene que decir lo que cambia una decision de hoy.
+    expect(INTERRUPTION_WARNING).toMatch(/pagar una parte|cuota/i)
   })
 })
 

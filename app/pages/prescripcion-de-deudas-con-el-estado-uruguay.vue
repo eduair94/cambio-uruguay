@@ -78,9 +78,13 @@
             <p class="text-medium-emphasis mb-2">
               Interrumpir significa que el plazo vuelve a cero.
             </p>
-            <ul class="mb-0 pl-4">
+            <ul class="mb-3 pl-4">
               <li v-for="(c, i) in INTERRUPTION_CAUSES" :key="i">{{ c }}</li>
             </ul>
+            <!-- Las dos causales que dependen del propio deudor: son las que se pierden por error. -->
+            <VAlert type="warning" variant="tonal" density="compact" class="mb-0">
+              <span class="text-body-2">{{ INTERRUPTION_WARNING }}</span>
+            </VAlert>
           </VCard>
         </VCol>
         <VCol cols="12" md="6">
@@ -161,6 +165,7 @@ import {
   DGI_VERIFIED_AT,
   EXTENSION_CAUSES,
   INTERRUPTION_CAUSES,
+  INTERRUPTION_WARNING,
   PRESCRIPTION_NOT_AUTOMATIC,
   PRESCRIPTION_START,
   PRESCRIPTION_YEARS,

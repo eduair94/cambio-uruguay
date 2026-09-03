@@ -250,11 +250,35 @@ export const EXTENSION_CAUSES: readonly string[] = Object.freeze([
   'Cuando el tributo lo determina el organismo recaudador y este no tuvo conocimiento del hecho.',
 ])
 
-/** Qué interrumpe el plazo (art. 39). Interrumpir = volver a cero. */
+/**
+ * Qué interrumpe el plazo (art. 39). Interrumpir = volver a cero.
+ *
+ * Estaban SÓLO las dos primeras, presentadas como la lista completa. El artículo enumera seis, y
+ * las que faltaban son justamente las que perjudican a quien está leyendo esta página: reconocer la
+ * deuda —expresa o TÁCITAMENTE— y pagar cualquier parte de ella reinician el plazo entero. Alguien
+ * que abona una cuota para "mostrar voluntad de pago" acaba de resucitar una deuda que podía estar
+ * prescripta, y la página no se lo decía. El propio sitio ya lo advertía para las multas de
+ * tránsito (`trafficFines.ts`), así que además se contradecía.
+ *
+ * Texto vigente leído en impo.com.uy el 2026-09-03. La lista termina abierta porque el artículo
+ * termina abierto: "y por todos los demás medios del derecho común" no es una fórmula de cortesía.
+ */
 export const INTERRUPTION_CAUSES: readonly string[] = Object.freeze([
   'El acta final de inspección.',
-  'La notificación de la resolución del organismo competente.',
+  'La notificación de la resolución del organismo competente de la que resulte un crédito contra el sujeto pasivo.',
+  'El reconocimiento expreso o tácito de la obligación por parte del deudor.',
+  'Cualquier pago o consignación total o parcial de la deuda, cuando ella proceda.',
+  'El emplazamiento judicial.',
+  'Todos los demás medios del derecho común.',
 ])
+
+/**
+ * La consecuencia práctica de las dos causales que faltaban.
+ *
+ * Va aparte de la lista porque es lo único de este artículo que cambia lo que alguien HACE hoy.
+ */
+export const INTERRUPTION_WARNING =
+  'Pagar una parte de la deuda, o reconocerla aunque sea tácitamente —firmar un convenio, pedir un plan de pagos, aceptar el saldo—, hace que el plazo vuelva a empezar de cero. Es la forma más común de perder una prescripción que ya estaba cumplida: se abona una cuota para "mostrar voluntad de pago" y el reloj arranca de nuevo. Antes de pagar cualquier cosa sobre una deuda vieja, mirá si ya está prescripta.'
 
 /** La regla práctica que cambia todo: la prescripción no se aplica sola. */
 export const PRESCRIPTION_NOT_AUTOMATIC =
@@ -339,8 +363,8 @@ export const DGI_FAQ: readonly DgiFaq[] = Object.freeze([
   },
   {
     question: '¿Qué interrumpe el plazo de prescripción?',
-    short: 'El acta final de inspección y la notificación de la resolución del organismo.',
+    short: 'Seis cosas, y dos dependen de vos: reconocer la deuda o pagar una parte.',
     answer:
-      'Interrumpir significa que el plazo vuelve a empezar de cero. En materia tributaria lo interrumpen el acta final de inspección y la notificación de la resolución del organismo competente. Por eso una inspección vieja puede haber reiniciado un plazo que creías cumplido.',
+      'Interrumpir significa que el plazo vuelve a empezar de cero. El artículo 39 del Código Tributario enumera seis causales: el acta final de inspección; la notificación de la resolución del organismo competente de la que resulte un crédito contra el sujeto pasivo; el reconocimiento expreso o tácito de la obligación por parte del deudor; cualquier pago o consignación total o parcial de la deuda; el emplazamiento judicial; y todos los demás medios del derecho común. Las dos que más importan son las que dependen de vos: pagar una cuota para «mostrar voluntad de pago», o reconocer la deuda aunque sea tácitamente, reinicia el plazo entero sobre una deuda que quizá ya estaba prescripta.',
   },
 ])
