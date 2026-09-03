@@ -48,7 +48,9 @@ export async function suggest(seed: string, timeoutMs = 8000): Promise<Suggestio
     if (!Array.isArray(list)) return [];
     return list
       .filter((q): q is string => typeof q === "string" && q.trim().length > 0)
-      .map((query, rank) => ({ query: query.trim().toLowerCase(), rank, seed }));
+      // Espacios internos normalizados además del trim: la lista real trajo "aguinaldo" dos veces,
+      // que como cadenas eran distintas y como consulta son la misma.
+      .map((query, rank) => ({ query: query.trim().replace(/\s+/g, " ").toLowerCase(), rank, seed }));
   } catch {
     return [];
   }

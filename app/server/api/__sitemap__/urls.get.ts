@@ -321,7 +321,6 @@ export default defineEventHandler(async _event => {
 
     const origins = new Set<string>()
     const originCurrencyPairs = new Set<string>()
-    const originTypePairs = new Set<string>()
 
     data.forEach(item => {
       if (!item.origin) return
@@ -334,9 +333,14 @@ export default defineEventHandler(async _event => {
       if (item.code && SITEMAP_CURRENCIES.has(item.code.toUpperCase())) {
         originCurrencyPairs.add(`${item.origin}/${item.code.toLocaleLowerCase('es')}`)
       }
-      if (item.type && item.type.trim() !== '') {
-        originTypePairs.add(`${item.origin}/${item.type.toLocaleLowerCase('es')}`)
-      }
+      // El `type` NO va al sitemap, y eso se decidió midiendo. La ruta es
+      // /historico/<casa>/<MONEDA>, así que meter el tipo en el segundo segmento
+      // produce /historico/brou/billete: una página que responde 200 y se titula
+      // "Brou BILLETE hoy: cotización y evolución" como si BILLETE fuera una
+      // moneda. Son ~47 casas × 4 tipos × 3 idiomas de casi-duplicado, y en 28
+      // días las trece que Google llegó a mostrar juntaron 88 impresiones y CERO
+      // clics. Un sitemap que las declara le pide a Google que gaste rastreo en
+      // eso en vez de en las páginas que sí convierten.
     })
 
     const sucursalesOrigins = new Set<string>()
@@ -373,7 +377,6 @@ export default defineEventHandler(async _event => {
     originCurrencyPairs.forEach(pair =>
       addUrlsForAllLocales(`/historico/${pair}`, 0.7, 'daily', today)
     )
-    originTypePairs.forEach(pair => addUrlsForAllLocales(`/historico/${pair}`, 0.7, 'daily', today))
     sucursalesOrigins.forEach(origin => addUrlsForAllLocales(`/sucursales/${origin}`, 0.8))
     sucursalesLocationPairs.forEach(pair => addUrlsForAllLocales(`/sucursales/${pair}`, 0.7))
     departmentSlugs.forEach(slug => addUrlsForAllLocales(`/dolar/${slug}`, 0.7, 'daily', today))
@@ -387,7 +390,6 @@ export default defineEventHandler(async _event => {
       `\n- Static + catalogue: ${staticCount} URLs`,
       `\n- Historico origins: ${origins.size} routes`,
       `\n- Historico currency pairs: ${originCurrencyPairs.size} routes`,
-      `\n- Historico type pairs: ${originTypePairs.size} routes`,
       `\n- Sucursales origins: ${sucursalesOrigins.size} routes`,
       `\n- Sucursales location pairs: ${sucursalesLocationPairs.size} routes`,
       `\n- Dolar department pages: ${departmentSlugs.size} routes`,
