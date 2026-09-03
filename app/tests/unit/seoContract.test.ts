@@ -217,3 +217,40 @@ describe('the legacy SEO debt only shrinks', () => {
     expect(noindexed.sort()).toEqual(NOINDEXED)
   })
 })
+
+// Dos páginas del sitio que reclaman la misma intención se la quitan entre sí. No es teoría:
+// medido sobre 28 días al 2026-09-02, "cotizacion brou" (6.574 impresiones, 0 clics), "brou
+// cotizaciones" (3.865, 2) y "dolar brou" (3.017, 0) los repartía Google entre tres URLs propias,
+// y la familia /historico competía consigo misma en 9 consultas: 18.911 impresiones, 6 clics.
+// Parte de eso eran títulos casi iguales: el hub de la casa se llamaba "BROU: cotización del dólar
+// hoy e histórico" y la página de la moneda "BROU Dólar hoy: cotización y evolución".
+describe('ninguna familia le disputa a otra la misma intención de marca', () => {
+  const LOCALES = ['es', 'en', 'pt'] as const
+  const seoStrings = (locale: string): Record<string, string> => {
+    const raw = readFileSync(
+      join(__dirname, '..', '..', 'i18n', 'locales', 'json', `${locale}.json`),
+      'utf8'
+    )
+    return (JSON.parse(raw).seo ?? {}) as Record<string, string>
+  }
+
+  // "dólar/dollar" + "hoy/today" es la intención de la página de la MONEDA. El hub de la casa
+  // lista todas, así que no puede reclamarla.
+  const CURRENCY_WORDS = /d[óo]lar|dollar/i
+  const TODAY_WORDS = /\bhoy\b|\bhoje\b|\btoday\b/i
+
+  it.each(LOCALES)('en %s el hub de la casa no reclama "dólar hoy"', locale => {
+    const seo = seoStrings(locale)
+    const hub = seo.historicalOriginTitle ?? ''
+    expect(hub, `falta seo.historicalOriginTitle en ${locale}.json`).not.toBe('')
+    expect(CURRENCY_WORDS.test(hub) && TODAY_WORDS.test(hub)).toBe(false)
+  })
+
+  it.each(LOCALES)('en %s la página de la moneda sí la reclama', locale => {
+    // El contrapeso del test de arriba: si la intención no la reclama NADIE, el arreglo dejó al
+    // sitio sin página para la consulta de marca, que es peor que la cannibalización.
+    const detail = seoStrings(locale).historicalDetailTitle ?? ''
+    expect(detail).not.toBe('')
+    expect(TODAY_WORDS.test(detail)).toBe(true)
+  })
+})

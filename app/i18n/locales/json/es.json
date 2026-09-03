@@ -765,7 +765,7 @@
     "historicalTitle": "Histórico de cotizaciones del dólar en Uruguay",
     "historicalDescription": "Consulta el historial completo de cotizaciones de todas las casas de cambio en Uruguay. Datos actualizados en tiempo real.",
     "historicalKeywords": "historial cotizaciones, cambio uruguay, histórico precios, casas cambio uruguay",
-    "historicalOriginTitle": "{origin}: cotización del dólar hoy e histórico",
+    "historicalOriginTitle": "{origin}: todas las monedas, cotización y histórico",
     "historicalOriginDescription": "Consulta todas las cotizaciones actuales e históricas de {origin}. Precios de compra y venta actualizados en tiempo real.",
     "historicalOriginKeywords": "cotizaciones casa cambio, cambio divisas uruguay, precios cambio uruguay",
     "historicalDetailTitle": "{origin} {currency} hoy: cotización y evolución",
