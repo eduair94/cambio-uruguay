@@ -399,30 +399,39 @@ if (!data.value) {
 //     serie es un caso normal (recién agregada, scraper caído), no un error de la página.
 const { getEvolutionData } = useApiService()
 
-const { data: evolution } = await useAsyncData(
+// La reducción va en el `transform`, no en un computed aparte, y es la diferencia entre serializar
+// cuatro escalares o un año entero de serie. `transform` corre ANTES de que Nuxt escriba el
+// payload, así que lo que viaja en __NUXT_DATA__ es lo que devuelve.
+//
+// Medido el 2026-09-03 en /casa/brou: la página pesa 332.818 b y su bloque __NUXT_DATA__ 73.740,
+// de los cuales 65.981 —el 89 %— eran las 732 filas de `evolution`, cada una con date, buy, sell,
+// origin, code, type y name. La página no dibuja ningún gráfico: toda esa serie se reducía a
+// máximo, mínimo, mayor salto y días desde el máximo. Son 110 URLs con datos en Search Console.
+const { data: records } = await useAsyncData(
   () => `casa-records-${origin.value}`,
   async () => {
     if (mirror.value) return null
     const res = await getEvolutionData(origin.value, 'USD', undefined, 12)
     return res.error ? null : res.data
   },
-  { lazy: true, watch: [origin] }
+  {
+    lazy: true,
+    watch: [origin],
+    transform: (raw: unknown) => {
+      const rows = (raw as { evolution?: { date: string; sell: number; type?: string }[] } | null)
+        ?.evolution
+      if (!rows?.length) return null
+      // Sin filtrar por tipo, la serie mezcla billete, cable e interbancario del mismo día y el
+      // "máximo" sale de comparar cosas distintas. `selectTypeRows` se queda con un solo tipo.
+      const typed = selectTypeRows(rows, undefined)
+      return computePageRecords(
+        typed
+          .map(r => ({ date: r.date, value: r.sell }))
+          .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      )
+    },
+  }
 )
-
-const records = computed(() => {
-  const rows = (
-    evolution.value as { evolution?: { date: string; sell: number; type?: string }[] } | null
-  )?.evolution
-  if (!rows?.length) return null
-  // Sin filtrar por tipo, la serie mezcla billete, cable e interbancario del mismo día y el
-  // "máximo" sale de comparar cosas distintas. `selectTypeRows` se queda con un solo tipo.
-  const typed = selectTypeRows(rows, undefined)
-  return computePageRecords(
-    typed
-      .map(r => ({ date: r.date, value: r.sell }))
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-  )
-})
 
 const formatDay = (iso: string) =>
   new Date(iso).toLocaleDateString('es-UY', {
