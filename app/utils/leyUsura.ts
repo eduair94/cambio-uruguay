@@ -75,7 +75,8 @@ export const TOPES: readonly TopeUsura[] = Object.freeze([
   {
     caso: 'Mora en un crédito de 2.000.000 UI o más',
     recargo: 120,
-    detalle: 'El techo más alto de la ley, y el único que llega a triplicar la tasa media.',
+    detalle:
+      'El techo más alto de la ley: la tasa implícita puede llegar a 2,2 veces la tasa media antes de ser usuraria.',
     articulo: 'Ley 18.212, art. 11, inciso 5',
   },
 ])

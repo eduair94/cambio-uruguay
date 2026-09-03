@@ -37,6 +37,18 @@ describe('los topes del artículo 11', () => {
     expect(mora!.recargo).toBe(80)
   })
 
+  it('ningún detalle exagera el múltiplo que representa su recargo', () => {
+    // Escribí "llega a triplicar la tasa media" para el +120 %, y +120 % es 2,2 veces, no 3. La
+    // aritmética es la única fuente: recargo r por ciento => tope = media × (1 + r/100).
+    for (const t of TOPES) {
+      const multiplo = 1 + t.recargo / 100
+      if (/triplic/i.test(t.detalle)) expect(multiplo).toBeGreaterThanOrEqual(3)
+      if (/duplic/i.test(t.detalle)) expect(multiplo).toBeGreaterThanOrEqual(2)
+    }
+    const mora = TOPES.find(t => t.recargo === 120)!
+    expect(mora.detalle).toContain('2,2 veces')
+  })
+
   it('cada tope cita su inciso', () => {
     for (const t of TOPES) expect(t.articulo).toMatch(/Ley 18\.212, art/)
   })
