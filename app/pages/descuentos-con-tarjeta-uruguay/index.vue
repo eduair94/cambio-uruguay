@@ -401,6 +401,28 @@
       </v-row>
     </template>
 
+    <!-- Marcas con descuento. Server-rendered a propósito: es lo único de esta página que el
+         buscador puede leer, porque el mapa depende de una selección que sólo existe en el
+         navegador de cada quien. -->
+    <section v-if="topBrands.length" class="mt-8">
+      <h2 class="text-h6 mb-1">Marcas con descuento en Uruguay</h2>
+      <p class="text-body-2 text-medium-emphasis mb-3" style="max-width: 70ch">
+        Las cadenas con más locales del catálogo. Cada una tiene su página con qué emisor da el
+        beneficio, si aplica con débito y el mapa de sus locales.
+      </p>
+      <div class="d-flex flex-wrap ga-2">
+        <NuxtLink
+          v-for="brand in topBrands"
+          :key="brand.pageSlug!"
+          :to="localePath(`/descuentos-con-tarjeta-uruguay/marca/${brand.pageSlug}`)"
+          class="brand-pill"
+        >
+          {{ brand.name }}
+          <span class="brand-pill__count">{{ brand.locations }}</span>
+        </NuxtLink>
+      </div>
+    </section>
+
     <!-- Context / SEO body -->
     <v-card variant="tonal" class="mt-6">
       <v-card-text style="max-width: 75ch">
@@ -742,6 +764,27 @@ function cardKindLabel(bank: { unique?: string }, card: { type: string }): strin
   if (bank.unique) return bank.unique
   return card.type === 'credit' ? 'Crédito' : 'Débito'
 }
+
+/**
+ * Las marcas más grandes con página propia, traídas EN EL SERVIDOR.
+ *
+ * Por qué existe: el mapa se arma con la selección de tarjetas, que vive en localStorage y en el
+ * servidor está vacía, así que su fetch es `server: false` y el HTML servido de esta página no
+ * contenía el nombre de una sola marca — medido: Farmashop, TaTa, Ancap, Tienda Inglesa y Las
+ * Delicias aparecían cero veces en 287 KB. La página que ES el producto hacía 35 impresiones y 0
+ * clics. Esta lectura es chica, no depende de nadie en particular, y le da al buscador (y a quien
+ * llega sin tarjetas elegidas) algo que leer y por dónde entrar a las 304 páginas de marca.
+ */
+const { data: brandIndex } = await useFetch<{
+  brands: Array<{ name: string; locations: number; pageSlug: string | null }>
+}>('/api/bankos/brands', { key: 'bankos-brands-hub' })
+
+const topBrands = computed(() =>
+  (brandIndex.value?.brands || [])
+    .filter(b => b.pageSlug)
+    .sort((a, b) => b.locations - a.locations)
+    .slice(0, 48)
+)
 
 const cardsParam = computed(() => [...selectedCards.value].sort().join(','))
 const { data, pending, refresh } = await useLazyAsyncData<BankosDiscountsResponse>(
@@ -1121,5 +1164,25 @@ useHead(() => ({
    `size="small"` se conserva para no agrandar la tipografía. */
 .card-chip {
   min-height: 44px;
+}
+
+.brand-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid rgba(var(--v-border-color), 0.3);
+  border-radius: 999px;
+  font-size: 0.875rem;
+  color: rgb(var(--v-theme-link));
+  text-decoration: none;
+}
+.brand-pill:hover {
+  border-color: rgb(var(--v-theme-link));
+}
+.brand-pill__count {
+  font-size: 0.72rem;
+  color: rgba(var(--v-theme-on-surface), 0.6);
+  font-variant-numeric: tabular-nums;
 }
 </style>
