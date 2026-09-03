@@ -12,6 +12,7 @@ import { RentalListingModel } from "../../classes/models/RentalListing";
 import { RentalMetaModel } from "../../classes/models/RentalMeta";
 import { SearchConsoleSnapshotModel } from "../../classes/models/SearchConsoleSnapshot";
 import { SiteRevenueSnapshotModel } from "../../classes/models/SiteRevenueSnapshot";
+import { SearchDemandQueueModel } from "../../classes/models/SearchDemandQueue";
 
 const appModel = (name: string): string =>
   fs.readFileSync(path.join(__dirname, "..", "..", "app", "server", "models", `${name}.ts`), "utf8");
@@ -83,6 +84,14 @@ describe("app-Mongo schema parity", () => {
     // quien la tiene que trabajar.
     expect(Object.keys(SearchConsoleSnapshotModel.schema.obj).sort()).toEqual(
       appFields(appModel("SearchConsoleSnapshot")).sort()
+    );
+  });
+
+  it("SearchDemandQueue declares exactly the app's top-level fields", () => {
+    // La cola de qué escribir. Un campo que el backend agregue y el app no declare se guarda pero
+    // no llega a la pantalla, y esta cola sólo existe para que alguien la lea.
+    expect(Object.keys(SearchDemandQueueModel.schema.obj).sort()).toEqual(
+      appFields(appModel("SearchDemandQueue")).sort()
     );
   });
 

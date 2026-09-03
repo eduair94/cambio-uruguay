@@ -66,6 +66,63 @@
         </div>
       </VCard>
 
+      <!-- La cola de qué escribir. Va JUSTO DESPUÉS del pozo de cero clics porque es su respuesta:
+           si el 43 % de las impresiones no puede convertirse en clic, crecer es entrar donde el
+           sitio hoy no aparece, y eso no lo puede ver Search Console. -->
+      <h2 class="text-h6 mb-2">Qué escribir (fuera de lo que ya rankeamos)</h2>
+      <p class="text-body-2 text-medium-emphasis mb-3">
+        Search Console sólo lista consultas donde el sitio <em>ya</em> aparece. Esta cola sale del
+        autocompletado uruguayo: preguntas que la gente tipea, filtradas por las temáticas del
+        sitio, comparadas contra el índice propio para saber si ya están cubiertas y clasificadas
+        mirando el SERP. La escribe el job <code>currency-search-demand</code> los domingos.
+        <strong>No publica nada</strong>: es una lista para leer y decidir.
+      </p>
+      <VAlert v-if="!demand" type="info" variant="tonal" density="compact" class="mb-8">
+        Todavía no hay cola. {{ demandHint }}
+      </VAlert>
+      <template v-else>
+        <p class="text-caption text-medium-emphasis mb-2">
+          {{ demand.asOf }} · {{ formatNumber(demand.harvested) }} sugerencias cosechadas,
+          {{ formatNumber(demand.inScope) }} dentro de las temáticas,
+          {{ formatNumber(demand.probed) }} clasificadas mirando el SERP. El orden del
+          autocompletado es un proxy de frecuencia relativa, no un volumen de búsquedas.
+        </p>
+        <VTable v-if="demand.items.length" density="compact" class="mb-8 cu-mobile-cards">
+          <thead>
+            <tr>
+              <th>Consulta</th>
+              <th>Tema</th>
+              <th>SERP</th>
+              <th class="text-right">Cobertura</th>
+              <th>Por qué</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="item in demand.items" :key="item.query">
+              <td data-label="Consulta" class="gsc-subject">{{ item.query }}</td>
+              <td data-label="Tema" class="text-caption">{{ item.topic }}</td>
+              <td data-label="SERP">
+                <VChip size="x-small" variant="tonal" :color="scDemandColor(item.serp?.verdict)">
+                  {{ scDemandLabel(item.serp?.verdict) }}
+                </VChip>
+              </td>
+              <td data-label="Cobertura" class="text-right">
+                <span v-if="item.bestPath" :title="item.bestPath">
+                  {{ scPercent(item.coverage, 0) }}
+                </span>
+                <span v-else class="text-medium-emphasis">—</span>
+              </td>
+              <td data-label="Por qué" class="text-caption">{{ item.why }}</td>
+            </tr>
+          </tbody>
+        </VTable>
+        <VAlert v-else type="warning" variant="tonal" density="compact" class="mb-8">
+          La última corrida no encontró ningún hueco: o el sitio ya cubre lo que el autocompletado
+          sugiere, o el servidor de SERP no contestó. Los dos casos se ven igual acá, y se
+          distinguen en el log de <code>currency-search-demand</code>.
+        </VAlert>
+      </template>
+
       <h2 class="text-h6 mb-2">Demanda y plata, en la misma fila</h2>
       <p class="text-body-2 text-medium-emphasis mb-3">
         Lo que Search Console mide de demanda y lo que GA4 mide de ingreso, por familia de
@@ -280,6 +337,7 @@ import {
   type ScOpportunity,
   type SearchConsoleSnapshot,
 } from '~/utils/searchConsole'
+import { scDemandColor, scDemandLabel, type SearchDemandQueue } from '~/utils/searchDemand'
 import { formatRevenue, type SiteRevenueSnapshot } from '~/utils/siteRevenue'
 
 // Login is required to get a bearer token at all; the server route re-checks the allowlist, which
@@ -299,6 +357,8 @@ const pending = ref(true)
 const forbidden = ref(false)
 const kindFilter = ref<string>('')
 const revenue = ref<SiteRevenueSnapshot | null>(null)
+const demand = ref<SearchDemandQueue | null>(null)
+const demandHint = ref('')
 
 try {
   const res = await authFetch<{ snapshot: SearchConsoleSnapshot | null; hint?: string }>(
@@ -321,6 +381,19 @@ try {
   revenue.value = res.snapshot
 } catch {
   revenue.value = null
+}
+
+// Y la cola de contenido en la suya: es semanal, y una semana sin corrida no puede vaciar el resto
+// del tablero.
+try {
+  const res = await authFetch<{ queue: SearchDemandQueue | null; hint?: string }>(
+    '/api/search-demand'
+  )
+  demand.value = res.queue
+  demandHint.value = res.hint || ''
+} catch {
+  demand.value = null
+  demandHint.value = 'La ruta de la cola no respondió.'
 }
 
 const formatNumber = (n: number) => new Intl.NumberFormat('es-UY').format(Math.round(n || 0))

@@ -30,6 +30,8 @@
     "sync_explain": "ts-node sync_explain.ts",
     "sync_gsc": "ts-node sync_gsc.ts",
     "sync_site_analytics": "ts-node sync_site_analytics.ts",
+    "sync_search_demand": "ts-node sync_search_demand.ts",
+    "probe_demand": "ts-node scripts/oneoff/probe_demand.ts",
     "ga4_probe": "ts-node scripts/oneoff/ga4_probe.ts",
     "sync_chair_tiers": "ts-node sync_chair_tiers.ts",
     "sync_chairs": "ts-node sync_chairs.ts",

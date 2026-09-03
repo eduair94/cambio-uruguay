@@ -290,6 +290,28 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // La cola de qué escribir. Search Console es ciego a la demanda que el sitio NO captura
+      // (sólo lista consultas donde ya aparece); esto cosecha el autocompletado uruguayo, descarta
+      // lo que no es de las temáticas del sitio, mide contra el índice RAG propio si ya está
+      // cubierto, mira el SERP de los mejores candidatos y ordena una cola revisable.
+      //
+      // NO PUBLICA NADA. La cola la lee una persona en /estadisticas-de-busqueda y decide.
+      //
+      // Semanal, domingos 06:40 UTC: el autocompletado se mueve en semanas, no en horas, y correrlo
+      // a diario sólo gastaría cuota del servidor de SERP para reescribir la misma lista. Domingo
+      // temprano porque no compite con ningún otro job (el más cercano es rag-index 04:20) y la
+      // cobertura la mide contra el índice que ese job dejó fresco esa madrugada.
+      //
+      // Necesita APP_MONGO_URI. El SERP sale por `google_search_server` (:5112) en la misma máquina;
+      // si no está, los candidatos quedan "dudoso" en vez de romper la corrida.
+      name: "currency-search-demand",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_search_demand.js",
+      cron_restart: "40 6 * * 0",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Lender TEA refresh (bancos/financieras/cooperativas/fintech) for /prestamos-uruguay.
       // Fallback chain: regex parser first (oca/pronto/cash), Gemini-grounded lookup for the rest
       // (host-gated to the lender's own resolved domain). Daily 08:47 UTC ≈ 05:47
