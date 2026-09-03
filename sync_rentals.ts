@@ -27,6 +27,7 @@ import { harvestRentalMarket } from "./classes/rentals/sources";
 import {
   countRentals,
   loadRentalHistory,
+  dropReassignedOffers,
   pruneStaleRentals,
   saveRentalMeta,
   saveRentalProperties,
@@ -107,8 +108,18 @@ async function main(): Promise<void> {
     staleOfferDays: STALE_OFFER_DAYS,
   });
 
+  // Sacar cada aviso de las filas que ya no son su dueña, ANTES de podar: una fila que queda sin
+  // ofertas la borra este barrido, y lo que sobrevive entra a la poda con su lastSeen recalculado.
   let pruned = 0;
-  if (mode === "full") pruned = await pruneStaleRentals(today, PRUNE_DAYS);
+  if (mode === "full") {
+    const reassigned = await dropReassignedOffers(properties);
+    if (reassigned.cleaned) {
+      console.log(
+        `[rentals] ${reassigned.removed} avisos sacados de ${reassigned.cleaned} filas que ya no eran su propiedad (${reassigned.deleted} filas quedaron vacías)`
+      );
+    }
+    pruned = await pruneStaleRentals(today, PRUNE_DAYS);
+  }
 
   const total = await countRentals();
   const meta: RentalMeta = {

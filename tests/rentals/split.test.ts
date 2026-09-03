@@ -16,7 +16,7 @@ vi.mock("../../classes/models/RentalListing", () => ({
   },
 }));
 
-import { saveRentalProperties } from "../../classes/rentals/store";
+import { dropReassignedOffers, saveRentalProperties } from "../../classes/rentals/store";
 import type { RentalOffer, RentalProperty, RentalSource } from "../../classes/rentals/types";
 
 const offer = (listingId: string, priceUyu = 30_000): RentalOffer => ({
@@ -122,5 +122,51 @@ describe("saveRentalProperties cuando una union se parte", () => {
       "infocasas:1",
       "infocasas:ausente",
     ]);
+  });
+});
+
+// Limpiar solo las filas que la corrida escribe no alcanza: cuando el agrupamiento deja de unir dos
+// avisos, la fila vieja puede no producirse NUNCA MAS, asi que nadie la toca y se queda con su
+// copia hasta vencer por dias. Medido el 2026-09-03 despues de la primera corrida arreglada:
+// 2.707 avisos vivian en mas de una fila.
+describe("dropReassignedOffers", () => {
+  const rowsInDb = (rows: unknown[]) => {
+    find.mockReturnValue({
+      lean: () => ({
+        cursor: () => (async function* () {
+          for (const row of rows) yield row;
+        })(),
+      }),
+    });
+  };
+
+  it("saca el aviso de la fila que ya no es su dueña", async () => {
+    rowsInDb([
+      { key: "vieja", offers: [offer("infocasas:1"), offer("infocasas:2")] },
+      { key: "nueva", offers: [offer("infocasas:2")] },
+    ]);
+    const out = await dropReassignedOffers([
+      property("vieja", [offer("infocasas:1")]),
+      property("nueva", [offer("infocasas:2")]),
+    ]);
+    expect(out.removed).toBe(1);
+    expect(out.cleaned).toBe(1);
+    const op = bulkWrite.mock.calls[0][0][0] as { updateOne: { update: { $set: { offers: Array<{ listingId: string }> } } } };
+    expect(op.updateOne.update.$set.offers.map(o => o.listingId)).toEqual(["infocasas:1"]);
+  });
+
+  it("borra la fila que se queda sin un solo aviso", async () => {
+    rowsInDb([{ key: "vieja", offers: [offer("infocasas:2")] }]);
+    const out = await dropReassignedOffers([property("nueva", [offer("infocasas:2")])]);
+    expect(out.deleted).toBe(1);
+    const op = bulkWrite.mock.calls[0][0][0] as { deleteOne: { filter: { key: string } } };
+    expect(op.deleteOne.filter.key).toBe("vieja");
+  });
+
+  it("no toca un aviso que la corrida no vio", async () => {
+    rowsInDb([{ key: "vieja", offers: [offer("infocasas:ausente")] }]);
+    const out = await dropReassignedOffers([property("nueva", [offer("infocasas:otro")])]);
+    expect(out).toEqual({ cleaned: 0, removed: 0, deleted: 0 });
+    expect(bulkWrite).not.toHaveBeenCalled();
   });
 });

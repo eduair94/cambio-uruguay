@@ -94,43 +94,58 @@ export function mergeOffers(
   const priced = all.filter((offer) => offer.priceUyu > 0);
   if (priced.length < 2) return all;
 
-  // De quién es el precio que manda.
+  // Qué rango de precios puede tener esta propiedad.
   //
   // Si la corrida de hoy trajo avisos, mandan ellos: `buildRentalProperties` los volvió a comparar
   // con `sameUnit` hace un instante, así que son coherentes entre sí por construcción. Lo guardado
   // es lo que hay que volver a ganarse.
   //
   // Si hoy no vino ninguno —pasa en cada corrida rápida, que sólo mira lo recién publicado— hay
-  // que decidir entre los guardados sin árbitro. Ahí gana el grupo MÁS GRANDE, no el más barato:
-  // con [21.000, 41.000, 41.000] el barato es el raro, y anclar al mínimo tiraría los dos avisos
+  // que decidir entre los guardados sin árbitro. Ahí gana el grupo MÁS NUMEROSO, no el más barato:
+  // con [21.000, 41.000, 41.000] el raro es el barato, y anclar al mínimo tiraría los dos avisos
   // que coinciden para quedarse con el único que no coincide con nadie.
-  const anchor = fresh.length
-    ? Math.min(...fresh.filter((offer) => offer.priceUyu > 0).map((offer) => offer.priceUyu))
-    : largestCoherentAnchor(priced);
-  if (!Number.isFinite(anchor) || anchor <= 0) return all;
+  //
+  // Y se mide contra los DOS extremos, no contra un precio de referencia. Medir contra uno solo
+  // encadena la tolerancia: con referencia 26.900, un aviso de 26.500 y otro de 28.800 pasan los
+  // dos —cada uno está dentro del 7 % del ancla— y el conjunto termina estirado un 8 %. Así se
+  // publicaban quince "1 dormitorio en Tres Cruces" como una sola propiedad: piso 10, piso 9, PB
+  // con entrada propia, con garaje. Cada uno cerca del ancla, ninguno cerca del otro.
+  const freshPrices = fresh.map((offer) => offer.priceUyu).filter((price) => price > 0);
+  const [lo, hi] = freshPrices.length
+    ? [Math.min(...freshPrices), Math.max(...freshPrices)]
+    : largestCoherentWindow(priced.map((offer) => offer.priceUyu));
+  if (!(lo > 0) || !(hi > 0)) return all;
 
   const freshIds = new Set(fresh.map((offer) => offer.listingId));
   return all.filter((offer) => {
     if (freshIds.has(offer.listingId)) return true;
     // Sin precio no hay con qué contradecir; el precio es la única señal que sobrevive en la oferta.
     if (offer.priceUyu <= 0) return true;
-    return withinTolerance(offer.priceUyu, anchor);
+    return coherent(Math.min(lo, offer.priceUyu), Math.max(hi, offer.priceUyu));
   });
 }
 
-function withinTolerance(a: number, b: number): boolean {
-  return Math.min(a, b) / Math.max(a, b) >= OFFER_PRICE_TOLERANCE;
+/** ¿Un conjunto cuyo precio va de `lo` a `hi` sigue siendo una sola propiedad? */
+function coherent(lo: number, hi: number): boolean {
+  return lo / hi >= OFFER_PRICE_TOLERANCE;
 }
 
-/** El precio del grupo más numeroso que cae dentro de la tolerancia. Empate: el más barato. */
-function largestCoherentAnchor(offers: RentalOffer[]): number {
-  let best = offers[0].priceUyu;
+/**
+ * El rango de precios del grupo más numeroso que sigue siendo coherente ENTERO.
+ *
+ * Sobre la lista ordenada, un grupo coherente es una ventana contigua cuyos extremos no se separan
+ * más que la tolerancia. Empate en cantidad: gana la más barata, que es la que se recorre primero.
+ */
+function largestCoherentWindow(sorted: number[]): [number, number] {
+  let best: [number, number] = [sorted[0], sorted[0]];
   let bestCount = 0;
-  for (const candidate of offers) {
-    const count = offers.filter((other) => withinTolerance(other.priceUyu, candidate.priceUyu)).length;
-    if (count > bestCount || (count === bestCount && candidate.priceUyu < best)) {
-      best = candidate.priceUyu;
+  for (let start = 0; start < sorted.length; start++) {
+    let end = start;
+    while (end + 1 < sorted.length && coherent(sorted[start], sorted[end + 1])) end++;
+    const count = end - start + 1;
+    if (count > bestCount) {
       bestCount = count;
+      best = [sorted[start], sorted[end]];
     }
   }
   return best;
@@ -214,6 +229,69 @@ export async function saveRentalProperties(
   }
 
   return { written, emptied };
+}
+
+/**
+ * Saca cada aviso de TODA fila que ya no sea su dueña.
+ *
+ * `saveRentalProperties` limpia las filas que la corrida escribe, y eso no alcanza: cuando el
+ * agrupamiento deja de unir dos avisos, la fila vieja puede no volver a producirse nunca más, así
+ * que nadie la toca y se queda con su copia hasta vencer por días. Medido el 2026-09-03 después
+ * de la primera corrida con los tres arreglos: **2.707 avisos vivían en más de una fila**, y sólo
+ * 9 filas tenían un conjunto fresco incoherente por sí mismo. O sea que el agrupamiento del día ya
+ * estaba bien y lo que ensuciaba el directorio eran las copias viejas.
+ *
+ * SÓLO DESPUÉS DE UNA CORRIDA COMPLETA, por el mismo motivo que la poda: una corrida rápida ve una
+ * franja del mercado, y "este aviso hoy pertenece a otra propiedad" sólo se puede afirmar de los
+ * avisos que la corrida efectivamente vio. Los que no vio no se tocan.
+ *
+ * Una fila que se queda sin ofertas se borra: una propiedad sin un solo aviso no es una propiedad.
+ */
+export async function dropReassignedOffers(
+  properties: RentalProperty[]
+): Promise<{ cleaned: number; removed: number; deleted: number }> {
+  const owner = new Map<string, string>();
+  for (const property of properties) {
+    for (const offer of property.offers) owner.set(offer.listingId, property.key);
+  }
+  if (!owner.size) return { cleaned: 0, removed: 0, deleted: 0 };
+
+  let cleaned = 0;
+  let removed = 0;
+  let deleted = 0;
+  const cursor = RentalListingModel.find({}).lean().cursor();
+  let operations: Array<Record<string, unknown>> = [];
+
+  const flush = async (): Promise<void> => {
+    if (!operations.length) return;
+    await RentalListingModel.bulkWrite(operations, { ordered: false });
+    operations = [];
+  };
+
+  for await (const raw of cursor) {
+    const row = raw as unknown as RentalProperty;
+    const offers = row.offers || [];
+    const kept = offers.filter((offer) => {
+      const now = owner.get(offer.listingId);
+      return !now || now === row.key;
+    });
+    if (kept.length === offers.length) continue;
+
+    cleaned++;
+    removed += offers.length - kept.length;
+    if (!kept.length) {
+      deleted++;
+      operations.push({ deleteOne: { filter: { key: row.key } } });
+    } else {
+      operations.push({
+        updateOne: { filter: { key: row.key }, update: { $set: recomputeFromOffers(row, kept) } },
+      });
+    }
+    if (operations.length >= CHUNK) await flush();
+  }
+  await flush();
+
+  return { cleaned, removed, deleted };
 }
 
 /**

@@ -110,6 +110,36 @@ describe("mergeOffers", () => {
   });
 });
 
+// La tolerancia encadenada, que fue el hallazgo de medir la primera corrida arreglada.
+describe("mergeOffers mide contra los dos extremos", () => {
+  it("no deja que el conjunto se estire mas que la tolerancia aunque cada uno pase contra el ancla", () => {
+    // Caso real: quince "1 dormitorio en Tres Cruces" —piso 10, piso 9, PB con entrada propia, con
+    // garaje— en una sola fila. Con referencia 26.900, tanto 26.500 como 28.800 estan dentro del
+    // 7 %; entre ellos hay 8 %. Cada uno cerca del ancla, ninguno cerca del otro.
+    const merged = mergeOffers(
+      [offer({ source: "infocasas", listingId: "infocasas:caro", price: 28_800, priceUyu: 28_800 })],
+      [offer({ source: "infocasas", listingId: "infocasas:hoy", price: 26_500, priceUyu: 26_500 })],
+      context
+    );
+    expect(merged.map((item) => item.listingId)).toEqual(["infocasas:hoy"]);
+  });
+
+  it("sin avisos frescos se queda con la ventana coherente mas numerosa", () => {
+    // [26.500, 26.900, 27.000, 28.800]: las tres primeras entran en un 2 %; la cuarta rompe.
+    const merged = mergeOffers(
+      [
+        offer({ source: "facebook", listingId: "facebook:a", price: 26_500, priceUyu: 26_500 }),
+        offer({ source: "facebook", listingId: "facebook:b", price: 26_900, priceUyu: 26_900 }),
+        offer({ source: "facebook", listingId: "facebook:c", price: 27_000, priceUyu: 27_000 }),
+        offer({ source: "facebook", listingId: "facebook:d", price: 28_800, priceUyu: 28_800 }),
+      ],
+      [],
+      context
+    );
+    expect(merged.map((item) => item.listingId)).toEqual(["facebook:a", "facebook:b", "facebook:c"]);
+  });
+});
+
 describe("recomputeFromOffers", () => {
   it("re-prices the property from the cheapest surviving advert", () => {
     const property = {
