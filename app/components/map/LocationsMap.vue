@@ -53,6 +53,13 @@ interface Props {
   directionsLabel?: string
   cashPoints?: CashPoint[]
   cashLabel?: string
+  /**
+   * Encuadrar la cámara sobre los marcadores en el primer render con datos.
+   *
+   * Opt-in y no comportamiento por defecto para no tocar /mapa ni
+   * /casa-de-cambio-cerca-de-mi, que abren a propósito en una vista fija.
+   */
+  fitToMarkers?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -66,6 +73,7 @@ const props = withDefaults(defineProps<Props>(), {
   directionsLabel: 'Cómo llegar',
   cashPoints: () => [],
   cashLabel: 'Retiro de efectivo',
+  fitToMarkers: false,
 })
 
 const emit = defineEmits<{ 'marker-click': [branch: Branch] }>()
@@ -82,6 +90,8 @@ let cashCluster: any = null
 let userMarker: any = null
 let radiusCircle: any = null
 let initStarted = false
+/** Ya se encuadró sobre los datos: sólo se hace en el primer render con marcadores. */
+let hasFitted = false
 const markersById = new Map<string, any>()
 const branchById = new Map<string, Branch>()
 let currentHighlightId: string | null = null
@@ -215,6 +225,30 @@ function renderMarkers() {
     cluster.addLayer(m)
   }
   currentHighlightId = props.highlightId ?? null
+  fitOnce()
+}
+
+/**
+ * Encuadra la cámara sobre los marcadores, UNA sola vez.
+ *
+ * Tres cuidados, y los tres vienen de cómo se usa este componente:
+ *
+ *  1. Sólo el primer render con datos. `renderMarkers` corre con cada cambio de `branches`, y en
+ *     el mapa de descuentos eso pasa con CADA chip de filtro: un fitBounds incondicional movería
+ *     la cámara en cada toque, que es exactamente lo que nadie quiere mientras mira una zona.
+ *  2. Bounds vacíos. `cluster.getBounds()` sin capas devuelve bounds inválidos y `fitBounds` tira
+ *     "Bounds are not valid".
+ *  3. La ubicación del visitante manda. Si ya se centró en dónde está parado, encuadrar sobre todo
+ *     el país le saca de la pantalla lo único que le importaba.
+ */
+function fitOnce() {
+  if (!props.fitToMarkers || hasFitted || !map || !cluster) return
+  if (props.userLocation) return
+  if (!props.branches.length) return
+  const bounds = cluster.getBounds()
+  if (!bounds || !bounds.isValid()) return
+  hasFitted = true
+  map.fitBounds(bounds, { padding: [24, 24], maxZoom: 14 })
 }
 
 // Swap only the affected marker icons when the highlight changes. A full
@@ -296,6 +330,7 @@ onBeforeUnmount(() => {
   userMarker = null
   radiusCircle = null
   initStarted = false
+  hasFitted = false
   markersById.clear()
   branchById.clear()
   currentHighlightId = null

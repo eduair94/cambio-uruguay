@@ -90,9 +90,18 @@
         </v-card-title>
       </v-card-item>
       <v-card-text class="pt-1">
+        <!-- Este es EL control de la pantalla: sin tarjetas elegidas no hay mapa. Iba como chips
+             sin rol ni estado, o sea invisible para un lector y sin forma de saber cuáles están
+             puestas. `aria-pressed` y no `role="switch"`: es lo que ya usan otras ocho páginas del
+             sitio (mejores-bancos-uruguay, mejores-prestamos-uruguay, ChairFilterPanel) y meter un
+             segundo idioma de interruptor en el mismo lugar sólo confunde. -->
         <div v-for="bank in banks" :key="bank.id" class="mb-2">
-          <div class="d-flex flex-wrap align-center ga-2">
-            <span class="bank-dot" :style="{ background: bank.color }" />
+          <div
+            class="d-flex flex-wrap align-center ga-2"
+            role="group"
+            :aria-label="`Tarjetas de ${bank.name}`"
+          >
+            <span class="bank-dot" :style="{ background: bank.color }" aria-hidden="true" />
             <span class="text-caption font-weight-medium mr-1" style="min-width: 92px">{{
               bank.name
             }}</span>
@@ -100,14 +109,17 @@
               v-for="card in cardsByBank[bank.id]"
               :key="card.id"
               size="small"
+              class="card-chip"
               :variant="selected.has(card.id) ? 'flat' : 'outlined'"
               :color="selected.has(card.id) ? 'primary' : undefined"
+              :aria-pressed="selected.has(card.id)"
+              :aria-label="`${bank.name} ${cardKindLabel(bank, card)}`"
               @click="toggleCard(card.id)"
             >
-              <v-icon start size="x-small">{{
+              <v-icon start size="x-small" aria-hidden="true">{{
                 card.type === 'credit' ? 'mdi-credit-card' : 'mdi-card-bulleted-outline'
               }}</v-icon>
-              {{ card.type === 'credit' ? 'Crédito' : 'Débito' }}
+              {{ cardKindLabel(bank, card) }}
             </v-chip>
           </div>
         </div>
@@ -275,6 +287,7 @@
             :radius-km="userLocation ? radiusKm : 0"
             :highlight-id="highlightId"
             :popup-for="popupFor"
+            fit-to-markers
             height="70vh"
             @marker-click="onMarkerClick"
           />
@@ -695,6 +708,18 @@ const BANKOS_FAQ: FaqItem[] = [
  * 84 % de lo que veía no le servía, en la única pantalla del sitio cuya pregunta es "¿me sirve mi
  * tarjeta acá?". `selectedBankIds` sigue existiendo para pintar los chips y la leyenda.
  */
+/**
+ * Cómo se llama el medio de pago de esa tarjeta.
+ *
+ * No siempre es "Crédito" o "Débito": Mercado Pago se paga con QR y Club El País y Prex son una
+ * tarjeta a secas. El catálogo lo dice en `bank.unique`, y el chip venía anunciando "Débito" para
+ * los tres — mal para quien lo lee y peor para quien lo escucha.
+ */
+function cardKindLabel(bank: { unique?: string }, card: { type: string }): string {
+  if (bank.unique) return bank.unique
+  return card.type === 'credit' ? 'Crédito' : 'Débito'
+}
+
 const cardsParam = computed(() => [...selectedCards.value].sort().join(','))
 const { data, pending, refresh } = await useLazyAsyncData<BankosDiscountsResponse>(
   'bankos-discounts',
@@ -1066,5 +1091,12 @@ useHead(() => ({
 .bank-card__fichas a:hover,
 .bank-card__fichas a:focus-visible {
   text-decoration: underline;
+}
+
+/* 44 px de alto para el objetivo táctil. A 26 px ya cumplía WCAG 2.5.8 (AA, 24 px); esto es
+   2.5.5 (AAA) y sobre todo comodidad real: es el control que hay que tocar dieciséis veces.
+   `size="small"` se conserva para no agrandar la tipografía. */
+.card-chip {
+  min-height: 44px;
 }
 </style>

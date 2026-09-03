@@ -170,9 +170,13 @@
           <!-- Map, only when the coordinate is trustworthy for this department -->
           <section v-if="mapBranches.length" class="mb-8">
             <h2 class="text-h5 font-weight-bold mb-3">Dónde queda</h2>
+            <!-- `fit-to-markers` y no un centro fijo: sin esto el mapa abría en Montevideo con
+                 zoom 15 para CUALQUIER sucursal, así que la de Rivera o la de Salto se veían como
+                 un mapa vacío del centro de Montevideo. Encuadra sobre el punto real. -->
             <LocationsMap
               :branches="mapBranches"
               :zoom="15"
+              fit-to-markers
               height="42vh"
               :directions-label="t('map.directions')"
             />
