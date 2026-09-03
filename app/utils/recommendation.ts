@@ -80,6 +80,22 @@ function round2(value: number): number {
  * @returns a strictly-typed {@link RankingResult}; `ranked` is empty and
  * `marketAverage` is 0 when there is no usable data.
  */
+/**
+ * Nombre legible de una casa a partir de su `origin`.
+ *
+ * Deliberadamente simple y sin catálogo: este módulo es puro y lo consume tanto el servidor como el
+ * cliente. Un slug con guiones bajos se lee bien en mayúsculas iniciales ("cambio_minas" ->
+ * "Cambio Minas"), y las páginas que tienen el directorio a mano (localData) ya resuelven el nombre
+ * comercial exacto por su cuenta.
+ */
+export function humaniseOriginName(origin: string): string {
+  return String(origin || '')
+    .trim()
+    .replace(/[-_]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .replace(/(^|\s)(\p{L})/gu, (_m, sep, ch) => sep + ch.toUpperCase())
+}
+
 export function rankExchanges(
   rows: readonly RankableRate[],
   currency: string,
@@ -103,7 +119,14 @@ export function rankExchanges(
     .filter(r => r.code === currency)
     .map(r => ({
       origin: r.origin,
-      name: r.name && r.name.trim() ? r.name : r.origin,
+      // El nombre SALE DEL ORIGEN, nunca de `r.name`. Ese campo no es el nombre de la casa: es la
+      // etiqueta de la moneda raspada de cada pizarra, y trae lo que cada casa haya puesto en su
+      // HTML. Medido el 2026-09-03 sobre la respuesta cruda de la API: baluma_cambio dice "Dólar
+      // USA", itau "US.D", cambio_minas "1", aeromar "img/dolar.png", cambio_rynder la URL entera
+      // de una imagen y cambio_misiones "images/bg_dolares.gif". Con `r.name` el sitio publicaba
+      // en datos estructurados que una casa de cambio se llama "images/bg_euros.gif".
+      // El peor caso de `origin` es un slug legible.
+      name: humaniseOriginName(r.origin),
       rate: operation === 'buy' ? (r.sell ?? 0) : (r.buy ?? 0),
     }))
     .filter(c => c.rate > 0)

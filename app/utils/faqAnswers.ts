@@ -3,7 +3,8 @@
 // The Nitro route (server/api/faq.get.ts) calls this, then optionally appends one
 // AI context sentence. Visible page text and FAQPage schema both come from these items.
 import type { ExchangeRate } from '../types/api'
-import { rankExchanges, type RankableRate } from './recommendation'
+import { humaniseOriginName, rankExchanges, type RankableRate } from './recommendation'
+import { offMarketDetector } from './marketOutlier'
 
 export const FAQ_LANGS = ['es', 'en', 'pt'] as const
 export type FaqLang = (typeof FAQ_LANGS)[number]
@@ -70,7 +71,17 @@ function round2(n: number): number {
 }
 
 function factsFor(rates: ExchangeRate[], code: string): RateFacts | null {
-  const market = rates.filter(r => r.code === code && !r.type && r.origin !== 'bcu')
+  const all = rates.filter(r => r.code === code && !r.type && r.origin !== 'bcu')
+
+  // La misma guarda anti-outlier que usan la home (index.vue), casaIntents y casasDirectory, y que
+  // a este módulo nunca se le aplicó. El resultado era que el MISMO HTML de la home publicaba dos
+  // precios distintos del mismo dólar: $40,40 en la meta description y en el
+  // ExchangeRateSpecification —que ya pasaban por `rankUsableQuotes`— y $39,55 en el FAQPage, que
+  // salía de acá. El comentario de currencyPages.ts:262 describe ese $39,55 como "una pizarra
+  // 4,6 % bajo la mediana", o sea un precio inalcanzable; Google leía las dos afirmaciones juntas.
+  const isOffMarket = offMarketDetector(all)
+  const market = all.filter(r => !isOffMarket(r))
+
   const sells = market.map(r => r.sell ?? 0).filter(v => v > 0)
   const buys = market.map(r => r.buy ?? 0).filter(v => v > 0)
   if (!sells.length || !buys.length) return null
@@ -84,7 +95,9 @@ function factsFor(rates: ExchangeRate[], code: string): RateFacts | null {
   const spreads = market
     .filter(r => (r.buy ?? 0) > 0 && (r.sell ?? 0) > 0)
     .map(r => ({
-      name: r.name || r.origin,
+      // Por `origin` y no por `r.name`: ese campo es la etiqueta de la moneda raspada de cada
+      // pizarra. Ver la nota en recommendation.ts.
+      name: humaniseOriginName(r.origin),
       spread: round2((r.sell as number) - (r.buy as number)),
     }))
     .sort((a, b) => a.spread - b.spread)
