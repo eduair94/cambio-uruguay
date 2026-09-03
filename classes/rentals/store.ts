@@ -62,6 +62,18 @@ const daysBetween = (from: string, to: string): number =>
  * Union of stored and fresh offers. Fresh always wins for the same advert; a stored advert survives
  * if its portal was down this run, or if a healthy portal simply has not re-shown it yet.
  */
+/**
+ * Cuánto puede separarse el precio de dos avisos que decimos que son la misma propiedad.
+ *
+ * Es la tolerancia más floja que admite `sameUnit` (0,93 en la rama con calle). Se aplica también
+ * acá porque la unión, una vez hecha, sobrevivía a su propia regla: `mergeOffers` conservaba un
+ * aviso guardado mientras su portal hubiera corrido y no estuviera vencido por días, sin volver a
+ * preguntarse si seguía siendo la misma propiedad. Auditado el 2026-09-03 sobre los 3.503 merges
+ * vivos: 378 tenían ofertas con más de 5 % de diferencia y 104 más de 8 %, con casos de 21.000
+ * contra 41.000 pesos en la misma fila — dos alquileres distintos presentados como uno.
+ */
+const OFFER_PRICE_TOLERANCE = 0.93;
+
 export function mergeOffers(
   stored: RentalOffer[],
   fresh: RentalOffer[],
@@ -75,7 +87,53 @@ export function mergeOffers(
     byId.set(offer.listingId, offer);
   }
   for (const offer of fresh) byId.set(offer.listingId, offer);
-  return [...byId.values()].sort((a, b) => a.priceUyu - b.priceUyu);
+
+  const all = [...byId.values()].sort((a, b) => a.priceUyu - b.priceUyu);
+  if (all.length < 2) return all;
+
+  const priced = all.filter((offer) => offer.priceUyu > 0);
+  if (priced.length < 2) return all;
+
+  // De quién es el precio que manda.
+  //
+  // Si la corrida de hoy trajo avisos, mandan ellos: `buildRentalProperties` los volvió a comparar
+  // con `sameUnit` hace un instante, así que son coherentes entre sí por construcción. Lo guardado
+  // es lo que hay que volver a ganarse.
+  //
+  // Si hoy no vino ninguno —pasa en cada corrida rápida, que sólo mira lo recién publicado— hay
+  // que decidir entre los guardados sin árbitro. Ahí gana el grupo MÁS GRANDE, no el más barato:
+  // con [21.000, 41.000, 41.000] el barato es el raro, y anclar al mínimo tiraría los dos avisos
+  // que coinciden para quedarse con el único que no coincide con nadie.
+  const anchor = fresh.length
+    ? Math.min(...fresh.filter((offer) => offer.priceUyu > 0).map((offer) => offer.priceUyu))
+    : largestCoherentAnchor(priced);
+  if (!Number.isFinite(anchor) || anchor <= 0) return all;
+
+  const freshIds = new Set(fresh.map((offer) => offer.listingId));
+  return all.filter((offer) => {
+    if (freshIds.has(offer.listingId)) return true;
+    // Sin precio no hay con qué contradecir; el precio es la única señal que sobrevive en la oferta.
+    if (offer.priceUyu <= 0) return true;
+    return withinTolerance(offer.priceUyu, anchor);
+  });
+}
+
+function withinTolerance(a: number, b: number): boolean {
+  return Math.min(a, b) / Math.max(a, b) >= OFFER_PRICE_TOLERANCE;
+}
+
+/** El precio del grupo más numeroso que cae dentro de la tolerancia. Empate: el más barato. */
+function largestCoherentAnchor(offers: RentalOffer[]): number {
+  let best = offers[0].priceUyu;
+  let bestCount = 0;
+  for (const candidate of offers) {
+    const count = offers.filter((other) => withinTolerance(other.priceUyu, candidate.priceUyu)).length;
+    if (count > bestCount || (count === bestCount && candidate.priceUyu < best)) {
+      best = candidate.priceUyu;
+      bestCount = count;
+    }
+  }
+  return best;
 }
 
 /** Re-derives the fields that are a function of the offers, after a merge changed them. */

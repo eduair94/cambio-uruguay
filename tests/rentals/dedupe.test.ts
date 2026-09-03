@@ -210,6 +210,92 @@ describe("buildRentalProperties", () => {
   });
 });
 
+// Los tres defectos que encontró la auditoría del 2026-09-03 sobre los 3.503 merges vivos, donde
+// el 10,8 % de las propiedades unificadas publicaba ofertas más separadas que la propia tolerancia
+// de la regla. Cada test reproduce un caso REAL de produccion, no uno inventado.
+describe("falsos positivos que la auditoria encontro en produccion", () => {
+  it("no une una casa con un apartamento aunque coincida todo lo demas", () => {
+    // Caso real: "ALQUILER CASA CARRASCO 3 DORMITORIOS, GRAN JARDIN" contra "Alquiler Apartamento
+    // Carrasco Norte 3 Dormitorios", misma calle, mismo numero, precio a un 2 %.
+    const casa = listing({
+      listingId: "infocasas:casa",
+      propertyType: "casa",
+      title: "ALQUILER CASA CARRASCO 3 DORMITORIOS",
+      bedrooms: 3,
+    });
+    const apto = listing({
+      source: "mercadolibre",
+      listingId: "mercadolibre:apto",
+      propertyType: "apartamento",
+      title: "Alquiler Apartamento Carrasco Norte 3 Dormitorios",
+      bedrooms: 3,
+      price: 32_500,
+    });
+    expect(sameUnit({ ...casa, priceUyu: casa.price }, { ...apto, priceUyu: apto.price })).toBe(false);
+    expect(buildRentalProperties([casa, apto], context)).toHaveLength(2);
+  });
+
+  it("no compara dos avisos sin barrio solo porque son del mismo departamento", () => {
+    // Caso real: UNA fila con nueve ofertas cuyos titulos nombraban Malvin, La Union y Buceo. Sin
+    // barrio y sin calle, el balde era el departamento entero.
+    const shared = {
+      neighborhood: "",
+      address: "",
+      street: "",
+      streetNumber: "",
+      latitude: null,
+      longitude: null,
+      area: null,
+      commonExpenses: null,
+      commonExpensesCurrency: null,
+    };
+    const malvin = listing({
+      ...shared,
+      listingId: "facebook:malvin",
+      source: "facebook",
+      title: "Apartamento 2 Dormitorios Malvin",
+    });
+    const laUnion = listing({
+      ...shared,
+      listingId: "facebook:launion",
+      source: "facebook",
+      title: "Alquiler apartamento 2 dormitorios La Union",
+    });
+    // Mismo departamento, mismos dormitorios, mismo precio exacto: antes alcanzaba para unirlos.
+    expect(buildRentalProperties([malvin, laUnion], context)).toHaveLength(2);
+  });
+
+  it("sigue uniendo por barrio cuando el barrio esta, que es la evidencia que si existe", () => {
+    // El arreglo anterior no puede llevarse puesto el caso legitimo: con barrio la union sigue.
+    const shared = {
+      address: "",
+      street: "",
+      streetNumber: "",
+      latitude: null,
+      longitude: null,
+      area: null,
+      commonExpenses: null,
+      commonExpensesCurrency: null,
+    };
+    const uno = listing({ ...shared, listingId: "facebook:1", source: "facebook" });
+    const dos = listing({ ...shared, listingId: "facebook:2", source: "facebook", price: 32_800 });
+    expect(buildRentalProperties([uno, dos], context)).toHaveLength(1);
+  });
+
+  it("no une dos avisos que declaran distinta cantidad de banos", () => {
+    const unBano = listing({ listingId: "infocasas:1", bathrooms: 1 });
+    const dosBanos = listing({ source: "mercadolibre", listingId: "mercadolibre:1", bathrooms: 2 });
+    expect(
+      sameUnit({ ...unBano, priceUyu: unBano.price }, { ...dosBanos, priceUyu: dosBanos.price })
+    ).toBe(false);
+    // Y no descalifica cuando uno de los dos no lo publica: ausente no contradice.
+    const sinDato = listing({ source: "mercadolibre", listingId: "mercadolibre:2", bathrooms: null });
+    expect(
+      sameUnit({ ...unBano, priceUyu: unBano.price }, { ...sinDato, priceUyu: sinDato.price })
+    ).toBe(true);
+  });
+});
+
 describe("sameUnit", () => {
   const candidate = (overrides: Partial<RawRental> & { priceUyu: number }) => ({
     ...base,

@@ -44,10 +44,21 @@ export function priceInPesos(price: number, currency: string, usdUyu: number): n
 
 const ratio = (a: number, b: number): number => (a <= 0 || b <= 0 ? 0 : Math.min(a, b) / Math.max(a, b));
 
-/** Types that are the same kind of thing for merging purposes. */
+/**
+ * Types that are the same kind of thing for merging purposes.
+ *
+ * `casa` y `apartamento` estaban en la MISMA familia y no lo son. Auditando los merges reales del
+ * 2026-09-03 apareció "ALQUILER CASA CARRASCO 3 DORMITORIOS, GRAN JARDÍN" unificada con "Alquiler
+ * Apartamento Carrasco Norte 3 Dormitorios": mismo barrio, mismos dormitorios, precio parecido, y
+ * dos propiedades distintas presentadas como una. Un aviso que dice casa y otro que dice
+ * apartamento se están describiendo a sí mismos; discreparle es inventar.
+ *
+ * `local` y `oficina` sí siguen juntos: los portales los usan casi indistintamente para el mismo
+ * inmueble comercial, y ahí el propio dato es ambiguo.
+ */
 const TYPE_FAMILY: Record<RentalPropertyType, string> = {
-  apartamento: "vivienda",
-  casa: "vivienda",
+  apartamento: "apartamento",
+  casa: "casa",
   habitacion: "habitacion",
   local: "comercial",
   oficina: "comercial",
@@ -67,7 +78,14 @@ export function bucketKey(listing: Candidate): string {
   }
   const neighborhood = flatten(listing.neighborhood);
   if (neighborhood) return `barrio|${department}|${neighborhood}|${TYPE_FAMILY[listing.propertyType]}`;
-  return `depto|${department}|${TYPE_FAMILY[listing.propertyType]}`;
+  // SIN barrio y SIN calle no hay dónde comparar: el balde queda por aviso.
+  //
+  // Antes era `depto|<departamento>|<familia>`, o sea TODO Montevideo en un solo balde, y con eso
+  // alcanzaba que dos avisos coincidieran en dormitorios y precio para unirse. Auditado el
+  // 2026-09-03: una sola fila juntaba NUEVE avisos —"Casa en alquiler con cochera 2 dormitorios",
+  // "Apartamento 2 Dormitorios Malvín", "Alquiler apartamento 2 dormitorios La Unión", "…Buceo"—
+  // que son nueve propiedades en barrios distintos. Un departamento entero no es una ubicación.
+  return `solo|${listing.listingId}`;
 }
 
 /**
@@ -81,6 +99,10 @@ export function sameUnit(a: Candidate, b: Candidate): boolean {
   // Dormitorios are the strongest cheap signal, and both portals publish them for real estate.
   // A disagreement is a different unit, full stop.
   if (a.bedrooms !== null && b.bedrooms !== null && a.bedrooms !== b.bedrooms) return false;
+  // Los baños se leían y no se comparaban nunca. Es el mismo argumento que los dormitorios: si los
+  // dos avisos dicen cuántos baños tiene y dicen distinto, se están describiendo a sí mismos y no
+  // coinciden. Sólo descalifica cuando AMBOS lo publican; ausente no contradice nada.
+  if (a.bathrooms !== null && b.bathrooms !== null && a.bathrooms !== b.bathrooms) return false;
 
   const areaRatio = a.area !== null && b.area !== null ? ratio(a.area, b.area) : null;
   const priceRatio = ratio(a.priceUyu, b.priceUyu);

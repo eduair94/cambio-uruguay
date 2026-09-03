@@ -60,6 +60,54 @@ describe("mergeOffers", () => {
     expect(merged).toHaveLength(1);
     expect(merged[0]!.priceUyu).toBe(28_000);
   });
+  // Una union tenia que volver a ganarse cada corrida y no lo hacia: alcanzaba con que el portal
+  // estuviera vivo y el aviso no estuviera vencido por dias. Auditado el 2026-09-03: la propiedad
+  // de Av. Ing. Luis Ponce publicaba [21.000, 41.000, 41.000] como un solo alquiler.
+  it("suelta un aviso guardado cuyo precio se despego del de la corrida de hoy", () => {
+    const merged = mergeOffers(
+      [offer({ source: "infocasas", listingId: "infocasas:viejo", price: 21_000, priceUyu: 21_000 })],
+      [offer({ source: "infocasas", listingId: "infocasas:hoy", price: 41_000, priceUyu: 41_000 })],
+      context
+    );
+    expect(merged.map((item) => item.listingId)).toEqual(["infocasas:hoy"]);
+  });
+
+  it("nunca suelta un aviso de la corrida de hoy, aunque sea el que se despega", () => {
+    // Los frescos ya pasaron por sameUnit hace un instante; el que tiene que reganarse es lo guardado.
+    const merged = mergeOffers(
+      [],
+      [
+        offer({ source: "infocasas", listingId: "infocasas:a", price: 21_000, priceUyu: 21_000 }),
+        offer({ source: "infocasas", listingId: "infocasas:b", price: 41_000, priceUyu: 41_000 }),
+      ],
+      context
+    );
+    expect(merged).toHaveLength(2);
+  });
+
+  it("sin avisos frescos manda el grupo mas numeroso, no el mas barato", () => {
+    // Con [21.000, 41.000, 41.000] el raro es el barato: anclar al minimo tiraria los dos que si
+    // coinciden entre si para quedarse con el unico que no coincide con nadie.
+    const merged = mergeOffers(
+      [
+        offer({ source: "facebook", listingId: "facebook:barato", price: 21_000, priceUyu: 21_000 }),
+        offer({ source: "facebook", listingId: "facebook:a", price: 41_000, priceUyu: 41_000 }),
+        offer({ source: "facebook", listingId: "facebook:b", price: 41_000, priceUyu: 41_000 }),
+      ],
+      [],
+      context
+    );
+    expect(merged.map((item) => item.listingId).sort()).toEqual(["facebook:a", "facebook:b"]);
+  });
+
+  it("no toca un conjunto coherente: la tolerancia es la misma que usa sameUnit", () => {
+    const merged = mergeOffers(
+      [offer({ source: "facebook", listingId: "facebook:1", price: 30_000, priceUyu: 30_000 })],
+      [offer({ source: "infocasas", listingId: "infocasas:1", price: 31_500, priceUyu: 31_500 })],
+      context
+    );
+    expect(merged).toHaveLength(2);
+  });
 });
 
 describe("recomputeFromOffers", () => {

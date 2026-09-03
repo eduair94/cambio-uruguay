@@ -54,9 +54,32 @@ lea `attributes_list` (`"2 dormitorios | 1 baño | 40 m² cubiertos"`) y `locati
 
 | nivel | condición | por qué |
 |---|---|---|
-| fuerte | misma calle **y** número, mismos dormitorios, m² ±15 %, precio ±7 % | un edificio de ocho apartamentos son ocho avisos en la misma dirección: la dirección sola es el EDIFICIO, no la unidad |
-| medio | sin calle de ninguno de los dos, mismo barrio, mismos dormitorios (los dos publicados), m² ±8 %, precio ±5 % | es lo único que se puede pedir en Marketplace, que casi nunca da dirección |
-| ninguno | el resto | un duplicado visible molesta; un aviso tragado es mentir sobre lo que hay en el mercado |
+| fuerte | misma calle **y** número, mismos dormitorios, mismos baños, m² ±15 %, precio ±7 % | un edificio de ocho apartamentos son ocho avisos en la misma dirección: la dirección sola es el EDIFICIO, no la unidad |
+| medio | sin calle de ninguno de los dos, mismo barrio, mismos dormitorios (los dos publicados), mismos baños, m² ±8 %, precio ±5 % | es lo único que se puede pedir en Marketplace, que casi nunca da dirección |
+| ninguno | el resto, y **siempre** que falten calle y barrio a la vez | un duplicado visible molesta; un aviso tragado es mentir sobre lo que hay en el mercado |
+
+Dormitorios y baños descalifican sólo cuando **los dos** avisos los publican: ausente no contradice
+nada, distinto sí. Y una casa nunca se une con un apartamento, por más que coincida todo lo demás.
+
+### Los tres falsos positivos que encontró la auditoría del 2026-09-03
+
+Medidos sobre las 3.503 propiedades con más de un aviso que había vivas ese día:
+
+| defecto | qué unía | cuántas | arreglo |
+|---|---|---|---|
+| `casa` y `apartamento` eran la misma familia | "ALQUILER CASA CARRASCO 3 DORMITORIOS, GRAN JARDÍN" con "Alquiler Apartamento Carrasco Norte 3 Dormitorios" | 225 filas mezclaban las dos palabras en sus títulos | familias separadas en `TYPE_FAMILY` |
+| sin barrio, el balde era el DEPARTAMENTO entero | una fila con nueve ofertas cuyos títulos nombraban Malvín, La Unión y Buceo | 269 propiedades unidas sin calle ni barrio | sin calle y sin barrio el balde queda por aviso: no hay dónde comparar |
+| una unión no volvía a ganarse nunca | Av. Ing. Luis Ponce publicaba [21.000, 41.000, 41.000] como un solo alquiler | 176 filas (5,0 %) con extremos más separados que la propia tolerancia; 55 ofertas a soltar | `mergeOffers` suelta lo guardado que se despegó del precio de la corrida de hoy |
+
+El tercero es el que más costó ver: `sameUnit` nunca habría unido esos precios, y el agrupamiento no
+es transitivo. La unión venía de antes y sobrevivía porque `mergeOffers` sólo preguntaba si el
+portal había corrido y si el aviso estaba vencido por días — nunca si **seguía siendo la misma
+propiedad**. Sin avisos frescos manda el grupo más numeroso, no el más barato: con
+[21.000, 41.000, 41.000] el raro es el barato, y anclar al mínimo tiraría los dos que sí coinciden.
+
+Lo que sigue sin poder auditarse: `RentalOffer` guarda precio y vendedor pero **no** dormitorios,
+m² ni baños por portal, así que cuando dos avisos se contradicen en esos campos la contradicción se
+pierde al escribir y un merge malo no se puede revisar después de hecho.
 
 Antes de comparar, todo pasa por `normalize.ts`:
 
