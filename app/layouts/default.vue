@@ -499,105 +499,85 @@ useHead(() => ({
 //     compilada y en el módulo de entrada. El sitio no carga fuentes de Google.
 // El presupuesto práctico de preconnect son tres o cuatro hosts, así que gastar dos en un
 // proveedor que no se consulta es al revés de lo que la etiqueta existe para hacer.
-useHead({
-  script: [
-    {
-      type: 'application/ld+json',
-      innerHTML: JSON.stringify({
-        '@context': 'https://schema.org',
-        '@graph': [
-          {
-            '@type': 'WebSite',
-            '@id': 'https://cambio-uruguay.com/#website',
-            url: 'https://cambio-uruguay.com',
-            name: 'Cambio Uruguay',
-            description:
-              'Comparador en tiempo real de la cotización del dólar y otras divisas en Uruguay.',
-            inLanguage: ['es', 'en', 'pt'],
-            publisher: { '@id': 'https://cambio-uruguay.com/#organization' },
-            potentialAction: {
-              '@type': 'SearchAction',
-              target: {
-                '@type': 'EntryPoint',
-                urlTemplate: 'https://cambio-uruguay.com/buscar?q={search_term_string}',
-              },
-              'query-input': 'required name=search_term_string',
-            },
-          },
-          {
-            '@type': 'Organization',
-            '@id': 'https://cambio-uruguay.com/#organization',
-            name: 'Cambio Uruguay',
-            alternateName: 'Cambio Uruguay - Cotización del Dólar',
-            url: 'https://cambio-uruguay.com',
-            foundingDate: '2023',
-            areaServed: {
-              '@type': 'Country',
-              name: 'Uruguay',
-              sameAs: 'https://www.wikidata.org/wiki/Q77',
-            },
-            // Las medidas son las del archivo, verificadas leyendo el IHDR del PNG el 2026-09-03:
-            // 498 × 72. Declaraba 227 × 33, que no es ni el tamaño real ni una escala de él
-            // (227 × 33 tiene otra proporción: 6,88 contra 6,92). Un ImageObject que miente sobre
-            // sus dimensiones es un dato que el consumidor puede descartar entero.
-            logo: {
-              '@type': 'ImageObject',
-              url: 'https://cambio-uruguay.com/img/logo.png',
-              width: 498,
-              height: 72,
-            },
-            description:
-              'Plataforma líder en Uruguay para comparar cotizaciones del dólar y divisas en más de 40 casas de cambio en tiempo real.',
-            contactPoint: {
-              '@type': 'ContactPoint',
-              email: 'admin@cambio-uruguay.com',
-              contactType: 'Customer Service',
-              areaServed: 'UY',
-              availableLanguage: ['Spanish', 'English', 'Portuguese'],
-            },
-            sameAs: [
-              'https://twitter.com/cambio_uruguay',
-              'https://www.linkedin.com/company/cambio-uruguay/',
-              'https://github.com/eduair94/cambio-uruguay',
-              'https://medium.com/@cambio-uruguay',
-            ],
-            address: {
-              '@type': 'PostalAddress',
-              streetAddress: 'Montevideo',
-              addressLocality: 'Montevideo',
-              addressRegion: 'Montevideo',
-              postalCode: '11000',
-              addressCountry: 'UY',
-            },
-            founder: {
-              '@type': 'Person',
-              name: 'Eduardo Airaudo',
-              url: 'https://www.linkedin.com/in/eduardo-airaudo/',
-              jobTitle: 'Founder & Developer',
-            },
-            author: {
-              '@type': 'Person',
-              name: 'Eduardo Airaudo',
-              url: 'https://www.linkedin.com/in/eduardo-airaudo/',
-            },
-            knowsAbout: [
-              'Cotización del dólar en Uruguay',
-              'Tipo de cambio Uruguay',
-              'Casas de cambio Uruguay',
-              'Mercado cambiario uruguayo',
-              'Peso uruguayo (UYU)',
-              'Unidad Indexada (UI)',
-              'Unidad Reajustable (UR)',
-              'Base de Prestaciones y Contribuciones (BPC)',
-              'Cambio de divisas para turistas en Uruguay',
-              'Precio del oro en Uruguay',
-            ],
-          },
-        ],
-      }),
+// La identidad del sitio, por el módulo y no a mano.
+//
+// Este layout escribía su propio grafo JSON-LD con un WebSite y una Organization, y @nuxtjs/seo
+// emite los suyos igual. Resultado medido en producción el 2026-09-03: DOS nodos `WebSite` con el
+// MISMO @id (https://cambio-uruguay.com/#website), que es inválido — el consumidor los fusiona o
+// elige uno, y el que puede perderse es el que lleva el SearchAction. Y dos Organizations con @id
+// distinto (#organization a mano, #identity del módulo), de las cuales la que el WebPage referencia
+// es la del módulo: la pobre, sin logo, sin contacto y sin sameAs.
+//
+// Ahora hay una sola de cada una. `defineWebSite` y `defineOrganization` escriben sobre los nodos
+// del módulo en vez de agregar otros, así que el grafo queda con #website, #webpage e #identity.
+useSchemaOrg([
+  defineWebSite({
+    name: 'Cambio Uruguay',
+    description: 'Comparador en tiempo real de la cotización del dólar y otras divisas en Uruguay.',
+    inLanguage: ['es', 'en', 'pt'],
+    potentialAction: [defineSearchAction({ target: '/buscar?q={search_term_string}' })],
+  }),
+  defineOrganization({
+    name: 'Cambio Uruguay',
+    alternateName: 'Cambio Uruguay - Cotización del Dólar',
+    url: 'https://cambio-uruguay.com',
+    foundingDate: '2023',
+    description:
+      'Plataforma líder en Uruguay para comparar cotizaciones del dólar y divisas en más de 40 casas de cambio en tiempo real.',
+    areaServed: {
+      '@type': 'Country',
+      name: 'Uruguay',
+      sameAs: 'https://www.wikidata.org/wiki/Q77',
     },
-  ],
-})
+    // Las medidas son las del archivo, leídas del IHDR del PNG el 2026-09-03: 498 × 72. Declaraba
+    // 227 × 33, que no es ni el tamaño real ni una escala de él.
+    logo: {
+      '@type': 'ImageObject',
+      url: 'https://cambio-uruguay.com/img/logo.png',
+      width: 498,
+      height: 72,
+    },
+    contactPoint: {
+      '@type': 'ContactPoint',
+      email: 'admin@cambio-uruguay.com',
+      contactType: 'Customer Service',
+      areaServed: 'UY',
+      availableLanguage: ['Spanish', 'English', 'Portuguese'],
+    },
+    sameAs: [
+      'https://twitter.com/cambio_uruguay',
+      'https://www.linkedin.com/company/cambio-uruguay/',
+      'https://github.com/eduair94/cambio-uruguay',
+      'https://medium.com/@cambio-uruguay',
+    ],
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: 'Montevideo',
+      addressLocality: 'Montevideo',
+      addressRegion: 'Montevideo',
+      postalCode: '11000',
+      addressCountry: 'UY',
+    },
+    founder: {
+      '@type': 'Person',
+      name: 'Eduardo Airaudo',
+      url: 'https://www.linkedin.com/in/eduardo-airaudo/',
+      jobTitle: 'Founder & Developer',
+    },
+    knowsAbout: [
+      'Cotización del dólar en Uruguay',
+      'Tipo de cambio Uruguay',
+      'Casas de cambio Uruguay',
+      'Mercado cambiario uruguayo',
+      'Peso uruguayo (UYU)',
+      'Unidad Indexada (UI)',
+      'Unidad Reajustable (UR)',
+      'Base de Prestaciones y Contribuciones (BPC)',
+      'Cambio de divisas para turistas en Uruguay',
+      'Precio del oro en Uruguay',
+    ],
+  }),
+])
 </script>
 
 <style scoped>
