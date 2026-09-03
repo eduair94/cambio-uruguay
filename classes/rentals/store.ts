@@ -260,7 +260,10 @@ export async function dropReassignedOffers(
   let removed = 0;
   let deleted = 0;
   const cursor = RentalListingModel.find({}).lean().cursor();
-  let operations: Array<Record<string, unknown>> = [];
+  // El tipo sale del propio modelo: escribirlo a mano como Record<string, unknown> compila acá y
+  // rompe en el build del servidor, que resuelve los overloads de mongoose con más información.
+  type BulkOps = Parameters<typeof RentalListingModel.bulkWrite>[0];
+  let operations: BulkOps = [];
 
   const flush = async (): Promise<void> => {
     if (!operations.length) return;
