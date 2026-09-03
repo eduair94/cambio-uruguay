@@ -462,19 +462,45 @@ const {
   data: branchesData,
   pending,
   error,
-} = await useLazyAsyncData(`branches-${origin}-${location || 'all'}`, async () => {
-  // Skip API call for special cases
-  if (origin === 'prex' || origin === 'ebrou') {
-    return []
-  }
+} = await useLazyAsyncData(
+  `branches-${origin}-${location || 'all'}`,
+  async () => {
+    // Skip API call for special cases
+    if (origin === 'prex' || origin === 'ebrou') {
+      return []
+    }
 
-  try {
-    return await getExchangesByOriginLocation(origin, location || '', undefined, undefined)
-  } catch (err) {
-    console.error('Error fetching branches data:', err)
-    throw err
+    try {
+      return await getExchangesByOriginLocation(origin, location || '', undefined, undefined)
+    } catch (err) {
+      console.error('Error fetching branches data:', err)
+      throw err
+    }
+  },
+  {
+    // Las MISMAS sucursales ya viajan en `branch-directory-<casa>`, con otro esquema. En
+    // /sucursales/brou el bloque __NUXT_DATA__ pesa 116.978 b: 45.411 del directorio y 64.731 de
+    // esta respuesta, que es la misma información contada dos veces. Medido el 2026-09-03.
+    //
+    // Unificar las dos fuentes sería el arreglo de fondo, pero cambia de dónde sale una tabla que
+    // hoy funciona; esto se queda en lo comprobable: de la respuesta viva sólo se serializan los
+    // once campos que la página lee — cuatro los pinta la tabla y siete los consume el mapa.
+    transform: (rows: unknown) =>
+      (Array.isArray(rows) ? rows : []).map((row: Record<string, unknown>) => ({
+        NroSucursal: row.NroSucursal,
+        Direccion: row.Direccion,
+        Telefono: row.Telefono,
+        Horarios: row.Horarios,
+        Nombre: row.Nombre,
+        Departamento: row.Departamento,
+        Localidad: row.Localidad,
+        id: row.id,
+        latitude: row.latitude,
+        longitude: row.longitude,
+        map: row.map,
+      })),
   }
-})
+)
 
 // SEO Meta
 useSeoMeta({
