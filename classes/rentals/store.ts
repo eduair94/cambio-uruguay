@@ -159,6 +159,21 @@ export async function saveRentalProperties(
   let written = 0;
   let emptied = 0;
 
+  // A qué propiedad pertenece cada aviso SEGÚN LA CORRIDA DE HOY.
+  //
+  // Hace falta para que una unión que se parte se limpie el mismo día. Cuando el agrupamiento deja
+  // de unir dos avisos, uno se lleva la clave vieja y el otro estrena la suya; sin esto el que se
+  // fue seguía guardado en la fila vieja hasta vencer por días, así que durante esa ventana el
+  // mismo aviso salía en dos propiedades Y la fila vieja seguía publicando el merge que ya
+  // dejamos de creer.
+  //
+  // Sólo habla de los avisos que esta corrida vio: uno que no está en el mapa no se toca, que es lo
+  // que hace que esto sea seguro también en la corrida rápida, que ve una franja del mercado.
+  const assignedTo = new Map<string, string>();
+  for (const property of properties) {
+    for (const offer of property.offers) assignedTo.set(offer.listingId, property.key);
+  }
+
   for (let index = 0; index < properties.length; index += CHUNK) {
     const batch = properties.slice(index, index + CHUNK);
     const keys = batch.map((property) => property.key);
@@ -170,7 +185,11 @@ export async function saveRentalProperties(
     const operations = [];
     for (const property of batch) {
       const previous = stored.get(property.key);
-      const offers = mergeOffers(previous?.offers || [], property.offers, context);
+      const kept = (previous?.offers || []).filter((offer) => {
+        const now = assignedTo.get(offer.listingId);
+        return !now || now === property.key;
+      });
+      const offers = mergeOffers(kept, property.offers, context);
       if (!offers.length) {
         emptied++;
         continue;
