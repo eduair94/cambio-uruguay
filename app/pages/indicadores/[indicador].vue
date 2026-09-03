@@ -250,11 +250,37 @@ defineOgImageComponent('Cambio', {
   tag: indicator.value!.tag,
 })
 
+/**
+ * El número va en el título y en la descripción, que es lo que separa al que gana el clic del que
+ * no lo gana.
+ *
+ * Medido el 2026-09-03 sobre el SERP real de Uruguay (gl=uy): para "valor de la ur hoy" NO hay
+ * caja de respuesta ni panel —o sea que el clic existe— y el tercer resultado es
+ * datosuruguay.com/ur, titulado "Valor UR Uruguay Hoy 2026: $1.923,44". Nosotros estábamos
+ * séptimos con un título sin una sola cifra. El cluster entero de la UR son 594 consultas, 18.251
+ * impresiones y 15 clics.
+ *
+ * LA GUARDA, que viene de un error propio: el número se muestra SÓLO cuando vino de la lectura
+ * viva. `currentValue` cae al `referenceValue` del catálogo cuando la lectura falla, y estampar un
+ * valor de referencia viejo en el título es exactamente el bug que en julio puso la misma
+ * cotización equivocada en cuarenta páginas de casas.
+ */
+const liveValue = computed(() => (value.value == null ? null : formattedValue.value))
+const currentYear = new Date().getFullYear()
+
 useSeoMeta({
   title: () =>
-    `Valor de la ${indicator.value!.name} (${indicator.value!.abbr}) Hoy | Cambio Uruguay`,
-  description: () => indicator.value!.shortDef,
-  ogTitle: () => `Valor de la ${indicator.value!.name} (${indicator.value!.abbr}) hoy`,
+    liveValue.value
+      ? `Valor de la ${indicator.value!.abbr} hoy: ${liveValue.value} | Cambio Uruguay`
+      : `Valor de la ${indicator.value!.name} (${indicator.value!.abbr}) Hoy | Cambio Uruguay`,
+  description: () =>
+    liveValue.value
+      ? `La ${indicator.value!.name} (${indicator.value!.abbr}) vale hoy ${liveValue.value} en ${currentYear}. ${indicator.value!.shortDef}`
+      : indicator.value!.shortDef,
+  ogTitle: () =>
+    liveValue.value
+      ? `${indicator.value!.abbr} hoy: ${liveValue.value}`
+      : `Valor de la ${indicator.value!.name} (${indicator.value!.abbr}) hoy`,
   ogDescription: () => indicator.value!.shortDef,
   ogType: 'website',
   ogUrl: () => canonicalUrl.value,
