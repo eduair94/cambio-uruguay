@@ -1,7 +1,8 @@
 // Las dos piezas gratis de la cosecha: de dónde salen las semillas y qué se considera "nuestro".
 // Ninguna de las dos sale a la red, y son las que deciden el 100 % de lo que llega a costar plata.
-import { describe, expect, it } from "vitest";
-import { QUESTION_PREFIXES, buildSeeds } from "../../classes/demand/harvest";
+import { describe, expect, it, vi } from "vitest";
+import { QUESTION_PREFIXES, buildSeeds, harvest } from "../../classes/demand/harvest";
+import axios from "axios";
 import { isUruguayan } from "../../classes/demand/classify";
 import { topicFor } from "../../classes/demand/refresh";
 import { SITE_TOPICS } from "../../classes/gaps/topics";
@@ -109,5 +110,62 @@ describe("isUruguayan", () => {
     // Salto, Colonia, Florida, Rivera y Durazno están afuera de la lista a propósito.
     expect(isUruguayan("salto de linea en excel")).toBe(false);
     expect(isUruguayan("colonia perfume hombre")).toBe(false);
+  });
+});
+
+// Son 510 semillas en serie y desde el VPS cada una tarda ~1,5 s: la cosecha entera son unos 14
+// minutos aun saliendo todo bien (medido el 2026-09-03). Si el endpoint dejara de contestar, sin
+// corte el job se pasaría más de una hora acumulando timeouts de 8 s para no traer nada — y peor,
+// el resultado sería indistinguible de un día sin demanda, que es el mismo error silencioso que ya
+// costó una corrida con la cobertura. Por eso `suggest` distingue "el pedido falló" de "no hay
+// sugerencias" y `harvest` corta por racha.
+describe("harvest frente a un endpoint que estrangula", () => {
+  const seeds = Array.from({ length: 30 }, (_, i) => `semilla ${i}`);
+
+  it("corta por la racha de fallas en vez de recorrer las 510 semillas", async () => {
+    const spy = vi.spyOn(axios, "get").mockRejectedValue(new Error("429"));
+    try {
+      const out = await harvest(seeds, 0);
+      expect(out.throttled).toBe(true);
+      expect(out.suggestions).toEqual([]);
+      // Cortó mucho antes del final, que es todo el punto.
+      expect(out.attempted).toBeLessThan(seeds.length);
+      expect(out.failed).toBe(out.attempted);
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it("una falla suelta no corta nada y la racha se reinicia", async () => {
+    let n = 0;
+    const spy = vi.spyOn(axios, "get").mockImplementation(async () => {
+      n++;
+      if (n === 3) throw new Error("timeout");
+      return { data: ["x", [`respuesta ${n}`]] } as never;
+    });
+    try {
+      const out = await harvest(seeds.slice(0, 10), 0);
+      expect(out.throttled).toBe(false);
+      expect(out.attempted).toBe(10);
+      expect(out.failed).toBe(1);
+      expect(out.suggestions.length).toBe(9);
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it("se queda con el mejor rango de una consulta que aparece desde dos semillas", async () => {
+    const spy = vi.spyOn(axios, "get").mockImplementation(async (_url, config: any) => {
+      const q = config?.params?.q;
+      // La misma consulta llega sexta desde una semilla y primera desde la otra.
+      if (q === "semilla 0") return { data: ["x", ["otra", "otra2", "repetida"]] } as never;
+      return { data: ["x", ["repetida"]] } as never;
+    });
+    try {
+      const out = await harvest(["semilla 0", "semilla 1"], 0);
+      expect(out.suggestions.find((s) => s.query === "repetida")?.rank).toBe(0);
+    } finally {
+      spy.mockRestore();
+    }
   });
 });

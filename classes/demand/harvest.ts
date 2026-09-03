@@ -33,10 +33,13 @@ export interface Suggestion {
 /**
  * Sugerencias para una semilla, con locale uruguayo.
  *
- * Nunca lanza: una semilla que falla es una semilla menos, no una corrida perdida. El endpoint no
- * pide clave pero sí es sensible al ritmo, así que el llamador espacia las llamadas.
+ * Devuelve `null` cuando el PEDIDO falló, y `[]` cuando el pedido salió bien y no hay sugerencias.
+ * La diferencia importa: el endpoint no pide clave pero sí limita el ritmo, y la primera versión
+ * de esto devolvía `[]` en los dos casos. Con eso una corrida estrangulada por Google se veía
+ * exactamente igual que un día sin demanda — el mismo error silencioso que ya costó una corrida
+ * con la cobertura.
  */
-export async function suggest(seed: string, timeoutMs = 8000): Promise<Suggestion[]> {
+export async function suggest(seed: string, timeoutMs = 8000): Promise<Suggestion[] | null> {
   try {
     const res = await axios.get(SUGGEST_URL, {
       params: { client: "firefox", hl: "es", gl: "uy", q: seed },
@@ -45,14 +48,14 @@ export async function suggest(seed: string, timeoutMs = 8000): Promise<Suggestio
       responseType: "json",
     });
     const list: unknown = Array.isArray(res.data) ? res.data[1] : null;
-    if (!Array.isArray(list)) return [];
+    if (!Array.isArray(list)) return null;
     return list
       .filter((q): q is string => typeof q === "string" && q.trim().length > 0)
       // Espacios internos normalizados además del trim: la lista real trajo "aguinaldo" dos veces,
       // que como cadenas eran distintas y como consulta son la misma.
       .map((query, rank) => ({ query: query.trim().replace(/\s+/g, " ").toLowerCase(), rank, seed }));
   } catch {
-    return [];
+    return null;
   }
 }
 
@@ -60,21 +63,66 @@ export async function suggest(seed: string, timeoutMs = 8000): Promise<Suggestio
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
+ * Cuántos pedidos seguidos pueden fallar antes de dar la cosecha por perdida.
+ *
+ * No es prolijidad: son 510 semillas en serie, y desde el VPS cada una tarda ~1,5 s, así que la
+ * cosecha entera son unos 14 minutos aun saliendo todo bien (medido el 2026-09-03). Si el endpoint
+ * dejara de contestar, sin este corte el job se pasaría más de una hora acumulando timeouts de 8 s
+ * para no traer nada. Doce fallas seguidas no son mala suerte.
+ */
+const MAX_CONSECUTIVE_FAILURES = 12;
+
+export interface Harvest {
+  suggestions: Suggestion[];
+  /** Semillas pedidas antes de cortar. */
+  attempted: number;
+  /** De esas, cuántas fallaron el pedido. */
+  failed: number;
+  /** True si se cortó por la racha de fallas: la cosecha está incompleta. */
+  throttled: boolean;
+}
+
+/**
  * Cosecha todas las semillas, de a una y espaciadas, deduplicando por consulta.
  *
  * Se queda con el MEJOR rank de cada consulta: si "me corresponde aguinaldo" aparece primera desde
  * una semilla y sexta desde otra, la que manda es la primera.
  */
-export async function harvest(seeds: readonly string[], gapMs = 350): Promise<Suggestion[]> {
+export async function harvest(seeds: readonly string[], gapMs = 350): Promise<Harvest> {
   const best = new Map<string, Suggestion>();
+  let attempted = 0;
+  let failed = 0;
+  let streak = 0;
+  let throttled = false;
+
   for (const seed of seeds) {
-    for (const s of await suggest(seed)) {
-      const prev = best.get(s.query);
-      if (!prev || s.rank < prev.rank) best.set(s.query, s);
+    attempted++;
+    const items = await suggest(seed);
+    if (items === null) {
+      failed++;
+      streak++;
+      if (streak >= MAX_CONSECUTIVE_FAILURES) {
+        throttled = true;
+        break;
+      }
+    } else {
+      streak = 0;
+      for (const s of items) {
+        const prev = best.get(s.query);
+        if (!prev || s.rank < prev.rank) best.set(s.query, s);
+      }
     }
     await sleep(gapMs);
   }
-  return [...best.values()].sort((a, b) => a.rank - b.rank || a.query.localeCompare(b.query, "es"));
+
+  return {
+    suggestions: [...best.values()].sort(
+      (a, b) => a.rank - b.rank || a.query.localeCompare(b.query, "es")
+    ),
+    attempted,
+    failed,
+    throttled,
+  };
 }
 
 /**

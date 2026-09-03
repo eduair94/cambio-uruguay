@@ -63,13 +63,30 @@ export interface RefreshOptions {
 export async function refreshDemandQueue(options: RefreshOptions = {}): Promise<DemandQueue> {
   const asOf = new Date(options.now ?? Date.now()).toISOString().slice(0, 10);
 
+  // Cada etapa se cronometra porque las dos primeras corridas reales tardaron mucho más de lo que
+  // decía la cuenta (510 semillas × 350 ms ≈ 3 min) y desde afuera no había forma de saber cuál era
+  // la lenta. Un job semanal puede tardar; lo que no puede es tardar sin decir en qué.
+  const started = Date.now();
+  const stage = (name: string, from: number) =>
+    console.log(`[demand] ${name}: ${((Date.now() - from) / 1000).toFixed(1)} s`);
+
   const seeds = buildSeeds(SITE_TOPICS);
   // El eco de la semilla se descarta. El autocompletado devuelve la propia semilla como primera
   // sugerencia ("casas de cambio uruguay", "transferencia uruguay", "letras uruguay"), y como
   // llega con rango 0 encabezaba la cola sin aportar una sola palabra que no hubiéramos escrito
   // nosotros. Lo que sirve de esta fuente es lo que la gente AGREGA a la semilla.
   const seedSet = new Set(seeds.map((s) => s.trim().toLowerCase()));
-  const suggestions: Suggestion[] = (await harvest(seeds)).filter((s) => !seedSet.has(s.query));
+  const picked = await harvest(seeds);
+  const suggestions: Suggestion[] = picked.suggestions.filter((s) => !seedSet.has(s.query));
+  stage(`cosecha de ${picked.attempted}/${seeds.length} semillas (${picked.failed} fallaron)`, started);
+  if (picked.throttled) {
+    // No se lanza: media cosecha sigue siendo mejor que ninguna, y el guardado ya se niega a pisar
+    // una cola buena con una vacía. Lo que hace falta es que quede DICHO, porque una cola corta por
+    // estrangulamiento se ve igual que una cola corta por falta de demanda.
+    console.warn(
+      "[demand] el autocompletado cortó la cosecha por racha de fallas: la lista está incompleta"
+    );
+  }
 
   // Dos etapas de alcance, gratis y antes que nada. Primero el país: el `gl=uy` del autocompletado
   // no filtra nada (contesta lo mismo con y sin él) y sin este paso la cola se llena de demanda
@@ -85,8 +102,10 @@ export async function refreshDemandQueue(options: RefreshOptions = {}): Promise<
   // El recuperador ENCUENTRA la página, que es lo difícil; cuánto se parece lo mide `coverageOf`
   // sobre el título y la ruta. El puntaje que devuelve no sirve para eso y creerle costó una
   // corrida entera: ver la cabecera de coverage.ts.
+  const indexStarted = Date.now();
   const chunks = await loadIndex();
   const retriever = chunks.length ? new SiteRetriever(chunks) : null;
+  stage(`índice propio (${chunks.length} fragmentos)`, indexStarted);
 
   const candidates: Candidate[] = inScope.map(({ s, topic }) => {
     const hits = retriever ? retriever.rankWithVector(s.query, null, 1) : [];
@@ -105,6 +124,7 @@ export async function refreshDemandQueue(options: RefreshOptions = {}): Promise<
 
   let probed = 0;
   if (!options.skipSerp) {
+    const serpStarted = Date.now();
     for (const c of shortlist) {
       const probe = await probeSerp(c.query);
       if (probe) {
@@ -113,6 +133,10 @@ export async function refreshDemandQueue(options: RefreshOptions = {}): Promise<
       }
       await new Promise((r) => setTimeout(r, SERP_GAP_MS));
     }
+    // Cuántas contestaron importa tanto como cuánto tardó: un servidor de SERP que devuelve null
+    // deja a todos los candidatos "sin clasificar", y la cola sigue sirviendo pero hay que
+    // mirarla entera a mano en vez de leer las primeras cinco.
+    stage(`${probed} de ${shortlist.length} SERP clasificados`, serpStarted);
   }
 
   return {

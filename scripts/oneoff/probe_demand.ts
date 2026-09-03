@@ -12,11 +12,12 @@ import { SITE_TOPICS } from "../../classes/gaps/topics";
   const limit = Number(process.argv[2]) || all.length;
   const seeds = all.slice(0, limit);
   const out = await harvest(seeds);
-  const local = out.filter((s) => isUruguayan(s.query));
+  const local = out.suggestions.filter((s) => isUruguayan(s.query));
   const scoped = local.map((s) => ({ ...s, topic: topicFor(s.query) })).filter((s) => s.topic);
 
   console.log(
-    `semillas ${seeds.length} · sugerencias ${out.length} · uruguayas ${local.length} · en tema ${scoped.length}`
+    `semillas ${out.attempted}/${seeds.length} (${out.failed} fallaron${out.throttled ? ", CORTADA" : ""}) · ` +
+      `sugerencias ${out.suggestions.length} · uruguayas ${local.length} · en tema ${scoped.length}`
   );
   for (const s of scoped.slice(0, 40)) console.log(`  ${s.rank} [${s.topic}] ${s.query}`);
 })();

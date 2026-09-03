@@ -20,7 +20,10 @@ export interface SerpProbe {
  * Devuelve null cuando el servidor no está o contesta algo que no se puede leer. Nunca lanza: una
  * clasificación que falta no puede costar la corrida entera.
  */
-export async function probeSerp(query: string, timeoutMs = 25000): Promise<SerpProbe | null> {
+// 12 s y no 25: son 25 sondas en serie, así que el tiempo máximo de la etapa es el timeout por
+// veinticinco. Con 25 s la etapa podía tardar once minutos, y una consulta que tarda más de doce
+// segundos casi siempre termina fallando igual.
+export async function probeSerp(query: string, timeoutMs = 12000): Promise<SerpProbe | null> {
   try {
     const res = await axios.get(BASE, {
       params: { query, gl: "uy", lr: "lang_es", num: 8 },
