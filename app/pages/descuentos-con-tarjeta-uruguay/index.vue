@@ -404,7 +404,7 @@
     <!-- Marcas con descuento. Server-rendered a propósito: es lo único de esta página que el
          buscador puede leer, porque el mapa depende de una selección que sólo existe en el
          navegador de cada quien. -->
-    <section v-if="topBrands.length" class="mt-8">
+    <section v-if="topBrands?.length" class="mt-8">
       <h2 class="text-h6 mb-1">Marcas con descuento en Uruguay</h2>
       <p class="text-body-2 text-medium-emphasis mb-3" style="max-width: 70ch">
         Las cadenas con más locales del catálogo. Cada una tiene su página con qué emisor da el
@@ -775,16 +775,26 @@ function cardKindLabel(bank: { unique?: string }, card: { type: string }): strin
  * clics. Esta lectura es chica, no depende de nadie en particular, y le da al buscador (y a quien
  * llega sin tarjetas elegidas) algo que leer y por dónde entrar a las 304 páginas de marca.
  */
-const { data: brandIndex } = await useFetch<{
-  brands: Array<{ name: string; locations: number; pageSlug: string | null }>
-}>('/api/bankos/brands', { key: 'bankos-brands-hub' })
+interface HubBrand {
+  name: string
+  locations: number
+  pageSlug: string | null
+}
 
-const topBrands = computed(() =>
-  (brandIndex.value?.brands || [])
-    .filter(b => b.pageSlug)
-    .sort((a, b) => b.locations - a.locations)
-    .slice(0, 48)
-)
+const { data: topBrands } = await useFetch('/api/bankos/brands', {
+  key: 'bankos-brands-hub',
+  // `transform` y no un computed sobre la respuesta: lo que devuelve esta ruta son 2.068 marcas y
+  // 382 KB, y sin recortar ACÁ Nuxt serializa el payload entero en el HTML — medido, la página
+  // pasó de 287 KB a 760 KB la primera vez que se agregó. `transform` corre antes de serializar,
+  // así que sólo viajan las 48 filas que la sección dibuja.
+  transform: (res: { brands: HubBrand[] }) =>
+    (res?.brands || [])
+      .filter(b => b.pageSlug)
+      .sort((a, b) => b.locations - a.locations)
+      .slice(0, 48)
+      .map(b => ({ name: b.name, locations: b.locations, pageSlug: b.pageSlug })),
+  default: () => [] as HubBrand[],
+})
 
 const cardsParam = computed(() => [...selectedCards.value].sort().join(','))
 const { data, pending, refresh } = await useLazyAsyncData<BankosDiscountsResponse>(
