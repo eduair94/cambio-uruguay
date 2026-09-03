@@ -79,22 +79,49 @@ test('the rest of the site keeps its analytics', async ({ page }) => {
 
   expect(hosts, 'gtag did not load on a normal page').toContain('www.googletagmanager.com')
 
-  // And the Consent Mode v2 defaults still travel with it (all denied until the
-  // banner grants), which is what makes loading it before consent legitimate.
-  // gtag pushes the `arguments` object, NOT a real array — `Array.isArray` is
-  // false for those, which silently emptied this filter the first time.
+  // Y los defaults de Consent Mode v2 siguen viajando con él. Son DOS llamadas desde que el
+  // default se acotó por región (66c1d8b): una línea de base mundial que concede, y una segunda
+  // que la sobrescribe con denegado en el EEE, el Reino Unido y Suiza, donde la política de Google
+  // exige consentimiento previo. Los valores con `region` tienen precedencia sobre los que no la
+  // llevan, así que el orden es documentación y no lógica.
+  //
+  // Este test esperaba UNA sola llamada y todo denegado, que era el contrato anterior. Quedó rojo
+  // desde aquel cambio y nadie lo miró: por eso ahora afirma la forma nueva ENTERA en vez de un
+  // conteo, y sobre todo las dos cosas que harían ilegal el arreglo — que no exista una denegación
+  // sin región (rompería la medición fuera del EEE sin ningún fin legal) y que no exista una
+  // concesión CON región (que es lo que sí sería un problema de cumplimiento).
+  //
+  // gtag empuja el objeto `arguments`, NO un arreglo de verdad — `Array.isArray` da false para
+  // esos, y eso vació este filtro en silencio la primera vez.
   const consent = await page.evaluate(() =>
     Array.from((window as unknown as { dataLayer?: ArrayLike<unknown>[] }).dataLayer ?? [])
       .filter(a => a && (a as ArrayLike<unknown>)[0] === 'consent' && a[1] === 'default')
-      .map(a => (a as ArrayLike<unknown>)[2])
+      .map(a => (a as ArrayLike<unknown>)[2] as Record<string, unknown>)
   )
-  expect(consent).toHaveLength(1)
-  expect(consent[0]).toMatchObject({
+  expect(consent).toHaveLength(2)
+
+  const scoped = consent.filter(c => Array.isArray(c.region))
+  const worldwide = consent.filter(c => !Array.isArray(c.region))
+  expect(worldwide, 'falta la línea de base mundial').toHaveLength(1)
+  expect(scoped, 'falta el default acotado por región').toHaveLength(1)
+
+  expect(worldwide[0]).toMatchObject({
+    ad_storage: 'granted',
+    ad_user_data: 'granted',
+    ad_personalization: 'granted',
+    analytics_storage: 'granted',
+  })
+  expect(scoped[0]).toMatchObject({
     ad_storage: 'denied',
     ad_user_data: 'denied',
     ad_personalization: 'denied',
     analytics_storage: 'denied',
+    wait_for_update: 500,
   })
+  // El EEE, el Reino Unido y Suiza tienen que estar; Uruguay no, que es el punto del cambio.
+  const region = scoped[0]!.region as string[]
+  expect(region).toEqual(expect.arrayContaining(['DE', 'FR', 'ES', 'IT', 'GB', 'CH']))
+  expect(region).not.toContain('UY')
 })
 
 test('the calculator scales the whole board and is shareable', async ({ page }) => {
