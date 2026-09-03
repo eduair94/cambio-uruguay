@@ -489,26 +489,17 @@ useHead(() => ({
 }))
 
 // Head configuration
+//
+// SIN `preconnect` acá. Los cuatro que había servían para poco o para nada, y estaban en todas las
+// páginas del sitio (531.351 impresiones en español en 28 días):
+//   * api.cambio-uruguay.com y www.googletagmanager.com ya los declara nuxt.config.ts:149 y :153,
+//     así que el HTML servía cada uno DOS veces;
+//   * fonts.googleapis.com y fonts.gstatic.com abrían dos handshakes TLS que nadie usa — medido el
+//     2026-09-03, cero peticiones a esos hosts en el HTML de seis páginas, en la hoja de estilos
+//     compilada y en el módulo de entrada. El sitio no carga fuentes de Google.
+// El presupuesto práctico de preconnect son tres o cuatro hosts, así que gastar dos en un
+// proveedor que no se consulta es al revés de lo que la etiqueta existe para hacer.
 useHead({
-  link: [
-    {
-      rel: 'preconnect',
-      href: 'https://api.cambio-uruguay.com',
-    },
-    {
-      rel: 'preconnect',
-      href: 'https://www.googletagmanager.com',
-    },
-    {
-      rel: 'preconnect',
-      href: 'https://fonts.googleapis.com',
-    },
-    {
-      rel: 'preconnect',
-      href: 'https://fonts.gstatic.com',
-      crossorigin: 'anonymous',
-    },
-  ],
   script: [
     {
       type: 'application/ld+json',

@@ -170,7 +170,9 @@ if (!entry.value) {
 const foreign = computed<ConvertCode>(() => foreignCode(entry.value!))
 const title = computed(() => convertTitle(entry.value!))
 
-const { bestSell, bestBuy, pending } = useExchangeRates()
+// Sólo la moneda de esta conversión: ver la nota del filtro en useExchangeRates. Antes viajaban
+// las 196 filas de las dieciocho monedas para leer dos números.
+const { bestSell, bestBuy, pending } = useExchangeRates([foreign.value as CurrencyCode])
 
 const sellRate = computed(() => bestSell(foreign.value as CurrencyCode)) // price to buy foreign
 const buyRate = computed(() => bestBuy(foreign.value as CurrencyCode)) // price to sell foreign
