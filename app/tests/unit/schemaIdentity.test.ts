@@ -45,6 +45,13 @@ describe('la identidad del sitio la declara el módulo', () => {
     }
   })
 
+  it('la Organization lleva el @id que el WebPage referencia', () => {
+    // Sin @id explícito la librería la nombra #organization, y el `about` del WebPage apunta a
+    // #identity: la parte rica queda colgando de un identificador que nadie referencia. Verificado
+    // en producción el 2026-09-03.
+    expect(layout).toContain("'@id': 'https://cambio-uruguay.com/#identity'")
+  })
+
   it('el logo declara el tamaño real del archivo', () => {
     expect(layout).toContain('width: 498')
     expect(layout).toContain('height: 72')

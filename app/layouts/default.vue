@@ -518,6 +518,17 @@ useSchemaOrg([
     potentialAction: [defineSearchAction({ target: '/buscar?q={search_term_string}' })],
   }),
   defineOrganization({
+    // El @id EXPLÍCITO es el arreglo, y costó una vuelta descubrirlo. Sin él la librería nombra a
+    // este nodo `#organization`, mientras el `WebPage` que emite el módulo apunta su `about` a
+    // `#identity` — o sea que toda la parte rica (logo, contactPoint, address, founder, knowsAbout)
+    // colgaba de un identificador que ningún otro nodo referenciaba, y la entidad que Google
+    // resuelve para la página traía sólo name, url y sameAs. Verificado en producción el
+    // 2026-09-03, antes y después de consolidar: el problema no era escribir el grafo a mano, era
+    // el identificador.
+    //
+    // Con el mismo @id los dos nodos se fusionan: JSON-LD une por @id a lo largo del documento,
+    // aunque estén en <script> distintos.
+    '@id': 'https://cambio-uruguay.com/#identity',
     name: 'Cambio Uruguay',
     alternateName: 'Cambio Uruguay - Cotización del Dólar',
     url: 'https://cambio-uruguay.com',
