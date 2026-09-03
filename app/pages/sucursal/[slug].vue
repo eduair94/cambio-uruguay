@@ -336,8 +336,41 @@ const slug = computed(() => String(route.params.slug ?? ''))
 
 // The directory is one cached Nitro route shared by every branch page, the
 // `/sucursal` index and the sitemap, so all three agree on the slug set.
-const { data: directory } = await useAsyncData('branch-directory', () =>
-  $fetch<BranchDirectory>('/api/branches')
+//
+// El `transform` deja sólo las sucursales que ESTA página puede llegar a mostrar, y en esta
+// familia importa más que en ninguna otra: son 528 páginas y cada una serializaba el directorio
+// entero. Medido en producción el 2026-09-03 sobre /sucursal/alter-cambio-misiones-1375, la página
+// pesaba 534.869 bytes y 233.275 eran este documento — el 44 %, repetido 528 veces.
+//
+// Conserva la MISMA forma a propósito, en vez de devolver `{branch, siblings, competidores}`: así
+// los computeds de abajo no cambian y el recorte no puede alterar lo que se renderiza. Y es
+// idempotente — `siblingBranches` y `nearbyCompetitors` sobre el subconjunto eligen exactamente lo
+// mismo que sobre la lista completa, porque el subconjunto ES lo que ellas eligieron.
+//
+// La clave del caché lleva el slug porque el contenido ahora depende de él. Con la clave compartida
+// —que /sucursal y /sucursal/<slug> usaban igual— la segunda página renderizada en el mismo proceso
+// se habría quedado con el recorte de la primera.
+const { data: directory } = await useAsyncData(
+  `branch-directory-${route.params.slug}`,
+  () => $fetch<BranchDirectory>('/api/branches'),
+  {
+    transform: (all: BranchDirectory): BranchDirectory => {
+      const wanted = String(route.params.slug ?? '')
+      const found = (all?.branches ?? []).find(item => item.slug === wanted)
+      if (!found) return { branches: [], casas: {} }
+      const keep = [
+        found,
+        ...siblingBranches(found, all.branches),
+        ...nearbyCompetitors(found, all.branches),
+      ]
+      const casas: BranchDirectory['casas'] = {}
+      for (const b of keep) {
+        const casa = all.casas?.[b.origin]
+        if (casa) casas[b.origin] = casa
+      }
+      return { branches: keep, casas }
+    },
+  }
 )
 
 const branch = computed(() => {

@@ -197,8 +197,27 @@ const location = route.params.location as string | undefined
 // built from this, and a lazy fetch resolves after the SSR render — Google
 // would receive the fallback ("Brou", zero branches, no rate), which is exactly
 // the snippet being fixed. It reads one Nitro route cached for 30 minutes.
-const { data: directory } = await useAsyncData('branch-directory', () =>
-  $fetch<BranchDirectory>('/api/branches')
+//
+// El `transform` recorta a ESTA casa antes de serializar, y no es cosmético: `/api/branches`
+// devuelve el directorio entero (todas las casas, sus 528 sucursales y la cotización de cada una),
+// y esta página lee tres cosas —el nombre de la casa, sus sucursales y su dólar—. Medido en
+// producción el 2026-09-03 sobre /sucursales/brou/montevideo: la página pesaba 595.580 bytes, de
+// los cuales 233.275 eran este documento dentro de __NUXT_DATA__. Es la misma lección que dejó la
+// familia /historico con 1,18 MB: lo que entra en `data` viaja entero al navegador, se use o no.
+//
+// La clave del caché incluye el origen porque el contenido ahora depende de él; con la clave
+// compartida, la segunda casa renderizada en el mismo proceso se habría quedado con el recorte de
+// la primera.
+const { data: directory } = await useAsyncData(
+  `branch-directory-${origin}`,
+  () => $fetch<BranchDirectory>('/api/branches'),
+  {
+    transform: (all: BranchDirectory): BranchDirectory => ({
+      branches: (all?.branches ?? []).filter(branch => branch.origin === origin),
+      casas: all?.casas?.[origin] ? { [origin]: all.casas[origin]! } : {},
+      usd: all?.usd?.[origin] ? { [origin]: all.usd[origin]! } : {},
+    }),
+  }
 )
 
 /**
