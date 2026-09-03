@@ -10,6 +10,7 @@ import { SiteRetriever } from "../rag/retrieve";
 import { buildQueue, isUruguayan, type Candidate, type ScoredCandidate } from "./classify";
 import { coverageOf } from "./coverage";
 import { buildSeeds, harvest, type Suggestion } from "./harvest";
+import { loadKnownQueries } from "./known";
 import { probeSerp } from "./serp";
 
 /** Cuántos candidatos llegan a la etapa del SERP. Es la única parte que cuesta. */
@@ -132,6 +133,11 @@ export async function refreshDemandQueue(options: RefreshOptions = {}): Promise<
   const retriever = chunks.length ? new SiteRetriever(chunks) : null;
   stage(`índice propio (${chunks.length} fragmentos)`, indexStarted);
 
+  // Lo que Google ya nos muestra. Va después del índice y antes del SERP porque es gratis y
+  // cambia a qué candidatos vale la pena gastarles una consulta cara.
+  const known = await loadKnownQueries();
+  stage(`archivo de Search Console (${known.size} consultas)`, indexStarted);
+
   const candidates: Candidate[] = inScope.map(({ s, topic }) => {
     // Cinco candidatas y se elige la que MÁS cubre, no la primera. Con `limit: 1` la cola del
     // 2026-09-03 daba cobertura 0 para las 40 filas, y mirando los `bestPath` se ve por qué:
@@ -150,7 +156,14 @@ export async function refreshDemandQueue(options: RefreshOptions = {}): Promise<
         best = hit;
       }
     }
-    return { query: s.query, topic, rank: s.rank, coverage, bestPath: best?.path ?? null };
+    return {
+      query: s.query,
+      topic,
+      rank: s.rank,
+      coverage,
+      bestPath: best?.path ?? null,
+      known: known.get(s.query),
+    };
   });
 
   // Los mejores por hueco y frecuencia van al SERP, que es la etapa cara. Los que no entran en el

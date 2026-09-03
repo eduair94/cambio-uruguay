@@ -17,6 +17,13 @@ export interface ScDemandSerp {
   weak: number
 }
 
+/** Lo que el archivo de Search Console ya sabe de la consulta. */
+export interface ScDemandKnown {
+  impressions: number
+  clicks: number
+  position: number
+}
+
 export interface ScDemandItem {
   query: string
   topic: string | null
@@ -26,6 +33,8 @@ export interface ScDemandItem {
   coverage: number
   bestPath: string | null
   serp?: ScDemandSerp
+  /** Presente cuando Google YA muestra el sitio para esta consulta exacta. */
+  known?: ScDemandKnown
   score: number
   why: string
 }

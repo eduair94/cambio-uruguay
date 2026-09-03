@@ -120,6 +120,35 @@ describe("scoreCandidate", () => {
     expect(s.why).toMatch(/a mano/);
   });
 
+  // Search Console es la única señal que dice qué hace GOOGLE, no qué tenemos nosotros. Una
+  // consulta donde el sitio ya aparece no es una página que falta: es una que hay que mejorar, y
+  // escribir una segunda para la misma consulta fabrica la cannibalización que a este sitio le
+  // costó 34.259 impresiones y 52 clics en el grupo de marca de BROU.
+  it("baja mucho si Google ya nos muestra para esa consulta", () => {
+    const s = scoreCandidate({
+      ...base,
+      known: { impressions: 900, clicks: 3, position: 11.4 },
+    });
+    expect(s.score).toBeLessThan(scoreCandidate(base).score);
+    expect(s.why).toMatch(/ya aparecés en posición 11\.4/);
+    expect(s.why).toMatch(/mejorar, no de escribir/);
+  });
+
+  it("no baja si aparecemos tan atrás que da igual", () => {
+    // Posición 38 es la página cuatro: nadie la ve, y tratarla como cobertura esconde el hueco.
+    const s = scoreCandidate({ ...base, known: { impressions: 40, clicks: 0, position: 38 } });
+    expect(s.score).toBe(scoreCandidate(base).score);
+  });
+
+  it("una consulta que no está en el archivo se puntúa igual que antes", () => {
+    expect(scoreCandidate({ ...base, known: undefined }).score).toBe(scoreCandidate(base).score);
+  });
+
+  it("sigue quedando en la cola, porque mejorar también es trabajo", () => {
+    const out = buildQueue([{ ...base, known: { impressions: 900, clicks: 3, position: 11.4 } }]);
+    expect(out).toHaveLength(1);
+  });
+
   it("la sugerencia número ocho vale menos que la primera", () => {
     expect(scoreCandidate({ ...base, rank: 8 }).score).toBeLessThan(scoreCandidate(base).score);
   });

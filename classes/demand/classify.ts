@@ -207,6 +207,13 @@ export function assessSerp(shape: SerpShape): SerpAssessment {
   };
 }
 
+/** Lo que el archivo de Search Console ya sabe de una consulta. */
+export interface KnownPosition {
+  impressions: number;
+  clicks: number;
+  position: number;
+}
+
 export interface Candidate {
   /** La consulta tal como la sugiere el autocompletado. */
   query: string;
@@ -219,7 +226,18 @@ export interface Candidate {
   /** La página que más se le parece, si hay alguna. */
   bestPath: string | null;
   serp?: SerpAssessment;
+  /** Presente cuando el sitio YA aparece en Google para esta consulta exacta. */
+  known?: KnownPosition;
 }
+
+/**
+ * Hasta qué posición se considera que el sitio "ya aparece".
+ *
+ * Quince y no diez: en el puesto 12 Google ya eligió la página, y escribir una segunda para la
+ * misma consulta es fabricar la cannibalización que a este sitio le costó 34.259 impresiones y 52
+ * clics en el grupo de marca de BROU.
+ */
+const RANKING_POSITION = 15;
 
 export interface ScoredCandidate extends Candidate {
   score: number;
@@ -245,9 +263,18 @@ export function scoreCandidate(c: Candidate): ScoredCandidate {
   // para el único caso que se midió y se descartó: "no-entrar".
   const serpFactor = !c.serp ? 0.4 : c.serp.verdict === "escribir" ? 1 : c.serp.verdict === "dudoso" ? 0.4 : 0;
 
-  const score = Number((demand * gap * serpFactor).toFixed(4));
-  const why =
-    serpFactor === 0
+  // Si Google YA nos muestra para esta consulta exacta, no es una página que falta: es una que hay
+  // que mejorar. Vale menos en una cola que existe para decidir qué ESCRIBIR, y lo dice en el
+  // motivo en vez de desaparecer — porque una consulta en el puesto 12 con impresiones también es
+  // trabajo, sólo que de otro tipo.
+  const alreadyRanks = c.known && c.known.position > 0 && c.known.position <= RANKING_POSITION;
+  const knownFactor = alreadyRanks ? 0.3 : 1;
+
+  const score = Number((demand * gap * serpFactor * knownFactor).toFixed(4));
+  const why = alreadyRanks
+    ? `ya aparecés en posición ${c.known!.position.toFixed(1)} (${c.known!.impressions} impresiones, ` +
+      `${c.known!.clicks} clics): es de mejorar, no de escribir`
+    : serpFactor === 0
       ? c.serp?.reason || "sin evaluar el SERP"
       : gap < 0.3
         ? `ya hay algo parecido en ${c.bestPath ?? "el sitio"}`

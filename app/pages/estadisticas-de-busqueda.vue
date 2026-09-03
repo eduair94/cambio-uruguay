@@ -94,6 +94,7 @@
               <th>Tema</th>
               <th>SERP</th>
               <th class="text-right">Cobertura</th>
+              <th class="text-right">¿Ya rankeamos?</th>
               <th>Por qué</th>
             </tr>
           </thead>
@@ -111,6 +112,17 @@
                   {{ scPercent(item.coverage, 0) }}
                 </span>
                 <span v-else class="text-medium-emphasis">—</span>
+              </td>
+              <td data-label="¿Ya rankeamos?" class="text-right">
+                <!-- La única señal que dice qué hace GOOGLE y no qué tenemos nosotros. Si ya
+                     aparecemos, el trabajo es mejorar la página que existe, no escribir otra. -->
+                <span
+                  v-if="item.known"
+                  :title="`${item.known.impressions} impresiones, ${item.known.clicks} clics`"
+                >
+                  pos {{ item.known.position.toFixed(1) }}
+                </span>
+                <span v-else class="text-medium-emphasis">no</span>
               </td>
               <td data-label="Por qué" class="text-caption">{{ item.why }}</td>
             </tr>
