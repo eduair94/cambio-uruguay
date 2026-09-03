@@ -268,6 +268,24 @@ export async function refreshSearchConsole(options: RefreshOptions = {}): Promis
     ),
   };
 
+  // El canal de alertas, en el único lugar donde alguien las mira.
+  //
+  // `notifyAdmin` degrada sin lanzar cuando faltan las credenciales, y deja una línea en los logs
+  // de pm2 que nadie lee. Verificado en el VPS el 2026-09-03: `TELEGRAM_BOT_TOKEN` tiene valor y
+  // `TELEGRAM_ADMIN_CHAT_ID` está VACÍO, así que las alertas de dieciséis archivos —entre ellas el
+  // disyuntor del bot de Reddit y la auditoría de cotizaciones— no llegan a ningún lado y el
+  // síntoma es que no pasa nada. Esto lo pone arriba del tablero privado, que es donde el dueño
+  // busca alertas por diseño.
+  if (!process.env.TELEGRAM_BOT_TOKEN || !process.env.TELEGRAM_ADMIN_CHAT_ID) {
+    snapshot.alerts.push({
+      level: "warn",
+      code: "alerts-unconfigured",
+      message:
+        "El aviso por Telegram no está configurado (falta TELEGRAM_BOT_TOKEN o TELEGRAM_ADMIN_CHAT_ID en el .env del VPS): " +
+        "ninguna alerta de ningún job está llegando, y eso incluye las de cotizaciones implausibles y el disyuntor del bot de Reddit.",
+    });
+  }
+
   if (snapshot.indexation.checked >= 10) {
     const rate = snapshot.indexation.indexed / snapshot.indexation.checked;
     if (rate < 0.6) {
