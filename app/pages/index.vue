@@ -459,7 +459,11 @@
                             >
                               <nuxt-link
                                 class="d-flex w-100 h-100 text-decoration-none"
-                                :to="localePath(`/historico/${rate.origin}/${subjectCode}`)"
+                                :to="
+                                  localePath(
+                                    canonicalRoutePath(`/historico/${rate.origin}/${subjectCode}`)
+                                  )
+                                "
                               >
                                 <VCard
                                   class="rate-item pa-3 text-center flex-grow-1"
@@ -508,7 +512,11 @@
                             >
                               <nuxt-link
                                 class="d-flex w-100 h-100 text-decoration-none"
-                                :to="localePath(`/historico/${rate.origin}/${subjectCode}`)"
+                                :to="
+                                  localePath(
+                                    canonicalRoutePath(`/historico/${rate.origin}/${subjectCode}`)
+                                  )
+                                "
                               >
                                 <VCard
                                   class="rate-item pa-3 text-center flex-grow-1"
@@ -607,7 +615,7 @@
           >
             <nuxt-link
               class="d-flex w-100 h-100 text-decoration-none"
-              :to="localePath(`/historico/${exchange.origin}/${exchange.code}`)"
+              :to="localePath(canonicalRoutePath(`/historico/${exchange.origin}/${exchange.code}`))"
             >
               <VCard
                 class="house-card pa-4 h-100 w-100"

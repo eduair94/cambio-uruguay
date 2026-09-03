@@ -138,7 +138,7 @@
                     {{ $t('cotizacion.viewCasa') }}
                   </v-btn>
                   <v-btn
-                    :to="localePath(`/historico/${item.origin}/${code}`)"
+                    :to="localePath(canonicalRoutePath(`/historico/${item.origin}/${code}`))"
                     color="secondary"
                     variant="text"
                     size="small"

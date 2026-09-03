@@ -238,9 +238,10 @@ const getItemColor = ({ pos }: { pos: number }) => {
 }
 
 const getLinkHistory = (item: any) => {
-  let link = `/historico/${item.origin}/${item.code}`
+  // Ver la nota en pages/historico/index.vue: la minúscula va al construir el href.
+  let link = canonicalRoutePath(`/historico/${item.origin}/${item.code}`)
   if (item.type) {
-    link = `/historico/${item.origin}/${item.code}/${item.type}`
+    link = canonicalRoutePath(`/historico/${item.origin}/${item.code}/${item.type}`)
   }
   return localePath(link)
 }

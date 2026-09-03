@@ -112,7 +112,7 @@
               </template>
               <template #item.actions="{ item }">
                 <v-btn
-                  :to="localePath(`/historico/${origin}/${item.code}`)"
+                  :to="localePath(canonicalRoutePath(`/historico/${origin}/${item.code}`))"
                   color="secondary"
                   variant="text"
                   size="small"

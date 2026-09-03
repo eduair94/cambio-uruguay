@@ -385,9 +385,10 @@ const filteredItems = computed(() => {
 
 // Methods
 const getLink = (item: any): string => {
-  let link = `/historico/${item.origin}/${item.code}`
+  // Ver la nota en historico/index.vue: la minúscula va al construir el href.
+  let link = canonicalRoutePath(`/historico/${item.origin}/${item.code}`)
   if (item.type) {
-    link = `/historico/${item.origin}/${item.code}/${item.type}`
+    link = canonicalRoutePath(`/historico/${item.origin}/${item.code}/${item.type}`)
   }
   return link
 }

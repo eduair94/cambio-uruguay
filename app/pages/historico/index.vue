@@ -347,9 +347,12 @@ const { data: rawData, pending: loading } = await useAsyncData(
 )
 const getLink = (item: CambioItem): string => {
   if (!item.origin || !item.code) return ''
-  let url = `/historico/${item.origin}/${item.code}`
+  // En minúscula al CONSTRUIR, no después. El sitemap declara la minúscula y el servidor 301ea
+  // la mayúscula, así que emitir el href en mayúscula hacía que el propio sitio disparara su
+  // redirección: 638 enlaces desde 104 páginas, medidos el 2026-09-03.
+  let url = canonicalRoutePath(`/historico/${item.origin}/${item.code}`)
   if (item.type) {
-    url = `/historico/${item.origin}/${item.code}/${item.type}`
+    url = canonicalRoutePath(`/historico/${item.origin}/${item.code}/${item.type}`)
   }
   return localePath(url)
 }
