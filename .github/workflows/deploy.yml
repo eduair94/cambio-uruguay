@@ -144,6 +144,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      # El npm que trae Node 22 es la serie 10, y ahí `npm install` sin lockfile
+      # revienta con "Cannot read properties of null (reading 'edgesOut')" — un
+      # bug de arborist. Pasó dos veces seguidas el 2026-09-03 (6de2bc6 y
+      # 8911768) y dejó el backend sin desplegar; el árbol está bien, la misma
+      # resolución en frío con npm 11 instala 726 paquetes sin una queja.
+      #
+      # Y lo importante: el VPS corre Node 22.14 con **npm 11.4.2**, así que CI
+      # con npm 10 no estaba reproduciendo producción, que es justamente lo que
+      # este job existe para hacer.
+      - run: npm i -g npm@11
       # No lockfile is committed at the repo root (package-lock.json is
       # gitignored there — only app/package-lock.json is deliberately
       # un-ignored), so install like scripts/deploy-backend.sh does — `npm
