@@ -6,7 +6,12 @@
     </h2>
     <p class="related-lead text-caption text-medium-emphasis mb-4">{{ t('related.lead') }}</p>
 
-    <VRow dense>
+    <!-- `density` y no `dense`: Vuetify 4 avisa por consola en CADA render que `dense` está
+         deprecado, y este componente vive en el layout, o sea en todas las páginas. Medido en el
+         VPS: 47.095 líneas y ~1 MB de stderr por día, casi todas esta advertencia con su stack de
+         componentes, que además tapaba los errores de verdad (el 2026-09-02 había ocho, invisibles
+         entre el ruido). -->
+    <VRow density="comfortable">
       <VCol v-for="item in items" :key="item.to" cols="12" sm="6" md="4">
         <VCard
           :to="localePath(item.to)"
