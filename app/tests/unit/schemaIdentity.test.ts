@@ -52,8 +52,8 @@ describe('la identidad del sitio la declara el módulo', () => {
     expect(layout).toContain("'@id': 'https://cambio-uruguay.com/#identity'")
   })
 
-  it('el logo declara el tamaño real del archivo', () => {
-    expect(layout).toContain('width: 498')
-    expect(layout).toContain('height: 72')
+  it('el logo va como cadena, que es lo que la librería conserva', () => {
+    // Con un ImageObject el nodo #identity salía sin logo. Verificado en producción el 2026-09-03.
+    expect(layout).toContain("logo: 'https://cambio-uruguay.com/img/logo.png'")
   })
 })

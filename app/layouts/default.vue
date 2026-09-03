@@ -540,14 +540,12 @@ useSchemaOrg([
       name: 'Uruguay',
       sameAs: 'https://www.wikidata.org/wiki/Q77',
     },
-    // Las medidas son las del archivo, leídas del IHDR del PNG el 2026-09-03: 498 × 72. Declaraba
-    // 227 × 33, que no es ni el tamaño real ni una escala de él.
-    logo: {
-      '@type': 'ImageObject',
-      url: 'https://cambio-uruguay.com/img/logo.png',
-      width: 498,
-      height: 72,
-    },
+    // El logo va como CADENA, no como ImageObject. Con el objeto la librería lo descartaba: el
+    // nodo #identity —el que el WebPage referencia— salía con trece campos y sin logo, mientras el
+    // logo quedaba en el nodo que arma `site.identity`. Verificado en producción el 2026-09-03.
+    // Las medidas del archivo, por si vuelve a hacer falta declararlas: 498 × 72 leídas del IHDR
+    // del PNG (el valor viejo, 227 × 33, no era ni el tamaño real ni una escala de él).
+    logo: 'https://cambio-uruguay.com/img/logo.png',
     contactPoint: {
       '@type': 'ContactPoint',
       email: 'admin@cambio-uruguay.com',
