@@ -259,3 +259,76 @@ export function rentalSpecsLabel(
   if (property.area !== null) parts.push(`${property.area} m²`)
   return parts.join(' · ')
 }
+
+/** Un punto del mapa: lo mínimo para dibujar un marcador y su globo. */
+export interface RentalMapPoint {
+  key: string
+  lat: number
+  lng: number
+  /** Precio en la moneda del aviso, ya formateado por el servidor para no mandar dos campos. */
+  price: number
+  currency: RentalCurrency
+  bedrooms: number | null
+  area: number | null
+  neighborhood: string
+  /** Cuántos portales publican esta misma propiedad. */
+  offers: number
+  /** El aviso al que lleva el globo. */
+  url: string
+}
+
+export interface RentalMapResponse {
+  points: RentalMapPoint[]
+  /** Propiedades que cumplen el filtro, tengan o no coordenada. */
+  total: number
+  /** De ésas, cuántas tienen una coordenada utilizable. */
+  located: number
+  /** Cuántas se mandaron: `located` recortado al tope. */
+  shown: number
+  /** El tope que se aplicó, para que la página pueda decirlo sin adivinarlo. */
+  limit: number
+}
+
+/**
+ * El filtro de Mongo que corresponde a una consulta del directorio.
+ *
+ * Vive acá y no dentro del endpoint porque lo usan DOS rutas —la lista y el mapa— y si cada una
+ * armara el suyo, un filtro aplicado en una y no en la otra daría un mapa que muestra propiedades
+ * que la lista no lista. Es la misma clase de contradicción que el sitio ya tuvo entre la meta
+ * description y el FAQ de la home.
+ *
+ * Devuelve DOS filtros porque las facetas los necesitan distintos: `nonLocation` lleva todo menos
+ * departamento y barrio (contar el facet de departamento con el departamento ya aplicado dejaría
+ * "1" al lado de todos los demás), y `filter` es el completo.
+ */
+export function buildRentalFilter(
+  query: RentalQuery,
+  staleDays: number
+): { filter: Record<string, unknown>; nonLocation: Record<string, unknown> } {
+  const cutoff = new Date(Date.now() - staleDays * 86_400_000).toISOString().slice(0, 10)
+  const nonLocation: Record<string, unknown> = { lastSeen: { $gte: cutoff } }
+
+  if (query.type) nonLocation.propertyType = query.type
+  if (query.source) nonLocation.sources = query.source
+  if (query.bedrooms !== null) nonLocation.bedrooms = { $gte: query.bedrooms }
+  if (query.multi) nonLocation['sources.1'] = { $exists: true }
+  if (query.priceMin !== null || query.priceMax !== null) {
+    nonLocation.priceUyu = {
+      ...(query.priceMin !== null ? { $gte: query.priceMin } : {}),
+      ...(query.priceMax !== null ? { $lte: query.priceMax } : {}),
+    }
+  }
+  if (query.q) {
+    // A plain, anchored-free regex over the two fields a person actually types into: the street
+    // and the advert's headline. Escaped, because a stray "(" from a paste must not 500.
+    const safe = query.q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const pattern = new RegExp(safe, 'i')
+    nonLocation.$or = [{ title: pattern }, { address: pattern }, { neighborhood: pattern }]
+  }
+
+  const filter: Record<string, unknown> = { ...nonLocation }
+  if (query.department) filter.department = query.department
+  if (query.neighborhood) filter.neighborhood = query.neighborhood
+
+  return { filter, nonLocation }
+}

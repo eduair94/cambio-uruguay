@@ -193,13 +193,67 @@ STORY: Arrive with a barrio and a budget, narrow it, see who publishes it, leave
       </p>
     </section>
 
-    <VProgressLinear v-if="pending" indeterminate color="primary" class="mb-4" />
+    <!-- Lista o mapa. El mapa NO se pide hasta que alguien lo abre: son hasta 3.000 puntos y
+         mandarlos en el payload del SSR de una página que la mayoría usa como lista sería
+         cobrarle a todos el peso de una vista que abren algunos. -->
+    <div class="rentals-view mb-4">
+      <VBtnToggle v-model="view" mandatory density="comfortable" variant="outlined" divided>
+        <VBtn value="lista" size="small" prepend-icon="mdi-view-grid-outline">Lista</VBtn>
+        <VBtn value="mapa" size="small" prepend-icon="mdi-map-marker-outline">Mapa</VBtn>
+      </VBtnToggle>
+    </div>
 
-    <VAlert v-if="!pending && !items.length" type="info" variant="tonal" class="mb-6">
+    <section v-if="view === 'mapa'" class="rentals-map mb-6">
+      <VProgressLinear v-if="mapPending" indeterminate color="primary" class="mb-2" />
+
+      <!-- La mitad del inventario no tiene coordenada y el mapa tiene que decirlo: un mapa que
+           esconde la mitad sin avisar hace creer que un barrio no tiene oferta. -->
+      <VAlert
+        v-if="mapData && mapData.located < mapData.total"
+        type="info"
+        variant="tonal"
+        density="compact"
+        class="mb-3"
+      >
+        {{ numberFormat(mapData.located) }} de {{ numberFormat(mapData.total) }} propiedades de esta
+        búsqueda tienen ubicación publicada; el resto sólo aparece en la lista.
+        <template v-if="mapData.shown < mapData.located">
+          En el mapa se dibujan las {{ numberFormat(mapData.shown) }} más recientes.
+        </template>
+      </VAlert>
+
+      <ClientOnly>
+        <LocationsMap
+          v-if="mapMarkers.length"
+          :branches="mapMarkers"
+          :popup-for="rentalPopup"
+          :fit-to-markers="true"
+          height="65vh"
+          directions-label="Ver el aviso"
+        />
+        <VAlert v-else-if="!mapPending" type="warning" variant="tonal" density="compact">
+          Ninguna de las propiedades de esta búsqueda tiene ubicación publicada. Probá en la lista.
+        </VAlert>
+      </ClientOnly>
+    </section>
+
+    <VProgressLinear
+      v-if="pending && view === 'lista'"
+      indeterminate
+      color="primary"
+      class="mb-4"
+    />
+
+    <VAlert
+      v-if="!pending && !items.length && view === 'lista'"
+      type="info"
+      variant="tonal"
+      class="mb-6"
+    >
       No hay propiedades para esos filtros. Probá ampliar el precio o sacar el barrio.
     </VAlert>
 
-    <VRow>
+    <VRow v-if="view === 'lista'">
       <VCol v-for="property in items" :key="property.key" cols="12" sm="6" lg="4">
         <VCard class="rental-card h-100 d-flex flex-column" variant="flat">
           <a
@@ -269,7 +323,7 @@ STORY: Arrive with a barrio and a budget, narrow it, see who publishes it, leave
     </VRow>
 
     <VPagination
-      v-if="pageCount > 1"
+      v-if="pageCount > 1 && view === 'lista'"
       v-model="page"
       :length="pageCount"
       :total-visible="smAndDown ? 4 : 7"
@@ -339,6 +393,7 @@ import {
   rentalAgeLabel,
   rentalPriceLabel,
   rentalSpecsLabel,
+  type RentalMapResponse,
   type RentalOffer,
   type RentalProperty,
   type RentalPropertyType,
@@ -412,6 +467,83 @@ const activeSourceLabels = computed(() =>
     .map(source => sourceLabel(source.key))
     .join(', ')
 )
+
+/**
+ * Lista o mapa, y el mapa se pide sólo cuando alguien lo abre.
+ *
+ * `server: false` + `immediate: false`: son hasta 3.000 puntos y esta página se usa sobre todo como
+ * lista. Meterlos en el payload del SSR le cobraría a todos el peso de una vista que abren algunos
+ * — que es exactamente el defecto que hoy costó 1,18 MB en /historico y 233 KB en cada una de las
+ * 528 fichas de sucursal.
+ */
+const view = ref<'lista' | 'mapa'>('lista')
+
+const {
+  data: mapData,
+  pending: mapPending,
+  execute: loadMap,
+} = await useAsyncData<RentalMapResponse | null>(
+  'rentals-map',
+  () => $fetch('/api/rentals/mapa', { query: requestParams.value }),
+  { server: false, immediate: false, watch: [requestParams], default: () => null }
+)
+
+// Se carga al abrir el mapa por primera vez; después el `watch` de los filtros lo mantiene al día.
+watch(view, async next => {
+  if (next === 'mapa' && !mapData.value) await loadMap()
+})
+
+/**
+ * Los puntos, con la forma que espera `LocationsMap`.
+ *
+ * Se reutiliza ese componente en vez de escribir otro mapa: ya trae el agrupamiento, el guardado
+ * contra coordenadas inválidas y el encuadre que costó dos bugs arreglar. Que su tipo se llame
+ * `Branch` es una etiqueta, no un obstáculo — el globo lo dibuja `popupFor`.
+ */
+const mapMarkers = computed(() =>
+  (mapData.value?.points ?? []).map(point => ({
+    origin: 'alquiler',
+    id: point.key,
+    name: point.neighborhood || 'Alquiler',
+    dept: point.neighborhood || '',
+    locality: point.neighborhood || '',
+    address: point.neighborhood || '',
+    phone: '',
+    hours: '',
+    lat: point.lat,
+    lng: point.lng,
+    mapUrl: point.url,
+    source: 'alquileres',
+  }))
+)
+
+/** El globo de cada pin: precio, tamaño, y cuántos portales publican la misma propiedad. */
+function rentalPopup(marker: { id: string }): string {
+  const point = (mapData.value?.points ?? []).find(candidate => candidate.key === marker.id)
+  if (!point) return ''
+  const money =
+    point.currency === 'USD' ? `US$ ${numberFormat(point.price)}` : `$ ${numberFormat(point.price)}`
+  const partes = [
+    point.bedrooms !== null ? `${point.bedrooms} dorm.` : '',
+    point.area ? `${point.area} m²` : '',
+  ].filter(Boolean)
+  const enVarios =
+    point.offers > 1
+      ? `<div class="rental-pop__multi">Publicada en ${point.offers} portales</div>`
+      : ''
+  const enlace = point.url
+    ? `<a href="${point.url}" target="_blank" rel="noopener noreferrer nofollow">Ver el aviso</a>`
+    : ''
+  return [
+    `<strong>${money}</strong>`,
+    partes.length ? `<div>${partes.join(' · ')}</div>` : '',
+    point.neighborhood ? `<div>${point.neighborhood}</div>` : '',
+    enVarios,
+    enlace,
+  ]
+    .filter(Boolean)
+    .join('')
+}
 
 const departmentItems = computed(() => [
   { title: 'Todo el país', value: '' },
@@ -649,6 +781,16 @@ useHead(() => ({
 </script>
 
 <style scoped>
+.rentals-view {
+  display: flex;
+  justify-content: flex-end;
+}
+.rentals-map {
+  border-radius: 12px;
+  overflow: hidden;
+}
+/* El globo lo inyecta Leaflet fuera del árbol del componente, así que su estilo no puede ir
+   `scoped`: va en el bloque global de más abajo. */
 .rentals {
   max-width: 1240px;
 }
@@ -894,5 +1036,15 @@ useHead(() => ({
   margin: 0;
   font-size: 0.875rem;
   color: rgba(var(--v-theme-on-surface), 0.7);
+}
+</style>
+
+<style>
+/* Leaflet monta el globo fuera del árbol del componente, así que estas reglas NO pueden ir
+   `scoped`: con el atributo de scope no matchearían nada. Van acotadas por su propia clase. */
+.rental-pop__multi {
+  margin-top: 4px;
+  font-weight: 600;
+  color: rgb(var(--v-theme-primary));
 }
 </style>

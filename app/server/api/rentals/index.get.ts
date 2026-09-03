@@ -2,6 +2,7 @@ import { RentalListingModel } from '../../models/RentalListing'
 import { RentalMetaModel } from '../../models/RentalMeta'
 import { connectDb } from '../../utils/db'
 import {
+  buildRentalFilter,
   normalizeRentalQuery,
   type RentalFacetValue,
   type RentalMeta,
@@ -45,34 +46,11 @@ export default defineEventHandler(async (event): Promise<RentalsResponse> => {
   try {
     await connectDb()
 
-    const cutoff = new Date(Date.now() - STALE_DAYS * 86_400_000).toISOString().slice(0, 10)
-    const live: Record<string, unknown> = { lastSeen: { $gte: cutoff } }
-
-    // Filters that are NOT about where the property is — the department facet has to be counted
-    // with these applied but with the location free, or picking a barrio would leave the
-    // department list showing "1" beside every other department.
-    const nonLocation: Record<string, unknown> = { ...live }
-    if (query.type) nonLocation.propertyType = query.type
-    if (query.source) nonLocation.sources = query.source
-    if (query.bedrooms !== null) nonLocation.bedrooms = { $gte: query.bedrooms }
-    if (query.multi) nonLocation['sources.1'] = { $exists: true }
-    if (query.priceMin !== null || query.priceMax !== null) {
-      nonLocation.priceUyu = {
-        ...(query.priceMin !== null ? { $gte: query.priceMin } : {}),
-        ...(query.priceMax !== null ? { $lte: query.priceMax } : {}),
-      }
-    }
-    if (query.q) {
-      // A plain, anchored-free regex over the two fields a person actually types into: the street
-      // and the advert's headline. Escaped, because a stray "(" from a paste must not 500.
-      const safe = query.q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-      const pattern = new RegExp(safe, 'i')
-      nonLocation.$or = [{ title: pattern }, { address: pattern }, { neighborhood: pattern }]
-    }
-
-    const filter: Record<string, unknown> = { ...nonLocation }
-    if (query.department) filter.department = query.department
-    if (query.neighborhood) filter.neighborhood = query.neighborhood
+    // El filtro lo arma `buildRentalFilter` y no este archivo: lo comparte con /api/rentals/mapa,
+    // y dos copias del mismo filtro terminan divergiendo — un mapa que muestra propiedades que la
+    // lista no lista es la misma clase de contradicción que el sitio ya tuvo entre su meta
+    // description y su propio FAQ.
+    const { filter, nonLocation } = buildRentalFilter(query, STALE_DAYS)
 
     const sort: Record<string, 1 | -1> =
       query.sort === 'precio'
