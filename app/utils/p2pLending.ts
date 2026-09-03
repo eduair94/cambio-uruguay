@@ -40,6 +40,8 @@
 // ─────────────────────────────────────────────────────────────────────────────────────────
 
 /** Fecha en que se verificó el contenido de este módulo contra sus fuentes. */
+import type { UsuryCapRow } from './usuryCaps'
+
 export const P2P_VERIFIED_AT = '2026-08-17'
 
 /**
@@ -261,22 +263,26 @@ export function minBorrowersToUseCap(): number {
 
 // ── Topes de usura vigentes ──────────────────────────────────────────────────────────────
 
-export interface UsuryRow {
-  segment: string
-  currency: 'UYU' | 'USD'
-  /** Tasa media publicada por el BCU. */
-  meanPct: number
-  /** Tope = media + margen legal. */
-  capPct: number
-  note?: string
-}
+/**
+ * La fila publicada. Vive en `utils/usuryCaps.ts` porque la comparten tres páginas y porque ahí
+ * está el único lugar del sitio que decide si un tope es el de hoy o una lectura vieja.
+ */
+export type UsuryRow = UsuryCapRow
 
-/** Trimestre ABRIL–JUNIO 2026, vigentes desde el 1º de agosto de 2026 (BCU). */
+/**
+ * La lectura de BASE, que es de cuándo se transcribió a mano, no de qué rige hoy.
+ *
+ * Seis de estas filas las refresca `/api/bcu-rates` todos los días (el BCU republica la tabla cada
+ * mes), y la página muestra el período que venga de ahí. Este texto queda para el caso en que la
+ * grilla viva no conteste, y para las DOS filas que el parser del BCU no trae —autorización de
+ * descuento y retención de haberes—, que siguen siendo esta lectura fechada.
+ */
 export const USURY_PERIOD = 'trimestre abril–junio 2026, vigente desde el 1º de agosto de 2026'
 
 export const USURY_CAPS: readonly UsuryRow[] = Object.freeze([
   {
     segment: 'Consumo, menos de UI 10.000, hasta 366 días, sin autorización de descuento',
+    grid: 'menor10kUI|corto|UYU',
     currency: 'UYU',
     meanPct: 84.47,
     capPct: 130.9285,
@@ -284,12 +290,14 @@ export const USURY_CAPS: readonly UsuryRow[] = Object.freeze([
   },
   {
     segment: 'Consumo, menos de UI 10.000, 367 días o más, sin autorización de descuento',
+    grid: 'menor10kUI|largo|UYU',
     currency: 'UYU',
     meanPct: 82.36,
     capPct: 127.658,
   },
   {
     segment: 'Consumo, UI 10.000 o más, hasta 366 días, sin autorización de descuento',
+    grid: 'mayor10kUI|corto|UYU',
     currency: 'UYU',
     meanPct: 41.02,
     capPct: 63.581,
@@ -297,6 +305,7 @@ export const USURY_CAPS: readonly UsuryRow[] = Object.freeze([
   },
   {
     segment: 'Consumo, UI 10.000 o más, 367 días o más, sin autorización de descuento',
+    grid: 'mayor10kUI|largo|UYU',
     currency: 'UYU',
     meanPct: 57.32,
     capPct: 88.846,
@@ -316,6 +325,7 @@ export const USURY_CAPS: readonly UsuryRow[] = Object.freeze([
   },
   {
     segment: 'Consumo en dólares, hasta 366 días',
+    grid: 'menor10kUI|corto|USD',
     currency: 'USD',
     meanPct: 8.26,
     capPct: 12.803,
@@ -323,6 +333,7 @@ export const USURY_CAPS: readonly UsuryRow[] = Object.freeze([
   },
   {
     segment: 'Consumo en dólares, 367 días o más',
+    grid: 'menor10kUI|largo|USD',
     currency: 'USD',
     meanPct: 12.26,
     capPct: 19.003,
@@ -1106,28 +1117,30 @@ export const LENDER_CHECKLIST: readonly ChecklistItem[] = Object.freeze([
   },
 ])
 
-export const BORROWER_CHECKLIST: readonly ChecklistItem[] = Object.freeze([
-  {
-    title: 'Compará contra el techo legal, no contra la oferta',
-    detail:
-      'Para un préstamo de consumo chico en pesos, el tope de usura vigente es 130,93% y para uno de UI 10.000 o más (unos $ 66.350) baja a 63,58%. Una tasa “dentro de lo permitido” puede seguir siendo carísima.',
-  },
-  {
-    title: 'Fijate si podés bajar de escalón',
-    detail:
-      'Con el sueldo acreditado o con autorización de descuento, los topes caen a 32%–38% y los bancos publican tasas de 16% a 31% más IVA. El precio del crédito en Uruguay lo define el requisito que podés cumplir, no la urgencia.',
-  },
-  {
-    title: 'Pedí la tasa implícita con comisión adentro',
-    detail:
-      'La plataforma está obligada a mostrarte la tasa implícita incluyendo lo que ella cobra y la tasa máxima legal aplicable a tu operación. Si no aparece, falta la mitad del precio.',
-  },
-  {
-    title: 'Preguntá qué pasa si te atrasás',
-    detail:
-      'El interés de mora tiene su propio tope, más alto. Y el que te presta es un particular con un vale a su nombre: la negociación no es con un call center, es con una persona que puede ejecutar el documento.',
-  },
-])
+/** Igual que las preguntas: el primer punto compara contra el techo legal, y ese techo cambia todos los meses. */
+export function buildBorrowerChecklist(chico: string, grande: string): readonly ChecklistItem[] {
+  return Object.freeze([
+    {
+      title: 'Compará contra el techo legal, no contra la oferta',
+      detail: `Para un préstamo de consumo chico en pesos, el tope de usura vigente es ${chico} y para uno de UI 10.000 o más (unos $ 66.350) baja a ${grande}. Una tasa “dentro de lo permitido” puede seguir siendo carísima.`,
+    },
+    {
+      title: 'Fijate si podés bajar de escalón',
+      detail:
+        'Con el sueldo acreditado o con autorización de descuento, los topes caen a 32%–38% y los bancos publican tasas de 16% a 31% más IVA. El precio del crédito en Uruguay lo define el requisito que podés cumplir, no la urgencia.',
+    },
+    {
+      title: 'Pedí la tasa implícita con comisión adentro',
+      detail:
+        'La plataforma está obligada a mostrarte la tasa implícita incluyendo lo que ella cobra y la tasa máxima legal aplicable a tu operación. Si no aparece, falta la mitad del precio.',
+    },
+    {
+      title: 'Preguntá qué pasa si te atrasás',
+      detail:
+        'El interés de mora tiene su propio tope, más alto. Y el que te presta es un particular con un vale a su nombre: la negociación no es con un call center, es con una persona que puede ejecutar el documento.',
+    },
+  ])
+}
 
 // ── Preguntas frecuentes ─────────────────────────────────────────────────────────────────
 
@@ -1136,68 +1149,77 @@ export interface FaqItem {
   answer: string
 }
 
-export const P2P_FAQ: readonly FaqItem[] = Object.freeze([
-  {
-    question: '¿Qué pasa si la persona a la que le presté no me paga?',
-    answer:
-      'La pérdida es tuya. La norma obliga a la plataforma a advertírtelo: sos vos quien asume el riesgo de pérdida total o parcial del capital, y la administradora “sólo se limita a aproximar a las partes”. No hay fondo de garantía —está prohibido constituirlo— ni seguro de depósitos. Te queda el vale firmado a tu nombre y la vía judicial, con su costo.',
-  },
-  {
-    question: '¿El Banco Central garantiza mi plata si la plataforma está registrada?',
-    answer:
-      'No. El registro acredita que la empresa cumplió requisitos formales de inscripción; no supervisa la calidad de cada préstamo ni responde por los incumplimientos. El depósito de UI 50.000 que la plataforma mantiene en el BCU es para atender sus obligaciones con el propio Banco Central, no para cubrir a los prestamistas.',
-  },
-  {
-    question: '¿Cuánto puedo prestar y cuánto puede deberme una persona?',
-    answer:
-      'Un prestamista particular puede tener hasta UI 100.000 colocados en una plataforma, con un máximo de UI 25.000 en un mismo deudor. Si tiene activos financieros por más de UI 4.000.000, el total sube a UI 1.000.000. Del otro lado, una persona física no puede deber más de UI 100.000 dentro de una misma plataforma, y una empresa más de UI 1.000.000.',
-  },
-  {
-    question: '¿La plataforma puede cobrar por mí si el deudor se atrasa?',
-    answer:
-      'Puede hacer tareas vinculadas a la gestión de cobro de los créditos vencidos, pero tiene prohibido operar los pagos y cobros y comprarte el crédito vencido. Es decir: puede ayudarte con la gestión, no puede reemplazarte ni sacarte el problema de encima.',
-  },
-  {
-    question: '¿Puedo vender mi préstamo si necesito la plata antes?',
-    answer:
-      'No. El documento debe ser nominativo a favor del prestamista y llevar la cláusula “no a la orden”, lo que impide transmitirlo por endoso. No hay mercado secundario: la colocación es ilíquida hasta el vencimiento.',
-  },
-  {
-    question: '¿Cuánto paga de impuestos el interés que gano?',
-    answer:
-      'IRPF Categoría I al 12%, la tasa de “restantes rentas”. Las tasas rebajadas de 0,5% a 7% son para depósitos bancarios y para títulos emitidos por suscripción pública con cotización bursátil, que no es el caso de un préstamo entre particulares. Las plataformas P2P no están designadas como agentes de retención, así que si el deudor es una persona física el impuesto lo declarás y pagás vos.',
-  },
-  {
-    question: '¿Hay un tope de tasa o puedo cobrar lo que quiera?',
-    answer:
-      'Hay tope. La Ley 18.212 de usura alcanza a los préstamos entre particulares, y las comisiones de la plataforma se computan dentro de la tasa implícita. Para consumo en pesos sin autorización de descuento los topes vigentes son 130,93% (créditos chicos) y 63,58% (de UI 10.000 en adelante). Pasarse no es sólo una multa: caduca el derecho a cobrar los intereses y hay delito de usura con pena de seis meses a cuatro años.',
-  },
-  {
-    question: '¿Es lo mismo que el crowdfunding de Crowder?',
-    answer:
-      'No, y el propio BCU lo aclaró por escrito: el préstamo entre personas “no debe confundirse con otros mecanismos de financiación no basados en préstamos sino en la emisión de valores”. El P2P se rige por la Circular 2.307 y la Recopilación del sistema financiero, con inscripción registral; el crowdfunding se rige por la Ley 19.820 y la Circular 2.377, con autorización previa de la Superintendencia y emisión de valores de oferta pública.',
-  },
-  {
-    question: '¿Ya hubo plataformas de préstamos entre personas en Uruguay?',
-    answer:
-      'Sí, antes de que existiera la licencia. Entre 2015 y 2017 operaron al menos cuatro sin regulación específica —Inversionate, Prezzta, TuTasa y Socius— y ninguna sigue en el rubro: Prezzta convirtió su tecnología en software para empresas de crédito y los sitios de las otras dejaron de funcionar. La licencia se creó en noviembre de 2018 y no hay noticia pública de ninguna inscripción hasta 2026.',
-  },
-  {
-    question: '¿Qué rendimiento es razonable esperar?',
-    answer:
-      'La referencia sin riesgo hoy está entre 2,3% y 3,0% real anual en Notas del Tesoro en UI, exentas de IRPF, y entre 0% y 1% real neto en un plazo fijo bancario en pesos. Todo lo que supere eso es el precio del riesgo de crédito que estás tomando. La cuenta que importa no es la tasa pactada sino lo que queda después de la mora, la comisión y el impuesto.',
-  },
-  {
-    question: '¿Le conviene a alguien pedir prestado por esta vía?',
-    answer:
-      'Depende de qué escalón tenés disponible. Si podés acreditar el sueldo en un banco, las tasas van de 16% a 38% y el P2P difícilmente compita. La franja donde tiene sentido es la de quien hoy paga 108% a 123% en una administradora de crédito, o la de quien queda afuera de todo. La plataforma dice apuntar justamente al préstamo informal.',
-  },
-  {
-    question: '¿Mi préstamo queda registrado en el clearing o en la Central de Riesgos?',
-    answer:
-      'La Central de Riesgos del BCU tiene una lista tasada de informantes —bancos, cooperativas, casas financieras, administradoras de crédito de mayores activos, entre otras— en la que las plataformas de préstamos entre personas no figuran. Lo que sí deben hacer es reportar trimestralmente a la Superintendencia información sobre los préstamos otorgados. Las bases privadas de informes comerciales son otra cosa y se rigen por sus propios contratos.',
-  },
-])
+/**
+ * Las preguntas, con los topes del día metidos adentro.
+ *
+ * Es una FUNCIÓN y no una constante justamente por esto: dos de estas respuestas decían "el tope
+ * vigente es 130,93 %" mientras la grilla del BCU ya marcaba 133,49 %, y una respuesta escrita a
+ * mano no tiene forma de enterarse. Recibe los topes ya formateados para que la página, el JSON-LD
+ * y los tests digan exactamente el mismo número.
+ */
+export function buildP2pFaq(chico: string, grande: string): readonly FaqItem[] {
+  return Object.freeze([
+    {
+      question: '¿Qué pasa si la persona a la que le presté no me paga?',
+      answer:
+        'La pérdida es tuya. La norma obliga a la plataforma a advertírtelo: sos vos quien asume el riesgo de pérdida total o parcial del capital, y la administradora “sólo se limita a aproximar a las partes”. No hay fondo de garantía —está prohibido constituirlo— ni seguro de depósitos. Te queda el vale firmado a tu nombre y la vía judicial, con su costo.',
+    },
+    {
+      question: '¿El Banco Central garantiza mi plata si la plataforma está registrada?',
+      answer:
+        'No. El registro acredita que la empresa cumplió requisitos formales de inscripción; no supervisa la calidad de cada préstamo ni responde por los incumplimientos. El depósito de UI 50.000 que la plataforma mantiene en el BCU es para atender sus obligaciones con el propio Banco Central, no para cubrir a los prestamistas.',
+    },
+    {
+      question: '¿Cuánto puedo prestar y cuánto puede deberme una persona?',
+      answer:
+        'Un prestamista particular puede tener hasta UI 100.000 colocados en una plataforma, con un máximo de UI 25.000 en un mismo deudor. Si tiene activos financieros por más de UI 4.000.000, el total sube a UI 1.000.000. Del otro lado, una persona física no puede deber más de UI 100.000 dentro de una misma plataforma, y una empresa más de UI 1.000.000.',
+    },
+    {
+      question: '¿La plataforma puede cobrar por mí si el deudor se atrasa?',
+      answer:
+        'Puede hacer tareas vinculadas a la gestión de cobro de los créditos vencidos, pero tiene prohibido operar los pagos y cobros y comprarte el crédito vencido. Es decir: puede ayudarte con la gestión, no puede reemplazarte ni sacarte el problema de encima.',
+    },
+    {
+      question: '¿Puedo vender mi préstamo si necesito la plata antes?',
+      answer:
+        'No. El documento debe ser nominativo a favor del prestamista y llevar la cláusula “no a la orden”, lo que impide transmitirlo por endoso. No hay mercado secundario: la colocación es ilíquida hasta el vencimiento.',
+    },
+    {
+      question: '¿Cuánto paga de impuestos el interés que gano?',
+      answer:
+        'IRPF Categoría I al 12%, la tasa de “restantes rentas”. Las tasas rebajadas de 0,5% a 7% son para depósitos bancarios y para títulos emitidos por suscripción pública con cotización bursátil, que no es el caso de un préstamo entre particulares. Las plataformas P2P no están designadas como agentes de retención, así que si el deudor es una persona física el impuesto lo declarás y pagás vos.',
+    },
+    {
+      question: '¿Hay un tope de tasa o puedo cobrar lo que quiera?',
+      answer: `Hay tope. La Ley 18.212 de usura alcanza a los préstamos entre particulares, y las comisiones de la plataforma se computan dentro de la tasa implícita. Para consumo en pesos sin autorización de descuento los topes vigentes son ${chico} (créditos chicos) y ${grande} (de UI 10.000 en adelante). Pasarse no es sólo una multa: caduca el derecho a cobrar los intereses y hay delito de usura con pena de seis meses a cuatro años.`,
+    },
+    {
+      question: '¿Es lo mismo que el crowdfunding de Crowder?',
+      answer:
+        'No, y el propio BCU lo aclaró por escrito: el préstamo entre personas “no debe confundirse con otros mecanismos de financiación no basados en préstamos sino en la emisión de valores”. El P2P se rige por la Circular 2.307 y la Recopilación del sistema financiero, con inscripción registral; el crowdfunding se rige por la Ley 19.820 y la Circular 2.377, con autorización previa de la Superintendencia y emisión de valores de oferta pública.',
+    },
+    {
+      question: '¿Ya hubo plataformas de préstamos entre personas en Uruguay?',
+      answer:
+        'Sí, antes de que existiera la licencia. Entre 2015 y 2017 operaron al menos cuatro sin regulación específica —Inversionate, Prezzta, TuTasa y Socius— y ninguna sigue en el rubro: Prezzta convirtió su tecnología en software para empresas de crédito y los sitios de las otras dejaron de funcionar. La licencia se creó en noviembre de 2018 y no hay noticia pública de ninguna inscripción hasta 2026.',
+    },
+    {
+      question: '¿Qué rendimiento es razonable esperar?',
+      answer:
+        'La referencia sin riesgo hoy está entre 2,3% y 3,0% real anual en Notas del Tesoro en UI, exentas de IRPF, y entre 0% y 1% real neto en un plazo fijo bancario en pesos. Todo lo que supere eso es el precio del riesgo de crédito que estás tomando. La cuenta que importa no es la tasa pactada sino lo que queda después de la mora, la comisión y el impuesto.',
+    },
+    {
+      question: '¿Le conviene a alguien pedir prestado por esta vía?',
+      answer:
+        'Depende de qué escalón tenés disponible. Si podés acreditar el sueldo en un banco, las tasas van de 16% a 38% y el P2P difícilmente compita. La franja donde tiene sentido es la de quien hoy paga 108% a 123% en una administradora de crédito, o la de quien queda afuera de todo. La plataforma dice apuntar justamente al préstamo informal.',
+    },
+    {
+      question: '¿Mi préstamo queda registrado en el clearing o en la Central de Riesgos?',
+      answer:
+        'La Central de Riesgos del BCU tiene una lista tasada de informantes —bancos, cooperativas, casas financieras, administradoras de crédito de mayores activos, entre otras— en la que las plataformas de préstamos entre personas no figuran. Lo que sí deben hacer es reportar trimestralmente a la Superintendencia información sobre los préstamos otorgados. Las bases privadas de informes comerciales son otra cosa y se rigen por sus propios contratos.',
+    },
+  ])
+}
 
 // ── Fuentes ──────────────────────────────────────────────────────────────────────────────
 

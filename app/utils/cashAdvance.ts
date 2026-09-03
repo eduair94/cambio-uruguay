@@ -847,86 +847,112 @@ export const PROS: readonly ProCon[] = Object.freeze([
   },
 ])
 
-export const CONS: readonly ProCon[] = Object.freeze([
-  {
-    text: 'No hay período sin intereses',
-    detail:
-      'Es la diferencia que más plata cuesta. Una compra no paga interés hasta el vencimiento; el adelanto empieza a devengar el día que sacaste la plata. Itaú lo dice textual: "entre la fecha de la transacción y el vencimiento del E/C".',
-  },
-  {
-    text: 'La tasa es más alta que la de una compra financiada',
-    detail:
-      'No es la misma tasa con otro nombre: es otra tasa. OCA publica 80 % TEA para adelantos contra 63 % para financiación de saldos.',
-  },
-  {
-    text: 'La tasa publicada no incluye IVA',
-    detail:
-      'Todos los emisores publican la TEA "+ IVA". Y el IVA sobre intereses de tarjeta no tiene exoneración posible: el 80 % de OCA se paga como 97,6 %.',
-  },
-  {
-    text: 'Los que no publican número te mandan al tope legal',
-    detail:
-      'Itaú y Scotiabank dicen "tasa máxima permitida". Hoy, para un adelanto de menos de 10.000 UI a devolver dentro del año, ese tope es 130,93 % TEA — y con IVA, ~159,7 %.',
-  },
-  {
-    text: 'No suma puntos ni millas',
-    detail:
-      'Prácticamente todos los programas excluyen los adelantos de efectivo de la acumulación. Pagás la tasa más cara y encima no acumulás.',
-  },
-  {
-    text: 'El cupo de adelanto es menor que el de compra',
-    detail:
-      'El contrato de OCA lo dice: el adelanto llega "hasta el porcentaje máximo del Límite de Crédito que se indica en la Cartilla". No dispongas del límite entero.',
-  },
-])
+/**
+ * Los contras, con el tope legal del día adentro.
+ *
+ * Función y no constante porque uno de estos renglones publicaba "130,93 %" como el tope de hoy
+ * cuando el BCU ya marcaba 133,49 %: la tabla se republica todos los meses y una frase escrita a
+ * mano no se entera.
+ */
+export function buildCons(caps: AdvanceCapLabels): readonly ProCon[] {
+  return Object.freeze([
+    {
+      text: 'No hay período sin intereses',
+      detail:
+        'Es la diferencia que más plata cuesta. Una compra no paga interés hasta el vencimiento; el adelanto empieza a devengar el día que sacaste la plata. Itaú lo dice textual: "entre la fecha de la transacción y el vencimiento del E/C".',
+    },
+    {
+      text: 'La tasa es más alta que la de una compra financiada',
+      detail:
+        'No es la misma tasa con otro nombre: es otra tasa. OCA publica 80 % TEA para adelantos contra 63 % para financiación de saldos.',
+    },
+    {
+      text: 'La tasa publicada no incluye IVA',
+      detail:
+        'Todos los emisores publican la TEA "+ IVA". Y el IVA sobre intereses de tarjeta no tiene exoneración posible: el 80 % de OCA se paga como 97,6 %.',
+    },
+    {
+      text: 'Los que no publican número te mandan al tope legal',
+      detail: `Itaú y Scotiabank dicen "tasa máxima permitida". Hoy, para un adelanto de menos de 10.000 UI a devolver dentro del año, ese tope es ${caps.topeChico} TEA — y con IVA, ${caps.topeChicoConIva}.`,
+    },
+    {
+      text: 'No suma puntos ni millas',
+      detail:
+        'Prácticamente todos los programas excluyen los adelantos de efectivo de la acumulación. Pagás la tasa más cara y encima no acumulás.',
+    },
+    {
+      text: 'El cupo de adelanto es menor que el de compra',
+      detail:
+        'El contrato de OCA lo dice: el adelanto llega "hasta el porcentaje máximo del Límite de Crédito que se indica en la Cartilla". No dispongas del límite entero.',
+    },
+  ])
+}
 
 export interface AdvanceFaq {
   q: string
   a: string
 }
 
-export const FAQS: readonly AdvanceFaq[] = Object.freeze([
-  {
-    q: '¿Por qué Itaú no lo tiene en el tarifario?',
-    a: 'Sí lo tiene, pero no en el Manual de tarifas: está en la <strong>Cartilla · Contrato de tarjeta de crédito</strong> (documento fechado 19/03/2026). Ahí figuran tres líneas: "Comisión por adelantos de efectivo realizados en el Uruguay — $0", la misma para el exterior, y "Tasa de interés por adelantos de efectivo — Tasa máxima permitida", devengada "con cada adelanto realizado, entre la fecha de la transacción y el vencimiento del E/C". El Manual de tarifas cubre cuentas, transferencias y servicios; las condiciones de la tarjeta viven en la cartilla.',
-  },
-  {
-    q: '¿Qué es exactamente la "tasa máxima permitida"?',
-    a: 'Es el tope de la <strong>Ley 18.212</strong>: la tasa media que publica el BCU cada trimestre, más 55 % si el capital es menor a 2.000.000 UI. Para crédito al consumo a familias sin descuento de sueldo, con la tabla vigente desde el 1º de agosto de 2026, la media es 84,47 % y el tope <strong>130,9285 % TEA</strong> para operaciones menores a 10.000 UI. Por encima de 10.000 UI la media baja a 41,02 % y el tope a 63,58 %.',
-  },
-  {
-    q: '¿De verdad cambia tanto según el monto?',
-    a: `Sí, y es la asimetría más rara del sistema. La ley parte las tasas medias en dos por el tamaño del crédito, con el corte en 10.000 UI —hoy unos $${BRACKET_PESOS.toLocaleString('es-UY')}—. Debajo de esa línea el tope es 130,93 %; arriba, 63,58 %. El mismo emisor, la misma tarjeta, el mismo día: el adelanto chico puede costar el doble de tasa que el grande.`,
-  },
-  {
-    q: '¿El IVA se suma a la tasa o ya está adentro?',
-    a: 'Se suma. Los tarifarios dicen "+ IVA" o "las tasas informadas no incluyen IVA". Y no hay margen de interpretación: el <strong>Título 10 del T.O. 2023, art. 38, num. 2 lit. E)</strong> establece que "los intereses de créditos y financiaciones otorgados mediante tarjetas de créditos y similares, estarán gravados en todos los casos". El IVA sobre intereses, eso sí, <strong>no se computa</strong> para medir la usura (Ley 18.212, art. 14), así que el tope de 130,93 % se mide sin IVA aunque vos lo pagues.',
-  },
-  {
-    q: '¿Conviene comprar cripto con la tarjeta y venderla en Binance?',
-    a: 'Casi nunca, y el motivo no es el precio de la cripto. Mastercard exige que las compras de criptomonedas se identifiquen con el <strong>MCC 6051 (quasi-cash)</strong>, y el propio soporte de Binance avisa que "algunos bancos pueden clasificar las transacciones de cripto como pagos quasi-cash, lo que genera comisiones adicionales". Si tu emisor lo marca así, pagás las dos cosas: el recargo por compra en el exterior <em>y</em> el interés de adelanto desde el día 1. Si no lo marca, tenés una chance de que salga parecido —pero le sumás spread, comisión de plataforma, riesgo de contraparte en el P2P y cero derecho a contracargo.',
-  },
-  {
-    q: '¿Es legal operar con Binance desde Uruguay?',
-    a: 'Operar con activos virtuales no está prohibido. Lo que cambió es el marco: la <strong>Ley 20.345</strong> (10/09/2024) facultó al BCU a regular a los proveedores de servicios de activos virtuales, y la <strong>Circular 2507</strong> (16/07/2026) incorporó el régimen a la Recopilación de Normas del Mercado de Valores, con autorización previa obligatoria de la Superintendencia de Servicios Financieros. Antes de operar conviene verificar si la plataforma que usás está autorizada: si no lo está, no tenés detrás ninguna de las protecciones del sistema regulado.',
-  },
-  {
-    q: '¿El banco me puede preguntar de dónde salió la plata?',
-    a: 'Sí, y es lo normal. Cuando entra dinero desde un exchange, el banco aplica su régimen de prevención de lavado y puede pedirte justificación de origen de fondos. Scotiabank además publica una <strong>comisión de 3 % por créditos recibidos desde el exterior de empresas de servicios de pago y cobranzas</strong>: una capa más de costo en la pata de vuelta que casi nadie cuenta.',
-  },
-  {
-    q: '¿Sacar efectivo me deja marcado en el clearing?',
-    a: 'No por sí mismo. Un adelanto es uso normal del cupo y no genera ninguna anotación: lo que se informa a la central de riesgos del BCU es tu calificación como deudor, que empeora si te atrasás. El riesgo real es indirecto: como el interés corre desde el día 1 y no acumula puntos, es la forma más rápida de que el saldo crezca más rápido de lo que podés pagar.',
-  },
-  {
-    q: '¿Y si saco en un cajero que no es de mi banco?',
-    a: 'Ahí aparece la comisión que en Uruguay suele ser cero. BROU cobra <strong>U$S 1,75 + IVA + 0,33 %</strong> del adelanto si sacás fuera de su red o en el exterior, y OCA cobra <strong>U$S 2,459 + IVA</strong> por retiro en el exterior. Santander informa US$ 5 por extracción en cajeros ajenos, más la comisión de la red local del país donde estés.',
-  },
-  {
-    q: '¿Cuál es la salida más barata si necesito pesos ya?',
-    a: 'Si tenés dólares guardados, venderlos: pagás un spread de una sola operación en vez de una tasa anual. Si no, financiar el estado de cuenta (55 % TEA en OCA) o reestructurar el saldo (62 %) sale menos que el adelanto (80 %). El adelanto gana sólo contra una cosa: no pagar.',
-  },
-])
+/**
+ * Las etiquetas ya formateadas de la grilla del BCU del día.
+ *
+ * Llegan como texto y no como número para que la página, el JSON-LD y los tests publiquen
+ * exactamente el mismo string: dos formateos distintos del mismo dato son dos cifras distintas en
+ * pantalla, que es la clase de contradicción que este archivo dejó de publicar el 2026-09-03.
+ */
+export interface AdvanceCapLabels {
+  mediaChico: string
+  topeChico: string
+  topeChicoConIva: string
+  mediaGrande: string
+  topeGrande: string
+  vigenteDesde: string
+}
+
+export function buildFaqs(caps: AdvanceCapLabels): readonly AdvanceFaq[] {
+  return Object.freeze([
+    {
+      q: '¿Por qué Itaú no lo tiene en el tarifario?',
+      a: 'Sí lo tiene, pero no en el Manual de tarifas: está en la <strong>Cartilla · Contrato de tarjeta de crédito</strong> (documento fechado 19/03/2026). Ahí figuran tres líneas: "Comisión por adelantos de efectivo realizados en el Uruguay — $0", la misma para el exterior, y "Tasa de interés por adelantos de efectivo — Tasa máxima permitida", devengada "con cada adelanto realizado, entre la fecha de la transacción y el vencimiento del E/C". El Manual de tarifas cubre cuentas, transferencias y servicios; las condiciones de la tarjeta viven en la cartilla.',
+    },
+    {
+      q: '¿Qué es exactamente la "tasa máxima permitida"?',
+      a: `Es el tope de la <strong>Ley 18.212</strong>: la tasa media que publica el BCU cada trimestre, más 55 % si el capital es menor a 2.000.000 UI. Para crédito al consumo a familias sin descuento de sueldo, con la tabla vigente desde el ${caps.vigenteDesde}, la media es ${caps.mediaChico} y el tope <strong>${caps.topeChico} TEA</strong> para operaciones menores a 10.000 UI. Por encima de 10.000 UI la media baja a ${caps.mediaGrande} y el tope a ${caps.topeGrande}.`,
+    },
+    {
+      q: '¿De verdad cambia tanto según el monto?',
+      a: `Sí, y es la asimetría más rara del sistema. La ley parte las tasas medias en dos por el tamaño del crédito, con el corte en 10.000 UI —hoy unos $${BRACKET_PESOS.toLocaleString('es-UY')}—. Debajo de esa línea el tope es ${caps.topeChico}; arriba, ${caps.topeGrande}. El mismo emisor, la misma tarjeta, el mismo día: el adelanto chico puede costar el doble de tasa que el grande.`,
+    },
+    {
+      q: '¿El IVA se suma a la tasa o ya está adentro?',
+      a: `Se suma. Los tarifarios dicen "+ IVA" o "las tasas informadas no incluyen IVA". Y no hay margen de interpretación: el <strong>Título 10 del T.O. 2023, art. 38, num. 2 lit. E)</strong> establece que "los intereses de créditos y financiaciones otorgados mediante tarjetas de créditos y similares, estarán gravados en todos los casos". El IVA sobre intereses, eso sí, <strong>no se computa</strong> para medir la usura (Ley 18.212, art. 14), así que el tope de ${caps.topeChico} se mide sin IVA aunque vos lo pagues.`,
+    },
+    {
+      q: '¿Conviene comprar cripto con la tarjeta y venderla en Binance?',
+      a: 'Casi nunca, y el motivo no es el precio de la cripto. Mastercard exige que las compras de criptomonedas se identifiquen con el <strong>MCC 6051 (quasi-cash)</strong>, y el propio soporte de Binance avisa que "algunos bancos pueden clasificar las transacciones de cripto como pagos quasi-cash, lo que genera comisiones adicionales". Si tu emisor lo marca así, pagás las dos cosas: el recargo por compra en el exterior <em>y</em> el interés de adelanto desde el día 1. Si no lo marca, tenés una chance de que salga parecido —pero le sumás spread, comisión de plataforma, riesgo de contraparte en el P2P y cero derecho a contracargo.',
+    },
+    {
+      q: '¿Es legal operar con Binance desde Uruguay?',
+      a: 'Operar con activos virtuales no está prohibido. Lo que cambió es el marco: la <strong>Ley 20.345</strong> (10/09/2024) facultó al BCU a regular a los proveedores de servicios de activos virtuales, y la <strong>Circular 2507</strong> (16/07/2026) incorporó el régimen a la Recopilación de Normas del Mercado de Valores, con autorización previa obligatoria de la Superintendencia de Servicios Financieros. Antes de operar conviene verificar si la plataforma que usás está autorizada: si no lo está, no tenés detrás ninguna de las protecciones del sistema regulado.',
+    },
+    {
+      q: '¿El banco me puede preguntar de dónde salió la plata?',
+      a: 'Sí, y es lo normal. Cuando entra dinero desde un exchange, el banco aplica su régimen de prevención de lavado y puede pedirte justificación de origen de fondos. Scotiabank además publica una <strong>comisión de 3 % por créditos recibidos desde el exterior de empresas de servicios de pago y cobranzas</strong>: una capa más de costo en la pata de vuelta que casi nadie cuenta.',
+    },
+    {
+      q: '¿Sacar efectivo me deja marcado en el clearing?',
+      a: 'No por sí mismo. Un adelanto es uso normal del cupo y no genera ninguna anotación: lo que se informa a la central de riesgos del BCU es tu calificación como deudor, que empeora si te atrasás. El riesgo real es indirecto: como el interés corre desde el día 1 y no acumula puntos, es la forma más rápida de que el saldo crezca más rápido de lo que podés pagar.',
+    },
+    {
+      q: '¿Y si saco en un cajero que no es de mi banco?',
+      a: 'Ahí aparece la comisión que en Uruguay suele ser cero. BROU cobra <strong>U$S 1,75 + IVA + 0,33 %</strong> del adelanto si sacás fuera de su red o en el exterior, y OCA cobra <strong>U$S 2,459 + IVA</strong> por retiro en el exterior. Santander informa US$ 5 por extracción en cajeros ajenos, más la comisión de la red local del país donde estés.',
+    },
+    {
+      q: '¿Cuál es la salida más barata si necesito pesos ya?',
+      a: 'Si tenés dólares guardados, venderlos: pagás un spread de una sola operación en vez de una tasa anual. Si no, financiar el estado de cuenta (55 % TEA en OCA) o reestructurar el saldo (62 %) sale menos que el adelanto (80 %). El adelanto gana sólo contra una cosa: no pagar.',
+    },
+  ])
+}
 
 /** Everything cited on the page, in one list so the UI never invents a link. */
 export const ADVANCE_SOURCES: readonly AdvanceSource[] = Object.freeze([

@@ -90,14 +90,14 @@
             <p class="mb-3">
               No es una banda inventada por la plataforma ni un producto especial: son los topes de
               usura que publica el BCU para el crédito al consumo en pesos sin autorización de
-              descuento, vigentes desde el 1º de agosto de 2026.
+              descuento, vigentes desde el {{ vigenteDesdeLabel }}.
             </p>
             <div class="stat-line">
-              <span class="big-n">130,93%</span>
+              <span class="big-n">{{ topeChicoLabel }}</span>
               <span class="stat-cap">tope para créditos de menos de UI 10.000 (unos $ 66.350)</span>
             </div>
             <div class="stat-line mt-4">
-              <span class="big-n">63,58%</span>
+              <span class="big-n">{{ topeGrandeLabel }}</span>
               <span class="stat-cap">tope desde UI 10.000, hasta 366 días</span>
             </div>
             <p class="text-caption text-medium-emphasis mt-4 mb-0">
@@ -365,7 +365,7 @@
         </VCol>
         <VCol cols="12" md="6">
           <VCard variant="flat" class="plain-card pa-5 h-100">
-            <div class="text-overline mb-3">Topes de usura ({{ USURY_PERIOD }})</div>
+            <div class="text-overline mb-3">Topes de usura ({{ usuryPeriod }})</div>
             <VTable density="comfortable" class="cu-mobile-cards cu-roomy usury-table">
               <thead>
                 <tr>
@@ -375,7 +375,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="cap in USURY_CAPS" :key="cap.segment">
+                <tr v-for="cap in usuryRows" :key="cap.segment">
                   <td data-label="Segmento" class="cu-cell-prose">
                     {{ cap.segment }}
                     <span v-if="cap.note" class="d-block text-caption text-medium-emphasis">{{
@@ -389,6 +389,11 @@
                 </tr>
               </tbody>
             </VTable>
+            <p v-if="hasStaleRows" class="text-caption text-medium-emphasis mt-3 mb-0">
+              Las filas de autorización de descuento y retención de haberes no vienen en la tabla
+              que se lee a diario: son del {{ USURY_PERIOD }}. El resto es lo que el BCU publica
+              hoy.
+            </p>
             <p class="text-caption text-medium-emphasis mt-3 mb-0">
               Pasarse del tope no es sólo una multa: caduca el derecho a cobrar intereses,
               comisiones y gastos (art. 21 de la Ley 18.212) y el delito de usura tiene pena de seis
@@ -653,7 +658,7 @@
         <VCol cols="12" md="5">
           <VCard variant="flat" class="plain-card pa-5 h-100">
             <div class="text-overline mb-4">Si vas a pedir</div>
-            <div v-for="(item, i) in BORROWER_CHECKLIST" :key="i" class="check-item">
+            <div v-for="(item, i) in borrowerChecklist" :key="i" class="check-item">
               <VIcon size="18" color="secondary" class="check-icon">mdi-check-circle-outline</VIcon>
               <div>
                 <div class="font-weight-medium">{{ item.title }}</div>
@@ -675,7 +680,7 @@
     <section id="preguntas" class="mb-12">
       <h2 class="text-h5 font-weight-bold mb-5">Preguntas frecuentes</h2>
       <VExpansionPanels variant="accordion">
-        <VExpansionPanel v-for="(f, i) in P2P_FAQ" :key="i">
+        <VExpansionPanel v-for="(f, i) in faq" :key="i">
           <VExpansionPanelTitle class="font-weight-medium">{{ f.question }}</VExpansionPanelTitle>
           <VExpansionPanelText>
             <p class="faq-answer mb-0">{{ f.answer }}</p>
@@ -712,7 +717,7 @@
 <script setup lang="ts">
 import {
   BORROWER_ALTERNATIVES,
-  BORROWER_CHECKLIST,
+  buildBorrowerChecklist,
   EAPPP_REGISTRATION,
   INFLATION_PERIOD,
   INFLATION_YOY_PCT,
@@ -721,7 +726,7 @@ import {
   LENDER_CHECKLIST,
   MINTOS_NET_RETURNS,
   P2P_CALC_DEFAULTS,
-  P2P_FAQ,
+  buildP2pFaq,
   P2P_LIMITS,
   P2P_RULES,
   P2P_SOURCES,
@@ -737,8 +742,49 @@ import {
   uiToPesos,
   type P2PReturnInput,
 } from '~/utils/p2pLending'
+import type { BcuCapRow } from '~/utils/cashAdvance'
 
 const localePath = useLocalePath()
+
+// ── Los topes, del BCU de hoy y no de cuando se escribió la página ──
+//
+// El BCU republica esta tabla TODOS LOS MESES sobre una ventana trimestral móvil. Hasta el
+// 2026-09-03 esta página publicaba 130,93 % como "vigente" mientras /ley-de-usura-uruguay mostraba
+// 133,49 % leído esa misma mañana: el sitio se contradecía a sí mismo en la cifra que decide si un
+// préstamo es legal. Misma clave de fetch que /adelanto-de-efectivo-tarjeta-de-credito, así que las
+// dos páginas comparten la respuesta.
+const { data: liveCaps } = await useFetch<{
+  periodo: string
+  vigenteDesde: string
+  rows: BcuCapRow[]
+  live: boolean
+}>('/api/bcu-rates', { key: 'bcu-rates', server: true, default: () => null })
+
+const usuryRows = computed(() => mergeUsuryCaps(USURY_CAPS, liveCaps.value?.rows))
+const usuryPeriod = computed(() => liveCaps.value?.periodo || USURY_PERIOD)
+/** Las dos filas que el parser del BCU no trae quedan con la lectura vieja, y hay que decirlo. */
+const hasStaleRows = computed(() => usuryRows.value.some(row => !row.live))
+
+const topeChico = computed(() => usuryCapOf(usuryRows.value, 'menor10kUI|corto|UYU'))
+const topeGrande = computed(() => usuryCapOf(usuryRows.value, 'mayor10kUI|corto|UYU'))
+const topeChicoLabel = computed(() => usuryPct(topeChico.value ?? 0))
+const topeGrandeLabel = computed(() => usuryPct(topeGrande.value ?? 0))
+
+const vigenteDesdeLabel = computed(() => {
+  const iso = liveCaps.value?.vigenteDesde
+  if (!iso) return '1º de agosto de 2026'
+  return new Date(`${iso}T12:00:00Z`).toLocaleDateString('es-UY', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  })
+})
+
+const faq = computed(() => buildP2pFaq(topeChicoLabel.value, topeGrandeLabel.value))
+const borrowerChecklist = computed(() =>
+  buildBorrowerChecklist(topeChicoLabel.value, topeGrandeLabel.value)
+)
 
 const linkAdvertencias = localePath('/advertencias-bcu')
 const linkPrestamos = localePath('/prestamos-uruguay')
@@ -843,7 +889,7 @@ useHead(() => ({
           },
           {
             '@type': 'FAQPage',
-            mainEntity: P2P_FAQ.map(f => ({
+            mainEntity: faq.value.map(f => ({
               '@type': 'Question',
               name: f.question,
               acceptedAnswer: { '@type': 'Answer', text: f.answer },

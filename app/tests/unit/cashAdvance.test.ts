@@ -6,8 +6,8 @@ import {
   BBVA_TNA_ADELANTO_UYU,
   BCU_CAPS,
   BRACKET_PESOS,
-  CONS,
-  FAQS,
+  buildCons,
+  buildFaqs,
   GAPS,
   ISSUERS,
   ADVANCE_IVA_RATE,
@@ -24,6 +24,19 @@ import {
   teaConIva,
   tnaToTea,
 } from '../../utils/cashAdvance'
+
+// Las etiquetas del BCU del dia. En los tests van fijas: lo que se prueba es la redaccion, no la
+// grilla, y la grilla tiene sus propios tests en usuryCaps.test.ts.
+const CAP_LABELS = {
+  mediaChico: '86,12%',
+  topeChico: '133,49%',
+  topeChicoConIva: '162,86%',
+  mediaGrande: '42,79%',
+  topeGrande: '66,32%',
+  vigenteDesde: '1 de setiembre de 2026',
+}
+const CONS = buildCons(CAP_LABELS)
+const FAQS = buildFaqs(CAP_LABELS)
 
 describe('BCU caps are arithmetically consistent with Ley 18.212', () => {
   // The law says the cap is the published average plus 55 % (capital under
@@ -309,6 +322,17 @@ describe('editorial content', () => {
       expect(item.detail.length).toBeGreaterThan(40)
     }
     expect(CONS.length).toBeGreaterThanOrEqual(PROS.length)
+  })
+
+  // El 2026-09-03 esta pagina mostraba la tabla viva del BCU arriba y "130,93 %" escrito a mano en
+  // los contras y en tres respuestas: el trimestre anterior publicado como el vigente, en la misma
+  // pantalla que el numero correcto.
+  it('ninguna frase trae un tope de usura escrito a mano', () => {
+    const textos = [...CONS.map(c => c.detail), ...FAQS.map(f => f.a)]
+    for (const texto of textos) {
+      expect(texto).not.toMatch(/130,93|130,9285|63,58|84,47|41,02|159,7/)
+    }
+    expect(textos.filter(t => t.includes('133,49%')).length).toBeGreaterThanOrEqual(3)
   })
 
   it('answers the question that prompted the page', () => {

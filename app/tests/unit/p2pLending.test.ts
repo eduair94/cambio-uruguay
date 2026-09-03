@@ -2,14 +2,14 @@ import { describe, expect, it } from 'vitest'
 
 import {
   BORROWER_ALTERNATIVES,
-  BORROWER_CHECKLIST,
+  buildBorrowerChecklist,
   EAPPP_REGISTRATION,
   INFLATION_YOY_PCT,
   LENDER_ALTERNATIVES,
   LENDER_CHECKLIST,
   MINTOS_NET_RETURNS,
   P2P_CALC_DEFAULTS,
-  P2P_FAQ,
+  buildP2pFaq,
   P2P_IRPF_PCT,
   P2P_LIMITS,
   P2P_RULES,
@@ -176,10 +176,22 @@ describe('topes de usura', () => {
   it('la banda declarada por la plataforma cae dentro de los topes vigentes', () => {
     const caps = USURY_CAPS.filter(c => c.currency === 'UYU').map(c => c.capPct)
     expect(Math.max(...caps)).toBeGreaterThanOrEqual(130)
-    const consumoGrande = USURY_CAPS.find(c =>
-      c.segment.startsWith('Consumo, UI 10.000 o más, hasta 366 días')
-    )
-    expect(consumoGrande?.capPct).toBeCloseTo(63.581, 3)
+  })
+
+  // Las seis filas que el BCU republica cada mes tienen que poder refrescarse solas. Si alguna
+  // pierde su `grid`, la pagina vuelve a publicar el trimestre viejo sin que nadie se entere.
+  it('las seis filas que el BCU republica saben de que fila de la grilla vienen', () => {
+    const conGrid = USURY_CAPS.filter(c => c.grid)
+    expect(conGrid).toHaveLength(6)
+    expect(new Set(conGrid.map(c => c.grid)).size).toBe(6)
+  })
+
+  // Las dos que el parser NO trae siguen siendo una lectura fechada, y no pueden fingir lo
+  // contrario: la pagina las marca aparte justamente porque no se refrescan.
+  it('las que no vienen en la grilla quedan sin marcar como vivas', () => {
+    const sinGrid = USURY_CAPS.filter(c => !c.grid).map(c => c.segment)
+    expect(sinGrid).toHaveLength(2)
+    expect(sinGrid.join(' ')).toMatch(/descuento|retención/)
   })
 })
 
@@ -226,13 +238,28 @@ describe('catálogos', () => {
   })
 
   it('las FAQ y los checklists tienen contenido real', () => {
-    expect(P2P_FAQ.length).toBeGreaterThanOrEqual(10)
-    for (const f of P2P_FAQ) {
+    const faq = buildP2pFaq('133,49%', '66,32%')
+    expect(faq.length).toBeGreaterThanOrEqual(10)
+    for (const f of faq) {
       expect(f.question.endsWith('?')).toBe(true)
       expect(f.answer.length).toBeGreaterThan(80)
     }
     expect(LENDER_CHECKLIST.length).toBeGreaterThanOrEqual(6)
-    expect(BORROWER_CHECKLIST.length).toBeGreaterThanOrEqual(3)
+    expect(buildBorrowerChecklist('133,49%', '66,32%').length).toBeGreaterThanOrEqual(3)
+  })
+
+  // El sitio publicaba dos topes distintos y los dos decian "vigente". Ninguna respuesta puede
+  // volver a traer un tope escrito a mano: el numero entra por parametro o no entra.
+  it('ninguna respuesta ni ningun checklist trae un tope escrito a mano', () => {
+    const textos = [
+      ...buildP2pFaq('133,49%', '66,32%').map(f => f.answer),
+      ...buildBorrowerChecklist('133,49%', '66,32%').map(c => c.detail),
+    ]
+    for (const texto of textos) {
+      expect(texto).not.toMatch(/130,93|63,58|127,66/)
+    }
+    const conTope = textos.filter(t => t.includes('133,49%'))
+    expect(conTope.length).toBeGreaterThanOrEqual(2)
   })
 
   it('la inscripción publicada por el BCU va con su resolución y su expediente', () => {

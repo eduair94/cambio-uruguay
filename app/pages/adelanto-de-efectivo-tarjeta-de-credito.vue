@@ -766,7 +766,7 @@
             <h3 class="text-subtitle-1 font-weight-bold mb-3">
               <VIcon size="20" class="mr-1">mdi-thumb-down-outline</VIcon>En contra
             </h3>
-            <div v-for="(c, i) in CONS" :key="i" class="procon">
+            <div v-for="(c, i) in cons" :key="i" class="procon">
               <p class="procon-title">{{ c.text }}</p>
               <p class="procon-detail">{{ c.detail }}</p>
             </div>
@@ -779,7 +779,7 @@
     <section id="faq" class="mb-6">
       <h2 class="section-title">Preguntas frecuentes</h2>
       <VExpansionPanels variant="accordion">
-        <VExpansionPanel v-for="(f, i) in FAQS" :key="i">
+        <VExpansionPanel v-for="(f, i) in faqs" :key="i">
           <VExpansionPanelTitle>{{ f.q }}</VExpansionPanelTitle>
           <VExpansionPanelText>
             <p class="text-body-2 mb-0" v-html="f.a" />
@@ -831,9 +831,9 @@ import {
   BCU_PERIOD,
   BRACKET_PESOS,
   CASH_ADVANCE_LAST_REVIEWED,
-  CONS,
+  buildCons,
   CRYPTO_DEFAULTS,
-  FAQS,
+  buildFaqs,
   GAPS,
   ISSUERS,
   PROS,
@@ -845,6 +845,7 @@ import {
   simulateCrypto,
   teaConIva,
   tnaToTea,
+  type AdvanceCapLabels,
   type BcuCapRow,
 } from '~/utils/cashAdvance'
 import { adDensityForPath } from '~/utils/ads'
@@ -879,6 +880,30 @@ function pickCap(bracket: 'menor10kUI' | 'mayor10kUI'): BcuCapRow {
 }
 const capChico = computed(() => pickCap('menor10kUI'))
 const capGrande = computed(() => pickCap('mayor10kUI'))
+
+/**
+ * Los mismos topes, ya en texto, para las frases que los nombran.
+ *
+ * Hasta el 2026-09-03 esta página mostraba la tabla viva arriba y "130,93 %" escrito a mano en los
+ * contras y en tres respuestas: el trimestre anterior, publicado como el vigente, a diez centímetros
+ * del número correcto. Ahora las frases leen la misma grilla que la tabla.
+ */
+const capLabels = computed<AdvanceCapLabels>(() => ({
+  mediaChico: usuryPct(capChico.value.media * 100),
+  topeChico: usuryPct(capChico.value.tope * 100),
+  topeChicoConIva: usuryPct(teaConIva(capChico.value.tope) * 100),
+  mediaGrande: usuryPct(capGrande.value.media * 100),
+  topeGrande: usuryPct(capGrande.value.tope * 100),
+  vigenteDesde: new Date(`${capVigenteDesde.value}T12:00:00Z`).toLocaleDateString('es-UY', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }),
+}))
+
+const cons = computed(() => buildCons(capLabels.value))
+const faqs = computed(() => buildFaqs(capLabels.value))
 
 // ── Calculator state ──
 const issuerId = ref('oca')
@@ -1122,7 +1147,7 @@ useHead(() => ({
           },
           {
             '@type': 'FAQPage',
-            mainEntity: FAQS.map(f => ({
+            mainEntity: faqs.value.map(f => ({
               '@type': 'Question',
               name: f.q,
               acceptedAnswer: { '@type': 'Answer', text: f.a.replace(/<[^>]+>/g, '') },

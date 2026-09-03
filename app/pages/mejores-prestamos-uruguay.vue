@@ -703,6 +703,7 @@ import {
 } from '~/utils/loanTierlist'
 import { monoStyle, monogram, readableOn } from '~/utils/brandColors'
 import type { FaqItem } from '~/utils/faqAnswers'
+import { BCU_CAPS, BCU_IN_FORCE_SINCE, type BcuCapRow } from '~/utils/cashAdvance'
 import { useDisplay } from 'vuetify'
 
 const localePath = useLocalePath()
@@ -1044,7 +1045,37 @@ const EXCLUDED: { name: string; tag: string; tone: string; why: string }[] = [
   },
 ]
 
-const FAQ: FaqItem[] = [
+// ── El tope de usura, del BCU de hoy ──
+//
+// El BCU republica la tabla TODOS LOS MESES. Hasta el 2026-09-03 esta respuesta decía "el tope
+// vigente desde el 1° de agosto de 2026 es 130,9285%" mientras /ley-de-usura-uruguay publicaba
+// 133,49 % leído esa misma mañana. Misma clave de fetch que las otras dos páginas que lo nombran.
+const { data: liveCaps } = await useFetch<{
+  periodo: string
+  vigenteDesde: string
+  rows: BcuCapRow[]
+  live: boolean
+}>('/api/bcu-rates', { key: 'bcu-rates', server: true, default: () => null })
+
+const capChico = computed(() => {
+  const row = (liveCaps.value?.rows || BCU_CAPS).find(
+    r => r.bracket === 'menor10kUI' && r.cortoPlazo && r.currency === 'UYU'
+  )
+  return row ?? BCU_CAPS[0]
+})
+const topeChicoLabel = computed(() => usuryPct(capChico.value.tope * 100))
+const mediaChicaLabel = computed(() => usuryPct(capChico.value.media * 100))
+const vigenteDesdeLabel = computed(() => {
+  const iso = liveCaps.value?.vigenteDesde || BCU_IN_FORCE_SINCE
+  return new Date(`${iso}T12:00:00Z`).toLocaleDateString('es-UY', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  })
+})
+
+const FAQ = computed<FaqItem[]>(() => [
   {
     id: 'quien-presta-clearing',
     question: '¿Quién presta plata en Uruguay estando en el clearing?',
@@ -1090,8 +1121,7 @@ const FAQ: FaqItem[] = [
   {
     id: 'tope-usura',
     question: '¿Cuál es el tope legal y qué pasa si un prestamista lo supera?',
-    answer:
-      'La Ley 18.212 pone el techo en un porcentaje sobre la tasa MEDIA que el Banco Central publica cada mes por segmento. Para un préstamo personal en pesos, chico (menos de 10.000 UI, unos $66.351) y sin autorización de descuento del sueldo, el tope vigente desde el 1° de agosto de 2026 es 130,9285% —80% en mora—, porque ese segmento tiene la tasa media más alta del sistema (84,47%): el promedio de mercado no es un parámetro de razonabilidad, es solo un promedio. Con retención de haberes el tope baja mucho: 27,43% para "otra retención" y apenas 25,32% para crédito de nómina. Si un prestamista cobra por encima del tope, la ley hace caducar TODO el interés y los cargos —no solo el excedente— y lo ya cobrado se descuenta del capital; además es delito si hubo aprovechamiento de tu necesidad, con pena de seis meses a cuatro años. Se denuncia ante el BCU (si el prestamista está supervisado) o ante la Unidad Defensa del Consumidor del MEF si no lo está.',
+    answer: `La Ley 18.212 pone el techo en un porcentaje sobre la tasa MEDIA que el Banco Central publica cada mes por segmento. Para un préstamo personal en pesos, chico (menos de 10.000 UI, unos $66.351) y sin autorización de descuento del sueldo, el tope vigente desde el ${vigenteDesdeLabel.value} es ${topeChicoLabel.value} —80% en mora—, porque ese segmento tiene la tasa media más alta del sistema (${mediaChicaLabel.value}): el promedio de mercado no es un parámetro de razonabilidad, es solo un promedio. Con retención de haberes el tope baja mucho: 27,43% para "otra retención" y apenas 25,32% para crédito de nómina. Si un prestamista cobra por encima del tope, la ley hace caducar TODO el interés y los cargos —no solo el excedente— y lo ya cobrado se descuenta del capital; además es delito si hubo aprovechamiento de tu necesidad, con pena de seis meses a cuatro años. Se denuncia ante el BCU (si el prestamista está supervisado) o ante la Unidad Defensa del Consumidor del MEF si no lo está.`,
   },
   {
     id: 'iva-y-gastos',
@@ -1123,7 +1153,7 @@ const FAQ: FaqItem[] = [
     answer:
       'No. Es la estafa más común del rubro. Ningún prestamista legítimo cobra sellado, gestión, seguro ni "liberación de fondos" antes de desembolsar: esos costos se descuentan del préstamo o se cobran después, siempre con contrato. Si te piden depositar para recibir, no es un préstamo caro, es un robo.',
   },
-]
+])
 
 const PAGE_SOURCES: { label: string; url: string }[] = [
   {
