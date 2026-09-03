@@ -489,15 +489,33 @@ useSeoMeta({
   twitterImageAlt: () => seoTitle.value,
 })
 
-// This family had no canonical at all, so a department reachable under two
-// spellings (PAYSANDU / PAYSANDÚ) could be indexed twice.
+/**
+ * La grafía canónica del departamento: la que declara el sitemap.
+ *
+ * Poner una canónica no alcanzaba: la que había devolvía la MISMA grafía que traía la URL, así que
+ * cada variante se declaraba canónica de sí misma y seguían siendo páginas distintas para Google.
+ * Verificado el 2026-09-03, tres formas vivas del mismo departamento, cada una autocanónica:
+ *   /sucursales/brou/cerro%20largo   (la del sitemap)
+ *   /sucursales/brou/cerro-largo
+ *   /sucursales/brou/r%C3%ADo%20negro  frente a  /sucursales/brou/rio%20negro
+ * La mayúscula sí estaba resuelta: /sucursales/brou/CERRO%20LARGO responde 301.
+ *
+ * El nombre crudo sale del directorio —es el mismo dato del que se arma el sitemap— y si el
+ * directorio no está, se cae a la grafía de la URL, que es el comportamiento anterior.
+ */
+const canonicalDept = computed(() => {
+  if (!location) return ''
+  const fromDirectory = directoryBranches.value[0]?.dept
+  return (fromDirectory || location).toLocaleLowerCase('es')
+})
+
 useHead({
   link: [
     {
       rel: 'canonical',
       href: computed(() =>
         location
-          ? `https://cambio-uruguay.com/sucursales/${origin}/${encodeURIComponent(location)}`
+          ? `https://cambio-uruguay.com/sucursales/${origin}/${encodeURIComponent(canonicalDept.value)}`
           : `https://cambio-uruguay.com/sucursales/${origin}`
       ),
     },
