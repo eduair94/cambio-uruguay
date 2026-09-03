@@ -398,6 +398,43 @@ function toClock(hour: string, minute: string | undefined): string | null {
 }
 
 /**
+ * Todo lo que viene después de estas marcas NO es horario de atención al público.
+ *
+ * El feed mete en el mismo campo el horario de la sucursal y el de otra cosa —la buzonera, las
+ * terminales de autoservicio, las cajas, el horario de temporada—, y sin cortar acá el parser
+ * emitía las DOS franjas para los mismos días. Medido el 2026-09-03 sobre las 528 fichas: 25
+ * sucursales con estas marcas, entre ellas cinco del Santander donde la buzonera (06:00 a 22:00) se
+ * publicaba como horario de atención contra un mostrador que cierra a las 17:00.
+ *
+ * El caso límite que decide el diseño es "Zona de autoservicios de 9 a 21 horas sin atención al
+ * público": la marca está al principio, la cabeza queda vacía y la función devuelve [] — que es
+ * exactamente lo correcto, porque esa sucursal no atiende público.
+ */
+const NOT_PUBLIC_HOURS = [
+  'buzonera',
+  'buzoneras',
+  'autoservicio',
+  'autoservicios',
+  'terminales',
+  'cajero',
+  'cajeros',
+  'horario de cajas',
+  'temporada',
+  'invierno',
+  'verano',
+]
+
+/** Corta el texto en la primera marca que introduce un horario que no es el de atención. */
+function publicHoursPart(text: string): string {
+  let cut = text.length
+  for (const marker of NOT_PUBLIC_HOURS) {
+    const at = text.indexOf(marker)
+    if (at >= 0 && at < cut) cut = at
+  }
+  return text.slice(0, cut).trim()
+}
+
+/**
  * Parse a Uruguayan opening-hours string into structured windows.
  *
  * Handles the shapes the BCU feed actually uses: `"Lunes a Viernes de 13 a 18 hs."`,
@@ -409,7 +446,7 @@ function toClock(hour: string, minute: string | undefined): string | null {
  * about when a business is open is worse than none at all.
  */
 export function parseOpeningHours(raw: string): OpeningWindow[] {
-  const text = normaliseHours(raw)
+  const text = publicHoursPart(normaliseHours(raw))
   if (!text || text === 'sin informar' || !/\d/.test(text)) return []
 
   // Day-spec matcher, longest alternatives first so "lunes a viernes" wins over
@@ -463,6 +500,27 @@ export function parseOpeningHours(raw: string): OpeningWindow[] {
   }
 
   if (!segments.length) return []
+
+  // Une los días que el texto enumera: "Martes, Jueves y Viernes de 13 a 18" son TRES day-specs
+  // seguidos separados sólo por comas y por "y", y sin unirlos el rango horario se le asigna nada
+  // más que al último —el bloque de abajo reparte cada rango entre un day-spec y el siguiente—.
+  // Por eso /sucursal/brou-rivera-44 publicaba "abre sólo los viernes" cuando abre martes, jueves y
+  // viernes. Había un caso especial cableado para "lunes, miércoles y viernes" y ninguno para las
+  // demás combinaciones; medido sobre el feed real, 24 sucursales usan esta forma.
+  const merged: Segment[] = []
+  for (const segment of segments) {
+    const previous = merged[merged.length - 1]
+    // Sólo separadores entre uno y otro: ni horas, ni letras que no sean la conjunción.
+    const gap = previous ? text.slice(previous.to, segment.from) : null
+    if (previous && gap !== null && /^[\s,]*(?:(?:y|e)[\s,]*)?$/.test(gap)) {
+      previous.days = [...new Set([...previous.days, ...segment.days])].sort((a, b) => a - b)
+      previous.to = segment.to
+      continue
+    }
+    merged.push({ ...segment })
+  }
+  segments.length = 0
+  segments.push(...merged)
 
   // Time ranges belonging to a day spec are the ones between it and the next.
   const timeRange =
