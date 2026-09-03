@@ -1880,7 +1880,7 @@ export const LENDER_TIERLIST: readonly LenderEntity[] = Object.freeze([
       'El seguro de vida va incluido.',
     ],
     cons: [
-      'Los dos números que publica como "desde" —27,43% y 63,58%— coinciden exactamente con los topes de usura vigentes desde el 1/8/2026, así que lo que muestra parece ser el techo legal y no su propia tasa.',
+      'Los dos números que publica como "desde" —27,43% y 63,58%— coincidían exactamente con los topes de usura que regían al leerlos, en agosto de 2026, así que lo que muestra parece ser el techo legal y no su propia tasa. El BCU republica esos topes todos los meses; lo que no cambia es de dónde salen sus dos números.',
       'Su sitio bloquea las consultas automatizadas, así que el resto de sus condiciones no se puede confirmar en la fuente.',
       'Figura en el BCU como entidad otorgante de crédito, no como administradora de crédito: es otro régimen y otra intensidad de supervisión.',
     ],
