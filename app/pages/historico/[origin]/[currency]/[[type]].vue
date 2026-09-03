@@ -639,12 +639,27 @@ interface DriversResponse {
   series: { key: string; points: { date: string; value: number }[] }[]
 }
 
+// `server: false` EN LAS DOS, y es la mitad del peso de esta página. "Lazy" no quiere decir "no se
+// pide en el servidor": quiere decir que no bloquea la navegación. Se pedían igual durante el SSR y
+// se serializaban enteras en __NUXT_DATA__. Medido el 2026-09-03 en /historico/brou/usd:
+//
+//   página completa                2.431.146 bytes
+//   de eso, __NUXT_DATA__          2.107.202 bytes
+//   de eso, historico-drivers-USD  1.128.560 bytes   ← /api/drivers pesa 1,69 MB
+//            historico-analysis     51.328 bytes
+//            evolution-brou-usd     25.114 bytes   ← el dato que la página SÍ muestra
+//
+// Los dos alimentan exclusivamente el gráfico: `moves` marca los días de movimiento y
+// `driverSeriesArr` sólo se lee dentro del callback `afterBody` del tooltip de Chart.js. Nada de
+// eso se renderiza en el HTML, así que en el servidor era 1,18 MB que ningún lector ni ningún
+// rastreador iba a usar. La familia /historico es la de más impresiones del sitio.
 const { data: analysisData } = useLazyAsyncData<AnalysisResponse | null>(
   `historico-analysis-${currencyUpper.value}`,
   async () => {
     if (!analysisSupported.value) return null
     return await $fetch<AnalysisResponse>(`/api/analysis/${currencyUpper.value}`).catch(() => null)
-  }
+  },
+  { server: false }
 )
 
 const { data: driversData } = useLazyAsyncData<DriversResponse | null>(
@@ -652,7 +667,8 @@ const { data: driversData } = useLazyAsyncData<DriversResponse | null>(
   async () => {
     if (!analysisSupported.value) return null
     return await $fetch<DriversResponse>('/api/drivers').catch(() => null)
-  }
+  },
+  { server: false }
 )
 
 const moves = computed<AnalysisMove[]>(() => analysisData.value?.moves ?? [])
