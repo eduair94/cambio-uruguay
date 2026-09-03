@@ -5,7 +5,7 @@
         <v-card>
           <v-card-title class="d-flex align-center flex-wrap ga-3 py-4">
             <v-icon class="mr-2" color="primary">mdi-chart-line</v-icon>
-            <span class="text-h5 text-md-h4">{{ $t('historical.currentQuotes') }}</span>
+            <h1 class="historico-title text-h5 text-md-h4">{{ $t('historical.currentQuotes') }}</h1>
             <v-spacer />
             <ClientOnly>
               <Updated />
@@ -643,6 +643,15 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* El h1 vive dentro de un `v-card-title` que es flex: el `margin-block: 1em` que
+   Vuetify 4 NO resetea no colapsa ahí, así que empujaría el título 16px debajo
+   del icono. Se declara acá en vez de confiar en el navegador. */
+.historico-title {
+  margin: 0;
+  font-weight: inherit;
+  letter-spacing: inherit;
+}
+
 .v-data-table {
   border-radius: 8px;
 }

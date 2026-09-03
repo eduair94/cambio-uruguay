@@ -212,6 +212,27 @@ describe('the legacy SEO debt only shrinks', () => {
     expect(source).toContain('https://cambio-uruguay.com')
   })
 
+  // El H1 es la única señal de la página que Google lee sin depender de nadie: el title lo puede
+  // reescribir, la description la puede ignorar, el H1 es el encabezado que la página se pone a sí
+  // misma. `/historico` — indexable, en el sitemap, con `useSeoMeta` completo y canonical — no tenía
+  // NINGUNO: su encabezado visible era un `<span class="text-h5">` dentro del `v-card-title`, que se
+  // ve igual y para el crawler no existe. Justamente por verse igual nadie lo iba a notar mirando la
+  // página, y por eso el chequeo va acá y no en una revisión a ojo.
+  //
+  // `heading-tag="h1"` cuenta: varias páginas delegan el encabezado en un componente de catálogo
+  // (`ChairsChairMarketDirectory`) al que le pasan la etiqueta, y el `<h1>` sale igual en el HTML.
+  it('cada página que se declara su propio SEO renderiza exactamente un H1', () => {
+    const offenders = OWES_OWN_SEO.filter(file => {
+      const source = read(file)
+      const template = source.split('<script setup')[0] ?? ''
+      const count =
+        (template.match(/<h1[\s>]/g) ?? []).length +
+        (template.match(/heading-tag="h1"/g) ?? []).length
+      return count !== 1
+    }).sort()
+    expect(offenders).toEqual([])
+  })
+
   it('noindexes only the pages meant to be invisible', () => {
     const noindexed = files.filter(file => /noindex/i.test(read(file)))
     expect(noindexed.sort()).toEqual(NOINDEXED)
