@@ -53,11 +53,19 @@ export default defineNuxtConfig({
       type: 'Organization',
       name: 'Cambio Uruguay',
       url: 'https://cambio-uruguay.com',
-      // SIN `logo` acá: declararlo en esta clave es lo que hace aparecer el nodo `#organization`
-      // aparte, y el logo se queda en ÉL en vez de ir al `#identity` que el WebPage referencia.
-      // Probado en producción con el logo como ImageObject y como cadena en el layout: en los dos
-      // casos `#identity` salía sin logo mientras `#organization` lo tenía. El logo lo declara el
-      // `defineOrganization` del layout, que es quien escribe en `#identity`.
+      // SIN `logo` acá, y NO porque eso arregle nada: probado, quitarlo no cambió el resultado.
+      //
+      // Lo que la librería hace, medido en producción contra el origen (con cache-buster, porque
+      // `/` se cachea una hora en el borde): PARTE el `defineOrganization` del layout en dos nodos
+      // — todo menos el logo va a `#identity`, que es el que el `WebPage` referencia en su `about`,
+      // y un nodo aparte `#organization` se queda con el logo. Pasa igual con el logo declarado
+      // como ImageObject o como cadena, y esté o no declarado en esta clave.
+      //
+      // Cinco intentos: useSchemaOrg en el layout, @id explícito, enriquecer esta clave, logo como
+      // cadena, y sacarlo de acá. El único que movió la aguja fue el tercero, y para bien: el nodo
+      // que Google resuelve para la página pasó de tres campos a trece. El residuo —el logo en un
+      // nodo que nada referencia— queda así a propósito: doblarlo requiere leer el código de la
+      // librería, y no vale lo que costaría.
       sameAs: [
         'https://twitter.com/cambio_uruguay',
         'https://www.linkedin.com/company/cambio-uruguay/',
