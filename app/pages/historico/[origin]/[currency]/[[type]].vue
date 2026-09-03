@@ -573,9 +573,41 @@ interface EvolutionData {
 }
 
 // Route validation
+// La moneda tiene que SER una moneda. Antes bastaba con que el parámetro existiera, así que
+// /historico/brou/xyz respondía 200 con 242 KB, canonical a sí misma e `index, follow`: un espacio
+// de rastreo infinito colgando de la familia con más impresiones del sitio después de la home
+// (75.271 en 28 días). Lo mismo con /historico/bcu/promed.fondo, donde el segmento era un tipo de
+// tasa y no una moneda.
+//
+// La lista son los códigos que la API devuelve de verdad (medidos el 2026-09-03), y se comparan en
+// minúscula porque esa es la grafía canónica que declara el sitemap. El origen NO se valida acá:
+// una casa inexistente ya cae en el 404 del hub /historico/<casa>, y pedir el directorio en la
+// guarda de las 670 URLs de esta familia costaría más de lo que evita.
 definePageMeta({
   validate: route => {
-    return !!(route.params.origin && route.params.currency)
+    const currency = String(route.params.currency ?? '').toLowerCase()
+    if (!route.params.origin || !currency) return false
+    // Inline y no importado: `definePageMeta` es una macro que el compilador extrae del módulo.
+    return [
+      'ars',
+      'aud',
+      'brl',
+      'cad',
+      'chf',
+      'clp',
+      'cop',
+      'eur',
+      'gbp',
+      'jpy',
+      'mxn',
+      'pen',
+      'pyg',
+      'ui',
+      'up',
+      'ur',
+      'usd',
+      'xau',
+    ].includes(currency)
   },
 })
 

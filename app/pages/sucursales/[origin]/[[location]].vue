@@ -171,9 +171,50 @@ interface BranchDirectory {
 }
 
 // Define page meta for route validation
+// Rechaza casas y departamentos inventados en la GUARDA, no en el setup.
+//
+// Antes alcanzaba con que existiera el parámetro, así que /sucursales/no_existe_casa/montevideo
+// respondía 200 con 229 KB, canonical a sí misma y `index, follow` — un espacio de rastreo infinito
+// colgando de la segunda familia con más impresiones del sitio (63.359 en 28 días). Lo mismo con un
+// departamento inventado en una casa que sí existe.
+//
+// Va en `validate` y no con `createError` en el setup por lo que ya documenta /sucursal/<slug>:
+// lanzar después de un `await` dentro del setup renderiza la página de error pero contesta 200, que
+// es exactamente el soft 404 que se quiere evitar. La ruta del directorio está cacheada en Nitro,
+// así que la guarda no cuesta una llamada upstream.
 definePageMeta({
-  validate: route => {
-    return !!route.params.origin
+  validate: async route => {
+    const origin = String(route.params.origin ?? '')
+    if (!origin) return false
+    try {
+      const directory = await $fetch<{
+        branches: Array<{ origin: string; dept: string }>
+        casas: Record<string, unknown>
+      }>('/api/branches')
+      if (!directory?.casas?.[origin]) return false
+
+      const location = route.params.location
+      if (!location) return true
+
+      // Normalizador INLINE, no `deptKey`: `definePageMeta` es una macro que el compilador extrae
+      // de este módulo, así que no puede referenciar nada de su ámbito. Es la misma normalización
+      // (sin tildes, minúscula, separadores a espacio) que usa utils/branches.ts.
+      const norm = (value: string) =>
+        value
+          .normalize('NFD')
+          .replace(/[\u0300-\u036F]/g, '')
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, ' ')
+          .trim()
+
+      const wanted = norm(String(location))
+      return (directory.branches ?? []).some(
+        branch => branch.origin === origin && norm(branch.dept) === wanted
+      )
+    } catch {
+      // Directorio inalcanzable: no se puede 404ear con seguridad, así que se renderiza y degrada.
+      return true
+    }
   },
 })
 
