@@ -44,7 +44,14 @@
             venderte en cuotas.
           </p>
           <ul class="reg-list">
-            <li>Los datos <strong>caducan a los 5 años</strong> (plazo no renovable).</li>
+            <li>
+              Una deuda <strong>impaga</strong> se registra por 5 años, y el acreedor puede pedir
+              <strong>por única vez</strong> otros 5. Pueden ser diez.
+            </li>
+            <li>
+              Una deuda <strong>ya cancelada</strong> queda hasta 5 años más —eso sí, no renovables—
+              contados <strong>desde que la pagaste</strong>.
+            </li>
             <li>Podés pedir tus datos <strong>gratis cada 6 meses</strong> (Ley 18.331).</li>
             <li>Te tienen que responder en <strong>5 días hábiles</strong>.</li>
           </ul>
@@ -133,17 +140,33 @@
           razón, se habilita la acción de <strong>habeas data</strong>.
         </li>
         <li>
-          <strong>Caducidad a los 5 años.</strong> La información no puede quedar para siempre: el
-          plazo máximo es de 5 años y <strong>no es renovable</strong>.
+          <strong>Caducidad: 5 años, y depende de si pagaste.</strong> Una obligación
+          <strong>impaga</strong> se registra por cinco años desde que la incorporaron, y si al
+          vencer sigue impaga el acreedor puede pedir —<strong>por única vez</strong>, y dentro de
+          los treinta días anteriores al vencimiento— un nuevo registro por otros cinco. Una
+          obligación <strong>ya cancelada</strong> permanece registrada como tal por un máximo de
+          cinco años <strong>no renovables</strong>, contados desde la cancelación.
         </li>
         <li>
-          <strong>Rectificación.</strong> Si el dato está mal o ya pagaste, podés exigir que lo
-          corrijan o lo actualicen.
+          <strong>Rectificación en 5 días hábiles.</strong> Si el dato está mal o ya pagaste, podés
+          exigir que lo corrijan. Tienen cinco días hábiles para hacerlo o para explicarte por qué
+          entienden que no corresponde; vencido el plazo, se habilita el habeas data.
+        </li>
+        <li>
+          <strong>Mientras lo discutís, tiene que decirlo.</strong> Durante la verificación, si un
+          tercero pide un informe sobre vos, el responsable de la base
+          <strong>debe dejar constancia de que ese dato está sometido a revisión</strong>.
+        </li>
+        <li>
+          <strong>Cuando pagás, corren dos relojes.</strong> El acreedor tiene cinco días hábiles
+          para comunicar la cancelación a la base, y la base tres días hábiles para actualizar el
+          dato. Si a los dos meses seguís figurando igual, no es demora: es incumplimiento.
         </li>
       </ul>
       <VAlert type="info" variant="tonal" density="comfortable" class="mt-4">
-        Pagar no te borra del registro al instante: lo que corresponde es que quede asentado como
-        <strong>cancelada</strong>. Guardá siempre el comprobante y el convenio por escrito.
+        Pagar no te borra del registro: lo que corresponde es que quede asentado como
+        <strong>cancelada</strong>, y esa mención puede quedar hasta cinco años más contados desde
+        el pago. Guardá siempre el comprobante y el convenio por escrito.
       </VAlert>
     </VCard>
 
@@ -529,7 +552,7 @@ const sources = [
 const canonicalUrl = 'https://cambio-uruguay.com/salir-del-clearing'
 const title = 'Cómo salir del clearing en Uruguay: derechos, plazos y plan de deudas'
 const description =
-  'Qué es el Clearing de Informes y en qué se diferencia de la Central de Riesgos del BCU, cómo consultar tu situación gratis, tus derechos por la Ley 18.331 (caducidad a los 5 años, acceso gratuito), un planificador para salir de deudas y una calculadora de la tasa real que te cobran.'
+  'Qué es el Clearing de Informes y en qué se diferencia de la Central de Riesgos del BCU, cómo consultar tu situación gratis, y qué dice de verdad la Ley 18.331: una deuda impaga se registra cinco años y el acreedor puede renovar por otros cinco, mientras que una deuda pagada queda hasta cinco años más contados desde el pago. Con un planificador para salir de deudas y una calculadora de la tasa real que te cobran.'
 
 defineOgImageComponent('Cambio', {
   title: 'Salir del clearing',
@@ -555,7 +578,7 @@ useHead(() => ({
     {
       name: 'keywords',
       content:
-        'salir del clearing uruguay, clearing de informes, central de riesgos bcu, consultar deuda bcu, cuanto tiempo quedo en el clearing, ley 18331 habeas data, usura uruguay ley 18212, plan de deudas, salir de deudas uruguay',
+        'salir del clearing uruguay, clearing de informes, central de riesgos bcu, consultar deuda bcu, cuanto tiempo quedo en el clearing, como saber si estoy en el clearing, clearing cuanto debo, que pasa si estoy en el clearing, ley 18331 habeas data, usura uruguay ley 18212, plan de deudas, salir de deudas uruguay',
     },
   ],
   script: [
@@ -584,7 +607,7 @@ useHead(() => ({
                 name: '¿Cuánto tiempo quedo en el clearing?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Por la Ley 18.331 los datos tienen un plazo máximo de caducidad de 5 años, y ese plazo no es renovable. Las obligaciones canceladas quedan registradas como tales hasta que se cumple el plazo.',
+                  text: 'Depende de si pagaste. Una obligación impaga se registra por cinco años desde que la incorporaron, y si al vencer sigue impaga el acreedor puede pedir por única vez —dentro de los treinta días anteriores al vencimiento— un nuevo registro por otros cinco: pueden ser diez años. Una obligación ya cancelada permanece registrada como tal por un máximo de cinco años no renovables, contados desde la cancelación y no desde el registro original.',
                 },
               },
               {
