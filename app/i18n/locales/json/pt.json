@@ -777,7 +777,7 @@
     "nearbyCasasTitle": "Melhor Casa de Câmbio Perto de Mim no Uruguai | Cambio Uruguay",
     "nearbyCasasDescription": "Encontre a casa de câmbio real mais próxima com a melhor cotação e avaliações. Navegue direto com Google Maps ou Waze. Sem bancos ou fintechs.",
     "historicalDetailDescriptionLive": "{currency} no {origin} hoje: venda ${sell}, compra ${buy}. Evolução, gráfico e recordes. Compare 40+ casas de câmbio do Uruguai.",
-    "sucursalesWithCount": "Agências de {origin}: {count} endereços com telefone e horário",
+    "sucursalesWithCount": "Agências de {origin}: horários, endereços e telefones de {count} locais",
     "sucursalesInLocation": "Agências de {origin} em {location}: {count} endereços, telefones e horários"
   },
   "dolarDepto": {

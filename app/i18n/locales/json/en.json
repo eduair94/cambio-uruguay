@@ -782,7 +782,7 @@
     "nearbyCasasTitle": "Best Exchange House Near Me in Uruguay | Cambio Uruguay",
     "nearbyCasasDescription": "Find the closest real exchange house with the best rate and reviews. Navigate directly with Google Maps or Waze. No banks or fintechs.",
     "historicalDetailDescriptionLive": "{currency} at {origin} today: sell ${sell}, buy ${buy}. Trend, chart and records. Compare 40+ exchange houses in Uruguay.",
-    "sucursalesWithCount": "{origin} branches: {count} locations with address, phone and hours",
+    "sucursalesWithCount": "{origin} branches: opening hours, addresses and phones of {count} locations",
     "sucursalesInLocation": "{origin} branches in {location}: {count} locations, phones and hours"
   },
   "dolarDepto": {

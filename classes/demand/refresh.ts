@@ -8,6 +8,7 @@ import { SITE_TOPICS } from "../gaps/topics";
 import { loadIndex } from "../rag/store";
 import { SiteRetriever } from "../rag/retrieve";
 import { buildQueue, isUruguayan, type Candidate, type ScoredCandidate } from "./classify";
+import { coverageOf } from "./coverage";
 import { buildSeeds, harvest, type Suggestion } from "./harvest";
 import { probeSerp } from "./serp";
 
@@ -63,7 +64,12 @@ export async function refreshDemandQueue(options: RefreshOptions = {}): Promise<
   const asOf = new Date(options.now ?? Date.now()).toISOString().slice(0, 10);
 
   const seeds = buildSeeds(SITE_TOPICS);
-  const suggestions: Suggestion[] = await harvest(seeds);
+  // El eco de la semilla se descarta. El autocompletado devuelve la propia semilla como primera
+  // sugerencia ("casas de cambio uruguay", "transferencia uruguay", "letras uruguay"), y como
+  // llega con rango 0 encabezaba la cola sin aportar una sola palabra que no hubiéramos escrito
+  // nosotros. Lo que sirve de esta fuente es lo que la gente AGREGA a la semilla.
+  const seedSet = new Set(seeds.map((s) => s.trim().toLowerCase()));
+  const suggestions: Suggestion[] = (await harvest(seeds)).filter((s) => !seedSet.has(s.query));
 
   // Dos etapas de alcance, gratis y antes que nada. Primero el país: el `gl=uy` del autocompletado
   // no filtra nada (contesta lo mismo con y sin él) y sin este paso la cola se llena de demanda
@@ -75,15 +81,17 @@ export async function refreshDemandQueue(options: RefreshOptions = {}): Promise<
 
   // Cobertura contra el índice propio. Arma léxica solamente (vector null): alcanza para saber si
   // ya hay una página del tema y no gasta una sola llamada de embeddings.
+  //
+  // El recuperador ENCUENTRA la página, que es lo difícil; cuánto se parece lo mide `coverageOf`
+  // sobre el título y la ruta. El puntaje que devuelve no sirve para eso y creerle costó una
+  // corrida entera: ver la cabecera de coverage.ts.
   const chunks = await loadIndex();
   const retriever = chunks.length ? new SiteRetriever(chunks) : null;
 
   const candidates: Candidate[] = inScope.map(({ s, topic }) => {
     const hits = retriever ? retriever.rankWithVector(s.query, null, 1) : [];
     const best = hits[0] ?? null;
-    // El puntaje del recuperador no está acotado a 1; lo que importa acá es "hay algo parecido",
-    // así que se satura y se usa como proporción.
-    const coverage = best ? Math.min(1, best.score / 6) : 0;
+    const coverage = coverageOf(s.query, best);
     return { query: s.query, topic, rank: s.rank, coverage, bestPath: best?.path ?? null };
   });
 
