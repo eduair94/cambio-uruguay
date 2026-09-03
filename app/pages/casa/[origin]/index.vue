@@ -521,8 +521,15 @@ useHead({
           '@graph': [
             {
               '@type': 'FinancialService',
+              // `url` es la CANÓNICA de esta página y el sitio de la casa va en `sameAs`. Antes
+              // `url` apuntaba al dominio de la casa (gales.com.uy, aeromar.com.uy...), que le dice
+              // al consumidor que la entidad descrita acá vive en otro lado — justo lo contrario de
+              // lo que una página que compara casas quiere afirmar. `sameAs` es el campo que existe
+              // para decir "esta entidad también está allá" sin ceder la referencia.
+              '@id': `${canonicalUrl.value}#casa`,
               name: casaName.value,
-              ...(website.value ? { url: website.value } : {}),
+              url: canonicalUrl.value,
+              ...(website.value ? { sameAs: [website.value] } : {}),
               areaServed: { '@type': 'Country', name: 'Uruguay' },
               ...(departments.value.length
                 ? {
