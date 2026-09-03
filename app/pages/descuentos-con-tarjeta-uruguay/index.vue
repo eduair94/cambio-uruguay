@@ -132,6 +132,20 @@
             </v-chip>
           </div>
         </div>
+        <!-- La pregunta de alguien parado en la caja no se contesta con un mapa de 4.000 puntos.
+             Va arriba de los otros controles porque es el atajo, no una función más. -->
+        <div class="mt-3">
+          <v-btn
+            :to="localePath('/descuentos-con-tarjeta-uruguay/cerca-de-mi')"
+            color="primary"
+            variant="flat"
+            prepend-icon="mdi-crosshairs-gps"
+            block
+          >
+            ¿Tengo descuento acá? Ver los de esta cuadra
+          </v-btn>
+        </div>
+
         <div class="d-flex flex-wrap align-center ga-2 mt-3">
           <v-btn
             v-if="isLoggedIn"

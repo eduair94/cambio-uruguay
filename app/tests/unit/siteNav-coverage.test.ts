@@ -136,6 +136,7 @@ describe('the navigation model has no dead links', () => {
   it('excludes exactly the non-content routes', () => {
     expect([...EXCLUDED_ROUTES].sort()).toEqual([
       '/cuenta',
+      '/descuentos-con-tarjeta-uruguay/cerca-de-mi',
       '/estadisticas-de-busqueda',
       '/offline',
       '/widget',

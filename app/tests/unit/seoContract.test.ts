@@ -136,6 +136,8 @@ const NOINDEXED = [
   'alquileres-uruguay.vue',
   'buscar.vue',
   'cuenta/index.vue',
+  // La herramienta "¿tengo descuento acá?": la respuesta depende de la ubicación de quien la abre.
+  'descuentos-con-tarjeta-uruguay/cerca-de-mi.vue',
   // The Search Console dashboard: private, gated server-side, and noindexed so a stray link can
   // never put the site's own keyword list into the index.
   'estadisticas-de-busqueda.vue',
