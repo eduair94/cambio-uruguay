@@ -42,8 +42,25 @@ export default defineNuxtConfig({
     description:
       'Cotización del dólar en Uruguay hoy actualizada cada 10 minutos. Compara precios de compra y venta en más de 40 casas de cambio en Montevideo y todo Uruguay.',
     defaultLocale: 'es',
+    // La identidad va ACÁ y no en el layout, y descubrirlo costó dos intentos. `defineOrganization`
+    // en una página o layout emite un nodo con @id `#organization`, mientras el `WebPage` que arma
+    // el módulo apunta su `about` a `#identity` — el nodo que sale de esta clave. Verificado en
+    // producción el 2026-09-03: la Organization rica (logo, contactPoint, address, founder,
+    // knowsAbout) colgaba de `#organization`, sin que ningún otro nodo la referenciara, y la que
+    // Google resuelve para la página traía tres campos. Pasarle un @id explícito a
+    // `defineOrganization` no alcanza: la librería lo ignora.
     identity: {
       type: 'Organization',
+      name: 'Cambio Uruguay',
+      url: 'https://cambio-uruguay.com',
+      // Medidas reales del archivo, leídas del IHDR del PNG: 498 × 72.
+      logo: 'https://cambio-uruguay.com/img/logo.png',
+      sameAs: [
+        'https://twitter.com/cambio_uruguay',
+        'https://www.linkedin.com/company/cambio-uruguay/',
+        'https://github.com/eduair94/cambio-uruguay',
+        'https://medium.com/@cambio-uruguay',
+      ],
     },
     twitter: '@cambio_uruguay',
     trailingSlash: false,
