@@ -70,6 +70,24 @@ describe("topicFor", () => {
     expect(topicFor("cuantos dias son de licencia")).toBe("trabajo");
   });
 
+  it("una palabra ambigua sola no alcanza para entrar", () => {
+    // Las tres salieron de la cola real: "letras" es también letra de canción y "fondos" también
+    // fondo de pantalla. La palabra sola deja pasar consultas que no son de plata.
+    expect(topicFor("letras uruguay trueno y rubén rada")).toBeNull();
+    expect(topicFor("uruguay fondos de pantalla")).toBeNull();
+  });
+
+  it("la misma palabra ambigua con contexto sí entra", () => {
+    expect(topicFor("letras del tesoro uruguay")).toBe("inversion");
+    expect(topicFor("fondos de inversion uruguay")).toBe("inversion");
+  });
+
+  it("no promete filtrar la INTENCIÓN, sólo la palabra", () => {
+    // "antel cuando se fundo" habla de Antel, que es del tema, pero no es una pregunta de plata.
+    // Se documenta acá para que nadie lo lea como un bug: ese filtro lo hace el SERP y la persona.
+    expect(topicFor("antel cuando se fundo")).toBe("servicios");
+  });
+
   it("cuando dos temáticas comparten la palabra, elige siempre la misma", () => {
     // "aguinaldo" está en el scope de `impuestos` y en el de `trabajo`. Cualquiera de las dos es
     // una respuesta buena; lo que importa es que no cambie entre corridas, porque el tema viaja en

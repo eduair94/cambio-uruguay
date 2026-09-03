@@ -14,6 +14,8 @@ import { probeSerp } from "./serp";
 
 /** Cuántos candidatos llegan a la etapa del SERP. Es la única parte que cuesta. */
 const SERP_BUDGET = 25;
+/** Cuántas páginas del sitio se miran para decidir si la consulta ya está cubierta. */
+const COVERAGE_HITS = 5;
 /** Pausa entre consultas al SERP: el servidor es propio pero Google del otro lado no. */
 const SERP_GAP_MS = 1500;
 
@@ -32,6 +34,25 @@ export interface DemandQueue {
 }
 
 /**
+ * Palabras del `scope` que en Uruguay significan otra cosa la mitad de las veces.
+ *
+ * Cada una necesita una segunda palabra que confirme el tema. Salieron de la cola real del
+ * 2026-09-03, que dejó pasar "letras uruguay trueno y rubén rada" (una canción, no un título del
+ * tesoro), "uruguay fondos de pantalla" (no un fondo de inversión) y "uruguay cuentas pendientes".
+ * No es una lista de palabras prohibidas: es una lista de palabras que solas no alcanzan.
+ *
+ * LO QUE ESTO NO ARREGLA, y la misma cola lo mostró: "antel cuando se fundo" y "puedo ver antel tv
+ * en smart tv" entran igual, porque la palabra SÍ es del tema — lo que no es del tema es la
+ * intención. Ese filtro no es de palabras y no se intenta acá: para eso está el SERP, que dice si
+ * hay algo que ganar, y la persona que lee la cola.
+ */
+const AMBIGUOUS_SCOPE_WORDS: Readonly<Record<string, readonly string[]>> = {
+  letras: ["tesoro", "bcu", "invertir", "inversion", "inversión", "tasa", "rendimiento", "comprar"],
+  fondos: ["inversion", "inversión", "invertir", "afap", "rendimiento", "tasa", "administradora"],
+  cuentas: ["banco", "bancaria", "sueldo", "abrir", "caja", "ahorro", "corriente", "comisión", "comision"],
+};
+
+/**
  * A qué temática pertenece una consulta, o null si no es nuestra.
  *
  * Match por palabra del `scope` de cada temática, que es la misma lista que gobierna al bot de
@@ -41,12 +62,16 @@ export interface DemandQueue {
  */
 export function topicFor(query: string): string | null {
   const q = ` ${query.toLowerCase()} `;
+  const has = (w: string) => q.includes(` ${w} `) || q.includes(`${w} `) || q.includes(` ${w}`);
   for (const topic of SITE_TOPICS) {
     const words = topic.scope
       .split(/[,;]/)
       .map((w) => w.trim().toLowerCase())
       .filter((w) => w.length > 3);
-    if (words.some((w) => q.includes(` ${w} `) || q.includes(`${w} `) || q.includes(` ${w}`))) {
+    for (const word of words) {
+      if (!has(word)) continue;
+      const needs = AMBIGUOUS_SCOPE_WORDS[word];
+      if (needs && !needs.some((extra) => has(extra))) continue;
       return topic.key;
     }
   }
@@ -108,9 +133,23 @@ export async function refreshDemandQueue(options: RefreshOptions = {}): Promise<
   stage(`índice propio (${chunks.length} fragmentos)`, indexStarted);
 
   const candidates: Candidate[] = inScope.map(({ s, topic }) => {
-    const hits = retriever ? retriever.rankWithVector(s.query, null, 1) : [];
-    const best = hits[0] ?? null;
-    const coverage = coverageOf(s.query, best);
+    // Cinco candidatas y se elige la que MÁS cubre, no la primera. Con `limit: 1` la cola del
+    // 2026-09-03 daba cobertura 0 para las 40 filas, y mirando los `bestPath` se ve por qué:
+    // "clearing como saber si estoy" devolvía /mejores-prestamos-uruguay cuando el sitio tiene
+    // /salir-del-clearing, y /tarjetas-de-socio-uruguay salía primera nueve veces para consultas
+    // que no tienen nada que ver. Con el vector en null la única señal es léxica, y una consulta
+    // cuyas palabras casi no están en el índice ordena por ruido. Pedir cinco y quedarse con la de
+    // mejor superposición corrige la mayoría sin costar una sola llamada de embeddings.
+    const hits = retriever ? retriever.rankWithVector(s.query, null, COVERAGE_HITS) : [];
+    let best: { path: string; title: string } | null = null;
+    let coverage = 0;
+    for (const hit of hits) {
+      const score = coverageOf(s.query, hit);
+      if (score > coverage) {
+        coverage = score;
+        best = hit;
+      }
+    }
     return { query: s.query, topic, rank: s.rank, coverage, bestPath: best?.path ?? null };
   });
 
