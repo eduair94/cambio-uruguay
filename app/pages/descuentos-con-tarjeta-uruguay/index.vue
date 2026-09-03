@@ -94,7 +94,13 @@
              sin rol ni estado, o sea invisible para un lector y sin forma de saber cuáles están
              puestas. `aria-pressed` y no `role="switch"`: es lo que ya usan otras ocho páginas del
              sitio (mejores-bancos-uruguay, mejores-prestamos-uruguay, ChairFilterPanel) y meter un
-             segundo idioma de interruptor en el mismo lugar sólo confunde. -->
+             segundo idioma de interruptor en el mismo lugar sólo confunde.
+
+             `role="button"` es obligatorio, no decorativo: Vuetify renderiza el chip como un
+             <span> con tabindex y sin rol, y `aria-pressed` sobre algo que no es un botón es ARIA
+             inválido — un lector lo ignora y axe lo marca. Verificado en el HTML servido antes de
+             agregarlo. Y con el rol viene el teclado: Enter y Espacio tienen que alternar, porque
+             un <span> no lo hace solo. -->
         <div v-for="bank in banks" :key="bank.id" class="mb-2">
           <div
             class="d-flex flex-wrap align-center ga-2"
@@ -112,9 +118,12 @@
               class="card-chip"
               :variant="selected.has(card.id) ? 'flat' : 'outlined'"
               :color="selected.has(card.id) ? 'primary' : undefined"
+              role="button"
               :aria-pressed="selected.has(card.id)"
               :aria-label="`${bank.name} ${cardKindLabel(bank, card)}`"
               @click="toggleCard(card.id)"
+              @keydown.enter.prevent="toggleCard(card.id)"
+              @keydown.space.prevent="toggleCard(card.id)"
             >
               <v-icon start size="x-small" aria-hidden="true">{{
                 card.type === 'credit' ? 'mdi-credit-card' : 'mdi-card-bulleted-outline'
