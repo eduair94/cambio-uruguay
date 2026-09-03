@@ -155,6 +155,38 @@
             </p>
           </v-card-text>
         </v-card>
+
+        <!-- El árbol que el sitemap ya declaraba y el HTML no tenía.
+             Medido el 2026-09-03 sobre un rastreo de 1.229 páginas de producción: CERO enlaces a
+             /sucursales/<casa>/<depto> y CERO a /sucursal/<slug> en todo el sitio. Son 682 URLs del
+             sitemap alcanzables sólo desde el XML, con 50.202 impresiones y 336 clics en 28 días.
+             La tabla de arriba pinta el departamento y la dirección como texto, así que no servía
+             de ruta de rastreo ni de navegación. -->
+        <nav v-if="deptLinks.length" class="mt-6" :aria-label="$t('sucursales')">
+          <h2 class="text-subtitle-1 font-weight-bold mb-2">
+            {{ exchangeHouseName }} por departamento
+          </h2>
+          <div class="d-flex flex-wrap ga-2">
+            <NuxtLink
+              v-for="d in deptLinks"
+              :key="d.to"
+              :to="localePath(d.to)"
+              class="suc-chip text-body-2"
+            >
+              {{ d.label }}
+              <span class="text-caption text-medium-emphasis">({{ d.count }})</span>
+            </NuxtLink>
+          </div>
+        </nav>
+
+        <nav v-if="branchLinks.length" class="mt-6" :aria-label="$t('listaSucursales')">
+          <h2 class="text-subtitle-1 font-weight-bold mb-2">Ficha de cada sucursal</h2>
+          <ul class="suc-list">
+            <li v-for="b in branchLinks" :key="b.to">
+              <NuxtLink :to="localePath(b.to)" class="suc-link text-body-2">{{ b.label }}</NuxtLink>
+            </li>
+          </ul>
+        </nav>
       </v-col>
     </v-row>
   </div>
@@ -280,6 +312,45 @@ const directoryBranches = computed(() => {
   if (!location) return all
   const wanted = deptKey(location)
   return all.filter(branch => deptKey(branch.dept) === wanted)
+})
+
+/**
+ * Los departamentos de esta casa, como enlaces.
+ *
+ * Sólo en el hub (`/sucursales/<casa>`): en la página de un departamento el enlace útil es la ficha
+ * de cada sucursal, no los departamentos hermanos. La grafía es la MISMA que declara el sitemap —
+ * el departamento crudo en minúscula, con espacios— porque la ruta responde también con guiones y
+ * las dos formas se declaran canónicas de sí mismas; emitir la del sitemap es lo único que no
+ * agrega una tercera.
+ */
+const deptLinks = computed(() => {
+  if (location) return []
+  const counts = new Map<string, { label: string; raw: string; count: number }>()
+  for (const branch of directory.value?.branches ?? []) {
+    if (branch.origin !== origin || !branch.dept) continue
+    const key = deptKey(branch.dept)
+    const previous = counts.get(key)
+    if (previous) previous.count++
+    else counts.set(key, { label: deptLabel(branch.dept), raw: branch.dept, count: 1 })
+  }
+  return [...counts.values()]
+    .sort((a, b) => a.label.localeCompare(b.label, 'es'))
+    .map(d => ({
+      label: d.label,
+      count: d.count,
+      to: `/sucursales/${origin}/${d.raw.toLocaleLowerCase('es')}`,
+    }))
+})
+
+/** Las fichas de sucursal de este departamento, como enlaces. */
+const branchLinks = computed(() => {
+  if (!location) return []
+  return directoryBranches.value
+    .filter(branch => branch.slug)
+    .map(branch => ({
+      label: branch.addressLabel || branch.name || branch.slug,
+      to: `/sucursal/${branch.slug}`,
+    }))
 })
 
 /** The department in title case (`'TREINTA Y TRES'` -> `'Treinta y Tres'`). */
@@ -482,6 +553,35 @@ useHead(() => {
 </script>
 
 <style scoped>
+.suc-chip {
+  display: inline-block;
+  padding: 4px 10px;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-radius: 999px;
+  text-decoration: none;
+  color: rgb(var(--v-theme-link));
+}
+.suc-chip:hover {
+  text-decoration: underline;
+}
+.suc-list {
+  columns: 2;
+  padding-left: 1.1rem;
+  margin: 0;
+}
+@media (max-width: 600px) {
+  .suc-list {
+    columns: 1;
+  }
+}
+.suc-link {
+  color: rgb(var(--v-theme-link));
+  text-decoration: none;
+}
+.suc-link:hover {
+  text-decoration: underline;
+}
+
 .text-wrap {
   white-space: normal;
   word-wrap: break-word;
