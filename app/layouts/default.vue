@@ -536,11 +536,15 @@ useHead({
               name: 'Uruguay',
               sameAs: 'https://www.wikidata.org/wiki/Q77',
             },
+            // Las medidas son las del archivo, verificadas leyendo el IHDR del PNG el 2026-09-03:
+            // 498 × 72. Declaraba 227 × 33, que no es ni el tamaño real ni una escala de él
+            // (227 × 33 tiene otra proporción: 6,88 contra 6,92). Un ImageObject que miente sobre
+            // sus dimensiones es un dato que el consumidor puede descartar entero.
             logo: {
               '@type': 'ImageObject',
               url: 'https://cambio-uruguay.com/img/logo.png',
-              width: 227,
-              height: 33,
+              width: 498,
+              height: 72,
             },
             description:
               'Plataforma líder en Uruguay para comparar cotizaciones del dólar y divisas en más de 40 casas de cambio en tiempo real.',
