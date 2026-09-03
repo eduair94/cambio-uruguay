@@ -108,7 +108,9 @@
 
     <!-- Patente: cómo se calcula -->
     <section id="patente" class="mb-12">
-      <h2 class="text-h5 font-weight-bold mb-2">La patente: de dónde sale ese número</h2>
+      <h2 class="text-h5 font-weight-bold mb-2">
+        La patente en el SUCIVE: de dónde sale ese número
+      </h2>
       <VCard variant="flat" class="highlight-card pa-5 pa-md-6 mb-4">
         <div class="text-overline mb-2">El aforo</div>
         <p class="mb-0">{{ PATENTE_AFORO_RULE }}</p>
@@ -240,7 +242,7 @@
 
     <!-- Si no pagás -->
     <section id="impago" class="mb-12">
-      <h2 class="text-h5 font-weight-bold mb-2">Si no pagás la patente</h2>
+      <h2 class="text-h5 font-weight-bold mb-2">Si no pagás la patente: qué hace el SUCIVE</h2>
 
       <h3 class="text-subtitle-1 font-weight-bold mb-2">La multa por mora</h3>
       <VCard variant="flat" class="plain-card pa-0 mb-2">
@@ -292,7 +294,7 @@
 
     <!-- Convenio -->
     <section class="mb-12">
-      <h2 class="text-h5 font-weight-bold mb-4">El convenio de pago</h2>
+      <h2 class="text-h5 font-weight-bold mb-4">El convenio de pago del SUCIVE</h2>
       <VRow>
         <VCol v-for="c in CONVENIO_FACTS" :key="c.label" cols="12" md="6">
           <VCard variant="flat" class="plain-card pa-5 h-100">
@@ -454,12 +456,12 @@ const verifiedAt = fmtDate(FINES_VERIFIED_AT)
 const patenteVerifiedAt = fmtDate(PATENTE_VERIFIED_AT)
 
 const canonicalUrl = 'https://cambio-uruguay.com/multas-de-transito-y-patente-uruguay'
-const title = 'Multas de tránsito y patente en Uruguay: plazos, cálculo y deuda'
+const title = 'Multas de tránsito y patente (SUCIVE) en Uruguay: plazos, cálculo y deuda'
 const description =
   'Diez días hábiles para el descargo y diez corridos para el recurso: no es el mismo plazo y es la forma más común de perder la instancia. Y la patente: cómo se calcula sobre el aforo, las alícuotas 2026 por categoría, la escala de motos por cilindrada que no existe, qué pasa si no pagás (mora, bloqueo para transferir, retiro de placas), el convenio, la prescripción a los diez años y por qué el departamento donde empadronás no se elige.'
 
 defineOgImageComponent('Cambio', {
-  title: 'Multas de tránsito y patente',
+  title: 'Multas y patente (SUCIVE)',
   subtitle: 'Los plazos, el aforo y la deuda que sigue al vehículo',
   tag: 'AUTO',
 })

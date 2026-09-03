@@ -17,6 +17,14 @@
 // ruta de esa página: es explicable (se puede discutir mirando las dos cadenas) y es justo lo que
 // significa "ya tenemos una página de esto".
 //
+// LO QUE ESTA MEDIDA NO VE, y la cola del 2026-09-03 lo mostró con cuatro consultas: una página
+// puede cubrir un tema con OTRO nombre. "sucive cuanto debo", "sucive cuando vence" y "sucive como
+// hacer convenio" salieron con cobertura 0, y la respuesta a las tres estaba en
+// /multas-de-transito-y-patente-uruguay — que no decía "sucive" ni en el título ni en la ruta. La
+// cobertura no se equivocó: leyó lo que la página declara ser. El arreglo fue de la página, que
+// ahora nombra al organismo que la gente busca. Sirve de recordatorio de qué mide esto: si una
+// página cubre algo y no lo nombra, para Google tampoco lo cubre.
+//
 // PURE (sin red, sin Mongo) para poder probarlo con las cadenas reales.
 
 /** Palabras que aparecen en casi cualquier consulta o título y no dicen nada del tema. */
