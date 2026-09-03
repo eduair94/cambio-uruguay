@@ -33,6 +33,25 @@ export const FIGURE_BANDS = {
   inflacionAnual: [1, 15],
 } as const;
 
+/**
+ * Las cifras que en pesos nominales NO BAJAN NUNCA.
+ *
+ * Es el guardarraíl que faltaba, y su ausencia estuvo publicando cifras de 2024 durante meses. La
+ * banda sólo pregunta si un número es PLAUSIBLE, y una cifra vieja es perfectísimamente plausible:
+ * el 2026-09-03 la API servía salario mínimo $22.268 y BPC $6.177 —los valores de 2024— con
+ * `asOf` del día y las cuatro marcadas como actualizadas, porque Gemini las encontró en la web
+ * (están en todos lados) y las cuatro cayeron dentro de banda. O sea que el job "que se actualiza
+ * solo" estaba PISANDO una base verificada de 2026 con datos más viejos que ella.
+ *
+ * El salario mínimo, la BPC y el boleto los fija un decreto y en pesos nominales sólo suben. Así
+ * que un valor propuesto por debajo del que ya tenemos no es una actualización: es una lectura
+ * vieja o una alucinación, y en los dos casos se descarta. La inflación NO entra acá: baja.
+ *
+ * Esto no puede trabarse hacia arriba: `refreshUyFigures` arranca de la base verificada en cada
+ * corrida, así que el piso siempre es esa base y un valor alto equivocado dura un solo día.
+ */
+export const MONOTONIC_FIGURES = ["salarioMinimo", "bpc", "boletoStm"] as const;
+
 const inBand = (n: unknown, band: readonly [number, number]): n is number =>
   typeof n === "number" && Number.isFinite(n) && n >= band[0] && n <= band[1];
 
@@ -54,11 +73,15 @@ export function applyFigureBands(
 ): { figures: UyFigures; updated: string[] } {
   const figures: UyFigures = { ...current, updated: [], sources: current.sources };
   const updated: string[] = [];
+  const monotonic = new Set<string>(MONOTONIC_FIGURES);
   for (const k of ["salarioMinimo", "bpc", "boletoStm", "inflacionAnual"] as const) {
-    if (inBand(data[k], FIGURE_BANDS[k])) {
-      figures[k] = k === "inflacionAnual" ? Math.round((data[k] as number) * 10) / 10 : Math.round(data[k] as number);
-      updated.push(k);
-    }
+    if (!inBand(data[k], FIGURE_BANDS[k])) continue;
+    const proposed =
+      k === "inflacionAnual" ? Math.round((data[k] as number) * 10) / 10 : Math.round(data[k] as number);
+    // Más bajo que lo que ya teníamos verificado = dato viejo, no dato nuevo.
+    if (monotonic.has(k) && proposed < current[k]) continue;
+    figures[k] = proposed;
+    updated.push(k);
   }
   figures.updated = updated;
   return { figures, updated };
