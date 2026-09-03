@@ -206,7 +206,16 @@ log "Rolling reload (pm2 reload, zero-downtime)…"
 # `9>&-` cierra el fd del lock para el hijo. Sin eso, si pm2 tiene que levantar su God daemon,
 # el daemon hereda el fd y se queda con el lock del deploy PARA SIEMPRE: todos los deploys
 # siguientes abortarian con "another deploy holds the lock".
-pm2 reload "$PM2_NAME" --update-env 9>&- || log "pm2 reload exited non-zero; the health check below decides."
+# `startOrReload <ecosystem>` y no `reload <nombre>`: el segundo recarga el CÓDIGO y el env pero NO
+# relee ecosystem.config.cjs, así que ningún cambio de ese archivo llega nunca al runtime. Se vio
+# con `max_memory_restart`: el archivo dice 900M desde el 2026-08-19 y `pm2 jlist` seguía
+# devolviendo 524288000 (500 MiB) el 2026-09-03, con las instancias reiniciándose ~113 veces por día
+# por superar el techo viejo. Es la misma clase de deriva que 6c5fda6 arregló para el cron de los
+# jobs del backend.
+#
+# Vale para cualquier campo futuro, no sólo ese. El archivo declara UNA sola app, así que
+# startOrReload no toca nada más, y para una app que ya corre hace la misma recarga gradual.
+pm2 startOrReload "$APP_DIR/ecosystem.config.cjs" --update-env 9>&- || log "pm2 startOrReload exited non-zero; the health check below decides."
 
 log "Waiting for the app to answer on :$APP_PORT…"
 if ! wait_healthy; then
