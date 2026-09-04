@@ -1,6 +1,6 @@
 <template>
   <ClientOnly>
-    <aside v-if="visible" class="nl-capture" :aria-label="t('capture.aria')">
+    <aside v-if="visible" ref="card" class="nl-capture" :aria-label="t('capture.aria')">
       <VCard class="nl-capture-card pa-5 pa-md-6" variant="flat">
         <VBtn
           class="nl-capture-close"
@@ -41,6 +41,7 @@ import {
   captureAllowedForPath,
   shouldAskForEmail,
 } from '~/utils/capture'
+import { createNewsletterViewReporter, observeFirstImpression } from '~/utils/newsletterFunnel'
 
 const route = useRoute()
 const { t } = useI18n()
@@ -107,9 +108,21 @@ watch(
   }
 )
 
-watch(visible, now => {
-  if (now) track('newsletter_capture_view', { source: route.path })
+// La vista se emitía en un `watch(visible)`, y `remembered` arranca en `true`:
+// el onMounted lo bajaba, el watch corría y el evento salía con la tarjeta recién
+// insertada en el DOM, a pantallas de distancia del lector. Por eso el pico del
+// 17-08 dejó 1.274 `newsletter_capture_view` que no se pueden comparar con nada.
+// Ahora la vista la declara el observador, una sola vez por sesión.
+const card = ref<HTMLElement | null>(null)
+const viewReporter = createNewsletterViewReporter({ track, source: () => route.path })
+let stopObserving: (() => void) | null = null
+
+watch(card, el => {
+  stopObserving?.()
+  stopObserving = el ? observeFirstImpression(el, () => viewReporter.report()) : null
 })
+
+onBeforeUnmount(() => stopObserving?.())
 </script>
 
 <style scoped>

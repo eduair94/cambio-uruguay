@@ -50,6 +50,8 @@
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+import { runNewsletterSubmit } from '~/utils/newsletterFunnel'
+
 // Emitted once the subscribe request succeeds, so a host (the end-of-article
 // capture card) can stop asking. The form stays the single implementation of
 // subscribing — honeypot, GA4 key event and all.
@@ -62,23 +64,30 @@ const email = ref('')
 const website = ref('') // honeypot
 const state = ref<'idle' | 'submitting' | 'sent' | 'error'>('idle')
 
+// Los tres momentos van separados porque un éxito sin denominador no es una tasa:
+// hasta ahora sólo salía `newsletter_signup`, así que 40 altas podían ser 40 de 45
+// o 40 de 4.000, y nadie podía decir si un cambio en la tarjeta había servido.
+// `runNewsletterSubmit` fija el orden: intención antes del pedido, resultado
+// después de que resuelve.
 async function submit(): Promise<void> {
   if (state.value === 'submitting' || state.value === 'sent') return
   state.value = 'submitting'
-  try {
-    await $fetch('/api/newsletter/subscribe', {
-      method: 'POST',
-      body: { email: email.value, locale: locale.value, website: website.value },
-    })
-    state.value = 'sent'
+  // La carga va escrita entera en cada uno y no en una constante: `ga4-key-events`
+  // lee el archivo como texto y comprueba que la conversión lleve `source` al lado.
+  state.value = await runNewsletterSubmit({
+    post: () =>
+      $fetch('/api/newsletter/subscribe', {
+        method: 'POST',
+        body: { email: email.value, locale: locale.value, website: website.value },
+      }),
+    onSubmit: () => track('newsletter_submit', { source: route.path, locale: locale.value }),
     // A GA4 key event: the signup is one of the two conversions that tell us an
     // organic landing page earned a returning visitor. `source` is the landing
     // path so we can attribute it to the page type in an Exploration.
-    track('newsletter_signup', { source: route.path, locale: locale.value })
-    emit('subscribed')
-  } catch {
-    state.value = 'error'
-  }
+    onSuccess: () => track('newsletter_signup', { source: route.path, locale: locale.value }),
+    onError: () => track('newsletter_error', { source: route.path, locale: locale.value }),
+  })
+  if (state.value === 'sent') emit('subscribed')
 }
 </script>
 
