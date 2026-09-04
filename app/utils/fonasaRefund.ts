@@ -67,6 +67,23 @@ export const CPE_UPLIFT = 1.25
 /** Costo promedio equivalente mensual, en pesos. Decreto 317/025 art. 18, desde el 1/1/2026. */
 export const CPE_MONTHLY = 6693
 export const CPE_FROM = '2026-01-01'
+
+/**
+ * Cuándo cambia ese valor, que NO es sólo en enero.
+ *
+ * El artículo 17 del Decreto 317/025 —el que sustituyó el art. 13 del Decreto 221/011— dice que el
+ * CPE «se ajustará en las mismas oportunidades que determine el Poder Ejecutivo para las cuotas
+ * salud», y recién «adicionalmente, en enero de cada año» se recalcula incorporando los cambios en
+ * las expectativas de vida. O sea que cada ajuste de cuotas salud mueve el CPE, y en Uruguay esos
+ * ajustes son típicamente dos por año.
+ *
+ * La página publicaba «$ 6.693 desde el 1.º de enero de 2026» sin esta parte, lo que lo hacía leer
+ * como un valor fijo hasta el enero siguiente. No lo es. Acá no se estima el valor que rija hoy —no
+ * encontramos el decreto posterior y estimarlo sería inventar una cifra— pero sí se dice cuál es la
+ * regla, que es lo que le permite a alguien saber que tiene que mirar.
+ */
+export const CPE_ADJUSTMENT_RULE =
+  'Ese valor no queda fijo hasta el enero siguiente. El artículo 17 del Decreto 317/025 dispone que el costo promedio equivalente se ajusta en las mismas oportunidades que el Poder Ejecutivo determine para las cuotas salud, y que además, en enero de cada año, se recalcula incorporando los cambios en las expectativas de vida de la población. Si el Ejecutivo ajustó las cuotas salud después de esa fecha, el CPE vigente es más alto que el que figura acá.'
 /** Ejercicio al que le corresponde ese CPE (el que se cobra al año siguiente). */
 export const CPE_EXERCISE = 2026
 

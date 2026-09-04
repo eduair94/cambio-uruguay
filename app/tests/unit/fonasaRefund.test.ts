@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  CPE_ADJUSTMENT_RULE,
   CPE_MONTHLY,
   CPE_UPLIFT,
   FONASA_EXERCISES,
@@ -131,5 +132,21 @@ describe('el contenido de la página', () => {
     // quedaría publicando un número sin fuente.
     expect(urls).toContain('leyes/18731-2011/3')
     expect(urls).toContain('decretos-originales/317-2025')
+  })
+})
+
+// El Decreto 317/025 art. 17 dice que el CPE se ajusta "en las mismas oportunidades que determine
+// el Poder Ejecutivo para las cuotas salud", y recien "adicionalmente, en enero de cada anio" se
+// recalcula. La pagina publicaba "$ 6.693 desde el 1/1/2026" sin esa parte, lo que lo hacia leer
+// como un valor fijo hasta el enero siguiente.
+describe('la regla de ajuste del CPE', () => {
+  it('dice que se mueve con las cuotas salud, no solo en enero', () => {
+    expect(CPE_ADJUSTMENT_RULE).toMatch(/cuotas salud/i)
+    expect(CPE_ADJUSTMENT_RULE).toMatch(/enero de cada a[nñ]o/i)
+  })
+
+  // Y no estima el valor de hoy: no encontramos el decreto posterior, y estimarlo seria inventar.
+  it('no publica un CPE estimado', () => {
+    expect(CPE_ADJUSTMENT_RULE).not.toMatch(/\$\s*\d/)
   })
 })

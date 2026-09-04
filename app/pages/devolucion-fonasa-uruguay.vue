@@ -53,10 +53,14 @@
           <span class="op">=</span>
           <span class="term is-result">tu tope anual</span>
         </div>
-        <p class="text-body-2 text-medium-emphasis mb-0 mt-4">
+        <p class="text-body-2 text-medium-emphasis mb-3 mt-4">
           El CPE mensual vale $ {{ money(CPE_MONTHLY) }} desde el 1.º de enero de 2026 (artículo 18
           del Decreto 317/025). El 1,25 lo pone la ley, no el BPS.
         </p>
+        <!-- El valor NO queda fijo hasta enero: se mueve con cada ajuste de cuotas salud. -->
+        <VAlert type="info" variant="tonal" density="compact" class="mb-0">
+          <span class="text-body-2">{{ CPE_ADJUSTMENT_RULE }}</span>
+        </VAlert>
       </VCard>
     </section>
 
@@ -301,6 +305,7 @@ import { computed, ref } from 'vue'
 
 import {
   CPE_EXERCISE,
+  CPE_ADJUSTMENT_RULE,
   CPE_MONTHLY,
   FONASA_EXERCISES,
   FONASA_FAQ,
