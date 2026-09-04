@@ -19,10 +19,7 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { CASAS_REPUTATION } from '~/utils/casasDirectory'
 
-const ORIGINS_SRC = readFileSync(
-  join(__dirname, '..', '..', '..', 'classes', 'origins.ts'),
-  'utf8'
-)
+const ORIGINS_SRC = readFileSync(join(__dirname, '..', '..', '..', 'classes', 'origins.ts'), 'utf8')
 
 /** El bloque `export const origins = { ... }`, que es el registro que alimenta /localData. */
 function originsBlock(): string {
@@ -38,7 +35,7 @@ function activeOrigins(): Set<string> {
   for (const line of originsBlock().split('\n')) {
     const trimmed = line.trim()
     if (!trimmed || trimmed.startsWith('//')) continue
-    const match = trimmed.match(/^([A-Za-z0-9_]+):/)
+    const match = trimmed.match(/^(\w+):/)
     if (match) active.add(match[1])
   }
   return active

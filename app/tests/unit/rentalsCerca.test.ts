@@ -63,7 +63,9 @@ describe('filtro de cercanía a una sede', () => {
   })
 
   it('acota cuántas sedes se pueden cruzar y descarta basura', () => {
-    const ids = MUTUALISTA_SEDES.slice(0, 20).map(s => s.osmId).join(',')
+    const ids = MUTUALISTA_SEDES.slice(0, 20)
+      .map(s => s.osmId)
+      .join(',')
     expect(normalizeRentalQuery({ sedes: ids }).sedes.length).toBeLessThanOrEqual(6)
     expect(normalizeRentalQuery({ sedes: 'a,-1,0,;drop' }).sedes).toEqual([])
   })
@@ -80,7 +82,9 @@ describe('filtro de mascotas', () => {
   // Ningún portal publica "no acepta mascotas": un filtro de "no admite" seria inventado.
   it('no hay forma de pedir "no admite mascotas"', () => {
     for (const valor of ['0', 'false', 'no']) {
-      expect(buildRentalFilter(normalizeRentalQuery({ pets: valor }), 10).filter.petsAllowed).toBeUndefined()
+      expect(
+        buildRentalFilter(normalizeRentalQuery({ pets: valor }), 10).filter.petsAllowed
+      ).toBeUndefined()
     }
   })
 })
@@ -90,7 +94,10 @@ describe('el dataset de sedes', () => {
     for (const nombre of ['Médica Uruguaya', 'Asociación Española']) {
       const sedes = MUTUALISTA_SEDES.filter(s => s.mutualista === nombre)
       expect(sedes.length, nombre).toBeGreaterThan(5)
-      expect(sedes.some(s => s.departamento === 'Montevideo'), nombre).toBe(true)
+      expect(
+        sedes.some(s => s.departamento === 'Montevideo'),
+        nombre
+      ).toBe(true)
     }
   })
 
