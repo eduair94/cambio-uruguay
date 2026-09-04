@@ -553,11 +553,17 @@ useSchemaOrg([
       areaServed: 'UY',
       availableLanguage: ['Spanish', 'English', 'Portuguese'],
     },
+    // Perfiles que ya existen y que alguien puede verificar. No es una lista de deseos: cada URL
+    // de acá tiene que devolver 200 y hablar de este proyecto, porque `sameAs` es lo que un motor
+    // usa para atar la entidad a sus perfiles. Trustpilot estaba reclamado desde 2023 y faltaba;
+    // npm es el paquete del servidor MCP.
     sameAs: [
       'https://twitter.com/cambio_uruguay',
       'https://www.linkedin.com/company/cambio-uruguay/',
       'https://github.com/eduair94/cambio-uruguay',
       'https://medium.com/@cambio-uruguay',
+      'https://www.trustpilot.com/review/cambio-uruguay.com',
+      'https://www.npmjs.com/package/cambio-uruguay-mcp',
     ],
     address: {
       '@type': 'PostalAddress',

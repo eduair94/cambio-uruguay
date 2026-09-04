@@ -1,40 +1,70 @@
-tier,channel,type,url,dofollow,priority,status,date_done,live_url,notes
-1,GitHub repo topics,setup,https://github.com/eduair94/cambio-uruguay,n/a,P0,DONE,2026-07-06,https://github.com/eduair94/cambio-uruguay,12 topics set incl mcp/mcp-server/model-context-protocol
-1,Official MCP Registry,mcp-registry,https://registry.modelcontextprotocol.io,yes,P0,ready-to-publish,,,server.json written+validated + mcpName added; needs npm republish + mcp-publisher login (user)
-1,Glama,mcp-registry,https://glama.ai/mcp/servers,maybe,P0,todo,,,auto-indexes mcp topic
-1,MCP.so,mcp-registry,https://mcp.so/submit,maybe,P0,todo,,,
-1,PulseMCP,mcp-registry,https://www.pulsemcp.com/submit,maybe,P0,todo,,,
-1,Smithery,mcp-registry,https://smithery.ai/new,maybe,P1,todo,,,connect github
-1,Cursor Directory,mcp-registry,https://cursor.directory/mcp,maybe,P1,todo,,,
-1,mcp-get,mcp-registry,https://github.com/michaellatman/mcp-get,yes,P2,todo,,,PR
-1,punkpeye/awesome-mcp-servers,awesome-pr,https://github.com/punkpeye/awesome-mcp-servers,yes,P0,PR-OPEN,2026-07-06,https://github.com/punkpeye/awesome-mcp-servers/pull/9525,agent fast-track tag; Finance & Fintech
-1,wong2/awesome-mcp-servers,awesome-pr,https://github.com/wong2/awesome-mcp-servers,yes,P2,1-CLICK-LEFT,2026-07-06,https://github.com/wong2/awesome-mcp-servers/compare/main...eduair94:wong2-awesome-mcp-servers:add-cambio-uruguay?expand=1,branch+content pushed; open compare url + Create PR (renamed-fork API block)
-1,appcypher/awesome-mcp-servers,awesome-pr,https://github.com/appcypher/awesome-mcp-servers,yes,P2,1-CLICK-LEFT,2026-07-06,https://github.com/appcypher/awesome-mcp-servers/compare/main...eduair94:appcypher-awesome-mcp-servers:add-cambio-uruguay?expand=1,branch+content pushed; open compare url + Create PR
-1,public-apis,api-pr,https://github.com/public-apis/public-apis,yes,P0,todo,,,Currency Exchange section; follow CONTRIBUTING
-1,FreePublicAPIs,api-directory,https://www.freepublicapis.com/submit,maybe,P1,todo,,,
-1,APIs.guru,api-directory,https://github.com/APIs-guru/openapi-directory,yes,P3,todo,,,needs OpenAPI spec
-1,RapidAPI Hub,api-directory,https://rapidapi.com/provider,maybe,P3,todo,,,optional
-1,AlternativeTo,app-directory,https://alternativeto.net,often,P1,todo,,,alt to XE/Wise
-1,SaaSHub,app-directory,https://www.saashub.com/submit,yes,P1,todo,,,
-1,Product Hunt,launch,https://www.producthunt.com/posts/new,no,P1,todo,,,pick Tue-Thu launch day
-1,Uneed,app-directory,https://www.uneed.best/submit-a-tool,mix,P2,todo,,,
-1,Fazier,app-directory,https://fazier.com,mix,P2,todo,,,
-1,Peerlist,app-directory,https://peerlist.io,mix,P2,todo,,,
-1,BetaList,app-directory,https://betalist.com/submit,mix,P3,todo,,,
-2,Dev.to cross-post EN,content,https://dev.to,no-then-yes,P0,todo,,,canonical to Medium EN
-2,Hashnode cross-post EN,content,https://hashnode.com,no-then-yes,P1,todo,,,canonical to Medium EN
-2,Dev.to MCP build post,content,https://dev.to,no-then-yes,P2,todo,,,fresh dev post; ask Claude to draft
-2,Show HN,social,https://news.ycombinator.com/submit,no,P1,todo,,,repo url + first comment
-2,r/SideProject,social,https://reddit.com/r/SideProject,no,P1,todo,,,post allowed
-2,r/webdev,social,https://reddit.com/r/webdev,no,P2,todo,,,MCP/API angle
-2,r/uruguay,social,https://reddit.com/r/uruguay,no,P2,ongoing,,,comment first never cold-post link
-2,r/solotravel,social,https://reddit.com/r/solotravel,no,P3,ongoing,,,money-in-Uruguay threads
-3,TripAdvisor Uruguay forum,forum,https://www.tripadvisor.com,no,P2,ongoing,,,answer money questions
-3,Quora,qa,https://www.quora.com,no,P2,ongoing,,,3-5 answers spread out
-3,InterNations Uruguay,forum,https://www.internations.org,no,P3,ongoing,,,
-3,Expat.com Uruguay,forum,https://www.expat.com,no,P3,ongoing,,,
-3,Featured.com,pr,https://featured.com,yes,P2,ongoing,,,HARO replacement
-3,Qwoted,pr,https://www.qwoted.com,yes,P2,ongoing,,,fintech journalists
-3,#journorequest,pr,https://twitter.com,yes,P3,ongoing,,,monitor
-3,Guest post (guruguay etc),guest-post,,yes,P3,todo,,,pitch resource link
-3,Wikidata item,reference,https://www.wikidata.org,yes,P3,todo,,,optional
+tier,channel,type,url,dofollow,priority,status,verified_on,live_url,notes
+1,GitHub repo topics,setup,https://github.com/eduair94/cambio-uruguay,no,P0,DONE,2026-09-04,https://github.com/eduair94/cambio-uruguay,12 topics confirmados por API. GitHub es nofollow: el valor es que los auto-indexadores leen el topic mcp
+1,GitHub repo homepage,setup,https://github.com/eduair94/cambio-uruguay,no,P0,DONE,2026-09-04,https://cambio-uruguay.com,estaba NULL 2 meses; por eso mcpmarket.com listaba el server SIN enlace al sitio. Arreglado 2026-09-04 via gh api PATCH
+1,marcelscruz/public-apis,api-pr,https://github.com/marcelscruz/public-apis,si,P0,MERGEADO,2026-09-04,https://github.com/marcelscruz/public-apis/pull/990,mergeado 2026-07-23. Repo 9418 estrellas. EL MEJOR BACKLINK DE LA CAMPANA y no figuraba aca. Ojo: publicapis.dev todavia no lo renderiza (build viejo)
+1,public-api-lists,api-pr,https://github.com/public-api-lists/public-api-lists,si,P0,MERGEADO,2026-09-04,https://github.com/public-api-lists/public-api-lists/pull/549,mergeado 2026-07-08. README rama master linea 249
+1,npm cambio-uruguay-mcp,package,https://www.npmjs.com/package/cambio-uruguay-mcp,no,P0,BLOQUEADO-NPM-LOGIN,2026-09-04,,unica version 0.1.0 del 2026-06-17. mcpName NO viaja en el tarball -> bloquea el registro oficial MCP. npm whoami da 401: falta `npm login` del maintainer
+1,Glama,mcp-registry,https://glama.ai/mcp/servers,quiza,P0,TODO-CUELLO-DE-BOTELLA,2026-09-04,,"el ""auto-indexa por topic mcp"" del tracker viejo era FALSO (404 verificado en 2 URLs + buscador). Es el unico nudo del carril MCP: sin badge de Glama no mergea punkpeye #9525. El server hosteado YA pasaria el chequeo (POST mcp.cambio-uruguay.com/mcp -> 200 con serverInfo)"
+1,punkpeye/awesome-mcp-servers,awesome-pr,https://github.com/punkpeye/awesome-mcp-servers,si,P0,PR-ABIERTO-BLOQUEADO,2026-09-04,https://github.com/punkpeye/awesome-mcp-servers/pull/9525,"OPEN pero CONFLICTING+DIRTY, sin actividad desde 2026-07-13. Labels: missing-glama. punkpeye en persona pidio el badge de Glama. Necesita: Glama primero, despues rebase, despues el badge"
+1,Official MCP Registry,mcp-registry,https://registry.modelcontextprotocol.io,si,P0,BLOQUEADO-POR-NPM,2026-09-04,,"search=cambio devuelve 0. URGENCIA: search=uruguay ya devuelve 3 servers de TERCEROS (app.wishpool x2, eu.ansvar). Depende de publicar npm 0.1.1"
+1,wong2/awesome-mcp-servers,awesome-pr,https://github.com/wong2/awesome-mcp-servers,si,P1,RAMA-LISTA-FALTA-1-CLIC,2026-09-04,https://github.com/wong2/awesome-mcp-servers/compare/main...eduair94:wong2-awesome-mcp-servers:add-cambio-uruguay?expand=1,"rama add-cambio-uruguay empujada (57ef2cc2). La API da 404 por la trampa del fork renombrado (reintentado 2026-09-04 con head_repo, mismo 404). SOLO se abre desde el navegador"
+1,appcypher/awesome-mcp-servers,awesome-pr,https://github.com/appcypher/awesome-mcp-servers,si,P1,RAMA-LISTA-FALTA-1-CLIC,2026-09-04,https://github.com/appcypher/awesome-mcp-servers/compare/main...eduair94:appcypher-awesome-mcp-servers:add-cambio-uruguay?expand=1,rama empujada (521b0ea3). Mismo bloqueo que wong2
+1,public-apis/public-apis,api-pr,https://github.com/public-apis/public-apis,si,P1,PR-ABIERTO,2026-09-04,https://github.com/public-apis/public-apis/pull/6498,"el tracker viejo decia ""todo"": mentira, el PR existe desde 2026-07-06 y espera revision. Su unico comentario es spam de cripto ajeno"
+1,tools-collection/apis-collection,api-pr,https://github.com/tools-collection/apis-collection,si,P2,PR-ABIERTO,2026-09-04,https://github.com/tools-collection/apis-collection/pull/53,abierto 2026-07-06; no figuraba en el tracker
+1,mcp.so,mcp-registry,https://mcp.so/submit,quiza,P1,TODO,2026-09-04,,no listado (busqueda + 2 URLs directas 404)
+1,PulseMCP,mcp-registry,https://www.pulsemcp.com/submit,quiza,P1,TODO,2026-09-04,,no listado (0 resultados para uruguay)
+1,Smithery,mcp-registry,https://smithery.ai/new,quiza,P2,TODO,2026-09-04,,no listado en registry.smithery.ai
+1,Cursor Directory,mcp-registry,https://cursor.directory/mcp,quiza,P2,NO-VERIFICADO,2026-09-04,,dio 429 al probar
+1,mcp-get,mcp-registry,https://github.com/michaellatman/mcp-get,si,P3,TODO,2026-09-04,,0 PRs de eduair94 (verificado por API)
+1,APIs.guru,api-directory,https://github.com/APIs-guru/openapi-directory,si,P3,TODO,2026-09-04,,0 PRs de eduair94. Necesita spec OpenAPI
+1,AlternativeTo,app-directory,https://alternativeto.net,seguido,P2,NO-VERIFICADO,2026-09-04,,buscador client-side; no pude confirmar ausencia
+1,SaaSHub,app-directory,https://www.saashub.com/submit,si,P2,NO-VERIFICADO,2026-09-04,,idem
+1,Product Hunt / Uneed / Fazier / Peerlist / BetaList,app-directory,,mixto,P3,NO-VERIFICADO,2026-09-04,,buscadores client-side. Bajo valor para publico uruguayo
+2,Medium ES,content,https://cambio-uruguay.medium.com,no,P0,PUBLICADO,2026-09-04,https://cambio-uruguay.medium.com,vivo en el feed
+2,Medium EN,content,https://cambio-uruguay.medium.com,no,P0,PUBLICADO,2026-09-04,https://cambio-uruguay.medium.com,vivo; 10 URLs distintas al sitio en el cuerpo
+2,Medium PT,content,https://cambio-uruguay.medium.com,no,P2,BORRADOR,2026-09-04,,docs/medium-articles/pt-cotacao-dolar-uruguai.md sigue marcado rascunho. El carril portugues entero esta sin abrir
+2,dev.to cross-post EN,content,https://dev.to,no,P0,PUBLICADO-VACIO,2026-09-04,https://dev.to/eduair94/currency-exchange-in-uruguay-how-to-find-the-best-rate-before-you-trade-1fml,"body_markdown longitud 0, reading_time 0, CERO menciones del dominio en 74KB de HTML, canonical apuntando a Medium. Cascara de solo titulo desde julio. Arreglo = pegar el cuerpo desde docs/medium-articles/en-exchange-rates-uruguay.md"
+2,Hashnode,content,https://hashnode.com,no,P3,CUENTA-INEXISTENTE,2026-09-04,,hashnode.com/@eduair94 devuelve User not found
+2,Show HN,social,https://news.ycombinator.com/submit,no,P1,NUNCA-ENVIADO,2026-09-04,,HN Algolia: 0 hits historicos para cambio-uruguay
+2,r/uruguay,social,https://www.reddit.com/r/uruguay/,no,P0,EN-CURSO-COMENTARIOS,2026-09-04,,"262.258 subs, restrict_commenting=false, sus 4 reglas NO prohiben autopromo. El post de anuncio ya se gasto (2026-08-07, 24 pts): no se repite. AutoModerator bloquea la palabra franquicia"
+2,r/ExpatFIRE,social,https://www.reddit.com/r/ExpatFIRE/,no,P0,TODO,2026-09-04,,"143.490 subs. Su regla de spam AUTORIZA por escrito enlazar lo propio si es muy relevante, ""sparingly"". Demanda real y recurrente sobre Uruguay. Max 1 enlace propio por semana"
+2,r/expats,social,https://www.reddit.com/r/expats/,no,P2,TODO,2026-09-04,,submission_type=self: enlace propio permitido en COMENTARIO y prohibido como post
+2,r/merval,social,https://www.reddit.com/r/merval/,no,P2,TODO-SIN-ENLACE,2026-09-04,,"la regla ""sin publicidad"" es kind=all y alcanza a los comentarios -> se responde con la cifra en texto, SIN enlace"
+2,r/ArgentinaBenderStyle,social,https://www.reddit.com/r/ArgentinaBenderStyle/,no,P2,TODO,2026-09-04,,"flair [PSA] obligatorio. Unico permiso escrito CON precedente verificado (PSA: arme Cartoncito / MundoArg siguen vivos). Angulo: los 7 dolares del tablero regional"
+2,r/CharruaDevs,social,https://www.reddit.com/r/CharruaDevs/,no,P1,SOLO-MANUAL,2026-09-04,,"Regla 3 permite autopromo 1:10; Regla 4 prohibe CORRER BOTS. subrules.ts frena bien al bot; un post humano SI esta permitido. 34.088 subs"
+2,r/SideProject + r/opensource + Lobste.rs,social,,no,P2,TODO,2026-09-04,,carril showcase entero sin abrir
+3,Neurona Financiera,podcast,https://neuronafinanciera.com/contacto/,no,P0,TODO,2026-09-04,,"4.9 con 492 valoraciones en Apple Podcasts UY, semanal. Episodio reciente: Donde conviene guardar los dolares. Contesta dudas de oyentes. Correo real hola@neuronafinanciera.com (NO rorro.uy@gmail.com)"
+3,Debate Uruguay,prensa,https://www.debate.com.uy/pages/contacto.html,quiza,P0,TODO,2026-09-04,,"publica serie diaria Dolar en Uruguay hoy tipeando 6 emisores A MANO sin citar fuente. Pitch = ofrecer la API, no pedir enlace. Duplicar por redaccion@debate.com.uy. curl da 403: entrar con navegador"
+3,Montevideo Portal,prensa,"https://www.montevideo.com.uy/mvdformularios/hformularios.aspx?80,0,0,,",quiza,P0,TODO,2026-09-04,,"id 80 = Prensa. Pide nombre/apellido/celular/email + reCAPTCHA. NO pide CI ni SMS (eso es el login de comentarios). Mayor alcance del pais"
+3,OWU CONF 2026 (CFP),charla,https://conf.owu.uy/,no,P0,VENCE-2026-09-15,2026-09-04,,"Google Form abierto. NO da enlace al sitio (solo LinkedIn del orador); el valor es audiencia dev uruguaya. Evento 7-nov en Sinergia Faro. UNICA fecha dura del plan"
+3,Catalogo Nacional de Datos Abiertos (AGESIC),datos,https://catalogodatos.gub.uy/dataset/new,si,P1,TODO,2026-09-04,,"unico dofollow verificado en .gub.uy (rel=foaf:homepage, cero nofollow). 2.702 datasets y UNO SOLO de cotizaciones. Alta por catalogodatos@agesic.gub.uy; PIDE NOMBRE APELLIDO Y DOCUMENTO"
+3,Asociacion de Escribanos del Uruguay,institucion,mailto:comunicaciones@aeu.org.uy,si,P1,TODO,2026-09-04,,"seccion Variables e indices: dofollow MEDIDO (0 nofollow). Ya enlazan pizarra BROU y tasas medias BCU. Copia a cid@aeu.org.uy"
+3,la diaria (Economia),prensa,https://ayuda.ladiaria.com.uy/contacto/,quiza,P1,TODO,2026-09-04,,unico medio grande UY con puerta declarada a la seccion de economia. Sin reCAPTCHA (solo honeypot)
+3,El Telegrafo (Paysandu),prensa,mailto:redaccion@eltelegrafo.com,si,P1,TODO,2026-09-04,,dofollow verificado. Angulo frontera: peso argentino y cruce a Colon. Ningun medio de Montevideo lo cubre
+3,AFornio/UruguayAPI,dev-uy,https://github.com/AFornio/UruguayAPI/issues/new,no,P1,TODO,2026-09-04,,"52 estrellas, activo, mergea PRs de terceros. Su /banks/brou_rates cubre UN solo banco. Ofrecer mandar el PR uno mismo"
+3,awesome-quant,awesome-pr,https://github.com/wilsonfreitas/awesome-quant,si,P1,TODO,2026-09-04,,"dofollow MEDIDO en su GitHub Page (1.423 anchors rel=noopener, 0 nofollow). Riesgo: es lista de finanzas cuantitativas, puede rechazar por relevancia"
+3,Guru'Guay,guia-viajes,https://www.guruguay.com/es/contacto/,no,P2,TODO,2026-09-04,,"NO comentar la nota (ugc external nofollow + hilo frio desde 2023). El form de contacto INVITA el pitch por escrito. Su nota de cambio es de 2018 y solo enlaza al BROU"
+3,Camara de Comercio Uruguay-EEUU,institucion,https://www.ccuruguayusa.com/contactenos/,si,P2,TODO,2026-09-04,,"37 enlaces salientes TODOS rel=null. Ahi estan BCU y BEVSA. No hace falta ser socio para pedir el alta en /links-de-interes-2/"
+3,Descubri Montevideo (IM),institucion,mailto:informacion.turistica@imm.gub.uy,si,P2,TODO,2026-09-04,,"su pagina dice textual ""Cambio de moneda: consulta aqui las cotizaciones"" y enlaza al BCU dofollow. Pedir sobre /datos-generales"
+3,Facultad de Medicina UdelaR,institucion,mailto:internacional@fmed.edu.uy,si,P2,TODO,2026-09-04,,"dofollow .edu.uy. Gancho: su costo de vida dice ""actualizado al 15 de julio de 2019"". Abrir por http (el https tiene cert vencido)"
+3,todo.com.uy (pitch por error),guia-uy,https://todo.com.uy/contacto.php,no,P2,TODO,2026-09-04,,"el ALTA no sirve (el enlace es un salto por JS sin <a href>). Lo que si sirve: su barra lateral publica una cotizacion desfasada -> avisar el error y ofrecer la API"
+3,Expat.com Directorio de negocios,directorio,https://www.expat.com/en/business/add,si,P2,TODO,2026-09-04,,"dofollow confirmado en ficha real. Cuenta basica GRATIS pero EXIGE DIRECCION FISICA (causa de rechazo n1). El FORO de expat.com queda P3 y sin enlace: sus terminos prohiben ofertas de servicios"
+3,Featured.com / Qwoted,pr,https://featured.com,si,P2,EN-CURSO,2026-09-04,,reemplazo de HARO. Background task
+3,Cronicas Economicas,prensa,https://cronicas.com.uy,,P2,REINTENTAR-EN-2-SEMANAS,2026-09-04,,HTTP 500 con pantalla de error de Laravel hoy. Semanario 100% economico = de los mejores encajes. Un dia caido no es muerto
+3,Radio Carve,radio,https://radiocarve.uy,,P3,TODO,2026-09-04,,"programas Terapia Financiera / Carve Negocios. NO entrar por CFA Society (espacio de socios, /news/ en 404)"
+0,Pinterest,DESCARTADO,,no,-,DESCARTADO,2026-09-04,,es un enlace y no una audiencia. Trafico uruguayo esperable ~0
+0,Uruguay-Directorio.com,DESCARTADO,,no,-,DESCARTADO,2026-09-04,,plantilla replicada en 14 paises sin categoria de finanzas. Colocacion pura
+0,Welcome Uruguay,DESCARTADO,,,-,DESCARTADO,2026-09-04,,"cero enlaces externos en todo el sitio, bancos que cerraron hace 20 anos, y separa Publicidad de Modificaciones: un enlace ahi es un aviso pago"
+0,Wikipedia Peso Uruguayo,DESCARTADO,,no,-,DESCARTADO,2026-09-04,,"la premisa era falsa: el ""enlace roto"" ya esta arreglado con un snapshot de Wayback. Ir a reportarlo quema credibilidad. Ademas todo es rel=nofollow y son ~1.000 visitas/mes"
+0,Guia Comercial (guiacomercial.uy),DESCARTADO,,no,-,DESCARTADO,2026-09-04,,no hay alta (solo claim.php de fichas existentes) y sale rel=nofollow noopener. Es un raspado de Google Maps
+0,totaluruguay.com,DESCARTADO,,,-,DESCARTADO,2026-09-04,,"no es un foro de expats: es una granja de respuestas pagas en bitcoin (red glrsales.com) que ni renderiza en Chrome. Vecindario a evitar"
+0,Rankia .com.ar,DESCARTADO,,,-,DESCARTADO,2026-09-04,,"su ""prueba de vida"" era spam de Whatsapp plus; 13 hilos de spam en una pagina. Su aviso legal prohibe promocionar sitios. Rankia Espana esta vivo pero su publico uruguayo es ~0"
+0,r/argentina,DESCARTADO,,no,-,DESCARTADO,2026-09-04,,"el Sabado de Clasificados que la regla designa como unico canal legitimo esta discontinuado desde 2026-01-31. La alternativa se castiga con ban sin aviso"
+0,r/NegociosArgentina,DESCARTADO,,no,-,DESCARTADO,2026-09-04,,Regla 5: ningun enlace externo de ningun tipo en ningun hilo. Techo cero
+0,r/AskArgentina + r/asklatinamerica,DESCARTADO,,no,-,DESCARTADO,2026-09-04,,demanda medida = cero hilos de dinero sobre Uruguay. AskArgentina ademas prohibe contenido generado por IA
+0,TripAdvisor,DESCARTADO,,no,-,GUARDIA-PASIVA,2026-09-04,,auto-cierra hilos por inactividad: TODOS los historicos de moneda son incontestables. En 12 meses no se abrio una sola pregunta de dinero
+0,Los Viajeros t=78275,DESCARTADO,,no,-,DESCARTADO,2026-09-04,,ultimo mensaje hace ~15 anos. Revivirlo con enlace propio es el ejemplo de manual que su propia norma prohibe
+0,Mochileiros.com,DESCARTADO,,,-,MUERTO,2026-09-04,,NXDOMAIN confirmado por 4 resolutores. NO clausura el carril portugues: falta Rivera/Livramento/Chuy y prensa gaucha
+0,Crunchbase,DESCARTADO,,,-,DESCARTADO,2026-09-04,,Cloudflare duro incluso con Chrome real y logueado. Y el perfil (proyecto personal sin ronda) es el que rechazan
+0,Stack Overflow perfil,DESCARTADO,,no,-,DESCARTADO,2026-09-04,,"test empirico: en 6 perfiles con reputacion 1 y website_url cargado, en los 6 el enlace NO SE RENDERIZA. No es nofollow, no existe"
+0,GitHub/npm/Medium/Trustpilot/Gravatar como enlace,NOTA,,no,-,NOFOLLOW-MEDIDO,2026-09-04,,"usalos como control de calidad: cualquier fuente que afirme que GitHub da dofollow no midio nada y su lista entera es sospechosa"

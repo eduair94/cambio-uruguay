@@ -7,15 +7,17 @@
     "source": "github",
     "subfolder": "mcp"
   },
-  "version": "0.1.0",
+  "version": "0.1.1",
   "websiteUrl": "https://cambio-uruguay.com",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "cambio-uruguay-mcp",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "runtimeHint": "npx",
-      "transport": { "type": "stdio" },
+      "transport": {
+        "type": "stdio"
+      },
       "environmentVariables": [
         {
           "name": "API_BASE_URL",

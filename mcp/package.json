@@ -1,6 +1,6 @@
 {
   "name": "cambio-uruguay-mcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "mcpName": "io.github.eduair94/cambio-uruguay",
   "description": "Model Context Protocol server for live Uruguayan exchange-rate data (cambio-uruguay.com). Read-only, open source.",
   "type": "module",
@@ -27,10 +27,22 @@
   "main": "dist/lib.js",
   "types": "dist/lib.d.ts",
   "exports": {
-    ".": { "types": "./dist/lib.d.ts", "import": "./dist/lib.js" },
-    "./api": { "types": "./dist/api.d.ts", "import": "./dist/api.js" },
-    "./tools": { "types": "./dist/tools.d.ts", "import": "./dist/tools.js" },
-    "./news": { "types": "./dist/news.d.ts", "import": "./dist/news.js" }
+    ".": {
+      "types": "./dist/lib.d.ts",
+      "import": "./dist/lib.js"
+    },
+    "./api": {
+      "types": "./dist/api.d.ts",
+      "import": "./dist/api.js"
+    },
+    "./tools": {
+      "types": "./dist/tools.d.ts",
+      "import": "./dist/tools.js"
+    },
+    "./news": {
+      "types": "./dist/news.d.ts",
+      "import": "./dist/news.js"
+    }
   },
   "files": [
     "dist",
