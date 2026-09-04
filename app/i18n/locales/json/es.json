@@ -2300,5 +2300,13 @@
     "liveReading": "Qué están mirando",
     "liveAgeSeconds": "actualizado hace {n} s · se refresca solo cada minuto",
     "liveAgeMinutes": "actualizado hace {n} min · se refresca solo cada minuto"
+  },
+  "staleRate": {
+    "badge": "{days} días sin cambios",
+    "badgeAtLeast": "+{days} días sin cambios",
+    "badgeShort": "{days} d",
+    "tooltip": "Esta casa viene publicando el mismo precio desde hace {days} días. Puede estar desactualizado: confirmalo antes de ir.",
+    "tooltipAtLeast": "Esta casa viene publicando el mismo precio desde hace más de {days} días. Puede estar desactualizado: confirmalo antes de ir.",
+    "tooltipLeading": "Y es el precio que hoy encabeza el ranking."
   }
 }

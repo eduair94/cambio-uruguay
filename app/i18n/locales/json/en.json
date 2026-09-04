@@ -2289,5 +2289,13 @@
     "liveReading": "What they are reading",
     "liveAgeSeconds": "updated {n} s ago · refreshes itself every minute",
     "liveAgeMinutes": "updated {n} min ago · refreshes itself every minute"
+  },
+  "staleRate": {
+    "badge": "{days} days unchanged",
+    "badgeAtLeast": "{days}+ days unchanged",
+    "badgeShort": "{days} d",
+    "tooltip": "This exchange has been publishing the same rate for {days} days. It may be out of date — check before you go.",
+    "tooltipAtLeast": "This exchange has been publishing the same rate for more than {days} days. It may be out of date — check before you go.",
+    "tooltipLeading": "And it is the rate topping the ranking today."
   }
 }

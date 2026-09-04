@@ -483,6 +483,11 @@
                                     {{ intentIsSellingSubject ? t('buy') : t('sell') }}
                                     {{ t('codes.' + subjectCode) }}
                                   </div>
+                                  <StaleRateChip
+                                    :entry="frozenFor(rate.origin, subjectCode, rate.type)"
+                                    dense
+                                    class="mt-2"
+                                  />
                                 </VCard>
                               </nuxt-link>
                             </VCol>
@@ -536,6 +541,11 @@
                                     {{ intentIsSellingSubject ? t('sell') : t('buy') }}
                                     {{ t('codes.' + subjectCode) }}
                                   </div>
+                                  <StaleRateChip
+                                    :entry="frozenFor(rate.origin, subjectCode, rate.type)"
+                                    dense
+                                    class="mt-2"
+                                  />
                                 </VCard>
                               </nuxt-link>
                             </VCol>
@@ -1132,6 +1142,8 @@ interface Feature {
 
 // Composables
 const { t, locale } = useI18n()
+// Las pizarras que no se mueven, para poder advertirlo en la tarjeta que las publica como #1.
+const { frozenFor } = useFrozenQuotes()
 const localePath = useLocalePath()
 // Shared, deduped exchange-rates fetch (the home trend modules use the same
 // `useExchangeRates` cache key) — the calculator reads from it instead of
@@ -1916,6 +1928,8 @@ const top4SellRatesForSubject = computed(() => {
       origin: item.origin,
       source: item.localData?.name || item.origin,
       rate: item.buy,
+      // La punta importa: una casa puede tener el mostrador quieto y el eBROU moviendose.
+      type: item.type || '',
     }))
     .sort((a, b) => b.rate - a.rate)
   return items.slice(0, 4)
@@ -1929,6 +1943,7 @@ const top4BuyRatesForSubject = computed(() => {
       origin: item.origin,
       source: item.localData?.name || item.origin,
       rate: item.sell,
+      type: item.type || '',
     }))
     .sort((a, b) => a.rate - b.rate)
   return items.slice(0, 4)

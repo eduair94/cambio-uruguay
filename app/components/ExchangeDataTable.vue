@@ -47,6 +47,7 @@
         <span :class="{ 'font-weight-bold text-teal-lighten-2': item.preferentialRate }">
           {{ formatNumber(item.sell) }}
         </span>
+        <StaleRateChip :entry="frozenFor(item.origin, item.code, item.type)" class="mt-1" />
         <small v-if="item.preferentialRate" class="published-rate">
           {{
             $t('preferentialRates.published', {
@@ -183,6 +184,10 @@ const localePath = useLocalePath()
 const { t, locale } = useI18n()
 
 const { smAndDown } = useDisplay()
+
+// Cuantos dias lleva cada pizarra publicando el mismo numero. Una sola peticion compartida por
+// toda la pagina; si falla, el chip no aparece y la tabla queda igual.
+const { frozenFor } = useFrozenQuotes()
 
 const itemClass = (item: any) => {
   if (item.isInterBank) {
