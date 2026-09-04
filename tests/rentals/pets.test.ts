@@ -11,7 +11,8 @@
 // Ninguno de los dos publica la negativa, así que el tipo es `true | null`.
 import { describe, expect, it, vi } from "vitest";
 import { buildRentalProperties } from "../../classes/rentals/dedupe";
-import type { RawRental } from "../../classes/rentals/types";
+import { mergeOffers, recomputeFromOffers } from "../../classes/rentals/store";
+import type { RawRental, RentalOffer, RentalProperty, RentalSource } from "../../classes/rentals/types";
 
 vi.mock("../../classes/rentals/net", async () => {
   const actual = await vi.importActual<Record<string, unknown>>("../../classes/rentals/net");
@@ -141,5 +142,65 @@ describe("al unificar la propiedad", () => {
     const conDato = { ...base, petsAllowed: true as const };
     const [property] = buildRentalProperties([conDato], context);
     expect(property?.offers[0]?.petsAllowed).toBe(true);
+  });
+});
+
+// La corrida RAPIDA de cada hora no hace la pasada de mascotas de MercadoLibre (es una consulta
+// aparte y sólo corre en la completa). Si esa corrida vuelve a ver un aviso que la completa había
+// marcado, lo trae con `petsAllowed: null` — y `mergeOffers` pisa lo guardado con lo fresco por
+// listingId. Sin una regla, cada hora se borraban las 1.318 marcas que vienen de ML.
+//
+// `null` NO es una negativa: es "esta corrida no preguntó". Por eso nunca puede pisar un `true`.
+describe("la corrida rapida no puede borrar lo que la completa averiguo", () => {
+  const offer = (over: Partial<RentalOffer> & { listingId: string }): RentalOffer => ({
+    source: "mercadolibre",
+    url: "https://x",
+    title: "Apartamento",
+    price: 30_000,
+    currency: "UYU",
+    priceUyu: 30_000,
+    commonExpenses: null,
+    commonExpensesCurrency: null,
+    sellerName: "x",
+    sellerType: "desconocido",
+    image: null,
+    publishedAt: null,
+    petsAllowed: null,
+    firstSeen: "2026-09-01",
+    lastSeen: "2026-09-04",
+    ...over,
+  });
+  const context = {
+    today: "2026-09-04",
+    okSources: new Set<RentalSource>(["mercadolibre"]),
+    staleOfferDays: 4,
+  };
+
+  it("conserva el true de la oferta guardada cuando la fresca no lo dice", () => {
+    const merged = mergeOffers(
+      [offer({ listingId: "mercadolibre:1", petsAllowed: true })],
+      [offer({ listingId: "mercadolibre:1" })],
+      context
+    );
+    expect(merged[0]?.petsAllowed).toBe(true);
+  });
+
+  it("la propiedad recalculada sigue marcada si alguna oferta lo dice", () => {
+    const property = {
+      key: "k",
+      firstSeen: "2026-09-01",
+      petsAllowed: null,
+    } as unknown as RentalProperty;
+    const out = recomputeFromOffers(property, [
+      offer({ listingId: "mercadolibre:1", petsAllowed: true }),
+      offer({ listingId: "infocasas:1", source: "infocasas" }),
+    ]);
+    expect(out.petsAllowed).toBe(true);
+  });
+
+  it("y queda en null cuando ninguna oferta lo dice", () => {
+    const property = { key: "k", firstSeen: "2026-09-01", petsAllowed: true } as unknown as RentalProperty;
+    const out = recomputeFromOffers(property, [offer({ listingId: "mercadolibre:1" })]);
+    expect(out.petsAllowed).toBeNull();
   });
 });

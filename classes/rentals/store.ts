@@ -86,7 +86,21 @@ export function mergeOffers(
     if (sourceRan && age > context.staleOfferDays) continue;
     byId.set(offer.listingId, offer);
   }
-  for (const offer of fresh) byId.set(offer.listingId, offer);
+  for (const offer of fresh) {
+    // `null` NO es una negativa: es "esta corrida no preguntó".
+    //
+    // La corrida RAPIDA no hace la pasada de mascotas de MercadoLibre —es una consulta aparte y
+    // sólo corre en la completa— asi que trae los mismos avisos con `petsAllowed: null`. Como acá
+    // lo fresco pisa a lo guardado por listingId, sin esta linea cada hora se borraban las ~1.300
+    // marcas que vienen de ML, y nadie se enteraba: el campo volvia a null y el filtro devolvia
+    // menos, no un error.
+    const previo = byId.get(offer.listingId);
+    if (previo?.petsAllowed === true && offer.petsAllowed !== true) {
+      byId.set(offer.listingId, { ...offer, petsAllowed: true });
+      continue;
+    }
+    byId.set(offer.listingId, offer);
+  }
 
   const all = [...byId.values()].sort((a, b) => a.priceUyu - b.priceUyu);
   if (all.length < 2) return all;
@@ -162,6 +176,9 @@ export function recomputeFromOffers(property: RentalProperty, offers: RentalOffe
     price: cheapest.price,
     priceUyu: cheapest.priceUyu,
     currency: cheapest.currency,
+    // Se deriva de las ofertas y no se arrastra del objeto entrante: en una corrida rapida ese
+    // objeto viene sin la marca, y las ofertas son las que la conservan.
+    petsAllowed: offers.some((offer) => offer.petsAllowed === true) ? true : null,
     firstSeen: [property.firstSeen, ...offers.map((offer) => offer.firstSeen)].filter(Boolean).sort()[0]!,
     lastSeen: offers.map((offer) => offer.lastSeen).sort().slice(-1)[0]!,
   };
