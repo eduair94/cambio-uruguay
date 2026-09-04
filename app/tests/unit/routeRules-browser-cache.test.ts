@@ -61,8 +61,28 @@ function cacheControlByRoute(): Map<string, string> {
 /**
  * Routes that serve an HTML document. An asset under a content-hashed path may
  * be immutable; a document may not, because its body names those hashes.
+ *
+ * Derived, not listed. The edge setting that caused this is staying as it is, so
+ * the repo is the only thing standing between a new document route and the same
+ * year-long pin — and a hand-kept list only guards the routes someone remembered
+ * to add. Anything whose path has no file extension serves a document.
  */
-const DOCUMENT_ROUTES = ['/', '/widget']
+function documentRoutes(): string[] {
+  // An asset route names a file: it carries an extension, an extension set, or
+  // sits under a directory that only ever holds build output or well-known
+  // metadata. Everything else in routeRules answers with HTML.
+  const ASSET = [
+    /\.([a-z0-9]{2,5}|\*)$/i, // /sw.js, /favicon.*
+    /\{[^}]*\}/, // /**/*.{png,jpg,…}
+    /^\/_nuxt\//, // hashed build output
+    /^\/\.well-known\//, // metadata documents, not pages
+  ]
+  return [...cacheControlByRoute().keys()].filter(
+    route => !ASSET.some(pattern => pattern.test(route))
+  )
+}
+
+const DOCUMENT_ROUTES = documentRoutes()
 
 describe('routeRules cache-control', () => {
   it('finds the cache-control declarations it means to check', () => {
