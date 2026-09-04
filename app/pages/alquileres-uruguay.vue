@@ -401,6 +401,19 @@ import {
   type RentalsResponse,
 } from '~/utils/rentals'
 
+// Explícito y perezoso, igual que en /descuentos-con-tarjeta-uruguay/marca/<marca>.
+//
+// `components/map/` NO está en el namespace plano de auto-imports de Nuxt: su nombre generado es
+// `MapLocationsMap`. Un `<LocationsMap>` suelto no falla ni avisa en el navegador — queda en el DOM
+// como elemento desconocido, sin mapa. Fue exactamente lo que pasó acá: verificado en producción el
+// 2026-09-04, la vista de mapa mostraba el texto y CERO contenedores Leaflet, y el único rastro era
+// un "Failed to resolve component: LocationsMap" en el log de SSR. Los tests no lo veían porque
+// miran el texto del archivo, no el render.
+//
+// Perezoso además porque Leaflet no tiene por qué entrar en el primer pintado de una página que
+// arranca en modo lista.
+const LocationsMap = defineAsyncComponent(() => import('~/components/map/LocationsMap.vue'))
+
 const { t } = useI18n()
 const localePath = useLocalePath()
 const route = useRoute()
