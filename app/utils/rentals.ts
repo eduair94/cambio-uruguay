@@ -43,6 +43,40 @@ export interface RentalOffer {
   lastSeen: string
 }
 
+/**
+ * Tipos de garantía de alquiler. Espejo de `classes/rentals/guarantees.ts`.
+ *
+ * Se repite en vez de importarse porque `app/` es un paquete aparte y no puede alcanzar el backend
+ * — la misma razón por la que existen los dos esquemas de mongoose. El tripwire de paridad vigila
+ * que no se separen.
+ */
+export type RentalGuarantee =
+  | 'anda'
+  | 'contaduria'
+  | 'aseguradora'
+  | 'propietaria'
+  | 'deposito'
+  | 'bhu'
+  | 'aConvenir'
+
+/** Cómo se llama cada una en la página, y qué significa para quien nunca alquiló. */
+export const RENTAL_GUARANTEE_LABELS: Record<RentalGuarantee, { label: string; hint: string }> = {
+  anda: { label: 'ANDA', hint: 'Garantía de alquiler de ANDA' },
+  contaduria: {
+    label: 'Contaduría',
+    hint: 'Contaduría General de la Nación, para funcionarios públicos',
+  },
+  aseguradora: { label: 'Aseguradora', hint: 'Póliza privada: Porto, Sura, Mapfre y similares' },
+  propietaria: { label: 'Propietaria', hint: 'Un propietario sale de fiador' },
+  deposito: { label: 'Depósito', hint: 'Meses de depósito en garantía' },
+  bhu: { label: 'BHU', hint: 'Garantía del Banco Hipotecario' },
+  aConvenir: { label: 'A convenir', hint: 'El aviso dice que la garantía se conversa' },
+}
+
+export const RENTAL_GUARANTEE_VALUES: readonly RentalGuarantee[] = Object.freeze(
+  Object.keys(RENTAL_GUARANTEE_LABELS) as RentalGuarantee[]
+)
+
 export interface RentalProperty {
   key: string
   title: string
@@ -65,6 +99,11 @@ export interface RentalProperty {
    * significa que no acepten. La página tiene que mostrarlo así.
    */
   petsAllowed: true | null
+  /**
+   * Garantías que el aviso dice aceptar. VACÍO = el aviso no lo dice, que es casi la mitad.
+   * Nunca significa "no acepta ninguna": ningún portal publica la negativa.
+   */
+  guarantees: RentalGuarantee[]
   priceUyu: number
   price: number
   currency: RentalCurrency
@@ -164,6 +203,8 @@ export interface RentalQuery {
   multi: boolean
   /** Sólo las que el portal publica como "se aceptan mascotas". Ver `petsAllowed`. */
   pets: boolean
+  /** Garantías pedidas. Una propiedad entra si acepta AL MENOS UNA de las marcadas. */
+  guarantees: RentalGuarantee[]
   /** Ids de OSM de las sedes elegidas como punto de referencia. Vacío = sin filtro de distancia. */
   sedes: number[]
   /** Radio en km alrededor de cada sede elegida. */
@@ -215,6 +256,7 @@ export function normalizeRentalQuery(input: Record<string, unknown> = {}): Renta
     priceMax: priceMax !== null && priceMax > 0 ? priceMax : null,
     multi: String(input.multi ?? '') === '1' || input.multi === true,
     pets: String(input.pets ?? '') === '1' || input.pets === true,
+    guarantees: parseGuarantees(input.garantia),
     sedes: parseSedes(input.sedes),
     radioKm: parseRadio(input.radio),
     sort,
@@ -322,6 +364,15 @@ export interface RentalMapResponse {
  * "1" al lado de todos los demás), y `filter` es el completo.
  */
 
+function parseGuarantees(input: unknown): RentalGuarantee[] {
+  const wanted = new Set(
+    String(input ?? '')
+      .split(',')
+      .map(part => part.trim())
+  )
+  return RENTAL_GUARANTEE_VALUES.filter(value => wanted.has(value))
+}
+
 /** Cuántas sedes se pueden cruzar a la vez. Cada una suma un `$expr` a la consulta. */
 const MAX_SEDES = 6
 
@@ -409,6 +460,9 @@ export function buildRentalFilter(
   if (query.multi) nonLocation['sources.1'] = { $exists: true }
   // `true` o nada: ningún portal publica la negativa, así que no existe el filtro "no acepta".
   if (query.pets) nonLocation.petsAllowed = true
+  // AL MENOS UNA de las marcadas: quien tiene ANDA y también puede pagar una póliza quiere ver las
+  // dos. Pedir que las acepte todas dejaría casi nada y no es lo que nadie busca.
+  if (query.guarantees.length) nonLocation.guarantees = { $in: query.guarantees }
   if (query.priceMin !== null || query.priceMax !== null) {
     nonLocation.priceUyu = {
       ...(query.priceMin !== null ? { $gte: query.priceMin } : {}),

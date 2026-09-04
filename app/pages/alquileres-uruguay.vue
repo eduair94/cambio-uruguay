@@ -224,23 +224,51 @@ STORY: Arrive with a barrio and a budget, narrow it, see who publishes it, leave
           label="Admite mascotas"
           @update:model-value="apply"
         />
+      </div>
+
+      <!-- Garantías. En Uruguay es el filtro que decide si alguien puede alquilar, más que el
+           precio: quien no tiene un propietario que salga de fiador depende de ANDA, de Contaduría
+           o de una aseguradora, y cada inmobiliaria acepta unas y otras no. -->
+      <div class="rentals-filters__row">
+        <span class="text-caption text-medium-emphasis">Garantía que podés presentar:</span>
         <div class="d-flex align-center flex-wrap ga-2">
           <VChip
-            v-for="source in sourceChips"
-            :key="source.value"
-            :color="form.source === source.value ? 'primary' : undefined"
-            :variant="form.source === source.value ? 'flat' : 'tonal'"
+            v-for="g in guaranteeChips"
+            :key="g.value"
+            :color="form.guarantees.includes(g.value) ? 'primary' : undefined"
+            :variant="form.guarantees.includes(g.value) ? 'flat' : 'tonal'"
+            :title="g.hint"
             size="small"
             label
-            @click="toggleSource(source.value)"
+            @click="toggleGuarantee(g.value)"
           >
-            {{ sourceLabel(source.value as RentalSource) }} ({{ numberFormat(source.count) }})
+            {{ g.label }}
           </VChip>
-          <VBtn v-if="hasFilters" size="small" variant="text" @click="clearFilters">
-            Limpiar filtros
-          </VBtn>
+          <div class="d-flex align-center flex-wrap ga-2">
+            <VChip
+              v-for="source in sourceChips"
+              :key="source.value"
+              :color="form.source === source.value ? 'primary' : undefined"
+              :variant="form.source === source.value ? 'flat' : 'tonal'"
+              size="small"
+              label
+              @click="toggleSource(source.value)"
+            >
+              {{ sourceLabel(source.value as RentalSource) }} ({{ numberFormat(source.count) }})
+            </VChip>
+            <VBtn v-if="hasFilters" size="small" variant="text" @click="clearFilters">
+              Limpiar filtros
+            </VBtn>
+          </div>
         </div>
       </div>
+      <p v-if="form.guarantees.length" class="text-caption text-medium-emphasis mb-0">
+        Sale de lo que dice cada aviso, y casi la mitad no lo dice: que una propiedad no aparezca
+        acá no significa que no acepte esa garantía, sino que no la nombra.
+        <NuxtLink :to="localePath('/alquilar-en-uruguay')" class="cu-link">
+          Qué es cada garantía
+        </NuxtLink>
+      </p>
     </section>
 
     <section class="rentals-summary" aria-live="polite">
@@ -381,9 +409,28 @@ STORY: Arrive with a barrio and a budget, narrow it, see who publishes it, leave
             </p>
             <!-- Sólo se muestra el SÍ. No hay chip de "no admite" porque ningún portal lo publica:
                  la ausencia de este chip significa que el aviso no lo dice, no que no acepte. -->
-            <VChip v-if="property.petsAllowed" size="x-small" color="primary" variant="tonal" label>
-              Admite mascotas
-            </VChip>
+            <div class="d-flex flex-wrap ga-1 mt-1">
+              <VChip
+                v-if="property.petsAllowed"
+                size="x-small"
+                color="primary"
+                variant="tonal"
+                label
+              >
+                Admite mascotas
+              </VChip>
+              <!-- Sólo lo que el aviso dice. Sin chip = no lo dice, no que no la acepte. -->
+              <VChip
+                v-for="g in property.guarantees"
+                :key="g"
+                size="x-small"
+                variant="outlined"
+                label
+                :title="guaranteeHint(g)"
+              >
+                {{ guaranteeLabel(g) }}
+              </VChip>
+            </div>
           </div>
         </VCard>
       </VCol>
@@ -507,6 +554,9 @@ const form = reactive({
   priceMax: readQuery().priceMax ?? '',
   multi: readQuery().multi === '1',
   pets: readQuery().pets === '1',
+  guarantees: (readQuery().garantia ?? '')
+    .split(',')
+    .filter(v => (RENTAL_GUARANTEE_VALUES as readonly string[]).includes(v)) as RentalGuarantee[],
   // La mutualidad sólo filtra la lista de sedes: lo que viaja al servidor son los ids de OSM.
   mutualista: readQuery().mutualista ?? '',
   sedes: (readQuery().sedes ?? '')
@@ -531,6 +581,7 @@ const requestParams = computed(() => {
   if (form.priceMax) params.priceMax = String(form.priceMax)
   if (form.multi) params.multi = '1'
   if (form.pets) params.pets = '1'
+  if (form.guarantees.length) params.garantia = form.guarantees.join(',')
   if (form.sedes.length) {
     params.sedes = form.sedes.join(',')
     params.radio = String(form.radio)
@@ -575,6 +626,22 @@ function onMutualistaChange() {
  * Se muestra la PRIMERA de las elegidas: `LocationsMap` acepta un solo punto de referencia, y
  * dibujar un círculo por sede convertiría el mapa en una mancha. Las demás siguen filtrando igual.
  */
+const guaranteeChips = RENTAL_GUARANTEE_VALUES.map(value => ({
+  value,
+  label: RENTAL_GUARANTEE_LABELS[value].label,
+  hint: RENTAL_GUARANTEE_LABELS[value].hint,
+}))
+
+const guaranteeLabel = (value: RentalGuarantee) => RENTAL_GUARANTEE_LABELS[value]?.label ?? value
+const guaranteeHint = (value: RentalGuarantee) => RENTAL_GUARANTEE_LABELS[value]?.hint ?? ''
+
+function toggleGuarantee(value: RentalGuarantee): void {
+  form.guarantees = form.guarantees.includes(value)
+    ? form.guarantees.filter(item => item !== value)
+    : [...form.guarantees, value]
+  apply()
+}
+
 const sedeCentro = computed<{ lat: number; lng: number } | null>(() => {
   const primera = MUTUALISTA_SEDES.find(sede => sede.osmId === form.sedes[0])
   return primera ? { lat: primera.lat, lng: primera.lng } : null
@@ -713,6 +780,7 @@ const hasFilters = computed(() =>
       form.priceMax ||
       form.multi ||
       form.pets ||
+      form.guarantees.length > 0 ||
       form.sedes.length > 0
   )
 )
@@ -806,6 +874,7 @@ function clearFilters(): void {
   form.priceMax = ''
   form.multi = false
   form.pets = false
+  form.guarantees = []
   form.mutualista = ''
   form.sedes = []
   form.radio = RADIO_KM_DEFAULT

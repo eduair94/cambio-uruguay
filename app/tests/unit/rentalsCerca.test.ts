@@ -11,7 +11,15 @@
 // "a menos de 2 km de la Médica Uruguaya". Es exactamente la cifra inventada que este repo prohíbe,
 // y llegaba con la etiqueta puesta.
 import { describe, expect, it } from 'vitest'
-import { buildRentalFilter, normalizeRentalQuery, RADIO_KM_DEFAULT } from '~/utils/rentals'
+import {
+  buildRentalFilter,
+  normalizeRentalQuery,
+  RADIO_KM_DEFAULT,
+  RENTAL_GUARANTEE_LABELS,
+  RENTAL_GUARANTEE_VALUES,
+} from '~/utils/rentals'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { MUTUALISTA_SEDES, mutualistasConSede } from '~/utils/mutualistaSedes'
 
 const sedeDe = (mutualista: string) => MUTUALISTA_SEDES.find(s => s.mutualista === mutualista)!
@@ -118,5 +126,56 @@ describe('el dataset de sedes', () => {
     const lista = mutualistasConSede()
     expect(new Set(lista).size).toBe(lista.length)
     expect([...lista].sort((a, b) => a.localeCompare(b, 'es'))).toEqual(lista)
+  })
+})
+
+describe('filtro de garantias', () => {
+  it('acepta AL MENOS UNA de las marcadas', () => {
+    const { filter } = buildRentalFilter(normalizeRentalQuery({ garantia: 'anda,contaduria' }), 10)
+    expect(filter.guarantees).toEqual({ $in: ['anda', 'contaduria'] })
+  })
+
+  it('descarta lo que no es un tipo conocido, sin romper', () => {
+    expect(normalizeRentalQuery({ garantia: 'anda,;drop,inventada' }).guarantees).toEqual(['anda'])
+    expect(
+      buildRentalFilter(normalizeRentalQuery({ garantia: 'nada' }), 10).filter.guarantees
+    ).toBeUndefined()
+  })
+
+  it('sin garantias marcadas no toca la consulta', () => {
+    expect(buildRentalFilter(normalizeRentalQuery({}), 10).filter.guarantees).toBeUndefined()
+  })
+
+  // No existe "no acepta ANDA": ningun portal publica la negativa, asi que tampoco puede haber un
+  // filtro que la pida.
+  it('no hay forma de pedir "no acepta tal garantia"', () => {
+    const { filter } = buildRentalFilter(normalizeRentalQuery({ garantia: '!anda' }), 10)
+    expect(filter.guarantees).toBeUndefined()
+  })
+})
+
+// Los dos catalogos viven en paquetes distintos (`app/` no puede importar del backend, por lo mismo
+// que hay dos esquemas de mongoose). Si se separan, la pagina ofrece un filtro que la base nunca
+// escribio, o deja de ofrecer uno que si tiene datos — y las dos fallan calladas.
+describe('el catalogo de garantias del app y el del backend no pueden separarse', () => {
+  it('tienen exactamente los mismos valores', () => {
+    const backend = readFileSync(
+      join(__dirname, '..', '..', '..', 'classes', 'rentals', 'guarantees.ts'),
+      'utf8'
+    )
+    const bloque = backend.slice(
+      backend.indexOf('export const RENTAL_GUARANTEES'),
+      backend.indexOf('/**', backend.indexOf('export const RENTAL_GUARANTEES'))
+    )
+    const delBackend = [...bloque.matchAll(/"([a-z]+)"/gi)].map(m => m[1])
+    expect(delBackend.length).toBeGreaterThan(0)
+    expect([...delBackend].sort()).toEqual([...RENTAL_GUARANTEE_VALUES].sort())
+  })
+
+  it('cada valor tiene etiqueta y explicacion para quien nunca alquilo', () => {
+    for (const value of RENTAL_GUARANTEE_VALUES) {
+      expect(RENTAL_GUARANTEE_LABELS[value].label.length, value).toBeGreaterThan(2)
+      expect(RENTAL_GUARANTEE_LABELS[value].hint.length, value).toBeGreaterThan(10)
+    }
   })
 })
