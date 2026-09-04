@@ -31,19 +31,32 @@ const bcuHttpsAgent = new https.Agent({ rejectUnauthorized: false });
  * está memoizado por nombre, así que las dos rutas devuelven exactamente la misma instancia.
  */
 export function ratesCollection(): MongooseServer {
-  return MongooseServer.getInstance(
-    "cambio-uy",
-    new Schema({
-      bcu: { type: String },
-      origin: { type: String },
-      code: { type: String },
-      type: { type: String },
-      name: { type: String },
-      buy: { type: Number },
-      sell: { type: Number },
-      date: { type: Date },
-    })
-  );
+  const schema = new Schema({
+    bcu: { type: String },
+    origin: { type: String },
+    code: { type: String },
+    type: { type: String },
+    name: { type: String },
+    buy: { type: Number },
+    sell: { type: Number },
+    date: { type: Date },
+  });
+
+  // Esta colección no tenía más índice que `_id`. Medido en producción el 2026-09-04: 243.372
+  // documentos y COLLSCAN —`totalDocsExamined: 243372, keysExamined: 0`— en todas sus consultas
+  // calientes, que no son pocas:
+  //   * `save()` hace `updateOne({origin, date, code, type})` con upsert: un escaneo entero POR FILA,
+  //     unas 200 veces cada cinco minutos.
+  //   * `auditTodaysRates` lee las filas del día al final de cada corrida.
+  //   * `buildRateAnalytics` sirve cada página /historico.
+  //   * `reportFrozenQuotes` lee la ventana larga.
+  // Los dos índices cubren las dos formas que se consultan y no una tercera hipotética: por serie
+  // (origen+moneda+tipo, con la fecha al final para poder recorrerla ordenada) y por fecha sola.
+  // `autoIndex` está en su valor por omisión, así que mongoose los crea al iniciar el modelo.
+  schema.index({ origin: 1, code: 1, type: 1, date: -1 });
+  schema.index({ date: -1 });
+
+  return MongooseServer.getInstance("cambio-uy", schema);
 }
 
 abstract class Cambio {
