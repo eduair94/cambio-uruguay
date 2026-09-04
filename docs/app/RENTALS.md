@@ -77,6 +77,30 @@ portal había corrido y si el aviso estaba vencido por días — nunca si **segu
 propiedad**. Sin avisos frescos manda el grupo más numeroso, no el más barato: con
 [21.000, 41.000, 41.000] el raro es el barato, y anclar al mínimo tiraría los dos que sí coinciden.
 
+### Los dos que aparecieron al MEDIR el arreglo
+
+Arreglar el agrupamiento no alcanzó, y sólo se supo por volver a medir:
+
+| defecto | cómo se vio | arreglo |
+|---|---|---|
+| un aviso vivía en varias filas | **2.707 listingIds en más de una fila** después de la primera corrida arreglada | `dropReassignedOffers` barre la colección entera tras una corrida COMPLETA y saca cada aviso de toda fila que no sea su dueña de hoy; la que queda sin ofertas se borra |
+| la tolerancia se encadenaba | quince "1 dormitorio en Tres Cruces" —piso 10, piso 9, PB, con garaje— en una fila: con ancla 26.900, tanto 26.500 como 28.800 pasan, y entre ellos hay 8 % | `mergeOffers` mide contra los DOS extremos; sin avisos frescos gana la ventana coherente más numerosa |
+
+El primero explica por qué limpiar sólo las filas que la corrida escribe no alcanza: cuando una
+unión se parte, la fila vieja puede no volver a producirse nunca más, así que nadie la toca.
+
+### Lo que dio la medición
+
+| métrica | antes | tras el agrupamiento | tras el barrido |
+|---|---|---|---|
+| propiedades con 2+ ofertas | 3.503 | 3.402 | 2.939 |
+| filas con extremos fuera de la tolerancia | 176 | 97 | **36** |
+| filas con más de 8 % de dispersión | 104 | 56 | **26** |
+| avisos presentes en dos filas | — | 2.707 | **706** |
+| filas cuyo conjunto FRESCO ya es incoherente | — | 9 | **0** |
+
+Las 706 que quedan son avisos que la corrida no vio: no se tocan por diseño, y vencen por días.
+
 Lo que sigue sin poder auditarse: `RentalOffer` guarda precio y vendedor pero **no** dormitorios,
 m² ni baños por portal, así que cuando dos avisos se contradicen en esos campos la contradicción se
 pierde al escribir y un merge malo no se puede revisar después de hecho.
