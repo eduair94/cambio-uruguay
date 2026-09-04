@@ -100,7 +100,7 @@ const PATTERNS: ReadonlyArray<readonly [RentalGuarantee, RegExp]> = [
   // `seguros` en PLURAL a propósito: el singular es adjetival en "sistema de seguridad".
   [
     "aseguradora",
-    /aseguradora|p[óo]liza|\bseguros\b|\bporto\b|\bsura\b|mapfre|sancor|zurich|berkley|fide[cs]iu?|fianza|cauci[óo]n|seguro (privado|de alquiler)/i,
+    /aseguradora|p[óo]liza|\bseguros\b|\bporto\b|\bsura\b|\bsurco\b|\bsbi\b|mapfre|sancor|zurich|berkley|fide[cs]iu?|fianza|cauci[óo]n|seguro (privado|de alquiler)/i,
   ],
   ["propietaria", /garant[ií]a propietaria|fiador/i],
   // `deposito` NO va acá: necesita mirar sólo lo que viene DESPUÉS del sustantivo y en la MISMA

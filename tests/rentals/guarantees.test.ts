@@ -199,3 +199,29 @@ describe("el campo `guarantee` de InfoCasas", () => {
     expect(guaranteesFromField("")).toEqual([]);
   });
 });
+
+// El caso de inversion que la revision encontro publicandose: el aviso 194204182 dice
+// "Garantias; Anda, Contaduria, Seguros. No deposito." y se le estaba poniendo la etiqueta
+// `deposito`. Lo ataja la regla de MISMA ORACION, no la de negacion: el "No deposito" vive en
+// una oracion aparte.
+describe("las negaciones reales que aparecieron en produccion", () => {
+  it("no publica deposito cuando el aviso lo rechaza en la oracion siguiente", () => {
+    expect(
+      guaranteesFromText("Garantías; Anda, Contaduría, Seguros. No depósito. Compartimos con colegas.")
+    ).toEqual(["anda", "contaduria", "aseguradora"]);
+  });
+
+  // "Garantías: Aseguradoras, no propiedades" rechaza la garantia propietaria. Hoy no dispara
+  // porque el patron exige "garantia propietaria" o "fiador", y `propietaria` ni siquiera se
+  // publica — pero es la trampa que se activa el dia que alguien la encienda.
+  it("no inventa una garantia propietaria donde el aviso la rechaza", () => {
+    expect(guaranteesFromText("Garantías: Aseguradoras, no propiedades")).toEqual(["aseguradora"]);
+  });
+
+  // Aseguradoras uruguayas que la taxonomia no tenia y aparecen en las listas reales.
+  it("reconoce las aseguradoras que faltaban", () => {
+    for (const nombre of ["Surco", "SBI", "Sancor", "Fideciu"]) {
+      expect(guaranteesFromText(`Garantías: ${nombre}`), nombre).toContain("aseguradora");
+    }
+  });
+});
