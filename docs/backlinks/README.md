@@ -4,8 +4,15 @@ Everything needed to build backlinks off Medium. **Content is written for you.**
 
 ## Files
 
+> **Empezá por [2026-09-verificado.md](./2026-09-verificado.md).** Los tres `tier*.md` son del
+> 2026-07-06 y tienen premisas caídas (Glama NO auto-indexa; dev.to no es por reputación; el tracker
+> daba por pendientes dos PRs ya mergeados). El pack de septiembre está medido contra la web en vivo,
+> trae los textos listos con su calendario, y abre con un bloqueante: 17 de 43 pizarras del USD llevan
+> ≥7 días sin moverse, y la más congelada es la que el sitio publica como "el dólar más barato".
+
 | File | What it is |
 |------|-----------|
+| [2026-09-verificado.md](./2026-09-verificado.md) | **Lo vigente.** Textos verificados, calendario, descartes con motivo, y las premisas de julio que se cayeron. |
 | [copy-blocks.md](./copy-blocks.md) | Reusable names, taglines, descriptions (5 lengths), tags, links, screenshot list. Copy from here into every form. |
 | [tier1-registries-directories.md](./tier1-registries-directories.md) | Highest ROI: MCP registries, API directories, app/launch directories. Mostly form-fill. |
 | [tier2-content-social.md](./tier2-content-social.md) | Dev.to/Hashnode cross-posts, Show HN, Reddit. Ready copy. |
