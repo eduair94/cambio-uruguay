@@ -722,7 +722,12 @@ export default defineNuxtConfig({
         disallow: ['/admin/', '/server/', '/_nuxt/'],
       },
     ],
-    sitemap: 'https://cambio-uruguay.com/sitemap.xml',
+    // El índice, no /sitemap.xml.
+    //
+    // /sitemap.xml contesta 307 hacia /sitemap_index.xml —el módulo lo redirige cuando hay más de
+    // un sitemap— así que declararlo mandaba a cada rastreador a un salto que no hacía falta, y
+    // robots.txt terminaba anunciando las dos URLs para el mismo archivo.
+    sitemap: 'https://cambio-uruguay.com/sitemap_index.xml',
     credits: false,
   },
 

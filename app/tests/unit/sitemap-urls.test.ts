@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 // The sitemap used to be one big try/catch around a live API call: any upstream
 // hiccup returned `[]` and the site silently submitted an empty sitemap. These
 // tests pin the two properties that fix bought us — the static backbone survives
@@ -178,5 +180,16 @@ describe('sitemap during prerender', () => {
 
     expect(disconnect).toHaveBeenCalled()
     vi.doUnmock('../../server/utils/db')
+  })
+})
+
+// robots.txt anunciaba /sitemap.xml, que contesta 307 hacia /sitemap_index.xml: cada rastreador
+// arrancaba con un salto que no hacia falta, y el archivo terminaba declarando dos URLs para lo
+// mismo. Se declara el indice.
+describe('la URL de sitemap que declara robots.txt', () => {
+  it('es el indice y no la que redirige', () => {
+    const config = readFileSync(resolve(__dirname, '../../nuxt.config.ts'), 'utf8')
+    const declared = config.match(/sitemap: 'https:\/\/cambio-uruguay\.com\/([^']+)'/)
+    expect(declared?.[1]).toBe('sitemap_index.xml')
   })
 })
