@@ -266,14 +266,16 @@ export async function dropReassignedOffers(
   // rutas con punto (`offers.0.title`), que un `RentalProperty` entero no satisface, y el `tsc` de
   // esta máquina no lo reproduce —resuelve otra versión de los tipos— así que el error sólo aparece
   // al compilar en el servidor. El array vacío sin anotación deja que TS lo infiera del uso, que es
-  // lo que viene compilando ahí desde siempre. Se vacía con `length = 0` porque reasignarlo
-  // también rompería la inferencia.
+  // lo que viene compilando ahí desde siempre. Se vacía con `splice(0)` al escribir, porque
+  // reasignarlo también rompería la inferencia.
   const operations = [];
 
   const flush = async (): Promise<void> => {
     if (!operations.length) return;
-    await RentalListingModel.bulkWrite(operations, { ordered: false });
-    operations.length = 0;
+    // `splice(0)` y no vaciar después: pasarle el array y limpiarlo a continuación deja a quien lo
+    // recibió con la lista vacía, porque es la MISMA referencia. En producción no se nota —el await
+    // termina antes— pero es la clase de aliasing que muerde más tarde, y acá lo destapó un test.
+    await RentalListingModel.bulkWrite(operations.splice(0), { ordered: false });
   };
 
   for await (const raw of cursor) {
