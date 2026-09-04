@@ -176,7 +176,7 @@ async function searchRaw(params: URLSearchParams): Promise<SearchResult | null> 
   };
 }
 
-function petsParams(query: string, offset: number, withFilter: boolean): URLSearchParams {
+function filterParams(query: string, offset: number, filter?: [string, string]): URLSearchParams {
   const params = new URLSearchParams({
     country: "UY",
     category: RENT_CATEGORY,
@@ -185,29 +185,36 @@ function petsParams(query: string, offset: number, withFilter: boolean): URLSear
     limit: String(PAGE_SIZE),
     raw: "true",
   });
-  if (withFilter) params.set(PETS_FILTER_ID, PETS_FILTER_VALUE);
+  if (filter) params.set(filter[0], filter[1]);
   return params;
 }
 
 /**
- * Marca `petsAllowed: true` en los avisos que MercadoLibre devuelve bajo el filtro de mascotas.
+ * Recorre una busqueda FILTRADA de MercadoLibre y aplica `apply` a cada aviso ya cosechado.
  *
- * LA GUARDA QUE JUSTIFICA TODO ESTO: antes de marcar nada, comprueba que el filtro se APLICO,
- * comparando el total filtrado contra el total sin filtrar de la misma consulta. Si el puente
- * dejara de reenviar el parametro, la busqueda volveria sin filtrar y marcariamos los 15.456 avisos
- * de la categoria como pet-friendly. No alcanza con buscar la cadena "IS_SUITABLE_FOR_PETS" en la
- * respuesta: aparece igual sin filtro, porque ML tambien lista los filtros DISPONIBLES.
+ * LA GUARDA QUE JUSTIFICA TODO ESTO: antes de tocar nada comprueba que el filtro se APLICO,
+ * comparando el total filtrado contra el sin filtrar de la misma consulta. No es paranoia: medido
+ * el 2026-09-04, un valor INVENTADO en `seller_type` devuelve el total COMPLETO (15.416), o sea que
+ * el filtro se ignora en silencio. Sin esta comparacion marcariamos los 15.416 avisos de la
+ * categoria. Tampoco alcanza con buscar el nombre del filtro en la respuesta: ML tambien lista los
+ * filtros DISPONIBLES, asi que aparece igual sin aplicar.
  *
- * Ante cualquier duda no marca nada: el precio de no marcar es que un alquiler que acepta mascotas
- * quede como "no se sabe"; el de marcar mal es publicar que acepta uno que no.
+ * Ante cualquier duda no marca nada: el precio de no marcar es que un aviso quede como "no se
+ * sabe"; el de marcar mal es publicar algo falso.
  */
-async function markPetFriendly(byId: Map<string, RawRental>, maxPages: number): Promise<number> {
-  const control = await searchRaw(petsParams("alquiler", 0, false));
-  const filtered = await searchRaw(petsParams("alquiler", 0, true));
+async function sweepFiltered(
+  filter: [string, string],
+  label: string,
+  byId: Map<string, RawRental>,
+  maxPages: number,
+  apply: (listing: RawRental) => void,
+): Promise<number> {
+  const control = await searchRaw(filterParams("alquiler", 0));
+  const filtered = await searchRaw(filterParams("alquiler", 0, filter));
   if (!control?.total || !filtered?.total) return 0;
   if (filtered.total >= control.total) {
     console.warn(
-      `[rentals] ML: el filtro de mascotas no se aplico (total ${filtered.total} >= ${control.total}); no se marca nada`,
+      `[rentals] ML: el filtro de ${label} no se aplico (total ${filtered.total} >= ${control.total}); no se marca nada`,
     );
     return 0;
   }
@@ -217,7 +224,7 @@ async function markPetFriendly(byId: Map<string, RawRental>, maxPages: number): 
   for (let page = 0; page < maxPages; page++) {
     const offset = page * PAGE_SIZE;
     if (offset >= ML_OFFSET_CEILING) break;
-    const result = page === 0 ? filtered : await searchRaw(petsParams("alquiler", offset, true));
+    const result = page === 0 ? filtered : await searchRaw(filterParams("alquiler", offset, filter));
     if (!result || result.cards.length === 0) break;
 
     let fresh = 0;
@@ -229,7 +236,7 @@ async function markPetFriendly(byId: Map<string, RawRental>, maxPages: number): 
       fresh++;
       const known = byId.get(listing.listingId);
       if (known) {
-        known.petsAllowed = true;
+        apply(known);
         marked++;
       }
     }
@@ -239,6 +246,23 @@ async function markPetFriendly(byId: Map<string, RawRental>, maxPages: number): 
   }
   return marked;
 }
+
+/**
+ * Quien alquila SIN inmobiliaria de por medio.
+ *
+ * Medido el 2026-09-04: `seller_type` parte la categoria en private_seller 944 y
+ * real_estate_agency 14.472, que suman EXACTO el total sin filtrar — es una particion exhaustiva.
+ * El directorio venia detectando 52 "dueno directo" sobre 14.744 propiedades (0,35 %) porque este
+ * parser ponia `desconocido` en todo y el dato solo salia de InfoCasas.
+ *
+ * Importa mas que un chip: alquilar al dueno evita la comision de la inmobiliaria, que en Uruguay
+ * es un mes de alquiler mas IVA.
+ *
+ * Se marca SOLO el lado particular. El otro lado se podria derivar —la particion es exhaustiva—
+ * pero solo para los avisos que la pasada llego a ver, y el tope de 4.000 deja fuera a la mayoria
+ * de los 14.472: decir "inmobiliaria" por no haberlo visto seria inventar.
+ */
+const PRIVATE_SELLER_FILTER: [string, string] = ["seller_type", "private_seller"];
 
 export async function harvestMercadoLibre(mode: "full" | "fast", usdUyu: number): Promise<RentalSourceResult> {
   const maxPages =
@@ -280,14 +304,23 @@ export async function harvestMercadoLibre(mode: "full" | "fast", usdUyu: number)
   // Solo en la corrida COMPLETA: la rapida mira lo recien publicado y esta pasada es una consulta
   // aparte que no comparte ese recorte, asi que no le corresponde.
   let pets = 0;
-  if (mode === "full" && byId.size > 0) pets = await markPetFriendly(byId, maxPages);
+  let particulares = 0;
+  if (mode === "full" && byId.size > 0) {
+    pets = await sweepFiltered([PETS_FILTER_ID, PETS_FILTER_VALUE], "mascotas", byId, maxPages, (listing) => {
+      listing.petsAllowed = true;
+    });
+    particulares = await sweepFiltered(PRIVATE_SELLER_FILTER, "vendedor particular", byId, maxPages, (listing) => {
+      listing.sellerType = "particular";
+      listing.sellerName = "Particular";
+    });
+  }
 
   return {
     key: "mercadolibre",
     ok: reachable && byId.size > 0,
     listings: [...byId.values()],
     note: reachable
-      ? `${pages} páginas, ${byId.size} avisos, ${rejected} descartados, ${pets} admiten mascotas`
+      ? `${pages} páginas, ${byId.size} avisos, ${rejected} descartados, ${pets} admiten mascotas, ${particulares} de particular`
       : `sin respuesta de ${API_BASE}`,
   };
 }
