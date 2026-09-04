@@ -239,15 +239,34 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
-    // `s-maxage` alone only speaks to shared caches. Cloudflare fills the silence
-    // about the browser with its Browser Cache TTL — a year on this zone — so the
-    // origin's honest `s-maxage=3600` arrived at visitors as
-    // `max-age=31536000, s-maxage=3600` (measured 2026-09-04). HTML pinned for a
-    // year names `_nuxt/<hash>.js` files that a later deploy renames, so a repeat
-    // visitor loads a document whose 45 scripts all 404, nothing hydrates, and the
-    // tab just spins. A hard refresh hides it until the next deploy, which is what
-    // made it look random. The zone respects an explicit value — /sw.js below ships
-    // `max-age=0` and arrives untouched — so the browser half is stated out loud.
+    // The browser half is stated out loud here, but this line alone does NOT
+    // decide what a visitor gets — the zone's Browser Cache TTL does, and this
+    // comment exists because that took two measurements to learn.
+    //
+    // Symptom: the site sometimes just span, on any page, at random. HTML pinned
+    // in the browser for a year names `_nuxt/<hash>.js` files that a later deploy
+    // renames, so a repeat visitor loads a document whose 45 scripts all 404,
+    // nothing hydrates, and the tab never finishes. A hard refresh hides it until
+    // the next deploy, which is what made it look random.
+    //
+    // Measured 2026-09-04, before and after shipping `max-age=0` here:
+    //
+    //   origin  /         public, max-age=0, must-revalidate, s-maxage=3600
+    //   edge    /         public, max-age=31536000, must-revalidate, s-maxage=3600
+    //   origin  /sw.js    public, max-age=0, must-revalidate
+    //   edge    /sw.js    public, max-age=0, must-revalidate      (untouched)
+    //
+    // So Cloudflare does not fill a gap, it OVERWRITES max-age — but only where it
+    // considers the response edge-cacheable. `/sw.js` survives precisely because it
+    // declares no `s-maxage`. Which means that while Browser Cache TTL is set to a
+    // year, edge-cached HTML and a revalidating browser are mutually exclusive, and
+    // no value written on this line can buy both.
+    //
+    // The fix that actually lands is in the dashboard: Caching → Configuration →
+    // Browser Cache TTL → "Respect Existing Headers". This line is what that
+    // setting then respects, so it has to stay correct — and dropping `s-maxage`
+    // is the fallback if the setting ever goes back (costs the edge HIT: measured
+    // 0.15s TTFB cached vs ~1.3s straight from SSR).
     '/': {
       ssr: true,
       headers: {

@@ -20,12 +20,18 @@ import { describe, expect, it } from 'vitest'
 // hardest, and a hard refresh "fixes" it until the next deploy — which is exactly
 // what makes it read as random.
 //
-// The zone proves it respects an explicit value: `/sw.js` ships
-// `public, max-age=0, must-revalidate` from the origin and arrives unchanged. So
-// the fix is to say the browser half out loud on every document route, the same
-// way `/sw.js` already does. `nuxt.config.ts:274` documents this exact failure for
-// the service worker; this test is the part that keeps it from coming back
-// somewhere else.
+// What this test does NOT prove, measured the hard way by shipping the fix and
+// re-measuring: the value written here is not what a visitor receives. Cloudflare
+// overwrites `max-age` on anything it considers edge-cacheable, so `/` went out
+// as `max-age=0` and arrived as `max-age=31536000`. `/sw.js` survives only because
+// it declares no `s-maxage` and is therefore not edge-cached.
+//
+// The setting that actually decides is Browser Cache TTL in the zone dashboard
+// ("Respect Existing Headers"). This file guards the half that lives in the repo:
+// the origin must keep saying the honest thing, or the dashboard setting has
+// nothing correct to respect. Verifying the edge belongs in a probe against
+// production, not in a unit test — so do not read a green run here as proof that
+// visitors revalidate.
 const config = readFileSync(resolve(__dirname, '../../nuxt.config.ts'), 'utf-8')
 
 /**
