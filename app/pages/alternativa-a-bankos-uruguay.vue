@@ -308,7 +308,7 @@ defineOgImageComponent('Cambio', {
   tag: 'Comparativa',
 })
 useSeoMeta({
-  title: 'Alternativa web a Bankos: descuentos con tarjeta sin instalar | Cambio Uruguay',
+  title: 'Alternativa a Bankos: descuentos sin la app',
   description:
     'Comparativa honesta entre la app Bankos y nuestro mapa web de descuentos con tarjeta en Uruguay: sin instalar, en la computadora, con filtro por el día de hoy, favoritos sincronizados y análisis por banco. También qué hace mejor Bankos.',
   ogTitle: 'Alternativa web a Bankos: descuentos con tarjeta sin instalar',

@@ -773,7 +773,7 @@ const LINKS = [
   },
 ]
 
-const title = 'Cotizaciones de la región: el dólar en Argentina, Brasil, Paraguay, Chile y Bolivia'
+const title = 'El dólar en Argentina, Brasil y la región'
 const description =
   'Tablero regional con todos los mercados que publica cada país: los siete dólares argentinos, el PTAX y el dólar turismo brasileños, el referencial paraguayo, el observado chileno y el paralelo boliviano, comparados con lo que cobran las casas de cambio uruguayas.'
 const canonicalUrl = 'https://cambio-uruguay.com/cotizaciones-de-la-region'

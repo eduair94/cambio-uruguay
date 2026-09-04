@@ -598,8 +598,7 @@ const lastResearchedLabel = new Date(`${LAST_RESEARCHED}T00:00:00Z`).toLocaleDat
 
 // --- SEO ---
 const canonicalUrl = 'https://cambio-uruguay.com/impuesto-autos-electricos-uruguay'
-const title =
-  'IMESI a autos eléctricos e híbridos en Uruguay 2027: la matriz completa del Decreto 147/026'
+const title = 'IMESI a autos eléctricos en Uruguay 2027'
 const description =
   'Desde el 1°/1/2027 los eléctricos pagan 0, 5 o 9 % de IMESI según el valor en aduana (corte en US$ 19.000 y US$ 27.000). Para híbridos de valor bajo no cambia nada. Matriz completa del Decreto 147/026, con fuentes primarias.'
 

@@ -260,8 +260,7 @@ const verifiedDisplay = computed(() =>
 )
 
 const canonicalUrl = 'https://cambio-uruguay.com/trabajo-para-menores-de-edad-uruguay'
-const title =
-  'Trabajo para menores de edad en Uruguay: requisitos, carné del INAU y cómo ganar plata a los 15'
+const title = 'Trabajo para menores de edad en Uruguay'
 const description =
   'Se puede trabajar desde los 15 años con el carné del INAU, que es gratis. Hasta 6 horas por día, de 6.00 a 22.00. Qué documentos pide el trámite, qué tareas están prohibidas y qué vías legales hay para ganar dinero.'
 

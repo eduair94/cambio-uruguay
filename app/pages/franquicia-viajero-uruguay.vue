@@ -323,8 +323,7 @@ const sources = [
 
 // --- SEO ---
 const canonicalUrl = 'https://cambio-uruguay.com/franquicia-viajero-uruguay'
-const title =
-  'Franquicia de equipaje de viajero en Uruguay 2026: ¿pagás impuesto al entrar por Carrasco?'
+const title = 'Franquicia de viajero en Uruguay 2026'
 const description =
   'US$ 500 de franquicia por vía aérea o marítima (US$ 300 terrestre), 50% de impuesto sobre el excedente, sin despachante de aduana. Qué pasa si no declarás, qué es "uso personal" y por qué es zona gris — con la ley y el decreto linkeados.'
 

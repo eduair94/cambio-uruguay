@@ -287,7 +287,7 @@ defineOgImageComponent('Cambio', {
   tag: 'Beneficios',
 })
 useSeoMeta({
-  title: 'Tarjetas de socio y beneficios en Uruguay: cuáles hay y cómo obtenerlas | Cambio Uruguay',
+  title: 'Tarjetas de socio y beneficios en Uruguay',
   description:
     'Lista verificada de tarjetas de socio y programas de beneficios uruguayos que no son de crédito ni de débito: Club El País, clubes de shoppings, fidelidad de supermercados y combustible, abonos de cine y teatro. Cuánto cuestan, cómo sacarlas y qué descuentos dan, con fuentes oficiales.',
   ogTitle: 'Tarjetas de socio y beneficios en Uruguay',

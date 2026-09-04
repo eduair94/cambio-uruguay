@@ -1,3 +1,5 @@
+import { readFileSync, readdirSync, statSync } from 'node:fs'
+import { join, relative } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { createI18n } from 'vue-i18n'
 import en from '../../i18n/locales/json/en.json'
@@ -121,4 +123,97 @@ describe('los títulos de la home dicen "hoy"', () => {
       ).toContain(word)
     })
   }
+})
+
+// ---------------------------------------------------------------------------
+// El mismo presupuesto, aplicado a los títulos que viven en las páginas
+// ---------------------------------------------------------------------------
+
+/**
+ * Los tres bloques de arriba miden las tres claves de i18n que arman su texto en
+ * tiempo de render. Son las tres que más impresiones mueven, pero son TRES: las
+ * otras ~110 páginas escriben su `<title>` en el propio `.vue` y nadie las medía.
+ *
+ * Medidas por primera vez el 2026-09-04, noventa de esas ciento diez pasaban de
+ * los 60 caracteres — el 82 %. No es un detalle de forma: el título que se pasa
+ * es el título que Google recorta o reescribe, y en estas páginas lo que se
+ * perdía era justamente la cola, que es donde estaba el dato que las diferencia
+ * ("...y por qué la culpa no decide", "...el rendimiento del saldo en Prex y
+ * Mercado Pago"). El head genérico sobrevivía entero.
+ *
+ * Se leen dos formas, que son las dos que el repo usa de verdad:
+ *
+ *   title: 'Texto literal'
+ *   title: () => `${title} | Cambio Uruguay`   con  const title = '...'
+ *
+ * Las que arman el título desde `t()`, desde un `computed` o desde el payload de
+ * la API no se pueden resolver leyendo el archivo y quedan fuera de la cuenta.
+ * Eso es una limitación real y no una excusa: por eso el test también fija
+ * `MEASURABLE`, así que convertir una página medible en una dinámica no puede
+ * usarse para bajar el número de abajo sin que se note.
+ *
+ * OVER_BUDGET SÓLO PUEDE BAJAR. Si CI falla acá porque subió, el título que
+ * agregaste no entra en el SERP: acortalo a 43 caracteres o menos (los otros 17
+ * se los lleva " | Cambio Uruguay" que pega el titleTemplate de app.vue).
+ */
+const PAGES_DIR = join(__dirname, '..', '..', 'pages')
+
+function pageFiles(dir: string = PAGES_DIR): string[] {
+  return readdirSync(dir).flatMap(name => {
+    const full = join(dir, name)
+    if (statSync(full).isDirectory()) return pageFiles(full)
+    return name.endsWith('.vue') ? [full] : []
+  })
+}
+
+/** El mensaje del `<title>` de una página, o `null` si no se puede leer del archivo. */
+function staticTitle(source: string): string | null {
+  // El `})` de cierre va anclado a la columna 0: `useSeoMeta` se llama siempre en
+  // el nivel superior del `<script setup>`. Además de ser exacto, evita el
+  // backtracking cuadrático de un `\n\s*\}\)` (regexp/no-super-linear-backtracking).
+  const block = source.match(/useSeoMeta\(\{[\s\S]*?\n\}\)/)
+  if (!block) return null
+  const entry = block[0].match(/\n\s*title:\s*(.+)/)
+  if (!entry) return null
+  const expression = entry[1].trim().replace(/,$/, '')
+
+  const literal = expression.match(/^'((?:[^'\\]|\\.)*)'$/)
+  if (literal) return literal[1]
+
+  // `() => \`${title} | Cambio Uruguay\`` — resolver el const del mismo archivo.
+  const interpolated = expression.match(
+    /^(?:\(\)\s*=>\s*)?`\$\{([A-Za-z_$][\w$]*)\}\s*\|\s*Cambio Uruguay`$/
+  )
+  if (!interpolated) return null
+  const declaration = source.match(
+    new RegExp(`\\n(?:const|let)\\s+${interpolated[1]}\\s*=\\s*\\n?\\s*'((?:[^'\\\\]|\\\\.)*)'`)
+  )
+  return declaration ? `${declaration[1]} | Cambio Uruguay` : null
+}
+
+const MEASURABLE = 110
+const OVER_BUDGET = 65
+
+describe('los títulos escritos en las páginas entran en el SERP', () => {
+  const measured = pageFiles()
+    .map(file => ({
+      file: relative(PAGES_DIR, file),
+      title: staticTitle(readFileSync(file, 'utf8')),
+    }))
+    .filter((page): page is { file: string; title: string } => page.title !== null)
+    .map(page => ({ ...page, rendered: withBrand(page.title) }))
+
+  it(`lee el título de ${MEASURABLE} páginas sin ejecutar la app`, () => {
+    // El contrapeso de la deuda de abajo: si alguien vuelve dinámico un título
+    // para sacarlo de la cuenta, este número baja y el test lo dice.
+    expect(measured.length).toBeGreaterThanOrEqual(MEASURABLE)
+  })
+
+  it(`tiene como mucho ${OVER_BUDGET} títulos pasados de ${MAX_TITLE} caracteres`, () => {
+    const offenders = measured
+      .filter(page => page.rendered.length > MAX_TITLE)
+      .map(page => `${page.rendered.length} ${page.file}: ${page.rendered}`)
+      .sort()
+    expect(offenders.length, offenders.join('\n')).toBeLessThanOrEqual(OVER_BUDGET)
+  })
 })

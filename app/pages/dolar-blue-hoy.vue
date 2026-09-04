@@ -391,7 +391,7 @@ defineOgImageComponent('Cambio', {
 })
 
 useSeoMeta({
-  title: 'Dólar blue hoy: cotización y qué significa desde Uruguay | Cambio Uruguay',
+  title: 'Dólar blue hoy: cotización y brecha',
   description:
     'Dólar blue y oficial argentino actualizados a diario, la brecha entre los dos, y la comparación que importa desde Uruguay: cuánto te cuesta un peso argentino según cómo lo consigas.',
   ogTitle: 'Dólar blue hoy: cotización y qué significa desde Uruguay',

@@ -527,7 +527,7 @@ const verifiedAt = new Date(MONO_INVOICING_VERIFIED_AT).toLocaleDateString('es-U
 })
 
 const canonicalUrl = 'https://cambio-uruguay.com/facturar-en-monotributo-uruguay'
-const title = 'Facturar en Monotributo y Monotributo Social MIDES: talonario o factura electrónica'
+const title = 'Facturar en Monotributo y Monotributo MIDES'
 const description =
   '¿Es obligatorio el talonario o podés facturar electrónico? DGI exceptúa al Monotributo y al Monotributo Social MIDES de emitir CFE: el papel es el camino legal y el barato. Con el trámite gratis de autorización, las palancas para bajar el precio de imprenta, y por qué el crédito de 80 UI que abarata la factura electrónica no te alcanza.'
 

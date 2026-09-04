@@ -240,8 +240,7 @@ const fmtDate = (iso: string): string => {
 
 // ── SEO ──
 const canonicalUrl = 'https://cambio-uruguay.com/alquilar-sin-recibo-de-sueldo'
-const title =
-  'Alquilar sin recibo de sueldo en Uruguay: qué garantía sirve si trabajás por tu cuenta'
+const title = 'Alquilar sin recibo de sueldo en Uruguay'
 const description =
   'Independiente, monotributista o con ingresos variables: qué garantía de alquiler te acepta y cuál no. FGA, ANDA, seguros, contrato sin garantía y depósito, con lo que pide cada una.'
 

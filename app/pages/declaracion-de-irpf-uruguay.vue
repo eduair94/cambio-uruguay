@@ -238,7 +238,7 @@ const fmt = (iso: string) =>
 const verifiedAt = fmt(DGI_VERIFIED_AT)
 
 const canonicalUrl = 'https://cambio-uruguay.com/declaracion-de-irpf-uruguay'
-const title = 'Declaración de IRPF en Uruguay: quién está obligado y cuándo se cobra la devolución'
+const title = 'Declaración de IRPF en Uruguay: quién debe'
 const description =
   'Quién tiene que presentar la declaración jurada de IRPF y quién no, con los casos que obligan (más de un empleador, sin ingreso en diciembre, formulario 3100, núcleo familiar, servicios personales, rentas de capital), las fechas de la campaña 2026, los formularios 1102/1103/1101, la regla del día 15 que decide cuándo cobrás la devolución, y la multa por mora del artículo 94 del Código Tributario.'
 

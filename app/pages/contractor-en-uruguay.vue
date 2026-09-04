@@ -254,8 +254,7 @@ const verifiedAt = new Date(CONTRACTOR_VERIFIED_AT).toLocaleDateString('es-UY', 
 })
 
 const canonicalUrl = 'https://cambio-uruguay.com/contractor-en-uruguay'
-const title =
-  'Contractor en Uruguay: cuánto facturar para igualar un sueldo y qué pasa con la jubilación'
+const title = 'Contractor en Uruguay: cuánto facturar'
 const description =
   'La cuenta que casi nadie hace: un dependiente cobra trece sueldos al año con el aguinaldo, así que facturar el nominal ya te deja abajo. Más lo que no viene con la facturación (licencia, salario vacacional, despido, seguro de paro) y la verdad sobre la jubilación del contractor: la ficta es un piso, no un techo — se aporta sobre el mayor entre la ficta, los ingresos reales y el mayor sueldo pagado.'
 

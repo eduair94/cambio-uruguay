@@ -81,7 +81,7 @@ defineOgImageComponent('Cambio', {
 })
 
 useSeoMeta({
-  title: 'Herramientas y calculadoras financieras para Uruguay | Cambio Uruguay',
+  title: 'Calculadoras de IRPF, IVA, aguinaldo y más',
   description:
     'Calculadoras gratuitas para Uruguay: impuestos de importación, IVA 22%, IRPF, conversor de monedas en vivo, plazo fijo, préstamos, inflación y unidad indexada.',
   ogTitle: 'Herramientas y calculadoras financieras para Uruguay',

@@ -157,7 +157,7 @@ defineOgImageComponent('Cambio', {
 })
 
 useSeoMeta({
-  title: 'Importar a Uruguay por categoría: impuestos y exenciones | Cambio Uruguay',
+  title: 'Importar a Uruguay: impuestos por categoría',
   description,
   ogTitle: 'Importar a Uruguay según qué compres',
   ogDescription: description,

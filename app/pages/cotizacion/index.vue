@@ -205,7 +205,7 @@ defineOgImageComponent('Cambio', {
 })
 
 useSeoMeta({
-  title: 'Cotizaciones de Todas las Monedas en Uruguay Hoy | Cambio Uruguay',
+  title: 'Cotización de monedas en Uruguay hoy',
   description:
     'Cotización de compra y venta del dólar, euro, real, peso argentino, oro y más monedas en las casas de cambio de Uruguay. Precios en vivo para comprar y vender al mejor precio.',
   ogTitle: 'Cotizaciones de todas las monedas en Uruguay hoy',

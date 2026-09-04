@@ -146,7 +146,7 @@ defineOgImageComponent('Cambio', {
 })
 
 useSeoMeta({
-  title: 'Indicadores Económicos de Uruguay Hoy: UI, UR y BPC | Cambio Uruguay',
+  title: 'Indicadores de Uruguay hoy: UI, UR y BPC',
   description:
     'Valor actualizado de la Unidad Indexada (UI), la Unidad Reajustable (UR) y la BPC en Uruguay. Qué son, para qué sirven y conversor a pesos.',
   ogTitle: 'Indicadores económicos de Uruguay hoy: UI, UR y BPC',

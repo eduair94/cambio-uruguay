@@ -532,8 +532,7 @@ const sources = [
 ]
 
 const canonicalUrl = 'https://cambio-uruguay.com/tarjetas-de-credito-uruguay'
-const title =
-  'Ranking de tarjetas de crédito en Uruguay 2026: mejores puntos y beneficios comparados'
+const title = 'Ranking de tarjetas de crédito en Uruguay'
 const description =
   'Comparación y ranking objetivo de los programas de puntos y beneficios de las tarjetas de crédito uruguayas (Itaú Volar, Santander, BBVA, Scotia Puntos, BROU Recompensa, OCA Metraje, Pronto, PassCard, Creditel y más), con una rúbrica transparente y ponderada.'
 

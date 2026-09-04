@@ -870,7 +870,7 @@ defineOgImageComponent('Cambio', {
 })
 
 useSeoMeta({
-  title: 'Alquileres en Uruguay: buscador unificado de portales | Cambio Uruguay',
+  title: 'Alquileres en Uruguay: 3 portales en uno',
   description:
     'Alquileres de todo el país reunidos de Mercado Libre, InfoCasas y Facebook Marketplace, con el mismo inmueble unificado en una sola fila. Filtrá por barrio, precio y dormitorios.',
   ogTitle: 'Alquileres en Uruguay, sin el mismo aviso tres veces',

@@ -524,7 +524,7 @@ const sources = [
 
 const canonical = 'https://cambio-uruguay.com/por-que-el-bcu-quiere-mas-pesos'
 useSeoMeta({
-  title: '¿Por qué el BCU quiere incentivar el peso uruguayo? | Análisis objetivo',
+  title: '¿Por qué el BCU quiere más pesos uruguayos?',
   description:
     'Qué busca la desdolarización en Uruguay, cómo puede beneficiar a la población, cuáles son sus riesgos y qué dicen las fuentes del BCU, FMI y BID.',
   ogTitle: '¿Por qué el BCU quiere que usemos más el peso?',

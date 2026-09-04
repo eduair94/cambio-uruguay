@@ -809,8 +809,7 @@ const faqs = [
 
 // ── SEO ──
 const canonicalUrl = 'https://cambio-uruguay.com/tarjetas-de-debito-uruguay'
-const title =
-  'Tarjetas de débito y prepagas para comprar en dólares (Uruguay 2026): comisiones reales'
+const title = 'Tarjetas de débito para comprar en dólares'
 const description =
   'Cuánto te cobran de verdad al comprar en dólares o ítems de juegos con tarjetas disponibles en Uruguay: Prex, OCA, MiDinero, Mercado Pago y débito de BROU, Itaú, Santander y más. Tier list, calculadora y ranking con datos.'
 

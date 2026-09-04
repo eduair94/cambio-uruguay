@@ -392,7 +392,7 @@ const sources = [
 ]
 
 const canonicalUrl = 'https://cambio-uruguay.com/pagar-cuentas-con-tarjeta'
-const title = 'Pagar cuentas con tarjeta de crédito por Totalnet: ¿suma puntos y conviene? (2026)'
+const title = 'Pagar cuentas con tarjeta por Totalnet'
 const description =
   'Guía para pagar UTE, OSE, Antel, patente e impuestos con tarjeta de crédito en pagos.totalnet.uy: si acumula millas o puntos (caso Itaú Volar), si hay recargo, pros y contras, y una calculadora para saber si te conviene.'
 

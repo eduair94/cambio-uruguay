@@ -148,7 +148,7 @@ const fmtDate = (iso: string): string => {
 
 // ── SEO ──
 const canonicalUrl = 'https://cambio-uruguay.com/accidente-de-trabajo-uruguay'
-const title = 'Accidente de trabajo en Uruguay: qué te cubre el BSE y por qué la culpa no decide'
+const title = 'Accidente de trabajo en Uruguay: el BSE'
 const description =
   'La Ley 16.074 mantiene tu derecho a la indemnización aun con culpa grave tuya: sólo lo perdés si lo provocaste a propósito. Plazos de la denuncia patronal, cuánto se cobra de licencia y qué pasa si estabas en negro.'
 

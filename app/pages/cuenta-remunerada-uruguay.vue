@@ -714,8 +714,7 @@ const faqs = [
 
 // ── SEO ──
 const canonicalUrl = 'https://cambio-uruguay.com/cuenta-remunerada-uruguay'
-const title =
-  'Cuenta remunerada en Uruguay 2026: el rendimiento del saldo en Prex y Mercado Pago, explicado'
+const title = 'Cuenta remunerada en Uruguay: rendimientos'
 const description =
   'Prex (Inversión Violeta) y Mercado Pago pagan rendimiento diario por el saldo de la cuenta. No es un interés: la Ley 19.210 lo prohíbe, es un fondo de inversión. Qué rinde, qué comisión tiene, qué riesgo corrés y cuánto queda después de la inflación.'
 

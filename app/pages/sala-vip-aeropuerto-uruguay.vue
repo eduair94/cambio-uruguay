@@ -538,8 +538,7 @@ function fmtDate(iso: string): string {
 
 // ── SEO ──
 const canonicalUrl = 'https://cambio-uruguay.com/sala-vip-aeropuerto-uruguay'
-const title =
-  'Sala VIP del aeropuerto en Uruguay (2026): todas las formas de entrar y cuánto cuesta cada una'
+const title = 'Sala VIP en el aeropuerto de Carrasco'
 const description =
   'Cómo entrar a la Sala VIP del Aeropuerto de Carrasco y de Punta del Este: qué tarjeta uruguaya da accesos gratis, la tarifa de US$ 10 de Itaú, el ingreso suelto de US$ 90, las membresías de Priority Pass y del operador, canje de millas y descuentos. Con fuente oficial de cada cifra.'
 

@@ -522,8 +522,7 @@ const faqs = [
 
 // --- SEO ---
 const canonicalUrl = 'https://cambio-uruguay.com/importar-para-revender-uruguay'
-const title =
-  'Importar para revender en Uruguay 2026: ¿necesito despachante, empresa y dónde se paga el 60%?'
+const title = 'Importar para revender en Uruguay 2026'
 const description =
   'Hasta US$ 800 y 20 kg por envío importás para revender sin despachante ni DUA, pagando el 60% al courier: el Decreto 50/026 art. 2 admite personas jurídicas. Cuándo abrir la unipersonal, el cupo de 2 DUA por año y qué trámites piden cargadores, power banks y auriculares.'
 

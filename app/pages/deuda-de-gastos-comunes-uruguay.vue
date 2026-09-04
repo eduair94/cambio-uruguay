@@ -131,7 +131,7 @@ const verifiedAt = new Date(`${GASTOS_COMUNES_VERIFIED_AT}T12:00:00Z`).toLocaleD
 const faq = GASTOS_COMUNES_FAQ as unknown as FaqItem[]
 
 const canonicalUrl = 'https://cambio-uruguay.com/deuda-de-gastos-comunes-uruguay'
-const title = 'Deuda de gastos comunes en Uruguay: prescriben a los 4 años y el interés es 12 %'
+const title = 'Deuda de gastos comunes en Uruguay'
 const description =
   'La cuenta aprobada por la asamblea es título ejecutivo, la deuda se actualiza aunque nadie reclame, el interés es del 12 % anual y no se capitaliza, y prescribe a los cuatro años. Todo eso es de orden público: el reglamento del edificio no lo puede cambiar.'
 
