@@ -38,6 +38,11 @@ const RentalListingSchema = new Schema(
      * `null` = el aviso no lo dice. NUNCA `false`: ningun portal publica la negativa.
      */
     petsAllowed: { type: Boolean, default: null },
+    /**
+     * Igual que `petsAllowed`: si no se declara ACA, `castUpdate` lo saca del `$set` en silencio
+     * y sólo persiste el de las ofertas, que son Mixed. Lista vacia = el aviso no lo dice.
+     */
+    guarantees: { type: [String], default: [] },
     offers: { type: [Schema.Types.Mixed], default: [] },
     sources: { type: [String], default: [] },
     freshAt: { type: String, default: "" },

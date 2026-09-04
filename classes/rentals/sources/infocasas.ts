@@ -12,6 +12,7 @@
 //   * we read the NATIONWIDE list sorted by "más recientes" (`order=3`). Sorting by newest is what
 //     makes a truncated run still correct: whatever the page cap cuts off is the oldest tail, never
 //     today's adverts.
+import { guaranteesFromText } from "../guarantees";
 import { fetchText } from "../net";
 import {
   canonicalDepartment,
@@ -79,6 +80,8 @@ interface IcFacility {
 interface IcRow {
   id?: number | string;
   facilities?: IcFacility[] | null;
+  /** Texto libre del aviso. Es de donde sale la garantia: el campo `guarantee` viene siempre null. */
+  description?: string | null;
   /**
    * OJO: NO es la negacion de `facilities`. Es un booleano del propio aviso (42 true / 168 false
    * sobre 210 medidos el 2026-09-04) y 12 avisos lo traen en `true` Y traen la facility 222. Se
@@ -217,6 +220,7 @@ export function toRawRental(row: IcRow): RawRental | null {
     sellerName: String(row.owner?.name || "").trim() || "InfoCasas",
     sellerType: sellerTypeOf(row.owner),
     petsAllowed: petsFromFacilities(row.facilities),
+    guarantees: guaranteesFromText(row.description),
     image: String(row.img || "").trim() || null,
     publishedAt: /^\d{4}-\d{2}-\d{2}$/.test(String(row.created_at || "")) ? String(row.created_at) : null,
     propertyType: inferPropertyType(title, row.property_type?.name || null),

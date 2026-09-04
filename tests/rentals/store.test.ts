@@ -15,6 +15,7 @@ const offer = (overrides: Partial<RentalOffer> & { source: RentalSource; listing
   image: null,
   publishedAt: null,
   petsAllowed: null,
+  guarantees: [],
   firstSeen: "2026-08-01",
   lastSeen: "2026-08-20",
   ...overrides,

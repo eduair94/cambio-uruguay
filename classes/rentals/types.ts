@@ -1,3 +1,5 @@
+import type { RentalGuarantee } from "./guarantees";
+
 // Shared shapes for the rental directory (/alquileres-uruguay).
 //
 // The unit the site publishes is a PROPERTY, not a listing: the same apartment is posted by three
@@ -80,6 +82,14 @@ export interface RentalOffer {
    * figure. The opposite of `true` here is "we do not know", and it has to be shown that way.
    */
   petsAllowed: true | null;
+  /**
+   * Tipos de garantía de alquiler que el aviso dice aceptar.
+   *
+   * Lista VACÍA = el aviso no lo dice, que es la mitad de ellos. NUNCA significa "no acepta
+   * ninguna": ningún portal publica la negativa. Ver `guarantees.ts` para de dónde sale y por qué
+   * se ancla en el sustantivo.
+   */
+  guarantees: RentalGuarantee[];
   firstSeen: string;
   lastSeen: string;
 }
@@ -122,6 +132,14 @@ export interface RentalProperty {
    * figure. The opposite of `true` here is "we do not know", and it has to be shown that way.
    */
   petsAllowed: true | null;
+  /**
+   * Tipos de garantía de alquiler que el aviso dice aceptar.
+   *
+   * Lista VACÍA = el aviso no lo dice, que es la mitad de ellos. NUNCA significa "no acepta
+   * ninguna": ningún portal publica la negativa. Ver `guarantees.ts` para de dónde sale y por qué
+   * se ancla en el sustantivo.
+   */
+  guarantees: RentalGuarantee[];
   /** Cheapest offer, in pesos — what the list sorts and filters by. */
   priceUyu: number;
   /** The same price in the currency the cheapest offer was published in. */
@@ -188,6 +206,14 @@ export interface RawRental {
    * figure. The opposite of `true` here is "we do not know", and it has to be shown that way.
    */
   petsAllowed: true | null;
+  /**
+   * Tipos de garantía de alquiler que el aviso dice aceptar.
+   *
+   * Lista VACÍA = el aviso no lo dice, que es la mitad de ellos. NUNCA significa "no acepta
+   * ninguna": ningún portal publica la negativa. Ver `guarantees.ts` para de dónde sale y por qué
+   * se ancla en el sustantivo.
+   */
+  guarantees: RentalGuarantee[];
 }
 
 /** Per-source outcome of one run, published so the page can admit a portal is missing. */

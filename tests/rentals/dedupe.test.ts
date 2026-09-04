@@ -27,6 +27,7 @@ const base: RawRental = {
   bathrooms: 1,
   area: 60,
   petsAllowed: null,
+  guarantees: [],
 };
 
 const listing = (overrides: Partial<RawRental>): RawRental => ({ ...base, ...overrides });

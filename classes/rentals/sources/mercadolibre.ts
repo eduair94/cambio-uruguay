@@ -111,6 +111,8 @@ export function toRawRental(card: Polycard): RawRental | null {
     area: attributes.area,
     // La pasada principal no sabe: el dato NO viene por aviso. Lo pone `markPetFriendly`.
     petsAllowed: null,
+    // MercadoLibre no publica la garantia: ni por aviso ni como filtro de busqueda.
+    guarantees: [],
   };
 }
 

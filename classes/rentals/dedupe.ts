@@ -14,6 +14,7 @@
 //   * otherwise the adverts stay apart. A visible duplicate is a nuisance; a swallowed listing is
 //     a lie about what is on the market.
 import { flatten, slugify } from "./normalize";
+import { mergeGuarantees } from "./guarantees";
 import type { RawRental, RentalOffer, RentalProperty, RentalPropertyType, RentalSource } from "./types";
 
 /** How complete a source's rows tend to be — used only to pick which row names the property. */
@@ -232,6 +233,7 @@ function toOffer(listing: Candidate, context: DedupeContext): RentalOffer {
     image: listing.image,
     publishedAt: listing.publishedAt,
     petsAllowed: listing.petsAllowed,
+    guarantees: listing.guarantees,
     firstSeen: context.offerFirstSeen.get(listing.listingId) || context.today,
     lastSeen: context.today,
   };
@@ -294,6 +296,8 @@ export function buildRentalProperties(raw: RawRental[], context: DedupeContext):
         // —ningun portal publica "no acepta mascotas"— asi que un `null` no contradice a un `true`,
         // sólo dice que ese aviso no lo menciona.
         petsAllowed: cluster.some((item) => item.petsAllowed === true) ? true : null,
+        // Union: que un aviso no nombre ANDA no dice que la inmobiliaria no la acepte.
+        guarantees: mergeGuarantees(cluster.map((item) => item.guarantees)),
         priceUyu: cheapest.priceUyu,
         price: cheapest.price,
         currency: cheapest.currency,
