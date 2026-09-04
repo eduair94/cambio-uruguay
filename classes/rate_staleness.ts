@@ -49,12 +49,21 @@ export interface FrozenQuote {
   /** `true` = la ventana entera está quieta, así que `daysFrozen` es un piso, no el número real. */
   capped: boolean;
   extreme: FrozenExtreme;
+  /** Mediana de días quietos del propio grupo (moneda + tipo). La vara contra la que se juzgó. */
+  groupMedianDays: number;
 }
 
 export interface FrozenOptions {
   today: Date;
   /** Días de calendario sin moverse a partir de los cuales se reporta. Por defecto 7. */
   minDays?: number;
+}
+
+function median(values: number[]): number {
+  if (!values.length) return 0;
+  const s = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(s.length / 2);
+  return s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2;
 }
 
 const keyOf = (r: StalenessRow) => `${r.origin}|${r.code}|${r.type || ""}`;
@@ -93,7 +102,19 @@ export function findFrozenQuotes(rows: StalenessRow[], opts: FrozenOptions): Fro
     latest.set(key, { code: last.row.code, type: last.row.type || "", origin: last.row.origin, buy: last.buy, sell: last.sell });
   }
 
-  const frozen: FrozenQuote[] = [];
+  // Primera pasada: cuántos días lleva quieta cada serie. Todavía sin juzgar a nadie.
+  interface Measured {
+    key: string;
+    origin: string;
+    code: string;
+    type: string;
+    buy: number | null;
+    sell: number | null;
+    lastChangedAt: Date | null;
+    daysFrozen: number;
+    capped: boolean;
+  }
+  const measured: Measured[] = [];
   for (const [key, points] of groups) {
     // Con una sola muestra no hay nada que comparar. Eso es una serie corta, no una pizarra quieta,
     // y denunciarla convertiría a cada casa nueva en una alerta el día que entra.
@@ -107,19 +128,54 @@ export function findFrozenQuotes(rows: StalenessRow[], opts: FrozenOptions): Fro
     const runStart = capped ? points[0].date : points[i + 1].date;
     // Días de CALENDARIO, no cantidad de puntos: hay orígenes con días faltantes, y contar muestras
     // le bajaría la antigüedad justo a los que peor se están portando.
-    const daysFrozen = daysBetween(runStart, opts.today);
-    if (daysFrozen < minDays) continue;
-
-    frozen.push({
+    measured.push({
+      key,
       origin: last.row.origin,
       code: last.row.code,
       type: last.row.type || "",
       buy: last.buy,
       sell: last.sell,
       lastChangedAt: capped ? null : runStart,
-      daysFrozen,
+      daysFrozen: daysBetween(runStart, opts.today),
       capped,
-      extreme: extremeOf(key, latest),
+    });
+  }
+
+  // Segunda pasada: juzgar a cada serie contra SU PROPIO GRUPO, no contra un número fijo.
+  //
+  // La primera corrida en producción devolvió 105 congeladas y 66 graves, casi todas ARS y BRL a 120
+  // días. No era un hallazgo: el peso argentino a 0,02/0,04 es una moneda que las casas apenas
+  // quieren, y dejar la pizarra quieta meses es su comportamiento normal. Un umbral fijo calibrado
+  // con el dólar y aplicado a 18 monedas es el mismo error que `rate_audit` ya había aprendido a no
+  // cometer con los spreads. La pregunta correcta no es "¿hace cuánto no se mueve?" sino "¿hace
+  // cuánto no se mueve, comparada con las otras casas que cotizan lo mismo?".
+  const groupDays = new Map<string, number[]>();
+  for (const m of measured) {
+    const g = `${m.code}|${m.type}`;
+    if (!groupDays.has(g)) groupDays.set(g, []);
+    groupDays.get(g)!.push(m.daysFrozen);
+  }
+
+  const frozen: FrozenQuote[] = [];
+  for (const m of measured) {
+    const groupMedianDays = median(groupDays.get(`${m.code}|${m.type}`) || []);
+    // Dos condiciones, y la segunda es la que apaga el ruido: quieta en términos absolutos, y
+    // ADEMÁS quieta más allá de lo que su propio mercado considera normal. Si el grupo entero lleva
+    // 120 días sin moverse, una casa a 120 días no está fallando: está haciendo lo que hacen todas.
+    if (m.daysFrozen < minDays) continue;
+    if (m.daysFrozen < groupMedianDays + minDays) continue;
+
+    frozen.push({
+      origin: m.origin,
+      code: m.code,
+      type: m.type,
+      buy: m.buy,
+      sell: m.sell,
+      lastChangedAt: m.lastChangedAt,
+      daysFrozen: m.daysFrozen,
+      capped: m.capped,
+      extreme: extremeOf(m.key, latest),
+      groupMedianDays,
     });
   }
 

@@ -36,6 +36,18 @@ function moving(origin: string, from: string, days: number, buy: number, sell: n
 
 const TODAY = day("2026-09-04");
 
+/**
+ * El mercado del dólar alrededor: tres casas que sí mueven la pizarra.
+ *
+ * Hace falta en casi todos los casos porque el veredicto es RELATIVO al grupo. Sin pares, "no se
+ * movió en 34 días" no significa nada: puede ser una casa dormida o una moneda que nadie opera.
+ */
+const PEERS: StalenessRow[] = [
+  ...moving("peer_a", "2026-08-01", 35, 39.0, 41.4),
+  ...moving("peer_b", "2026-08-01", 35, 39.1, 41.45),
+  ...moving("peer_c", "2026-08-01", 35, 39.2, 41.5),
+];
+
 describe("findFrozenQuotes", () => {
   it("encuentra la pizarra que no se mueve y dice desde cuándo", () => {
     const rows = [...moving("brou", "2026-08-01", 35, 39.05, 41.45), ...flat("baluma_cambio", "2026-08-01", 35, 37.15, 39.55)];
@@ -51,6 +63,7 @@ describe("findFrozenQuotes", () => {
     const rows = [
       ...moving("cambio_x", "2026-08-01", 10, 41.0, 41.2), // se movió hasta el 10/08
       ...flat("cambio_x", "2026-08-11", 25, 41.5, 41.7), // saltó el 11/08 y ahí se quedó
+      ...PEERS, // el mercado alrededor, que sí se mueve
     ];
     const [frozen] = findFrozenQuotes(rows, { today: TODAY, minDays: 7 });
 
@@ -70,6 +83,7 @@ describe("findFrozenQuotes", () => {
       { origin: "cambio_z", code: "USD", type: "", buy: 40, sell: 41, date: day("2026-08-28") },
       { origin: "cambio_z", code: "USD", type: "", buy: 40, sell: 41, date: day("2026-08-31") },
       { origin: "cambio_z", code: "USD", type: "", buy: 40, sell: 41, date: day("2026-09-04") },
+      ...PEERS,
     ];
     const [frozen] = findFrozenQuotes(rows, { today: TODAY, minDays: 7 });
     expect(frozen.daysFrozen).toBe(7);
@@ -84,6 +98,7 @@ describe("findFrozenQuotes", () => {
     const rows: StalenessRow[] = [
       ...flat("brou", "2026-08-01", 35, 39.05, 41.45),
       ...moving("brou", "2026-08-01", 35, 39.55, 40.95).map(r => ({ ...r, type: "EBROU" })),
+      ...PEERS,
     ];
     const frozen = findFrozenQuotes(rows, { today: TODAY, minDays: 7 });
     expect(frozen).toHaveLength(1);
@@ -112,8 +127,57 @@ describe("findFrozenQuotes", () => {
     expect(frozen.extreme).toBeNull();
   });
 
+  it("no juzga a una serie sin pares: con un solo origen no hay vara", () => {
+    // Monedas como el dólar canadiense o el yen las cotiza una sola casa. Ahí "no se movió" no se
+    // puede distinguir de "nadie más la cotiza", y el silencio es la respuesta honesta.
+    const rows = flat("unica", "2026-08-01", 35, 27.5, 30.1).map(r => ({ ...r, code: "CAD" }));
+    expect(findFrozenQuotes(rows, { today: TODAY, minDays: 7 })).toEqual([]);
+  });
+
   it("no lanza con una lista vacía: esta guarda nunca puede romper el scrape", () => {
     expect(findFrozenQuotes([], { today: TODAY, minDays: 7 })).toEqual([]);
+  });
+
+  // La primera corrida en producción devolvió 105 congeladas y 66 "graves", y casi todas eran ARS y
+  // BRL a 120 días. No era un hallazgo: es que el peso argentino a 0,02/0,04 es una moneda que las
+  // casas apenas quieren y dejan la pizarra quieta durante meses. Un umbral fijo calibrado con el
+  // dólar aplicado a 18 monedas es el MISMO error que `rate_audit` ya había aprendido a no cometer
+  // con los spreads ("un factor fijo o borra el peso argentino o deja pasar cualquier cosa en el
+  // dólar"). La referencia tiene que ser el propio grupo, no un número.
+  it("no denuncia a una moneda cuyo mercado entero está quieto", () => {
+    // Cuatro casas cotizando el peso argentino, las cuatro sin tocar la pizarra en toda la ventana.
+    const rows = ["a", "b", "c", "d"].flatMap((o, i) =>
+      flat(o, "2026-08-01", 35, 0.02, 0.04 + i * 0.001).map(r => ({ ...r, code: "ARS" }))
+    );
+    expect(findFrozenQuotes(rows, { today: TODAY, minDays: 7 })).toEqual([]);
+  });
+
+  it("sí denuncia a la que está quieta MIENTRAS sus pares se mueven", () => {
+    const rows = [
+      ...moving("brou", "2026-08-01", 35, 39.05, 41.45),
+      ...moving("itau", "2026-08-01", 35, 39.2, 41.5),
+      ...moving("gales", "2026-08-01", 35, 39.1, 41.4),
+      ...flat("baluma_cambio", "2026-08-01", 35, 37.15, 39.55),
+    ];
+    const frozen = findFrozenQuotes(rows, { today: TODAY, minDays: 7 });
+    expect(frozen.map(f => f.origin)).toEqual(["baluma_cambio"]);
+    expect(frozen[0].groupMedianDays).toBe(0);
+  });
+
+  it("mide el grupo por moneda: que el peso argentino duerma no exime al dólar de la misma casa", () => {
+    const rows = [
+      // El dólar del barrio se mueve...
+      ...moving("brou", "2026-08-01", 35, 39.05, 41.45),
+      ...moving("itau", "2026-08-01", 35, 39.2, 41.5),
+      ...moving("gales", "2026-08-01", 35, 39.1, 41.4),
+      ...flat("dormida", "2026-08-01", 35, 37.15, 39.55),
+      // ...y el peso argentino de todos duerme, incluida la misma casa.
+      ...["brou", "itau", "gales", "dormida"].flatMap(o =>
+        flat(o, "2026-08-01", 35, 0.02, 0.04).map(r => ({ ...r, code: "ARS" }))
+      ),
+    ];
+    const frozen = findFrozenQuotes(rows, { today: TODAY, minDays: 7 });
+    expect(frozen.map(f => `${f.origin}/${f.code}`)).toEqual(["dormida/USD"]);
   });
 
   it("ignora filas sin precio en vez de contarlas como un cambio", () => {
@@ -121,6 +185,7 @@ describe("findFrozenQuotes", () => {
       ...flat("parcial", "2026-08-01", 20, 40, 41),
       { origin: "parcial", code: "USD", type: "", buy: null as any, sell: null as any, date: day("2026-08-21") },
       ...flat("parcial", "2026-08-22", 14, 40, 41),
+      ...PEERS,
     ];
     const [frozen] = findFrozenQuotes(rows, { today: TODAY, minDays: 7 });
     expect(frozen.daysFrozen).toBe(34);
