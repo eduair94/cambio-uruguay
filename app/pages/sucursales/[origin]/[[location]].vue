@@ -581,15 +581,40 @@ useHead(() => {
       item: `https://cambio-uruguay.com/sucursales/${origin}/${location}`,
     })
   }
+  const graph: Array<Record<string, unknown>> = [
+    { '@type': 'BreadcrumbList', itemListElement: items },
+  ]
+
+  // ItemList de RESUMEN: posición, nombre y URL, nada más.
+  //
+  // Los datos del negocio —dirección, coordenada, horarios— ya los publica la ficha de cada
+  // sucursal como FinancialService, que es donde corresponden. Repetirlos acá engordaría el HTML de
+  // las ~200 páginas de esta familia sin agregar un dato que Google no tenga, y esta página no es
+  // la sucursal: es la lista. Es el patrón que documenta Google para una página de listado cuyos
+  // ítems tienen página propia.
+  //
+  // Sólo se emite cuando hay enlaces reales: una lista vacía no es una lista.
+  if (branchLinks.value.length) {
+    graph.push({
+      '@type': 'ItemList',
+      name: locationLabel.value
+        ? `Sucursales de ${exchangeHouseName.value} en ${locationLabel.value}`
+        : `Sucursales de ${exchangeHouseName.value}`,
+      numberOfItems: branchLinks.value.length,
+      itemListElement: branchLinks.value.map((link, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: link.label,
+        url: `https://cambio-uruguay.com${link.to}`,
+      })),
+    })
+  }
+
   return {
     script: [
       {
         type: 'application/ld+json',
-        innerHTML: JSON.stringify({
-          '@context': 'https://schema.org',
-          '@type': 'BreadcrumbList',
-          itemListElement: items,
-        }),
+        innerHTML: JSON.stringify({ '@context': 'https://schema.org', '@graph': graph }),
       },
     ],
   }

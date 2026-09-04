@@ -56,3 +56,25 @@ describe('la página de sucursales enlaza a sus hijos', () => {
     )
   })
 })
+
+// La pagina de departamento lista sucursales y no lo declaraba en ningun lado: solo emitia el
+// BreadcrumbList. Es una pagina de LISTADO, y son ~200 en esta familia.
+describe('el ItemList de la pagina de departamento', () => {
+  it('declara la lista con posicion, nombre y URL', () => {
+    expect(src).toMatch(/'@type': 'ItemList'/)
+    expect(src).toMatch(/numberOfItems: branchLinks\.value\.length/)
+    expect(src).toMatch(/position: index \+ 1/)
+    expect(src).toMatch(/url: `https:\/\/cambio-uruguay\.com\$\{link\.to\}`/)
+  })
+
+  // Los datos del negocio van en la ficha de cada sucursal, que ya emite FinancialService con su
+  // coordenada y sus horarios. Repetirlos aca engordaria el HTML sin agregar nada.
+  it('no repite los datos del negocio que ya publica la ficha', () => {
+    const bloque = src.slice(src.indexOf("'@type': 'ItemList'"))
+    expect(bloque).not.toMatch(/FinancialService|GeoCoordinates|openingHours|streetAddress/)
+  })
+
+  it('no emite una lista vacia', () => {
+    expect(src).toMatch(/if \(branchLinks\.value\.length\) \{/)
+  })
+})
