@@ -244,3 +244,26 @@ describe('solo se publican las garantias con precision medida', () => {
     }
   })
 })
+
+// Alquilar al dueño evita la comision de la inmobiliaria: un mes de alquiler mas IVA. El directorio
+// detectaba 52 de 14.744 (0,35 %) porque el parser de MercadoLibre ponia `desconocido` en todo;
+// tras leer su `seller_type` son 519.
+describe('filtro de dueno directo', () => {
+  it('pide particular, y no toma "desconocido" por inmobiliaria', () => {
+    const { filter } = buildRentalFilter(normalizeRentalQuery({ dueno: '1' }), 10)
+    expect(filter['offers.sellerType']).toBe('particular')
+    expect(
+      buildRentalFilter(normalizeRentalQuery({}), 10).filter['offers.sellerType']
+    ).toBeUndefined()
+  })
+
+  // No existe el filtro contrario: "desconocido" no es "inmobiliaria", es que no se sabe quien
+  // publica. Con el tope de paginacion de ML la mayoria de las inmobiliarias nunca se ven.
+  it('no hay forma de pedir "solo inmobiliarias"', () => {
+    for (const valor of ['0', 'inmobiliaria', 'false']) {
+      expect(
+        buildRentalFilter(normalizeRentalQuery({ dueno: valor }), 10).filter['offers.sellerType']
+      ).toBeUndefined()
+    }
+  })
+})

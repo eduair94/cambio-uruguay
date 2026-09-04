@@ -233,6 +233,15 @@ STORY: Arrive with a barrio and a budget, narrow it, see who publishes it, leave
           label="Publica gastos comunes"
           @update:model-value="apply"
         />
+        <VSwitch
+          v-model="form.dueno"
+          color="primary"
+          density="compact"
+          hide-details
+          inset
+          label="Dueño directo (sin comisión)"
+          @update:model-value="apply"
+        />
       </div>
 
       <!-- Garantías. En Uruguay es el filtro que decide si alguien puede alquilar, más que el
@@ -567,6 +576,7 @@ const form = reactive({
   multi: readQuery().multi === '1',
   pets: readQuery().pets === '1',
   gc: readQuery().gc === '1',
+  dueno: readQuery().dueno === '1',
   guarantees: (readQuery().garantia ?? '')
     .split(',')
     .filter(v =>
@@ -597,6 +607,7 @@ const requestParams = computed(() => {
   if (form.multi) params.multi = '1'
   if (form.pets) params.pets = '1'
   if (form.gc) params.gc = '1'
+  if (form.dueno) params.dueno = '1'
   if (form.guarantees.length) params.garantia = form.guarantees.join(',')
   if (form.sedes.length) {
     params.sedes = form.sedes.join(',')
@@ -803,6 +814,7 @@ const hasFilters = computed(() =>
       form.multi ||
       form.pets ||
       form.gc ||
+      form.dueno ||
       form.guarantees.length > 0 ||
       form.sedes.length > 0
   )
@@ -849,8 +861,13 @@ const totalLabel = (property: RentalProperty): string => {
 
 const sellerLabel = (property: RentalProperty): string => {
   const named = property.offers.find(offer => offer.sellerType !== 'desconocido')
-  if (named) return `${RENTAL_SELLER_LABEL[named.sellerType]}: ${named.sellerName}`
-  return property.offers[0]?.sellerName || 'Sin dato'
+  if (!named) return property.offers[0]?.sellerName || 'Sin dato'
+  const tipo = RENTAL_SELLER_LABEL[named.sellerType]
+  // MercadoLibre no da el nombre de quien publica, sólo si es particular o inmobiliaria: sin esto
+  // la tarjeta decía "Dueño directo: Particular".
+  const nombre = named.sellerName?.trim()
+  if (!nombre || /^(?:particular|mercado libre)$/i.test(nombre)) return tipo
+  return `${tipo}: ${nombre}`
 }
 
 const ageLabel = (property: RentalProperty): string => {
@@ -917,6 +934,7 @@ function clearFilters(): void {
   form.multi = false
   form.pets = false
   form.gc = false
+  form.dueno = false
   form.guarantees = []
   form.mutualista = ''
   form.sedes = []

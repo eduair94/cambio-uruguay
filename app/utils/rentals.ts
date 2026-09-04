@@ -233,6 +233,8 @@ export interface RentalQuery {
   guarantees: RentalGuarantee[]
   /** Sólo las que publican los gastos comunes, para poder comparar el costo real. */
   withExpenses: boolean
+  /** Sólo las que alquila el dueño, sin inmobiliaria: se ahorra la comisión de un mes + IVA. */
+  owner: boolean
   /** Ids de OSM de las sedes elegidas como punto de referencia. Vacío = sin filtro de distancia. */
   sedes: number[]
   /** Radio en km alrededor de cada sede elegida. */
@@ -286,6 +288,7 @@ export function normalizeRentalQuery(input: Record<string, unknown> = {}): Renta
     pets: String(input.pets ?? '') === '1' || input.pets === true,
     guarantees: parseGuarantees(input.garantia),
     withExpenses: String(input.gc ?? '') === '1' || input.gc === true,
+    owner: String(input.dueno ?? '') === '1' || input.dueno === true,
     sedes: parseSedes(input.sedes),
     radioKm: parseRadio(input.radio),
     sort,
@@ -528,6 +531,8 @@ export function buildRentalFilter(
   // dos. Pedir que las acepte todas dejaría casi nada y no es lo que nadie busca.
   if (query.guarantees.length) nonLocation.guarantees = { $in: query.guarantees }
   if (query.withExpenses) nonLocation['offers.commonExpenses'] = { $type: 'number', $gt: 0 }
+  // `particular` o nada: "desconocido" NO es una inmobiliaria, es que no se sabe quién publica.
+  if (query.owner) nonLocation['offers.sellerType'] = 'particular'
   if (query.priceMin !== null || query.priceMax !== null) {
     nonLocation.priceUyu = {
       ...(query.priceMin !== null ? { $gte: query.priceMin } : {}),
