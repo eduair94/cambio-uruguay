@@ -1,5 +1,5 @@
 import type { ExchangeRate } from '~/types/api'
-import { quotesForCurrency, type CurrencyCode } from '~/utils/currencyPages'
+import { quotesForCurrency, rankUsableQuotes, type CurrencyCode } from '~/utils/currencyPages'
 import { publicRates } from '~/utils/rateSource'
 
 /**
@@ -53,17 +53,29 @@ export function useExchangeRates(codes?: readonly CurrencyCode[]) {
   // rate (nobody can transact at those). SEO/casa pages keep using `rows`.
   const realRows = computed<ExchangeRate[]>(() => publicRates(data.value ?? []))
 
+  /**
+   * Las cotizaciones de una moneda con la corona ya puesta por `rankUsableQuotes`.
+   *
+   * `quotesForCurrency` corona la compra más alta y la venta más baja SIN mirar si el número es
+   * alcanzable, y esa es la última superficie del sitio a la que le faltaba la regla: `/casas-de-cambio`,
+   * `/pizarra`, las páginas de casa y la home ya descartan la pizarra que está a más de
+   * OFF_MARKET_PCT de la mediana antes de coronar. El conversor no, y por eso el 2026-09-04 el
+   * `<title>` de /convertir/50000-pesos-argentinos-a-pesos-uruguayos publicaba "≈ $ 7.500,00":
+   * tomaba la compra de tradelix, 0,15, contra una mediana de 0,02 en un mercado de 40 casas. La
+   * respuesta honesta era ~$ 1.000. El backend hace bien en conservar esa fila —`rate_plausibility`
+   * la marca sospechosa y no la borra, porque es un precio publicado y no un error de parseo—; lo
+   * que no puede pasar es que el sitio la anuncie como el mejor precio del mercado.
+   */
+  const rankedQuotes = (code: CurrencyCode) =>
+    rankUsableQuotes(quotesForCurrency(realRows.value, code))
+
   /** Lowest positive sell price for a currency (best price to BUY it), or null. */
-  const bestSell = (code: CurrencyCode): number | null => {
-    const quotes = quotesForCurrency(realRows.value, code)
-    return quotes.find(q => q.bestSell)?.sell ?? null
-  }
+  const bestSell = (code: CurrencyCode): number | null =>
+    rankedQuotes(code).find(q => q.bestSell)?.sell ?? null
 
   /** Highest positive buy price for a currency (best price to SELL it), or null. */
-  const bestBuy = (code: CurrencyCode): number | null => {
-    const quotes = quotesForCurrency(realRows.value, code)
-    return quotes.find(q => q.bestBuy)?.buy ?? null
-  }
+  const bestBuy = (code: CurrencyCode): number | null =>
+    rankedQuotes(code).find(q => q.bestBuy)?.buy ?? null
 
   return { rows: data, realRows, pending, error, refresh, bestSell, bestBuy }
 }
