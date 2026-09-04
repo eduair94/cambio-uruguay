@@ -163,9 +163,10 @@ describe("dropReassignedOffers", () => {
     expect(op.deleteOne.filter.key).toBe("vieja");
   });
 
-  // El documento entero se reescribe con `$set`, y `$set` sobre `_id` lo rechaza MongoDB por
-  // inmutable. Sin esta proyeccion el barrido revienta en la primera fila que cambia.
-  it("no lee _id, que haria fallar el $set por campo inmutable", async () => {
+  // Son 16.000 documentos leidos enteros: no traer los campos que se van a reescribir con el mismo
+  // valor es trafico y memoria. (No es correccion de un fallo: crei que $set sobre _id rompia el
+  // barrido y la corrida del 2026-09-04 lo desmintio, porque reescribir el mismo _id no lo modifica.)
+  it("no lee _id ni __v, que se reescribirian con el mismo valor", async () => {
     rowsInDb([]);
     await dropReassignedOffers([property("nueva", [offer("infocasas:1")])]);
     const projection = find.mock.calls[0][1] as Record<string, number>;

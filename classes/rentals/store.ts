@@ -259,10 +259,13 @@ export async function dropReassignedOffers(
   let cleaned = 0;
   let removed = 0;
   let deleted = 0;
-  // Sin `_id` ni los campos que administra mongoose: el documento entero se vuelve a escribir con
-  // `$set`, y `$set` sobre `_id` lo rechaza MongoDB por inmutable ("would modify the immutable
-  // field '_id'"). `saveRentalProperties` no tiene el problema porque sus objetos vienen del
-  // agrupamiento y nunca pasaron por la base.
+  // Sin `_id` ni los campos que administra mongoose.
+  //
+  // NO es que sin esto falle: lo escribí creyendo que sí y la corrida del 2026-09-04 lo desmintió
+  // —barrió 1.015 filas sin un solo error—. MongoDB rechaza MODIFICAR `_id`, y volver a
+  // escribirle el mismo valor no lo modifica. La proyección se queda igual por lo que sí es cierto:
+  // son 16.000 documentos que se leen enteros, y traer campos que se van a reescribir con el mismo
+  // valor es tráfico y memoria al pedo.
   const cursor = RentalListingModel.find({}, { _id: 0, __v: 0, createdAt: 0, updatedAt: 0 })
     .lean()
     .cursor();
