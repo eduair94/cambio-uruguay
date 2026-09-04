@@ -91,7 +91,7 @@ export const origins = {
   // cambio_vexel: CambioVexel, // 2026-06: web server down (DNS resolves, no HTTP response). Re-enable when site is back.
   // cambio_velso: CambioVelso, // 2026-06: published rate table abandoned (last modified 12/02/2025). Re-enable when site updates again.
   tradelix: Tradelix,
-  cambio_sicurezza: CambioSicurezza,
+  // cambio_sicurezza: CambioSicurezza, // 2026-09: el BCU marca a la institucion 2640 "En proceso de Baja" y el sitio no esta caido sino BORRADO (le sacaron la zona DNS al dominio en el proveedor -> SERVFAIL, y ya no hay vhost en el hosting). A diferencia de las otras tres de esta lista, esta no es una falla reversible del sitio: es la licencia en retirada. Re-habilitar solo si el BCU vuelve a "Activa" Y publica una web nueva.
   cambio_pernas: CambioPernas,
   cambio_misiones: CambioMisiones,
   cambio_obelisco: CambioObelisco,
@@ -113,6 +113,10 @@ export const origins = {
  */
 export const locationOrigins = {
   ...origins,
+  // Sigue aca aunque salga de `origins`: get_locations recorre ESTA lista y reconcilia contra la
+  // ficha del BCU, que hoy todavia lista la Casa Central de Sicurezza. Asi la sucursal se retira
+  // sola cuando el BCU deje de listarla, en vez de quedar congelada para siempre.
+  cambio_sicurezza: CambioSicurezza,
   cambio_salto_grande: CambioSaltoGrande,
   mas_cambio: MasCambio,
   cambio_vexel: CambioVexel,
