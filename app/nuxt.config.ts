@@ -239,10 +239,19 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
+    // `s-maxage` alone only speaks to shared caches. Cloudflare fills the silence
+    // about the browser with its Browser Cache TTL — a year on this zone — so the
+    // origin's honest `s-maxage=3600` arrived at visitors as
+    // `max-age=31536000, s-maxage=3600` (measured 2026-09-04). HTML pinned for a
+    // year names `_nuxt/<hash>.js` files that a later deploy renames, so a repeat
+    // visitor loads a document whose 45 scripts all 404, nothing hydrates, and the
+    // tab just spins. A hard refresh hides it until the next deploy, which is what
+    // made it look random. The zone respects an explicit value — /sw.js below ships
+    // `max-age=0` and arrives untouched — so the browser half is stated out loud.
     '/': {
       ssr: true,
       headers: {
-        'cache-control': 's-maxage=3600',
+        'cache-control': 'public, max-age=0, must-revalidate, s-maxage=3600',
         'X-Frame-Options': 'DENY',
         'X-Content-Type-Options': 'nosniff',
         'Referrer-Policy': 'strict-origin-when-cross-origin',
@@ -253,7 +262,7 @@ export default defineNuxtConfig({
     '/widget': {
       ssr: true,
       headers: {
-        'cache-control': 's-maxage=300',
+        'cache-control': 'public, max-age=0, must-revalidate, s-maxage=300',
         'X-Frame-Options': '',
         'Content-Security-Policy': 'frame-ancestors *',
       },
