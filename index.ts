@@ -1112,6 +1112,75 @@ const main = async () => {
 
   /**
    * @openapi
+   * /frozen-quotes:
+   *   get:
+   *     tags:
+   *       - Health
+   *     summary: Pizarras que no cambian de precio
+   *     description: |
+   *       Cotizaciones cuyo precio no se movió en 7 días o más, medido contra su propia historia.
+   *
+   *       Es la cuarta guarda del pipeline y mira un eje que las otras tres no ven: `rate_plausibility`
+   *       compara compra contra venta por fila, `rate_audit` compara cada casa contra las demás, y el
+   *       estado `stale` de /estado mira la FECHA de la fila. Un origen que publica fila fresca todos
+   *       los días con el mismo número pasa las tres.
+   *
+   *       Importa porque el daño no es pasivo: el mercado se mueve y la pizarra quieta no, así que
+   *       deriva al extremo de la distribución — y como el sitio ordena por "más barato", la sube al
+   *       titular. Por eso cada fila trae `extreme`, que dice si esa cotización encabeza hoy su grupo.
+   *
+   *       Lo calcula el job de sync al final de cada corrida y se sirve desde archivo: esta ruta no
+   *       toca la base.
+   *     responses:
+   *       200:
+   *         description: Informe de pizarras congeladas
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 generatedAt:
+   *                   type: string
+   *                   format: date-time
+   *                 windowDays:
+   *                   type: number
+   *                 checked:
+   *                   type: number
+   *                 quotes:
+   *                   type: array
+   *                   items:
+   *                     type: object
+   *                     properties:
+   *                       origin: { type: string }
+   *                       code: { type: string }
+   *                       type: { type: string }
+   *                       buy: { type: number, nullable: true }
+   *                       sell: { type: number, nullable: true }
+   *                       daysFrozen: { type: number }
+   *                       capped:
+   *                         type: boolean
+   *                         description: la ventana entera está quieta, así que daysFrozen es un piso
+   *                       lastChangedAt: { type: string, format: date-time, nullable: true }
+   *                       extreme:
+   *                         type: string
+   *                         nullable: true
+   *                         enum: [min-sell, max-sell, min-buy, max-buy]
+   */
+  server.get("frozen-quotes", async (req: Request, res: Response): Promise<any> => {
+    // Servido desde el archivo que escribe el sync, no recalculado: leer 120 días de historia en una
+    // ruta pública sería regalarle a cualquiera una consulta cara sobre la colección más grande.
+    try {
+      const raw = fs.readFileSync("last_frozen_quotes.json", "utf8");
+      return res.json(JSON.parse(raw));
+    } catch {
+      // Sin archivo todavía (primer arranque, o un sync que se comió la guillotina de 5 minutos).
+      // No es un error: es "no hay informe", y hay que poder distinguirlo de "no hay congeladas".
+      return res.json({ generatedAt: null, windowDays: 0, checked: 0, quotes: [], available: false });
+    }
+  });
+
+  /**
+   * @openapi
    * /health:
    *   get:
    *     tags:

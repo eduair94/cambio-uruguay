@@ -1,7 +1,8 @@
 import fs from "fs";
 import { Cambio } from "./cambio";
 import { origins } from "./origins";
-import { auditTodaysRates } from "./rate_audit";
+import { auditTodaysRates, reportFrozenQuotes } from "./rate_audit";
+import { frozenSeverity } from "./rate_staleness";
 import { publishPendingRateChanges } from "./rate_changes";
 import { DEFAULT_ORIGIN_TIMEOUT_MS, DEFAULT_SYNC_BUDGET_MS } from "./sync_health";
 
@@ -103,6 +104,21 @@ const sync_cambios = async () => {
   console.log(
     `Rate audit: ${audit.checked} filas, ${audit.removed} borradas, ${audit.suspicious} sospechosas`
   );
+
+  // Y mirar a cada casa contra su propio pasado, que es el único eje donde se ve el origen que
+  // publica el mismo número desde hace dos meses: escribe fila fresca, con compra menor que venta y
+  // dentro de la banda del grupo, así que las otras dos guardas lo dan por bueno. Tampoco lanza.
+  const frozen = await reportFrozenQuotes();
+  const graves = frozen.quotes.filter((q) => frozenSeverity(q) === "grave").length;
+  console.log(
+    `Pizarras congeladas: ${frozen.quotes.length} sin moverse hace 7+ días (${graves} graves) sobre ${frozen.checked} filas de historia`
+  );
+  try {
+    fs.writeFileSync("last_frozen_quotes.json", JSON.stringify(frozen), "utf8");
+  } catch (e) {
+    // Igual que el resto de los archivos de estado: no poder escribirlo no puede tumbar el scrape.
+    console.error("No se pudo escribir last_frozen_quotes.json:", e);
+  }
 
   const telegram = await publishPendingRateChanges().catch((error) => {
     console.error("Could not publish pending rate changes:", error);

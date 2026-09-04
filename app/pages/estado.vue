@@ -178,6 +178,11 @@ const { data, pending, error } = await useFetch<ScraperHealth>('/api/scraper-hea
 
 const statusMeta: Record<ScraperStatus, { color: string; icon: string }> = {
   live: { color: 'success', icon: 'mdi-check-circle' },
+  // `frozen` va en azul hielo y NO en verde a propósito: la casa contesta perfecto, la fila es de
+  // hoy y el spread es plausible — lo único que no cambia es el número. Pintarla de verde es
+  // exactamente lo que hizo que baluma_cambio pasara 57 días encabezando la portada sin que nadie
+  // lo viera.
+  frozen: { color: 'info', icon: 'mdi-snowflake' },
   stale: { color: 'warning', icon: 'mdi-clock-alert-outline' },
   silent: { color: 'orange', icon: 'mdi-volume-off' },
   error: { color: 'error', icon: 'mdi-alert-circle' },
@@ -193,7 +198,7 @@ const healthColor = computed(() => {
 const summaryCards = computed(() => {
   const s = data.value?.summary
   if (!s) return []
-  return (['live', 'stale', 'silent', 'error'] as ScraperStatus[]).map(key => ({
+  return (['live', 'frozen', 'stale', 'silent', 'error'] as ScraperStatus[]).map(key => ({
     key,
     count: s[key],
     icon: statusMeta[key].icon,
@@ -280,6 +285,9 @@ defineOgImageComponent('Cambio', {
 .tone-silent {
   border-color: rgba(255, 152, 0, 0.4);
 }
+.tone-frozen {
+  border-color: rgba(33, 150, 243, 0.4);
+}
 .casa-link {
   color: inherit;
   font-weight: 600;
@@ -340,5 +348,8 @@ defineOgImageComponent('Cambio', {
 }
 .issue-stale .v-icon {
   color: rgb(var(--v-theme-warning));
+}
+.issue-frozen .v-icon {
+  color: rgb(var(--v-theme-info));
 }
 </style>

@@ -26,12 +26,14 @@
     "colDuration": "Duration",
     "status": {
       "live": "Live",
+      "frozen": "Frozen",
       "stale": "Stale",
       "silent": "No data",
       "error": "Error"
     },
     "statusDesc": {
       "live": "Fresh data today",
+      "frozen": "Publishing, but the price never moves",
       "stale": "Not updated today",
       "silent": "Ran but no rows",
       "error": "Failed to run"

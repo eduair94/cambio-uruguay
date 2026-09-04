@@ -9,12 +9,20 @@
 //                  ZERO rows (e.g. a Wix/JS site whose selectors broke) — that
 //                  silent failure only shows up as the origin being ABSENT here.
 //   3. /localData -> display name + website per origin (for a humane table).
+//   4. /frozen-quotes -> the board that did not break, it just stopped moving. The other three
+//                  signals all measure THIS run; only this one compares an origin against its own
+//                  past. baluma_cambio published 37,15/39,55 for 57 days straight while its source
+//                  returned a clean HTTP 200 titled "Cotizaciones del día" — fresh row, plausible
+//                  spread, inside the peer band, and therefore `live` on this very page.
 //
 // Classification per origin:
 //   error  — the run threw (in originResults with status!=success)
 //   silent — the run "succeeded" but produced 0 fresh rows (parsed nothing)
 //   stale  — has rows, but newest row is older than today (Montevideo)
-//   live   — ran clean AND has fresh rows
+//   frozen — fresh rows, but the PRICE has not changed in 7+ days. Ranks worse than `live` on
+//            purpose: a frozen board drifts to the edge of the distribution as the market moves,
+//            and since the site sorts by "cheapest", staleness promotes it to the headline.
+//   live   — ran clean, has fresh rows, and the number still moves
 //
 // Everything is read-only against the public API and cached briefly.
 
@@ -49,7 +57,21 @@ interface HealthResponse {
 
 type LocalData = Record<string, { name?: string; website?: string }>
 
-export type ScraperStatus = 'live' | 'stale' | 'silent' | 'error'
+interface FrozenQuote {
+  origin: string
+  code: string
+  type: string
+  daysFrozen: number
+  capped: boolean
+  extreme: 'min-sell' | 'max-sell' | 'min-buy' | 'max-buy' | null
+}
+
+interface FrozenReport {
+  generatedAt?: string | null
+  quotes?: FrozenQuote[]
+}
+
+export type ScraperStatus = 'live' | 'frozen' | 'stale' | 'silent' | 'error'
 
 export interface ScraperRow {
   origin: string
@@ -65,6 +87,10 @@ export interface ScraperRow {
   usdBuy: number | null
   usdSell: number | null
   lastUpdate: string | null
+  /** Días sin que cambie el precio del USD de mostrador. `null` = se mueve, o no hay historia. */
+  frozenDays: number | null
+  /** Si esa cotización quieta encabeza hoy su grupo — el caso que llega a la portada. */
+  frozenExtreme: FrozenQuote['extreme']
 }
 
 export interface ScraperHealth {
@@ -74,6 +100,7 @@ export interface ScraperHealth {
   summary: {
     total: number
     live: number
+    frozen: number
     stale: number
     silent: number
     error: number
@@ -112,17 +139,35 @@ function round2(n: number): number {
   return Math.round((n + Number.EPSILON) * 100) / 100
 }
 
+const EXTREME_LABEL: Record<NonNullable<FrozenQuote['extreme']>, string> = {
+  'min-sell': 'y es la venta más barata del mercado',
+  'max-sell': 'y es la venta más cara del mercado',
+  'max-buy': 'y es la compra más alta del mercado',
+  'min-buy': 'y es la compra más baja del mercado',
+}
+
+/** El detalle importa: los mismos días quietos pesan mucho más si además encabezan el ranking. */
+function frozenDetail(s: ScraperRow): string {
+  const days = `precio sin cambiar hace ${s.frozenDays} días`
+  return s.frozenExtreme ? `${days}, ${EXTREME_LABEL[s.frozenExtreme]}` : days
+}
+
 async function buildHealth(nowMs: number): Promise<ScraperHealth> {
   const config = useRuntimeConfig()
   const apiBase = config.public.apiBase as string
 
-  const [health, rates, localData] = await Promise.all([
+  const [health, rates, localData, frozenReport] = await Promise.all([
     $fetch<HealthResponse>('/health', { baseURL: apiBase, timeout: 20000 }).catch(
       () => ({}) as HealthResponse
     ),
     $fetch<RateRow[]>('/', { baseURL: apiBase, timeout: 20000 }).catch(() => [] as RateRow[]),
     $fetch<LocalData>('/localData', { baseURL: apiBase, timeout: 20000 }).catch(
       () => ({}) as LocalData
+    ),
+    // Cuarta señal. Si la ruta no existe todavía o falla, el resto de la página sigue igual: no
+    // saber si una pizarra está quieta no puede costar el tablero entero.
+    $fetch<FrozenReport>('/frozen-quotes', { baseURL: apiBase, timeout: 20000 }).catch(
+      () => ({ quotes: [] }) as FrozenReport
     ),
   ])
 
@@ -149,6 +194,15 @@ async function buildHealth(nowMs: number): Promise<ScraperHealth> {
     ...rowsByOrigin.keys(),
   ])
 
+  // Sólo el USD de mostrador: es la cotización que la portada ordena y publica, y mezclarle los
+  // tipos (EBROU, TRANSFERENCIA) haría que una casa figure quieta por una punta que nadie mira.
+  const frozenByOrigin = new Map<string, FrozenQuote>()
+  for (const q of frozenReport?.quotes || []) {
+    if (q.code !== 'USD' || (q.type && q.type !== '')) continue
+    const prev = frozenByOrigin.get(q.origin)
+    if (!prev || q.daysFrozen > prev.daysFrozen) frozenByOrigin.set(q.origin, q)
+  }
+
   const todayStart = montevideoTodayStartMs(nowMs)
 
   const scrapers: ScraperRow[] = []
@@ -171,10 +225,13 @@ async function buildHealth(nowMs: number): Promise<ScraperHealth> {
     // Plain USD quote (no interbank/cable type) for the comparison column.
     const usd = rows.find(r => r.code === 'USD' && (!r.type || r.type === ''))
 
+    const frozen = frozenByOrigin.get(origin) || null
+
     let status: ScraperStatus
     if (run && run.status !== 'success') status = 'error'
     else if (rows.length === 0) status = 'silent'
     else if (!hasFresh) status = 'stale'
+    else if (frozen) status = 'frozen'
     else status = 'live'
 
     scrapers.push({
@@ -191,16 +248,19 @@ async function buildHealth(nowMs: number): Promise<ScraperHealth> {
       usdBuy: usd?.buy ?? null,
       usdSell: usd?.sell ?? null,
       lastUpdate: newest ? new Date(newest).toISOString() : null,
+      frozenDays: frozen ? frozen.daysFrozen : null,
+      frozenExtreme: frozen ? frozen.extreme : null,
     })
   }
 
   // Sort: problems first (error, silent, stale), then live; alpha within a tier.
-  const order: Record<ScraperStatus, number> = { error: 0, silent: 1, stale: 2, live: 3 }
+  const order: Record<ScraperStatus, number> = { error: 0, silent: 1, stale: 2, frozen: 3, live: 4 }
   scrapers.sort((a, b) => order[a.status] - order[b.status] || a.name.localeCompare(b.name))
 
   const summary = {
     total: scrapers.length,
     live: scrapers.filter(s => s.status === 'live').length,
+    frozen: scrapers.filter(s => s.status === 'frozen').length,
     stale: scrapers.filter(s => s.status === 'stale').length,
     silent: scrapers.filter(s => s.status === 'silent').length,
     error: scrapers.filter(s => s.status === 'error').length,
@@ -210,7 +270,7 @@ async function buildHealth(nowMs: number): Promise<ScraperHealth> {
 
   // --- Insights ---
   const usdSells = scrapers
-    .filter(s => s.status === 'live' && s.usdSell && s.origin !== 'bcu')
+    .filter(s => (s.status === 'live' || s.status === 'frozen') && s.usdSell && s.origin !== 'bcu')
     .map(s => ({ origin: s.origin, name: s.name, sell: s.usdSell as number }))
   const usdMedianSell = median(usdSells.map(u => u.sell))
   usdSells.sort((a, b) => a.sell - b.sell)
@@ -230,7 +290,9 @@ async function buildHealth(nowMs: number): Promise<ScraperHealth> {
       : []
 
   // Best place to BUY usd = lowest sell price; best to SELL usd = highest buy.
-  const liveUsd = scrapers.filter(s => s.status === 'live' && s.origin !== 'bcu')
+  const liveUsd = scrapers.filter(
+    s => (s.status === 'live' || s.status === 'frozen') && s.origin !== 'bcu'
+  )
   const bestUsdBuy = liveUsd
     .filter(s => s.usdSell)
     .sort((a, b) => (a.usdSell as number) - (b.usdSell as number))[0]
@@ -259,7 +321,9 @@ async function buildHealth(nowMs: number): Promise<ScraperHealth> {
           ? s.error || 'run failed'
           : s.status === 'silent'
             ? 'ran but parsed 0 rows'
-            : 'data not refreshed today',
+            : s.status === 'frozen'
+              ? frozenDetail(s)
+              : 'data not refreshed today',
     }))
 
   return {

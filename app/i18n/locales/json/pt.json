@@ -26,12 +26,14 @@
     "colDuration": "Duração",
     "status": {
       "live": "Ao vivo",
+      "frozen": "Congelado",
       "stale": "Desatualizado",
       "silent": "Sem dados",
       "error": "Com erro"
     },
     "statusDesc": {
       "live": "Dados frescos hoje",
+      "frozen": "Publica, mas o preço não muda",
       "stale": "Não atualizado hoje",
       "silent": "Rodou mas sem linhas",
       "error": "Falhou ao executar"
