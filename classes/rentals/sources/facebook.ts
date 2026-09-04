@@ -91,6 +91,9 @@ export function toRawRental(item: FbListing, locationHint: string): RawRental | 
     bedrooms: attributes.bedrooms,
     bathrooms: attributes.bathrooms,
     area: attributes.area,
+    // El puente devuelve id,title,url,price,image,location,condition: no hay campo de mascotas.
+    // Y el titulo no alcanza: 3 de 1.947 ofertas de Facebook lo mencionan (0,15 %, medido 2026-09-04).
+    petsAllowed: null,
   };
 }
 

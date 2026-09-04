@@ -60,6 +60,26 @@ export interface RentalOffer {
   image: string | null;
   /** ISO date (YYYY-MM-DD) the portal says the advert was published, when it says so. */
   publishedAt: string | null;
+  /**
+   * Does the advert SAY pets are allowed?
+   *
+   * `true` only when the portal publishes it as STRUCTURED data: InfoCasas facility 222, or
+   * MercadoLibre's IS_SUITABLE_FOR_PETS search filter. `null` is "the advert does not say", which
+   * is most of them.
+   *
+   * The type is `true | null` and NOT `boolean | null` ON PURPOSE: no source publishes the
+   * negative, so a `false` cannot be derived from any measurement.
+   *   * InfoCasas: 44 distinct facilities observed over 210 adverts (2026-09-04) and none is a
+   *     negative — the neighbour of 222 is 225 "Se aceptan grupos de jóvenes". And
+   *     `facilitiesNotApply` does NOT negate it: it is an advert-level boolean, and 12 adverts
+   *     carry it `true` AND carry facility 222.
+   *   * MercadoLibre: the filter has ONE value (242085 = "Admite mascotas"). There is no opposite
+   *     bucket.
+   *   * Facebook: publishes no such field at all.
+   * Leaving `false` out of the type turns writing it into a compile error instead of an invented
+   * figure. The opposite of `true` here is "we do not know", and it has to be shown that way.
+   */
+  petsAllowed: true | null;
   firstSeen: string;
   lastSeen: string;
 }
@@ -82,6 +102,26 @@ export interface RentalProperty {
   bathrooms: number | null;
   /** Built area in m². */
   area: number | null;
+  /**
+   * Does the advert SAY pets are allowed?
+   *
+   * `true` only when the portal publishes it as STRUCTURED data: InfoCasas facility 222, or
+   * MercadoLibre's IS_SUITABLE_FOR_PETS search filter. `null` is "the advert does not say", which
+   * is most of them.
+   *
+   * The type is `true | null` and NOT `boolean | null` ON PURPOSE: no source publishes the
+   * negative, so a `false` cannot be derived from any measurement.
+   *   * InfoCasas: 44 distinct facilities observed over 210 adverts (2026-09-04) and none is a
+   *     negative — the neighbour of 222 is 225 "Se aceptan grupos de jóvenes". And
+   *     `facilitiesNotApply` does NOT negate it: it is an advert-level boolean, and 12 adverts
+   *     carry it `true` AND carry facility 222.
+   *   * MercadoLibre: the filter has ONE value (242085 = "Admite mascotas"). There is no opposite
+   *     bucket.
+   *   * Facebook: publishes no such field at all.
+   * Leaving `false` out of the type turns writing it into a compile error instead of an invented
+   * figure. The opposite of `true` here is "we do not know", and it has to be shown that way.
+   */
+  petsAllowed: true | null;
   /** Cheapest offer, in pesos — what the list sorts and filters by. */
   priceUyu: number;
   /** The same price in the currency the cheapest offer was published in. */
@@ -128,6 +168,26 @@ export interface RawRental {
   bedrooms: number | null;
   bathrooms: number | null;
   area: number | null;
+  /**
+   * Does the advert SAY pets are allowed?
+   *
+   * `true` only when the portal publishes it as STRUCTURED data: InfoCasas facility 222, or
+   * MercadoLibre's IS_SUITABLE_FOR_PETS search filter. `null` is "the advert does not say", which
+   * is most of them.
+   *
+   * The type is `true | null` and NOT `boolean | null` ON PURPOSE: no source publishes the
+   * negative, so a `false` cannot be derived from any measurement.
+   *   * InfoCasas: 44 distinct facilities observed over 210 adverts (2026-09-04) and none is a
+   *     negative — the neighbour of 222 is 225 "Se aceptan grupos de jóvenes". And
+   *     `facilitiesNotApply` does NOT negate it: it is an advert-level boolean, and 12 adverts
+   *     carry it `true` AND carry facility 222.
+   *   * MercadoLibre: the filter has ONE value (242085 = "Admite mascotas"). There is no opposite
+   *     bucket.
+   *   * Facebook: publishes no such field at all.
+   * Leaving `false` out of the type turns writing it into a compile error instead of an invented
+   * figure. The opposite of `true` here is "we do not know", and it has to be shown that way.
+   */
+  petsAllowed: true | null;
 }
 
 /** Per-source outcome of one run, published so the page can admit a portal is missing. */

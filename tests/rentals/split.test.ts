@@ -33,6 +33,7 @@ const offer = (listingId: string, priceUyu = 30_000): RentalOffer => ({
   sellerType: "desconocido",
   image: null,
   publishedAt: null,
+  petsAllowed: null,
   firstSeen: "2026-08-01",
   lastSeen: "2026-09-03",
 });

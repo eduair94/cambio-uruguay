@@ -231,6 +231,7 @@ function toOffer(listing: Candidate, context: DedupeContext): RentalOffer {
     sellerType: listing.sellerType,
     image: listing.image,
     publishedAt: listing.publishedAt,
+    petsAllowed: listing.petsAllowed,
     firstSeen: context.offerFirstSeen.get(listing.listingId) || context.today,
     lastSeen: context.today,
   };
@@ -289,6 +290,10 @@ export function buildRentalProperties(raw: RawRental[], context: DedupeContext):
         bedrooms: cluster.map((item) => item.bedrooms).find((value) => value !== null) ?? null,
         bathrooms: cluster.map((item) => item.bathrooms).find((value) => value !== null) ?? null,
         area: cluster.map((item) => item.area).find((value) => value !== null) ?? null,
+        // Basta con que UN portal lo publique. No es optimismo: la ausencia no es una negativa
+        // —ningun portal publica "no acepta mascotas"— asi que un `null` no contradice a un `true`,
+        // sólo dice que ese aviso no lo menciona.
+        petsAllowed: cluster.some((item) => item.petsAllowed === true) ? true : null,
         priceUyu: cheapest.priceUyu,
         price: cheapest.price,
         currency: cheapest.currency,

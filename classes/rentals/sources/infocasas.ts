@@ -30,6 +30,29 @@ const PAGE_SIZE = 21;
 /** Newest-first. Their `order` values: 2 = popularidad (default), 3 = más recientes. */
 const ORDER_NEWEST = "3";
 
+/**
+ * "Se aceptan mascotas" en la lista de facilities de InfoCasas.
+ *
+ * Medido el 2026-09-04 sobre 210 avisos: `facilities` viene en el 100 % de las filas, la 222 es
+ * exactamente {"id":222,"name":"Se aceptan mascotas","group":"Confort de la casa"}, el id y el
+ * nombre coincidieron 210/210, y es la unica facility con "mascota" en el nombre. La trae el
+ * 14,8 %. Cero requests extra: el sweep ya baja estas filas.
+ *
+ * Se acepta el id O el nombre: si el dia de manana renumeran, el nombre sigue sirviendo, y si le
+ * cambian el texto, sigue el id. Que las dos señales sean redundantes es a proposito.
+ */
+const PETS_FACILITY_ID = 222;
+
+function petsFromFacilities(facilities: IcFacility[] | null | undefined): true | null {
+  if (!Array.isArray(facilities)) return null;
+  for (const facility of facilities) {
+    if (Number(facility?.id) === PETS_FACILITY_ID) return true;
+    if (/se aceptan mascotas/i.test(String(facility?.name || ""))) return true;
+  }
+  // Ausente = el aviso no lo dice. NUNCA false: InfoCasas no publica la negativa.
+  return null;
+}
+
 interface IcCurrency {
   id?: number | null;
   name?: string | null;
@@ -47,8 +70,21 @@ interface IcLocationEntry {
   name?: string | null;
 }
 
+interface IcFacility {
+  id?: number | null;
+  name?: string | null;
+  group?: string | null;
+}
+
 interface IcRow {
   id?: number | string;
+  facilities?: IcFacility[] | null;
+  /**
+   * OJO: NO es la negacion de `facilities`. Es un booleano del propio aviso (42 true / 168 false
+   * sobre 210 medidos el 2026-09-04) y 12 avisos lo traen en `true` Y traen la facility 222. Se
+   * declara para que nadie lo lea como "no acepta mascotas".
+   */
+  facilitiesNotApply?: boolean | null;
   title?: string | null;
   address?: string | null;
   link?: string | null;
@@ -180,6 +216,7 @@ export function toRawRental(row: IcRow): RawRental | null {
     commonExpensesCurrency: commonExpenses === null ? null : currencyOf(row.commonExpenses?.currency) || currency,
     sellerName: String(row.owner?.name || "").trim() || "InfoCasas",
     sellerType: sellerTypeOf(row.owner),
+    petsAllowed: petsFromFacilities(row.facilities),
     image: String(row.img || "").trim() || null,
     publishedAt: /^\d{4}-\d{2}-\d{2}$/.test(String(row.created_at || "")) ? String(row.created_at) : null,
     propertyType: inferPropertyType(title, row.property_type?.name || null),

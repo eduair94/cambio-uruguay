@@ -26,6 +26,18 @@ const RentalListingSchema = new Schema(
     priceUyu: { type: Number, required: true },
     price: { type: Number, required: true },
     currency: { type: String, default: "UYU" },
+    /**
+     * Se declara ACA o no llega a Mongo.
+     *
+     * El esquema es `strict` por defecto y `store.ts` escribe con `bulkWrite`, que pasa por
+     * `castUpdate`: un campo no declarado se saca del `$set` EN SILENCIO. Y falla asimetrico,
+     * que es lo peor: `offers` es `[Schema.Types.Mixed]`, asi que `offers[].petsAllowed` si
+     * persistiria y el de la propiedad no. Compilaria limpio, los tests pasarian y el filtro no
+     * devolveria nada.
+     *
+     * `null` = el aviso no lo dice. NUNCA `false`: ningun portal publica la negativa.
+     */
+    petsAllowed: { type: Boolean, default: null },
     offers: { type: [Schema.Types.Mixed], default: [] },
     sources: { type: [String], default: [] },
     freshAt: { type: String, default: "" },
