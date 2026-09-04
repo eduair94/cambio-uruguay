@@ -128,7 +128,6 @@ export const CASAS_PLACE_IDS: Record<string, string> = {
   cambio_ingles: 'ChIJyXsmQlaAn5UR2r5o1-PMxI8', // Cambio Ingles (2★/9)
   cambio_regul: 'ChIJG5QTrO6An5UR6Sne2qVCyak', // Cambio Regul (4.2★/220)
   alter_cambio: 'ChIJ0avl_IB_n5URZrw2YrWKQtU', // Altercambio (4.2★/10)
-  cambio_sicurezza: 'ChIJoSVuIj_VoZUROtNDpcauWnQ', // Cambio Sicurezza (4★/1)
   la_favorita: 'ChIJG15_5sqBn5URlX9lEv8DnoE', // La Favorita SF - Casa Central (3.5★/31)
   cambio_romantico: 'ChIJDdY0qKPUoZURczp_tY7fAo4', // Cambio Romántico (4.4★/15)
   cambio_federal: 'ChIJfWLEc7b1n5URGmr0NYHFc20', // Cambio Federal (3.4★/7)

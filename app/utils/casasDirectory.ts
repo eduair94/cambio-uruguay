@@ -1414,54 +1414,6 @@ export const CASAS_REPUTATION: CasaReputation[] = [
     ],
   },
   {
-    code: 'cambio_sicurezza',
-    name: 'Cambio Sicurezza',
-    category: 'casa',
-    googleRating: 4,
-    googleReviewCount: 1,
-    ratingSource: 'https://www.google.com/maps?cid=8384205824503042874',
-    branchNote:
-      'Única sucursal (San Quintín 4296, Paso Molino, Montevideo) con un solo listado en Google Maps; la única reseña existente es de 4 estrellas.',
-    founded: '2012',
-    services: [
-      'cotización online en su web',
-      'horario extendido: lunes a viernes 8 a 21 h',
-      'atención fines de semana: sábados y domingos 8:30 a 13:30',
-      'formulario online de reclamos y sugerencias',
-    ],
-    strengths: [
-      'Horario muy extendido: L-V 8 a 21 h y abre sábados y domingos (según su web)',
-      'Autorizada y supervisada por el BCU desde 2012 (código de institución 2640)',
-      'Publica cotizaciones online de USD, EUR, ARS y BRL en su sitio',
-      'Sin incidentes, sanciones ni quejas hallados en prensa uruguaya',
-    ],
-    weaknesses: [
-      "Figura 'En proceso de Baja' en el registro del BCU (posible cese de actividad)",
-      'Reputación online casi inexistente: una sola reseña en Google Maps',
-      'Sitio web deteriorado: portada muestra página por defecto del servidor y certificado SSL vencido',
-      'Una única sucursal (Paso Molino); sin presencia en aeropuertos ni otras zonas',
-    ],
-    press: [],
-    sources: [
-      {
-        label: 'Google Maps — Cambio Sicurezza (4,0★, 1 reseña)',
-        url: 'https://www.google.com/maps?cid=8384205824503042874',
-      },
-      {
-        label: "BCU — Información de institución 2640 (Sicurezza Casa Cambiaria S.A., 'En…",
-        url: 'https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/InformacionInstitucion.aspx?nroinst=2640',
-      },
-      {
-        label: 'Sitio oficial — dirección, horarios, autorización BCU 14/9/2012, RUT',
-        url: 'http://www.sicurezza.uy/index.html',
-      },
-      {
-        label: 'Sitio oficial — tabla de cotizaciones online (feed activo)',
-        url: 'http://www.sicurezza.uy/xml/xml.php',
-      },
-    ],
-  },
-  {
     code: 'cambio_sir',
     name: 'Cambio Sir',
     category: 'casa',

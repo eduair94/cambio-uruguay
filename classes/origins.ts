@@ -113,9 +113,13 @@ export const origins = {
  */
 export const locationOrigins = {
   ...origins,
-  // Sigue aca aunque salga de `origins`: get_locations recorre ESTA lista y reconcilia contra la
-  // ficha del BCU, que hoy todavia lista la Casa Central de Sicurezza. Asi la sucursal se retira
-  // sola cuando el BCU deje de listarla, en vez de quedar congelada para siempre.
+  // Sigue aca aunque salga de `origins` para que su sucursal se pueda reconciliar contra la ficha
+  // del BCU, que hoy todavia lista la Casa Central de Sicurezza.
+  //
+  // OJO CON LO QUE ESTO **NO** HACE, que es lo que escribi mal la primera vez: NADA corre esto
+  // solo. El unico consumidor de `locationOrigins` es `scripts/oneoff/get_locations.ts`, que esta
+  // fuera del build y no tiene job de pm2: la sucursal se retira cuando UNA PERSONA corre
+  // `npm run get_locations`, no por su cuenta.
   cambio_sicurezza: CambioSicurezza,
   cambio_salto_grande: CambioSaltoGrande,
   mas_cambio: MasCambio,
