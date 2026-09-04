@@ -433,7 +433,7 @@ STORY: Arrive with a barrio and a budget, narrow it, see who publishes it, leave
               </VChip>
               <!-- Sólo lo que el aviso dice. Sin chip = no lo dice, no que no la acepte. -->
               <VChip
-                v-for="g in property.guarantees"
+                v-for="g in publishedGuarantees(property)"
                 :key="g"
                 size="x-small"
                 variant="outlined"
@@ -569,7 +569,9 @@ const form = reactive({
   gc: readQuery().gc === '1',
   guarantees: (readQuery().garantia ?? '')
     .split(',')
-    .filter(v => (RENTAL_GUARANTEE_VALUES as readonly string[]).includes(v)) as RentalGuarantee[],
+    .filter(v =>
+      (RENTAL_GUARANTEE_PUBLISHED as readonly string[]).includes(v)
+    ) as RentalGuarantee[],
   // La mutualidad sólo filtra la lista de sedes: lo que viaja al servidor son los ids de OSM.
   mutualista: readQuery().mutualista ?? '',
   sedes: (readQuery().sedes ?? '')
@@ -640,11 +642,17 @@ function onMutualistaChange() {
  * Se muestra la PRIMERA de las elegidas: `LocationsMap` acepta un solo punto de referencia, y
  * dibujar un círculo por sede convertiría el mapa en una mancha. Las demás siguen filtrando igual.
  */
-const guaranteeChips = RENTAL_GUARANTEE_VALUES.map(value => ({
+const guaranteeChips = RENTAL_GUARANTEE_PUBLISHED.map(value => ({
   value,
   label: RENTAL_GUARANTEE_LABELS[value].label,
   hint: RENTAL_GUARANTEE_LABELS[value].hint,
 }))
+
+/** Sólo los tipos con precisión medida. Ver RENTAL_GUARANTEE_PUBLISHED. */
+const publishedGuarantees = (property: RentalProperty): RentalGuarantee[] =>
+  (property.guarantees ?? []).filter(g =>
+    (RENTAL_GUARANTEE_PUBLISHED as readonly string[]).includes(g)
+  )
 
 const guaranteeLabel = (value: RentalGuarantee) => RENTAL_GUARANTEE_LABELS[value]?.label ?? value
 const guaranteeHint = (value: RentalGuarantee) => RENTAL_GUARANTEE_LABELS[value]?.hint ?? ''

@@ -3,7 +3,12 @@
 // Los textos de este archivo son RECORTES REALES de descripciones de InfoCasas del 2026-09-04. No
 // están inventados: cada uno cubre un modo de falla que apareció al medir sobre 336 avisos.
 import { describe, expect, it } from "vitest";
-import { guaranteesFromText, mergeGuarantees, plainText } from "../../classes/rentals/guarantees";
+import {
+  guaranteesFromField,
+  guaranteesFromText,
+  mergeGuarantees,
+  plainText,
+} from "../../classes/rentals/guarantees";
 
 describe("qué garantías dice aceptar un aviso", () => {
   it("lee la lista típica", () => {
@@ -114,5 +119,83 @@ describe("al unificar varios avisos de la misma propiedad", () => {
   it("sin datos queda vacío", () => {
     expect(mergeGuarantees([[], []])).toEqual([]);
     expect(mergeGuarantees([])).toEqual([]);
+  });
+});
+
+// Los tres defectos que encontro la revision adversarial DESPUES de publicar la primera version.
+describe("lo que la revision corrigio", () => {
+  // Medido sobre las menciones reales: 34 "ANDA", 25 "Anda", 3 "anda". Con /ANDA/ se perdia
+  // el 45 %. Y ninguna de las 62 apariciones es el verbo andar.
+  it("reconoce ANDA en cualquier caja", () => {
+    for (const caja of ["ANDA", "Anda", "anda"]) {
+      expect(guaranteesFromText(`Garantías: ${caja} o Contaduría`), caja).toContain("anda");
+    }
+  });
+
+  // "SOMOS CORREDORES DE PORTO SEGURO" es publicidad de la inmobiliaria, no una garantia de la
+  // propiedad: 10 falsos positivos medidos, 8 de ellos CONTRADICIENDO la lista del propio aviso.
+  // Mandar a alguien con poliza de Porto a una casa que solo toma ANDA es el peor error posible.
+  it("no toma la publicidad de la inmobiliaria por una garantia de la propiedad", () => {
+    expect(
+      guaranteesFromText(
+        "SOMOS CORREDORES DE PORTO SEGURO - TRAMITA CON NOSOTROS TU GARANTIA EN 48HS. GARANTIAS: ANDA o CGN."
+      )
+    ).toEqual(["anda", "contaduria"]);
+  });
+
+  it("pero conserva la lista propia del aviso que ademas se publicita", () => {
+    expect(
+      guaranteesFromText("Somos corredores de seguros. Garantías: Aseguradoras, ANDA.")
+    ).toEqual(["anda", "aseguradora"]);
+  });
+
+  // (a) solo despues del sustantivo, (b) misma oracion, (c) sin negacion pegada.
+  it("no toma por deposito en garantia un galpon que quedo en la ventana", () => {
+    expect(
+      guaranteesFromText("Garantías: Anda o Porto. Ideal para empresas, depósitos y logística.")
+    ).toEqual(["anda", "aseguradora"]);
+    expect(guaranteesFromText("habitación depósito amplia. GARANTÍAS: ASEGURADORAS")).toEqual([
+      "aseguradora",
+    ]);
+  });
+
+  it("respeta una negacion pegada al deposito", () => {
+    expect(guaranteesFromText("Garantía: Seguros. No depósito.")).toEqual(["aseguradora"]);
+  });
+
+  // La negacion se ancla en el token del TIPO, nunca en "garantia": hay avisos que dicen
+  // "Gastos Comunes: NO TIENE. GARANTIAS: ANDA o CGN".
+  it("un 'no tiene' de los gastos comunes no borra las garantias", () => {
+    expect(guaranteesFromText("Gastos Comunes: NO TIENE. GARANTIAS: ANDA o CGN")).toEqual([
+      "anda",
+      "contaduria",
+    ]);
+  });
+});
+
+// El campo dedicado de InfoCasas. Dije que venia SIEMPRE null midiendo 126 avisos; con muestras
+// mas grandes viene cargado en 4,4 % y 9,8 %. Es texto libre pero es SOLO la frase de garantia,
+// asi que se lee entero, sin anclar en el sustantivo.
+describe("el campo `guarantee` de InfoCasas", () => {
+  it("lee una lista suelta, sin la palabra garantia", () => {
+    expect(guaranteesFromField("ANDA , PORTO SEGURO, FIDECIU O SURA.")).toEqual([
+      "anda",
+      "aseguradora",
+    ]);
+    expect(guaranteesFromField("ANDA, CONTADURÍA , SEGUROS")).toEqual([
+      "anda",
+      "contaduria",
+      "aseguradora",
+    ]);
+    expect(guaranteesFromField("POLIZA DE SEGUROS")).toEqual(["aseguradora"]);
+  });
+
+  it('entiende "Se Evalúan" como que la garantia se conversa', () => {
+    expect(guaranteesFromField("Se Evalúan")).toEqual(["aConvenir"]);
+  });
+
+  it("vacio cuando el campo no viene", () => {
+    expect(guaranteesFromField(null)).toEqual([]);
+    expect(guaranteesFromField("")).toEqual([]);
   });
 });

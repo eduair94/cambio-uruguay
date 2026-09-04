@@ -77,6 +77,32 @@ export const RENTAL_GUARANTEE_VALUES: readonly RentalGuarantee[] = Object.freeze
   Object.keys(RENTAL_GUARANTEE_LABELS) as RentalGuarantee[]
 )
 
+/**
+ * Los únicos que se OFRECEN como filtro y se muestran en la tarjeta.
+ *
+ * Se cosechan los siete, pero sólo se publican los tres con precisión medida sobre 460 avisos
+ * leídos a mano, con piso de Wilson al 95 %:
+ *
+ *   contaduria   78/78  = 100 %   piso 95,3 %
+ *   anda         57/57  = 100 %   piso 93,7 %
+ *   aseguradora 191/191 = 100 %   piso 98,0 % (tras sacar la publicidad de las inmobiliarias)
+ *
+ * Los otros cuatro se guardan y NO se publican, cada uno por su motivo:
+ *   deposito     66-83 % de precisión, piso 43,7 %. Depende de tres galpones que nadie pudo
+ *                decidir sin abrir el aviso. Por debajo del listón del repo.
+ *   bhu          3 de 3 leídos a mano, pero n=3 da piso 43,8 %: es una anécdota, no una medición.
+ *                Y sus tres casos dicen "depósito BHU", que es UN producto partido en dos etiquetas.
+ *   aConvenir    ídem, n=3.
+ *   propietaria  CERO apariciones en 460 avisos: no es que mida mal, es que no se puede medir.
+ *
+ * Para publicar alguno hace falta medirlo sobre una muestra más grande, no cambiar este arreglo.
+ */
+export const RENTAL_GUARANTEE_PUBLISHED: readonly RentalGuarantee[] = Object.freeze([
+  'anda',
+  'contaduria',
+  'aseguradora',
+])
+
 export interface RentalProperty {
   key: string
   title: string
@@ -406,7 +432,9 @@ function parseGuarantees(input: unknown): RentalGuarantee[] {
       .split(',')
       .map(part => part.trim())
   )
-  return RENTAL_GUARANTEE_VALUES.filter(value => wanted.has(value))
+  // Sólo los publicados: un filtro por un tipo que no se muestra devolvería resultados que nadie
+  // puede ver de dónde salen.
+  return RENTAL_GUARANTEE_PUBLISHED.filter(value => wanted.has(value))
 }
 
 /** Cuántas sedes se pueden cruzar a la vez. Cada una suma un `$expr` a la consulta. */

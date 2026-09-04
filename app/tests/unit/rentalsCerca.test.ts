@@ -16,6 +16,7 @@ import {
   normalizeRentalQuery,
   RADIO_KM_DEFAULT,
   RENTAL_GUARANTEE_LABELS,
+  RENTAL_GUARANTEE_PUBLISHED,
   RENTAL_GUARANTEE_VALUES,
   totalMonthlyUyu,
 } from '~/utils/rentals'
@@ -219,5 +220,27 @@ describe('el costo mensual real', () => {
     expect(
       buildRentalFilter(normalizeRentalQuery({}), 10).filter['offers.commonExpenses']
     ).toBeUndefined()
+  })
+})
+
+// Se cosechan siete tipos y se publican tres. Los otros cuatro no llegan al listón de precision:
+// deposito mide 66-83 % (piso Wilson 43,7 %), bhu y aConvenir tienen n=3 (piso 43,8 %, es una
+// anecdota) y propietaria tuvo CERO apariciones en 460 avisos, o sea que no se puede ni medir.
+describe('solo se publican las garantias con precision medida', () => {
+  it('ofrece exactamente las tres medidas', () => {
+    expect([...RENTAL_GUARANTEE_PUBLISHED]).toEqual(['anda', 'contaduria', 'aseguradora'])
+  })
+
+  it('el filtro rechaza un tipo que se cosecha pero no se publica', () => {
+    for (const noPublicado of ['deposito', 'bhu', 'aConvenir', 'propietaria']) {
+      expect(normalizeRentalQuery({ garantia: noPublicado }).guarantees, noPublicado).toEqual([])
+    }
+  })
+
+  it('pero el catalogo completo sigue existiendo, porque el dato se guarda igual', () => {
+    expect(RENTAL_GUARANTEE_VALUES.length).toBe(7)
+    for (const value of RENTAL_GUARANTEE_PUBLISHED) {
+      expect(RENTAL_GUARANTEE_VALUES).toContain(value)
+    }
   })
 })
