@@ -55,7 +55,7 @@ Root pm2 entrypoints live at repo root: `index.ts`, `sync.ts`, `sync_aduana*.ts`
 |---|---|
 | `app/` | Nuxt frontend (separate package, own MongoDB) — see `app/AGENTS.md` |
 | `classes/` | backend logic — see `classes/AGENTS.md` |
-| `classes/cambios/` | 53 per-casa scraper modules + shared DolarAhora parser (47 active keys in `origins.ts`) — see `classes/cambios/AGENTS.md` |
+| `classes/cambios/` | 53 per-casa scraper modules + shared DolarAhora parser (**46** active keys in `origins.ts`, 6 comentadas) — see `classes/cambios/AGENTS.md`. **Cuidado al contar hacia afuera:** de esos 46 orígenes uno es `bcu`, que no es una casa de cambio y sólo aporta UI/UP/UR — son **45 casas**. El copy del sitio dice "más de 40" y por eso es correcto; cualquier cifra exacta que se publique afuera se cuenta desde `GET /parameters/origins` menos el BCU, no desde este archivo |
 | `bots/` | Telegram/Discord/Twitter bots — see `bots/AGENTS.md` + `bots/README.md` |
 | `mcp/` | open-source MCP server — see `mcp/AGENTS.md`, `mcp/README.md`, `mcp/DEPLOY.md` |
 | `tests/` | root vitest backend suite — see `tests/AGENTS.md` |
