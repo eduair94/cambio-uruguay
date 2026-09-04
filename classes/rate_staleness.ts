@@ -57,6 +57,15 @@ export interface FrozenOptions {
   today: Date;
   /** Días de calendario sin moverse a partir de los cuales se reporta. Por defecto 7. */
   minDays?: number;
+  /**
+   * Cuántos días de atraso se le tolera a la última fila antes de dejar de juzgar la serie.
+   *
+   * Una casa que DEJO de publicar no tiene una pizarra quieta: tiene otra falla, y `/estado` ya la
+   * cubre con `silent` y `stale`. Sin este corte, cada casa que alguna vez existió queda reportada
+   * para siempre como "congelada hace 120 días" — le pasó a `cambio_sicurezza`, que el BCU dio de
+   * baja y que hoy publica cero filas. Por defecto 2, para que un domingo sin fila no la mate.
+   */
+  maxGapDays?: number;
 }
 
 function median(values: number[]): number {
@@ -79,6 +88,7 @@ const daysBetween = (from: Date, to: Date) => startOfDay(to) - startOfDay(from);
  */
 export function findFrozenQuotes(rows: StalenessRow[], opts: FrozenOptions): FrozenQuote[] {
   const minDays = opts.minDays ?? 7;
+  const maxGapDays = opts.maxGapDays ?? 2;
   const groups = new Map<string, { row: StalenessRow; date: Date; buy: number | null; sell: number | null }[]>();
 
   for (const row of rows) {
@@ -121,6 +131,10 @@ export function findFrozenQuotes(rows: StalenessRow[], opts: FrozenOptions): Fro
     if (points.length < 2) continue;
 
     const last = points[points.length - 1];
+    // La serie tiene que seguir viva. Una casa que dejó de publicar parece congelada al máximo, y no
+    // lo está: se fue. Ver `maxGapDays`.
+    if (daysBetween(last.date, opts.today) > maxGapDays) continue;
+
     let i = points.length - 1;
     while (i >= 0 && points[i].buy === last.buy && points[i].sell === last.sell) i--;
 

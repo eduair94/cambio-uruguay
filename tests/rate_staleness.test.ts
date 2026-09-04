@@ -134,6 +134,28 @@ describe("findFrozenQuotes", () => {
     expect(findFrozenQuotes(rows, { today: TODAY, minDays: 7 })).toEqual([]);
   });
 
+  // cambio_sicurezza salio en la primera corrida real como "congelada 120 dias". No lo estaba: el
+  // BCU la marco "En proceso de Baja", le borraron la zona DNS al dominio y quedo comentada en
+  // origins.ts. Hoy publica CERO filas. Una casa que dejo de publicar no es una pizarra quieta — es
+  // otra falla, y `/estado` ya la cubre con `silent` y `stale`. Confundirlas le pone a esta guarda
+  // el ruido de todas las casas que alguna vez existieron.
+  it("no denuncia a la casa que dejo de publicar: eso es `silent`, no congelada", () => {
+    const rows = [
+      // Se fue el 2026-07-01 y no volvio.
+      ...flat("dada_de_baja", "2026-06-01", 30, 38.85, 41.65),
+      ...PEERS,
+    ];
+    expect(findFrozenQuotes(rows, { today: TODAY, minDays: 7 }).map(f => f.origin)).toEqual([]);
+  });
+
+  it("tolera un hueco corto: un domingo sin fila no es una casa que se fue", () => {
+    const rows = [
+      ...flat("con_hueco", "2026-08-01", 34, 37.15, 39.55), // ultima fila el 2026-09-03, ayer
+      ...PEERS,
+    ];
+    expect(findFrozenQuotes(rows, { today: TODAY, minDays: 7 }).map(f => f.origin)).toEqual(["con_hueco"]);
+  });
+
   it("no lanza con una lista vacía: esta guarda nunca puede romper el scrape", () => {
     expect(findFrozenQuotes([], { today: TODAY, minDays: 7 })).toEqual([]);
   });
