@@ -2404,6 +2404,19 @@ useHead({
   ],
 })
 
+// Un solo formato para las dos cifras del head. Lo comparten el título y la
+// descripción a propósito: son la misma pregunta contestada dos veces en el mismo
+// snippet, y si cada una redondeara por su cuenta el resultado se contradiría solo.
+//
+// El separador SÍ sigue al idioma. La descripción en castellano escribe "$40,65", igual que la
+// pizarra y la imagen OG; pero servir esa misma coma en /en da "$40,65", que un lector anglo lee
+// como cuarenta mil seiscientos cincuenta. Portugués comparte la coma con el castellano.
+const fmtRate = (value: number) =>
+  value.toLocaleString(locale.value === 'en' ? 'en-US' : 'es-UY', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
+
 /**
  * Meta description carrying today's two numbers.
  *
@@ -2417,27 +2430,58 @@ useHead({
  */
 const homeDescription = computed(() => {
   if (usdBestSell.value === null || usdBestBuy.value === null) return t('seo.homeDescription')
-  const fmt = (value: number) =>
-    value.toLocaleString('es-UY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
   return (
-    `Dólar hoy en Uruguay: se vende desde $${fmt(usdBestSell.value)} y se compra hasta ` +
-    `$${fmt(usdBestBuy.value)} comparando ${usdQuotes.value.length} casas de cambio. ` +
+    `Dólar hoy en Uruguay: se vende desde $${fmtRate(usdBestSell.value)} y se compra hasta ` +
+    `$${fmtRate(usdBestBuy.value)} comparando ${usdQuotes.value.length} casas de cambio. ` +
     `Datos del BCU actualizados cada 10 minutos. También euro, real y peso argentino.`
   ).slice(0, 300)
 })
 
+/**
+ * El título también lleva las cifras de hoy, no sólo la descripción.
+ *
+ * La home junta 126.314 impresiones a 0,18% de CTR en posición 9,55 y Search Console la marca
+ * en BAJA (−88 clics). Google la puso en "dolar hoy" —de 2.652 a 31.786 impresiones en dos
+ * meses— y contestaba con un genérico de 35 caracteres sin una sola cifra, teniendo los números
+ * renderizados en el servidor y publicados en la descripción de acá arriba desde siempre. Es la
+ * misma lección que 65f2aa5 dejó en /indicadores: el valor es lo que gana el clic.
+ *
+ * VA UNA SOLA CIFRA, y es la de venta. Con las dos —"venta $40,65 y compra $40,00"— el título se
+ * lee como la pizarra de UNA casa, y no lo es: son el mínimo de venta y el máximo de compra de ~40
+ * casas distintas, que es justo lo que dice la descripción con "desde" y "hasta". Poner esos dos
+ * calificadores en el título son 66 caracteres y no entran, y sin ellos el par puede además salir
+ * cruzado (el que vende más barato no tiene por qué ser el que compra más caro) y quedar absurdo.
+ * El que busca "dolar hoy" quiere a cuánto lo consigue: una cifra bien encuadrada gana más clics
+ * que dos ambiguas. La comparación entre casas la cuenta la descripción, que Google muestra debajo.
+ *
+ * Entra en 52 con el " | Cambio Uruguay" que agrega el titleTemplate de app.vue, muy por debajo del
+ * corte del SERP; la marca NO va en el mensaje (el "|" de un mensaje de i18n es el separador de
+ * plurales y t() se come todo lo que venga después — es el bug que este título tuvo desde febrero).
+ *
+ * LA GUARDA: la cifra sale de `usdBestSell`, la MISMA que arma la descripción, así que las dos
+ * mitades del snippet no pueden discrepar; y cuando la lectura no vino (SSR sin payload, API caída)
+ * vuelve al título traducido en vez de estampar un "$ NaN", que es peor que el genérico.
+ */
+const homeTitle = computed(() => {
+  if (usdBestSell.value === null) return t('seo.homeTitle')
+  // El símbolo vive en el mensaje, como en `seo.historicalDetailDescriptionLive`: acá va la cifra
+  // sola para que cada idioma ponga el suyo — "$" en castellano, "$U" en /en y /pt, donde un "$"
+  // pelado se lee como dólar y el número es en pesos uruguayos.
+  return t('seo.homeTitleLive', { sell: fmtRate(usdBestSell.value) })
+})
+
 useSeoMeta({
-  title: () => t('seo.homeTitle'),
+  title: () => homeTitle.value,
   description: () => homeDescription.value,
   keywords: () => t('seo.homeKeywords'),
-  ogTitle: () => t('seo.homeTitle'),
+  ogTitle: () => homeTitle.value,
   ogDescription: () => homeDescription.value,
   ogType: 'website',
   ogUrl: 'https://cambio-uruguay.com',
   ogLocale: 'es_UY',
   ogLocaleAlternate: ['en_US', 'pt_BR'],
   twitterCard: 'summary_large_image',
-  twitterTitle: () => t('seo.homeTitle'),
+  twitterTitle: () => homeTitle.value,
   twitterDescription: () => t('seo.homeDescription'),
 })
 </script>
