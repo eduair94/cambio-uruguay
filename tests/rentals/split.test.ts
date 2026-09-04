@@ -163,6 +163,16 @@ describe("dropReassignedOffers", () => {
     expect(op.deleteOne.filter.key).toBe("vieja");
   });
 
+  // El documento entero se reescribe con `$set`, y `$set` sobre `_id` lo rechaza MongoDB por
+  // inmutable. Sin esta proyeccion el barrido revienta en la primera fila que cambia.
+  it("no lee _id, que haria fallar el $set por campo inmutable", async () => {
+    rowsInDb([]);
+    await dropReassignedOffers([property("nueva", [offer("infocasas:1")])]);
+    const projection = find.mock.calls[0][1] as Record<string, number>;
+    expect(projection._id).toBe(0);
+    expect(projection.__v).toBe(0);
+  });
+
   it("no toca un aviso que la corrida no vio", async () => {
     rowsInDb([{ key: "vieja", offers: [offer("infocasas:ausente")] }]);
     const out = await dropReassignedOffers([property("nueva", [offer("infocasas:otro")])]);

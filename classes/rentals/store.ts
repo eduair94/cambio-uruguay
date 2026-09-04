@@ -259,7 +259,13 @@ export async function dropReassignedOffers(
   let cleaned = 0;
   let removed = 0;
   let deleted = 0;
-  const cursor = RentalListingModel.find({}).lean().cursor();
+  // Sin `_id` ni los campos que administra mongoose: el documento entero se vuelve a escribir con
+  // `$set`, y `$set` sobre `_id` lo rechaza MongoDB por inmutable ("would modify the immutable
+  // field '_id'"). `saveRentalProperties` no tiene el problema porque sus objetos vienen del
+  // agrupamiento y nunca pasaron por la base.
+  const cursor = RentalListingModel.find({}, { _id: 0, __v: 0, createdAt: 0, updatedAt: 0 })
+    .lean()
+    .cursor();
   // Sin anotar y sin reasignar, igual que en `saveRentalProperties`.
   //
   // No es descuido: anotarlo rompe el build. Los tipos de mongoose exigen para `$set` un objeto de
