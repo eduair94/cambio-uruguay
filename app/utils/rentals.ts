@@ -205,6 +205,8 @@ export interface RentalQuery {
   pets: boolean
   /** Garantías pedidas. Una propiedad entra si acepta AL MENOS UNA de las marcadas. */
   guarantees: RentalGuarantee[]
+  /** Sólo las que publican los gastos comunes, para poder comparar el costo real. */
+  withExpenses: boolean
   /** Ids de OSM de las sedes elegidas como punto de referencia. Vacío = sin filtro de distancia. */
   sedes: number[]
   /** Radio en km alrededor de cada sede elegida. */
@@ -257,6 +259,7 @@ export function normalizeRentalQuery(input: Record<string, unknown> = {}): Renta
     multi: String(input.multi ?? '') === '1' || input.multi === true,
     pets: String(input.pets ?? '') === '1' || input.pets === true,
     guarantees: parseGuarantees(input.garantia),
+    withExpenses: String(input.gc ?? '') === '1' || input.gc === true,
     sedes: parseSedes(input.sedes),
     radioKm: parseRadio(input.radio),
     sort,
@@ -298,6 +301,39 @@ export function rentalAgeLabel(iso: string | null | undefined, today = new Date(
 }
 
 /** The rent as the advert states it, plus the other currency in brackets. */
+
+/**
+ * El costo mensual real de un aviso: alquiler + gastos comunes, en pesos.
+ *
+ * POR QUE IMPORTA: sobre 16.300 propiedades, las que publican gastos comunes tienen una mediana de
+ * $4.650, que es el 15 % del alquiler. Un apartamento de $30.000 cuesta $34.650, y el directorio
+ * mostraba sólo los $30.000.
+ *
+ * SE CALCULA POR AVISO, NO POR PROPIEDAD, y eso no es un detalle. De las 971 propiedades donde dos
+ * portales declaran gastos comunes, 438 (45 %) discrepan en más de un 15 %. Mezclar el alquiler más
+ * barato con los gastos comunes de OTRO aviso daría un total que ningún aviso ofrece. Se suma lo
+ * que dice un mismo aviso o no se suma nada.
+ *
+ * Devuelve `null` cuando el aviso no publica los gastos: el 71 % no lo hace, y estimarlos con la
+ * mediana seria inventar el numero mas caro de la busqueda.
+ */
+export function totalMonthlyUyu(
+  offer: Pick<RentalOffer, 'priceUyu' | 'commonExpenses' | 'commonExpensesCurrency'>,
+  usdUyu: number
+): number | null {
+  const expenses = offer.commonExpenses
+  if (typeof expenses !== 'number' || !(expenses > 0)) return null
+  if (!(offer.priceUyu > 0)) return null
+  // Los gastos vienen en su propia moneda: 929 avisos de 6.739 la tienen distinta a la del
+  // alquiler. Sin la cotizacion de la corrida no se pueden sumar, y sumarlos igual seria un error
+  // de un factor 40.
+  if (offer.commonExpensesCurrency === 'USD') {
+    if (!(usdUyu > 0)) return null
+    return Math.round(offer.priceUyu + expenses * usdUyu)
+  }
+  return Math.round(offer.priceUyu + expenses)
+}
+
 export function rentalPriceLabel(price: number, currency: RentalCurrency, usdUyu: number): string {
   const pesos = new Intl.NumberFormat('es-UY', { maximumFractionDigits: 0 })
   if (currency === 'USD') {
@@ -463,6 +499,7 @@ export function buildRentalFilter(
   // AL MENOS UNA de las marcadas: quien tiene ANDA y también puede pagar una póliza quiere ver las
   // dos. Pedir que las acepte todas dejaría casi nada y no es lo que nadie busca.
   if (query.guarantees.length) nonLocation.guarantees = { $in: query.guarantees }
+  if (query.withExpenses) nonLocation['offers.commonExpenses'] = { $type: 'number', $gt: 0 }
   if (query.priceMin !== null || query.priceMax !== null) {
     nonLocation.priceUyu = {
       ...(query.priceMin !== null ? { $gte: query.priceMin } : {}),

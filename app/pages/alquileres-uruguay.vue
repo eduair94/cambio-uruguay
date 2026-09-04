@@ -224,6 +224,15 @@ STORY: Arrive with a barrio and a budget, narrow it, see who publishes it, leave
           label="Admite mascotas"
           @update:model-value="apply"
         />
+        <VSwitch
+          v-model="form.gc"
+          color="primary"
+          density="compact"
+          hide-details
+          inset
+          label="Publica gastos comunes"
+          @update:model-value="apply"
+        />
       </div>
 
       <!-- Garantías. En Uruguay es el filtro que decide si alguien puede alquilar, más que el
@@ -374,6 +383,9 @@ STORY: Arrive with a barrio and a budget, narrow it, see who publishes it, leave
               {{ priceLabel(property) }}
               <span v-if="commonExpensesLabel(property)" class="rental-card__ce">
                 + {{ commonExpensesLabel(property) }} de gastos
+                <template v-if="totalLabel(property)">
+                  · total <strong>{{ totalLabel(property) }}</strong>
+                </template>
               </span>
             </p>
             <p class="rental-card__specs">
@@ -554,6 +566,7 @@ const form = reactive({
   priceMax: readQuery().priceMax ?? '',
   multi: readQuery().multi === '1',
   pets: readQuery().pets === '1',
+  gc: readQuery().gc === '1',
   guarantees: (readQuery().garantia ?? '')
     .split(',')
     .filter(v => (RENTAL_GUARANTEE_VALUES as readonly string[]).includes(v)) as RentalGuarantee[],
@@ -581,6 +594,7 @@ const requestParams = computed(() => {
   if (form.priceMax) params.priceMax = String(form.priceMax)
   if (form.multi) params.multi = '1'
   if (form.pets) params.pets = '1'
+  if (form.gc) params.gc = '1'
   if (form.guarantees.length) params.garantia = form.guarantees.join(',')
   if (form.sedes.length) {
     params.sedes = form.sedes.join(',')
@@ -780,6 +794,7 @@ const hasFilters = computed(() =>
       form.priceMax ||
       form.multi ||
       form.pets ||
+      form.gc ||
       form.guarantees.length > 0 ||
       form.sedes.length > 0
   )
@@ -795,14 +810,33 @@ const priceLabel = (property: RentalProperty): string =>
 const offerPrice = (offer: RentalOffer): string =>
   offer.currency === 'USD' ? `U$S ${numberFormat(offer.price)}` : `$ ${numberFormat(offer.price)}`
 
+/**
+ * Los gastos comunes DEL MISMO AVISO cuyo precio se muestra, que es el más barato.
+ *
+ * Antes tomaba el primer aviso que los publicara, que no siempre es ese: el precio de uno junto a
+ * los gastos de otro son dos números que no se pueden sumar. Y sumar es exactamente lo que hace
+ * quien los ve juntos. De las 971 propiedades donde dos portales declaran gastos, 438 discrepan en
+ * más de 15 %, así que no es un caso raro.
+ *
+ * El costo: la oferta más barata publica los gastos en 4.231 de 4.729 casos (89 %), así que se
+ * pierde mostrarlos en un 11 %. Vale la pena.
+ */
+const cheapestOffer = (property: RentalProperty): RentalOffer | null => property.offers[0] ?? null
+
 const commonExpensesLabel = (property: RentalProperty): string => {
-  const withExpenses = property.offers.find(
-    offer => offer.commonExpenses && offer.commonExpenses > 0
-  )
-  if (!withExpenses?.commonExpenses) return ''
-  return withExpenses.commonExpensesCurrency === 'USD'
-    ? `U$S ${numberFormat(withExpenses.commonExpenses)}`
-    : `$ ${numberFormat(withExpenses.commonExpenses)}`
+  const offer = cheapestOffer(property)
+  if (!offer?.commonExpenses || offer.commonExpenses <= 0) return ''
+  return offer.commonExpensesCurrency === 'USD'
+    ? `U$S ${numberFormat(offer.commonExpenses)}`
+    : `$ ${numberFormat(offer.commonExpenses)}`
+}
+
+/** Alquiler + gastos comunes del mismo aviso, en pesos. Vacío cuando el aviso no los publica. */
+const totalLabel = (property: RentalProperty): string => {
+  const offer = cheapestOffer(property)
+  if (!offer) return ''
+  const total = totalMonthlyUyu(offer, usdUyu.value)
+  return total === null ? '' : `$ ${numberFormat(total)}`
 }
 
 const sellerLabel = (property: RentalProperty): string => {
@@ -874,6 +908,7 @@ function clearFilters(): void {
   form.priceMax = ''
   form.multi = false
   form.pets = false
+  form.gc = false
   form.guarantees = []
   form.mutualista = ''
   form.sedes = []

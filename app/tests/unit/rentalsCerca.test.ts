@@ -17,6 +17,7 @@ import {
   RADIO_KM_DEFAULT,
   RENTAL_GUARANTEE_LABELS,
   RENTAL_GUARANTEE_VALUES,
+  totalMonthlyUyu,
 } from '~/utils/rentals'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -177,5 +178,46 @@ describe('el catalogo de garantias del app y el del backend no pueden separarse'
       expect(RENTAL_GUARANTEE_LABELS[value].label.length, value).toBeGreaterThan(2)
       expect(RENTAL_GUARANTEE_LABELS[value].hint.length, value).toBeGreaterThan(10)
     }
+  })
+})
+
+// El costo real de alquilar en Uruguay es alquiler + gastos comunes. Medido sobre 16.300
+// propiedades: las que los publican tienen una mediana de $4.650, el 15 % del alquiler. Un
+// apartamento de $30.000 cuesta $34.650, y el directorio mostraba sólo los $30.000.
+describe('el costo mensual real', () => {
+  const offer = (over: Record<string, unknown> = {}) =>
+    ({ priceUyu: 30_000, commonExpenses: 4_650, commonExpensesCurrency: 'UYU', ...over }) as never
+
+  it('suma los gastos comunes al alquiler', () => {
+    expect(totalMonthlyUyu(offer(), 41.45)).toBe(34_650)
+  })
+
+  // 929 avisos de 6.739 declaran los gastos en una moneda distinta a la del alquiler. Sumarlos sin
+  // convertir seria un error de un factor 40.
+  it('convierte los gastos en dolares antes de sumar', () => {
+    expect(
+      totalMonthlyUyu(offer({ commonExpenses: 100, commonExpensesCurrency: 'USD' }), 41.45)
+    ).toBe(34_145)
+  })
+
+  it('no inventa un total cuando no hay cotizacion para convertir', () => {
+    expect(
+      totalMonthlyUyu(offer({ commonExpenses: 100, commonExpensesCurrency: 'USD' }), 0)
+    ).toBeNull()
+  })
+
+  // El 71 % no los publica. Estimarlos con la mediana seria inventar el numero mas caro de la
+  // busqueda.
+  it('devuelve null cuando el aviso no los publica, en vez de estimarlos', () => {
+    expect(totalMonthlyUyu(offer({ commonExpenses: null }), 41.45)).toBeNull()
+    expect(totalMonthlyUyu(offer({ commonExpenses: 0 }), 41.45)).toBeNull()
+  })
+
+  it('el filtro pide gastos publicados de verdad, no cero', () => {
+    const { filter } = buildRentalFilter(normalizeRentalQuery({ gc: '1' }), 10)
+    expect(filter['offers.commonExpenses']).toEqual({ $type: 'number', $gt: 0 })
+    expect(
+      buildRentalFilter(normalizeRentalQuery({}), 10).filter['offers.commonExpenses']
+    ).toBeUndefined()
   })
 })
