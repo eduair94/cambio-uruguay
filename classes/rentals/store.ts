@@ -90,10 +90,15 @@ export function mergeOffers(
     // `null` NO es una negativa: es "esta corrida no preguntó".
     //
     // La corrida RAPIDA no hace la pasada de mascotas de MercadoLibre —es una consulta aparte y
-    // sólo corre en la completa— asi que trae los mismos avisos con `petsAllowed: null`. Como acá
-    // lo fresco pisa a lo guardado por listingId, sin esta linea cada hora se borraban las ~1.300
-    // marcas que vienen de ML, y nadie se enteraba: el campo volvia a null y el filtro devolvia
-    // menos, no un error.
+    // sólo corre en la completa— asi que trae los mismos avisos con `petsAllowed: null`, y acá lo
+    // fresco pisa a lo guardado por listingId.
+    //
+    // El alcance, medido y no supuesto: la rapida lee lo recien publicado, asi que de las 1.246
+    // propiedades con oferta de ML marcada, las expuestas en una corrida dada son las pocas que esa
+    // franja vuelve a ver (2 publicadas hoy, 4 con freshAt de hoy al medirlo). Chico por corrida,
+    // pero se come justo lo mas nuevo —lo que mas se busca— y se repite cada hora hasta que la
+    // corrida completa de las 04:52 lo repone. Y no avisa: el campo vuelve a null y el filtro
+    // devuelve menos, no un error.
     const previo = byId.get(offer.listingId);
     if (previo?.petsAllowed === true && offer.petsAllowed !== true) {
       byId.set(offer.listingId, { ...offer, petsAllowed: true });
