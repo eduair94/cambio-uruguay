@@ -45,6 +45,15 @@ export interface RateAnswerFacts {
   periodMonths: number
   /** ISO date of the most recent point. A calendar date, NOT a scrape time. */
   asOf: string
+  /**
+   * Dias entre `asOf` y hoy. 0 = la cotizacion es de hoy.
+   *
+   * Existe por una sola razon: la pagina decia "Hoy {date}, el Dolar en {casa} cotiza a $X" usando
+   * la fecha de la ULTIMA fila, fuera cual fuera. Medido el 2026-09-04, /historico/nonica/usd
+   * publicaba "Hoy 07/08/2026 ... $41,30" — un precio de 28 dias atras, presentado como el de hoy,
+   * porque el scraper de esa casa llevaba semanas mudo. La cifra era real; la palabra "Hoy" no.
+   */
+  ageDays: number
 }
 
 /** One day's quote in the /evolution series. */
@@ -108,7 +117,9 @@ const FLAT_THRESHOLD_PCT = 0.05
  * never surface as "el dólar en X cotiza a $0".
  */
 export function rateAnswerFacts(
-  stats: EvolutionStatistics | null | undefined
+  stats: EvolutionStatistics | null | undefined,
+  /** Inyectable para que `ageDays` se pueda testear sin que el resultado dependa del dia. */
+  now: Date = new Date()
 ): RateAnswerFacts | null {
   if (!stats) return null
 
@@ -139,7 +150,23 @@ export function rateAnswerFacts(
     maxSell,
     periodMonths,
     asOf,
+    ageDays: daysSince(asOf, now),
   }
+}
+
+/**
+ * Dias entre una fecha ISO y hoy, en el calendario de Montevideo.
+ *
+ * Se compara por DIA CIVIL, no por milisegundos: `asOf` es una fecha de calendario (la fila mas
+ * reciente), no una hora de scrapeo, asi que restar timestamps daria 0,9 dias para algo que ya es
+ * "ayer". Y el huso importa: a las 22 h de Montevideo, UTC ya esta en el dia siguiente, y una
+ * cotizacion de hoy pareceria de ayer.
+ */
+function daysSince(iso: string, now: Date = new Date()): number {
+  const today = new Date(now.toLocaleDateString('en-CA', { timeZone: 'America/Montevideo' }))
+  const then = new Date(`${iso.slice(0, 10)}T00:00:00Z`)
+  const diff = Math.round((today.getTime() - then.getTime()) / 86_400_000)
+  return diff > 0 ? diff : 0
 }
 
 /**
@@ -158,7 +185,9 @@ export function rateAnswerFacts(
 export function factsFromRows(
   rows: readonly EvolutionRow[],
   type: string | null | undefined,
-  periodMonths: number | undefined
+  periodMonths: number | undefined,
+  /** Inyectable para que `ageDays` se pueda testear sin que el resultado dependa del dia. */
+  now: Date = new Date()
 ): RateAnswerFacts | null {
   if (!isPositive(periodMonths)) return null
 
@@ -190,6 +219,7 @@ export function factsFromRows(
     maxSell,
     periodMonths,
     asOf,
+    ageDays: daysSince(asOf, now),
   }
 }
 

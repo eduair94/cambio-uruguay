@@ -712,6 +712,7 @@
       "selectOneCurrency": "Seleccioná una sola moneda para ver el análisis de tendencia."
     },
     "heading": "Cotización del {currency} en {origin} hoy e histórico",
+    "answerStale": "La última cotización que publicó {origin} para el {currency} es del {date}: ${sell} venta y ${buy} compra. Desde entonces no publicó precios nuevos. En los últimos {months} meses varió {change} %; máximo del período ${max}, mínimo ${min}.",
     "answer": "Hoy {date}, el {currency} en {origin} cotiza a ${sell} venta y ${buy} compra. En los últimos {months} meses varió {change} %; máximo del período ${max}, mínimo ${min}.",
     "asOf": "Datos al {date}."
   },

@@ -916,7 +916,12 @@ const streakSentence = computed(() => {
 const answerSentence = computed(() => {
   const f = answerFacts.value
   if (!f) return ''
-  return t('historical.answer', {
+  // "Hoy {date}" con la fecha de la ULTIMA fila, fuera cual fuera. Medido en produccion el
+  // 2026-09-04: /historico/nonica/usd publicaba «Hoy 07/08/2026, el Dólar en Cambio El Trébol
+  // cotiza a $41,30» — un precio de 28 dias atras presentado como el de hoy, porque el scraper de
+  // esa casa llevaba semanas mudo. La cifra era real; la palabra «Hoy» no. Un scraper se puede
+  // volver a romper, asi que la guarda vive aca y no en el scraper.
+  return t(f.ageDays >= 1 ? 'historical.answerStale' : 'historical.answer', {
     currency: currencyLabel.value,
     origin: exchangeHouseName.value,
     date: asOfDate.value,
@@ -1202,7 +1207,10 @@ const getSellColor = (value: number): string => {
 // description. Falls back to the generic sentence when the payload is short.
 const seoDescription = computed(() => {
   const f = answerFacts.value
-  if (!f) {
+  // Sin datos, o con datos que ya no son de hoy, va la generica. La variante "Live" escribe
+  // «{moneda} en {casa} hoy: venta $X» y esa palabra «hoy» tiene que ser cierta: es la linea que
+  // Google muestra en el resultado. Misma bifurcacion que ya hace /casa/<origin>.
+  if (!f || f.ageDays >= 1) {
     return t('seo.historicalDetailDescription', {
       origin: exchangeHouseName.value,
       currency: currencyLabel.value,

@@ -22,8 +22,12 @@ const brou: EvolutionStatistics = {
 }
 
 describe('rateAnswerFacts', () => {
+  // El `now` va fijo: `ageDays` depende del dia y sin anclarlo este test cambiaria de valor cada
+  // manana. Es el mismo dia del payload, asi que la cotizacion es "de hoy" y ageDays es 0.
+  const AS_OF_DAY = new Date('2026-07-10T12:00:00Z')
+
   it('reduces the live BROU payload to the facts an answer block states', () => {
-    expect(rateAnswerFacts(brou)).toEqual({
+    expect(rateAnswerFacts(brou, AS_OF_DAY)).toEqual({
       buy: 39.5,
       sell: 40.9,
       changePct: 3.41,
@@ -32,6 +36,7 @@ describe('rateAnswerFacts', () => {
       maxSell: 42,
       periodMonths: 6,
       asOf: '2026-07-10T03:00:00.000Z',
+      ageDays: 0,
     })
   })
 
@@ -165,5 +170,52 @@ describe('factsFromRows', () => {
     expect(
       factsFromRows([{ date: '2026-07-10', type: '', buy: 0, sell: 41 }], undefined, 6)
     ).toBeNull()
+  })
+})
+
+// La palabra "Hoy" tiene que ser cierta.
+//
+// Medido en produccion el 2026-09-04: /historico/nonica/usd publicaba «Hoy 07/08/2026, el Dolar en
+// Cambio El Trebol cotiza a $41,30 venta» — un precio de 28 dias atras presentado como el de hoy,
+// porque el scraper de esa casa llevaba semanas mudo. La cifra era real; el encuadre no. Es la
+// version frontend de la misma leccion que el guardarrail de figures: un dato viejo es plausible.
+describe('la antiguedad de la cotizacion', () => {
+  const conFecha = (asOf: string) => ({
+    ...brou,
+    dateRange: { ...brou.dateRange, end: asOf },
+  })
+
+  it('marca cero cuando la ultima fila es de hoy', () => {
+    const f = rateAnswerFacts(
+      conFecha('2026-09-04T03:00:00.000Z'),
+      new Date('2026-09-04T14:00:00Z')
+    )
+    expect(f?.ageDays).toBe(0)
+  })
+
+  it('cuenta los dias cuando la casa dejo de publicar', () => {
+    const f = rateAnswerFacts(
+      conFecha('2026-08-07T03:00:00.000Z'),
+      new Date('2026-09-04T14:00:00Z')
+    )
+    expect(f?.ageDays).toBe(28)
+  })
+
+  // Se compara por DIA CIVIL de Montevideo, no por milisegundos ni en UTC. A las 22 h de Montevideo
+  // ya es el dia siguiente en UTC: contar en UTC haria ver "de ayer" una cotizacion de hoy.
+  it('no envejece una cotizacion de hoy por el huso horario', () => {
+    const f = rateAnswerFacts(
+      conFecha('2026-09-04T03:00:00.000Z'),
+      new Date('2026-09-05T01:30:00Z')
+    )
+    expect(f?.ageDays).toBe(0)
+  })
+
+  it('nunca da negativo si la fila viene con fecha futura', () => {
+    const f = rateAnswerFacts(
+      conFecha('2026-09-10T03:00:00.000Z'),
+      new Date('2026-09-04T14:00:00Z')
+    )
+    expect(f?.ageDays).toBe(0)
   })
 })

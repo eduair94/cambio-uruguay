@@ -709,6 +709,7 @@
       "selectOneCurrency": "Select a single currency to see the trend analysis."
     },
     "heading": "{currency} rate at {origin} today and historical chart",
+    "answerStale": "The last quote {origin} published for the {currency} is from {date}: ${sell} sell and ${buy} buy. It has published no new prices since. Over the last {months} months it moved {change} %; period high ${max}, low ${min}.",
     "answer": "On {date}, the {currency} at {origin} trades at ${sell} sell and ${buy} buy. Over the last {months} months it moved {change} %; period high ${max}, low ${min}.",
     "asOf": "Data as of {date}."
   },

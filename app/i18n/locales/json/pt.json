@@ -704,6 +704,7 @@
       "selectOneCurrency": "Selecione uma única moeda para ver a análise de tendência."
     },
     "heading": "Cotação do {currency} no {origin} hoje e histórico",
+    "answerStale": "A última cotação que {origin} publicou para o {currency} é de {date}: ${sell} venda e ${buy} compra. Desde então não publicou preços novos. Nos últimos {months} meses variou {change} %; máximo do período ${max}, mínimo ${min}.",
     "answer": "Hoje {date}, o {currency} no {origin} está a ${sell} venda e ${buy} compra. Nos últimos {months} meses variou {change} %; máximo do período ${max}, mínimo ${min}.",
     "asOf": "Dados de {date}."
   },
