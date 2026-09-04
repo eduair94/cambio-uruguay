@@ -154,6 +154,57 @@ STORY: Arrive with a barrio and a budget, narrow it, see who publishes it, leave
         </VCol>
       </VRow>
 
+      <!-- Cerca de una sede de salud. La coordenada de cada sede sale de OpenStreetMap. -->
+      <VRow dense class="align-center">
+        <VCol cols="12" md="4">
+          <VSelect
+            v-model="form.mutualista"
+            :items="mutualistaItems"
+            label="Cerca de (mutualidad)"
+            density="compact"
+            variant="outlined"
+            hide-details
+            clearable
+            @update:model-value="onMutualistaChange"
+          />
+        </VCol>
+        <VCol cols="12" md="5">
+          <VSelect
+            v-model="form.sedes"
+            :items="sedeItems"
+            :disabled="!sedeItems.length"
+            label="Sedes"
+            density="compact"
+            variant="outlined"
+            hide-details
+            multiple
+            chips
+            closable-chips
+            @update:model-value="apply"
+          />
+        </VCol>
+        <VCol cols="12" md="3">
+          <div class="text-caption text-medium-emphasis">Radio: {{ form.radio }} km</div>
+          <VSlider
+            v-model="form.radio"
+            :min="0.3"
+            :max="5"
+            :step="0.1"
+            :disabled="!form.sedes.length"
+            density="compact"
+            hide-details
+            @end="apply"
+          />
+        </VCol>
+      </VRow>
+      <!-- Dos límites reales de este filtro. Se dicen acá y no en una nota al pie: quien filtra por
+           cercanía tiene que saber que está viendo menos de lo que hay. -->
+      <p v-if="form.sedes.length" class="text-caption text-medium-emphasis mb-0">
+        Una propiedad sin coordenada publicada no puede entrar en este filtro, por más cerca que
+        esté. Y las sedes salen de OpenStreetMap: sirven como punto de referencia, no son el padrón
+        completo de cada institución.
+      </p>
+
       <div class="rentals-filters__row">
         <VSwitch
           v-model="form.multi"
@@ -162,6 +213,15 @@ STORY: Arrive with a barrio and a budget, narrow it, see who publishes it, leave
           hide-details
           inset
           label="Solo lo publicado en más de un portal"
+          @update:model-value="apply"
+        />
+        <VSwitch
+          v-model="form.pets"
+          color="primary"
+          density="compact"
+          hide-details
+          inset
+          label="Admite mascotas"
           @update:model-value="apply"
         />
         <div class="d-flex align-center flex-wrap ga-2">
@@ -227,6 +287,8 @@ STORY: Arrive with a barrio and a budget, narrow it, see who publishes it, leave
           v-if="mapMarkers.length"
           :branches="mapMarkers"
           :popup-for="rentalPopup"
+          :user-location="sedeCentro"
+          :radius-km="sedeCentro ? form.radio : 0"
           :fit-to-markers="true"
           height="65vh"
           directions-label="Ver el aviso"
@@ -317,6 +379,11 @@ STORY: Arrive with a barrio and a budget, narrow it, see who publishes it, leave
               <span>{{ sellerLabel(property) }}</span>
               <span v-if="ageLabel(property)">· visto {{ ageLabel(property) }}</span>
             </p>
+            <!-- Sólo se muestra el SÍ. No hay chip de "no admite" porque ningún portal lo publica:
+                 la ausencia de este chip significa que el aviso no lo dice, no que no acepte. -->
+            <VChip v-if="property.petsAllowed" size="x-small" color="primary" variant="tonal" label>
+              Admite mascotas
+            </VChip>
           </div>
         </VCard>
       </VCol>
@@ -439,6 +506,14 @@ const form = reactive({
   priceMin: readQuery().priceMin ?? '',
   priceMax: readQuery().priceMax ?? '',
   multi: readQuery().multi === '1',
+  pets: readQuery().pets === '1',
+  // La mutualidad sólo filtra la lista de sedes: lo que viaja al servidor son los ids de OSM.
+  mutualista: readQuery().mutualista ?? '',
+  sedes: (readQuery().sedes ?? '')
+    .split(',')
+    .map(id => Number(id))
+    .filter(id => Number.isSafeInteger(id) && id > 0),
+  radio: Number(readQuery().radio ?? RADIO_KM_DEFAULT) || RADIO_KM_DEFAULT,
   sort: readQuery().sort ?? 'recientes',
 })
 const page = ref(Number(readQuery().page ?? 1) || 1)
@@ -455,6 +530,11 @@ const requestParams = computed(() => {
   if (form.priceMin) params.priceMin = String(form.priceMin)
   if (form.priceMax) params.priceMax = String(form.priceMax)
   if (form.multi) params.multi = '1'
+  if (form.pets) params.pets = '1'
+  if (form.sedes.length) {
+    params.sedes = form.sedes.join(',')
+    params.radio = String(form.radio)
+  }
   if (form.sort && form.sort !== 'recientes') params.sort = form.sort
   if (page.value > 1) params.page = String(page.value)
   return params
@@ -465,6 +545,40 @@ const { data, pending } = await useAsyncData<RentalsResponse | null>(
   () => $fetch('/api/rentals', { query: requestParams.value }),
   { watch: [requestParams] }
 )
+
+/**
+ * Las mutualidades que tienen al menos una sede en la lista de OpenStreetMap.
+ *
+ * El selector es en dos pasos —primero la institución, después la sede— porque hay 158 sedes de 38
+ * instituciones y una lista plana de 158 no se puede recorrer.
+ */
+const mutualistaItems = computed(() => mutualistasConSede())
+
+const sedeItems = computed(() => {
+  if (!form.mutualista) return []
+  return MUTUALISTA_SEDES.filter(sede => sede.mutualista === form.mutualista).map(sede => ({
+    title: sede.direccion ? `${sede.nombre} — ${sede.direccion}` : sede.nombre,
+    subtitle: sede.departamento,
+    value: sede.osmId,
+  }))
+})
+
+function onMutualistaChange() {
+  // Cambiar de institución invalida las sedes elegidas de la anterior.
+  form.sedes = []
+  apply()
+}
+
+/**
+ * La sede que el mapa dibuja como centro, con su círculo de radio.
+ *
+ * Se muestra la PRIMERA de las elegidas: `LocationsMap` acepta un solo punto de referencia, y
+ * dibujar un círculo por sede convertiría el mapa en una mancha. Las demás siguen filtrando igual.
+ */
+const sedeCentro = computed<{ lat: number; lng: number } | null>(() => {
+  const primera = MUTUALISTA_SEDES.find(sede => sede.osmId === form.sedes[0])
+  return primera ? { lat: primera.lat, lng: primera.lng } : null
+})
 
 const items = computed<RentalProperty[]>(() => data.value?.items ?? [])
 const total = computed(() => data.value?.total ?? 0)
@@ -597,7 +711,9 @@ const hasFilters = computed(() =>
       form.bedrooms ||
       form.priceMin ||
       form.priceMax ||
-      form.multi
+      form.multi ||
+      form.pets ||
+      form.sedes.length > 0
   )
 )
 
@@ -689,6 +805,10 @@ function clearFilters(): void {
   form.priceMin = ''
   form.priceMax = ''
   form.multi = false
+  form.pets = false
+  form.mutualista = ''
+  form.sedes = []
+  form.radio = RADIO_KM_DEFAULT
   form.sort = 'recientes'
   apply()
 }

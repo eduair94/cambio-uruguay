@@ -8,6 +8,8 @@
 // Everything is prefixed `RENTAL_`/`rental` on purpose: `utils/` is a flat auto-import namespace
 // and a bare `SOURCES` or `formatPrice` here would silently collide with another page's helper.
 
+import { MUTUALISTA_SEDES, type MutualistaSede } from './mutualistaSedes'
+
 export type RentalSource = 'mercadolibre' | 'infocasas' | 'facebook'
 
 export type RentalPropertyType =
@@ -54,6 +56,15 @@ export interface RentalProperty {
   bedrooms: number | null
   bathrooms: number | null
   area: number | null
+  /**
+   * ¿El aviso DICE que se aceptan mascotas?
+   *
+   * `true` sólo cuando el portal lo publica como dato estructurado (facility 222 de InfoCasas, o el
+   * filtro IS_SUITABLE_FOR_PETS de MercadoLibre). `null` = el aviso no lo dice, que es la mayoría.
+   * NO existe el `false`: ningún portal publica la negativa, así que la ausencia de este dato no
+   * significa que no acepten. La página tiene que mostrarlo así.
+   */
+  petsAllowed: true | null
   priceUyu: number
   price: number
   currency: RentalCurrency
@@ -151,6 +162,12 @@ export interface RentalQuery {
   priceMax: number | null
   /** Only properties published on more than one portal. */
   multi: boolean
+  /** Sólo las que el portal publica como "se aceptan mascotas". Ver `petsAllowed`. */
+  pets: boolean
+  /** Ids de OSM de las sedes elegidas como punto de referencia. Vacío = sin filtro de distancia. */
+  sedes: number[]
+  /** Radio en km alrededor de cada sede elegida. */
+  radioKm: number
   sort: RentalSort
   page: number
   perPage: number
@@ -197,6 +214,9 @@ export function normalizeRentalQuery(input: Record<string, unknown> = {}): Renta
     priceMin: priceMin !== null && priceMin > 0 ? priceMin : null,
     priceMax: priceMax !== null && priceMax > 0 ? priceMax : null,
     multi: String(input.multi ?? '') === '1' || input.multi === true,
+    pets: String(input.pets ?? '') === '1' || input.pets === true,
+    sedes: parseSedes(input.sedes),
+    radioKm: parseRadio(input.radio),
     sort,
     page,
     perPage,
@@ -301,6 +321,81 @@ export interface RentalMapResponse {
  * departamento y barrio (contar el facet de departamento con el departamento ya aplicado dejaría
  * "1" al lado de todos los demás), y `filter` es el completo.
  */
+
+/** Cuántas sedes se pueden cruzar a la vez. Cada una suma un `$expr` a la consulta. */
+const MAX_SEDES = 6
+
+/** Radio por defecto y banda. Menos de 300 m no dice nada; más de 10 km ya no es "cerca". */
+export const RADIO_KM_DEFAULT = 1.5
+const RADIO_KM_MIN = 0.3
+const RADIO_KM_MAX = 10
+
+function parseSedes(input: unknown): number[] {
+  const raw = String(input ?? '')
+    .split(',')
+    .map(part => Number(part.trim()))
+    .filter(id => Number.isSafeInteger(id) && id > 0)
+  return [...new Set(raw)].slice(0, MAX_SEDES)
+}
+
+function parseRadio(input: unknown): number {
+  const km = Number(input)
+  if (!Number.isFinite(km)) return RADIO_KM_DEFAULT
+  return Math.min(RADIO_KM_MAX, Math.max(RADIO_KM_MIN, Math.round(km * 10) / 10))
+}
+
+/**
+ * "¿Está este documento a menos de `km` de este punto?", como expresión de agregación.
+ *
+ * Se calcula en Mongo con la fórmula del semiverseno sobre los `latitude`/`longitude` que ya
+ * existen. NO se usa `$geoWithin`/`$centerSphere`: esos necesitan UN campo con el par de
+ * coordenadas y acá son dos escalares sueltos — y no fallan, devuelven cero documentos en silencio.
+ * Tampoco una caja de lat/lng sola: es un cuadrado, y medido contra estas sedes se pasa del radio
+ * declarado entre 5,9 % y 23,4 % de las filas. Publicar "a 2 km" y entregar cosas a 2,8 km sería
+ * inventar una cifra.
+ */
+function withinKm(lat: number, lng: number, km: number): Record<string, unknown> {
+  const rad = (deg: number) => (deg * Math.PI) / 180
+  return {
+    $lte: [
+      {
+        $multiply: [
+          6371,
+          {
+            $acos: {
+              $min: [
+                1,
+                {
+                  $add: [
+                    {
+                      $multiply: [Math.sin(rad(lat)), { $sin: { $degreesToRadians: '$latitude' } }],
+                    },
+                    {
+                      $multiply: [
+                        Math.cos(rad(lat)),
+                        { $cos: { $degreesToRadians: '$latitude' } },
+                        { $cos: { $subtract: [{ $degreesToRadians: '$longitude' }, rad(lng)] } },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        ],
+      },
+      km,
+    ],
+  }
+}
+
+/** Las sedes elegidas, resueltas por su id de OSM. Un id que no existe se ignora. */
+function sedesPorId(ids: readonly number[]): MutualistaSede[] {
+  if (!ids.length) return []
+  const wanted = new Set(ids)
+  return MUTUALISTA_SEDES.filter(sede => wanted.has(sede.osmId))
+}
+
 export function buildRentalFilter(
   query: RentalQuery,
   staleDays: number
@@ -312,6 +407,8 @@ export function buildRentalFilter(
   if (query.source) nonLocation.sources = query.source
   if (query.bedrooms !== null) nonLocation.bedrooms = { $gte: query.bedrooms }
   if (query.multi) nonLocation['sources.1'] = { $exists: true }
+  // `true` o nada: ningún portal publica la negativa, así que no existe el filtro "no acepta".
+  if (query.pets) nonLocation.petsAllowed = true
   if (query.priceMin !== null || query.priceMax !== null) {
     nonLocation.priceUyu = {
       ...(query.priceMin !== null ? { $gte: query.priceMin } : {}),
@@ -324,6 +421,24 @@ export function buildRentalFilter(
     const safe = query.q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     const pattern = new RegExp(safe, 'i')
     nonLocation.$or = [{ title: pattern }, { address: pattern }, { neighborhood: pattern }]
+  }
+
+  // ── Cerca de una sede ──
+  //
+  // LA GUARDA DE COORDENADA NO ES OPCIONAL. `$degreesToRadians` de un campo ausente da `null`, todo
+  // el semiverseno colapsa a `null`, y `{$lte: [null, 2]}` es TRUE por el orden BSON: sin esto,
+  // TODA fila sin coordenada pasa cualquier radio. Medido sobre la colección real el 2026-09-04,
+  // pidiendo 2 km del hospital de Médica Uruguaya con 2+ dormitorios: 2.878 filas sin la guarda
+  // contra 544 con ella. Las 2.334 fantasma incluían propiedades en Maldonado, Canelones y
+  // Paysandú, que la página habría mostrado bajo el rótulo "a menos de 2 km".
+  const puntos = sedesPorId(query.sedes)
+  if (puntos.length) {
+    nonLocation.latitude = { $type: 'number' }
+    nonLocation.longitude = { $type: 'number' }
+    const cerca = puntos.map(sede => ({ $expr: withinKm(sede.lat, sede.lng, query.radioKm) }))
+    // Va en `$and` y no en `$or` de primer nivel porque el buscador de texto ya usa `$or`.
+    const previos = Array.isArray(nonLocation.$and) ? (nonLocation.$and as unknown[]) : []
+    nonLocation.$and = [...previos, cerca.length === 1 ? cerca[0] : { $or: cerca }]
   }
 
   const filter: Record<string, unknown> = { ...nonLocation }
