@@ -260,15 +260,20 @@ export async function dropReassignedOffers(
   let removed = 0;
   let deleted = 0;
   const cursor = RentalListingModel.find({}).lean().cursor();
-  // El tipo sale del propio modelo: escribirlo a mano como Record<string, unknown> compila acá y
-  // rompe en el build del servidor, que resuelve los overloads de mongoose con más información.
-  type BulkOps = Parameters<typeof RentalListingModel.bulkWrite>[0];
-  let operations: BulkOps = [];
+  // Sin anotar y sin reasignar, igual que en `saveRentalProperties`.
+  //
+  // No es descuido: anotarlo rompe el build. Los tipos de mongoose exigen para `$set` un objeto de
+  // rutas con punto (`offers.0.title`), que un `RentalProperty` entero no satisface, y el `tsc` de
+  // esta máquina no lo reproduce —resuelve otra versión de los tipos— así que el error sólo aparece
+  // al compilar en el servidor. El array vacío sin anotación deja que TS lo infiera del uso, que es
+  // lo que viene compilando ahí desde siempre. Se vacía con `length = 0` porque reasignarlo
+  // también rompería la inferencia.
+  const operations = [];
 
   const flush = async (): Promise<void> => {
     if (!operations.length) return;
     await RentalListingModel.bulkWrite(operations, { ordered: false });
-    operations = [];
+    operations.length = 0;
   };
 
   for await (const raw of cursor) {
