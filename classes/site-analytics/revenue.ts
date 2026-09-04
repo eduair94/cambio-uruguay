@@ -13,6 +13,9 @@
 // `publisherAdImpressions` y `publisherAdClicks` aparecen en la misma Data API que el job ya lee.
 // Google avisa que tarda hasta 24 h en empezar a devolver datos, y mientras tanto contesta ceros —
 // por eso `revenueIsEmpty()` existe y el job trata el vacío como "todavía no", no como un error.
+// Lo que no contesta es SÓLO ceros: el enlace no rellena hacia atrás, así que una ventana de 28
+// días que empezó antes del enlace vuelve con las horas sueltas que alcanzó a medir. Ver el
+// comentario de los dos pisos, abajo.
 //
 // LA MÉTRICA DE GOBIERNO es el RPM por FAMILIA de página, no por URL. Una URL suelta no dice nada;
 // 46 páginas de `/convertir` medidas juntas dicen que la familia entera rinde 0,05 % de CTR en
@@ -188,7 +191,7 @@ export async function fetchRevenue(
     })
     .sort((a, b) => a.date.localeCompare(b.date));
 
-  return {
+  const snapshot: RevenueSnapshot = {
     key: SITE_REVENUE_KEY,
     asOf,
     currency,
@@ -197,11 +200,49 @@ export async function fetchRevenue(
     families: familyRows,
     topPages: pageRows.filter((p) => p.adRevenue > 0).slice(0, 40),
     daily,
-    pending: totals.adRevenue === 0 && totals.adImpressions === 0,
+    // Se calcula abajo con `revenueIsEmpty` y no acá: cuando `pending` tenía su propia copia de la
+    // regla, las dos se separaron y la lectura de una impresión salió publicada como definitiva.
+    pending: false,
   };
+
+  snapshot.pending = revenueIsEmpty(snapshot);
+  return snapshot;
 }
 
-/** Un snapshot sin una sola impresión de anuncio: el enlace es nuevo, o no existe. */
+/**
+ * Piso absoluto de impresiones para que la ventana cuente como medida.
+ *
+ * La ventana es de 28 días: un solo día sano del sitio ya deja miles de impresiones, así que 50 en
+ * cuatro semanas está dos órdenes de magnitud por debajo de lo normal y no puede confundirse con un
+ * mes flojo. Existe además de la tasa porque con muy pocas vistas la tasa es ruido: 10 impresiones
+ * sobre 40 vistas da 25 % y sigue sin decir nada.
+ */
+export const MIN_AD_IMPRESSIONS = 50;
+
+/**
+ * Piso de impresiones por vista de página.
+ *
+ * La lectura que motivó todo esto: 4.131 vistas → 1 impresión, o sea 0,024 %. Del otro lado, lo que
+ * el sitio debería dar: `utils/ads.ts` declara hasta dos unidades en las rutas que llevan anuncios,
+ * y aun descontando las rutas sin anuncios, el consentimiento rechazado y que `AdSlot` es lazy (sin
+ * scroll no carga), la cobertura real cae en el orden de las decenas por ciento. 1 % es un piso
+ * cuarenta veces por encima del artefacto y cien veces por debajo de lo esperable: cualquier día de
+ * poco tráfico pero con anuncios sirviendo lo pasa sobrado.
+ */
+export const MIN_IMPRESSIONS_PER_VIEW = 0.01;
+
+/**
+ * True mientras la lectura no sea todavía una medición.
+ *
+ * Empezó preguntando por el cero exacto, que es lo que contesta un enlace AdSense↔GA4 inexistente.
+ * No es lo que contesta un enlace RECIÉN creado: el del 2026-09-02 no rellena hacia atrás y devolvió
+ * 1 impresión y USD 0,000122 sobre 4.131 vistas de página — un cero disfrazado que pasaba las tres
+ * puertas y quedaba guardado como "el sitio no factura nada". El guardarraíl estaba escrito para el
+ * cero y no atajaba el casi-cero.
+ */
 export function revenueIsEmpty(snapshot: RevenueSnapshot): boolean {
-  return snapshot.totals.adImpressions === 0 && snapshot.totals.adRevenue === 0;
+  const { adImpressions, screenPageViews } = snapshot.totals;
+  if (adImpressions < MIN_AD_IMPRESSIONS) return true;
+  // Sin vistas no hay tasa que calcular; el piso absoluto ya decidió.
+  return screenPageViews > 0 && adImpressions < screenPageViews * MIN_IMPRESSIONS_PER_VIEW;
 }
