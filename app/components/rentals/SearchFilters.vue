@@ -613,6 +613,14 @@ legend {
 .rental-search--dialog :deep(.v-selection-control) {
   min-height: 44px;
 }
+.rental-search--dialog :deep(.v-autocomplete__selection),
+.rental-search--dialog :deep(.v-select__selection) {
+  min-height: 44px;
+}
+.rental-search--dialog :deep(.v-autocomplete .v-field input) {
+  /* Keep the search row stable when a tap moves focus to the next filter. */
+  min-width: 64px;
+}
 .rental-search--dialog :deep(.v-chip) {
   min-height: 44px;
 }

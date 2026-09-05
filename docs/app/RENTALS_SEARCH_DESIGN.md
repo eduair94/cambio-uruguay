@@ -26,6 +26,9 @@ viewport visible, con espacio para áreas seguras y el acceso al chat. Las accio
 Los cierres de barrios, garantías y filtros activos tienen un área táctil de 44 px. Al elegir
 un barrio, el autocompletado limpia inmediatamente el término escrito: evita que el campo cambie
 de altura al tocar el control siguiente y que ese toque se pierda.
+El espacio del campo de texto se conserva también al perder el foco. Las filas de selección
+acompañan los 44 px del cierre y las etiquetas largas se envuelven dentro de la pantalla, sin
+superponer ni recortar los botones de quitar.
 
 Los barrios se seleccionan y agrupan con collation española de nivel primario: Cordón, CORDON y
 cordon comparten resultados y faceta. El autocompletado admite escribir sin tildes. La collation

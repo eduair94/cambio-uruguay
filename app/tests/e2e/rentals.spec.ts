@@ -190,6 +190,31 @@ async function openAdvanced(page: Page) {
   }).toPass({ timeout: 90_000, intervals: [250, 500, 1000] })
 }
 
+async function expectMobileChipTargets(buttons: Locator, width: number) {
+  const boxes = await buttons.evaluateAll(elements =>
+    elements.map(element => {
+      const { left, right, top, bottom, width, height } = element.getBoundingClientRect()
+      return { left, right, top, bottom, width, height }
+    })
+  )
+  expect(boxes.length).toBeGreaterThan(0)
+  for (const box of boxes) {
+    expect(box.width).toBeGreaterThanOrEqual(44)
+    expect(box.height).toBeGreaterThanOrEqual(44)
+    expect(box.left).toBeGreaterThanOrEqual(0)
+    expect(box.right).toBeLessThanOrEqual(width)
+  }
+  for (let index = 0; index < boxes.length; index++) {
+    for (const other of boxes.slice(index + 1)) {
+      const box = boxes[index]
+      const overlaps =
+        Math.min(box.right, other.right) > Math.max(box.left, other.left) &&
+        Math.min(box.bottom, other.bottom) > Math.max(box.top, other.top)
+      expect(overlaps, 'Chip removal targets must not overlap').toBe(false)
+    }
+  }
+}
+
 async function startFixtureSearch(page: Page, expectedCount = 3) {
   // The initial SSR fetch runs outside the browser interception. Submitting page 2 as page 1
   // changes the route and loads our fixture through the real hydrated form and client fetch.
@@ -544,6 +569,7 @@ test.describe('rental directory', () => {
         await expect(page.getByRole('listbox')).not.toBeVisible()
       }
       await expect(dialog.locator('.rental-search .v-chip')).toContainText(['Cordón', 'Pocitos'])
+      await expectMobileChipTargets(dialog.locator('.v-chip__close'), width)
       await budget.fill('25000')
       await pets.check()
       await openAdvanced(page)
@@ -607,6 +633,7 @@ test.describe('rental directory', () => {
       expect(listRequests.get(page)).toHaveLength(requestsBeforeEditing + 1)
       expect(mapRequests.get(page)).toHaveLength(0)
       await expectInsideViewport(trigger, page)
+      await expectMobileChipTargets(page.locator('.rentals-chips .v-chip__close'), width)
 
       const appliedUrl = page.url()
       await openMobileFilters(page)

@@ -862,7 +862,14 @@ useHead(() => ({
   margin: 8px 0 12px;
 }
 .rentals--mobile .rentals-chips :deep(.v-chip) {
+  height: auto;
   min-height: 44px;
+  max-width: 100%;
+}
+.rentals--mobile .rentals-chips :deep(.v-chip__content) {
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 .rentals--mobile .rentals-chips :deep(.v-chip__close) {
   flex: 0 0 44px;
