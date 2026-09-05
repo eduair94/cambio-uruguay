@@ -1225,6 +1225,30 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         priority: 0.7,
         changefreq: 'monthly',
       },
+      {
+        // El otro lado del mostrador de `/embargo-de-sueldo-uruguay`: esa página contesta cuánto te
+        // pueden descontar, y ninguna contestaba cuánto ES la cuota. Va en esta sección y no en una
+        // de familia porque la palanca que casi nadie conoce es financiera: inscripto en el
+        // registro de deudores alimentarios morosos, ningún banco puede darte crédito, abrirte
+        // cuenta ni emitirte tarjeta (Ley 18.244 art. 2).
+        to: '/pension-alimenticia-uruguay',
+        labelKey: 'nav.pensionAlimenticia',
+        icon: 'mdi-account-child-outline',
+        keywords: [
+          'pension alimenticia',
+          'cuanto es la pension alimenticia',
+          'que porcentaje del sueldo es la pension alimenticia',
+          'pension alimenticia hasta que edad',
+          'no me pasa la pension',
+          'deudor alimentario moroso',
+          'registro de deudores alimentarios',
+          'alimentos codigo de la ninez',
+          'ley 17957',
+          'ley 18244',
+        ],
+        priority: 0.7,
+        changefreq: 'monthly',
+      },
     ],
   },
   {
