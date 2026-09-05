@@ -49,6 +49,10 @@ interface Props {
   userLocation?: { lat: number; lng: number } | null
   radiusKm?: number
   highlightId?: string | null
+  /** Disable Leaflet HTML popups when the page supplies its own contextual panel. */
+  popups?: boolean
+  /** Optional touch target around the unchanged visual dot. */
+  markerHitSize?: number
   popupFor?: (b: Branch) => string
   directionsLabel?: string
   cashPoints?: CashPoint[]
@@ -69,6 +73,8 @@ const props = withDefaults(defineProps<Props>(), {
   userLocation: null,
   radiusKm: 0,
   highlightId: null,
+  popups: true,
+  markerHitSize: 0,
   popupFor: undefined,
   directionsLabel: 'Cómo llegar',
   cashPoints: () => [],
@@ -76,7 +82,7 @@ const props = withDefaults(defineProps<Props>(), {
   fitToMarkers: false,
 })
 
-const emit = defineEmits<{ 'marker-click': [branch: Branch] }>()
+const emit = defineEmits<{ 'marker-click': [branch: Branch]; 'map-click': [] }>()
 
 const config = useRuntimeConfig()
 const tileUrl =
@@ -106,11 +112,12 @@ function colorFor(origin: string): string {
 function pinIcon(origin: string, highlighted: boolean) {
   const c = colorFor(origin)
   const size = highlighted ? 18 : 12
+  const hitSize = Math.max(size, props.markerHitSize)
   return L.divIcon({
     className: 'casa-pin',
-    html: `<span style="display:block;width:${size}px;height:${size}px;border-radius:50%;background:${c};border:2px solid #fff;box-shadow:0 0 3px rgba(0,0,0,.5)"></span>`,
-    iconSize: [size, size],
-    iconAnchor: [size / 2, size / 2],
+    html: `<span style="display:flex;width:${hitSize}px;height:${hitSize}px;align-items:center;justify-content:center"><span style="display:block;width:${size}px;height:${size}px;border-radius:50%;background:${c};border:2px solid #fff;box-shadow:0 0 3px rgba(0,0,0,.5)"></span></span>`,
+    iconSize: [hitSize, hitSize],
+    iconAnchor: [hitSize / 2, hitSize / 2],
   })
 }
 
@@ -148,6 +155,16 @@ async function init() {
   await import('leaflet.markercluster/dist/MarkerCluster.Default.css')
 
   map = L.map(el.value, { scrollWheelZoom: true }).setView(props.center, props.zoom)
+  map.on('click', (event: { originalEvent?: MouseEvent }) => {
+    const target = event.originalEvent?.target
+    // A cluster zoom, marker selection or map control must not dismiss the page's panel.
+    if (
+      target instanceof Element &&
+      target.closest('.leaflet-marker-icon, .leaflet-popup, .leaflet-control')
+    )
+      return
+    emit('map-click')
+  })
   L.tileLayer(tileUrl, {
     attribution:
       '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -198,7 +215,7 @@ function renderCashPoints() {
   for (const p of props.cashPoints || []) {
     const label = p.name || p.label
     const m = L.marker([p.lat, p.lng], { icon: cashIcon(), title: label, alt: label })
-    m.bindPopup(cashPopup(p))
+    if (props.popups) m.bindPopup(cashPopup(p))
     cashCluster.addLayer(m)
   }
 }
@@ -218,7 +235,7 @@ function renderMarkers() {
       title: label,
       alt: label,
     })
-    m.bindPopup(popup(b))
+    if (props.popups) m.bindPopup(popup(b))
     m.on('click', () => emit('marker-click', b))
     markersById.set(b.id, m)
     branchById.set(b.id, b)
@@ -308,10 +325,35 @@ function renderUser() {
 function focusBranch(id: string) {
   const m = markersById.get(id)
   if (m && map && cluster) {
-    cluster.zoomToShowLayer(m, () => m.openPopup())
+    cluster.zoomToShowLayer(m, () => {
+      if (props.popups) m.openPopup()
+    })
   }
 }
-defineExpose({ focusBranch })
+
+/** Restore keyboard focus without moving the document or revealing an offscreen marker. */
+function focusMarker(id: string): boolean {
+  const markerElement = markersById.get(id)?.getElement()
+  const mapElement = el.value
+  if (!(markerElement instanceof HTMLElement) || !markerElement.isConnected || !mapElement)
+    return false
+  const markerBounds = markerElement.getBoundingClientRect()
+  const mapBounds = mapElement.getBoundingClientRect()
+  // Leaflet pans on focus. Only focus an already visible marker; otherwise the parent can
+  // focus the map region and preserve the camera chosen while its detail panel was open.
+  if (
+    !markerBounds.width ||
+    !markerBounds.height ||
+    markerBounds.left < mapBounds.left ||
+    markerBounds.right > mapBounds.right ||
+    markerBounds.top < mapBounds.top ||
+    markerBounds.bottom > mapBounds.bottom
+  )
+    return false
+  markerElement.focus({ preventScroll: true })
+  return document.activeElement === markerElement
+}
+defineExpose({ focusBranch, focusMarker })
 
 // <client-only> renders its default-slot div AFTER this component's onMounted
 // fires, so el.value can still be null here. Watch the ref and init the moment
@@ -345,6 +387,13 @@ watch(
   () => props.cashPoints,
   () => renderCashPoints(),
   { deep: false }
+)
+watch(
+  () => [props.popups, props.markerHitSize],
+  () => {
+    renderMarkers()
+    renderCashPoints()
+  }
 )
 watch(
   () => [props.userLocation, props.radiusKm],

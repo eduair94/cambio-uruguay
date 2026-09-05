@@ -2,6 +2,7 @@ import { resolve } from 'node:path'
 import { expect, test, type Locator, type Page, type Request } from '@playwright/test'
 import type {
   RentalCoverage,
+  RentalMapPoint,
   RentalOffer,
   RentalProperty,
   RentalsResponse,
@@ -15,6 +16,7 @@ const diagnostics = new WeakMap<
   { errors: string[]; failed: string[]; pending: Map<Request, { path: string; start: number }> }
 >()
 const mapRequests = new WeakMap<Page, URL[]>()
+const detailRequests = new WeakMap<Page, URL[]>()
 const listRequests = new WeakMap<Page, URL[]>()
 function offer(
   listingId: string,
@@ -166,6 +168,56 @@ function fixtureResponse(url: URL, copies = 1): RentalsResponse {
       priceMaxUyu: 24_000,
     },
   }
+}
+
+const mapFixturePhoto = 'https://example.com/rental-test/map-photo.png'
+
+function detailFixture(url: URL) {
+  const key = decodeURIComponent(url.pathname.split('/').at(-1) || '')
+  const item = fixtureResponse(url).items.find(candidate => candidate.key === key)
+  if (!item) return null
+  const publicProperty = { ...item }
+  Reflect.deleteProperty(publicProperty, 'addressKey')
+  publicProperty.offers = item.offers.map(candidate => ({
+    ...candidate,
+    title: item.title,
+    guarantees: item.guarantees,
+    image:
+      key === 'e2e-multiple' && candidate.listingId === item.matchingOffer?.listingId
+        ? mapFixturePhoto
+        : null,
+  }))
+  publicProperty.matchingOffer = publicProperty.offers.find(
+    candidate => candidate.listingId === item.matchingOffer?.listingId
+  )
+  return { property: publicProperty, usdUyu: 40 }
+}
+
+function mapFixturePoint(item: RentalProperty, lat: number, lng: number): RentalMapPoint {
+  const matched = item.matchingOffer ?? item.offers[0]
+  return {
+    key: item.key,
+    lat,
+    lng,
+    price: matched.price,
+    currency: matched.currency,
+    bedrooms: item.bedrooms,
+    area: item.area,
+    neighborhood: item.neighborhood,
+    offers: item.offers.length,
+    url: matched.url,
+  }
+}
+
+async function mockMapPoints(page: Page, points: RentalMapPoint[], total = points.length) {
+  await page.route(/\/api\/rentals\/mapa(?:\?|$)/, async route => {
+    mapRequests.get(page)!.push(new URL(route.request().url()))
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ points, total, located: total, shown: points.length, limit: 3000 }),
+    })
+  })
 }
 
 async function openMobileFilters(page: Page) {
@@ -353,6 +405,7 @@ test.describe('rental directory', () => {
     }
     diagnostics.set(page, log)
     mapRequests.set(page, [])
+    detailRequests.set(page, [])
     listRequests.set(page, [])
     page.on('pageerror', error => log.errors.push(error.stack || error.message))
     page.on('request', request => {
@@ -371,6 +424,26 @@ test.describe('rental directory', () => {
       { name: 'cu_consent', value: 'denied', domain: cookieDomain, path: '/' },
     ])
     await page.addInitScript(() => localStorage.setItem('not_show_twitter', 'true'))
+    await page.route(mapFixturePhoto, route =>
+      route.fulfill({
+        status: 200,
+        contentType: 'image/png',
+        body: Buffer.from(
+          'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+          'base64'
+        ),
+      })
+    )
+    await page.route(/\/api\/rentals\/propiedad\/[^/?]+(?:\?|$)/, async route => {
+      const url = new URL(route.request().url())
+      detailRequests.get(page)!.push(url)
+      const response = detailFixture(url)
+      await route.fulfill({
+        status: response ? 200 : 404,
+        contentType: 'application/json',
+        body: JSON.stringify(response ?? { statusCode: 404, message: 'Fixture not found' }),
+      })
+    })
     await page.route(/\/api\/rentals(?:\/mapa)?(?:\?|$)/, async route => {
       const url = new URL(route.request().url())
       if (url.pathname === '/api/rentals/mapa') {
@@ -695,6 +768,211 @@ test.describe('rental directory', () => {
     await page.getByRole('button', { name: 'Mapa', exact: true }).click()
     await expect.poll(() => mapRequests.get(page)?.length).toBe(2)
     expect(mapRequests.get(page)?.[1].searchParams.get('monthlyMax')).toBe('24000')
+  })
+
+  test('opens one rich map detail on demand without prefetching 3000 properties', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await startFixtureSearch(page)
+    await applyBudget(page, '25000')
+    const matched = fixtureResponse(new URL('https://example.com/?monthlyMax=25000')).items.find(
+      item => item.key === 'e2e-multiple'
+    )!
+    const selected = mapFixturePoint(matched, -34.9005, -56.161)
+    const points = [
+      selected,
+      ...Array.from({ length: 2999 }, (_, index) => ({
+        ...selected,
+        key: `e2e-unselected-${index}`,
+        neighborhood: 'Rivera',
+        lat: -30.908,
+        lng: -55.551,
+      })),
+    ]
+    await mockMapPoints(page, points, 3500)
+    expect(detailRequests.get(page)).toHaveLength(0)
+    await page.getByRole('button', { name: 'Mapa', exact: true }).click()
+    const marker = page.locator('.casa-pin[title="Pocitos"]')
+    await expect(marker).toBeVisible()
+    await expect(page.locator('.marker-cluster')).toContainText(['2999'])
+    expect(detailRequests.get(page)).toHaveLength(0)
+
+    await marker.click()
+    const panel = page.getByTestId('rental-map-detail')
+    await expect(panel.getByRole('heading', { name: matched.title, exact: true })).toBeVisible()
+    await expect.poll(() => detailRequests.get(page)?.length).toBe(1)
+    const request = detailRequests.get(page)![0]
+    expect(request.pathname).toBe('/api/rentals/propiedad/e2e-multiple')
+    expect(request.searchParams.get('monthlyMax')).toBe('25000')
+    await expect(page.locator('.leaflet-popup')).toHaveCount(0)
+    await expect(panel.locator('.rental-map-detail__price')).toHaveText(/\$\s*22\.000/)
+    const cost = panel.locator('.rental-map-detail__cost')
+    await expect(cost).toContainText('$ 1.000')
+    await expect(cost).toContainText('$ 23.000')
+    await expect(panel).toContainText('Dirección de prueba')
+    await expect(panel).toContainText('Pocitos')
+    await expect(
+      panel
+        .locator('.rental-map-detail__facts > div')
+        .filter({ hasText: 'Dormitorios' })
+        .locator('dd')
+    ).toHaveText('2')
+    await expect(panel).toContainText(/45\s*m²/)
+    await expect(panel).toContainText('ANDA')
+    await expect(panel).toContainText('Anunciante de prueba')
+    await expect(panel).toContainText(/ubicación.*(?:aproximada|orientativa)/i)
+    const photo = panel.locator(`img[src="${mapFixturePhoto}"]`)
+    await expect(photo).toBeVisible()
+    await expect
+      .poll(() => photo.evaluate(image => (image as HTMLImageElement).naturalWidth))
+      .toBe(1)
+    const publisher = panel.locator(`a[href="${matched.matchingOffer!.url}"]`).first()
+    await expect(publisher).toHaveAttribute('target', '_blank')
+    await expect(publisher).toHaveAttribute('rel', /noopener/)
+    await expect(publisher).toHaveAttribute('rel', /noreferrer/)
+
+    await panel.getByTestId('rental-map-detail-save').click()
+    await expect
+      .poll(() =>
+        page.evaluate(
+          key =>
+            JSON.parse(localStorage.getItem(key) || '{}').favorites?.map(
+              (item: { key: string }) => item.key
+            ),
+          RENTAL_SAVED_STORAGE_ID
+        )
+      )
+      .toEqual(['e2e-multiple'])
+    await panel.getByTestId('rental-map-detail-close').click()
+    await expect(panel).not.toBeVisible()
+    await expect(marker).toBeFocused()
+    expect(detailRequests.get(page)).toHaveLength(1)
+  })
+
+  test('keeps zero and unknown expenses distinct in the mobile map detail and restores marker focus', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 740 })
+    await startFixtureSearch(page)
+    await mockMapPoints(page, [
+      mapFixturePoint(fixtureProperties[0], -34.9048, -56.1733),
+      mapFixturePoint(fixtureProperties[1], -34.89, -56.1),
+    ])
+    await page.getByRole('button', { name: 'Mapa', exact: true }).click()
+    const zeroMarker = page.locator('.casa-pin[title="Cordón"]')
+    await expect(zeroMarker).toBeVisible()
+    expect(detailRequests.get(page)).toHaveLength(0)
+    await zeroMarker.click()
+    const panel = page.getByTestId('rental-map-detail')
+    await expect(
+      panel.getByRole('heading', { name: fixtureProperties[0].title, exact: true })
+    ).toBeVisible()
+    await expect(panel.locator('.rental-map-detail__cost')).toContainText('Sin gastos comunes')
+    await expect(panel.locator('.rental-map-detail__cost')).toContainText('$ 24.000')
+    await expect(panel.locator('.rental-map-detail__total dd')).toHaveText('$ 24.000')
+    await expectInsideViewport(panel.getByTestId('rental-map-detail-close'), page)
+    await expectInsideViewport(panel.getByTestId('rental-map-detail-save'), page)
+    await panel.getByTestId('rental-map-detail-save').click()
+    await expect
+      .poll(() =>
+        page.evaluate(
+          key => JSON.parse(localStorage.getItem(key) || '{}').favorites?.[0]?.key,
+          RENTAL_SAVED_STORAGE_ID
+        )
+      )
+      .toBe('e2e-zero')
+    await panel.getByTestId('rental-map-detail-close').click()
+    await expect(panel).not.toBeVisible()
+    await expect(zeroMarker).toBeFocused()
+
+    const unknownMarker = page.locator('.casa-pin[title="Malvín"]')
+    await unknownMarker.click()
+    await expect(
+      panel.getByRole('heading', { name: fixtureProperties[1].title, exact: true })
+    ).toBeVisible()
+    await expect(panel.locator('.rental-map-detail__cost')).toContainText(
+      'Gastos comunes sin informar'
+    )
+    await expect(panel.locator('.rental-map-detail__cost')).not.toContainText('Sin gastos comunes')
+    await expect(panel.locator('.rental-map-detail__price')).toHaveText(/\$\s*18\.000/)
+    await expect(panel.locator('.rental-map-detail__total dd')).toHaveText('Sin informar')
+    await expectInsideViewport(panel.getByTestId('rental-map-detail-close'), page)
+    await expectInsideViewport(panel.getByTestId('rental-map-detail-save'), page)
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390)
+    await page.screenshot({ path: resolve('..', 'rentals-e2e-mobile-map-detail.png') })
+    await panel.getByTestId('rental-map-detail-close').click()
+    await expect(panel).not.toBeVisible()
+    await expect(unknownMarker).toBeFocused()
+    expect(detailRequests.get(page)).toHaveLength(2)
+    expect(mapRequests.get(page)).toHaveLength(1)
+  })
+
+  test('retries a missing map detail and ignores its late response after another marker is selected', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await startFixtureSearch(page)
+    await mockMapPoints(page, [
+      // The second marker stays left of the desktop detail, so both clicks are real hit targets.
+      mapFixturePoint(fixtureProperties[0], -34.9, -56.1),
+      mapFixturePoint(fixtureProperties[1], -34.9, -56.2),
+    ])
+    let zeroAttempts = 0
+    let finishSlowRequest: () => void = () => undefined
+    const slowRequest = new Promise<void>(resolve => {
+      finishSlowRequest = resolve
+    })
+    let slowRequestFinished = false
+    await page.route(/\/api\/rentals\/propiedad\/e2e-zero(?:\?|$)/, async route => {
+      const url = new URL(route.request().url())
+      detailRequests.get(page)!.push(url)
+      zeroAttempts++
+      if (zeroAttempts === 1) {
+        await route.fulfill({
+          status: 404,
+          contentType: 'application/json',
+          body: JSON.stringify({ statusCode: 404, message: 'Fixture no longer matches' }),
+        })
+        return
+      }
+      await slowRequest
+      await route
+        .fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify(detailFixture(url)),
+        })
+        .catch(() => undefined) // Aborting a superseded request is an equally valid outcome.
+      slowRequestFinished = true
+    })
+    try {
+      await page.getByRole('button', { name: 'Mapa', exact: true }).click()
+      await page.locator('.casa-pin[title="Cordón"]').click()
+      const panel = page.getByTestId('rental-map-detail')
+      await expect(panel.getByRole('alert')).toBeVisible()
+      await panel.getByRole('button', { name: /Reintentar|Volver a intentar/ }).click()
+      await expect.poll(() => zeroAttempts).toBe(2)
+      const latestMarker = page.locator('.casa-pin[title="Malvín"]')
+      await latestMarker.click()
+      const latestHeading = panel.getByRole('heading', {
+        name: fixtureProperties[1].title,
+        exact: true,
+      })
+      await expect(latestHeading).toBeVisible()
+      finishSlowRequest()
+      await expect.poll(() => slowRequestFinished).toBe(true)
+      await expect(latestHeading).toBeVisible()
+      await expect(
+        panel.getByRole('heading', { name: fixtureProperties[0].title, exact: true })
+      ).toHaveCount(0)
+      await expect.poll(() => detailRequests.get(page)?.length).toBe(3)
+      await panel.getByTestId('rental-map-detail-close').click()
+      await expect(panel).not.toBeVisible()
+      await expect(latestMarker).toBeFocused()
+    } finally {
+      finishSlowRequest()
+    }
   })
 
   for (const width of [320, 390]) {

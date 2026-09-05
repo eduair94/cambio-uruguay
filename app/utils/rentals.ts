@@ -164,6 +164,14 @@ export interface RentalProperty {
   lastSeen: string
 }
 
+/** Fields returned publicly; addressKey only supports internal deduplication. */
+export type RentalPublicProperty = Omit<RentalProperty, 'addressKey'>
+
+export interface RentalPropertyDetailResponse {
+  property: RentalPublicProperty
+  usdUyu: number
+}
+
 export interface RentalSourceRun {
   key: RentalSource
   ok: boolean

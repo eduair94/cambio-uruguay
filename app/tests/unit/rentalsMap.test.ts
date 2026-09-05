@@ -100,7 +100,8 @@ describe('la página no manda los puntos en el SSR', () => {
 
   it('reutiliza LocationsMap en vez de escribir otro mapa', () => {
     expect(pagina).toContain('<LocationsMap')
-    expect(pagina).toContain(':popup-for="rentalPopup"')
+    expect(pagina).toContain(':popups="false"')
+    expect(pagina).toContain('@marker-click=')
   })
 })
 

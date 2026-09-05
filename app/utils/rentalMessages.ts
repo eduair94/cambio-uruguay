@@ -1,6 +1,20 @@
 /** Route-local messages shared by the rental search and its controls. */
 export const rentalMessages = {
   es: {
+    mapProperty: 'Detalle de la propiedad',
+    mapClose: 'Cerrar ficha y volver al mapa',
+    mapLoading: 'Cargando la propiedad…',
+    mapDetailError: 'No pudimos cargar esta propiedad. Volvé a intentarlo.',
+    mapUnavailable:
+      'Esta propiedad ya no aparece en la búsqueda. Probá de nuevo o elegí otro punto.',
+    mapArea: 'Superficie',
+    mapTotalUnknown: 'Faltan datos para calcular el costo mensual completo.',
+    mapPortals: 'Avisos y precios por portal',
+    mapMatching: 'Aviso que cumple tus filtros',
+    mapOpen: 'Ver en {source}',
+    mapLocationHint:
+      'Ubicación publicada por el portal; puede ser aproximada. Confirmá la dirección con quien publica.',
+    mapContactHint: 'Encontrá más fotos y contactá a quien publica en el aviso original.',
     mobileFilters: 'Filtros',
     closeFilters: 'Cerrar filtros',
     applyFilters: 'Aplicar filtros',
@@ -146,6 +160,20 @@ export const rentalMessages = {
     aseguradora: 'Aseguradora',
   },
   en: {
+    mapProperty: 'Property details',
+    mapClose: 'Close details and return to map',
+    mapLoading: 'Loading property…',
+    mapDetailError: 'We could not load this property. Please try again.',
+    mapUnavailable:
+      'This property no longer appears in this search. Try again or select another point.',
+    mapArea: 'Area',
+    mapTotalUnknown: 'Some information is missing to calculate the full monthly cost.',
+    mapPortals: 'Listings and prices by portal',
+    mapMatching: 'Listing matching your filters',
+    mapOpen: 'View on {source}',
+    mapLocationHint:
+      'Location published by the portal; it may be approximate. Confirm the address with the publisher.',
+    mapContactHint: 'Find more photos and contact the publisher in the original listing.',
     mobileFilters: 'Filters',
     closeFilters: 'Close filters',
     applyFilters: 'Apply filters',
@@ -288,6 +316,20 @@ export const rentalMessages = {
     aseguradora: 'Insurance company',
   },
   pt: {
+    mapProperty: 'Detalhes do imóvel',
+    mapClose: 'Fechar detalhes e voltar ao mapa',
+    mapLoading: 'Carregando imóvel…',
+    mapDetailError: 'Não foi possível carregar este imóvel. Tente novamente.',
+    mapUnavailable:
+      'Este imóvel não aparece mais nesta busca. Tente novamente ou escolha outro ponto.',
+    mapArea: 'Área',
+    mapTotalUnknown: 'Faltam informações para calcular o custo mensal completo.',
+    mapPortals: 'Anúncios e preços por portal',
+    mapMatching: 'Anúncio que atende aos filtros',
+    mapOpen: 'Ver em {source}',
+    mapLocationHint:
+      'Localização publicada pelo portal; pode ser aproximada. Confirme o endereço com o anunciante.',
+    mapContactHint: 'Encontre mais fotos e fale com o anunciante no anúncio original.',
     mobileFilters: 'Filtros',
     closeFilters: 'Fechar filtros',
     applyFilters: 'Aplicar filtros',

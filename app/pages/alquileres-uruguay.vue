@@ -153,16 +153,42 @@ MOBILE: Results first; persistent thumb-reachable filters open a focused draft w
               }}</span>
             </p>
             <ClientOnly>
-              <LocationsMap
+              <div
                 v-if="mapMarkers.length && !mapError"
-                :branches="mapMarkers"
-                :popup-for="rentalPopup"
-                :user-location="sedeCentro"
-                :radius-km="sedeCentro ? query.radioKm : 0"
-                :fit-to-markers="true"
-                height="65vh"
-                :directions-label="t('open')"
-              />
+                ref="mapFrame"
+                class="rentals-map__frame"
+                tabindex="-1"
+                :aria-label="t('map')"
+                @keydown.esc="closeMapProperty()"
+              >
+                <LocationsMap
+                  ref="rentalMap"
+                  :branches="mapMarkers"
+                  :popups="false"
+                  :marker-hit-size="44"
+                  :highlight-id="selectedMapKey"
+                  :user-location="sedeCentro"
+                  :radius-km="sedeCentro ? query.radioKm : 0"
+                  :fit-to-markers="true"
+                  height="100%"
+                  :directions-label="t('open')"
+                  @marker-click="selectMapProperty"
+                  @map-click="closeMapProperty(false)"
+                />
+                <MapPropertyDetail
+                  v-if="selectedMapKey"
+                  :key="selectedMapKey"
+                  :property="mapDetail?.property ?? null"
+                  :point="selectedMapPoint"
+                  :usd-uyu="mapDetail?.usdUyu ?? usdUyu"
+                  :pending="mapDetailPending"
+                  :error="mapDetailError"
+                  :favorite="isFavorite(selectedMapKey)"
+                  @close="closeMapProperty()"
+                  @retry="selectMapProperty({ id: selectedMapKey! })"
+                  @favorite="property => toggleFavorite(property, mapDetail?.usdUyu ?? usdUyu)"
+                />
+              </div>
               <VAlert v-else-if="!mapPending && !mapError" type="info" variant="tonal">
                 {{ t('noMap') }}
                 <VBtn variant="text" @click="changeView('lista')">{{ t('list') }}</VBtn>
@@ -369,6 +395,7 @@ MOBILE: Results first; persistent thumb-reachable filters open a focused draft w
 import { useDisplay } from 'vuetify'
 import SearchFilters from '~/components/rentals/SearchFilters.vue'
 import SavedPanel from '~/components/rentals/SavedPanel.vue'
+import MapPropertyDetail from '~/components/rentals/MapPropertyDetail.vue'
 import { rentalMessages } from '~/utils/rentalMessages'
 import {
   RENTAL_GUARANTEE_PUBLISHED,
@@ -380,6 +407,8 @@ import {
   totalMonthlyUyu,
   type RentalQuery,
   type RentalProperty,
+  type RentalPublicProperty,
+  type RentalPropertyDetailResponse,
   type RentalMapResponse,
   type RentalFacetValue,
   type RentalsResponse,
@@ -591,6 +620,7 @@ const {
   { server: false, immediate: false }
 )
 watch([view, mapKey], () => {
+  void closeMapProperty(false)
   if (view.value === 'mapa') void loadMap()
 })
 const sedeCentro = computed(() => {
@@ -614,17 +644,73 @@ const mapMarkers = computed(() =>
     source: 'alquileres',
   }))
 )
-const escapeHtml = (value: string) =>
-  value.replace(
-    /[&<>"']/g,
-    char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]!
-  )
-function rentalPopup(marker: { id: string }) {
-  const point = mapData.value?.points.find(candidate => candidate.key === marker.id)
-  if (!point) return ''
-  const url = /^https?:\/\//i.test(point.url || '') ? point.url : ''
-  return `<strong>${escapeHtml(offerPrice(point))}</strong><div>${escapeHtml(point.neighborhood || '')}</div>${url ? `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer nofollow">${escapeHtml(t('open'))}</a>` : ''}`
+const rentalMap = ref<{ focusMarker: (id: string) => boolean } | null>(null)
+const mapFrame = ref<HTMLElement | null>(null)
+const selectedMapKey = ref<string | null>(null)
+const selectedMapPoint = computed(
+  () => mapData.value?.points.find(point => point.key === selectedMapKey.value) ?? null
+)
+const mapDetail = shallowRef<RentalPropertyDetailResponse | null>(null)
+const mapDetailPending = ref(false)
+const mapDetailError = ref<'unavailable' | 'failed' | null>(null)
+let mapDetailRequest: AbortController | null = null
+// One full property is fetched on selection; the other map points remain lightweight.
+async function selectMapProperty(marker: { id: string }) {
+  if (mapPending.value || !mapData.value?.points.some(point => point.key === marker.id)) return
+  if (selectedMapKey.value === marker.id && (mapDetailPending.value || mapDetail.value)) return
+  // Keep map context visible above the mobile sheet, and desktop actions inside the viewport.
+  mapFrame.value?.scrollIntoView({
+    block: smAndDown.value ? 'start' : 'nearest',
+    behavior: 'instant',
+  })
+  mapDetailRequest?.abort()
+  const request = new AbortController()
+  mapDetailRequest = request
+  selectedMapKey.value = marker.id
+  mapDetail.value = null
+  mapDetailError.value = null
+  mapDetailPending.value = true
+  try {
+    const detail = await $fetch<RentalPropertyDetailResponse>(
+      `/api/rentals/propiedad/${encodeURIComponent(marker.id)}`,
+      { query: mapParams.value, signal: request.signal, retry: 0 }
+    )
+    if (mapDetailRequest === request) mapDetail.value = detail
+  } catch (error) {
+    if (mapDetailRequest === request && !request.signal.aborted) {
+      mapDetailError.value =
+        (error as { statusCode?: number }).statusCode === 404 ? 'unavailable' : 'failed'
+    }
+  } finally {
+    if (mapDetailRequest === request) mapDetailPending.value = false
+  }
 }
+async function closeMapProperty(restoreFocus = true) {
+  const key = selectedMapKey.value
+  mapDetailRequest?.abort()
+  mapDetailRequest = null
+  selectedMapKey.value = null
+  mapDetail.value = null
+  mapDetailError.value = null
+  mapDetailPending.value = false
+  if (restoreFocus && key) {
+    await nextTick()
+    if (!rentalMap.value?.focusMarker(key)) mapFrame.value?.focus({ preventScroll: true })
+  }
+}
+let mapVisibility: IntersectionObserver | null = null
+watch(mapFrame, frame => {
+  mapVisibility?.disconnect()
+  if (!frame) return
+  mapVisibility = new IntersectionObserver(([entry]) => {
+    // A mobile sheet should not follow the user into coverage, saved items or the footer.
+    if (!entry?.isIntersecting) void closeMapProperty(false)
+  })
+  mapVisibility.observe(frame)
+})
+watch(mapError, error => {
+  if (error) void closeMapProperty(false)
+})
 const numberFormat = (value: number) =>
   new Intl.NumberFormat(
     locale.value === 'en' ? 'en-US' : locale.value === 'pt' ? 'pt-BR' : 'es-UY',
@@ -745,13 +831,13 @@ function removeFavorite(key: string) {
   saved.value = removeRentalFavorite(saved.value, key)
   persist()
 }
-function toggleFavorite(property: RentalProperty) {
+function toggleFavorite(property: RentalPublicProperty, rate = usdUyu.value) {
   if (!isFavorite(property.key) && saved.value.favorites.length >= RENTAL_SAVED_FAVORITE_LIMIT) {
     notify(t('favoriteLimit'))
     showSaved.value = true
     return
   }
-  saved.value = toggleRentalFavorite(saved.value, property, usdUyu.value)
+  saved.value = toggleRentalFavorite(saved.value, property, rate)
   persist()
 }
 const isFavorite = (key: string) => saved.value.favorites.some(item => item.key === key)
@@ -774,7 +860,11 @@ onMounted(() => {
   window.addEventListener('storage', onStorage)
   if (view.value === 'mapa') void loadMap()
 })
-onBeforeUnmount(() => window.removeEventListener('storage', onStorage))
+onBeforeUnmount(() => {
+  window.removeEventListener('storage', onStorage)
+  mapDetailRequest?.abort()
+  mapVisibility?.disconnect()
+})
 const breadcrumbs = computed(() => [
   { title: t('country'), to: localePath('/') },
   { title: t('search'), disabled: true },
@@ -1116,6 +1206,18 @@ useHead(() => ({
 .rentals-map__coverage {
   margin: 0 0 16px;
   font-size: 0.875rem;
+}
+.rentals-map__frame {
+  position: relative;
+  height: max(400px, 68vh);
+  height: max(400px, 68dvh);
+  scroll-margin-top: 100px;
+  scroll-margin-bottom: 16px;
+}
+@media (min-width: 960px) {
+  .rentals-map__frame {
+    height: min(max(400px, 68dvh), calc(100dvh - 128px));
+  }
 }
 .rentals-empty {
   padding: 40px 20px;

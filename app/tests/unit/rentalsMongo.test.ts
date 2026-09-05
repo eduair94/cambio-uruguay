@@ -3,6 +3,7 @@
 import mongoose from 'mongoose'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { rentalCoverageStages } from '../../server/utils/rentalCoverage'
+import { rentalDetailStages } from '../../server/utils/rentalDetail'
 import {
   RENTAL_COLLATION,
   buildRentalFilter,
@@ -77,6 +78,112 @@ describe.skipIf(!uri)('rental budgets evaluated by Mongo (read-only synthetic do
   })
   afterAll(async () => {
     await client?.close()
+  })
+
+  it('returns the same matching offer as list/map while hiding internal fields and expired offers', async () => {
+    const old = '2000-01-01'
+    const documents = [
+      doc(
+        'selected',
+        [
+          offer({
+            source: 'mercadolibre',
+            listingId: 'cheap-rent',
+            priceUyu: 20_000,
+            price: 20_000,
+            commonExpenses: 8_000,
+          }),
+          {
+            ...offer({
+              listingId: 'cheap-total',
+              priceUyu: 22_000,
+              price: 22_000,
+              commonExpenses: 1_000,
+            }),
+            internalToken: 'private-offer-data',
+          },
+          offer({
+            listingId: 'expired',
+            lastSeen: old,
+            priceUyu: 1_000,
+            price: 1_000,
+            commonExpenses: 0,
+          }),
+        ],
+        {
+          department: 'Montevideo',
+          neighborhood: 'Cordón',
+          address: 'Dirección publicada',
+          addressKey: 'private-dedupe',
+          internalNote: 'private-property-data',
+          _id: 'internal-id',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          __v: 1,
+        }
+      ),
+      doc('stale', [offer({ lastSeen: old })]),
+    ]
+    const query = normalizeRentalQuery({
+      department: 'MONTEVIDEO',
+      neighborhoods: 'cordon',
+      monthlyMax: '25000',
+      page: '999',
+    })
+    const detailRows = await client
+      .db()
+      .aggregate([{ $documents: documents }, ...rentalDetailStages('selected', query, 10, 40)], {
+        collation: RENTAL_COLLATION,
+      })
+      .toArray()
+    expect(detailRows).toHaveLength(1)
+    const detail = detailRows[0]
+    const list = await client
+      .db()
+      .aggregate(
+        [
+          { $documents: documents },
+          ...rentalPublicStages(buildRentalFilter(query, 10, 40).filter, 10),
+          ...rentalOfferStages(query, 40),
+        ],
+        { collation: RENTAL_COLLATION }
+      )
+      .toArray()
+    expect(detail.price).toBe(22_000)
+    expect(detail.matchingOffer.listingId).toBe(list[0].matchingOffer.listingId)
+    expect(detail.matchingOffer.listingId).toBe(
+      rentalMatchingOffer(detail.offers, query, 40)?.listingId
+    )
+    expect(detail.offers.map((row: RentalOffer) => row.listingId)).toEqual([
+      'cheap-rent',
+      'cheap-total',
+    ])
+    expect(detail.address).toBe('Dirección publicada')
+    for (const field of ['_id', 'addressKey', 'internalNote', 'createdAt', 'updatedAt', '__v'])
+      expect(detail).not.toHaveProperty(field)
+    expect(detail.matchingOffer).not.toHaveProperty('internalToken')
+    expect(detail.offers.every((row: Record<string, unknown>) => !('internalToken' in row))).toBe(
+      true
+    )
+
+    for (const [key, filters] of [
+      ['missing', {}],
+      ['stale', {}],
+      ['selected', { monthlyMax: '10000' }],
+      ['selected', { department: 'Maldonado' }],
+    ] as const) {
+      const rows = await client
+        .db()
+        .aggregate(
+          [
+            { $documents: documents },
+            ...rentalDetailStages(key, normalizeRentalQuery(filters), 10, 40),
+          ],
+          { collation: RENTAL_COLLATION }
+        )
+        .toArray()
+      expect(rows).toEqual([])
+    }
   })
 
   it('counts global properties once per current source using the catalogue visibility rules', async () => {

@@ -242,6 +242,19 @@ En pantallas más pequeñas se conserva el botón fijo inferior y el panel de pa
 editar sigue siendo un borrador, cancelar conserva la posición y aplicar actualiza la búsqueda.
 La barra de escritorio queda oculta por CSS en móvil también antes de la hidratación.
 
+El mapa conserva un máximo de 3000 puntos livianos; al seleccionar uno solicita sólo esa
+propiedad a `GET /api/rentals/propiedad/[key]`, con los mismos filtros de la búsqueda. La ficha
+Vue muestra foto, dirección, características, alquiler, gastos comunes, total mensual,
+publicador, última lectura y enlaces con precios por portal. Cada costo y condición pertenece
+al `matchingOffer`; un gasto desconocido no se presenta como cero. Permite guardar con el
+mismo sistema de favoritos de la lista. En escritorio se ubica sobre el lateral del mapa;
+en móvil es una ficha inferior con scroll propio, por encima del botón fijo de filtros.
+Cierre y enlace al aviso quedan siempre accesibles. Cerrar devuelve el foco al marcador
+cuando sigue visible, sin recentrar el mapa. Cambiar de propiedad cancela la lectura anterior;
+cambiar la búsqueda o salir del mapa cierra la ficha. El endpoint aplica visibilidad de 10 días,
+proyecta sólo campos públicos (también dentro de ofertas), devuelve 404 si ya no coincide y
+503 ante un fallo de lectura. Nunca incorpora los registros completos a todos los puntos.
+
 **Fuentes y cobertura** usa `coverage` de la respuesta pública, calculada sobre todas las
 propiedades visibles y sus ofertas vigentes, sin los filtros de la búsqueda. Cada propiedad
 cuenta una vez por fuente; la suma puede superar el total único. `computedAt` fecha el conteo.

@@ -6,7 +6,7 @@ import {
   totalMonthlyUyu,
   type RentalCurrency,
   type RentalGuarantee,
-  type RentalProperty,
+  type RentalPublicProperty,
   type RentalQuery,
   type RentalSource,
 } from './rentals'
@@ -283,7 +283,7 @@ export function removeRentalSearch(state: RentalSavedState, id: string): RentalS
 }
 
 export function createRentalFavorite(
-  property: RentalProperty,
+  property: RentalPublicProperty,
   usdUyu: number,
   now = new Date().toISOString()
 ): RentalSavedFavorite | null {
@@ -297,7 +297,7 @@ export function createRentalFavorite(
 
 export function toggleRentalFavorite(
   state: RentalSavedState,
-  property: RentalProperty,
+  property: RentalPublicProperty,
   usdUyu: number,
   now = new Date().toISOString()
 ): RentalSavedState {
