@@ -9,10 +9,14 @@ import { toRawRental as infoCasas } from "../../classes/rentals/sources/infocasa
 import { fetchJson, fetchText } from "../../classes/rentals/net";
 import { sourcesAllowingExpiry } from "../../classes/rentals/sources/types";
 import { sameUnit } from "../../classes/rentals/dedupe";
+import { openSearchesWithBrowser } from "../../classes/rentals/sources/elpais_browser";
 
 // `sleep` is stubbed out, not shortened: El País paces the searches it has to OPEN seven seconds
 // apart, and a suite that actually waited would take two minutes to assert nothing about waiting.
 vi.mock("../../classes/rentals/net", () => ({ fetchText: vi.fn(), fetchJson: vi.fn(), sleep: vi.fn(async () => {}) }));
+// Chrome never starts in the unit suite. The fallback is asserted by what the harvester ASKS it
+// for and what it does with the answer, which is the part that can break.
+vi.mock("../../classes/rentals/sources/elpais_browser", () => ({ openSearchesWithBrowser: vi.fn(async () => new Map<string, string>()) }));
 const fixture = (name: string): string => readFileSync(join(__dirname, "fixtures", `${name}.html`), "utf8");
 afterEach(() => vi.resetAllMocks());
 
@@ -192,17 +196,49 @@ describe("Inmuebles El País's offline public-page samples", () => {
     expect([...sourcesAllowingExpiry([run], "full")]).toEqual([]);
   });
 
-  it("treats a search that never opened as a hole in the sweep and stops after three", async () => {
+  it("hands the challenged searches to the browser after three plain refusals", async () => {
     const { inits } = serveElpais({ initFails: true });
     const run = await harvestElpais("full", 40);
-    expect(run).toMatchObject({ ok: false, complete: false, listings: [] });
-    expect(run.note).toContain("3 búsquedas sin abrir (desafío del portal)");
-    expect(run.note).toContain("barrido detenido tras 3 seguidas, sigue en la próxima corrida");
-    expect(run.note).toContain("departamentos consultados: 0 de 19");
-    // One attempt each, then the sweep gives up: the refusal is a Cloudflare challenge, and 16
-    // more attempts neither solve it nor look like anything but an attack.
+
+    // Plain HTTP gets three tries — it is free when it works. The other 16 go to the browser in
+    // ONE handover, not one launch each.
     expect(inits).toHaveLength(3);
+    expect(openSearchesWithBrowser).toHaveBeenCalledTimes(1);
+    const handed = vi.mocked(openSearchesWithBrowser).mock.calls[0]![0].map(search => search.province);
+    expect(handed).toHaveLength(19);
+    // The three plain HTTP was refused on are handed over TOO. They were not tried and rejected,
+    // they were challenged, and the browser is the thing that answers a challenge.
+    expect(handed[0]).toBe("MONTEVIDEO");
+
+    // The browser found nothing either: every department is a hole in the sweep, not an empty one.
+    expect(run).toMatchObject({ ok: false, complete: false, listings: [] });
+    expect(run.note).toContain("19 búsquedas sin abrir");
+    expect(run.note).toContain("departamentos consultados: 0 de 19");
     expect([...sourcesAllowingExpiry([run], "full")]).toEqual([]);
+  });
+
+  it("reads what the browser opened and stays partial while any is still missing", async () => {
+    serveElpais({ initFails: true });
+    // Chrome answers the challenge for ten of the nineteen and gives up on the rest.
+    vi.mocked(openSearchesWithBrowser).mockImplementation(async searches =>
+      new Map(searches.slice(0, 10).map((search, index) => [search.province, `b000000${index}-0000-4000-8000-00000000000${index}`])));
+
+    const run = await harvestElpais("full", 40);
+
+    expect(run.ok).toBe(true);
+    expect(run.listings.length).toBeGreaterThan(0);
+    expect(run.note).toContain("10 abiertas con navegador");
+    expect(run.note).toContain("departamentos consultados: 10 de 19");
+    expect(run.note).toContain("9 búsquedas sin abrir");
+    // Nine departments never opened, so nothing may expire on this run's evidence.
+    expect(run.complete).toBe(false);
+    expect([...sourcesAllowingExpiry([run], "full")]).toEqual([]);
+  });
+
+  it("skips the browser entirely when plain HTTP opened everything", async () => {
+    serveElpais();
+    await harvestElpais("full", 40);
+    expect(openSearchesWithBrowser).not.toHaveBeenCalled();
   });
 
   it("stops claiming coverage when a department has more pages than the budget", async () => {

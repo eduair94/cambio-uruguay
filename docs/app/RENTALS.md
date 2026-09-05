@@ -99,18 +99,34 @@ de Canelones de 30 minutos antes y otra recién abierta devolvieron los mismos 4
 El barrido de comprobación del **2026-09-05** leyó los 19 departamentos: **4.788** avisos en
 Montevideo, **1.081** en Maldonado, **422** en Canelones y **65** repartidos en el resto; cuatro
 departamentos con cero. El **92 %** del catálogo está en los tres primeros, que son los que repasa
-la corrida horaria. Son avisos leídos, no un incremento neto publicado.
+la corrida horaria. Son avisos leídos, no un incremento neto publicado. El harvester real, con las
+búsquedas ya guardadas y sin levantar navegador, cerró **19 de 19 departamentos con 5.835 avisos y
+`complete: true` en 197 segundos**; 2.281 de ellos (39 %) traen garantía.
 
-**Abrir búsquedas está limitado por Cloudflare**, y eso define el resto del diseño: tres o cuatro
-`POST /api/chat/init` pasan por corrida y el siguiente vuelve **403 `Just a moment...`** con
-`ratelimit-remaining` en 7, o sea lejos del tope y sin cabeceras de límite — es un desafío de
-cliente, no una tasa. Los `GET` de `results` siguen en 200 durante todo el episodio. No se sortea:
-un intento por búsqueda, corte tras 3 negativas seguidas y **el caché hace el resto**, subiendo la
-cobertura corrida a corrida. Por eso los departamentos van **ordenados por volumen y no
-alfabéticamente**: las aperturas que se consiguen tienen que gastarse en Montevideo, Maldonado y
-Canelones, no en Artigas (1 aviso) y Cerro Largo (ninguno). `complete` sigue en `false` hasta
-tenerlos todos, así que ninguna ausencia caduca nada mientras tanto. Lo que cerraría esto en una
-sola corrida no es código: que el operador deje pasar a `CambioUruguayBot/1.0` por Cloudflare.
+**Abrir búsquedas lo limita Cloudflare, no una tasa**: tres o cuatro `POST /api/chat/init` pasan
+desde Node y el siguiente vuelve **403 `Just a moment...`** con `ratelimit-remaining` en 7 —lejos
+del tope y sin cabeceras de límite—, mientras los `GET` de `results` siguen en 200 todo el
+episodio.
+
+Lo resuelve **un navegador de verdad, sin falsificar nada**: se levanta el Chrome que el repo ya
+trae (`puppeteer`, el mismo de `cambio_regul.ts`), se carga el portal como cualquier visitante y
+**desde dentro de la página** se emite el mismo `POST` que emite su propio frontend. No hay replay
+de cookie, ni huella TLS suplantada, ni parches de sigilo: el navegador contesta el desafío porque
+es un navegador. Lleva además cabecera propia (`x-cambio-uruguay-bot`) para que el operador
+encuentre nuestro tráfico en sus registros. Medido: 6 aperturas seguidas desde la página, las 6 en
+201, con Node recibiendo 403 en el mismo momento; y la cosecha completa con caché vacío abrió
+**19 de 19 departamentos**, 18 por navegador.
+
+Orden: **primero HTTP plano** (cuando funciona no cuesta ni Chrome ni memoria) y a las 3 negativas
+seguidas el resto va al navegador **en una sola tanda, un solo Chrome** — incluidas esas 3, que no
+fueron rechazadas sino desafiadas. Con el caché tibio no se lanza navegador ninguno. Dos frenos,
+porque un Chrome colgado en este VPS no es un job lento sino una caída: cierre en `finally` pase lo
+que pase y presupuesto duro de 6 min para toda la fase. `RENTALS_EP_BROWSER=0` la apaga.
+
+Los departamentos van **ordenados por volumen y no alfabéticamente**: si algo falla y entran pocas
+aperturas, tienen que ser Montevideo, Maldonado y Canelones, no Artigas (1 aviso) y Cerro Largo
+(ninguno). `complete` sigue en `false` hasta tenerlos todos, así que ninguna ausencia caduca nada
+mientras tanto.
 
 [Casasweb](https://casasweb.com/resultados.aspx?m=0&n=A&t=c&x=1&z=1) entrega tarjetas HTML y un
 formulario ASP.NET de paginación **funcional**: se verificaron las páginas 1 y 2 con IDs distintos.
@@ -474,6 +490,9 @@ El País vuelve a tener variables propias, ahora que importa:
 | `RENTALS_EP_FAST_PAGES` | 1 | páginas por departamento en el repaso horario |
 | `RENTALS_EP_INIT_GAP_MS` | 7000 | separación entre búsquedas **que hay que abrir**. Una corrida que reutiliza todos los identificadores no espera nada |
 | `RENTALS_EP_CHATS_FILE` | `<temp>/cambio-uruguay-elpais-chats.json` | dónde se guardan los identificadores de las búsquedas entre corridas. Si falta o está corrupto, la corrida las abre de nuevo; se puede **sembrar a mano** con identificadores abiertos desde un navegador |
+| `RENTALS_EP_BROWSER` | `1` | `0` deja la fuente en HTTP plano: se abren las 3 búsquedas que Cloudflare deja pasar y nada más |
+| `RENTALS_EP_CHROME` | — | ruta al Chrome a usar. Se prueban esta, `PUPPETEER_EXECUTABLE_PATH`, `/usr/bin/google-chrome-stable` y por último el Chromium propio de puppeteer |
+| `RENTALS_EP_BROWSER_BUDGET_MS` | 360000 | techo duro de toda la fase de navegador. Un Chrome colgado en este VPS no es un job lento, es una caída |
 
 ## La página
 

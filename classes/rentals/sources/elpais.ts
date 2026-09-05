@@ -177,7 +177,7 @@ export function elpaisToRawRental(value: unknown): RawRental | null {
  * anchored on "Colonia del Sacramento" returned 6, because the geocoder resolved the second one to
  * a city and the search narrowed to it. These are the strings the site itself sends.
  */
-interface ElpaisSearch {
+export interface ElpaisSearch {
   province: string;
   anchor: string;
   lat: number;
@@ -226,6 +226,8 @@ const FAST_PAGES = Number(process.env.RENTALS_EP_FAST_PAGES || 1);
 /** `/api/chat/init` publishes `ratelimit-policy: 10;w=60`. Seven seconds keeps us under it. */
 const INIT_GAP_MS = Number(process.env.RENTALS_EP_INIT_GAP_MS || 7_000);
 const CHAT_ID = /^[a-f0-9-]{16,64}$/i;
+/** `0` keeps the run to plain HTTP: fewer searches open, and nothing else changes. */
+const BROWSER_ENABLED = process.env.RENTALS_EP_BROWSER !== "0";
 
 /**
  * The saved searches survive between runs, so we keep their ids and stop paying for new ones.
@@ -284,23 +286,30 @@ interface ChatResultsResponse {
  * `includeProjects: false` drops the new-construction developments: those are FOR SALE, and this
  * is a rental index.
  */
-function searchForm(search: ElpaisSearch): FormData {
+export function searchFields(search: ElpaisSearch): Record<string, string> {
   const coordinates = { lat: search.lat, lng: search.lon };
+  return {
+    userLocation: JSON.stringify({ location: search.anchor, coordinates }),
+    anchorLocation: JSON.stringify({ name: search.anchor, coordinates, anchorSource: "picked" }),
+    transactionType: "rental",
+    userLanguage: "es",
+    displayMessage: `Alquileres en ${search.anchor}`,
+    manualFilters: JSON.stringify({
+      intent: "rent",
+      zones: { province: search.province },
+      filters: { propertyTypes: [], amenities: [], transactionType: "rental" },
+      _clearedFilters: ["price", "bedrooms", "bathrooms", "areaM2", "landAreaM2", "amenities", "sellerType", "publishedWithin"],
+      displayCurrency: "UYU",
+    }),
+    includeProjects: "false",
+    includeListings: "true",
+  };
+}
+
+/** The same fields the browser posts, as a `FormData` for the plain HTTP path. */
+function searchForm(search: ElpaisSearch): FormData {
   const form = new FormData();
-  form.set("userLocation", JSON.stringify({ location: search.anchor, coordinates }));
-  form.set("anchorLocation", JSON.stringify({ name: search.anchor, coordinates, anchorSource: "picked" }));
-  form.set("transactionType", "rental");
-  form.set("userLanguage", "es");
-  form.set("displayMessage", `Alquileres en ${search.anchor}`);
-  form.set("manualFilters", JSON.stringify({
-    intent: "rent",
-    zones: { province: search.province },
-    filters: { propertyTypes: [], amenities: [], transactionType: "rental" },
-    _clearedFilters: ["price", "bedrooms", "bathrooms", "areaM2", "landAreaM2", "amenities", "sellerType", "publishedWithin"],
-    displayCurrency: "UYU",
-  }));
-  form.set("includeProjects", "false");
-  form.set("includeListings", "true");
+  for (const [name, value] of Object.entries(searchFields(search))) form.set(name, value);
   return form;
 }
 
@@ -331,6 +340,45 @@ async function openSearch(search: ElpaisSearch): Promise<string> {
   });
   const chatId = typeof init?.data?.chatId === "string" ? init.data.chatId : "";
   return init?.success && CHAT_ID.test(chatId) ? chatId : "";
+}
+
+/**
+ * Opens every search in `missing`, cheapest path first.
+ *
+ * Plain HTTP gets three tries because when it works it costs nothing — no Chrome, no memory, no
+ * startup. When Cloudflare starts refusing, the rest go through a real browser, which answers the
+ * challenge by being one. See `elpais_browser.ts`: nothing here forges anything.
+ */
+async function openSearches(missing: readonly ElpaisSearch[]): Promise<{ opened: Map<string, string>; viaBrowser: number }> {
+  const opened = new Map<string, string>();
+  const challenged: ElpaisSearch[] = [];
+  let consecutiveFailures = 0;
+  let attempts = 0;
+
+  for (const search of missing) {
+    if (consecutiveFailures >= 3) {
+      challenged.push(search);
+      continue;
+    }
+    if (attempts++ > 0) await sleep(INIT_GAP_MS);
+    const chatId = await openSearch(search);
+    if (chatId) {
+      opened.set(search.province, chatId);
+      consecutiveFailures = 0;
+    } else {
+      challenged.push(search);
+      consecutiveFailures++;
+    }
+  }
+
+  if (!challenged.length || !BROWSER_ENABLED) return { opened, viaBrowser: 0 };
+
+  const { openSearchesWithBrowser } = await import("./elpais_browser");
+  const viaBrowser = await openSearchesWithBrowser(challenged, INIT_GAP_MS);
+  for (const [province, chatId] of viaBrowser) {
+    if (CHAT_ID.test(chatId)) opened.set(province, chatId);
+  }
+  return { opened, viaBrowser: viaBrowser.size };
 }
 
 interface ResultsPage {
@@ -367,41 +415,48 @@ export async function harvestElpais(mode: "full" | "fast", usdUyu: number): Prom
   const sort = mode === "fast" ? "&sort=newest" : "";
   let pages = 0;
   let failed = 0;
-  let opened = 0;
-  let consecutiveFailures = 0;
+  let viaBrowser = 0;
   let incomplete = mode !== "full" || searches.length !== SEARCHES.length;
 
+  // 1. Which searches do we already have? A cached id is proved by its FIRST PAGE, which the sweep
+  //    needs anyway — so verifying costs nothing extra. A forgotten chat answers 404, never an
+  //    empty 200, which is what makes this safe: a stale id cannot pass as an empty department.
+  const firstPages = new Map<string, ResultsPage>();
+  const missing: ElpaisSearch[] = [];
   for (const search of searches) {
-    let chatId = chats.get(search.province) ?? "";
-    let first = chatId ? await readPage(chatId, 1, sort) : null;
+    const chatId = chats.get(search.province) ?? "";
+    const first = chatId ? await readPage(chatId, 1, sort) : null;
+    if (first) firstPages.set(search.province, first);
+    else {
+      chats.delete(search.province);
+      missing.push(search);
+    }
+  }
 
-    // No cached search, or the portal has forgotten it: open one, paced for the ten-per-minute
-    // window. The gap is charged per INIT, not per department — a run that reuses every id waits
-    // for nothing.
-    if (!first) {
-      if (opened > 0) await sleep(INIT_GAP_MS);
-      opened++;
-      chatId = await openSearch(search);
-      // A search we could not open is a hole in the sweep, not an empty department.
-      if (!chatId) {
+  // 2. Open what is missing — plain HTTP while it works, a real browser when Cloudflare steps in.
+  if (missing.length) {
+    const result = await openSearches(missing);
+    viaBrowser = result.viaBrowser;
+    for (const [province, chatId] of result.opened) chats.set(province, chatId);
+    for (const search of missing) {
+      const chatId = chats.get(search.province) ?? "";
+      const first = chatId ? await readPage(chatId, 1, sort) : null;
+      if (first) firstPages.set(search.province, first);
+      else {
+        // A search we could not open is a hole in the sweep, not an empty department.
         chats.delete(search.province);
         failed++;
         incomplete = true;
-        // Cloudflare is challenging us, and 15 more attempts will not change its mind. This is
-        // Casasweb's rule, and here it is also what keeps the run from looking like an attack.
-        if (++consecutiveFailures >= 3) break;
-        continue;
-      }
-      chats.set(search.province, chatId);
-      first = await readPage(chatId, 1, sort);
-      if (!first) {
-        failed++;
-        incomplete = true;
-        if (++consecutiveFailures >= 3) break;
-        continue;
       }
     }
-    consecutiveFailures = 0;
+  }
+  saveChats(chats);
+
+  // 3. Read every department we have a working search for.
+  for (const search of searches) {
+    const first = firstPages.get(search.province);
+    if (!first) continue;
+    const chatId = chats.get(search.province)!;
     covered.push(search.province);
 
     for (let page = 1; page <= budget; page++) {
@@ -426,7 +481,6 @@ export async function harvestElpais(mode: "full" | "fast", usdUyu: number): Prom
       if (page === budget) incomplete = true;
     }
   }
-  saveChats(chats);
 
   const partial = incomplete
     ? mode === "fast"
@@ -436,7 +490,7 @@ export async function harvestElpais(mode: "full" | "fast", usdUyu: number): Prom
   return {
     key: "elpais", ok: byId.size > 0, complete: !incomplete, listings: [...byId.values()],
     note: `${pages} páginas, ${byId.size} avisos únicos; departamentos consultados: ${covered.length} de ${searches.length}`
-      + partial + (failed ? `; ${failed} búsquedas sin abrir (desafío del portal)` : "")
-      + (consecutiveFailures >= 3 ? `; barrido detenido tras 3 seguidas, sigue en la próxima corrida` : ""),
+      + partial + (failed ? `; ${failed} búsquedas sin abrir` : "")
+      + (viaBrowser ? `; ${viaBrowser} abiertas con navegador` : ""),
   };
 }
