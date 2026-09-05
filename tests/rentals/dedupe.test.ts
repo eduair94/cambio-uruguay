@@ -482,6 +482,29 @@ describe("conservative unit evidence", () => {
   });
 
   it.each([
+    ["Apartamento 2D Pocitos", 2],
+    ["Apartamento 1 d", 1],
+    ["Apto 1D Pocitos", 1],
+    ["Apto 3D Pocitos", 3],
+    ["Apto 4D Pocitos", 4],
+    ["Apto 5D Pocitos", 5],
+    ["Apto 6D Pocitos", 6],
+    ["Apartamento 2 amb.", 2],
+    ["Apto 2 ambs. Pocitos", 2],
+  ] as const)("does not identify a unit from room-count shorthand: %s", (title, bedrooms) => {
+    const advertised = { address: "Rizal 3715", title, bedrooms };
+    expect(matches(advertised, advertised)).toBe(false);
+  });
+
+  it.each(["Unidad 2D", "Apto N° 2D", "Apartamento número 2D", "Apto #2D"])(
+    "retains a letter-suffixed unit when its identifier is explicitly labelled: %s",
+    (title) => {
+      const advertised = { address: "Rizal 3715", title };
+      expect(matches(advertised, advertised)).toBe(true);
+    },
+  );
+
+  it.each([
     "Apartamento a pasos de la rambla",
     "Apto a metros del shopping",
     "Unidad a precio de oportunidad",

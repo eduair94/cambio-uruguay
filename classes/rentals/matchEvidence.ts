@@ -68,9 +68,18 @@ export function rentalUnitEvidence(
     for (const match of text.matchAll(unitPattern)) {
       const tail = text.slice((match.index ?? 0) + match[0].length);
       // "Apartamento 2 dormitorios" is a specification, not unit number 2.
-      if (/^\s*(?:dorm|dorms|dormitorios?|habitaciones?|ba[ñn]os?|ambientes?|m2|m²|metros)\b/.test(tail))
+      if (
+        /^\s*(?:dorm|dorms|dormitorios?|habitaciones?|ba[ñn]os?|amb|ambs|ambientes?|m2|m²|metros)\b/.test(
+          tail,
+        )
+      )
         continue;
       const value = match[1]!.trim();
+      const label = match[0].slice(0, match[0].length - match[1]!.length);
+      const explicitlyNumbered = /\bunidad\b|\bn(?:ro|umero)?\.?\s*[°ºo]?|\bno\.|#/.test(label);
+      // "Apto 2D" / "Apartamento 1 d" often abbreviate bedrooms. Similar rents/specifications
+      // cannot resolve that ambiguity. Require "unidad", N°/número or # to use such a unit ID.
+      if (/^[1-6]\s*d$/.test(value) && !explicitlyNumbered) continue;
       // "Apartamento a pasos de la rambla" is prose. A bare letter only identifies a unit when
       // it ends the label or is followed by an explicit separator/floor/building designation.
       if (/^[a-z]$/.test(value) && !/^\s*(?:$|[,;:.-]|(?:piso|torre|bloque|block)\b)/.test(tail)) continue;
