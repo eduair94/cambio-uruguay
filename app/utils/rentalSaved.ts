@@ -12,7 +12,7 @@ import {
 } from './rentals'
 
 // Device-local snapshots: these do not claim a listing is still available or create alerts.
-export const RENTAL_SAVED_STORAGE_KEY = 'cu_rentals_saved_v1'
+export const RENTAL_SAVED_STORAGE_ID = 'cu_rentals_saved_v1'
 export const RENTAL_SAVED_SEARCH_LIMIT = 12
 export const RENTAL_SAVED_FAVORITE_LIMIT = 60
 export const RENTAL_SAVED_OFFER_LIMIT = 8
@@ -242,7 +242,7 @@ function browserStorage(): RentalSavedStorage | undefined {
 
 export function readRentalSaved(storage = browserStorage()): RentalSavedState {
   try {
-    return parseRentalSaved(storage?.getItem(RENTAL_SAVED_STORAGE_KEY))
+    return parseRentalSaved(storage?.getItem(RENTAL_SAVED_STORAGE_ID))
   } catch {
     return emptyRentalSaved()
   }
@@ -254,7 +254,7 @@ export function writeRentalSaved(state: RentalSavedState, storage = browserStora
   try {
     const raw = JSON.stringify(normalizeState(state))
     if (raw.length > MAX_STORED_LENGTH) return false
-    storage.setItem(RENTAL_SAVED_STORAGE_KEY, raw)
+    storage.setItem(RENTAL_SAVED_STORAGE_ID, raw)
     return true
   } catch {
     return false

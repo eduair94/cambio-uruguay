@@ -1,7 +1,7 @@
 import { resolve } from 'node:path'
 import { expect, test, type Locator, type Page, type Request } from '@playwright/test'
 import type { RentalOffer, RentalProperty, RentalsResponse } from '../../utils/rentals'
-import { RENTAL_SAVED_STORAGE_KEY } from '../../utils/rentalSaved'
+import { RENTAL_SAVED_STORAGE_ID } from '../../utils/rentalSaved'
 
 // Synthetic browser fixtures only. No production listing or storage is modified by these tests.
 const day = '2026-09-04'
@@ -422,7 +422,7 @@ test.describe('rental directory', () => {
       .poll(() =>
         page.evaluate(
           key => JSON.parse(localStorage.getItem(key) || '{}').favorites?.length,
-          RENTAL_SAVED_STORAGE_KEY
+          RENTAL_SAVED_STORAGE_ID
         )
       )
       .toBe(2)
@@ -433,7 +433,7 @@ test.describe('rental directory', () => {
       .poll(() =>
         page.evaluate(
           key => JSON.parse(localStorage.getItem(key) || '{}').searches?.[0]?.params?.monthlyMax,
-          RENTAL_SAVED_STORAGE_KEY
+          RENTAL_SAVED_STORAGE_ID
         )
       )
       .toBe('25000')
@@ -539,6 +539,7 @@ test.describe('rental directory', () => {
       ]) {
         await neighborhoods.fill(typed)
         await page.getByRole('option', { name: label, exact: true }).click()
+        await expect(neighborhoods).toHaveValue('')
         await page.keyboard.press('Escape')
         await expect(page.getByRole('listbox')).not.toBeVisible()
       }
@@ -582,6 +583,7 @@ test.describe('rental directory', () => {
       ]) {
         await neighborhoods.fill(typed)
         await page.getByRole('option', { name: label, exact: true }).click()
+        await expect(neighborhoods).toHaveValue('')
         await page.keyboard.press('Escape')
         await expect(page.getByRole('listbox')).not.toBeVisible()
       }

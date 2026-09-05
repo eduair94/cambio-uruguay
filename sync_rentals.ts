@@ -1,8 +1,9 @@
 // The rental directory harvest for /alquileres-uruguay.
 //
-// Reads MercadoLibre (through the scraper service), InfoCasas (through its own server-rendered
-// payload) and Facebook Marketplace (through the browser service), merges the adverts into one row
-// per PROPERTY, and writes them to the APP database the Nuxt site reads.
+// Reads MercadoLibre (through the scraper service), InfoCasas (its server-rendered payload),
+// Facebook Marketplace (the browser service), Casasweb (public result pages and pagination), and
+// Inmuebles El Pais (public category pages). Merges adverts into one row per PROPERTY and writes
+// them to the APP database the Nuxt site reads. Partial harvests never prove an advert disappeared.
 //
 // Two modes:
 //   * default — the full sweep. Walks every page each portal will give us, then prunes properties

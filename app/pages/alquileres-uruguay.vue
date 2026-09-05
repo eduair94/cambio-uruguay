@@ -354,7 +354,7 @@ import {
 } from '~/utils/rentals'
 import { MUTUALISTA_SEDES } from '~/utils/mutualistaSedes'
 import {
-  RENTAL_SAVED_STORAGE_KEY,
+  RENTAL_SAVED_STORAGE_ID,
   RENTAL_SAVED_FAVORITE_LIMIT,
   emptyRentalSaved,
   readRentalSaved,
@@ -723,7 +723,7 @@ async function shareSearch() {
   }
 }
 const onStorage = (event: StorageEvent) => {
-  if (event.key === RENTAL_SAVED_STORAGE_KEY || event.key === null) saved.value = readRentalSaved()
+  if (event.key === RENTAL_SAVED_STORAGE_ID || event.key === null) saved.value = readRentalSaved()
 }
 onMounted(() => {
   saved.value = readRentalSaved()

@@ -10,7 +10,7 @@ import {
   rentalSavedSafeUrl,
   RENTAL_SAVED_FAVORITE_LIMIT,
   RENTAL_SAVED_SEARCH_LIMIT,
-  RENTAL_SAVED_STORAGE_KEY,
+  RENTAL_SAVED_STORAGE_ID,
   saveRentalSearch,
   toggleRentalFavorite,
   writeRentalSaved,
@@ -193,7 +193,7 @@ describe('rental browser persistence', () => {
     const storage = memoryStorage()
     const state = toggleRentalFavorite(emptyRentalSaved(), property(), 40, savedAt)
     expect(writeRentalSaved(state, storage)).toBe(true)
-    expect(storage.values.has(RENTAL_SAVED_STORAGE_KEY)).toBe(true)
+    expect(storage.values.has(RENTAL_SAVED_STORAGE_ID)).toBe(true)
     expect(readRentalSaved(storage)).toEqual(state)
   })
 
