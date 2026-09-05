@@ -340,6 +340,7 @@ function stopViewport() {
   window.removeEventListener('resize', syncViewport)
 }
 function focusDialogHeading() {
+  if (dialogHeading.value?.closest('form')?.contains(document.activeElement)) return
   dialogHeading.value?.focus({ preventScroll: true })
 }
 const copy = (query: RentalQuery): RentalQuery => ({

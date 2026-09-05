@@ -660,6 +660,13 @@ test.describe('rental directory', () => {
         .evaluate(element => element.getBoundingClientRect().top)
       await expectInsideViewport(trigger, page)
       await openMobileFilters(page)
+      // Entering a value during opening must keep the user's focus when the transition ends.
+      await budget.focus()
+      await expect(budget).toBeFocused()
+      await budget.fill('25000')
+      await expect(budget).toHaveValue('25000')
+      await expect(dialog.locator('.v-overlay__content')).not.toHaveClass(/enter-active/)
+      await expect(budget).toBeFocused()
       await expect(dialog).toHaveAttribute('role', 'dialog')
       await expect
         .poll(() => dialog.evaluate(element => element.contains(document.activeElement)))

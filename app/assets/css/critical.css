@@ -23,6 +23,11 @@ html[data-theme='light'] body {
   color: #1a1a1a;
 }
 
+/* Auto ads retain their initial iframe width after a viewport resize. */
+.google-auto-placed {
+  overflow-x: clip;
+}
+
 /* Ensure Vuetify components use Open Sans */
 .v-application {
   font-family: 'Open Sans', sans-serif !important;
