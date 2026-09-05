@@ -134,6 +134,12 @@ desde dentro de la página—, se puede allowlistear en su borde, y `RENTALS_EP_
 UA el día que prefieran otra cosa. Es la única fuente del directorio con esta excepción y está acá
 escrita para que se note.
 
+**Verificado en producción** el 2026-09-05, sobre el `dist` desplegado en el VPS y con el caché de
+búsquedas vacío: **19 de 19 departamentos, 5.835 avisos, `complete: true`, 453 segundos**, y las 19
+búsquedas se abrieron **por HTTP plano, sin levantar navegador**. La corrida anterior a este
+cambio, en la misma máquina, había abierto 3 búsquedas con Chrome y leído **cero** avisos porque
+cada página de resultados volvía como interstitial.
+
 ### Y si aun así hay desafío: que lo pida un navegador de verdad
 
 **No se falsifica nada.** No hay replay de la cookie `cf_clearance`, ni suplantación de huella TLS,

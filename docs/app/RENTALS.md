@@ -99,9 +99,9 @@ de Canelones de 30 minutos antes y otra recién abierta devolvieron los mismos 4
 El barrido de comprobación del **2026-09-05** leyó los 19 departamentos: **4.788** avisos en
 Montevideo, **1.081** en Maldonado, **422** en Canelones y **65** repartidos en el resto; cuatro
 departamentos con cero. El **92 %** del catálogo está en los tres primeros, que son los que repasa
-la corrida horaria. Son avisos leídos, no un incremento neto publicado. El harvester real, con las
-búsquedas ya guardadas y sin levantar navegador, cerró **19 de 19 departamentos con 5.835 avisos y
-`complete: true` en 197 segundos**; 2.281 de ellos (39 %) traen garantía.
+la corrida horaria. Son avisos leídos, no un incremento neto publicado. **Verificado en producción** sobre el `dist` desplegado en el VPS, con el caché de búsquedas
+vacío: **19 de 19 departamentos, 5.835 avisos, `complete: true`, 453 segundos**, y las 19 búsquedas
+abiertas por HTTP plano sin levantar navegador. 2.281 de esos avisos (39 %) traen garantía.
 
 **Abrir búsquedas lo limita Cloudflare, no una tasa**: tres o cuatro `POST /api/chat/init` pasan
 desde Node y el siguiente vuelve **403 `Just a moment...`** con `ratelimit-remaining` en 7 —lejos
