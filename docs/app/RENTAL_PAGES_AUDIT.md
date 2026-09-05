@@ -36,7 +36,30 @@ Sólo las 93 keys revisadas que sigan calificando se incluyen en el sitemap espa
 
 La decisión sigue las recomendaciones oficiales: [contenido escalado sin valor añadido](https://developers.google.com/search/docs/essentials/spam-policies#scaled-content), [sitemap con URLs canónicas y lastmod de cambios significativos](https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap), y [consolidación de duplicados](https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls). El valor añadido del piloto es la comparación entre portales, costos transparentes, benchmark acotado y navegación hacia alternativas reales. No se añade prosa genérica para alcanzar un número de palabras.
 
+## Verificación posterior al despliegue
+
+El commit `951f3fc` se desplegó mediante el run `33948376430`: frontend terminado el **2026-09-05 a las 06:04:26 UTC** y backend a las **06:07:26 UTC**, ambos con éxito. La auditoría HTTP pública posterior comenzó a las **06:08:47 UTC** y realizó 108 solicitudes, con un máximo de dos consultas de fichas simultáneas.
+
+Las **93 keys del piloto respondieron 200**. De ellas, **91 calificaban para indexación** en esa lectura. El sitemap público contenía exactamente esas 91 URLs españolas, sin duplicados, variantes EN/PT ni `lastmod` de alquileres. Dos fichas conservaron respuesta 200 y pasaron correctamente a `noindex`, fuera del sitemap y sin benchmark comparable, porque los dormitorios estaban desconocidos:
+
+| Key | Dato observado después del despliegue | Motivo de exclusión |
+|---|---|---|
+| `montevideo-cordon-arenal-grande-1o9en65` | `bedrooms: null` | `missing_location_or_residential_specs` |
+| `montevideo-pocitos-francisco-munoz-1vixo8p` | `bedrooms: null` | `missing_location_or_residential_specs` |
+
+Ambas tenían dormitorios informados en la revisión inicial. Es una diferencia observada entre lecturas; no se atribuye a un cambio concreto del parser ni se modifica el piloto para sustituirlas.
+
+En todas las respuestas del piloto se verificaron la proyección pública sin campos internos, la conversión uniforme con `usdUyu: 41.5`, la oferta seleccionada, los costos de cada oferta y hasta seis similares únicos. Los gastos desconocidos siguieron siendo desconocidos. Los benchmarks publicados respetaron la muestra mínima de diez y el alcance declarado. Los cuerpos de API midieron entre **11.702 y 26.983 bytes** sin compresión.
+
+Ocho respuestas HTML SSR cubrieron rentas en USD, gastos comunes explícitamente cero, gastos desconocidos y total conocido en UYU, además de EN/PT, parámetros de consulta y una ficha fuera del piloto. Se comprobaron título y ofertas presentes sin JavaScript, costos coherentes con la API, canonical limpia propia de cada idioma, `noindex` donde correspondía y datos estructurados con precios y enlaces originales. Una key inexistente devolvió **404 real** tanto en API como en HTML: la API indicó `Cache-Control: no-cache`; el HTML, `no-store, max-age=0` y `noindex`. El manejo de 503 está cubierto por pruebas automatizadas; no se provocó una caída de datos en producción.
+
+La validación de navegador en producción completó **12 recorridos en Chrome y un recorrido móvil nuevo en WebKit**. Once casos Chrome pasaron en la primera ejecución; el restante pasó al actualizar una expectativa obsoleta del test: el título abre la ficha interna y el enlace del portal abre el aviso original. Ese ajuste no modificó el runtime. También se revisaron seis vistas de fichas reales, cubriendo anchos de 320, 390, 960 y 1.440 px, ES/EN/PT y temas claro/oscuro, sin errores ni desbordamiento horizontal observado; la acción de contacto siguió accesible al pie y los inputs midieron al menos 16 px de fuente. La cobertura corresponde a esos navegadores y vistas, sin pruebas en dispositivos físicos.
+
+El primer intento, inmediatamente después del despliegue del frontend, encontró dos consultas de fichas que agotaron 30 segundos y se detuvo. Hubo también demoras en comprobaciones de navegador y consultas acotadas del directorio. A las **06:07:54 UTC**, las lecturas directas del origen respondieron 200; la comprobación pública siguiente respondió en 951 ms y el lote completo posterior pasó, con respuestas entre 191 y 4.531 ms. La demora inicial fue transitoria y no se confirmó su causa. No se aplicaron cambios de código, reinicios ni escrituras de datos para obtener esa recuperación. Estos resultados describen la verificación de ese momento, no una garantía de disponibilidad ni de indexación por Google.
+
 ## Registros revisados aprobados
+
+La tabla conserva los datos de la revisión inicial de las 05:36 UTC; no representa atributos ni elegibilidad actualizados en tiempo real. Las dos exclusiones posteriores están documentadas arriba.
 
 | Key | Barrio | Dorm. | Baños | m² publicados | Portales |
 |---|---|---:|---:|---:|---|

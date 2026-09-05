@@ -24,6 +24,22 @@ lectura/escritura no prueba un cambio de contenido. La lista no se rellena autom
 
 Ver [auditoría, umbrales, exclusiones y listado revisado](RENTAL_PAGES_AUDIT.md).
 
+La verificación pública posterior al despliegue de `951f3fc` (run `33948376430`, ambos
+despliegues terminados el **2026-09-05 a las 06:07:26 UTC**) obtuvo **93 fichas del piloto
+disponibles y 91 indexables**, con coincidencia exacta de esas 91 URLs en el sitemap español.
+Dos fichas tenían dormitorios desconocidos y quedaron correctamente en 200 con `noindex`,
+fuera del sitemap y sin benchmark comparable. La muestra SSR verificó costos, contenido sin
+JavaScript, canonical, idiomas y 404 reales; la API de las 93 fichas conservó la proyección
+pública y la misma base de conversión monetaria. El 503 se verificó en pruebas automatizadas,
+sin provocar una caída en producción. El primer intento tuvo demoras de hasta 30 segundos;
+las lecturas del origen y el lote público posterior se recuperaron, sin causa confirmada ni
+intervención correctiva. Son resultados de esa lectura, no una garantía de disponibilidad
+futura ni de indexación por Google. Pasaron además doce recorridos de navegador en Chrome
+y uno móvil nuevo en WebKit, junto con seis vistas de fichas reales entre 320 y 1.440 px,
+ES/EN/PT y claro/oscuro, sin desbordamiento observado. Un caso Chrome requirió corregir una
+expectativa obsoleta del test de enlaces; no cambió el runtime. La auditoría enlazada conserva
+los detalles, los límites de la prueba y las dos keys.
+
 Una fila por **propiedad**, no por aviso. El mismo apartamento publicado por dos inmobiliarias en
 InfoCasas y de nuevo en Mercado Libre es una sola tarjeta con tres enlaces.
 

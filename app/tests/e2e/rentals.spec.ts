@@ -937,7 +937,12 @@ test.describe('rental directory', () => {
       .filter({ hasText: 'Gastos comunes del mismo aviso' })
     await expect(expensesRow).toContainText('Sin gastos comunes')
     await expect(expensesRow).toContainText('Sin dato')
-    await expect(page.locator('.saved-compare-table a').first()).toHaveAttribute(
+    for (const item of fixtureProperties.slice(0, 2)) {
+      await expect(
+        page.locator('.saved-compare-table').getByRole('link', { name: item.title, exact: true })
+      ).toHaveAttribute('href', `/alquileres/${item.key}`)
+    }
+    await expect(page.locator('.saved-compare-table tbody a').first()).toHaveAttribute(
       'href',
       /^https:\/\/example\.com\/rental-test\//
     )
