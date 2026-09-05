@@ -644,7 +644,13 @@ const mapMarkers = computed(() =>
     source: 'alquileres',
   }))
 )
-const rentalMap = ref<{ focusMarker: (id: string) => boolean } | null>(null)
+const rentalMap = ref<{
+  focusMarker: (id: string) => boolean
+  revealMarker: (
+    id: string,
+    padding: { top: number; right: number; bottom: number; left: number }
+  ) => void
+} | null>(null)
 const mapFrame = ref<HTMLElement | null>(null)
 const selectedMapKey = ref<string | null>(null)
 const selectedMapPoint = computed(
@@ -682,7 +688,33 @@ async function selectMapProperty(marker: { id: string }) {
         (error as { statusCode?: number }).statusCode === 404 ? 'unavailable' : 'failed'
     }
   } finally {
-    if (mapDetailRequest === request) mapDetailPending.value = false
+    if (mapDetailRequest === request) {
+      mapDetailPending.value = false
+      await nextTick()
+      if (mapDetailRequest === request) revealSelectedMapProperty()
+    }
+  }
+}
+function revealSelectedMapProperty() {
+  const frame = mapFrame.value?.getBoundingClientRect()
+  const panel = mapFrame.value?.querySelector('.rental-map-detail')?.getBoundingClientRect()
+  if (!frame || !panel || !selectedMapKey.value) return
+  // Reserve room for the whole 44px target, not only the centre of its dot.
+  if (smAndDown.value) {
+    if (panel.top - frame.top < 80) return
+    rentalMap.value?.revealMarker(selectedMapKey.value, {
+      top: 28,
+      right: 28,
+      bottom: Math.max(28, frame.bottom - panel.top + 28),
+      left: 66,
+    })
+  } else {
+    rentalMap.value?.revealMarker(selectedMapKey.value, {
+      top: 28,
+      right: Math.max(28, frame.right - panel.left + 28),
+      bottom: 28,
+      left: 66,
+    })
   }
 }
 async function closeMapProperty(restoreFocus = true) {

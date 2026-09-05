@@ -251,6 +251,74 @@ async function expectInsideViewport(locator: Locator, page: Page) {
     .toBe(true)
 }
 
+async function expectSelectedMarkerClear(page: Page, marker: Locator, panel: Locator) {
+  await expect(marker).toHaveClass(/casa-pin--selected/)
+  await expect
+    .poll(
+      async () => {
+        const [point, frame, detail] = await Promise.all([
+          marker.boundingBox(),
+          page.locator('.rentals-map__frame').boundingBox(),
+          panel.boundingBox(),
+        ])
+        if (!point || !frame || !detail) return false
+        const viewport = page.viewportSize()!
+        const overlaps =
+          Math.min(point.x + point.width, detail.x + detail.width) > Math.max(point.x, detail.x) &&
+          Math.min(point.y + point.height, detail.y + detail.height) > Math.max(point.y, detail.y)
+        return (
+          point.width >= 44 &&
+          point.height >= 44 &&
+          point.x >= Math.max(0, frame.x) - 1 &&
+          point.y >= Math.max(0, frame.y) - 1 &&
+          point.x + point.width <= Math.min(viewport.width, frame.x + frame.width) + 1 &&
+          point.y + point.height <= Math.min(viewport.height, frame.y + frame.height) + 1 &&
+          !overlaps
+        )
+      },
+      { message: 'The complete 44px selected marker must remain visible outside its detail panel' }
+    )
+    .toBe(true)
+}
+
+function mapPosition(marker: Locator) {
+  return marker.evaluate(element => {
+    const map = element.closest('.leaflet-container')!
+    const frame = map.getBoundingClientRect()
+    const point = element.getBoundingClientRect()
+    const pane = map.querySelector('.leaflet-map-pane')!
+    const zoomProxy = map.querySelector('.leaflet-proxy')
+    return {
+      scrollY: window.scrollY,
+      markerX: point.x - frame.x,
+      markerY: point.y - frame.y,
+      mapTransform: getComputedStyle(pane).transform,
+      cameraTransform: zoomProxy ? getComputedStyle(zoomProxy).transform : null,
+    }
+  })
+}
+
+async function closeMapDetailPreservingContext(panel: Locator, marker: Locator) {
+  const before = await mapPosition(marker)
+  await panel.getByTestId('rental-map-detail-close').click()
+  await expect(panel).not.toBeVisible()
+  await expect(marker).toBeFocused()
+  await expect(marker).not.toHaveClass(/casa-pin--selected/)
+  await expect
+    .poll(async () => {
+      const after = await mapPosition(marker)
+      return {
+        documentMoved: Math.abs(after.scrollY - before.scrollY) > 1,
+        markerMoved:
+          Math.abs(after.markerX - before.markerX) > 1 ||
+          Math.abs(after.markerY - before.markerY) > 1,
+        mapPanned: after.mapTransform !== before.mapTransform,
+        cameraChanged: after.cameraTransform !== before.cameraTransform,
+      }
+    })
+    .toEqual({ documentMoved: false, markerMoved: false, mapPanned: false, cameraChanged: false })
+}
+
 async function openAdvanced(page: Page) {
   if ((page.viewportSize()?.width ?? 1440) < 960) await openMobileFilters(page)
   await expect(page.locator('#rental-advanced')).toBeVisible({ timeout: 90_000 })
@@ -801,6 +869,7 @@ test.describe('rental directory', () => {
     await marker.click()
     const panel = page.getByTestId('rental-map-detail')
     await expect(panel.getByRole('heading', { name: matched.title, exact: true })).toBeVisible()
+    await expectSelectedMarkerClear(page, marker, panel)
     await expect.poll(() => detailRequests.get(page)?.length).toBe(1)
     const request = detailRequests.get(page)![0]
     expect(request.pathname).toBe('/api/rentals/propiedad/e2e-multiple')
@@ -844,9 +913,7 @@ test.describe('rental directory', () => {
         )
       )
       .toEqual(['e2e-multiple'])
-    await panel.getByTestId('rental-map-detail-close').click()
-    await expect(panel).not.toBeVisible()
-    await expect(marker).toBeFocused()
+    await closeMapDetailPreservingContext(panel, marker)
     expect(detailRequests.get(page)).toHaveLength(1)
   })
 
@@ -856,8 +923,9 @@ test.describe('rental directory', () => {
     await page.setViewportSize({ width: 390, height: 740 })
     await startFixtureSearch(page)
     await mockMapPoints(page, [
-      mapFixturePoint(fixtureProperties[0], -34.9048, -56.1733),
-      mapFixturePoint(fixtureProperties[1], -34.89, -56.1),
+      // Same latitude, far enough apart to avoid clustering at the map's initial zoom cap.
+      mapFixturePoint(fixtureProperties[0], -34.9, -56.15),
+      mapFixturePoint(fixtureProperties[1], -34.9, -56.145),
     ])
     await page.getByRole('button', { name: 'Mapa', exact: true }).click()
     const zeroMarker = page.locator('.casa-pin[title="Cordón"]')
@@ -868,6 +936,7 @@ test.describe('rental directory', () => {
     await expect(
       panel.getByRole('heading', { name: fixtureProperties[0].title, exact: true })
     ).toBeVisible()
+    await expectSelectedMarkerClear(page, zeroMarker, panel)
     await expect(panel.locator('.rental-map-detail__cost')).toContainText('Sin gastos comunes')
     await expect(panel.locator('.rental-map-detail__cost')).toContainText('$ 24.000')
     await expect(panel.locator('.rental-map-detail__total dd')).toHaveText('$ 24.000')
@@ -882,15 +951,14 @@ test.describe('rental directory', () => {
         )
       )
       .toBe('e2e-zero')
-    await panel.getByTestId('rental-map-detail-close').click()
-    await expect(panel).not.toBeVisible()
-    await expect(zeroMarker).toBeFocused()
+    await closeMapDetailPreservingContext(panel, zeroMarker)
 
     const unknownMarker = page.locator('.casa-pin[title="Malvín"]')
     await unknownMarker.click()
     await expect(
       panel.getByRole('heading', { name: fixtureProperties[1].title, exact: true })
     ).toBeVisible()
+    await expectSelectedMarkerClear(page, unknownMarker, panel)
     await expect(panel.locator('.rental-map-detail__cost')).toContainText(
       'Gastos comunes sin informar'
     )
@@ -901,9 +969,7 @@ test.describe('rental directory', () => {
     await expectInsideViewport(panel.getByTestId('rental-map-detail-save'), page)
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390)
     await page.screenshot({ path: resolve('..', 'rentals-e2e-mobile-map-detail.png') })
-    await panel.getByTestId('rental-map-detail-close').click()
-    await expect(panel).not.toBeVisible()
-    await expect(unknownMarker).toBeFocused()
+    await closeMapDetailPreservingContext(panel, unknownMarker)
     expect(detailRequests.get(page)).toHaveLength(2)
     expect(mapRequests.get(page)).toHaveLength(1)
   })

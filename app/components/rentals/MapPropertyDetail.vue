@@ -49,7 +49,7 @@
           <div class="rental-map-detail__intro">
             <p class="rental-map-detail__where">{{ location || t('unknown') }}</p>
             <h4>{{ title }}</h4>
-            <p v-if="property.address">{{ property.address }}</p>
+            <p v-if="address">{{ address }}</p>
           </div>
         </div>
 
@@ -191,6 +191,17 @@ const body = ref<HTMLElement | null>(null)
 const photoFailed = ref(false)
 const offer = computed(() => props.property?.matchingOffer ?? props.property?.offers[0])
 const title = computed(() => offer.value?.title || props.property?.title || '')
+const address = computed(() => {
+  const value = props.property?.address?.trim() || ''
+  const compare = new Intl.Collator(locale.value, { sensitivity: 'base', ignorePunctuation: true })
+  // Some portals put their headline in the address field; repeating it adds no location detail.
+  return [title.value, props.property?.title || ''].some(
+    candidate =>
+      compare.compare(value.replace(/\s+/g, ' '), candidate.trim().replace(/\s+/g, ' ')) === 0
+  )
+    ? ''
+    : value
+})
 const photo = computed(() => rentalSavedSafeUrl(offer.value?.image))
 const offerUrl = computed(() => rentalSavedSafeUrl(offer.value?.url))
 const offers = computed(() =>

@@ -114,7 +114,7 @@ function pinIcon(origin: string, highlighted: boolean) {
   const size = highlighted ? 18 : 12
   const hitSize = Math.max(size, props.markerHitSize)
   return L.divIcon({
-    className: 'casa-pin',
+    className: highlighted ? 'casa-pin casa-pin--selected' : 'casa-pin',
     html: `<span style="display:flex;width:${hitSize}px;height:${hitSize}px;align-items:center;justify-content:center"><span style="display:block;width:${size}px;height:${size}px;border-radius:50%;background:${c};border:2px solid #fff;box-shadow:0 0 3px rgba(0,0,0,.5)"></span></span>`,
     iconSize: [hitSize, hitSize],
     iconAnchor: [hitSize / 2, hitSize / 2],
@@ -353,7 +353,35 @@ function focusMarker(id: string): boolean {
   markerElement.focus({ preventScroll: true })
   return document.activeElement === markerElement
 }
-defineExpose({ focusBranch, focusMarker })
+
+/** Keep the selected point in the area left visible by the page's detail panel. */
+function revealMarker(
+  id: string,
+  padding: { top: number; right: number; bottom: number; left: number }
+): void {
+  const marker = markersById.get(id)
+  // A clustered marker must not trigger a zoom or reveal a different world copy.
+  if (!map || !marker || !map.hasLayer(marker)) return
+  const size = map.getSize()
+  if (size.x < 44 || size.y < 44) return
+  const clampAxis = (start: number, end: number, dimension: number) => {
+    const available = dimension - 44
+    const safe = (value: number) =>
+      Number.isFinite(value) ? Math.min(available, Math.max(0, value)) : 0
+    const first = safe(start)
+    const last = safe(end)
+    const scale = Math.min(1, available / Math.max(1, first + last))
+    return [first * scale, last * scale]
+  }
+  const [left, right] = clampAxis(padding.left, padding.right, size.x)
+  const [top, bottom] = clampAxis(padding.top, padding.bottom, size.y)
+  map.panInside(marker.getLatLng(), {
+    paddingTopLeft: [left, top],
+    paddingBottomRight: [right, bottom],
+    animate: false,
+  })
+}
+defineExpose({ focusBranch, focusMarker, revealMarker })
 
 // <client-only> renders its default-slot div AFTER this component's onMounted
 // fires, so el.value can still be null here. Watch the ref and init the moment

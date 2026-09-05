@@ -250,7 +250,9 @@ al `matchingOffer`; un gasto desconocido no se presenta como cero. Permite guard
 mismo sistema de favoritos de la lista. En escritorio se ubica sobre el lateral del mapa;
 en móvil es una ficha inferior con scroll propio, por encima del botón fijo de filtros.
 Cierre y enlace al aviso quedan siempre accesibles. Cerrar devuelve el foco al marcador
-cuando sigue visible, sin recentrar el mapa. Cambiar de propiedad cancela la lectura anterior;
+cuando sigue visible, sin recentrar el mapa. Al abrir la ficha, el punto seleccionado se desplaza
+al área que queda visible, conservando el zoom. No repetimos el título como dirección cuando
+el portal usó el mismo texto en ambos campos. Cambiar de propiedad cancela la lectura anterior;
 cambiar la búsqueda o salir del mapa cierra la ficha. El endpoint aplica visibilidad de 10 días,
 proyecta sólo campos públicos (también dentro de ofertas), devuelve 404 si ya no coincide y
 503 ante un fallo de lectura. Nunca incorpora los registros completos a todos los puntos.
