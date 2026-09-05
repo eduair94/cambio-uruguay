@@ -64,16 +64,28 @@ export function rentalUnitEvidence(
   for (const raw of [listing.address, listing.title]) {
     const text = matchText(raw);
     const unitPattern =
-      /\b(?:apto|apt|apartamento|unidad|apartament[o]?\s+n(?:ro|umero))\.?\s*(?:(?:n(?:ro|umero)?\.?|no\.)\s*[°ºo]?\s*)?[:#-]?\s*(\d{1,4}\s*[a-z]?|[a-z])\b/g;
+      /\b(?:apto|apt|apartamento|unidad|apartament[o]?\s+n(?:ro|umero))(?![a-z])\.?\s*(?:(?:n(?:ro|umero)?\.?|no\.)\s*[°ºo]?\s*)?[:#-]?\s*(\d{1,4}\s*[a-z]?|[a-z])\b/g;
     for (const match of text.matchAll(unitPattern)) {
       const tail = text.slice((match.index ?? 0) + match[0].length);
       // "Apartamento 2 dormitorios" is a specification, not unit number 2.
       if (
-        /^\s*(?:dorm|dorms|dormitorios?|habitaciones?|ba[ñn]os?|amb|ambs|ambientes?|m2|m²|metros)\b/.test(
+        /^\s*(?:dor|dors|dorm|dorms|dormitorios?|habitaciones?|ba[ñn]os?|amb|ambs|ambientes?|m2|m²|metros)\b/.test(
           tail,
         )
       )
         continue;
+      const fromIdentifier = text.slice((match.index ?? 0) + match[0].length - match[1]!.length);
+      // Inspect the complete quantity, not only the regex capture: "100 m²" can capture
+      // "100 m" and leave only "²" in the tail. Asking prices also never identify units.
+      if (
+        /^\d+(?:[.,]\d+)*\s*(?:m(?:2|²)|mts?(?:2|²)?|metros(?:\s+cuadrados)?|pesos?|dolares?|usd|uyu|u\s*\$\s*s|\$u?)(?=$|[\s.,;:!?/)\]-])/.test(
+          fromIdentifier,
+        )
+      )
+        continue;
+      // "Apartamento 1 -2 dor" / "1 o 2 dormitorios" describe alternatives. The matcher may
+      // consume only the first number (or "1 o"), but neither is an identified single unit.
+      if (/^\d{1,4}\s*(?:[-–—/]|o|y|a)\s*\d{1,4}(?!\d)/.test(fromIdentifier)) continue;
       const value = match[1]!.trim();
       const label = match[0].slice(0, match[0].length - match[1]!.length);
       const explicitlyNumbered = /\bunidad\b|\bn(?:ro|umero)?\.?\s*[°ºo]?|\bno\.|#/.test(label);

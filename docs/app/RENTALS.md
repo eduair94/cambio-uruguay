@@ -189,13 +189,20 @@ esquinas y direcciones aproximadas no cuentan como dirección exacta. Todos los 
 deben cumplir las reglas: un aviso intermedio no une dos unidades incompatibles. Los avisos sin
 dirección suficiente permanecen separados, también en Marketplace.
 
+La reproducción sobre la captura original de dos apartamentos de **San Luis** identificó la
+causa real de su unión: el parser interpretaba `1 dor` y `1-2 dor` como unidad **1**, al no
+reconocer esa abreviatura y el rango de dormitorios. Eran el segundo y el cuarto de un conjunto
+de cuatro; sus títulos y URLs de fotos eran distintos. La corrección debe impedir que una
+cantidad o rango de dormitorios se convierta en identificador de apartamento. La revisión
+también detectó un falso identificador `O` extraído de `Apto.` al aceptar antes la alternativa
+corta `apt`; esa letra tampoco demuestra una unidad.
+
 La vía alternativa de foto original, título específico, dirección y atributos completos se
-retiró tras revisar manualmente dos apartamentos de **San Luis**: eran el segundo y el cuarto
-de un conjunto de cuatro, pero reutilizaban fotos y texto. Incluso esa combinación podía unir
-unidades distintas. Ahora la identificación explícita de la unidad es obligatoria para unir
-avisos diferentes. Es una limitación deliberada: una vivienda realmente repetida puede quedar
-en varias tarjetas cuando faltan pruebas; no se oculta una oferta ni se le prestan datos de
-otra para aparentar una coincidencia.
+retira como decisión preventiva; **no fue la causa demostrada del caso de San Luis**. La
+identificación explícita de la unidad es obligatoria para unir avisos diferentes. Es una
+limitación deliberada: una vivienda realmente repetida puede quedar en varias tarjetas cuando
+faltan pruebas; no se oculta una oferta ni se le prestan datos de otra para aparentar una
+coincidencia.
 
 Cada lectura nueva guarda `RentalOffer.identity.version: 1` con los datos físicos originales de
 esa oferta: tipo, departamento, barrio, dirección/calle/número, dormitorios, baños, superficie y
@@ -239,13 +246,23 @@ que cada vivienda del mercado esté incluida ni de que nunca haya dos tarjetas p
 inmueble. La separación conserva las fechas reales de observación y publicación: no crea
 anuncios nuevos ni refresca artificialmente los que no se volvieron a leer.
 
-**Pendiente de cierre:** el par de San Luis motivó retirar la vía de coincidencia por foto y
-texto. Su corrección final y la verificación posterior quedan pendientes del informe operativo
-final; no se suman todavía al recuento de pares reparados. Las cifras anteriores no deben
-presentarse como el resultado final de esa última aplicación.
+**Cierre posterior a las 08:00 UTC:** la aplicación final verificó **10 pares incompatibles
+en 8 grupos**, incluidos los dos apartamentos de San Luis. Conservó los **25.050 IDs**,
+con cero pertenencias duplicadas y cero grupos multioferta sin identidad individual. La
+comparación posterior de todos los campos previstos pasó. El catálogo almacenado terminó
+con 25.050 filas, incluido el histórico: no equivale a 25.050 viviendas disponibles distintas.
+Malvín también quedó separado por carecer de unidad explícita, sin clasificarlo como un
+conflicto confirmado. No se aplicó caducidad por ausencia ni poda durante estas reparaciones.
 
-La suite raíz local de la etapa anterior aprobó **1.671 pruebas**. Es un resultado fechado de
-validación del código, distinto de los controles de datos aplicados y del cierre aún pendiente.
+Los tres respaldos completos previos y los informes de cada etapa se conservaron. El cierre
+usó el mismo instante real de lectura de las 07:19:18 UTC; separar avisos no generó una lectura
+nueva. Se mantuvo el bloqueo compartido mientras se cerraba la reparación y su despliegue.
+
+La suite raíz final aprobó **1.721 pruebas**, con una omitida. Pasaron además doce recorridos
+Chrome y tres WebKit del frontend publicado, incluidos mapa y filtros accesibles desde el final
+de resultados a 320 y 390 px. Ocho pruebas Mongo con documentos sintéticos verificaron la
+proyección pública sin escrituras. Las capturas móviles reales comprobaron cobertura, unidad
+canónica, ausencia de desbordamiento y apertura de filtros desde la sección de fuentes.
 
 ### Identidad y URLs de fichas (auditoría 2026-09-05)
 

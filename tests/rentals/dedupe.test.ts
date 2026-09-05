@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildRentalProperties, sameUnit } from "../../classes/rentals/dedupe";
+import { rentalUnitEvidence } from "../../classes/rentals/matchEvidence";
 import type { RawRental } from "../../classes/rentals/types";
 
 const base: RawRental = {
@@ -590,23 +591,37 @@ describe("conservative unit evidence", () => {
     ).toBe(true);
   });
 
-  it("keeps the San Luis complex adverts separate when distinct units reuse a photo and title", () => {
-    // The audited adverts identify the second and fourth of four apartments only in their
-    // descriptions. Their shared photo/title/address/specs cannot substitute for a unit ID.
+  it("keeps the exact San Luis adverts separate instead of treating '1 dor' and '1 -2 dor' as unit 1", () => {
+    // Actual per-offer fields from the audit. Descriptions identify the second and fourth of
+    // four apartments; neither title publishes a unit ID. Both previously produced units=['1'].
     const shared: Partial<RawRental> = {
       department: "Canelones",
       neighborhood: "San Luis",
-      address: "Rincón 1900",
+      address: "Rincon 1900",
       street: "rincon",
       streetNumber: "1900",
-      title: "Apartamento de 1 dormitorio en San Luis con patio privado cerca de la playa",
-      image: "https://pictures.example.uy/original/san-luis-complex.jpg",
       bedrooms: 1,
       bathrooms: 1,
       area: 30,
+      latitude: -34.767387842572,
+      longitude: -55.593019723892,
     };
-    const second = listing({ ...shared, listingId: "infocasas:194165703", price: 15900 });
-    const fourth = listing({ ...shared, listingId: "infocasas:194171253", price: 17000 });
+    const second = listing({
+      ...shared,
+      listingId: "infocasas:194165703",
+      title: "Alquiler apartamento 1 dor amueblado en San Luis",
+      image: "https://cdn1.infocasas.com.uy/repo/img/13651_UY.42.14.9.63.V7_153.jpg",
+      price: 15900,
+    });
+    const fourth = listing({
+      ...shared,
+      listingId: "infocasas:194171253",
+      title: "Alquiler apartamento 1 -2 dor amueblado San Luis",
+      image: "https://cdn1.infocasas.com.uy/repo/img/13651_UY.42.14.9.64.V7_728.jpg",
+      price: 17000,
+    });
+    expect(rentalUnitEvidence(second).units).toEqual([]);
+    expect(rentalUnitEvidence(fourth).units).toEqual([]);
     expect(matches(second, fourth)).toBe(false);
     expect(matches(fourth, second)).toBe(false);
     const properties = buildRentalProperties([second, fourth], context);
@@ -616,6 +631,79 @@ describe("conservative unit evidence", () => {
       [second.listingId, fourth.listingId].sort(),
     );
   });
+
+  it.each([
+    "Apartamento 1 dor amueblado",
+    "Apto 2 dors. en Pocitos",
+    "Apartamento 1 -2 dor amueblado",
+    "Apartamento 1–2 dormitorios",
+    "Apartamento 1/2 dorm",
+    "Apartamento 1 o 2 dormitorios",
+    "Apartamento 1 y 2 dormitorios",
+    "Apartamento 1 a 2 dormitorios",
+    "Apartamento 1-2",
+    "Apartamento 100 m²",
+    "Apartamento 100m²",
+    "Apartamento 30 m2",
+    "Apartamento 60 metros cuadrados",
+    "Apartamento 1500 dólares",
+    "Apartamento 1.500 dólares",
+    "Apartamento 25.000 UYU",
+    "Apartamento 1500 USD",
+    "Apartamento 1500 U$S",
+    "Apartamento 1500 pesos",
+    "Apartamento 1500 $",
+  ])("does not extract a unit from bedrooms, ranges, surface areas or asking prices: %s", (title) => {
+    const raw = { address: "Rizal 3715", title };
+    expect(rentalUnitEvidence(raw).units).toEqual([]);
+    expect(matches(raw, raw)).toBe(false);
+  });
+
+  it("does not extract the final letter of Apto as unit O in the exact Malvin adverts", () => {
+    const shared: Partial<RawRental> = {
+      department: "Montevideo",
+      neighborhood: "Malvín",
+      address: "Rambla República de Chile 4500",
+      street: "rambla republica de chile",
+      streetNumber: "4500",
+      bedrooms: 3,
+      bathrooms: 1,
+      area: 90,
+      price: 42000,
+    };
+    const infocasas = listing({
+      ...shared,
+      listingId: "infocasas:194088031",
+      title: "Alquiler Apto. Rambla de Malvin, 3D, 1B y garaje",
+    });
+    const mercadolibre = listing({
+      ...shared,
+      source: "mercadolibre",
+      listingId: "mercadolibre:MLU1477297794",
+      neighborhood: "Malvin",
+      address: "Rambla República De Chile 4500",
+      title: "Alquiler Apto. Rambla De Malvin, 3d, 1b Y Garaje",
+    });
+    expect(rentalUnitEvidence(infocasas).units).toEqual([]);
+    expect(rentalUnitEvidence(mercadolibre).units).toEqual([]);
+    expect(matches(infocasas, mercadolibre)).toBe(false);
+    expect(buildRentalProperties([infocasas, mercadolibre], context)).toHaveLength(2);
+  });
+
+  it.each(["Apto.", "Apto. Rambla", "Apto, Rambla", "Apartamentos en alquiler"])(
+    "does not use part of the label itself as an identifier: %s",
+    (title) => {
+      expect(rentalUnitEvidence({ address: "Rizal 3715", title }).units).toEqual([]);
+    },
+  );
+
+  it.each(["Unidad301", "Apto301", "Apto N°2D"])(
+    "still recognizes an explicit numeric identifier after the complete label: %s",
+    (title) => {
+      expect(rentalUnitEvidence({ address: "Rizal 3715", title }).units).toHaveLength(1);
+      expect(matches({ address: "Rizal 3715", title }, { address: "Rizal 3715", title })).toBe(true);
+    },
+  );
 
   it.each([
     { title: "Apartamento 2 dormitorios en Pocitos" },
