@@ -1,15 +1,18 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { describe, expect, it, vi, afterEach } from "vitest";
+import { beforeEach, describe, expect, it, vi, afterEach } from "vitest";
 import { parseCasaswebPage, casaswebSearchUrl, harvestCasasweb } from "../../classes/rentals/sources/casasweb";
 import { elpaisCategoryUrls, elpaisToRawRental, extractElpaisRows, harvestElpais } from "../../classes/rentals/sources/elpais";
 import { isPlausibleRent } from "../../classes/rentals/normalize";
 import { toRawRental as infoCasas } from "../../classes/rentals/sources/infocasas";
-import { fetchText } from "../../classes/rentals/net";
+import { fetchJson, fetchText } from "../../classes/rentals/net";
 import { sourcesAllowingExpiry } from "../../classes/rentals/sources/types";
 import { sameUnit } from "../../classes/rentals/dedupe";
 
-vi.mock("../../classes/rentals/net", () => ({ fetchText: vi.fn() }));
+// `sleep` is stubbed out, not shortened: El País paces the searches it has to OPEN seven seconds
+// apart, and a suite that actually waited would take two minutes to assert nothing about waiting.
+vi.mock("../../classes/rentals/net", () => ({ fetchText: vi.fn(), fetchJson: vi.fn(), sleep: vi.fn(async () => {}) }));
 const fixture = (name: string): string => readFileSync(join(__dirname, "fixtures", `${name}.html`), "utf8");
 afterEach(() => vi.resetAllMocks());
 
@@ -72,12 +75,198 @@ describe("Inmuebles El País's offline public-page samples", () => {
     expect(elpaisCategoryUrls(`<urlset>${urls.map(url => `<url><loc>${url}</loc></url>`).join("")}</urlset>`)).toEqual([urls[0]]);
   });
 
-  it.each(["full", "fast"] as const)("keeps %s external-only without network access or expiry", async mode => {
-    const run = await harvestElpais(mode, 40);
-    expect(run).toMatchObject({ key: "elpais", ok: false, complete: false, access: "external_only", listings: [] });
-    expect(run.note).toBe("Consulta externa; actualización automática no habilitada por las condiciones del portal.");
-    expect(fetchText).not.toHaveBeenCalled();
+  /**
+   * The authorised harvest. Two endpoints: one `init` per department that opens a saved search,
+   * then `results` pages against the chat id it returns. The fake below answers both and lets each
+   * test say how many rows and pages a department has.
+   */
+  const elpaisRow = (id: string, extra: Record<string, unknown> = {}): Record<string, unknown> => ({
+    ...(extractElpaisRows(fixture("elpais"))![0] as Record<string, unknown>),
+    _id: id.padStart(24, "0"),
+    ...extra,
+  });
+
+  interface Plan { rowsPerPage?: number; totalPages?: number; initFails?: boolean; pageFails?: number }
+
+  const serveElpais = (plan: Plan = {}): { inits: FormData[]; urls: string[] } => {
+    const inits: FormData[] = [];
+    const urls: string[] = [];
+    let chats = 0;
+    vi.mocked(fetchJson).mockImplementation(async (url: string, options: any = {}) => {
+      if (url.endsWith("/api/chat/init")) {
+        inits.push(options.body as FormData);
+        if (plan.initFails) return null;
+        chats++;
+        return { success: true, data: { chatId: `0000000${chats}-0000-4000-8000-00000000000${chats}` } } as any;
+      }
+      urls.push(url);
+      const page = Number(new URL(url).searchParams.get("page"));
+      if (plan.pageFails && page >= plan.pageFails) return null;
+      const rows = Array.from({ length: plan.rowsPerPage ?? 2 }, (_, index) => elpaisRow(`${chats}${page}${index}`));
+      return { success: true, data: { results: rows, pagination: { page, totalPages: plan.totalPages ?? 1 } } } as any;
+    });
+    return { inits, urls };
+  };
+
+  const province = (form: FormData): string => JSON.parse(String(form.get("manualFilters"))).zones.province;
+
+  // Every test starts with NO saved searches: the cache path points inside a directory that does
+  // not exist, so the read finds nothing and the write is swallowed. The reuse case below writes a
+  // real file of its own.
+  const noCache = join(tmpdir(), "cambio-uruguay-elpais-tests-absent", "chats.json");
+  const cacheFile = join(tmpdir(), "cambio-uruguay-elpais-tests-chats.json");
+  beforeEach(() => vi.stubEnv("RENTALS_EP_CHATS_FILE", noCache));
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    rmSync(cacheFile, { force: true });
+  });
+
+  it("opens one authorised search per department and declares full coverage", async () => {
+    const { inits, urls } = serveElpais({ rowsPerPage: 3, totalPages: 2 });
+    const run = await harvestElpais("full", 40);
+
+    expect(inits).toHaveLength(19);
+    expect(new Set(inits.map(province)).size).toBe(19);
+    // Biggest first, because only about three searches get opened per run: alphabetical would
+    // spend them on Artigas (1 advert) and Cerro Largo (none).
+    expect(inits.slice(0, 3).map(province)).toEqual(["MONTEVIDEO", "MALDONADO", "CANELONES"]);
+    // The anchor is the department, not its capital: "Colonia del Sacramento" narrows the search
+    // to that city and loses the rest of the province.
+    expect(JSON.parse(String(inits[3]!.get("anchorLocation"))).name).toBe("Colonia");
+    // Developments are for sale. A rental index does not ask for them.
+    expect(inits[0]!.get("includeProjects")).toBe("false");
+    expect(urls).toHaveLength(38);
+    expect(urls[0]).toContain("page=1&limit=500");
+    expect(urls[0]).not.toContain("sort=");
+    expect(run).toMatchObject({ key: "elpais", ok: true, complete: true, listings: expect.any(Array) });
+    expect(run.access).toBeUndefined();
+    expect(run.note).toContain("departamentos consultados: 19 de 19");
+    expect([...sourcesAllowingExpiry([run], "full")]).toEqual(["elpais"]);
+  });
+
+  it("reuses the saved searches it already has and opens none", async () => {
+    const saved = Object.fromEntries(
+      ["ARTIGAS", "CANELONES", "CERRO LARGO", "COLONIA", "DURAZNO", "FLORES", "FLORIDA", "LAVALLEJA", "MALDONADO",
+        "MONTEVIDEO", "PAYSANDU", "RIO NEGRO", "RIVERA", "ROCHA", "SALTO", "SAN JOSE", "SORIANO", "TACUAREMBO",
+        "TREINTA Y TRES"].map((code, index) => [code, `0000000${index % 9}-0000-4000-8000-00000000000${index % 9}`])
+    );
+    writeFileSync(cacheFile, JSON.stringify(saved), "utf8");
+    vi.stubEnv("RENTALS_EP_CHATS_FILE", cacheFile);
+
+    const { inits, urls } = serveElpais();
+    const run = await harvestElpais("full", 40);
+
+    // Opening a search is an AI call on the portal's side. A run that already has the ids makes none.
+    expect(inits).toHaveLength(0);
+    expect(urls).toHaveLength(19);
+    expect(run.complete).toBe(true);
+    expect(run.note).toContain("departamentos consultados: 19 de 19");
+  });
+
+  it("re-opens a search the portal has forgotten and stores the new id", async () => {
+    writeFileSync(cacheFile, JSON.stringify({ MONTEVIDEO: "dead0000-0000-4000-8000-00000000dead" }), "utf8");
+    vi.stubEnv("RENTALS_EP_CHATS_FILE", cacheFile);
+
+    const dead = "dead0000-0000-4000-8000-00000000dead";
+    const { inits } = serveElpais();
+    const live = vi.mocked(fetchJson).getMockImplementation()!;
+    vi.mocked(fetchJson).mockImplementation(async (url: string, options?: any) =>
+      url.includes(dead) ? null : live(url, options));
+
+    await harvestElpais("fast", 40);
+    // Canelones and Maldonado had no id; Montevideo's was stale. All three end up opened.
+    expect(inits.map(province)).toEqual(["MONTEVIDEO", "MALDONADO", "CANELONES"]);
+    expect(JSON.parse(readFileSync(cacheFile, "utf8")).MONTEVIDEO).not.toBe(dead);
+  });
+
+  it("limits the hourly pass to the three live departments and never claims coverage", async () => {
+    const { inits, urls } = serveElpais({ totalPages: 9 });
+    const run = await harvestElpais("fast", 40);
+
+    expect(inits.map(province)).toEqual(["MONTEVIDEO", "MALDONADO", "CANELONES"]);
+    expect(urls).toHaveLength(3);
+    expect(urls.every(url => url.includes("sort=newest"))).toBe(true);
+    expect(run.complete).toBe(false);
+    expect(run.note).toContain("repaso horario");
+    // A partial pass must never let an unseen advert expire, not even inside a full sweep's set.
     expect([...sourcesAllowingExpiry([run], "full")]).toEqual([]);
+  });
+
+  it("treats a search that never opened as a hole in the sweep and stops after three", async () => {
+    const { inits } = serveElpais({ initFails: true });
+    const run = await harvestElpais("full", 40);
+    expect(run).toMatchObject({ ok: false, complete: false, listings: [] });
+    expect(run.note).toContain("3 búsquedas sin abrir (desafío del portal)");
+    expect(run.note).toContain("barrido detenido tras 3 seguidas, sigue en la próxima corrida");
+    expect(run.note).toContain("departamentos consultados: 0 de 19");
+    // One attempt each, then the sweep gives up: the refusal is a Cloudflare challenge, and 16
+    // more attempts neither solve it nor look like anything but an attack.
+    expect(inits).toHaveLength(3);
+    expect([...sourcesAllowingExpiry([run], "full")]).toEqual([]);
+  });
+
+  it("stops claiming coverage when a department has more pages than the budget", async () => {
+    serveElpais({ totalPages: 999 });
+    const run = await harvestElpais("full", 40);
+    expect(run.complete).toBe(false);
+    expect(run.note).toContain("cobertura parcial");
+  });
+
+  it("returns to external consultation when the operator's permission is withdrawn", async () => {
+    vi.stubEnv("RENTALS_ELPAIS_ENABLED", "0");
+    vi.resetModules();
+    const [{ harvestElpais: disabled }, net] = await Promise.all([
+      import("../../classes/rentals/sources/elpais"),
+      import("../../classes/rentals/net"),
+    ]);
+    const run = await disabled("full", 40);
+    expect(run).toMatchObject({ key: "elpais", ok: false, complete: false, access: "external_only", listings: [] });
+    expect(net.fetchJson).not.toHaveBeenCalled();
+    expect(net.fetchText).not.toHaveBeenCalled();
+    expect([...sourcesAllowingExpiry([run], "full")]).toEqual([]);
+    vi.unstubAllEnvs();
+    vi.resetModules();
+  });
+
+  it("never copies the agency's phone or e-mail into the index", async () => {
+    const row = elpaisRow("1", {
+      contact: { company: "VARELA INM", phone: "095110110" },
+      sourceAgency: { provider: "elpais", id: "1001084", raw: "VARELA INM", emails: ["casacentral@ejemplo.com"] },
+    });
+    const listing = elpaisToRawRental(row)!;
+    expect(listing.sellerName).toBe("VARELA INM");
+    expect(listing.sellerType).toBe("inmobiliaria");
+    const serialised = JSON.stringify(listing);
+    expect(serialised).not.toContain("095110110");
+    expect(serialised).not.toContain("ejemplo.com");
+  });
+
+  it("reads the portal's structured guarantees and drops the codes it cannot name", async () => {
+    expect(elpaisToRawRental(elpaisRow("2", {
+      rentalGuarantees: [{ type: "porto_seguros" }, { type: "anda" }, { type: "cgn" }, { type: "mvotma" }],
+      guaranteesAccepted: ["bhu"],
+      description: "Apartamento en alquiler",
+    }))!.guarantees).toEqual(["anda", "contaduria", "aseguradora", "bhu"]);
+    // No structured field and no phrase in the text is an empty list, never a guess.
+    expect(elpaisToRawRental(elpaisRow("3", { rentalGuarantees: [], guaranteesAccepted: null, description: "Apartamento en alquiler" }))!.guarantees).toEqual([]);
+  });
+
+  it("drops adverts whose monthly price cannot be a rent", async () => {
+    serveElpais({ rowsPerPage: 1 });
+    vi.mocked(fetchJson).mockImplementation(async (url: string) => {
+      if (url.endsWith("/api/chat/init")) return { success: true, data: { chatId: "00000001-0000-4000-8000-000000000001" } } as any;
+      return {
+        success: true,
+        data: {
+          results: [elpaisRow("4", { price: { amount: 120_000_000, currency: "UYU" } }), elpaisRow("5")],
+          pagination: { page: 1, totalPages: 1 },
+        },
+      } as any;
+    });
+    const run = await harvestElpais("full", 40);
+    // Same advert id in all 19 departments plus one absurd rent: one row survives.
+    expect(run.listings).toHaveLength(1);
+    expect(run.listings[0]!.listingId).toBe("elpais:000000000000000000000005");
   });
 
   it("does not convert missing expenses to zero or trust inferred amenities", () => {

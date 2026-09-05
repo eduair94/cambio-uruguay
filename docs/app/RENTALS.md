@@ -61,7 +61,7 @@ app/pages/alquileres-uruguay.vue <── app/server/api/rentals <────┘
 | **InfoCasas** | `__NEXT_DATA__` de sus páginas de listado | todo lo anterior **más** lat/lon, gastos comunes, inmobiliaria y fecha de publicación | — |
 | **Facebook Marketplace** | bridge propio en `:9657` (`pm2 facebook_marketplace`) | precio, título, ciudad, foto | dirección, barrio, m², dormitorios (salvo que estén en el título) |
 | **Casasweb** | HTML público de `resultados.aspx`; paginación mediante el formulario de búsqueda que entrega el servidor | mensualidad, moneda, departamento, barrio, tipo, dormitorios, m², garajes, inmobiliaria, foto | dirección separada, coordenadas, fecha de publicación; baños sólo cuando el título los declara |
-| **Inmuebles El País** | **consulta externa**, `access: external_only`; el adaptador no hace peticiones | enlace al buscador original | no aporta avisos al índice ni tiene actualización automática habilitada |
+| **Inmuebles El País** | los dos endpoints de su propio buscador, con nuestra UA: `POST /api/chat/init` (una búsqueda guardada por departamento) y `GET /api/chat/<id>/results?page&limit=500` | dirección, barrio, lat/lon, dormitorios/baños/m², gastos comunes, inmobiliaria, foto y **la garantía como dato estructurado** | fecha de publicación original; teléfono y correo de la inmobiliaria (existen en la respuesta y **no se copian**); garaje y amueblado |
 
 Verificado localmente el **2026-09-04** con la UA propia: Gallito directo devolvió **403 Cloudflare** en
 `https://www.gallito.com.uy/inmuebles/alquiler`; no se sortea esa protección. Su nuevo portal
@@ -74,11 +74,43 @@ publicación. Esta fue una prueba histórica de acceso, no una autorización par
 
 La revisión del **2026-09-05** encontró en los [términos oficiales](https://inmuebles.elpais.com.uy/terms)
 la prohibición expresa de extracción automatizada. Se detuvo la investigación de listados y se
-deshabilitó el adaptador, sin un override ambiental para reactivarlo. No se encontró un feed o API
-de catálogo públicamente habilitado; no se contactó a nadie. El estado es **consulta externa**,
-no caída temporal ni inventario de cero propiedades. Las muestras no se importaron: el aporte
-de esta investigación al índice es **cero avisos**. Ver [evidencia, condiciones y contacto
-oficial](../research/rental-elpais-access-2026-09-05.md).
+deshabilitó el adaptador, sin un override ambiental para reactivarlo. Ver [evidencia, condiciones y
+contacto oficial](../research/rental-elpais-access-2026-09-05.md).
+
+**Ese estado se levantó el mismo 2026-09-05, y no por un hallazgo técnico: lo autorizó el operador
+del portal.** La restricción de los términos sigue escrita donde estaba; lo que cambió es que hay
+un permiso, y el permiso es lo único que habilita esta importación. Queda fechado y con su alcance
+en [la nota de autorización](../research/rental-elpais-authorized-2026-09-05.md), y
+`RENTALS_ELPAIS_ENABLED=0` devuelve el adaptador a **consulta externa** sin desplegar el día que se
+retire. Lo que **no** cambió: no se toma el enriquecimiento por IA (`visualDescription`,
+`keywordsOfProperty`, `contentTags`, los `*Score`), ni los gastos convertidos, ni las fechas de
+importación como fecha de publicación — y **ningún dato de contacto**. Cada fila trae
+`contact.phone` y `sourceAgency.emails`; sólo cruza el **nombre público** de la inmobiliaria.
+
+No se lee su HTML: las páginas de categoría dan **403 de Cloudflare** a nuestra UA y su HTML sólo
+traía las **primeras 24 filas** (`?page=2` se ignora). Se leen los dos endpoints que usa su propio
+frontend, que convierte una URL de categoría en una búsqueda guardada. **Los identificadores de esas
+búsquedas se reutilizan entre corridas** (`RENTALS_EP_CHATS_FILE`): abrirlas es una llamada de IA
+del lado del portal —contesta "Encontré 24 propiedades en Colonia"— y abrir 19 por día más 3 por
+hora serían 91 llamadas diarias al modelo de otro para volver a derivar un identificador que no
+cambia. Comprobado que el identificador apunta a una **consulta viva** y no a una foto: una búsqueda
+de Canelones de 30 minutos antes y otra recién abierta devolvieron los mismos 422 avisos.
+
+El barrido de comprobación del **2026-09-05** leyó los 19 departamentos: **4.788** avisos en
+Montevideo, **1.081** en Maldonado, **422** en Canelones y **65** repartidos en el resto; cuatro
+departamentos con cero. El **92 %** del catálogo está en los tres primeros, que son los que repasa
+la corrida horaria. Son avisos leídos, no un incremento neto publicado.
+
+**Abrir búsquedas está limitado por Cloudflare**, y eso define el resto del diseño: tres o cuatro
+`POST /api/chat/init` pasan por corrida y el siguiente vuelve **403 `Just a moment...`** con
+`ratelimit-remaining` en 7, o sea lejos del tope y sin cabeceras de límite — es un desafío de
+cliente, no una tasa. Los `GET` de `results` siguen en 200 durante todo el episodio. No se sortea:
+un intento por búsqueda, corte tras 3 negativas seguidas y **el caché hace el resto**, subiendo la
+cobertura corrida a corrida. Por eso los departamentos van **ordenados por volumen y no
+alfabéticamente**: las aperturas que se consiguen tienen que gastarse en Montevideo, Maldonado y
+Canelones, no en Artigas (1 aviso) y Cerro Largo (ninguno). `complete` sigue en `false` hasta
+tenerlos todos, así que ninguna ausencia caduca nada mientras tanto. Lo que cerraría esto en una
+sola corrida no es código: que el operador deje pasar a `CambioUruguayBot/1.0` por Cloudflare.
 
 [Casasweb](https://casasweb.com/resultados.aspx?m=0&n=A&t=c&x=1&z=1) entrega tarjetas HTML y un
 formulario ASP.NET de paginación **funcional**: se verificaron las páginas 1 y 2 con IDs distintos.
@@ -93,8 +125,9 @@ Las fuentes habilitadas admiten degradación independiente. Sólo la marca inter
 permite expirar ofertas por ausencia; ML y Facebook declaran cobertura parcial por sus límites
 de búsqueda, y el modo horario aplica esa misma protección a todas las fuentes. InfoCasas sólo
 la declara si terminó sin cortes ni fallas; Casasweb aplica el mismo criterio. Tres respuestas
-consecutivas fallidas detienen el barrido de Casasweb. El País devuelve `ok: false`,
-`complete: false`, `access: external_only` y ninguna fila sin intentar leer el portal.
+consecutivas fallidas detienen el barrido de Casasweb. El País sólo se declara completo si abrió
+las 19 búsquedas y leyó todas sus páginas: una búsqueda que no abrió es un **agujero del barrido**,
+no un departamento vacío, y con el interruptor apagado vuelve a `access: external_only` sin red.
 No se cambia la guarda global de colapso ni la poda de propiedades después de 21 días sin verse.
 
 Prueba de integración **sin DB** del 2026-09-04: seis páginas de Casasweb aportaron **232 avisos
@@ -123,9 +156,13 @@ Los nuevos atributos `parkingSpaces` y `furnished` se guardan tanto en la propie
 oferta. InfoCasas aporta `garage` positivo y facility 69 `Amueblada` (ausencia = `null`); Casasweb
 aporta `Garaje(N)` explícito. Un `garage: 0` de InfoCasas es un valor por defecto y **no demuestra
 que no haya garaje**. Dos cantidades publicadas de garajes distintas impiden unir los avisos.
-Los gastos comunes explícitos de cero se conservan. El parser offline de El País, por tratar
-muestras de un catálogo importado, exige además la declaración «sin gastos comunes» para
-distinguirlos de un posible valor por defecto. Un importe sin moneda no adquiere la moneda del
+Los gastos comunes explícitos de cero se conservan. El parser de El País, por tratar un catálogo
+importado de terceros, exige además la declaración «sin gastos comunes» para distinguirlos de un
+posible valor por defecto. Su `featureIds` **parece** el garaje/amueblado estructurado que falta y
+no lo es: de los 481 avisos de Montevideo del 2026-09-05, sólo 68 de los 81 `GARAGE` y 19 de los 30
+`FURNISHED` lo dicen en su propio texto (84 % y 63 %), y no trae cantidad. Su `petsAllowed` sí es
+estructurado —publica el `false`, cosa que ninguna etiqueta inferida hace— y aun así el `false` se
+guarda como desconocido. Un importe sin moneda no adquiere la moneda del
 alquiler por suposición.
 
 ### Candidatos revisados el 2026-09-05 (sin integrar)
@@ -156,17 +193,21 @@ lea `attributes_list` (`"2 dormitorios | 1 baño | 40 m² cubiertos"`) y `locati
 ### Buenos modales
 
 - UA propia e identificable (`CambioUruguayBot/1.0 (+https://cambio-uruguay.com/alquileres-uruguay)`).
-  Las comprobaciones fechadas arriba conservan sus resultados de acceso. El País está
-  deshabilitado por sus condiciones oficiales, independientemente de que una página responda 200.
+  Las comprobaciones fechadas arriba conservan sus resultados de acceso. En El País la UA propia
+  sigue recibiendo **403 de Cloudflare en las páginas HTML** y **200 en los dos endpoints del
+  buscador**: por eso se leen esos y no se sortea el desafío del HTML.
 - Un request por host a la vez, con 1,2 s de separación (`RENTALS_HOST_GAP_MS`). El barrido completo
   de InfoCasas son ~900 páginas contra un solo host: va a las 04:52 UTC (01:52 de Montevideo).
 - `robots.txt` de InfoCasas prohíbe `/alquiler/*-y-*`. Sólo construimos `/alquiler/pagina<N>`, y
   `assertAllowed()` rechaza cualquier ruta con `-y-` para que un futuro slug tipo
   `treinta-y-tres` no se cuele.
-- Casasweb permite las rutas públicas de búsqueda para nuestra UA. En El País, `robots.txt`
-  excluye `/api/` y los términos prohíben extracción automatizada: no se consulta ninguna ruta
-  desde el adaptador. El parser conservado sirve sólo para muestras offline o una futura
-  integración expresamente habilitada.
+- Casasweb permite las rutas públicas de búsqueda para nuestra UA. En El País, `robots.txt` excluye
+  `/api/` y los términos prohíben la extracción automatizada: se leen igual porque **el operador del
+  portal lo autorizó**, que es la única cosa que puede levantar cualquiera de las dos. Un
+  `robots.txt` no otorga ni quita ese permiso, y sin él el adaptador vuelve a no pedir nada.
+  Ritmo: `/api/chat/init` publica `ratelimit-policy: 10;w=60`, así que los 19 departamentos van
+  separados 7 s (`RENTALS_EP_INIT_GAP_MS`); `results` admite 15.000 cada 15 min y usa el ritmo
+  común del host.
 - Gallito publica `Content-Signal: search=yes, ai-train=no, use=reference`, pero esa señal no
   habilita sortear su respuesta 403. Se indexan únicamente las fuentes accesibles, con enlaces
   de vuelta y sin entrenamiento de modelos.
@@ -374,8 +415,8 @@ BCU ni interbancario): dos harvesters con dos dólares distintos discreparían s
 
 | pm2 | cron (UTC) | qué hace |
 |---|---|---|
-| `currency-rentals` | `52 4 * * *` | barrido diario de las cuatro fuentes habilitadas, con cobertura completa o parcial declarada; El País sólo informa estado externo, sin red; poda histórica de propiedades no vistas en 21 días |
-| `currency-rentals-hourly` | `47 * * * *` | novedades de InfoCasas/ML, muestra de Marketplace y seis búsquedas de Casasweb. El País sólo informa estado externo. **Nunca poda propiedades ni expira ofertas por ausencia**; sí limpia copias tras confirmar un nuevo dueño |
+| `currency-rentals` | `52 4 * * *` | barrido diario de las cinco fuentes habilitadas, con cobertura completa o parcial declarada; El País abre una búsqueda por departamento y las pagina enteras; poda histórica de propiedades no vistas en 21 días |
+| `currency-rentals-hourly` | `47 * * * *` | novedades de InfoCasas/ML, muestra de Marketplace, seis búsquedas de Casasweb y la primera página de El País ordenada por `sort=newest` en Montevideo, Canelones y Maldonado. **Nunca poda propiedades ni expira ofertas por ausencia**; sí limpia copias tras confirmar un nuevo dueño |
 
 Tres propiedades que el job mantiene:
 
@@ -423,9 +464,16 @@ aislado que no importa el sync ni consulta DB.
 | `RENTALS_STALE_OFFER_DAYS` | 4 | caducidad por ausencia sólo cuando el portal terminó una cosecha completa y exitosa; no aplica a fuentes parciales ni al modo horario |
 | `RENTALS_USD_UYU` | — | fija la cotización (útil para probar) |
 
-Las antiguas variables `RENTALS_EP_MAX_PAGES` y `RENTALS_EP_FAST_PAGES` ya no se leen.
-El País no tiene un interruptor ambiental para habilitar extracción: requiere una integración
-con condiciones expresamente habilitadas.
+El País vuelve a tener variables propias, ahora que importa:
+
+| variable | por defecto | qué hace |
+|---|---|---|
+| `RENTALS_ELPAIS_ENABLED` | `1` | `0` devuelve el adaptador a `external_only`: cero peticiones, cero filas, la tarjeta de "consulta externa" en la página. Es el interruptor para el día que se retire el permiso |
+| `RENTALS_EP_PAGE_SIZE` | 500 | avisos por página de `results`; el portal acepta ese tope |
+| `RENTALS_EP_MAX_PAGES` | 40 | presupuesto por departamento (~13× el más grande). Si un departamento lo agota, la corrida deja de declararse completa |
+| `RENTALS_EP_FAST_PAGES` | 1 | páginas por departamento en el repaso horario |
+| `RENTALS_EP_INIT_GAP_MS` | 7000 | separación entre búsquedas **que hay que abrir**. Una corrida que reutiliza todos los identificadores no espera nada |
+| `RENTALS_EP_CHATS_FILE` | `<temp>/cambio-uruguay-elpais-chats.json` | dónde se guardan los identificadores de las búsquedas entre corridas. Si falta o está corrupto, la corrida las abre de nuevo; se puede **sembrar a mano** con identificadores abiertos desde un navegador |
 
 ## La página
 
@@ -512,7 +560,7 @@ cd app && npx vitest run tests/unit/rentals.test.ts
 ```
 
 El probe existente limita InfoCasas y ML a tres páginas por consulta; Casasweb usa
-`RENTALS_CW_MAX_PAGES`. El País devuelve su estado externo sin peticiones. Casasweb recorre las
+`RENTALS_CW_MAX_PAGES`; El País, `RENTALS_EP_MAX_PAGES`. Casasweb recorre las
 combinaciones de
 departamento/tipo del barrido completo, aun con una página por combinación. El probe no escribe
 en DB; las pruebas con fixtures no realizan peticiones de red.

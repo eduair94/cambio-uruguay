@@ -1,5 +1,11 @@
 # Inmuebles El País: acceso e integración, 5 de septiembre de 2026
 
+> **SUPERADO EL MISMO DÍA.** Lo que sigue describe la investigación que terminó con el adaptador
+> deshabilitado, y sus condiciones y mediciones siguen siendo ciertas. Lo que cambió después no es
+> un hallazgo técnico: **el operador del portal autorizó la importación**. El estado vigente, la vía
+> de acceso y lo que se toma y no se toma están en
+> [rental-elpais-authorized-2026-09-05.md](rental-elpais-authorized-2026-09-05.md).
+
 El País queda como **consulta externa**. La actualización automática está deshabilitada por
 las condiciones publicadas por el portal; no se representa como una caída temporal ni como
 un catálogo de cero propiedades. No se importó ninguna de las muestras de esta investigación.

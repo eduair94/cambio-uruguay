@@ -191,6 +191,61 @@ export function guaranteesFromField(value: string | null | undefined): RentalGua
 }
 
 /**
+ * El País publica la garantía como DATO, no como texto: `rentalGuarantees: [{type: "anda"}, …]` y
+ * `guaranteesAccepted: ["bhu", "porto"]`, dos campos con vocabularios distintos que conviven en el
+ * mismo aviso. Es la primera fuente además de InfoCasas que lo declara estructurado, y es la más
+ * densa: 191 de 481 avisos de Montevideo lo traen (40 %) contra el 4-10 % del campo de InfoCasas.
+ *
+ * DOS DECISIONES:
+ *
+ * 1. Las tres aseguradoras que nombra el portal (Porto Seguro, SURA, Mapfre) colapsan en
+ *    `aseguradora`, que es el tipo que el sitio publica. Distinguir la marca sería un dato que
+ *    nuestro filtro no tiene dónde mostrar, y el usuario pregunta "¿me sirve una aseguradora?",
+ *    no "¿cuál?".
+ *
+ * 2. Un código que no está en esta tabla se DESCARTA, no se aproxima. `mvotma` (1 aviso de 481) es
+ *    el caso real: el fondo del ministerio lo administra la Contaduría, así que mapearlo a
+ *    `contaduria` es defendible — y sería igual una inferencia nuestra sobre un trámite que el
+ *    inquilino hace en otra ventanilla. Un tipo que no sabemos leer se lee "el aviso no lo dice".
+ */
+const ELPAIS_GUARANTEE_CODES: ReadonlyMap<string, RentalGuarantee> = new Map([
+  ["anda", "anda"],
+  ["cgn", "contaduria"],
+  ["contaduria", "contaduria"],
+  ["porto", "aseguradora"],
+  ["porto_seguros", "aseguradora"],
+  ["porto_seguro", "aseguradora"],
+  ["sura", "aseguradora"],
+  ["mapfre", "aseguradora"],
+  ["aseguradora", "aseguradora"],
+  ["propiedad", "propietaria"],
+  ["propietaria", "propietaria"],
+  ["deposito_bancario", "deposito"],
+  ["deposito", "deposito"],
+  ["bhu", "bhu"],
+  ["a_convenir", "aConvenir"],
+]);
+
+/**
+ * Lee los dos campos estructurados de El País. Acepta strings sueltos y objetos `{type}` porque el
+ * portal usa las dos formas, y no toca el texto del aviso: eso lo sigue haciendo `guaranteesFromText`,
+ * y los dos resultados se unen con `mergeGuarantees`.
+ */
+export function guaranteesFromElpaisCodes(...values: unknown[]): RentalGuarantee[] {
+  const found = new Set<RentalGuarantee>();
+  for (const value of values) {
+    if (!Array.isArray(value)) continue;
+    for (const entry of value) {
+      const raw = typeof entry === "string" ? entry : (entry as { type?: unknown } | null)?.type;
+      if (typeof raw !== "string") continue;
+      const guarantee = ELPAIS_GUARANTEE_CODES.get(raw.trim().toLowerCase());
+      if (guarantee) found.add(guarantee);
+    }
+  }
+  return RENTAL_GUARANTEES.filter((guarantee) => found.has(guarantee));
+}
+
+/**
  * La unión de lo que dicen varios avisos de la misma propiedad.
  *
  * Unión y no intersección por el mismo motivo que las mascotas: que un aviso no nombre ANDA no

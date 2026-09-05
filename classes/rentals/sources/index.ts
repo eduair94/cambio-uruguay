@@ -1,8 +1,9 @@
 // The rental harvest: enabled sources run in parallel and fail independently.
 //
-// Gallito's direct listings returned 403 to our identifying UA. El País is external_only:
-// its terms prohibit automated extraction (reviewed 2026-09-05), so that adapter makes no
-// network requests and contributes no adverts. Public HTML does not authorize reuse.
+// Gallito's direct listings returned 403 to our identifying UA. El País ran as external_only for
+// the same reason its terms give — until its operator authorised the import on 2026-09-05; that
+// adapter now reads the portal's own search endpoints and `RENTALS_ELPAIS_ENABLED=0` returns it to
+// external_only. Public HTML still does not authorize reuse anywhere: a person's permission does.
 import { harvestFacebookMarketplace } from "./facebook";
 import { harvestCasasweb } from "./casasweb";
 import { harvestElpais } from "./elpais";

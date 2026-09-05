@@ -590,6 +590,10 @@ test.describe('rental directory', () => {
         response.page = Number(url.searchParams.get('page')) || 1
       }
       if (testInfo.title.startsWith('keeps global indexed')) {
+        // El País imports adverts since its operator authorised it (2026-09-05). This fixture keeps
+        // exercising the external-only card because that is still a reachable state: it is what
+        // `RENTALS_ELPAIS_ENABLED=0` serves the day the permission is withdrawn, and the card has
+        // to stay distinct from "this portal failed".
         response.meta!.sources.push({
           key: 'elpais',
           ok: false,
