@@ -10,7 +10,7 @@
 // al titular. Por eso el tablero de salud tiene que seguir mostrando el precio que el sitio
 // PUBLICA, congelado incluido: si acá lo saneáramos, la página que existe para ver el defecto sería
 // justo la que lo esconde.
-import { describe, expect, it, vi, beforeEach } from 'vitest'
+import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
 import { installNitroGlobals } from './helpers/nitro'
 
 const fetchMock = vi.fn()
@@ -88,8 +88,14 @@ const usd = (origin: string, buy: number, sell: number): Row => ({
 })
 
 beforeEach(() => {
+  // Las filas del fixture son frescas en este instante, aunque cambie el día real en Montevideo.
+  vi.spyOn(Date, 'now').mockReturnValue(Date.parse(TODAY))
   fetchMock.mockReset()
   useRuntimeConfig.mockReturnValue({ public: { apiBase: 'https://api.example' } })
+})
+
+afterEach(() => {
+  vi.restoreAllMocks()
 })
 
 describe('/api/scraper-health — estado frozen', () => {
