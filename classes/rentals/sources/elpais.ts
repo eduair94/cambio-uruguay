@@ -114,7 +114,15 @@ export function elpaisToRawRental(value: unknown): RawRental | null {
 
 export async function harvestElpais(mode: "full" | "fast", usdUyu: number): Promise<RentalSourceResult> {
   const sitemap = await fetchText(`${ORIGIN}/sitemaps/categories.xml`, { retries: 0 });
-  const urls = sitemap ? elpaisCategoryUrls(sitemap) : [];
+  if (!sitemap) {
+    return { key: "elpais", ok: false, complete: false, listings: [],
+      note: "No se pudo leer el sitemap público de categorías; fuente no actualizada." };
+  }
+  const urls = elpaisCategoryUrls(sitemap);
+  if (!urls.length) {
+    return { key: "elpais", ok: false, complete: false, listings: [],
+      note: "El sitemap público no contiene categorías de alquiler reconocibles; fuente no actualizada." };
+  }
   const limit = Math.max(1, Number(mode === "fast" ? process.env.RENTALS_EP_FAST_PAGES || 8 : process.env.RENTALS_EP_MAX_PAGES || 250));
   const byId = new Map<string, RawRental>();
   let pages = 0;

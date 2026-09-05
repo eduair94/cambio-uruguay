@@ -72,6 +72,24 @@ describe("Inmuebles El País's permitted public category pages", () => {
     expect(elpaisCategoryUrls(`<urlset>${urls.map(url => `<url><loc>${url}</loc></url>`).join("")}</urlset>`)).toEqual([urls[0]]);
   });
 
+  it("reports an unavailable sitemap without requesting categories or inferring an HTTP status", async () => {
+    vi.mocked(fetchText).mockResolvedValue(null);
+    const run = await harvestElpais("full", 40);
+    expect(run).toMatchObject({ key: "elpais", ok: false, complete: false, listings: [] });
+    expect(run.note).toBe("No se pudo leer el sitemap público de categorías; fuente no actualizada.");
+    expect(fetchText).toHaveBeenCalledTimes(1);
+    expect(fetchText).toHaveBeenCalledWith("https://inmuebles.elpais.com.uy/sitemaps/categories.xml", { retries: 0 });
+    expect([...sourcesAllowingExpiry([run], "full")]).toEqual([]);
+  });
+
+  it("distinguishes a readable sitemap without valid rental categories from an unavailable one", async () => {
+    vi.mocked(fetchText).mockResolvedValue('<urlset><url><loc>https://inmuebles.elpais.com.uy/venta/casas/canelones</loc></url></urlset>');
+    const run = await harvestElpais("fast", 40);
+    expect(run).toMatchObject({ ok: false, complete: false, listings: [] });
+    expect(run.note).toBe("El sitemap público no contiene categorías de alquiler reconocibles; fuente no actualizada.");
+    expect(fetchText).toHaveBeenCalledTimes(1);
+  });
+
   it("does not convert missing expenses to zero or trust inferred amenities", () => {
     const base = extractElpaisRows(fixture("elpais"))![0] as any;
     expect(elpaisToRawRental({ ...base, expenses: { amount: null }, featureIds: ["FURNISHED", "PETS_ALLOWED"] })).toMatchObject({ commonExpenses: null, furnished: null, petsAllowed: null });

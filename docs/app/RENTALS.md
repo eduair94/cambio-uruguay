@@ -22,10 +22,10 @@ app/pages/alquileres-uruguay.vue <── app/server/api/rentals <────┘
 | **Casasweb** | HTML público de `resultados.aspx`; paginación mediante el formulario de búsqueda que entrega el servidor | mensualidad, moneda, departamento, barrio, tipo, dormitorios, m², garajes, inmobiliaria, foto | dirección separada, coordenadas, fecha de publicación; baños sólo cuando el título los declara |
 | **Inmuebles El País** | categorías de su sitemap público y datos SSR de esas páginas (Next Flight) | precio, moneda, ubicación, dormitorios/baños/m², gastos cuando figuran, inmobiliaria, foto | cobertura completa: cada categoría sirve hasta 24 avisos, y `?page=2` no amplía ese lote |
 
-Verificado el **2026-09-04** con la UA propia: Gallito directo devolvió **403 Cloudflare** en
+Verificado localmente el **2026-09-04** con la UA propia: Gallito directo devolvió **403 Cloudflare** en
 `https://www.gallito.com.uy/inmuebles/alquiler`; no se sortea esa protección. Su nuevo portal
-[Inmuebles El País](https://inmuebles.elpais.com.uy/) sí entrega HTML público utilizable. Sus
-189 categorías de alquiler del sitemap se pueden consultar, pero **no representan todo el
+[Inmuebles El País](https://inmuebles.elpais.com.uy/) entregó HTML público utilizable. Sus
+189 categorías de alquiler del sitemap pudieron consultarse localmente, pero **no representan todo el
 catálogo**. No consultamos `/api/`: lo excluye expresamente su
 [robots.txt](https://inmuebles.elpais.com.uy/robots.txt). Tampoco usamos sus amenities generadas
 por IA, `visualDescription`, gastos convertidos ni fechas internas de importación como fecha de
@@ -50,7 +50,22 @@ No se cambia la guarda global de colapso ni la poda de propiedades después de 2
 Prueba de integración **sin DB** del 2026-09-04: seis páginas de Casasweb aportaron **232 avisos
 válidos** en Montevideo, Canelones y Maldonado; tres categorías de El País aportaron **61**. Son
 avisos leídos en la prueba, no un incremento neto publicado: la unificación contra el índice
-completo ocurre en la siguiente sincronización desplegada.
+completo ocurre al sincronizar el directorio.
+
+El primer barrido desplegado terminó el **2026-09-05 a las 00:52 UTC**, con salida 0, en
+**30 minutos y 24 segundos**. InfoCasas recorrió 868 páginas y aportó 8.107 avisos; Casasweb
+recorrió 237 páginas en los 19 departamentos y aportó **2.632 avisos**, correspondientes a
+**2.189 propiedades visibles**. La API pasó de 14.712 a **16.517 propiedades visibles** con las
+mismas reglas de vigencia (**+1.805 netas**); este incremento es del directorio completo, no
+una atribución exclusiva a Casasweb. La comparación anterior al cambio de vigencia era 15.053.
+
+**El País no quedó activo en producción:** informó cero avisos. La comprobación acotada desde
+el VPS, con la misma UA, obtuvo `robots.txt` 200 y el
+[sitemap de categorías](https://inmuebles.elpais.com.uy/sitemaps/categories.xml) **403 Cloudflare**
+(`Just a moment...`). Se respetó el rechazo, sin rutas alternativas ni más consultas de diagnóstico al portal.
+Queda configurado con fallo explícito, sin avisos incorporados. El diagnóstico diferencia un
+sitemap que no se pudo leer de uno leído sin categorías de alquiler reconocibles; no inventa
+un código HTTP, porque `fetchText` no lo devuelve. El índice conserva los demás resultados.
 
 Los nuevos atributos `parkingSpaces` y `furnished` se guardan tanto en la propiedad como por
 oferta. InfoCasas aporta `garage` positivo y facility 69 `Amueblada` (ausencia = `null`); Casasweb
@@ -73,7 +88,8 @@ lea `attributes_list` (`"2 dormitorios | 1 baño | 40 m² cubiertos"`) y `locati
 
 - UA propia e identificable (`CambioUruguayBot/1.0 (+https://cambio-uruguay.com/alquileres-uruguay)`).
   InfoCasas, Casasweb y las categorías públicas de El País respondieron 200 en las pruebas del
-  2026-09-04; Gallito directo respondió 403 y quedó fuera.
+  2026-09-04; Gallito directo respondió 403 y quedó fuera. En el VPS, el sitemap de El País
+  devolvió 403 el 2026-09-05 y su fuente quedó sin resultados, como se detalla arriba.
 - Un request por host a la vez, con 1,2 s de separación (`RENTALS_HOST_GAP_MS`). El barrido completo
   de InfoCasas son ~900 páginas contra un solo host: va a las 04:52 UTC (01:52 de Montevideo).
 - `robots.txt` de InfoCasas prohíbe `/alquiler/*-y-*`. Sólo construimos `/alquiler/pagina<N>`, y
