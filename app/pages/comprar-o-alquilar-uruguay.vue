@@ -367,7 +367,7 @@ const verifiedAt = new Date(BUY_VS_RENT_VERIFIED_AT).toLocaleDateString('es-UY',
 })
 
 const canonicalUrl = 'https://cambio-uruguay.com/comprar-o-alquilar-uruguay'
-const title = 'Comprar o alquilar en Uruguay: la cuenta completa'
+const title = '¿Comprar o alquilar en Uruguay? La cuenta'
 const description =
   'Comparar la cuota contra el alquiler siempre da que comprar gana, porque deja tres costos afuera: contribución y gastos comunes, el costo de oportunidad del anticipo y la escrituración repartida entre los años que te quedes. Comparador con las tres adentro, sin proyectar apreciación inventada.'
 

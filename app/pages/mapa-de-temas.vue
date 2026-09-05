@@ -623,7 +623,7 @@ function statusChipStyle(status: import('~/utils/topicColors').CoverageStatus) {
 
 // --- SEO ---
 const canonicalUrl = 'https://cambio-uruguay.com/mapa-de-temas'
-const pageTitle = 'Mapa analítico de temas consultados en Uruguay'
+const pageTitle = 'Mapa de temas consultados en Uruguay'
 const pageDescription =
   'Mapa interactivo de los temas de dinero que más consultan los uruguayos: dólar, alquiler, deudas, impuestos, inversión, cripto y más. Volumen y momentum de la demanda real cruzados con nuestra cobertura de guías, con una lectura por IA que se actualiza cada 90 días.'
 

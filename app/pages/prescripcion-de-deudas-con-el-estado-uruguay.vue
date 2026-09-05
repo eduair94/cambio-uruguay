@@ -186,7 +186,7 @@ const verifiedAt = new Date(DGI_VERIFIED_AT).toLocaleDateString('es-UY', {
 })
 
 const canonicalUrl = 'https://cambio-uruguay.com/prescripcion-de-deudas-con-el-estado-uruguay'
-const title = '¿Prescriben las deudas con el Estado en Uruguay?'
+const title = '¿Prescriben las deudas con el Estado?'
 const description =
   'Los tres regímenes que se confunden: los impuestos de DGI prescriben a los cinco años desde el fin del año civil del hecho gravado (diez si hubo defraudación o no presentaste declaraciones), pero la prescripción no opera sola — hay que pedirla. Y la patente y la contribución son tributos departamentales, que el Código Tributario excluye expresamente de su ámbito.'
 

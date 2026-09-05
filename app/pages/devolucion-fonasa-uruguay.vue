@@ -365,7 +365,7 @@ const people = computed(() => latest.people.toLocaleString('es-UY'))
 const totalMillones = Math.round(latest.totalPesos / 1_000_000).toLocaleString('es-UY')
 
 const canonicalUrl = 'https://cambio-uruguay.com/devolucion-fonasa-uruguay'
-const title = 'Devolución de FONASA: quién cobra, cuánto y cuándo'
+const title = 'Devolución de FONASA: quién cobra y cuánto'
 const description = `Por ${latest.year} el BPS devolvió ${totalMillones} millones a ${latest.people.toLocaleString('es-UY')} personas. Cobrás si tu promedio mensual pasó $ ${money(latest.workerThreshold)} ($ ${money(latest.retireeThreshold)} jubilados). Calculá tu tope con el CPE de $ ${money(CPE_MONTHLY)}.`
 
 defineOgImageComponent('Cambio', {

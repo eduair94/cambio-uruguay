@@ -240,7 +240,7 @@ const verifiedAt = new Date(`${FERIADOS_VERIFIED_AT}T00:00:00Z`).toLocaleDateStr
 })
 
 const canonicalUrl = 'https://cambio-uruguay.com/feriados-que-se-corren-uruguay'
-const title = '¿Qué feriados se corren al lunes en Uruguay?'
+const title = 'Feriados que se corren al lunes en Uruguay'
 const description =
   'Sólo tres feriados uruguayos se corren al lunes: el 19 de abril, el 18 de mayo y el 12 de octubre. Las otras ocho fechas, más Carnaval y Semana de Turismo, se observan el día que caen (Ley 16.805, art. 2). Y el 18 de mayo sí se corre: la ley que lo dejó fijo valía sólo para 2011.'
 
