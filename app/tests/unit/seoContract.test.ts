@@ -19,6 +19,8 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, relative, sep } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { parse as parseSfc } from '@vue/compiler-sfc'
+import { baseParse, NodeTypes, type ElementNode, type TemplateChildNode } from '@vue/compiler-dom'
 
 import { DYNAMIC_ROUTE_KEYS } from '../../utils/siteNav'
 
@@ -134,6 +136,8 @@ const NOINDEXED = [
   // opt out, for the same reason `buscar.vue` does — a facet combination is an infinite set of
   // thin copies of one page.
   'alquileres-uruguay.vue',
+  // Public property dossiers: only the reviewed, currently valid pilot is indexable.
+  'alquileres/[key].vue',
   'buscar.vue',
   'cuenta/index.vue',
   // La herramienta "¿tengo descuento acá?": la respuesta depende de la ubicación de quien la abre.
@@ -184,6 +188,37 @@ function missing(predicate: (source: string) => boolean): string[] {
   return OWES_OWN_SEO.filter(file => predicate(read(file))).sort()
 }
 
+/** Count headings that can coexist, including templates placed after script setup. */
+function maximumHeadings(nodes: TemplateChildNode[]): number {
+  const elements = nodes.filter((node): node is ElementNode => node.type === NodeTypes.ELEMENT)
+  const has = (node: ElementNode, name: string) =>
+    node.props.some(prop => prop.type === NodeTypes.DIRECTIVE && prop.name === name)
+  const count = (node: ElementNode): number =>
+    (node.tag === 'h1' ||
+    node.props.some(
+      prop =>
+        prop.type === NodeTypes.ATTRIBUTE &&
+        prop.name === 'heading-tag' &&
+        prop.value?.content === 'h1'
+    )
+      ? 1
+      : 0) + maximumHeadings(node.children)
+  let total = 0
+  for (let i = 0; i < elements.length; i++) {
+    let value = count(elements[i]!)
+    if (has(elements[i]!, 'if')) {
+      while (
+        elements[i + 1] &&
+        (has(elements[i + 1]!, 'else-if') || has(elements[i + 1]!, 'else'))
+      ) {
+        value = Math.max(value, count(elements[++i]!))
+      }
+    }
+    total += value
+  }
+  return total
+}
+
 describe('the legacy SEO debt only shrinks', () => {
   it(`has at most ${LEGACY_BUDGET.seoMeta} pages with no useSeoMeta`, () => {
     const offenders = missing(source => !/useSeoMeta\s*\(/.test(source))
@@ -224,10 +259,8 @@ describe('the legacy SEO debt only shrinks', () => {
   it('cada página que se declara su propio SEO renderiza exactamente un H1', () => {
     const offenders = OWES_OWN_SEO.filter(file => {
       const source = read(file)
-      const template = source.split('<script setup')[0] ?? ''
-      const count =
-        (template.match(/<h1[\s>]/g) ?? []).length +
-        (template.match(/heading-tag="h1"/g) ?? []).length
+      const template = parseSfc(source).descriptor.template?.content ?? ''
+      const count = maximumHeadings(baseParse(template).children)
       return count !== 1
     }).sort()
     expect(offenders).toEqual([])
@@ -236,6 +269,23 @@ describe('the legacy SEO debt only shrinks', () => {
   it('noindexes only the pages meant to be invisible', () => {
     const noindexed = files.filter(file => /noindex/i.test(read(file)))
     expect(noindexed.sort()).toEqual(NOINDEXED)
+  })
+  it('counts mutually exclusive success/error headings once and rejects simultaneous duplicates', () => {
+    expect(
+      maximumHeadings(
+        baseParse(
+          '<section v-if="error"><h1>Error</h1></section><article v-else><header><h1>Property</h1></header></article>'
+        ).children
+      )
+    ).toBe(1)
+    expect(
+      maximumHeadings(
+        baseParse('<h1>Property</h1><section><h1>Second heading</h1></section>').children
+      )
+    ).toBe(2)
+    expect(
+      maximumHeadings(baseParse('<PageHeader heading-tag="h1" /><p>Details</p>').children)
+    ).toBe(1)
   })
 })
 

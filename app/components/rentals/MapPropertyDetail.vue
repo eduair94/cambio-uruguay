@@ -50,6 +50,13 @@
             <p class="rental-map-detail__where">{{ location || t('unknown') }}</p>
             <h4>{{ title }}</h4>
             <p v-if="address">{{ address }}</p>
+            <NuxtLink
+              :to="localePath(rentalPropertyPath(property.key))"
+              class="rental-map-detail__full-link"
+              @pointerdown="rememberRentalSearch(route.fullPath)"
+              @click="rememberRentalSearch(route.fullPath)"
+              >{{ t('detail') }}</NuxtLink
+            >
           </div>
         </div>
 
@@ -161,6 +168,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { rentalMessages } from '~/utils/rentalMessages'
+import { rentalPropertyPath, rememberRentalSearch } from '~/utils/rentalPresentation'
 import { rentalSavedSafeUrl } from '~/utils/rentalSaved'
 import {
   RENTAL_GUARANTEE_PUBLISHED,
@@ -186,6 +194,8 @@ const emit = defineEmits<{
   favorite: [property: RentalPublicProperty]
 }>()
 const { t, locale } = useI18n({ useScope: 'local', messages: rentalMessages })
+const localePath = useLocalePath()
+const route = useRoute()
 const heading = ref<HTMLElement | null>(null)
 const body = ref<HTMLElement | null>(null)
 const photoFailed = ref(false)
@@ -299,6 +309,14 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.rental-map-detail__full-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: rgb(var(--v-theme-link));
+  text-underline-offset: 3px;
+  font-weight: 600;
+}
 .rental-map-detail {
   position: absolute;
   inset: 12px 12px 12px auto;

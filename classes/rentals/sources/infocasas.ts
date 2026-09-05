@@ -177,7 +177,7 @@ export function toRawRental(row: IcRow): RawRental | null {
   if (!id || !title || !link) return null;
   // operation_type_id 2 is "Alquiler". A row that says anything else reached us by accident.
   if (row.operation_type_id != null && Number(row.operation_type_id) !== 2) return null;
-  if (!looksLikeRentalAdvert(title)) return null;
+  if (!looksLikeRentalAdvert(title, row.description || "")) return null;
   if (row.price?.hidePrice) return null;
 
   const price = Number(row.price?.amount);

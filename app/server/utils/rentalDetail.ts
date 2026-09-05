@@ -55,7 +55,7 @@ const offerFields: Array<keyof RentalOffer> = [
 ]
 
 /** Offers are Mixed in storage; an explicit allowlist also excludes future internal fields. */
-const publicProjection = {
+export const rentalPublicPropertyProjection = {
   _id: 0,
   ...Object.fromEntries(propertyFields.map(field => [field, 1])),
   ...Object.fromEntries(
@@ -76,6 +76,6 @@ export function rentalDetailStages(
     ...rentalPublicStages({ ...filter, key }, staleDays),
     ...rentalOfferStages(query, usdUyu),
     { $limit: 1 },
-    { $project: publicProjection },
+    { $project: rentalPublicPropertyProjection },
   ]
 }

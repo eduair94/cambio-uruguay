@@ -1,6 +1,7 @@
 /** Route-local messages shared by the rental search and its controls. */
 export const rentalMessages = {
   es: {
+    detail: 'Ver ficha completa',
     mapProperty: 'Detalle de la propiedad',
     mapClose: 'Cerrar ficha y volver al mapa',
     mapLoading: 'Cargando la propiedad…',
@@ -160,6 +161,7 @@ export const rentalMessages = {
     aseguradora: 'Aseguradora',
   },
   en: {
+    detail: 'View full property details',
     mapProperty: 'Property details',
     mapClose: 'Close details and return to map',
     mapLoading: 'Loading property…',
@@ -316,6 +318,7 @@ export const rentalMessages = {
     aseguradora: 'Insurance company',
   },
   pt: {
+    detail: 'Ver ficha completa',
     mapProperty: 'Detalhes do imóvel',
     mapClose: 'Fechar detalhes e voltar ao mapa',
     mapLoading: 'Carregando imóvel…',

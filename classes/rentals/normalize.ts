@@ -334,11 +334,18 @@ export function inferPropertyType(title: string, hint?: string | null): RentalPr
  * temporary/tourist rentals into the same category; a nightly rate compared against a monthly one
  * is the fastest way to publish a lie.
  */
-export function looksLikeRentalAdvert(title: string): boolean {
+export function looksLikeRentalAdvert(title: string, description = ""): boolean {
   const flat = flatten(title);
   if (/\b(vendo|venta|se vende|permuta|remato)\b/.test(flat) && !/\balquil/.test(flat)) return false;
   if (/\b(busco|necesito|solicito)\b.*\balquil/.test(flat)) return false;
   if (/\b(por dia|por noche|diario|temporada|temporal|alquiler temporario|turistico)\b/.test(flat)) return false;
+  if (/\binvernal(?:es)?\b|\balquiler (?:de |por |durante el )?invierno\b/.test(flat)) return false;
+  // Some portals label winter-only contracts as ordinary rentals and mention the term only in
+  // the description. Do not scan for "invierno" alone: an annual home may have a winter garden.
+  // If an annual option is also mentioned, the description does not prove it is winter-only.
+  const detail = flatten(description.replace(/<[^>]*>/g, " ").replace(/&nbsp;|&#160;/gi, " "));
+  if (!/\banual(?:es)?\b/.test(`${flat} ${detail}`)
+    && /\balquiler (?:invernal|(?:de |por |durante el )?invierno)\b/.test(detail)) return false;
   return true;
 }
 

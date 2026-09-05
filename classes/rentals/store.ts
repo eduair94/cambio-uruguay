@@ -26,24 +26,55 @@ export interface RentalHistory {
  */
 export async function loadRentalHistory(): Promise<RentalHistory> {
   const rows = (await RentalListingModel.find({})
-    .select({ key: 1, firstSeen: 1, "offers.listingId": 1, "offers.firstSeen": 1 })
-    .lean()) as unknown as Array<{
-    key: string;
-    firstSeen: string;
-    offers?: Array<{ listingId: string; firstSeen: string }>;
-  }>;
+    .select({ key: 1, firstSeen: 1, "offers.listingId": 1, "offers.firstSeen": 1, "offers.lastSeen": 1 })
+    .lean()) as unknown as RentalHistoryRow[];
+  return rentalHistoryFromRows(rows);
+}
 
+export interface RentalHistoryRow {
+  key?: string | null;
+  firstSeen?: string | null;
+  offers?: Array<{ listingId?: string | null; firstSeen?: string | null; lastSeen?: string | null }>;
+}
+
+const historyDay = (value: unknown): string | null => {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+  const timestamp = Date.parse(`${value}T00:00:00Z`);
+  return Number.isFinite(timestamp) && new Date(timestamp).toISOString().slice(0, 10) === value ? value : null;
+};
+
+/**
+ * Old copies of an advert can survive in several stored properties until a full cleanup sees it.
+ * Mongo's natural row order is not identity evidence. Prefer the most recently observed offer,
+ * then the oldest known property (its own firstSeen, not the advert's), then the key. Missing
+ * dates stay unknown: they never become a fresh observation or an epoch-old property.
+ */
+export function rentalHistoryFromRows(rows: readonly RentalHistoryRow[]): RentalHistory {
   const offerFirstSeen = new Map<string, string>();
   const propertyFirstSeen = new Map<string, string>();
   const offerToProperty = new Map<string, string>();
+  const owners = new Map<string, { key: string; lastSeen: string | null; firstSeen: string | null }>();
   for (const row of rows) {
-    if (row.key && row.firstSeen) propertyFirstSeen.set(row.key, row.firstSeen);
+    const key = typeof row.key === "string" ? row.key.trim() : "";
+    const firstSeen = historyDay(row.firstSeen);
+    if (key && firstSeen) propertyFirstSeen.set(key, firstSeen);
     for (const offer of row.offers || []) {
       if (!offer?.listingId) continue;
-      if (offer.firstSeen) offerFirstSeen.set(offer.listingId, offer.firstSeen);
-      if (row.key) offerToProperty.set(offer.listingId, row.key);
+      const seen = historyDay(offer.firstSeen);
+      const earliest = offerFirstSeen.get(offer.listingId);
+      if (seen && (!earliest || seen < earliest)) offerFirstSeen.set(offer.listingId, seen);
+      if (!key) continue;
+      const lastSeen = historyDay(offer.lastSeen);
+      const previous = owners.get(offer.listingId);
+      const fresher = (lastSeen || "").localeCompare(previous?.lastSeen || "");
+      // A valid firstSeen wins over unknown; otherwise prefer the earlier documented date.
+      const older = (firstSeen || "9999-99-99").localeCompare(previous?.firstSeen || "9999-99-99");
+      if (!previous || fresher > 0 || (fresher === 0 && (older < 0 || (older === 0 && key < previous.key)))) {
+        owners.set(offer.listingId, { key, lastSeen, firstSeen });
+      }
     }
   }
+  for (const [listingId, owner] of owners) offerToProperty.set(listingId, owner.key);
   return { offerFirstSeen, propertyFirstSeen, offerToProperty };
 }
 

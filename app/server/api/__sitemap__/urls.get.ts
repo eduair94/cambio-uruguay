@@ -18,6 +18,14 @@ import { NAV_SECTIONS, UNLISTED_ROUTES } from '../../../utils/siteNav'
 import { toolSlugs } from '../../../utils/tools'
 import { videoTopicSlugs } from '../../../utils/videoTopics'
 import { ChairCatalogProductModel } from '../../models/ChairCatalogProduct'
+import { RentalListingModel } from '../../models/RentalListing'
+import { RentalMetaModel } from '../../models/RentalMeta'
+import { RENTAL_COLLATION, type RentalPublicProperty } from '../../../utils/rentals'
+import {
+  rentalPageSitemapStages,
+  rentalPageSitemapUrls,
+  rentalPageAmbiguousKeysStages,
+} from '../../utils/rentalPage'
 import { listPosts } from '../../utils/blog'
 import { listIssueDates } from '../../utils/newsletterArchive'
 import { connectDb, disconnectDbAfterPrerender } from '../../utils/db'
@@ -223,6 +231,32 @@ export default defineEventHandler(async _event => {
     })
   } catch (issueError) {
     console.warn('Failed to add newsletter issues to sitemap:', issueError)
+  }
+
+  // Fixed reviewed Spanish rental pilot; the same live quality gate as each page.
+  // No lastmod: seeing an advert again is not evidence that its content changed.
+  try {
+    await connectDb()
+    const [properties, meta, ambiguous] = await Promise.all([
+      RentalListingModel.aggregate<RentalPublicProperty>(rentalPageSitemapStages()).collation(
+        RENTAL_COLLATION
+      ),
+      RentalMetaModel.findOne({ key: 'uy-rentals' }).select({ usdUyu: 1 }).lean(),
+      RentalListingModel.aggregate<{ key: string }>(rentalPageAmbiguousKeysStages()).collation(
+        RENTAL_COLLATION
+      ),
+    ])
+    urls.push(
+      ...rentalPageSitemapUrls(
+        properties,
+        Number(meta?.usdUyu) || 0,
+        new Set(ambiguous.map(row => row.key))
+      )
+    )
+  } catch (rentalError) {
+    console.warn('Failed to add reviewed rental pages to sitemap:', rentalError)
+  } finally {
+    await disconnectDbAfterPrerender()
   }
 
   // --- Desk-chair pages: Mongo-derived, independently fallible --------------

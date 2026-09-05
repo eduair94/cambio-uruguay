@@ -2720,6 +2720,7 @@ export const UNLISTED_ROUTES: ReadonlyArray<{ to: string; priority: number; chan
  * filesystem exactly, so a new dynamic route cannot be silently orphaned.
  */
 export const DYNAMIC_ROUTE_KEYS: Readonly<Record<string, string>> = Object.freeze({
+  'alquileres/[key]': 'consumer',
   'blog/[slug]': 'news',
   'casa/[origin]/index': 'houses',
   'casa/[origin]/[intent]': 'houses',

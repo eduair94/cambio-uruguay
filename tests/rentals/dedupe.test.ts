@@ -208,6 +208,68 @@ describe("buildRentalProperties", () => {
     expect(new Set(properties.map(property => property.key)).size).toBe(2);
   });
 
+  it("does not let a new unit steal an existing URL by sorting before its owner", () => {
+    const original = listing({ listingId: "infocasas:9" });
+    const storedKey = buildRentalProperties([original], context)[0]!.key;
+    const newcomer = listing({ listingId: "infocasas:1", price: 55_000 });
+    const properties = buildRentalProperties([newcomer, original], {
+      ...context,
+      offerToProperty: new Map([[original.listingId, storedKey]]),
+    });
+    expect(properties).toHaveLength(2);
+    expect(properties.find(property => property.key === storedKey)?.offers.map(offer => offer.listingId))
+      .toEqual([original.listingId]);
+    expect(new Set(properties.map(property => property.key)).size).toBe(2);
+  });
+
+  it("reserves an absent property's URL during a partial run and keeps the new URL next time", () => {
+    const original = listing({ listingId: "infocasas:9" });
+    const storedKey = buildRentalProperties([original], context)[0]!.key;
+    const newcomer = listing({ listingId: "infocasas:1", price: 55_000 });
+    const history = {
+      ...context,
+      propertyFirstSeen: new Map([[storedKey, "2026-07-01"]]),
+      offerToProperty: new Map([[original.listingId, storedKey]]),
+    };
+    const first = buildRentalProperties([newcomer], history)[0]!;
+    expect(first.key).not.toBe(storedKey);
+    const after = buildRentalProperties([original, newcomer], {
+      ...history,
+      offerToProperty: new Map([...history.offerToProperty, [newcomer.listingId, first.key]]),
+    });
+    expect(after.find(property => property.key === first.key)?.offers[0]!.listingId).toBe(newcomer.listingId);
+    expect(after.find(property => property.key === storedKey)?.offers[0]!.listingId).toBe(original.listingId);
+  });
+
+  it("checks collision suffixes against stored URLs as well", () => {
+    const original = listing({ listingId: "infocasas:9" });
+    const computed = buildRentalProperties([original], context)[0]!.key;
+    const newcomer = listing({ listingId: "infocasas:1", price: 55_000 });
+    const first = buildRentalProperties([newcomer], {
+      ...context,
+      propertyFirstSeen: new Map([[computed, "2026-07-01"]]),
+    })[0]!;
+    const after = buildRentalProperties([newcomer], {
+      ...context,
+      propertyFirstSeen: new Map([[computed, "2026-07-01"], [first.key, "2026-07-02"]]),
+    })[0]!;
+    expect(after.key).not.toBe(computed);
+    expect(after.key).not.toBe(first.key);
+  });
+
+  it("keeps the same known advert's URL when its address and specifications are completed", () => {
+    const thin = listing({ address: "", street: "", streetNumber: "", area: null });
+    const storedKey = buildRentalProperties([thin], context)[0]!.key;
+    const completed = buildRentalProperties([listing({ area: 62 })], {
+      ...context,
+      propertyFirstSeen: new Map([[storedKey, "2026-07-01"]]),
+      offerToProperty: new Map([[thin.listingId, storedKey]]),
+    })[0]!;
+    expect(completed.key).toBe(storedKey);
+    expect(completed.address).toBe("Rizal 3715");
+    expect(completed.firstSeen).toBe("2026-07-01");
+  });
+
   it("never merges a shop into a flat", () => {
     const shop = listing({ listingId: "infocasas:9", propertyType: "local", bedrooms: null });
     expect(buildRentalProperties([listing({}), shop], context)).toHaveLength(2);

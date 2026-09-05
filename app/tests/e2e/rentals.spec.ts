@@ -512,6 +512,39 @@ test.describe('rental directory', () => {
         body: JSON.stringify(response ?? { statusCode: 404, message: 'Fixture not found' }),
       })
     })
+    await page.route(/\/api\/rentals\/ficha\/[^/?]+(?:\?|$)/, async route => {
+      const url = new URL(route.request().url())
+      const detail = detailFixture(url)
+      await route.fulfill({
+        status: detail ? 200 : 404,
+        contentType: 'application/json',
+        body: JSON.stringify(
+          detail
+            ? {
+                ...detail,
+                canonicalPath: `/alquileres/${detail.property.key}`,
+                seo: { indexable: false, reasons: ['fixture'], contentUpdatedAt: null },
+                market: {
+                  status: 'insufficient',
+                  minimumSample: 10,
+                  sampleSize: 2,
+                  medianRentUyu: null,
+                  p25RentUyu: null,
+                  p75RentUyu: null,
+                  differencePercent: null,
+                  scope: {
+                    department: 'Montevideo',
+                    neighborhood: detail.property.neighborhood,
+                    propertyType: 'apartamento',
+                    bedrooms: detail.property.bedrooms,
+                  },
+                },
+                similar: [],
+              }
+            : { statusCode: 404, message: 'Fixture not found' }
+        ),
+      })
+    })
     await page.route(/\/api\/rentals(?:\/mapa)?(?:\?|$)/, async route => {
       const url = new URL(route.request().url())
       if (url.pathname === '/api/rentals/mapa') {
@@ -619,6 +652,101 @@ test.describe('rental directory', () => {
       ),
       contentType: 'application/json',
     })
+  })
+
+  test('property page compares adverts, calculates a budget and returns to the same search', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 1000 })
+    await startFixtureSearch(page)
+    await page.locator('.rental-card h3 a').filter({ hasText: 'Prueba: dos avisos' }).click()
+    await expect(page).toHaveURL(/\/alquileres\/e2e-multiple$/)
+    const detail = page.getByTestId('rental-property-page')
+    await expect(detail.locator('h1')).toHaveText('Prueba: dos avisos de una propiedad')
+    await expect(detail.locator('.rental-page__monthly-total')).toContainText('$ 28.000')
+    await detail
+      .getByRole('button', { name: 'Usar este aviso para calcular', exact: true })
+      .nth(1)
+      .click()
+    await expect(detail.locator('.rental-page__monthly-total')).toContainText('$ 23.000')
+    await expect(detail.locator('a[rel="canonical"]')).toHaveCount(0)
+    await expect(page.locator('head link[rel="canonical"]')).toHaveAttribute(
+      'href',
+      /\/alquileres\/e2e-multiple$/
+    )
+    const planner = page.getByTestId('rental-budget')
+    await planner.locator('summary').click()
+    await planner
+      .getByRole('spinbutton', { name: 'Servicios y otros gastos por mes ($)', exact: true })
+      .fill('3000')
+    await planner
+      .getByRole('spinbutton', {
+        name: 'Garantía, comisión y mudanza: extras de entrada ($)',
+        exact: true,
+      })
+      .fill('20000')
+    await planner
+      .getByRole('spinbutton', { name: 'Tu presupuesto mensual ($)', exact: true })
+      .fill('25000')
+    await expect(planner.locator('.rental-budget__result')).toContainText('$ 26.000')
+    await expect(planner.locator('.rental-budget__result')).toContainText('$ 46.000')
+    await expect(planner.locator('.rental-budget__result')).toContainText(
+      'Supera tu presupuesto en $ 1.000'
+    )
+    await detail
+      .locator('.rental-page__tools')
+      .getByRole('button', { name: 'Guardar propiedad', exact: true })
+      .click()
+    await expect(
+      detail
+        .locator('.rental-page__tools')
+        .getByRole('button', { name: 'Quitar de favoritos', exact: true })
+    ).toBeVisible()
+    await detail.getByRole('link', { name: 'Volver a mi búsqueda', exact: true }).click()
+    await expect(page).toHaveURL(/\/alquileres-uruguay#rental-results$/)
+    await expect(page.getByRole('button', { name: 'Mis guardados (1)', exact: true })).toBeVisible()
+  })
+
+  test('mobile property page keeps contact reachable and unknown expenses explicit', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 320, height: 740 })
+    await startFixtureSearch(page)
+    await page
+      .locator('.rental-card h3 a')
+      .filter({ hasText: 'Prueba: gastos comunes desconocidos' })
+      .click()
+    await expect(page).toHaveURL(/\/alquileres\/e2e-unknown$/)
+    const detail = page.getByTestId('rental-property-page')
+    await expect(detail.locator('.rental-page__monthly-total')).toContainText('No informado')
+    const planner = page.getByTestId('rental-budget')
+    await planner.locator('summary').click()
+    await planner
+      .getByRole('spinbutton', { name: 'Tu estimación de gastos comunes ($)', exact: true })
+      .fill('1000')
+    await planner
+      .getByRole('spinbutton', { name: 'Servicios y otros gastos por mes ($)', exact: true })
+      .fill('500')
+    await expect(planner.locator('.rental-budget__result')).toContainText('$ 19.500')
+    await expect(planner).toContainText('Incluye tu estimación de gastos comunes')
+    await expect(detail.locator('.rental-page__monthly-total')).toContainText('No informado')
+    await detail.locator('.rental-page__questions input').first().check()
+    await expect(detail.locator('.rental-page__questions input').first()).toBeChecked()
+    const contact = detail
+      .locator('.rental-page__mobile-action')
+      .getByRole('link', { name: 'Consultar aviso original', exact: true })
+    await expectInsideViewport(contact, page)
+    expect((await contact.boundingBox())!.height).toBeGreaterThanOrEqual(44)
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(
+      true
+    )
+    expect(
+      await planner
+        .locator('input')
+        .first()
+        .evaluate(input => parseFloat(getComputedStyle(input).fontSize))
+    ).toBeGreaterThanOrEqual(16)
+    await page.screenshot({ path: resolve('..', 'rentals-e2e-property-mobile.png') })
   })
 
   test('applies monthly cost from one offer and restores filters on browser Back', async ({

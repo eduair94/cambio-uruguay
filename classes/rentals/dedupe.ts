@@ -147,8 +147,9 @@ function hash(value: string): string {
 }
 
 /**
- * The property's stable id. Built from the identity we actually merged on, so it survives a price
- * change and a re-post. When there is no address (Marketplace), the earliest advert id is folded in
+ * A candidate id, not proof that a stored property is the same unit. The prior advert mapping is
+ * what preserves identity across edits; an unknown repost must not reuse another unit's URL.
+ * When there is no address (Marketplace), the earliest advert id is folded in
  * — without it every barrio would collapse into one key.
  */
 export function propertyKey(canonical: Candidate, cluster: Candidate[]): string {
@@ -181,7 +182,11 @@ export function resolveKey(
   canonical: Candidate,
   cluster: Candidate[],
   context: DedupeContext,
-  claimed: Set<string>
+  claimed: Set<string>,
+  reserved: ReadonlySet<string> = new Set([
+    ...context.propertyFirstSeen.keys(),
+    ...context.offerToProperty.values(),
+  ])
 ): string {
   // Which stored key do most of these adverts belong to? Counting (rather than taking the first)
   // matters when two properties merge for the first time: the bigger half keeps its identity.
@@ -196,12 +201,20 @@ export function resolveKey(
     .find((key) => !claimed.has(key));
   if (inherited) return inherited;
 
+  // An unseen advert can share the address/specification tuple with another unit, while its
+  // price keeps the clusters correctly separate. It must not claim that unit's existing URL,
+  // even when an hourly run does not include the owner of the URL at all.
+  const available = (key: string): boolean => !claimed.has(key) && !reserved.has(key);
   const computed = propertyKey(canonical, cluster);
-  if (!claimed.has(computed)) return computed;
+  if (available(computed)) return computed;
   // Two clusters computing the same key means the identity tuple did not tell them apart. Rather
   // than let one silently overwrite the other, give the second one its own row.
   const oldest = [...cluster].map((item) => item.listingId).sort()[0]!;
-  return `${computed}-${hash(oldest)}`;
+  const distinct = `${computed}-${hash(oldest)}`;
+  if (available(distinct)) return distinct;
+  let suffix = 2;
+  while (!available(`${distinct}-${suffix}`)) suffix++;
+  return `${distinct}-${suffix}`;
 }
 
 /**
@@ -271,6 +284,10 @@ export function buildRentalProperties(raw: RawRental[], context: DedupeContext):
   // no longer do), both halves would otherwise inherit the same key and one would overwrite the
   // other on upsert.
   const claimed = new Set<string>();
+  const reserved = new Set([
+    ...context.propertyFirstSeen.keys(),
+    ...context.offerToProperty.values(),
+  ]);
   for (const clusters of buckets.values()) {
     for (const cluster of clusters) {
       const canonical = [...cluster].sort((a, b) => completeness(b) - completeness(a))[0]!;
@@ -278,7 +295,7 @@ export function buildRentalProperties(raw: RawRental[], context: DedupeContext):
         .map((listing) => toOffer(listing, context))
         .sort((a, b) => a.priceUyu - b.priceUyu);
       const cheapest = offers[0]!;
-      const key = resolveKey(canonical, cluster, context, claimed);
+      const key = resolveKey(canonical, cluster, context, claimed, reserved);
       claimed.add(key);
       const sources = [...new Set(offers.map((offer) => offer.source))];
 

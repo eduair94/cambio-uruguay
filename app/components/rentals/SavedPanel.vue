@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue'
 import { RENTAL_SOURCE_LABEL, totalMonthlyUyu, type RentalCurrency } from '~/utils/rentals'
 import type { RentalSavedFavorite, RentalSavedOffer, RentalSavedState } from '~/utils/rentalSaved'
 import { rentalSavedMessages } from '~/utils/rentalSavedMessages'
+import { rentalPropertyPath } from '~/utils/rentalPresentation'
 
 const props = defineProps<{ state: RentalSavedState; usdUyu: number }>()
 const emit = defineEmits<{
@@ -11,6 +12,7 @@ const emit = defineEmits<{
   removeFavorite: [key: string]
 }>()
 const { t, locale } = useI18n({ useScope: 'local', messages: rentalSavedMessages })
+const localePath = useLocalePath()
 const selected = ref<string[]>([])
 const showAll = ref(false)
 let initialized = false
@@ -220,7 +222,9 @@ const comparisonRows = computed(() => [
                 <tr>
                   <th scope="col">{{ t('property') }}</th>
                   <th v-for="favorite in compared" :key="favorite.key" scope="col">
-                    {{ favorite.title }}
+                    <NuxtLink :to="localePath(rentalPropertyPath(favorite.key))">{{
+                      favorite.title
+                    }}</NuxtLink>
                   </th>
                 </tr>
               </thead>

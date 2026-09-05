@@ -1,5 +1,29 @@
 # Directorio de alquileres (`/alquileres-uruguay`)
 
+## Fichas públicas SSR (`/alquileres/[key]`)
+
+`GET /api/rentals/ficha/[key]` ignora filtros del directorio y devuelve una ficha canónica:
+`{ property, usdUyu, canonicalPath, seo, market, similar }`. `property` y los hasta seis
+`similar` usan la proyección pública explícita del detalle del mapa. El benchmark consulta sólo
+IDs, títulos, características y precios; no carga todas las fotos ni vendedores de la cohorte.
+Todas las rentas USD de la ficha y de sus comparables usan la misma cotización del fetch;
+se reelige la oferta más barata con esa base. Gastos desconocidos siguen desconocidos.
+
+`market` informa estado, muestra, mínimo de diez observaciones, mediana, cuartiles e intervalo
+de comparación: mismo departamento, barrio, tipo y dormitorios, excluyendo la propia ficha.
+Son alquileres anunciados sin gastos comunes, no precios de cierre ni tasaciones. Se excluyen
+conflictos explícitos de datos e identidades compartidas. Una identidad ambigua también impide
+publicar benchmark para la ficha consultada. Ausencia/caducidad devuelve 404; fallo de datos, 503.
+
+El lanzamiento indexable es un catálogo fijo de **93 apartamentos de Montevideo**, tras revisar
+100 candidatos y descartar siete casos dudosos. Sólo esas keys, mientras sigan vigentes y
+calificadas, entran al sitemap español; las otras fichas útiles tienen noindex. EN/PT conservan
+UI traducida y canonical propia por idioma, con noindex por ahora. No se afirma que Google haya
+indexado estas páginas ni se agregan tres copias al sitemap. Se omite `lastmod` porque la última
+lectura/escritura no prueba un cambio de contenido. La lista no se rellena automáticamente.
+
+Ver [auditoría, umbrales, exclusiones y listado revisado](RENTAL_PAGES_AUDIT.md).
+
 Una fila por **propiedad**, no por aviso. El mismo apartamento publicado por dos inmobiliarias en
 InfoCasas y de nuevo en Mercado Libre es una sola tarjeta con tres enlaces.
 
@@ -75,6 +99,24 @@ Los gastos comunes explícitos de cero se conservan; en El País, por ser un cat
 además se exige la declaración «sin gastos comunes» para distinguirlos de un posible valor por
 defecto. Un importe sin moneda no adquiere la moneda del alquiler por suposición.
 
+### Candidatos revisados el 2026-09-05 (sin integrar)
+
+Comprobación local con la UA propia, peticiones ordinarias y separación entre lecturas. No se
+ejecutó una sincronización ni se escribió en MongoDB. Un `robots.txt` 404 indica que no se
+publicaron reglas allí; no demuestra un permiso contractual ni garantiza acceso desde el VPS.
+
+| candidato | evidencia pública | utilidad y condición pendiente |
+|---|---|---|
+| [BuscandoCasa](https://www.buscandocasa.com/) | Inicio, [40 apartamentos](https://www.buscandocasa.com/bc/0_promocion.asp?promo=1) y [40 casas](https://www.buscandocasa.com/bc/0_promocion.asp?promo=2): HTTP 200; robots 404. Las tarjetas incluyen referencia, operación, moneda, precio, ubicación, dormitorios, baños, superficie y una fecha. Una [ficha enlazada](https://885caa866.ver.uy/) respondió 200 y conserva referencia e inmobiliaria. | Candidato útil para investigar cobertura independiente. La página de apartamentos llega hasta septiembre de 2025 y la de casas hasta abril de 2026; sólo 7 de las 80 fechas son del 26 de agosto en adelante. La fecha de tarjeta no certifica disponibilidad. Antes de integrar: validar significado de esa fecha, circuito de bajas, paginación/búsqueda pública y aporte neto contra el índice; estos listados de últimos 40 sólo permitirían cobertura parcial. |
+| [Inmuebles.com.uy](https://www.inmuebles.com.uy/) | Inicio y [detalle 254656](https://www.inmuebles.com.uy/detalle.aspx?id=254656): HTTP 200; robots 404. El detalle enlaza fotos, «Nosotros» y marca de Casasweb; referencia 254656. Ofrece campos estructurados adicionales de baños, superficie y gastos. | Evidencia de catálogo compartido con Casasweb, no prueba de una fuente independiente. No añadir otra etiqueta de portal ni contar su espejo como aumento del índice. Explorar eventualmente esos metadatos bajo la fuente existente, verificando antes que los ceros y negativos no sean valores por defecto. |
+
+No se almacenan las descripciones ni se convierten sus afirmaciones comerciales en textos
+originales del sitio. La siguiente mejora útil de datos es conservar **por oferta** los campos
+estructurados de tipo, dormitorios, baños, superficie y ubicación, con su procedencia: hoy sólo
+queda el valor canónico de la propiedad y eso dificulta detectar contradicciones después de una
+unión. Requiere un contrato coordinado entre el escritor y la proyección pública; no se incorporó
+como parte de esta revisión de candidatos.
+
 ### La trampa de Mercado Libre
 
 La respuesta **recortada** del bridge (la que usa el directorio de sillas) deja afuera justo lo que
@@ -114,6 +156,37 @@ lea `attributes_list` (`"2 dormitorios | 1 baño | 40 m² cubiertos"`) y `locati
 
 Dormitorios y baños descalifican sólo cuando **los dos** avisos los publican: ausente no contradice
 nada, distinto sí. Y una casa nunca se une con un apartamento, por más que coincida todo lo demás.
+
+### Identidad y URLs de fichas (auditoría 2026-09-05)
+
+Una oferta conocida conserva la key guardada aunque se complete su dirección, cambien sus
+especificaciones o desaparezca el aviso canónico. Si dos grupos previos se unen, conserva la key
+que reúne más ofertas conocidas (empate lexicográfico); si un grupo se divide, sólo uno puede
+conservar su key. No hay colección de alias ni redirecciones históricas. `dropReassignedOffers`
+elimina una fila que queda sin ofertas y la poda borra filas después de 21 días sin verse; una URL
+extinguida debe responder 404, nunca redirigir a un inmueble parecido.
+
+La auditoría reprodujo una colisión que sí cambiaba el inmueble bajo una URL viva: dos unidades
+con igual dirección y superficie pero precios 32.000 y 55.000 se agrupaban correctamente por
+separado; el aviso nuevo, si ordenaba antes, calculaba y reclamaba la key del antiguo. Ahora se
+reservan todas las keys del historial antes de generar nuevas, incluidas las de propiedades que
+no aparecen en una corrida parcial. Sólo una oferta ya vinculada puede heredar su key; los
+sufijos también se comprueban contra las reservas. Un repost desconocido no demuestra identidad
+y puede recibir una URL nueva. Esto protege el historial conservado, no recupera identidades ya
+podadas ni garantiza permanencia tras una unión o división.
+
+Lectura agregada de producción a las 05:28:38 UTC: 25.011 identificadores de aviso distintos;
+411 figuraban en más de una propiedad almacenada y 293 en más de una propiedad visible bajo la
+regla pública de 10 días (máximo 5 dueños). Son duplicados residuales del almacenamiento, no un
+recuento de fuentes nuevas. Por eso una ficha indexable necesita evidencia consistente además
+de una key, y no se deben crear redirecciones por parecido de título o dirección.
+
+Al leer ese historial, la oferta se vincula a su observación más reciente (`offers.lastSeen`),
+no al último documento devuelto por MongoDB. En empate conserva la propiedad con `firstSeen`
+documentado más antiguo; si sigue el empate, decide la key. Las fechas faltantes o inválidas
+siguen siendo desconocidas, y la primera observación del aviso conserva la menor fecha válida
+entre sus copias. Esto hace la elección reproducible; no certifica que una unión histórica sea
+correcta ni sustituye la exclusión de duplicados del piloto indexable.
 
 ### Los tres falsos positivos que encontró la auditoría del 2026-09-03
 
@@ -170,8 +243,13 @@ Antes de comparar, todo pasa por `normalize.ts`:
 - Un barrio que repite el departamento (`Montevideo, Montevideo`) no es un barrio: dejarlo partía la
   misma oficina de 25 de Mayo 500 en dos filas.
 - Precios: **manda el último separador**. `$ 4.500` es 4500, nunca 4,50.
-- Se descartan ventas, "busco alquiler", alquileres por día/temporada y cualquier precio que no
+- Se descartan ventas, "busco alquiler", alquileres por día/temporada/invernales y cualquier precio que no
   pueda ser una mensualidad (`isPlausibleRent`: $3.000 a $900.000).
+- Un contrato invernal puede tener un precio mensual plausible. Se reconoce su declaración
+  explícita en el título y, para InfoCasas, también «alquiler invernal» en la descripción cuando
+  no se menciona una opción anual. «Jardín de invierno» o ropa de cama no son plazos. Una
+  descripción con opciones anual e invernal no prueba qué precio corresponde a cada una; no se
+  inventa esa atribución ni se copia el texto.
 
 Todo en pesos con **una sola** cotización por corrida (mediana de venta de las casas de cambio, ni
 BCU ni interbancario): dos harvesters con dos dólares distintos discreparían sobre el mismo aviso.
@@ -274,6 +352,33 @@ Las búsquedas con filtro y las páginas 2+ salen `noindex, follow`: las facetas
 millones de URLs y cada una es una copia delgada de la misma página.
 
 ## Probarlo
+
+### Experiencia de la ficha individual (2026-09-05)
+
+La tarjeta del directorio, el panel del mapa y el comparador de favoritos enlazan a
+`/alquileres/[key]`. La ficha se renderiza en el servidor y conserva un enlace de regreso a la
+búsqueda mediante `sessionStorage`, validado contra la ruta del directorio y sus filtros conocidos.
+Compartir copia una URL canónica sin esos parámetros. Los enlaces a los portales siguen disponibles.
+
+Cada oferta conserva su precio, gastos comunes, anunciante, condiciones y fechas. Cambiar de aviso
+actualiza el resumen, el contacto y el planificador sin mezclar alquiler y gastos de portales
+distintos. Las portadas se atribuyen a sus fuentes; si una falla se intenta la siguiente. La galería
+completa y el contacto pertenecen al portal original. Cuando hay contradicciones detectadas o una
+identidad compartida, la ficha lo advierte antes de presentar los datos.
+
+El planificador permite estimar servicios, gastos comunes ausentes, extras de entrada y presupuesto
+mensual en pesos. No presupone comisiones ni garantías obligatorias, no trata valores ausentes como
+cero y no guarda ni envía lo escrito. La lista para la visita permite marcar lo confirmado y copiar
+una consulta para pegar voluntariamente en el contacto del aviso; no envía mensajes. El contacto y
+el favorito permanecen visibles al pie en móvil. Hay traducciones de interfaz ES/EN/PT.
+
+Validación local: 5.258 pruebas de app aprobadas y ocho pruebas Mongo opcionales omitidas en la
+suite local; los pipelines nuevos además se ejecutaron contra Mongo real sin escrituras. Backend:
+1.526 aprobadas, una omitida. Revisión visual/interactiva en Chrome, 320/390/1440 px, claro/oscuro y
+tres idiomas: sin desbordamiento ni errores JS. Se probaron números editados, cambio de oferta,
+GC desconocidos, todas las fotos caídas, tasa ausente, regreso saneado y acciones táctiles de 44 px.
+Las pruebas E2E del directorio incorporan el recorrido hasta la ficha y de vuelta, así como el
+presupuesto y el contacto fijo móvil. La comprobación de producción se realiza tras el despliegue.
 
 ```bash
 npx ts-node scripts/oneoff/rentals_probe.ts   # lectura real: revisar los presupuestos antes de ejecutarlo

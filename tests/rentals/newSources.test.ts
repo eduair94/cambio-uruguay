@@ -119,6 +119,12 @@ describe("explicit InfoCasas search amenities", () => {
     expect(infoCasas({ ...base, commonExpenses: { amount: null } })).toMatchObject({ commonExpenses: null });
     expect(infoCasas({ ...base, commonExpenses: { amount: 4500 } })).toMatchObject({ commonExpenses: 4500, commonExpensesCurrency: null });
   });
+  it("rejects a winter-only contract hidden in a normal rental category", () => {
+    expect(infoCasas({ ...base, operation_type_id: 2, title: "Alquiler invernal en Punta del Este" })).toBeNull();
+    expect(infoCasas({ ...base, operation_type_id: 2, description: "Alquiler invernal de abril a noviembre." })).toBeNull();
+    expect(infoCasas({ ...base, operation_type_id: 2, title: "Alquiler anual", description: "Jardín de invierno." }))
+      .toMatchObject({ listingId: "infocasas:123", price: 25000 });
+  });
   it("does not merge otherwise matching units whose published parking counts conflict", () => {
     const raw = { ...infoCasas({ ...base, address: "18 de Julio 1500", bedrooms: 2, m2: 60 })!, priceUyu: 25000 };
     expect(sameUnit({ ...raw, parkingSpaces: 1 }, { ...raw, parkingSpaces: 2 })).toBe(false);

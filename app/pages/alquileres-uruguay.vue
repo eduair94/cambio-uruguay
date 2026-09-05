@@ -204,12 +204,12 @@ MOBILE: Results first; persistent thumb-reachable filters open a focused draft w
           <div v-if="view === 'lista' && !error" class="rentals-grid">
             <article v-for="(property, index) in items" :key="property.key" class="rental-card">
               <div class="rental-card__visual">
-                <a
-                  :href="displayOffer(property)?.url"
-                  target="_blank"
-                  rel="noopener noreferrer nofollow"
+                <NuxtLink
+                  :to="localePath(rentalPropertyPath(property.key))"
                   class="rental-card__media"
-                  :aria-label="`${t('open')}: ${property.title}`"
+                  :aria-label="`${t('detail')}: ${property.title}`"
+                  @pointerdown="rememberRentalSearch(route.fullPath)"
+                  @click="rememberRentalSearch(route.fullPath)"
                 >
                   <img
                     v-if="displayOffer(property)?.image && !failedImages.has(property.key)"
@@ -228,7 +228,7 @@ MOBILE: Results first; persistent thumb-reachable filters open a focused draft w
                   <span v-if="property.sources.length > 1" class="rental-card__badge">{{
                     t('portals', { n: property.sources.length })
                   }}</span>
-                </a>
+                </NuxtLink>
                 <VBtn
                   class="rental-card__save"
                   :icon="isFavorite(property.key) ? 'mdi-heart' : 'mdi-heart-outline'"
@@ -248,11 +248,11 @@ MOBILE: Results first; persistent thumb-reachable filters open a focused draft w
                   }}
                 </p>
                 <h3>
-                  <a
-                    :href="displayOffer(property)?.url"
-                    target="_blank"
-                    rel="noopener noreferrer nofollow"
-                    >{{ property.title }}</a
+                  <NuxtLink
+                    :to="localePath(rentalPropertyPath(property.key))"
+                    @pointerdown="rememberRentalSearch(route.fullPath)"
+                    @click="rememberRentalSearch(route.fullPath)"
+                    >{{ property.title }}</NuxtLink
                   >
                 </h3>
                 <p class="rental-card__specs">{{ specsLabel(property) }}</p>
@@ -397,6 +397,7 @@ import SearchFilters from '~/components/rentals/SearchFilters.vue'
 import SavedPanel from '~/components/rentals/SavedPanel.vue'
 import MapPropertyDetail from '~/components/rentals/MapPropertyDetail.vue'
 import { rentalMessages } from '~/utils/rentalMessages'
+import { rentalPropertyPath, rememberRentalSearch } from '~/utils/rentalPresentation'
 import {
   RENTAL_GUARANTEE_PUBLISHED,
   RENTAL_SOURCE_LABEL,
@@ -955,7 +956,7 @@ useHead(() => ({
               '@type': 'ListItem',
               position: (query.value.page - 1) * query.value.perPage + index + 1,
               name: property.title,
-              url: displayOffer(property)?.url,
+              url: `https://cambio-uruguay.com${localePath(rentalPropertyPath(property.key))}`,
             })),
           }).replace(/</g, '\\u003c'),
         },

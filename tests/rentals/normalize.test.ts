@@ -158,6 +158,21 @@ describe("looksLikeRentalAdvert", () => {
     expect(looksLikeRentalAdvert("Busco alquilar apartamento en Cordón")).toBe(false);
     expect(looksLikeRentalAdvert("Alquiler por día en Punta del Este")).toBe(false);
   });
+
+  it("excludes explicit winter-only contracts even when their monthly price is plausible", () => {
+    expect(looksLikeRentalAdvert("ALQUILER INVERNAL PUNTA DEL ESTE 2026")).toBe(false);
+    expect(looksLikeRentalAdvert("Apartamento en alquiler por invierno")).toBe(false);
+    expect(looksLikeRentalAdvert("Apartamento en alquiler", "Alquiler invernal de abril a noviembre: USD 750 mensuales.")).toBe(false);
+    expect(looksLikeRentalAdvert("Apartamento en alquiler", "<p>Alquiler&nbsp;<strong>invernal</strong> de abril a noviembre.</p>")).toBe(false);
+    expect(isPlausibleRent(750 * 40, "apartamento")).toBe(true);
+  });
+
+  it("does not confuse winter amenities or an available annual contract with winter-only rent", () => {
+    expect(looksLikeRentalAdvert("Alquiler anual con jardín de invierno")).toBe(true);
+    expect(looksLikeRentalAdvert("Casa en alquiler", "Ropa de cama para invierno y calefacción.")).toBe(true);
+    expect(looksLikeRentalAdvert("Apartamento en alquiler anual", "Alquiler invernal también disponible.")).toBe(true);
+    expect(looksLikeRentalAdvert("Apartamento en alquiler", "Alquiler anual USD 1.000. Alquiler invernal USD 750.")).toBe(true);
+  });
 });
 
 describe("isPlausibleRent", () => {
