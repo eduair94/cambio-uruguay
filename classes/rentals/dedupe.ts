@@ -6,9 +6,9 @@
 // eight-flat building has eight adverts at the same street number, and merging them hides seven
 // real options behind one card.
 //
-// Evidence must identify a UNIT: exact published address + matching explicit unit, or exact
-// original photo + specific identical title + complete matching specifications at that address.
-// Barrio, coordinates, asking price and a building's floor plan cannot establish identity.
+// Evidence must identify a UNIT: exact published address + matching explicit unit.
+// Different units can share the original photo, specific title and every physical attribute;
+// none of those signals, nor barrio, coordinates or asking price, establishes unit identity.
 import { flatten, slugify } from "./normalize";
 import { mergeGuarantees } from "./guarantees";
 import {
@@ -17,7 +17,6 @@ import {
   matchText,
   rentalMatchHasConflicts,
   rentalUnitEvidence,
-  sharesSpecificPhotoAndTitle,
   type RentalMatchCandidate,
 } from "./matchEvidence";
 import type { RawRental, RentalOffer, RentalProperty, RentalSource } from "./types";
@@ -121,10 +120,8 @@ export function sameUnit(a: RentalMatchCandidate, b: RentalMatchCandidate): bool
       unitsA.buildings.length === unitsB.buildings.length && (knowsBedrooms || knowsBathrooms || knowsArea)
     );
   }
-  // The same model/facade photo or a generic agency title is not enough, even at one address.
-  return (
-    knowsBedrooms && knowsBathrooms && knowsArea && areaRatio! >= 0.98 && sharesSpecificPhotoAndTitle(a, b)
-  );
+  // Even an original photo and specific identical title may describe several units in one complex.
+  return false;
 }
 
 function completeness(listing: Candidate): number {

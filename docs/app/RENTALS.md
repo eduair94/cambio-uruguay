@@ -178,17 +178,24 @@ lea `attributes_list` (`"2 dormitorios | 1 baño | 40 m² cubiertos"`) y `locati
 
 | vía de unión | evidencia exigida | límites |
 |---|---|---|
-| unidad identificada | misma dirección exacta e identificador explícito de apartamento/unidad, con al menos dormitorios, baños o superficie publicados por ambos | torre, piso, orientación y demás identificadores publicados no pueden contradecirse; una torre indicada en un solo aviso no identifica la unidad del otro |
-| evidencia documental compartida | misma dirección exacta, misma URL de foto original y título específico coincidente; dormitorios, baños y superficie conocidos en ambos | una foto genérica o de agencia y un título de plantilla no bastan; superficie con razón mínimo/máximo ≥0,98 |
-| sin unión | falta cualquiera de las vías anteriores | barrio, coordenadas, precio parecido o distribución de un edificio no identifican por sí solos una vivienda |
+| unidad identificada: única vía de unión entre avisos | misma dirección exacta y el mismo identificador explícito de apartamento/unidad, con al menos dormitorios, baños o superficie publicados por ambos | torre, piso, orientación y demás identificadores publicados no pueden contradecirse; una torre indicada en un solo aviso no identifica la unidad del otro |
+| sin unión | falta la dirección exacta, el identificador explícito de unidad o la compatibilidad exigida | barrio, coordenadas, precio, foto compartida, título o distribución de un edificio no identifican por sí solos una vivienda |
 
-En ambas vías se rechazan contradicciones de tipo, dormitorios, baños, garaje, barrio publicado
+Se rechazan contradicciones de tipo, dormitorios, baños, garaje, barrio publicado
 o identificadores de unidad, incluso entre el título y los campos estructurados de un aviso.
 Se exige razón de precios mínimo/máximo ≥0,93 y de superficies ≥0,95 cuando ambas existen;
 estas tolerancias sólo descartan incompatibilidades, **no son prueba de identidad**. Rangos,
 esquinas y direcciones aproximadas no cuentan como dirección exacta. Todos los pares del grupo
 deben cumplir las reglas: un aviso intermedio no une dos unidades incompatibles. Los avisos sin
 dirección suficiente permanecen separados, también en Marketplace.
+
+La vía alternativa de foto original, título específico, dirección y atributos completos se
+retiró tras revisar manualmente dos apartamentos de **San Luis**: eran el segundo y el cuarto
+de un conjunto de cuatro, pero reutilizaban fotos y texto. Incluso esa combinación podía unir
+unidades distintas. Ahora la identificación explícita de la unidad es obligatoria para unir
+avisos diferentes. Es una limitación deliberada: una vivienda realmente repetida puede quedar
+en varias tarjetas cuando faltan pruebas; no se oculta una oferta ni se le prestan datos de
+otra para aparentar una coincidencia.
 
 Cada lectura nueva guarda `RentalOffer.identity.version: 1` con los datos físicos originales de
 esa oferta: tipo, departamento, barrio, dirección/calle/número, dormitorios, baños, superficie y
@@ -213,12 +220,32 @@ presentación para no conservar el título o la dirección de una oferta retirad
 por ausencia requiere una fuente exitosa con `complete: true` **y modo full**; la poda histórica
 de propiedades a 21 días sigue siendo una operación separada, sólo del barrido completo.
 
-**Estado operativo al documentar este cambio:** la reparación histórica seleccionada todavía
-no se ejecutó. Las reglas y pruebas nuevas no demuestran por sí solas que todas las filas
-almacenadas hayan quedado corregidas. Se requiere respaldo, plan revisable y comprobación
-posterior de avisos, fechas y URLs antes de afirmar ese resultado.
-La suite raíz local del cambio actual aprobó **1.671 pruebas**; ese resultado valida el código,
-no representa una reparación aplicada en producción.
+### Reparación aplicada el 2026-09-05 y cierre pendiente
+
+La operación usó como base la captura fechada el **2026-09-05 a las 07:19:18 UTC**, con
+**14.583 lecturas de cuatro fuentes**. El País no aportó lecturas ni se importaron sus muestras.
+Se conservaron respaldos y manifiestos de auditoría antes de las escrituras; los artefactos
+operativos de datos permanecen fuera de los archivos públicos del repositorio.
+
+Los controles posteriores a las etapas ya aplicadas registraron **25.050 identificadores de
+aviso conservados** y **cero identificadores repetidos en varias propiedades**. La reparación
+seleccionada inicial separó **9 pares incorrectos en 7 grupos**; posteriormente se separaron
+**923 agrupaciones legacy con varias ofertas**, sin atribuir a sus avisos la ubicación de otra
+unidad. La investigación original y los criterios de revisión están en la
+[auditoría de agrupaciones](../research/rental-matches-2026-09-05.md).
+
+Estos son controles de conservación de avisos y pertenencia al índice, no una afirmación de
+que cada vivienda del mercado esté incluida ni de que nunca haya dos tarjetas para el mismo
+inmueble. La separación conserva las fechas reales de observación y publicación: no crea
+anuncios nuevos ni refresca artificialmente los que no se volvieron a leer.
+
+**Pendiente de cierre:** el par de San Luis motivó retirar la vía de coincidencia por foto y
+texto. Su corrección final y la verificación posterior quedan pendientes del informe operativo
+final; no se suman todavía al recuento de pares reparados. Las cifras anteriores no deben
+presentarse como el resultado final de esa última aplicación.
+
+La suite raíz local de la etapa anterior aprobó **1.671 pruebas**. Es un resultado fechado de
+validación del código, distinto de los controles de datos aplicados y del cierre aún pendiente.
 
 ### Identidad y URLs de fichas (auditoría 2026-09-05)
 

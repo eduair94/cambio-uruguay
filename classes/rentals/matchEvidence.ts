@@ -193,34 +193,3 @@ export function rentalMatchHasConflicts(...listings: RentalMatchCandidate[]): bo
   }
   return allBedrooms.size > 1 || allBathrooms.size > 1;
 }
-
-/** Exact original photo plus specific text; neither similarity nor generic agency templates. */
-export function sharesSpecificPhotoAndTitle(a: RentalMatchCandidate, b: RentalMatchCandidate): boolean {
-  if (!a.image || a.image !== b.image) return false;
-  try {
-    const url = new URL(a.image);
-    if (!/^https?:$/.test(url.protocol) || url.username || url.password) return false;
-    if (/logo|placeholder|no[-_]?image|no[-_]?photo|sin[-_]?foto|default|avatar/i.test(url.pathname))
-      return false;
-  } catch {
-    return false;
-  }
-  const title = matchText(a.title)
-    .replace(/[.,;:!¿?¡]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-  const other = matchText(b.title)
-    .replace(/[.,;:!¿?¡]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-  if (title !== other || title.length < 45 || title.split(" ").length < 8) return false;
-  const generic = new Set(
-    "alquiler alquilo de en con y a el la los las un una apartamento apto dormitorios dormitorio dorm banos bano ambientes ambiente monoambiente casa oficina local m2 metros cuadrados montevideo uruguay excelente hermoso luminoso venta".split(
-      " ",
-    ),
-  );
-  const specific = new Set(
-    title.split(" ").filter((word) => word.length > 2 && !generic.has(word) && !/^\d+$/.test(word)),
-  );
-  return specific.size >= 3;
-}

@@ -575,9 +575,45 @@ describe("conservative unit evidence", () => {
     image: "https://pictures.example.uy/original/rizal-living-1487.jpg",
     title: "Apartamento 2 dormitorios en Rizal con estufa a leña y terraza orientada al norte",
   };
-  it("accepts a second proof path with exact original photo, specific title, address and complete specs", () => {
+  it("refuses shared original photo, specific title, address and complete specs without a unit identifier", () => {
     expect(matches(photoEvidence, { ...photoEvidence, source: "mercadolibre", price: 32500, area: 61 })).toBe(
-      true,
+      false,
+    );
+  });
+
+  it("still joins a coherently identified unit when the two adverts publish different photos", () => {
+    expect(
+      matches(
+        { ...photoEvidence, address: "Rizal 3715 apto 301" },
+        { ...photoEvidence, address: "Rizal 3715 unidad 301", source: "mercadolibre", image: null },
+      ),
+    ).toBe(true);
+  });
+
+  it("keeps the San Luis complex adverts separate when distinct units reuse a photo and title", () => {
+    // The audited adverts identify the second and fourth of four apartments only in their
+    // descriptions. Their shared photo/title/address/specs cannot substitute for a unit ID.
+    const shared: Partial<RawRental> = {
+      department: "Canelones",
+      neighborhood: "San Luis",
+      address: "Rincón 1900",
+      street: "rincon",
+      streetNumber: "1900",
+      title: "Apartamento de 1 dormitorio en San Luis con patio privado cerca de la playa",
+      image: "https://pictures.example.uy/original/san-luis-complex.jpg",
+      bedrooms: 1,
+      bathrooms: 1,
+      area: 30,
+    };
+    const second = listing({ ...shared, listingId: "infocasas:194165703", price: 15900 });
+    const fourth = listing({ ...shared, listingId: "infocasas:194171253", price: 17000 });
+    expect(matches(second, fourth)).toBe(false);
+    expect(matches(fourth, second)).toBe(false);
+    const properties = buildRentalProperties([second, fourth], context);
+    expect(properties).toHaveLength(2);
+    expect(properties.every((property) => property.offers.length === 1)).toBe(true);
+    expect(properties.flatMap((property) => property.offers.map((offer) => offer.listingId)).sort()).toEqual(
+      [second.listingId, fourth.listingId].sort(),
     );
   });
 
@@ -588,11 +624,11 @@ describe("conservative unit evidence", () => {
     { bedrooms: null },
     { bathrooms: null },
     { area: null },
-  ])("does not replace missing photo-path evidence with similarity: %j", (missing) => {
+  ])("does not infer a unit identifier from shared media or incomplete attributes: %j", (missing) => {
     expect(matches({ ...photoEvidence, ...missing }, { ...photoEvidence, ...missing })).toBe(false);
   });
 
-  it("requires exact photo identity rather than similar URLs or identical image basenames", () => {
+  it("does not infer a unit identifier from similar photo URLs or identical image basenames", () => {
     expect(
       matches(photoEvidence, {
         ...photoEvidence,
@@ -604,7 +640,7 @@ describe("conservative unit evidence", () => {
     );
   });
 
-  it("does not allow the photo path to override a conflicting published unit", () => {
+  it("does not allow a shared photo to override a conflicting published unit", () => {
     expect(
       matches(
         { ...photoEvidence, address: "Rizal 3715 apto 301" },
