@@ -184,6 +184,27 @@ describe("partitionRentalOffers", () => {
 });
 
 describe("propertyFromRentalOffers", () => {
+  it.each([undefined, null, "anda", { anda: true }])(
+    "handles non-array legacy guarantees without modifying the original offer: %j",
+    (guarantees) => {
+      const input = legacy({ guarantees: guarantees as RentalOffer["guarantees"] });
+      const before = structuredClone(input);
+      const property = propertyFromRentalOffers("legacy-guarantees", [input], 40);
+      expect(property.guarantees).toEqual([]);
+      expect(property.offers[0]!.guarantees).toEqual(guarantees);
+      expect(property.offers[0]!.identity).toBeUndefined();
+      expect(input).toEqual(before);
+    },
+  );
+
+  it("keeps only known guarantee vocabulary in the derived property while retaining the original array", () => {
+    const guarantees = ["anda", "unknown-guarantee", null, "anda"] as RentalOffer["guarantees"];
+    const input = legacy({ guarantees });
+    const property = propertyFromRentalOffers("legacy-guarantees", [input], 40);
+    expect(property.guarantees).toEqual(["anda"]);
+    expect(property.offers[0]!.guarantees).toEqual(guarantees);
+  });
+
   it("rebuilds physical attributes from real per-offer facts and re-expresses all rents uniformly", () => {
     const pesos = offer({ price: 33000, priceUyu: 99999 });
     const dollars = offer({

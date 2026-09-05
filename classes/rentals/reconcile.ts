@@ -244,7 +244,9 @@ export function propertyFromRentalOffers(
     parkingSpaces: current.find((offer) => offer.parkingSpaces != null)?.parkingSpaces ?? null,
     furnished: current.some((offer) => offer.furnished === true) ? true : null,
     petsAllowed: current.some((offer) => offer.petsAllowed === true) ? true : null,
-    guarantees: mergeGuarantees(current.map((offer) => offer.guarantees)),
+    guarantees: mergeGuarantees(
+      current.map((offer) => (Array.isArray(offer.guarantees) ? offer.guarantees : [])),
+    ),
     priceUyu: cheapest.priceUyu,
     price: cheapest.price,
     currency: cheapest.currency,
