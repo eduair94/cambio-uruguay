@@ -216,8 +216,45 @@ async function expectMobileChipTargets(buttons: Locator, width: number) {
 }
 
 async function expectInputLabelClear(input: Locator) {
-  const geometry = await input.evaluate(element => {
+  const { geometry, animationFrames } = await input.evaluate(async element => {
     const input = element as HTMLInputElement
+    const fieldLabels = [...input.closest('.v-field')!.querySelectorAll('label')]
+    const visibleLabels = () =>
+      fieldLabels.flatMap(label => {
+        const style = getComputedStyle(label)
+        if (style.visibility !== 'visible' || Number(style.opacity) === 0) return []
+        const range = document.createRange()
+        range.selectNodeContents(label)
+        return [
+          {
+            text: label.textContent,
+            fragments: [...range.getClientRects()]
+              .filter(rect => rect.width && rect.height)
+              .map(({ left, right, top, bottom }) => ({ left, right, top, bottom })),
+          },
+        ]
+      })
+    const nextFrame = () => new Promise<void>(resolve => requestAnimationFrame(() => resolve()))
+    const animationFrames = [visibleLabels()]
+    // Vuetify starts its floating-label animation in requestAnimationFrame. Capture every
+    // visible state, including the original label, then wait for the native motion to finish.
+    await nextFrame()
+    const animations = fieldLabels
+      .flatMap(label => label.getAnimations())
+      .filter(animation => Number.isFinite(animation.effect?.getComputedTiming().endTime))
+    let animating = animations.length > 0
+    const finished = Promise.allSettled(animations.map(animation => animation.finished)).then(
+      () => {
+        animating = false
+      }
+    )
+    while (animating) {
+      animationFrames.push(visibleLabels())
+      await nextFrame()
+    }
+    await finished
+    const labels = visibleLabels()
+    animationFrames.push(labels)
     const box = input.getBoundingClientRect()
     const style = getComputedStyle(input)
     const context = document.createElement('canvas').getContext('2d')!
@@ -229,17 +266,21 @@ async function expectInputLabelClear(input: Locator) {
       top: box.top + Number.parseFloat(style.paddingTop),
       bottom: box.bottom - Number.parseFloat(style.paddingBottom),
     }
-    const labels = [...input.closest('.v-field')!.querySelectorAll('label')].flatMap(label => {
-      const labelStyle = getComputedStyle(label)
-      if (labelStyle.visibility !== 'visible' || Number(labelStyle.opacity) === 0) return []
-      const range = document.createRange()
-      range.selectNodeContents(label)
-      return [...range.getClientRects()]
-        .filter(rect => rect.width && rect.height)
-        .map(({ left, right, top, bottom }) => ({ left, right, top, bottom }))
-    })
-    return { valueLine, labels }
+    return {
+      geometry: { valueLine, labels: labels.flatMap(label => label.fragments) },
+      animationFrames,
+    }
   })
+  for (const labels of animationFrames) {
+    expect(labels.length, 'A field label must remain visible during its animation').toBeGreaterThan(
+      0
+    )
+    for (const label of labels) {
+      // A clipped label can expose multiple Range fragments on the same line in Chromium.
+      const lines = new Set(label.fragments.map(({ top, bottom }) => `${top}:${bottom}`))
+      expect(lines.size, `The visible field label wraps: ${JSON.stringify(label)}`).toBe(1)
+    }
+  }
   expect(geometry.labels.length).toBeGreaterThan(0)
   for (const label of geometry.labels) {
     const overlaps =
@@ -638,8 +679,7 @@ test.describe('rental directory', () => {
       await budget.focus()
       await page.setViewportSize({ width, height: 360 })
       await budget.fill('25000')
-      // Check the currently visible label too: its animation must not wrap a second line over
-      // the value before the final floating label takes over.
+      // A label must stay on one line during its native animation, then settle clear of the value.
       await expectInputLabelClear(budget)
       await expectInsideViewport(budget, page)
       await expectInsideViewport(apply, page)
