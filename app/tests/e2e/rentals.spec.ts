@@ -159,9 +159,7 @@ async function openMobileFilters(page: Page) {
 }
 
 async function submitFilters(page: Page) {
-  if ((page.viewportSize()?.width ?? 1440) < 600)
-    await page.getByTestId('rental-filters-apply').click()
-  else await page.locator('.rental-search__submit').click()
+  await page.getByTestId('rental-filters-apply').click()
 }
 
 async function expectInsideViewport(locator: Locator, page: Page) {
@@ -182,12 +180,8 @@ async function expectInsideViewport(locator: Locator, page: Page) {
 }
 
 async function openAdvanced(page: Page) {
-  if ((page.viewportSize()?.width ?? 1440) < 600) await openMobileFilters(page)
-  await expect(async () => {
-    if (!(await page.locator('#rental-advanced').isVisible()))
-      await page.getByRole('button', { name: 'Más filtros', exact: true }).click()
-    await expect(page.locator('#rental-advanced')).toBeVisible({ timeout: 1000 })
-  }).toPass({ timeout: 90_000, intervals: [250, 500, 1000] })
+  if ((page.viewportSize()?.width ?? 1440) < 960) await openMobileFilters(page)
+  await expect(page.locator('#rental-advanced')).toBeVisible({ timeout: 90_000 })
 }
 
 async function expectMobileChipTargets(buttons: Locator, width: number) {
@@ -299,11 +293,16 @@ async function startFixtureSearch(page: Page, expectedCount = 3) {
   // The initial SSR fetch runs outside the browser interception. Submitting page 2 as page 1
   // changes the route and loads our fixture through the real hydrated form and client fetch.
   await page.goto('/alquileres-uruguay?page=2', { waitUntil: 'domcontentloaded' })
-  await openAdvanced(page)
-  await submitFilters(page)
-  await expect(page.locator('.rental-card')).toHaveCount(expectedCount)
-  await expect(page).toHaveURL(/\/alquileres-uruguay$/)
-  if ((page.viewportSize()?.width ?? 1440) < 600) {
+  await expect(async () => {
+    // The sidebar renders its fields in SSR too; a visible form alone does not prove hydration.
+    if (new URL(page.url()).searchParams.has('page')) {
+      await openAdvanced(page)
+      await submitFilters(page)
+    }
+    await expect(page.locator('.rental-card')).toHaveCount(expectedCount, { timeout: 1000 })
+    await expect(page).toHaveURL(/\/alquileres-uruguay$/, { timeout: 1000 })
+  }).toPass({ timeout: 90_000, intervals: [250, 500, 1000] })
+  if ((page.viewportSize()?.width ?? 1440) < 960) {
     await expect(page.getByTestId('rental-mobile-filters-dialog')).not.toBeVisible()
     await expect(page.locator('#rental-results')).toBeFocused()
   }
@@ -313,7 +312,7 @@ async function applyBudget(page: Page, value: string) {
   await page
     .getByRole('spinbutton', { name: 'Presupuesto mensual máximo ($)', exact: true })
     .fill(value)
-  await page.locator('.rental-search__submit').click()
+  await submitFilters(page)
   await expect(page).toHaveURL(new RegExp(`monthlyMax=${value}`))
 }
 
@@ -385,7 +384,11 @@ test.describe('rental directory', () => {
       listRequests.get(page)!.push(url)
       const response = fixtureResponse(
         url,
-        testInfo.title.startsWith('opens mobile filters') ? 4 : 1
+        testInfo.title.startsWith('applies monthly cost')
+          ? 8
+          : testInfo.title.startsWith('opens mobile filters')
+            ? 4
+            : 1
       )
       // The mobile case also exercises navigation across many result pages.
       if (testInfo.title.startsWith('keeps mobile')) {
@@ -452,32 +455,67 @@ test.describe('rental directory', () => {
   test('applies monthly cost from one offer and restores filters on browser Back', async ({
     page,
   }) => {
-    await startFixtureSearch(page)
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await startFixtureSearch(page, 24)
+    const sidebar = page.locator('aside.rentals-sidebar')
+    const results = page.locator('#rental-results')
+    await expect(sidebar).toBeVisible()
+    await expect
+      .poll(async () => {
+        const left = await sidebar.boundingBox()
+        const right = await results.boundingBox()
+        return !!left && !!right && left.x + left.width < right.x
+      })
+      .toBe(true)
+    const deepCard = page.locator('.rental-card').nth(15)
+    await deepCard.scrollIntoViewIfNeeded()
+    await deepCard.locator('.rental-card__media').click({ trial: true })
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(1800)
+    const resultScroll = await page.evaluate(() => window.scrollY)
+    const apply = sidebar.getByTestId('rental-filters-apply')
+    const reset = sidebar.getByTestId('rental-filters-reset')
+    await expectInsideViewport(apply, page)
+    await expectInsideViewport(reset, page)
+    const filterScroll = sidebar.locator('.rental-search__scroll')
+    await filterScroll.evaluate(element => {
+      element.scrollTop = element.scrollHeight
+    })
+    await expect.poll(() => filterScroll.evaluate(element => element.scrollTop)).toBeGreaterThan(0)
+    await expectInsideViewport(apply, page)
+    await expectInsideViewport(reset, page)
     const neighborhoods = page.getByRole('textbox', { name: 'Barrios o localidades', exact: true })
+    await neighborhoods.scrollIntoViewIfNeeded()
+    await expectInsideViewport(neighborhoods, page)
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeCloseTo(resultScroll, 0)
     await neighborhoods.fill('cordon')
     await page.getByRole('option', { name: 'Cordón', exact: true }).click()
     await page.keyboard.press('Escape')
     await expect(page.locator('.rental-search .v-chip')).toContainText(['Cordón'])
-    await page
-      .locator('.rental-search')
-      .getByRole('button', { name: 'Limpiar filtros', exact: true })
-      .click()
+    await page.getByTestId('rental-filters-reset').click()
     await expect(page.locator('.rental-search .v-chip')).toHaveCount(0)
+    await expect(results).toBeFocused()
+    await deepCard.scrollIntoViewIfNeeded()
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(1800)
     await applyBudget(page, '25000')
-    await expect(page.locator('.rental-card')).toHaveCount(2)
+    await expect(page.locator('.rental-card')).toHaveCount(16)
+    await expect(results).toBeFocused()
+    await expectInsideViewport(results.getByRole('heading', { level: 2 }), page)
     await expect(page.getByRole('heading', { name: fixtureProperties[1].title })).toHaveCount(0)
-    const multiple = page.locator('.rental-card').filter({ hasText: fixtureProperties[2].title })
+    const multiple = page
+      .locator('.rental-card')
+      .filter({ hasText: fixtureProperties[2].title })
+      .first()
     await expect(multiple.locator('.rental-card__price')).toContainText('$ 22.000')
     await expect(multiple.locator('.rental-card__total')).toContainText('$ 23.000')
     await expect(multiple.locator('.rental-card__expenses')).toContainText('$ 1.000')
 
     await page.getByRole('checkbox', { name: 'Admite mascotas', exact: true }).check()
-    await page.locator('.rental-search__submit').click()
+    await submitFilters(page)
     await expect(page).toHaveURL(/pets=1/)
-    await expect(page.locator('.rental-card')).toHaveCount(1)
+    await expect(page.locator('.rental-card')).toHaveCount(8)
     await page.goBack()
     await expect(page).toHaveURL(/monthlyMax=25000$/)
-    await expect(page.locator('.rental-card')).toHaveCount(2)
+    await expect(page.locator('.rental-card')).toHaveCount(16)
     await expect(
       page.getByRole('checkbox', { name: 'Admite mascotas', exact: true })
     ).not.toBeChecked()
@@ -490,14 +528,11 @@ test.describe('rental directory', () => {
     await startFixtureSearch(page)
     await page.getByRole('spinbutton', { name: 'Alquiler desde ($)', exact: true }).fill('40000')
     await page.getByRole('spinbutton', { name: 'Alquiler hasta ($)', exact: true }).fill('20000')
-    await page.locator('.rental-search__submit').click()
+    await submitFilters(page)
     await expect(
       page.getByRole('alert').filter({ hasText: 'El mínimo no puede ser mayor que el máximo.' })
     ).toBeVisible()
-    await page
-      .locator('.rental-search')
-      .getByRole('button', { name: 'Limpiar filtros', exact: true })
-      .click()
+    await page.getByTestId('rental-filters-reset').click()
     await expect(
       page.getByRole('spinbutton', { name: 'Alquiler desde ($)', exact: true })
     ).toHaveValue('')
@@ -516,7 +551,6 @@ test.describe('rental directory', () => {
     test.setTimeout(300_000)
     await page.setViewportSize({ width: 1440, height: 1000 })
     await startFixtureSearch(page)
-    await page.getByRole('button', { name: 'Menos filtros', exact: true }).click()
     await page.screenshot({ path: resolve('..', 'rentals-e2e-desktop.png') })
     for (const item of fixtureProperties.slice(0, 2)) {
       await page

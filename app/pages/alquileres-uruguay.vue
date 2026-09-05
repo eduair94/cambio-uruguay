@@ -2,299 +2,309 @@
 THESIS: Find a viable home across portals by location, conditions and actual monthly cost.
 OWN-WORLD: Extend Cambio Uruguay's navy/paper surfaces, Open Sans and blue actions.
 STORY: Narrow the search, compare costs, save candidates, contact the original publisher.
-FIRST VIEWPORT: Compact heading, location and monthly budget, explicit search, then results.
-FORM: Familiar rental catalogue; progressive filters and a personal comparison shortlist.
+FIRST VIEWPORT: Persistent filters beside the heading and results; location and budget lead.
+FORM: Rental catalogue with a left filter sidebar and a personal comparison shortlist.
 MOBILE: Results first; persistent thumb-reachable filters open a focused draft with fixed actions.
 -->
 <template>
   <VContainer class="rentals pt-1 pt-sm-4" :class="{ 'rentals--mobile': smAndDown }">
     <VBreadcrumbs :items="breadcrumbs" density="compact" class="px-0 py-1" />
-    <header class="rentals-head">
-      <h1>{{ t('title') }}</h1>
-      <p class="rentals-lead">{{ t('subtitle') }}</p>
-      <div class="rentals-provenance">
-        <span v-if="activeSourceLabels">{{ activeSourceLabels }}</span>
-        <span v-if="meta?.generatedAt">{{ t('date', { date: dateLabel(meta.generatedAt) }) }}</span>
-        <a href="#rental-coverage">{{ t('coverage') }}</a>
-      </div>
-      <VAlert v-if="downSources.length" type="warning" variant="tonal" class="mt-3">{{
-        t('sourceWarning', {
-          sources: downSources.map(source => sourceLabel(source.key)).join(', '),
-        })
-      }}</VAlert>
-    </header>
-    <SearchFilters
-      v-model:open="mobileFiltersOpen"
-      :mobile="smAndDown"
-      :query="query"
-      :departments="data?.facets.departments ?? []"
-      :neighborhoods="neighborhoodFacets"
-      :pending="pending"
-      @search="search"
-      @clear="clearFilters"
-      @department="loadNeighborhoods"
-      @closed="restoreFilterContext"
-    />
-    <div v-if="smAndDown" class="rentals-mobile-bar">
-      <VBtn
-        color="primary"
-        size="large"
-        prepend-icon="mdi-tune-variant"
-        aria-haspopup="dialog"
-        aria-controls="rental-mobile-filters-dialog"
-        :aria-expanded="mobileFiltersOpen"
-        data-testid="rental-mobile-filters-trigger"
-        @click="openMobileFilters"
-        >{{ t('mobileFilters')
-        }}<span v-if="filterChips.length"> ({{ filterChips.length }})</span></VBtn
-      >
-    </div>
-    <div v-if="filterChips.length" class="rentals-chips" :aria-label="t('activeFilters')">
-      <VChip
-        v-for="chip in filterChips"
-        :key="chip.key"
-        closable
-        variant="tonal"
-        color="primary"
-        :close-label="t('remove', { name: chip.label })"
-        @click:close="removeFilter(chip.keys)"
-        >{{ chip.label }}</VChip
-      >
-      <VBtn variant="text" size="small" @click="clearFilters">{{ t('reset') }}</VBtn>
-    </div>
-    <div class="rentals-tools">
-      <VBtn variant="text" prepend-icon="mdi-bookmark-plus-outline" @click="saveSearch">{{
-        t('saveSearch')
-      }}</VBtn>
-      <VBtn
-        variant="text"
-        prepend-icon="mdi-heart-outline"
-        :aria-expanded="showSaved"
-        aria-controls="rental-saved"
-        @click="showSaved = !showSaved"
-        >{{ t('saved') }} ({{ saved.favorites.length + saved.searches.length }})</VBtn
-      >
-      <VBtn variant="text" prepend-icon="mdi-share-variant-outline" @click="shareSearch">{{
-        t('share')
-      }}</VBtn>
-    </div>
-    <div v-if="showSaved" id="rental-saved" class="mb-6">
-      <SavedPanel
-        :state="saved"
-        :usd-uyu="usdUyu"
-        @open-search="openSavedSearch"
-        @remove-search="removeSearch"
-        @remove-favorite="removeFavorite"
-      />
-    </div>
-    <section
-      id="rental-results"
-      class="rentals-results"
-      :aria-busy="pending"
-      tabindex="-1"
-      :aria-label="t('searchResults')"
-    >
-      <div class="rentals-toolbar">
-        <div class="rentals-summary" role="status" aria-live="polite">
-          <h2>{{ pending ? t('searching') : t('results', { n: numberFormat(total) }) }}</h2>
-          <p v-if="medianUyu && !pending">
-            {{ t('typical', { price: `$ ${numberFormat(medianUyu)}` }) }}
-          </p>
-        </div>
-        <VSelect
-          :model-value="query.sort"
-          :items="sortItems"
-          :label="t('sort')"
-          variant="outlined"
-          density="compact"
-          hide-details
-          class="rentals-sort"
-          @update:model-value="changeSort"
-        />
-        <VBtnToggle
-          :model-value="view"
-          mandatory
-          variant="outlined"
-          density="comfortable"
-          divided
-          @update:model-value="changeView"
-          ><VBtn value="lista" prepend-icon="mdi-view-grid-outline">{{ t('list') }}</VBtn
-          ><VBtn value="mapa" prepend-icon="mdi-map-marker-outline">{{
-            t('map')
-          }}</VBtn></VBtnToggle
-        >
-      </div>
-      <VProgressLinear v-if="pending" indeterminate color="primary" class="mb-4" />
-      <VAlert v-if="error" type="error" variant="tonal" class="mb-5" role="alert">
-        {{ t('error') }}
-        <VBtn variant="text" @click="refresh()">{{ t('retry') }}</VBtn>
-      </VAlert>
-      <section v-if="view === 'mapa'" class="rentals-map mb-6" :aria-label="t('map')">
-        <VProgressLinear v-if="mapPending" indeterminate color="primary" class="mb-2" />
-        <VAlert v-if="mapError" type="error" variant="tonal" class="mb-3">
-          {{ t('error') }}
-          <VBtn variant="text" @click="loadMap()">{{ t('retry') }}</VBtn>
-        </VAlert>
-        <p v-if="mapData" class="rentals-map__coverage">
-          {{
-            t('mapCoverage', {
-              located: numberFormat(mapData.located),
-              total: numberFormat(mapData.total),
-            })
-          }}
-          <span v-if="mapData.shown < mapData.located">{{
-            t('mapLimit', { n: numberFormat(mapData.shown) })
+    <div class="rentals-workspace">
+      <header class="rentals-head">
+        <h1>{{ t('title') }}</h1>
+        <p class="rentals-lead">{{ t('subtitle') }}</p>
+        <div class="rentals-provenance">
+          <span v-if="activeSourceLabels">{{ activeSourceLabels }}</span>
+          <span v-if="meta?.generatedAt">{{
+            t('date', { date: dateLabel(meta.generatedAt) })
           }}</span>
-        </p>
-        <ClientOnly>
-          <LocationsMap
-            v-if="mapMarkers.length && !mapError"
-            :branches="mapMarkers"
-            :popup-for="rentalPopup"
-            :user-location="sedeCentro"
-            :radius-km="sedeCentro ? query.radioKm : 0"
-            :fit-to-markers="true"
-            height="65vh"
-            :directions-label="t('open')"
+          <a href="#rental-coverage">{{ t('coverage') }}</a>
+        </div>
+        <VAlert v-if="downSources.length" type="warning" variant="tonal" class="mt-3">{{
+          t('sourceWarning', {
+            sources: downSources.map(source => sourceLabel(source.key)).join(', '),
+          })
+        }}</VAlert>
+      </header>
+      <aside class="rentals-sidebar" :aria-label="t('mobileFilters')">
+        <SearchFilters
+          v-model:open="mobileFiltersOpen"
+          :mobile="smAndDown"
+          :query="query"
+          :departments="data?.facets.departments ?? []"
+          :neighborhoods="neighborhoodFacets"
+          :pending="pending"
+          @search="search"
+          @clear="clearFilters"
+          @department="loadNeighborhoods"
+          @closed="restoreFilterContext"
+        />
+      </aside>
+      <div class="rentals-content">
+        <div v-if="smAndDown" class="rentals-mobile-bar">
+          <VBtn
+            color="primary"
+            size="large"
+            prepend-icon="mdi-tune-variant"
+            aria-haspopup="dialog"
+            aria-controls="rental-mobile-filters-dialog"
+            :aria-expanded="mobileFiltersOpen"
+            data-testid="rental-mobile-filters-trigger"
+            @click="openMobileFilters"
+            >{{ t('mobileFilters')
+            }}<span v-if="filterChips.length"> ({{ filterChips.length }})</span></VBtn
+          >
+        </div>
+        <div v-if="filterChips.length" class="rentals-chips" :aria-label="t('activeFilters')">
+          <VChip
+            v-for="chip in filterChips"
+            :key="chip.key"
+            closable
+            variant="tonal"
+            color="primary"
+            :close-label="t('remove', { name: chip.label })"
+            @click:close="removeFilter(chip.keys)"
+            >{{ chip.label }}</VChip
+          >
+          <VBtn variant="text" size="small" @click="clearFilters">{{ t('reset') }}</VBtn>
+        </div>
+        <div class="rentals-tools">
+          <VBtn variant="text" prepend-icon="mdi-bookmark-plus-outline" @click="saveSearch">{{
+            t('saveSearch')
+          }}</VBtn>
+          <VBtn
+            variant="text"
+            prepend-icon="mdi-heart-outline"
+            :aria-expanded="showSaved"
+            aria-controls="rental-saved"
+            @click="showSaved = !showSaved"
+            >{{ t('saved') }} ({{ saved.favorites.length + saved.searches.length }})</VBtn
+          >
+          <VBtn variant="text" prepend-icon="mdi-share-variant-outline" @click="shareSearch">{{
+            t('share')
+          }}</VBtn>
+        </div>
+        <div v-if="showSaved" id="rental-saved" class="mb-6">
+          <SavedPanel
+            :state="saved"
+            :usd-uyu="usdUyu"
+            @open-search="openSavedSearch"
+            @remove-search="removeSearch"
+            @remove-favorite="removeFavorite"
           />
-          <VAlert v-else-if="!mapPending && !mapError" type="info" variant="tonal">
-            {{ t('noMap') }}
-            <VBtn variant="text" @click="changeView('lista')">{{ t('list') }}</VBtn>
-          </VAlert>
-        </ClientOnly>
-      </section>
-      <div v-if="!pending && !error && !items.length && view === 'lista'" class="rentals-empty">
-        <VIcon size="40" color="primary">mdi-home-search-outline</VIcon>
-        <h3>{{ t('empty') }}</h3>
-        <p>{{ t('emptyHint') }}</p>
-        <VBtn color="primary" variant="tonal" @click="clearFilters">{{ t('reset') }}</VBtn>
-      </div>
-      <div v-if="view === 'lista' && !error" class="rentals-grid">
-        <article v-for="(property, index) in items" :key="property.key" class="rental-card">
-          <div class="rental-card__visual">
-            <a
-              :href="displayOffer(property)?.url"
-              target="_blank"
-              rel="noopener noreferrer nofollow"
-              class="rental-card__media"
-              :aria-label="`${t('open')}: ${property.title}`"
-            >
-              <img
-                v-if="displayOffer(property)?.image && !failedImages.has(property.key)"
-                :src="displayOffer(property)?.image || ''"
-                :alt="property.title"
-                :loading="index < 3 ? 'eager' : 'lazy'"
-                decoding="async"
-                width="400"
-                height="260"
-                @error="failedImages.add(property.key)"
-              />
-              <span v-else class="rental-card__noimage">
-                <VIcon size="36">mdi-home-city-outline</VIcon>
-                <span>{{ t('noPhoto') }}</span>
-              </span>
-              <span v-if="property.sources.length > 1" class="rental-card__badge">{{
-                t('portals', { n: property.sources.length })
-              }}</span>
-            </a>
-            <VBtn
-              class="rental-card__save"
-              :icon="isFavorite(property.key) ? 'mdi-heart' : 'mdi-heart-outline'"
-              :color="isFavorite(property.key) ? 'primary' : undefined"
-              :aria-label="`${t(isFavorite(property.key) ? 'unfavorite' : 'favorite')}: ${property.title}`"
-              :aria-pressed="isFavorite(property.key)"
-              variant="flat"
-              size="small"
-              @click="toggleFavorite(property)"
+        </div>
+        <section
+          id="rental-results"
+          class="rentals-results"
+          :aria-busy="pending"
+          tabindex="-1"
+          :aria-label="t('searchResults')"
+        >
+          <div class="rentals-toolbar">
+            <div class="rentals-summary" role="status" aria-live="polite">
+              <h2>{{ pending ? t('searching') : t('results', { n: numberFormat(total) }) }}</h2>
+              <p v-if="medianUyu && !pending">
+                {{ t('typical', { price: `$ ${numberFormat(medianUyu)}` }) }}
+              </p>
+            </div>
+            <VSelect
+              :model-value="query.sort"
+              :items="sortItems"
+              :label="t('sort')"
+              variant="outlined"
+              density="compact"
+              hide-details
+              class="rentals-sort"
+              @update:model-value="changeSort"
             />
+            <VBtnToggle
+              :model-value="view"
+              mandatory
+              variant="outlined"
+              density="comfortable"
+              divided
+              @update:model-value="changeView"
+              ><VBtn value="lista" prepend-icon="mdi-view-grid-outline">{{ t('list') }}</VBtn
+              ><VBtn value="mapa" prepend-icon="mdi-map-marker-outline">{{
+                t('map')
+              }}</VBtn></VBtnToggle
+            >
           </div>
-          <div class="rental-card__body">
-            <p class="rental-card__where">
+          <VProgressLinear v-if="pending" indeterminate color="primary" class="mb-4" />
+          <VAlert v-if="error" type="error" variant="tonal" class="mb-5" role="alert">
+            {{ t('error') }}
+            <VBtn variant="text" @click="refresh()">{{ t('retry') }}</VBtn>
+          </VAlert>
+          <section v-if="view === 'mapa'" class="rentals-map mb-6" :aria-label="t('map')">
+            <VProgressLinear v-if="mapPending" indeterminate color="primary" class="mb-2" />
+            <VAlert v-if="mapError" type="error" variant="tonal" class="mb-3">
+              {{ t('error') }}
+              <VBtn variant="text" @click="loadMap()">{{ t('retry') }}</VBtn>
+            </VAlert>
+            <p v-if="mapData" class="rentals-map__coverage">
               {{
-                [property.neighborhood, property.department].filter(Boolean).join(', ') ||
-                t('unknown')
-              }}
-            </p>
-            <h3>
-              <a
-                :href="displayOffer(property)?.url"
-                target="_blank"
-                rel="noopener noreferrer nofollow"
-                >{{ property.title }}</a
-              >
-            </h3>
-            <p class="rental-card__specs">{{ specsLabel(property) }}</p>
-            <p v-if="property.address" class="rental-card__address">{{ property.address }}</p>
-            <div class="rental-card__cost">
-              <p class="rental-card__price">
-                {{ priceLabel(property) }} <span>{{ t('rent') }}</span>
-              </p>
-              <p class="rental-card__expenses">{{ expensesLabel(property) }}</p>
-              <p
-                v-if="monthlyTotal(property) !== null"
-                class="rental-card__total"
-                :title="t('totalHint')"
-              >
-                <span>{{ t('monthlyTotal') }}</span
-                ><strong>$ {{ numberFormat(monthlyTotal(property)!) }}</strong>
-              </p>
-            </div>
-            <div class="rental-card__tags">
-              <VChip v-if="property.petsAllowed" size="small" variant="tonal">{{ t('pets') }}</VChip
-              ><VChip v-if="(property.parkingSpaces ?? 0) > 0" size="small" variant="tonal">{{
-                t('parking')
-              }}</VChip
-              ><VChip v-if="property.furnished" size="small" variant="tonal">{{
-                t('furnished')
-              }}</VChip
-              ><VChip
-                v-for="guarantee in publishedGuarantees(property)"
-                :key="guarantee"
-                size="small"
-                variant="outlined"
-                >{{ t(guarantee) }}</VChip
-              >
-            </div>
-            <div class="rental-card__offers">
-              <a
-                v-for="offer in property.offers"
-                :key="offer.listingId"
-                :href="offer.url"
-                target="_blank"
-                rel="noopener noreferrer nofollow"
-                class="rental-card__offer"
-                :class="{
-                  'rental-card__offer--selected':
-                    offer.listingId === displayOffer(property)?.listingId,
-                }"
-                ><span>{{ sourceLabel(offer.source) }}</span
-                ><strong>{{ offerPrice(offer) }}</strong
-                ><VIcon size="16">mdi-open-in-new</VIcon></a
-              >
-            </div>
-            <p class="rental-card__meta">{{ sellerLabel(property) }}</p>
-            <p class="rental-card__meta">
-              {{
-                t('seen', {
-                  date: dateLabel(displayOffer(property)?.lastSeen || property.lastSeen),
+                t('mapCoverage', {
+                  located: numberFormat(mapData.located),
+                  total: numberFormat(mapData.total),
                 })
               }}
+              <span v-if="mapData.shown < mapData.located">{{
+                t('mapLimit', { n: numberFormat(mapData.shown) })
+              }}</span>
+            </p>
+            <ClientOnly>
+              <LocationsMap
+                v-if="mapMarkers.length && !mapError"
+                :branches="mapMarkers"
+                :popup-for="rentalPopup"
+                :user-location="sedeCentro"
+                :radius-km="sedeCentro ? query.radioKm : 0"
+                :fit-to-markers="true"
+                height="65vh"
+                :directions-label="t('open')"
+              />
+              <VAlert v-else-if="!mapPending && !mapError" type="info" variant="tonal">
+                {{ t('noMap') }}
+                <VBtn variant="text" @click="changeView('lista')">{{ t('list') }}</VBtn>
+              </VAlert>
+            </ClientOnly>
+          </section>
+          <div v-if="!pending && !error && !items.length && view === 'lista'" class="rentals-empty">
+            <VIcon size="40" color="primary">mdi-home-search-outline</VIcon>
+            <h3>{{ t('empty') }}</h3>
+            <p>{{ t('emptyHint') }}</p>
+            <VBtn color="primary" variant="tonal" @click="clearFilters">{{ t('reset') }}</VBtn>
+          </div>
+          <div v-if="view === 'lista' && !error" class="rentals-grid">
+            <article v-for="(property, index) in items" :key="property.key" class="rental-card">
+              <div class="rental-card__visual">
+                <a
+                  :href="displayOffer(property)?.url"
+                  target="_blank"
+                  rel="noopener noreferrer nofollow"
+                  class="rental-card__media"
+                  :aria-label="`${t('open')}: ${property.title}`"
+                >
+                  <img
+                    v-if="displayOffer(property)?.image && !failedImages.has(property.key)"
+                    :src="displayOffer(property)?.image || ''"
+                    :alt="property.title"
+                    :loading="index < 3 ? 'eager' : 'lazy'"
+                    decoding="async"
+                    width="400"
+                    height="260"
+                    @error="failedImages.add(property.key)"
+                  />
+                  <span v-else class="rental-card__noimage">
+                    <VIcon size="36">mdi-home-city-outline</VIcon>
+                    <span>{{ t('noPhoto') }}</span>
+                  </span>
+                  <span v-if="property.sources.length > 1" class="rental-card__badge">{{
+                    t('portals', { n: property.sources.length })
+                  }}</span>
+                </a>
+                <VBtn
+                  class="rental-card__save"
+                  :icon="isFavorite(property.key) ? 'mdi-heart' : 'mdi-heart-outline'"
+                  :color="isFavorite(property.key) ? 'primary' : undefined"
+                  :aria-label="`${t(isFavorite(property.key) ? 'unfavorite' : 'favorite')}: ${property.title}`"
+                  :aria-pressed="isFavorite(property.key)"
+                  variant="flat"
+                  size="small"
+                  @click="toggleFavorite(property)"
+                />
+              </div>
+              <div class="rental-card__body">
+                <p class="rental-card__where">
+                  {{
+                    [property.neighborhood, property.department].filter(Boolean).join(', ') ||
+                    t('unknown')
+                  }}
+                </p>
+                <h3>
+                  <a
+                    :href="displayOffer(property)?.url"
+                    target="_blank"
+                    rel="noopener noreferrer nofollow"
+                    >{{ property.title }}</a
+                  >
+                </h3>
+                <p class="rental-card__specs">{{ specsLabel(property) }}</p>
+                <p v-if="property.address" class="rental-card__address">{{ property.address }}</p>
+                <div class="rental-card__cost">
+                  <p class="rental-card__price">
+                    {{ priceLabel(property) }} <span>{{ t('rent') }}</span>
+                  </p>
+                  <p class="rental-card__expenses">{{ expensesLabel(property) }}</p>
+                  <p
+                    v-if="monthlyTotal(property) !== null"
+                    class="rental-card__total"
+                    :title="t('totalHint')"
+                  >
+                    <span>{{ t('monthlyTotal') }}</span
+                    ><strong>$ {{ numberFormat(monthlyTotal(property)!) }}</strong>
+                  </p>
+                </div>
+                <div class="rental-card__tags">
+                  <VChip v-if="property.petsAllowed" size="small" variant="tonal">{{
+                    t('pets')
+                  }}</VChip
+                  ><VChip v-if="(property.parkingSpaces ?? 0) > 0" size="small" variant="tonal">{{
+                    t('parking')
+                  }}</VChip
+                  ><VChip v-if="property.furnished" size="small" variant="tonal">{{
+                    t('furnished')
+                  }}</VChip
+                  ><VChip
+                    v-for="guarantee in publishedGuarantees(property)"
+                    :key="guarantee"
+                    size="small"
+                    variant="outlined"
+                    >{{ t(guarantee) }}</VChip
+                  >
+                </div>
+                <div class="rental-card__offers">
+                  <a
+                    v-for="offer in property.offers"
+                    :key="offer.listingId"
+                    :href="offer.url"
+                    target="_blank"
+                    rel="noopener noreferrer nofollow"
+                    class="rental-card__offer"
+                    :class="{
+                      'rental-card__offer--selected':
+                        offer.listingId === displayOffer(property)?.listingId,
+                    }"
+                    ><span>{{ sourceLabel(offer.source) }}</span
+                    ><strong>{{ offerPrice(offer) }}</strong
+                    ><VIcon size="16">mdi-open-in-new</VIcon></a
+                  >
+                </div>
+                <p class="rental-card__meta">{{ sellerLabel(property) }}</p>
+                <p class="rental-card__meta">
+                  {{
+                    t('seen', {
+                      date: dateLabel(displayOffer(property)?.lastSeen || property.lastSeen),
+                    })
+                  }}
+                </p>
+              </div>
+            </article>
+          </div>
+          <div v-if="pageCount > 1 && view === 'lista' && !error" class="mt-6">
+            <VPagination
+              :model-value="query.page"
+              :length="pageCount"
+              :total-visible="smAndDown ? 1 : 7"
+              @update:model-value="onPageChange"
+            />
+            <p v-if="smAndDown" class="text-caption text-center mt-1">
+              {{ t('pageStatus', { current: query.page, total: pageCount }) }}
             </p>
           </div>
-        </article>
+        </section>
       </div>
-      <div v-if="pageCount > 1 && view === 'lista' && !error" class="mt-6">
-        <VPagination
-          :model-value="query.page"
-          :length="pageCount"
-          :total-visible="smAndDown ? 1 : 7"
-          @update:model-value="onPageChange"
-        />
-        <p v-if="smAndDown" class="text-caption text-center mt-1">
-          {{ t('pageStatus', { current: query.page, total: pageCount }) }}
-        </p>
-      </div>
-    </section>
+    </div>
     <section id="rental-coverage" class="rentals-notes">
       <h2>{{ t('methodology') }}</h2>
       <p>{{ t('methodText') }}</p>
@@ -385,9 +395,7 @@ async function restoreFilterContext() {
   neighborhoodOverride.value = null
   await nextTick()
   if (filtersApplied) {
-    const results = document.getElementById('rental-results')
-    results?.focus({ preventScroll: true })
-    results?.scrollIntoView({ block: 'start', behavior: 'instant' })
+    focusSearchResults()
   } else if (filterActivator?.isConnected) {
     filterActivator.focus({ preventScroll: true })
     window.scrollTo({ top: filterReturnScroll, behavior: 'instant' })
@@ -427,15 +435,28 @@ const failedImages = reactive(new Set<string>())
 function navigate(params: Record<string, string>) {
   return router.push({ query: { ...params, ...(view.value === 'mapa' ? { view: 'mapa' } : {}) } })
 }
-function search(next: RentalQuery) {
-  if (mobileFiltersOpen.value) {
+function focusSearchResults() {
+  const results = document.getElementById('rental-results')
+  results?.focus({ preventScroll: true })
+  results?.scrollIntoView({ block: 'start', behavior: 'instant' })
+}
+async function search(next: RentalQuery) {
+  const closingMobileFilters = mobileFiltersOpen.value
+  if (closingMobileFilters) {
     filtersApplied = true
     mobileFiltersOpen.value = false
   }
-  void navigate(rentalQueryToParams({ ...next, page: 1 }))
+  await navigate(rentalQueryToParams({ ...next, page: 1 }))
+  // The dialog restores focus after its closing animation; the sidebar stays on screen.
+  if (!closingMobileFilters) {
+    await nextTick()
+    focusSearchResults()
+  }
 }
-function clearFilters() {
-  void navigate({})
+async function clearFilters() {
+  await navigate({})
+  await nextTick()
+  focusSearchResults()
 }
 function removeFilter(keys: string[]) {
   const params = Object.fromEntries(
@@ -806,6 +827,13 @@ useHead(() => ({
 .rentals--mobile {
   padding-bottom: calc(104px + env(safe-area-inset-bottom));
 }
+.rentals-content,
+.rentals-sidebar {
+  min-width: 0;
+}
+.rentals-sidebar {
+  display: none;
+}
 .rentals-mobile-bar {
   position: fixed;
   inset: auto 0 0;
@@ -908,7 +936,7 @@ useHead(() => ({
 }
 .rentals-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 24px;
 }
 .rental-card {
@@ -1125,6 +1153,30 @@ useHead(() => ({
 .rentals summary:focus-visible {
   outline: 3px solid rgb(var(--v-theme-primary));
   outline-offset: 4px;
+}
+@media (min-width: 960px) {
+  .rentals-workspace {
+    display: grid;
+    grid-template-columns: 304px minmax(0, 1fr);
+    grid-template-areas:
+      'filters heading'
+      'filters results';
+    column-gap: 24px;
+    align-items: start;
+  }
+  .rentals-head {
+    grid-area: heading;
+    margin: 0 0 12px;
+  }
+  .rentals-sidebar {
+    display: block;
+    grid-area: filters;
+    position: sticky;
+    top: 90px;
+  }
+  .rentals-content {
+    grid-area: results;
+  }
 }
 @media (max-width: 959px) {
   .rentals-grid {

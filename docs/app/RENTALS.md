@@ -233,6 +233,15 @@ aislado que no importa el sync ni consulta DB.
 
 `app/pages/alquileres-uruguay.vue` + `app/server/api/rentals/index.get.ts`.
 
+Desde 960 px, los filtros se presentan en una barra lateral izquierda de 304 px, junto al
+encabezado y los resultados. La barra acompaña el desplazamiento dentro del catálogo; su
+contenido tiene scroll propio y Buscar/Limpiar permanecen fuera de ese scroll. Los grupos
+avanzados están siempre disponibles y hay un único formulario y una única acción de búsqueda.
+Aplicar o limpiar desde la barra lateral lleva el foco al inicio de los resultados renovados.
+En pantallas más pequeñas se conserva el botón fijo inferior y el panel de pantalla completa:
+editar sigue siendo un borrador, cancelar conserva la posición y aplicar actualiza la búsqueda.
+La barra de escritorio queda oculta por CSS en móvil también antes de la hidratación.
+
 A diferencia de `/api/chairs` —unos cientos de filas que viajan enteras y se filtran en el
 navegador—, acá son decenas de miles: **todo** el filtrado, el orden, las facetas y la mediana se
 resuelven en Mongo contra los índices compuestos del modelo. Las filas cuyos avisos dejaron de

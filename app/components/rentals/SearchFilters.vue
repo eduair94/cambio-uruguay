@@ -8,15 +8,16 @@
   >
     <form
       class="rental-search"
-      :class="{ 'rental-search--dialog': mobile }"
+      :class="{ 'rental-search--dialog': mobile, 'rental-search--sidebar': !mobile }"
       :aria-label="t('search')"
       @submit.prevent="submit"
     >
-      <header v-if="mobile" class="rental-search__header">
+      <header class="rental-search__header">
         <h2 id="rental-filters-title" ref="dialogHeading" tabindex="-1">
           {{ t('mobileFilters') }}
         </h2>
         <VBtn
+          v-if="mobile"
           icon="mdi-close"
           variant="text"
           :aria-label="t('closeFilters')"
@@ -62,16 +63,6 @@
             clearable
             v-bind="field"
           />
-          <VBtn
-            v-if="!mobile"
-            class="rental-search__submit"
-            color="primary"
-            type="submit"
-            size="large"
-            prepend-icon="mdi-magnify"
-            :loading="pending"
-            >{{ t('search') }}</VBtn
-          >
         </div>
         <p class="rental-search__hint">{{ t('monthlyHint') }}</p>
         <div class="rental-search__quick">
@@ -96,17 +87,8 @@
             density="compact"
             color="primary"
           />
-          <VBtn
-            v-if="!mobile"
-            variant="text"
-            :append-icon="expanded ? 'mdi-chevron-up' : 'mdi-chevron-down'"
-            :aria-expanded="expanded"
-            aria-controls="rental-advanced"
-            @click="expanded = !expanded"
-            >{{ t(expanded ? 'less' : 'more') }}</VBtn
-          >
         </div>
-        <div v-show="mobile || expanded" id="rental-advanced" class="rental-search__advanced">
+        <div id="rental-advanced" class="rental-search__advanced">
           <fieldset>
             <legend>{{ t('budget') }}</legend>
             <div class="rental-search__fields">
@@ -278,29 +260,15 @@
             <p class="rental-search__hint">{{ t('nearbyHint') }}</p>
           </fieldset>
           <p class="rental-search__hint">{{ t('knownHint') }}</p>
-          <VAlert
-            v-if="invalidRange && !mobile"
-            type="error"
-            variant="tonal"
-            class="mt-3"
-            role="alert"
-            >{{ t('invalidRange') }}</VAlert
-          >
-          <div v-if="!mobile" class="rental-search__actions">
-            <VBtn variant="text" @click="reset">{{ t('reset') }}</VBtn>
-            <VBtn color="primary" type="submit" :loading="pending" prepend-icon="mdi-magnify">{{
-              t('search')
-            }}</VBtn>
-          </div>
         </div>
       </div>
-      <footer v-if="mobile" class="rental-search__footer">
+      <footer class="rental-search__footer">
         <p v-if="invalidRange" class="rental-search__error" role="alert">{{ t('invalidRange') }}</p>
         <VBtn variant="text" data-testid="rental-filters-reset" @click="reset">{{
           t('clearDraft')
         }}</VBtn>
         <VBtn color="primary" type="submit" data-testid="rental-filters-apply" :loading="pending">{{
-          t('applyFilters')
+          t(mobile ? 'applyFilters' : 'search')
         }}</VBtn>
       </footer>
     </form>
@@ -381,7 +349,6 @@ const copy = (query: RentalQuery): RentalQuery => ({
   sedes: [...query.sedes],
 })
 const draft = ref(copy(props.query))
-const expanded = ref(props.query.bedroomsExact)
 const institution = ref(
   MUTUALISTA_SEDES.find(s => s.osmId === props.query.sedes[0])?.mutualista || ''
 )
@@ -489,10 +456,7 @@ const invalidRange = computed(() =>
   )
 )
 function submit() {
-  if (invalidRange.value) {
-    expanded.value = true
-    return
-  }
+  if (invalidRange.value) return
   emit('search', copy(draft.value))
 }
 function reset() {
@@ -508,18 +472,22 @@ function clearNeighborhoods() {
 
 <style scoped>
 .rental-search {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-width: 100%;
   border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
   border-radius: 12px;
-  padding: 20px;
+  overflow: hidden;
   background: rgb(var(--v-theme-surface));
+}
+.rental-search--sidebar {
+  max-height: calc(100dvh - 160px);
 }
 .rental-search__main {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
-}
-.rental-search__submit {
-  height: 56px;
 }
 .rental-search__hint {
   margin: 12px 0 0;
@@ -536,9 +504,6 @@ function clearNeighborhoods() {
 }
 .rental-search__quick {
   margin-top: 8px;
-}
-.rental-search__quick > .v-btn {
-  margin-left: auto;
 }
 .rental-search__advanced {
   padding-top: 12px;
@@ -559,21 +524,10 @@ legend {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
 }
-.rental-search__actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 20px;
-}
 .rental-search--dialog {
-  display: flex;
-  flex-direction: column;
   height: 100%;
-  min-height: 0;
   border: 0;
   border-radius: 0;
-  padding: 0;
-  overflow: hidden;
 }
 .rental-search__header {
   display: flex;
@@ -590,7 +544,10 @@ legend {
   font-size: 1.25rem;
   line-height: 1.3;
 }
-.rental-search--dialog .rental-search__scroll {
+.rental-search--sidebar .rental-search__header {
+  padding: 16px;
+}
+.rental-search__scroll {
   flex: 1 1 auto;
   min-height: 0;
   padding: 20px max(16px, env(safe-area-inset-right)) 24px max(16px, env(safe-area-inset-left));
@@ -598,6 +555,15 @@ legend {
   overflow-x: hidden;
   overscroll-behavior-y: contain;
   scroll-padding-block: 16px;
+}
+.rental-search--sidebar .rental-search__fields {
+  grid-template-columns: minmax(0, 1fr);
+}
+.rental-search--sidebar .rental-search__quick,
+.rental-search--sidebar .rental-search__checks {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
 }
 .rental-search--dialog .rental-search__main {
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -607,24 +573,24 @@ legend {
 .rental-search--dialog .rental-search__budget {
   grid-column: 1 / -1;
 }
-.rental-search--dialog :deep(input) {
+.rental-search :deep(input) {
   font-size: 16px;
 }
-.rental-search--dialog :deep(.v-selection-control) {
+.rental-search :deep(.v-selection-control) {
   min-height: 44px;
 }
-.rental-search--dialog :deep(.v-autocomplete__selection),
-.rental-search--dialog :deep(.v-select__selection) {
+.rental-search :deep(.v-autocomplete__selection),
+.rental-search :deep(.v-select__selection) {
   min-height: 44px;
 }
-.rental-search--dialog :deep(.v-autocomplete .v-field input) {
+.rental-search :deep(.v-autocomplete .v-field input) {
   /* Keep the search row stable when a tap moves focus to the next filter. */
   min-width: 64px;
 }
-.rental-search--dialog :deep(.v-chip) {
+.rental-search :deep(.v-chip) {
   min-height: 44px;
 }
-.rental-search--dialog :deep(.v-chip__close) {
+.rental-search :deep(.v-chip__close) {
   flex: 0 0 44px;
   justify-content: center;
   min-width: 44px;
@@ -632,7 +598,7 @@ legend {
   max-width: 44px;
   max-height: 44px;
 }
-.rental-search--dialog :deep(.v-selection-control .v-label) {
+.rental-search :deep(.v-selection-control .v-label) {
   white-space: normal;
   overflow-wrap: anywhere;
 }
@@ -651,6 +617,9 @@ legend {
   min-height: 48px;
   padding-inline: 8px;
 }
+.rental-search--sidebar .rental-search__footer {
+  padding: 12px;
+}
 .rental-search__error {
   grid-column: 1 / -1;
   margin: 0;
@@ -659,19 +628,12 @@ legend {
   color: rgb(var(--v-theme-error));
 }
 @media (max-width: 599px) {
-  .rental-search {
-    padding: 16px;
-  }
-  .rental-search--dialog {
-    padding: 0;
-  }
   .rental-search__main {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px 10px;
   }
   .rental-search__main > :nth-child(2),
-  .rental-search__budget,
-  .rental-search__submit {
+  .rental-search__budget {
     grid-column: 1 / -1;
   }
   .rental-search__main > :first-child {
@@ -680,18 +642,8 @@ legend {
   .rental-search__quick {
     gap: 0 12px;
   }
-  .rental-search__quick > .v-btn {
-    margin-left: 0;
-  }
   .rental-search__fields {
     grid-template-columns: 1fr;
-  }
-  .rental-search__actions {
-    position: sticky;
-    bottom: 0;
-    padding: 12px 0;
-    background: rgb(var(--v-theme-surface));
-    z-index: 1;
   }
 }
 </style>
