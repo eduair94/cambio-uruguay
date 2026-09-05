@@ -229,7 +229,11 @@ export async function writeRentalPropertyPlan(plan: RentalWritePlan): Promise<nu
   for (let index = 0; index < plan.assigned.length; index += CHUNK) {
     const operations = [];
     for (const row of plan.assigned.slice(index, index + CHUNK)) {
-      operations.push({ updateOne: { filter: { key: row.key }, update: { $set: row }, upsert: true } });
+      // Mongoose may mutate timestamps and cast nested fields. Keep the reviewed plan isolated
+      // from the driver's update object, including the original per-offer evidence.
+      operations.push({
+        updateOne: { filter: { key: row.key }, update: { $set: { ...structuredClone(row) } }, upsert: true },
+      });
     }
     if (operations.length) await RentalListingModel.bulkWrite(operations, { ordered: false });
   }

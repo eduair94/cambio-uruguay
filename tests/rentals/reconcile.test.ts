@@ -187,7 +187,7 @@ describe("propertyFromRentalOffers", () => {
   it.each([undefined, null, "anda", { anda: true }])(
     "handles non-array legacy guarantees without modifying the original offer: %j",
     (guarantees) => {
-      const input = legacy({ guarantees: guarantees as RentalOffer["guarantees"] });
+      const input = legacy({ guarantees: guarantees as unknown as RentalOffer["guarantees"] });
       const before = structuredClone(input);
       const property = propertyFromRentalOffers("legacy-guarantees", [input], 40);
       expect(property.guarantees).toEqual([]);

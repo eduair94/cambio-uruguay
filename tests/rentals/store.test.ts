@@ -1,5 +1,17 @@
-import { describe, expect, it } from "vitest";
-import { mergeOffers, recomputeFromOffers } from "../../classes/rentals/store";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const bulkWrite = vi.hoisted(() => vi.fn());
+vi.mock("../../classes/models/RentalListing", () => ({
+  RentalListingModel: { bulkWrite },
+}));
+
+import {
+  mergeOffers,
+  recomputeFromOffers,
+  writeRentalPropertyPlan,
+  type RentalWritePlan,
+} from "../../classes/rentals/store";
+import { propertyFromRentalOffers } from "../../classes/rentals/reconcile";
 import type { RentalOffer, RentalProperty, RentalSource } from "../../classes/rentals/types";
 
 const offer = (
@@ -217,5 +229,58 @@ describe("recomputeFromOffers", () => {
     expect(result.sources.sort()).toEqual(["facebook", "infocasas"]);
     expect(result.firstSeen).toBe("2026-07-02");
     expect(result.lastSeen).toBe("2026-08-20");
+  });
+});
+
+describe("writeRentalPropertyPlan keeps the reviewed plan immutable", () => {
+  beforeEach(() => {
+    bulkWrite.mockReset();
+  });
+
+  it.each([false, true])("isolates timestamp and nested cast mutations, driver failure: %s", async (fail) => {
+    const original = offer({
+      source: "infocasas",
+      listingId: "infocasas:original",
+      guarantees: ["anda"],
+      identity: {
+        version: 1,
+        propertyType: "apartamento",
+        department: "Montevideo",
+        neighborhood: "Pocitos",
+        address: "Rizal 3715 unidad 301",
+        street: "rizal",
+        streetNumber: "3715",
+        latitude: -34.9,
+        longitude: -56.15,
+        bedrooms: 2,
+        bathrooms: 1,
+        area: 60,
+      },
+    });
+    const row = propertyFromRentalOffers("reviewed", [original], 40);
+    const plan: RentalWritePlan = { assigned: [row], emptied: 0, separated: 0 };
+    const before = structuredClone(plan);
+    bulkWrite.mockImplementation(async (operations) => {
+      const set = operations[0].updateOne.update.$set;
+      expect(set).toEqual(before.assigned[0]);
+      // Mongoose timestamp/cast processing may mutate the submitted update, including arrays.
+      set.updatedAt = new Date("2026-09-05T10:00:00Z");
+      set.priceUyu = 99_999;
+      set.sources.push("facebook");
+      set.guarantees.push("cgn");
+      set.offers[0].priceUyu = 99_999;
+      set.offers[0].identity.address = "Driver-mutated address";
+      set.offers[0].guarantees.push("cgn");
+      if (fail) throw new Error("Synthetic driver failure");
+      return {};
+    });
+
+    if (fail) await expect(writeRentalPropertyPlan(plan)).rejects.toThrow("Synthetic driver failure");
+    else expect(await writeRentalPropertyPlan(plan)).toBe(1);
+
+    expect(plan).toEqual(before);
+    expect(row).not.toHaveProperty("updatedAt");
+    expect(bulkWrite).toHaveBeenCalledTimes(1);
+    expect(bulkWrite.mock.calls[0][1]).toEqual({ ordered: false });
   });
 });

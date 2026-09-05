@@ -79,6 +79,9 @@ async function main() {
   const incomingIds = new Set(incoming.flatMap(row => row.offers.map(offer => offer.listingId)));
   const claimed = new Set(incoming.map(row => row.key));
   const selected = new Set<string>(manifest.confirmedKeys);
+  const splitUnverifiedLegacy = process.argv.includes("--split-unverified-legacy");
+  const legacyGroups = rows.filter(row => row.offers.length > 1 && row.offers.some(offer => offer.identity?.version !== 1));
+  if (splitUnverifiedLegacy) for (const row of legacyGroups) selected.add(row.key);
   let selectedLegacyOffers = 0;
   for (const row of rows.filter(row => selected.has(row.key))) {
     const eligible = row.offers.filter(offer => !incomingIds.has(offer.listingId)
@@ -111,9 +114,20 @@ async function main() {
     || assignedIds.some(id => !expectedIds.has(id))) throw new Error("Conservation or single-owner invariant failed");
   const ownership = new Map(owners.flatMap(row => row.offers.map(offer => [offer.listingId, row.key] as const)));
   const verifiedNegativePairs = assertRentalConflictSeparation(manifest, ownership);
+  if (splitUnverifiedLegacy) {
+    const groups = new Map<string, { count: number; unverified: boolean }>();
+    for (const row of owners) for (const offer of row.offers) {
+      const group = groups.get(row.key) || { count: 0, unverified: false };
+      group.count++; group.unverified ||= offer.identity?.version !== 1;
+      groups.set(row.key, group);
+    }
+    if ([...groups.values()].some(group => group.count > 1 && group.unverified)) {
+      throw new Error("Unverified legacy group in reviewed plan; nothing written");
+    }
+  }
   const canonicalContinuity = [...selected].map(key => ({ key, canonicalOffer: history.propertyCanonicalOffer.get(key) ?? null,
     ownerAfter: ownership.get(history.propertyCanonicalOffer.get(key) || "") ?? null }));
-  const planHash = hash({ catalog: rows, snapshot, manifest, canonicalContinuity, assigned: plan.assigned });
+  const planHash = hash({ catalog: rows, snapshot, manifest, splitUnverifiedLegacy, canonicalContinuity, assigned: plan.assigned });
   const summary = {
     mode: process.argv.includes("--apply") ? "apply" : "dry-run", planHash,
     capturedAt: snapshot.capturedAt, rowsBefore: rows.length,
@@ -122,12 +136,17 @@ async function main() {
     harvested: listings.length, plannedProperties: plan.assigned.length,
     separatedGroups: plan.separated, selectedLegacyOffers, conservedDistinctOffers: expectedIds.size,
     verifiedNegativePairs, canonicalContinuity,
+    splitUnverifiedLegacy, legacyGroupsBefore: legacyGroups.length,
     plannedWithOriginalEvidence: plan.assigned.filter(row => row.offers.every(offer => offer.identity?.version === 1)).length,
     plannedWithoutDepartment: plan.assigned.filter(row => !row.department).length,
     selectedKeys: [...selected], sources: snapshot.runs,
   };
   writeFileSync(workspaceFile(reportName), JSON.stringify(summary, null, 2));
-  console.log(JSON.stringify(summary));
+  const compactSummary = { ...summary, selectedKeys: summary.selectedKeys.length,
+    canonicalContinuity: { reviewed: canonicalContinuity.length,
+      preserved: canonicalContinuity.filter(row => row.canonicalOffer && row.ownerAfter === row.key).length,
+      unattributable: canonicalContinuity.filter(row => !row.canonicalOffer).length } };
+  console.log(JSON.stringify(compactSummary));
   if (!process.argv.includes("--apply")) return;
   if (arg("expect-plan") !== planHash) throw new Error("Plan or catalog changed; rerun dry-run and inspect before applying");
   // A complete pre-write backup permits restoring even a partially applied batch. No deletion
@@ -143,6 +162,8 @@ async function main() {
     || actualIds.some(id => !expectedIds.has(id))) throw new Error("Post-write conservation verification failed; backup retained");
   const actualOwners = new Map(actual.flatMap(row => row.offers.map(offer => [offer.listingId, row.key] as const)));
   assertRentalConflictSeparation(manifest, actualOwners);
+  const legacyGroupsAfter = actual.filter(row => row.offers.length > 1 && row.offers.some(offer => offer.identity?.version !== 1)).length;
+  if (splitUnverifiedLegacy && legacyGroupsAfter) throw new Error("Post-write unverified legacy groups remain; backup retained");
   const actualRows = new Map(actual.map(row => [row.key, row]));
   for (const expected of plan.assigned) {
     const saved = actualRows.get(expected.key);
@@ -161,9 +182,9 @@ async function main() {
       ...(run.access ? { access: run.access } : {}),
     })),
   });
-  const result = { ...summary, written, cleanup, propertiesAfter: total, verifiedUniqueOffers: actualIds.length, backup: backupName };
+  const result = { ...summary, written, cleanup, propertiesAfter: total, verifiedUniqueOffers: actualIds.length, legacyGroupsAfter, backup: backupName };
   writeFileSync(workspaceFile(reportName), JSON.stringify(result, null, 2));
-  console.log(JSON.stringify({ result: "applied", written, cleanup, propertiesAfter: total, verifiedUniqueOffers: actualIds.length }));
+  console.log(JSON.stringify({ result: "applied", written, cleanup, propertiesAfter: total, verifiedUniqueOffers: actualIds.length, legacyGroupsAfter }));
 }
 
 main().then(() => appConnection().close()).catch(error => {
