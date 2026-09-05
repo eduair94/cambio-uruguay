@@ -980,9 +980,9 @@ test.describe('rental directory', () => {
     await page.setViewportSize({ width: 1440, height: 900 })
     await startFixtureSearch(page)
     await mockMapPoints(page, [
-      // The second marker stays left of the desktop detail, so both clicks are real hit targets.
-      mapFixturePoint(fixtureProperties[0], -34.9, -56.1),
-      mapFixturePoint(fixtureProperties[1], -34.9, -56.2),
+      // Nearby points stay visible beside the detail after revealing the first selected marker.
+      mapFixturePoint(fixtureProperties[0], -34.9, -56.145),
+      mapFixturePoint(fixtureProperties[1], -34.9, -56.15),
     ])
     let zeroAttempts = 0
     let finishSlowRequest: () => void = () => undefined
