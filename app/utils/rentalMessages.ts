@@ -107,13 +107,21 @@ export const rentalMessages = {
     individual: 'Dueño directo',
     date: 'Actualizado {date}',
     coverage: 'Fuentes y cobertura',
-    sourceWarning: 'Sin datos frescos de {sources}. Conservamos sus últimos avisos conocidos.',
+    sourceWarning: 'No pudimos actualizar {sources} en el último repaso.',
     rate: 'Conversión: U$S 1 = $ {rate}',
     methodology: 'Cómo reunimos los alquileres',
     methodText:
       'Agrupamos avisos cuando coinciden ubicación, características y precio. Una dirección compartida no alcanza: en un edificio puede haber varias viviendas.',
     coverageText:
       'El índice se amplía con fuentes públicas que podemos leer de forma estable. Ningún portal cubre todo el mercado. Cada aviso conserva su enlace y fecha de última lectura.',
+    coverageTotal: '{n} propiedad única en el índice | {n} propiedades únicas en el índice',
+    coverageProperties: '{n} propiedad | {n} propiedades',
+    coverageScope:
+      'Contamos las propiedades visibles en todo el índice, independientemente de tus filtros. Una propiedad puede figurar en varios portales, por eso la suma por fuente puede superar el total.',
+    coverageReadFailed: 'No se pudo actualizar en el último repaso.',
+    coverageCounted: 'Cobertura calculada el {date} (hora de Uruguay).',
+    coverageUnavailable:
+      'No pudimos calcular la cobertura del índice. Volvé a intentarlo más tarde.',
     freshnessText:
       'Buscamos novedades cada hora y hacemos un barrido diario. Que un aviso siga publicado no garantiza que la propiedad continúe disponible: confirmalo con quien publica.',
     scopeText:
@@ -242,13 +250,20 @@ export const rentalMessages = {
     individual: 'Direct owner',
     date: 'Updated {date}',
     coverage: 'Sources and coverage',
-    sourceWarning: 'No fresh data from {sources}. Their last known listings are retained.',
+    sourceWarning: 'We could not update {sources} during the latest check.',
     rate: 'Conversion: US$ 1 = UYU {rate}',
     methodology: 'How we collect rentals',
     methodText:
       'We group listings when location, features and price match. A shared address is not enough: one building can contain several homes.',
     coverageText:
       'We expand the index using public sources we can read reliably. No portal covers the whole market. Every listing retains its source link and last reading date.',
+    coverageTotal: '{n} unique property in the index | {n} unique properties in the index',
+    coverageProperties: '{n} property | {n} properties',
+    coverageScope:
+      'We count visible properties across the entire index, independently of your filters. A property can appear on several portals, so source counts may add up to more than the total.',
+    coverageReadFailed: 'Could not be updated during the latest check.',
+    coverageCounted: 'Coverage calculated on {date} (Uruguay time).',
+    coverageUnavailable: 'We could not calculate index coverage. Please try again later.',
     freshnessText:
       'We check new listings hourly and run a daily scan. A published listing does not guarantee the property is still available: check with the publisher.',
     scopeText:
@@ -379,13 +394,21 @@ export const rentalMessages = {
     individual: 'Proprietário',
     date: 'Atualizado {date}',
     coverage: 'Fontes e cobertura',
-    sourceWarning: 'Sem dados recentes de {sources}. Mantemos seus últimos anúncios conhecidos.',
+    sourceWarning: 'Não foi possível atualizar {sources} na última consulta.',
     rate: 'Conversão: US$ 1 = UYU {rate}',
     methodology: 'Como reunimos os aluguéis',
     methodText:
       'Agrupamos anúncios quando localização, características e preço coincidem. Um endereço compartilhado não basta: um prédio pode ter vários imóveis.',
     coverageText:
       'Ampliamos o índice com fontes públicas que podemos ler de forma estável. Nenhum portal cobre todo o mercado. Cada anúncio mantém seu link e data de última leitura.',
+    coverageTotal: '{n} imóvel único no índice | {n} imóveis únicos no índice',
+    coverageProperties: '{n} imóvel | {n} imóveis',
+    coverageScope:
+      'Contamos os imóveis visíveis em todo o índice, independentemente dos seus filtros. Um imóvel pode aparecer em vários portais, por isso a soma por fonte pode superar o total.',
+    coverageReadFailed: 'Não foi possível atualizar na última consulta.',
+    coverageCounted: 'Cobertura calculada em {date} (horário do Uruguai).',
+    coverageUnavailable:
+      'Não foi possível calcular a cobertura do índice. Tente novamente mais tarde.',
     freshnessText:
       'Buscamos novidades a cada hora e fazemos uma varredura diária. Um anúncio publicado não garante que o imóvel continue disponível: confirme com o anunciante.',
     scopeText:

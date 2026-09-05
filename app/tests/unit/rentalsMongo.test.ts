@@ -2,6 +2,7 @@
 // collection or writing anything. Set RENTALS_TEST_MONGO_URI to run it on MongoDB 6+.
 import mongoose from 'mongoose'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { rentalCoverageStages } from '../../server/utils/rentalCoverage'
 import {
   RENTAL_COLLATION,
   buildRentalFilter,
@@ -76,6 +77,46 @@ describe.skipIf(!uri)('rental budgets evaluated by Mongo (read-only synthetic do
   })
   afterAll(async () => {
     await client?.close()
+  })
+
+  it('counts global properties once per current source using the catalogue visibility rules', async () => {
+    const old = '2000-01-01'
+    const documents = [
+      doc('shared', [
+        offer(),
+        offer({ listingId: 'infocasas:2' }),
+        offer({ source: 'mercadolibre' }),
+        offer({ source: 'elpais', lastSeen: old }),
+      ]),
+      doc('casasweb', [offer({ source: 'casasweb' })]),
+      doc('unknown-expenses', [offer({ source: 'facebook', commonExpenses: null })]),
+      doc('old-offer', [offer({ lastSeen: old })]),
+      doc('old-property', [offer()], { lastSeen: old }),
+      doc('invalid-price', [offer({ source: 'elpais', priceUyu: 0 })]),
+      doc('missing-offer-date', [offer({ source: 'elpais', lastSeen: undefined })]),
+    ]
+    const [coverage] = await client
+      .db()
+      .aggregate([{ $documents: documents }, ...rentalCoverageStages(10)], {
+        collation: RENTAL_COLLATION,
+      })
+      .toArray()
+    const visible = await client
+      .db()
+      .aggregate([
+        { $documents: documents },
+        ...rentalPublicStages(buildRentalFilter(normalizeRentalQuery(), 10).filter, 10),
+        { $count: 'total' },
+      ])
+      .toArray()
+    expect(coverage.properties).toEqual([{ count: visible[0].total }])
+    expect(visible[0].total).toBe(3)
+    expect(coverage.sources.sort((a, b) => a._id.localeCompare(b._id))).toEqual([
+      { _id: 'casasweb', properties: 1 },
+      { _id: 'facebook', properties: 1 },
+      { _id: 'infocasas', properties: 1 },
+      { _id: 'mercadolibre', properties: 1 },
+    ])
   })
 
   it('groups and selects neighborhood spellings consistently across list, map and facets', async () => {

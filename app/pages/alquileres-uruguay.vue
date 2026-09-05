@@ -312,11 +312,33 @@ MOBILE: Results first; persistent thumb-reachable filters open a focused draft w
       <details>
         <summary>{{ t('coverage') }}</summary>
         <p>{{ t('coverageText') }}</p>
-        <ul v-if="meta?.sources.length">
-          <li v-for="source in meta.sources" :key="source.key">
-            {{ sourceLabel(source.key) }} · {{ numberFormat(source.listings) }}
-          </li>
-        </ul>
+        <template v-if="coverage">
+          <p data-testid="rental-coverage-summary">
+            <strong>{{
+              t('coverageTotal', { n: numberFormat(coverage.properties) }, coverage.properties)
+            }}</strong>
+          </p>
+          <p>{{ t('coverageScope') }}</p>
+          <dl class="rentals-coverage-sources">
+            <div
+              v-for="source in coverage.sources"
+              :key="source.key"
+              :data-testid="`rental-coverage-source-${source.key}`"
+            >
+              <dt>{{ sourceLabel(source.key) }}</dt>
+              <dd>
+                <span>{{
+                  t('coverageProperties', { n: numberFormat(source.properties) }, source.properties)
+                }}</span>
+                <small v-if="meta?.sources.some(run => run.key === source.key && !run.ok)">{{
+                  t('coverageReadFailed')
+                }}</small>
+              </dd>
+            </div>
+          </dl>
+          <p>{{ t('coverageCounted', { date: dateLabel(coverage.computedAt) }) }}</p>
+        </template>
+        <p v-else>{{ t('coverageUnavailable') }}</p>
         <p v-if="usdUyu">{{ t('rate', { rate: usdUyu.toFixed(2) }) }}</p>
         <h3>{{ t('otherPortals') }}</h3>
         <p>{{ t('externalHint') }}</p>
@@ -416,13 +438,14 @@ const { data, pending, error, refresh } = await useAsyncData<RentalsResponse>(
 const items = computed(() => data.value?.items ?? [])
 const total = computed(() => data.value?.total ?? 0)
 const meta = computed(() => data.value?.meta ?? null)
+const coverage = computed(() => data.value?.coverage ?? null)
 const medianUyu = computed(() => data.value?.medianUyu ?? 0)
 const usdUyu = computed(() => meta.value?.usdUyu ?? 0)
 const pageCount = computed(() => Math.max(1, Math.ceil(total.value / (data.value?.perPage || 24))))
 const downSources = computed(() => (meta.value?.sources ?? []).filter(source => !source.ok))
 const activeSourceLabels = computed(() =>
-  (meta.value?.sources ?? [])
-    .filter(source => source.ok && source.listings > 0)
+  (coverage.value?.sources ?? [])
+    .filter(source => source.properties > 0)
     .map(source => sourceLabel(source.key))
     .join(' · ')
 )
@@ -1133,6 +1156,39 @@ useHead(() => ({
 .rentals-notes h3 {
   margin: 24px 0 8px;
   font-size: 1rem;
+}
+.rentals-coverage-sources {
+  margin: 20px 0;
+}
+.rentals-coverage-sources > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px 20px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+.rentals-coverage-sources dt {
+  font-weight: 600;
+}
+.rentals-coverage-sources dd {
+  margin: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.rentals-coverage-sources small {
+  display: block;
+  margin-top: 4px;
+  line-height: 1.5;
+  color: rgba(var(--v-theme-on-surface), 0.8);
+}
+@media (max-width: 599px) {
+  .rentals-coverage-sources > div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
+  .rentals-coverage-sources dd {
+    text-align: left;
+  }
 }
 .rentals-external {
   display: flex;

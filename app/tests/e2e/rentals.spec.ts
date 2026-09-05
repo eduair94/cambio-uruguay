@@ -1,6 +1,11 @@
 import { resolve } from 'node:path'
 import { expect, test, type Locator, type Page, type Request } from '@playwright/test'
-import type { RentalOffer, RentalProperty, RentalsResponse } from '../../utils/rentals'
+import type {
+  RentalCoverage,
+  RentalOffer,
+  RentalProperty,
+  RentalsResponse,
+} from '../../utils/rentals'
 import { RENTAL_SAVED_STORAGE_ID } from '../../utils/rentalSaved'
 
 // Synthetic browser fixtures only. No production listing or storage is modified by these tests.
@@ -86,6 +91,20 @@ const fixtureProperties = [
 fixtureProperties[1].neighborhood = 'Malvín'
 fixtureProperties[2].neighborhood = 'Pocitos'
 
+// Global indexed properties deliberately differ from filtered results and the last scrape.
+// A property may occur on multiple portals, so these source counts do not add up to the total.
+const fixtureCoverage: RentalCoverage = {
+  computedAt: `${day}T12:05:00.000Z`,
+  properties: 3500,
+  sources: [
+    { key: 'mercadolibre', properties: 2468 },
+    { key: 'infocasas', properties: 1234 },
+    { key: 'facebook', properties: 321 },
+    { key: 'casasweb', properties: 456 },
+    { key: 'elpais', properties: 0 },
+  ],
+}
+
 function fixtureResponse(url: URL, copies = 1): RentalsResponse {
   const max = Number(url.searchParams.get('monthlyMax')) || Infinity
   const pets = url.searchParams.get('pets') === '1'
@@ -130,6 +149,7 @@ function fixtureResponse(url: URL, copies = 1): RentalsResponse {
         { key: 'mercadolibre', ok: true, listings: 1, note: 'test fixture' },
       ],
     },
+    coverage: fixtureCoverage,
     items,
     total: items.length,
     page: 1,
@@ -395,6 +415,14 @@ test.describe('rental directory', () => {
         response.total = 2400
         response.page = Number(url.searchParams.get('page')) || 1
       }
+      if (testInfo.title.startsWith('keeps global indexed')) {
+        response.meta!.sources.push({
+          key: 'elpais',
+          ok: false,
+          listings: 0,
+          note: 'test fixture unavailable',
+        })
+      }
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -522,6 +550,48 @@ test.describe('rental directory', () => {
     await expect(
       page.getByRole('spinbutton', { name: 'Presupuesto mensual máximo ($)', exact: true })
     ).toHaveValue('25000')
+  })
+
+  test('keeps global indexed coverage distinct from filtered results and the last scrape', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 320, height: 740 })
+    await startFixtureSearch(page)
+    const coverage = page.locator('#rental-coverage')
+    await coverage.locator('summary').click()
+    const summary = page.getByTestId('rental-coverage-summary')
+    await expect(summary).toHaveText('3.500 propiedades únicas en el índice')
+    const expectedSources = [
+      ['mercadolibre', 'Mercado Libre', '2.468 propiedades'],
+      ['infocasas', 'InfoCasas', '1.234 propiedades'],
+      ['facebook', 'Facebook Marketplace', '321 propiedades'],
+      ['casasweb', 'Casasweb', '456 propiedades'],
+      ['elpais', 'Inmuebles El País', '0 propiedades'],
+    ]
+    for (const [key, name, count] of expectedSources) {
+      const source = page.getByTestId(`rental-coverage-source-${key}`)
+      await expect(source).toContainText(name)
+      await expect(source).toContainText(count)
+    }
+    await expect(page.getByTestId('rental-coverage-source-elpais')).toContainText(
+      'No se pudo actualizar en el último repaso.'
+    )
+    const before = (await coverage.locator('.rentals-coverage-sources').textContent()) ?? ''
+    await expect
+      .poll(() => page.evaluate(() => document.documentElement.scrollWidth))
+      .toBeLessThanOrEqual(320)
+
+    await openMobileFilters(page)
+    await applyBudget(page, '25000')
+    await expect(page.getByTestId('rental-mobile-filters-dialog')).not.toBeVisible()
+    await expect(page.locator('.rental-card')).toHaveCount(2)
+    await expect(page.locator('#rental-results h2')).toHaveText('2 propiedades')
+    await coverage.locator('summary').scrollIntoViewIfNeeded()
+    await expect(summary).toHaveText('3.500 propiedades únicas en el índice')
+    await expect(coverage.locator('.rentals-coverage-sources')).toHaveText(before)
+    await expect
+      .poll(() => page.evaluate(() => document.documentElement.scrollWidth))
+      .toBeLessThanOrEqual(320)
   })
 
   test('clears an invalid unsubmitted draft even when the URL has no filters', async ({ page }) => {

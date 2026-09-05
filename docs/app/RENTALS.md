@@ -242,6 +242,14 @@ En pantallas más pequeñas se conserva el botón fijo inferior y el panel de pa
 editar sigue siendo un borrador, cancelar conserva la posición y aplicar actualiza la búsqueda.
 La barra de escritorio queda oculta por CSS en móvil también antes de la hidratación.
 
+**Fuentes y cobertura** usa `coverage` de la respuesta pública, calculada sobre todas las
+propiedades visibles y sus ofertas vigentes, sin los filtros de la búsqueda. Cada propiedad
+cuenta una vez por fuente; la suma puede superar el total único. `computedAt` fecha el conteo.
+`meta.sources[].listings` conserva otro significado: avisos leídos en el último repaso full/fast,
+no inventario acumulado. No se usa como cifra de cobertura. Si falla el cálculo, `coverage` es
+`null` y la página indica que no está disponible; cero sólo aparece tras un conteo válido.
+Los fallos de lectura de cada fuente se informan aparte, sin prometer avisos guardados inexistentes.
+
 A diferencia de `/api/chairs` —unos cientos de filas que viajan enteras y se filtran en el
 navegador—, acá son decenas de miles: **todo** el filtrado, el orden, las facetas y la mediana se
 resuelven en Mongo contra los índices compuestos del modelo. Las filas cuyos avisos dejaron de

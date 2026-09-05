@@ -1,6 +1,7 @@
 import { RentalListingModel } from '../../models/RentalListing'
 import { RentalMetaModel } from '../../models/RentalMeta'
 import { connectDb } from '../../utils/db'
+import { getRentalCoverage } from '../../utils/rentalCoverage'
 import {
   RENTAL_COLLATION,
   buildRentalFilter,
@@ -57,7 +58,7 @@ export default defineEventHandler(async (event): Promise<RentalsResponse> => {
     const offerStages = rentalOfferStages(query, usdUyu)
     const publicStages = rentalPublicStages(filter, STALE_DAYS)
 
-    const [items, totals, departments, neighborhoods, dimensions] = await Promise.all([
+    const [items, totals, departments, neighborhoods, dimensions, coverage] = await Promise.all([
       RentalListingModel.aggregate([
         ...publicStages,
         ...offerStages,
@@ -100,6 +101,7 @@ export default defineEventHandler(async (event): Promise<RentalsResponse> => {
           },
         },
       ]).collation(RENTAL_COLLATION),
+      getRentalCoverage(meta?.generatedAt, STALE_DAYS),
     ])
     const total = Number(totals[0]?.total) || 0
 
@@ -131,6 +133,7 @@ export default defineEventHandler(async (event): Promise<RentalsResponse> => {
 
     return {
       meta: (meta as RentalMeta | null) ?? null,
+      coverage,
       items: items as RentalProperty[],
       total,
       page: query.page,

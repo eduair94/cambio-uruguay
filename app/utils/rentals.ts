@@ -188,8 +188,18 @@ export interface RentalFacetValue {
   count: number
 }
 
+/** Global visible catalogue, independently from filters and the latest scraper run. */
+export interface RentalCoverage {
+  computedAt: string
+  properties: number
+  /** A property may appear under multiple sources, but only once under each source. */
+  sources: Array<{ key: RentalSource; properties: number }>
+}
+
 export interface RentalsResponse {
   meta: RentalMeta | null
+  /** Null means this count is unavailable; zero is reserved for a successful empty count. */
+  coverage?: RentalCoverage | null
   items: RentalProperty[]
   total: number
   page: number
