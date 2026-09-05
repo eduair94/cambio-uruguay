@@ -632,7 +632,7 @@ legend {
   max-width: 44px;
   max-height: 44px;
 }
-.rental-search--dialog :deep(.v-label) {
+.rental-search--dialog :deep(.v-selection-control .v-label) {
   white-space: normal;
   overflow-wrap: anywhere;
 }

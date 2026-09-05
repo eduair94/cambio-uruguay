@@ -215,6 +215,45 @@ async function expectMobileChipTargets(buttons: Locator, width: number) {
   }
 }
 
+async function expectInputLabelClear(input: Locator) {
+  const geometry = await input.evaluate(element => {
+    const input = element as HTMLInputElement
+    const box = input.getBoundingClientRect()
+    const style = getComputedStyle(input)
+    const context = document.createElement('canvas').getContext('2d')!
+    context.font = style.font
+    const left = box.left + Number.parseFloat(style.paddingLeft)
+    const valueLine = {
+      left,
+      right: left + context.measureText(input.value).width,
+      top: box.top + Number.parseFloat(style.paddingTop),
+      bottom: box.bottom - Number.parseFloat(style.paddingBottom),
+    }
+    const labels = [...input.closest('.v-field')!.querySelectorAll('label')].flatMap(label => {
+      const labelStyle = getComputedStyle(label)
+      if (labelStyle.visibility !== 'visible' || Number(labelStyle.opacity) === 0) return []
+      const range = document.createRange()
+      range.selectNodeContents(label)
+      return [...range.getClientRects()]
+        .filter(rect => rect.width && rect.height)
+        .map(({ left, right, top, bottom }) => ({ left, right, top, bottom }))
+    })
+    return { valueLine, labels }
+  })
+  expect(geometry.labels.length).toBeGreaterThan(0)
+  for (const label of geometry.labels) {
+    const overlaps =
+      Math.min(label.right, geometry.valueLine.right) >
+        Math.max(label.left, geometry.valueLine.left) &&
+      Math.min(label.bottom, geometry.valueLine.bottom) >
+        Math.max(label.top, geometry.valueLine.top)
+    expect(
+      overlaps,
+      `The visible field label overlaps its value: ${JSON.stringify(geometry)}`
+    ).toBe(false)
+  }
+}
+
 async function startFixtureSearch(page: Page, expectedCount = 3) {
   // The initial SSR fetch runs outside the browser interception. Submitting page 2 as page 1
   // changes the route and loads our fixture through the real hydrated form and client fetch.
@@ -599,6 +638,9 @@ test.describe('rental directory', () => {
       await budget.focus()
       await page.setViewportSize({ width, height: 360 })
       await budget.fill('25000')
+      // Check the currently visible label too: its animation must not wrap a second line over
+      // the value before the final floating label takes over.
+      await expectInputLabelClear(budget)
       await expectInsideViewport(budget, page)
       await expectInsideViewport(apply, page)
       await expectInsideViewport(cancel, page)
