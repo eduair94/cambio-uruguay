@@ -836,12 +836,12 @@ test.describe('rental directory', () => {
     const coverage = page.locator('#rental-coverage')
     await coverage.locator('summary').click()
     const summary = page.getByTestId('rental-coverage-summary')
-    await expect(summary).toHaveText('3.500 propiedades únicas en el índice')
+    await expect(summary).toHaveText('3.500 resultados visibles en el índice')
     const expectedSources = [
-      ['mercadolibre', 'Mercado Libre', '2.468 propiedades'],
-      ['infocasas', 'InfoCasas', '1.234 propiedades'],
-      ['facebook', 'Facebook Marketplace', '321 propiedades'],
-      ['casasweb', 'Casasweb', '456 propiedades'],
+      ['mercadolibre', 'Mercado Libre', '2.468 resultados'],
+      ['infocasas', 'InfoCasas', '1.234 resultados'],
+      ['facebook', 'Facebook Marketplace', '321 resultados'],
+      ['casasweb', 'Casasweb', '456 resultados'],
       ['elpais', 'Inmuebles El País', 'Consulta externa'],
     ]
     for (const [key, name, count] of expectedSources) {
@@ -853,7 +853,7 @@ test.describe('rental directory', () => {
       'No se pudo actualizar en el último repaso.'
     )
     const externalSource = page.getByTestId('rental-coverage-source-elpais')
-    await expect(externalSource).not.toContainText('0 propiedades')
+    await expect(externalSource).not.toContainText('0 resultados')
     await expect(externalSource).not.toContainText('No se pudo actualizar')
     await expect(page.locator('.rentals-head [role="alert"]')).toContainText('Facebook Marketplace')
     await expect(page.locator('.rentals-head [role="alert"]')).not.toContainText(
@@ -875,7 +875,7 @@ test.describe('rental directory', () => {
     await expect(page.locator('.rental-card')).toHaveCount(2)
     await expect(page.locator('#rental-results h2')).toHaveText('2 propiedades')
     await coverage.locator('summary').scrollIntoViewIfNeeded()
-    await expect(summary).toHaveText('3.500 propiedades únicas en el índice')
+    await expect(summary).toHaveText('3.500 resultados visibles en el índice')
     await expect(coverage.locator('.rentals-coverage-sources')).toHaveText(before)
     await expect
       .poll(() => page.evaluate(() => document.documentElement.scrollWidth))

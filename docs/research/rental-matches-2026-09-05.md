@@ -213,6 +213,8 @@ Las portadas originales muestran interiores distintos: paredes rosadas y techo d
 
 El manifiesto añade únicamente este octavo grupo y su décimo par negativo. Conserva intactos los siete grupos anteriores y guarda para cada nueva evidencia la URL, la hora, `identityMatched: true` y la procedencia de la designación en `data.description`. No almacena en el manifiesto la descripción completa ni infiere una numeración registral desde el ordinal.
 
+La reproducción posterior del agrupador con estos títulos e identidades originales localizó además la causa concreta de la unión que persistía: el extractor interpretaba como unidad `1` tanto «apartamento 1 dor» como «apartamento 1 -2 dor». Eran cantidades de dormitorios, no identificadores de apartamento. **Este falso positivo no provenía de fotografías ni títulos iguales**: las dos portadas y los dos títulos originales son distintos. Tras corregir la abreviatura y el rango, ninguno de estos títulos aporta una unidad y el criterio conservador los separa.
+
 ### Malvín: coincidencia probable, sin identificación independiente de la unidad
 
 **Key observada:** `montevideo-malvin-rambla-republica-de-chile-ufl03l`. **IDs completos:** `infocasas:194088031` y `mercadolibre:MLU1477297794`. Las dos ofertas conservaban Rambla República de Chile 4500, Malvín, tres dormitorios, un baño, 90 m² y UYU 42.000, además del título específico sobre alquiler en la rambla, tres dormitorios, un baño y garaje. La portada es visualmente la misma fotografía exterior, con igual encuadre, autos, árboles y marca de agua, servida a resoluciones diferentes.

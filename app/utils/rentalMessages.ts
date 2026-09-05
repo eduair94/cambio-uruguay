@@ -126,13 +126,13 @@ export const rentalMessages = {
     rate: 'Conversión: U$S 1 = $ {rate}',
     methodology: 'Cómo reunimos los alquileres',
     methodText:
-      'Agrupamos avisos cuando coinciden ubicación, características y precio. Una dirección compartida no alcanza: en un edificio puede haber varias viviendas.',
+      'Agrupamos avisos sólo cuando identifican la misma dirección exacta y unidad, y sus datos son compatibles.',
     coverageText:
       'El índice se amplía con fuentes públicas que podemos leer de forma estable. Ningún portal cubre todo el mercado. Cada aviso conserva su enlace y fecha de última lectura.',
-    coverageTotal: '{n} propiedad única en el índice | {n} propiedades únicas en el índice',
-    coverageProperties: '{n} propiedad | {n} propiedades',
+    coverageTotal: '{n} resultado visible en el índice | {n} resultados visibles en el índice',
+    coverageProperties: '{n} resultado | {n} resultados',
     coverageScope:
-      'Contamos las propiedades visibles en todo el índice, independientemente de tus filtros. Una propiedad puede figurar en varios portales, por eso la suma por fuente puede superar el total.',
+      'Contamos los resultados visibles de todo el índice y de cada fuente, sin aplicar tus filtros. Sólo agrupamos avisos con la misma dirección exacta y unidad explícitamente identificada. Un mismo inmueble puede quedar en resultados separados si faltan datos. Un resultado presente en varios portales cuenta en cada fuente, por eso la suma puede superar el total.',
     coverageReadFailed: 'No se pudo actualizar en el último repaso.',
     externalOnly: 'Consulta externa',
     externalOnlyHint:
@@ -287,13 +287,13 @@ export const rentalMessages = {
     rate: 'Conversion: US$ 1 = UYU {rate}',
     methodology: 'How we collect rentals',
     methodText:
-      'We group listings when location, features and price match. A shared address is not enough: one building can contain several homes.',
+      'We group listings only when they identify the same exact address and unit, and their details are compatible.',
     coverageText:
       'We expand the index using public sources we can read reliably. No portal covers the whole market. Every listing retains its source link and last reading date.',
-    coverageTotal: '{n} unique property in the index | {n} unique properties in the index',
-    coverageProperties: '{n} property | {n} properties',
+    coverageTotal: '{n} visible result in the index | {n} visible results in the index',
+    coverageProperties: '{n} result | {n} results',
     coverageScope:
-      'We count visible properties across the entire index, independently of your filters. A property can appear on several portals, so source counts may add up to more than the total.',
+      'We count visible results across the entire index and for each source, independently of your filters. Listings are grouped only when they identify the same exact address and explicit unit. The same property may remain in separate results if details are missing. A result listed on multiple portals counts under each source, so source counts may add up to more than the total.',
     coverageReadFailed: 'Could not be updated during the latest check.',
     externalOnly: 'External search',
     externalOnlyHint: 'Browse listings on the portal. Automatic updates here are not enabled.',
@@ -448,13 +448,13 @@ export const rentalMessages = {
     rate: 'Conversão: US$ 1 = UYU {rate}',
     methodology: 'Como reunimos os aluguéis',
     methodText:
-      'Agrupamos anúncios quando localização, características e preço coincidem. Um endereço compartilhado não basta: um prédio pode ter vários imóveis.',
+      'Agrupamos anúncios apenas quando identificam o mesmo endereço exato e unidade, e seus dados são compatíveis.',
     coverageText:
       'Ampliamos o índice com fontes públicas que podemos ler de forma estável. Nenhum portal cobre todo o mercado. Cada anúncio mantém seu link e data de última leitura.',
-    coverageTotal: '{n} imóvel único no índice | {n} imóveis únicos no índice',
-    coverageProperties: '{n} imóvel | {n} imóveis',
+    coverageTotal: '{n} resultado visível no índice | {n} resultados visíveis no índice',
+    coverageProperties: '{n} resultado | {n} resultados',
     coverageScope:
-      'Contamos os imóveis visíveis em todo o índice, independentemente dos seus filtros. Um imóvel pode aparecer em vários portais, por isso a soma por fonte pode superar o total.',
+      'Contamos os resultados visíveis de todo o índice e de cada fonte, sem aplicar seus filtros. Agrupamos anúncios apenas com o mesmo endereço exato e unidade explicitamente identificada. Um mesmo imóvel pode ficar em resultados separados se faltarem dados. Um resultado presente em vários portais conta em cada fonte, por isso a soma pode superar o total.',
     coverageReadFailed: 'Não foi possível atualizar na última consulta.',
     externalOnly: 'Consulta externa',
     externalOnlyHint:
