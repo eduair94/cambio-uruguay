@@ -61,7 +61,7 @@ app/pages/alquileres-uruguay.vue <── app/server/api/rentals <────┘
 | **InfoCasas** | `__NEXT_DATA__` de sus páginas de listado | todo lo anterior **más** lat/lon, gastos comunes, inmobiliaria y fecha de publicación | — |
 | **Facebook Marketplace** | bridge propio en `:9657` (`pm2 facebook_marketplace`) | precio, título, ciudad, foto | dirección, barrio, m², dormitorios (salvo que estén en el título) |
 | **Casasweb** | HTML público de `resultados.aspx`; paginación mediante el formulario de búsqueda que entrega el servidor | mensualidad, moneda, departamento, barrio, tipo, dormitorios, m², garajes, inmobiliaria, foto | dirección separada, coordenadas, fecha de publicación; baños sólo cuando el título los declara |
-| **Inmuebles El País** | los dos endpoints de su propio buscador, con nuestra UA: `POST /api/chat/init` (una búsqueda guardada por departamento) y `GET /api/chat/<id>/results?page&limit=500` | dirección, barrio, lat/lon, dormitorios/baños/m², gastos comunes, inmobiliaria, foto y **la garantía como dato estructurado** | fecha de publicación original; teléfono y correo de la inmobiliaria (existen en la respuesta y **no se copian**); garaje y amueblado |
+| **Inmuebles El País** | los dos endpoints de su propio buscador: `POST /api/chat/init` (una búsqueda guardada por departamento) y `GET /api/chat/<id>/results?page&limit=500`; UA de navegador y cabecera `x-cambio-uruguay-bot`, con puppeteer de respaldo cuando Cloudflare desafía | dirección, barrio, lat/lon, dormitorios/baños/m², gastos comunes, inmobiliaria, foto y **la garantía como dato estructurado** | fecha de publicación original; teléfono y correo de la inmobiliaria (existen en la respuesta y **no se copian**); garaje y amueblado |
 
 Verificado localmente el **2026-09-04** con la UA propia: Gallito directo devolvió **403 Cloudflare** en
 `https://www.gallito.com.uy/inmuebles/alquiler`; no se sortea esa protección. Su nuevo portal
@@ -209,9 +209,14 @@ lea `attributes_list` (`"2 dormitorios | 1 baño | 40 m² cubiertos"`) y `locati
 ### Buenos modales
 
 - UA propia e identificable (`CambioUruguayBot/1.0 (+https://cambio-uruguay.com/alquileres-uruguay)`).
-  Las comprobaciones fechadas arriba conservan sus resultados de acceso. En El País la UA propia
-  sigue recibiendo **403 de Cloudflare en las páginas HTML** y **200 en los dos endpoints del
-  buscador**: por eso se leen esos y no se sortea el desafío del HTML.
+  Las comprobaciones fechadas arriba conservan sus resultados de acceso. **El País es la excepción,
+  y por una razón medida:** desde el VPS, en el mismo segundo y contra la misma ruta, nuestra UA
+  recibe **403 de Cloudflare** y una UA de navegador recibe **404 `Chat not found`**, o sea que
+  llega a la aplicación. Anunciarnos en la UA ahí no nos hace honestos, nos hace invisibles: la
+  fuente lee cero avisos y el operador que **pidió** la importación no recibe nada. La
+  identificación se muda a la cabecera `x-cambio-uruguay-bot`, que viaja en cada petición —también
+  en las que emite el navegador desde dentro de la página—, se puede allowlistear, y la UA se puede
+  cambiar con `RENTALS_EP_USER_AGENT`.
 - Un request por host a la vez, con 1,2 s de separación (`RENTALS_HOST_GAP_MS`). El barrido completo
   de InfoCasas son ~900 páginas contra un solo host: va a las 04:52 UTC (01:52 de Montevideo).
 - `robots.txt` de InfoCasas prohíbe `/alquiler/*-y-*`. Sólo construimos `/alquiler/pagina<N>`, y
@@ -490,6 +495,7 @@ El País vuelve a tener variables propias, ahora que importa:
 | `RENTALS_EP_FAST_PAGES` | 1 | páginas por departamento en el repaso horario |
 | `RENTALS_EP_INIT_GAP_MS` | 7000 | separación entre búsquedas **que hay que abrir**. Una corrida que reutiliza todos los identificadores no espera nada |
 | `RENTALS_EP_CHATS_FILE` | `<temp>/cambio-uruguay-elpais-chats.json` | dónde se guardan los identificadores de las búsquedas entre corridas. Si falta o está corrupto, la corrida las abre de nuevo; se puede **sembrar a mano** con identificadores abiertos desde un navegador |
+| `RENTALS_EP_USER_AGENT` | UA de Chrome | la UA con la que se habla con el portal. **Es la única fuente que no manda `CambioUruguayBot/1.0`**: desde el VPS esa cadena cobra 403 y una de navegador llega a la app. La identificación va en la cabecera `x-cambio-uruguay-bot` |
 | `RENTALS_EP_BROWSER` | `1` | `0` deja la fuente en HTTP plano: se abren las 3 búsquedas que Cloudflare deja pasar y nada más |
 | `RENTALS_EP_CHROME` | — | ruta al Chrome a usar. Se prueban esta, `PUPPETEER_EXECUTABLE_PATH`, `/usr/bin/google-chrome-stable` y por último el Chromium propio de puppeteer |
 | `RENTALS_EP_BROWSER_BUDGET_MS` | 360000 | techo duro de toda la fase de navegador. Un Chrome colgado en este VPS no es un job lento, es una caída |

@@ -10,17 +10,18 @@
 // `docs/research/rental-elpais-authorized-2026-09-05.md`, and `RENTALS_ELPAIS_ENABLED=0` puts the
 // adapter back to `external_only` without a deploy the day it is withdrawn.
 //
-// HOW IT READS. Not by scraping the category pages: those are served behind a Cloudflare
-// challenge that answers 403 to our honest UA, and their HTML only ever carried the first 24 rows.
-// The portal's own front end turns a category URL into a saved conversational search and then
-// pages through it, so we call the same two endpoints it does, with our identifying UA:
+// HOW IT READS. Not the category pages: their HTML only ever carried the first 24 rows and `?page`
+// is ignored. The portal's own front end turns a category URL into a saved conversational search
+// and pages through it, so we call the same two endpoints it does:
 //
-//   POST /api/chat/init                     -> {chatId}, one per department (province filter)
+//   POST /api/chat/init                         -> {chatId}, one per department (province filter)
 //   GET  /api/chat/<chatId>/results?page&limit  -> the full rows, 500 at a time
 //
-// Both answer 200 to `CambioUruguayBot/1.0`. `results` allows 15.000 requests per 15 min; `init`
-// allows TEN PER MINUTE, which is the one real constraint here and why the departments are paced
-// by `INIT_GAP_MS` instead of by the shared host gap.
+// `results` allows 15.000 requests per 15 min; `init` allows TEN PER MINUTE, which is why the
+// departments are paced by `INIT_GAP_MS` instead of by the shared host gap. Neither of those is
+// the real obstacle: Cloudflare is. See `PORTAL_HEADERS` for what the edge refuses and why the
+// identification lives in a header here, and `elpais_browser.ts` for what happens when even that
+// is challenged.
 //
 // WHAT IS STILL NOT TAKEN, authorisation or not: the AI enrichment (`visualDescription`,
 // `keywordsOfProperty`, `contentTags`, the `*Score` fields), the converted `expensesMonthlyUSD`,
@@ -230,6 +231,31 @@ const CHAT_ID = /^[a-f0-9-]{16,64}$/i;
 const BROWSER_ENABLED = process.env.RENTALS_EP_BROWSER !== "0";
 
 /**
+ * Why this source does NOT send `CambioUruguayBot/1.0` in the User-Agent, alone in this directory.
+ *
+ * Because that exact string is what the portal's edge refuses. Measured from the production VPS on
+ * 2026-09-05, same second, same IP, same path:
+ *
+ *   our bot UA      -> 403, Cloudflare's `Just a moment...` interstitial
+ *   a browser UA    -> 404 `{"success":false,"error":"Chat not found"}` — through to the app
+ *
+ * Locally the bot UA still passes; from the VPS's address it does not. So announcing ourselves in
+ * the UA does not make us honest here, it makes us invisible — the source reads zero adverts and
+ * the operator who ASKED for this import gets nothing.
+ *
+ * The identification moves to a header instead of disappearing. `x-cambio-uruguay-bot` rides on
+ * every request, including the ones the browser makes from inside the page, so the operator can
+ * still find our traffic in their logs and can allowlist it. `RENTALS_EP_USER_AGENT` overrides the
+ * UA the day they would rather see something else.
+ */
+const PORTAL_HEADERS: Record<string, string> = {
+  "user-agent": process.env.RENTALS_EP_USER_AGENT
+    || "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+  "x-cambio-uruguay-bot": "CambioUruguayBot/1.0 (+https://cambio-uruguay.com/alquileres-uruguay)",
+  accept: "application/json",
+};
+
+/**
  * The saved searches survive between runs, so we keep their ids and stop paying for new ones.
  *
  * This is not a micro-optimisation. Opening a search is an **AI** call on the portal's side — it
@@ -335,7 +361,7 @@ const positiveInt = (value: unknown): number => (Number.isFinite(Number(value)) 
  */
 async function openSearch(search: ElpaisSearch): Promise<string> {
   const init = await fetchJson<ChatInitResponse>(`${ORIGIN}/api/chat/init`, {
-    method: "POST", body: searchForm(search), headers: { accept: "application/json" },
+    method: "POST", body: searchForm(search), headers: PORTAL_HEADERS,
     timeoutMs: 90_000, retries: 0,
   });
   const chatId = typeof init?.data?.chatId === "string" ? init.data.chatId : "";
@@ -389,7 +415,7 @@ interface ResultsPage {
 async function readPage(chatId: string, page: number, sort: string): Promise<ResultsPage | null> {
   const body = await fetchJson<ChatResultsResponse>(
     `${ORIGIN}/api/chat/${chatId}/results?page=${page}&limit=${PAGE_SIZE}${sort}`,
-    { headers: { accept: "application/json" }, timeoutMs: 90_000 }
+    { headers: PORTAL_HEADERS, timeoutMs: 90_000 }
   );
   if (!body?.success || !Array.isArray(body.data?.results)) return null;
   return { rows: body.data!.results as unknown[], totalPages: positiveInt(body.data?.pagination?.totalPages) };

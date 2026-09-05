@@ -114,7 +114,27 @@ del tope— y sin ninguna cabecera de límite. Sólo lo dispara `POST /api/chat/
 `results` siguen contestando 200 durante todo el episodio. Tres o cuatro aperturas por corrida
 pasan; de ahí en adelante, no.
 
-### La solución: que lo pida un navegador de verdad
+### Lo primero que hay que cambiar es la UA, y duele decirlo
+
+Desde el VPS de producción, mismo segundo, misma IP, misma ruta:
+
+| User-Agent | respuesta |
+| --- | --- |
+| `CambioUruguayBot/1.0 (+https://cambio-uruguay.com/…)` | **403**, `Just a moment...` |
+| UA de Chrome | **404** `{"success":false,"error":"Chat not found"}` — llegó a la aplicación |
+
+Y con UA de navegador el `POST /api/chat/init` desde el VPS devuelve **201 por HTTP plano**, sin
+navegador de por medio. En esta caja local la UA propia todavía pasa; desde la dirección del VPS,
+no.
+
+Así que acá anunciarnos en la UA no nos hace honestos: nos hace **invisibles**. La fuente lee cero
+avisos y el operador que pidió la importación no recibe nada. La identificación **no desaparece,
+se muda**: `x-cambio-uruguay-bot` viaja en cada petición —incluidas las que emite el navegador
+desde dentro de la página—, se puede allowlistear en su borde, y `RENTALS_EP_USER_AGENT` cambia la
+UA el día que prefieran otra cosa. Es la única fuente del directorio con esta excepción y está acá
+escrita para que se note.
+
+### Y si aun así hay desafío: que lo pida un navegador de verdad
 
 **No se falsifica nada.** No hay replay de la cookie `cf_clearance`, ni suplantación de huella TLS,
 ni parches de sigilo. Se levanta el Chrome que este repo ya trae (`puppeteer`, el mismo que usa

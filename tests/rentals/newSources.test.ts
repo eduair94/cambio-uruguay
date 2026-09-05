@@ -142,6 +142,12 @@ describe("Inmuebles El País's offline public-page samples", () => {
     expect(urls).toHaveLength(38);
     expect(urls[0]).toContain("page=1&limit=500");
     expect(urls[0]).not.toContain("sort=");
+    // Our bot UA is exactly what the portal's edge answers 403 to from the VPS, so the
+    // identification rides in a header that survives instead of vanishing with it.
+    for (const headers of vi.mocked(fetchJson).mock.calls.map(call => (call[1] as any)?.headers)) {
+      expect(headers["x-cambio-uruguay-bot"]).toContain("cambio-uruguay.com");
+      expect(headers["user-agent"]).toContain("Mozilla/5.0");
+    }
     expect(run).toMatchObject({ key: "elpais", ok: true, complete: true, listings: expect.any(Array) });
     expect(run.access).toBeUndefined();
     expect(run.note).toContain("departamentos consultados: 19 de 19");
