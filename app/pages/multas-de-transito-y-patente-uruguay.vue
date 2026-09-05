@@ -3,7 +3,7 @@
     <header class="mb-10">
       <VChip color="primary" variant="flat" size="small" class="mb-4">AUTO</VChip>
       <h1 class="text-h4 text-md-h3 font-weight-bold mb-4">
-        Multas de tránsito y patente: los plazos y los números que casi todos pierden
+        {{ t('heading') }}
       </h1>
       <p class="lead mb-6">
         Para defenderte de una multa hay dos plazos de diez días — pero
@@ -13,12 +13,20 @@
         empadronás no se elige.
       </p>
 
-      <div class="d-flex flex-wrap ga-2 mb-6">
-        <VBtn href="#pasos" variant="tonal" size="small">Multas: los plazos</VBtn>
-        <VBtn href="#patente" variant="tonal" size="small">Cuánto es la patente</VBtn>
-        <VBtn href="#impago" variant="tonal" size="small">Si no pagás</VBtn>
-        <VBtn href="#reempadronar" variant="tonal" size="small">Reempadronar</VBtn>
-      </div>
+      <nav :aria-label="t('navigation')" class="fines-navigation d-flex flex-wrap ga-2 mb-6">
+        <VBtn
+          href="#circular-con-deuda"
+          color="primary"
+          variant="flat"
+          data-cta="fines_driving_debt"
+        >
+          {{ t('drivingFine') }}
+        </VBtn>
+        <VBtn href="#pasos" variant="tonal">{{ t('appeal') }}</VBtn>
+        <VBtn href="#consulta-patente" variant="tonal">{{ t('checkDebt') }}</VBtn>
+        <VBtn href="#patente" variant="text">{{ t('taxAmount') }}</VBtn>
+        <VBtn href="#reempadronar" variant="text">{{ t('registration') }}</VBtn>
+      </nav>
 
       <VCard class="trap-card pa-5 pa-md-6" variant="flat">
         <div class="d-flex align-start">
@@ -181,7 +189,7 @@
         </VCol>
       </VRow>
 
-      <VCard variant="flat" class="plain-card pa-5">
+      <VCard id="consulta-patente" variant="flat" class="plain-card pa-5">
         <h3 class="text-subtitle-1 font-weight-bold mb-2">Consultá tu importe</h3>
         <p class="mb-3 text-medium-emphasis">
           El valor de patente y la deuda se consultan gratis con matrícula, padrón y gobierno
@@ -203,6 +211,7 @@
             target="_blank"
             rel="noopener noreferrer"
             variant="tonal"
+            data-cta="fines_check_debt"
             size="small"
           >
             Consulta de deuda
@@ -244,6 +253,33 @@
     <section id="impago" class="mb-12">
       <h2 class="text-h5 font-weight-bold mb-2">Si no pagás la patente: qué hace el SUCIVE</h2>
 
+      <div v-if="drivingFine" id="circular-con-deuda" class="mb-6">
+        <h3 class="text-h6 font-weight-bold mb-2">{{ t('drivingFineHeading') }}</h3>
+        <p class="mb-3">{{ drivingFine.detail }}</p>
+        <a
+          href="https://www.gub.uy/congreso-intendentes/comunicacion/publicaciones/texto-ordenado-del-sucive-2026"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="fines-link"
+        >
+          {{ drivingFine.norm }}
+        </a>
+        <div class="fines-navigation d-flex flex-wrap ga-2 mt-4">
+          <VBtn
+            :href="PATENTE_DEUDA_URL"
+            target="_blank"
+            rel="noopener noreferrer"
+            variant="tonal"
+            data-cta="fines_check_debt"
+          >
+            {{ t('checkDebtOfficial') }}
+          </VBtn>
+          <VBtn href="#convenio" variant="text" data-cta="fines_payment_plan">
+            {{ t('paymentPlan') }}
+          </VBtn>
+        </div>
+      </div>
+
       <h3 class="text-subtitle-1 font-weight-bold mb-2">La multa por mora</h3>
       <VCard variant="flat" class="plain-card pa-0 mb-2">
         <VTable class="cu-mobile-cards" density="comfortable">
@@ -265,7 +301,7 @@
 
       <h3 class="text-subtitle-1 font-weight-bold mb-2">Y después, los bloqueos</h3>
       <VRow>
-        <VCol v-for="c in PATENTE_CONSEQUENCES" :key="c.label" cols="12" md="6">
+        <VCol v-for="c in otherConsequences" :key="c.label" cols="12" md="6">
           <VCard variant="flat" class="step-card pa-5 h-100">
             <h4 class="text-subtitle-1 font-weight-bold mb-1">{{ c.label }}</h4>
             <p class="mb-2 text-medium-emphasis">{{ c.detail }}</p>
@@ -293,7 +329,7 @@
     </section>
 
     <!-- Convenio -->
-    <section class="mb-12">
+    <section id="convenio" class="mb-12">
       <h2 class="text-h5 font-weight-bold mb-4">El convenio de pago del SUCIVE</h2>
       <VRow>
         <VCol v-for="c in CONVENIO_FACTS" :key="c.label" cols="12" md="6">
@@ -360,23 +396,24 @@
 
     <!-- Related -->
     <section class="mb-12">
-      <h2 class="text-h6 font-weight-bold mb-3">Seguir por acá</h2>
+      <h2 class="text-h6 font-weight-bold mb-3">{{ t('relatedHeading') }}</h2>
+      <p class="text-body-2 text-medium-emphasis mb-4">{{ t('relatedIntro') }}</p>
       <div class="d-flex flex-wrap ga-2">
         <VBtn
           :to="localePath('/prescripcion-de-deudas-con-el-estado-uruguay')"
           variant="tonal"
           size="small"
         >
-          Prescripción de deudas con el Estado
+          {{ t('debtPrescription') }}
         </VBtn>
         <VBtn :to="localePath('/guias/costos-de-tener-auto-uruguay')" variant="tonal" size="small">
-          Cuánto cuesta tener auto
+          {{ t('carCosts') }}
         </VBtn>
         <VBtn :to="localePath('/guias/transferir-un-auto-uruguay')" variant="tonal" size="small">
-          Transferir un auto
+          {{ t('transferCar') }}
         </VBtn>
         <VBtn :to="localePath('/a-quien-le-reclamo-uruguay')" variant="tonal" size="small">
-          A quién le reclamo
+          {{ t('findAuthority') }}
         </VBtn>
       </div>
     </section>
@@ -402,6 +439,7 @@
 </template>
 
 <script setup lang="ts">
+import { finesNavigationMessages } from '~/utils/finesNavigationMessages'
 import {
   CONVENIO_FACTS,
   CONVENIO_VS_PRESCRIPCION_NOTE,
@@ -443,6 +481,11 @@ import {
 } from '~/utils/trafficFines'
 
 const localePath = useLocalePath()
+const { t } = useI18n({ useScope: 'local', messages: finesNavigationMessages })
+const drivingFine = PATENTE_CONSEQUENCES.find(
+  consequence => consequence.norm === 'Texto Ordenado del SUCIVE 2026, art. 10'
+)
+const otherConsequences = PATENTE_CONSEQUENCES.filter(consequence => consequence !== drivingFine)
 
 const fmtDate = (iso: string) =>
   new Date(iso).toLocaleDateString('es-UY', {
@@ -456,9 +499,8 @@ const verifiedAt = fmtDate(FINES_VERIFIED_AT)
 const patenteVerifiedAt = fmtDate(PATENTE_VERIFIED_AT)
 
 const canonicalUrl = 'https://cambio-uruguay.com/multas-de-transito-y-patente-uruguay'
-const title = 'Multas de tránsito y patente (SUCIVE) en Uruguay: plazos, cálculo y deuda'
-const description =
-  'Diez días hábiles para el descargo y diez corridos para el recurso: no es el mismo plazo y es la forma más común de perder la instancia. Y la patente: cómo se calcula sobre el aforo, las alícuotas 2026 por categoría, la escala de motos por cilindrada que no existe, qué pasa si no pagás (mora, bloqueo para transferir, retiro de placas), el convenio, la prescripción a los diez años y por qué el departamento donde empadronás no se elige.'
+const title = computed(() => t('title'))
+const description = computed(() => t('description'))
 
 defineOgImageComponent('Cambio', {
   title: 'Multas y patente (SUCIVE)',
@@ -467,7 +509,7 @@ defineOgImageComponent('Cambio', {
 })
 
 useSeoMeta({
-  title: () => `${title} | Cambio Uruguay`,
+  title: () => `${title.value} | Cambio Uruguay`,
   description,
   ogTitle: title,
   ogDescription: description,
@@ -528,6 +570,20 @@ useHead(() => ({
 <style scoped>
 .fines-page {
   max-width: 1180px;
+}
+.fines-page [id] {
+  scroll-margin-top: 96px;
+}
+.fines-navigation .v-btn {
+  min-height: 44px;
+  height: auto;
+  max-width: 100%;
+  white-space: normal;
+  padding-block: 8px;
+}
+.fines-link {
+  color: rgb(var(--v-theme-link));
+  font-weight: 600;
 }
 .lead {
   font-size: 1.075rem;

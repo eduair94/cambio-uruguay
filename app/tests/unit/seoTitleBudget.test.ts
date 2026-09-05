@@ -7,6 +7,9 @@ import es from '../../i18n/locales/json/es.json'
 import pt from '../../i18n/locales/json/pt.json'
 import { currencyDisplayName } from '../../utils/currencyPages'
 import { FRONTERA_ROUTES } from '../../utils/frontera'
+import { growthEntryMessages } from '../../utils/growthEntryMessages'
+import { noiseNavigationMessages } from '../../utils/noiseNavigationMessages'
+import { finesNavigationMessages } from '../../utils/finesNavigationMessages'
 
 /**
  * El presupuesto de caracteres de los títulos que llevan datos adentro.
@@ -141,13 +144,14 @@ describe('los títulos de la home dicen "hoy"', () => {
  * ("...y por qué la culpa no decide", "...el rendimiento del saldo en Prex y
  * Mercado Pago"). El head genérico sobrevivía entero.
  *
- * Se leen dos formas, que son las dos que el repo usa de verdad:
+ * Se leen los literales locales y los catálogos puros importados que usan estas páginas:
  *
  *   title: 'Texto literal'
  *   title: () => `${title} | Cambio Uruguay`   con  const title = '...'
+ *   title: () => `${title.value} | Cambio Uruguay` con computed(() => t('clave'))
  *
- * Las que arman el título desde `t()`, desde un `computed` o desde el payload de
- * la API no se pueden resolver leyendo el archivo y quedan fuera de la cuenta.
+ * Los mensajes locales se resuelven siguiendo el import, el catálogo de useI18n y
+ * la clave literal. Los computed con datos o mensajes dinámicos de la API siguen fuera.
  * Eso es una limitación real y no una excusa: por eso el test también fija
  * `MEASURABLE`, así que convertir una página medible en una dinámica no puede
  * usarse para bajar el número de abajo sin que se note.
@@ -166,6 +170,37 @@ function pageFiles(dir: string = PAGES_DIR): string[] {
   })
 }
 
+// Sólo datos puros: importar estos catálogos no ejecuta el componente ni una página Nuxt.
+// El binding y la ruta del import deben coincidir con el useI18n real de la página.
+const LOCAL_TITLE_MESSAGES: Record<string, Record<string, unknown>> = {
+  '~/utils/growthEntryMessages': growthEntryMessages.es,
+  '~/utils/noiseNavigationMessages': noiseNavigationMessages.es,
+  '~/utils/finesNavigationMessages': finesNavigationMessages.es,
+}
+
+function localMessageTitle(source: string, titleVariable: string): string | null {
+  const computedTitle = [
+    ...source.matchAll(
+      /\bconst\s+([A-Za-z_$][\w$]*)\s*=\s*computed\(\(\)\s*=>\s*t\('([^']+)'\)\)/g
+    ),
+  ].find(match => match[1] === titleVariable)
+  if (!computedTitle) return null
+  const local = source.match(
+    /useI18n\(\{\s*useScope:\s*'local',\s*messages:\s*([A-Za-z_$][\w$]*)\s*\}\)/
+  )
+  if (!local) return null
+  const imported = [
+    ...source.matchAll(/import\s+\{\s*([A-Za-z_$][\w$]*)\s*\}\s+from\s+'(~\/utils\/[^']+)'/g),
+  ].find(match => match[1] === local[1])
+  if (!imported) return null
+  let value: unknown = LOCAL_TITLE_MESSAGES[imported[2]]
+  for (const key of computedTitle[2].split('.')) {
+    if (!value || typeof value !== 'object' || !Object.hasOwn(value, key)) return null
+    value = (value as Record<string, unknown>)[key]
+  }
+  return typeof value === 'string' ? value : null
+}
+
 /** El mensaje del `<title>` de una página, o `null` si no se puede leer del archivo. */
 function staticTitle(source: string): string | null {
   // El `})` de cierre va anclado a la columna 0: `useSeoMeta` se llama siempre en
@@ -182,9 +217,13 @@ function staticTitle(source: string): string | null {
 
   // `() => \`${title} | Cambio Uruguay\`` — resolver el const del mismo archivo.
   const interpolated = expression.match(
-    /^(?:\(\)\s*=>\s*)?`\$\{([A-Za-z_$][\w$]*)\}\s*\|\s*Cambio Uruguay`$/
+    /^(?:\(\)\s*=>\s*)?`\$\{([A-Za-z_$][\w$]*)(\.value)?\}\s*\|\s*Cambio Uruguay`$/
   )
   if (!interpolated) return null
+  if (interpolated[2]) {
+    const title = localMessageTitle(source, interpolated[1])
+    return title === null ? null : `${title} | Cambio Uruguay`
+  }
   const declaration = source.match(
     new RegExp(`\\n(?:const|let)\\s+${interpolated[1]}\\s*=\\s*\\n?\\s*'((?:[^'\\\\]|\\\\.)*)'`)
   )
@@ -193,6 +232,30 @@ function staticTitle(source: string): string | null {
 
 const MEASURABLE = 110
 const OVER_BUDGET = 65
+
+describe('el lector sigue los títulos trasladados a mensajes locales', () => {
+  for (const [file, title] of [
+    ['alquilar-estando-en-clearing.vue', growthEntryMessages.es.clearing.seoTitle],
+    ['tarjetas-de-credito-uruguay.vue', growthEntryMessages.es.cards.seoTitle],
+    ['denunciar-ruidos-molestos-uruguay.vue', noiseNavigationMessages.es.title],
+    ['multas-de-transito-y-patente-uruguay.vue', finesNavigationMessages.es.title],
+  ]) {
+    it(`mide el mensaje importado real de ${file}`, () => {
+      expect(staticTitle(readFileSync(join(PAGES_DIR, file), 'utf8'))).toBe(
+        `${title} | Cambio Uruguay`
+      )
+    })
+  }
+
+  it('no inventa títulos cuando la clave o el catálogo no se pueden resolver', () => {
+    const source = readFileSync(join(PAGES_DIR, 'alquilar-estando-en-clearing.vue'), 'utf8')
+    expect(staticTitle(source.replace("t('clearing.seoTitle')", "t('missing.title')"))).toBeNull()
+    expect(
+      staticTitle(source.replace("'~/utils/growthEntryMessages'", "'~/utils/unknownMessages'"))
+    ).toBeNull()
+    expect(staticTitle(source.replace("t('clearing.seoTitle')", 't(dynamicTitleKey)'))).toBeNull()
+  })
+})
 
 describe('los títulos escritos en las páginas entran en el SERP', () => {
   const measured = pageFiles()

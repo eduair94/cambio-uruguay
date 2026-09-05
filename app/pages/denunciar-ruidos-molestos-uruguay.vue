@@ -9,18 +9,28 @@
               CONVIVENCIA
             </VChip>
             <h1 class="text-h4 text-md-h3 font-weight-bold mb-3">
-              Cómo denunciar ruidos molestos en Uruguay
+              {{ t('heading') }}
             </h1>
             <p class="text-body-1 noise-lead">
               Guía paso a paso para denunciar ruidos molestos: qué límite en decibeles rige, qué
               datos te piden, qué canales no tienen costo y qué conviene resolver antes de
               denunciar. Incluye una plantilla lista para completar y enviar.
             </p>
-            <ShareButtons
-              class="mt-4"
-              :url="canonicalUrl"
-              text="Cómo denunciar ruidos molestos en Uruguay"
-            />
+            <nav :aria-label="t('navigation')" class="noise-navigation d-flex flex-wrap ga-2 mt-4">
+              <VBtn
+                href="#plantilla-denuncia"
+                color="primary"
+                variant="flat"
+                data-cta="noise_prepare_complaint"
+              >
+                {{ t('useTemplate') }}
+              </VBtn>
+              <VBtn href="#donde-denunciar" variant="tonal">{{ t('where') }}</VBtn>
+              <VBtn href="#denuncia-anonima" variant="text" data-cta="noise_anonymous">
+                {{ t('anonymous') }}
+              </VBtn>
+            </nav>
+            <ShareButtons class="mt-4" :url="canonicalUrl" :text="t('heading')" />
             <p class="text-caption text-medium-emphasis mt-3">
               Normas y trámites verificados contra su fuente el {{ verifiedDisplay }}.
             </p>
@@ -86,8 +96,8 @@
           </section>
 
           <!-- 4. Dónde se presenta -->
-          <section class="mb-8">
-            <h2 class="text-h5 font-weight-bold mb-3">Dónde se presenta</h2>
+          <section id="donde-denunciar" class="mb-8">
+            <h2 class="text-h5 font-weight-bold mb-3">{{ t('whereHeading') }}</h2>
             <div class="table-scroll">
               <table class="noise-table cu-mobile-cards">
                 <thead>
@@ -134,8 +144,21 @@
             </VAlert>
           </section>
 
+          <section id="denuncia-anonima" class="mb-8">
+            <h2 class="text-h5 font-weight-bold mb-3">{{ t('anonymousHeading') }}</h2>
+            <p class="text-body-1 noise-prose mb-3">{{ t('anonymousAnswer') }}</p>
+            <a
+              href="https://www.gub.uy/tramites/denuncias-ambiente"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="noise-link"
+            >
+              {{ t('anonymousSource') }}
+            </a>
+          </section>
+
           <!-- 5. La plantilla -->
-          <section class="mb-8">
+          <section id="plantilla-denuncia" class="mb-8">
             <h2 class="text-h5 font-weight-bold mb-3">Plantilla de la denuncia</h2>
             <p class="text-body-1 noise-prose mb-4">
               Completá los campos. El texto se arma solo, con los tres datos que exige la
@@ -256,6 +279,16 @@
                 />
               </div>
             </VCard>
+            <p class="text-body-2 noise-prose mt-4 mb-0">
+              {{ t('nextStep') }}
+              <NuxtLink
+                :to="localePath('/a-quien-le-reclamo-uruguay')"
+                class="noise-link"
+                data-cta="noise_find_authority"
+              >
+                {{ t('findAuthority') }}
+              </NuxtLink>
+            </p>
           </section>
 
           <!-- 6. FAQ -->
@@ -330,6 +363,7 @@
 
 <script setup lang="ts">
 import type { SendAction } from '~/utils/messageChannels'
+import { noiseNavigationMessages } from '~/utils/noiseNavigationMessages'
 import {
   NOISE_CHANNELS,
   NOISE_FAQS,
@@ -344,12 +378,13 @@ import {
 } from '~/utils/noiseComplaint'
 
 const localePath = useLocalePath()
+const { t } = useI18n({ useScope: 'local', messages: noiseNavigationMessages })
 
 const limits = NOISE_LIMITS
 const channels = NOISE_CHANNELS
 const steps = NOISE_STEPS
 const tips = NOISE_TIPS
-const faqs = NOISE_FAQS
+const faqs = NOISE_FAQS.filter(faq => faq.q !== '¿Puedo denunciar de forma anónima?')
 const sources = NOISE_SOURCES
 
 const form = ref(emptyNoiseComplaint())
@@ -409,14 +444,17 @@ const verifiedDisplay = computed(() =>
 )
 
 const canonicalUrl = 'https://cambio-uruguay.com/denunciar-ruidos-molestos-uruguay'
-const title = 'Cómo denunciar ruidos molestos en Uruguay: guía, plantilla y dónde presentarla'
-const description =
-  'Montevideo considera ruido molesto lo que supera 45 dB(A) de 7 a 22 h y 39 dB(A) de 22 a 7 h, medidos dentro de tu vivienda. Qué datos te piden, qué canales no tienen costo y una plantilla lista para completar.'
+const title = computed(() => t('title'))
+const description = computed(() => t('description'))
 
-defineOgImageComponent('Cambio', { title, subtitle: description, tag: 'DENUNCIA' })
+defineOgImageComponent('Cambio', {
+  title: title.value,
+  subtitle: description.value,
+  tag: 'DENUNCIA',
+})
 
 useSeoMeta({
-  title: `${title} | Cambio Uruguay`,
+  title: () => `${title.value} | Cambio Uruguay`,
   description,
   ogTitle: title,
   ogDescription: description,
@@ -427,7 +465,7 @@ useSeoMeta({
   twitterDescription: description,
 })
 
-useHead({
+useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl }],
   script: [
     {
@@ -438,7 +476,7 @@ useHead({
           {
             '@type': 'HowTo',
             name: 'Cómo denunciar ruidos molestos en Uruguay',
-            description,
+            description: noiseNavigationMessages.es.description,
             inLanguage: 'es-UY',
             step: NOISE_STEPS.map((step, index) => ({
               '@type': 'HowToStep',
@@ -464,17 +502,28 @@ useHead({
                 name: 'Cambio Uruguay',
                 item: 'https://cambio-uruguay.com',
               },
-              { '@type': 'ListItem', position: 2, name: title, item: canonicalUrl },
+              { '@type': 'ListItem', position: 2, name: title.value, item: canonicalUrl },
             ],
           },
         ],
       }),
     },
   ],
-})
+}))
 </script>
 
 <style scoped>
+.noise-page section[id] {
+  scroll-margin-top: 96px;
+}
+.noise-navigation .v-btn {
+  min-height: 44px;
+  height: auto;
+  max-width: 100%;
+  white-space: normal;
+  padding-block: 8px;
+}
+
 .noise-lead,
 .noise-prose {
   line-height: 1.75;

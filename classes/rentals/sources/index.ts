@@ -1,10 +1,10 @@
 // The rental harvest: every portal, in parallel, each free to fail on its own.
 //
-// Gallito is NOT here. Its listing pages are an ASP.NET WebForms app that renders the results with
-// a client-side postback, so there is no server-rendered card and no JSON contract to read — only
-// a reverse-engineered `__doPostBack` sequence that breaks on their next deploy. Documented in
-// docs/app/RENTALS.md rather than half-implemented.
+// Gallito's direct listing endpoint currently blocks our identifying UA (403). Its public
+// Inmuebles El País category pages provide a separate permitted, explicitly partial read path.
 import { harvestFacebookMarketplace } from "./facebook";
+import { harvestCasasweb } from "./casasweb";
+import { harvestElpais } from "./elpais";
 import { harvestInfoCasas } from "./infocasas";
 import { harvestMercadoLibre } from "./mercadolibre";
 import type { RentalSourceResult } from "./types";
@@ -26,6 +26,8 @@ export async function harvestRentalMarket(mode: "full" | "fast", usdUyu: number)
     harvestMercadoLibre(mode, usdUyu),
     harvestInfoCasas(mode, usdUyu),
     harvestFacebookMarketplace(mode, usdUyu),
+    harvestCasasweb(mode, usdUyu),
+    harvestElpais(mode, usdUyu),
   ]);
 
   return {

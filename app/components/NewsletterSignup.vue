@@ -72,20 +72,22 @@ const state = ref<'idle' | 'submitting' | 'sent' | 'error'>('idle')
 async function submit(): Promise<void> {
   if (state.value === 'submitting' || state.value === 'sent') return
   state.value = 'submitting'
-  // La carga va escrita entera en cada uno y no en una constante: `ga4-key-events`
-  // lee el archivo como texto y comprueba que la conversión lleve `source` al lado.
+  // Capture the page at submission, even if navigation happens during the request.
+  // Only these two fields reach analytics; the email/honeypot stay in the API body.
+  const analytics = { content_path: route.path, locale: locale.value }
   state.value = await runNewsletterSubmit({
     post: () =>
       $fetch('/api/newsletter/subscribe', {
         method: 'POST',
         body: { email: email.value, locale: locale.value, website: website.value },
       }),
-    onSubmit: () => track('newsletter_submit', { source: route.path, locale: locale.value }),
-    // A GA4 key event: the signup is one of the two conversions that tell us an
-    // organic landing page earned a returning visitor. `source` is the landing
-    // path so we can attribute it to the page type in an Exploration.
-    onSuccess: () => track('newsletter_signup', { source: route.path, locale: locale.value }),
-    onError: () => track('newsletter_error', { source: route.path, locale: locale.value }),
+    onSubmit: () => track('newsletter_submit', analytics),
+    // Keep the existing GA4 key-event name: this counts an accepted API request,
+    // not a new or confirmed subscriber (confirmation happens by email).
+    // `content_path` identifies the form's page without reusing traffic-source
+    // fields or sending the email to Analytics.
+    onSuccess: () => track('newsletter_signup', analytics),
+    onError: () => track('newsletter_error', analytics),
   })
   if (state.value === 'sent') emit('subscribed')
 }

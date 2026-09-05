@@ -6,7 +6,7 @@ InfoCasas y de nuevo en Mercado Libre es una sola tarjeta con tres enlaces.
 ```
 sync_rentals.ts ──> classes/rentals/sources/*  ──> dedupe.ts ──> store.ts ──> APP Mongo
    (pm2)              ML :9656 / InfoCasas /         │            (upsert)     rentallistings
-                      FB :9657                       │                          rentalmetas
+                      FB :9657 / Casasweb / El País │                          rentalmetas
                                                       └── una propiedad = N ofertas
                                                                  │
 app/pages/alquileres-uruguay.vue <── app/server/api/rentals <────┘
@@ -19,11 +19,46 @@ app/pages/alquileres-uruguay.vue <── app/server/api/rentals <────┘
 | **Mercado Libre** | bridge propio en `:9656` (`pm2 mercadolibre`), `?raw=true` | dirección con calle+número, barrio, dormitorios/baños/m², precio, foto | gastos comunes, fecha de publicación, lat/lon, nombre del vendedor |
 | **InfoCasas** | `__NEXT_DATA__` de sus páginas de listado | todo lo anterior **más** lat/lon, gastos comunes, inmobiliaria y fecha de publicación | — |
 | **Facebook Marketplace** | bridge propio en `:9657` (`pm2 facebook_marketplace`) | precio, título, ciudad, foto | dirección, barrio, m², dormitorios (salvo que estén en el título) |
+| **Casasweb** | HTML público de `resultados.aspx`; paginación mediante el formulario de búsqueda que entrega el servidor | mensualidad, moneda, departamento, barrio, tipo, dormitorios, m², garajes, inmobiliaria, foto | dirección separada, coordenadas, fecha de publicación; baños sólo cuando el título los declara |
+| **Inmuebles El País** | categorías de su sitemap público y datos SSR de esas páginas (Next Flight) | precio, moneda, ubicación, dormitorios/baños/m², gastos cuando figuran, inmobiliaria, foto | cobertura completa: cada categoría sirve hasta 24 avisos, y `?page=2` no amplía ese lote |
 
-**Gallito no está.** Sus listados se arman con un postback de ASP.NET WebForms del lado del
-cliente: la página que sirve el servidor no tiene ninguna tarjeta, y lo único que quedaría es
-reproducir una secuencia de `__doPostBack` que se rompe con su próximo deploy. Está documentado
-acá en vez de medio implementado.
+Verificado el **2026-09-04** con la UA propia: Gallito directo devolvió **403 Cloudflare** en
+`https://www.gallito.com.uy/inmuebles/alquiler`; no se sortea esa protección. Su nuevo portal
+[Inmuebles El País](https://inmuebles.elpais.com.uy/) sí entrega HTML público utilizable. Sus
+189 categorías de alquiler del sitemap se pueden consultar, pero **no representan todo el
+catálogo**. No consultamos `/api/`: lo excluye expresamente su
+[robots.txt](https://inmuebles.elpais.com.uy/robots.txt). Tampoco usamos sus amenities generadas
+por IA, `visualDescription`, gastos convertidos ni fechas internas de importación como fecha de
+publicación. Conservamos sólo metadatos verificables y el enlace al aviso.
+
+[Casasweb](https://casasweb.com/resultados.aspx?m=0&n=A&t=c&x=1&z=1) entrega tarjetas HTML y un
+formulario ASP.NET de paginación **funcional**: se verificaron las páginas 1 y 2 con IDs distintos.
+El barrido completo recorre los 19 departamentos y diez tipos (apartamentos, casas, oficinas,
+locales comerciales/industriales, depósitos, terrenos, containers, edificios y garajes). El
+repaso horario toma sólo la primera página de casas/apartamentos en Montevideo, Canelones y
+Maldonado. Se lee exclusivamente el bloque **ALQUILER / MES**: una misma tarjeta puede incluir
+también precio de venta o temporal. Se excluyen avisos reservados y mensualidades inverosímiles:
+la muestra real incluyó un alquiler de USD 120.000.000.
+
+Ambas fuentes admiten degradación independiente. Sólo la marca interna **`complete: true`**
+permite expirar ofertas por ausencia; ML y Facebook declaran cobertura parcial por sus límites
+de búsqueda, y el modo horario aplica esa misma protección a todas las fuentes. InfoCasas sólo
+la declara si terminó sin cortes ni fallas. Tres respuestas consecutivas fallidas detienen el
+barrido de la nueva fuente.
+No se cambia la guarda global de colapso ni la poda de propiedades después de 21 días sin verse.
+
+Prueba de integración **sin DB** del 2026-09-04: seis páginas de Casasweb aportaron **232 avisos
+válidos** en Montevideo, Canelones y Maldonado; tres categorías de El País aportaron **61**. Son
+avisos leídos en la prueba, no un incremento neto publicado: la unificación contra el índice
+completo ocurre en la siguiente sincronización desplegada.
+
+Los nuevos atributos `parkingSpaces` y `furnished` se guardan tanto en la propiedad como por
+oferta. InfoCasas aporta `garage` positivo y facility 69 `Amueblada` (ausencia = `null`); Casasweb
+aporta `Garaje(N)` explícito. Un `garage: 0` de InfoCasas es un valor por defecto y **no demuestra
+que no haya garaje**. Dos cantidades publicadas de garajes distintas impiden unir los avisos.
+Los gastos comunes explícitos de cero se conservan; en El País, por ser un catálogo importado,
+además se exige la declaración «sin gastos comunes» para distinguirlos de un posible valor por
+defecto. Un importe sin moneda no adquiere la moneda del alquiler por suposición.
 
 ### La trampa de Mercado Libre
 
@@ -37,15 +72,18 @@ lea `attributes_list` (`"2 dormitorios | 1 baño | 40 m² cubiertos"`) y `locati
 ### Buenos modales
 
 - UA propia e identificable (`CambioUruguayBot/1.0 (+https://cambio-uruguay.com/alquileres-uruguay)`).
-  Probada contra los tres sitios: responden 200.
+  InfoCasas, Casasweb y las categorías públicas de El País respondieron 200 en las pruebas del
+  2026-09-04; Gallito directo respondió 403 y quedó fuera.
 - Un request por host a la vez, con 1,2 s de separación (`RENTALS_HOST_GAP_MS`). El barrido completo
   de InfoCasas son ~900 páginas contra un solo host: va a las 04:52 UTC (01:52 de Montevideo).
 - `robots.txt` de InfoCasas prohíbe `/alquiler/*-y-*`. Sólo construimos `/alquiler/pagina<N>`, y
   `assertAllowed()` rechaza cualquier ruta con `-y-` para que un futuro slug tipo
   `treinta-y-tres` no se cuele.
-- Gallito publica `Content-Signal: search=yes, ai-train=no, use=reference`. Lo que hacemos es
-  justamente el uso `search` (indexar y enlazar de vuelta), no entrenamiento — y por eso no está
-  scrapeado igual: la razón para dejarlo afuera es técnica.
+- Casasweb permite las rutas públicas de búsqueda para nuestra UA. El País permite categorías
+  públicas y excluye `/api/`; el crawler sólo toma URLs de categorías del propio dominio.
+- Gallito publica `Content-Signal: search=yes, ai-train=no, use=reference`, pero esa señal no
+  habilita sortear su respuesta 403. Se indexan únicamente las fuentes accesibles, con enlaces
+  de vuelta y sin entrenamiento de modelos.
 - Guardamos metadatos y el enlace, nunca la descripción del aviso.
 
 ## Cómo se unifica (lo importante)
@@ -126,16 +164,36 @@ BCU ni interbancario): dos harvesters con dos dólares distintos discreparían s
 
 | pm2 | cron (UTC) | qué hace |
 |---|---|---|
-| `currency-rentals` | `52 4 * * *` | barrido completo + poda de lo que nadie publica hace 21 días |
-| `currency-rentals-hourly` | `47 * * * *` | sólo lo más nuevo (`order=3` en InfoCasas, `since=today` en ML). **Nunca poda** |
+| `currency-rentals` | `52 4 * * *` | barrido diario de las cinco fuentes, con cobertura completa o parcial declarada; poda histórica de propiedades no vistas en 21 días |
+| `currency-rentals-hourly` | `47 * * * *` | novedades de InfoCasas/ML, muestra de Marketplace, seis búsquedas de Casasweb y hasta ocho categorías de El País. **Nunca poda propiedades ni expira ofertas por ausencia** |
 
 Tres propiedades que el job mantiene:
 
 1. Un portal que falla **degrada** la corrida, no la voltea: la página dice cuál falta y las filas de
    ese portal se conservan en vez de borrarse como "ya no está".
 2. Se niega a publicar un directorio derrumbado sobre uno sano (`RENTALS_COLLAPSE_RATIO`, 50 %).
-3. `mergeOffers` conserva las ofertas que la corrida no vio: sin eso, el repaso horario —que lee una
-   franja del mercado— borraría los otros portales de cada propiedad que toca.
+3. `mergeOffers` conserva las ofertas que una fuente parcial o la corrida horaria no vio. Sólo
+   una cosecha exitosa marcada explícitamente `complete: true` puede aplicar la caducidad de
+   ofertas por ausencia; la poda histórica de propiedades sigue teniendo su ventana separada.
+
+Los dos jobs de pm2 entran por `scripts/run-rentals.sh` con intérprete Bash en el servidor Linux.
+Comparten un `flock`: el repaso horario usa **modo no bloqueante** y, si otra corrida tiene el
+bloqueo, escribe un mensaje y sale correctamente sin ejecutar el sync. El barrido diario
+**espera hasta una hora**: así una rápida de las 04:47 que tarde más de cinco minutos no cancela
+el barrido de las 04:52. Si vence esa espera, sale con código 75 y un error visible; no se
+presenta como una corrida correcta. El descriptor 9 permanece abierto durante
+`exec node`, y el kernel lo libera al terminar el proceso, incluso ante un crash. Un error al
+crear o adquirir el bloqueo falla la ejecución; no se interpreta como una corrida ocupada.
+No hay scheduler ni bloqueo dentro del proceso API ni en MongoDB. Para desarrollo siguen
+disponibles `node dist/sync_rentals.js` y el entrypoint TypeScript directo.
+
+El deploy migra los dos registros existentes de pm2 cuando difieren el script o el intérprete,
+además de la comparación de cron que ya tenía. Antes de recrearlos espera que **ambos** terminen;
+si siguen activos después de una hora, aborta la migración y conserva los procesos en curso.
+No se mata una sincronización para instalar el wrapper. Los cambios del wrapper activan el
+filtro de despliegue del backend. `tests/sync/rentals_lock.test.ts` comprueba el contrato y, en
+Linux con `flock`, la exclusión real y la liberación después de matar un proceso de prueba
+aislado que no importa el sync ni consulta DB.
 
 ## Variables de entorno
 
@@ -144,11 +202,15 @@ Tres propiedades que el job mantiene:
 | `APP_MONGO_URI` | — | **obligatoria**: sin ella el job se niega a correr (escribiría la DB equivocada) |
 | `RENTALS_IC_MAX_PAGES` / `RENTALS_IC_FAST_PAGES` | 900 / 10 | tope de páginas de InfoCasas |
 | `RENTALS_ML_MAX_PAGES` / `RENTALS_ML_FAST_PAGES` | 120 / 12 | tope de páginas por consulta en ML |
+| `RENTALS_CW_MAX_PAGES` | 60 | tope de páginas por departamento/tipo en Casasweb; la rápida toma una página por búsqueda |
+| `RENTALS_EP_MAX_PAGES` / `RENTALS_EP_FAST_PAGES` | 250 / 8 | tope de categorías públicas de El País; cada una contiene hasta 24 avisos |
 | `RENTALS_FB_ENABLED` | — | `0` apaga Marketplace |
 | `RENTALS_FB_LOCATIONS` | montevideo,ciudad-de-la-costa,maldonado,salto,paysandu | ciudades que se consultan en Marketplace |
 | `RENTALS_HOST_GAP_MS` | 1200 | separación mínima entre dos requests al mismo host |
+| `RENTALS_LOCK_FILE` | `/tmp/cambio-uruguay-rentals-sync.lock` | archivo de bloqueo del wrapper Linux; ambos jobs deben compartir el mismo valor |
+| `RENTALS_FULL_LOCK_WAIT_SECONDS` | 3600 | espera máxima del barrido diario por el bloqueo; la corrida horaria nunca espera |
 | `RENTALS_PRUNE_DAYS` | 21 | días sin publicarse antes de salir del directorio |
-| `RENTALS_STALE_OFFER_DAYS` | 4 | días que un aviso sobrevive sin que su portal (sano) lo vuelva a mostrar |
+| `RENTALS_STALE_OFFER_DAYS` | 4 | caducidad por ausencia sólo cuando el portal terminó una cosecha completa y exitosa; no aplica a fuentes parciales ni al modo horario |
 | `RENTALS_USD_UYU` | — | fija la cotización (útil para probar) |
 
 ## La página
@@ -166,7 +228,16 @@ millones de URLs y cada una es una copia delgada de la misma página.
 ## Probarlo
 
 ```bash
-npx ts-node scripts/oneoff/rentals_probe.ts   # 3 páginas por fuente, imprime qué unificó
-npx vitest run tests/rentals/                 # normalize + dedupe + store
+npx ts-node scripts/oneoff/rentals_probe.ts   # lectura real: revisar los presupuestos antes de ejecutarlo
+npx vitest run tests/rentals/                 # parsers con fixtures + dedupe + retención + store
 cd app && npx vitest run tests/unit/rentals.test.ts
 ```
+
+El probe existente limita InfoCasas y ML a tres páginas por consulta; las nuevas fuentes usan
+`RENTALS_CW_MAX_PAGES` y `RENTALS_EP_MAX_PAGES`. Casasweb siempre recorre las combinaciones de
+departamento/tipo del barrido completo, aun con una página por combinación. El probe no escribe
+en DB; las pruebas con fixtures no realizan peticiones de red.
+
+El build raíz necesita `sheet_key.json`, archivo ignorado y exclusivo del entorno del servidor
+que importa `sync_sheet.ts`. Si falta localmente, `npm run build` reporta ese módulo ausente;
+no se crean credenciales falsas ni se modifica el build para ocultarlo.

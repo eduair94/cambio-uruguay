@@ -2,8 +2,12 @@ import { RentalListingModel } from '../../models/RentalListing'
 import { RentalMetaModel } from '../../models/RentalMeta'
 import { connectDb } from '../../utils/db'
 import {
+  RENTAL_COLLATION,
   buildRentalFilter,
   normalizeRentalQuery,
+  rentalMongoSort,
+  rentalOfferStages,
+  rentalPublicStages,
   type RentalFacetValue,
   type RentalMeta,
   type RentalProperty,
@@ -33,61 +37,56 @@ export default defineEventHandler(async (event): Promise<RentalsResponse> => {
 
   const query = normalizeRentalQuery(getQuery(event) as Record<string, unknown>)
 
-  const empty: RentalsResponse = {
-    meta: null,
-    items: [],
-    total: 0,
-    page: query.page,
-    perPage: query.perPage,
-    medianUyu: 0,
-    facets: { departments: [], neighborhoods: [], types: [], sources: [], priceMaxUyu: 0 },
-  }
-
   try {
     await connectDb()
+    const meta = (await RentalMetaModel.findOne({ key: 'uy-rentals' })
+      .select({ _id: 0, __v: 0 })
+      .lean()) as RentalMeta | null
+    const usdUyu = Number(meta?.usdUyu) || 0
 
     // El filtro lo arma `buildRentalFilter` y no este archivo: lo comparte con /api/rentals/mapa,
     // y dos copias del mismo filtro terminan divergiendo — un mapa que muestra propiedades que la
     // lista no lista es la misma clase de contradicción que el sitio ya tuvo entre su meta
     // description y su propio FAQ.
-    const { filter, nonLocation } = buildRentalFilter(query, STALE_DAYS)
+    const { filter, nonLocation, withoutNeighborhood } = buildRentalFilter(
+      query,
+      STALE_DAYS,
+      usdUyu
+    )
+    const sort = rentalMongoSort(query.sort)
+    const offerStages = rentalOfferStages(query, usdUyu)
+    const publicStages = rentalPublicStages(filter, STALE_DAYS)
 
-    const sort: Record<string, 1 | -1> =
-      query.sort === 'precio'
-        ? { priceUyu: 1, lastSeen: -1 }
-        : query.sort === 'precio-desc'
-          ? { priceUyu: -1, lastSeen: -1 }
-          : query.sort === 'metros'
-            ? { area: -1, priceUyu: 1 }
-            : // "Más recientes". The tiebreak is `key`, NOT price: every row shares today's date on
-              // a fresh directory, and a price tiebreak filled page one with $3.500 garages.
-              { freshAt: -1, key: 1 }
-
-    const [items, total, meta, departments, dimensions] = await Promise.all([
-      RentalListingModel.find(filter)
-        .select({ _id: 0, __v: 0, createdAt: 0, updatedAt: 0, addressKey: 0 })
-        .sort(sort)
-        .skip((query.page - 1) * query.perPage)
-        .limit(query.perPage)
-        .lean(),
-      RentalListingModel.countDocuments(filter),
-      RentalMetaModel.findOne({ key: 'uy-rentals' }).select({ _id: 0, __v: 0 }).lean(),
+    const [items, totals, departments, neighborhoods, dimensions] = await Promise.all([
       RentalListingModel.aggregate([
-        { $match: nonLocation },
+        ...publicStages,
+        ...offerStages,
+        { $sort: sort },
+        { $skip: (query.page - 1) * query.perPage },
+        { $limit: query.perPage },
+        { $project: { _id: 0, __v: 0, createdAt: 0, updatedAt: 0, addressKey: 0 } },
+      ]).collation(RENTAL_COLLATION),
+      RentalListingModel.aggregate([...publicStages, { $count: 'total' }]).collation(
+        RENTAL_COLLATION
+      ),
+      RentalListingModel.aggregate([
+        ...rentalPublicStages(nonLocation, STALE_DAYS),
         { $group: { _id: '$department', count: { $sum: 1 } } },
         { $sort: { count: -1 } },
         { $limit: 25 },
-      ]),
+      ]).collation(RENTAL_COLLATION),
+      // Exclude the neighborhood's own selection so selecting Pocitos does not hide Cordón.
       RentalListingModel.aggregate([
-        { $match: filter },
+        ...rentalPublicStages(withoutNeighborhood, STALE_DAYS),
+        { $match: { neighborhood: { $ne: '' } } },
+        { $group: { _id: '$neighborhood', count: { $sum: 1 } } },
+        { $sort: { count: -1, _id: 1 } },
+        { $limit: 250 },
+      ]).collation(RENTAL_COLLATION),
+      RentalListingModel.aggregate([
+        ...publicStages,
         {
           $facet: {
-            neighborhoods: [
-              { $match: { neighborhood: { $ne: '' } } },
-              { $group: { _id: '$neighborhood', count: { $sum: 1 } } },
-              { $sort: { count: -1 } },
-              { $limit: 80 },
-            ],
             types: [
               { $group: { _id: '$propertyType', count: { $sum: 1 } } },
               { $sort: { count: -1 } },
@@ -97,23 +96,27 @@ export default defineEventHandler(async (event): Promise<RentalsResponse> => {
               { $group: { _id: '$sources', count: { $sum: 1 } } },
               { $sort: { count: -1 } },
             ],
-            price: [{ $group: { _id: null, max: { $max: '$priceUyu' } } }],
+            price: [...offerStages, { $group: { _id: null, max: { $max: '$priceUyu' } } }],
           },
         },
-      ]),
+      ]).collation(RENTAL_COLLATION),
     ])
+    const total = Number(totals[0]?.total) || 0
 
     // The median is what tells someone whether a price is normal for the filter they built. Taken
     // by skipping to the middle of the sorted set rather than pushing every price into memory.
     let medianUyu = 0
     if (total > 0) {
-      const middle = await RentalListingModel.find(filter)
-        .select({ _id: 0, priceUyu: 1 })
-        .sort({ priceUyu: 1 })
-        .skip(Math.floor(total / 2))
-        .limit(1)
-        .lean()
-      medianUyu = Number((middle?.[0] as { priceUyu?: number } | undefined)?.priceUyu || 0)
+      const middle = await RentalListingModel.aggregate([
+        ...publicStages,
+        ...offerStages,
+        { $sort: { priceUyu: 1 } },
+        { $skip: Math.floor((total - 1) / 2) },
+        { $limit: total % 2 === 0 ? 2 : 1 },
+        { $project: { _id: 0, priceUyu: 1 } },
+      ]).collation(RENTAL_COLLATION)
+      const prices = middle.map(row => Number(row.priceUyu)).filter(Number.isFinite)
+      medianUyu = prices.length ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : 0
     }
 
     const toFacet = (rows: Array<{ _id: string; count: number }>): RentalFacetValue[] =>
@@ -128,14 +131,14 @@ export default defineEventHandler(async (event): Promise<RentalsResponse> => {
 
     return {
       meta: (meta as RentalMeta | null) ?? null,
-      items: items as unknown as RentalProperty[],
+      items: items as RentalProperty[],
       total,
       page: query.page,
       perPage: query.perPage,
       medianUyu,
       facets: {
         departments: toFacet(departments as Array<{ _id: string; count: number }>),
-        neighborhoods: toFacet(dimension.neighborhoods || []),
+        neighborhoods: toFacet(neighborhoods),
         types: toFacet(dimension.types || []),
         sources: toFacet(dimension.sources || []),
         priceMaxUyu: Number((dimension.price?.[0] as unknown as { max?: number })?.max || 0),
@@ -143,6 +146,10 @@ export default defineEventHandler(async (event): Promise<RentalsResponse> => {
     }
   } catch (error) {
     console.error('[api/rentals] failed', error)
-    return empty
+    setResponseHeader(event, 'cache-control', 'no-store')
+    throw createError({
+      statusCode: 503,
+      statusMessage: 'Rental search is temporarily unavailable',
+    })
   }
 })

@@ -8,7 +8,7 @@
 // there is registered nowhere on the VPS. The root AGENTS.md warns about it in
 // prose; this is the same warning where it can fail a build.
 //
-// Scope is deliberately every `dist/sync_*.js` app and nothing else:
+// Scope covers root sync entrypoints and their shared rental lock wrapper:
 //   * `currency-server` is the API, reloaded by its own step in the deploy;
 //   * the `mcp/` and `bots/` apps build from their own packages with their own
 //     cwd and are not this script's business.
@@ -47,7 +47,7 @@ describe("pm2 fleet registration", () => {
 
   it("registers every scheduled sync job in the deploy script", () => {
     const missing = apps
-      .filter((app) => /^dist\/sync_[a-z0-9_]+\.js$/.test(app.script))
+      .filter((app) => /^dist\/sync_[a-z0-9_]+\.js$/.test(app.script) || app.script === "scripts/run-rentals.sh")
       .filter((app) => !registered.has(app.name))
       .map((app) => app.name);
     expect(missing, `add these to OTHER_APPS in scripts/deploy-backend.sh: ${missing.join(", ")}`).toEqual([]);

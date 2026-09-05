@@ -94,7 +94,7 @@ export function observeFirstImpression(
  */
 export function createNewsletterViewReporter(opts: {
   track: TrackFn
-  source: () => string
+  contentPath: () => string
   session?: () => SessionLike | null
 }): { report(): void } {
   let fired = false
@@ -116,7 +116,7 @@ export function createNewsletterViewReporter(opts: {
         }
       }
 
-      opts.track('newsletter_capture_view', { source: opts.source() })
+      opts.track('newsletter_capture_view', { content_path: opts.contentPath() })
     },
   }
 }

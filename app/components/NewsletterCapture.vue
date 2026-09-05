@@ -82,7 +82,7 @@ function dismiss(): void {
   } catch {
     // nothing to do — the card is closed for this page view either way
   }
-  track('newsletter_dismiss', { source: route.path })
+  track('newsletter_dismiss', { content_path: route.path })
 }
 
 function onSubscribed(): void {
@@ -114,7 +114,7 @@ watch(
 // 17-08 dejó 1.274 `newsletter_capture_view` que no se pueden comparar con nada.
 // Ahora la vista la declara el observador, una sola vez por sesión.
 const card = ref<HTMLElement | null>(null)
-const viewReporter = createNewsletterViewReporter({ track, source: () => route.path })
+const viewReporter = createNewsletterViewReporter({ track, contentPath: () => route.path })
 let stopObserving: (() => void) | null = null
 
 watch(card, el => {

@@ -211,15 +211,13 @@ describe('el costo mensual real', () => {
   // busqueda.
   it('devuelve null cuando el aviso no los publica, en vez de estimarlos', () => {
     expect(totalMonthlyUyu(offer({ commonExpenses: null }), 41.45)).toBeNull()
-    expect(totalMonthlyUyu(offer({ commonExpenses: 0 }), 41.45)).toBeNull()
+    expect(totalMonthlyUyu(offer({ commonExpenses: 0 }), 41.45)).toBe(30_000)
   })
 
-  it('el filtro pide gastos publicados de verdad, no cero', () => {
+  it('el filtro pide gastos publicados e incluye cero explícito', () => {
     const { filter } = buildRentalFilter(normalizeRentalQuery({ gc: '1' }), 10)
-    expect(filter['offers.commonExpenses']).toEqual({ $type: 'number', $gt: 0 })
-    expect(
-      buildRentalFilter(normalizeRentalQuery({}), 10).filter['offers.commonExpenses']
-    ).toBeUndefined()
+    expect(filter.offers).toEqual({ $elemMatch: { commonExpenses: { $type: 'number', $gte: 0 } } })
+    expect(buildRentalFilter(normalizeRentalQuery({}), 10).filter.offers).toBeUndefined()
   })
 })
 
@@ -251,10 +249,8 @@ describe('solo se publican las garantias con precision medida', () => {
 describe('filtro de dueno directo', () => {
   it('pide particular, y no toma "desconocido" por inmobiliaria', () => {
     const { filter } = buildRentalFilter(normalizeRentalQuery({ dueno: '1' }), 10)
-    expect(filter['offers.sellerType']).toBe('particular')
-    expect(
-      buildRentalFilter(normalizeRentalQuery({}), 10).filter['offers.sellerType']
-    ).toBeUndefined()
+    expect(filter.offers).toEqual({ $elemMatch: { sellerType: 'particular' } })
+    expect(buildRentalFilter(normalizeRentalQuery({}), 10).filter.offers).toBeUndefined()
   })
 
   // No existe el filtro contrario: "desconocido" no es "inmobiliaria", es que no se sabe quien
@@ -262,7 +258,7 @@ describe('filtro de dueno directo', () => {
   it('no hay forma de pedir "solo inmobiliarias"', () => {
     for (const valor of ['0', 'inmobiliaria', 'false']) {
       expect(
-        buildRentalFilter(normalizeRentalQuery({ dueno: valor }), 10).filter['offers.sellerType']
+        buildRentalFilter(normalizeRentalQuery({ dueno: valor }), 10).filter.offers
       ).toBeUndefined()
     }
   })

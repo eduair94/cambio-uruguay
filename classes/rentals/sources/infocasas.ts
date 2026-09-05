@@ -98,6 +98,7 @@ interface IcRow {
   longitude?: number | null;
   bedrooms?: number | null;
   bathrooms?: number | null;
+  garage?: number | null;
   m2?: number | null;
   m2Built?: number | null;
   created_at?: string | null;
@@ -198,9 +199,9 @@ export function toRawRental(row: IcRow): RawRental | null {
 
   // `admin_included` is price + gastos comunes. When the explicit field is missing we recover the
   // difference rather than publishing "sin gastos comunes", which would be a claim we cannot make.
-  const explicitExpenses = Number(row.commonExpenses?.amount);
+  const explicitExpenses = row.commonExpenses?.amount == null ? NaN : Number(row.commonExpenses.amount);
   const derived = Number(row.price?.admin_included) - price;
-  const commonExpenses = Number.isFinite(explicitExpenses) && explicitExpenses > 0
+  const commonExpenses = Number.isFinite(explicitExpenses) && explicitExpenses >= 0
     ? explicitExpenses
     : Number.isFinite(derived) && derived > 0
       ? derived
@@ -211,6 +212,9 @@ export function toRawRental(row: IcRow): RawRental | null {
   const bathrooms = row.bathrooms == null ? null : Number(row.bathrooms);
 
   return {
+    // InfoCasas fills missing garages with 0, so only a positive count is evidence.
+    parkingSpaces: Number.isInteger(row.garage) && Number(row.garage) > 0 ? Number(row.garage) : null,
+    furnished: row.facilities?.some((facility) => /^(?:amueblado|amoblado|amueblada|amoblada)$/i.test(String(facility.name || "").trim())) ? true : null,
     source: "infocasas",
     listingId: `infocasas:${id}`,
     url: link.startsWith("http") ? link : `${ORIGIN}${link.startsWith("/") ? "" : "/"}${link}`,
@@ -218,7 +222,8 @@ export function toRawRental(row: IcRow): RawRental | null {
     price,
     currency,
     commonExpenses,
-    commonExpensesCurrency: commonExpenses === null ? null : currencyOf(row.commonExpenses?.currency) || currency,
+    commonExpensesCurrency: commonExpenses === null ? null
+      : Number.isFinite(explicitExpenses) && explicitExpenses >= 0 ? currencyOf(row.commonExpenses?.currency) : currency,
     sellerName: String(row.owner?.name || "").trim() || "InfoCasas",
     sellerType: sellerTypeOf(row.owner),
     petsAllowed: petsFromFacilities(row.facilities),
@@ -293,5 +298,5 @@ export async function harvestInfoCasas(mode: "full" | "fast", usdUyu: number): P
       (lastError ? ` — con reintentos: ${lastError}` : "")
     : `sin datos utilizables${lastError ? `: ${lastError}` : ""}`;
 
-  return { key: "infocasas", ok, listings: [...byId.values()], note };
+  return { key: "infocasas", ok, complete: mode === "full" && !truncated && !lastError, listings: [...byId.values()], note };
 }

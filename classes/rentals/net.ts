@@ -23,6 +23,9 @@ const UA =
   "CambioUruguayBot/1.0 (+https://cambio-uruguay.com/alquileres-uruguay; rental price index; contact via site)";
 
 export interface FetchOptions {
+  /** Only used to submit the public Casasweb search pagination form. */
+  method?: "GET" | "POST";
+  body?: string;
   timeoutMs?: number;
   retries?: number;
   headers?: Record<string, string>;
@@ -66,6 +69,8 @@ async function rawFetch(url: string, options: FetchOptions): Promise<Response | 
   const timer = setTimeout(() => controller.abort(), options.timeoutMs ?? DEFAULT_TIMEOUT_MS);
   try {
     const response = await fetch(url, {
+      method: options.method,
+      body: options.body,
       signal: controller.signal,
       redirect: "follow",
       headers: {

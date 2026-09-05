@@ -8,6 +8,13 @@ import type { RawRental, RentalSource } from "../types";
 export interface RentalSourceResult {
   key: RentalSource;
   ok: boolean;
+  /** False for partial coverage: missing offers must not expire on its evidence. */
+  complete?: boolean;
   listings: RawRental[];
   note: string;
+}
+
+/** Only a complete full sweep can interpret an advert's absence as evidence. */
+export function sourcesAllowingExpiry(runs: RentalSourceResult[], mode: "full" | "fast"): Set<RentalSource> {
+  return new Set(mode === "full" ? runs.filter((run) => run.ok && run.complete === true).map((run) => run.key) : []);
 }

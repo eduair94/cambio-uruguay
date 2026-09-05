@@ -156,6 +156,54 @@ else
   pm2 start ecosystem.config.js --only "$PM2_NAME"
 fi
 
+# pm2 keeps the script/interpreter with which an app was registered, just like
+# its cron. Migrate ONLY the two rental launchers; changing ecosystem.config.js
+# alone would leave existing jobs bypassing their shared lock indefinitely.
+rental_recreate="$(pm2 jlist 2>/dev/null | node -e '
+  const path = require("path");
+  const wanted = require(process.argv[1] + "/ecosystem.config.js").apps;
+  const names = ["currency-rentals", "currency-rentals-hourly"];
+  let raw = "";
+  process.stdin.on("data", (chunk) => (raw += chunk)).on("end", () => {
+    const live = JSON.parse(raw || "[]");
+    const changed = names.filter((name) => {
+      const configured = wanted.find((app) => app.name === name);
+      const current = live.find((app) => app.name === name);
+      if (!configured || !current) return false;
+      return path.resolve(current.pm2_env.pm_exec_path) !== path.resolve(process.argv[1], configured.script)
+        || path.basename(current.pm2_env.exec_interpreter || "node") !== path.basename(configured.interpreter || "node");
+    });
+    process.stdout.write(changed.join(" "));
+  });
+' "$REPO_DIR")"
+if [[ -n "$rental_recreate" ]]; then
+  log "Rental launcher changed ($rental_recreate); waiting for both jobs to finish before migration…"
+  rental_wait_started=$SECONDS
+  while true; do
+    active_rentals="$(pm2 jlist 2>/dev/null | node -e '
+      let raw = "";
+      process.stdin.on("data", (chunk) => (raw += chunk)).on("end", () => {
+        const active = JSON.parse(raw || "[]").filter((app) =>
+          ["currency-rentals", "currency-rentals-hourly"].includes(app.name)
+          && ["online", "launching", "stopping", "waiting restart"].includes(app.pm2_env && app.pm2_env.status));
+        process.stdout.write(active.map((app) => app.name).join(" "));
+      });
+    ')"
+    [[ -z "$active_rentals" ]] && break
+    if (( SECONDS - rental_wait_started >= 3600 )); then
+      echo "[deploy-backend] rental launcher migration timed out; $active_rentals remains untouched. Retry after it finishes." >&2
+      exit 1
+    fi
+    log "  Waiting for $active_rentals (no running rental sync is interrupted)…"
+    sleep 10
+  done
+  # Remove all old launchers BEFORE starting either replacement: otherwise the
+  # first new wrapper could overlap with the other still-running legacy script.
+  for rental_app in $rental_recreate; do
+    pm2 delete "$rental_app" >/dev/null 2>&1 || true
+  done
+fi
+
 log "Ensuring other backend pm2 apps are registered…"
 # These are cron-restart / one-shot jobs (currency-sync, currency-sheet already
 # run today; currency-aduana never has), not long-running request handlers, so

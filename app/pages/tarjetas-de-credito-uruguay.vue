@@ -17,20 +17,33 @@
           </VAvatar>
           <div>
             <h1 class="text-h5 text-md-h4 font-weight-bold text-white mb-1">
-              Ranking de tarjetas de crédito en Uruguay: puntos y beneficios
+              {{ t('cards.title') }}
             </h1>
             <p class="text-body-1 text-grey-lighten-2 mb-0 tarjetas-intro">
-              Comparamos {{ ranked.length }} programas de puntos y beneficios de tarjetas uruguayas
-              y los rankeamos con una rúbrica transparente y ponderada. Cada puntaje está a la
-              vista: podés recalcular con tu propio criterio.
+              {{ t('cards.lead', { count: ranked.length }) }}
             </p>
           </div>
         </div>
         <div class="d-flex justify-start justify-md-end mt-3">
-          <ShareButtons text="Ranking de tarjetas de crédito en Uruguay: puntos y beneficios" />
+          <ShareButtons :text="t('cards.title')" />
         </div>
       </div>
     </VCard>
+
+    <section class="mb-6" aria-labelledby="card-choice-title">
+      <h2 id="card-choice-title" class="text-h6 font-weight-bold mb-2">
+        {{ t('cards.question') }}
+      </h2>
+      <p class="text-body-2 text-medium-emphasis mb-2">{{ t('cards.answer') }}</p>
+      <ContentTaskLinks
+        :label="t('cards.navigation')"
+        :items="[
+          { label: t('cards.ranking'), to: '#credit-tier-title' },
+          { label: t('cards.discounts'), to: localePath('/descuentos-con-tarjeta-uruguay') },
+          { label: t('cards.debit'), to: localePath('/tarjetas-de-debito-uruguay') },
+        ]"
+      />
+    </section>
 
     <!-- Methodology -->
     <VExpansionPanels class="mb-6 method-panels">
@@ -59,7 +72,7 @@
 
     <!-- Tier list: shared score bands keep this top comparable with the debit-card page. -->
     <section class="mb-8" aria-labelledby="credit-tier-title">
-      <h2 id="credit-tier-title" class="text-h6 font-weight-bold mb-1">
+      <h2 id="credit-tier-title" class="text-h6 font-weight-bold mb-1 card-entry-anchor">
         Tier list de tarjetas y programas disponibles en Uruguay
       </h2>
       <p class="text-body-2 text-medium-emphasis mb-3">
@@ -146,6 +159,22 @@
             <span class="score-val">{{ p.scores[dim.id] }}</span>
           </div>
         </div>
+        <ContentTaskLinks
+          v-if="mapaDescuentos(p.id)"
+          class="mt-3"
+          :label="
+            t('cards.bankDiscounts', { bank: bankosBankName(BANKOS_BANK_BY_CREDIT_PROGRAM[p.id]) })
+          "
+          placement="program_summary"
+          :items="[
+            {
+              label: t('cards.bankDiscounts', {
+                bank: bankosBankName(BANKOS_BANK_BY_CREDIT_PROGRAM[p.id]),
+              }),
+              to: mapaDescuentos(p.id),
+            },
+          ]"
+        />
       </div>
 
       <!-- Details (expandable). `eager` so the rich content ships in the SSR HTML
@@ -399,8 +428,10 @@ import {
 } from '~/utils/cardRewards'
 import { BANKOS_BANK_BY_CREDIT_PROGRAM, bankosBankName, bankosMapPath } from '~/utils/bankos'
 import { bankPageForBankId } from '~/utils/bankosPages'
+import { growthEntryMessages } from '~/utils/growthEntryMessages'
 
 const localePath = useLocalePath()
+const { t } = useI18n({ useScope: 'local', messages: growthEntryMessages })
 
 /**
  * Link al mapa de descuentos con las tarjetas de crédito de ese emisor ya elegidas.
@@ -532,9 +563,8 @@ const sources = [
 ]
 
 const canonicalUrl = 'https://cambio-uruguay.com/tarjetas-de-credito-uruguay'
-const title = 'Ranking de tarjetas de crédito en Uruguay'
-const description =
-  'Comparación y ranking objetivo de los programas de puntos y beneficios de las tarjetas de crédito uruguayas (Itaú Volar, Santander, BBVA, Scotia Puntos, BROU Recompensa, OCA Metraje, Pronto, PassCard, Creditel y más), con una rúbrica transparente y ponderada.'
+const title = computed(() => t('cards.seoTitle'))
+const description = computed(() => t('cards.description'))
 
 defineOgImageComponent('Cambio', {
   title: 'Ranking de tarjetas de crédito',
@@ -543,7 +573,7 @@ defineOgImageComponent('Cambio', {
 })
 
 useSeoMeta({
-  title: () => `${title} | Cambio Uruguay`,
+  title: () => `${title.value} | Cambio Uruguay`,
   description,
   ogTitle: title,
   ogDescription: description,
@@ -603,6 +633,10 @@ useHead(() => ({
 </script>
 
 <style scoped>
+.card-entry-anchor {
+  scroll-margin-top: 6rem;
+}
+
 .bg-gradient-tarjetas {
   background: linear-gradient(135deg, #b45309 0%, #7c3aed 100%);
 }

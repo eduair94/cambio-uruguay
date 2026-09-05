@@ -5,8 +5,10 @@
 // This is a source-level contract, not a behavioural test: it asserts the call
 // sites exist with the agreed names and payload keys. It does NOT prove gtag
 // fired (that needs a browser + consent) — the e2e/manual check is GA4 DebugView.
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { parse } from '@vue/compiler-sfc'
+import ts from 'typescript'
 import { describe, expect, it } from 'vitest'
 // The list itself lives in utils/siteAnalytics.ts, because /estadisticas-del-sitio also needs it
 // (it marks which of the reported GA4 events are ours). One list, two readers.
@@ -27,6 +29,53 @@ describe('GA4 key events', () => {
     expect(sources[event]).toContain(`'${event}'`)
   })
 
+  it('internal interaction metadata does not reuse traffic-source or campaign fields', () => {
+    const collisions: string[] = []
+    const scan = (dir: string) => {
+      for (const entry of readdirSync(resolve(__dirname, '../../', dir), { withFileTypes: true })) {
+        const path = `${dir}/${entry.name}`
+        if (entry.isDirectory()) {
+          scan(path)
+          continue
+        }
+        if (!/\.(?:ts|vue)$/.test(entry.name)) continue
+        const text = read(path)
+        const code = path.endsWith('.vue')
+          ? (() => {
+              const { descriptor } = parse(text)
+              return [descriptor.script?.content, descriptor.scriptSetup?.content].join('\n')
+            })()
+          : text
+        const ast = ts.createSourceFile(path, code, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS)
+        const visit = (node: ts.Node) => {
+          if (ts.isCallExpression(node)) {
+            const name = ts.isPropertyAccessExpression(node.expression)
+              ? node.expression.name.getText(ast)
+              : node.expression.getText(ast)
+            const isAnalytics =
+              name === 'track' ||
+              (name === 'send' && path === 'plugins/track-clicks.client.ts') ||
+              (name === 'gtag' && node.arguments[0]?.getText(ast) === "'event'")
+            const params = node.arguments[name === 'gtag' ? 2 : 1]
+            if (isAnalytics && params && ts.isObjectLiteralExpression(params)) {
+              for (const property of params.properties) {
+                if (!property.name) continue
+                const key = property.name.getText(ast).replace(/^['"]|['"]$/g, '')
+                if (/^(?:source|medium|campaign(?:_.*)?)$/.test(key))
+                  collisions.push(`${path}: ${key}`)
+              }
+            }
+          }
+          ts.forEachChild(node, visit)
+        }
+        visit(ast)
+      }
+    }
+    for (const dir of ['components', 'composables', 'layouts', 'pages', 'plugins', 'utils'])
+      scan(dir)
+    expect(collisions).toEqual([])
+  })
+
   it('alert_created carries the alert shape, not a casa', () => {
     const src = sources.alert_created
     const call = src.slice(src.indexOf("track('alert_created'"))
@@ -35,12 +84,6 @@ describe('GA4 key events', () => {
     }
     // An alert watches the best rate across every casa, so there is no origin.
     expect(call.slice(0, 300)).not.toContain('origin')
-  })
-
-  it('newsletter_signup carries the landing path so it can be attributed', () => {
-    const src = sources.newsletter_signup
-    const call = src.slice(src.indexOf("track('newsletter_signup'"))
-    expect(call.slice(0, 200)).toContain('source')
   })
 
   it('conversions are only emitted after their request resolves', () => {

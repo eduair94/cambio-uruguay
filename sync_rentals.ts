@@ -24,6 +24,7 @@ import { appDbConfigured } from "./classes/appdb";
 import { buildRentalProperties } from "./classes/rentals/dedupe";
 import { fetchUsdUyuRate } from "./classes/rentals/rate";
 import { harvestRentalMarket } from "./classes/rentals/sources";
+import { sourcesAllowingExpiry } from "./classes/rentals/sources/types";
 import {
   countRentals,
   loadRentalHistory,
@@ -32,7 +33,7 @@ import {
   saveRentalMeta,
   saveRentalProperties,
 } from "./classes/rentals/store";
-import { RENTAL_META_KEY, type RentalMeta, type RentalSource } from "./classes/rentals/types";
+import { RENTAL_META_KEY, type RentalMeta } from "./classes/rentals/types";
 
 /** A full run that finds less than this share of what we already had is treated as an outage. */
 const COLLAPSE_RATIO = Number(process.env.RENTALS_COLLAPSE_RATIO || 0.5);
@@ -71,8 +72,10 @@ async function main(): Promise<void> {
     console.log(`[rentals] ${run.ok ? "ok  " : "FAIL"} ${run.key.padEnd(14)} ${run.listings.length} avisos :: ${run.note}`);
   }
 
-  const okSources = new Set<RentalSource>(harvest.runs.filter((run) => run.ok).map((run) => run.key));
-  if (!okSources.size) {
+  // Only a complete sweep can use absence as evidence. Partial sources and the hourly slice
+  // may add/update adverts, but never expire the older offers of a property they happen to touch.
+  const okSources = sourcesAllowingExpiry(harvest.runs, mode);
+  if (!harvest.runs.some((run) => run.ok && run.listings.length)) {
     console.error("[rentals] ningún portal respondió — se conserva el directorio anterior");
     process.exit(1);
   }

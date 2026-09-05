@@ -66,6 +66,8 @@ export function toRawRental(item: FbListing, locationHint: string): RawRental | 
   const attributes = parseAttributes([title]);
 
   return {
+    parkingSpaces: null,
+    furnished: null,
     source: "facebook",
     listingId: `facebook:${id}`,
     url: String(item.url || `https://www.facebook.com/marketplace/item/${id}`),
@@ -101,7 +103,7 @@ export function toRawRental(item: FbListing, locationHint: string): RawRental | 
 
 export async function harvestFacebookMarketplace(mode: "full" | "fast", usdUyu: number): Promise<RentalSourceResult> {
   if (process.env.RENTALS_FB_ENABLED === "0") {
-    return { key: "facebook", ok: true, listings: [], note: "deshabilitado por configuración" };
+    return { key: "facebook", ok: true, complete: false, listings: [], note: "deshabilitado por configuración" };
   }
 
   const perQuery = Number(process.env.RENTALS_FB_LIMIT || 40);
@@ -140,6 +142,8 @@ export async function harvestFacebookMarketplace(mode: "full" | "fast", usdUyu: 
 
   return {
     key: "facebook",
+    // The bridge returns a limited set per city/query, never the entire live marketplace.
+    complete: false,
     ok: reachable,
     listings: [...byId.values()],
     note: reachable ? `${byId.size} avisos en ${locations.length} ciudades` : `sin sesión del navegador: ${lastError}`,

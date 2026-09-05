@@ -23,6 +23,8 @@ const RentalListingSchema = new Schema(
     bedrooms: { type: Number, default: null },
     bathrooms: { type: Number, default: null },
     area: { type: Number, default: null },
+    parkingSpaces: { type: Number, default: null },
+    furnished: { type: Boolean, default: null },
     priceUyu: { type: Number, required: true },
     price: { type: Number, required: true },
     currency: { type: String, default: "UYU" },

@@ -104,9 +104,7 @@ describe('routeRules cache-control', () => {
     'declares an explicit browser max-age for the document route %s',
     route => {
       const value = cacheControlByRoute().get(route)
-      expect(value, `routeRules['${route}'] declares no cache-control`).toBeTypeOf(
-        'string'
-      )
+      expect(value, `routeRules['${route}'] declares no cache-control`).toBeTypeOf('string')
       // `s-maxage` alone leaves the browser TTL to whatever sits in front of us.
       expect(
         value,

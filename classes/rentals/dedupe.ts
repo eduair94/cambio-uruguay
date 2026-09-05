@@ -18,7 +18,7 @@ import { mergeGuarantees } from "./guarantees";
 import type { RawRental, RentalOffer, RentalProperty, RentalPropertyType, RentalSource } from "./types";
 
 /** How complete a source's rows tend to be — used only to pick which row names the property. */
-const SOURCE_RANK: Record<RentalSource, number> = { infocasas: 3, mercadolibre: 2, facebook: 1 };
+const SOURCE_RANK: Record<RentalSource, number> = { infocasas: 4, elpais: 3, mercadolibre: 2, casasweb: 2, facebook: 1 };
 
 export interface DedupeContext {
   usdUyu: number;
@@ -104,6 +104,7 @@ export function sameUnit(a: Candidate, b: Candidate): boolean {
   // dos avisos dicen cuántos baños tiene y dicen distinto, se están describiendo a sí mismos y no
   // coinciden. Sólo descalifica cuando AMBOS lo publican; ausente no contradice nada.
   if (a.bathrooms !== null && b.bathrooms !== null && a.bathrooms !== b.bathrooms) return false;
+  if (a.parkingSpaces != null && b.parkingSpaces != null && a.parkingSpaces !== b.parkingSpaces) return false;
 
   const areaRatio = a.area !== null && b.area !== null ? ratio(a.area, b.area) : null;
   const priceRatio = ratio(a.priceUyu, b.priceUyu);
@@ -219,6 +220,8 @@ export function freshnessOf(offers: RentalOffer[], fallback: string): string {
 
 function toOffer(listing: Candidate, context: DedupeContext): RentalOffer {
   return {
+    parkingSpaces: listing.parkingSpaces ?? null,
+    furnished: listing.furnished === true ? true : null,
     source: listing.source,
     listingId: listing.listingId,
     url: listing.url,
@@ -292,6 +295,8 @@ export function buildRentalProperties(raw: RawRental[], context: DedupeContext):
         bedrooms: cluster.map((item) => item.bedrooms).find((value) => value !== null) ?? null,
         bathrooms: cluster.map((item) => item.bathrooms).find((value) => value !== null) ?? null,
         area: cluster.map((item) => item.area).find((value) => value !== null) ?? null,
+        parkingSpaces: cluster.map((item) => item.parkingSpaces).find((value) => value != null) ?? null,
+        furnished: cluster.some((item) => item.furnished === true) ? true : null,
         // Basta con que UN portal lo publique. No es optimismo: la ausencia no es una negativa
         // —ningun portal publica "no acepta mascotas"— asi que un `null` no contradice a un `true`,
         // sólo dice que ese aviso no lo menciona.

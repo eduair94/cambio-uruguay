@@ -10,15 +10,17 @@ import type { RentalGuarantee } from "./guarantees";
 // Everything here is plain data (no mongoose, no Vue): the app mirrors these types in
 // `app/utils/rentals.ts` and the parity test keeps the two schemas in step.
 
-/** Portals we read. `gallito` is deliberately absent — see docs/app/RENTALS.md. */
-export type RentalSource = "mercadolibre" | "infocasas" | "facebook";
+/** Portals we read. Coverage limitations are published in the per-source run note. */
+export type RentalSource = "mercadolibre" | "infocasas" | "facebook" | "casasweb" | "elpais";
 
-export const RENTAL_SOURCES: readonly RentalSource[] = ["mercadolibre", "infocasas", "facebook"];
+export const RENTAL_SOURCES: readonly RentalSource[] = ["mercadolibre", "infocasas", "facebook", "casasweb", "elpais"];
 
 export const RENTAL_SOURCE_LABEL: Record<RentalSource, string> = {
   mercadolibre: "Mercado Libre",
   infocasas: "InfoCasas",
   facebook: "Facebook Marketplace",
+  casasweb: "Casasweb",
+  elpais: "Inmuebles El País",
 };
 
 /**
@@ -45,6 +47,10 @@ export type RentalCurrency = "UYU" | "USD";
 
 /** One published advert. Several of these can point at the same physical property. */
 export interface RentalOffer {
+  /** Explicit count only; null means the publisher does not state it. */
+  parkingSpaces: number | null;
+  /** A positive published amenity; absence is not an unfurnished claim. */
+  furnished: true | null;
   source: RentalSource;
   /** `<source>:<id>` — stable across runs, the upsert key inside a property. */
   listingId: string;
@@ -96,6 +102,8 @@ export interface RentalOffer {
 
 /** A physical property, as far as we can tell. One row on the site. */
 export interface RentalProperty {
+  parkingSpaces: number | null;
+  furnished: true | null;
   /** Deterministic id derived from the dedupe key — stable while the property stays published. */
   key: string;
   title: string;
@@ -163,6 +171,8 @@ export interface RentalProperty {
  * the location parts beside the price, and a nested shape would only be unwrapped again.
  */
 export interface RawRental {
+  parkingSpaces: number | null;
+  furnished: true | null;
   source: RentalSource;
   listingId: string;
   url: string;

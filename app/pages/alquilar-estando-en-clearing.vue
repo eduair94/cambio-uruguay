@@ -11,7 +11,7 @@
     <VCard class="overflow-hidden mb-5" elevation="8">
       <div class="hero pa-6 pa-md-8">
         <p class="hero-eyebrow">Vivienda · Clearing · Verificado en julio de 2026</p>
-        <h1 class="hero-title">Alquilar estando en el clearing</h1>
+        <h1 class="hero-title">{{ t('clearing.title') }}</h1>
         <p class="hero-lead">
           “Nunca alquilé y estoy en el clearing por una deuda con la telefónica.” Se puede: lo que
           cambia es <strong>por qué puerta entrás</strong>. El seguro de alquiler te rechaza porque
@@ -24,6 +24,16 @@
         </div>
       </div>
     </VCard>
+
+    <ContentTaskLinks
+      class="mb-5"
+      :label="t('clearing.navigation')"
+      :items="[
+        { label: t('clearing.matcher'), to: '#opciones-de-garantia' },
+        { label: t('clearing.guarantees'), to: '#requisitos-de-garantias' },
+        { label: t('clearing.listings'), to: localePath('/alquileres-uruguay') },
+      ]"
+    />
 
     <!-- Where does the debt sit -->
     <h2 class="section-heading mb-1">Primero: ¿dónde figura tu deuda?</h2>
@@ -84,7 +94,9 @@
     </VAlert>
 
     <!-- Matcher -->
-    <h2 class="section-heading mb-1 mt-8">Tu situación: ¿qué garantía te conviene?</h2>
+    <h2 id="opciones-de-garantia" class="section-heading mb-1 mt-8 clearing-entry-anchor">
+      Tu situación: ¿qué garantía te conviene?
+    </h2>
     <p class="text-body-2 text-medium-emphasis mb-4">
       Respondé cinco cosas y te ordenamos las rutas de mejor a peor para tu caso. No promete
       aprobación: te dice dónde tenés más chance y dónde vas a chocar, con el motivo.
@@ -177,7 +189,22 @@
     </VCard>
 
     <!-- Verdict table -->
-    <h2 class="section-heading mb-1 mt-8">Qué mira cada garantía de tu clearing</h2>
+    <section class="my-6" aria-labelledby="rental-next-title">
+      <h2 id="rental-next-title" class="section-heading mb-2">{{ t('clearing.nextTitle') }}</h2>
+      <p class="text-body-2 text-medium-emphasis mb-2">{{ t('clearing.nextLead') }}</p>
+      <ContentTaskLinks
+        :label="t('clearing.navigation')"
+        placement="matcher_results"
+        :items="[
+          { label: t('clearing.listings'), to: localePath('/alquileres-uruguay') },
+          { label: t('clearing.noPayslip'), to: localePath('/alquilar-sin-recibo-de-sueldo') },
+        ]"
+      />
+    </section>
+
+    <h2 id="requisitos-de-garantias" class="section-heading mb-1 mt-8 clearing-entry-anchor">
+      Qué mira cada garantía de tu clearing
+    </h2>
     <p class="text-body-2 text-medium-emphasis mb-4">
       El dato que casi nadie te explica claro: qué proveedor revisa tu historial y cuál ni lo mira.
     </p>
@@ -386,8 +413,10 @@ import {
   type IncomeKind,
   type YesNoUnknown,
 } from '~/utils/rentClearing'
+import { growthEntryMessages } from '~/utils/growthEntryMessages'
 
 const localePath = useLocalePath()
+const { t } = useI18n({ useScope: 'local', messages: growthEntryMessages })
 
 const routes = GUARANTEE_ROUTES
 const sources = RENT_CLEARING_SOURCES
@@ -517,9 +546,8 @@ function formatReviewedDate(iso: string) {
 const lastReviewedLabel = formatReviewedDate(RENT_CLEARING_LAST_REVIEWED)
 
 const canonicalUrl = 'https://cambio-uruguay.com/alquilar-estando-en-clearing'
-const title = 'Alquilar estando en el clearing en Uruguay: qué garantía te sirve (2026)'
-const description =
-  'Guía para alquilar estando en el clearing: qué garantías chequean tu historial (el seguro de alquiler es excluyente) y cuáles no (depósito BHU, régimen sin garantía, garante, dueño directo), la garantía estatal FGA que lo tolera, la Ley 20.212 y tus derechos, con fuentes oficiales.'
+const title = computed(() => t('clearing.seoTitle'))
+const description = computed(() => t('clearing.description'))
 
 defineOgImageComponent('Cambio', {
   title: 'Alquilar estando en el clearing',
@@ -528,7 +556,7 @@ defineOgImageComponent('Cambio', {
 })
 
 useSeoMeta({
-  title: () => `${title} | Cambio Uruguay`,
+  title: () => `${title.value} | Cambio Uruguay`,
   description,
   ogTitle: title,
   ogDescription: description,
@@ -579,8 +607,8 @@ useHead(() => ({
           },
           {
             '@type': 'Article',
-            headline: title,
-            description,
+            headline: title.value,
+            description: description.value,
             dateModified: RENT_CLEARING_LAST_REVIEWED,
             mainEntityOfPage: canonicalUrl,
           },
@@ -600,6 +628,10 @@ useHead(() => ({
 </script>
 
 <style scoped>
+.clearing-entry-anchor {
+  scroll-margin-top: 6rem;
+}
+
 .rc-page {
   overflow-x: hidden;
 }

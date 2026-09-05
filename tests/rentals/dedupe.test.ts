@@ -3,6 +3,8 @@ import { buildRentalProperties, sameUnit } from "../../classes/rentals/dedupe";
 import type { RawRental } from "../../classes/rentals/types";
 
 const base: RawRental = {
+  parkingSpaces: null,
+  furnished: null,
   source: "infocasas",
   listingId: "infocasas:1",
   url: "https://www.infocasas.com.uy/x/1",

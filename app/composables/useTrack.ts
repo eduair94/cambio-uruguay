@@ -6,6 +6,11 @@
 //
 //   const track = useTrack()
 //   track('convert', { from: 'USD', to: 'UYU' })
+//
+// Give interaction metadata specific names (content_path, tour_trigger,
+// search_trigger). `source` and other campaign fields belong to acquisition,
+// not to where an on-site interaction happened: keep campaign attribution in
+// external UTM links, separate from these events.
 export function useTrack() {
   const { gtag } = useGtag()
   return (event: string, params: Record<string, unknown> = {}) => {

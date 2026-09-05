@@ -134,6 +134,7 @@ jobs:
               - 'tsconfig*.json'
               - 'tests/**'
               - 'scripts/deploy-backend.sh'
+              - 'scripts/run-rentals.sh'
               - '.github/workflows/deploy.yml'
 
   backend-test:

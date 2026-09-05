@@ -88,6 +88,8 @@ describe("InfoCasas publica el dato de mascotas y el parser lo lee", () => {
 
 describe("al unificar la propiedad", () => {
   const base: RawRental = {
+    parkingSpaces: null,
+    furnished: null,
     source: "infocasas",
     listingId: "infocasas:1",
     url: "https://www.infocasas.com.uy/x/1",
@@ -154,6 +156,8 @@ describe("al unificar la propiedad", () => {
 // `null` NO es una negativa: es "esta corrida no preguntó". Por eso nunca puede pisar un `true`.
 describe("la corrida rapida no puede borrar lo que la completa averiguo", () => {
   const offer = (over: Partial<RentalOffer> & { listingId: string }): RentalOffer => ({
+    parkingSpaces: null,
+    furnished: null,
     source: "mercadolibre",
     url: "https://x",
     title: "Apartamento",

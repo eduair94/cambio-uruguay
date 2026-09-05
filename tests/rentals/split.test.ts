@@ -20,6 +20,8 @@ import { dropReassignedOffers, saveRentalProperties } from "../../classes/rental
 import type { RentalOffer, RentalProperty, RentalSource } from "../../classes/rentals/types";
 
 const offer = (listingId: string, priceUyu = 30_000): RentalOffer => ({
+  parkingSpaces: null,
+  furnished: null,
   source: "infocasas" as RentalSource,
   listingId,
   url: "https://example.com",

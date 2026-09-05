@@ -19,8 +19,28 @@ const lista = readFileSync(join(APP, 'server', 'api', 'rentals', 'index.get.ts')
 
 describe('el filtro es uno solo', () => {
   it('las dos rutas lo piden a la misma función', () => {
-    expect(mapa).toContain('buildRentalFilter(query, STALE_DAYS)')
-    expect(lista).toContain('buildRentalFilter(query, STALE_DAYS)')
+    for (const route of [mapa, lista])
+      expect(route).toMatch(/buildRentalFilter\(\s*query,\s*STALE_DAYS,\s*usdUyu\s*\)/)
+  })
+
+  it('lista, mapa, conteos y facetas comparan barrios sin distinguir mayúsculas ni tildes', () => {
+    for (const route of [mapa, lista]) {
+      const queries = route.match(/RentalListingModel\.aggregate\(/g) || []
+      const collations = route.match(/\.collation\(\s*RENTAL_COLLATION\s*\)/g) || []
+      expect(queries.length).toBeGreaterThan(0)
+      expect(collations).toHaveLength(queries.length)
+    }
+    const filters = readFileSync(join(APP, 'components', 'rentals', 'SearchFilters.vue'), 'utf8')
+    expect(filters).toContain(':custom-filter="rentalTextMatches"')
+  })
+
+  it('filtra la vigencia de cada aviso antes de contar, filtrar y producir las facetas', () => {
+    for (const route of [mapa, lista]) {
+      expect(route).toContain('rentalPublicStages(')
+      expect(route).not.toContain('.countDocuments(')
+    }
+    expect(lista).toContain('rentalPublicStages(nonLocation, STALE_DAYS)')
+    expect(lista).toContain('rentalPublicStages(withoutNeighborhood, STALE_DAYS)')
   })
 
   it('la lista ya no arma el suyo a mano', () => {
@@ -64,7 +84,7 @@ describe('buildRentalFilter', () => {
 
 describe('la página no manda los puntos en el SSR', () => {
   it('el mapa se pide sólo cuando alguien lo abre', () => {
-    const at = pagina.indexOf("'rentals-map'")
+    const at = pagina.indexOf("'rental-directory-map'")
     expect(at).toBeGreaterThan(-1)
     const bloque = pagina.slice(at, at + 400)
     expect(bloque).toContain('server: false')
@@ -72,8 +92,10 @@ describe('la página no manda los puntos en el SSR', () => {
   })
 
   it('sigue los filtros una vez abierto', () => {
-    const at = pagina.indexOf("'rentals-map'")
-    expect(pagina.slice(at, at + 400)).toContain('watch: [requestParams]')
+    const at = pagina.indexOf("'rental-directory-map'")
+    const block = pagina.slice(at, at + 400)
+    expect(block).toContain('watch([view, mapKey]')
+    expect(block).toContain("if (view.value === 'mapa') void loadMap()")
   })
 
   it('reutiliza LocationsMap en vez de escribir otro mapa', () => {
@@ -89,8 +111,9 @@ describe('lo que el mapa no puede mostrar, lo dice', () => {
   })
 
   it('la página avisa cuándo hay propiedades sin ubicación', () => {
-    expect(pagina).toContain('mapData.located < mapData.total')
-    expect(pagina).toContain('sólo aparece en la lista')
+    expect(pagina).toContain("t('mapCoverage'")
+    expect(pagina).toContain('located: numberFormat(mapData.located)')
+    expect(pagina).toContain('total: numberFormat(mapData.total)')
   })
 
   it('descarta el 0,0 que los feeds usan como nulo', () => {

@@ -3,6 +3,8 @@ import { mergeOffers, recomputeFromOffers } from "../../classes/rentals/store";
 import type { RentalOffer, RentalProperty, RentalSource } from "../../classes/rentals/types";
 
 const offer = (overrides: Partial<RentalOffer> & { source: RentalSource; listingId: string }): RentalOffer => ({
+  parkingSpaces: null,
+  furnished: null,
   url: "https://example.com",
   title: "Apartamento",
   price: 30_000,

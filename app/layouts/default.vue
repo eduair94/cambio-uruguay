@@ -463,13 +463,13 @@ function isTypingTarget(target: EventTarget | null): boolean {
 function onGlobalKeydown(event: KeyboardEvent) {
   if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
     event.preventDefault()
-    track('search_open', { source: 'hotkey' })
+    track('search_open', { search_trigger: 'hotkey' })
     openPalette()
     return
   }
   if (event.key === '/' && !event.metaKey && !event.ctrlKey && !isTypingTarget(event.target)) {
     event.preventDefault()
-    track('search_open', { source: 'hotkey_slash' })
+    track('search_open', { search_trigger: 'hotkey_slash' })
     openPalette()
   }
 }

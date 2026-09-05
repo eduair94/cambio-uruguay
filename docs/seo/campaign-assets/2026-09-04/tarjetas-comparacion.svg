@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+  <title id="title">Antes de elegir una tarjeta</title>
+  <desc id="desc">Compará costo anual, canje de puntos, topes y vencimientos en Cambio Uruguay.</desc>
+  <rect width="1200" height="675" fill="#0a0e1a"/>
+  <path d="M640 0H1200V675H640Z" fill="#121a2e"/>
+  <path d="M640 0V675" stroke="#29354c"/>
+  <g font-family="Arial, Helvetica, sans-serif">
+    <rect x="64" y="62" width="34" height="5" rx="2.5" fill="#64b5f6"/>
+    <text x="111" y="71" fill="#b9cbe0" font-size="18" font-weight="700" letter-spacing="2">TARJETAS · URUGUAY</text>
+    <text x="64" y="196" fill="#ffffff" font-size="73" font-weight="700" letter-spacing="-2.8">Antes de</text>
+    <text x="64" y="280" fill="#ffffff" font-size="73" font-weight="700" letter-spacing="-2.8">elegir una</text>
+    <text x="64" y="364" fill="#64b5f6" font-size="73" font-weight="700" letter-spacing="-2.8">tarjeta.</text>
+    <text x="68" y="434" fill="#b9cbe0" font-size="25">Mirá qué incluye y qué exige.</text>
+    <rect x="64" y="486" width="391" height="66" rx="8" fill="#1976d2"/>
+    <text x="90" y="528" fill="#ffffff" font-size="25" font-weight="700">Abrí la comparación</text>
+    <path d="M410 510l9 9-9 9M418 519h-23" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="64" y="618" fill="#b9cbe0" font-size="23">cambio-uruguay.com</text>
+    <text x="706" y="105" fill="#64b5f6" font-size="17" font-weight="700" letter-spacing="1.9">TRES COSAS PARA REVISAR</text>
+    <path d="M704 140H1132M704 293H1132M704 446H1132" stroke="#33415b"/>
+    <text x="706" y="190" fill="#64b5f6" font-size="18" font-weight="700">01</text>
+    <text x="759" y="192" fill="#ffffff" font-size="29" font-weight="700">Costo anual</text>
+    <text x="759" y="233" fill="#b9cbe0" font-size="22">Cargos y bonificaciones</text>
+    <text x="706" y="343" fill="#64b5f6" font-size="18" font-weight="700">02</text>
+    <text x="759" y="345" fill="#ffffff" font-size="29" font-weight="700">Canje de puntos</text>
+    <text x="759" y="386" fill="#b9cbe0" font-size="22">Cómo podés usarlos</text>
+    <text x="706" y="496" fill="#64b5f6" font-size="18" font-weight="700">03</text>
+    <text x="759" y="498" fill="#ffffff" font-size="29" font-weight="700">La letra chica</text>
+    <text x="759" y="539" fill="#b9cbe0" font-size="22">Topes y vencimientos</text>
+    <text x="706" y="618" fill="#8fabc9" font-size="18">Condiciones de cada programa, a la vista.</text>
+  </g>
+</svg>

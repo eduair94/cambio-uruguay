@@ -1,8 +1,15 @@
 import { RentalListingModel } from '../../models/RentalListing'
+import { RentalMetaModel } from '../../models/RentalMeta'
 import { connectDb } from '../../utils/db'
 import {
+  RENTAL_COLLATION,
   buildRentalFilter,
   normalizeRentalQuery,
+  rentalMatchingOffer,
+  rentalMongoSort,
+  rentalOfferStages,
+  rentalPublicStages,
+  type RentalOffer,
   type RentalMapPoint,
   type RentalMapResponse,
 } from '../../../utils/rentals'
@@ -44,42 +51,60 @@ export default defineEventHandler(async (event): Promise<RentalMapResponse> => {
   )
 
   const query = normalizeRentalQuery(getQuery(event) as Record<string, unknown>)
-  const empty: RentalMapResponse = { points: [], total: 0, located: 0, shown: 0, limit: MAX_POINTS }
-
   try {
     await connectDb()
-    const { filter } = buildRentalFilter(query, STALE_DAYS)
+    const meta = await RentalMetaModel.findOne({ key: 'uy-rentals' }).select({ usdUyu: 1 }).lean()
+    const usdUyu = Number(meta?.usdUyu) || 0
+    const { filter } = buildRentalFilter(query, STALE_DAYS, usdUyu)
 
     // `$type: 'number'` y no `$ne: null`: los documentos viejos traen la coordenada ausente, no
     // nula, y un `$ne: null` los cuenta como si la tuvieran.
     const located: Record<string, unknown> = {
       ...filter,
-      latitude: { $type: 'number' },
-      longitude: { $type: 'number' },
+      latitude: { $type: 'number', $gte: -35.5, $lte: -30 },
+      longitude: { $type: 'number', $gte: -58.6, $lte: -53 },
     }
 
-    const [total, locatedCount, rows] = await Promise.all([
-      RentalListingModel.countDocuments(filter),
-      RentalListingModel.countDocuments(located),
-      RentalListingModel.find(located)
-        .select({
-          _id: 0,
-          key: 1,
-          latitude: 1,
-          longitude: 1,
-          price: 1,
-          currency: 1,
-          bedrooms: 1,
-          area: 1,
-          neighborhood: 1,
-          'offers.url': 1,
-        })
-        // Mismo orden que la lista en su modo por defecto, para que "los primeros del mapa" y "los
-        // primeros de la lista" sean las mismas propiedades cuando hay recorte.
-        .sort({ freshAt: -1, key: 1 })
-        .limit(MAX_POINTS)
-        .lean(),
+    const publicLocated = rentalPublicStages(located, STALE_DAYS)
+    const [totals, locatedTotals, rows] = await Promise.all([
+      RentalListingModel.aggregate([
+        ...rentalPublicStages(filter, STALE_DAYS),
+        { $count: 'total' },
+      ]).collation(RENTAL_COLLATION),
+      RentalListingModel.aggregate([...publicLocated, { $count: 'total' }]).collation(
+        RENTAL_COLLATION
+      ),
+      RentalListingModel.aggregate([
+        ...publicLocated,
+        ...rentalOfferStages(query, usdUyu),
+        { $sort: rentalMongoSort(query.sort) },
+        { $limit: MAX_POINTS },
+        {
+          $project: {
+            _id: 0,
+            key: 1,
+            latitude: 1,
+            longitude: 1,
+            price: 1,
+            currency: 1,
+            bedrooms: 1,
+            area: 1,
+            neighborhood: 1,
+            'offers.url': 1,
+            'offers.listingId': 1,
+            'offers.source': 1,
+            'offers.price': 1,
+            'offers.priceUyu': 1,
+            'offers.currency': 1,
+            'offers.sellerType': 1,
+            'offers.commonExpenses': 1,
+            'offers.commonExpensesCurrency': 1,
+          },
+        },
+      ]).collation(RENTAL_COLLATION),
     ])
+    const total = Number(totals[0]?.total) || 0
+    const locatedCount = Number(locatedTotals[0]?.total) || 0
 
     const points: RentalMapPoint[] = []
     for (const row of rows as Array<Record<string, any>>) {
@@ -88,23 +113,25 @@ export default defineEventHandler(async (event): Promise<RentalMapResponse> => {
       // Un cero exacto en las dos es el null de los feeds, no la isla de Null: cae en el Golfo de
       // Guinea y arrastraría el encuadre del mapa a África.
       if (!Number.isFinite(lat) || !Number.isFinite(lng) || (lat === 0 && lng === 0)) continue
+      const matched = rentalMatchingOffer((row.offers || []) as RentalOffer[], query, usdUyu)
       points.push({
         key: String(row.key),
         lat,
         lng,
-        price: Number(row.price) || 0,
-        currency: row.currency === 'USD' ? 'USD' : 'UYU',
+        price: Number(matched?.price ?? row.price) || 0,
+        currency: (matched?.currency ?? row.currency) === 'USD' ? 'USD' : 'UYU',
         bedrooms: typeof row.bedrooms === 'number' ? row.bedrooms : null,
         area: typeof row.area === 'number' ? row.area : null,
         neighborhood: String(row.neighborhood || ''),
         offers: Array.isArray(row.offers) ? row.offers.length : 0,
-        url: (Array.isArray(row.offers) && row.offers[0]?.url) || '',
+        url: matched?.url || (Array.isArray(row.offers) && row.offers[0]?.url) || '',
       })
     }
 
     return { points, total, located: locatedCount, shown: points.length, limit: MAX_POINTS }
-  } catch {
-    // Mongo caído: el mapa se muestra vacío y la lista sigue andando por su cuenta.
-    return empty
+  } catch (error) {
+    console.error('[api/rentals/mapa] failed', error)
+    setResponseHeader(event, 'cache-control', 'no-store')
+    throw createError({ statusCode: 503, statusMessage: 'Rental map is temporarily unavailable' })
   }
 })

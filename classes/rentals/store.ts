@@ -184,6 +184,8 @@ export function recomputeFromOffers(property: RentalProperty, offers: RentalOffe
     // Se deriva de las ofertas y no se arrastra del objeto entrante: en una corrida rapida ese
     // objeto viene sin la marca, y las ofertas son las que la conservan.
     petsAllowed: offers.some((offer) => offer.petsAllowed === true) ? true : null,
+    parkingSpaces: offers.map((offer) => offer.parkingSpaces).find((value) => value != null) ?? null,
+    furnished: offers.some((offer) => offer.furnished === true) ? true : null,
     firstSeen: [property.firstSeen, ...offers.map((offer) => offer.firstSeen)].filter(Boolean).sort()[0]!,
     lastSeen: offers.map((offer) => offer.lastSeen).sort().slice(-1)[0]!,
   };

@@ -20,7 +20,7 @@ const track = useTrack()
 
 const SEEN_KEY = 'cu_tour_seen'
 
-async function start(source: 'button' | 'auto') {
+async function start(trigger: 'button' | 'auto') {
   if (!import.meta.client) return
   try {
     window.localStorage.setItem(SEEN_KEY, '1')
@@ -70,11 +70,11 @@ async function start(source: 'button' | 'auto') {
     steps,
     // Fires on both finishing the last step and closing early; pair with
     // tour_start in GA4 to read the completion rate.
-    onDestroyed: () => track('tour_end', { source }),
+    onDestroyed: () => track('tour_end', { tour_trigger: trigger }),
   })
 
   d.drive()
-  track('tour_start', { source, steps: steps.length })
+  track('tour_start', { tour_trigger: trigger, steps: steps.length })
 }
 
 onMounted(() => {

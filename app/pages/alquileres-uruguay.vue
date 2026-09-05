@@ -1,414 +1,260 @@
 <!--
-THESIS: Nobody rents a flat on one portal. The value we can add is not another listing site — it is
-ONE list where the same flat posted on three portals is one row, with every portal beside it.
-OWN-WORLD: The site's navy/action-blue surfaces on a catalogue layout people already know from the
-chair directory, so the controls need no learning.
-STORY: Arrive with a barrio and a budget, narrow it, see who publishes it, leave through the portal.
+THESIS: Find a viable home across portals by location, conditions and actual monthly cost.
+OWN-WORLD: Extend Cambio Uruguay's navy/paper surfaces, Open Sans and blue actions.
+STORY: Narrow the search, compare costs, save candidates, contact the original publisher.
+FIRST VIEWPORT: Compact heading, location and monthly budget, explicit search, then results.
+FORM: Familiar rental catalogue; progressive filters and a personal comparison shortlist.
+MOBILE: Results first; persistent thumb-reachable filters open a focused draft with fixed actions.
 -->
 <template>
-  <VContainer class="rentals pt-1 pt-sm-4 pb-12">
+  <VContainer class="rentals pt-1 pt-sm-4" :class="{ 'rentals--mobile': smAndDown }">
     <VBreadcrumbs :items="breadcrumbs" density="compact" class="px-0 py-1" />
-
     <header class="rentals-head">
-      <p class="rentals-kicker">Directorio de alquileres</p>
-      <h1 class="rentals-title">Alquileres en Uruguay, sin el mismo aviso tres veces</h1>
-      <p class="rentals-lead">
-        Reunimos lo publicado en {{ activeSourceLabels || 'los portales' }} y unificamos el mismo
-        inmueble cuando aparece en varios lados: una fila por propiedad, con todos los avisos al
-        lado. Los precios se comparan en pesos al dólar del día; el aviso siempre se abre en el
-        portal que lo publicó.
-      </p>
-
-      <div class="rentals-stats">
-        <div class="rentals-stat">
-          <span class="rentals-stat__value">{{ numberFormat(meta?.properties ?? total) }}</span>
-          <span class="rentals-stat__label">propiedades publicadas</span>
-        </div>
-        <div class="rentals-stat">
-          <span class="rentals-stat__value">{{ numberFormat(meta?.merged ?? 0) }}</span>
-          <span class="rentals-stat__label">en más de un portal</span>
-        </div>
-        <div class="rentals-stat">
-          <span class="rentals-stat__value">{{
-            meta?.usdUyu ? `$ ${meta.usdUyu.toFixed(2)}` : '—'
-          }}</span>
-          <span class="rentals-stat__label">dólar usado para comparar</span>
-        </div>
-        <div class="rentals-stat">
-          <span class="rentals-stat__value">{{ updatedLabel }}</span>
-          <span class="rentals-stat__label">última actualización</span>
-        </div>
+      <h1>{{ t('title') }}</h1>
+      <p class="rentals-lead">{{ t('subtitle') }}</p>
+      <div class="rentals-provenance">
+        <span v-if="activeSourceLabels">{{ activeSourceLabels }}</span>
+        <span v-if="meta?.generatedAt">{{ t('date', { date: dateLabel(meta.generatedAt) }) }}</span>
+        <a href="#rental-coverage">{{ t('coverage') }}</a>
       </div>
-
-      <!-- A portal that is down is said out loud. The alternative is a directory that quietly
-           shrinks and looks like a market that emptied. -->
-      <VAlert
-        v-if="downSources.length"
-        type="warning"
-        variant="tonal"
-        density="comfortable"
-        class="mt-4"
-      >
-        Sin datos frescos de {{ downSources.map(source => sourceLabel(source.key)).join(', ') }}. Se
-        siguen mostrando sus últimos avisos conocidos.
-      </VAlert>
+      <VAlert v-if="downSources.length" type="warning" variant="tonal" class="mt-3">{{
+        t('sourceWarning', {
+          sources: downSources.map(source => sourceLabel(source.key)).join(', '),
+        })
+      }}</VAlert>
     </header>
-
-    <section class="rentals-filters" aria-label="Filtros">
-      <VRow dense>
-        <VCol cols="12" md="4">
-          <VTextField
-            v-model="form.q"
-            label="Buscar por calle, barrio o texto del aviso"
-            prepend-inner-icon="mdi-magnify"
-            density="comfortable"
-            variant="outlined"
-            hide-details
-            clearable
-            @update:model-value="debouncedApply"
-          />
-        </VCol>
-        <VCol cols="6" md="2">
-          <VSelect
-            v-model="form.department"
-            :items="departmentItems"
-            label="Departamento"
-            density="comfortable"
-            variant="outlined"
-            hide-details
-            @update:model-value="onDepartmentChange"
-          />
-        </VCol>
-        <VCol cols="6" md="2">
-          <VAutocomplete
-            v-model="form.neighborhood"
-            :items="neighborhoodItems"
-            label="Barrio"
-            density="comfortable"
-            variant="outlined"
-            hide-details
-            :disabled="!neighborhoodItems.length"
-            @update:model-value="apply"
-          />
-        </VCol>
-        <VCol cols="6" md="2">
-          <VSelect
-            v-model="form.bedrooms"
-            :items="bedroomItems"
-            label="Dormitorios"
-            density="comfortable"
-            variant="outlined"
-            hide-details
-            @update:model-value="apply"
-          />
-        </VCol>
-        <VCol cols="6" md="2">
-          <VSelect
-            v-model="form.sort"
-            :items="sortItems"
-            label="Ordenar"
-            density="comfortable"
-            variant="outlined"
-            hide-details
-            @update:model-value="apply"
-          />
-        </VCol>
-        <VCol cols="6" md="3">
-          <VTextField
-            v-model="form.priceMin"
-            label="Precio mínimo ($)"
-            type="number"
-            inputmode="numeric"
-            density="comfortable"
-            variant="outlined"
-            hide-details
-            clearable
-            @update:model-value="debouncedApply"
-          />
-        </VCol>
-        <VCol cols="6" md="3">
-          <VTextField
-            v-model="form.priceMax"
-            label="Precio máximo ($)"
-            type="number"
-            inputmode="numeric"
-            density="comfortable"
-            variant="outlined"
-            hide-details
-            clearable
-            @update:model-value="debouncedApply"
-          />
-        </VCol>
-        <VCol cols="12" md="6" class="d-flex align-center flex-wrap ga-2">
-          <VChip
-            v-for="type in typeChips"
-            :key="type.value"
-            :color="form.type === type.value ? 'primary' : undefined"
-            :variant="form.type === type.value ? 'flat' : 'tonal'"
-            size="small"
-            label
-            @click="toggleType(type.value)"
-          >
-            {{ typeLabel(type.value) }} ({{ numberFormat(type.count) }})
-          </VChip>
-        </VCol>
-      </VRow>
-
-      <!-- Cerca de una sede de salud. La coordenada de cada sede sale de OpenStreetMap. -->
-      <VRow dense class="align-center">
-        <VCol cols="12" md="4">
-          <VSelect
-            v-model="form.mutualista"
-            :items="mutualistaItems"
-            label="Cerca de (mutualidad)"
-            density="compact"
-            variant="outlined"
-            hide-details
-            clearable
-            @update:model-value="onMutualistaChange"
-          />
-        </VCol>
-        <VCol cols="12" md="5">
-          <VSelect
-            v-model="form.sedes"
-            :items="sedeItems"
-            :disabled="!sedeItems.length"
-            label="Sedes"
-            density="compact"
-            variant="outlined"
-            hide-details
-            multiple
-            chips
-            closable-chips
-            @update:model-value="apply"
-          />
-        </VCol>
-        <VCol cols="12" md="3">
-          <div class="text-caption text-medium-emphasis">Radio: {{ form.radio }} km</div>
-          <VSlider
-            v-model="form.radio"
-            :min="0.3"
-            :max="5"
-            :step="0.1"
-            :disabled="!form.sedes.length"
-            density="compact"
-            hide-details
-            @end="apply"
-          />
-        </VCol>
-      </VRow>
-      <!-- Dos límites reales de este filtro. Se dicen acá y no en una nota al pie: quien filtra por
-           cercanía tiene que saber que está viendo menos de lo que hay. -->
-      <p v-if="form.sedes.length" class="text-caption text-medium-emphasis mb-0">
-        Una propiedad sin coordenada publicada no puede entrar en este filtro, por más cerca que
-        esté. Y las sedes salen de OpenStreetMap: sirven como punto de referencia, no son el padrón
-        completo de cada institución.
-      </p>
-
-      <div class="rentals-filters__row">
-        <VSwitch
-          v-model="form.multi"
-          color="primary"
-          density="compact"
-          hide-details
-          inset
-          label="Solo lo publicado en más de un portal"
-          @update:model-value="apply"
-        />
-        <VSwitch
-          v-model="form.pets"
-          color="primary"
-          density="compact"
-          hide-details
-          inset
-          label="Admite mascotas"
-          @update:model-value="apply"
-        />
-        <VSwitch
-          v-model="form.gc"
-          color="primary"
-          density="compact"
-          hide-details
-          inset
-          label="Publica gastos comunes"
-          @update:model-value="apply"
-        />
-        <VSwitch
-          v-model="form.dueno"
-          color="primary"
-          density="compact"
-          hide-details
-          inset
-          label="Dueño directo (sin comisión)"
-          @update:model-value="apply"
-        />
-      </div>
-
-      <!-- Garantías. En Uruguay es el filtro que decide si alguien puede alquilar, más que el
-           precio: quien no tiene un propietario que salga de fiador depende de ANDA, de Contaduría
-           o de una aseguradora, y cada inmobiliaria acepta unas y otras no. -->
-      <div class="rentals-filters__row">
-        <span class="text-caption text-medium-emphasis">Garantía que podés presentar:</span>
-        <div class="d-flex align-center flex-wrap ga-2">
-          <VChip
-            v-for="g in guaranteeChips"
-            :key="g.value"
-            :color="form.guarantees.includes(g.value) ? 'primary' : undefined"
-            :variant="form.guarantees.includes(g.value) ? 'flat' : 'tonal'"
-            :title="g.hint"
-            size="small"
-            label
-            @click="toggleGuarantee(g.value)"
-          >
-            {{ g.label }}
-          </VChip>
-          <div class="d-flex align-center flex-wrap ga-2">
-            <VChip
-              v-for="source in sourceChips"
-              :key="source.value"
-              :color="form.source === source.value ? 'primary' : undefined"
-              :variant="form.source === source.value ? 'flat' : 'tonal'"
-              size="small"
-              label
-              @click="toggleSource(source.value)"
-            >
-              {{ sourceLabel(source.value as RentalSource) }} ({{ numberFormat(source.count) }})
-            </VChip>
-            <VBtn v-if="hasFilters" size="small" variant="text" @click="clearFilters">
-              Limpiar filtros
-            </VBtn>
-          </div>
-        </div>
-      </div>
-      <p v-if="form.guarantees.length" class="text-caption text-medium-emphasis mb-0">
-        Sale de lo que dice cada aviso, y casi la mitad no lo dice: que una propiedad no aparezca
-        acá no significa que no acepte esa garantía, sino que no la nombra.
-        <NuxtLink :to="localePath('/alquilar-en-uruguay')" class="cu-link">
-          Qué es cada garantía
-        </NuxtLink>
-      </p>
-    </section>
-
-    <section class="rentals-summary" aria-live="polite">
-      <p class="mb-0">
-        <strong>{{ numberFormat(total) }}</strong> propiedades
-        <template v-if="medianUyu">
-          · alquiler típico de esta búsqueda: <strong>$ {{ numberFormat(medianUyu) }}</strong>
-          <span class="text-medium-emphasis"> (mediana, gastos comunes aparte)</span>
-        </template>
-      </p>
-    </section>
-
-    <!-- Lista o mapa. El mapa NO se pide hasta que alguien lo abre: son hasta 3.000 puntos y
-         mandarlos en el payload del SSR de una página que la mayoría usa como lista sería
-         cobrarle a todos el peso de una vista que abren algunos. -->
-    <div class="rentals-view mb-4">
-      <VBtnToggle v-model="view" mandatory density="comfortable" variant="outlined" divided>
-        <VBtn value="lista" size="small" prepend-icon="mdi-view-grid-outline">Lista</VBtn>
-        <VBtn value="mapa" size="small" prepend-icon="mdi-map-marker-outline">Mapa</VBtn>
-      </VBtnToggle>
-    </div>
-
-    <section v-if="view === 'mapa'" class="rentals-map mb-6">
-      <VProgressLinear v-if="mapPending" indeterminate color="primary" class="mb-2" />
-
-      <!-- La mitad del inventario no tiene coordenada y el mapa tiene que decirlo: un mapa que
-           esconde la mitad sin avisar hace creer que un barrio no tiene oferta. -->
-      <VAlert
-        v-if="mapData && mapData.located < mapData.total"
-        type="info"
-        variant="tonal"
-        density="compact"
-        class="mb-3"
-      >
-        {{ numberFormat(mapData.located) }} de {{ numberFormat(mapData.total) }} propiedades de esta
-        búsqueda tienen ubicación publicada; el resto sólo aparece en la lista.
-        <template v-if="mapData.shown < mapData.located">
-          En el mapa se dibujan las {{ numberFormat(mapData.shown) }} más recientes.
-        </template>
-      </VAlert>
-
-      <ClientOnly>
-        <LocationsMap
-          v-if="mapMarkers.length"
-          :branches="mapMarkers"
-          :popup-for="rentalPopup"
-          :user-location="sedeCentro"
-          :radius-km="sedeCentro ? form.radio : 0"
-          :fit-to-markers="true"
-          height="65vh"
-          directions-label="Ver el aviso"
-        />
-        <VAlert v-else-if="!mapPending" type="warning" variant="tonal" density="compact">
-          Ninguna de las propiedades de esta búsqueda tiene ubicación publicada. Probá en la lista.
-        </VAlert>
-      </ClientOnly>
-    </section>
-
-    <VProgressLinear
-      v-if="pending && view === 'lista'"
-      indeterminate
-      color="primary"
-      class="mb-4"
+    <SearchFilters
+      v-model:open="mobileFiltersOpen"
+      :mobile="smAndDown"
+      :query="query"
+      :departments="data?.facets.departments ?? []"
+      :neighborhoods="neighborhoodFacets"
+      :pending="pending"
+      @search="search"
+      @clear="clearFilters"
+      @department="loadNeighborhoods"
+      @closed="restoreFilterContext"
     />
-
-    <VAlert
-      v-if="!pending && !items.length && view === 'lista'"
-      type="info"
-      variant="tonal"
-      class="mb-6"
+    <div v-if="smAndDown" class="rentals-mobile-bar">
+      <VBtn
+        color="primary"
+        size="large"
+        prepend-icon="mdi-tune-variant"
+        aria-haspopup="dialog"
+        aria-controls="rental-mobile-filters-dialog"
+        :aria-expanded="mobileFiltersOpen"
+        data-testid="rental-mobile-filters-trigger"
+        @click="openMobileFilters"
+        >{{ t('mobileFilters')
+        }}<span v-if="filterChips.length"> ({{ filterChips.length }})</span></VBtn
+      >
+    </div>
+    <div v-if="filterChips.length" class="rentals-chips" :aria-label="t('activeFilters')">
+      <VChip
+        v-for="chip in filterChips"
+        :key="chip.key"
+        closable
+        variant="tonal"
+        color="primary"
+        :close-label="t('remove', { name: chip.label })"
+        @click:close="removeFilter(chip.keys)"
+        >{{ chip.label }}</VChip
+      >
+      <VBtn variant="text" size="small" @click="clearFilters">{{ t('reset') }}</VBtn>
+    </div>
+    <div class="rentals-tools">
+      <VBtn variant="text" prepend-icon="mdi-bookmark-plus-outline" @click="saveSearch">{{
+        t('saveSearch')
+      }}</VBtn>
+      <VBtn
+        variant="text"
+        prepend-icon="mdi-heart-outline"
+        :aria-expanded="showSaved"
+        aria-controls="rental-saved"
+        @click="showSaved = !showSaved"
+        >{{ t('saved') }} ({{ saved.favorites.length + saved.searches.length }})</VBtn
+      >
+      <VBtn variant="text" prepend-icon="mdi-share-variant-outline" @click="shareSearch">{{
+        t('share')
+      }}</VBtn>
+    </div>
+    <div v-if="showSaved" id="rental-saved" class="mb-6">
+      <SavedPanel
+        :state="saved"
+        :usd-uyu="usdUyu"
+        @open-search="openSavedSearch"
+        @remove-search="removeSearch"
+        @remove-favorite="removeFavorite"
+      />
+    </div>
+    <section
+      id="rental-results"
+      class="rentals-results"
+      :aria-busy="pending"
+      tabindex="-1"
+      :aria-label="t('searchResults')"
     >
-      No hay propiedades para esos filtros. Probá ampliar el precio o sacar el barrio.
-    </VAlert>
-
-    <VRow v-if="view === 'lista'">
-      <VCol v-for="property in items" :key="property.key" cols="12" sm="6" lg="4">
-        <VCard class="rental-card h-100 d-flex flex-column" variant="flat">
-          <a
-            :href="property.offers[0]?.url"
-            target="_blank"
-            rel="noopener noreferrer nofollow"
-            class="rental-card__media"
-          >
-            <img
-              v-if="property.offers[0]?.image"
-              :src="property.offers[0]!.image!"
-              :alt="property.title"
-              loading="lazy"
-              decoding="async"
-              width="400"
-              height="260"
-            />
-            <span v-else class="rental-card__noimage">
-              <VIcon size="32">mdi-home-city-outline</VIcon>
-            </span>
-            <span v-if="property.sources.length > 1" class="rental-card__badge">
-              {{ property.sources.length }} portales
-            </span>
-          </a>
-
-          <div class="rental-card__body">
-            <p class="rental-card__price">
-              {{ priceLabel(property) }}
-              <span v-if="commonExpensesLabel(property)" class="rental-card__ce">
-                + {{ commonExpensesLabel(property) }} de gastos
-                <template v-if="totalLabel(property)">
-                  · total <strong>{{ totalLabel(property) }}</strong>
-                </template>
+      <div class="rentals-toolbar">
+        <div class="rentals-summary" role="status" aria-live="polite">
+          <h2>{{ pending ? t('searching') : t('results', { n: numberFormat(total) }) }}</h2>
+          <p v-if="medianUyu && !pending">
+            {{ t('typical', { price: `$ ${numberFormat(medianUyu)}` }) }}
+          </p>
+        </div>
+        <VSelect
+          :model-value="query.sort"
+          :items="sortItems"
+          :label="t('sort')"
+          variant="outlined"
+          density="compact"
+          hide-details
+          class="rentals-sort"
+          @update:model-value="changeSort"
+        />
+        <VBtnToggle
+          :model-value="view"
+          mandatory
+          variant="outlined"
+          density="comfortable"
+          divided
+          @update:model-value="changeView"
+          ><VBtn value="lista" prepend-icon="mdi-view-grid-outline">{{ t('list') }}</VBtn
+          ><VBtn value="mapa" prepend-icon="mdi-map-marker-outline">{{
+            t('map')
+          }}</VBtn></VBtnToggle
+        >
+      </div>
+      <VProgressLinear v-if="pending" indeterminate color="primary" class="mb-4" />
+      <VAlert v-if="error" type="error" variant="tonal" class="mb-5" role="alert">
+        {{ t('error') }}
+        <VBtn variant="text" @click="refresh()">{{ t('retry') }}</VBtn>
+      </VAlert>
+      <section v-if="view === 'mapa'" class="rentals-map mb-6" :aria-label="t('map')">
+        <VProgressLinear v-if="mapPending" indeterminate color="primary" class="mb-2" />
+        <VAlert v-if="mapError" type="error" variant="tonal" class="mb-3">
+          {{ t('error') }}
+          <VBtn variant="text" @click="loadMap()">{{ t('retry') }}</VBtn>
+        </VAlert>
+        <p v-if="mapData" class="rentals-map__coverage">
+          {{
+            t('mapCoverage', {
+              located: numberFormat(mapData.located),
+              total: numberFormat(mapData.total),
+            })
+          }}
+          <span v-if="mapData.shown < mapData.located">{{
+            t('mapLimit', { n: numberFormat(mapData.shown) })
+          }}</span>
+        </p>
+        <ClientOnly>
+          <LocationsMap
+            v-if="mapMarkers.length && !mapError"
+            :branches="mapMarkers"
+            :popup-for="rentalPopup"
+            :user-location="sedeCentro"
+            :radius-km="sedeCentro ? query.radioKm : 0"
+            :fit-to-markers="true"
+            height="65vh"
+            :directions-label="t('open')"
+          />
+          <VAlert v-else-if="!mapPending && !mapError" type="info" variant="tonal">
+            {{ t('noMap') }}
+            <VBtn variant="text" @click="changeView('lista')">{{ t('list') }}</VBtn>
+          </VAlert>
+        </ClientOnly>
+      </section>
+      <div v-if="!pending && !error && !items.length && view === 'lista'" class="rentals-empty">
+        <VIcon size="40" color="primary">mdi-home-search-outline</VIcon>
+        <h3>{{ t('empty') }}</h3>
+        <p>{{ t('emptyHint') }}</p>
+        <VBtn color="primary" variant="tonal" @click="clearFilters">{{ t('reset') }}</VBtn>
+      </div>
+      <div v-if="view === 'lista' && !error" class="rentals-grid">
+        <article v-for="(property, index) in items" :key="property.key" class="rental-card">
+          <div class="rental-card__visual">
+            <a
+              :href="displayOffer(property)?.url"
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              class="rental-card__media"
+              :aria-label="`${t('open')}: ${property.title}`"
+            >
+              <img
+                v-if="displayOffer(property)?.image && !failedImages.has(property.key)"
+                :src="displayOffer(property)?.image || ''"
+                :alt="property.title"
+                :loading="index < 3 ? 'eager' : 'lazy'"
+                decoding="async"
+                width="400"
+                height="260"
+                @error="failedImages.add(property.key)"
+              />
+              <span v-else class="rental-card__noimage">
+                <VIcon size="36">mdi-home-city-outline</VIcon>
+                <span>{{ t('noPhoto') }}</span>
               </span>
-            </p>
-            <p class="rental-card__specs">
-              {{ specsLabel(property) || typeLabel(property.propertyType) }}
-            </p>
-            <p class="rental-card__where">
-              <VIcon size="14" class="mr-1">mdi-map-marker-outline</VIcon>
-              <span>{{
-                [property.neighborhood, property.department].filter(Boolean).join(', ')
+              <span v-if="property.sources.length > 1" class="rental-card__badge">{{
+                t('portals', { n: property.sources.length })
               }}</span>
+            </a>
+            <VBtn
+              class="rental-card__save"
+              :icon="isFavorite(property.key) ? 'mdi-heart' : 'mdi-heart-outline'"
+              :color="isFavorite(property.key) ? 'primary' : undefined"
+              :aria-label="`${t(isFavorite(property.key) ? 'unfavorite' : 'favorite')}: ${property.title}`"
+              :aria-pressed="isFavorite(property.key)"
+              variant="flat"
+              size="small"
+              @click="toggleFavorite(property)"
+            />
+          </div>
+          <div class="rental-card__body">
+            <p class="rental-card__where">
+              {{
+                [property.neighborhood, property.department].filter(Boolean).join(', ') ||
+                t('unknown')
+              }}
             </p>
+            <h3>
+              <a
+                :href="displayOffer(property)?.url"
+                target="_blank"
+                rel="noopener noreferrer nofollow"
+                >{{ property.title }}</a
+              >
+            </h3>
+            <p class="rental-card__specs">{{ specsLabel(property) }}</p>
             <p v-if="property.address" class="rental-card__address">{{ property.address }}</p>
-            <p class="rental-card__title">{{ property.title }}</p>
-
+            <div class="rental-card__cost">
+              <p class="rental-card__price">
+                {{ priceLabel(property) }} <span>{{ t('rent') }}</span>
+              </p>
+              <p class="rental-card__expenses">{{ expensesLabel(property) }}</p>
+              <p
+                v-if="monthlyTotal(property) !== null"
+                class="rental-card__total"
+                :title="t('totalHint')"
+              >
+                <span>{{ t('monthlyTotal') }}</span
+                ><strong>$ {{ numberFormat(monthlyTotal(property)!) }}</strong>
+              </p>
+            </div>
+            <div class="rental-card__tags">
+              <VChip v-if="property.petsAllowed" size="small" variant="tonal">{{ t('pets') }}</VChip
+              ><VChip v-if="(property.parkingSpaces ?? 0) > 0" size="small" variant="tonal">{{
+                t('parking')
+              }}</VChip
+              ><VChip v-if="property.furnished" size="small" variant="tonal">{{
+                t('furnished')
+              }}</VChip
+              ><VChip
+                v-for="guarantee in publishedGuarantees(property)"
+                :key="guarantee"
+                size="small"
+                variant="outlined"
+                >{{ t(guarantee) }}</VChip
+              >
+            </div>
             <div class="rental-card__offers">
               <a
                 v-for="offer in property.offers"
@@ -417,323 +263,304 @@ STORY: Arrive with a barrio and a budget, narrow it, see who publishes it, leave
                 target="_blank"
                 rel="noopener noreferrer nofollow"
                 class="rental-card__offer"
+                :class="{
+                  'rental-card__offer--selected':
+                    offer.listingId === displayOffer(property)?.listingId,
+                }"
+                ><span>{{ sourceLabel(offer.source) }}</span
+                ><strong>{{ offerPrice(offer) }}</strong
+                ><VIcon size="16">mdi-open-in-new</VIcon></a
               >
-                <span class="rental-card__offer-source">{{ sourceLabel(offer.source) }}</span>
-                <span class="rental-card__offer-price">{{ offerPrice(offer) }}</span>
-                <VIcon size="13">mdi-open-in-new</VIcon>
-              </a>
             </div>
-
+            <p class="rental-card__meta">{{ sellerLabel(property) }}</p>
             <p class="rental-card__meta">
-              <span>{{ sellerLabel(property) }}</span>
-              <span v-if="ageLabel(property)">· visto {{ ageLabel(property) }}</span>
+              {{
+                t('seen', {
+                  date: dateLabel(displayOffer(property)?.lastSeen || property.lastSeen),
+                })
+              }}
             </p>
-            <!-- Sólo se muestra el SÍ. No hay chip de "no admite" porque ningún portal lo publica:
-                 la ausencia de este chip significa que el aviso no lo dice, no que no acepte. -->
-            <div class="d-flex flex-wrap ga-1 mt-1">
-              <VChip
-                v-if="property.petsAllowed"
-                size="x-small"
-                color="primary"
-                variant="tonal"
-                label
-              >
-                Admite mascotas
-              </VChip>
-              <!-- Sólo lo que el aviso dice. Sin chip = no lo dice, no que no la acepte. -->
-              <VChip
-                v-for="g in publishedGuarantees(property)"
-                :key="g"
-                size="x-small"
-                variant="outlined"
-                label
-                :title="guaranteeHint(g)"
-              >
-                {{ guaranteeLabel(g) }}
-              </VChip>
-            </div>
           </div>
-        </VCard>
-      </VCol>
-    </VRow>
-
-    <VPagination
-      v-if="pageCount > 1 && view === 'lista'"
-      v-model="page"
-      :length="pageCount"
-      :total-visible="smAndDown ? 4 : 7"
-      class="mt-6"
-      @update:model-value="onPageChange"
-    />
-
-    <section class="rentals-notes">
-      <h2>Cómo se arma esta lista</h2>
-      <ul>
-        <li>
-          <strong>Qué mostramos.</strong> Precio, ubicación, metros y dormitorios tal como los
-          publica cada portal, más el enlace al aviso original. No copiamos las descripciones ni
-          reemplazamos al portal: la consulta y el contrato siguen siendo con quien publica.
-        </li>
-        <li>
-          <strong>Cómo unificamos.</strong> Dos avisos son la misma propiedad cuando coinciden calle
-          y número, dormitorios, metros (±15 %) y precio (±7 %). Sin dirección —lo habitual en
-          Marketplace— hace falta además el mismo barrio y el mismo precio (±5 %). Un edificio de
-          ocho apartamentos son ocho avisos en la misma dirección: por eso la dirección sola nunca
-          alcanza para unificar.
-        </li>
-        <li>
-          <strong>Qué no vas a ver.</strong> Alquileres por día o temporada, avisos de venta y
-          publicaciones de "busco alquiler". Tampoco precios imposibles de mensualidad.
-        </li>
-        <li>
-          <strong>Cada cuánto.</strong> Barrido completo diario y un repaso cada hora de lo recién
-          publicado. Una propiedad que deja de aparecer tres semanas sale del directorio.
-        </li>
-      </ul>
-
-      <p class="rentals-notes__foot">
-        Falta Gallito: sus listados se arman con un postback del lado del cliente, sin contenido
-        servido ni contrato estable para leer. Preferimos decirlo antes que mostrar una lista
-        incompleta como si fuera todo el mercado.
-      </p>
+        </article>
+      </div>
+      <div v-if="pageCount > 1 && view === 'lista' && !error" class="mt-6">
+        <VPagination
+          :model-value="query.page"
+          :length="pageCount"
+          :total-visible="smAndDown ? 1 : 7"
+          @update:model-value="onPageChange"
+        />
+        <p v-if="smAndDown" class="text-caption text-center mt-1">
+          {{ t('pageStatus', { current: query.page, total: pageCount }) }}
+        </p>
+      </div>
     </section>
-
-    <section class="rentals-related">
-      <h2>Antes de firmar</h2>
-      <VRow>
-        <VCol v-for="link in relatedLinks" :key="link.to" cols="12" sm="6" md="3">
-          <VCard
-            :to="localePath(link.to)"
-            class="rentals-related__card pa-4 h-100"
-            variant="flat"
-            hover
+    <section id="rental-coverage" class="rentals-notes">
+      <h2>{{ t('methodology') }}</h2>
+      <p>{{ t('methodText') }}</p>
+      <p>{{ t('scopeText') }} {{ t('freshnessText') }}</p>
+      <details>
+        <summary>{{ t('coverage') }}</summary>
+        <p>{{ t('coverageText') }}</p>
+        <ul v-if="meta?.sources.length">
+          <li v-for="source in meta.sources" :key="source.key">
+            {{ sourceLabel(source.key) }} · {{ numberFormat(source.listings) }}
+          </li>
+        </ul>
+        <p v-if="usdUyu">{{ t('rate', { rate: usdUyu.toFixed(2) }) }}</p>
+        <h3>{{ t('otherPortals') }}</h3>
+        <p>{{ t('externalHint') }}</p>
+        <div class="rentals-external">
+          <a
+            v-for="portal in externalPortals"
+            :key="portal.name"
+            :href="portal.url"
+            target="_blank"
+            rel="noopener noreferrer"
+            >{{ portal.name }} ↗</a
           >
-            <VIcon color="primary" class="mb-2">{{ link.icon }}</VIcon>
-            <h3>{{ link.title }}</h3>
-            <p>{{ link.text }}</p>
-          </VCard>
-        </VCol>
-      </VRow>
+        </div>
+      </details>
     </section>
+    <nav class="rentals-help" :aria-label="t('help')">
+      <h2>{{ t('help') }}</h2>
+      <NuxtLink v-for="link in relatedLinks" :key="link.to" :to="localePath(link.to)">
+        {{ t(link.label) }}
+        <VIcon size="16">mdi-arrow-right</VIcon>
+      </NuxtLink>
+    </nav>
+    <VSnackbar v-model="snackbar" :timeout="4500" role="status">{{ feedback }}</VSnackbar>
   </VContainer>
 </template>
 
 <script setup lang="ts">
 import { useDisplay } from 'vuetify'
+import SearchFilters from '~/components/rentals/SearchFilters.vue'
+import SavedPanel from '~/components/rentals/SavedPanel.vue'
+import { rentalMessages } from '~/utils/rentalMessages'
 import {
-  RENTAL_SELLER_LABEL,
-  RENTAL_SORTS,
+  RENTAL_GUARANTEE_PUBLISHED,
   RENTAL_SOURCE_LABEL,
-  RENTAL_TYPE_LABEL,
-  rentalAgeLabel,
+  RENTAL_SORTS,
+  normalizeRentalQuery,
+  rentalQueryToParams,
   rentalPriceLabel,
-  rentalSpecsLabel,
-  type RentalMapResponse,
-  type RentalOffer,
+  totalMonthlyUyu,
+  type RentalQuery,
   type RentalProperty,
-  type RentalPropertyType,
-  type RentalSource,
+  type RentalMapResponse,
+  type RentalFacetValue,
   type RentalsResponse,
 } from '~/utils/rentals'
+import { MUTUALISTA_SEDES } from '~/utils/mutualistaSedes'
+import {
+  RENTAL_SAVED_STORAGE_KEY,
+  RENTAL_SAVED_FAVORITE_LIMIT,
+  emptyRentalSaved,
+  readRentalSaved,
+  writeRentalSaved,
+  saveRentalSearch,
+  removeRentalSearch,
+  toggleRentalFavorite,
+  removeRentalFavorite,
+} from '~/utils/rentalSaved'
 
-// Explícito y perezoso, igual que en /descuentos-con-tarjeta-uruguay/marca/<marca>.
-//
-// `components/map/` NO está en el namespace plano de auto-imports de Nuxt: su nombre generado es
-// `MapLocationsMap`. Un `<LocationsMap>` suelto no falla ni avisa en el navegador — queda en el DOM
-// como elemento desconocido, sin mapa. Fue exactamente lo que pasó acá: verificado en producción el
-// 2026-09-04, la vista de mapa mostraba el texto y CERO contenedores Leaflet, y el único rastro era
-// un "Failed to resolve component: LocationsMap" en el log de SSR. Los tests no lo veían porque
-// miran el texto del archivo, no el render.
-//
-// Perezoso además porque Leaflet no tiene por qué entrar en el primer pintado de una página que
-// arranca en modo lista.
 const LocationsMap = defineAsyncComponent(() => import('~/components/map/LocationsMap.vue'))
-
-const { t } = useI18n()
+const { t, locale } = useI18n({ useScope: 'local', messages: rentalMessages })
 const localePath = useLocalePath()
 const route = useRoute()
 const router = useRouter()
 const { smAndDown } = useDisplay()
-
-const readQuery = (): Record<string, string> => {
-  const raw = route.query
-  const out: Record<string, string> = {}
-  for (const [key, value] of Object.entries(raw)) {
-    if (typeof value === 'string' && value) out[key] = value
-  }
-  return out
+const mobileFiltersOpen = ref(false)
+let filterActivator: HTMLElement | null = null
+let filterReturnScroll = 0
+let filtersApplied = false
+function openMobileFilters(event: MouseEvent) {
+  filterActivator = event.currentTarget as HTMLElement
+  filterReturnScroll = window.scrollY
+  filtersApplied = false
+  mobileFiltersOpen.value = true
 }
-
-const form = reactive({
-  q: readQuery().q ?? '',
-  department: readQuery().department ?? '',
-  neighborhood: readQuery().neighborhood ?? '',
-  type: readQuery().type ?? '',
-  source: readQuery().source ?? '',
-  bedrooms: readQuery().bedrooms ?? '',
-  priceMin: readQuery().priceMin ?? '',
-  priceMax: readQuery().priceMax ?? '',
-  multi: readQuery().multi === '1',
-  pets: readQuery().pets === '1',
-  gc: readQuery().gc === '1',
-  dueno: readQuery().dueno === '1',
-  guarantees: (readQuery().garantia ?? '')
-    .split(',')
-    .filter(v =>
-      (RENTAL_GUARANTEE_PUBLISHED as readonly string[]).includes(v)
-    ) as RentalGuarantee[],
-  // La mutualidad sólo filtra la lista de sedes: lo que viaja al servidor son los ids de OSM.
-  mutualista: readQuery().mutualista ?? '',
-  sedes: (readQuery().sedes ?? '')
-    .split(',')
-    .map(id => Number(id))
-    .filter(id => Number.isSafeInteger(id) && id > 0),
-  radio: Number(readQuery().radio ?? RADIO_KM_DEFAULT) || RADIO_KM_DEFAULT,
-  sort: readQuery().sort ?? 'recientes',
-})
-const page = ref(Number(readQuery().page ?? 1) || 1)
-
-/** The request the API actually gets. Empty values are dropped so the cache key stays small. */
-const requestParams = computed(() => {
-  const params: Record<string, string> = {}
-  if (form.q) params.q = String(form.q)
-  if (form.department) params.department = form.department
-  if (form.neighborhood) params.neighborhood = form.neighborhood
-  if (form.type) params.type = form.type
-  if (form.source) params.source = form.source
-  if (form.bedrooms !== '' && form.bedrooms !== null) params.bedrooms = String(form.bedrooms)
-  if (form.priceMin) params.priceMin = String(form.priceMin)
-  if (form.priceMax) params.priceMax = String(form.priceMax)
-  if (form.multi) params.multi = '1'
-  if (form.pets) params.pets = '1'
-  if (form.gc) params.gc = '1'
-  if (form.dueno) params.dueno = '1'
-  if (form.guarantees.length) params.garantia = form.guarantees.join(',')
-  if (form.sedes.length) {
-    params.sedes = form.sedes.join(',')
-    params.radio = String(form.radio)
+async function restoreFilterContext() {
+  neighborhoodOverride.value = null
+  await nextTick()
+  if (filtersApplied) {
+    const results = document.getElementById('rental-results')
+    results?.focus({ preventScroll: true })
+    results?.scrollIntoView({ block: 'start', behavior: 'instant' })
+  } else if (filterActivator?.isConnected) {
+    filterActivator.focus({ preventScroll: true })
+    window.scrollTo({ top: filterReturnScroll, behavior: 'instant' })
   }
-  if (form.sort && form.sort !== 'recientes') params.sort = form.sort
-  if (page.value > 1) params.page = String(page.value)
-  return params
+}
+watch(smAndDown, mobile => {
+  if (!mobile) mobileFiltersOpen.value = false
 })
-
-const { data, pending } = await useAsyncData<RentalsResponse | null>(
-  'rentals',
+const query = computed(() => normalizeRentalQuery(route.query))
+const requestParams = computed(() => rentalQueryToParams(query.value))
+const requestKey = computed(() => JSON.stringify(requestParams.value))
+const view = computed(() => (route.query.view === 'mapa' ? 'mapa' : 'lista'))
+const { data, pending, error, refresh } = await useAsyncData<RentalsResponse>(
+  'rental-directory',
   () => $fetch('/api/rentals', { query: requestParams.value }),
-  { watch: [requestParams] }
+  { watch: [requestKey] }
 )
-
-/**
- * Las mutualidades que tienen al menos una sede en la lista de OpenStreetMap.
- *
- * El selector es en dos pasos —primero la institución, después la sede— porque hay 158 sedes de 38
- * instituciones y una lista plana de 158 no se puede recorrer.
- */
-const mutualistaItems = computed(() => mutualistasConSede())
-
-const sedeItems = computed(() => {
-  if (!form.mutualista) return []
-  return MUTUALISTA_SEDES.filter(sede => sede.mutualista === form.mutualista).map(sede => ({
-    title: sede.direccion ? `${sede.nombre} — ${sede.direccion}` : sede.nombre,
-    subtitle: sede.departamento,
-    value: sede.osmId,
-  }))
-})
-
-function onMutualistaChange() {
-  // Cambiar de institución invalida las sedes elegidas de la anterior.
-  form.sedes = []
-  apply()
-}
-
-/**
- * La sede que el mapa dibuja como centro, con su círculo de radio.
- *
- * Se muestra la PRIMERA de las elegidas: `LocationsMap` acepta un solo punto de referencia, y
- * dibujar un círculo por sede convertiría el mapa en una mancha. Las demás siguen filtrando igual.
- */
-const guaranteeChips = RENTAL_GUARANTEE_PUBLISHED.map(value => ({
-  value,
-  label: RENTAL_GUARANTEE_LABELS[value].label,
-  hint: RENTAL_GUARANTEE_LABELS[value].hint,
-}))
-
-/** Sólo los tipos con precisión medida. Ver RENTAL_GUARANTEE_PUBLISHED. */
-const publishedGuarantees = (property: RentalProperty): RentalGuarantee[] =>
-  (property.guarantees ?? []).filter(g =>
-    (RENTAL_GUARANTEE_PUBLISHED as readonly string[]).includes(g)
-  )
-
-const guaranteeLabel = (value: RentalGuarantee) => RENTAL_GUARANTEE_LABELS[value]?.label ?? value
-const guaranteeHint = (value: RentalGuarantee) => RENTAL_GUARANTEE_LABELS[value]?.hint ?? ''
-
-function toggleGuarantee(value: RentalGuarantee): void {
-  form.guarantees = form.guarantees.includes(value)
-    ? form.guarantees.filter(item => item !== value)
-    : [...form.guarantees, value]
-  apply()
-}
-
-const sedeCentro = computed<{ lat: number; lng: number } | null>(() => {
-  const primera = MUTUALISTA_SEDES.find(sede => sede.osmId === form.sedes[0])
-  return primera ? { lat: primera.lat, lng: primera.lng } : null
-})
-
-const items = computed<RentalProperty[]>(() => data.value?.items ?? [])
+const items = computed(() => data.value?.items ?? [])
 const total = computed(() => data.value?.total ?? 0)
 const meta = computed(() => data.value?.meta ?? null)
 const medianUyu = computed(() => data.value?.medianUyu ?? 0)
 const usdUyu = computed(() => meta.value?.usdUyu ?? 0)
 const pageCount = computed(() => Math.max(1, Math.ceil(total.value / (data.value?.perPage || 24))))
-
 const downSources = computed(() => (meta.value?.sources ?? []).filter(source => !source.ok))
 const activeSourceLabels = computed(() =>
   (meta.value?.sources ?? [])
     .filter(source => source.ok && source.listings > 0)
     .map(source => sourceLabel(source.key))
-    .join(', ')
+    .join(' · ')
 )
+const sortItems = computed(() =>
+  RENTAL_SORTS.map(option => ({ title: t(option.value), value: option.value }))
+)
+const failedImages = reactive(new Set<string>())
 
-/**
- * Lista o mapa, y el mapa se pide sólo cuando alguien lo abre.
- *
- * `server: false` + `immediate: false`: son hasta 3.000 puntos y esta página se usa sobre todo como
- * lista. Meterlos en el payload del SSR le cobraría a todos el peso de una vista que abren algunos
- * — que es exactamente el defecto que hoy costó 1,18 MB en /historico y 233 KB en cada una de las
- * 528 fichas de sucursal.
- */
-const view = ref<'lista' | 'mapa'>('lista')
+// Confirmed URL filters alone fetch results. Back/Forward restores the complete draft form.
+function navigate(params: Record<string, string>) {
+  return router.push({ query: { ...params, ...(view.value === 'mapa' ? { view: 'mapa' } : {}) } })
+}
+function search(next: RentalQuery) {
+  if (mobileFiltersOpen.value) {
+    filtersApplied = true
+    mobileFiltersOpen.value = false
+  }
+  void navigate(rentalQueryToParams({ ...next, page: 1 }))
+}
+function clearFilters() {
+  void navigate({})
+}
+function removeFilter(keys: string[]) {
+  const params = Object.fromEntries(
+    Object.entries(requestParams.value).filter(([key]) => ![...keys, 'page'].includes(key))
+  )
+  void navigate(params)
+}
+function changeSort(sort: RentalQuery['sort']) {
+  search({ ...query.value, sort })
+}
+function changeView(next: string) {
+  void router.push({
+    query: { ...requestParams.value, ...(next === 'mapa' ? { view: 'mapa' } : {}) },
+  })
+}
+async function onPageChange(page: number) {
+  await navigate(rentalQueryToParams({ ...query.value, page }))
+  document.getElementById('rental-results')?.scrollIntoView({
+    behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+    block: 'start',
+  })
+}
+const neighborhoodOverride = ref<RentalFacetValue[] | null>(null)
+const neighborhoodFacets = computed(
+  () => neighborhoodOverride.value ?? data.value?.facets.neighborhoods ?? []
+)
+let neighborhoodRequest = 0
+watch(requestKey, () => {
+  neighborhoodRequest++
+  neighborhoodOverride.value = null
+})
+async function loadNeighborhoods(department: string) {
+  const request = ++neighborhoodRequest
+  if (department === query.value.department) {
+    neighborhoodOverride.value = null
+    return
+  }
+  neighborhoodOverride.value = []
+  try {
+    const result = await $fetch<RentalsResponse>('/api/rentals', {
+      query: { department, perPage: 6 },
+    })
+    if (request === neighborhoodRequest) neighborhoodOverride.value = result.facets.neighborhoods
+  } catch {
+    if (request === neighborhoodRequest) notify(t('error'))
+  }
+}
+const filterChips = computed(() => {
+  const q = query.value
+  const chips: Array<{ key: string; keys: string[]; label: string }> = []
+  const add = (key: string, label: string, keys = [key]) => chips.push({ key, keys, label })
+  if (q.department) add('department', q.department, ['department', 'neighborhood', 'neighborhoods'])
+  if (q.neighborhoods.length)
+    add('neighborhoods', q.neighborhoods.join(', '), ['neighborhood', 'neighborhoods'])
+  if (q.type) add('type', typeLabel(q.type))
+  if (q.q) add('q', q.q)
+  if (q.bedrooms !== null)
+    add(
+      'bedrooms',
+      q.bedrooms === 0
+        ? t('studio')
+        : `${q.bedrooms}${q.bedroomsExact ? '' : '+'} ${t('bedrooms')}`,
+      ['bedrooms', 'bedroomsExact']
+    )
+  for (const [key, value] of Object.entries({
+    bathrooms: q.bathrooms,
+    areaMin: q.areaMin,
+    areaMax: q.areaMax,
+    priceMin: q.priceMin,
+    priceMax: q.priceMax,
+    monthlyMax: q.monthlyMax,
+    expensesMax: q.expensesMax,
+  })) {
+    if (value !== null) add(key, `${t(key)}: ${numberFormat(value)}`)
+  }
+  for (const [key, active, label] of [
+    ['pets', q.pets, 'pets'],
+    ['parking', q.parking, 'parking'],
+    ['furnished', q.furnished, 'furnished'],
+    ['dueno', q.owner, 'owner'],
+    ['gc', q.withExpenses, 'expensesKnown'],
+    ['multi', q.multi, 'multi'],
+  ] as const) {
+    if (active) add(key, t(label))
+  }
+  if (q.currency) add('currency', q.currency)
+  if (q.source) add('source', sourceLabel(q.source))
+  if (q.guarantees.length) add('garantia', q.guarantees.map(g => t(g)).join(', '))
+  if (q.sedes.length) add('sedes', `${t('nearby')} · ${q.radioKm} km`, ['sedes', 'radio'])
+  return chips
+})
 
+// The map never requests thousands of points while the user is browsing the list.
+const mapParams = computed(() => {
+  const params = { ...requestParams.value }
+  delete params.page
+  delete params.perPage
+  return params
+})
+const mapKey = computed(() => JSON.stringify(mapParams.value))
 const {
   data: mapData,
   pending: mapPending,
+  error: mapError,
   execute: loadMap,
-} = await useAsyncData<RentalMapResponse | null>(
-  'rentals-map',
-  () => $fetch('/api/rentals/mapa', { query: requestParams.value }),
-  { server: false, immediate: false, watch: [requestParams], default: () => null }
+} = await useAsyncData<RentalMapResponse>(
+  'rental-directory-map',
+  () => $fetch('/api/rentals/mapa', { query: mapParams.value }),
+  { server: false, immediate: false }
 )
-
-// Se carga al abrir el mapa por primera vez; después el `watch` de los filtros lo mantiene al día.
-watch(view, async next => {
-  if (next === 'mapa' && !mapData.value) await loadMap()
+watch([view, mapKey], () => {
+  if (view.value === 'mapa') void loadMap()
 })
-
-/**
- * Los puntos, con la forma que espera `LocationsMap`.
- *
- * Se reutiliza ese componente en vez de escribir otro mapa: ya trae el agrupamiento, el guardado
- * contra coordenadas inválidas y el encuadre que costó dos bugs arreglar. Que su tipo se llame
- * `Branch` es una etiqueta, no un obstáculo — el globo lo dibuja `popupFor`.
- */
+const sedeCentro = computed(() => {
+  if (query.value.sedes.length !== 1) return null
+  const sede = MUTUALISTA_SEDES.find(s => s.osmId === query.value.sedes[0])
+  return sede ? { lat: sede.lat, lng: sede.lng } : null
+})
 const mapMarkers = computed(() =>
   (mapData.value?.points ?? []).map(point => ({
     origin: 'alquiler',
     id: point.key,
-    name: point.neighborhood || 'Alquiler',
+    name: point.neighborhood || t('rent'),
     dept: point.neighborhood || '',
-    locality: point.neighborhood || '',
+    locality: '',
     address: point.neighborhood || '',
     phone: '',
     hours: '',
@@ -743,279 +570,211 @@ const mapMarkers = computed(() =>
     source: 'alquileres',
   }))
 )
-
-/** El globo de cada pin: precio, tamaño, y cuántos portales publican la misma propiedad. */
-function rentalPopup(marker: { id: string }): string {
-  const point = (mapData.value?.points ?? []).find(candidate => candidate.key === marker.id)
+const escapeHtml = (value: string) =>
+  value.replace(
+    /[&<>"']/g,
+    char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]!
+  )
+function rentalPopup(marker: { id: string }) {
+  const point = mapData.value?.points.find(candidate => candidate.key === marker.id)
   if (!point) return ''
-  const money =
-    point.currency === 'USD' ? `US$ ${numberFormat(point.price)}` : `$ ${numberFormat(point.price)}`
-  const partes = [
-    point.bedrooms !== null ? `${point.bedrooms} dorm.` : '',
-    point.area ? `${point.area} m²` : '',
-  ].filter(Boolean)
-  const enVarios =
-    point.offers > 1
-      ? `<div class="rental-pop__multi">Publicada en ${point.offers} portales</div>`
-      : ''
-  const enlace = point.url
-    ? `<a href="${point.url}" target="_blank" rel="noopener noreferrer nofollow">Ver el aviso</a>`
-    : ''
-  return [
-    `<strong>${money}</strong>`,
-    partes.length ? `<div>${partes.join(' · ')}</div>` : '',
-    point.neighborhood ? `<div>${point.neighborhood}</div>` : '',
-    enVarios,
-    enlace,
+  const url = /^https?:\/\//i.test(point.url || '') ? point.url : ''
+  return `<strong>${escapeHtml(offerPrice(point))}</strong><div>${escapeHtml(point.neighborhood || '')}</div>${url ? `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer nofollow">${escapeHtml(t('open'))}</a>` : ''}`
+}
+const numberFormat = (value: number) =>
+  new Intl.NumberFormat(
+    locale.value === 'en' ? 'en-US' : locale.value === 'pt' ? 'pt-BR' : 'es-UY',
+    { maximumFractionDigits: 0 }
+  ).format(value)
+const dateLabel = (value: string) => {
+  const date = new Date(value)
+  const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(value)
+  return Number.isFinite(date.getTime())
+    ? date.toLocaleString(
+        locale.value === 'en' ? 'en-US' : locale.value === 'pt' ? 'pt-BR' : 'es-UY',
+        {
+          day: '2-digit',
+          month: '2-digit',
+          ...(dateOnly ? {} : { hour: '2-digit' as const, minute: '2-digit' as const }),
+          timeZone: dateOnly ? 'UTC' : 'America/Montevideo',
+        }
+      )
+    : t('unknown')
+}
+const sourceLabel = (source: string) =>
+  RENTAL_SOURCE_LABEL[source as keyof typeof RENTAL_SOURCE_LABEL] ?? source
+const typeLabel = (type: string) =>
+  t(
+    (
+      {
+        apartamento: 'apartment',
+        casa: 'house',
+        habitacion: 'room',
+        local: 'commercial',
+        oficina: 'office',
+        terreno: 'land',
+        otro: 'other',
+      } as Record<string, string>
+    )[type] || 'other'
+  )
+const displayOffer = (property: RentalProperty) => property.matchingOffer ?? property.offers[0]
+const offerPrice = (offer: { price: number; currency: string }) =>
+  `${offer.currency === 'USD' ? 'U$S' : '$'} ${numberFormat(offer.price)}`
+const priceLabel = (property: RentalProperty) => {
+  const offer = displayOffer(property)
+  return offer
+    ? offerPrice(offer)
+    : rentalPriceLabel(property.price, property.currency, usdUyu.value)
+}
+const specsLabel = (property: RentalProperty) =>
+  [
+    typeLabel(property.propertyType),
+    property.bedrooms !== null
+      ? property.bedrooms === 0
+        ? t('studio')
+        : `${property.bedrooms} ${t('bedrooms').toLowerCase()}`
+      : '',
+    property.bathrooms !== null ? `${property.bathrooms} ${t('bathrooms').toLowerCase()}` : '',
+    property.area ? `${property.area} m²` : '',
   ]
     .filter(Boolean)
-    .join('')
+    .join(' · ')
+const monthlyTotal = (property: RentalProperty) => {
+  const offer = displayOffer(property)
+  return offer ? totalMonthlyUyu(offer, usdUyu.value) : null
 }
-
-const departmentItems = computed(() => [
-  { title: 'Todo el país', value: '' },
-  ...(data.value?.facets.departments ?? []).map(facet => ({
-    title: `${facet.value} (${numberFormat(facet.count)})`,
-    value: facet.value,
-  })),
-])
-
-const neighborhoodItems = computed(() => [
-  { title: 'Todos los barrios', value: '' },
-  ...(data.value?.facets.neighborhoods ?? []).map(facet => ({
-    title: `${facet.value} (${numberFormat(facet.count)})`,
-    value: facet.value,
-  })),
-])
-
-const bedroomItems = [
-  { title: 'Cualquiera', value: '' },
-  { title: 'Monoambiente', value: '0' },
-  { title: '1 o más', value: '1' },
-  { title: '2 o más', value: '2' },
-  { title: '3 o más', value: '3' },
-  { title: '4 o más', value: '4' },
-]
-
-const sortItems = RENTAL_SORTS.map(option => ({ title: option.label, value: option.value }))
-const typeChips = computed(() => data.value?.facets.types ?? [])
-const sourceChips = computed(() => data.value?.facets.sources ?? [])
-
-const hasFilters = computed(() =>
-  Boolean(
-    form.q ||
-      form.department ||
-      form.neighborhood ||
-      form.type ||
-      form.source ||
-      form.bedrooms ||
-      form.priceMin ||
-      form.priceMax ||
-      form.multi ||
-      form.pets ||
-      form.gc ||
-      form.dueno ||
-      form.guarantees.length > 0 ||
-      form.sedes.length > 0
+const expensesLabel = (property: RentalProperty) => {
+  const offer = displayOffer(property)
+  if (offer?.commonExpenses === 0) return t('noExpenses')
+  if (!offer || offer.commonExpenses === null || !offer.commonExpensesCurrency)
+    return t('expensesUnknown')
+  return `${t('expenses')}: ${offerPrice({ price: offer.commonExpenses, currency: offer.commonExpensesCurrency })}`
+}
+const publishedGuarantees = (property: RentalProperty) =>
+  (property.guarantees ?? []).filter(g => RENTAL_GUARANTEE_PUBLISHED.includes(g))
+const sellerLabel = (property: RentalProperty) => {
+  const offer = displayOffer(property)
+  const type = t(
+    offer?.sellerType === 'particular'
+      ? 'individual'
+      : offer?.sellerType === 'inmobiliaria'
+        ? 'agency'
+        : 'unknown'
   )
-)
-
-const numberFormat = (value: number): string =>
-  new Intl.NumberFormat('es-UY').format(Math.round(value || 0))
-const sourceLabel = (source: RentalSource): string => RENTAL_SOURCE_LABEL[source] ?? source
-const typeLabel = (type: string): string => RENTAL_TYPE_LABEL[type as RentalPropertyType] ?? type
-const specsLabel = (property: RentalProperty): string => rentalSpecsLabel(property)
-const priceLabel = (property: RentalProperty): string =>
-  rentalPriceLabel(property.price, property.currency, usdUyu.value)
-const offerPrice = (offer: RentalOffer): string =>
-  offer.currency === 'USD' ? `U$S ${numberFormat(offer.price)}` : `$ ${numberFormat(offer.price)}`
-
-/**
- * Los gastos comunes DEL MISMO AVISO cuyo precio se muestra, que es el más barato.
- *
- * Antes tomaba el primer aviso que los publicara, que no siempre es ese: el precio de uno junto a
- * los gastos de otro son dos números que no se pueden sumar. Y sumar es exactamente lo que hace
- * quien los ve juntos. De las 971 propiedades donde dos portales declaran gastos, 438 discrepan en
- * más de 15 %, así que no es un caso raro.
- *
- * El costo: la oferta más barata publica los gastos en 4.231 de 4.729 casos (89 %), así que se
- * pierde mostrarlos en un 11 %. Vale la pena.
- */
-const cheapestOffer = (property: RentalProperty): RentalOffer | null => property.offers[0] ?? null
-
-const commonExpensesLabel = (property: RentalProperty): string => {
-  const offer = cheapestOffer(property)
-  if (!offer?.commonExpenses || offer.commonExpenses <= 0) return ''
-  return offer.commonExpensesCurrency === 'USD'
-    ? `U$S ${numberFormat(offer.commonExpenses)}`
-    : `$ ${numberFormat(offer.commonExpenses)}`
+  return offer?.sellerName && !/^(?:particular|mercado libre)$/i.test(offer.sellerName)
+    ? `${type} · ${offer.sellerName}`
+    : type
 }
 
-/** Alquiler + gastos comunes del mismo aviso, en pesos. Vacío cuando el aviso no los publica. */
-const totalLabel = (property: RentalProperty): string => {
-  const offer = cheapestOffer(property)
-  if (!offer) return ''
-  const total = totalMonthlyUyu(offer, usdUyu.value)
-  return total === null ? '' : `$ ${numberFormat(total)}`
+const saved = ref(emptyRentalSaved())
+const showSaved = ref(false)
+const snackbar = ref(false)
+const feedback = ref('')
+function notify(message: string) {
+  feedback.value = message
+  snackbar.value = true
 }
-
-const sellerLabel = (property: RentalProperty): string => {
-  const named = property.offers.find(offer => offer.sellerType !== 'desconocido')
-  if (!named) return property.offers[0]?.sellerName || 'Sin dato'
-  const tipo = RENTAL_SELLER_LABEL[named.sellerType]
-  // MercadoLibre no da el nombre de quien publica, sólo si es particular o inmobiliaria: sin esto
-  // la tarjeta decía "Dueño directo: Particular".
-  const nombre = named.sellerName?.trim()
-  if (!nombre || /^(?:particular|mercado libre)$/i.test(nombre)) return tipo
-  return `${tipo}: ${nombre}`
+function persist() {
+  if (!writeRentalSaved(saved.value)) notify(t('storageError'))
 }
-
-const ageLabel = (property: RentalProperty): string => {
-  const published = property.offers
-    .map(offer => offer.publishedAt)
-    .filter(Boolean)
-    .sort()
-    .slice(-1)[0]
-  return rentalAgeLabel(published || property.firstSeen)
+function saveSearch() {
+  const label = filterChips.value.map(chip => chip.label).join(' · ') || t('country')
+  const next = saveRentalSearch(saved.value, label, query.value)
+  if (
+    saved.value.searches.some(
+      search => !next.searches.some(candidate => candidate.id === search.id)
+    )
+  ) {
+    notify(t('searchLimit'))
+    showSaved.value = true
+    return
+  }
+  saved.value = next
+  persist()
+  showSaved.value = true
 }
-
-const updatedLabel = computed(() => {
-  const iso = meta.value?.generatedAt
-  if (!iso) return '—'
-  return new Date(iso).toLocaleString('es-UY', {
-    day: '2-digit',
-    month: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+function removeSearch(id: string) {
+  saved.value = removeRentalSearch(saved.value, id)
+  persist()
+}
+function removeFavorite(key: string) {
+  saved.value = removeRentalFavorite(saved.value, key)
+  persist()
+}
+function toggleFavorite(property: RentalProperty) {
+  if (!isFavorite(property.key) && saved.value.favorites.length >= RENTAL_SAVED_FAVORITE_LIMIT) {
+    notify(t('favoriteLimit'))
+    showSaved.value = true
+    return
+  }
+  saved.value = toggleRentalFavorite(saved.value, property, usdUyu.value)
+  persist()
+}
+const isFavorite = (key: string) => saved.value.favorites.some(item => item.key === key)
+function openSavedSearch(params: Record<string, string>) {
+  void navigate(rentalQueryToParams(normalizeRentalQuery(params)))
+}
+async function shareSearch() {
+  try {
+    await navigator.clipboard.writeText(window.location.href)
+    notify(t('copied'))
+  } catch {
+    notify(t('copyError'))
+  }
+}
+const onStorage = (event: StorageEvent) => {
+  if (event.key === RENTAL_SAVED_STORAGE_KEY || event.key === null) saved.value = readRentalSaved()
+}
+onMounted(() => {
+  saved.value = readRentalSaved()
+  window.addEventListener('storage', onStorage)
+  if (view.value === 'mapa') void loadMap()
 })
-
-/** Filters live in the URL: a search worth sharing is a search worth linking. */
-function syncUrl(): void {
-  router.replace({ query: requestParams.value })
-}
-
-function apply(): void {
-  page.value = 1
-  syncUrl()
-}
-
-let timer: ReturnType<typeof setTimeout> | null = null
-function debouncedApply(): void {
-  if (timer) clearTimeout(timer)
-  timer = setTimeout(apply, 450)
-}
-
-function onDepartmentChange(): void {
-  // A barrio from the previous department would return zero rows and look like a broken filter.
-  form.neighborhood = ''
-  apply()
-}
-
-function toggleType(value: string): void {
-  form.type = form.type === value ? '' : value
-  apply()
-}
-
-function toggleSource(value: string): void {
-  form.source = form.source === value ? '' : value
-  apply()
-}
-
-function clearFilters(): void {
-  form.q = ''
-  form.department = ''
-  form.neighborhood = ''
-  form.type = ''
-  form.source = ''
-  form.bedrooms = ''
-  form.priceMin = ''
-  form.priceMax = ''
-  form.multi = false
-  form.pets = false
-  form.gc = false
-  form.dueno = false
-  form.guarantees = []
-  form.mutualista = ''
-  form.sedes = []
-  form.radio = RADIO_KM_DEFAULT
-  form.sort = 'recientes'
-  apply()
-}
-
-function onPageChange(): void {
-  syncUrl()
-  if (import.meta.client) window.scrollTo({ top: 0, behavior: 'smooth' })
-}
-
-const relatedLinks = [
-  {
-    to: '/alquilar-en-uruguay',
-    icon: 'mdi-home-search-outline',
-    title: 'Guía para alquilar',
-    text: 'Garantías, costos de entrada, contrato, visita y estafas, paso a paso.',
-  },
-  {
-    to: '/alquilar-en-uruguay#comunidades',
-    icon: 'mdi-account-group-outline',
-    title: 'Grupos y comunidades',
-    text: 'Dónde publicar tu búsqueda y ver la oferta de dueño directo que no llega a los portales.',
-  },
-  {
-    to: '/alquilar-sin-recibo-de-sueldo',
-    icon: 'mdi-file-document-outline',
-    title: 'Sin recibo de sueldo',
-    text: 'Qué garantía acepta a un monotributista, un freelance o un independiente.',
-  },
-  {
-    to: '/alquilar-estando-en-clearing',
-    icon: 'mdi-account-alert-outline',
-    title: 'Estando en el clearing',
-    text: 'Cuáles de las garantías consultan el clearing y cuáles no.',
-  },
+onBeforeUnmount(() => window.removeEventListener('storage', onStorage))
+const breadcrumbs = computed(() => [
+  { title: t('country'), to: localePath('/') },
+  { title: t('search'), disabled: true },
+])
+const externalPortals = [
+  { name: 'Gallito', url: 'https://www.gallito.com.uy/inmuebles/alquiler' },
+  { name: 'BuscandoCasa', url: 'https://www.buscandocasa.com/' },
+  { name: 'Casasweb', url: 'https://casasweb.com/' },
+  { name: 'Inmuebles El País', url: 'https://inmuebles.elpais.com.uy/' },
 ]
-
-const breadcrumbs = computed(() => {
-  const current = { title: 'Alquileres', disabled: true }
-  return smAndDown.value
-    ? [current]
-    : [
-        { title: t('inicio'), to: localePath('/'), disabled: false },
-        { title: t('nav.alquilar'), to: localePath('/alquilar-en-uruguay'), disabled: false },
-        current,
-      ]
-})
-
+const relatedLinks = [
+  { to: '/alquilar-en-uruguay', label: 'guide' },
+  { to: '/alquilar-sin-recibo-de-sueldo', label: 'independent' },
+  { to: '/alquilar-estando-en-clearing', label: 'clearing' },
+]
 const canonicalUrl = computed(
   () => `https://cambio-uruguay.com${localePath('/alquileres-uruguay')}`
 )
-
 defineOgImageComponent('Cambio', {
-  title: () => 'Alquileres en Uruguay',
-  subtitle: () =>
-    meta.value
-      ? `${numberFormat(meta.value.properties)} propiedades de ${meta.value.sources.filter(source => source.ok).length} portales, sin repetidos`
-      : 'Un buscador que unifica el mismo aviso publicado en varios portales',
+  title: () => t('title'),
+  subtitle: () => t('subtitle'),
   tag: 'ALQUILERES',
 })
-
 useSeoMeta({
-  title: 'Alquileres en Uruguay: 3 portales en uno',
-  description:
-    'Alquileres de todo el país reunidos de Mercado Libre, InfoCasas y Facebook Marketplace, con el mismo inmueble unificado en una sola fila. Filtrá por barrio, precio y dormitorios.',
-  ogTitle: 'Alquileres en Uruguay, sin el mismo aviso tres veces',
-  ogDescription:
-    'Un buscador que junta los portales y unifica el aviso repetido: precio, barrio, metros y todos los portales que lo publican.',
+  title: () =>
+    locale.value === 'es'
+      ? 'Alquileres en Uruguay: compará portales, precios y gastos'
+      : t('title'),
+  description: () => t('subtitle'),
+  ogTitle: () => t('title'),
+  ogDescription: () => t('subtitle'),
   ogType: 'website',
   ogUrl: () => canonicalUrl.value,
   twitterCard: 'summary_large_image',
 })
-
 useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl.value }],
-  // Only the FILTERED views are kept out of the index — the page itself is meant to rank. The
-  // facets multiply into millions of URLs and every one of them is a thin copy of this page.
-  meta: page.value > 1 || hasFilters.value ? [{ name: 'robots', content: 'noindex, follow' }] : [],
+  meta:
+    query.value.page > 1 ||
+    filterChips.value.length ||
+    query.value.sort !== 'recientes' ||
+    view.value === 'mapa'
+      ? [{ name: 'robots', content: 'noindex, follow' }]
+      : [],
   script: items.value.length
     ? [
         {
@@ -1023,20 +782,16 @@ useHead(() => ({
           innerHTML: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'ItemList',
-            name: 'Alquileres en Uruguay',
-            description:
-              'Propiedades en alquiler publicadas en los portales uruguayos, unificadas en una fila por inmueble.',
+            name: t('title'),
             url: canonicalUrl.value,
             numberOfItems: items.value.length,
-            // Only the page being rendered is described. Claiming the whole collection would be a
-            // list Google never sees.
-            itemListElement: items.value.slice(0, 24).map((property, index) => ({
+            itemListElement: items.value.map((property, index) => ({
               '@type': 'ListItem',
-              position: index + 1,
+              position: (query.value.page - 1) * query.value.perPage + index + 1,
               name: property.title,
-              url: property.offers[0]?.url,
+              url: displayOffer(property)?.url,
             })),
-          }),
+          }).replace(/</g, '\\u003c'),
         },
       ]
     : [],
@@ -1044,270 +799,354 @@ useHead(() => ({
 </script>
 
 <style scoped>
-.rentals-view {
-  display: flex;
-  justify-content: flex-end;
-}
-.rentals-map {
-  border-radius: 12px;
-  overflow: hidden;
-}
-/* El globo lo inyecta Leaflet fuera del árbol del componente, así que su estilo no puede ir
-   `scoped`: va en el bloque global de más abajo. */
 .rentals {
-  max-width: 1240px;
+  max-width: 1280px;
+  padding-bottom: 48px;
 }
-
+.rentals--mobile {
+  padding-bottom: calc(104px + env(safe-area-inset-bottom));
+}
+.rentals-mobile-bar {
+  position: fixed;
+  inset: auto 0 0;
+  z-index: 1900;
+  display: flex;
+  padding: 12px max(84px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom))
+    max(12px, env(safe-area-inset-left));
+  background: rgb(var(--v-theme-surface));
+  border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+.rentals-mobile-bar > .v-btn {
+  flex: 1;
+  min-width: 0;
+  min-height: 48px;
+}
 .rentals-head {
-  margin-bottom: 24px;
+  margin: 12px 0 24px;
 }
-
-.rentals-kicker {
-  margin: 0 0 4px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgb(var(--v-theme-primary));
-}
-
-.rentals-title {
+.rentals-head h1 {
   margin: 0 0 8px;
-  font-size: clamp(1.5rem, 3.4vw, 2.1rem);
+  font-size: 2rem;
   font-weight: 800;
-  letter-spacing: -0.01em;
-  line-height: 1.15;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
 }
-
 .rentals-lead {
   margin: 0;
-  max-width: 68ch;
-  color: rgba(var(--v-theme-on-surface), 0.72);
+  max-width: 75ch;
+  color: rgba(var(--v-theme-on-surface), 0.8);
 }
-
-.rentals-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 12px;
-  margin-top: 20px;
+.rentals-provenance {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin-top: 12px;
+  font-size: 0.78rem;
+  color: rgba(var(--v-theme-on-surface), 0.76);
 }
-
-.rentals-stat {
-  padding: 12px 16px;
-  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-  border-radius: 12px;
-  background: rgba(var(--v-theme-surface-bright), 0.35);
+.rentals-provenance a,
+.rentals-external a,
+.rentals-help a {
+  color: rgb(var(--v-theme-link));
+  text-underline-offset: 3px;
 }
-
-.rentals-stat__value {
-  display: block;
-  font-size: 1.25rem;
-  font-weight: 800;
-}
-
-.rentals-stat__label {
-  display: block;
-  font-size: 0.75rem;
-  color: rgba(var(--v-theme-on-surface), 0.66);
-}
-
-.rentals-filters {
-  margin: 20px 0 8px;
-  padding: 16px;
-  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-  border-radius: 12px;
-}
-
-.rentals-filters__row {
+.rentals-chips,
+.rentals-tools {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px 24px;
-  margin-top: 12px;
+  gap: 8px;
+  margin-top: 16px;
 }
-
+.rentals-tools {
+  margin: 8px 0 12px;
+}
+.rentals--mobile .rentals-chips :deep(.v-chip) {
+  min-height: 44px;
+}
+.rentals--mobile .rentals-chips :deep(.v-chip__close) {
+  flex: 0 0 44px;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  max-width: 44px;
+  max-height: 44px;
+}
+.rentals-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin: 20px 0;
+}
 .rentals-summary {
-  margin: 16px 0 12px;
+  margin-right: auto;
 }
-
+.rentals-summary h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+.rentals-summary p {
+  margin: 4px 0 0;
+  color: rgba(var(--v-theme-on-surface), 0.76);
+  font-size: 0.8rem;
+}
+.rentals-sort {
+  flex: 0 1 210px;
+  min-width: 175px;
+}
+.rentals-results {
+  scroll-margin-top: 90px;
+}
+.rentals-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
 .rental-card {
   border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
   border-radius: 12px;
   overflow: hidden;
+  background: rgb(var(--v-theme-surface));
+  display: flex;
+  flex-direction: column;
 }
-
-.rental-card__media {
+.rental-card__visual {
   position: relative;
+}
+.rental-card__media {
   display: block;
   aspect-ratio: 3 / 2;
   background: rgba(var(--v-theme-on-surface), 0.06);
 }
-
 .rental-card__media img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
-
 .rental-card__noimage {
   display: flex;
-  align-items: center;
+  gap: 8px;
+  flex-direction: column;
   justify-content: center;
-  width: 100%;
+  align-items: center;
   height: 100%;
-  color: rgba(var(--v-theme-on-surface), 0.4);
+  color: rgba(var(--v-theme-on-surface), 0.72);
+  font-size: 0.8rem;
 }
-
 .rental-card__badge {
   position: absolute;
-  top: 8px;
-  left: 8px;
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-size: 0.75rem;
+  bottom: 12px;
+  left: 12px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: rgb(var(--v-theme-surface));
+  color: rgb(var(--v-theme-on-surface));
+  font-size: 0.78rem;
   font-weight: 700;
-  color: rgb(var(--v-theme-on-primary));
-  background: rgb(var(--v-theme-primary));
 }
-
+.rental-card__save {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
 .rental-card__body {
+  padding: 18px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 16px;
+  flex: 1;
+  gap: 8px;
+  min-width: 0;
 }
-
-.rental-card__price {
+.rental-card__body p {
   margin: 0;
-  font-size: 1.075rem;
-  font-weight: 800;
 }
-
-.rental-card__ce {
-  display: block;
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: rgba(var(--v-theme-on-surface), 0.66);
-}
-
-.rental-card__specs {
-  margin: 0;
-  font-size: 0.875rem;
+.rental-card__where {
+  color: rgb(var(--v-theme-link));
+  font-size: 0.8rem;
   font-weight: 600;
 }
-
-.rental-card__where,
-.rental-card__address,
-.rental-card__meta {
+.rental-card h3 {
   margin: 0;
+  font-size: 1rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.rental-card h3 a {
+  color: inherit;
+  text-decoration: none;
+}
+.rental-card h3 a:hover {
+  text-decoration: underline;
+}
+.rental-card__specs,
+.rental-card__address {
   font-size: 0.8rem;
-  color: rgba(var(--v-theme-on-surface), 0.66);
 }
-
-.rental-card__title {
-  margin: 4px 0 0;
+.rental-card__address,
+.rental-card__meta,
+.rental-card__expenses {
+  color: rgba(var(--v-theme-on-surface), 0.76);
+}
+.rental-card__cost {
+  margin: 8px 0;
+  padding: 12px 0;
+  border-block: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+.rental-card__price {
+  font-size: 1.35rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.rental-card__price span {
+  font-size: 0.75rem;
+  font-weight: 400;
+  margin-left: 4px;
+}
+.rental-card__expenses {
+  font-size: 0.8rem;
+  margin-top: 4px !important;
+}
+.rental-card__total {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 10px !important;
   font-size: 0.875rem;
-  line-height: 1.35;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
-
+.rental-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
 .rental-card__offers {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin: 10px 0 6px;
+  gap: 6px;
+  margin: auto 0 4px;
+  padding-top: 16px;
 }
-
 .rental-card__offer {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 10px;
-  border-radius: 8px;
-  font-size: 0.8rem;
+  min-height: 44px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 0.78rem;
   text-decoration: none;
   color: inherit;
-  background: rgba(var(--v-theme-on-surface), 0.04);
+  background: rgba(var(--v-theme-on-surface), 0.05);
 }
-
+.rental-card__offer strong {
+  margin-left: auto;
+  white-space: nowrap;
+}
+.rental-card__offer--selected,
 .rental-card__offer:hover {
   background: rgba(var(--v-theme-primary), 0.12);
 }
-
-.rental-card__offer-source {
-  font-weight: 600;
-}
-
-.rental-card__offer-price {
-  margin-left: auto;
-}
-
 .rental-card__meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 6px;
+  font-size: 0.75rem;
+  overflow-wrap: anywhere;
 }
-
-.rentals-notes,
-.rentals-related {
-  margin-top: clamp(40px, 6vw, 72px);
+.rentals-map {
+  border-radius: 12px;
+  overflow: hidden;
 }
-
-.rentals-notes h2,
-.rentals-related h2 {
-  font-size: 1.25rem;
-  font-weight: 800;
-  margin-bottom: 12px;
-}
-
-.rentals-notes ul {
-  margin: 0;
-  padding-left: 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  max-width: 78ch;
-  font-size: 0.95rem;
-  line-height: 1.55;
-}
-
-.rentals-notes__foot {
-  margin-top: 16px;
-  max-width: 78ch;
+.rentals-map__coverage {
+  margin: 0 0 16px;
   font-size: 0.875rem;
-  color: rgba(var(--v-theme-on-surface), 0.66);
 }
-
-.rentals-related__card {
+.rentals-empty {
+  padding: 40px 20px;
+  text-align: center;
   border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
   border-radius: 12px;
 }
-
-.rentals-related__card h3 {
-  font-size: 0.95rem;
+.rentals-empty h3 {
+  margin: 16px 0 8px;
+}
+.rentals-empty p {
+  margin: 0 auto 20px;
+  max-width: 65ch;
+}
+.rentals-notes {
+  margin-top: 56px;
+  max-width: 78ch;
+}
+.rentals-notes h2,
+.rentals-help h2 {
+  margin: 0 0 16px;
+  font-size: 1.25rem;
+}
+.rentals-notes p {
+  margin: 12px 0;
+  color: rgba(var(--v-theme-on-surface), 0.8);
+  line-height: 1.65;
+}
+.rentals-notes details {
+  margin-top: 24px;
+}
+.rentals-notes summary {
+  cursor: pointer;
   font-weight: 700;
-  margin-bottom: 4px;
+  min-height: 44px;
+  display: list-item;
 }
-
-.rentals-related__card p {
-  margin: 0;
-  font-size: 0.875rem;
-  color: rgba(var(--v-theme-on-surface), 0.7);
+.rentals-notes h3 {
+  margin: 24px 0 8px;
+  font-size: 1rem;
 }
-</style>
-
-<style>
-/* Leaflet monta el globo fuera del árbol del componente, así que estas reglas NO pueden ir
-   `scoped`: con el atributo de scope no matchearían nada. Van acotadas por su propia clase. */
-.rental-pop__multi {
-  margin-top: 4px;
-  font-weight: 600;
-  color: rgb(var(--v-theme-primary));
+.rentals-external {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.rentals-help {
+  margin-top: 40px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+}
+.rentals-help h2 {
+  width: 100%;
+  margin-bottom: 0;
+}
+.rentals :deep(a:focus-visible),
+.rentals summary:focus-visible {
+  outline: 3px solid rgb(var(--v-theme-primary));
+  outline-offset: 4px;
+}
+@media (max-width: 959px) {
+  .rentals-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .rentals-summary {
+    flex-basis: 100%;
+  }
+}
+@media (max-width: 599px) {
+  .rentals-head h1 {
+    font-size: 1.55rem;
+  }
+  .rentals-grid {
+    grid-template-columns: 1fr;
+  }
+  .rentals-sort {
+    flex: 1;
+    min-width: 150px;
+  }
+  .rentals-toolbar {
+    gap: 12px;
+  }
+  .rentals-tools {
+    gap: 0;
+  }
+  .rentals-provenance {
+    gap: 6px 12px;
+  }
 }
 </style>

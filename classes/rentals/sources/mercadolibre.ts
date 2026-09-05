@@ -84,6 +84,8 @@ export function toRawRental(card: Polycard): RawRental | null {
   );
 
   return {
+    parkingSpaces: null,
+    furnished: null,
     source: "mercadolibre",
     listingId: `mercadolibre:${id}`,
     url: permalink,
@@ -317,6 +319,8 @@ export async function harvestMercadoLibre(mode: "full" | "fast", usdUyu: number)
 
   return {
     key: "mercadolibre",
+    // Text searches, per-query page caps and the upstream offset limit cannot prove absence.
+    complete: false,
     ok: reachable && byId.size > 0,
     listings: [...byId.values()],
     note: reachable

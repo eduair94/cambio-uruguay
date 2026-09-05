@@ -58,7 +58,7 @@ const EL = {} as Element
 describe('cuándo se cuenta una vista de la tarjeta', () => {
   it('no cuenta nada por montarse: crear el reporter no emite el evento', () => {
     const track = vi.fn()
-    createNewsletterViewReporter({ track, source: () => '/tarjetas-de-credito-uruguay' })
+    createNewsletterViewReporter({ track, contentPath: () => '/tarjetas-de-credito-uruguay' })
     expect(track).not.toHaveBeenCalled()
   })
 
@@ -66,7 +66,7 @@ describe('cuándo se cuenta una vista de la tarjeta', () => {
     const track = vi.fn()
     const reporter = createNewsletterViewReporter({
       track,
-      source: () => '/tarjetas-de-credito-uruguay',
+      contentPath: () => '/tarjetas-de-credito-uruguay',
       session: () => fakeSession(),
     })
     const { state, FakeIO } = fakeObserver()
@@ -80,7 +80,7 @@ describe('cuándo se cuenta una vista de la tarjeta', () => {
     state.fire(true)
     expect(track).toHaveBeenCalledTimes(1)
     expect(track).toHaveBeenCalledWith('newsletter_capture_view', {
-      source: '/tarjetas-de-credito-uruguay',
+      content_path: '/tarjetas-de-credito-uruguay',
     })
   })
 
@@ -88,7 +88,7 @@ describe('cuándo se cuenta una vista de la tarjeta', () => {
     const track = vi.fn()
     const reporter = createNewsletterViewReporter({
       track,
-      source: () => '/x',
+      contentPath: () => '/x',
       session: () => null,
     })
     const { state, FakeIO } = fakeObserver()
@@ -104,13 +104,21 @@ describe('cuándo se cuenta una vista de la tarjeta', () => {
   it('no vuelve a contar en la misma sesión aunque se recargue la página', () => {
     const track = vi.fn()
     const session = fakeSession()
-    createNewsletterViewReporter({ track, source: () => '/x', session: () => session }).report()
+    createNewsletterViewReporter({
+      track,
+      contentPath: () => '/x',
+      session: () => session,
+    }).report()
     expect(track).toHaveBeenCalledTimes(1)
     expect(session.map.get(NEWSLETTER_VIEW_SESSION_KEY)).toBe('1')
 
     // Segundo reporter = la misma pestaña después de un F5: la sesión de GA4 sigue
     // siendo una sola, así que una segunda vista inflaría el denominador.
-    createNewsletterViewReporter({ track, source: () => '/y', session: () => session }).report()
+    createNewsletterViewReporter({
+      track,
+      contentPath: () => '/y',
+      session: () => session,
+    }).report()
     expect(track).toHaveBeenCalledTimes(1)
   })
 
@@ -126,7 +134,7 @@ describe('cuándo se cuenta una vista de la tarjeta', () => {
     }
     const reporter = createNewsletterViewReporter({
       track,
-      source: () => '/x',
+      contentPath: () => '/x',
       session: () => hostile,
     })
     reporter.report()
