@@ -3,7 +3,7 @@
 import mongoose from 'mongoose'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { rentalCoverageStages } from '../../server/utils/rentalCoverage'
-import { rentalDetailStages } from '../../server/utils/rentalDetail'
+import { rentalDetailStages, rentalPublicPropertyProjection } from '../../server/utils/rentalDetail'
 import {
   RENTAL_COLLATION,
   buildRentalFilter,
@@ -101,6 +101,12 @@ describe.skipIf(!uri)('rental budgets evaluated by Mongo (read-only synthetic do
               commonExpenses: 1_000,
             }),
             internalToken: 'private-offer-data',
+            identity: {
+              version: 1,
+              privateAddress: 'Private matching address',
+              privateUnit: '603',
+              internalToken: 'private-identity-data',
+            },
           },
           offer({
             listingId: 'expired',
@@ -145,6 +151,7 @@ describe.skipIf(!uri)('rental budgets evaluated by Mongo (read-only synthetic do
           { $documents: documents },
           ...rentalPublicStages(buildRentalFilter(query, 10, 40).filter, 10),
           ...rentalOfferStages(query, 40),
+          { $project: rentalPublicPropertyProjection },
         ],
         { collation: RENTAL_COLLATION }
       )
@@ -158,13 +165,41 @@ describe.skipIf(!uri)('rental budgets evaluated by Mongo (read-only synthetic do
       'cheap-rent',
       'cheap-total',
     ])
-    expect(detail.address).toBe('Dirección publicada')
-    for (const field of ['_id', 'addressKey', 'internalNote', 'createdAt', 'updatedAt', '__v'])
-      expect(detail).not.toHaveProperty(field)
-    expect(detail.matchingOffer).not.toHaveProperty('internalToken')
-    expect(detail.offers.every((row: Record<string, unknown>) => !('internalToken' in row))).toBe(
-      true
-    )
+    expect(list).toHaveLength(1)
+    for (const row of [detail, list[0]]) {
+      expect(row).toMatchObject({
+        key: 'selected',
+        department: 'Montevideo',
+        neighborhood: 'Cordón',
+        address: 'Dirección publicada',
+        price: 22_000,
+        priceUyu: 22_000,
+        currency: 'UYU',
+      })
+      expect(row.matchingOffer).toMatchObject({
+        source: 'infocasas',
+        listingId: 'cheap-total',
+        url: 'https://www.infocasas.com.uy/1',
+        title: 'Apartamento',
+        commonExpenses: 1_000,
+        commonExpensesCurrency: 'UYU',
+        firstSeen: date,
+        lastSeen: date,
+      })
+      expect(row.offers.map((item: RentalOffer) => item.listingId)).toEqual([
+        'cheap-rent',
+        'cheap-total',
+      ])
+      expect(row.offers.find((item: RentalOffer) => item.listingId === 'cheap-total')).toEqual(
+        row.matchingOffer
+      )
+      for (const field of ['_id', 'addressKey', 'internalNote', 'createdAt', 'updatedAt', '__v'])
+        expect(row).not.toHaveProperty(field)
+      for (const item of [row.matchingOffer, ...row.offers]) {
+        expect(item).not.toHaveProperty('identity')
+        expect(item).not.toHaveProperty('internalToken')
+      }
+    }
 
     for (const [key, filters] of [
       ['missing', {}],

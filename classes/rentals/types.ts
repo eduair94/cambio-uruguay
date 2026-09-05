@@ -45,8 +45,26 @@ export type RentalSellerType = "inmobiliaria" | "particular" | "desconocido";
 
 export type RentalCurrency = "UYU" | "USD";
 
+/** Original, per-advert facts. Never reconstructed from the merged property's attributes. */
+export interface RentalOfferIdentity {
+  version: 1;
+  propertyType: RentalPropertyType;
+  department: string;
+  neighborhood: string;
+  address: string;
+  street: string;
+  streetNumber: string;
+  latitude: number | null;
+  longitude: number | null;
+  bedrooms: number | null;
+  bathrooms: number | null;
+  area: number | null;
+}
+
 /** One published advert. Several of these can point at the same physical property. */
 export interface RentalOffer {
+  /** Absent on legacy records; absence cannot be used as evidence that two units match. */
+  identity?: RentalOfferIdentity;
   /** Explicit count only; null means the publisher does not state it. */
   parkingSpaces: number | null;
   /** A positive published amenity; absence is not an unfurnished claim. */
@@ -230,6 +248,8 @@ export interface RawRental {
 export interface RentalSourceRun {
   key: RentalSource;
   ok: boolean;
+  /** An external directory without an authorized automated integration, not a transient outage. */
+  access?: "external_only";
   listings: number;
   note: string;
 }

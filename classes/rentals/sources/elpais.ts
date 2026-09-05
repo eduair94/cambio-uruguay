@@ -1,10 +1,9 @@
-// Inmuebles El País publishes the first 24 adverts of each category in its server HTML.
-// Its robots.txt excludes /api/, so we ONLY read the public category sitemap and those pages.
-// This is deliberately partial coverage, never evidence that an unseen advert has disappeared.
+// Automated collection is disabled: the portal's terms expressly prohibit scraping (2026-09-05).
+// Keep these pure parsers for offline validation of existing samples and a future authorized feed.
+// Public HTML or a permissive robots path does not establish permission to reuse the catalogue.
 import * as cheerio from "cheerio";
-import { fetchText } from "../net";
 import { guaranteesFromText } from "../guarantees";
-import { canonicalDepartment, inferPropertyType, isPlausibleRent, looksLikeRentalAdvert, parseCurrency, parseStreet } from "../normalize";
+import { canonicalDepartment, flatten, inferPropertyType, looksLikeRentalAdvert, parseCurrency, parseStreet } from "../normalize";
 import type { RawRental, RentalPropertyType } from "../types";
 import type { RentalSourceResult } from "./types";
 
@@ -19,7 +18,8 @@ export function elpaisCategoryUrls(xml: string): string[] {
   return [...new Set($("loc").map((_, node) => $(node).text().trim()).get().filter((raw) => {
     try {
       const url = new URL(raw);
-      return url.origin === ORIGIN && /^\/alquiler\/[a-z-]+\/[a-z0-9-]+\/?$/.test(url.pathname) && !url.search;
+      return url.origin === ORIGIN && /^\/alquiler\/[a-z-]+\/[a-z0-9-]+\/?$/.test(url.pathname)
+        && !url.search && !url.hash && !url.username && !url.password;
     } catch { return false; }
   }))];
 }
@@ -68,15 +68,25 @@ export function extractElpaisRows(html: string): unknown[] | null {
 
 const positive = (value: unknown): number | null => value != null && Number.isFinite(Number(value)) && Number(value) > 0 ? Number(value) : null;
 
+/** A rental category can contain fortnight or named-month holiday prices. */
+function hasOnlyShortTermPrice(title: string, description: string): boolean {
+  const text = flatten(`${title} ${description.replace(/<[^>]*>/g, " ").replace(/&nbsp;|&#160;/gi, " ")}`);
+  if (/\banual(?:es)?\b/.test(text)) return false;
+  if (/\b(?:primera|segunda|1ra|2da) quincena\b|\b(?:por|precio(?: de| por)?|alquiler(?: por)?) quincena\b/.test(text)) return true;
+  // "Desde febrero" can be an annual start date. "En febrero 2023" names a bounded stay.
+  return /\bdisponible en alquiler en (?:enero|febrero|marzo|abril|mayo|junio|julio|agosto|setiembre|septiembre|octubre|noviembre|diciembre) (?:de )?20\d{2}\b/.test(text);
+}
+
 export function elpaisToRawRental(value: unknown): RawRental | null {
   if (!value || typeof value !== "object") return null;
   const row = value as Record<string, any>;
   if (row.transactionType !== "rental" || row.status !== "active" || row.pausedByAdmin || row.trashedAt) return null;
   if (!/^[a-f0-9]{24}$/i.test(String(row._id || ""))) return null;
   const title = String(row.title || "").trim();
+  const description = typeof row.description === "string" ? row.description : "";
   const price = positive(row.price?.amount);
   const currency = parseCurrency(row.price?.currency);
-  if (!title || !price || !currency || !looksLikeRentalAdvert(title)) return null;
+  if (!title || !price || !currency || !looksLikeRentalAdvert(title, description) || hasOnlyShortTermPrice(title, description)) return null;
   const department = canonicalDepartment(String(row.province || ""));
   if (!department) return null;
   const address = String(row.address || "").replace(/\s*-?\s*Ref\s*:.*$/i, "").trim();
@@ -84,14 +94,16 @@ export function elpaisToRawRental(value: unknown): RawRental | null {
   const expenses = row.expenses?.amount;
   // This portal imports third-party records: a numeric 0 may be an import default. Only the
   // original advert explicitly saying "sin gastos comunes" turns that value into a free expense.
-  const noExpenses = /\bsin gastos comunes\b/i.test(`${title} ${typeof row.description === "string" ? row.description : ""}`);
+  const noExpenses = /\bsin gastos comunes\b/i.test(`${title} ${description}`);
   const commonExpenses = positive(expenses) ?? (noExpenses ? 0 : null);
   const coordinates = row.geo?.coordinates;
   const lat = Array.isArray(coordinates) ? Number(coordinates[1]) : NaN;
   const lon = Array.isArray(coordinates) ? Number(coordinates[0]) : NaN;
   const located = lat >= -35.9 && lat <= -30 && lon >= -58.6 && lon <= -53;
-  const image = row.images?.find((item: any) => item.isPrimary) || row.images?.[0];
-  const seller = String(row.contact?.company || row.sourceAgency || "").trim();
+  const images = Array.isArray(row.images) ? row.images.filter((item: any) => item && typeof item === "object") : [];
+  const image = images.find((item: any) => item.isPrimary) || images[0];
+  const agency = typeof row.sourceAgency === "string" ? row.sourceAgency : row.sourceAgency?.raw;
+  const seller = [row.contact?.company, agency].find(item => typeof item === "string" && item.trim())?.trim() || "";
   // Do not use the portal's AI-enriched features/visualDescription or its converted costs.
   // Only original money fields and advert text provide evidence for the facets we persist.
   return {
@@ -108,44 +120,13 @@ export function elpaisToRawRental(value: unknown): RawRental | null {
     bedrooms: row.bedrooms != null && Number.isInteger(Number(row.bedrooms)) && Number(row.bedrooms) >= 0 ? Number(row.bedrooms) : null,
     bathrooms: positive(row.bathrooms), area: positive(row.areaM2),
     parkingSpaces: null, furnished: null, petsAllowed: null,
-    guarantees: guaranteesFromText(typeof row.description === "string" ? row.description : ""),
+    guarantees: guaranteesFromText(description),
   };
 }
 
-export async function harvestElpais(mode: "full" | "fast", usdUyu: number): Promise<RentalSourceResult> {
-  const sitemap = await fetchText(`${ORIGIN}/sitemaps/categories.xml`, { retries: 0 });
-  if (!sitemap) {
-    return { key: "elpais", ok: false, complete: false, listings: [],
-      note: "No se pudo leer el sitemap público de categorías; fuente no actualizada." };
-  }
-  const urls = elpaisCategoryUrls(sitemap);
-  if (!urls.length) {
-    return { key: "elpais", ok: false, complete: false, listings: [],
-      note: "El sitemap público no contiene categorías de alquiler reconocibles; fuente no actualizada." };
-  }
-  const limit = Math.max(1, Number(mode === "fast" ? process.env.RENTALS_EP_FAST_PAGES || 8 : process.env.RENTALS_EP_MAX_PAGES || 250));
-  const byId = new Map<string, RawRental>();
-  let pages = 0;
-  let failures = 0;
-  let consecutiveFailures = 0;
-  for (const url of urls.slice(0, limit)) {
-    const html = await fetchText(url, { retries: 0 });
-    const rows = html ? extractElpaisRows(html) : null;
-    if (!rows) {
-      failures++;
-      if (++consecutiveFailures >= 3) break;
-      continue;
-    }
-    consecutiveFailures = 0;
-    pages++;
-    for (const row of rows) {
-      const listing = elpaisToRawRental(row);
-      if (listing && isPlausibleRent(listing.price * (listing.currency === "USD" ? usdUyu : 1), listing.propertyType)) byId.set(listing.listingId, listing);
-    }
-  }
+export async function harvestElpais(_mode: "full" | "fast", _usdUyu: number): Promise<RentalSourceResult> {
   return {
-    key: "elpais", ok: byId.size > 0, complete: false, listings: [...byId.values()],
-    note: `${pages} categorías públicas, ${byId.size} avisos únicos — cobertura parcial: hasta 24 avisos por categoría` +
-      (failures ? `; ${failures} páginas sin datos` : ""),
+    key: "elpais", ok: false, complete: false, access: "external_only", listings: [],
+    note: "Consulta externa; actualización automática no habilitada por las condiciones del portal.",
   };
 }

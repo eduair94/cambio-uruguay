@@ -353,12 +353,22 @@ MOBILE: Results first; persistent thumb-reachable filters open a focused draft w
             >
               <dt>{{ sourceLabel(source.key) }}</dt>
               <dd>
-                <span>{{
-                  t('coverageProperties', { n: numberFormat(source.properties) }, source.properties)
-                }}</span>
-                <small v-if="meta?.sources.some(run => run.key === source.key && !run.ok)">{{
-                  t('coverageReadFailed')
-                }}</small>
+                <template v-if="externalSourceKeys.has(source.key)">
+                  <VChip size="small" variant="tonal">{{ t('externalOnly') }}</VChip>
+                  <small>{{ t('externalOnlyHint') }}</small>
+                </template>
+                <template v-else>
+                  <span>{{
+                    t(
+                      'coverageProperties',
+                      { n: numberFormat(source.properties) },
+                      source.properties
+                    )
+                  }}</span>
+                  <small v-if="downSources.some(run => run.key === source.key)">{{
+                    t('coverageReadFailed')
+                  }}</small>
+                </template>
               </dd>
             </div>
           </dl>
@@ -472,10 +482,20 @@ const coverage = computed(() => data.value?.coverage ?? null)
 const medianUyu = computed(() => data.value?.medianUyu ?? 0)
 const usdUyu = computed(() => meta.value?.usdUyu ?? 0)
 const pageCount = computed(() => Math.max(1, Math.ceil(total.value / (data.value?.perPage || 24))))
-const downSources = computed(() => (meta.value?.sources ?? []).filter(source => !source.ok))
+const externalSourceKeys = computed(
+  () =>
+    new Set(
+      (meta.value?.sources ?? [])
+        .filter(source => source.access === 'external_only')
+        .map(source => source.key)
+    )
+)
+const downSources = computed(() =>
+  (meta.value?.sources ?? []).filter(source => !source.ok && source.access !== 'external_only')
+)
 const activeSourceLabels = computed(() =>
   (coverage.value?.sources ?? [])
-    .filter(source => source.properties > 0)
+    .filter(source => source.properties > 0 && !externalSourceKeys.value.has(source.key))
     .map(source => sourceLabel(source.key))
     .join(' · ')
 )

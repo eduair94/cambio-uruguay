@@ -2,6 +2,7 @@ import { RentalListingModel } from '../../models/RentalListing'
 import { RentalMetaModel } from '../../models/RentalMeta'
 import { connectDb } from '../../utils/db'
 import { getRentalCoverage } from '../../utils/rentalCoverage'
+import { rentalPublicPropertyProjection } from '../../utils/rentalDetail'
 import {
   RENTAL_COLLATION,
   buildRentalFilter,
@@ -65,7 +66,7 @@ export default defineEventHandler(async (event): Promise<RentalsResponse> => {
         { $sort: sort },
         { $skip: (query.page - 1) * query.perPage },
         { $limit: query.perPage },
-        { $project: { _id: 0, __v: 0, createdAt: 0, updatedAt: 0, addressKey: 0 } },
+        { $project: rentalPublicPropertyProjection },
       ]).collation(RENTAL_COLLATION),
       RentalListingModel.aggregate([...publicStages, { $count: 'total' }]).collation(
         RENTAL_COLLATION

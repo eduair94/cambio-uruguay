@@ -54,7 +54,7 @@ describe("Casasweb's public monthly-rental cards", () => {
   });
 });
 
-describe("Inmuebles El País's permitted public category pages", () => {
+describe("Inmuebles El País's offline public-page samples", () => {
   it("reassembles split Next Flight chunks without evaluating scripts", () => {
     const rows = extractElpaisRows(fixture("elpais"))!;
     expect(rows).toHaveLength(2);
@@ -68,26 +68,16 @@ describe("Inmuebles El País's permitted public category pages", () => {
   });
 
   it("retains only same-host permanent rental category URLs from the sitemap", () => {
-    const urls = ["https://inmuebles.elpais.com.uy/alquiler/casas/canelones", "https://evil.test/alquiler/casas/canelones", "https://inmuebles.elpais.com.uy/api/properties", "https://inmuebles.elpais.com.uy/alquiler-temporario/casas/canelones"];
+    const urls = ["https://inmuebles.elpais.com.uy/alquiler/casas/canelones", "https://evil.test/alquiler/casas/canelones", "https://inmuebles.elpais.com.uy/api/properties", "https://inmuebles.elpais.com.uy/alquiler-temporario/casas/canelones", "https://user@inmuebles.elpais.com.uy/alquiler/casas/canelones", "https://inmuebles.elpais.com.uy/alquiler/casas/canelones#fragment"];
     expect(elpaisCategoryUrls(`<urlset>${urls.map(url => `<url><loc>${url}</loc></url>`).join("")}</urlset>`)).toEqual([urls[0]]);
   });
 
-  it("reports an unavailable sitemap without requesting categories or inferring an HTTP status", async () => {
-    vi.mocked(fetchText).mockResolvedValue(null);
-    const run = await harvestElpais("full", 40);
-    expect(run).toMatchObject({ key: "elpais", ok: false, complete: false, listings: [] });
-    expect(run.note).toBe("No se pudo leer el sitemap público de categorías; fuente no actualizada.");
-    expect(fetchText).toHaveBeenCalledTimes(1);
-    expect(fetchText).toHaveBeenCalledWith("https://inmuebles.elpais.com.uy/sitemaps/categories.xml", { retries: 0 });
+  it.each(["full", "fast"] as const)("keeps %s external-only without network access or expiry", async mode => {
+    const run = await harvestElpais(mode, 40);
+    expect(run).toMatchObject({ key: "elpais", ok: false, complete: false, access: "external_only", listings: [] });
+    expect(run.note).toBe("Consulta externa; actualización automática no habilitada por las condiciones del portal.");
+    expect(fetchText).not.toHaveBeenCalled();
     expect([...sourcesAllowingExpiry([run], "full")]).toEqual([]);
-  });
-
-  it("distinguishes a readable sitemap without valid rental categories from an unavailable one", async () => {
-    vi.mocked(fetchText).mockResolvedValue('<urlset><url><loc>https://inmuebles.elpais.com.uy/venta/casas/canelones</loc></url></urlset>');
-    const run = await harvestElpais("fast", 40);
-    expect(run).toMatchObject({ ok: false, complete: false, listings: [] });
-    expect(run.note).toBe("El sitemap público no contiene categorías de alquiler reconocibles; fuente no actualizada.");
-    expect(fetchText).toHaveBeenCalledTimes(1);
   });
 
   it("does not convert missing expenses to zero or trust inferred amenities", () => {
@@ -99,13 +89,6 @@ describe("Inmuebles El País's permitted public category pages", () => {
     expect(elpaisToRawRental({ ...base, status: "inactive" })).toBeNull();
   });
 
-  it("publishes partial coverage without authorizing absence-based pruning", async () => {
-    vi.mocked(fetchText).mockResolvedValueOnce('<urlset><url><loc>https://inmuebles.elpais.com.uy/alquiler/casas/canelones</loc></url></urlset>').mockResolvedValueOnce(fixture("elpais"));
-    const run = await harvestElpais("full", 40);
-    expect(run).toMatchObject({ ok: true, complete: false });
-    expect(run.listings).toHaveLength(2);
-    expect(vi.mocked(fetchText).mock.calls.some(([url]) => url.includes("/api/"))).toBe(false);
-  });
 });
 
 describe("explicit InfoCasas search amenities", () => {

@@ -107,7 +107,7 @@ describe("al unificar la propiedad", () => {
     propertyType: "apartamento",
     department: "Montevideo",
     neighborhood: "Pocitos",
-    address: "Rizal 3715",
+    address: "Rizal 3715 apto 301",
     street: "rizal",
     streetNumber: "3715",
     latitude: -34.9,

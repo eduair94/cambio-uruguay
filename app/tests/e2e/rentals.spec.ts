@@ -593,6 +593,13 @@ test.describe('rental directory', () => {
         response.meta!.sources.push({
           key: 'elpais',
           ok: false,
+          access: 'external_only',
+          listings: 0,
+          note: 'test fixture external directory',
+        })
+        response.meta!.sources.push({
+          key: 'facebook',
+          ok: false,
           listings: 0,
           note: 'test fixture unavailable',
         })
@@ -835,15 +842,27 @@ test.describe('rental directory', () => {
       ['infocasas', 'InfoCasas', '1.234 propiedades'],
       ['facebook', 'Facebook Marketplace', '321 propiedades'],
       ['casasweb', 'Casasweb', '456 propiedades'],
-      ['elpais', 'Inmuebles El País', '0 propiedades'],
+      ['elpais', 'Inmuebles El País', 'Consulta externa'],
     ]
     for (const [key, name, count] of expectedSources) {
       const source = page.getByTestId(`rental-coverage-source-${key}`)
       await expect(source).toContainText(name)
       await expect(source).toContainText(count)
     }
-    await expect(page.getByTestId('rental-coverage-source-elpais')).toContainText(
+    await expect(page.getByTestId('rental-coverage-source-facebook')).toContainText(
       'No se pudo actualizar en el último repaso.'
+    )
+    const externalSource = page.getByTestId('rental-coverage-source-elpais')
+    await expect(externalSource).not.toContainText('0 propiedades')
+    await expect(externalSource).not.toContainText('No se pudo actualizar')
+    await expect(page.locator('.rentals-head [role="alert"]')).toContainText('Facebook Marketplace')
+    await expect(page.locator('.rentals-head [role="alert"]')).not.toContainText(
+      'Inmuebles El País'
+    )
+    await expect(page.locator('.rentals-provenance')).not.toContainText('Inmuebles El País')
+    await expect(coverage.getByRole('link', { name: 'Inmuebles El País' })).toHaveAttribute(
+      'href',
+      'https://inmuebles.elpais.com.uy/'
     )
     const before = (await coverage.locator('.rentals-coverage-sources').textContent()) ?? ''
     await expect

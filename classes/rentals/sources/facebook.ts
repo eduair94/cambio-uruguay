@@ -2,10 +2,10 @@
 // `facebook_marketplace`, :9657) that owns the logged-in Chrome profile — the same bridge the
 // chair directory uses.
 //
-// Marketplace is where the "dueño directo" half of the rental market posts: no agency, no
-// comisión, and frequently no address beyond the city. That is exactly why it is worth having and
-// exactly why its rows are the weakest for dedupe — with no street we can only merge them by
-// barrio + price + dormitorios, so the merge rules in dedupe.ts refuse to guess.
+// Marketplace can add adverts from private owners, frequently without an address beyond the
+// city. Neither the portal nor a city label proves ownership, commission terms or unit identity.
+// Without an exact address its adverts remain separate: barrio, price and bedroom counts alone
+// never establish a cross-advert match. The limited search is always partial coverage.
 //
 // The bridge needs a live browser session. When it has none it answers
 // `FB_MARKETPLACE_SESSION_UNAVAILABLE`, and this harvester reports `ok: false` so the run keeps

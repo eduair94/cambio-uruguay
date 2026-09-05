@@ -8,6 +8,8 @@ import type { RawRental, RentalSource } from "../types";
 export interface RentalSourceResult {
   key: RentalSource;
   ok: boolean;
+  /** No collection is attempted when the directory is available only for external consultation. */
+  access?: "external_only";
   /** False for partial coverage: missing offers must not expire on its evidence. */
   complete?: boolean;
   listings: RawRental[];

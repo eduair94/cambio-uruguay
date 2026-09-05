@@ -1,7 +1,7 @@
 // Turning three portals' free text into something two rows can be compared on.
 //
-// The whole directory rests on this file: if "Av. Garzón 1975" and "Avenida Garzon 1975 bis" do not
-// produce the same key, the same apartment is published twice and the page is worthless. Every
+// The whole directory rests on this file: equivalent abbreviations should share a street key,
+// while distinct doors (including bis) must stay distinct. Every
 // function here is pure and unit-tested (tests/rentals/normalize.test.ts).
 import type { RentalCurrency, RentalPropertyType } from "./types";
 
@@ -120,12 +120,12 @@ export function parseStreet(raw: string): { street: string; number: string } {
 
   // THE DOOR NUMBER IS THE LAST ONE, not the first. Half of Montevideo's streets ARE numbers —
   // 18 de Julio, 25 de Mayo, 8 de Octubre, 33 Orientales — and reading the first number as the door
-  // left those addresses with an empty street name, which quietly split one building into two
-  // properties. Ranges ("Colorado 1500 - 1800") keep the low end.
-  const trailing = flat.match(/(?:^|\s)(\d{1,5})(?:\s*[-–/]\s*\d{1,5})?(?:\s+bis)?\s*$/);
-  const number = trailing ? trailing[1]! : "";
+  // left those addresses with an empty street name. A range is an approximate location, not
+  // proof of either door. Likewise 1975 and 1975 bis are distinct entrances.
+  if (/\d\s*[-–/]\s*\d/.test(flat)) return { street: flat, number: "" };
+  const trailing = flat.match(/(?:^|\s)(\d{1,5})(\s+bis)?\s*$/);
+  const number = trailing ? `${trailing[1]}${trailing[2] ? " bis" : ""}` : "";
   const street = (trailing ? flat.slice(0, trailing.index).trim() : flat)
-    .replace(/\bbis\b/g, "")
     .replace(/\s+/g, " ")
     .trim();
 
@@ -261,8 +261,6 @@ export interface RentalAttributes {
   area: number | null;
 }
 
-const INT = /(\d+(?:[.,]\d+)?)/;
-
 /**
  * Reads MercadoLibre's attribute strip (`["2 dormitorios", "1 baño", "40 m² cubiertos"]`) and any
  * other "N dormitorios" text. A monoambiente has zero bedrooms by definition, and that zero is
@@ -275,17 +273,21 @@ export function parseAttributes(texts: readonly string[]): RentalAttributes {
 
   for (const raw of texts) {
     const flat = flatten(raw);
-    if (bedrooms === null && /\b(dormitorio|dormitorios|habitacion|habitaciones)\b/.test(flat)) {
-      const match = flat.match(INT);
-      if (match) bedrooms = Math.round(Number(match[1]!.replace(",", ".")));
+    // A number belongs to the attribute beside it, never to the beginning of the advert.
+    // "Apto 301, 2 dormitorios, 1 baño, 60 m²" must not become 301 bedrooms / 2 bathrooms.
+    if (bedrooms === null) {
+      const match = flat.match(/\b(\d{1,2})\s*(?:dormitorios?|dorms?\.?|habitacion(?:es)?)\b/)
+        || flat.match(/\b(?:dormitorios?|dorms?\.?|habitacion(?:es)?)\s*[:=]\s*(\d{1,2})\b/);
+      if (match) bedrooms = Number(match[1]);
     }
     if (bedrooms === null && /\bmonoambiente\b/.test(flat)) bedrooms = 0;
-    if (bathrooms === null && /\bbanos?\b/.test(flat)) {
-      const match = flat.match(INT);
-      if (match) bathrooms = Math.round(Number(match[1]!.replace(",", ".")));
+    if (bathrooms === null) {
+      const match = flat.match(/\b(\d{1,2})\s*banos?\b/)
+        || flat.match(/\bbanos?\s*[:=]\s*(\d{1,2})\b/);
+      if (match) bathrooms = Number(match[1]);
     }
-    if (area === null && /\bm2|m²\b/.test(flat.replace("m²", "m2"))) {
-      const match = flat.match(INT);
+    if (area === null) {
+      const match = flat.match(/\b(\d{1,4}(?:[.,]\d+)?)\s*m(?:2|²)(?!\w)/);
       if (match) area = Math.round(Number(match[1]!.replace(",", ".")));
     }
   }

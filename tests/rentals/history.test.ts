@@ -8,6 +8,32 @@ const row = (key: string, firstSeen: string | null, lastSeen: string | null): Re
 });
 
 describe("stored rental identity history", () => {
+  it("attributes the old URL only to its unique canonical title owner", () => {
+    const history = rentalHistoryFromRows([{ key: "unit-601", title: " Apartamento 601 ", offers: [
+      { listingId: "infocasas:1", title: "Apartamento 801" },
+      { listingId: "infocasas:9", title: "apartamento   601" },
+    ] }]);
+    expect(history.propertyCanonicalOffer.get("unit-601")).toBe("infocasas:9");
+  });
+
+  it("reserves every ambiguous or missing canonical presentation", () => {
+    const history = rentalHistoryFromRows([
+      { key: "ambiguous", title: "Apartamento", offers: [{ listingId: "infocasas:1", title: "Apartamento" }, { listingId: "infocasas:2", title: "Apartamento" }] },
+      { key: "missing", title: "Apartamento 601", offers: [{ listingId: "infocasas:3", title: "Apartamento 801" }] },
+      { key: "empty" },
+    ]);
+    expect([...history.propertyCanonicalOffer.entries()]).toEqual([["ambiguous", null], ["missing", null], ["empty", null]]);
+  });
+
+  it("does not transfer canonical ownership from a stale duplicate row", () => {
+    const stale = { ...row("stale", "2026-07-01", "2026-08-01"), title: "Apartamento 601" };
+    const fresh = { ...row("fresh", "2026-07-01", "2026-09-05"), title: "Apartamento 601" };
+    stale.offers![0]!.title = fresh.offers![0]!.title = "Apartamento 601";
+    const history = rentalHistoryFromRows([stale, fresh]);
+    expect(history.propertyCanonicalOffer.get("stale")).toBeNull();
+    expect(history.propertyCanonicalOffer.get("fresh")).toBe("infocasas:1");
+  });
+
   it("chooses the latest observed owner independently of Mongo row order", () => {
     const a = row("old-copy", "2026-06-01", "2026-08-01");
     const b = row("current-owner", "2026-07-01", "2026-09-05");

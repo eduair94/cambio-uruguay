@@ -8,7 +8,7 @@
 // every other portal's rows off every property it touched.
 import { RentalListingModel } from "../models/RentalListing";
 import { RentalMetaModel } from "../models/RentalMeta";
-import { freshnessOf } from "./dedupe";
+import { detachedRentalKey, partitionRentalOffers, propertyFromRentalOffers } from "./reconcile";
 import { RENTAL_META_KEY, type RentalMeta, type RentalOffer, type RentalProperty, type RentalSource } from "./types";
 
 const CHUNK = 400;
@@ -18,6 +18,8 @@ export interface RentalHistory {
   propertyFirstSeen: Map<string, string>;
   /** `listingId -> property key`: how a property keeps its identity across runs (see dedupe.ts). */
   offerToProperty: Map<string, string>;
+  /** Only this attributable advert may keep the old presentation URL after a split. */
+  propertyCanonicalOffer: Map<string, string | null>;
 }
 
 /**
@@ -26,15 +28,16 @@ export interface RentalHistory {
  */
 export async function loadRentalHistory(): Promise<RentalHistory> {
   const rows = (await RentalListingModel.find({})
-    .select({ key: 1, firstSeen: 1, "offers.listingId": 1, "offers.firstSeen": 1, "offers.lastSeen": 1 })
+    .select({ key: 1, title: 1, firstSeen: 1, "offers.listingId": 1, "offers.title": 1, "offers.firstSeen": 1, "offers.lastSeen": 1 })
     .lean()) as unknown as RentalHistoryRow[];
   return rentalHistoryFromRows(rows);
 }
 
 export interface RentalHistoryRow {
   key?: string | null;
+  title?: string | null;
   firstSeen?: string | null;
-  offers?: Array<{ listingId?: string | null; firstSeen?: string | null; lastSeen?: string | null }>;
+  offers?: Array<{ listingId?: string | null; title?: string | null; firstSeen?: string | null; lastSeen?: string | null }>;
 }
 
 const historyDay = (value: unknown): string | null => {
@@ -75,11 +78,25 @@ export function rentalHistoryFromRows(rows: readonly RentalHistoryRow[]): Rental
     }
   }
   for (const [listingId, owner] of owners) offerToProperty.set(listingId, owner.key);
-  return { offerFirstSeen, propertyFirstSeen, offerToProperty };
+  const propertyCanonicalOffer = new Map<string, string | null>();
+  const titleIdentity = (value: unknown) => typeof value === "string" ? value.trim().toLowerCase().replace(/\s+/g, " ") : "";
+  for (const row of rows) {
+    const key = typeof row.key === "string" ? row.key.trim() : "";
+    if (!key) continue;
+    const title = titleIdentity(row.title);
+    const candidates = new Set((row.offers || []).filter(offer => title && titleIdentity(offer.title) === title)
+      .map(offer => offer.listingId).filter((id): id is string => typeof id === "string" && offerToProperty.get(id) === key));
+    propertyCanonicalOffer.set(key, candidates.size === 1 ? [...candidates][0]! : null);
+  }
+  return { offerFirstSeen, propertyFirstSeen, offerToProperty, propertyCanonicalOffer };
 }
 
 export interface SaveContext {
   today: string;
+  /** Runtime always supplies the current common conversion rate. */
+  usdUyu?: number;
+  /** Deterministic prior owner prevents a historical duplicate from being copied again. */
+  offerOwners?: ReadonlyMap<string, string>;
   /** Sources that actually answered this run. A source that did not is never pruned. */
   okSources: Set<RentalSource>;
   /** How long an advert may go unseen (by a HEALTHY portal) before it is dropped. */
@@ -93,18 +110,6 @@ const daysBetween = (from: string, to: string): number =>
  * Union of stored and fresh offers. Fresh always wins for the same advert; a stored advert survives
  * if its portal was down this run, or if a healthy portal simply has not re-shown it yet.
  */
-/**
- * Cuánto puede separarse el precio de dos avisos que decimos que son la misma propiedad.
- *
- * Es la tolerancia más floja que admite `sameUnit` (0,93 en la rama con calle). Se aplica también
- * acá porque la unión, una vez hecha, sobrevivía a su propia regla: `mergeOffers` conservaba un
- * aviso guardado mientras su portal hubiera corrido y no estuviera vencido por días, sin volver a
- * preguntarse si seguía siendo la misma propiedad. Auditado el 2026-09-03 sobre los 3.503 merges
- * vivos: 378 tenían ofertas con más de 5 % de diferencia y 104 más de 8 %, con casos de 21.000
- * contra 41.000 pesos en la misma fila — dos alquileres distintos presentados como uno.
- */
-const OFFER_PRICE_TOLERANCE = 0.93;
-
 export function mergeOffers(
   stored: RentalOffer[],
   fresh: RentalOffer[],
@@ -138,152 +143,103 @@ export function mergeOffers(
     byId.set(offer.listingId, offer);
   }
 
-  const all = [...byId.values()].sort((a, b) => a.priceUyu - b.priceUyu);
-  if (all.length < 2) return all;
-
-  const priced = all.filter((offer) => offer.priceUyu > 0);
-  if (priced.length < 2) return all;
-
-  // Qué rango de precios puede tener esta propiedad.
-  //
-  // Si la corrida de hoy trajo avisos, mandan ellos: `buildRentalProperties` los volvió a comparar
-  // con `sameUnit` hace un instante, así que son coherentes entre sí por construcción. Lo guardado
-  // es lo que hay que volver a ganarse.
-  //
-  // Si hoy no vino ninguno —pasa en cada corrida rápida, que sólo mira lo recién publicado— hay
-  // que decidir entre los guardados sin árbitro. Ahí gana el grupo MÁS NUMEROSO, no el más barato:
-  // con [21.000, 41.000, 41.000] el raro es el barato, y anclar al mínimo tiraría los dos avisos
-  // que coinciden para quedarse con el único que no coincide con nadie.
-  //
-  // Y se mide contra los DOS extremos, no contra un precio de referencia. Medir contra uno solo
-  // encadena la tolerancia: con referencia 26.900, un aviso de 26.500 y otro de 28.800 pasan los
-  // dos —cada uno está dentro del 7 % del ancla— y el conjunto termina estirado un 8 %. Así se
-  // publicaban quince "1 dormitorio en Tres Cruces" como una sola propiedad: piso 10, piso 9, PB
-  // con entrada propia, con garaje. Cada uno cerca del ancla, ninguno cerca del otro.
-  const freshPrices = fresh.map((offer) => offer.priceUyu).filter((price) => price > 0);
-  const [lo, hi] = freshPrices.length
-    ? [Math.min(...freshPrices), Math.max(...freshPrices)]
-    : largestCoherentWindow(priced.map((offer) => offer.priceUyu));
-  if (!(lo > 0) || !(hi > 0)) return all;
-
-  const freshIds = new Set(fresh.map((offer) => offer.listingId));
-  return all.filter((offer) => {
-    if (freshIds.has(offer.listingId)) return true;
-    // Sin precio no hay con qué contradecir; el precio es la única señal que sobrevive en la oferta.
-    if (offer.priceUyu <= 0) return true;
-    return coherent(Math.min(lo, offer.priceUyu), Math.max(hi, offer.priceUyu));
-  });
-}
-
-/** ¿Un conjunto cuyo precio va de `lo` a `hi` sigue siendo una sola propiedad? */
-function coherent(lo: number, hi: number): boolean {
-  return lo / hi >= OFFER_PRICE_TOLERANCE;
-}
-
-/**
- * El rango de precios del grupo más numeroso que sigue siendo coherente ENTERO.
- *
- * Sobre la lista ordenada, un grupo coherente es una ventana contigua cuyos extremos no se separan
- * más que la tolerancia. Empate en cantidad: gana la más barata, que es la que se recorre primero.
- */
-function largestCoherentWindow(sorted: number[]): [number, number] {
-  let best: [number, number] = [sorted[0], sorted[0]];
-  let bestCount = 0;
-  for (let start = 0; start < sorted.length; start++) {
-    let end = start;
-    while (end + 1 < sorted.length && coherent(sorted[start], sorted[end + 1])) end++;
-    const count = end - start + 1;
-    if (count > bestCount) {
-      bestCount = count;
-      best = [sorted[start], sorted[end]];
-    }
-  }
-  return best;
+  // Similarity decides grouping, never whether an otherwise live advert survives.
+  return [...byId.values()].sort((a, b) => a.priceUyu - b.priceUyu || a.listingId.localeCompare(b.listingId));
 }
 
 /** Re-derives the fields that are a function of the offers, after a merge changed them. */
 export function recomputeFromOffers(property: RentalProperty, offers: RentalOffer[]): RentalProperty {
-  const cheapest = offers[0]!;
-  return {
-    ...property,
-    offers,
-    sources: [...new Set(offers.map((offer) => offer.source))],
-    freshAt: freshnessOf(offers, property.firstSeen),
-    price: cheapest.price,
-    priceUyu: cheapest.priceUyu,
-    currency: cheapest.currency,
-    // Se deriva de las ofertas y no se arrastra del objeto entrante: en una corrida rapida ese
-    // objeto viene sin la marca, y las ofertas son las que la conservan.
-    petsAllowed: offers.some((offer) => offer.petsAllowed === true) ? true : null,
-    parkingSpaces: offers.map((offer) => offer.parkingSpaces).find((value) => value != null) ?? null,
-    furnished: offers.some((offer) => offer.furnished === true) ? true : null,
-    firstSeen: [property.firstSeen, ...offers.map((offer) => offer.firstSeen)].filter(Boolean).sort()[0]!,
-    lastSeen: offers.map((offer) => offer.lastSeen).sort().slice(-1)[0]!,
-  };
+  return propertyFromRentalOffers(property.key, offers, 0, property);
 }
 
-export async function saveRentalProperties(
+export interface RentalWritePlan {
+  emptied: number;
+  separated: number;
+  assigned: RentalProperty[];
+}
+
+/** Read-only planning also powers an inspectable historical repair before its first write. */
+export async function planRentalPropertyUpdates(
   properties: RentalProperty[],
   context: SaveContext
-): Promise<{ written: number; emptied: number }> {
-  let written = 0;
-  let emptied = 0;
-
-  // A qué propiedad pertenece cada aviso SEGÚN LA CORRIDA DE HOY.
-  //
-  // Hace falta para que una unión que se parte se limpie el mismo día. Cuando el agrupamiento deja
-  // de unir dos avisos, uno se lleva la clave vieja y el otro estrena la suya; sin esto el que se
-  // fue seguía guardado en la fila vieja hasta vencer por días, así que durante esa ventana el
-  // mismo aviso salía en dos propiedades Y la fila vieja seguía publicando el merge que ya
-  // dejamos de creer.
-  //
-  // Sólo habla de los avisos que esta corrida vio: uno que no está en el mapa no se toca, que es lo
-  // que hace que esto sea seguro también en la corrida rápida, que ve una franja del mercado.
+): Promise<RentalWritePlan> {
   const assignedTo = new Map<string, string>();
   for (const property of properties) {
-    for (const offer of property.offers) assignedTo.set(offer.listingId, property.key);
+    for (const offer of property.offers) {
+      const owner = assignedTo.get(offer.listingId);
+      if (owner && owner !== property.key) throw new Error("[rentals] incoming advert has two owners");
+      assignedTo.set(offer.listingId, property.key);
+    }
   }
-
+  const planned = new Map<string, RentalProperty>();
+  let emptied = 0;
+  let separated = 0;
+  const incomingKeys = new Set(properties.map(property => property.key));
+  // Plan every update before writing: a detached advert must never overwrite another unit.
   for (let index = 0; index < properties.length; index += CHUNK) {
     const batch = properties.slice(index, index + CHUNK);
-    const keys = batch.map((property) => property.key);
-    const storedRows = (await RentalListingModel.find({ key: { $in: keys } })
-      .select({ key: 1, offers: 1, firstSeen: 1 })
-      .lean()) as unknown as Array<{ key: string; offers?: RentalOffer[]; firstSeen?: string }>;
-    const stored = new Map(storedRows.map((row) => [row.key, row]));
-
-    const operations = [];
+    const storedRows = await RentalListingModel.find({ key: { $in: batch.map(property => property.key) } })
+      .select({ _id: 0, __v: 0, createdAt: 0, updatedAt: 0 }).lean() as unknown as RentalProperty[];
+    const stored = new Map(storedRows.map(row => [row.key, row]));
     for (const property of batch) {
       const previous = stored.get(property.key);
-      const kept = (previous?.offers || []).filter((offer) => {
-        const now = assignedTo.get(offer.listingId);
-        return !now || now === property.key;
+      const kept = (previous?.offers || []).filter(offer => {
+        const owner = assignedTo.get(offer.listingId);
+        if (owner) return owner === property.key;
+        const previousOwner = context.offerOwners?.get(offer.listingId);
+        return !previousOwner || previousOwner === property.key;
       });
-      const offers = mergeOffers(kept, property.offers, context);
-      if (!offers.length) {
-        emptied++;
-        continue;
+      const all = mergeOffers(kept, property.offers, context);
+      const groups = partitionRentalOffers(all, context.usdUyu || 0);
+      if (!groups.length) { emptied++; continue; }
+      const firstFreshId = property.offers.find(offer => offer.title === property.title)?.listingId
+        || property.offers[0]?.listingId;
+      const primary = groups.find(group => group.some(offer => offer.listingId === firstFreshId)) || groups[0]!;
+      for (const group of groups) {
+        const key = group === primary ? property.key : detachedRentalKey(group[0]!);
+        if (group !== primary && incomingKeys.has(key)) throw new Error("[rentals] detached key collides with incoming property");
+        const former = planned.get(key);
+        if (former && JSON.stringify(former.offers) !== JSON.stringify(group)) {
+          throw new Error("[rentals] inconsistent duplicate assignment in write plan");
+        }
+        const row = propertyFromRentalOffers(key, group, context.usdUyu || 0,
+          group === primary ? property : previous);
+        planned.set(key, row);
+        if (group !== primary) separated++;
       }
-      const merged = recomputeFromOffers(
-        { ...property, firstSeen: previous?.firstSeen || property.firstSeen },
-        offers
-      );
-      operations.push({
-        updateOne: {
-          filter: { key: merged.key },
-          update: { $set: merged },
-          upsert: true,
-        },
-      });
-    }
-
-    if (operations.length) {
-      await RentalListingModel.bulkWrite(operations, { ordered: false });
-      written += operations.length;
     }
   }
+  const assigned = [...planned.values()];
+  const detached = assigned.filter(property => !incomingKeys.has(property.key));
+  for (let index = 0; index < detached.length; index += CHUNK) {
+    const batch = detached.slice(index, index + CHUNK);
+    const existing = await RentalListingModel.find({ key: { $in: batch.map(row => row.key) } })
+      .select({ key: 1, "offers.listingId": 1 }).lean() as unknown as RentalProperty[];
+    for (const old of existing) {
+      const targetIds = new Set(planned.get(old.key)!.offers.map(offer => offer.listingId));
+      if (old.offers.some(offer => !targetIds.has(offer.listingId))) {
+        throw new Error("[rentals] detached key already belongs to another advert; nothing written");
+      }
+    }
+  }
+  return { emptied, separated, assigned };
+}
 
-  return { written, emptied };
+export async function writeRentalPropertyPlan(plan: RentalWritePlan): Promise<number> {
+  for (let index = 0; index < plan.assigned.length; index += CHUNK) {
+    const operations = [];
+    for (const row of plan.assigned.slice(index, index + CHUNK)) {
+      operations.push({ updateOne: { filter: { key: row.key }, update: { $set: row }, upsert: true } });
+    }
+    if (operations.length) await RentalListingModel.bulkWrite(operations, { ordered: false });
+  }
+  return plan.assigned.length;
+}
+
+export async function saveRentalProperties(properties: RentalProperty[], context: SaveContext) {
+  const plan = await planRentalPropertyUpdates(properties, context);
+  const written = await writeRentalPropertyPlan(plan);
+  return { ...plan, written };
 }
 
 /**
@@ -296,9 +252,8 @@ export async function saveRentalProperties(
  * 9 filas tenían un conjunto fresco incoherente por sí mismo. O sea que el agrupamiento del día ya
  * estaba bien y lo que ensuciaba el directorio eran las copias viejas.
  *
- * SÓLO DESPUÉS DE UNA CORRIDA COMPLETA, por el mismo motivo que la poda: una corrida rápida ve una
- * franja del mercado, y "este aviso hoy pertenece a otra propiedad" sólo se puede afirmar de los
- * avisos que la corrida efectivamente vio. Los que no vio no se tocan.
+ * Acts only on positive assignments, including a partial run: absence never removes an advert.
+ * A newly assigned advert must stop appearing under its obsolete owner immediately.
  *
  * Una fila que se queda sin ofertas se borra: una propiedad sin un solo aviso no es una propiedad.
  */

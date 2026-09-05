@@ -87,6 +87,7 @@ async function main(): Promise<void> {
     offerFirstSeen: history.offerFirstSeen,
     propertyFirstSeen: history.propertyFirstSeen,
     offerToProperty: history.offerToProperty,
+    propertyCanonicalOffer: history.propertyCanonicalOffer,
   });
 
   const merged = properties.filter((property) => property.sources.length > 1).length;
@@ -106,8 +107,10 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  const { written, emptied } = await saveRentalProperties(properties, {
+  const { written, emptied, separated, assigned } = await saveRentalProperties(properties, {
     today,
+    usdUyu,
+    offerOwners: history.offerToProperty,
     okSources,
     staleOfferDays: STALE_OFFER_DAYS,
   });
@@ -115,15 +118,15 @@ async function main(): Promise<void> {
   // Sacar cada aviso de las filas que ya no son su dueña, ANTES de podar: una fila que queda sin
   // ofertas la borra este barrido, y lo que sobrevive entra a la poda con su lastSeen recalculado.
   let pruned = 0;
-  if (mode === "full") {
-    const reassigned = await dropReassignedOffers(properties);
-    if (reassigned.cleaned) {
-      console.log(
+  // This cleanup follows positive assignments, not absence. It is safe in an hourly slice too:
+  // only adverts assigned above are removed from their superseded owners; unseen IDs stay.
+  const reassigned = await dropReassignedOffers(assigned);
+  if (reassigned.cleaned) {
+    console.log(
         `[rentals] ${reassigned.removed} avisos sacados de ${reassigned.cleaned} filas que ya no eran su propiedad (${reassigned.deleted} filas quedaron vacías)`
-      );
-    }
-    pruned = await pruneStaleRentals(today, PRUNE_DAYS);
+    );
   }
+  if (mode === "full") pruned = await pruneStaleRentals(today, PRUNE_DAYS);
 
   const total = await countRentals();
   const meta: RentalMeta = {
@@ -140,13 +143,14 @@ async function main(): Promise<void> {
       ok: run.ok,
       listings: run.listings.length,
       note: run.note,
+      ...(run.access ? { access: run.access } : {}),
     })),
   };
   await saveRentalMeta(meta);
 
   console.log(
     `[rentals] listo en ${Math.round(meta.durationMs / 1000)}s :: ${written} filas escritas, ` +
-      `${emptied} sin ofertas, ${pruned} podadas, ${total} propiedades publicadas`
+      `${emptied} sin ofertas, ${separated} grupos separados sin perder avisos, ${pruned} podadas, ${total} propiedades publicadas`
   );
   process.exit(0);
 }

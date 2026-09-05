@@ -6,19 +6,32 @@
 // eight-flat building has eight adverts at the same street number, and merging them hides seven
 // real options behind one card.
 //
-// So the rule is EVIDENCE, not similarity:
-//   * STRONG — same street and door number, same dormitorios, area within 15 %, price within 7 %.
-//     Same address alone is never enough: that is the building, not the unit.
-//   * MEDIUM — no street on either side (Marketplace rarely has one), but same barrio, same
-//     dormitorios, area within 8 % and price within 5 %.
-//   * otherwise the adverts stay apart. A visible duplicate is a nuisance; a swallowed listing is
-//     a lie about what is on the market.
+// Evidence must identify a UNIT: exact published address + matching explicit unit, or exact
+// original photo + specific identical title + complete matching specifications at that address.
+// Barrio, coordinates, asking price and a building's floor plan cannot establish identity.
 import { flatten, slugify } from "./normalize";
 import { mergeGuarantees } from "./guarantees";
-import type { RawRental, RentalOffer, RentalProperty, RentalPropertyType, RentalSource } from "./types";
+import {
+  conflictingUnitEvidence,
+  exactRentalAddress,
+  matchText,
+  rentalMatchHasConflicts,
+  rentalUnitEvidence,
+  sharesSpecificPhotoAndTitle,
+  type RentalMatchCandidate,
+} from "./matchEvidence";
+import type { RawRental, RentalOffer, RentalProperty, RentalSource } from "./types";
+
+export type { RentalMatchCandidate } from "./matchEvidence";
 
 /** How complete a source's rows tend to be — used only to pick which row names the property. */
-const SOURCE_RANK: Record<RentalSource, number> = { infocasas: 4, elpais: 3, mercadolibre: 2, casasweb: 2, facebook: 1 };
+const SOURCE_RANK: Record<RentalSource, number> = {
+  infocasas: 4,
+  elpais: 3,
+  mercadolibre: 2,
+  casasweb: 2,
+  facebook: 1,
+};
 
 export interface DedupeContext {
   usdUyu: number;
@@ -37,35 +50,16 @@ export interface DedupeContext {
    * already had makes that impossible.
    */
   offerToProperty: Map<string, string>;
+  /** A unique owner of each old canonical presentation; null means attribution is ambiguous. */
+  propertyCanonicalOffer?: ReadonlyMap<string, string | null>;
 }
 
 export function priceInPesos(price: number, currency: string, usdUyu: number): number {
   return currency === "USD" ? Math.round(price * usdUyu) : Math.round(price);
 }
 
-const ratio = (a: number, b: number): number => (a <= 0 || b <= 0 ? 0 : Math.min(a, b) / Math.max(a, b));
-
-/**
- * Types that are the same kind of thing for merging purposes.
- *
- * `casa` y `apartamento` estaban en la MISMA familia y no lo son. Auditando los merges reales del
- * 2026-09-03 apareció "ALQUILER CASA CARRASCO 3 DORMITORIOS, GRAN JARDÍN" unificada con "Alquiler
- * Apartamento Carrasco Norte 3 Dormitorios": mismo barrio, mismos dormitorios, precio parecido, y
- * dos propiedades distintas presentadas como una. Un aviso que dice casa y otro que dice
- * apartamento se están describiendo a sí mismos; discreparle es inventar.
- *
- * `local` y `oficina` sí siguen juntos: los portales los usan casi indistintamente para el mismo
- * inmueble comercial, y ahí el propio dato es ambiguo.
- */
-const TYPE_FAMILY: Record<RentalPropertyType, string> = {
-  apartamento: "apartamento",
-  casa: "casa",
-  habitacion: "habitacion",
-  local: "comercial",
-  oficina: "comercial",
-  terreno: "terreno",
-  otro: "otro",
-};
+const ratio = (a: number, b: number): number =>
+  !Number.isFinite(a) || !Number.isFinite(b) || a <= 0 || b <= 0 ? 0 : Math.min(a, b) / Math.max(a, b);
 
 interface Candidate extends RawRental {
   priceUyu: number;
@@ -77,25 +71,20 @@ export function bucketKey(listing: Candidate): string {
   if (listing.street && listing.streetNumber) {
     return `addr|${department}|${flatten(listing.street)}|${listing.streetNumber}`;
   }
-  const neighborhood = flatten(listing.neighborhood);
-  if (neighborhood) return `barrio|${department}|${neighborhood}|${TYPE_FAMILY[listing.propertyType]}`;
-  // SIN barrio y SIN calle no hay dónde comparar: el balde queda por aviso.
-  //
-  // Antes era `depto|<departamento>|<familia>`, o sea TODO Montevideo en un solo balde, y con eso
-  // alcanzaba que dos avisos coincidieran en dormitorios y precio para unirse. Auditado el
-  // 2026-09-03: una sola fila juntaba NUEVE avisos —"Casa en alquiler con cochera 2 dormitorios",
-  // "Apartamento 2 Dormitorios Malvín", "Alquiler apartamento 2 dormitorios La Unión", "…Buceo"—
-  // que son nueve propiedades en barrios distintos. Un departamento entero no es una ubicación.
-  return `solo|${listing.listingId}`;
+  // A whole barrio cannot identify a unit. Avoid quadratic comparisons of addressless adverts
+  // which the identity predicate necessarily rejects; known IDs were deduplicated globally.
+  return `solo|${listing.source}|${listing.listingId}`;
 }
 
 /**
- * Do these two adverts describe the same unit? Called only within a bucket, so the location half
- * of the evidence is already established; what is left is proving it is the same FLAT and not the
- * flat upstairs.
+ * A self-contained identity test, also usable when revalidating stored offers. A bucket or
+ * previously shared property key is only a candidate search aid, never proof of a match.
  */
-export function sameUnit(a: Candidate, b: Candidate): boolean {
-  if (TYPE_FAMILY[a.propertyType] !== TYPE_FAMILY[b.propertyType]) return false;
+export function sameUnit(a: RentalMatchCandidate, b: RentalMatchCandidate): boolean {
+  if (a.propertyType !== b.propertyType) return false;
+  if (a.department && b.department && matchText(a.department) !== matchText(b.department)) return false;
+  if (a.street && b.street && matchText(a.street) !== matchText(b.street)) return false;
+  if (a.streetNumber && b.streetNumber && a.streetNumber !== b.streetNumber) return false;
 
   // Dormitorios are the strongest cheap signal, and both portals publish them for real estate.
   // A disagreement is a different unit, full stop.
@@ -105,25 +94,37 @@ export function sameUnit(a: Candidate, b: Candidate): boolean {
   // coinciden. Sólo descalifica cuando AMBOS lo publican; ausente no contradice nada.
   if (a.bathrooms !== null && b.bathrooms !== null && a.bathrooms !== b.bathrooms) return false;
   if (a.parkingSpaces != null && b.parkingSpaces != null && a.parkingSpaces !== b.parkingSpaces) return false;
+  if (rentalMatchHasConflicts(a, b)) return false;
+  const unitsA = rentalUnitEvidence(a);
+  const unitsB = rentalUnitEvidence(b);
+  if (conflictingUnitEvidence(unitsA, unitsB)) return false;
+  const areaRatio = a.area != null && b.area != null ? ratio(a.area, b.area) : null;
+  if (areaRatio !== null && areaRatio < 0.95) return false;
+  if (ratio(a.priceUyu, b.priceUyu) < 0.93) return false;
 
-  const areaRatio = a.area !== null && b.area !== null ? ratio(a.area, b.area) : null;
-  const priceRatio = ratio(a.priceUyu, b.priceUyu);
+  // Re-reading the SAME advert is not a cross-advert match. Contradictions still veto above.
+  if (a.source === b.source && a.listingId && a.listingId === b.listingId) return true;
+  if (a.propertyType === "otro") return false;
+  const address = exactRentalAddress(a);
+  if (!address || address !== exactRentalAddress(b)) return false;
+  if (a.neighborhood && b.neighborhood && matchText(a.neighborhood) !== matchText(b.neighborhood))
+    return false;
 
-  const hasStreet = Boolean(a.street && a.streetNumber && b.street && b.streetNumber);
-  if (hasStreet) {
-    if (areaRatio !== null && areaRatio < 0.85) return false;
-    if (priceRatio < 0.93) return false;
-    // Same building, same size, same price, same dormitorios — and if BOTH sides left dormitorios
-    // and area blank, all we really share is an address, which is not a unit.
-    const knowsSomething =
-      (a.bedrooms !== null && b.bedrooms !== null) || areaRatio !== null || priceRatio >= 0.99;
-    return knowsSomething;
+  const knowsBedrooms =
+    Number.isInteger(a.bedrooms) && a.bedrooms! >= 0 && Number.isInteger(b.bedrooms) && b.bedrooms! >= 0;
+  const knowsBathrooms =
+    Number.isInteger(a.bathrooms) && a.bathrooms! > 0 && Number.isInteger(b.bathrooms) && b.bathrooms! > 0;
+  const knowsArea = areaRatio !== null && areaRatio > 0;
+  if (unitsA.units.length === 1 && unitsB.units.length === 1) {
+    // Unit 301 in an unspecified tower is not proof of tower A's unit 301.
+    return (
+      unitsA.buildings.length === unitsB.buildings.length && (knowsBedrooms || knowsBathrooms || knowsArea)
+    );
   }
-
-  // No street on either side: the bar goes up, because the bucket is a whole barrio.
-  if (a.bedrooms === null || b.bedrooms === null) return false;
-  if (areaRatio !== null && areaRatio < 0.92) return false;
-  return priceRatio >= 0.95;
+  // The same model/facade photo or a generic agency title is not enough, even at one address.
+  return (
+    knowsBedrooms && knowsBathrooms && knowsArea && areaRatio! >= 0.98 && sharesSpecificPhotoAndTitle(a, b)
+  );
 }
 
 function completeness(listing: Candidate): number {
@@ -134,6 +135,16 @@ function completeness(listing: Candidate): number {
   if (listing.bedrooms !== null) score += 2;
   if (listing.neighborhood) score += 1;
   return score;
+}
+
+function candidateSignature(listing: Candidate): string {
+  // Resolve repeated snapshots independently of query order, including known amenities. This
+  // compares the original fields only and does not blend two differing physical specifications.
+  return JSON.stringify(
+    Object.keys(listing)
+      .sort()
+      .map((key) => [key, listing[key as keyof Candidate]]),
+  );
 }
 
 /** FNV-1a — a short, stable, dependency-free id for a cluster. */
@@ -168,7 +179,9 @@ export function propertyKey(canonical: Candidate, cluster: Candidate[]): string 
     parts.push(oldest);
   }
   const slug = slugify(
-    [canonical.department, canonical.neighborhood || canonical.propertyType, canonical.street].filter(Boolean).join(" ")
+    [canonical.department, canonical.neighborhood || canonical.propertyType, canonical.street]
+      .filter(Boolean)
+      .join(" "),
   );
   return `${slug || "uy"}-${hash(parts.join("|"))}`;
 }
@@ -186,13 +199,21 @@ export function resolveKey(
   reserved: ReadonlySet<string> = new Set([
     ...context.propertyFirstSeen.keys(),
     ...context.offerToProperty.values(),
-  ])
+    ...(context.propertyCanonicalOffer?.keys() ?? []),
+  ]),
 ): string {
   // Which stored key do most of these adverts belong to? Counting (rather than taking the first)
   // matters when two properties merge for the first time: the bigger half keeps its identity.
   const votes = new Map<string, number>();
+  const clusterIds = new Set(cluster.map((listing) => listing.listingId));
   for (const listing of cluster) {
     const previous = context.offerToProperty.get(listing.listingId);
+    if (previous && context.propertyCanonicalOffer?.has(previous)) {
+      const canonicalOwner = context.propertyCanonicalOffer.get(previous);
+      // A split must not turn a known URL into a different unit merely because that unit's ID
+      // sorts first. If attribution is ambiguous or its advert is absent, retain the reservation.
+      if (!canonicalOwner || !clusterIds.has(canonicalOwner)) continue;
+    }
     if (previous) votes.set(previous, (votes.get(previous) ?? 0) + 1);
   }
   const inherited = [...votes.entries()]
@@ -227,12 +248,29 @@ export function freshnessOf(offers: RentalOffer[], fallback: string): string {
     .filter((value): value is string => Boolean(value))
     .sort();
   if (published.length) return published[published.length - 1]!;
-  const seen = offers.map((offer) => offer.firstSeen).filter(Boolean).sort();
+  const seen = offers
+    .map((offer) => offer.firstSeen)
+    .filter(Boolean)
+    .sort();
   return seen[seen.length - 1] || fallback;
 }
 
 function toOffer(listing: Candidate, context: DedupeContext): RentalOffer {
   return {
+    identity: {
+      version: 1,
+      department: listing.department,
+      neighborhood: listing.neighborhood,
+      address: listing.address,
+      street: listing.street,
+      streetNumber: listing.streetNumber,
+      propertyType: listing.propertyType,
+      bedrooms: listing.bedrooms,
+      bathrooms: listing.bathrooms,
+      area: listing.area,
+      latitude: listing.latitude,
+      longitude: listing.longitude,
+    },
     parkingSpaces: listing.parkingSpaces ?? null,
     furnished: listing.furnished === true ? true : null,
     source: listing.source,
@@ -261,18 +299,30 @@ function toOffer(listing: Candidate, context: DedupeContext): RentalOffer {
  */
 export function buildRentalProperties(raw: RawRental[], context: DedupeContext): RentalProperty[] {
   const candidates: Candidate[] = raw
-    .map((listing) => ({ ...listing, priceUyu: priceInPesos(listing.price, listing.currency, context.usdUyu) }))
-    .sort((a, b) => a.listingId.localeCompare(b.listingId));
+    .map((listing) => ({
+      ...listing,
+      priceUyu: priceInPesos(listing.price, listing.currency, context.usdUyu),
+    }))
+    .sort(
+      (a, b) =>
+        a.listingId.localeCompare(b.listingId) ||
+        a.source.localeCompare(b.source) ||
+        completeness(b) - completeness(a) ||
+        Number(b.petsAllowed === true) - Number(a.petsAllowed === true) ||
+        Number(b.furnished === true) - Number(a.furnished === true) ||
+        candidateSignature(a).localeCompare(candidateSignature(b)),
+    );
 
   const buckets = new Map<string, Candidate[][]>();
+  const seenOffers = new Set<string>();
   for (const listing of candidates) {
+    // A portal can repeat one ID in two searches with different address completeness. Deduplicate
+    // before bucketing, or the same advert would be emitted under two property keys.
+    const offerId = `${listing.source}|${listing.listingId}`;
+    if (seenOffers.has(offerId)) continue;
+    seenOffers.add(offerId);
     const key = bucketKey(listing);
     const clusters = buckets.get(key) || [];
-    // Same advert id twice in one run (two queries hit it) is not a merge decision.
-    const alreadyKnown = clusters.some((cluster) =>
-      cluster.some((member) => member.listingId === listing.listingId)
-    );
-    if (alreadyKnown) continue;
     const target = clusters.find((cluster) => cluster.every((member) => sameUnit(member, listing)));
     if (target) target.push(listing);
     else clusters.push([listing]);
@@ -287,6 +337,7 @@ export function buildRentalProperties(raw: RawRental[], context: DedupeContext):
   const reserved = new Set([
     ...context.propertyFirstSeen.keys(),
     ...context.offerToProperty.values(),
+    ...(context.propertyCanonicalOffer?.keys() ?? []),
   ]);
   for (const clusters of buckets.values()) {
     for (const cluster of clusters) {
@@ -326,7 +377,10 @@ export function buildRentalProperties(raw: RawRental[], context: DedupeContext):
         offers,
         sources,
         freshAt: freshnessOf(offers, context.propertyFirstSeen.get(key) || context.today),
-        firstSeen: context.propertyFirstSeen.get(key) || offers.map((offer) => offer.firstSeen).sort()[0] || context.today,
+        firstSeen:
+          context.propertyFirstSeen.get(key) ||
+          offers.map((offer) => offer.firstSeen).sort()[0] ||
+          context.today,
         lastSeen: context.today,
       });
     }

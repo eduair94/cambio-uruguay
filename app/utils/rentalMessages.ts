@@ -134,6 +134,9 @@ export const rentalMessages = {
     coverageScope:
       'Contamos las propiedades visibles en todo el índice, independientemente de tus filtros. Una propiedad puede figurar en varios portales, por eso la suma por fuente puede superar el total.',
     coverageReadFailed: 'No se pudo actualizar en el último repaso.',
+    externalOnly: 'Consulta externa',
+    externalOnlyHint:
+      'Consultá los avisos en el portal. Su actualización automática aquí no está habilitada.',
     coverageCounted: 'Cobertura calculada el {date} (hora de Uruguay).',
     coverageUnavailable:
       'No pudimos calcular la cobertura del índice. Volvé a intentarlo más tarde.',
@@ -292,6 +295,8 @@ export const rentalMessages = {
     coverageScope:
       'We count visible properties across the entire index, independently of your filters. A property can appear on several portals, so source counts may add up to more than the total.',
     coverageReadFailed: 'Could not be updated during the latest check.',
+    externalOnly: 'External search',
+    externalOnlyHint: 'Browse listings on the portal. Automatic updates here are not enabled.',
     coverageCounted: 'Coverage calculated on {date} (Uruguay time).',
     coverageUnavailable: 'We could not calculate index coverage. Please try again later.',
     freshnessText:
@@ -451,6 +456,9 @@ export const rentalMessages = {
     coverageScope:
       'Contamos os imóveis visíveis em todo o índice, independentemente dos seus filtros. Um imóvel pode aparecer em vários portais, por isso a soma por fonte pode superar o total.',
     coverageReadFailed: 'Não foi possível atualizar na última consulta.',
+    externalOnly: 'Consulta externa',
+    externalOnlyHint:
+      'Consulte os anúncios no portal. A atualização automática aqui não está habilitada.',
     coverageCounted: 'Cobertura calculada em {date} (horário do Uruguai).',
     coverageUnavailable:
       'Não foi possível calcular a cobertura do índice. Tente novamente mais tarde.',

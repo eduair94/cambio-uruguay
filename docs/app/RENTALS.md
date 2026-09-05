@@ -40,13 +40,14 @@ ES/EN/PT y claro/oscuro, sin desbordamiento observado. Un caso Chrome requirió 
 expectativa obsoleta del test de enlaces; no cambió el runtime. La auditoría enlazada conserva
 los detalles, los límites de la prueba y las dos keys.
 
-Una fila por **propiedad**, no por aviso. El mismo apartamento publicado por dos inmobiliarias en
-InfoCasas y de nuevo en Mercado Libre es una sola tarjeta con tres enlaces.
+Una fila por **propiedad** cuando existe evidencia suficiente para unir sus avisos. El mismo
+apartamento puede reunir enlaces de varias inmobiliarias y portales; una coincidencia incierta
+permanece como tarjetas separadas.
 
 ```
 sync_rentals.ts ──> classes/rentals/sources/*  ──> dedupe.ts ──> store.ts ──> APP Mongo
    (pm2)              ML :9656 / InfoCasas /         │            (upsert)     rentallistings
-                      FB :9657 / Casasweb / El País │                          rentalmetas
+                      FB :9657 / Casasweb          │                          rentalmetas
                                                       └── una propiedad = N ofertas
                                                                  │
 app/pages/alquileres-uruguay.vue <── app/server/api/rentals <────┘
@@ -60,16 +61,24 @@ app/pages/alquileres-uruguay.vue <── app/server/api/rentals <────┘
 | **InfoCasas** | `__NEXT_DATA__` de sus páginas de listado | todo lo anterior **más** lat/lon, gastos comunes, inmobiliaria y fecha de publicación | — |
 | **Facebook Marketplace** | bridge propio en `:9657` (`pm2 facebook_marketplace`) | precio, título, ciudad, foto | dirección, barrio, m², dormitorios (salvo que estén en el título) |
 | **Casasweb** | HTML público de `resultados.aspx`; paginación mediante el formulario de búsqueda que entrega el servidor | mensualidad, moneda, departamento, barrio, tipo, dormitorios, m², garajes, inmobiliaria, foto | dirección separada, coordenadas, fecha de publicación; baños sólo cuando el título los declara |
-| **Inmuebles El País** | categorías de su sitemap público y datos SSR de esas páginas (Next Flight) | precio, moneda, ubicación, dormitorios/baños/m², gastos cuando figuran, inmobiliaria, foto | cobertura completa: cada categoría sirve hasta 24 avisos, y `?page=2` no amplía ese lote |
+| **Inmuebles El País** | **consulta externa**, `access: external_only`; el adaptador no hace peticiones | enlace al buscador original | no aporta avisos al índice ni tiene actualización automática habilitada |
 
 Verificado localmente el **2026-09-04** con la UA propia: Gallito directo devolvió **403 Cloudflare** en
 `https://www.gallito.com.uy/inmuebles/alquiler`; no se sortea esa protección. Su nuevo portal
-[Inmuebles El País](https://inmuebles.elpais.com.uy/) entregó HTML público utilizable. Sus
-189 categorías de alquiler del sitemap pudieron consultarse localmente, pero **no representan todo el
-catálogo**. No consultamos `/api/`: lo excluye expresamente su
+[Inmuebles El País](https://inmuebles.elpais.com.uy/) entregó HTML público utilizable.
+El sitemap enumeró 189 categorías de alquiler; se probaron tres, **sin barrer el catálogo**.
+No consultamos `/api/`: lo excluye expresamente su
 [robots.txt](https://inmuebles.elpais.com.uy/robots.txt). Tampoco usamos sus amenities generadas
 por IA, `visualDescription`, gastos convertidos ni fechas internas de importación como fecha de
-publicación. Conservamos sólo metadatos verificables y el enlace al aviso.
+publicación. Esta fue una prueba histórica de acceso, no una autorización para reutilizar datos.
+
+La revisión del **2026-09-05** encontró en los [términos oficiales](https://inmuebles.elpais.com.uy/terms)
+la prohibición expresa de extracción automatizada. Se detuvo la investigación de listados y se
+deshabilitó el adaptador, sin un override ambiental para reactivarlo. No se encontró un feed o API
+de catálogo públicamente habilitado; no se contactó a nadie. El estado es **consulta externa**,
+no caída temporal ni inventario de cero propiedades. Las muestras no se importaron: el aporte
+de esta investigación al índice es **cero avisos**. Ver [evidencia, condiciones y contacto
+oficial](../research/rental-elpais-access-2026-09-05.md).
 
 [Casasweb](https://casasweb.com/resultados.aspx?m=0&n=A&t=c&x=1&z=1) entrega tarjetas HTML y un
 formulario ASP.NET de paginación **funcional**: se verificaron las páginas 1 y 2 con IDs distintos.
@@ -80,17 +89,19 @@ Maldonado. Se lee exclusivamente el bloque **ALQUILER / MES**: una misma tarjeta
 también precio de venta o temporal. Se excluyen avisos reservados y mensualidades inverosímiles:
 la muestra real incluyó un alquiler de USD 120.000.000.
 
-Ambas fuentes admiten degradación independiente. Sólo la marca interna **`complete: true`**
+Las fuentes habilitadas admiten degradación independiente. Sólo la marca interna **`complete: true`**
 permite expirar ofertas por ausencia; ML y Facebook declaran cobertura parcial por sus límites
 de búsqueda, y el modo horario aplica esa misma protección a todas las fuentes. InfoCasas sólo
-la declara si terminó sin cortes ni fallas. Tres respuestas consecutivas fallidas detienen el
-barrido de la nueva fuente.
+la declara si terminó sin cortes ni fallas; Casasweb aplica el mismo criterio. Tres respuestas
+consecutivas fallidas detienen el barrido de Casasweb. El País devuelve `ok: false`,
+`complete: false`, `access: external_only` y ninguna fila sin intentar leer el portal.
 No se cambia la guarda global de colapso ni la poda de propiedades después de 21 días sin verse.
 
 Prueba de integración **sin DB** del 2026-09-04: seis páginas de Casasweb aportaron **232 avisos
 válidos** en Montevideo, Canelones y Maldonado; tres categorías de El País aportaron **61**. Son
 avisos leídos en la prueba, no un incremento neto publicado: la unificación contra el índice
-completo ocurre al sincronizar el directorio.
+completo ocurre al sincronizar las fuentes habilitadas. Las muestras de El País no se importaron
+ni forman parte de una sincronización pendiente.
 
 El primer barrido desplegado terminó el **2026-09-05 a las 00:52 UTC**, con salida 0, en
 **30 minutos y 24 segundos**. InfoCasas recorrió 868 páginas y aportó 8.107 avisos; Casasweb
@@ -99,21 +110,23 @@ recorrió 237 páginas en los 19 departamentos y aportó **2.632 avisos**, corre
 mismas reglas de vigencia (**+1.805 netas**); este incremento es del directorio completo, no
 una atribución exclusiva a Casasweb. La comparación anterior al cambio de vigencia era 15.053.
 
-**El País no quedó activo en producción:** informó cero avisos. La comprobación acotada desde
+**Resultado histórico del primer barrido, 2026-09-05 00:52 UTC:** El País no quedó activo en
+producción; informó cero avisos. La comprobación acotada desde
 el VPS, con la misma UA, obtuvo `robots.txt` 200 y el
 [sitemap de categorías](https://inmuebles.elpais.com.uy/sitemaps/categories.xml) **403 Cloudflare**
-(`Just a moment...`). Se respetó el rechazo, sin rutas alternativas ni más consultas de diagnóstico al portal.
-Queda configurado con fallo explícito, sin avisos incorporados. El diagnóstico diferencia un
-sitemap que no se pudo leer de uno leído sin categorías de alquiler reconocibles; no inventa
-un código HTTP, porque `fetchText` no lo devuelve. El índice conserva los demás resultados.
+(`Just a moment...`). Se respetó el rechazo. En esa versión el diagnóstico distinguía un
+sitemap no disponible de otro leído sin categorías, sin inventar un código HTTP que `fetchText`
+no devolvía. El estado actual `external_only` sustituyó ese fallo de red tras la revisión de
+las condiciones; los resultados de las demás fuentes se conservan.
 
 Los nuevos atributos `parkingSpaces` y `furnished` se guardan tanto en la propiedad como por
 oferta. InfoCasas aporta `garage` positivo y facility 69 `Amueblada` (ausencia = `null`); Casasweb
 aporta `Garaje(N)` explícito. Un `garage: 0` de InfoCasas es un valor por defecto y **no demuestra
 que no haya garaje**. Dos cantidades publicadas de garajes distintas impiden unir los avisos.
-Los gastos comunes explícitos de cero se conservan; en El País, por ser un catálogo importado,
-además se exige la declaración «sin gastos comunes» para distinguirlos de un posible valor por
-defecto. Un importe sin moneda no adquiere la moneda del alquiler por suposición.
+Los gastos comunes explícitos de cero se conservan. El parser offline de El País, por tratar
+muestras de un catálogo importado, exige además la declaración «sin gastos comunes» para
+distinguirlos de un posible valor por defecto. Un importe sin moneda no adquiere la moneda del
+alquiler por suposición.
 
 ### Candidatos revisados el 2026-09-05 (sin integrar)
 
@@ -127,11 +140,9 @@ publicaron reglas allí; no demuestra un permiso contractual ni garantiza acceso
 | [Inmuebles.com.uy](https://www.inmuebles.com.uy/) | Inicio y [detalle 254656](https://www.inmuebles.com.uy/detalle.aspx?id=254656): HTTP 200; robots 404. El detalle enlaza fotos, «Nosotros» y marca de Casasweb; referencia 254656. Ofrece campos estructurados adicionales de baños, superficie y gastos. | Evidencia de catálogo compartido con Casasweb, no prueba de una fuente independiente. No añadir otra etiqueta de portal ni contar su espejo como aumento del índice. Explorar eventualmente esos metadatos bajo la fuente existente, verificando antes que los ceros y negativos no sean valores por defecto. |
 
 No se almacenan las descripciones ni se convierten sus afirmaciones comerciales en textos
-originales del sitio. La siguiente mejora útil de datos es conservar **por oferta** los campos
-estructurados de tipo, dormitorios, baños, superficie y ubicación, con su procedencia: hoy sólo
-queda el valor canónico de la propiedad y eso dificulta detectar contradicciones después de una
-unión. Requiere un contrato coordinado entre el escritor y la proyección pública; no se incorporó
-como parte de esta revisión de candidatos.
+originales del sitio. La auditoría de candidatos identificó que faltaba conservar por oferta los
+campos físicos originales. El código actual incorpora `identity.version: 1` para las nuevas
+lecturas; el contrato y los límites de los registros anteriores se describen abajo.
 
 ### La trampa de Mercado Libre
 
@@ -145,16 +156,17 @@ lea `attributes_list` (`"2 dormitorios | 1 baño | 40 m² cubiertos"`) y `locati
 ### Buenos modales
 
 - UA propia e identificable (`CambioUruguayBot/1.0 (+https://cambio-uruguay.com/alquileres-uruguay)`).
-  InfoCasas, Casasweb y las categorías públicas de El País respondieron 200 en las pruebas del
-  2026-09-04; Gallito directo respondió 403 y quedó fuera. En el VPS, el sitemap de El País
-  devolvió 403 el 2026-09-05 y su fuente quedó sin resultados, como se detalla arriba.
+  Las comprobaciones fechadas arriba conservan sus resultados de acceso. El País está
+  deshabilitado por sus condiciones oficiales, independientemente de que una página responda 200.
 - Un request por host a la vez, con 1,2 s de separación (`RENTALS_HOST_GAP_MS`). El barrido completo
   de InfoCasas son ~900 páginas contra un solo host: va a las 04:52 UTC (01:52 de Montevideo).
 - `robots.txt` de InfoCasas prohíbe `/alquiler/*-y-*`. Sólo construimos `/alquiler/pagina<N>`, y
   `assertAllowed()` rechaza cualquier ruta con `-y-` para que un futuro slug tipo
   `treinta-y-tres` no se cuele.
-- Casasweb permite las rutas públicas de búsqueda para nuestra UA. El País permite categorías
-  públicas y excluye `/api/`; el crawler sólo toma URLs de categorías del propio dominio.
+- Casasweb permite las rutas públicas de búsqueda para nuestra UA. En El País, `robots.txt`
+  excluye `/api/` y los términos prohíben extracción automatizada: no se consulta ninguna ruta
+  desde el adaptador. El parser conservado sirve sólo para muestras offline o una futura
+  integración expresamente habilitada.
 - Gallito publica `Content-Signal: search=yes, ai-train=no, use=reference`, pero esa señal no
   habilita sortear su respuesta 403. Se indexan únicamente las fuentes accesibles, con enlaces
   de vuelta y sin entrenamiento de modelos.
@@ -162,23 +174,61 @@ lea `attributes_list` (`"2 dormitorios | 1 baño | 40 m² cubiertos"`) y `locati
 
 ## Cómo se unifica (lo importante)
 
-`classes/rentals/dedupe.ts`. La regla es **evidencia**, no parecido:
+`classes/rentals/dedupe.ts` y `matchEvidence.ts`. Reglas del código actualizado el **2026-09-05**:
 
-| nivel | condición | por qué |
+| vía de unión | evidencia exigida | límites |
 |---|---|---|
-| fuerte | misma calle **y** número, mismos dormitorios, mismos baños, m² ±15 %, precio ±7 % | un edificio de ocho apartamentos son ocho avisos en la misma dirección: la dirección sola es el EDIFICIO, no la unidad |
-| medio | sin calle de ninguno de los dos, mismo barrio, mismos dormitorios (los dos publicados), mismos baños, m² ±8 %, precio ±5 % | es lo único que se puede pedir en Marketplace, que casi nunca da dirección |
-| ninguno | el resto, y **siempre** que falten calle y barrio a la vez | un duplicado visible molesta; un aviso tragado es mentir sobre lo que hay en el mercado |
+| unidad identificada | misma dirección exacta e identificador explícito de apartamento/unidad, con al menos dormitorios, baños o superficie publicados por ambos | torre, piso, orientación y demás identificadores publicados no pueden contradecirse; una torre indicada en un solo aviso no identifica la unidad del otro |
+| evidencia documental compartida | misma dirección exacta, misma URL de foto original y título específico coincidente; dormitorios, baños y superficie conocidos en ambos | una foto genérica o de agencia y un título de plantilla no bastan; superficie con razón mínimo/máximo ≥0,98 |
+| sin unión | falta cualquiera de las vías anteriores | barrio, coordenadas, precio parecido o distribución de un edificio no identifican por sí solos una vivienda |
 
-Dormitorios y baños descalifican sólo cuando **los dos** avisos los publican: ausente no contradice
-nada, distinto sí. Y una casa nunca se une con un apartamento, por más que coincida todo lo demás.
+En ambas vías se rechazan contradicciones de tipo, dormitorios, baños, garaje, barrio publicado
+o identificadores de unidad, incluso entre el título y los campos estructurados de un aviso.
+Se exige razón de precios mínimo/máximo ≥0,93 y de superficies ≥0,95 cuando ambas existen;
+estas tolerancias sólo descartan incompatibilidades, **no son prueba de identidad**. Rangos,
+esquinas y direcciones aproximadas no cuentan como dirección exacta. Todos los pares del grupo
+deben cumplir las reglas: un aviso intermedio no une dos unidades incompatibles. Los avisos sin
+dirección suficiente permanecen separados, también en Marketplace.
+
+Cada lectura nueva guarda `RentalOffer.identity.version: 1` con los datos físicos originales de
+esa oferta: tipo, departamento, barrio, dirección/calle/número, dormitorios, baños, superficie y
+coordenadas. Es evidencia interna para comparar y reconstruir; la proyección explícita de las
+APIs públicas la excluye, también en lista, mapa, ficha y similares. No se agrega una identidad
+ficticia a una oferta antigua tomando campos canónicos de la propiedad.
+
+`mergeOffers` conserva los avisos vigentes; una diferencia de precio o identidad provoca
+**separación**, no descarte. `partitionRentalOffers` vuelve a comprobar los grupos usando los
+datos originales por oferta. Una oferta legacy sin identidad no puede probar una unión y se
+separa sin heredar la ubicación de una agrupación antigua. Sólo puede conservarse la
+presentación de un singleton anterior atribuible al mismo aviso, con título concordante y sin
+contradicciones explícitas; eso no certifica su ubicación ni crea `identity` retroactivamente.
+La reconstrucción conserva fechas de observación/publicación y reexpresa los precios originales
+con una sola cotización disponible; no rejuvenece avisos por haberlos separado.
+
+El plan de escritura se calcula y comprueba antes de escribir. Una key de separación que ya
+pertenece a otro aviso aborta el plan. Después de guardar los nuevos dueños,
+`dropReassignedOffers` retira copias de sus filas anteriores **en ambos modos**: actúa sobre
+asignaciones positivas, no sobre ausencias. Al cambiar los avisos de una fila se reconstruye su
+presentación para no conservar el título o la dirección de una oferta retirada. La caducidad
+por ausencia requiere una fuente exitosa con `complete: true` **y modo full**; la poda histórica
+de propiedades a 21 días sigue siendo una operación separada, sólo del barrido completo.
+
+**Estado operativo al documentar este cambio:** la reparación histórica seleccionada todavía
+no se ejecutó. Las reglas y pruebas nuevas no demuestran por sí solas que todas las filas
+almacenadas hayan quedado corregidas. Se requiere respaldo, plan revisable y comprobación
+posterior de avisos, fechas y URLs antes de afirmar ese resultado.
+La suite raíz local del cambio actual aprobó **1.671 pruebas**; ese resultado valida el código,
+no representa una reparación aplicada en producción.
 
 ### Identidad y URLs de fichas (auditoría 2026-09-05)
 
-Una oferta conocida conserva la key guardada aunque se complete su dirección, cambien sus
-especificaciones o desaparezca el aviso canónico. Si dos grupos previos se unen, conserva la key
-que reúne más ofertas conocidas (empate lexicográfico); si un grupo se divide, sólo uno puede
-conservar su key. No hay colección de alias ni redirecciones históricas. `dropReassignedOffers`
+Una key histórica sólo puede heredarse si el grupo contiene el **único aviso atribuible al
+título canónico anterior**. Si esa atribución es ambigua o ese aviso falta, la key queda
+reservada: no la gana otra unidad porque ordene primero. Entre las keys elegibles se conserva
+la que reúne más ofertas conocidas, con empate lexicográfico; cada key sólo se reclama una
+vez por corrida. Completar una dirección no exige cambiar una URL cuya atribución sigue
+vigente, pero compartir una URL previa no demuestra que los avisos sean el mismo inmueble.
+No hay colección de alias ni redirecciones históricas. `dropReassignedOffers`
 elimina una fila que queda sin ofertas y la poda borra filas después de 21 días sin verse; una URL
 extinguida debe responder 404, nunca redirigir a un inmueble parecido.
 
@@ -186,12 +236,13 @@ La auditoría reprodujo una colisión que sí cambiaba el inmueble bajo una URL 
 con igual dirección y superficie pero precios 32.000 y 55.000 se agrupaban correctamente por
 separado; el aviso nuevo, si ordenaba antes, calculaba y reclamaba la key del antiguo. Ahora se
 reservan todas las keys del historial antes de generar nuevas, incluidas las de propiedades que
-no aparecen en una corrida parcial. Sólo una oferta ya vinculada puede heredar su key; los
+no aparecen en una corrida parcial. Además del vínculo anterior se exige la atribución canónica
+descrita arriba para heredar una key; los
 sufijos también se comprueban contra las reservas. Un repost desconocido no demuestra identidad
 y puede recibir una URL nueva. Esto protege el historial conservado, no recupera identidades ya
 podadas ni garantiza permanencia tras una unión o división.
 
-Lectura agregada de producción a las 05:28:38 UTC: 25.011 identificadores de aviso distintos;
+Lectura agregada de producción del **2026-09-05 a las 05:28:38 UTC**: 25.011 identificadores de aviso distintos;
 411 figuraban en más de una propiedad almacenada y 293 en más de una propiedad visible bajo la
 regla pública de 10 días (máximo 5 dueños). Son duplicados residuales del almacenamiento, no un
 recuento de fuentes nuevas. Por eso una ficha indexable necesita evidencia consistente además
@@ -208,7 +259,7 @@ correcta ni sustituye la exclusión de duplicados del piloto indexable.
 
 Medidos sobre las 3.503 propiedades con más de un aviso que había vivas ese día:
 
-| defecto | qué unía | cuántas | arreglo |
+| defecto | qué unía | cuántas | arreglo aplicado entonces |
 |---|---|---|---|
 | `casa` y `apartamento` eran la misma familia | "ALQUILER CASA CARRASCO 3 DORMITORIOS, GRAN JARDÍN" con "Alquiler Apartamento Carrasco Norte 3 Dormitorios" | 225 filas mezclaban las dos palabras en sus títulos | familias separadas en `TYPE_FAMILY` |
 | sin barrio, el balde era el DEPARTAMENTO entero | una fila con nueve ofertas cuyos títulos nombraban Malvín, La Unión y Buceo | 269 propiedades unidas sin calle ni barrio | sin calle y sin barrio el balde queda por aviso: no hay dónde comparar |
@@ -217,14 +268,14 @@ Medidos sobre las 3.503 propiedades con más de un aviso que había vivas ese d�
 El tercero es el que más costó ver: `sameUnit` nunca habría unido esos precios, y el agrupamiento no
 es transitivo. La unión venía de antes y sobrevivía porque `mergeOffers` sólo preguntaba si el
 portal había corrido y si el aviso estaba vencido por días — nunca si **seguía siendo la misma
-propiedad**. Sin avisos frescos manda el grupo más numeroso, no el más barato: con
-[21.000, 41.000, 41.000] el raro es el barato, y anclar al mínimo tiraría los dos que sí coinciden.
+propiedad**. La solución de aquella fecha retenía el grupo de precios más numeroso. La versión
+actual reemplaza ese descarte por separación conservando todos los avisos vigentes.
 
-### Los dos que aparecieron al MEDIR el arreglo
+### Los dos que aparecieron al medir el arreglo (2026-09-03/04)
 
 Arreglar el agrupamiento no alcanzó, y sólo se supo por volver a medir:
 
-| defecto | cómo se vio | arreglo |
+| defecto | cómo se vio | arreglo aplicado entonces |
 |---|---|---|
 | un aviso vivía en varias filas | **2.707 listingIds en más de una fila** después de la primera corrida arreglada | `dropReassignedOffers` barre la colección entera tras una corrida COMPLETA y saca cada aviso de toda fila que no sea su dueña de hoy; la que queda sin ofertas se borra |
 | la tolerancia se encadenaba | quince "1 dormitorio en Tres Cruces" —piso 10, piso 9, PB, con garaje— en una fila: con ancla 26.900, tanto 26.500 como 28.800 pasan, y entre ellos hay 8 % | `mergeOffers` mide contra los DOS extremos; sin avisos frescos gana la ventana coherente más numerosa |
@@ -232,7 +283,7 @@ Arreglar el agrupamiento no alcanzó, y sólo se supo por volver a medir:
 El primero explica por qué limpiar sólo las filas que la corrida escribe no alcanza: cuando una
 unión se parte, la fila vieja puede no volver a producirse nunca más, así que nadie la toca.
 
-### Lo que dio la medición
+### Resultado histórico de esa medición (2026-09-03/04)
 
 | métrica | antes | tras el agrupamiento | tras el barrido |
 |---|---|---|---|
@@ -242,20 +293,25 @@ unión se parte, la fila vieja puede no volver a producirse nunca más, así que
 | avisos presentes en dos filas | — | 2.707 | **706** |
 | filas cuyo conjunto FRESCO ya es incoherente | — | 9 | **0** |
 
-Las 706 que quedan son avisos que la corrida no vio: no se tocan por diseño, y vencen por días.
+Las 706 restantes en esa medición eran avisos que la corrida no había visto. Este cuadro no
+representa el estado actual del índice ni prueba que se haya aplicado la nueva reparación.
 
-Lo que sigue sin poder auditarse: `RentalOffer` guarda precio y vendedor pero **no** dormitorios,
-m² ni baños por portal, así que cuando dos avisos se contradicen en esos campos la contradicción se
-pierde al escribir y un merge malo no se puede revisar después de hecho.
+La limitación de entonces era que `RentalOffer` no conservaba dormitorios, m² ni baños por
+portal. `identity.version: 1` corrige esa carencia para lecturas nuevas; el histórico sin esa
+evidencia sigue siendo legacy, no se completa copiando los atributos de la propiedad agrupada.
 
 Antes de comparar, todo pasa por `normalize.ts`:
 
 - **El número de puerta es el último, no el primero.** Media Montevideo son calles que empiezan con
   número (18 de Julio, 25 de Mayo, 8 de Octubre, 33 Orientales). Leer el primero dejaba esas
   direcciones sin nombre de calle y partía un edificio en dos propiedades.
-- Abreviaturas expandidas (`Av.` → `avenida`, `Cno.` → `camino`, `Dr.` → `doctor`), rangos al valor
-  bajo (`1500 - 1800` → `1500`), Plus Codes de Google descartados, esquinas cortadas en la primera
-  calle (`Sena esq. 20 de Febrero` → `sena`).
+- Abreviaturas expandidas (`Av.` → `avenida`, `Cno.` → `camino`, `Dr.` → `doctor`), rangos sin
+  número exacto (`1500 - 1800` conserva la aproximación) y puertas BIS diferenciadas, Plus Codes
+  de Google descartados, esquinas cortadas en la primera calle (`Sena esq. 20 de Febrero` → `sena`).
+  Los números de dormitorios, baños y superficie se leen junto a su atributo, sin confundirlos
+  con el número de apartamento. Esta normalización sirve para ordenar candidatos;
+  `exactRentalAddress` vuelve al texto original y rechaza rangos, esquinas y aproximaciones
+  como evidencia de una dirección exacta.
 - Un barrio que repite el departamento (`Montevideo, Montevideo`) no es un barrio: dejarlo partía la
   misma oficina de 25 de Mayo 500 en dos filas.
 - Precios: **manda el último separador**. `$ 4.500` es 4500, nunca 4,50.
@@ -274,8 +330,8 @@ BCU ni interbancario): dos harvesters con dos dólares distintos discreparían s
 
 | pm2 | cron (UTC) | qué hace |
 |---|---|---|
-| `currency-rentals` | `52 4 * * *` | barrido diario de las cinco fuentes, con cobertura completa o parcial declarada; poda histórica de propiedades no vistas en 21 días |
-| `currency-rentals-hourly` | `47 * * * *` | novedades de InfoCasas/ML, muestra de Marketplace, seis búsquedas de Casasweb y hasta ocho categorías de El País. **Nunca poda propiedades ni expira ofertas por ausencia** |
+| `currency-rentals` | `52 4 * * *` | barrido diario de las cuatro fuentes habilitadas, con cobertura completa o parcial declarada; El País sólo informa estado externo, sin red; poda histórica de propiedades no vistas en 21 días |
+| `currency-rentals-hourly` | `47 * * * *` | novedades de InfoCasas/ML, muestra de Marketplace y seis búsquedas de Casasweb. El País sólo informa estado externo. **Nunca poda propiedades ni expira ofertas por ausencia**; sí limpia copias tras confirmar un nuevo dueño |
 
 Tres propiedades que el job mantiene:
 
@@ -283,8 +339,9 @@ Tres propiedades que el job mantiene:
    ese portal se conservan en vez de borrarse como "ya no está".
 2. Se niega a publicar un directorio derrumbado sobre uno sano (`RENTALS_COLLAPSE_RATIO`, 50 %).
 3. `mergeOffers` conserva las ofertas que una fuente parcial o la corrida horaria no vio. Sólo
-   una cosecha exitosa marcada explícitamente `complete: true` puede aplicar la caducidad de
+   una cosecha full exitosa marcada explícitamente `complete: true` puede aplicar la caducidad de
    ofertas por ausencia; la poda histórica de propiedades sigue teniendo su ventana separada.
+   Un aviso incompatible se separa; no se descarta por haber dejado de pertenecer al grupo.
 
 Los dos jobs de pm2 entran por `scripts/run-rentals.sh` con intérprete Bash en el servidor Linux.
 Comparten un `flock`: el repaso horario usa **modo no bloqueante** y, si otra corrida tiene el
@@ -313,7 +370,6 @@ aislado que no importa el sync ni consulta DB.
 | `RENTALS_IC_MAX_PAGES` / `RENTALS_IC_FAST_PAGES` | 900 / 10 | tope de páginas de InfoCasas |
 | `RENTALS_ML_MAX_PAGES` / `RENTALS_ML_FAST_PAGES` | 120 / 12 | tope de páginas por consulta en ML |
 | `RENTALS_CW_MAX_PAGES` | 60 | tope de páginas por departamento/tipo en Casasweb; la rápida toma una página por búsqueda |
-| `RENTALS_EP_MAX_PAGES` / `RENTALS_EP_FAST_PAGES` | 250 / 8 | tope de categorías públicas de El País; cada una contiene hasta 24 avisos |
 | `RENTALS_FB_ENABLED` | — | `0` apaga Marketplace |
 | `RENTALS_FB_LOCATIONS` | montevideo,ciudad-de-la-costa,maldonado,salto,paysandu | ciudades que se consultan en Marketplace |
 | `RENTALS_HOST_GAP_MS` | 1200 | separación mínima entre dos requests al mismo host |
@@ -322,6 +378,10 @@ aislado que no importa el sync ni consulta DB.
 | `RENTALS_PRUNE_DAYS` | 21 | días sin publicarse antes de salir del directorio |
 | `RENTALS_STALE_OFFER_DAYS` | 4 | caducidad por ausencia sólo cuando el portal terminó una cosecha completa y exitosa; no aplica a fuentes parciales ni al modo horario |
 | `RENTALS_USD_UYU` | — | fija la cotización (útil para probar) |
+
+Las antiguas variables `RENTALS_EP_MAX_PAGES` y `RENTALS_EP_FAST_PAGES` ya no se leen.
+El País no tiene un interruptor ambiental para habilitar extracción: requiere una integración
+con condiciones expresamente habilitadas.
 
 ## La página
 
@@ -358,6 +418,10 @@ cuenta una vez por fuente; la suma puede superar el total único. `computedAt` f
 no inventario acumulado. No se usa como cifra de cobertura. Si falla el cálculo, `coverage` es
 `null` y la página indica que no está disponible; cero sólo aparece tras un conteo válido.
 Los fallos de lectura de cada fuente se informan aparte, sin prometer avisos guardados inexistentes.
+`meta.sources[].access: external_only` identifica una consulta externa: sustituye el contador
+por su etiqueta, conserva el enlace y no participa en la alerta de fuentes caídas ni en el
+encabezado de portales activos. No se interpreta el cero técnico del adaptador como inventario
+del portal externo.
 
 A diferencia de `/api/chairs` —unos cientos de filas que viajan enteras y se filtran en el
 navegador—, acá son decenas de miles: **todo** el filtrado, el orden, las facetas y la mediana se
@@ -388,13 +452,14 @@ cero y no guarda ni envía lo escrito. La lista para la visita permite marcar lo
 una consulta para pegar voluntariamente en el contacto del aviso; no envía mensajes. El contacto y
 el favorito permanecen visibles al pie en móvil. Hay traducciones de interfaz ES/EN/PT.
 
-Validación local: 5.258 pruebas de app aprobadas y ocho pruebas Mongo opcionales omitidas en la
+Validación local del lanzamiento de fichas `951f3fc`: 5.258 pruebas de app aprobadas y ocho pruebas Mongo opcionales omitidas en la
 suite local; los pipelines nuevos además se ejecutaron contra Mongo real sin escrituras. Backend:
 1.526 aprobadas, una omitida. Revisión visual/interactiva en Chrome, 320/390/1440 px, claro/oscuro y
 tres idiomas: sin desbordamiento ni errores JS. Se probaron números editados, cambio de oferta,
 GC desconocidos, todas las fotos caídas, tasa ausente, regreso saneado y acciones táctiles de 44 px.
 Las pruebas E2E del directorio incorporan el recorrido hasta la ficha y de vuelta, así como el
-presupuesto y el contacto fijo móvil. La comprobación de producción se realiza tras el despliegue.
+presupuesto y el contacto fijo móvil. La comprobación pública de ese lanzamiento está fechada
+al inicio de este documento; no valida todavía los cambios posteriores de agrupación.
 
 ```bash
 npx ts-node scripts/oneoff/rentals_probe.ts   # lectura real: revisar los presupuestos antes de ejecutarlo
@@ -402,8 +467,9 @@ npx vitest run tests/rentals/                 # parsers con fixtures + dedupe + 
 cd app && npx vitest run tests/unit/rentals.test.ts
 ```
 
-El probe existente limita InfoCasas y ML a tres páginas por consulta; las nuevas fuentes usan
-`RENTALS_CW_MAX_PAGES` y `RENTALS_EP_MAX_PAGES`. Casasweb siempre recorre las combinaciones de
+El probe existente limita InfoCasas y ML a tres páginas por consulta; Casasweb usa
+`RENTALS_CW_MAX_PAGES`. El País devuelve su estado externo sin peticiones. Casasweb recorre las
+combinaciones de
 departamento/tipo del barrido completo, aun con una página por combinación. El probe no escribe
 en DB; las pruebas con fixtures no realizan peticiones de red.
 

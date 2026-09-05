@@ -40,19 +40,19 @@ describe("parseStreet", () => {
   });
 
   it("expands the abbreviations the portals use interchangeably", () => {
-    expect(parseStreet("Av. Garzón 1975 Bis")).toEqual({ street: "avenida garzon", number: "1975" });
+    expect(parseStreet("Av. Garzón 1975 Bis")).toEqual({ street: "avenida garzon", number: "1975 bis" });
     expect(parseStreet("Avenida Garzon 1975")).toEqual({ street: "avenida garzon", number: "1975" });
     expect(parseStreet("Cno. Maldonado 5500")).toEqual({ street: "camino maldonado", number: "5500" });
   });
 
-  it("keeps the low end of a range", () => {
-    expect(parseStreet("Colorado 1500 - 1800")).toEqual({ street: "colorado", number: "1500" });
+  it("does not treat the low end of a range as an exact door", () => {
+    expect(parseStreet("Colorado 1500 - 1800")).toEqual({ street: "colorado 1500 - 1800", number: "" });
   });
 
   it("drops Google plus codes and apartment tails", () => {
     expect(parseStreet("4QJ9+664, C. Doctor Martín Berinduague 600 - 900")).toEqual({
-      street: "c doctor martin berinduague",
-      number: "600",
+      street: "c doctor martin berinduague 600 - 900",
+      number: "",
     });
     expect(parseStreet("Rizal 3715 apto 402")).toEqual({ street: "rizal", number: "3715" });
   });
@@ -74,7 +74,7 @@ describe("parseLocationLine", () => {
   it("splits MercadoLibre's street / barrio / departamento line", () => {
     expect(parseLocationLine("Av. Garzón 1975 Bis, Colón, Montevideo")).toMatchObject({
       street: "avenida garzon",
-      number: "1975",
+      number: "1975 bis",
       neighborhood: "Colón",
       department: "Montevideo",
     });
@@ -93,7 +93,7 @@ describe("parseLocationLine", () => {
     expect(parseLocationLine("Colorado 1500 - 1800, Montevideo, Goes, Montevideo")).toMatchObject({
       neighborhood: "Goes",
       department: "Montevideo",
-      number: "1500",
+      number: "",
     });
   });
 
@@ -202,5 +202,18 @@ describe("inferPropertyType", () => {
     expect(inferPropertyType("Alquilo habitación en pensión")).toBe("habitacion");
     expect(inferPropertyType("Alquilo casa 3 dormitorios")).toBe("casa");
     expect(inferPropertyType("Oportunidad única")).toBe("otro");
+  });
+});
+
+
+describe("attribute numbers belong to their own labels", () => {
+  it("does not use unit, door, rent or another attribute as the count", () => {
+    expect(parseAttributes(["Apto 301, 2 dormitorios, 1 baño, 60 m² por $ 30000"])).toEqual({ bedrooms: 2, bathrooms: 1, area: 60 });
+    expect(parseAttributes(["18 de Julio 1234, 3 dormitorios y 2 baños, 95m2"])).toEqual({ bedrooms: 3, bathrooms: 2, area: 95 });
+    expect(parseAttributes(["2026: baño nuevo y dormitorio amplio"])).toEqual({ bedrooms: null, bathrooms: null, area: null });
+  });
+  it("handles explicit field labels, abbreviations and decimal areas", () => {
+    expect(parseAttributes(["Dormitorios: 2", "Baños: 1", "50,6 m²"])).toEqual({ bedrooms: 2, bathrooms: 1, area: 51 });
+    expect(parseAttributes(["1 habitación, 1 baño, 22 m2"])).toEqual({ bedrooms: 1, bathrooms: 1, area: 22 });
   });
 });

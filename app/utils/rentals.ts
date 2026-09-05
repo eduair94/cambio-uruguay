@@ -175,6 +175,8 @@ export interface RentalPropertyDetailResponse {
 export interface RentalSourceRun {
   key: RentalSource
   ok: boolean
+  /** External consultation without an authorized automated integration. */
+  access?: 'external_only'
   listings: number
   note: string
 }
