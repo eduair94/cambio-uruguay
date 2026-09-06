@@ -7,6 +7,25 @@ import {
 
 test.setTimeout(120000)
 test.use({ serviceWorkers: 'block', extraHTTPHeaders: { 'Accept-Language': 'es-UY,es;q=0.9' } })
+
+for (const [prefix, title] of [
+  ['', 'Este aviso ya no está disponible'],
+  ['/en', 'This advert is no longer available'],
+  ['/pt', 'Este anúncio não está mais disponível'],
+] as const) {
+  test(`SSR unavailable sale advert ${prefix || 'es'} returns rendered 404 without a database`, async ({
+    request,
+  }) => {
+    // Invalid keys are handled inside useAsyncData, so the real SSR wrapper must still render.
+    const response = await request.get(`${prefix}/venta-viviendas-uruguay/not-a-valid-advert`)
+    expect(response.status()).toBe(404)
+    expect(response.headers()['cache-control']).toContain('no-store')
+    const html = await response.text()
+    expect(html.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/)?.[1]).toContain(title)
+    expect(html).toMatch(/<meta\b[^>]+name="robots"[^>]*content="noindex/)
+    expect(html).not.toContain('"@type":"RealEstateListing"')
+  })
+}
 const image = 'https://images.infocasas.com.uy/test-sale-photo.jpg'
 const properties: PropertySaleListing[] = Array.from({ length: 8 }, (_, index) => ({
   key: `infocasas-${990000001 + index}`,

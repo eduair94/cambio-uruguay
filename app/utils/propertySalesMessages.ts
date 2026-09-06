@@ -1,4 +1,10 @@
 const es = {
+  detailNotFoundTitle: 'Este aviso ya no está disponible',
+  detailNotFoundHint:
+    'El enlace puede ser incorrecto o el aviso ya no está en el catálogo. Volvé a la búsqueda para consultar otras viviendas.',
+  detailUnavailableTitle: 'No pudimos cargar este aviso',
+  detailUnavailableHint:
+    'La consulta no está disponible en este momento. Podés reintentar o volver a la búsqueda.',
   savedTemporary:
     'No pudimos guardarlo en este navegador. Se conservará mientras esta página esté abierta.',
   zoneTitle: 'Explorar avisos por barrio',
@@ -162,6 +168,12 @@ const es = {
 }
 type Messages = Record<keyof typeof es, string>
 const en: Messages = {
+  detailNotFoundTitle: 'This advert is no longer available',
+  detailNotFoundHint:
+    'The link may be incorrect or the advert may no longer be in the catalogue. Return to search to find other homes.',
+  detailUnavailableTitle: 'We could not load this advert',
+  detailUnavailableHint:
+    'The service is temporarily unavailable. You can try again or return to search.',
   savedTemporary:
     'This browser could not save it. It will remain available while this page is open.',
   zoneTitle: 'Explore adverts by neighbourhood',
@@ -323,6 +335,12 @@ const en: Messages = {
     'Find houses and apartments for sale in Uruguay. Filter by location, price, area and features, with a map, saved adverts and dated source details.',
 }
 const pt: Messages = {
+  detailNotFoundTitle: 'Este anúncio não está mais disponível',
+  detailNotFoundHint:
+    'O link pode estar incorreto ou o anúncio pode ter saído do catálogo. Volte à busca para consultar outros imóveis.',
+  detailUnavailableTitle: 'Não foi possível carregar este anúncio',
+  detailUnavailableHint:
+    'A consulta está temporariamente indisponível. Tente novamente ou volte à busca.',
   savedTemporary:
     'Não foi possível salvar neste navegador. Ficará disponível enquanto esta página estiver aberta.',
   zoneTitle: 'Explorar anúncios por bairro',

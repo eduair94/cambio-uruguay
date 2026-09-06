@@ -4,10 +4,13 @@
       <VIcon icon="mdi-arrow-left" size="20" />
       {{ t('back') }}
     </NuxtLink>
-    <VAlert v-if="error || !data" type="error" variant="tonal" class="sale-request-status-message">
-      {{ t('error') }}
-      <VBtn variant="text" @click="refresh()">{{ t('retry') }}</VBtn>
-    </VAlert>
+    <section v-if="error || !data" class="sale-detail__failure" aria-live="polite">
+      <h1>{{ t(failureCode === 404 ? 'detailNotFoundTitle' : 'detailUnavailableTitle') }}</h1>
+      <p>{{ t(failureCode === 404 ? 'detailNotFoundHint' : 'detailUnavailableHint') }}</p>
+      <VBtn v-if="failureCode !== 404" color="primary" :loading="pending" @click="refresh()">
+        {{ t('retry') }}
+      </VBtn>
+    </section>
     <template v-else>
       <header class="sale-detail__header">
         <p>
@@ -177,15 +180,27 @@ const route = useRoute()
 const localePath = useLocalePath()
 const { t, locale } = useI18n({ useScope: 'local', messages: propertySalesMessages })
 const key = computed(() => String(route.params.key || ''))
-if (!propertySaleValidKey(key.value))
-  throw createError({ statusCode: 404, statusMessage: 'Advert not found' })
-const { data, error, refresh } = await useAsyncData(
+const { data, pending, error, refresh } = await useAsyncData<PropertySaleDetailResponse>(
   () => `property-sale-${key.value}`,
-  () =>
-    $fetch<PropertySaleDetailResponse>(`/api/property-sales/ficha/${encodeURIComponent(key.value)}`)
+  () => {
+    if (!propertySaleValidKey(key.value))
+      throw createError({ statusCode: 404, statusMessage: 'Advert not found' })
+    return $fetch<PropertySaleDetailResponse>(
+      `/api/property-sales/ficha/${encodeURIComponent(key.value)}`
+    )
+  }
 )
-if (error.value?.statusCode === 404)
-  throw createError({ statusCode: 404, statusMessage: 'Advert not found' })
+const failureCode = computed(() => {
+  const failure = error.value as { statusCode?: number; data?: { statusCode?: number } } | null
+  return failure?.statusCode === 404 || failure?.data?.statusCode === 404 ? 404 : 503
+})
+if (import.meta.server && (error.value || !data.value)) {
+  const event = useRequestEvent()
+  if (event) {
+    setResponseStatus(event, failureCode.value)
+    useResponseHeader('cache-control').value = 'no-store, max-age=0'
+  }
+}
 const property = computed(() => data.value!.property)
 const images = computed(() => [
   ...new Set(
@@ -258,11 +273,14 @@ onMounted(() => {
   }
 })
 useSeoMeta({
-  title: () => (data.value ? `${data.value.property.title} | ${t('sales')}` : t('sales')),
+  title: () =>
+    data.value && !error.value
+      ? `${data.value.property.title} | ${t('sales')}`
+      : t(failureCode.value === 404 ? 'detailNotFoundTitle' : 'detailUnavailableTitle'),
   description: () => data.value?.property.description.slice(0, 160) || t('seoDescription'),
   ogTitle: () => data.value?.property.title || t('sales'),
   ogDescription: () => data.value?.property.description.slice(0, 160) || t('seoDescription'),
-  robots: () => (data.value?.indexable ? 'index,follow' : 'noindex,follow'),
+  robots: () => (data.value?.indexable && !error.value ? 'index,follow' : 'noindex,follow'),
 })
 useHead(() => ({
   link: [
@@ -271,56 +289,57 @@ useHead(() => ({
       href: `https://cambio-uruguay.com${localePath(propertySalePath(key.value))}`,
     },
   ],
-  script: data.value
-    ? [
-        {
-          key: 'property-sale-schema',
-          type: 'application/ld+json',
-          innerHTML: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'RealEstateListing',
-            '@id': `https://cambio-uruguay.com${localePath(propertySalePath(key.value))}#listing`,
-            url: `https://cambio-uruguay.com${localePath(propertySalePath(key.value))}`,
-            name: data.value.property.title,
-            description: data.value.property.description || undefined,
-            image: data.value.property.images.length
-              ? data.value.property.images
-              : data.value.property.image || undefined,
-            datePosted: data.value.property.publishedAt || undefined,
-            isBasedOn: data.value.property.url,
-            mainEntity: {
-              '@type': data.value.property.propertyType === 'casa' ? 'House' : 'Apartment',
-              '@id': `https://cambio-uruguay.com${localePath(propertySalePath(key.value))}#advertised-property`,
+  script:
+    data.value && !error.value
+      ? [
+          {
+            key: 'property-sale-schema',
+            type: 'application/ld+json',
+            innerHTML: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'RealEstateListing',
+              '@id': `https://cambio-uruguay.com${localePath(propertySalePath(key.value))}#listing`,
+              url: `https://cambio-uruguay.com${localePath(propertySalePath(key.value))}`,
               name: data.value.property.title,
-              numberOfBedrooms: data.value.property.bedrooms ?? undefined,
-              numberOfBathroomsTotal: data.value.property.bathrooms ?? undefined,
-              floorSize: data.value.property.areas.built
-                ? {
-                    '@type': 'QuantitativeValue',
-                    value: data.value.property.areas.built,
-                    unitCode: 'MTK',
-                  }
-                : undefined,
-              address: {
-                '@type': 'PostalAddress',
-                addressCountry: 'UY',
-                addressRegion: data.value.property.department || undefined,
-                addressLocality: data.value.property.locality || undefined,
-              },
-            },
-            offers: {
-              '@type': 'Offer',
-              price: data.value.property.price.amount,
-              priceCurrency: data.value.property.price.currency,
-              url: data.value.property.url,
-              itemOffered: {
+              description: data.value.property.description || undefined,
+              image: data.value.property.images.length
+                ? data.value.property.images
+                : data.value.property.image || undefined,
+              datePosted: data.value.property.publishedAt || undefined,
+              isBasedOn: data.value.property.url,
+              mainEntity: {
+                '@type': data.value.property.propertyType === 'casa' ? 'House' : 'Apartment',
                 '@id': `https://cambio-uruguay.com${localePath(propertySalePath(key.value))}#advertised-property`,
+                name: data.value.property.title,
+                numberOfBedrooms: data.value.property.bedrooms ?? undefined,
+                numberOfBathroomsTotal: data.value.property.bathrooms ?? undefined,
+                floorSize: data.value.property.areas.built
+                  ? {
+                      '@type': 'QuantitativeValue',
+                      value: data.value.property.areas.built,
+                      unitCode: 'MTK',
+                    }
+                  : undefined,
+                address: {
+                  '@type': 'PostalAddress',
+                  addressCountry: 'UY',
+                  addressRegion: data.value.property.department || undefined,
+                  addressLocality: data.value.property.locality || undefined,
+                },
               },
-            },
-          }).replace(/</g, '\\u003c'),
-        },
-      ]
-    : [],
+              offers: {
+                '@type': 'Offer',
+                price: data.value.property.price.amount,
+                priceCurrency: data.value.property.price.currency,
+                url: data.value.property.url,
+                itemOffered: {
+                  '@id': `https://cambio-uruguay.com${localePath(propertySalePath(key.value))}#advertised-property`,
+                },
+              },
+            }).replace(/</g, '\\u003c'),
+          },
+        ]
+      : [],
 }))
 defineOgImageComponent('Cambio', {
   title: data.value?.property.title || t('sales'),
@@ -347,6 +366,15 @@ defineOgImageComponent('Cambio', {
 }
 .sale-detail__header {
   padding: 16px 0 24px;
+}
+.sale-detail__failure {
+  padding: 32px 0;
+  min-height: 260px;
+}
+.sale-detail__failure p {
+  margin: 16px 0 24px;
+  max-width: 640px;
+  line-height: 1.7;
 }
 .sale-detail__header > p {
   font-size: 0.875rem;
