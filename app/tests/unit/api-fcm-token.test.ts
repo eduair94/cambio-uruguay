@@ -4,6 +4,7 @@ import { installNitroGlobals } from './helpers/nitro'
 const requireUser = vi.fn()
 const registerPushToken = vi.fn()
 const unregisterPushToken = vi.fn()
+const fixtureToken = 'test-token-'.repeat(3)
 vi.mock('../../server/utils/auth', () => ({ requireUser }))
 vi.mock('../../server/utils/pushRegistrations', async importOriginal => ({
   ...(await importOriginal<typeof import('../../server/utils/pushRegistrations')>()),
@@ -27,9 +28,9 @@ describe('POST /api/me/fcm-token', () => {
   })
 
   it('adds the token to the user (idempotent)', async () => {
-    readBody.mockResolvedValueOnce({ token: 'tok-123456789012345' })
+    readBody.mockResolvedValueOnce({ token: fixtureToken })
     const res = await handler({} as any)
-    expect(registerPushToken).toHaveBeenCalledWith('u1', 'tok-123456789012345')
+    expect(registerPushToken).toHaveBeenCalledWith('u1', fixtureToken)
     expect(res).toEqual({ ok: true })
   })
 
@@ -43,8 +44,8 @@ describe('POST /api/me/fcm-token', () => {
   )
 
   it('DELETE only revokes for the authenticated UID, ignoring supplied UID', async () => {
-    readBody.mockResolvedValue({ token: 'tok-123456789012345', uid: 'victim' })
+    readBody.mockResolvedValue({ token: fixtureToken, uid: 'victim' })
     await remove({} as any)
-    expect(unregisterPushToken).toHaveBeenCalledWith('u1', 'tok-123456789012345')
+    expect(unregisterPushToken).toHaveBeenCalledWith('u1', fixtureToken)
   })
 })
