@@ -40,19 +40,18 @@
           v-model="channel"
           color="primary"
           mandatory
-          divided
           variant="outlined"
-          class="w-100 mb-5 flex-wrap"
+          class="cu-btn-grid channel-toggle mb-6"
         >
-          <VBtn value="correo-simple" class="flex-grow-1">
+          <VBtn value="correo-simple">
             <VIcon start>mdi-mailbox-outline</VIcon>
             Correo no exprés
           </VBtn>
-          <VBtn value="correo-ems" class="flex-grow-1">
+          <VBtn value="correo-ems">
             <VIcon start>mdi-email-fast-outline</VIcon>
             Correo EMS
           </VBtn>
-          <VBtn value="courier" class="flex-grow-1">
+          <VBtn value="courier">
             <VIcon start>mdi-truck-fast-outline</VIcon>
             Courier privado
           </VBtn>
@@ -63,14 +62,13 @@
           v-model="stage"
           color="primary"
           mandatory
-          divided
           variant="outlined"
-          class="w-100 mb-2 flex-wrap"
+          class="cu-btn-grid mb-2"
         >
-          <VBtn value="antes-de-comprar" class="flex-grow-1">Todavía no compré</VBtn>
-          <VBtn value="en-camino" class="flex-grow-1">Está en camino</VBtn>
-          <VBtn value="aviso" class="flex-grow-1">Pasaron y no estaba</VBtn>
-          <VBtn value="retenido" class="flex-grow-1">Está retenido</VBtn>
+          <VBtn value="antes-de-comprar">Todavía no compré</VBtn>
+          <VBtn value="en-camino">Está en camino</VBtn>
+          <VBtn value="aviso">Pasaron y no estaba</VBtn>
+          <VBtn value="retenido">Está retenido</VBtn>
         </VBtnToggle>
 
         <!-- Veredicto -->
@@ -387,6 +385,12 @@ useHead({
   border: 1px solid rgba(var(--v-border-color), 0.16);
   border-radius: 12px;
   background: rgba(var(--v-theme-on-surface), 0.03);
+}
+
+/* Icon + up to three uppercase words needs more than the 10rem default cell;
+   at 12rem a 390px phone drops to one column instead of splitting the labels. */
+.channel-toggle {
+  --cu-btn-grid-min: 12rem;
 }
 
 .answer-steps {

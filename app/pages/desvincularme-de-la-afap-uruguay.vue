@@ -136,10 +136,10 @@
             <VBtnToggle
               v-model="cohort"
               mandatory
-              divided
               density="comfortable"
               color="primary"
-              class="mb-4 d-flex flex-wrap"
+              variant="outlined"
+              class="mb-4 cu-btn-grid"
             >
               <VBtn v-for="c in AFAP_COHORTS" :key="c.id" :value="c.id" size="small">
                 {{ c.id === 'spc' ? 'Empecé desde dic. 2023' : 'Ya aportaba antes' }}

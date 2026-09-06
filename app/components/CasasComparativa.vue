@@ -140,8 +140,7 @@
             density="compact"
             color="primary"
             variant="outlined"
-            divided
-            class="casas-cat-toggle"
+            class="casas-cat-toggle cu-btn-grid"
             :aria-label="c.colCasa"
             @update:model-value="onCategoryChange"
           >
@@ -1468,8 +1467,12 @@ useHead(() => ({
   color: rgba(255, 255, 255, 0.85);
 }
 
+/* Four short labels do not fit one 36px strip on a phone: they wrapped inside a
+   fixed-height group and rendered 18px tall. `cu-btn-grid` (legacy-vuetify.css)
+   turns them into separated cells; 7rem keeps two per row at 390px rather than
+   stacking a secondary filter four rows deep. */
 .casas-cat-toggle {
-  flex-wrap: wrap;
+  --cu-btn-grid-min: 7rem;
 }
 
 /* Dashed rather than solid so an empty result reads as a placeholder, not as

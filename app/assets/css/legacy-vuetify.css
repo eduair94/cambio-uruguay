@@ -16,6 +16,9 @@
  *
  * 3) Button labels that outgrow their button (see the rule at the bottom).
  *
+ * 4) A VBtnToggle with more options than fit one line: `cu-btn-grid`, last
+ *    block in this file.
+ *
  * Remove this file when adopting MD3 elevations/typography (follow-up).
  */
 
@@ -93,7 +96,9 @@
  *     36px). Imposing a floor there pushed 4 buttons out of a 48px group. They keep
  *     `nowrap` unless the group opts in with `class="cu-btn-wrap"` (/analiticas does:
  *     "Promedio seleccionado" is 160px inside its 147px half of a 390px screen, and two
- *     lines still fit the group).
+ *     lines still fit the group). A group whose options do not fit ONE LINE is the other
+ *     half of that problem and is not solved by wrapping labels: see `cu-btn-grid` at
+ *     the bottom of this file.
  *
  * Regression check: `node scripts/btn-overflow-audit.mjs` (mirror any change there). */
 :where(.v-btn:not(.v-btn--icon):not(.v-btn--stacked):not(.v-tab)) {
@@ -124,4 +129,78 @@
 
 :where(.v-btn-group:not(.cu-btn-wrap) > .v-btn) > .v-btn__content {
   white-space: nowrap;
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+ * `cu-btn-grid` — a VBtnToggle whose options do not fit on one line.
+ *
+ * VBtnGroup is a single-line strip by construction: `flex-wrap: nowrap`, a
+ * FIXED height (48px at default density, 40 comfortable, 36 compact) and
+ * `overflow-y: hidden`, with `overflow-x: auto` as its answer to too many
+ * options. Hanging a `flex-wrap` utility on it — three surfaces here did —
+ * makes the buttons wrap while the box stays one row tall, so each flex line
+ * gets a share of 48px and every row is sliced through the middle. On
+ * /donde-te-entregan-el-paquete-uruguay the channel and stage toggles rendered
+ * their second row 20px tall, cut across the cap height: the label was there,
+ * legible as half a word. Nothing reports it, because no text overflows its
+ * button — the BOX is what is too short, and `overflow-y: hidden` on an
+ * ancestor is invisible to the button-overflow audit.
+ *
+ * The fix is to stop treating a set of options that needs two rows as a strip.
+ * `cu-btn-grid` makes the group an auto-fitting grid of equal cells: one row
+ * while they fit, as many as needed on a phone, each option its own bordered
+ * rectangle. It replaces `divided` (there is nothing to divide once the
+ * buttons are separated by a gap) — leave that prop off.
+ *
+ * Contract:
+ *   - Put `cu-btn-grid` on the VBtnToggle/VBtnGroup, drop `divided`, and drop
+ *     any `flex-wrap` / `w-100` / per-button `flex-grow-1` that was there to
+ *     fight the strip.
+ *   - Set `--cu-btn-grid-min` on the group when its labels need a wider cell
+ *     than the 10rem default (a leading icon plus three words wants ~12rem).
+ *     The `min(100%, …)` is load-bearing: without it a container narrower than
+ *     the minimum itself gets one column that overflows it.
+ *   - Selection stays readable without hue: the active option changes ink,
+ *     tonal fill AND border. Unselected borders keep the quiet border token
+ *     rather than VBtnGroup's inherited edge.
+ *
+ * Radius is the 4px control step, the same corner the group's own first/last
+ * child inherited before — this separates the options, it does not restyle
+ * them. The 44px floor is the mobile target size; VBtn's own `min-height` from
+ * the rule above is specificity 0 and does not reach group children.
+ *
+ * Regression check: `node scripts/btn-overflow-audit.mjs` (labels), plus a
+ * visual pass at 390px — the audit cannot see a clipped row. */
+.cu-btn-grid {
+  --cu-btn-grid-min: 10rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--cu-btn-grid-min)), 1fr));
+  gap: 8px;
+  height: auto;
+  overflow: visible;
+  border-radius: 0;
+  background: transparent;
+}
+
+.cu-btn-grid > .v-btn {
+  height: auto;
+  min-height: 44px;
+  min-width: 0;
+  border-radius: 4px;
+}
+
+.cu-btn-grid > .v-btn > .v-btn__content {
+  white-space: normal;
+  min-width: 0;
+}
+
+/* VBtnGroup strips the inline borders off every child so the strip reads as one
+ * control; separated cells need them back. Quiet at rest, the option's own ink
+ * once selected. */
+.cu-btn-grid > .v-btn--variant-outlined {
+  border: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+.cu-btn-grid > .v-btn--variant-outlined.v-btn--active {
+  border-color: currentColor;
 }
