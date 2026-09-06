@@ -175,8 +175,9 @@ jobs:
       always() &&
       needs.secret-scan.result == 'success' &&
       needs.backend-test.result == 'success' &&
-      needs.changes.outputs.backend == 'true' &&
-      github.event_name == 'push' && github.ref == 'refs/heads/main'
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' && needs.changes.outputs.backend == 'true'))
     runs-on: ubuntu-latest
     steps:
       - name: Run remote backend deploy over SSH
