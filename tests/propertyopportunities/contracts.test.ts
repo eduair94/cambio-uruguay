@@ -13,6 +13,11 @@ describe("property opportunity contract", () => {
     const backend = contract("classes/propertyopportunities/types.ts");
     expect(backend.length).toBeGreaterThan(1000);
     expect(contract("app/utils/propertyOpportunities.ts")).toBe(backend);
+    const availabilityContract = (file: string) => contract(file)
+      .match(/exportinterfaceRentalAvailabilitySummary\{[^}]+\}/)?.[0] || "";
+    const availability = availabilityContract("classes/propertyopportunities/rentalAvailability.ts");
+    expect(availability.length).toBeGreaterThan(80);
+    expect(availabilityContract("app/utils/rentalAvailability.ts")).toBe(availability);
   });
   it("starts both standalone jobs through the same exclusive wrapper and includes them in deploy", () => {
     const config = require("../../ecosystem.config.js");
