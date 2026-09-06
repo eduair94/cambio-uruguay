@@ -83,6 +83,34 @@ const snapshot = (items = [item()]): PropertyOpportunitySnapshot => ({
 })
 
 describe('public property opportunity query', () => {
+  it('filters community reports before pagination without rewriting price evidence', () => {
+    const one = item('one', {
+      availability: { count: 1, lastReportedAt: '2026-09-06T10:00:00Z', status: 'unconfirmed' },
+    })
+    const many = item('many', {
+      availability: { count: 2, lastReportedAt: '2026-09-06T11:00:00Z', status: 'unconfirmed' },
+    })
+    const clear = item('clear')
+    const source = snapshot([one, many, clear])
+    const before = JSON.stringify(source)
+    expect(queryPropertyOpportunities(source, {}, now).total).toBe(3)
+    const filtered = queryPropertyOpportunities(
+      source,
+      { availability: 'hide_multiple', perPage: '1', page: '2' },
+      now
+    )
+    expect(filtered.total).toBe(2)
+    expect(filtered.pages).toBe(2)
+    expect(filtered.items).toHaveLength(1)
+    expect(filtered.items[0].subject.id).not.toBe(many.subject.id)
+    const any = queryPropertyOpportunities(source, { availability: 'hide_any' }, now)
+    expect(any.items.map(row => row.subject.id)).toEqual([clear.subject.id])
+    expect(any.items[0].analysis).toEqual(clear.analysis)
+    expect(JSON.stringify(source)).toBe(before)
+    expect(
+      normalizeOpportunityQuery({ operation: 'sale', availability: 'hide_any' }).availability
+    ).toBe('all')
+  })
   it('filters independent signal labels without duplicating a two-signal advert or changing its cohort', () => {
     const twoSignals = item('two')
     twoSignals.analysis.signals = ['total_price', 'price_per_m2']

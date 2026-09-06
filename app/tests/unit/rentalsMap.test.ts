@@ -39,8 +39,8 @@ describe('el filtro es uno solo', () => {
       expect(route).toContain('rentalPublicStages(')
       expect(route).not.toContain('.countDocuments(')
     }
-    expect(lista).toContain('rentalPublicStages(nonLocation, STALE_DAYS)')
-    expect(lista).toContain('rentalPublicStages(withoutNeighborhood, STALE_DAYS)')
+    expect(lista).toContain('rentalPublicStages(nonLocation, STALE_DAYS, excluded)')
+    expect(lista).toContain('rentalPublicStages(withoutNeighborhood, STALE_DAYS, excluded)')
   })
 
   it('la lista ya no arma el suyo a mano', () => {

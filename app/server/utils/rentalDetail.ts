@@ -88,11 +88,12 @@ export function rentalDetailStages(
   key: string,
   query: RentalQuery,
   staleDays: number,
-  usdUyu: number
+  usdUyu: number,
+  excludedAdvertIds: readonly string[] = []
 ) {
   const { filter } = buildRentalFilter(query, staleDays, usdUyu)
   return [
-    ...rentalPublicStages({ ...filter, key }, staleDays),
+    ...rentalPublicStages({ ...filter, key }, staleDays, excludedAdvertIds),
     ...rentalOfferStages(query, usdUyu),
     { $limit: 1 },
     { $project: rentalExpandedPropertyProjection },

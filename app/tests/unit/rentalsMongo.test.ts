@@ -80,6 +80,64 @@ describe.skipIf(!uri)('rental budgets evaluated by Mongo (read-only synthetic do
     await client?.close()
   })
 
+  it('removes only reported adverts before prices, budgets, facets and pagination', async () => {
+    const documents = [
+      doc('reported-only', [offer({ listingId: 'infocasas:1', priceUyu: 20000 })]),
+      doc('alternate', [
+        offer({ listingId: '2', priceUyu: 25000, price: 25000 }),
+        offer({ source: 'casasweb', listingId: 'casasweb:2', priceUyu: 35000, price: 35000 }),
+      ]),
+      doc('another-source', [offer({ source: 'casasweb', listingId: '1', priceUyu: 28000 })]),
+    ]
+    const excluded = ['rent:infocasas:1', 'rent:infocasas:2']
+    const stages = (input: Record<string, unknown>) => {
+      const query = normalizeRentalQuery({ ...input, availability: 'hide_any' })
+      return rentalPublicStages(buildRentalFilter(query, 10, 40).filter, 10, excluded)
+    }
+    const rows = await client
+      .db()
+      .aggregate([{ $documents: documents }, ...stages({}), { $sort: { priceUyu: 1 } }])
+      .toArray()
+    expect(rows.map(row => [row.key, row.priceUyu])).toEqual([
+      ['another-source', 28000],
+      ['alternate', 35000],
+    ])
+    expect(rows[1].offers.map((row: RentalOffer) => row.source)).toEqual(['casasweb'])
+    expect(rows[1].matchingOffer.source).toBe('casasweb')
+    expect(
+      await client
+        .db()
+        .aggregate([{ $documents: documents }, ...stages({ source: 'infocasas' })])
+        .toArray()
+    ).toEqual([])
+    const budget = await client
+      .db()
+      .aggregate([
+        { $documents: documents },
+        ...stages({ priceMax: '30000' }),
+        {
+          $facet: {
+            totals: [{ $count: 'n' }],
+            page: [{ $sort: { priceUyu: 1 } }, { $limit: 1 }],
+            sources: [{ $unwind: '$sources' }, { $group: { _id: '$sources', count: { $sum: 1 } } }],
+          },
+        },
+      ])
+      .toArray()
+    expect(budget[0].totals).toEqual([{ n: 1 }])
+    expect(budget[0].page[0].key).toBe('another-source')
+    expect(budget[0].sources).toEqual([{ _id: 'casasweb', count: 1 }])
+    const all = await client
+      .db()
+      .aggregate([
+        { $documents: documents },
+        ...rentalPublicStages(buildRentalFilter(normalizeRentalQuery(), 10, 40).filter, 10),
+        { $count: 'n' },
+      ])
+      .toArray()
+    expect(all).toEqual([{ n: 3 }])
+  })
+
   it('returns the same matching offer as list/map while hiding internal fields and expired offers', async () => {
     const old = '2000-01-01'
     const documents = [

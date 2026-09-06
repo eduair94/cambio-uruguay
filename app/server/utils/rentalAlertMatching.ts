@@ -23,6 +23,8 @@ import { RentalListingModel } from '../models/RentalListing'
 import { RentalMetaModel } from '../models/RentalMeta'
 import { PropertyOpportunitySnapshotModel } from '../models/PropertyOpportunitySnapshot'
 import { rentalPublicPropertyProjection } from './rentalDetail'
+import { loadRentalAvailabilityIndex } from './rentalAvailability'
+import { normalizeRentalAvailabilityFilter } from '../../utils/rentalAvailability'
 
 export const RENTAL_ALERT_STALE_DAYS = RENTAL_STALE_DAYS
 const PAGE = 400
@@ -139,7 +141,8 @@ export function rentalAlertSearchStages(
   filters: RentalAlertFilters,
   listingIds: string[],
   usdUyu: number,
-  after = ''
+  after = '',
+  excludedAdvertIds: readonly string[] = []
 ) {
   const query = normalizeRentalQuery(filters)
   const { filter } = buildRentalFilter(query, RENTAL_ALERT_STALE_DAYS, usdUyu)
@@ -150,7 +153,7 @@ export function rentalAlertSearchStages(
         ...(after ? { key: { $gt: after } } : {}),
       },
     },
-    ...rentalPublicStages(filter, RENTAL_ALERT_STALE_DAYS),
+    ...rentalPublicStages(filter, RENTAL_ALERT_STALE_DAYS, excludedAdvertIds),
     ...rentalOfferStages(query, usdUyu),
     { $sort: { key: 1 as const } },
     { $limit: PAGE },
@@ -209,16 +212,33 @@ export async function matchRentalAlertCandidates(
 ): Promise<RentalAlertCandidate[]> {
   if (!candidateIds.length) return []
   const wanted = new Set(candidateIds)
+  const visibility = normalizeRentalAvailabilityFilter(filters.availability)
+  // Inventory identity remains independent from this optional visibility setting. Withdrawing
+  // or expiring a report must never make an old advert a new notification candidate.
+  const availability = visibility === 'all' ? null : await loadRentalAvailabilityIndex()
+  const excluded = availability?.excludedAdvertIds(visibility) ?? []
   if (kind === 'rental-opportunity') {
     const snapshot = await rentalAlertOpportunitySnapshot(now)
-    const selected = rentalAlertOpportunityMatches(snapshot, filters, now).filter(item =>
+    const currentSnapshot = availability
+      ? {
+          ...snapshot,
+          items: snapshot.items.map(item => ({
+            ...item,
+            subject: {
+              ...item.subject,
+              availability: availability.byAdvertId.get(item.subject.id),
+            },
+          })),
+        }
+      : snapshot
+    const selected = rentalAlertOpportunityMatches(currentSnapshot, filters, now).filter(item =>
       wanted.has(item.subject.id)
     )
     const current = new Map(
       (
         await matchRentalAlertCandidates(
           'rental-search',
-          {},
+          { availability: visibility },
           selected.map(item => item.subject.id),
           now
         )
@@ -264,7 +284,7 @@ export async function matchRentalAlertCandidates(
   let after = ''
   for (;;) {
     const rows = (await RentalListingModel.aggregate(
-      rentalAlertSearchStages(filters, listingIds, usdUyu, after)
+      rentalAlertSearchStages(filters, listingIds, usdUyu, after, excluded)
     )
       .collation(RENTAL_COLLATION)
       .option({ maxTimeMS: 15_000 })) as RentalPublicProperty[]

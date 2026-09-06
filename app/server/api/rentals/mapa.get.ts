@@ -1,6 +1,8 @@
 import { RentalListingModel } from '../../models/RentalListing'
 import { RentalMetaModel } from '../../models/RentalMeta'
 import { connectDb } from '../../utils/db'
+import { loadRentalAvailabilityIndex } from '../../utils/rentalAvailability'
+import { rentalAvailabilityAdvertId } from '../../../utils/rentalAvailability'
 import {
   RENTAL_COLLATION,
   RENTAL_STALE_DAYS,
@@ -45,15 +47,13 @@ const STALE_DAYS = RENTAL_STALE_DAYS
 const MAX_POINTS = 3000
 
 export default defineEventHandler(async (event): Promise<RentalMapResponse> => {
-  setResponseHeader(
-    event,
-    'cache-control',
-    'public, max-age=180, s-maxage=300, stale-while-revalidate=86400'
-  )
+  setResponseHeader(event, 'cache-control', 'public, max-age=30, s-maxage=60')
 
   const query = normalizeRentalQuery(getQuery(event) as Record<string, unknown>)
   try {
     await connectDb()
+    const availability = await loadRentalAvailabilityIndex()
+    const excluded = availability.excludedAdvertIds(query.availability)
     const meta = await RentalMetaModel.findOne({ key: 'uy-rentals' }).select({ usdUyu: 1 }).lean()
     const usdUyu = Number(meta?.usdUyu) || 0
     const { filter } = buildRentalFilter(query, STALE_DAYS, usdUyu)
@@ -66,10 +66,10 @@ export default defineEventHandler(async (event): Promise<RentalMapResponse> => {
       longitude: { $type: 'number', $gte: -58.6, $lte: -53 },
     }
 
-    const publicLocated = rentalPublicStages(located, STALE_DAYS)
+    const publicLocated = rentalPublicStages(located, STALE_DAYS, excluded)
     const [totals, locatedTotals, rows] = await Promise.all([
       RentalListingModel.aggregate([
-        ...rentalPublicStages(filter, STALE_DAYS),
+        ...rentalPublicStages(filter, STALE_DAYS, excluded),
         { $count: 'total' },
       ]).collation(RENTAL_COLLATION),
       RentalListingModel.aggregate([...publicLocated, { $count: 'total' }]).collation(
@@ -116,6 +116,9 @@ export default defineEventHandler(async (event): Promise<RentalMapResponse> => {
       if (!Number.isFinite(lat) || !Number.isFinite(lng) || (lat === 0 && lng === 0)) continue
       const matched = rentalMatchingOffer((row.offers || []) as RentalOffer[], query, usdUyu)
       points.push({
+        availability: availability.byAdvertId.get(
+          rentalAvailabilityAdvertId(matched?.source, matched?.listingId) || ''
+        ),
         key: String(row.key),
         lat,
         lng,

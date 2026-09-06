@@ -68,6 +68,16 @@
         >
           <summary v-if="mobile">{{ t('evidenceFilter') }}</summary>
           <VSelect
+            v-if="query.operation === 'rent'"
+            v-model="draft.availability"
+            :items="availabilityItems"
+            :label="availabilityCopy.filter"
+            v-bind="field"
+          />
+          <p v-if="query.operation === 'rent'" class="opportunity-filters__hint">
+            {{ availabilityCopy.filterHint }}
+          </p>
+          <VSelect
             v-model="draft.signal"
             :items="signalItems"
             :label="t('signalFilter')"
@@ -91,6 +101,7 @@
 </template>
 
 <script setup lang="ts">
+import { rentalAvailabilityCopy } from '~/utils/rentalAvailabilityMessages'
 import { VDialog } from 'vuetify/components'
 import { propertyOpportunityMessages } from '~/utils/propertyOpportunityMessages'
 import type { OpportunityQuery } from '~/utils/propertyOpportunityQuery'
@@ -110,7 +121,14 @@ const emit = defineEmits<{
   'update:open': [value: boolean]
   closed: []
 }>()
-const { t } = useI18n({ useScope: 'local', messages: propertyOpportunityMessages })
+const { t, locale } = useI18n({ useScope: 'local', messages: propertyOpportunityMessages })
+const availabilityCopy = computed(() => rentalAvailabilityCopy(locale.value))
+const availabilityItems = computed(() =>
+  ['all', 'hide_multiple', 'hide_any'].map(value => ({
+    value,
+    title: availabilityCopy.value[value as 'all' | 'hide_multiple' | 'hide_any'],
+  }))
+)
 const heading = ref<HTMLElement | null>(null)
 const draft = ref({ ...props.query })
 const budget = ref<string | number | null>(props.query.maxPrice)
@@ -188,6 +206,7 @@ watch(
     budget.value = props.query.maxPrice
     invalidBudget.value = false
     advancedOpen.value =
+      props.query.availability !== 'all' ||
       props.query.signal !== 'all' ||
       props.query.evidence !== 'all' ||
       props.query.confidence !== 'all'

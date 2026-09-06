@@ -81,6 +81,7 @@ export class RentalAlertValidationError extends Error {
 
 const presentation = new Set(['page', 'perPage', 'sort', 'view'])
 const searchKeys = new Set([
+  'availability',
   'q',
   'department',
   'neighborhood',
@@ -112,6 +113,7 @@ const searchKeys = new Set([
   'radioKm',
 ])
 const opportunityKeys = new Set([
+  'availability',
   'operation',
   'department',
   'neighborhood',
@@ -188,6 +190,11 @@ export function normalizeRentalAlertFilters(
       throw new RentalAlertValidationError('unsupported_filter')
   }
   let params: RentalAlertFilters
+  if (
+    populated(input.availability) &&
+    !['all', 'hide_multiple', 'hide_any'].includes(String(input.availability))
+  )
+    throw new RentalAlertValidationError('unsupported_filter')
   if (kind === 'rental-search') {
     if (populated(input.type) && !Object.hasOwn(RENTAL_TYPE_LABEL, String(input.type)))
       throw new RentalAlertValidationError('unsupported_filter')
@@ -258,6 +265,7 @@ export function normalizeRentalAlertFilters(
       'confidence',
       'evidence',
       'signal',
+      'availability',
     ] as const) {
       const value = query[field]
       if (value !== '' && value !== null && value !== 'all') params[field] = String(value)

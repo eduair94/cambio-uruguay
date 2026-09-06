@@ -7,6 +7,11 @@ import type {
   OpportunitySource,
   OpportunitySignal,
 } from './propertyOpportunities'
+import {
+  normalizeRentalAvailabilityFilter,
+  rentalAvailabilityHidden,
+  type RentalAvailabilityFilter,
+} from './rentalAvailability'
 
 export interface OpportunityCoverage {
   source: OpportunitySource
@@ -29,6 +34,7 @@ export interface PropertyOpportunitySnapshot {
 }
 
 export interface OpportunityQuery {
+  availability: RentalAvailabilityFilter
   operation: OpportunityOperation
   department: string
   neighborhood: string
@@ -77,6 +83,8 @@ export function normalizeOpportunityQuery(input: Record<string, unknown>): Oppor
   const price = Number(input.maxPrice)
   const bedrooms = input.bedrooms === '' || input.bedrooms == null ? NaN : Number(input.bedrooms)
   return {
+    availability:
+      input.operation === 'sale' ? 'all' : normalizeRentalAvailabilityFilter(input.availability),
     operation: input.operation === 'sale' ? 'sale' : 'rent',
     department: text(input.department),
     neighborhood: text(input.neighborhood),
@@ -122,13 +130,18 @@ export function queryPropertyOpportunities(
         return Number.isFinite(parsed) && day >= cutoff && day <= today
       })
   )
-  const departments = uniqueSorted(fresh.map(item => item.subject.department))
+  const visible = fresh.filter(
+    item =>
+      snapshot.operation !== 'rent' ||
+      !rentalAvailabilityHidden(item.subject.availability, query.availability)
+  )
+  const departments = uniqueSorted(visible.map(item => item.subject.department))
   const neighborhoods = uniqueSorted(
-    fresh
+    visible
       .filter(item => matches(item.subject.department, query.department))
       .map(item => item.subject.neighborhood)
   )
-  const selected = fresh.filter(
+  const selected = visible.filter(
     ({ subject, analysis }) =>
       matches(subject.department, query.department) &&
       matches(subject.neighborhood, query.neighborhood) &&

@@ -96,6 +96,13 @@
           @toggle="advancedOpen = ($event.target as HTMLDetailsElement).open"
         >
           <summary v-if="mobile" data-testid="rental-advanced-toggle">{{ t('more') }}</summary>
+          <VSelect
+            v-model="draft.availability"
+            :items="availabilityItems"
+            :label="availabilityCopy.filter"
+            v-bind="field"
+          />
+          <p class="rental-search__hint">{{ availabilityCopy.filterHint }}</p>
           <fieldset>
             <legend>{{ t('budget') }}</legend>
             <div class="rental-search__fields">
@@ -283,6 +290,7 @@
 </template>
 
 <script setup lang="ts">
+import { rentalAvailabilityCopy } from '~/utils/rentalAvailabilityMessages'
 import { VDialog } from 'vuetify/components'
 import { rentalMessages } from '~/utils/rentalMessages'
 import {
@@ -313,7 +321,14 @@ const emit = defineEmits<{
   'update:open': [open: boolean]
   closed: []
 }>()
-const { t } = useI18n({ useScope: 'local', messages: rentalMessages })
+const { t, locale } = useI18n({ useScope: 'local', messages: rentalMessages })
+const availabilityCopy = computed(() => rentalAvailabilityCopy(locale.value))
+const availabilityItems = computed(() =>
+  ['all', 'hide_multiple', 'hide_any'].map(value => ({
+    value,
+    title: availabilityCopy.value[value as 'all' | 'hide_multiple' | 'hide_any'],
+  }))
+)
 const dialogHeading = ref<HTMLElement | null>(null)
 const advancedOpen = ref(false)
 const viewportHeight = ref<number | null>(null)
@@ -375,7 +390,8 @@ watch(
     draft.value = copy(props.query)
     const q = props.query
     advancedOpen.value = Boolean(
-      q.q ||
+      q.availability !== 'all' ||
+        q.q ||
         q.source ||
         q.currency ||
         q.bedroomsExact ||

@@ -3,6 +3,9 @@ import { installNitroGlobals } from './helpers/nitro'
 
 const load = vi.hoisted(() => vi.fn())
 vi.mock('../../server/utils/propertyOpportunities', () => ({ loadPropertyOpportunities: load }))
+vi.mock('../../server/utils/rentalAvailability', () => ({
+  loadRentalAvailabilityIndex: async () => ({ byAdvertId: new Map() }),
+}))
 const { getQuery } = installNitroGlobals()
 const headers = vi.fn()
 vi.stubGlobal('setResponseHeader', headers)

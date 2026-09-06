@@ -136,6 +136,12 @@
         </section>
 
         <h4 class="rental-map-detail__section-title">{{ t('mapPortals') }}</h4>
+        <RentalsAvailabilityReport
+          :offers="offers"
+          :summary="property.availability"
+          :preferred="offer"
+          :title="property.title"
+        />
         <ul class="rental-map-detail__offers">
           <li v-for="entry in offers" :key="`${entry.source}:${entry.listingId}`">
             <a

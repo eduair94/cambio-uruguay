@@ -88,6 +88,12 @@
         <p class="opportunity-card__meta">
           {{ sourceName(subject.source) }} · {{ t('sourceRead', { date: date(subject.lastSeen) }) }}
         </p>
+        <RentalsAvailabilityReport
+          v-if="subject.operation === 'rent'"
+          :offers="[subject]"
+          :summary="subject.availability"
+          :title="subject.title"
+        />
         <div class="opportunity-card__actions">
           <VBtn v-if="propertyPath" :to="localePath(propertyPath)" variant="tonal" color="link">{{
             t(subject.operation === 'sale' ? 'saleDetail' : 'detail')

@@ -3,6 +3,10 @@ import { RentalMetaModel } from '../../../models/RentalMeta'
 import { connectDb } from '../../../utils/db'
 import { rentalDetailStages } from '../../../utils/rentalDetail'
 import {
+  annotateRentalAvailability,
+  loadRentalAvailabilityIndex,
+} from '../../../utils/rentalAvailability'
+import {
   buildRentalPage,
   rentalPageEvidenceStages,
   rentalPageIdentityStages,
@@ -30,6 +34,7 @@ export default defineEventHandler(async (event): Promise<RentalPageResponse> => 
   let page: RentalPageResponse | undefined
   try {
     await connectDb()
+    const availability = await loadRentalAvailabilityIndex()
     const meta = await RentalMetaModel.findOne({ key: 'uy-rentals' }).select({ usdUyu: 1 }).lean()
     const usdUyu = Number(meta?.usdUyu) || 0
     const rows = await RentalListingModel.aggregate<RentalPublicProperty>(
@@ -56,6 +61,8 @@ export default defineEventHandler(async (event): Promise<RentalPageResponse> => 
           ).collation(RENTAL_COLLATION)
         : []
       page = buildRentalPage(property, similar, usdUyu, otherOwners.length > 0, market)
+      page.property = annotateRentalAvailability(page.property, availability)
+      page.similar = page.similar.map(row => annotateRentalAvailability(row, availability))
     }
   } catch (error) {
     console.error('[api/rentals/ficha] failed', error)

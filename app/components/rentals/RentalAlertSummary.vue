@@ -12,6 +12,7 @@
 
 <script setup lang="ts">
 import { rentalAlertMessages } from '~/utils/rentalAlertMessages'
+import { rentalAvailabilityCopy } from '~/utils/rentalAvailabilityMessages'
 import { normalizeRentalQuery, RENTAL_SOURCE_LABEL } from '~/utils/rentals'
 import { normalizeOpportunityQuery } from '~/utils/propertyOpportunityQuery'
 import { MUTUALISTA_SEDES } from '~/utils/mutualistaSedes'
@@ -23,6 +24,10 @@ const number = (n: number) =>
   new Intl.NumberFormat(locale.value, { maximumFractionDigits: 2 }).format(n)
 const rows = computed(() => {
   const result: { label: string; value: string }[] = []
+  const availability = rentalAvailabilityCopy(locale.value)
+  const addAvailability = (value: 'all' | 'hide_multiple' | 'hide_any') => {
+    if (value !== 'all') result.push({ label: availability.filter, value: availability[value] })
+  }
   const add = (label: string, value: unknown) => {
     if (value !== '' && value !== null && value !== undefined && value !== false)
       result.push({ label: t(label), value: String(value) })
@@ -38,6 +43,7 @@ const rows = computed(() => {
   }
   if (props.kind === 'rental-search') {
     const q = normalizeRentalQuery(props.filters)
+    addAvailability(q.availability)
     add('text', q.q)
     add('department', q.department)
     add(
@@ -76,6 +82,7 @@ const rows = computed(() => {
     }
   } else {
     const q = normalizeOpportunityQuery(props.filters)
+    addAvailability(q.availability)
     add('department', q.department)
     add('neighborhood', q.neighborhood)
     if (q.type !== 'all') add('type', t(typeLabels[q.type]))

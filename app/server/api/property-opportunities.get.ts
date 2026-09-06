@@ -3,6 +3,7 @@ import {
   queryPropertyOpportunities,
 } from '../../utils/propertyOpportunityQuery'
 import { loadPropertyOpportunities } from '../utils/propertyOpportunities'
+import { loadRentalAvailabilityIndex } from '../utils/rentalAvailability'
 
 export default defineEventHandler(async event => {
   const input = getQuery(event) as Record<string, unknown>
@@ -16,8 +17,23 @@ export default defineEventHandler(async event => {
         statusMessage: 'Property comparison is not available yet',
       })
     }
-    setResponseHeader(event, 'cache-control', 'public, max-age=60, s-maxage=180')
-    return queryPropertyOpportunities(snapshot, input)
+    const availability = query.operation === 'rent' ? await loadRentalAvailabilityIndex() : null
+    // The cached price analysis stays immutable. Community observations only annotate the
+    // subject currently being offered; neither comparables nor stored medians are rewritten.
+    const current = availability
+      ? {
+          ...snapshot,
+          items: snapshot.items.map(item => ({
+            ...item,
+            subject: {
+              ...item.subject,
+              availability: availability.byAdvertId.get(item.subject.id),
+            },
+          })),
+        }
+      : snapshot
+    setResponseHeader(event, 'cache-control', 'public, max-age=30, s-maxage=60')
+    return queryPropertyOpportunities(current, input)
   } catch {
     setResponseHeader(event, 'cache-control', 'no-store')
     throw createError({

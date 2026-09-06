@@ -42,10 +42,15 @@ const { t, locale } = useI18n({ useScope: 'local', messages: rentalPageMessages 
 const localePath = useLocalePath()
 const route = useRoute()
 const propertyKey = computed(() => String(route.params.key || ''))
+const availability = useRentalAvailability()
 const { data, pending, error, refresh } = await useAsyncData<RentalPageResponse>(
   () => `rental-page:${propertyKey.value}`,
-  () => $fetch(`/api/rentals/ficha/${encodeURIComponent(propertyKey.value)}`)
+  () =>
+    $fetch(`/api/rentals/ficha/${encodeURIComponent(propertyKey.value)}`, {
+      query: availability.withRevision({}),
+    })
 )
+availability.watchChanges(() => refresh())
 const property = computed(() => data.value?.property ?? null)
 const failureCode = computed(() => {
   const failure = error.value as { statusCode?: number; data?: { statusCode?: number } } | null
@@ -477,6 +482,12 @@ useHead(() => ({
         >
           <h2 id="rental-offers-title">{{ t('offersHeading') }}</h2>
           <p>{{ t('offersHint') }}</p>
+          <RentalsAvailabilityReport
+            :offers="offers"
+            :summary="property.availability"
+            :preferred="selectedOffer || undefined"
+            :title="property.title"
+          />
           <ul class="rental-page__offers">
             <li
               v-for="offer in offers"

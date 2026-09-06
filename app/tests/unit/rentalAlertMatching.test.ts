@@ -9,6 +9,17 @@ import { RentalListingModel } from '../../server/models/RentalListing'
 import { RentalMetaModel } from '../../server/models/RentalMeta'
 import type { RentalOffer, RentalPublicProperty } from '../../utils/rentals'
 import type { PropertyOpportunitySnapshot } from '../../utils/propertyOpportunityQuery'
+vi.mock('../../server/utils/rentalAvailability', () => ({
+  loadRentalAvailabilityIndex: async () => ({
+    byAdvertId: new Map([
+      [
+        'rent:infocasas:0',
+        { count: 2, lastReportedAt: '2026-09-06T10:00:00Z', status: 'unconfirmed' },
+      ],
+    ]),
+    excludedAdvertIds: () => ['rent:infocasas:0'],
+  }),
+}))
 
 const now = Date.parse('2026-09-06T12:00:00Z')
 const offer = (id: string, changes: Partial<RentalOffer> = {}): RentalOffer => ({

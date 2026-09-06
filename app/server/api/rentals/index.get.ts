@@ -4,6 +4,10 @@ import { connectDb } from '../../utils/db'
 import { getRentalCoverage } from '../../utils/rentalCoverage'
 import { rentalPublicPropertyProjection } from '../../utils/rentalDetail'
 import {
+  annotateRentalAvailability,
+  loadRentalAvailabilityIndex,
+} from '../../utils/rentalAvailability'
+import {
   RENTAL_COLLATION,
   RENTAL_STALE_DAYS,
   buildRentalFilter,
@@ -32,16 +36,14 @@ import {
 const STALE_DAYS = RENTAL_STALE_DAYS
 
 export default defineEventHandler(async (event): Promise<RentalsResponse> => {
-  setResponseHeader(
-    event,
-    'cache-control',
-    'public, max-age=180, s-maxage=300, stale-while-revalidate=86400'
-  )
+  setResponseHeader(event, 'cache-control', 'public, max-age=30, s-maxage=60')
 
   const query = normalizeRentalQuery(getQuery(event) as Record<string, unknown>)
 
   try {
     await connectDb()
+    const availability = await loadRentalAvailabilityIndex()
+    const excluded = availability.excludedAdvertIds(query.availability)
     const meta = (await RentalMetaModel.findOne({ key: 'uy-rentals' })
       .select({ _id: 0, __v: 0 })
       .lean()) as RentalMeta | null
@@ -58,7 +60,7 @@ export default defineEventHandler(async (event): Promise<RentalsResponse> => {
     )
     const sort = rentalMongoSort(query.sort)
     const offerStages = rentalOfferStages(query, usdUyu)
-    const publicStages = rentalPublicStages(filter, STALE_DAYS)
+    const publicStages = rentalPublicStages(filter, STALE_DAYS, excluded)
 
     const [items, totals, departments, neighborhoods, dimensions, coverage] = await Promise.all([
       RentalListingModel.aggregate([
@@ -73,14 +75,14 @@ export default defineEventHandler(async (event): Promise<RentalsResponse> => {
         RENTAL_COLLATION
       ),
       RentalListingModel.aggregate([
-        ...rentalPublicStages(nonLocation, STALE_DAYS),
+        ...rentalPublicStages(nonLocation, STALE_DAYS, excluded),
         { $group: { _id: '$department', count: { $sum: 1 } } },
         { $sort: { count: -1 } },
         { $limit: 25 },
       ]).collation(RENTAL_COLLATION),
       // Exclude the neighborhood's own selection so selecting Pocitos does not hide Cordón.
       RentalListingModel.aggregate([
-        ...rentalPublicStages(withoutNeighborhood, STALE_DAYS),
+        ...rentalPublicStages(withoutNeighborhood, STALE_DAYS, excluded),
         { $match: { neighborhood: { $ne: '' } } },
         { $group: { _id: '$neighborhood', count: { $sum: 1 } } },
         { $sort: { count: -1, _id: 1 } },
@@ -136,7 +138,9 @@ export default defineEventHandler(async (event): Promise<RentalsResponse> => {
     return {
       meta: (meta as RentalMeta | null) ?? null,
       coverage,
-      items: items as RentalProperty[],
+      items: (items as RentalProperty[]).map(property =>
+        annotateRentalAvailability(property, availability)
+      ),
       total,
       page: query.page,
       perPage: query.perPage,

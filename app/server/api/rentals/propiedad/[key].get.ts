@@ -3,6 +3,10 @@ import { RentalMetaModel } from '../../../models/RentalMeta'
 import { connectDb } from '../../../utils/db'
 import { rentalDetailStages } from '../../../utils/rentalDetail'
 import {
+  annotateRentalAvailability,
+  loadRentalAvailabilityIndex,
+} from '../../../utils/rentalAvailability'
+import {
   RENTAL_COLLATION,
   RENTAL_STALE_DAYS,
   normalizeRentalQuery,
@@ -24,12 +28,19 @@ export default defineEventHandler(async (event): Promise<RentalPropertyDetailRes
   let usdUyu = 0
   try {
     await connectDb()
+    const availability = await loadRentalAvailabilityIndex()
     const meta = await RentalMetaModel.findOne({ key: 'uy-rentals' }).select({ usdUyu: 1 }).lean()
     usdUyu = Number(meta?.usdUyu) || 0
     const rows = await RentalListingModel.aggregate<RentalPublicProperty>(
-      rentalDetailStages(key, query, STALE_DAYS, usdUyu)
+      rentalDetailStages(
+        key,
+        query,
+        STALE_DAYS,
+        usdUyu,
+        availability.excludedAdvertIds(query.availability)
+      )
     ).collation(RENTAL_COLLATION)
-    property = rows[0]
+    property = rows[0] ? annotateRentalAvailability(rows[0], availability) : undefined
   } catch (error) {
     console.error('[api/rentals/propiedad] failed', error)
     setResponseHeader(event, 'cache-control', 'no-store')

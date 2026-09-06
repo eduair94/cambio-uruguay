@@ -13,6 +13,10 @@ const aggregate = vi.fn<(stages: unknown[]) => { collation: typeof collation }>(
 vi.mock('../../server/utils/db', () => ({ connectDb }))
 vi.mock('../../server/models/RentalMeta', () => ({ RentalMetaModel: { findOne } }))
 vi.mock('../../server/models/RentalListing', () => ({ RentalListingModel: { aggregate } }))
+vi.mock('../../server/utils/rentalAvailability', () => ({
+  loadRentalAvailabilityIndex: async () => ({ excludedAdvertIds: () => [] }),
+  annotateRentalAvailability: (property: unknown) => property,
+}))
 
 const { getQuery, getRouterParam } = installNitroGlobals()
 const setResponseHeader = vi.fn()

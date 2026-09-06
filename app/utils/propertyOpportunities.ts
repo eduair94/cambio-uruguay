@@ -1,3 +1,5 @@
+import type { RentalAvailabilitySummary } from './rentalAvailability'
+
 /** An asking-price comparison, never a transaction valuation or a promised saving. */
 export type OpportunityOperation = 'rent' | 'sale'
 export type OpportunityCurrency = 'UYU' | 'USD'
@@ -82,6 +84,8 @@ export interface OpportunityListing {
 }
 
 export interface OpportunityPublicListing {
+  /** Live community evidence is attached on read, never stored in the price analysis. */
+  availability?: RentalAvailabilitySummary
   id: string
   operation: OpportunityOperation
   propertyKey?: string

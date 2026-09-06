@@ -352,6 +352,12 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
                   >
                 </div>
                 <p class="rental-card__meta">{{ sellerLabel(property) }}</p>
+                <RentalsAvailabilityReport
+                  :offers="property.offers"
+                  :summary="property.availability"
+                  :preferred="displayOffer(property)"
+                  :title="property.title"
+                />
                 <p class="rental-card__meta">
                   {{
                     t('seen', {
@@ -459,6 +465,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
 </template>
 
 <script setup lang="ts">
+import { rentalAvailabilityCopy } from '~/utils/rentalAvailabilityMessages'
 import { useDisplay } from 'vuetify'
 import SearchFilters from '~/components/rentals/SearchFilters.vue'
 import SavedPanel from '~/components/rentals/SavedPanel.vue'
@@ -498,6 +505,8 @@ import {
 
 const LocationsMap = defineAsyncComponent(() => import('~/components/map/LocationsMap.vue'))
 const { t, locale } = useI18n({ useScope: 'local', messages: rentalMessages })
+const availability = useRentalAvailability()
+const availabilityCopy = computed(() => rentalAvailabilityCopy(locale.value))
 const localePath = useLocalePath()
 const route = useRoute()
 const router = useRouter()
@@ -531,7 +540,7 @@ const requestKey = computed(() => JSON.stringify(requestParams.value))
 const view = computed(() => (route.query.view === 'mapa' ? 'mapa' : 'lista'))
 const { data, pending, error, refresh } = await useAsyncData<RentalsResponse>(
   'rental-directory',
-  () => $fetch('/api/rentals', { query: requestParams.value }),
+  () => $fetch('/api/rentals', { query: availability.withRevision(requestParams.value) }),
   { watch: [requestKey] }
 )
 const items = computed(() => data.value?.items ?? [])
@@ -675,6 +684,11 @@ const filterChips = computed(() => {
     if (active) add(key, t(label))
   }
   if (q.currency) add('currency', q.currency)
+  if (q.availability !== 'all')
+    add(
+      'availability',
+      availabilityCopy.value[q.availability === 'hide_multiple' ? 'chipMultiple' : 'chipAny']
+    )
   if (q.source) add('source', sourceLabel(q.source))
   if (q.guarantees.length) add('garantia', q.guarantees.map(g => t(g)).join(', '))
   if (q.sedes.length) add('sedes', `${t('nearby')} · ${q.radioKm} km`, ['sedes', 'radio'])
@@ -696,7 +710,7 @@ const {
   execute: loadMap,
 } = await useAsyncData<RentalMapResponse>(
   'rental-directory-map',
-  () => $fetch('/api/rentals/mapa', { query: mapParams.value }),
+  () => $fetch('/api/rentals/mapa', { query: availability.withRevision(mapParams.value) }),
   { server: false, immediate: false }
 )
 watch([view, mapKey], () => {
@@ -759,7 +773,7 @@ async function selectMapProperty(marker: { id: string }) {
   try {
     const detail = await $fetch<RentalPropertyDetailResponse>(
       `/api/rentals/propiedad/${encodeURIComponent(marker.id)}`,
-      { query: mapParams.value, signal: request.signal, retry: 0 }
+      { query: availability.withRevision(mapParams.value), signal: request.signal, retry: 0 }
     )
     if (mapDetailRequest === request) mapDetail.value = detail
   } catch (error) {
@@ -967,6 +981,20 @@ async function shareSearch() {
 const onStorage = (event: StorageEvent) => {
   if (event.key === RENTAL_SAVED_STORAGE_ID || event.key === null) saved.value = readRentalSaved()
 }
+availability.watchChanges(async () => {
+  await refresh()
+  if (view.value === 'mapa') {
+    const selected = selectedMapKey.value
+    await loadMap()
+    if (selected && mapData.value?.points.some(point => point.key === selected)) {
+      mapDetail.value = null
+      await selectMapProperty({ id: selected })
+    } else if (selected) {
+      await closeMapProperty(false)
+      focusSearchResults()
+    }
+  } else if (query.value.availability !== 'all') focusSearchResults()
+})
 onMounted(() => {
   saved.value = readRentalSaved()
   window.addEventListener('storage', onStorage)

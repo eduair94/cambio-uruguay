@@ -269,6 +269,7 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
 </template>
 
 <script setup lang="ts">
+import { rentalAvailabilityCopy } from '~/utils/rentalAvailabilityMessages'
 import { useDisplay } from 'vuetify'
 import OpportunityFilters from '~/components/property-opportunities/Filters.vue'
 import OpportunityCard from '~/components/property-opportunities/OpportunityCard.vue'
@@ -289,6 +290,8 @@ import {
 import type { OpportunitySource } from '~/utils/propertyOpportunities'
 
 const { t, locale } = useI18n({ useScope: 'local', messages: propertyOpportunityMessages })
+const availability = useRentalAvailability()
+const availabilityCopy = computed(() => rentalAvailabilityCopy(locale.value))
 const localePath = useLocalePath()
 const route = useRoute()
 const router = useRouter()
@@ -297,12 +300,17 @@ const query = computed(() => normalizeOpportunityQuery(route.query))
 const requestKey = computed(() => JSON.stringify(query.value))
 const { data, pending, error, refresh } = await useAsyncData<PropertyOpportunitiesResponse>(
   'property-opportunities',
-  () => $fetch('/api/property-opportunities', { query: query.value }),
+  () =>
+    $fetch('/api/property-opportunities', { query: availability.withRevision({ ...query.value }) }),
   { watch: [requestKey] }
 )
 const items = computed(() =>
   !pending.value && data.value?.operation === query.value.operation ? data.value.items : []
 )
+availability.watchChanges(async () => {
+  await refresh()
+  if (query.value.availability !== 'all') await focusResults()
+})
 const unavailable = computed(() => error.value?.statusCode === 503)
 const number = (value: number) => opportunityNumber(value, locale.value)
 const date = (value: string) => opportunityDate(value, locale.value) || t('unknownDate')
@@ -331,6 +339,7 @@ let filterActivator: HTMLElement | null = null
 let filterReturnScroll = 0
 let filtersApplied = false
 type FilterKey =
+  | 'availability'
   | 'department'
   | 'neighborhood'
   | 'type'
@@ -356,6 +365,12 @@ const filterChips = computed(() => {
   if (q.confidence !== 'all') chips.push({ key: 'confidence', label: t(q.confidence) })
   if (q.signal !== 'all') chips.push({ key: 'signal', label: t(q.signal) })
   if (q.evidence !== 'all') chips.push({ key: 'evidence', label: t(q.evidence) })
+  if (q.availability !== 'all')
+    chips.push({
+      key: 'availability',
+      label:
+        availabilityCopy.value[q.availability === 'hide_multiple' ? 'chipMultiple' : 'chipAny'],
+    })
   return chips
 })
 const emptyMessages = computed(() => {
@@ -376,6 +391,7 @@ async function updateQuery(next: OpportunityQuery) {
     'confidence',
     'signal',
     'evidence',
+    'availability',
     'sort',
     'page',
   ] as const) {

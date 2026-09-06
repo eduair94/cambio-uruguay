@@ -9,6 +9,11 @@
 // and a bare `SOURCES` or `formatPrice` here would silently collide with another page's helper.
 
 import { MUTUALISTA_SEDES, type MutualistaSede } from './mutualistaSedes'
+import {
+  normalizeRentalAvailabilityFilter,
+  type RentalAvailabilityFilter,
+  type RentalAvailabilitySummary,
+} from './rentalAvailability'
 
 /** Portals spell the same barrio as Cordón, CORDON or cordon. Match and group them together. */
 export const RENTAL_COLLATION = { locale: 'es', strength: 1 } as const
@@ -53,6 +58,8 @@ export interface RentalOfferDetails {
 }
 
 export interface RentalOffer {
+  /** Recent community reports about this advert, never a confirmed availability status. */
+  availability?: RentalAvailabilitySummary
   details?: RentalOfferDetails
   source: RentalSource
   listingId: string
@@ -136,6 +143,8 @@ export const RENTAL_GUARANTEE_PUBLISHED: readonly RentalGuarantee[] = Object.fre
 ])
 
 export interface RentalProperty {
+  /** Distinct accounts reporting the adverts currently displayed in this group. */
+  availability?: RentalAvailabilitySummary
   key: string
   title: string
   propertyType: RentalPropertyType
@@ -277,6 +286,7 @@ export const RENTAL_PER_PAGE = 24
 export const RENTAL_PER_PAGE_MAX = 48
 
 export interface RentalQuery {
+  availability: RentalAvailabilityFilter
   q: string
   department: string
   neighborhood: string
@@ -373,6 +383,7 @@ export function normalizeRentalQuery(input: Record<string, unknown> = {}): Renta
   const source = clean(input.source, 30)
 
   return {
+    availability: normalizeRentalAvailabilityFilter(input.availability),
     q: clean(input.q, 80),
     department: clean(input.department),
     neighborhood: neighborhoods.length === 1 ? neighborhoods[0]! : '',
@@ -407,6 +418,7 @@ export function normalizeRentalQuery(input: Record<string, unknown> = {}): Renta
 /** Only the parameters that differ from the default, so the URL stays readable and cacheable. */
 export function rentalQueryToParams(query: RentalQuery): Record<string, string> {
   const params: Record<string, string> = {}
+  if (query.availability && query.availability !== 'all') params.availability = query.availability
   if (query.q) params.q = query.q
   if (query.department) params.department = query.department
   if (query.neighborhoods.length > 1) params.neighborhoods = query.neighborhoods.join(',')
@@ -560,6 +572,7 @@ export function rentalSpecsLabel(
 
 /** Un punto del mapa: lo mínimo para dibujar un marcador y su globo. */
 export interface RentalMapPoint {
+  availability?: RentalAvailabilitySummary
   key: string
   lat: number
   lng: number
@@ -860,7 +873,11 @@ function rentalBudgetExpression(query: RentalQuery, usdUyu: number): Record<stri
  * the property must not turn those old prices, amenities or source counts into current evidence.
  * Both list/map and EVERY facet/count run this stage before interpreting the query.
  */
-export function rentalPublicStages(filter: Record<string, unknown>, staleDays: number) {
+export function rentalPublicStages(
+  filter: Record<string, unknown>,
+  staleDays: number,
+  excludedAdvertIds: readonly string[] = []
+) {
   const cutoff = new Date(Date.now() - staleDays * 86_400_000).toISOString().slice(0, 10)
   const derived = new Set([
     'offers',
@@ -889,6 +906,71 @@ export function rentalPublicStages(filter: Record<string, unknown>, staleDays: n
                 { $gte: ['$$offer.lastSeen', cutoff] },
                 { $isNumber: '$$offer.priceUyu' },
                 { $gt: ['$$offer.priceUyu', 0] },
+                ...(excludedAdvertIds.length
+                  ? [
+                      {
+                        $not: [
+                          {
+                            $in: [
+                              {
+                                $let: {
+                                  vars: {
+                                    source: {
+                                      $convert: {
+                                        input: '$$offer.source',
+                                        to: 'string',
+                                        onError: '',
+                                        onNull: '',
+                                      },
+                                    },
+                                    id: {
+                                      $convert: {
+                                        input: '$$offer.listingId',
+                                        to: 'string',
+                                        onError: '',
+                                        onNull: '',
+                                      },
+                                    },
+                                  },
+                                  in: {
+                                    $concat: [
+                                      'rent:',
+                                      '$$source',
+                                      ':',
+                                      {
+                                        $cond: [
+                                          {
+                                            $eq: [
+                                              {
+                                                $indexOfCP: [
+                                                  '$$id',
+                                                  { $concat: ['$$source', ':'] },
+                                                ],
+                                              },
+                                              0,
+                                            ],
+                                          },
+                                          {
+                                            $substrCP: [
+                                              '$$id',
+                                              { $add: [{ $strLenCP: '$$source' }, 1] },
+                                              { $strLenCP: '$$id' },
+                                            ],
+                                          },
+                                          '$$id',
+                                        ],
+                                      },
+                                    ],
+                                  },
+                                },
+                              },
+                              [...excludedAdvertIds],
+                            ],
+                          },
+                        ],
+                      },
+                    ]
+                  : []),
               ],
             },
           },

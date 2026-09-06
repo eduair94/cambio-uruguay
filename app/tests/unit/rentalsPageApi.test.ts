@@ -19,6 +19,10 @@ vi.mock('../../server/models/RentalMeta', () => ({
   RentalMetaModel: { findOne: () => ({ select: () => ({ lean }) }) },
 }))
 vi.mock('../../server/models/RentalListing', () => ({ RentalListingModel: { aggregate } }))
+vi.mock('../../server/utils/rentalAvailability', () => ({
+  loadRentalAvailabilityIndex: async () => ({}),
+  annotateRentalAvailability: (property: unknown) => property,
+}))
 vi.mock('../../server/utils/rentalPage', () => ({
   buildRentalPage,
   rentalPageEvidenceStages,
@@ -48,10 +52,18 @@ describe('canonical rental page API', () => {
     getRouterParam.mockReturnValue('canonical-key')
     getQuery.mockReturnValue({ monthlyMax: '1', source: 'facebook' })
     rentalPageEvidenceStages.mockReturnValue([{ $match: { peer: true } }])
-    buildRentalPage.mockReturnValue({ canonicalPath: '/alquileres/canonical-key' })
+    buildRentalPage.mockReturnValue({
+      canonicalPath: '/alquileres/canonical-key',
+      property: { key: 'canonical-key' },
+      similar: [],
+    })
   })
   it('ignores user query parameters so canonical content does not change by entrance path', async () => {
-    expect(await handler({} as any)).toEqual({ canonicalPath: '/alquileres/canonical-key' })
+    expect(await handler({} as any)).toEqual({
+      canonicalPath: '/alquileres/canonical-key',
+      property: { key: 'canonical-key' },
+      similar: [],
+    })
     expect(getQuery).not.toHaveBeenCalled()
     expect(buildRentalPage).toHaveBeenCalledWith(
       { key: 'canonical-key' },
