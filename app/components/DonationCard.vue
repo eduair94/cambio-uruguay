@@ -11,8 +11,8 @@
           target="_blank"
           rel="noopener noreferrer"
           :aria-label="$t('donation.donatePaypal')"
-          variant="tonal"
-          color="primary"
+          variant="outlined"
+          color="link"
           class="donation-link"
           @click="trackDonation('paypal')"
         >
@@ -23,8 +23,8 @@
           target="_blank"
           rel="noopener noreferrer"
           :aria-label="$t('donation.donateMercadoPago')"
-          variant="tonal"
-          color="primary"
+          variant="outlined"
+          color="link"
           class="donation-link"
           @click="trackDonation('mercadopago')"
         >
@@ -110,7 +110,7 @@ const trackDonation = (platform: string) => {
   align-items: center;
   min-height: 44px;
   padding: 8px;
-  color: rgb(var(--v-theme-primary));
+  color: rgb(var(--v-theme-link));
   font-size: 0.9375rem;
   line-height: 1.5;
   text-underline-offset: 3px;

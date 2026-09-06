@@ -19,7 +19,7 @@ test.describe('cookie consent', () => {
   })
 
   test('shows the banner on first visit and accepting hides it + persists', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/', { waitUntil: 'domcontentloaded' })
     const accept = page.getByRole('button', { name: /Aceptar/i })
     await expect(accept).toBeVisible()
 
@@ -34,12 +34,12 @@ test.describe('cookie consent', () => {
     expect(cookies.find(c => c.name === 'cu_consent')?.value).toBe('granted')
 
     // Reload: banner must not reappear.
-    await page.reload()
+    await page.reload({ waitUntil: 'domcontentloaded' })
     await expect(page.getByRole('button', { name: /Aceptar/i })).toBeHidden()
   })
 
   test('rejecting persists denied and hides the banner', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/', { waitUntil: 'domcontentloaded' })
     const reject = page.getByRole('button', { name: /Rechazar/i })
     await expect(reject).toBeVisible()
     await expect(async () => {
@@ -53,7 +53,7 @@ test.describe('cookie consent', () => {
   })
 
   test('footer "Configurar cookies" re-opens the banner after a decision', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/', { waitUntil: 'domcontentloaded' })
     await expect(async () => {
       await page.getByRole('button', { name: /Aceptar/i }).click()
       await expect(page.getByRole('button', { name: /Aceptar/i })).toBeHidden()

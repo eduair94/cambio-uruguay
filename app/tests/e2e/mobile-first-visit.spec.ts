@@ -15,7 +15,7 @@ for (const width of [320, 390]) {
     page.on('request', request => {
       if (/tawk\.(?:to|link)/i.test(request.url())) chatRequests.push(request.url())
     })
-    await page.goto('/alquileres-uruguay')
+    await page.goto('/alquileres-uruguay', { waitUntil: 'domcontentloaded' })
     const consent = page.getByTestId('cookie-consent-inline')
     await expect(consent).toBeVisible()
     await expect(consent).toHaveCSS('position', 'static')
@@ -28,8 +28,12 @@ for (const width of [320, 390]) {
 
     // Load a real result set before checking persistence through a long list.
     // Review previews can use a different database for their initial SSR payload.
-    await page.getByLabel('Ordenar', { exact: true }).click()
-    await page.getByRole('option', { name: 'Precio: menor a mayor', exact: true }).click()
+    await page
+      .locator('.v-select')
+      .filter({ has: page.getByLabel('Ordenar', { exact: true }) })
+      .locator('.v-field__input')
+      .click()
+    await page.getByRole('option', { name: 'Menor alquiler', exact: true }).click()
     await expect(page.locator('.rental-card').first()).toBeVisible()
 
     await page.clock.install()

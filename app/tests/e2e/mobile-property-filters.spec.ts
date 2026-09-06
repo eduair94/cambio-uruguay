@@ -15,7 +15,7 @@ const directories = [
     advanced: 'Más filtros',
     apply: 'Aplicar filtros',
     hasMap: true,
-    cheapest: 'Precio: menor a mayor',
+    cheapest: 'Menor alquiler',
     card: '.rental-card',
   },
   {
@@ -84,7 +84,11 @@ for (const width of [320, 390]) {
       await clearConsentByChoice(page)
       // Real client navigation also supports review previews whose SSR database
       // differs from the public read-only catalogue used by the browser.
-      await page.getByLabel('Ordenar', { exact: true }).click()
+      await page
+        .locator('.v-select')
+        .filter({ has: page.getByLabel('Ordenar', { exact: true }) })
+        .locator('.v-field__input')
+        .click()
       await page.getByRole('option', { name: directory.cheapest, exact: true }).click()
       await expect(page.locator(directory.card).first()).toBeVisible()
       const trigger = page.getByTestId(directory.trigger)
