@@ -230,6 +230,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/alquilar-en-uruguay',
       },
       {
+        label: 'Primer alquiler: gastos y trámites',
+        description: 'Presupuesto de entrada, garantía CGN, UTE, OSE y tributos.',
+        to: '/primer-alquiler-uruguay',
+      },
+      {
         label: 'Alquilar estando en el Clearing',
         description: 'Sí se puede: cómo hacerlo.',
         to: '/alquilar-estando-en-clearing',

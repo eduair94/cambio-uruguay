@@ -516,6 +516,14 @@
           </p>
         </VCard>
       </div>
+      <VAlert type="info" variant="tonal" density="comfortable" class="mt-5">
+        <strong>Si ya elegiste la vivienda y estás por firmar:</strong> revisá
+        <NuxtLink :to="localePath('/primer-alquiler-uruguay')">
+          primer alquiler: gastos y trámites
+        </NuxtLink>
+        para armar tu presupuesto, resolver la garantía CGN y los servicios de UTE y OSE, y saber
+        qué preguntar por tributos y saneamiento aunque la casa no tenga gastos comunes.
+      </VAlert>
     </section>
 
     <section class="mb-10" aria-labelledby="visita-title">
