@@ -11,7 +11,7 @@
 // none of those signals, nor barrio, coordinates or asking price, establishes unit identity.
 import { flatten, slugify } from "./normalize";
 import { mergeGuarantees } from "./guarantees";
-import { rentalDescription, rentalOfferDetails } from "./details";
+import { checkedRentalArea, rentalDescription, rentalOfferDetails } from "./details";
 import {
   conflictingUnitEvidence,
   exactRentalAddress,
@@ -315,7 +315,8 @@ export function buildRentalProperties(raw: RawRental[], context: DedupeContext):
       // Captures can outlive parser fixes. Sanitize fresh detail again at this write boundary,
       // before it can become private matching evidence or public per-offer information.
       ...(listing.description ? { description: rentalDescription(listing.description) } : {}),
-      ...(listing.details ? { details: rentalOfferDetails(listing.details) } : {}),
+      ...(listing.details ? { details: rentalOfferDetails(listing.details, `${listing.title}\n${listing.description || ""}`, listing.propertyType) } : {}),
+      area: checkedRentalArea(listing.area, `${listing.title}\n${listing.description || ""}`, listing.propertyType),
       // Honor the publisher's flag centrally as well as in each parser. A future feed must not
       // reveal a hidden address merely by retaining the original JSON's street or precise pin.
       ...(listing.addressHidden === true ? {

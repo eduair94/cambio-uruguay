@@ -444,6 +444,35 @@ describe("sameUnit", () => {
     expect(buildRentalProperties([raw, listing({ listingId: "infocasas:2" })], context)).toHaveLength(1);
   });
 
+  it.each(["title", "full_description"])("checks explicit hectares in the original %s before publishing a raw land field as square metres", (location) => {
+    const title = location === "title" ? "Apartamento con 5 hectáreas de terreno" : base.title;
+    const description = `${"Características del inmueble. ".repeat(100)}Terreno de 5 hectáreas.`;
+    const details = {
+      description: description.slice(0, 2400), images: [], builtArea: 60, totalArea: 70,
+      landArea: 5, terraceArea: null, amenities: [], guaranteeText: "",
+    };
+    const property = buildRentalProperties([listing({ title, description: location === "full_description" ? description : "", details })], context)[0]!;
+    expect(property.offers[0]!.details?.landArea).toBeNull();
+    expect(property.offers[0]!.details?.builtArea).toBe(60);
+    const squareMetres = buildRentalProperties([listing({ title, description, details: { ...details, landArea: 50_000 } })], context)[0]!;
+    expect(squareMetres.offers[0]!.details?.landArea).toBe(50_000);
+  });
+
+  it("withholds the real truncated InfoCasas hectare quantity from terrain area and total square metres", () => {
+    const details = { description: "Hermosa Chacra de 4,2 hectáreas con salón para eventos.",
+      images: [], builtArea: 600, totalArea: 4, landArea: 4.2, terraceArea: 4, amenities: [], guaranteeText: "" };
+    const advert = listing({ listingId: "infocasas:194151603", title: "ALQUILER Chacra para eventos. 500 personas",
+      propertyType: "terreno", area: 4, description: details.description, details });
+    const property = buildRentalProperties([advert], context)[0]!;
+    expect(property.area).toBeNull();
+    expect(property.offers[0]!.identity?.area).toBeNull();
+    expect(property.offers[0]!.details).toMatchObject({ totalArea: null, landArea: null, builtArea: 600, terraceArea: 4 });
+    const correctlyConverted = buildRentalProperties([listing({ ...advert, area: 42_000,
+      details: { ...details, totalArea: 42_000, landArea: 42_000 } })], context)[0]!;
+    expect(correctlyConverted.area).toBe(42_000);
+    expect(correctlyConverted.offers[0]!.details).toMatchObject({ totalArea: 42_000, landArea: 42_000 });
+  });
+
   it("keeps all units in multi-unit prose separate, without deciding which description is wrong", () => {
     const description = "Disponibles unidad 301 y unidad 801 en el mismo edificio.";
     expect(buildRentalProperties([listing({ description }), listing({ listingId: "infocasas:2" })], context)).toHaveLength(2);

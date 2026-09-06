@@ -652,6 +652,14 @@ legend {
     grid-template-columns: 1fr;
   }
 }
+@media (max-width: 360px) {
+  .rental-search--dialog .rental-search__main {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .rental-search--dialog :deep(.v-field-label:not(.v-field-label--floating)) {
+    font-size: 14px;
+  }
+}
 </style>
 
 <style>

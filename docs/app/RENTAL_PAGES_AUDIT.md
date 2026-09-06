@@ -200,3 +200,18 @@ La tabla conserva los datos de la revisión inicial de las 05:36 UTC; no represe
 | montevideo-pocitos-lorenzo-justiniano-perez-1moyfrm | Pocitos | 2 | 1 | 64 | infocasas, mercadolibre |
 | montevideo-cordon-jose-enrique-rodo-1qechrc | Cordón | 1 | 1 | 52 | infocasas, mercadolibre |
 | montevideo-buceo-demostenes-18gw5ae | Buceo | 0 | 1 | 25 | infocasas, mercadolibre |
+## Verificación posterior a la actualización del 6 de septiembre
+
+Lectura pública de las 93 keys a **2026-09-06 04:45:06 UTC**, tras incorporar las descripciones
+y fotos: 41 fichas disponibles con HTTP 200, 52 retiradas con 404 y **28 aptas para indexación**.
+El sitemap español contiene exactamente esas 28 URLs, sin faltantes ni extras, sin variantes
+EN/PT y sin `lastmod` inventado. Siete comprobaciones de HTML servido verificaron canonical,
+robots, títulos, descripciones visibles sin JavaScript, idiomas y 404 real. No se detectó
+evidencia privada ni contactos internos en las respuestas. Son condiciones técnicas de
+indexabilidad, no una afirmación de indexación o posición en Google.
+
+La ficha real de Avenida Brasil, Pocitos (`infocasas:194110593`) presentó doce fotos y una
+descripción de 1.849 caracteres. La portada y la ampliación cargaron correctamente a
+320/390/1440 px; se verificaron flechas, Escape, recuperación del foco, contacto y ausencia
+de desbordamiento y errores JS. Las capturas e informes con los datos completos se guardaron
+como artefactos locales ignorados, sin publicar el catálogo bruto.

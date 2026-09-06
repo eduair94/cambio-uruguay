@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { rentalDescription, rentalImages, rentalOfferDetails } from "../../classes/rentals/details";
+import { checkedRentalArea, rentalDescription, rentalImages, rentalOfferDetails } from "../../classes/rentals/details";
 import { toRawRental as infoCasas } from "../../classes/rentals/sources/infocasas";
 import { elpaisToRawRental } from "../../classes/rentals/sources/elpais";
 import { buildRentalProperties } from "../../classes/rentals/dedupe";
@@ -76,6 +76,52 @@ describe("original advert detail, without executable content or contacts", () =>
     for (const value of [null, undefined, "", false, -5, Infinity, 1_000_001]) {
       expect(rentalOfferDetails({ builtArea: value, totalArea: value })).toMatchObject({ builtArea: null, totalArea: null });
     }
+  });
+
+  it.each([
+    ["TERRENO: 5 hectáreas.", 5],
+    ["Local con 5 has de terreno.", 5],
+    ["Chacra de 1,5 ha.", 1.5],
+    ["Superficie de 2.5 hectareas.", 2.5],
+  ])("does not publish an imported hectare count as the same number of square metres: %s", (description, landArea) => {
+    const details = rentalOfferDetails({ description, landArea });
+    expect(details.landArea).toBeNull();
+    expect(details.description).toBe(description);
+    expect(rentalOfferDetails(details)).toEqual(details);
+  });
+
+  it("keeps an already converted area and does not infer hectares from unrelated quantities", () => {
+    expect(rentalOfferDetails({ description: "Terreno: 5 hectáreas.", landArea: 50000 }).landArea).toBe(50000);
+    expect(rentalOfferDetails({ description: "Chacra de 1,5 hectáreas.", landArea: 15000 }).landArea).toBe(15000);
+    expect(rentalOfferDetails({ description: "5 dormitorios y 500 m² de terreno", landArea: 500 }).landArea).toBe(500);
+    expect(rentalOfferDetails({ description: "Casa de 500 m² cerca de un parque de 5 hectáreas", landArea: 500 }).landArea).toBe(500);
+  });
+
+  it("checks the full original evidence when a harvested excerpt omitted the hectare unit", () => {
+    const details = rentalOfferDetails({ description: "Descripción corta.", landArea: 5 }, "Alquiler local. 5 has de terreno.");
+    expect(details.landArea).toBeNull();
+    expect(details.description).toBe("Descripción corta.");
+  });
+
+  it("withholds a terrain's truncated or rounded hectare amount in main and total surface, without converting it", () => {
+    const text = "Hermosa Chacra de 4,2 hectáreas con salón para eventos.";
+    expect(checkedRentalArea(4, text, "terreno")).toBeNull();
+    expect(checkedRentalArea(4.2, text, "terreno")).toBeNull();
+    expect(checkedRentalArea(5, "Terreno de 4,8 ha.", "terreno")).toBeNull();
+    expect(checkedRentalArea(4, "Terreno de 4,8 ha.", "terreno")).toBeNull();
+    const input = { description: text, totalArea: 4, landArea: 4.2, builtArea: 600, terraceArea: 20 };
+    const details = rentalOfferDetails(input, text, "terreno");
+    expect(details).toMatchObject({ totalArea: null, landArea: null, builtArea: 600, terraceArea: 20 });
+    expect(rentalOfferDetails(details, text, "terreno")).toEqual(details);
+  });
+
+  it("keeps real square metres and does not apply terrain rounding to a building's area", () => {
+    const text = "Local de 600 m² construidos en un terreno de 5 hectáreas.";
+    expect(checkedRentalArea(600, text, "local")).toBe(600);
+    expect(checkedRentalArea(42000, "Chacra de 4,2 hectáreas.", "terreno")).toBe(42000);
+    expect(rentalOfferDetails({ description: text, builtArea: 600, totalArea: 600, landArea: 50000 }, text, "local"))
+      .toMatchObject({ builtArea: 600, totalArea: 600, landArea: 50000 });
+    expect(checkedRentalArea(4, "Casa dentro de un predio de 4,2 hectáreas.", "casa")).toBe(4);
   });
 });
 

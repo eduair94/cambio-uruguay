@@ -2,6 +2,35 @@
 
 ## Ampliación de fichas y revisión de identidad — 2026-09-06
 
+Verificación de producción a **04:54:57 UTC**: **28.758 resultados visibles** (Mercado Libre
+7.455, InfoCasas 10.889, Facebook 1.860, Casasweb 2.647, El País 5.907), con coincidencia exacta
+entre Mongo y la cobertura pública, incluso al filtrar la búsqueda. La lectura completa de
+04:03:30–04:33:21 relevó **20.702 avisos**: 3.721 / 8.231 / 310 / 2.631 / 5.809 respectivamente.
+El País consultó los 19 departamentos. Son lecturas e inventario distintos, no cobertura total
+del mercado ni un recuento certificado de viviendas únicas.
+
+La aplicación con respaldo previo conservó **31.510 IDs almacenados**, incluidos los 26.692
+anteriores y 4.818 nuevos; 10.808 avisos no observados conservaron todas sus fechas y evidencia.
+La revisión independiente encontró cero pertenencias duplicadas, cero grupos de varios avisos
+y diez pares negativos históricos separados. Hay 14.040 detalles nuevos (8.231 de InfoCasas y
+5.809 de El País); 3.749 direcciones ocultas mantienen calle y coordenadas vacías. Un único aviso
+de Mercado Libre recibió una key propia al comprobar que su título/dirección canónicos anteriores
+no eran atribuibles a su anuncio. Ninguna ausencia en esta captura eliminó avisos antiguos.
+
+La inspección real detectó cuatro superficies de terreno cuyo número estaba expresado en
+hectáreas en el texto, pero etiquetado como m² en el campo del portal. Esas superficies quedan
+desconocidas, sin inventar una conversión. Para terrenos también se retira la cantidad de
+hectáreas truncada/redondeada en área general/total; se conservan superficies construidas y
+terrazas. `infocasas:194151603` deja de mostrar 4 m² frente a un texto de 4,2 ha;
+`elpais:6a62b7176b973a2b79b201b6` conserva los 5.560 m² del local y retira el terreno de 5 m².
+
+Validación pública: 56 controles de datos aprobados; once recorridos de navegador aprobados
+para mapa, fichas, cobertura y filtros. El recorrido con avisos reales a 320/390/844 px abrió
+filtros tras desplazarse 5.000 px y conservó exactamente esa posición al cerrar; sin errores JS
+ni desbordamientos observados. Una ficha real a 320/390/1440 px cargó doce fotos y su descripción,
+con ampliación, teclado, foco y contacto comprobados. Chrome y WebKit también aprobaron las
+pruebas locales del panel lateral; esto no certifica cada dispositivo o navegador integrado.
+
 Todas las tarjetas vigentes enlazan explícitamente a su ficha SSR existente. Los datos nuevos
 de InfoCasas y El País conservan descripción original, fotografías y superficies disponibles
 por aviso; InfoCasas también aporta instalaciones y texto de garantías. No se completan campos

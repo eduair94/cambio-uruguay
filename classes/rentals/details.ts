@@ -1,4 +1,5 @@
 import * as cheerio from "cheerio";
+import { flatten, parseMoney } from "./normalize";
 import type { RentalOfferDetails } from "./types";
 
 /** No HTML, scripts, links or contact data cross from source descriptions into our catalogue. */
@@ -53,6 +54,31 @@ const area = (value: unknown): number | null => {
   return Number.isFinite(number) && number >= 1 && number <= 1_000_000 ? number : null;
 };
 
+/** Some imported feeds name a hectare count `landAreaM2` without converting its units. */
+function checkedLandArea(value: unknown, originalText: string, allowRounded = false): number | null {
+  const squareMetres = area(value);
+  if (squareMetres === null) return null;
+  const text = flatten(originalText);
+  for (const match of text.matchAll(/\b(\d[\d.,]*)\s*(?:hectareas?|hectares?|has?)\b/g)) {
+    const hectares = parseMoney(match[1]);
+    // The same numerical amount in hectares cannot also be that amount in m². Withhold the
+    // conflicted field rather than inventing a corrected value. Already converted values stay.
+    if (hectares !== null && (
+      Math.abs(squareMetres - hectares) < 0.000001 ||
+      (allowRounded && Number.isInteger(squareMetres) &&
+        (squareMetres === Math.trunc(hectares) || squareMetres === Math.round(hectares)))
+    )) return null;
+  }
+  return squareMetres;
+}
+
+/** A terrain's general/total surface can also be an imported, rounded hectare quantity. */
+export function checkedRentalArea(value: unknown, originalText: unknown, propertyType?: string): number | null {
+  return propertyType === "terreno"
+    ? checkedLandArea(value, rentalDescription(originalText), true)
+    : area(value);
+}
+
 /** Fields are deliberately explicit so unknown publisher metadata cannot leak via object spread. */
 export function rentalOfferDetails(input: {
   description?: unknown;
@@ -63,13 +89,15 @@ export function rentalOfferDetails(input: {
   terraceArea?: unknown;
   amenities?: readonly unknown[];
   guaranteeText?: unknown;
-}): RentalOfferDetails {
+}, originalText?: unknown, propertyType?: string): RentalOfferDetails {
+  const description = rentalDescription(input.description, 2_400);
+  const landEvidence = `${description}\n${rentalDescription(originalText ?? input.description)}`;
   return {
-    description: rentalDescription(input.description, 2_400),
+    description,
     images: rentalImages(input.images || []),
     builtArea: area(input.builtArea),
-    totalArea: area(input.totalArea),
-    landArea: area(input.landArea),
+    totalArea: checkedRentalArea(input.totalArea, landEvidence, propertyType),
+    landArea: checkedLandArea(input.landArea, landEvidence),
     terraceArea: area(input.terraceArea),
     amenities: [...new Set((input.amenities || [])
       .filter((value): value is string => typeof value === "string")
