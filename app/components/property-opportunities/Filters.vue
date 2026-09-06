@@ -61,9 +61,15 @@
           {{ t(query.operation === 'rent' ? 'rentBudget' : 'saleBudget') }}
         </p>
         <VSelect
-          v-model="draft.confidence"
-          :items="confidenceItems"
-          :label="t('confidence')"
+          v-model="draft.signal"
+          :items="signalItems"
+          :label="t('signalFilter')"
+          v-bind="field"
+        />
+        <VSelect
+          v-model="draft.evidence"
+          :items="evidenceItems"
+          :label="t('evidenceFilter')"
           v-bind="field"
         />
         <p class="opportunity-filters__hint">{{ t('confidenceHint') }}</p>
@@ -121,10 +127,15 @@ const bedroomItems = computed(() => [
   { title: t('any'), value: '' },
   ...Array.from({ length: 9 }, (_, n) => ({ title: n ? `${n}` : t('studio'), value: n })),
 ])
-const confidenceItems = computed(() => [
+const signalItems = computed(() => [
   { title: t('any'), value: 'all' },
-  { title: t('supported'), value: 'supported' },
-  { title: t('limited'), value: 'limited' },
+  { title: t('total_price'), value: 'total_price' },
+  { title: t('price_per_m2'), value: 'price_per_m2' },
+])
+const evidenceItems = computed(() => [
+  { title: t('any'), value: 'all' },
+  { title: t('standard'), value: 'standard' },
+  { title: t('exploratory'), value: 'exploratory' },
 ])
 const dialogProps = computed(() =>
   props.mobile

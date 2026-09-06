@@ -31,6 +31,14 @@ Separar el candidato de su cohorte y evitar repeticiones como evidencia independ
 
 ## Integración y verificación
 
+### Ampliación solicitada el mismo día
+
+El usuario señaló que cuatro resultados no satisfacían la necesidad de explorar el mercado. La revisión separó ventajas de precio total y por m², y añadió un nivel exploratorio con una muestra menor claramente identificada. La selección física de la cohorte precede al precio; se conserva el mismo grupo para ambas métricas y se mide la sensibilidad al retirar cada anunciante. No se amplían barrios ni se asignan primas monetarias inventadas a amenities.
+
+Las guías de [comparables de Fannie Mae](https://selling-guide.fanniemae.com/sel/b4-1.3-08/comparable-sales) priorizan características físicas y ubicación, mientras que las [instrucciones de ajustes](https://guide-selling.fanniemae.com/sel/b4-1.3-09/adjustments-comparable-sales) requieren justificación de mercado. Esas guías trabajan con tasaciones y transacciones: no validan nuestros umbrales de anuncios. Aquí sirven para mantener visible la similitud, abstenerse ante contradicciones y explicar qué desconocemos. La política de cinco anuncios exploratorios es propia, no un mínimo profesional trasladado a Uruguay.
+
+Los contrafactuales se evaluaron sobre capturas reales y luego se revisaron los textos de candidatos. Se encontraron falsos atractivos que no podían resolverse bajando un umbral: anuncios ocupados, unidades de referencia, costos aparte y superficies incompatibles. Se añadieron regresiones sobre esas variantes antes de publicar el método ampliado. Los resultados describen precios pedidos; aun una diferencia estable puede deberse al estado, exterior u otras características no disponibles.
+
 API con snapshot fechado, cobertura por operación, filtros disponibles, resultados y paginación. La UI consume el resultado del motor; no recalcula descuentos con otro universo. Se preservan fuente, moneda, clase de superficie y costos de cada aviso. Sin datos de contacto privados ni inferencias demográficas.
 
 Raíz mantiene API, navegación, catálogo de herramientas y metadatos. Esta tarea implementa página, componentes y mensajes dedicados. Verificar URL compartible, limpieza de presupuesto al cambiar operación, drawer tras scroll, Escape/foco, comparables sin desbordamiento, estados vacíos/error y temas claro/oscuro en 320/390/1440 px. Separar pruebas sintéticas de la verificación pública posterior al despliegue.

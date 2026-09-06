@@ -1,8 +1,54 @@
 import type {
   OpportunityArea,
+  OpportunityItem,
   OpportunityMoney,
   OpportunityPublicListing,
+  OpportunitySignal,
 } from './propertyOpportunities'
+
+export function opportunitySignals(item: OpportunityItem): OpportunitySignal[] {
+  return item.analysis.signals ?? ['total_price']
+}
+
+/** Both metrics use the server's same complete cohort, never the visible sample of links. */
+export function opportunityPrimaryMetric(
+  item: OpportunityItem,
+  selected: 'all' | OpportunitySignal = 'all'
+) {
+  const signals = opportunitySignals(item)
+  const signal =
+    selected !== 'all' && signals.includes(selected)
+      ? selected
+      : signals.includes('total_price')
+        ? 'total_price'
+        : signals[0]
+  if (!signal) return null
+  const { analysis, subject } = item
+  if (signal === 'price_per_m2') {
+    if (
+      ![analysis.perAreaMedian, analysis.perAreaQ25, analysis.perAreaQ75].every(
+        value => typeof value === 'number' && Number.isFinite(value) && value > 0
+      )
+    )
+      return null
+    return {
+      signal,
+      value: subject.comparisonPrice / subject.area.value,
+      median: analysis.perAreaMedian!,
+      q25: analysis.perAreaQ25!,
+      q75: analysis.perAreaQ75!,
+      gapPct: analysis.perAreaGapPct,
+    }
+  }
+  return {
+    signal,
+    value: subject.comparisonPrice,
+    median: analysis.median,
+    q25: analysis.q25,
+    q75: analysis.q75,
+    gapPct: analysis.gapPct,
+  }
+}
 
 export const opportunitySourceLabels = {
   mercadolibre: 'Mercado Libre',

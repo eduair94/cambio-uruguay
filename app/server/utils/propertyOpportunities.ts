@@ -37,7 +37,7 @@ export function publicOpportunityListing(row: OpportunityPublicListing): Opportu
   }
 }
 
-function publicOpportunityItem(item: OpportunityItem): OpportunityItem {
+export function publicOpportunityItem(item: OpportunityItem): OpportunityItem {
   const a = item.analysis
   return {
     subject: publicOpportunityListing(item.subject),
@@ -60,11 +60,44 @@ function publicOpportunityItem(item: OpportunityItem): OpportunityItem {
       areaMin: a.areaMin,
       areaMax: a.areaMax,
       confidence: a.confidence,
+      ...(a.signals !== undefined
+        ? {
+            signals: a.signals.filter(
+              signal => signal === 'total_price' || signal === 'price_per_m2'
+            ),
+          }
+        : {}),
+      evidenceTier: a.evidenceTier,
+      comparisonScope: a.comparisonScope,
+      areaTolerancePct: a.areaTolerancePct,
+      perAreaMedian: a.perAreaMedian,
+      perAreaQ25: a.perAreaQ25,
+      perAreaQ75: a.perAreaQ75,
+      ...(a.sensitivity
+        ? {
+            sensitivity: {
+              minimumGapPct: a.sensitivity.minimumGapPct,
+              minimumPerAreaGapPct: a.sensitivity.minimumPerAreaGapPct,
+              omittedSellersN: a.sensitivity.omittedSellersN,
+            },
+          }
+        : {}),
     },
     comparables: item.comparables.slice(0, 10).map(
       (row): OpportunityComparable => ({
         ...publicOpportunityListing(row),
-        differences: { areaPercent: row.differences.areaPercent },
+        differences: {
+          areaPercent: row.differences.areaPercent,
+          ...(row.differences.featureDifferences
+            ? {
+                featureDifferences: row.differences.featureDifferences.map(difference => ({
+                  feature: difference.feature,
+                  subject: difference.subject,
+                  comparable: difference.comparable,
+                })),
+              }
+            : {}),
+        },
       })
     ),
     cautions: item.cautions,

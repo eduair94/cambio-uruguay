@@ -15,6 +15,7 @@ export interface OpportunityArea {
 }
 
 export type OpportunityRisk =
+  | 'unavailable'
   | 'temporary'
   | 'partial_price'
   | 'occupied'
@@ -102,9 +103,24 @@ export type OpportunityCaution =
   | 'single_source'
   | 'total_area_basis'
 
+export type OpportunitySignal = 'total_price' | 'price_per_m2'
+export type OpportunityComparisonScope = 'same_features' | 'wider_area' | 'local_context'
+export type OpportunityFeature =
+  | 'parking'
+  | 'furnishing'
+  | 'access'
+  | 'aspect'
+  | 'pool'
+  | 'gym'
+  | 'condition'
+  | 'ground_floor'
+
 export interface OpportunityComparable extends OpportunityPublicListing {
   /** Explicit measured differences, not monetary adjustments. */
-  differences: { areaPercent: number }
+  differences: {
+    areaPercent: number
+    featureDifferences?: { feature: OpportunityFeature; subject: string; comparable: string }[]
+  }
 }
 
 export interface OpportunityAnalysis {
@@ -131,6 +147,16 @@ export interface OpportunityAnalysis {
   areaMax: number
   /** Evidence strength; not a probability that this is below transaction value. */
   confidence: 'supported' | 'limited'
+  /** Additive v2 evidence; legacy snapshots retain their original strict interpretation. */
+  signals?: OpportunitySignal[]
+  evidenceTier?: 'standard' | 'exploratory'
+  comparisonScope?: OpportunityComparisonScope
+  areaTolerancePct?: number
+  perAreaMedian?: number
+  perAreaQ25?: number
+  perAreaQ75?: number
+  /** Recompute after removing each public advertiser, without fitting price adjustments. */
+  sensitivity?: { minimumGapPct: number; minimumPerAreaGapPct: number; omittedSellersN: number }
 }
 
 export interface OpportunityItem {
@@ -171,7 +197,7 @@ export interface OpportunityOperationStats {
 
 export interface OpportunityAnalysisResult {
   version: 1
-  algorithm: 'local-asking-comparables-v1'
+  algorithm: 'local-asking-comparables-v1' | 'local-asking-comparables-v2'
   generatedAt: string
   usdUyu: number
   items: OpportunityItem[]

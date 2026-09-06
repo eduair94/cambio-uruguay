@@ -157,7 +157,12 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
             </div>
           </div>
           <div v-if="!error" class="opportunities__list">
-            <OpportunityCard v-for="item in items" :key="item.subject.id" :item="item" />
+            <OpportunityCard
+              v-for="item in items"
+              :key="item.subject.id"
+              :item="item"
+              :signal="query.signal"
+            />
           </div>
           <nav
             v-if="!error && (data?.pages ?? 0) > 1"
@@ -185,6 +190,9 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
             <li>{{ t('comparableHint') }}</li>
             <li>{{ t('methodSample') }}</li>
             <li>{{ t('methodDiscount') }}</li>
+            <li>{{ t('methodExploratoryTotal') }}</li>
+            <li>{{ t('methodExploratoryArea') }}</li>
+            <li>{{ t('methodRobustness') }}</li>
             <li>{{ t('methodCosts') }}</li>
           </ul>
           <p>{{ t('methodLimits') }}</p>
@@ -256,7 +264,16 @@ const number = (value: number) => opportunityNumber(value, locale.value)
 const date = (value: string) => opportunityDate(value, locale.value) || t('unknownDate')
 const sourceName = (value: OpportunitySource) => opportunitySourceLabels[value]
 const sortItems = computed(() =>
-  ['evidence', 'discount', 'price', 'recent'].map(value => ({ title: t(value), value }))
+  ['evidence', 'discount', 'price', 'recent'].map(value => ({
+    title: t(
+      value === 'discount'
+        ? query.value.signal === 'price_per_m2'
+          ? 'discountPerArea'
+          : 'discountTotal'
+        : value
+    ),
+    value,
+  }))
 )
 const breadcrumbs = computed(() => [
   { title: t('home'), to: localePath('/') },
@@ -269,7 +286,15 @@ let facetRequest = 0
 let filterActivator: HTMLElement | null = null
 let filterReturnScroll = 0
 let filtersApplied = false
-type FilterKey = 'department' | 'neighborhood' | 'type' | 'bedrooms' | 'maxPrice' | 'confidence'
+type FilterKey =
+  | 'department'
+  | 'neighborhood'
+  | 'type'
+  | 'bedrooms'
+  | 'maxPrice'
+  | 'confidence'
+  | 'signal'
+  | 'evidence'
 const filterChips = computed(() => {
   const q = query.value
   const chips: { key: FilterKey; label: string }[] = []
@@ -285,6 +310,8 @@ const filterChips = computed(() => {
       label: `≤ ${opportunityMoney({ amount: q.maxPrice, currency: q.operation === 'rent' ? 'UYU' : 'USD' }, locale.value)}`,
     })
   if (q.confidence !== 'all') chips.push({ key: 'confidence', label: t(q.confidence) })
+  if (q.signal !== 'all') chips.push({ key: 'signal', label: t(q.signal) })
+  if (q.evidence !== 'all') chips.push({ key: 'evidence', label: t(q.evidence) })
   return chips
 })
 const emptyMessages = computed(() => {
@@ -303,6 +330,8 @@ async function updateQuery(next: OpportunityQuery) {
     'bedrooms',
     'maxPrice',
     'confidence',
+    'signal',
+    'evidence',
     'sort',
     'page',
   ] as const) {

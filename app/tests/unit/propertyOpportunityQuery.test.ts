@@ -83,6 +83,53 @@ const snapshot = (items = [item()]): PropertyOpportunitySnapshot => ({
 })
 
 describe('public property opportunity query', () => {
+  it('filters independent signal labels without duplicating a two-signal advert or changing its cohort', () => {
+    const twoSignals = item('two')
+    twoSignals.analysis.signals = ['total_price', 'price_per_m2']
+    twoSignals.analysis.evidenceTier = 'exploratory'
+    const source = snapshot([item('legacy'), twoSignals])
+    const found = queryPropertyOpportunities(
+      source,
+      { signal: 'price_per_m2', evidence: 'exploratory' },
+      now
+    )
+    expect(found.total).toBe(1)
+    expect(found.items[0].subject.id).toBe(twoSignals.subject.id)
+    expect(found.items[0].analysis.median).toBe(30000)
+    expect(queryPropertyOpportunities(source, { signal: 'total_price' }, now).total).toBe(2)
+    expect(
+      queryPropertyOpportunities(source, { evidence: 'standard' }, now).items[0].subject.listingId
+    ).toBe('infocasas:legacy')
+  })
+  it('ranks the original evidence tier first and sorts m² only against the m² metric', () => {
+    const strict = item('strict')
+    const exploratory = item('exploratory')
+    strict.analysis.signals = ['total_price', 'price_per_m2']
+    exploratory.analysis.signals = ['total_price', 'price_per_m2']
+    exploratory.analysis.evidenceTier = 'exploratory'
+    exploratory.analysis.gapPct = 40
+    exploratory.analysis.perAreaGapPct = 10
+    const source = snapshot([exploratory, strict])
+    expect(queryPropertyOpportunities(source, {}, now).items[0].subject.id).toBe(strict.subject.id)
+    expect(
+      queryPropertyOpportunities(source, { sort: 'discount', signal: 'price_per_m2' }, now).items[0]
+        .subject.id
+    ).toBe(strict.subject.id)
+    expect(
+      queryPropertyOpportunities(source, { sort: 'discount', signal: 'total_price' }, now).items[0]
+        .subject.id
+    ).toBe(exploratory.subject.id)
+  })
+  it('preserves legacy signal semantics but never fabricates a signal for an explicit empty array', () => {
+    const empty = item('empty')
+    empty.analysis.signals = []
+    const found = queryPropertyOpportunities(snapshot([empty, item('legacy')]), {}, now)
+    expect(found.total).toBe(1)
+    expect(found.items[0].subject.listingId).toBe('infocasas:legacy')
+    expect(
+      normalizeOpportunityQuery({ signal: 'guaranteed', evidence: 'guaranteed' })
+    ).toMatchObject({ signal: 'all', evidence: 'all' })
+  })
   it('normalizes only supported operations, filters and bounded pagination', () => {
     expect(
       normalizeOpportunityQuery({

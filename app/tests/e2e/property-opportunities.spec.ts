@@ -309,6 +309,94 @@ test('mobile first viewport shows price and evidence with readable light control
   }
 })
 
+for (const theme of ['dark', 'light'] as const) {
+  test(`per-m² exploration exposes its basis, small sample and filter state on mobile in ${theme}`, async ({
+    page,
+  }) => {
+    test.setTimeout(150000)
+    await setup(page, theme)
+    let dualSignal = false
+    await page.route('**/api/property-opportunities?**', async route => {
+      const url = new URL(route.request().url())
+      const data = fixture(url.searchParams.get('operation') === 'sale' ? 'sale' : 'rent')
+      const item = data.items[0]
+      const areaPrice = item.subject.comparisonPrice / item.subject.area.value
+      Object.assign(item.analysis, {
+        signals: dualSignal ? ['total_price', 'price_per_m2'] : ['price_per_m2'],
+        evidenceTier: 'exploratory',
+        comparisonScope: 'wider_area',
+        areaTolerancePct: 25,
+        distinctN: 6,
+        sellersN: 3,
+        confidence: 'limited',
+        gapPct: 5,
+        median: item.subject.comparisonPrice / 0.95,
+        perAreaMedian: areaPrice / 0.75,
+        perAreaQ25: areaPrice / 0.85,
+        perAreaQ75: areaPrice / 0.65,
+        perAreaGapPct: 25,
+        sensitivity: { minimumGapPct: -2, minimumPerAreaGapPct: 20, omittedSellersN: 3 },
+      })
+      item.comparables = item.comparables.slice(0, 6)
+      item.comparables[0].differences.featureDifferences = [
+        { feature: 'furnishing', subject: 'unknown', comparable: 'furnished' },
+      ]
+      await route.fulfill({ contentType: 'application/json', body: JSON.stringify(data) })
+    })
+    for (const width of [320, 390]) {
+      await page.setViewportSize({ width, height: 844 })
+      await page
+        .getByRole('button', { name: width === 320 ? 'Compra' : 'Alquiler', exact: true })
+        .click()
+      const card = page.getByTestId('opportunity-card')
+      await expect(card).toContainText('25% por debajo de la mediana por m²')
+      await expect(card.locator('.opportunity-card__evidence')).toContainText(
+        '6 comparables · 3 anunciantes'
+      )
+      await expect(card.locator('.opportunity-card__evidence')).toContainText('Para explorar')
+      await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }))
+      await expect(card.locator('.opportunity-card__prices')).toBeInViewport({ ratio: 1 })
+      await expect(card.locator('.opportunity-card__evidence')).toBeInViewport({ ratio: 1 })
+      await expect(card).toContainText(width === 320 ? 'USD 160.000' : 'UYU 32.000')
+      await page.screenshot({ path: `../.sdd-opportunities-signals-${theme}-${width}.png` })
+      await card.locator('summary').click()
+      await expect(card).toContainText('Muestra pequeña: menos de 8 comparables.')
+      await expect(card).toContainText('La superficie puede diferir hasta 25%')
+      await expect(card).toContainText(
+        'Mobiliario: este aviso, sin confirmar; comparable, amueblado.'
+      )
+      await expect(card).toContainText('2% por encima de la mediana')
+      expect(
+        await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)
+      ).toBe(true)
+    }
+    dualSignal = true
+    await page.getByTestId('opportunity-filter-trigger').click()
+    const dialog = page.getByRole('dialog', { name: 'Filtros', exact: true })
+    for (const [label, option] of [
+      ['Comparar por', 'Precio por m²'],
+      ['Tipo de evidencia', 'Para explorar'],
+    ]) {
+      await dialog
+        .locator('.v-select')
+        .filter({ has: page.getByLabel(label, { exact: true }) })
+        .locator('.v-field__input')
+        .click()
+      await page.getByRole('option', { name: option, exact: true }).click()
+    }
+    await dialog.getByRole('button', { name: 'Ver resultados', exact: true }).click()
+    await expect(page).toHaveURL(/signal=price_per_m2/)
+    expect(new URL(page.url()).searchParams.get('evidence')).toBe('exploratory')
+    await expect(page.getByTestId('opportunity-card')).toHaveCount(1)
+    await expect(page.locator('.opportunity-card__difference')).toHaveText(
+      '25% por debajo de la mediana por m²'
+    )
+    await expect(page.getByTestId('opportunity-card')).toContainText(
+      'También destaca en: Precio total.'
+    )
+  })
+}
+
 test('unfiltered empty snapshots distinguish insufficient evidence from no qualifying prices', async ({
   page,
 }) => {

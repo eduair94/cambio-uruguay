@@ -54,6 +54,42 @@ describe("local asking-price opportunities", () => {
     expect(analyzeOpportunities([...rows].reverse(), options)).toEqual(analyzeOpportunities(rows, options));
   });
 
+  it("keeps two evidence signals on one advert and handles exact threshold boundaries", () => {
+    const result = analyzeOpportunities(market(), options);
+    expect(result.algorithm).toBe("local-asking-comparables-v2");
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0]!.analysis).toMatchObject({ signals: ["total_price", "price_per_m2"], evidenceTier: "standard",
+      comparisonScope: "same_features", perAreaMedian: 2000, perAreaQ25: 2000, perAreaQ75: 2000,
+      sensitivity: { minimumGapPct: 20, minimumPerAreaGapPct: 20, omittedSellersN: 12 } });
+  });
+
+  it("requires three advertisers even for a small exploratory sample", () => {
+    const rows = market("sale", 6);
+    rows.slice(1).forEach((row, i) => row.sellerName = `Agency ${Math.floor(i / 2)}`);
+    expect(subject(rows)?.analysis).toMatchObject({ distinctN: 6, sellersN: 3, evidenceTier: "exploratory" });
+    rows.slice(1).forEach((row, i) => row.sellerName = `Agency ${i % 2}`);
+    expect(subject(rows)).toBeUndefined();
+  });
+
+  it("rejects an exploratory advantage that vanishes when one advertiser is omitted", () => {
+    const rows = market("sale", 5);
+    rows[1]!.price.amount = 81_000; rows[2]!.price.amount = 81_000;
+    rows[1]!.sellerName = rows[2]!.sellerName = "Lower advertiser";
+    rows[3]!.sellerName = rows[4]!.sellerName = "Higher advertiser";
+    expect(subject(rows)).toBeUndefined();
+    rows[1]!.price.amount = 100_000; rows[2]!.price.amount = 100_000;
+    expect(subject(rows)?.analysis.sensitivity?.omittedSellersN).toBe(3);
+  });
+
+  it("chooses an adequate physical cohort before price and never widens to obtain a larger discount", () => {
+    const narrow = market("sale", 5); narrow.slice(1).forEach(row => row.price.amount = 81_000);
+    const wider = Array.from({ length: 8 }, (_, i) => listing(`wider-${i}`, { area: { value: 60, basis: "built" }, price: { amount: 130_000, currency: "USD" } }));
+    expect(subject([...narrow, ...wider])).toBeUndefined();
+    const item = subject([narrow[0]!, ...wider])!;
+    expect(item.analysis).toMatchObject({ evidenceTier: "exploratory", comparisonScope: "wider_area", areaTolerancePct: 25, signals: ["price_per_m2"] });
+    expect(item.comparables.every(peer => peer.listingId.startsWith("wider-"))).toBe(true);
+  });
+
   it("does not combine operations, currencies, area bases or different localities", () => {
     for (const change of [
       { operation: "rent" as const, price: { amount: 30_000, currency: "UYU" as const }, expenses: { amount: 0, currency: "UYU" as const } },
@@ -76,8 +112,9 @@ describe("local asking-price opportunities", () => {
     }
   });
 
-  it("requires at least eight independent recent comparables", () => {
-    expect(subject(market("sale", 7))).toBeUndefined();
+  it("requires five independent recent comparables and keeps fewer than eight exploratory", () => {
+    expect(subject(market("sale", 4))).toBeUndefined();
+    expect(subject(market("sale", 7))?.analysis.evidenceTier).toBe("exploratory");
     expect(subject(market("sale", 8))?.analysis.confidence).toBe("limited");
     const rows = market();
     rows.slice(1).forEach(row => row.lastSeen = "2026-09-02");
@@ -149,15 +186,19 @@ describe("local asking-price opportunities", () => {
     expect(subject(rows)).toBeUndefined();
   });
 
-  it("does not reward smaller units solely because the total asking price is lower", () => {
+  it("keeps a modest per-area advantage exploratory and rejects smaller units with worse unit prices", () => {
     const rows = market();
     rows[0]!.area = { value: 44, basis: "built" }; rows[0]!.price.amount = 82_000;
+    expect(subject(rows)?.analysis).toMatchObject({ evidenceTier: "exploratory", signals: ["total_price"] });
+    rows[0]!.price.amount = 90_000;
     expect(subject(rows)).toBeUndefined();
   });
 
   it("requires a discount against the lower quartile and rejects extreme discounts and dispersed samples", () => {
     const rows = market(); rows[0]!.price.amount = 83_000;
     rows.slice(1, 5).forEach(row => row.price.amount = 85_000);
+    expect(subject(rows)?.analysis.evidenceTier).toBe("exploratory");
+    rows[0]!.price.amount = 86_000;
     expect(subject(rows)).toBeUndefined();
     const extreme = market(); extreme[0]!.price.amount = 40_000;
     expect(analyzeOpportunities(extreme, options).stats.sale.excluded.extreme_discount).toBe(1);
@@ -165,11 +206,14 @@ describe("local asking-price opportunities", () => {
     expect(subject(dispersed)).toBeUndefined();
   });
 
-  it("avoids comparing explicitly furnished/parking/new units with unknown amenities", () => {
-    for (const patch of [{ furnished: true as const }, { parkingSpaces: 1 }, { description: "A estrenar" }]) {
+  it("keeps parking and new condition exact, and labels furnishing differences in local references", () => {
+    for (const patch of [{ parkingSpaces: 1 }, { description: "A estrenar" }]) {
       const rows = market(); Object.assign(rows[0]!, patch);
       expect(subject(rows)).toBeUndefined();
     }
+    const rows = market(); rows[0]!.furnished = true;
+    expect(subject(rows)?.analysis).toMatchObject({ evidenceTier: "exploratory", comparisonScope: "local_context" });
+    expect(subject(rows)?.comparables[0]!.differences.featureDifferences).toEqual([{ feature: "furnishing", subject: "furnished", comparable: "unknown" }]);
   });
 
   it("does not compare houses with materially different known plot sizes", () => {
@@ -195,6 +239,25 @@ describe("local asking-price opportunities", () => {
     expect(opportunityRisks(row)).toEqual([]);
     row.description = "59m² construidos";
     expect(opportunityRisks(row)).toEqual([]);
+  });
+
+  it("flags an isolated dwelling size heading without confusing balconies, total area or distances", () => {
+    const row = listing("x", { area: { value: 52, basis: "built" }, description: "CARACTERÍSTICAS: 40 mtrs\nPiso 7 con doble ascensor" });
+    expect(opportunityRisks(row)).toContain("attribute_conflict");
+    for (const description of ["CARACTERÍSTICAS: patio de 40m²", "Superficie: 40m² de garaje", "Superficie: 60m² totales", "A 40 metros de la rambla", "Superficie: 51m²"])
+      expect(opportunityRisks({ ...row, description })).not.toContain("attribute_conflict");
+  });
+
+  it("uses strict own exact expenses but preserves explicit estimates and published ranges", () => {
+    const row = listing("x", { operation: "rent", price: { amount: 32_000, currency: "UYU" }, expenses: { amount: 3570, currency: "UYU" }, description: "Gastos comunes $ 3750" });
+    expect(opportunityRisks(row)).toContain("attribute_conflict");
+    for (const description of ["Gastos comunes aproximados $3750", "Gastos comunes $3750 (aprox.)", "Gastos comunes $3750 variables"])
+      expect(opportunityRisks({ ...row, description })).not.toContain("attribute_conflict");
+    expect(opportunityRisks({ ...row, description: "Gastos comunes $5000 aproximados" })).toContain("attribute_conflict");
+    const range = { ...row, expenses: { amount: 5000, currency: "UYU" as const }, description: "Gastos comunes: $4.500 – $5.000 aprox." };
+    expect(opportunityRisks(range)).not.toContain("attribute_conflict");
+    expect(opportunityRisks({ ...range, expenses: { amount: 4700, currency: "UYU" }, description: "GC $4500 a $5000" })).not.toContain("attribute_conflict");
+    expect(opportunityRisks({ ...range, expenses: { amount: 6000, currency: "UYU" } })).toContain("attribute_conflict");
   });
 
   it("does not mistake a building facility's floor for the apartment's floor", () => {
@@ -305,11 +368,13 @@ describe("local asking-price opportunities", () => {
     }
   });
 
-  it("keeps known interior, front and furnished units in separate comparison cohorts", () => {
+  it("keeps aspect exact and explicitly separates the furnishing/pool local context", () => {
     for (const description of ["Apartamento interior", "Apto interior", "Disposición interna", "Contrafrente", "Muy luminoso al frente", "Se alquila amueblado", "Piscina"])
     {
       const rows = market(); rows[0]!.description = description;
-      expect(subject(rows)).toBeUndefined();
+      if (["Se alquila amueblado", "Piscina"].includes(description))
+        expect(subject(rows)?.analysis.comparisonScope).toBe("local_context");
+      else expect(subject(rows)).toBeUndefined();
       rows.slice(1).forEach(row => row.description = description);
       expect(subject(rows)).toBeDefined();
     }
@@ -319,13 +384,15 @@ describe("local asking-price opportunities", () => {
     const rows = market(); rows[0]!.description = "Cocina con muebles bajo mesada y aéreo";
     expect(subject(rows)).toBeDefined();
     rows.slice(1).forEach(row => row.description = "Apartamento amueblado");
-    expect(subject(rows)).toBeUndefined();
+    expect(subject(rows)?.analysis.comparisonScope).toBe("local_context");
+    expect(subject(rows)?.comparables[0]!.differences.featureDifferences).toEqual([{ feature: "furnishing", subject: "unknown", comparable: "furnished" }]);
   });
 
   it("does not compare a known ground-floor unit or shared gym against unknown facilities", () => {
     for (const description of ["Apartamento en planta baja", "Apartamento 2 Dormitorios\nPlanta Baja", "Apartamento tipo casita en planta baja interno", "Apto Estrenar", "Edificio con gimnasio"]) {
       const rows = market(); rows[0]!.description = description;
-      expect(subject(rows)).toBeUndefined();
+      if (description === "Edificio con gimnasio") expect(subject(rows)?.analysis.comparisonScope).toBe("local_context");
+      else expect(subject(rows)).toBeUndefined();
       rows.slice(1).forEach(row => row.description = description);
       expect(subject(rows)).toBeDefined();
     }

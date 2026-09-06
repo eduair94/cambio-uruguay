@@ -3,9 +3,65 @@ vi.mock('../../server/models/PropertyOpportunitySnapshot', () => ({
   PropertyOpportunitySnapshotModel: {},
 }))
 vi.mock('../../server/utils/db', () => ({ connectDb: vi.fn() }))
-const { publicOpportunityListing } = await import('../../server/utils/propertyOpportunities')
+const { publicOpportunityListing, publicOpportunityItem } = await import(
+  '../../server/utils/propertyOpportunities'
+)
 
 describe('opportunity public facts', () => {
+  it('projects new comparison and sensitivity evidence without leaking unknown nested fields', () => {
+    const subject = {
+      id: 'sale:infocasas:1',
+      area: { value: 50, basis: 'built' },
+      price: { amount: 100000, currency: 'USD' },
+      expenses: null,
+    }
+    const result = publicOpportunityItem({
+      subject,
+      analysis: {
+        signals: ['price_per_m2'],
+        evidenceTier: 'exploratory',
+        comparisonScope: 'local_context',
+        perAreaMedian: 2400,
+        perAreaQ25: 2300,
+        perAreaQ75: 2500,
+        sensitivity: {
+          minimumGapPct: 8,
+          minimumPerAreaGapPct: 15,
+          omittedSellersN: 4,
+          privateAddress: 'Private',
+        },
+        internalEvidence: 'Private',
+      },
+      comparables: [
+        {
+          ...subject,
+          differences: {
+            areaPercent: 5,
+            privateContact: 'Private',
+            featureDifferences: [
+              {
+                feature: 'gym',
+                subject: 'unknown',
+                comparable: 'gym',
+                privateDescription: 'Private',
+              },
+            ],
+          },
+        },
+      ],
+      cautions: [],
+    } as any)
+    expect(JSON.stringify(result)).not.toContain('Private')
+    expect(result.analysis.sensitivity).toEqual({
+      minimumGapPct: 8,
+      minimumPerAreaGapPct: 15,
+      omittedSellersN: 4,
+    })
+    expect(result.comparables[0].differences.featureDifferences).toEqual([
+      { feature: 'gym', subject: 'unknown', comparable: 'gym' },
+    ])
+    expect(result.analysis.signals).toEqual(['price_per_m2'])
+  })
   it('does not expose original private prose, addresses or future unknown nested fields', () => {
     const result = publicOpportunityListing({
       id: 'sale:infocasas:1',

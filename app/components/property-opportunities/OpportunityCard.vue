@@ -40,10 +40,15 @@
           <div>
             <span>{{ t(subject.operation === 'rent' ? 'monthly' : 'asking') }}</span
             ><strong>{{ money(subject.comparisonPrice) }}</strong>
+            <small v-if="metric?.signal === 'price_per_m2'">{{ perAreaMoney(metric.value) }}</small>
           </div>
           <div>
-            <span>{{ t('median') }}</span
-            ><b>{{ money(analysis.median) }}</b>
+            <span>{{ t(metric?.signal === 'price_per_m2' ? 'perAreaMedian' : 'median') }}</span
+            ><b>{{
+              metric?.signal === 'price_per_m2'
+                ? perAreaMoney(metric.median)
+                : money(analysis.median)
+            }}</b>
           </div>
         </div>
         <p v-if="subject.operation === 'rent' && subject.expenses" class="opportunity-card__meta">
@@ -55,13 +60,30 @@
           }}
         </p>
         <div class="opportunity-card__evidence">
-          <span class="opportunity-card__difference">{{
-            t('below', { n: number(analysis.gapPct, 1) })
+          <span v-if="metric" class="opportunity-card__difference">{{
+            t(metric.signal === 'price_per_m2' ? 'belowPerArea' : 'below', {
+              n: number(metric.gapPct, 1),
+            })
           }}</span
-          ><span>{{ t('comparison', { n: number(analysis.distinctN) }) }}</span>
+          ><span>{{
+            t('comparisonEvidence', {
+              n: number(analysis.distinctN),
+              sellers: number(analysis.sellersN),
+            })
+          }}</span>
+          <strong class="opportunity-card__tier">{{
+            t(exploratory ? 'exploratory' : 'standard')
+          }}</strong>
         </div>
-        <p class="opportunity-card__meta">
-          {{ t('confidence') }}: <strong>{{ t(analysis.confidence) }}</strong>
+        <p v-if="exploratory" class="opportunity-card__meta opportunity-card__exploration">
+          {{ exploratoryReasons.join(' ') }}
+        </p>
+        <p v-if="signals.length > 1" class="opportunity-card__meta">
+          {{
+            t('alsoSignal', {
+              signal: t(metric?.signal === 'price_per_m2' ? 'total_price' : 'price_per_m2'),
+            })
+          }}
         </p>
         <p class="opportunity-card__meta">
           {{ sourceName(subject.source) }} · {{ t('sourceRead', { date: date(subject.lastSeen) }) }}
@@ -98,12 +120,44 @@
               })
             }}
           </p>
-          <p>{{ t('lowerQuartile', { n: number(analysis.conservativeGapPct, 1) }) }}</p>
-          <dl class="opportunity-card__range">
-            <dt>{{ t('range') }}</dt>
-            <dd>{{ money(analysis.q25) }} – {{ money(analysis.q75) }}</dd>
+          <p>{{ t('confidence') }}: {{ t(analysis.confidence) }}. {{ t('confidenceHint') }}</p>
+          <p>{{ t('comparisonBand', { n: number(analysis.areaTolerancePct ?? 15) }) }}</p>
+          <dl v-if="metric" class="opportunity-card__range">
+            <dt>{{ t('range') }} · {{ t(metric.signal) }}</dt>
+            <dd>
+              {{ metric.signal === 'price_per_m2' ? perAreaMoney(metric.q25) : money(metric.q25) }}
+              –
+              {{ metric.signal === 'price_per_m2' ? perAreaMoney(metric.q75) : money(metric.q75) }}
+            </dd>
           </dl>
           <p class="opportunity-card__meta">{{ t('rangeHint') }}</p>
+          <dl class="opportunity-card__metric-pair">
+            <div>
+              <dt>{{ t('total_price') }}</dt>
+              <dd>
+                {{ money(subject.comparisonPrice) }} · {{ t('median') }}
+                {{ money(analysis.median) }}
+              </dd>
+              <dd>{{ gap(analysis.gapPct) }}</dd>
+            </div>
+            <div v-if="analysis.perAreaMedian">
+              <dt>{{ t('price_per_m2') }} · {{ t(opportunityAreaKey(subject.area)) }}</dt>
+              <dd>
+                {{ perAreaMoney(subject.comparisonPrice / subject.area.value) }} ·
+                {{ t('median') }} {{ perAreaMoney(analysis.perAreaMedian) }}
+              </dd>
+              <dd>{{ gap(analysis.perAreaGapPct) }}</dd>
+            </div>
+          </dl>
+          <p v-if="analysis.sensitivity" class="opportunity-card__meta">
+            {{
+              t('sensitivity', {
+                sellers: number(analysis.sensitivity.omittedSellersN),
+                total: gap(analysis.sensitivity.minimumGapPct),
+                area: gap(analysis.sensitivity.minimumPerAreaGapPct),
+              })
+            }}
+          </p>
         </section>
         <section v-if="item.cautions.length">
           <h4>{{ t('limitations') }}</h4>
@@ -131,8 +185,28 @@
                 </a>
                 <p>{{ specs(comparable) }}</p>
                 <p>{{ sourceName(comparable.source) }} · {{ date(comparable.lastSeen) }}</p>
+                <p>
+                  {{ t('areaDifference', { n: number(comparable.differences.areaPercent, 1) }) }}
+                </p>
+                <p
+                  v-for="difference in comparable.differences.featureDifferences ?? []"
+                  :key="difference.feature"
+                >
+                  {{
+                    t('featureDifference', {
+                      feature: t(`feature_${difference.feature}`),
+                      subject: featureValue(difference.subject),
+                      comparable: featureValue(difference.comparable),
+                    })
+                  }}
+                </p>
               </div>
-              <strong>{{ money(comparable.comparisonPrice) }}</strong>
+              <strong
+                >{{ money(comparable.comparisonPrice)
+                }}<small v-if="metric?.signal === 'price_per_m2'">{{
+                  perAreaMoney(comparable.comparisonPrice / comparable.area.value)
+                }}</small></strong
+              >
             </li>
           </ol>
         </section>
@@ -147,6 +221,7 @@ import type {
   OpportunityMoney,
   OpportunityPublicListing,
   OpportunitySource,
+  OpportunitySignal,
 } from '~/utils/propertyOpportunities'
 import { propertyOpportunityMessages } from '~/utils/propertyOpportunityMessages'
 import {
@@ -156,19 +231,39 @@ import {
   opportunityNumber,
   opportunityRentalPath,
   opportunitySourceLabels,
+  opportunitySignals,
+  opportunityPrimaryMetric,
 } from '~/utils/propertyOpportunityPresentation'
 
-const props = defineProps<{ item: OpportunityItem }>()
-const { t, locale } = useI18n({ useScope: 'local', messages: propertyOpportunityMessages })
+const props = defineProps<{ item: OpportunityItem; signal?: 'all' | OpportunitySignal }>()
+const { t, te, locale } = useI18n({ useScope: 'local', messages: propertyOpportunityMessages })
 const localePath = useLocalePath()
 const subject = computed(() => props.item.subject)
 const analysis = computed(() => props.item.analysis)
+const signals = computed(() => opportunitySignals(props.item))
+const metric = computed(() => opportunityPrimaryMetric(props.item, props.signal))
+const exploratory = computed(() => analysis.value.evidenceTier === 'exploratory')
+const exploratoryReasons = computed(() => {
+  const reasons: string[] = []
+  if (analysis.value.distinctN < 8) reasons.push(t('smallSample'))
+  if (analysis.value.comparisonScope === 'wider_area') reasons.push(t('widerArea'))
+  if (analysis.value.comparisonScope === 'local_context') reasons.push(t('localContext'))
+  if (!reasons.length) reasons.push(t('exploratoryHint'))
+  return reasons
+})
 const imageFailed = ref(false)
 const headingId = computed(() => `opportunity-${subject.value.id.replace(/[^\w-]/g, '-')}`)
 const rentalPath = computed(() => opportunityRentalPath(subject.value))
 const number = (value: number, digits = 0) => opportunityNumber(value, locale.value, digits)
 const originalMoney = (value: OpportunityMoney) => opportunityMoney(value, locale.value)
 const money = (value: number) => originalMoney({ amount: value, currency: analysis.value.currency })
+const perAreaMoney = (value: number) =>
+  `${money(value)} ${t(subject.value.operation === 'rent' ? 'perAreaMonthlyUnit' : 'perAreaUnit')}`
+const gap = (value: number) => t(value >= 0 ? 'below' : 'above', { n: number(Math.abs(value), 1) })
+const featureValue = (value: string) =>
+  /^\d+$/.test(value)
+    ? t('parkingCount', { n: Number(value) })
+    : t(te(`featureValue_${value}`) ? `featureValue_${value}` : 'featureValue_unknown')
 const date = (value: string) => opportunityDate(value, locale.value) || t('unknownDate')
 const sourceName = (source: OpportunitySource) => opportunitySourceLabels[source]
 function specs(listing: OpportunityPublicListing) {
@@ -293,6 +388,29 @@ function specs(listing: OpportunityPublicListing) {
   color: rgb(var(--v-theme-link));
   font-weight: 800;
 }
+.opportunity-card__tier {
+  color: rgb(var(--v-theme-on-surface));
+}
+.opportunity-card__prices small,
+.opportunity-card__comparables strong small {
+  display: block;
+  font-size: 0.74rem;
+  font-weight: 500;
+  white-space: normal;
+}
+.opportunity-card__metric-pair {
+  display: grid;
+  gap: 14px;
+  margin: 16px 0;
+}
+.opportunity-card__metric-pair dt {
+  font-weight: 700;
+  font-size: 0.82rem;
+}
+.opportunity-card__metric-pair dd {
+  margin: 4px 0 0;
+  font-size: 0.8rem;
+}
 .opportunity-card__meta {
   margin-top: 5px !important;
   font-size: 0.78rem;
@@ -413,6 +531,14 @@ function specs(listing: OpportunityPublicListing) {
   }
   .opportunity-card__body h3 {
     order: 1;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+  }
+  .opportunity-card__body h3:focus-within {
+    -webkit-line-clamp: unset;
+    overflow: visible;
   }
   .opportunity-card__prices {
     order: 2;

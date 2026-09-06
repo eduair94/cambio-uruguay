@@ -5,6 +5,7 @@ import type {
   OpportunityOperation,
   OpportunityOperationStats,
   OpportunitySource,
+  OpportunitySignal,
 } from './propertyOpportunities'
 
 export interface OpportunityCoverage {
@@ -35,6 +36,8 @@ export interface OpportunityQuery {
   bedrooms: '' | number
   maxPrice: number | null
   confidence: 'all' | 'supported' | 'limited'
+  evidence: 'all' | 'standard' | 'exploratory'
+  signal: 'all' | OpportunitySignal
   sort: 'evidence' | 'discount' | 'price' | 'recent'
   page: number
   perPage: number
@@ -82,6 +85,10 @@ export function normalizeOpportunityQuery(input: Record<string, unknown>): Oppor
     maxPrice: Number.isFinite(price) && price > 0 ? Math.min(price, 100_000_000) : null,
     confidence:
       input.confidence === 'supported' || input.confidence === 'limited' ? input.confidence : 'all',
+    evidence:
+      input.evidence === 'standard' || input.evidence === 'exploratory' ? input.evidence : 'all',
+    signal:
+      input.signal === 'total_price' || input.signal === 'price_per_m2' ? input.signal : 'all',
     sort:
       input.sort === 'discount' || input.sort === 'price' || input.sort === 'recent'
         ? input.sort
@@ -106,12 +113,14 @@ export function queryPropertyOpportunities(
   // An old analysis must not continue recommending ads after their freshness window expired.
   const today = Math.floor(now / 86_400_000) * 86_400_000
   const cutoff = today - 3 * 86_400_000
-  const fresh = snapshot.items.filter(item =>
-    [item.subject.lastSeen, item.analysis.oldestLastSeen].every(date => {
-      const parsed = Date.parse(date.length === 10 ? `${date}T00:00:00Z` : date)
-      const day = Math.floor(parsed / 86_400_000) * 86_400_000
-      return Number.isFinite(parsed) && day >= cutoff && day <= today
-    })
+  const fresh = snapshot.items.filter(
+    item =>
+      (item.analysis.signals === undefined || item.analysis.signals.length > 0) &&
+      [item.subject.lastSeen, item.analysis.oldestLastSeen].every(date => {
+        const parsed = Date.parse(date.length === 10 ? `${date}T00:00:00Z` : date)
+        const day = Math.floor(parsed / 86_400_000) * 86_400_000
+        return Number.isFinite(parsed) && day >= cutoff && day <= today
+      })
   )
   const departments = uniqueSorted(fresh.map(item => item.subject.department))
   const neighborhoods = uniqueSorted(
@@ -126,15 +135,23 @@ export function queryPropertyOpportunities(
       (query.type === 'all' || subject.propertyType === query.type) &&
       (query.bedrooms === '' || subject.bedrooms === query.bedrooms) &&
       (query.maxPrice === null || subject.comparisonPrice <= query.maxPrice) &&
-      (query.confidence === 'all' || analysis.confidence === query.confidence)
+      (query.confidence === 'all' || analysis.confidence === query.confidence) &&
+      (query.evidence === 'all' || (analysis.evidenceTier ?? 'standard') === query.evidence) &&
+      (query.signal === 'all' || (analysis.signals ?? ['total_price']).includes(query.signal))
   )
   selected.sort((a, b) => {
     let order = 0
     if (query.sort === 'price') order = a.subject.comparisonPrice - b.subject.comparisonPrice
     else if (query.sort === 'recent') order = b.subject.lastSeen.localeCompare(a.subject.lastSeen)
-    else if (query.sort === 'discount') order = b.analysis.gapPct - a.analysis.gapPct
+    else if (query.sort === 'discount')
+      order =
+        query.signal === 'price_per_m2'
+          ? b.analysis.perAreaGapPct - a.analysis.perAreaGapPct
+          : b.analysis.gapPct - a.analysis.gapPct
     else {
       order =
+        Number((b.analysis.evidenceTier ?? 'standard') === 'standard') -
+          Number((a.analysis.evidenceTier ?? 'standard') === 'standard') ||
         Number(b.analysis.confidence === 'supported') -
           Number(a.analysis.confidence === 'supported') ||
         b.analysis.conservativeGapPct - a.analysis.conservativeGapPct ||
