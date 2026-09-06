@@ -349,7 +349,7 @@ const verifiedAt = new Date(`${SALARY_VERIFIED_AT}T00:00:00Z`).toLocaleDateStrin
 const capThird = GARNISHMENT_CAPS.find(cap => cap.kind === 'tributos')?.asText ?? 'hasta un tercio'
 
 const canonicalUrl = 'https://cambio-uruguay.com/embargo-de-sueldo-uruguay'
-const title = 'Embargo de sueldo en Uruguay: cuánto te pueden descontar'
+const title = 'Embargo de sueldo: cuánto te pueden sacar'
 const description = `El sueldo es inembargable salvo por tributos y pensión alimenticia: hasta un tercio, y hasta la mitad si es de menores (CGP art. 381). Y siempre cobrás al menos el ${RETENTION_FLOOR_PCT} % de tu nominal después de impuestos y aportes, ${RETENTION_FLOOR_PCT_HOUSING} % con garantía de alquiler (Ley 17.829 art. 3).`
 
 defineOgImageComponent('Cambio', {

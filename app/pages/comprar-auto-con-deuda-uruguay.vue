@@ -532,7 +532,7 @@ const fmtDate = (iso: string) =>
 const verifiedAt = fmtDate(CAR_DEBT_VERIFIED_AT)
 
 const canonicalUrl = 'https://cambio-uruguay.com/comprar-auto-con-deuda-uruguay'
-const title = 'Comprar un auto con deuda de patente o multas en Uruguay'
+const title = 'Comprar un auto con deuda: patente y multas'
 const description =
   'La deuda no pasa a ser tuya, pero bloquea la transferencia: comprás un auto que no podés poner a tu nombre. Qué se traba, en qué momento dejan de ser pesos y pasan a retirarte las placas, qué cubre el Certificado SUCIVE que la consulta rápida no muestra, y una calculadora del costo real con mora, recargo diario y multas por circular.'
 

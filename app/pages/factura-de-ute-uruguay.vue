@@ -502,7 +502,7 @@ const verifiedAt = longDate(BILLS_VERIFIED_AT)
 const faqVerifiedAt = longDate(BILLS_FAQ_VERIFIED_AT)
 
 const canonicalUrl = 'https://cambio-uruguay.com/factura-de-ute-uruguay'
-const title = 'Factura de UTE alta: por qué sube y qué tarifa te conviene'
+const title = 'Factura de UTE alta: qué tarifa te conviene'
 /**
  * Ojo con el cierre: esta frase es lo que se ve en Google y al compartir, y una parte grande de la
  * audiencia está en Montevideo, donde el saneamiento no viene en la factura de OSE. Prometer ahí

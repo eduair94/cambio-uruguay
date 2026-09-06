@@ -183,6 +183,11 @@ describe('the navigation model has no dead links', () => {
       // eligiendo cómo pagar («¿lo pago en efectivo o transfiero?»), que es la misma decisión que
       // resuelven las dos entradas de arriba.
       '/limite-de-efectivo-uruguay',
+      // El tercer medio de pago, y el único atado a una cuenta corriente: un cheque rebotado
+      // suspende SEIS MESES todas las cuentas del librador en ese banco, y a la segunda el BCU se
+      // las cierra en todos. Va pegado al límite de efectivo porque contesta la misma pregunta
+      // desde el otro lado: con qué se puede pagar y qué cuesta hacerlo mal.
+      '/cheques-uruguay',
       // What the same account pays you for leaving money in it — the other side
       // of the card comparison, and where the debit ranking sends the reader.
       '/cuenta-remunerada-uruguay',

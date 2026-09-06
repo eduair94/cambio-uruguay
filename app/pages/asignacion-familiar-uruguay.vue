@@ -289,7 +289,7 @@ const verifiedAt = new Date(`${ASIGNACION_FAMILIAR_VERIFIED_AT}T12:00:00Z`).toLo
 )
 
 const canonicalUrl = 'https://cambio-uruguay.com/asignacion-familiar-uruguay'
-const title = 'Asignación familiar en Uruguay: cuánto es y quién la cobra'
+const title = 'Asignación familiar del BPS: cuánto es'
 const description =
   'Son dos prestaciones distintas. La contributiva paga $ 1.347 o $ 674 por mes por hijo según el ingreso del hogar; el Plan de Equidad, $ 2.686,51 por el primero. Son incompatibles. Valores BPS 1/2026.'
 

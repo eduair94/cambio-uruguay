@@ -275,7 +275,7 @@ const canonicalUrl = computed(
   () => `https://cambio-uruguay.com${localePath('/casas-de-cambio-abiertas-fin-de-semana')}`
 )
 
-const title = 'Casas de cambio abiertas los sábados y domingos en Uruguay'
+const title = 'Casas de cambio abiertas sábados y domingos'
 
 /**
  * The description carries the two counts because they ARE the answer, and a

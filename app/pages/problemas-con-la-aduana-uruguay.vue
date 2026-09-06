@@ -1050,7 +1050,7 @@ function useProblemForClaim(id: BucketId) {
 
 // --- SEO ---
 const canonicalUrl = 'https://cambio-uruguay.com/problemas-con-la-aduana-uruguay'
-const title = 'Problemas con la aduana en Uruguay: qué hacer en cada caso'
+const title = 'Problemas con la aduana: qué hacer'
 const description =
   'Paquete retenido, factura exigida, cobro que no entendés, franquicia agotada, decomiso: situaciones típicas con los pasos exactos, a quién reclamarle y la norma citada. Con calculadoras y un generador de reclamo.'
 

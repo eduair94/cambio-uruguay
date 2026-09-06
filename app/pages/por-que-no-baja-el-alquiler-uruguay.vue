@@ -207,7 +207,7 @@ const verifiedAt = new Date(HOUSING_VERIFIED_AT).toLocaleDateString('es-UY', {
 })
 
 const canonicalUrl = 'https://cambio-uruguay.com/por-que-no-baja-el-alquiler-uruguay'
-const title = '¿Por qué no baja el alquiler si se construye tanto?'
+const title = '¿Por qué no baja el alquiler en Uruguay?'
 const description =
   'Los datos del Censo 2023 contra la intuición: Montevideo es el departamento con MENOS vivienda vacía del país (9,6 %), y el 19,5 % nacional lo empujan Maldonado (45,2 %) y Rocha (42,1 %), donde la vivienda vacía es casa de temporada. Además, qué exonera exactamente la Ley 18.795 de vivienda promovida y por qué el horizonte del inversor son 10 años.'
 

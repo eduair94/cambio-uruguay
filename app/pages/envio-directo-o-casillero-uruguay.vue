@@ -494,7 +494,7 @@ const verifiedDisplay = computed(() =>
 )
 
 const canonicalUrl = 'https://cambio-uruguay.com/envio-directo-o-casillero-uruguay'
-const title = '¿Envío directo a Uruguay o casillero en Miami o España?'
+const title = '¿Envío directo a Uruguay o casillero?'
 const description =
   'Qué te cuesta de verdad desviar una compra por un casillero: Estados Unidos ya no tiene la exención de US$ 800 y por España te comés el IVA europeo dos veces. Comparación con la norma, y el paso a paso del envío directo.'
 
