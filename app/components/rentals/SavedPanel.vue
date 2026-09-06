@@ -4,6 +4,7 @@ import { RENTAL_SOURCE_LABEL, totalMonthlyUyu, type RentalCurrency } from '~/uti
 import type { RentalSavedFavorite, RentalSavedOffer, RentalSavedState } from '~/utils/rentalSaved'
 import { rentalSavedMessages } from '~/utils/rentalSavedMessages'
 import { rentalPropertyPath } from '~/utils/rentalPresentation'
+import RentalAlertButton from './RentalAlertButton.vue'
 
 const props = defineProps<{ state: RentalSavedState; usdUyu: number }>()
 const emit = defineEmits<{
@@ -158,6 +159,7 @@ const comparisonRows = computed(() => [
           >
             {{ search.label }}
           </v-btn>
+          <RentalAlertButton kind="rental-search" :filters="search.params" compact notify />
           <v-btn
             variant="text"
             icon="mdi-close"
@@ -313,7 +315,7 @@ const comparisonRows = computed(() => [
   max-width: 100%;
 }
 .saved-search-open {
-  max-width: calc(100% - 40px);
+  max-width: calc(100% - 92px);
   min-height: 44px;
   height: auto;
   padding-block: 8px;

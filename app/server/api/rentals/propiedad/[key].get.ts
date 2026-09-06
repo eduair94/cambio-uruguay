@@ -4,12 +4,13 @@ import { connectDb } from '../../../utils/db'
 import { rentalDetailStages } from '../../../utils/rentalDetail'
 import {
   RENTAL_COLLATION,
+  RENTAL_STALE_DAYS,
   normalizeRentalQuery,
   type RentalPropertyDetailResponse,
   type RentalPublicProperty,
 } from '../../../../utils/rentals'
 
-const STALE_DAYS = 10
+const STALE_DAYS = RENTAL_STALE_DAYS
 
 /** One requested property, never the full records behind thousands of map points. */
 export default defineEventHandler(async (event): Promise<RentalPropertyDetailResponse> => {

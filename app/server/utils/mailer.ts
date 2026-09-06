@@ -30,6 +30,9 @@ function getTransport(): Transporter {
       port: Number(s.port) || 587,
       secure: s.secure === true || s.secure === 'true',
       auth: { user: s.user, pass: s.pass },
+      connectionTimeout: 15_000,
+      greetingTimeout: 15_000,
+      socketTimeout: 30_000,
     })
   }
   return transport
@@ -41,6 +44,7 @@ export interface SendMailOptions {
   html: string
   text: string
   listUnsubscribeUrl?: string
+  messageId?: string
 }
 
 export async function sendMail(opts: SendMailOptions): Promise<void> {
@@ -57,5 +61,6 @@ export async function sendMail(opts: SendMailOptions): Promise<void> {
     html: opts.html,
     text: opts.text,
     headers,
+    ...(opts.messageId ? { messageId: opts.messageId } : {}),
   })
 }

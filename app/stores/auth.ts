@@ -144,7 +144,42 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
+    async refreshUser(): Promise<void> {
+      const current = fbAuth().currentUser
+      if (!current) {
+        this.setUser(null)
+        return
+      }
+      await current.reload()
+      await current.getIdToken(true)
+      this.setUser(current)
+    },
+
+    async verifyEmail(): Promise<boolean> {
+      this.error = null
+      const current = fbAuth().currentUser
+      if (!current?.email || current.isAnonymous) {
+        this.error = 'auth/required'
+        return false
+      }
+      try {
+        await sendEmailVerification(current)
+        this.notice = 'auth.verifySent'
+        return true
+      } catch (error: any) {
+        this.error = error?.code ?? 'auth/verification-failed'
+        return false
+      }
+    },
+
     async logout() {
+      if (import.meta.client && typeof window !== 'undefined') {
+        const { revokeBrowserPush } = await import('./firebaseMessagingApi')
+        if (!(await revokeBrowserPush(await this.getToken()))) {
+          this.error = 'push/revocation-failed'
+          throw new Error('push/revocation-failed')
+        }
+      }
       await signOut(fbAuth())
       this.user = null
     },

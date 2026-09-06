@@ -79,6 +79,12 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
             @click="shareSearch"
             >{{ t('share') }}</VBtn
           >
+          <RentalAlertButton
+            v-if="query.operation === 'rent'"
+            kind="rental-opportunity"
+            :filters="{ ...query }"
+            :compact="smAndDown"
+          />
         </div>
         <div
           v-if="filterChips.length"
@@ -243,6 +249,7 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
       </div>
     </div>
     <VSnackbar v-model="showSnackbar" :timeout="5000">{{ snackbar }}</VSnackbar>
+    <RentalAlertDialog />
   </VContainer>
 </template>
 
@@ -250,6 +257,8 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
 import { useDisplay } from 'vuetify'
 import OpportunityFilters from '~/components/property-opportunities/Filters.vue'
 import OpportunityCard from '~/components/property-opportunities/OpportunityCard.vue'
+import RentalAlertButton from '~/components/rentals/RentalAlertButton.vue'
+import RentalAlertDialog from '~/components/rentals/RentalAlertDialog.vue'
 import { propertyOpportunityMessages } from '~/utils/propertyOpportunityMessages'
 import {
   normalizeOpportunityQuery,

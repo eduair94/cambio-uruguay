@@ -1,4 +1,5 @@
 import {
+  RENTAL_STALE_DAYS,
   buildRentalFilter,
   normalizeRentalQuery,
   rentalPublicStages,
@@ -15,7 +16,7 @@ import { RENTAL_SEO_PILOT_KEYS } from '../../utils/rentalSeoPilot'
 import { rentalStreet } from '../../utils/rentalPresentation'
 import { rentalPublicPropertyProjection, rentalExpandedPropertyProjection } from './rentalDetail'
 
-export const RENTAL_PAGE_STALE_DAYS = 10
+export const RENTAL_PAGE_STALE_DAYS = RENTAL_STALE_DAYS
 export const RENTAL_MARKET_MINIMUM_SAMPLE = 10
 const pilot = new Set(RENTAL_SEO_PILOT_KEYS)
 const locationCollator = new Intl.Collator('es', { sensitivity: 'base' })

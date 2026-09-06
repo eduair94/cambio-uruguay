@@ -3,6 +3,7 @@ import { RentalMetaModel } from '../../models/RentalMeta'
 import { connectDb } from '../../utils/db'
 import {
   RENTAL_COLLATION,
+  RENTAL_STALE_DAYS,
   buildRentalFilter,
   normalizeRentalQuery,
   rentalMatchingOffer,
@@ -31,7 +32,7 @@ import {
  * la respuesta trae `total` y `located` por separado: un mapa que muestra la mitad del inventario
  * sin decirlo es peor que uno que lo aclara.
  */
-const STALE_DAYS = 10
+const STALE_DAYS = RENTAL_STALE_DAYS
 
 /**
  * Tope de puntos por respuesta.

@@ -30,12 +30,19 @@
         <VListItemTitle>{{ $t('auth.account') }}</VListItemTitle>
       </VListItem>
       <VDivider />
-      <VListItem @click="store.logout()">
+      <VListItem :disabled="loggingOut" @click="logout">
         <template #prepend><VIcon>mdi-logout</VIcon></template>
         <VListItemTitle>{{ $t('auth.logout') }}</VListItemTitle>
       </VListItem>
     </VList>
   </VMenu>
+  <VSnackbar v-model="logoutFailed" :timeout="-1" color="error" location="bottom" role="alert">
+    {{ logoutCopy.message }}
+    <template #actions>
+      <VBtn variant="text" :loading="loggingOut" @click="logout">{{ logoutCopy.retry }}</VBtn>
+      <VBtn variant="text" @click="logoutFailed = false">{{ logoutCopy.close }}</VBtn>
+    </template>
+  </VSnackbar>
 </template>
 
 <script setup lang="ts">
@@ -43,7 +50,45 @@ import { fbAuth, isSignInWithEmailLink, signInWithEmailLink } from '~/stores/fir
 
 const store = useAuthStore()
 const localePath = useLocalePath()
-const { t } = useI18n()
+const { t, locale } = useI18n()
+const loggingOut = ref(false)
+const logoutFailed = ref(false)
+const logoutCopy = computed(() => {
+  const messages = {
+    es: {
+      message:
+        'No pudimos desvincular las notificaciones de este dispositivo. Tu sesión sigue abierta. Comprobá la conexión y volvé a intentar.',
+      retry: 'Reintentar',
+      close: 'Cerrar',
+    },
+    en: {
+      message:
+        'We could not disconnect notifications on this device. You are still signed in. Check your connection and try again.',
+      retry: 'Try again',
+      close: 'Close',
+    },
+    pt: {
+      message:
+        'Não foi possível desvincular as notificações deste dispositivo. Sua sessão continua aberta. Verifique a conexão e tente novamente.',
+      retry: 'Tentar novamente',
+      close: 'Fechar',
+    },
+  }
+  return messages[locale.value === 'en' || locale.value === 'pt' ? locale.value : 'es']
+})
+
+async function logout() {
+  if (loggingOut.value) return
+  loggingOut.value = true
+  logoutFailed.value = false
+  try {
+    await store.logout()
+  } catch {
+    logoutFailed.value = true
+  } finally {
+    loggingOut.value = false
+  }
+}
 
 const initials = computed(() => {
   const n = store.user?.name || store.user?.email || '?'

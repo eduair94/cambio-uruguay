@@ -5,6 +5,7 @@ import { getRentalCoverage } from '../../utils/rentalCoverage'
 import { rentalPublicPropertyProjection } from '../../utils/rentalDetail'
 import {
   RENTAL_COLLATION,
+  RENTAL_STALE_DAYS,
   buildRentalFilter,
   normalizeRentalQuery,
   rentalMongoSort,
@@ -28,7 +29,7 @@ import {
  * prunes them later, and their history is worth keeping), but a flat nobody has published for a
  * week and a half is not shown as if it were on the market today.
  */
-const STALE_DAYS = 10
+const STALE_DAYS = RENTAL_STALE_DAYS
 
 export default defineEventHandler(async (event): Promise<RentalsResponse> => {
   setResponseHeader(

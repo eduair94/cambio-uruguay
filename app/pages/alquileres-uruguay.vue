@@ -58,6 +58,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
             >{{ t('mobileFilters')
             }}<span v-if="filterChips.length"> ({{ filterChips.length }})</span></VBtn
           >
+          <RentalAlertButton kind="rental-search" :filters="{ ...query }" compact />
         </div>
         <div v-if="filterChips.length" class="rentals-chips" :aria-label="t('activeFilters')">
           <VChip
@@ -73,6 +74,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
           <VBtn variant="text" size="small" @click="clearFilters">{{ t('reset') }}</VBtn>
         </div>
         <div class="rentals-tools">
+          <RentalAlertButton v-if="!smAndDown" kind="rental-search" :filters="{ ...query }" />
           <VBtn variant="text" prepend-icon="mdi-bookmark-plus-outline" @click="saveSearch">{{
             t('saveSearch')
           }}</VBtn>
@@ -413,6 +415,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
       </NuxtLink>
     </nav>
     <VSnackbar v-model="snackbar" :timeout="4500" role="status">{{ feedback }}</VSnackbar>
+    <RentalAlertDialog />
   </VContainer>
 </template>
 
@@ -421,6 +424,8 @@ import { useDisplay } from 'vuetify'
 import SearchFilters from '~/components/rentals/SearchFilters.vue'
 import SavedPanel from '~/components/rentals/SavedPanel.vue'
 import MapPropertyDetail from '~/components/rentals/MapPropertyDetail.vue'
+import RentalAlertButton from '~/components/rentals/RentalAlertButton.vue'
+import RentalAlertDialog from '~/components/rentals/RentalAlertDialog.vue'
 import { rentalMessages } from '~/utils/rentalMessages'
 import { rentalPropertyPath, rememberRentalSearch } from '~/utils/rentalPresentation'
 import {
@@ -1020,6 +1025,7 @@ useHead(() => ({
   inset: auto 0 0;
   z-index: 1900;
   display: flex;
+  gap: 8px;
   padding: 12px max(84px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom))
     max(12px, env(safe-area-inset-left));
   background: rgb(var(--v-theme-surface));
@@ -1029,6 +1035,9 @@ useHead(() => ({
   flex: 1;
   min-width: 0;
   min-height: 48px;
+}
+.rentals-mobile-bar :deep(.rental-alert-trigger) {
+  flex: 0 0 48px;
 }
 .rentals-head {
   margin: 12px 0 24px;

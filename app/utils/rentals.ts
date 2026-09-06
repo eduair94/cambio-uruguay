@@ -12,6 +12,8 @@ import { MUTUALISTA_SEDES, type MutualistaSede } from './mutualistaSedes'
 
 /** Portals spell the same barrio as Cordón, CORDON or cordon. Match and group them together. */
 export const RENTAL_COLLATION = { locale: 'es', strength: 1 } as const
+/** One freshness window for the list, map, individual pages and saved-search alerts. */
+export const RENTAL_STALE_DAYS = 10
 
 /** Autocomplete follows the same user expectation: a keyboard without accents can find Cordón. */
 export function rentalTextMatches(value: unknown, query: string): boolean {

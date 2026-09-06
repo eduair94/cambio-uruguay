@@ -436,6 +436,8 @@ export default defineNuxtConfig({
       '20 9 * * *': ['bankos:alerts'],
       // Every 10 minutes: evaluate rate alerts and notify (push + email + telegram).
       '*/10 * * * *': ['alerts:check'],
+      // Rental subscriptions use a Mongo lease and a per-channel outbox across both workers.
+      '2,12,22,32,42,52 * * * *': ['rentals:alerts'],
       // 11:00 UTC = 08:00 Uruguay: personalized Telegram summary for linked users.
       '0 11 * * *': ['telegram:summary'],
       // 08:15 UTC ≈ 05:15 Uruguay: refresh courier per-kg shipping rates.
@@ -934,6 +936,9 @@ export default defineNuxtConfig({
     },
     newsletter: {
       delayMs: process.env.NEWSLETTER_SEND_DELAY_MS || '1000',
+    },
+    rentalAlerts: {
+      enabled: process.env.RENTAL_ALERTS_ENABLED !== '0',
     },
     // Public keys (exposed to client-side)
     public: {

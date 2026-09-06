@@ -12,10 +12,13 @@ const h = vi.hoisted(() => ({
   sendPasswordResetEmail: vi.fn(),
   signOut: vi.fn(),
   sendEmailVerification: vi.fn(),
+  currentUser: null as any,
+  revokeBrowserPush: vi.fn(),
 }))
+vi.mock('../../stores/firebaseMessagingApi', () => ({ revokeBrowserPush: h.revokeBrowserPush }))
 
 vi.mock('../../stores/firebaseAuthApi', () => ({
-  fbAuth: () => ({ currentUser: null }),
+  fbAuth: () => ({ currentUser: h.currentUser }),
   GoogleAuthProvider: vi.fn(),
   signInWithPopup: h.signInWithPopup,
   signInWithEmailAndPassword: h.signInWithEmailAndPassword,
@@ -28,7 +31,11 @@ vi.mock('../../stores/firebaseAuthApi', () => ({
 
 beforeEach(() => {
   setActivePinia(createPinia())
-  Object.values(h).forEach(m => m.mockReset())
+  Object.values(h).forEach(m => {
+    if (typeof m === 'function') m.mockReset()
+  })
+  h.currentUser = null
+  vi.unstubAllGlobals()
 })
 
 describe('auth store', () => {
@@ -59,5 +66,41 @@ describe('auth store', () => {
     s.setUser({ uid: 'u1', email: null, displayName: null, photoURL: null, emailVerified: false })
     await s.logout()
     expect(s.user).toBeNull()
+  })
+
+  it('refreshes verification and forces a fresh ID token before remapping the account', async () => {
+    h.currentUser = {
+      uid: 'u1',
+      email: 'a@b.com',
+      emailVerified: false,
+      reload: vi.fn(async () => {
+        h.currentUser.emailVerified = true
+      }),
+      getIdToken: vi.fn(),
+    }
+    const store = useAuthStore()
+    await store.refreshUser()
+    expect(h.currentUser.reload).toHaveBeenCalledOnce()
+    expect(h.currentUser.getIdToken).toHaveBeenCalledWith(true)
+    expect(store.user?.emailVerified).toBe(true)
+  })
+
+  it('verification requires a non-anonymous mailbox and is explicit', async () => {
+    const store = useAuthStore()
+    expect(await store.verifyEmail()).toBe(false)
+    h.currentUser = { uid: 'u1', email: 'a@b.com', isAnonymous: false }
+    expect(await store.verifyEmail()).toBe(true)
+    expect(h.sendEmailVerification).toHaveBeenCalledWith(h.currentUser)
+  })
+
+  it('does not claim logout completed when both device revocation routes failed', async () => {
+    vi.stubGlobal('window', {})
+    h.currentUser = { getIdToken: vi.fn().mockResolvedValue('id-token') }
+    h.revokeBrowserPush.mockResolvedValue(false)
+    const store = useAuthStore()
+    store.setUser({ uid: 'u1' })
+    await expect(store.logout()).rejects.toThrow('push/revocation-failed')
+    expect(h.signOut).not.toHaveBeenCalled()
+    expect(store.user?.uid).toBe('u1')
   })
 })

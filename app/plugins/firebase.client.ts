@@ -7,6 +7,8 @@ import { useImportCartStore } from '~/stores/importCart'
 import { useWatchlistStore } from '~/stores/watchlist'
 import { useBankosCardsStore } from '~/stores/bankosCards'
 import { useBankosFavoritesStore } from '~/stores/bankosFavorites'
+import { readPushDevice, revokeBrowserPush } from '~/stores/firebaseMessagingApi'
+import { usePushNotifications } from '~/composables/usePushNotifications'
 
 export default defineNuxtPlugin(() => {
   const cfg = useRuntimeConfig().public.firebase
@@ -25,6 +27,7 @@ export default defineNuxtPlugin(() => {
   const auth = getAuth()
   const store = useAuthStore()
   const { authFetch } = useAuthFetch()
+  const push = usePushNotifications()
 
   const cart = useImportCartStore()
   const watchlist = useWatchlistStore()
@@ -33,6 +36,19 @@ export default defineNuxtPlugin(() => {
 
   onAuthStateChanged(auth, async fbUser => {
     store.setUser(fbUser)
+    const device = readPushDevice()
+    if (device && device.uid !== fbUser?.uid) {
+      // Account changes must not silently reuse a previous account's device consent.
+      if (!(await revokeBrowserPush(null))) store.error = 'push/revocation-failed'
+    } else if (
+      device &&
+      fbUser &&
+      typeof Notification !== 'undefined' &&
+      Notification.permission === 'granted'
+    ) {
+      // Refresh only an explicitly registered device. This never opens a permission prompt.
+      await push.enablePush().catch(() => {})
+    }
     if (fbUser) {
       await authFetch('/api/me/profile').catch(() => {})
       await hydrateFavorites(authFetch)

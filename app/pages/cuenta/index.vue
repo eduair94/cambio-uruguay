@@ -1,6 +1,7 @@
 <template>
   <div class="cuenta-page py-6">
     <h1 class="text-h4 mb-6">{{ $t('account.title') }}</h1>
+    <RentalAlertResume />
 
     <VTabs v-model="tab" class="mb-4">
       <VTab value="saved">{{ $t('auth.saved') }}</VTab>
@@ -85,13 +86,18 @@
 
       <!-- Rate alerts -->
       <VTabsWindowItem value="alerts">
+        <RentalAlertPanel />
         <AccountAlertsPanel />
       </VTabsWindowItem>
     </VTabsWindow>
+    <RentalAlertDialog />
   </div>
 </template>
 
 <script setup lang="ts">
+import RentalAlertPanel from '~/components/rentals/RentalAlertPanel.vue'
+import RentalAlertResume from '~/components/rentals/RentalAlertResume.vue'
+import RentalAlertDialog from '~/components/rentals/RentalAlertDialog.vue'
 definePageMeta({ middleware: 'auth' })
 
 // Private account area — behind auth, never a search landing page.
@@ -101,7 +107,18 @@ const { authFetch } = useAuthFetch()
 const { driftForItem } = useSavedDrift()
 const favorites = useFavoritesState()
 
-const tab = ref('saved')
+const route = useRoute()
+const tab = ref(
+  ['saved', 'favorites', 'alerts'].includes(String(route.query.tab))
+    ? String(route.query.tab)
+    : 'saved'
+)
+watch(
+  () => route.query.tab,
+  value => {
+    if (['saved', 'favorites', 'alerts'].includes(String(value))) tab.value = String(value)
+  }
+)
 const saved = ref<any[]>([])
 
 const favoriteIds = computed(() => Array.from(favorites))

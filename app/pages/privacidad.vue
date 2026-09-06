@@ -48,9 +48,10 @@
               <li>
                 <strong>Datos de cuenta (opcional):</strong> si iniciás sesión (Google, correo,
                 enlace mágico o Discord), guardamos un identificador y los datos mínimos para
-                ofrecerte favoritos y alertas de cotización. La autenticación se gestiona con
-                Firebase (Google).
+                ofrecerte favoritos y alertas de cotización y alquileres. La autenticación se
+                gestiona con Firebase (Google).
               </li>
+              <li>{{ rentalAlertPrivacy }}</li>
               <li>
                 <strong>Datos que nos envías:</strong> si nos escribís por correo, conservamos tu
                 mensaje para responderte.
@@ -171,9 +172,17 @@
 const { t, locale } = useI18n()
 const localePath = useLocalePath()
 
-const LAST_UPDATED = '2026-06-20'
+const LAST_UPDATED = '2026-09-06'
+const rentalAlertPrivacy = computed(() => {
+  if (locale.value.startsWith('en'))
+    return 'Rental alerts are optional. We store your chosen filters, frequency, channels, verified email address and delivery records to avoid repeating notifications. Push uses a device registration identifier. You can pause or delete an alert in your account; deleting it also removes its delivery history. Each email includes a link to unsubscribe from that alert’s emails independently of push notifications.'
+  if (locale.value.startsWith('pt'))
+    return 'Os alertas de aluguel são opcionais. Guardamos os filtros, a frequência, os canais escolhidos, o email verificado e o histórico de envios para evitar notificações repetidas. O push usa um identificador de registro do dispositivo. Você pode pausar ou excluir um alerta na sua conta; a exclusão também remove seu histórico de envios. Cada email inclui um link para cancelar os emails daquele alerta, independentemente das notificações push.'
+  return 'Las alertas de alquiler son opcionales. Guardamos los filtros, la frecuencia y los canales elegidos, el correo verificado y el registro de envíos para evitar notificaciones repetidas. Push utiliza un identificador de registro del dispositivo. Podés pausar o eliminar una alerta desde tu cuenta; al eliminarla también se borra su historial de envíos. Cada correo incluye un enlace para cancelar los emails de esa alerta, de forma independiente de las notificaciones push.'
+})
 const lastUpdatedDisplay = computed(() =>
   new Date(LAST_UPDATED).toLocaleDateString(locale.value, {
+    timeZone: 'UTC',
     year: 'numeric',
     month: 'long',
     day: 'numeric',
