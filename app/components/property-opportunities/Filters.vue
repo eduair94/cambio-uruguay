@@ -60,19 +60,27 @@
         <p class="opportunity-filters__hint">
           {{ t(query.operation === 'rent' ? 'rentBudget' : 'saleBudget') }}
         </p>
-        <VSelect
-          v-model="draft.signal"
-          :items="signalItems"
-          :label="t('signalFilter')"
-          v-bind="field"
-        />
-        <VSelect
-          v-model="draft.evidence"
-          :items="evidenceItems"
-          :label="t('evidenceFilter')"
-          v-bind="field"
-        />
-        <p class="opportunity-filters__hint">{{ t('confidenceHint') }}</p>
+        <component
+          :is="mobile ? 'details' : 'div'"
+          class="opportunity-filters__advanced"
+          :open="advancedOpen"
+          @toggle="advancedOpen = ($event.target as HTMLDetailsElement).open"
+        >
+          <summary v-if="mobile">{{ t('evidenceFilter') }}</summary>
+          <VSelect
+            v-model="draft.signal"
+            :items="signalItems"
+            :label="t('signalFilter')"
+            v-bind="field"
+          />
+          <VSelect
+            v-model="draft.evidence"
+            :items="evidenceItems"
+            :label="t('evidenceFilter')"
+            v-bind="field"
+          />
+          <p class="opportunity-filters__hint">{{ t('confidenceHint') }}</p>
+        </component>
       </div>
       <footer>
         <VBtn variant="text" @click="clear">{{ t('reset') }}</VBtn
@@ -107,6 +115,7 @@ const heading = ref<HTMLElement | null>(null)
 const draft = ref({ ...props.query })
 const budget = ref<string | number | null>(props.query.maxPrice)
 const invalidBudget = ref(false)
+const advancedOpen = ref(false)
 const viewport = ref<{ height: number; top: number } | null>(null)
 const field = { variant: 'outlined' as const, density: 'comfortable' as const, hideDetails: true }
 const departmentItems = computed(() =>
@@ -178,6 +187,10 @@ watch(
     draft.value = { ...props.query }
     budget.value = props.query.maxPrice
     invalidBudget.value = false
+    advancedOpen.value =
+      props.query.signal !== 'all' ||
+      props.query.evidence !== 'all' ||
+      props.query.confidence !== 'all'
   },
   { deep: true }
 )
@@ -264,6 +277,41 @@ h2 {
   font-size: 0.8rem;
   line-height: 1.55;
   color: rgba(var(--v-theme-on-surface), 0.8);
+}
+.opportunity-filters__advanced {
+  display: grid;
+  gap: 20px;
+}
+.opportunity-filters--dialog .opportunity-filters__advanced {
+  display: block;
+}
+.opportunity-filters__advanced > summary {
+  min-height: 44px;
+  padding-block: 10px;
+  cursor: pointer;
+  font-weight: 700;
+  color: rgb(var(--v-theme-link));
+}
+.opportunity-filters__advanced > summary:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-link));
+  outline-offset: 2px;
+}
+.opportunity-filters--dialog .opportunity-filters__advanced > .v-input {
+  margin-top: 12px;
+}
+.opportunity-filters--dialog .opportunity-filters__advanced > p {
+  margin-top: 12px;
+}
+.opportunity-filters--dialog .opportunity-filters__scroll {
+  gap: 12px;
+  padding: 16px;
+}
+.opportunity-filters--dialog header,
+.opportunity-filters--dialog footer {
+  padding-block: 8px;
+}
+.opportunity-filters--dialog footer {
+  padding-bottom: max(8px, env(safe-area-inset-bottom));
 }
 .opportunity-filters__error {
   margin: -8px 0 0;

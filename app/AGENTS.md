@@ -18,7 +18,7 @@ Nuxt 4 (`compatibilityVersion: 4`) + Vuetify 4.1.5 SSR frontend for cambio-urugu
 - `composables/` — `useThemeMode`, `useExchangeRates`, `useTrack`, `useConsent`, `useRedditSentiment`, `useAuthFetch`, `useSavedDrift`, etc.
 - `stores/` — Pinia (`auth`, `cambio`, `importCart`, `loading`, `firebaseAuthApi`, `firebaseMessagingApi`).
 - `i18n/locales/` — `es.ts` / `en.ts` / `pt.ts` (+ `json/`). Strategy `prefix_except_default`; labels are i18n keys, never raw literals.
-- `plugins/` (`.client.ts` for browser-only: firebase, clarity, tawk, consent, track-clicks), `middleware/auth.ts` (client-only login guard), `layouts/` (`default`, `error`, `widget`), `assets/`.
+- `plugins/` (`.client.ts` for browser-only: firebase, clarity, consent, pwa-install, track-clicks), `middleware/auth.ts` (client-only login guard), `layouts/` (`default`, `error`, `widget`), `assets/`.
 
 ## Source-of-truth & guard rails (these cause CI-red bugs)
 - **`utils/siteNav.ts` = single source of truth** for desktop header, mobile drawer, footer, XML+HTML sitemap, Ctrl+K palette, `/buscar`. A new `pages/*.vue` **not registered in `NAV_SECTIONS`** (or in `EXCLUDED_ROUTES`/`UNLISTED_ROUTES`) fails `tests/unit/siteNav-coverage.test.ts`. It's a PURE module (no catalog imports); long-tail search lives in `utils/searchIndex.ts`. New tool → also `utils/tools.ts` (`toolSlugs`).
@@ -26,6 +26,8 @@ Nuxt 4 (`compatibilityVersion: 4`) + Vuetify 4.1.5 SSR frontend for cambio-urugu
 - OG image is generated **per public page** (nuxt-og-image via `OgImage/Cambio.vue`); `og:image` is intentionally NOT hardcoded in `nuxt.config`. `npm run check:og-images` verifies coverage.
 
 ## Theme & responsive (recurring bug sources)
+- Mobile first visit must remain usable with **no saved preferences**: there is no global chat, timed social popup, or automatic install invitation. `CookieConsent` starts in document flow; only the footer's explicit preferences action opens its dialog. `PwaInstallAction` is optional in the footer and after a successful rental subscription; `pwa-install.client.ts` captures the browser event but never invokes installation without a click. `DonationCard` stays in document flow. Do not pre-dismiss these states in first-visit E2E tests.
+- Rental, sales and opportunity filters use a compact sticky mobile toolbar and an explicitly opened side panel. Keep Apply/Clear accessible in short viewports, preserve draft cancellation, and test while scrolled down as well as on arrival. Advanced options may be collapsed but active advanced criteria must remain discoverable.
 - Dark-first site. `useThemeMode` persists to `localStorage['cu_theme']` (`THEME_STORAGE_KEY` in `utils/theme.ts`) and stamps `data-theme` on `<html>`; Vuetify theme mirrors it.
 - Light-mode AA fixes live in `assets/css/critical.css`. **A permanently-dark/colored banner darkens its own text in light mode** → add class **`.on-dark`** to the slab root so the global rule restores light text.
 - Wide tables: add global class **`cu-mobile-cards`** + `data-label` per `<td>` to stack into cards <600px (`assets/css/responsive-tables.css`); VDataTables use native `:mobile` instead.

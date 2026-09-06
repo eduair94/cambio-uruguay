@@ -47,8 +47,22 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
         />
       </aside>
       <div class="opportunities__content">
+        <VBtnToggle
+          v-if="smAndDown"
+          :model-value="query.operation"
+          class="opportunities__operation"
+          mandatory
+          divided
+          variant="outlined"
+          color="link"
+          :aria-label="t('operation')"
+          @update:model-value="changeOperation"
+          ><VBtn value="rent">{{ t('rent') }}</VBtn
+          ><VBtn value="sale">{{ t('sale') }}</VBtn></VBtnToggle
+        >
         <div class="opportunities__controls">
           <VBtnToggle
+            v-if="!smAndDown"
             :model-value="query.operation"
             mandatory
             divided
@@ -61,7 +75,8 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
           >
           <VBtn
             v-if="smAndDown"
-            color="primary"
+            color="link"
+            variant="tonal"
             prepend-icon="mdi-tune-variant"
             aria-haspopup="dialog"
             aria-controls="opportunity-filter-dialog"
@@ -740,6 +755,17 @@ useHead(() => ({
   color: rgba(var(--v-theme-on-surface), 0.8);
 }
 @media (max-width: 959px) {
+  .opportunities__header {
+    margin-bottom: 12px;
+  }
+  .opportunities__operation {
+    height: 44px;
+    margin-bottom: 6px;
+  }
+  .opportunities__operation :deep(.v-btn) {
+    min-height: 44px;
+    padding-inline: 16px;
+  }
   .opportunities__workspace {
     grid-template-columns: minmax(0, 1fr);
     gap: 0;
@@ -754,10 +780,40 @@ useHead(() => ({
     position: sticky;
     top: 64px;
     z-index: 8;
-    padding: 10px 0;
-    margin-bottom: 16px;
+    padding: 5px 0;
+    margin-bottom: 8px;
+    flex-wrap: nowrap;
     background: rgb(var(--v-theme-background));
     border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  }
+  .opportunities__controls :deep(.v-btn) {
+    height: 44px;
+    min-height: 44px;
+    letter-spacing: 0;
+  }
+  .opportunities__controls :deep(.rental-alert-trigger) {
+    margin-left: auto;
+    width: 44px;
+    flex: 0 0 44px;
+  }
+  .opportunities__chips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    margin-bottom: 8px;
+    scrollbar-width: thin;
+  }
+  .opportunities__chips :deep(.v-chip) {
+    height: 44px;
+    max-width: none;
+    flex: none;
+  }
+  .opportunities__chips :deep(.v-chip__content) {
+    white-space: nowrap;
+  }
+  .opportunities__chips > .v-btn {
+    min-height: 44px;
+    flex: none;
   }
   .opportunities__share {
     margin-left: 0;

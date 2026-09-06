@@ -85,110 +85,118 @@
           </div>
           <p>{{ t('priceHint') }}</p>
         </fieldset>
-        <fieldset>
-          <legend>{{ t('features') }}</legend>
-          <VSelect
-            v-model="draft.type"
-            :items="[
-              { title: t('all'), value: 'all' },
-              ...['casa', 'apartamento'].map(value => ({ title: t(value), value })),
-            ]"
-            :label="t('type')"
-            v-bind="field"
-          />
-          <div class="sale-search__pair">
+        <component
+          :is="mobile ? 'details' : 'div'"
+          class="sale-search__advanced"
+          :open="advancedOpen"
+          @toggle="advancedOpen = ($event.target as HTMLDetailsElement).open"
+        >
+          <summary v-if="mobile">{{ t('features') }}</summary>
+          <fieldset>
+            <legend v-if="!mobile">{{ t('features') }}</legend>
             <VSelect
-              v-model="draft.bedrooms"
-              :items="bedroomItems"
-              :label="t('bedrooms')"
+              v-model="draft.type"
+              :items="[
+                { title: t('all'), value: 'all' },
+                ...['casa', 'apartamento'].map(value => ({ title: t(value), value })),
+              ]"
+              :label="t('type')"
               v-bind="field"
+            />
+            <div class="sale-search__pair">
+              <VSelect
+                v-model="draft.bedrooms"
+                :items="bedroomItems"
+                :label="t('bedrooms')"
+                v-bind="field"
+              />
+              <VSelect
+                v-model="draft.bathrooms"
+                :items="bathroomItems"
+                :label="t('bathroomsMin')"
+                v-bind="field"
+              />
+            </div>
+            <VCheckbox
+              v-for="key in checks"
+              :key="key"
+              v-model="draft[key]"
+              :label="t(key)"
+              density="compact"
+              hide-details
             />
             <VSelect
-              v-model="draft.bathrooms"
-              :items="bathroomItems"
-              :label="t('bathroomsMin')"
+              v-model="draft.amenity"
+              :items="[
+                { title: t('any'), value: '' },
+                ...PROPERTY_SALES_AMENITIES.map(value => ({ title: t(value), value })),
+              ]"
+              :label="t('amenity')"
               v-bind="field"
             />
-          </div>
-          <VCheckbox
-            v-for="key in checks"
-            :key="key"
-            v-model="draft[key]"
-            :label="t(key)"
-            density="compact"
-            hide-details
-          />
-          <VSelect
-            v-model="draft.amenity"
-            :items="[
-              { title: t('any'), value: '' },
-              ...PROPERTY_SALES_AMENITIES.map(value => ({ title: t(value), value })),
-            ]"
-            :label="t('amenity')"
-            v-bind="field"
-          />
-        </fieldset>
-        <fieldset>
-          <legend>{{ t('area') }}</legend>
-          <VSelect
-            v-model="draft.areaBasis"
-            :items="
-              ['built', 'total', 'land', 'reported'].map(value => ({ title: t(value), value }))
-            "
-            :label="t('areaBasis')"
-            v-bind="field"
-          />
-          <div class="sale-search__pair">
-            <VTextField
-              v-model="draft.minArea"
-              :label="t('minArea')"
-              type="number"
-              min="0"
-              inputmode="decimal"
+          </fieldset>
+          <fieldset>
+            <legend>{{ t('area') }}</legend>
+            <VSelect
+              v-model="draft.areaBasis"
+              :items="
+                ['built', 'total', 'land', 'reported'].map(value => ({ title: t(value), value }))
+              "
+              :label="t('areaBasis')"
               v-bind="field"
             />
-            <VTextField
-              v-model="draft.maxArea"
-              :label="t('maxArea')"
-              type="number"
-              min="0"
-              inputmode="decimal"
+            <div class="sale-search__pair">
+              <VTextField
+                v-model="draft.minArea"
+                :label="t('minArea')"
+                type="number"
+                min="0"
+                inputmode="decimal"
+                v-bind="field"
+              />
+              <VTextField
+                v-model="draft.maxArea"
+                :label="t('maxArea')"
+                type="number"
+                min="0"
+                inputmode="decimal"
+                v-bind="field"
+              />
+            </div>
+            <p>{{ t('areaHint') }}</p>
+          </fieldset>
+          <fieldset>
+            <legend>{{ t('source') }}</legend>
+            <VSelect
+              v-model="draft.source"
+              :items="[
+                { title: t('all'), value: 'all' },
+                ...facets.sources.map(item => ({
+                  title: propertySaleSourceName(item.value),
+                  value: item.value,
+                })),
+              ]"
+              :label="t('source')"
               v-bind="field"
             />
-          </div>
-          <p>{{ t('areaHint') }}</p>
-        </fieldset>
-        <fieldset>
-          <legend>{{ t('source') }}</legend>
-          <VSelect
-            v-model="draft.source"
-            :items="[
-              { title: t('all'), value: 'all' },
-              ...facets.sources.map(item => ({
-                title: propertySaleSourceName(item.value),
-                value: item.value,
-              })),
-            ]"
-            :label="t('source')"
-            v-bind="field"
-          />
-          <VAutocomplete
-            v-model="draft.seller"
-            :items="facetItems('sellers')"
-            :label="t('seller')"
-            v-bind="field"
-            clearable
-          />
-          <VSelect
-            v-model="draft.recent"
-            :items="[
-              { title: t('all'), value: 'all' },
-              ...['1', '3', '7'].map(value => ({ title: t(`recent${value}`), value })),
-            ]"
-            :label="t('recent')"
-            v-bind="field"
-          />
-        </fieldset>
+            <VAutocomplete
+              v-model="draft.seller"
+              :items="facetItems('sellers')"
+              :label="t('seller')"
+              v-bind="field"
+              clearable
+            />
+            <VSelect
+              v-model="draft.recent"
+              :items="[
+                { title: t('all'), value: 'all' },
+                ...['1', '3', '7'].map(value => ({ title: t(`recent${value}`), value })),
+              ]"
+              :label="t('recent')"
+              v-bind="field"
+            />
+          </fieldset>
+        </component>
       </div>
       <footer>
         <p v-if="invalid" role="alert" class="sale-search__error">{{ t('rangeError') }}</p>
@@ -228,6 +236,7 @@ const checks = ['parking', 'furnished', 'photos'] as const
 const draft = ref(normalizePropertySalesQuery(props.query as unknown as Record<string, unknown>))
 const heading = ref<HTMLElement | null>(null)
 const invalid = ref(false)
+const advancedOpen = ref(false)
 const viewportHeight = ref('100dvh')
 const viewportTop = ref('0px')
 const bedroomItems = computed(() => [
@@ -309,6 +318,21 @@ watch(
   open => {
     if (open) {
       draft.value = normalizePropertySalesQuery(props.query as unknown as Record<string, unknown>)
+      const q = props.query
+      advancedOpen.value = Boolean(
+        q.type !== 'all' ||
+          q.bedrooms !== '' ||
+          q.bathrooms !== '' ||
+          q.parking ||
+          q.furnished ||
+          q.photos ||
+          q.amenity ||
+          q.minArea !== null ||
+          q.maxArea !== null ||
+          q.source !== 'all' ||
+          q.seller ||
+          q.recent !== 'all'
+      )
       invalid.value = false
       syncViewport()
     }
@@ -355,6 +379,31 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   gap: 24px;
+}
+.sale-search__body > .v-input {
+  flex: 0 0 auto;
+}
+.sale-search__advanced {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.sale-search--mobile .sale-search__advanced {
+  display: block;
+}
+.sale-search__advanced > summary {
+  min-height: 44px;
+  padding-block: 10px;
+  font-weight: 700;
+  color: rgb(var(--v-theme-link));
+  cursor: pointer;
+}
+.sale-search__advanced > summary:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-link));
+  outline-offset: 2px;
+}
+.sale-search--mobile .sale-search__advanced fieldset {
+  margin-top: 16px;
 }
 .sale-search fieldset {
   border: 0;
@@ -406,6 +455,27 @@ onBeforeUnmount(() => {
   overscroll-behavior: contain;
   min-height: 0;
   flex: 1;
+  gap: 16px;
+  padding-top: 8px;
+}
+.sale-search--mobile header,
+.sale-search--mobile footer {
+  padding-block: 8px;
+}
+.sale-search--mobile footer {
+  padding-bottom: max(8px, env(safe-area-inset-bottom));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+}
+.sale-search--mobile footer .v-btn {
+  min-width: 0;
+  padding-inline: 8px;
+}
+.sale-search--mobile footer :deep(.v-btn__content) {
+  white-space: normal;
+}
+.sale-search--mobile footer .sale-search__error {
+  grid-column: 1 / -1;
 }
 .sale-search :deep(.v-field__input) {
   font-size: 0.9rem;

@@ -26,6 +26,7 @@
                any page. Kept as its own labelled action above the icon strip so
                it stays discoverable. -->
           <ShareButtons label variant="tonal" color="white" class="cu-footer__share" />
+          <ClientOnly><PwaInstallAction /></ClientOnly>
 
           <!-- External + connect channels. Native title + aria-label instead of
                VTooltip: avoids empty role=tooltip overlays that fail the

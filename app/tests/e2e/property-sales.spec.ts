@@ -97,7 +97,6 @@ async function setup(page: Page, theme = 'dark') {
     { name: 'cu_consent', value: 'denied', domain, path: '/' },
   ])
   await page.addInitScript(theme => {
-    localStorage.setItem('not_show_twitter', 'true')
     localStorage.setItem('cu_theme', theme)
     localStorage.removeItem('cu_property_sale_favorites')
   }, theme)

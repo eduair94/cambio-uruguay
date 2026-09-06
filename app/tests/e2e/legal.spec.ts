@@ -15,13 +15,9 @@ test.describe('legal pages', () => {
   // Dev server takes ~50 s per page load; give 180 s so assertions have room.
   test.setTimeout(180_000)
 
-  test.beforeEach(async ({ context, page }) => {
+  test.beforeEach(async ({ context }) => {
     // Pin locale to Spanish before any navigation.
     await context.addCookies([{ name: 'lang', value: 'es', domain: 'localhost', path: '/' }])
-    // Suppress the JoinTwitter bottom-sheet before page scripts run (it appears
-    // after 20-79 s randomly and can block consent-banner clicks at the headless
-    // 1280x720 viewport where both sit at the bottom of the screen).
-    await page.addInitScript(() => localStorage.setItem('not_show_twitter', 'true'))
   })
 
   for (const p of pages) {

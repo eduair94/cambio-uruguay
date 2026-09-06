@@ -88,7 +88,14 @@
             color="primary"
           />
         </div>
-        <div id="rental-advanced" class="rental-search__advanced">
+        <component
+          :is="mobile ? 'details' : 'div'"
+          id="rental-advanced"
+          class="rental-search__advanced"
+          :open="advancedOpen"
+          @toggle="advancedOpen = ($event.target as HTMLDetailsElement).open"
+        >
+          <summary v-if="mobile" data-testid="rental-advanced-toggle">{{ t('more') }}</summary>
           <fieldset>
             <legend>{{ t('budget') }}</legend>
             <div class="rental-search__fields">
@@ -260,7 +267,7 @@
             <p class="rental-search__hint">{{ t('nearbyHint') }}</p>
           </fieldset>
           <p class="rental-search__hint">{{ t('knownHint') }}</p>
-        </div>
+        </component>
       </div>
       <footer class="rental-search__footer">
         <p v-if="invalidRange" class="rental-search__error" role="alert">{{ t('invalidRange') }}</p>
@@ -308,6 +315,7 @@ const emit = defineEmits<{
 }>()
 const { t } = useI18n({ useScope: 'local', messages: rentalMessages })
 const dialogHeading = ref<HTMLElement | null>(null)
+const advancedOpen = ref(false)
 const viewportHeight = ref<number | null>(null)
 const viewportTop = ref(0)
 const dialogProps = computed(() =>
@@ -365,6 +373,25 @@ watch(
     stopViewport()
     if (!open) return
     draft.value = copy(props.query)
+    const q = props.query
+    advancedOpen.value = Boolean(
+      q.q ||
+        q.source ||
+        q.currency ||
+        q.bedroomsExact ||
+        q.bathrooms !== null ||
+        q.priceMin !== null ||
+        q.priceMax !== null ||
+        q.expensesMax !== null ||
+        q.areaMin !== null ||
+        q.areaMax !== null ||
+        q.withExpenses ||
+        q.parking ||
+        q.furnished ||
+        q.multi ||
+        q.guarantees.length ||
+        q.sedes.length
+    )
     institution.value =
       MUTUALISTA_SEDES.find(s => s.osmId === props.query.sedes[0])?.mutualista || ''
     syncViewport()
@@ -514,6 +541,17 @@ function clearNeighborhoods() {
 .rental-search__advanced {
   padding-top: 12px;
 }
+.rental-search__advanced > summary {
+  min-height: 44px;
+  padding-block: 10px;
+  cursor: pointer;
+  color: rgb(var(--v-theme-link));
+  font-weight: 700;
+}
+.rental-search__advanced > summary:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-link));
+  outline-offset: 2px;
+}
 fieldset {
   border: 0;
   border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
@@ -534,6 +572,23 @@ legend {
   height: 100%;
   border: 0;
   border-radius: 0;
+}
+.rental-search--dialog .rental-search__scroll {
+  padding: 14px 16px 16px;
+}
+.rental-search--dialog .rental-search__main {
+  gap: 12px;
+}
+.rental-search--dialog fieldset {
+  padding-top: 14px;
+  margin-top: 8px;
+}
+.rental-search--dialog .rental-search__footer {
+  padding-top: 8px;
+  padding-bottom: max(8px, env(safe-area-inset-bottom));
+}
+.rental-search--dialog .rental-search__footer > .v-btn {
+  min-height: 44px;
 }
 .rental-search__header {
   display: flex;

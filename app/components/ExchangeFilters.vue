@@ -205,13 +205,6 @@
             :label="$t('hideConditional')"
             @update:model-value="$emit('update:notConditional', $event == true)"
           />
-          <VCheckbox
-            color="primary"
-            :model-value="hiddenWidgets"
-            hide-details
-            :label="$t('hideWidgets')"
-            @update:model-value="$emit('update:hiddenWidgets', $event == true)"
-          />
         </div>
       </VCol>
     </VRow>
@@ -233,7 +226,6 @@ interface Props {
   longitude: number
   notInterBank: boolean
   notConditional: boolean
-  hiddenWidgets: boolean
   onlyInterBank: string[]
   items: any[]
   savings: string
@@ -260,7 +252,6 @@ const emit = defineEmits<{
   resetAllFilters: []
   'update:notInterBank': [value: boolean]
   'update:notConditional': [value: boolean]
-  'update:hiddenWidgets': [value: boolean]
 }>()
 
 const { locale } = useI18n()

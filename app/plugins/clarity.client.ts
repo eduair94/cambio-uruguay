@@ -13,7 +13,7 @@ export default defineNuxtPlugin(() => {
   const clarityId = useRuntimeConfig().public.clarityId as string
   if (!clarityId) return // not configured yet -> do nothing
 
-  // Defer until after critical content renders (mirror tawk.client.ts strategy)
+  // Defer until after critical content renders.
   setTimeout(() => {
     ;(function (c: any, l: Document, a: string, r: string, i: string) {
       c[a] =

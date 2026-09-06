@@ -182,10 +182,6 @@ export default defineNuxtConfig({
           rel: 'preconnect',
           href: 'https://www.googletagmanager.com',
         },
-        {
-          rel: 'dns-prefetch',
-          href: 'https://embed.tawk.to',
-        },
       ],
     },
   },

@@ -491,7 +491,6 @@ test.describe('rental directory', () => {
       { name: 'lang', value: 'es', domain: cookieDomain, path: '/' },
       { name: 'cu_consent', value: 'denied', domain: cookieDomain, path: '/' },
     ])
-    await page.addInitScript(() => localStorage.setItem('not_show_twitter', 'true'))
     await page.route(mapFixturePhoto, route =>
       route.fulfill({
         status: 200,

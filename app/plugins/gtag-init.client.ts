@@ -3,7 +3,7 @@
 // starts here, with the same Consent Mode v2 defaults it always had — they
 // travel in the module's `initCommands` and are applied by `initialize()`.
 //
-// Why this exists: gating the tawk and clarity plugins was not enough. gtag is
+// Why this exists: gating the Clarity plugin was not enough. gtag is
 // loaded by the module itself, so /pizarra (which promises no third-party
 // request) and /widget (an iframe inside somebody else's page) were both still
 // pulling googletagmanager.com. Caught by the /pizarra e2e network assertion.

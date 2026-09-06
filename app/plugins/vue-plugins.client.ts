@@ -50,7 +50,5 @@ export default defineNuxtPlugin(nuxtApp => {
         window.removeEventListener('unhandledrejection', rejectionHandler)
       }
     }
-
-    // Tawk.to is loaded separately in tawk.client.ts plugin - removed duplicate
   }
 })

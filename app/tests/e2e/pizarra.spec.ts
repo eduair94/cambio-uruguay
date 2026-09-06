@@ -53,8 +53,8 @@ test('loads no third-party script and shows no cookie banner', async ({ page }) 
 
   await page.goto('/pizarra')
   await expect(page.locator('h1')).toBeVisible({ timeout: 90_000 })
-  // Tawk self-loads on idle (~8s), Clarity after 3s, and gtag is deferred —
-  // give all three their window before concluding they stayed away.
+  // Clarity starts after 3s and gtag is deferred — give both their window
+  // before concluding they stayed away.
   await page.waitForTimeout(9000)
 
   expect(

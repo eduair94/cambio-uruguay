@@ -37,7 +37,6 @@ for (const sample of [
       { name: 'lang', value: sample.locale, domain, path: '/' },
       { name: 'cu_consent', value: 'denied', domain, path: '/' },
     ])
-    await page.addInitScript(() => localStorage.setItem('not_show_twitter', 'true'))
     const today = new Date().toISOString().slice(0, 10)
     const first: RentalOffer = {
       source: 'infocasas',

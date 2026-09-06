@@ -1,64 +1,151 @@
-<!-- app/components/CookieConsent.vue -->
 <template>
-  <VFadeTransition>
-    <div v-if="visible" class="cookie-consent" role="region" :aria-label="t('consent.title')">
-      <VCard class="cookie-consent__card pa-4" elevation="12">
-        <div class="d-flex flex-column flex-md-row align-md-center ga-3">
-          <div class="cookie-consent__text text-body-2">
-            {{ t('consent.message') }}
-            <NuxtLink :to="localePath('/privacidad')" class="cookie-consent__link">
-              {{ t('consent.more') }}
-            </NuxtLink>
-          </div>
-          <div class="d-flex ga-2 flex-shrink-0">
-            <VBtn variant="text" color="grey-lighten-1" @click="reject">
-              {{ t('consent.reject') }}
-            </VBtn>
-            <VBtn color="primary" variant="elevated" @click="accept">
-              {{ t('consent.accept') }}
-            </VBtn>
-          </div>
-        </div>
-      </VCard>
+  <component
+    :is="bannerOpen ? VDialog : 'div'"
+    v-if="visible"
+    v-bind="containerProps"
+    class="cookie-consent"
+  >
+    <div class="cookie-consent__card">
+      <div class="cookie-consent__text">
+        <h2 v-if="bannerOpen" :id="titleId">{{ t('consent.title') }}</h2>
+        <p>
+          {{ bannerOpen ? t('consent.message') : localT('message') }}
+          <NuxtLink
+            :to="localePath('/privacidad')"
+            class="cookie-consent__link"
+            @click="openPolicy"
+          >
+            {{ t('consent.more') }}
+          </NuxtLink>
+        </p>
+      </div>
+      <div class="cookie-consent__actions">
+        <VBtn variant="outlined" @click="reject">{{ t('consent.reject') }}</VBtn>
+        <VBtn variant="outlined" @click="accept">{{ t('consent.accept') }}</VBtn>
+      </div>
     </div>
-  </VFadeTransition>
+  </component>
 </template>
 
 <script setup lang="ts">
-const { t } = useI18n()
+import { VDialog } from 'vuetify/components'
+const { t } = useI18n({ useScope: 'global' })
+const { t: localT } = useI18n({
+  useScope: 'local',
+  messages: {
+    es: {
+      message:
+        'Usamos cookies para medir visitas y mostrar anuncios. Podés aceptarlas o rechazarlas.',
+    },
+    en: {
+      message: 'We use cookies to measure visits and show ads. You can accept or reject them.',
+    },
+    pt: {
+      message:
+        'Usamos cookies para medir visitas e mostrar anúncios. Você pode aceitar ou rejeitar.',
+    },
+  },
+})
 const localePath = useLocalePath()
 const { hasDecided, bannerOpen, accept, reject } = useConsent()
-
-// Show until a decision is made, or when the user re-opens it from the footer.
+const titleId = useId()
 const visible = computed(() => !hasDecided.value || bannerOpen.value)
+const preferencesTrigger = shallowRef<HTMLElement | null>(null)
+watch(
+  bannerOpen,
+  (open, wasOpen) => {
+    if (!import.meta.client) return
+    if (open) {
+      preferencesTrigger.value =
+        document.activeElement instanceof HTMLElement ? document.activeElement : null
+    } else if (wasOpen) {
+      const trigger = preferencesTrigger.value
+      preferencesTrigger.value = null
+      nextTick(() => {
+        if (trigger?.isConnected) trigger.focus({ preventScroll: true })
+      })
+    }
+  },
+  { flush: 'sync' }
+)
+function openPolicy() {
+  // Navigation should reach the policy, without retaining the dialog or
+  // returning focus to the footer of the previous page. Consent is unchanged.
+  preferencesTrigger.value = null
+  bannerOpen.value = false
+}
+// First visit stays in document flow. Only an explicit footer action opens a
+// dialog, so preferences remain reachable without jumping back up the page.
+const containerProps = computed(() =>
+  bannerOpen.value
+    ? {
+        modelValue: true,
+        'onUpdate:modelValue': (value: boolean) => {
+          bannerOpen.value = value
+        },
+        maxWidth: 560,
+        scrollable: true,
+        'aria-labelledby': titleId,
+      }
+    : { role: 'region', 'aria-label': t('consent.title'), 'data-testid': 'cookie-consent-inline' }
+)
 </script>
 
 <style scoped>
-.cookie-consent {
-  position: fixed;
-  inset: auto 0 0 0;
-  z-index: 2000;
-  display: flex;
-  justify-content: center;
-  padding: 12px;
-  pointer-events: none;
+.cookie-consent:not(.v-dialog) {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 8px 12px;
 }
 .cookie-consent__card {
-  pointer-events: auto;
-  max-width: 920px;
-  width: 100%;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  gap: 12px 24px;
+  padding: 12px 16px;
+  color: rgb(var(--v-theme-on-surface));
+  background: rgb(var(--v-theme-surface));
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.16);
   border-radius: 12px;
 }
 .cookie-consent__text {
-  line-height: 1.6;
+  flex: 1;
+  min-width: 0;
+}
+.cookie-consent__text p {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+.cookie-consent__text h2 {
+  margin: 0 0 12px;
+  font-size: 1.25rem;
 }
 .cookie-consent__link {
   color: rgb(var(--v-theme-link));
-  text-decoration: none;
-  font-weight: 600;
+  text-underline-offset: 3px;
 }
-.cookie-consent__link:hover {
-  text-decoration: underline;
+.cookie-consent__actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 8px;
+}
+.cookie-consent__actions :deep(.v-btn) {
+  min-height: 44px;
+}
+.v-dialog .cookie-consent__card {
+  flex-direction: column;
+  align-items: stretch;
+  padding: 20px;
+}
+@media (max-width: 599px) {
+  .cookie-consent__card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding: 10px 12px;
+  }
+  .cookie-consent__actions .v-btn {
+    flex: 1;
+  }
 }
 </style>

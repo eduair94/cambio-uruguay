@@ -257,11 +257,8 @@
       <LazySearchPalette v-if="paletteActivated" v-model="paletteOpen" />
     </ClientOnly>
 
-    <ClientOnly>
-      <PWAInstallBanner />
-    </ClientOnly>
-
     <VMain id="main" tabindex="-1" :class="formatNameRoute()">
+      <CookieConsent />
       <div class="container_custom">
         <slot />
         <!-- Where to go next, server-rendered so crawlers follow it too. Routes
@@ -285,8 +282,6 @@
     </VMain>
 
     <Footer />
-    <ClientOnly><CookieConsent /></ClientOnly>
-    <JoinTwitter />
     <ClientOnly><AuthDialog /></ClientOnly>
 
     <!-- Memory Monitor for debugging (only shows in development) -->

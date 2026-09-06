@@ -19,7 +19,7 @@ describe('isBareRoute', () => {
     expect(isBareRoute('/en/widget/?theme=light')).toBe(true)
   })
 
-  it('leaves every normal page alone, so the site keeps its chat and analytics', () => {
+  it('leaves every normal page alone, so the site keeps its analytics', () => {
     for (const p of ['/', '/dolar-hoy', '/casas-de-cambio', '/en/', '/avanzado']) {
       expect(isBareRoute(p)).toBe(false)
     }

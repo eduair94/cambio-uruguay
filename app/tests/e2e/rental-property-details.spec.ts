@@ -171,7 +171,6 @@ for (const width of [320, 390, 1440]) {
       { name: 'lang', value: 'es', domain, path: '/' },
       { name: 'cu_consent', value: 'denied', domain, path: '/' },
     ])
-    await page.addInitScript(() => localStorage.setItem('not_show_twitter', 'true'))
     await openDossier(page)
     const detail = page.getByTestId('rental-property-page')
     await expect(detail.getByTestId('rental-source-description')).toContainText('primer anunciante')

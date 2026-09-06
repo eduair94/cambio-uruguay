@@ -47,8 +47,8 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
       <div class="rentals-content">
         <div v-if="smAndDown" class="rentals-mobile-bar">
           <VBtn
-            color="primary"
-            size="large"
+            color="link"
+            variant="tonal"
             prepend-icon="mdi-tune-variant"
             aria-haspopup="dialog"
             aria-controls="rental-mobile-filters-dialog"
@@ -58,6 +58,21 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
             >{{ t('mobileFilters')
             }}<span v-if="filterChips.length"> ({{ filterChips.length }})</span></VBtn
           >
+          <VBtnToggle
+            :model-value="view"
+            mandatory
+            variant="outlined"
+            divided
+            :aria-label="`${t('list')} / ${t('map')}`"
+            @update:model-value="changeView"
+          >
+            <VBtn value="lista" :aria-label="t('list')" :title="t('list')">
+              <VIcon icon="mdi-view-grid-outline" />
+            </VBtn>
+            <VBtn value="mapa" :aria-label="t('map')" :title="t('map')">
+              <VIcon icon="mdi-map-marker-outline" />
+            </VBtn>
+          </VBtnToggle>
           <RentalAlertButton kind="rental-search" :filters="{ ...query }" compact />
         </div>
         <div v-if="filterChips.length" class="rentals-chips" :aria-label="t('activeFilters')">
@@ -75,20 +90,43 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
         </div>
         <div class="rentals-tools">
           <RentalAlertButton v-if="!smAndDown" kind="rental-search" :filters="{ ...query }" />
-          <VBtn variant="text" prepend-icon="mdi-bookmark-plus-outline" @click="saveSearch">{{
-            t('saveSearch')
-          }}</VBtn>
           <VBtn
             variant="text"
-            prepend-icon="mdi-heart-outline"
+            :prepend-icon="smAndDown ? undefined : 'mdi-bookmark-plus-outline'"
+            :icon="smAndDown"
+            :aria-label="t('saveSearch')"
+            :title="t('saveSearch')"
+            @click="saveSearch"
+          >
+            <VIcon v-if="smAndDown" icon="mdi-bookmark-plus-outline" /><template v-else>{{
+              t('saveSearch')
+            }}</template>
+          </VBtn>
+          <VBtn
+            variant="text"
+            :prepend-icon="smAndDown ? undefined : 'mdi-heart-outline'"
+            :icon="smAndDown"
+            :aria-label="`${t('saved')} (${saved.favorites.length + saved.searches.length})`"
+            :title="t('saved')"
             :aria-expanded="showSaved"
             aria-controls="rental-saved"
             @click="showSaved = !showSaved"
-            >{{ t('saved') }} ({{ saved.favorites.length + saved.searches.length }})</VBtn
+            ><VIcon v-if="smAndDown" icon="mdi-heart-outline" /><template v-else
+              >{{ t('saved') }} ({{ saved.favorites.length + saved.searches.length }})</template
+            ></VBtn
           >
-          <VBtn variant="text" prepend-icon="mdi-share-variant-outline" @click="shareSearch">{{
-            t('share')
-          }}</VBtn>
+          <VBtn
+            variant="text"
+            :prepend-icon="smAndDown ? undefined : 'mdi-share-variant-outline'"
+            :icon="smAndDown"
+            :aria-label="t('share')"
+            :title="t('share')"
+            @click="shareSearch"
+          >
+            <VIcon v-if="smAndDown" icon="mdi-share-variant-outline" /><template v-else>{{
+              t('share')
+            }}</template>
+          </VBtn>
         </div>
         <div v-if="showSaved" id="rental-saved" class="mb-6">
           <SavedPanel
@@ -124,6 +162,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
               @update:model-value="changeSort"
             />
             <VBtnToggle
+              v-if="!smAndDown"
               :model-value="view"
               mandatory
               variant="outlined"
@@ -1011,7 +1050,7 @@ useHead(() => ({
   padding-bottom: 48px;
 }
 .rentals--mobile {
-  padding-bottom: calc(104px + env(safe-area-inset-bottom));
+  padding-bottom: 32px;
 }
 .rentals-content,
 .rentals-sidebar {
@@ -1021,23 +1060,34 @@ useHead(() => ({
   display: none;
 }
 .rentals-mobile-bar {
-  position: fixed;
-  inset: auto 0 0;
-  z-index: 1900;
+  position: sticky;
+  top: 64px;
+  z-index: 8;
   display: flex;
-  gap: 8px;
-  padding: 12px max(84px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom))
-    max(12px, env(safe-area-inset-left));
-  background: rgb(var(--v-theme-surface));
-  border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  align-items: center;
+  gap: 6px;
+  padding: 5px 0;
+  background: rgb(var(--v-theme-background));
+  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
-.rentals-mobile-bar > .v-btn {
-  flex: 1;
-  min-width: 0;
-  min-height: 48px;
+.rentals-mobile-bar :deep(.v-btn) {
+  min-width: 44px;
+  min-height: 44px;
+  height: 44px;
+  padding-inline: 10px;
+}
+.rentals-mobile-bar > .v-btn:first-child {
+  margin-right: auto;
+  font-size: 0.8rem;
+  letter-spacing: 0;
+}
+.rentals-mobile-bar :deep(.v-btn-toggle) {
+  height: 44px;
+  flex: none;
 }
 .rentals-mobile-bar :deep(.rental-alert-trigger) {
-  flex: 0 0 48px;
+  width: 44px;
+  flex: 0 0 44px;
 }
 .rentals-head {
   margin: 12px 0 24px;
@@ -1080,14 +1130,55 @@ useHead(() => ({
   margin: 8px 0 12px;
 }
 .rentals--mobile .rentals-chips :deep(.v-chip) {
-  height: auto;
+  height: 44px;
   min-height: 44px;
-  max-width: 100%;
+  flex: none;
+  max-width: none;
 }
 .rentals--mobile .rentals-chips :deep(.v-chip__content) {
-  min-width: 0;
-  white-space: normal;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
+}
+.rentals--mobile .rentals-chips {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  margin-top: 8px;
+  gap: 6px;
+  scrollbar-width: thin;
+}
+.rentals--mobile .rentals-chips > .v-btn {
+  flex: none;
+  min-height: 44px;
+}
+.rentals--mobile .rentals-tools {
+  margin: 0;
+  gap: 4px;
+  justify-content: flex-end;
+}
+.rentals--mobile .rentals-tools :deep(.v-btn) {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+}
+.rentals--mobile .rentals-head {
+  margin: 6px 0 12px;
+}
+.rentals--mobile .rentals-lead {
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+.rentals--mobile .rentals-provenance {
+  margin-top: 8px;
+}
+.rentals--mobile .rentals-toolbar {
+  margin: 8px 0 12px;
+  gap: 10px;
+}
+.rentals--mobile .rentals-summary h2 {
+  font-size: 1.05rem;
+}
+.rentals--mobile .rentals-results {
+  scroll-margin-top: 126px;
 }
 .rentals--mobile .rentals-chips :deep(.v-chip__close) {
   flex: 0 0 44px;

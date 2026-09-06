@@ -26,6 +26,14 @@
         </NuxtLink>
         <NuxtLink :to="localePath('/comprar-o-alquilar-uruguay')">{{ t('buyOrRent') }}</NuxtLink>
         <a href="#sales-coverage">{{ t('coverage') }}</a>
+        <VBtn
+          v-if="smAndDown"
+          icon="mdi-share-variant-outline"
+          variant="text"
+          :aria-label="t('share')"
+          class="sales-directory__share-mobile"
+          @click="shareSearch"
+        />
       </nav>
     </header>
     <div class="sales-directory__workspace">
@@ -45,7 +53,8 @@
         <div class="sales-directory__toolbar">
           <VBtn
             v-if="smAndDown"
-            color="primary"
+            color="link"
+            variant="tonal"
             prepend-icon="mdi-tune-variant"
             aria-haspopup="dialog"
             aria-controls="sale-filter-dialog"
@@ -76,16 +85,18 @@
           <VBtn
             :variant="savedOnly ? 'tonal' : 'text'"
             :color="savedOnly ? 'primary' : undefined"
-            prepend-icon="mdi-heart-outline"
+            :prepend-icon="smAndDown ? undefined : 'mdi-heart-outline'"
             :aria-pressed="savedOnly"
             data-testid="sale-saved-trigger"
             :aria-label="`${t('saved')} (${favorites.keys.value.length})`"
             @click="toggleSaved"
           >
+            <VIcon v-if="smAndDown" icon="mdi-heart-outline" />
             <span class="sales-directory__saved-label">{{ t('saved') }}</span>
             <span v-if="favorites.ready.value">({{ favorites.keys.value.length }})</span>
           </VBtn>
           <VBtn
+            v-if="!smAndDown"
             icon="mdi-share-variant-outline"
             variant="text"
             :aria-label="t('share')"
@@ -727,6 +738,22 @@ defineOgImageComponent('Cambio', { title: t('title'), description: t('seoDescrip
   outline-offset: 3px;
 }
 @media (max-width: 959px) {
+  .sales-directory__header {
+    padding: 6px 0 12px;
+  }
+  .sales-directory__header > p {
+    margin-top: 6px;
+    line-height: 1.45;
+  }
+  .sales-directory__header nav {
+    margin-top: 4px;
+  }
+  .sales-directory__share-mobile {
+    margin-left: auto;
+    flex: none;
+    width: 44px;
+    height: 44px;
+  }
   .sales-directory__workspace {
     display: block;
   }
@@ -734,24 +761,55 @@ defineOgImageComponent('Cambio', { title: t('title'), description: t('seoDescrip
     height: 0;
   }
   .sales-directory__toolbar {
-    top: 56px;
-    margin: 0 -12px;
-    padding: 8px 12px;
+    top: 64px;
+    margin: 0;
+    padding: 5px 0;
     gap: 6px;
     flex-wrap: nowrap;
   }
   .sales-directory__toolbar > .v-btn:last-child {
     margin-left: auto;
   }
+  .sales-directory__toolbar .v-btn-toggle {
+    height: 44px;
+  }
   .sales-directory__toolbar :deep(.v-btn) {
     padding-inline: 10px;
     min-width: 44px;
+    height: 44px;
+    letter-spacing: 0;
+  }
+  .sales-directory__chips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    padding-top: 8px;
+    gap: 6px;
+    scrollbar-width: thin;
+  }
+  .sales-directory__chips :deep(.v-chip) {
+    flex: none;
+    height: 44px;
+    min-height: 44px;
+    max-width: none;
+  }
+  .sales-directory__chips :deep(.v-chip__content) {
+    white-space: nowrap;
+  }
+  .sales-directory__chips :deep(.v-chip__close) {
+    min-width: 44px;
+    min-height: 44px;
+    justify-content: center;
+  }
+  .sales-directory__chips > .v-btn {
+    flex: none;
+    min-height: 44px;
   }
   .sales-directory__view-label {
     display: none;
   }
   .sales-directory__result-head {
-    padding-top: 16px;
+    padding-top: 12px;
     gap: 12px;
   }
   .sales-directory__sort {
@@ -765,7 +823,7 @@ defineOgImageComponent('Cambio', { title: t('title'), description: t('seoDescrip
   .sales-directory__saved-label {
     display: none;
   }
-  .sales-directory__header nav > :nth-child(n + 3) {
+  .sales-directory__header nav > a:nth-child(n + 3) {
     display: none;
   }
   .sales-directory__grid {

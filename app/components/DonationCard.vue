@@ -1,342 +1,129 @@
 <template>
-  <VCard
-    class="donation-card"
-    elevation="6"
-    :class="{
-      'donation-card--minimized': isMinimized,
-      'donation-card--right': isMinimized,
-      'donation-card--left': !isMinimized,
-    }"
-  >
-    <!-- Minimized state -->
-    <div v-if="isMinimized" class="donation-minimized">
-      <VBtn
-        icon
-        size="small"
-        color="red"
-        variant="text"
-        class="donation-expand-btn"
-        :aria-label="$t('a11y.expandDonation')"
-        @click="toggleCard"
-      >
-        <VIcon>mdi-heart</VIcon>
-      </VBtn>
-    </div>
-
-    <!-- Expanded state -->
-    <div v-else class="donation-expanded">
-      <!-- Header -->
-      <div class="donation-header pa-3 pb-2 d-flex align-center justify-space-between">
-        <div class="d-flex align-center">
-          <VIcon color="red" class="mr-2">mdi-heart</VIcon>
-          <span class="text-body-2 font-weight-medium">{{ $t('donation.supportProject') }}</span>
-        </div>
+  <section aria-labelledby="donation-support-title">
+    <VContainer class="donation-card">
+      <div class="donation-copy">
+        <h2 id="donation-support-title">{{ $t('donation.supportProject') }}</h2>
+        <p>{{ $t('donation.helpMessage') }}</p>
+      </div>
+      <div class="donation-actions">
         <VBtn
-          icon
-          size="x-small"
-          variant="text"
-          class="donation-close-btn"
-          :aria-label="$t('a11y.closeDonation')"
-          @click="toggleCard"
+          href="https://ko-fi.com/cambio_uruguay"
+          target="_blank"
+          rel="noopener noreferrer"
+          :aria-label="$t('donation.donatePaypal')"
+          variant="tonal"
+          color="primary"
+          class="donation-link"
+          @click="trackDonation('paypal')"
         >
-          <VIcon size="16">mdi-close</VIcon>
+          PayPal
         </VBtn>
+        <VBtn
+          href="https://mpago.la/19j46vX"
+          target="_blank"
+          rel="noopener noreferrer"
+          :aria-label="$t('donation.donateMercadoPago')"
+          variant="tonal"
+          color="primary"
+          class="donation-link"
+          @click="trackDonation('mercadopago')"
+        >
+          MercadoPago
+        </VBtn>
+        <a
+          href="https://www.trustpilot.com/review/cambio-uruguay.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="donation-reviews"
+          @click="trackDonation('trustpilot')"
+        >
+          {{ $t('donation.seeReviews') }}
+        </a>
       </div>
-
-      <!-- Content -->
-      <div class="donation-content pa-3 pt-0">
-        <p class="text-caption text-grey-lighten-1 mb-3">
-          {{ $t('donation.helpMessage') }}
-        </p>
-
-        <!-- Donation buttons -->
-        <div class="d-flex justify-space-between align-center">
-          <a
-            target="_blank"
-            rel="noopener noreferrer"
-            :aria-label="$t('donation.donatePaypal')"
-            class="donation-link"
-            href="https://ko-fi.com/cambio_uruguay"
-            @click="trackDonation('paypal')"
-          >
-            <VChip
-              size="small"
-              color="primary"
-              variant="elevated"
-              class="donation-chip"
-              prepend-icon="mdi-currency-usd"
-            >
-              PayPal
-            </VChip>
-          </a>
-
-          <a
-            target="_blank"
-            rel="noopener noreferrer"
-            :aria-label="$t('donation.donateMercadoPago')"
-            class="donation-link"
-            href="https://mpago.la/19j46vX"
-            @click="trackDonation('mercadopago')"
-          >
-            <VChip
-              size="small"
-              color="light-blue-darken-4"
-              variant="elevated"
-              class="donation-chip"
-              prepend-icon="mdi-credit-card"
-            >
-              MercadoPago
-            </VChip>
-          </a>
-        </div>
-
-        <!-- Trust link -->
-        <div class="text-center mt-2">
-          <a
-            target="_blank"
-            rel="noopener noreferrer"
-            class="text-caption text-grey-lighten-2 text-decoration-none"
-            href="https://www.trustpilot.com/review/cambio-uruguay.com"
-            @click="trackDonation('trustpilot')"
-          >
-            <VIcon size="12" class="mr-1">mdi-star</VIcon>
-            {{ $t('donation.seeReviews') }}
-          </a>
-        </div>
-      </div>
-    </div>
-  </VCard>
+    </VContainer>
+  </section>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-
-// State
-const isMinimized = ref(false)
-
-// Methods
-const toggleCard = () => {
-  isMinimized.value = !isMinimized.value
-  // Save preference in localStorage
-  localStorage.setItem('donationCardMinimized', isMinimized.value.toString())
-}
-
 const trackDonation = (platform: string) => {
-  // Track donation clicks (could be used for analytics)
-  console.log(`Donation click: ${platform}`)
-
-  // You could add Google Analytics or other tracking here
   if (
     typeof window !== 'undefined' &&
     'gtag' in window &&
     typeof (window as any).gtag === 'function'
   ) {
     ;(window as any).gtag('event', 'donation_click', {
-      platform: platform,
+      platform,
       currency: 'USD',
       value: 1,
     })
   }
 }
-
-// Load preference from localStorage
-onMounted(() => {
-  const savedState = localStorage.getItem('donationCardMinimized')
-  if (savedState !== null) {
-    isMinimized.value = savedState === 'true'
-  }
-})
 </script>
 
 <style scoped>
 .donation-card {
-  position: fixed;
-  bottom: 20px;
-  z-index: 1000;
-  max-width: 280px;
-  background: rgba(18, 18, 18, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
-  border-radius: 12px;
-  /* Surface is hardcoded dark in both themes, so pin text light. Otherwise in
-     light mode Vuetify's VCard sets near-black on-surface ink and the un-classed
-     title renders black-on-dark (illegible). */
-  color: rgba(255, 255, 255, 0.92);
-}
-
-/* Title inherits the card color; keep it explicitly light regardless of theme. */
-.donation-header span {
-  color: rgba(255, 255, 255, 0.95);
-}
-
-/* The secondary text + reviews link used Vuetify `text-grey-lighten-*` utilities,
-   which don't resolve to a light value here (palette utility absent / the <a>'s
-   link cascade wins) — the reviews link came out near-black on the dark card.
-   Pin them light explicitly so they never depend on the theme/utility palette. */
-.donation-content p,
-.donation-content a {
-  color: rgba(255, 255, 255, 0.78) !important;
-}
-
-/* The card surface is hardcoded dark in BOTH themes, but the global light-mode
-   `text-grey-lighten-*` → dark-ink remap (higher specificity than the rule
-   above) turns the reviews link near-black on the dark card. Re-pin light under
-   the light theme with enough specificity to win. */
-.v-theme--light .donation-content p,
-.v-theme--light .donation-content a,
-.v-theme--light .donation-content a.text-grey-lighten-2 {
-  color: rgba(255, 255, 255, 0.82) !important;
-}
-
-/* Side positioning modifiers */
-.donation-card--right {
-  right: 20px;
-  left: auto;
-}
-
-.donation-card--left {
-  left: 20px;
-  right: auto;
-}
-
-/* Minimized button: place above chat bubble on desktop too */
-.donation-card.donation-card--minimized.donation-card--right {
-  bottom: calc(20px + var(--chat-bubble-height, 72px));
-}
-
-.donation-card--minimized {
-  max-width: 50px;
-  max-height: 50px;
-}
-
-.donation-minimized {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+  margin-block: 24px;
+  padding-block: 24px;
+  border-block-start: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  color: rgb(var(--v-theme-on-surface));
 }
 
-.donation-expand-btn {
-  animation: pulse 2s infinite;
+.donation-copy {
+  flex: 1 1 360px;
+  min-width: 0;
 }
 
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
-  100% {
-    transform: scale(1);
-  }
+.donation-copy h2 {
+  margin: 0 0 6px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.4;
 }
 
-.donation-header {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+.donation-copy p {
+  margin: 0;
+  max-width: 65ch;
+  font-size: 1rem;
+  line-height: 1.5;
 }
 
-.donation-content {
-  background: rgba(255, 255, 255, 0.02);
+.donation-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .donation-link {
-  text-decoration: none;
-  transition: transform 0.2s ease;
+  min-height: 44px;
+  text-transform: none;
+  letter-spacing: normal;
 }
 
-.donation-link:hover {
-  transform: translateY(-2px);
+.donation-reviews {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 8px;
+  color: rgb(var(--v-theme-primary));
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  text-underline-offset: 3px;
 }
 
-.donation-chip {
-  font-size: 0.75rem;
-  height: 28px;
-  transition: all 0.2s ease;
+.donation-actions a:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-primary));
+  outline-offset: 3px;
 }
 
-.donation-chip:hover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
-.donation-close-btn {
-  opacity: 0.7;
-  transition: opacity 0.2s ease;
-}
-
-.donation-close-btn:hover {
-  opacity: 1;
-}
-
-/* Mobile responsiveness */
-@media (max-width: 768px) {
-  /* Expanded: place bottom-left on mobile and lift above potential mobile nav */
-  .donation-card.donation-card--left {
-    bottom: 80px;
-    left: 15px;
-    max-width: 250px;
-  }
-
-  /* Minimized: keep bottom-right, place above chat bubble */
-  .donation-card.donation-card--minimized.donation-card--right {
-    bottom: calc(20px + var(--chat-bubble-height, 72px));
-    right: 15px;
-  }
-}
-
-@media (max-width: 480px) {
-  .donation-card.donation-card--left {
-    max-width: 220px;
-    left: 10px;
-    bottom: 70px;
-  }
-}
-
-/* Accessibility */
-.donation-card:focus-within {
-  outline: 2px solid #42a5f5;
-  outline-offset: 2px;
-}
-
-.donation-link:focus {
-  outline: 2px solid #42a5f5;
-  outline-offset: 2px;
-  border-radius: 4px;
-}
-
-/* Dark mode compatibility */
-@media (prefers-color-scheme: dark) {
-  .donation-card {
-    background: rgba(30, 30, 30, 0.95);
-    border-color: rgba(255, 255, 255, 0.15);
-  }
-}
-
-/* Smooth animations */
-.donation-expanded {
-  animation: slideIn 0.3s ease-out;
-}
-
-.donation-minimized {
-  animation: slideIn 0.3s ease-out;
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Hide on print */
 @media print {
   .donation-card {
-    display: none !important;
+    display: none;
   }
 }
 </style>

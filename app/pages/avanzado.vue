@@ -76,7 +76,6 @@
                   :longitude="longitude"
                   :not-inter-bank="notInterBank"
                   :not-conditional="notConditional"
-                  :hidden-widgets="hiddenWidgets"
                   :only-inter-bank="onlyInterBank"
                   :items="items"
                   :savings="savings()"
@@ -130,12 +129,6 @@
                     value => {
                       notConditional = value
                       updateTable()
-                    }
-                  "
-                  @update:hidden-widgets="
-                    value => {
-                      hiddenWidgets = value
-                      hideWidgets(value)
                     }
                   "
                 />
@@ -327,7 +320,6 @@ const initialAmount = Number.isFinite(routeAmount) && routeAmount >= 0 ? routeAm
 const snackColor = ref<string>('green darken-4')
 const routeHasQuery = ref<boolean>(false)
 const pageMounted = ref<boolean>(false)
-const hiddenWidgets = ref<boolean>(false)
 const hasScroll = ref<boolean>(false)
 const allItems = ref<ExchangeItem[]>([])
 const preferentialCatalog = ref<PreferentialRatesCatalog | null>(null)
@@ -563,42 +555,6 @@ const openSnack = (text: string, timeout = 2000, color = 'green darken-4') => {
   setTimeout(() => {
     snackbar.value = false
   }, timeout)
-}
-
-const hideFeedback = () => {
-  document.head.insertAdjacentHTML(
-    'beforeend',
-    `<style type="text/css" class="custom_style_list">
-                    ._hj_feedback_container {
-                      display:none!important;
-                    }
-            </style>`
-  )
-}
-
-const hideWidgets = (val: boolean, att = 0) => {
-  const t = (window as any).Tawk_API
-  if (t?.hideWidget) {
-    if (val) {
-      localStorage.setItem('hideWidgets', '1')
-      t.hideWidget()
-      hideFeedback()
-    } else {
-      localStorage.removeItem('hideWidgets')
-      t.showWidget()
-      const el = document.querySelector('.custom_style_list')
-      if (el) el.remove()
-    }
-  } else {
-    nextTick(() => {
-      att++
-      if (att === 10) {
-        console.log('hide widget', att)
-        return
-      }
-      hideWidgets(val, att)
-    })
-  }
 }
 
 const buildExchangeHouseOptions = () => {
@@ -1170,7 +1126,6 @@ const loadDataFromQueryParams = () => {
       date: selectedDate.value,
       notInterBank: notInterBank.value,
       notConditional: notConditional.value,
-      hiddenWidgets: hiddenWidgets.value,
       hasCoordinates: enableDistance.value,
     })
 
@@ -1204,9 +1159,6 @@ onMounted(() => {
   // Then load any additional client-side query parameters
   loadDataFromQueryParams()
 
-  if (localStorage.getItem('hideWidgets') === 'true') {
-    hiddenWidgets.value = true
-  }
   pageMounted.value = true
 })
 

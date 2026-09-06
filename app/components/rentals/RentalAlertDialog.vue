@@ -22,6 +22,7 @@
       </header>
       <div v-if="success" class="rental-alert-dialog__body">
         <VAlert type="success" variant="tonal" role="status">{{ t(success) }}</VAlert>
+        <PwaInstallAction class="mt-3" />
         <VBtn
           :to="localePath('/cuenta?tab=alerts')"
           variant="text"
