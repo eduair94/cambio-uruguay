@@ -44,8 +44,9 @@ async function main(): Promise<void> {
   // Dry-run uses the same merge as an upsert without touching the collection.
   const sales = new Map(storedSales.map(row => [row.id, row]));
   for (const row of harvest?.listings || []) sales.set(row.id, row);
-  const result = analyzeOpportunities([...rentalOpportunityListings(rentals.rows), ...sales.values()], { now, usdUyu: rate });
-  const rentSnapshot = operationSnapshot(result, "rent", rentals.meta?.generatedAt || now, rentalCoverage(rentals.meta));
+  const rentalInputs = rentalOpportunityListings(rentals.rows);
+  const result = analyzeOpportunities([...rentalInputs, ...sales.values()], { now, usdUyu: rate });
+  const rentSnapshot = operationSnapshot(result, "rent", rentals.meta?.generatedAt || now, rentalCoverage(rentals.meta, rentalInputs, now));
   const saleSnapshot = operationSnapshot(result, "sale", harvest?.readAt || saleMeta?.readAt || now,
     harvest ? salesCoverage(harvest) : saleMeta?.coverage || []);
   if (reportFile) fs.writeFileSync(reportFile, JSON.stringify({ dryRun, rent: rentSnapshot, sale: saleSnapshot }, null, 2));

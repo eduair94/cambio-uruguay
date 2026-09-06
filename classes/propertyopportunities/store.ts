@@ -7,6 +7,7 @@ import type { RentalMeta, RentalProperty } from "../rentals/types";
 import type { OpportunityAnalysisResult, OpportunityListing, OpportunityOperation } from "./types";
 import type { OpportunityCoverage, PropertyOpportunitySnapshot } from "./snapshotTypes";
 import type { SaleHarvestResult } from "./sales";
+import { OPPORTUNITY_POLICY } from "./analyze";
 
 const CHUNK = 300;
 const MAX_SNAPSHOT_BYTES = 8 * 1024 * 1024;
@@ -100,12 +101,27 @@ export async function loadRentalMarket(): Promise<{ rows: Pick<RentalProperty, "
   return { rows, meta };
 }
 
-export function rentalCoverage(meta: RentalMeta | null): OpportunityCoverage[] {
-  return (meta?.sources || []).map(source => ({
-    source: source.key, observed: source.listings, lastRead: meta!.generatedAt,
-    // The public rental metadata does not persist per-source completeness. Do not invent it.
-    complete: false, note: source.note,
-  }));
+export function rentalCoverage(
+  meta: RentalMeta | null,
+  listings: readonly Pick<OpportunityListing, "id" | "source" | "lastSeen">[],
+  now: string,
+): OpportunityCoverage[] {
+  const today = Math.floor(Date.parse(now) / 86_400_000);
+  const sources = new Set([...(meta?.sources || []).map(source => source.key), ...listings.map(row => row.source)]);
+  return [...sources].flatMap(source => {
+    const rows = listings.filter(row => {
+      const day = Math.floor(Date.parse(row.lastSeen) / 86_400_000);
+      return row.source === source && Number.isFinite(day) && day <= today && day >= today - OPPORTUNITY_POLICY.freshDays;
+    });
+    if (!rows.length) return [];
+    return [{
+      source, observed: new Set(rows.map(row => row.id)).size,
+      lastRead: rows.map(row => row.lastSeen).sort((a, b) => Date.parse(a) - Date.parse(b)).at(-1)!,
+      // A small hourly harvest does not replace the corpus; neither proves exhaustive coverage.
+      complete: false,
+      note: "Avisos residenciales con datos propios y lectura reciente presentes en el análisis, contados una sola vez por identificador. No equivale a viviendas únicas ni a cobertura de todo el mercado.",
+    }];
+  });
 }
 
 export function operationSnapshot(
