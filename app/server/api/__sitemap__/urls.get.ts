@@ -28,6 +28,7 @@ import {
 } from '../../utils/rentalPage'
 import { listPosts } from '../../utils/blog'
 import { listIssueDates } from '../../utils/newsletterArchive'
+import { loadPropertySaleSitemapUrls } from '../../utils/propertySales'
 import { connectDb, disconnectDbAfterPrerender } from '../../utils/db'
 
 interface SitemapUrl {
@@ -255,6 +256,16 @@ export default defineEventHandler(async _event => {
     )
   } catch (rentalError) {
     console.warn('Failed to add reviewed rental pages to sitemap:', rentalError)
+  } finally {
+    await disconnectDbAfterPrerender()
+  }
+
+  // Source-specific sale dossiers: reviewed Spanish pilot with the same live page gate.
+  // A scrape timestamp is not a content modification, so these omit lastmod.
+  try {
+    urls.push(...(await loadPropertySaleSitemapUrls()))
+  } catch (saleError) {
+    console.warn('Failed to add reviewed sale pages to sitemap:', saleError)
   } finally {
     await disconnectDbAfterPrerender()
   }

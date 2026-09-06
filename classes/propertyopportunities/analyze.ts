@@ -92,6 +92,8 @@ export function opportunityRisks(listing: OpportunityListing): OpportunityRisk[]
     found.add("temporary");
   if (/\b(?:anticipo|adelanto|entrega inicial|saldo financiado|precio de la cuota)\b|\bdesde\s*(?:u\s*\$\s*s?|usd|uyu|\$|\d)|\b\d+[\d.,]*\s*(?:cuotas|mensualidades)\b|\bcuotas?\s*(?:de|desde|:|usd|u\s*\$|\$)/.test(own))
     found.add("partial_price");
+  if (listing.operation === "sale" && /\bentrega\s+(?:\+|mas)\s+saldo\b|(?:\+|mas)\s+saldo\s+(?:anv|bhu|mvotma|mvot|ministerio de vivienda)\b/.test(own))
+    found.add("partial_price");
   const nonNegated = own.replace(/\b(?:no (?:(?:esta|se encuentra|se vende|es) )?(?:actualmente )?(?:ocupad[oa]|alquilad[oa]|arrendad[oa])|sin (?:ocupantes|inquilinos|renta))\b/g, " ");
   if (/\b(?:con renta|con inquilinos?|actualmente alquilad[oa]|actualmente arrendad[oa]|se vende alquilad[oa]|se vende con ocupantes|ocupad[oa] por|inmueble ocupado|vivienda ocupada)\b/.test(nonNegated))
     found.add("occupied");
@@ -99,7 +101,7 @@ export function opportunityRisks(listing: OpportunityListing): OpportunityRisk[]
     found.add("occupied");
   const occupancyLines = `${listing.title}\n${listing.description}`.split(/\r?\n/).map(text).join("\n")
     .replace(/\b(?:no (?:(?:esta|se encuentra|se vende|es) )?(?:actualmente )?|(?:anteriormente |antes |estuvo |fue )|(?:puede ser |podria ser |para ser |sera ))(?:alquilad[oa]|arrendad[oa])\b/g, " ");
-  if (/(?:^|[\n.!?;]\s*)(?:alquilad[oa]|arrendad[oa])(?=\s*(?:[,.;:]|con contrato|$))|\b(?:esta|se encuentra)\s+(?:actualmente\s+)?(?:alquilad[oa]|arrendad[oa])\b|\b(?:alquilad[oa]|arrendad[oa])\s+con\s+contrato\b/.test(occupancyLines))
+  if (/(?:^|[\n.!?;]\s*)(?:alquilad[oa]|arrendad[oa])(?=\s*(?:[,.;:]|con contrato|$))|\b(?:esta|se encuentra)\s+(?:actualmente\s+)?(?:alquilad[oa]|arrendad[oa])\b|\b(?:alquilad[oa]|arrendad[oa])\s+con\s+contrato\b|\b(?:alquilad[oa]|arrendad[oa])\s+por\s+(?:usd\s*|uyu\s*|u\s*\$\s*s?\s*|\$\s*)?\d/.test(occupancyLines))
     found.add("occupied");
   const renovation = own.replace(/\b(?:no (?:requiere|necesita) (?:reforma|reciclaje|arreglos)|sin necesidad de (?:reforma|reciclaje|arreglos))\b/g, " ");
   if (/\b(?:a reciclar|para reciclar|a reformar|para reformar|a refaccionar|para refaccionar|requiere (?:reforma|reciclaje|arreglos)|necesita (?:reforma|reciclaje|arreglos))\b/.test(renovation))
@@ -111,9 +113,10 @@ export function opportunityRisks(listing: OpportunityListing): OpportunityRisk[]
   if (/\b(?:en pozo|en construccion|nuevo proyecto|proyecto en|hasta finalizar la obra|entrega (?:prevista|estimada|en 20\d{2})|ocupacion (?:prevista|en 20\d{2}))\b|\b(?:ocupacion|entrega)\b.{0,45}\b(?:sera|fijada|prevista|estimada)\b.{0,50}\b20\d{2}\b|\bla construccion\b.{0,65}\bsera\b/.test(own))
     found.add("project");
   if (/\bla estructura sera de hormigon\b/.test(own)) found.add("project");
+  if (/\bprecio publicado es en obra\b|\bdurante (?:el )?plazo de obra\b|\b(?:a partir de|desde)\b.{0,60}\bcomienzo de obra\b/.test(own)) found.add("project");
   const months = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
   const readDate = new Date(listing.lastSeen);
-  for (const match of own.matchAll(/\b(?:ocupacion|entrega)\s+(?:en\s+)?(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\s+(20\d{2})\b/g)) {
+  for (const match of own.matchAll(/\b(?:ocupacion|entrega)\s*[:=-]?\s*-?\s*(?:en\s+)?(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\s+(20\d{2})\b/g)) {
     if (Number.isFinite(readDate.getTime()) && (Number(match[2]) > readDate.getUTCFullYear() ||
       (Number(match[2]) === readDate.getUTCFullYear() && months.indexOf(match[1]!) > readDate.getUTCMonth()))) found.add("project");
   }
@@ -224,7 +227,7 @@ function explicitMoneyConflict(listing: OpportunityListing): boolean {
       distance > Math.max(1, listing.expenses.amount * (approximate ? 0.10 : 0.01)))) return true;
   }
   const label = listing.operation === "rent" ? "alquiler" : "venta";
-  const prices = new RegExp(`\\b(?:precio(?: de ${label})?|${label})\\s*(?:(?:mensual|de|:|=)\\s*){0,3}(usd|u\\s*\\$\\s*[sd]|us\\$|uyu|uy\\$|\\$)\\s*(\\d[\\d.,]*)`, "g");
+  const prices = new RegExp(`\\b(?:precio(?: de ${label})?|${label})\\s*(?:(?:mensual|de|:|=|,)\\s*){0,3}(usd|u\\s*\\$\\s*[sd]|us\\$|uyu|uy\\$|\\$)\\s*(\\d[\\d.,]*)`, "g");
   for (const match of own.matchAll(prices)) {
     const amount = parsePublishedNumber(match[2]!);
     const currency = /usd|us\$|u\s*\$\s*[sd]/.test(match[1]!) ? "USD" : "UYU";

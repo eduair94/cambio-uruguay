@@ -4,6 +4,7 @@ import {
   opportunityDate,
   opportunityMoney,
   opportunityRentalPath,
+  opportunityPropertyPath,
   opportunitySignals,
   opportunityPrimaryMetric,
 } from '../../utils/propertyOpportunityPresentation'
@@ -73,6 +74,17 @@ describe('opportunity evidence presentation', () => {
     expect(opportunityAreaKey({ value: 90, basis: 'total' })).toBe('areaTotal')
     expect(opportunityAreaKey({ value: 40, basis: 'built' })).toBe('areaBuilt')
     expect(opportunityAreaKey({ value: 90, basis: 'reported' })).toBe('area')
+  })
+  it('routes each sale to its own source-advert page, never to a rental group', () => {
+    const sale = {
+      operation: 'sale',
+      source: 'infocasas',
+      listingId: 'infocasas:194207809',
+      propertyKey: 'a-rental-group',
+    } as OpportunityPublicListing
+    expect(opportunityPropertyPath(sale)).toBe('/venta-viviendas-uruguay/infocasas-194207809')
+    expect(opportunityPropertyPath({ ...sale, listingId: '../cuenta' })).toBeNull()
+    expect(opportunityPropertyPath({ ...sale, source: 'elpais' })).toBeNull()
   })
   it('does not fabricate a freshness date for missing or malformed dates', () => {
     expect(opportunityDate(null)).toBeNull()

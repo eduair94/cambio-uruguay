@@ -13,6 +13,14 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
       <div class="opportunities__intro-links">
         <a href="#opportunity-method">{{ t('methodShort') }}</a
         ><a href="#opportunity-coverage">{{ t('coverageShort') }}</a>
+        <NuxtLink
+          :to="
+            localePath(
+              query.operation === 'sale' ? '/venta-viviendas-uruguay' : '/alquileres-uruguay'
+            )
+          "
+          >{{ t(query.operation === 'sale' ? 'sales' : 'rentals') }}</NuxtLink
+        >
         <VBtn
           v-if="smAndDown"
           icon="mdi-share-variant-outline"
@@ -132,9 +140,15 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
             <p v-if="unavailable">{{ t('unavailableHint') }}</p>
             <div class="opportunities__notice-actions">
               <VBtn variant="tonal" @click="refresh()">{{ t('retry') }}</VBtn
-              ><VBtn :to="localePath('/alquileres-uruguay')" variant="text">{{
-                t('rentals')
-              }}</VBtn>
+              ><VBtn
+                :to="
+                  localePath(
+                    query.operation === 'sale' ? '/venta-viviendas-uruguay' : '/alquileres-uruguay'
+                  )
+                "
+                variant="text"
+                >{{ t(query.operation === 'sale' ? 'sales' : 'rentals') }}</VBtn
+              >
             </div></VAlert
           >
           <VAlert v-else-if="data?.stale" type="warning" variant="tonal" class="mb-4">{{
@@ -151,9 +165,15 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
               <VBtn href="#opportunity-method" variant="tonal" color="link">{{
                 t('methodShort')
               }}</VBtn
-              ><VBtn :to="localePath('/alquileres-uruguay')" variant="text">{{
-                t('rentals')
-              }}</VBtn>
+              ><VBtn
+                :to="
+                  localePath(
+                    query.operation === 'sale' ? '/venta-viviendas-uruguay' : '/alquileres-uruguay'
+                  )
+                "
+                variant="text"
+                >{{ t(query.operation === 'sale' ? 'sales' : 'rentals') }}</VBtn
+              >
             </div>
           </div>
           <div v-if="!error" class="opportunities__list">

@@ -150,6 +150,8 @@ const NOINDEXED = [
   'offline.vue',
   // Index the opportunity directory itself; query combinations opt out like rental filters.
   'oportunidades-inmobiliarias-uruguay.vue',
+  // Sale dossiers use the same reviewed, fresh pilot gate as their sitemap entries.
+  'venta-viviendas-uruguay/[key].vue',
   'widget.vue',
 ]
 
@@ -160,8 +162,16 @@ const NOINDEXED = [
  * them has its title, canonical and JSON-LD emitted by the shell, so grepping
  * the page file finds nothing — and that nothing means nothing.
  */
-const SEO_SHELLS = ['ToolShell', 'CasasComparativa']
-const SHELL_FILES = SEO_SHELLS.map(name => join(__dirname, '..', '..', 'components', `${name}.vue`))
+const SEO_SHELL_COMPONENTS = {
+  ToolShell: 'ToolShell.vue',
+  CasasComparativa: 'CasasComparativa.vue',
+  // The routing wrapper mounts either this directory or the independently checked dossier.
+  PropertySalesDirectory: 'property-sales/Directory.vue',
+}
+const SEO_SHELLS = Object.keys(SEO_SHELL_COMPONENTS)
+const SHELL_FILES = Object.values(SEO_SHELL_COMPONENTS).map(file =>
+  join(__dirname, '..', '..', 'components', file)
+)
 const delegates = (source: string) =>
   SEO_SHELLS.some(name => new RegExp(`<${name}[\\s/>]`).test(source))
 

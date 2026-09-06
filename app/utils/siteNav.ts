@@ -2146,6 +2146,22 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        to: '/venta-viviendas-uruguay',
+        labelKey: 'nav.propertySales',
+        icon: 'mdi-home-search-outline',
+        priority: 0.8,
+        changefreq: 'daily',
+        keywords: [
+          'comprar vivienda uruguay',
+          'casas en venta uruguay',
+          'apartamentos en venta montevideo',
+          'buscar casa para comprar',
+          'venta viviendas mapa',
+          'inmuebles en venta',
+          'comprar apartamento',
+        ],
+      },
+      {
         to: '/oportunidades-inmobiliarias-uruguay',
         labelKey: 'nav.propertyOpportunities',
         icon: 'mdi-home-search-outline',
@@ -2803,6 +2819,7 @@ export const UNLISTED_ROUTES: ReadonlyArray<{ to: string; priority: number; chan
  */
 export const DYNAMIC_ROUTE_KEYS: Readonly<Record<string, string>> = Object.freeze({
   'alquileres/[key]': 'consumer',
+  'venta-viviendas-uruguay/[key]': 'consumer',
   'blog/[slug]': 'news',
   'casa/[origin]/index': 'houses',
   'casa/[origin]/[intent]': 'houses',

@@ -8,6 +8,7 @@ import type { OpportunityAnalysisResult, OpportunityListing, OpportunityOperatio
 import type { OpportunityCoverage, PropertyOpportunitySnapshot } from "./snapshotTypes";
 import type { SaleHarvestResult } from "./sales";
 import { OPPORTUNITY_POLICY } from "./analyze";
+import type { SaleCatalogInput } from "../propertysales/project";
 
 const CHUNK = 300;
 const MAX_SNAPSHOT_BYTES = 8 * 1024 * 1024;
@@ -34,9 +35,10 @@ export function validateSaleHarvest(harvest: SaleHarvestResult, now: string): vo
     !Number.isFinite(captured) || !Number.isFinite(clock) || captured > clock + 60_000 ||
     clock - captured > 24 * 3_600_000) throw new Error("Sales harvest is missing, failed or too old to import");
   const ids = new Set<string>();
+  if (harvest.unavailableIds?.some(id => !/^sale:infocasas:\d{1,18}$/.test(id))) throw new Error("Invalid withdrawn source ID");
   for (const row of harvest.listings) {
     if (row.operation !== "sale" || row.source !== "infocasas" ||
-      !/^sale:infocasas:\d+$/.test(row.id) || ids.has(row.id) ||
+      !/^sale:infocasas:\d+$/.test(row.id) || ids.has(row.id) || harvest.unavailableIds?.includes(row.id) ||
       !Number.isFinite(Date.parse(row.lastSeen)) || row.lastSeen.slice(0, 10) !== harvest.readAt.slice(0, 10)) {
       throw new Error("Sales harvest contains conflicting operations, identities or observation dates");
     }
@@ -65,14 +67,15 @@ export async function saveSaleHarvest(harvest: SaleHarvestResult, now: string): 
   await saleCollection.createIndex({ lastSeen: 1 });
   await salesMeta().createIndex({ key: 1 }, { unique: true });
   for (let offset = 0; offset < harvest.listings.length; offset += CHUNK) {
-    await PropertySaleListingModel.bulkWrite(harvest.listings.slice(offset, offset + CHUNK).map(listing => ({
+    await saleCollection.bulkWrite(harvest.listings.slice(offset, offset + CHUNK).map(listing => ({
       updateOne: {
         filter: { id: listing.id },
-        update: { $set: { listing, lastSeen: listing.lastSeen }, $setOnInsert: { firstSeen: harvest.readAt } },
+        update: { $set: { listing, lastSeen: listing.lastSeen }, $unset: { retiredAt: "" }, $setOnInsert: { firstSeen: listing.lastSeen } },
         upsert: true,
       },
     })), { ordered: true });
   }
+  if (harvest.unavailableIds?.length) await saleCollection.updateMany({ id: { $in: harvest.unavailableIds } }, { $set: { retiredAt: harvest.readAt } });
   await salesMeta().updateOne({ key: "infocasas" }, {
     $set: { readAt: harvest.readAt, coverage: salesCoverage(harvest) },
   }, { upsert: true });
@@ -83,9 +86,14 @@ export async function loadSaleReadMeta(): Promise<SaleReadMeta | null> {
 }
 
 export async function loadSaleListings(): Promise<OpportunityListing[]> {
-  const rows = await PropertySaleListingModel.find({})
-    .select({ _id: 0, listing: 1 }).maxTimeMS(30_000).lean();
-  return rows.map(row => row.listing);
+  return (await loadSaleCatalogInputs()).map(row => row.listing);
+}
+
+/** firstSeen is the original own-advert observation, never the catalogue publication time. */
+export async function loadSaleCatalogInputs(): Promise<SaleCatalogInput[]> {
+  const rows = await appConnection().collection(PropertySaleListingModel.collection.name)
+    .find({ retiredAt: { $exists: false } }, { projection: { _id: 0, listing: 1, firstSeen: 1 }, maxTimeMS: 30_000 }).toArray();
+  return rows.map(row => ({ listing: row.listing as OpportunityListing, firstSeen: typeof row.firstSeen === "string" ? row.firstSeen : null }));
 }
 
 export async function loadRentalMarket(): Promise<{ rows: Pick<RentalProperty, "key" | "offers">[]; meta: RentalMeta | null }> {
@@ -122,6 +130,11 @@ export function rentalCoverage(
       note: "Avisos residenciales con datos propios y lectura reciente presentes en el análisis, contados una sola vez por identificador. No equivale a viviendas únicas ni a cobertura de todo el mercado.",
     }];
   });
+}
+
+/** The sale comparison can have several input sources, regardless of the last harvested batch. */
+export function saleAnalysisCoverage(listings: readonly OpportunityListing[], now: string): OpportunityCoverage[] {
+  return rentalCoverage(null, listings.filter(row => row.operation === "sale"), now);
 }
 
 export function operationSnapshot(

@@ -41,6 +41,15 @@ interface CashPoint {
   lng: number
 }
 
+interface AreaZone {
+  id: string
+  lat: number
+  lng: number
+  count: number
+  /** Accessible description of a search area, not an individual property's location. */
+  label: string
+}
+
 interface Props {
   branches: Branch[]
   center?: [number, number]
@@ -57,6 +66,8 @@ interface Props {
   directionsLabel?: string
   cashPoints?: CashPoint[]
   cashLabel?: string
+  /** Optional area-navigation layer. Never counted as individual branch/property markers. */
+  zones?: AreaZone[]
   /**
    * Encuadrar la cámara sobre los marcadores en el primer render con datos.
    *
@@ -79,10 +90,15 @@ const props = withDefaults(defineProps<Props>(), {
   directionsLabel: 'Cómo llegar',
   cashPoints: () => [],
   cashLabel: 'Retiro de efectivo',
+  zones: () => [],
   fitToMarkers: false,
 })
 
-const emit = defineEmits<{ 'marker-click': [branch: Branch]; 'map-click': [] }>()
+const emit = defineEmits<{
+  'marker-click': [branch: Branch]
+  'zone-click': [zone: AreaZone]
+  'map-click': []
+}>()
 
 const config = useRuntimeConfig()
 const tileUrl =
@@ -93,6 +109,7 @@ let L: any = null
 let map: any = null
 let cluster: any = null
 let cashCluster: any = null
+let zoneLayer: any = null
 let userMarker: any = null
 let radiusCircle: any = null
 let initStarted = false
@@ -173,7 +190,9 @@ async function init() {
 
   cluster = (L as any).markerClusterGroup({ chunkedLoading: true, maxClusterRadius: 50 })
   map.addLayer(cluster)
+  zoneLayer = L.layerGroup().addTo(map)
   renderMarkers()
+  renderZones()
 
   cashCluster = (L as any).markerClusterGroup({ chunkedLoading: true, maxClusterRadius: 60 })
   map.addLayer(cashCluster)
@@ -245,6 +264,42 @@ function renderMarkers() {
   fitOnce()
 }
 
+function renderZones() {
+  if (!zoneLayer || !L) return
+  zoneLayer.clearLayers()
+  for (const zone of props.zones) {
+    if (
+      !Number.isFinite(zone.lat) ||
+      !Number.isFinite(zone.lng) ||
+      !Number.isInteger(zone.count) ||
+      zone.count < 1
+    )
+      continue
+    // DOM text avoids interpreting a source-derived area label as Leaflet popup HTML.
+    const badge = document.createElement('span')
+    badge.className = 'location-zone-badge'
+    badge.textContent = String(zone.count)
+    const tooltip = document.createElement('span')
+    tooltip.textContent = zone.label
+    const marker = L.marker([zone.lat, zone.lng], {
+      icon: L.divIcon({
+        className: 'location-zone-pin',
+        html: badge,
+        iconSize: [44, 44],
+        iconAnchor: [22, 22],
+      }),
+      title: zone.label,
+      alt: zone.label,
+      // Area navigation must never cover a property's own marker or its cluster.
+      zIndexOffset: -1000,
+    })
+    marker.bindTooltip(tooltip, { direction: 'top' })
+    marker.on('click', () => emit('zone-click', zone))
+    zoneLayer.addLayer(marker)
+  }
+  fitOnce()
+}
+
 /**
  * Encuadra la cámara sobre los marcadores, UNA sola vez.
  *
@@ -261,8 +316,10 @@ function renderMarkers() {
 function fitOnce() {
   if (!props.fitToMarkers || hasFitted || !map || !cluster) return
   if (props.userLocation) return
-  if (!props.branches.length) return
+  if (!props.branches.length && !props.zones.length) return
   const bounds = cluster.getBounds()
+  for (const zone of props.zones)
+    if (Number.isFinite(zone.lat) && Number.isFinite(zone.lng)) bounds.extend([zone.lat, zone.lng])
   if (!bounds || !bounds.isValid()) return
   hasFitted = true
   map.fitBounds(bounds, { padding: [24, 24], maxZoom: 14 })
@@ -397,6 +454,7 @@ onBeforeUnmount(() => {
   }
   cluster = null
   cashCluster = null
+  zoneLayer = null
   userMarker = null
   radiusCircle = null
   initStarted = false
@@ -409,6 +467,11 @@ onBeforeUnmount(() => {
 watch(
   () => props.branches,
   () => renderMarkers(),
+  { deep: false }
+)
+watch(
+  () => props.zones,
+  () => renderZones(),
   { deep: false }
 )
 watch(
@@ -446,5 +509,23 @@ watch(
   align-items: center;
   justify-content: center;
   background: rgba(0, 0, 0, 0.04);
+}
+.locations-map :deep(.location-zone-badge) {
+  display: flex;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed #fff;
+  border-radius: 12px;
+  background: #123f65;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1;
+}
+.locations-map :deep(.location-zone-pin:focus-visible) {
+  outline: 3px solid #123f65;
+  outline-offset: 3px;
 }
 </style>

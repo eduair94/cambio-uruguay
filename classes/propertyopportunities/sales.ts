@@ -43,6 +43,8 @@ export interface InfoCasasSaleRow {
   created_at?: unknown;
   showAddress?: unknown;
   address?: unknown;
+  latitude?: unknown;
+  longitude?: unknown;
   active?: unknown;
   deleted?: unknown;
   sold?: unknown;
@@ -141,12 +143,19 @@ export function toInfoCasasSale(row: InfoCasasSaleRow, readAt: string): Opportun
   const listingId = `infocasas:${id}`;
   const images = rentalImages([row.img, ...(Array.isArray(row.images) ? row.images.map(item => item?.image) : [])]);
   const riskFlags: OpportunityRisk[] = [];
+  const latitude = number(row.latitude), longitude = number(row.longitude);
+  const geo = row.showAddress === true && latitude !== null && longitude !== null &&
+    latitude >= -35.5 && latitude <= -30 && longitude >= -58.6 && longitude <= -53
+    ? { lat: latitude, lng: longitude, precision: "approximate" as const } : null;
   if (row.isProject === true || row.isProject === 1 || row.isProjectUnit === true || row.isProjectUnit === 1) riskFlags.push("project");
   if (propertyType === "apartamento" && details.builtArea !== null && details.totalArea !== null &&
     details.builtArea > details.totalArea * 1.05 && details.builtArea - details.totalArea > 2) riskFlags.push("attribute_conflict");
   return {
     id: `sale:${listingId}`, operation: "sale", source: "infocasas", listingId,
-    url: url.href, title, description, image: images[0] || null,
+    url: url.href, title, description, image: images[0] || null, images, geo,
+    areas: { built: details.builtArea, total: propertyType === "apartamento" ? details.totalArea : null,
+      land: details.landArea, terrace: details.terraceArea,
+      reported: propertyType === "casa" ? details.totalArea : null },
     sellerName: rentalDescription(row.owner?.name, 160).replace(/\s+/g, " "),
     department, locality, neighborhood, propertyType,
     bedrooms: integer(row.bedrooms, 0), bathrooms: integer(row.bathrooms, 1), area, landArea: details.landArea, price,
@@ -224,6 +233,8 @@ export interface SaleHarvestResult {
   ok: boolean;
   complete: boolean;
   listings: OpportunityListing[];
+  /** Explicit own-source withdrawal only. Missing IDs in a partial sample never qualify. */
+  unavailableIds?: string[];
   readAt: string;
   /** Read evidence, not part of the public opportunity payload. Original captures may omit it. */
   pageReads?: Array<{ path: string; readAt: string; ids: string[]; newIds: number; ok: boolean }>;
@@ -251,6 +262,7 @@ export async function harvestSalesInfoCasas(options: SaleHarvestOptions = {}): P
   const started = now();
   const fetchPage = options.fetchPage || ((url: string) => fetchText(url, { timeoutMs: 30_000, retries: 0, headers: { "user-agent": USER_AGENT } }));
   const byId = new Map<string, OpportunityListing>();
+  const unavailableIds = new Set<string>();
   interface Stream {
     type: HousingType; department: string; neighborhood: string; total: number; lastPage: number; limit: number;
     visited: Set<number>; succeeded: Set<number>; ids: Set<string>; repeats: number[];
@@ -295,6 +307,14 @@ export async function harvestSalesInfoCasas(options: SaleHarvestOptions = {}): P
     stream.total = Math.max(stream.total, parsed.total);
     rawRows += parsed.rows.length;
     const readAt = now().toISOString();
+    for (const row of parsed.rows) {
+      const id = String(row.id || "");
+      if ((row.operation_type_id === 1 || row.operation_type_id === "1") && /^\d{1,18}$/.test(id) &&
+        (row.active === false || row.active === 0 || row.deleted === true || row.deleted === 1 || row.sold === true || row.sold === 1 ||
+          row.hidePrice === true || row.hidePrice === 1 || row.price?.hidePrice === true || row.price?.hidePrice === 1)) {
+        unavailableIds.add(`sale:infocasas:${id}`);
+      }
+    }
     const ids = parsed.rows.map(row => String(row?.id || "")).filter(id => /^\d+$/.test(id));
     const newIds = ids.filter(id => !stream.ids.has(id)).length;
     ids.forEach(id => stream.ids.add(id));
@@ -397,7 +417,8 @@ export async function harvestSalesInfoCasas(options: SaleHarvestOptions = {}): P
     if (!choices.length) break;
     await read(choices[0]!.stream, choices[0]!.page);
   }
-  const listings = [...byId.values()];
+  // Conflicting source states in the same run are withheld until a later active observation.
+  const listings = [...byId.values()].filter(row => !unavailableIds.has(row.id));
   const repeatedDepths = streams.filter(stream => stream.depthLimited).map(stream => ({ type: stream.type,
     department: stream.department, ...(stream.neighborhood ? { neighborhood: stream.neighborhood } : {}),
     advertisedLastPage: stream.lastPage, depthLimit: stream.limit }));
@@ -406,7 +427,7 @@ export async function harvestSalesInfoCasas(options: SaleHarvestOptions = {}): P
   const totalAvailable = national.reduce((sum, stream) => sum + stream.lastPage, 0);
   const byDepartment = Object.fromEntries(DEPARTMENTS.map(department => [department, listings.filter(item => item.department === department).length]));
   return {
-    operation: "sale", source: "infocasas", ok: listings.length > 0, complete, listings, readAt: now().toISOString(), pageReads,
+    operation: "sale", source: "infocasas", ok: listings.length > 0, complete, listings, unavailableIds: [...unavailableIds], readAt: now().toISOString(), pageReads,
     coverage: { strategy: regional.length ? "stratified-departments-with-national-sample" : "uniform-national",
       pagesRead, pagesRequested, pagesAvailable: totalAvailable, rawRows, uniqueAccepted: listings.length,
       advertisedByType, byDepartment, failedPages, capped: capped || !complete, repeatedDepths },

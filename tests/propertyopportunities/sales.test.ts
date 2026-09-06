@@ -19,6 +19,14 @@ const page = (rows: InfoCasasSaleRow[], currentPage = 1, lastPage = 1, total = r
   } } } })}</script></html>`;
 
 describe("InfoCasas sale-only normalization", () => {
+  it("retains own galleries and dimensions without exposing coordinates when the source hides the address", () => {
+    const fields = { latitude: -34.9, longitude: -56.2, images: [{ image: "https://cdn.infocasas.com.uy/inside.jpg" }], m2Terrace: 8 };
+    expect(toInfoCasasSale(base({ ...fields, showAddress: false }), NOW)).toMatchObject({ geo: null, areas: { built: 55, total: 63, terrace: 8 } });
+    const row = toInfoCasasSale(base({ ...fields, showAddress: true }), NOW)!;
+    expect(row.images).toHaveLength(2);
+    expect(row.geo).toEqual({ lat: -34.9, lng: -56.2, precision: "approximate" });
+    expect(toInfoCasasSale(base({ ...fields, showAddress: true, latitude: -60 }), NOW)?.geo).toBeNull();
+  });
   it("namespaces operation, preserves original price/currency, and keeps monthly expenses separate", () => {
     const row = toInfoCasasSale(base(), NOW)!;
     expect(row.id).toBe("sale:infocasas:123");
@@ -116,6 +124,13 @@ describe("InfoCasas sale-only normalization", () => {
 });
 
 describe("bounded and honest sale harvesting", () => {
+  it("records only explicit withdrawal IDs, never unseen IDs or non-sale status rows", async () => {
+    const result = await harvestSalesInfoCasas({ maxPages: 2, geographicSeeds: false, now: () => new Date(NOW),
+      fetchPage: async () => page([base(), base({ id: 124, sold: true }), base({ id: 125, active: false }), base({ id: 126, operation_type_id: 2, sold: true }), base({ id: 127, hidePrice: true }), base({ id: 128, price: { amount: 120000, hidePrice: true, currency: { name: "USD" } } })]),
+    });
+    expect(result.listings).toHaveLength(1);
+    expect(result.unavailableIds).toEqual(["sale:infocasas:124", "sale:infocasas:125", "sale:infocasas:127", "sale:infocasas:128"]);
+  });
   it("uses permitted public paths and uniform date positions, never cheap-only ordering", () => {
     expect(salePageUrl("casas", 2, "Río Negro")).toBe("https://www.infocasas.com.uy/venta/casas/rio-negro/pagina2?order=3");
     expect(salePageUrl("apartamentos", 3, "Montevideo", "Parque Rodó")).toBe("https://www.infocasas.com.uy/venta/apartamentos/montevideo/parque-rodo/pagina3?order=3");

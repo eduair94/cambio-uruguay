@@ -118,6 +118,8 @@ export const propertyOpportunityMessages = {
     unavailableHint:
       'Todavía no hay un análisis disponible para esta operación. Podés consultar el directorio de alquileres mientras tanto.',
     rentals: 'Explorar alquileres',
+    sales: 'Explorar viviendas en venta',
+    saleDetail: 'Ver ficha de la vivienda',
     updated: 'Análisis actualizado: {date}',
     sourceRead: 'Última lectura: {date}',
     unknownDate: 'Fecha no disponible',
@@ -302,6 +304,8 @@ export const propertyOpportunityMessages = {
     unavailableHint:
       'There is no analysis available for this operation yet. You can explore the rental directory in the meantime.',
     rentals: 'Explore rentals',
+    sales: 'Explore homes for sale',
+    saleDetail: 'View property details',
     updated: 'Analysis updated: {date}',
     sourceRead: 'Last read: {date}',
     unknownDate: 'Date unavailable',
@@ -489,6 +493,8 @@ export const propertyOpportunityMessages = {
     unavailableHint:
       'Ainda não há análise disponível para esta operação. Enquanto isso, você pode consultar o diretório de aluguéis.',
     rentals: 'Explorar aluguéis',
+    sales: 'Explorar imóveis à venda',
+    saleDetail: 'Ver detalhes do imóvel',
     updated: 'Análise atualizada: {date}',
     sourceRead: 'Última leitura: {date}',
     unknownDate: 'Data indisponível',

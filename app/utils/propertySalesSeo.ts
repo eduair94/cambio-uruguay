@@ -1,0 +1,21 @@
+/** Own text, physical facts, location and cover response reviewed on 2026-09-06. */
+export const PROPERTY_SALES_SEO_PILOT_KEYS: readonly string[] = [
+  'infocasas-169923',
+  'infocasas-186005146',
+  'infocasas-186156451',
+  'infocasas-186716586',
+  'infocasas-187883825',
+  'infocasas-187672155',
+  'infocasas-190003047',
+  'infocasas-190303875',
+  'infocasas-190183439',
+  'infocasas-190899593',
+  'infocasas-190605593',
+  'infocasas-190913202',
+  'infocasas-190841940',
+  'infocasas-191541888',
+  'infocasas-191751890',
+  'infocasas-191752531',
+  'infocasas-191752691',
+  'infocasas-191754022',
+]

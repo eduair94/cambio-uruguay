@@ -40,6 +40,13 @@ export interface OpportunityListing {
   url: string;
   title: string;
   image: string | null;
+  /** Own-advert media and dimensions, retained for the separately projected sale directory. */
+  images?: string[];
+  areas?: { built: number | null; total: number | null; land: number | null; terrace: number | null; reported: number | null };
+  /** Source coordinates are never assumed to be a verified entrance. */
+  geo?: { lat: number; lng: number; precision: "approximate" } | null;
+  /** Casasweb is public only after its own full detail, including purchase terms, was read. */
+  saleDetailReadAt?: string;
   sellerName: string;
   department: string;
   /** Explicit source locality; the adapter may use Montevideo for that department only. */

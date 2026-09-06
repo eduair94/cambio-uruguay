@@ -19,6 +19,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
             t('date', { date: dateLabel(meta.generatedAt) })
           }}</span>
           <a href="#rental-coverage">{{ t('coverage') }}</a>
+          <NuxtLink :to="localePath('/venta-viviendas-uruguay')">{{ t('sales') }}</NuxtLink>
           <NuxtLink :to="localePath('/oportunidades-inmobiliarias-uruguay')">{{
             t('opportunities')
           }}</NuxtLink>

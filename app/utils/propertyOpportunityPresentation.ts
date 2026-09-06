@@ -80,6 +80,15 @@ export function opportunityRentalPath(listing: OpportunityPublicListing): string
     : null
 }
 
+/** Sale URLs identify one source advert; they never reuse a rental's property group. */
+export function opportunityPropertyPath(listing: OpportunityPublicListing): string | null {
+  if (listing.operation === 'rent') return opportunityRentalPath(listing)
+  const match = listing.listingId?.match(/^infocasas:(\d+)$/)
+  return listing.operation === 'sale' && listing.source === 'infocasas' && match
+    ? `/venta-viviendas-uruguay/infocasas-${match[1]}`
+    : null
+}
+
 export function opportunityDate(value: string | null | undefined, locale = 'es'): string | null {
   if (!value || !Number.isFinite(Date.parse(value))) return null
   const dayOnly = /^\d{4}-\d{2}-\d{2}$/.test(value)

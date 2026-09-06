@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { operationSnapshot, snapshotRefusal, validateSaleHarvest, saleHarvestRefusal, rentalCoverage } from "../../classes/propertyopportunities/store";
+import { operationSnapshot, snapshotRefusal, validateSaleHarvest, saleHarvestRefusal, rentalCoverage, saleAnalysisCoverage } from "../../classes/propertyopportunities/store";
 import type { OpportunityAnalysisResult } from "../../classes/propertyopportunities/types";
 import type { SaleHarvestResult } from "../../classes/propertyopportunities/sales";
 
@@ -8,6 +8,19 @@ const result = (): OpportunityAnalysisResult => ({ version: 1, algorithm: "local
 const snapshot = () => operationSnapshot(result(), "rent", "2026-09-06T05:00:00Z", []);
 
 describe("property opportunity publication guards", () => {
+  it("counts sale source IDs and preserves real reading instants across multiple input sources", () => {
+    const rows = [
+      { id: "sale:infocasas:123", operation: "sale", source: "infocasas", lastSeen: "2026-09-06T06:00:00Z" },
+      { id: "sale:infocasas:123", operation: "sale", source: "infocasas", lastSeen: "2026-09-06T04:00:00-03:00" },
+      { id: "sale:casasweb:123", operation: "sale", source: "casasweb", lastSeen: "2026-09-05T06:00:00Z" },
+      { id: "rent:casasweb:124", operation: "rent", source: "casasweb", lastSeen: "2026-09-06T06:00:00Z" },
+      { id: "sale:casasweb:125", operation: "sale", source: "casasweb", lastSeen: "2026-09-01T06:00:00Z" },
+    ] as any;
+    expect(saleAnalysisCoverage(rows, "2026-09-06T08:00:00Z")).toMatchObject([
+      { source: "infocasas", observed: 1, lastRead: "2026-09-06T04:00:00-03:00" },
+      { source: "casasweb", observed: 1, lastRead: "2026-09-05T06:00:00Z" },
+    ]);
+  });
   it("counts the actual recent analysis corpus rather than the last small hourly harvest", () => {
     const meta = { generatedAt: "2026-09-06T06:47:00Z", sources: [{ key: "infocasas", listings: 1 }] } as any;
     const rows = [

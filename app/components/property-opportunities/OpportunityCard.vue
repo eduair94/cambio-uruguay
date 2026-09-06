@@ -30,7 +30,7 @@
           }}
         </p>
         <h3 :id="headingId">
-          <NuxtLink v-if="rentalPath" :to="localePath(rentalPath)">{{ subject.title }}</NuxtLink
+          <NuxtLink v-if="propertyPath" :to="localePath(propertyPath)">{{ subject.title }}</NuxtLink
           ><a v-else :href="subject.url" target="_blank" rel="noopener noreferrer">{{
             subject.title
           }}</a>
@@ -89,8 +89,8 @@
           {{ sourceName(subject.source) }} · {{ t('sourceRead', { date: date(subject.lastSeen) }) }}
         </p>
         <div class="opportunity-card__actions">
-          <VBtn v-if="rentalPath" :to="localePath(rentalPath)" variant="tonal" color="link">{{
-            t('detail')
+          <VBtn v-if="propertyPath" :to="localePath(propertyPath)" variant="tonal" color="link">{{
+            t(subject.operation === 'sale' ? 'saleDetail' : 'detail')
           }}</VBtn
           ><VBtn
             :href="subject.url"
@@ -229,7 +229,7 @@ import {
   opportunityDate,
   opportunityMoney,
   opportunityNumber,
-  opportunityRentalPath,
+  opportunityPropertyPath,
   opportunitySourceLabels,
   opportunitySignals,
   opportunityPrimaryMetric,
@@ -253,7 +253,7 @@ const exploratoryReasons = computed(() => {
 })
 const imageFailed = ref(false)
 const headingId = computed(() => `opportunity-${subject.value.id.replace(/[^\w-]/g, '-')}`)
-const rentalPath = computed(() => opportunityRentalPath(subject.value))
+const propertyPath = computed(() => opportunityPropertyPath(subject.value))
 const number = (value: number, digits = 0) => opportunityNumber(value, locale.value, digits)
 const originalMoney = (value: OpportunityMoney) => opportunityMoney(value, locale.value)
 const money = (value: number) => originalMoney({ amount: value, currency: analysis.value.currency })

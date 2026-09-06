@@ -34,6 +34,7 @@ describe("own-source risk variants found in expanded comparison samples", () => 
     "Alquilado con contrato vigente hasta 2028.",
     "La unidad está arrendada. Consulte condiciones del contrato.",
     "Cuenta con una renta activa de $18.500 y flujo constante de inquilinos.",
+    "Alquilado por $ 11.000 con garantía de Luc.",
   ])("excludes explicitly occupied property: %s", description => {
     expect(opportunityRisks(listing(description))).toContain("occupied");
   });
@@ -49,6 +50,8 @@ describe("own-source risk variants found in expanded comparison samples", () => 
     "No genera renta activa. Está vacío.",
     "Sin renta activa. Ideal para inversión.",
     "No cuenta con una renta activa, se encuentra vacío.",
+    "Anteriormente alquilado por $ 11.000. Ahora está vacío.",
+    "No está alquilado por $ 11.000. Entrega sin inquilinos.",
   ])("preserves negated, historical and hypothetical tenancy: %s", description => {
     expect(opportunityRisks(listing(description))).not.toContain("occupied");
   });
@@ -94,8 +97,19 @@ describe("own-source risk variants found in expanded comparison samples", () => 
   it("recognizes a future delivery month using the advert reading date, without labelling a past delivery as future", () => {
     expect(opportunityRisks(listing("Ocupación junio 2028. Si se puede, vemos la obra."))).toContain("project");
     expect(opportunityRisks(listing("Entrega en diciembre 2026."))).toContain("project");
+    expect(opportunityRisks(listing("ENTREGA: - Octubre 2027"))).toContain("project");
     expect(opportunityRisks(listing("Entrega junio 2025, edificio ya terminado."))).not.toContain("project");
     expect(opportunityRisks(listing("Ocupación junio 2026, entrega inmediata."))).not.toContain("project");
+  });
+
+  it("withholds a price explicitly excluding the outstanding housing debt while preserving a full price with optional split payment", () => {
+    expect(opportunityRisks(listing("ENTREGA MAS SALDO CON MINISTERIO DE VIVIENDA"))).toContain("partial_price");
+    expect(opportunityRisks(listing("USD 78.000 + Saldo ANV. El comprador asume el saldo pendiente."))).toContain("partial_price");
+    expect(opportunityRisks(listing("Precio total USD 100.000. Puede pagar USD 70.000 ahora y saldo de USD 30.000 al escriturar."))).not.toContain("partial_price");
+  });
+
+  it.each(["PRECIO PUBLICADO ES EN OBRA", "Saldo en cuotas mensuales durante plazo de obra", "Saldo del 60%: cuotas trimestrales a partir de los 3 meses del comienzo de obra"])("labels own unfinished construction terms: %s", description => {
+    expect(opportunityRisks(listing(description))).toContain("project");
   });
 
   it("excludes a dwelling currently configured as an office without rejecting optional home-office use", () => {

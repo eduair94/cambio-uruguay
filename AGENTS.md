@@ -50,6 +50,8 @@ Root map of a multi-package monorepo behind [cambio-uruguay.com](https://cambio-
 | currency-alerts | bots/dist/entries/alert_check.js | */15 11-21 * * * | intraday move alerts |
 | currency-content-promo | bots/dist/entries/content_promo.js | 0 14 * * 1,3,5 | one evergreen guide to X; **inert until `CONTENT_PROMO_ENABLED=1`** in `bots/.env` |
 
+Ambos trabajos de oportunidades también publican `/venta-viviendas-uruguay`: `propertysalecatalog` y `propertysalecatalogmetas`, desde una proyección explícita en `classes/propertysales/`. Una ficha corresponde a un anuncio (`infocasas-<id>`/`casasweb-<id>`), nunca a una unión inferida. La lectura diaria agrega Casasweb, pero sus tarjetas solas no prueban el precio total: para publicar se exige la ficha propia completa, porque saldos ANV/BHU y derechos parciales no aparecen en la tarjeta. Las exclusiones de ventas también rigen para los comparables de oportunidades. La última lectura no renueva la fecha de publicación; GC cero exige texto propio y ubicación oculta no se publica. Detalles: `docs/app/PROPERTY_SALES.md` y `PROPERTY_SALES_BACKEND.md`.
+
 Root pm2 entrypoints live at repo root: `index.ts`, `sync.ts`, `sync_aduana*.ts`, `sync_banks_news.ts`, `sync_figures.ts`, `sync_costs.ts`, `sync_debt_relief.ts`, `sync_loans.ts`, `sync_predictions.ts`, `sync_explain.ts`, `sync_sheet.ts`, `sync_site_analytics.ts`, `sync_gsc.ts`, `sync_search_demand.ts`, `sync_temas_analysis.ts`, `sync_rag_index.ts`, `sync_reddit_bot.ts`, `sync_reddit_bot_watch.ts`, `sync_content_gaps.ts`, `sync_videos.ts`, `sync_bcu_rates.ts`, `sync_rentals.ts`, `sync_regional.ts`. Shared: `config.ts`, `global.ts`, `sentry.ts`.
 
 ## Top-level dirs
