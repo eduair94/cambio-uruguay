@@ -835,9 +835,20 @@ useSchemaOrg([
 
 /* Search triggers. Both reserve their footprint in the SSR HTML so hydration
    never shifts the app bar. The desktop one reads as a search field, which is
-   what people look for; the mobile one is an icon next to the hamburger. */
+   what people look for; the mobile one is an icon next to the hamburger.
+
+   NEITHER MAY DECLARE `display` HERE. Which of the two shows is `d-none
+   d-lg-flex` / `d-flex d-lg-none`, and in Vuetify 4 those utilities lost the
+   `!important` v3 gave them and moved into `@layer vuetify-utilities` — so any
+   unlayered rule beats them, and a component's `<style scoped>` is unlayered.
+   A `display: flex` here therefore outranked `d-none` at every width and the
+   desktop pill rendered next to the mobile magnifier on every page of the site,
+   two search icons in one app bar. The mobile trigger never had the bug because
+   it never declared its own display; this one did. Everything else about the
+   box is safe to declare — it is inert while the utility keeps it hidden.
+   `node scripts/display-utility-audit.mjs` sweeps the site for the same
+   collision. */
 .search-trigger {
-  display: flex;
   align-items: center;
   gap: 8px;
   min-width: 196px;

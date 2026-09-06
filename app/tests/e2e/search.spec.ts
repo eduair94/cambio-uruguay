@@ -7,6 +7,15 @@ test.setTimeout(120_000)
 // default, unprefixed locale these assertions describe.
 test.use({ locale: 'es-UY' })
 
+// `a.search-trigger` is the DESKTOP trigger, shown from lg (1280px) up; below that
+// the bar carries `a.search-trigger-icon` instead. Playwright's default viewport is
+// exactly 1280 wide, which put these clicks on the breakpoint boundary — a scrollbar
+// or a one-pixel rounding difference and the element they click is display:none.
+// Pin a width with room above lg so what these assertions target is unambiguous.
+// (They passed at any width until the app bar's `display: flex` was removed: that
+// declaration was beating `d-none` and rendering the desktop pill on phones too.)
+test.use({ viewport: { width: 1440, height: 900 } })
+
 /**
  * The palette's options, and ONLY the palette's options.
  *
