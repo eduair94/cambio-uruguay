@@ -14,6 +14,8 @@
  *    so the restored `.text-overline`/`.text-button` classes lose their v3
  *    UPPERCASE. Re-added here.
  *
+ * 3) Button labels that outgrow their button (see the rule at the bottom).
+ *
  * Remove this file when adopting MD3 elevations/typography (follow-up).
  */
 
@@ -55,3 +57,71 @@
   text-transform: uppercase;
 }
 
+/* Vuetify 3's `.v-btn` carried `overflow: hidden`; v4's VBtn.css dropped it and kept
+ * `.v-btn__content { white-space: nowrap }`. A label wider than its button therefore
+ * neither wraps nor clips — it SPILLS, drawing over whatever sits beside the button.
+ * The uppercase rule above widens every label ~8%, so this site meets it early: the
+ * `/descuentos-con-tarjeta-uruguay` CTA ("¿Tengo descuento acá? Ver los de esta cuadra")
+ * needed 360px inside a 301px block button on a 390px screen and painted ~30px of text
+ * past each edge. `scripts/btn-overflow-audit.mjs` found 10 more on mobile.
+ *
+ * Restoring `overflow: hidden` would contain it by truncating the label, which on a CTA
+ * is the worse failure. Let it wrap instead: the button keeps the exact height it had
+ * while the label fits, and grows a line when it does not. VBtn sizes itself as
+ * `height: calc(var(--v-btn-height) + <density delta>)`, so the floor has to carry the
+ * same delta — `min-height: var(--v-btn-height)` alone would make every compact button
+ * 12px taller.
+ *
+ * EVERYTHING HERE IS `:where()`, i.e. specificity 0, and that is the point. Unlayered
+ * still beats Vuetify (its component CSS is in `@layer vuetify-components`), while ANY
+ * page- or component-authored rule beats this. The first cut of this fix was written at
+ * specificity (0,4,0) and the audit caught it re-sizing 267 buttons that were not broken:
+ * `.cta-btn { min-height: 44px }` and friends lost to it, so half the site's CTAs shrank
+ * from 44/48/52px to 36. A repair for a layout bug must not outrank layout.
+ *
+ * `min-width: 0` on the content is what lets the label wrap where the button is a flex
+ * or table item: on /que-banco-tiene-mas-descuentos-uruguay the nowrap "Ver locales"
+ * pushed the last column past the table's edge, clipping both it and the "Mapa" header.
+ *
+ * Skipped, because their box IS the design and a taller one would break it:
+ *   .v-btn--icon     square by construction (also VDatePicker's day cells)
+ *   .v-btn--stacked  already wraps; its height is set by the stacked variant
+ *   .v-tab           height comes from the fixed-height VTabs bar
+ *   VBtnGroup children — the group owns their box: it is a fixed-height container with
+ *     `overflow-y: hidden`, and when it wraps it hands each flex line a share of that
+ *     height (the toggles on /donde-te-entregan-el-paquete-uruguay measure 20px, not
+ *     36px). Imposing a floor there pushed 4 buttons out of a 48px group. They keep
+ *     `nowrap` unless the group opts in with `class="cu-btn-wrap"` (/analiticas does:
+ *     "Promedio seleccionado" is 160px inside its 147px half of a 390px screen, and two
+ *     lines still fit the group).
+ *
+ * Regression check: `node scripts/btn-overflow-audit.mjs` (mirror any change there). */
+:where(.v-btn:not(.v-btn--icon):not(.v-btn--stacked):not(.v-tab)) {
+  --cu-btn-density-delta: 0px;
+  height: auto;
+  min-height: calc(var(--v-btn-height) + var(--cu-btn-density-delta));
+}
+
+:where(.v-btn--density-comfortable) {
+  --cu-btn-density-delta: -8px;
+}
+
+:where(.v-btn--density-compact) {
+  --cu-btn-density-delta: -12px;
+}
+
+:where(.v-btn:not(.v-btn--icon):not(.v-btn--stacked):not(.v-tab)) > .v-btn__content {
+  white-space: normal;
+  min-width: 0;
+}
+
+/* Later than the rules above and equally weightless, so it wins over them and loses to
+ * every page rule. `height: auto` is what the group already relies on, not a size. */
+:where(.v-btn-group:not(.cu-btn-wrap) > .v-btn) {
+  height: auto;
+  min-height: 0;
+}
+
+:where(.v-btn-group:not(.cu-btn-wrap) > .v-btn) > .v-btn__content {
+  white-space: nowrap;
+}

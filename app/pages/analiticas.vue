@@ -240,6 +240,10 @@
               {{ chartRangeLabel }}
             </p>
           </div>
+          <!-- cu-btn-wrap: legacy-vuetify.css lets long button labels wrap but skips
+               VBtnGroup, whose box is fixed-height. These labels need it — "Promedio
+               seleccionado" is 160px inside its 147px half of a 390px screen and paints
+               over "Comparar casas" — and two lines still fit the 40px group. -->
           <div class="analytics-controls d-flex ga-2">
             <VBtnToggle
               v-model="chartMode"
@@ -247,6 +251,7 @@
               color="primary"
               variant="outlined"
               density="comfortable"
+              class="cu-btn-wrap"
             >
               <VBtn value="average">{{ t('rateAnalytics.average') }}</VBtn>
               <VBtn value="houses">{{ t('rateAnalytics.byHouse') }}</VBtn>
@@ -258,6 +263,7 @@
               color="secondary"
               variant="outlined"
               density="comfortable"
+              class="cu-btn-wrap"
             >
               <VBtn value="buy">{{ t('rateAnalytics.buy') }}</VBtn>
               <VBtn value="sell">{{ t('rateAnalytics.sell') }}</VBtn>
