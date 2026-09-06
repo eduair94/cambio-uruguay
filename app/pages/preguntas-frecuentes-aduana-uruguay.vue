@@ -297,7 +297,7 @@ const lastModified = aduanaFaqLastModified()
 const lastModifiedLabel = formatDate(lastModified)
 const hasPartialUpdate = lastModified !== ADUANA_FAQ_LAST_REVIEWED
 const canonicalUrl = 'https://cambio-uruguay.com/preguntas-frecuentes-aduana-uruguay'
-const title = 'Preguntas frecuentes de aduana e importaciones en Uruguay'
+const title = 'Aduana e importación: preguntas frecuentes'
 const description = `${ADUANA_FAQS.length} respuestas verificadas sobre franquicia, IVA, courier, Correo, paquetes retenidos, productos, equipaje y DUA en Uruguay, con fuentes oficiales.`
 
 defineOgImageComponent('Cambio', {

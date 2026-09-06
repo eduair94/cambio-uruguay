@@ -540,7 +540,7 @@ const FAQ: FaqItem[] = [
   },
 ]
 
-const title = '¿Llevar dólares a Brasil o comprar reales en Uruguay?'
+const title = '¿Llevar dólares a Brasil o comprar reales?'
 const description =
   'La comparación con precios reales de las dos puntas: lo que cobra hoy una casa de cambio uruguaya por un real contra lo que paga un câmbio brasileño por un dólar, con el recargo del dólar turismo medido contra el fixing PTAX.'
 const canonicalUrl = 'https://cambio-uruguay.com/llevar-dolares-o-reales-a-brasil'

@@ -231,7 +231,7 @@ function staticTitle(source: string): string | null {
 }
 
 const MEASURABLE = 110
-const OVER_BUDGET = 60
+const OVER_BUDGET = 44
 
 describe('el lector sigue los títulos trasladados a mensajes locales', () => {
   for (const [file, title] of [

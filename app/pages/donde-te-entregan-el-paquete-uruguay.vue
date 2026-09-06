@@ -295,7 +295,7 @@ const verifiedDisplay = computed(() =>
 )
 
 const canonicalUrl = 'https://cambio-uruguay.com/donde-te-entregan-el-paquete-uruguay'
-const title = '¿Dónde te entregan el paquete del exterior en Uruguay?'
+const title = '¿Dónde te entregan el paquete del exterior?'
 const description =
   'Si podés recibir una compra del exterior en una sucursal o agencia en vez de tu domicilio, qué pasa si no estabas, cuántos días lo guardan y por qué cambiar el nombre o la dirección puede costarte la franquicia.'
 

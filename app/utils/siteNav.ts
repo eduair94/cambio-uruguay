@@ -962,6 +962,31 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // El único instrumento de pago uruguayo del que el sitio no decía nada: aparecía nombrado
+        // de paso en `/prestamos-p2p-uruguay` (el descuento de cheques) y en ningún lado se
+        // contestaba la pregunta de plazo, que es la que llega primero. Va en esta sección porque
+        // el cheque vive atado a la cuenta corriente: rebota uno y el banco te suspende TODAS las
+        // cuentas seis meses, y a la segunda las cierra el BCU.
+        to: '/cheques-uruguay',
+        labelKey: 'nav.cheques',
+        icon: 'mdi-checkbook',
+        priority: 0.7,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'cheques uruguay',
+          'cuanto tiempo tengo para cobrar un cheque',
+          'plazo de presentacion de un cheque',
+          'cheque de pago diferido uruguay',
+          'cheque sin fondos uruguay',
+          'me reboto un cheque',
+          'cheque cruzado y certificado',
+          'cheque en garantia es delito',
+          'ley de cheques uruguay',
+          'decreto ley 14412',
+        ],
+      },
+      {
         to: '/cuenta-remunerada-uruguay',
         labelKey: 'nav.cuentaRemunerada',
         icon: 'mdi-chart-line',

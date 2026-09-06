@@ -286,7 +286,7 @@ const verifiedDisplay = computed(() =>
 )
 
 const canonicalUrl = 'https://cambio-uruguay.com/me-cobran-algo-que-no-autorice'
-const title = 'Me cobran algo que no autoricé: qué hacer en Uruguay'
+const title = 'Me cobran algo que no autoricé: qué hacer'
 const description =
   'Seguro renovado solo, débito que no para, servicio dado de baja que sigue cobrando: cómo frenarlo hoy, a quién reclamar y quién puede ordenar la devolución.'
 
