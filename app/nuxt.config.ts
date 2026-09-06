@@ -324,9 +324,15 @@ export default defineNuxtConfig({
     },
   },
 
+  hooks: {
+    'nitro:config'(config) {
+      // Nitro's development worker needs its own entry and IPC bridge for HMR.
+      // Only production workers join PM2's shared socket after warming SSR.
+      if (!config.dev) config.entry = fileURLToPath(new URL('./server/entry.ts', import.meta.url))
+    },
+  },
+
   nitro: {
-    // Warm SSR before joining PM2's shared listening socket.
-    entry: fileURLToPath(new URL('./server/entry.ts', import.meta.url)),
     // Zero-downtime deploys: when NITRO_OUTPUT_DIR is set (by scripts/deploy.sh)
     // the build writes to a staging dir so the live .output keeps serving during
     // the build; the deploy script then atomically swaps it into place. Unset in

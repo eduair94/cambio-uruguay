@@ -2121,6 +2121,21 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        to: '/oportunidades-inmobiliarias-uruguay',
+        labelKey: 'nav.propertyOpportunities',
+        icon: 'mdi-home-search-outline',
+        priority: 0.8,
+        changefreq: 'daily',
+        keywords: [
+          'oportunidades inmobiliarias uruguay',
+          'alquiler bajo precio comparable',
+          'casas en venta oportunidades',
+          'apartamentos por debajo de la mediana',
+          'comparar precios viviendas',
+          'alquiler gastos comunes oportunidad',
+        ],
+      },
+      {
         to: '/por-que-no-baja-el-alquiler-uruguay',
         labelKey: 'nav.porQueNoBajaAlquiler',
         icon: 'mdi-city-variant-outline',

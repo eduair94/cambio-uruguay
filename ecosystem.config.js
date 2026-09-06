@@ -181,6 +181,27 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Separate asking-price comparison: sales are sampled daily; rental data is read only.
+      // Keep this source sweep away from the full rentals job and the hourly :47 top-up.
+      name: "currency-property-opportunities",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "scripts/run-property-opportunities.sh",
+      interpreter: "bash",
+      cron_restart: "21 6 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
+      name: "currency-property-opportunities-hourly",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "scripts/run-property-opportunities.sh",
+      interpreter: "bash",
+      args: "--analyze-only",
+      cron_restart: "17 * * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // BCU usury caps (topes de usura) for /saldar-deudas-uruguay. Monthly on the 1st, 10:13 UTC
       // ≈ 07:13 America/Montevideo. Minute 13: not a multiple of 5.
       name: "currency-debt-relief",

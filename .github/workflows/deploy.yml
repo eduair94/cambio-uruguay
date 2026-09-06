@@ -135,6 +135,7 @@ jobs:
               - 'tests/**'
               - 'scripts/deploy-backend.sh'
               - 'scripts/run-rentals.sh'
+              - 'scripts/run-property-opportunities.sh'
               - '.github/workflows/deploy.yml'
 
   backend-test:

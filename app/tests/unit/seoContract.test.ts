@@ -148,6 +148,8 @@ const NOINDEXED = [
   'estado.vue',
   'newsletter/archivo.vue',
   'offline.vue',
+  // Index the opportunity directory itself; query combinations opt out like rental filters.
+  'oportunidades-inmobiliarias-uruguay.vue',
   'widget.vue',
 ]
 

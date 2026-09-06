@@ -10,6 +10,7 @@ import { SiteAnalyticsSnapshotModel } from "../../classes/models/SiteAnalyticsSn
 import { RedditBotStatsModel } from "../../classes/models/RedditBotStats";
 import { RentalListingModel } from "../../classes/models/RentalListing";
 import { RentalMetaModel } from "../../classes/models/RentalMeta";
+import { PropertyOpportunitySnapshotModel } from "../../classes/models/PropertyOpportunitySnapshot";
 import { SearchConsoleSnapshotModel } from "../../classes/models/SearchConsoleSnapshot";
 import { SiteRevenueSnapshotModel } from "../../classes/models/SiteRevenueSnapshot";
 import { SearchDemandQueueModel } from "../../classes/models/SearchDemandQueue";
@@ -76,6 +77,13 @@ describe("app-Mongo schema parity", () => {
 
   it("RentalMeta declares exactly the app's top-level fields", () => {
     expect(Object.keys(RentalMetaModel.schema.obj).sort()).toEqual(appFields(appModel("RentalMeta")).sort());
+  });
+
+  it("PropertyOpportunitySnapshot declares exactly the app's public snapshot fields", () => {
+    expect(Object.keys(PropertyOpportunitySnapshotModel.schema.obj).sort()).toEqual(
+      appFields(appModel("PropertyOpportunitySnapshot")).sort()
+    );
+    expect(PropertyOpportunitySnapshotModel.collection.name).toBe("propertyopportunitysnapshots");
   });
 
   it("SearchConsoleSnapshot declares exactly the app's top-level fields", () => {
