@@ -27,8 +27,7 @@
                 <DollarMomentum class="hero-live hero-anim mb-6" />
               </ClientOnly>
 
-              <!-- Guided tour entry point (lazy driver.js; auto-runs once on a
-                   first visit, replayable from here). Client-only. -->
+              <!-- Guided tour: loaded and started only from this button. -->
               <ClientOnly>
                 <div class="d-flex justify-center mb-4">
                   <SiteTour />

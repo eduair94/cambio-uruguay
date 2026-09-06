@@ -11,22 +11,13 @@
 </template>
 
 <script setup lang="ts">
-// Guided product tour (driver.js). Best-practice choice over recorded videos:
-// contextual, accessible, multilingual, ~5KB and lazy-loaded only when started,
-// and it never goes stale the way a screen-capture does. Targets on-page home
-// elements and filters out any that aren't visible at the current breakpoint.
+// The visitor starts this tour explicitly. Loading the page, deciding about
+// cookies, scrolling or waiting must never open it or download driver.js.
 const { t } = useI18n()
 const track = useTrack()
 
-const SEEN_KEY = 'cu_tour_seen'
-
-async function start(trigger: 'button' | 'auto') {
+async function start(trigger: 'button') {
   if (!import.meta.client) return
-  try {
-    window.localStorage.setItem(SEEN_KEY, '1')
-  } catch {
-    /* private mode */
-  }
 
   const [{ driver }] = await Promise.all([import('driver.js'), import('driver.js/dist/driver.css')])
 
@@ -76,26 +67,6 @@ async function start(trigger: 'button' | 'auto') {
   d.drive()
   track('tour_start', { tour_trigger: trigger, steps: steps.length })
 }
-
-onMounted(() => {
-  // Gentle first-visit auto-start: once, after the page settles, and never while
-  // the cookie banner is up (don't stack overlays) or for reduced-motion users.
-  if (!import.meta.client) return
-  let seen = '1'
-  try {
-    seen = window.localStorage.getItem(SEEN_KEY) || ''
-  } catch {
-    seen = '1'
-  }
-  if (seen) return
-  const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-  if (reduce) return
-  window.setTimeout(() => {
-    if (document.querySelector('.cookie-consent')) return // consent banner open
-    if (document.visibilityState !== 'visible') return
-    start('auto')
-  }, 3500)
-})
 
 defineExpose({ start })
 </script>

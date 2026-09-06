@@ -6,6 +6,27 @@ test.beforeEach(async ({ context }) => {
   await context.addCookies([{ name: 'lang', value: 'es', domain: 'localhost', path: '/' }])
 })
 
+test('home never opens a guided tour after consent, gestures or idle', async ({ page }) => {
+  test.setTimeout(180_000)
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.clock.install()
+  await page.goto('/', { waitUntil: 'domcontentloaded' })
+  const consent = page.getByTestId('cookie-consent-inline')
+  await expect(consent).toBeVisible({ timeout: 45_000 })
+  await expect(async () => {
+    await consent.getByRole('button', { name: 'Rechazar', exact: true }).click()
+    await expect(consent).toBeHidden()
+  }).toPass({ timeout: 60_000 })
+  await page.mouse.move(30, 300)
+  await page.keyboard.press('Tab')
+  await page.mouse.wheel(0, 1000)
+  await page.clock.fastForward(85000)
+  await expect(page.locator('.driver-overlay, .driver-popover')).toHaveCount(0)
+  const settings = page.getByRole('button', { name: 'Configurar cookies', exact: true })
+  await settings.click()
+  await expect(page.getByRole('dialog', { name: 'Tu privacidad' })).toBeVisible()
+})
+
 for (const viewport of [
   { width: 390, height: 844 },
   { width: 1440, height: 1000 },

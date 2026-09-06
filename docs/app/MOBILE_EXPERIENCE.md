@@ -6,6 +6,7 @@ Revisión del 6 de septiembre de 2026 a partir de feedback de una primera visita
 
 - Se retiró el chat global, su carga diferida, su precarga de dominios y la opción obsoleta de ocultarlo.
 - No se abren invitaciones de instalación ni de redes sociales por tiempo, desplazamiento o interacción con otro control. La instalación es una acción opcional en el pie de página o después de crear una alerta. En iOS, esa acción muestra instrucciones dentro de la página.
+- El recorrido guiado de la portada se inicia únicamente desde «Ver tour guiado». Aceptar cookies ya no dispara el tutorial unos segundos después ni bloquea otros controles.
 - El consentimiento inicial de cookies ocupa espacio en el documento y se desplaza con él. Aceptar y rechazar tienen controles equivalentes. «Configurar cookies», en el pie, abre las preferencias por petición del usuario.
 - Las donaciones forman parte del contenido de la portada; no hay tarjeta flotante.
 - Alquileres, ventas y oportunidades tienen una barra móvil compacta debajo del encabezado. Permite volver a abrir los filtros al recorrer resultados. En alquileres y ventas también mantiene a mano el cambio entre lista y mapa.
@@ -24,5 +25,7 @@ Pruebas relevantes en `app/tests/e2e/`:
 - `global-chat-removed.spec.ts`: ausencia de solicitudes y elementos de chat después de interacción e inactividad, y donaciones dentro del documento.
 
 La unidad `pwa-install.test.ts` prueba consumo único del evento, cancelación, instalación externa, modo independiente, instrucciones de iOS y limpieza de listeners. `noGlobalChat.test.ts` impide reintroducir la carga global de chat.
+
+`siteTour.test.ts` ejecuta el setup real del recorrido con un visitante nuevo y 85 segundos simulados: no se importa ni se inicia el tutorial hasta solicitarlo. La prueba de portada en `global-chat-removed.spec.ts` comprueba además que sus capas no bloqueen las preferencias de cookies.
 
 Las dimensiones emuladas y WebKit permiten detectar problemas de adaptación; no equivalen a probar cada teléfono físico ni a garantizar todas las versiones de navegador.
