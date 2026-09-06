@@ -4,7 +4,7 @@ OWN-WORLD: Extend Cambio Uruguay's navy/paper surfaces, Open Sans and blue actio
 STORY: Narrow the search, compare costs, save candidates, contact the original publisher.
 FIRST VIEWPORT: Persistent filters beside the heading and results; location and budget lead.
 FORM: Rental catalogue with a left filter sidebar and a personal comparison shortlist.
-MOBILE: Results first; persistent thumb-reachable filters open a focused draft with fixed actions.
+MOBILE: Results first; persistent filters open a right-side drawer with fixed actions.
 -->
 <template>
   <VContainer class="rentals pt-1 pt-sm-4" :class="{ 'rentals--mobile': smAndDown }">
@@ -314,6 +314,17 @@ MOBILE: Results first; persistent thumb-reachable filters open a focused draft w
                     })
                   }}
                 </p>
+                <NuxtLink
+                  :to="localePath(rentalPropertyPath(property.key))"
+                  class="rental-card__detail"
+                  data-testid="rental-card-detail-link"
+                  :aria-label="`${t('detail')}: ${property.title}`"
+                  @pointerdown="rememberRentalSearch(route.fullPath)"
+                  @click="rememberRentalSearch(route.fullPath)"
+                >
+                  {{ t('detail') }}
+                  <VIcon size="20" aria-hidden="true">mdi-arrow-right</VIcon>
+                </NuxtLink>
               </div>
             </article>
           </div>
@@ -1251,6 +1262,20 @@ useHead(() => ({
 .rental-card__meta {
   font-size: 0.75rem;
   overflow-wrap: anywhere;
+}
+.rental-card__detail {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 44px;
+  margin-top: 8px;
+  color: rgb(var(--v-theme-link));
+  font-weight: 700;
+  text-decoration: none;
+}
+.rental-card__detail:hover {
+  text-decoration: underline;
 }
 .rentals-map {
   border-radius: 12px;

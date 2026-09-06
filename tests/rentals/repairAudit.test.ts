@@ -1,8 +1,50 @@
 import { describe, expect, it } from "vitest";
 import {
   assertRentalConflictSeparation,
+  assertRentalSnapshotIsCurrent,
+  rentalOwnerKeyChanges,
   validateRentalConflictManifest,
 } from "../../classes/rentals/repairAudit";
+
+describe("assertRentalSnapshotIsCurrent", () => {
+  it("accepts an earlier run or the same capture, but refuses newer prices even on the same date", () => {
+    const captured = Date.parse("2026-09-06T04:30:00.000Z");
+    expect(() => assertRentalSnapshotIsCurrent("2026-09-06T03:47:00.000Z", captured)).not.toThrow();
+    expect(() => assertRentalSnapshotIsCurrent("2026-09-06T04:30:00.000Z", captured)).not.toThrow();
+    expect(() => assertRentalSnapshotIsCurrent("2026-09-06T04:47:00.000Z", captured)).toThrow("newer rental run");
+  });
+
+  it.each([undefined, null, "", "invalid", "2026-09-06", 2026, {}])("fails closed when the previous run cannot be dated: %j", (value) => {
+    expect(() => assertRentalSnapshotIsCurrent(value, Date.parse("2026-09-06T04:30:00.000Z")))
+      .toThrow("missing or invalid run timestamps");
+  });
+});
+
+describe("rentalOwnerKeyChanges", () => {
+  it("reports every prior advert's changed URL, distinguishing ambiguous attribution from a known canonical", () => {
+    const previous = new Map([
+      ["infocasas:z", "ambiguous"], ["infocasas:a", "known"], ["infocasas:b", "known"], ["infocasas:c", "unchanged"],
+    ]);
+    const next = new Map([
+      ["infocasas:z", "new-z"], ["infocasas:a", "new-a"], ["infocasas:b", "new-b"], ["infocasas:c", "unchanged"],
+      ["infocasas:new", "brand-new"],
+    ]);
+    const canonical = new Map<string, string | null>([["ambiguous", null], ["known", "infocasas:a"]]);
+    const result = rentalOwnerKeyChanges(previous, next, canonical);
+    expect(result).toEqual([
+      { listingId: "infocasas:a", previousKey: "known", nextKey: "new-a", previousCanonicalOffer: "infocasas:a", reason: "canonical_offer_reassigned" },
+      { listingId: "infocasas:b", previousKey: "known", nextKey: "new-b", previousCanonicalOffer: "infocasas:a", reason: "noncanonical_offer_reassigned" },
+      { listingId: "infocasas:z", previousKey: "ambiguous", nextKey: "new-z", previousCanonicalOffer: null, reason: "ambiguous_previous_canonical" },
+    ]);
+    expect(rentalOwnerKeyChanges(new Map([...previous].reverse()), next, canonical)).toEqual(result);
+    expect(previous.get("infocasas:z")).toBe("ambiguous");
+  });
+
+  it("does not silently drop a lost existing advert from the continuity report", () => {
+    expect(() => rentalOwnerKeyChanges(new Map([["infocasas:missing", "old"]]), new Map(), new Map()))
+      .toThrow("Existing advert has no reviewed owner");
+  });
+});
 
 const manifest = () => ({
   schemaVersion: 1,

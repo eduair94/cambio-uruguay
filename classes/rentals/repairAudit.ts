@@ -106,3 +106,43 @@ export function assertRentalConflictSeparation(
   }
   return count;
 }
+
+export interface RentalOwnerKeyChange {
+  listingId: string;
+  previousKey: string;
+  nextKey: string;
+  previousCanonicalOffer: string | null;
+  /** Mechanical explanation of URL reassignment, not proof that either property is correct. */
+  reason: "ambiguous_previous_canonical" | "canonical_offer_reassigned" | "noncanonical_offer_reassigned";
+}
+
+/** Review every existing advert's URL change, including properties outside the negative-pair sample. */
+export function rentalOwnerKeyChanges(
+  previousOwners: ReadonlyMap<string, string>,
+  nextOwners: ReadonlyMap<string, string>,
+  previousCanonicalOffers: ReadonlyMap<string, string | null>,
+): RentalOwnerKeyChange[] {
+  const changes: RentalOwnerKeyChange[] = [];
+  for (const [listingId, previousKey] of previousOwners) {
+    const nextKey = nextOwners.get(listingId);
+    if (!nextKey) throw new Error(`[rentals] Existing advert has no reviewed owner: ${listingId}`);
+    if (nextKey === previousKey) continue;
+    const previousCanonicalOffer = previousCanonicalOffers.get(previousKey) || null;
+    changes.push({
+      listingId, previousKey, nextKey, previousCanonicalOffer,
+      reason: !previousCanonicalOffer ? "ambiguous_previous_canonical"
+        : previousCanonicalOffer === listingId ? "canonical_offer_reassigned" : "noncanonical_offer_reassigned",
+    });
+  }
+  return changes.sort((a, b) => a.listingId.localeCompare(b.listingId));
+}
+
+/** Dates on adverts have day resolution; the run timestamp also protects newer same-day prices. */
+export function assertRentalSnapshotIsCurrent(generatedAt: unknown, capturedAt: number): void {
+  const timestamp = typeof generatedAt === "string" && /^\d{4}-\d{2}-\d{2}T/.test(generatedAt)
+    ? Date.parse(generatedAt) : NaN;
+  if (!Number.isFinite(timestamp) || !Number.isFinite(capturedAt))
+    throw new Error("[rentals] Cannot establish snapshot freshness from missing or invalid run timestamps");
+  if (timestamp > capturedAt)
+    throw new Error("[rentals] A newer rental run exists than the harvest snapshot; recapture before applying");
+}

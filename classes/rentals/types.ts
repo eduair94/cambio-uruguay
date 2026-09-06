@@ -48,6 +48,12 @@ export type RentalCurrency = "UYU" | "USD";
 /** Original, per-advert facts. Never reconstructed from the merged property's attributes. */
 export interface RentalOfferIdentity {
   version: 1;
+  /** Explicit publisher city/town; never reconstructed from barrio or coordinates. */
+  locality?: string;
+  /** Publisher explicitly marks its street address as hidden/approximate. */
+  addressHidden?: true;
+  /** Sanitized original publisher text; contradiction evidence only, never proof of a match. */
+  description?: string;
   propertyType: RentalPropertyType;
   department: string;
   neighborhood: string;
@@ -61,8 +67,27 @@ export interface RentalOfferIdentity {
   area: number | null;
 }
 
+/** Original factual detail from one advert, never a blend of several publishers. */
+export interface RentalOfferDetails {
+  /** Plain excerpt of the original description, with contact details removed. */
+  description: string;
+  /** Published property images; no rendered floorplan or generated picture is invented. */
+  images: string[];
+  /** Only distinctly labelled source fields; an unspecified area does not become built/total. */
+  builtArea: number | null;
+  totalArea: number | null;
+  landArea: number | null;
+  terraceArea: number | null;
+  /** Published structured facility labels; no AI-enriched attributes. */
+  amenities: string[];
+  /** Original dedicated guarantee field; empty means the publisher did not provide it. */
+  guaranteeText: string;
+}
+
 /** One published advert. Several of these can point at the same physical property. */
 export interface RentalOffer {
+  /** Absent for legacy or sources that only expose summary cards. */
+  details?: RentalOfferDetails;
   /** Absent on legacy records; absence cannot be used as evidence that two units match. */
   identity?: RentalOfferIdentity;
   /** Explicit count only; null means the publisher does not state it. */
@@ -189,6 +214,13 @@ export interface RentalProperty {
  * the location parts beside the price, and a nested shape would only be unwrapped again.
  */
 export interface RawRental {
+  /** Explicit publisher city/town, when supplied separately from department and barrio. */
+  locality?: string;
+  /** Publisher explicitly hides its street; it cannot establish an exact-address match. */
+  addressHidden?: true;
+  /** Original description, sanitized and bounded, for contradictory identity evidence. */
+  description?: string;
+  details?: RentalOfferDetails;
   parkingSpaces: number | null;
   furnished: true | null;
   source: RentalSource;

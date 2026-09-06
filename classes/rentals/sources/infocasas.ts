@@ -13,6 +13,7 @@
 //     makes a truncated run still correct: whatever the page cap cuts off is the oldest tail, never
 //     today's adverts.
 import { guaranteesFromField, guaranteesFromText, mergeGuarantees } from "../guarantees";
+import { rentalDescription, rentalOfferDetails } from "../details";
 import { fetchText } from "../net";
 import {
   canonicalDepartment,
@@ -92,8 +93,10 @@ interface IcRow {
   facilitiesNotApply?: boolean | null;
   title?: string | null;
   address?: string | null;
+  showAddress?: boolean | null;
   link?: string | null;
   img?: string | null;
+  images?: Array<{ image?: string | null }> | null;
   latitude?: number | null;
   longitude?: number | null;
   bedrooms?: number | null;
@@ -101,6 +104,8 @@ interface IcRow {
   garage?: number | null;
   m2?: number | null;
   m2Built?: number | null;
+  m2Terrain?: number | null;
+  m2Terrace?: number | null;
   created_at?: string | null;
   price?: IcMoney | null;
   commonExpenses?: IcMoney | null;
@@ -192,9 +197,10 @@ export function toRawRental(row: IcRow): RawRental | null {
   // buckets — which is exactly how the same office at 25 de Mayo 500 showed up twice.
   const rawNeighborhood = String(row.locations?.neighbourhood?.[0]?.name || row.locations?.city?.[0]?.name || "").trim();
   const neighborhood = canonicalDepartment(rawNeighborhood) === department ? "" : rawNeighborhood;
-  const addressLine = String(row.address ?? "")
-    .split(",")[0]!
-    .trim();
+  // Search JSON includes address/coordinates even when the publisher hides the street.
+  // That flag must survive the import: do not reveal the hidden address or use it as identity.
+  const hidesAddress = row.showAddress === false;
+  const addressLine = hidesAddress ? "" : String(row.address ?? "").split(",")[0]!.trim();
   const { street, number } = parseStreet(addressLine);
 
   // `admin_included` is price + gastos comunes. When the explicit field is missing we recover the
@@ -212,6 +218,19 @@ export function toRawRental(row: IcRow): RawRental | null {
   const bathrooms = row.bathrooms == null ? null : Number(row.bathrooms);
 
   return {
+    locality: String(row.locations?.city?.[0]?.name || "").trim() || undefined,
+    ...(row.showAddress === false ? { addressHidden: true as const } : {}),
+    description: rentalDescription(row.description),
+    details: rentalOfferDetails({
+      description: row.description,
+      images: [row.img, ...(Array.isArray(row.images) ? row.images.map(image => image?.image) : [])],
+      builtArea: row.m2Built,
+      totalArea: row.m2,
+      landArea: row.m2Terrain,
+      terraceArea: row.m2Terrace,
+      amenities: Array.isArray(row.facilities) ? row.facilities.map(facility => facility?.name) : [],
+      guaranteeText: row.guarantee,
+    }),
     // InfoCasas fills missing garages with 0, so only a positive count is evidence.
     parkingSpaces: Number.isInteger(row.garage) && Number(row.garage) > 0 ? Number(row.garage) : null,
     furnished: row.facilities?.some((facility) => /^(?:amueblado|amoblado|amueblada|amoblada)$/i.test(String(facility.name || "").trim())) ? true : null,
@@ -236,8 +255,8 @@ export function toRawRental(row: IcRow): RawRental | null {
     address: addressLine,
     street,
     streetNumber: number,
-    latitude: Number.isFinite(Number(row.latitude)) && Number(row.latitude) !== 0 ? Number(row.latitude) : null,
-    longitude: Number.isFinite(Number(row.longitude)) && Number(row.longitude) !== 0 ? Number(row.longitude) : null,
+    latitude: !hidesAddress && Number.isFinite(Number(row.latitude)) && Number(row.latitude) !== 0 ? Number(row.latitude) : null,
+    longitude: !hidesAddress && Number.isFinite(Number(row.longitude)) && Number(row.longitude) !== 0 ? Number(row.longitude) : null,
     bedrooms: Number.isFinite(bedrooms as number) ? (bedrooms as number) : null,
     bathrooms: Number.isFinite(bathrooms as number) && (bathrooms as number) > 0 ? (bathrooms as number) : null,
     area: Number.isFinite(area) && area > 0 ? area : null,

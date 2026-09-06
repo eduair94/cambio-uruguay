@@ -18,7 +18,15 @@ export type RentalMatchCandidate = Pick<
   | "bathrooms"
   | "area"
   | "parkingSpaces"
-> & { priceUyu: number };
+> & {
+  priceUyu: number;
+  /** Original source description can contradict a match, never establish one. */
+  description?: string;
+  locality?: string;
+  addressHidden?: true;
+  latitude?: number | null;
+  longitude?: number | null;
+};
 
 // Keep ñ distinct: Peñarol and Penarol may be spelling variants, but inference is not identity.
 export function matchText(value: string): string {
@@ -38,6 +46,8 @@ export interface RentalUnitEvidence {
   /** An unlabelled suffix may be an agency code. It can veto a merge, never establish it. */
   suffixes: string[];
   aspects: string[];
+  /** "Second of four apartments" identifies a position, not the registered unit number. */
+  positions: string[];
 }
 
 const unique = (values: string[]) => [...new Set(values)];
@@ -60,7 +70,7 @@ const ORDINALS: Record<string, string> = {
 export function rentalUnitEvidence(
   listing: Pick<RentalMatchCandidate, "address" | "title">,
 ): RentalUnitEvidence {
-  const result: RentalUnitEvidence = { units: [], floors: [], buildings: [], suffixes: [], aspects: [] };
+  const result: RentalUnitEvidence = { units: [], floors: [], buildings: [], suffixes: [], aspects: [], positions: [] };
   for (const raw of [listing.address, listing.title]) {
     const text = matchText(raw);
     const unitPattern =
@@ -86,6 +96,7 @@ export function rentalUnitEvidence(
       // "Apartamento 1 -2 dor" / "1 o 2 dormitorios" describe alternatives. The matcher may
       // consume only the first number (or "1 o"), but neither is an identified single unit.
       if (/^\d{1,4}\s*(?:[-–—/]|o|y|a)\s*\d{1,4}(?!\d)/.test(fromIdentifier)) continue;
+      if (/^\d+(?:[.,]\d+)?\s*%/.test(fromIdentifier)) continue;
       const value = match[1]!.trim();
       const label = match[0].slice(0, match[0].length - match[1]!.length);
       const explicitlyNumbered = /\bunidad\b|\bn(?:ro|umero)?\.?\s*[°ºo]?|\bno\.|#/.test(label);
@@ -107,6 +118,10 @@ export function rentalUnitEvidence(
     }
     for (const [word, number] of Object.entries(ORDINALS)) {
       if (new RegExp(`\\b(?:${word} piso|piso ${word})\\b`).test(text)) result.floors.push(number);
+      // Real San Luis adverts distinguish "el segundo de 4 apartamentos" and "el cuarto de 4
+      // apartamentos" only in the description. Keep that original distinction as veto evidence.
+      const position = text.match(new RegExp(`\\b${word} de (?:los? )?(\\d{1,2}|dos|tres|cuatro|cinco|seis) (?:apartamentos|unidades)\\b`));
+      if (position) result.positions.push(`${number}/${QUANTITIES[position[1]!] ?? position[1]}`);
     }
     if (/\bplanta baja\b|\bpb\b/.test(text)) result.floors.push("0");
     for (const match of text.matchAll(/\b(?:torre|bloque|block)\s*[-:#]?\s*(\d{1,3}|[a-z])\b/g)) {
@@ -131,8 +146,26 @@ export function conflictingUnitEvidence(a: RentalUnitEvidence, b: RentalUnitEvid
   );
 }
 
+/** A pin is not a unit ID. Distant original pins do, however, contradict a shared address. */
+export function rentalCoordinateDistance(a: RentalMatchCandidate, b: RentalMatchCandidate): number | null {
+  const valid = (listing: RentalMatchCandidate) =>
+    typeof listing.latitude === "number" && Number.isFinite(listing.latitude) &&
+    typeof listing.longitude === "number" && Number.isFinite(listing.longitude) &&
+    // Only Uruguayan published coordinates are useful evidence for this directory.
+    listing.latitude >= -35.5 && listing.latitude <= -30 &&
+    listing.longitude >= -58.5 && listing.longitude <= -53;
+  if (!valid(a) || !valid(b)) return null;
+  const rad = (degrees: number) => degrees * Math.PI / 180;
+  const dLat = rad(b.latitude! - a.latitude!);
+  const dLon = rad(b.longitude! - a.longitude!);
+  const haversine = Math.sin(dLat / 2) ** 2 +
+    Math.cos(rad(a.latitude!)) * Math.cos(rad(b.latitude!)) * Math.sin(dLon / 2) ** 2;
+  return 6_371_000 * 2 * Math.atan2(Math.sqrt(haversine), Math.sqrt(Math.max(0, 1 - haversine)));
+}
+
 /** Published exact door number. Range starts and street corners are not exact addresses. */
 export function exactRentalAddress(listing: RentalMatchCandidate): string | null {
+  if (listing.addressHidden === true) return null;
   const address = matchText(listing.address);
   const department = matchText(listing.department);
   if (!department || !address || !listing.street || !listing.streetNumber) return null;
@@ -172,8 +205,14 @@ function quantities(text: string, pattern: RegExp): number[] {
 export function rentalMatchHasConflicts(...listings: RentalMatchCandidate[]): boolean {
   const allBedrooms = new Set<number>();
   const allBathrooms = new Set<number>();
+  const unitEvidence: RentalUnitEvidence[] = [];
   for (const listing of listings) {
-    const text = matchText(listing.title);
+    // The description is original per-advert evidence; legacy rows never borrow it from another
+    // offer. Broad/multiple-unit copy can veto a match but is never positive identity evidence.
+    const description = typeof listing.description === "string" ? listing.description : "";
+    const text = matchText([listing.title, description].join("\n"));
+    unitEvidence.push(rentalUnitEvidence(listing));
+    if (description) unitEvidence.push(rentalUnitEvidence({ title: description, address: "" }));
     const bedrooms = quantities(
       text,
       /\b(\d{1,2}|un|uno|una|dos|tres|cuatro|cinco|seis)\s*(?:dormitorios?|dorms?|bedrooms?)\b/g,
@@ -191,7 +230,7 @@ export function rentalMatchHasConflicts(...listings: RentalMatchCandidate[]): bo
       /\b(?:temporada|temporario|temporal|turistico|invernal)\b|\balquiler (?:de |por )?invierno\b/.test(text)
     )
       return true;
-    const header = text.replace(/^(?:alquiler|alquilo|se alquila)\s+(?:de\s+)?/, "");
+    const header = matchText(listing.title).replace(/^(?:alquiler|alquilo|se alquila)\s+(?:de\s+)?/, "");
     const type = /^(?:apartamento|apto|monoambiente|penthouse|duplex|loft)\b/.test(header)
       ? "apartamento"
       : /^(?:casa|chalet)\b/.test(header)
@@ -203,5 +242,6 @@ export function rentalMatchHasConflicts(...listings: RentalMatchCandidate[]): bo
             : null;
     if (type !== null && type !== listing.propertyType) return true;
   }
-  return allBedrooms.size > 1 || allBathrooms.size > 1;
+  return allBedrooms.size > 1 || allBathrooms.size > 1 ||
+    unitEvidence.some((a, index) => unitEvidence.slice(index).some((b) => conflictingUnitEvidence(a, b)));
 }

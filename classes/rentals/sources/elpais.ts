@@ -33,6 +33,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as cheerio from "cheerio";
 import { guaranteesFromElpaisCodes, guaranteesFromText, mergeGuarantees } from "../guarantees";
+import { rentalDescription, rentalOfferDetails } from "../details";
 import { fetchJson, sleep } from "../net";
 import { canonicalDepartment, flatten, inferPropertyType, isPlausibleRent, looksLikeRentalAdvert, parseCurrency, parseStreet } from "../normalize";
 import type { RawRental, RentalPropertyType } from "../types";
@@ -139,6 +140,14 @@ export function elpaisToRawRental(value: unknown): RawRental | null {
   // Only original money fields and advert text provide evidence for the facets we persist.
   return {
     source: "elpais", listingId: `elpais:${row._id}`, url: `${ORIGIN}/property/${row._id}`,
+    description: rentalDescription(description),
+    details: rentalOfferDetails({
+      description,
+      images: [image, ...images.filter(item => item !== image)].map(item => item?.publicUrl || item?.url),
+      landArea: row.landAreaM2,
+      // areaM2 does not identify built vs total area; it stays in the existing unspecified area.
+      // featureIds/amenities and generated descriptions are deliberately not copied.
+    }),
     title, price, currency, commonExpenses,
     commonExpensesCurrency: commonExpenses === null ? null : parseCurrency(row.expenses?.currency),
     sellerName: seller || "Inmuebles El País", sellerType: row.ownerDirect === true ? "particular" : seller ? "inmobiliaria" : "desconocido",

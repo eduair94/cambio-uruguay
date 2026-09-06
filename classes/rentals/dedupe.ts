@@ -11,10 +11,12 @@
 // none of those signals, nor barrio, coordinates or asking price, establishes unit identity.
 import { flatten, slugify } from "./normalize";
 import { mergeGuarantees } from "./guarantees";
+import { rentalDescription, rentalOfferDetails } from "./details";
 import {
   conflictingUnitEvidence,
   exactRentalAddress,
   matchText,
+  rentalCoordinateDistance,
   rentalMatchHasConflicts,
   rentalUnitEvidence,
   type RentalMatchCandidate,
@@ -104,6 +106,14 @@ export function sameUnit(a: RentalMatchCandidate, b: RentalMatchCandidate): bool
   // Re-reading the SAME advert is not a cross-advert match. Contradictions still veto above.
   if (a.source === b.source && a.listingId && a.listingId === b.listingId) return true;
   if (a.propertyType === "otro") return false;
+  const coordinateDistance = rentalCoordinateDistance(a, b);
+  if (coordinateDistance !== null && coordinateDistance > 1000) return false;
+  // Department is not locality: the same street/door/unit can exist in several Canelones towns.
+  // A shared barrio such as "Centro" or an approximate map pin cannot establish the town.
+  const localityA = matchText(a.locality || "");
+  const localityB = matchText(b.locality || "");
+  if (localityA && localityB && localityA !== localityB) return false;
+  if (matchText(a.department) !== "montevideo" && (!localityA || !localityB)) return false;
   const address = exactRentalAddress(a);
   if (!address || address !== exactRentalAddress(b)) return false;
   if (a.neighborhood && b.neighborhood && matchText(a.neighborhood) !== matchText(b.neighborhood))
@@ -267,7 +277,11 @@ function toOffer(listing: Candidate, context: DedupeContext): RentalOffer {
       area: listing.area,
       latitude: listing.latitude,
       longitude: listing.longitude,
+      ...(listing.description ? { description: listing.description } : {}),
+      ...(listing.locality ? { locality: listing.locality } : {}),
+      ...(listing.addressHidden === true ? { addressHidden: true as const } : {}),
     },
+    ...(listing.details ? { details: listing.details } : {}),
     parkingSpaces: listing.parkingSpaces ?? null,
     furnished: listing.furnished === true ? true : null,
     source: listing.source,
@@ -298,12 +312,22 @@ export function buildRentalProperties(raw: RawRental[], context: DedupeContext):
   const candidates: Candidate[] = raw
     .map((listing) => ({
       ...listing,
+      // Captures can outlive parser fixes. Sanitize fresh detail again at this write boundary,
+      // before it can become private matching evidence or public per-offer information.
+      ...(listing.description ? { description: rentalDescription(listing.description) } : {}),
+      ...(listing.details ? { details: rentalOfferDetails(listing.details) } : {}),
+      // Honor the publisher's flag centrally as well as in each parser. A future feed must not
+      // reveal a hidden address merely by retaining the original JSON's street or precise pin.
+      ...(listing.addressHidden === true ? {
+        address: "", street: "", streetNumber: "", latitude: null, longitude: null,
+      } : {}),
       priceUyu: priceInPesos(listing.price, listing.currency, context.usdUyu),
     }))
     .sort(
       (a, b) =>
         a.listingId.localeCompare(b.listingId) ||
         a.source.localeCompare(b.source) ||
+        Number(b.addressHidden === true) - Number(a.addressHidden === true) ||
         completeness(b) - completeness(a) ||
         Number(b.petsAllowed === true) - Number(a.petsAllowed === true) ||
         Number(b.furnished === true) - Number(a.furnished === true) ||

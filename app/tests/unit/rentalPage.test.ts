@@ -200,6 +200,52 @@ describe('public rental page evidence', () => {
       sampleSize: 9,
     })
   })
+  it('flags explicit counts in the source description without correcting or benchmarking them', () => {
+    const current = property({
+      offers: [
+        offer({
+          details: {
+            description:
+              'Cuenta con tres dormitorios y dos baños. La cocina tiene salida al patio.',
+            images: [],
+            builtArea: null,
+            totalArea: null,
+            landArea: null,
+            terraceArea: null,
+            amenities: [],
+            guaranteeText: '',
+          },
+        }),
+      ],
+    })
+    const page = buildRentalPage(current, peers(), 40)
+    expect(page.seo.reasons).toEqual(
+      expect.arrayContaining(['conflicting_bedrooms', 'conflicting_bathrooms'])
+    )
+    expect(page.seo.indexable).toBe(false)
+    expect(page.market.status).toBe('not_comparable')
+    expect(page.market.medianRentUyu).toBeNull()
+    expect(
+      buildRentalPage(current, [], 40, false, rentalPageMarket(property(), peers())).market.status
+    ).toBe('not_comparable')
+    expect(page.property.bedrooms).toBe(1)
+    expect(page.property.bathrooms).toBe(1)
+    expect(rentalPageSitemapUrls([current], 40)).toEqual([])
+    expect(
+      rentalPageConflicts({
+        ...current,
+        offers: [
+          offer({
+            details: {
+              ...current.offers[0]!.details!,
+              description:
+                'Un dormitorio y un baño. Zona de interés turístico. El edificio incluye oficinas. Referencia - 1000',
+            },
+          }),
+        ],
+      })
+    ).toEqual([])
+  })
   it('only indexes the fixed reviewed pilot while retaining complete useful data for other keys', () => {
     expect(buildRentalPage(property(), peers(), 40).seo).toEqual({
       indexable: true,
@@ -223,13 +269,43 @@ describe('public rental page evidence', () => {
     expect(buildRentalPage(unknown, peers(), 40).seo.reasons).toContain(
       'pilot_needs_known_monthly_cost'
     )
-    expect(buildRentalPage(property({ offers: [offer()] }), peers(), 40).seo.reasons).toContain(
-      'pilot_needs_multiple_portals'
-    )
+    expect(buildRentalPage(property({ offers: [offer()] }), [], 40).seo.indexable).toBe(true)
     expect(
       buildRentalPage(property({ offers: [offer({ image: 'javascript:alert(1)' })] }), peers(), 40)
         .seo.reasons
     ).toContain('missing_photo')
+  })
+  it('requires a source-backed dossier without rewarding uncertain multi-portal joins', () => {
+    const single = property({ offers: [offer()], sources: ['infocasas'] })
+    expect(buildRentalPage(single, [], 40).seo.indexable).toBe(true)
+    expect(rentalPageSitemapUrls([single], 40)).toEqual([{ loc: '/alquileres/pilot' }])
+    expect(
+      buildRentalPage({ ...single, address: single.title }, peers(), 40).seo.reasons
+    ).toContain('missing_address_or_source_description')
+    expect(buildRentalPage({ ...single, area: null }, peers(), 40).seo.reasons).toContain(
+      'insufficient_specific_attributes'
+    )
+    const hiddenAddress = {
+      ...single,
+      address: '',
+      offers: [
+        offer({
+          details: {
+            description:
+              'El apartamento cuenta con un dormitorio independiente, living comedor con salida a terraza y cocina integrada. El edificio dispone de ascensor y un espacio de lavandería de uso común.',
+            images: [],
+            builtArea: 45,
+            totalArea: 50,
+            landArea: null,
+            terraceArea: 5,
+            amenities: [],
+            guaranteeText: '',
+          },
+        }),
+      ],
+    }
+    expect(buildRentalPage(hiddenAddress, [], 40).seo.indexable).toBe(true)
+    expect(rentalPageSitemapUrls([hiddenAddress], 40)).toEqual([{ loc: '/alquileres/pilot' }])
   })
   it('uses exact property specs in the DB query and projects only public fields', () => {
     const evidenceProjection = rentalPageEvidenceStages(property())!.at(-1)! as {

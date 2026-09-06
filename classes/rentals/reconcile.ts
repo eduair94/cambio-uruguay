@@ -14,6 +14,9 @@ export function offerMatchCandidate(offer: RentalOffer): RentalMatchCandidate | 
   const identity = offer.identity;
   if (!identity || identity.version !== 1 || !RENTAL_PROPERTY_TYPES.includes(identity.propertyType))
     return null;
+  if (identity.description !== undefined && typeof identity.description !== "string") return null;
+  if (identity.locality !== undefined && typeof identity.locality !== "string") return null;
+  if (identity.addressHidden !== undefined && identity.addressHidden !== true) return null;
   if (
     ![
       identity.department,
@@ -44,13 +47,18 @@ export function offerMatchCandidate(offer: RentalOffer): RentalMatchCandidate | 
     parkingSpaces: offer.parkingSpaces,
     department: identity.department,
     neighborhood: identity.neighborhood,
-    address: identity.address,
-    street: identity.street,
-    streetNumber: identity.streetNumber,
+    address: identity.addressHidden === true ? "" : identity.address,
+    street: identity.addressHidden === true ? "" : identity.street,
+    streetNumber: identity.addressHidden === true ? "" : identity.streetNumber,
     propertyType: identity.propertyType,
     bedrooms: identity.bedrooms,
     bathrooms: identity.bathrooms,
     area: identity.area,
+    latitude: identity.addressHidden === true ? null : identity.latitude,
+    longitude: identity.addressHidden === true ? null : identity.longitude,
+    ...(identity.description ? { description: identity.description } : {}),
+    ...(identity.locality ? { locality: identity.locality } : {}),
+    ...(identity.addressHidden === true ? { addressHidden: true as const } : {}),
     priceUyu: offer.priceUyu,
   };
 }
@@ -236,8 +244,8 @@ export function propertyFromRentalOffers(
       identity && street && number
         ? `addr|${matchText(department)}|${matchText(street)}|${number}`
         : (safePrevious?.addressKey ?? `solo|${offerId(canonical)}`),
-    latitude: identity ? canonical.identity!.latitude : (safePrevious?.latitude ?? null),
-    longitude: identity ? canonical.identity!.longitude : (safePrevious?.longitude ?? null),
+    latitude: identity ? (identity.latitude ?? null) : (safePrevious?.latitude ?? null),
+    longitude: identity ? (identity.longitude ?? null) : (safePrevious?.longitude ?? null),
     bedrooms: attribute("bedrooms"),
     bathrooms: attribute("bathrooms"),
     area: attribute("area"),

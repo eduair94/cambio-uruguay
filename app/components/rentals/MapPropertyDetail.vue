@@ -108,6 +108,33 @@
           <p>{{ guarantees.join(' · ') }}</p>
         </template>
 
+        <section
+          v-if="description || detailedAreas.length || amenities.length"
+          class="rental-map-detail__source-details"
+          data-testid="rental-map-source-details"
+          aria-labelledby="rental-map-source-title"
+        >
+          <h4 id="rental-map-source-title" class="rental-map-detail__section-title">
+            {{ t('mapDescription') }}
+          </h4>
+          <p class="rental-map-detail__note">
+            {{ t('mapDetailsSource', { source: sourceLabel(offer.source) }) }}
+          </p>
+          <p v-if="description" class="rental-map-detail__description">{{ description }}</p>
+          <dl v-if="detailedAreas.length" class="rental-map-detail__facts">
+            <div v-for="area in detailedAreas" :key="area.label">
+              <dt>{{ t(area.label) }}</dt>
+              <dd>{{ area.value }} m²</dd>
+            </div>
+          </dl>
+          <template v-if="amenities.length">
+            <h4 class="rental-map-detail__section-title">{{ t('mapAmenities') }}</h4>
+            <ul class="rental-map-detail__amenities">
+              <li v-for="amenity in amenities" :key="amenity">{{ amenity }}</li>
+            </ul>
+          </template>
+        </section>
+
         <h4 class="rental-map-detail__section-title">{{ t('mapPortals') }}</h4>
         <ul class="rental-map-detail__offers">
           <li v-for="entry in offers" :key="`${entry.source}:${entry.listingId}`">
@@ -200,6 +227,25 @@ const heading = ref<HTMLElement | null>(null)
 const body = ref<HTMLElement | null>(null)
 const photoFailed = ref(false)
 const offer = computed(() => props.property?.matchingOffer ?? props.property?.offers[0])
+// Expanded data is fetched only after a marker is opened and belongs to the matching advert.
+const description = computed(() => {
+  const value = offer.value?.details?.description?.trim() || ''
+  return value.length > 600
+    ? `${value
+        .slice(0, 600)
+        .replace(/\s+\S*$/, '')
+        .trimEnd()}…`
+    : value
+})
+const detailedAreas = computed(() =>
+  [
+    { label: 'mapBuiltArea', value: offer.value?.details?.builtArea },
+    { label: 'mapTotalArea', value: offer.value?.details?.totalArea },
+    { label: 'mapLandArea', value: offer.value?.details?.landArea },
+    { label: 'mapTerraceArea', value: offer.value?.details?.terraceArea },
+  ].filter(area => typeof area.value === 'number' && Number.isFinite(area.value) && area.value > 0)
+)
+const amenities = computed(() => (offer.value?.details?.amenities ?? []).slice(0, 8))
 const title = computed(() => offer.value?.title || props.property?.title || '')
 const address = computed(() => {
   const value = props.property?.address?.trim() || ''
@@ -462,6 +508,22 @@ onMounted(async () => {
   flex-wrap: wrap;
   gap: 6px;
   margin-top: 16px;
+}
+.rental-map-detail .rental-map-detail__description {
+  margin-top: 10px;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+.rental-map-detail__source-details > .rental-map-detail__facts {
+  margin-top: 16px;
+}
+.rental-map-detail__amenities {
+  padding-left: 20px;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.rental-map-detail__amenities li + li {
+  margin-top: 4px;
 }
 .rental-map-detail__offers {
   list-style: none;

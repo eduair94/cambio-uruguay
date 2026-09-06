@@ -1,5 +1,49 @@
 # Auditoría del piloto de fichas de alquiler
 
+## Revisión del 2026-09-06: una ficha útil no exige unir portales
+
+Las cifras del 5 de septiembre que siguen son históricas. La reparación de identidad separó
+agrupaciones que no tenían evidencia suficiente y retiró keys que no podían atribuirse a una
+unidad. Por eso exigir dos portales para el SEO dejó de ser un criterio apropiado: la utilidad de
+una ficha no debe depender de conseguir una unión entre avisos.
+
+La lista revisada permanece fija en 93 keys; **no se amplía automáticamente**. La puerta actual
+exige ubicación por barrio/departamento, tipo residencial, dormitorios, tres características
+concretas, foto y enlace originales, costo mensual conocido y ausencia de contradicciones o
+identidades compartidas. Requiere además dirección publicada o una descripción atribuida de al
+menos 160 caracteres. Ese umbral sólo descarta encabezados vacíos: no es una regla de Google ni
+un objetivo de palabras. El anunciante puede ocultar la dirección sin que se la publique para
+favorecer el SEO. La página y el sitemap usan exactamente la misma puerta, sin depender de que
+un benchmark variable responda durante una de las dos peticiones.
+
+La auditoría de lectura pública del **2026-09-06 a las 04:02:45 UTC** cruzó las 93 keys con una
+captura independiente del catálogo de producción. Quedaban 42 almacenadas; 41 devolvieron 200 y
+una 404. **23 de esas fichas calificaban bajo las reglas candidatas** usando los datos publicados
+en ese momento. Se inspeccionaron individualmente doce registros con sus títulos, dirección,
+dormitorios, baños, superficie, precio y gastos por aviso; no se observaron contradicciones
+explícitas en esa muestra. Se comprobaron las 41 respuestas para exclusión de `identity` y
+coincidencia entre la elegibilidad de la página y la del sitemap. Las excluidas conservan ficha
+útil con `noindex` cuando están vigentes. Los detalles locales de lectura están en el artefacto
+ignorado `.sdd-rental-pages-sep6-audit.json`; no se publican contactos ni datos internos.
+
+Es una evaluación previa al despliegue y a la siguiente lectura de fuentes. La cantidad
+indexable se vuelve a evaluar con cada consulta, especialmente cuando se respeta una dirección
+oculta. **No acredita indexación en Google ni ausencia de duplicados físicos entre tarjetas.**
+
+Las fichas ahora admiten descripción atribuida, galerías publicadas ampliables, superficie
+construida/total/terreno/terrazas y condiciones por anunciante. Los datos ampliados sólo se
+recuperan al abrir una propiedad; las listas y similares conservan su respuesta compacta.
+Ante datos que requieren confirmación, se avisa junto a las características y se omiten las
+cantidades discutidas del marcado estructurado. El benchmark se describe como muestra de
+resultados, porque dos tarjetas podrían pertenecer a una vivienda sin evidencia para unirlas.
+
+La decisión sigue la [guía de contenido útil de Google](https://developers.google.com/search/docs/fundamentals/creating-helpful-content):
+datos específicos, fuente visible y herramientas que ayuden a decidir; no texto de relleno ni
+un mínimo artificial de palabras. El sitemap conserva canonical propia y omite `lastmod` sin
+prueba de un cambio material.
+
+## Auditoría histórica del lanzamiento
+
 Revisión de metadatos públicos el 2026-09-05T05:36:36.364Z. No se copiaron descripciones de portales ni se escribieron datos en Mongo.
 
 ## Alcance y decisión

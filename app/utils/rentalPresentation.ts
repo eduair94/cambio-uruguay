@@ -53,11 +53,14 @@ export function rentalStreet(property: RentalPublicProperty): string {
 export function rentalPhotos(property: RentalPublicProperty) {
   const seen = new Set<string>()
   return property.offers.flatMap(offer => {
-    const url = rentalSavedSafeUrl(offer.image)
     const sourceUrl = rentalSavedSafeUrl(offer.url)
-    if (!url || !sourceUrl || seen.has(url) || seen.size >= 8) return []
-    seen.add(url)
-    return [{ url, sourceUrl, source: offer.source, title: offer.title }]
+    if (!sourceUrl) return []
+    return [offer.image, ...(offer.details?.images ?? [])].flatMap(image => {
+      const url = rentalSavedSafeUrl(image)
+      if (!url || seen.has(url) || seen.size >= 24) return []
+      seen.add(url)
+      return [{ url, sourceUrl, source: offer.source, title: offer.title }]
+    })
   })
 }
 

@@ -106,6 +106,27 @@ describe("offerMatchCandidate", () => {
 });
 
 describe("partitionRentalOffers", () => {
+  it("revalidates stored original description conflicts without borrowing canonical data or changing dates", () => {
+    const first = offer({ identity: { ...identity, description: "Dos dormitorios y un baño, unidad 301." } });
+    const second = offer({ listingId: "infocasas:2", identity: { ...identity, description: "Dos dormitorios y un baño, unidad 801." } });
+    const before = structuredClone([first, second]);
+    expect(partitionRentalOffers([first, second])).toEqual([[first], [second]]);
+    expect([first, second]).toEqual(before);
+  });
+
+  it("carries original coordinates and locality into historical revalidation", () => {
+    const first = offer({ identity: { ...identity, department: "Canelones", locality: "Las Piedras" } });
+    const second = offer({ listingId: "infocasas:2", identity: { ...identity, department: "Canelones", locality: "La Paz" } });
+    expect(offerMatchCandidate(first)).toMatchObject({ locality: "Las Piedras", latitude: identity.latitude, longitude: identity.longitude });
+    expect(partitionRentalOffers([first, second])).toHaveLength(2);
+  });
+
+  it("retains the publisher's hidden-address veto during historical revalidation", () => {
+    const hidden = offer({ identity: { ...identity, addressHidden: true } });
+    expect(offerMatchCandidate(hidden)?.addressHidden).toBe(true);
+    expect(partitionRentalOffers([hidden, offer({ listingId: "infocasas:2" })])).toHaveLength(2);
+  });
+
   it("keeps every distinct advert while separating conflicting known units and legacy records", () => {
     const a = offer();
     const same = offer({ source: "mercadolibre", listingId: "mercadolibre:1" });
@@ -184,6 +205,22 @@ describe("partitionRentalOffers", () => {
 });
 
 describe("propertyFromRentalOffers", () => {
+  it("does not revive a formerly public street or precise pin after the publisher hides the address", () => {
+    // Exercise a historical/future feed that retained the raw hidden street beside the flag.
+    const hidden = offer({ identity: { ...identity, addressHidden: true } });
+    const previous = storedProperty({
+      title: hidden.title, address: identity.address, latitude: identity.latitude, longitude: identity.longitude,
+      offers: [offer()],
+    });
+    const rebuilt = propertyFromRentalOffers(previous.key, [hidden], 40, previous);
+    expect(rebuilt).toMatchObject({
+      key: previous.key, title: hidden.title, address: "", latitude: null, longitude: null,
+      neighborhood: "Pocitos", department: "Montevideo",
+    });
+    expect(rebuilt.addressKey).toBe("solo|infocasas|infocasas:1");
+    expect(rebuilt.offers[0]?.identity?.addressHidden).toBe(true);
+  });
+
   it.each([undefined, null, "anda", { anda: true }])(
     "handles non-array legacy guarantees without modifying the original offer: %j",
     (guarantees) => {

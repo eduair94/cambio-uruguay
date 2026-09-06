@@ -65,6 +65,25 @@ export const rentalPublicPropertyProjection = {
   ),
 }
 
+/** Rich source text/photos belong on an opened property, never on each search-result card. */
+export const rentalExpandedPropertyProjection = {
+  ...rentalPublicPropertyProjection,
+  ...Object.fromEntries(
+    ['offers', 'matchingOffer'].flatMap(parent =>
+      [
+        'description',
+        'images',
+        'builtArea',
+        'totalArea',
+        'landArea',
+        'terraceArea',
+        'amenities',
+        'guaranteeText',
+      ].map(field => [`${parent}.details.${field}`, 1])
+    )
+  ),
+}
+
 export function rentalDetailStages(
   key: string,
   query: RentalQuery,
@@ -76,6 +95,6 @@ export function rentalDetailStages(
     ...rentalPublicStages({ ...filter, key }, staleDays),
     ...rentalOfferStages(query, usdUyu),
     { $limit: 1 },
-    { $project: rentalPublicPropertyProjection },
+    { $project: rentalExpandedPropertyProjection },
   ]
 }

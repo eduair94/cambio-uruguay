@@ -12,7 +12,8 @@ import type {
   RentalPageResponse,
 } from '../../utils/rentalPage'
 import { RENTAL_SEO_PILOT_KEYS } from '../../utils/rentalSeoPilot'
-import { rentalPublicPropertyProjection } from './rentalDetail'
+import { rentalStreet } from '../../utils/rentalPresentation'
+import { rentalPublicPropertyProjection, rentalExpandedPropertyProjection } from './rentalDetail'
 
 export const RENTAL_PAGE_STALE_DAYS = 10
 export const RENTAL_MARKET_MINIMUM_SAMPLE = 10
@@ -32,7 +33,10 @@ export type RentalPageEvidence = Pick<
   | 'priceUyu'
 > & {
   offers: Array<
-    Pick<RentalOffer, 'source' | 'listingId' | 'title' | 'price' | 'currency' | 'priceUyu'>
+    Pick<
+      RentalOffer,
+      'source' | 'listingId' | 'title' | 'price' | 'currency' | 'priceUyu' | 'details'
+    >
   >
   matchingOffer?: Pick<
     RentalOffer,
@@ -108,16 +112,28 @@ export function rentalPageScope(property: RentalPageEvidence): RentalMarketScope
   }
 }
 
-/** A title disagreement is evidence of uncertain metadata, never an invented correction. */
+/** A published disagreement needs confirmation, never an invented correction. */
 export function rentalPageConflicts(property: RentalPageEvidence): string[] {
   const conflicts = new Set<string>()
   const explicitUnits = new Set<string>()
-  for (const title of [property.title, ...property.offers.map(offer => offer.title)]) {
-    const text = String(title ?? '')
+  const evidence = [property.title, ...property.offers.map(offer => offer.title)].map(text => ({
+    text,
+    description: false,
+  }))
+  // Detail records include the source's own description. Cohort rows intentionally do not:
+  // this adds no description fetch to the market query. Prose only contributes explicit
+  // bedroom/bathroom counts; mentions of a building's units or seasonal surroundings do not.
+  for (const offer of property.offers) {
+    if (offer.details?.description)
+      evidence.push({ text: offer.details.description.slice(0, 2400), description: true })
+  }
+  for (const entry of evidence) {
+    const text = String(entry.text ?? '')
       .normalize('NFD')
       .replace(/[\u0300-\u036F]/g, '')
       .toLowerCase()
     if (
+      !entry.description &&
       /\b(?:temporada|temporario|temporal|turistico|invernal)\b|\balquiler\s+(?:de\s+|por\s+)?invierno\b/.test(
         text
       )
@@ -136,7 +152,7 @@ export function rentalPageConflicts(property: RentalPageEvidence): string[] {
     }
     const bedrooms = [
       ...text.matchAll(
-        /\b(\d{1,2}|un|uno|una|dos|tres|cuatro|cinco|seis)\s*(?:dormitorios?|dorm\.?\b|dorms\b|bedrooms?)/g
+        /\b(\d{1,2}|un|uno|una|dos|tres|cuatro|cinco|seis)\s*(?:dormitorios?|dorms?|dor|bedrooms?)\b/g
       ),
     ].map(match => quantities[match[1]!] ?? Number(match[1]))
     if (/\bmono\s*ambiente\b/.test(text)) bedrooms.push(0)
@@ -149,6 +165,7 @@ export function rentalPageConflicts(property: RentalPageEvidence): string[] {
     if (property.bathrooms !== null && bathrooms.some(value => value !== property.bathrooms)) {
       conflicts.add('conflicting_bathrooms')
     }
+    if (entry.description) continue
     if (
       ['apartamento', 'casa'].includes(property.propertyType) &&
       (/\b(?:locales? comerciales?|oficinas? en alquiler)\b/.test(text) ||
@@ -183,11 +200,7 @@ function publicUrl(value: unknown): boolean {
   }
 }
 
-export function rentalPageQualityIssues(
-  property: RentalPublicProperty,
-  market: RentalPageMarket,
-  usdUyu: number
-): string[] {
+export function rentalPageQualityIssues(property: RentalPublicProperty, usdUyu: number): string[] {
   const issues = rentalPageConflicts(property)
   if (!rentalPageScope(property)) issues.push('missing_location_or_residential_specs')
   const attributes = [
@@ -197,16 +210,22 @@ export function rentalPageQualityIssues(
     Number.isFinite(property.parkingSpaces) && property.parkingSpaces! > 0,
     property.furnished === true,
   ].filter(Boolean).length
-  if (attributes < 2) issues.push('insufficient_specific_attributes')
+  if (attributes < 3) issues.push('insufficient_specific_attributes')
   if (!property.offers.some(offer => publicUrl(offer.image))) issues.push('missing_photo')
   if (!property.offers.some(offer => publicUrl(offer.url))) issues.push('missing_original_advert')
   if (!property.title || property.title.trim().length < 15) issues.push('insufficient_title')
   const comparableOffers = property.offers.filter(offer => publicUrl(offer.url))
-  if (comparableOffers.length < 2 && market.status !== 'available')
-    issues.push('insufficient_comparison_value')
-  // The reviewed pilot adds a useful, source-backed cost comparison to the source adverts.
-  if (new Set(comparableOffers.map(offer => offer.source)).size < 2)
-    issues.push('pilot_needs_multiple_portals')
+  // A useful reviewed dossier does not require joining different adverts. Requiring multiple
+  // portals here rewarded precisely the uncertain merges that the identity audit removed.
+  // Its own address, photo, specific facts and published monthly costs support the budget tool.
+  // This check is independent of live peers so sitemap and page robots always agree.
+  const sourceDescription = comparableOffers.some(
+    offer => (offer.details?.description?.trim().length ?? 0) >= 160
+  )
+  // An advertiser may intentionally hide the street. A useful source description can supply
+  // specific context without publishing an address the advertiser withheld.
+  if (!rentalStreet(property) && !sourceDescription)
+    issues.push('missing_address_or_source_description')
   if (!comparableOffers.some(offer => totalMonthlyUyu(offer, usdUyu) !== null))
     issues.push('pilot_needs_known_monthly_cost')
   return issues
@@ -353,7 +372,7 @@ export function buildRentalPage(
     peers.map(peer => rentalPageReprice(peer, usdUyu))
   )
   let market = marketOverride ?? rentalPageMarket(property, peers)
-  if (ambiguousIdentity)
+  if (ambiguousIdentity || rentalPageConflicts(property).length)
     market = {
       ...market,
       status: 'not_comparable',
@@ -363,7 +382,7 @@ export function buildRentalPage(
       p75RentUyu: null,
       differencePercent: null,
     }
-  const reasons = rentalPageQualityIssues(property, market, usdUyu)
+  const reasons = rentalPageQualityIssues(property, usdUyu)
   if (ambiguousIdentity) reasons.push('ambiguous_identity')
   if (!pilot.has(property.key)) reasons.push('outside_reviewed_pilot')
   const seen = new Set<string>([property.key])
@@ -397,7 +416,7 @@ export function rentalPageSitemapStages() {
       { ...filter, key: { $in: [...RENTAL_SEO_PILOT_KEYS] } },
       RENTAL_PAGE_STALE_DAYS
     ),
-    { $project: rentalPublicPropertyProjection },
+    { $project: rentalExpandedPropertyProjection },
   ]
 }
 

@@ -1,10 +1,40 @@
 # Directorio de alquileres (`/alquileres-uruguay`)
 
+## Ampliación de fichas y revisión de identidad — 2026-09-06
+
+Todas las tarjetas vigentes enlazan explícitamente a su ficha SSR existente. Los datos nuevos
+de InfoCasas y El País conservan descripción original, fotografías y superficies disponibles
+por aviso; InfoCasas también aporta instalaciones y texto de garantías. No se completan campos
+ausentes ni se atribuyen características de una oferta a otra. Las descripciones pasan por
+limpieza de HTML, enlaces y contactos, repetida al construir las propiedades para que una
+captura anterior a una corrección también quede saneada al aplicarse.
+
+La galería permite ampliar imágenes, recorrerlas con teclado y volver al control que la abrió.
+Cada foto mantiene su portal y enlace original. Se conservan hasta doce imágenes por aviso y
+se muestran hasta veinticuatro por ficha. La descripción pública se limita a 2.400 caracteres;
+la evidencia privada de identidad conserva hasta 8.000. Los listados y las cohortes de comparación
+siguen usando proyecciones compactas: los detalles se cargan al abrir una ficha o un punto del mapa.
+
+Los filtros móviles abren un panel lateral derecho, con encabezado y acciones fijas, desplazamiento
+interno y cierre que descarta cambios sin aplicar. El acceso permanece disponible desde resultados
+profundos, sin volver al comienzo de la página. Se conserva el panel lateral de escritorio.
+
+La dirección y las coordenadas se retiran cuando el publicador marca la dirección como oculta.
+Para unir avisos distintos se exige dirección exacta y unidad explícita; fuera de Montevideo,
+también localidad original coincidente. Las contradicciones de descripción y coordenadas distantes
+pueden vetar una unión, pero nunca demostrarla. Ver la [auditoría completa de identidad](../research/rental-matches-2026-09-06.md).
+
+El piloto SEO sigue acotado a las 93 keys revisadas. Su criterio ya no exige unir portales:
+requiere foto, enlace original, tres atributos específicos, costo mensual publicado y dirección
+o descripción propia suficiente. La ficha y el sitemap usan el mismo criterio. Una contradicción
+detectada en los dormitorios o baños de la descripción también impide presentar la comparación
+de precios y mantiene la ficha fuera del conjunto indexable, sin sobrescribir lo publicado.
+
 ## Fichas públicas SSR (`/alquileres/[key]`)
 
 `GET /api/rentals/ficha/[key]` ignora filtros del directorio y devuelve una ficha canónica:
-`{ property, usdUyu, canonicalPath, seo, market, similar }`. `property` y los hasta seis
-`similar` usan la proyección pública explícita del detalle del mapa. El benchmark consulta sólo
+`{ property, usdUyu, canonicalPath, seo, market, similar }`. `property` usa la proyección pública
+expandida del detalle del mapa; los hasta seis `similar` conservan la proyección compacta. El benchmark consulta sólo
 IDs, títulos, características y precios; no carga todas las fotos ni vendedores de la cohorte.
 Todas las rentas USD de la ficha y de sus comparables usan la misma cotización del fetch;
 se reelige la oferta más barata con esa base. Gastos desconocidos siguen desconocidos.
@@ -559,8 +589,8 @@ Compartir copia una URL canónica sin esos parámetros. Los enlaces a los portal
 
 Cada oferta conserva su precio, gastos comunes, anunciante, condiciones y fechas. Cambiar de aviso
 actualiza el resumen, el contacto y el planificador sin mezclar alquiler y gastos de portales
-distintos. Las portadas se atribuyen a sus fuentes; si una falla se intenta la siguiente. La galería
-completa y el contacto pertenecen al portal original. Cuando hay contradicciones detectadas o una
+distintos. Las portadas se atribuyen a sus fuentes; si una falla se intenta la siguiente. La ficha
+incluye las fotografías disponibles en la lectura; el contacto permanece en el portal original. Cuando hay contradicciones detectadas o una
 identidad compartida, la ficha lo advierte antes de presentar los datos.
 
 El planificador permite estimar servicios, gastos comunes ausentes, extras de entrada y presupuesto

@@ -38,7 +38,20 @@ export type RentalSellerType = 'inmobiliaria' | 'particular' | 'desconocido'
 
 export type RentalCurrency = 'UYU' | 'USD'
 
+/** Facts belonging to this advert alone; unavailable on legacy and summary-only sources. */
+export interface RentalOfferDetails {
+  description: string
+  images: string[]
+  builtArea: number | null
+  totalArea: number | null
+  landArea: number | null
+  terraceArea: number | null
+  amenities: string[]
+  guaranteeText: string
+}
+
 export interface RentalOffer {
+  details?: RentalOfferDetails
   source: RentalSource
   listingId: string
   url: string

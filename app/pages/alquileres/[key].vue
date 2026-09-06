@@ -7,6 +7,7 @@ FORM: Property dossier with a working comparison, budget planner and visit check
 -->
 <script setup lang="ts">
 import BudgetPlanner from '~/components/rentals/BudgetPlanner.vue'
+import PropertyGallery from '~/components/rentals/PropertyGallery.vue'
 import { rentalPageMessages } from '~/utils/rentalPageMessages'
 import type { RentalPageResponse } from '~/utils/rentalPage'
 import {
@@ -135,14 +136,6 @@ const seller = (offer: RentalOffer) =>
     .filter(Boolean)
     .join(' · ')
 const photos = computed(() => (property.value ? rentalPhotos(property.value) : []))
-const photoIndex = ref(0)
-const failedPhotos = ref(new Set<string>())
-const photo = computed(() => photos.value[photoIndex.value])
-function photoFailed(url: string) {
-  failedPhotos.value.add(url)
-  const alternative = photos.value.findIndex(entry => !failedPhotos.value.has(entry.url))
-  if (alternative >= 0) photoIndex.value = alternative
-}
 const saved = ref(emptyRentalSaved())
 const favorite = computed(() => saved.value.favorites.some(item => item.key === propertyKey.value))
 const returnPath = ref('')
@@ -264,8 +257,6 @@ onMounted(() => {
 onBeforeUnmount(() => window.removeEventListener('storage', onStorage))
 watch(propertyKey, () => {
   selectedId.value = ''
-  photoIndex.value = 0
-  failedPhotos.value = new Set()
   checked.value = []
   showMap.value = false
 })
@@ -349,7 +340,8 @@ useHead(() => ({
                         : {}),
                       ...(street.value ? { streetAddress: street.value } : {}),
                     },
-                    ...(['apartamento', 'casa'].includes(property.value.propertyType)
+                    ...(!uncertainData.value &&
+                    ['apartamento', 'casa'].includes(property.value.propertyType)
                       ? {
                           ...(property.value.bedrooms !== null
                             ? { numberOfBedrooms: property.value.bedrooms }
@@ -422,61 +414,38 @@ useHead(() => ({
               :prepend-icon="favorite ? 'mdi-heart' : 'mdi-heart-outline'"
               variant="text"
               :aria-pressed="favorite"
+              :aria-label="t(favorite ? 'unfavorite' : 'favorite')"
+              class="rental-page__icon-tool"
               @click="save"
-              >{{ t(favorite ? 'unfavorite' : 'favorite') }}</VBtn
+              ><span class="rental-page__tool-label">{{
+                t(favorite ? 'unfavorite' : 'favorite')
+              }}</span></VBtn
             >
-            <VBtn prepend-icon="mdi-share-variant-outline" variant="text" @click="share">{{
-              t('share')
+            <VBtn
+              prepend-icon="mdi-share-variant-outline"
+              variant="text"
+              :aria-label="t('share')"
+              class="rental-page__icon-tool"
+              @click="share"
+              ><span class="rental-page__tool-label">{{ t('share') }}</span></VBtn
+            >
+            <VBtn href="#rental-cost-title" variant="text" prepend-icon="mdi-cash-multiple">{{
+              t('monthlyOverview')
             }}</VBtn>
           </div>
         </header>
-        <figure class="rental-page__gallery">
-          <img
-            v-if="photo && !failedPhotos.has(photo.url)"
-            :src="photo.url"
-            :alt="photo.title || title"
-            width="720"
-            height="450"
-            decoding="async"
-            fetchpriority="high"
-            referrerpolicy="no-referrer"
-            class="rental-page__photo"
-            @error="photoFailed(photo.url)"
-          />
-          <div v-else class="rental-page__photo rental-page__photo--empty">
-            <VIcon icon="mdi-home-city-outline" size="44" /><span>{{ t('noGallery') }}</span>
-          </div>
-          <div v-if="photos.length > 1" class="rental-page__thumbs" :aria-label="t('photoHint')">
-            <button
-              v-for="(entry, index) in photos"
-              :key="entry.url"
-              type="button"
-              :aria-label="
-                t('photoNumber', { n: index + 1, source: RENTAL_SOURCE_LABEL[entry.source] })
-              "
-              :aria-pressed="index === photoIndex"
-              :disabled="failedPhotos.has(entry.url)"
-              @click="photoIndex = index"
-            >
-              <img
-                :src="entry.url"
-                alt=""
-                width="76"
-                height="56"
-                loading="lazy"
-                referrerpolicy="no-referrer"
-              />
-            </button>
-          </div>
-          <figcaption v-if="photo && !failedPhotos.has(photo.url)">
-            <a :href="photo.sourceUrl" target="_blank" rel="noopener noreferrer nofollow">{{
-              t('photoCredit', { source: RENTAL_SOURCE_LABEL[photo.source] })
-            }}</a>
-            <p>{{ t('photoHint') }}</p>
-          </figcaption>
-        </figure>
+        <PropertyGallery :property="property" class="rental-page__gallery" />
+        <nav class="rental-page__sections" :aria-label="t('onThisPage')">
+          <a href="#rental-facts-title">{{ t('factsShort') }}</a>
+          <a href="#rental-page-offers">{{ t('costsShort') }}</a>
+          <a href="#rental-location-title">{{ t('locationShort') }}</a>
+          <a href="#rental-visit-title">{{ t('visitShort') }}</a>
+        </nav>
         <section class="rental-page__section" aria-labelledby="rental-facts-title">
           <h2 id="rental-facts-title">{{ t('features') }}</h2>
+          <p v-if="uncertainData" class="rental-page__note">
+            <strong>{{ t('factsToConfirm') }}</strong>
+          </p>
           <dl class="rental-page__facts">
             <div>
               <dt>{{ t('type') }}</dt>
@@ -521,6 +490,10 @@ useHead(() => ({
                 }}</span>
               </div>
               <p>{{ seller(offer) }}</p>
+              <p class="rental-page__note">{{ t('originalTitle', { title: offer.title }) }}</p>
+              <p class="rental-page__note">
+                {{ t('advertReference', { source: source(offer), id: offer.listingId }) }}
+              </p>
               <dl class="rental-page__offer-costs">
                 <div>
                   <dt>{{ t('rent') }}</dt>
@@ -564,6 +537,54 @@ useHead(() => ({
             </li>
           </ul>
         </section>
+        <section class="rental-page__section" aria-labelledby="rental-description-title">
+          <h2 id="rental-description-title">{{ t('descriptionTitle') }}</h2>
+          <p class="rental-page__note">
+            {{ t('descriptionSource', { source: source(selectedOffer) }) }}
+          </p>
+          <p
+            v-if="selectedOffer.details?.description"
+            class="rental-page__description"
+            data-testid="rental-source-description"
+          >
+            {{ selectedOffer.details.description }}
+          </p>
+          <p v-else>{{ t('descriptionEmpty') }}</p>
+          <dl
+            v-if="
+              selectedOffer.details?.builtArea ||
+              selectedOffer.details?.totalArea ||
+              selectedOffer.details?.landArea ||
+              selectedOffer.details?.terraceArea
+            "
+            class="rental-page__facts"
+          >
+            <div v-if="selectedOffer.details?.builtArea">
+              <dt>{{ t('builtArea') }}</dt>
+              <dd>{{ selectedOffer.details.builtArea }} m²</dd>
+            </div>
+            <div v-if="selectedOffer.details?.totalArea">
+              <dt>{{ t('totalArea') }}</dt>
+              <dd>{{ selectedOffer.details.totalArea }} m²</dd>
+            </div>
+            <div v-if="selectedOffer.details?.landArea">
+              <dt>{{ t('landArea') }}</dt>
+              <dd>{{ selectedOffer.details.landArea }} m²</dd>
+            </div>
+            <div v-if="selectedOffer.details?.terraceArea">
+              <dt>{{ t('terraceArea') }}</dt>
+              <dd>{{ selectedOffer.details.terraceArea }} m²</dd>
+            </div>
+          </dl>
+          <template v-if="selectedOffer.details?.amenities?.length">
+            <h3>{{ t('amenitiesTitle') }}</h3>
+            <ul class="rental-page__amenities">
+              <li v-for="amenity in selectedOffer.details.amenities" :key="amenity">
+                {{ amenity }}
+              </li>
+            </ul>
+          </template>
+        </section>
         <section class="rental-page__section" aria-labelledby="rental-conditions-title">
           <h2 id="rental-conditions-title">{{ t('offerFeatures') }}</h2>
           <p class="rental-page__note">
@@ -593,6 +614,9 @@ useHead(() => ({
               <dd>{{ guarantees.length ? guarantees.join(' · ') : t('notPublished') }}</dd>
             </div>
           </dl>
+          <p v-if="selectedOffer.details?.guaranteeText">
+            <strong>{{ t('guaranteeText') }}:</strong> {{ selectedOffer.details.guaranteeText }}
+          </p>
           <p>{{ t('knownHint') }}</p>
         </section>
         <BudgetPlanner :key="property.key" :offer="selectedOffer" :usd-uyu="usdUyu" />
@@ -885,55 +909,41 @@ useHead(() => ({
 .rental-page__gallery {
   margin: 0;
 }
-.rental-page__photo {
-  display: block;
-  width: 100%;
-  height: auto;
-  aspect-ratio: 8 / 5;
-  max-height: 460px;
-  object-fit: contain;
-  border-radius: 12px;
-  background: rgba(var(--v-theme-on-surface), 0.06);
-}
-.rental-page__photo--empty {
-  aspect-ratio: auto;
+.rental-page__sections {
   display: flex;
-  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin-top: 20px;
+  padding-block: 8px;
+  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+.rental-page__sections a {
+  display: inline-flex;
   align-items: center;
-  flex-direction: column;
-  gap: 16px;
-  min-height: 220px;
-  padding: 24px;
-  text-align: center;
+  min-height: 44px;
+  font-size: 0.875rem;
+  font-weight: 600;
 }
-.rental-page__gallery figcaption {
-  font-size: 0.8125rem;
-  margin-top: 12px;
+.rental-page h2[id] {
+  scroll-margin-top: 104px;
 }
-.rental-page__gallery figcaption p {
-  margin-top: 6px;
+.rental-page__description {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
 }
-.rental-page__thumbs {
+.rental-page__amenities {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
-  padding: 12px 2px 2px;
-  overflow-x: auto;
+  padding: 0;
+  list-style: none;
+  margin: 16px 0;
 }
-.rental-page__thumbs button {
-  flex: 0 0 80px;
-  border: 2px solid transparent;
+.rental-page__amenities li {
+  padding: 6px 12px;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
   border-radius: 8px;
-  overflow: hidden;
-  height: 60px;
-}
-.rental-page__thumbs button[aria-pressed='true'] {
-  border-color: rgb(var(--v-theme-primary));
-}
-.rental-page__thumbs img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  font-size: 0.875rem;
 }
 .rental-page__section {
   margin-top: 40px;
@@ -1189,9 +1199,6 @@ useHead(() => ({
   .rental-page__section {
     margin-top: 16px;
   }
-  .rental-page__photo {
-    max-height: 380px;
-  }
   .rental-page__tools {
     margin-bottom: 0;
   }
@@ -1220,14 +1227,33 @@ useHead(() => ({
   }
 }
 @media (max-width: 599px) {
+  .rental-page__tools {
+    flex-wrap: nowrap;
+    gap: 4px;
+    margin-inline: 0;
+  }
+  .rental-page__tools .rental-page__icon-tool {
+    width: 44px;
+    min-width: 44px;
+    flex: 0 0 44px;
+    padding-inline: 0;
+  }
+  .rental-page__tool-label {
+    display: none;
+  }
+  .rental-page__icon-tool :deep(.v-btn__prepend) {
+    margin-inline: 0;
+  }
+  .rental-page__tools > .v-btn:last-child {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding-inline: 8px;
+  }
   .rental-page__back {
     margin-bottom: 12px;
   }
   .rental-page__layout {
     gap: 20px;
-  }
-  .rental-page__photo {
-    max-height: 260px;
   }
   .rental-page__offer-costs {
     grid-template-columns: 1fr;

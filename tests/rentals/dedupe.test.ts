@@ -373,6 +373,132 @@ describe("falsos positivos que la auditoria encontro en produccion", () => {
 });
 
 describe("sameUnit", () => {
+  it.each([
+    "Apartamento unidad 801, segundo piso, dos dormitorios.",
+    "Este apartamento tiene tres dormitorios y un baño.",
+    "Unidad 301 en torre B.",
+    "Departamento en alquiler invernal.",
+  ])("uses original descriptions to veto contradicting adverts: %s", (description) => {
+    const a = listing({ address: "Rizal 3715 torre A apto 301" });
+    const b = listing({ listingId: "infocasas:2", address: a.address, description });
+    expect(buildRentalProperties([a, b], context)).toHaveLength(2);
+  });
+
+  it("does not use a description as positive proof of a unit, even when both copies agree", () => {
+    const description = "Unidad 301, dos dormitorios y un baño.";
+    const a = listing({ address: "Rizal 3715", description });
+    const b = listing({ ...a, listingId: "infocasas:2" });
+    expect(buildRentalProperties([a, b], context)).toHaveLength(2);
+  });
+
+  it("vetoes the actual San Luis description positions even if a future title repeats the same unit ID", () => {
+    const first = listing({ description: "Es el segundo de 4 apartamentos." });
+    const second = listing({ listingId: "infocasas:2", description: "Es el cuarto de 4 apartamentos." });
+    expect(buildRentalProperties([first, second], context)).toHaveLength(2);
+    // The ordinal remains a position within a complex, never a unit ID of its own.
+    expect(rentalUnitEvidence({ address: "", title: first.description! }).units).toEqual([]);
+  });
+
+  it("does not interpret a advertised percentage as a unit number", () => {
+    const title = "Apartamento 100% reciclado";
+    expect(rentalUnitEvidence({ title, address: "Rizal 3715" }).units).toEqual([]);
+    expect(buildRentalProperties([
+      listing({ title, address: "Rizal 3715" }),
+      listing({ title, address: "Rizal 3715", listingId: "infocasas:2" }),
+    ], context)).toHaveLength(2);
+  });
+
+  it("retains a coherent identified unit and keeps each original description and public detail", () => {
+    const a = listing({ description: "Dos dormitorios y un baño. Piso 3, unidad 301." });
+    const b = listing({
+      listingId: "infocasas:2",
+      description: "Apto 301, tercer piso, dos dormitorios y un baño.",
+      details: { description: "Tercer piso, dos dormitorios y un baño.", images: [], builtArea: null, totalArea: null, landArea: null, terraceArea: null, amenities: [], guaranteeText: "" },
+    });
+    const rows = buildRentalProperties([a, b], context);
+    expect(rows).toHaveLength(1);
+    expect(rows[0]!.offers.find((item) => item.listingId === a.listingId)?.identity?.description).toBe(a.description);
+    const own = rows[0]!.offers.find((item) => item.listingId === b.listingId);
+    expect(own?.identity?.description).toBe(b.description);
+    expect(own?.details).toEqual(b.details);
+  });
+
+  it("sanitizes captured fresh detail at the builder boundary before matching or persistence", () => {
+    const text = "<p>Unidad 301, dos dormitorios y un baño.</p><p>WhatsApp 099\u00a0123\u00a0456.</p>";
+    const details = {
+      description: text, images: ["javascript:alert(1)", "https://images.example.com/301.jpg"],
+      builtArea: 60, totalArea: 70, landArea: null, terraceArea: 10,
+      amenities: ["Balcón", "Contacto 099\u202f123\u202f456"], guaranteeText: "ANDA. contacto@example.com",
+      rawContact: "099123456",
+    };
+    const raw = listing({ description: text, details });
+    const before = structuredClone(raw);
+    const row = buildRentalProperties([raw], context)[0]!;
+    expect(row.offers[0]!.identity?.description).toContain("Unidad 301, dos dormitorios y un baño.");
+    expect(row.offers[0]!.details).toMatchObject({
+      images: ["https://images.example.com/301.jpg"], builtArea: 60, totalArea: 70, terraceArea: 10,
+    });
+    expect(JSON.stringify(row)).not.toMatch(/099|123.?456|@|javascript:|rawContact|<p>/);
+    expect(raw).toEqual(before);
+    // Sanitization must not manufacture a mismatch with another coherent unit 301 advert.
+    expect(buildRentalProperties([raw, listing({ listingId: "infocasas:2" })], context)).toHaveLength(1);
+  });
+
+  it("keeps all units in multi-unit prose separate, without deciding which description is wrong", () => {
+    const description = "Disponibles unidad 301 y unidad 801 en el mismo edificio.";
+    expect(buildRentalProperties([listing({ description }), listing({ listingId: "infocasas:2" })], context)).toHaveLength(2);
+  });
+
+  it("vetoes distant original pins, while close or absent pins never establish unit identity", () => {
+    expect(buildRentalProperties([listing({}), listing({ listingId: "infocasas:2", latitude: -34.7 })], context)).toHaveLength(2);
+    expect(buildRentalProperties([listing({}), listing({ listingId: "infocasas:2", latitude: -34.9001 })], context)).toHaveLength(1);
+    expect(buildRentalProperties([
+      listing({ address: "Rizal 3715" }),
+      listing({ listingId: "infocasas:2", address: "Rizal 3715", latitude: -34.9001 }),
+    ], context)).toHaveLength(2);
+  });
+
+  it("does not use a source-hidden address as published exact identity", () => {
+    const rows = buildRentalProperties([
+      listing({ addressHidden: true }),
+      listing({ listingId: "infocasas:2" }),
+    ], context);
+    expect(rows).toHaveLength(2);
+    const hidden = rows.find((row) => row.offers[0]?.listingId === "infocasas:1");
+    expect(hidden).toMatchObject({ address: "", latitude: null, longitude: null });
+    expect(hidden?.offers[0]?.identity).toMatchObject({ addressHidden: true, address: "", street: "", streetNumber: "" });
+  });
+
+  it("prefers a publisher's explicit hidden-address flag over completeness for repeated copies of one ID", () => {
+    const visible = listing({});
+    const hidden = listing({ addressHidden: true });
+    for (const input of [[visible, hidden], [hidden, visible]]) {
+      const result = buildRentalProperties(input, context);
+      expect(result).toHaveLength(1);
+      expect(result[0]).toMatchObject({ address: "", latitude: null, longitude: null });
+      expect(result[0]!.offers[0]!.identity?.addressHidden).toBe(true);
+    }
+  });
+
+  it.each([
+    [undefined, undefined],
+    ["Las Piedras", undefined],
+    ["Las Piedras", "La Paz"],
+  ])("requires an explicit shared locality outside Montevideo: %s / %s", (a, b) => {
+    const property = { department: "Canelones", neighborhood: "Centro", address: "Artigas 123 apto 301", street: "artigas", streetNumber: "123" };
+    expect(buildRentalProperties([
+      listing({ ...property, locality: a }),
+      listing({ ...property, listingId: "infocasas:2", locality: b }),
+    ], context)).toHaveLength(2);
+  });
+
+  it("allows a compatible unit with explicit matching original locality outside Montevideo", () => {
+    const property = { department: "Canelones", locality: "Las Piedras", neighborhood: "Centro", address: "Artigas 123 apto 301", street: "artigas", streetNumber: "123", latitude: null, longitude: null };
+    const rows = buildRentalProperties([listing(property), listing({ ...property, listingId: "infocasas:2" })], context);
+    expect(rows).toHaveLength(1);
+    expect(rows[0]!.offers.every((item) => item.identity?.locality === "Las Piedras")).toBe(true);
+  });
+
   const candidate = (overrides: Partial<RawRental> & { priceUyu: number }) => ({
     ...base,
     ...overrides,

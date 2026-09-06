@@ -11,7 +11,7 @@ import { appConnection } from "../../classes/appdb";
 import { RentalListingModel } from "../../classes/models/RentalListing";
 import { buildRentalProperties } from "../../classes/rentals/dedupe";
 import { detachedRentalKey, propertyFromRentalOffers } from "../../classes/rentals/reconcile";
-import { assertRentalConflictSeparation, validateRentalConflictManifest } from "../../classes/rentals/repairAudit";
+import { assertRentalConflictSeparation, assertRentalSnapshotIsCurrent, rentalOwnerKeyChanges, validateRentalConflictManifest } from "../../classes/rentals/repairAudit";
 import {
   dropReassignedOffers, loadRentalMeta, planRentalPropertyUpdates,
   rentalHistoryFromRows, saveRentalMeta, writeRentalPropertyPlan,
@@ -38,7 +38,7 @@ function stable(value: unknown): unknown {
 const hash = (value: unknown) => createHash("sha256").update(JSON.stringify(stable(value)) ?? "undefined").digest("hex");
 
 async function main() {
-  process.env.APP_MONGO_URI = process.env.APP_MONGO_URI || process.env.MONGO_URI;
+  if (!process.env.APP_MONGO_URI?.trim()) throw new Error("Explicit APP_MONGO_URI is required; no backend MONGO_URI fallback");
   const snapshotName = arg("snapshot");
   const manifestName = arg("confirmed");
   const reportName = arg("report");
@@ -72,6 +72,7 @@ async function main() {
     .lean() as unknown as RentalProperty[];
   rows.sort((a, b) => a.key.localeCompare(b.key));
   const previousMeta = await loadRentalMeta();
+  assertRentalSnapshotIsCurrent(previousMeta?.generatedAt, capture);
   const history = rentalHistoryFromRows(rows);
   const today = new Date(capture).toISOString().slice(0, 10);
   if (rows.some(row => row.offers.some(offer => offer.lastSeen > today))) throw new Error("Stored observations are newer than this harvest");
@@ -127,7 +128,10 @@ async function main() {
   }
   const canonicalContinuity = [...selected].map(key => ({ key, canonicalOffer: history.propertyCanonicalOffer.get(key) ?? null,
     ownerAfter: ownership.get(history.propertyCanonicalOffer.get(key) || "") ?? null }));
-  const planHash = hash({ catalog: rows, snapshot, manifest, splitUnverifiedLegacy, canonicalContinuity, assigned: plan.assigned });
+  const ownerKeyChanges = rentalOwnerKeyChanges(history.offerToProperty, ownership, history.propertyCanonicalOffer);
+  const ownerKeyChangeReasons: Record<string, number> = {};
+  for (const change of ownerKeyChanges) ownerKeyChangeReasons[change.reason] = (ownerKeyChangeReasons[change.reason] || 0) + 1;
+  const planHash = hash({ catalog: rows, snapshot, manifest, splitUnverifiedLegacy, canonicalContinuity, ownerKeyChanges, assigned: plan.assigned });
   const summary = {
     mode: process.argv.includes("--apply") ? "apply" : "dry-run", planHash,
     capturedAt: snapshot.capturedAt, rowsBefore: rows.length,
@@ -135,7 +139,7 @@ async function main() {
     uniqueOffersBefore: new Set(rows.flatMap(row => row.offers.map(offer => offer.listingId))).size,
     harvested: listings.length, plannedProperties: plan.assigned.length,
     separatedGroups: plan.separated, selectedLegacyOffers, conservedDistinctOffers: expectedIds.size,
-    verifiedNegativePairs, canonicalContinuity,
+    verifiedNegativePairs, canonicalContinuity, ownerKeyChanges,
     splitUnverifiedLegacy, legacyGroupsBefore: legacyGroups.length,
     plannedWithOriginalEvidence: plan.assigned.filter(row => row.offers.every(offer => offer.identity?.version === 1)).length,
     plannedWithoutDepartment: plan.assigned.filter(row => !row.department).length,
@@ -143,6 +147,8 @@ async function main() {
   };
   writeFileSync(workspaceFile(reportName), JSON.stringify(summary, null, 2));
   const compactSummary = { ...summary, selectedKeys: summary.selectedKeys.length,
+    ownerKeyChanges: { adverts: ownerKeyChanges.length, previousKeys: new Set(ownerKeyChanges.map(change => change.previousKey)).size,
+      reasons: ownerKeyChangeReasons },
     canonicalContinuity: { reviewed: canonicalContinuity.length,
       preserved: canonicalContinuity.filter(row => row.canonicalOffer && row.ownerAfter === row.key).length,
       unattributable: canonicalContinuity.filter(row => !row.canonicalOffer).length } };

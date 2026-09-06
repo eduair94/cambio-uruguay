@@ -314,16 +314,21 @@ const dialogProps = computed(() =>
   props.mobile
     ? {
         modelValue: props.open,
-        fullscreen: true,
-        transition: 'dialog-bottom-transition',
+        transition: 'rental-drawer-transition',
+        class: 'rental-filters-drawer',
         id: 'rental-mobile-filters-dialog',
         'data-testid': 'rental-mobile-filters-dialog',
         'aria-labelledby': 'rental-filters-title',
         contentProps: {
           style: {
+            width: 'min(420px, calc(100vw - 24px))',
+            maxWidth: 'calc(100vw - 24px)',
             height: viewportHeight.value ? `${viewportHeight.value}px` : '100dvh',
             maxHeight: '100%',
             top: `${viewportTop.value}px`,
+            right: 0,
+            left: 'auto',
+            margin: 0,
             overflow: 'hidden',
           },
         },
@@ -609,7 +614,7 @@ legend {
   align-items: center;
   gap: 8px;
   flex: 0 0 auto;
-  padding: 12px max(84px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom))
+  padding: 12px max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom))
     max(12px, env(safe-area-inset-left));
   border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
   background: rgb(var(--v-theme-surface));
@@ -645,6 +650,23 @@ legend {
   }
   .rental-search__fields {
     grid-template-columns: 1fr;
+  }
+}
+</style>
+
+<style>
+/* Keep Vuetify's focus trap, scroll lock and nested select menus in a side drawer. */
+.rental-filters-drawer > .v-overlay__content.rental-drawer-transition-enter-active,
+.rental-filters-drawer > .v-overlay__content.rental-drawer-transition-leave-active {
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.rental-filters-drawer > .v-overlay__content.rental-drawer-transition-enter-from,
+.rental-filters-drawer > .v-overlay__content.rental-drawer-transition-leave-to {
+  transform: translateX(100%);
+}
+@media (prefers-reduced-motion: reduce) {
+  .rental-filters-drawer > .v-overlay__content {
+    transition: none !important;
   }
 }
 </style>

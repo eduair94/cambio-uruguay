@@ -1238,6 +1238,13 @@ test.describe('rental directory', () => {
       await expect(dialog.locator('.v-overlay__content')).not.toHaveClass(/enter-active/)
       await expect(budget).toBeFocused()
       await expect(dialog).toHaveAttribute('role', 'dialog')
+      await expect(dialog).toHaveAttribute('aria-modal', 'true')
+      const drawer = dialog.locator('.rental-search--dialog')
+      const drawerBounds = await drawer.boundingBox()
+      expect(drawerBounds).not.toBeNull()
+      expect(drawerBounds!.x).toBeGreaterThanOrEqual(23)
+      expect(drawerBounds!.width).toBeLessThan(width)
+      expect(drawerBounds!.x + drawerBounds!.width).toBeCloseTo(width, 0)
       await expect
         .poll(() => dialog.evaluate(element => element.contains(document.activeElement)))
         .toBe(true)
@@ -1308,6 +1315,7 @@ test.describe('rental directory', () => {
       }
       await pets.check()
       await area.fill('40')
+      await expectInputLabelClear(area)
       await page.screenshot({ path: resolve('..', `rentals-e2e-mobile-filters-${width}.png`) })
       await apply.click()
       await expect(dialog).not.toBeVisible()
@@ -1344,6 +1352,36 @@ test.describe('rental directory', () => {
       expect(listRequests.get(page)).toHaveLength(requestsBeforeEditing + 1)
     })
   }
+
+  test('keeps the side drawer usable in landscape and discards edits on backdrop close', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 844, height: 390 })
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await startFixtureSearch(page)
+    const initialUrl = page.url()
+    const trigger = page.getByTestId('rental-mobile-filters-trigger')
+    const dialog = page.getByTestId('rental-mobile-filters-dialog')
+    await openMobileFilters(page)
+    const budget = page.getByRole('spinbutton', {
+      name: 'Presupuesto mensual máximo ($)',
+      exact: true,
+    })
+    await budget.fill('21000')
+    await expectInsideViewport(page.getByTestId('rental-filters-apply'), page)
+    await expectInsideViewport(page.getByTestId('rental-filters-cancel'), page)
+    const drawer = await dialog.locator('.rental-search--dialog').boundingBox()
+    expect(drawer!.width).toBeCloseTo(420, 0)
+    expect(drawer!.x + drawer!.width).toBeCloseTo(844, 0)
+    await page.mouse.click(20, 180)
+    await expect(dialog).not.toBeVisible()
+    await expect(trigger).toBeFocused()
+    expect(page.url()).toBe(initialUrl)
+    await openMobileFilters(page)
+    await expect(budget).toHaveValue('')
+    await page.keyboard.press('Escape')
+    await expect(dialog).not.toBeVisible()
+  })
 
   test('keeps mobile filters and a wide comparison inside the viewport', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 })
