@@ -21,14 +21,6 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
           "
           >{{ t(query.operation === 'sale' ? 'sales' : 'rentals') }}</NuxtLink
         >
-        <VBtn
-          v-if="smAndDown"
-          icon="mdi-share-variant-outline"
-          variant="text"
-          :aria-label="t('share')"
-          class="opportunities__share-mobile"
-          @click="shareSearch"
-        />
       </div>
     </header>
     <div class="opportunities__workspace">
@@ -86,6 +78,14 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
             >{{ t('filters')
             }}<span v-if="filterChips.length"> ({{ filterChips.length }})</span></VBtn
           >
+          <VBtn
+            v-if="smAndDown"
+            icon="mdi-share-variant-outline"
+            variant="text"
+            :aria-label="t('share')"
+            class="opportunities__share-mobile"
+            @click="shareSearch"
+          />
           <VBtn
             v-if="!smAndDown"
             variant="text"
@@ -808,7 +808,6 @@ useHead(() => ({
     letter-spacing: 0;
   }
   .opportunities__controls :deep(.rental-alert-trigger) {
-    margin-left: auto;
     width: 44px;
     flex: 0 0 44px;
   }
