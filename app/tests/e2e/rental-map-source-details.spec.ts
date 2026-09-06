@@ -87,7 +87,7 @@ for (const sample of [
       },
     }
     const property: RentalPublicProperty = {
-      key: 'fixture-map301',
+      key: 'test',
       title: first.title,
       propertyType: 'apartamento',
       department: 'Montevideo',
@@ -138,7 +138,7 @@ for (const sample of [
         }),
       })
     )
-    await page.route(/\/api\/rentals\/propiedad\/fixture-map301(?:\?|$)/, route => {
+    await page.route(/\/api\/rentals\/propiedad\/test(?:\?|$)/, route => {
       detailRequests++
       return route.fulfill({
         contentType: 'application/json',
@@ -169,7 +169,7 @@ for (const sample of [
     expect(excerpt.endsWith('…')).toBe(true)
     await expect(panel.getByRole('link', { name: sample.detail, exact: true })).toHaveAttribute(
       'href',
-      `${prefix}/alquileres/fixture-map301`
+      `${prefix}/alquileres/test`
     )
     const footer = panel.locator('.rental-map-detail__footer')
     await expect(footer).toBeInViewport()
