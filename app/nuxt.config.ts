@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url'
 import { CONSENT_STRICT_REGIONS } from './utils/consent'
 
 export default defineNuxtConfig({
@@ -262,11 +263,12 @@ export default defineNuxtConfig({
     // year, edge-cached HTML and a revalidating browser are mutually exclusive, and
     // no value written on this line can buy both.
     //
-    // The fix that actually lands is in the dashboard: Caching → Configuration →
-    // Browser Cache TTL → "Respect Existing Headers". This line is what that
-    // setting then respects, so it has to stay correct — and dropping `s-maxage`
-    // is the fallback if the setting ever goes back (costs the edge HIT: measured
-    // 0.15s TTFB cached vs ~1.3s straight from SSR).
+    // Fixed in the dashboard on 2026-09-06: Caching → Configuration → Browser
+    // Cache TTL → "Respect Existing Headers". Verified against public HITs:
+    // / and /widget now return max-age=0 while keeping their shared-cache TTL.
+    // Keep BOTH the origin header and that zone setting. A production probe,
+    // not a unit test alone, must check the header the browser actually receives.
+    // See docs/app/LOADING_INCIDENT_2026-09-06.md.
     '/': {
       ssr: true,
       headers: {
@@ -323,6 +325,8 @@ export default defineNuxtConfig({
   },
 
   nitro: {
+    // Warm SSR before joining PM2's shared listening socket.
+    entry: fileURLToPath(new URL('./server/entry.ts', import.meta.url)),
     // Zero-downtime deploys: when NITRO_OUTPUT_DIR is set (by scripts/deploy.sh)
     // the build writes to a staging dir so the live .output keeps serving during
     // the build; the deploy script then atomically swaps it into place. Unset in
@@ -560,7 +564,10 @@ export default defineNuxtConfig({
         disable: process.env.NODE_ENV === 'development',
         workbox: {
           importScripts: ['firebase-messaging-extra.js'],
-          navigateFallback: '/',
+          // SSR pages are served by Nitro, not a precached SPA shell. '/' is
+          // absent from the precache: binding it throws non-precached-url on
+          // every worker startup, before the runtime routes below can register.
+          navigateFallback: null,
           globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
           cleanupOutdatedCaches: true,
           // Limit file size to prevent memory issues
@@ -591,8 +598,10 @@ export default defineNuxtConfig({
             {
               // The discount map is the one payload worth keeping offline: it is big, it changes
               // about once a day, and the page is most useful standing in a shop with bad signal.
-              // Must precede the generic /api rule below — Workbox takes the first match.
-              urlPattern: /\/api\/bankos\/discounts/i,
+              // Match only this public endpoint; private account/admin APIs must
+              // never enter Cache Storage, which does not honor HTTP no-store.
+              urlPattern: ({ url, sameOrigin }) =>
+                sameOrigin && url.pathname === '/api/bankos/discounts',
               handler: 'NetworkFirst',
               options: {
                 cacheName: 'bankos-discounts-cache',
@@ -602,18 +611,6 @@ export default defineNuxtConfig({
                   maxAgeSeconds: 60 * 60 * 24, // a day
                 },
                 cacheableResponse: { statuses: [0, 200] },
-              },
-            },
-            {
-              urlPattern: /\/api\/.*/i,
-              handler: 'NetworkFirst',
-              options: {
-                cacheName: 'api-cache',
-                networkTimeoutSeconds: 5, // Reduced from 10
-                expiration: {
-                  maxEntries: 50, // Increased from 16 for better caching
-                  maxAgeSeconds: 300, // Keep 5 minutes
-                },
               },
             },
           ],

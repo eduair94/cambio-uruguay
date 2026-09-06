@@ -8,9 +8,11 @@ import { bestUsdPair, type OgRatePair } from '../../utils/ogRate'
 export default defineCachedEventHandler(
   async (): Promise<OgRatePair> => {
     const apiBase = useRuntimeConfig().public.apiBase as string
-    const rates = await $fetch<ExchangeRate[]>('/', { baseURL: apiBase }).catch(
-      () => [] as ExchangeRate[]
-    )
+    const rates = await $fetch<ExchangeRate[]>('/', {
+      baseURL: apiBase,
+      timeout: 2500,
+      retry: 0,
+    }).catch(() => [] as ExchangeRate[])
     return bestUsdPair(rates)
   },
   { maxAge: 60 * 10, staleMaxAge: 60 * 60, name: 'og-rate', getKey: () => 'usd' }

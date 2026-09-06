@@ -149,6 +149,17 @@ if [ ! -f "$STAGING/server/index.mjs" ]; then
   exit 1
 fi
 
+# A listening socket is not proof of working SSR. Validate the complete candidate
+# on a separate port BEFORE touching live output or asking PM2 to reload.
+log "Checking candidate SSR before the swap…"
+node "$APP_DIR/scripts/check-staging.cjs" "$STAGING"
+
+# The old workers still serve requests until each replacement has rendered SSR
+# and signalled ready. Their lazy server imports resolve through .output, too:
+# swapping only client assets stranded them between the swap and the reload.
+log "Retaining the previous worker's server chunks for the rolling reload…"
+bash "$APP_DIR/scripts/retain-server-chunks.sh" "$APP_DIR/.output" "$STAGING"
+
 # Cached HTML and already-open tabs can reference the previous generation's
 # hashed chunks for up to an hour. Carry those immutable files into the fresh
 # output before the swap so a rolling reload never strands an old client.

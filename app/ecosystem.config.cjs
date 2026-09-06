@@ -6,6 +6,12 @@ module.exports = {
       exec_mode: 'cluster',
       instances: '2', // Or a number of instances
       script: './.output/server/index.mjs',
+      // Listening only proves the socket exists. Keep the previous worker until
+      // server/entry.ts has rendered a real page before opening its replacement's socket.
+      wait_ready: true,
+      listen_timeout: 10 * 60 * 1000,
+      // Let Nitro drain pending requests for its 30s grace period before SIGKILL.
+      kill_timeout: 35000,
       // 500M era el techo anterior y las instancias lo tocaban seguido: 2.189 reinicios
       // acumulados al 2026-08-19, con un estado estable de 170-500 MB. Ese ciclado es el que
       // habilita la falla real — un `pm2 reload` que agarra una instancia reiniciándose sola

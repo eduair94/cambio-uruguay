@@ -27,7 +27,9 @@ async function fetchContextSentence(lang: FaqLang, apiBase: string): Promise<str
       baseURL: apiBase,
       method: 'POST',
       body: { type: 'custom', language: lang, customPrompt: CONTEXT_INSTR[lang] },
-      timeout: 20000,
+      // Optional prose must not hold up the homepage's server-rendered HTML.
+      timeout: 1500,
+      retry: 0,
     })
     const s = res?.insight
       ?.replace(/<think>[\s\S]*?<\/think>/gi, '')
@@ -45,9 +47,11 @@ async function buildPayload(lang: FaqLang): Promise<{ generatedAt: string; items
   const config = useRuntimeConfig()
   const apiBase = config.public.apiBase as string
 
-  const rates = await $fetch<ExchangeRate[]>('/', { baseURL: apiBase }).catch(
-    () => [] as ExchangeRate[]
-  )
+  const rates = await $fetch<ExchangeRate[]>('/', {
+    baseURL: apiBase,
+    timeout: 2500,
+    retry: 0,
+  }).catch(() => [] as ExchangeRate[])
 
   let items = buildFaqItems(rates, lang)
 

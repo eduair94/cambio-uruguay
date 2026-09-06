@@ -26,8 +26,11 @@ import { describe, expect, it } from 'vitest'
 // as `max-age=0` and arrived as `max-age=31536000`. `/sw.js` survives only because
 // it declares no `s-maxage` and is therefore not edge-cached.
 //
-// The setting that actually decides is Browser Cache TTL in the zone dashboard
-// ("Respect Existing Headers"). This file guards the half that lives in the repo:
+// On 2026-09-06 at 05:02:47 UTC the zone was changed to Respect Existing Headers.
+// Production HIT responses then kept max-age=0 for both / and /widget while
+// retaining their shared TTLs (3600 and 300 seconds). The dashboard correction,
+// not another identical origin-header deploy, fixed the measured override.
+// This file guards the half that lives in the repo:
 // the origin must keep saying the honest thing, or the dashboard setting has
 // nothing correct to respect. Verifying the edge belongs in a probe against
 // production, not in a unit test — so do not read a green run here as proof that
@@ -68,10 +71,9 @@ function cacheControlByRoute(): Map<string, string> {
  * Routes that serve an HTML document. An asset under a content-hashed path may
  * be immutable; a document may not, because its body names those hashes.
  *
- * Derived, not listed. The edge setting that caused this is staying as it is, so
- * the repo is the only thing standing between a new document route and the same
- * year-long pin — and a hand-kept list only guards the routes someone remembered
- * to add. Anything whose path has no file extension serves a document.
+ * Derived, not listed: a hand-kept list only guards the routes someone remembered
+ * to add. With the edge respecting origin headers, every new document policy
+ * must continue to ask the browser to revalidate after deployments.
  */
 function documentRoutes(): string[] {
   // An asset route names a file: it carries an extension, an extension set, or
@@ -120,9 +122,16 @@ describe('routeRules cache-control', () => {
       const value = cacheControlByRoute().get(route) ?? ''
       expect(value, `routeRules['${route}'] is immutable`).not.toMatch(/immutable/)
       const maxAge = Number(value.match(/(?:^|[\s,])max-age=(\d+)/)?.[1] ?? NaN)
-      // A document must be revalidated. Anything above a minute means a deploy
-      // can leave a visitor pointing at assets that no longer exist.
-      expect(maxAge, `routeRules['${route}'] browser max-age=${maxAge}`).toBeLessThanOrEqual(60)
+      // Every navigation must revalidate after a deployment changes asset hashes.
+      expect(maxAge, `routeRules['${route}'] browser max-age=${maxAge}`).toBe(0)
+      expect(value, `routeRules['${route}'] must reject stale browser reuse`).toMatch(
+        /(?:^|[\s,])must-revalidate(?:,|$)/
+      )
     }
+  })
+
+  it('retains useful edge caching after the Cloudflare browser-TTL correction', () => {
+    expect(cacheControlByRoute().get('/')).toMatch(/(?:^|[\s,])s-maxage=3600(?:,|$)/)
+    expect(cacheControlByRoute().get('/widget')).toMatch(/(?:^|[\s,])s-maxage=300(?:,|$)/)
   })
 })
