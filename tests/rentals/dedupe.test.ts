@@ -789,6 +789,11 @@ describe("conservative unit evidence", () => {
 
   it.each([
     "Apartamento 1 dor amueblado",
+    "Apartamento 5 domitorios Cordon",
+    "Apartamento 1 domitorio",
+    "Apartamento 2 dormtorios",
+    "Apartamento 2 dormitoiros",
+    "Apartamento 2 dormitórios",
     "Apto 2 dors. en Pocitos",
     "Apartamento 1 -2 dor amueblado",
     "Apartamento 1–2 dormitorios",
@@ -843,6 +848,36 @@ describe("conservative unit evidence", () => {
     expect(rentalUnitEvidence(mercadolibre).units).toEqual([]);
     expect(matches(infocasas, mercadolibre)).toBe(false);
     expect(buildRentalProperties([infocasas, mercadolibre], context)).toHaveLength(2);
+  });
+
+  it("keeps the Cordón adverts separate when their shared bedroom typo looks like a unit label", () => {
+    const shared: Partial<RawRental> = {
+      department: "Montevideo", neighborhood: "Cordón", propertyType: "apartamento",
+      street: "avenida 18 de julio", streetNumber: "2200", bathrooms: 1, area: 135,
+      price: 55000, latitude: null, longitude: null,
+    };
+    const elpais = listing({
+      ...shared, source: "elpais", listingId: "elpais:6a9c5467f3081b26a1cbf146",
+      title: "ALQUILER APARTAMENTO 5 DOMITORIOS CORDON", bedrooms: null,
+      address: "Avenida 18 de Julio 2200 .",
+    });
+    const mercadolibre = listing({
+      ...shared, source: "mercadolibre", listingId: "mercadolibre:MLU1497719400",
+      title: "Alquiler Apartamento 5 Domitorios Cordon", bedrooms: 5,
+      address: "Avenida 18 De Julio 2200",
+    });
+    expect(rentalUnitEvidence(elpais).units).toEqual([]);
+    expect(rentalUnitEvidence(mercadolibre).units).toEqual([]);
+    expect(matches(elpais, mercadolibre)).toBe(false);
+    expect(matches(mercadolibre, elpais)).toBe(false);
+    const separated = buildRentalProperties([elpais, mercadolibre], context);
+    expect(separated).toHaveLength(2);
+    expect(separated.flatMap(row => row.offers.map(offer => offer.listingId)).sort()).toEqual(
+      [elpais.listingId, mercadolibre.listingId].sort(),
+    );
+    // An independently published unit still works; the typo neither supplies nor vetoes it.
+    expect(matches({ ...elpais, address: "Avenida 18 de Julio 2200 unidad 3" },
+      { ...mercadolibre, address: "Avenida 18 de Julio 2200 unidad 3" })).toBe(true);
   });
 
   it.each(["Apto.", "Apto. Rambla", "Apto, Rambla", "Apartamentos en alquiler"])(

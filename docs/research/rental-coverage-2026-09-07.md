@@ -69,6 +69,25 @@ máximo de 1.538 por franja. Se prefieren rangos completos y contiguos que caben
 de páginas antes de una división geográfica con resto. Cada respuesta sigue validando sus
 filtros y cada anuncio su categoría, operación y precio; `complete` permanece en `false`.
 
+La comprobación posterior al despliegue `8e2671e` realizó siete GET: categoría de casas y
+primera/última página de sus tres franjas. Todas conservaron los filtros y los offsets
+pedidos. El total anunciado era 4.413; una franja cambió de 1.468 a 1.469 durante la lectura,
+otro motivo para no prometer una fotografía exhaustiva de un catálogo dinámico.
+
+### Comprobación de las dos uniones nuevas
+
+La auditoría de las dos fichas con varias fuentes encontró evidencia suficiente en Aguada:
+Yaguarón 1986, unidad 3 explícita en ambos anuncios, con atributos compatibles. En Cordón,
+el título `Alquiler Apartamento 5 DOMITORIOS Cordon` hacía que el parser confundiera el
+error ortográfico de “dormitorios” con la unidad 5. Coincidir en dirección, precio y ese
+título no prueba identidad: esos avisos deben permanecer separados.
+
+El veto de atributos ahora reconoce también `domitorio`, `dormtorio` y `dormitoiro`,
+sin inventar dormitorios ni descartar un identificador de unidad independiente. La
+reparación del grupo de Cordón debe preservar los dos IDs, todas sus fechas y sus datos;
+como ambos títulos coinciden normalizados, la URL canónica anterior no es atribuible a
+un único anuncio y no debe asignarse arbitrariamente a uno de ellos.
+
 ## Comprobaciones directas
 
 - **Mercado Libre:** el breadcrumb del portal identifica `MLU1473` como

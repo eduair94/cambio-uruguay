@@ -77,9 +77,11 @@ export function rentalUnitEvidence(
       /\b(?:apto|apt|apartamento|unidad|apartament[o]?\s+n(?:ro|umero))(?![a-z])\.?\s*(?:(?:n(?:ro|umero)?\.?|no\.)\s*[°ºo]?\s*)?[:#-]?\s*(\d{1,4}\s*[a-z]?|[a-z])\b/g;
     for (const match of text.matchAll(unitPattern)) {
       const tail = text.slice((match.index ?? 0) + match[0].length);
-      // "Apartamento 2 dormitorios" is a specification, not unit number 2.
+      // "Apartamento 2 dormitorios" is a specification, not unit number 2. A shared typo
+      // does not establish identity either: the Cordón pair published "5 domitorios".
+      // Common missing/transposed letters are vetoes only, never positive unit evidence.
       if (
-        /^\s*(?:dor|dors|dorm|dorms|dormitorios?|habitaciones?|ba[ñn]os?|amb|ambs|ambientes?|m2|m²|metros)\b/.test(
+        /^\s*(?:dor|dors|dorm|dorms|d(?:ormitorio|omitorio|ormtorio|ormitoiro)s?|habitaciones?|ba[ñn]os?|amb|ambs|ambientes?|m2|m²|metros)\b/.test(
           tail,
         )
       )
