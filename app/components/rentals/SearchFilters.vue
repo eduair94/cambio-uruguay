@@ -27,6 +27,21 @@
       </header>
       <div class="rental-search__scroll">
         <PropertyAgencyFilter v-model="draft.agency" />
+        <VSelect
+          v-model="draft.types"
+          :items="typeItems"
+          :label="t('type')"
+          :placeholder="t('allTypes')"
+          multiple
+          chips
+          closable-chips
+          clearable
+          v-bind="field"
+          data-testid="rental-filter-type"
+        />
+        <p v-if="draft.types.includes('vivienda')" class="rental-search__hint">
+          {{ t('homesHint') }}
+        </p>
         <fieldset class="rental-search__primary">
           <legend>{{ t('whereSearch') }}</legend>
           <div class="rental-search__fields">
@@ -82,7 +97,6 @@
         <fieldset>
           <legend>{{ t('homeSearch') }}</legend>
           <div class="rental-search__fields">
-            <VSelect v-model="draft.type" :items="typeItems" :label="t('type')" v-bind="field" />
             <VSelect
               v-model="draft.bedrooms"
               :items="bedroomItems"
@@ -451,6 +465,7 @@ function focusDialogHeading() {
 }
 const copy = (query: RentalQuery): RentalQuery => ({
   ...query,
+  types: [...query.types],
   neighborhoods: [...query.neighborhoods],
   guarantees: [...query.guarantees],
   sedes: [...query.sedes],
@@ -514,13 +529,14 @@ const neighborhoods = computed(() =>
   )
 )
 const typeItems = computed(() => [
-  { title: t('any'), value: '' },
+  { title: t('homes'), value: 'vivienda' },
+  { title: t('offices'), value: 'oficina' },
+  { title: t('commercials'), value: 'local' },
+  { title: t('garages'), value: 'garaje' },
   ...Object.entries({
     apartamento: 'apartment',
     casa: 'house',
     habitacion: 'room',
-    local: 'commercial',
-    oficina: 'office',
     terreno: 'land',
     otro: 'other',
   }).map(([value, label]) => ({ title: t(label), value })),

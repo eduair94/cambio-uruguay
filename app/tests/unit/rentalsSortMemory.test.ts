@@ -5,6 +5,7 @@ import ts from 'typescript'
 import mongoose from 'mongoose'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import * as rentals from '../../utils/rentals'
+import * as rentalDistance from '../../utils/rentalDistance'
 import { rentalPublicPropertyProjection } from '../../server/utils/rentalDetail'
 
 type Stage = Record<string, any>
@@ -47,6 +48,7 @@ async function capture(query: Record<string, string> = {}, total = 240) {
       annotateRentalAvailability: (property: unknown) => property,
     },
     '../../../utils/rentals': rentals,
+    '../../../utils/rentalDistance': rentalDistance,
   }
   const module = { exports: {} as { default?: (event: unknown) => Promise<unknown> } }
   runInNewContext(compiled, {
@@ -95,6 +97,32 @@ describe('rental endpoint sort input', () => {
     const base = await capture({ sort: 'precio', pets: '1' })
     const monthly = await capture({ sort: 'total', pets: '1' })
     expect(monthly.median).toEqual(base.median)
+  })
+
+  it('computes distance before projecting and paging while excluding location evidence from the sort buffer', async () => {
+    const { items, median } = await capture({
+      sort: 'distancia',
+      refLat: '-34.9',
+      refLng: '-56.17',
+      page: '3',
+      pets: '1',
+    })
+    const distance = items.findIndex(stage => stage.$set?.distanceKm)
+    const projection = items.findIndex(stage => stage.$project)
+    const sort = items.findIndex(stage => stage.$sort)
+    const page = items.findIndex(stage => stage.$skip)
+    expect(distance).toBeGreaterThan(0)
+    expect(distance).toBeLessThan(projection)
+    expect(projection).toBeLessThan(sort)
+    expect(sort).toBeLessThan(page)
+    expect(items[projection]!.$project).toEqual({
+      ...rentalPublicPropertyProjection,
+      distanceKm: 1,
+      _rentalDistanceUnknown: 1,
+    })
+    expect(items[sort]!.$sort).toEqual({ _rentalDistanceUnknown: 1, distanceKm: 1, key: 1 })
+    expect(items.at(-1)).toEqual({ $unset: ['_rentalDistanceUnknown'] })
+    expect(median).toEqual((await capture({ pets: '1' })).median)
   })
 })
 

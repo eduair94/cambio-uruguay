@@ -173,6 +173,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
                 {{ t('typical', { price: `$ ${numberFormat(medianUyu)}` }) }}
               </p>
               <p v-if="query.sort === 'total'">{{ t('totalSortHint') }}</p>
+              <p v-if="query.sort === 'distancia'">{{ t('distanceSortHint') }}</p>
             </div>
             <VSelect
               :model-value="query.sort"
@@ -198,12 +199,66 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
               }}</VBtn></VBtnToggle
             >
           </div>
+          <div v-if="referencePoint" class="rentals-reference" data-testid="rental-reference">
+            <p v-if="query.refLabel">
+              <strong>{{ query.refLabel }}</strong>
+            </p>
+            <p>{{ t('distanceHint') }}</p>
+            <div class="rentals-reference__actions">
+              <VBtn
+                variant="text"
+                prepend-icon="mdi-map-marker-outline"
+                @click="startPointSelection"
+              >
+                {{ t('changePoint') }}
+              </VBtn>
+              <VBtn variant="text" @click="removeReference">{{ t('removePoint') }}</VBtn>
+            </div>
+          </div>
           <VProgressLinear v-if="pending" indeterminate color="primary" class="mb-4" />
           <VAlert v-if="error" type="error" variant="tonal" class="mb-5" role="alert">
             {{ t('error') }}
             <VBtn variant="text" @click="refresh()">{{ t('retry') }}</VBtn>
           </VAlert>
           <section v-if="view === 'mapa'" class="rentals-map mb-6" :aria-label="t('map')">
+            <div
+              class="rentals-map__point-controls"
+              :class="{ 'rentals-map__point-controls--picking': pickingPoint }"
+            >
+              <template v-if="pickingPoint">
+                <ReferenceAddress
+                  :department="query.department"
+                  @select="selectReferenceAddress"
+                  @edit="clearDraftReference"
+                />
+                <p id="rental-point-instructions">{{ t('pickPointHint') }}</p>
+                <p v-if="pointError" role="alert">{{ t('pointOutsideUruguay') }}</p>
+                <p v-if="draftPoint" role="status">{{ draftPointLabel || t('pointSelected') }}</p>
+                <div class="rentals-reference__actions">
+                  <VBtn variant="outlined" :disabled="!mapReady" @click="useMapCenter">
+                    {{ t('useMapCenter') }}
+                  </VBtn>
+                  <VBtn
+                    color="primary"
+                    :disabled="!draftPoint"
+                    data-testid="rental-point-apply"
+                    @click="applyReference"
+                  >
+                    {{ t('sortFromPoint') }}
+                  </VBtn>
+                  <VBtn variant="text" @click="cancelPointSelection">{{ t('cancelPoint') }}</VBtn>
+                </div>
+              </template>
+              <VBtn
+                v-else
+                variant="outlined"
+                prepend-icon="mdi-map-marker-distance"
+                data-testid="rental-point-start"
+                @click="startPointSelection"
+              >
+                {{ t(referencePoint ? 'changePoint' : 'choosePoint') }}
+              </VBtn>
+            </div>
             <VProgressLinear v-if="mapPending" indeterminate color="primary" class="mb-2" />
             <VAlert v-if="mapError" type="error" variant="tonal" class="mb-3">
               {{ t('error') }}
@@ -222,12 +277,14 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
             </p>
             <ClientOnly>
               <div
-                v-if="mapMarkers.length && !mapError"
+                v-if="(mapMarkers.length || pickingPoint || referencePoint) && !mapError"
                 ref="mapFrame"
                 class="rentals-map__frame"
                 tabindex="-1"
                 :aria-label="t('map')"
-                @keydown.esc="closeMapProperty()"
+                :aria-describedby="pickingPoint ? 'rental-point-instructions' : undefined"
+                :class="{ 'rentals-map__frame--picking': pickingPoint }"
+                @keydown.esc="pickingPoint ? cancelPointSelection() : closeMapProperty()"
               >
                 <LocationsMap
                   ref="rentalMap"
@@ -236,13 +293,20 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
                   :marker-hit-size="44"
                   :highlight-id="selectedMapKey"
                   :user-location="sedeCentro"
+                  :reference-point="pickingPoint ? draftPoint : referencePoint"
+                  :reference-label="t('referencePoint')"
+                  :center="referencePoint ? [referencePoint.lat, referencePoint.lng] : undefined"
+                  :zoom="referencePoint ? 14 : 7"
                   :radius-km="sedeCentro ? query.radioKm : 0"
-                  :fit-to-markers="true"
+                  :fit-to-markers="!referencePoint"
                   height="100%"
                   :directions-label="t('open')"
                   @marker-click="selectMapProperty"
                   @map-click="closeMapProperty(false)"
+                  @map-point="selectReferencePoint"
+                  @ready="mapReady = true"
                 />
+                <span v-if="pickingPoint" class="rentals-map__crosshair" aria-hidden="true">+</span>
                 <MapPropertyDetail
                   v-if="selectedMapKey"
                   :key="selectedMapKey"
@@ -252,6 +316,9 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
                   :pending="mapDetailPending"
                   :error="mapDetailError"
                   :favorite="isFavorite(selectedMapKey)"
+                  :distance-label="
+                    referencePoint ? distanceLabel(selectedMapPoint?.distanceKm) : ''
+                  "
                   @close="closeMapProperty()"
                   @retry="selectMapProperty({ id: selectedMapKey! })"
                   @favorite="property => toggleFavorite(property, mapDetail?.usdUyu ?? usdUyu)"
@@ -327,6 +394,13 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
                       [property.neighborhood, property.department].filter(Boolean).join(', ') ||
                       t('unknown')
                     }}
+                  </p>
+                  <p
+                    v-if="referencePoint && !pending"
+                    class="rental-card__distance"
+                    data-testid="rental-card-distance"
+                  >
+                    {{ distanceLabel(property.distanceKm) }}
                   </p>
                   <div class="rental-card__cost">
                     <p class="rental-card__price" data-testid="rental-card-price">
@@ -518,6 +592,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
 import { rentalAvailabilityCopy } from '~/utils/rentalAvailabilityMessages'
 import { useDisplay } from 'vuetify'
 import SearchFilters from '~/components/rentals/SearchFilters.vue'
+import ReferenceAddress from '~/components/rentals/ReferenceAddress.vue'
 import SavedPanel from '~/components/rentals/SavedPanel.vue'
 import MapPropertyDetail from '~/components/rentals/MapPropertyDetail.vue'
 import RentalAlertButton from '~/components/rentals/RentalAlertButton.vue'
@@ -651,12 +726,28 @@ async function clearFilters() {
   focusSearchResults()
 }
 function removeFilter(keys: string[]) {
+  const type = keys.find(key => key.startsWith('type:'))?.slice(5)
+  if (type) {
+    void navigate(
+      rentalQueryToParams({
+        ...query.value,
+        types: query.value.types.filter(value => value !== type),
+        type: '',
+        page: 1,
+      })
+    )
+    return
+  }
   const params = Object.fromEntries(
     Object.entries(requestParams.value).filter(([key]) => ![...keys, 'page'].includes(key))
   )
   void navigate(params)
 }
 function changeSort(sort: RentalQuery['sort']) {
+  if (sort === 'distancia' && !referencePoint.value) {
+    void startPointSelection()
+    return
+  }
   search({ ...query.value, sort })
 }
 function changeView(next: string) {
@@ -703,7 +794,7 @@ const filterChips = computed(() => {
   if (q.department) add('department', q.department, ['department', 'neighborhood', 'neighborhoods'])
   if (q.neighborhoods.length)
     add('neighborhoods', q.neighborhoods.join(', '), ['neighborhood', 'neighborhoods'])
-  if (q.type) add('type', typeLabel(q.type))
+  for (const type of q.types) add(`type:${type}`, typeLabel(type))
   if (q.q) add('q', q.q)
   if (q.agency) add('agency', agencyName.value || t('selectedAgency'))
   if (q.bedrooms !== null)
@@ -791,12 +882,101 @@ const mapMarkers = computed(() =>
   }))
 )
 const rentalMap = ref<{
+  getCenter: () => { lat: number; lng: number } | null
+  focusPoint: (point: { lat: number; lng: number }) => void
   focusMarker: (id: string) => boolean
   revealMarker: (
     id: string,
     padding: { top: number; right: number; bottom: number; left: number }
   ) => void
 } | null>(null)
+const referencePoint = computed(() =>
+  query.value.refLat !== null && query.value.refLng !== null
+    ? { lat: query.value.refLat, lng: query.value.refLng }
+    : null
+)
+const pickingPoint = ref(false)
+const draftPoint = ref<{ lat: number; lng: number } | null>(null)
+const draftPointLabel = ref('')
+const pointError = ref(false)
+const mapReady = ref(false)
+watch(rentalMap, () => {
+  mapReady.value = false
+})
+watch(view, () => {
+  pickingPoint.value = false
+})
+async function startPointSelection() {
+  await closeMapProperty(false)
+  await router.push({ query: { ...requestParams.value, view: 'mapa' } })
+  draftPoint.value = referencePoint.value
+  draftPointLabel.value = query.value.refLabel
+  pointError.value = false
+  pickingPoint.value = true
+  await nextTick()
+  document
+    .querySelector('.rentals-map__point-controls')
+    ?.scrollIntoView({ block: 'start', behavior: 'instant' })
+}
+function selectReferencePoint(point: { lat: number; lng: number }) {
+  if (!pickingPoint.value) return
+  const next = normalizeRentalQuery({ refLat: point.lat, refLng: point.lng })
+  pointError.value = next.refLat === null || next.refLng === null
+  draftPoint.value = pointError.value ? null : { lat: next.refLat!, lng: next.refLng! }
+  draftPointLabel.value = ''
+}
+function selectReferenceAddress(point: { lat: number; lng: number; label: string }) {
+  selectReferencePoint(point)
+  if (!draftPoint.value) return
+  draftPointLabel.value = point.label
+  rentalMap.value?.focusPoint(draftPoint.value)
+}
+function clearDraftReference() {
+  draftPoint.value = null
+  draftPointLabel.value = ''
+  pointError.value = false
+}
+function useMapCenter() {
+  const point = rentalMap.value?.getCenter()
+  if (point) selectReferencePoint(point)
+}
+function cancelPointSelection() {
+  pickingPoint.value = false
+  draftPoint.value = null
+  draftPointLabel.value = ''
+  pointError.value = false
+}
+async function applyReference() {
+  if (!draftPoint.value) return
+  const next = {
+    ...query.value,
+    refLat: draftPoint.value.lat,
+    refLng: draftPoint.value.lng,
+    refLabel: draftPointLabel.value,
+    sort: 'distancia' as const,
+    page: 1,
+  }
+  cancelPointSelection()
+  await router.push({ query: rentalQueryToParams(next) })
+  await nextTick()
+  focusSearchResults()
+}
+function removeReference() {
+  cancelPointSelection()
+  void search({
+    ...query.value,
+    refLat: null,
+    refLng: null,
+    refLabel: '',
+    sort: query.value.sort === 'distancia' ? 'recientes' : query.value.sort,
+    page: 1,
+  })
+}
+function distanceLabel(distance: number | null | undefined) {
+  if (typeof distance !== 'number' || !Number.isFinite(distance)) return t('distanceUnknown')
+  const km = new Intl.NumberFormat(locale.value, { maximumFractionDigits: 1 }).format(distance)
+  return distance < 0.1 ? t('distanceVeryNear') : t('distanceFromPoint', { km })
+}
 const mapFrame = ref<HTMLElement | null>(null)
 const selectedMapKey = ref<string | null>(null)
 const selectedMapPoint = computed(
@@ -808,6 +988,11 @@ const mapDetailError = ref<'unavailable' | 'failed' | null>(null)
 let mapDetailRequest: AbortController | null = null
 // One full property is fetched on selection; the other map points remain lightweight.
 async function selectMapProperty(marker: { id: string }) {
+  if (pickingPoint.value) {
+    const point = mapData.value?.points.find(point => point.key === marker.id)
+    if (point) selectReferencePoint({ lat: point.lat, lng: point.lng })
+    return
+  }
   if (mapPending.value || !mapData.value?.points.some(point => point.key === marker.id)) return
   if (selectedMapKey.value === marker.id && (mapDetailPending.value || mapDetail.value)) return
   // Keep map context visible above the mobile sheet, and desktop actions inside the viewport.
@@ -915,6 +1100,8 @@ const typeLabel = (type: string) =>
   t(
     (
       {
+        vivienda: 'homes',
+        garaje: 'garage',
         apartamento: 'apartment',
         casa: 'house',
         habitacion: 'room',
@@ -1099,6 +1286,7 @@ useHead(() => ({
   meta:
     query.value.page > 1 ||
     filterChips.value.length ||
+    referencePoint.value ||
     query.value.sort !== 'recientes' ||
     view.value === 'mapa'
       ? [{ name: 'robots', content: 'noindex, follow' }]
@@ -1484,7 +1672,62 @@ useHead(() => ({
 }
 .rentals-map {
   border-radius: 12px;
-  overflow: hidden;
+}
+.rentals-reference {
+  margin: 0 0 16px;
+}
+.rentals-reference p,
+.rentals-map__point-controls p {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+.rentals-reference__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  margin-top: 8px;
+}
+.rentals-reference__actions .v-btn,
+.rentals-map__point-controls > .v-btn {
+  min-height: 44px;
+  text-transform: none;
+  letter-spacing: normal;
+}
+.rentals-map__point-controls {
+  padding: 8px 0 12px;
+  scroll-margin-top: 132px;
+  background: rgb(var(--v-theme-background));
+}
+.rentals-map__point-controls--picking {
+  position: sticky;
+  top: 120px;
+  z-index: 3;
+}
+.rentals-map .rentals-map__frame--picking {
+  height: clamp(240px, 45dvh, 440px);
+}
+.rentals-map__frame--picking :deep(.leaflet-container) {
+  cursor: crosshair;
+}
+.rentals-map__crosshair {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 1;
+  color: #1565c0;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 4px;
+  font-size: 28px;
+  line-height: 1;
+}
+.rental-card__distance {
+  margin: 0;
+  color: rgb(var(--v-theme-link));
+  font-size: 0.875rem;
+  font-weight: 600;
 }
 .rentals-map__coverage {
   margin: 0 0 16px;

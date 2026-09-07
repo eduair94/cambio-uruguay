@@ -103,6 +103,7 @@ const types: Record<string, string> = {
   habitacion: 'room',
   local: 'commercial',
   oficina: 'office',
+  garaje: 'garage',
   terreno: 'land',
   otro: 'other',
 }

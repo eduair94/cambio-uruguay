@@ -3,6 +3,11 @@ import { RentalListingModel } from '../../models/RentalListing'
 import { RentalMetaModel } from '../../models/RentalMeta'
 import { connectDb } from '../../utils/db'
 import { getRentalCoverage } from '../../utils/rentalCoverage'
+import {
+  RENTAL_DISTANCE_SORT_FIELDS,
+  rentalDistanceProjection,
+  rentalDistanceStages,
+} from '../../../utils/rentalDistance'
 
 import {
   annotateRentalAvailability,
@@ -70,10 +75,12 @@ export default defineEventHandler(async (event): Promise<RentalsResponse> => {
       RentalListingModel.aggregate([
         ...publicStages,
         ...offerStages,
+        ...rentalDistanceStages(query),
         // Rich source evidence must not enter the blocking sort buffer.
         {
           $project: {
             ...rentalPublicPropertyProjection,
+            ...rentalDistanceProjection(query),
             ...(query.sort === 'total'
               ? Object.fromEntries(RENTAL_TOTAL_SORT_FIELDS.map(field => [field, 1]))
               : {}),
@@ -83,6 +90,7 @@ export default defineEventHandler(async (event): Promise<RentalsResponse> => {
         { $skip: (query.page - 1) * query.perPage },
         { $limit: query.perPage },
         ...(query.sort === 'total' ? [{ $unset: [...RENTAL_TOTAL_SORT_FIELDS] }] : []),
+        ...(query.refLat !== null ? [{ $unset: [...RENTAL_DISTANCE_SORT_FIELDS] }] : []),
       ]).collation(RENTAL_COLLATION),
       RentalListingModel.aggregate([...publicStages, { $count: 'total' }]).collation(
         RENTAL_COLLATION

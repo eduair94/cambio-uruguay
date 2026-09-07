@@ -12,6 +12,7 @@ import {
   rentalOfferMatchesQuery,
   rentalOfferStages,
   rentalPublicStages,
+  rentalTypeMatches,
   type RentalPublicProperty,
 } from '../../utils/rentals'
 import { rentalPropertyPath } from '../../utils/rentalPresentation'
@@ -169,7 +170,8 @@ export function rentalAlertCandidatesFromRows(
 ): RentalAlertCandidate[] {
   const query = normalizeRentalQuery(filters)
   const result = new Map<string, RentalAlertCandidate>()
-  for (const row of rows)
+  for (const row of rows) {
+    if (!rentalTypeMatches(row.propertyType, query.types)) continue
     for (const offer of row.offers) {
       const id = rentalAlertCandidateId(offer.source, offer.listingId)
       if (!id || !wanted.has(id) || !rentalOfferMatchesQuery(offer, query, usdUyu)) continue
@@ -201,6 +203,7 @@ export function rentalAlertCandidatesFromRows(
         image: offer.image || null,
       })
     }
+  }
   return [...result.values()]
 }
 

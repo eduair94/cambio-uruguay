@@ -81,6 +81,37 @@ describe.skipIf(!uri)('rental budgets evaluated by Mongo (read-only synthetic do
     await client?.close()
   })
 
+  it('separates homes from offices before list/map counts and detail selection', async () => {
+    const types = ['apartamento', 'casa', 'habitacion', 'oficina', 'local', 'terreno', 'otro']
+    const documents = types.map(propertyType =>
+      doc(propertyType, [offer()], { propertyType, latitude: -34.9, longitude: -56.1 })
+    )
+    for (const [type, expected] of [
+      ['vivienda', ['apartamento', 'casa', 'habitacion']],
+      ['oficina', ['oficina']],
+      ['apartamento', ['apartamento']],
+      ['', types],
+    ] as const) {
+      const query = normalizeRentalQuery({ type })
+      const stages = rentalPublicStages(buildRentalFilter(query, 10, 40).filter, 10)
+      const rows = await client
+        .db()
+        .aggregate([{ $documents: documents }, ...stages])
+        .toArray()
+      expect(rows.map(row => row.key)).toEqual(expected)
+      const count = await client
+        .db()
+        .aggregate([{ $documents: documents }, ...stages, { $count: 'total' }])
+        .toArray()
+      expect(count[0]?.total).toBe(expected.length)
+      const office = await client
+        .db()
+        .aggregate([{ $documents: documents }, ...rentalDetailStages('oficina', query, 10, 40)])
+        .toArray()
+      expect(office).toHaveLength(expected.includes('oficina') ? 1 : 0)
+    }
+  })
+
   it('matches conditions, price and source on one advert in counts, details and JavaScript selection', async () => {
     const terms: Partial<RentalOffer> = {
       petsAllowed: true,

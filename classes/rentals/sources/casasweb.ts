@@ -135,7 +135,8 @@ export async function harvestCasasweb(mode: "full" | "fast", usdUyu: number): Pr
   let failed = 0;
   let consecutiveFailures = 0;
   const departments = mode === "fast" ? [1, 3, 10] : Array.from({ length: 19 }, (_, index) => index + 1);
-  const types = mode === "fast" ? ["a", "c"] : PROPERTY_TYPES;
+  // Garages have their own search category; housing pages do not discover standalone spaces.
+  const types = mode === "fast" ? ["a", "c", "g"] : PROPERTY_TYPES;
   const attemptedDepartments = new Set<number>();
   sweep: for (const department of departments) {
     attemptedDepartments.add(department);

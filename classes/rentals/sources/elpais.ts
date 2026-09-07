@@ -44,6 +44,7 @@ const ORIGIN = "https://inmuebles.elpais.com.uy";
 const TYPES: Record<string, RentalPropertyType> = {
   apartment: "apartamento", house: "casa", room: "habitacion", office: "oficina",
   commercial: "local", commercial_space: "local", land: "terreno",
+  garage: "garaje", parking: "garaje",
 };
 
 export function elpaisCategoryUrls(xml: string): string[] {
