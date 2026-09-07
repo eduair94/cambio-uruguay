@@ -47,7 +47,7 @@ const icPage = (rows: unknown[]) =>
     props: {
       pageProps: {
         fetchResult: {
-          searchFast: { data: rows, paginatorInfo: { hasMorePages: false, total: rows.length } },
+          searchFast: { data: rows, paginatorInfo: { currentPage: 1, lastPage: 1, hasMorePages: false, total: rows.length } },
         },
       },
     },
@@ -55,8 +55,7 @@ const icPage = (rows: unknown[]) =>
 
 const harvest = async (rows: unknown[]) => {
   (fetchText as unknown as ReturnType<typeof vi.fn>).mockResolvedValue(icPage(rows));
-  process.env.RENTALS_IC_MAX_PAGES = "1";
-  return harvestInfoCasas("full", 41.45);
+  return harvestInfoCasas("full", 41.45, { maxPages: 1, ranges: [{}] });
 };
 
 describe("InfoCasas publica el dato de mascotas y el parser lo lee", () => {

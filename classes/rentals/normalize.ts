@@ -4,6 +4,7 @@
 // while distinct doors (including bis) must stay distinct. Every
 // function here is pure and unit-tested (tests/rentals/normalize.test.ts).
 import type { RentalCurrency, RentalPropertyType } from "./types";
+import { rentalEligibility, rentalPeriodEvidence, type RentalEligibilityInput } from "./eligibility";
 
 export function stripAccents(value: string): string {
   return value.normalize("NFD").replace(/[̀-ͯ]/g, "");
@@ -249,7 +250,16 @@ const RENT_FLOOR_UYU: Record<RentalPropertyType, number> = {
   otro: 2_000,
 };
 
-export function isPlausibleRent(priceUyu: number, propertyType: RentalPropertyType = "otro"): boolean {
+export function isPlausibleRent(
+  priceUyu: number,
+  propertyType: RentalPropertyType = "otro",
+  context?: RentalEligibilityInput,
+): boolean {
+  // An explicit own-advert check can recover low-priced homes, without relaxing unknown USD
+  // periods or changing other sources that still call the original two-argument contract.
+  if (priceUyu >= 3_000 && priceUyu < RENT_FLOOR_UYU[propertyType]
+    && context?.currency === "UYU" && context.price === priceUyu
+    && context.propertyType === propertyType && rentalEligibility(context).eligible) return true;
   return priceUyu >= RENT_FLOOR_UYU[propertyType] && priceUyu <= 900_000;
 }
 
@@ -340,15 +350,7 @@ export function looksLikeRentalAdvert(title: string, description = ""): boolean 
   const flat = flatten(title);
   if (/\b(vendo|venta|se vende|permuta|remato)\b/.test(flat) && !/\balquil/.test(flat)) return false;
   if (/\b(busco|necesito|solicito)\b.*\balquil/.test(flat)) return false;
-  if (/\b(por dia|por noche|diario|temporada|temporal|alquiler temporario|turistico)\b/.test(flat)) return false;
-  if (/\binvernal(?:es)?\b|\balquiler (?:de |por |durante el )?invierno\b/.test(flat)) return false;
-  // Some portals label winter-only contracts as ordinary rentals and mention the term only in
-  // the description. Do not scan for "invierno" alone: an annual home may have a winter garden.
-  // If an annual option is also mentioned, the description does not prove it is winter-only.
-  const detail = flatten(description.replace(/<[^>]*>/g, " ").replace(/&nbsp;|&#160;/gi, " "));
-  if (!/\banual(?:es)?\b/.test(`${flat} ${detail}`)
-    && /\balquiler (?:invernal|(?:de |por |durante el )?invierno)\b/.test(detail)) return false;
-  return true;
+  return !rentalPeriodEvidence(title, description).shortTerm;
 }
 
 /** Stable, human-debuggable id for a property key. */

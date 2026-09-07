@@ -7,11 +7,11 @@
 //
 // Two rules this file must not break:
 //   * robots.txt disallows `/alquiler/*-y-*` (their combined-filter URLs). We only ever build
-//     `/alquiler/pagina<N>`, and `assertAllowed` refuses anything with `-y-` in the path so a
+//     single price ranges, and `assertAllowed` refuses anything with `-y-` in the path so a
 //     future "treinta-y-tres" slug can never sneak past.
-//   * we read the NATIONWIDE list sorted by "más recientes" (`order=3`). Sorting by newest is what
-//     makes a truncated run still correct: whatever the page cap cuts off is the oldest tail, never
-//     today's adverts.
+//   * newest-first does NOT make the nationwide tail accessible. On 2026-09-07 pages 600 and 850
+//     returned the same 21 IDs despite different paginator numbers. Full runs partition the public
+//     search into overlapping price ranges below that depth; fast runs keep the newest-first feed.
 import { guaranteesFromField, guaranteesFromText, mergeGuarantees } from "../guarantees";
 import { rentalDescription, rentalOfferDetails } from "../details";
 import { fetchText } from "../net";
@@ -27,7 +27,6 @@ import type { RawRental, RentalCurrency, RentalSellerType } from "../types";
 import type { RentalSourceResult } from "./types";
 
 const ORIGIN = "https://www.infocasas.com.uy";
-const PAGE_SIZE = 21;
 
 /** Newest-first. Their `order` values: 2 = popularidad (default), 3 = más recientes. */
 const ORDER_NEWEST = "3";
@@ -121,6 +120,8 @@ interface IcRow {
 
 interface IcPage {
   rows: IcRow[];
+  currentPage: number;
+  lastPage: number;
   hasMorePages: boolean;
   total: number;
 }
@@ -130,8 +131,22 @@ export function assertAllowed(path: string): boolean {
   return !/-y-/.test(path);
 }
 
-function pageUrl(page: number): string {
-  const path = page <= 1 ? "/alquiler" : `/alquiler/pagina${page}`;
+export interface InfoCasasPriceRange { min?: number; max?: number }
+
+/** Inclusive boundaries deliberately overlap: exact-boundary adverts must never fall in a gap. */
+export const INFOCASAS_PRICE_RANGES: readonly InfoCasasPriceRange[] = [
+  { max: 13_000 }, { min: 13_000, max: 25_000 }, { min: 25_000, max: 40_000 },
+  { min: 40_000, max: 70_000 }, { min: 70_000 },
+];
+
+export function infoCasasPageUrl(page: number, range: InfoCasasPriceRange = {}): string {
+  if (!Number.isInteger(page) || page < 1 || [range.min, range.max].some(value =>
+    value !== undefined && (!Number.isSafeInteger(value) || value <= 0)) ||
+    (range.min !== undefined && range.max !== undefined && range.min >= range.max)) {
+    throw new Error("invalid InfoCasas page/range");
+  }
+  const prices = `${range.min ? `/desde-${range.min}` : ""}${range.max ? `/hasta-${range.max}` : ""}`;
+  const path = `/alquiler${prices}${prices ? "/pesos" : ""}${page > 1 ? `/pagina${page}` : ""}`;
   return `${ORIGIN}${path}?order=${ORDER_NEWEST}`;
 }
 
@@ -156,11 +171,20 @@ export function extractNextData(html: string): unknown | null {
 
 export function readPage(payload: unknown): IcPage | null {
   const search = (payload as any)?.props?.pageProps?.fetchResult?.searchFast;
-  if (!search || !Array.isArray(search.data)) return null;
+  const pagination = search?.paginatorInfo;
+  if (!search || !Array.isArray(search.data) || !pagination ||
+    !Number.isInteger(pagination.currentPage) || pagination.currentPage < 1 ||
+    !Number.isInteger(pagination.lastPage) || pagination.lastPage < 0 ||
+    !Number.isInteger(pagination.total) || pagination.total < 0 ||
+    typeof pagination.hasMorePages !== "boolean" ||
+    (pagination.hasMorePages && pagination.currentPage >= pagination.lastPage) ||
+    (!pagination.hasMorePages && pagination.lastPage > pagination.currentPage)) return null;
   return {
     rows: search.data as IcRow[],
-    hasMorePages: Boolean(search.paginatorInfo?.hasMorePages),
-    total: Number(search.paginatorInfo?.total || 0),
+    currentPage: pagination.currentPage,
+    lastPage: pagination.lastPage,
+    hasMorePages: pagination.hasMorePages,
+    total: pagination.total,
   };
 }
 
@@ -263,59 +287,121 @@ export function toRawRental(row: IcRow): RawRental | null {
   };
 }
 
-export async function harvestInfoCasas(mode: "full" | "fast", usdUyu: number): Promise<RentalSourceResult> {
-  const maxPages =
-    mode === "fast"
-      ? Number(process.env.RENTALS_IC_FAST_PAGES || 10)
-      : Number(process.env.RENTALS_IC_MAX_PAGES || 900);
+export interface InfoCasasHarvestOptions {
+  maxPages?: number;
+  maxDurationMs?: number;
+  /** Read-only diagnostics can isolate a range; production uses all ranges. */
+  ranges?: readonly InfoCasasPriceRange[];
+  fetchPage?: (url: string) => Promise<string | null>;
+  onProgress?: (progress: { pages: number; uniqueRows: number; accepted: number; range: InfoCasasPriceRange }) => void;
+}
 
+function boundedInteger(value: unknown, fallback: number, max: number): number {
+  const n = Number(value);
+  return Number.isFinite(n) && n > 0 ? Math.min(max, Math.max(1, Math.floor(n))) : fallback;
+}
+
+/** A price-filter redirect must not quietly turn five small searches into five national samples. */
+function matchesPriceRange(payload: unknown, range: InfoCasasPriceRange): boolean {
+  if (range.min === undefined && range.max === undefined) return true;
+  const filters = (payload as any)?.props?.pageProps?.params?.filters;
+  return !!filters && Number(filters.operation_type_id?.value) === 2 &&
+    Number(filters.currencyID?.value) === 2 && Number(filters.order?.value) === 3 &&
+    (range.min === undefined ? !filters.minPrice : Number(filters.minPrice?.value) === range.min) &&
+    (range.max === undefined ? !filters.maxPrice : Number(filters.maxPrice?.value) === range.max);
+}
+
+export async function harvestInfoCasas(
+  mode: "full" | "fast", usdUyu: number, options: InfoCasasHarvestOptions = {}
+): Promise<RentalSourceResult> {
+  const maxPages = boundedInteger(options.maxPages ?? (mode === "fast"
+    ? process.env.RENTALS_IC_FAST_PAGES : process.env.RENTALS_IC_MAX_PAGES), mode === "fast" ? 10 : 900, 1800);
+  const maxDurationMs = boundedInteger(options.maxDurationMs ?? process.env.RENTALS_IC_MAX_DURATION_MS, 40 * 60_000, 60 * 60_000);
+  const started = Date.now();
+  const fetchPage = options.fetchPage || ((url: string) => fetchText(url, { timeoutMs: 40_000, retries: 1 }));
+  const queue = [...(options.ranges || (mode === "fast" ? [{}] : INFOCASAS_PRICE_RANGES))];
   const byId = new Map<string, RawRental>();
-  let pages = 0;
-  let total = 0;
-  let truncated = false;
-  let lastError = "";
+  const seenIds = new Set<string>();
+  const rejectedIds = new Set<string>();
+  let pages = 0, rawRows = 0, repeatedRows = 0, repeatedTails = 0, failedPages = 0, completedRanges = 0;
+  let truncated = false, missingIds = false;
+  const issues: string[] = [];
 
-  for (let page = 1; page <= maxPages; page++) {
-    const url = pageUrl(page);
-    if (!assertAllowed(new URL(url).pathname)) break;
-    let html = await fetchText(url, { timeoutMs: 40_000, retries: 1 });
-    if (!html) {
-      lastError = `sin respuesta en la página ${page}`;
-      // One bad page is a hiccup; two in a row means the host has had enough of us.
-      html = await fetchText(url, { timeoutMs: 40_000, retries: 0 });
-      if (!html) break;
+  for (let stream = 0; stream < queue.length; stream++) {
+    const range = queue[stream]!;
+    const rangeIds = new Set<string>();
+    let advertised = 0, noNewPages = 0;
+    for (let page = 1; ; page++) {
+      if (pages >= maxPages || Date.now() - started >= maxDurationMs) { truncated = true; break; }
+      const url = infoCasasPageUrl(page, range);
+      if (!assertAllowed(new URL(url).pathname)) throw new Error("disallowed InfoCasas path");
+      let html: string | null = null;
+      try { html = await fetchPage(url); } catch { /* Preserve prior data when one stream fails. */ }
+      pages++;
+      const payload = html ? extractNextData(html) : null;
+      const parsed = readPage(payload);
+      if (!parsed || parsed.currentPage !== page || !matchesPriceRange(payload, range) ||
+        (!parsed.rows.length && parsed.hasMorePages)) {
+        failedPages++;
+        issues.push(`búsqueda ${stream + 1}, página ${page}: respuesta incompleta o distinta`);
+        break;
+      }
+      advertised = Math.max(advertised, parsed.total);
+      // Keep each stream below the observed ~10,000-result deep-pagination ceiling. If the
+      // market grows, split this range before wasting hundreds of requests on its repeated tail.
+      if (mode === "full" && page === 1 && parsed.total > 9000 && queue.length < 32) {
+        const min = range.min || 0;
+        const mid = range.max ? Math.floor((min + range.max) / 2) : Math.max(13_000, min * 2);
+        if (mid > min && (range.max === undefined || mid < range.max)) {
+          queue.splice(stream + 1, 0, { ...range, max: mid }, { min: mid, ...(range.max ? { max: range.max } : {}) });
+          break;
+        }
+      }
+      let newIds = 0;
+      rawRows += parsed.rows.length;
+      for (const row of parsed.rows) {
+        if (!row || typeof row !== "object" || !/^\d+$/.test(String(row.id || ""))) continue;
+        const id = String(row.id);
+        if (!rangeIds.has(id)) { newIds++; rangeIds.add(id); }
+        if (seenIds.has(id)) repeatedRows++;
+        seenIds.add(id);
+        const listing = toRawRental(row);
+        if (!listing) { rejectedIds.add(id); continue; }
+        const priceUyu = listing.currency === "USD" ? listing.price * usdUyu : listing.price;
+        if (!isPlausibleRent(priceUyu, listing.propertyType, listing)) { rejectedIds.add(id); continue; }
+        rejectedIds.delete(id);
+        byId.set(listing.listingId, listing);
+      }
+      options.onProgress?.({ pages, uniqueRows: seenIds.size, accepted: byId.size, range });
+      noNewPages = newIds ? 0 : noNewPages + 1;
+      if (noNewPages >= 3 && parsed.hasMorePages) {
+        repeatedTails++;
+        issues.push(`búsqueda ${stream + 1}: cola repetida desde página ${page - 2}`);
+        break;
+      }
+      if (!parsed.hasMorePages) {
+        completedRanges++;
+        // Counting HTTP pages does not prove completeness. Stable boundaries can still omit
+        // IDs when the source changes order within one publication date.
+        if (rangeIds.size < advertised) missingIds = true;
+        break;
+      }
     }
-    const parsed = readPage(extractNextData(html) ?? {});
-    if (!parsed) {
-      lastError = `la página ${page} no trajo el payload de búsqueda`;
-      break;
-    }
-    pages++;
-    total = parsed.total || total;
-
-    for (const row of parsed.rows) {
-      const listing = toRawRental(row);
-      if (!listing) continue;
-      const priceUyu = listing.currency === "USD" ? listing.price * usdUyu : listing.price;
-      if (!isPlausibleRent(priceUyu, listing.propertyType)) continue;
-      byId.set(listing.listingId, listing);
-    }
-
-    if (!parsed.hasMorePages) break;
-    if (page === maxPages && parsed.hasMorePages) truncated = true;
+    if (truncated) break;
   }
-
-  const ok = pages > 0 && byId.size > 0;
-  // Why the unique count is well below `pages * 21`: the list is sorted by "más recientes" and it
-  // is LIVE — adverts published while we walk it push the rest down a page, so we see some of them
-  // twice. That is not a leak, and it is not a reason to stop sorting by newest: coverage
-  // accumulates across runs, because a row nobody re-published is kept (and only pruned after
-  // three weeks) instead of being deleted for missing one sweep.
-  const note = ok
-    ? `${pages} páginas, ${byId.size} avisos únicos de ${total || "?"} publicados` +
-      (truncated ? ` — CORTADO en el tope de ${maxPages} páginas` : "") +
-      (lastError ? ` — con reintentos: ${lastError}` : "")
-    : `sin datos utilizables${lastError ? `: ${lastError}` : ""}`;
-
-  return { key: "infocasas", ok, complete: mode === "full" && !truncated && !lastError, listings: [...byId.values()], note };
+  const ok = byId.size > 0;
+  // Even a fully walked, overlapping set of price filters is not a transactional snapshot:
+  // adverts can move between ranges while we read. Never expire unseen offers on this evidence.
+  const complete = false;
+  const note = `${pages} páginas, ${seenIds.size} IDs únicos leídos, ${byId.size} avisos aceptados; ` +
+    `${rejectedIds.size} descartados, ${repeatedRows} lecturas repetidas de ${rawRows}; ` +
+    `${completedRanges} búsquedas terminadas` +
+    (mode === "full" ? " por franjas de precio" : " — repaso de novedades") +
+    (truncated ? ` — CORTADO por presupuesto (${maxPages} páginas / ${Math.round(maxDurationMs / 60_000)} min)` : "") +
+    (missingIds ? " — el portal omitió IDs entre páginas" : "") +
+    (failedPages ? ` — ${failedPages} páginas fallidas` : "") +
+    (repeatedTails ? ` — ${repeatedTails} colas repetidas` : "") +
+    (issues.length ? `; ${issues.slice(0, 3).join("; ")}` : "") +
+    "; cobertura parcial: se conservan avisos no vistos";
+  return { key: "infocasas", ok, complete, listings: [...byId.values()], note };
 }
