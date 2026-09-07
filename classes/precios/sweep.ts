@@ -93,11 +93,18 @@ export function observationsFor(
   return { observations: [...best.values()], rejected };
 }
 
-/** Las filas de un artículo en todo el país, o null si el origen no contestó. */
+/**
+ * Las filas de un artículo en todo el país, o null si el origen no contestó.
+ *
+ * `Accept: text/plain` no es un descuido: los POST del SIPC devuelven **406**
+ * con `Accept: application/json` (medido). El cuerpo que llega es JSON igual;
+ * es la cabecera lo que el servidor mira, y es la que manda su propia SPA. Los
+ * dos GET del catálogo, en cambio, sí aceptan `application/json`.
+ */
 export async function sweepArticle(articleId: number): Promise<PrecioRawRow[] | null> {
   return fetchJson<PrecioRawRow[]>(`${SIPC_BASE}/compararArticulo`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", Accept: "text/plain" },
     body: JSON.stringify({ id_articulo: String(articleId), ...NATIONAL_BBOX }),
   });
 }

@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { normalizeStore } from "../../classes/precios/catalog";
-import { matchStore, observationsFor, storeIndex } from "../../classes/precios/sweep";
+import { matchStore, observationsFor, storeIndex, sweepArticle } from "../../classes/precios/sweep";
 
 const stores = [
   normalizeStore({
@@ -98,5 +98,33 @@ describe("observationsFor", () => {
     expect(observations).toHaveLength(1);
     expect(observations[0].storeId).toBeNull();
     expect(observations[0].lat).toBe(-33.5);
+  });
+});
+
+describe("sweepArticle", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("pide text/plain, porque el POST del SIPC devuelve 406 con application/json", () => {
+    // Medido contra el origen: los dos GET del catalogo aceptan
+    // application/json, pero compararArticulo contesta 406 con esa cabecera. El
+    // cuerpo que llega es JSON igual; es la cabecera lo que el servidor mira, y
+    // es la que manda su propia SPA. Sin este test, un "limpiemos las
+    // cabeceras" deja el barrido devolviendo null todos los dias sin fallar.
+    const calls: Array<{ url: string; init: any }> = [];
+    vi.stubGlobal("fetch", (url: string, init: any) => {
+      calls.push({ url, init });
+      return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve([]) } as any);
+    });
+
+    return sweepArticle(1).then(() => {
+      expect(calls).toHaveLength(1);
+      expect(calls[0].url).toContain("compararArticulo");
+      expect(calls[0].init.method).toBe("POST");
+      expect(calls[0].init.headers.Accept).toBe("text/plain");
+      const body = JSON.parse(calls[0].init.body);
+      expect(body).toMatchObject({ id_articulo: "1", v1: -58.5, v2: -35.2, v3: -53.0, v4: -30.0 });
+    });
   });
 });
