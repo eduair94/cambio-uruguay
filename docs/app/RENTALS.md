@@ -1,5 +1,27 @@
 # Directorio de alquileres (`/alquileres-uruguay`)
 
+## Auditoría de cobertura — 7 de septiembre de 2026
+
+La auditoría por ID y los límites de cada fuente están documentados en
+[`rental-coverage-2026-09-07.md`](../research/rental-coverage-2026-09-07.md).
+Mercado Libre ya no usa la categoría de apartamentos como si contuviera todos los alquileres:
+recorre categorías nativas separadas y subdivide las búsquedas grandes con los filtros que el
+portal devuelve. Cada página debe conservar categoría, filtros y offset; cada tarjeta debe
+corresponder a una categoría/dominio de alquiler aceptada. Los topes son globales además del
+límite por consulta. La cobertura sigue siendo parcial.
+
+Casasweb añade Chacras (`f`) a sus 19 departamentos y valida el formulario, la página y los IDs
+únicos antes de declarar el barrido completo. El País también valida paginador, IDs y total
+final. Marketplace añade Colonia del Sacramento después de corroborar tarjetas propias de
+esa ciudad; nunca se atribuye la ciudad solicitada a una sugerencia sin ubicación publicada.
+Las nuevas lecturas de Marketplace exigen evidencia de alquiler en el título: la consulta
+por sí sola no prueba la operación. Las notas distinguen límites, descartes y consultas fallidas.
+
+El último barrido guardado de alcance `full` se conserva en `rentalmetas`, clave
+`uy-rentals-last-full`, separado del estado horario público. La auditoría de sólo lectura es
+`npx ts-node scripts/oneoff/rentals_coverage_audit.ts`; permite cotejar una muestra con
+`--ids-file=muestra.json`. No modifica avisos ni fechas.
+
 ## Auditoría de InfoCasas y alquileres económicos — 6 de septiembre de 2026
 
 La búsqueda pública de casas/apartamentos hasta $13.000 permitió reproducir dos causas distintas de faltantes:
@@ -562,9 +584,11 @@ aislado que no importa el sync ni consulta DB.
 | `RENTALS_IC_MAX_PAGES` / `RENTALS_IC_FAST_PAGES` | 900 / 10 | presupuesto global de páginas de InfoCasas |
 | `RENTALS_IC_MAX_DURATION_MS` | 2400000 | presupuesto global de 40 minutos; un corte conserva avisos anteriores |
 | `RENTALS_ML_MAX_PAGES` / `RENTALS_ML_FAST_PAGES` | 120 / 12 | tope de páginas por consulta en ML |
+| `RENTALS_ML_REQUEST_BUDGET` | 1600 / 100 | solicitudes globales en full / fast, incluidos reintentos y enriquecimiento |
+| `RENTALS_ML_TIME_BUDGET_MS` | 2400000 / 240000 | tiempo global de ML en full / fast; conserva los avisos aceptados al cortar |
 | `RENTALS_CW_MAX_PAGES` | 60 | tope de páginas por departamento/tipo en Casasweb; la rápida toma una página por búsqueda |
 | `RENTALS_FB_ENABLED` | — | `0` apaga Marketplace |
-| `RENTALS_FB_LOCATIONS` | montevideo,ciudad-de-la-costa,maldonado,salto,paysandu | ciudades que se consultan en Marketplace |
+| `RENTALS_FB_LOCATIONS` | montevideo,ciudad-de-la-costa,maldonado,salto,paysandu,colonia-del-sacramento | anclas de búsqueda en Marketplace; las sugerencias pueden estar en otras zonas |
 | `RENTALS_HOST_GAP_MS` | 1200 | separación mínima entre dos requests al mismo host |
 | `RENTALS_LOCK_FILE` | `/tmp/cambio-uruguay-rentals-sync.lock` | archivo de bloqueo del wrapper Linux; ambos jobs deben compartir el mismo valor |
 | `RENTALS_FULL_LOCK_WAIT_SECONDS` | 3600 | espera máxima del barrido diario por el bloqueo; la corrida horaria nunca espera |

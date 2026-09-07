@@ -351,8 +351,6 @@ function searchForm(search: ElpaisSearch): FormData {
   return form;
 }
 
-const positiveInt = (value: unknown): number => (Number.isFinite(Number(value)) && Number(value) > 0 ? Math.floor(Number(value)) : 0);
-
 /**
  * ONE attempt, and no retry. This is the measured shape of the endpoint, not caution.
  *
@@ -422,6 +420,31 @@ async function openSearches(missing: readonly ElpaisSearch[]): Promise<{ opened:
 interface ResultsPage {
   rows: unknown[];
   totalPages: number;
+  total: number;
+}
+
+/** A missing, shifted or contradictory paginator never proves that a department ended. */
+export function parseElpaisResultsPage(value: unknown, requestedPage: number): ResultsPage | null {
+  if (!value || typeof value !== "object") return null;
+  const body = value as ChatResultsResponse;
+  if (!body.success || !Array.isArray(body.data?.results)) return null;
+  const pagination = body.data?.pagination;
+  const integer = (raw: unknown): number | null => {
+    if (typeof raw !== "number" && !(typeof raw === "string" && /^\d+$/.test(raw))) return null;
+    const number = Number(raw);
+    return Number.isSafeInteger(number) && number >= 0 ? number : null;
+  };
+  const page = integer(pagination?.page);
+  const total = integer(pagination?.total);
+  const totalPages = integer(pagination?.totalPages);
+  if (page !== requestedPage || total === null || totalPages === null) return null;
+  const rows = body.data.results;
+  if (total === 0) {
+    return requestedPage === 1 && rows.length === 0 && totalPages <= 1
+      ? { rows, total, totalPages } : null;
+  }
+  if (totalPages < requestedPage || rows.length === 0 || rows.length > total) return null;
+  return { rows, total, totalPages };
 }
 
 async function readPage(chatId: string, page: number, sort: string): Promise<ResultsPage | null> {
@@ -429,8 +452,7 @@ async function readPage(chatId: string, page: number, sort: string): Promise<Res
     `${ORIGIN}/api/chat/${chatId}/results?page=${page}&limit=${PAGE_SIZE}${sort}`,
     { headers: PORTAL_HEADERS, timeoutMs: 90_000 }
   );
-  if (!body?.success || !Array.isArray(body.data?.results)) return null;
-  return { rows: body.data!.results as unknown[], totalPages: positiveInt(body.data?.pagination?.totalPages) };
+  return parseElpaisResultsPage(body, page);
 }
 
 export async function harvestElpais(mode: "full" | "fast", usdUyu: number): Promise<RentalSourceResult> {
@@ -496,20 +518,32 @@ export async function harvestElpais(mode: "full" | "fast", usdUyu: number): Prom
     if (!first) continue;
     const chatId = chats.get(search.province)!;
     covered.push(search.province);
+    const seenIds = new Set<string>();
 
     for (let page = 1; page <= budget; page++) {
       const body = page === 1 ? first : await readPage(chatId, page, sort);
-      if (!body) {
+      if (!body || body.total !== first.total || body.totalPages !== first.totalPages) {
         failed++;
         incomplete = true;
         break;
       }
       pages++;
+      let repeatedOrInvalid = false;
       for (const row of body.rows) {
+        // Count raw source IDs, including adverts intentionally rejected by the rental parser.
+        // Repeated pages can advance their page number while returning the same adverts.
+        const id = row && typeof row === "object" ? String((row as Record<string, unknown>)._id || "") : "";
+        if (!/^[a-f0-9]{24}$/i.test(id) || seenIds.has(id)) repeatedOrInvalid = true;
+        if (id) seenIds.add(id);
         const listing = elpaisToRawRental(row);
         if (!listing) continue;
         if (!isPlausibleRent(listing.price * (listing.currency === "USD" ? usdUyu : 1), listing.propertyType)) continue;
         byId.set(listing.listingId, listing);
+      }
+      if (repeatedOrInvalid) {
+        failed++;
+        incomplete = true;
+        break;
       }
       if (!body.rows.length || page >= body.totalPages) {
         // Ran out of pages before the budget did: this department is fully read.
@@ -518,6 +552,9 @@ export async function harvestElpais(mode: "full" | "fast", usdUyu: number): Prom
       }
       if (page === budget) incomplete = true;
     }
+    // A shrinking/moving result set or an early empty last page is partial even when its page
+    // counter looks plausible. Retain accepted adverts; never expire unseen adverts on it.
+    if (mode === "full" && seenIds.size !== first.total) incomplete = true;
   }
 
   const partial = incomplete
@@ -528,7 +565,7 @@ export async function harvestElpais(mode: "full" | "fast", usdUyu: number): Prom
   return {
     key: "elpais", ok: byId.size > 0, complete: !incomplete, listings: [...byId.values()],
     note: `${pages} páginas, ${byId.size} avisos únicos; departamentos consultados: ${covered.length} de ${searches.length}`
-      + partial + (failed ? `; ${failed} búsquedas sin abrir` : "")
+      + partial + (failed ? `; ${failed} lecturas incompletas` : "")
       + (viaBrowser ? `; ${viaBrowser} abiertas con navegador` : ""),
   };
 }

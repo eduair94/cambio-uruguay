@@ -9,24 +9,16 @@ import { advertiserClassification, ownerDirectDeclaration } from "../advertiser"
 // search page renders it: `attributes_list` for "2 dormitorios | 1 baño | 40 m² cubiertos" and
 // `location` for "Av. Garzón 1975 Bis, Colón, Montevideo".
 import { fetchJson } from "../net";
-import { inferPropertyType, isPlausibleRent, looksLikeRentalAdvert, parseAttributes, parseLocationLine } from "../normalize";
+import { isPlausibleRent, looksLikeRentalAdvert, parseAttributes, parseLocationLine } from "../normalize";
 import type { RawRental, RentalCurrency } from "../types";
 import type { RentalSourceResult } from "./types";
+import {
+  ML_RENTAL_CATEGORIES, ML_PAGE_SIZE as PAGE_SIZE, ML_OFFSET_CEILING,
+  mlBoundedNumber, mlCount, mlPageMatches, mlParams, mlPartitions, mlPartitionRemainder,
+  type MLFilters, type MLSearchEvidence,
+} from "./mercadolibreSearch";
 
 const API_BASE = (process.env.RENTALS_ML_API || "http://104.234.204.107:9656/mercadolibre").replace(/\/+$/, "");
-
-/** "Inmuebles > Alquiler" on MLU. Every rental advert lives under it. */
-const RENT_CATEGORY = "MLU1473";
-
-/** ML's search page returns 20 cards per request whatever `limit` says. */
-const PAGE_SIZE = 20;
-
-/**
- * The bridge requires a text query, and one query does not see the whole category: `alquiler`
- * misses adverts whose text never uses the word. Several broad queries inside the rental category,
- * deduped by item id, cover far more than any single one.
- */
-const QUERIES = ["alquiler", "apartamento", "casa", "habitacion", "monoambiente", "local", "oficina"];
 
 interface Polycard {
   metadata?: {
@@ -65,7 +57,8 @@ const componentOf = (card: Polycard, type: string) => card.components?.find((com
 
 export function toRawRental(card: Polycard, observedAt = new Date().toISOString()): RawRental | null {
   const id = String(card.metadata?.id || "").trim();
-  if (!id) return null;
+  const category = ML_RENTAL_CATEGORIES.find(row => row.id === card.metadata?.category_id && row.domain === card.metadata?.domain_id);
+  if (!/^MLU\d+$/.test(id) || !category) return null;
 
   const params = new URLSearchParams(String(card.metadata?.url_params || "").replace(/^\?/, ""));
   const title = String(componentOf(card, "title")?.title?.text || params.get("title") || "").trim();
@@ -102,7 +95,7 @@ export function toRawRental(card: Polycard, observedAt = new Date().toISOString(
     ownerDirect: ownerDirectDeclaration({ title }, permalink, observedAt) ?? undefined,
     image: String(params.get("picture") || params.get("thumbnail") || "").trim() || null,
     publishedAt: null,
-    propertyType: inferPropertyType(title, card.metadata?.domain_id || null),
+    propertyType: category.propertyType,
     department: location.department,
     neighborhood: location.neighborhood,
     address: location.address,
@@ -120,213 +113,176 @@ export function toRawRental(card: Polycard, observedAt = new Date().toISOString(
   };
 }
 
-async function searchPage(query: string, offset: number, since?: string): Promise<Polycard[] | null> {
-  const params = new URLSearchParams({
-    country: "UY",
-    category: RENT_CATEGORY,
-    q: query,
-    offset: String(offset),
-    limit: String(PAGE_SIZE),
-    raw: "true",
-  });
-  if (since) params.set("since", since);
-  const payload = await fetchJson<unknown>(`${API_BASE}/search?${params}`, {
-    timeoutMs: 45_000,
-    retries: 2,
-    // Deliberately THROTTLED even though the bridge is ours: a full sweep is ~800 requests, and
-    // every one of them is a request the bridge makes to MercadoLibre. The chair harvester can
-    // afford `unthrottled` because it asks for 36 pages; this one would be a burst.
-  });
-  if (!payload) return null;
-  return collectPolycards((payload as any).components ?? payload);
+interface SearchResult extends MLSearchEvidence { cards: Polycard[] }
+interface SearchTask {
+  filters: MLFilters;
+  offset: number;
+  depth: number;
+  seen: Set<string>;
+  parentTotal?: number;
+  fallback?: boolean;
 }
 
-
-/**
- * El valor del filtro "Admite mascotas" de MercadoLibre.
- *
- * Medido el 2026-09-04 contra el puente: en la categoria de alquiler, `IS_SUITABLE_FOR_PETS=242085`
- * baja `paging.total` de 15.456 a 6.349. El filtro tiene UN SOLO valor: no existe el bucket
- * contrario, asi que de aca sale un `true` o nada — nunca un `false`.
- *
- * El dato NO viene por aviso: en la respuesta compacta los items traen `attributes: []`, y en el
- * crudo las cadenas "mascota" y "PET" aparecen cero veces. Por eso hace falta esta segunda pasada.
- */
-const PETS_FILTER_ID = "IS_SUITABLE_FOR_PETS";
-const PETS_FILTER_VALUE = "242085";
-
-/**
- * MercadoLibre deja de paginar a los ~4.000 y NO avisa: vuelve a servir la primera pagina.
- *
- * Medido: los offsets 4.000, 4.500, 5.000 y 8.000 devuelven los MISMOS 20 ids que el offset 0. O
- * sea que `cards.length < PAGE_SIZE` nunca corta el bucle, y sin este tope la pasada giraria
- * releyendo la pagina uno hasta agotar `maxPages`.
- */
-const ML_OFFSET_CEILING = 4_000;
-
-interface SearchResult {
-  cards: Polycard[];
-  total: number | null;
-}
-
-async function searchRaw(params: URLSearchParams): Promise<SearchResult | null> {
-  const payload = await fetchJson<unknown>(`${API_BASE}/search?${params}`, { timeoutMs: 45_000, retries: 2 });
-  if (!payload) return null;
-  const paging = (payload as { paging?: { total?: unknown } }).paging;
-  const total = Number(paging?.total);
-  return {
-    cards: collectPolycards((payload as any).components ?? payload),
-    total: Number.isFinite(total) ? total : null,
-  };
-}
-
-function filterParams(query: string, offset: number, filter?: [string, string]): URLSearchParams {
-  const params = new URLSearchParams({
-    country: "UY",
-    category: RENT_CATEGORY,
-    q: query,
-    offset: String(offset),
-    limit: String(PAGE_SIZE),
-    raw: "true",
-  });
-  if (filter) params.set(filter[0], filter[1]);
-  return params;
-}
-
-/**
- * Recorre una busqueda FILTRADA de MercadoLibre y aplica `apply` a cada aviso ya cosechado.
- *
- * LA GUARDA QUE JUSTIFICA TODO ESTO: antes de tocar nada comprueba que el filtro se APLICO,
- * comparando el total filtrado contra el sin filtrar de la misma consulta. No es paranoia: medido
- * el 2026-09-04, un valor INVENTADO en `seller_type` devuelve el total COMPLETO (15.416), o sea que
- * el filtro se ignora en silencio. Sin esta comparacion marcariamos los 15.416 avisos de la
- * categoria. Tampoco alcanza con buscar el nombre del filtro en la respuesta: ML tambien lista los
- * filtros DISPONIBLES, asi que aparece igual sin aplicar.
- *
- * Ante cualquier duda no marca nada: el precio de no marcar es que un aviso quede como "no se
- * sabe"; el de marcar mal es publicar algo falso.
- */
-async function sweepFiltered(
-  filter: [string, string],
-  label: string,
-  byId: Map<string, RawRental>,
-  maxPages: number,
-  apply: (listing: RawRental) => void,
-): Promise<number> {
-  const control = await searchRaw(filterParams("alquiler", 0));
-  const filtered = await searchRaw(filterParams("alquiler", 0, filter));
-  if (!control?.total || !filtered?.total) return 0;
-  if (filtered.total >= control.total) {
-    console.warn(
-      `[rentals] ML: el filtro de ${label} no se aplico (total ${filtered.total} >= ${control.total}); no se marca nada`,
-    );
-    return 0;
-  }
-
-  const seen = new Set<string>();
-  let marked = 0;
-  for (let page = 0; page < maxPages; page++) {
-    const offset = page * PAGE_SIZE;
-    if (offset >= ML_OFFSET_CEILING) break;
-    const result = page === 0 ? filtered : await searchRaw(filterParams("alquiler", offset, filter));
-    if (!result || result.cards.length === 0) break;
-
-    let fresh = 0;
-    for (const card of result.cards) {
-      const listing = toRawRental(card);
-      if (!listing) continue;
-      if (seen.has(listing.listingId)) continue;
-      seen.add(listing.listingId);
-      fresh++;
-      const known = byId.get(listing.listingId);
-      if (known) {
-        apply(known);
-        marked++;
-      }
-    }
-    // Cero ids nuevos = ML volvio a servir una pagina ya vista.
-    if (fresh === 0) break;
-    if (result.cards.length < PAGE_SIZE) break;
-  }
-  return marked;
-}
-
-/**
- * Quien alquila SIN inmobiliaria de por medio.
- *
- * Medido el 2026-09-04: `seller_type` parte la categoria en private_seller 944 y
- * real_estate_agency 14.472, que suman EXACTO el total sin filtrar — es una particion exhaustiva.
- * El directorio venia detectando 52 "dueno directo" sobre 14.744 propiedades (0,35 %) porque este
- * parser ponia `desconocido` en todo y el dato solo salia de InfoCasas.
- *
- * Importa mas que un chip: alquilar al dueno evita la comision de la inmobiliaria, que en Uruguay
- * es un mes de alquiler mas IVA.
- *
- * Se marca SOLO el lado particular. El otro lado se podria derivar —la particion es exhaustiva—
- * pero solo para los avisos que la pasada llego a ver, y el tope de 4.000 deja fuera a la mayoria
- * de los 14.472: decir "inmobiliaria" por no haberlo visto seria inventar.
- */
-const PRIVATE_SELLER_FILTER: [string, string] = ["seller_type", "private_seller"];
-
+/** A bounded, interleaved frontier: apartments cannot spend the whole run before houses are read.
+ * Larger slices are partitioned by the portal's own location/price facets, never by invented
+ * state IDs or seven equivalent words inside the apartment-only category. */
 export async function harvestMercadoLibre(mode: "full" | "fast", usdUyu: number): Promise<RentalSourceResult> {
-  const maxPages =
-    mode === "fast" ? Number(process.env.RENTALS_ML_FAST_PAGES || 12) : Number(process.env.RENTALS_ML_MAX_PAGES || 120);
-  // Fast runs read the same category filtered to today's publications: ~500 adverts, 25 pages.
-  const since = mode === "fast" ? "today" : undefined;
-  const queries = mode === "fast" ? ["alquiler"] : QUERIES;
-
+  const full = mode === "full";
+  const maxPages = mlBoundedNumber(
+    full ? process.env.RENTALS_ML_MAX_PAGES : process.env.RENTALS_ML_FAST_PAGES,
+    full ? 120 : 12, 1, ML_OFFSET_CEILING / PAGE_SIZE,
+  );
+  const requestLimit = mlBoundedNumber(process.env.RENTALS_ML_REQUEST_BUDGET, full ? 1600 : 100, 1, 3000);
+  const timeLimit = mlBoundedNumber(process.env.RENTALS_ML_TIME_BUDGET_MS, full ? 2_400_000 : 240_000, 1000, 3_600_000);
+  // Enrichment has a small reservation, and cannot consume the primary coverage budget.
+  const reserve = full ? Math.min(100, Math.floor(requestLimit / 10)) : 0;
+  const primaryLimit = requestLimit - reserve;
+  const started = Date.now();
   const byId = new Map<string, RawRental>();
+  const categoryTotals = new Map<string, number>();
+  const cuts = { failed: 0, filters: 0, repeated: 0, pages: 0, budget: 0, unpartitioned: 0, residual: 0, shortUnknown: 0, empty: 0 };
+  let requests = 0;
   let pages = 0;
-  let reachable = false;
   let rejected = 0;
+  let duplicates = 0;
+  let reachable = false;
+  const pets = new Set<string>();
+  const particulars = new Set<string>();
 
-  for (const query of queries) {
-    for (let page = 0; page < maxPages; page++) {
-      const cards = await searchPage(query, page * PAGE_SIZE, since);
-      if (cards === null) break;
-      pages++;
-      if (cards.length) reachable = true;
-
-      for (const card of cards) {
-        const listing = toRawRental(card);
-        if (!listing) {
-          rejected++;
-          continue;
-        }
-        const priceUyu = listing.currency === "USD" ? listing.price * usdUyu : listing.price;
-        if (!isPlausibleRent(priceUyu, listing.propertyType)) {
-          rejected++;
-          continue;
-        }
-        byId.set(listing.listingId, listing);
+  const canRead = (limit: number) => requests < limit && Date.now() - started < timeLimit;
+  async function read(filters: MLFilters, offset: number, limit: number): Promise<SearchResult | null> {
+    for (let attempt = 0; attempt < 2 && canRead(limit); attempt++) {
+      requests++;
+      const payload = await fetchJson<MLSearchEvidence & { components?: unknown }>(
+        `${API_BASE}/search?${mlParams(filters, offset)}`,
+        { timeoutMs: Math.max(1, Math.min(45_000, timeLimit - (Date.now() - started))), retries: 0 },
+      );
+      if (payload && typeof payload === "object") {
+        pages++;
+        return { ...payload, cards: collectPolycards(payload.components ?? payload) };
       }
+    }
+    cuts.failed++;
+    return null;
+  }
 
-      if (cards.length < PAGE_SIZE) break;
+  function accept(cards: Polycard[], category: string): void {
+    for (const card of cards) {
+      const listing = card.metadata?.category_id === category ? toRawRental(card) : null;
+      if (!listing) { rejected++; continue; }
+      const priceUyu = listing.currency === "USD" ? listing.price * usdUyu : listing.price;
+      // Search cards do not provide descriptions. The live 3–8k sample includes annual luxury
+      // titles with suspicious UYU prices, so it does NOT justify lowering this source's floor.
+      if (!isPlausibleRent(priceUyu, listing.propertyType)) { rejected++; continue; }
+      if (byId.has(listing.listingId)) { duplicates++; continue; }
+      byId.set(listing.listingId, listing);
     }
   }
 
-  // Solo en la corrida COMPLETA: la rapida mira lo recien publicado y esta pasada es una consulta
-  // aparte que no comparte ese recorte, asi que no le corresponde.
-  let pets = 0;
-  let particulares = 0;
-  if (mode === "full" && byId.size > 0) {
-    pets = await sweepFiltered([PETS_FILTER_ID, PETS_FILTER_VALUE], "mascotas", byId, maxPages, (listing) => {
-      listing.petsAllowed = true;
-    });
-    particulares = await sweepFiltered(PRIVATE_SELLER_FILTER, "vendedor particular", byId, maxPages, (listing) => {
-      listing.sellerType = "particular";
-      listing.sellerName = "Particular";
-    });
+  async function walk(initial: SearchTask[], limit: number, enrichment?: "pets" | "particular"): Promise<void> {
+    const queue = [...initial];
+    const scheduled = new Set(queue.map(task => JSON.stringify(task.filters)));
+    while (queue.length && canRead(limit)) {
+      const task = queue.shift()!;
+      const result = await read(task.filters, task.offset, limit);
+      if (!result) continue;
+      // The upstream can silently reset an offset or discard a category/invalid facet.
+      // In either case the response is not evidence for this slice (including pets/owner).
+      if (!mlPageMatches(result, task.filters, task.offset)) { cuts.filters++; continue; }
+      reachable = true;
+      const total = mlCount(result.paging?.total);
+      if (task.offset === 0 && task.parentTotal !== undefined && (total === null || total >= task.parentTotal)) {
+        cuts.filters++;
+        continue;
+      }
+      if (!enrichment && task.depth === 0 && task.offset === 0 && total !== null) {
+        categoryTotals.set(task.filters.category!, total);
+      }
+      if (total === 0) {
+        if (result.cards.length) cuts.filters++;
+        continue;
+      }
+      if (total !== null && result.cards.length > Math.max(0, total - task.offset)) {
+        cuts.filters++;
+        // Recommendations can remain in an empty/nearly exhausted search layout. Native rental
+        // cards may still extend primary coverage, but cannot prove pets/private for this filter.
+        if (enrichment) continue;
+      }
+      if (!result.cards.length) {
+        if (total === null || total > task.offset) cuts.empty++;
+        continue;
+      }
+      let fresh = 0;
+      for (const card of result.cards) {
+        const id = String(card.metadata?.id || "");
+        if (id && !task.seen.has(id)) { task.seen.add(id); fresh++; }
+      }
+      // Count raw IDs, not accepted rentals: a page of rejected prices must not hide the next page.
+      if (!fresh) { cuts.repeated++; continue; }
+      if (!enrichment) accept(result.cards, task.filters.category!);
+      else for (const card of result.cards) {
+        if (card.metadata?.category_id !== task.filters.category) continue;
+        const listing = toRawRental(card);
+        const known = listing && byId.get(listing.listingId);
+        if (!known) continue;
+        if (enrichment === "pets") { known.petsAllowed = true; pets.add(known.listingId); }
+        else if (known.sellerType !== "inmobiliaria") {
+          known.sellerType = "particular";
+          known.sellerName = "Particular";
+          particulars.add(known.listingId);
+        }
+      }
+      const leafLimit = Math.min(maxPages * PAGE_SIZE, ML_OFFSET_CEILING);
+      if (full && !task.offset && !task.fallback && total !== null && total > leafLimit && task.depth < 6) {
+        const children = mlPartitions(result, task.filters).filter(filters => !scheduled.has(JSON.stringify(filters)));
+        if (children.length) {
+          for (const filters of children) {
+            scheduled.add(JSON.stringify(filters));
+            queue.push({ filters, offset: 0, depth: task.depth + 1, seen: new Set(), parentTotal: total });
+          }
+          if (mlPartitionRemainder(result, task.filters, children) !== 0) {
+            cuts.residual++;
+            // Retain the parent's initial cards and sample up to ten further pages for adverts
+            // omitted from facets. It shares the global budget and never displaces a whole slice.
+            if (PAGE_SIZE < leafLimit) queue.push({ ...task, offset: PAGE_SIZE, fallback: true });
+            else cuts.pages++;
+          }
+          continue;
+        }
+        cuts.unpartitioned++;
+      }
+      const next = task.offset + PAGE_SIZE;
+      if (total !== null && next >= total) continue;
+      if (total === null && result.cards.length < PAGE_SIZE) { cuts.shortUnknown++; continue; }
+      if (next >= ML_OFFSET_CEILING || next >= (task.fallback ? Math.min(maxPages, 11) : maxPages) * PAGE_SIZE) { cuts.pages++; continue; }
+      queue.push({ ...task, offset: next });
+    }
+    cuts.budget += queue.length;
   }
 
+  const roots = ML_RENTAL_CATEGORIES.map(category => ({
+    filters: { category: category.id, ...(full ? {} : { since: "today" }) } as MLFilters,
+    offset: 0, depth: 0, seen: new Set<string>(),
+  }));
+  await walk(roots, primaryLimit);
+  if (full && byId.size && canRead(requestLimit)) {
+    // Both effective filter presence AND a reduced total are required. Never infer the opposite
+    // side from absence, and a private seller flag alone does not declare ownerDirect.
+    const enrichedRoots = (id: string, value: string) => roots.filter(root => categoryTotals.get(root.filters.category!)! > 0)
+      .map(root => ({ ...root, filters: { ...root.filters, [id]: value }, seen: new Set<string>(),
+        parentTotal: categoryTotals.get(root.filters.category!) }));
+    const enrichmentEnd = Math.min(requestLimit, requests + reserve);
+    const middle = Math.min(enrichmentEnd, requests + Math.ceil(reserve / 2));
+    await walk(enrichedRoots("seller_type", "private_seller"), middle, "particular");
+    await walk(enrichedRoots("IS_SUITABLE_FOR_PETS", "242085"), enrichmentEnd, "pets");
+  }
+  const totals = ML_RENTAL_CATEGORIES.map(category => `${category.name}:${categoryTotals.get(category.id) ?? "?"}`).join(",");
+  const detail = `categorías[${totals}]; cortes[falla:${cuts.failed},filtro:${cuts.filters},repetida:${cuts.repeated},tope:${cuts.pages},presupuesto:${cuts.budget},sinPartición:${cuts.unpartitioned},residual:${cuts.residual},totalDesconocido:${cuts.shortUnknown},vacía:${cuts.empty}]`;
+  console.log(`[rentals] ML ${mode}: ${pages} páginas/${requests} solicitudes, ${byId.size} IDs, ${duplicates} repetidos, ${detail}`);
   return {
-    key: "mercadolibre",
-    // Text searches, per-query page caps and the upstream offset limit cannot prove absence.
-    complete: false,
+    key: "mercadolibre", complete: false,
     ok: reachable && byId.size > 0,
     listings: [...byId.values()],
-    note: reachable
-      ? `${pages} páginas, ${byId.size} avisos, ${rejected} descartados, ${pets} admiten mascotas, ${particulares} de particular`
-      : `sin respuesta de ${API_BASE}`,
+    note: `${pages} páginas, ${byId.size} avisos, ${rejected} descartados, ${pets.size} admiten mascotas, ${particulars.size} de particular; cobertura parcial; ${detail}`,
   };
 }

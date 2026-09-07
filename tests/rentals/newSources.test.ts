@@ -107,7 +107,7 @@ describe("Inmuebles El País's offline public-page samples", () => {
       const page = Number(new URL(url).searchParams.get("page"));
       if (plan.pageFails && page >= plan.pageFails) return null;
       const rows = Array.from({ length: plan.rowsPerPage ?? 2 }, (_, index) => elpaisRow(`${chats}${page}${index}`));
-      return { success: true, data: { results: rows, pagination: { page, totalPages: plan.totalPages ?? 1 } } } as any;
+      return { success: true, data: { results: rows, pagination: { page, total: (plan.rowsPerPage ?? 2) * (plan.totalPages ?? 1), totalPages: plan.totalPages ?? 1 } } } as any;
     });
     return { inits, urls };
   };
@@ -218,7 +218,7 @@ describe("Inmuebles El País's offline public-page samples", () => {
 
     // The browser found nothing either: every department is a hole in the sweep, not an empty one.
     expect(run).toMatchObject({ ok: false, complete: false, listings: [] });
-    expect(run.note).toContain("19 búsquedas sin abrir");
+    expect(run.note).toContain("19 lecturas incompletas");
     expect(run.note).toContain("departamentos consultados: 0 de 19");
     expect([...sourcesAllowingExpiry([run], "full")]).toEqual([]);
   });
@@ -235,7 +235,7 @@ describe("Inmuebles El País's offline public-page samples", () => {
     expect(run.listings.length).toBeGreaterThan(0);
     expect(run.note).toContain("10 abiertas con navegador");
     expect(run.note).toContain("departamentos consultados: 10 de 19");
-    expect(run.note).toContain("9 búsquedas sin abrir");
+    expect(run.note).toContain("9 lecturas incompletas");
     // Nine departments never opened, so nothing may expire on this run's evidence.
     expect(run.complete).toBe(false);
     expect([...sourcesAllowingExpiry([run], "full")]).toEqual([]);
@@ -301,7 +301,7 @@ describe("Inmuebles El País's offline public-page samples", () => {
         success: true,
         data: {
           results: [elpaisRow("4", { price: { amount: 120_000_000, currency: "UYU" } }), elpaisRow("5")],
-          pagination: { page: 1, totalPages: 1 },
+          pagination: { page: 1, total: 2, totalPages: 1 },
         },
       } as any;
     });

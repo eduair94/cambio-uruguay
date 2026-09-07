@@ -18,6 +18,7 @@
 //   * it refuses to publish a collapsed directory over a healthy one;
 //   * every price is stored in pesos with the run's rate, so two portals can be compared at all.
 import dotenv from "dotenv";
+import fs from "fs";
 dotenv.config();
 dotenv.config({ path: "app/.env" });
 
@@ -46,7 +47,10 @@ const STALE_OFFER_DAYS = Number(process.env.RENTALS_STALE_OFFER_DAYS || 4);
 async function main(): Promise<void> {
   // The app's own env calls this MONGO_URI; the root bridge insists on APP_MONGO_URI so a job can
   // never write the backend database by accident.
-  process.env.APP_MONGO_URI = process.env.APP_MONGO_URI || process.env.MONGO_URI;
+  // A root MONGO_URI must never masquerade as the app's URI when dotenv preserves an existing
+  // environment variable. Only use the fallback read explicitly from the app's own env file.
+  const appEnv = fs.existsSync("app/.env") ? dotenv.parse(fs.readFileSync("app/.env")) : {};
+  process.env.APP_MONGO_URI = process.env.APP_MONGO_URI || appEnv.APP_MONGO_URI || appEnv.MONGO_URI;
   if (!appDbConfigured()) {
     console.error("[rentals] APP_MONGO_URI/MONGO_URI is missing — refusing to write the wrong DB");
     process.exit(1);
@@ -141,6 +145,7 @@ async function main(): Promise<void> {
     sources: harvest.runs.map((run) => ({
       key: run.key,
       ok: run.ok,
+      complete: mode === "full" && run.complete === true,
       listings: run.listings.length,
       note: run.note,
       ...(run.access ? { access: run.access } : {}),

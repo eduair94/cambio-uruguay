@@ -9,7 +9,7 @@ import type { RentalSourceResult } from "./types";
 
 const ORIGIN = "https://casasweb.com";
 // Values from the public search form: all 19 departments, housing and commercial rentals.
-const PROPERTY_TYPES = ["a", "c", "o", "l", "d", "i", "t", "h", "b", "g"];
+const PROPERTY_TYPES = ["a", "c", "f", "o", "l", "d", "i", "t", "h", "b", "g"];
 const clean = (text: string): string => text.replace(/\s+/g, " ").trim();
 
 export function casaswebSearchUrl(department: number, propertyType: string): string {
@@ -18,17 +18,29 @@ export function casaswebSearchUrl(department: number, propertyType: string): str
 
 export interface CasaswebPage {
   listings: RawRental[];
-  /** null when the document is a challenge/error page rather than a search response. */
   total: number;
   nextBody: string | null;
   cardCount: number;
+  /** Includes excluded seasonal/reserved cards: coverage and eligibility are different checks. */
+  advertIds: string[];
+  department: number | null;
+  propertyType: string | null;
+  currentPage: number | null;
+}
+
+function currentPage($: cheerio.CheerioAPI): number | null {
+  const selected = $("input[type=submit][id*=btnP].btn-secondary");
+  // The public form leaves every button outlined on the first page, including one-page searches.
+  if (!selected.length) return 1;
+  if (selected.length !== 1) return null;
+  const page = Number(selected.val());
+  return Number.isSafeInteger(page) && page > 0 ? page : null;
 }
 
 /** Read the NEXT numbered submit button, preserving server-issued form state verbatim. */
-function nextPageBody($: cheerio.CheerioAPI): string | null {
+function nextPageBody($: cheerio.CheerioAPI, page: number | null): string | null {
+  if (page === null) return null;
   const buttons = $("input[type=submit][id*=btnP]").toArray();
-  const current = buttons.find((node) => $(node).hasClass("btn-secondary"));
-  const page = current ? Number($(current).val()) : 1;
   const next = buttons.find((node) => Number($(node).val()) === page + 1);
   if (!next) return null;
   const params = new URLSearchParams();
@@ -50,7 +62,13 @@ export function parseCasaswebPage(html: string, observedAt = new Date().toISOStr
   const $ = cheerio.load(html);
   const count = clean($("body").text()).match(/([\d.,]+)\s+Resultados\b/i);
   if (!count || !$("select[id$=drpNegocio] option[value=A][selected]").length) return null;
+  const total = Number(count[1]!.replace(/[.,]/g, ""));
+  if (!Number.isSafeInteger(total) || total < 0) return null;
+  const department = Number($("select[id$=drpDepto]").val());
+  const propertyType = $("select[id$=drpTipo]").val();
+  const page = currentPage($);
   const listings: RawRental[] = [];
+  const advertIds: string[] = [];
   let cardCount = 0;
   $("a[href]").each((_, node) => {
     const card = $(node);
@@ -60,6 +78,9 @@ export function parseCasaswebPage(html: string, observedAt = new Date().toISOStr
     const title = clean(card.find(".item-title h3").text());
     const location = card.find(".tipo-propiedad-zona small");
     const id = clean(location.eq(1).find("strong").text());
+    // The portal also carries native external-reference IDs such as TKA8362149.
+    if (!id) return;
+    advertIds.push(`casasweb:${id}`);
     const declaredType = clean(location.eq(0).find("b").clone().children().remove().end().text()).replace(/\s*-\s*$/, "");
     const neighborhood = clean(location.eq(0).clone().find("b").remove().end().text());
     const department = canonicalDepartment(clean(location.eq(1).clone().find("strong").remove().end().text()));
@@ -97,7 +118,12 @@ export function parseCasaswebPage(html: string, observedAt = new Date().toISOStr
       furnished: null, petsAllowed: null, guarantees: [],
     });
   });
-  return { listings, total: Number(count[1]!.replace(/[.,]/g, "")), nextBody: nextPageBody($), cardCount };
+  return {
+    listings, total, nextBody: nextPageBody($, page), cardCount, advertIds,
+    department: Number.isSafeInteger(department) && department >= 1 && department <= 19 ? department : null,
+    propertyType: typeof propertyType === "string" && propertyType ? propertyType : null,
+    currentPage: page,
+  };
 }
 
 export async function harvestCasasweb(mode: "full" | "fast", usdUyu: number): Promise<RentalSourceResult> {
@@ -116,30 +142,34 @@ export async function harvestCasasweb(mode: "full" | "fast", usdUyu: number): Pr
     for (const type of types) {
       const url = casaswebSearchUrl(department, type);
       let body: string | null = null;
-      let cardsSeen = 0;
+      let initialTotal: number | null = null;
+      const advertIds = new Set<string>();
       const seen = new Set<string>();
       for (let page = 1; page <= pageBudget; page++) {
         const html = await fetchText(url, body === null ? { retries: 0 } : {
           method: "POST", body, headers: { "content-type": "application/x-www-form-urlencoded" }, retries: 0,
         });
         const parsed = html ? parseCasaswebPage(html) : null;
-        if (!parsed) {
+        if (!parsed || parsed.department !== department || parsed.propertyType !== type || parsed.currentPage !== page) {
           failed++; incomplete = true;
           if (++consecutiveFailures >= 3) break sweep;
           break;
         }
         consecutiveFailures = 0;
         pages++;
-        cardsSeen += parsed.cardCount;
-        const fingerprint = parsed.listings.map((listing) => listing.listingId).join("|");
+        if (initialTotal === null) initialTotal = parsed.total;
+        // A live search is not a snapshot. Do not expire absent adverts if its inventory changes.
+        if (parsed.total !== initialTotal || parsed.advertIds.length !== parsed.cardCount) incomplete = true;
+        const fingerprint = [...new Set(parsed.advertIds)].sort().join("|");
         if (fingerprint && seen.has(fingerprint)) { incomplete = true; break; }
         seen.add(fingerprint);
+        for (const id of parsed.advertIds) advertIds.add(id);
         for (const row of parsed.listings) {
           if (isPlausibleRent(row.price * (row.currency === "USD" ? usdUyu : 1), row.propertyType)) byId.set(row.listingId, row);
         }
         body = parsed.nextBody;
         if (!body) {
-          if (cardsSeen < parsed.total) incomplete = true;
+          if (advertIds.size !== parsed.total) incomplete = true;
           break;
         }
         if (page === pageBudget) incomplete = true;

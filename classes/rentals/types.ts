@@ -315,6 +315,8 @@ export interface RawRental extends RentalAdvertiserFields {
 export interface RentalSourceRun {
   key: RentalSource;
   ok: boolean;
+  /** Finished the source's entire search; partial runs cannot prove an unseen advert expired. */
+  complete?: boolean;
   /** An external directory without an authorized automated integration, not a transient outage. */
   access?: "external_only";
   listings: number;
@@ -325,7 +327,7 @@ export interface RentalSourceRun {
 export interface RentalMeta {
   key: string;
   generatedAt: string;
-  /** `full` walked every page; `fast` only read what the portals sort as newest. */
+  /** Requested scope, not proof of completeness; consult each source's `complete` flag. */
   mode: "full" | "fast";
   durationMs: number;
   usdUyu: number;
@@ -337,3 +339,5 @@ export interface RentalMeta {
 }
 
 export const RENTAL_META_KEY = "uy-rentals";
+/** Retain the daily sweep when the next hourly update replaces the public run summary. */
+export const RENTAL_FULL_META_KEY = "uy-rentals-last-full";

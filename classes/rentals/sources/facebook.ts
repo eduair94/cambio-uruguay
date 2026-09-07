@@ -12,7 +12,7 @@
 // yesterday's Marketplace rows instead of declaring them gone.
 import { fetchJson } from "../net";
 import {
-  canonicalDepartment,
+  flatten,
   inferPropertyType,
   isPlausibleRent,
   looksLikeRentalAdvert,
@@ -29,8 +29,10 @@ const API_BASE = (process.env.RENTALS_FB_API || "http://104.234.204.107:9657/fac
 
 const QUERIES = ["alquiler apartamento", "alquiler casa", "alquilo apartamento", "alquiler habitacion"];
 
-/** Marketplace searches by city, so the list of cities IS the coverage. */
-const LOCATIONS = (process.env.RENTALS_FB_LOCATIONS || "montevideo,ciudad-de-la-costa,maldonado,salto,paysandu")
+/** Search anchors, not geographic coverage: Marketplace can also return suggested distant ads.
+ * Colonia was corroborated 2026-09-07 by 11 cards explicitly located in Colonia del Sacramento.
+ */
+const LOCATIONS = (process.env.RENTALS_FB_LOCATIONS || "montevideo,ciudad-de-la-costa,maldonado,salto,paysandu,colonia-del-sacramento")
   .split(",")
   .map((value) => value.trim())
   .filter(Boolean);
@@ -52,7 +54,7 @@ interface FbResponse {
   results?: FbListing[];
 }
 
-export function toRawRental(item: FbListing, locationHint: string): RawRental | null {
+export function toRawRental(item: FbListing, _locationHint: string): RawRental | null {
   const id = String(item.id || "").trim();
   const title = String(item.title || "").trim();
   const amount = Number(item.price?.amount);
@@ -60,9 +62,17 @@ export function toRawRental(item: FbListing, locationHint: string): RawRental | 
   if (!id || !title || !Number.isFinite(amount) || amount <= 0) return null;
   if (currency !== "UYU" && currency !== "USD") return null;
   if (!looksLikeRentalAdvert(title)) return null;
+  // Search suggestions include sale cards and generated titles such as "4 habitaciones Casa".
+  // The query is not the advert's operation. With no description in this bridge, abstain unless
+  // the card itself declares renting; do not remove older adverts based on this partial sample.
+  const rentalText = flatten(title)
+    .replace(/\b(?:ya no|no)\s+(?:(?:se|lo|la)\s+)?(?:alquila(?:n)?|alquilo|alquiler|arrienda(?:n)?|arriendo)\b/g, "")
+    .replace(/\b(?:no (?:es|esta) (?:en|para)|sin opcion (?:de|a))\s+alquiler\b/g, "");
+  if (!/\b(?:alquiler(?:es)?|alquilo|alquila(?:n|mos)?|alquilar|arriendo|arrienda(?:n)?|arrendamiento)\b|\balq(?:uil)?(?:\.|(?=\s|:|$))/.test(rentalText)) return null;
 
   // The card's location is a city ("Montevideo", "Ciudad de la Costa"), never a street.
-  const location = parseLocationLine(String(item.location || ""), locationHint.replace(/-/g, " "));
+  // The search anchor is not evidence of where an individual suggested advert is located.
+  const location = parseLocationLine(String(item.location || ""));
   const attributes = parseAttributes([title]);
 
   return {
@@ -83,7 +93,7 @@ export function toRawRental(item: FbListing, locationHint: string): RawRental | 
     image: String(item.image || "").trim() || null,
     publishedAt: null,
     propertyType: inferPropertyType(title),
-    department: location.department || canonicalDepartment(locationHint.replace(/-/g, " ")),
+    department: location.department,
     neighborhood: location.neighborhood,
     address: "",
     street: "",
@@ -106,12 +116,16 @@ export async function harvestFacebookMarketplace(mode: "full" | "fast", usdUyu: 
     return { key: "facebook", ok: true, complete: false, listings: [], note: "deshabilitado por configuración" };
   }
 
-  const perQuery = Number(process.env.RENTALS_FB_LIMIT || 40);
+  const configuredLimit = Number(process.env.RENTALS_FB_LIMIT || 40);
+  const perQuery = Number.isFinite(configuredLimit) ? Math.min(120, Math.max(1, Math.floor(configuredLimit))) : 40;
   const locations = mode === "fast" ? LOCATIONS.slice(0, 1) : LOCATIONS;
   const queries = mode === "fast" ? QUERIES.slice(0, 2) : QUERIES;
 
   const byId = new Map<string, RawRental>();
-  let reachable = false;
+  let successful = 0;
+  let failed = 0;
+  let rawRows = 0;
+  let rejected = 0;
   let lastError = "";
 
   for (const location of locations) {
@@ -123,18 +137,25 @@ export async function harvestFacebookMarketplace(mode: "full" | "fast", usdUyu: 
       })}`;
       const payload = await fetchJson<FbResponse>(url, { timeoutMs: 120_000, retries: 1, unthrottled: true });
       if (!payload) {
+        failed++;
         lastError = "sin respuesta del servicio";
         continue;
       }
-      if (payload.error) lastError = `${payload.code || ""} ${payload.error}`.trim();
-      if (!Array.isArray(payload.results)) continue;
-      if (payload.results.length) reachable = true;
+      if (payload.ok !== true || payload.error || !Array.isArray(payload.results)) {
+        failed++;
+        // Provider errors may contain internal URLs or account diagnostics. Report only a code.
+        lastError = /^FB_MARKETPLACE_[A-Z_]{1,60}$/.test(payload.code || "")
+          ? payload.code! : "respuesta inválida del servicio";
+        continue;
+      }
+      successful++;
+      rawRows += payload.results.length;
 
       for (const item of payload.results) {
         const listing = toRawRental(item, location);
-        if (!listing) continue;
+        if (!listing) { rejected++; continue; }
         const priceUyu = listing.currency === "USD" ? listing.price * usdUyu : listing.price;
-        if (!isPlausibleRent(priceUyu, listing.propertyType)) continue;
+        if (!isPlausibleRent(priceUyu, listing.propertyType)) { rejected++; continue; }
         byId.set(listing.listingId, listing);
       }
     }
@@ -144,8 +165,11 @@ export async function harvestFacebookMarketplace(mode: "full" | "fast", usdUyu: 
     key: "facebook",
     // The bridge returns a limited set per city/query, never the entire live marketplace.
     complete: false,
-    ok: reachable,
+    ok: successful > 0,
     listings: [...byId.values()],
-    note: reachable ? `${byId.size} avisos en ${locations.length} ciudades` : `sin sesión del navegador: ${lastError}`,
+    note: `${byId.size} avisos únicos de ${rawRows} lecturas; ${rejected} descartados; `
+      + `${successful}/${locations.length * queries.length} consultas respondidas, ${failed} fallidas; `
+      + `cobertura parcial: ${locations.length} ciudades de búsqueda, hasta ${perQuery} tarjetas por consulta, con sugerencias de otras zonas`
+      + (failed ? `; último fallo: ${lastError}` : ""),
   };
 }

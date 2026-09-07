@@ -10,7 +10,7 @@ import { retainRentalAdvertiser } from "./advertiserRetention";
 import { RentalListingModel } from "../models/RentalListing";
 import { RentalMetaModel } from "../models/RentalMeta";
 import { detachedRentalKey, partitionRentalOffers, propertyFromRentalOffers } from "./reconcile";
-import { RENTAL_META_KEY, type RentalMeta, type RentalOffer, type RentalProperty, type RentalSource } from "./types";
+import { RENTAL_FULL_META_KEY, RENTAL_META_KEY, type RentalMeta, type RentalOffer, type RentalProperty, type RentalSource } from "./types";
 
 const CHUNK = 400;
 
@@ -345,6 +345,15 @@ export async function countRentals(): Promise<number> {
 }
 
 export async function saveRentalMeta(meta: RentalMeta): Promise<void> {
+  // Hourly top-ups are deliberately partial. Their small counts must not erase the evidence
+  // needed to diagnose a daily pagination cut or a portal outage. No extra public endpoint.
+  if (meta.mode === "full") {
+    await RentalMetaModel.updateOne(
+      { key: RENTAL_FULL_META_KEY },
+      { $set: { ...meta, key: RENTAL_FULL_META_KEY } },
+      { upsert: true },
+    );
+  }
   await RentalMetaModel.updateOne({ key: RENTAL_META_KEY }, { $set: meta }, { upsert: true });
 }
 
